@@ -24,6 +24,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const debugLogEl = $("debugLog");
 
   const rollBtn = $("rollBtn");
+  const ROLL_BTN_BASE_TEXT = rollBtn ? (rollBtn.textContent || "Würfeln").trim() : "Würfeln";
   const startBtn = $("startBtn");
   const endBtn  = $("endBtn");
   const skipBtn = $("skipBtn");
@@ -210,7 +211,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   let rafDrawId = 0;
 
   // ===== Online =====
-  const SERVER_URL = "wss://spiel-server.onrender.com";
+  const SERVER_URL = "wss://serverfinal-ynbe.onrender.com";
   if(serverLabel) serverLabel.textContent = SERVER_URL;
 
   let ws=null;
@@ -456,16 +457,6 @@ try{ ws = new WebSocket(SERVER_URL); }
       if(type==="error"){
         const code = msg.code || "";
         const message = msg.message || "Server-Fehler";
-        if(code==="ROOM_LOCKED"){
-          toast("Raum ist bereits mit 2 Spielern belegt. Du kannst nicht beitreten.");
-          setNetStatus("Raum gesperrt", false);
-          return;
-        }
-        if(code==="NEED_2P"){
-          toast("Warte bis beide wieder verbunden sind… Dann kann der Host fortsetzen.");
-          return;
-        }
-
         // If server has no running game state (e.g. after restart), unlock manual start.
         if(code==="NO_STATE" || /Spiel nicht gestartet/i.test(message)){
           debugLog("[server:NO_STATE]", code, message);
@@ -572,22 +563,46 @@ try{ ws = new WebSocket(SERVER_URL); }
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
-      const players = ["red","blue"];
+
+      // Prefer explicit server order (supports 2-4 players)
+      let players = Array.isArray(server.turnOrder) && server.turnOrder.length>=2 ? server.turnOrder.slice() :
+                    (Array.isArray(server.activeColors) && server.activeColors.length>=2 ? server.activeColors.slice() : null);
+
+      if(!players){
+        // Fallback: infer from pieces colors, keep canonical order
+        const order = ["red","blue","green","yellow"];
+        const seen = new Set();
+        players = [];
+        for(const pc of server.pieces){
+          const col = String(pc?.color||"").toLowerCase();
+          if(!col || !order.includes(col) || seen.has(col)) continue;
+          seen.add(col); players.push(col);
+        }
+        players.sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+        if(players.length<2) players=["red","blue"];
+      }
+
       setPlayers(players);
+
       const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
-      // ensure 5 slots per color
-      for(const c of players) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
+      // ensure 5 slots per active color
+      for(const col of players) piecesByColor[col] = Array.from({length:5}, ()=>({pos:"house"}));
 
       for(const pc of server.pieces){
-        if(!pc || (pc.color!=="red" && pc.color!=="blue")) continue;
+        const col = String(pc?.color||"").toLowerCase();
+        if(!pc || !players.includes(col)) continue;
         // pc.label is 1..5
         const idx = Math.max(0, Math.min(4, Number(pc.label||1)-1));
         let pos = "house";
         if(pc.posKind==="board" && pc.nodeId) pos = String(pc.nodeId);
         else if(pc.posKind==="goal") pos = "goal";
         else pos = "house";
-        piecesByColor[pc.color][idx] = {pos, pieceId: pc.id};
+        piecesByColor[col][idx] = {pos, pieceId: pc.id};
       }
+
+      // Build state.pieces only for active players
+      const piecesObj = {};
+      for(const col of players) piecesObj[col] = piecesByColor[col];
 
       state = {
         started: true,
@@ -596,11 +611,32 @@ try{ ws = new WebSocket(SERVER_URL); }
         dice: (server.rolled==null ? null : Number(server.rolled)),
         phase: server.phase,
         placingChoices: [],
-        pieces: {red:piecesByColor.red, blue:piecesByColor.blue},
+        pieces: piecesObj,
         barricades: new Set(server.barricades.map(String)),
         winner: null,
         goalNodeId: server.goal ? String(server.goal) : goalNodeId
       };
+
+      // map phases
+      const ph = server.phase;
+      if(ph==="need_roll") phase="need_roll";
+      else if(ph==="need_move") phase="need_move";
+      else if(ph==="place_barricade") phase="placing_barricade";
+      else phase="need_roll";
+
+      // show dice
+      setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
+      if(barrInfo) barrInfo.textContent = String(state.barricades.size);
+
+      // in online mode we let the server validate moves, so don't compute legalTargets
+      legalTargets = [];
+      legalMovesAll = [];
+      legalMovesByPiece = new Map();
+      placingChoices = [];
+      updateTurnUI(); updateStartButton(); draw();
+      ensureFittedOnce();
+      return;
+    }
 
       // map phases
       const ph = server.phase;
@@ -960,6 +996,16 @@ function toast(msg){
 
     const isMyTurn = (netMode==="offline") ? true : (myColor && myColor===state.currentPlayer);
     rollBtn.disabled = (phase!=="need_roll") || !isMyTurn;
+
+    // UX: On mobile/tablet it should be obvious why "Würfeln" is not possible.
+    // Keep the button visible but disabled when it's not your turn (classic boardgame feel).
+    if(rollBtn){
+      if(!isMyTurn && !state.winner){
+        rollBtn.textContent = `Warte auf ${PLAYER_NAME[state.currentPlayer]}…`;
+      }else{
+        rollBtn.textContent = ROLL_BTN_BASE_TEXT;
+      }
+    }
     endBtn.disabled  = (phase==="need_roll"||phase==="placing_barricade"||phase==="game_over") || !isMyTurn;
     if(skipBtn) skipBtn.disabled = (phase==="placing_barricade"||phase==="game_over") || !isMyTurn;
 
@@ -1650,6 +1696,12 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   });
 
   rollBtn.addEventListener("click", () => {
+    // Extra guard: if the button is disabled (not your turn / wrong phase), don't send a request.
+    if(rollBtn.disabled){
+      const who = (state && state.currentPlayer) ? PLAYER_NAME[state.currentPlayer] : "…";
+      toast(`Du bist nicht dran – warte auf ${who}.`);
+      return;
+    }
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       // server checks turn
