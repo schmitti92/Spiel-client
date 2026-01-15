@@ -210,7 +210,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   let rafDrawId = 0;
 
   // ===== Online =====
-  const SERVER_URL = "wss://serverfinal-ynbe.onrender.com";
+  const SERVER_URL = "wss://spiel-server.onrender.com";
   if(serverLabel) serverLabel.textContent = SERVER_URL;
 
   let ws=null;
