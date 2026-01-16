@@ -67,41 +67,11 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const myColorEl = $("myColor");
 
   // Color picker
-  let colorPickWrap = $("colorPick");
-  let btnPickRed = $("pickRed");
-  let btnPickBlue = $("pickBlue");
-  let btnPickGreen = $("pickGreen");
-  let btnPickYellow = $("pickYellow");
-
-  // Falls index.html den Farbwähler noch nicht enthält, bauen wir ihn zur Laufzeit nach.
-  // (Additiv, keine bestehende Funktion wird entfernt.)
-  (function ensureColorPickUI(){
-    try{
-      if(colorPickWrap) return;
-      if(!hostBtn || !hostBtn.parentElement) return;
-      const wrap = document.createElement("div");
-      wrap.id = "colorPick";
-      wrap.style.marginTop = "10px";
-      wrap.style.display = "none";
-      wrap.innerHTML = `
-        <div style="font-weight:700; margin:6px 0 8px 0;">Farbe wählen</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button id="pickRed"  class="btn">🔴 Rot</button>
-          <button id="pickBlue" class="btn">🔵 Blau</button>
-        </div>
-        <div style="font-size:12px; opacity:.8; margin-top:6px;">Nur vor Spielstart. Belegte Farben sind gesperrt.</div>
-      `;
-      // Einfügen unter die Online-Buttons (Host/Beitreten/Trennen)
-      hostBtn.parentElement.insertAdjacentElement("afterend", wrap);
-
-      // Re-bind element refs
-      colorPickWrap = $("colorPick");
-      btnPickRed = $("pickRed");
-      btnPickBlue = $("pickBlue");
-      btnPickGreen = $("pickGreen");
-      btnPickYellow = $("pickYellow");
-    }catch(_e){}
-  })();
+  const colorPickWrap = $("colorPick");
+  const btnPickRed = $("pickRed");
+  const btnPickBlue = $("pickBlue");
+  const btnPickGreen = $("pickGreen");
+  const btnPickYellow = $("pickYellow");
 
   // Overlay
   const overlay = $("overlay");
@@ -302,6 +272,82 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
   function safeJsonParse(s){ try{ return JSON.parse(s); }catch(_e){ return null; } }
 
+  // ===== Wunschfarbe (Lobby) =====
+  // Additiv: beeinflusst Reconnect/Save NICHT. Nur ein Wunsch vor Spielstart.
+  function reqColorKey(){
+    const rc = roomCode || (roomCodeInp ? normalizeRoomCode(roomCodeInp.value) : "");
+    return "barikade_requested_color_" + (rc || "room");
+  }
+  function getRequestedColor(){
+    try{
+      const v = localStorage.getItem(reqColorKey()) || localStorage.getItem("barikade_requested_color") || "";
+      const c = String(v).toLowerCase().trim();
+      return (c==="red"||c==="blue"||c==="green"||c==="yellow") ? c : null;
+    }catch(_e){ return null; }
+  }
+  function setRequestedColor(c){
+    const v = (c==="red"||c==="blue"||c==="green"||c==="yellow") ? c : "";
+    try{
+      if(v) localStorage.setItem(reqColorKey(), v); else localStorage.removeItem(reqColorKey());
+      // global fallback for old sessions
+      if(v) localStorage.setItem("barikade_requested_color", v);
+    }catch(_e){}
+  }
+
+  function isLobbyPhase(){
+    // Server-Game nutzt state.started
+    return !(state && state.started);
+  }
+
+  function usedColorsSet(){
+    const used = new Set();
+    for(const pl of (lastNetPlayers||[])){
+      if(pl && pl.color) used.add(String(pl.color).toLowerCase());
+    }
+    return used;
+  }
+
+  function updateColorPickUI(){
+    if(!colorPickWrap) return;
+
+    if(netMode === "offline"){
+      colorPickWrap.style.display = "none";
+      return;
+    }
+
+    // Farbauswahl nur vor Spielstart
+    const show = isLobbyPhase();
+    colorPickWrap.style.display = show ? "block" : "none";
+    if(!show) return;
+
+    const used = usedColorsSet();
+    const want = getRequestedColor();
+
+    function configBtn(btn, color){
+      if(!btn) return;
+      const c = String(color).toLowerCase();
+      const mine = (myColor === c);
+      const takenByOther = used.has(c) && !mine;
+
+      btn.disabled = takenByOther;
+      btn.style.opacity = takenByOther ? "0.4" : "1";
+
+      // active mark: current wish or my assigned color
+      const active = (want === c) || mine;
+      btn.classList.toggle("active", !!active);
+
+      // label add: show lock
+      const base = (c==="red") ? "🔴 Rot" : (c==="blue") ? "🔵 Blau" : (c==="green") ? "🟢 Grün" : "🟡 Gelb";
+      btn.textContent = takenByOther ? (base + " 🔒") : base;
+    }
+
+    configBtn(btnPickRed, "red");
+    configBtn(btnPickBlue, "blue");
+    configBtn(btnPickGreen, "green");
+    configBtn(btnPickYellow, "yellow");
+  }
+
+
   function setNetStatus(text, good){
     if(!netStatus) return;
     netStatus.textContent = text;
@@ -326,12 +372,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       myColorEl.style.color = myColor ? COLORS[myColor] : "var(--muted)";
     updateStartButton();
     }
-    if(colorPickWrap){
-      const inLobby = (!state || !state.started);
-      colorPickWrap.style.display = (netMode!=="offline" && inLobby) ? "block" : "none";
-    }
-
-    // Update color pick button state (free/blocked/highlight)
     updateColorPickUI();
 
     // Host: keep state players in sync with chosen colors
@@ -369,41 +409,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
     // host-only controls visibility
     updateHostToolsUI();
-  }
-
-  function updateColorPickUI(){
-    try{
-      if(!colorPickWrap) return;
-      const inLobby = (!state || !state.started);
-      if(netMode==="offline" || !inLobby) return;
-
-      const req = getRequestedColor();
-      const usedByConnected = new Set();
-      for(const p of lastNetPlayers){
-        if(!p || !p.color) continue;
-        if(p.connected) usedByConnected.add(p.color);
-      }
-
-      const btns = [
-        {c:"red", b:btnPickRed},
-        {c:"blue", b:btnPickBlue},
-        {c:"green", b:btnPickGreen},
-        {c:"yellow", b:btnPickYellow}
-      ];
-      for(const it of btns){
-        if(!it.b) continue;
-        const taken = usedByConnected.has(it.c) && myColor!==it.c;
-        it.b.disabled = !!taken;
-        it.b.style.opacity = taken ? "0.45" : "1";
-        it.b.style.filter = taken ? "grayscale(0.2)" : "none";
-
-        // Highlight: myColor (server truth) strongest, then requestedColor
-        const isMine = (myColor===it.c);
-        const isReq = (!isMine && req===it.c);
-        it.b.style.outline = isMine ? "2px solid var(--green)" : (isReq ? "2px solid var(--edge)" : "none");
-        it.b.style.outlineOffset = "2px";
-      }
-    }catch(_e){}
   }
 
   function updateStartButton(){
@@ -460,14 +465,13 @@ try{ ws = new WebSocket(SERVER_URL); }
       setNetStatus("Verbunden – join…", true);
 
       const sessionToken = getSessionToken();
-      const requestedColor = getRequestedColor();
       wsSend({
         type: "join",
         room: roomCode,
         name: (netMode === "host" ? "Host" : "Client"),
         asHost: (netMode === "host"),
         sessionToken,
-        requestedColor,
+        requestedColor: getRequestedColor(),
         ts: Date.now()
       });
     };
@@ -606,41 +610,8 @@ try{ ws = new WebSocket(SERVER_URL); }
     }
   }
 
-  // Wunschfarbe (optional): wird im Browser gespeichert und beim Join an den Server gesendet.
-  // Wichtig: Das ersetzt NICHT die bestehende Farbvergabe, es ist nur eine Präferenz.
-  const REQ_COLOR_KEY = "barikade_requestedColor";
-  function getRequestedColor(){
-    try{
-      const v = String(localStorage.getItem(REQ_COLOR_KEY) || "").toLowerCase().trim();
-      return (v==="red"||v==="blue"||v==="green"||v==="yellow") ? v : null;
-    }catch(_e){ return null; }
-  }
-  function setRequestedColor(color){
-    try{
-      const v = String(color||"").toLowerCase().trim();
-      if(v==="red"||v==="blue"||v==="green"||v==="yellow") localStorage.setItem(REQ_COLOR_KEY, v);
-      else localStorage.removeItem(REQ_COLOR_KEY);
-    }catch(_e){}
-  }
-
-  function chooseColor(color){
-    const c = String(color||"").toLowerCase().trim();
-    if(!(c==="red"||c==="blue"||c==="green"||c==="yellow")) return;
-
-    // Online aktuell strikt 2 Spieler -> nur Rot/Blau zulassen (Server akzeptiert nur diese Farben).
-    if(netMode!=="offline" && (c==="green" || c==="yellow")){
-      toast("Online aktuell nur Rot/Blau (2 Spieler)");
-      return;
-    }
-    setRequestedColor(c);
-
-    // Wenn online verbunden: Wunschfarbe sofort an Server schicken (nur Lobby).
-    if(ws && ws.readyState===1 && netMode!=="offline"){
-      wsSend({ type:"request_color", color: c, ts: Date.now() });
-      toast(`Wunschfarbe: ${PLAYER_NAME[c]}`);
-      return;
-    }
-    toast(`Wunschfarbe gespeichert: ${PLAYER_NAME[c]}`);
+  function chooseColor(_color){
+    toast("Farbe wird vom Server automatisch vergeben");
   }
 
   function getActiveColors(){
@@ -1042,10 +1013,7 @@ function toast(msg){
       if(rollBtn) rollBtn.disabled = true;
       if(endBtn)  endBtn.disabled  = true;
       if(skipBtn) skipBtn.disabled = true;
-      if(colorPickWrap){
-        const inLobby = (!state || !state.started);
-        colorPickWrap.style.display = (netMode!=="offline" && inLobby) ? "block" : "none";
-      }
+      updateColorPickUI();
       return;
     }
 
@@ -1065,10 +1033,7 @@ function toast(msg){
       if(skipBtn) skipBtn.disabled = true;
     }
 
-    if(colorPickWrap){
-      const inLobby = (!state || !state.started);
-      colorPickWrap.style.display = (netMode!=="offline" && inLobby) ? "block" : "none";
-    }
+    updateColorPickUI();
   }
 
   function endTurn(){
@@ -1808,7 +1773,26 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     toast("Beitreten…");
   });
 
-  leaveBtn.addEventListener("click", () => {
+  
+
+  // Farbauswahl (nur Lobby): Wunsch speichern + an Server schicken
+  function requestColor(color){
+    const c = String(color||"").toLowerCase();
+    if(!(c==="red"||c==="blue"||c==="green"||c==="yellow")) return;
+    setRequestedColor(c);
+    updateColorPickUI();
+    if(ws && ws.readyState===1){
+      wsSend({ type:"request_color", color: c, ts: Date.now() });
+    } else {
+      toast("Wunschfarbe gespeichert (wird beim Join gesendet)");
+    }
+  }
+
+  if(btnPickRed) btnPickRed.addEventListener("click", ()=> requestColor("red"));
+  if(btnPickBlue) btnPickBlue.addEventListener("click", ()=> requestColor("blue"));
+  if(btnPickGreen) btnPickGreen.addEventListener("click", ()=> requestColor("green"));
+  if(btnPickYellow) btnPickYellow.addEventListener("click", ()=> requestColor("yellow"));
+leaveBtn.addEventListener("click", () => {
     netMode = "offline";
     saveSession();
     disconnectWS();
