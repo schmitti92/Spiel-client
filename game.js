@@ -66,12 +66,98 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const netPlayersEl = $("netPlayers");
   const myColorEl = $("myColor");
 
-  // Color picker
-  const colorPickWrap = $("colorPick");
-  const btnPickRed = $("pickRed");
-  const btnPickBlue = $("pickBlue");
-  const btnPickGreen = $("pickGreen");
-  const btnPickYellow = $("pickYellow");
+  // Color picker (A1.1)
+  // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
+  // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
+  let colorPickWrap = $("colorPick");
+  let btnPickRed = $("pickRed");
+  let btnPickBlue = $("pickBlue");
+  let btnPickGreen = $("pickGreen");
+  let btnPickYellow = $("pickYellow");
+
+  let _colorPickBound = false;
+
+  function bindColorPickHandlers(){
+    if(_colorPickBound) return;
+    if(!btnPickRed || !btnPickBlue) return;
+    _colorPickBound = true;
+    btnPickRed.addEventListener("click", ()=> requestColor("red"));
+    btnPickBlue.addEventListener("click", ()=> requestColor("blue"));
+    if(btnPickGreen) btnPickGreen.addEventListener("click", ()=> requestColor("green"));
+    if(btnPickYellow) btnPickYellow.addEventListener("click", ()=> requestColor("yellow"));
+  }
+
+  function ensureColorPickerUI(){
+    try{
+      if(colorPickWrap && btnPickRed && btnPickBlue) return;
+
+      // Wir haengen den Farbwähler unter die Online-Buttons (Host/Beitreten/Trennen),
+      // wenn moeglich.
+      const anchor = leaveBtn?.parentElement || hostBtn?.parentElement || document.body;
+      if(!anchor) return;
+
+      // Wrapper
+      colorPickWrap = document.createElement('div');
+      colorPickWrap.id = 'colorPick';
+      colorPickWrap.style.marginTop = '10px';
+      colorPickWrap.style.display = 'block';
+
+      const title = document.createElement('div');
+      title.textContent = 'Farbe wählen (vor Spielstart)';
+      title.style.fontWeight = '700';
+      title.style.opacity = '0.9';
+      title.style.marginBottom = '6px';
+
+      const row = document.createElement('div');
+      row.style.display = 'flex';
+      row.style.gap = '8px';
+      row.style.flexWrap = 'wrap';
+
+      const mkBtn = (id, label) => {
+        const b = document.createElement('button');
+        b.id = id;
+        b.className = 'btn';
+        b.type = 'button';
+        b.textContent = label;
+        b.style.minWidth = '110px';
+        return b;
+      };
+
+      btnPickRed = mkBtn('pickRed', '🔴 Rot');
+      btnPickBlue = mkBtn('pickBlue', '🔵 Blau');
+      // Falls du spaeter 3/4 Spieler aktivierst, sind die Buttons schon vorbereitet.
+      btnPickGreen = mkBtn('pickGreen', '🟢 Grün');
+      btnPickYellow = mkBtn('pickYellow', '🟡 Gelb');
+      btnPickGreen.style.display = 'none';
+      btnPickYellow.style.display = 'none';
+
+      row.appendChild(btnPickRed);
+      row.appendChild(btnPickBlue);
+      row.appendChild(btnPickGreen);
+      row.appendChild(btnPickYellow);
+
+      const hint = document.createElement('div');
+      hint.id = 'colorPickHint';
+      hint.style.marginTop = '6px';
+      hint.style.opacity = '0.75';
+      hint.style.fontSize = '12px';
+      hint.textContent = 'Du kannst die Wunschfarbe auch offline auswählen – sie wird beim Join gesendet.';
+
+      colorPickWrap.appendChild(title);
+      colorPickWrap.appendChild(row);
+      colorPickWrap.appendChild(hint);
+
+      // Einfügen: nach der Button-Reihe (Host/Beitreten/Trennen)
+      anchor.appendChild(colorPickWrap);
+
+      // Handler erst NACH dem Erzeugen binden.
+      // (Wenn Elemente im HTML vorhanden sind, bindet das spaeter auch.)
+      bindColorPickHandlers();
+    }catch(_e){}
+  }
+
+  // sofort versuchen, UI zu erzeugen (rein additiv)
+  ensureColorPickerUI();
 
   // Overlay
   const overlay = $("overlay");
@@ -308,14 +394,14 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
   function updateColorPickUI(){
+    // Falls UI fehlt (alte index.html), nacherzeugen.
+    if(!colorPickWrap || !btnPickRed || !btnPickBlue){
+      ensureColorPickerUI();
+    }
     if(!colorPickWrap) return;
 
-    if(netMode === "offline"){
-      colorPickWrap.style.display = "none";
-      return;
-    }
-
-    // Farbauswahl nur vor Spielstart
+    // Farbauswahl nur vor Spielstart (Lobby). Auch offline anzeigen,
+    // damit man die Wunschfarbe schon VOR dem Verbinden festlegen kann.
     const show = isLobbyPhase();
     colorPickWrap.style.display = show ? "block" : "none";
     if(!show) return;
@@ -1788,10 +1874,9 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     }
   }
 
-  if(btnPickRed) btnPickRed.addEventListener("click", ()=> requestColor("red"));
-  if(btnPickBlue) btnPickBlue.addEventListener("click", ()=> requestColor("blue"));
-  if(btnPickGreen) btnPickGreen.addEventListener("click", ()=> requestColor("green"));
-  if(btnPickYellow) btnPickYellow.addEventListener("click", ()=> requestColor("yellow"));
+  // Handlers werden zentral ueber bindColorPickHandlers() gebunden,
+  // damit es auch funktioniert, wenn die Buttons erst per JS erzeugt wurden.
+  bindColorPickHandlers();
 leaveBtn.addEventListener("click", () => {
     netMode = "offline";
     saveSession();
@@ -1865,11 +1950,8 @@ leaveBtn.addEventListener("click", () => {
   });
 
 
-  // Color pick
-  if(btnPickRed) btnPickRed.addEventListener("click", ()=>chooseColor("red"));
-  if(btnPickBlue) btnPickBlue.addEventListener("click", ()=>chooseColor("blue"));
-  if(btnPickGreen) btnPickGreen.addEventListener("click", ()=>chooseColor("green"));
-  if(btnPickYellow) btnPickYellow.addEventListener("click", ()=>chooseColor("yellow"));
+  // (Legacy) In aelteren Offline-Versionen gab es chooseColor().
+  // Wir binden hier NICHT doppelt, um keine Doppel-Sends zu erzeugen.
 
   // ===== Host: intent processing =====
   function colorOf(id){
