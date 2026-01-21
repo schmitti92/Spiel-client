@@ -1008,9 +1008,27 @@ function toast(msg){
   overlayOk.addEventListener("click", hideOverlay);
 
   async function loadBoard(){
-    const res = await fetch("board.json", {cache:"no-store"});
-    if(!res.ok) throw new Error("board.json nicht gefunden");
-    return await res.json();
+    // Robust: try common locations so GitHub Pages folder layouts don't break.
+    // We keep cache:no-store so updates are seen quickly.
+    const candidates = [
+      "board.json",
+      "./board.json",
+      "Spiel-client-main/board.json",
+      "./Spiel-client-main/board.json",
+    ];
+    let lastErr = null;
+    for(const url of candidates){
+      try{
+        const res = await fetch(url, {cache:"no-store"});
+        if(res && res.ok){
+          return await res.json();
+        }
+        lastErr = new Error(`Board nicht gefunden: ${url} (HTTP ${res?res.status:"?"})`);
+      }catch(e){
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error("board.json nicht gefunden");
   }
 
   function buildGraph(){
