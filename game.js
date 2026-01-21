@@ -105,6 +105,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       colorPickWrap.id = 'colorPick';
       colorPickWrap.style.marginTop = '10px';
       colorPickWrap.style.display = 'block';
+      colorPickWrap.style.width = '100%';
 
       const title = document.createElement('div');
       title.textContent = 'Farbe wählen (vor Spielstart)';
@@ -150,8 +151,15 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       colorPickWrap.appendChild(row);
       colorPickWrap.appendChild(hint);
 
-      // Einfügen: nach der Button-Reihe (Host/Beitreten/Trennen)
-      anchor.appendChild(colorPickWrap);
+      // Einfügen: UNTER die Button-Reihe (Host/Beitreten/Trennen), nicht IN die Reihe.
+      // Grund: die Buttons sitzen in einer Flex-Row; ein weiteres DIV darin kann unsichtbar/zusammengedrückt werden.
+      const afterRow = anchor.parentElement || anchor;
+      if(afterRow && afterRow !== anchor){
+        // direkt nach der Button-Reihe einfügen
+        anchor.insertAdjacentElement('afterend', colorPickWrap);
+      }else{
+        anchor.appendChild(colorPickWrap);
+      }
 
       // Handler erst NACH dem Erzeugen binden.
       // (Wenn Elemente im HTML vorhanden sind, bindet das spaeter auch.)
