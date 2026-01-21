@@ -105,7 +105,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       colorPickWrap.id = 'colorPick';
       colorPickWrap.style.marginTop = '10px';
       colorPickWrap.style.display = 'block';
-      colorPickWrap.style.width = '100%';
 
       const title = document.createElement('div');
       title.textContent = 'Farbe wählen (vor Spielstart)';
@@ -152,7 +151,14 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       colorPickWrap.appendChild(hint);
 
       // Einfügen: nach der Button-Reihe (Host/Beitreten/Trennen)
-      anchor.insertAdjacentElement('afterend', colorPickWrap);
+      // Einfügen: nach der Button-Reihe (Host/Beitreten/Trennen)
+      // WICHTIG: anchor ist oft die Button-Reihe selbst (Flex). Dann würde der Picker unsichtbar "weggequetscht".
+      // Deshalb: wenn anchor eine Zeile ist -> nach der Zeile einfügen.
+      if(anchor && anchor.insertAdjacentElement){
+        anchor.insertAdjacentElement('afterend', colorPickWrap);
+      }else{
+        anchor.appendChild(colorPickWrap);
+      }
 
       // Handler erst NACH dem Erzeugen binden.
       // (Wenn Elemente im HTML vorhanden sind, bindet das spaeter auch.)
