@@ -395,9 +395,6 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 #diceCube[data-face="5"] .p1 .pip, #diceCube[data-face="5"] .p3 .pip, #diceCube[data-face="5"] .p5 .pip, #diceCube[data-face="5"] .p7 .pip, #diceCube[data-face="5"] .p9 .pip{ opacity:1; }
 #diceCube[data-face="6"] .p1 .pip, #diceCube[data-face="6"] .p3 .pip, #diceCube[data-face="6"] .p4 .pip, #diceCube[data-face="6"] .p6 .pip, #diceCube[data-face="6"] .p7 .pip, #diceCube[data-face="6"] .p9 .pip{ opacity:1; }
 
-/* Server assigns colors: hide color picker */
-#colorPick{ display:none !important; }
-
 /* ================================
    FINAL FIXES (Canvas + Tablet)
    - stellt sicher, dass #c (Canvas) eine echte Höhe hat
