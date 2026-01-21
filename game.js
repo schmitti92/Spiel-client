@@ -37,6 +37,19 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const loadFile = $("loadFile");
   const autoSaveInfo = $("autoSaveInfo");
 
+  // Notfall: Farben tauschen (Host-only)
+  let swapColorsBtn = $("swapColorsBtn");
+  try{
+    // Falls index.html den Button noch nicht hat, erzeugen wir ihn sicher per JS,
+    // damit du nur game.js tauschen musst.
+    if(!swapColorsBtn && hostTools){
+      swapColorsBtn = document.createElement("button");
+      swapColorsBtn.id = "swapColorsBtn";
+      swapColorsBtn.className = "btn";
+      swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
+      hostTools.appendChild(swapColorsBtn);
+    }
+  }catch(_e){}
   const diceEl  = $("diceCube");
   const turnText= $("turnText");
   const turnDot = $("turnDot");
@@ -744,14 +757,14 @@ try{ ws = new WebSocket(SERVER_URL); }
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
-      const players = ["red","blue"];
+      const players = Array.isArray(server.turnOrder) ? server.turnOrder.slice() : (Array.isArray(server.players) ? server.players.slice() : ["red","blue"]);
       setPlayers(players);
       const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
-      // ensure 5 slots per color
-      for(const c of players) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
+      // ensure 5 slots per active color
+      for(const c of players){ piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"})); }
 
       for(const pc of server.pieces){
-        if(!pc || (pc.color!=="red" && pc.color!=="blue")) continue;
+        if(!pc || !players.includes(pc.color)) continue;
         // pc.label is 1..5
         const idx = Math.max(0, Math.min(4, Number(pc.label||1)-1));
         let pos = "house";
@@ -1962,6 +1975,13 @@ leaveBtn.addEventListener("click", () => {
     toast("Auto‑Save wiederherstellen…");
   });
 
+  // Host tool: Notfall – Farben tauschen (Rot ↔ Blau)
+  if(swapColorsBtn) swapColorsBtn.addEventListener("click", () => {
+    if(!isMeHost()) { toast("Nur Host"); return; }
+    if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+    wsSend({ type:"swap_colors", ts: Date.now() });
+    toast("Farben tauschen…");
+  });
 
 
   // (Legacy) In aelteren Offline-Versionen gab es chooseColor().
