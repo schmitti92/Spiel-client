@@ -757,14 +757,14 @@ try{ ws = new WebSocket(SERVER_URL); }
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
-      const players = Array.isArray(server.turnOrder) ? server.turnOrder.slice() : (Array.isArray(server.players) ? server.players.slice() : ["red","blue"]);
+      const players = ["red","blue"];
       setPlayers(players);
       const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
-      // ensure 5 slots per active color
-      for(const c of players){ piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"})); }
+      // ensure 5 slots per color
+      for(const c of players) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
 
       for(const pc of server.pieces){
-        if(!pc || !players.includes(pc.color)) continue;
+        if(!pc || (pc.color!=="red" && pc.color!=="blue")) continue;
         // pc.label is 1..5
         const idx = Math.max(0, Math.min(4, Number(pc.label||1)-1));
         let pos = "house";
@@ -1245,7 +1245,7 @@ if(!node) return false;
 
   function anyPiecesAtNode(nodeId){
     const res=[];
-    for(const c of PLAYERS){
+    for(const c of getActiveColors()){
       const arr=state.pieces[c];
       for(let i=0;i<arr.length;i++) if(arr[i].pos===nodeId) res.push({color:c,index:i});
     }
@@ -1304,7 +1304,7 @@ if(!node) return false;
   }
 
   function checkWin(){
-    for(const c of PLAYERS){
+    for(const c of getActiveColors()){
       if(state.pieces[c].filter(p=>p.pos==="goal").length===5){ state.winner=c; return; }
     }
   }
@@ -1576,7 +1576,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
 
     // pieces stacked
     const stacks=new Map();
-    for(const c of PLAYERS){
+    for(const c of getActiveColors()){
       const pcs=state.pieces[c];
       for(let i=0;i<pcs.length;i++){
         const pc = pcs[i];
