@@ -37,19 +37,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const loadFile = $("loadFile");
   const autoSaveInfo = $("autoSaveInfo");
 
-  // Notfall: Farben tauschen (Host-only)
-  let swapColorsBtn = $("swapColorsBtn");
-  try{
-    // Falls index.html den Button noch nicht hat, erzeugen wir ihn sicher per JS,
-    // damit du nur game.js tauschen musst.
-    if(!swapColorsBtn && hostTools){
-      swapColorsBtn = document.createElement("button");
-      swapColorsBtn.id = "swapColorsBtn";
-      swapColorsBtn.className = "btn";
-      swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
-      hostTools.appendChild(swapColorsBtn);
-    }
-  }catch(_e){}
   const diceEl  = $("diceCube");
   const turnText= $("turnText");
   const turnDot = $("turnDot");
@@ -1975,13 +1962,6 @@ leaveBtn.addEventListener("click", () => {
     toast("Auto‑Save wiederherstellen…");
   });
 
-  // Host tool: Notfall – Farben tauschen (Rot ↔ Blau)
-  if(swapColorsBtn) swapColorsBtn.addEventListener("click", () => {
-    if(!isMeHost()) { toast("Nur Host"); return; }
-    if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
-    wsSend({ type:"swap_colors", ts: Date.now() });
-    toast("Farben tauschen…");
-  });
 
 
   // (Legacy) In aelteren Offline-Versionen gab es chooseColor().
