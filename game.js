@@ -75,6 +75,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   let btnPickGreen = $("pickGreen");
   let btnPickYellow = $("pickYellow");
 
+  // Server can tell which colors are currently supported online.
+  // (Additiv: if missing, fallback to red/blue)
+  let allowedColorsOnline = new Set(["red","blue"]);
+
   let _colorPickBound = false;
 
   function bindColorPickHandlers(){
@@ -88,15 +92,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
   function ensureColorPickerUI(){
-    // FIX: Wenn colorPick bereits in index.html existiert (display:none), sichtbar schalten.
-    // Das ist rein UI und ändert keine Spiel-/Reconnect-Logik.
-    try{
-      const existing = document.getElementById('colorPick');
-      if(existing){
-        // nur "ent-hiden"; Logik wer/was darf bleibt unten in updateColorPickUI()
-        existing.style.display = 'block';
-      }
-    }catch(_e){}
     try{
       if(colorPickWrap && btnPickRed && btnPickBlue) return;
 
@@ -137,8 +132,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       // Falls du spaeter 3/4 Spieler aktivierst, sind die Buttons schon vorbereitet.
       btnPickGreen = mkBtn('pickGreen', '🟢 Grün');
       btnPickYellow = mkBtn('pickYellow', '🟡 Gelb');
-      btnPickGreen.style.display = 'none';
-      btnPickYellow.style.display = 'none';
+      // Sichtbar lassen – online ggf. automatisch gesperrt ("bald").
 
       row.appendChild(btnPickRed);
       row.appendChild(btnPickBlue);
@@ -426,7 +420,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     // Gruen/Gelb bleiben sichtbar (falls du spaeter 3/4 Spieler aktivierst),
     // sind aber online gesperrt, damit man keinen Server-Fehler provoziert.
     const onlineLimited = (netMode !== "offline");
-    const onlineAllowed = new Set(["red","blue"]);
+    const onlineAllowed = allowedColorsOnline || new Set(["red","blue"]);
 
     function configBtn(btn, color){
       if(!btn) return;
@@ -598,6 +592,14 @@ try{ ws = new WebSocket(SERVER_URL); }
       }
       if(type==="room_update"){
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        if(Array.isArray(msg.allowedColors)){
+          const s = new Set();
+          for(const c of msg.allowedColors){
+            const cc = String(c||"").toLowerCase().trim();
+            if(cc) s.add(cc);
+          }
+          if(s.size) allowedColorsOnline = s;
+        }
         netCanStart = !!msg.canStart;
         updateStartButton();
         return;
@@ -1008,27 +1010,9 @@ function toast(msg){
   overlayOk.addEventListener("click", hideOverlay);
 
   async function loadBoard(){
-    // Robust: try common locations so GitHub Pages folder layouts don't break.
-    // We keep cache:no-store so updates are seen quickly.
-    const candidates = [
-      "board.json",
-      "./board.json",
-      "Spiel-client-main/board.json",
-      "./Spiel-client-main/board.json",
-    ];
-    let lastErr = null;
-    for(const url of candidates){
-      try{
-        const res = await fetch(url, {cache:"no-store"});
-        if(res && res.ok){
-          return await res.json();
-        }
-        lastErr = new Error(`Board nicht gefunden: ${url} (HTTP ${res?res.status:"?"})`);
-      }catch(e){
-        lastErr = e;
-      }
-    }
-    throw lastErr || new Error("board.json nicht gefunden");
+    const res = await fetch("board.json", {cache:"no-store"});
+    if(!res.ok) throw new Error("board.json nicht gefunden");
+    return await res.json();
   }
 
   function buildGraph(){
