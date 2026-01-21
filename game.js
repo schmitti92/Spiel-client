@@ -93,8 +93,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
       // Wir haengen den Farbwähler unter die Online-Buttons (Host/Beitreten/Trennen),
       // wenn moeglich.
-      const rowEl = leaveBtn?.parentElement || hostBtn?.parentElement;
-      const anchor = rowEl?.parentElement || document.body;
+      const anchor = leaveBtn?.parentElement || hostBtn?.parentElement || document.body;
       if(!anchor) return;
 
       // Wrapper
@@ -129,7 +128,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       // Falls du spaeter 3/4 Spieler aktivierst, sind die Buttons schon vorbereitet.
       btnPickGreen = mkBtn('pickGreen', '🟢 Grün');
       btnPickYellow = mkBtn('pickYellow', '🟡 Gelb');
-      btnPickGreen.style.display = 'inline-block';
+      btnPickGreen.style.display = 'none';
       btnPickYellow.style.display = 'none';
 
       row.appendChild(btnPickRed);
@@ -149,11 +148,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       colorPickWrap.appendChild(hint);
 
       // Einfügen: nach der Button-Reihe (Host/Beitreten/Trennen)
-      if(rowEl && rowEl.parentElement === anchor){
-        anchor.insertBefore(colorPickWrap, rowEl.nextSibling);
-      } else {
-        anchor.appendChild(colorPickWrap);
-      }
+      anchor.appendChild(colorPickWrap);
 
       // Handler erst NACH dem Erzeugen binden.
       // (Wenn Elemente im HTML vorhanden sind, bindet das spaeter auch.)
@@ -163,6 +158,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // sofort versuchen, UI zu erzeugen (rein additiv)
   ensureColorPickerUI();
+  // Wichtig: Manche HTML-Versionen haben #colorPick initial auf display:none.
+  // Wenn man noch OFFLINE ist, kam frueher kein room_update -> UI blieb unsichtbar.
+  // Daher initial einmal aktualisieren.
+  try{ updateColorPickUI(); }catch(_e){}
 
   // Overlay
   const overlay = $("overlay");
@@ -414,9 +413,11 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     const used = usedColorsSet();
     const want = getRequestedColor();
 
-    // show buttons depending on room capacity (server may send maxPlayers)
-    if(btnPickGreen) btnPickGreen.style.display = (lastMaxPlayers>=3) ? "inline-block" : "none";
-    if(btnPickYellow) btnPickYellow.style.display = (lastMaxPlayers>=4) ? "inline-block" : "none";
+    // Online-Server unterstuetzt aktuell nur Rot/Blau (server.js: ALLOWED_COLORS).
+    // Gruen/Gelb bleiben sichtbar (falls du spaeter 3/4 Spieler aktivierst),
+    // sind aber online gesperrt, damit man keinen Server-Fehler provoziert.
+    const onlineLimited = (netMode !== "offline");
+    const onlineAllowed = new Set(["red","blue"]);
 
     function configBtn(btn, color){
       if(!btn) return;
@@ -424,8 +425,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       const mine = (myColor === c);
       const takenByOther = used.has(c) && !mine;
 
-      btn.disabled = takenByOther;
-      btn.style.opacity = takenByOther ? "0.4" : "1";
+      const supportedOnline = !onlineLimited || onlineAllowed.has(c);
+
+      btn.disabled = takenByOther || !supportedOnline;
+      btn.style.opacity = (takenByOther || !supportedOnline) ? "0.4" : "1";
 
       // active mark: current wish or my assigned color
       const active = (want === c) || mine;
@@ -433,7 +436,11 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
       // label add: show lock
       const base = (c==="red") ? "🔴 Rot" : (c==="blue") ? "🔵 Blau" : (c==="green") ? "🟢 Grün" : "🟡 Gelb";
-      btn.textContent = takenByOther ? (base + " 🔒") : base;
+      if(!supportedOnline){
+        btn.textContent = base + " (bald)";
+      } else {
+        btn.textContent = takenByOther ? (base + " 🔒") : base;
+      }
     }
 
     configBtn(btnPickRed, "red");
@@ -581,7 +588,6 @@ try{ ws = new WebSocket(SERVER_URL); }
         return;
       }
       if(type==="room_update"){
-        if(typeof msg.maxPlayers==="number") lastMaxPlayers = msg.maxPlayers;
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         netCanStart = !!msg.canStart;
         updateStartButton();
