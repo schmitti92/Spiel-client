@@ -2250,3 +2250,62 @@ leaveBtn.addEventListener("click", () => {
     }
   })();
 })();
+
+// ===== UI PATCH: Würfel in die Status-Box über "Board / Barikaden" docken (nur Optik) =====
+(function dockDiceIntoStatusCard(){
+  function tryDock(){
+    const dice = document.getElementById("diceCube");
+    const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
+    if(!dice || !boardInfo) return false;
+
+    // Container finden, in dem "Board/Barikaden" stehen (Status-Card)
+    let card =
+      boardInfo.closest(".card") ||
+      boardInfo.closest(".panel") ||
+      boardInfo.closest("section") ||
+      (boardInfo.parentElement && boardInfo.parentElement.parentElement) ||
+      boardInfo.parentElement;
+
+    if(!card) return false;
+
+    // Dock-Wrapper (falls schon vorhanden -> wiederverwenden)
+    let dock = document.getElementById("diceDockStatus");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockStatus";
+      dock.style.display = "flex";
+      dock.style.justifyContent = "flex-end";   // rechts
+      dock.style.alignItems = "flex-start";
+      dock.style.margin = "10px 0 12px 0";
+    } else {
+      dock.innerHTML = "";
+    }
+
+    // Inner Wrapper für "richtig groß"
+    const big = document.createElement("div");
+    big.style.transform = "scale(2.8)";          // Größe (fett)
+    big.style.transformOrigin = "right top";
+    big.style.pointerEvents = "none";            // Anzeige-only (Buttons bleiben oben)
+    big.appendChild(dice);
+
+    dock.appendChild(big);
+
+    // Position: direkt über der Zeile, die boardInfo enthält
+    const row = boardInfo.closest("div") || boardInfo;
+    if(row && row.parentElement){
+      row.parentElement.insertBefore(dock, row);
+      return true;
+    }
+    return false;
+  }
+
+  // Mehrere Versuche, weil UI teils dynamisch aufgebaut wird
+  let tries = 0;
+  const t = setInterval(() => {
+    tries++;
+    const ok = tryDock();
+    if(ok || tries > 30) clearInterval(t);
+  }, 100);
+
+  window.addEventListener("load", () => { tryDock(); });
+})();
