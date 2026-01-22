@@ -189,6 +189,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   };
 
   const DEFAULT_PLAYERS = ["red","blue","green","yellow"];
+  const ALL_COLORS = DEFAULT_PLAYERS;
   const PLAYER_NAME = {red:"Rot", blue:"Blau", green:"Grün", yellow:"Gelb"};
 
   let PLAYERS = ["red","blue"];
@@ -495,7 +496,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         setPlayers(active);
         state.players = [...PLAYERS];
         state.pieces = state.pieces || {};
-        for(const c of PLAYERS){
+        for(const c of DEFAULT_PLAYERS){
           if(!state.pieces[c]) state.pieces[c] = Array.from({length:5},()=>({pos:"house"}));
         }
         if(!state.players.includes(state.currentPlayer)){
@@ -718,16 +719,21 @@ try{ ws = new WebSocket(SERVER_URL); }
 
   // Server uses sessionToken to reconnect a "slot" (same color) after refresh.
   function getSessionToken(){
+    // IMPORTANT: Use per-tab sessionStorage token to avoid kicking players
+    // when you open multiple tabs on the SAME device.
+    // sessionStorage survives refresh, but is unique per tab.
     try{
-      let t = localStorage.getItem("barikade_sessionToken") || "";
+      let t = sessionStorage.getItem("barikade_sessionToken_tab") || "";
       if(!t){
         t = "S-" + randId(16);
-        localStorage.setItem("barikade_sessionToken", t);
+        sessionStorage.setItem("barikade_sessionToken_tab", t);
       }
       return t;
     }catch(_e){
+      // fallback
       return "S-" + randId(16);
     }
+  }
   }
 
   function chooseColor(_color){
@@ -757,16 +763,14 @@ try{ ws = new WebSocket(SERVER_URL); }
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
-      // In Online-Mode we ALWAYS render all 4 Farben (auch wenn nicht gewählt),
-      // damit Gelb/Grün im Haus sichtbar bleiben.
-      const players = ["red","blue","green","yellow"];
+      const players = ["red","blue"];
       setPlayers(players);
       const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
-      // ensure 5 slots per color
-      for(const c of players) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
+      // ensure 5 slots per color (ALL colors for visibility)
+      for(const c of ALL_COLORS) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
 
       for(const pc of server.pieces){
-        if(!pc || !pc.color || !piecesByColor[pc.color]) continue;
+        if(!pc || !ALL_COLORS.includes(pc.color)) continue;
         // pc.label is 1..5
         const idx = Math.max(0, Math.min(4, Number(pc.label||1)-1));
         let pos = "house";
@@ -783,12 +787,10 @@ try{ ws = new WebSocket(SERVER_URL); }
         dice: (server.rolled==null ? null : Number(server.rolled)),
         phase: server.phase,
         placingChoices: [],
-        pieces: Object.fromEntries(players.map(c => [c, piecesByColor[c] || []])),
+        pieces: Object.fromEntries(ALL_COLORS.map(c => [c, piecesByColor[c] || []])),
         barricades: new Set(server.barricades.map(String)),
         winner: null,
-        goalNodeId: server.goal ? String(server.goal) : goalNodeId,
-        // optional info from server (used by some UIs)
-        activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
+        goalNodeId: server.goal ? String(server.goal) : goalNodeId
       };
 
       // map phases
