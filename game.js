@@ -77,7 +77,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // Server can tell which colors are currently supported online.
   // (Additiv: if missing, fallback to red/blue)
-  let allowedColorsOnline = new Set(["red","blue","green","yellow"]);
+  let allowedColorsOnline = new Set(["red","blue"]);
 
   let _colorPickBound = false;
 
@@ -730,8 +730,21 @@ try{ ws = new WebSocket(SERVER_URL); }
     }
   }
 
-  function chooseColor(_color){
-    toast("Farbe wird vom Server automatisch vergeben");
+  function chooseColor(color){
+    // Store requested color for this room (used on join + reconnect)
+    try{
+      if(currentRoom){
+        localStorage.setItem("barikade_reqColor_"+currentRoom, String(color));
+      }
+    }catch(_e){}
+
+    // If online & already connected, ask server immediately
+    if(netMode==="online" && ws && ws.readyState===1){
+      wsSend({type:"request_color", room: currentRoom, sessionToken: sessionToken, color: String(color)});
+    } else {
+      // If not connected yet, we reconnect so the next join includes requestedColor
+      toast("Farbe gespeichert. Beim Beitreten/Reconnect wird sie angefragt.");
+    }
   }
 
   function getActiveColors(){
