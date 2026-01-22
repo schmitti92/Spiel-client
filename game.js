@@ -180,12 +180,15 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const overlayHint = $("overlayHint");
   const overlayOk = $("overlayOk");
 
-  const CSS = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const CSS = (v, fallback = "") => {
+    const val = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    return val || fallback;
+  };
   const COLORS = {
-    node: CSS("--node"), stroke: CSS("--stroke"),
-    edge: CSS("--edge"),
+    node: CSS("--node", "#8fbaff"), stroke: CSS("--stroke", "rgba(255,255,255,0.12)"),
+    edge: CSS("--edge", "rgba(255,255,255,0.10)"),
     goal: CSS("--goal"), run: CSS("--run"),
-    red: CSS("--red"), blue: CSS("--blue"), green: CSS("--green"), yellow: CSS("--yellow"),
+    red: CSS("--red", "#ff3b6b"), blue: CSS("--blue", "#3b7cff"), green: CSS("--green", "#2ecc71"), yellow: CSS("--yellow", "#f1c40f"),
   };
 
   const DEFAULT_PLAYERS = ["red","blue","green","yellow"];
@@ -1016,49 +1019,13 @@ function toast(msg){
   function hideOverlay(){ overlay.classList.remove("show"); }
   overlayOk.addEventListener("click", hideOverlay);
 
-  async function loadBoard() {
-  // Robust loader: supports different filenames/locations (e.g. board.json vs board-1.json on GitHub Pages)
-  const candidates = [
-    "board.json",
-    "board-1.json",
-    "./board.json",
-    "./board-1.json",
-    "assets/board.json",
-    "assets/board-1.json"
-  ];
-
-  let lastErr = null;
-
-  for (const rel of candidates) {
-    try {
-      const res = await fetch(rel, { cache: "no-store" });
-      if (!res.ok) { lastErr = new Error(`${rel}: HTTP ${res.status}`); continue; }
-      const data = await res.json();
-      if (data && Array.isArray(data.nodes) && data.nodes.length) return data;
-      lastErr = new Error(`${rel}: JSON ok but nodes missing/empty`);
-    } catch (e) {
-      lastErr = e;
-    }
+  async function loadBoard(){
+    const res = await fetch("board.json", {cache:"no-store"});
+    if(!res.ok) throw new Error("board.json nicht gefunden");
+    return await res.json();
   }
 
-  // Final attempt: resolve against current URL (helps with odd base paths)
-  try {
-    const url = new URL("board.json", window.location.href).toString();
-    const res = await fetch(url, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && Array.isArray(data.nodes) && data.nodes.length) return data;
-    }
-  } catch (e) {
-    lastErr = e;
-  }
-
-  console.error("[board] Could not load board JSON.", lastErr);
-  showToast("Fehler: Board konnte nicht geladen werden (board.json / board-1.json fehlt).", "error");
-  return null;
-}
-
-function buildGraph(){
+  function buildGraph(){
     nodeById.clear(); adj.clear(); runNodes.clear();
     goalNodeId=null;
     startNodeId={red:null,blue:null,green:null,yellow:null};
