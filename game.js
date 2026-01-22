@@ -180,15 +180,12 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const overlayHint = $("overlayHint");
   const overlayOk = $("overlayOk");
 
-  const CSS = (v, fallback = "") => {
-    const val = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-    return val || fallback;
-  };
+  const CSS = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const COLORS = {
-    node: CSS("--node", "#8fbaff"), stroke: CSS("--stroke", "rgba(255,255,255,0.12)"),
-    edge: CSS("--edge", "rgba(255,255,255,0.10)"),
+    node: CSS("--node"), stroke: CSS("--stroke"),
+    edge: CSS("--edge"),
     goal: CSS("--goal"), run: CSS("--run"),
-    red: CSS("--red", "#ff3b6b"), blue: CSS("--blue", "#3b7cff"), green: CSS("--green", "#2ecc71"), yellow: CSS("--yellow", "#f1c40f"),
+    red: CSS("--red"), blue: CSS("--blue"), green: CSS("--green"), yellow: CSS("--yellow"),
   };
 
   const DEFAULT_PLAYERS = ["red","blue","green","yellow"];
@@ -497,8 +494,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       if(!same){
         setPlayers(active);
         state.players = [...PLAYERS];
+  ensureAllColorsPieces();
         state.pieces = state.pieces || {};
-        for(const c of PLAYERS){
+        for(const c of DEFAULT_PLAYERS){
           if(!state.pieces[c]) state.pieces[c] = Array.from({length:5},()=>({pos:"house"}));
         }
         if(!state.players.includes(state.currentPlayer)){
@@ -737,7 +735,30 @@ try{ ws = new WebSocket(SERVER_URL); }
     toast("Farbe wird vom Server automatisch vergeben");
   }
 
-  function getActiveColors(){
+  
+  // Ensure we always have 4 color arrays (red/blue/green/yellow) with 5 pieces each.
+  // Inactive colors stay in the "house" and are not part of turn order unless selected/server-active.
+  function ensureAllColorsPieces(){
+    if(!state) state = {};
+    if(!state.pieces) state.pieces = {};
+    for(const c of ALL_COLORS){
+      if(!Array.isArray(state.pieces[c])) state.pieces[c] = [];
+      const byId = new Map(state.pieces[c].map(p=>[p && p.id, p]));
+      const arr = [];
+      for(let i=1;i<=5;i++){
+        const existing = byId.get(i);
+        if(existing && typeof existing === "object"){
+          if(!("pos" in existing)) existing.pos = "house";
+          arr.push(existing);
+        } else {
+          arr.push({id:i,pos:"house"});
+        }
+      }
+      state.pieces[c] = arr;
+    }
+  }
+
+function getActiveColors(){
     if(netMode==="offline") return [...PLAYERS];
     const order=["red","blue","green","yellow"];
     const colors=[], seen=new Set();
@@ -760,7 +781,8 @@ try{ ws = new WebSocket(SERVER_URL); }
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
-      const players = ["red","blue"];
+      const players = Array.isArray(server.players) ? server.players.filter(c=>ALL_COLORS.includes(c)) : Array.from(new Set(server.pieces.map(p=>p.color).filter(c=>ALL_COLORS.includes(c))));
+      if(players.length===0) players.push("red","blue");
       setPlayers(players);
       const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
       // ensure 5 slots per color
@@ -813,6 +835,7 @@ try{ ws = new WebSocket(SERVER_URL); }
 
     if(st.barricades && Array.isArray(st.barricades)) st.barricades = new Set(st.barricades);
     state = st;
+    ensureAllColorsPieces();
 
     if(st.players && Array.isArray(st.players) && st.players.length>=2) setPlayers(st.players);
 
