@@ -85,10 +85,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     if(_colorPickBound) return;
     if(!btnPickRed || !btnPickBlue) return;
     _colorPickBound = true;
-    btnPickRed.addEventListener("click", ()=> requestColor("red"));
-    btnPickBlue.addEventListener("click", ()=> requestColor("blue"));
-    if(btnPickGreen) btnPickGreen.addEventListener("click", ()=> requestColor("green"));
-    if(btnPickYellow) btnPickYellow.addEventListener("click", ()=> requestColor("yellow"));
+    on(btnPickRed,"click", ()=> requestColor("red"));
+    on(btnPickBlue,"click", ()=> requestColor("blue"));
+    if(btnPickGreen) on(btnPickGreen,"click", ()=> requestColor("green"));
+    if(btnPickYellow) on(btnPickYellow,"click", ()=> requestColor("yellow"));
   }
 
   function ensureColorPickerUI(){
@@ -191,7 +191,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const DEFAULT_PLAYERS = ["red","blue","green","yellow"];
   const PLAYER_NAME = {red:"Rot", blue:"Blau", green:"Grün", yellow:"Gelb"};
 
-  let PLAYERS = ["red","blue"];
+  const ALL_COLORS = ["red","blue","green","yellow"];
+let PLAYERS = ["red","blue"];
   function setPlayers(arg){
     if(Array.isArray(arg)){
       const order = {red:0, blue:1, green:2, yellow:3};
@@ -495,7 +496,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         setPlayers(active);
         state.players = [...PLAYERS];
         state.pieces = state.pieces || {};
-        for(const c of PLAYERS){
+        for(const c of ALL_COLORS){
           if(!state.pieces[c]) state.pieces[c] = Array.from({length:5},()=>({pos:"house"}));
         }
         if(!state.players.includes(state.currentPlayer)){
@@ -1007,14 +1008,16 @@ function toast(msg){
     requestDraw();
   }
 
-  function showOverlay(title, sub, hint){
+  
+function on(el, ev, fn, opts){ if(el) el.addEventListener(ev, fn, opts); }
+function showOverlay(title, sub, hint){
     overlayTitle.textContent=title;
     overlaySub.textContent=sub||"";
     overlayHint.textContent=hint||"";
     overlay.classList.add("show");
   }
   function hideOverlay(){ overlay.classList.remove("show"); }
-  overlayOk.addEventListener("click", hideOverlay);
+  on(overlayOk,"click", hideOverlay);
 
   async function loadBoard(){
     const res = await fetch("board.json", {cache:"no-store"});
@@ -1104,7 +1107,7 @@ function toast(msg){
       dice:null,
       phase:"need_roll",
       placingChoices:[],
-      pieces:Object.fromEntries(PLAYERS.map(c=>[c, Array.from({length:5},()=>({pos:"house"}))])),
+      pieces:Object.fromEntries(ALL_COLORS.map(c=>[c, Array.from({length:5},()=>({pos:"house"}))])),
       barricades:new Set(),
       winner:null
     };
@@ -1259,7 +1262,7 @@ if(!node) return false;
       if(remaining===0){ results.push([...path]); return; }
       for(const nb of (adj.get(curr)||[])){
         if(visited.has(nb)) continue;
-        if(state?.barricades?.has(nb) && remaining>1) continue; // cannot pass barricade
+        if(state.barricades.has(nb) && remaining>1) continue; // cannot pass barricade
         visited.add(nb); path.push(nb);
         dfs(nb, remaining-1, path);
         path.pop(); visited.delete(nb);
@@ -1281,7 +1284,7 @@ if(!node) return false;
     }
     const start=startNodeId[color];
     const hasHouse = state.pieces[color].some(p=>p.pos==="house");
-    if(hasHouse && start && !state?.barricades?.has(start)){
+    if(hasHouse && start && !state.barricades.has(start)){
       const remaining=dice-1;
       if(remaining===0){
         for(let i=0;i<5;i++) if(state.pieces[color][i].pos==="house"){
@@ -1314,7 +1317,7 @@ if(!node) return false;
     const choices=[];
     for(const id of adj.keys()){
       if(id===goalNodeId) continue;
-      if(state?.barricades?.has(id)) continue;
+      if(state.barricades.has(id)) continue;
       choices.push(id);
     }
     setPlacingChoices(choices);
@@ -1328,7 +1331,7 @@ if(!node) return false;
     const enemies = anyPiecesAtNode(toId).filter(p=>p.color!==color);
     for(const e of enemies) state.pieces[e.color][e.index].pos="house";
 
-    const landsOnBarr = state?.barricades?.has(toId);
+    const landsOnBarr = state.barricades.has(toId);
     state.pieces[color][index].pos=toId;
 
     if(toId===goalNodeId){
@@ -1472,7 +1475,7 @@ if(!node) return false;
 
 
   function draw(){
-    if(!board) return;
+    if(!board||!state) return;
     const rect=canvas.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
 
@@ -1556,7 +1559,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         }
       }
 
-      if(n.kind==="board" && state?.barricades?.has(n.id)){
+      if(n.kind==="board" && s.barricades.has(n.id)){
         drawBarricadeIcon(s.x,s.y,r);
       }
     }
@@ -1577,8 +1580,8 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
     // pieces stacked
     const stacks=new Map();
     // Show ALL colors always (also unchosen)
-    for(const c of PLAYERS){
-      const pcs=(state && state.pieces && state.pieces[c]) ? state.pieces[c] : [];
+    for(const c of ALL_COLORS){
+      const pcs=s.pieces[c];
       for(let i=0;i<pcs.length;i++){
         const pc = pcs[i];
         const pos = pc.pos;
@@ -1674,7 +1677,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       }
     }
 if(selected){
-      const pc = state?.pieces?.[selected.color]?.[selected.index];
+      const pc = s.pieces[selected.color]?.[selected.index];
       if(pc && typeof pc.pos==="string" && adj.has(pc.pos)){
         const n = nodeById.get(pc.pos);
         if(n){
@@ -1728,7 +1731,7 @@ canvas.setPointerCapture(ev.pointerId);
     const wp=screenToWorld(sp);
     const hit=hitNode(wp);
 
-    const isMyTurn = (netMode!=="client") || (myColor && myColor===state.currentPlayer);
+    const isMyTurn = (netMode!=="client") || (myColor && myColor===s.currentPlayer);
     if(netMode==="client" && (!myColor || !isMyTurn) && (phase==="placing_barricade" || phase==="need_move" || phase==="need_roll")){
       toast(!myColor ? "Bitte Farbe wählen" : "Du bist nicht dran");
       return;
@@ -1758,7 +1761,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
         const list = legalMovesByPiece.get(selected.index) || [];
         const m = list.find(x => x.toId===hit.id);
         if(m){
-          if(netMode==="client"){ wsSend({type:"move_request", pieceId: (state.pieces[selected.color][selected.index].pieceId), targetId: hit.id, ts:Date.now()}); return; }
+          if(netMode==="client"){ wsSend({type:"move_request", pieceId: (s.pieces[selected.color][selected.index].pieceId), targetId: hit.id, ts:Date.now()}); return; }
           movePiece(m);
           if(netMode==="host") broadcastState("state");
           draw();
@@ -1816,22 +1819,22 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     debugLogEl.style.display = show ? "block" : "none";
   });
 
-  startBtn && startBtn.addEventListener("click", () => {
+  startBtn && on(startBtn,"click", () => {
     if(netMode!=="host"){ toast("Nur Host kann starten"); return; }
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
-    if(state && state.started){ toast("Spiel läuft bereits"); return; }
+    if(state && s.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
     wsSend({type:"start", ts:Date.now()});
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
-  resumeBtn && resumeBtn.addEventListener("click", () => {
+  resumeBtn && on(resumeBtn,"click", () => {
     if(netMode!=="host"){ toast("Nur Host kann fortsetzen"); return; }
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
     wsSend({type:"resume", ts:Date.now()});
   });
 
-  rollBtn.addEventListener("click", () => {
+  on(rollBtn,"click", () => {
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       // server checks turn
@@ -1852,10 +1855,10 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(netMode==="host") broadcastState("state");
   });
 
-  if(skipBtn) skipBtn.addEventListener("click", () => {
+  if(skipBtn) on(skipBtn,"click", () => {
     if(netMode!=="offline"){
       if(!myColor){ toast("Bitte Farbe wählen"); return; }
-      if(myColor!==state.currentPlayer){ toast("Du bist nicht dran"); return; }
+      if(myColor!==s.currentPlayer){ toast("Du bist nicht dran"); return; }
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       wsSend({type:"skip_turn", ts:Date.now()});
       return;
@@ -1864,7 +1867,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(netMode==="host") broadcastState("state");
   });
 
-  resetBtn.addEventListener("click", () => {
+  on(resetBtn,"click", () => {
     if(netMode==="offline"){
       newGame();
       return;
@@ -1874,7 +1877,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   });
 
   // Online actions
-  hostBtn.addEventListener("click", () => {
+  on(hostBtn,"click", () => {
     netMode = "host";
     clientId = clientId || ("H-" + randId(8));
     roomCode = normalizeRoomCode(roomCodeInp.value) || randId(6);
@@ -1884,7 +1887,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     toast("Host gestartet – teile den Raumcode");
   });
 
-  joinBtn.addEventListener("click", () => {
+  on(joinBtn,"click", () => {
     netMode = "client";
     clientId = clientId || ("C-" + randId(8));
     roomCode = normalizeRoomCode(roomCodeInp.value);
@@ -1922,7 +1925,7 @@ leaveBtn.addEventListener("click", () => {
   });
 
   // Host tools (Save/Load) – only host can use
-  if(saveBtn) saveBtn.addEventListener("click", () => {
+  if(saveBtn) on(saveBtn,"click", () => {
     if(!isMeHost()) { toast("Nur Host"); return; }
 
     // Allow Save even during reconnect / offline WS, using the last known snapshot in memory.
@@ -1942,7 +1945,7 @@ leaveBtn.addEventListener("click", () => {
     toast("Save angefordert…");
   });
 
-  if(loadBtn) loadBtn.addEventListener("click", () => {
+  if(loadBtn) on(loadBtn,"click", () => {
     if(!isMeHost()) { toast("Nur Host"); return; }
     if(!loadFile) return;
     loadFile.value = "";
@@ -1962,7 +1965,7 @@ leaveBtn.addEventListener("click", () => {
   });
 
   // Host tool: Restore last Auto-Save from browser (useful after server sleep/restart on Render)
-  if(restoreBtn) restoreBtn.addEventListener("click", () => {
+  if(restoreBtn) on(restoreBtn,"click", () => {
     if(!isMeHost()) { toast("Nur Host"); return; }
     const v = readHostAutosave();
     if(!v || !v.state){ toast("Kein Auto‑Save gefunden"); return; }
@@ -1999,7 +2002,7 @@ leaveBtn.addEventListener("click", () => {
   }
   function handleRemoteIntent(intent, senderId=""){
     const senderColor = colorOf(senderId);
-    const mustBeTurnPlayer = () => senderColor && senderColor===state.currentPlayer;
+    const mustBeTurnPlayer = () => senderColor && senderColor===s.currentPlayer;
 
     const t = intent.type;
     if(t==="roll"){
