@@ -77,7 +77,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // Server can tell which colors are currently supported online.
   // (Additiv: if missing, fallback to red/blue)
-  let allowedColorsOnline = new Set(["red","blue"]);
+  let allowedColorsOnline = new Set(["red","blue","green","yellow"]);
 
   let _colorPickBound = false;
 
