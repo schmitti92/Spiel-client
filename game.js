@@ -191,7 +191,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const DEFAULT_PLAYERS = ["red","blue","green","yellow"];
   const PLAYER_NAME = {red:"Rot", blue:"Blau", green:"Grün", yellow:"Gelb"};
 
-  let PLAYERS = DEFAULT_PLAYERS.slice();
+  let PLAYERS = ["red","blue"];
   function setPlayers(arg){
     if(Array.isArray(arg)){
       const order = {red:0, blue:1, green:2, yellow:3};
@@ -264,8 +264,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   let legalMovesAll=[];
   let legalMovesByPiece=new Map();
   let state=null;
-let RENDER_PIECES = null; // set each frame in draw()
-
 
   function clearLocalState(){
     state = null;
@@ -1261,7 +1259,7 @@ if(!node) return false;
       if(remaining===0){ results.push([...path]); return; }
       for(const nb of (adj.get(curr)||[])){
         if(visited.has(nb)) continue;
-        if(state.barricades.has(nb) && remaining>1) continue; // cannot pass barricade
+        if(state?.barricades?.has(nb) && remaining>1) continue; // cannot pass barricade
         visited.add(nb); path.push(nb);
         dfs(nb, remaining-1, path);
         path.pop(); visited.delete(nb);
@@ -1283,7 +1281,7 @@ if(!node) return false;
     }
     const start=startNodeId[color];
     const hasHouse = state.pieces[color].some(p=>p.pos==="house");
-    if(hasHouse && start && !state.barricades.has(start)){
+    if(hasHouse && start && !state?.barricades?.has(start)){
       const remaining=dice-1;
       if(remaining===0){
         for(let i=0;i<5;i++) if(state.pieces[color][i].pos==="house"){
@@ -1316,7 +1314,7 @@ if(!node) return false;
     const choices=[];
     for(const id of adj.keys()){
       if(id===goalNodeId) continue;
-      if(state.barricades.has(id)) continue;
+      if(state?.barricades?.has(id)) continue;
       choices.push(id);
     }
     setPlacingChoices(choices);
@@ -1330,7 +1328,7 @@ if(!node) return false;
     const enemies = anyPiecesAtNode(toId).filter(p=>p.color!==color);
     for(const e of enemies) state.pieces[e.color][e.index].pos="house";
 
-    const landsOnBarr = state.barricades.has(toId);
+    const landsOnBarr = state?.barricades?.has(toId);
     state.pieces[color][index].pos=toId;
 
     if(toId===goalNodeId){
@@ -1417,8 +1415,8 @@ if(!node) return false;
     const slot = Number(node.flags && node.flags.houseSlot);
     if(!color || !slot) return;
     const idx = slot - 1;
-    if(!RENDER_PIECES?.[color]) return;
-    if(RENDER_PIECES[color][idx].pos !== "house") return;
+    if(!state?.pieces?.[color]) return;
+    if(state.pieces[color][idx].pos !== "house") return;
 
     ctx.save();
     // (27) subtle gradient for pieces
@@ -1474,8 +1472,7 @@ if(!node) return false;
 
 
   function draw(){
-    if(!board||!state) return;
-    RENDER_PIECES = buildRenderPieces();
+    if(!board) return;
     const rect=canvas.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
 
@@ -1559,7 +1556,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         }
       }
 
-      if(n.kind==="board" && state.barricades.has(n.id)){
+      if(n.kind==="board" && state?.barricades?.has(n.id)){
         drawBarricadeIcon(s.x,s.y,r);
       }
     }
@@ -1581,7 +1578,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
     const stacks=new Map();
     // Show ALL colors always (also unchosen)
     for(const c of PLAYERS){
-      const pcs=state.pieces[c];
+      const pcs=(state && state.pieces && state.pieces[c]) ? state.pieces[c] : [];
       for(let i=0;i<pcs.length;i++){
         const pc = pcs[i];
         const pos = pc.pos;
@@ -1677,7 +1674,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       }
     }
 if(selected){
-      const pc = state.pieces[selected.color]?.[selected.index];
+      const pc = state?.pieces?.[selected.color]?.[selected.index];
       if(pc && typeof pc.pos==="string" && adj.has(pc.pos)){
         const n = nodeById.get(pc.pos);
         if(n){
@@ -1748,27 +1745,6 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   placeBarricade(hit.id);
   return;
 }
-
-// ---- Render-only pieces: always show all 4 colors in their house slots,
-// even if a color is not part of the current match (online) or not selected (offline).
-// This does NOT affect gameplay logic; it is used only for drawing.
-function buildRenderPieces(){
-  const out = {};
-  for (const c of DEFAULT_PLAYERS){
-    const arr = state?.pieces?.[c];
-    if (Array.isArray(arr) && arr.length){
-      out[c] = arr;
-    } else {
-      out[c] = Array.from({length:5}, (_,i)=>({
-        id: `${c}_${i+1}`,
-        color: c,
-        pos: "house"
-      }));
-    }
-  }
-  return out;
-}
-
 
     if(phase==="need_move"){
       if(trySelectAtNode(hit)) { draw(); return; }
