@@ -495,11 +495,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         setPlayers(active);
         state.players = [...PLAYERS];
         state.pieces = state.pieces || {};
-        for (const c of DEFAULT_PLAYERS) {
-  if (!state.pieces[c] || !Array.isArray(state.pieces[c])) state.pieces[c] = [];
-  while (state.pieces[c].length < 5) state.pieces[c].push({ pos: "house" });
-  state.pieces[c] = state.pieces[c].slice(0, 5);
-}
+        for(const c of PLAYERS){
+          if(!state.pieces[c]) state.pieces[c] = Array.from({length:5},()=>({pos:"house"}));
+        }
         if(!state.players.includes(state.currentPlayer)){
           state.currentPlayer = state.players[0];
           setPhase("need_roll");
@@ -751,61 +749,100 @@ try{ ws = new WebSocket(SERVER_URL); }
   }
 
   // ===== State sync =====
-  function applyRemoteState(server) {
-  if (!server) return;
+  function applyRemoteState(remote){
+    const st = (typeof remote==="string") ? safeJsonParse(remote) : remote;
+    if(!st || typeof st!=="object") return;
 
-  // active players come from room_update (lastNetPlayers) if possible
-  const fromServerPlayers = Array.isArray(server.players) ? server.players : null;
-  const fromPiecesKeys = server.pieces ? Object.keys(server.pieces) : [];
-  let active = (Array.isArray(lastNetPlayers) && lastNetPlayers.length) ? lastNetPlayers.slice()
-             : (fromServerPlayers && fromServerPlayers.length) ? fromServerPlayers.slice()
-             : (fromPiecesKeys.length) ? fromPiecesKeys.slice()
-             : (Array.isArray(PLAYERS) && PLAYERS.length) ? PLAYERS.slice()
-             : ["red", "blue"];
+    // --- Server-state adapter (serverfinal protocol) ---
+    // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
+    if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
+      const server = st;
+      // In Online-Mode we ALWAYS render all 4 Farben (auch wenn nicht gewählt),
+      // damit Gelb/Grün im Haus sichtbar bleiben.
+      const players = ["red","blue","green","yellow"];
+      setPlayers(players);
+      const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
+      // ensure 5 slots per color
+      for(const c of players) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
 
-  active = active.filter(c => DEFAULT_PLAYERS.includes(c));
-  if (active.length < 2) active = ["red", "blue"];
-  if (active.length > 4) active = active.slice(0, 4);
-
-  setPlayers(active);
-
-  // Always keep all 4 colors in pieces so the house is always visible (even if a color is not joined).
-  const piecesByColor = {};
-  for (const c of DEFAULT_PLAYERS) {
-    piecesByColor[c] = Array.from({ length: 5 }, () => ({ pos: "house" }));
-  }
-
-  if (server.pieces) {
-    for (const [color, pcs] of Object.entries(server.pieces)) {
-      if (!DEFAULT_PLAYERS.includes(color) || !Array.isArray(pcs)) continue;
-      for (let i = 0; i < 5; i++) {
-        const pc = pcs[i];
-        if (!pc) continue;
-        if (pc.posKind === "house" || pc.pos === "house") {
-          piecesByColor[color][i] = { pos: "house" };
-        } else if (pc.posKind === "node" && pc.nodeId) {
-          piecesByColor[color][i] = { pos: pc.nodeId };
-        } else if (typeof pc.pos === "string") {
-          piecesByColor[color][i] = { pos: pc.pos };
-        }
+      for(const pc of server.pieces){
+        if(!pc || !pc.color || !piecesByColor[pc.color]) continue;
+        // pc.label is 1..5
+        const idx = Math.max(0, Math.min(4, Number(pc.label||1)-1));
+        let pos = "house";
+        if(pc.posKind==="board" && pc.nodeId) pos = String(pc.nodeId);
+        else if(pc.posKind==="goal") pos = "goal";
+        else pos = "house";
+        piecesByColor[pc.color][idx] = {pos, pieceId: pc.id};
       }
+
+      state = {
+        started: true,
+        players,
+        currentPlayer: server.turnColor,
+        dice: (server.rolled==null ? null : Number(server.rolled)),
+        phase: server.phase,
+        placingChoices: [],
+        pieces: Object.fromEntries(players.map(c => [c, piecesByColor[c] || []])),
+        barricades: new Set(server.barricades.map(String)),
+        winner: null,
+        goalNodeId: server.goal ? String(server.goal) : goalNodeId,
+        // optional info from server (used by some UIs)
+        activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
+      };
+
+      // map phases
+      const ph = server.phase;
+      if(ph==="need_roll") phase="need_roll";
+      else if(ph==="need_move") phase="need_move";
+      else if(ph==="place_barricade") phase="placing_barricade";
+      else phase="need_roll";
+
+      // show dice
+      setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
+      if(barrInfo) barrInfo.textContent = String(state.barricades.size);
+
+      // in online mode we let the server validate moves, so don't compute legalTargets
+      legalTargets = [];
+      legalMovesAll = [];
+      legalMovesByPiece = new Map();
+      placingChoices = [];
+      updateTurnUI(); updateStartButton(); draw();
+      ensureFittedOnce();
+      return;
     }
+
+    if(st.barricades && Array.isArray(st.barricades)) st.barricades = new Set(st.barricades);
+    state = st;
+
+    if(st.players && Array.isArray(st.players) && st.players.length>=2) setPlayers(st.players);
+
+    if(typeof st.phase === "string") phase = st.phase;
+    else phase = st.winner ? "game_over" : (st.dice==null ? "need_roll" : "need_move");
+
+    placingChoices = Array.isArray(st.placingChoices) ? st.placingChoices : [];
+
+    if(phase==="need_move" && st.dice!=null && !st.winner){
+      legalMovesAll = computeLegalMoves(st.currentPlayer, st.dice);
+      legalMovesByPiece = new Map();
+      for(const m of legalMovesAll){
+        const idx = m.piece.index;
+        if(!legalMovesByPiece.has(idx)) legalMovesByPiece.set(idx, []);
+        legalMovesByPiece.get(idx).push(m);
+      }
+      legalTargets = legalMovesAll;
+    }else{
+      legalTargets = [];
+      legalMovesAll = [];
+      legalMovesByPiece = new Map();
+      if(phase!=="placing_barricade") selected=null;
+    }
+
+    if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
+    setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
+    updateTurnUI(); updateStartButton(); draw();
+      ensureFittedOnce();
   }
-
-  // core fields
-  state.turnColor = server.turnColor || state.turnColor || active[0];
-  state.lastRoll = (typeof server.lastRoll === "number") ? server.lastRoll : (state.lastRoll ?? null);
-  state.mustMove = !!server.mustMove;
-  state.mustPlace = !!server.mustPlace;
-
-  state.players = active.slice(); // turn cycle list (2-4)
-  state.pieces = piecesByColor;   // always 4 colors drawn
-  state.barricades = Array.isArray(server.barricades) ? server.barricades.slice() : (state.barricades || []);
-  state.carrying = server.carrying || state.carrying || null;
-
-  // Backwards compat: some old servers send carryingByColor; merge if present
-  if (server.carryingByColor && !state.carryingByColor) state.carryingByColor = server.carryingByColor;
-}
 
   function serializeState(){
     const st = JSON.parse(JSON.stringify(state));
@@ -1071,7 +1108,7 @@ function toast(msg){
       dice:null,
       phase:"need_roll",
       placingChoices:[],
-      pieces:Object.fromEntries(DEFAULT_PLAYERS.map(c=>[c, Array.from({length:5},()=>({pos:"house"}))])),
+      pieces:Object.fromEntries(PLAYERS.map(c=>[c, Array.from({length:5},()=>({pos:"house"}))])),
       barricades:new Set(),
       winner:null
     };
