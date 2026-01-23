@@ -1795,6 +1795,39 @@ if(!node) return false;
     return false;
   }
 
+  // Fallback selection (important for tablets / house-flag mismatches):
+  // If tapping a piece doesn't "hit" its node reliably, select the closest piece of the CURRENT player.
+  function trySelectAtPiece(wp){
+    if(!state || !state.currentPlayer || !board) return false;
+    const c = state.currentPlayer;
+    const r=Math.max(16, board.ui?.nodeRadius || 20);
+    const hitR=(r+14)/view.s; // a bit bigger than node hit radius
+    let best=null, bd=Infinity;
+
+    for(let i=0;i<5;i++){
+      const p = state.pieces?.[c]?.[i];
+      if(!p) continue;
+      if(p.pos === "home") continue;
+
+      const nid = (p.pos === "house") ? p.houseId : p.nodeId;
+      if(!nid) continue;
+      const n = nodeById.get(String(nid));
+      if(!n) continue;
+
+      const d=Math.hypot(n.x-wp.x, n.y-wp.y);
+      if(d < hitR && d < bd){
+        bd = d;
+        best = { color: c, index: i };
+      }
+    }
+    if(best){
+      selectPiece(best);
+      return true;
+    }
+    return false;
+  }
+
+
   function anyPiecesAtNode(nodeId){
     const res=[];
     for(const c of getActiveColors()){
@@ -2300,6 +2333,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
 
     if(phase==="need_move"){
       if(trySelectAtNode(hit)) { draw(); return; }
+      if(!selected && trySelectAtPiece(wp)) { draw(); return; }
       if(selected && hit && hit.kind==="board"){
         if(netMode!=="offline"){
           const pid = state?.pieces?.[selected.color]?.[selected.index]?.pieceId;
