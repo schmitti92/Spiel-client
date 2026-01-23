@@ -14,6 +14,222 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     }
   }
 
+  // ===== Glücksrad (nur Optik) =====
+let wheelOverlay = null;
+let wheelAnimId = 0;
+
+function ensureWheelOverlay(){
+  if(wheelOverlay) return wheelOverlay;
+  const ov = document.createElement("div");
+  ov.id = "wheelOverlay";
+  ov.style.position = "fixed";
+  ov.style.inset = "0";
+  ov.style.background = "rgba(0,0,0,0.45)";
+  ov.style.backdropFilter = "blur(2px)";
+  ov.style.display = "none";
+  ov.style.zIndex = "9999";
+  ov.style.alignItems = "center";
+  ov.style.justifyContent = "center";
+
+  const card = document.createElement("div");
+  card.style.width = "min(420px, 92vw)";
+  card.style.borderRadius = "22px";
+  card.style.padding = "18px 16px 14px";
+  card.style.background = "rgba(18,22,30,0.92)";
+  card.style.boxShadow = "0 10px 40px rgba(0,0,0,0.45)";
+  card.style.border = "1px solid rgba(255,255,255,0.10)";
+
+  const title = document.createElement("div");
+  title.textContent = "Glücksrad entscheidet Startspieler…";
+  title.style.fontSize = "16px";
+  title.style.fontWeight = "700";
+  title.style.margin = "0 0 10px 0";
+  title.style.opacity = "0.95";
+
+  const wrap = document.createElement("div");
+  wrap.style.position = "relative";
+  wrap.style.width = "min(360px, 84vw)";
+  wrap.style.aspectRatio = "1 / 1";
+  wrap.style.margin = "0 auto";
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 720;
+  canvas.height = 720;
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  canvas.style.borderRadius = "50%";
+  canvas.style.boxShadow = "inset 0 0 0 10px rgba(255,255,255,0.06), 0 18px 40px rgba(0,0,0,0.35)";
+  canvas.style.background = "rgba(255,255,255,0.03)";
+  canvas.id = "wheelCanvas";
+
+  // pointer
+  const pointer = document.createElement("div");
+  pointer.style.position = "absolute";
+  pointer.style.left = "50%";
+  pointer.style.top = "-6px";
+  pointer.style.transform = "translateX(-50%)";
+  pointer.style.width = "0";
+  pointer.style.height = "0";
+  pointer.style.borderLeft = "16px solid transparent";
+  pointer.style.borderRight = "16px solid transparent";
+  pointer.style.borderBottom = "26px solid rgba(255,255,255,0.92)";
+  pointer.style.filter = "drop-shadow(0 6px 10px rgba(0,0,0,0.55))";
+
+  const subtitle = document.createElement("div");
+  subtitle.id = "wheelSubtitle";
+  subtitle.style.marginTop = "12px";
+  subtitle.style.textAlign = "center";
+  subtitle.style.fontSize = "14px";
+  subtitle.style.opacity = "0.85";
+  subtitle.textContent = "Dreht…";
+
+  wrap.appendChild(canvas);
+  wrap.appendChild(pointer);
+
+  card.appendChild(title);
+  card.appendChild(wrap);
+  card.appendChild(subtitle);
+  ov.appendChild(card);
+  document.body.appendChild(ov);
+
+  wheelOverlay = ov;
+  return ov;
+}
+
+function colorCss(color){
+  // keep in sync with server ALLOWED_COLORS
+  switch(String(color||"").toLowerCase()){
+    case "red": return "#ff3b3b";
+    case "blue": return "#3b82ff";
+    case "green": return "#22c55e";
+    case "yellow": return "#fbbf24";
+    default: return "#94a3b8";
+  }
+}
+function colorLabel(color){
+  switch(String(color||"").toLowerCase()){
+    case "red": return "Rot";
+    case "blue": return "Blau";
+    case "green": return "Grün";
+    case "yellow": return "Gelb";
+    default: return String(color||"");
+  }
+}
+
+function drawWheel(ctx, colors, rot){
+  const W = ctx.canvas.width, H = ctx.canvas.height;
+  const cx = W/2, cy = H/2;
+  const r = Math.min(W,H)*0.42;
+  ctx.clearRect(0,0,W,H);
+
+  // subtle glossy radial
+  const grd = ctx.createRadialGradient(cx, cy, r*0.1, cx, cy, r*1.25);
+  grd.addColorStop(0, "rgba(255,255,255,0.16)");
+  grd.addColorStop(0.55, "rgba(255,255,255,0.05)");
+  grd.addColorStop(1, "rgba(0,0,0,0.25)");
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(cx, cy, r*1.18, 0, Math.PI*2); ctx.fill();
+
+  const n = Math.max(2, colors.length);
+  const step = (Math.PI*2)/n;
+
+  for(let i=0;i<n;i++){
+    const a0 = rot + i*step - Math.PI/2;
+    const a1 = a0 + step;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,a0,a1,false);
+    ctx.closePath();
+    ctx.fillStyle = colorCss(colors[i]);
+    ctx.globalAlpha = 0.92;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // text
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(a0 + step/2);
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "700 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 10;
+    ctx.fillText(colorLabel(colors[i]).toUpperCase(), r*0.92, 0);
+    ctx.restore();
+  }
+
+  // center cap
+  ctx.beginPath();
+  ctx.arc(cx,cy,r*0.18,0,Math.PI*2);
+  ctx.fillStyle = "rgba(15,18,24,0.85)";
+  ctx.fill();
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "rgba(255,255,255,0.10)";
+  ctx.stroke();
+}
+
+function showWheelStart(activeColors, starterColor, endsAt){
+  const ov = ensureWheelOverlay();
+  const canvas = document.getElementById("wheelCanvas");
+  const sub = document.getElementById("wheelSubtitle");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const colors = (Array.isArray(activeColors) && activeColors.length) ? activeColors.slice() : ["red","blue"];
+
+  const n = colors.length;
+  const idx = Math.max(0, colors.indexOf(String(starterColor||"").toLowerCase()));
+  const step = (Math.PI*2)/n;
+
+  // target rotation so that the center of winning segment lands at pointer (top).
+  // Pointer is at -90deg, our draw starts at rot - 90deg, so align via rot.
+  const winCenter = idx*step + step/2;
+  // set final rotation such that winCenter maps to 0 angle in our local coordinates.
+  const baseTarget = -winCenter;
+
+  const now = Date.now();
+  const t0 = now;
+  const tEnd = Math.max(now + 4000, Number(endsAt)||now+10000); // safety
+  const dur = Math.max(3000, tEnd - t0);
+
+  // add extra spins for drama
+  const extraSpins = 8 * Math.PI * 2; // 8 full rotations
+  const startRot = 0;
+  const finalRot = baseTarget + extraSpins;
+
+  ov.style.display = "flex";
+  let lastRot = 0;
+
+  function easeOutCubic(x){ return 1 - Math.pow(1-x,3); }
+
+  function frame(){
+    const t = Date.now();
+    const p = Math.min(1, (t - t0)/dur);
+    const e = easeOutCubic(p);
+    const rot = startRot + (finalRot - startRot)*e;
+    lastRot = rot;
+    drawWheel(ctx, colors, rot);
+    if(sub){
+      const leftMs = Math.max(0, tEnd - t);
+      sub.textContent = leftMs>0 ? `Dreht… (${Math.ceil(leftMs/1000)}s)` : `${colorLabel(starterColor)} beginnt!`;
+    }
+    if(p < 1){
+      wheelAnimId = requestAnimationFrame(frame);
+    } else {
+      drawWheel(ctx, colors, finalRot);
+      if(sub) sub.textContent = `${colorLabel(starterColor)} beginnt!`;
+      // keep overlay a short moment, then hide (server will also send wheel_done)
+      setTimeout(()=>{ hideWheel(); }, 2000);
+    }
+  }
+  try{ cancelAnimationFrame(wheelAnimId); }catch(_e){}
+  wheelAnimId = requestAnimationFrame(frame);
+}
+
+function hideWheel(){
+  if(!wheelOverlay) return;
+  wheelOverlay.style.display = "none";
+}
 
   // ===== UI refs =====
   const canvas = $("c");
@@ -55,31 +271,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const turnDot = $("turnDot");
   const boardInfo = $("boardInfo");
   const barrInfo  = $("barrInfo");
-
-
-  // --- Force diceCube to be a 3D host (override any legacy "mini-dice" styling) ---
-  function prepareDiceCubeHost(el){
-    if(!el) return;
-    el.className = "dice3dHost";
-    el.setAttribute("aria-label","3D Dice");
-    el.style.width = "180px";
-    el.style.height = "180px";
-    el.style.display = "grid";
-    el.style.placeItems = "center";
-    el.style.background = "transparent";
-    el.style.border = "0";
-    el.style.padding = "0";
-    el.style.margin = "0";
-    el.style.borderRadius = "18px";
-    el.style.boxShadow = "none";
-    el.style.overflow = "visible";
-    // Remove legacy SVG/icon content
-    if(!el.__dicePrepared){
-      el.innerHTML = "";
-      el.__dicePrepared = true;
-    }
-  }
-  prepareDiceCubeHost(diceEl);
 
   // ===== Legendary Dice (visual only, isolated) =====
   // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
@@ -162,402 +353,166 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // call once (safe)
   ensureLegendaryDiceStyles();
-  // ===== 3D Dice (Server-Attractor, visual only, isolated) =====
-  // Ziel: Der Würfel rotiert frei (schnell -> langsam). Sobald die Server-Zahl kommt,
-  // wird sie sanft "magnetisch" angezogen (ohne Snap / ohne Speed-Boost am Ende).
-  // KEINE Spiellogik wird geändert – wir hängen uns nur visuell an Würfel-Events.
-  let dice3d = null;
 
-  function ensureDice3DStyles(){
+  // ===== Dice realism: Pips etwas weiter nach innen + mehr Tiefe (nur Optik, safe) =====
+  function ensureRealisticPipStyles(){
     try{
-      if(document.getElementById("dice3DStyles")) return;
+      if(document.getElementById("diceRealisticPipStyles")) return;
       const style = document.createElement("style");
-      style.id = "dice3DStyles";
+      style.id = "diceRealisticPipStyles";
       style.textContent = `
-        /* Dock Premium Float (C) */
-        #diceDockStatusV2 .diceFloatWrap,
-        #diceDockStatusV3 .diceFloatWrap,
-        #diceDockStatusV4 .diceFloatWrap,
-        #diceDockStatusV5 .diceFloatWrap{
-          position: relative;
-          transform-origin: right top;
-          filter: drop-shadow(0 16px 28px rgba(0,0,0,.38));
-          animation: dicePremiumBob 3.6s ease-in-out infinite;
-          will-change: transform;
-        }
-        @keyframes dicePremiumBob{
-          0%{ transform: scale(2.9) translateY(-2px); }
-          50%{ transform: scale(2.9) translateY(-6px); }
-          100%{ transform: scale(2.9) translateY(-2px); }
-        }
-        /* kleines extra Ambient-Shadow unter dem Dock */
-        #diceDockStatusV2, #diceDockStatusV3, #diceDockStatusV4, #diceDockStatusV5{
-          position: relative;
-        }
-        #diceDockStatusV2::after,
-        #diceDockStatusV3::after,
-        #diceDockStatusV4::after,
-        #diceDockStatusV5::after{
-          content:"";
-          position:absolute;
-          right: 8px;
-          top: 62%;
-          width: 220px;
-          height: 54px;
-          background: radial-gradient(closest-side, rgba(0,0,0,.32), rgba(0,0,0,0));
-          filter: blur(14px);
-          opacity: .55;
-          pointer-events:none;
-        }
-
-        /* 3D Dice (isolated inside #diceCube) */
-        #diceCube.d3d{
-          width: 100%;
-          height: 100%;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-        }
-        #diceCube .d3d-stage{
-          position: relative;
-          width: 100%;
-          height: 100%;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          perspective: 900px;
-          perspective-origin: 50% 45%;
-          overflow: visible;
-        }
-        #diceCube .d3d-wrap{
-          position: relative;
-          width: min(180px, 100%);
-          height: min(180px, 100%);
-          transform-style: preserve-3d;
-          will-change: transform;
-        }
-        /* Ambient + contact shadow under dice */
-        #diceCube .d3d-shadow{
-          position:absolute;
-          left:50%;
-          top: 78%;
-          width: 62%;
-          height: 18%;
-          transform: translate(-50%, 0);
-          background: radial-gradient(closest-side, rgba(0,0,0,.35), rgba(0,0,0,0));
-          filter: blur(10px);
-          opacity:.65;
-          pointer-events:none;
-        }
-        #diceCube .d3d-cube{
-          position:absolute;
-          left:50%;
-          top: 50%;
-          width: 72%;
-          height: 72%;
-          transform-style: preserve-3d;
-          transform: translate(-50%,-56%); /* kamera etwas tiefer (realistischer) */
-          border-radius: 18px;
-          will-change: transform;
-        }
-        #diceCube .d3d-face{
-          position:absolute;
-          inset:0;
-          border-radius: 18px;
-          background: linear-gradient(165deg, rgba(255,255,255,.98), rgba(240,240,240,.98));
+        /* Pips: runder, mehr Tiefe, weniger 'aufgeklebt' */
+        #diceCube .pip, #diceCube .dot, #diceCube .spot,
+        #diceCube [class*="pip"], #diceCube [class*="dot"], #diceCube [class*="spot"]{
+          border-radius: 999px !important;
           box-shadow:
-            inset 0 0 0 1px rgba(0,0,0,.10),
-            inset 10px 14px 22px rgba(255,255,255,.35),
-            inset -12px -16px 26px rgba(0,0,0,.10);
-          backface-visibility: hidden;
+            inset 0 2px 4px rgba(255,255,255,.22),
+            inset 0 -5px 10px rgba(0,0,0,.55),
+            0 2px 6px rgba(0,0,0,.35) !important;
+          filter: saturate(1.05);
         }
-        /* slight gloss */
-        #diceCube .d3d-face::after{
+        /* Würfelfläche: leichte Mikro-Struktur (wenn Face-Element existiert) */
+        #diceCube .face, #diceCube .side, #diceCube .cube-face{
+          overflow: hidden;
+        }
+        #diceCube .face::before, #diceCube .side::before, #diceCube .cube-face::before{
           content:"";
           position:absolute; inset:0;
-          border-radius:18px;
-          background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.65), rgba(255,255,255,0) 52%);
-          opacity:.35;
+          background:
+            radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), rgba(255,255,255,0) 40%),
+            radial-gradient(circle at 70% 75%, rgba(0,0,0,.12), rgba(0,0,0,0) 45%);
           pointer-events:none;
+          mix-blend-mode: overlay;
         }
-        #diceCube .pips{
-          position:absolute;
-          inset:0;
-          display:grid;
-          grid-template-columns: repeat(3, 1fr);
-          grid-template-rows: repeat(3, 1fr);
-          padding: 18%;
-          gap: 8%;
-          align-items:center;
-          justify-items:center;
+      
+        /* Glossy finish: specular highlight + subtle edge vignette */
+        #diceCube .face::after, #diceCube .side::after, #diceCube .cube-face::after{
+          content:"";
+          position:absolute; inset:0;
+          background:
+            radial-gradient(circle at 28% 22%, rgba(255,255,255,.38), rgba(255,255,255,0) 45%),
+            linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,0) 42%),
+            radial-gradient(circle at 70% 78%, rgba(0,0,0,.18), rgba(0,0,0,0) 55%);
+          pointer-events:none;
+          mix-blend-mode: screen;
+          opacity:.85;
         }
-        #diceCube .pip{
-          width: 18%;
-          aspect-ratio: 1/1;
-          border-radius: 999px;
-          background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.18), rgba(0,0,0,.86) 58%, rgba(0,0,0,.98) 100%);
-          box-shadow:
-            inset 0 2px 3px rgba(255,255,255,.08),
-            inset 0 -3px 6px rgba(0,0,0,.50);
-        }
-      `;
+`;
       document.head.appendChild(style);
     }catch(_e){}
   }
 
-  function buildDice3D(container){
+  // Schiebt gefundene Pip-Elemente ein Stück nach innen (Samsung/Tablet safe).
+  // Wir ändern NUR ein zusätzliches transform translate auf den Pips – keine Logik.
+  
+  // Pips auf echte Würfel-Optik zentrieren:
+  // Wir remappen die Pip-Zentren Richtung Mitte (tablet/pc/handy identisch),
+  // statt nur "translate" zu stapeln. Rein visuell, keine Spiel-Logik.
+  function centerPipsRealistically(){
     try{
-      if(!container) return null;
-      ensureDice3DStyles();
-      container.classList.add("d3d");
-      container.innerHTML = `
-        <div class="d3d-stage">
-          <div class="d3d-wrap">
-            <div class="d3d-shadow"></div>
-            <div class="d3d-cube" aria-label="3D Würfel">
-              <div class="d3d-face face-1"><div class="pips"></div></div>
-              <div class="d3d-face face-2"><div class="pips"></div></div>
-              <div class="d3d-face face-3"><div class="pips"></div></div>
-              <div class="d3d-face face-4"><div class="pips"></div></div>
-              <div class="d3d-face face-5"><div class="pips"></div></div>
-              <div class="d3d-face face-6"><div class="pips"></div></div>
-            </div>
-          </div>
-        </div>
-      `;
+      if(!diceEl) return;
 
-      const cube = container.querySelector(".d3d-cube");
-      const shadow = container.querySelector(".d3d-shadow");
-      if(!cube) return null;
+      const pipSel = [
+        ".pip",".dot",".spot",
+        "[data-pip]","[data-dot]","[data-spot]",
+        "[class*='pip']","[class*='dot']","[class*='spot']"
+      ].join(",");
 
-      // Place faces in cube (size = 72% of wrap, depth = half)
-      const depth = 0.5; // in cube size units via translateZ(%)
-      const faces = {
-        1: container.querySelector(".face-1"),
-        2: container.querySelector(".face-2"),
-        3: container.querySelector(".face-3"),
-        4: container.querySelector(".face-4"),
-        5: container.querySelector(".face-5"),
-        6: container.querySelector(".face-6"),
-      };
+      const all = Array.from(diceEl.querySelectorAll(pipSel));
 
-      // Build pips (classic positions 1..9 grid)
-      const pipMap = {
-        1: [5],
-        2: [1,9],
-        3: [1,5,9],
-        4: [1,3,7,9],
-        5: [1,3,5,7,9],
-        6: [1,3,4,6,7,9],
-      };
-      for(const n of [1,2,3,4,5,6]){
-        const p = faces[n]?.querySelector(".pips");
-        if(!p) continue;
-        p.innerHTML = "";
-        const set = new Set(pipMap[n]);
-        for(let i=1;i<=9;i++){
-          const d = document.createElement("div");
-          d.className = "pip";
-          d.style.visibility = set.has(i) ? "visible" : "hidden";
-          p.appendChild(d);
+      // Filter: wirklich nur kleine runde Punkte
+      const pips = all.filter(el=>{
+        const r = el.getBoundingClientRect();
+        if(!(r.width>0 && r.height>0)) return false;
+        if(r.width>90 || r.height>90) return false; // keine großen Elemente
+        const cs = getComputedStyle(el);
+        const br = cs.borderRadius || "";
+        const looksRound = br.includes("999") || br.includes("%") || (parseFloat(br)||0) >= Math.min(r.width, r.height)/2 - 2;
+        return looksRound;
+      });
+
+      if(!pips.length) return;
+
+      // --- V8: Snap in ein zentriertes inneres 3x3 Raster (realistische Würfel-Geometrie) ---
+      // Innerer Bereich (ohne "Rand/Rundung"): desto kleiner, desto "mittiger" wirken die Augen.
+      const inset = 0.19;           // 19% Rand -> echte Würfeloptik
+      const grid = [0, 0.5, 1];     // 3x3 Raster im inneren Quadrat
+
+      // Hilfsfunktion: finde nächstes Raster-Index (0/1/2) aus aktueller relativer Position 0..1
+      const snapIdx = (t) => (t < 0.35 ? 0 : (t > 0.65 ? 2 : 1));
+
+      // Wir positionieren immer relativ zum jeweiligen Face-Parent
+      const byParent = new Map();
+      for(const pip of pips){
+        const parent = pip.parentElement;
+        if(!parent) continue;
+        if(!byParent.has(parent)) byParent.set(parent, []);
+        byParent.get(parent).push(pip);
+      }
+
+      for(const [parent, arr] of byParent.entries()){
+        const pr = parent.getBoundingClientRect();
+        if(pr.width <= 0 || pr.height <= 0) continue;
+
+        const parentCS = getComputedStyle(parent);
+        if(parentCS.position === "static") parent.style.position = "relative";
+
+        const innerLeft = pr.width  * inset;
+        const innerTop  = pr.height * inset;
+        const innerW    = pr.width  * (1 - inset*2);
+        const innerH    = pr.height * (1 - inset*2);
+
+        for(const pip of arr){
+          if(pip.dataset && pip.dataset.pipCenteredV8 === "1") continue;
+
+          const rr = pip.getBoundingClientRect();
+          if(rr.width <= 0 || rr.height <= 0) continue;
+
+          pip.style.position = "absolute";
+
+          // aktuelles Zentrum relativ im Parent
+          const cx = rr.left + rr.width/2;
+          const cy = rr.top  + rr.height/2;
+          const rx = (cx - pr.left) / pr.width;   // 0..1
+          const ry = (cy - pr.top)  / pr.height;  // 0..1
+
+          // Grobe Zuordnung zu Rasterzelle (links/mitte/rechts, oben/mitte/unten)
+          const ix = snapIdx(rx);
+          const iy = snapIdx(ry);
+
+          // Zielzentrum im inneren Raster
+          const tx = innerLeft + innerW * grid[ix];
+          const ty = innerTop  + innerH * grid[iy];
+
+          // Links/Top so setzen, dass pip zentriert ist
+          pip.style.left = `${(tx - rr.width/2).toFixed(1)}px`;
+          pip.style.top  = `${(ty - rr.height/2).toFixed(1)}px`;
+
+          // Überschreibe translate, falls vorhanden (sonst verschiebt Samsung Internet es wieder)
+          const st = pip.style.transform || "";
+          pip.style.transform = st
+            .replace(/translate3d\([^)]+\)/g, "")
+            .replace(/translate\([^)]+\)/g, "")
+            .trim();
+
+          pip.dataset.pipCenteredV8 = "1";
         }
       }
-
-      // Face transforms (standard dice net)
-      // We define a cube coordinate system:
-      // front=1, back=6, right=3, left=4, top=5, bottom=2
-      // (important: opposite sides sum to 7)
-      faces[1].style.transform = "translateZ(36%)";
-      faces[6].style.transform = "rotateY(180deg) translateZ(36%)";
-      faces[3].style.transform = "rotateY(90deg) translateZ(36%)";
-      faces[4].style.transform = "rotateY(-90deg) translateZ(36%)";
-      faces[5].style.transform = "rotateX(90deg) translateZ(36%)";
-      faces[2].style.transform = "rotateX(-90deg) translateZ(36%)";
-
-      // Animation state
-      let raf = 0;
-      let lastT = 0;
-
-      // orientation (degrees)
-      let ax = -18;   // camera lower look
-      let ay = 22;
-      let vel = 0;
-      let vx = 0, vy = 0; // deg/s
-      let spinning = false;
-
-      // target
-      let targetFace = 1;
-      let targetAx = ax, targetAy = ay;
-      let attract = false;
-      let attractStrength = 10; // will be scaled with dt
-      let settling = false;
-
-      // never same axis twice: choose which component dominates
-      let lastAxis = "x";
-
-      const faceToRot = {
-        // rotations that bring the chosen FACE to the FRONT, with cube upright (no Z)
-        1: {x: 0,   y: 0},
-        2: {x: 90,  y: 0},
-        3: {x: 0,   y: -90},
-        4: {x: 0,   y: 90},
-        5: {x: -90, y: 0},
-        6: {x: 0,   y: 180},
-      };
-
-      function applyTransform(){
-        // Keep Y within [-180,180] to avoid huge numbers
-        const norm = (d)=>((d%360)+360)%360;
-        const tx = ax;
-        let ty = ay;
-        // shadow reacts slightly
-        if(shadow){
-          const o = Math.min(0.95, Math.max(0.25, 0.55 + (Math.abs(vx)+Math.abs(vy))/1200));
-          shadow.style.opacity = String(o);
-          shadow.style.transform = `translate(-50%,0) scale(${(0.92 + (Math.abs(vx)+Math.abs(vy))/2200).toFixed(3)})`;
-        }
-        cube.style.transform = `translate(-50%,-56%) rotateX(${tx.toFixed(3)}deg) rotateY(${ty.toFixed(3)}deg)`;
-      }
-
-      function shortestAngleDiff(a, b){
-        // diff from a -> b in degrees in [-180,180]
-        let d = (b - a) % 360;
-        if(d > 180) d -= 360;
-        if(d < -180) d += 360;
-        return d;
-      }
-
-      function tick(t){
-        raf = requestAnimationFrame(tick);
-        if(!lastT) lastT = t;
-        const dt = Math.min(0.033, (t - lastT)/1000);
-        lastT = t;
-
-        if(spinning){
-          // friction decel strictly monotonic: speed *= exp(-k*dt)
-          const k = attract ? 3.1 : 1.85; // stronger when magnet is active
-          const f = Math.exp(-k*dt);
-          vx *= f;
-          vy *= f;
-
-          ax += vx * dt;
-          ay += vy * dt;
-
-          // subtle micro edge wobble near end (only when slow)
-          const speed = Math.hypot(vx, vy);
-          if(speed < 55){
-            const wob = (55 - speed) / 55;
-            ax += (Math.sin(t/120) * 0.18) * wob;
-            ay += (Math.cos(t/140) * 0.18) * wob;
-          }
-
-          // magnet attractor towards target (no snap)
-          if(attract){
-            const dx = shortestAngleDiff(ax, targetAx);
-            const dy = shortestAngleDiff(ay, targetAy);
-
-            // gentle pull proportional to diff, capped
-            const pull = attractStrength * dt; // base
-            ax += dx * Math.min(0.22, pull);
-            ay += dy * Math.min(0.22, pull);
-
-            // also softly damp velocities so it doesn't "re-accelerate"
-            vx *= Math.exp(-2.6*dt);
-            vy *= Math.exp(-2.6*dt);
-
-            // when extremely close and slow -> lock perfectly (face-lock)
-            const close = (Math.abs(dx) + Math.abs(dy)) < 0.18;
-            const slow = speed < 10;
-            if(close && slow){
-              ax = targetAx;
-              ay = targetAy;
-              vx = 0; vy = 0;
-              spinning = false;
-              attract = false;
-              settling = false;
-            }
-          }
-
-          // if no attract and very slow, keep floating but never speed up
-          const speed2 = Math.hypot(vx, vy);
-          if(!attract && speed2 < 6){
-            // keep minimal drift, but strictly decreasing
-            vx *= 0.92;
-            vy *= 0.92;
-          }
-        }
-
-        applyTransform();
-      }
-
-      function start(){
-        if(!raf) raf = requestAnimationFrame(tick);
-      }
-      start();
-
-      function startSpin(){
-        // fast start, then friction slows down
-        spinning = true;
-        attract = false;
-        settling = false;
-
-        // choose axis pattern different from last time
-        const axis = (lastAxis === "x") ? "y" : "x";
-        lastAxis = axis;
-
-        // initial velocities (deg/s) - fast
-        const base = 980 + Math.random()*420;
-        const other = 620 + Math.random()*260;
-
-        if(axis === "x"){
-          vx = (Math.random() < 0.5 ? -1 : 1) * base;
-          vy = (Math.random() < 0.5 ? -1 : 1) * other;
-        }else{
-          vy = (Math.random() < 0.5 ? -1 : 1) * base;
-          vx = (Math.random() < 0.5 ? -1 : 1) * other;
-        }
-      }
-
-      function reset(){
-        spinning = false;
-        attract = false;
-        vx = 0; vy = 0;
-        ax = -18;
-        ay = 22;
-        applyTransform();
-      }
-
-      function serverAttract(face){
-        const f = (face>=1 && face<=6) ? face : 1;
-        targetFace = f;
-
-        // We want final to be FRONT straight (no tilt illusion). Keep a tiny camera pitch.
-        const rot = faceToRot[f];
-        targetAx = -10 + rot.x; // slightly lower camera look, but front-aligned
-        targetAy = 0 + rot.y;
-
-        // engage magnet smoothly; do NOT boost speed
-        attract = true;
-        spinning = true;
-        attractStrength = 8.5; // default; can be tuned if needed
-      }
-
-      return {
-        startSpin,
-        reset,
-        attract: serverAttract,
-        setMagnetStrength: (v)=>{ attractStrength = Math.max(2, Math.min(18, Number(v)||8.5)); },
-      };
-    }catch(_e){
-      return null;
-    }
+    }catch(_e){}
   }
 
-  // init once if element exists
+  ensureRealisticPipStyles();
+
+
+
+  // nach dem Rendern ein paar mal versuchen (weil der Würfel/DOM manchmal später kommt)
   try{
-    if(diceEl){
-      dice3d = buildDice3D(diceEl);
-    }
+    let triesP=0;
+    const tp=setInterval(()=>{
+      triesP++;
+      centerPipsRealistically();
+      if(triesP>25) clearInterval(tp);
+    }, 120);
   }catch(_e){}
 
 
@@ -1123,11 +1078,30 @@ try{ ws = new WebSocket(SERVER_URL); }
         if(msg.state){
           applyRemoteState(msg.state);
           writeHostAutosave(msg.state);
+
+          // Glücksrad anzeigen, falls vorhanden (rein UI)
+          if(msg.state.wheel && msg.state.wheel.starterColor){
+            showWheelStart(
+              msg.state.wheel.activeColors || msg.state.activeColors || [],
+              msg.state.wheel.starterColor,
+              msg.state.wheel.endsAt
+            );
+          }
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         return;
       }
-      if(type==="roll"){
+      if(type==="wheel_done"){
+  if(msg.state){
+    applyRemoteState(msg.state);
+    writeHostAutosave(msg.state);
+  }
+  hideWheel();
+  if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+  return;
+}
+
+if(type==="roll"){
         // (108/26) small suspense + particles
         if(typeof msg.value==="number") setDiceFaceAnimated(msg.value);
         if(msg.state){
@@ -1450,23 +1424,6 @@ function toast(msg){
   function setDiceFaceAnimated(v){
     if(!diceEl) return;
     const face = (v>=1 && v<=6) ? v : 0;
-
-    // 3D Dice active: KEIN Flicker/Snap – Server-Zahl wird sanft angezogen.
-    if(dice3d){
-      try{
-        if(face===0){
-          dice3d.reset();
-          diceEl.dataset.face = "0";
-          lastDiceFace = 0;
-        }else{
-          // keep dataset in sync for existing CSS fallback, but visuals come from 3D cube
-          diceEl.dataset.face = String(face);
-          lastDiceFace = face;
-          dice3d.attract(face);
-        }
-      }catch(_e){}
-      return;
-    }
 
     // clear any previous roll timers (visual only)
     try{
@@ -2417,6 +2374,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
     wsSend({type:"start", ts:Date.now()});
+    toast("Glücksrad startet…");
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
@@ -2427,7 +2385,6 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   });
 
   rollBtn.addEventListener("click", () => {
-    try{ if(dice3d) dice3d.startSpin(); }catch(_e){}
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       // server checks turn
@@ -2803,16 +2760,12 @@ leaveBtn.addEventListener("click", () => {
       dock.innerHTML = "";
     }
 
-    // Groß + Premium-Float (C): groß, schwebend, aber sauber im Status-Bereich
+    // Groß darstellen (ohne 3D-Transforms zu zerstören)
     const big = document.createElement("div");
-    big.className = "diceFloatWrap";
-    // (Skalierung + leichter Offset; die Animation kommt per CSS)
-    setImportant(big, "transform", "scale(2.9) translateY(-2px)");
+    setImportant(big, "transform", "scale(2.9)");
     setImportant(big, "transform-origin", "right top");
     // Anzeige-only (würfeln bleibt Button)
     setImportant(big, "pointer-events", "none");
-    // Platz für Schweben/Shadow
-    setImportant(dock, "padding-bottom", "16px");
     big.appendChild(dice);
     dock.appendChild(big);
 
@@ -2850,7 +2803,7 @@ leaveBtn.addEventListener("click", () => {
 
 
 /* ===== UI PATCH V3 (nur Optik): Dock via "Status" Überschrift (falls IDs/Struktur am PC anders sind) ===== */
-(function forceDiceDockByStatusTitle(){ if(false){
+(function forceDiceDockByStatusTitle(){
   function setImportant(el, prop, value){
     try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
   }
