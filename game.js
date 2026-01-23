@@ -138,6 +138,101 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   // call once (safe)
   ensureLegendaryDiceStyles();
 
+  // ===== Dice realism: Pips etwas weiter nach innen + mehr Tiefe (nur Optik, safe) =====
+  function ensureRealisticPipStyles(){
+    try{
+      if(document.getElementById("diceRealisticPipStyles")) return;
+      const style = document.createElement("style");
+      style.id = "diceRealisticPipStyles";
+      style.textContent = `
+        /* Pips: runder, mehr Tiefe, weniger 'aufgeklebt' */
+        #diceCube .pip, #diceCube .dot, #diceCube .spot,
+        #diceCube [class*="pip"], #diceCube [class*="dot"], #diceCube [class*="spot"]{
+          border-radius: 999px !important;
+          box-shadow:
+            inset 0 2px 4px rgba(255,255,255,.22),
+            inset 0 -5px 10px rgba(0,0,0,.55),
+            0 2px 6px rgba(0,0,0,.35) !important;
+          filter: saturate(1.05);
+        }
+        /* Würfelfläche: leichte Mikro-Struktur (wenn Face-Element existiert) */
+        #diceCube .face, #diceCube .side, #diceCube .cube-face{
+          overflow: hidden;
+        }
+        #diceCube .face::before, #diceCube .side::before, #diceCube .cube-face::before{
+          content:"";
+          position:absolute; inset:0;
+          background:
+            radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), rgba(255,255,255,0) 40%),
+            radial-gradient(circle at 70% 75%, rgba(0,0,0,.12), rgba(0,0,0,0) 45%);
+          pointer-events:none;
+          mix-blend-mode: overlay;
+        }
+      `;
+      document.head.appendChild(style);
+    }catch(_e){}
+  }
+
+  // Schiebt gefundene Pip-Elemente ein Stück nach innen (Samsung/Tablet safe).
+  // Wir ändern NUR ein zusätzliches transform translate auf den Pips – keine Logik.
+  function pullPipsInward(){
+    try{
+      if(!diceEl) return;
+      const pipSel = [
+        ".pip",".dot",".spot",
+        "[data-pip]","[data-dot]","[data-spot]",
+        "[class*='pip']","[class*='dot']","[class*='spot']"
+      ].join(",");
+      const pips = Array.from(diceEl.querySelectorAll(pipSel))
+        .filter(el=>{
+          const r = el.getBoundingClientRect();
+          // kleine Kreise filtern (damit wir nicht aus Versehen Buttons treffen)
+          return r.width>0 && r.height>0 && r.width<60 && r.height<60;
+        });
+
+      if(!pips.length) return; // falls Würfel keine einzelnen Pip-Elemente nutzt
+
+      for(const pip of pips){
+        const parent = pip.parentElement;
+        if(!parent) continue;
+        const pr = parent.getBoundingClientRect();
+        const rr = pip.getBoundingClientRect();
+        const pcx = pr.left + pr.width/2;
+        const pcy = pr.top  + pr.height/2;
+        const cx  = rr.left + rr.width/2;
+        const cy  = rr.top  + rr.height/2;
+        const dx = cx - pcx;
+        const dy = cy - pcy;
+
+        // 18% Richtung Zentrum ziehen (bei dir: 'zu weit außen')
+        const pull = 0.18;
+        const tx = (-dx * pull);
+        const ty = (-dy * pull);
+
+        // existing transform beibehalten + additiv translate
+        const existing = pip.style.transform || "";
+        // damit wir nicht mehrfach addieren:
+        if(existing.includes("translate(") && existing.includes("--pipPull")) continue;
+
+        pip.style.setProperty("--pipPull", "1");
+        pip.style.transform = (existing ? existing + " " : "") + `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px)`;
+      }
+    }catch(_e){}
+  }
+
+  ensureRealisticPipStyles();
+
+  // nach dem Rendern ein paar mal versuchen (weil der Würfel/DOM manchmal später kommt)
+  try{
+    let triesP=0;
+    const tp=setInterval(()=>{
+      triesP++;
+      pullPipsInward();
+      if(triesP>25) clearInterval(tp);
+    }, 120);
+  }catch(_e){}
+
+
   // Online
   const serverLabel = $("serverLabel");
   const roomCodeInp = $("roomCode");
