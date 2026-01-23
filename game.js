@@ -12,8 +12,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         el.scrollTop = el.scrollHeight;
       }catch(_e){}
     }
+  }
 
-// ===== Glücksrad (nur Optik) =====
+  // ===== Glücksrad (nur Optik) =====
 let wheelOverlay = null;
 let wheelAnimId = 0;
 
@@ -229,8 +230,6 @@ function hideWheel(){
   if(!wheelOverlay) return;
   wheelOverlay.style.display = "none";
 }
-  }
-
 
   // ===== UI refs =====
   const canvas = $("c");
