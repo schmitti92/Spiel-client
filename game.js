@@ -175,59 +175,100 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // Schiebt gefundene Pip-Elemente ein Stück nach innen (Samsung/Tablet safe).
   // Wir ändern NUR ein zusätzliches transform translate auf den Pips – keine Logik.
-  function pullPipsInward(){
+  
+  // Pips auf echte Würfel-Optik zentrieren:
+  // Wir remappen die Pip-Zentren Richtung Mitte (tablet/pc/handy identisch),
+  // statt nur "translate" zu stapeln. Rein visuell, keine Spiel-Logik.
+  function centerPipsRealistically(){
     try{
       if(!diceEl) return;
+
       const pipSel = [
         ".pip",".dot",".spot",
         "[data-pip]","[data-dot]","[data-spot]",
         "[class*='pip']","[class*='dot']","[class*='spot']"
       ].join(",");
-      const pips = Array.from(diceEl.querySelectorAll(pipSel))
-        .filter(el=>{
-          const r = el.getBoundingClientRect();
-          // kleine Kreise filtern (damit wir nicht aus Versehen Buttons treffen)
-          return r.width>0 && r.height>0 && r.width<60 && r.height<60;
-        });
 
-      if(!pips.length) return; // falls Würfel keine einzelnen Pip-Elemente nutzt
+      const all = Array.from(diceEl.querySelectorAll(pipSel));
+
+      // Filter: wirklich nur kleine runde Punkte
+      const pips = all.filter(el=>{
+        const r = el.getBoundingClientRect();
+        if(!(r.width>0 && r.height>0)) return false;
+        if(r.width>80 || r.height>80) return false; // keine großen Elemente
+        const cs = getComputedStyle(el);
+        // Kreis-Optik grob prüfen (Samsung Internet: borderRadius kann "999px" sein)
+        const br = cs.borderRadius || "";
+        const looksRound = br.includes("999") || br.includes("%") || parseFloat(br) >= Math.min(r.width, r.height)/2 - 2;
+        return looksRound;
+      });
+
+      if(!pips.length) return;
+
+      // Wie stark wir die Abstände Richtung Mitte ziehen:
+      // 0.70 = 30% näher zur Mitte (realistischer). Wenn du mehr willst: 0.62 (noch näher).
+      const scale = 0.70;
 
       for(const pip of pips){
+        // nicht doppelt "hart" repositionieren
+        if(pip.dataset && pip.dataset.pipCentered === "1") continue;
+
         const parent = pip.parentElement;
         if(!parent) continue;
+
         const pr = parent.getBoundingClientRect();
         const rr = pip.getBoundingClientRect();
-        const pcx = pr.left + pr.width/2;
-        const pcy = pr.top  + pr.height/2;
-        const cx  = rr.left + rr.width/2;
-        const cy  = rr.top  + rr.height/2;
-        const dx = cx - pcx;
-        const dy = cy - pcy;
+        if(pr.width <= 0 || pr.height <= 0) continue;
 
-        // 18% Richtung Zentrum ziehen (bei dir: 'zu weit außen')
-        const pull = 0.18;
-        const tx = (-dx * pull);
-        const ty = (-dy * pull);
+        // Parent/Pip positioning absichern
+        const parentCS = getComputedStyle(parent);
+        if(parentCS.position === "static"){
+          parent.style.position = "relative";
+        }
+        pip.style.position = "absolute";
 
-        // existing transform beibehalten + additiv translate
-        const existing = pip.style.transform || "";
-        // damit wir nicht mehrfach addieren:
-        if(existing.includes("translate(") && existing.includes("--pipPull")) continue;
+        // aktuelles Zentrum relativ im Parent
+        const cx = rr.left + rr.width/2;
+        const cy = rr.top  + rr.height/2;
+        const rx = (cx - pr.left) / pr.width;   // 0..1
+        const ry = (cy - pr.top)  / pr.height;  // 0..1
 
-        pip.style.setProperty("--pipPull", "1");
-        pip.style.transform = (existing ? existing + " " : "") + `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px)`;
+        // Richtung Mitte remappen
+        const nrx = 0.5 + (rx - 0.5) * scale;
+        const nry = 0.5 + (ry - 0.5) * scale;
+
+        const newCx = pr.left + pr.width  * nrx;
+        const newCy = pr.top  + pr.height * nry;
+
+        const newLeft = (newCx - pr.left) - rr.width/2;
+        const newTop  = (newCy - pr.top)  - rr.height/2;
+
+        // transform-translate entfernen (sonst addiert es sich), aber andere transforms lassen wir in Ruhe
+        const existingT = pip.style.transform || "";
+        if(existingT.includes("translate(") || existingT.includes("translate3d(")){
+          pip.style.transform = existingT
+            .replace(/translate3d\([^)]+\)/g, "")
+            .replace(/translate\([^)]+\)/g, "")
+            .trim();
+        }
+
+        pip.style.left = `${newLeft.toFixed(1)}px`;
+        pip.style.top  = `${newTop.toFixed(1)}px`;
+
+        pip.dataset.pipCentered = "1";
       }
     }catch(_e){}
   }
 
   ensureRealisticPipStyles();
 
+
   // nach dem Rendern ein paar mal versuchen (weil der Würfel/DOM manchmal später kommt)
   try{
     let triesP=0;
     const tp=setInterval(()=>{
       triesP++;
-      pullPipsInward();
+      centerPipsRealistically();
       if(triesP>25) clearInterval(tp);
     }, 120);
   }catch(_e){}
