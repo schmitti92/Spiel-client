@@ -56,88 +56,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const boardInfo = $("boardInfo");
   const barrInfo  = $("barrInfo");
 
-  // ===== Legendary Dice (visual only, isolated) =====
-  // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
-  // Entfernt keine Funktion – nur Optik für den Würfel.
-  function ensureLegendaryDiceStyles(){
-    try{
-      if(document.getElementById("legendaryDiceStyles")) return;
-      const style = document.createElement("style");
-      style.id = "legendaryDiceStyles";
-      style.textContent = `
-        /* Legendary Dice – additive, should not affect gameplay */
-        #diceCube{
-          position: relative;
-          transform-style: preserve-3d;
-          will-change: transform, filter;
-          filter: drop-shadow(0 10px 22px rgba(0,0,0,.55));
-        }
-        #diceCube.legend-roll{
-          animation: legendRoll 650ms cubic-bezier(.2,.9,.2,1) both;
-        }
-        #diceCube.legend-ping{
-          animation: legendPing 420ms cubic-bezier(.2,.9,.2,1) both;
-        }
-        #diceCube.legend-crit6::after{
-          content:"";
-          position:absolute; inset:-14px;
-          border-radius: 18px;
-          background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%);
-          filter: blur(0px);
-          animation: critGlow 950ms ease-out both;
-          pointer-events:none;
-          mix-blend-mode: screen;
-        }
-        #diceCube.legend-crit1::after{
-          content:"";
-          position:absolute; inset:-16px;
-          border-radius: 18px;
-          background: radial-gradient(circle at 50% 60%, rgba(255,80,80,.28), rgba(255,80,80,0) 62%);
-          animation: critRed 950ms ease-out both;
-          pointer-events:none;
-          mix-blend-mode: screen;
-        }
-        /* If older CSS misses .shake, provide a safe fallback */
-        #diceCube.shake{
-          animation: diceShake 280ms ease-in-out both;
-        }
-        @keyframes diceShake{
-          0%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
-          20%{ transform: translate3d(-2px,1px,0) rotate(-4deg) scale(1.02); }
-          40%{ transform: translate3d(2px,-1px,0) rotate(4deg) scale(1.03); }
-          60%{ transform: translate3d(-1px,-2px,0) rotate(-3deg) scale(1.02); }
-          80%{ transform: translate3d(1px,2px,0) rotate(3deg) scale(1.01); }
-          100%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
-        }
-        @keyframes legendRoll{
-          0%{ transform: translate3d(0,0,0) rotateX(0deg) rotateY(0deg) scale(1); filter: drop-shadow(0 10px 22px rgba(0,0,0,.55)); }
-          45%{ transform: translate3d(0,-6px,0) rotateX(520deg) rotateY(620deg) scale(1.10); filter: drop-shadow(0 16px 30px rgba(0,0,0,.55)); }
-          70%{ transform: translate3d(0,-2px,0) rotateX(760deg) rotateY(840deg) scale(1.06); }
-          100%{ transform: translate3d(0,0,0) rotateX(720deg) rotateY(720deg) scale(1); }
-        }
-        @keyframes legendPing{
-          0%{ transform: translate3d(0,0,0) scale(1); }
-          40%{ transform: translate3d(0,-2px,0) scale(1.08); }
-          100%{ transform: translate3d(0,0,0) scale(1); }
-        }
-        @keyframes critGlow{
-          0%{ opacity:0; transform: scale(.92); }
-          25%{ opacity:1; transform: scale(1); }
-          100%{ opacity:0; transform: scale(1.14); }
-        }
-        @keyframes critRed{
-          0%{ opacity:0; transform: scale(.92); }
-          25%{ opacity:1; transform: scale(1); }
-          100%{ opacity:0; transform: scale(1.18); }
-        }
-      `;
-      document.head.appendChild(style);
-    }catch(_e){}
-  }
-
-  // call once (safe)
-  ensureLegendaryDiceStyles();
-
   // Online
   const serverLabel = $("serverLabel");
   const roomCodeInp = $("roomCode");
@@ -361,9 +279,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // ===== FX (safe, visual only) =====
   let lastDiceFace = 0;
-  let _diceFlickerTimer = null;
-  let _diceFlickerStop = null;
-
   let lastMoveFx = null;
   let moveGhostFx = null;
 
@@ -815,21 +730,8 @@ try{ ws = new WebSocket(SERVER_URL); }
     }
   }
 
-  function chooseColor(color){
-    // Store requested color for this room (used on join + reconnect)
-    try{
-      if(currentRoom){
-        localStorage.setItem("barikade_reqColor_"+currentRoom, String(color));
-      }
-    }catch(_e){}
-
-    // If online & already connected, ask server immediately
-    if(netMode==="online" && ws && ws.readyState===1){
-      wsSend({type:"request_color", room: currentRoom, sessionToken: sessionToken, color: String(color)});
-    } else {
-      // If not connected yet, we reconnect so the next join includes requestedColor
-      toast("Farbe gespeichert. Beim Beitreten/Reconnect wird sie angefragt.");
-    }
+  function chooseColor(_color){
+    toast("Farbe wird vom Server automatisch vergeben");
   }
 
   function getActiveColors(){
@@ -855,16 +757,14 @@ try{ ws = new WebSocket(SERVER_URL); }
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
-      // In Online-Mode we ALWAYS render all 4 Farben (auch wenn nicht gewählt),
-      // damit Gelb/Grün im Haus sichtbar bleiben.
-      const players = ["red","blue","green","yellow"];
+      const players = ["red","blue"];
       setPlayers(players);
       const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
       // ensure 5 slots per color
       for(const c of players) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
 
       for(const pc of server.pieces){
-        if(!pc || !pc.color || !piecesByColor[pc.color]) continue;
+        if(!pc || (pc.color!=="red" && pc.color!=="blue")) continue;
         // pc.label is 1..5
         const idx = Math.max(0, Math.min(4, Number(pc.label||1)-1));
         let pos = "house";
@@ -884,9 +784,7 @@ try{ ws = new WebSocket(SERVER_URL); }
         pieces: Object.fromEntries(players.map(c => [c, piecesByColor[c] || []])),
         barricades: new Set(server.barricades.map(String)),
         winner: null,
-        goalNodeId: server.goal ? String(server.goal) : goalNodeId,
-        // optional info from server (used by some UIs)
-        activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
+        goalNodeId: server.goal ? String(server.goal) : goalNodeId
       };
 
       // map phases
@@ -1027,82 +925,29 @@ function toast(msg){
   function setDiceFaceAnimated(v){
     if(!diceEl) return;
     const face = (v>=1 && v<=6) ? v : 0;
-
-    // clear any previous roll timers (visual only)
-    try{
-      if(_diceFlickerTimer){ clearInterval(_diceFlickerTimer); _diceFlickerTimer=null; }
-      if(_diceFlickerStop){ clearTimeout(_diceFlickerStop); _diceFlickerStop=null; }
-    }catch(_e){}
-
-    // reset helper classes
-    try{
-      diceEl.classList.remove("legend-roll","legend-ping","legend-crit6","legend-crit1");
-    }catch(_e){}
-
     if(face===0){
       diceEl.dataset.face = "0";
       lastDiceFace = 0;
       return;
     }
 
-    const sameAsBefore = (face === lastDiceFace);
+    // avoid spamming if same face
+    if(face === lastDiceFace) return;
     lastDiceFace = face;
 
-    // start legendary roll animation
-    // - flicker faces quickly for suspense
-    // - then settle on final face and keep it until next roll
-    try{
-      // restart animation class reliably
-      diceEl.classList.remove("legend-roll");
-      void diceEl.offsetWidth;
-      diceEl.classList.add("legend-roll");
+    // (108) jitter before showing result
+    diceEl.classList.remove("shake");
+    void diceEl.offsetWidth; // restart animation
+    diceEl.classList.add("shake");
 
-      // also keep old shake (if CSS exists)
-      diceEl.classList.remove("shake");
-      void diceEl.offsetWidth;
-      diceEl.classList.add("shake");
-    }catch(_e){}
+    // (26) particles
+    spawnDiceParticles();
 
-    // Flicker: 10–14 quick random faces (visual only)
-    const t0 = performance.now();
-    _diceFlickerTimer = setInterval(()=>{
-      try{
-        const r = 1 + Math.floor(Math.random()*6);
-        diceEl.dataset.face = String(r);
-      }catch(_e){}
-      // hard stop safety
-      if(performance.now() - t0 > 520){
-        try{ clearInterval(_diceFlickerTimer); }catch(_e){}
-        _diceFlickerTimer=null;
-      }
-    }, 45);
-
-    // particles (existing)
-    try{ spawnDiceParticles(); }catch(_e){}
-
-    // settle on real result
-    _diceFlickerStop = setTimeout(()=>{
-      try{
-        if(_diceFlickerTimer){ clearInterval(_diceFlickerTimer); _diceFlickerTimer=null; }
-      }catch(_e){}
-      try{
-        diceEl.dataset.face = String(face);
-        diceEl.classList.remove("shake");
-        // if same face, give a small ping so it still feels alive
-        if(sameAsBefore){
-          diceEl.classList.remove("legend-ping");
-          void diceEl.offsetWidth;
-          diceEl.classList.add("legend-ping");
-        }
-        // crit effects
-        if(face===6) diceEl.classList.add("legend-crit6");
-        if(face===1) diceEl.classList.add("legend-crit1");
-        // remove crit classes after a moment (visual only)
-        setTimeout(()=>{
-          try{ diceEl.classList.remove("legend-crit6","legend-crit1","legend-ping"); }catch(_e){}
-        }, 1000);
-      }catch(_e){}
-    }, 560);
+    // show result slightly delayed for suspense
+    setTimeout(()=>{
+      if(diceEl) diceEl.dataset.face = String(face);
+      if(diceEl) diceEl.classList.remove("shake");
+    }, 280);
   }
 
   function parseColorFromPieceId(pieceId){
@@ -1171,13 +1016,49 @@ function toast(msg){
   function hideOverlay(){ overlay.classList.remove("show"); }
   overlayOk.addEventListener("click", hideOverlay);
 
-  async function loadBoard(){
-    const res = await fetch("board.json", {cache:"no-store"});
-    if(!res.ok) throw new Error("board.json nicht gefunden");
-    return await res.json();
+  async function loadBoard() {
+  // Robust loader: supports different filenames/locations (e.g. board.json vs board-1.json on GitHub Pages)
+  const candidates = [
+    "board.json",
+    "board-1.json",
+    "./board.json",
+    "./board-1.json",
+    "assets/board.json",
+    "assets/board-1.json"
+  ];
+
+  let lastErr = null;
+
+  for (const rel of candidates) {
+    try {
+      const res = await fetch(rel, { cache: "no-store" });
+      if (!res.ok) { lastErr = new Error(`${rel}: HTTP ${res.status}`); continue; }
+      const data = await res.json();
+      if (data && Array.isArray(data.nodes) && data.nodes.length) return data;
+      lastErr = new Error(`${rel}: JSON ok but nodes missing/empty`);
+    } catch (e) {
+      lastErr = e;
+    }
   }
 
-  function buildGraph(){
+  // Final attempt: resolve against current URL (helps with odd base paths)
+  try {
+    const url = new URL("board.json", window.location.href).toString();
+    const res = await fetch(url, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.nodes) && data.nodes.length) return data;
+    }
+  } catch (e) {
+    lastErr = e;
+  }
+
+  console.error("[board] Could not load board JSON.", lastErr);
+  showToast("Fehler: Board konnte nicht geladen werden (board.json / board-1.json fehlt).", "error");
+  return null;
+}
+
+function buildGraph(){
     nodeById.clear(); adj.clear(); runNodes.clear();
     goalNodeId=null;
     startNodeId={red:null,blue:null,green:null,yellow:null};
@@ -2249,63 +2130,4 @@ leaveBtn.addEventListener("click", () => {
       console.error(err);
     }
   })();
-})();
-
-// ===== UI PATCH: Würfel in die Status-Box über "Board / Barikaden" docken (nur Optik) =====
-(function dockDiceIntoStatusCard(){
-  function tryDock(){
-    const dice = document.getElementById("diceCube");
-    const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
-    if(!dice || !boardInfo) return false;
-
-    // Container finden, in dem "Board/Barikaden" stehen (Status-Card)
-    let card =
-      boardInfo.closest(".card") ||
-      boardInfo.closest(".panel") ||
-      boardInfo.closest("section") ||
-      (boardInfo.parentElement && boardInfo.parentElement.parentElement) ||
-      boardInfo.parentElement;
-
-    if(!card) return false;
-
-    // Dock-Wrapper (falls schon vorhanden -> wiederverwenden)
-    let dock = document.getElementById("diceDockStatus");
-    if(!dock){
-      dock = document.createElement("div");
-      dock.id = "diceDockStatus";
-      dock.style.display = "flex";
-      dock.style.justifyContent = "flex-end";   // rechts
-      dock.style.alignItems = "flex-start";
-      dock.style.margin = "10px 0 12px 0";
-    } else {
-      dock.innerHTML = "";
-    }
-
-    // Inner Wrapper für "richtig groß"
-    const big = document.createElement("div");
-    big.style.transform = "scale(2.8)";          // Größe (fett)
-    big.style.transformOrigin = "right top";
-    big.style.pointerEvents = "none";            // Anzeige-only (Buttons bleiben oben)
-    big.appendChild(dice);
-
-    dock.appendChild(big);
-
-    // Position: direkt über der Zeile, die boardInfo enthält
-    const row = boardInfo.closest("div") || boardInfo;
-    if(row && row.parentElement){
-      row.parentElement.insertBefore(dock, row);
-      return true;
-    }
-    return false;
-  }
-
-  // Mehrere Versuche, weil UI teils dynamisch aufgebaut wird
-  let tries = 0;
-  const t = setInterval(() => {
-    tries++;
-    const ok = tryDock();
-    if(ok || tries > 30) clearInterval(t);
-  }, 100);
-
-  window.addEventListener("load", () => { tryDock(); });
 })();
