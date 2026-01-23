@@ -56,6 +56,31 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const boardInfo = $("boardInfo");
   const barrInfo  = $("barrInfo");
 
+
+  // --- Force diceCube to be a 3D host (override any legacy "mini-dice" styling) ---
+  function prepareDiceCubeHost(el){
+    if(!el) return;
+    el.className = "dice3dHost";
+    el.setAttribute("aria-label","3D Dice");
+    el.style.width = "180px";
+    el.style.height = "180px";
+    el.style.display = "grid";
+    el.style.placeItems = "center";
+    el.style.background = "transparent";
+    el.style.border = "0";
+    el.style.padding = "0";
+    el.style.margin = "0";
+    el.style.borderRadius = "18px";
+    el.style.boxShadow = "none";
+    el.style.overflow = "visible";
+    // Remove legacy SVG/icon content
+    if(!el.__dicePrepared){
+      el.innerHTML = "";
+      el.__dicePrepared = true;
+    }
+  }
+  prepareDiceCubeHost(diceEl);
+
   // ===== Legendary Dice (visual only, isolated) =====
   // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
   // Entfernt keine Funktion – nur Optik für den Würfel.
@@ -2825,7 +2850,7 @@ leaveBtn.addEventListener("click", () => {
 
 
 /* ===== UI PATCH V3 (nur Optik): Dock via "Status" Überschrift (falls IDs/Struktur am PC anders sind) ===== */
-(function forceDiceDockByStatusTitle(){
+(function forceDiceDockByStatusTitle(){ if(false){
   function setImportant(el, prop, value){
     try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
   }
