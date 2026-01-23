@@ -218,7 +218,7 @@ function showWheelStart(activeColors, starterColor, endsAt){
       drawWheel(ctx, colors, finalRot);
       if(sub) sub.textContent = `${colorLabel(starterColor)} beginnt!`;
       // keep overlay a short moment, then hide (server will also send wheel_done)
-      setTimeout(()=>{ hideWheel(); }, 900);
+      setTimeout(()=>{ hideWheel(); }, 2000);
     }
   }
   try{ cancelAnimationFrame(wheelAnimId); }catch(_e){}
