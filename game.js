@@ -56,6 +56,486 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const boardInfo = $("boardInfo");
   const barrInfo  = $("barrInfo");
 
+  // ===== Legendary Dice (visual only, isolated) =====
+  // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
+  // Entfernt keine Funktion – nur Optik für den Würfel.
+  function ensureLegendaryDiceStyles(){
+    try{
+      if(document.getElementById("legendaryDiceStyles")) return;
+      const style = document.createElement("style");
+      style.id = "legendaryDiceStyles";
+      style.textContent = `
+        /* Legendary Dice – additive, should not affect gameplay */
+        #diceCube{
+          position: relative;
+          transform-style: preserve-3d;
+          will-change: transform, filter;
+          filter: drop-shadow(0 10px 22px rgba(0,0,0,.55));
+        }
+        #diceCube.legend-roll{
+          animation: legendRoll 650ms cubic-bezier(.2,.9,.2,1) both;
+        }
+        #diceCube.legend-ping{
+          animation: legendPing 420ms cubic-bezier(.2,.9,.2,1) both;
+        }
+        #diceCube.legend-crit6::after{
+          content:"";
+          position:absolute; inset:-14px;
+          border-radius: 18px;
+          background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%);
+          filter: blur(0px);
+          animation: critGlow 950ms ease-out both;
+          pointer-events:none;
+          mix-blend-mode: screen;
+        }
+        #diceCube.legend-crit1::after{
+          content:"";
+          position:absolute; inset:-16px;
+          border-radius: 18px;
+          background: radial-gradient(circle at 50% 60%, rgba(255,80,80,.28), rgba(255,80,80,0) 62%);
+          animation: critRed 950ms ease-out both;
+          pointer-events:none;
+          mix-blend-mode: screen;
+        }
+        /* If older CSS misses .shake, provide a safe fallback */
+        #diceCube.shake{
+          animation: diceShake 280ms ease-in-out both;
+        }
+        @keyframes diceShake{
+          0%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+          20%{ transform: translate3d(-2px,1px,0) rotate(-4deg) scale(1.02); }
+          40%{ transform: translate3d(2px,-1px,0) rotate(4deg) scale(1.03); }
+          60%{ transform: translate3d(-1px,-2px,0) rotate(-3deg) scale(1.02); }
+          80%{ transform: translate3d(1px,2px,0) rotate(3deg) scale(1.01); }
+          100%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+        }
+        @keyframes legendRoll{
+          0%{ transform: translate3d(0,0,0) rotateX(0deg) rotateY(0deg) scale(1); filter: drop-shadow(0 10px 22px rgba(0,0,0,.55)); }
+          45%{ transform: translate3d(0,-6px,0) rotateX(520deg) rotateY(620deg) scale(1.10); filter: drop-shadow(0 16px 30px rgba(0,0,0,.55)); }
+          70%{ transform: translate3d(0,-2px,0) rotateX(760deg) rotateY(840deg) scale(1.06); }
+          100%{ transform: translate3d(0,0,0) rotateX(720deg) rotateY(720deg) scale(1); }
+        }
+        @keyframes legendPing{
+          0%{ transform: translate3d(0,0,0) scale(1); }
+          40%{ transform: translate3d(0,-2px,0) scale(1.08); }
+          100%{ transform: translate3d(0,0,0) scale(1); }
+        }
+        @keyframes critGlow{
+          0%{ opacity:0; transform: scale(.92); }
+          25%{ opacity:1; transform: scale(1); }
+          100%{ opacity:0; transform: scale(1.14); }
+        }
+        @keyframes critRed{
+          0%{ opacity:0; transform: scale(.92); }
+          25%{ opacity:1; transform: scale(1); }
+          100%{ opacity:0; transform: scale(1.18); }
+        }
+      `;
+      document.head.appendChild(style);
+    }catch(_e){}
+  }
+
+  // call once (safe)
+  ensureLegendaryDiceStyles();
+  // ===== 3D Dice (Server-Attractor, visual only, isolated) =====
+  // Ziel: Der Würfel rotiert frei (schnell -> langsam). Sobald die Server-Zahl kommt,
+  // wird sie sanft "magnetisch" angezogen (ohne Snap / ohne Speed-Boost am Ende).
+  // KEINE Spiellogik wird geändert – wir hängen uns nur visuell an Würfel-Events.
+  let dice3d = null;
+
+  function ensureDice3DStyles(){
+    try{
+      if(document.getElementById("dice3DStyles")) return;
+      const style = document.createElement("style");
+      style.id = "dice3DStyles";
+      style.textContent = `
+        /* Dock Premium Float (C) */
+        #diceDockStatusV2 .diceFloatWrap,
+        #diceDockStatusV3 .diceFloatWrap,
+        #diceDockStatusV4 .diceFloatWrap,
+        #diceDockStatusV5 .diceFloatWrap{
+          position: relative;
+          transform-origin: right top;
+          filter: drop-shadow(0 16px 28px rgba(0,0,0,.38));
+          animation: dicePremiumBob 3.6s ease-in-out infinite;
+          will-change: transform;
+        }
+        @keyframes dicePremiumBob{
+          0%{ transform: scale(2.9) translateY(-2px); }
+          50%{ transform: scale(2.9) translateY(-6px); }
+          100%{ transform: scale(2.9) translateY(-2px); }
+        }
+        /* kleines extra Ambient-Shadow unter dem Dock */
+        #diceDockStatusV2, #diceDockStatusV3, #diceDockStatusV4, #diceDockStatusV5{
+          position: relative;
+        }
+        #diceDockStatusV2::after,
+        #diceDockStatusV3::after,
+        #diceDockStatusV4::after,
+        #diceDockStatusV5::after{
+          content:"";
+          position:absolute;
+          right: 8px;
+          top: 62%;
+          width: 220px;
+          height: 54px;
+          background: radial-gradient(closest-side, rgba(0,0,0,.32), rgba(0,0,0,0));
+          filter: blur(14px);
+          opacity: .55;
+          pointer-events:none;
+        }
+
+        /* 3D Dice (isolated inside #diceCube) */
+        #diceCube.d3d{
+          width: 100%;
+          height: 100%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+        #diceCube .d3d-stage{
+          position: relative;
+          width: 100%;
+          height: 100%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          perspective: 900px;
+          perspective-origin: 50% 45%;
+          overflow: visible;
+        }
+        #diceCube .d3d-wrap{
+          position: relative;
+          width: min(180px, 100%);
+          height: min(180px, 100%);
+          transform-style: preserve-3d;
+          will-change: transform;
+        }
+        /* Ambient + contact shadow under dice */
+        #diceCube .d3d-shadow{
+          position:absolute;
+          left:50%;
+          top: 78%;
+          width: 62%;
+          height: 18%;
+          transform: translate(-50%, 0);
+          background: radial-gradient(closest-side, rgba(0,0,0,.35), rgba(0,0,0,0));
+          filter: blur(10px);
+          opacity:.65;
+          pointer-events:none;
+        }
+        #diceCube .d3d-cube{
+          position:absolute;
+          left:50%;
+          top: 50%;
+          width: 72%;
+          height: 72%;
+          transform-style: preserve-3d;
+          transform: translate(-50%,-56%); /* kamera etwas tiefer (realistischer) */
+          border-radius: 18px;
+          will-change: transform;
+        }
+        #diceCube .d3d-face{
+          position:absolute;
+          inset:0;
+          border-radius: 18px;
+          background: linear-gradient(165deg, rgba(255,255,255,.98), rgba(240,240,240,.98));
+          box-shadow:
+            inset 0 0 0 1px rgba(0,0,0,.10),
+            inset 10px 14px 22px rgba(255,255,255,.35),
+            inset -12px -16px 26px rgba(0,0,0,.10);
+          backface-visibility: hidden;
+        }
+        /* slight gloss */
+        #diceCube .d3d-face::after{
+          content:"";
+          position:absolute; inset:0;
+          border-radius:18px;
+          background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.65), rgba(255,255,255,0) 52%);
+          opacity:.35;
+          pointer-events:none;
+        }
+        #diceCube .pips{
+          position:absolute;
+          inset:0;
+          display:grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(3, 1fr);
+          padding: 18%;
+          gap: 8%;
+          align-items:center;
+          justify-items:center;
+        }
+        #diceCube .pip{
+          width: 18%;
+          aspect-ratio: 1/1;
+          border-radius: 999px;
+          background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.18), rgba(0,0,0,.86) 58%, rgba(0,0,0,.98) 100%);
+          box-shadow:
+            inset 0 2px 3px rgba(255,255,255,.08),
+            inset 0 -3px 6px rgba(0,0,0,.50);
+        }
+      `;
+      document.head.appendChild(style);
+    }catch(_e){}
+  }
+
+  function buildDice3D(container){
+    try{
+      if(!container) return null;
+      ensureDice3DStyles();
+      container.classList.add("d3d");
+      container.innerHTML = `
+        <div class="d3d-stage">
+          <div class="d3d-wrap">
+            <div class="d3d-shadow"></div>
+            <div class="d3d-cube" aria-label="3D Würfel">
+              <div class="d3d-face face-1"><div class="pips"></div></div>
+              <div class="d3d-face face-2"><div class="pips"></div></div>
+              <div class="d3d-face face-3"><div class="pips"></div></div>
+              <div class="d3d-face face-4"><div class="pips"></div></div>
+              <div class="d3d-face face-5"><div class="pips"></div></div>
+              <div class="d3d-face face-6"><div class="pips"></div></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const cube = container.querySelector(".d3d-cube");
+      const shadow = container.querySelector(".d3d-shadow");
+      if(!cube) return null;
+
+      // Place faces in cube (size = 72% of wrap, depth = half)
+      const depth = 0.5; // in cube size units via translateZ(%)
+      const faces = {
+        1: container.querySelector(".face-1"),
+        2: container.querySelector(".face-2"),
+        3: container.querySelector(".face-3"),
+        4: container.querySelector(".face-4"),
+        5: container.querySelector(".face-5"),
+        6: container.querySelector(".face-6"),
+      };
+
+      // Build pips (classic positions 1..9 grid)
+      const pipMap = {
+        1: [5],
+        2: [1,9],
+        3: [1,5,9],
+        4: [1,3,7,9],
+        5: [1,3,5,7,9],
+        6: [1,3,4,6,7,9],
+      };
+      for(const n of [1,2,3,4,5,6]){
+        const p = faces[n]?.querySelector(".pips");
+        if(!p) continue;
+        p.innerHTML = "";
+        const set = new Set(pipMap[n]);
+        for(let i=1;i<=9;i++){
+          const d = document.createElement("div");
+          d.className = "pip";
+          d.style.visibility = set.has(i) ? "visible" : "hidden";
+          p.appendChild(d);
+        }
+      }
+
+      // Face transforms (standard dice net)
+      // We define a cube coordinate system:
+      // front=1, back=6, right=3, left=4, top=5, bottom=2
+      // (important: opposite sides sum to 7)
+      faces[1].style.transform = "translateZ(36%)";
+      faces[6].style.transform = "rotateY(180deg) translateZ(36%)";
+      faces[3].style.transform = "rotateY(90deg) translateZ(36%)";
+      faces[4].style.transform = "rotateY(-90deg) translateZ(36%)";
+      faces[5].style.transform = "rotateX(90deg) translateZ(36%)";
+      faces[2].style.transform = "rotateX(-90deg) translateZ(36%)";
+
+      // Animation state
+      let raf = 0;
+      let lastT = 0;
+
+      // orientation (degrees)
+      let ax = -18;   // camera lower look
+      let ay = 22;
+      let vel = 0;
+      let vx = 0, vy = 0; // deg/s
+      let spinning = false;
+
+      // target
+      let targetFace = 1;
+      let targetAx = ax, targetAy = ay;
+      let attract = false;
+      let attractStrength = 10; // will be scaled with dt
+      let settling = false;
+
+      // never same axis twice: choose which component dominates
+      let lastAxis = "x";
+
+      const faceToRot = {
+        // rotations that bring the chosen FACE to the FRONT, with cube upright (no Z)
+        1: {x: 0,   y: 0},
+        2: {x: 90,  y: 0},
+        3: {x: 0,   y: -90},
+        4: {x: 0,   y: 90},
+        5: {x: -90, y: 0},
+        6: {x: 0,   y: 180},
+      };
+
+      function applyTransform(){
+        // Keep Y within [-180,180] to avoid huge numbers
+        const norm = (d)=>((d%360)+360)%360;
+        const tx = ax;
+        let ty = ay;
+        // shadow reacts slightly
+        if(shadow){
+          const o = Math.min(0.95, Math.max(0.25, 0.55 + (Math.abs(vx)+Math.abs(vy))/1200));
+          shadow.style.opacity = String(o);
+          shadow.style.transform = `translate(-50%,0) scale(${(0.92 + (Math.abs(vx)+Math.abs(vy))/2200).toFixed(3)})`;
+        }
+        cube.style.transform = `translate(-50%,-56%) rotateX(${tx.toFixed(3)}deg) rotateY(${ty.toFixed(3)}deg)`;
+      }
+
+      function shortestAngleDiff(a, b){
+        // diff from a -> b in degrees in [-180,180]
+        let d = (b - a) % 360;
+        if(d > 180) d -= 360;
+        if(d < -180) d += 360;
+        return d;
+      }
+
+      function tick(t){
+        raf = requestAnimationFrame(tick);
+        if(!lastT) lastT = t;
+        const dt = Math.min(0.033, (t - lastT)/1000);
+        lastT = t;
+
+        if(spinning){
+          // friction decel strictly monotonic: speed *= exp(-k*dt)
+          const k = attract ? 3.1 : 1.85; // stronger when magnet is active
+          const f = Math.exp(-k*dt);
+          vx *= f;
+          vy *= f;
+
+          ax += vx * dt;
+          ay += vy * dt;
+
+          // subtle micro edge wobble near end (only when slow)
+          const speed = Math.hypot(vx, vy);
+          if(speed < 55){
+            const wob = (55 - speed) / 55;
+            ax += (Math.sin(t/120) * 0.18) * wob;
+            ay += (Math.cos(t/140) * 0.18) * wob;
+          }
+
+          // magnet attractor towards target (no snap)
+          if(attract){
+            const dx = shortestAngleDiff(ax, targetAx);
+            const dy = shortestAngleDiff(ay, targetAy);
+
+            // gentle pull proportional to diff, capped
+            const pull = attractStrength * dt; // base
+            ax += dx * Math.min(0.22, pull);
+            ay += dy * Math.min(0.22, pull);
+
+            // also softly damp velocities so it doesn't "re-accelerate"
+            vx *= Math.exp(-2.6*dt);
+            vy *= Math.exp(-2.6*dt);
+
+            // when extremely close and slow -> lock perfectly (face-lock)
+            const close = (Math.abs(dx) + Math.abs(dy)) < 0.18;
+            const slow = speed < 10;
+            if(close && slow){
+              ax = targetAx;
+              ay = targetAy;
+              vx = 0; vy = 0;
+              spinning = false;
+              attract = false;
+              settling = false;
+            }
+          }
+
+          // if no attract and very slow, keep floating but never speed up
+          const speed2 = Math.hypot(vx, vy);
+          if(!attract && speed2 < 6){
+            // keep minimal drift, but strictly decreasing
+            vx *= 0.92;
+            vy *= 0.92;
+          }
+        }
+
+        applyTransform();
+      }
+
+      function start(){
+        if(!raf) raf = requestAnimationFrame(tick);
+      }
+      start();
+
+      function startSpin(){
+        // fast start, then friction slows down
+        spinning = true;
+        attract = false;
+        settling = false;
+
+        // choose axis pattern different from last time
+        const axis = (lastAxis === "x") ? "y" : "x";
+        lastAxis = axis;
+
+        // initial velocities (deg/s) - fast
+        const base = 980 + Math.random()*420;
+        const other = 620 + Math.random()*260;
+
+        if(axis === "x"){
+          vx = (Math.random() < 0.5 ? -1 : 1) * base;
+          vy = (Math.random() < 0.5 ? -1 : 1) * other;
+        }else{
+          vy = (Math.random() < 0.5 ? -1 : 1) * base;
+          vx = (Math.random() < 0.5 ? -1 : 1) * other;
+        }
+      }
+
+      function reset(){
+        spinning = false;
+        attract = false;
+        vx = 0; vy = 0;
+        ax = -18;
+        ay = 22;
+        applyTransform();
+      }
+
+      function serverAttract(face){
+        const f = (face>=1 && face<=6) ? face : 1;
+        targetFace = f;
+
+        // We want final to be FRONT straight (no tilt illusion). Keep a tiny camera pitch.
+        const rot = faceToRot[f];
+        targetAx = -10 + rot.x; // slightly lower camera look, but front-aligned
+        targetAy = 0 + rot.y;
+
+        // engage magnet smoothly; do NOT boost speed
+        attract = true;
+        spinning = true;
+        attractStrength = 8.5; // default; can be tuned if needed
+      }
+
+      return {
+        startSpin,
+        reset,
+        attract: serverAttract,
+        setMagnetStrength: (v)=>{ attractStrength = Math.max(2, Math.min(18, Number(v)||8.5)); },
+      };
+    }catch(_e){
+      return null;
+    }
+  }
+
+  // init once if element exists
+  try{
+    if(diceEl){
+      dice3d = buildDice3D(diceEl);
+    }
+  }catch(_e){}
+
+
   // Online
   const serverLabel = $("serverLabel");
   const roomCodeInp = $("roomCode");
@@ -279,6 +759,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // ===== FX (safe, visual only) =====
   let lastDiceFace = 0;
+  let _diceFlickerTimer = null;
+  let _diceFlickerStop = null;
+
   let lastMoveFx = null;
   let moveGhostFx = null;
 
@@ -730,8 +1213,21 @@ try{ ws = new WebSocket(SERVER_URL); }
     }
   }
 
-  function chooseColor(_color){
-    toast("Farbe wird vom Server automatisch vergeben");
+  function chooseColor(color){
+    // Store requested color for this room (used on join + reconnect)
+    try{
+      if(currentRoom){
+        localStorage.setItem("barikade_reqColor_"+currentRoom, String(color));
+      }
+    }catch(_e){}
+
+    // If online & already connected, ask server immediately
+    if(netMode==="online" && ws && ws.readyState===1){
+      wsSend({type:"request_color", room: currentRoom, sessionToken: sessionToken, color: String(color)});
+    } else {
+      // If not connected yet, we reconnect so the next join includes requestedColor
+      toast("Farbe gespeichert. Beim Beitreten/Reconnect wird sie angefragt.");
+    }
   }
 
   function getActiveColors(){
@@ -757,14 +1253,16 @@ try{ ws = new WebSocket(SERVER_URL); }
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
-      const players = ["red","blue"];
+      // In Online-Mode we ALWAYS render all 4 Farben (auch wenn nicht gewählt),
+      // damit Gelb/Grün im Haus sichtbar bleiben.
+      const players = ["red","blue","green","yellow"];
       setPlayers(players);
       const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
       // ensure 5 slots per color
       for(const c of players) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
 
       for(const pc of server.pieces){
-        if(!pc || (pc.color!=="red" && pc.color!=="blue")) continue;
+        if(!pc || !pc.color || !piecesByColor[pc.color]) continue;
         // pc.label is 1..5
         const idx = Math.max(0, Math.min(4, Number(pc.label||1)-1));
         let pos = "house";
@@ -784,7 +1282,9 @@ try{ ws = new WebSocket(SERVER_URL); }
         pieces: Object.fromEntries(players.map(c => [c, piecesByColor[c] || []])),
         barricades: new Set(server.barricades.map(String)),
         winner: null,
-        goalNodeId: server.goal ? String(server.goal) : goalNodeId
+        goalNodeId: server.goal ? String(server.goal) : goalNodeId,
+        // optional info from server (used by some UIs)
+        activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
       };
 
       // map phases
@@ -925,29 +1425,99 @@ function toast(msg){
   function setDiceFaceAnimated(v){
     if(!diceEl) return;
     const face = (v>=1 && v<=6) ? v : 0;
+
+    // 3D Dice active: KEIN Flicker/Snap – Server-Zahl wird sanft angezogen.
+    if(dice3d){
+      try{
+        if(face===0){
+          dice3d.reset();
+          diceEl.dataset.face = "0";
+          lastDiceFace = 0;
+        }else{
+          // keep dataset in sync for existing CSS fallback, but visuals come from 3D cube
+          diceEl.dataset.face = String(face);
+          lastDiceFace = face;
+          dice3d.attract(face);
+        }
+      }catch(_e){}
+      return;
+    }
+
+    // clear any previous roll timers (visual only)
+    try{
+      if(_diceFlickerTimer){ clearInterval(_diceFlickerTimer); _diceFlickerTimer=null; }
+      if(_diceFlickerStop){ clearTimeout(_diceFlickerStop); _diceFlickerStop=null; }
+    }catch(_e){}
+
+    // reset helper classes
+    try{
+      diceEl.classList.remove("legend-roll","legend-ping","legend-crit6","legend-crit1");
+    }catch(_e){}
+
     if(face===0){
       diceEl.dataset.face = "0";
       lastDiceFace = 0;
       return;
     }
 
-    // avoid spamming if same face
-    if(face === lastDiceFace) return;
+    const sameAsBefore = (face === lastDiceFace);
     lastDiceFace = face;
 
-    // (108) jitter before showing result
-    diceEl.classList.remove("shake");
-    void diceEl.offsetWidth; // restart animation
-    diceEl.classList.add("shake");
+    // start legendary roll animation
+    // - flicker faces quickly for suspense
+    // - then settle on final face and keep it until next roll
+    try{
+      // restart animation class reliably
+      diceEl.classList.remove("legend-roll");
+      void diceEl.offsetWidth;
+      diceEl.classList.add("legend-roll");
 
-    // (26) particles
-    spawnDiceParticles();
+      // also keep old shake (if CSS exists)
+      diceEl.classList.remove("shake");
+      void diceEl.offsetWidth;
+      diceEl.classList.add("shake");
+    }catch(_e){}
 
-    // show result slightly delayed for suspense
-    setTimeout(()=>{
-      if(diceEl) diceEl.dataset.face = String(face);
-      if(diceEl) diceEl.classList.remove("shake");
-    }, 280);
+    // Flicker: 10–14 quick random faces (visual only)
+    const t0 = performance.now();
+    _diceFlickerTimer = setInterval(()=>{
+      try{
+        const r = 1 + Math.floor(Math.random()*6);
+        diceEl.dataset.face = String(r);
+      }catch(_e){}
+      // hard stop safety
+      if(performance.now() - t0 > 520){
+        try{ clearInterval(_diceFlickerTimer); }catch(_e){}
+        _diceFlickerTimer=null;
+      }
+    }, 45);
+
+    // particles (existing)
+    try{ spawnDiceParticles(); }catch(_e){}
+
+    // settle on real result
+    _diceFlickerStop = setTimeout(()=>{
+      try{
+        if(_diceFlickerTimer){ clearInterval(_diceFlickerTimer); _diceFlickerTimer=null; }
+      }catch(_e){}
+      try{
+        diceEl.dataset.face = String(face);
+        diceEl.classList.remove("shake");
+        // if same face, give a small ping so it still feels alive
+        if(sameAsBefore){
+          diceEl.classList.remove("legend-ping");
+          void diceEl.offsetWidth;
+          diceEl.classList.add("legend-ping");
+        }
+        // crit effects
+        if(face===6) diceEl.classList.add("legend-crit6");
+        if(face===1) diceEl.classList.add("legend-crit1");
+        // remove crit classes after a moment (visual only)
+        setTimeout(()=>{
+          try{ diceEl.classList.remove("legend-crit6","legend-crit1","legend-ping"); }catch(_e){}
+        }, 1000);
+      }catch(_e){}
+    }, 560);
   }
 
   function parseColorFromPieceId(pieceId){
@@ -1016,49 +1586,13 @@ function toast(msg){
   function hideOverlay(){ overlay.classList.remove("show"); }
   overlayOk.addEventListener("click", hideOverlay);
 
-  async function loadBoard() {
-  // Robust loader: supports different filenames/locations (e.g. board.json vs board-1.json on GitHub Pages)
-  const candidates = [
-    "board.json",
-    "board-1.json",
-    "./board.json",
-    "./board-1.json",
-    "assets/board.json",
-    "assets/board-1.json"
-  ];
-
-  let lastErr = null;
-
-  for (const rel of candidates) {
-    try {
-      const res = await fetch(rel, { cache: "no-store" });
-      if (!res.ok) { lastErr = new Error(`${rel}: HTTP ${res.status}`); continue; }
-      const data = await res.json();
-      if (data && Array.isArray(data.nodes) && data.nodes.length) return data;
-      lastErr = new Error(`${rel}: JSON ok but nodes missing/empty`);
-    } catch (e) {
-      lastErr = e;
-    }
+  async function loadBoard(){
+    const res = await fetch("board.json", {cache:"no-store"});
+    if(!res.ok) throw new Error("board.json nicht gefunden");
+    return await res.json();
   }
 
-  // Final attempt: resolve against current URL (helps with odd base paths)
-  try {
-    const url = new URL("board.json", window.location.href).toString();
-    const res = await fetch(url, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && Array.isArray(data.nodes) && data.nodes.length) return data;
-    }
-  } catch (e) {
-    lastErr = e;
-  }
-
-  console.error("[board] Could not load board JSON.", lastErr);
-  showToast("Fehler: Board konnte nicht geladen werden (board.json / board-1.json fehlt).", "error");
-  return null;
-}
-
-function buildGraph(){
+  function buildGraph(){
     nodeById.clear(); adj.clear(); runNodes.clear();
     goalNodeId=null;
     startNodeId={red:null,blue:null,green:null,yellow:null};
@@ -1868,6 +2402,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   });
 
   rollBtn.addEventListener("click", () => {
+    try{ if(dice3d) dice3d.startSpin(); }catch(_e){}
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       // server checks turn
@@ -2130,4 +2665,441 @@ leaveBtn.addEventListener("click", () => {
       console.error(err);
     }
   })();
+})();
+
+// ===== UI PATCH: Würfel in die Status-Box über "Board / Barikaden" docken (nur Optik) =====
+(function dockDiceIntoStatusCard(){
+  function tryDock(){
+    const dice = document.getElementById("diceCube");
+    const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
+    if(!dice || !boardInfo) return false;
+
+    // Container finden, in dem "Board/Barikaden" stehen (Status-Card)
+    let card =
+      boardInfo.closest(".card") ||
+      boardInfo.closest(".panel") ||
+      boardInfo.closest("section") ||
+      (boardInfo.parentElement && boardInfo.parentElement.parentElement) ||
+      boardInfo.parentElement;
+
+    if(!card) return false;
+
+    // Dock-Wrapper (falls schon vorhanden -> wiederverwenden)
+    let dock = document.getElementById("diceDockStatus");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockStatus";
+      dock.style.display = "flex";
+      dock.style.justifyContent = "flex-end";   // rechts
+      dock.style.alignItems = "flex-start";
+      dock.style.margin = "10px 0 12px 0";
+    } else {
+      dock.innerHTML = "";
+    }
+
+    // Inner Wrapper für "richtig groß"
+    const big = document.createElement("div");
+    big.style.transform = "scale(2.8)";          // Größe (fett)
+    big.style.transformOrigin = "right top";
+    big.style.pointerEvents = "none";            // Anzeige-only (Buttons bleiben oben)
+    big.appendChild(dice);
+
+    dock.appendChild(big);
+
+    // Position: direkt über der Zeile, die boardInfo enthält
+    const row = boardInfo.closest("div") || boardInfo;
+    if(row && row.parentElement){
+      row.parentElement.insertBefore(dock, row);
+      return true;
+    }
+    return false;
+  }
+
+  // Mehrere Versuche, weil UI teils dynamisch aufgebaut wird
+  let tries = 0;
+  const t = setInterval(() => {
+    tries++;
+    const ok = tryDock();
+    if(ok || tries > 30) clearInterval(t);
+  }, 100);
+
+  window.addEventListener("load", () => { tryDock(); });
+})();
+
+
+
+/* ===== UI PATCH V2 (nur Optik, KEIN Gameplay): Würfel wirklich in "Status" docken + Fixed/Absolute überschreiben ===== */
+(function forceDiceDockIntoStatus(){
+  function setImportant(el, prop, value){
+    try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
+  }
+  function findStatusCardByBoardInfo(){
+    const boardInfo = document.getElementById("boardInfo");
+    if(!boardInfo) return null;
+    return (
+      boardInfo.closest(".card") ||
+      boardInfo.closest(".panel") ||
+      boardInfo.closest("section") ||
+      boardInfo.closest("div") ||
+      null
+    );
+  }
+
+  function tryDock(){
+    const dice = document.getElementById("diceCube");
+    const boardInfo = document.getElementById("boardInfo");
+    if(!dice || !boardInfo) return false;
+
+    const card = findStatusCardByBoardInfo();
+    if(!card) return false;
+
+    // Überschreibe mögliche Header-Fixierungen (damit ein Umhängen auch sichtbar wird)
+    setImportant(dice, "position", "static");
+    setImportant(dice, "top", "auto");
+    setImportant(dice, "right", "auto");
+    setImportant(dice, "bottom", "auto");
+    setImportant(dice, "left", "auto");
+    setImportant(dice, "margin", "0");
+    setImportant(dice, "z-index", "10");
+    // Falls im Header per flex "klein gedrückt"
+    setImportant(dice, "flex", "0 0 auto");
+
+    // Dock-Wrapper
+    let dock = document.getElementById("diceDockStatusV2");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockStatusV2";
+      dock.style.display = "flex";
+      dock.style.justifyContent = "flex-end";
+      dock.style.alignItems = "flex-start";
+      dock.style.gap = "12px";
+      dock.style.margin = "10px 0 14px 0";
+    } else {
+      dock.innerHTML = "";
+    }
+
+    // Groß + Premium-Float (C): groß, schwebend, aber sauber im Status-Bereich
+    const big = document.createElement("div");
+    big.className = "diceFloatWrap";
+    // (Skalierung + leichter Offset; die Animation kommt per CSS)
+    setImportant(big, "transform", "scale(2.9) translateY(-2px)");
+    setImportant(big, "transform-origin", "right top");
+    // Anzeige-only (würfeln bleibt Button)
+    setImportant(big, "pointer-events", "none");
+    // Platz für Schweben/Shadow
+    setImportant(dock, "padding-bottom", "16px");
+    big.appendChild(dice);
+    dock.appendChild(big);
+
+    // Einfügen: direkt NACH der Status-Überschrift, sonst über boardInfo-Zeile
+    const statusTitle = Array.from(card.querySelectorAll("h1,h2,h3,div,span"))
+      .find(n => (n.textContent||"").trim() === "Status");
+    if(statusTitle && statusTitle.parentElement){
+      // nach dem Titel einfügen
+      if(statusTitle.nextSibling){
+        statusTitle.parentElement.insertBefore(dock, statusTitle.nextSibling);
+      } else {
+        statusTitle.parentElement.appendChild(dock);
+      }
+      return true;
+    }
+
+    // Fallback: über der Board-Zeile
+    const row = boardInfo.closest("div") || boardInfo;
+    row.parentElement && row.parentElement.insertBefore(dock, row);
+    return true;
+  }
+
+  // oft wird UI dynamisch gerendert → mehrfach versuchen + nach jedem Resize
+  let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    const ok = tryDock();
+    if(ok || tries > 80) clearInterval(iv);
+  }, 120);
+
+  window.addEventListener("load", () => { tryDock(); });
+  window.addEventListener("resize", () => { tryDock(); });
+})();
+
+
+
+/* ===== UI PATCH V3 (nur Optik): Dock via "Status" Überschrift (falls IDs/Struktur am PC anders sind) ===== */
+(function forceDiceDockByStatusTitle(){
+  function setImportant(el, prop, value){
+    try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
+  }
+  function findStatusTitleEl(){
+    const candidates = Array.from(document.querySelectorAll("h1,h2,h3,h4,div,span,p,button"));
+    for(const el of candidates){
+      const t = (el.textContent || "").trim();
+      if(t === "Status"){
+        // prefer headings or bold-looking
+        return el;
+      }
+    }
+    return null;
+  }
+  function tryDock(){
+    const dice = document.getElementById("diceCube") || document.querySelector("#diceCube") || document.querySelector(".diceCube") || null;
+    if(!dice) return false;
+
+    const titleEl = findStatusTitleEl();
+    if(!titleEl) return false;
+
+    // card/container: nearest big box on the right
+    let card = titleEl.closest(".card") || titleEl.closest(".panel") || titleEl.closest("section") || titleEl.closest("div");
+    if(!card) return false;
+
+    // create/reuse dock
+    let dock = document.getElementById("diceDockStatusV3");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockStatusV3";
+      setImportant(dock, "display", "flex");
+      setImportant(dock, "justify-content", "flex-end");
+      setImportant(dock, "align-items", "flex-start");
+      setImportant(dock, "margin", "10px 0 12px 0");
+    } else {
+      dock.innerHTML = "";
+    }
+
+    const big = document.createElement("div");
+    setImportant(big, "transform", "scale(2.8)");
+    setImportant(big, "transform-origin", "right top");
+    setImportant(big, "pointer-events", "none");
+    big.appendChild(dice);
+    dock.appendChild(big);
+
+    // override dice positioning so it can't stick to header
+    setImportant(dice, "position", "static");
+    setImportant(dice, "top", "auto");
+    setImportant(dice, "right", "auto");
+    setImportant(dice, "left", "auto");
+    setImportant(dice, "bottom", "auto");
+    setImportant(dice, "margin", "0");
+    setImportant(dice, "z-index", "1");
+
+    // insert dock right after title
+    if(titleEl.parentElement){
+      // if title is within a header row, insert after that row; else directly after title
+      const headerRow = titleEl.closest("div") || titleEl;
+      headerRow.parentElement.insertBefore(dock, headerRow.nextSibling);
+      return true;
+    }
+    return false;
+  }
+
+  let tries=0;
+  const t=setInterval(()=>{
+    tries++;
+    const ok=tryDock();
+    if(ok || tries>50) clearInterval(t);
+  }, 120);
+
+  window.addEventListener("load", ()=>{ tryDock(); });
+})();
+
+
+
+
+/* ===== UI PATCH V4 (nur Optik): Würfel bekommt eigenen Bereich in der Status-Box (kein Überlappen) ===== */
+(function diceOwnAreaInStatus(){
+  function setImp(el, prop, val){
+    try{ el.style.setProperty(prop, val, "important"); }catch(_e){ try{ el.style[prop]=val; }catch(__e){} }
+  }
+
+  function findStatusTitle(card){
+    if(!card) return null;
+    // suche einen Titel-Knoten mit Text "Status"
+    const candidates = Array.from(card.querySelectorAll("h1,h2,h3,h4,div,span,strong"));
+    return candidates.find(n => (n.textContent||"").trim() === "Status") || null;
+  }
+
+  function tryDock(){
+    const dice = document.getElementById("diceCube");
+    const boardInfo = document.getElementById("boardInfo");
+    if(!dice || !boardInfo) return false;
+
+    // Status-Card finden
+    let card =
+      boardInfo.closest(".card") ||
+      boardInfo.closest(".panel") ||
+      boardInfo.closest("section") ||
+      boardInfo.parentElement?.parentElement ||
+      boardInfo.parentElement;
+
+    if(!card) return false;
+
+    // Würfel von "oben festgeklebt" lösen (nur Anzeige!)
+    setImp(dice, "position", "relative");
+    setImp(dice, "top", "auto");
+    setImp(dice, "right", "auto");
+    setImp(dice, "bottom", "auto");
+    setImp(dice, "left", "auto");
+    setImp(dice, "margin", "0");
+    setImp(dice, "z-index", "2");
+    setImp(dice, "pointer-events", "none");
+
+    // Dock-Wrapper mit FESTER HÖHE, damit Platz reserviert wird
+    let dock = document.getElementById("diceDockStatus");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockStatus";
+    } else {
+      dock.innerHTML = "";
+    }
+
+    setImp(dock, "display", "flex");
+    setImp(dock, "justify-content", "flex-end");
+    setImp(dock, "align-items", "center");
+    setImp(dock, "width", "100%");
+    // <<< HIER entsteht der Platz, damit nix überlappt >>>
+    setImp(dock, "height", "170px");            // genug Platz für großen Würfel
+    setImp(dock, "min-height", "170px");
+    setImp(dock, "margin", "8px 0 8px 0");
+
+    // Inner Wrapper (Skalierung)
+    const big = document.createElement("div");
+    setImp(big, "transform", "scale(2.8)");
+    setImp(big, "transform-origin", "right center");
+    setImp(big, "width", "72px");               // Basisfläche (Layout)
+    setImp(big, "height", "72px");
+
+    big.appendChild(dice);
+    dock.appendChild(big);
+
+    // Einfügen: direkt NACH dem "Status"-Titel, sonst ganz oben in die Card
+    const title = findStatusTitle(card);
+    if(title && title.parentElement){
+      title.parentElement.insertBefore(dock, title.nextSibling);
+      return true;
+    }
+
+    // Fallback: vor die Zeile von boardInfo
+    const row = boardInfo.closest("div") || boardInfo;
+    if(row && row.parentElement){
+      row.parentElement.insertBefore(dock, row);
+      return true;
+    }
+
+    return false;
+  }
+
+  let tries = 0;
+  const t = setInterval(() => {
+    tries++;
+    const ok = tryDock();
+    if(ok || tries > 60) clearInterval(t);
+  }, 120);
+
+  window.addEventListener("load", () => { tryDock(); });
+})();
+
+
+
+/* ===== UI PATCH V5 (Samsung Internet safe): Würfel bekommt eigenen Bereich in Status-Box, keine Überlappung =====
+   - rein visuell, KEIN Gameplay
+   - robust über "Status" Überschrift oder #boardInfo
+*/
+(function diceStatusDockV5(){
+  function setImp(el, prop, value){
+    if(!el) return;
+    try { el.style.setProperty(prop, value, "important"); }
+    catch(_e){ try { el.style[prop] = value; } catch(__e){} }
+  }
+
+  function findStatusCard(){
+    // 1) über #boardInfo (stabil)
+    const boardInfo = document.getElementById("boardInfo");
+    if(boardInfo){
+      const c = boardInfo.closest(".card") || boardInfo.closest(".panel") || boardInfo.closest("section") || boardInfo.parentElement;
+      if(c) return c;
+    }
+    // 2) über Überschrift "Status"
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,div,span,p"))
+      .filter(el => (el.textContent||"").trim() === "Status");
+    for(const h of headings){
+      const c = h.closest(".card") || h.closest(".panel") || h.closest("section") || h.parentElement;
+      if(c) return c;
+    }
+    return null;
+  }
+
+  function dock(){
+    const dice = document.getElementById("diceCube");
+    const card = findStatusCard();
+    if(!dice || !card) return false;
+
+    // Samsung/Tablet: Transform + overflow kann clippen → overflow sichtbar machen
+    setImp(card, "overflow", "visible");
+
+    // Dock Zone erstellen (nimmt echten Platz ein)
+    let zone = document.getElementById("diceStatusZoneV5");
+    if(!zone){
+      zone = document.createElement("div");
+      zone.id = "diceStatusZoneV5";
+      zone.style.display = "flex";
+      zone.style.justifyContent = "flex-end";
+      zone.style.alignItems = "flex-start";
+      zone.style.margin = "10px 0 14px 0";
+      zone.style.paddingRight = "6px";
+      zone.style.overflow = "visible";
+      // Reservierter Platz -> nichts überlappt
+      zone.style.height = "170px";
+    } else {
+      zone.innerHTML = "";
+    }
+
+    // Würfel "ent-fixieren"
+    setImp(dice, "position", "static");
+    setImp(dice, "top", "auto");
+    setImp(dice, "right", "auto");
+    setImp(dice, "left", "auto");
+    setImp(dice, "bottom", "auto");
+    setImp(dice, "margin", "0");
+    setImp(dice, "zIndex", "1");
+    setImp(dice, "pointerEvents", "none"); // Anzeige-only
+
+    // Größe: Samsung Internet kann "zoom" besser rechnen als transform (wir setzen beides)
+    const big = document.createElement("div");
+    big.style.overflow = "visible";
+    big.style.transformOrigin = "right top";
+    big.style.pointerEvents = "none";
+    big.style.zoom = "2.6";              // Samsung/Chromium-friendly
+    big.style.transform = "scale(2.6)";  // Fallback, falls zoom ignoriert wird
+    big.appendChild(dice);
+
+    zone.appendChild(big);
+
+    // Einfügen: direkt nach dem "Status"-Titel, sonst ganz oben im Card-Content
+    // Wir suchen das Status-Label im Card
+    let statusLabel = null;
+    const inside = Array.from(card.querySelectorAll("*"));
+    statusLabel = inside.find(el => (el.textContent||"").trim() === "Status");
+    if(statusLabel && statusLabel.parentElement){
+      // Wenn direkt nach dem Label schon unsere Zone sitzt, ok
+      if(zone.parentElement !== statusLabel.parentElement){
+        statusLabel.parentElement.insertBefore(zone, statusLabel.nextSibling);
+      } else if(zone.previousSibling !== statusLabel){
+        statusLabel.parentElement.insertBefore(zone, statusLabel.nextSibling);
+      }
+    } else {
+      // fallback: ganz oben
+      card.insertBefore(zone, card.firstChild);
+    }
+
+    return true;
+  }
+
+  let tries = 0;
+  const timer = setInterval(() => {
+    tries++;
+    const ok = dock();
+    if(ok || tries > 80) clearInterval(timer);
+  }, 120);
+
+  window.addEventListener("load", () => { dock(); });
+  // Wenn die UI später neu gerendert wird:
+  document.addEventListener("visibilitychange", () => { if(!document.hidden) dock(); });
 })();
