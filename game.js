@@ -12,6 +12,223 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         el.scrollTop = el.scrollHeight;
       }catch(_e){}
     }
+
+// ===== Glücksrad (nur Optik) =====
+let wheelOverlay = null;
+let wheelAnimId = 0;
+
+function ensureWheelOverlay(){
+  if(wheelOverlay) return wheelOverlay;
+  const ov = document.createElement("div");
+  ov.id = "wheelOverlay";
+  ov.style.position = "fixed";
+  ov.style.inset = "0";
+  ov.style.background = "rgba(0,0,0,0.45)";
+  ov.style.backdropFilter = "blur(2px)";
+  ov.style.display = "none";
+  ov.style.zIndex = "9999";
+  ov.style.alignItems = "center";
+  ov.style.justifyContent = "center";
+
+  const card = document.createElement("div");
+  card.style.width = "min(420px, 92vw)";
+  card.style.borderRadius = "22px";
+  card.style.padding = "18px 16px 14px";
+  card.style.background = "rgba(18,22,30,0.92)";
+  card.style.boxShadow = "0 10px 40px rgba(0,0,0,0.45)";
+  card.style.border = "1px solid rgba(255,255,255,0.10)";
+
+  const title = document.createElement("div");
+  title.textContent = "Glücksrad entscheidet Startspieler…";
+  title.style.fontSize = "16px";
+  title.style.fontWeight = "700";
+  title.style.margin = "0 0 10px 0";
+  title.style.opacity = "0.95";
+
+  const wrap = document.createElement("div");
+  wrap.style.position = "relative";
+  wrap.style.width = "min(360px, 84vw)";
+  wrap.style.aspectRatio = "1 / 1";
+  wrap.style.margin = "0 auto";
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 720;
+  canvas.height = 720;
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  canvas.style.borderRadius = "50%";
+  canvas.style.boxShadow = "inset 0 0 0 10px rgba(255,255,255,0.06), 0 18px 40px rgba(0,0,0,0.35)";
+  canvas.style.background = "rgba(255,255,255,0.03)";
+  canvas.id = "wheelCanvas";
+
+  // pointer
+  const pointer = document.createElement("div");
+  pointer.style.position = "absolute";
+  pointer.style.left = "50%";
+  pointer.style.top = "-6px";
+  pointer.style.transform = "translateX(-50%)";
+  pointer.style.width = "0";
+  pointer.style.height = "0";
+  pointer.style.borderLeft = "16px solid transparent";
+  pointer.style.borderRight = "16px solid transparent";
+  pointer.style.borderBottom = "26px solid rgba(255,255,255,0.92)";
+  pointer.style.filter = "drop-shadow(0 6px 10px rgba(0,0,0,0.55))";
+
+  const subtitle = document.createElement("div");
+  subtitle.id = "wheelSubtitle";
+  subtitle.style.marginTop = "12px";
+  subtitle.style.textAlign = "center";
+  subtitle.style.fontSize = "14px";
+  subtitle.style.opacity = "0.85";
+  subtitle.textContent = "Dreht…";
+
+  wrap.appendChild(canvas);
+  wrap.appendChild(pointer);
+
+  card.appendChild(title);
+  card.appendChild(wrap);
+  card.appendChild(subtitle);
+  ov.appendChild(card);
+  document.body.appendChild(ov);
+
+  wheelOverlay = ov;
+  return ov;
+}
+
+function colorCss(color){
+  // keep in sync with server ALLOWED_COLORS
+  switch(String(color||"").toLowerCase()){
+    case "red": return "#ff3b3b";
+    case "blue": return "#3b82ff";
+    case "green": return "#22c55e";
+    case "yellow": return "#fbbf24";
+    default: return "#94a3b8";
+  }
+}
+function colorLabel(color){
+  switch(String(color||"").toLowerCase()){
+    case "red": return "Rot";
+    case "blue": return "Blau";
+    case "green": return "Grün";
+    case "yellow": return "Gelb";
+    default: return String(color||"");
+  }
+}
+
+function drawWheel(ctx, colors, rot){
+  const W = ctx.canvas.width, H = ctx.canvas.height;
+  const cx = W/2, cy = H/2;
+  const r = Math.min(W,H)*0.42;
+  ctx.clearRect(0,0,W,H);
+
+  // subtle glossy radial
+  const grd = ctx.createRadialGradient(cx, cy, r*0.1, cx, cy, r*1.25);
+  grd.addColorStop(0, "rgba(255,255,255,0.16)");
+  grd.addColorStop(0.55, "rgba(255,255,255,0.05)");
+  grd.addColorStop(1, "rgba(0,0,0,0.25)");
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(cx, cy, r*1.18, 0, Math.PI*2); ctx.fill();
+
+  const n = Math.max(2, colors.length);
+  const step = (Math.PI*2)/n;
+
+  for(let i=0;i<n;i++){
+    const a0 = rot + i*step - Math.PI/2;
+    const a1 = a0 + step;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,a0,a1,false);
+    ctx.closePath();
+    ctx.fillStyle = colorCss(colors[i]);
+    ctx.globalAlpha = 0.92;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // text
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(a0 + step/2);
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "700 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 10;
+    ctx.fillText(colorLabel(colors[i]).toUpperCase(), r*0.92, 0);
+    ctx.restore();
+  }
+
+  // center cap
+  ctx.beginPath();
+  ctx.arc(cx,cy,r*0.18,0,Math.PI*2);
+  ctx.fillStyle = "rgba(15,18,24,0.85)";
+  ctx.fill();
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "rgba(255,255,255,0.10)";
+  ctx.stroke();
+}
+
+function showWheelStart(activeColors, starterColor, endsAt){
+  const ov = ensureWheelOverlay();
+  const canvas = document.getElementById("wheelCanvas");
+  const sub = document.getElementById("wheelSubtitle");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const colors = (Array.isArray(activeColors) && activeColors.length) ? activeColors.slice() : ["red","blue"];
+
+  const n = colors.length;
+  const idx = Math.max(0, colors.indexOf(String(starterColor||"").toLowerCase()));
+  const step = (Math.PI*2)/n;
+
+  // target rotation so that the center of winning segment lands at pointer (top).
+  // Pointer is at -90deg, our draw starts at rot - 90deg, so align via rot.
+  const winCenter = idx*step + step/2;
+  // set final rotation such that winCenter maps to 0 angle in our local coordinates.
+  const baseTarget = -winCenter;
+
+  const now = Date.now();
+  const t0 = now;
+  const tEnd = Math.max(now + 4000, Number(endsAt)||now+10000); // safety
+  const dur = Math.max(3000, tEnd - t0);
+
+  // add extra spins for drama
+  const extraSpins = 8 * Math.PI * 2; // 8 full rotations
+  const startRot = 0;
+  const finalRot = baseTarget + extraSpins;
+
+  ov.style.display = "flex";
+  let lastRot = 0;
+
+  function easeOutCubic(x){ return 1 - Math.pow(1-x,3); }
+
+  function frame(){
+    const t = Date.now();
+    const p = Math.min(1, (t - t0)/dur);
+    const e = easeOutCubic(p);
+    const rot = startRot + (finalRot - startRot)*e;
+    lastRot = rot;
+    drawWheel(ctx, colors, rot);
+    if(sub){
+      const leftMs = Math.max(0, tEnd - t);
+      sub.textContent = leftMs>0 ? `Dreht… (${Math.ceil(leftMs/1000)}s)` : `${colorLabel(starterColor)} beginnt!`;
+    }
+    if(p < 1){
+      wheelAnimId = requestAnimationFrame(frame);
+    } else {
+      drawWheel(ctx, colors, finalRot);
+      if(sub) sub.textContent = `${colorLabel(starterColor)} beginnt!`;
+      // keep overlay a short moment, then hide (server will also send wheel_done)
+      setTimeout(()=>{ hideWheel(); }, 900);
+    }
+  }
+  try{ cancelAnimationFrame(wheelAnimId); }catch(_e){}
+  wheelAnimId = requestAnimationFrame(frame);
+}
+
+function hideWheel(){
+  if(!wheelOverlay) return;
+  wheelOverlay.style.display = "none";
+}
   }
 
 
@@ -862,11 +1079,30 @@ try{ ws = new WebSocket(SERVER_URL); }
         if(msg.state){
           applyRemoteState(msg.state);
           writeHostAutosave(msg.state);
+
+          // Glücksrad anzeigen, falls vorhanden (rein UI)
+          if(msg.state.wheel && msg.state.wheel.starterColor){
+            showWheelStart(
+              msg.state.wheel.activeColors || msg.state.activeColors || [],
+              msg.state.wheel.starterColor,
+              msg.state.wheel.endsAt
+            );
+          }
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         return;
       }
-      if(type==="roll"){
+      if(type==="wheel_done"){
+  if(msg.state){
+    applyRemoteState(msg.state);
+    writeHostAutosave(msg.state);
+  }
+  hideWheel();
+  if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+  return;
+}
+
+if(type==="roll"){
         // (108/26) small suspense + particles
         if(typeof msg.value==="number") setDiceFaceAnimated(msg.value);
         if(msg.state){
@@ -2139,6 +2375,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
     wsSend({type:"start", ts:Date.now()});
+    toast("Glücksrad startet…");
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
