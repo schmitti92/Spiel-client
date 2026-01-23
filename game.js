@@ -168,7 +168,20 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
           pointer-events:none;
           mix-blend-mode: overlay;
         }
-      `;
+      
+        /* Glossy finish: specular highlight + subtle edge vignette */
+        #diceCube .face::after, #diceCube .side::after, #diceCube .cube-face::after{
+          content:"";
+          position:absolute; inset:0;
+          background:
+            radial-gradient(circle at 28% 22%, rgba(255,255,255,.38), rgba(255,255,255,0) 45%),
+            linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,0) 42%),
+            radial-gradient(circle at 70% 78%, rgba(0,0,0,.18), rgba(0,0,0,0) 55%);
+          pointer-events:none;
+          mix-blend-mode: screen;
+          opacity:.85;
+        }
+`;
       document.head.appendChild(style);
     }catch(_e){}
   }
@@ -195,72 +208,85 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       const pips = all.filter(el=>{
         const r = el.getBoundingClientRect();
         if(!(r.width>0 && r.height>0)) return false;
-        if(r.width>80 || r.height>80) return false; // keine großen Elemente
+        if(r.width>90 || r.height>90) return false; // keine großen Elemente
         const cs = getComputedStyle(el);
-        // Kreis-Optik grob prüfen (Samsung Internet: borderRadius kann "999px" sein)
         const br = cs.borderRadius || "";
-        const looksRound = br.includes("999") || br.includes("%") || parseFloat(br) >= Math.min(r.width, r.height)/2 - 2;
+        const looksRound = br.includes("999") || br.includes("%") || (parseFloat(br)||0) >= Math.min(r.width, r.height)/2 - 2;
         return looksRound;
       });
 
       if(!pips.length) return;
 
-      // Wie stark wir die Abstände Richtung Mitte ziehen:
-      // 0.70 = 30% näher zur Mitte (realistischer). Wenn du mehr willst: 0.62 (noch näher).
-      const scale = 0.70;
+      // --- V8: Snap in ein zentriertes inneres 3x3 Raster (realistische Würfel-Geometrie) ---
+      // Innerer Bereich (ohne "Rand/Rundung"): desto kleiner, desto "mittiger" wirken die Augen.
+      const inset = 0.19;           // 19% Rand -> echte Würfeloptik
+      const grid = [0, 0.5, 1];     // 3x3 Raster im inneren Quadrat
 
+      // Hilfsfunktion: finde nächstes Raster-Index (0/1/2) aus aktueller relativer Position 0..1
+      const snapIdx = (t) => (t < 0.35 ? 0 : (t > 0.65 ? 2 : 1));
+
+      // Wir positionieren immer relativ zum jeweiligen Face-Parent
+      const byParent = new Map();
       for(const pip of pips){
-        // nicht doppelt "hart" repositionieren
-        if(pip.dataset && pip.dataset.pipCentered === "1") continue;
-
         const parent = pip.parentElement;
         if(!parent) continue;
+        if(!byParent.has(parent)) byParent.set(parent, []);
+        byParent.get(parent).push(pip);
+      }
 
+      for(const [parent, arr] of byParent.entries()){
         const pr = parent.getBoundingClientRect();
-        const rr = pip.getBoundingClientRect();
         if(pr.width <= 0 || pr.height <= 0) continue;
 
-        // Parent/Pip positioning absichern
         const parentCS = getComputedStyle(parent);
-        if(parentCS.position === "static"){
-          parent.style.position = "relative";
-        }
-        pip.style.position = "absolute";
+        if(parentCS.position === "static") parent.style.position = "relative";
 
-        // aktuelles Zentrum relativ im Parent
-        const cx = rr.left + rr.width/2;
-        const cy = rr.top  + rr.height/2;
-        const rx = (cx - pr.left) / pr.width;   // 0..1
-        const ry = (cy - pr.top)  / pr.height;  // 0..1
+        const innerLeft = pr.width  * inset;
+        const innerTop  = pr.height * inset;
+        const innerW    = pr.width  * (1 - inset*2);
+        const innerH    = pr.height * (1 - inset*2);
 
-        // Richtung Mitte remappen
-        const nrx = 0.5 + (rx - 0.5) * scale;
-        const nry = 0.5 + (ry - 0.5) * scale;
+        for(const pip of arr){
+          if(pip.dataset && pip.dataset.pipCenteredV8 === "1") continue;
 
-        const newCx = pr.left + pr.width  * nrx;
-        const newCy = pr.top  + pr.height * nry;
+          const rr = pip.getBoundingClientRect();
+          if(rr.width <= 0 || rr.height <= 0) continue;
 
-        const newLeft = (newCx - pr.left) - rr.width/2;
-        const newTop  = (newCy - pr.top)  - rr.height/2;
+          pip.style.position = "absolute";
 
-        // transform-translate entfernen (sonst addiert es sich), aber andere transforms lassen wir in Ruhe
-        const existingT = pip.style.transform || "";
-        if(existingT.includes("translate(") || existingT.includes("translate3d(")){
-          pip.style.transform = existingT
+          // aktuelles Zentrum relativ im Parent
+          const cx = rr.left + rr.width/2;
+          const cy = rr.top  + rr.height/2;
+          const rx = (cx - pr.left) / pr.width;   // 0..1
+          const ry = (cy - pr.top)  / pr.height;  // 0..1
+
+          // Grobe Zuordnung zu Rasterzelle (links/mitte/rechts, oben/mitte/unten)
+          const ix = snapIdx(rx);
+          const iy = snapIdx(ry);
+
+          // Zielzentrum im inneren Raster
+          const tx = innerLeft + innerW * grid[ix];
+          const ty = innerTop  + innerH * grid[iy];
+
+          // Links/Top so setzen, dass pip zentriert ist
+          pip.style.left = `${(tx - rr.width/2).toFixed(1)}px`;
+          pip.style.top  = `${(ty - rr.height/2).toFixed(1)}px`;
+
+          // Überschreibe translate, falls vorhanden (sonst verschiebt Samsung Internet es wieder)
+          const st = pip.style.transform || "";
+          pip.style.transform = st
             .replace(/translate3d\([^)]+\)/g, "")
             .replace(/translate\([^)]+\)/g, "")
             .trim();
+
+          pip.dataset.pipCenteredV8 = "1";
         }
-
-        pip.style.left = `${newLeft.toFixed(1)}px`;
-        pip.style.top  = `${newTop.toFixed(1)}px`;
-
-        pip.dataset.pipCentered = "1";
       }
     }catch(_e){}
   }
 
   ensureRealisticPipStyles();
+
 
 
   // nach dem Rendern ein paar mal versuchen (weil der Würfel/DOM manchmal später kommt)
