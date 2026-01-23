@@ -934,6 +934,20 @@ function hideWheel(){
     try{ ws.send(JSON.stringify(obj)); return true; }catch(_e){ return false; }
   }
 
+  // --- Helper: robust pieceId (server protocol uses p_<color>_<1..5>) ---
+  function getPieceIdFor(color, index){
+    try{
+      const c = String(color||"").toLowerCase();
+      const i = Number(index);
+      const pid = state?.pieces?.[c]?.[i]?.pieceId;
+      if(pid) return pid;
+      // Fallback: server ids are deterministic
+      if(c && Number.isFinite(i)) return `p_${c}_${i+1}`;
+    }catch(_e){}
+    return null;
+  }
+
+
   function setNetPlayers(list){
     lastNetPlayers = Array.isArray(list) ? list : [];
     rosterById = new Map();
@@ -1795,39 +1809,6 @@ if(!node) return false;
     return false;
   }
 
-  // Fallback selection (important for tablets / house-flag mismatches):
-  // If tapping a piece doesn't "hit" its node reliably, select the closest piece of the CURRENT player.
-  function trySelectAtPiece(wp){
-    if(!state || !state.currentPlayer || !board) return false;
-    const c = state.currentPlayer;
-    const r=Math.max(16, board.ui?.nodeRadius || 20);
-    const hitR=(r+14)/view.s; // a bit bigger than node hit radius
-    let best=null, bd=Infinity;
-
-    for(let i=0;i<5;i++){
-      const p = state.pieces?.[c]?.[i];
-      if(!p) continue;
-      if(p.pos === "home") continue;
-
-      const nid = (p.pos === "house") ? p.houseId : p.nodeId;
-      if(!nid) continue;
-      const n = nodeById.get(String(nid));
-      if(!n) continue;
-
-      const d=Math.hypot(n.x-wp.x, n.y-wp.y);
-      if(d < hitR && d < bd){
-        bd = d;
-        best = { color: c, index: i };
-      }
-    }
-    if(best){
-      selectPiece(best);
-      return true;
-    }
-    return false;
-  }
-
-
   function anyPiecesAtNode(nodeId){
     const res=[];
     for(const c of getActiveColors()){
@@ -2333,18 +2314,17 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
 
     if(phase==="need_move"){
       if(trySelectAtNode(hit)) { draw(); return; }
-      if(!selected && trySelectAtPiece(wp)) { draw(); return; }
       if(selected && hit && hit.kind==="board"){
         if(netMode!=="offline"){
-          const pid = state?.pieces?.[selected.color]?.[selected.index]?.pieceId;
-          if(!pid){ toast("PieceId fehlt"); return; }
+          const pid = getPieceIdFor(selected.color, selected.index);
+          if(!pid){ toast("PieceId fehlt (Fallback)"); return; }
           wsSend({type:"move_request", pieceId: pid, targetId: hit.id, ts:Date.now()});
           return;
         }
         const list = legalMovesByPiece.get(selected.index) || [];
         const m = list.find(x => x.toId===hit.id);
         if(m){
-          if(netMode==="client"){ wsSend({type:"move_request", pieceId: (state.pieces[selected.color][selected.index].pieceId), targetId: hit.id, ts:Date.now()}); return; }
+          if(netMode==="client"){ wsSend({type:"move_request", pieceId: (getPieceIdFor(selected.color, selected.index)), targetId: hit.id, ts:Date.now()}); return; }
           movePiece(m);
           if(netMode==="host") broadcastState("state");
           draw();
