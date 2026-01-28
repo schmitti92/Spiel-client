@@ -2489,3 +2489,90 @@ leaveBtn.addEventListener("click", () => {
   window.addEventListener("load", ()=>{ tryDock(); });
 })();
 
+
+
+
+/* ===== FINAL UI PATCH: Würfel unter Würfel-Button und oberhalb von Status (nur Position, kein Gameplay) ===== */
+(function finalPlaceDiceBetweenRollAndStatus(){
+  function $all(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+
+  function findCardByTitle(exactTitle){
+    const hs = $all("h1,h2,h3,h4");
+    for(const h of hs){
+      if(((h.textContent||"").trim()) === exactTitle){
+        return h.closest(".card") || h.closest(".panel") || h.closest("section") || h.closest("div");
+      }
+    }
+    return null;
+  }
+
+  function ensureDock(){
+    const dice = document.getElementById("diceCube");
+    if(!dice) return false;
+
+    // Remove older docks if they exist (avoid duplicates)
+    ["diceDockStatus","diceDockStatusV2","diceDockStatusV3"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el && el.parentElement) el.parentElement.removeChild(el);
+    });
+
+    // Build / reuse dock container
+    let dock = document.getElementById("diceDockFinal");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockFinal";
+      dock.style.display = "flex";
+      dock.style.justifyContent = "flex-end";
+      dock.style.alignItems = "center";
+      dock.style.margin = "10px 0 14px 0";
+    } else {
+      dock.innerHTML = "";
+    }
+
+    // Wrapper for size + positioning (display only)
+    const big = document.createElement("div");
+    big.style.transform = "scale(2.3)";
+    big.style.transformOrigin = "right top";
+    big.style.pointerEvents = "none";
+    big.appendChild(dice);
+    dock.appendChild(big);
+
+    // 1) Preferred: inside the "Würfel" card, directly under the Würfeln button
+    const diceCard = findCardByTitle("Würfel");
+    if(diceCard){
+      const rollBtn = diceCard.querySelector("#rollBtn") || document.getElementById("rollBtn");
+      if(rollBtn && diceCard.contains(rollBtn)){
+        // Insert dock right after button (or after its container)
+        const after = rollBtn.nextSibling;
+        if(after){
+          rollBtn.parentElement.insertBefore(dock, after);
+        } else {
+          rollBtn.parentElement.appendChild(dock);
+        }
+        return true;
+      }
+      // If the card exists but we didn't find the button inside, put dock at end of the card content
+      diceCard.appendChild(dock);
+      return true;
+    }
+
+    // 2) Fallback: place dock directly BEFORE the "Status" card in the sidebar
+    const statusCard = findCardByTitle("Status");
+    if(statusCard && statusCard.parentElement){
+      statusCard.parentElement.insertBefore(dock, statusCard);
+      return true;
+    }
+
+    return false;
+  }
+
+  let tries = 0;
+  const iv = setInterval(()=>{
+    tries++;
+    const ok = ensureDock();
+    if(ok || tries > 80) clearInterval(iv);
+  }, 120);
+
+  window.addEventListener("load", ensureDock);
+  window.addEventListener("resize", ensureDock);
+})();
