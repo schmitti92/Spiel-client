@@ -1,210 +1,131 @@
-/* =========================================================
-   Joker Panel – A2.1 FINAL
-   Reines CSS + minimale HTML-Abhängigkeit
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Barikade</title>
 
-   ✔ kein JS
-   ✔ Click-Fix für Spielfiguren
-   ✔ Action-Modus ready
-   ========================================================= */
+  <!-- Base Styles -->
+  <link rel="stylesheet" href="styles.css" />
 
+  <!-- A2.1 Joker Panel FINAL (CSS only, Click-Fix) -->
+  <link rel="stylesheet" href="joker-panel-a2.1-final.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">B</div>
+        <div>
+          <div class="title">Barikade</div>
+          <div class="subtitle">Online • Server steuert Würfel + Züge • 2–3 Spieler</div>
+        </div>
+      </div>
 
-/* ---------- WICHTIGER CLICK-FIX ---------- */
-/* Panels dürfen KEINE Klicks vom Canvas klauen */
-#actionCard,
-#actionCard * {
-  pointer-events: auto;
-}
+      <div class="topControls">
+        <div class="turnPill"><span id="turnDot" class="dot"></span><span id="turnText">–</span></div>
+        <button id="rollBtn" class="btn">Würfeln</button>
+        <div class="dicePill">
+          <div id="diceCube" data-face="0">
+            <div class="dip p1"><span class="pip"></span></div>
+            <div class="dip p2"><span class="pip"></span></div>
+            <div class="dip p3"><span class="pip"></span></div>
+            <div class="dip p4"><span class="pip"></span></div>
+            <div class="dip p5"><span class="pip"></span></div>
+            <div class="dip p6"><span class="pip"></span></div>
+            <div class="dip p7"><span class="pip"></span></div>
+            <div class="dip p8"><span class="pip"></span></div>
+            <div class="dip p9"><span class="pip"></span></div>
+          </div>
+        </div>
+        <button id="endBtn" class="btn">Zug beenden</button>
+        <button id="skipBtn" class="btn">Runde aussetzen</button>
+        <button id="resetBtn" class="btn">Reset</button>
+      </div>
+    </header>
 
-/* Joker-Panel über UI, aber unter Gameplay-Logik */
-#actionCard {
-  position: relative;
-  z-index: 5;
-}
+    <main class="main">
+      <section class="boardWrap">
+        <canvas id="c"></canvas>
+      </section>
 
-/* Canvas & Spielfeld explizit klickbar halten */
-canvas,
-#c {
-  pointer-events: auto !important;
-}
+      <aside class="side">
 
+        <!-- STATUS -->
+        <div class="card">
+          <h3>Status</h3>
+          <div class="kv"><span>Board</span><span id="boardInfo">–</span></div>
+          <div class="kv"><span>Barikaden</span><span id="barrInfo">–</span></div>
+        </div>
 
-/* ---------- ACTION CARD CONTAINER ---------- */
-#actionCard {
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 14px;
+        <!-- ONLINE -->
+        <div class="card">
+          <h3>Online</h3>
+          <div class="muted">Server ist fest hinterlegt. Du brauchst nur noch einen Raumcode.</div>
+          <div class="kv"><span>Server</span><span id="serverLabel">–</span></div>
 
-  background: linear-gradient(
-    180deg,
-    rgba(40, 60, 90, 0.55),
-    rgba(20, 30, 50, 0.55)
-  );
+          <label class="lbl">Raumcode</label>
+          <input id="roomCode" class="inp" placeholder="z.B. A7K3Q2" />
 
-  border: 1px solid rgba(255, 255, 255, 0.08);
+          <div class="row">
+            <button id="hostBtn" class="btn">Host</button>
+            <button id="joinBtn" class="btn">Beitreten</button>
+            <button id="leaveBtn" class="btn">Trennen</button>
+            <button id="startBtn" class="btn" disabled>Spiel starten</button>
+          </div>
 
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    0 10px 28px rgba(0,0,0,0.45);
+          <label class="muted" style="display:flex; gap:10px; align-items:center; margin-top:8px;">
+            <input id="actionModeToggle" type="checkbox" />
+            Action-Modus (Joker-Spiel)
+          </label>
 
-  display: none; /* wird NUR von JS ein-/ausgeblendet */
-}
+          <div class="kv"><span>Status</span><span id="netStatus" class="ok">Offline</span></div>
+          <div class="kv"><span>Du bist</span><span id="myColor">–</span></div>
+          <div class="kv"><span>Aktive Spieler</span><span id="netPlayers">–</span></div>
+          <div class="kv"><span>Verbindung</span><span id="connStatus">–</span></div>
+          <div class="kv"><span>Warte auf</span><span id="waitReason">–</span></div>
 
+          <div id="colorPick" style="display:none;">
+            <div class="lbl">Wähle deine Farbe</div>
+            <div class="colorRow">
+              <button id="pickRed" class="btnColor">Rot</button>
+              <button id="pickBlue" class="btnColor">Blau</button>
+              <button id="pickGreen" class="btnColor">Grün</button>
+              <button id="pickYellow" class="btnColor">Gelb</button>
+            </div>
+            <div class="muted" style="margin-top:6px;">Farbe bleibt reserviert (Reconnect).</div>
+          </div>
+        </div>
 
-/* ---------- TITLE ---------- */
-#actionCard h3 {
-  margin: 0 0 10px 0;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  opacity: 0.9;
-}
+        <!-- ACTION MODE -->
+        <div id="actionCard" class="card" style="display:none;">
+          <h3>⚡ Action-Joker</h3>
+          <div class="muted" id="actionHint">–</div>
 
+          <div class="joker-grid">
+            <button id="jokerChooseBtn" class="joker-btn">🎯 Choose</button>
+            <button id="jokerSumBtn" class="joker-btn">➕ Summe</button>
+            <button id="jokerAllColorsBtn" class="joker-btn">🎮 Alle Farben</button>
+            <button id="jokerBarricadeBtn" class="joker-btn">🧱 Barikade</button>
+          </div>
 
-/* ---------- INFO / HINT ---------- */
-#actionHint {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-bottom: 10px;
-}
+          <div id="chooseBox">
+            <div class="muted">Choose: Wähle deinen Wurf</div>
+            <button id="choosePickA" class="btn">Wurf A</button>
+            <button id="choosePickB" class="btn">Wurf B</button>
+          </div>
 
+          <div id="barricadeBox">
+            <div id="barricadeHint">Barikade: klicke Quelle, dann Ziel</div>
+            <button id="barricadeCancel" class="btn">Abbrechen</button>
+            <button id="barricadeClear" class="btn">Auswahl löschen</button>
+          </div>
+        </div>
 
-/* ---------- JOKER GRID ---------- */
-.joker-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
+      </aside>
+    </main>
+  </div>
 
-
-/* ---------- JOKER BUTTON BASE ---------- */
-.joker-btn {
-  position: relative;
-  padding: 12px 10px;
-  border-radius: 12px;
-
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0.10),
-    rgba(255,255,255,0.02)
-  );
-
-  border: 1px solid rgba(255,255,255,0.12);
-  color: #eef3ff;
-
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-
-  cursor: pointer;
-
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    opacity 0.12s ease;
-}
-
-
-/* Hover nur wenn aktiv */
-.joker-btn:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-}
-
-
-/* ---------- DISABLED ---------- */
-.joker-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-
-/* ---------- USED / VERBRAUCHT ---------- */
-.joker-btn.used {
-  opacity: 0.55;
-
-  background: linear-gradient(
-    180deg,
-    rgba(120,120,120,0.25),
-    rgba(60,60,60,0.25)
-  );
-}
-
-
-/* ---------- ACTIVE EFFECT ---------- */
-.joker-btn.active {
-  outline: 2px solid rgba(255, 220, 120, 0.9);
-
-  box-shadow:
-    0 0 0 2px rgba(255,220,120,0.25),
-    0 0 18px rgba(255,220,120,0.45);
-}
-
-
-/* ---------- BADGES ---------- */
-.joker-badge {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 999px;
-
-  background: rgba(0,0,0,0.55);
-  opacity: 0.85;
-}
-
-
-/* ---------- CHOOSE BOX ---------- */
-#chooseBox {
-  margin-top: 12px;
-  padding: 10px;
-  border-radius: 12px;
-
-  background: rgba(0,0,0,0.35);
-  border: 1px dashed rgba(255,255,255,0.15);
-
-  display: none;
-}
-
-#chooseBox button {
-  margin-top: 6px;
-  width: 100%;
-}
-
-
-/* ---------- BARRICADE MODE ---------- */
-#barricadeBox {
-  margin-top: 12px;
-  padding: 10px;
-  border-radius: 12px;
-
-  background: linear-gradient(
-    180deg,
-    rgba(120,80,40,0.45),
-    rgba(60,40,20,0.45)
-  );
-
-  border: 1px solid rgba(255,200,120,0.25);
-  display: none;
-}
-
-#barricadeHint {
-  font-size: 12px;
-  opacity: 0.85;
-  margin-bottom: 6px;
-}
-
-
-/* ---------- MOBILE SAFETY ---------- */
-@media (max-width: 700px) {
-  #actionCard {
-    padding: 12px;
-  }
-
-  .joker-btn {
-    font-size: 12px;
-    padding: 10px 8px;
-  }
-}
+  <script src="game.js"></script>
+</body>
+</html>
