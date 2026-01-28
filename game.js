@@ -48,33 +48,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       swapColorsBtn.className = "btn";
       swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
       hostTools.appendChild(swapColorsBtn);
-      // ⚡ Action-Modus Toggle (Host-only) – additive
-      try{
-        if(!document.getElementById("actionModeWrap") && startBtn && startBtn.parentElement){
-          const wrap = document.createElement("label");
-          wrap.id = "actionModeWrap";
-          wrap.style.display = "inline-flex";
-          wrap.style.alignItems = "center";
-          wrap.style.gap = "8px";
-          wrap.style.marginLeft = "10px";
-          wrap.style.userSelect = "none";
-          wrap.style.fontSize = "14px";
-          wrap.style.opacity = "0.95";
-          const cb = document.createElement("input");
-          cb.type = "checkbox";
-          cb.id = "actionModeToggle";
-          cb.style.transform = "scale(1.1)";
-          const saved = (localStorage.getItem("barikade_actionMode") || "0") === "1";
-          cb.checked = saved;
-          cb.addEventListener("change", ()=>{ try{ localStorage.setItem("barikade_actionMode", cb.checked ? "1":"0"); }catch(_e){} });
-          const sp = document.createElement("span");
-          sp.textContent = "⚡ Action‑Modus";
-          wrap.appendChild(cb);
-          wrap.appendChild(sp);
-          startBtn.parentElement.appendChild(wrap);
-        }
-      }catch(_e){}
-
     }
   }catch(_e){}
   const diceEl  = $("diceCube");
@@ -82,148 +55,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const turnDot = $("turnDot");
   const boardInfo = $("boardInfo");
   const barrInfo  = $("barrInfo");
-
-  // ===== Action Mode UI (additive) =====
-  let actionPanel = $("actionPanel");
-  let chooseRollModal = $("chooseRollModal");
-  let actionBarrFrom = null;
-
-  function ensureActionUI(){
-    try{
-      if(!actionPanel){
-        actionPanel = document.createElement("div");
-        actionPanel.id = "actionPanel";
-        actionPanel.style.marginTop = "10px";
-        actionPanel.style.display = "none";
-        actionPanel.style.gap = "8px";
-        actionPanel.style.flexWrap = "wrap";
-        actionPanel.style.alignItems = "center";
-        actionPanel.style.padding = "10px";
-        actionPanel.style.border = "1px solid rgba(255,255,255,0.12)";
-        actionPanel.style.borderRadius = "14px";
-        actionPanel.style.background = "rgba(0,0,0,0.22)";
-        actionPanel.style.backdropFilter = "blur(6px)";
-        // try to place near existing info area
-        const host = document.getElementById("infoPanel") || boardInfo?.parentElement || document.body;
-        host.appendChild(actionPanel);
-      }
-      if(!chooseRollModal){
-        chooseRollModal = document.createElement("div");
-        chooseRollModal.id = "chooseRollModal";
-        chooseRollModal.style.position = "fixed";
-        chooseRollModal.style.inset = "0";
-        chooseRollModal.style.display = "none";
-        chooseRollModal.style.alignItems = "center";
-        chooseRollModal.style.justifyContent = "center";
-        chooseRollModal.style.background = "rgba(0,0,0,0.55)";
-        chooseRollModal.style.zIndex = "9999";
-        chooseRollModal.innerHTML = `
-          <div style="min-width:260px; max-width:92vw; padding:16px; border-radius:16px; border:1px solid rgba(255,255,255,0.14); background:rgba(18,18,18,0.92); backdrop-filter: blur(8px);">
-            <div style="font-weight:700; margin-bottom:10px;">🎯 Wähle deinen Wurf</div>
-            <div id="chooseRollBtns" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
-            <div style="opacity:.75; font-size:12px; margin-top:10px;">(Nur du siehst das, dann geht’s normal weiter)</div>
-          </div>
-        `;
-        document.body.appendChild(chooseRollModal);
-      }
-    }catch(_e){}
-  }
-
-  function renderActionPanel(){
-    ensureActionUI();
-    if(!actionPanel) return;
-    const isAction = (state && state.mode === "action");
-    if(!isAction || netMode==="offline"){
-      actionPanel.style.display = "none";
-      return;
-    }
-    const my = myColor || null;
-    const isMyTurn = (my && state.currentPlayer === my);
-    const jb = state.action?.jokersByColor?.[my] || null;
-
-    actionPanel.style.display = "flex";
-    actionPanel.innerHTML = "";
-
-    const title = document.createElement("div");
-    title.textContent = "⚡ Joker";
-    title.style.fontWeight = "700";
-    title.style.marginRight = "6px";
-    actionPanel.appendChild(title);
-
-    function addBtn(key, label){
-      const b = document.createElement("button");
-      b.className = "btn";
-      b.textContent = label;
-      const available = !!(jb && jb[key]);
-      b.disabled = !(available && isMyTurn);
-      b.style.opacity = b.disabled ? "0.5" : "1";
-      b.addEventListener("click", ()=>{
-        if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
-        wsSend({ type:"use_joker", joker:key, ts:Date.now() });
-      });
-      actionPanel.appendChild(b);
-    }
-
-    addBtn("choose_roll","🎲🎯 Choose");
-    addBtn("sum_roll","🎲➕ Summe");
-    addBtn("control_all","🕹️ Alle Farben");
-    addBtn("move_barricade","🧱 Barikade");
-
-    // armed helper
-    if(state.action?.turn?.moveBarricadeArmed){
-      const hint = document.createElement("div");
-      hint.style.marginLeft = "8px";
-      hint.style.opacity = "0.9";
-      hint.textContent = actionBarrFrom ? "Quelle gewählt – Ziel klicken" : "Quelle‑Barikade klicken";
-      actionPanel.appendChild(hint);
-
-      const cancel = document.createElement("button");
-      cancel.className = "btn";
-      cancel.textContent = "✖ Abbrechen";
-      cancel.addEventListener("click", ()=>{
-        actionBarrFrom = null;
-        // no server cancel (joker already consumed), just clear local guidance
-        toast("Abgebrochen – Joker bleibt verbraucht");
-        renderActionPanel();
-      });
-      actionPanel.appendChild(cancel);
-    }
-
-    // allowAnyColor info
-    if(state.action?.turn?.allowAnyColor){
-      const info = document.createElement("div");
-      info.style.marginLeft = "8px";
-      info.style.opacity = "0.95";
-      info.textContent = "🕹️ Du darfst jetzt auch gegnerische Figuren bewegen";
-      actionPanel.appendChild(info);
-    }
-  }
-
-  function showChooseRoll(rolls){
-    ensureActionUI();
-    if(!chooseRollModal) return;
-    const btnWrap = document.getElementById("chooseRollBtns");
-    if(!btnWrap) return;
-    btnWrap.innerHTML = "";
-    const r1 = Number(rolls?.[0] ?? 1);
-    const r2 = Number(rolls?.[1] ?? 1);
-
-    const mk = (n, idx) => {
-      const b = document.createElement("button");
-      b.className = "btn";
-      b.textContent = `Wurf ${idx}: ${n}`;
-      b.addEventListener("click", ()=>{
-        if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
-        wsSend({ type:"choose_roll_pick", pick: idx, ts:Date.now() });
-        chooseRollModal.style.display = "none";
-      });
-      return b;
-    };
-    btnWrap.appendChild(mk(r1,1));
-    btnWrap.appendChild(mk(r2,2));
-    chooseRollModal.style.display = "flex";
-  }
-
 
   // ===== Legendary Dice (visual only, isolated) =====
   // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
@@ -316,6 +147,27 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const netStatus = $("netStatus");
   const netPlayersEl = $("netPlayers");
   const myColorEl = $("myColor");
+
+  // ===== Action-Mode UI refs (nur sichtbar wenn state.mode === "action") =====
+  const actionCard = $("actionCard");
+  const actionHint = $("actionHint");
+  const jokerChooseBtn = $("jokerChooseBtn");
+  const jokerSumBtn = $("jokerSumBtn");
+  const jokerAllColorsBtn = $("jokerAllColorsBtn");
+  const jokerBarricadeBtn = $("jokerBarricadeBtn");
+  const chooseBox = $("chooseBox");
+  const choosePickA = $("choosePickA");
+  const choosePickB = $("choosePickB");
+  const barricadeBox = $("barricadeBox");
+  const barricadeHint = $("barricadeHint");
+  const barricadeCancel = $("barricadeCancel");
+  const barricadeClear = $("barricadeClear");
+
+  // local UI-only helpers for Action-Mode
+  let actionChooseRolls = null;        // [a,b] waiting for pick
+  let actionBarricadeFrom = null;      // nodeId of source barricade
+  let actionBarricadeActive = false;   // UI mode enabled (server must also have effects.barricadeBy)
+
 
   // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
@@ -739,6 +591,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     updateStartButton();
     }
     updateColorPickUI();
+    updateActionUI();
 
     // Host: keep state players in sync with chosen colors
     if(netMode==="host" && state){
@@ -871,8 +724,34 @@ try{ ws = new WebSocket(SERVER_URL); }
           writeHostAutosave(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        updateActionUI();
         return;
       }
+
+      if(type==="joker_roll"){
+        // Action-Mode: server sends intermediate rolls for choose/sum
+        if(msg && msg.kind){
+          const k = String(msg.kind||"").toLowerCase();
+          const rolls = Array.isArray(msg.rolls) ? msg.rolls.slice() : [];
+          // update local state from msg.state if provided
+          if(msg.state){
+            applyRemoteState(msg.state);
+            writeHostAutosave(msg.state);
+          }
+          if(k==="choose"){
+            if(rolls.length===1) toast(`🎯 Choose: erster Wurf ${rolls[0]} – würfle nochmal`);
+            if(rolls.length===2){
+              toast("🎯 Choose: wähle deinen Wurf");
+              // picker will appear via updateActionUI/applyRemoteState
+            }
+          }else if(k==="sum"){
+            if(rolls.length===1) toast(`➕ Summe: erster Wurf ${rolls[0]} – würfle nochmal`);
+          }
+          updateActionUI();
+        }
+        return;
+      }
+
       if(type==="roll"){
         // (108/26) small suspense + particles
         if(typeof msg.value==="number") setDiceFaceAnimated(msg.value);
@@ -881,6 +760,7 @@ try{ ws = new WebSocket(SERVER_URL); }
           writeHostAutosave(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        updateActionUI();
         return;
       }
       if(type==="move"){
@@ -1056,16 +936,15 @@ try{ ws = new WebSocket(SERVER_URL); }
         goalNodeId: server.goal ? String(server.goal) : goalNodeId,
         // optional info from server (used by some UIs)
         activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null,
-        mode: server.mode || "classic",
-        action: (server.action && typeof server.action==="object") ? server.action : null
-      };
+        mode: String(server.mode || \"classic\"),
+        action: (server.action && typeof server.action === \"object\") ? server.action : null
+      });
 
       // map phases
       const ph = server.phase;
       if(ph==="need_roll") phase="need_roll";
       else if(ph==="need_move") phase="need_move";
       else if(ph==="place_barricade") phase="placing_barricade";
-      else if(ph==="action_choose_roll") phase="need_roll";
       else phase="need_roll";
 
       // show dice
@@ -1078,8 +957,130 @@ try{ ws = new WebSocket(SERVER_URL); }
       legalMovesByPiece = new Map();
       placingChoices = [];
       updateTurnUI(); updateStartButton(); draw();
+      updateActionUI();
       ensureFittedOnce();
       return;
+    }
+
+    // ===== Action-Mode UI update (server-chef) =====
+    function isActionMode(){
+      return !!(state && state.mode === "action" && state.action);
+    }
+    function isMyTurnOnline(){
+      return !!(netMode !== "offline" && myColor && state && state.currentPlayer === myColor);
+    }
+    function canUseAllColorsNow(){
+      if(!isActionMode()) return false;
+      const eff = state.action?.effects;
+      return !!(eff && eff.allColorsBy && eff.allColorsBy === state.currentPlayer);
+    }
+    function canBarricadeJokerNow(){
+      if(!isActionMode()) return false;
+      const eff = state.action?.effects;
+      return !!(eff && eff.barricadeBy && eff.barricadeBy === state.currentPlayer && state.phase === "need_roll");
+    }
+    function canDoubleRollChooseNow(){
+      if(!isActionMode()) return false;
+      const eff = state.action?.effects?.doubleRoll;
+      return !!(eff && eff.kind === "choose" && eff.by === state.currentPlayer);
+    }
+    function canDoubleRollSumNow(){
+      if(!isActionMode()) return false;
+      const eff = state.action?.effects?.doubleRoll;
+      return !!(eff && eff.kind === "sum" && eff.by === state.currentPlayer);
+    }
+
+    function setActionCardVisible(yes){
+      if(!actionCard) return;
+      actionCard.style.display = yes ? "block" : "none";
+    }
+
+    function setBtn(btn, enabled, label){
+      if(!btn) return;
+      btn.disabled = !enabled;
+      if(typeof label === "string") btn.textContent = label;
+      btn.style.opacity = enabled ? "1" : "0.45";
+    }
+
+    function showChoosePicker(rolls){
+      actionChooseRolls = Array.isArray(rolls) ? rolls.slice(0,2) : null;
+      if(!chooseBox || !choosePickA || !choosePickB) return;
+      if(!actionChooseRolls || actionChooseRolls.length !== 2){
+        chooseBox.style.display = "none";
+        return;
+      }
+      chooseBox.style.display = "block";
+      choosePickA.textContent = `Wurf A: ${actionChooseRolls[0]}`;
+      choosePickB.textContent = `Wurf B: ${actionChooseRolls[1]}`;
+    }
+
+    function hideChoosePicker(){
+      actionChooseRolls = null;
+      if(chooseBox) chooseBox.style.display = "none";
+    }
+
+    function setBarricadeUI(active){
+      actionBarricadeActive = !!active;
+      if(!barricadeBox) return;
+      barricadeBox.style.display = actionBarricadeActive ? "block" : "none";
+      if(!actionBarricadeActive){
+        actionBarricadeFrom = null;
+      }
+      if(barricadeHint){
+        const fromTxt = actionBarricadeFrom ? `Quelle: ${actionBarricadeFrom}` : "Quelle wählen";
+        barricadeHint.textContent = `Barikade: ${fromTxt} → dann Ziel klicken`;
+      }
+    }
+
+    function updateActionUI(){
+      if(netMode === "offline"){ setActionCardVisible(false); return; }
+      if(!state){ setActionCardVisible(false); return; }
+
+      const show = isActionMode();
+      setActionCardVisible(show);
+      if(!show) return;
+
+      const isTurn = isMyTurnOnline();
+      const ph = state.phase;
+      const mySet = (myColor && state.action?.jokersByColor) ? state.action.jokersByColor[myColor] : null;
+
+      // availability (server is truth; UI is only convenience)
+      const canChoose = !!(isTurn && ph === "need_roll" && mySet && mySet.choose === true && !canDoubleRollChooseNow() && !canDoubleRollSumNow() && !canBarricadeJokerNow());
+      const canSum    = !!(isTurn && ph === "need_roll" && mySet && mySet.sum === true    && !canDoubleRollChooseNow() && !canDoubleRollSumNow() && !canBarricadeJokerNow());
+      const canAll    = !!(isTurn && (ph === "need_roll" || ph === "need_move") && mySet && mySet.allColors === true && !canDoubleRollChooseNow() && !canDoubleRollSumNow());
+      const canBarr   = !!(isTurn && ph === "need_roll" && mySet && mySet.barricade === true && !canDoubleRollChooseNow() && !canDoubleRollSumNow() && !canBarricadeJokerNow());
+
+      // button labels include remaining status
+      setBtn(jokerChooseBtn, canChoose, `🎯 Choose${mySet && mySet.choose===false ? " ✓" : ""}`);
+      setBtn(jokerSumBtn,    canSum,    `➕ Summe${mySet && mySet.sum===false ? " ✓" : ""}`);
+      setBtn(jokerAllColorsBtn, canAll, `🎮 Alle Farben${mySet && mySet.allColors===false ? " ✓" : ""}`);
+      setBtn(jokerBarricadeBtn, canBarr,`🧱 Barikade${mySet && mySet.barricade===false ? " ✓" : ""}`);
+
+      // Hint
+      if(actionHint){
+        const eff = state.action?.effects || {};
+        const flags = [];
+        if(eff.allColorsBy === state.currentPlayer) flags.push("Alle Farben aktiv");
+        if(eff.doubleRoll?.kind === "choose") flags.push("Choose aktiv");
+        if(eff.doubleRoll?.kind === "sum") flags.push("Summe aktiv");
+        if(eff.barricadeBy === state.currentPlayer) flags.push("Barikade aktiv");
+        actionHint.textContent = flags.length ? flags.join(" • ") : "Nutze 1 Joker pro Typ (je 1× pro Spiel).";
+      }
+
+      // Choose UI
+      const effDR = state.action?.effects?.doubleRoll;
+      if(isTurn && effDR && effDR.kind === "choose" && Array.isArray(effDR.rolls) && effDR.rolls.length === 2){
+        showChoosePicker(effDR.rolls);
+      }else if(!actionChooseRolls){
+        hideChoosePicker();
+      }
+
+      // Barricade UI
+      if(isTurn && canBarricadeJokerNow()){
+        setBarricadeUI(true);
+      }else if(actionBarricadeActive){
+        setBarricadeUI(false);
+      }
     }
 
     if(st.barricades && Array.isArray(st.barricades)) st.barricades = new Set(st.barricades);
@@ -1461,6 +1462,7 @@ function toast(msg){
       if(endBtn)  endBtn.disabled  = true;
       if(skipBtn) skipBtn.disabled = true;
       updateColorPickUI();
+    updateActionUI();
       return;
     }
 
@@ -1481,6 +1483,7 @@ function toast(msg){
     }
 
     updateColorPickUI();
+    updateActionUI();
   }
 
   function endTurn(){
@@ -1548,35 +1551,42 @@ function toast(msg){
   }
   function trySelectAtNode(node){
       if (!state || !state.currentPlayer) { return false; }
-if(!node) return false;
-    const c = state.currentPlayer;
-    if(node.kind === "board"){
-      const allowAny = !!(state.mode==="action" && state.action && state.action.turn && state.action.turn.allowAnyColor);
-      if(allowAny){
-        for(const cc of PLAYERS){
-          const pAny = pieceAtBoardNode(node.id, cc);
-          if(pAny){ selectPiece(pAny); return true; }
+      if(!node) return false;
+
+      // In Action-Modus (Joker "Alle Farben") darf der aktuelle Spieler jede Farbe bewegen
+      const allowAll = canUseAllColorsNow() && isMyTurnOnline();
+      const preferred = state.currentPlayer;
+
+      if(node.kind === "board"){
+        // Prefer current turn color, otherwise first found
+        let p = pieceAtBoardNode(node.id, preferred);
+        if(!p && allowAll){
+          for(const col of ["red","blue","green","yellow"]){
+            p = pieceAtBoardNode(node.id, col);
+            if(p) break;
+          }
         }
+        if(p){ selectPiece(p); return true; }
         return false;
       }
-      const p = pieceAtBoardNode(node.id, c);
-      if(p){ selectPiece(p); return true; }
-      return false;
-    }
-    if(node.kind === "house" && node.flags?.houseColor === c && node.flags?.houseSlot){
-      const idx = Number(node.flags.houseSlot) - 1;
-      if(idx>=0 && idx<5){
-        if(state.pieces[c][idx].pos === "house"){
-          selectPiece({color:c, index:idx});
-          return true;
-        }else{
-          toast("Diese Figur ist nicht im Haus");
-          return true;
+
+      if(node.kind === "house" && node.flags?.houseColor && node.flags?.houseSlot){
+        const hc = String(node.flags.houseColor).toLowerCase();
+        const idx = Number(node.flags.houseSlot) - 1;
+        if(idx>=0 && idx<5){
+          const can = (hc === preferred) || allowAll;
+          if(!can) return false;
+          if(state.pieces[hc] && state.pieces[hc][idx] && state.pieces[hc][idx].pos === "house"){
+            selectPiece({color:hc, index:idx});
+            return true;
+          }else{
+            toast("Diese Figur ist nicht im Haus");
+            return true;
+          }
         }
       }
+      return false;
     }
-    return false;
-  }
 
   function anyPiecesAtNode(nodeId){
     const res=[];
@@ -2069,24 +2079,38 @@ canvas.setPointerCapture(ev.pointerId);
       return;
     }
 
-    // ⚡ Action: Barikade versetzen (Joker)
-    if(state && state.mode==="action" && state.action?.turn?.moveBarricadeArmed && hit && hit.kind==="board"){
-      const id = String(hit.id);
-      if(!actionBarrFrom){
-        if(!state.barricades.has(id)){ toast("Erst eine Barikade als Quelle anklicken"); return; }
-        actionBarrFrom = id;
-        toast("Quelle gewählt – jetzt Zielfeld anklicken");
-        renderActionPanel();
-        return;
-      } else {
-        // target chosen
-        wsSend({ type:"action_barricade_move", from: actionBarrFrom, to: id, ts: Date.now() });
-        actionBarrFrom = null;
-        renderActionPanel();
+
+    // ===== Action-Mode: Barikade-Joker (Quelle -> Ziel) =====
+    // Server erlaubt das nur, wenn effects.barricadeBy == turnColor und phase == need_roll.
+    if(netMode!=="offline" && state && state.mode==="action" && actionBarricadeActive && canBarricadeJokerNow()){
+      if(hit && hit.kind==="board"){
+        const hitId = String(hit.id);
+        // Step 1: Quelle wählen (muss aktuell eine Barikade sein)
+        if(!actionBarricadeFrom){
+          if(state.barricades && state.barricades.has(hitId)){
+            actionBarricadeFrom = hitId;
+            setBarricadeUI(true);
+            toast("Quelle gewählt – jetzt Ziel klicken");
+            draw();
+            return;
+          }else{
+            toast("Quelle muss eine vorhandene Barikade sein");
+            return;
+          }
+        }
+        // Step 2: Ziel wählen (server prüft final)
+        if(hitId === goalNodeId){ toast("Ziel-Feld ist gesperrt"); return; }
+        if(state.barricades && state.barricades.has(hitId)){ toast("Da liegt schon eine Barikade"); return; }
+
+        wsSend({ type:"action_barricade_move", from: actionBarricadeFrom, to: hitId, ts:Date.now() });
+        // UI zurücksetzen – Server broadcastet snapshot
+        actionBarricadeFrom = null;
+        setBarricadeUI(false);
+        toast("Barikade versetzt");
         return;
       }
+      // Klick ins Leere ignorieren
     }
-
 if(phase==="placing_barricade" && hit && hit.kind==="board"){
   // ONLINE: Server entscheidet immer (Host + Client senden)
   if(netMode!=="offline"){
@@ -2150,7 +2174,6 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       view.x=panStart.vx+dx;
       view.y=panStart.vy+dy;
       draw();
-      try{ renderActionPanel(); }catch(_e){}
     }
   }
   function onPointerUp(ev){
@@ -2175,9 +2198,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
-    const am = (document.getElementById("actionModeToggle")?.checked) ? "action" : "classic";
-    try{ localStorage.setItem("barikade_actionMode", am==="action" ? "1":"0"); }catch(_e){}
-    wsSend({type:"start", mode: am, ts:Date.now()});
+    wsSend({type:"start", mode: (actionModeToggle && actionModeToggle.checked ? "action" : "classic"), ts:Date.now()});
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
@@ -2227,6 +2248,67 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     }
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
     wsSend({type:"reset", ts:Date.now()});
+
+  // ===== Action-Mode Joker Buttons (UI only; server validates) =====
+  function wsOk(){ return !!(ws && ws.readyState===1); }
+
+  jokerChooseBtn && jokerChooseBtn.addEventListener("click", () => {
+    if(netMode==="offline") return;
+    if(!wsOk()) return toast("Nicht verbunden");
+    if(!state || state.mode!=="action") return toast("Action-Modus ist nicht aktiv");
+    if(!isMyTurnOnline()) return toast("Du bist nicht dran");
+    wsSend({ type:"use_joker", joker:"choose", ts:Date.now() });
+  });
+
+  jokerSumBtn && jokerSumBtn.addEventListener("click", () => {
+    if(netMode==="offline") return;
+    if(!wsOk()) return toast("Nicht verbunden");
+    if(!state || state.mode!=="action") return toast("Action-Modus ist nicht aktiv");
+    if(!isMyTurnOnline()) return toast("Du bist nicht dran");
+    wsSend({ type:"use_joker", joker:"sum", ts:Date.now() });
+  });
+
+  jokerAllColorsBtn && jokerAllColorsBtn.addEventListener("click", () => {
+    if(netMode==="offline") return;
+    if(!wsOk()) return toast("Nicht verbunden");
+    if(!state || state.mode!=="action") return toast("Action-Modus ist nicht aktiv");
+    if(!isMyTurnOnline()) return toast("Du bist nicht dran");
+    wsSend({ type:"use_joker", joker:"allcolors", ts:Date.now() });
+  });
+
+  jokerBarricadeBtn && jokerBarricadeBtn.addEventListener("click", () => {
+    if(netMode==="offline") return;
+    if(!wsOk()) return toast("Nicht verbunden");
+    if(!state || state.mode!=="action") return toast("Action-Modus ist nicht aktiv");
+    if(!isMyTurnOnline()) return toast("Du bist nicht dran");
+    wsSend({ type:"use_joker", joker:"barricade", ts:Date.now() });
+    toast("🧱 Barikade-Joker: Quelle klicken, dann Ziel");
+  });
+
+  choosePickA && choosePickA.addEventListener("click", () => {
+    if(netMode==="offline") return;
+    if(!wsOk()) return toast("Nicht verbunden");
+    if(!actionChooseRolls || actionChooseRolls.length!==2) return;
+    wsSend({ type:"choose_roll", pick:0, ts:Date.now() });
+    hideChoosePicker();
+  });
+  choosePickB && choosePickB.addEventListener("click", () => {
+    if(netMode==="offline") return;
+    if(!wsOk()) return toast("Nicht verbunden");
+    if(!actionChooseRolls || actionChooseRolls.length!==2) return;
+    wsSend({ type:"choose_roll", pick:1, ts:Date.now() });
+    hideChoosePicker();
+  });
+
+  barricadeCancel && barricadeCancel.addEventListener("click", () => {
+    setBarricadeUI(false);
+    toast("Barikade-Joker abgebrochen");
+  });
+  barricadeClear && barricadeClear.addEventListener("click", () => {
+    actionBarricadeFrom = null;
+    setBarricadeUI(true);
+  });
+
   });
 
   // Online actions
@@ -2258,6 +2340,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!(c==="red"||c==="blue"||c==="green"||c==="yellow")) return;
     setRequestedColor(c);
     updateColorPickUI();
+    updateActionUI();
     if(ws && ws.readyState===1){
       wsSend({ type:"request_color", color: c, ts: Date.now() });
     } else {
