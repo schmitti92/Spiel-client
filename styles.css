@@ -504,8 +504,9 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 /* ===== Sidebar Würfel (über Status) ===== */
 .diceRow{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
+  flex-direction: column;
+  align-items:flex-start;
+  justify-content:flex-start;
   gap:10px;
 }
 
