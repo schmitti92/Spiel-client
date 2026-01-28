@@ -1658,14 +1658,10 @@ function toast(msg){
   }
 
   function pieceAtBoardNode(nodeId, color){
-    const nid = String(nodeId);
-    const arr = (state && state.pieces && state.pieces[color]) ? state.pieces[color] : null;
-    if(!arr) return null;
+    const arr = state.pieces[color];
     for(let i=0;i<arr.length;i++){
-      if(String(arr[i].pos) === nid) return {color, index:i};
+      if(arr[i].pos === nodeId) return {color, index:i};
     }
-    return null;
-  }
     return null;
   }
   function selectPiece(sel){
@@ -1712,16 +1708,11 @@ function toast(msg){
     }
 
   function anyPiecesAtNode(nodeId){
-    const nid = String(nodeId);
     const res=[];
     for(const c of getActiveColors()){
-      const arr = (state && state.pieces && state.pieces[c]) ? state.pieces[c] : [];
-      for(let i=0;i<arr.length;i++){
-        if(String(arr[i].pos) === nid) res.push({color:c,index:i});
-      }
+      const arr=state.pieces[c];
+      for(let i=0;i<arr.length;i++) if(arr[i].pos===nodeId) res.push({color:c,index:i});
     }
-    return res;
-  }
     return res;
   }
 
@@ -2059,7 +2050,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         if(animPieceId && pid === animPieceId){
           continue; // draw as animated override, not as a stack at the target
         }
-        if(pos!=null && adj.has(String(pos))){
+        if(typeof pos==="string" && adj.has(pos)){
           if(!stacks.has(pos)) stacks.set(pos, []);
           stacks.get(pos).push({color:c,index:i});
         }
