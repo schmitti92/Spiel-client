@@ -1589,10 +1589,7 @@ function toast(msg){
     turnText.textContent = state.winner ? `${PLAYER_NAME[state.winner]} gewinnt!` : `${PLAYER_NAME[c]} ist dran`;
     turnDot.style.background = COLORS[c];
 
-    const reqCol = (typeof getRequestedColor==="function") ? getRequestedColor() : null;
-    const hostTurnOk = (netMode==="host" && typeof isMeHost==="function" && isMeHost());
-    const isMyTurn = (netMode==="offline") ? true : ((myColor && myColor===state.currentPlayer) || hostTurnOk || (reqCol && reqCol===state.currentPlayer));
-
+    const isMyTurn = (netMode==="offline") ? true : (myColor && myColor===state.currentPlayer);
     rollBtn.disabled = (phase!=="need_roll") || !isMyTurn;
     endBtn.disabled  = (phase==="need_roll"||phase==="placing_barricade"||phase==="game_over") || !isMyTurn;
     if(skipBtn) skipBtn.disabled = (phase==="placing_barricade"||phase==="game_over") || !isMyTurn;
@@ -2330,7 +2327,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     wsSend({type:"resume", ts:Date.now()});
   });
 
-  rollBtn && rollBtn.addEventListener("click", () => {
+  rollBtn.addEventListener("click", () => {
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       // server checks turn
