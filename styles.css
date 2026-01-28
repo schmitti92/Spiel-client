@@ -501,10 +501,28 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 }
 
 
-/* Würfel über Status (Sidebar) */
-.sideDiceRow{
+/* ===== Sidebar Würfel (über Status) ===== */
+.diceRow{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
+}
+
+.dicePill--sidebar{
+  width:72px;
+  height:64px;
+}
+
+.dicePill--sidebar #diceCube{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  gap:4px;
+  padding:6px;
+}
+
+.dicePill--sidebar .pip{
+  width:7px;
+  height:7px;
 }
