@@ -2253,12 +2253,12 @@ leaveBtn.addEventListener("click", () => {
 
 // ===== UI PATCH: Würfel in die Status-Box über "Board / Barikaden" docken (nur Optik) =====
 (function dockDiceIntoStatusCard(){
+  // NOTE: Neues Layout hat eigene Würfel-Card (diceCard). Docking-Patches deaktivieren.
+  if (document.getElementById('diceCard')) return;
+
   function tryDock(){
     const dice = document.getElementById("diceCube");
-    // Guard: Würfel ist bewusst in eigener Sidebar-Card -> NICHT umdocken
-    if (dice && dice.dataset && dice.dataset.lockDiceDock === "1") return true;
-    if (dice && dice.closest && dice.closest(".diceCard")) return true;
-const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
+    const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
     if(!dice || !boardInfo) return false;
 
     // Container finden, in dem "Board/Barikaden" stehen (Status-Card)
@@ -2317,6 +2317,9 @@ const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
 
 /* ===== UI PATCH V2 (nur Optik, KEIN Gameplay): Würfel wirklich in "Status" docken + Fixed/Absolute überschreiben ===== */
 (function forceDiceDockIntoStatus(){
+  // NOTE: Neues Layout hat eigene Würfel-Card (diceCard). Docking-Patches deaktivieren.
+  if (document.getElementById('diceCard')) return;
+
   function setImportant(el, prop, value){
     try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
   }
@@ -2409,6 +2412,9 @@ const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
 
 /* ===== UI PATCH V3 (nur Optik): Dock via "Status" Überschrift (falls IDs/Struktur am PC anders sind) ===== */
 (function forceDiceDockByStatusTitle(){
+  // NOTE: Neues Layout hat eigene Würfel-Card (diceCard). Docking-Patches deaktivieren.
+  if (document.getElementById('diceCard')) return;
+
   function setImportant(el, prop, value){
     try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
   }
