@@ -2255,8 +2255,9 @@ leaveBtn.addEventListener("click", () => {
 (function dockDiceIntoStatusCard(){
   function tryDock(){
     const dice = document.getElementById("diceCube");
-            if(dice && dice.closest && dice.closest(".diceCard")) return true;
-if(dice && dice.closest && dice.closest(".diceCard")) return true;
+        // Wenn der Würfel bereits in einem eigenen Würfel-Bereich steckt, NICHT umdocken
+    if (dice.closest && (dice.closest(".diceCard") || dice.closest("#diceArea"))) return true;
+    if (dice.dataset && dice.dataset.lockDiceDock === "1") return true;
 const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
     if(!dice || !boardInfo) return false;
 
@@ -2333,8 +2334,7 @@ const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
 
   function tryDock(){
     const dice = document.getElementById("diceCube");
-        if(dice && dice.closest && dice.closest(".diceCard")) return true;
-const boardInfo = document.getElementById("boardInfo");
+    const boardInfo = document.getElementById("boardInfo");
     if(!dice || !boardInfo) return false;
 
     const card = findStatusCardByBoardInfo();
@@ -2425,8 +2425,7 @@ const boardInfo = document.getElementById("boardInfo");
   }
   function tryDock(){
     const dice = document.getElementById("diceCube") || document.querySelector("#diceCube") || document.querySelector(".diceCube") || null;
-        if(dice && dice.closest && dice.closest(".diceCard")) return true;
-if(!dice) return false;
+    if(!dice) return false;
 
     const titleEl = findStatusTitleEl();
     if(!titleEl) return false;
