@@ -2255,7 +2255,7 @@ leaveBtn.addEventListener("click", () => {
 (function dockDiceIntoStatusCard(){
   function tryDock(){
     const dice = document.getElementById("diceCube");
-    // Guard: wenn Würfel bewusst in eigener Würfel-Card steckt, NICHT umdocken
+    // Guard: Würfel ist bewusst in eigener Sidebar-Card -> NICHT umdocken
     if (dice && dice.dataset && dice.dataset.lockDiceDock === "1") return true;
     if (dice && dice.closest && dice.closest(".diceCard")) return true;
 const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
