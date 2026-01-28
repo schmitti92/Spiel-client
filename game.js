@@ -56,25 +56,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const boardInfo = $("boardInfo");
   const barrInfo  = $("barrInfo");
 
-  // ===== Würfel-Position FIX (nur Würfel verschieben, sonst nichts) =====
-  // Ziel: Würfel direkt UNTER den Würfeln-Button setzen.
-  // Wir verschieben dabei nur den Würfel-Wrapper (.dicePill) bzw. den Würfel selbst.
-  function dockDiceUnderRollButton(){
-    try{
-      if(!diceEl) return;
-      if(!rollBtn) return;
-
-      const wrap = diceEl.closest(".dicePill") || diceEl;
-
-      // Wenn der Würfel schon direkt hinter dem Button sitzt: nix tun
-      if(rollBtn.nextElementSibling === wrap) return;
-
-      rollBtn.insertAdjacentElement("afterend", wrap);
-    }catch(_e){}
-  }
-  try{ dockDiceUnderRollButton(); }catch(_e){}
-
-
   // ===== Legendary Dice (visual only, isolated) =====
   // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
   // Entfernt keine Funktion – nur Optik für den Würfel.
@@ -156,6 +137,235 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // call once (safe)
   ensureLegendaryDiceStyles();
+  // ===== Start-Wheel (Glücksrad) – Server (Firebase) bestimmt Starter, Clients animieren 10s =====
+  // Additiv: keine bestehende Funktion wird entfernt.
+  let wheelBlockUntil = 0;
+  let lastStartWheelAt = 0;
+
+  function isWheelBlocking(){
+    return Date.now() < wheelBlockUntil;
+  }
+
+  function mulberry32(a){
+    return function(){
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function hashStr(s){
+    s = String(s||"");
+    let h = 2166136261 >>> 0;
+    for(let i=0;i<s.length;i++){
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function ensureStartWheelStyles(){
+    try{
+      if(document.getElementById("startWheelStyles")) return;
+      const style = document.createElement("style");
+      style.id = "startWheelStyles";
+      style.textContent = `
+        .startWheelOverlay{
+          position:fixed; inset:0; z-index:10050;
+          display:none; align-items:center; justify-content:center;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(8px);
+        }
+        .startWheelOverlay.show{ display:flex; }
+        .startWheelCard{
+          width:min(520px, 92vw);
+          border-radius:22px;
+          border:1px solid rgba(255,255,255,0.10);
+          background: rgba(18,24,38,0.92);
+          box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+          padding:16px 16px 14px;
+          text-align:center;
+        }
+        .startWheelTitle{ font-weight:900; letter-spacing:.2px; font-size:18px; }
+        .startWheelSub{ color: var(--muted); font-size:13px; margin-top:6px; }
+        .startWheelStage{ position:relative; margin:14px auto 10px; width:min(420px, 80vw); aspect-ratio:1/1; }
+        canvas.startWheelCanvas{ width:100%; height:100%; display:block; }
+        .startWheelPointer{
+          position:absolute; left:50%; top:-6px; transform:translateX(-50%);
+          width:0;height:0;
+          border-left:14px solid transparent;
+          border-right:14px solid transparent;
+          border-bottom:22px solid rgba(255,255,255,0.9);
+          filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6));
+        }
+        .startWheelResult{ font-weight:900; margin-top:8px; }
+      `;
+      document.head.appendChild(style);
+    }catch(_e){}
+  }
+
+  let wheelOverlay=null, wheelCanvas=null, wheelCtx=null, wheelTitleEl=null, wheelSubEl=null, wheelResEl=null;
+
+  function ensureStartWheelUI(){
+    try{
+      if(wheelOverlay) return;
+      ensureStartWheelStyles();
+      wheelOverlay = document.createElement("div");
+      wheelOverlay.className = "startWheelOverlay";
+      wheelOverlay.innerHTML = `
+        <div class="startWheelCard">
+          <div class="startWheelTitle" id="startWheelTitle">Glücksrad</div>
+          <div class="startWheelSub" id="startWheelSub">Wer fängt an…</div>
+          <div class="startWheelStage">
+            <div class="startWheelPointer"></div>
+            <canvas class="startWheelCanvas" id="startWheelCanvas" width="600" height="600"></canvas>
+          </div>
+          <div class="startWheelResult" id="startWheelResult"></div>
+        </div>
+      `;
+      document.body.appendChild(wheelOverlay);
+      wheelCanvas = wheelOverlay.querySelector("#startWheelCanvas");
+      wheelCtx = wheelCanvas.getContext("2d");
+      wheelTitleEl = wheelOverlay.querySelector("#startWheelTitle");
+      wheelSubEl = wheelOverlay.querySelector("#startWheelSub");
+      wheelResEl = wheelOverlay.querySelector("#startWheelResult");
+    }catch(_e){}
+  }
+
+  function drawWheel(activeColors, angle){
+    if(!wheelCtx || !wheelCanvas) return;
+    const ctx = wheelCtx;
+    const w = wheelCanvas.width, h = wheelCanvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    const cx = w/2, cy = h/2;
+    const R = Math.min(w,h)*0.46;
+
+    const cols = Array.isArray(activeColors) && activeColors.length ? activeColors : ["red","blue"];
+    const n = cols.length;
+    const seg = (Math.PI*2)/n;
+
+    // background ring
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+
+    for(let i=0;i<n;i++){
+      const c = cols[i];
+      const a0 = -Math.PI/2 + i*seg;
+      const a1 = a0 + seg;
+
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.arc(0,0,R,a0,a1,false);
+      ctx.closePath();
+      ctx.fillStyle = COLORS[c] || "#888";
+      ctx.globalAlpha = 0.95;
+      ctx.fill();
+
+      // slice border
+      ctx.globalAlpha = 0.22;
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // label
+      ctx.save();
+      ctx.globalAlpha = 0.92;
+      ctx.rotate(a0 + seg/2);
+      ctx.translate(R*0.68, 0);
+      ctx.rotate(Math.PI/2);
+      ctx.fillStyle = "#0b0e14";
+      ctx.font = "900 34px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const label = PLAYER_NAME[c] || c;
+      ctx.fillText(label, 0, 0);
+      ctx.restore();
+    }
+
+    // center cap
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.arc(0,0,R*0.18,0,Math.PI*2);
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.fill();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "rgba(0,0,0,0.55)";
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function playStartWheelFromServer(serverState){
+    try{
+      const sw = serverState?.startWheel;
+      if(!sw || typeof sw !== "object") return;
+      const at = Number(sw.at||0);
+      const dur = Math.max(2000, Math.min(20000, Number(sw.durationMs||10000)));
+      const starter = String(sw.starterColor||"").toLowerCase();
+      const active = Array.isArray(serverState.activeColors) && serverState.activeColors.length ? serverState.activeColors.map(c=>String(c).toLowerCase()) : ["red","blue"];
+
+      // prevent re-trigger
+      if(at && at===lastStartWheelAt) return;
+      lastStartWheelAt = at || Date.now();
+
+      // if very old (e.g. someone joins later), don't block
+      const now = Date.now();
+      if(at && now - at > (dur + 4000)) return;
+
+      ensureStartWheelUI();
+      if(!wheelOverlay) return;
+
+      wheelBlockUntil = (at||now) + dur;
+
+      wheelTitleEl.textContent = "Glücksrad";
+      wheelSubEl.textContent = "Server entscheidet, wer anfängt…";
+      wheelResEl.textContent = "";
+
+      wheelOverlay.classList.add("show");
+
+      // deterministic random across clients (same room + same start timestamp)
+      const seed = hashStr((roomCode||"") + "|" + starter + "|" + String(at||0));
+      const rnd = mulberry32(seed);
+
+      // target slice
+      const n = active.length || 2;
+      const seg = (Math.PI*2)/n;
+      const idx = Math.max(0, active.indexOf(starter));
+      const within = (rnd()*0.7 + 0.15) * seg; // 15%..85% inside slice
+      // pointer is at top (-pi/2). We rotate wheel so slice center hits pointer.
+      const targetAngle = -( -Math.PI/2 + idx*seg + within ); // negative because we rotate wheel
+      const extraSpins = 8 + Math.floor(rnd()*4); // 8..11
+      const total = extraSpins*(Math.PI*2) + targetAngle;
+
+      const t0 = performance.now();
+      const ms = dur;
+
+      function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+
+      function frame(){
+        const t = (performance.now() - t0) / ms;
+        const k = Math.max(0, Math.min(1, t));
+        const eased = easeOutCubic(k);
+        const ang = total * eased;
+        drawWheel(active, ang);
+        if(k < 1){
+          requestAnimationFrame(frame);
+        }else{
+          wheelOverlay.classList.remove("show");
+          wheelResEl.textContent = "";
+          toast(`${PLAYER_NAME[starter] || starter} fängt an!`);
+          // ensure UI reflects correct turn (already in state)
+          updateTurnUI();
+          draw();
+        }
+      }
+      // initial draw
+      drawWheel(active, 0);
+      requestAnimationFrame(frame);
+    }catch(_e){}
+  }
+
 
   // Online
   const serverLabel = $("serverLabel");
@@ -924,6 +1134,8 @@ try{ ws = new WebSocket(SERVER_URL); }
       legalMovesAll = [];
       legalMovesByPiece = new Map();
       placingChoices = [];
+      // Start-Wheel (nur wenn Server startWheel mitsendet)
+      playStartWheelFromServer(server);
       updateTurnUI(); updateStartButton(); draw();
       ensureFittedOnce();
       return;
@@ -1876,6 +2088,7 @@ if(selected){
   }
 
   function onPointerDown(ev){
+      if(isWheelBlocking()){ return; }
       if (!state) { return; }
 canvas.setPointerCapture(ev.pointerId);
     const sp=pointerPos(ev);
@@ -2006,6 +2219,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   });
 
   rollBtn.addEventListener("click", () => {
+    if(isWheelBlocking()){ toast("Glücksrad läuft…"); return; }
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       // server checks turn
