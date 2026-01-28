@@ -2255,10 +2255,10 @@ leaveBtn.addEventListener("click", () => {
 (function dockDiceIntoStatusCard(){
   function tryDock(){
     const dice = document.getElementById("diceCube");
-    const boardInfo = document.getElementById("boardInfo");
-    // FIX: Wenn der Würfel in einem eigenen Würfel-Bereich steckt, NICHT umdocken
+    // Guard: wenn Würfel bewusst in eigener Würfel-Card steckt, NICHT umdocken
     if (dice && dice.dataset && dice.dataset.lockDiceDock === "1") return true;
-    if (dice && dice.closest && dice.closest(".diceCard")) return true; // "112 Felder"
+    if (dice && dice.closest && dice.closest(".diceCard")) return true;
+const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
     if(!dice || !boardInfo) return false;
 
     // Container finden, in dem "Board/Barikaden" stehen (Status-Card)
