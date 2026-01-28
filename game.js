@@ -2255,7 +2255,9 @@ leaveBtn.addEventListener("click", () => {
 (function dockDiceIntoStatusCard(){
   function tryDock(){
     const dice = document.getElementById("diceCube");
-    const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
+            if(dice && dice.closest && dice.closest(".diceCard")) return true;
+if(dice && dice.closest && dice.closest(".diceCard")) return true;
+const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
     if(!dice || !boardInfo) return false;
 
     // Container finden, in dem "Board/Barikaden" stehen (Status-Card)
@@ -2331,7 +2333,8 @@ leaveBtn.addEventListener("click", () => {
 
   function tryDock(){
     const dice = document.getElementById("diceCube");
-    const boardInfo = document.getElementById("boardInfo");
+        if(dice && dice.closest && dice.closest(".diceCard")) return true;
+const boardInfo = document.getElementById("boardInfo");
     if(!dice || !boardInfo) return false;
 
     const card = findStatusCardByBoardInfo();
@@ -2422,7 +2425,8 @@ leaveBtn.addEventListener("click", () => {
   }
   function tryDock(){
     const dice = document.getElementById("diceCube") || document.querySelector("#diceCube") || document.querySelector(".diceCube") || null;
-    if(!dice) return false;
+        if(dice && dice.closest && dice.closest(".diceCard")) return true;
+if(!dice) return false;
 
     const titleEl = findStatusTitleEl();
     if(!titleEl) return false;
