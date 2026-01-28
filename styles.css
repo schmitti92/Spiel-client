@@ -499,21 +499,33 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
   0%{ transform: translate(0,0) scale(1); opacity: 1; }
   100%{ transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; }
 }
-
 /* =========================
-   WÜRFEL – GROSS + EDEL (OVERRIDE)
-   (ans Ende der bestehenden styles.css anhängen)
+   FIX: Würfel gehört in die Sidebar-Card (eigener Bereich)
+   - kein Overlap
+   - groß + sanfter Glow
+   (keine Spiellogik betroffen)
 ========================= */
 
-.diceCard{
+.side .diceCard{
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:flex-start;
-  min-height:260px;
+  gap:14px;
 }
 
-.dicePill{
+.side .diceCard h3{
+  width:100%;
+  margin:0;
+}
+
+.side .diceHint{
+  font-size:13px;
+  opacity:0.75;
+  margin-top:-6px;
+}
+
+.side .dicePill{
   width:220px;
   height:220px;
   border-radius:32px;
@@ -521,8 +533,7 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
   align-items:center;
   justify-content:center;
 
-  background: radial-gradient(
-    120% 120% at 30% 20%,
+  background: radial-gradient(120% 120% at 30% 20%,
     rgba(255,255,255,0.08),
     rgba(0,0,0,0.35)
   );
@@ -531,10 +542,11 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
     inset 0 0 0 1px rgba(255,255,255,0.08),
     inset 0 20px 40px rgba(255,255,255,0.04),
     0 25px 60px rgba(0,0,0,0.55),
-    0 0 40px rgba(90,160,255,0.25);
+    0 0 40px rgba(90,160,255,0.22);
 }
 
-#diceCube{
+/* Der Würfel selbst */
+.side #diceCube{
   width:120px !important;
   height:120px !important;
   border-radius:24px;
@@ -548,19 +560,20 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
     inset 0 2px 6px rgba(255,255,255,0.45),
     inset 0 -4px 10px rgba(0,0,0,0.35),
     0 18px 35px rgba(0,0,0,0.55),
-    0 0 35px rgba(100,170,255,0.35);
+    0 0 35px rgba(100,170,255,0.30);
 }
 
-#diceCube .pip{
+.side #diceCube .pip{
   width:16px;
   height:16px;
 }
 
-#diceCube.shake,
-#diceCube.legend-roll,
-#diceCube.legend-ping{
+/* Beim Würfeln etwas mehr Glow */
+.side #diceCube.shake,
+.side #diceCube.legend-roll,
+.side #diceCube.legend-ping{
   box-shadow:
     inset 0 2px 6px rgba(255,255,255,0.55),
     0 22px 45px rgba(0,0,0,0.65),
-    0 0 50px rgba(120,190,255,0.55);
+    0 0 50px rgba(120,190,255,0.45);
 }
