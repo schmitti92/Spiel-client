@@ -360,9 +360,6 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 .btnColor.active{border-color: rgba(77,163,255,.65); box-shadow: 0 0 0 2px rgba(77,163,255,.12) inset;}
 
 
-
-/* Würfel-Card (Button über Würfel) */
-.diceCardBody{display:flex; flex-direction:column; gap:10px; align-items:flex-start;}
 /* ===== Dice cube (pips) ===== */
 .dicePill{
   width:52px; height:44px;
@@ -501,4 +498,32 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 @keyframes diceParticle{
   0%{ transform: translate(0,0) scale(1); opacity: 1; }
   100%{ transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; }
+}
+
+
+/* ===== Sidebar Würfel (über Status) ===== */
+.diceRow{
+  display:flex;
+  flex-direction: column;
+  align-items:flex-start;
+  justify-content:flex-start;
+  gap:10px;
+}
+
+.dicePill--sidebar{
+  width:72px;
+  height:64px;
+}
+
+.dicePill--sidebar #diceCube{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  gap:4px;
+  padding:6px;
+}
+
+.dicePill--sidebar .pip{
+  width:7px;
+  height:7px;
 }
