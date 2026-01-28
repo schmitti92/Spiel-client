@@ -2,130 +2,130 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Barikade</title>
-
-  <!-- Base Styles -->
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- A2.1 Joker Panel FINAL (CSS only, Click-Fix) -->
-  <link rel="stylesheet" href="joker-panel-a2.1-final.css" />
+  <!-- A2.1 Joker-Panel Styling (nur CSS, kein JS) -->
+  <link rel="stylesheet" href="joker-panel-a2.1.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">B</div>
-        <div>
-          <div class="title">Barikade</div>
-          <div class="subtitle">Online • Server steuert Würfel + Züge • 2–3 Spieler</div>
-        </div>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">B</div>
+      <div class="title">
+        <div class="h1">Barikade</div>
+        <div class="sub">Online • Server steuert Würfel + Züge • 2–3 Spieler</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="turn">
+        <span class="dot" id="turnDot"></span>
+        <span id="turnText">–</span>
+      </div>
+      <button class="btn" id="rollBtn">Würfeln</button>
+      <div id="diceCube" class="dice" data-face="0" aria-label="Würfel"></div>
+      <button class="btn" id="endBtn">Zug beenden</button>
+      <button class="btn" id="skipBtn">Runde aussetzen</button>
+      <button class="btn" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="boardWrap">
+      <!-- WICHTIG: game.js erwartet id="c" -->
+      <canvas id="c"></canvas>
+      <div id="netBanner" class="netBanner"></div>
+      <div id="toast" class="toast"></div>
+    </div>
+
+    <aside class="side">
+      <div class="card">
+        <h2>Status</h2>
+        <div class="row"><span>Board</span><span id="boardInfo">–</span></div>
+        <div class="row"><span>Barikaden</span><span id="barrInfo">–</span></div>
       </div>
 
-      <div class="topControls">
-        <div class="turnPill"><span id="turnDot" class="dot"></span><span id="turnText">–</span></div>
-        <button id="rollBtn" class="btn">Würfeln</button>
-        <div class="dicePill">
-          <div id="diceCube" data-face="0">
-            <div class="dip p1"><span class="pip"></span></div>
-            <div class="dip p2"><span class="pip"></span></div>
-            <div class="dip p3"><span class="pip"></span></div>
-            <div class="dip p4"><span class="pip"></span></div>
-            <div class="dip p5"><span class="pip"></span></div>
-            <div class="dip p6"><span class="pip"></span></div>
-            <div class="dip p7"><span class="pip"></span></div>
-            <div class="dip p8"><span class="pip"></span></div>
-            <div class="dip p9"><span class="pip"></span></div>
-          </div>
-        </div>
-        <button id="endBtn" class="btn">Zug beenden</button>
-        <button id="skipBtn" class="btn">Runde aussetzen</button>
-        <button id="resetBtn" class="btn">Reset</button>
-      </div>
-    </header>
+      <div class="card">
+        <h2>Online</h2>
+        <p class="muted">Server ist fest hinterlegt. Du brauchst nur noch einen Raumcode.</p>
+        <div class="row"><span>Server</span><span id="serverLabel">–</span></div>
 
-    <main class="main">
-      <section class="boardWrap">
-        <canvas id="c"></canvas>
-      </section>
+        <label class="lbl">Raumcode</label>
+        <input class="inp" id="roomCode" placeholder="z.B. A7K3Q2" />
 
-      <aside class="side">
-
-        <!-- STATUS -->
-        <div class="card">
-          <h3>Status</h3>
-          <div class="kv"><span>Board</span><span id="boardInfo">–</span></div>
-          <div class="kv"><span>Barikaden</span><span id="barrInfo">–</span></div>
+        <div class="btnRow">
+          <button class="btn" id="hostBtn">Host</button>
+          <button class="btn" id="joinBtn">Beitreten</button>
+          <button class="btn" id="leaveBtn">Trennen</button>
+          <button class="btn" id="startBtn">Spiel starten</button>
+          <button class="btn" id="debugToggle">Debug</button>
         </div>
 
-        <!-- ONLINE -->
-        <div class="card">
-          <h3>Online</h3>
-          <div class="muted">Server ist fest hinterlegt. Du brauchst nur noch einen Raumcode.</div>
-          <div class="kv"><span>Server</span><span id="serverLabel">–</span></div>
+        <!-- Action Mode Toggle (minimal HTML) -->
+        <label class="chkRow">
+          <input type="checkbox" id="actionModeToggle" />
+          <span>Action‑Modus (Joker‑Spiel)</span>
+        </label>
 
-          <label class="lbl">Raumcode</label>
-          <input id="roomCode" class="inp" placeholder="z.B. A7K3Q2" />
-
-          <div class="row">
-            <button id="hostBtn" class="btn">Host</button>
-            <button id="joinBtn" class="btn">Beitreten</button>
-            <button id="leaveBtn" class="btn">Trennen</button>
-            <button id="startBtn" class="btn" disabled>Spiel starten</button>
-          </div>
-
-          <label class="muted" style="display:flex; gap:10px; align-items:center; margin-top:8px;">
-            <input id="actionModeToggle" type="checkbox" />
-            Action-Modus (Joker-Spiel)
-          </label>
-
-          <div class="kv"><span>Status</span><span id="netStatus" class="ok">Offline</span></div>
-          <div class="kv"><span>Du bist</span><span id="myColor">–</span></div>
-          <div class="kv"><span>Aktive Spieler</span><span id="netPlayers">–</span></div>
-          <div class="kv"><span>Verbindung</span><span id="connStatus">–</span></div>
-          <div class="kv"><span>Warte auf</span><span id="waitReason">–</span></div>
-
-          <div id="colorPick" style="display:none;">
-            <div class="lbl">Wähle deine Farbe</div>
-            <div class="colorRow">
-              <button id="pickRed" class="btnColor">Rot</button>
-              <button id="pickBlue" class="btnColor">Blau</button>
-              <button id="pickGreen" class="btnColor">Grün</button>
-              <button id="pickYellow" class="btnColor">Gelb</button>
-            </div>
-            <div class="muted" style="margin-top:6px;">Farbe bleibt reserviert (Reconnect).</div>
-          </div>
+        <!-- Host tools (werden in game.js ein/ausgeblendet) -->
+        <div id="hostTools" class="btnRow" style="display:none; margin-top:10px;">
+          <button class="btn" id="resumeBtn">Spiel fortsetzen</button>
+          <button class="btn" id="saveBtn">Save</button>
+          <button class="btn" id="loadBtn">Load</button>
+          <button class="btn" id="restoreBtn">Restore</button>
+          <input id="loadFile" type="file" accept="application/json" style="display:none" />
+          <span id="autoSaveInfo" class="muted" style="display:none"></span>
         </div>
 
-        <!-- ACTION MODE -->
-        <div id="actionCard" class="card" style="display:none;">
-          <h3>⚡ Action-Joker</h3>
-          <div class="muted" id="actionHint">–</div>
+        <div class="row"><span>Status</span><span id="netStatus">Offline</span></div>
+        <div class="row"><span>Du bist</span><span id="myColor">–</span></div>
+        <div class="row"><span>Aktive Spieler</span><span id="netPlayers">–</span></div>
+        <div class="row"><span>Verbindung</span><span id="connStatus">–</span></div>
+        <div class="row"><span>Warte auf</span><span id="waitReason">–</span></div>
+
+        <!-- Joker Panel (minimal HTML, Styling via CSS) -->
+        <div id="actionCard" class="actionCard">
+          <h3>🃏 Joker</h3>
+          <div id="actionHint">Nutze 1 Joker pro Typ (je 1× pro Spiel).</div>
 
           <div class="joker-grid">
-            <button id="jokerChooseBtn" class="joker-btn">🎯 Choose</button>
-            <button id="jokerSumBtn" class="joker-btn">➕ Summe</button>
-            <button id="jokerAllColorsBtn" class="joker-btn">🎮 Alle Farben</button>
-            <button id="jokerBarricadeBtn" class="joker-btn">🧱 Barikade</button>
+            <button class="joker-btn" id="jokerChooseBtn">🎯 Choose</button>
+            <button class="joker-btn" id="jokerSumBtn">➕ Summe</button>
+            <button class="joker-btn" id="jokerAllColorsBtn">🎮 Alle Farben</button>
+            <button class="joker-btn" id="jokerBarricadeBtn">🧱 Barikade</button>
           </div>
 
           <div id="chooseBox">
-            <div class="muted">Choose: Wähle deinen Wurf</div>
-            <button id="choosePickA" class="btn">Wurf A</button>
-            <button id="choosePickB" class="btn">Wurf B</button>
+            <div class="muted">Wähle deinen Wurf:</div>
+            <button class="btn" id="choosePickA">Wurf A</button>
+            <button class="btn" id="choosePickB">Wurf B</button>
           </div>
 
           <div id="barricadeBox">
-            <div id="barricadeHint">Barikade: klicke Quelle, dann Ziel</div>
-            <button id="barricadeCancel" class="btn">Abbrechen</button>
-            <button id="barricadeClear" class="btn">Auswahl löschen</button>
+            <div id="barricadeHint">Barikade: Quelle wählen → dann Ziel klicken</div>
+            <div class="btnRow">
+              <button class="btn" id="barricadeClear">Quelle löschen</button>
+              <button class="btn" id="barricadeCancel">Abbrechen</button>
+            </div>
           </div>
         </div>
+      </div>
 
-      </aside>
-    </main>
+      <pre id="debugLog" class="debugLog" style="display:none"></pre>
+    </aside>
   </div>
 
+  <div id="overlay" class="overlay">
+    <div class="overlayCard">
+      <h2 id="overlayTitle">–</h2>
+      <div id="overlaySub" class="muted">–</div>
+      <div id="overlayHint" class="hint">–</div>
+      <button class="btn" id="overlayOk">OK</button>
+    </div>
+  </div>
+
+  <!-- WICHTIG: Datei muss game.js heißen -->
   <script src="game.js"></script>
 </body>
 </html>
