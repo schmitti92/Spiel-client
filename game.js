@@ -29,6 +29,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const skipBtn = $("skipBtn");
   const resetBtn= $("resetBtn");
   const resumeBtn = $("resumeBtn");
+  const actionModeToggle = $("actionModeToggle");
   // Host tools (Save/Load) - host only
   const hostTools = $("hostTools");
   const saveBtn = $("saveBtn");
@@ -801,7 +802,7 @@ try{ ws = new WebSocket(SERVER_URL); }
           // UI-Hinweis statt Reset:
           const hasAuto = !!readHostAutosave();
           if(isMeHost() && hasAuto){
-            showNetBanner("Server war offline/sleep (kein Spielstand). Klicke als Host auf \"Restore\" (Auto‑Save) oder \"Load\" (JSON).");
+            showNetBanner("Server war offline/sleep (kein Spielstand). Klicke als Host auf 'Restore' (Auto‑Save) oder 'Load' (JSON).");
           }else{
             showNetBanner("Kein Spielstand am Server. Nutze Load (JSON) oder starte neu.");
           }
@@ -865,19 +866,19 @@ try{ ws = new WebSocket(SERVER_URL); }
   }
 
   function chooseColor(color){
-    // Store requested color for this room (used on join + reconnect)
-    try{
-      if(currentRoom){
-        localStorage.setItem("barikade_reqColor_"+currentRoom, String(color));
-      }
-    }catch(_e){}
+    // Legacy helper: set requested color for the current room and optionally notify server.
+    const c = String(color||"").toLowerCase();
+    if(!(c==="red"||c==="blue"||c==="green"||c==="yellow")) return;
 
-    // If online & already connected, ask server immediately
-    if(netMode==="online" && ws && ws.readyState===1){
-      wsSend({type:"request_color", room: currentRoom, sessionToken: sessionToken, color: String(color)});
-    } else {
-      // If not connected yet, we reconnect so the next join includes requestedColor
-      toast("Farbe gespeichert. Beim Beitreten/Reconnect wird sie angefragt.");
+    // persist wish (room-scoped + global fallback)
+    setRequestedColor(c);
+    updateColorPickUI();
+
+    // If we are already connected online, ask server immediately.
+    if(netMode!=="offline" && ws && ws.readyState===1){
+      wsSend({ type:"request_color", color: c, ts: Date.now() });
+    }else{
+      toast("Farbe gespeichert. Beim Join/Reconnect wird sie angefragt.");
     }
   }
 
@@ -936,9 +937,9 @@ try{ ws = new WebSocket(SERVER_URL); }
         goalNodeId: server.goal ? String(server.goal) : goalNodeId,
         // optional info from server (used by some UIs)
         activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null,
-        mode: String(server.mode || \"classic\"),
-        action: (server.action && typeof server.action === \"object\") ? server.action : null
-      });
+        mode: String(server.mode || "classic"),
+        action: (server.action && typeof server.action === "object") ? server.action : null
+      };
 
       // map phases
       const ph = server.phase;
