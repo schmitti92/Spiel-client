@@ -1,10 +1,12 @@
 /* =========================================================
    Joker Panel – A2.1 FINAL
    Reines CSS + minimale HTML-Abhängigkeit
+
    ✔ kein JS
    ✔ Click-Fix für Spielfiguren
    ✔ Action-Modus ready
    ========================================================= */
+
 
 /* ---------- WICHTIGER CLICK-FIX ---------- */
 /* Panels dürfen KEINE Klicks vom Canvas klauen */
@@ -13,7 +15,7 @@
   pointer-events: auto;
 }
 
-/* Alles außerhalb des Panels bleibt klickbar */
+/* Joker-Panel über UI, aber unter Gameplay-Logik */
 #actionCard {
   position: relative;
   z-index: 5;
@@ -25,26 +27,28 @@ canvas,
   pointer-events: auto !important;
 }
 
+
 /* ---------- ACTION CARD CONTAINER ---------- */
 #actionCard {
   margin-top: 14px;
   padding: 14px;
   border-radius: 14px;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(40, 60, 90, 0.55),
-      rgba(20, 30, 50, 0.55)
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(40, 60, 90, 0.55),
+    rgba(20, 30, 50, 0.55)
+  );
 
   border: 1px solid rgba(255, 255, 255, 0.08);
+
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.06),
     0 10px 28px rgba(0,0,0,0.45);
 
-  display: none; /* wird von JS nur EIN/AUS geschaltet */
+  display: none; /* wird NUR von JS ein-/ausgeblendet */
 }
+
 
 /* ---------- TITLE ---------- */
 #actionCard h3 {
@@ -55,12 +59,14 @@ canvas,
   opacity: 0.9;
 }
 
+
 /* ---------- INFO / HINT ---------- */
 #actionHint {
   font-size: 12px;
   opacity: 0.8;
   margin-bottom: 10px;
 }
+
 
 /* ---------- JOKER GRID ---------- */
 .joker-grid {
@@ -69,18 +75,18 @@ canvas,
   gap: 10px;
 }
 
+
 /* ---------- JOKER BUTTON BASE ---------- */
 .joker-btn {
   position: relative;
   padding: 12px 10px;
   border-radius: 12px;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,0.10),
-      rgba(255,255,255,0.02)
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.10),
+    rgba(255,255,255,0.02)
+  );
 
   border: 1px solid rgba(255,255,255,0.12);
   color: #eef3ff;
@@ -90,17 +96,20 @@ canvas,
   text-align: center;
 
   cursor: pointer;
+
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
     opacity 0.12s ease;
 }
 
+
 /* Hover nur wenn aktiv */
 .joker-btn:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
+
 
 /* ---------- DISABLED ---------- */
 .joker-btn:disabled {
@@ -109,24 +118,28 @@ canvas,
   box-shadow: none;
 }
 
+
 /* ---------- USED / VERBRAUCHT ---------- */
 .joker-btn.used {
   opacity: 0.55;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(120,120,120,0.25),
-      rgba(60,60,60,0.25)
-    );
+
+  background: linear-gradient(
+    180deg,
+    rgba(120,120,120,0.25),
+    rgba(60,60,60,0.25)
+  );
 }
+
 
 /* ---------- ACTIVE EFFECT ---------- */
 .joker-btn.active {
   outline: 2px solid rgba(255, 220, 120, 0.9);
+
   box-shadow:
     0 0 0 2px rgba(255,220,120,0.25),
     0 0 18px rgba(255,220,120,0.45);
 }
+
 
 /* ---------- BADGES ---------- */
 .joker-badge {
@@ -141,6 +154,7 @@ canvas,
   background: rgba(0,0,0,0.55);
   opacity: 0.85;
 }
+
 
 /* ---------- CHOOSE BOX ---------- */
 #chooseBox {
@@ -159,18 +173,18 @@ canvas,
   width: 100%;
 }
 
+
 /* ---------- BARRICADE MODE ---------- */
 #barricadeBox {
   margin-top: 12px;
   padding: 10px;
   border-radius: 12px;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(120,80,40,0.45),
-      rgba(60,40,20,0.45)
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(120,80,40,0.45),
+    rgba(60,40,20,0.45)
+  );
 
   border: 1px solid rgba(255,200,120,0.25);
   display: none;
@@ -181,6 +195,7 @@ canvas,
   opacity: 0.85;
   margin-bottom: 6px;
 }
+
 
 /* ---------- MOBILE SAFETY ---------- */
 @media (max-width: 700px) {
