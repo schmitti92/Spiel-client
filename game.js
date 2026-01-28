@@ -1666,6 +1666,8 @@ function toast(msg){
     }
     return null;
   }
+    return null;
+  }
   function selectPiece(sel){
     selected = sel;
     toast(`${PLAYER_NAME[sel.color]} Figur ${sel.index+1} gewählt`);
@@ -1718,6 +1720,8 @@ function toast(msg){
         if(String(arr[i].pos) === nid) res.push({color:c,index:i});
       }
     }
+    return res;
+  }
     return res;
   }
 
