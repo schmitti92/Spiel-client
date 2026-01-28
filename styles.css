@@ -501,30 +501,47 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 }
 
 
-/* ================================
-   Würfel-Card (neu, stabil, ohne Overlap)
-   - Würfel hat eigenen Bereich
-   - Status kommt darunter
-   ================================ */
-.diceCard .diceArea{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-  padding-top:4px;
-}
-.dicePillBig{
-  width:110px;
-  height:110px;
-  border-radius:22px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.dicePillBig #diceCube{
-  transform: scale(2.25);
-  transform-origin: center;
+/* =========================
+   Würfel-UX Upgrade (größer + sanfter Glow) – nur Sidebar
+   (keine Spiellogik betroffen)
+========================= */
+.sidebar .dicePill{
+  width: 168px;
+  height: 168px;
+  border-radius: 26px;
+  background: rgba(0,0,0,0.20);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.04),
+    0 18px 40px rgba(0,0,0,0.35);
 }
 
-/* Header: kein Platz für Würfel mehr nötig */
-.topControls .dicePill{ display:none; }
+.sidebar .dicePill #diceCube{
+  width: 78px;
+  height: 78px;
+  border-radius: 18px;
+  gap: 7px;
+  padding: 9px;
+
+  /* sanfter Glow */
+  box-shadow:
+    inset 0 2px 5px rgba(255,255,255,0.35),
+    0 10px 22px rgba(0,0,0,0.45),
+    0 0 22px rgba(77,163,255,0.22);
+  filter: drop-shadow(0 14px 26px rgba(0,0,0,0.45));
+}
+
+.sidebar .dicePill #diceCube .pip{
+  width: 12px;
+  height: 12px;
+}
+
+/* Optional: etwas mehr “Glow” während Shake/Legend-Animationen */
+.sidebar .dicePill #diceCube.shake,
+.sidebar .dicePill #diceCube.legend-roll,
+.sidebar .dicePill #diceCube.legend-ping{
+  box-shadow:
+    inset 0 2px 5px rgba(255,255,255,0.35),
+    0 14px 28px rgba(0,0,0,0.55),
+    0 0 28px rgba(77,163,255,0.28);
+}
