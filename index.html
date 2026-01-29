@@ -61,15 +61,11 @@
 
           <div class="row">
             <button id="hostBtn" class="btn">Host</button>
+          <button id="hostNewBtn" class="btn">🆕 Neues Spiel</button>
             <button id="joinBtn" class="btn">Beitreten</button>
             <button id="leaveBtn" class="btn">Trennen</button>
             <button id="startBtn" class="btn" disabled>Spiel starten</button>
           </div>
-
-          <label class="muted" style="display:flex; gap:10px; align-items:center; margin-top:8px;">
-            <input id="actionModeToggle" type="checkbox" />
-            Action-Modus (Joker-Spiel)
-          </label>
 
           <!-- Host-Tools: Save/Load (nur sichtbar für Host) -->
           <div id="hostTools" class="row" style="margin-top:8px; display:none;">
@@ -99,38 +95,6 @@
             <div class="muted" style="margin-top:6px;">Farbe bleibt reserviert (Reconnect).</div>
           </div>
         </div>
-      
-        <!-- ACTION MODE (nur sichtbar wenn mode === "action") -->
-        <div id="actionCard" class="card" style="display:none;">
-          <h3>⚡ Action-Joker</h3>
-          <div class="muted" id="actionHint" style="margin-bottom:8px;">–</div>
-
-          <div class="row" style="flex-wrap:wrap; gap:8px;">
-            <button id="jokerChooseBtn" class="btn" title="2× würfeln, einen wählen">🎯 Choose</button>
-            <button id="jokerSumBtn" class="btn" title="2× würfeln, Summe zählt">➕ Summe</button>
-            <button id="jokerAllColorsBtn" class="btn" title="Diesen Zug alle Farben bewegen">🎮 Alle Farben</button>
-            <button id="jokerBarricadeBtn" class="btn" title="Barikade aufnehmen & versetzen">🧱 Barikade</button>
-          </div>
-
-          <!-- Choose-Auswahl (Overlay im Panel) -->
-          <div id="chooseBox" style="display:none; margin-top:10px; padding:10px; border:1px solid rgba(255,255,255,0.12); border-radius:12px;">
-            <div class="muted" style="margin-bottom:8px;">Choose: Wähle deinen Wurf</div>
-            <div class="row" style="gap:8px;">
-              <button id="choosePickA" class="btn">Wurf A</button>
-              <button id="choosePickB" class="btn">Wurf B</button>
-            </div>
-          </div>
-
-          <!-- Barikade-Flow -->
-          <div id="barricadeBox" style="display:none; margin-top:10px; padding:10px; border:1px solid rgba(255,255,255,0.12); border-radius:12px;">
-            <div class="muted" id="barricadeHint">Barikade: klicke Quelle, dann Ziel</div>
-            <div class="row" style="gap:8px; margin-top:8px;">
-              <button id="barricadeCancel" class="btn">Abbrechen</button>
-              <button id="barricadeClear" class="btn">Auswahl löschen</button>
-            </div>
-          </div>
-        </div>
-
       </aside>
     </main>
 
