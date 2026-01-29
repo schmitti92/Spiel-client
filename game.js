@@ -2881,5 +2881,18 @@ leaveBtn.addEventListener("click", () => {
   }, 120);
 
   window.addEventListener("load", ()=>{ tryDock(); });
+
+  // --- BOOTSTRAP (wichtig: ohne das wird weder Board geladen noch Server verbunden) ---
+  try {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  } catch (e) {
+    console.error("BOOTSTRAP failed:", e);
+    showOverlay("Fehler", "Boot-Fehler: " + (e && e.message ? e.message : e));
+  }
+
 })();
 
