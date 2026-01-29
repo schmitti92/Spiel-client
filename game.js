@@ -148,7 +148,20 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const netPlayersEl = $("netPlayers");
   const myColorEl = $("myColor");
 
-  // Color picker (A1.1)
+  // ===== Action-Mode (J1: Anzeige-Only, kein Gameplay-Risiko) =====
+  const actionModeToggle = $("actionModeToggle");
+  const actionCard = $("actionCard");
+  const actionHint = $("actionHint");
+  const jokerChooseState = $("jokerChooseState");
+  const jokerSumState = $("jokerSumState");
+  const jokerAllColorsState = $("jokerAllColorsState");
+  const jokerBarricadeState = $("jokerBarricadeState");
+  const actionEffectsState = $("actionEffectsState");
+
+
+  
+  const jokerAllColorsBtn = $("jokerAllColorsBtn");
+// Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
   // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
   let colorPickWrap = $("colorPick");
@@ -399,6 +412,11 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   if(serverLabel) serverLabel.textContent = SERVER_URL;
 
   let ws=null;
+  // Net watchdog: detects "silent" sockets that look connected but receive no messages
+  let _lastNetMsgAt = Date.now();
+  let _netWatchdogIv = null;
+  let _netPingIv = null;
+  let _netWatchdogArmed = false;
   let netMode="offline";
   let netCanStart=false;    // offline | host | client
   let roomCode="";
@@ -545,6 +563,51 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
 
+  // ===== Action-Mode UI (J1: nur anzeigen, NICHT eingreifen) =====
+  function updateActionUI_J1(){
+    try{
+      if(!actionCard) return;
+      const mode = (state && state.mode) ? String(state.mode) : "classic";
+      const show = (mode === "action");
+      actionCard.style.display = show ? "block" : "none";
+      if(!show) return;
+
+      const ac = (state && state.action) ? state.action : null;
+      const my = myColor || (state ? state.currentPlayer : null);
+
+      // Hint text
+      if(actionHint){
+        actionHint.textContent = ac ? "Joker-Status (Anzeige):" : "Action-Modus aktiv (Status lädt…)";
+      }
+
+      const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
+      const eff = ac && ac.effects ? ac.effects : null;
+
+      function fmt(v){
+        if(v===true) return "bereit";
+        if(v===false) return "verbraucht";
+        return "–";
+      }
+
+      if(jokerChooseState) jokerChooseState.textContent = fmt(js && my ? js[my]?.choose : null);
+      if(jokerSumState) jokerSumState.textContent = fmt(js && my ? js[my]?.sum : null);
+      if(jokerAllColorsState) jokerAllColorsState.textContent = fmt(js && my ? js[my]?.allColors : null);
+      if(jokerBarricadeState) jokerBarricadeState.textContent = fmt(js && my ? js[my]?.barricade : null);
+
+      if(actionEffectsState){
+        if(!eff){ actionEffectsState.textContent = "–"; }
+        else{
+          const parts = [];
+          if(eff.allColorsBy) parts.push("Alle Farben aktiv");
+          if(eff.doubleRoll && eff.doubleRoll.kind) parts.push("Doppelwurf: " + eff.doubleRoll.kind);
+          if(eff.barricadeBy) parts.push("Barikade-Joker aktiv");
+          actionEffectsState.textContent = parts.length ? parts.join(" • ") : "keine Effekte";
+        }
+      }
+    }catch(_e){}
+  }
+
+
   function setNetStatus(text, good){
     if(!netStatus) return;
     netStatus.textContent = text;
@@ -570,6 +633,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     updateStartButton();
     }
     updateColorPickUI();
+    updateActionUI_J1();
+    updateActionUI_J1();
 
     // Host: keep state players in sync with chosen colors
     if(netMode==="host" && state){
@@ -658,6 +723,24 @@ try{ ws = new WebSocket(SERVER_URL); }
 
     ws.onopen = () => {
       stopReconnect();
+      _lastNetMsgAt = Date.now();
+      // Start watchdog only once per connection lifecycle
+      try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
+      try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
+      _netWatchdogIv = setInterval(()=>{
+        if(netMode === "offline") return;
+        if(!ws || ws.readyState!==1) return;
+        const age = Date.now() - (_lastNetMsgAt||0);
+        if(age > 12000){
+          // Force reconnect: socket is "silent" (common on some WLANs)
+          try{ ws.close(); }catch(_e){}
+        }
+      }, 2000);
+      // Lightweight ping to keep some routers/proxies happy (server may ignore)
+      _netPingIv = setInterval(()=>{
+        if(!ws || ws.readyState!==1) return;
+        try{ ws.send(JSON.stringify({type:"ping", ts:Date.now()})); }catch(_e){}
+      }, 5000);
       hideNetBanner();
       setNetStatus("Verbunden – join…", true);
 
@@ -674,6 +757,7 @@ try{ ws = new WebSocket(SERVER_URL); }
     };
 
     ws.onmessage = (ev) => {
+      _lastNetMsgAt = Date.now();
       const msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
       if(!msg) return;
       const type = msg.type;
@@ -767,6 +851,9 @@ try{ ws = new WebSocket(SERVER_URL); }
 
     ws.onerror = () => { setNetStatus("Fehler – Reconnect…", false); showNetBanner("Verbindungsfehler – Reconnect läuft…"); };
     ws.onclose = () => {
+      try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
+      try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
+      _netWatchdogIv=null; _netPingIv=null;
       setNetStatus("Getrennt – Reconnect…", false);
       showNetBanner("Verbindung getrennt – Reconnect läuft…");
       if(netMode!=="offline") scheduleReconnect();
@@ -775,6 +862,9 @@ try{ ws = new WebSocket(SERVER_URL); }
 
   function disconnectWS(){
     stopReconnect();
+    try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
+    try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
+    _netWatchdogIv=null; _netPingIv=null;
     if(ws){
       try{ ws.onopen=ws.onmessage=ws.onerror=ws.onclose=null; ws.close(); }catch(_e){}
       ws=null;
@@ -887,6 +977,10 @@ try{ ws = new WebSocket(SERVER_URL); }
         goalNodeId: server.goal ? String(server.goal) : goalNodeId,
         // optional info from server (used by some UIs)
         activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
+              ,
+        mode: String(server.mode || "classic"),
+        action: (server.action && typeof server.action === "object") ? server.action : null
+      
       };
 
       // map phases
@@ -906,6 +1000,8 @@ try{ ws = new WebSocket(SERVER_URL); }
       legalMovesByPiece = new Map();
       placingChoices = [];
       updateTurnUI(); updateStartButton(); draw();
+    updateActionUI_J1();
+      updateActionUI_J1();
       ensureFittedOnce();
       return;
     }
@@ -939,6 +1035,7 @@ try{ ws = new WebSocket(SERVER_URL); }
     if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
     setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
     updateTurnUI(); updateStartButton(); draw();
+    updateActionUI_J1();
       ensureFittedOnce();
   }
 
@@ -1024,7 +1121,7 @@ function toast(msg){
     }
   }
 
-  function setDiceFaceAnimated(v, forceFullRoll=false){
+  function setDiceFaceAnimated(v){
     if(!diceEl) return;
     const face = (v>=1 && v<=6) ? v : 0;
 
@@ -1036,7 +1133,7 @@ function toast(msg){
 
     // reset helper classes
     try{
-      diceEl.classList.remove("legend-roll","legend-ping","legend-crit6","legend-crit1","shake");
+      diceEl.classList.remove("legend-roll","legend-ping","legend-crit6","legend-crit1");
     }catch(_e){}
 
     if(face===0){
@@ -1046,27 +1143,6 @@ function toast(msg){
     }
 
     const sameAsBefore = (face === lastDiceFace);
-
-    // 🔧 Stabilitäts-Fix:
-    // Bei häufigen Server-Snapshots (Heartbeat) kommt die gleiche Zahl immer wieder.
-    // Dann darf der Würfel NICHT jedes Mal neu "rollen" (sonst wirkt er unruhig).
-    // -> Nur bei echter Änderung (oder forceFullRoll) animieren.
-    if(sameAsBefore && !forceFullRoll){
-      try{
-        diceEl.dataset.face = String(face);
-
-        // kleiner Ping nur optional (sehr kurz), aber KEIN full roll / flicker
-        diceEl.classList.remove("legend-ping");
-        void diceEl.offsetWidth;
-        diceEl.classList.add("legend-ping");
-        setTimeout(()=>{ try{ diceEl.classList.remove("legend-ping"); }catch(_e){} }, 220);
-
-        // crit overlays (kurz) nur wenn gewünscht – hier NICHT neu starten
-      }catch(_e){}
-      return;
-    }
-
-    // update last face now (only when we actually animate a new result)
     lastDiceFace = face;
 
     // start legendary roll animation
@@ -1076,7 +1152,9 @@ function toast(msg){
       // restart animation class reliably
       diceEl.classList.remove("legend-roll");
       void diceEl.offsetWidth;
-      diceEl.classList.add("legend-roll");
+      if(!sameAsBefore){
+        diceEl.classList.add("legend-roll");
+      }
 
       // also keep old shake (if CSS exists)
       diceEl.classList.remove("shake");
@@ -1085,8 +1163,10 @@ function toast(msg){
     }catch(_e){}
 
     // Flicker: 10–14 quick random faces (visual only)
+    // But ONLY when the face actually changes; otherwise snapshots would cause jitter.
     const t0 = performance.now();
-    _diceFlickerTimer = setInterval(()=>{
+    if(!sameAsBefore){
+      _diceFlickerTimer = setInterval(()=>{
       try{
         const r = 1 + Math.floor(Math.random()*6);
         diceEl.dataset.face = String(r);
@@ -1096,7 +1176,8 @@ function toast(msg){
         try{ clearInterval(_diceFlickerTimer); }catch(_e){}
         _diceFlickerTimer=null;
       }
-    }, 45);
+      }, 45);
+    }
 
     // particles (existing)
     try{ spawnDiceParticles(); }catch(_e){}
@@ -1109,14 +1190,18 @@ function toast(msg){
       try{
         diceEl.dataset.face = String(face);
         diceEl.classList.remove("shake");
-
+        // if same face, give a small ping so it still feels alive
+        if(sameAsBefore){
+          diceEl.classList.remove("legend-ping");
+          void diceEl.offsetWidth;
+          diceEl.classList.add("legend-ping");
+        }
         // crit effects
         if(face===6) diceEl.classList.add("legend-crit6");
         if(face===1) diceEl.classList.add("legend-crit1");
-
         // remove crit classes after a moment (visual only)
         setTimeout(()=>{
-          try{ diceEl.classList.remove("legend-crit6","legend-crit1"); }catch(_e){}
+          try{ diceEl.classList.remove("legend-crit6","legend-crit1","legend-ping"); }catch(_e){}
         }, 1000);
       }catch(_e){}
     }, 560);
@@ -1393,27 +1478,41 @@ function toast(msg){
   }
   function trySelectAtNode(node){
       if (!state || !state.currentPlayer) { return false; }
-if(!node) return false;
-    const c = state.currentPlayer;
-    if(node.kind === "board"){
-      const p = pieceAtBoardNode(node.id, c);
-      if(p){ selectPiece(p); return true; }
-      return false;
-    }
-    if(node.kind === "house" && node.flags?.houseColor === c && node.flags?.houseSlot){
-      const idx = Number(node.flags.houseSlot) - 1;
-      if(idx>=0 && idx<5){
-        if(state.pieces[c][idx].pos === "house"){
-          selectPiece({color:c, index:idx});
-          return true;
-        }else{
-          toast("Diese Figur ist nicht im Haus");
-          return true;
+      if(!node) return false;
+
+      const turn = state.currentPlayer;
+      const isMyTurnOnline = (netMode!=="offline") ? (myColor && myColor===turn) : true;
+      const allowAll = !!(isMyTurnOnline && state && state.mode==="action" && state.action && state.action.effects && state.action.effects.allColorsBy===turn);
+
+      if(node.kind === "board"){
+        let p = pieceAtBoardNode(node.id, turn);
+        if(!p && allowAll){
+          for(const col of ["red","blue","green","yellow"]){
+            p = pieceAtBoardNode(node.id, col);
+            if(p) break;
+          }
+        }
+        if(p){ selectPiece(p); return true; }
+        return false;
+      }
+
+      if(node.kind === "house" && node.flags?.houseColor && node.flags?.houseSlot){
+        const hc = String(node.flags.houseColor).toLowerCase();
+        const idx = Number(node.flags.houseSlot) - 1;
+        if(idx>=0 && idx<5){
+          const can = (hc === turn) || allowAll;
+          if(!can) return false;
+          if(state.pieces[hc] && state.pieces[hc][idx] && state.pieces[hc][idx].pos === "house"){
+            selectPiece({color:hc, index:idx});
+            return true;
+          }else{
+            toast("Diese Figur ist nicht im Haus");
+            return true;
+          }
         }
       }
+      return false;
     }
-    return false;
-  }
 
   function anyPiecesAtNode(nodeId){
     const res=[];
@@ -1993,7 +2092,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
-    wsSend({type:"start", ts:Date.now()});
+    wsSend({type:"start", mode: (actionModeToggle && actionModeToggle.checked ? "action" : "classic"), ts:Date.now()});
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
@@ -2003,7 +2102,21 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     wsSend({type:"resume", ts:Date.now()});
   });
 
-  rollBtn.addEventListener("click", () => {
+  
+  // ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
+  if(jokerAllColorsBtn){
+    jokerAllColorsBtn.addEventListener("click", () => {
+      if(netMode==="offline") return;
+      if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+      if(!state || String(state.mode||"classic")!=="action"){ toast("Action-Modus ist nicht aktiv"); return; }
+      if(!myColor){ toast("Bitte Farbe wählen"); return; }
+      if(state.currentPlayer!==myColor){ toast("Du bist nicht dran"); return; }
+      if(state.phase!=="need_move" || state.rolled==null){ toast("Erst würfeln – dann Joker"); return; }
+      wsSend({ type:"use_joker", joker:"allcolors", ts: Date.now() });
+    });
+  }
+
+rollBtn.addEventListener("click", () => {
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       // server checks turn
