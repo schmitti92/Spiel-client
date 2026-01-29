@@ -568,7 +568,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     try{
       if(!actionCard) return;
       const mode = (state && state.mode) ? String(state.mode) : "classic";
-      const show = (mode === "action");
+      const show = (mode === "action") || (!!(actionModeToggle && actionModeToggle.checked));
       actionCard.style.display = show ? "block" : "none";
       if(!show) return;
 
@@ -577,7 +577,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
       // Hint text
       if(actionHint){
-        actionHint.textContent = ac ? "Joker-Status (Anzeige):" : "Action-Modus aktiv (Status lädt…)";
+        actionHint.textContent = (mode === "action") ? (ac ? "Joker-Status (Anzeige):" : "Action-Modus aktiv (Status lädt…)") : ((actionModeToggle && actionModeToggle.checked) ? "Action-Modus aktiv (warte auf Server…)" : (ac ? "Joker-Status (Anzeige):" : "Action-Modus aktiv (Status lädt…)"));
       }
 
       const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
@@ -2108,7 +2108,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     jokerAllColorsBtn.addEventListener("click", () => {
       if(netMode==="offline") return;
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
-      if(!state || String(state.mode||"classic")!=="action"){ toast("Action-Modus ist nicht aktiv"); return; }
+      const actionEnabled = (!!state && String(state.mode||"classic")==="action") || (!!(actionModeToggle && actionModeToggle.checked));
+      if(!actionEnabled){ toast("Action-Modus ist nicht aktiv"); return; }
       if(!myColor){ toast("Bitte Farbe wählen"); return; }
       if(state.currentPlayer!==myColor){ toast("Du bist nicht dran"); return; }
       if(state.phase!=="need_move" || state.rolled==null){ toast("Erst würfeln – dann Joker"); return; }
