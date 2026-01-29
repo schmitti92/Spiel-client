@@ -864,7 +864,17 @@ try{ ws = new WebSocket(SERVER_URL); }
       const type = msg.type;
 
       if(type==="hello"){
+        // Server assigns canonical clientId. If room_update arrived before hello,
+        // myColor would stay null and clicks/rolls get blocked. Recompute after hello.
+        const prevId = clientId;
         if(msg.clientId) clientId = msg.clientId;
+        if(prevId !== clientId){
+          try{ saveSession(); }catch(_e){}
+          try{ setNetPlayers(lastNetPlayers); }catch(_e){}
+          try{ updateTurnUI(); }catch(_e){}
+          try{ updateActionUI(); }catch(_e){}
+          try{ updateStartButton(); }catch(_e){}
+        }
         return;
       }
       if(type==="room_update"){
@@ -2881,18 +2891,5 @@ leaveBtn.addEventListener("click", () => {
   }, 120);
 
   window.addEventListener("load", ()=>{ tryDock(); });
-
-  // --- BOOTSTRAP (wichtig: ohne das wird weder Board geladen noch Server verbunden) ---
-  try {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", init);
-    } else {
-      init();
-    }
-  } catch (e) {
-    console.error("BOOTSTRAP failed:", e);
-    showOverlay("Fehler", "Boot-Fehler: " + (e && e.message ? e.message : e));
-  }
-
 })();
 
