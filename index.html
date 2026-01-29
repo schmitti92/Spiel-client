@@ -61,10 +61,30 @@
 
           <div class="row">
             <button id="hostBtn" class="btn">Host</button>
-          <button id="hostNewBtn" class="btn">🆕 Neues Spiel</button>
             <button id="joinBtn" class="btn">Beitreten</button>
             <button id="leaveBtn" class="btn">Trennen</button>
             <button id="startBtn" class="btn" disabled>Spiel starten</button>
+          </div>
+
+
+          <div class="row" style="gap:10px; align-items:center; margin-top:6px;">
+            <label style="display:flex; gap:8px; align-items:center; font-size:13px; opacity:.9; user-select:none;">
+              <input type="checkbox" id="actionModeToggle" />
+              Action‑Modus (Joker‑Extra)
+            </label>
+          </div>
+
+          <!-- Action-Mode Panel (J1: Anzeige-Only) -->
+          <div id="actionCard" class="card" style="display:none; margin-top:10px;">
+            <h3 style="margin:0 0 8px 0;">🎴 Action‑Modus</h3>
+            <div id="actionHint" style="font-size:12px; opacity:.8; margin-bottom:8px;">–</div>
+
+            <div class="kv"><span>🎯 Choose</span><span id="jokerChooseState">–</span></div>
+            <div class="kv"><span>➕ Summe</span><span id="jokerSumState">–</span></div>
+            <div class="kv"><span>🎮 Alle Farben</span><span id="jokerAllColorsState">–</span></div>
+            <div class="kv"><span>🧱 Barikade</span><span id="jokerBarricadeState">–</span></div>
+
+            <div class="kv" style="margin-top:8px;"><span>Effekte</span><span id="actionEffectsState">–</span></div>
           </div>
 
           <!-- Host-Tools: Save/Load (nur sichtbar für Host) -->
