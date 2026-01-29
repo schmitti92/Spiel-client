@@ -159,7 +159,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const actionEffectsState = $("actionEffectsState");
 
 
-  // Color picker (A1.1)
+  
+  const jokerAllColorsBtn = $("jokerAllColorsBtn");
+// Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
   // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
   let colorPickWrap = $("colorPick");
@@ -1441,27 +1443,41 @@ function toast(msg){
   }
   function trySelectAtNode(node){
       if (!state || !state.currentPlayer) { return false; }
-if(!node) return false;
-    const c = state.currentPlayer;
-    if(node.kind === "board"){
-      const p = pieceAtBoardNode(node.id, c);
-      if(p){ selectPiece(p); return true; }
-      return false;
-    }
-    if(node.kind === "house" && node.flags?.houseColor === c && node.flags?.houseSlot){
-      const idx = Number(node.flags.houseSlot) - 1;
-      if(idx>=0 && idx<5){
-        if(state.pieces[c][idx].pos === "house"){
-          selectPiece({color:c, index:idx});
-          return true;
-        }else{
-          toast("Diese Figur ist nicht im Haus");
-          return true;
+      if(!node) return false;
+
+      const turn = state.currentPlayer;
+      const isMyTurnOnline = (netMode!=="offline") ? (myColor && myColor===turn) : true;
+      const allowAll = !!(isMyTurnOnline && state && state.mode==="action" && state.action && state.action.effects && state.action.effects.allColorsBy===turn);
+
+      if(node.kind === "board"){
+        let p = pieceAtBoardNode(node.id, turn);
+        if(!p && allowAll){
+          for(const col of ["red","blue","green","yellow"]){
+            p = pieceAtBoardNode(node.id, col);
+            if(p) break;
+          }
+        }
+        if(p){ selectPiece(p); return true; }
+        return false;
+      }
+
+      if(node.kind === "house" && node.flags?.houseColor && node.flags?.houseSlot){
+        const hc = String(node.flags.houseColor).toLowerCase();
+        const idx = Number(node.flags.houseSlot) - 1;
+        if(idx>=0 && idx<5){
+          const can = (hc === turn) || allowAll;
+          if(!can) return false;
+          if(state.pieces[hc] && state.pieces[hc][idx] && state.pieces[hc][idx].pos === "house"){
+            selectPiece({color:hc, index:idx});
+            return true;
+          }else{
+            toast("Diese Figur ist nicht im Haus");
+            return true;
+          }
         }
       }
+      return false;
     }
-    return false;
-  }
 
   function anyPiecesAtNode(nodeId){
     const res=[];
@@ -2051,7 +2067,21 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     wsSend({type:"resume", ts:Date.now()});
   });
 
-  rollBtn.addEventListener("click", () => {
+  
+  // ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
+  if(jokerAllColorsBtn){
+    jokerAllColorsBtn.addEventListener("click", () => {
+      if(netMode==="offline") return;
+      if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+      if(!state || String(state.mode||"classic")!=="action"){ toast("Action-Modus ist nicht aktiv"); return; }
+      if(!myColor){ toast("Bitte Farbe wählen"); return; }
+      if(state.currentPlayer!==myColor){ toast("Du bist nicht dran"); return; }
+      if(state.phase!=="need_move" || state.rolled==null){ toast("Erst würfeln – dann Joker"); return; }
+      wsSend({ type:"use_joker", joker:"allcolors", ts: Date.now() });
+    });
+  }
+
+rollBtn.addEventListener("click", () => {
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       // server checks turn
