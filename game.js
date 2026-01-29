@@ -148,17 +148,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const netPlayersEl = $("netPlayers");
   const myColorEl = $("myColor");
 
-  // ===== Action-Mode (J1: Anzeige-Only, kein Gameplay-Risiko) =====
-  const actionModeToggle = $("actionModeToggle");
-  const actionCard = $("actionCard");
-  const actionHint = $("actionHint");
-  const jokerChooseState = $("jokerChooseState");
-  const jokerSumState = $("jokerSumState");
-  const jokerAllColorsState = $("jokerAllColorsState");
-  const jokerBarricadeState = $("jokerBarricadeState");
-  const actionEffectsState = $("actionEffectsState");
-
-
   // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
   // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
@@ -556,51 +545,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
 
-  // ===== Action-Mode UI (J1: nur anzeigen, NICHT eingreifen) =====
-  function updateActionUI_J1(){
-    try{
-      if(!actionCard) return;
-      const mode = (state && state.mode) ? String(state.mode) : "classic";
-      const show = (mode === "action");
-      actionCard.style.display = show ? "block" : "none";
-      if(!show) return;
-
-      const ac = (state && state.action) ? state.action : null;
-      const my = myColor || (state ? state.currentPlayer : null);
-
-      // Hint text
-      if(actionHint){
-        actionHint.textContent = ac ? "Joker-Status (Anzeige):" : "Action-Modus aktiv (Status lädt…)";
-      }
-
-      const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
-      const eff = ac && ac.effects ? ac.effects : null;
-
-      function fmt(v){
-        if(v===true) return "bereit";
-        if(v===false) return "verbraucht";
-        return "–";
-      }
-
-      if(jokerChooseState) jokerChooseState.textContent = fmt(js && my ? js[my]?.choose : null);
-      if(jokerSumState) jokerSumState.textContent = fmt(js && my ? js[my]?.sum : null);
-      if(jokerAllColorsState) jokerAllColorsState.textContent = fmt(js && my ? js[my]?.allColors : null);
-      if(jokerBarricadeState) jokerBarricadeState.textContent = fmt(js && my ? js[my]?.barricade : null);
-
-      if(actionEffectsState){
-        if(!eff){ actionEffectsState.textContent = "–"; }
-        else{
-          const parts = [];
-          if(eff.allColorsBy) parts.push("Alle Farben aktiv");
-          if(eff.doubleRoll && eff.doubleRoll.kind) parts.push("Doppelwurf: " + eff.doubleRoll.kind);
-          if(eff.barricadeBy) parts.push("Barikade-Joker aktiv");
-          actionEffectsState.textContent = parts.length ? parts.join(" • ") : "keine Effekte";
-        }
-      }
-    }catch(_e){}
-  }
-
-
   function setNetStatus(text, good){
     if(!netStatus) return;
     netStatus.textContent = text;
@@ -626,8 +570,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     updateStartButton();
     }
     updateColorPickUI();
-    updateActionUI_J1();
-    updateActionUI_J1();
 
     // Host: keep state players in sync with chosen colors
     if(netMode==="host" && state){
@@ -704,48 +646,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     reconnectAttempt = 0;
   }
 
-  
-// ---------- NET WATCHDOG (stabile Realtime-Sync, besonders bei WLAN/Tablet) ----------
-const NET_WATCH = {
-  pingEveryMs: 4000,
-  stallWarnMs: 12000,   // wenn länger keine Server-Nachricht kommt -> reconnect
-  hardStallMs: 20000,   // absoluter Timeout
-  lastMsgTs: 0,
-  lastPongTs: 0,
-  pingTimer: null,
-  stallTimer: null
-};
-
-function stopNetWatchdog() {
-  if (NET_WATCH.pingTimer) { clearInterval(NET_WATCH.pingTimer); NET_WATCH.pingTimer = null; }
-  if (NET_WATCH.stallTimer) { clearInterval(NET_WATCH.stallTimer); NET_WATCH.stallTimer = null; }
-}
-
-function startNetWatchdog() {
-  stopNetWatchdog();
-  NET_WATCH.lastMsgTs = Date.now();
-  NET_WATCH.lastPongTs = Date.now();
-
-  // send ping regularly to keep the socket alive and detect half-open connections
-  NET_WATCH.pingTimer = setInterval(() => {
-    if (!ws || ws.readyState !== 1) return; // 1 = OPEN
-    try { wsSend({ type: 'ping', t: Date.now() }); } catch (e) {}
-  }, NET_WATCH.pingEveryMs);
-
-  // if we stop receiving messages, force a reconnect to resync state
-  NET_WATCH.stallTimer = setInterval(() => {
-    if (!ws) return;
-    const now = Date.now();
-    const silence = now - (NET_WATCH.lastMsgTs || 0);
-    if (ws.readyState === 1 && silence > NET_WATCH.stallWarnMs) {
-      // close will trigger the existing reconnect path
-      try { ws.close(); } catch (e) {}
-    }
-  }, 2000);
-}
-// -------------------------------------------------------------------------------
-
-function connectWS(){
+  function connectWS(){
     if(!roomCode) return;
     if(ws && (ws.readyState===0 || ws.readyState===1)) return;
 
@@ -756,7 +657,6 @@ try{ ws = new WebSocket(SERVER_URL); }
     catch(_e){ setNetStatus("WebSocket nicht möglich", false); scheduleReconnect(); return; }
 
     ws.onopen = () => {
-    startNetWatchdog();
       stopReconnect();
       hideNetBanner();
       setNetStatus("Verbunden – join…", true);
@@ -774,7 +674,6 @@ try{ ws = new WebSocket(SERVER_URL); }
     };
 
     ws.onmessage = (ev) => {
-    NET_WATCH.lastMsgTs = Date.now();
       const msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
       if(!msg) return;
       const type = msg.type;
@@ -868,7 +767,6 @@ try{ ws = new WebSocket(SERVER_URL); }
 
     ws.onerror = () => { setNetStatus("Fehler – Reconnect…", false); showNetBanner("Verbindungsfehler – Reconnect läuft…"); };
     ws.onclose = () => {
-    stopNetWatchdog();
       setNetStatus("Getrennt – Reconnect…", false);
       showNetBanner("Verbindung getrennt – Reconnect läuft…");
       if(netMode!=="offline") scheduleReconnect();
@@ -989,10 +887,6 @@ try{ ws = new WebSocket(SERVER_URL); }
         goalNodeId: server.goal ? String(server.goal) : goalNodeId,
         // optional info from server (used by some UIs)
         activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
-              ,
-        mode: String(server.mode || "classic"),
-        action: (server.action && typeof server.action === "object") ? server.action : null
-      
       };
 
       // map phases
@@ -1012,8 +906,6 @@ try{ ws = new WebSocket(SERVER_URL); }
       legalMovesByPiece = new Map();
       placingChoices = [];
       updateTurnUI(); updateStartButton(); draw();
-    updateActionUI_J1();
-      updateActionUI_J1();
       ensureFittedOnce();
       return;
     }
@@ -1047,7 +939,6 @@ try{ ws = new WebSocket(SERVER_URL); }
     if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
     setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
     updateTurnUI(); updateStartButton(); draw();
-    updateActionUI_J1();
       ensureFittedOnce();
   }
 
@@ -1133,7 +1024,7 @@ function toast(msg){
     }
   }
 
-  function setDiceFaceAnimated(v){
+  function setDiceFaceAnimated(v, forceFullRoll=false){
     if(!diceEl) return;
     const face = (v>=1 && v<=6) ? v : 0;
 
@@ -1145,7 +1036,7 @@ function toast(msg){
 
     // reset helper classes
     try{
-      diceEl.classList.remove("legend-roll","legend-ping","legend-crit6","legend-crit1");
+      diceEl.classList.remove("legend-roll","legend-ping","legend-crit6","legend-crit1","shake");
     }catch(_e){}
 
     if(face===0){
@@ -1155,6 +1046,27 @@ function toast(msg){
     }
 
     const sameAsBefore = (face === lastDiceFace);
+
+    // 🔧 Stabilitäts-Fix:
+    // Bei häufigen Server-Snapshots (Heartbeat) kommt die gleiche Zahl immer wieder.
+    // Dann darf der Würfel NICHT jedes Mal neu "rollen" (sonst wirkt er unruhig).
+    // -> Nur bei echter Änderung (oder forceFullRoll) animieren.
+    if(sameAsBefore && !forceFullRoll){
+      try{
+        diceEl.dataset.face = String(face);
+
+        // kleiner Ping nur optional (sehr kurz), aber KEIN full roll / flicker
+        diceEl.classList.remove("legend-ping");
+        void diceEl.offsetWidth;
+        diceEl.classList.add("legend-ping");
+        setTimeout(()=>{ try{ diceEl.classList.remove("legend-ping"); }catch(_e){} }, 220);
+
+        // crit overlays (kurz) nur wenn gewünscht – hier NICHT neu starten
+      }catch(_e){}
+      return;
+    }
+
+    // update last face now (only when we actually animate a new result)
     lastDiceFace = face;
 
     // start legendary roll animation
@@ -1197,18 +1109,14 @@ function toast(msg){
       try{
         diceEl.dataset.face = String(face);
         diceEl.classList.remove("shake");
-        // if same face, give a small ping so it still feels alive
-        if(sameAsBefore){
-          diceEl.classList.remove("legend-ping");
-          void diceEl.offsetWidth;
-          diceEl.classList.add("legend-ping");
-        }
+
         // crit effects
         if(face===6) diceEl.classList.add("legend-crit6");
         if(face===1) diceEl.classList.add("legend-crit1");
+
         // remove crit classes after a moment (visual only)
         setTimeout(()=>{
-          try{ diceEl.classList.remove("legend-crit6","legend-crit1","legend-ping"); }catch(_e){}
+          try{ diceEl.classList.remove("legend-crit6","legend-crit1"); }catch(_e){}
         }, 1000);
       }catch(_e){}
     }, 560);
@@ -2085,7 +1993,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
-    wsSend({type:"start", mode: (actionModeToggle && actionModeToggle.checked ? "action" : "classic"), ts:Date.now()});
+    wsSend({type:"start", ts:Date.now()});
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
