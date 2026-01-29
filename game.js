@@ -142,12 +142,22 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const serverLabel = $("serverLabel");
   const roomCodeInp = $("roomCode");
   const hostBtn = $("hostBtn");
-  const hostNewBtn = $("hostNewBtn");
   const joinBtn = $("joinBtn");
   const leaveBtn= $("leaveBtn");
   const netStatus = $("netStatus");
   const netPlayersEl = $("netPlayers");
   const myColorEl = $("myColor");
+
+  // ===== Action-Mode (J1: Anzeige-Only, kein Gameplay-Risiko) =====
+  const actionModeToggle = $("actionModeToggle");
+  const actionCard = $("actionCard");
+  const actionHint = $("actionHint");
+  const jokerChooseState = $("jokerChooseState");
+  const jokerSumState = $("jokerSumState");
+  const jokerAllColorsState = $("jokerAllColorsState");
+  const jokerBarricadeState = $("jokerBarricadeState");
+  const actionEffectsState = $("actionEffectsState");
+
 
   // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
@@ -399,9 +409,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const SERVER_URL = "wss://spiel-server.onrender.com";
   if(serverLabel) serverLabel.textContent = SERVER_URL;
 
-    let hostForceNewJoin = false; // Host-only: start fresh (ignore old save for this room)
-
-let ws=null;
+  let ws=null;
   let netMode="offline";
   let netCanStart=false;    // offline | host | client
   let roomCode="";
@@ -548,6 +556,51 @@ let ws=null;
   }
 
 
+  // ===== Action-Mode UI (J1: nur anzeigen, NICHT eingreifen) =====
+  function updateActionUI_J1(){
+    try{
+      if(!actionCard) return;
+      const mode = (state && state.mode) ? String(state.mode) : "classic";
+      const show = (mode === "action");
+      actionCard.style.display = show ? "block" : "none";
+      if(!show) return;
+
+      const ac = (state && state.action) ? state.action : null;
+      const my = myColor || (state ? state.currentPlayer : null);
+
+      // Hint text
+      if(actionHint){
+        actionHint.textContent = ac ? "Joker-Status (Anzeige):" : "Action-Modus aktiv (Status lädt…)";
+      }
+
+      const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
+      const eff = ac && ac.effects ? ac.effects : null;
+
+      function fmt(v){
+        if(v===true) return "bereit";
+        if(v===false) return "verbraucht";
+        return "–";
+      }
+
+      if(jokerChooseState) jokerChooseState.textContent = fmt(js && my ? js[my]?.choose : null);
+      if(jokerSumState) jokerSumState.textContent = fmt(js && my ? js[my]?.sum : null);
+      if(jokerAllColorsState) jokerAllColorsState.textContent = fmt(js && my ? js[my]?.allColors : null);
+      if(jokerBarricadeState) jokerBarricadeState.textContent = fmt(js && my ? js[my]?.barricade : null);
+
+      if(actionEffectsState){
+        if(!eff){ actionEffectsState.textContent = "–"; }
+        else{
+          const parts = [];
+          if(eff.allColorsBy) parts.push("Alle Farben aktiv");
+          if(eff.doubleRoll && eff.doubleRoll.kind) parts.push("Doppelwurf: " + eff.doubleRoll.kind);
+          if(eff.barricadeBy) parts.push("Barikade-Joker aktiv");
+          actionEffectsState.textContent = parts.length ? parts.join(" • ") : "keine Effekte";
+        }
+      }
+    }catch(_e){}
+  }
+
+
   function setNetStatus(text, good){
     if(!netStatus) return;
     netStatus.textContent = text;
@@ -573,6 +626,8 @@ let ws=null;
     updateStartButton();
     }
     updateColorPickUI();
+    updateActionUI_J1();
+    updateActionUI_J1();
 
     // Host: keep state players in sync with chosen colors
     if(netMode==="host" && state){
@@ -672,10 +727,8 @@ try{ ws = new WebSocket(SERVER_URL); }
         asHost: (netMode === "host"),
         sessionToken,
         requestedColor: getRequestedColor(),
-        forceNew: (netMode === "host" && hostForceNewJoin),
         ts: Date.now()
       });
-      hostForceNewJoin = false;
     };
 
     ws.onmessage = (ev) => {
@@ -892,6 +945,10 @@ try{ ws = new WebSocket(SERVER_URL); }
         goalNodeId: server.goal ? String(server.goal) : goalNodeId,
         // optional info from server (used by some UIs)
         activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
+              ,
+        mode: String(server.mode || "classic"),
+        action: (server.action && typeof server.action === "object") ? server.action : null
+      
       };
 
       // map phases
@@ -911,6 +968,8 @@ try{ ws = new WebSocket(SERVER_URL); }
       legalMovesByPiece = new Map();
       placingChoices = [];
       updateTurnUI(); updateStartButton(); draw();
+    updateActionUI_J1();
+      updateActionUI_J1();
       ensureFittedOnce();
       return;
     }
@@ -944,6 +1003,7 @@ try{ ws = new WebSocket(SERVER_URL); }
     if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
     setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
     updateTurnUI(); updateStartButton(); draw();
+    updateActionUI_J1();
       ensureFittedOnce();
   }
 
@@ -1981,7 +2041,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
-    wsSend({type:"start", ts:Date.now()});
+    wsSend({type:"start", mode: (actionModeToggle && actionModeToggle.checked ? "action" : "classic"), ts:Date.now()});
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
@@ -2042,18 +2102,6 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     saveSession();
     connectWS();
     toast("Host gestartet – teile den Raumcode");
-  });
-
-  // Host: neues Spiel im gleichen Raum (ignoriert alten Save, löscht Persistenz)
-  hostNewBtn && hostNewBtn.addEventListener("click", () => {
-    netMode = "host";
-    hostForceNewJoin = true;
-    clientId = clientId || ("H-" + randId(8));
-    roomCode = normalizeRoomCode(roomCodeInp.value) || randId(6);
-    roomCodeInp.value = roomCode;
-    saveSession();
-    connectWS();
-    toast("Host (Neues Spiel) – alter Spielstand wird verworfen");
   });
 
   joinBtn.addEventListener("click", () => {
