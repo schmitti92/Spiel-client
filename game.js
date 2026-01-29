@@ -2076,7 +2076,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(!state || String(state.mode||"classic")!=="action"){ toast("Action-Modus ist nicht aktiv"); return; }
       if(!myColor){ toast("Bitte Farbe wählen"); return; }
       if(state.currentPlayer!==myColor){ toast("Du bist nicht dran"); return; }
-      if(state.phase!=="need_move" || state.rolled==null){ toast("Erst würfeln – dann Joker"); return; }
+      if(state.phase!=="need_move" || state.dice==null){ toast("Erst würfeln – dann Joker"); return; }
       wsSend({ type:"use_joker", joker:"allcolors", ts: Date.now() });
     });
   }
