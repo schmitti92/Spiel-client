@@ -2252,9 +2252,12 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   jokerAllColorsBtn.addEventListener("click", () => {
     if(netMode!=="online" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
     if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
-    if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
-    // All-Colors-Joker ist nach dem Wurf (need_move) sinnvoll
-    if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Joker"); return; }
+    if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }    // All-Colors-Joker ist nach dem Wurf sinnvoll.
+    // Der Client kann den Phasenwechsel minimal verzögert empfangen –
+    // daher reicht ein vorhandener Würfelwert, solange wir nicht explizit
+    // wieder im "need_roll" sind.
+    const hasRoll = (state.dice!=null) && (state.phase!=="need_roll");
+    if(!hasRoll) { toast("Erst würfeln – dann Joker"); return; }
     wsSend({ type: "use_joker", joker: "allcolors" });
   });
 
