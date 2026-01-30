@@ -2171,6 +2171,13 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   return;
 }
 
+    // IMPORTANT: In 'need_roll' (vor dem Würfeln) müssen Klicks ebenfalls
+    // ausgewertet werden, sonst funktionieren Action-Mode Joker (z.B. Barikade)
+    // nicht, weil der Click-Handler bisher nur in 'need_move' aktiv war.
+    if(phase==="need_roll"){
+      if(trySelectAtNode(hit)) { draw(); return; }
+    }
+
     if(phase==="need_move"){
       if(trySelectAtNode(hit)) { draw(); return; }
       if(selected && hit && hit.kind==="board"){
