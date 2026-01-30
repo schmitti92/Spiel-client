@@ -654,6 +654,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       if(jokerSumState) jokerSumState.textContent = fmt(js && my ? js[my]?.sum : null);
       if(jokerAllColorsState) jokerAllColorsState.textContent = fmt(js && my ? js[my]?.allColors : null);
       if(jokerBarricadeState) jokerBarricadeState.textContent = fmt(js && my ? js[my]?.barricade : null);
+      if(jokerRerollState) jokerRerollState.textContent = fmt(js && my ? js[my]?.reroll : null);
+      if(jokerDoubleState) jokerDoubleState.textContent = fmt(js && my ? js[my]?.double : null);
       const rrEl = document.getElementById("jokerRerollState");
       if(rrEl) rrEl.textContent = fmt(js && my ? js[my]?.reroll : null);
 
@@ -1212,6 +1214,14 @@ function toast(msg){
 
   function setDiceFaceAnimated(v){
     if(!diceEl) return;
+    try{ ensureDiceValueLabel(); }catch(_e){}
+    // Werte >6 als Zahl anzeigen (z.B. Doppelwurf 7-12)
+    if (typeof v === "number" && v > 6) {
+      if (diceValueLabel) { diceValueLabel.textContent = String(v); diceValueLabel.style.display = "block"; }
+      v = 0;
+    } else {
+      if (diceValueLabel) diceValueLabel.style.display = "none";
+    }
     const face = (v>=1 && v<=6) ? v : 0;
 
     // clear any previous roll timers (visual only)
@@ -2315,7 +2325,52 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   });
 
   
-  // ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
+  
+
+  // ===== Joker #4: Doppelwurf (2x würfeln, Summe) (UI inject, additive) =====
+  function ensureActionJoker4UI(){
+    try{
+      if(!actionCard) return;
+
+      // Add status row if missing
+      if(!document.getElementById("jokerDoubleState")){
+        const row = document.createElement("div");
+        row.className = "kv";
+        const left = document.createElement("span");
+        left.textContent = "🎲🎲 Doppelwurf";
+        const right = document.createElement("span");
+        right.id = "jokerDoubleState";
+        right.textContent = "–";
+        row.appendChild(left);
+        row.appendChild(right);
+
+        const afterSpan = document.getElementById("jokerRerollState") || document.getElementById("jokerBarricadeState");
+        const afterKv = afterSpan ? afterSpan.closest(".kv") : null;
+        if(afterKv && afterKv.parentElement){
+          afterKv.parentElement.insertBefore(row, afterKv.nextSibling);
+        } else {
+          actionCard.appendChild(row);
+        }
+      }
+
+      // Add button if missing
+      if(!document.getElementById("jokerDoubleBtn")){
+        const grid = actionCard.querySelector(".joker-grid");
+        if(grid){
+          const btn = document.createElement("button");
+          btn.id = "jokerDoubleBtn";
+          btn.className = "joker-btn";
+          btn.textContent = "🎲🎲 Doppelwurf nutzen";
+          grid.appendChild(btn);
+        }
+      }
+    }catch(_e){}
+  }
+  try{ ensureActionJoker4UI(); }catch(_e){}
+
+  let jokerDoubleState = $("jokerDoubleState");
+  let jokerDoubleBtn = $("jokerDoubleBtn");
+// ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
   if(jokerAllColorsBtn){
   jokerAllColorsBtn.addEventListener("click", () => {
     if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
@@ -2365,6 +2420,24 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
       wsSend({ type: "use_joker", joker: "reroll" });
+
+  // Joker #4: Doppelwurf (vor dem Würfeln)
+  if(jokerDoubleBtn){
+    jokerDoubleBtn.addEventListener("click", ()=>{
+      try{
+        if(!ws || ws.readyState!==1) return toast("❌ Keine Verbindung");
+        if(!roomState || !roomState.started) return toast("❌ Spiel läuft nicht");
+        if(String(roomState.mode||"classic")!=="action" || !roomState.action) return toast("❌ Action-Modus ist nicht aktiv");
+        if(roomState.phase!=="need_roll" || roomState.rolled!=null) return toast("❌ Doppelwurf nur vor dem Würfeln");
+        const my = myColor;
+        if(!my || my!==roomState.turnColor) return toast("❌ Du bist nicht dran");
+        wsSend({ type:"use_joker", joker:"double" });
+      }catch(e){
+        console.error(e);
+      }
+    });
+  }
+
     });
   };
   // bind now + also after UI injection
