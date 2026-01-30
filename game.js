@@ -164,14 +164,61 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const jokerSumState = $("jokerSumState");
   const jokerAllColorsState = $("jokerAllColorsState");
   const jokerBarricadeState = $("jokerBarricadeState");
+  const jokerRerollState = $("jokerRerollState");
   const actionEffectsState = $("actionEffectsState");
 
 
   
   const jokerAllColorsBtn = $("jokerAllColorsBtn");
   const jokerBarricadeBtn = $("jokerBarricadeBtn");
-  const jokerRerollBtn = $("jokerRerollBtn");
-  const jokerRerollState = $("jokerRerollState");
+  let jokerRerollBtn = $("jokerRerollBtn");
+
+  // ===== Joker #3: Neu-Wurf (UI inject, additive) =====
+  function ensureActionJoker3UI(){
+    try{
+      if(!actionCard) return;
+      try{ ensureActionJoker3UI(); }catch(_e){}
+
+      // Add status row if missing
+      if(!document.getElementById("jokerRerollState")){
+        const row = document.createElement("div");
+        row.className = "kv";
+        const left = document.createElement("span");
+        left.textContent = "🔁 Neu‑Wurf";
+        const right = document.createElement("span");
+        right.id = "jokerRerollState";
+        right.textContent = "–";
+        row.appendChild(left);
+        row.appendChild(right);
+
+        const afterSpan = document.getElementById("jokerBarricadeState");
+        const afterKv = afterSpan ? afterSpan.closest(".kv") : null;
+        if(afterKv && afterKv.parentElement){
+          afterKv.parentElement.insertBefore(row, afterKv.nextSibling);
+        } else {
+          actionCard.appendChild(row);
+        }
+      }
+
+      // Add button if missing
+      if(!document.getElementById("jokerRerollBtn")){
+        const grid = actionCard.querySelector(".joker-grid");
+        if(grid){
+          const btn = document.createElement("button");
+          btn.id = "jokerRerollBtn";
+          btn.className = "joker-btn";
+          btn.type = "button";
+          btn.textContent = "🔁 Neu‑Wurf nutzen";
+          grid.appendChild(btn);
+        }
+      }
+
+      // refresh local ref
+      jokerRerollBtn = document.getElementById("jokerRerollBtn");
+    }catch(_e){}
+  }
+  ensureActionJoker3UI();
+
 // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
   // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
@@ -607,7 +654,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       if(jokerSumState) jokerSumState.textContent = fmt(js && my ? js[my]?.sum : null);
       if(jokerAllColorsState) jokerAllColorsState.textContent = fmt(js && my ? js[my]?.allColors : null);
       if(jokerBarricadeState) jokerBarricadeState.textContent = fmt(js && my ? js[my]?.barricade : null);
-      if(jokerRerollState) jokerRerollState.textContent = fmt(js && my ? js[my]?.reroll : null);
+      const rrEl = document.getElementById("jokerRerollState");
+      if(rrEl) rrEl.textContent = fmt(js && my ? js[my]?.reroll : null);
 
       if(actionEffectsState){
         if(!eff){ actionEffectsState.textContent = "–"; }
@@ -2306,17 +2354,21 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   }
 
 
-// Neu-Wurf Joker: NACH dem Wurf aktivieren -> setzt den Wurf zurück, danach darf man neu würfeln.
-if(jokerRerollBtn){
-  jokerRerollBtn.addEventListener("click", () => {
-    if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
-    if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
-    if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
-    // Erst nach dem Wurf (need_move)
-    if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu‑Wurf"); return; }
-    wsSend({ type: "use_joker", joker: "reroll" });
-  });
-}
+  // Neu-Wurf-Joker: NACH dem Wurf -> erster Wurf verfällt, dann neu würfeln
+  const bindReroll = () => {
+    jokerRerollBtn = document.getElementById("jokerRerollBtn");
+    if(!jokerRerollBtn || jokerRerollBtn.__bound) return;
+    jokerRerollBtn.__bound = true;
+    jokerRerollBtn.addEventListener("click", () => {
+      if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
+      if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
+      if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
+      if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
+      wsSend({ type: "use_joker", joker: "reroll" });
+    });
+  };
+  // bind now + also after UI injection
+  bindReroll();
 
 
 rollBtn.addEventListener("click", () => {
