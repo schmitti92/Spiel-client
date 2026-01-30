@@ -170,6 +170,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   
   const jokerAllColorsBtn = $("jokerAllColorsBtn");
   const jokerBarricadeBtn = $("jokerBarricadeBtn");
+  const jokerRerollBtn = $("jokerRerollBtn");
+  const jokerRerollState = $("jokerRerollState");
 // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
   // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
@@ -605,6 +607,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       if(jokerSumState) jokerSumState.textContent = fmt(js && my ? js[my]?.sum : null);
       if(jokerAllColorsState) jokerAllColorsState.textContent = fmt(js && my ? js[my]?.allColors : null);
       if(jokerBarricadeState) jokerBarricadeState.textContent = fmt(js && my ? js[my]?.barricade : null);
+      if(jokerRerollState) jokerRerollState.textContent = fmt(js && my ? js[my]?.reroll : null);
 
       if(actionEffectsState){
         if(!eff){ actionEffectsState.textContent = "–"; }
@@ -2301,6 +2304,20 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     wsSend({ type: "use_joker", joker: "barricade" });
   });
   }
+
+
+// Neu-Wurf Joker: NACH dem Wurf aktivieren -> setzt den Wurf zurück, danach darf man neu würfeln.
+if(jokerRerollBtn){
+  jokerRerollBtn.addEventListener("click", () => {
+    if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
+    if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
+    if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
+    // Erst nach dem Wurf (need_move)
+    if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu‑Wurf"); return; }
+    wsSend({ type: "use_joker", joker: "reroll" });
+  });
+}
+
 
 rollBtn.addEventListener("click", () => {
     if(netMode!=="offline"){
