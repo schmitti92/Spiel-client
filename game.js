@@ -356,13 +356,27 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
   let selected=null;
+  let barricadePickFrom=null; // B2: temporary selection for Action-Joker 'Barrikade'
   let legalMovesAll=[];
   let legalMovesByPiece=new Map();
   let state=null;
+  function isBarricadeJokerActive(){
+    // B2: Barrikade-Joker darf VOR dem Würfeln benutzt werden (server prüft alles)
+    if(!state) return false;
+    if(state.mode!=="action") return false;
+    if(state.phase!=="need_roll") return false;
+    if(state.rolled!=null) return false;
+    const by = state.action && state.action.effects && state.action.effects.barricadeBy;
+    if(!by) return false;
+    // nur der aktive Spieler darf wählen
+    return (by===state.turnColor) && (myColor===state.turnColor);
+  }
+
 
   function clearLocalState(){
     state = null;
     legalMovesByPiece = new Map();
+    barricadePickFrom = null;
     // UI reset
     if(turnText) turnText.textContent = '–';
     if(turnDot) turnDot.className = 'dot';
@@ -1003,6 +1017,31 @@ try{ ws = new WebSocket(SERVER_URL); }
     updateActionUI_J1();
       updateActionUI_J1();
       ensureFittedOnce();
+      return;
+    }
+
+    // B2: Barrikade-Joker (vor dem Würfeln) – UI nur, Server validiert Regeln
+    if(isBarricadeJokerActive() && hit && hit.kind==="board"){
+      const isBarr = Array.isArray(state.barricades) && state.barricades.includes(hit.id);
+      if(!barricadePickFrom){
+        if(!isBarr){
+          toast("Wähle zuerst eine Barikade");
+          return;
+        }
+        barricadePickFrom = hit.id;
+        toast("Ziel-Feld wählen");
+        draw();
+        return;
+      }
+
+      if(hit.id===barricadePickFrom){
+        barricadePickFrom = null;
+        draw();
+        return;
+      }
+
+      wsSend({type:"action_barricade_move", fromId:barricadePickFrom, toId:hit.id, ts:Date.now()});
+      barricadePickFrom = null;
       return;
     }
 
@@ -1829,6 +1868,14 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
 
       if(n.kind==="board" && state.barricades.has(n.id)){
         drawBarricadeIcon(s.x,s.y,r);
+        // B2: wenn Barrikaden-Joker aktiv ist, Barrikaden hervorheben
+        if(isBarricadeJokerActive()){
+          // Jede Barikade ist als 'Quelle' klickbar
+          drawRing(s.x,s.y,r+6,"rgba(255,255,255,0.35)",2);
+          if(barricadePickFrom===n.id){
+            drawRing(s.x,s.y,r+9,"rgba(255,255,255,0.65)",3);
+          }
+        }
       }
     }
 
@@ -2002,6 +2049,28 @@ canvas.setPointerCapture(ev.pointerId);
     const isMyTurn = (netMode!=="client") || (myColor && myColor===state.currentPlayer);
     if(netMode==="client" && (!myColor || !isMyTurn) && (phase==="placing_barricade" || phase==="need_move" || phase==="need_roll")){
       toast(!myColor ? "Bitte Farbe wählen" : "Du bist nicht dran");
+      return;
+    }
+
+    // B2: Barrikade-Joker (vor dem Würfeln) – klickbar machen, ohne Logik zu duplizieren (Server validiert)
+    if(isBarricadeJokerActive() && hit && hit.kind==="board"){
+      const isBarr = Array.isArray(state.barricades) && state.barricades.includes(hit.id);
+      if(!barricadePickFrom){
+        if(!isBarr){ toast("Wähle zuerst eine Barikade"); return; }
+        barricadePickFrom = hit.id;
+        toast("Ziel-Feld auswählen");
+        draw();
+        return;
+      }
+      // already have from
+      if(hit.id===barricadePickFrom){
+        barricadePickFrom=null;
+        toast("Auswahl zurückgesetzt");
+        draw();
+        return;
+      }
+      wsSend({type:"action_barricade_move", fromId:barricadePickFrom, toId:hit.id, ts:Date.now()});
+      barricadePickFrom=null;
       return;
     }
 
