@@ -2245,43 +2245,44 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
     wsSend({type:"resume", ts:Date.now()});
   });
-  // ===== Action-Modus: Joker (Alle Farben / Barikade) =====
+
+  
+  // ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
   if(jokerAllColorsBtn){
-    jokerAllColorsBtn.addEventListener("click", () => {
-      if(netMode==="offline"){ toast("Nur online verfügbar"); return; }
-      if(!ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
-      if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
-      if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
-      // All-Colors-Joker ist nach dem Wurf (need_move) sinnvoll
-      if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Joker"); return; }
-      wsSend({ type: "use_joker", joker: "allcolors" });
-    });
-  }
+  jokerAllColorsBtn.addEventListener("click", () => {
+    if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
+    if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
+    if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
+    // All-Colors-Joker ist nach dem Wurf (need_move) sinnvoll
+    if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Joker"); return; }
+    wsSend({ type: "use_joker", joker: "allcolors" });
+  });
 
-  if(jokerBarricadeBtn){
-    jokerBarricadeBtn.addEventListener("click", () => {
-      if(netMode==="offline"){ toast("Nur online verfügbar"); return; }
-      if(!ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
-      if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
-      if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
+  // Barrikade-Joker: VOR dem Wurf aktivieren, danach Quelle+Ziel klicken
+  jokerBarricadeBtn.addEventListener("click", () => {
+    if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
+    if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
+    if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
 
-      const eff = (state.action && state.action.effects) ? state.action.effects : {};
-      const effActiveForMe = (eff.barricadeBy === myColor);
+    const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+    const effActiveForMe = (eff.barricadeBy === myColor);
 
-      // Wenn Effekt schon aktiv ist: direkt Auswahlmodus starten
-      if(effActiveForMe){
-        actionBarricadeActive = true;
-        actionBarricadeFrom = null;
-        toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
-        draw();
-        return;
-      }
+    // Wenn Effekt schon aktiv ist: direkt Auswahlmodus starten
+    if(effActiveForMe){
+      actionBarricadeActive = true;
+      actionBarricadeFrom = null;
+      toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+      draw();
+      return;
+    }
 
-      // Sonst: Joker jetzt aktivieren (nur vor dem Wurf)
-      if(state.phase!=="need_roll") { toast("Barikade nur vor dem Würfeln"); return; }
-      pendingBarricadePick = true;
-      wsSend({ type: "use_joker", joker: "barricade" });
-    });
+    // Sonst: Joker jetzt aktivieren (nur vor dem Wurf)
+    if(state.phase!=="need_roll") { toast("Barikade nur vor dem Würfeln"); return; }
+    pendingBarricadePick = true;
+    wsSend({ type: "use_joker", joker: "barricade" });
+  });
   }
 
 rollBtn.addEventListener("click", () => {
