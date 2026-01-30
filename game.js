@@ -1585,9 +1585,19 @@ function toast(msg){
         state.phase === "need_roll"
       );
       if (allowBarricadeJoker && node.kind === "board") {
-        const bset = state.barricades || new Set();
+        const bset = (() => {
+          const b = state.barricades;
+          if (!b) return new Set();
+          if (Array.isArray(b)) return new Set(b.map(String));
+          if (typeof b.has === "function") return b; // already a Set
+          if (typeof b === "object") {
+            // object map {id:true}
+            return new Set(Object.keys(b).filter(k => b[k]).map(String));
+          }
+          return new Set();
+        })();
         if (actionBarricadeFrom == null) {
-          if (!bset.has(node.id)) { toast("Erst eine Barikade wählen"); return true; }
+          if (!bset.has(String(node.id))) { toast("Erst eine Barikade wählen"); return true; }
           actionBarricadeFrom = node.id;
           toast("Ziel-Feld wählen");
           draw();
