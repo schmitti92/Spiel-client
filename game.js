@@ -2456,31 +2456,36 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     jokerRerollBtn.addEventListener("click", () => {
       if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
       if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
+      if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
+      const js = state.actionJokers || state.jokers || null;
+      if(!js || !myColor || js[myColor]?.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "reroll" });
-
-  // Joker #4: Doppelwurf (vor dem Würfeln)
-  if(jokerDoubleBtn){
-    jokerDoubleBtn.addEventListener("click", ()=>{
-      try{
-        if(!ws || ws.readyState!==1) return toast("❌ Keine Verbindung");
-        if(!roomState || !roomState.started) return toast("❌ Spiel läuft nicht");
-        if(String(roomState.mode||"classic")!=="action" || !roomState.action) return toast("❌ Action-Modus ist nicht aktiv");
-        if(roomState.phase!=="need_roll" || roomState.rolled!=null) return toast("❌ Doppelwurf nur vor dem Würfeln");
-        const my = myColor;
-        if(!my || my!==roomState.turnColor) return toast("❌ Du bist nicht dran");
-        wsSend({ type:"use_joker", joker:"double" });
-      }catch(e){
-        console.error(e);
-      }
-    });
-  }
-
     });
   };
+
+  // Joker #4: Doppelwurf (vor dem Würfeln)
+  const bindDouble = () => {
+    jokerDoubleBtn = document.getElementById("jokerDoubleBtn");
+    if(!jokerDoubleBtn || jokerDoubleBtn.__bound) return;
+    jokerDoubleBtn.__bound = true;
+    jokerDoubleBtn.addEventListener("click", () => {
+      if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
+      if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
+      if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
+      if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
+      if(state.phase!=="need_roll" || state.dice!=null) { toast("Doppelwurf nur vor dem Würfeln"); return; }
+      const js = state.actionJokers || state.jokers || null;
+      if(!js || !myColor || js[myColor]?.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
+      wsSend({ type: "use_joker", joker: "double" });
+    });
+  };
+
   // bind now + also after UI injection
   bindReroll();
+  bindDouble();
+
 
 
 rollBtn.addEventListener("click", () => {
