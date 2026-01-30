@@ -524,6 +524,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   let lastNetPlayers=[];
   let rosterById=new Map();
   let myColor=null;
+  // latest action joker availability from server snapshot
+  let lastJokersByColor = null;
+
 
   let reconnectTimer=null;
   let reconnectAttempt=0;
@@ -681,6 +684,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       }
 
       const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
+      // store globally for button handlers
+      lastJokersByColor = js;
       const eff = ac && ac.effects ? ac.effects : null;
 
       function fmt(v){
@@ -2460,7 +2465,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
       const js = state.actionJokers || state.jokers || null;
-      if(!js || !myColor || js[myColor]?.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
+      if(!lastJokersByColor || !myColor || lastJokersByColor[myColor]?.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "reroll" });
     });
   };
@@ -2477,7 +2482,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_roll" || state.dice!=null) { toast("Doppelwurf nur vor dem Würfeln"); return; }
       const js = state.actionJokers || state.jokers || null;
-      if(!js || !myColor || js[myColor]?.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
+      if(!lastJokersByColor || !myColor || lastJokersByColor[myColor]?.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "double" });
     });
   };
