@@ -59,6 +59,45 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     }
   }catch(_e){}
   const diceEl  = $("diceCube");
+  // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
+  // Additiv: nur Anzeige, beeinflusst Gameplay nicht.
+  let diceValueLabel = null;
+  function ensureDiceValueLabel(){
+    try{
+      if(diceValueLabel && diceValueLabel.isConnected) return diceValueLabel;
+      if(!diceEl) return null;
+      // Put label inside the dice container so it moves with the cube
+      const host = diceEl.parentElement || diceEl;
+      // Ensure host can position children
+      try{
+        const cs = getComputedStyle(host);
+        if(cs.position === "static") host.style.position = "relative";
+      }catch(_e){}
+      const el = document.createElement("div");
+      el.id = "diceValueLabel";
+      el.textContent = "";
+      el.style.position = "absolute";
+      el.style.inset = "0";
+      el.style.display = "none";
+      el.style.alignItems = "center";
+      el.style.justifyContent = "center";
+      el.style.fontFamily = "system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      el.style.fontWeight = "900";
+      el.style.fontSize = "28px";
+      el.style.letterSpacing = "0.5px";
+      el.style.color = "rgba(255,255,255,0.95)";
+      el.style.textShadow = "0 6px 14px rgba(0,0,0,0.75)";
+      el.style.pointerEvents = "none";
+      el.style.zIndex = "5";
+      el.style.userSelect = "none";
+      el.style.display = "flex";
+      el.style.display = "none";
+      host.appendChild(el);
+      diceValueLabel = el;
+      return diceValueLabel;
+    }catch(_e){ return null; }
+  }
+
   const turnText= $("turnText");
   const turnDot = $("turnDot");
   const boardInfo = $("boardInfo");
