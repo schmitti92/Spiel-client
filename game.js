@@ -1492,6 +1492,7 @@ function toast(msg){
       const tc = entry?.targetColor ? String(entry.targetColor) : "";
       overlayHint.textContent = tc ? (`Joker geht an: ${((PLAYER_NAME && PLAYER_NAME[tc]) ? PLAYER_NAME[tc] : tc)} (rausgeschmissen)`) : "Joker geht an den rausgeschmissenen Spieler";
       overlaySub.textContent = "";
+      overlay.classList.add(\"show\");
 
       const wrap = document.createElement("div");
       wrap.style.display = "flex";
