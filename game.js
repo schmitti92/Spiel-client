@@ -210,6 +210,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   
   const jokerAllColorsBtn = $("jokerAllColorsBtn");
   const jokerBarricadeBtn = $("jokerBarricadeBtn");
+  let jokerRerollBtn = $("jokerRerollBtn");
+
+  
 
   // ===== Visual: Hide legacy jokers (Choose + Summe) =====
   // NOTE: Only visual removal. No gameplay logic is removed on server/client.
@@ -219,27 +222,25 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       ids.forEach(id=>{
         const el = document.getElementById(id);
         if(!el) return;
+        // hide the row that contains the state label
         const row = el.closest("div") || el.parentElement;
         if(row) row.style.display = "none";
       });
+
+      // hide any related buttons inside action card (if they exist)
       if(actionCard){
         const btns = actionCard.querySelectorAll("button");
         btns.forEach(b=>{
           const t = (b.textContent || "").toLowerCase();
-          if(t.includes("choose") || t.includes("summe") || (t.includes("sum") && !t.includes("resume"))) {
+          if(t.includes("choose") || t.includes("summe") || t.includes("sum")) {
             b.style.display = "none";
           }
         });
       }
     }catch(_e){}
   }
-  // call once (safe)
-  hideLegacyChooseSumUI();
 
-
-  let jokerRerollBtn = $("jokerRerollBtn");
-
-  // ===== Joker #3: Neu-Wurf (UI inject, additive) =====
+// ===== Joker #3: Neu-Wurf (UI inject, additive) =====
   function ensureActionJoker3UI(){
     try{
       if(!actionCard) return;
@@ -917,6 +918,7 @@ try{ ws = new WebSocket(SERVER_URL); }
           writeHostAutosave(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
         return;
       }
       if(type==="roll"){
@@ -927,17 +929,18 @@ try{ ws = new WebSocket(SERVER_URL); }
           writeHostAutosave(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
         return;
       }
       if(type==="move"){
         // (7/8/109) animate path + destination glow
         if(msg.action) queueMoveFx(msg.action);
-        if(msg.wheel) enqueueWheel(msg.wheel);
         if(msg.state){
           applyRemoteState(msg.state);
           writeHostAutosave(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
         return;
       }
 
@@ -1436,216 +1439,8 @@ function toast(msg){
     overlayHint.textContent=hint||"";
     overlay.classList.add("show");
   }
-
-  // ---- Glücksrad UI (nur Anzeige) ----
-  // Dreht 10 Sekunden, Ergebnis kommt vom Server (fair).
-  let _wheelQueue = [];
-  let _wheelRunning = false;
-  let _wheelAllowClose = true;
-  let _wheelCanvas = null;
-
-  function hideOverlay(){
-    // Während dem Glücksrad darf man nicht wegklicken
-    if(_wheelRunning && !_wheelAllowClose) return;
-    overlay.classList.remove("show");
-    // Clean wheel canvas if any
-    try{
-      if(_wheelCanvas && _wheelCanvas.isConnected) _wheelCanvas.remove();
-      _wheelCanvas = null;
-    }catch(_e){}
-  }
-
-  overlayOk.addEventListener("click", () => {
-    // Wenn Glücksrad läuft: erst nach Ende/Result schließen
-    if(_wheelRunning && !_wheelAllowClose) return;
-    hideOverlay();
-    // Wenn Queue noch Items hat, starte direkt das nächste
-    if(_wheelQueue.length){
-      const next = _wheelQueue.shift();
-      startWheelSpin(next);
-    }else{
-      _wheelRunning = false;
-    }
-  });
-
-  function enqueueWheel(w){
-    try{
-      const arr = Array.isArray(w) ? w : (w ? [w] : []);
-      for(const it of arr){
-        if(it && typeof it === "object") _wheelQueue.push(it);
-      }
-      if(!_wheelRunning && _wheelQueue.length){
-        _wheelRunning = true;
-        const first = _wheelQueue.shift();
-        startWheelSpin(first);
-      }
-    }catch(_e){}
-  }
-
-  function startWheelSpin(entry){
-    try{
-      _wheelRunning = true;
-      _wheelAllowClose = false;
-
-      // Build wheel canvas inside overlaySub
-      overlayTitle.textContent = "🎡 Glücksrad";
-      const tc = entry?.targetColor ? String(entry.targetColor) : "";
-      overlayHint.textContent = tc ? (`Joker geht an: ${((PLAYER_NAME && PLAYER_NAME[tc]) ? PLAYER_NAME[tc] : tc)} (rausgeschmissen)`) : "Joker geht an den rausgeschmissenen Spieler";
-      overlaySub.textContent = "";
-      overlay.classList.add("show");
-
-      const wrap = document.createElement("div");
-      wrap.style.display = "flex";
-      wrap.style.justifyContent = "center";
-      wrap.style.alignItems = "center";
-      wrap.style.padding = "10px 0";
-
-      const c = document.createElement("canvas");
-      c.width = 260;
-      c.height = 260;
-      c.style.width = "260px";
-      c.style.height = "260px";
-      c.style.borderRadius = "18px";
-      c.style.boxShadow = "0 18px 45px rgba(0,0,0,.55)";
-      wrap.appendChild(c);
-      overlaySub.appendChild(wrap);
-      _wheelCanvas = c;
-
-      const ctx2 = c.getContext("2d");
-      const segments = [
-        { key:"allColors", label:"Alle Farben", icon:"🎮" },
-        { key:null, label:"Niete", icon:"❌" },
-        { key:"barricade", label:"Barikade", icon:"🧱" },
-        { key:null, label:"Niete", icon:"❌" },
-        { key:"reroll", label:"Neu-Wurf", icon:"↩️" },
-        { key:null, label:"Niete", icon:"❌" },
-        { key:"double", label:"Doppelwurf", icon:"🎲🎲" },
-        { key:null, label:"Niete", icon:"❌" },
-      ];
-      const duration = Math.max(1000, Math.min(20000, Number(entry?.durationMs || 10000)));
-      const resultKey = entry?.result ? String(entry.result) : null;
-
-      // Pick a final angle so the pointer (top) lands in the result segment
-      const segN = segments.length;
-      const segAngle = (Math.PI * 2) / segN;
-
-      function segIndexForKey(k){
-        if(!k) return segments.findIndex(s => s.key === null);
-        const idx = segments.findIndex(s => s.key === k);
-        return idx >= 0 ? idx : 0;
-      }
-      const idxTarget = segIndexForKey(resultKey);
-      // Center of that segment
-      const targetCenter = idxTarget * segAngle + segAngle/2;
-      // We draw wheel with angle offset; pointer at -90deg (top). We want wheel rotation so that
-      // segment center aligns with top. So finalRot = -pi/2 - targetCenter + random small jitter.
-      const jitter = (Math.random() - 0.5) * (segAngle * 0.35);
-      const finalRot = (-Math.PI/2) - targetCenter + jitter;
-      // Add extra spins
-      const spins = (Math.PI*2) * (6 + Math.floor(Math.random()*3)); // 6-8 full turns
-      const startRot = 0;
-      const endRot = finalRot - spins;
-
-      const t0 = performance.now();
-
-      function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-
-      function draw(rot){
-        const cx = c.width/2, cy = c.height/2;
-        ctx2.clearRect(0,0,c.width,c.height);
-
-        // background
-        ctx2.save();
-        ctx2.translate(cx,cy);
-        ctx2.rotate(rot);
-
-        for(let i=0;i<segN;i++){
-          const a0 = i*segAngle;
-          const a1 = a0 + segAngle;
-          ctx2.beginPath();
-          ctx2.moveTo(0,0);
-          ctx2.arc(0,0,110,a0,a1);
-          ctx2.closePath();
-          ctx2.fillStyle = (i%2===0) ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)";
-          ctx2.fill();
-          ctx2.strokeStyle = "rgba(255,255,255,0.18)";
-          ctx2.lineWidth = 2;
-          ctx2.stroke();
-
-          // label
-          ctx2.save();
-          ctx2.rotate(a0 + segAngle/2);
-          ctx2.textAlign="center";
-          ctx2.textBaseline="middle";
-          ctx2.fillStyle="rgba(255,255,255,0.95)";
-          ctx2.font="bold 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-          const s = segments[i];
-          ctx2.fillText(s.icon, 70, -6);
-          ctx2.font="600 12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-          ctx2.fillText(s.label, 70, 12);
-          ctx2.restore();
-        }
-
-        // center circle
-        ctx2.beginPath();
-        ctx2.arc(0,0,36,0,Math.PI*2);
-        ctx2.fillStyle="rgba(0,0,0,0.35)";
-        ctx2.fill();
-        ctx2.strokeStyle="rgba(255,255,255,0.25)";
-        ctx2.lineWidth=2;
-        ctx2.stroke();
-
-        ctx2.restore();
-
-        // pointer (top)
-        ctx2.save();
-        ctx2.translate(cx,cy);
-        ctx2.beginPath();
-        ctx2.moveTo(0,-125);
-        ctx2.lineTo(-12,-98);
-        ctx2.lineTo(12,-98);
-        ctx2.closePath();
-        ctx2.fillStyle="rgba(255,255,255,0.95)";
-        ctx2.fill();
-        ctx2.restore();
-      }
-
-      function frame(now){
-        const t = (now - t0) / duration;
-        if(t >= 1){
-          draw(endRot);
-          // show result after spin
-          const nice = resultKey ? jokerNiceName(resultKey) : "Niete";
-          overlayHint.textContent = tc ? (`Ergebnis für ${((PLAYER_NAME && PLAYER_NAME[tc]) ? PLAYER_NAME[tc] : tc)}: ${nice}`) : (`Ergebnis: ${nice}`);
-          _wheelAllowClose = true;
-          return;
-        }
-        const k = easeOutCubic(Math.max(0, Math.min(1, t)));
-        const rot = startRot + (endRot - startRot) * k;
-        draw(rot);
-        requestAnimationFrame(frame);
-      }
-
-      // Disable OK while spinning
-      _wheelAllowClose = false;
-      requestAnimationFrame(frame);
-    }catch(_e){
-      // Fallback
-      overlayTitle.textContent="🎡 Glücksrad";
-      overlaySub.textContent="(Anzeige fehlgeschlagen)";
-      _wheelAllowClose = true;
-    }
-  }
-
-  function jokerNiceName(key){
-    switch(String(key||"")){
-      case "allColors": return "🎮 Alle Farben";
-      case "barricade": return "🧱 Barikade";
-      case "reroll": return "↩️ Neu-Wurf";
-      case "double": return "🎲🎲 Doppelwurf";
-      default: return "Niete";
-    }
-  }
+  function hideOverlay(){ overlay.classList.remove("show"); }
+  overlayOk.addEventListener("click", hideOverlay);
 
   async function loadBoard(){
     const res = await fetch("board.json", {cache:"no-store"});
@@ -2642,6 +2437,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     }catch(_e){}
   }
   try{ ensureActionJoker4UI(); }catch(_e){}
+  try{ hideLegacyChooseSumUI(); }catch(_e){}
 
   let jokerDoubleState = $("jokerDoubleState");
   let jokerDoubleBtn = $("jokerDoubleBtn");
@@ -2653,6 +2449,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
     // All-Colors-Joker ist nach dem Wurf (need_move) sinnvoll
     if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Joker"); return; }
+    const set = getMyJokerSet();
+    if(set && set.allColors===false) { toast("Alle Farben nicht verfügbar"); return; }
     wsSend({ type: "use_joker", joker: "allcolors" });
   });
 
@@ -2678,13 +2476,29 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
 
     // Sonst: Joker jetzt aktivieren (nur vor dem Wurf)
     if(state.phase!=="need_roll") { toast("Barikade nur vor dem Würfeln"); return; }
+    const set = getMyJokerSet();
+    if(set && set.barricade===false) { toast("Barikade nicht verfügbar"); return; }
     pendingBarricadePick = true;
     wsSend({ type: "use_joker", joker: "barricade" });
   });
   }
 
 
-  // Neu-Wurf-Joker: NACH dem Wurf -> erster Wurf verfällt, dann neu würfeln
+  // Helper: robust access to action joker set for current player (server snapshot is source of truth)
+function getMyJokerSet(){
+  try{
+    const c = (myColor || (state && state.currentPlayer)) || null;
+    if(!c) return null;
+    // preferred path (server v14+)
+    if(state && state.action && state.action.jokersByColor && state.action.jokersByColor[c]) return state.action.jokersByColor[c];
+    // backward-compat fallbacks (older builds)
+    if(state && state.actionJokers && state.actionJokers[c]) return state.actionJokers[c];
+    if(state && state.jokers && state.jokers[c]) return state.jokers[c];
+  }catch(_e){}
+  return null;
+}
+
+// Neu-Wurf-Joker: NACH dem Wurf -> erster Wurf verfällt, dann neu würfeln
   const bindReroll = () => {
     jokerRerollBtn = document.getElementById("jokerRerollBtn");
     if(!jokerRerollBtn || jokerRerollBtn.__bound) return;
@@ -2695,8 +2509,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
-      const js = state.actionJokers || state.jokers || null;
-      if(!js || !myColor || js[myColor]?.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
+      const set = getMyJokerSet();
+      if(!set || set.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "reroll" });
     });
   };
@@ -2712,8 +2526,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_roll" || state.dice!=null) { toast("Doppelwurf nur vor dem Würfeln"); return; }
-      const js = state.actionJokers || state.jokers || null;
-      if(!js || !myColor || js[myColor]?.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
+      const set = getMyJokerSet();
+      if(!set || set.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "double" });
     });
   };
@@ -3218,3 +3032,91 @@ leaveBtn.addEventListener("click", () => {
   window.addEventListener("load", ()=>{ tryDock(); });
 })();
 
+
+
+// ---------- Wheel UI (client only, does not block gameplay) ----------
+let _wheelQueue = [];
+let _wheelBusy = false;
+
+function enqueueWheel(list) {
+  try {
+    for (const it of list) _wheelQueue.push(it);
+    if (!_wheelBusy) _wheelNext();
+  } catch (_e) {}
+}
+
+function _wheelEnsureUI() {
+  if (document.getElementById("wheelOverlay")) return;
+  const style = document.createElement("style");
+  style.id = "wheelStyle";
+  style.textContent = `
+#wheelOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:9999;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+#wheelOverlay.show{opacity:1;pointer-events:auto;}
+#wheelCard{width:min(520px,92vw);border-radius:16px;background:#111;box-shadow:0 10px 40px rgba(0,0,0,.45);padding:18px;border:1px solid rgba(255,255,255,.12);}
+#wheelTitle{font-weight:700;font-size:18px;margin:0 0 8px 0;}
+#wheelSub{opacity:.85;margin:0 0 14px 0;line-height:1.35;}
+#wheelBar{height:10px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;}
+#wheelBar > div{height:100%;width:0%;}
+#wheelResult{margin-top:12px;font-weight:700;}
+  `;
+  document.head.appendChild(style);
+
+  const overlay = document.createElement("div");
+  overlay.id = "wheelOverlay";
+  overlay.innerHTML = `
+    <div id="wheelCard">
+      <div id="wheelTitle">Gluecksrad</div>
+      <p id="wheelSub">Ein Spieler wurde rausgeschmissen. Das Rad dreht...</p>
+      <div id="wheelBar"><div></div></div>
+      <div id="wheelResult"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function _wheelNext() {
+  const item = _wheelQueue.shift();
+  if (!item) { _wheelBusy = false; return; }
+  _wheelBusy = true;
+
+  _wheelEnsureUI();
+  const overlay = document.getElementById("wheelOverlay");
+  const title = document.getElementById("wheelTitle");
+  const sub = document.getElementById("wheelSub");
+  const barFill = document.querySelector("#wheelBar > div");
+  const res = document.getElementById("wheelResult");
+
+  const targetColor = String(item.targetColor || "").toUpperCase();
+  const durationMs = Number(item.durationMs || 10000);
+
+  title.textContent = "Gluecksrad fuer " + (targetColor || "Spieler");
+  sub.textContent = "Das Rad dreht... (50% Chance auf Joker)";
+  res.textContent = "";
+  barFill.style.transition = "none";
+  barFill.style.width = "0%";
+
+  // show overlay
+  overlay.classList.add("show");
+
+  // animate progress
+  requestAnimationFrame(() => {
+    barFill.style.transition = "width " + durationMs + "ms linear";
+    barFill.style.width = "100%";
+  });
+
+  // finish
+  window.setTimeout(() => {
+    const r = item.result;
+    if (r) {
+      res.textContent = "Joker gewonnen: " + String(r);
+    } else {
+      res.textContent = "Leider kein Joker.";
+    }
+  }, durationMs);
+
+  // hide shortly after
+  window.setTimeout(() => {
+    overlay.classList.remove("show");
+    window.setTimeout(() => _wheelNext(), 250);
+  }, durationMs + 1200);
+}
