@@ -711,10 +711,17 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
       const eff = ac && ac.effects ? ac.effects : null;
 
+      function jokerCountVal(v){
+        if(v===true) return 1;
+        if(v===false || v==null) return 0;
+        if(typeof v==="number" && isFinite(v)) return Math.max(0, Math.floor(v));
+        return 0;
+      }
       function fmt(v){
-        if(v===true) return "bereit";
-        if(v===false) return "verbraucht";
-        return "–";
+        const c = jokerCountVal(v);
+        if(c<=0) return "verbraucht";
+        if(c===1) return "bereit";
+        return `bereit (x${c})`;
       }
 
       if(jokerChooseState) jokerChooseState.textContent = fmt(js && my ? js[my]?.choose : null);
@@ -2450,7 +2457,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     // All-Colors-Joker ist nach dem Wurf (need_move) sinnvoll
     if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Joker"); return; }
     const set = getMyJokerSet();
-    if(set && set.allColors===false) { toast("Alle Farben nicht verfügbar"); return; }
+    if(!hasJoker(set,"allColors")) { toast("Alle Farben nicht verfügbar"); return; }
     wsSend({ type: "use_joker", joker: "allcolors" });
   });
 
@@ -2477,7 +2484,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     // Sonst: Joker jetzt aktivieren (nur vor dem Wurf)
     if(state.phase!=="need_roll") { toast("Barikade nur vor dem Würfeln"); return; }
     const set = getMyJokerSet();
-    if(set && set.barricade===false) { toast("Barikade nicht verfügbar"); return; }
+    if(!hasJoker(set,"barricade")) { toast("Barikade nicht verfügbar"); return; }
     pendingBarricadePick = true;
     wsSend({ type: "use_joker", joker: "barricade" });
   });
@@ -2498,6 +2505,18 @@ function getMyJokerSet(){
   return null;
 }
 
+function jokerCount(obj, key){
+  try{
+    if(!obj) return 0;
+    const v = obj[key];
+    if(v===true) return 1;
+    if(v===false || v==null) return 0;
+    if(typeof v==="number" && isFinite(v)) return Math.max(0, Math.floor(v));
+  }catch(_e){}
+  return 0;
+}
+function hasJoker(obj, key){ return jokerCount(obj, key) > 0; }
+
 // Neu-Wurf-Joker: NACH dem Wurf -> erster Wurf verfällt, dann neu würfeln
   const bindReroll = () => {
     jokerRerollBtn = document.getElementById("jokerRerollBtn");
@@ -2510,7 +2529,7 @@ function getMyJokerSet(){
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
       const set = getMyJokerSet();
-      if(!set || set.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
+      if(!hasJoker(set,"reroll")) { toast("Neu-Wurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "reroll" });
     });
   };
@@ -2527,7 +2546,7 @@ function getMyJokerSet(){
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_roll" || state.dice!=null) { toast("Doppelwurf nur vor dem Würfeln"); return; }
       const set = getMyJokerSet();
-      if(!set || set.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
+      if(!hasJoker(set,"double")) { toast("Doppelwurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "double" });
     });
   };
@@ -3045,19 +3064,38 @@ function enqueueWheel(list) {
   } catch (_e) {}
 }
 
+// ----- Wheel UI (visual spinning wheel) -----
+// Note: Pure UI. Server already decides the result. No game-state changes here.
+const _WHEEL_SEGMENTS = [
+  { key: "allColors", label: "Alle Farben" },
+  { key: "none",      label: "Niete" },
+  { key: "barricade", label: "Barikade" },
+  { key: "none",      label: "Niete" },
+  { key: "reroll",    label: "Neu-Wurf" },
+  { key: "none",      label: "Niete" },
+  { key: "double",    label: "Doppelwurf" },
+  { key: "none",      label: "Niete" },
+];
+
+let _wheelAngle = 0; // radians (0 = segment 0 centered at top after calibration)
+
 function _wheelEnsureUI() {
   if (document.getElementById("wheelOverlay")) return;
+
   const style = document.createElement("style");
   style.id = "wheelStyle";
   style.textContent = `
-#wheelOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:9999;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+#wheelOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.62);z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s ease;}
 #wheelOverlay.show{opacity:1;pointer-events:auto;}
-#wheelCard{width:min(520px,92vw);border-radius:16px;background:#111;box-shadow:0 10px 40px rgba(0,0,0,.45);padding:18px;border:1px solid rgba(255,255,255,.12);}
-#wheelTitle{font-weight:700;font-size:18px;margin:0 0 8px 0;}
-#wheelSub{opacity:.85;margin:0 0 14px 0;line-height:1.35;}
-#wheelBar{height:10px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;}
-#wheelBar > div{height:100%;width:0%;}
-#wheelResult{margin-top:12px;font-weight:700;}
+#wheelCard{width:min(560px,94vw);border-radius:18px;background:#111;box-shadow:0 12px 50px rgba(0,0,0,.55);padding:16px 16px 18px 16px;border:1px solid rgba(255,255,255,.12);}
+#wheelHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+#wheelTitle{font-weight:800;font-size:18px;margin:0;}
+#wheelSub{opacity:.85;margin:6px 0 0 0;line-height:1.35;font-size:13px;}
+#wheelWrap{display:flex;align-items:center;justify-content:center;padding:10px 0 6px 0;}
+#wheelCanvas{width:min(360px,78vw);height:auto;max-width:360px;aspect-ratio:1/1;}
+#wheelPointer{width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:18px solid rgba(255,255,255,.9);filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));margin:0 auto -6px auto;}
+#wheelResult{margin-top:10px;font-weight:800;font-size:16px;min-height:22px;}
+#wheelHint{opacity:.7;font-size:12px;margin-top:6px;}
   `;
   document.head.appendChild(style);
 
@@ -3065,13 +3103,107 @@ function _wheelEnsureUI() {
   overlay.id = "wheelOverlay";
   overlay.innerHTML = `
     <div id="wheelCard">
-      <div id="wheelTitle">Gluecksrad</div>
-      <p id="wheelSub">Ein Spieler wurde rausgeschmissen. Das Rad dreht...</p>
-      <div id="wheelBar"><div></div></div>
+      <div id="wheelHeader">
+        <div>
+          <div id="wheelTitle">Gluecksrad</div>
+          <p id="wheelSub">Das Rad dreht...</p>
+        </div>
+      </div>
+      <div id="wheelPointer"></div>
+      <div id="wheelWrap">
+        <canvas id="wheelCanvas" width="720" height="720"></canvas>
+      </div>
       <div id="wheelResult"></div>
+      <div id="wheelHint">50% Joker, 50% Niete</div>
     </div>
   `;
   document.body.appendChild(overlay);
+}
+
+function _wheelDraw(angleRad) {
+  const cvs = document.getElementById("wheelCanvas");
+  if (!cvs) return;
+  const ctx = cvs.getContext("2d");
+  const w = cvs.width, h = cvs.height;
+  const cx = w / 2, cy = h / 2;
+  const r = Math.min(w, h) * 0.44;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 18, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,255,255,.08)";
+  ctx.fill();
+
+  // segments
+  const segN = _WHEEL_SEGMENTS.length;
+  const seg = (Math.PI * 2) / segN;
+
+  for (let i = 0; i < segN; i++) {
+    const a0 = angleRad + i * seg - Math.PI / 2;
+    const a1 = a0 + seg;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, a0, a1);
+    ctx.closePath();
+
+    // alternating fill
+    ctx.fillStyle = (i % 2 === 0) ? "rgba(255,255,255,.16)" : "rgba(255,255,255,.10)";
+    ctx.fill();
+
+    // border
+    ctx.strokeStyle = "rgba(0,0,0,.35)";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // label
+    const mid = (a0 + a1) / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(mid);
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(255,255,255,.95)";
+    ctx.font = "bold 34px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillText(_WHEEL_SEGMENTS[i].label, r - 18, 0);
+    ctx.restore();
+  }
+
+  // center hub
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.18, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0,0,0,.55)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,.20)";
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,255,255,.92)";
+  ctx.font = "bold 36px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("RAD", cx, cy);
+}
+
+function _wheelResolveIndex(resultKey) {
+  const key = String(resultKey || "").trim();
+  if (!key) {
+    // pick a "none" segment
+    const noneIdx = [];
+    for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) if (_WHEEL_SEGMENTS[i].key === "none") noneIdx.push(i);
+    return noneIdx.length ? noneIdx[Math.floor(Math.random() * noneIdx.length)] : 0;
+  }
+  const k = key.toLowerCase();
+  for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
+    if (_WHEEL_SEGMENTS[i].key.toLowerCase() === k) return i;
+  }
+  // if server sends "allColors" etc.
+  for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
+    if (_WHEEL_SEGMENTS[i].key.toLowerCase() === k.replace(/[^a-z]/g, "")) return i;
+  }
+  return 0;
 }
 
 function _wheelNext() {
@@ -3083,40 +3215,57 @@ function _wheelNext() {
   const overlay = document.getElementById("wheelOverlay");
   const title = document.getElementById("wheelTitle");
   const sub = document.getElementById("wheelSub");
-  const barFill = document.querySelector("#wheelBar > div");
   const res = document.getElementById("wheelResult");
 
   const targetColor = String(item.targetColor || "").toUpperCase();
-  const durationMs = Number(item.durationMs || 10000);
+  const durationMs = Math.max(1200, Number(item.durationMs || 10000));
 
   title.textContent = "Gluecksrad fuer " + (targetColor || "Spieler");
-  sub.textContent = "Das Rad dreht... (50% Chance auf Joker)";
+  sub.textContent = "Das Rad dreht...";
   res.textContent = "";
-  barFill.style.transition = "none";
-  barFill.style.width = "0%";
 
-  // show overlay
   overlay.classList.add("show");
 
-  // animate progress
-  requestAnimationFrame(() => {
-    barFill.style.transition = "width " + durationMs + "ms linear";
-    barFill.style.width = "100%";
-  });
+  // Determine target segment based on server result.
+  const idx = _wheelResolveIndex(item.result);
 
-  // finish
-  window.setTimeout(() => {
-    const r = item.result;
-    if (r) {
-      res.textContent = "Joker gewonnen: " + String(r);
+  // Compute final angle so that the segment center lands at the pointer (top).
+  const seg = (Math.PI * 2) / _WHEEL_SEGMENTS.length;
+  const center = (idx + 0.5) * seg;
+  const base = -center; // because draw rotates labels by angleRad and we subtract pi/2 inside draw
+  const spins = 6 + Math.floor(Math.random() * 3); // 6..8 full rotations
+  const finalAngle = base + spins * Math.PI * 2;
+
+  const startAngle = _wheelAngle;
+  const delta = finalAngle - startAngle;
+
+  const t0 = performance.now();
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+  const tick = (now) => {
+    const t = Math.min(1, (now - t0) / durationMs);
+    const eased = easeOutCubic(t);
+    _wheelAngle = startAngle + delta * eased;
+    _wheelDraw(_wheelAngle);
+    if (t < 1) {
+      requestAnimationFrame(tick);
     } else {
-      res.textContent = "Leider kein Joker.";
+      const r = item.result;
+      if (r) {
+        const pretty = (_WHEEL_SEGMENTS[idx] && _WHEEL_SEGMENTS[idx].key !== "none") ? _WHEEL_SEGMENTS[idx].label : String(r);
+        res.textContent = "Joker gewonnen: " + pretty;
+      } else {
+        res.textContent = "Leider kein Joker.";
+      }
+      // hide shortly after
+      window.setTimeout(() => {
+        overlay.classList.remove("show");
+        window.setTimeout(() => _wheelNext(), 250);
+      }, 1200);
     }
-  }, durationMs);
+  };
 
-  // hide shortly after
-  window.setTimeout(() => {
-    overlay.classList.remove("show");
-    window.setTimeout(() => _wheelNext(), 250);
-  }, durationMs + 1200);
+  // initial draw and start animation
+  _wheelDraw(_wheelAngle);
+  requestAnimationFrame(tick);
 }
