@@ -2417,7 +2417,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
     // All-Colors-Joker ist nach dem Wurf (need_move) sinnvoll
     if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Joker"); return; }
-    wsSend({ type: "use_joker", joker: "allcolors" });
+    wsSend({ type: "use_joker", joker: "allColors" });
   });
 
   // Barrikade-Joker: VOR dem Wurf aktivieren, danach Quelle+Ziel klicken
@@ -2459,7 +2459,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
-      const js = state.actionJokers || state.jokers || null;
+      const js = getMyActionJokers();
       if(!js || !myColor || js[myColor]?.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "reroll" });
     });
@@ -2476,7 +2476,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_roll" || state.dice!=null) { toast("Doppelwurf nur vor dem Würfeln"); return; }
-      const js = state.actionJokers || state.jokers || null;
+      const js = getMyActionJokers();
       if(!js || !myColor || js[myColor]?.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "double" });
     });
@@ -2981,4 +2981,16 @@ leaveBtn.addEventListener("click", () => {
 
   window.addEventListener("load", ()=>{ tryDock(); });
 })();
+
+  // Helper: read joker availability from the server snapshot (supports older keys for backwards compatibility)
+  function getMyActionJokers(){
+    const c = myColor;
+    const ac = state && state.action ? state.action : null;
+    return (ac && ac.jokersByColor && c ? ac.jokersByColor[c] : null)
+        || (state && state.actionJokers && c ? state.actionJokers[c] : null)
+        || (state && state.jokersByColor && c ? state.jokersByColor[c] : null)
+        || (state && state.jokers && c ? state.jokers[c] : null)
+        || null;
+  }
+
 
