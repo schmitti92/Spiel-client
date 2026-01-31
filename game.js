@@ -723,29 +723,65 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         }
         return 0;
       }
-      function fmt(v){
-        const c = jokerCountVal(v);
-        if(c<=0) return "verbraucht";
-        return `bereit (x${c})`;
-      }
-      function fmtC(v){
-        const base = fmt(v);
-        if(!my) return base;
-        const label = (typeof PLAYER_NAME==="object" && PLAYER_NAME && PLAYER_NAME[my]) ? PLAYER_NAME[my] : my;
-        return `${base} (${label})`;
+
+      function colorLabel(c){
+        if(!c) return "";
+        const key = String(c);
+        return (typeof PLAYER_NAME==="object" && PLAYER_NAME && PLAYER_NAME[key]) ? PLAYER_NAME[key] : key;
       }
 
+      // Prefer server v2 structure: ac.jokersOwned[ownerColor] = [{type,color(origin),...}, ...]
+      function ownedSummary(typeKey){
+        try{
+          if(!ac || !ac.jokersOwned || !my) return null;
+          const arr = ac.jokersOwned[my];
+          if(!Array.isArray(arr)) return null;
+          const by = {};
+          let total = 0;
+          for(const j of arr){
+            if(String(j?.type) !== String(typeKey)) continue;
+            total++;
+            const oc = String(j?.color || "");
+            if(oc) by[oc] = (by[oc]||0)+1;
+          }
+          return { total, by };
+        }catch(_e){ return null; }
+      }
 
-      if(jokerChooseState) jokerChooseState.textContent = fmtC(js && my ? js[my]?.choose : null);
-      if(jokerSumState) jokerSumState.textContent = fmtC(js && my ? js[my]?.sum : null);
-      if(jokerAllColorsState) jokerAllColorsState.textContent = fmtC(js && my ? js[my]?.allColors : null);
-      if(jokerBarricadeState) jokerBarricadeState.textContent = fmtC(js && my ? js[my]?.barricade : null);
-      if(jokerRerollState) jokerRerollState.textContent = fmtC(js && my ? js[my]?.reroll : null);
-      if(jokerDoubleState) jokerDoubleState.textContent = fmtC(js && my ? js[my]?.double : null);
+      function fmtCount(total){
+        if(total<=0) return "verbraucht";
+        return `bereit (x${total})`;
+      }
+
+      function fmtWithOrigin(typeKey, legacyVal){
+        const sum = ownedSummary(typeKey);
+        if(sum){
+          const base = fmtCount(sum.total);
+          if(sum.total<=0) return base;
+          const keys = Object.keys(sum.by||{}).filter(k => sum.by[k]>0);
+          if(!keys.length) return base;
+          // show origins sorted
+          keys.sort();
+          const originStr = keys.map(k => `${colorLabel(k)}×${sum.by[k]}`).join(", ");
+          return `${base} (${originStr})`;
+        }
+        // fallback to legacy counts: show owner color label
+        const c = jokerCountVal(legacyVal);
+        const base = fmtCount(c);
+        if(c<=0) return base;
+        return my ? `${base} (${colorLabel(my)})` : base;
+      }
+
+      if(jokerChooseState) jokerChooseState.textContent = fmtWithOrigin("choose", js && my ? js[my]?.choose : null);
+      if(jokerSumState) jokerSumState.textContent = fmtWithOrigin("sum", js && my ? js[my]?.sum : null);
+      if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColors", js && my ? js[my]?.allColors : null);
+      if(jokerBarricadeState) jokerBarricadeState.textContent = fmtWithOrigin("barricade", js && my ? js[my]?.barricade : null);
+      if(jokerRerollState) jokerRerollState.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
+      if(jokerDoubleState) jokerDoubleState.textContent = fmtWithOrigin("double", js && my ? js[my]?.double : null);
       const rrEl = document.getElementById("jokerRerollState");
-      if(rrEl) rrEl.textContent = fmtC(js && my ? js[my]?.reroll : null);
+      if(rrEl) rrEl.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
 
-      if(actionEffectsState){
+if(actionEffectsState){
         if(!eff){ actionEffectsState.textContent = "–"; }
         else{
           const parts = [];
