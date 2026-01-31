@@ -726,7 +726,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       function fmt(v){
         const c = jokerCountVal(v);
         if(c<=0) return "verbraucht";
-        if(c===1) return "bereit";
         return `bereit (x${c})`;
       }
       function fmtC(v){
