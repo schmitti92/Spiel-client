@@ -2417,7 +2417,9 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
     // All-Colors-Joker ist nach dem Wurf (need_move) sinnvoll
     if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Joker"); return; }
-    wsSend({ type: "use_joker", joker: "allColors" });
+    const set = getMyJokerSet();
+    if(set && set.allColors===false) { toast("Alle Farben nicht verfügbar"); return; }
+    wsSend({ type: "use_joker", joker: "allcolors" });
   });
 
   // Barrikade-Joker: VOR dem Wurf aktivieren, danach Quelle+Ziel klicken
@@ -2442,13 +2444,29 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
 
     // Sonst: Joker jetzt aktivieren (nur vor dem Wurf)
     if(state.phase!=="need_roll") { toast("Barikade nur vor dem Würfeln"); return; }
+    const set = getMyJokerSet();
+    if(set && set.barricade===false) { toast("Barikade nicht verfügbar"); return; }
     pendingBarricadePick = true;
     wsSend({ type: "use_joker", joker: "barricade" });
   });
   }
 
 
-  // Neu-Wurf-Joker: NACH dem Wurf -> erster Wurf verfällt, dann neu würfeln
+  // Helper: robust access to action joker set for current player (server snapshot is source of truth)
+function getMyJokerSet(){
+  try{
+    const c = (myColor || (state && state.currentPlayer)) || null;
+    if(!c) return null;
+    // preferred path (server v14+)
+    if(state && state.action && state.action.jokersByColor && state.action.jokersByColor[c]) return state.action.jokersByColor[c];
+    // backward-compat fallbacks (older builds)
+    if(state && state.actionJokers && state.actionJokers[c]) return state.actionJokers[c];
+    if(state && state.jokers && state.jokers[c]) return state.jokers[c];
+  }catch(_e){}
+  return null;
+}
+
+// Neu-Wurf-Joker: NACH dem Wurf -> erster Wurf verfällt, dann neu würfeln
   const bindReroll = () => {
     jokerRerollBtn = document.getElementById("jokerRerollBtn");
     if(!jokerRerollBtn || jokerRerollBtn.__bound) return;
@@ -2459,8 +2477,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
-      const js = getMyActionJokers();
-      if(!js || !myColor || js[myColor]?.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
+      const set = getMyJokerSet();
+      if(!set || set.reroll!==true) { toast("Neu-Wurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "reroll" });
     });
   };
@@ -2476,8 +2494,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_roll" || state.dice!=null) { toast("Doppelwurf nur vor dem Würfeln"); return; }
-      const js = getMyActionJokers();
-      if(!js || !myColor || js[myColor]?.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
+      const set = getMyJokerSet();
+      if(!set || set.double!==true) { toast("Doppelwurf nicht verfügbar"); return; }
       wsSend({ type: "use_joker", joker: "double" });
     });
   };
@@ -2981,16 +2999,4 @@ leaveBtn.addEventListener("click", () => {
 
   window.addEventListener("load", ()=>{ tryDock(); });
 })();
-
-  // Helper: read joker availability from the server snapshot (supports older keys for backwards compatibility)
-  function getMyActionJokers(){
-    const c = myColor;
-    const ac = state && state.action ? state.action : null;
-    return (ac && ac.jokersByColor && c ? ac.jokersByColor[c] : null)
-        || (state && state.actionJokers && c ? state.actionJokers[c] : null)
-        || (state && state.jokersByColor && c ? state.jokersByColor[c] : null)
-        || (state && state.jokers && c ? state.jokers[c] : null)
-        || null;
-  }
-
 
