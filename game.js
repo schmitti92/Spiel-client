@@ -212,7 +212,35 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const jokerBarricadeBtn = $("jokerBarricadeBtn");
   let jokerRerollBtn = $("jokerRerollBtn");
 
-  // ===== Joker #3: Neu-Wurf (UI inject, additive) =====
+  
+
+  // ===== Visual: Hide legacy jokers (Choose + Summe) =====
+  // NOTE: Only visual removal. No gameplay logic is removed on server/client.
+  function hideLegacyChooseSumUI(){
+    try{
+      const ids = ["jokerChooseState","jokerSumState"];
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        // hide the row that contains the state label
+        const row = el.closest("div") || el.parentElement;
+        if(row) row.style.display = "none";
+      });
+
+      // hide any related buttons inside action card (if they exist)
+      if(actionCard){
+        const btns = actionCard.querySelectorAll("button");
+        btns.forEach(b=>{
+          const t = (b.textContent || "").toLowerCase();
+          if(t.includes("choose") || t.includes("summe") || t.includes("sum")) {
+            b.style.display = "none";
+          }
+        });
+      }
+    }catch(_e){}
+  }
+
+// ===== Joker #3: Neu-Wurf (UI inject, additive) =====
   function ensureActionJoker3UI(){
     try{
       if(!actionCard) return;
@@ -2406,6 +2434,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     }catch(_e){}
   }
   try{ ensureActionJoker4UI(); }catch(_e){}
+  try{ hideLegacyChooseSumUI(); }catch(_e){}
 
   let jokerDoubleState = $("jokerDoubleState");
   let jokerDoubleBtn = $("jokerDoubleBtn");
