@@ -714,7 +714,13 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       function jokerCountVal(v){
         if(v===true) return 1;
         if(v===false || v==null) return 0;
+        // allow numeric counts
         if(typeof v==="number" && isFinite(v)) return Math.max(0, Math.floor(v));
+        // allow object form: {count:3} or {n:3}
+        if(typeof v==="object"){
+          const c = (v.count!=null) ? v.count : (v.n!=null ? v.n : null);
+          if(typeof c==="number" && isFinite(c)) return Math.max(0, Math.floor(c));
+        }
         return 0;
       }
       function fmt(v){
@@ -723,15 +729,22 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         if(c===1) return "bereit";
         return `bereit (x${c})`;
       }
+      function fmtC(v){
+        const base = fmt(v);
+        if(!my) return base;
+        const label = (typeof PLAYER_NAME==="object" && PLAYER_NAME && PLAYER_NAME[my]) ? PLAYER_NAME[my] : my;
+        return `${base} (${label})`;
+      }
 
-      if(jokerChooseState) jokerChooseState.textContent = fmt(js && my ? js[my]?.choose : null);
-      if(jokerSumState) jokerSumState.textContent = fmt(js && my ? js[my]?.sum : null);
-      if(jokerAllColorsState) jokerAllColorsState.textContent = fmt(js && my ? js[my]?.allColors : null);
-      if(jokerBarricadeState) jokerBarricadeState.textContent = fmt(js && my ? js[my]?.barricade : null);
-      if(jokerRerollState) jokerRerollState.textContent = fmt(js && my ? js[my]?.reroll : null);
-      if(jokerDoubleState) jokerDoubleState.textContent = fmt(js && my ? js[my]?.double : null);
+
+      if(jokerChooseState) jokerChooseState.textContent = fmtC(js && my ? js[my]?.choose : null);
+      if(jokerSumState) jokerSumState.textContent = fmtC(js && my ? js[my]?.sum : null);
+      if(jokerAllColorsState) jokerAllColorsState.textContent = fmtC(js && my ? js[my]?.allColors : null);
+      if(jokerBarricadeState) jokerBarricadeState.textContent = fmtC(js && my ? js[my]?.barricade : null);
+      if(jokerRerollState) jokerRerollState.textContent = fmtC(js && my ? js[my]?.reroll : null);
+      if(jokerDoubleState) jokerDoubleState.textContent = fmtC(js && my ? js[my]?.double : null);
       const rrEl = document.getElementById("jokerRerollState");
-      if(rrEl) rrEl.textContent = fmt(js && my ? js[my]?.reroll : null);
+      if(rrEl) rrEl.textContent = fmtC(js && my ? js[my]?.reroll : null);
 
       if(actionEffectsState){
         if(!eff){ actionEffectsState.textContent = "–"; }
