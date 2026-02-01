@@ -6,40 +6,67 @@
   if (typeof window.canUseAllColorsNow !== 'function') window.canUseAllColorsNow = () => true;
 })();
 
-// --- C2 panel scroll fix (keeps "no-viewport-jump" while allowing right panel to scroll) ---
-(() => {
-  function applyPanelScrollFix(){
-    try{
-      const topbar = document.querySelector('.topbar');
-      const app = document.querySelector('.app');
-      const panel = document.querySelector('.panel');
-      if(!app || !panel) return;
-
-      const topH = topbar ? Math.ceil(topbar.getBoundingClientRect().height) : 0;
-
-      // If the page scroll is locked (to prevent viewport jump), the panel must become its own scroll container.
-      if(!app.style.height) app.style.height = `calc(100vh - ${topH}px)`;
-      app.style.overflow = app.style.overflow || 'hidden';
-
-      panel.style.overflowY = 'auto';
-      panel.style.webkitOverflowScrolling = 'touch';
-      panel.style.overscrollBehavior = 'contain';
-      panel.style.maxHeight = `calc(100vh - ${topH}px - 24px)`;
-    }catch(_e){}
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', applyPanelScrollFix, { once:true });
-  } else {
-    applyPanelScrollFix();
-  }
-  window.addEventListener('resize', () => setTimeout(applyPanelScrollFix, 50));
-})();
-
 let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
 (() => {
   const $ = (id) => document.getElementById(id);
+
+
+  // ===== C1: UX stability fixes (NO functional changes) =====
+  // 1) Prevent viewport jump on mobile while keeping right panel scrollable.
+  // 2) Prevent dice clipping by ensuring the dice container allows overflow & adapts size.
+  function applyUxStabilityFixes(){
+    try{
+      const topbar = document.querySelector('.topbar');
+      const sidePanel = document.querySelector('.app > .panel');
+      if(!sidePanel) return;
+
+      // Ensure the document doesn't become scroll-container (prevents mobile "refresh-like" jumps)
+      // while the right panel gets its own scroll.
+      try{
+        document.documentElement.style.height = '100%';
+        document.body.style.height = '100%';
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overscrollBehavior = 'none';
+        document.documentElement.style.overscrollBehavior = 'none';
+      }catch(_e){}
+
+      // Compute available height for right panel and enable smooth scrolling (tablet friendly)
+      const topH = topbar ? topbar.getBoundingClientRect().height : 0;
+      const pad = 16; // matches .app padding
+      const maxH = Math.max(200, window.innerHeight - topH - pad*2);
+      sidePanel.style.maxHeight = maxH + 'px';
+      sidePanel.style.overflowY = 'auto';
+      sidePanel.style.webkitOverflowScrolling = 'touch';
+
+      // Make sure dice isn't clipped by the dice pill (index.html had overflow:hidden)
+      const dicePill = sidePanel.querySelector('.dicePill');
+      if(dicePill){
+        dicePill.style.overflow = 'visible';
+        // Give it a predictable box so large dice stays inside the panel
+        // (still responsive; doesn't break desktop)
+        const maxSize = Math.min(190, Math.max(92, Math.floor(sidePanel.clientWidth * 0.40)));
+        dicePill.style.width = maxSize + 'px';
+        dicePill.style.height = maxSize + 'px';
+        dicePill.style.flex = '0 0 auto';
+        // keep a small inner padding so it doesn't touch the panel edge
+        dicePill.style.padding = '6px';
+        dicePill.style.boxSizing = 'border-box';
+      }
+
+      // Let the cube fill the pill; pips scale automatically with CSS grid
+      const diceCube = document.getElementById('diceCube');
+      if(diceCube && dicePill){
+        diceCube.style.width = '100%';
+        diceCube.style.height = '100%';
+      }
+    }catch(_e){}
+  }
+
+  // Apply now + on resize/orientation changes
+  window.addEventListener('resize', () => { try{ applyUxStabilityFixes(); }catch(_e){} }, { passive:true });
+  window.addEventListener('orientationchange', () => { try{ setTimeout(applyUxStabilityFixes, 50); }catch(_e){} });
 
   function debugLog(...args){
     try{ console.log(...args); }catch(_e){}
@@ -60,6 +87,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const netBannerEl = $("netBanner");
   const debugToggle = $("debugToggle");
   const debugLogEl = $("debugLog");
+
+
+  // Run UX stability fixes once after we have DOM.
+  applyUxStabilityFixes();
 
   const rollBtn = $("rollBtn");
   const startBtn = $("startBtn");
@@ -88,35 +119,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       hostTools.appendChild(swapColorsBtn);
     }
   }catch(_e){}
-  
-  // ===== Dice pips (render directly on the cube face) =====
-  // Additiv: erzeugt nur die 9 "Pip"-Zellen im #diceCube, damit die Augen sichtbar sind.
-  // Beeinflusst weder Server-Logik noch Würfel-/Zug-Regeln.
-  function ensureDicePips(){
-    try{
-      const el = document.getElementById("diceCube");
-      if(!el) return;
-      // If already built (9 cells), do nothing
-      if(el.children && el.children.length >= 9) return;
-
-      // Clear accidental text nodes / partial markup
-      while(el.firstChild) el.removeChild(el.firstChild);
-
-      const frag = document.createDocumentFragment();
-      for(let i=1;i<=9;i++){
-        const cell = document.createElement("div");
-        cell.className = "dip p"+i;
-        const pip = document.createElement("span");
-        pip.className = "pip";
-        cell.appendChild(pip);
-        frag.appendChild(cell);
-      }
-      el.appendChild(frag);
-    }catch(_e){}
-  }
-
   const diceEl  = $("diceCube");
-  ensureDicePips();
   // UI-only: ensure dice is visible even before the first roll.
   try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
