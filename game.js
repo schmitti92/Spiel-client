@@ -182,10 +182,16 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     }catch(_e){}
   }
 
-  // call once (safe)
-  ensureLegendaryDiceStyles();
-
-  // Online
+  // call once (safe) — nur wenn keine 2D-DiceMarkup (".dip") vorhanden ist
+  (function(){
+    try{
+      const _d = document.getElementById("diceCube");
+      // Wenn wir 2D-Markup mit .dip nutzen, NICHT die 3D-Legendary-Styles injizieren (würde den Würfel verstecken)
+      if(_d && _d.querySelector && _d.querySelector(".dip")) return;
+    }catch(_e){}
+    ensureLegendaryDiceStyles();
+  })();
+// Online
   const serverLabel = $("serverLabel");
   const roomCodeInp = $("roomCode");
   const hostBtn = $("hostBtn");
@@ -3014,6 +3020,13 @@ leaveBtn.addEventListener("click", () => {
   function tryDock(){
     const dice = document.getElementById("diceCube") || document.querySelector("#diceCube") || document.querySelector(".diceCube") || null;
     if(!dice) return false;
+
+    // Wenn der Würfel bereits bei "Würfeln" sitzt, NICHT mehr in Status docken
+    try{
+      const rb = document.getElementById("rollBtn");
+      const dc = rb ? (rb.closest(".card") || rb.closest(".panel") || rb.closest("section") || rb.parentElement) : null;
+      if(dc && dc.contains(dice)) return true;
+    }catch(_e){}
 
     const titleEl = findStatusTitleEl();
     if(!titleEl) return false;
