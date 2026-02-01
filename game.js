@@ -2870,132 +2870,128 @@ leaveBtn.addEventListener("click", () => {
   })();
 })();
 
-// ===== UI PATCH: Würfel bleibt beim Würfeln-Button (nur Optik) =====
-(function keepDiceNearRollButton(){
-  function apply(){
+// ===== UI PATCH: Würfel beim Würfel-Button anzeigen (nur Optik) =====
+// Hinweis: Früher wurde der Würfel in die Status-Box gedockt. Jetzt bleibt er beim Würfeln-Button.
+(function dockDiceIntoStatusCard(){
+  function tryDock(){
     const dice = document.getElementById("diceCube");
     const rollBtn = document.getElementById("rollBtn");
     if(!dice || !rollBtn) return false;
 
-    // Der Würfel soll NICHT in den Status-Block wandern.
-    // Stattdessen: in der gleichen Leiste/Box beim Würfeln-Button bleiben.
-    // Wir sorgen nur für Größe/Position (Optik), ohne IDs/Logik zu ändern.
+    // Ziel: die Card/Section, in der der Würfeln-Button sitzt
+    const diceCard =
+      rollBtn.closest(".card") ||
+      rollBtn.closest(".panel") ||
+      rollBtn.closest("section") ||
+      rollBtn.parentElement;
 
-    // Versuche, den "dicePill" / Wrapper zu finden
-    const pill = dice.closest(".dicePill") || dice.parentElement;
+    if(!diceCard) return false;
+
+    // Wenn der Würfel bereits in der richtigen Card ist -> fertig
+    if(diceCard.contains(dice)) return true;
+
+    // Bevorzugt: existierenden dicePill-Container in der Würfel-Card nutzen
+    const pill = diceCard.querySelector(".dicePill");
     if(pill){
-      pill.style.display = "flex";
-      pill.style.alignItems = "center";
-      pill.style.justifyContent = "flex-end";
-      pill.style.gap = "12px";
+      pill.appendChild(dice);
+      return true;
     }
 
-    // Optional: etwas größer, aber nicht übertrieben (kannst du später anpassen)
-    dice.style.transform = "scale(1.25)";
-    dice.style.transformOrigin = "right center";
+    // Fallback: einen Dock-Wrapper anlegen und direkt neben/unter dem Button platzieren
+    let dock = document.getElementById("diceDockDice");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockDice";
+      dock.style.display = "flex";
+      dock.style.justifyContent = "flex-end";
+      dock.style.alignItems = "center";
+      dock.style.gap = "10px";
+      dock.style.marginTop = "10px";
+    } else {
+      dock.innerHTML = "";
+    }
 
+    dock.appendChild(dice);
+
+    const btnRow = rollBtn.closest(".row") || rollBtn.parentElement;
+    if(btnRow && btnRow.parentElement){
+      btnRow.parentElement.insertBefore(dock, btnRow.nextSibling);
+      return true;
+    }
+    diceCard.appendChild(dock);
+    return true;
+  }
+
+  // Mehrere Versuche (UI kann dynamisch sein)
+  let tries = 0;
+  const t = setInterval(() => {
+    tries++;
+    const ok = tryDock();
+    if(ok || tries > 30) clearInterval(t);
+  }, 100);
+
+  window.addEventListener("load", () => { tryDock(); });
+})();
+
+
+
+
+/* ===== UI PATCH V2 (nur Optik, KEIN Gameplay): Würfel beim Würfeln-Button erzwingen =====
+   Früher wurde der Würfel in "Status" gedockt und mit Fixed/Absolute-Overrides stabilisiert.
+   Jetzt erzwingen wir: Würfel bleibt in der Würfel-Card (neben dem Würfeln-Button). */
+(function forceDiceDockIntoStatus(){
+  function setImportant(el, prop, value){
+    try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
+  }
+
+  function tryDock(){
+    const dice = document.getElementById("diceCube");
+    const rollBtn = document.getElementById("rollBtn");
+    if(!dice || !rollBtn) return false;
+
+    const diceCard =
+      rollBtn.closest(".card") ||
+      rollBtn.closest(".panel") ||
+      rollBtn.closest("section") ||
+      rollBtn.parentElement;
+
+    if(!diceCard) return false;
+
+    // Dock in dicePill wenn vorhanden
+    const pill = diceCard.querySelector(".dicePill");
+    if(pill && !pill.contains(dice)){
+      pill.appendChild(dice);
+    } else if(!diceCard.contains(dice)){
+      diceCard.appendChild(dice);
+    }
+
+    // Style-Overrides: der Würfel soll NICHT fixed/absolute irgendwo rumhängen
+    setImportant(dice, "position", "relative");
+    setImportant(dice, "left", "auto");
+    setImportant(dice, "right", "auto");
+    setImportant(dice, "top", "auto");
+    setImportant(dice, "bottom", "auto");
+    setImportant(dice, "transform", "none"); // die Würfel-Animation setzt selbst transform am Element/Children
+    setImportant(dice, "margin", "0");
+
+    // Wenn es einen alten Status-Dock-Wrapper gibt, leeren/entfernen wir ihn nur optisch
+    const oldDock = document.getElementById("diceDockStatus");
+    if(oldDock){
+      try{ oldDock.remove(); }catch(_e){ oldDock.innerHTML = ""; }
+    }
     return true;
   }
 
   let tries = 0;
   const t = setInterval(() => {
     tries++;
-    const ok = apply();
-    if(ok || tries > 30) clearInterval(t);
-  }, 100);
-
-  window.addEventListener("load", () => { apply(); });
-})();
-
-/* ===== UI PATCH V2 (nur Optik, KEIN Gameplay): Würfel wirklich in "Status" docken + Fixed/Absolute überschreiben ===== */
-(function forceDiceDockIntoStatus(){
-  function setImportant(el, prop, value){
-    try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
-  }
-  function findStatusCardByBoardInfo(){
-    const boardInfo = document.getElementById("boardInfo");
-    if(!boardInfo) return null;
-    return (
-      boardInfo.closest(".card") ||
-      boardInfo.closest(".panel") ||
-      boardInfo.closest("section") ||
-      boardInfo.closest("div") ||
-      null
-    );
-  }
-
-  function tryDock(){
-    const dice = document.getElementById("diceCube");
-    const boardInfo = document.getElementById("boardInfo");
-    if(!dice || !boardInfo) return false;
-
-    const card = findStatusCardByBoardInfo();
-    if(!card) return false;
-
-    // Überschreibe mögliche Header-Fixierungen (damit ein Umhängen auch sichtbar wird)
-    setImportant(dice, "position", "static");
-    setImportant(dice, "top", "auto");
-    setImportant(dice, "right", "auto");
-    setImportant(dice, "bottom", "auto");
-    setImportant(dice, "left", "auto");
-    setImportant(dice, "margin", "0");
-    setImportant(dice, "z-index", "10");
-    // Falls im Header per flex "klein gedrückt"
-    setImportant(dice, "flex", "0 0 auto");
-
-    // Dock-Wrapper
-    let dock = document.getElementById("diceDockStatusV2");
-    if(!dock){
-      dock = document.createElement("div");
-      dock.id = "diceDockStatusV2";
-      dock.style.display = "flex";
-      dock.style.justifyContent = "flex-end";
-      dock.style.alignItems = "flex-start";
-      dock.style.gap = "12px";
-      dock.style.margin = "10px 0 14px 0";
-    } else {
-      dock.innerHTML = "";
-    }
-
-    // Groß darstellen (ohne 3D-Transforms zu zerstören)
-    const big = document.createElement("div");
-    setImportant(big, "transform", "scale(2.9)");
-    setImportant(big, "transform-origin", "right top");
-    // Anzeige-only (würfeln bleibt Button)
-    setImportant(big, "pointer-events", "none");
-    big.appendChild(dice);
-    dock.appendChild(big);
-
-    // Einfügen: direkt NACH der Status-Überschrift, sonst über boardInfo-Zeile
-    const statusTitle = Array.from(card.querySelectorAll("h1,h2,h3,div,span"))
-      .find(n => (n.textContent||"").trim() === "Status");
-    if(statusTitle && statusTitle.parentElement){
-      // nach dem Titel einfügen
-      if(statusTitle.nextSibling){
-        statusTitle.parentElement.insertBefore(dock, statusTitle.nextSibling);
-      } else {
-        statusTitle.parentElement.appendChild(dock);
-      }
-      return true;
-    }
-
-    // Fallback: über der Board-Zeile
-    const row = boardInfo.closest("div") || boardInfo;
-    row.parentElement && row.parentElement.insertBefore(dock, row);
-    return true;
-  }
-
-  // oft wird UI dynamisch gerendert → mehrfach versuchen + nach jedem Resize
-  let tries = 0;
-  const iv = setInterval(() => {
-    tries++;
     const ok = tryDock();
-    if(ok || tries > 80) clearInterval(iv);
+    if(ok || tries > 40) clearInterval(t);
   }, 120);
 
   window.addEventListener("load", () => { tryDock(); });
-  window.addEventListener("resize", () => { tryDock(); });
 })();
+
 
 
 
