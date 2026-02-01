@@ -59,6 +59,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     }
   }catch(_e){}
   const diceEl  = $("diceCube");
+  // UI-only: ensure dice is visible even before the first roll.
+  try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
   // Additiv: nur Anzeige, beeinflusst Gameplay nicht.
   let diceValueLabel = null;
@@ -182,16 +184,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     }catch(_e){}
   }
 
-  // call once (safe) — nur wenn keine 2D-DiceMarkup (".dip") vorhanden ist
-  (function(){
-    try{
-      const _d = document.getElementById("diceCube");
-      // Wenn wir 2D-Markup mit .dip nutzen, NICHT die 3D-Legendary-Styles injizieren (würde den Würfel verstecken)
-      if(_d && _d.querySelector && _d.querySelector(".dip")) return;
-    }catch(_e){}
-    ensureLegendaryDiceStyles();
-  })();
-// Online
+  // call once (safe)
+  ensureLegendaryDiceStyles();
+
+  // Online
   const serverLabel = $("serverLabel");
   const roomCodeInp = $("roomCode");
   const hostBtn = $("hostBtn");
@@ -2893,6 +2889,19 @@ leaveBtn.addEventListener("click", () => {
 
     if(!diceCard) return false;
 
+    // If the dice is already placed next to the roll button (inside the same card/row),
+    // do NOT move it (prevents the dicePill from becoming empty).
+    try{
+      const sameCard = diceCard && diceCard.contains(dice);
+      const inDicePill = !!dice.closest(".dicePill");
+      const btnRow2 = rollBtn.closest(".row") || rollBtn.parentElement;
+      const nearBtn = btnRow2 && btnRow2.contains(dice) || (btnRow2 && btnRow2.querySelector && btnRow2.querySelector("#diceCube"));
+      if(sameCard && (inDicePill || nearBtn)){
+        return true;
+      }
+    }catch(_e){}
+
+
     // Wenn der Würfel bereits in der richtigen Card ist -> fertig
     if(diceCard.contains(dice)) return true;
 
@@ -3020,13 +3029,6 @@ leaveBtn.addEventListener("click", () => {
   function tryDock(){
     const dice = document.getElementById("diceCube") || document.querySelector("#diceCube") || document.querySelector(".diceCube") || null;
     if(!dice) return false;
-
-    // Wenn der Würfel bereits bei "Würfeln" sitzt, NICHT mehr in Status docken
-    try{
-      const rb = document.getElementById("rollBtn");
-      const dc = rb ? (rb.closest(".card") || rb.closest(".panel") || rb.closest("section") || rb.parentElement) : null;
-      if(dc && dc.contains(dice)) return true;
-    }catch(_e){}
 
     const titleEl = findStatusTitleEl();
     if(!titleEl) return false;
