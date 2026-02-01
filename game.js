@@ -6,6 +6,36 @@
   if (typeof window.canUseAllColorsNow !== 'function') window.canUseAllColorsNow = () => true;
 })();
 
+// --- C2 panel scroll fix (keeps "no-viewport-jump" while allowing right panel to scroll) ---
+(() => {
+  function applyPanelScrollFix(){
+    try{
+      const topbar = document.querySelector('.topbar');
+      const app = document.querySelector('.app');
+      const panel = document.querySelector('.panel');
+      if(!app || !panel) return;
+
+      const topH = topbar ? Math.ceil(topbar.getBoundingClientRect().height) : 0;
+
+      // If the page scroll is locked (to prevent viewport jump), the panel must become its own scroll container.
+      if(!app.style.height) app.style.height = `calc(100vh - ${topH}px)`;
+      app.style.overflow = app.style.overflow || 'hidden';
+
+      panel.style.overflowY = 'auto';
+      panel.style.webkitOverflowScrolling = 'touch';
+      panel.style.overscrollBehavior = 'contain';
+      panel.style.maxHeight = `calc(100vh - ${topH}px - 24px)`;
+    }catch(_e){}
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', applyPanelScrollFix, { once:true });
+  } else {
+    applyPanelScrollFix();
+  }
+  window.addEventListener('resize', () => setTimeout(applyPanelScrollFix, 50));
+})();
+
 let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
 (() => {
@@ -20,25 +50,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         el.scrollTop = el.scrollHeight;
       }catch(_e){}
     }
-  }
-
-
-  // ===== UX: prevent mobile "page refresh / jump" during dice shake (layout/scrollbar bounce) =====
-  // Additiv & sicher: verhindert nur Scroll/Overflow auf dem Dokument, Gameplay bleibt unverändert.
-  function lockViewportScroll(){
-    try{
-      const id="__lockViewportScrollStyle";
-      if(document.getElementById(id)) return;
-      const st=document.createElement("style");
-      st.id=id;
-      st.textContent = `
-        html, body { height: 100%; overflow: hidden !important; overscroll-behavior: none; }
-        body { position: fixed; inset: 0; width: 100%; }
-        /* avoid accidental horizontal scrollbars caused by dice shake/particles */
-        .panel, .dicePill { overflow: hidden; }
-      `;
-      document.head.appendChild(st);
-    }catch(_e){}
   }
 
 
@@ -106,7 +117,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   const diceEl  = $("diceCube");
   ensureDicePips();
-  try{ lockViewportScroll(); }catch(_e){}
   // UI-only: ensure dice is visible even before the first roll.
   try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
@@ -1255,7 +1265,7 @@ try{ ws = new WebSocket(SERVER_URL); }
       updateTurnUI(); updateStartButton(); draw();
     updateActionUI_J1();
       updateActionUI_J1();
-      if(!view._fittedOnce) ensureFittedOnce();
+      ensureFittedOnce();
       return;
     }
 
@@ -1302,7 +1312,7 @@ try{ ws = new WebSocket(SERVER_URL); }
 
       updateTurnUI(); updateStartButton(); draw();
     updateActionUI_J1();
-      if(!view._fittedOnce) ensureFittedOnce();
+      ensureFittedOnce();
   }
 
   function serializeState(){
