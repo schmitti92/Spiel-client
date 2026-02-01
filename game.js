@@ -23,6 +23,25 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
 
+  // ===== UX: prevent mobile "page refresh / jump" during dice shake (layout/scrollbar bounce) =====
+  // Additiv & sicher: verhindert nur Scroll/Overflow auf dem Dokument, Gameplay bleibt unverändert.
+  function lockViewportScroll(){
+    try{
+      const id="__lockViewportScrollStyle";
+      if(document.getElementById(id)) return;
+      const st=document.createElement("style");
+      st.id=id;
+      st.textContent = `
+        html, body { height: 100%; overflow: hidden !important; overscroll-behavior: none; }
+        body { position: fixed; inset: 0; width: 100%; }
+        /* avoid accidental horizontal scrollbars caused by dice shake/particles */
+        .panel, .dicePill { overflow: hidden; }
+      `;
+      document.head.appendChild(st);
+    }catch(_e){}
+  }
+
+
   // ===== UI refs =====
   const canvas = $("c");
   const ctx = canvas.getContext("2d");
@@ -87,6 +106,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   const diceEl  = $("diceCube");
   ensureDicePips();
+  try{ lockViewportScroll(); }catch(_e){}
   // UI-only: ensure dice is visible even before the first roll.
   try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
