@@ -1235,7 +1235,7 @@ try{ ws = new WebSocket(SERVER_URL); }
       updateTurnUI(); updateStartButton(); draw();
     updateActionUI_J1();
       updateActionUI_J1();
-      ensureFittedOnce();
+      if(!view._fittedOnce) ensureFittedOnce();
       return;
     }
 
@@ -1282,7 +1282,7 @@ try{ ws = new WebSocket(SERVER_URL); }
 
       updateTurnUI(); updateStartButton(); draw();
     updateActionUI_J1();
-      ensureFittedOnce();
+      if(!view._fittedOnce) ensureFittedOnce();
   }
 
   function serializeState(){
