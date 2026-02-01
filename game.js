@@ -135,80 +135,18 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // Notfall: Farben tauschen (Host-only)
   let swapColorsBtn = $("swapColorsBtn");
-try{
-  // Falls index.html den Button noch nicht hat, erzeugen wir ihn sicher per JS,
-  // damit du nur game.js tauschen musst.
-  if(hostToolsBox){
-    if(!swapColorsBtn){
+  try{
+    // Falls index.html den Button noch nicht hat, erzeugen wir ihn sicher per JS,
+    // damit du nur game.js tauschen musst.
+    if(!swapColorsBtn && hostToolsBox){
       swapColorsBtn = document.createElement("button");
       swapColorsBtn.id = "swapColorsBtn";
       swapColorsBtn.className = "btn";
       swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
       hostToolsBox.appendChild(swapColorsBtn);
+
     }
-
-    // Joker-Modus (Host-only): Wer bekommt den Joker, wenn eine Figur rausgeworfen wird?
-    // - thrower: Wer wirft, bekommt Joker
-    // - victim:  Wer rausfliegt, bekommt Joker
-    let jokerModeWrap = document.getElementById("jokerModeWrap");
-    if(!jokerModeWrap){
-      jokerModeWrap = document.createElement("div");
-      jokerModeWrap.id = "jokerModeWrap";
-      jokerModeWrap.style.display = "flex";
-      jokerModeWrap.style.gap = "8px";
-      jokerModeWrap.style.flexWrap = "wrap";
-      jokerModeWrap.style.alignItems = "center";
-      jokerModeWrap.style.marginTop = "8px";
-
-      const lbl = document.createElement("div");
-      lbl.textContent = "Joker bei Rauswurf:";
-      lbl.style.opacity = "0.85";
-      lbl.style.fontSize = "12px";
-      lbl.style.marginRight = "4px";
-
-      const btnThrower = document.createElement("button");
-      btnThrower.id = "jokerModeThrowerBtn";
-      btnThrower.className = "btn";
-      btnThrower.textContent = "🎯 Wer wirft";
-
-      const btnVictim = document.createElement("button");
-      btnVictim.id = "jokerModeVictimBtn";
-      btnVictim.className = "btn";
-      btnVictim.textContent = "🛡️ Wer rausfliegt";
-
-      function updateJokerModeButtons(){
-        try{
-          const mode = (netJokerAwardMode||"thrower");
-          btnThrower.classList.toggle("primary", mode === "thrower");
-          btnVictim.classList.toggle("primary", mode === "victim");
-        }catch(_e){}
-      }
-      // global, damit room_update nachziehen kann
-      window.updateJokerModeButtons = updateJokerModeButtons;
-
-      btnThrower.addEventListener("click", ()=>{
-        if(netMode !== "host") return;
-        netJokerAwardMode = "thrower";
-        sendToServer({ type: "set_award_mode", awardMode: "thrower" });
-        updateJokerModeButtons();
-      });
-
-      btnVictim.addEventListener("click", ()=>{
-        if(netMode !== "host") return;
-        netJokerAwardMode = "victim";
-        sendToServer({ type: "set_award_mode", awardMode: "victim" });
-        updateJokerModeButtons();
-      });
-
-      jokerModeWrap.appendChild(lbl);
-      jokerModeWrap.appendChild(btnThrower);
-      jokerModeWrap.appendChild(btnVictim);
-      hostToolsBox.appendChild(jokerModeWrap);
-
-      updateJokerModeButtons();
-    }
-  }
-}catch(_e){}
+  }catch(_e){}
   const diceEl  = $("diceCube");
   // ===== Dice pips (render directly on the cube face) =====
   // Additiv: erzeugt die 9 Pip-Zellen im #diceCube, damit die Augen sichtbar sind.
@@ -1117,6 +1055,28 @@ if(actionEffectsState){
       restoreBtn.disabled = !(show && has);
       restoreBtn.style.opacity = (show && has) ? "1" : "0.6";
     }
+    // Joker-Award-Mode buttons (host-only, lobby-only)
+    const modeWrap = document.getElementById("jokerAwardModeWrap");
+    if(modeWrap){
+      const inLobby = !(state && state.started);
+      modeWrap.style.display = (show && inLobby) ? "flex" : "none";
+
+      // Highlight current selection (prefer server value, fallback localStorage)
+      let mode = "victim";
+      try{ mode = (netJokerAwardMode || localStorage.getItem("jokerAwardMode") || "victim"); }catch(_e){}
+      const bT = document.getElementById("jokerModeThrowerBtn");
+      const bV = document.getElementById("jokerModeVictimBtn");
+      const isT = mode === "thrower";
+      if(bT){
+        bT.style.outline = isT ? "2px solid rgba(120,200,255,0.65)" : "none";
+        bT.style.opacity = isT ? "1" : "0.85";
+      }
+      if(bV){
+        bV.style.outline = (!isT) ? "2px solid rgba(120,200,255,0.65)" : "none";
+        bV.style.opacity = (!isT) ? "1" : "0.85";
+      }
+    }
+
   }
 
   function scheduleReconnect(){
