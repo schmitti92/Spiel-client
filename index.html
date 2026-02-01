@@ -97,6 +97,20 @@
       <div id="actionCard" style="display:none; margin-top:12px;">
         <div id="actionHint" style="opacity:.85; font-size:13px; margin-bottom:10px;">Action-Modus aktiv</div>
 
+        <div id="jokerAwardModeBox" class="awardmode-box">
+          <div class="awardmode-title">Joker bei Rausschmeißen</div>
+          <label class="awardmode-option">
+            <input type="radio" name="jokerAwardMode" id="jokerAwardThrower" value="thrower">
+            Werfer bekommt den Joker
+          </label>
+          <label class="awardmode-option">
+            <input type="radio" name="jokerAwardMode" id="jokerAwardVictim" value="victim">
+            Opfer bekommt den Joker
+          </label>
+          <div id="jokerAwardModeHint" class="awardmode-hint"></div>
+        </div>
+
+
         <!-- Statuszeilen (IDs müssen existieren, game.js versteckt ggf. choose/sum nur optisch) -->
         <div class="kv"><span>🎯 Choose</span><span id="jokerChooseState">–</span></div>
         <div class="kv"><span>➕ Summe</span><span id="jokerSumState">–</span></div>
