@@ -147,6 +147,63 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
     }
   }catch(_e){}
+
+  // Lobby: Joker-Modus-Auswahl (Host-only, vor Spielstart)
+  // Falls index.html den Container nicht hat, erzeugen wir ihn hier,
+  // damit du nur game.js tauschen musst.
+  function ensureJokerAwardModeWrap(){
+    try{
+      let wrap = document.getElementById("jokerAwardModeWrap");
+      if(wrap) return wrap;
+
+      // Ziel: direkt zwischen "Joker" und dem Action-Mode Toggle einfügen
+      const actionRow = (typeof actionModeToggle !== "undefined" && actionModeToggle)
+        ? (actionModeToggle.closest(".row") || actionModeToggle.parentElement)
+        : null;
+
+      wrap = document.createElement("div");
+      wrap.id = "jokerAwardModeWrap";
+      wrap.style.margin = "10px 0 6px";
+      wrap.style.display = "none";
+
+      const title = document.createElement("div");
+      title.style.opacity = "0.9";
+      title.style.fontSize = "13px";
+      title.style.marginBottom = "6px";
+      title.textContent = "Joker‑Modus (Lobby – Host)";
+
+      const row = document.createElement("div");
+      row.className = "row";
+      row.style.justifyContent = "space-between";
+      row.style.gap = "8px";
+
+      const btnA = document.createElement("button");
+      btnA.id = "jokerModeThrowerBtn";
+      btnA.className = "btn";
+      btnA.textContent = "🎯 Wer wirft → Joker";
+
+      const btnB = document.createElement("button");
+      btnB.id = "jokerModeVictimBtn";
+      btnB.className = "btn";
+      btnB.textContent = "💥 Getroffen → Joker";
+
+      row.appendChild(btnA);
+      row.appendChild(btnB);
+
+      wrap.appendChild(title);
+      wrap.appendChild(row);
+
+      if(actionRow && actionRow.parentElement){
+        actionRow.parentElement.insertBefore(wrap, actionRow);
+      } else if (panel) {
+        panel.appendChild(wrap);
+      } else {
+        document.body.appendChild(wrap);
+      }
+      return wrap;
+    }catch(_e){ return null; }
+  }
+
   const diceEl  = $("diceCube");
   // ===== Dice pips (render directly on the cube face) =====
   // Additiv: erzeugt die 9 Pip-Zellen im #diceCube, damit die Augen sichtbar sind.
