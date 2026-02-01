@@ -98,6 +98,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const skipBtn = $("skipBtn");
   const resetBtn= $("resetBtn");
   const resumeBtn = $("resumeBtn");
+  // Joker wheel rule (lobby setting)
+  mountJokerRuleUi();
   // Host tools (Save/Load) - host only
   const hostTools = $("hostTools");
   const saveBtn = $("saveBtn");
@@ -153,54 +155,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       }
     }catch(_e){}
   }
-  
-  // Additiv: macht die Augen größer und kontrastreicher (reine Anzeige, keine Logik).
-  function applyDicePipSizing(){
-    try{
-      if(!diceEl) return;
-      const rect = diceEl.getBoundingClientRect();
-      if(!rect || !rect.width) return;
-
-      // Größe proportional zur Würfelfläche (Tablet: gut sichtbar)
-      const pipSize = Math.max(14, Math.round(rect.width * 0.16)); // ~16% der Würfelseite
-      const pipColor = "#111"; // dunkler für mehr Kontrast
-
-      // Zellen zentrieren (Fallback, falls CSS fehlt)
-      const cells = diceEl.querySelectorAll ? diceEl.querySelectorAll(".dip") : [];
-      cells.forEach(c => {
-        c.style.display = "flex";
-        c.style.alignItems = "center";
-        c.style.justifyContent = "center";
-      });
-
-      const pips = diceEl.querySelectorAll ? diceEl.querySelectorAll(".pip") : [];
-      pips.forEach(p => {
-        p.style.width = pipSize + "px";
-        p.style.height = pipSize + "px";
-        p.style.borderRadius = "999px";
-        p.style.background = pipColor;
-        // wirkt optisch größer, ohne zu übertreiben
-        p.style.boxShadow = "inset 0 2px 3px rgba(255,255,255,0.22), 0 2px 4px rgba(0,0,0,0.45)";
-      });
-    }catch(_e){}
-  }
-
-  // Resize-sicher: wenn sich Layout ändert (Rotation/Tablet), Pips neu skalieren
-  (function(){
-    let raf = 0;
-    function onResize(){
-      if(raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => { raf = 0; try{ applyDicePipSizing(); }catch(_e){} });
-    }
-    try{ window.addEventListener("resize", onResize, {passive:true}); }catch(_e){}
-    try{ window.addEventListener("orientationchange", onResize, {passive:true}); }catch(_e){}
-  })();
-// Build pips once at startup (safe even if dice is later replaced)
+  // Build pips once at startup (safe even if dice is later replaced)
   try{ ensureDicePips(); }catch(_e){}
 
-  
-  try{ applyDicePipSizing(); }catch(_e){}
-// UI-only: ensure dice is visible even before the first roll.
+  // UI-only: ensure dice is visible even before the first roll.
   try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
   // Additiv: nur Anzeige, beeinflusst Gameplay nicht.
@@ -640,6 +598,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     lastDiceFace = 0;
     if(diceEl) diceEl.setAttribute('data-face','0');
     updateStartButton();
+    updateJokerRuleUi();
     draw();
   }
 
@@ -689,6 +648,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   let _netPingIv = null;
   let _netWatchdogArmed = false;
   let netMode="offline";
+  let jokerRule = "ATTACKER"; // "ATTACKER" | "VICTIM" (server is source of truth)
+  let jokerRuleBtn = null;
   let netCanStart=false;    // offline | host | client
   let roomCode="";
   let clientId="";
@@ -1009,7 +970,64 @@ if(actionEffectsState){
     const amHost = !!(me && me.isHost);
     const hasState = !!(state && state.started);
     startBtn.disabled = !(amHost && netCanStart && !hasState);
-    startBtn.textContent = hasState ? 'Spiel läuft' : 'Spiel starten';
+    startBtn.t
+
+  function _jokerRuleLabel(rule){
+    return (String(rule||"ATTACKER")==="VICTIM")
+      ? "Joker-Regel: Rausgeworfene Farbe bekommt Joker"
+      : "Joker-Regel: Wer wirft, bekommt Joker";
+  }
+
+  function updateJokerRuleUi(){
+    try{
+      if(!jokerRuleBtn) return;
+      const started = !!(state && state.started);
+      const isHost = (netMode === "host");
+      jokerRuleBtn.textContent = _jokerRuleLabel(jokerRule);
+      jokerRuleBtn.disabled = (!isHost) || started || (!ws || ws.readyState!==1);
+      jokerRuleBtn.style.opacity = jokerRuleBtn.disabled ? "0.55" : "1";
+    }catch(_e){}
+  }
+
+  function mountJokerRuleUi(){
+    try{
+      if(jokerRuleBtn) return;
+      if(!startBtn) return;
+      const startRow = startBtn.parentElement;
+      if(!startRow || !startRow.parentElement) return;
+
+      const row = document.createElement("div");
+      row.className = "row";
+      row.style.marginTop = "12px";
+
+      const btn = document.createElement("button");
+      btn.id = "jokerRuleBtn";
+      btn.className = "btn";
+      btn.style.flex = "1";
+
+      btn.addEventListener("click", () => {
+        try{
+          if(netMode !== "host"){ toast("Nur Host kann die Joker-Regel ändern"); return; }
+          if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+          if(state && state.started){ toast("Nur vor Spielstart änderbar"); return; }
+
+          const newRule = (String(jokerRule||"ATTACKER")==="VICTIM") ? "ATTACKER" : "VICTIM";
+          jokerRule = newRule; // optimistic (server will broadcast truth)
+          updateJokerRuleUi();
+          wsSend({ type:"set_joker_rule", rule:newRule, ts:Date.now() });
+          toast(_jokerRuleLabel(newRule));
+        }catch(_e){}
+      });
+
+      row.appendChild(btn);
+      startRow.parentElement.insertBefore(row, startRow);
+
+      jokerRuleBtn = btn;
+      updateJokerRuleUi();
+    }catch(_e){}
+  }
+
+extContent = hasState ? 'Spiel läuft' : 'Spiel starten';
   }
 
   function isMeHost(){
@@ -1092,8 +1110,19 @@ try{ ws = new WebSocket(SERVER_URL); }
       if(!msg) return;
       const type = msg.type;
 
+      // Lobby setting: joker wheel rule (server is source of truth)
+      if(msg.jokerRule){
+        jokerRule = String(msg.jokerRule).toUpperCase()==="VICTIM" ? "VICTIM" : "ATTACKER";
+        updateJokerRuleUi();
+      }
+
       if(type==="hello"){
         if(msg.clientId) clientId = msg.clientId;
+        return;
+      }
+      if(type==="joker_rule"){
+        jokerRule = String(msg.rule||"ATTACKER").toUpperCase()==="VICTIM" ? "VICTIM" : "ATTACKER";
+        updateJokerRuleUi();
         return;
       }
       if(type==="room_update"){
