@@ -2871,51 +2871,64 @@ leaveBtn.addEventListener("click", () => {
 })();
 
 // ===== UI PATCH: Würfel in die Status-Box über "Board / Barikaden" docken (nur Optik) =====
-(function dockDiceIntoStatusCard(){
+(function dockDiceIntoDiceCard(){
+  // UX-Fix: Würfelanzeige gehört zum Würfel-Button (nicht in den Status-Block).
+  // Funktionsverlust: keiner – wir docken nur um (Optik), die Würfel-Logik bleibt identisch.
   function tryDock(){
     const dice = document.getElementById("diceCube");
-    const boardInfo = document.getElementById("boardInfo"); // "112 Felder"
-    if(!dice || !boardInfo) return false;
+    const rollBtn = document.getElementById("rollBtn");
+    if(!dice || !rollBtn) return false;
 
-    // Container finden, in dem "Board/Barikaden" stehen (Status-Card)
-    let card =
-      boardInfo.closest(".card") ||
-      boardInfo.closest(".panel") ||
-      boardInfo.closest("section") ||
-      (boardInfo.parentElement && boardInfo.parentElement.parentElement) ||
-      boardInfo.parentElement;
+    // Falls ein alter Status-Dock existiert (aus früheren Versionen), entfernen/aufräumen:
+    const oldDock = document.getElementById("diceDockStatus");
+    if(oldDock) oldDock.remove();
+
+    // Ziel-Card = Card/Panel um den Würfel-Button herum
+    const card =
+      rollBtn.closest(".card") ||
+      rollBtn.closest(".panel") ||
+      rollBtn.closest("section") ||
+      rollBtn.parentElement;
 
     if(!card) return false;
 
-    // Dock-Wrapper (falls schon vorhanden -> wiederverwenden)
-    let dock = document.getElementById("diceDockStatus");
-    if(!dock){
-      dock = document.createElement("div");
-      dock.id = "diceDockStatus";
-      dock.style.display = "flex";
-      dock.style.justifyContent = "flex-end";   // rechts
-      dock.style.alignItems = "flex-start";
-      dock.style.margin = "10px 0 12px 0";
-    } else {
-      dock.innerHTML = "";
+    // Bevorzugt: bestehende dicePill nutzen (neben Button)
+    let pill = card.querySelector(".dicePill");
+    if(!pill){
+      pill = document.createElement("div");
+      pill.className = "dicePill";
+      pill.style.display = "flex";
+      pill.style.alignItems = "center";
+      pill.style.justifyContent = "center";
     }
 
-    // Inner Wrapper für "richtig groß"
-    const big = document.createElement("div");
-    big.style.transform = "scale(2.8)";          // Größe (fett)
-    big.style.transformOrigin = "right top";
-    big.style.pointerEvents = "none";            // Anzeige-only (Buttons bleiben oben)
-    big.appendChild(dice);
-
-    dock.appendChild(big);
-
-    // Position: direkt über der Zeile, die boardInfo enthält
-    const row = boardInfo.closest("div") || boardInfo;
-    if(row && row.parentElement){
-      row.parentElement.insertBefore(dock, row);
-      return true;
+    // Falls die dicePill noch nicht im selben Row wie Button ist, ein kleines Dock bauen:
+    let row = rollBtn.closest(".row");
+    if(!row){
+      row = document.createElement("div");
+      row.className = "row";
+      row.style.display = "flex";
+      row.style.gap = "10px";
+      row.style.alignItems = "center";
+      // Button + Pill direkt unter die Überschrift setzen
+      const title = card.querySelector("h2, h3");
+      if(title && title.parentElement){
+        title.parentElement.insertBefore(row, title.nextSibling);
+      } else {
+        card.insertBefore(row, card.firstChild);
+      }
+      row.appendChild(rollBtn);
     }
-    return false;
+
+    // dicePill neben Button platzieren (falls nicht schon drin)
+    if(pill.parentElement !== row) row.appendChild(pill);
+
+    // Würfel in die Pill setzen (ohne riesiges Scaling)
+    pill.innerHTML = "";
+    dice.style.pointerEvents = "none";
+    pill.appendChild(dice);
+
+    return true;
   }
 
   // Mehrere Versuche, weil UI teils dynamisch aufgebaut wird
@@ -2927,7 +2940,8 @@ leaveBtn.addEventListener("click", () => {
   }, 100);
 
   window.addEventListener("load", () => { tryDock(); });
-})();
+})()
+;
 
 
 
