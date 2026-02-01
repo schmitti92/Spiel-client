@@ -607,35 +607,3 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 #jokerCard .toggleRow input{
   transform: translateY(1px);
 }
-
-/* --- Joker award mode (UI under Action-Modus) --- */
-.awardmode-box{
-  margin: 10px 0 14px 0;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.04);
-}
-.awardmode-title{
-  font-weight: 900;
-  opacity: .9;
-  margin-bottom: 8px;
-}
-.awardmode-option{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding: 8px 6px;
-  border-radius: 12px;
-}
-.awardmode-option input{
-  transform: scale(1.15);
-}
-.awardmode-option.is-disabled{
-  opacity: .55;
-}
-.awardmode-hint{
-  margin-top: 6px;
-  font-size: 12px;
-  opacity: .8;
-}
