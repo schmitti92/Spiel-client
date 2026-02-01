@@ -2907,6 +2907,7 @@ if(pill && !wrap){
   wrap.style.transform = "scale(2.50)";
   wrap.style.transformOrigin = "50% 50%";
   pill.style.position = pill.style.position || "relative";
+  pill.style.overflow = "visible";
   pill.appendChild(wrap);
 }
 
