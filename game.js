@@ -58,7 +58,35 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       hostTools.appendChild(swapColorsBtn);
     }
   }catch(_e){}
+  
+  // ===== Dice pips (render directly on the cube face) =====
+  // Additiv: erzeugt nur die 9 "Pip"-Zellen im #diceCube, damit die Augen sichtbar sind.
+  // Beeinflusst weder Server-Logik noch Würfel-/Zug-Regeln.
+  function ensureDicePips(){
+    try{
+      const el = document.getElementById("diceCube");
+      if(!el) return;
+      // If already built (9 cells), do nothing
+      if(el.children && el.children.length >= 9) return;
+
+      // Clear accidental text nodes / partial markup
+      while(el.firstChild) el.removeChild(el.firstChild);
+
+      const frag = document.createDocumentFragment();
+      for(let i=1;i<=9;i++){
+        const cell = document.createElement("div");
+        cell.className = "dip p"+i;
+        const pip = document.createElement("span");
+        pip.className = "pip";
+        cell.appendChild(pip);
+        frag.appendChild(cell);
+      }
+      el.appendChild(frag);
+    }catch(_e){}
+  }
+
   const diceEl  = $("diceCube");
+  ensureDicePips();
   // UI-only: ensure dice is visible even before the first roll.
   try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
