@@ -117,6 +117,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       swapColorsBtn.className = "btn";
       swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
       hostTools.appendChild(swapColorsBtn);
+    }
+  }catch(_e){}
 
       // // Joker award mode toggle (HOST only): choose who gets the Joker after a piece is kicked.
 // - "wer wirft": the thrower's color gets the Joker
@@ -3020,7 +3022,6 @@ leaveBtn.addEventListener("click", () => {
       console.error(err);
     }
   })();
-})();
 
 
 // ===== Dice Dock (safe) =====
@@ -3305,3 +3306,6 @@ function _wheelNext() {
   _wheelDraw(_wheelAngle);
   requestAnimationFrame(tick);
 }
+
+})();
+
