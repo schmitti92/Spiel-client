@@ -76,21 +76,68 @@
 
           <!-- Action-Mode Panel (J1: Anzeige-Only) -->
           <div id="actionCard" class="card" style="display:none; margin-top:10px;">
-            <h3 style="margin:0 0 8px 0;">🎴 Action‑Modus</h3>
-            <div id="actionHint" style="font-size:12px; opacity:.8; margin-bottom:8px;">–</div>
-
-            <div class="kv"><span>🎯 Choose</span><span id="jokerChooseState">–</span></div>
-            <div class="kv"><span>➕ Summe</span><span id="jokerSumState">–</span></div>
-            <div class="kv"><span>🎮 Alle Farben</span><span id="jokerAllColorsState">–</span></div>
-            <div class="kv"><span>🧱 Barikade</span><span id="jokerBarricadeState">–</span></div>
-
-            
-            <div class="joker-grid" style="margin-top:10px;">
-              <button id="jokerAllColorsBtn" class="joker-btn" type="button">🎮 Alle Farben nutzen</button>
-              <button id="jokerBarricadeBtn" class="joker-btn" type="button">🧱 Barikade nutzen</button>
+            <div class="actionHeader">
+              <div class="actionTitle">🎴 Action‑Modus</div>
+              <div id="actionHint" class="actionHint">–</div>
             </div>
 
-            <div class="kv" style="margin-top:8px;"><span>Effekte</span><span id="actionEffectsState">–</span></div>
+            <!-- Joker als Karten (nur UI) – IDs bleiben gleich, damit keine Logik bricht -->
+            <div class="jokerCards" aria-label="Joker">
+              <!-- Choose (falls genutzt) -->
+              <div class="jokerCard" data-joker="choose">
+                <div class="jokerTop">
+                  <div class="jokerName">🎯 Choose</div>
+                  <div id="jokerChooseState" class="jokerState">–</div>
+                </div>
+                <div class="jokerMeta">
+                  <span class="jokerBadge">Status</span>
+                  <span class="jokerHelp">Wählt eine Aktion/Option (falls aktiv)</span>
+                </div>
+              </div>
+
+              <!-- Summe (falls genutzt) -->
+              <div class="jokerCard" data-joker="sum">
+                <div class="jokerTop">
+                  <div class="jokerName">➕ Summe</div>
+                  <div id="jokerSumState" class="jokerState">–</div>
+                </div>
+                <div class="jokerMeta">
+                  <span class="jokerBadge">Status</span>
+                  <span class="jokerHelp">Addiert/ändert den Wurf (falls aktiv)</span>
+                </div>
+              </div>
+
+              <!-- Alle Farben -->
+              <div class="jokerCard" data-joker="allcolors">
+                <div class="jokerTop">
+                  <div class="jokerName">🎮 Alle Farben</div>
+                  <div id="jokerAllColorsState" class="jokerState">–</div>
+                </div>
+                <div class="jokerMeta">
+                  <span class="jokerBadge">Joker</span>
+                  <span class="jokerHelp">Erlaubt das Bewegen aller Farben (wenn bereit)</span>
+                </div>
+                <button id="jokerAllColorsBtn" class="jokerUse" type="button">Alle Farben nutzen</button>
+              </div>
+
+              <!-- Barikade -->
+              <div class="jokerCard" data-joker="barricade">
+                <div class="jokerTop">
+                  <div class="jokerName">🧱 Barikade</div>
+                  <div id="jokerBarricadeState" class="jokerState">–</div>
+                </div>
+                <div class="jokerMeta">
+                  <span class="jokerBadge">Joker</span>
+                  <span class="jokerHelp">Barikade versetzen (wenn bereit)</span>
+                </div>
+                <button id="jokerBarricadeBtn" class="jokerUse" type="button">Barikade nutzen</button>
+              </div>
+            </div>
+
+            <div class="actionEffects">
+              <div class="actionEffectsLabel">Effekte</div>
+              <div id="actionEffectsState" class="actionEffectsValue">–</div>
+            </div>
           </div>
 
           <!-- Host-Tools: Save/Load (nur sichtbar für Host) -->
