@@ -153,10 +153,54 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       }
     }catch(_e){}
   }
-  // Build pips once at startup (safe even if dice is later replaced)
+  
+  // Additiv: macht die Augen größer und kontrastreicher (reine Anzeige, keine Logik).
+  function applyDicePipSizing(){
+    try{
+      if(!diceEl) return;
+      const rect = diceEl.getBoundingClientRect();
+      if(!rect || !rect.width) return;
+
+      // Größe proportional zur Würfelfläche (Tablet: gut sichtbar)
+      const pipSize = Math.max(14, Math.round(rect.width * 0.16)); // ~16% der Würfelseite
+      const pipColor = "#111"; // dunkler für mehr Kontrast
+
+      // Zellen zentrieren (Fallback, falls CSS fehlt)
+      const cells = diceEl.querySelectorAll ? diceEl.querySelectorAll(".dip") : [];
+      cells.forEach(c => {
+        c.style.display = "flex";
+        c.style.alignItems = "center";
+        c.style.justifyContent = "center";
+      });
+
+      const pips = diceEl.querySelectorAll ? diceEl.querySelectorAll(".pip") : [];
+      pips.forEach(p => {
+        p.style.width = pipSize + "px";
+        p.style.height = pipSize + "px";
+        p.style.borderRadius = "999px";
+        p.style.background = pipColor;
+        // wirkt optisch größer, ohne zu übertreiben
+        p.style.boxShadow = "inset 0 2px 3px rgba(255,255,255,0.22), 0 2px 4px rgba(0,0,0,0.45)";
+      });
+    }catch(_e){}
+  }
+
+  // Resize-sicher: wenn sich Layout ändert (Rotation/Tablet), Pips neu skalieren
+  (function(){
+    let raf = 0;
+    function onResize(){
+      if(raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => { raf = 0; try{ applyDicePipSizing(); }catch(_e){} });
+    }
+    try{ window.addEventListener("resize", onResize, {passive:true}); }catch(_e){}
+    try{ window.addEventListener("orientationchange", onResize, {passive:true}); }catch(_e){}
+  })();
+// Build pips once at startup (safe even if dice is later replaced)
   try{ ensureDicePips(); }catch(_e){}
 
-  // UI-only: ensure dice is visible even before the first roll.
+  
+  try{ applyDicePipSizing(); }catch(_e){}
+// UI-only: ensure dice is visible even before the first roll.
   try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
   // Additiv: nur Anzeige, beeinflusst Gameplay nicht.
