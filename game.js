@@ -2949,173 +2949,76 @@ leaveBtn.addEventListener("click", () => {
 
 
 
-/* ===== UI PATCH V2 (nur Optik, KEIN Gameplay): Würfel wirklich in "Status" docken + Fixed/Absolute überschreiben ===== */
-(function forceDiceDockIntoStatus(){
-  function setImportant(el, prop, value){
-    try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
+/* ===== UI PATCH (final): Dice stays in dicePill next to Würfeln button (no fixed positioning) ===== */
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  function resetDiceInlineStyles(diceEl){
+    try{
+      // Remove any "dock to corner" leftovers
+      diceEl.style.position = "";
+      diceEl.style.right = "";
+      diceEl.style.bottom = "";
+      diceEl.style.left = "";
+      diceEl.style.top = "";
+      diceEl.style.transform = "";
+      diceEl.style.zIndex = "";
+      diceEl.style.width = "";
+      diceEl.style.height = "";
+      diceEl.style.maxWidth = "";
+      diceEl.style.maxHeight = "";
+      diceEl.style.margin = "";
+      diceEl.style.pointerEvents = "";
+    }catch(_e){}
   }
-  function findStatusCardByBoardInfo(){
-    const boardInfo = document.getElementById("boardInfo");
-    if(!boardInfo) return null;
-    return (
-      boardInfo.closest(".card") ||
-      boardInfo.closest(".panel") ||
-      boardInfo.closest("section") ||
-      boardInfo.closest("div") ||
-      null
-    );
-  }
 
-  function tryDock(){
-    const dice = document.getElementById("diceCube");
-    const boardInfo = document.getElementById("boardInfo");
-    if(!dice || !boardInfo) return false;
+  function dockDiceToPill(){
+    try{
+      const diceEl = $("diceCube");
+      const pill = document.querySelector(".dicePill");
+      if(!diceEl || !pill) return;
 
-    const card = findStatusCardByBoardInfo();
-    if(!card) return false;
+      // Ensure the pill is a fixed, neat slot in the Würfel row
+      try{
+        pill.style.width = "66px";
+        pill.style.height = "66px";
+        pill.style.flex = "0 0 66px";
+        pill.style.display = "flex";
+        pill.style.alignItems = "center";
+        pill.style.justifyContent = "center";
+      }catch(_e){}
 
-    // Überschreibe mögliche Header-Fixierungen (damit ein Umhängen auch sichtbar wird)
-    setImportant(dice, "position", "static");
-    setImportant(dice, "top", "auto");
-    setImportant(dice, "right", "auto");
-    setImportant(dice, "bottom", "auto");
-    setImportant(dice, "left", "auto");
-    setImportant(dice, "margin", "0");
-    setImportant(dice, "z-index", "10");
-    // Falls im Header per flex "klein gedrückt"
-    setImportant(dice, "flex", "0 0 auto");
+      resetDiceInlineStyles(diceEl);
 
-    // Dock-Wrapper
-    let dock = document.getElementById("diceDockStatusV2");
-    if(!dock){
-      dock = document.createElement("div");
-      dock.id = "diceDockStatusV2";
-      dock.style.display = "flex";
-      dock.style.justifyContent = "flex-end";
-      dock.style.alignItems = "flex-start";
-      dock.style.gap = "12px";
-      dock.style.margin = "10px 0 14px 0";
-    } else {
-      dock.innerHTML = "";
-    }
-
-    // Groß darstellen (ohne 3D-Transforms zu zerstören)
-    const big = document.createElement("div");
-    setImportant(big, "transform", "scale(2.9)");
-    setImportant(big, "transform-origin", "right top");
-    // Anzeige-only (würfeln bleibt Button)
-    setImportant(big, "pointer-events", "none");
-    big.appendChild(dice);
-    dock.appendChild(big);
-
-    // Einfügen: direkt NACH der Status-Überschrift, sonst über boardInfo-Zeile
-    const statusTitle = Array.from(card.querySelectorAll("h1,h2,h3,div,span"))
-      .find(n => (n.textContent||"").trim() === "Status");
-    if(statusTitle && statusTitle.parentElement){
-      // nach dem Titel einfügen
-      if(statusTitle.nextSibling){
-        statusTitle.parentElement.insertBefore(dock, statusTitle.nextSibling);
-      } else {
-        statusTitle.parentElement.appendChild(dock);
+      // Put dice inside the pill if it isn't already
+      if(diceEl.parentElement !== pill){
+        pill.innerHTML = "";
+        pill.appendChild(diceEl);
       }
-      return true;
-    }
 
-    // Fallback: über der Board-Zeile
-    const row = boardInfo.closest("div") || boardInfo;
-    row.parentElement && row.parentElement.insertBefore(dock, row);
-    return true;
+      // Make the dice fit the pill (and still look nice)
+      try{
+        diceEl.style.width = "66px";
+        diceEl.style.height = "66px";
+        diceEl.style.maxWidth = "66px";
+        diceEl.style.maxHeight = "66px";
+        diceEl.style.pointerEvents = "none"; // click is on "Würfeln" button
+      }catch(_e){}
+    }catch(_e){}
   }
 
-  // oft wird UI dynamisch gerendert → mehrfach versuchen + nach jedem Resize
-  let tries = 0;
-  const iv = setInterval(() => {
-    tries++;
-    const ok = tryDock();
-    if(ok || tries > 80) clearInterval(iv);
-  }, 120);
+  // Run now + after UI changes
+  dockDiceToPill();
+  window.addEventListener("resize", () => dockDiceToPill(), { passive: true });
 
-  window.addEventListener("load", () => { tryDock(); });
-  window.addEventListener("resize", () => { tryDock(); });
+  // If the app re-renders parts of the panel, keep it stable
+  const panel = document.querySelector(".panel");
+  if(panel && window.MutationObserver){
+    const mo = new MutationObserver(() => dockDiceToPill());
+    mo.observe(panel, { childList: true, subtree: true });
+  }
 })();
-
-
-
-/* ===== UI PATCH V3 (nur Optik): Dock via "Status" Überschrift (falls IDs/Struktur am PC anders sind) ===== */
-(function forceDiceDockByStatusTitle(){
-  function setImportant(el, prop, value){
-    try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
-  }
-  function findStatusTitleEl(){
-    const candidates = Array.from(document.querySelectorAll("h1,h2,h3,h4,div,span,p,button"));
-    for(const el of candidates){
-      const t = (el.textContent || "").trim();
-      if(t === "Status"){
-        // prefer headings or bold-looking
-        return el;
-      }
-    }
-    return null;
-  }
-  function tryDock(){
-    const dice = document.getElementById("diceCube") || document.querySelector("#diceCube") || document.querySelector(".diceCube") || null;
-    if(!dice) return false;
-
-    const titleEl = findStatusTitleEl();
-    if(!titleEl) return false;
-
-    // card/container: nearest big box on the right
-    let card = titleEl.closest(".card") || titleEl.closest(".panel") || titleEl.closest("section") || titleEl.closest("div");
-    if(!card) return false;
-
-    // create/reuse dock
-    let dock = document.getElementById("diceDockStatusV3");
-    if(!dock){
-      dock = document.createElement("div");
-      dock.id = "diceDockStatusV3";
-      setImportant(dock, "display", "flex");
-      setImportant(dock, "justify-content", "flex-end");
-      setImportant(dock, "align-items", "flex-start");
-      setImportant(dock, "margin", "10px 0 12px 0");
-    } else {
-      dock.innerHTML = "";
-    }
-
-    const big = document.createElement("div");
-    setImportant(big, "transform", "scale(2.8)");
-    setImportant(big, "transform-origin", "right top");
-    setImportant(big, "pointer-events", "none");
-    big.appendChild(dice);
-    dock.appendChild(big);
-
-    // override dice positioning so it can't stick to header
-    setImportant(dice, "position", "static");
-    setImportant(dice, "top", "auto");
-    setImportant(dice, "right", "auto");
-    setImportant(dice, "left", "auto");
-    setImportant(dice, "bottom", "auto");
-    setImportant(dice, "margin", "0");
-    setImportant(dice, "z-index", "1");
-
-    // insert dock right after title
-    if(titleEl.parentElement){
-      // if title is within a header row, insert after that row; else directly after title
-      const headerRow = titleEl.closest("div") || titleEl;
-      headerRow.parentElement.insertBefore(dock, headerRow.nextSibling);
-      return true;
-    }
-    return false;
-  }
-
-  let tries=0;
-  const t=setInterval(()=>{
-    tries++;
-    const ok=tryDock();
-    if(ok || tries>50) clearInterval(t);
-  }, 120);
-
-  window.addEventListener("load", ()=>{ tryDock(); });
-})();
+;
 
 
 
