@@ -568,3 +568,42 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 .actionEffects{margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.06); display:flex; justify-content:space-between; gap:10px;}
 .actionEffectsLabel{color:var(--muted); font-size:12px;}
 .actionEffectsValue{font-weight:800; font-size:12px; text-align:right;}
+
+
+/* ===== Sidebar dice card layout (stable) ===== */
+#diceCard .diceRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+#diceCard .dicePill{
+  width:72px;
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:visible; /* prevent clipping */
+}
+#diceCard #diceCube{
+  width:56px;
+  height:56px;
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  grid-template-rows:repeat(3, 1fr);
+  gap:4px;
+  padding:6px;
+}
+
+/* ===== Joker toggle row ===== */
+#jokerCard .toggleRow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  font-size:13px;
+  opacity:.9;
+  user-select:none;
+}
+#jokerCard .toggleRow input{
+  transform: translateY(1px);
+}
