@@ -8,9 +8,6 @@
 
 let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
-// Joker award mode (server-synced). "thrower" | "victim"
-let netJokerAwardMode = "thrower";
-
 (() => {
   const $ = (id) => document.getElementById(id);
 
@@ -154,10 +151,6 @@ let netJokerAwardMode = "thrower";
       jokerModeWrap.style.display = "flex";
       jokerModeWrap.style.gap = "8px";
       jokerModeWrap.style.flexWrap = "wrap";
-
-      // Legacy host-tools buttons (kept as fallback, but hidden when the new Action-Mode UI exists)
-      jokerModeWrap.id = "jokerModeLegacyWrap";
-      if (jokerAwardModeBox) { try { jokerModeWrap.style.display = "none"; } catch(_e){} }
 
       const jokerModeLabel = document.createElement("div");
       jokerModeLabel.textContent = "Joker bei Rausschmeißen:";
@@ -419,12 +412,6 @@ let netJokerAwardMode = "thrower";
   const actionModeToggle = $("actionModeToggle");
   const actionCard = $("actionCard");
   const actionHint = $("actionHint");
-
-  // Joker award mode UI (under Action-Mode)
-  const jokerAwardThrower = $("jokerAwardThrower");
-  const jokerAwardVictim  = $("jokerAwardVictim");
-  const jokerAwardModeBox = $("jokerAwardModeBox");
-  const jokerAwardModeHint= $("jokerAwardModeHint");
   const jokerChooseState = $("jokerChooseState");
   const jokerSumState = $("jokerSumState");
   const jokerAllColorsState = $("jokerAllColorsState");
@@ -917,73 +904,6 @@ let netJokerAwardMode = "thrower";
   }
 
 
-
-  // ----- Joker Award Mode (2 Modi) -----
-  function isHostPlayer(){
-    try{
-      const me = rosterById.get(clientId);
-      return !!(me && me.isHost);
-    }catch(_e){ return false; }
-  }
-
-  function syncJokerAwardModeUI(){
-    try{
-      if(!jokerAwardThrower || !jokerAwardVictim) return;
-
-      // checked state
-      jokerAwardThrower.checked = (netJokerAwardMode === "thrower");
-      jokerAwardVictim.checked  = (netJokerAwardMode === "victim");
-
-      const locked = !!(state && state.started); // only before start
-      const host   = isHostPlayer();
-      const disabled = locked || !host;
-
-      jokerAwardThrower.disabled = disabled;
-      jokerAwardVictim.disabled  = disabled;
-
-      const l1 = jokerAwardThrower.closest ? jokerAwardThrower.closest("label") : null;
-      const l2 = jokerAwardVictim.closest  ? jokerAwardVictim.closest("label")  : null;
-      if(l1) l1.classList.toggle("is-disabled", disabled);
-      if(l2) l2.classList.toggle("is-disabled", disabled);
-
-      if(jokerAwardModeHint){
-        if(locked) jokerAwardModeHint.textContent = "Nur vor Spielstart änderbar.";
-        else if(!host) jokerAwardModeHint.textContent = "Nur der Host kann den Modus ändern.";
-        else jokerAwardModeHint.textContent = "Gilt für diesen Raum (wie aktuell).";
-      }
-    }catch(_e){}
-  }
-
-  function requestSetAwardMode(mode){
-    mode = (mode === "victim") ? "victim" : "thrower";
-
-    const locked = !!(state && state.started);
-    if(locked){
-      toast("Joker-Modus kann nur vor Spielstart geändert werden.");
-      syncJokerAwardModeUI();
-      return;
-    }
-    if(!isHostPlayer()){
-      toast("Nur der Host kann den Joker-Modus ändern.");
-      syncJokerAwardModeUI();
-      return;
-    }
-
-    netJokerAwardMode = mode;
-    wsSend({ type: "set_award_mode", mode });
-    syncJokerAwardModeUI();
-  }
-
-  // Wire radio inputs
-  try{
-    if(jokerAwardThrower) jokerAwardThrower.addEventListener("change", () => {
-      if(jokerAwardThrower.checked) requestSetAwardMode("thrower");
-    });
-    if(jokerAwardVictim) jokerAwardVictim.addEventListener("change", () => {
-      if(jokerAwardVictim.checked) requestSetAwardMode("victim");
-    });
-  }catch(_e){}
-
   // ===== Action-Mode UI (J1: nur anzeigen, NICHT eingreifen) =====
   function updateActionUI_J1(){
     try{
@@ -991,8 +911,6 @@ let netJokerAwardMode = "thrower";
       const mode = (state && state.mode) ? String(state.mode) : "classic";
       const show = (mode === "action") || (!!(actionModeToggle && actionModeToggle.checked));
       actionCard.style.display = show ? "block" : "none";
-      // keep award-mode UI in sync (disabled/checked)
-      syncJokerAwardModeUI();
       if(!show) return;
 
       const ac = (state && state.action) ? state.action : null;
@@ -1260,7 +1178,6 @@ try{ ws = new WebSocket(SERVER_URL); }
         }
         netCanStart = !!msg.canStart;
       if (msg.jokerAwardMode) netJokerAwardMode = msg.jokerAwardMode;
-      syncJokerAwardModeUI();
         updateStartButton();
         return;
       }
