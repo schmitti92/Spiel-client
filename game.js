@@ -8,6 +8,9 @@
 
 let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
+// Joker award mode (server-synced). "thrower" | "victim"
+let netJokerAwardMode = "thrower";
+
 (() => {
   const $ = (id) => document.getElementById(id);
 
@@ -145,65 +148,54 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
       hostToolsBox.appendChild(swapColorsBtn);
 
+      // Joker award mode toggle (Host only): who receives a Joker on kick-out?
+      const jokerModeWrap = document.createElement("div");
+      jokerModeWrap.style.marginTop = "10px";
+      jokerModeWrap.style.display = "flex";
+      jokerModeWrap.style.gap = "8px";
+      jokerModeWrap.style.flexWrap = "wrap";
+
+      // Legacy host-tools buttons (kept as fallback, but hidden when the new Action-Mode UI exists)
+      jokerModeWrap.id = "jokerModeLegacyWrap";
+      if (jokerAwardModeBox) { try { jokerModeWrap.style.display = "none"; } catch(_e){} }
+
+      const jokerModeLabel = document.createElement("div");
+      jokerModeLabel.textContent = "Joker bei Rausschmeißen:";
+      jokerModeLabel.style.width = "100%";
+      jokerModeLabel.style.opacity = ".85";
+      jokerModeLabel.style.fontWeight = "800";
+      jokerModeWrap.appendChild(jokerModeLabel);
+
+      const btnThrower = document.createElement("button");
+      btnThrower.className = "btn";
+      btnThrower.textContent = "Werfer bekommt Joker";
+      btnThrower.onclick = () => {
+        netJokerAwardMode = "thrower";
+        wsSend({ type: "set_award_mode", mode: "thrower" });
+        updateJokerModeButtons();
+      };
+
+      const btnVictim = document.createElement("button");
+      btnVictim.className = "btn";
+      btnVictim.textContent = "Opfer bekommt Joker";
+      btnVictim.onclick = () => {
+        netJokerAwardMode = "victim";
+        wsSend({ type: "set_award_mode", mode: "victim" });
+        updateJokerModeButtons();
+      };
+
+      function updateJokerModeButtons(){
+        btnThrower.className = (netJokerAwardMode === "thrower") ? "btn primary" : "btn";
+        btnVictim.className  = (netJokerAwardMode === "victim")  ? "btn primary" : "btn";
+      }
+      updateJokerModeButtons();
+
+      jokerModeWrap.appendChild(btnThrower);
+      jokerModeWrap.appendChild(btnVictim);
+      hostToolsBox.appendChild(jokerModeWrap);
+
     }
   }catch(_e){}
-
-  // Lobby: Joker-Modus-Auswahl (Host-only, vor Spielstart)
-  // Falls index.html den Container nicht hat, erzeugen wir ihn hier,
-  // damit du nur game.js tauschen musst.
-  function ensureJokerAwardModeWrap(){
-    try{
-      let wrap = document.getElementById("jokerAwardModeWrap");
-      if(wrap) return wrap;
-
-      // Ziel: direkt zwischen "Joker" und dem Action-Mode Toggle einfügen
-      const actionRow = (typeof actionModeToggle !== "undefined" && actionModeToggle)
-        ? (actionModeToggle.closest(".row") || actionModeToggle.parentElement)
-        : null;
-
-      wrap = document.createElement("div");
-      wrap.id = "jokerAwardModeWrap";
-      wrap.style.margin = "10px 0 6px";
-      wrap.style.display = "none";
-
-      const title = document.createElement("div");
-      title.style.opacity = "0.9";
-      title.style.fontSize = "13px";
-      title.style.marginBottom = "6px";
-      title.textContent = "Joker‑Modus (Lobby – Host)";
-
-      const row = document.createElement("div");
-      row.className = "row";
-      row.style.justifyContent = "space-between";
-      row.style.gap = "8px";
-
-      const btnA = document.createElement("button");
-      btnA.id = "jokerModeThrowerBtn";
-      btnA.className = "btn";
-      btnA.textContent = "🎯 Wer wirft → Joker";
-
-      const btnB = document.createElement("button");
-      btnB.id = "jokerModeVictimBtn";
-      btnB.className = "btn";
-      btnB.textContent = "💥 Getroffen → Joker";
-
-      row.appendChild(btnA);
-      row.appendChild(btnB);
-
-      wrap.appendChild(title);
-      wrap.appendChild(row);
-
-      if(actionRow && actionRow.parentElement){
-        actionRow.parentElement.insertBefore(wrap, actionRow);
-      } else if (panel) {
-        panel.appendChild(wrap);
-      } else {
-        document.body.appendChild(wrap);
-      }
-      return wrap;
-    }catch(_e){ return null; }
-  }
-
   const diceEl  = $("diceCube");
   // ===== Dice pips (render directly on the cube face) =====
   // Additiv: erzeugt die 9 Pip-Zellen im #diceCube, damit die Augen sichtbar sind.
@@ -427,6 +419,12 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const actionModeToggle = $("actionModeToggle");
   const actionCard = $("actionCard");
   const actionHint = $("actionHint");
+
+  // Joker award mode UI (under Action-Mode)
+  const jokerAwardThrower = $("jokerAwardThrower");
+  const jokerAwardVictim  = $("jokerAwardVictim");
+  const jokerAwardModeBox = $("jokerAwardModeBox");
+  const jokerAwardModeHint= $("jokerAwardModeHint");
   const jokerChooseState = $("jokerChooseState");
   const jokerSumState = $("jokerSumState");
   const jokerAllColorsState = $("jokerAllColorsState");
@@ -919,6 +917,73 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
 
+
+  // ----- Joker Award Mode (2 Modi) -----
+  function isHostPlayer(){
+    try{
+      const me = rosterById.get(clientId);
+      return !!(me && me.isHost);
+    }catch(_e){ return false; }
+  }
+
+  function syncJokerAwardModeUI(){
+    try{
+      if(!jokerAwardThrower || !jokerAwardVictim) return;
+
+      // checked state
+      jokerAwardThrower.checked = (netJokerAwardMode === "thrower");
+      jokerAwardVictim.checked  = (netJokerAwardMode === "victim");
+
+      const locked = !!(state && state.started); // only before start
+      const host   = isHostPlayer();
+      const disabled = locked || !host;
+
+      jokerAwardThrower.disabled = disabled;
+      jokerAwardVictim.disabled  = disabled;
+
+      const l1 = jokerAwardThrower.closest ? jokerAwardThrower.closest("label") : null;
+      const l2 = jokerAwardVictim.closest  ? jokerAwardVictim.closest("label")  : null;
+      if(l1) l1.classList.toggle("is-disabled", disabled);
+      if(l2) l2.classList.toggle("is-disabled", disabled);
+
+      if(jokerAwardModeHint){
+        if(locked) jokerAwardModeHint.textContent = "Nur vor Spielstart änderbar.";
+        else if(!host) jokerAwardModeHint.textContent = "Nur der Host kann den Modus ändern.";
+        else jokerAwardModeHint.textContent = "Gilt für diesen Raum (wie aktuell).";
+      }
+    }catch(_e){}
+  }
+
+  function requestSetAwardMode(mode){
+    mode = (mode === "victim") ? "victim" : "thrower";
+
+    const locked = !!(state && state.started);
+    if(locked){
+      toast("Joker-Modus kann nur vor Spielstart geändert werden.");
+      syncJokerAwardModeUI();
+      return;
+    }
+    if(!isHostPlayer()){
+      toast("Nur der Host kann den Joker-Modus ändern.");
+      syncJokerAwardModeUI();
+      return;
+    }
+
+    netJokerAwardMode = mode;
+    wsSend({ type: "set_award_mode", mode });
+    syncJokerAwardModeUI();
+  }
+
+  // Wire radio inputs
+  try{
+    if(jokerAwardThrower) jokerAwardThrower.addEventListener("change", () => {
+      if(jokerAwardThrower.checked) requestSetAwardMode("thrower");
+    });
+    if(jokerAwardVictim) jokerAwardVictim.addEventListener("change", () => {
+      if(jokerAwardVictim.checked) requestSetAwardMode("victim");
+    });
+  }catch(_e){}
+
   // ===== Action-Mode UI (J1: nur anzeigen, NICHT eingreifen) =====
   function updateActionUI_J1(){
     try{
@@ -926,6 +991,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
       const mode = (state && state.mode) ? String(state.mode) : "classic";
       const show = (mode === "action") || (!!(actionModeToggle && actionModeToggle.checked));
       actionCard.style.display = show ? "block" : "none";
+      // keep award-mode UI in sync (disabled/checked)
+      syncJokerAwardModeUI();
       if(!show) return;
 
       const ac = (state && state.action) ? state.action : null;
@@ -1112,28 +1179,6 @@ if(actionEffectsState){
       restoreBtn.disabled = !(show && has);
       restoreBtn.style.opacity = (show && has) ? "1" : "0.6";
     }
-    // Joker-Award-Mode buttons (host-only, lobby-only)
-    const modeWrap = document.getElementById("jokerAwardModeWrap");
-    if(modeWrap){
-      const inLobby = !(state && state.started);
-      modeWrap.style.display = (show && inLobby) ? "flex" : "none";
-
-      // Highlight current selection (prefer server value, fallback localStorage)
-      let mode = "victim";
-      try{ mode = (netJokerAwardMode || localStorage.getItem("jokerAwardMode") || "victim"); }catch(_e){}
-      const bT = document.getElementById("jokerModeThrowerBtn");
-      const bV = document.getElementById("jokerModeVictimBtn");
-      const isT = mode === "thrower";
-      if(bT){
-        bT.style.outline = isT ? "2px solid rgba(120,200,255,0.65)" : "none";
-        bT.style.opacity = isT ? "1" : "0.85";
-      }
-      if(bV){
-        bV.style.outline = (!isT) ? "2px solid rgba(120,200,255,0.65)" : "none";
-        bV.style.opacity = (!isT) ? "1" : "0.85";
-      }
-    }
-
   }
 
   function scheduleReconnect(){
@@ -1215,6 +1260,7 @@ try{ ws = new WebSocket(SERVER_URL); }
         }
         netCanStart = !!msg.canStart;
       if (msg.jokerAwardMode) netJokerAwardMode = msg.jokerAwardMode;
+      syncJokerAwardModeUI();
         updateStartButton();
         return;
       }
