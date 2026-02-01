@@ -2870,80 +2870,42 @@ leaveBtn.addEventListener("click", () => {
   })();
 })();
 
-// ===== UI PATCH: Würfel in die Status-Box über "Board / Barikaden" docken (nur Optik) =====
-(function dockDiceIntoDiceCard(){
-  // UX-Fix: Würfelanzeige gehört zum Würfel-Button (nicht in den Status-Block).
-  // Funktionsverlust: keiner – wir docken nur um (Optik), die Würfel-Logik bleibt identisch.
-  function tryDock(){
+// ===== UI PATCH: Würfel bleibt beim Würfeln-Button (nur Optik) =====
+(function keepDiceNearRollButton(){
+  function apply(){
     const dice = document.getElementById("diceCube");
     const rollBtn = document.getElementById("rollBtn");
     if(!dice || !rollBtn) return false;
 
-    // Falls ein alter Status-Dock existiert (aus früheren Versionen), entfernen/aufräumen:
-    const oldDock = document.getElementById("diceDockStatus");
-    if(oldDock) oldDock.remove();
+    // Der Würfel soll NICHT in den Status-Block wandern.
+    // Stattdessen: in der gleichen Leiste/Box beim Würfeln-Button bleiben.
+    // Wir sorgen nur für Größe/Position (Optik), ohne IDs/Logik zu ändern.
 
-    // Ziel-Card = Card/Panel um den Würfel-Button herum
-    const card =
-      rollBtn.closest(".card") ||
-      rollBtn.closest(".panel") ||
-      rollBtn.closest("section") ||
-      rollBtn.parentElement;
-
-    if(!card) return false;
-
-    // Bevorzugt: bestehende dicePill nutzen (neben Button)
-    let pill = card.querySelector(".dicePill");
-    if(!pill){
-      pill = document.createElement("div");
-      pill.className = "dicePill";
+    // Versuche, den "dicePill" / Wrapper zu finden
+    const pill = dice.closest(".dicePill") || dice.parentElement;
+    if(pill){
       pill.style.display = "flex";
       pill.style.alignItems = "center";
-      pill.style.justifyContent = "center";
+      pill.style.justifyContent = "flex-end";
+      pill.style.gap = "12px";
     }
 
-    // Falls die dicePill noch nicht im selben Row wie Button ist, ein kleines Dock bauen:
-    let row = rollBtn.closest(".row");
-    if(!row){
-      row = document.createElement("div");
-      row.className = "row";
-      row.style.display = "flex";
-      row.style.gap = "10px";
-      row.style.alignItems = "center";
-      // Button + Pill direkt unter die Überschrift setzen
-      const title = card.querySelector("h2, h3");
-      if(title && title.parentElement){
-        title.parentElement.insertBefore(row, title.nextSibling);
-      } else {
-        card.insertBefore(row, card.firstChild);
-      }
-      row.appendChild(rollBtn);
-    }
-
-    // dicePill neben Button platzieren (falls nicht schon drin)
-    if(pill.parentElement !== row) row.appendChild(pill);
-
-    // Würfel in die Pill setzen (ohne riesiges Scaling)
-    pill.innerHTML = "";
-    dice.style.pointerEvents = "none";
-    pill.appendChild(dice);
+    // Optional: etwas größer, aber nicht übertrieben (kannst du später anpassen)
+    dice.style.transform = "scale(1.25)";
+    dice.style.transformOrigin = "right center";
 
     return true;
   }
 
-  // Mehrere Versuche, weil UI teils dynamisch aufgebaut wird
   let tries = 0;
   const t = setInterval(() => {
     tries++;
-    const ok = tryDock();
+    const ok = apply();
     if(ok || tries > 30) clearInterval(t);
   }, 100);
 
-  window.addEventListener("load", () => { tryDock(); });
-})()
-;
-
-
+  window.addEventListener("load", () => { apply(); });
+})();
 
 /* ===== UI PATCH V2 (nur Optik, KEIN Gameplay): Würfel wirklich in "Status" docken + Fixed/Absolute überschreiben ===== */
 (function forceDiceDockIntoStatus(){
