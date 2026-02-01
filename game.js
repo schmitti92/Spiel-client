@@ -2904,7 +2904,7 @@ if(pill && !wrap){
   wrap.style.alignItems = "center";
   wrap.style.justifyContent = "center";
   // Scale the whole cube to fit the small pill (change 0.62 if you want a bit bigger/smaller)
-  wrap.style.transform = "scale(0.62)";
+  wrap.style.transform = "scale(0.80)";
   wrap.style.transformOrigin = "50% 50%";
   pill.style.position = pill.style.position || "relative";
   pill.appendChild(wrap);
