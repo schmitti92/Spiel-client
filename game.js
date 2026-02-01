@@ -4,69 +4,16 @@
   if (typeof window.showOverlay !== 'function') window.showOverlay = () => {};
   if (typeof window.hideOverlay !== 'function') window.hideOverlay = () => {};
   if (typeof window.canUseAllColorsNow !== 'function') window.canUseAllColorsNow = () => true;
+  if (typeof window.mountJokerRuleUi !== 'function') window.mountJokerRuleUi = () => {};
 })();
+
+// Guard: avoid ReferenceError if optional Joker UI helper is missing
+var mountJokerRuleUi = window.mountJokerRuleUi;
 
 let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
 (() => {
   const $ = (id) => document.getElementById(id);
-
-
-  // ===== C1: UX stability fixes (NO functional changes) =====
-  // 1) Prevent viewport jump on mobile while keeping right panel scrollable.
-  // 2) Prevent dice clipping by ensuring the dice container allows overflow & adapts size.
-  function applyUxStabilityFixes(){
-    try{
-      const topbar = document.querySelector('.topbar');
-      const sidePanel = document.querySelector('.app > .panel');
-      if(!sidePanel) return;
-
-      // Ensure the document doesn't become scroll-container (prevents mobile "refresh-like" jumps)
-      // while the right panel gets its own scroll.
-      try{
-        document.documentElement.style.height = '100%';
-        document.body.style.height = '100%';
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
-        document.body.style.overscrollBehavior = 'none';
-        document.documentElement.style.overscrollBehavior = 'none';
-      }catch(_e){}
-
-      // Compute available height for right panel and enable smooth scrolling (tablet friendly)
-      const topH = topbar ? topbar.getBoundingClientRect().height : 0;
-      const pad = 16; // matches .app padding
-      const maxH = Math.max(200, window.innerHeight - topH - pad*2);
-      sidePanel.style.maxHeight = maxH + 'px';
-      sidePanel.style.overflowY = 'auto';
-      sidePanel.style.webkitOverflowScrolling = 'touch';
-
-      // Make sure dice isn't clipped by the dice pill (index.html had overflow:hidden)
-      const dicePill = sidePanel.querySelector('.dicePill');
-      if(dicePill){
-        dicePill.style.overflow = 'visible';
-        // Give it a predictable box so large dice stays inside the panel
-        // (still responsive; doesn't break desktop)
-        const maxSize = Math.min(190, Math.max(92, Math.floor(sidePanel.clientWidth * 0.40)));
-        dicePill.style.width = maxSize + 'px';
-        dicePill.style.height = maxSize + 'px';
-        dicePill.style.flex = '0 0 auto';
-        // keep a small inner padding so it doesn't touch the panel edge
-        dicePill.style.padding = '6px';
-        dicePill.style.boxSizing = 'border-box';
-      }
-
-      // Let the cube fill the pill; pips scale automatically with CSS grid
-      const diceCube = document.getElementById('diceCube');
-      if(diceCube && dicePill){
-        diceCube.style.width = '100%';
-        diceCube.style.height = '100%';
-      }
-    }catch(_e){}
-  }
-
-  // Apply now + on resize/orientation changes
-  window.addEventListener('resize', () => { try{ applyUxStabilityFixes(); }catch(_e){} }, { passive:true });
-  window.addEventListener('orientationchange', () => { try{ setTimeout(applyUxStabilityFixes, 50); }catch(_e){} });
 
   function debugLog(...args){
     try{ console.log(...args); }catch(_e){}
@@ -88,18 +35,12 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const debugToggle = $("debugToggle");
   const debugLogEl = $("debugLog");
 
-
-  // Run UX stability fixes once after we have DOM.
-  applyUxStabilityFixes();
-
   const rollBtn = $("rollBtn");
   const startBtn = $("startBtn");
   const endBtn  = $("endBtn");
   const skipBtn = $("skipBtn");
   const resetBtn= $("resetBtn");
   const resumeBtn = $("resumeBtn");
-  // Joker wheel rule (lobby setting)
-  mountJokerRuleUi();
   // Host tools (Save/Load) - host only
   const hostTools = $("hostTools");
   const saveBtn = $("saveBtn");
@@ -122,44 +63,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     }
   }catch(_e){}
   const diceEl  = $("diceCube");
-  // ===== Dice pips (render directly on the cube face) =====
-  // Additiv: erzeugt die 9 Pip-Zellen im #diceCube, damit die Augen sichtbar sind.
-  // Entfernt keine Funktion und ändert keine Spielregeln.
-  function ensureDicePips(){
-    try{
-      if(!diceEl) return;
-      // Already built?
-      if(diceEl.querySelector && diceEl.querySelector(".dip")) return;
-
-      // Build pips grid inside diceCube (needed for styles.css selectors)
-      diceEl.innerHTML = "";
-      const frag = document.createDocumentFragment();
-      for(let i=1;i<=9;i++){
-        const cell = document.createElement("div");
-        cell.className = "dip p"+i;
-        const pip = document.createElement("span");
-        pip.className = "pip";
-        cell.appendChild(pip);
-        frag.appendChild(cell);
-      }
-      diceEl.appendChild(frag);
-
-      // Safety: if some environments miss the CSS grid styles, apply minimal inline fallbacks
-      // (keeps sizes from CSS; only sets layout if missing)
-      const cs = getComputedStyle(diceEl);
-      if(cs.display === "inline" || cs.display === "block"){
-        diceEl.style.display = "grid";
-        diceEl.style.gridTemplateColumns = "repeat(3, 1fr)";
-        diceEl.style.gridTemplateRows = "repeat(3, 1fr)";
-        diceEl.style.gap = "3px";
-      }
-    }catch(_e){}
-  }
-  // Build pips once at startup (safe even if dice is later replaced)
-  try{ ensureDicePips(); }catch(_e){}
-
-  // UI-only: ensure dice is visible even before the first roll.
-  try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
   // Additiv: nur Anzeige, beeinflusst Gameplay nicht.
   let diceValueLabel = null;
@@ -598,7 +501,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     lastDiceFace = 0;
     if(diceEl) diceEl.setAttribute('data-face','0');
     updateStartButton();
-    updateJokerRuleUi();
     draw();
   }
 
@@ -648,8 +550,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   let _netPingIv = null;
   let _netWatchdogArmed = false;
   let netMode="offline";
-  let jokerRule = "ATTACKER"; // "ATTACKER" | "VICTIM" (server is source of truth)
-  let jokerRuleBtn = null;
   let netCanStart=false;    // offline | host | client
   let roomCode="";
   let clientId="";
@@ -970,64 +870,7 @@ if(actionEffectsState){
     const amHost = !!(me && me.isHost);
     const hasState = !!(state && state.started);
     startBtn.disabled = !(amHost && netCanStart && !hasState);
-    startBtn.t
-
-  function _jokerRuleLabel(rule){
-    return (String(rule||"ATTACKER")==="VICTIM")
-      ? "Joker-Regel: Rausgeworfene Farbe bekommt Joker"
-      : "Joker-Regel: Wer wirft, bekommt Joker";
-  }
-
-  function updateJokerRuleUi(){
-    try{
-      if(!jokerRuleBtn) return;
-      const started = !!(state && state.started);
-      const isHost = (netMode === "host");
-      jokerRuleBtn.textContent = _jokerRuleLabel(jokerRule);
-      jokerRuleBtn.disabled = (!isHost) || started || (!ws || ws.readyState!==1);
-      jokerRuleBtn.style.opacity = jokerRuleBtn.disabled ? "0.55" : "1";
-    }catch(_e){}
-  }
-
-  function mountJokerRuleUi(){
-    try{
-      if(jokerRuleBtn) return;
-      if(!startBtn) return;
-      const startRow = startBtn.parentElement;
-      if(!startRow || !startRow.parentElement) return;
-
-      const row = document.createElement("div");
-      row.className = "row";
-      row.style.marginTop = "12px";
-
-      const btn = document.createElement("button");
-      btn.id = "jokerRuleBtn";
-      btn.className = "btn";
-      btn.style.flex = "1";
-
-      btn.addEventListener("click", () => {
-        try{
-          if(netMode !== "host"){ toast("Nur Host kann die Joker-Regel ändern"); return; }
-          if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
-          if(state && state.started){ toast("Nur vor Spielstart änderbar"); return; }
-
-          const newRule = (String(jokerRule||"ATTACKER")==="VICTIM") ? "ATTACKER" : "VICTIM";
-          jokerRule = newRule; // optimistic (server will broadcast truth)
-          updateJokerRuleUi();
-          wsSend({ type:"set_joker_rule", rule:newRule, ts:Date.now() });
-          toast(_jokerRuleLabel(newRule));
-        }catch(_e){}
-      });
-
-      row.appendChild(btn);
-      startRow.parentElement.insertBefore(row, startRow);
-
-      jokerRuleBtn = btn;
-      updateJokerRuleUi();
-    }catch(_e){}
-  }
-
-extContent = hasState ? 'Spiel läuft' : 'Spiel starten';
+    startBtn.textContent = hasState ? 'Spiel läuft' : 'Spiel starten';
   }
 
   function isMeHost(){
@@ -1110,19 +953,8 @@ try{ ws = new WebSocket(SERVER_URL); }
       if(!msg) return;
       const type = msg.type;
 
-      // Lobby setting: joker wheel rule (server is source of truth)
-      if(msg.jokerRule){
-        jokerRule = String(msg.jokerRule).toUpperCase()==="VICTIM" ? "VICTIM" : "ATTACKER";
-        updateJokerRuleUi();
-      }
-
       if(type==="hello"){
         if(msg.clientId) clientId = msg.clientId;
-        return;
-      }
-      if(type==="joker_rule"){
-        jokerRule = String(msg.rule||"ATTACKER").toUpperCase()==="VICTIM" ? "VICTIM" : "ATTACKER";
-        updateJokerRuleUi();
         return;
       }
       if(type==="room_update"){
@@ -3042,71 +2874,249 @@ leaveBtn.addEventListener("click", () => {
   })();
 })();
 
-
-// ===== Dice Dock (safe) =====
-// The dice should stay inside the "Würfel" card next to the Roll button.
-// Some older patches forced CSS transforms to "none" which can make the 3D dice invisible.
-// This helper ONLY ensures the element is inside the dicePill (if present) and does not override transforms.
-(function ensureDiceInDiceCard(){
-  function dock(){
+// ===== UI PATCH: Würfel in die Status-Box über "Board / Barikaden" docken (nur Optik) =====
+(function dockDiceIntoDiceCard(){
+  // UX-Fix: Würfelanzeige gehört zum Würfel-Button (nicht in den Status-Block).
+  // Funktionsverlust: keiner – wir docken nur um (Optik), die Würfel-Logik bleibt identisch.
+  function tryDock(){
     const dice = document.getElementById("diceCube");
     const rollBtn = document.getElementById("rollBtn");
     if(!dice || !rollBtn) return false;
 
-    const diceCard =
+    // Falls ein alter Status-Dock existiert (aus früheren Versionen), entfernen/aufräumen:
+    const oldDock = document.getElementById("diceDockStatus");
+    if(oldDock) oldDock.remove();
+
+    // Ziel-Card = Card/Panel um den Würfel-Button herum
+    const card =
       rollBtn.closest(".card") ||
       rollBtn.closest(".panel") ||
       rollBtn.closest("section") ||
       rollBtn.parentElement;
 
-    if(!diceCard) return false;
+    if(!card) return false;
 
-    const pill = diceCard.querySelector(".dicePill");
+    // Bevorzugt: bestehende dicePill nutzen (neben Button)
+    let pill = card.querySelector(".dicePill");
+    if(!pill){
+      pill = document.createElement("div");
+      pill.className = "dicePill";
+      pill.style.display = "flex";
+      pill.style.alignItems = "center";
+      pill.style.justifyContent = "center";
+    }
 
-// Create a wrapper inside the pill so we can scale/center the 3D cube without touching its own transform.
-let wrap = pill ? pill.querySelector("#diceDockWrap") : null;
-if(pill && !wrap){
-  wrap = document.createElement("div");
-  wrap.id = "diceDockWrap";
-  wrap.style.position = "absolute";
-  wrap.style.inset = "0";
-  wrap.style.display = "flex";
-  wrap.style.alignItems = "center";
-  wrap.style.justifyContent = "center";
-  // Scale the whole cube to fit the small pill (change 0.62 if you want a bit bigger/smaller)
-  wrap.style.transform = "scale(1.0)";
-  wrap.style.transformOrigin = "50% 50%";
-  pill.style.position = pill.style.position || "relative";
-  pill.style.overflow = "hidden";
-  pill.appendChild(wrap);
-}
+    // Falls die dicePill noch nicht im selben Row wie Button ist, ein kleines Dock bauen:
+    let row = rollBtn.closest(".row");
+    if(!row){
+      row = document.createElement("div");
+      row.className = "row";
+      row.style.display = "flex";
+      row.style.gap = "10px";
+      row.style.alignItems = "center";
+      // Button + Pill direkt unter die Überschrift setzen
+      const title = card.querySelector("h2, h3");
+      if(title && title.parentElement){
+        title.parentElement.insertBefore(row, title.nextSibling);
+      } else {
+        card.insertBefore(row, card.firstChild);
+      }
+      row.appendChild(rollBtn);
+    }
 
-if(pill){
-  // Ensure the cube is inside the wrapper (keeps cube transform intact)
-  if(wrap && !wrap.contains(dice)) wrap.appendChild(dice);
-  else if(!pill.contains(dice)) pill.appendChild(dice);
-} else if(!diceCard.contains(dice)){
-  diceCard.appendChild(dice);
-}
+    // dicePill neben Button platzieren (falls nicht schon drin)
+    if(pill.parentElement !== row) row.appendChild(pill);
 
-// IMPORTANT: do NOT touch `transform` here (3D dice uses it).
-dice.style.position = "relative";
-dice.style.left = "";
-dice.style.top = "";
-dice.style.right = "";
-dice.style.bottom = "";
+    // Würfel in die Pill setzen (ohne riesiges Scaling)
+    pill.innerHTML = "";
+    dice.style.pointerEvents = "none";
+    pill.appendChild(dice);
 
     return true;
   }
 
+  // Mehrere Versuche, weil UI teils dynamisch aufgebaut wird
+  let tries = 0;
+  const t = setInterval(() => {
+    tries++;
+    const ok = tryDock();
+    if(ok || tries > 30) clearInterval(t);
+  }, 100);
+
+  window.addEventListener("load", () => { tryDock(); });
+})()
+;
+
+
+
+/* ===== UI PATCH V2 (nur Optik, KEIN Gameplay): Würfel wirklich in "Status" docken + Fixed/Absolute überschreiben ===== */
+(function forceDiceDockIntoStatus(){
+  function setImportant(el, prop, value){
+    try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
+  }
+  function findStatusCardByBoardInfo(){
+    const boardInfo = document.getElementById("boardInfo");
+    if(!boardInfo) return null;
+    return (
+      boardInfo.closest(".card") ||
+      boardInfo.closest(".panel") ||
+      boardInfo.closest("section") ||
+      boardInfo.closest("div") ||
+      null
+    );
+  }
+
+  function tryDock(){
+    const dice = document.getElementById("diceCube");
+    const boardInfo = document.getElementById("boardInfo");
+    if(!dice || !boardInfo) return false;
+
+    const card = findStatusCardByBoardInfo();
+    if(!card) return false;
+
+    // Überschreibe mögliche Header-Fixierungen (damit ein Umhängen auch sichtbar wird)
+    setImportant(dice, "position", "static");
+    setImportant(dice, "top", "auto");
+    setImportant(dice, "right", "auto");
+    setImportant(dice, "bottom", "auto");
+    setImportant(dice, "left", "auto");
+    setImportant(dice, "margin", "0");
+    setImportant(dice, "z-index", "10");
+    // Falls im Header per flex "klein gedrückt"
+    setImportant(dice, "flex", "0 0 auto");
+
+    // Dock-Wrapper
+    let dock = document.getElementById("diceDockStatusV2");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockStatusV2";
+      dock.style.display = "flex";
+      dock.style.justifyContent = "flex-end";
+      dock.style.alignItems = "flex-start";
+      dock.style.gap = "12px";
+      dock.style.margin = "10px 0 14px 0";
+    } else {
+      dock.innerHTML = "";
+    }
+
+    // Groß darstellen (ohne 3D-Transforms zu zerstören)
+    const big = document.createElement("div");
+    setImportant(big, "transform", "scale(2.9)");
+    setImportant(big, "transform-origin", "right top");
+    // Anzeige-only (würfeln bleibt Button)
+    setImportant(big, "pointer-events", "none");
+    big.appendChild(dice);
+    dock.appendChild(big);
+
+    // Einfügen: direkt NACH der Status-Überschrift, sonst über boardInfo-Zeile
+    const statusTitle = Array.from(card.querySelectorAll("h1,h2,h3,div,span"))
+      .find(n => (n.textContent||"").trim() === "Status");
+    if(statusTitle && statusTitle.parentElement){
+      // nach dem Titel einfügen
+      if(statusTitle.nextSibling){
+        statusTitle.parentElement.insertBefore(dock, statusTitle.nextSibling);
+      } else {
+        statusTitle.parentElement.appendChild(dock);
+      }
+      return true;
+    }
+
+    // Fallback: über der Board-Zeile
+    const row = boardInfo.closest("div") || boardInfo;
+    row.parentElement && row.parentElement.insertBefore(dock, row);
+    return true;
+  }
+
+  // oft wird UI dynamisch gerendert → mehrfach versuchen + nach jedem Resize
   let tries = 0;
   const iv = setInterval(() => {
     tries++;
-    if(dock() || tries > 40) clearInterval(iv);
+    const ok = tryDock();
+    if(ok || tries > 80) clearInterval(iv);
   }, 120);
 
-  window.addEventListener("load", () => { try{ dock(); }catch(_e){} });
+  window.addEventListener("load", () => { tryDock(); });
+  window.addEventListener("resize", () => { tryDock(); });
 })();
+
+
+
+/* ===== UI PATCH V3 (nur Optik): Dock via "Status" Überschrift (falls IDs/Struktur am PC anders sind) ===== */
+(function forceDiceDockByStatusTitle(){
+  function setImportant(el, prop, value){
+    try{ el.style.setProperty(prop, value, "important"); }catch(_e){ try{ el.style[prop]=value; }catch(__e){} }
+  }
+  function findStatusTitleEl(){
+    const candidates = Array.from(document.querySelectorAll("h1,h2,h3,h4,div,span,p,button"));
+    for(const el of candidates){
+      const t = (el.textContent || "").trim();
+      if(t === "Status"){
+        // prefer headings or bold-looking
+        return el;
+      }
+    }
+    return null;
+  }
+  function tryDock(){
+    const dice = document.getElementById("diceCube") || document.querySelector("#diceCube") || document.querySelector(".diceCube") || null;
+    if(!dice) return false;
+
+    const titleEl = findStatusTitleEl();
+    if(!titleEl) return false;
+
+    // card/container: nearest big box on the right
+    let card = titleEl.closest(".card") || titleEl.closest(".panel") || titleEl.closest("section") || titleEl.closest("div");
+    if(!card) return false;
+
+    // create/reuse dock
+    let dock = document.getElementById("diceDockStatusV3");
+    if(!dock){
+      dock = document.createElement("div");
+      dock.id = "diceDockStatusV3";
+      setImportant(dock, "display", "flex");
+      setImportant(dock, "justify-content", "flex-end");
+      setImportant(dock, "align-items", "flex-start");
+      setImportant(dock, "margin", "10px 0 12px 0");
+    } else {
+      dock.innerHTML = "";
+    }
+
+    const big = document.createElement("div");
+    setImportant(big, "transform", "scale(2.8)");
+    setImportant(big, "transform-origin", "right top");
+    setImportant(big, "pointer-events", "none");
+    big.appendChild(dice);
+    dock.appendChild(big);
+
+    // override dice positioning so it can't stick to header
+    setImportant(dice, "position", "static");
+    setImportant(dice, "top", "auto");
+    setImportant(dice, "right", "auto");
+    setImportant(dice, "left", "auto");
+    setImportant(dice, "bottom", "auto");
+    setImportant(dice, "margin", "0");
+    setImportant(dice, "z-index", "1");
+
+    // insert dock right after title
+    if(titleEl.parentElement){
+      // if title is within a header row, insert after that row; else directly after title
+      const headerRow = titleEl.closest("div") || titleEl;
+      headerRow.parentElement.insertBefore(dock, headerRow.nextSibling);
+      return true;
+    }
+    return false;
+  }
+
+  let tries=0;
+  const t=setInterval(()=>{
+    tries++;
+    const ok=tryDock();
+    if(ok || tries>50) clearInterval(t);
+  }, 120);
+
+  window.addEventListener("load", ()=>{ tryDock(); });
+})();
+
 
 
 // ---------- Wheel UI (client only, does not block gameplay) ----------
