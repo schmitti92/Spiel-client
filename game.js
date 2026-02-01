@@ -106,112 +106,173 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const loadFile = $("loadFile");
   const autoSaveInfo = $("autoSaveInfo");
 
+  // Ensure we always have a container for host-only controls (mobile/older index.html may miss #hostTools)
+  let hostToolsBox = hostTools;
+  try {
+    if (!hostToolsBox) {
+      // If Save/Load buttons exist, use their parent as host tools area
+      if (saveBtn && saveBtn.parentElement) hostToolsBox = saveBtn.parentElement;
+      else if (loadBtn && loadBtn.parentElement) hostToolsBox = loadBtn.parentElement;
+      else if (restoreBtn && restoreBtn.parentElement) hostToolsBox = restoreBtn.parentElement;
+    }
+    if (!hostToolsBox) {
+      // Create a host tools box inside the side panel (fallback)
+      const panel = document.querySelector(".panel");
+      if (panel) {
+        hostToolsBox = document.createElement("div");
+        hostToolsBox.id = "hostTools";
+        hostToolsBox.className = "row";
+        hostToolsBox.style.gap = "8px";
+        hostToolsBox.style.flexWrap = "wrap";
+        // Insert near the bottom of the panel (before the last big buttons if possible)
+        const resume = $("resumeBtn");
+        if (resume && resume.parentElement === panel) panel.insertBefore(hostToolsBox, resume);
+        else panel.appendChild(hostToolsBox);
+      }
+    }
+  } catch(_e) {}
+
+
   // Notfall: Farben tauschen (Host-only)
   let swapColorsBtn = $("swapColorsBtn");
   try{
     // Falls index.html den Button noch nicht hat, erzeugen wir ihn sicher per JS,
     // damit du nur game.js tauschen musst.
-    if(!swapColorsBtn && hostTools){
+    if(!swapColorsBtn && hostToolsBox){
       swapColorsBtn = document.createElement("button");
       swapColorsBtn.id = "swapColorsBtn";
       swapColorsBtn.className = "btn";
       swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
-      hostTools.appendChild(swapColorsBtn);
-    }
-  }catch(_e){}
+      hostToolsBox.appendChild(swapColorsBtn);
 
-      // // Joker award mode toggle (HOST only): choose who gets the Joker after a piece is kicked.
-// - "wer wirft": the thrower's color gets the Joker
-// - "wer geschmissen wird": the kicked piece's color gets the Joker
-// Buttons are shown directly in the Joker section (easy to find) and ONLY for the host.
-(() => {
-  const MODE_THROWER = "thrower";
-  const MODE_KICKED = "victim";
+      // Joker award mode toggle (Host only): who receives a Joker on kick-out?
+      const jokerModeWrap = document.createElement("div");
+      jokerModeWrap.style.marginTop = "10px";
+      jokerModeWrap.style.display = "flex";
+      jokerModeWrap.style.gap = "8px";
+      jokerModeWrap.style.flexWrap = "wrap";
 
-  function mountJokerAwardModeUI(){
-    try{
-      // Only host sees the buttons
-      if (typeof isMeHost === "function" && !isMeHost()) return;
-
-      // Find the Joker header row (the one that contains the Action-Mode toggle)
-      const toggle = document.getElementById("actionToggle");
-      const row = toggle ? (toggle.closest ? toggle.closest(".row") : toggle.parentElement) : null;
-      if(!row || !row.parentElement) return;
-
-      // Already mounted?
-      if(document.getElementById("jokerAwardModeWrap")) return;
-
-      const wrap = document.createElement("div");
-      wrap.id = "jokerAwardModeWrap";
-      wrap.style.display = "flex";
-      wrap.style.flexWrap = "wrap";
-      wrap.style.gap = "8px";
-      wrap.style.marginTop = "8px";
-      wrap.style.alignItems = "center";
-
-      const label = document.createElement("div");
-      label.textContent = "🎡 Joker-Rad Modus:";
-      label.style.opacity = "0.85";
-      label.style.fontSize = "12px";
-      label.style.marginRight = "4px";
+      const jokerModeLabel = document.createElement("div");
+      jokerModeLabel.textContent = "Joker bei Rausschmeißen:";
+      jokerModeLabel.style.width = "100%";
+      jokerModeLabel.style.opacity = ".85";
+      jokerModeLabel.style.fontWeight = "800";
+      jokerModeWrap.appendChild(jokerModeLabel);
 
       const btnThrower = document.createElement("button");
-      btnThrower.id = "btnAwardThrower";
-      btnThrower.className = "btn btnSmall";
-      btnThrower.textContent = "🎯 Wer wirft";
-
-      const btnKicked = document.createElement("button");
-      btnKicked.id = "btnAwardKicked";
-      btnKicked.className = "btn btnSmall";
-      btnKicked.textContent = "🛡️ Wer geschmissen wird";
-
-      wrap.appendChild(label);
-      wrap.appendChild(btnThrower);
-      wrap.appendChild(btnKicked);
-
-      // Insert right under the Joker row
-      row.parentElement.insertBefore(wrap, row.nextSibling);
-
-      function setActive(mode){
-        try{
-          const m = (mode === MODE_KICKED) ? MODE_KICKED : MODE_THROWER;
-          btnThrower.style.opacity = (m === MODE_THROWER) ? "1" : "0.55";
-          btnKicked.style.opacity  = (m === MODE_KICKED)  ? "1" : "0.55";
-          btnThrower.style.outline = (m === MODE_THROWER) ? "2px solid rgba(255,255,255,0.18)" : "";
-          btnKicked.style.outline  = (m === MODE_KICKED)  ? "2px solid rgba(255,255,255,0.18)" : "";
-        }catch(e){}
-      }
-
+      btnThrower.className = "btn";
+      btnThrower.textContent = "Werfer bekommt Joker";
       btnThrower.onclick = () => {
-        try{
-          if(typeof sendMsg === "function") sendMsg({ type: "set_award_mode", mode: MODE_THROWER });
-          setActive(MODE_THROWER);
-        }catch(e){}
+        netJokerAwardMode = "thrower";
+        wsSend({ type: "set_award_mode", mode: "thrower" });
+        updateJokerModeButtons();
       };
 
-      btnKicked.onclick = () => {
-        try{
-          if(typeof sendMsg === "function") sendMsg({ type: "set_award_mode", mode: MODE_KICKED });
-          setActive(MODE_KICKED);
-        }catch(e){}
+      const btnVictim = document.createElement("button");
+      btnVictim.className = "btn";
+      btnVictim.textContent = "Opfer bekommt Joker";
+      btnVictim.onclick = () => {
+        netJokerAwardMode = "victim";
+        wsSend({ type: "set_award_mode", mode: "victim" });
+        updateJokerModeButtons();
       };
 
-      // Expose updater so network state sync can update the UI
-      window.__updateJokerAwardModeUI = setActive;
+      function updateJokerModeButtons(){
+        btnThrower.className = (netJokerAwardMode === "thrower") ? "btn primary" : "btn";
+        btnVictim.className  = (netJokerAwardMode === "victim")  ? "btn primary" : "btn";
+      }
+      updateJokerModeButtons();
 
-      // Initial state
-      try{ setActive(typeof netJokerAwardMode !== "undefined" ? netJokerAwardMode : MODE_THROWER); }catch(e){}
-    }catch(e){}
+      jokerModeWrap.appendChild(btnThrower);
+      jokerModeWrap.appendChild(btnVictim);
+      hostToolsBox.appendChild(jokerModeWrap);
+
+    }
+  }catch(_e){}
+  const diceEl  = $("diceCube");
+  // ===== Dice pips (render directly on the cube face) =====
+  // Additiv: erzeugt die 9 Pip-Zellen im #diceCube, damit die Augen sichtbar sind.
+  // Entfernt keine Funktion und ändert keine Spielregeln.
+  function ensureDicePips(){
+    try{
+      if(!diceEl) return;
+      // Already built?
+      if(diceEl.querySelector && diceEl.querySelector(".dip")) return;
+
+      // Build pips grid inside diceCube (needed for styles.css selectors)
+      diceEl.innerHTML = "";
+      const frag = document.createDocumentFragment();
+      for(let i=1;i<=9;i++){
+        const cell = document.createElement("div");
+        cell.className = "dip p"+i;
+        const pip = document.createElement("span");
+        pip.className = "pip";
+        cell.appendChild(pip);
+        frag.appendChild(cell);
+      }
+      diceEl.appendChild(frag);
+
+      // Safety: if some environments miss the CSS grid styles, apply minimal inline fallbacks
+      // (keeps sizes from CSS; only sets layout if missing)
+      const cs = getComputedStyle(diceEl);
+      if(cs.display === "inline" || cs.display === "block"){
+        diceEl.style.display = "grid";
+        diceEl.style.gridTemplateColumns = "repeat(3, 1fr)";
+        diceEl.style.gridTemplateRows = "repeat(3, 1fr)";
+        diceEl.style.gap = "3px";
+      }
+    }catch(_e){}
+  }
+  
+  // Additiv: macht die Augen größer und kontrastreicher (reine Anzeige, keine Logik).
+  function applyDicePipSizing(){
+    try{
+      if(!diceEl) return;
+      const rect = diceEl.getBoundingClientRect();
+      if(!rect || !rect.width) return;
+
+      // Größe proportional zur Würfelfläche (Tablet: gut sichtbar)
+      const pipSize = Math.max(14, Math.round(rect.width * 0.16)); // ~16% der Würfelseite
+      const pipColor = "#111"; // dunkler für mehr Kontrast
+
+      // Zellen zentrieren (Fallback, falls CSS fehlt)
+      const cells = diceEl.querySelectorAll ? diceEl.querySelectorAll(".dip") : [];
+      cells.forEach(c => {
+        c.style.display = "flex";
+        c.style.alignItems = "center";
+        c.style.justifyContent = "center";
+      });
+
+      const pips = diceEl.querySelectorAll ? diceEl.querySelectorAll(".pip") : [];
+      pips.forEach(p => {
+        p.style.width = pipSize + "px";
+        p.style.height = pipSize + "px";
+        p.style.borderRadius = "999px";
+        p.style.background = pipColor;
+        // wirkt optisch größer, ohne zu übertreiben
+        p.style.boxShadow = "inset 0 2px 3px rgba(255,255,255,0.22), 0 2px 4px rgba(0,0,0,0.45)";
+      });
+    }catch(_e){}
   }
 
-  // Try mounting a few times (covers cases where UI is built after initial load)
-  try{ mountJokerAwardModeUI(); }catch(e){}
-  try{ setTimeout(mountJokerAwardModeUI, 200); }catch(e){}
-  try{ setTimeout(mountJokerAwardModeUI, 900); }catch(e){}
-  try{ setTimeout(mountJokerAwardModeUI, 2000); }catch(e){}
-})();
+  // Resize-sicher: wenn sich Layout ändert (Rotation/Tablet), Pips neu skalieren
+  (function(){
+    let raf = 0;
+    function onResize(){
+      if(raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => { raf = 0; try{ applyDicePipSizing(); }catch(_e){} });
+    }
+    try{ window.addEventListener("resize", onResize, {passive:true}); }catch(_e){}
+    try{ window.addEventListener("orientationchange", onResize, {passive:true}); }catch(_e){}
+  })();
+// Build pips once at startup (safe even if dice is later replaced)
+  try{ ensureDicePips(); }catch(_e){}
 
-// ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
+  
+  try{ applyDicePipSizing(); }catch(_e){}
+// UI-only: ensure dice is visible even before the first roll.
+  try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
+  // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
   // Additiv: nur Anzeige, beeinflusst Gameplay nicht.
   let diceValueLabel = null;
   function ensureDiceValueLabel(){
@@ -1117,7 +1178,6 @@ try{ ws = new WebSocket(SERVER_URL); }
         }
         netCanStart = !!msg.canStart;
       if (msg.jokerAwardMode) netJokerAwardMode = msg.jokerAwardMode;
-      try{ if(window.__updateJokerAwardModeUI) window.__updateJokerAwardModeUI(netJokerAwardMode); }catch(e){}
         updateStartButton();
         return;
       }
@@ -3022,6 +3082,7 @@ leaveBtn.addEventListener("click", () => {
       console.error(err);
     }
   })();
+})();
 
 
 // ===== Dice Dock (safe) =====
@@ -3306,6 +3367,3 @@ function _wheelNext() {
   _wheelDraw(_wheelAngle);
   requestAnimationFrame(tick);
 }
-
-})();
-
