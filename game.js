@@ -120,6 +120,42 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     }
   }catch(_e){}
   const diceEl  = $("diceCube");
+  // ===== Dice pips (render directly on the cube face) =====
+  // Additiv: erzeugt die 9 Pip-Zellen im #diceCube, damit die Augen sichtbar sind.
+  // Entfernt keine Funktion und ändert keine Spielregeln.
+  function ensureDicePips(){
+    try{
+      if(!diceEl) return;
+      // Already built?
+      if(diceEl.querySelector && diceEl.querySelector(".dip")) return;
+
+      // Build pips grid inside diceCube (needed for styles.css selectors)
+      diceEl.innerHTML = "";
+      const frag = document.createDocumentFragment();
+      for(let i=1;i<=9;i++){
+        const cell = document.createElement("div");
+        cell.className = "dip p"+i;
+        const pip = document.createElement("span");
+        pip.className = "pip";
+        cell.appendChild(pip);
+        frag.appendChild(cell);
+      }
+      diceEl.appendChild(frag);
+
+      // Safety: if some environments miss the CSS grid styles, apply minimal inline fallbacks
+      // (keeps sizes from CSS; only sets layout if missing)
+      const cs = getComputedStyle(diceEl);
+      if(cs.display === "inline" || cs.display === "block"){
+        diceEl.style.display = "grid";
+        diceEl.style.gridTemplateColumns = "repeat(3, 1fr)";
+        diceEl.style.gridTemplateRows = "repeat(3, 1fr)";
+        diceEl.style.gap = "3px";
+      }
+    }catch(_e){}
+  }
+  // Build pips once at startup (safe even if dice is later replaced)
+  try{ ensureDicePips(); }catch(_e){}
+
   // UI-only: ensure dice is visible even before the first roll.
   try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
   // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
@@ -2965,10 +3001,10 @@ if(pill && !wrap){
   wrap.style.alignItems = "center";
   wrap.style.justifyContent = "center";
   // Scale the whole cube to fit the small pill (change 0.62 if you want a bit bigger/smaller)
-  wrap.style.transform = "scale(2.50)";
+  wrap.style.transform = "scale(1.0)";
   wrap.style.transformOrigin = "50% 50%";
   pill.style.position = pill.style.position || "relative";
-  pill.style.overflow = "visible";
+  pill.style.overflow = "hidden";
   pill.appendChild(wrap);
 }
 
