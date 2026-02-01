@@ -135,60 +135,80 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   // Notfall: Farben tauschen (Host-only)
   let swapColorsBtn = $("swapColorsBtn");
-  try{
-    // Falls index.html den Button noch nicht hat, erzeugen wir ihn sicher per JS,
-    // damit du nur game.js tauschen musst.
-    if(!swapColorsBtn && hostToolsBox){
+try{
+  // Falls index.html den Button noch nicht hat, erzeugen wir ihn sicher per JS,
+  // damit du nur game.js tauschen musst.
+  if(hostToolsBox){
+    if(!swapColorsBtn){
       swapColorsBtn = document.createElement("button");
       swapColorsBtn.id = "swapColorsBtn";
       swapColorsBtn.className = "btn";
       swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
       hostToolsBox.appendChild(swapColorsBtn);
+    }
 
-      // Joker award mode toggle (Host only): who receives a Joker on kick-out?
-      const jokerModeWrap = document.createElement("div");
-      jokerModeWrap.style.marginTop = "10px";
+    // Joker-Modus (Host-only): Wer bekommt den Joker, wenn eine Figur rausgeworfen wird?
+    // - thrower: Wer wirft, bekommt Joker
+    // - victim:  Wer rausfliegt, bekommt Joker
+    let jokerModeWrap = document.getElementById("jokerModeWrap");
+    if(!jokerModeWrap){
+      jokerModeWrap = document.createElement("div");
+      jokerModeWrap.id = "jokerModeWrap";
       jokerModeWrap.style.display = "flex";
       jokerModeWrap.style.gap = "8px";
       jokerModeWrap.style.flexWrap = "wrap";
+      jokerModeWrap.style.alignItems = "center";
+      jokerModeWrap.style.marginTop = "8px";
 
-      const jokerModeLabel = document.createElement("div");
-      jokerModeLabel.textContent = "Joker bei Rausschmeißen:";
-      jokerModeLabel.style.width = "100%";
-      jokerModeLabel.style.opacity = ".85";
-      jokerModeLabel.style.fontWeight = "800";
-      jokerModeWrap.appendChild(jokerModeLabel);
+      const lbl = document.createElement("div");
+      lbl.textContent = "Joker bei Rauswurf:";
+      lbl.style.opacity = "0.85";
+      lbl.style.fontSize = "12px";
+      lbl.style.marginRight = "4px";
 
       const btnThrower = document.createElement("button");
+      btnThrower.id = "jokerModeThrowerBtn";
       btnThrower.className = "btn";
-      btnThrower.textContent = "Werfer bekommt Joker";
-      btnThrower.onclick = () => {
-        netJokerAwardMode = "thrower";
-        wsSend({ type: "set_award_mode", mode: "thrower" });
-        updateJokerModeButtons();
-      };
+      btnThrower.textContent = "🎯 Wer wirft";
 
       const btnVictim = document.createElement("button");
+      btnVictim.id = "jokerModeVictimBtn";
       btnVictim.className = "btn";
-      btnVictim.textContent = "Opfer bekommt Joker";
-      btnVictim.onclick = () => {
-        netJokerAwardMode = "victim";
-        wsSend({ type: "set_award_mode", mode: "victim" });
-        updateJokerModeButtons();
-      };
+      btnVictim.textContent = "🛡️ Wer rausfliegt";
 
       function updateJokerModeButtons(){
-        btnThrower.className = (netJokerAwardMode === "thrower") ? "btn primary" : "btn";
-        btnVictim.className  = (netJokerAwardMode === "victim")  ? "btn primary" : "btn";
+        try{
+          const mode = (netJokerAwardMode||"thrower");
+          btnThrower.classList.toggle("primary", mode === "thrower");
+          btnVictim.classList.toggle("primary", mode === "victim");
+        }catch(_e){}
       }
-      updateJokerModeButtons();
+      // global, damit room_update nachziehen kann
+      window.updateJokerModeButtons = updateJokerModeButtons;
 
+      btnThrower.addEventListener("click", ()=>{
+        if(netMode !== "host") return;
+        netJokerAwardMode = "thrower";
+        sendToServer({ type: "set_award_mode", awardMode: "thrower" });
+        updateJokerModeButtons();
+      });
+
+      btnVictim.addEventListener("click", ()=>{
+        if(netMode !== "host") return;
+        netJokerAwardMode = "victim";
+        sendToServer({ type: "set_award_mode", awardMode: "victim" });
+        updateJokerModeButtons();
+      });
+
+      jokerModeWrap.appendChild(lbl);
       jokerModeWrap.appendChild(btnThrower);
       jokerModeWrap.appendChild(btnVictim);
       hostToolsBox.appendChild(jokerModeWrap);
 
+      updateJokerModeButtons();
     }
-  }catch(_e){}
+  }
+}catch(_e){}
   const diceEl  = $("diceCube");
   // ===== Dice pips (render directly on the cube face) =====
   // Additiv: erzeugt die 9 Pip-Zellen im #diceCube, damit die Augen sichtbar sind.
