@@ -31,8 +31,12 @@
 <canvas id="c"></canvas>
 </section>
 <aside class="side">
-        <div class="card"><h3>Würfel</h3><div class="row" style="gap:10px; align-items:center;"><button class="btn" id="rollBtn">Würfeln</button><div class="dicePill">
-<div data-face="1" id="diceCube">
+        <div class="card" id="diceCard">
+  <h3>Würfel</h3>
+  <div class="diceRow">
+    <button class="btn" id="rollBtn">Würfeln</button>
+    <div class="dicePill" id="dicePill">
+      <div data-face="1" id="diceCube">
 <div class="dip p1"><span class="pip"></span></div>
 <div class="dip p2"><span class="pip"></span></div>
 <div class="dip p3"><span class="pip"></span></div>
@@ -43,13 +47,16 @@
 <div class="dip p8"><span class="pip"></span></div>
 <div class="dip p9"><span class="pip"></span></div>
 </div>
-</div></div></div>
-        <div class="card"><h3>Joker</h3><div class="row" style="gap:10px; align-items:center;">
-<label style="display:flex; gap:8px; align-items:center; font-size:13px; opacity:.9; user-select:none;">
-<input id="actionModeToggle" type="checkbox"/>
-              Action‑Modus (Joker‑Extra)
-            </label>
-</div></div>
+    </div>
+  </div>
+</div>
+        <div class="card" id="jokerCard">
+  <h3>Joker</h3>
+  <label class="toggleRow">
+    <input id="actionModeToggle" type="checkbox"/>
+    <span>Action‑Modus (Joker‑Extra)</span>
+  </label>
+</div>
         <div class="card" id="actionCard" style="display:none;">
 <div class="actionHeader">
 <div class="actionTitle">🎴 Action‑Modus</div>
