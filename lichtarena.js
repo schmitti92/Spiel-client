@@ -215,6 +215,78 @@
   });
 
   function stopPointer(e){
+    // --- Tap selection on pointerup (more precise than "click") ---
+    if (e.type === "pointerup" && S.board){
+      const rect = canvas.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+
+      const moved = Math.hypot(sx - PZ.downX, sy - PZ.downY);
+      const DRAG_THRESHOLD_PX = 7;
+
+      // Treat as "tap/click" only if we didn't pan and stayed under threshold.
+      if (!PZ.isPanning && moved <= DRAG_THRESHOLD_PX && !PZ.suppressClick){
+        // nearest node in current camera screen space
+        const scale = CAM.scale;
+        const ox = CAM.ox;
+        const oy = CAM.oy;
+
+        // 1) Prefer piece-hit first (so selecting a piece doesn't require "perfect" node click)
+        const pl = currentPlayer();
+        let bestPiece = null, bestPD = 1e9;
+        for (const pc of S.pieces){
+          const n = S.nodeById.get(pc.nodeId);
+          if (!n) continue;
+          const x = n.x*scale+ox, y = n.y*scale+oy;
+          const d = Math.hypot(x - sx, y - sy);
+          if (d < bestPD){ bestPD = d; bestPiece = pc; }
+        }
+
+        // Hit radii in SCREEN px (tuned for PC+Tablet)
+        const PIECE_HIT = 18;
+        const NODE_HIT  = 26;
+
+        // If we are in "need_piece", allow selecting the nearest OWN piece within PIECE_HIT
+        if (S.phase === "need_piece" && bestPiece && bestPD <= PIECE_HIT && bestPiece.owner === pl.id){
+          S.selectedPiece = bestPiece.id;
+          S.phase = "choose_target";
+          log(`✅ Figur gewählt (${S.selectedPiece}). Klick jetzt ein Ziel-Feld, das GENAU ${S.stepsLeft} Schritte entfernt ist.`);
+          syncUI(); draw();
+          // continue with stopPointer cleanup
+        } else {
+          // Otherwise: normal node hit test
+          let best=null, bestD=1e9;
+          for (const n of S.nodes){
+            const x=n.x*scale+ox, y=n.y*scale+oy;
+            const d=Math.hypot(x-sx,y-sy);
+            if (d<bestD){ bestD=d; best=n; }
+          }
+          if (best && bestD <= NODE_HIT){
+            const nodeId = best.id;
+
+            // special phases
+            if (S.phase === "place_barricade"){ placeBarricade(nodeId); }
+            else if (S.phase === "j2_pick_source" || S.phase === "j2_pick_target"){ handleJ2Click(nodeId); syncUI(); draw(); }
+            else if (S.phase === "need_piece"){
+              const pcsHere = S.pieces.filter(pc => pc.nodeId===nodeId && pc.owner===pl.id);
+              if (!pcsHere.length){
+                log("ℹ️ Wähle eine eigene Figur.");
+              } else {
+                S.selectedPiece = pcsHere[0].id;
+                S.phase = "choose_target";
+                log(`✅ Figur gewählt (${S.selectedPiece}). Klick jetzt ein Ziel-Feld, das GENAU ${S.stepsLeft} Schritte entfernt ist.`);
+                syncUI(); draw();
+              }
+            }
+            else if (S.phase === "choose_target" && S.selectedPiece){
+              tryMoveTo(nodeId);
+              syncUI(); draw();
+            }
+          }
+        }
+      }
+    }
+
     PZ.pointers.delete(e.pointerId);
     const touches = [...PZ.pointers.values()].filter(p=>p.type==="touch");
     if (touches.length < 2){
@@ -1078,101 +1150,9 @@ async function loadBoard(){
     return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
   }
 
-  // ---------- Tap/Click handling (pointerup for precise hit-testing) ----------
-  // Using pointerup avoids some browsers reporting slightly shifted "click" coords.
-  // It also plays nicely with our drag-threshold pan (Google-Maps feel).
-  function getCanvasPosFromEvent(e){
-    const rect = canvas.getBoundingClientRect();
-    return { sx: e.clientX - rect.left, sy: e.clientY - rect.top };
-  }
+  // ---------- Click handling ----------
 
-  function hitTestNode(sx, sy){
-    // nearest node in current camera screen space
-    const scale = CAM.scale;
-    const ox = CAM.ox;
-    const oy = CAM.oy;
-
-    let best=null, bestD=1e9;
-    for (const n of S.nodes){
-      const x=n.x*scale+ox, y=n.y*scale+oy;
-      const d=Math.hypot(x-sx,y-sy);
-      if (d<bestD){ bestD=d; best=n; }
-    }
-    // Slightly generous hit radius so the cursor "feels" like it matches the field.
-    const HIT_PX = 28;
-    if (!best || bestD>HIT_PX) return null;
-    return best.id;
-  }
-
-  function hitTestOwnPiece(sx, sy){
-    const pl = currentPlayer();
-    if (!pl) return null;
-    const scale = CAM.scale;
-    const ox = CAM.ox;
-    const oy = CAM.oy;
-
-    const PIECE_HIT_PX = 16; // click directly on the piece, not only "above the field"
-    let bestPc = null, bestD = 1e9;
-
-    for (const pc of S.pieces){
-      if (pc.owner !== pl.id) continue;
-      const n = S.nodeById.get(pc.nodeId);
-      if (!n) continue;
-      const x = n.x*scale+ox, y = n.y*scale+oy;
-      const d = Math.hypot(x-sx, y-sy);
-      if (d < bestD){
-        bestD = d;
-        bestPc = pc;
-      }
-    }
-    if (!bestPc || bestD > PIECE_HIT_PX) return null;
-    return bestPc;
-  }
-
-  function handleBoardTap(sx, sy){
-    if (!S.board) return;
-
-    const nodeId = hitTestNode(sx, sy);
-    if (!nodeId) return;
-
-    // special phases
-    if (S.phase === "place_barricade"){ placeBarricade(nodeId); return; }
-    if (S.phase === "j2_pick_source" || S.phase === "j2_pick_target"){ handleJ2Click(nodeId); syncUI(); draw(); return; }
-
-    const pl = currentPlayer();
-
-    // pick own piece (prefer piece-hit, then node-hit)
-    if (S.phase === "need_piece"){
-      const pc = hitTestOwnPiece(sx, sy);
-      const pcsHere = pc ? [pc] : S.pieces.filter(p=>p.nodeId===nodeId && p.owner===pl.id);
-      if (!pcsHere.length){
-        log("ℹ️ Wähle eine eigene Figur.");
-        return;
-      }
-      S.selectedPiece = pcsHere[0].id;
-      S.phase = "moving";
-      log(`✅ Figur gewählt (${S.selectedPiece}). Jetzt Ziel-Feld klicken.`); 
-      syncUI(); draw();
-      return;
-    }
-
-    // move direct
-    if (S.phase === "moving" && S.selectedPiece){
-      tryMoveDirectTo(nodeId); // created in direct-move patch
-      syncUI(); draw();
-      return;
-    }
-  }
-
-  canvas.addEventListener("pointerup", (e)=>{
-    // If we dragged/panned, suppress the tap.
-    if (PZ.suppressClick) return;
-    // Only react to primary button / touch.
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    const {sx, sy} = getCanvasPosFromEvent(e);
-    handleBoardTap(sx, sy);
-  });
-
+  // ---------- Buttons ----------
   ui.playersSel.onchange = ()=>{
     S.playerCount = parseInt(ui.playersSel.value,10);
     ui.pCount.textContent = String(S.playerCount);
