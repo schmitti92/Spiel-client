@@ -1,167 +1,79 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Lichtarena – Prototype</title>
-  <link rel="stylesheet" href="styles.css?v=la1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lichtarena – Prototype (offline)</title>
+  <link rel="stylesheet" href="styles.css" />
   <style>
-
-/* LA_PANZOOM_LAYOUT */
-html, body { height:100%; margin:0; }
-body { display:flex; height:100vh; overflow:hidden; background:#0b1220; color:#e5e7eb; }
-#sidebar { width:360px; max-width:45vw; min-width:280px; overflow:auto; border-right:1px solid rgba(148,163,184,.18); background:rgba(2,6,23,.65); backdrop-filter: blur(8px); }
-#main { flex:1; position:relative; overflow:hidden; }
-#boardViewport { position:absolute; inset:0; overflow:hidden; touch-action: none; }
-#hudTopRight { position:absolute; top:12px; right:12px; display:flex; gap:8px; align-items:center; z-index:10; }
-.hudBtn { padding:8px 10px; border-radius:10px; border:1px solid rgba(148,163,184,.25); background:rgba(15,23,42,.75); color:#e5e7eb; cursor:pointer; }
-.hudBtn:active { transform: scale(.98); }
-#zoomLabel { font: 12px ui-monospace, monospace; opacity:.9; padding:6px 8px; border-radius:10px; border:1px solid rgba(148,163,184,.20); background:rgba(15,23,42,.55); }
-
-    body{margin:0;background:linear-gradient(180deg,#070a0f,#0b1220);color:#e5e7eb;font:14px/1.4 system-ui,Segoe UI,Roboto,Arial}
-    header{position:sticky;top:0;z-index:10;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
-      padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(2,6,23,.6);backdrop-filter:blur(10px)}
-    header .left{display:flex;flex-direction:column;gap:2px}
-    header h1{margin:0;font-size:14px;letter-spacing:.4px}
-    header .sub{color:rgba(255,255,255,.65);font-size:12px}
+    html, body { height:100%; margin:0; }
+    body{ background:#0b1220; color:#e5e7eb; overflow:hidden; }
+    header{padding:10px 12px;border-bottom:1px solid rgba(148,163,184,.15);background:rgba(2,6,23,.55);backdrop-filter: blur(8px)}
+    header h1{margin:0;font-size:14px;font-weight:700;letter-spacing:.3px}
+    header .muted{font-size:12px;color:rgba(226,232,240,.75)}
     .wrap{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 56px)}
-    aside{border-right:1px solid rgba(255,255,255,.08);background:rgba(15,23,42,.6);padding:12px;overflow:auto}
-    main{position:relative}
-    canvas{display:block;width:100%;height:100%}
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .btn, select, input{border:1px solid rgba(255,255,255,.12);background:rgba(15,23,42,.7);color:#e5e7eb;padding:8px 10px;border-radius:12px}
-    .btn{cursor:pointer}
-    .btn:hover{border-color:rgba(255,255,255,.20)}
-    .btn.primary{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.30)}
-    .btn.warn{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.30)}
-    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);
-      color:rgba(255,255,255,.7);font-size:12px;background:rgba(2,6,23,.35)}
-    .pill b{color:#e5e7eb}
-    .hint{margin-top:10px;padding:10px;border-radius:14px;border:1px dashed rgba(255,255,255,.14);background:rgba(2,6,23,.35);color:rgba(255,255,255,.7);font-size:12px}
-    .overlay{position:absolute;left:12px;top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:5;
-      background:rgba(2,6,23,.55);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px);
-      padding:8px;border-radius:16px}
-    .badge{padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.7)}
-    .badge.on{border-color:rgba(34,197,94,.35);color:#bbf7d0;background:rgba(34,197,94,.10)}
-    .badge.warn{border-color:rgba(245,158,11,.35);color:#fde68a;background:rgba(245,158,11,.08)}
-    .log{margin-top:10px;max-height:220px;overflow:auto;font-family:ui-monospace,monospace;font-size:12px;color:rgba(255,255,255,.75);
-      background:rgba(2,6,23,.35);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px}
-    .log div{margin-bottom:6px}
-    .small{color:rgba(255,255,255,.6);font-size:12px}
+    aside{padding:12px;overflow:auto;border-right:1px solid rgba(148,163,184,.12);background:rgba(2,6,23,.45)}
+    main{position:relative;overflow:hidden}
+    canvas{width:100%;height:100%;display:block;background:linear-gradient(180deg, rgba(15,23,42,.9), rgba(2,6,23,.95));touch-action:none}
+    .card{border:1px solid rgba(148,163,184,.15);border-radius:14px;padding:10px 10px 12px;margin-bottom:10px;background:rgba(15,23,42,.45)}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0}
+    .badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(148,163,184,.20);background:rgba(15,23,42,.55)}
+    .btn{appearance:none;border:1px solid rgba(148,163,184,.25);background:rgba(15,23,42,.75);color:#e5e7eb;padding:8px 10px;border-radius:12px;cursor:pointer}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .btn.small{padding:6px 10px;border-radius:10px;font-size:12px}
+    .muted2{font-size:12px;color:rgba(226,232,240,.72)}
+    select{background:rgba(15,23,42,.75);border:1px solid rgba(148,163,184,.25);color:#e5e7eb;border-radius:10px;padding:6px 8px}
+    .hud{position:absolute;top:12px;right:12px;display:flex;gap:8px;align-items:center;z-index:10}
+    #zoomLabel{font:12px ui-monospace, monospace;opacity:.9;padding:6px 8px;border-radius:10px;border:1px solid rgba(148,163,184,.20);background:rgba(15,23,42,.55)}
+    #log{max-height:180px;overflow:auto;font:12px ui-monospace, monospace;white-space:pre-wrap;line-height:1.35}
   </style>
 </head>
 <body>
-
-<div id="sidebar"></div>
-<div id="main">
-  <div id="boardViewport">
-<header>
-  <div class="left">
+  <header>
     <h1>Lichtarena – Prototype (offline)</h1>
-    <div class="sub">Spawn: 50% Zentrum · 30% Mittel · 20% Außen · Re-Spawn nach „jeder Spieler 5 Züge“ · nicht gleiches Feld</div>
+    <div class="muted">Spawn: 50% Zentrum · 30% Mittel · 20% Außen · Re-Spawn nach „jeder Spieler 5 Züge“ · nicht gleiches Feld</div>
+  </header>
+  <div class="wrap">
+    <aside>
+      <div class="card">
+        <div class="row"><span class="badge">Spieler <span id="pCount">4</span></span><span class="badge">Zug <span id="turnLabel">–</span></span></div>
+        <div class="row"><span class="badge">Barikaden <span id="bCount">0/15</span></span></div>
+        <div class="row"><span class="badge" id="lightBadge">Licht: –</span></div>
+        <div class="row"><span class="badge" id="phaseBadge">Phase: –</span></div>
+        <div class="row"><span class="badge" id="scoreBadge">Punkte: –</span></div>
+      </div>
+      <div class="card">
+        <div class="muted2" style="margin-bottom:8px">Links ziehen = Board verschieben · Mausrad = Zoom · Doppelklick = Zoom · Touch: 1 Finger schieben, 2 Finger zoomen.</div>
+        <div class="row"><label class="muted2">Spieleranzahl</label>
+          <select id="playersSel"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row"><span class="badge">Würfel</span><span class="badge" id="diceVal">–</span></div>
+        <div class="row"><span class="badge">Restschritte</span><span class="badge" id="stepsLeft">–</span></div>
+        <div class="row" style="gap:10px"><button class="btn" id="rollBtn">Würfeln</button><button class="btn" id="endTurnBtn">Zug beenden</button></div>
+        <div class="row" style="gap:10px"><button class="btn small" id="resetBtn">Reset</button><button class="btn small" id="nextTurnBtn">Nächster Zug</button></div>
+      </div>
+      <div class="card">
+        <div class="row"><span class="badge">J1</span><span class="badge" id="j1">0</span><button class="btn small" id="giveJ1">+J1</button><button class="btn small" id="useJ1">J1 nutzen</button></div>
+        <div class="row"><span class="badge">J2</span><span class="badge" id="j2">0</span><button class="btn small" id="giveJ2">+J2</button><button class="btn small" id="useJ2">J2 nutzen</button></div>
+        <div class="row"><span class="badge">J3</span><span class="badge" id="j3">0</span><button class="btn small" id="giveJ3">+J3</button><button class="btn small" id="useJ3">J3 nutzen</button></div>
+        <div class="row"><span class="badge">J4</span><span class="badge" id="j4">0</span><button class="btn small" id="giveJ4">+J4</button><button class="btn small" id="useJ4">J4 nutzen</button></div>
+        <div class="row"><span class="badge">J5</span><span class="badge" id="j5">0</span><button class="btn small" id="giveJ5">+J5</button><button class="btn small" id="useJ5">J5 nutzen</button></div>
+        <div class="row"><span class="muted2">J5 aktiv</span><span class="badge" id="j5a">nein</span></div>
+      </div>
+      <div class="card"><div class="row"><span class="badge">Log</span></div><div id="log"></div></div>
+    </aside>
+    <main>
+      <canvas id="c"></canvas>
+      <div class="hud">
+        <button class="btn small" id="btnFit">Fit</button>
+        <button class="btn small" id="btnZoomOut">–</button>
+        <span id="zoomLabel">100%</span>
+        <button class="btn small" id="btnZoomIn">+</button>
+      </div>
+    </main>
   </div>
-  <div class="row">
-    <a class="btn" href="index.html">← Auswahl</a>
-    <button class="btn" id="resetBtn">Reset</button>
-    <button class="btn primary" id="nextTurnBtn">Nächster Zug</button>
-  </div>
-</header>
-
-<div class="wrap">
-  <aside>
-    <div class="row">
-      <span class="pill"><b>Spieler</b> <span id="pCount">4</span></span>
-      <span class="pill"><b>Zug</b> <span id="turnLabel">–</span></span>
-      <span class="pill"><b>Barikaden</b> <span id="bCount">0/15</span></span>
-    </div>
-
-    <div class="hint">
-      <div><b>Bedienung</b></div>
-      <div>• Klick auf eine Figur: auswählen</div>
-      <div>• Klick auf ein verbundenes Feld: bewegen</div>
-      <div>• Wenn du auf <b>E</b> landest: du platzierst sofort eine Barikade (klick Feld)</div>
-      <div>• Barikaden blockieren komplett – außer mit Joker 5 (für deinen nächsten Zug)</div>
-      <div class="small" style="margin-top:6px">Hinweis: Zonen (center/mid/outer) sind hier im Prototype vereinfacht (nach Entfernung zum Zentrum). Später taggen wir das im Board-Designer.</div>
-    </div>
-
-    <div class="section" style="margin-top:12px">
-      <div class="row">
-        <label class="pill"><b>Spieleranzahl</b>
-          <select id="playersSel">
-            <option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option>
-          </select>
-        </label>
-      </div>
-    </div>
-
-    
-    <div class="section" style="margin-top:12px">
-      <div class="row">
-        <span class="pill"><b>Würfel</b> <span id="diceVal">–</span></span>
-        <span class="pill"><b>Restschritte</b> <span id="stepsLeft">–</span></span>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button class="btn primary" id="rollBtn">Würfeln</button>
-        <button class="btn" id="endTurnBtn">Zug beenden</button>
-      </div>
-      <div class="small" style="margin-top:6px">
-        Ablauf: Würfeln → Figur wählen → Schritt für Schritt klicken (du wählst an jeder Abzweigung). Wenn Restschritte 0 sind, endet der Zug automatisch.
-      </div>
-    </div>
-
-    <div class="section" style="margin-top:12px">
-      <div class="row">
-        <button class="btn" id="giveJ1">+ Joker 1 (Farbe auswählen)</button>
-        <button class="btn" id="giveJ2">+ Joker 2 (Barikade versetzen)</button>
-        <button class="btn" id="giveJ3">+ Joker 3 (Neuwurf)</button>
-        <button class="btn" id="giveJ4">+ Joker 4 (Doppelwurf)</button>
-        <button class="btn" id="giveJ5">+ Joker 5 (Überspringen)</button>
-      </div>
-      <div class="small" style="margin-top:6px">
-        Für den Prototype kannst du Joker manuell geben. In der finalen Version kommen Joker über Ereigniskarten.
-      </div>
-    </div>
-
-    <div class="section" style="margin-top:12px">
-      <div class="row">
-        <span class="pill"><b>J1</b> <span id="j1">0</span></span>
-        <span class="pill"><b>J2</b> <span id="j2">0</span></span>
-        <span class="pill"><b>J3</b> <span id="j3">0</span></span>
-        <span class="pill"><b>J4</b> <span id="j4">0</span></span>
-        <span class="pill"><b>J5</b> <span id="j5">0</span></span>
-        <span class="pill"><b>J5 aktiv</b> <span id="j5a">nein</span></span>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button class="btn" id="useJ1">Joker 1: Farbe wählen</button>
-        <button class="btn" id="useJ2">Joker 2: Barikade versetzen</button>
-        <button class="btn" id="useJ3">Joker 3: Neuwurf</button>
-        <button class="btn" id="useJ4">Joker 4: Doppelwurf</button>
-        <button class="btn warn" id="useJ5">Joker 5 aktivieren (1 Zug)</button>
-      </div>
-      <div class="small" style="margin-top:6px">Joker 2: klick Barikade-Quelle → klick Ziel (nicht Startfeld). Quelle nochmal klicken = entfernen.
-      <br><span class="small">Joker 1 (Prototype): wählt eine Farbe – Platzhalter, damit die 5 Joker vollständig sind. In der Online-Version koppeln wir J1 an eine echte Regel (z.B. extra Farbe/Team-Modus oder Spezialkarte).</span></div>
-    </div>
-
-    <div class="log" id="log"></div>
-  </aside>
-
-  <main>
-    <div class="overlay">
-      <span class="badge" id="lightBadge">Licht: –</span>
-      <span class="badge on" id="phaseBadge">Phase: –</span>
-      <span class="badge" id="scoreBadge">Punkte: –</span>
-    </div>
-    <canvas id="c"></canvas>
-  </main>
-</div>
-
-<script src="lichtarena.js?v=la1"></script>
-</div>
-  <div id="hudTopRight">
-    <button id="btnFit" class="hudBtn" title="Board zentrieren">Fit</button>
-    <div id="zoomLabel">100%</div>
-  </div>
-</div>
-
+  <script src="lichtarena.js?v=la5"></script>
 </body>
 </html>
