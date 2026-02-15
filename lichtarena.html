@@ -6,6 +6,18 @@
   <title>Lichtarena – Prototype</title>
   <link rel="stylesheet" href="styles.css?v=la1"/>
   <style>
+
+/* LA_PANZOOM_LAYOUT */
+html, body { height:100%; margin:0; }
+body { display:flex; height:100vh; overflow:hidden; background:#0b1220; color:#e5e7eb; }
+#sidebar { width:360px; max-width:45vw; min-width:280px; overflow:auto; border-right:1px solid rgba(148,163,184,.18); background:rgba(2,6,23,.65); backdrop-filter: blur(8px); }
+#main { flex:1; position:relative; overflow:hidden; }
+#boardViewport { position:absolute; inset:0; overflow:hidden; touch-action: none; }
+#hudTopRight { position:absolute; top:12px; right:12px; display:flex; gap:8px; align-items:center; z-index:10; }
+.hudBtn { padding:8px 10px; border-radius:10px; border:1px solid rgba(148,163,184,.25); background:rgba(15,23,42,.75); color:#e5e7eb; cursor:pointer; }
+.hudBtn:active { transform: scale(.98); }
+#zoomLabel { font: 12px ui-monospace, monospace; opacity:.9; padding:6px 8px; border-radius:10px; border:1px solid rgba(148,163,184,.20); background:rgba(15,23,42,.55); }
+
     body{margin:0;background:linear-gradient(180deg,#070a0f,#0b1220);color:#e5e7eb;font:14px/1.4 system-ui,Segoe UI,Roboto,Arial}
     header{position:sticky;top:0;z-index:10;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
       padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(2,6,23,.6);backdrop-filter:blur(10px)}
@@ -39,6 +51,10 @@
   </style>
 </head>
 <body>
+
+<div id="sidebar"></div>
+<div id="main">
+  <div id="boardViewport">
 <header>
   <div class="left">
     <h1>Lichtarena – Prototype (offline)</h1>
@@ -140,5 +156,12 @@
 </div>
 
 <script src="lichtarena.js?v=la1"></script>
+</div>
+  <div id="hudTopRight">
+    <button id="btnFit" class="hudBtn" title="Board zentrieren">Fit</button>
+    <div id="zoomLabel">100%</div>
+  </div>
+</div>
+
 </body>
 </html>
