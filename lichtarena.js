@@ -192,9 +192,11 @@
     }
 
     // Pan (mouse OR 1-finger touch): start panning after small threshold.
+    // "Drag erst ab X Pixel" -> Klicks bleiben sichere Klicks.
+    const DRAG_THRESHOLD_PX = 7; // 6–8px fühlt sich sehr "Google-Maps" an
     if (!PZ.isPointerDown) return;
     const moved = Math.hypot(sx - PZ.downX, sy - PZ.downY);
-    if (!PZ.isPanning && moved > 4){
+    if (!PZ.isPanning && moved > DRAG_THRESHOLD_PX){
       PZ.isPanning = true;
       PZ.suppressClick = true;
     }
