@@ -90,7 +90,53 @@
   }
 
   // ---------- Load board.json ----------
-  async function loadBoard(){
+  
+  function normalizeBoard(raw){
+    // Supports:
+    // 1) Legacy Barikade board.json (nodes/edges with various fields)
+    // 2) board-designer-pro export (meta.tool === "board-designer-pro")
+    if (!raw) throw new Error("board missing");
+
+    // board-designer-pro schema
+    if (raw.meta && raw.meta.tool === "board-designer-pro" && Array.isArray(raw.nodes) && Array.isArray(raw.edges)){
+      const nodes = raw.nodes.map(n => {
+        const id = String(n.id);
+        const kind = (n.type === "start") ? "house" : "normal";
+        const flags = {
+          label: (typeof n.label === "string" ? n.label : String(n.id)),
+          specialType: (n.specialType || ""),
+          boostSteps: (n.boostSteps == null ? undefined : n.boostSteps),
+          eventDeckId: (n.eventDeckId || ""),
+          start: (n.type === "start"),
+          startColor: (n.color || "")
+        };
+        return { id, x: n.x, y: n.y, kind, flags };
+      });
+      const edges = raw.edges.map(e => ({ a: String(e.a), b: String(e.b) }));
+      const ui = { gridSize: raw.grid?.size ?? 30 };
+      return { ui, nodes, edges };
+    }
+
+    // legacy: best-effort normalize
+    if (Array.isArray(raw.nodes) && Array.isArray(raw.edges)){
+      const nodes = raw.nodes.map(n => {
+        const id = String(n.id ?? n.nodeId ?? n.name);
+        const kind = n.kind ?? n.type ?? "normal";
+        const flags = n.flags ?? {};
+        return { ...n, id, kind, flags };
+      });
+      const edges = raw.edges.map(e => ({
+        a: String(e.a ?? e.from),
+        b: String(e.b ?? e.to)
+      }));
+      const ui = raw.ui ?? raw.grid ?? {};
+      return { ui, nodes, edges };
+    }
+
+    throw new Error("unknown board schema");
+  }
+
+async function loadBoard(){
     let res;
     try {
       res = await fetch("board_lichtarena.json?v=la3");
