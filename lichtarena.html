@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Lichtarena – Prototype</title>
+  <link rel="stylesheet" href="styles.css?v=la1"/>
+  <style>
+    body{margin:0;background:linear-gradient(180deg,#070a0f,#0b1220);color:#e5e7eb;font:14px/1.4 system-ui,Segoe UI,Roboto,Arial}
+    header{position:sticky;top:0;z-index:10;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+      padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(2,6,23,.6);backdrop-filter:blur(10px)}
+    header .left{display:flex;flex-direction:column;gap:2px}
+    header h1{margin:0;font-size:14px;letter-spacing:.4px}
+    header .sub{color:rgba(255,255,255,.65);font-size:12px}
+    .wrap{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 56px)}
+    aside{border-right:1px solid rgba(255,255,255,.08);background:rgba(15,23,42,.6);padding:12px;overflow:auto}
+    main{position:relative}
+    canvas{display:block;width:100%;height:100%}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn, select, input{border:1px solid rgba(255,255,255,.12);background:rgba(15,23,42,.7);color:#e5e7eb;padding:8px 10px;border-radius:12px}
+    .btn{cursor:pointer}
+    .btn:hover{border-color:rgba(255,255,255,.20)}
+    .btn.primary{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.30)}
+    .btn.warn{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.30)}
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.7);font-size:12px;background:rgba(2,6,23,.35)}
+    .pill b{color:#e5e7eb}
+    .hint{margin-top:10px;padding:10px;border-radius:14px;border:1px dashed rgba(255,255,255,.14);background:rgba(2,6,23,.35);color:rgba(255,255,255,.7);font-size:12px}
+    .overlay{position:absolute;left:12px;top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:5;
+      background:rgba(2,6,23,.55);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px);
+      padding:8px;border-radius:16px}
+    .badge{padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.7)}
+    .badge.on{border-color:rgba(34,197,94,.35);color:#bbf7d0;background:rgba(34,197,94,.10)}
+    .badge.warn{border-color:rgba(245,158,11,.35);color:#fde68a;background:rgba(245,158,11,.08)}
+    .log{margin-top:10px;max-height:220px;overflow:auto;font-family:ui-monospace,monospace;font-size:12px;color:rgba(255,255,255,.75);
+      background:rgba(2,6,23,.35);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px}
+    .log div{margin-bottom:6px}
+    .small{color:rgba(255,255,255,.6);font-size:12px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="left">
+    <h1>Lichtarena – Prototype (offline)</h1>
+    <div class="sub">Spawn: 50% Zentrum · 30% Mittel · 20% Außen · Re-Spawn nach „jeder Spieler 5 Züge“ · nicht gleiches Feld</div>
+  </div>
+  <div class="row">
+    <a class="btn" href="index.html">← Auswahl</a>
+    <button class="btn" id="resetBtn">Reset</button>
+    <button class="btn primary" id="nextTurnBtn">Nächster Zug</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside>
+    <div class="row">
+      <span class="pill"><b>Spieler</b> <span id="pCount">4</span></span>
+      <span class="pill"><b>Zug</b> <span id="turnLabel">–</span></span>
+      <span class="pill"><b>Barikaden</b> <span id="bCount">0/15</span></span>
+    </div>
+
+    <div class="hint">
+      <div><b>Bedienung</b></div>
+      <div>• Klick auf eine Figur: auswählen</div>
+      <div>• Klick auf ein verbundenes Feld: bewegen</div>
+      <div>• Wenn du auf <b>E</b> landest: du platzierst sofort eine Barikade (klick Feld)</div>
+      <div>• Barikaden blockieren komplett – außer mit Joker 5 (für deinen nächsten Zug)</div>
+      <div class="small" style="margin-top:6px">Hinweis: Zonen (center/mid/outer) sind hier im Prototype vereinfacht (nach Entfernung zum Zentrum). Später taggen wir das im Board-Designer.</div>
+    </div>
+
+    <div class="section" style="margin-top:12px">
+      <div class="row">
+        <label class="pill"><b>Spieleranzahl</b>
+          <select id="playersSel">
+            <option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    
+    <div class="section" style="margin-top:12px">
+      <div class="row">
+        <span class="pill"><b>Würfel</b> <span id="diceVal">–</span></span>
+        <span class="pill"><b>Restschritte</b> <span id="stepsLeft">–</span></span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="rollBtn">Würfeln</button>
+        <button class="btn" id="endTurnBtn">Zug beenden</button>
+      </div>
+      <div class="small" style="margin-top:6px">
+        Ablauf: Würfeln → Figur wählen → Schritt für Schritt klicken (du wählst an jeder Abzweigung). Wenn Restschritte 0 sind, endet der Zug automatisch.
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:12px">
+      <div class="row">
+        <button class="btn" id="giveJ1">+ Joker 1 (Farbe auswählen)</button>
+        <button class="btn" id="giveJ2">+ Joker 2 (Barikade versetzen)</button>
+        <button class="btn" id="giveJ3">+ Joker 3 (Neuwurf)</button>
+        <button class="btn" id="giveJ4">+ Joker 4 (Doppelwurf)</button>
+        <button class="btn" id="giveJ5">+ Joker 5 (Überspringen)</button>
+      </div>
+      <div class="small" style="margin-top:6px">
+        Für den Prototype kannst du Joker manuell geben. In der finalen Version kommen Joker über Ereigniskarten.
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:12px">
+      <div class="row">
+        <span class="pill"><b>J1</b> <span id="j1">0</span></span>
+        <span class="pill"><b>J2</b> <span id="j2">0</span></span>
+        <span class="pill"><b>J3</b> <span id="j3">0</span></span>
+        <span class="pill"><b>J4</b> <span id="j4">0</span></span>
+        <span class="pill"><b>J5</b> <span id="j5">0</span></span>
+        <span class="pill"><b>J5 aktiv</b> <span id="j5a">nein</span></span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="useJ1">Joker 1: Farbe wählen</button>
+        <button class="btn" id="useJ2">Joker 2: Barikade versetzen</button>
+        <button class="btn" id="useJ3">Joker 3: Neuwurf</button>
+        <button class="btn" id="useJ4">Joker 4: Doppelwurf</button>
+        <button class="btn warn" id="useJ5">Joker 5 aktivieren (1 Zug)</button>
+      </div>
+      <div class="small" style="margin-top:6px">Joker 2: klick Barikade-Quelle → klick Ziel (nicht Startfeld). Quelle nochmal klicken = entfernen.
+      <br><span class="small">Joker 1 (Prototype): wählt eine Farbe – Platzhalter, damit die 5 Joker vollständig sind. In der Online-Version koppeln wir J1 an eine echte Regel (z.B. extra Farbe/Team-Modus oder Spezialkarte).</span></div>
+    </div>
+
+    <div class="log" id="log"></div>
+  </aside>
+
+  <main>
+    <div class="overlay">
+      <span class="badge" id="lightBadge">Licht: –</span>
+      <span class="badge on" id="phaseBadge">Phase: –</span>
+      <span class="badge" id="scoreBadge">Punkte: –</span>
+    </div>
+    <canvas id="c"></canvas>
+  </main>
+</div>
+
+<script src="lichtarena.js?v=la1"></script>
+</body>
+</html>
