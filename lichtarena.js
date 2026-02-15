@@ -37,7 +37,9 @@
     // We keep at least a small margin of the board bbox visible.
     const bb = boardBounds();
     if (!bb) return;
-    const margin = 90;
+    // Allow panning until at least one field remains visible.
+    // Smaller margin = more freedom; we just prevent the board from fully disappearing.
+    const margin = 28;
 
     const left   = bb.minX * CAM.scale + CAM.ox;
     const right  = bb.maxX * CAM.scale + CAM.ox;
@@ -120,6 +122,9 @@
     zoomAt(sx, sy, e.deltaY > 0 ? 0.9 : 1.1);
     draw();
   }, {passive:false});
+
+  // Prevent default double-click behavior ("wobble" / accidental zoom)
+  canvas.addEventListener("dblclick", (e)=>{ e.preventDefault(); }, {passive:false});
 
   canvas.addEventListener("pointerdown", (e)=>{
     canvas.setPointerCapture(e.pointerId);
