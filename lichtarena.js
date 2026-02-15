@@ -91,7 +91,13 @@
 
   // ---------- Load board.json ----------
   async function loadBoard(){
-    const res = await fetch("board.json?v=la2");
+    let res;
+    try {
+      res = await fetch("board_lichtarena.json?v=la3");
+      if (!res.ok) throw new Error("no board_lichtarena.json");
+    } catch (e) {
+      res = await fetch("board.json?v=la3");
+    }
     const b = await res.json();
     S.board = b;
 
@@ -549,13 +555,13 @@
     const h = canvas.height/(window.devicePixelRatio||1);
     ctx.clearRect(0,0,w,h);
 
-    // bounds
+    // bounds in board space
     let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     for (const n of S.nodes){
       minX=Math.min(minX,n.x); minY=Math.min(minY,n.y);
       maxX=Math.max(maxX,n.x); maxY=Math.max(maxY,n.y);
     }
-    const pad=40;
+    const pad=70;
     const bw=Math.max(1,maxX-minX), bh=Math.max(1,maxY-minY);
     const sx=(w-pad*2)/bw, sy=(h-pad*2)/bh;
     const scale=Math.min(sx,sy);
@@ -565,9 +571,43 @@
     const X=(x)=>x*scale+ox;
     const Y=(y)=>y*scale+oy;
 
+    // --- Background grid (like designer) ---
+    const grid = (S.board?.ui?.gridSize ?? 20);
+    // draw in screen space using board coordinates to align
+    ctx.save();
+    ctx.lineWidth = 1;
+    // compute visible grid range in board units
+    const inv = 1/scale;
+    const left = (0 - ox)*inv;
+    const top  = (0 - oy)*inv;
+    const right= (w - ox)*inv;
+    const bot  = (h - oy)*inv;
+    const startGX = Math.floor(left/grid)*grid;
+    const endGX   = Math.ceil(right/grid)*grid;
+    const startGY = Math.floor(top/grid)*grid;
+    const endGY   = Math.ceil(bot/grid)*grid;
+
+    for (let gx=startGX; gx<=endGX; gx+=grid){
+      const major = (Math.round(gx/grid) % 5 === 0);
+      ctx.strokeStyle = major ? "rgba(56,189,248,.18)" : "rgba(148,163,184,.08)";
+      ctx.beginPath();
+      ctx.moveTo(X(gx), 0);
+      ctx.lineTo(X(gx), h);
+      ctx.stroke();
+    }
+    for (let gy=startGY; gy<=endGY; gy+=grid){
+      const major = (Math.round(gy/grid) % 5 === 0);
+      ctx.strokeStyle = major ? "rgba(56,189,248,.18)" : "rgba(148,163,184,.08)";
+      ctx.beginPath();
+      ctx.moveTo(0, Y(gy));
+      ctx.lineTo(w, Y(gy));
+      ctx.stroke();
+    }
+    ctx.restore();
+
     // edges
     ctx.lineWidth=3;
-    ctx.strokeStyle="rgba(148,163,184,.45)";
+    ctx.strokeStyle="rgba(148,163,184,.35)";
     for (const e of S.edges){
       const a=S.nodeById.get(e.a), b=S.nodeById.get(e.b);
       if (!a||!b) continue;
@@ -579,33 +619,79 @@
 
     // nodes
     for (const n of S.nodes){
-      const r = (n.kind==="house") ? 14 : 12;
+      const r = (n.kind==="house") ? 18 : 14;
       const isLight = (S.light===n.id);
       const hasBarr = S.barricades.has(n.id);
-      const isSel = isLight;
+      const isGoal = !!(n.flags && n.flags.goal);
+      const specialType = String(n.flags?.specialType || "");
+      const isEvent = !!(specialType==="event" || n.flags?.event===true || n.flags?.isEvent===true);
+      const isBoost = !!(specialType==="boost" || n.flags?.boost===true || n.flags?.boostSteps);
 
+      // light glow
       if (isLight){
         ctx.beginPath();
-        ctx.arc(X(n.x),Y(n.y), (r+10), 0, Math.PI*2);
+        ctx.arc(X(n.x),Y(n.y), (r+14), 0, Math.PI*2);
         ctx.fillStyle = "rgba(34,197,94,.12)";
         ctx.fill();
       }
 
+      // base fill
       ctx.beginPath();
       ctx.arc(X(n.x),Y(n.y), r, 0, Math.PI*2);
-      ctx.fillStyle = (n.kind==="house") ? "rgba(59,130,246,.10)" : "rgba(15,23,42,.65)";
+      if (n.kind==="house"){
+        ctx.fillStyle = "rgba(59,130,246,.10)";
+      } else {
+        ctx.fillStyle = "rgba(15,23,42,.70)";
+      }
       ctx.fill();
 
+      // border
       ctx.lineWidth = isLight ? 4 : 3;
-      ctx.strokeStyle = isLight ? "rgba(34,197,94,.85)" : "rgba(148,163,184,.55)";
+      ctx.strokeStyle = isLight ? "rgba(34,197,94,.85)" : "rgba(148,163,184,.60)";
       ctx.stroke();
 
+      // goal ring
+      if (isGoal){
+        ctx.beginPath();
+        ctx.arc(X(n.x),Y(n.y), r+6, 0, Math.PI*2);
+        ctx.strokeStyle="rgba(245,158,11,.55)";
+        ctx.lineWidth=3;
+        ctx.stroke();
+      }
+
+      // special rings
+      if (isEvent){
+        ctx.beginPath();
+        ctx.arc(X(n.x),Y(n.y), r+4, 0, Math.PI*2);
+        ctx.strokeStyle="rgba(59,130,246,.75)";
+        ctx.lineWidth=3;
+        ctx.stroke();
+      }
+      if (isBoost){
+        ctx.beginPath();
+        ctx.arc(X(n.x),Y(n.y), r+4, 0, Math.PI*2);
+        ctx.strokeStyle="rgba(34,197,94,.65)";
+        ctx.lineWidth=3;
+        ctx.stroke();
+      }
+
+      // barricade mark
       if (hasBarr){
         ctx.beginPath();
-        ctx.arc(X(n.x),Y(n.y), r*0.65, 0, Math.PI*2);
+        ctx.arc(X(n.x),Y(n.y), r*0.70, 0, Math.PI*2);
         ctx.strokeStyle="rgba(239,68,68,.85)";
         ctx.lineWidth=3;
         ctx.stroke();
+      }
+
+      // labels (id numbers / E / B+3)
+      const label = getNodeLabel(n);
+      if (label){
+        ctx.font = `${Math.max(10, Math.min(13, r))}px ui-monospace, monospace`;
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillStyle="rgba(226,232,240,.85)";
+        ctx.fillText(label, X(n.x), Y(n.y));
       }
     }
 
@@ -615,17 +701,38 @@
       if (!n) continue;
       const sel = (S.selectedPiece===pc.id);
       ctx.beginPath();
-      ctx.arc(X(n.x),Y(n.y), 7, 0, Math.PI*2);
-      ctx.fillStyle = colorTo(pc.color, .85);
+      ctx.arc(X(n.x),Y(n.y), 8, 0, Math.PI*2);
+      ctx.fillStyle = colorTo(pc.color, .90);
       ctx.fill();
       if (sel){
         ctx.beginPath();
-        ctx.arc(X(n.x),Y(n.y), 12, 0, Math.PI*2);
+        ctx.arc(X(n.x),Y(n.y), 14, 0, Math.PI*2);
         ctx.strokeStyle="rgba(255,255,255,.85)";
         ctx.lineWidth=2;
         ctx.stroke();
       }
     }
+  }
+
+  function getNodeLabel(n){
+    const f = n.flags || {};
+    // priority: explicit label
+    if (typeof f.label === "string" && f.label.trim()) return f.label.trim();
+    // event/boost shortcuts
+    const st = String(f.specialType || "");
+    if (st === "event") return "E";
+    if (st === "boost"){
+      const s = f.boostSteps ?? 3;
+      return `B+${s}`;
+    }
+    // prefer numeric part of id
+    const m = String(n.id).match(/(\d+)/g);
+    if (m && m.length){
+      const last = m[m.length-1];
+      // keep short
+      if (last.length <= 3) return last;
+    }
+    return "";
   }
 
   function colorTo(c,a){
