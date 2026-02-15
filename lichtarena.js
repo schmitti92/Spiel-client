@@ -300,7 +300,7 @@
     pieces: [], // {id,owner,color,nodeId}
     selectedPiece: null,
 
-    phase: "need_roll", // need_roll | need_piece | moving | place_barricade | j2_pick_source | j2_pick_target
+    phase: "need_roll", // need_roll | need_piece | choose_target | place_barricade | j2_pick_source | j2_pick_target
     stepsLeft: 0,
     rollValue: null,
 
@@ -687,43 +687,54 @@ async function loadBoard(){
     return false;
   }
 
-  function tryStepTo(targetNodeId){
-    if (S.phase !== "moving") return;
+  function reachableExact(fromId, steps){
+    // Returns a Set of nodeIds reachable in EXACTLY `steps` moves.
+    // Respects barricades unless Joker 5 is active for current player.
+    let frontier = new Set([fromId]);
+    for (let i=0;i<steps;i++){
+      const next = new Set();
+      for (const v of frontier){
+        const neighbors = S.adj.get(v) || [];
+        for (const nb of neighbors){
+          if (!canEnter(nb)) continue;
+          next.add(nb);
+        }
+      }
+      frontier = next;
+      if (!frontier.size) break;
+    }
+    return frontier;
+  }
+
+  function tryMoveTo(targetNodeId){
+    if (S.phase !== "choose_target") return;
     const pl = currentPlayer();
     const piece = S.pieces.find(pc => pc.id === S.selectedPiece);
     if (!piece) return;
 
-    if (S.stepsLeft <= 0){
+    const steps = S.stepsLeft || 0;
+    if (steps <= 0){
       log("ℹ️ Keine Schritte mehr übrig.");
       return;
     }
 
-    const from = piece.nodeId;
-    const neighbors = S.adj.get(from) || [];
-    if (!neighbors.includes(targetNodeId)) return;
-
-    if (!canEnter(targetNodeId)){
-      log("⛔ Barikade blockiert. (Nur mit Joker 5 überschreitbar)");
+    const reachable = reachableExact(piece.nodeId, steps);
+    if (!reachable.has(targetNodeId)){
+      log(`⛔ Ziel nicht erreichbar in genau ${steps} Schritt(en).`);
       return;
     }
 
     piece.nodeId = targetNodeId;
-    S.stepsLeft -= 1;
-    log(`➡️ ${pl.color} Schritt auf ${targetNodeId} (Rest: ${S.stepsLeft})`);
+    S.stepsLeft = 0;
+    log(`➡️ ${pl.color} läuft direkt auf ${targetNodeId} (Wurf: ${S.rollValue}).`);
 
     // handle arrival effects (score/event)
     const handled = onReachNode(piece, targetNodeId);
     if (handled) return;
 
-    // finished movement?
-    if (S.stepsLeft <= 0){
-      endTurn("Zug fertig");
-      return;
-    }
-
-    syncUI();
-    draw();
+    endTurn("Zug fertig");
   }
+
 
   // ---------- Barricades ----------
   function placeBarricade(nodeId){
@@ -1082,20 +1093,13 @@ async function loadBoard(){
     const ox = CAM.ox;
     const oy = CAM.oy;
 
-    // Hit-test should feel like "Google-Maps level":
-    // you shouldn't need to click the exact center; being on the circle is enough.
-    // We therefore accept clicks only when the cursor is INSIDE a node's visible radius
-    // (plus a small margin), and pick the closest among hit nodes.
-    const HIT_MARGIN = 8; // px
     let best=null, bestD=1e9;
     for (const n of S.nodes){
       const x=n.x*scale+ox, y=n.y*scale+oy;
       const d=Math.hypot(x-sx,y-sy);
-      const k = String(n.kind).toLowerCase();
-      const r = ((k==="house" || k==="start") ? 18 : 14) + HIT_MARGIN;
-      if (d <= r && d < bestD){ bestD=d; best=n; }
+      if (d<bestD){ bestD=d; best=n; }
     }
-    if (!best) return;
+    if (!best || bestD>24) return;
     const nodeId = best.id;
 
     // special phases
@@ -1105,25 +1109,25 @@ async function loadBoard(){
     const pl = currentPlayer();
 
     // pick own piece
-    if (S.phase === "need_piece"){
-      const pcsHere = S.pieces.filter(pc => pc.nodeId===nodeId && pc.owner===pl.id);
-      if (!pcsHere.length){
-        log("ℹ️ Wähle eine eigene Figur.");
-        return;
-      }
-      S.selectedPiece = pcsHere[0].id;
-      S.phase = "moving";
-      log(`✅ Figur gewählt (${S.selectedPiece}). Jetzt Schritt für Schritt klicken. (Rest: ${S.stepsLeft})`);
-      syncUI(); draw();
-      return;
-    }
+if (S.phase === "need_piece"){
+  const pcsHere = S.pieces.filter(pc => pc.nodeId===nodeId && pc.owner===pl.id);
+  if (!pcsHere.length){
+    log("ℹ️ Wähle eine eigene Figur.");
+    return;
+  }
+  S.selectedPiece = pcsHere[0].id;
+  S.phase = "choose_target";
+  log(`✅ Figur gewählt (${S.selectedPiece}). Klick jetzt ein Ziel-Feld, das GENAU ${S.stepsLeft} Schritte entfernt ist.`);
+  syncUI(); draw();
+  return;
+}
 
-    // move step
-    if (S.phase === "moving" && S.selectedPiece){
-      tryStepTo(nodeId);
-      syncUI(); draw();
-      return;
-    }
+// choose target (move directly)
+if (S.phase === "choose_target" && S.selectedPiece){
+  tryMoveTo(nodeId);
+  syncUI(); draw();
+  return;
+}
   });
 
   // ---------- Buttons ----------
