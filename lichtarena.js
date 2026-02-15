@@ -1078,16 +1078,15 @@ async function loadBoard(){
     return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
   }
 
-  // ---------- Click handling ----------
-  canvas.addEventListener("click", (ev)=>{
-    if (!S.board) return;
+  // ---------- Tap/Click handling (pointerup for precise hit-testing) ----------
+  // Using pointerup avoids some browsers reporting slightly shifted "click" coords.
+  // It also plays nicely with our drag-threshold pan (Google-Maps feel).
+  function getCanvasPosFromEvent(e){
     const rect = canvas.getBoundingClientRect();
-    const sx = ev.clientX - rect.left;
-    const sy = ev.clientY - rect.top;
+    return { sx: e.clientX - rect.left, sy: e.clientY - rect.top };
+  }
 
-     // If the user was panning, ignore the click (prevents accidental moves).
-     if (PZ.suppressClick) return;
-
+  function hitTestNode(sx, sy){
     // nearest node in current camera screen space
     const scale = CAM.scale;
     const ox = CAM.ox;
@@ -1099,8 +1098,42 @@ async function loadBoard(){
       const d=Math.hypot(x-sx,y-sy);
       if (d<bestD){ bestD=d; best=n; }
     }
-    if (!best || bestD>24) return;
-    const nodeId = best.id;
+    // Slightly generous hit radius so the cursor "feels" like it matches the field.
+    const HIT_PX = 28;
+    if (!best || bestD>HIT_PX) return null;
+    return best.id;
+  }
+
+  function hitTestOwnPiece(sx, sy){
+    const pl = currentPlayer();
+    if (!pl) return null;
+    const scale = CAM.scale;
+    const ox = CAM.ox;
+    const oy = CAM.oy;
+
+    const PIECE_HIT_PX = 16; // click directly on the piece, not only "above the field"
+    let bestPc = null, bestD = 1e9;
+
+    for (const pc of S.pieces){
+      if (pc.owner !== pl.id) continue;
+      const n = S.nodeById.get(pc.nodeId);
+      if (!n) continue;
+      const x = n.x*scale+ox, y = n.y*scale+oy;
+      const d = Math.hypot(x-sx, y-sy);
+      if (d < bestD){
+        bestD = d;
+        bestPc = pc;
+      }
+    }
+    if (!bestPc || bestD > PIECE_HIT_PX) return null;
+    return bestPc;
+  }
+
+  function handleBoardTap(sx, sy){
+    if (!S.board) return;
+
+    const nodeId = hitTestNode(sx, sy);
+    if (!nodeId) return;
 
     // special phases
     if (S.phase === "place_barricade"){ placeBarricade(nodeId); return; }
@@ -1108,29 +1141,38 @@ async function loadBoard(){
 
     const pl = currentPlayer();
 
-    // pick own piece
-if (S.phase === "need_piece"){
-  const pcsHere = S.pieces.filter(pc => pc.nodeId===nodeId && pc.owner===pl.id);
-  if (!pcsHere.length){
-    log("ℹ️ Wähle eine eigene Figur.");
-    return;
-  }
-  S.selectedPiece = pcsHere[0].id;
-  S.phase = "choose_target";
-  log(`✅ Figur gewählt (${S.selectedPiece}). Klick jetzt ein Ziel-Feld, das GENAU ${S.stepsLeft} Schritte entfernt ist.`);
-  syncUI(); draw();
-  return;
-}
+    // pick own piece (prefer piece-hit, then node-hit)
+    if (S.phase === "need_piece"){
+      const pc = hitTestOwnPiece(sx, sy);
+      const pcsHere = pc ? [pc] : S.pieces.filter(p=>p.nodeId===nodeId && p.owner===pl.id);
+      if (!pcsHere.length){
+        log("ℹ️ Wähle eine eigene Figur.");
+        return;
+      }
+      S.selectedPiece = pcsHere[0].id;
+      S.phase = "moving";
+      log(`✅ Figur gewählt (${S.selectedPiece}). Jetzt Ziel-Feld klicken.`); 
+      syncUI(); draw();
+      return;
+    }
 
-// choose target (move directly)
-if (S.phase === "choose_target" && S.selectedPiece){
-  tryMoveTo(nodeId);
-  syncUI(); draw();
-  return;
-}
+    // move direct
+    if (S.phase === "moving" && S.selectedPiece){
+      tryMoveDirectTo(nodeId); // created in direct-move patch
+      syncUI(); draw();
+      return;
+    }
+  }
+
+  canvas.addEventListener("pointerup", (e)=>{
+    // If we dragged/panned, suppress the tap.
+    if (PZ.suppressClick) return;
+    // Only react to primary button / touch.
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const {sx, sy} = getCanvasPosFromEvent(e);
+    handleBoardTap(sx, sy);
   });
 
-  // ---------- Buttons ----------
   ui.playersSel.onchange = ()=>{
     S.playerCount = parseInt(ui.playersSel.value,10);
     ui.pCount.textContent = String(S.playerCount);
