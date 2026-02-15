@@ -47,8 +47,8 @@
     barricadeMax: 15,
     respawnAfterTurnsPerPlayer: 5,
     spawnWeights: { center: 0.50, mid: 0.30, outer: 0.20 },
-    forbidSpawnKinds: new Set(["house"]), // startfields
-    forbidBarricadeKinds: new Set(["house"]),
+    forbidSpawnKinds: new Set(["house","start"]), // startfields
+    forbidBarricadeKinds: new Set(["house","start"]),
     spawnDifferentFromLast: true,
     diceSides: 6,
   };
@@ -139,7 +139,7 @@
 async function loadBoard(){
     let res;
     try {
-      res = await fetch("board_lichtarena.json?v=la3");
+      res = await fetch("board_lichtarena.json?v=la4");
       if (!res.ok) throw new Error("no board_lichtarena.json");
     } catch (e) {
       res = await fetch("board.json?v=la3");
@@ -154,6 +154,12 @@ async function loadBoard(){
         kind: n.kind || n.type || "board",
         x: n.x ?? n.pos?.x ?? 0,
         y: n.y ?? n.pos?.y ?? 0,
+        // Board-Designer / Barikade-Kompat:
+        color: (n.color || n.flags?.houseColor || "").toLowerCase(),
+        label: n.label ?? "",
+        specialType: n.specialType ?? n.flags?.specialType ?? "",
+        boostSteps: (n.boostSteps ?? n.flags?.boostSteps ?? null),
+        eventDeckId: (n.eventDeckId ?? n.flags?.eventDeckId ?? ""),
         flags: n.flags || {},
       }));
     } else {
@@ -162,6 +168,11 @@ async function loadBoard(){
         kind: n.kind || n.type || "board",
         x: n.x ?? n.pos?.x ?? 0,
         y: n.y ?? n.pos?.y ?? 0,
+        color: (n.color || n.flags?.houseColor || "").toLowerCase(),
+        label: n.label ?? "",
+        specialType: n.specialType ?? n.flags?.specialType ?? "",
+        boostSteps: (n.boostSteps ?? n.flags?.boostSteps ?? null),
+        eventDeckId: (n.eventDeckId ?? n.flags?.eventDeckId ?? ""),
         flags: n.flags || {},
       }));
     }
@@ -220,26 +231,69 @@ async function loadBoard(){
   // Pieces: 4 per player on house nodes for that color (fallback: any non-start)
   function resetPieces(){
     const pieces = [];
-    const housesByColor = new Map();
+
+    // Startfelder pro Farbe sammeln (Board-Designer: kind="start" + color)
+    const startsByColor = new Map();
     for (const n of S.nodes){
-      if (n.kind === "house"){
-        const c = String(n.flags?.houseColor || "").toLowerCase();
-        if (!housesByColor.has(c)) housesByColor.set(c, []);
-        housesByColor.get(c).push(n.id);
+      if (String(n.kind).toLowerCase() === "start"){
+        const c = String(n.color || n.flags?.houseColor || "").toLowerCase();
+        if (!startsByColor.has(c)) startsByColor.set(c, []);
+        startsByColor.get(c).push(n.id);
       }
     }
+
+    // stabil sortieren, damit Startfeld-Positionen immer gleich bleiben (nicht "wandern")
+    for (const [c, arr] of startsByColor.entries()){
+      arr.sort((a,b)=>a-b);
+      startsByColor.set(c, arr);
+    }
+
+    // 6 Figuren pro Spieler:
+    // - 5 Stück auf die 5 Startfelder (falls vorhanden)
+    // - 6. Figur: zufällig auf ein normales Feld (nicht Start, nicht Special) -> unbesetzt
+    const PIECES_PER_PLAYER = 6;
+    const START_PIECES = 5;
+
     for (const p of S.players){
-      const houses = housesByColor.get(p.color) || [];
-      for (let i=0;i<4;i++){
+      const starts = startsByColor.get(p.color) || [];
+      // Start-5
+      for (let i=0;i<Math.min(START_PIECES, PIECES_PER_PLAYER);i++){
         pieces.push({
           id: `pc_${p.color}_${i+1}`,
           owner: p.id,
           color: p.color,
-          nodeId: houses[i] || houses[0] || pickAnyNonStartNodeId(),
+          nodeId: starts[i] ?? starts[0] ?? pickRandomNormalNodeId(pieces),
+        });
+      }
+      // 6te (random)
+      if (PIECES_PER_PLAYER > START_PIECES){
+        pieces.push({
+          id: `pc_${p.color}_${START_PIECES+1}`,
+          owner: p.id,
+          color: p.color,
+          nodeId: pickRandomNormalNodeId(pieces),
         });
       }
     }
+
     S.pieces = pieces;
+  }
+
+  function pickRandomNormalNodeId(existingPieces){
+    const occupied = new Set((existingPieces || S.pieces || []).map(pc => pc.nodeId));
+    const arr = S.nodes
+      .filter(n => String(n.kind).toLowerCase() === "normal") // NUR normale Felder
+      .filter(n => !occupied.has(n.id))
+      .map(n => n.id);
+
+    // Fallback (sollte nicht passieren): irgendein Nicht-Start
+    if (!arr.length){
+      const fallback = S.nodes
+        .filter(n => !RULES.forbidSpawnKinds.has(String(n.kind).toLowerCase() === "start" ? "start" : n.kind))
+        .map(n=>n.id);
+      return fallback[Math.floor(Math.random()*fallback.length)];
+    }
+    return arr[Math.floor(Math.random()*arr.length)];
   }
 
   function pickAnyNonStartNodeId(){
@@ -665,7 +719,7 @@ async function loadBoard(){
 
     // nodes
     for (const n of S.nodes){
-      const r = (n.kind==="house") ? 18 : 14;
+      const r = (n.kind==="house"||n.kind==="start") ? 18 : 14;
       const isLight = (S.light===n.id);
       const hasBarr = S.barricades.has(n.id);
       const isGoal = !!(n.flags && n.flags.goal);
@@ -684,7 +738,7 @@ async function loadBoard(){
       // base fill
       ctx.beginPath();
       ctx.arc(X(n.x),Y(n.y), r, 0, Math.PI*2);
-      if (n.kind==="house"){
+      if (n.kind==="house"||n.kind==="start" || n.kind==="start"){
         ctx.fillStyle = "rgba(59,130,246,.10)";
       } else {
         ctx.fillStyle = "rgba(15,23,42,.70)";
