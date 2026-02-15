@@ -1,73 +1,173 @@
-
-
-// --- Camera / Pan&Zoom (LA_PANZOOM) ---
-const CAM = {
-  scale: 1,
-  ox: 0,
-  oy: 0,
-  minScale: 0.15,
-  maxScale: 3.2,
-  isDragging: false,
-  dragStartX: 0,
-  dragStartY: 0,
-  dragStartOX: 0,
-  dragStartOY: 0,
-  hasManual: false
-};
-
-function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-
-function fitCamera(pad=70){
-  if (!S.board || !S.nodes || !S.nodes.length) return;
-  const w = canvas.width/(window.devicePixelRatio||1);
-  const h = canvas.height/(window.devicePixelRatio||1);
-  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  for (const n of S.nodes){
-    minX=Math.min(minX,n.x); minY=Math.min(minY,n.y);
-    maxX=Math.max(maxX,n.x); maxY=Math.max(maxY,n.y);
-  }
-  const bw=Math.max(1,maxX-minX), bh=Math.max(1,maxY-minY);
-  const sx=(w-pad*2)/bw, sy=(h-pad*2)/bh;
-  const scale=Math.min(sx,sy);
-  CAM.scale = clamp(scale, CAM.minScale, CAM.maxScale);
-  CAM.ox = pad - minX*CAM.scale;
-  CAM.oy = pad - minY*CAM.scale;
-  CAM.hasManual = false;
-  updateZoomLabel();
-}
-
-function screenToWorld(px, py){
-  return { x: (px - CAM.ox)/CAM.scale, y: (py - CAM.oy)/CAM.scale };
-}
-
-function zoomAt(px, py, factor){
-  const old = CAM.scale;
-  const neu = clamp(old * factor, CAM.minScale, CAM.maxScale);
-  if (neu === old) return;
-  const wpt = screenToWorld(px, py);
-  CAM.scale = neu;
-  CAM.ox = px - wpt.x * neu;
-  CAM.oy = py - wpt.y * neu;
-  CAM.hasManual = true;
-  updateZoomLabel();
-}
-
-function panBy(dx, dy){
-  CAM.ox += dx;
-  CAM.oy += dy;
-  CAM.hasManual = true;
-}
-
-function updateZoomLabel(){
-  const el = document.getElementById("zoomLabel");
-  if (!el) return;
-  el.textContent = Math.round(CAM.scale*100) + "%";
-}
 (() => {
   const $ = (id) => document.getElementById(id);
 
   const canvas = $("c");
   const ctx = canvas.getContext("2d");
+
+  // =========================
+  // Camera (Pan/Zoom)
+  // =========================
+  // Additive UX improvement (no rule changes):
+  // - PC: Space + Drag to pan, Mousewheel to zoom.
+  // - Tablet/Touch: 2-finger drag to pan, pinch to zoom.
+  const CAM = {
+    scale: 1,
+    ox: 0,
+    oy: 0,
+    minScale: 0.15,
+    maxScale: 6,
+    autoFit: true,
+  };
+
+  function fitCamera(viewW, viewH){
+    if (!S.board || !S.nodes || !S.nodes.length) return;
+    const pad = 70;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    for (const n of S.nodes){
+      minX=Math.min(minX,n.x); minY=Math.min(minY,n.y);
+      maxX=Math.max(maxX,n.x); maxY=Math.max(maxY,n.y);
+    }
+    const bw=Math.max(1, maxX-minX);
+    const bh=Math.max(1, maxY-minY);
+    const sx=(viewW-pad*2)/bw;
+    const sy=(viewH-pad*2)/bh;
+    CAM.scale = clamp(Math.min(sx,sy), CAM.minScale, CAM.maxScale);
+    CAM.ox = pad - minX*CAM.scale;
+    CAM.oy = pad - minY*CAM.scale;
+  }
+
+  function screenToBoard(sx, sy){
+    return { x: (sx - CAM.ox) / CAM.scale, y: (sy - CAM.oy) / CAM.scale };
+  }
+  function zoomAt(sx, sy, factor){
+    const before = screenToBoard(sx, sy);
+    CAM.scale = clamp(CAM.scale * factor, CAM.minScale, CAM.maxScale);
+    const after = screenToBoard(sx, sy);
+    // keep point under cursor stable
+    CAM.ox += (after.x - before.x) * CAM.scale;
+    CAM.oy += (after.y - before.y) * CAM.scale;
+    CAM.autoFit = false;
+  }
+
+  const PZ = {
+    spaceDown: false,
+    isPanning: false,
+    lastX: 0,
+    lastY: 0,
+    pointers: new Map(),
+    pinchStartDist: 0,
+    pinchStartScale: 1,
+  };
+
+  window.addEventListener("keydown", (e)=>{
+    if (e.code === "Space"){
+      PZ.spaceDown = true;
+      if (e.target === document.body) e.preventDefault();
+    }
+  }, {passive:false});
+  window.addEventListener("keyup", (e)=>{
+    if (e.code === "Space") PZ.spaceDown = false;
+  });
+
+  canvas.addEventListener("wheel", (e)=>{
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    zoomAt(sx, sy, e.deltaY > 0 ? 0.9 : 1.1);
+    draw();
+  }, {passive:false});
+
+  canvas.addEventListener("pointerdown", (e)=>{
+    canvas.setPointerCapture(e.pointerId);
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    PZ.pointers.set(e.pointerId, {x:sx,y:sy,type:e.pointerType});
+
+    // Touch: pan/zoom only when 2 fingers are down
+    if (e.pointerType === "touch"){
+      if (PZ.pointers.size === 2){
+        const pts = [...PZ.pointers.values()];
+        const dx = pts[0].x - pts[1].x;
+        const dy = pts[0].y - pts[1].y;
+        PZ.pinchStartDist = Math.hypot(dx,dy) || 1;
+        PZ.pinchStartScale = CAM.scale;
+        PZ.isPanning = true;
+        PZ.lastX = (pts[0].x + pts[1].x)/2;
+        PZ.lastY = (pts[0].y + pts[1].y)/2;
+        CAM.autoFit = false;
+      }
+      return;
+    }
+
+    // Mouse: Space + Drag (or middle mouse) pans
+    const isMiddle = (e.button === 1);
+    if (PZ.spaceDown || isMiddle){
+      PZ.isPanning = true;
+      PZ.lastX = sx;
+      PZ.lastY = sy;
+      CAM.autoFit = false;
+      e.preventDefault();
+    }
+  });
+
+  canvas.addEventListener("pointermove", (e)=>{
+    if (!PZ.pointers.has(e.pointerId)) return;
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+    PZ.pointers.set(e.pointerId, {x:sx,y:sy,type:e.pointerType});
+
+    // Touch: 2-finger pan + pinch
+    const touches = [...PZ.pointers.values()].filter(p=>p.type==="touch");
+    if (touches.length >= 2){
+      const a = touches[0], b = touches[1];
+      const midX = (a.x + b.x)/2;
+      const midY = (a.y + b.y)/2;
+      const pdx = midX - PZ.lastX;
+      const pdy = midY - PZ.lastY;
+      CAM.ox += pdx;
+      CAM.oy += pdy;
+      PZ.lastX = midX;
+      PZ.lastY = midY;
+
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const dist = Math.hypot(dx,dy) || 1;
+      const factor = dist / (PZ.pinchStartDist || 1);
+      const targetScale = clamp(PZ.pinchStartScale * factor, CAM.minScale, CAM.maxScale);
+      const before = screenToBoard(midX, midY);
+      CAM.scale = targetScale;
+      const after = screenToBoard(midX, midY);
+      CAM.ox += (after.x - before.x) * CAM.scale;
+      CAM.oy += (after.y - before.y) * CAM.scale;
+
+      draw();
+      return;
+    }
+
+    // Mouse pan
+    if (!PZ.isPanning) return;
+    const dx = sx - PZ.lastX;
+    const dy = sy - PZ.lastY;
+    PZ.lastX = sx;
+    PZ.lastY = sy;
+    CAM.ox += dx;
+    CAM.oy += dy;
+    draw();
+  });
+
+  function stopPointer(e){
+    PZ.pointers.delete(e.pointerId);
+    const touches = [...PZ.pointers.values()].filter(p=>p.type==="touch");
+    if (touches.length < 2){
+      PZ.isPanning = false;
+      PZ.pinchStartDist = 0;
+    }
+  }
+  canvas.addEventListener("pointerup", stopPointer);
+  canvas.addEventListener("pointercancel", stopPointer);
 
   const ui = {
     pCount: $("pCount"),
@@ -710,6 +810,9 @@ async function loadBoard(){
     canvas.width = Math.round(rect.width*dpr);
     canvas.height= Math.round(rect.height*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
+    if (CAM.autoFit){
+      fitCamera(rect.width, rect.height);
+    }
     draw();
   }
   window.addEventListener("resize", resize);
@@ -720,19 +823,16 @@ async function loadBoard(){
     const h = canvas.height/(window.devicePixelRatio||1);
     ctx.clearRect(0,0,w,h);
 
-    // bounds in board space
-    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-    for (const n of S.nodes){
-      minX=Math.min(minX,n.x); minY=Math.min(minY,n.y);
-      maxX=Math.max(maxX,n.x); maxY=Math.max(maxY,n.y);
-    }
-    // first-time fit or after load
-    if (!CAM.hasManual && (CAM.scale===1 && CAM.ox===0 && CAM.oy===0)){
-      fitCamera(70);
+    // Auto-fit once after load/reset, then keep manual pan/zoom.
+    if (CAM.autoFit){
+      fitCamera(w,h);
     }
 
-    const X=(x)=>x*CAM.scale+CAM.ox;
-    const Y=(y)=>y*CAM.scale+CAM.oy;
+    const scale = CAM.scale;
+    const ox = CAM.ox;
+    const oy = CAM.oy;
+    const X=(x)=>x*scale+ox;
+    const Y=(y)=>y*scale+oy;
 
     // --- Background grid (like designer) ---
     const grid = (S.board?.ui?.gridSize ?? 20);
@@ -911,14 +1011,13 @@ async function loadBoard(){
     const sx = ev.clientX - rect.left;
     const sy = ev.clientY - rect.top;
 
-    // nearest node in screen space
-    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-    for (const n of S.nodes){ minX=Math.min(minX,n.x); minY=Math.min(minY,n.y); maxX=Math.max(maxX,n.x); maxY=Math.max(maxY,n.y); }
-    const pad=40;
-    const bw=Math.max(1,maxX-minX), bh=Math.max(1,maxY-minY);
-    const scale=Math.min((rect.width-pad*2)/bw, (rect.height-pad*2)/bh);
-    const ox=pad - minX*scale;
-    const oy=pad - minY*scale;
+     // If the user was panning (Space+Drag / 2-finger), ignore the click.
+     if (PZ.isPanning) return;
+
+    // nearest node in current camera screen space
+    const scale = CAM.scale;
+    const ox = CAM.ox;
+    const oy = CAM.oy;
 
     let best=null, bestD=1e9;
     for (const n of S.nodes){
@@ -995,12 +1094,15 @@ async function loadBoard(){
     spawnLight("Spielstart");
     startTurn();
     syncUI();
+    CAM.autoFit = true;
+    resize();
     draw();
     log("✅ Lichtarena Offline v2 bereit (Würfel + Schrittbewegung + Joker 3/4).");
   }
 
   (async function init(){
     await loadBoard();
+    CAM.autoFit = true;
     resize();
     S.playerCount = parseInt(ui.playersSel.value,10);
     resetPlayers();
@@ -1012,115 +1114,3 @@ async function loadBoard(){
     log("✅ Lichtarena Offline v2 bereit.");
   })();
 })();
-
-// --- LA_PANZOOM_EVENTS ---
-let SPACE_DOWN = false;
-document.addEventListener("keydown", (e)=>{
-  if (e.code === "Space"){ SPACE_DOWN = true; e.preventDefault(); }
-});
-document.addEventListener("keyup", (e)=>{
-  if (e.code === "Space"){ SPACE_DOWN = false; }
-});
-
-// Wheel zoom (mouse / trackpad). Ctrl+wheel also works.
-canvas.addEventListener("wheel", (e)=>{
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  const px = (e.clientX - rect.left);
-  const py = (e.clientY - rect.top);
-  const delta = e.deltaY;
-  const factor = delta > 0 ? 0.90 : 1.11;
-  zoomAt(px, py, factor);
-  draw();
-}, { passive:false });
-
-// Space + drag to pan (PC)
-canvas.addEventListener("mousedown", (e)=>{
-  if (!SPACE_DOWN) return;
-  CAM.isDragging = true;
-  CAM.dragStartX = e.clientX;
-  CAM.dragStartY = e.clientY;
-  CAM.dragStartOX = CAM.ox;
-  CAM.dragStartOY = CAM.oy;
-});
-window.addEventListener("mousemove", (e)=>{
-  if (!CAM.isDragging) return;
-  const dx = e.clientX - CAM.dragStartX;
-  const dy = e.clientY - CAM.dragStartY;
-  CAM.ox = CAM.dragStartOX + dx;
-  CAM.oy = CAM.dragStartOY + dy;
-  CAM.hasManual = true;
-  draw();
-});
-window.addEventListener("mouseup", ()=>{ CAM.isDragging = false; });
-
-// Touch pinch + pan (tablet/phone) - 2 fingers
-const pointers = new Map();
-let pinchStartDist = 0;
-let pinchStartScale = 1;
-let pinchStartOX = 0;
-let pinchStartOY = 0;
-let pinchCenter = null;
-
-function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
-function center(a,b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
-
-canvas.addEventListener("pointerdown", (e)=>{
-  canvas.setPointerCapture(e.pointerId);
-  pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
-  if (pointers.size === 2){
-    const [p1,p2] = Array.from(pointers.values());
-    pinchStartDist = dist(p1,p2);
-    pinchStartScale = CAM.scale;
-    pinchStartOX = CAM.ox;
-    pinchStartOY = CAM.oy;
-    pinchCenter = center(p1,p2);
-  }
-});
-
-canvas.addEventListener("pointermove", (e)=>{
-  if (!pointers.has(e.pointerId)) return;
-  pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
-
-  if (pointers.size === 2){
-    const [p1,p2] = Array.from(pointers.values());
-    const d = dist(p1,p2);
-    const c = center(p1,p2);
-    const rect = canvas.getBoundingClientRect();
-    const px = c.x - rect.left;
-    const py = c.y - rect.top;
-
-    const factor = (pinchStartDist>0) ? (d / pinchStartDist) : 1;
-    const newScale = clamp(pinchStartScale * factor, CAM.minScale, CAM.maxScale);
-
-    // Zoom around center + pan with center movement
-    const worldAtStart = { x: ( (pinchCenter.x - rect.left) - pinchStartOX)/pinchStartScale,
-                           y: ( (pinchCenter.y - rect.top)  - pinchStartOY)/pinchStartScale };
-
-    CAM.scale = newScale;
-    CAM.ox = px - worldAtStart.x * newScale;
-    CAM.oy = py - worldAtStart.y * newScale;
-
-    CAM.hasManual = true;
-    updateZoomLabel();
-    draw();
-  }
-});
-
-canvas.addEventListener("pointerup", (e)=>{
-  pointers.delete(e.pointerId);
-  if (pointers.size < 2){
-    pinchStartDist = 0;
-    pinchCenter = null;
-  }
-});
-canvas.addEventListener("pointercancel", (e)=>{
-  pointers.delete(e.pointerId);
-});
-
-// Fit button
-document.getElementById("btnFit")?.addEventListener("click", ()=>{
-  fitCamera(70);
-  draw();
-});
-
