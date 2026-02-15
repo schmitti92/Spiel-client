@@ -1082,13 +1082,20 @@ async function loadBoard(){
     const ox = CAM.ox;
     const oy = CAM.oy;
 
+    // Hit-test should feel like "Google-Maps level":
+    // you shouldn't need to click the exact center; being on the circle is enough.
+    // We therefore accept clicks only when the cursor is INSIDE a node's visible radius
+    // (plus a small margin), and pick the closest among hit nodes.
+    const HIT_MARGIN = 8; // px
     let best=null, bestD=1e9;
     for (const n of S.nodes){
       const x=n.x*scale+ox, y=n.y*scale+oy;
       const d=Math.hypot(x-sx,y-sy);
-      if (d<bestD){ bestD=d; best=n; }
+      const k = String(n.kind).toLowerCase();
+      const r = ((k==="house" || k==="start") ? 18 : 14) + HIT_MARGIN;
+      if (d <= r && d < bestD){ bestD=d; best=n; }
     }
-    if (!best || bestD>24) return;
+    if (!best) return;
     const nodeId = best.id;
 
     // special phases
