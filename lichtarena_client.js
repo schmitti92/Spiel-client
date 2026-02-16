@@ -60,6 +60,57 @@
     pinchCenter: {x:0, y:0},
   };
 
+  // ---------- Render bounds (for Fit-to-board) ----------
+  let lastTf = null;
+  let lastBounds = null;
+
+  function getNodeSizePx(){
+    // read CSS var --nodeSize (fallback 84)
+    const v = getComputedStyle(document.documentElement).getPropertyValue("--nodeSize").trim();
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : 84;
+  }
+
+  function computeBoardBounds(tf){
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const n of nodeById.values()) {
+      const p = toStagePoint(n, tf);
+      if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x);
+      maxY = Math.max(maxY, p.y);
+    }
+    if (!Number.isFinite(minX)) return null;
+    return { minX, minY, maxX, maxY };
+  }
+
+  function fitToBoard(pad = 28){
+    if (!panZoom.enabled) return;
+    if (!lastBounds) return;
+
+    const vp = boardViewport.getBoundingClientRect();
+    if (!vp.width || !vp.height) return;
+
+    const nodeSize = getNodeSizePx();
+    const spanX = Math.max(1, (lastBounds.maxX - lastBounds.minX) + nodeSize);
+    const spanY = Math.max(1, (lastBounds.maxY - lastBounds.minY) + nodeSize);
+
+    const scaleX = (vp.width - pad*2) / spanX;
+    const scaleY = (vp.height - pad*2) / spanY;
+    const scale = Math.max(panZoom.minScale, Math.min(panZoom.maxScale, Math.min(scaleX, scaleY)));
+
+    const cx = (lastBounds.minX + lastBounds.maxX) / 2;
+    const cy = (lastBounds.minY + lastBounds.maxY) / 2;
+
+    panZoom.scale = scale;
+    panZoom.tx = (vp.width / 2) - cx * scale;
+    panZoom.ty = (vp.height / 2) - cy * scale;
+
+    applyPanZoom();
+    updateZoomPct();
+  }
+
   function applyPanZoom(){
     if (!panZoom.enabled) return;
     boardPanZoom.style.transform = `translate(${panZoom.tx}px, ${panZoom.ty}px) scale(${panZoom.scale})`;
@@ -460,7 +511,14 @@ const btnToggleEdges = document.getElementById("btnToggleEdges");
 
   function nodeLabel(n) {
     const t = String(n.type || "normal").toLowerCase();
-    if (t === "start") return String(n.color || "start").toUpperCase();
+    if (t === "start") {
+      const c = String(n.color || "").toLowerCase();
+      if (c === "red") return "R";
+      if (c === "blue") return "B";
+      if (c === "green") return "G";
+      if (c === "yellow") return "Y";
+      return "";
+    }
     if (t === "light_start") return "💡";
     if (t === "light_spawn") return "✨";
     if (t === "barricade_fixed") return "B";
