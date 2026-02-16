@@ -17,7 +17,7 @@
   --uiW:380px;
 }
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%; background: var(--bg0); overscroll-behavior: none;}
 body{
   margin:0;
   font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
@@ -107,6 +107,8 @@ body{
     linear-gradient(180deg, rgba(8,10,16,.65), rgba(6,8,12,.72));
   box-shadow: var(--shadow);
   overflow:hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 
 /* subtle grid */
