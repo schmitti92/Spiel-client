@@ -1,6 +1,6 @@
 /* lichtarena_client.js
    Offline-Client für Lichtarena.
-   - lädt ./board.json
+   - lädt ./lichtarena_board_1.json
    - rendert Nodes/Edges
    - verwaltet lokalen Game-State (später leicht server-authoritative zu ersetzen)
 */
@@ -97,7 +97,7 @@
 async function loadBoard() {
   const res = await fetch("./lichtarena_board_1.json", { cache: "no-store" });
    
-    if (!res.ok) throw new Error("board.json konnte nicht geladen werden");
+    if (!res.ok) throw new Error("lichtarena_board_1.json konnte nicht geladen werden");
     const json = await res.json();
     return json;
   }
@@ -113,15 +113,16 @@ async function loadBoard() {
       if (!adjacency.has(a)) adjacency.set(a, []);
       adjacency.get(a).push({ to: b, gate: gate || null });
     };
+    // WICHTIG: gerichtete Kanten (from -> to). Rückwärts ist verboten.
     for (const e of (board.edges || [])) {
       const a = String(e.from), b = String(e.to);
       if (!nodeById.has(a) || !nodeById.has(b)) continue;
       add(a, b, e.gate);
-      add(b, a, e.gate);
     }
   }
 
   // ---------- Rendering ----------
+
   function clearStage() {
     edgesSvg.innerHTML = "";
     // remove node divs
@@ -368,14 +369,47 @@ async function loadBoard() {
       }
     }
 
+    // Wie viele Figuren pro Farbe? -> aus Board-Meta, fallback 5
+    const piecesByColor = { red: 5, blue: 5, green: 5, yellow: 5 };
+    const metaPlayers = board?.meta?.players;
+    if (Array.isArray(metaPlayers)) {
+      for (const p of metaPlayers) {
+        const c = String(p?.color || "").toLowerCase();
+        const k = Number(p?.pieces);
+        if (piecesByColor[c] != null && Number.isFinite(k) && k > 0) {
+          piecesByColor[c] = Math.floor(k);
+        }
+      }
+    }
+
+    // Startfelder pro Farbe nach X sortieren, damit die Reihenfolge stabil ist
+    for (const c of Object.keys(startsByColor)) {
+      startsByColor[c].sort((idA, idB) => {
+        const a = nodeById.get(String(idA));
+        const b = nodeById.get(String(idB));
+        const ax = (a && typeof a.x === "number") ? a.x : 0;
+        const bx = (b && typeof b.x === "number") ? b.x : 0;
+        return ax - bx;
+      });
+    }
+
     const colors = ["red","blue","green","yellow"];
     const pieces = [];
 
     for (const color of colors) {
-      const startList = startsByColor[color];
-      const startNodeId = startList[0] || findAnyNormalNodeId() || findAnyNodeId();
-      for (let i=1;i<=5;i++) {
-        pieces.push({ id: `${color}_${i}`, color, nodeId: startNodeId });
+      const startList = startsByColor[color] || [];
+      const need = piecesByColor[color] ?? 5;
+
+      // Fallback, falls Startfelder fehlen:
+      const fallback = startList[0] || findAnyNormalNodeId() || findAnyNodeId();
+
+      if (startList.length < need) {
+        setStatus(`Warnung: ${color} hat nur ${startList.length} Startfelder, braucht aber ${need}.`, "warn");
+      }
+
+      for (let i = 0; i < need; i++) {
+        const startNodeId = startList[i] || fallback;
+        pieces.push({ id: `${color}_${i+1}`, color, nodeId: startNodeId });
       }
     }
 
@@ -383,7 +417,7 @@ async function loadBoard() {
     gameState.selectedPieceId = pieces[0]?.id || null;
   }
 
-  function findAnyNormalNodeId() {
+  function findAnyNormalNodeId()() {
     for (const n of nodeById.values()) {
       if (String(n.type || "normal").toLowerCase() === "normal") return String(n.id);
     }
