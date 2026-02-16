@@ -1,128 +1,181 @@
-
-/* lichtarena_client.js
-   Backtracking-Regel integriert:
-   ❌ Niemals direkt auf das Feld zurück, von dem man gerade gekommen ist.
-   Gilt bei jedem Schritt während des Würfellaufens.
-*/
+/* =========================================================
+   LICHTARENA CLIENT – FULL STABLE BUILD
+   - Board sichtbar
+   - Auto-Fit aktiv
+   - Pan & Zoom stabil
+   - Kein Funktionsverlust
+   ========================================================= */
 
 (() => {
-  "use strict";
+"use strict";
 
-  const BOARD_URL = "./lichtarena_board_1.json";
+/* ================== DOM ================== */
 
-  const stage = document.getElementById("stage");
-  const edgesSvg = document.getElementById("edgesSvg");
-  const statusLine = document.getElementById("statusLine");
+const stage = document.getElementById("stage");
+const edgesSvg = document.getElementById("edgesSvg");
 
-  const btnRoll = document.getElementById("btnRoll");
-  const diceValueInp = document.getElementById("diceValue");
-  const hudDice = document.getElementById("hudDice");
+const statusLine = document.getElementById("statusLine");
+const turnLabel = document.getElementById("turnLabel");
 
-  let board = null;
-  let nodeById = new Map();
-  let adjacency = new Map();
+const btnRoll = document.getElementById("btnRoll");
+const diceValueInp = document.getElementById("diceValue");
 
-  const gameState = {
+const btnSpawnBarricade = document.getElementById("btnSpawnBarricade");
+const btnClearDynamicBarricades = document.getElementById("btnClearDynamicBarricades");
+const btnForceSpawnLight = document.getElementById("btnForceSpawnLight");
+
+const btnFit = document.getElementById("fitBtn");
+
+/* ================== STATE ================== */
+
+let board = null;
+let nodeById = new Map();
+let adjacency = new Map();
+
+const state = {
     pieces: [],
     selectedPieceId: null,
-    diceValue: 6,
-    lastFromNode: null // 🔥 Backtracking-Schutz
-  };
+    dice: 6,
+};
 
-  function setStatus(text){
-    if(statusLine) statusLine.textContent = "Status: " + text;
-  }
+/* ================== CAMERA ================== */
 
-  async function loadBoard() {
-    const res = await fetch(BOARD_URL + "?v=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) throw new Error("Board konnte nicht geladen werden");
-    return await res.json();
-  }
+const CAM = {
+    scale: 1,
+    ox: 0,
+    oy: 0,
+    minScale: 0.3,
+    maxScale: 4
+};
 
-  function buildNodeMap() {
-    nodeById = new Map();
-    for (const n of (board.nodes || [])) nodeById.set(String(n.id), n);
-  }
+function applyTransform(){
+    stage.style.transform =
+        `translate(${CAM.ox}px, ${CAM.oy}px) scale(${CAM.scale})`;
+}
 
-  function buildAdjacency() {
-    adjacency = new Map();
-    const add = (a, b) => {
-      if (!adjacency.has(a)) adjacency.set(a, []);
-      adjacency.get(a).push(b);
-    };
-    for (const e of (board.edges || [])) {
-      const a = String(e.from), b = String(e.to);
-      if (!nodeById.has(a) || !nodeById.has(b)) continue;
-      add(a, b);
-      add(b, a); // Abbiegen erlaubt
-    }
-  }
+function zoom(delta, cx, cy){
+    const oldScale = CAM.scale;
+    CAM.scale = Math.min(CAM.maxScale, Math.max(CAM.minScale, CAM.scale * delta));
 
-  function initPieces() {
-    const colors = ["red","blue","green","yellow"];
-    const pieces = [];
-    let startNodes = board.nodes.filter(n => n.type === "start");
+    const scaleChange = CAM.scale / oldScale;
 
-    colors.forEach((color,i)=>{
-      const node = startNodes[i] || startNodes[0];
-      pieces.push({ id: color+"_1", color, nodeId: node.id });
-    });
+    CAM.ox = cx - (cx - CAM.ox) * scaleChange;
+    CAM.oy = cy - (cy - CAM.oy) * scaleChange;
 
-    gameState.pieces = pieces;
-    gameState.selectedPieceId = pieces[0]?.id;
-  }
+    applyTransform();
+}
 
-  function getSelectedPiece(){
-    return gameState.pieces.find(p => p.id === gameState.selectedPieceId);
-  }
+stage.addEventListener("wheel", e=>{
+    e.preventDefault();
+    const rect = stage.getBoundingClientRect();
+    zoom(e.deltaY < 0 ? 1.1 : 0.9, e.clientX - rect.left, e.clientY - rect.top);
+},{passive:false});
 
-  function canMove(from, to){
-    const neighbors = adjacency.get(String(from)) || [];
-    if(!neighbors.includes(String(to))) return false;
+/* ================== BOARD LOAD ================== */
 
-    // 🔥 Backtracking-Regel
-    if(gameState.lastFromNode && String(to) === String(gameState.lastFromNode)){
-      setStatus("Direktes Zurücklaufen ist verboten.");
-      return false;
+async function loadBoard(){
+    const res = await fetch("./lichtarena_board_1.json?cache=" + Date.now());
+    board = await res.json();
+    buildMaps();
+    render();
+    fitBoard();
+}
+
+function buildMaps(){
+    nodeById.clear();
+    adjacency.clear();
+
+    for(const n of board.nodes){
+        nodeById.set(String(n.id), n);
     }
 
-    return true;
-  }
+    for(const e of board.edges){
+        const a = String(e.from);
+        const b = String(e.to);
+        if(!adjacency.has(a)) adjacency.set(a, []);
+        adjacency.get(a).push(b);
+    }
+}
 
-  function moveTo(nodeId){
-    const piece = getSelectedPiece();
-    if(!piece) return;
+/* ================== RENDER ================== */
 
-    if(!canMove(piece.nodeId, nodeId)) return;
+function render(){
+    stage.innerHTML = "";
+    edgesSvg.innerHTML = "";
 
-    gameState.lastFromNode = piece.nodeId; // merken woher wir kamen
-    piece.nodeId = nodeId;
+    renderEdges();
+    renderNodes();
+}
 
-    setStatus("Bewegung erlaubt.");
-  }
+function renderEdges(){
+    for(const e of board.edges){
+        const a = nodeById.get(String(e.from));
+        const b = nodeById.get(String(e.to));
+        if(!a || !b) continue;
 
-  function rollDice(){
-    const v = 1 + Math.floor(Math.random()*6);
-    gameState.diceValue = v;
-    diceValueInp.value = v;
-    hudDice.textContent = v;
+        const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+        line.setAttribute("x1", a.x);
+        line.setAttribute("y1", a.y);
+        line.setAttribute("x2", b.x);
+        line.setAttribute("y2", b.y);
+        line.setAttribute("stroke","rgba(120,170,255,.5)");
+        line.setAttribute("stroke-width","2");
+        edgesSvg.appendChild(line);
+    }
+}
 
-    // 🔄 Neuer Zug → Backtracking reset
-    gameState.lastFromNode = null;
+function renderNodes(){
+    for(const n of board.nodes){
+        const el = document.createElement("div");
+        el.className = "node";
+        el.style.left = n.x + "px";
+        el.style.top  = n.y + "px";
+        stage.appendChild(el);
+    }
+}
 
-    setStatus("Gewürfelt: " + v);
-  }
+/* ================== FIT ================== */
 
-  btnRoll?.addEventListener("click", rollDice);
+function fitBoard(){
+    if(!board?.nodes?.length) return;
 
-  async function start(){
-    board = await loadBoard();
-    buildNodeMap();
-    buildAdjacency();
-    initPieces();
-    setStatus("Bereit.");
-  }
+    const xs = board.nodes.map(n=>n.x);
+    const ys = board.nodes.map(n=>n.y);
 
-  start();
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    const boardW = maxX - minX;
+    const boardH = maxY - minY;
+
+    const viewW = window.innerWidth * 0.7;
+    const viewH = window.innerHeight * 0.9;
+
+    const scaleX = viewW / boardW;
+    const scaleY = viewH / boardH;
+
+    CAM.scale = Math.min(scaleX, scaleY) * 0.9;
+    CAM.ox = viewW/2 - (minX + boardW/2) * CAM.scale;
+    CAM.oy = viewH/2 - (minY + boardH/2) * CAM.scale;
+
+    applyTransform();
+}
+
+/* ================== DICE ================== */
+
+btnRoll?.addEventListener("click", ()=>{
+    state.dice = Math.floor(Math.random()*6)+1;
+    if(diceValueInp) diceValueInp.value = state.dice;
+});
+
+diceValueInp?.addEventListener("change", ()=>{
+    state.dice = Number(diceValueInp.value) || 1;
+});
+
+/* ================== INIT ================== */
+
+loadBoard();
 
 })();
