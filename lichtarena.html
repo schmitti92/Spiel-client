@@ -304,6 +304,52 @@
     .turnDot.green{ background: var(--green); }
     .turnDot.yellow{ background: var(--yellow); }
 
+  /* ---------- Responsive / Tablet ---------- */
+@media (max-width: 1024px){
+  body{ overflow:auto; }
+  .wrap{ padding:12px; gap:10px; }
+  .topbar{ flex-direction:column; align-items:stretch; gap:10px; }
+  .pillrow{ justify-content:flex-start; }
+  .subtitle{ max-width:100%; font-size:13px; }
+  .stageWrap{ min-height:52vh; padding:10px; border-radius:16px; }
+  #stage, #edgesSvg{ inset:10px; width:calc(100% - 20px); height:calc(100% - 20px); }
+  .node{ width:48px; height:48px; border-radius:12px; }
+  .token{ width:34px; height:34px; border-radius:12px; }
+  .bottom{ padding:10px; gap:10px; border-radius:16px; }
+  .row{ gap:8px; }
+  .group{ width:100%; justify-content:space-between; gap:10px; }
+  .group .labeltxt{ font-size:13px; }
+  button{ padding:10px 12px; border-radius:12px; }
+  input[type="number"]{ width:78px; padding:10px 12px; border-radius:12px; font-size:16px; }
+  .jokerTable{ width:100%; max-width:520px; font-size:13px; }
+}
+
+@media (max-width: 1024px) and (orientation: portrait){
+  .stageWrap{ min-height:46vh; }
+  .bottom{ max-height:46vh; overflow:auto; -webkit-overflow-scrolling:touch; }
+}
+
+@media (max-width: 1024px) and (orientation: landscape){
+  .stageWrap{ min-height:58vh; }
+  .bottom{ max-height:38vh; overflow:auto; -webkit-overflow-scrolling:touch; }
+}
+
+/* Make 'am Zug' more visible everywhere */
+#hudTurnWrap{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.10);
+}
+#hudTurn{
+  font-weight:800;
+  letter-spacing:.3px;
+  color:var(--text);
+}
+
   </style>
 </head>
 <body class="edgesOff">
@@ -320,7 +366,7 @@
       <div class="pillrow">
         <div class="pill"><b>Modus:</b> Offline lokal</div>
         <div class="pill"><b>Regel:</b> Board 1 startet mit Licht auf allen Lichtfeldern</div>
-        <div class="pill"><b>Am Zug:</b> <span id="hudTurn">–</span></div>
+        <div class="pill"><b>Am Zug:</b> <span id="hudTurnWrap"><span id="hudTurnDotTop" class="turnDot"></span><span id="hudTurn">–</span></span></div>
         <div class="pill"><b>Server-ready:</b> später leicht umstellbar</div>
       </div>
     </div>
@@ -388,6 +434,6 @@
   </div>
 
   <script src="./game_rules_lights_barricades.js"></script>
-  <script src="./lichtarena_client.js"></script>
+  <script src="./lichtarena_client_TABLET_RESPONSIVE.js"></script>
 </body>
 </html>
