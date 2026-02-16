@@ -1,120 +1,334 @@
+/* lichtarena.css – eigenes Styling nur für Lichtarena (Barikade bleibt unberührt) */
 
-/* =====================================================
-   LICHTARENA FINAL – Layout Overrides (Tablet/Side Panel)
-   - Keine Logikänderung, nur UI/Layout
-   ===================================================== */
+:root{
+  --bg:#070a12;
+  --panel:rgba(18,24,38,.72);
+  --panel2:rgba(13,18,30,.72);
+  --stroke:rgba(255,255,255,.12);
+  --text:#e7eaf0;
+  --muted:#a9b2c3;
 
-.content{
-  height: calc(100% - 86px); /* topbar approx */
-  display:flex;
-  gap: 14px;
-  padding: 14px;
+  --red:#ff5a6a;
+  --blue:#5aa2ff;
+  --green:#2ee59d;
+  --yellow:#ffd250;
+
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --r:16px;
+  --r2:22px;
 }
 
-.boardArea{
-  flex: 1 1 auto;
-  min-width: 0;
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1000px 600px at 20% 10%, rgba(90,162,255,.18), transparent 55%),
+    radial-gradient(900px 560px at 80% 30%, rgba(46,229,157,.14), transparent 60%),
+    radial-gradient(900px 560px at 40% 70%, rgba(255,90,106,.12), transparent 60%),
+    linear-gradient(180deg, #050712, #070a12 30%, #050712);
 }
 
-.sidePanel{
-  width: 380px;
-  max-width: 42vw;
+.topbar{
   display:flex;
-  flex-direction:column;
-  gap: 12px;
-}
-
-.sideTop{
-  display:flex;
-  align-items:center;
+  gap:18px;
   justify-content:space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel2);
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  padding:16px 16px 10px;
+  position:sticky;
+  top:0;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(180deg, rgba(7,10,18,.92), rgba(7,10,18,.55));
+  border-bottom:1px solid rgba(255,255,255,.06);
+  z-index:10;
+}
+.title{font-size:22px; font-weight:800; letter-spacing:.2px}
+.subtitle{font-size:12.5px; color:var(--muted); max-width:860px; line-height:1.25}
+.topbar-right{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+.pill{
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  font-size:12px;
+  color:var(--muted);
+}
+.pill b{color:var(--text); font-weight:700}
+.pill.subtle{opacity:.85}
+.turn-pill{border-color:rgba(255,255,255,.18)}
+
+.layout{
+  height:calc(100vh - 78px);
+  padding:14px 14px 16px;
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap:14px;
 }
 
-.zoomGroup{
+.boardCard{
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:var(--r2);
+  box-shadow:var(--shadow);
+  overflow:hidden;
   display:flex;
-  gap: 8px;
+  flex-direction:column;
+  min-width:0;
 }
-.miniBtn{
-  min-height: 40px;
-  padding: 8px 12px;
-  border-radius: 12px;
+.boardTop{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  justify-content:space-between;
+  padding:12px 12px 10px;
+}
+.statusLine{
+  font-size:13px;
+  color:var(--muted);
+}
+.statusLine b{color:var(--text)}
+.statusLine .good{color:#76f0b1}
+.statusLine .warn{color:#ffd250}
+.statusLine .bad{color:#ff6b74}
+
+.miniHint{
+  display:none;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.18);
+  color:var(--muted);
+  font-size:12px;
+  max-width:320px;
+}
+.miniHint .hintTitle{font-weight:700; color:var(--text); margin-bottom:4px}
+@media (min-width: 980px){
+  .miniHint{display:block}
 }
 
-.hint{
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.2;
-  text-align:right;
+.boardViewport{
+  position:relative;
+  flex:1;
+  min-height:360px;
+  background: radial-gradient(800px 420px at 40% 20%, rgba(255,255,255,.06), transparent 65%);
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  overflow:hidden;
+  touch-action:none; /* pan/zoom handled by JS */
 }
-
-/* Board viewport + panzoom */
-#boardViewport{
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 420px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(0,0,0,.18);
-  overflow: hidden;
-}
-
-#boardPanZoom{
+.boardPanZoom{
   position:absolute;
-  inset:0;
+  left:0; top:0;
   transform-origin: 0 0;
+  width:100%;
+  height:100%;
 }
-
-#edgesSvg{
+.edgesSvg{
   position:absolute;
-  inset:0;
+  left:0; top:0;
   width:100%;
   height:100%;
   pointer-events:none;
 }
+.stage{
+  position:absolute;
+  left:0; top:0;
+  width:100%;
+  height:100%;
+}
 
-#stage{
+/* Edges */
+.edge{
+  stroke: rgba(90,162,255,.40);
+  stroke-width: 2.2;
+}
+.edge.gated{ stroke: rgba(255,210,80,.45); stroke-width: 2.6; }
+.gateLabelBg{ fill: rgba(0,0,0,.35); stroke: rgba(255,255,255,.18); rx: 10; ry: 10; }
+.gateLabelText{ fill: rgba(255,255,255,.92); font-size: 12.5px; font-weight:700; }
+
+/* Nodes */
+.node{
+  position:absolute;
+  width:56px;
+  height:56px;
+  border-radius:16px;
+  transform: translate(-50%, -50%);
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  box-shadow: 0 6px 16px rgba(0,0,0,.25);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  user-select:none;
+}
+.node .label{
+  position:absolute;
+  top:6px;
+  left:8px;
+  font-size:11px;
+  color:rgba(255,255,255,.7);
+}
+.node .tokens{
   position:absolute;
   inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px;
+}
+.token{
+  width:26px;
+  height:26px;
+  border-radius:8px;
+  border:1px solid rgba(0,0,0,.25);
+  box-shadow: 0 6px 14px rgba(0,0,0,.28);
+}
+.token.selected{
+  outline:2px solid rgba(255,255,255,.85);
+  outline-offset:2px;
 }
 
-/* SidePanel: bottom card should look good when moved */
-.sidePanel .bottom{
-  position: static !important;
-  margin: 0 !important;
-  width: 100% !important;
+.node.selectedNode{
+  box-shadow: 0 0 0 3px rgba(90,162,255,.45), 0 10px 24px rgba(0,0,0,.35);
+}
+.node.lightfield{ border-color: rgba(255,210,80,.30); }
+.node.activeLight{
+  box-shadow: 0 0 0 3px rgba(255,210,80,.45), 0 16px 30px rgba(0,0,0,.35);
+}
+.node.dynamicBarricade{
+  border-color: rgba(255,90,106,.55);
+  background: rgba(255,90,106,.08);
+}
+.node.barricade-fixed{
+  border-color: rgba(255,90,106,.45);
+  background: rgba(255,90,106,.06);
 }
 
-/* Make control groups wrap nicely inside side panel */
-.sidePanel .row{
+/* start colors */
+.start-red{ border-color: rgba(255,90,106,.55); }
+.start-blue{ border-color: rgba(90,162,255,.55); }
+.start-green{ border-color: rgba(46,229,157,.55); }
+.start-yellow{ border-color: rgba(255,210,80,.55); }
+
+/* footer buttons */
+.boardFooter{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+}
+.zoomReadout{
+  min-width:68px;
+  text-align:center;
+  color:var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.spacer{flex:1}
+
+.side{
+  min-width:0;
   display:flex;
   flex-direction:column;
-  gap: 12px;
+  gap:12px;
+  overflow:auto;
+  padding-right:2px;
 }
-.sidePanel .row .group{
-  width: 100%;
+.panel{
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:var(--r2);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.panelHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 12px 10px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.panelTitle{font-weight:800}
+.panelBadge{color:var(--muted); font-size:12.5px}
+.panelBadge b{color:var(--text)}
+.panelBody{padding:12px}
+.panelBody.row{display:flex; gap:10px; align-items:center}
+.panelBody.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.help{color:var(--muted); font-size:12px; line-height:1.25; margin-top:8px}
+
+.dot{
+  width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:8px;
+  background: var(--red);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+  vertical-align:middle;
+}
+.panelBadge .dot{margin-right:6px}
+
+.btn{
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color:var(--text);
+  border-radius:14px;
+  padding:12px 12px;
+  font-weight:700;
+  font-size:14px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.22);
+  cursor:pointer;
+  user-select:none;
+}
+.btn:hover{background: rgba(255,255,255,.09)}
+.btn:active{transform: translateY(1px)}
+.btn.ghost{padding:10px 12px; background: rgba(255,255,255,.05)}
+.btn.primary{background: rgba(90,162,255,.18); border-color: rgba(90,162,255,.30)}
+.btn.danger{background: rgba(255,90,106,.16); border-color: rgba(255,90,106,.28)}
+
+.field label{
+  display:block;
+  font-size:11px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+.field input{
+  width:100%;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.24);
+  color:var(--text);
+  font-size:14px;
 }
 
-/* Tablet portrait fallback: sidebar becomes bottom */
-@media (max-width: 920px), (orientation: portrait){
-  .content{
-    flex-direction:column;
+/* Joker table */
+.jokerTable{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+.jokerTable th, .jokerTable td{
+  padding:10px 8px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.jokerTable th{color:var(--muted); font-weight:700; text-align:left}
+.jokerTable td.right, .jokerTable th.right{text-align:right}
+.jokerTable tr:last-child td{border-bottom:0}
+
+/* Responsive: smaller screens -> sidebar becomes bottom sheet */
+@media (max-width: 980px){
+  .layout{
+    grid-template-columns: 1fr;
     height:auto;
+    padding-bottom: 18px;
   }
-  .sidePanel{
-    width: 100%;
-    max-width: none;
+  .side{
+    flex-direction:row;
+    flex-wrap:wrap;
+    overflow:visible;
   }
-  #boardViewport{
-    min-height: 52vh;
+  .panel{
+    flex:1 1 320px;
   }
-  .hint{ text-align:left; }
+  .miniHint{display:none}
+  .boardCard{min-height: 65vh;}
 }
