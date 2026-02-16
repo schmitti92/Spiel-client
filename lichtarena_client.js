@@ -94,9 +94,8 @@
   }
 
   // ---------- Board load ----------
-async function loadBoard() {
-  const res = await fetch("./lichtarena_board_1.json", { cache: "no-store" });
-
+  async function loadBoard() {
+    const res = await fetch("./board.json", { cache: "no-store" });
     if (!res.ok) throw new Error("board.json konnte nicht geladen werden");
     const json = await res.json();
     return json;
@@ -682,4 +681,3 @@ async function loadBoard() {
   // kick off
   start();
 })();
-
