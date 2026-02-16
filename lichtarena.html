@@ -2,150 +2,142 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lichtarena (Prototype – Offline)</title>
   <link rel="stylesheet" href="./lichtarena.css?v=1" />
 </head>
 <body>
+
   <header class="topbar">
-    <div class="topbar-left">
-      <div class="title">Lichtarena (Prototype – Offline)</div>
-      <div class="subtitle">
+    <div class="brand">
+      <h1>Lichtarena (Prototype – Offline)</h1>
+      <div class="sub">
         Klick auf eine Figur → auswählen. Dann auf ein verbundenes Feld klicken → Zug (1 Schritt). Tore/Gates werden beim Zug geprüft (Würfel muss passen). Licht spawnt zufällig auf freien normalen Feldern.
       </div>
     </div>
 
-    <div class="topbar-right">
-      <span class="pill">Modus: <b>Offline lokal</b></span>
-      <span class="pill">Regel: <b>Board 1 startet mit Licht auf allen Lichtfeldern</b></span>
-      <span class="pill turn-pill">Am Zug: <b id="turnColor">RED</b></span>
-      <span class="pill subtle">Server-ready: später leicht umstellbar</span>
+    <div class="pills">
+      <button id="btnSideToggle" class="iconBtn" title="Sidebar ein-/ausblenden">☰ UI</button>
+      <span class="pill">Modus: <strong>Offline lokal</strong></span>
+      <span class="pill">Regel: <strong>Board 1 startet mit Licht auf allen Lichtfeldern</strong></span>
+      <span class="pill">Am Zug: <span id="hudTurnDot" class="dot red"></span> <strong id="hudTurnName">RED</strong></span>
+      <span class="pill">Server-ready: <strong>später leicht umstellbar</strong></span>
     </div>
   </header>
 
   <main class="layout">
-    <!-- Board -->
+
+    <!-- BOARD -->
     <section class="boardCard">
-      <div class="boardTop">
+      <div class="boardHeader">
         <div id="statusLine" class="statusLine">Status: –</div>
-
-        <div class="miniHint">
-          <div class="hintTitle">Zoom &amp; Move</div>
-          <div class="hintText">
-            <b>Touch:</b> 1 Finger ziehen = verschieben • 2 Finger = pinch-zoom<br/>
-            <b>Maus:</b> Scroll = zoom • Linksklick ziehen = verschieben
-          </div>
-        </div>
+        <div class="hint">Touch: 1 Finger ziehen = verschieben · 2 Finger = pinch-zoom · Maus: Scroll = zoom</div>
       </div>
 
-      <div class="boardViewport" id="boardViewport" aria-label="Spielfeld">
-        <div class="boardPanZoom" id="boardPanZoom">
-          <svg id="edgesSvg" class="edgesSvg" xmlns="http://www.w3.org/2000/svg"></svg>
-          <div id="stage" class="stage" aria-hidden="false"></div>
+      <div class="view" id="boardViewport">
+        <div id="boardPanZoom" class="stageWrap">
+          <svg id="edgesSvg"></svg>
+          <div id="stage"></div>
         </div>
-      </div>
 
-      <div class="boardFooter">
-        <button id="fitBtn" class="btn ghost">Fit</button>
-        <button id="zoomOut" class="btn ghost">−</button>
-        <div class="zoomReadout"><span id="zoomPct">100%</span></div>
-        <button id="zoomIn" class="btn ghost">+</button>
+        <div class="boardOverlay" aria-label="Zoom Controls">
+          <button id="fitBtn" class="fitBtn">Fit</button>
+          <button id="btnZoomOut" class="zoomBtn" aria-label="Zoom out">−</button>
+          <div class="zoomReadout"><span id="zoomPct">100%</span></div>
+          <button id="btnZoomIn" class="zoomBtn" aria-label="Zoom in">+</button>
+          <button id="btnZoomReset" class="fitBtn" title="Zoom zurücksetzen">Reset</button>
+        </div>
 
-        <div class="spacer"></div>
-
-        <button id="btnToggleEdges" class="btn ghost">Linien: AUS</button>
+        <div class="linesBadge">
+          <button id="btnToggleEdges" class="btn" style="padding:8px 10px; border-radius:12px;">Linien: <span id="hudEdges">AUS</span></button>
+        </div>
       </div>
     </section>
 
-    <!-- Sidebar -->
-    <aside class="side">
-      <!-- Turn -->
-      <section class="panel">
-        <div class="panelHead">
-          <div class="panelTitle">Spieler</div>
-          <div class="panelBadge"><span class="dot" data-dot="turn"></span><b id="turnColor2">RED</b></div>
-        </div>
-        <div class="panelBody row">
-          <button id="btnPrevTurn" class="btn">◀</button>
-          <button id="btnNextTurn" class="btn">▶</button>
-          <div class="help">Wechselt den aktiven Spieler (offline Test).</div>
-        </div>
-      </section>
+    <!-- SIDEBAR -->
+    <aside class="side" aria-label="Spielsteuerung">
+      <div class="sideScroll">
 
-      <!-- Dice -->
-      <section class="panel">
-        <div class="panelHead">
-          <div class="panelTitle">Würfel</div>
-          <div class="panelBadge">Aktuell: <b id="hudDice">6</b></div>
+        <div class="card">
+          <div class="row">
+            <h3 style="margin:0">Spieler</h3>
+            <div class="row" style="gap:8px">
+              <span id="playerDot" class="dot red"></span>
+              <strong id="playerLabel">RED</strong>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button id="btnPrevTurn" class="btn" title="Vorheriger Spieler">◀</button>
+            <button id="btnNextTurn" class="btn" title="Nächster Spieler">▶</button>
+          </div>
+          <div class="small" style="margin-top:8px">Nächster Schritt: Turn-Logik + Joker-Effekte „scharf“ schalten.</div>
         </div>
-        <div class="panelBody grid2">
-          <button id="btnRoll" class="btn primary">Würfeln</button>
-          <div class="field">
-            <label for="diceValue">Wert (1–6)</label>
-            <input id="diceValue" type="number" inputmode="numeric" min="1" max="6" value="6" />
+
+        <div class="card">
+          <div class="row">
+            <h3>Würfel</h3>
+            <div class="small">Aktuell: <strong id="hudDice">6</strong></div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button id="btnRoll" class="btn">Würfeln</button>
+            <input id="diceValue" class="input" type="number" min="1" max="6" value="6" />
           </div>
         </div>
-      </section>
 
-      <!-- Lights -->
-      <section class="panel">
-        <div class="panelHead">
-          <div class="panelTitle">Licht</div>
-          <div class="panelBadge">
-            Aktiv: <b id="hudActiveLights">0</b> • Gesammelt: <b id="hudLightTotal">0</b>/<b id="hudLightGoal">5</b>
+        <div class="card">
+          <div class="row">
+            <h3>Licht</h3>
+            <div class="small">Aktiv: <strong id="hudActiveLights">0</strong> · Gesammelt: <strong id="hudLightTotal">0</strong>/<strong id="hudLightGoal">5</strong></div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button id="btnForceSpawnLight" class="btn btnGold">Test: Licht spawnen</button>
           </div>
         </div>
-        <div class="panelBody">
-          <button id="btnForceSpawnLight" class="btn">Test: Licht spawnen</button>
-          <div class="help">Regel: Wenn kein Licht mehr aktiv ist, spawnt zufällig ein neues auf einem freien normalen Feld.</div>
-        </div>
-      </section>
 
-      <!-- Events -->
-      <section class="panel">
-        <div class="panelHead">
-          <div class="panelTitle">Ereignis</div>
-          <div class="panelBadge">Barikaden</div>
+        <div class="card">
+          <div class="row">
+            <h3>Ereignis</h3>
+            <div class="small">Barikaden</div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button id="btnSpawnBarricade" class="btn btnDanger">Barikade spawnen</button>
+            <button id="btnClearDynamicBarricades" class="btn">Barikaden löschen</button>
+          </div>
         </div>
-        <div class="panelBody grid2">
-          <button id="btnSpawnBarricade" class="btn danger">Barikade spawnen</button>
-          <button id="btnClearDynamicBarricades" class="btn">Barikaden löschen</button>
-        </div>
-      </section>
 
-      <!-- Jokers -->
-      <section class="panel">
-        <div class="panelHead">
-          <div class="panelTitle">Joker (am Zug)</div>
-          <div class="panelBadge">Start: 2× je Typ</div>
-        </div>
-        <div class="panelBody">
-          <table class="jokerTable" aria-label="Jokerübersicht">
+        <div class="card">
+          <div class="row">
+            <h3>Joker</h3>
+            <div class="small">(am Zug)</div>
+          </div>
+          <table class="table" style="margin-top:8px" aria-label="Joker Übersicht">
             <thead>
-              <tr><th>Joker</th><th class="right">Anzahl</th></tr>
+              <tr><th>Joker</th><th>Anzahl</th></tr>
             </thead>
             <tbody id="jokerTable"></tbody>
           </table>
-          <div class="help">Später: Buttons zum Einsetzen + Glücksrad bei Rausschmiss.</div>
         </div>
-      </section>
 
-      <!-- Debug -->
-      <section class="panel">
-        <div class="panelHead">
-          <div class="panelTitle">Debug</div>
-          <div class="panelBadge subtle">Local</div>
+        <div class="card">
+          <div class="row">
+            <h3>Debug</h3>
+            <div class="small">Local</div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button id="btnRestart" class="btn">Restart</button>
+            <button id="btnSave" class="btn">Save</button>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button id="btnLoad" class="btn">Load</button>
+            <button id="btnEndTurn" class="btn">Zug beenden</button>
+          </div>
         </div>
-        <div class="panelBody grid2">
-          <button id="btnRestart" class="btn">Restart (Board neu laden)</button>
-          <button id="btnSave" class="btn">Save Local</button>
-          <button id="btnLoad" class="btn">Load Local</button>
-        </div>
-      </section>
+
+      </div>
     </aside>
+
   </main>
 
-  <!-- Rules + Client -->
   <script src="./game_rules_lights_barricades.js?v=1"></script>
   <script src="./lichtarena_client.js?v=1"></script>
 </body>
