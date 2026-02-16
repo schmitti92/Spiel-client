@@ -42,6 +42,7 @@
   const hudTurn = document.getElementById("hudTurn");
   const hudTurnName = document.getElementById("hudTurnName");
   const hudTurnDot = document.getElementById("hudTurnDot");
+  const hudTurnDotTop = document.getElementById("hudTurnDotTop");
   const jokerTableBody = document.getElementById("jokerTable");
   const btnPrevTurn = document.getElementById("btnPrevTurn");
   const btnNextTurn = document.getElementById("btnNextTurn");
@@ -141,6 +142,9 @@
     if (hudTurnName) hudTurnName.textContent = pretty;
     if (hudTurnDot){
       hudTurnDot.className = "turnDot " + c;
+    }
+    if (hudTurnDotTop){
+      hudTurnDotTop.className = "turnDot " + c;
     }
 
     if (jokerTableBody){
