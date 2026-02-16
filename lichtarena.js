@@ -25,6 +25,11 @@
     phaseBadge: $("phaseBadge"),
     scoreBadge: $("scoreBadge"),
 
+    // event overlay
+    eventOverlay: $("eventOverlay"),
+    eventCardTitle: $("eventCardTitle"),
+    eventCardBody: $("eventCardBody"),
+
     diceVal: $("diceVal"),
     stepsLeft: $("stepsLeft"),
     rollBtn: $("rollBtn"),
@@ -78,6 +83,51 @@
     startFieldsPerColor: 5,
   };
 
+  // ---------- Event cards (always reshuffled: 1/22 each draw) ----------
+  const EVENT_CARDS = [
+    { id: 1,  text: 'Erhalte 1 Joker: Farbwechsel', type: 'gain_joker', joker: 'j1' },
+    { id: 2,  text: 'Erhalte 1 Joker: Barikade versetzen', type: 'gain_joker', joker: 'j2' },
+    { id: 3,  text: 'Erhalte 1 Joker: Neuwurf', type: 'gain_joker', joker: 'j3' },
+    { id: 4,  text: 'Erhalte 1 Joker: Doppelwurf', type: 'gain_joker', joker: 'j4' },
+    { id: 5,  text: 'Erhalte 1 Joker: Ignorieren', type: 'gain_joker', joker: 'j5' },
+    { id: 6,  text: 'Erhalte 1 Joker: Farbwechsel', type: 'gain_joker', joker: 'j1' },
+    { id: 7,  text: 'Erhalte 1 Joker: Barikade versetzen', type: 'gain_joker', joker: 'j2' },
+    { id: 8,  text: 'Erhalte 1 Joker: Neuwurf', type: 'gain_joker', joker: 'j3' },
+    { id: 9,  text: 'Erhalte 1 Joker: Doppelwurf', type: 'gain_joker', joker: 'j4' },
+    { id: 10, text: 'Erhalte 1 Joker: Ignorieren', type: 'gain_joker', joker: 'j5' },
+    { id: 11, text: 'Erhalte ALLE 5 Joker (je +1)', type: 'gain_all_jokers' },
+    { id: 12, text: 'Alle anderen Spieler bekommen 2 zufällige Joker', type: 'others_gain_random', count: 2 },
+    { id: 13, text: 'Alle Spielfiguren werden neu gemischt', type: 'shuffle_all_pieces' },
+    { id: 14, text: 'Alle Figuren auf Startfeldern werden zufällig auf dem Spielbrett gespawnt', type: 'spawn_start_pieces_random' },
+    { id: 15, text: '+5 Felder laufen', type: 'bonus_steps', steps: 5 },
+    { id: 16, text: '+10 Felder laufen', type: 'bonus_steps', steps: 10 },
+    { id: 17, text: 'Tausche Position mit eigener Figur', type: 'swap_with_own' },
+    { id: 18, text: 'Figur zurück auf Start', type: 'return_to_start' },
+    { id: 19, text: 'Du verlierst alle Joker', type: 'lose_all_jokers' },
+    { id: 20, text: 'Klaue 1 Punkt vom Mitspieler', type: 'steal_point' },
+    { id: 21, text: 'Ein zusätzliches Lichtfeld erscheint', type: 'spawn_second_light' },
+    { id: 22, text: 'Spieler mit den wenigsten Punkten bekommt +1 Punkt', type: 'lowest_gets_point' },
+  ];
+
+  function drawEventCard(){
+    return EVENT_CARDS[Math.floor(Math.random()*EVENT_CARDS.length)];
+  }
+
+  function showEventOverlay(card){
+    if (!ui.eventOverlay) return;
+    ui.eventCardTitle.textContent = `Ereigniskarte #${card.id}`;
+    ui.eventCardBody.textContent = card.text;
+    ui.eventOverlay.classList.add('show');
+  }
+
+  function hideEventOverlay(){
+    if (!ui.eventOverlay) return;
+    ui.eventOverlay.classList.remove('show');
+  }
+
+  const wait = (ms)=>new Promise(r=>setTimeout(r,ms));
+
+
   // =========================
   // State
   // =========================
@@ -92,8 +142,8 @@
     lastLight: null,
     light: null,
     light2: null,
+    pendingEvent: null,
 
-    eventPending: null, // {pieceId,nodeId} when landing on event
     barricades: new Set(),
 
     playerCount: 4,
@@ -111,225 +161,6 @@
   };
 
   const COLORS = ["red", "blue", "green", "yellow", "black", "white"];
-
-  // =========================
-  // Event Cards (always random 1/22)
-  // Reihenfolge: Eventfeld betreten -> Barikade platzieren -> Karte 3s zeigen -> Effekt anwenden
-  // =========================
-  const EVENT_DECK = [
-    { id: 1,  title: "🃏 Joker: Farbwechsel", effect: (pl)=>{ pl.jokers.j1++; } },
-    { id: 2,  title: "🃏 Joker: Barikade versetzen", effect: (pl)=>{ pl.jokers.j2++; } },
-    { id: 3,  title: "🃏 Joker: Neuwurf", effect: (pl)=>{ pl.jokers.j3++; } },
-    { id: 4,  title: "🃏 Joker: Doppelwurf", effect: (pl)=>{ pl.jokers.j4++; } },
-    { id: 5,  title: "🃏 Joker: Ignorieren", effect: (pl)=>{ pl.jokers.j5++; } },
-    { id: 6,  title: "🃏 Joker: Farbwechsel", effect: (pl)=>{ pl.jokers.j1++; } },
-    { id: 7,  title: "🃏 Joker: Barikade versetzen", effect: (pl)=>{ pl.jokers.j2++; } },
-    { id: 8,  title: "🃏 Joker: Neuwurf", effect: (pl)=>{ pl.jokers.j3++; } },
-    { id: 9,  title: "🃏 Joker: Doppelwurf", effect: (pl)=>{ pl.jokers.j4++; } },
-    { id:10,  title: "🃏 Joker: Ignorieren", effect: (pl)=>{ pl.jokers.j5++; } },
-    { id:11,  title: "🎁 Alle 5 Joker", effect: (pl)=>{ pl.jokers.j1++;pl.jokers.j2++;pl.jokers.j3++;pl.jokers.j4++;pl.jokers.j5++; } },
-    { id:12,  title: "🎲 Alle anderen: 2 zufällige Joker", effect: (pl)=>{ giveOthersRandomJokers(pl.id, 2); } },
-    { id:13,  title: "🌀 Alle Spielfiguren werden neu gemischt", effect: ()=>{ shuffleAllPieces(); } },
-    { id:14,  title: "🚀 Startfeld-Figuren werden zufällig gespawnt", effect: ()=>{ scatterStartPiecesToBoard(); } },
-    { id:15,  title: "➕ +5 Felder laufen", effect: (pl, ctx)=>{ grantBonusSteps(ctx, 5); } },
-    { id:16,  title: "➕ +10 Felder laufen", effect: (pl, ctx)=>{ grantBonusSteps(ctx,10); } },
-    { id:17,  title: "🔁 Tausche Position mit eigener Figur", effect: (pl, ctx)=>{ swapWithOwnRandom(pl.id, ctx.pieceId); } },
-    { id:18,  title: "🏠 Figur zurück auf Start", effect: (pl, ctx)=>{ sendPieceHome(pl.id, ctx.pieceId); } },
-    { id:19,  title: "💥 Du verlierst alle Joker", effect: (pl)=>{ pl.jokers={j1:0,j2:0,j3:0,j4:0,j5:0}; pl.j5Active=false; pl.pendingDouble=false; } },
-    { id:20,  title: "🕵️ Klaue 1 Punkt vom Mitspieler", effect: (pl)=>{ stealOnePoint(pl.id); } },
-    { id:21,  title: "✨ Ein zusätzliches Lichtfeld erscheint", effect: ()=>{ spawnSecondLight(); } },
-    { id:22,  title: "🏆 Spieler mit den wenigsten Punkten bekommt 1 Punkt", effect: ()=>{ awardLowestPlayer(); } },
-  ];
-
-  const EVENT_UI = { overlay:null, card:null, title:null, sub:null, icon:null, timer:null };
-
-  function ensureEventUI(){
-    if (EVENT_UI.overlay) return;
-    let ov = document.getElementById("eventOverlay");
-    if (!ov){
-      ov = document.createElement("div");
-      ov.id = "eventOverlay";
-      ov.innerHTML = `
-        <div class="eventCard">
-          <div class="eventTop">
-            <div class="eventIcon">🎴</div>
-            <div class="eventTitle">Ereignis</div>
-          </div>
-          <div class="eventBody" id="eventBody"></div>
-          <div class="eventHint">Wird ausgeführt…</div>
-        </div>`;
-      document.body.appendChild(ov);
-
-      const st = document.createElement("style");
-      st.textContent = `
-        #eventOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999;
-          background:rgba(2,6,23,.55);backdrop-filter:blur(6px);}
-        #eventOverlay.show{display:flex;}
-        #eventOverlay .eventCard{width:min(520px,92vw);border-radius:18px;padding:18px 18px 16px;
-          background:linear-gradient(180deg, rgba(15,23,42,.95), rgba(2,6,23,.92));
-          border:1px solid rgba(148,163,184,.22);box-shadow:0 16px 60px rgba(0,0,0,.55);}
-        #eventOverlay .eventTop{display:flex;gap:12px;align-items:center;margin-bottom:10px;}
-        #eventOverlay .eventIcon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-          background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.35);font-size:24px;}
-        #eventOverlay .eventTitle{font-weight:800;font-size:18px;letter-spacing:.2px;color:rgba(226,232,240,.95);}
-        #eventOverlay .eventBody{margin-top:6px;font-size:16px;line-height:1.25;color:rgba(226,232,240,.92);}
-        #eventOverlay .eventHint{margin-top:10px;font-size:12px;color:rgba(148,163,184,.85);}
-        @keyframes eventPop{0%{transform:scale(.94);opacity:0}100%{transform:scale(1);opacity:1}}
-        #eventOverlay.show .eventCard{animation:eventPop .14s ease-out;}
-      `;
-      document.head.appendChild(st);
-    }
-    EVENT_UI.overlay = ov;
-    EVENT_UI.card = ov.querySelector(".eventCard");
-    EVENT_UI.title = ov.querySelector(".eventTitle");
-    EVENT_UI.sub = ov.querySelector(".eventHint");
-    EVENT_UI.icon = ov.querySelector(".eventIcon");
-  }
-
-  function showEventCard(text){
-    ensureEventUI();
-    EVENT_UI.title.textContent = "Ereigniskarte";
-    const body = document.getElementById("eventBody");
-    if (body) body.textContent = text;
-    EVENT_UI.overlay.classList.add("show");
-  }
-
-  function hideEventCard(){
-    if (!EVENT_UI.overlay) return;
-    EVENT_UI.overlay.classList.remove("show");
-  }
-
-  function drawEventCard(){
-    // immer 1/22 Wahrscheinlichkeit, immer neu gemischt (random draw)
-    const i = Math.floor(Math.random()*EVENT_DECK.length);
-    return EVENT_DECK[i];
-  }
-
-  // Event helpers
-  function giveOthersRandomJokers(exceptPlayerId, count){
-    const keys = ["j1","j2","j3","j4","j5"];
-    for (const p of S.players){
-      if (p.id === exceptPlayerId) continue;
-      for (let i=0;i<count;i++){
-        const k = keys[Math.floor(Math.random()*keys.length)];
-        p.jokers[k] += 1;
-      }
-    }
-  }
-
-  function shuffleAllPieces(){
-    // shuffle positions among ALL pieces (permutation)
-    const ids = S.pieces.map(pc=>pc.nodeId);
-    for (let i=ids.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [ids[i],ids[j]]=[ids[j],ids[i]];
-    }
-    for (let i=0;i<S.pieces.length;i++){
-      S.pieces[i].nodeId = ids[i];
-    }
-  }
-
-  function scatterStartPiecesToBoard(){
-    for (const pc of S.pieces){
-      if (isStartNode(pc.nodeId)){
-        pc.nodeId = pickRandomNormalNodeId(S.pieces);
-      }
-    }
-  }
-
-  function grantBonusSteps(ctx, bonus){
-    // ctx: {pieceId}
-    if (!ctx || !ctx.pieceId) return;
-    S.selectedPiece = ctx.pieceId;
-    S.stepsLeft = bonus;
-    S.phase = "moving";
-    log(`⚡ Bonus: ${bonus} Schritte extra! Wähle jetzt ein Ziel (${bonus} Schritte).`);
-  }
-
-  function swapWithOwnRandom(playerId, pieceId){
-    const own = S.pieces.filter(pc=>pc.owner===playerId);
-    const me = own.find(pc=>pc.id===pieceId);
-    const others = own.filter(pc=>pc.id!==pieceId);
-    if (!me || !others.length) return;
-    const other = others[Math.floor(Math.random()*others.length)];
-    const tmp = me.nodeId;
-    me.nodeId = other.nodeId;
-    other.nodeId = tmp;
-  }
-
-  function sendPieceHome(playerId, pieceId){
-    const pc = S.pieces.find(p=>p.id===pieceId && p.owner===playerId);
-    if (!pc) return;
-    // find first start field for this color
-    const starts = S.nodes.filter(n=>String(n.kind).toLowerCase()==="start" && String(n.color||n.flags?.houseColor||"").toLowerCase()===pc.color);
-    if (starts.length) pc.nodeId = starts[0].id;
-    else pc.nodeId = pickAnyNonStartNodeId();
-  }
-
-  function stealOnePoint(thiefId){
-    const thief = S.players.find(p=>p.id===thiefId);
-    const victims = S.players.filter(p=>p.id!==thiefId && p.score>0);
-    if (!thief || !victims.length) return;
-    const v = victims[Math.floor(Math.random()*victims.length)];
-    v.score -= 1;
-    thief.score += 1;
-  }
-
-  function spawnSecondLight(){
-    // pick a second light different from primary and last
-    const prev = S.light2 || null;
-    let pick = weightedPickLightNode(prev);
-    if (pick === S.light) pick = weightedPickLightNode(pick);
-    S.light2 = pick;
-    log(`✨ Zweites Lichtfeld erscheint: ${S.light2}`);
-  }
-
-  function awardLowestPlayer(){
-    let min = Infinity;
-    for (const p of S.players) min = Math.min(min, p.score);
-    const lows = S.players.filter(p=>p.score===min);
-    if (!lows.length) return;
-    const w = lows[Math.floor(Math.random()*lows.length)];
-    w.score += 1;
-    log(`🏆 Bonuspunkt für ${w.color} (wenigste Punkte).`);
-  }
-
-  function resolveEventAfterBarricade(){
-    const pl = currentPlayer();
-    const ctx = S.eventPending ? { pieceId: S.eventPending.pieceId, nodeId: S.eventPending.nodeId } : { pieceId: S.selectedPiece, nodeId: null };
-    S.eventPending = null;
-
-    const card = drawEventCard();
-    // freeze input for 3 seconds
-    S.phase = "event_reveal";
-    syncUI();
-    draw();
-    showEventCard(card.title);
-
-    clearTimeout(EVENT_UI.timer);
-    EVENT_UI.timer = setTimeout(()=>{
-      hideEventCard();
-      try{
-        card.effect(pl, ctx);
-      } catch (e){
-        console.error(e);
-      }
-      // after effect: either continue moving (bonus steps sets phase=moving),
-      // or if we're still in event mode -> end turn
-      if (S.phase === "event_reveal"){
-        // no bonus / no special flow triggered
-        endTurn("Ereignis");
-      } else {
-        // e.g. bonus steps already set phase=moving
-        syncUI();
-        draw();
-      }
-      syncUI();
-      draw();
-    }, 3000);
-  }
-
-
 
   function currentPlayer() {
     return S.players[S.turnIndex];
@@ -896,22 +727,18 @@
   function onReachNode(piece, nodeId) {
     const pl = currentPlayer();
 
-    // scoring: primary OR secondary light
-    if (S.light === nodeId || (S.light2 && S.light2 === nodeId)) {
+    if (S.light === nodeId) {
       pl.score += 1;
       log(`🏁 Punkt! ${pl.color} hat jetzt ${pl.score} Punkte.`);
-      // after scoring: remove secondary light (if any) and respawn primary
-      S.light2 = null;
-      spawnLight("Punkt erreicht");
+      if (which === "light2") spawnLight2("Punkt erreicht");
+      else spawnLight("Punkt erreicht");
       endTurn("Punkt");
       return true;
     }
 
-    // event: first place barricade, THEN draw card (3s), THEN apply
     if (isEventNode(nodeId) && S.barricades.size < RULES.barricadeMax) {
-      S.eventPending = { pieceId: piece.id, nodeId };
-      S.phase = "event_place_barricade";
-      log("🎴 Ereignisfeld: Platziere jetzt 1 Barikade (klick Feld). Danach wird die Karte aufgedeckt.");
+      S.phase = "place_barricade";
+      log("🎴 Ereignisfeld: Du erhältst 1 Barikade – bitte jetzt platzieren (klick Feld).");
       syncUI();
       draw();
       return true;
@@ -982,34 +809,18 @@
   // Barricades
   // =========================
   function placeBarricade(nodeId) {
-    if (S.phase !== "place_barricade" && S.phase !== "event_place_barricade") return;
-
+    if (S.phase !== "place_barricade") return;
     if (S.barricades.size >= RULES.barricadeMax) {
       log("ℹ️ Max 15 Barikaden erreicht – keine neue Barikade.");
-      // continue safely
-      if (S.phase === "event_place_barricade") {
-        resolveEventAfterBarricade();
-      } else {
-        S.phase = "need_roll";
-        syncUI(); draw();
-      }
+      S.phase = "need_roll";
       return;
     }
     if (isStartNode(nodeId)) {
       log("⛔ Barikaden dürfen nicht auf Startfeldern stehen.");
       return;
     }
-
     S.barricades.add(nodeId);
     log(`🧱 Barikade platziert auf ${nodeId} (${S.barricades.size}/${RULES.barricadeMax})`);
-
-    if (S.phase === "event_place_barricade") {
-      // reveal card after barricade (as requested)
-      resolveEventAfterBarricade();
-      return;
-    }
-
-    // normal (non-event) barricade placement ends the turn
     endTurn("Barikade platziert");
   }
 
@@ -1152,7 +963,7 @@
     ui.bCount.textContent = `${S.barricades.size}/${RULES.barricadeMax}`;
     ui.phaseBadge.textContent = "Phase: " + S.phase;
     ui.scoreBadge.textContent = "Punkte: " + S.players.map((p) => `${p.color}:${p.score}`).join(" · ");
-    ui.lightBadge.textContent = "Licht: " + (S.light ?? "–");
+    ui.lightBadge.textContent = "Licht: " + (S.light ?? "–") + (S.light2 ? " + " + S.light2 : "");
 
     ui.diceVal.textContent = S.rollValue ?? "–";
     ui.stepsLeft.textContent = S.phase === "need_roll" ? "–" : String(S.stepsLeft);
@@ -1229,8 +1040,6 @@
 
   function draw() {
     if (!S.board) return;
-
-    if (S.phase === "event_reveal") return;
     const w = canvas.width / (window.devicePixelRatio || 1);
     const h = canvas.height / (window.devicePixelRatio || 1);
 
@@ -1296,29 +1105,6 @@
         ctx.strokeStyle = "rgba(59,130,246,.80)";
         ctx.lineWidth = 3;
         ctx.stroke();
-
-        // tiny card icon (always visible, zoom-safe)
-        ctx.save();
-        const cx = X(n.x), cy = Y(n.y);
-        const wCard = r*1.05, hCard = r*1.25;
-        const x0 = cx - wCard/2, y0 = cy - hCard/2;
-        const rad = Math.max(3, r*0.22);
-        ctx.fillStyle = "rgba(59,130,246,.18)";
-        ctx.strokeStyle = "rgba(147,197,253,.75)";
-        ctx.lineWidth = 2;
-        roundRect(ctx, x0, y0, wCard, hCard, rad);
-        ctx.fill();
-        ctx.stroke();
-        // inner lines
-        ctx.strokeStyle = "rgba(226,232,240,.55)";
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.moveTo(x0+rad, y0+rad+2);
-        ctx.lineTo(x0+wCard-rad, y0+rad+2);
-        ctx.moveTo(x0+rad, y0+rad+8);
-        ctx.lineTo(x0+wCard*0.78, y0+rad+8);
-        ctx.stroke();
-        ctx.restore();
       }
       if (isBoost) {
         ctx.beginPath();
@@ -1418,19 +1204,7 @@
       yellow: [245, 158, 11],
       black: [17, 24, 39],
       white: [226, 232, 240],
-    }
-
-  function roundRect(ctx, x, y, w, h, r){
-    const rr = Math.min(r, w/2, h/2);
-    ctx.beginPath();
-    ctx.moveTo(x+rr, y);
-    ctx.arcTo(x+w, y, x+w, y+h, rr);
-    ctx.arcTo(x+w, y+h, x, y+h, rr);
-    ctx.arcTo(x, y+h, x, y, rr);
-    ctx.arcTo(x, y, x+w, y, rr);
-    ctx.closePath();
-  }
-;
+    };
     const rgb = map[c] || [148, 163, 184];
     return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
   }
@@ -1458,8 +1232,6 @@
 
   function handleBoardTap(sx, sy) {
     if (!S.board) return;
-
-    if (S.phase === "event_reveal") return;
 
     const hit = findHitNode(sx, sy);
     if (!hit) return;
@@ -1561,6 +1333,8 @@
     resetPieces();
     S.lastLight = null;
     S.light = null;
+    S.light2 = null;
+    S.pendingEvent = null;
     S.j2Source = null;
 
     spawnLight("Spielstart");
@@ -1604,3 +1378,164 @@
     log("✅ Lichtarena Offline bereit.");
   })();
 })();
+
+  function spawnLight2(reason){
+    const prev = S.light2 || S.light;
+    const pick = weightedPickLightNode(prev);
+    S.light2 = pick;
+    log(`✨ Zusatz-Lichtfeld spawnt (${reason}): ${S.light2}`);
+    syncUI();
+    draw();
+  }
+
+  // ---------- Event resolution ----------
+  function applyEventCard(card){
+    const pl = currentPlayer();
+    const piece = S.pieces.find(pc => pc.id === (S.pendingEvent?.pieceId));
+    const keys = ['j1','j2','j3','j4','j5'];
+    const randKey = ()=>keys[Math.floor(Math.random()*keys.length)];
+
+    if (!card) { S.pendingEvent=null; return; }
+
+    switch(card.type){
+      case 'gain_joker':
+        pl.jokers[card.joker] += 1;
+        log(`🃏 Ereignis: +1 ${card.joker.toUpperCase()} für ${pl.color}.`);
+        break;
+      case 'gain_all_jokers':
+        for (const k of keys) pl.jokers[k] += 1;
+        log(`🃏 Ereignis: Alle 5 Joker (+1 je) für ${pl.color}.`);
+        break;
+      case 'others_gain_random':
+        for (const op of S.players){
+          if (op.id === pl.id) continue;
+          const got = [];
+          for (let i=0;i<(card.count||2);i++){
+            const k = randKey();
+            op.jokers[k] += 1;
+            got.push(k.toUpperCase());
+          }
+          log(`🃏 Ereignis: ${op.color} bekommt ${got.join(' & ')}`);
+        }
+        break;
+      case 'shuffle_all_pieces':
+        {
+          const ids = S.pieces.map(p=>p.nodeId);
+          for (let i=ids.length-1;i>0;i--){
+            const j = Math.floor(Math.random()*(i+1));
+            [ids[i], ids[j]] = [ids[j], ids[i]];
+          }
+          for (let i=0;i<S.pieces.length;i++) S.pieces[i].nodeId = ids[i];
+          log('🔀 Ereignis: Alle Spielfiguren wurden neu gemischt.');
+        }
+        break;
+      case 'spawn_start_pieces_random':
+        {
+          for (const pc of S.pieces){
+            if (!isStartNode(pc.nodeId)) continue;
+            pc.nodeId = pickRandomNormalNodeId(S.pieces.filter(p=>p.id!==pc.id));
+          }
+          log('🎲 Ereignis: Startfeld-Figuren wurden zufällig aufs Brett gespawnt.');
+        }
+        break;
+      case 'bonus_steps':
+        S.stepsLeft += (card.steps||0);
+        log(`⚡ Ereignis: +${card.steps} Schritte. Restschritte: ${S.stepsLeft}`);
+        break;
+      case 'swap_with_own':
+        {
+          if (!piece){ log('ℹ️ Ereignis: Kein aktives Piece.'); break; }
+          const own = S.pieces.filter(p=>p.owner===pl.id && p.id!==piece.id);
+          if (!own.length){ log('ℹ️ Ereignis: Keine zweite eigene Figur zum Tauschen.'); break; }
+          const other = own[Math.floor(Math.random()*own.length)];
+          const tmp = piece.nodeId;
+          piece.nodeId = other.nodeId;
+          other.nodeId = tmp;
+          log('🔁 Ereignis: Position mit eigener Figur getauscht.');
+        }
+        break;
+      case 'return_to_start':
+        {
+          if (!piece){ log('ℹ️ Ereignis: Kein aktives Piece.'); break; }
+          const starts = S.nodes
+            .filter(n => String(n.kind).toLowerCase()==='start' && String(n.color||n.flags?.houseColor||'').toLowerCase()===pl.color)
+            .map(n=>n.id);
+          if (starts.length) piece.nodeId = starts[0];
+          log('↩️ Ereignis: Figur zurück auf Start.');
+        }
+        break;
+      case 'lose_all_jokers':
+        pl.jokers = { j1:0,j2:0,j3:0,j4:0,j5:0 };
+        pl.j5Active = false;
+        pl.pendingDouble = false;
+        log('💥 Ereignis: Du verlierst alle Joker.');
+        break;
+      case 'steal_point':
+        {
+          const victims = S.players.filter(p=>p.id!==pl.id && p.score>0);
+          if (!victims.length){ log('🪙 Ereignis: Niemand hat Punkte zum Klauen.'); break; }
+          const v = victims[Math.floor(Math.random()*victims.length)];
+          v.score -= 1;
+          pl.score += 1;
+          log(`🪙 Ereignis: 1 Punkt geklaut von ${v.color}.`);
+        }
+        break;
+      case 'spawn_second_light':
+        spawnLight2('Ereigniskarte');
+        break;
+      case 'lowest_gets_point':
+        {
+          const min = Math.min(...S.players.map(p=>p.score));
+          const lows = S.players.filter(p=>p.score===min);
+          const pick = lows[Math.floor(Math.random()*lows.length)];
+          pick.score += 1;
+          log(`🏅 Ereignis: ${pick.color} bekommt +1 Punkt.`);
+        }
+        break;
+    }
+
+    S.pendingEvent = null;
+
+    if (S.stepsLeft <= 0){
+      endTurn('Ereignis');
+    } else {
+      S.phase = 'moving';
+      syncUI();
+      draw();
+    }
+  }
+
+
+  function drawCardIcon(ctx, cx, cy, r){
+    const w = r*0.95;
+    const h = r*1.15;
+    const x = cx - w/2;
+    const y = cy - h/2;
+    const rr = Math.max(2, r*0.18);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.lineTo(x+w-rr, y);
+    ctx.quadraticCurveTo(x+w, y, x+w, y+rr);
+    ctx.lineTo(x+w, y+h-rr);
+    ctx.quadraticCurveTo(x+w, y+h, x+w-rr, y+h);
+    ctx.lineTo(x+rr, y+h);
+    ctx.quadraticCurveTo(x, y+h, x, y+h-rr);
+    ctx.lineTo(x, y+rr);
+    ctx.quadraticCurveTo(x, y, x+rr, y);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(56,189,248,.18)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(56,189,248,.85)';
+    ctx.lineWidth = Math.max(1.5, r*0.12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x+rr*1.1, y+rr*1.1);
+    ctx.lineTo(x+w*0.65, y+rr*1.1);
+    ctx.strokeStyle = 'rgba(226,232,240,.55)';
+    ctx.lineWidth = Math.max(1, r*0.08);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+
