@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lichtarena (Offline) – Prototype</title>
+  <style>
+    :root{
+      --text:#e7eaf2; --muted:#9aa3b2;
+      --bg1:#0c0f17; --bg2:#070911;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --accent: rgba(90,162,255,.85);
+      --ok: rgba(46,229,157,.9);
+      --warn: rgba(255,210,80,.95);
+      --danger: rgba(255,90,106,.95);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 50% 0%, #1a2340 0%, var(--bg1) 55%, var(--bg2) 100%);
+      color: var(--text);
+      padding-bottom: 170px;
+    }
+    header{
+      max-width: 1180px;
+      margin: 18px auto 10px;
+      padding: 0 14px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+    }
+    header h1{margin:0;font-size:18px;letter-spacing:.2px}
+    header .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.25}
+    .wrap{max-width:1180px;margin:0 auto;padding:0 14px}
+    .pill{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,14,22,.35);
+      padding: 8px 10px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+      box-shadow: var(--shadow);
+      user-select:none;
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text);font-weight:700}
+    .top-right{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
+    .stage-shell{
+      position:relative;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .stage{
+      position:relative;
+      width:100%;
+      height: 720px;
+      background:
+        radial-gradient(800px 500px at 20% 10%, rgba(90,162,255,.10), transparent 60%),
+        radial-gradient(800px 500px at 80% 30%, rgba(46,229,157,.08), transparent 60%),
+        rgba(10,12,18,.55);
+      border-radius:14px;
+    }
+    svg#edgesSvg{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+    }
+    .edge{
+      stroke: rgba(90,162,255,.85);
+      stroke-width: 4.5;
+      stroke-linecap: round;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+      pointer-events: none;
+    }
+    .edge.gated{
+      stroke: rgba(255,210,80,.98);
+      stroke-dasharray: 10 8;
+      stroke-width: 6.2;
+      filter:
+        drop-shadow(0 10px 16px rgba(255,210,80,.18))
+        drop-shadow(0 8px 12px rgba(0,0,0,.35));
+    }
+    .gateLabelText{
+      font-weight: 900;
+      font-size: 14px;
+      fill: rgba(255,255,255,.95);
+      paint-order: stroke;
+      stroke: rgba(0,0,0,.55);
+      stroke-width: 4px;
+      user-select:none;
+    }
+    .gateLabelBg{
+      fill: rgba(255,210,80,.18);
+      stroke: rgba(255,210,80,.85);
+      stroke-width: 2px;
+      rx: 10px; ry: 10px;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,.40));
+    }
+
+    .node{
+      position:absolute;
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      transform: translate(-50%,-50%);
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      cursor:pointer;
+    }
+    .node:hover{ filter: brightness(1.08); }
+
+    .node.start-red{ background: rgba(255,90,106,.18); border-color: rgba(255,90,106,.55); }
+    .node.start-blue{ background: rgba(90,162,255,.18); border-color: rgba(90,162,255,.55); }
+    .node.start-green{ background: rgba(46,229,157,.14); border-color: rgba(46,229,157,.55); }
+    .node.start-yellow{ background: rgba(255,210,80,.14); border-color: rgba(255,210,80,.55); }
+
+    .node.lightfield{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.35); }
+    .node.barricade-fixed{ background: rgba(255,90,106,.24); border-color: rgba(255,90,106,.85); }
+
+    .node.activeLight{
+      box-shadow:
+        0 10px 30px rgba(0,0,0,.25),
+        0 0 0 3px rgba(255,255,255,.28),
+        0 0 22px rgba(255,255,255,.22),
+        0 0 44px rgba(255,255,255,.16);
+    }
+    .node.dynamicBarricade{
+      outline: 3px solid rgba(255,90,106,.75);
+      outline-offset: 2px;
+    }
+
+    .node.selectedNode{
+      outline: 3px solid rgba(90,162,255,.85);
+      outline-offset: 2px;
+    }
+
+    .label{
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      color: rgba(255,255,255,.92);
+      white-space:nowrap;
+    }
+
+    .tokens{
+      position:absolute;
+      left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      display:flex; gap:6px;
+      pointer-events:none;
+    }
+    .token{
+      width: 14px; height: 14px; border-radius: 999px;
+      border: 2px solid rgba(0,0,0,.35);
+      box-shadow: 0 6px 10px rgba(0,0,0,.25);
+      pointer-events:auto;
+      cursor:pointer;
+    }
+    .token.selected{
+      outline: 3px solid rgba(255,255,255,.75);
+      outline-offset: 2px;
+    }
+
+    /* Bottom toolbar */
+    .toolbar{
+      position: fixed;
+      left:0; right:0; bottom:0;
+      padding: 14px 14px 18px;
+      background: linear-gradient(to top, rgba(5,6,10,.96), rgba(5,6,10,.70));
+      border-top: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+      z-index: 50;
+    }
+    .toolbar .row{
+      max-width:1180px;
+      margin:0 auto;
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .group{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: var(--shadow);
+    }
+    .group .title{
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 6px;
+    }
+    button, input[type="number"]{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 10px;
+      font-size: 13px;
+      outline:none;
+    }
+    input[type="number"]{ width: 74px; }
+    button{
+      cursor:pointer;
+      transition: transform .06s ease, filter .06s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    button:hover{filter: brightness(1.12)}
+    button:active{transform: scale(0.98)}
+    button.primary{ background: rgba(90,162,255,.22); border-color: rgba(90,162,255,.45); }
+    button.ok{ background: rgba(46,229,157,.16); border-color: rgba(46,229,157,.35); }
+    button.warn{ background: rgba(255,210,80,.16); border-color: rgba(255,210,80,.35); }
+    button.danger{ background: rgba(255,90,106,.16); border-color: rgba(255,90,106,.35); }
+    button.ghost{ background: rgba(255,255,255,.06); }
+
+    .hud{
+      display:flex; gap:10px; flex-wrap:wrap;
+      font-size: 12px; color: var(--muted);
+      align-items:center;
+    }
+    .hud b{ color: var(--text); }
+    .statusline{
+      max-width:1180px;
+      margin: 10px auto 0;
+      padding: 0 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .statusline .good{ color: var(--ok); }
+    .statusline .warn{ color: var(--warn); }
+    .statusline .bad{ color: var(--danger); }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>Lichtarena (Prototype – Offline)</h1>
+      <div class="sub">
+        Klick auf eine Figur → auswählen. Dann auf ein verbundenes Feld klicken → Zug (1 Schritt).<br/>
+        Gates/Tore werden beim Zug geprüft (Würfel muss passen). Licht spawnt zufällig auf freien normalen Feldern.
+      </div>
+    </div>
+    <div class="top-right">
+      <div class="pill"><b>Modus:</b> Offline lokal</div>
+      <div class="pill"><b>Regel:</b> Board 1 startet mit Licht auf allen Lichtfeldern</div>
+      <div class="pill"><b>Server-ready:</b> später leicht umstellbar</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="stage-shell">
+      <div id="stage" class="stage">
+        <svg id="edgesSvg"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusline" id="statusLine">Status: <b class="good">bereit</b></div>
+
+  <div class="toolbar">
+    <div class="row">
+
+      <div class="group">
+        <div class="title">Würfel</div>
+        <button id="btnRoll" class="primary" type="button">Würfeln</button>
+        <input id="diceValue" type="number" min="1" max="6" step="1" value="6" />
+        <div class="hud">
+          <span>Aktuell: <b id="hudDice">6</b></span>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="title">Licht</div>
+        <div class="hud">
+          <span>Aktive Lichter: <b id="hudActiveLights">0</b></span>
+          <span>Gesammelt (global): <b id="hudLightTotal">0</b>/<b id="hudLightGoal">5</b></span>
+        </div>
+        <button id="btnForceSpawnLight" class="warn" type="button">Test: Licht spawnen</button>
+      </div>
+
+      <div class="group">
+        <div class="title">Ereignis</div>
+        <button id="btnSpawnBarricade" class="danger" type="button">Barikade spawnen</button>
+        <button id="btnClearDynamicBarricades" class="ghost" type="button">Barikaden löschen</button>
+      </div>
+
+      <div class="group">
+        <div class="title">Debug</div>
+        <button id="btnRestart" class="ghost" type="button">Restart (Board neu laden)</button>
+        <button id="btnSave" class="ghost" type="button">Save Local</button>
+        <button id="btnLoad" class="ghost" type="button">Load Local</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Rules + Client -->
+  <script src="./game_rules_lights_barricades.js"></script>
+  <script src="./lichtarena_client.js"></script>
+</body>
+</html>

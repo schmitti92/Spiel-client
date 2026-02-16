@@ -1,0 +1,683 @@
+/* lichtarena_client.js
+   Offline-Client für Lichtarena.
+   - lädt ./board.json
+   - rendert Nodes/Edges
+   - verwaltet lokalen Game-State (später leicht server-authoritative zu ersetzen)
+*/
+
+(() => {
+  "use strict";
+
+  // ---------- DOM ----------
+  const stage = document.getElementById("stage");
+  const edgesSvg = document.getElementById("edgesSvg");
+  const statusLine = document.getElementById("statusLine");
+
+  const btnRoll = document.getElementById("btnRoll");
+  const diceValueInp = document.getElementById("diceValue");
+  const hudDice = document.getElementById("hudDice");
+
+  const hudActiveLights = document.getElementById("hudActiveLights");
+  const hudLightTotal = document.getElementById("hudLightTotal");
+  const hudLightGoal = document.getElementById("hudLightGoal");
+
+  const btnForceSpawnLight = document.getElementById("btnForceSpawnLight");
+  const btnSpawnBarricade = document.getElementById("btnSpawnBarricade");
+  const btnClearDynamicBarricades = document.getElementById("btnClearDynamicBarricades");
+
+  const btnRestart = document.getElementById("btnRestart");
+  const btnSave = document.getElementById("btnSave");
+  const btnLoad = document.getElementById("btnLoad");
+
+  // ---------- RULES API ----------
+  const Rules = window.GameRulesLightsBarricades;
+  if (!Rules) {
+    setStatus("game_rules_lights_barricades.js nicht geladen.", "bad");
+    throw new Error("Rules missing");
+  }
+
+  // ---------- State ----------
+  let board = null;
+  let nodeById = new Map();
+  let adjacency = new Map();
+
+  const gameState = {
+    // pieces as flat list (20 pieces)
+    pieces: [], // [{id,color,nodeId}]
+    selectedPieceId: null,
+
+    // dynamic barricades by nodeId
+    barricades: [],
+    barricadesMax: 15,
+
+    // lights
+    lights: {
+      active: [],
+      collectedByColor: { red:0, blue:0, green:0, yellow:0 },
+      totalCollected: 0,
+      globalGoal: 5,
+      spawnAfterCollect: true,
+      seed: 123456789
+    },
+
+    // dice
+    diceValue: 6
+  };
+
+  // ---------- Helpers ----------
+  function setStatus(text, kind="good"){
+    const cls = kind === "bad" ? "bad" : kind === "warn" ? "warn" : "good";
+    statusLine.innerHTML = `Status: <b class="${cls}">${escapeHtml(text)}</b>`;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  function clampInt(val, min, max){
+    const n = Math.round(Number(val));
+    if (!Number.isFinite(n)) return min;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function canonEdgeKey(a,b){
+    return (a < b) ? `${a}|${b}` : `${b}|${a}`;
+  }
+
+  function gateLabel(gate){
+    if (!gate) return "";
+    if (gate.mode === "exact") return `🔒 🎲=${gate.value}`;
+    if (gate.mode === "range") return `🔒 🎲 ${gate.min}–${gate.max}`;
+    return "🔒 🎲 ?";
+  }
+
+  // ---------- Board load ----------
+  async function loadBoard() {
+    const res = await fetch("./board.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("board.json konnte nicht geladen werden");
+    const json = await res.json();
+    return json;
+  }
+
+  function buildNodeMap() {
+    nodeById = new Map();
+    for (const n of (board.nodes || [])) nodeById.set(String(n.id), n);
+  }
+
+  function buildAdjacency() {
+    adjacency = new Map();
+    const add = (a, b, gate) => {
+      if (!adjacency.has(a)) adjacency.set(a, []);
+      adjacency.get(a).push({ to: b, gate: gate || null });
+    };
+    for (const e of (board.edges || [])) {
+      const a = String(e.from), b = String(e.to);
+      if (!nodeById.has(a) || !nodeById.has(b)) continue;
+      add(a, b, e.gate);
+      add(b, a, e.gate);
+    }
+  }
+
+  // ---------- Rendering ----------
+  function clearStage() {
+    edgesSvg.innerHTML = "";
+    // remove node divs
+    for (const el of Array.from(stage.querySelectorAll(".node"))) el.remove();
+  }
+
+  function computeTransform() {
+    // Map board coordinates to stage pixels, with padding.
+    // If coordinates are already stage-pixel-ish, this still works (scale ~1).
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+    const pad = 60;
+
+    const xs = [];
+    const ys = [];
+    for (const n of nodeById.values()) {
+      if (typeof n.x === "number" && typeof n.y === "number") {
+        xs.push(n.x); ys.push(n.y);
+      }
+    }
+    // fallback if no coords
+    if (!xs.length) {
+      return { scale: 1, ox: pad, oy: pad, minX:0, minY:0 };
+    }
+
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const spanX = Math.max(1, maxX - minX);
+    const spanY = Math.max(1, maxY - minY);
+
+    const scale = Math.min((W - pad*2) / spanX, (H - pad*2) / spanY);
+    const ox = pad - minX * scale;
+    const oy = pad - minY * scale;
+
+    return { scale, ox, oy, minX, minY };
+  }
+
+  function toStagePoint(n, tf) {
+    const x = (typeof n.x === "number") ? (n.x * tf.scale + tf.ox) : 100;
+    const y = (typeof n.y === "number") ? (n.y * tf.scale + tf.oy) : 100;
+    return { x, y };
+  }
+
+  function renderEdges(tf) {
+    edgesSvg.innerHTML = "";
+
+    const rendered = new Set();
+    for (const e of (board.edges || [])) {
+      const a = String(e.from), b = String(e.to);
+      const key = canonEdgeKey(a,b);
+      if (rendered.has(key)) continue;
+      rendered.add(key);
+
+      const na = nodeById.get(a);
+      const nb = nodeById.get(b);
+      if (!na || !nb) continue;
+
+      const A = toStagePoint(na, tf);
+      const B = toStagePoint(nb, tf);
+
+      const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+
+      const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+      line.setAttribute("x1", A.x);
+      line.setAttribute("y1", A.y);
+      line.setAttribute("x2", B.x);
+      line.setAttribute("y2", B.y);
+      line.classList.add("edge");
+      if (e.gate) line.classList.add("gated");
+      g.appendChild(line);
+
+      if (e.gate) {
+        const midX = (A.x + B.x) / 2;
+        const midY = (A.y + B.y) / 2;
+        const txt = gateLabel(e.gate);
+        const approxW = Math.max(70, 13.5 * txt.length);
+        const approxH = 28;
+
+        const bg = document.createElementNS("http://www.w3.org/2000/svg","rect");
+        bg.setAttribute("x", midX - approxW/2);
+        bg.setAttribute("y", midY - approxH/2);
+        bg.setAttribute("width", approxW);
+        bg.setAttribute("height", approxH);
+        bg.classList.add("gateLabelBg");
+
+        const t = document.createElementNS("http://www.w3.org/2000/svg","text");
+        t.setAttribute("x", midX);
+        t.setAttribute("y", midY);
+        t.setAttribute("text-anchor", "middle");
+        t.setAttribute("dominant-baseline", "middle");
+        t.classList.add("gateLabelText");
+        t.textContent = txt;
+
+        g.appendChild(bg);
+        g.appendChild(t);
+      }
+
+      edgesSvg.appendChild(g);
+    }
+  }
+
+  function nodeCssClasses(n) {
+    const t = String(n.type || "normal").toLowerCase();
+    const cls = ["node"];
+
+    if (t === "start") {
+      const c = String(n.color || "").toLowerCase();
+      cls.push(`start-${c || "red"}`);
+    }
+    if (t === "light_start" || t === "light_spawn") cls.push("lightfield");
+    if (t === "barricade_fixed") cls.push("barricade-fixed");
+
+    // active light?
+    if (gameState.lights.active.includes(String(n.id))) cls.push("activeLight");
+
+    // dynamic barricade?
+    if (gameState.barricades.includes(String(n.id))) cls.push("dynamicBarricade");
+
+    return cls.join(" ");
+  }
+
+  function renderNodes(tf) {
+    // nodes as divs
+    for (const n of nodeById.values()) {
+      const p = toStagePoint(n, tf);
+
+      const el = document.createElement("div");
+      el.className = nodeCssClasses(n);
+      el.style.left = `${p.x}px`;
+      el.style.top = `${p.y}px`;
+      el.dataset.id = String(n.id);
+
+      const label = document.createElement("div");
+      label.className = "label";
+      label.textContent = nodeLabel(n);
+      el.appendChild(label);
+
+      const tokens = document.createElement("div");
+      tokens.className = "tokens";
+      el.appendChild(tokens);
+
+      el.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        onNodeClicked(String(n.id));
+      });
+
+      stage.appendChild(el);
+    }
+
+    renderTokens();
+  }
+
+  function nodeLabel(n) {
+    const t = String(n.type || "normal").toLowerCase();
+    if (t === "start") return String(n.color || "start").toUpperCase();
+    if (t === "light_start") return "💡";
+    if (t === "light_spawn") return "✨";
+    if (t === "barricade_fixed") return "B";
+    if (t === "goal") return "ZIEL";
+    if (t === "portal") return `P${n.portalId || "?"}`;
+    return "";
+  }
+
+  function renderTokens() {
+    // Clear all token areas
+    for (const nodeEl of Array.from(stage.querySelectorAll(".node"))) {
+      const tokens = nodeEl.querySelector(".tokens");
+      if (tokens) tokens.innerHTML = "";
+      nodeEl.classList.remove("selectedNode");
+    }
+
+    const selectedPiece = gameState.pieces.find(p => p.id === gameState.selectedPieceId) || null;
+
+    // group pieces by nodeId
+    const byNode = new Map();
+    for (const p of gameState.pieces) {
+      const nid = String(p.nodeId);
+      if (!byNode.has(nid)) byNode.set(nid, []);
+      byNode.get(nid).push(p);
+    }
+
+    for (const [nid, pieces] of byNode.entries()) {
+      const nodeEl = stage.querySelector(`.node[data-id="${CSS.escape(nid)}"]`);
+      if (!nodeEl) continue;
+      const tokens = nodeEl.querySelector(".tokens");
+      if (!tokens) continue;
+
+      // show up to 5 tokens visually (rest as +N label could be later)
+      for (const p of pieces.slice(0, 5)) {
+        const tok = document.createElement("div");
+        tok.className = "token";
+        tok.style.background = colorToCss(p.color);
+        if (p.id === gameState.selectedPieceId) tok.classList.add("selected");
+
+        tok.title = `Figur ${p.id} (${p.color})`;
+        tok.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          selectPiece(p.id);
+        });
+
+        tokens.appendChild(tok);
+      }
+
+      // highlight selected node
+      if (selectedPiece && selectedPiece.nodeId === nid) {
+        nodeEl.classList.add("selectedNode");
+      }
+    }
+
+    // update node classes for light/barricade highlights
+    for (const nodeEl of Array.from(stage.querySelectorAll(".node"))) {
+      const id = nodeEl.dataset.id;
+      const n = nodeById.get(String(id));
+      if (!n) continue;
+      nodeEl.className = nodeCssClasses(n);
+    }
+  }
+
+  function colorToCss(color) {
+    const c = String(color || "").toLowerCase();
+    if (c === "red") return "rgba(255,90,106,.95)";
+    if (c === "blue") return "rgba(90,162,255,.95)";
+    if (c === "green") return "rgba(46,229,157,.95)";
+    if (c === "yellow") return "rgba(255,210,80,.95)";
+    return "rgba(255,255,255,.85)";
+  }
+
+  function renderAll() {
+    clearStage();
+    const tf = computeTransform();
+    renderEdges(tf);
+    renderNodes(tf);
+    renderHud();
+  }
+
+  // ---------- Game init ----------
+  function initPiecesFromStartNodes() {
+    const startsByColor = { red: [], blue: [], green: [], yellow: [] };
+
+    for (const n of nodeById.values()) {
+      if (String(n.type || "").toLowerCase() === "start") {
+        const c = String(n.color || "").toLowerCase();
+        if (startsByColor[c]) startsByColor[c].push(String(n.id));
+      }
+    }
+
+    const colors = ["red","blue","green","yellow"];
+    const pieces = [];
+
+    for (const color of colors) {
+      const startList = startsByColor[color];
+      const startNodeId = startList[0] || findAnyNormalNodeId() || findAnyNodeId();
+      for (let i=1;i<=5;i++) {
+        pieces.push({ id: `${color}_${i}`, color, nodeId: startNodeId });
+      }
+    }
+
+    gameState.pieces = pieces;
+    gameState.selectedPieceId = pieces[0]?.id || null;
+  }
+
+  function findAnyNormalNodeId() {
+    for (const n of nodeById.values()) {
+      if (String(n.type || "normal").toLowerCase() === "normal") return String(n.id);
+    }
+    return null;
+  }
+
+  function findAnyNodeId() {
+    for (const n of nodeById.values()) return String(n.id);
+    return null;
+  }
+
+  function initLightsFromBoard() {
+    // Board 1 soll auf ALLEN light_start Feldern Licht haben (du willst 2 -> beide aktiv)
+    const initial = [];
+    for (const n of nodeById.values()) {
+      const t = String(n.type || "").toLowerCase();
+      if (t === "light_start") initial.push(String(n.id));
+    }
+
+    Rules.initLights(board, gameState, {
+      globalGoal: 5,
+      spawnAfterCollect: true,
+      seed: (Date.now() >>> 0),
+      initialActiveNodeIds: initial
+    });
+
+    // Wenn es keine light_start gibt, spawnen wir testweise eins
+    if (gameState.lights.active.length === 0) {
+      Rules.spawnOneLightOnRandomFreeNormal(board, gameState, Rules.mulberry32(gameState.lights.seed));
+    }
+  }
+
+  function resetDynamicBarricades() {
+    gameState.barricades = [];
+  }
+
+  function renderHud() {
+    hudDice.textContent = String(gameState.diceValue);
+    hudActiveLights.textContent = String(gameState.lights.active.length);
+    hudLightTotal.textContent = String(gameState.lights.totalCollected);
+    hudLightGoal.textContent = String(gameState.lights.globalGoal);
+  }
+
+  // ---------- Movement / Validation ----------
+  function selectPiece(pieceId) {
+    gameState.selectedPieceId = pieceId;
+    renderTokens();
+    setStatus(`Ausgewählt: ${pieceId}`, "good");
+  }
+
+  function getSelectedPiece() {
+    return gameState.pieces.find(p => p.id === gameState.selectedPieceId) || null;
+  }
+
+  function isNodeBlockedByBarricade(nodeId) {
+    // fixed barricades are node.type === barricade_fixed
+    const n = nodeById.get(String(nodeId));
+    if (!n) return true;
+
+    const t = String(n.type || "normal").toLowerCase();
+    if (t === "barricade_fixed") return true;
+
+    // dynamic barricades
+    return gameState.barricades.includes(String(nodeId));
+  }
+
+  function isNodeOccupiedByAnyPiece(nodeId) {
+    const id = String(nodeId);
+    return gameState.pieces.some(p => String(p.nodeId) === id);
+  }
+
+  function canMoveOneStep(fromId, toId, diceValue) {
+    // adjacency + gate check
+    const list = adjacency.get(String(fromId)) || [];
+    const link = list.find(x => String(x.to) === String(toId));
+    if (!link) return { ok:false, reason:"Nicht verbunden." };
+
+    // gate check via Rules.gateAllows? (In deiner Rules-Datei ist gate checking nicht exportiert)
+    // -> Wir prüfen hier minimal selbst (server später macht das zentral)
+    if (link.gate) {
+      const d = Number(diceValue);
+      if (link.gate.mode === "exact") {
+        if (d !== Number(link.gate.value)) return { ok:false, reason:`Tor: nur bei exakt ${link.gate.value}.` };
+      } else if (link.gate.mode === "range") {
+        const mn = Math.min(Number(link.gate.min), Number(link.gate.max));
+        const mx = Math.max(Number(link.gate.min), Number(link.gate.max));
+        if (d < mn || d > mx) return { ok:false, reason:`Tor: nur bei ${mn}–${mx}.` };
+      } else {
+        return { ok:false, reason:"Tor: unbekanntes Format." };
+      }
+    }
+
+    // target blocked?
+    if (isNodeBlockedByBarricade(toId)) return { ok:false, reason:"Ziel ist durch Barikade blockiert." };
+
+    // occupied (optional rule): no stacking on same node
+    if (isNodeOccupiedByAnyPiece(toId)) return { ok:false, reason:"Ziel ist besetzt." };
+
+    return { ok:true, reason:"OK" };
+  }
+
+  function moveSelectedPieceTo(nodeId) {
+    const piece = getSelectedPiece();
+    if (!piece) return;
+
+    const from = String(piece.nodeId);
+    const to = String(nodeId);
+
+    const check = canMoveOneStep(from, to, gameState.diceValue);
+    if (!check.ok) {
+      setStatus(check.reason, "warn");
+      return;
+    }
+
+    // Apply move (offline local)
+    piece.nodeId = to;
+
+    // Apply light collection/spawn rule
+    const res = Rules.onPieceArrived(board, gameState, piece.color, to);
+
+    // Info text
+    if (res.picked) {
+      if (res.spawned) {
+        setStatus(`💡 Licht eingesammelt! Neues Licht gespawnt auf ${res.spawned}.`, "good");
+      } else {
+        // Wichtig: in deinen Regeln spawn nur wenn activeLights leer sind
+        // Bei Brett 1: erst wenn beide weg sind -> danach spawned
+        setStatus(`💡 Licht eingesammelt! (${res.total}/${res.goal})`, "good");
+      }
+    } else {
+      setStatus(`Zug: ${piece.id} → ${to}`, "good");
+    }
+
+    renderTokens();
+    renderHud();
+  }
+
+  function onNodeClicked(nodeId) {
+    const piece = getSelectedPiece();
+    if (!piece) {
+      setStatus("Keine Figur ausgewählt.", "warn");
+      return;
+    }
+    moveSelectedPieceTo(nodeId);
+  }
+
+  // ---------- Events (Barricade spawn) ----------
+  function spawnRandomBarricade() {
+    const rng = Rules.mulberry32((gameState.barricadesSeed ?? 999) >>> 0);
+    const placed = Rules.spawnBarricadeOnRandomFreeNormal(board, gameState, rng);
+    gameState.barricadesSeed = ((gameState.barricadesSeed ?? 999) + 1) >>> 0;
+
+    if (!placed) {
+      setStatus("Keine Barikade platzierbar (keine freien normalen Felder / max erreicht).", "warn");
+      return;
+    }
+    setStatus(`🧱 Barikade gespawnt auf ${placed}`, "good");
+    renderTokens();
+  }
+
+  function forceSpawnLight() {
+    const rng = Rules.mulberry32((gameState.lights.seed ?? 123) >>> 0);
+    const placed = Rules.spawnOneLightOnRandomFreeNormal(board, gameState, rng);
+    gameState.lights.seed = ((gameState.lights.seed ?? 123) + 1) >>> 0;
+
+    if (!placed) {
+      setStatus("Kein Licht platzierbar (keine freien normalen Felder).", "warn");
+      return;
+    }
+    setStatus(`💡 Test: Licht gespawnt auf ${placed}`, "good");
+    renderTokens();
+    renderHud();
+  }
+
+  // ---------- Dice ----------
+  function syncDiceFromInput() {
+    gameState.diceValue = clampInt(diceValueInp.value, 1, 6);
+    diceValueInp.value = String(gameState.diceValue);
+    renderHud();
+  }
+
+  function rollDice() {
+    const v = clampInt(1 + Math.floor(Math.random() * 6), 1, 6);
+    gameState.diceValue = v;
+    diceValueInp.value = String(v);
+    renderHud();
+    setStatus(`🎲 Gewürfelt: ${v}`, "good");
+  }
+
+  // ---------- Save/Load Local ----------
+  const LS_KEY = "lichtarena_offline_save_v1";
+
+  function saveLocal() {
+    const payload = {
+      // board is loaded from file, we only store gameState
+      gameState: {
+        pieces: gameState.pieces,
+        selectedPieceId: gameState.selectedPieceId,
+        barricades: gameState.barricades,
+        barricadesMax: gameState.barricadesMax,
+        barricadesSeed: gameState.barricadesSeed,
+        lights: gameState.lights,
+        diceValue: gameState.diceValue
+      }
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(payload));
+    setStatus("✅ Gespeichert (LocalStorage).", "good");
+  }
+
+  function loadLocal() {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) {
+      setStatus("Kein Save gefunden.", "warn");
+      return;
+    }
+    try {
+      const payload = JSON.parse(raw);
+      if (!payload?.gameState) throw new Error("bad save");
+
+      const gs = payload.gameState;
+
+      gameState.pieces = Array.isArray(gs.pieces) ? gs.pieces : gameState.pieces;
+      gameState.selectedPieceId = gs.selectedPieceId ?? gameState.selectedPieceId;
+      gameState.barricades = Array.isArray(gs.barricades) ? gs.barricades : [];
+      gameState.barricadesMax = typeof gs.barricadesMax === "number" ? gs.barricadesMax : 15;
+      gameState.barricadesSeed = typeof gs.barricadesSeed === "number" ? gs.barricadesSeed : (Date.now()>>>0);
+
+      if (gs.lights && typeof gs.lights === "object") {
+        gameState.lights = gs.lights;
+        if (!Array.isArray(gameState.lights.active)) gameState.lights.active = [];
+      }
+
+      gameState.diceValue = typeof gs.diceValue === "number" ? gs.diceValue : 6;
+      diceValueInp.value = String(clampInt(gameState.diceValue, 1, 6));
+      syncDiceFromInput();
+
+      renderAll();
+      setStatus("✅ Save geladen.", "good");
+    } catch (e) {
+      console.error(e);
+      setStatus("Save ist kaputt/ungültig.", "bad");
+    }
+  }
+
+  // ---------- Wire UI ----------
+  btnRoll.addEventListener("click", rollDice);
+  diceValueInp.addEventListener("change", syncDiceFromInput);
+  diceValueInp.addEventListener("input", syncDiceFromInput);
+
+  btnSpawnBarricade.addEventListener("click", spawnRandomBarricade);
+  btnClearDynamicBarricades.addEventListener("click", () => {
+    gameState.barricades = [];
+    setStatus("Dynamische Barikaden gelöscht.", "good");
+    renderTokens();
+  });
+
+  btnForceSpawnLight.addEventListener("click", forceSpawnLight);
+
+  btnRestart.addEventListener("click", async () => {
+    setStatus("Board wird neu geladen…", "warn");
+    await start();
+  });
+
+  btnSave.addEventListener("click", saveLocal);
+  btnLoad.addEventListener("click", loadLocal);
+
+  // ---------- Start ----------
+  async function start() {
+    try {
+      board = await loadBoard();
+      buildNodeMap();
+      buildAdjacency();
+
+      // reset state
+      gameState.pieces = [];
+      gameState.selectedPieceId = null;
+      resetDynamicBarricades();
+
+      // dice
+      syncDiceFromInput();
+
+      // pieces + lights
+      initPiecesFromStartNodes();
+      initLightsFromBoard();
+
+      renderAll();
+
+      const countLights = gameState.lights.active.length;
+      setStatus(`Bereit. Start-Lichter aktiv: ${countLights}`, "good");
+    } catch (e) {
+      console.error(e);
+      setStatus(String(e?.message || e), "bad");
+    }
+  }
+
+  // kick off
+  start();
+})();
