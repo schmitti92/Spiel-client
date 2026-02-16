@@ -38,6 +38,14 @@
 
   const btnToggleEdges = document.getElementById("btnToggleEdges");
 
+  // turn + jokers UI
+  const hudTurn = document.getElementById("hudTurn");
+  const hudTurnName = document.getElementById("hudTurnName");
+  const hudTurnDot = document.getElementById("hudTurnDot");
+  const jokerTableBody = document.getElementById("jokerTable");
+  const btnPrevTurn = document.getElementById("btnPrevTurn");
+  const btnNextTurn = document.getElementById("btnNextTurn");
+
   // ---------- RULES API ----------
   const Rules = window.GameRulesLightsBarricades;
   if (!Rules) {
@@ -53,6 +61,20 @@
   const gameState = {
     pieces: [], // [{id,color,nodeId}]
     selectedPieceId: null,
+
+    // turn system (offline): server later authoritative
+    turn: {
+      order: ["red","blue","green","yellow"],
+      index: 0
+    },
+
+    // jokers per color
+    jokers: {
+      red:   { j1:2, j2:2, j3:2, j4:2, j5:2 },
+      blue:  { j1:2, j2:2, j3:2, j4:2, j5:2 },
+      green: { j1:2, j2:2, j3:2, j4:2, j5:2 },
+      yellow:{ j1:2, j2:2, j3:2, j4:2, j5:2 }
+    },
 
     barricades: [],
     barricadesMax: 15,
@@ -94,6 +116,66 @@
     if (gate.mode === "range") return `🔒 🎲 ${gate.min}–${gate.max}`;
     return "🔒 🎲 ?";
   }
+
+
+  function activeColor() {
+    const order = gameState.turn.order;
+    const idx = gameState.turn.index % order.length;
+    return order[idx] || "red";
+  }
+
+  function jokerName(key){
+    // names aligned to your list
+    if (key === "j1") return "1) Neuwurf";
+    if (key === "j2") return "2) Alle Farben";
+    if (key === "j3") return "3) Doppelwurf";
+    if (key === "j4") return "4) Barikade versetzen";
+    if (key === "j5") return "5) Durch Barikade";
+    return key;
+  }
+
+  function renderTurnAndJokers(){
+    const c = activeColor();
+    const pretty = c.toUpperCase();
+    if (hudTurn) hudTurn.textContent = pretty;
+    if (hudTurnName) hudTurnName.textContent = pretty;
+    if (hudTurnDot){
+      hudTurnDot.className = "turnDot " + c;
+    }
+
+    if (jokerTableBody){
+      const j = gameState.jokers[c] || {j1:0,j2:0,j3:0,j4:0,j5:0};
+      const rows = ["j1","j2","j3","j4","j5"].map(k => {
+        const tr = document.createElement("tr");
+        const td1 = document.createElement("td");
+        td1.textContent = jokerName(k);
+        const td2 = document.createElement("td");
+        td2.textContent = String(j[k] ?? 0);
+        tr.appendChild(td1); tr.appendChild(td2);
+        return tr;
+      });
+      jokerTableBody.innerHTML = "";
+      for (const r of rows) jokerTableBody.appendChild(r);
+    }
+  }
+
+  function nextTurn(delta=1){
+    const len = gameState.turn.order.length || 4;
+    gameState.turn.index = (gameState.turn.index + delta + len) % len;
+
+    // auto-select a piece of that color if current selection isn't matching
+    const c = activeColor();
+    const selected = getSelectedPiece();
+    if (!selected || String(selected.color).toLowerCase() !== c) {
+      const p = gameState.pieces.find(x => String(x.color).toLowerCase() === c);
+      if (p) gameState.selectedPieceId = p.id;
+    }
+
+    renderTurnAndJokers();
+    renderTokens();
+    setStatus(`Am Zug: ${c.toUpperCase()}`, "good");
+  }
+
 
   // ---------- Board load ----------
   async function loadBoard() {
@@ -340,6 +422,7 @@
     hudActiveLights.textContent = String(gameState.lights.active.length);
     hudLightTotal.textContent = String(gameState.lights.totalCollected);
     hudLightGoal.textContent = String(gameState.lights.globalGoal);
+    renderTurnAndJokers();
   }
 
   function renderAll() {
@@ -350,7 +433,22 @@
     renderHud();
   }
 
-  // ---------- Game init ----------
+  
+  function initTurnOrderFromBoard(){
+    const metaPlayers = board?.meta?.players;
+    if (Array.isArray(metaPlayers) && metaPlayers.length){
+      const order = [];
+      for (const p of metaPlayers){
+        const c = String(p?.color || "").toLowerCase();
+        if (c && !order.includes(c)) order.push(c);
+      }
+      if (order.length) gameState.turn.order = order;
+    }
+    // ensure current index valid
+    gameState.turn.index = 0;
+  }
+
+// ---------- Game init ----------
   function initPiecesFromStartNodes() {
     const startsByColor = { red: [], blue: [], green: [], yellow: [] };
 
@@ -444,6 +542,12 @@
 
   // ---------- Movement / Validation ----------
   function selectPiece(pieceId) {
+    const p = gameState.pieces.find(x => x.id === pieceId);
+    const c = activeColor();
+    if (p && String(p.color).toLowerCase() !== c) {
+      setStatus(`Nur Figuren der aktiven Farbe (${c.toUpperCase()}) wählbar.`, "warn");
+      return;
+    }
     gameState.selectedPieceId = pieceId;
     renderTokens();
     setStatus(`Ausgewählt: ${pieceId}`, "good");
@@ -496,6 +600,12 @@
     const piece = getSelectedPiece();
     if (!piece) return;
 
+    const c = activeColor();
+    if (String(piece.color).toLowerCase() !== c) {
+      setStatus(`Nur aktive Farbe darf ziehen: ${c.toUpperCase()}`, "warn");
+      return;
+    }
+
     const from = String(piece.nodeId);
     const to = String(nodeId);
 
@@ -518,6 +628,9 @@
 
     renderTokens();
     renderHud();
+
+    // offline: nach jedem gültigen Zug nächster Spieler
+    nextTurn(1);
   }
 
   function onNodeClicked(nodeId) {
@@ -555,6 +668,9 @@
     setStatus(`💡 Test: Licht gespawnt auf ${placed}`, "good");
     renderTokens();
     renderHud();
+
+    // offline: nach jedem gültigen Zug nächster Spieler
+    nextTurn(1);
   }
 
   // ---------- Dice ----------
@@ -647,6 +763,9 @@
 
   // ---------- Wire UI ----------
   btnRoll.addEventListener("click", rollDice);
+
+  if (btnPrevTurn) btnPrevTurn.addEventListener("click", () => nextTurn(-1));
+  if (btnNextTurn) btnNextTurn.addEventListener("click", () => nextTurn(1));
   diceValueInp.addEventListener("change", syncDiceFromInput);
   diceValueInp.addEventListener("input", syncDiceFromInput);
 
@@ -673,6 +792,7 @@
       board = await loadBoard();
       buildNodeMap();
       buildAdjacency();
+      initTurnOrderFromBoard();
 
       // reset state
       gameState.pieces = [];
@@ -683,6 +803,7 @@
 
       initPiecesFromStartNodes();
       initLightsFromBoard();
+      nextTurn(0);
 
       renderAll();
 
