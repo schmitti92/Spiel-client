@@ -12,62 +12,49 @@
   const canvas = $("c");
   const ctx = canvas.getContext("2d", { alpha: true });
 
-
-// Safe DOM helpers (avoid null crashes when HTML evolves)
-const $maybe = (id) => document.getElementById(id);
-const setText = (el, v) => { if (el) el.textContent = String(v); };
-const setClass = (el, v) => { if (el) el.className = v; };
-
-
   // =========================
   // UI
   // =========================
-  
-const ui = {
-  pCount: $("pCount"),
-  turnLabel: $("turnLabel"),
-  bCount: $("bCount"),
-  playersSel: $("playersSel"),
-  log: $("log"),
-  lightBadge: $("lightBadge"),
-  phaseBadge: $("phaseBadge"),
-  scoreBadge: $("scoreBadge"),
+  const ui = {
+    pCount: $("pCount"),
+    turnLabel: $("turnLabel"),
+    bCount: $("bCount"),
+    playersSel: $("playersSel"),
+    log: $("log"),
+    lightBadge: $("lightBadge"),
+    phaseBadge: $("phaseBadge"),
+    scoreBadge: $("scoreBadge"),
 
-  // camera mini controls (optional)
-  fitBtn: $("fitBtn"),
-  zoomIn: $("zoomIn"),
-  zoomOut: $("zoomOut"),
-  // older html used zoomLabel, newer uses zoomPct
-  zoomPct: $("zoomPct") || $maybe("zoomLabel"),
+    diceVal: $("diceVal"),
+    stepsLeft: $("stepsLeft"),
+    rollBtn: $("rollBtn"),
+    endTurnBtn: $("endTurnBtn"),
 
-  // dice
-  diceVal: $("diceVal"),
-  stepsLeft: $("stepsLeft"),
-  rollBtn: $("rollBtn"),
-  endTurnBtn: $("endTurnBtn"),
+    j1: $("j1"),
+    j2: $("j2"),
+    j3: $("j3"),
+    j4: $("j4"),
+    j5: $("j5"),
+    j5a: $("j5a"),
+    giveJ1: $("giveJ1"),
+    giveJ2: $("giveJ2"),
+    giveJ3: $("giveJ3"),
+    giveJ4: $("giveJ4"),
+    giveJ5: $("giveJ5"),
+    useJ1: $("useJ1"),
+    useJ2: $("useJ2"),
+    useJ3: $("useJ3"),
+    useJ4: $("useJ4"),
+    useJ5: $("useJ5"),
 
-  // jokers
-  j1: $("j1"),
-  j2: $("j2"),
-  j3: $("j3"),
-  j4: $("j4"),
-  j5: $("j5"),
-  j5a: $("j5a"),
-  giveJ1: $("giveJ1"),
-  giveJ2: $("giveJ2"),
-  giveJ3: $("giveJ3"),
-  giveJ4: $("giveJ4"),
-  giveJ5: $("giveJ5"),
-  useJ1: $("useJ1"),
-  useJ2: $("useJ2"),
-  useJ3: $("useJ3"),
-  useJ4: $("useJ4"),
-  useJ5: $("useJ5"),
+    resetBtn: $("resetBtn"),
+    nextTurnBtn: $("nextTurnBtn"),
 
-  resetBtn: $("resetBtn"),
-  nextTurnBtn: $("nextTurnBtn"),
-};
-
+    fitBtn: $("fitBtn"),
+    zoomIn: $("zoomIn"),
+    zoomOut: $("zoomOut"),
+    zoomPct: $("zoomPct"),
+  };
 
   function log(msg) {
     const d = document.createElement("div");
@@ -104,11 +91,9 @@ const ui = {
 
     lastLight: null,
     light: null,
+    light2: null,
 
-    extraLight: null, // optional second light from event card
-    pendingEvent: null, // {pieceId,nodeId} when event triggered
-    eventSwap: null,
-
+    eventPending: null, // {pieceId,nodeId} when landing on event
     barricades: new Set(),
 
     playerCount: 4,
@@ -126,6 +111,225 @@ const ui = {
   };
 
   const COLORS = ["red", "blue", "green", "yellow", "black", "white"];
+
+  // =========================
+  // Event Cards (always random 1/22)
+  // Reihenfolge: Eventfeld betreten -> Barikade platzieren -> Karte 3s zeigen -> Effekt anwenden
+  // =========================
+  const EVENT_DECK = [
+    { id: 1,  title: "🃏 Joker: Farbwechsel", effect: (pl)=>{ pl.jokers.j1++; } },
+    { id: 2,  title: "🃏 Joker: Barikade versetzen", effect: (pl)=>{ pl.jokers.j2++; } },
+    { id: 3,  title: "🃏 Joker: Neuwurf", effect: (pl)=>{ pl.jokers.j3++; } },
+    { id: 4,  title: "🃏 Joker: Doppelwurf", effect: (pl)=>{ pl.jokers.j4++; } },
+    { id: 5,  title: "🃏 Joker: Ignorieren", effect: (pl)=>{ pl.jokers.j5++; } },
+    { id: 6,  title: "🃏 Joker: Farbwechsel", effect: (pl)=>{ pl.jokers.j1++; } },
+    { id: 7,  title: "🃏 Joker: Barikade versetzen", effect: (pl)=>{ pl.jokers.j2++; } },
+    { id: 8,  title: "🃏 Joker: Neuwurf", effect: (pl)=>{ pl.jokers.j3++; } },
+    { id: 9,  title: "🃏 Joker: Doppelwurf", effect: (pl)=>{ pl.jokers.j4++; } },
+    { id:10,  title: "🃏 Joker: Ignorieren", effect: (pl)=>{ pl.jokers.j5++; } },
+    { id:11,  title: "🎁 Alle 5 Joker", effect: (pl)=>{ pl.jokers.j1++;pl.jokers.j2++;pl.jokers.j3++;pl.jokers.j4++;pl.jokers.j5++; } },
+    { id:12,  title: "🎲 Alle anderen: 2 zufällige Joker", effect: (pl)=>{ giveOthersRandomJokers(pl.id, 2); } },
+    { id:13,  title: "🌀 Alle Spielfiguren werden neu gemischt", effect: ()=>{ shuffleAllPieces(); } },
+    { id:14,  title: "🚀 Startfeld-Figuren werden zufällig gespawnt", effect: ()=>{ scatterStartPiecesToBoard(); } },
+    { id:15,  title: "➕ +5 Felder laufen", effect: (pl, ctx)=>{ grantBonusSteps(ctx, 5); } },
+    { id:16,  title: "➕ +10 Felder laufen", effect: (pl, ctx)=>{ grantBonusSteps(ctx,10); } },
+    { id:17,  title: "🔁 Tausche Position mit eigener Figur", effect: (pl, ctx)=>{ swapWithOwnRandom(pl.id, ctx.pieceId); } },
+    { id:18,  title: "🏠 Figur zurück auf Start", effect: (pl, ctx)=>{ sendPieceHome(pl.id, ctx.pieceId); } },
+    { id:19,  title: "💥 Du verlierst alle Joker", effect: (pl)=>{ pl.jokers={j1:0,j2:0,j3:0,j4:0,j5:0}; pl.j5Active=false; pl.pendingDouble=false; } },
+    { id:20,  title: "🕵️ Klaue 1 Punkt vom Mitspieler", effect: (pl)=>{ stealOnePoint(pl.id); } },
+    { id:21,  title: "✨ Ein zusätzliches Lichtfeld erscheint", effect: ()=>{ spawnSecondLight(); } },
+    { id:22,  title: "🏆 Spieler mit den wenigsten Punkten bekommt 1 Punkt", effect: ()=>{ awardLowestPlayer(); } },
+  ];
+
+  const EVENT_UI = { overlay:null, card:null, title:null, sub:null, icon:null, timer:null };
+
+  function ensureEventUI(){
+    if (EVENT_UI.overlay) return;
+    let ov = document.getElementById("eventOverlay");
+    if (!ov){
+      ov = document.createElement("div");
+      ov.id = "eventOverlay";
+      ov.innerHTML = `
+        <div class="eventCard">
+          <div class="eventTop">
+            <div class="eventIcon">🎴</div>
+            <div class="eventTitle">Ereignis</div>
+          </div>
+          <div class="eventBody" id="eventBody"></div>
+          <div class="eventHint">Wird ausgeführt…</div>
+        </div>`;
+      document.body.appendChild(ov);
+
+      const st = document.createElement("style");
+      st.textContent = `
+        #eventOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999;
+          background:rgba(2,6,23,.55);backdrop-filter:blur(6px);}
+        #eventOverlay.show{display:flex;}
+        #eventOverlay .eventCard{width:min(520px,92vw);border-radius:18px;padding:18px 18px 16px;
+          background:linear-gradient(180deg, rgba(15,23,42,.95), rgba(2,6,23,.92));
+          border:1px solid rgba(148,163,184,.22);box-shadow:0 16px 60px rgba(0,0,0,.55);}
+        #eventOverlay .eventTop{display:flex;gap:12px;align-items:center;margin-bottom:10px;}
+        #eventOverlay .eventIcon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+          background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.35);font-size:24px;}
+        #eventOverlay .eventTitle{font-weight:800;font-size:18px;letter-spacing:.2px;color:rgba(226,232,240,.95);}
+        #eventOverlay .eventBody{margin-top:6px;font-size:16px;line-height:1.25;color:rgba(226,232,240,.92);}
+        #eventOverlay .eventHint{margin-top:10px;font-size:12px;color:rgba(148,163,184,.85);}
+        @keyframes eventPop{0%{transform:scale(.94);opacity:0}100%{transform:scale(1);opacity:1}}
+        #eventOverlay.show .eventCard{animation:eventPop .14s ease-out;}
+      `;
+      document.head.appendChild(st);
+    }
+    EVENT_UI.overlay = ov;
+    EVENT_UI.card = ov.querySelector(".eventCard");
+    EVENT_UI.title = ov.querySelector(".eventTitle");
+    EVENT_UI.sub = ov.querySelector(".eventHint");
+    EVENT_UI.icon = ov.querySelector(".eventIcon");
+  }
+
+  function showEventCard(text){
+    ensureEventUI();
+    EVENT_UI.title.textContent = "Ereigniskarte";
+    const body = document.getElementById("eventBody");
+    if (body) body.textContent = text;
+    EVENT_UI.overlay.classList.add("show");
+  }
+
+  function hideEventCard(){
+    if (!EVENT_UI.overlay) return;
+    EVENT_UI.overlay.classList.remove("show");
+  }
+
+  function drawEventCard(){
+    // immer 1/22 Wahrscheinlichkeit, immer neu gemischt (random draw)
+    const i = Math.floor(Math.random()*EVENT_DECK.length);
+    return EVENT_DECK[i];
+  }
+
+  // Event helpers
+  function giveOthersRandomJokers(exceptPlayerId, count){
+    const keys = ["j1","j2","j3","j4","j5"];
+    for (const p of S.players){
+      if (p.id === exceptPlayerId) continue;
+      for (let i=0;i<count;i++){
+        const k = keys[Math.floor(Math.random()*keys.length)];
+        p.jokers[k] += 1;
+      }
+    }
+  }
+
+  function shuffleAllPieces(){
+    // shuffle positions among ALL pieces (permutation)
+    const ids = S.pieces.map(pc=>pc.nodeId);
+    for (let i=ids.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [ids[i],ids[j]]=[ids[j],ids[i]];
+    }
+    for (let i=0;i<S.pieces.length;i++){
+      S.pieces[i].nodeId = ids[i];
+    }
+  }
+
+  function scatterStartPiecesToBoard(){
+    for (const pc of S.pieces){
+      if (isStartNode(pc.nodeId)){
+        pc.nodeId = pickRandomNormalNodeId(S.pieces);
+      }
+    }
+  }
+
+  function grantBonusSteps(ctx, bonus){
+    // ctx: {pieceId}
+    if (!ctx || !ctx.pieceId) return;
+    S.selectedPiece = ctx.pieceId;
+    S.stepsLeft = bonus;
+    S.phase = "moving";
+    log(`⚡ Bonus: ${bonus} Schritte extra! Wähle jetzt ein Ziel (${bonus} Schritte).`);
+  }
+
+  function swapWithOwnRandom(playerId, pieceId){
+    const own = S.pieces.filter(pc=>pc.owner===playerId);
+    const me = own.find(pc=>pc.id===pieceId);
+    const others = own.filter(pc=>pc.id!==pieceId);
+    if (!me || !others.length) return;
+    const other = others[Math.floor(Math.random()*others.length)];
+    const tmp = me.nodeId;
+    me.nodeId = other.nodeId;
+    other.nodeId = tmp;
+  }
+
+  function sendPieceHome(playerId, pieceId){
+    const pc = S.pieces.find(p=>p.id===pieceId && p.owner===playerId);
+    if (!pc) return;
+    // find first start field for this color
+    const starts = S.nodes.filter(n=>String(n.kind).toLowerCase()==="start" && String(n.color||n.flags?.houseColor||"").toLowerCase()===pc.color);
+    if (starts.length) pc.nodeId = starts[0].id;
+    else pc.nodeId = pickAnyNonStartNodeId();
+  }
+
+  function stealOnePoint(thiefId){
+    const thief = S.players.find(p=>p.id===thiefId);
+    const victims = S.players.filter(p=>p.id!==thiefId && p.score>0);
+    if (!thief || !victims.length) return;
+    const v = victims[Math.floor(Math.random()*victims.length)];
+    v.score -= 1;
+    thief.score += 1;
+  }
+
+  function spawnSecondLight(){
+    // pick a second light different from primary and last
+    const prev = S.light2 || null;
+    let pick = weightedPickLightNode(prev);
+    if (pick === S.light) pick = weightedPickLightNode(pick);
+    S.light2 = pick;
+    log(`✨ Zweites Lichtfeld erscheint: ${S.light2}`);
+  }
+
+  function awardLowestPlayer(){
+    let min = Infinity;
+    for (const p of S.players) min = Math.min(min, p.score);
+    const lows = S.players.filter(p=>p.score===min);
+    if (!lows.length) return;
+    const w = lows[Math.floor(Math.random()*lows.length)];
+    w.score += 1;
+    log(`🏆 Bonuspunkt für ${w.color} (wenigste Punkte).`);
+  }
+
+  function resolveEventAfterBarricade(){
+    const pl = currentPlayer();
+    const ctx = S.eventPending ? { pieceId: S.eventPending.pieceId, nodeId: S.eventPending.nodeId } : { pieceId: S.selectedPiece, nodeId: null };
+    S.eventPending = null;
+
+    const card = drawEventCard();
+    // freeze input for 3 seconds
+    S.phase = "event_reveal";
+    syncUI();
+    draw();
+    showEventCard(card.title);
+
+    clearTimeout(EVENT_UI.timer);
+    EVENT_UI.timer = setTimeout(()=>{
+      hideEventCard();
+      try{
+        card.effect(pl, ctx);
+      } catch (e){
+        console.error(e);
+      }
+      // after effect: either continue moving (bonus steps sets phase=moving),
+      // or if we're still in event mode -> end turn
+      if (S.phase === "event_reveal"){
+        // no bonus / no special flow triggered
+        endTurn("Ereignis");
+      } else {
+        // e.g. bonus steps already set phase=moving
+        syncUI();
+        draw();
+      }
+      syncUI();
+      draw();
+    }, 3000);
+  }
+
+
 
   function currentPlayer() {
     return S.players[S.turnIndex];
@@ -232,7 +436,7 @@ const ui = {
 
   function updateZoomPct() {
     const pct = Math.round(CAM.scale * 100);
-    setText(ui.zoomPct, `${pct}%`);
+    ui.zoomPct.textContent = `${pct}%`;
   }
 
   // prevent browser double-click zoom jitter
@@ -629,34 +833,6 @@ const ui = {
   }
 
   function endTurn(reason) {
-
-// event swap: click a node that has another of your pieces to swap positions
-if (S.phase === "event_swap_pick") {
-  const pl = currentPlayer();
-  const srcId = S.eventSwap?.pieceId;
-  const src = S.pieces.find(pc => pc.id === srcId);
-  if (!src) {
-    S.phase = "need_roll";
-    S.eventSwap = null;
-    log("ℹ️ Swap abgebrochen.");
-    syncUI(); draw();
-    return;
-  }
-  const target = S.pieces.find(pc => pc.owner === pl.id && pc.id !== srcId && pc.nodeId === nodeId);
-  if (!target) {
-    log("ℹ️ Klick ein Feld mit einer ANDEREN deiner Figuren.");
-    return;
-  }
-  const tmp = src.nodeId;
-  src.nodeId = target.nodeId;
-  target.nodeId = tmp;
-  S.eventSwap = null;
-  log("🔁 Positionswechsel ausgeführt.");
-  syncUI(); draw();
-  endTurn("Ereignis: Swap");
-  return;
-}
-
     const pl = currentPlayer();
     if (pl.j5Active) {
       pl.j5Active = false;
@@ -717,154 +893,34 @@ if (S.phase === "event_swap_pick") {
     return !!(st === "event" || f.event === true || f.isEvent === true || f.eventDeckId);
   }
 
-// =========================
-// Event cards (22) – always uniform (1/22)
-// Reihenfolge: Feld betreten -> Barikade platzieren -> Karte 3s zeigen -> Effekt
-// =========================
-
-// Lightweight overlay (created dynamically to avoid HTML mismatch)
-const EVT = {
-  overlay: null,
-  titleEl: null,
-  textEl: null,
-  iconEl: null,
-  active: false,
-  pending: null,
-};
-
-function ensureEventOverlay(){
-  if (EVT.overlay) return;
-  const ov = document.createElement("div");
-  ov.id = "eventOverlay";
-  ov.style.cssText = `
-    position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-    background:rgba(2,6,23,.55); z-index:9999; backdrop-filter: blur(6px);
-  `;
-  const card = document.createElement("div");
-  card.style.cssText = `
-    width:min(560px, 92vw);
-    border-radius:18px;
-    border:1px solid rgba(148,163,184,.35);
-    background: radial-gradient(120% 120% at 20% 10%, rgba(56,189,248,.20), rgba(2,6,23,.92) 60%);
-    box-shadow: 0 20px 80px rgba(0,0,0,.45);
-    padding:18px 18px 16px;
-    transform: translateY(6px) scale(.98);
-    transition: transform .18s ease, opacity .18s ease;
-    opacity:0;
-  `;
-  const top = document.createElement("div");
-  top.style.cssText = "display:flex; gap:14px; align-items:center; margin-bottom:10px;";
-  const icon = document.createElement("div");
-  icon.style.cssText = `
-    width:52px; height:52px; border-radius:16px;
-    display:flex; align-items:center; justify-content:center;
-    background: rgba(56,189,248,.12);
-    border:1px solid rgba(56,189,248,.35);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
-    font-size:26px;
-  `;
-  const titleWrap = document.createElement("div");
-  const h = document.createElement("div");
-  h.style.cssText = "font-size:18px; font-weight:800; letter-spacing:.2px; color:rgba(226,232,240,.96)";
-  const p = document.createElement("div");
-  p.style.cssText = "font-size:13px; line-height:1.35; color:rgba(148,163,184,.92)";
-  titleWrap.appendChild(h); titleWrap.appendChild(p);
-  top.appendChild(icon); top.appendChild(titleWrap);
-
-  const hint = document.createElement("div");
-  hint.style.cssText = "margin-top:10px; font-size:12px; color:rgba(148,163,184,.7)";
-  hint.textContent = "Ereignis wird ausgeführt…";
-
-  card.appendChild(top);
-  card.appendChild(hint);
-  ov.appendChild(card);
-  document.body.appendChild(ov);
-
-  EVT.overlay = ov;
-  EVT.titleEl = h;
-  EVT.textEl = p;
-  EVT.iconEl = icon;
-  EVT._card = card;
-}
-
-function showEventCard(title, text, icon="🃏", ms=3000){
-  ensureEventOverlay();
-  EVT.active = true;
-  EVT.iconEl.textContent = icon;
-  EVT.titleEl.textContent = title;
-  EVT.textEl.textContent = text;
-  EVT.overlay.style.display = "flex";
-  requestAnimationFrame(()=>{
-    EVT._card.style.opacity = "1";
-    EVT._card.style.transform = "translateY(0) scale(1)";
-  });
-  return new Promise((resolve)=>{
-    setTimeout(()=>{
-      EVT._card.style.opacity = "0";
-      EVT._card.style.transform = "translateY(6px) scale(.98)";
-      setTimeout(()=>{
-        EVT.overlay.style.display = "none";
-        EVT.active = false;
-        resolve();
-      }, 180);
-    }, ms);
-  });
-}
-
-const EVENT_CARDS = [
-  { id:1,  title:"Joker erhalten", text:"Farbwechsel (J1)", kind:"gainJoker", joker:"j1", icon:"🎨" },
-  { id:2,  title:"Joker erhalten", text:"Barikade versetzen (J2)", kind:"gainJoker", joker:"j2", icon:"🧱" },
-  { id:3,  title:"Joker erhalten", text:"Neuwurf (J3)", kind:"gainJoker", joker:"j3", icon:"🎲" },
-  { id:4,  title:"Joker erhalten", text:"Doppelwurf (J4)", kind:"gainJoker", joker:"j4", icon:"🎲" },
-  { id:5,  title:"Joker erhalten", text:"Ignorieren (J5)", kind:"gainJoker", joker:"j5", icon:"🚧" },
-  { id:6,  title:"Joker erhalten", text:"Farbwechsel (J1)", kind:"gainJoker", joker:"j1", icon:"🎨" },
-  { id:7,  title:"Joker erhalten", text:"Barikade versetzen (J2)", kind:"gainJoker", joker:"j2", icon:"🧱" },
-  { id:8,  title:"Joker erhalten", text:"Neuwurf (J3)", kind:"gainJoker", joker:"j3", icon:"🎲" },
-  { id:9,  title:"Joker erhalten", text:"Doppelwurf (J4)", kind:"gainJoker", joker:"j4", icon:"🎲" },
-  { id:10, title:"Joker erhalten", text:"Ignorieren (J5)", kind:"gainJoker", joker:"j5", icon:"🚧" },
-  { id:11, title:"Jackpot!", text:"Du erhältst alle 5 Joker (+1 jeweils).", kind:"allJokers", icon:"💥" },
-  { id:12, title:"Chaos für alle", text:"Alle anderen Spieler bekommen 2 zufällige Joker.", kind:"othersTwoRandom", icon:"🎁" },
-  { id:13, title:"Neu gemischt", text:"Alle Spielfiguren werden neu gemischt.", kind:"shuffleAllPieces", icon:"🌀" },
-  { id:14, title:"Start-Rauswurf", text:"Alle Figuren auf Startfeldern werden zufällig gespawnt.", kind:"spawnStartPieces", icon:"🚀" },
-  { id:15, title:"Speed!", text:"+5 Felder laufen.", kind:"addSteps", steps:5, icon:"⚡" },
-  { id:16, title:"Turbo!", text:"+10 Felder laufen.", kind:"addSteps", steps:10, icon:"⚡" },
-  { id:17, title:"Positionswechsel", text:"Tausche Position mit eigener Figur.", kind:"swapOwn", icon:"🔁" },
-  { id:18, title:"Zurück zum Start", text:"Figur zurück auf Start.", kind:"backToStart", icon:"🏠" },
-  { id:19, title:"Alles verloren", text:"Du verlierst alle Joker.", kind:"loseAllJokers", icon:"💀" },
-  { id:20, title:"Raubzug", text:"Klaue 1 Punkt von einem Mitspieler.", kind:"stealPoint", icon:"🪙" },
-  { id:21, title:"Doppel-Licht", text:"Ein zusätzliches Lichtfeld erscheint.", kind:"extraLight", icon:"✨" },
-  { id:22, title:"Comeback", text:"Spieler mit den wenigsten Punkten bekommt +1 Punkt.", kind:"lowestGetsPoint", icon:"🆙" },
-];
-
-function drawRandomEventCard(){
-  return EVENT_CARDS[Math.floor(Math.random()*EVENT_CARDS.length)];
-}
-
-
-
   function onReachNode(piece, nodeId) {
     const pl = currentPlayer();
 
-    if (S.light === nodeId) {
+    // scoring: primary OR secondary light
+    if (S.light === nodeId || (S.light2 && S.light2 === nodeId)) {
       pl.score += 1;
       log(`🏁 Punkt! ${pl.color} hat jetzt ${pl.score} Punkte.`);
+      // after scoring: remove secondary light (if any) and respawn primary
+      S.light2 = null;
       spawnLight("Punkt erreicht");
       endTurn("Punkt");
       return true;
     }
 
-    if (isEventNode(nodeId) && S.barricades.size < RULES.barricadeMax){
-      S.pendingEvent = { pieceId: piece.id, nodeId };
+    // event: first place barricade, THEN draw card (3s), THEN apply
+    if (isEventNode(nodeId) && S.barricades.size < RULES.barricadeMax) {
+      S.eventPending = { pieceId: piece.id, nodeId };
       S.phase = "event_place_barricade";
-      log("🎴 Ereignisfeld: ZUERST Barikade platzieren (klick Feld). Danach wird die Ereigniskarte aufgedeckt.");
-      syncUI(); draw();
+      log("🎴 Ereignisfeld: Platziere jetzt 1 Barikade (klick Feld). Danach wird die Karte aufgedeckt.");
+      syncUI();
+      draw();
       return true;
     }
 
     return false;
   }
 
- function shortestDistance(fromId, toId) {
+  function shortestDistance(fromId, toId) {
     if (fromId === toId) return 0;
     const pl = currentPlayer();
 
@@ -927,31 +983,33 @@ function drawRandomEventCard(){
   // =========================
   function placeBarricade(nodeId) {
     if (S.phase !== "place_barricade" && S.phase !== "event_place_barricade") return;
+
     if (S.barricades.size >= RULES.barricadeMax) {
       log("ℹ️ Max 15 Barikaden erreicht – keine neue Barikade.");
-      S.phase = "need_roll";
+      // continue safely
+      if (S.phase === "event_place_barricade") {
+        resolveEventAfterBarricade();
+      } else {
+        S.phase = "need_roll";
+        syncUI(); draw();
+      }
       return;
     }
     if (isStartNode(nodeId)) {
       log("⛔ Barikaden dürfen nicht auf Startfeldern stehen.");
       return;
     }
+
     S.barricades.add(nodeId);
     log(`🧱 Barikade platziert auf ${nodeId} (${S.barricades.size}/${RULES.barricadeMax})`);
 
-    // Event-Sequenz: nach Barikade kommt die Karte (3s), dann Effekt
-    if (S.phase === "event_place_barricade" && S.pendingEvent){
-      const pending = S.pendingEvent;
-      S.pendingEvent = null;
-      const card = drawRandomEventCard();
-
-      (async ()=>{
-        await showEventCard(`Ereigniskarte #${card.id}`, card.text, card.icon, 3000);
-        await applyEventCard(card, pending.pieceId);
-      })();
+    if (S.phase === "event_place_barricade") {
+      // reveal card after barricade (as requested)
+      resolveEventAfterBarricade();
       return;
     }
 
+    // normal (non-event) barricade placement ends the turn
     endTurn("Barikade platziert");
   }
 
@@ -1084,160 +1142,30 @@ function drawRandomEventCard(){
     syncUI();
   }
 
-  
-
-// =========================
-// Event card effects
-// =========================
-async function applyEventCard(card, pieceId){
-  const pl = currentPlayer();
-  const piece = S.pieces.find(pc=>pc.id===pieceId) || (S.selectedPiece ? S.pieces.find(pc=>pc.id===S.selectedPiece) : null);
-
-  const keys = ["j1","j2","j3","j4","j5"];
-  const give = (k, n=1)=>{ pl.jokers[k] = (pl.jokers[k]||0)+n; };
-
-  if (card.kind === "gainJoker"){
-    give(card.joker, 1);
-    log(`🎴 Karte: +1 ${card.joker.toUpperCase()} (${pl.color}).`);
-  } else if (card.kind === "allJokers"){
-    for (const k of keys) give(k, 1);
-    log(`🎴 Karte: ${pl.color} erhält alle 5 Joker (+1).`);
-  } else if (card.kind === "othersTwoRandom"){
-    for (const op of S.players){
-      if (op.id === pl.id) continue;
-      for (let i=0;i<2;i++){
-        const k = keys[Math.floor(Math.random()*keys.length)];
-        op.jokers[k] = (op.jokers[k]||0)+1;
-      }
-    }
-    log(`🎴 Karte: Alle anderen bekommen 2 zufällige Joker.`);
-  } else if (card.kind === "shuffleAllPieces"){
-    const normals = S.nodes.filter(n => String(n.kind).toLowerCase()==="normal").map(n=>n.id);
-    for (let i=normals.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [normals[i],normals[j]]=[normals[j],normals[i]];
-    }
-    for (let i=0;i<S.pieces.length;i++){
-      S.pieces[i].nodeId = normals[i % normals.length];
-    }
-    log("🎴 Karte: Alle Spielfiguren wurden neu gemischt.");
-  } else if (card.kind === "spawnStartPieces"){
-    const occupied = new Set(S.pieces.map(pc=>pc.nodeId));
-    const normals = S.nodes.filter(n => String(n.kind).toLowerCase()==="normal").map(n=>n.id);
-    for (let i=normals.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1)); [normals[i],normals[j]]=[normals[j],normals[i]];
-    }
-    let idx=0;
-    for (const pc of S.pieces){
-      if (isStartNode(pc.nodeId)){
-        while (idx<normals.length && occupied.has(normals[idx])) idx++;
-        if (idx<normals.length){
-          occupied.delete(pc.nodeId);
-          pc.nodeId = normals[idx];
-          occupied.add(pc.nodeId);
-          idx++;
-        }
-      }
-    }
-    log("🎴 Karte: Startfeld-Figuren wurden zufällig gespawnt.");
-  } else if (card.kind === "addSteps"){
-    const add = card.steps||0;
-    S.stepsLeft = (S.stepsLeft||0) + add;
-    if (piece){
-      S.selectedPiece = piece.id;
-      S.phase = "moving";
-    } else if (S.phase === "need_roll"){
-      S.phase = "need_piece";
-    }
-    log(`🎴 Karte: +${add} Felder! (Rest: ${S.stepsLeft})`);
-  } else if (card.kind === "swapOwn"){
-    if (!piece){
-      log("🎴 Karte: Positionswechsel – keine aktive Figur gefunden.");
-    } else {
-      S.phase = "event_swap_pick";
-      S.eventSwap = { pieceId: piece.id };
-      log("🎴 Karte: Klick ein Feld, auf dem eine ANDERE deiner Figuren steht (zum Tauschen).");
-      syncUI(); draw();
-      return;
-    }
-  } else if (card.kind === "backToStart"){
-    if (piece){
-      const starts = S.nodes
-        .filter(n => String(n.kind).toLowerCase()==="start" && String(n.color||'').toLowerCase()===pl.color)
-        .map(n=>n.id).sort((a,b)=>a-b);
-      if (starts.length){
-        piece.nodeId = starts[0];
-        log("🎴 Karte: Figur zurück auf Start.");
-      } else {
-        log("🎴 Karte: Kein Startfeld gefunden – Effekt übersprungen.");
-      }
-    }
-  } else if (card.kind === "loseAllJokers"){
-    pl.jokers = { j1:0, j2:0, j3:0, j4:0, j5:0 };
-    pl.j5Active = false;
-    pl.pendingDouble = false;
-    log("🎴 Karte: Alle Joker verloren.");
-  } else if (card.kind === "stealPoint"){
-    const victims = S.players.filter(p=>p.id!==pl.id && p.score>0);
-    if (!victims.length){
-      log("🎴 Karte: Kein Mitspieler hat Punkte – nichts zu klauen.");
-    } else {
-      const v = victims[Math.floor(Math.random()*victims.length)];
-      v.score -= 1; pl.score += 1;
-      log(`🎴 Karte: ${pl.color} klaut 1 Punkt von ${v.color}.`);
-    }
-  } else if (card.kind === "extraLight"){
-    const candidates = S.nodes
-      .filter(n=>!RULES.forbidSpawnKinds.has(n.kind))
-      .map(n=>n.id)
-      .filter(id=>id!==S.light);
-    S.extraLight = candidates[Math.floor(Math.random()*candidates.length)];
-    log(`🎴 Karte: Zusätzliches Lichtfeld erscheint: ${S.extraLight}`);
-  } else if (card.kind === "lowestGetsPoint"){
-    const min = Math.min(...S.players.map(p=>p.score));
-    const lows = S.players.filter(p=>p.score===min);
-    const who = lows[Math.floor(Math.random()*lows.length)];
-    who.score += 1;
-    log(`🎴 Karte: ${who.color} (wenigste Punkte) bekommt +1 Punkt.`);
-  }
-
-  syncUI(); draw();
-
-  if (S.stepsLeft > 0 && piece){
-    S.selectedPiece = piece.id;
-    S.phase = "moving";
-    log(`➡️ Weiterlaufen möglich. Rest: ${S.stepsLeft}`);
-    syncUI(); draw();
-    return;
-  }
-
-  endTurn("Ereignis");
-}
-
-// =========================
+  // =========================
   // UI sync
   // =========================
   function syncUI() {
-    setText(ui.pCount, String(S.playerCount));
+    ui.pCount.textContent = String(S.playerCount);
     const pl = currentPlayer();
-    setText(ui.turnLabel, pl ? `${pl.color} (Spieler ${pl.id + 1})` : "–");
-    setText(ui.bCount, `${S.barricades.size}/${RULES.barricadeMax}`);
-    setText(ui.phaseBadge, "Phase: " + S.phase);
-    setText(ui.scoreBadge, "Punkte: " + S.players.map((p) => `${p.color}:${p.score}`).join(" · "));
-    setText(ui.lightBadge, "Licht: " + (S.light ?? "–"));
+    ui.turnLabel.textContent = pl ? `${pl.color} (Spieler ${pl.id + 1})` : "–";
+    ui.bCount.textContent = `${S.barricades.size}/${RULES.barricadeMax}`;
+    ui.phaseBadge.textContent = "Phase: " + S.phase;
+    ui.scoreBadge.textContent = "Punkte: " + S.players.map((p) => `${p.color}:${p.score}`).join(" · ");
+    ui.lightBadge.textContent = "Licht: " + (S.light ?? "–");
 
-    setText(ui.diceVal, S.rollValue ?? "–");
-    setText(ui.stepsLeft, S.phase === "need_roll" ? "–" : String(S.stepsLeft));
+    ui.diceVal.textContent = S.rollValue ?? "–";
+    ui.stepsLeft.textContent = S.phase === "need_roll" ? "–" : String(S.stepsLeft);
 
-    setText(ui.j1, String(pl?.jokers.j1 ?? 0));
-    setText(ui.j2, String(pl?.jokers.j2 ?? 0));
-    setText(ui.j3, String(pl?.jokers.j3 ?? 0));
-    setText(ui.j4, String(pl?.jokers.j4 ?? 0));
-    setText(ui.j5, String(pl?.jokers.j5 ?? 0));
-    setText(ui.j5a, pl?.j5Active ? "ja" : "nein");
+    ui.j1.textContent = String(pl?.jokers.j1 ?? 0);
+    ui.j2.textContent = String(pl?.jokers.j2 ?? 0);
+    ui.j3.textContent = String(pl?.jokers.j3 ?? 0);
+    ui.j4.textContent = String(pl?.jokers.j4 ?? 0);
+    ui.j5.textContent = String(pl?.jokers.j5 ?? 0);
+    ui.j5a.textContent = pl?.j5Active ? "ja" : "nein";
 
     ui.rollBtn.disabled = S.phase !== "need_roll";
-    ui.endTurnBtn.disabled = S.phase === "place_barricade" || S.phase === "event_place_barricade" || S.phase === "j2_pick_source" || S.phase === "j2_pick_target" || S.phase === "event_swap_pick";
+    ui.endTurnBtn.disabled = S.phase === "place_barricade" || S.phase === "j2_pick_source" || S.phase === "j2_pick_target";
   }
 
   // =========================
@@ -1302,8 +1230,7 @@ async function applyEventCard(card, pieceId){
   function draw() {
     if (!S.board) return;
 
-    // Block clicks while event card overlay is visible
-    if (EVT.active) return;
+    if (S.phase === "event_reveal") return;
     const w = canvas.width / (window.devicePixelRatio || 1);
     const h = canvas.height / (window.devicePixelRatio || 1);
 
@@ -1335,9 +1262,7 @@ async function applyEventCard(card, pieceId){
     // nodes
     for (const n of S.nodes) {
       const r = n.kind === "start" ? 19 : 15;
-      const isMainLight = (S.light === n.id);
-      const isExtraLight = (S.extraLight === n.id);
-      const isLight = isMainLight || isExtraLight;
+      const isLight = S.light === n.id;
       const hasBarr = S.barricades.has(n.id);
 
       const f = n.flags || {};
@@ -1349,7 +1274,7 @@ async function applyEventCard(card, pieceId){
       if (isLight) {
         ctx.beginPath();
         ctx.arc(X(n.x), Y(n.y), r + 18, 0, Math.PI * 2);
-        ctx.fillStyle = isExtraLight ? "rgba(56,189,248,.14)" : "rgba(34,197,94,.12)";
+        ctx.fillStyle = "rgba(34,197,94,.12)";
         ctx.fill();
       }
 
@@ -1372,13 +1297,27 @@ async function applyEventCard(card, pieceId){
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        // event icon (card)
+        // tiny card icon (always visible, zoom-safe)
         ctx.save();
-        ctx.font = `900 ${Math.max(10, Math.min(14, r+2))}px ui-sans-serif, system-ui`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "rgba(226,232,240,.92)";
-        ctx.fillText("🂠", X(n.x), Y(n.y));
+        const cx = X(n.x), cy = Y(n.y);
+        const wCard = r*1.05, hCard = r*1.25;
+        const x0 = cx - wCard/2, y0 = cy - hCard/2;
+        const rad = Math.max(3, r*0.22);
+        ctx.fillStyle = "rgba(59,130,246,.18)";
+        ctx.strokeStyle = "rgba(147,197,253,.75)";
+        ctx.lineWidth = 2;
+        roundRect(ctx, x0, y0, wCard, hCard, rad);
+        ctx.fill();
+        ctx.stroke();
+        // inner lines
+        ctx.strokeStyle = "rgba(226,232,240,.55)";
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(x0+rad, y0+rad+2);
+        ctx.lineTo(x0+wCard-rad, y0+rad+2);
+        ctx.moveTo(x0+rad, y0+rad+8);
+        ctx.lineTo(x0+wCard*0.78, y0+rad+8);
+        ctx.stroke();
         ctx.restore();
       }
       if (isBoost) {
@@ -1479,7 +1418,19 @@ async function applyEventCard(card, pieceId){
       yellow: [245, 158, 11],
       black: [17, 24, 39],
       white: [226, 232, 240],
-    };
+    }
+
+  function roundRect(ctx, x, y, w, h, r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+  }
+;
     const rgb = map[c] || [148, 163, 184];
     return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
   }
@@ -1507,6 +1458,8 @@ async function applyEventCard(card, pieceId){
 
   function handleBoardTap(sx, sy) {
     if (!S.board) return;
+
+    if (S.phase === "event_reveal") return;
 
     const hit = findHitNode(sx, sy);
     if (!hit) return;
@@ -1556,7 +1509,7 @@ async function applyEventCard(card, pieceId){
   // =========================
   ui.playersSel.onchange = () => {
     S.playerCount = parseInt(ui.playersSel.value, 10);
-    setText(ui.pCount, String(S.playerCount));
+    ui.pCount.textContent = String(S.playerCount);
     hardReset();
   };
 
