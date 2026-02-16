@@ -125,41 +125,7 @@
       #sidebar{width:260px}
       .title{display:none}
     }
-  
-/* Event card overlay */
-#eventOverlay{
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(2,6,23,.55);
-  backdrop-filter: blur(6px);
-  z-index: 9999;
-}
-#eventOverlay.show{ display:flex; }
-#eventOverlay .eventCard{
-  width: min(560px, 92vw);
-  border-radius: 18px;
-  padding: 18px 18px 16px;
-  background: rgba(15,23,42,.92);
-  border: 1px solid rgba(148,163,184,.28);
-  box-shadow: 0 18px 70px rgba(0,0,0,.55);
-}
-#eventOverlay .eventTitle{
-  font-weight: 800;
-  letter-spacing: .2px;
-  font-size: 16px;
-  color: rgba(226,232,240,.92);
-  margin-bottom: 10px;
-}
-#eventOverlay .eventBody{
-  font-size: 15px;
-  line-height: 1.35;
-  color: rgba(226,232,240,.85);
-}
-
-</style>
+  </style>
 </head>
 <body>
   <div id="app">
@@ -274,15 +240,6 @@
     </main>
   </div>
 
-  <script src="lichtarena.js?v=la_events_v16"></script>
-
-  <!-- Event overlay -->
-  <div id="eventOverlay">
-    <div class="eventCard">
-      <div class="eventTitle" id="eventCardTitle">Ereigniskarte</div>
-      <div class="eventBody" id="eventCardBody"></div>
-    </div>
-  </div>
-
+  <script src="lichtarena.js?v=la_v14"></script>
 </body>
 </html>
