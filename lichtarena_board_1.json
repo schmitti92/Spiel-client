@@ -5,19 +5,19 @@
     "players": [
       {
         "color": "red",
-        "pieces": 5
+        "pieces": 4
       },
       {
         "color": "blue",
-        "pieces": 5
+        "pieces": 4
       },
       {
         "color": "green",
-        "pieces": 5
+        "pieces": 4
       },
       {
         "color": "yellow",
-        "pieces": 5
+        "pieces": 4
       }
     ],
     "features": {
