@@ -1,72 +1,120 @@
 
 /* =====================================================
-   LICHTARENA – EIGENE CSS (OHNE FUNKTIONSVERLUST)
-   NUR Layout / Responsive – KEINE Logikänderung
+   LICHTARENA FINAL – Layout Overrides (Tablet/Side Panel)
+   - Keine Logikänderung, nur UI/Layout
    ===================================================== */
 
-/* Grundlayout stabilisieren */
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
+.content{
+  height: calc(100% - 86px); /* topbar approx */
+  display:flex;
+  gap: 14px;
+  padding: 14px;
 }
 
-/* Mehr Platz für das Spielfeld */
-#stage {
-  width: 100%;
-  height: calc(100vh - 240px);
-  min-height: 420px;
+.boardArea{
+  flex: 1 1 auto;
+  min-width: 0;
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
 }
 
-/* Dock unten scrollbar statt gequetscht */
-.dock .row {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
+.sidePanel{
+  width: 380px;
+  max-width: 42vw;
+  display:flex;
+  flex-direction:column;
   gap: 12px;
-  -webkit-overflow-scrolling: touch;
 }
 
-/* Touch-optimierte Buttons */
-button {
-  min-height: 44px;
-  padding: 8px 14px;
-  font-size: 14px;
+.sideTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel2);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
-input[type="number"] {
-  height: 44px;
-  font-size: 16px;
+.zoomGroup{
+  display:flex;
+  gap: 8px;
+}
+.miniBtn{
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 12px;
 }
 
-/* Joker Tabelle kompakter */
-.jokerTable {
-  width: 240px;
-  font-size: 13px;
+.hint{
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.2;
+  text-align:right;
 }
 
-/* Aktiver Spieler visuell klarer */
-#activePlayerDisplay {
-  font-weight: bold;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.1);
+/* Board viewport + panzoom */
+#boardViewport{
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(0,0,0,.18);
+  overflow: hidden;
 }
 
-/* Tablet Querformat Optimierung */
-@media (max-width: 1100px) and (orientation: landscape) {
+#boardPanZoom{
+  position:absolute;
+  inset:0;
+  transform-origin: 0 0;
+}
 
-  #stage {
-    height: calc(100vh - 260px);
+#edgesSvg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+
+#stage{
+  position:absolute;
+  inset:0;
+}
+
+/* SidePanel: bottom card should look good when moved */
+.sidePanel .bottom{
+  position: static !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+/* Make control groups wrap nicely inside side panel */
+.sidePanel .row{
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+}
+.sidePanel .row .group{
+  width: 100%;
+}
+
+/* Tablet portrait fallback: sidebar becomes bottom */
+@media (max-width: 920px), (orientation: portrait){
+  .content{
+    flex-direction:column;
+    height:auto;
   }
-
-  .top {
-    flex-wrap: wrap;
-    gap: 10px;
+  .sidePanel{
+    width: 100%;
+    max-width: none;
   }
-
-  .pill {
-    font-size: 12px;
-    padding: 6px 10px;
+  #boardViewport{
+    min-height: 52vh;
   }
+  .hint{ text-align:left; }
 }
