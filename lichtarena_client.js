@@ -1,12 +1,19 @@
 /* lichtarena_client.js
    Offline-Client für Lichtarena.
-   - lädt ./lichtarena_board_1.json
+   - lädt ./lichtarena_board_1.json (separat, Barikade-board.json bleibt unberührt)
    - rendert Nodes/Edges
    - verwaltet lokalen Game-State (später leicht server-authoritative zu ersetzen)
+
+   WICHTIG (dein Plan):
+   - Edges sind gerichtet (from -> to). Rückwärts verboten.
+   - Figuren pro Farbe kommen aus board.meta.players[].pieces (Board1=4, Board2=5, Board3=6 ...)
+   - Start: Figuren werden auf Startfelder verteilt (1 Figur pro Startfeld, falls genug Startfelder vorhanden).
 */
 
 (() => {
   "use strict";
+
+  const BOARD_URL = "./lichtarena_board_1.json";
 
   // ---------- DOM ----------
   const stage = document.getElementById("stage");
@@ -29,6 +36,8 @@
   const btnSave = document.getElementById("btnSave");
   const btnLoad = document.getElementById("btnLoad");
 
+  const btnToggleEdges = document.getElementById("btnToggleEdges");
+
   // ---------- RULES API ----------
   const Rules = window.GameRulesLightsBarricades;
   if (!Rules) {
@@ -42,15 +51,13 @@
   let adjacency = new Map();
 
   const gameState = {
-    // pieces as flat list (20 pieces)
     pieces: [], // [{id,color,nodeId}]
     selectedPieceId: null,
 
-    // dynamic barricades by nodeId
     barricades: [],
     barricadesMax: 15,
+    barricadesSeed: 999,
 
-    // lights
     lights: {
       active: [],
       collectedByColor: { red:0, blue:0, green:0, yellow:0 },
@@ -60,13 +67,12 @@
       seed: 123456789
     },
 
-    // dice
     diceValue: 6
   };
 
   // ---------- Helpers ----------
   function setStatus(text, kind="good"){
-    const cls = kind === "bad" ? "bad" : kind === "warn" ? "warn" : "good";
+    const cls = (kind === "bad") ? "bad" : (kind === "warn") ? "warn" : "good";
     statusLine.innerHTML = `Status: <b class="${cls}">${escapeHtml(text)}</b>`;
   }
 
@@ -82,10 +88,6 @@
     return Math.max(min, Math.min(max, n));
   }
 
-  function canonEdgeKey(a,b){
-    return (a < b) ? `${a}|${b}` : `${b}|${a}`;
-  }
-
   function gateLabel(gate){
     if (!gate) return "";
     if (gate.mode === "exact") return `🔒 🎲=${gate.value}`;
@@ -94,12 +96,12 @@
   }
 
   // ---------- Board load ----------
-async function loadBoard() {
-  const res = await fetch("./lichtarena_board_1.json", { cache: "no-store" });
-   
-    if (!res.ok) throw new Error("lichtarena_board_1.json konnte nicht geladen werden");
-    const json = await res.json();
-    return json;
+  async function loadBoard() {
+    // Cache-bust ist bei GitHub Pages wichtig
+    const url = `${BOARD_URL}?v=${Date.now()}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Board konnte nicht geladen werden: ${BOARD_URL} (HTTP ${res.status})`);
+    return await res.json();
   }
 
   function buildNodeMap() {
@@ -113,7 +115,8 @@ async function loadBoard() {
       if (!adjacency.has(a)) adjacency.set(a, []);
       adjacency.get(a).push({ to: b, gate: gate || null });
     };
-    // WICHTIG: gerichtete Kanten (from -> to). Rückwärts ist verboten.
+
+    // WICHTIG: nur from -> to (gerichtet)
     for (const e of (board.edges || [])) {
       const a = String(e.from), b = String(e.to);
       if (!nodeById.has(a) || !nodeById.has(b)) continue;
@@ -122,16 +125,12 @@ async function loadBoard() {
   }
 
   // ---------- Rendering ----------
-
   function clearStage() {
     edgesSvg.innerHTML = "";
-    // remove node divs
     for (const el of Array.from(stage.querySelectorAll(".node"))) el.remove();
   }
 
   function computeTransform() {
-    // Map board coordinates to stage pixels, with padding.
-    // If coordinates are already stage-pixel-ish, this still works (scale ~1).
     const W = stage.clientWidth;
     const H = stage.clientHeight;
     const pad = 60;
@@ -143,10 +142,8 @@ async function loadBoard() {
         xs.push(n.x); ys.push(n.y);
       }
     }
-    // fallback if no coords
-    if (!xs.length) {
-      return { scale: 1, ox: pad, oy: pad, minX:0, minY:0 };
-    }
+
+    if (!xs.length) return { scale: 1, ox: pad, oy: pad, minX:0, minY:0 };
 
     const minX = Math.min(...xs), maxX = Math.max(...xs);
     const minY = Math.min(...ys), maxY = Math.max(...ys);
@@ -157,7 +154,7 @@ async function loadBoard() {
     const ox = pad - minX * scale;
     const oy = pad - minY * scale;
 
-    return { scale, ox, oy, minX, minY };
+    return { scale, ox, oy };
   }
 
   function toStagePoint(n, tf) {
@@ -169,13 +166,8 @@ async function loadBoard() {
   function renderEdges(tf) {
     edgesSvg.innerHTML = "";
 
-    const rendered = new Set();
     for (const e of (board.edges || [])) {
       const a = String(e.from), b = String(e.to);
-      const key = canonEdgeKey(a,b);
-      if (rendered.has(key)) continue;
-      rendered.add(key);
-
       const na = nodeById.get(a);
       const nb = nodeById.get(b);
       if (!na || !nb) continue;
@@ -191,13 +183,13 @@ async function loadBoard() {
       line.setAttribute("x2", B.x);
       line.setAttribute("y2", B.y);
       line.classList.add("edge");
-      if (e.gate) line.classList.add("gated");
       g.appendChild(line);
 
       if (e.gate) {
         const midX = (A.x + B.x) / 2;
         const midY = (A.y + B.y) / 2;
         const txt = gateLabel(e.gate);
+
         const approxW = Math.max(70, 13.5 * txt.length);
         const approxH = 28;
 
@@ -235,17 +227,24 @@ async function loadBoard() {
     if (t === "light_start" || t === "light_spawn") cls.push("lightfield");
     if (t === "barricade_fixed") cls.push("barricade-fixed");
 
-    // active light?
     if (gameState.lights.active.includes(String(n.id))) cls.push("activeLight");
-
-    // dynamic barricade?
     if (gameState.barricades.includes(String(n.id))) cls.push("dynamicBarricade");
 
     return cls.join(" ");
   }
 
+  function nodeLabel(n) {
+    const t = String(n.type || "normal").toLowerCase();
+    if (t === "start") return String(n.color || "start").toUpperCase();
+    if (t === "light_start") return "💡";
+    if (t === "light_spawn") return "✨";
+    if (t === "barricade_fixed") return "B";
+    if (t === "goal") return "ZIEL";
+    if (t === "portal") return `P${n.portalId || "?"}`;
+    return "";
+  }
+
   function renderNodes(tf) {
-    // nodes as divs
     for (const n of nodeById.values()) {
       const p = toStagePoint(n, tf);
 
@@ -275,19 +274,16 @@ async function loadBoard() {
     renderTokens();
   }
 
-  function nodeLabel(n) {
-    const t = String(n.type || "normal").toLowerCase();
-    if (t === "start") return String(n.color || "start").toUpperCase();
-    if (t === "light_start") return "💡";
-    if (t === "light_spawn") return "✨";
-    if (t === "barricade_fixed") return "B";
-    if (t === "goal") return "ZIEL";
-    if (t === "portal") return `P${n.portalId || "?"}`;
-    return "";
+  function colorToCss(color) {
+    const c = String(color || "").toLowerCase();
+    if (c === "red") return "rgba(255,90,106,.95)";
+    if (c === "blue") return "rgba(90,162,255,.95)";
+    if (c === "green") return "rgba(46,229,157,.95)";
+    if (c === "yellow") return "rgba(255,210,80,.95)";
+    return "rgba(255,255,255,.85)";
   }
 
   function renderTokens() {
-    // Clear all token areas
     for (const nodeEl of Array.from(stage.querySelectorAll(".node"))) {
       const tokens = nodeEl.querySelector(".tokens");
       if (tokens) tokens.innerHTML = "";
@@ -296,7 +292,6 @@ async function loadBoard() {
 
     const selectedPiece = gameState.pieces.find(p => p.id === gameState.selectedPieceId) || null;
 
-    // group pieces by nodeId
     const byNode = new Map();
     for (const p of gameState.pieces) {
       const nid = String(p.nodeId);
@@ -307,11 +302,13 @@ async function loadBoard() {
     for (const [nid, pieces] of byNode.entries()) {
       const nodeEl = stage.querySelector(`.node[data-id="${CSS.escape(nid)}"]`);
       if (!nodeEl) continue;
+
       const tokens = nodeEl.querySelector(".tokens");
       if (!tokens) continue;
 
-      // show up to 5 tokens visually (rest as +N label could be later)
-      for (const p of pieces.slice(0, 5)) {
+      // Zeig maximal 1 großen Token (Board1: wenig Figuren). Später können wir stacking wieder bauen.
+      const p = pieces[0];
+      if (p) {
         const tok = document.createElement("div");
         tok.className = "token";
         tok.style.background = colorToCss(p.color);
@@ -326,13 +323,10 @@ async function loadBoard() {
         tokens.appendChild(tok);
       }
 
-      // highlight selected node
-      if (selectedPiece && selectedPiece.nodeId === nid) {
-        nodeEl.classList.add("selectedNode");
-      }
+      if (selectedPiece && selectedPiece.nodeId === nid) nodeEl.classList.add("selectedNode");
     }
 
-    // update node classes for light/barricade highlights
+    // update classes (lights/barricades)
     for (const nodeEl of Array.from(stage.querySelectorAll(".node"))) {
       const id = nodeEl.dataset.id;
       const n = nodeById.get(String(id));
@@ -341,13 +335,11 @@ async function loadBoard() {
     }
   }
 
-  function colorToCss(color) {
-    const c = String(color || "").toLowerCase();
-    if (c === "red") return "rgba(255,90,106,.95)";
-    if (c === "blue") return "rgba(90,162,255,.95)";
-    if (c === "green") return "rgba(46,229,157,.95)";
-    if (c === "yellow") return "rgba(255,210,80,.95)";
-    return "rgba(255,255,255,.85)";
+  function renderHud() {
+    hudDice.textContent = String(gameState.diceValue);
+    hudActiveLights.textContent = String(gameState.lights.active.length);
+    hudLightTotal.textContent = String(gameState.lights.totalCollected);
+    hudLightGoal.textContent = String(gameState.lights.globalGoal);
   }
 
   function renderAll() {
@@ -369,7 +361,7 @@ async function loadBoard() {
       }
     }
 
-    // Wie viele Figuren pro Farbe? -> aus Board-Meta, fallback 5
+    // Figuren pro Farbe aus board.meta.players (dein Plan Board1=4, Board2=5, Board3=6)
     const piecesByColor = { red: 5, blue: 5, green: 5, yellow: 5 };
     const metaPlayers = board?.meta?.players;
     if (Array.isArray(metaPlayers)) {
@@ -382,7 +374,7 @@ async function loadBoard() {
       }
     }
 
-    // Startfelder pro Farbe nach X sortieren, damit die Reihenfolge stabil ist
+    // Reihenfolge stabil (nach x)
     for (const c of Object.keys(startsByColor)) {
       startsByColor[c].sort((idA, idB) => {
         const a = nodeById.get(String(idA));
@@ -399,8 +391,6 @@ async function loadBoard() {
     for (const color of colors) {
       const startList = startsByColor[color] || [];
       const need = piecesByColor[color] ?? 5;
-
-      // Fallback, falls Startfelder fehlen:
       const fallback = startList[0] || findAnyNormalNodeId() || findAnyNodeId();
 
       if (startList.length < need) {
@@ -417,7 +407,7 @@ async function loadBoard() {
     gameState.selectedPieceId = pieces[0]?.id || null;
   }
 
-  function findAnyNormalNodeId()() {
+  function findAnyNormalNodeId() {
     for (const n of nodeById.values()) {
       if (String(n.type || "normal").toLowerCase() === "normal") return String(n.id);
     }
@@ -430,35 +420,26 @@ async function loadBoard() {
   }
 
   function initLightsFromBoard() {
-    // Board 1 soll auf ALLEN light_start Feldern Licht haben (du willst 2 -> beide aktiv)
     const initial = [];
     for (const n of nodeById.values()) {
       const t = String(n.type || "").toLowerCase();
       if (t === "light_start") initial.push(String(n.id));
     }
 
+    // Ziel kommt aus meta.lightRule falls gesetzt
+    const goal = Number(board?.meta?.lightRule?.globalGoal);
+    const spawnAfterCollect = (board?.meta?.lightRule?.spawnAfterCollect !== false);
+
     Rules.initLights(board, gameState, {
-      globalGoal: 5,
-      spawnAfterCollect: true,
+      globalGoal: Number.isFinite(goal) && goal > 0 ? goal : 5,
+      spawnAfterCollect,
       seed: (Date.now() >>> 0),
       initialActiveNodeIds: initial
     });
 
-    // Wenn es keine light_start gibt, spawnen wir testweise eins
     if (gameState.lights.active.length === 0) {
       Rules.spawnOneLightOnRandomFreeNormal(board, gameState, Rules.mulberry32(gameState.lights.seed));
     }
-  }
-
-  function resetDynamicBarricades() {
-    gameState.barricades = [];
-  }
-
-  function renderHud() {
-    hudDice.textContent = String(gameState.diceValue);
-    hudActiveLights.textContent = String(gameState.lights.active.length);
-    hudLightTotal.textContent = String(gameState.lights.totalCollected);
-    hudLightGoal.textContent = String(gameState.lights.globalGoal);
   }
 
   // ---------- Movement / Validation ----------
@@ -473,14 +454,12 @@ async function loadBoard() {
   }
 
   function isNodeBlockedByBarricade(nodeId) {
-    // fixed barricades are node.type === barricade_fixed
     const n = nodeById.get(String(nodeId));
     if (!n) return true;
 
     const t = String(n.type || "normal").toLowerCase();
     if (t === "barricade_fixed") return true;
 
-    // dynamic barricades
     return gameState.barricades.includes(String(nodeId));
   }
 
@@ -490,13 +469,10 @@ async function loadBoard() {
   }
 
   function canMoveOneStep(fromId, toId, diceValue) {
-    // adjacency + gate check
     const list = adjacency.get(String(fromId)) || [];
     const link = list.find(x => String(x.to) === String(toId));
-    if (!link) return { ok:false, reason:"Nicht verbunden." };
+    if (!link) return { ok:false, reason:"Nicht verbunden (oder Rückwärts verboten)." };
 
-    // gate check via Rules.gateAllows? (In deiner Rules-Datei ist gate checking nicht exportiert)
-    // -> Wir prüfen hier minimal selbst (server später macht das zentral)
     if (link.gate) {
       const d = Number(diceValue);
       if (link.gate.mode === "exact") {
@@ -510,10 +486,7 @@ async function loadBoard() {
       }
     }
 
-    // target blocked?
     if (isNodeBlockedByBarricade(toId)) return { ok:false, reason:"Ziel ist durch Barikade blockiert." };
-
-    // occupied (optional rule): no stacking on same node
     if (isNodeOccupiedByAnyPiece(toId)) return { ok:false, reason:"Ziel ist besetzt." };
 
     return { ok:true, reason:"OK" };
@@ -532,21 +505,13 @@ async function loadBoard() {
       return;
     }
 
-    // Apply move (offline local)
     piece.nodeId = to;
 
-    // Apply light collection/spawn rule
     const res = Rules.onPieceArrived(board, gameState, piece.color, to);
 
-    // Info text
     if (res.picked) {
-      if (res.spawned) {
-        setStatus(`💡 Licht eingesammelt! Neues Licht gespawnt auf ${res.spawned}.`, "good");
-      } else {
-        // Wichtig: in deinen Regeln spawn nur wenn activeLights leer sind
-        // Bei Brett 1: erst wenn beide weg sind -> danach spawned
-        setStatus(`💡 Licht eingesammelt! (${res.total}/${res.goal})`, "good");
-      }
+      if (res.spawned) setStatus(`💡 Licht eingesammelt! Neues Licht gespawnt auf ${res.spawned}.`, "good");
+      else setStatus(`💡 Licht eingesammelt! (${res.total}/${res.goal})`, "good");
     } else {
       setStatus(`Zug: ${piece.id} → ${to}`, "good");
     }
@@ -564,7 +529,7 @@ async function loadBoard() {
     moveSelectedPieceTo(nodeId);
   }
 
-  // ---------- Events (Barricade spawn) ----------
+  // ---------- Events ----------
   function spawnRandomBarricade() {
     const rng = Rules.mulberry32((gameState.barricadesSeed ?? 999) >>> 0);
     const placed = Rules.spawnBarricadeOnRandomFreeNormal(board, gameState, rng);
@@ -612,7 +577,6 @@ async function loadBoard() {
 
   function saveLocal() {
     const payload = {
-      // board is loaded from file, we only store gameState
       gameState: {
         pieces: gameState.pieces,
         selectedPieceId: gameState.selectedPieceId,
@@ -662,6 +626,25 @@ async function loadBoard() {
     }
   }
 
+  // ---------- Edges toggle ----------
+  function setEdgesVisible(isOn) {
+    // body.edgesOff => hidden
+    document.body.classList.toggle("edgesOff", !isOn);
+    btnToggleEdges.textContent = isOn ? "Linien: AN" : "Linien: AUS";
+    // persist per browser
+    localStorage.setItem("lichtarena_edges_visible", isOn ? "1" : "0");
+  }
+
+  function initEdgesToggle() {
+    const saved = localStorage.getItem("lichtarena_edges_visible");
+    const isOn = (saved === "1");
+    setEdgesVisible(isOn);
+    btnToggleEdges.addEventListener("click", () => {
+      const nowOn = document.body.classList.contains("edgesOff");
+      setEdgesVisible(nowOn);
+    });
+  }
+
   // ---------- Wire UI ----------
   btnRoll.addEventListener("click", rollDice);
   diceValueInp.addEventListener("change", syncDiceFromInput);
@@ -694,26 +677,23 @@ async function loadBoard() {
       // reset state
       gameState.pieces = [];
       gameState.selectedPieceId = null;
-      resetDynamicBarricades();
+      gameState.barricades = [];
 
-      // dice
       syncDiceFromInput();
 
-      // pieces + lights
       initPiecesFromStartNodes();
       initLightsFromBoard();
 
       renderAll();
 
-      const countLights = gameState.lights.active.length;
-      setStatus(`Bereit. Start-Lichter aktiv: ${countLights}`, "good");
+      const bname = board?.meta?.name ? String(board.meta.name) : "(ohne Name)";
+      setStatus(`Bereit. Board: ${bname} • Start-Lichter aktiv: ${gameState.lights.active.length}`, "good");
     } catch (e) {
       console.error(e);
       setStatus(String(e?.message || e), "bad");
     }
   }
 
-  // kick off
+  initEdgesToggle();
   start();
 })();
-
