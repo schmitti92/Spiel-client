@@ -1,0 +1,500 @@
+{
+  "version": "board_v2_free",
+  "meta": {
+    "name": "spielbrett 1",
+    "players": [
+      {
+        "color": "red",
+        "pieces": 5
+      },
+      {
+        "color": "blue",
+        "pieces": 5
+      },
+      {
+        "color": "green",
+        "pieces": 5
+      },
+      {
+        "color": "yellow",
+        "pieces": 5
+      }
+    ],
+    "features": {
+      "portals": true,
+      "enemies": false,
+      "lights": true,
+      "barricades": true,
+      "gates": true
+    },
+    "createdAt": "2026-02-16",
+    "lightRule": {
+      "globalGoal": 5,
+      "spawnAfterCollect": true
+    }
+  },
+  "nodes": [
+    {
+      "id": "n5",
+      "x": 48.33332824707031,
+      "y": 69.33333587646484,
+      "type": "start",
+      "color": "red"
+    },
+    {
+      "id": "n6",
+      "x": 97.66667175292969,
+      "y": 68.66666412353516,
+      "type": "start",
+      "color": "red"
+    },
+    {
+      "id": "n7",
+      "x": 147.6666717529297,
+      "y": 68.66666412353516,
+      "type": "start",
+      "color": "red"
+    },
+    {
+      "id": "n8",
+      "x": 200.5,
+      "y": 69,
+      "type": "start",
+      "color": "red"
+    },
+    {
+      "id": "n13",
+      "x": 586.5,
+      "y": 508,
+      "type": "start",
+      "color": "green"
+    },
+    {
+      "id": "n16",
+      "x": 429.5,
+      "y": 513,
+      "type": "start",
+      "color": "green"
+    },
+    {
+      "id": "n17",
+      "x": 580.5,
+      "y": 59,
+      "type": "start",
+      "color": "yellow"
+    },
+    {
+      "id": "n18",
+      "x": 530.5,
+      "y": 59,
+      "type": "start",
+      "color": "yellow"
+    },
+    {
+      "id": "n19",
+      "x": 475.5,
+      "y": 61,
+      "type": "start",
+      "color": "yellow"
+    },
+    {
+      "id": "n20",
+      "x": 425.5,
+      "y": 62,
+      "type": "start",
+      "color": "yellow"
+    },
+    {
+      "id": "n22",
+      "x": 41.5,
+      "y": 510,
+      "type": "start",
+      "color": "blue"
+    },
+    {
+      "id": "n23",
+      "x": 92.5,
+      "y": 510,
+      "type": "start",
+      "color": "blue"
+    },
+    {
+      "id": "n24",
+      "x": 147.5,
+      "y": 511,
+      "type": "start",
+      "color": "blue"
+    },
+    {
+      "id": "n25",
+      "x": 205.5,
+      "y": 510,
+      "type": "start",
+      "color": "blue"
+    },
+    {
+      "id": "n26",
+      "x": 116.5,
+      "y": 463,
+      "type": "normal"
+    },
+    {
+      "id": "n27",
+      "x": 122.5,
+      "y": 405,
+      "type": "normal"
+    },
+    {
+      "id": "n28",
+      "x": 173.5,
+      "y": 404,
+      "type": "normal"
+    },
+    {
+      "id": "n29",
+      "x": 224.5,
+      "y": 395,
+      "type": "normal"
+    },
+    {
+      "id": "n30",
+      "x": 234.5,
+      "y": 343,
+      "type": "normal"
+    },
+    {
+      "id": "n31",
+      "x": 236.5,
+      "y": 287,
+      "type": "normal"
+    },
+    {
+      "id": "n32",
+      "x": 235.5,
+      "y": 233,
+      "type": "normal"
+    },
+    {
+      "id": "n33",
+      "x": 230.5,
+      "y": 175,
+      "type": "normal"
+    },
+    {
+      "id": "n34",
+      "x": 139.5,
+      "y": 141,
+      "type": "normal"
+    },
+    {
+      "id": "n35",
+      "x": 124.5,
+      "y": 177,
+      "type": "normal"
+    },
+    {
+      "id": "n36",
+      "x": 178.5,
+      "y": 176,
+      "type": "normal"
+    },
+    {
+      "id": "n54",
+      "x": 524.5,
+      "y": 396,
+      "type": "normal"
+    },
+    {
+      "id": "n55",
+      "x": 467.5,
+      "y": 400,
+      "type": "normal"
+    },
+    {
+      "id": "n56",
+      "x": 405.5,
+      "y": 402,
+      "type": "normal"
+    },
+    {
+      "id": "n57",
+      "x": 337.5,
+      "y": 402,
+      "type": "normal"
+    },
+    {
+      "id": "n58",
+      "x": 283.5,
+      "y": 399,
+      "type": "normal"
+    },
+    {
+      "id": "n59",
+      "x": 405.5,
+      "y": 345,
+      "type": "normal"
+    },
+    {
+      "id": "n60",
+      "x": 404.5,
+      "y": 290,
+      "type": "normal"
+    },
+    {
+      "id": "n61",
+      "x": 401.5,
+      "y": 235,
+      "type": "normal"
+    },
+    {
+      "id": "n62",
+      "x": 401.5,
+      "y": 179,
+      "type": "normal"
+    },
+    {
+      "id": "n63",
+      "x": 345.5,
+      "y": 176,
+      "type": "normal"
+    },
+    {
+      "id": "n64",
+      "x": 287.5,
+      "y": 173,
+      "type": "normal"
+    },
+    {
+      "id": "n76",
+      "x": 451.5,
+      "y": 176,
+      "type": "normal"
+    },
+    {
+      "id": "n77",
+      "x": 504.5,
+      "y": 182,
+      "type": "normal"
+    },
+    {
+      "id": "n78",
+      "x": 505.5,
+      "y": 120,
+      "type": "normal"
+    },
+    {
+      "id": "n79",
+      "x": 526.5,
+      "y": 451,
+      "type": "normal"
+    },
+    {
+      "id": "n80",
+      "x": 487.5,
+      "y": 511,
+      "type": "start",
+      "color": "green"
+    },
+    {
+      "id": "n81",
+      "x": 533.5,
+      "y": 512,
+      "type": "start",
+      "color": "green"
+    },
+    {
+      "id": "n83",
+      "x": 295.5,
+      "y": 288,
+      "type": "light_start"
+    },
+    {
+      "id": "n84",
+      "x": 349.5,
+      "y": 295,
+      "type": "light_start"
+    }
+  ],
+  "edges": [
+    {
+      "from": "n16",
+      "to": "n79"
+    },
+    {
+      "from": "n79",
+      "to": "n80"
+    },
+    {
+      "from": "n13",
+      "to": "n79"
+    },
+    {
+      "from": "n54",
+      "to": "n79"
+    },
+    {
+      "from": "n54",
+      "to": "n55"
+    },
+    {
+      "from": "n55",
+      "to": "n56"
+    },
+    {
+      "from": "n56",
+      "to": "n59"
+    },
+    {
+      "from": "n59",
+      "to": "n60"
+    },
+    {
+      "from": "n60",
+      "to": "n61"
+    },
+    {
+      "from": "n61",
+      "to": "n62"
+    },
+    {
+      "from": "n62",
+      "to": "n76"
+    },
+    {
+      "from": "n76",
+      "to": "n77"
+    },
+    {
+      "from": "n77",
+      "to": "n78"
+    },
+    {
+      "from": "n17",
+      "to": "n78"
+    },
+    {
+      "from": "n18",
+      "to": "n78"
+    },
+    {
+      "from": "n19",
+      "to": "n78"
+    },
+    {
+      "from": "n20",
+      "to": "n78"
+    },
+    {
+      "from": "n62",
+      "to": "n63"
+    },
+    {
+      "from": "n63",
+      "to": "n64"
+    },
+    {
+      "from": "n33",
+      "to": "n64"
+    },
+    {
+      "from": "n33",
+      "to": "n36"
+    },
+    {
+      "from": "n35",
+      "to": "n36"
+    },
+    {
+      "from": "n34",
+      "to": "n35"
+    },
+    {
+      "from": "n34",
+      "to": "n8"
+    },
+    {
+      "from": "n34",
+      "to": "n7"
+    },
+    {
+      "from": "n34",
+      "to": "n6"
+    },
+    {
+      "from": "n34",
+      "to": "n5"
+    },
+    {
+      "from": "n32",
+      "to": "n33"
+    },
+    {
+      "from": "n31",
+      "to": "n32"
+    },
+    {
+      "from": "n30",
+      "to": "n31"
+    },
+    {
+      "from": "n29",
+      "to": "n30"
+    },
+    {
+      "from": "n29",
+      "to": "n58"
+    },
+    {
+      "from": "n57",
+      "to": "n58"
+    },
+    {
+      "from": "n56",
+      "to": "n57"
+    },
+    {
+      "from": "n28",
+      "to": "n29"
+    },
+    {
+      "from": "n27",
+      "to": "n28"
+    },
+    {
+      "from": "n26",
+      "to": "n27"
+    },
+    {
+      "from": "n24",
+      "to": "n26"
+    },
+    {
+      "from": "n25",
+      "to": "n26"
+    },
+    {
+      "from": "n23",
+      "to": "n26"
+    },
+    {
+      "from": "n22",
+      "to": "n26"
+    },
+    {
+      "from": "n79",
+      "to": "n81"
+    },
+    {
+      "from": "n31",
+      "to": "n83"
+    },
+    {
+      "from": "n83",
+      "to": "n84"
+    },
+    {
+      "from": "n60",
+      "to": "n84"
+    }
+  ]
+}
