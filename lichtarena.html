@@ -126,56 +126,40 @@
       .title{display:none}
     }
   
+/* Event card overlay */
+#eventOverlay{
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2,6,23,.55);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+}
+#eventOverlay.show{ display:flex; }
+#eventOverlay .eventCard{
+  width: min(560px, 92vw);
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  background: rgba(15,23,42,.92);
+  border: 1px solid rgba(148,163,184,.28);
+  box-shadow: 0 18px 70px rgba(0,0,0,.55);
+}
+#eventOverlay .eventTitle{
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 16px;
+  color: rgba(226,232,240,.92);
+  margin-bottom: 10px;
+}
+#eventOverlay .eventBody{
+  font-size: 15px;
+  line-height: 1.35;
+  color: rgba(226,232,240,.85);
+}
 
-    /* Event overlay */
-    .eventOverlay{
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(2,6,23,.55);
-      backdrop-filter: blur(6px);
-      z-index: 9999;
-    }
-    .eventOverlay.show{
-      display: flex;
-    }
-    .eventCard{
-      width: min(520px, 92vw);
-      border-radius: 18px;
-      padding: 18px 18px 14px;
-      background: linear-gradient(180deg, rgba(15,23,42,.92), rgba(2,6,23,.92));
-      border: 1px solid rgba(148,163,184,.25);
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-      transform: translateY(6px);
-      animation: pop .18s ease-out forwards;
-    }
-    .eventTitle{
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: .2px;
-      color: rgba(226,232,240,.95);
-      margin-bottom: 10px;
-    }
-    .eventBody{
-      font-size: 18px;
-      font-weight: 800;
-      line-height: 1.25;
-      color: rgba(56,189,248,.95);
-      text-shadow: 0 0 18px rgba(56,189,248,.15);
-      margin-bottom: 10px;
-    }
-    .eventHint{
-      font-size: 12px;
-      color: rgba(148,163,184,.85);
-    }
-    @keyframes pop{
-      from{ transform: translateY(10px) scale(.98); opacity: 0; }
-      to{ transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-  </style>
+</style>
 </head>
 <body>
   <div id="app">
@@ -290,15 +274,13 @@
     </main>
   </div>
 
-  <script src="lichtarena.js?v=la_v14"></script>
+  <script src="lichtarena.js?v=la_events_v16"></script>
 
-
-  <!-- Event Card Overlay -->
-  <div id="eventOverlay" class="eventOverlay" aria-hidden="true">
+  <!-- Event overlay -->
+  <div id="eventOverlay">
     <div class="eventCard">
-      <div id="eventCardTitle" class="eventTitle">Ereigniskarte</div>
-      <div id="eventCardBody" class="eventBody">…</div>
-      <div class="eventHint">(wird automatisch umgesetzt)</div>
+      <div class="eventTitle" id="eventCardTitle">Ereigniskarte</div>
+      <div class="eventBody" id="eventCardBody"></div>
     </div>
   </div>
 
