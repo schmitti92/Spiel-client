@@ -1,464 +1,136 @@
-/* Lichtarena – eigenes Stylesheet (Barikade styles.css bleibt unberührt)
-   Ziel: dunkel + edel + PRAKTISCH auf Tablet (Querformat).
-   - Board bekommt maximalen Platz
-   - Sidebar ist kompakt + scrollbar + optional einklappbar
-   - Controls sind fingerfreundlich
-*/
+/* ===============================
+   LICHTARENA – TURNIER LOOK
+   =============================== */
 
-:root{
-  --bg0:#05070c;
-  --bg1:#0a1020;
-  --panel:rgba(16,22,34,.68);
-  --panel2:rgba(10,15,26,.78);
-  --stroke:rgba(255,255,255,.10);
-  --stroke2:rgba(255,255,255,.14);
-  --text:#eaf1ff;
-  --muted:#a7b5d6;
-  --good:#38f4a6;
-  --warn:#ffd166;
-  --bad:#ff6476;
-
-  --red:#ff5a6a;
-  --blue:#5aa2ff;
-  --green:#2ee59d;
-  --yellow:#ffd250;
-
-  --shadow: 0 18px 50px rgba(0,0,0,.55);
-  --r:18px;
+body {
+    margin: 0;
+    background: #0b0f17;   /* komplett ruhig */
+    color: #e6edf5;
+    font-family: "Segoe UI", system-ui, sans-serif;
 }
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-  color:var(--text);
-  background:
-    radial-gradient(1100px 700px at 15% 85%, rgba(56,244,166,.10), transparent 60%),
-    radial-gradient(1000px 650px at 85% 35%, rgba(90,162,255,.10), transparent 60%),
-    radial-gradient(900px 600px at 60% 100%, rgba(255,210,80,.08), transparent 60%),
-    linear-gradient(180deg, var(--bg0), var(--bg1));
-  overflow:hidden;
+/* ========== LAYOUT ========== */
+
+.main-layout {
+    display: flex;
+    height: 100vh;
 }
 
-a{ color:inherit; }
-
-/* ---------- Header (kompakt) ---------- */
-.topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 14px;
-}
-.brand{
-  min-width: 260px;
-}
-.brand h1{
-  margin:0;
-  font-size:18px;
-  letter-spacing:.2px;
-}
-.brand .sub{
-  margin-top:4px;
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.25;
-  max-width: 56ch;
+.board-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #0f1624;
+    border-right: 1px solid rgba(255,255,255,0.08);
 }
 
-.pills{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  align-items:center;
-}
-.pill{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  border:1px solid var(--stroke);
-  background:rgba(0,0,0,.22);
-  border-radius:999px;
-  font-size:12px;
-  color:var(--muted);
-  backdrop-filter: blur(12px);
-}
-.pill strong{ color:var(--text); font-weight:650; }
-.dot{ width:10px; height:10px; border-radius:999px; display:inline-block; box-shadow:0 0 0 2px rgba(0,0,0,.35) inset; }
-.dot.red{ background:var(--red); }
-.dot.blue{ background:var(--blue); }
-.dot.green{ background:var(--green); }
-.dot.yellow{ background:var(--yellow); }
-
-.iconBtn{
-  border:1px solid var(--stroke);
-  background:rgba(0,0,0,.22);
-  color:var(--text);
-  border-radius:12px;
-  padding:8px 10px;
-  font-size:12px;
-  cursor:pointer;
-}
-.iconBtn:active{ transform: translateY(1px); }
-
-/* ---------- Layout ---------- */
-.layout{
-  display:grid;
-  grid-template-columns: 1fr minmax(280px, 340px);
-  gap:14px;
-  padding:0 14px 14px 14px;
-  height: calc(100vh - 58px);
+.ui-panel {
+    width: 360px;
+    background: #111827;
+    padding: 20px;
+    overflow-y: auto;
 }
 
-body.sideCollapsed .layout{ grid-template-columns: 1fr; }
-body.sideCollapsed .side{ display:none; }
+/* ========== BOARD ========== */
 
-/* ---------- Board Card ---------- */
-.boardCard{
-  position:relative;
-  border-radius: var(--r);
-  border:1px solid var(--stroke);
-  background:
-    radial-gradient(900px 700px at 25% 65%, rgba(255,90,106,.10), transparent 58%),
-    radial-gradient(900px 700px at 80% 35%, rgba(90,162,255,.11), transparent 60%),
-    radial-gradient(900px 700px at 65% 100%, rgba(46,229,157,.09), transparent 62%),
-    linear-gradient(180deg, rgba(18,24,38,.55), rgba(10,14,24,.72));
-  box-shadow: var(--shadow);
-  overflow:hidden;
+#stage {
+    position: absolute;
+    transform-origin: 0 0;
 }
 
-.boardHeader{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:10px 12px;
-  border-bottom:1px solid var(--stroke);
-  background: rgba(0,0,0,.18);
+/* ===== Nodes ===== */
+
+.node {
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+
+    background: #1c2435;
+    border: 2px solid #2a364f;
+
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.03),
+        0 0 8px rgba(0,0,0,0.6);
+
+    transition: 0.2s ease;
 }
 
-.statusLine{
-  font-size:13px;
-  color:var(--muted);
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.statusLine b.good{ color:var(--good); }
-.statusLine b.warn{ color:var(--warn); }
-.statusLine b.bad{ color:var(--bad); }
-
-.hint{
-  font-size:12px;
-  color:var(--muted);
-  opacity:.95;
+.node:hover {
+    border-color: #4b6cb7;
 }
 
-.view{
-  position:absolute;
-  inset: 46px 0 0 0;
-  overflow:hidden;
-  touch-action:none; /* wichtig für PointerEvents pan/zoom */
+/* ===== Edges ===== */
+
+svg line {
+    stroke: rgba(120,170,255,0.7);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 3px rgba(120,170,255,0.4));
 }
 
-/* stageWrap: wird per JS transformiert */
-.stageWrap{
-  position:absolute;
-  left:0; top:0;
-  transform-origin: 0 0;
+/* ========== TOKENS ========== */
+
+.token {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    margin: auto;
+    margin-top: 9px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.6);
 }
 
-/* Stage itself */
-#stage{
-  position:relative;
-  width: 1200px; /* großer virtueller Raum – Kamera passt an */
-  height: 900px;
+.token.red { background: #ff4d5a; }
+.token.blue { background: #4d9dff; }
+.token.green { background: #35d28a; }
+.token.yellow { background: #ffd84d; }
+
+/* ========== STATUS ========== */
+
+.status-bar {
+    background: #0f1624;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-#edgesSvg{
-  position:absolute;
-  inset:0;
-  overflow:visible;
+/* ========== UI PANEL ========== */
+
+.ui-section {
+    margin-bottom: 28px;
 }
 
-.edge{ stroke: rgba(120,190,255,.40); stroke-width: 4; stroke-linecap:round; }
-.edge.gated{ stroke: rgba(255,210,80,.55); }
-.gateLabelBg{ fill: rgba(0,0,0,.45); stroke: rgba(255,210,80,.35); stroke-width: 1; rx: 10; }
-.gateLabelText{ fill: rgba(255,245,210,.95); font-size: 12px; }
-
-/* Nodes */
-.node{
-  position:absolute;
-  width: 58px;
-  height: 58px;
-  transform: translate(-50%, -50%);
-  border-radius: 14px;
-  border:1px solid var(--stroke2);
-  background: rgba(255,255,255,.04);
-  box-shadow: 0 10px 26px rgba(0,0,0,.35);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  user-select:none;
-}
-.node .label{ position:absolute; top:6px; left:8px; font-size:11px; color:rgba(255,255,255,.70); }
-.node .tokens{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; align-content:center; padding:12px 10px 10px; }
-.token{ width:22px; height:22px; border-radius:8px; border:1px solid rgba(255,255,255,.35); box-shadow: 0 10px 18px rgba(0,0,0,.35); }
-.token.selected{ outline: 2px solid rgba(255,255,255,.85); outline-offset: 2px; }
-.selectedNode{ box-shadow: 0 0 0 2px rgba(255,255,255,.28) inset, 0 18px 40px rgba(0,0,0,.45); }
-
-.start-red{ box-shadow: 0 0 0 1px rgba(255,90,106,.60) inset, 0 10px 26px rgba(0,0,0,.35); }
-.start-blue{ box-shadow: 0 0 0 1px rgba(90,162,255,.60) inset, 0 10px 26px rgba(0,0,0,.35); }
-.start-green{ box-shadow: 0 0 0 1px rgba(46,229,157,.60) inset, 0 10px 26px rgba(0,0,0,.35); }
-.start-yellow{ box-shadow: 0 0 0 1px rgba(255,210,80,.60) inset, 0 10px 26px rgba(0,0,0,.35); }
-
-.lightfield{ box-shadow: 0 0 0 1px rgba(255,210,80,.55) inset, 0 10px 26px rgba(0,0,0,.35); }
-.activeLight{ box-shadow: 0 0 0 2px rgba(255,210,80,.85) inset, 0 0 34px rgba(255,210,80,.18); }
-
-.barricade-fixed{ box-shadow: 0 0 0 2px rgba(255,90,106,.55) inset; }
-.dynamicBarricade{ box-shadow: 0 0 0 2px rgba(255,90,106,.75) inset, 0 0 30px rgba(255,90,106,.12); }
-
-/* ---------- Board overlay controls ---------- */
-.boardOverlay{
-  position:absolute;
-  left:12px;
-  bottom:12px;
-  display:flex;
-  gap:10px;
-  align-items:center;
-  padding:10px;
-  border-radius: 16px;
-  border:1px solid var(--stroke);
-  background: rgba(0,0,0,.25);
-  backdrop-filter: blur(10px);
-}
-.zoomBtn{
-  width:44px; height:44px;
-  border-radius:14px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.05);
-  color:var(--text);
-  font-size:18px;
-  cursor:pointer;
-}
-.zoomReadout{ min-width:74px; text-align:center; font-variant-numeric: tabular-nums; color:var(--muted); }
-.fitBtn{
-  height:44px;
-  padding:0 12px;
-  border-radius:14px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.05);
-  color:var(--text);
-  cursor:pointer;
+.ui-section h3 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    color: #8aa0c8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.linesBadge{
-  position:absolute;
-  right:12px;
-  bottom:12px;
-  padding:10px 12px;
-  border-radius: 16px;
-  border:1px solid var(--stroke);
-  background: rgba(0,0,0,.22);
-  color:var(--muted);
-  font-size:12px;
-  backdrop-filter: blur(10px);
+button {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #e6edf5;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s ease;
 }
 
-/* ---------- Sidebar ---------- */
-.side{
-  border-radius: var(--r);
-  border:1px solid var(--stroke);
-  background: linear-gradient(180deg, rgba(18,24,38,.55), rgba(10,14,24,.78));
-  box-shadow: var(--shadow);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
-.sideScroll{
-  overflow:auto;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+button:hover {
+    background: #263244;
 }
 
-.card{
-  border-radius: 16px;
-  border:1px solid var(--stroke);
-  background: rgba(0,0,0,.18);
-  padding:12px;
-}
-.card h3{
-  margin:0 0 10px 0;
-  font-size:15px;
-  letter-spacing:.2px;
-}
-.row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
+/* ========== TURN BADGE ========== */
+
+.turn-indicator {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-block;
+    margin-left: 10px;
 }
 
-.btn{
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,.05);
-  color:var(--text);
-  padding:10px 12px;
-  border-radius:14px;
-  cursor:pointer;
-  font-weight:600;
-}
-.btn:active{ transform: translateY(1px); }
-
-.btnDanger{ background: rgba(255,90,106,.10); border-color: rgba(255,90,106,.25); }
-.btnGold{ background: rgba(255,210,80,.10); border-color: rgba(255,210,80,.25); }
-
-.input{
-  width: 84px;
-  border-radius: 12px;
-  border:1px solid var(--stroke);
-  background: rgba(0,0,0,.22);
-  color: var(--text);
-  padding:10px 10px;
-  font-size:14px;
-}
-
-.table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px;
-}
-.table th,
-.table td{
-  padding:8px 6px;
-  border-bottom:1px solid rgba(255,255,255,.07);
-}
-.table th{ text-align:left; color:var(--muted); font-weight:650; }
-.table td:last-child,
-.table th:last-child{ text-align:right; font-variant-numeric: tabular-nums; }
-
-.small{ font-size:12px; color:var(--muted); }
-
-/* ---------- Responsive: Tablet/Phone ---------- */
-@media (max-width: 980px){
-  .layout{ grid-template-columns: 1fr 300px; }
-  #stage{ width: 1100px; height: 820px; }
-}
-
-@media (max-width: 820px){
-  body{ overflow:auto; }
-  .layout{ grid-template-columns: 1fr; height:auto; }
-  .side{ height:auto; }
-  .boardCard{ min-height: 520px; }
-}
-
-/* Scrollbar subtle */
-.sideScroll::-webkit-scrollbar{ width:10px; }
-.sideScroll::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius: 999px; border:2px solid rgba(0,0,0,.25); }
-
-
-/* Reduce clutter on start fields */
-.node.start-red .label,
-.node.start-blue .label,
-.node.start-green .label,
-.node.start-yellow .label{ opacity:.35; font-size:12px; letter-spacing:.02em; }
-
-@media (max-width: 980px){
-  :root{ --nodeSize: clamp(72px, 8.2vw, 110px); }
-  .node .label{ font-size: 13px; }
-}
-
-/* ================= PATCH: Turnier-Look + praktische Tablet-Ansicht =================
-   Ziel: Brett groß links, UI rechts fix + scroll, bessere Lesbarkeit der Nodes/Edges.
-   (Overrides – keine Features entfernt)
-*/
-
-/* Mehr nutzbare Fläche & ruhiger Hintergrund */
-body{ overflow:hidden; }
-
-/* Layout: links maximal breit, rechts fix */
-.layout{
-  grid-template-columns: minmax(0, 1fr) clamp(320px, 30vw, 420px);
-}
-
-/* Rechte Leiste: "fix" im Sinne von eigenem Scrollbereich */
-.side{
-  height: 100%;
-  overflow: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-}
-
-/* Board-Panel kontrastreicher */
-.view{
-  background:
-    radial-gradient(1200px 700px at 30% 40%, rgba(46,229,157,.10), transparent 60%),
-    radial-gradient(1000px 700px at 70% 30%, rgba(90,162,255,.09), transparent 60%),
-    radial-gradient(1000px 900px at 60% 80%, rgba(255,210,80,.07), transparent 65%),
-    linear-gradient(180deg, rgba(7,10,18,.75), rgba(7,10,18,.65));
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-/* Hilfsraster (dezent), macht Bewegung/Zoom besser einschätzbar */
-#stageWrap::before{
-  content:"";
-  position:absolute; inset:0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-  background-size: 80px 80px;
-  opacity: .25;
-  pointer-events:none;
-}
-
-/* Edges klarer */
-.edge{ stroke: rgba(140,200,255,.55) !important; stroke-width: 3.2 !important; }
-.edge.gated{ stroke: rgba(255,210,80,.70) !important; stroke-width: 3.6 !important; }
-
-/* Nodes: weniger "Nebel", mehr Kante */
-.node{
-  width: 62px; height: 62px;
-  background: rgba(255,255,255,.11);
-  border: 1px solid rgba(255,255,255,.18);
-  box-shadow:
-    0 0 0 1px rgba(0,0,0,.35) inset,
-    0 10px 28px rgba(0,0,0,.45);
-}
-
-/* Start-Felder: Label aus, damit es nicht überlappt (Tokens reichen) */
-.node[class*="start-"] .label{ display:none; }
-
-/* Selected / Active: deutlicher */
-.node.selectedNode{ box-shadow: 0 0 0 2px rgba(255,255,255,.28), 0 0 0 6px rgba(90,162,255,.18), 0 12px 30px rgba(0,0,0,.50); }
-.node.activeLight{ box-shadow: 0 0 0 2px rgba(255,210,80,.35), 0 0 0 8px rgba(255,210,80,.15), 0 16px 34px rgba(0,0,0,.55); }
-
-/* Tokens: knackiger */
-.token{
-  width: 22px; height: 22px;
-  box-shadow: 0 0 0 2px rgba(0,0,0,.35), 0 10px 16px rgba(0,0,0,.40);
-}
-
-/* Zoom-Controls immer gut sichtbar */
-.zoomCtl{
-  background: rgba(10,14,24,.60);
-  border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(10px);
-}
-
-/* Tablet quer: mehr Höhe fürs Brett */
-@media (max-width: 1100px){
-  .layout{ grid-template-columns: minmax(0, 1fr) clamp(300px, 34vw, 400px); }
-}
-
-/* Sehr schmal: UI als Drawer (bleibt nutzbar, Brett groß) */
-@media (max-width: 820px){
-  body{ overflow:auto; }
-  .layout{ grid-template-columns: 1fr; }
-  .side{ height: auto; }
-}
+.turn-red { background: #3b1117; color: #ff6b77; }
+.turn-blue { background: #122338; color: #6bb6ff; }
+.turn-green { background: #0f2e22; color: #47e39f; }
+.turn-yellow { background: #332a0d; color: #ffd84d; }
