@@ -16,7 +16,7 @@
   const stage = $("stage");
   const edgesSvg = $("edgesSvg");
   const statusLine = $("statusLine");
-  const pillRule = $("pillRule");
+  const pillRule = $("pillRule"); // optional (may be missing in some layouts)
   const pillTurn = $("pillTurn");
 
   const btnRoll = $("btnRoll");
@@ -35,8 +35,8 @@
   const btnSave = $("btnSave");
   const btnLoad = $("btnLoad");
 
-  const btnPrevPlayer = $("btnPrevPlayer");
-  const btnNextPlayer = $("btnNextPlayer");
+  const btnPrevTurn = $("btnPrevTurn");
+  const btnNextTurn = $("btnNextTurn");
   const turnBadge = $("turnBadge");
   const turnName = $("turnName");
 
@@ -46,7 +46,7 @@
   const btnFit = $("btnFit");
   const btnZoomOut = $("btnZoomOut");
   const btnZoomIn = $("btnZoomIn");
-  const btnResetCam = $("btnResetCam");
+  const btnResetView = $("btnResetView");
   const btnToggleLines = $("btnToggleLines");
   const zoomPct = $("zoomPct");
 
@@ -343,8 +343,7 @@
       const tokens = document.createElement("div");
       tokens.className = "tokens";
       el.appendChild(tokens);
-
-      el.addEventListener("click", (ev) => {
+if (el) el.addEventListener("click", (ev) => {
         ev.stopPropagation();
         onNodeClicked(String(n.id));
       });
@@ -385,7 +384,7 @@
         tok.className = "token" + (p.id === state.selectedPieceId ? " selected" : "");
         tok.style.background = tokenCss(p.color);
         tok.title = `Figur ${p.id} (${p.color})`;
-        tok.addEventListener("click",(ev)=>{
+if (tok) tok.addEventListener("click",(ev)=>{
           ev.stopPropagation();
           selectPiece(p.id);
         });
@@ -693,8 +692,7 @@
     const dx = a.x-b.x, dy=a.y-b.y;
     return Math.hypot(dx,dy);
   }
-
-  boardShell.addEventListener("pointerdown", (e)=>{
+if (boardShell) boardShell.addEventListener("pointerdown", (e)=>{
     boardShell.setPointerCapture(e.pointerId);
     PZ.pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
     if (PZ.pointers.size === 1){
@@ -708,8 +706,7 @@
       PZ.pinchStart.cy = (pts[0].y + pts[1].y)/2;
     }
   });
-
-  boardShell.addEventListener("pointermove",(e)=>{
+if (boardShell) boardShell.addEventListener("pointermove",(e)=>{
     if (!PZ.pointers.has(e.pointerId)) return;
     PZ.pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
 
@@ -750,46 +747,41 @@
       }
     }
   }
-  boardShell.addEventListener("pointerup", endPointer);
-  boardShell.addEventListener("pointercancel", endPointer);
+if (boardShell) boardShell.addEventListener("pointerup", endPointer);
+if (boardShell) boardShell.addEventListener("pointercancel", endPointer);
 
   // wheel zoom
-  boardShell.addEventListener("wheel",(e)=>{
+if (boardShell) boardShell.addEventListener("wheel",(e)=>{
     e.preventDefault();
     const factor = (e.deltaY > 0) ? 0.92 : 1.08;
     zoomAt(e.clientX, e.clientY, factor);
   }, { passive:false });
 
   // ---------- Wire UI ----------
-  btnRoll.addEventListener("click", rollDice);
-  diceValueInp.addEventListener("change", syncDiceFromInput);
-  diceValueInp.addEventListener("input", syncDiceFromInput);
-
-  btnSpawnBarricade.addEventListener("click", spawnRandomBarricade);
-  btnClearDynamicBarricades.addEventListener("click", () => {
+if (btnRoll) btnRoll.addEventListener("click", rollDice);
+if (diceValueInp) diceValueInp.addEventListener("change", syncDiceFromInput);
+if (diceValueInp) diceValueInp.addEventListener("input", syncDiceFromInput);
+if (btnSpawnBarricade) btnSpawnBarricade.addEventListener("click", spawnRandomBarricade);
+if (btnClearDynamicBarricades) btnClearDynamicBarricades.addEventListener("click", () => {
     state.barricades = [];
     setStatus("Dynamische Barikaden gelöscht.", "good");
     renderTokens();
   });
-
-  btnForceSpawnLight.addEventListener("click", forceSpawnLight);
-
-  btnRestart.addEventListener("click", async () => {
+if (btnForceSpawnLight) btnForceSpawnLight.addEventListener("click", forceSpawnLight);
+if (btnRestart) btnRestart.addEventListener("click", async () => {
     setStatus("Board wird neu geladen…", "warn");
     await start();
   });
+if (btnSave) btnSave.addEventListener("click", saveLocal);
+if (btnLoad) btnLoad.addEventListener("click", loadLocal);
 
-  btnSave.addEventListener("click", saveLocal);
-  btnLoad.addEventListener("click", loadLocal);
-
-  btnPrevPlayer.addEventListener("click", prevPlayer);
-  btnNextPlayer.addEventListener("click", nextPlayer);
-
-  btnFit.addEventListener("click", () => { fitCamera(); });
-  btnResetCam.addEventListener("click", () => { resetCamera(); fitCamera(); });
-  btnZoomOut.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 0.9); });
-  btnZoomIn.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 1.1); });
-  btnToggleLines.addEventListener("click", () => {
+  if (btnPrevTurn) btnPrevTurn.addEventListener("click", prevPlayer);
+  if (btnNextTurn) btnNextTurn.addEventListener("click", nextPlayer);
+if (btnFit) btnFit.addEventListener("click", () => { fitCamera(); });
+  if (btnResetView) btnResetView.addEventListener("click", () => { resetCamera(); fitCamera(); });
+if (btnZoomOut) btnZoomOut.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 0.9); });
+if (btnZoomIn) btnZoomIn.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 1.1); });
+if (btnToggleLines) btnToggleLines.addEventListener("click", () => {
     state.showLines = !state.showLines;
     showLinesButtonLabel();
     renderEdges();
@@ -802,7 +794,7 @@
       buildMaps();
 
       const bname = board?.meta?.name ? String(board.meta.name) : "spielbrett";
-      pillRule.textContent = "Regel: Board 1 startet mit Licht auf allen Lichtfeldern";
+if (pillRule) pillRule.textContent = "Regel: Board 1 startet mit Licht auf allen Lichtfeldern";
       setStatus(`Board geladen: ${bname} • Nodes: ${(board.nodes||[]).length} • Edges: ${(board.edges||[]).length}`, "good");
 
       // reset state parts
