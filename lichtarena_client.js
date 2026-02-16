@@ -907,6 +907,14 @@ const btnToggleEdges = document.getElementById("btnToggleEdges");
   }
 
   // ---------- Wire UI ----------
+  // Optional: Sidebar ein-/ausblenden (mehr Platz fürs Brett auf Tablet)
+  const btnSideToggle = document.getElementById("btnSideToggle");
+  if (btnSideToggle) {
+    btnSideToggle.addEventListener("click", () => {
+      document.body.classList.toggle("sideCollapsed");
+    });
+  }
+
   btnRoll.addEventListener("click", rollDice);
 
   if (btnPrevTurn) btnPrevTurn.addEventListener("click", () => nextTurn(-1));
