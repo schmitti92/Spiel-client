@@ -1,117 +1,101 @@
 /* ===============================
-   LICHTARENA – TURNIER LOOK
+   LICHTARENA – TURNIER PRO LAYOUT
    =============================== */
 
 body {
     margin: 0;
-    background: #0b0f17;   /* komplett ruhig */
+    background: #0b0f17;
     color: #e6edf5;
     font-family: "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
 }
 
-/* ========== LAYOUT ========== */
+/* ====== MAIN LAYOUT ====== */
 
 .main-layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 380px;
     height: 100vh;
 }
 
+/* ====== BOARD AREA ====== */
+
 .board-area {
-    flex: 1;
     position: relative;
+    background: radial-gradient(circle at center, #111827 0%, #0b0f17 70%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     overflow: hidden;
-    background: #0f1624;
-    border-right: 1px solid rgba(255,255,255,0.08);
 }
 
-.ui-panel {
-    width: 360px;
-    background: #111827;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-/* ========== BOARD ========== */
-
+/* Stage wird sauber zentriert */
 #stage {
-    position: absolute;
-    transform-origin: 0 0;
+    position: relative;
+    transform-origin: center center;
 }
 
-/* ===== Nodes ===== */
+/* ====== BOARD NODES ====== */
 
 .node {
-    position: absolute;
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
 
     background: #1c2435;
-    border: 2px solid #2a364f;
+    border: 2px solid #2f3c55;
 
     box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,0.03),
-        0 0 8px rgba(0,0,0,0.6);
+        inset 0 0 0 1px rgba(255,255,255,0.04),
+        0 8px 18px rgba(0,0,0,0.7);
 
     transition: 0.2s ease;
 }
 
 .node:hover {
-    border-color: #4b6cb7;
+    border-color: #5d7fff;
+    box-shadow:
+        0 0 12px rgba(93,127,255,0.5);
 }
 
-/* ===== Edges ===== */
+/* ====== EDGES ====== */
 
 svg line {
-    stroke: rgba(120,170,255,0.7);
-    stroke-width: 3;
-    filter: drop-shadow(0 0 3px rgba(120,170,255,0.4));
+    stroke: rgba(120,170,255,0.8);
+    stroke-width: 4;
 }
 
-/* ========== TOKENS ========== */
+/* ====== UI PANEL ====== */
 
-.token {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    margin: auto;
-    margin-top: 9px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.6);
+.ui-panel {
+    background: #111827;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    padding: 24px;
+    overflow-y: auto;
 }
 
-.token.red { background: #ff4d5a; }
-.token.blue { background: #4d9dff; }
-.token.green { background: #35d28a; }
-.token.yellow { background: #ffd84d; }
-
-/* ========== STATUS ========== */
-
-.status-bar {
-    background: #0f1624;
-    padding: 10px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-/* ========== UI PANEL ========== */
+/* ====== UI SECTIONS ====== */
 
 .ui-section {
     margin-bottom: 28px;
 }
 
 .ui-section h3 {
-    margin: 0 0 10px;
-    font-size: 15px;
-    color: #8aa0c8;
-    text-transform: uppercase;
+    font-size: 13px;
     letter-spacing: 1px;
+    color: #8fa6d8;
+    text-transform: uppercase;
+    margin-bottom: 10px;
 }
+
+/* ====== BUTTONS ====== */
 
 button {
     background: #1e293b;
     border: 1px solid rgba(255,255,255,0.08);
     color: #e6edf5;
     padding: 8px 14px;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     transition: 0.2s ease;
 }
@@ -120,17 +104,28 @@ button:hover {
     background: #263244;
 }
 
-/* ========== TURN BADGE ========== */
+/* ====== TOKENS ====== */
 
-.turn-indicator {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-weight: bold;
-    display: inline-block;
-    margin-left: 10px;
+.token {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    margin: auto;
+    margin-top: 12px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.6);
 }
 
-.turn-red { background: #3b1117; color: #ff6b77; }
-.turn-blue { background: #122338; color: #6bb6ff; }
-.turn-green { background: #0f2e22; color: #47e39f; }
-.turn-yellow { background: #332a0d; color: #ffd84d; }
+.token.red { background: #ff4d5a; }
+.token.blue { background: #4d9dff; }
+.token.green { background: #35d28a; }
+.token.yellow { background: #ffd84d; }
+
+/* ====== STATUS ====== */
+
+.status-bar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 14px;
+    opacity: 0.8;
+}
