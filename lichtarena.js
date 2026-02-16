@@ -716,40 +716,184 @@
     }
     return Infinity;
   }
+  // ---------- Path (for animated movement) ----------
+  function shortestPath(fromId, toId, maxSteps){
+    if (fromId === toId) return [fromId];
+    const q = [fromId];
+    const dist = new Map([[fromId, 0]]);
+    const parent = new Map(); // child -> prev
+    while (q.length){
+      const cur = q.shift();
+      const d = dist.get(cur) || 0;
+      if (d >= maxSteps) continue; // we never need longer paths than remaining steps
+      const neigh = S.adj.get(cur) || [];
+      for (const nb of neigh){
+        if (dist.has(nb)) continue;
+        if (!canEnter(nb)) continue;
+        dist.set(nb, d+1);
+        parent.set(nb, cur);
+        if (nb === toId){
+          // reconstruct path
+          const path = [toId];
+          let x = toId;
+          while (parent.has(x)){
+            x = parent.get(x);
+            path.push(x);
+            if (x === fromId) break;
+          }
+          path.reverse();
+          return path;
+        }
+        q.push(nb);
+      }
+    }
+    return null;
+  }
 
-  function tryMoveDirectTo(targetNodeId) {
-    if (S.phase !== "moving") return;
-    const pl = currentPlayer();
-    const piece = S.pieces.find((pc) => pc.id === S.selectedPiece);
-    if (!piece) return;
+  // ---------- Animation engine (single active animation, additive) ----------
+  const ANIM = {
+    active: false,
+    pc: null,
+    path: null,
+    i: 0,
+    t0: 0,
+    dur: 180, // ms per step
+    from: null,
+    to: null,
+    onDone: null,
+    raf: 0,
+  };
 
-    const from = piece.nodeId;
-    const dist = shortestDistance(from, targetNodeId);
-    if (!isFinite(dist) || dist === Infinity) {
-      log("⛔ Nicht erreichbar (Barikade blockiert oder kein Weg)." + (pl.j5Active ? "" : " (Nur mit Joker 5 überschreitbar)"));
+  function easeInOutCubic(t){
+    return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+  }
+
+  function startMoveAnimation(piece, path, onDone){
+    if (!piece || !path || path.length < 2){
+      onDone && onDone();
       return;
     }
-    if (dist > S.stepsLeft) {
-      log(`ℹ️ Zu weit: Distanz ${dist}, aber nur ${S.stepsLeft} Schritte.`);
+    // cancel previous (shouldn't happen, but safe)
+    if (ANIM.raf) cancelAnimationFrame(ANIM.raf);
+
+    ANIM.active = true;
+    ANIM.pc = piece;
+    ANIM.path = path;
+    ANIM.i = 0;
+    ANIM.onDone = onDone || null;
+
+    // Render override: hide from stack + draw at interpolated position
+    piece._animActive = true;
+    piece._animX = S.nodeById.get(piece.nodeId)?.x ?? 0;
+    piece._animY = S.nodeById.get(piece.nodeId)?.y ?? 0;
+
+    // lock input while animating (prevents accidental clicks)
+    S.inputLocked = true;
+
+    beginAnimStep();
+  }
+
+  function beginAnimStep(){
+    const pc = ANIM.pc;
+    const aId = ANIM.path[ANIM.i];
+    const bId = ANIM.path[ANIM.i + 1];
+    const a = S.nodeById.get(aId);
+    const b = S.nodeById.get(bId);
+    if (!a || !b){
+      finishMoveAnimation();
+      return;
+    }
+    ANIM.from = {x: a.x, y: a.y, id: aId};
+    ANIM.to   = {x: b.x, y: b.y, id: bId};
+    ANIM.t0 = performance.now();
+    tickAnim();
+  }
+
+  function tickAnim(){
+    const pc = ANIM.pc;
+    if (!ANIM.active || !pc){ return; }
+    const t = (performance.now() - ANIM.t0) / ANIM.dur;
+    const k = easeInOutCubic(Math.max(0, Math.min(1, t)));
+    pc._animX = ANIM.from.x + (ANIM.to.x - ANIM.from.x) * k;
+    pc._animY = ANIM.from.y + (ANIM.to.y - ANIM.from.y) * k;
+
+    draw();
+
+    if (t >= 1){
+      // snap to node and advance
+      pc.nodeId = ANIM.to.id;
+      ANIM.i += 1;
+      if (ANIM.i >= ANIM.path.length - 1){
+        finishMoveAnimation();
+        return;
+      }
+      beginAnimStep();
       return;
     }
 
-    // Move
-    piece.nodeId = targetNodeId;
-    S.stepsLeft -= dist;
-    log(`➡️ ${pl.color} läuft ${dist} Schritte → ${targetNodeId} (Rest: ${S.stepsLeft})`);
+    ANIM.raf = requestAnimationFrame(tickAnim);
+  }
 
-    const handled = onReachNode(piece, targetNodeId);
-    if (handled) return;
+  function finishMoveAnimation(){
+    const pc = ANIM.pc;
+    ANIM.active = false;
+    if (ANIM.raf) cancelAnimationFrame(ANIM.raf);
+    ANIM.raf = 0;
 
-    if (S.stepsLeft <= 0) {
-      endTurn("Zug fertig");
-      return;
+    if (pc){
+      pc._animActive = false;
     }
+    S.inputLocked = false;
 
-    syncUI();
+    const cb = ANIM.onDone;
+    ANIM.pc = null;
+    ANIM.path = null;
+    ANIM.onDone = null;
+
+    cb && cb();
     draw();
   }
+
+
+  function tryMoveDirectTo(targetNodeId){
+    if (S.inputLocked || ANIM.active) return;
+    if (S.phase !== "moving") return;
+    const pl = currentPlayer();
+    const piece = S.pieces.find(pc => pc.id === S.selectedPiece);
+    if (!piece) return;
+
+    if (S.stepsLeft <= 0) { log("ℹ️ Keine Schritte mehr übrig."); return; }
+
+    const from = piece.nodeId;
+
+    // shortest path within remaining steps (respects barricades unless J5 is active)
+    const path = shortestPath(from, targetNodeId, S.stepsLeft);
+    if (!path) return;
+
+    const dist = path.length - 1;
+    if (dist <= 0 || dist > S.stepsLeft) return;
+
+    // animate along the path, then apply game logic at the end
+    startMoveAnimation(piece, path, () => {
+      // steps
+      S.stepsLeft -= dist;
+      log(`➡️ ${pl.color} läuft nach ${targetNodeId} (${dist} Schritte). Rest: ${S.stepsLeft}`);
+
+      // arrival effects
+      const handled = onReachNode(piece, targetNodeId);
+      if (handled) return;
+
+      // finished movement?
+      if (S.stepsLeft <= 0){
+        endTurn("Zug fertig");
+        return;
+      }
+
+      syncUI();
+      draw();
+    });
+  }
+
 
   // =========================
   // Barricades
@@ -1088,9 +1232,11 @@
   }
 
   function drawPieces(X, Y) {
-    // group pieces per node
+    // group pieces per node (animated pieces are drawn separately)
     const byNode = new Map();
+    const animPcs = [];
     for (const pc of S.pieces) {
+      if (pc._animActive) { animPcs.push(pc); continue; }
       if (!byNode.has(pc.nodeId)) byNode.set(pc.nodeId, []);
       byNode.get(pc.nodeId).push(pc);
     }
@@ -1140,6 +1286,40 @@
         ctx.restore();
       }
     }
+
+    // animated pieces (draw on top, unstacked)
+    if (animPcs.length){
+      for (const pc of animPcs){
+        const nx = pc._animX ?? (S.nodeById.get(pc.nodeId)?.x ?? 0);
+        const ny = pc._animY ?? (S.nodeById.get(pc.nodeId)?.y ?? 0);
+        const cx = X(nx);
+        const cy = Y(ny);
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,.35)";
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 6;
+
+        const baseR = 9.6;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, baseR, 0, Math.PI * 2);
+        ctx.fillStyle = colorTo(pc.color, 0.96);
+        ctx.fill();
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(255,255,255,.55)";
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx - 3.2, cy - 3.5, 2.8, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,.42)";
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
   }
 
   function colorTo(c, a) {
