@@ -1,1653 +1,405 @@
-(() => {
-  // =========================
-  // Helpers
-  // =========================
-  const $ = (id) => document.getElementById(id);
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lichtarena (Prototype – Offline)</title>
+  <style>
+    :root{
+      --bg:#070a12;
+      --panel:rgba(18,24,38,.72);
+      --panel2:rgba(13,18,30,.72);
+      --text:#e7eaf0;
+      --muted:#a9b2c3;
+      --line:rgba(255,255,255,.10);
+      --edge:rgba(90,162,255,.45);
 
-  // =========================
-  // Canvas
-  // =========================
-  const canvas = $("c");
-  const ctx = canvas.getContext("2d", { alpha: true });
+      --red:#ff5a6a;
+      --blue:#5aa2ff;
+      --green:#2ee59d;
+      --yellow:#ffd250;
+      --glow:rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 600px at 50% 40%, rgba(90,162,255,.08), transparent 60%),
+        radial-gradient(900px 700px at 20% 70%, rgba(46,229,157,.06), transparent 60%),
+        radial-gradient(900px 700px at 80% 70%, rgba(255,210,80,.05), transparent 60%),
+        linear-gradient(180deg, #060812 0%, #050713 60%, #040612 100%);
+      overflow:hidden;
+    }
 
+    .wrap{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:18px;
+    }
 
-// Safe DOM helpers (avoid null crashes when HTML evolves)
-const $maybe = (id) => document.getElementById(id);
-const setText = (el, v) => { if (el) el.textContent = String(v); };
-const setClass = (el, v) => { if (el) el.className = v; };
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+      max-width:740px;
+    }
 
+    .pillrow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      background:rgba(18,24,38,.55);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      gap:6px;
+      align-items:center;
+      backdrop-filter: blur(6px);
+    }
+    .pill b{ color:var(--text); font-weight:600; }
 
-  // =========================
-  // UI
-  // =========================
+    .stageWrap{
+      flex:1;
+      min-height:320px;
+      background:rgba(18,24,38,.35);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 10px 50px rgba(0,0,0,.45) inset;
+    }
+
+    /* Stage: nodes positioned absolute */
+    #stage{
+      position:absolute;
+      inset:16px;
+    }
+    #edgesSvg{
+      position:absolute;
+      inset:16px;
+      width:calc(100% - 32px);
+      height:calc(100% - 32px);
+      pointer-events:none;
+    }
+
+    /* Edges + gate labels */
+    .edge{
+      stroke:var(--edge);
+      stroke-width:3.5;
+      stroke-linecap:round;
+      opacity:.85;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.55));
+    }
+    body.edgesOff .edge{ opacity:0; }
+    .gateLabelBg{
+      fill:rgba(0,0,0,.55);
+      stroke:rgba(255,255,255,.12);
+      stroke-width:1;
+      rx:10;
+    }
+    .gateLabelText{
+      fill:rgba(255,255,255,.92);
+      font-size:12px;
+    }
+    body.edgesOff .gateLabelBg,
+    body.edgesOff .gateLabelText{ opacity:0; }
+
+    /* Nodes */
+    .node{
+      position:absolute;
+      transform:translate(-50%,-50%);
+      width:52px;
+      height:52px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      box-shadow:0 6px 18px rgba(0,0,0,.35);
+      cursor:pointer;
+      user-select:none;
+    }
+    .node:hover{ border-color:rgba(255,255,255,.22); }
+
+    .label{
+      position:absolute;
+      inset:auto 0 6px 0;
+      text-align:center;
+      font-size:11px;
+      color:rgba(255,255,255,.85);
+      text-shadow:0 2px 10px rgba(0,0,0,.7);
+      pointer-events:none;
+    }
+
+    .tokens{
+      position:absolute;
+      inset:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      pointer-events:none;
+    }
+
+    .token{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.25);
+      box-shadow:0 10px 26px rgba(0,0,0,.40);
+      pointer-events:auto;
+      cursor:pointer;
+      display:inline-block;
+    }
+    .token.selected{
+      outline:2px solid rgba(255,255,255,.85);
+      outline-offset:2px;
+      box-shadow:0 0 0 6px rgba(255,255,255,.10), 0 10px 26px rgba(0,0,0,.40);
+    }
+
+    .selectedNode{
+      box-shadow:0 0 0 6px rgba(255,255,255,.10), 0 6px 18px rgba(0,0,0,.35);
+      border-color:rgba(255,255,255,.26);
+    }
+
+    /* Start colors */
+    .start-red{ box-shadow:0 0 0 2px rgba(255,90,106,.18), 0 6px 18px rgba(0,0,0,.35); }
+    .start-blue{ box-shadow:0 0 0 2px rgba(90,162,255,.18), 0 6px 18px rgba(0,0,0,.35); }
+    .start-green{ box-shadow:0 0 0 2px rgba(46,229,157,.18), 0 6px 18px rgba(0,0,0,.35); }
+    .start-yellow{ box-shadow:0 0 0 2px rgba(255,210,80,.18), 0 6px 18px rgba(0,0,0,.35); }
+
+    /* Light fields */
+    .lightfield{ border-color:rgba(255,255,255,.18); }
+    .activeLight{
+      box-shadow:0 0 0 2px rgba(255,210,80,.20), 0 0 18px rgba(255,210,80,.18), 0 6px 18px rgba(0,0,0,.35);
+    }
+
+    /* Barricades */
+    .barricade-fixed{ background:rgba(255,255,255,.03); border-color:rgba(255,255,255,.16); }
+    .dynamicBarricade{
+      box-shadow:0 0 0 2px rgba(255,90,106,.20), 0 0 18px rgba(255,90,106,.14), 0 6px 18px rgba(0,0,0,.35);
+    }
+
+    /* Bottom panel */
+    .bottom{
+      background:rgba(18,24,38,.55);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      backdrop-filter: blur(6px);
+    }
+
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+    .group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      background:rgba(0,0,0,.18);
+    }
+    .group .labeltxt{ color:var(--muted); font-size:12px; }
+    .group b{ font-weight:700; }
+
+    button, input{
+      font:inherit;
+    }
+    button{
+      background:rgba(36,49,76,.55);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+    }
+    button:hover{ border-color:rgba(255,255,255,.22); }
+    button:active{ transform:translateY(1px); }
+
+    input[type="number"]{
+      width:70px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+    }
+
+    .btnWarn{ border-color:rgba(255,90,106,.22); background:rgba(255,90,106,.10); }
+    .btnGold{ border-color:rgba(255,210,80,.22); background:rgba(255,210,80,.08); }
+
+    #statusLine{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+    .good{ color:#7CFFB2; }
+    .warn{ color:#FFD97A; }
+    .bad{ color:#FF7A7A; }
   
-const ui = {
-  pCount: $("pCount"),
-  turnLabel: $("turnLabel"),
-  bCount: $("bCount"),
-  playersSel: $("playersSel"),
-  log: $("log"),
-  lightBadge: $("lightBadge"),
-  phaseBadge: $("phaseBadge"),
-  scoreBadge: $("scoreBadge"),
-
-  // camera mini controls (optional)
-  fitBtn: $("fitBtn"),
-  zoomIn: $("zoomIn"),
-  zoomOut: $("zoomOut"),
-  // older html used zoomLabel, newer uses zoomPct
-  zoomPct: $("zoomPct") || $maybe("zoomLabel"),
-
-  // dice
-  diceVal: $("diceVal"),
-  stepsLeft: $("stepsLeft"),
-  rollBtn: $("rollBtn"),
-  endTurnBtn: $("endTurnBtn"),
-
-  // jokers
-  j1: $("j1"),
-  j2: $("j2"),
-  j3: $("j3"),
-  j4: $("j4"),
-  j5: $("j5"),
-  j5a: $("j5a"),
-  giveJ1: $("giveJ1"),
-  giveJ2: $("giveJ2"),
-  giveJ3: $("giveJ3"),
-  giveJ4: $("giveJ4"),
-  giveJ5: $("giveJ5"),
-  useJ1: $("useJ1"),
-  useJ2: $("useJ2"),
-  useJ3: $("useJ3"),
-  useJ4: $("useJ4"),
-  useJ5: $("useJ5"),
-
-  resetBtn: $("resetBtn"),
-  nextTurnBtn: $("nextTurnBtn"),
-};
-
-
-  function log(msg) {
-    const d = document.createElement("div");
-    d.textContent = msg;
-    ui.log.appendChild(d);
-    ui.log.scrollTop = ui.log.scrollHeight;
-  }
-
-  // =========================
-  // Rules
-  // =========================
-  const RULES = {
-    barricadeMax: 15,
-    respawnAfterTurnsPerPlayer: 5,
-    spawnWeights: { center: 0.5, mid: 0.3, outer: 0.2 },
-    forbidSpawnKinds: new Set(["house", "start"]),
-    forbidBarricadeKinds: new Set(["house", "start"]),
-    spawnDifferentFromLast: true,
-    diceSides: 6,
-    piecesPerPlayer: 6,
-    startFieldsPerColor: 5,
-  };
-
-  // =========================
-  // State
-  // =========================
-  const S = {
-    board: null,
-    nodes: [],
-    edges: [],
-    adj: new Map(),
-    nodeById: new Map(),
-    zoneOf: new Map(),
-
-    lastLight: null,
-    light: null,
-
-    extraLight: null, // optional second light from event card
-    pendingEvent: null, // {pieceId,nodeId} when event triggered
-    eventSwap: null,
-
-    barricades: new Set(),
-
-    playerCount: 4,
-    players: [],
-    turnIndex: 0,
-
-    pieces: [],
-    selectedPiece: null,
-
-    phase: "need_roll", // need_roll | need_piece | moving | place_barricade | j2_pick_source | j2_pick_target
-    stepsLeft: 0,
-    rollValue: null,
-
-    j2Source: null,
-  };
-
-  const COLORS = ["red", "blue", "green", "yellow", "black", "white"];
-
-  function currentPlayer() {
-    return S.players[S.turnIndex];
-  }
-
-  // =========================
-  // Camera (Google-Maps-ish)
-  // - LMB drag: pan (after small threshold)
-  // - Wheel: zoom
-  // - Touch: 1 finger pan, 2 finger pinch zoom
-  // - Clamp so board can never fully disappear (at least one node stays visible)
-  // =========================
-  const CAM = {
-    scale: 1,
-    ox: 0,
-    oy: 0,
-    minScale: 0.12,
-    maxScale: 6,
-    autoFit: true,
-  };
-
-  const PZ = {
-    pointers: new Map(),
-    isDown: false,
-    isPanning: false,
-    downX: 0,
-    downY: 0,
-    lastX: 0,
-    lastY: 0,
-    dragThreshold: 7, // px
-    pinchStartDist: 0,
-    pinchStartScale: 1,
-  };
-
-  function fitCamera(viewW, viewH) {
-    if (!S.nodes.length) return;
-    const pad = 90;
-    let minX = Infinity,
-      minY = Infinity,
-      maxX = -Infinity,
-      maxY = -Infinity;
-    for (const n of S.nodes) {
-      minX = Math.min(minX, n.x);
-      minY = Math.min(minY, n.y);
-      maxX = Math.max(maxX, n.x);
-      maxY = Math.max(maxY, n.y);
-    }
-    const bw = Math.max(1, maxX - minX);
-    const bh = Math.max(1, maxY - minY);
-    const sx = (viewW - pad * 2) / bw;
-    const sy = (viewH - pad * 2) / bh;
-    CAM.scale = clamp(Math.min(sx, sy), CAM.minScale, CAM.maxScale);
-    CAM.ox = pad - minX * CAM.scale;
-    CAM.oy = pad - minY * CAM.scale;
-    CAM.autoFit = false;
-    clampPan();
-    updateZoomPct();
-  }
-
-  function screenToBoard(sx, sy) {
-    return { x: (sx - CAM.ox) / CAM.scale, y: (sy - CAM.oy) / CAM.scale };
-  }
-
-  function zoomAt(sx, sy, factor) {
-    const before = screenToBoard(sx, sy);
-    CAM.scale = clamp(CAM.scale * factor, CAM.minScale, CAM.maxScale);
-    const after = screenToBoard(sx, sy);
-    // keep point under cursor stable
-    CAM.ox += (after.x - before.x) * CAM.scale;
-    CAM.oy += (after.y - before.y) * CAM.scale;
-    CAM.autoFit = false;
-    clampPan();
-    updateZoomPct();
-  }
-
-  function clampPan() {
-    // Ensure at least one node stays visible.
-    if (!S.nodes.length) return;
-    const rect = canvas.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-    const vis = 34; // margin in px that must still overlap with board bbox
-
-    let minSX = Infinity,
-      minSY = Infinity,
-      maxSX = -Infinity,
-      maxSY = -Infinity;
-    for (const n of S.nodes) {
-      const sx = n.x * CAM.scale + CAM.ox;
-      const sy = n.y * CAM.scale + CAM.oy;
-      minSX = Math.min(minSX, sx);
-      minSY = Math.min(minSY, sy);
-      maxSX = Math.max(maxSX, sx);
-      maxSY = Math.max(maxSY, sy);
-    }
-
-    // allow panning until bbox still overlaps viewport with 'vis'
-    // If bbox is left of viewport entirely, pull it back, etc.
-    if (maxSX < vis) CAM.ox += vis - maxSX;
-    if (minSX > w - vis) CAM.ox -= minSX - (w - vis);
-    if (maxSY < vis) CAM.oy += vis - maxSY;
-    if (minSY > h - vis) CAM.oy -= minSY - (h - vis);
-  }
-
-  function updateZoomPct() {
-    const pct = Math.round(CAM.scale * 100);
-    setText(ui.zoomPct, `${pct}%`);
-  }
-
-  // prevent browser double-click zoom jitter
-  canvas.addEventListener(
-    "dblclick",
-    (e) => {
-      e.preventDefault();
-    },
-    { passive: false }
-  );
-
-  canvas.addEventListener(
-    "wheel",
-    (e) => {
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const sx = e.clientX - rect.left;
-      const sy = e.clientY - rect.top;
-      zoomAt(sx, sy, e.deltaY > 0 ? 0.9 : 1.1);
-      draw();
-    },
-    { passive: false }
-  );
-
-  canvas.addEventListener("pointerdown", (e) => {
-    canvas.setPointerCapture(e.pointerId);
-    const rect = canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-
-    PZ.pointers.set(e.pointerId, { x: sx, y: sy, type: e.pointerType });
-
-    if (e.pointerType === "mouse" && e.button !== 0) return; // only left
-
-    // Start a possible pan (becomes real pan after threshold)
-    PZ.isDown = true;
-    PZ.isPanning = false;
-    PZ.downX = sx;
-    PZ.downY = sy;
-    PZ.lastX = sx;
-    PZ.lastY = sy;
-  });
-
-  canvas.addEventListener("pointermove", (e) => {
-    if (!PZ.pointers.has(e.pointerId)) return;
-    const rect = canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-
-    const prev = PZ.pointers.get(e.pointerId);
-    PZ.pointers.set(e.pointerId, { x: sx, y: sy, type: e.pointerType });
-
-    // Touch: 2-finger pinch zoom + pan
-    const touches = [...PZ.pointers.values()].filter((p) => p.type === "touch");
-    if (touches.length >= 2) {
-      const a = touches[0],
-        b = touches[1];
-      const midX = (a.x + b.x) / 2;
-      const midY = (a.y + b.y) / 2;
-
-      // init pinch
-      if (!PZ.pinchStartDist) {
-        const dx0 = a.x - b.x;
-        const dy0 = a.y - b.y;
-        PZ.pinchStartDist = Math.hypot(dx0, dy0) || 1;
-        PZ.pinchStartScale = CAM.scale;
-        PZ.lastX = midX;
-        PZ.lastY = midY;
-      }
-
-      // pan
-      CAM.ox += midX - PZ.lastX;
-      CAM.oy += midY - PZ.lastY;
-      PZ.lastX = midX;
-      PZ.lastY = midY;
-
-      // zoom
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      const dist = Math.hypot(dx, dy) || 1;
-      const factor = dist / (PZ.pinchStartDist || 1);
-      const targetScale = clamp(PZ.pinchStartScale * factor, CAM.minScale, CAM.maxScale);
-      const before = screenToBoard(midX, midY);
-      CAM.scale = targetScale;
-      const after = screenToBoard(midX, midY);
-      CAM.ox += (after.x - before.x) * CAM.scale;
-      CAM.oy += (after.y - before.y) * CAM.scale;
-
-      CAM.autoFit = false;
-      clampPan();
-      updateZoomPct();
-      draw();
-      return;
-    }
-
-    // Mouse / single touch pan with threshold
-    if (!PZ.isDown) return;
-
-    const dxTotal = sx - PZ.downX;
-    const dyTotal = sy - PZ.downY;
-    const moved = Math.hypot(dxTotal, dyTotal);
-
-    if (!PZ.isPanning && moved >= PZ.dragThreshold) {
-      PZ.isPanning = true;
-    }
-
-    if (!PZ.isPanning) return;
-
-    const dxStep = sx - PZ.lastX;
-    const dyStep = sy - PZ.lastY;
-    PZ.lastX = sx;
-    PZ.lastY = sy;
-
-    CAM.ox += dxStep;
-    CAM.oy += dyStep;
-    CAM.autoFit = false;
-    clampPan();
-    draw();
-  });
-
-  function stopPointer(e) {
-    PZ.pointers.delete(e.pointerId);
-    const touches = [...PZ.pointers.values()].filter((p) => p.type === "touch");
-    if (touches.length < 2) {
-      PZ.pinchStartDist = 0;
-    }
-    // We'll handle tap on pointerup only if NOT panning.
-    if (PZ.isDown && e.pointerType !== "touch") {
-      // keep state
-    }
-  }
-  canvas.addEventListener("pointercancel", stopPointer);
-  canvas.addEventListener("pointerup", (e) => {
-    // tap
-    const wasPanning = PZ.isPanning;
-    PZ.isDown = false;
-    PZ.isPanning = false;
-
-    // reset pinch state when last touch ends
-    stopPointer(e);
-
-    if (wasPanning) return;
-
-    // treat as click/tap
-    const rect = canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-    handleBoardTap(sx, sy);
-  });
-
-  // =========================
-  // Board loading
-  // =========================
-  async function loadBoard() {
-    let res;
-    try {
-      res = await fetch("board_lichtarena.json?v=la", { cache: "no-store" });
-      if (!res.ok) throw new Error("no board_lichtarena.json");
-    } catch {
-      res = await fetch("board.json?v=la", { cache: "no-store" });
-    }
-    const raw = await res.json();
-
-    // Normalize to {ui,nodes,edges}
-    const b = normalizeBoard(raw);
-    S.board = b;
-
-    S.nodes = b.nodes.map((n) => ({
-      id: String(n.id),
-      kind: String(n.kind || n.type || "normal").toLowerCase(),
-      x: Number(n.x ?? 0),
-      y: Number(n.y ?? 0),
-      color: String(n.color || n.flags?.houseColor || n.flags?.startColor || "").toLowerCase(),
-      flags: n.flags || {},
-    }));
-
-    S.edges = (b.edges || []).map((e) => ({ a: String(e.a), b: String(e.b) }));
-
-    S.nodeById = new Map(S.nodes.map((n) => [n.id, n]));
-    S.adj = new Map();
-    for (const n of S.nodes) S.adj.set(n.id, []);
-    for (const e of S.edges) {
-      if (S.adj.has(e.a) && S.adj.has(e.b)) {
-        S.adj.get(e.a).push(e.b);
-        S.adj.get(e.b).push(e.a);
-      }
-    }
-
-    computeZonesPrototype();
-  }
-
-  function normalizeBoard(raw) {
-    if (!raw) throw new Error("board missing");
-
-    // board-designer-pro schema
-    if (raw.meta && raw.meta.tool === "board-designer-pro" && Array.isArray(raw.nodes) && Array.isArray(raw.edges)) {
-      const nodes = raw.nodes.map((n) => {
-        const id = String(n.id);
-        const kind = String(n.type || "normal");
-        const flags = {
-          label: typeof n.label === "string" ? n.label : "",
-          specialType: n.specialType || "",
-          boostSteps: n.boostSteps == null ? undefined : n.boostSteps,
-          eventDeckId: n.eventDeckId || "",
-          start: n.type === "start",
-          startColor: n.color || "",
-        };
-        return { id, x: n.x, y: n.y, kind, color: n.color || "", flags };
-      });
-      const edges = raw.edges.map((e) => ({ a: String(e.a), b: String(e.b) }));
-      const ui = { gridSize: raw.grid?.size ?? 30 };
-      return { ui, nodes, edges };
-    }
-
-    // legacy
-    if (Array.isArray(raw.nodes) && Array.isArray(raw.edges)) {
-      const nodes = raw.nodes.map((n) => {
-        const id = String(n.id ?? n.nodeId ?? n.name);
-        const kind = String(n.kind ?? n.type ?? "normal");
-        const flags = n.flags ?? {};
-        return { ...n, id, kind, flags };
-      });
-      const edges = raw.edges.map((e) => ({ a: String(e.a ?? e.from), b: String(e.b ?? e.to) }));
-      const ui = raw.ui ?? raw.grid ?? {};
-      return { ui, nodes, edges };
-    }
-
-    throw new Error("unknown board schema");
-  }
-
-  function computeZonesPrototype() {
-    const pts = S.nodes.filter((n) => n.kind !== "house" && n.kind !== "start");
-    const cx = pts.reduce((a, n) => a + n.x, 0) / Math.max(1, pts.length);
-    const cy = pts.reduce((a, n) => a + n.y, 0) / Math.max(1, pts.length);
-    const dists = pts
-      .map((n) => ({ id: n.id, d: Math.hypot(n.x - cx, n.y - cy) }))
-      .sort((a, b) => a.d - b.d);
-    const n = dists.length;
-    const iCenter = Math.floor(n * 0.5);
-    const iMid = Math.floor(n * 0.8);
-    S.zoneOf = new Map();
-    for (let i = 0; i < n; i++) {
-      const z = i < iCenter ? "center" : i < iMid ? "mid" : "outer";
-      S.zoneOf.set(dists[i].id, z);
-    }
-  }
-
-  // =========================
-  // Players & Pieces
-  // =========================
-  function resetPlayers() {
-    S.players = [];
-    for (let i = 0; i < S.playerCount; i++) {
-      S.players.push({
-        id: i,
-        color: COLORS[i],
-        score: 0,
-        turnsSinceLight: 0,
-        jokers: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0 },
-        j5Active: false,
-        pendingDouble: false,
-        lastRoll: null,
-      });
-    }
-    S.turnIndex = 0;
-  }
-
-  function resetPieces() {
-    const pieces = [];
-
-    // Collect start fields per color
-    const startsByColor = new Map();
-    for (const n of S.nodes) {
-      if (n.kind === "start") {
-        const c = String(n.color || n.flags?.houseColor || n.flags?.startColor || "").toLowerCase();
-        if (!startsByColor.has(c)) startsByColor.set(c, []);
-        startsByColor.get(c).push(n.id);
-      }
-    }
-
-    // stable order
-    for (const [c, arr] of startsByColor.entries()) {
-      arr.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
-      startsByColor.set(c, arr);
-    }
-
-    for (const p of S.players) {
-      const starts = startsByColor.get(p.color) || [];
-
-      // 5 on starts
-      for (let i = 0; i < Math.min(RULES.startFieldsPerColor, RULES.piecesPerPlayer); i++) {
-        pieces.push({
-          id: `pc_${p.color}_${i + 1}`,
-          owner: p.id,
-          color: p.color,
-          nodeId: starts[i] ?? starts[0] ?? pickRandomNormalNodeId(pieces),
-        });
-      }
-
-      // 6th random (normal field)
-      if (RULES.piecesPerPlayer > RULES.startFieldsPerColor) {
-        pieces.push({
-          id: `pc_${p.color}_${RULES.startFieldsPerColor + 1}`,
-          owner: p.id,
-          color: p.color,
-          nodeId: pickRandomNormalNodeId(pieces),
-        });
-      }
-    }
-
-    S.pieces = pieces;
-  }
-
-  function pickRandomNormalNodeId(existingPieces) {
-    const occupied = new Set((existingPieces || S.pieces || []).map((pc) => pc.nodeId));
-    const arr = S.nodes
-      .filter((n) => n.kind === "normal")
-      .filter((n) => !occupied.has(n.id))
-      .map((n) => n.id);
-    if (!arr.length) {
-      const fallback = S.nodes
-        .filter((n) => !RULES.forbidSpawnKinds.has(n.kind))
-        .map((n) => n.id);
-      return fallback[Math.floor(Math.random() * fallback.length)];
-    }
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-
-  function isStartNode(id) {
-    const n = S.nodeById.get(id);
-    return !!n && RULES.forbidSpawnKinds.has(n.kind);
-  }
-
-  // =========================
-  // Light spawn
-  // =========================
-  function spawnLight(reason) {
-    const prev = S.light;
-    const pick = weightedPickLightNode(prev);
-    S.lastLight = prev;
-    S.light = pick;
-    for (const pl of S.players) pl.turnsSinceLight = 0;
-    log(`✨ Lichtfeld spawnt (${reason}): ${S.light}`);
-    syncUI();
-    draw();
-  }
-
-  function weightedPickLightNode(prevId) {
-    const candidates = { center: [], mid: [], outer: [] };
-    for (const n of S.nodes) {
-      if (RULES.forbidSpawnKinds.has(n.kind)) continue;
-      if (RULES.spawnDifferentFromLast && prevId && n.id === prevId) continue;
-      const z = S.zoneOf.get(n.id) || "mid";
-      candidates[z].push(n.id);
-    }
-    const zone = pickWeightedZones(candidates);
-    const arr = candidates[zone];
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-
-  function pickWeightedZones(candidates) {
-    const opts = [
-      { k: "center", w: RULES.spawnWeights.center },
-      { k: "mid", w: RULES.spawnWeights.mid },
-      { k: "outer", w: RULES.spawnWeights.outer },
-    ];
-    let z = pickWeighted(opts);
-    if (!candidates[z].length) {
-      z = opts.map((o) => o.k).find((k) => candidates[k].length) || "mid";
-    }
-    return z;
-  }
-
-  function pickWeighted(items) {
-    const total = items.reduce((a, i) => a + i.w, 0);
-    let r = Math.random() * total;
-    for (const it of items) {
-      r -= it.w;
-      if (r <= 0) return it.k;
-    }
-    return items[items.length - 1].k;
-  }
-
-  // =========================
-  // Turn flow
-  // =========================
-  function startTurn() {
-    S.phase = "need_roll";
-    S.selectedPiece = null;
-    S.stepsLeft = 0;
-    S.rollValue = null;
-    syncUI();
-    draw();
-  }
-
-  function endTurn(reason) {
-
-// event swap: click a node that has another of your pieces to swap positions
-if (S.phase === "event_swap_pick") {
-  const pl = currentPlayer();
-  const srcId = S.eventSwap?.pieceId;
-  const src = S.pieces.find(pc => pc.id === srcId);
-  if (!src) {
-    S.phase = "need_roll";
-    S.eventSwap = null;
-    log("ℹ️ Swap abgebrochen.");
-    syncUI(); draw();
-    return;
-  }
-  const target = S.pieces.find(pc => pc.owner === pl.id && pc.id !== srcId && pc.nodeId === nodeId);
-  if (!target) {
-    log("ℹ️ Klick ein Feld mit einer ANDEREN deiner Figuren.");
-    return;
-  }
-  const tmp = src.nodeId;
-  src.nodeId = target.nodeId;
-  target.nodeId = tmp;
-  S.eventSwap = null;
-  log("🔁 Positionswechsel ausgeführt.");
-  syncUI(); draw();
-  endTurn("Ereignis: Swap");
-  return;
-}
-
-    const pl = currentPlayer();
-    if (pl.j5Active) {
-      pl.j5Active = false;
-      log(`🃏 Joker 5 endet für ${pl.color}.`);
-    }
-    pl.pendingDouble = false;
-    pl.lastRoll = S.rollValue;
-
-    S.turnIndex = (S.turnIndex + 1) % S.players.length;
-    const np = currentPlayer();
-    np.turnsSinceLight += 1;
-
-    const all = S.players.every((p) => p.turnsSinceLight >= RULES.respawnAfterTurnsPerPlayer);
-    if (all) spawnLight("5-Runden-Regel");
-
-    log(`⏭️ Zugwechsel (${reason}) → ${np.color}`);
-    startTurn();
-  }
-
-  function rollDice() {
-    const pl = currentPlayer();
-    if (S.phase !== "need_roll") {
-      log("ℹ️ Du hast bereits gewürfelt oder bist mitten im Zug.");
-      return;
-    }
-
-    const roll1 = randInt(1, RULES.diceSides);
-    if (pl.pendingDouble) {
-      const roll2 = randInt(1, RULES.diceSides);
-      S.rollValue = roll1 + roll2;
-      pl.pendingDouble = false;
-      log(`🎲 Doppelwurf: ${roll1} + ${roll2} = ${S.rollValue}`);
-    } else {
-      S.rollValue = roll1;
-      log(`🎲 Wurf: ${S.rollValue}`);
-    }
-
-    S.stepsLeft = S.rollValue;
-    S.phase = "need_piece";
-    syncUI();
-    draw();
-  }
-
-  // =========================
-  // Movement (direct like Barikade)
-  // Click a reachable destination. We compute shortest path distance.
-  // =========================
-  function canEnter(nodeId) {
-    const pl = currentPlayer();
-    if (pl.j5Active) return true;
-    return !S.barricades.has(nodeId);
-  }
-
-  function isEventNode(nodeId) {
-    const n = S.nodeById.get(nodeId);
-    const f = n?.flags || {};
-    const st = String(f.specialType || "");
-    return !!(st === "event" || f.event === true || f.isEvent === true || f.eventDeckId);
-  }
-
-// =========================
-// Event cards (22) – always uniform (1/22)
-// Reihenfolge: Feld betreten -> Barikade platzieren -> Karte 3s zeigen -> Effekt
-// =========================
-
-// Lightweight overlay (created dynamically to avoid HTML mismatch)
-const EVT = {
-  overlay: null,
-  titleEl: null,
-  textEl: null,
-  iconEl: null,
-  active: false,
-  pending: null,
-};
-
-function ensureEventOverlay(){
-  if (EVT.overlay) return;
-  const ov = document.createElement("div");
-  ov.id = "eventOverlay";
-  ov.style.cssText = `
-    position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-    background:rgba(2,6,23,.55); z-index:9999; backdrop-filter: blur(6px);
-  `;
-  const card = document.createElement("div");
-  card.style.cssText = `
-    width:min(560px, 92vw);
-    border-radius:18px;
-    border:1px solid rgba(148,163,184,.35);
-    background: radial-gradient(120% 120% at 20% 10%, rgba(56,189,248,.20), rgba(2,6,23,.92) 60%);
-    box-shadow: 0 20px 80px rgba(0,0,0,.45);
-    padding:18px 18px 16px;
-    transform: translateY(6px) scale(.98);
-    transition: transform .18s ease, opacity .18s ease;
-    opacity:0;
-  `;
-  const top = document.createElement("div");
-  top.style.cssText = "display:flex; gap:14px; align-items:center; margin-bottom:10px;";
-  const icon = document.createElement("div");
-  icon.style.cssText = `
-    width:52px; height:52px; border-radius:16px;
-    display:flex; align-items:center; justify-content:center;
-    background: rgba(56,189,248,.12);
-    border:1px solid rgba(56,189,248,.35);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
-    font-size:26px;
-  `;
-  const titleWrap = document.createElement("div");
-  const h = document.createElement("div");
-  h.style.cssText = "font-size:18px; font-weight:800; letter-spacing:.2px; color:rgba(226,232,240,.96)";
-  const p = document.createElement("div");
-  p.style.cssText = "font-size:13px; line-height:1.35; color:rgba(148,163,184,.92)";
-  titleWrap.appendChild(h); titleWrap.appendChild(p);
-  top.appendChild(icon); top.appendChild(titleWrap);
-
-  const hint = document.createElement("div");
-  hint.style.cssText = "margin-top:10px; font-size:12px; color:rgba(148,163,184,.7)";
-  hint.textContent = "Ereignis wird ausgeführt…";
-
-  card.appendChild(top);
-  card.appendChild(hint);
-  ov.appendChild(card);
-  document.body.appendChild(ov);
-
-  EVT.overlay = ov;
-  EVT.titleEl = h;
-  EVT.textEl = p;
-  EVT.iconEl = icon;
-  EVT._card = card;
-}
-
-function showEventCard(title, text, icon="🃏", ms=3000){
-  ensureEventOverlay();
-  EVT.active = true;
-  EVT.iconEl.textContent = icon;
-  EVT.titleEl.textContent = title;
-  EVT.textEl.textContent = text;
-  EVT.overlay.style.display = "flex";
-  requestAnimationFrame(()=>{
-    EVT._card.style.opacity = "1";
-    EVT._card.style.transform = "translateY(0) scale(1)";
-  });
-  return new Promise((resolve)=>{
-    setTimeout(()=>{
-      EVT._card.style.opacity = "0";
-      EVT._card.style.transform = "translateY(6px) scale(.98)";
-      setTimeout(()=>{
-        EVT.overlay.style.display = "none";
-        EVT.active = false;
-        resolve();
-      }, 180);
-    }, ms);
-  });
-}
-
-const EVENT_CARDS = [
-  { id:1,  title:"Joker erhalten", text:"Farbwechsel (J1)", kind:"gainJoker", joker:"j1", icon:"🎨" },
-  { id:2,  title:"Joker erhalten", text:"Barikade versetzen (J2)", kind:"gainJoker", joker:"j2", icon:"🧱" },
-  { id:3,  title:"Joker erhalten", text:"Neuwurf (J3)", kind:"gainJoker", joker:"j3", icon:"🎲" },
-  { id:4,  title:"Joker erhalten", text:"Doppelwurf (J4)", kind:"gainJoker", joker:"j4", icon:"🎲" },
-  { id:5,  title:"Joker erhalten", text:"Ignorieren (J5)", kind:"gainJoker", joker:"j5", icon:"🚧" },
-  { id:6,  title:"Joker erhalten", text:"Farbwechsel (J1)", kind:"gainJoker", joker:"j1", icon:"🎨" },
-  { id:7,  title:"Joker erhalten", text:"Barikade versetzen (J2)", kind:"gainJoker", joker:"j2", icon:"🧱" },
-  { id:8,  title:"Joker erhalten", text:"Neuwurf (J3)", kind:"gainJoker", joker:"j3", icon:"🎲" },
-  { id:9,  title:"Joker erhalten", text:"Doppelwurf (J4)", kind:"gainJoker", joker:"j4", icon:"🎲" },
-  { id:10, title:"Joker erhalten", text:"Ignorieren (J5)", kind:"gainJoker", joker:"j5", icon:"🚧" },
-  { id:11, title:"Jackpot!", text:"Du erhältst alle 5 Joker (+1 jeweils).", kind:"allJokers", icon:"💥" },
-  { id:12, title:"Chaos für alle", text:"Alle anderen Spieler bekommen 2 zufällige Joker.", kind:"othersTwoRandom", icon:"🎁" },
-  { id:13, title:"Neu gemischt", text:"Alle Spielfiguren werden neu gemischt.", kind:"shuffleAllPieces", icon:"🌀" },
-  { id:14, title:"Start-Rauswurf", text:"Alle Figuren auf Startfeldern werden zufällig gespawnt.", kind:"spawnStartPieces", icon:"🚀" },
-  { id:15, title:"Speed!", text:"+5 Felder laufen.", kind:"addSteps", steps:5, icon:"⚡" },
-  { id:16, title:"Turbo!", text:"+10 Felder laufen.", kind:"addSteps", steps:10, icon:"⚡" },
-  { id:17, title:"Positionswechsel", text:"Tausche Position mit eigener Figur.", kind:"swapOwn", icon:"🔁" },
-  { id:18, title:"Zurück zum Start", text:"Figur zurück auf Start.", kind:"backToStart", icon:"🏠" },
-  { id:19, title:"Alles verloren", text:"Du verlierst alle Joker.", kind:"loseAllJokers", icon:"💀" },
-  { id:20, title:"Raubzug", text:"Klaue 1 Punkt von einem Mitspieler.", kind:"stealPoint", icon:"🪙" },
-  { id:21, title:"Doppel-Licht", text:"Ein zusätzliches Lichtfeld erscheint.", kind:"extraLight", icon:"✨" },
-  { id:22, title:"Comeback", text:"Spieler mit den wenigsten Punkten bekommt +1 Punkt.", kind:"lowestGetsPoint", icon:"🆙" },
-];
-
-function drawRandomEventCard(){
-  return EVENT_CARDS[Math.floor(Math.random()*EVENT_CARDS.length)];
-}
-
-
-
-  function onReachNode(piece, nodeId) {
-    const pl = currentPlayer();
-
-    if (S.light === nodeId) {
-      pl.score += 1;
-      log(`🏁 Punkt! ${pl.color} hat jetzt ${pl.score} Punkte.`);
-      spawnLight("Punkt erreicht");
-      endTurn("Punkt");
-      return true;
-    }
-
-    if (isEventNode(nodeId) && S.barricades.size < RULES.barricadeMax){
-      S.pendingEvent = { pieceId: piece.id, nodeId };
-      S.phase = "event_place_barricade";
-      log("🎴 Ereignisfeld: ZUERST Barikade platzieren (klick Feld). Danach wird die Ereigniskarte aufgedeckt.");
-      syncUI(); draw();
-      return true;
-    }
-
-    return false;
-  }
-
- function shortestDistance(fromId, toId) {
-    if (fromId === toId) return 0;
-    const pl = currentPlayer();
-
-    const q = [fromId];
-    const dist = new Map([[fromId, 0]]);
-
-    while (q.length) {
-      const cur = q.shift();
-      const d = dist.get(cur);
-      const neigh = S.adj.get(cur) || [];
-      for (const nx of neigh) {
-        if (dist.has(nx)) continue;
-        // You can step onto barricaded nodes only if J5 active.
-        if (!pl.j5Active && S.barricades.has(nx)) continue;
-        dist.set(nx, d + 1);
-        if (nx === toId) return d + 1;
-        // small pruning: don't explore beyond remaining steps
-        if (d + 1 < S.stepsLeft) q.push(nx);
-      }
-    }
-    return Infinity;
-  }
-
-  function tryMoveDirectTo(targetNodeId) {
-    if (S.phase !== "moving") return;
-    const pl = currentPlayer();
-    const piece = S.pieces.find((pc) => pc.id === S.selectedPiece);
-    if (!piece) return;
-
-    const from = piece.nodeId;
-    const dist = shortestDistance(from, targetNodeId);
-    if (!isFinite(dist) || dist === Infinity) {
-      log("⛔ Nicht erreichbar (Barikade blockiert oder kein Weg)." + (pl.j5Active ? "" : " (Nur mit Joker 5 überschreitbar)"));
-      return;
-    }
-    if (dist > S.stepsLeft) {
-      log(`ℹ️ Zu weit: Distanz ${dist}, aber nur ${S.stepsLeft} Schritte.`);
-      return;
-    }
-
-    // Move
-    piece.nodeId = targetNodeId;
-    S.stepsLeft -= dist;
-    log(`➡️ ${pl.color} läuft ${dist} Schritte → ${targetNodeId} (Rest: ${S.stepsLeft})`);
-
-    const handled = onReachNode(piece, targetNodeId);
-    if (handled) return;
-
-    if (S.stepsLeft <= 0) {
-      endTurn("Zug fertig");
-      return;
-    }
-
-    syncUI();
-    draw();
-  }
-
-  // =========================
-  // Barricades
-  // =========================
-  function placeBarricade(nodeId) {
-    if (S.phase !== "place_barricade" && S.phase !== "event_place_barricade") return;
-    if (S.barricades.size >= RULES.barricadeMax) {
-      log("ℹ️ Max 15 Barikaden erreicht – keine neue Barikade.");
-      S.phase = "need_roll";
-      return;
-    }
-    if (isStartNode(nodeId)) {
-      log("⛔ Barikaden dürfen nicht auf Startfeldern stehen.");
-      return;
-    }
-    S.barricades.add(nodeId);
-    log(`🧱 Barikade platziert auf ${nodeId} (${S.barricades.size}/${RULES.barricadeMax})`);
-
-    // Event-Sequenz: nach Barikade kommt die Karte (3s), dann Effekt
-    if (S.phase === "event_place_barricade" && S.pendingEvent){
-      const pending = S.pendingEvent;
-      S.pendingEvent = null;
-      const card = drawRandomEventCard();
-
-      (async ()=>{
-        await showEventCard(`Ereigniskarte #${card.id}`, card.text, card.icon, 3000);
-        await applyEventCard(card, pending.pieceId);
-      })();
-      return;
-    }
-
-    endTurn("Barikade platziert");
-  }
-
-  // =========================
-  // Jokers
-  // =========================
-  function giveJ(k) {
-    const pl = currentPlayer();
-    pl.jokers[k] += 1;
-    log(`🃏 +1 ${k.toUpperCase()}`);
-    syncUI();
-  }
-
-  function useJ5() {
-    const pl = currentPlayer();
-    if (pl.jokers.j5 <= 0) {
-      log("🃏 Joker 5 fehlt.");
-      return;
-    }
-    if (pl.j5Active) {
-      log("ℹ️ Joker 5 ist bereits aktiv.");
-      return;
-    }
-    pl.jokers.j5 -= 1;
-    pl.j5Active = true;
-    log(`🃏 Joker 5 aktiv: Barikaden werden in diesem Zug ignoriert. (Rest J5: ${pl.jokers.j5})`);
-    syncUI();
-    draw();
-  }
-
-  function useJ4() {
-    const pl = currentPlayer();
-    if (pl.jokers.j4 <= 0) {
-      log("🃏 Joker 4 fehlt.");
-      return;
-    }
-    if (S.phase !== "need_roll") {
-      log("⛔ Joker 4 nur vor dem Würfeln nutzbar.");
-      return;
-    }
-    if (pl.pendingDouble) {
-      log("ℹ️ Doppelwurf ist schon aktiv.");
-      return;
-    }
-    pl.jokers.j4 -= 1;
-    pl.pendingDouble = true;
-    log(`🃏 Joker 4 aktiv: Nächster Wurf ist Doppelwurf. (Rest J4: ${pl.jokers.j4})`);
-    syncUI();
-  }
-
-  function useJ3() {
-    const pl = currentPlayer();
-    if (pl.jokers.j3 <= 0) {
-      log("🃏 Joker 3 fehlt.");
-      return;
-    }
-    if (S.phase === "need_roll") {
-      log("⛔ Joker 3 erst nach einem Wurf nutzbar.");
-      return;
-    }
-    pl.jokers.j3 -= 1;
-    const roll = randInt(1, RULES.diceSides);
-    S.rollValue = roll;
-    S.stepsLeft = roll;
-    S.selectedPiece = null;
-    S.phase = "need_piece";
-    log(`🃏 Neuwurf: ${roll} (Rest J3: ${pl.jokers.j3})`);
-    syncUI();
-    draw();
-  }
-
-  function useJ2() {
-    const pl = currentPlayer();
-    if (pl.jokers.j2 <= 0) {
-      log("🃏 Joker 2 fehlt.");
-      return;
-    }
-    S.phase = "j2_pick_source";
-    S.j2Source = null;
-    log("🃏 Joker 2 aktiv: Klick Barikade-Quelle. (Nochmal Quelle = entfernen).");
-    syncUI();
-    draw();
-  }
-
-  function handleJ2Click(nodeId) {
-    const pl = currentPlayer();
-    if (S.phase === "j2_pick_source") {
-      if (!S.barricades.has(nodeId)) {
-        log("⛔ Keine Barikade auf diesem Feld.");
-        return;
-      }
-      S.j2Source = nodeId;
-      S.phase = "j2_pick_target";
-      log("🃏 Quelle gewählt. Klick Ziel-Feld (nicht Startfeld) ODER klick Quelle nochmal = entfernen.");
-      return;
-    }
-    if (S.phase === "j2_pick_target") {
-      if (nodeId === S.j2Source) {
-        S.barricades.delete(S.j2Source);
-        pl.jokers.j2 -= 1;
-        log(`🧱 Barikade entfernt (J2). Rest J2: ${pl.jokers.j2}`);
-        S.phase = "need_roll";
-        S.j2Source = null;
-        startTurn();
-        return;
-      }
-      if (isStartNode(nodeId)) {
-        log("⛔ Ziel ist Startfeld – nicht erlaubt.");
-        return;
-      }
-      S.barricades.delete(S.j2Source);
-      S.barricades.add(nodeId);
-      pl.jokers.j2 -= 1;
-      log(`🧱 Barikade versetzt (J2) → ${nodeId}. Rest J2: ${pl.jokers.j2}`);
-      S.phase = "need_roll";
-      S.j2Source = null;
-      startTurn();
-      return;
-    }
-  }
-
-  function useJ1() {
-    const pl = currentPlayer();
-    if (pl.jokers.j1 <= 0) {
-      log("🃏 Joker 1 fehlt.");
-      return;
-    }
-    pl.jokers.j1 -= 1;
-    log("🃏 Joker 1 genutzt (Prototype-Platzhalter). In der Online-Version geben wir J1 eine feste Regel.");
-    syncUI();
-  }
-
-  
-
-// =========================
-// Event card effects
-// =========================
-async function applyEventCard(card, pieceId){
-  const pl = currentPlayer();
-  const piece = S.pieces.find(pc=>pc.id===pieceId) || (S.selectedPiece ? S.pieces.find(pc=>pc.id===S.selectedPiece) : null);
-
-  const keys = ["j1","j2","j3","j4","j5"];
-  const give = (k, n=1)=>{ pl.jokers[k] = (pl.jokers[k]||0)+n; };
-
-  if (card.kind === "gainJoker"){
-    give(card.joker, 1);
-    log(`🎴 Karte: +1 ${card.joker.toUpperCase()} (${pl.color}).`);
-  } else if (card.kind === "allJokers"){
-    for (const k of keys) give(k, 1);
-    log(`🎴 Karte: ${pl.color} erhält alle 5 Joker (+1).`);
-  } else if (card.kind === "othersTwoRandom"){
-    for (const op of S.players){
-      if (op.id === pl.id) continue;
-      for (let i=0;i<2;i++){
-        const k = keys[Math.floor(Math.random()*keys.length)];
-        op.jokers[k] = (op.jokers[k]||0)+1;
-      }
-    }
-    log(`🎴 Karte: Alle anderen bekommen 2 zufällige Joker.`);
-  } else if (card.kind === "shuffleAllPieces"){
-    const normals = S.nodes.filter(n => String(n.kind).toLowerCase()==="normal").map(n=>n.id);
-    for (let i=normals.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [normals[i],normals[j]]=[normals[j],normals[i]];
-    }
-    for (let i=0;i<S.pieces.length;i++){
-      S.pieces[i].nodeId = normals[i % normals.length];
-    }
-    log("🎴 Karte: Alle Spielfiguren wurden neu gemischt.");
-  } else if (card.kind === "spawnStartPieces"){
-    const occupied = new Set(S.pieces.map(pc=>pc.nodeId));
-    const normals = S.nodes.filter(n => String(n.kind).toLowerCase()==="normal").map(n=>n.id);
-    for (let i=normals.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1)); [normals[i],normals[j]]=[normals[j],normals[i]];
-    }
-    let idx=0;
-    for (const pc of S.pieces){
-      if (isStartNode(pc.nodeId)){
-        while (idx<normals.length && occupied.has(normals[idx])) idx++;
-        if (idx<normals.length){
-          occupied.delete(pc.nodeId);
-          pc.nodeId = normals[idx];
-          occupied.add(pc.nodeId);
-          idx++;
-        }
-      }
-    }
-    log("🎴 Karte: Startfeld-Figuren wurden zufällig gespawnt.");
-  } else if (card.kind === "addSteps"){
-    const add = card.steps||0;
-    S.stepsLeft = (S.stepsLeft||0) + add;
-    if (piece){
-      S.selectedPiece = piece.id;
-      S.phase = "moving";
-    } else if (S.phase === "need_roll"){
-      S.phase = "need_piece";
-    }
-    log(`🎴 Karte: +${add} Felder! (Rest: ${S.stepsLeft})`);
-  } else if (card.kind === "swapOwn"){
-    if (!piece){
-      log("🎴 Karte: Positionswechsel – keine aktive Figur gefunden.");
-    } else {
-      S.phase = "event_swap_pick";
-      S.eventSwap = { pieceId: piece.id };
-      log("🎴 Karte: Klick ein Feld, auf dem eine ANDERE deiner Figuren steht (zum Tauschen).");
-      syncUI(); draw();
-      return;
-    }
-  } else if (card.kind === "backToStart"){
-    if (piece){
-      const starts = S.nodes
-        .filter(n => String(n.kind).toLowerCase()==="start" && String(n.color||'').toLowerCase()===pl.color)
-        .map(n=>n.id).sort((a,b)=>a-b);
-      if (starts.length){
-        piece.nodeId = starts[0];
-        log("🎴 Karte: Figur zurück auf Start.");
-      } else {
-        log("🎴 Karte: Kein Startfeld gefunden – Effekt übersprungen.");
-      }
-    }
-  } else if (card.kind === "loseAllJokers"){
-    pl.jokers = { j1:0, j2:0, j3:0, j4:0, j5:0 };
-    pl.j5Active = false;
-    pl.pendingDouble = false;
-    log("🎴 Karte: Alle Joker verloren.");
-  } else if (card.kind === "stealPoint"){
-    const victims = S.players.filter(p=>p.id!==pl.id && p.score>0);
-    if (!victims.length){
-      log("🎴 Karte: Kein Mitspieler hat Punkte – nichts zu klauen.");
-    } else {
-      const v = victims[Math.floor(Math.random()*victims.length)];
-      v.score -= 1; pl.score += 1;
-      log(`🎴 Karte: ${pl.color} klaut 1 Punkt von ${v.color}.`);
-    }
-  } else if (card.kind === "extraLight"){
-    const candidates = S.nodes
-      .filter(n=>!RULES.forbidSpawnKinds.has(n.kind))
-      .map(n=>n.id)
-      .filter(id=>id!==S.light);
-    S.extraLight = candidates[Math.floor(Math.random()*candidates.length)];
-    log(`🎴 Karte: Zusätzliches Lichtfeld erscheint: ${S.extraLight}`);
-  } else if (card.kind === "lowestGetsPoint"){
-    const min = Math.min(...S.players.map(p=>p.score));
-    const lows = S.players.filter(p=>p.score===min);
-    const who = lows[Math.floor(Math.random()*lows.length)];
-    who.score += 1;
-    log(`🎴 Karte: ${who.color} (wenigste Punkte) bekommt +1 Punkt.`);
-  }
-
-  syncUI(); draw();
-
-  if (S.stepsLeft > 0 && piece){
-    S.selectedPiece = piece.id;
-    S.phase = "moving";
-    log(`➡️ Weiterlaufen möglich. Rest: ${S.stepsLeft}`);
-    syncUI(); draw();
-    return;
-  }
-
-  endTurn("Ereignis");
-}
-
-// =========================
-  // UI sync
-  // =========================
-  function syncUI() {
-    setText(ui.pCount, String(S.playerCount));
-    const pl = currentPlayer();
-    setText(ui.turnLabel, pl ? `${pl.color} (Spieler ${pl.id + 1})` : "–");
-    setText(ui.bCount, `${S.barricades.size}/${RULES.barricadeMax}`);
-    setText(ui.phaseBadge, "Phase: " + S.phase);
-    setText(ui.scoreBadge, "Punkte: " + S.players.map((p) => `${p.color}:${p.score}`).join(" · "));
-    setText(ui.lightBadge, "Licht: " + (S.light ?? "–"));
-
-    setText(ui.diceVal, S.rollValue ?? "–");
-    setText(ui.stepsLeft, S.phase === "need_roll" ? "–" : String(S.stepsLeft));
-
-    setText(ui.j1, String(pl?.jokers.j1 ?? 0));
-    setText(ui.j2, String(pl?.jokers.j2 ?? 0));
-    setText(ui.j3, String(pl?.jokers.j3 ?? 0));
-    setText(ui.j4, String(pl?.jokers.j4 ?? 0));
-    setText(ui.j5, String(pl?.jokers.j5 ?? 0));
-    setText(ui.j5a, pl?.j5Active ? "ja" : "nein");
-
-    ui.rollBtn.disabled = S.phase !== "need_roll";
-    ui.endTurnBtn.disabled = S.phase === "place_barricade" || S.phase === "event_place_barricade" || S.phase === "j2_pick_source" || S.phase === "j2_pick_target" || S.phase === "event_swap_pick";
-  }
-
-  // =========================
-  // Drawing (no numbers on fields; clearer pieces)
-  // =========================
-  function resize() {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    if (CAM.autoFit) fitCamera(rect.width, rect.height);
-    clampPan();
-    updateZoomPct();
-    draw();
-  }
-  window.addEventListener("resize", resize);
-
-  function drawGrid(w, h) {
-    const grid = S.board?.ui?.gridSize ?? 20;
-    const scale = CAM.scale;
-    const ox = CAM.ox;
-    const oy = CAM.oy;
-    const X = (x) => x * scale + ox;
-    const Y = (y) => y * scale + oy;
-
-    ctx.save();
-    ctx.lineWidth = 1;
-
-    const inv = 1 / scale;
-    const left = (0 - ox) * inv;
-    const top = (0 - oy) * inv;
-    const right = (w - ox) * inv;
-    const bot = (h - oy) * inv;
-    const startGX = Math.floor(left / grid) * grid;
-    const endGX = Math.ceil(right / grid) * grid;
-    const startGY = Math.floor(top / grid) * grid;
-    const endGY = Math.ceil(bot / grid) * grid;
-
-    for (let gx = startGX; gx <= endGX; gx += grid) {
-      const major = Math.round(gx / grid) % 5 === 0;
-      ctx.strokeStyle = major ? "rgba(56,189,248,.14)" : "rgba(148,163,184,.06)";
-      ctx.beginPath();
-      ctx.moveTo(X(gx), 0);
-      ctx.lineTo(X(gx), h);
-      ctx.stroke();
-    }
-
-    for (let gy = startGY; gy <= endGY; gy += grid) {
-      const major = Math.round(gy / grid) % 5 === 0;
-      ctx.strokeStyle = major ? "rgba(56,189,248,.14)" : "rgba(148,163,184,.06)";
-      ctx.beginPath();
-      ctx.moveTo(0, Y(gy));
-      ctx.lineTo(w, Y(gy));
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  }
-
-  function draw() {
-    if (!S.board) return;
-
-    // Block clicks while event card overlay is visible
-    if (EVT.active) return;
-    const w = canvas.width / (window.devicePixelRatio || 1);
-    const h = canvas.height / (window.devicePixelRatio || 1);
-
-    ctx.clearRect(0, 0, w, h);
-
-    const scale = CAM.scale;
-    const ox = CAM.ox;
-    const oy = CAM.oy;
-    const X = (x) => x * scale + ox;
-    const Y = (y) => y * scale + oy;
-
-    drawGrid(w, h);
-
-    // edges
-    ctx.save();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(148,163,184,.30)";
-    for (const e of S.edges) {
-      const a = S.nodeById.get(e.a);
-      const b = S.nodeById.get(e.b);
-      if (!a || !b) continue;
-      ctx.beginPath();
-      ctx.moveTo(X(a.x), Y(a.y));
-      ctx.lineTo(X(b.x), Y(b.y));
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    // nodes
-    for (const n of S.nodes) {
-      const r = n.kind === "start" ? 19 : 15;
-      const isMainLight = (S.light === n.id);
-      const isExtraLight = (S.extraLight === n.id);
-      const isLight = isMainLight || isExtraLight;
-      const hasBarr = S.barricades.has(n.id);
-
-      const f = n.flags || {};
-      const st = String(f.specialType || "");
-      const isEvent = st === "event" || f.event === true || f.isEvent === true;
-      const isBoost = st === "boost" || f.boost === true || !!f.boostSteps;
-
-      // Light glow
-      if (isLight) {
-        ctx.beginPath();
-        ctx.arc(X(n.x), Y(n.y), r + 18, 0, Math.PI * 2);
-        ctx.fillStyle = isExtraLight ? "rgba(56,189,248,.14)" : "rgba(34,197,94,.12)";
-        ctx.fill();
-      }
-
-      // node base (always crisp at any zoom: radius in screen px)
-      ctx.beginPath();
-      ctx.arc(X(n.x), Y(n.y), r, 0, Math.PI * 2);
-      ctx.fillStyle = n.kind === "start" ? "rgba(59,130,246,.12)" : "rgba(2,6,23,.55)";
-      ctx.fill();
-
-      // border
-      ctx.lineWidth = isLight ? 4 : 3;
-      ctx.strokeStyle = isLight ? "rgba(34,197,94,.85)" : "rgba(148,163,184,.65)";
-      ctx.stroke();
-
-      // special rings (no numbers, only rings)
-      if (isEvent) {
-        ctx.beginPath();
-        ctx.arc(X(n.x), Y(n.y), r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(59,130,246,.80)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        // event icon (card)
-        ctx.save();
-        ctx.font = `900 ${Math.max(10, Math.min(14, r+2))}px ui-sans-serif, system-ui`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "rgba(226,232,240,.92)";
-        ctx.fillText("🂠", X(n.x), Y(n.y));
-        ctx.restore();
-      }
-      if (isBoost) {
-        ctx.beginPath();
-        ctx.arc(X(n.x), Y(n.y), r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(34,197,94,.65)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-
-      // barricade
-      if (hasBarr) {
-        ctx.beginPath();
-        ctx.arc(X(n.x), Y(n.y), r * 0.75, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(239,68,68,.92)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-    }
-
-    // pieces (better readability, with stacking)
-    drawPieces(X, Y);
-
-    // selected piece halo on top
-    const selPc = S.pieces.find((p) => p.id === S.selectedPiece);
-    if (selPc) {
-      const n = S.nodeById.get(selPc.nodeId);
-      if (n) {
-        ctx.beginPath();
-        ctx.arc(X(n.x), Y(n.y), 18, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255,255,255,.85)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-    }
-  }
-
-  function drawPieces(X, Y) {
-    // group pieces per node
-    const byNode = new Map();
-    for (const pc of S.pieces) {
-      if (!byNode.has(pc.nodeId)) byNode.set(pc.nodeId, []);
-      byNode.get(pc.nodeId).push(pc);
-    }
-
-    for (const [nodeId, pcs] of byNode.entries()) {
-      const n = S.nodeById.get(nodeId);
-      if (!n) continue;
-
-      // spread pieces a bit if stacked
-      const k = pcs.length;
-      const baseR = 9;
-      const spread = k <= 1 ? 0 : 10;
-
-      for (let i = 0; i < k; i++) {
-        const pc = pcs[i];
-        const ang = k <= 1 ? 0 : (i / k) * Math.PI * 2;
-        const dx = Math.cos(ang) * spread;
-        const dy = Math.sin(ang) * spread;
-
-        const cx = X(n.x) + dx;
-        const cy = Y(n.y) + dy;
-
-        // shadow
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx, cy + 1.5, baseR + 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,.35)";
-        ctx.fill();
-
-        // body
-        ctx.beginPath();
-        ctx.arc(cx, cy, baseR, 0, Math.PI * 2);
-        ctx.fillStyle = colorTo(pc.color, 0.96);
-        ctx.fill();
-
-        // rim
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "rgba(255,255,255,.55)";
-        ctx.stroke();
-
-        // small highlight
-        ctx.beginPath();
-        ctx.arc(cx - 3.2, cy - 3.5, 2.8, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255,255,255,.42)";
-        ctx.fill();
-
-        ctx.restore();
-      }
-    }
-  }
-
-  function colorTo(c, a) {
-    const map = {
-      red: [239, 68, 68],
-      blue: [59, 130, 246],
-      green: [34, 197, 94],
-      yellow: [245, 158, 11],
-      black: [17, 24, 39],
-      white: [226, 232, 240],
-    };
-    const rgb = map[c] || [148, 163, 184];
-    return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
-  }
-
-  // =========================
-  // Input: tap/click selection (zoom independent)
-  // =========================
-  function findHitNode(sx, sy) {
-    // Use screen-space hit radius that feels the same at every zoom.
-    const HIT_R = 24; // px
-    let best = null;
-    let bestD = Infinity;
-    for (const n of S.nodes) {
-      const nx = n.x * CAM.scale + CAM.ox;
-      const ny = n.y * CAM.scale + CAM.oy;
-      const d = Math.hypot(nx - sx, ny - sy);
-      if (d < bestD) {
-        bestD = d;
-        best = n;
-      }
-    }
-    if (!best || bestD > HIT_R) return null;
-    return best;
-  }
-
-  function handleBoardTap(sx, sy) {
-    if (!S.board) return;
-
-    const hit = findHitNode(sx, sy);
-    if (!hit) return;
-    const nodeId = hit.id;
-
-    // phases
-    if (S.phase === "place_barricade") {
-      placeBarricade(nodeId);
-      return;
-    }
-    if (S.phase === "j2_pick_source" || S.phase === "j2_pick_target") {
-      handleJ2Click(nodeId);
-      syncUI();
-      draw();
-      return;
-    }
-
-    const pl = currentPlayer();
-
-    // choose a piece
-    if (S.phase === "need_piece") {
-      // prioritize piece under cursor: if stacked, pick your own first
-      const pcsHere = S.pieces.filter((pc) => pc.nodeId === nodeId && pc.owner === pl.id);
-      if (!pcsHere.length) {
-        log("ℹ️ Wähle eine eigene Figur.");
-        return;
-      }
-      S.selectedPiece = pcsHere[0].id;
-      S.phase = "moving";
-      log(`✅ Figur gewählt (${S.selectedPiece}). Jetzt Ziel-Feld klicken. (Rest: ${S.stepsLeft})`);
-      syncUI();
-      draw();
-      return;
-    }
-
-    // move
-    if (S.phase === "moving" && S.selectedPiece) {
-      tryMoveDirectTo(nodeId);
-      syncUI();
-      draw();
-      return;
-    }
-  }
-
-  // =========================
-  // Buttons
-  // =========================
-  ui.playersSel.onchange = () => {
-    S.playerCount = parseInt(ui.playersSel.value, 10);
-    setText(ui.pCount, String(S.playerCount));
-    hardReset();
-  };
-
-  ui.resetBtn.onclick = () => hardReset();
-  ui.nextTurnBtn.onclick = () => {
-    log("⏭️ Nächster Zug (manuell).");
-    endTurn("manuell");
-  };
-
-  ui.rollBtn.onclick = () => rollDice();
-  ui.endTurnBtn.onclick = () => endTurn("manuell beendet");
-
-  ui.giveJ1.onclick = () => giveJ("j1");
-  ui.giveJ2.onclick = () => giveJ("j2");
-  ui.giveJ3.onclick = () => giveJ("j3");
-  ui.giveJ4.onclick = () => giveJ("j4");
-  ui.giveJ5.onclick = () => giveJ("j5");
-
-  ui.useJ1.onclick = () => useJ1();
-  ui.useJ2.onclick = () => useJ2();
-  ui.useJ3.onclick = () => useJ3();
-  ui.useJ4.onclick = () => useJ4();
-  ui.useJ5.onclick = () => useJ5();
-
-  ui.fitBtn.onclick = () => {
-    const rect = canvas.getBoundingClientRect();
-    fitCamera(rect.width, rect.height);
-    draw();
-  };
-
-  ui.zoomIn.onclick = () => {
-    const rect = canvas.getBoundingClientRect();
-    zoomAt(rect.width * 0.5, rect.height * 0.5, 1.15);
-    draw();
-  };
-  ui.zoomOut.onclick = () => {
-    const rect = canvas.getBoundingClientRect();
-    zoomAt(rect.width * 0.5, rect.height * 0.5, 1 / 1.15);
-    draw();
-  };
-
-  // =========================
-  // Reset
-  // =========================
-  function hardReset() {
-    ui.log.innerHTML = "";
-    S.barricades = new Set();
-    resetPlayers();
-    resetPieces();
-    S.lastLight = null;
-    S.light = null;
-    S.j2Source = null;
-
-    spawnLight("Spielstart");
-    startTurn();
-    syncUI();
-
-    // keep camera stable but ensure playable
-    const rect = canvas.getBoundingClientRect();
-    fitCamera(rect.width, rect.height);
-    draw();
-
-    log("✅ Lichtarena Offline bereit.");
-  }
-
-  // =========================
-  // Init
-  // =========================
-  (async function init() {
-    try {
-      await loadBoard();
-    } catch (e) {
-      console.error(e);
-      log("❌ Board konnte nicht geladen werden. (board_lichtarena.json / board.json)");
-      return;
-    }
-
-    S.playerCount = parseInt(ui.playersSel.value, 10);
-    resetPlayers();
-    resetPieces();
-
-    // initial camera
-    resize();
-    const rect = canvas.getBoundingClientRect();
-    fitCamera(rect.width, rect.height);
-
-    spawnLight("Spielstart");
-    startTurn();
-    syncUI();
-    draw();
-
-    log("✅ Lichtarena Offline bereit.");
-  })();
-})();
+    /* Joker table */
+    .jokerTable{
+      border-collapse: collapse;
+      width: 260px;
+      font-size:12px;
+      color: var(--text);
+    }
+    .jokerTable th, .jokerTable td{
+      padding:6px 8px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      text-align:left;
+      white-space:nowrap;
+    }
+    .jokerTable th{
+      color: var(--muted);
+      font-weight:600;
+    }
+    .turnBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .turnDot{
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(255,255,255,.6);
+      box-shadow:0 0 0 3px rgba(255,255,255,.08);
+    }
+    .turnDot.red{ background: var(--red); }
+    .turnDot.blue{ background: var(--blue); }
+    .turnDot.green{ background: var(--green); }
+    .turnDot.yellow{ background: var(--yellow); }
+
+  </style>
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./lichtarena_FINAL.css">
+</head>
+<body class="edgesOff">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Lichtarena (Prototype – Offline)</h1>
+        <div class="subtitle">
+          Klick auf eine Figur → auswählen. Dann auf ein verbundenes Feld klicken → Zug (1 Schritt).
+          Tore/Gates werden beim Zug geprüft (Würfel muss passen). Licht spawnt zufällig auf freien normalen Feldern.
+        </div>
+      </div>
+
+      <div class="pillrow">
+        <div class="pill"><b>Modus:</b> Offline lokal</div>
+        <div class="pill"><b>Regel:</b> Board 1 startet mit Licht auf allen Lichtfeldern</div>
+        <div class="pill"><b>Am Zug:</b> <span id="hudTurn">–</span></div>
+        <div class="pill"><b>Server-ready:</b> später leicht umstellbar</div>
+      </div>
+    </div><div class="content">
+  <div class="boardArea">
+    <div class="stageWrap" id="boardViewport">
+      <div id="boardPanZoom">
+        <svg id="edgesSvg"></svg>
+        <div id="stage"></div>
+    <div id="statusLine">Status: <b class="warn">Lädt…</b></div>
+  </div>
+  <aside class="sidePanel">
+    <div class="sideTop">
+      <div class="zoomGroup">
+        <button id="btnZoomOut" class="miniBtn" title="Rauszoomen">−</button>
+        <button id="btnZoomReset" class="miniBtn" title="Reset">Reset</button>
+        <button id="btnZoomIn" class="miniBtn" title="Reinzoomen">+</button>
+      </div>
+      <div class="hint">Zoom: Pinch (2 Finger). Verschieben: 1 Finger ziehen (auf freie Fläche).</div>
+    </div>
+    <div class="bottom">
+      <div class="row">
+        <div class="group">
+          <span class="labeltxt">Würfel</span>
+          <button id="btnRoll">Würfeln</button>
+          <input id="diceValue" type="number" min="1" max="6" value="6" />
+          <span class="labeltxt">Aktuell:</span> <b id="hudDice">6</b>
+        </div>
+  </aside>
+</div>
+
+        <div class="group">
+          <span class="labeltxt">Licht</span>
+          <span class="labeltxt">Aktive Lichter:</span> <b id="hudActiveLights">0</b>
+          <span class="labeltxt">Gesammelt (global):</span> <b id="hudLightTotal">0</b>/<b id="hudLightGoal">5</b>
+          <button id="btnForceSpawnLight" class="btnGold">Test: Licht spawnen</button>
+        </div>
+
+        <div class="group">
+          <span class="labeltxt">Ereignis</span>
+          <button id="btnSpawnBarricade" class="btnWarn">Barikade spawnen</button>
+          <button id="btnClearDynamicBarricades">Barikaden löschen</button>
+        </div>
+      </div>
+
+      
+      <div class="row">
+        <div class="group">
+          <span class="labeltxt">Spieler</span>
+          <span class="turnBadge"><span id="hudTurnDot" class="turnDot"></span> <b id="hudTurnName">–</b></span>
+          <button id="btnPrevTurn" title="Nur offline zum Testen">◀</button>
+          <button id="btnNextTurn" title="Nur offline zum Testen">▶</button>
+        </div>
+
+        <div class="group">
+          <span class="labeltxt">Joker (am Zug)</span>
+          <table class="jokerTable" aria-label="Joker Übersicht">
+            <thead>
+              <tr><th>Joker</th><th>Anzahl</th></tr>
+            </thead>
+            <tbody id="jokerTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="group">
+          <span class="labeltxt">Debug</span>
+          <button id="btnRestart">Restart (Board neu laden)</button>
+          <button id="btnSave">Save Local</button>
+          <button id="btnLoad">Load Local</button>
+          <button id="btnToggleEdges">Linien: AUS</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./game_rules_lights_barricades.js"></script>
+  <script src="./lichtarena_client.js"></script>
+</body>
+</html>
