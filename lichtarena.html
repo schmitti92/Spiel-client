@@ -1,28 +1,395 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lichtarena</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lichtarena (Prototype – Offline)</title>
+  <style>
+    :root{
+      --bg:#070a12;
+      --panel:rgba(18,24,38,.72);
+      --panel2:rgba(13,18,30,.72);
+      --text:#e7eaf0;
+      --muted:#a9b2c3;
+      --line:rgba(255,255,255,.10);
+      --edge:rgba(90,162,255,.45);
 
-<!-- Globale Styles (Barikade bleibt unangetastet) -->
+      --red:#ff5a6a;
+      --blue:#5aa2ff;
+      --green:#2ee59d;
+      --yellow:#ffd250;
+      --glow:rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 600px at 50% 40%, rgba(90,162,255,.08), transparent 60%),
+        radial-gradient(900px 700px at 20% 70%, rgba(46,229,157,.06), transparent 60%),
+        radial-gradient(900px 700px at 80% 70%, rgba(255,210,80,.05), transparent 60%),
+        linear-gradient(180deg, #060812 0%, #050713 60%, #040612 100%);
+      overflow:hidden;
+    }
+
+    .wrap{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:18px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+      max-width:740px;
+    }
+
+    .pillrow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      background:rgba(18,24,38,.55);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      gap:6px;
+      align-items:center;
+      backdrop-filter: blur(6px);
+    }
+    .pill b{ color:var(--text); font-weight:600; }
+
+    .stageWrap{
+      flex:1;
+      min-height:320px;
+      background:rgba(18,24,38,.35);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 10px 50px rgba(0,0,0,.45) inset;
+    }
+
+    /* Stage: nodes positioned absolute */
+    #stage{
+      position:absolute;
+      inset:16px;
+    }
+    #edgesSvg{
+      position:absolute;
+      inset:16px;
+      width:calc(100% - 32px);
+      height:calc(100% - 32px);
+      pointer-events:none;
+    }
+
+    /* Edges + gate labels */
+    .edge{
+      stroke:var(--edge);
+      stroke-width:3.5;
+      stroke-linecap:round;
+      opacity:.85;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.55));
+    }
+    body.edgesOff .edge{ opacity:0; }
+    .gateLabelBg{
+      fill:rgba(0,0,0,.55);
+      stroke:rgba(255,255,255,.12);
+      stroke-width:1;
+      rx:10;
+    }
+    .gateLabelText{
+      fill:rgba(255,255,255,.92);
+      font-size:12px;
+    }
+    body.edgesOff .gateLabelBg,
+    body.edgesOff .gateLabelText{ opacity:0; }
+
+    /* Nodes */
+    .node{
+      position:absolute;
+      transform:translate(-50%,-50%);
+      width:52px;
+      height:52px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      box-shadow:0 6px 18px rgba(0,0,0,.35);
+      cursor:pointer;
+      user-select:none;
+    }
+    .node:hover{ border-color:rgba(255,255,255,.22); }
+
+    .label{
+      position:absolute;
+      inset:auto 0 6px 0;
+      text-align:center;
+      font-size:11px;
+      color:rgba(255,255,255,.85);
+      text-shadow:0 2px 10px rgba(0,0,0,.7);
+      pointer-events:none;
+    }
+
+    .tokens{
+      position:absolute;
+      inset:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      pointer-events:none;
+    }
+
+    .token{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.25);
+      box-shadow:0 10px 26px rgba(0,0,0,.40);
+      pointer-events:auto;
+      cursor:pointer;
+      display:inline-block;
+    }
+    .token.selected{
+      outline:2px solid rgba(255,255,255,.85);
+      outline-offset:2px;
+      box-shadow:0 0 0 6px rgba(255,255,255,.10), 0 10px 26px rgba(0,0,0,.40);
+    }
+
+    .selectedNode{
+      box-shadow:0 0 0 6px rgba(255,255,255,.10), 0 6px 18px rgba(0,0,0,.35);
+      border-color:rgba(255,255,255,.26);
+    }
+
+    /* Start colors */
+    .start-red{ box-shadow:0 0 0 2px rgba(255,90,106,.18), 0 6px 18px rgba(0,0,0,.35); }
+    .start-blue{ box-shadow:0 0 0 2px rgba(90,162,255,.18), 0 6px 18px rgba(0,0,0,.35); }
+    .start-green{ box-shadow:0 0 0 2px rgba(46,229,157,.18), 0 6px 18px rgba(0,0,0,.35); }
+    .start-yellow{ box-shadow:0 0 0 2px rgba(255,210,80,.18), 0 6px 18px rgba(0,0,0,.35); }
+
+    /* Light fields */
+    .lightfield{ border-color:rgba(255,255,255,.18); }
+    .activeLight{
+      box-shadow:0 0 0 2px rgba(255,210,80,.20), 0 0 18px rgba(255,210,80,.18), 0 6px 18px rgba(0,0,0,.35);
+    }
+
+    /* Barricades */
+    .barricade-fixed{ background:rgba(255,255,255,.03); border-color:rgba(255,255,255,.16); }
+    .dynamicBarricade{
+      box-shadow:0 0 0 2px rgba(255,90,106,.20), 0 0 18px rgba(255,90,106,.14), 0 6px 18px rgba(0,0,0,.35);
+    }
+
+    /* Bottom panel */
+    .bottom{
+      background:rgba(18,24,38,.55);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      backdrop-filter: blur(6px);
+    }
+
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+    .group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      background:rgba(0,0,0,.18);
+    }
+    .group .labeltxt{ color:var(--muted); font-size:12px; }
+    .group b{ font-weight:700; }
+
+    button, input{
+      font:inherit;
+    }
+    button{
+      background:rgba(36,49,76,.55);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+    }
+    button:hover{ border-color:rgba(255,255,255,.22); }
+    button:active{ transform:translateY(1px); }
+
+    input[type="number"]{
+      width:70px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+    }
+
+    .btnWarn{ border-color:rgba(255,90,106,.22); background:rgba(255,90,106,.10); }
+    .btnGold{ border-color:rgba(255,210,80,.22); background:rgba(255,210,80,.08); }
+
+    #statusLine{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+    .good{ color:#7CFFB2; }
+    .warn{ color:#FFD97A; }
+    .bad{ color:#FF7A7A; }
+  
+    /* Joker table */
+    .jokerTable{
+      border-collapse: collapse;
+      width: 260px;
+      font-size:12px;
+      color: var(--text);
+    }
+    .jokerTable th, .jokerTable td{
+      padding:6px 8px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      text-align:left;
+      white-space:nowrap;
+    }
+    .jokerTable th{
+      color: var(--muted);
+      font-weight:600;
+    }
+    .turnBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .turnDot{
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(255,255,255,.6);
+      box-shadow:0 0 0 3px rgba(255,255,255,.08);
+    }
+    .turnDot.red{ background: var(--red); }
+    .turnDot.blue{ background: var(--blue); }
+    .turnDot.green{ background: var(--green); }
+    .turnDot.yellow{ background: var(--yellow); }
+
+  </style>
 <link rel="stylesheet" href="./styles.css">
-
-<!-- Eigene Styles nur für Lichtarena -->
-<link rel="stylesheet" href="./lichtarena.css">
-
+<link rel="stylesheet" href="./lichtarena_FINAL.css">
 </head>
-<body>
+<body class="edgesOff">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Lichtarena (Prototype – Offline)</h1>
+        <div class="subtitle">
+          Klick auf eine Figur → auswählen. Dann auf ein verbundenes Feld klicken → Zug (1 Schritt).
+          Tore/Gates werden beim Zug geprüft (Würfel muss passen). Licht spawnt zufällig auf freien normalen Feldern.
+        </div>
+      </div>
 
-<div class="wrap">
+      <div class="pillrow">
+        <div class="pill"><b>Modus:</b> Offline lokal</div>
+        <div class="pill"><b>Regel:</b> Board 1 startet mit Licht auf allen Lichtfeldern</div>
+        <div class="pill"><b>Am Zug:</b> <span id="hudTurn">–</span></div>
+        <div class="pill"><b>Server-ready:</b> später leicht umstellbar</div>
+      </div>
+    </div>
 
-  <!-- Deine bestehende Lichtarena Struktur bleibt unberührt -->
-  <div id="app"></div>
+    <div class="stageWrap">
+      <svg id="edgesSvg"></svg>
+      <div id="stage"></div>
+    </div>
 
-</div>
+    <div id="statusLine">Status: <b class="warn">Lädt…</b></div>
 
-<!-- Bestehende Script-Datei (keine neue JS-Datei, kein Funktionsverlust) -->
-<script src="./lichtarena_client.js"></script>
+    <div class="bottom">
+      <div class="row">
+        <div class="group">
+          <span class="labeltxt">Würfel</span>
+          <button id="btnRoll">Würfeln</button>
+          <input id="diceValue" type="number" min="1" max="6" value="6" />
+          <span class="labeltxt">Aktuell:</span> <b id="hudDice">6</b>
+        </div>
 
+        <div class="group">
+          <span class="labeltxt">Licht</span>
+          <span class="labeltxt">Aktive Lichter:</span> <b id="hudActiveLights">0</b>
+          <span class="labeltxt">Gesammelt (global):</span> <b id="hudLightTotal">0</b>/<b id="hudLightGoal">5</b>
+          <button id="btnForceSpawnLight" class="btnGold">Test: Licht spawnen</button>
+        </div>
+
+        <div class="group">
+          <span class="labeltxt">Ereignis</span>
+          <button id="btnSpawnBarricade" class="btnWarn">Barikade spawnen</button>
+          <button id="btnClearDynamicBarricades">Barikaden löschen</button>
+        </div>
+      </div>
+
+      
+      <div class="row">
+        <div class="group">
+          <span class="labeltxt">Spieler</span>
+          <span class="turnBadge"><span id="hudTurnDot" class="turnDot"></span> <b id="hudTurnName">–</b></span>
+          <button id="btnPrevTurn" title="Nur offline zum Testen">◀</button>
+          <button id="btnNextTurn" title="Nur offline zum Testen">▶</button>
+        </div>
+
+        <div class="group">
+          <span class="labeltxt">Joker (am Zug)</span>
+          <table class="jokerTable" aria-label="Joker Übersicht">
+            <thead>
+              <tr><th>Joker</th><th>Anzahl</th></tr>
+            </thead>
+            <tbody id="jokerTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="group">
+          <span class="labeltxt">Debug</span>
+          <button id="btnRestart">Restart (Board neu laden)</button>
+          <button id="btnSave">Save Local</button>
+          <button id="btnLoad">Load Local</button>
+          <button id="btnToggleEdges">Linien: AUS</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./game_rules_lights_barricades.js"></script>
+  <script src="./lichtarena_client.js"></script>
 </body>
 </html>
