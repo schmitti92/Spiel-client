@@ -271,6 +271,39 @@
     .good{ color:#7CFFB2; }
     .warn{ color:#FFD97A; }
     .bad{ color:#FF7A7A; }
+  
+    /* Joker table */
+    .jokerTable{
+      border-collapse: collapse;
+      width: 260px;
+      font-size:12px;
+      color: var(--text);
+    }
+    .jokerTable th, .jokerTable td{
+      padding:6px 8px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      text-align:left;
+      white-space:nowrap;
+    }
+    .jokerTable th{
+      color: var(--muted);
+      font-weight:600;
+    }
+    .turnBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .turnDot{
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(255,255,255,.6);
+      box-shadow:0 0 0 3px rgba(255,255,255,.08);
+    }
+    .turnDot.red{ background: var(--red); }
+    .turnDot.blue{ background: var(--blue); }
+    .turnDot.green{ background: var(--green); }
+    .turnDot.yellow{ background: var(--yellow); }
+
   </style>
 </head>
 <body class="edgesOff">
@@ -287,6 +320,7 @@
       <div class="pillrow">
         <div class="pill"><b>Modus:</b> Offline lokal</div>
         <div class="pill"><b>Regel:</b> Board 1 startet mit Licht auf allen Lichtfeldern</div>
+        <div class="pill"><b>Am Zug:</b> <span id="hudTurn">–</span></div>
         <div class="pill"><b>Server-ready:</b> später leicht umstellbar</div>
       </div>
     </div>
@@ -318,6 +352,26 @@
           <span class="labeltxt">Ereignis</span>
           <button id="btnSpawnBarricade" class="btnWarn">Barikade spawnen</button>
           <button id="btnClearDynamicBarricades">Barikaden löschen</button>
+        </div>
+      </div>
+
+      
+      <div class="row">
+        <div class="group">
+          <span class="labeltxt">Spieler</span>
+          <span class="turnBadge"><span id="hudTurnDot" class="turnDot"></span> <b id="hudTurnName">–</b></span>
+          <button id="btnPrevTurn" title="Nur offline zum Testen">◀</button>
+          <button id="btnNextTurn" title="Nur offline zum Testen">▶</button>
+        </div>
+
+        <div class="group">
+          <span class="labeltxt">Joker (am Zug)</span>
+          <table class="jokerTable" aria-label="Joker Übersicht">
+            <thead>
+              <tr><th>Joker</th><th>Anzahl</th></tr>
+            </thead>
+            <tbody id="jokerTable"></tbody>
+          </table>
         </div>
       </div>
 
