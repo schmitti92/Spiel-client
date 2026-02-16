@@ -1,131 +1,358 @@
-/* ===============================
-   LICHTARENA – TURNIER PRO LAYOUT
-   =============================== */
+:root{
+  --bg:#070a12;
+  --panel: rgba(14, 20, 34, .72);
+  --text:#eaf0ff;
+  --muted:#9fb0d6;
 
-body {
-    margin: 0;
-    background: #0b0f17;
-    color: #e6edf5;
-    font-family: "Segoe UI", system-ui, sans-serif;
-    overflow: hidden;
+  --red:#ff4d5a;
+  --blue:#4d9dff;
+  --green:#35d28a;
+  --yellow:#ffd84d;
+
+  --edge: rgba(120,170,255,.50);
+  --edgeStrong: rgba(120,170,255,.85);
 }
 
-/* ====== MAIN LAYOUT ====== */
-
-.main-layout {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    height: 100vh;
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1100px 700px at 30% 20%, #0e1730 0%, var(--bg) 55%) fixed;
+  color:var(--text);
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  overflow:hidden;
 }
 
-/* ====== BOARD AREA ====== */
+/* Topbar */
+.topbar{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  padding:16px 16px 10px 16px;
+  gap:12px;
+}
+.brand .title{
+  font-size:34px;
+  font-weight:800;
+  letter-spacing:.2px;
+  line-height:1;
+}
+.brand .subtitle{
+  margin-top:4px;
+  color:var(--muted);
+  font-size:13px;
+}
+.badges{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+}
+.pill{
+  padding:8px 10px;
+  border-radius:999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(10px);
+  color:var(--muted);
+  font-size:13px;
+  white-space:nowrap;
+}
+.pill b{color:var(--text)}
+.pill-turn{border-color: rgba(255,255,255,.14); color: var(--text)}
 
-.board-area {
-    position: relative;
-    background: radial-gradient(circle at center, #111827 0%, #0b0f17 70%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+/* Layout */
+.layout{
+  display:grid;
+  grid-template-columns: minmax(520px, 1fr) 380px;
+  gap:14px;
+  padding:10px 14px 14px 14px;
+  height: calc(100vh - 78px);
 }
 
-/* Stage wird sauber zentriert */
-#stage {
-    position: relative;
-    transform-origin: center center;
+/* Board pane */
+.boardPane{
+  position:relative;
+  border-radius:18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.08);
+  overflow:hidden;
+  backdrop-filter: blur(10px);
+}
+.status{
+  padding:10px 12px;
+  color:var(--muted);
+  font-size:13px;
+  border-bottom:1px solid rgba(255,255,255,.07);
 }
 
-/* ====== BOARD NODES ====== */
-
-.node {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-
-    background: #1c2435;
-    border: 2px solid #2f3c55;
-
-    box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,0.04),
-        0 8px 18px rgba(0,0,0,0.7);
-
-    transition: 0.2s ease;
+.boardShell{
+  position:absolute;
+  inset:40px 0 0 0;
+  overflow:hidden;
+  background:
+    radial-gradient(900px 600px at 60% 40%, rgba(40, 80, 160, .20), rgba(0,0,0,0) 60%),
+    radial-gradient(800px 520px at 25% 70%, rgba(255, 100, 120, .12), rgba(0,0,0,0) 60%),
+    radial-gradient(850px 520px at 70% 75%, rgba(60, 210, 140, .12), rgba(0,0,0,0) 60%);
 }
 
-.node:hover {
-    border-color: #5d7fff;
-    box-shadow:
-        0 0 12px rgba(93,127,255,0.5);
+.edgesSvg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
 }
 
-/* ====== EDGES ====== */
-
-svg line {
-    stroke: rgba(120,170,255,0.8);
-    stroke-width: 4;
+.stage{
+  position:absolute;
+  left:0; top:0;
+  width:1px; height:1px;
+  transform-origin: 0 0;
 }
 
-/* ====== UI PANEL ====== */
-
-.ui-panel {
-    background: #111827;
-    border-left: 1px solid rgba(255,255,255,0.06);
-    padding: 24px;
-    overflow-y: auto;
+/* Camera reveal layer (subtle grid) */
+.boardShell:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity:.22;
+  pointer-events:none;
 }
 
-/* ====== UI SECTIONS ====== */
-
-.ui-section {
-    margin-bottom: 28px;
+/* Camera HUD */
+.camHud{
+  position:absolute;
+  left:14px;
+  top:14px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:8px;
+  border-radius:14px;
+  background: rgba(0,0,0,.25);
+  border:1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(10px);
+}
+.zoomPct{
+  min-width:54px;
+  text-align:center;
+  color:var(--muted);
+  font-weight:800;
+  font-size:12px
+}
+.hint{
+  position:absolute;
+  top:14px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:8px 10px;
+  border-radius:999px;
+  background: rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.08);
+  color: rgba(235,240,255,.90);
+  font-size:12px;
+  backdrop-filter: blur(10px);
 }
 
-.ui-section h3 {
-    font-size: 13px;
-    letter-spacing: 1px;
-    color: #8fa6d8;
-    text-transform: uppercase;
-    margin-bottom: 10px;
+/* UI pane */
+.uiPane{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  overflow:auto;
+  padding-right:2px;
+}
+.panel{
+  border-radius:18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.08);
+  padding:14px;
+  backdrop-filter: blur(10px);
+}
+.panelHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+.panelTitle{
+  font-size:16px;
+  font-weight:800;
+}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+
+/* Buttons / inputs */
+.btn{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  padding:10px 12px;
+  border-radius:14px;
+  font-weight:800;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.btn:hover{background: rgba(255,255,255,.09)}
+.btn:active{transform: translateY(1px)}
+.btn.tiny{padding:8px 10px; border-radius:12px; font-weight:900}
+.btn.primary{background: rgba(90,162,255,.22); border-color: rgba(90,162,255,.35)}
+.btn.primary:hover{background: rgba(90,162,255,.28)}
+.btn.danger{background: rgba(255,90,106,.18); border-color: rgba(255,90,106,.30)}
+.btn.danger:hover{background: rgba(255,90,106,.24)}
+
+.input{
+  width:88px;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.22);
+  color: var(--text);
+  font-weight:900;
+  outline:none;
 }
 
-/* ====== BUTTONS ====== */
-
-button {
-    background: #1e293b;
-    border: 1px solid rgba(255,255,255,0.08);
-    color: #e6edf5;
-    padding: 8px 14px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.2s ease;
+.turnBadge{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+.turnBadge .dot{
+  width:10px; height:10px; border-radius:50%;
+  background: var(--red);
+  box-shadow: 0 0 14px rgba(255,90,106,.55);
 }
 
-button:hover {
-    background: #263244;
+/* Table */
+.table{width:100%; border-collapse:collapse; font-size:13px}
+.table th,.table td{padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.08)}
+.table th{
+  color: var(--muted);
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  font-size:11px;
+}
+.table td{color: rgba(235,240,255,.92)}
+.table .right{text-align:right}
+
+/* Edges */
+.edgeLine{
+  stroke: var(--edge);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  opacity:.9;
+}
+.edgeLine.gated{
+  stroke: var(--edgeStrong);
+  stroke-dasharray: 8 8;
 }
 
-/* ====== TOKENS ====== */
-
-.token {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    margin: auto;
-    margin-top: 12px;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+/* Nodes */
+.node{
+  position:absolute;
+  width:70px; height:70px;
+  transform: translate(-50%, -50%);
+  border-radius:16px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none; /* taps fine; pan handled on shell */
+}
+.node .label{
+  font-weight:900;
+  letter-spacing:.6px;
+  color: rgba(235,240,255,.85);
+  text-shadow: 0 1px 0 rgba(0,0,0,.55);
+  font-size:12px;
+  opacity:.9;
+}
+.node.lightfield{
+  border-color: rgba(255,216,77,.35);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.35),
+    0 0 28px rgba(255,216,77,.10),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+.node.activeLight{
+  border-color: rgba(255,216,77,.70);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.35),
+    0 0 34px rgba(255,216,77,.22),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+.node.barricade-fixed{
+  border-color: rgba(255,120,140,.55);
+}
+.node.dynamicBarricade{
+  border-color: rgba(255,120,140,.70);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.35),
+    0 0 30px rgba(255,90,106,.14),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+.node.selectedNode{
+  outline: 2px solid rgba(255,255,255,.30);
+  outline-offset: 2px;
 }
 
-.token.red { background: #ff4d5a; }
-.token.blue { background: #4d9dff; }
-.token.green { background: #35d28a; }
-.token.yellow { background: #ffd84d; }
+/* Start colors */
+.node.start-red{border-color: rgba(255,77,90,.55)}
+.node.start-blue{border-color: rgba(77,157,255,.55)}
+.node.start-green{border-color: rgba(53,210,138,.55)}
+.node.start-yellow{border-color: rgba(255,216,77,.55)}
 
-/* ====== STATUS ====== */
+/* Tokens */
+.tokens{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%);
+  display:flex;
+  gap:6px;
+}
+.token{
+  width:18px; height:18px;
+  border-radius:6px;
+  box-shadow: 0 8px 16px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
+  border:1px solid rgba(0,0,0,.25);
+  cursor:pointer;
+}
+.token.selected{
+  outline: 2px solid rgba(255,255,255,.80);
+  outline-offset: 2px;
+}
 
-.status-bar {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    font-size: 14px;
-    opacity: 0.8;
+/* Responsive: small widths -> UI becomes bottom drawer */
+@media (max-width: 980px){
+  body{overflow:auto}
+  .layout{
+    grid-template-columns: 1fr;
+    height:auto;
+  }
+  .uiPane{order:2; max-height:none}
+  .boardPane{min-height: 62vh}
+  .hint{display:none}
 }
