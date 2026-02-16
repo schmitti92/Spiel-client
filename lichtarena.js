@@ -368,43 +368,66 @@
   // =========================
   // Board loading
   // =========================
-  async function loadBoard() {
-    let res;
+  
+const DEFAULT_BOARD = {"ui": {"gridSize": 30}, "nodes": [{"id": "n1", "kind": "normal", "x": 200, "y": 160, "color": "", "flags": {}}, {"id": "n2", "kind": "normal", "x": 280, "y": 160, "color": "", "flags": {}}, {"id": "n3", "kind": "normal", "x": 360, "y": 160, "color": "", "flags": {}}, {"id": "n4", "kind": "normal", "x": 440, "y": 160, "color": "", "flags": {}}, {"id": "n5", "kind": "normal", "x": 520, "y": 160, "color": "", "flags": {}}, {"id": "n6", "kind": "normal", "x": 600, "y": 160, "color": "", "flags": {}}, {"id": "n7", "kind": "normal", "x": 200, "y": 240, "color": "", "flags": {}}, {"id": "n8", "kind": "normal", "x": 280, "y": 240, "color": "", "flags": {"specialType": "event"}}, {"id": "n9", "kind": "normal", "x": 360, "y": 240, "color": "", "flags": {}}, {"id": "n10", "kind": "normal", "x": 440, "y": 240, "color": "", "flags": {}}, {"id": "n11", "kind": "normal", "x": 520, "y": 240, "color": "", "flags": {}}, {"id": "n12", "kind": "normal", "x": 600, "y": 240, "color": "", "flags": {}}, {"id": "n13", "kind": "normal", "x": 200, "y": 320, "color": "", "flags": {}}, {"id": "n14", "kind": "normal", "x": 280, "y": 320, "color": "", "flags": {"specialType": "event"}}, {"id": "n15", "kind": "normal", "x": 360, "y": 320, "color": "", "flags": {}}, {"id": "n16", "kind": "normal", "x": 440, "y": 320, "color": "", "flags": {}}, {"id": "n17", "kind": "normal", "x": 520, "y": 320, "color": "", "flags": {}}, {"id": "n18", "kind": "normal", "x": 600, "y": 320, "color": "", "flags": {}}, {"id": "n19", "kind": "normal", "x": 200, "y": 400, "color": "", "flags": {}}, {"id": "n20", "kind": "normal", "x": 280, "y": 400, "color": "", "flags": {}}, {"id": "n21", "kind": "normal", "x": 360, "y": 400, "color": "", "flags": {"specialType": "event"}}, {"id": "n22", "kind": "normal", "x": 440, "y": 400, "color": "", "flags": {}}, {"id": "n23", "kind": "normal", "x": 520, "y": 400, "color": "", "flags": {}}, {"id": "n24", "kind": "normal", "x": 600, "y": 400, "color": "", "flags": {}}, {"id": "n25", "kind": "normal", "x": 200, "y": 480, "color": "", "flags": {}}, {"id": "n26", "kind": "normal", "x": 280, "y": 480, "color": "", "flags": {}}, {"id": "n27", "kind": "normal", "x": 360, "y": 480, "color": "", "flags": {"specialType": "event"}}, {"id": "n28", "kind": "normal", "x": 440, "y": 480, "color": "", "flags": {}}, {"id": "n29", "kind": "normal", "x": 520, "y": 480, "color": "", "flags": {}}, {"id": "n30", "kind": "normal", "x": 600, "y": 480, "color": "", "flags": {}}, {"id": "n31", "kind": "normal", "x": 200, "y": 560, "color": "", "flags": {}}, {"id": "n32", "kind": "normal", "x": 280, "y": 560, "color": "", "flags": {}}, {"id": "n33", "kind": "normal", "x": 360, "y": 560, "color": "", "flags": {"specialType": "event"}}, {"id": "n34", "kind": "normal", "x": 440, "y": 560, "color": "", "flags": {}}, {"id": "n35", "kind": "normal", "x": 520, "y": 560, "color": "", "flags": {}}, {"id": "n36", "kind": "normal", "x": 600, "y": 560, "color": "", "flags": {}}, {"id": "s_red_1", "kind": "start", "x": 140.0, "y": 0.0, "color": "red", "flags": {"startColor": "red"}}, {"id": "s_red_2", "kind": "start", "x": 57.1, "y": 114.1, "color": "red", "flags": {"startColor": "red"}}, {"id": "s_red_3", "kind": "start", "x": -77.1, "y": 70.5, "color": "red", "flags": {"startColor": "red"}}, {"id": "s_red_4", "kind": "start", "x": -77.1, "y": -70.5, "color": "red", "flags": {"startColor": "red"}}, {"id": "s_red_5", "kind": "start", "x": 57.1, "y": -114.1, "color": "red", "flags": {"startColor": "red"}}, {"id": "s_blue_1", "kind": "start", "x": 900.0, "y": 0.0, "color": "blue", "flags": {"startColor": "blue"}}, {"id": "s_blue_2", "kind": "start", "x": 817.1, "y": 114.1, "color": "blue", "flags": {"startColor": "blue"}}, {"id": "s_blue_3", "kind": "start", "x": 682.9, "y": 70.5, "color": "blue", "flags": {"startColor": "blue"}}, {"id": "s_blue_4", "kind": "start", "x": 682.9, "y": -70.5, "color": "blue", "flags": {"startColor": "blue"}}, {"id": "s_blue_5", "kind": "start", "x": 817.1, "y": -114.1, "color": "blue", "flags": {"startColor": "blue"}}, {"id": "s_green_1", "kind": "start", "x": 320.0, "y": 720.0, "color": "green", "flags": {"startColor": "green"}}, {"id": "s_green_2", "kind": "start", "x": 237.1, "y": 834.1, "color": "green", "flags": {"startColor": "green"}}, {"id": "s_green_3", "kind": "start", "x": 102.9, "y": 790.5, "color": "green", "flags": {"startColor": "green"}}, {"id": "s_green_4", "kind": "start", "x": 102.9, "y": 649.5, "color": "green", "flags": {"startColor": "green"}}, {"id": "s_green_5", "kind": "start", "x": 237.1, "y": 605.9, "color": "green", "flags": {"startColor": "green"}}, {"id": "s_yellow_1", "kind": "start", "x": 720.0, "y": 720.0, "color": "yellow", "flags": {"startColor": "yellow"}}, {"id": "s_yellow_2", "kind": "start", "x": 637.1, "y": 834.1, "color": "yellow", "flags": {"startColor": "yellow"}}, {"id": "s_yellow_3", "kind": "start", "x": 502.9, "y": 790.5, "color": "yellow", "flags": {"startColor": "yellow"}}, {"id": "s_yellow_4", "kind": "start", "x": 502.9, "y": 649.5, "color": "yellow", "flags": {"startColor": "yellow"}}, {"id": "s_yellow_5", "kind": "start", "x": 637.1, "y": 605.9, "color": "yellow", "flags": {"startColor": "yellow"}}, {"id": "s_black_1", "kind": "start", "x": 380.0, "y": 320.0, "color": "black", "flags": {"startColor": "black"}}, {"id": "s_black_2", "kind": "start", "x": 297.1, "y": 434.1, "color": "black", "flags": {"startColor": "black"}}, {"id": "s_black_3", "kind": "start", "x": 162.9, "y": 390.5, "color": "black", "flags": {"startColor": "black"}}, {"id": "s_black_4", "kind": "start", "x": 162.9, "y": 249.5, "color": "black", "flags": {"startColor": "black"}}, {"id": "s_black_5", "kind": "start", "x": 297.1, "y": 205.9, "color": "black", "flags": {"startColor": "black"}}, {"id": "s_white_1", "kind": "start", "x": 660.0, "y": 400.0, "color": "white", "flags": {"startColor": "white"}}, {"id": "s_white_2", "kind": "start", "x": 577.1, "y": 514.1, "color": "white", "flags": {"startColor": "white"}}, {"id": "s_white_3", "kind": "start", "x": 442.9, "y": 470.5, "color": "white", "flags": {"startColor": "white"}}, {"id": "s_white_4", "kind": "start", "x": 442.9, "y": 329.5, "color": "white", "flags": {"startColor": "white"}}, {"id": "s_white_5", "kind": "start", "x": 577.1, "y": 285.9, "color": "white", "flags": {"startColor": "white"}}], "edges": [{"a": "n1", "b": "n2"}, {"a": "n1", "b": "n7"}, {"a": "n2", "b": "n3"}, {"a": "n2", "b": "n8"}, {"a": "n3", "b": "n4"}, {"a": "n3", "b": "n9"}, {"a": "n4", "b": "n5"}, {"a": "n4", "b": "n10"}, {"a": "n5", "b": "n6"}, {"a": "n5", "b": "n11"}, {"a": "n6", "b": "n12"}, {"a": "n7", "b": "n8"}, {"a": "n7", "b": "n13"}, {"a": "n8", "b": "n9"}, {"a": "n8", "b": "n14"}, {"a": "n9", "b": "n10"}, {"a": "n9", "b": "n15"}, {"a": "n10", "b": "n11"}, {"a": "n10", "b": "n16"}, {"a": "n11", "b": "n12"}, {"a": "n11", "b": "n17"}, {"a": "n12", "b": "n18"}, {"a": "n13", "b": "n14"}, {"a": "n13", "b": "n19"}, {"a": "n14", "b": "n15"}, {"a": "n14", "b": "n20"}, {"a": "n15", "b": "n16"}, {"a": "n15", "b": "n21"}, {"a": "n16", "b": "n17"}, {"a": "n16", "b": "n22"}, {"a": "n17", "b": "n18"}, {"a": "n17", "b": "n23"}, {"a": "n18", "b": "n24"}, {"a": "n19", "b": "n20"}, {"a": "n19", "b": "n25"}, {"a": "n20", "b": "n21"}, {"a": "n20", "b": "n26"}, {"a": "n21", "b": "n22"}, {"a": "n21", "b": "n27"}, {"a": "n22", "b": "n23"}, {"a": "n22", "b": "n28"}, {"a": "n23", "b": "n24"}, {"a": "n23", "b": "n29"}, {"a": "n24", "b": "n30"}, {"a": "n25", "b": "n26"}, {"a": "n25", "b": "n31"}, {"a": "n26", "b": "n27"}, {"a": "n26", "b": "n32"}, {"a": "n27", "b": "n28"}, {"a": "n27", "b": "n33"}, {"a": "n28", "b": "n29"}, {"a": "n28", "b": "n34"}, {"a": "n29", "b": "n30"}, {"a": "n29", "b": "n35"}, {"a": "n30", "b": "n36"}, {"a": "n31", "b": "n32"}, {"a": "n32", "b": "n33"}, {"a": "n33", "b": "n34"}, {"a": "n34", "b": "n35"}, {"a": "n35", "b": "n36"}, {"a": "n1", "b": "n8"}, {"a": "n3", "b": "n10"}, {"a": "n5", "b": "n12"}, {"a": "n8", "b": "n15"}, {"a": "n10", "b": "n17"}, {"a": "n13", "b": "n20"}, {"a": "n15", "b": "n22"}, {"a": "n17", "b": "n24"}, {"a": "n20", "b": "n27"}, {"a": "n22", "b": "n29"}, {"a": "n25", "b": "n32"}, {"a": "n27", "b": "n34"}, {"a": "n29", "b": "n36"}, {"a": "s_red_1", "b": "n1"}, {"a": "s_red_2", "b": "n1"}, {"a": "s_red_3", "b": "n1"}, {"a": "s_red_4", "b": "n1"}, {"a": "s_red_5", "b": "n1"}, {"a": "s_blue_1", "b": "n6"}, {"a": "s_blue_2", "b": "n6"}, {"a": "s_blue_3", "b": "n6"}, {"a": "s_blue_4", "b": "n6"}, {"a": "s_blue_5", "b": "n6"}, {"a": "s_green_1", "b": "n31"}, {"a": "s_green_2", "b": "n31"}, {"a": "s_green_3", "b": "n31"}, {"a": "s_green_4", "b": "n31"}, {"a": "s_green_5", "b": "n31"}, {"a": "s_yellow_1", "b": "n36"}, {"a": "s_yellow_2", "b": "n36"}, {"a": "s_yellow_3", "b": "n36"}, {"a": "s_yellow_4", "b": "n36"}, {"a": "s_yellow_5", "b": "n36"}, {"a": "s_black_1", "b": "n16"}, {"a": "s_black_2", "b": "n16"}, {"a": "s_black_3", "b": "n16"}, {"a": "s_black_4", "b": "n16"}, {"a": "s_black_5", "b": "n16"}, {"a": "s_white_1", "b": "n21"}, {"a": "s_white_2", "b": "n21"}, {"a": "s_white_3", "b": "n21"}, {"a": "s_white_4", "b": "n21"}, {"a": "s_white_5", "b": "n21"}]};
+
+async function loadBoard() {
+  // Robust loader:
+  // 1) Try board_lichtarena.json
+  // 2) Fallback to board.json
+  // 3) If file missing OR invalid JSON (e.g. HTML/JS returned), use DEFAULT_BOARD so Offline always runs.
+  const tryFetch = async (url) => {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
+    const txt = await res.text();
+    // Quick sanity check before JSON.parse
+    const t = txt.trim();
+    if (!(t.startsWith("{") || t.startsWith("["))) {
+      throw new Error("Not JSON from " + url + " (starts with: " + t.slice(0, 12) + ")");
+    }
+    return JSON.parse(t);
+  };
+
+  let raw = null;
+  try {
+    raw = await tryFetch("board_lichtarena.json?v=la");
+  } catch (e1) {
     try {
-      res = await fetch("board_lichtarena.json?v=la", { cache: "no-store" });
-      if (!res.ok) throw new Error("no board_lichtarena.json");
-    } catch {
-      res = await fetch("board.json?v=la", { cache: "no-store" });
+      raw = await tryFetch("board.json?v=la");
+    } catch (e2) {
+      console.warn("Board JSON missing/invalid – using DEFAULT_BOARD.", e1, e2);
+      log("⚠️ Board-JSON fehlt/kaputt → nutze eingebautes Demo-Board (DEFAULT_BOARD).");
+      raw = DEFAULT_BOARD;
     }
-    const raw = await res.json();
-
-    // Normalize to {ui,nodes,edges}
-    const b = normalizeBoard(raw);
-    S.board = b;
-
-    S.nodes = b.nodes.map((n) => ({
-      id: String(n.id),
-      kind: String(n.kind || n.type || "normal").toLowerCase(),
-      x: Number(n.x ?? 0),
-      y: Number(n.y ?? 0),
-      color: String(n.color || n.flags?.houseColor || n.flags?.startColor || "").toLowerCase(),
-      flags: n.flags || {},
-    }));
-
-    S.edges = (b.edges || []).map((e) => ({ a: String(e.a), b: String(e.b) }));
-
-    S.nodeById = new Map(S.nodes.map((n) => [n.id, n]));
-    S.adj = new Map();
-    for (const n of S.nodes) S.adj.set(n.id, []);
-    for (const e of S.edges) {
-      if (S.adj.has(e.a) && S.adj.has(e.b)) {
-        S.adj.get(e.a).push(e.b);
-        S.adj.get(e.b).push(e.a);
-      }
-    }
-
-    computeZonesPrototype();
   }
+
+  // Normalize to {ui,nodes,edges}
+  const b = normalizeBoard(raw);
+  S.board = b;
+
+  S.nodes = b.nodes.map((n) => ({
+    id: String(n.id),
+    kind: String(n.kind || n.type || "normal").toLowerCase(),
+    x: Number(n.x ?? 0),
+    y: Number(n.y ?? 0),
+    color: String(n.color || n.flags?.houseColor || n.flags?.startColor || "").toLowerCase(),
+    flags: n.flags || {},
+  }));
+
+  S.edges = (b.edges || []).map((e) => ({ a: String(e.a), b: String(e.b) }));
+
+  S.nodeById = new Map(S.nodes.map((n) => [n.id, n]));
+  S.adj = new Map();
+  for (const n of S.nodes) S.adj.set(n.id, []);
+  for (const e of S.edges) {
+    if (S.adj.has(e.a) && S.adj.has(e.b)) {
+      S.adj.get(e.a).push(e.b);
+      S.adj.get(e.b).push(e.a);
+    }
+  }
+
+  computeZonesPrototype();
+}
 
   function normalizeBoard(raw) {
     if (!raw) throw new Error("board missing");
