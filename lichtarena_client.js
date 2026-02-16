@@ -36,13 +36,155 @@
   const btnSave = document.getElementById("btnSave");
   const btnLoad = document.getElementById("btnLoad");
 
-  const btnToggleEdges = document.getElementById("btnToggleEdges");
+  
+  // ---------- Pan/Zoom (Tablet friendly) ----------
+  const boardViewport = document.getElementById("boardViewport");
+  const boardPanZoom = document.getElementById("boardPanZoom");
+  const btnZoomIn = document.getElementById("btnZoomIn");
+  const btnZoomOut = document.getElementById("btnZoomOut");
+  const btnZoomReset = document.getElementById("btnZoomReset");
+
+  const panZoom = {
+    enabled: !!(boardViewport && boardPanZoom),
+    scale: 1,
+    minScale: 0.6,
+    maxScale: 2.6,
+    tx: 0,
+    ty: 0,
+    dragging: false,
+    lastX: 0,
+    lastY: 0,
+    pinch: false,
+    pinchStartDist: 0,
+    pinchStartScale: 1,
+    pinchCenter: {x:0, y:0},
+  };
+
+  function applyPanZoom(){
+    if (!panZoom.enabled) return;
+    boardPanZoom.style.transform = `translate(${panZoom.tx}px, ${panZoom.ty}px) scale(${panZoom.scale})`;
+  }
+
+  function clampPanZoom(){
+    panZoom.scale = Math.max(panZoom.minScale, Math.min(panZoom.maxScale, panZoom.scale));
+  }
+
+  function zoomAt(factor, centerX, centerY){
+    if (!panZoom.enabled) return;
+    const prevScale = panZoom.scale;
+    panZoom.scale *= factor;
+    clampPanZoom();
+
+    // keep point under finger stable:
+    const rect = boardViewport.getBoundingClientRect();
+    const cx = (centerX ?? (rect.left + rect.width/2)) - rect.left;
+    const cy = (centerY ?? (rect.top + rect.height/2)) - rect.top;
+
+    // transform origin is top-left, so adjust translation:
+    const s = panZoom.scale / prevScale;
+    panZoom.tx = cx - (cx - panZoom.tx) * s;
+    panZoom.ty = cy - (cy - panZoom.ty) * s;
+
+    applyPanZoom();
+  }
+
+  function resetPanZoom(){
+    panZoom.scale = 1;
+    panZoom.tx = 0;
+    panZoom.ty = 0;
+    applyPanZoom();
+  }
+
+  function isInteractiveTarget(el){
+    // don't start dragging if user tries to click a piece/node/button
+    if (!el) return false;
+    return !!(el.closest && (el.closest(".node") || el.closest(".token") || el.closest("button") || el.closest("input") || el.closest("select") ));
+  }
+
+  function dist(t1, t2){
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+
+  if (panZoom.enabled){
+    // prevent browser from interpreting pan as scroll inside viewport
+    boardViewport.style.touchAction = "none";
+
+    boardViewport.addEventListener("pointerdown", (ev) => {
+      if (isInteractiveTarget(ev.target)) return;
+      panZoom.dragging = true;
+      panZoom.lastX = ev.clientX;
+      panZoom.lastY = ev.clientY;
+      boardViewport.setPointerCapture(ev.pointerId);
+    });
+
+    boardViewport.addEventListener("pointermove", (ev) => {
+      if (!panZoom.dragging) return;
+      const dx = ev.clientX - panZoom.lastX;
+      const dy = ev.clientY - panZoom.lastY;
+      panZoom.lastX = ev.clientX;
+      panZoom.lastY = ev.clientY;
+      panZoom.tx += dx;
+      panZoom.ty += dy;
+      applyPanZoom();
+    });
+
+    boardViewport.addEventListener("pointerup", () => { panZoom.dragging = false; });
+    boardViewport.addEventListener("pointercancel", () => { panZoom.dragging = false; });
+
+    // Pinch zoom (touch)
+    boardViewport.addEventListener("touchstart", (ev) => {
+      if (ev.touches.length === 2){
+        panZoom.pinch = true;
+        panZoom.pinchStartDist = dist(ev.touches[0], ev.touches[1]);
+        panZoom.pinchStartScale = panZoom.scale;
+      }
+    }, {passive:false});
+
+    boardViewport.addEventListener("touchmove", (ev) => {
+      if (!panZoom.pinch || ev.touches.length !== 2) return;
+      ev.preventDefault();
+      const d = dist(ev.touches[0], ev.touches[1]);
+      const factor = d / Math.max(1, panZoom.pinchStartDist);
+      const rect = boardViewport.getBoundingClientRect();
+      const cx = (ev.touches[0].clientX + ev.touches[1].clientX)/2;
+      const cy = (ev.touches[0].clientY + ev.touches[1].clientY)/2;
+      panZoom.scale = panZoom.pinchStartScale * factor;
+      clampPanZoom();
+      // reuse zoomAt math by computing relative factor from current:
+      // instead: call zoomAt with factor from previous scale
+      const prev = boardPanZoom._prevScale ?? panZoom.pinchStartScale;
+      const rel = panZoom.scale / prev;
+      boardPanZoom._prevScale = panZoom.scale;
+      zoomAt(rel, cx, cy);
+    }, {passive:false});
+
+    boardViewport.addEventListener("touchend", (ev) => {
+      if (ev.touches.length < 2){
+        panZoom.pinch = false;
+        boardPanZoom._prevScale = undefined;
+      }
+    });
+
+    // Mouse wheel zoom (desktop)
+    boardViewport.addEventListener("wheel", (ev) => {
+      ev.preventDefault();
+      const factor = ev.deltaY < 0 ? 1.08 : 0.92;
+      zoomAt(factor, ev.clientX, ev.clientY);
+    }, {passive:false});
+
+    // Buttons
+    if (btnZoomIn) btnZoomIn.addEventListener("click", () => zoomAt(1.15));
+    if (btnZoomOut) btnZoomOut.addEventListener("click", () => zoomAt(0.87));
+    if (btnZoomReset) btnZoomReset.addEventListener("click", resetPanZoom);
+  }
+const btnToggleEdges = document.getElementById("btnToggleEdges");
 
   // turn + jokers UI
   const hudTurn = document.getElementById("hudTurn");
   const hudTurnName = document.getElementById("hudTurnName");
   const hudTurnDot = document.getElementById("hudTurnDot");
-  const hudTurnDotTop = document.getElementById("hudTurnDotTop");
   const jokerTableBody = document.getElementById("jokerTable");
   const btnPrevTurn = document.getElementById("btnPrevTurn");
   const btnNextTurn = document.getElementById("btnNextTurn");
@@ -142,9 +284,6 @@
     if (hudTurnName) hudTurnName.textContent = pretty;
     if (hudTurnDot){
       hudTurnDot.className = "turnDot " + c;
-    }
-    if (hudTurnDotTop){
-      hudTurnDotTop.className = "turnDot " + c;
     }
 
     if (jokerTableBody){
@@ -435,6 +574,8 @@
     renderEdges(tf);
     renderNodes(tf);
     renderHud();
+  
+    applyPanZoom();
   }
 
   
