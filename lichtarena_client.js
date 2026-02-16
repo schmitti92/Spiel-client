@@ -16,7 +16,7 @@
   const stage = $("stage");
   const edgesSvg = $("edgesSvg");
   const statusLine = $("statusLine");
-  const pillRule = $("pillRule"); // optional (may be missing in some layouts)
+  const pillRule = $("pillRule");
   const pillTurn = $("pillTurn");
 
   const btnRoll = $("btnRoll");
@@ -35,8 +35,8 @@
   const btnSave = $("btnSave");
   const btnLoad = $("btnLoad");
 
-  const btnPrevTurn = $("btnPrevTurn");
-  const btnNextTurn = $("btnNextTurn");
+  const btnPrevPlayer = $("btnPrevPlayer");
+  const btnNextPlayer = $("btnNextPlayer");
   const turnBadge = $("turnBadge");
   const turnName = $("turnName");
 
@@ -46,14 +46,22 @@
   const btnFit = $("btnFit");
   const btnZoomOut = $("btnZoomOut");
   const btnZoomIn = $("btnZoomIn");
-  const btnResetView = $("btnResetView");
+  const btnResetCam = $("btnResetCam");
   const btnToggleLines = $("btnToggleLines");
   const zoomPct = $("zoomPct");
+  // ---- Compatibility: support older/newer HTML ids without crashing ----
+  const btnPrevTurn = $("btnPrevTurn") || btnPrevPlayer;
+  const btnNextTurn = $("btnNextTurn") || btnNextPlayer;
+  const btnResetView = $("btnResetView") || btnResetCam;
+  const turnText = $("turnText") || turnName || $("turnLabel") || $("turnText");
+  const turnDot = $("turnDot") || null;
+  const linesState = $("linesState") || null;
+
 
   // ---------- RULES API ----------
   const Rules = window.GameRulesLightsBarricades;
   if (!Rules) {
-    statusLine.textContent = "Status: game_rules_lights_barricades.js nicht geladen.";
+    if(statusLine) statusLine.textContent = "Status: game_rules_lights_barricades.js nicht geladen.";
     throw new Error("Rules missing");
   }
 
@@ -136,8 +144,8 @@
 
   function setTurnUI(){
     const c = currentColor();
-    pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
-    turnName.textContent = c.toUpperCase();
+    if(pillTurn) pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
+    if(turnName) turnName.textContent = c.toUpperCase();
     const dot = turnBadge.querySelector(".dot");
     if (dot){
       dot.style.background = cssColor(c);
@@ -229,7 +237,7 @@
   function applyCamera(){
     stage.style.transform = `translate(${state.cam.ox}px, ${state.cam.oy}px) scale(${state.cam.scale})`;
     edgesSvg.style.transform = `translate(${state.cam.ox}px, ${state.cam.oy}px) scale(${state.cam.scale})`;
-    zoomPct.textContent = `${Math.round(state.cam.scale*100)}%`;
+    if(zoomPct) zoomPct.textContent = `${Math.round(state.cam.scale*100)}%`;
   }
 
   function zoomAt(cx, cy, factor){
@@ -343,7 +351,8 @@
       const tokens = document.createElement("div");
       tokens.className = "tokens";
       el.appendChild(tokens);
-if (el) el.addEventListener("click", (ev) => {
+
+      el.addEventListener("click", (ev) => {
         ev.stopPropagation();
         onNodeClicked(String(n.id));
       });
@@ -384,7 +393,7 @@ if (el) el.addEventListener("click", (ev) => {
         tok.className = "token" + (p.id === state.selectedPieceId ? " selected" : "");
         tok.style.background = tokenCss(p.color);
         tok.title = `Figur ${p.id} (${p.color})`;
-if (tok) tok.addEventListener("click",(ev)=>{
+        tok.addEventListener("click",(ev)=>{
           ev.stopPropagation();
           selectPiece(p.id);
         });
@@ -692,8 +701,11 @@ if (tok) tok.addEventListener("click",(ev)=>{
     const dx = a.x-b.x, dy=a.y-b.y;
     return Math.hypot(dx,dy);
   }
-if (boardShell) boardShell.addEventListener("pointerdown", (e)=>{
-    boardShell.setPointerCapture(e.pointerId);
+
+  boardShell.addEventListener("pointerdown", (e)=>{
+    
+    if(e.pointerType==="touch"){ e.preventDefault(); }
+boardShell.setPointerCapture(e.pointerId);
     PZ.pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
     if (PZ.pointers.size === 1){
       PZ.isPanning = true;
@@ -706,8 +718,11 @@ if (boardShell) boardShell.addEventListener("pointerdown", (e)=>{
       PZ.pinchStart.cy = (pts[0].y + pts[1].y)/2;
     }
   });
-if (boardShell) boardShell.addEventListener("pointermove",(e)=>{
-    if (!PZ.pointers.has(e.pointerId)) return;
+
+  boardShell.addEventListener("pointermove",(e)=>{
+    
+    if(e.pointerType==="touch"){ e.preventDefault(); }
+if (!PZ.pointers.has(e.pointerId)) return;
     PZ.pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
 
     if (PZ.pointers.size === 1 && PZ.isPanning){
@@ -747,41 +762,47 @@ if (boardShell) boardShell.addEventListener("pointermove",(e)=>{
       }
     }
   }
-if (boardShell) boardShell.addEventListener("pointerup", endPointer);
-if (boardShell) boardShell.addEventListener("pointercancel", endPointer);
+  boardShell.addEventListener("pointerup", endPointer);
+  boardShell.addEventListener("pointercancel", endPointer);
 
   // wheel zoom
-if (boardShell) boardShell.addEventListener("wheel",(e)=>{
+  boardShell.addEventListener("wheel",(e)=>{
+    
     e.preventDefault();
     const factor = (e.deltaY > 0) ? 0.92 : 1.08;
     zoomAt(e.clientX, e.clientY, factor);
   }, { passive:false });
 
   // ---------- Wire UI ----------
-if (btnRoll) btnRoll.addEventListener("click", rollDice);
-if (diceValueInp) diceValueInp.addEventListener("change", syncDiceFromInput);
-if (diceValueInp) diceValueInp.addEventListener("input", syncDiceFromInput);
-if (btnSpawnBarricade) btnSpawnBarricade.addEventListener("click", spawnRandomBarricade);
-if (btnClearDynamicBarricades) btnClearDynamicBarricades.addEventListener("click", () => {
+  btnRoll.addEventListener("click", rollDice);
+  diceValueInp.addEventListener("change", syncDiceFromInput);
+  diceValueInp.addEventListener("input", syncDiceFromInput);
+
+  btnSpawnBarricade.addEventListener("click", spawnRandomBarricade);
+  btnClearDynamicBarricades.addEventListener("click", () => {
     state.barricades = [];
     setStatus("Dynamische Barikaden gelöscht.", "good");
     renderTokens();
   });
-if (btnForceSpawnLight) btnForceSpawnLight.addEventListener("click", forceSpawnLight);
-if (btnRestart) btnRestart.addEventListener("click", async () => {
+
+  btnForceSpawnLight.addEventListener("click", forceSpawnLight);
+
+  btnRestart.addEventListener("click", async () => {
     setStatus("Board wird neu geladen…", "warn");
     await start();
   });
-if (btnSave) btnSave.addEventListener("click", saveLocal);
-if (btnLoad) btnLoad.addEventListener("click", loadLocal);
 
-  if (btnPrevTurn) btnPrevTurn.addEventListener("click", prevPlayer);
-  if (btnNextTurn) btnNextTurn.addEventListener("click", nextPlayer);
-if (btnFit) btnFit.addEventListener("click", () => { fitCamera(); });
-  if (btnResetView) btnResetView.addEventListener("click", () => { resetCamera(); fitCamera(); });
-if (btnZoomOut) btnZoomOut.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 0.9); });
-if (btnZoomIn) btnZoomIn.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 1.1); });
-if (btnToggleLines) btnToggleLines.addEventListener("click", () => {
+  btnSave.addEventListener("click", saveLocal);
+  btnLoad.addEventListener("click", loadLocal);
+
+  btnPrevTurn && btnPrevTurn.addEventListener("click", prevPlayer);
+  btnNextTurn && btnNextTurn.addEventListener("click", nextPlayer);
+
+  btnFit.addEventListener("click", () => { fitCamera(); });
+  btnResetView && btnResetView.addEventListener("click", () => { resetCamera(); fitCamera(); });
+  btnZoomOut.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 0.9); });
+  btnZoomIn.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 1.1); });
+  btnToggleLines.addEventListener("click", () => {
     state.showLines = !state.showLines;
     showLinesButtonLabel();
     renderEdges();
@@ -794,7 +815,7 @@ if (btnToggleLines) btnToggleLines.addEventListener("click", () => {
       buildMaps();
 
       const bname = board?.meta?.name ? String(board.meta.name) : "spielbrett";
-if (pillRule) pillRule.textContent = "Regel: Board 1 startet mit Licht auf allen Lichtfeldern";
+      if(pillRule) pillRule.textContent = "Regel: Board 1 startet mit Licht auf allen Lichtfeldern";
       setStatus(`Board geladen: ${bname} • Nodes: ${(board.nodes||[]).length} • Edges: ${(board.edges||[]).length}`, "good");
 
       // reset state parts
