@@ -1,76 +1,293 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Lichtarena – Prototype</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Lichtarena – Prototype (offline)</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:rgba(15,23,42,.78);
+      --panel2:rgba(2,6,23,.55);
+      --line:rgba(148,163,184,.22);
+      --text:rgba(226,232,240,.92);
+      --muted:rgba(226,232,240,.72);
+      --btn:rgba(30,41,59,.72);
+      --btn2:rgba(51,65,85,.75);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:radial-gradient(1200px 900px at 30% 20%, rgba(56,189,248,.08), transparent 55%),
+                 radial-gradient(900px 700px at 70% 60%, rgba(34,197,94,.06), transparent 55%),
+                 var(--bg);
+      color:var(--text);
+      font:14px/1.35 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      overflow:hidden;
+    }
 
-<style>
-body {
-    margin: 0;
-    background: #0b1420;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    color: white;
-}
+    #app{height:100%; display:flex; width:100%;}
 
-.event-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(4px);
-}
+    /* LEFT SIDEBAR – flush to the very left (no gap) */
+    #sidebar{
+      width:320px;
+      max-width:86vw;
+      background:linear-gradient(180deg, rgba(2,6,23,.72), rgba(2,6,23,.55));
+      border-right:1px solid var(--line);
+      padding:12px;
+      overflow:auto;
+      overscroll-behavior:contain;
+    }
 
-.event-overlay.hidden {
-  display: none;
-}
+    #main{flex:1; min-width:0; position:relative;}
 
-.event-card {
-  width: 380px;
-  padding: 28px;
-  border-radius: 20px;
-  background: linear-gradient(145deg, #0e1a2b, #152843);
-  box-shadow:
-    0 0 40px rgba(0,150,255,0.4),
-    0 0 80px rgba(0,150,255,0.2);
-  text-align: center;
-  animation: cardPop 0.3s ease-out;
-}
+    #topbar{
+      position:absolute; inset:10px 10px auto 10px;
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:10px;
+      pointer-events:none;
+      z-index:5;
+    }
 
-.event-title {
-  font-size: 18px;
-  color: #6cc7ff;
-  margin-bottom: 16px;
-  letter-spacing: 1px;
-}
+    .title{
+      padding:10px 12px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:0 8px 30px rgba(0,0,0,.35);
+      pointer-events:auto;
+    }
+    .title b{display:block; font-size:14px; letter-spacing:.2px}
+    .title small{display:block; color:var(--muted); margin-top:2px}
 
-.event-text {
-  font-size: 16px;
-  color: #ffffff;
-}
+    .topActions{display:flex; gap:8px; pointer-events:auto;}
 
-@keyframes cardPop {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
+    button{
+      appearance:none; border:1px solid var(--line);
+      background:var(--btn); color:var(--text);
+      padding:8px 10px; border-radius:10px;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,.25);
+    }
+    button:hover{background:var(--btn2)}
+    button:disabled{opacity:.45; cursor:not-allowed}
+
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      box-shadow:0 8px 30px rgba(0,0,0,.28);
+      margin-bottom:10px;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(2,6,23,.45);
+      color:var(--text);
+      font-size:12px;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+
+    select{width:100%; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:rgba(2,6,23,.5); color:var(--text)}
+
+    .k{font-weight:700; color:rgba(226,232,240,.95)}
+    .help{color:var(--muted); font-size:12px}
+
+    #log{max-height:210px; overflow:auto; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:8px; font-size:12px}
+    #log div{padding:3px 0; border-bottom:1px dashed rgba(148,163,184,.14)}
+    #log div:last-child{border-bottom:none}
+
+    /* CANVAS viewport */
+    #boardWrap{position:absolute; inset:0;}
+    canvas{width:100%; height:100%; display:block; touch-action:none;}
+
+    /* small zoom UI in top-right */
+    #zoomUI{
+      position:absolute; right:14px; top:82px;
+      display:flex; flex-direction:column; gap:6px;
+      z-index:6;
+    }
+    #zoomUI button{width:42px; height:38px; padding:0; border-radius:12px}
+    #zoomUI .pct{width:42px; text-align:center; font-size:12px; opacity:.85;}
+
+    @media (max-width: 900px){
+      #sidebar{width:300px}
+    }
+    @media (max-width: 760px){
+      #sidebar{width:260px}
+      .title{display:none}
+    }
+  
+    /* Event Card Overlay */
+    .eventOverlay{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none;
+      opacity:0; transform:scale(.98);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .eventOverlay.show{ opacity:1; transform:scale(1); }
+    .eventCard{
+      width:min(420px, 88vw);
+      border-radius:18px;
+      padding:18px 18px 14px;
+      background: rgba(2,6,23,.72);
+      border:1px solid rgba(148,163,184,.30);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      text-align:center;
+    }
+    .eventCardTitle{
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-size:12px;
+      color: rgba(226,232,240,.85);
+      margin-bottom:10px;
+    }
+    .eventCardBody{
+      font-weight:800;
+      font-size:18px;
+      line-height:1.25;
+      color: rgba(226,232,240,.95);
+      margin: 4px 0 10px;
+    }
+    .eventCardHint{
+      font-size:12px;
+      color: rgba(148,163,184,.85);
+    }
+
 </style>
 </head>
-
 <body>
+  <div id="app">
+    <aside id="sidebar">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-end">
+          <div>
+            <div class="k">Spieler <span id="pCount">4</span></div>
+            <div class="help">Lichtarena – Prototype (offline)</div>
+          </div>
+          <div class="badge" id="turnLabel">–</div>
+        </div>
+        <div style="margin-top:8px">
+          <span class="badge">Barikaden <span id="bCount">0/15</span></span>
+          <span class="badge" id="lightBadge">Licht: –</span>
+          <span class="badge" id="phaseBadge">Phase: –</span>
+          <span class="badge" id="scoreBadge">Punkte: –</span>
+        </div>
+      </div>
 
-<canvas id="gameCanvas"></canvas>
+      <div class="card">
+        <div class="help"><span class="k">Bedienung</span><br>
+          • Linke Maustaste gedrückt halten &amp; ziehen: Board verschieben<br>
+          • Mausrad: Zoom<br>
+          • Tablet: 1 Finger ziehen = verschieben, 2 Finger pinch = zoomen<br>
+          • Klick: Figur/Feld auswählen (Zoom egal)
+        </div>
+      </div>
 
-<div id="eventOverlay" class="event-overlay hidden">
-  <div class="event-card">
-    <div class="event-title">Ereigniskarte</div>
-    <div id="eventText" class="event-text"></div>
+      <div class="card">
+        <div class="k">Spieleranzahl</div>
+        <select id="playersSel">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div><span class="k">Würfel</span> <span class="badge" id="diceVal">–</span></div>
+          <div><span class="k">Restschritte</span> <span class="badge" id="stepsLeft">–</span></div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="rollBtn">Würfeln</button>
+          <button id="endTurnBtn">Zug beenden</button>
+          <button id="resetBtn">Reset</button>
+          <button id="nextTurnBtn">Nächster Zug</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="k">Joker</div>
+        <div class="row" style="margin-top:8px; gap:10px">
+          <span class="badge">J1 <span id="j1">0</span></span>
+          <button id="giveJ1">+J1</button>
+          <button id="useJ1">J1 nutzen</button>
+        </div>
+        <div class="row" style="margin-top:8px; gap:10px">
+          <span class="badge">J2 <span id="j2">0</span></span>
+          <button id="giveJ2">+J2</button>
+          <button id="useJ2">J2 nutzen</button>
+        </div>
+        <div class="row" style="margin-top:8px; gap:10px">
+          <span class="badge">J3 <span id="j3">0</span></span>
+          <button id="giveJ3">+J3</button>
+          <button id="useJ3">J3 nutzen</button>
+        </div>
+        <div class="row" style="margin-top:8px; gap:10px">
+          <span class="badge">J4 <span id="j4">0</span></span>
+          <button id="giveJ4">+J4</button>
+          <button id="useJ4">J4 nutzen</button>
+        </div>
+        <div class="row" style="margin-top:8px; gap:10px">
+          <span class="badge">J5 <span id="j5">0</span></span>
+          <button id="giveJ5">+J5</button>
+          <button id="useJ5">J5 nutzen</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <span class="badge">J5 aktiv <span id="j5a">nein</span></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="k">Log</div>
+        <div id="log" style="margin-top:8px"></div>
+      </div>
+    </aside>
+
+    <main id="main">
+      <div id="topbar">
+        <div class="title">
+          <b>Lichtarena – Prototype (offline)</b>
+          <small>Spawn: 50% Zentrum · 30% Mittel · 20% Außen · Re-Spawn nach jeder Spieler 5 Züge · nicht gleiches Feld</small>
+        </div>
+        <div class="topActions">
+          <button id="fitBtn" title="Ansicht zentrieren">Fit</button>
+        </div>
+      </div>
+
+      <div id="zoomUI">
+        <button id="zoomIn" aria-label="Zoom in">+</button>
+        <div class="pct" id="zoomPct">100%</div>
+        <button id="zoomOut" aria-label="Zoom out">−</button>
+      </div>
+
+      <div id="boardWrap">
+        <canvas id="c"></canvas>
+      <div id="eventOverlay" class="eventOverlay" aria-hidden="true">
+        <div class="eventCard">
+          <div id="eventCardTitle" class="eventCardTitle">Ereigniskarte</div>
+          <div id="eventCardBody" class="eventCardBody">…</div>
+          <div class="eventCardHint">Wird automatisch aufgedeckt…</div>
+        </div>
+      </div>
+      </div>
+    </main>
   </div>
-</div>
 
-<script src="lichtarena.js"></script>
+  <script src="lichtarena.js?v=la_v14"></script>
 </body>
 </html>
