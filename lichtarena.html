@@ -2,128 +2,330 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Lichtarena (Prototype – Offline)</title>
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    /* --- Lichtarena Layout (additiv, ohne Barikade zu zerstören) --- */
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); overflow: hidden; overscroll-behavior: none; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+    .la-shell{ height:100%; display:flex; flex-direction:column; gap:10px; padding:12px; box-sizing:border-box; }
+    .la-topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 12px; border:1px solid rgba(255,255,255,.08); border-radius:14px;
+      background: linear-gradient(180deg, rgba(18,24,38,.9), rgba(15,20,34,.86));
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .la-title{ display:flex; flex-direction:column; gap:2px; min-width: 200px; }
+    .la-title h1{ font-size:22px; line-height:1.1; margin:0; letter-spacing:.2px; }
+    .la-title .sub{ font-size:12px; color: var(--muted); }
+
+    .la-chips{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .chip{
+      display:flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(10,14,24,.55);
+      backdrop-filter: blur(8px);
+      font-size:12px; color: var(--muted);
+      user-select:none;
+    }
+    .chip b{ color: var(--text); font-weight:700; }
+    .dot{ width:10px; height:10px; border-radius:999px; display:inline-block; box-shadow: 0 0 0 2px rgba(255,255,255,.08) inset; }
+    .dot.red{ background: var(--red); }
+    .dot.blue{ background: var(--blue); }
+    .dot.green{ background: var(--green); }
+    .dot.yellow{ background: var(--yellow); }
+
+    .la-main{
+      flex:1; min-height:0;
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:12px;
+    }
+
+    .panel{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(18,24,38,.78), rgba(15,20,34,.72));
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+
+    .la-status{
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; flex-direction:column; gap:6px;
+    }
+    #statusLine{ font-size:13px; color: var(--text); }
+    #statusLine .good{ color: #6ee7b7; font-weight:700; }
+    #statusLine .warn{ color: #fde68a; font-weight:700; }
+    #statusLine .bad{ color: #fca5a5; font-weight:700; }
+    .hint{ font-size:12px; color: var(--muted); }
+
+    /* Board viewport */
+    .la-boardWrap{ position:relative; height:100%; min-height:0; display:flex; flex-direction:column; }
+    .la-boardArea{ position:relative; flex:1; min-height:0; }
+    #boardViewport{
+      position:absolute; inset:0;
+      touch-action:none; /* verhindert Browser-Scroll/Zoom – wir machen das selbst */
+      background: radial-gradient(900px 520px at 35% 25%, rgba(95,185,255,.12), transparent 60%),
+                  radial-gradient(900px 520px at 70% 70%, rgba(45,212,191,.10), transparent 62%);
+    }
+    #world{
+      position:absolute; left:0; top:0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    /* grid background */
+    #boardViewport::before{
+      content:"";
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity:.25;
+      pointer-events:none;
+    }
+
+    /* edges svg behind nodes */
+    #edgesSvg{ position:absolute; inset:0; overflow:visible; pointer-events:none; }
+    .edge{ stroke: rgba(255,255,255,.16); stroke-width:4; }
+    .edge.gated{ stroke: rgba(255,210,80,.28); stroke-width:5; }
+    .gateLabelBg{ fill: rgba(10,14,24,.75); stroke: rgba(255,255,255,.12); stroke-width:1; rx:10; ry:10; }
+    .gateLabelText{ fill: rgba(255,255,255,.85); font-size: 12px; font-weight: 700; }
+
+    /* nodes */
+    #stage{ position:absolute; inset:0; }
+    .node{
+      position:absolute;
+      width:44px; height:44px;
+      transform: translate(-50%, -50%);
+      border-radius: 12px;
+      background: rgba(20,26,42,.85);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 10px 22px rgba(0,0,0,.45);
+    }
+    .node .label{
+      position:absolute; top:4px; left:6px; right:6px;
+      font-size:10px; color: rgba(255,255,255,.72);
+      text-align:center; pointer-events:none;
+      text-transform: uppercase;
+      letter-spacing:.3px;
+    }
+    .node .tokens{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:4px; padding:6px; box-sizing:border-box; }
+    .token{
+      width:20px; height:20px; border-radius:7px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.45), 0 0 0 2px rgba(0,0,0,.35) inset;
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .token.selected{ outline: 2px solid rgba(255,255,255,.85); outline-offset:2px; }
+
+    .start-red{ border-color: rgba(255,77,109,.45); box-shadow: 0 12px 26px rgba(255,77,109,.18), 0 10px 22px rgba(0,0,0,.45); }
+    .start-blue{ border-color: rgba(96,165,250,.45); box-shadow: 0 12px 26px rgba(96,165,250,.16), 0 10px 22px rgba(0,0,0,.45); }
+    .start-green{ border-color: rgba(45,212,191,.45); box-shadow: 0 12px 26px rgba(45,212,191,.15), 0 10px 22px rgba(0,0,0,.45); }
+    .start-yellow{ border-color: rgba(251,191,36,.45); box-shadow: 0 12px 26px rgba(251,191,36,.14), 0 10px 22px rgba(0,0,0,.45); }
+
+    .lightfield{ border-color: rgba(251,191,36,.35); }
+    .activeLight{ box-shadow: 0 0 0 2px rgba(251,191,36,.35) inset, 0 10px 22px rgba(0,0,0,.45); }
+    .dynamicBarricade{ box-shadow: 0 0 0 2px rgba(255,77,109,.40) inset, 0 10px 22px rgba(0,0,0,.45); }
+
+    /* bottom controls inside board */
+    .la-boardHud{
+      position:absolute; left:12px; right:12px; bottom:12px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-start;
+      pointer-events:none;
+    }
+    .hudBox{
+      pointer-events:auto;
+      display:flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      background: rgba(10,14,24,.55);
+      backdrop-filter: blur(10px);
+    }
+    .btn{
+      appearance:none; border:1px solid rgba(255,255,255,.10);
+      background: rgba(27,35,54,.9);
+      color: var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.small{ padding:8px 10px; border-radius:12px; font-size:12px; }
+    .btn.red{ background: rgba(80,18,28,.75); border-color: rgba(255,77,109,.25); }
+    .btn.yellow{ background: rgba(80,66,18,.65); border-color: rgba(251,191,36,.25); }
+    .btn.ghost{ background: rgba(10,14,24,.35); }
+    .kbd{ font-size:12px; color: var(--muted); }
+
+    /* Side panel */
+    .la-side{ padding:10px; overflow:auto; }
+    .sec{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      background: rgba(10,14,24,.30);
+      padding:12px;
+      margin-bottom:10px;
+    }
+    .sec h3{ margin:0 0 10px 0; font-size:14px; letter-spacing:.2px; }
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .muted{ color: var(--muted); font-size:12px; }
+    .input{
+      width:100%;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,14,24,.35);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:14px;
+      outline:none;
+    }
+
+    table.jtab{ width:100%; border-collapse:collapse; font-size:13px; }
+    .jtab td{ padding:8px 6px; border-bottom:1px solid rgba(255,255,255,.06); }
+    .jtab tr:last-child td{ border-bottom:none; }
+    .pill{
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:24px; padding:3px 8px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      font-weight:800;
+    }
+
+    /* Hide edges when toggled */
+    .linesHidden #edgesSvg{ opacity:0; }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .la-main{ grid-template-columns: 1fr; }
+      .la-side{ max-height: 40vh; }
+    }
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="titleBlock">
-      <div class="title">Lichtarena</div>
-      <div class="subtitle">Prototype – Offline</div>
-    </div>
-
-    <div class="pills">
-      <div class="pill"><span class="pillKey">Modus</span><span class="pillVal">Offline lokal</span></div>
-      <div class="pill"><span class="pillKey">Regel</span><span class="pillVal">Board 1 startet mit Licht auf allen Lichtfeldern</span></div>
-      <div class="pill"><span class="pillKey">Am Zug</span><span class="pillVal" id="turnBadge"><span class="dot dot-red"></span> <span id="hudTurnColor">RED</span></span></div>
-      <div class="pill"><span class="pillKey">Server-ready</span><span class="pillVal">später leicht umstellbar</span></div>
-    </div>
-
-    <button id="btnToggleUi" class="uiToggle">☰ UI</button>
-  </header>
-
-  <main class="layout" id="layout">
-    <section class="boardCol">
-      <div class="statusBox" id="statusBox">
-        <div class="statusLine" id="statusLine">Status: –</div>
-        <div class="statusHint">Touch: 1 Finger ziehen = verschieben · 2 Finger = pinch-zoom · Maus: Scroll = zoom</div>
+  <div class="la-shell">
+    <div class="la-topbar">
+      <div class="la-title">
+        <h1>Lichtarena</h1>
+        <div class="sub">Prototype – Offline</div>
       </div>
 
-      <div class="boardShell" id="boardShell">
-        <div class="boardViewport" id="boardViewport" aria-label="Spielfeld">
-          <!-- WICHTIG: Alles, was mit Kamera (Pan/Zoom) mitgehen soll, liegt in #world -->
-          <div class="world" id="world">
-            <svg id="edgesSvg" class="edgesSvg" xmlns="http://www.w3.org/2000/svg"></svg>
-            <div id="stage" class="stage"></div>
+      <div class="la-chips">
+        <div class="chip">Modus <b>Offline lokal</b></div>
+        <div class="chip">Regel <b>Board 1 startet mit Licht auf allen Lichtfeldern</b></div>
+        <div class="chip">Am Zug <span class="dot red" id="turnDot"></span> <b id="turnText">RED</b></div>
+        <div class="chip">Server-ready <b>später leicht umstellbar</b></div>
+      </div>
+    </div>
+
+    <div class="la-main">
+      <!-- Board Panel -->
+      <div class="panel la-boardWrap" id="boardPanel">
+        <div class="la-status">
+          <div id="statusLine">Status: –</div>
+          <div class="hint">Touch: 1 Finger ziehen = verschieben · 2 Finger = pinch-zoom · Maus: Scroll = zoom</div>
+        </div>
+
+        <div class="la-boardArea">
+          <div id="boardViewport">
+            <div id="world">
+              <svg id="edgesSvg"></svg>
+              <div id="stage"></div>
+            </div>
+
+            <div class="la-boardHud">
+              <div class="hudBox">
+                <button class="btn small ghost" id="btnFit">Fit</button>
+                <button class="btn small ghost" id="btnZoomOut">–</button>
+                <b id="zoomPct">100%</b>
+                <button class="btn small ghost" id="btnZoomIn">+</button>
+                <button class="btn small ghost" id="btnResetView">Reset</button>
+                <button class="btn small" id="btnToggleLines">Linien: AN</button>
+              </div>
+
+              <div class="hudBox">
+                <span class="kbd">Debug</span>
+                <button class="btn small" id="btnRestart">Restart</button>
+                <button class="btn small" id="btnSave">Save</button>
+                <button class="btn small" id="btnLoad">Load</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Panel -->
+      <div class="panel la-side" id="sidePanel">
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Spieler</h3>
+            <div class="row" style="gap:8px">
+              <span class="dot red" id="activeDot"></span>
+              <b id="activeColorLabel">RED</b>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn small ghost" id="btnPrevPlayer">◀</button>
+            <div class="muted">Figur anklicken → auswählen. Dann auf verbundenes Feld klicken = 1 Schritt.</div>
+            <button class="btn small ghost" id="btnNextPlayer">▶</button>
           </div>
         </div>
 
-        <div class="cameraBar">
-          <button class="btn" id="btnFit">Fit</button>
-          <button class="btn" id="btnZoomOut">-</button>
-          <div class="zoomReadout"><span id="hudZoom">70%</span></div>
-          <button class="btn" id="btnZoomIn">+</button>
-          <button class="btn" id="btnResetCam">Reset</button>
-          <button class="btn" id="btnToggleLines">Linien: AN</button>
-        </div>
-      </div>
-    </section>
-
-    <aside class="uiCol" id="uiCol">
-      <section class="card">
-        <div class="cardHeader">
-          <div class="cardTitle">Spieler</div>
-          <div class="cardMeta"><span class="dot dot-red" id="hudTurnDot"></span> <span id="hudTurnColor2">RED</span></div>
-        </div>
-        <div class="turnNav">
-          <button class="btn" id="btnPrevPlayer">◀</button>
-          <div class="turnInfo">Figur anklicken → auswählen. Dann auf verbundenes Feld klicken = 1 Schritt.</div>
-          <button class="btn" id="btnNextPlayer">▶</button>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="cardHeader">
-          <div class="cardTitle">Würfel</div>
-          <div class="cardMeta">Aktuell: <b id="hudDice">6</b></div>
-        </div>
-        <div class="row">
-          <button class="btn primary" id="btnRoll">Würfeln</button>
-          <div class="field">
-            <label for="diceValue">Wert (1–6)</label>
-            <input id="diceValue" type="number" min="1" max="6" value="6" />
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Würfel</h3>
+            <div class="muted">Aktuell: <b id="hudDice">6</b></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnRoll">Würfeln</button>
+            <input class="input" id="diceValue" type="number" min="1" max="6" value="6" />
           </div>
         </div>
-      </section>
 
-      <section class="card">
-        <div class="cardHeader">
-          <div class="cardTitle">Licht</div>
-          <div class="cardMeta">Aktiv: <b id="hudActiveLights">0</b> · Gesammelt: <b id="hudLightTotal">0</b> / <b id="hudLightGoal">5</b></div>
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Licht</h3>
+            <div class="muted">Aktiv: <b id="hudActiveLights">0</b> · Gesammelt: <b id="hudLightTotal">0</b> / <b id="hudLightGoal">5</b></div>
+          </div>
+          <div style="margin-top:10px">
+            <button class="btn yellow" id="btnForceSpawnLight">Test: Licht spawnen</button>
+          </div>
         </div>
-        <button class="btn" id="btnForceSpawnLight">Test: Licht spawnen</button>
-      </section>
 
-      <section class="card">
-        <div class="cardHeader">
-          <div class="cardTitle">Ereignis</div>
-          <div class="cardMeta">Barikaden</div>
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Ereignis</h3>
+            <div class="muted">Barikaden</div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn red" id="btnSpawnBarricade">Barikade spawnen</button>
+            <button class="btn" id="btnClearDynamicBarricades">Barikaden löschen</button>
+          </div>
         </div>
-        <div class="row">
-          <button class="btn danger" id="btnSpawnBarricade">Barikade spawnen</button>
-          <button class="btn" id="btnClearDynamicBarricades">Barikaden löschen</button>
-        </div>
-      </section>
 
-      <section class="card">
-        <div class="cardHeader">
-          <div class="cardTitle">Joker (am Zug)</div>
-          <div class="cardMeta">Start: 2× je Typ</div>
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Joker (am Zug)</h3>
+            <div class="muted">Start: <b>2× je Typ</b></div>
+          </div>
+          <div style="margin-top:8px">
+            <table class="jtab" id="jokerTable">
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
-        <table class="jokerTable" aria-label="Joker Übersicht">
-          <thead>
-            <tr><th>Joker</th><th>Anzahl</th></tr>
-          </thead>
-          <tbody id="jokerTableBody"></tbody>
-        </table>
-      </section>
+      </div>
+    </div>
+  </div>
 
-      <section class="card">
-        <div class="cardHeader">
-          <div class="cardTitle">Debug</div>
-          <div class="cardMeta">Offline</div>
-        </div>
-        <div class="row">
-          <button class="btn" id="btnRestart">Restart (Board neu laden)</button>
-          <button class="btn" id="btnSave">Save Local</button>
-          <button class="btn" id="btnLoad">Load Local</button>
-        </div>
-      </section>
-    </aside>
-  </main>
-
-  <script src="game_rules_lights_barricades.js?v=3"></script>
-  <script src="lichtarena_client.js?v=3"></script>
+  <script src="./game_rules_lights_barricades.js"></script>
+  <script src="./lichtarena_client.js"></script>
 </body>
 </html>
