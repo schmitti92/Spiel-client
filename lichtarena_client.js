@@ -51,7 +51,14 @@
   const zoomPct = $("zoomPct");
   const linesState = $("linesState");
 
-  // ---------- RULES API ----------
+  
+  // Glücksrad DOM (kann in Zukunft optional sein)
+  const wheelOverlay = document.getElementById("wheelOverlay");
+  const wheelEl = document.getElementById("wheel");
+  const wheelResult = document.getElementById("wheelResult");
+  const wheelBtnClose = document.getElementById("wheelBtnClose");
+
+// ---------- RULES API ----------
   const Rules = window.GameRulesLightsBarricades;
   if (!Rules) {
     statusLine.textContent = "Status: game_rules_lights_barricades.js nicht geladen.";
