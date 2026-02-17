@@ -84,6 +84,8 @@ body{
 }
 
 .side{
+  position:relative;
+  z-index:5;
   padding:12px;
   overflow:auto;
   border-right:1px solid var(--stroke);
@@ -131,7 +133,7 @@ body{
 .warn{ color:var(--warn); }
 .bad{ color:var(--bad); }
 
-.boardShell{ position:relative; overflow:hidden; }
+.boardShell{ position:relative; overflow:hidden; z-index:1; }
 .stage{
   position:absolute; inset:0;
   touch-action:none;
