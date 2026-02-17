@@ -3,132 +3,126 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Lichtarena (Prototype – Offline)</title>
-  <link rel="stylesheet" href="./lichtarena.css?v=la1" />
+  <title>Lichtarena (Prototype – Offline)</title>  <link rel="stylesheet" href="./lichtarena.css?v=la_clean1" />
+  <!-- NOTE: This page expects lichtarena.css + lichtarena_client.js with matching IDs. -->
 </head>
 <body>
-  <div class="la-app">
-    <header class="la-topbar">
+  <div class="la-shell">
+    <div class="la-topbar">
       <div class="la-title">
         <h1>Lichtarena</h1>
-        <div class="sub">Prototype – Offline • Board wird separat geladen (lichtarena_board_1.json)</div>
+        <div class="sub">Prototype – Offline</div>
       </div>
 
       <div class="la-chips">
-        <div class="la-chip"><span>Modus</span> <b id="chipMode">Offline lokal</b></div>
-        <div class="la-chip"><span>Regel</span> <b id="chipRule">Board 1 startet mit Licht auf allen Lichtfeldern</b></div>
-        <div class="la-chip"><span>Am Zug</span> <span class="la-dot red" id="chipDot"></span> <b id="chipTurn">RED</b></div>
-        <div class="la-chip"><span>Server-ready</span> <b>später leicht umstellbar</b></div>
+        <div class="chip">Modus <b>Offline lokal</b></div>
+        <div class="chip">Regel <b>Board 1 startet mit Licht auf allen Lichtfeldern</b></div>
+        <div class="chip">Am Zug <span class="dot red" id="turnDot"></span> <b id="turnText">RED</b></div>
+        <div class="chip">Server-ready <b>später leicht umstellbar</b></div>
       </div>
-    </header>
+    </div>
 
-    <main class="la-main">
-      <!-- Board -->
-      <section class="la-boardPanel">
-        <div class="la-statusbar">
-          <div class="la-statusline" id="statusLine">Status: <span class="good">bereit…</span></div>
-          <div class="la-hint">Touch: 1 Finger ziehen = verschieben • 2 Finger = pinch-zoom • Maus: Scroll = zoom</div>
+    <div class="la-main">
+      <!-- Board Panel -->
+      <div class="panel la-boardWrap" id="boardPanel">
+        <div class="la-status">
+          <div id="statusLine">Status: –</div>
+          <div class="hint">Touch: 1 Finger ziehen = verschieben · 2 Finger = pinch-zoom · Maus: Scroll = zoom</div>
         </div>
 
-        <div class="la-viewport" id="viewport">
-          <div class="la-layer" id="world">
-            <svg id="edgesSvg" aria-hidden="true"></svg>
-            <div id="stage"></div>
+        <div class="la-boardArea">
+          <div id="boardViewport">
+            <div id="world">
+              <svg id="edgesSvg"></svg>
+              <div id="stage"></div>
+            </div>
+
+            <div class="la-boardHud">
+              <div class="hudBox">
+                <button class="btn small ghost" id="btnFit">Fit</button>
+                <button class="btn small ghost" id="btnZoomOut">–</button>
+                <b id="zoomPct">100%</b>
+                <button class="btn small ghost" id="btnZoomIn">+</button>
+                <button class="btn small ghost" id="btnResetView">Reset</button>
+                <button class="btn small" id="btnToggleLines">Linien: AN</button>
+              </div>
+
+              <div class="hudBox">
+                <span class="kbd">Debug</span>
+                <button class="btn small" id="btnRestart">Restart</button>
+                <button class="btn small" id="btnSave">Save</button>
+                <button class="btn small" id="btnLoad">Load</button>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div class="la-controls">
-          <div class="la-group">
-            <button class="la-btn small" id="btnFit">Fit</button>
-            <button class="la-btn small" id="btnZoomOut">−</button>
-            <div class="la-zoom"><b id="hudZoom">100%</b></div>
-            <button class="la-btn small" id="btnZoomIn">+</button>
-            <button class="la-btn small" id="btnResetView">Reset</button>
-            <button class="la-btn small" id="btnToggleLines">Linien: AN</button>
-          </div>
-
-          <div class="la-group">
-            <span class="muted" style="opacity:.7;font-size:12px;">Debug</span>
-            <button class="la-btn small" id="btnRestart">Restart</button>
-            <button class="la-btn small" id="btnSave">Save</button>
-            <button class="la-btn small" id="btnLoad">Load</button>
-          </div>
-        </div>
-      </section>
+      </div>
 
       <!-- Side Panel -->
-      <aside class="la-sidePanel">
-        <div class="la-card">
-          <div class="la-row">
-            <h3 style="margin:0;">Spieler</h3>
-            <div class="la-turn">
-              <div class="who"><span class="la-dot red" id="turnDot"></span><span id="turnName">RED</span></div>
+      <div class="panel la-side" id="sidePanel">
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Spieler</h3>
+            <div class="row" style="gap:8px">
+              <span class="dot red" id="activeDot"></span>
+              <b id="activeColorLabel">RED</b>
             </div>
           </div>
-          <div style="height:10px"></div>
-          <div class="la-row">
-            <button class="la-btn small" id="btnPrevTurn">◀</button>
-            <div class="muted" style="flex:1;text-align:center;">Figur anklicken → auswählen. Dann auf verbundenes Feld klicken = 1 Schritt.</div>
-            <button class="la-btn small" id="btnNextTurn">▶</button>
+          <div class="row" style="margin-top:10px">
+            <button class="btn small ghost" id="btnPrevPlayer">◀</button>
+            <div class="muted">Figur anklicken → auswählen. Dann auf verbundenes Feld klicken = 1 Schritt.</div>
+            <button class="btn small ghost" id="btnNextPlayer">▶</button>
           </div>
         </div>
 
-        <div class="la-card">
-          <div class="la-row">
-            <h3 style="margin:0;">Würfel</h3>
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Würfel</h3>
             <div class="muted">Aktuell: <b id="hudDice">6</b></div>
           </div>
-          <div style="height:10px"></div>
-          <div class="la-row" style="gap:12px;">
-            <button class="la-btn" id="btnRoll">Würfeln</button>
-            <div style="flex:1;">
-              <div class="muted" style="margin-bottom:6px;">Wert (1–6)</div>
-              <input class="la-input" id="diceValue" type="number" min="1" max="6" value="6" inputmode="numeric" />
-            </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnRoll">Würfeln</button>
+            <input class="input" id="diceValue" type="number" min="1" max="6" value="6" />
           </div>
         </div>
 
-        <div class="la-card">
-          <div class="la-row">
-            <h3 style="margin:0;">Licht</h3>
-            <div class="la-kpi">
-              <span>Aktiv: <b id="hudActiveLights">0</b></span>
-              <span>Gesammelt: <b id="hudLightTotal">0</b> / <b id="hudLightGoal">5</b></span>
-            </div>
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Licht</h3>
+            <div class="muted">Aktiv: <b id="hudActiveLights">0</b> · Gesammelt: <b id="hudLightTotal">0</b> / <b id="hudLightGoal">5</b></div>
           </div>
-          <div style="height:10px"></div>
-          <button class="la-btn gold" id="btnForceSpawnLight">Test: Licht spawnen</button>
+          <div style="margin-top:10px">
+            <button class="btn yellow" id="btnForceSpawnLight">Test: Licht spawnen</button>
+          </div>
         </div>
 
-        <div class="la-card">
-          <div class="la-row">
-            <h3 style="margin:0;">Ereignis</h3>
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Ereignis</h3>
             <div class="muted">Barikaden</div>
           </div>
-          <div style="height:10px"></div>
-          <div class="la-row">
-            <button class="la-btn red" id="btnSpawnBarricade">Barikade spawnen</button>
-            <button class="la-btn" id="btnClearDynamicBarricades">Barikaden löschen</button>
+          <div class="row" style="margin-top:10px">
+            <button class="btn red" id="btnSpawnBarricade">Barikade spawnen</button>
+            <button class="btn" id="btnClearDynamicBarricades">Barikaden löschen</button>
           </div>
         </div>
 
-        <div class="la-card">
-          <div class="la-row">
-            <h3 style="margin:0;">Joker (am Zug)</h3>
-            <div class="muted">Start: 2× je Typ</div>
+        <div class="sec">
+          <div class="row">
+            <h3 style="margin:0">Joker (am Zug)</h3>
+            <div class="muted">Start: <b>2× je Typ</b></div>
           </div>
-          <div style="height:10px"></div>
-          <table class="la-jokers" aria-label="Joker Tabelle">
-            <tbody id="jokerTableBody"></tbody>
-          </table>
-          <div class="muted" style="margin-top:6px;">(Nur Anzeige – Logik kommt als Nächstes.)</div>
+          <div style="margin-top:8px">
+            <table class="jtab" id="jokerTable">
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
-      </aside>
-    </main>
+      </div>
+    </div>
   </div>
 
-  <script src="./game_rules_lights_barricades.js?v=la1"></script>
-  <script src="./lichtarena_client.js?v=la1"></script>
+  <script src="./game_rules_lights_barricades.js?v=la_clean1"></script>
+  <script src="./lichtarena_client.js?v=la_clean1"></script>
 </body>
 </html>
-
