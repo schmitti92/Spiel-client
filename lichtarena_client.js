@@ -649,10 +649,10 @@
   async function onNodeClicked(nodeId){
     if (state.animating) return;
 
-    const myColor = activeColor();
+    const activeColor = state.turnOrder[state.turnIndex];
     const piece = state.pieces.find(p => p.id === state.selectedPieceId);
 
-    if (!piece || piece.color !== myColor){
+    if (!piece || piece.color !== activeColor){
       setStatus("Erst eine eigene Figur auswählen (aktiver Spieler).","warn");
       return;
     }
@@ -682,7 +682,7 @@
         renderTokens();
 
         await runWheelReward(piece.color);
-        renderHud();
+        updateHUD();
       }
     }
 
@@ -709,7 +709,7 @@
     state.rolled = false;
     state.dice = null;
     state.reachable = new Map();
-    renderHud();
+    updateHUD();
     renderTokens();
 
     if (diceWas === 6){
