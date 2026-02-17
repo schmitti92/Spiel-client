@@ -40,6 +40,14 @@
   const turnDot = $("turnDot");
   const turnText = $("turnText");
 
+  const pillRule = $("pillRule");
+
+  // Glücksrad (Overlay)
+  const wheelOverlay = $("wheelOverlay");
+  const wheelEl = $("wheel");
+  const wheelResult = $("wheelResult");
+  const wheelBtnClose = $("wheelBtnClose");
+
   const jokerTableBody = $("jokerTableBody");
 
   const boardShell = $("boardShell");
@@ -51,14 +59,7 @@
   const zoomPct = $("zoomPct");
   const linesState = $("linesState");
 
-  
-  // Glücksrad DOM (kann in Zukunft optional sein)
-  const wheelOverlay = document.getElementById("wheelOverlay");
-  const wheelEl = document.getElementById("wheel");
-  const wheelResult = document.getElementById("wheelResult");
-  const wheelBtnClose = document.getElementById("wheelBtnClose");
-
-// ---------- RULES API ----------
+  // ---------- RULES API ----------
   const Rules = window.GameRulesLightsBarricades;
   if (!Rules) {
     statusLine.textContent = "Status: game_rules_lights_barricades.js nicht geladen.";
@@ -968,7 +969,7 @@
       buildMaps();
 
       const bname = board?.meta?.name ? String(board.meta.name) : "spielbrett";
-      pillRule.textContent = "Regel: Board 1 startet mit Licht auf allen Lichtfeldern";
+      if (pillRule) pillRule.textContent = "Regel: Board 1 startet mit Licht auf allen Lichtfeldern";
       setStatus(`Board geladen: ${bname} • Nodes: ${(board.nodes||[]).length} • Edges: ${(board.edges||[]).length}`, "good");
 
       // reset state parts
