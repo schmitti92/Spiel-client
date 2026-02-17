@@ -43,6 +43,15 @@
   const jokerTableBody = $("jokerTableBody");
 
   const boardShell = $("boardShell");
+
+  // --- Tablet/Touch: verhindere Browser-Scroll/Overscroll während Drag/Pinch ---
+  // Wichtig: muss passive:false sein, sonst ignoriert Chrome/Android preventDefault.
+  document.addEventListener("touchmove",(e)=>{
+    if (PZ.isPanning || (PZ.pointers && PZ.pointers.size>0)) {
+      e.preventDefault();
+    }
+  }, { passive:false });
+
   const btnFit = $("btnFit");
   const btnZoomOut = $("btnZoomOut");
   const btnZoomIn = $("btnZoomIn");
