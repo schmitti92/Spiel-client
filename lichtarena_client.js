@@ -104,6 +104,20 @@
   function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
   function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 
+  function isNodeBlocked(nodeId){
+    const id = String(nodeId);
+    const n = state.nodeById.get(id);
+    if(!n) return true;
+    const t = String(n.type||"normal").toLowerCase();
+    if(t==="barricade_fixed") return true; // reserved for later boards
+    // dynamic barricades (future): allow either Set or Array storage
+    if(state.dynamicBarricades){
+      if(state.dynamicBarricades instanceof Set && state.dynamicBarricades.has(id)) return true;
+      if(Array.isArray(state.dynamicBarricades) && state.dynamicBarricades.includes(id)) return true;
+    }
+    return false;
+  }
+
   // ---------- State ----------
   const state = {
     board: null,
