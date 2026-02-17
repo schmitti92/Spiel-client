@@ -3,173 +3,359 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Lichtarena – Tournament UI</title>
+  <title>Lichtarena – Board 1</title>
   <link rel="stylesheet" href="./lichtarena.css?v=1" />
+  <style>
+    :root{
+      --safeTop: env(safe-area-inset-top, 0px);
+      --safeBot: env(safe-area-inset-bottom, 0px);
+      --barH: 54px;
+      --topH: 52px;
+      --sheetMaxW: 720px;
+    }
+    html,body{height:100%; overflow:hidden;}
+    body{
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(120,160,255,.12), transparent 60%),
+                  radial-gradient(1200px 800px at 80% 20%, rgba(120,255,210,.10), transparent 60%),
+                  #05070c;
+      color:#e9eefc;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Top compact bar */
+    header.topbar2{
+      height:calc(var(--topH) + var(--safeTop));
+      padding-top:var(--safeTop);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding-left:12px;
+      padding-right:12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: rgba(6,10,18,.70);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index:20;
+    }
+    .brand2{display:flex; flex-direction:column; line-height:1.05;}
+    .brand2 .t{font-weight:800; letter-spacing:.2px; font-size:15px;}
+    .brand2 .s{opacity:.7; font-size:11px;}
+    .topMini{display:flex; gap:10px; align-items:center; margin-left:auto;}
+    .chip{
+      display:flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(10,14,26,.55);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .chip strong{font-size:12px;}
+    .turnBadge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .turnBadge .dot{width:10px;height:10px;border-radius:99px;background:#ff5a6a; box-shadow: 0 0 0 4px rgba(255,90,106,.18);}
+    .dicePip{
+      width:28px; height:28px; border-radius:10px;
+      display:grid; place-items:center;
+      background: rgba(12,16,28,.70);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+      font-weight:800;
+    }
+    .btnUi{
+      margin-left:6px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(12,16,28,.55);
+      color:inherit;
+    }
+
+    /* Board area */
+    main{
+      position:relative;
+      flex:1;
+      min-height:0;
+    }
+    .boardViewport{
+      position:absolute;
+      inset:0;
+      padding-bottom:calc(var(--barH) + var(--safeBot));
+    }
+    #boardShell{
+      position:absolute;
+      inset:0;
+      overflow:hidden;
+      border-radius:0;
+    }
+    /* keep existing stage/edges sizing from css; just ensure full */
+    #edgesSvg, #stage{
+      position:absolute;
+      inset:0;
+    }
+
+    /* Bottom bar */
+    .bottombar{
+      height:calc(var(--barH) + var(--safeBot));
+      padding-bottom:var(--safeBot);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding-left:12px;
+      padding-right:12px;
+      border-top:1px solid rgba(255,255,255,.06);
+      background: rgba(6,10,18,.70);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index:20;
+    }
+    .bbBtn{
+      flex:1;
+      min-width:0;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(12,16,28,.60);
+      color:inherit;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+    .bbBtn.small{flex:0 0 auto; width:52px; padding:10px 0;}
+    .bbSub{opacity:.75; font-weight:600; font-size:12px;}
+
+    /* Sheets */
+    .sheetOverlay{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.42);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index:50;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:12px;
+      padding-bottom:calc(12px + var(--safeBot));
+    }
+    .sheetOverlay.show{display:flex;}
+    .sheet{
+      width:min(var(--sheetMaxW), 100%);
+      max-height:min(78vh, 720px);
+      overflow:auto;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(8,12,22,.92);
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      padding:14px;
+    }
+    .sheetHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      margin-bottom:12px;
+    }
+    .sheetTitle{font-weight:900; letter-spacing:.2px;}
+    .sheetClose{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(12,16,28,.55);
+      color:inherit;
+      font-weight:800;
+    }
+
+    /* Make leftover old UI elements non-intrusive (we keep IDs for logic, but display inside sheets) */
+    .hidden{display:none !important;}
+
+    /* Wheel overlay (reuse existing ids) */
+    #wheelOverlay{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index:80;
+    }
+    #wheelOverlay.show{display:flex;}
+    #wheel{
+      width:min(420px, 92vw);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(8,12,22,.95);
+      box-shadow: 0 30px 90px rgba(0,0,0,.7);
+      padding:14px;
+      text-align:center;
+    }
+    #wheel h3{margin:4px 0 8px 0;}
+    #wheelCanvas{width:100%; aspect-ratio: 1/1; border-radius:14px; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.10);}
+    #wheelResult{margin-top:10px; font-weight:900;}
+    #wheelBtnClose{margin-top:10px; width:100%; padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background: rgba(12,16,28,.65); color:inherit; font-weight:900;}
+
+    /* Tablet: hide brand sub, keep chips short */
+    @media (max-width: 920px){
+      .brand2 .s{display:none;}
+    }
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brandTitle">Lichtarena</div>
-      <div class="brandSub">Prototype – Offline</div>
+
+<header class="topbar2">
+  <div class="brand2">
+    <div class="t">Lichtarena</div>
+    <div class="s">Board 1 – Offline</div>
+  </div>
+
+  <div class="topMini" aria-label="Spielstatus">
+    <div class="chip">
+      <span class="bbSub">Am Zug</span>
+      <span class="turnBadge"><span id="turnDot" class="dot"></span><span id="turnLabel">RED</span></span>
+    </div>
+    <div class="chip">
+      <span class="bbSub">🎲</span>
+      <span id="hudDice" class="dicePip">6</span>
+    </div>
+    <div class="chip">
+      <span class="bbSub">💡</span>
+      <strong><span id="hudMyLights">0</span></strong><span class="bbSub">/</span><span id="hudLightGoal">5</span>
+      <span class="bbSub">· Global</span>
+      <strong><span id="hudLightTotal">0</span></strong><span class="bbSub">/</span><span id="hudLightGoal2">5</span>
+    </div>
+    <button id="btnOpenUi" class="btnUi" type="button">≡</button>
+  </div>
+</header>
+
+<main>
+  <div class="boardViewport">
+    <div id="boardShell" class="boardShell">
+      <svg id="edgesSvg" aria-hidden="true"></svg>
+      <div id="stage" aria-label="Felder"></div>
     </div>
 
-    <div class="topPills" role="status" aria-label="Status">
-      <span class="pill"><span class="pillKey">Modus</span> Offline lokal</span>
-      <span class="pill"><span class="pillKey">Regel</span> Board 1 startet mit Licht auf allen Lichtfeldern</span>
-      <span class="pill pillTurn"><span class="pillKey">Am Zug</span> <span id="turnBadge" class="turnBadge"><span class="dot"></span><span id="turnLabel">RED</span></span></span>
-      <span class="pill"><span class="pillKey">Server-ready</span> später leicht umstellbar</span>
-    </div>
-
-    <button id="btnToggleUi" class="ghostBtn" type="button" aria-label="UI ein-/ausblenden">≡ UI</button>
-  </header>
-
-  <main class="shell">
-    <!-- BOARD -->
-    <section class="boardPanel">
-      <div class="boardHeader">
-        <div class="statusLine"><span class="muted">Status:</span> <span id="statusLine">–</span></div>
-        <div class="hintLine" id="hintLine">Touch: 1 Finger ziehen = verschieben · 2 Finger = pinch-zoom · Maus: Scroll = zoom</div>
+    <!-- overlays -->
+    <div id="wheelOverlay" aria-label="Glücksrad">
+      <div id="wheel">
+        <h3>🎡 Glücksrad</h3>
+        <div class="bbSub">Der aktive Spieler gewinnt einen Joker (keine Nieten).</div>
+        <canvas id="wheelCanvas" width="600" height="600"></canvas>
+        <div id="wheelResult">–</div>
+        <button id="wheelBtnClose" type="button">OK</button>
       </div>
+    </div>
 
-      <div id="boardShell" class="boardViewport" aria-label="Spielbrett">
-        <svg id="edgesSvg" class="edgesSvg" aria-hidden="true"></svg>
-        <div id="stage" class="stage" aria-label="Felder"></div>
-
-        <!-- Camera controls -->
-        <div class="camHud" aria-label="Zoom und Linien">
-          <button id="btnFit" class="hudBtn" type="button">Fit</button>
-          <button id="btnZoomOut" class="hudBtn" type="button">−</button>
-          <div id="zoomPct" class="hudPct">100%</div>
-          <button id="btnZoomIn" class="hudBtn" type="button">+</button>
-          <button id="btnResetView" class="hudBtn" type="button">Reset</button>
-          <button id="btnToggleLines" class="hudBtn hudBtnWide" type="button">Linien: <span id="linesState">AUS</span></button>
+    <div id="sheetOverlay" class="sheetOverlay" aria-hidden="true">
+      <div class="sheet" role="dialog" aria-modal="true" aria-label="Menü">
+        <div class="sheetHead">
+          <div id="sheetTitle" class="sheetTitle">Menü</div>
+          <button id="sheetClose" class="sheetClose" type="button">Schließen</button>
         </div>
-      </div>
-    </section>
 
-    <!-- UI -->
-    <aside id="uiPanel" class="uiPanel" aria-label="Spielsteuerung">
-      <div class="uiStack">
-
-        <section class="card">
-          <div class="cardHead">
-            <div class="cardTitle">Spieler</div>
-            <div class="cardMeta"><span class="turnDot" id="turnDot"></span><span id="turnText">RED</span></div>
-          </div>
-          <div class="cardBody row">
-            <button id="btnPrevTurn" class="btnIcon" type="button" aria-label="Vorheriger Spieler">◀</button>
-            <div class="turnInfo">Figur anklicken → auswählen. Dann auf verbundenes Feld klicken = 1 Schritt.</div>
-            <button id="btnNextTurn" class="btnIcon" type="button" aria-label="Nächster Spieler">▶</button>
+        <!-- TURN -->
+        <section id="sheetTurn" class="sheetSection">
+          <div class="bbSub" style="margin-bottom:8px;">Spielerwechsel (offline Debug). Online später server-gesteuert.</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button id="btnPrevTurn" class="bbBtn small" type="button">◀</button>
+            <div style="flex:1; text-align:center;">
+              <div style="font-weight:900;">Am Zug: <span id="turnText">RED</span></div>
+              <div class="bbSub">6 = nochmal würfeln</div>
+            </div>
+            <button id="btnNextTurn" class="bbBtn small" type="button">▶</button>
           </div>
         </section>
 
-        <section class="card">
-          <div class="cardHead">
-            <div class="cardTitle">Würfel</div>
-            <div class="cardMeta">Aktuell: <span id="hudDice">6</span></div>
-          </div>
-          <div class="cardBody row">
-            <button id="btnRoll" class="btnPrimary" type="button">Würfeln</button>
-            <label class="field">
-              <span class="fieldLabel">Wert (1–6)</span>
-              <input id="diceValue" class="input" type="number" min="1" max="6" step="1" value="6" />
-            </label>
+        <!-- ROLL -->
+        <section id="sheetDice" class="sheetSection" style="margin-top:14px;">
+          <div class="bbSub" style="margin-bottom:8px;">Würfel (Test)</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button id="btnRoll" class="bbBtn" type="button">Würfeln</button>
+            <div style="flex:0 0 150px;">
+              <div class="bbSub">Wert (1–6)</div>
+              <input id="diceValue" type="number" min="1" max="6" value="6" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.25); color:inherit;">
+            </div>
           </div>
         </section>
 
-        <section class="card">
-          <div class="cardHead">
-            <div class="cardTitle">Licht</div>
-            <div class="cardMeta">Aktiv: <span id="hudActiveLights">0</span> · Gesammelt: <span id="hudLightTotal">0</span>/<span id="hudLightGoal">5</span></div>
-          </div>
-          <div class="cardBody">
-            <button id="btnForceSpawnLight" class="btnSecondary" type="button">Test: Licht spawnen</button>
-          </div>
-        </section>
-
-        <section class="card">
-          <div class="cardHead">
-            <div class="cardTitle">Ereignis</div>
-            <div class="cardMeta">Barikaden</div>
-          </div>
-          <div class="cardBody row">
-            <button id="btnSpawnBarricade" class="btnDanger" type="button">Barikade spawnen</button>
-            <button id="btnClearDynamicBarricades" class="btnSecondary" type="button">Barikaden löschen</button>
-          </div>
-        </section>
-
-        <section class="card">
-          <div class="cardHead">
-            <div class="cardTitle">Joker (am Zug)</div>
-            <div class="cardMeta">Start: 2× je Typ</div>
-          </div>
-          <div class="cardBody">
-            <table class="jokerTable" aria-label="Joker Übersicht">
+        <!-- JOKERS -->
+        <section id="sheetJokers" class="sheetSection" style="margin-top:14px;">
+          <div class="bbSub" style="margin-bottom:8px;">Joker (aktiver Spieler)</div>
+          <div style="overflow:hidden; border-radius:14px; border:1px solid rgba(255,255,255,.10);">
+            <table style="width:100%; border-collapse:collapse;">
               <thead>
-                <tr><th>Joker</th><th class="right">Anzahl</th></tr>
+                <tr style="background: rgba(255,255,255,.06);">
+                  <th style="text-align:left; padding:10px 12px;">Joker</th>
+                  <th style="text-align:right; padding:10px 12px;">Anzahl</th>
+                </tr>
               </thead>
-              <tbody id="jokerTableBody">
-                <tr><td>1) Neuwurf</td><td class="right">2</td></tr>
-                <tr><td>2) Alle Farben</td><td class="right">2</td></tr>
-                <tr><td>3) Doppelwurf</td><td class="right">2</td></tr>
-                <tr><td>4) Barikade versetzen</td><td class="right">2</td></tr>
-                <tr><td>5) Durch Barikade</td><td class="right">2</td></tr>
-              </tbody>
+              <tbody id="jokerTable"></tbody>
             </table>
           </div>
         </section>
 
-        <section class="card">
-          <div class="cardHead">
-            <div class="cardTitle">Debug</div>
-            <div class="cardMeta">Local</div>
+        <!-- DEV -->
+        <section id="sheetDev" class="sheetSection" style="margin-top:14px;">
+          <div class="bbSub" style="margin-bottom:8px;">Debug / Local</div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <button id="btnRestart" class="bbBtn" type="button">Restart (Board neu laden)</button>
+            <button id="btnSave" class="bbBtn" type="button">Save Local</button>
+            <button id="btnLoad" class="bbBtn" type="button">Load Local</button>
+            <button id="btnToggleLines" class="bbBtn" type="button">Linien: <span id="linesState">AUS</span></button>
+            <button id="btnFit" class="bbBtn" type="button">Fit</button>
+            <button id="btnZoomOut" class="bbBtn" type="button">−</button>
+            <div id="zoomPct" class="bbBtn" style="flex:0 0 90px; justify-content:center;">100%</div>
+            <button id="btnZoomIn" class="bbBtn" type="button">+</button>
+            <button id="btnResetView" class="bbBtn" type="button">Reset</button>
           </div>
-          <div class="cardBody row">
-            <button id="btnRestart" class="btnSecondary" type="button">Restart</button>
-            <button id="btnSave" class="btnSecondary" type="button">Save</button>
-            <button id="btnLoad" class="btnSecondary" type="button">Load</button>
-            <button id="btnEndTurn" class="btnSecondary" type="button">Zug beenden</button>
+
+          <!-- kept for compatibility; Board 1 has no barricade UI in "gameplay", but dev tools remain -->
+          <div class="bbSub" style="margin:14px 0 8px;">Dev Tools</div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <button id="btnForceSpawnLight" class="bbBtn" type="button">Test: Licht spawnen</button>
+            <button id="btnSpawnBarricade" class="bbBtn" type="button">Barikade spawnen</button>
+            <button id="btnClearDynamicBarricades" class="bbBtn" type="button">Barikaden löschen</button>
+            <span class="bbSub" style="align-self:center;">(Board 1 nutzt das im Gameplay nicht – nur zum Testen)</span>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="bbSub">Status</div>
+            <div id="statusLine" style="margin-top:6px; font-weight:700;">–</div>
+          </div>
+
+          <div style="display:none">
+            <!-- compatibility only -->
+            <span id="hudActiveLights">0</span>
+            <span id="hudLightGoal">5</span>
           </div>
         </section>
-
       </div>
-    </aside>
-  </main>
-
-  <script src="./game_rules_lights_barricades.js"></script>
-  <script src="lichtarena_client.js?v=2"></script>
-  <script>
-    // UI collapse (purely visual; no game logic)
-    (function(){
-      const ui = document.getElementById('uiPanel');
-      const btn = document.getElementById('btnToggleUi');
-      if(!ui || !btn) return;
-      btn.addEventListener('click', ()=>{
-        ui.classList.toggle('hidden');
-        btn.textContent = ui.classList.contains('hidden') ? '≡ UI' : '⨯ UI';
-      });
-    })();
-  </script>
-
-  <!-- Joker Wheel Overlay -->
-  <div id="wheelOverlay" class="overlay hidden" aria-hidden="true">
-    <div class="overlayCard" role="dialog" aria-modal="true" aria-label="Glücksrad">
-      <div class="overlayTitle">🎡 Glücksrad – Joker Gewinn</div>
-      <div class="wheelWrap">
-        <div id="wheel" class="wheel">
-          <div class="seg s1"><span>1) Neuwurf</span></div>
-          <div class="seg s2"><span>2) Alle Farben</span></div>
-          <div class="seg s3"><span>3) Doppelwurf</span></div>
-          <div class="seg s4"><span>4) Barikade versetzen</span></div>
-          <div class="seg s5"><span>5) Durch Barikade</span></div>
-        </div>
-        <div class="wheelPointer">▼</div>
-      </div>
-      <div id="wheelResult" class="overlayResult">dreht…</div>
-      <div class="overlayHint">Der aktive Spieler bekommt den Joker. Keine Nieten.</div>
-      <button id="wheelBtnClose" class="btn primary" disabled>OK</button>
     </div>
   </div>
+</main>
 
+<footer class="bottombar" aria-label="Spiel-Leiste">
+  <button id="bbRoll" class="bbBtn" type="button">🎲 <span>Würfeln</span></button>
+  <button id="bbJokers" class="bbBtn" type="button">🎴 <span>Joker</span></button>
+  <button id="bbTurn" class="bbBtn" type="button">👤 <span>Spieler</span></button>
+  <button id="bbDev" class="bbBtn small" type="button">⚙</button>
+</footer>
+
+<script src="./game_rules_lights_barricades.js?v=1"></script>
+<script src="./lichtarena_client.js?v=1"></script>
 </body>
 </html>
