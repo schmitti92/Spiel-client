@@ -652,70 +652,86 @@
 
     const start = String(sp.nodeId);
 
-    // BFS by depth, store one predecessor path per node at depth=steps
-    // We must allow passing through occupied nodes? For Board1: allow passing through empties only.
-    const queue = [{ node:start, depth:0 }];
-    const prev = new Map(); // key: node|depth -> {pnode, pdepth}
-    const seen = new Set([`${start}|0`]);
+    // BFS over paths with EXACT length = steps
+    // Rule: you may move in all directions (edges are treated as undirected),
+    // but you may NOT immediately go back and forth within the same move (A->B->A).
+    const q = [{ nid:start, depth:0, prev:null }];
 
-    const occupied = new Set(state.pieces.map(p => String(p.nodeId)));
-    // allow starting node occupied by self
-    // During travel we allow passing through empty nodes; destination can be occupied (capture) by opponent.
-    function isBlockedMid(nid){
-      // can't pass through other pieces
-      return occupied.has(nid) && nid !== start;
-    }
+    // store predecessor for reconstruction: key = node@depth@prevNode
+    // we still need a stable key; we use node@depth@prev
+    const prevMap = new Map();
+    const seen = new Set();
+    const keyOf = (nid, depth, prevN) => `${nid}@${depth}@${prevN??""}`;
 
-    while (queue.length){
-      const cur = queue.shift();
-      const nid = cur.node;
-      const depth = cur.depth;
-      if (depth===steps) continue;
+    seen.add(keyOf(start,0,null));
+    prevMap.set(keyOf(start,0,null), null);
 
-      const outs = state.outgoing.get(nid) || [];
-      for (const o of outs){
-        const to = String(o.to);
-        const nd = depth+1;
-        const key = `${to}|${nd}`;
-        if (seen.has(key)) continue;
-        // mid-step blocking:
-        if (nd<steps && isBlockedMid(to)) continue;
-        // no barricades on board1
-        seen.add(key);
-        prev.set(key, { pnode:nid, pdepth:depth });
-        queue.push({ node:to, depth:nd });
+    const ends = []; // list of {nid, key}
+
+    while (q.length){
+      const cur = q.shift();
+      if (cur.depth === steps){
+        ends.push({ nid:cur.nid, key:keyOf(cur.nid,cur.depth,cur.prev) });
+        continue;
+      }
+
+      // undirected neighbors: outgoing + incoming
+      const outs = state.outgoing.get(cur.nid) || [];
+      const ins  = state.incoming.get(cur.nid) || [];
+
+      const neigh = [];
+      for (const o of outs) neigh.push(String(o.to));
+      for (const i of ins)  neigh.push(String(i.from));
+
+      for (const to of neigh){
+        if (cur.prev && to === cur.prev) continue; // prevent A->B->A within same move
+
+        // can't step onto blocked barricade (for later boards; board1 has none)
+        if (isNodeBlocked(to)) continue;
+
+        const k = keyOf(to, cur.depth+1, cur.nid);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        prevMap.set(k, { prevKey: keyOf(cur.nid, cur.depth, cur.prev), node: cur.nid });
+
+        q.push({ nid: to, depth: cur.depth+1, prev: cur.nid });
       }
     }
 
-    // collect nodes at depth=steps
-    for (const s of seen){
-      const m = s.match(/^(.+)\|(\d+)$/);
-      if (!m) continue;
-      const node = m[1];
-      const depth = Number(m[2]);
-      if (depth!==steps) continue;
+    // Convert end-states into reachable destinations with one representative path each.
+    // We rebuild path as [start, ..., destination]
+    const best = new Map(); // nodeId -> path array
+
+    for (const end of ends){
+      const dest = String(end.nid);
+      // don't include staying on same node
+      if (dest === start) continue;
 
       // reconstruct path
-      const path = [node];
-      let curNode = node;
-      let curDepth = depth;
-      while (!(curNode===start && curDepth===0)){
-        const pk = `${curNode}|${curDepth}`;
-        const pr = prev.get(pk);
-        if (!pr) break;
-        path.push(pr.pnode);
-        curNode = pr.pnode;
-        curDepth = pr.pdepth;
+      const path = [];
+      let k = end.key;
+      let curNode = dest;
+      path.push(curNode);
+
+      while (true){
+        const p = prevMap.get(k);
+        if (!p) break;
+        curNode = p.node;
+        path.push(curNode);
+        k = p.prevKey;
       }
-      path.reverse();
 
-      // Destination allowed if empty OR occupied by opponent (capture)
-      const occPiece = state.pieces.find(p => String(p.nodeId)===String(node));
-      if (occPiece && occPiece.color===sp.color) continue; // can't land on own
+      path.reverse(); // now starts with start
 
-      state.reachable.set(String(node), path);
+      // destination must not be own-occupied
+      const occPiece = state.pieces.find(p => String(p.nodeId)===dest);
+      if (occPiece && occPiece.color===sp.color) continue;
+
+      // keep first found path for this dest
+      if (!best.has(dest)) best.set(dest, path);
     }
 
+    state.reachable = best;
     renderTokens();
   }
 
