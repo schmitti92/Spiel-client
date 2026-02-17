@@ -836,7 +836,6 @@
   function showLinesButtonLabel(){
     if (!linesState) return;
     linesState.textContent = state.showLines ? "AN" : "AUS";
-  }`;
   }
 
   // ---------- Pan/Zoom input ----------
