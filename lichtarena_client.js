@@ -396,6 +396,11 @@
     if (hudMyLights) hudMyLights.textContent = String(state.lights.collectedByColor?.[c] ?? 0);
 
     renderTurnAndJokers();
+  
+    const turnColor = state.players[state.turnIndex] || "red";
+    if (hudMyLights) hudMyLights.textContent = String(state.lights.collectedByColor?.[turnColor] ?? 0);
+    if (hudLightGoal2) hudLightGoal2.textContent = String(state.lights.globalGoal);
+
   }
 
   function renderTurnAndJokers(){
@@ -878,3 +883,69 @@
 
   start();
 })();
+  // --- New responsive UI (bottom bar + sheets) ---
+  const sheetOverlay = $("sheetOverlay");
+  const sheetClose = $("sheetClose");
+  const sheetTitle = $("sheetTitle");
+  const btnOpenUi = $("btnOpenUi");
+
+  const bbRoll = $("bbRoll");
+  const bbJokers = $("bbJokers");
+  const bbTurn = $("bbTurn");
+  const bbDev = $("bbDev");
+
+  const sheetTurn = $("sheetTurn");
+  const sheetDice = $("sheetDice");
+  const sheetJokers = $("sheetJokers");
+  const sheetDev = $("sheetDev");
+
+  const hudMyLights = $("hudMyLights");
+  const hudLightGoal2 = $("hudLightGoal2");
+
+  // ---------- Sheets (UI) ----------
+  function hideAllSheets(){
+    if (sheetTurn) sheetTurn.style.display = "none";
+    if (sheetDice) sheetDice.style.display = "none";
+    if (sheetJokers) sheetJokers.style.display = "none";
+    if (sheetDev) sheetDev.style.display = "none";
+  }
+
+  function openSheet(which){
+    if (!sheetOverlay) return;
+    hideAllSheets();
+    const key = String(which || "");
+    if (sheetTitle){
+      sheetTitle.textContent =
+        key === "jokers" ? "Joker" :
+        key === "dev" ? "Debug / Local" :
+        key === "dice" ? "Würfel" :
+        "Spieler";
+    }
+    if (key === "jokers" && sheetJokers) sheetJokers.style.display = "";
+    else if (key === "dev" && sheetDev) sheetDev.style.display = "";
+    else if (key === "dice" && sheetDice) sheetDice.style.display = "";
+    else if (sheetTurn) sheetTurn.style.display = "";
+
+    sheetOverlay.classList.add("show");
+    sheetOverlay.setAttribute("aria-hidden","false");
+  }
+
+  function closeSheet(){
+    if (!sheetOverlay) return;
+    sheetOverlay.classList.remove("show");
+    sheetOverlay.setAttribute("aria-hidden","true");
+  }
+
+  // Bottom bar shortcuts
+  if (bbRoll) bbRoll.addEventListener("click", () => { rollDice(); });
+  if (bbJokers) bbJokers.addEventListener("click", () => { openSheet("jokers"); });
+  if (bbTurn) bbTurn.addEventListener("click", () => { openSheet("turn"); });
+  if (bbDev) bbDev.addEventListener("click", () => { openSheet("dev"); });
+  if (btnOpenUi) btnOpenUi.addEventListener("click", () => { openSheet("turn"); });
+
+  if (sheetClose) sheetClose.addEventListener("click", closeSheet);
+  if (sheetOverlay) sheetOverlay.addEventListener("click", (ev) => {
+    // click outside sheet closes
+    if (ev.target === sheetOverlay) closeSheet();
+  });
+
