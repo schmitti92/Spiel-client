@@ -951,11 +951,25 @@
   }
 
   // ---------- UI Wire ----------
-  btnToggleUI?.addEventListener("click", () => {
+  // Tablet/Touch: ensure buttons always react (some browsers suppress/delay plain "click").
+  function bindBtn(el, fn){
+    if (!el) return;
+    const handler = (e) => {
+      // ignore right/middle mouse
+      if (e?.pointerType === "mouse" && typeof e.button === "number" && e.button !== 0) return;
+      try { e?.preventDefault?.(); } catch {}
+      try { e?.stopPropagation?.(); } catch {}
+      fn(e);
+    };
+    el.addEventListener("click", handler);
+    el.addEventListener("pointerup", handler, { passive:false });
+  }
+
+  bindBtn(btnToggleUI, () => {
     document.body.classList.toggle("uiHidden");
   });
 
-  btnRoll?.addEventListener("click", () => {
+  bindBtn(btnRoll, () => {
     // if bonus roll available, it's fine. If already rolled and not bonus, block.
     if (state.animating) return;
     if (state.rolled){
@@ -965,25 +979,25 @@
     rollDice();
   });
 
-  btnEndTurn?.addEventListener("click", () => endTurn());
+  bindBtn(btnEndTurn, () => endTurn());
 
-  btnToggleLines?.addEventListener("click", () => {
+  bindBtn(btnToggleLines, () => {
     state.showLines = !state.showLines;
     btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
     renderEdges();
     applyCamera();
   });
 
-  btnFit?.addEventListener("click", () => { computeFitCamera(); applyCamera(); });
-  btnResetView?.addEventListener("click", () => { state.cam={x:0,y:0,scale:1}; computeFitCamera(); applyCamera(); });
+  bindBtn(btnFit, () => { computeFitCamera(); applyCamera(); });
+  bindBtn(btnResetView, () => { state.cam={x:0,y:0,scale:1}; computeFitCamera(); applyCamera(); });
 
-  btnRestart?.addEventListener("click", async () => { await start(); });
-  btnSave?.addEventListener("click", saveLocal);
-  btnLoad?.addEventListener("click", loadLocal);
+  bindBtn(btnRestart, async () => { await start(); });
+  bindBtn(btnSave, saveLocal);
+  bindBtn(btnLoad, loadLocal);
 
-  btnWheelClose?.addEventListener("click", closeWheel);
-  btnDoneClose?.addEventListener("click", closeDoneModal);
-  btnGoBoard2?.addEventListener("click", () => {
+  bindBtn(btnWheelClose, closeWheel);
+  bindBtn(btnDoneClose, closeDoneModal);
+  bindBtn(btnGoBoard2, () => {
     // Placeholder: später board2 file laden / redirect
     closeDoneModal();
     setStatus("Board 2 kommt als nächster Schritt. (Hier später Redirect einbauen)", "warn");
