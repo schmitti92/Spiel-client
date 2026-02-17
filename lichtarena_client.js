@@ -558,12 +558,17 @@
       }
     }
 
+    // Board 1: 4 Spielsteine pro Farbe, jeweils auf einem eigenen Startfeld.
+    const PIECES_PER_COLOR = 4;
+
     const pieces = [];
     for (const color of COLORS){
       const startList = startsByColor[color];
-      const startNodeId = startList[0] || findAnyNormalNodeId() || findAnyNodeId();
-      for (let i=1;i<=5;i++){
-        pieces.push({ id:`${color}_${i}`, color, nodeId: startNodeId });
+      const fallbackStart = startList[0] || findAnyNormalNodeId() || findAnyNodeId();
+
+      for (let i=1;i<=PIECES_PER_COLOR;i++){
+        const nodeId = startList[i-1] || fallbackStart; // verteilt auf Startfelder, fallback falls zu wenige vorhanden
+        pieces.push({ id:`${color}_${i}`, color, nodeId });
       }
     }
     gameState.pieces = pieces;
