@@ -649,10 +649,10 @@
   async function onNodeClicked(nodeId){
     if (state.animating) return;
 
-    const activeColor = state.turnOrder[state.turnIndex];
+    const myColor = activeColor();
     const piece = state.pieces.find(p => p.id === state.selectedPieceId);
 
-    if (!piece || piece.color !== activeColor){
+    if (!piece || piece.color !== myColor){
       setStatus("Erst eine eigene Figur auswählen (aktiver Spieler).","warn");
       return;
     }
