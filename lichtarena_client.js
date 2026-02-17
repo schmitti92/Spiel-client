@@ -122,8 +122,9 @@
   const state = {
     board: null,
     nodeById: new Map(),
-    outgoing: new Map(),        // from -> [{to}]
+    outgoing: new Map(),        // from -> [{to}] (visual arrows)
     incoming: new Map(),        // to -> [{from}] (optional)
+    neighbors: new Map(),       // undirected movement graph: node -> [neighbor]
     startByColor: new Map(),    // color -> [nodeId]
 
     // game
@@ -168,6 +169,7 @@
     state.nodeById = new Map();
     state.outgoing = new Map();
     state.incoming = new Map();
+    state.neighbors = new Map();
     state.startByColor = new Map();
 
     for (const n of (state.board.nodes||[])){
@@ -187,6 +189,10 @@
       if (!state.incoming.has(b)) state.incoming.set(b, []);
       state.incoming.get(b).push({from:a});
     };
+    const addNei = (a,b) => {
+      if (!state.neighbors.has(a)) state.neighbors.set(a, []);
+      state.neighbors.get(a).push(b);
+    };
 
     // IMPORTANT: directed edges
     for (const e of (state.board.edges||[])){
@@ -194,6 +200,8 @@
       if (!state.nodeById.has(a) || !state.nodeById.has(b)) continue;
       addOut(a,b);
       addIn(a,b);
+      addNei(a,b);
+      addNei(b,a);
     }
   }
 
@@ -570,7 +578,7 @@
     }
 
     // hint
-    if (!state.rolled) hudHint.textContent = "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel-Schritte, nur vorwärts).";
+    if (!state.rolled) hudHint.textContent = "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).";
     else if (!state.selectedPieceId) hudHint.textContent = "Figur anklicken, dann ein blau markiertes Ziel wählen.";
     else hudHint.textContent = "Ziel anklicken (blau markiert).";
   }
@@ -633,188 +641,143 @@
     return state.pieces.find(p => p.id===state.selectedPieceId) || null;
   }
 
-  function onNodeClicked(nodeId){
-    if (state.animating) return;
-    if (!state.rolled){
-      setStatus("Erst würfeln.", "warn");
-      return;
-    }
-    const sp = getSelectedPiece();
-    if (!sp){
-      setStatus("Erst eine Figur auswählen.", "warn");
-      return;
-    }
-    if (!state.reachable.has(String(nodeId))){
-      setStatus("Dieses Ziel ist mit dem Würfelwert nicht erreichbar (exakt Schritte, nur vorwärts).", "warn");
-      return;
-    }
-    const path = state.reachable.get(String(nodeId));
-    if (!Array.isArray(path) || path.length<2){
-      setStatus("Interner Pfadfehler.", "bad");
-      return;
-    }
-    moveAlongPath(sp, path);
+    function piecesAt(nodeId){
+    const id = String(nodeId);
+    return state.pieces.filter(p => String(p.nodeId) === id);
   }
 
-  function computeReachable(){
+  async function onNodeClicked(nodeId){
+    if (state.animating) return;
+
+    const activeColor = state.turnOrder[state.turnIndex];
+    const piece = state.pieces.find(p => p.id === state.selectedPieceId);
+
+    if (!piece || piece.color !== activeColor){
+      setStatus("Erst eine eigene Figur auswählen (aktiver Spieler).","warn");
+      return;
+    }
+    if (!state.rolled){
+      setStatus("Erst würfeln.","warn");
+      return;
+    }
+
+    const to = String(nodeId);
+    const path = state.reachable?.get(to) || null;
+    if (!path){
+      setStatus("Zielknoten nicht erreichbar (exakt Würfel-Schritte, ohne Hin-und-her-Hüpfen).","warn");
+      return;
+    }
+
+    const diceWas = state.dice;
+
+    await moveAlongPath(piece, path);
+
+    // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad
+    const occ = piecesAt(to).filter(p => p.id !== piece.id);
+    if (occ.length){
+      const victim = occ[0];
+      if (victim.color !== piece.color){
+        const starts = state.startByColor.get(victim.color) || [];
+        victim.nodeId = String(starts[0] || victim.nodeId);
+        renderTokens();
+
+        await runWheelReward(piece.color);
+        renderHud();
+      }
+    }
+
+    // Nach Ankunft: Licht einsammeln
+    if (state.activeLights.has(to)){
+      state.activeLights.delete(to);
+      state.globalCollected = (state.globalCollected|0) + 1;
+      state.collectedByColor[piece.color] = (state.collectedByColor[piece.color]||0) + 1;
+
+      if (state.activeLights.size === 0){
+        spawnRandomLight();
+      }
+
+      if (state.globalCollected >= state.goalLights){
+        setStatus("🏁 Board 1 geschafft! (5 Lichter) – Weiterleitung zu Board 2 kommt als nächstes.","good");
+      } else {
+        setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.goalLights}`,"good");
+      }
+    } else {
+      setStatus(`Zug: ${piece.color.toUpperCase()} → ${to}`,"good");
+    }
+
+    // Zug-Reset / Bonuswurf bei 6
+    state.rolled = false;
+    state.dice = null;
     state.reachable = new Map();
-    const sp = getSelectedPiece();
-    if (!sp) { renderTokens(); return; }
-
-    const steps = state.dice|0;
-    if (steps<=0){ renderTokens(); return; }
-
-    const start = String(sp.nodeId);
-
-    // BFS over paths with EXACT length = steps
-    // Rule: you may move in all directions (edges are treated as undirected),
-    // but you may NOT immediately go back and forth within the same move (A->B->A).
-    const q = [{ nid:start, depth:0, prev:null }];
-
-    // store predecessor for reconstruction: key = node@depth@prevNode
-    // we still need a stable key; we use node@depth@prev
-    const prevMap = new Map();
-    const seen = new Set();
-    const keyOf = (nid, depth, prevN) => `${nid}@${depth}@${prevN??""}`;
-
-    seen.add(keyOf(start,0,null));
-    prevMap.set(keyOf(start,0,null), null);
-
-    const ends = []; // list of {nid, key}
-
-    while (q.length){
-      const cur = q.shift();
-      if (cur.depth === steps){
-        ends.push({ nid:cur.nid, key:keyOf(cur.nid,cur.depth,cur.prev) });
-        continue;
-      }
-
-      // undirected neighbors: outgoing + incoming
-      const outs = state.outgoing.get(cur.nid) || [];
-      const ins  = state.incoming.get(cur.nid) || [];
-
-      const neigh = [];
-      for (const o of outs) neigh.push(String(o.to));
-      for (const i of ins)  neigh.push(String(i.from));
-
-      for (const to of neigh){
-        if (cur.prev && to === cur.prev) continue; // prevent A->B->A within same move
-
-        // can't step onto blocked barricade (for later boards; board1 has none)
-        if (isNodeBlocked(to)) continue;
-
-        const k = keyOf(to, cur.depth+1, cur.nid);
-        if (seen.has(k)) continue;
-        seen.add(k);
-        prevMap.set(k, { prevKey: keyOf(cur.nid, cur.depth, cur.prev), node: cur.nid });
-
-        q.push({ nid: to, depth: cur.depth+1, prev: cur.nid });
-      }
-    }
-
-    // Convert end-states into reachable destinations with one representative path each.
-    // We rebuild path as [start, ..., destination]
-    const best = new Map(); // nodeId -> path array
-
-    for (const end of ends){
-      const dest = String(end.nid);
-      // don't include staying on same node
-      if (dest === start) continue;
-
-      // reconstruct path
-      const path = [];
-      let k = end.key;
-      let curNode = dest;
-      path.push(curNode);
-
-      while (true){
-        const p = prevMap.get(k);
-        if (!p) break;
-        curNode = p.node;
-        path.push(curNode);
-        k = p.prevKey;
-      }
-
-      path.reverse(); // now starts with start
-
-      // destination must not be own-occupied
-      const occPiece = state.pieces.find(p => String(p.nodeId)===dest);
-      if (occPiece && occPiece.color===sp.color) continue;
-
-      // keep first found path for this dest
-      if (!best.has(dest)) best.set(dest, path);
-    }
-
-    state.reachable = best;
+    renderHud();
     renderTokens();
+
+    if (diceWas === 6){
+      setStatus("🎲 6 gewürfelt: Du darfst nochmal würfeln!","good");
+      return;
+    }
+
+    endTurn();
   }
 
   async function moveAlongPath(piece, path){
     state.animating = true;
-    state.reachable = new Map();
-    renderTokens();
-
-    // animate step by step
-    for (let i=1;i<path.length;i++){
-      piece.nodeId = String(path[i]);
-      renderTokens();
-      await sleep(120);
-    }
-
-    // handle capture
-    const victim = state.pieces.find(p => p.id!==piece.id && String(p.nodeId)===String(piece.nodeId));
-    // Note: after moving, victim would be on same node; but we already moved into it.
-    // We need to detect by checking duplicates BEFORE moving final step. Simpler: detect now by finding duplicates.
-    const sameNodePieces = state.pieces.filter(p => String(p.nodeId)===String(piece.nodeId));
-    if (sameNodePieces.length>1){
-      const other = sameNodePieces.find(p => p.id!==piece.id);
-      if (other && other.color!==piece.color){
-        // kick to start
-        const starts = state.startByColor.get(other.color) || [];
-        const back = starts[0] || findAnyNormalNodeId() || findAnyNodeId();
-        other.nodeId = back;
+    try{
+      for (let i=1;i<path.length;i++){
+        piece.nodeId = String(path[i]);
         renderTokens();
-        setStatus(`💥 Rauswurf! ${piece.color.toUpperCase()} schmeißt ${other.color.toUpperCase()} raus.`, "good");
-        await sleep(150);
-        // wheel reward for active player
-        await runWheelReward(piece.color);
+        await sleep(120);
       }
+    } finally {
+      state.animating = false;
     }
-
-    // handle light pickup
-    if (state.activeLights.has(String(piece.nodeId))){
-      state.activeLights.delete(String(piece.nodeId));
-      state.collected[piece.color] = (state.collected[piece.color]||0) + 1;
-      state.globalCollected += 1;
-      setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.globalGoal}`, "good");
-
-      // if no lights left -> spawn new one
-      if (state.activeLights.size===0 && state.globalCollected < state.globalGoal){
-        const spawned = spawnRandomLight();
-        if (spawned){
-          setStatus(`💡 Licht eingesammelt! Neues Licht gespawnt.`, "good");
-        }
-      }
-
-      // check done
-      if (state.globalCollected >= state.globalGoal){
-        openDoneModal();
-      }
-    }
-
-    // after move: if dice==6 -> allow optional extra roll, keep same turn but must roll again to move again
-    if (state.canRollAgain){
-      state.rolled = false; // require new roll
-      state.dice = 0;
-      setStatus("🎲 6 gewürfelt → Bonuswurf möglich. Drück 'Würfeln' (du bleibst am Zug).", "good");
-    }else{
-      // end turn automatically? For now: user presses "Zug beenden" to keep control.
-      setStatus("Zug beendet? Drück 'Zug beenden' um weiterzugeben.", "warn");
-    }
-
-    state.animating = false;
-    updateHUD();
   }
+
+
+
+      function canonEdgeKey(a,b){
+    const x=String(a), y=String(b);
+    return (x<y)? `${x}__${y}` : `${y}__${x}`;
+  }
+
+function computeReachable(){
+    state.reachable = new Map();
+    if (!state.rolled || !state.selectedPieceId) return;
+
+    const piece = state.pieces.find(p => p.id === state.selectedPieceId);
+    if (!piece) return;
+
+    const steps = Number(state.dice || 0);
+    if (!Number.isFinite(steps) || steps <= 0) return;
+
+    const startId = String(piece.nodeId);
+
+    const dfs = (cur, rem, usedEdges, visitedNodes, path) => {
+      if (rem === 0){
+        if (!state.reachable.has(cur)) state.reachable.set(cur, path.slice());
+        return;
+      }
+
+      const neigh = state.neighbors.get(cur) || [];
+      for (const to of neigh){
+        const edgeKey = canonEdgeKey(cur, to);
+        if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
+        if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
+        if (isNodeBlocked(to)) continue;
+
+        const nextUsed = new Set(usedEdges); nextUsed.add(edgeKey);
+        const nextVisited = new Set(visitedNodes); nextVisited.add(to);
+
+        path.push(to);
+        dfs(to, rem - 1, nextUsed, nextVisited, path);
+        path.pop();
+      }
+    };
+
+    dfs(startId, steps, new Set(), new Set([startId]), [startId]);
+  }
+
+
 
   function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
