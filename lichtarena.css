@@ -2,12 +2,12 @@
 :root{
   --bg0:#070a12;
   --bg1:#0a1020;
-  --panel: rgba(16, 22, 36, .72);
-  --panel2: rgba(16, 22, 36, .60);
+  --panel: rgba(12, 16, 26, 0.94);
+  --panel2: rgba(12, 16, 26, 0.88);
   --stroke: rgba(255,255,255,.08);
   --stroke2: rgba(255,255,255,.12);
-  --txt: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.62);
+  --txt: rgba(245, 248, 255, 0.96);
+  --muted: rgba(214, 223, 243, 0.78);
   --good:#55e09a;
   --warn:#ffd27a;
   --bad:#ff5a6a;
@@ -19,6 +19,10 @@
 
   --shadow: 0 18px 60px rgba(0,0,0,.55);
   --shadow2: 0 12px 35px rgba(0,0,0,.45);
+
+  --border: rgba(255,255,255,.10);
+  --borderSoft: rgba(255,255,255,.06);
+  --focus: rgba(125,190,255,.55);
 
   --radius: 18px;
   --radius2: 22px;
@@ -33,10 +37,10 @@ body{
   color:var(--txt);
   font-family:var(--font);
   background:
-    radial-gradient(900px 500px at 20% 20%, rgba(56,96,255,.12), transparent 60%),
-    radial-gradient(700px 500px at 70% 65%, rgba(46,229,157,.10), transparent 60%),
-    radial-gradient(800px 500px at 80% 15%, rgba(255,210,80,.08), transparent 65%),
-    linear-gradient(180deg, var(--bg0), var(--bg1));
+    radial-gradient(1200px 700px at 15% 0%, rgba(80,120,255,.10), transparent 55%),
+    radial-gradient(900px 650px at 85% 20%, rgba(255,180,80,.07), transparent 55%),
+    radial-gradient(1100px 800px at 50% 100%, rgba(60,255,170,.06), transparent 60%),
+    #070A12;
   overflow:hidden;
 }
 
@@ -49,7 +53,6 @@ body{
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
   border-radius: var(--radius2);
   box-shadow: var(--shadow2);
-  backdrop-filter: blur(12px);
 }
 .brand .title{ font-size: clamp(24px, 3.3vw, 36px); font-weight: 800; letter-spacing:.5px; }
 .brand .subtitle{ margin-top:2px; color: var(--muted); font-size: 13px; }
@@ -95,7 +98,6 @@ body{
   border-radius: var(--radius2);
   background: var(--panel);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
 }
 .boardPanel{ display:flex; flex-direction:column; overflow:hidden; }
 .statusbar{
