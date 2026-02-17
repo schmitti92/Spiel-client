@@ -3,127 +3,137 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Lichtarena (Prototype – Offline)</title>  <link rel="stylesheet" href="./lichtarena.css?v=la3">
-  <!-- NOTE: This page expects lichtarena.css + lichtarena_client.js with matching IDs. -->
+  <title>Lichtarena</title>
+  <link rel="stylesheet" href="./lichtarena.css?v=la4" />
 </head>
 <body>
-  <div class="la-shell">
-    <div class="la-topbar">
-      <div class="la-title">
-        <h1>Lichtarena</h1>
-        <div class="sub">Prototype – Offline</div>
+  <div class="app" id="appRoot">
+    <header class="topbar">
+      <div class="brand">
+        <div class="title">Lichtarena</div>
+        <div class="subtitle">Prototype • Offline • Board: <b id="hudBoardName">–</b></div>
       </div>
 
-      <div class="la-chips">
-        <div class="chip">Modus <b>Offline lokal</b></div>
-        <div class="chip">Regel <b>Board 1 startet mit Licht auf allen Lichtfeldern</b></div>
-        <div class="chip">Am Zug <span class="dot red" id="turnDot"></span> <b id="turnText">RED</b></div>
-        <div class="chip">Server-ready <b>später leicht umstellbar</b></div>
+      <div class="chips">
+        <div class="chip"><span>Modus</span><b id="chipMode">Offline lokal</b></div>
+        <div class="chip"><span>Regel</span><b id="chipRule">Board 1 startet mit Licht auf allen Lichtfeldern</b></div>
+        <div class="chip turnChip" id="chipTurnWrap">
+          <span>Am Zug</span>
+          <span class="dot" id="chipDot" data-color="red"></span>
+          <b id="chipTurn">RED</b>
+        </div>
+        <div class="chip"><span>Server-ready</span><b>später leicht umstellbar</b></div>
       </div>
-    </div>
+    </header>
 
-    <div class="la-main">
-      <!-- Board Panel -->
-      <div class="panel la-boardWrap" id="boardPanel">
-        <div class="la-status">
-          <div id="statusLine">Status: –</div>
-          <div class="hint">Touch: 1 Finger ziehen = verschieben · 2 Finger = pinch-zoom · Maus: Scroll = zoom</div>
+    <main class="main">
+      <section class="boardPanel">
+        <div class="statusbar">
+          <div class="statusline" id="statusLine">Status: <span class="good">bereit…</span></div>
+          <div class="hint">Touch: 1 Finger ziehen = verschieben • 2 Finger = pinch‑zoom • Maus: Scroll = zoom</div>
         </div>
 
-        <div class="la-boardArea">
-          <div id="boardViewport">
-            <div id="world">
-              <svg id="edgesSvg"></svg>
-              <div id="stage"></div>
-            </div>
-
-            <div class="la-boardHud">
-              <div class="hudBox">
-                <button class="btn small ghost" id="btnFit">Fit</button>
-                <button class="btn small ghost" id="btnZoomOut">–</button>
-                <b id="zoomPct">100%</b>
-                <button class="btn small ghost" id="btnZoomIn">+</button>
-                <button class="btn small ghost" id="btnResetView">Reset</button>
-                <button class="btn small" id="btnToggleLines">Linien: AN</button>
-              </div>
-
-              <div class="hudBox">
-                <span class="kbd">Debug</span>
-                <button class="btn small" id="btnRestart">Restart</button>
-                <button class="btn small" id="btnSave">Save</button>
-                <button class="btn small" id="btnLoad">Load</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Side Panel -->
-      <div class="panel la-side" id="sidePanel">
-        <div class="sec">
-          <div class="row">
-            <h3 style="margin:0">Spieler</h3>
-            <div class="row" style="gap:8px">
-              <span class="dot red" id="activeDot"></span>
-              <b id="activeColorLabel">RED</b>
-            </div>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <button class="btn small ghost" id="btnPrevPlayer">◀</button>
-            <div class="muted">Figur anklicken → auswählen. Dann auf verbundenes Feld klicken = 1 Schritt.</div>
-            <button class="btn small ghost" id="btnNextPlayer">▶</button>
+        <div class="viewport" id="viewport">
+          <div class="world" id="world">
+            <svg id="edgesSvg" aria-hidden="true"></svg>
+            <div id="stage"></div>
           </div>
         </div>
 
-        <div class="sec">
-          <div class="row">
-            <h3 style="margin:0">Würfel</h3>
+        <div class="bottomControls">
+          <div class="group">
+            <button class="btn small" id="btnFit">Fit</button>
+            <button class="btn small" id="btnZoomOut">−</button>
+            <div class="zoom"><b id="hudZoom">100%</b></div>
+            <button class="btn small" id="btnZoomIn">+</button>
+            <button class="btn small" id="btnResetView">Reset</button>
+            <button class="btn small" id="btnToggleLines">Linien: AN</button>
+          </div>
+          <div class="group">
+            <span class="muted tiny">Debug</span>
+            <button class="btn small" id="btnRestart">Restart</button>
+            <button class="btn small" id="btnSave">Save</button>
+            <button class="btn small" id="btnLoad">Load</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidePanel" id="sidePanel">
+        <div class="card">
+          <div class="row between">
+            <h3>Spieler</h3>
+            <div class="turnBadge">
+              <span class="dot" id="turnDot" data-color="red"></span>
+              <span id="turnName">RED</span>
+            </div>
+          </div>
+
+          <div class="row gap">
+            <button class="btn small" id="btnPrevTurn">◀</button>
+            <div class="muted center grow">Figur anklicken → auswählen. Dann auf verbundenes Feld klicken = 1 Schritt.</div>
+            <button class="btn small" id="btnNextTurn">▶</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="row between">
+            <h3>Würfel</h3>
             <div class="muted">Aktuell: <b id="hudDice">6</b></div>
           </div>
-          <div class="row" style="margin-top:10px">
+
+          <div class="row gap" style="margin-top:10px;">
             <button class="btn" id="btnRoll">Würfeln</button>
-            <input class="input" id="diceValue" type="number" min="1" max="6" value="6" />
+            <div class="grow">
+              <div class="muted tiny" style="margin-bottom:6px;">Wert (1–6)</div>
+              <input class="input" id="diceValue" type="number" min="1" max="6" value="6" inputmode="numeric" />
+            </div>
           </div>
         </div>
 
-        <div class="sec">
-          <div class="row">
-            <h3 style="margin:0">Licht</h3>
-            <div class="muted">Aktiv: <b id="hudActiveLights">0</b> · Gesammelt: <b id="hudLightTotal">0</b> / <b id="hudLightGoal">5</b></div>
+        <div class="card">
+          <div class="row between">
+            <h3>Licht</h3>
+            <div class="kpi">
+              <span>Aktiv: <b id="hudActiveLights">0</b></span>
+              <span>Gesammelt: <b id="hudLightTotal">0</b> / <b id="hudLightGoal">5</b></span>
+            </div>
           </div>
-          <div style="margin-top:10px">
-            <button class="btn yellow" id="btnForceSpawnLight">Test: Licht spawnen</button>
-          </div>
+          <button class="btn gold" id="btnForceSpawnLight" style="margin-top:10px;">Test: Licht spawnen</button>
         </div>
 
-        <div class="sec">
-          <div class="row">
-            <h3 style="margin:0">Ereignis</h3>
+        <div class="card">
+          <div class="row between">
+            <h3>Ereignis</h3>
             <div class="muted">Barikaden</div>
           </div>
-          <div class="row" style="margin-top:10px">
-            <button class="btn red" id="btnSpawnBarricade">Barikade spawnen</button>
+          <div class="row gap" style="margin-top:10px;">
+            <button class="btn danger" id="btnSpawnBarricade">Barikade spawnen</button>
             <button class="btn" id="btnClearDynamicBarricades">Barikaden löschen</button>
           </div>
         </div>
 
-        <div class="sec">
-          <div class="row">
-            <h3 style="margin:0">Joker (am Zug)</h3>
-            <div class="muted">Start: <b>2× je Typ</b></div>
+        <div class="card">
+          <div class="row between">
+            <h3>Joker (am Zug)</h3>
+            <div class="muted tiny">Start: 2× je Typ</div>
           </div>
-          <div style="margin-top:8px">
-            <table class="jtab" id="jokerTable">
-              <tbody></tbody>
+
+          <div class="tableWrap" style="margin-top:10px;">
+            <table class="table" aria-label="Joker Tabelle">
+              <thead>
+                <tr><th>Joker</th><th class="right">Anzahl</th></tr>
+              </thead>
+              <tbody id="jokerTableBody"></tbody>
             </table>
           </div>
+
+          <div class="muted tiny" style="margin-top:8px;">(Nur Anzeige – Logik kommt als Nächstes.)</div>
         </div>
-      </div>
-    </div>
+      </aside>
+    </main>
   </div>
 
-  <script src="./game_rules_lights_barricades.js?v=la_clean1"></script>
-  <script src="./lichtarena_client.js?v=la_clean1"></script>
+  <script src="./game_rules_lights_barricades.js?v=la4"></script>
+  <script src="./lichtarena_client.js?v=la4"></script>
 </body>
 </html>
-
