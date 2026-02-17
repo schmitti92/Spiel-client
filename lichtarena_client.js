@@ -985,6 +985,16 @@ function computeReachable(){
   let panStart = {x:0,y:0,cx:0,cy:0};
   let pinch = null;
 
+  // Wenn wir auf dem Stage-Element immer Pointer-Capture aktivieren,
+  // gehen Klicks auf Nodes/Tokens (besonders auf Tablets) kaputt.
+  // Daher: pannen/zoomen nur, wenn der Nutzer wirklich den Hintergrund zieht.
+  function isInteractiveTarget(el){
+    if (!el) return false;
+    return !!el.closest(
+      ".node, .token, .panel, .btn, button, input, select, textarea, label, a, .jokerRow, .playerCard, .pill, .topbar"
+    );
+  }
+
   stage.addEventListener("wheel", (e) => {
     e.preventDefault();
     const rect = boardShell.getBoundingClientRect();
@@ -995,10 +1005,9 @@ function computeReachable(){
   }, { passive:false });
 
   stage.addEventListener("pointerdown", (e) => {
-    stage.setPointerCapture(e.pointerId);
-    if (e.pointerType==="touch"){
-      // handled in touch logic below via pointers
-    }
+    // Nicht pannen, wenn auf Node/Token/UI geklickt wird.
+    if (isInteractiveTarget(e.target)) return;
+    try{ stage.setPointerCapture(e.pointerId); }catch(_){ }
     isPanning = true;
     panStart = { x:e.clientX, y:e.clientY, cx:state.cam.x, cy:state.cam.y };
   });
@@ -1022,6 +1031,7 @@ function computeReachable(){
   const activePointers = new Map();
   stage.addEventListener("pointerdown", (e) => {
     if (e.pointerType!=="touch") return;
+    if (isInteractiveTarget(e.target)) return;
     activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
     if (activePointers.size===2){
       const pts = Array.from(activePointers.values());
