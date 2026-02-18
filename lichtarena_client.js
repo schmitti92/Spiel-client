@@ -31,6 +31,8 @@
 
   // ---------- DOM ----------
   const $ = (id) => document.getElementById(id);
+  const setText = (el, v) => { if (el) el.textContent = String(v); };
+  const nowTime = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
   const stage = $("stage");
   const edgesSvg = $("edgesSvg");
   const boardShell = $("boardShell");
@@ -41,8 +43,14 @@
   const pillTurn = $("pillTurn");
 
   const btnToggleUI = $("btnToggleUI");
+  const btnDebug = $("btnDebug");
   const layout = $("layout");
   const side = $("side");
+
+  // in-page debug overlay (Tablet)
+  const debugOverlay = $("debugOverlay");
+  const debugText = $("debugText");
+  const btnDebugClose = $("btnDebugClose");
 
   const btnRoll = $("btnRoll");
   const btnEndTurn = $("btnEndTurn");
@@ -85,6 +93,26 @@
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
     }[c]));
   }
+
+  // --- In-Page Debug (für Tablet ohne Konsole) ---
+  function dbgAppend(line){
+    if (!debugText) return;
+    const prev = debugText.textContent || "";
+    debugText.textContent = `${prev}${prev ? "\n" : ""}[${nowTime()}] ${line}`;
+    if (debugOverlay && !debugOverlay.hasAttribute('hidden')) {
+      debugText.scrollTop = debugText.scrollHeight;
+    }
+  }
+  const _log = console.log.bind(console);
+  const _warn = console.warn.bind(console);
+  const _err = console.error.bind(console);
+  console.log = (...a)=>{ try{ dbgAppend(a.map(String).join(' ')); }catch(_e){} _log(...a); };
+  console.warn = (...a)=>{ try{ dbgAppend('WARN: ' + a.map(String).join(' ')); }catch(_e){} _warn(...a); };
+  console.error = (...a)=>{ try{ dbgAppend('ERR: ' + a.map(String).join(' ')); }catch(_e){} _err(...a); };
+  window.addEventListener('error', (ev)=>{ try{ dbgAppend(`JS-Error: ${ev.message} @ ${ev.filename}:${ev.lineno}:${ev.colno}`); }catch(_e){} });
+  window.addEventListener('unhandledrejection', (ev)=>{ try{ dbgAppend(`Promise-Rejection: ${String(ev.reason)}`); }catch(_e){} });
+  function openDebug(){ if (debugOverlay) debugOverlay.removeAttribute('hidden'); }
+  function closeDebug(){ if (debugOverlay) debugOverlay.setAttribute('hidden',''); }
   function colorToCss(c){
     c = String(c||"").toLowerCase();
     if (c==="red") return "rgba(255,90,106,.95)";
@@ -510,21 +538,21 @@
   // ---------- HUD / Panels ----------
   function updateHUD(){
     const c = activeColor();
-    pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
-    hudPlayer.textContent = c.toUpperCase();
-    hudDice.textContent = state.rolled ? String(state.dice) : "–";
-    hudActiveLights.textContent = String(state.activeLights.size);
-    hudGlobal.textContent = String(state.globalCollected);
-    hudGoal.textContent = String(state.globalGoal);
+    setText(pillTurn, `Am Zug: ${c.toUpperCase()}`);
+    setText(hudPlayer, c.toUpperCase());
+    setText(hudDice, state.rolled ? String(state.dice) : "–");
+    setText(hudActiveLights, String(state.activeLights.size));
+    setText(hudGlobal, String(state.globalCollected));
+    setText(hudGoal, String(state.globalGoal));
 
     // pills
-    pillMode.textContent = "Modus: Offline lokal";
+    setText(pillMode, "Modus: Offline lokal");
     const bname = state.board?.meta?.name ? String(state.board.meta.name) : "Board";
-    pillBoard.textContent = `Board: ${bname}`;
-    pillRule.textContent = `Regel: Sammle ${state.globalGoal} Lichter global → Board 2`;
+    setText(pillBoard, `Board: ${bname}`);
+    setText(pillRule, `Regel: Sammle ${state.globalGoal} Lichter global → Board 2`);
 
     // players panel
-    playersPanel.innerHTML = "";
+    if (playersPanel) playersPanel.innerHTML = "";
     for (const color of COLORS){
       const pc = document.createElement("div");
       pc.className = "playerCard";
@@ -538,10 +566,10 @@
       const txt = document.createElement("div");
       const name = document.createElement("div");
       name.className = "pcName";
-      name.textContent = color.toUpperCase() + (color===c ? " (am Zug)" : "");
+      setText(name, color.toUpperCase() + (color===c ? " (am Zug)" : ""));
       const sub = document.createElement("div");
       sub.className = "pcSub";
-      sub.textContent = `Lichter: ${state.collected[color] || 0}`;
+      setText(sub, `Lichter: ${state.collected[color] || 0}`);
       txt.appendChild(name);
       txt.appendChild(sub);
       left.appendChild(txt);
@@ -550,16 +578,16 @@
       right.className = "pcRight";
       const big = document.createElement("div");
       big.className = "big";
-      big.textContent = `Joker: ${jokerTotal(color)}`;
+      setText(big, `Joker: ${jokerTotal(color)}`);
       const small = document.createElement("div");
       small.className = "small";
-      small.textContent = `Figur: ${pieceOfColor(color)?.nodeId ?? "–"}`;
+      setText(small, `Figur: ${pieceOfColor(color)?.nodeId ?? "–"}`);
       right.appendChild(big);
       right.appendChild(small);
 
       pc.appendChild(left);
       pc.appendChild(right);
-      playersPanel.appendChild(pc);
+      if (playersPanel) playersPanel.appendChild(pc);
     }
 
     // joker table for active player
@@ -570,19 +598,19 @@
       row.className = "jRow";
       const name = document.createElement("div");
       name.className = "jName";
-      name.textContent = j.name;
+      setText(name, j.name);
       const count = document.createElement("div");
       count.className = "jCount";
-      count.textContent = String(state.jokers[ac]?.[j.id] ?? 0);
+      setText(count, String(state.jokers[ac]?.[j.id] ?? 0));
       row.appendChild(name);
       row.appendChild(count);
       jokerTable.appendChild(row);
     }
 
     // hint
-    if (!state.rolled) hudHint.textContent = "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).";
-    else if (!state.selectedPieceId) hudHint.textContent = "Figur anklicken, dann ein blau markiertes Ziel wählen.";
-    else hudHint.textContent = "Ziel anklicken (blau markiert).";
+    if (!state.rolled) setText(hudHint, "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).");
+    else if (!state.selectedPieceId) setText(hudHint, "Figur anklicken, dann ein blau markiertes Ziel wählen.");
+    else setText(hudHint, "Ziel anklicken (blau markiert).");
   }
 
   function jokerTotal(color){
@@ -807,7 +835,7 @@ function computeReachable(){
   // ---------- Wheel (Joker reward) ----------
   function openWheel(){
     wheelModal.classList.remove("hidden");
-    wheelResult.textContent = "Dreht…";
+    setText(wheelResult, "Dreht…");
   }
   function closeWheel(){
     wheelModal.classList.add("hidden");
@@ -912,7 +940,7 @@ function computeReachable(){
         else {
           // reward
           state.jokers[color][winner.id] = (state.jokers[color][winner.id]||0) + 1;
-          wheelResult.textContent = `Gewonnen: ${winner.name}`;
+          setText(wheelResult, `Gewonnen: ${winner.name}`);
           updateHUD();
           setTimeout(() => { closeWheel(); resolve(); }, 650);
         }
@@ -948,6 +976,13 @@ function computeReachable(){
     document.body.classList.toggle("uiHidden");
   });
 
+  bindBtn(btnDebug, () => {
+    if (!debugOverlay) return;
+    if (debugOverlay.hasAttribute('hidden')) openDebug();
+    else closeDebug();
+  });
+  bindBtn(btnDebugClose, () => closeDebug());
+
   bindBtn(btnRoll, () => {
     // if bonus roll available, it's fine. If already rolled and not bonus, block.
     if (state.animating) return;
@@ -962,7 +997,7 @@ function computeReachable(){
 
   bindBtn(btnToggleLines, () => {
     state.showLines = !state.showLines;
-    btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
+    setText(btnToggleLines, `Linien: ${state.showLines ? "AN" : "AUS"}`);
     renderEdges();
     applyCamera();
   });
@@ -1111,13 +1146,13 @@ function computeReachable(){
 
       // set board title
       const bname = state.board?.meta?.name ? String(state.board.meta.name) : "spielbrett";
-      pillBoard.textContent = `Board: ${bname}`;
+      setText(pillBoard, `Board: ${bname}`);
 
       // camera fit
       computeFitCamera();
 
       resetGame();
-      btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
+      setText(btnToggleLines, `Linien: ${state.showLines ? "AN" : "AUS"}`);
       applyCamera();
     }catch(e){
       console.error(e);
