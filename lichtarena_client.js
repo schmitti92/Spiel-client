@@ -583,6 +583,13 @@
     else hudHint.textContent = "Ziel anklicken (blau markiert).";
   }
 
+  // Backward-compat alias: older code calls renderHud()
+  // Keep function name to avoid crashes (no gameplay change).
+  function renderHud(){
+    try{ updateHUD(); }catch(_e){}
+  }
+
+
   function jokerTotal(color){
     const inv = state.jokers[color] || {};
     return Object.values(inv).reduce((a,b)=>a+(Number(b)||0),0);
