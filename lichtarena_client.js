@@ -1018,82 +1018,148 @@ function computeReachable(){
   });
 
   // ---------- Camera interactions (pan/zoom) ----------
-  let isPanning = false;
-  let panStart = {x:0,y:0,cx:0,cy:0};
-  let pinch = null;
+// Wichtig (Tablet): KEIN dauerhaftes Pointer-Capture für Touch, sonst werden UI-Klicks „verschluckt“.
+// Wir managen Touch/Maus einheitlich über activePointers.
+let isPanning = false;
+let panPointerId = null;
+let panStart = { x:0, y:0 };
+let panCamStart = { x:0, y:0 };
 
-  // Wenn wir auf dem Stage-Element immer Pointer-Capture aktivieren,
-  // gehen Klicks auf Nodes/Tokens (besonders auf Tablets) kaputt.
-  // Daher: pannen/zoomen nur, wenn der Nutzer wirklich den Hintergrund zieht.
-  function isInteractiveTarget(el){
-    if (!el) return false;
-    return !!el.closest(
-      ".node, .token, .panel, .btn, button, input, select, textarea, label, a, .jokerRow, .playerCard, .pill, .topbar"
-    );
+const activePointers = new Map(); // id -> {x,y}
+let pinch = null; // {startDist, startScale, startCamX, startCamY, midX, midY}
+
+function resetGestureState(){
+  isPanning = false;
+  panPointerId = null;
+  activePointers.clear();
+  pinch = null;
+}
+
+function beginPan(pointerId, x, y){
+  isPanning = true;
+  panPointerId = pointerId;
+  panStart = { x, y };
+  panCamStart = { x: cam.x, y: cam.y };
+}
+
+function beginPinch(){
+  const pts = Array.from(activePointers.values());
+  if (pts.length !== 2) return;
+  const a = pts[0], b = pts[1];
+  const midX = (a.x + b.x) / 2;
+  const midY = (a.y + b.y) / 2;
+  pinch = {
+    startDist: dist(a,b),
+    startScale: cam.scale,
+    startCamX: cam.x,
+    startCamY: cam.y,
+    midX, midY
+  };
+}
+
+function applyPinch(){
+  if (!pinch) return;
+  const pts = Array.from(activePointers.values());
+  if (pts.length !== 2) return;
+  const a = pts[0], b = pts[1];
+  const d = Math.max(10, dist(a,b));
+  const ratio = d / Math.max(10, pinch.startDist);
+  const newScale = clamp(pinch.startScale * ratio, 0.35, 3.0);
+
+  // Zoom um den initialen Mittelpunkt
+  const rect = boardShell.getBoundingClientRect();
+  const cx = pinch.midX - rect.left;
+  const cy = pinch.midY - rect.top;
+  // Weltpunkt unter dem Mittelpunkt bei Start
+  const worldX = (cx - pinch.startCamX) / pinch.startScale;
+  const worldY = (cy - pinch.startCamY) / pinch.startScale;
+
+  cam.scale = newScale;
+  cam.x = cx - worldX * newScale;
+  cam.y = cy - worldY * newScale;
+
+  applyCamera();
+}
+
+function isInteractiveTarget(ev){
+  const t = ev.target;
+  if (!t) return false;
+  // UI/Buttons/Inputs sollen IMMER klicken können
+  return !!t.closest?.('button, a, input, select, textarea, .panel, #debugOverlay, #debugBackdrop');
+}
+
+boardShell.addEventListener('pointerdown', (e) => {
+  if (isInteractiveTarget(e)) return;
+
+  // Nur linker Mausbutton
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  // Mouse/Pen: optional capture, Touch: NIE capture (sonst UI tot)
+  if (e.pointerType !== 'touch') {
+    try { boardShell.setPointerCapture(e.pointerId); } catch(_e){}
   }
 
-  stage.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    const rect = boardShell.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const zoom = e.deltaY < 0 ? 1.08 : 0.92;
-    zoomAt(mx,my,zoom);
-  }, { passive:false });
+  if (activePointers.size === 1) {
+    beginPan(e.pointerId, e.clientX, e.clientY);
+    pinch = null;
+  } else if (activePointers.size === 2) {
+    isPanning = false;
+    panPointerId = null;
+    beginPinch();
+  }
 
-  stage.addEventListener("pointerdown", (e) => {
-    // Nicht pannen, wenn auf Node/Token/UI geklickt wird.
-    if (isInteractiveTarget(e.target)) return;
-    try{ stage.setPointerCapture(e.pointerId); }catch(_){ }
-    isPanning = true;
-    panStart = { x:e.clientX, y:e.clientY, cx:state.cam.x, cy:state.cam.y };
-  });
+  // Verhindert Scroll/Back-gesture beim Draggen auf dem Board
+  if (e.cancelable) e.preventDefault();
+}, { passive: false });
 
-  stage.addEventListener("pointermove", (e) => {
-    if (!isPanning || pinch) return;
-    // pan
+boardShell.addEventListener('pointermove', (e) => {
+  if (!activePointers.has(e.pointerId)) return;
+
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (activePointers.size === 2) {
+    applyPinch();
+    return;
+  }
+
+  if (isPanning && e.pointerId === panPointerId) {
     const dx = e.clientX - panStart.x;
     const dy = e.clientY - panStart.y;
-    state.cam.x = panStart.cx + dx;
-    state.cam.y = panStart.cy + dy;
+    cam.x = panCamStart.x + dx;
+    cam.y = panCamStart.y + dy;
     applyCamera();
-  });
+    if (e.cancelable) e.preventDefault();
+  }
+}, { passive: false });
 
-  stage.addEventListener("pointerup", (e) => {
-    try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
+function endPointer(e){
+  if (!activePointers.has(e.pointerId)) return;
+
+  if (e.pointerType !== 'touch') {
+    try { boardShell.releasePointerCapture(e.pointerId); } catch(_e){}
+  }
+
+  activePointers.delete(e.pointerId);
+
+  if (e.pointerId === panPointerId) {
     isPanning = false;
-  });
+    panPointerId = null;
+  }
 
-  // Touch pinch using pointer events: track two active pointers
-  const activePointers = new Map();
-  stage.addEventListener("pointerdown", (e) => {
-    if (e.pointerType!=="touch") return;
-    if (isInteractiveTarget(e.target)) return;
-    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-    if (activePointers.size===2){
-      const pts = Array.from(activePointers.values());
-      pinch = makePinchState(pts[0], pts[1]);
-    }
-  });
-  stage.addEventListener("pointermove", (e) => {
-    if (e.pointerType!=="touch") return;
-    if (!activePointers.has(e.pointerId)) return;
-    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-    if (activePointers.size===2 && pinch){
-      const pts = Array.from(activePointers.values());
-      applyPinch(pinch, pts[0], pts[1]);
-    }
-  });
-  stage.addEventListener("pointerup", (e) => {
-    if (e.pointerType!=="touch") return;
-    activePointers.delete(e.pointerId);
-    if (activePointers.size<2) pinch = null;
-  });
-  stage.addEventListener("pointercancel", (e) => {
-    if (e.pointerType!=="touch") return;
-    activePointers.delete(e.pointerId);
-    if (activePointers.size<2) pinch = null;
-  });
+  if (activePointers.size < 2) pinch = null;
+
+  // Wenn nach Pinch noch 1 Finger übrig ist: direkt weiter pannen
+  if (!isPanning && activePointers.size === 1) {
+    const only = Array.from(activePointers.entries())[0];
+    beginPan(only[0], only[1].x, only[1].y);
+  }
+}
+
+boardShell.addEventListener('pointerup', endPointer, { passive: true });
+boardShell.addEventListener('pointercancel', endPointer, { passive: true });
+window.addEventListener('blur', () => { resetGestureState(); });
 
   function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy); }
   function mid(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
