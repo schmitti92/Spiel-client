@@ -17,7 +17,14 @@
   "use strict";
 
   // ---------- Constants ----------
-  const BOARD_URL = "./lichtarena_board_1.json";
+    // Board selection via URL param (?board=1 / ?board=2 ...)
+  const BOARD_MAP = {
+    "1": "./lichtarena_board_1.json",
+    "2": "./lichtarena_board_2.json"
+  };
+  const qs = new URLSearchParams(location.search);
+  const boardKey = (qs.get("board") || "1").trim();
+  const BOARD_URL = BOARD_MAP[boardKey] || BOARD_MAP["1"];
   const LS_KEY = "lichtarena_offline_save_clean_v1";
   const COLORS = ["red","blue","green","yellow"];
 
@@ -697,16 +704,17 @@
     if (state.activeLights.has(to)){
       state.activeLights.delete(to);
       state.globalCollected = (state.globalCollected|0) + 1;
-      state.collectedByColor[piece.color] = (state.collectedByColor[piece.color]||0) + 1;
+            state.collected[piece.color] = (state.collected[piece.color]||0) + 1;
 
       if (state.activeLights.size === 0){
         spawnRandomLight();
       }
 
-      if (state.globalCollected >= state.goalLights){
-        setStatus("🏁 Board 1 geschafft! (5 Lichter) – Weiterleitung zu Board 2 kommt als nächstes.","good");
+            if (state.globalCollected >= state.globalGoal){
+                setStatus(`🏁 Board 1 geschafft! (${state.globalGoal} Lichter) – weiter zu Board 2.`,`good`);
+        openDoneModal();
       } else {
-        setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.goalLights}`,"good");
+                setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.globalGoal}`,"good");
       }
     } else {
       setStatus(`Zug: ${piece.color.toUpperCase()} → ${to}`,"good");
@@ -982,9 +990,12 @@ function computeReachable(){
   bindBtn(btnWheelClose, closeWheel);
   bindBtn(btnDoneClose, closeDoneModal);
   bindBtn(btnGoBoard2, () => {
-    // Placeholder: später board2 file laden / redirect
+    // Weiterleitung auf Board 2 (Datei: lichtarena_board_2.json)
     closeDoneModal();
-    setStatus("Board 2 kommt als nächster Schritt. (Hier später Redirect einbauen)", "warn");
+    const url = new URL(location.href);
+    url.searchParams.set("board","2");
+    url.searchParams.set("v", String(Date.now()));
+    location.href = url.toString();
   });
 
   // ---------- Camera interactions (pan/zoom) ----------
