@@ -610,11 +610,10 @@
     }
 
     clearSelection();
-    state.rolled = false;
-    state.dice = 0;
 
-    updateHUD();
-    state.needsRender = true;
+    // Auto-turn: after a completed move, the next player is immediately on turn.
+    // (Manual 'Zug beenden' button still exists for cases where a player cannot/does not want to move.)
+    endTurn();
     return true;
   }
 
