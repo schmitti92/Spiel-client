@@ -228,9 +228,13 @@
     for (const color of COLORS){
       const starts = state.startByColor.get(color) || [];
       const startNode = starts[0] || findAnyNormalNodeId() || findAnyNodeId();
-      state.pieces.push({ id:`${color}_1`, color, nodeId:startNode });
+      // Board 1: 4 Figuren pro Farbe
+      for (let i = 1; i <= 4; i++){
+        state.pieces.push({ id:`${color}_${i}`, color, nodeId:startNode });
+      }
     }
-    state.selectedPieceId = state.pieces[0]?.id || null;
+    // Default: erste Figur des aktiven Spielers
+    state.selectedPieceId = pieceOfColor(activeColor())?.id ?? state.pieces[0]?.id ?? null;
 
     // jokers: 2× je Typ pro Spieler
     for (const color of COLORS){
@@ -482,15 +486,35 @@
       const stack = nodeEl.querySelector(".tokenStack");
       if (!stack) continue;
 
-      // show up to 1 big token (Board 1: 1 token per node expected)
-      for (const p of list.slice(0,1)){
+      // Board 1: mehrere Figuren können auf einem Feld stehen (Start + später)
+      // Wir zeigen bis zu 4 Tokens pro Feld (2×2). Ausgewählte Figur wird groß zentriert.
+      const selId = state.selectedPieceId;
+      const sorted = list.slice().sort((a,b) => (a.id===selId? -1 : b.id===selId? 1 : a.id.localeCompare(b.id)));
+
+      const selected = sorted.find(p => p.id === selId) || null;
+      const rest = sorted.filter(p => p.id !== selId).slice(0, 4);
+
+      // zuerst die "kleinen" (grid), dann selected als big (overlay) → selected bleibt sichtbar
+      for (const p of rest){
         const tok = document.createElement("div");
-        tok.className = "token big" + (p.id===state.selectedPieceId ? " sel" : "");
+        tok.className = "token" + (p.id===selId ? " sel" : "");
         tok.style.background = colorToCss(p.color);
         tok.title = `Figur ${p.id}`;
         tok.addEventListener("click", (ev) => {
           ev.stopPropagation();
           selectPiece(p.id);
+        });
+        stack.appendChild(tok);
+      }
+
+      if (selected){
+        const tok = document.createElement("div");
+        tok.className = "token big sel";
+        tok.style.background = colorToCss(selected.color);
+        tok.title = `Ausgewählt: ${selected.id}`;
+        tok.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          selectPiece(selected.id);
         });
         stack.appendChild(tok);
       }
