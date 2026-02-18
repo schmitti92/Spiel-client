@@ -17,14 +17,7 @@
   "use strict";
 
   // ---------- Constants ----------
-    // Board selection via URL param (?board=1 / ?board=2 ...)
-  const BOARD_MAP = {
-    "1": "./lichtarena_board_1.json",
-    "2": "./lichtarena_board_2.json"
-  };
-  const qs = new URLSearchParams(location.search);
-  const boardKey = (qs.get("board") || "1").trim();
-  const BOARD_URL = BOARD_MAP[boardKey] || BOARD_MAP["1"];
+  const BOARD_URL = "./lichtarena_board_1.json";
   const LS_KEY = "lichtarena_offline_save_clean_v1";
   const COLORS = ["red","blue","green","yellow"];
 
@@ -38,6 +31,10 @@
 
   // ---------- DOM ----------
   const $ = (id) => document.getElementById(id);
+  // Safe setters (avoid null crashes if HTML changes)
+  const setText = (el, v) => { if (el) el.textContent = String(v); };
+  const setHtml = (el, v) => { if (el) el.innerHTML = String(v); };
+  const setToggle = (el, cls, on) => { if (el) el.classList.toggle(cls, !!on); };
   const stage = $("stage");
   const edgesSvg = $("edgesSvg");
   const boardShell = $("boardShell");
@@ -85,7 +82,7 @@
   // ---------- Helpers ----------
   function setStatus(text, kind="good"){
     const cls = kind === "bad" ? "bad" : kind === "warn" ? "warn" : "good";
-    statusLine.innerHTML = `Status: <span class="${cls}">${escapeHtml(text)}</span>`;
+    setHtml(statusLine, `Status: <span class="${cls}">${escapeHtml(text)}</span>`);
   }
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({
@@ -228,13 +225,9 @@
     for (const color of COLORS){
       const starts = state.startByColor.get(color) || [];
       const startNode = starts[0] || findAnyNormalNodeId() || findAnyNodeId();
-      // Board 1: 4 Figuren pro Farbe
-      for (let i = 1; i <= 4; i++){
-        state.pieces.push({ id:`${color}_${i}`, color, nodeId:startNode });
-      }
+      state.pieces.push({ id:`${color}_1`, color, nodeId:startNode });
     }
-    // Default: erste Figur des aktiven Spielers
-    state.selectedPieceId = pieceOfColor(activeColor())?.id ?? state.pieces[0]?.id ?? null;
+    state.selectedPieceId = state.pieces[0]?.id || null;
 
     // jokers: 2× je Typ pro Spieler
     for (const color of COLORS){
@@ -486,35 +479,15 @@
       const stack = nodeEl.querySelector(".tokenStack");
       if (!stack) continue;
 
-      // Board 1: mehrere Figuren können auf einem Feld stehen (Start + später)
-      // Wir zeigen bis zu 4 Tokens pro Feld (2×2). Ausgewählte Figur wird groß zentriert.
-      const selId = state.selectedPieceId;
-      const sorted = list.slice().sort((a,b) => (a.id===selId? -1 : b.id===selId? 1 : a.id.localeCompare(b.id)));
-
-      const selected = sorted.find(p => p.id === selId) || null;
-      const rest = sorted.filter(p => p.id !== selId).slice(0, 4);
-
-      // zuerst die "kleinen" (grid), dann selected als big (overlay) → selected bleibt sichtbar
-      for (const p of rest){
+      // show up to 1 big token (Board 1: 1 token per node expected)
+      for (const p of list.slice(0,1)){
         const tok = document.createElement("div");
-        tok.className = "token" + (p.id===selId ? " sel" : "");
+        tok.className = "token big" + (p.id===state.selectedPieceId ? " sel" : "");
         tok.style.background = colorToCss(p.color);
         tok.title = `Figur ${p.id}`;
         tok.addEventListener("click", (ev) => {
           ev.stopPropagation();
           selectPiece(p.id);
-        });
-        stack.appendChild(tok);
-      }
-
-      if (selected){
-        const tok = document.createElement("div");
-        tok.className = "token big sel";
-        tok.style.background = colorToCss(selected.color);
-        tok.title = `Ausgewählt: ${selected.id}`;
-        tok.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          selectPiece(selected.id);
         });
         stack.appendChild(tok);
       }
@@ -539,21 +512,21 @@
   // ---------- HUD / Panels ----------
   function updateHUD(){
     const c = activeColor();
-    pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
-    hudPlayer.textContent = c.toUpperCase();
-    hudDice.textContent = state.rolled ? String(state.dice) : "–";
-    hudActiveLights.textContent = String(state.activeLights.size);
-    hudGlobal.textContent = String(state.globalCollected);
-    hudGoal.textContent = String(state.globalGoal);
+    setText(pillTurn, `Am Zug: ${c.toUpperCase()}`);
+    setText(hudPlayer, c.toUpperCase());
+    setText(hudDice, state.rolled ? String(state.dice) : "–");
+    setText(hudActiveLights, String(state.activeLights.size));
+    setText(hudGlobal, String(state.globalCollected));
+    setText(hudGoal, String(state.globalGoal));
 
     // pills
-    pillMode.textContent = "Modus: Offline lokal";
+    setText(pillMode, "Modus: Offline lokal");
     const bname = state.board?.meta?.name ? String(state.board.meta.name) : "Board";
-    pillBoard.textContent = `Board: ${bname}`;
-    pillRule.textContent = `Regel: Sammle ${state.globalGoal} Lichter global → Board 2`;
+    setText(pillBoard, `Board: ${bname}`);
+    setText(pillRule, `Regel: Sammle ${state.globalGoal} Lichter global → Board 2`);
 
     // players panel
-    playersPanel.innerHTML = "";
+    if(playersPanel) playersPanel.innerHTML = "";
     for (const color of COLORS){
       const pc = document.createElement("div");
       pc.className = "playerCard";
@@ -593,7 +566,7 @@
 
     // joker table for active player
     const ac = activeColor();
-    jokerTable.innerHTML = "";
+    if(jokerTable) jokerTable.innerHTML = "";
     for (const j of JOKERS){
       const row = document.createElement("div");
       row.className = "jRow";
@@ -614,11 +587,8 @@
     else hudHint.textContent = "Ziel anklicken (blau markiert).";
   }
 
-  // Backward-compat alias: older code calls renderHud()
-  // Keep function name to avoid crashes (no gameplay change).
-  function renderHud(){
-    try{ updateHUD(); }catch(_e){}
-  }
+  // Backward-compat: old code called renderHud(); keep alias to prevent crashes.
+  function renderHud(){ return updateHUD(); }
 
 
   function jokerTotal(color){
@@ -728,17 +698,16 @@
     if (state.activeLights.has(to)){
       state.activeLights.delete(to);
       state.globalCollected = (state.globalCollected|0) + 1;
-            state.collected[piece.color] = (state.collected[piece.color]||0) + 1;
+      state.collectedByColor[piece.color] = (state.collectedByColor[piece.color]||0) + 1;
 
       if (state.activeLights.size === 0){
         spawnRandomLight();
       }
 
-            if (state.globalCollected >= state.globalGoal){
-                setStatus(`🏁 Board 1 geschafft! (${state.globalGoal} Lichter) – weiter zu Board 2.`,`good`);
-        openDoneModal();
+      if (state.globalCollected >= state.goalLights){
+        setStatus("🏁 Board 1 geschafft! (5 Lichter) – Weiterleitung zu Board 2 kommt als nächstes.","good");
       } else {
-                setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.globalGoal}`,"good");
+        setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.goalLights}`,"good");
       }
     } else {
       setStatus(`Zug: ${piece.color.toUpperCase()} → ${to}`,"good");
@@ -999,7 +968,7 @@ function computeReachable(){
 
   bindBtn(btnToggleLines, () => {
     state.showLines = !state.showLines;
-    btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
+    setText(btnToggleLines, `Linien: ${state.showLines ? "AN" : "AUS"}`);
     renderEdges();
     applyCamera();
   });
@@ -1014,12 +983,9 @@ function computeReachable(){
   bindBtn(btnWheelClose, closeWheel);
   bindBtn(btnDoneClose, closeDoneModal);
   bindBtn(btnGoBoard2, () => {
-    // Weiterleitung auf Board 2 (Datei: lichtarena_board_2.json)
+    // Placeholder: später board2 file laden / redirect
     closeDoneModal();
-    const url = new URL(location.href);
-    url.searchParams.set("board","2");
-    url.searchParams.set("v", String(Date.now()));
-    location.href = url.toString();
+    setStatus("Board 2 kommt als nächster Schritt. (Hier später Redirect einbauen)", "warn");
   });
 
   // ---------- Camera interactions (pan/zoom) ----------
@@ -1151,13 +1117,13 @@ function computeReachable(){
 
       // set board title
       const bname = state.board?.meta?.name ? String(state.board.meta.name) : "spielbrett";
-      pillBoard.textContent = `Board: ${bname}`;
+      setText(pillBoard, `Board: ${bname}`);
 
       // camera fit
       computeFitCamera();
 
       resetGame();
-      btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
+      setText(btnToggleLines, `Linien: ${state.showLines ? "AN" : "AUS"}`);
       applyCamera();
     }catch(e){
       console.error(e);
