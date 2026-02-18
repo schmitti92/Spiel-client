@@ -1,482 +1,410 @@
-/* Lichtarena – saubere neue Grundarchitektur (Offline)
-   Dateien/Struktur:
-   - lichtarena.html lädt nur lichtarena.css + lichtarena_client.js
-   - Board-Datei: ./lichtarena_board_1.json (separat von barikade board.json)
-   Ziele Board 1:
-   - Vorwärts-Edges (from->to). Rückwärts verboten.
-   - Würfel-Schritte müssen komplett genutzt werden (exakt N Schritte).
-   - Rauswerfen: Wenn Ziel-Feld belegt (anderer Spieler) -> Gegner zurück zum Start.
-     Danach Glücksrad 5s: aktiver Spieler bekommt 1 Joker (keine Nieten).
-   - Bei Würfel=6: aktiver Spieler darf erneut würfeln.
-   - Lichtfelder sind gold; verschwinden nach Einsammeln.
-   - Wenn kein Licht auf dem Feld: neues Licht zufällig auf freies Normalfeld.
-   - Anzeige gesammelt (pro Spieler + global). Bei global=5: Board1 done modal.
+/* lichtarena_client.js (REBUILD1)
+   - Loads ./lichtarena_board_1.json
+   - Renders nodes/edges
+   - Right fixed UI, board left large
+   - Pan/Zoom: mouse drag + wheel, touch 1-finger pan, 2-finger pinch
+   - Local state: pieces, lights (via existing game_rules_lights_barricades.js), dynamic barricades, basic turn + jokers table
 */
-
 (() => {
   "use strict";
 
-  // ---------- Constants ----------
-  const BOARD_URL = "./lichtarena_board_1.json";
-  const LS_KEY = "lichtarena_offline_save_clean_v1";
-  const COLORS = ["red","blue","green","yellow"];
-
-  const JOKERS = [
-    { id:"j1", name:"Neuwurf" },
-    { id:"j2", name:"Alle Farben" },
-    { id:"j3", name:"Doppelwurf" },
-    { id:"j4", name:"Barikade versetzen" },
-    { id:"j5", name:"Durch Barikade" },
-  ];
+  let BOARD_URL = "./lichtarena_board_1.json";
 
   // ---------- DOM ----------
   const $ = (id) => document.getElementById(id);
-  const setText = (el, v) => { if (el) el.textContent = String(v); };
-  const nowTime = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+
   const stage = $("stage");
   const edgesSvg = $("edgesSvg");
-  const boardShell = $("boardShell");
-
-  const pillMode = $("pillMode");
-  const pillBoard = $("pillBoard");
-  const pillRule = $("pillRule");
-  const pillTurn = $("pillTurn");
-
-  const btnToggleUI = $("btnToggleUI");
-  const btnDebug = $("btnDebug");
-  const layout = $("layout");
-  const side = $("side");
-
-  // in-page debug overlay (Tablet)
-  const debugOverlay = $("debugOverlay");
-  const debugText = $("debugText");
-  const btnDebugClose = $("btnDebugClose");
-
+  const statusLine = $("statusLine");
+  
   const btnRoll = $("btnRoll");
-  const btnEndTurn = $("btnEndTurn");
-  const btnFit = $("btnFit");
-  const btnResetView = $("btnResetView");
-  const btnToggleLines = $("btnToggleLines");
+  const diceValueInp = $("diceValue");
+  const hudDice = $("hudDice");
+
+  const hudActiveLights = $("hudActiveLights");
+  const hudLightTotal = $("hudLightTotal");
+  const hudLightGoal = $("hudLightGoal");
+  const btnForceSpawnLight = $("btnForceSpawnLight");
+
+  const btnSpawnBarricade = $("btnSpawnBarricade");
+  const btnClearDynamicBarricades = $("btnClearDynamicBarricades");
+
   const btnRestart = $("btnRestart");
   const btnSave = $("btnSave");
   const btnLoad = $("btnLoad");
 
-  const hudPlayer = $("hudPlayer");
-  const hudDice = $("hudDice");
-  const hudActiveLights = $("hudActiveLights");
-  const hudGlobal = $("hudGlobal");
-  const hudGoal = $("hudGoal");
-  const hudHint = $("hudHint");
-  const statusLine = $("statusLine");
+  const btnPrevTurn = $("btnPrevTurn");
+  const btnNextTurn = $("btnNextTurn");
+  const turnBadge = $("turnBadge");
+  const turnLabel = $("turnLabel");
+  const turnDot = $("turnDot");
+  const turnText = $("turnText");
 
-  const playersPanel = $("playersPanel");
-  const jokerTable = $("jokerTable");
+  const jokerTableBody = $("jokerTableBody");
 
-  // wheel modal
-  const wheelModal = $("wheelModal");
-  const wheelCanvas = $("wheelCanvas");
-  const wheelResult = $("wheelResult");
-  const btnWheelClose = $("btnWheelClose");
+  const boardShell = $("boardShell");
+  const btnFit = $("btnFit");
+  const btnZoomOut = $("btnZoomOut");
+  const btnZoomIn = $("btnZoomIn");
+  const btnResetView = $("btnResetView");
+  const btnToggleLines = $("btnToggleLines");
+  const zoomPct = $("zoomPct");
+  const linesState = $("linesState");
 
-  // done modal
-  const doneModal = $("doneModal");
-  const btnDoneClose = $("btnDoneClose");
-  const btnGoBoard2 = $("btnGoBoard2");
-
-  // ---------- Helpers ----------
-  function setStatus(text, kind="good"){
-    const cls = kind === "bad" ? "bad" : kind === "warn" ? "warn" : "good";
-    statusLine.innerHTML = `Status: <span class="${cls}">${escapeHtml(text)}</span>`;
-  }
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[c]));
-  }
-
-  // --- In-Page Debug (für Tablet ohne Konsole) ---
-  function dbgAppend(line){
-    if (!debugText) return;
-    const prev = debugText.textContent || "";
-    debugText.textContent = `${prev}${prev ? "\n" : ""}[${nowTime()}] ${line}`;
-    if (debugOverlay && !debugOverlay.hasAttribute('hidden')) {
-      debugText.scrollTop = debugText.scrollHeight;
-    }
-  }
-  const _log = console.log.bind(console);
-  const _warn = console.warn.bind(console);
-  const _err = console.error.bind(console);
-  console.log = (...a)=>{ try{ dbgAppend(a.map(String).join(' ')); }catch(_e){} _log(...a); };
-  console.warn = (...a)=>{ try{ dbgAppend('WARN: ' + a.map(String).join(' ')); }catch(_e){} _warn(...a); };
-  console.error = (...a)=>{ try{ dbgAppend('ERR: ' + a.map(String).join(' ')); }catch(_e){} _err(...a); };
-  window.addEventListener('error', (ev)=>{ try{ dbgAppend(`JS-Error: ${ev.message} @ ${ev.filename}:${ev.lineno}:${ev.colno}`); }catch(_e){} });
-  window.addEventListener('unhandledrejection', (ev)=>{ try{ dbgAppend(`Promise-Rejection: ${String(ev.reason)}`); }catch(_e){} });
-  function openDebug(){ if (debugOverlay) debugOverlay.removeAttribute('hidden'); }
-  function closeDebug(){ if (debugOverlay) debugOverlay.setAttribute('hidden',''); }
-  function colorToCss(c){
-    c = String(c||"").toLowerCase();
-    if (c==="red") return "rgba(255,90,106,.95)";
-    if (c==="blue") return "rgba(90,162,255,.95)";
-    if (c==="green") return "rgba(46,229,157,.95)";
-    if (c==="yellow") return "rgba(255,210,80,.95)";
-    return "rgba(255,255,255,.9)";
-  }
-  function badgeColor(c){
-    c = String(c||"").toLowerCase();
-    if (c==="red") return "rgba(255,90,106,.9)";
-    if (c==="blue") return "rgba(90,162,255,.9)";
-    if (c==="green") return "rgba(46,229,157,.9)";
-    if (c==="yellow") return "rgba(255,210,80,.9)";
-    return "rgba(255,255,255,.8)";
-  }
-  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
-  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
-
-  function isNodeBlocked(nodeId){
-    const id = String(nodeId);
-    const n = state.nodeById.get(id);
-    if(!n) return true;
-    const t = String(n.type||"normal").toLowerCase();
-    if(t==="barricade_fixed") return true; // reserved for later boards
-    // dynamic barricades (future): allow either Set or Array storage
-    if(state.dynamicBarricades){
-      if(state.dynamicBarricades instanceof Set && state.dynamicBarricades.has(id)) return true;
-      if(Array.isArray(state.dynamicBarricades) && state.dynamicBarricades.includes(id)) return true;
-    }
-    return false;
+  // ---------- RULES API ----------
+  const Rules = window.GameRulesLightsBarricades;
+  if (!Rules) {
+    statusLine.textContent = "Status: game_rules_lights_barricades.js nicht geladen.";
+    throw new Error("Rules missing");
   }
 
   // ---------- State ----------
-  const state = {
-    board: null,
-    nodeById: new Map(),
-    outgoing: new Map(),        // from -> [{to}] (visual arrows)
-    incoming: new Map(),        // to -> [{from}] (optional)
-    neighbors: new Map(),       // undirected movement graph: node -> [neighbor]
-    startByColor: new Map(),    // color -> [nodeId]
+  let board = null;
+  let nodeById = new Map();
+  let adjacency = new Map();
 
-    // game
-    turnIndex: 0,
-    turnOrder: COLORS.slice(),
-    dice: 0,
-    rolled: false,
-    canRollAgain: false,        // when dice==6
+  const COLORS = ["red", "blue", "green", "yellow"];
+
+  const state = {
+    // selection
     selectedPieceId: null,
 
-    // pieces: {id,color,nodeId}
-    pieces: [],
+    // board flow (board 1 -> board 2)
+    boardFlow: { current: 1, nextUrl: "./lichtarena_board_2.json" },
 
-    // lights
-    activeLights: new Set(),    // nodeIds
-    collected: { red:0, blue:0, green:0, yellow:0 },
-    globalCollected: 0,
-    globalGoal: 5,
+    // pieces
+    pieces: [], // {id,color,nodeId}
 
-    // jokers inventory per color
+    // turn
+    turnIndex: 0,
+    players: COLORS.slice(),
+
+    // jokers per color
     jokers: {
-      red:{}, blue:{}, green:{}, yellow:{}
+      red:   { "Neuwurf": 2, "Alle Farben": 2, "Doppelwurf": 2, "Barikade versetzen": 2, "Durch Barikade": 2 },
+      blue:  { "Neuwurf": 2, "Alle Farben": 2, "Doppelwurf": 2, "Barikade versetzen": 2, "Durch Barikade": 2 },
+      green: { "Neuwurf": 2, "Alle Farben": 2, "Doppelwurf": 2, "Barikade versetzen": 2, "Durch Barikade": 2 },
+      yellow:{ "Neuwurf": 2, "Alle Farben": 2, "Doppelwurf": 2, "Barikade versetzen": 2, "Durch Barikade": 2 },
     },
 
-    // UI / view
-    showLines: false,
-    showReachable: false,
-    reachable: new Map(),       // nodeId -> path (array of nodeIds, including start+...+dest)
-    animating: false,
+    // dynamic barricades (node ids)
+    barricades: [],
+    barricadesMax: 15,
+    barricadesSeed: 123,
+
+    // lights
+    lights: {
+      active: [],
+      collectedByColor: { red:0, blue:0, green:0, yellow:0 },
+      totalCollected: 0,
+      globalGoal: 5,
+      spawnAfterCollect: true,
+      seed: 123456789
+    },
+
+    // dice
+    diceValue: 6,
+
+    // rendering
+    showLines: true,
 
     // camera
-    cam: { x:0, y:0, scale:1 },
+    cam: { scale: 1, ox: 0, oy: 0, minScale: 0.12, maxScale: 6 }
   };
 
-  // ---------- Load Board ----------
+  
+  function activeColor(){
+    const c = state.players[state.turnIndex % state.players.length] || "red";
+    return String(c).toLowerCase();
+  }
+
+  function updateTurnUI(){
+    const c = activeColor();
+    const up = c.toUpperCase();
+    if (turnLabel) turnLabel.textContent = up;
+    if (turnText) turnText.textContent = up;
+    if (turnDot) {
+      turnDot.className = "turnDot " + c;
+    }
+    // top pill dot
+    if (turnBadge){
+      const d = turnBadge.querySelector(".dot");
+      if (d) d.style.background = (c==="red")?"var(--red)":(c==="blue")?"var(--blue)":(c==="green")?"var(--green)":"var(--yellow)";
+    }
+    renderJokerTable();
+  }
+
+  function renderJokerTable(){
+    if (!jokerTableBody) return;
+    const c = activeColor();
+    const j = state.jokers[c] || {};
+    const order = ["Neuwurf","Alle Farben","Doppelwurf","Barikade versetzen","Durch Barikade"];
+    jokerTableBody.innerHTML = "";
+    for (const name of order){
+      const tr = document.createElement("tr");
+      const td1 = document.createElement("td");
+      td1.textContent = (name==="Neuwurf")?"1) Neuwurf":
+                        (name==="Alle Farben")?"2) Alle Farben":
+                        (name==="Doppelwurf")?"3) Doppelwurf":
+                        (name==="Barikade versetzen")?"4) Barikade versetzen":
+                        (name==="Durch Barikade")?"5) Durch Barikade": name;
+      const td2 = document.createElement("td");
+      td2.className = "right";
+      td2.textContent = String(j[name] ?? 0);
+      tr.appendChild(td1); tr.appendChild(td2);
+      jokerTableBody.appendChild(tr);
+    }
+  }
+
+  function nextTurn(delta){
+    const len = state.players.length || 4;
+    state.turnIndex = (state.turnIndex + delta + len) % len;
+    // auto-select a piece of active color
+    const c = activeColor();
+    const p = state.pieces.find(x => String(x.color).toLowerCase() === c);
+    if (p) state.selectedPieceId = p.id;
+    updateTurnUI();
+  }
+
+  // ---------- Helpers ----------
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
+
+  function setStatus(msg, kind="good"){
+    const prefix = (kind==="bad") ? "❌ " : (kind==="warn") ? "⚠️ " : "✅ ";
+    statusLine.innerHTML = `<span class="${kind}">${escapeHtml(prefix + msg)}</span>`;
+  }
+
+  function clampInt(val, min, max){
+    const n = Math.round(Number(val));
+    if (!Number.isFinite(n)) return min;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function canonEdgeKey(a,b){
+    return (a < b) ? `${a}|${b}` : `${b}|${a}`;
+  }
+
+  function currentColor(){
+    return state.players[state.turnIndex % state.players.length];
+  }
+
+  function setTurnUI(){
+    const c = currentColor();
+    pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
+    turnName.textContent = c.toUpperCase();
+    const dot = turnBadge.querySelector(".dot");
+    if (dot){
+      dot.style.background = cssColor(c);
+      dot.style.boxShadow = `0 0 14px ${cssColorGlow(c)}`;
+    }
+  }
+
+  function cssColor(c){
+    c = String(c||"").toLowerCase();
+    if (c==="red") return "var(--red)";
+    if (c==="blue") return "var(--blue)";
+    if (c==="green") return "var(--green)";
+    if (c==="yellow") return "var(--yellow)";
+    return "white";
+  }
+  function cssColorGlow(c){
+    c = String(c||"").toLowerCase();
+    if (c==="red") return "rgba(255,77,90,.55)";
+    if (c==="blue") return "rgba(77,157,255,.55)";
+    if (c==="green") return "rgba(53,210,138,.55)";
+    if (c==="yellow") return "rgba(255,216,77,.55)";
+    return "rgba(255,255,255,.35)";
+  }
+
+  // ---------- Board load ----------
   async function loadBoard(){
     const url = `${BOARD_URL}?v=${Date.now()}`;
-    const res = await fetch(url, { cache:"no-store" });
-    if (!res.ok) throw new Error(`Board konnte nicht geladen werden: ${BOARD_URL} (HTTP ${res.status})`);
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Board konnte nicht geladen werden (${res.status})`);
     return await res.json();
   }
 
   function buildMaps(){
-    state.nodeById = new Map();
-    state.outgoing = new Map();
-    state.incoming = new Map();
-    state.neighbors = new Map();
-    state.startByColor = new Map();
+    nodeById = new Map();
+    adjacency = new Map();
 
-    for (const n of (state.board.nodes||[])){
-      state.nodeById.set(String(n.id), n);
-      if (String(n.type||"").toLowerCase()==="start"){
-        const color = String(n.color||"").toLowerCase();
-        if (!state.startByColor.has(color)) state.startByColor.set(color, []);
-        state.startByColor.get(color).push(String(n.id));
-      }
+    for (const n of (board.nodes || [])){
+      nodeById.set(String(n.id), n);
     }
-
-    const addOut = (a,b) => {
-      if (!state.outgoing.has(a)) state.outgoing.set(a, []);
-      state.outgoing.get(a).push({to:b});
+    const add = (a,b,gate) => {
+      if (!adjacency.has(a)) adjacency.set(a, []);
+      adjacency.get(a).push({ to: b, gate: gate || null });
     };
-    const addIn = (a,b) => {
-      if (!state.incoming.has(b)) state.incoming.set(b, []);
-      state.incoming.get(b).push({from:a});
-    };
-    const addNei = (a,b) => {
-      if (!state.neighbors.has(a)) state.neighbors.set(a, []);
-      state.neighbors.get(a).push(b);
-    };
-
-    // IMPORTANT: directed edges
-    for (const e of (state.board.edges||[])){
+    for (const e of (board.edges || [])){
       const a = String(e.from), b = String(e.to);
-      if (!state.nodeById.has(a) || !state.nodeById.has(b)) continue;
-      addOut(a,b);
-      addIn(a,b);
-      addNei(a,b);
-      addNei(b,a);
+      if (!nodeById.has(a) || !nodeById.has(b)) continue;
+      add(a,b,e.gate);
+      add(b,a,e.gate);
     }
   }
 
-  // ---------- Init Game ----------
-  function resetGame(){
-    state.turnIndex = 0;
-    state.dice = 0;
-    state.rolled = false;
-    state.canRollAgain = false;
-    state.selectedPieceId = null;
-    state.animating = false;
-
-    // pieces: Board 1 will use 4 pieces total? (dein späterer Plan)
-    // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
-    // Wenn du später 5 pro Farbe willst: hier umstellen.
-    state.pieces = [];
-    for (const color of COLORS){
-      const starts = state.startByColor.get(color) || [];
-      const startNode = starts[0] || findAnyNormalNodeId() || findAnyNodeId();
-      state.pieces.push({ id:`${color}_1`, color, nodeId:startNode });
-    }
-    state.selectedPieceId = state.pieces[0]?.id || null;
-
-    // jokers: 2× je Typ pro Spieler
-    for (const color of COLORS){
-      state.jokers[color] = {};
-      for (const j of JOKERS) state.jokers[color][j.id] = 2;
-    }
-
-    // lights: start with ALL light_start nodes active
-    state.activeLights = new Set();
-    for (const n of state.nodeById.values()){
-      if (String(n.type||"").toLowerCase()==="light_start"){
-        state.activeLights.add(String(n.id));
+  // ---------- Camera / Transform ----------
+  function computeBoardBounds(){
+    let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+    let ok=false;
+    for (const n of nodeById.values()){
+      if (typeof n.x==="number" && typeof n.y==="number"){
+        ok=true;
+        minX=Math.min(minX,n.x); minY=Math.min(minY,n.y);
+        maxX=Math.max(maxX,n.x); maxY=Math.max(maxY,n.y);
       }
     }
-    // if none, spawn 2 lights on random free normals
-    if (state.activeLights.size===0){
-      spawnRandomLight();
-      spawnRandomLight();
-    }
-
-    state.collected = { red:0, blue:0, green:0, yellow:0 };
-    state.globalCollected = 0;
-    state.globalGoal = Number(state.board?.meta?.lightRule?.globalGoal || 5) || 5;
-
-    state.reachable = new Map();
-
-    renderAll();
-    updateHUD();
-    setStatus(`Bereit. Start-Lichter aktiv: ${state.activeLights.size}`, "good");
+    if (!ok) return {minX:0,minY:0,maxX:100,maxY:100};
+    return {minX,minY,maxX,maxY};
   }
 
-  function findAnyNormalNodeId(){
-    for (const n of state.nodeById.values()){
-      if (String(n.type||"normal").toLowerCase()==="normal") return String(n.id);
-    }
-    return null;
-  }
-  function findAnyNodeId(){
-    for (const n of state.nodeById.values()) return String(n.id);
-    return null;
-  }
-
-  function activeColor(){
-    return COLORS[state.turnIndex % COLORS.length];
+  function fitCamera(){
+    const shellRect = boardShell.getBoundingClientRect();
+    const pad = 90;
+    const b = computeBoardBounds();
+    const spanX = Math.max(1, b.maxX - b.minX);
+    const spanY = Math.max(1, b.maxY - b.minY);
+    const scale = Math.min((shellRect.width - pad*2)/spanX, (shellRect.height - pad*2)/spanY);
+    state.cam.scale = clamp(scale, state.cam.minScale, state.cam.maxScale);
+    state.cam.ox = pad - b.minX * state.cam.scale;
+    state.cam.oy = pad - b.minY * state.cam.scale;
+    applyCamera();
   }
 
-  // ---------- Save/Load ----------
-  function saveLocal(){
-    const payload = {
-      v:1,
-      turnIndex: state.turnIndex,
-      dice: state.dice,
-      rolled: state.rolled,
-      canRollAgain: state.canRollAgain,
-      selectedPieceId: state.selectedPieceId,
-      pieces: state.pieces,
-      activeLights: Array.from(state.activeLights),
-      collected: state.collected,
-      globalCollected: state.globalCollected,
-      globalGoal: state.globalGoal,
-      jokers: state.jokers,
-      showLines: state.showLines,
-      cam: state.cam
-    };
-    localStorage.setItem(LS_KEY, JSON.stringify(payload));
-    setStatus("✅ Gespeichert.", "good");
+  function resetCamera(){
+    state.cam.scale = 1;
+    state.cam.ox = 60;
+    state.cam.oy = 60;
+    applyCamera();
   }
 
-  function loadLocal(){
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw){ setStatus("Kein Save gefunden.", "warn"); return; }
-    try{
-      const p = JSON.parse(raw);
-      if (!p || p.v!==1) throw new Error("Ungültiges Save-Format");
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
 
-      state.turnIndex = p.turnIndex|0;
-      state.dice = p.dice|0;
-      state.rolled = !!p.rolled;
-      state.canRollAgain = !!p.canRollAgain;
-      state.selectedPieceId = p.selectedPieceId ?? null;
+  function applyCamera(){
+    stage.style.transform = `translate(${state.cam.ox}px, ${state.cam.oy}px) scale(${state.cam.scale})`;
+    edgesSvg.style.transform = `translate(${state.cam.ox}px, ${state.cam.oy}px) scale(${state.cam.scale})`;
+    zoomPct.textContent = `${Math.round(state.cam.scale*100)}%`;
+  }
 
-      state.pieces = Array.isArray(p.pieces) ? p.pieces : state.pieces;
-      state.activeLights = new Set(Array.isArray(p.activeLights) ? p.activeLights.map(String) : []);
-      state.collected = p.collected || state.collected;
-      state.globalCollected = Number(p.globalCollected||0);
-      state.globalGoal = Number(p.globalGoal||5);
-      state.jokers = p.jokers || state.jokers;
+  function zoomAt(cx, cy, factor){
+    const old = state.cam.scale;
+    const next = clamp(old * factor, state.cam.minScale, state.cam.maxScale);
+    if (next === old) return;
 
-      state.showLines = !!p.showLines;
-      state.cam = p.cam || state.cam;
-
-      state.reachable = new Map();
-      renderAll();
-      applyCamera();
-      updateHUD();
-      setStatus("✅ Save geladen.", "good");
-    }catch(e){
-      console.error(e);
-      setStatus("Save ist kaputt/ungültig.", "bad");
-    }
+    // Keep point (cx,cy) stable in screen space
+    const dx = cx - state.cam.ox;
+    const dy = cy - state.cam.oy;
+    const k = next / old;
+    state.cam.ox = cx - dx * k;
+    state.cam.oy = cy - dy * k;
+    state.cam.scale = next;
+    applyCamera();
   }
 
   // ---------- Rendering ----------
-  function clearStage(){
+  function clearBoard(){
     edgesSvg.innerHTML = "";
-    for (const el of Array.from(stage.querySelectorAll(".node"))) el.remove();
+    stage.innerHTML = "";
   }
 
-  // Camera transform on stage children
-  function applyCamera(){
-    const t = `translate(${state.cam.x}px, ${state.cam.y}px) scale(${state.cam.scale})`;
-    // apply to SVG + nodes via CSS transform origin 0 0
-    edgesSvg.style.transformOrigin = "0 0";
-    edgesSvg.style.transform = t;
-    for (const el of Array.from(stage.querySelectorAll(".node"))){
-      el.style.transform = `translate(-50%,-50%) ${t}`;
-      // careful: node already uses translate(-50%,-50%); we append camera transform.
-    }
+  function toStagePoint(n){
+    const x = (typeof n.x==="number") ? n.x : 0;
+    const y = (typeof n.y==="number") ? n.y : 0;
+    return {x,y};
   }
 
-  function computeFitCamera(){
-    // fit nodes into viewport
-    const rect = boardShell.getBoundingClientRect();
-    const pad = 60;
-
-    const xs=[], ys=[];
-    for (const n of state.nodeById.values()){
-      if (typeof n.x==="number" && typeof n.y==="number"){ xs.push(n.x); ys.push(n.y); }
-    }
-    if (!xs.length){
-      state.cam = {x:0,y:0,scale:1};
-      return;
-    }
-    const minX = Math.min(...xs), maxX=Math.max(...xs);
-    const minY = Math.min(...ys), maxY=Math.max(...ys);
-    const spanX = Math.max(1, maxX-minX);
-    const spanY = Math.max(1, maxY-minY);
-
-    const scale = Math.min((rect.width-pad*2)/spanX, (rect.height-pad*2)/spanY);
-    // Center
-    const cx = (minX+maxX)/2;
-    const cy = (minY+maxY)/2;
-    const vx = rect.width/2;
-    const vy = rect.height/2;
-    state.cam.scale = clamp(scale, 0.35, 2.2);
-    state.cam.x = vx - cx*state.cam.scale;
-    state.cam.y = vy - cy*state.cam.scale;
+  function gateLabel(g){
+    if (!g) return "";
+    if (g.mode==="exact") return `🔒 🎲=${g.value}`;
+    if (g.mode==="range") return `🔒 🎲 ${g.min}–${g.max}`;
+    return "🔒";
   }
 
   function renderEdges(){
     edgesSvg.innerHTML = "";
     if (!state.showLines) return;
 
-    // arrows for directed edges
-    // create marker
-    const defs = document.createElementNS("http://www.w3.org/2000/svg","defs");
-    const marker = document.createElementNS("http://www.w3.org/2000/svg","marker");
-    marker.setAttribute("id","arrowHead");
-    marker.setAttribute("viewBox","0 0 10 10");
-    marker.setAttribute("refX","9");
-    marker.setAttribute("refY","5");
-    marker.setAttribute("markerWidth","6");
-    marker.setAttribute("markerHeight","6");
-    marker.setAttribute("orient","auto-start-reverse");
-    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-    path.setAttribute("d","M 0 0 L 10 5 L 0 10 z");
-    path.setAttribute("class","edgeArrow");
-    marker.appendChild(path);
-    defs.appendChild(marker);
-    edgesSvg.appendChild(defs);
+    const rendered = new Set();
+    for (const e of (board.edges || [])){
+      const a = String(e.from), b = String(e.to);
+      const key = canonEdgeKey(a,b);
+      if (rendered.has(key)) continue;
+      rendered.add(key);
 
-    for (const e of (state.board.edges||[])){
-      const a = state.nodeById.get(String(e.from));
-      const b = state.nodeById.get(String(e.to));
-      if (!a || !b) continue;
+      const na = nodeById.get(a), nb = nodeById.get(b);
+      if (!na || !nb) continue;
+      const A = toStagePoint(na), B = toStagePoint(nb);
 
       const line = document.createElementNS("http://www.w3.org/2000/svg","line");
-      line.setAttribute("x1", String(a.x));
-      line.setAttribute("y1", String(a.y));
-      line.setAttribute("x2", String(b.x));
-      line.setAttribute("y2", String(b.y));
-      line.setAttribute("class","edgeLine");
-      line.setAttribute("marker-end","url(#arrowHead)");
+      line.setAttribute("x1", A.x);
+      line.setAttribute("y1", A.y);
+      line.setAttribute("x2", B.x);
+      line.setAttribute("y2", B.y);
+      line.setAttribute("class", "edgeLine" + (e.gate ? " gated" : ""));
       edgesSvg.appendChild(line);
+
+      if (e.gate){
+        const mx = (A.x + B.x)/2;
+        const my = (A.y + B.y)/2;
+        const text = document.createElementNS("http://www.w3.org/2000/svg","text");
+        text.setAttribute("x", mx);
+        text.setAttribute("y", my - 6);
+        text.setAttribute("text-anchor","middle");
+        text.setAttribute("fill","rgba(235,240,255,.85)");
+        text.setAttribute("font-size","12");
+        text.textContent = gateLabel(e.gate);
+        edgesSvg.appendChild(text);
+      }
     }
   }
 
-  function nodeClass(nid){
-    const n = state.nodeById.get(String(nid));
+  function nodeCss(n){
+    const t = String(n.type || "normal").toLowerCase();
     const cls = ["node"];
-
-    const t = String(n?.type||"normal").toLowerCase();
-    if (t==="start"){
-      const c = String(n?.color||"").toLowerCase();
-      cls.push(`start-${c||"red"}`);
-    }
-    if (state.activeLights.has(String(nid))) cls.push("light");
-
-    if (state.reachable.has(String(nid))) cls.push("reachable");
-
-    // selected node highlight: selected piece is on nid
-    const sp = getSelectedPiece();
-    if (sp && String(sp.nodeId)===String(nid)) cls.push("selected");
-
+    if (t==="start") cls.push(`start-${String(n.color||"red").toLowerCase()}`);
+    if (t==="light_start" || t==="light_spawn") cls.push("lightfield");
+    if (t==="barricade_fixed") cls.push("barricade-fixed");
+    if (state.lights.active.includes(String(n.id))) cls.push("activeLight");
+    if (state.barricades.includes(String(n.id))) cls.push("dynamicBarricade");
     return cls.join(" ");
   }
 
-  function renderNodes(){
-    for (const n of (state.board.nodes||[])){
-      const nid = String(n.id);
-      const el = document.createElement("div");
-      el.className = nodeClass(nid);
-      el.style.left = `${n.x}px`;
-      el.style.top = `${n.y}px`;
-      el.dataset.id = nid;
+  function nodeLabel(n){
+    const t = String(n.type || "normal").toLowerCase();
+    if (t==="start") return String(n.color||"").toUpperCase();
+    if (t==="goal") return "ZIEL";
+    if (t==="light_start") return "💡";
+    if (t==="light_spawn") return "✨";
+    if (t==="barricade_fixed") return "B";
+    if (t==="portal") return `P${n.portalId||"?"}`;
+    return "";
+  }
 
-      const stack = document.createElement("div");
-      stack.className = "tokenStack";
-      el.appendChild(stack);
+  function renderNodes(){
+    for (const n of nodeById.values()){
+      const p = toStagePoint(n);
+      const el = document.createElement("div");
+      el.className = nodeCss(n);
+      el.style.left = `${p.x}px`;
+      el.style.top = `${p.y}px`;
+      el.dataset.id = String(n.id);
+
+      const label = document.createElement("div");
+      label.className = "label";
+      label.textContent = nodeLabel(n);
+      el.appendChild(label);
+
+      const tokens = document.createElement("div");
+      tokens.className = "tokens";
+      el.appendChild(tokens);
 
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
-        onNodeClicked(nid);
+        onNodeClicked(String(n.id));
       });
 
       stage.appendChild(el);
@@ -485,13 +413,18 @@
   }
 
   function renderTokens(){
-    // clear stacks
+    // clear
     for (const nodeEl of Array.from(stage.querySelectorAll(".node"))){
-      const stack = nodeEl.querySelector(".tokenStack");
-      if (stack) stack.innerHTML = "";
+      const t = nodeEl.querySelector(".tokens");
+      if (t) t.innerHTML = "";
+      nodeEl.classList.remove("selectedNode");
+      // refresh classes for light/barricade state
+      const nid = nodeEl.dataset.id;
+      const n = nodeById.get(String(nid));
+      if (n) nodeEl.className = nodeCss(n);
     }
 
-    // group pieces by node
+    const selected = state.pieces.find(p => p.id === state.selectedPieceId) || null;
     const byNode = new Map();
     for (const p of state.pieces){
       const nid = String(p.nodeId);
@@ -499,734 +432,559 @@
       byNode.get(nid).push(p);
     }
 
-    for (const [nid, list] of byNode.entries()){
+    for (const [nid, pieces] of byNode.entries()){
       const nodeEl = stage.querySelector(`.node[data-id="${CSS.escape(nid)}"]`);
       if (!nodeEl) continue;
-      const stack = nodeEl.querySelector(".tokenStack");
-      if (!stack) continue;
+      const tokens = nodeEl.querySelector(".tokens");
+      if (!tokens) continue;
 
-      // show up to 1 big token (Board 1: 1 token per node expected)
-      for (const p of list.slice(0,1)){
+      for (const p of pieces.slice(0,5)){
         const tok = document.createElement("div");
-        tok.className = "token big" + (p.id===state.selectedPieceId ? " sel" : "");
-        tok.style.background = colorToCss(p.color);
-        tok.title = `Figur ${p.id}`;
-        tok.addEventListener("click", (ev) => {
+        tok.className = "token" + (p.id === state.selectedPieceId ? " selected" : "");
+        tok.style.background = tokenCss(p.color);
+        tok.title = `Figur ${p.id} (${p.color})`;
+        tok.addEventListener("click",(ev)=>{
           ev.stopPropagation();
           selectPiece(p.id);
         });
-        stack.appendChild(tok);
-      }
-    }
-
-    // update node classes (reachable/selected/light)
-    for (const nodeEl of Array.from(stage.querySelectorAll(".node"))){
-      const nid = nodeEl.dataset.id;
-      nodeEl.className = nodeClass(nid);
-    }
-
-    applyCamera();
-  }
-
-  function renderAll(){
-    clearStage();
-    renderEdges();
-    renderNodes();
-    applyCamera();
-  }
-
-  // ---------- HUD / Panels ----------
-  function updateHUD(){
-    const c = activeColor();
-    setText(pillTurn, `Am Zug: ${c.toUpperCase()}`);
-    setText(hudPlayer, c.toUpperCase());
-    setText(hudDice, state.rolled ? String(state.dice) : "–");
-    setText(hudActiveLights, String(state.activeLights.size));
-    setText(hudGlobal, String(state.globalCollected));
-    setText(hudGoal, String(state.globalGoal));
-
-    // pills
-    setText(pillMode, "Modus: Offline lokal");
-    const bname = state.board?.meta?.name ? String(state.board.meta.name) : "Board";
-    setText(pillBoard, `Board: ${bname}`);
-    setText(pillRule, `Regel: Sammle ${state.globalGoal} Lichter global → Board 2`);
-
-    // players panel
-    if (playersPanel) playersPanel.innerHTML = "";
-    for (const color of COLORS){
-      const pc = document.createElement("div");
-      pc.className = "playerCard";
-      const left = document.createElement("div");
-      left.className = "pcLeft";
-      const badge = document.createElement("div");
-      badge.className = "badge";
-      badge.style.background = badgeColor(color);
-      left.appendChild(badge);
-
-      const txt = document.createElement("div");
-      const name = document.createElement("div");
-      name.className = "pcName";
-      setText(name, color.toUpperCase() + (color===c ? " (am Zug)" : ""));
-      const sub = document.createElement("div");
-      sub.className = "pcSub";
-      setText(sub, `Lichter: ${state.collected[color] || 0}`);
-      txt.appendChild(name);
-      txt.appendChild(sub);
-      left.appendChild(txt);
-
-      const right = document.createElement("div");
-      right.className = "pcRight";
-      const big = document.createElement("div");
-      big.className = "big";
-      setText(big, `Joker: ${jokerTotal(color)}`);
-      const small = document.createElement("div");
-      small.className = "small";
-      setText(small, `Figur: ${pieceOfColor(color)?.nodeId ?? "–"}`);
-      right.appendChild(big);
-      right.appendChild(small);
-
-      pc.appendChild(left);
-      pc.appendChild(right);
-      if (playersPanel) playersPanel.appendChild(pc);
-    }
-
-    // joker table for active player
-    const ac = activeColor();
-    jokerTable.innerHTML = "";
-    for (const j of JOKERS){
-      const row = document.createElement("div");
-      row.className = "jRow";
-      const name = document.createElement("div");
-      name.className = "jName";
-      setText(name, j.name);
-      const count = document.createElement("div");
-      count.className = "jCount";
-      setText(count, String(state.jokers[ac]?.[j.id] ?? 0));
-      row.appendChild(name);
-      row.appendChild(count);
-      jokerTable.appendChild(row);
-    }
-
-    // hint
-    if (!state.rolled) setText(hudHint, "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).");
-    else if (!state.selectedPieceId) setText(hudHint, "Figur anklicken, dann ein blau markiertes Ziel wählen.");
-    else setText(hudHint, "Ziel anklicken (blau markiert).");
-  }
-
-  function jokerTotal(color){
-    const inv = state.jokers[color] || {};
-    return Object.values(inv).reduce((a,b)=>a+(Number(b)||0),0);
-  }
-
-  function pieceOfColor(color){
-    return state.pieces.find(p => p.color===color) || null;
-  }
-
-  // ---------- Turn / Dice ----------
-  function rollDice(){
-    if (state.animating) return;
-    const c = activeColor();
-    // only active player's piece can be moved
-    state.dice = randInt(1,6);
-    state.rolled = true;
-    state.canRollAgain = (state.dice===6);
-    setStatus(`🎲 ${c.toUpperCase()} würfelt: ${state.dice}` + (state.canRollAgain ? " (6 → Bonuswurf möglich)" : ""), "good");
-    computeReachable();
-    updateHUD();
-  }
-
-  function endTurn(){
-    if (state.animating) return;
-    // If dice==6 and player hasn't used bonus roll yet, allow to keep turn if they roll again:
-    // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
-    state.turnIndex = (state.turnIndex + 1) % COLORS.length;
-    state.rolled = false;
-    state.dice = 0;
-    state.canRollAgain = false;
-    state.selectedPieceId = pieceOfColor(activeColor())?.id ?? null;
-    state.reachable = new Map();
-    renderTokens();
-    updateHUD();
-    setStatus(`Zug: ${activeColor().toUpperCase()} ist dran.`, "good");
-  }
-
-  // ---------- Selection / Movement ----------
-  function selectPiece(id){
-    if (state.animating) return;
-    const p = state.pieces.find(x => x.id===id);
-    if (!p) return;
-
-    // Only active player's piece selectable
-    if (p.color !== activeColor()){
-      setStatus("Du kannst nur die Figur des aktiven Spielers bewegen.", "warn");
-      return;
-    }
-    state.selectedPieceId = id;
-    if (state.rolled) computeReachable();
-    renderTokens();
-    updateHUD();
-  }
-
-  function getSelectedPiece(){
-    return state.pieces.find(p => p.id===state.selectedPieceId) || null;
-  }
-
-    function piecesAt(nodeId){
-    const id = String(nodeId);
-    return state.pieces.filter(p => String(p.nodeId) === id);
-  }
-
-  async function onNodeClicked(nodeId){
-    if (state.animating) return;
-
-    const activeColor = state.turnOrder[state.turnIndex];
-    const piece = state.pieces.find(p => p.id === state.selectedPieceId);
-
-    if (!piece || piece.color !== activeColor){
-      setStatus("Erst eine eigene Figur auswählen (aktiver Spieler).","warn");
-      return;
-    }
-    if (!state.rolled){
-      setStatus("Erst würfeln.","warn");
-      return;
-    }
-
-    const to = String(nodeId);
-    const path = state.reachable?.get(to) || null;
-    if (!path){
-      setStatus("Zielknoten nicht erreichbar (exakt Würfel-Schritte, ohne Hin-und-her-Hüpfen).","warn");
-      return;
-    }
-
-    const diceWas = state.dice;
-
-    await moveAlongPath(piece, path);
-
-    // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad
-    const occ = piecesAt(to).filter(p => p.id !== piece.id);
-    if (occ.length){
-      const victim = occ[0];
-      if (victim.color !== piece.color){
-        const starts = state.startByColor.get(victim.color) || [];
-        victim.nodeId = String(starts[0] || victim.nodeId);
-        renderTokens();
-
-        await runWheelReward(piece.color);
-        updateHUD();
-      }
-    }
-
-    // Nach Ankunft: Licht einsammeln
-    if (state.activeLights.has(to)){
-      state.activeLights.delete(to);
-      state.globalCollected = (state.globalCollected|0) + 1;
-      state.collectedByColor[piece.color] = (state.collectedByColor[piece.color]||0) + 1;
-
-      if (state.activeLights.size === 0){
-        spawnRandomLight();
+        tokens.appendChild(tok);
       }
 
-      if (state.globalCollected >= state.goalLights){
-        setStatus("🏁 Board 1 geschafft! (5 Lichter) – Weiterleitung zu Board 2 kommt als nächstes.","good");
-      } else {
-        setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.goalLights}`,"good");
+      if (selected && String(selected.nodeId) === nid){
+        nodeEl.classList.add("selectedNode");
       }
-    } else {
-      setStatus(`Zug: ${piece.color.toUpperCase()} → ${to}`,"good");
-    }
-
-    // Zug-Reset / Bonuswurf bei 6
-    state.rolled = false;
-    state.dice = null;
-    state.reachable = new Map();
-    updateHUD();
-    renderTokens();
-
-    if (diceWas === 6){
-      setStatus("🎲 6 gewürfelt: Du darfst nochmal würfeln!","good");
-      return;
-    }
-
-    endTurn();
-  }
-
-  async function moveAlongPath(piece, path){
-    state.animating = true;
-    try{
-      for (let i=1;i<path.length;i++){
-        piece.nodeId = String(path[i]);
-        renderTokens();
-        await sleep(120);
-      }
-    } finally {
-      state.animating = false;
     }
   }
 
-
-
-      function canonEdgeKey(a,b){
-    const x=String(a), y=String(b);
-    return (x<y)? `${x}__${y}` : `${y}__${x}`;
+  function tokenCss(color){
+    color = String(color||"").toLowerCase();
+    if (color==="red") return "rgba(255,77,90,.95)";
+    if (color==="blue") return "rgba(77,157,255,.95)";
+    if (color==="green") return "rgba(53,210,138,.95)";
+    if (color==="yellow") return "rgba(255,216,77,.95)";
+    return "rgba(255,255,255,.85)";
   }
 
-function computeReachable(){
-    state.reachable = new Map();
-    if (!state.rolled || !state.selectedPieceId) return;
-
-    const piece = state.pieces.find(p => p.id === state.selectedPieceId);
-    if (!piece) return;
-
-    const steps = Number(state.dice || 0);
-    if (!Number.isFinite(steps) || steps <= 0) return;
-
-    const startId = String(piece.nodeId);
-
-    const dfs = (cur, rem, usedEdges, visitedNodes, path) => {
-      if (rem === 0){
-        if (!state.reachable.has(cur)) state.reachable.set(cur, path.slice());
-        return;
-      }
-
-      const neigh = state.neighbors.get(cur) || [];
-      for (const to of neigh){
-        const edgeKey = canonEdgeKey(cur, to);
-        if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
-        if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
-        if (isNodeBlocked(to)) continue;
-
-        const nextUsed = new Set(usedEdges); nextUsed.add(edgeKey);
-        const nextVisited = new Set(visitedNodes); nextVisited.add(to);
-
-        path.push(to);
-        dfs(to, rem - 1, nextUsed, nextVisited, path);
-        path.pop();
-      }
-    };
-
-    dfs(startId, steps, new Set(), new Set([startId]), [startId]);
+  function renderHud(){
+    updateTurnUI();
+    hudDice.textContent = String(state.diceValue);
+    hudActiveLights.textContent = String(state.lights.active.length);
+    hudLightTotal.textContent = String(state.lights.totalCollected);
+    hudLightGoal.textContent = String(state.lights.globalGoal);
+    renderJokerTable();
   }
 
-
-
-  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-
-  // ---------- Lights ----------
-  function spawnRandomLight(){
-    // choose random free normal node
-    const normals = [];
-    const occupied = new Set(state.pieces.map(p => String(p.nodeId)));
-    for (const n of state.nodeById.values()){
-      const t = String(n.type||"normal").toLowerCase();
-      if (t!=="normal") continue;
-      const id = String(n.id);
-      if (occupied.has(id)) continue;
-      if (state.activeLights.has(id)) continue;
-      normals.push(id);
-    }
-    if (!normals.length) return null;
-    const pick = normals[randInt(0, normals.length-1)];
-    state.activeLights.add(pick);
-    renderTokens();
-    updateHUD();
-    return pick;
-  }
-
-  // ---------- Wheel (Joker reward) ----------
-  function openWheel(){
-    wheelModal.classList.remove("hidden");
-    setText(wheelResult, "Dreht…");
-  }
-  function closeWheel(){
-    wheelModal.classList.add("hidden");
-  }
-
-  async function runWheelReward(color){
-    openWheel();
-    const ctx = wheelCanvas.getContext("2d");
-    const size = wheelCanvas.width;
-    const cx = size/2, cy=size/2;
-    const radius = size/2 - 18;
-
-    const slices = JOKERS.map(j => j.name);
-    const sliceCount = slices.length;
-    const sliceAngle = (Math.PI*2)/sliceCount;
-
-    // choose result uniformly
-    const winnerIndex = randInt(0, sliceCount-1);
-    const winner = JOKERS[winnerIndex];
-
-    // animation: 5s rotation ending at winner under pointer (top)
-    const start = performance.now();
-    const duration = 5000;
-    const spins = 6 + Math.random()*3; // 6-9 spins
-    const targetAngle = (Math.PI*1.5) - (winnerIndex*sliceAngle + sliceAngle/2); // pointer at top
-    const endRot = spins*2*Math.PI + targetAngle;
-
-    function draw(rot){
-      ctx.clearRect(0,0,size,size);
-
-      // background circle
-      ctx.save();
-      ctx.translate(cx,cy);
-
-      // slices
-      for (let i=0;i<sliceCount;i++){
-        const a0 = rot + i*sliceAngle;
-        const a1 = a0 + sliceAngle;
-
-        ctx.beginPath();
-        ctx.moveTo(0,0);
-        ctx.arc(0,0,radius,a0,a1);
-        ctx.closePath();
-
-        // alternating brightness
-        const alpha = i%2===0 ? 0.22 : 0.14;
-        ctx.fillStyle = `rgba(90,162,255,${alpha})`;
-        ctx.fill();
-
-        ctx.strokeStyle = "rgba(255,255,255,.14)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // text
-        ctx.save();
-        ctx.rotate(a0 + sliceAngle/2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "rgba(255,255,255,.92)";
-        ctx.font = "bold 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-        ctx.fillText(slices[i], radius-20, 6);
-        ctx.restore();
-      }
-
-      // center hub
-      ctx.beginPath();
-      ctx.arc(0,0,60,0,Math.PI*2);
-      ctx.fillStyle = "rgba(12,16,26,.92)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.18)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.fillStyle = "rgba(255,255,255,.9)";
-      ctx.font = "800 16px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-      ctx.textAlign = "center";
-      ctx.fillText("JOKER", 0, 6);
-
-      ctx.restore();
-
-      // pointer (top)
-      ctx.beginPath();
-      ctx.moveTo(cx, cy-radius-6);
-      ctx.lineTo(cx-14, cy-radius+22);
-      ctx.lineTo(cx+14, cy-radius+22);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(244,200,74,.95)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(0,0,0,.35)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-
-    function easeOutCubic(t){ return 1 - Math.pow(1-t,3); }
-
-    return await new Promise(resolve => {
-      function frame(now){
-        const t = clamp((now-start)/duration, 0, 1);
-        const e = easeOutCubic(t);
-        const rot = e*endRot;
-        draw(rot);
-        if (t<1) requestAnimationFrame(frame);
-        else {
-          // reward
-          state.jokers[color][winner.id] = (state.jokers[color][winner.id]||0) + 1;
-          setText(wheelResult, `Gewonnen: ${winner.name}`);
-          updateHUD();
-          setTimeout(() => { closeWheel(); resolve(); }, 650);
-        }
-      }
-      requestAnimationFrame(frame);
+  function renderJokerTable(){
+    const c = currentColor();
+    const jok = state.jokers[c] || {};
+    const entries = Object.entries(jok);
+    jokerTableBody.innerHTML = "";
+    entries.forEach(([name, count], idx) => {
+      const tr = document.createElement("tr");
+      const td1 = document.createElement("td");
+      td1.textContent = `${idx+1}) ${name}`;
+      const td2 = document.createElement("td");
+      td2.textContent = String(count);
+      td2.className = "right";
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      jokerTableBody.appendChild(tr);
     });
   }
 
-  // ---------- Done Modal ----------
-  function openDoneModal(){
-    doneModal.classList.remove("hidden");
-  }
-  function closeDoneModal(){
-    doneModal.classList.add("hidden");
-  }
-
-  // ---------- UI Wire ----------
-  // Tablet/Touch: ensure buttons always react (some browsers suppress/delay plain "click").
-  function bindBtn(el, fn){
-    if (!el) return;
-    const handler = (e) => {
-      // ignore right/middle mouse
-      if (e?.pointerType === "mouse" && typeof e.button === "number" && e.button !== 0) return;
-      try { e?.preventDefault?.(); } catch {}
-      try { e?.stopPropagation?.(); } catch {}
-      fn(e);
-    };
-    el.addEventListener("click", handler);
-    el.addEventListener("pointerup", handler, { passive:false });
+  function renderAll(){
+    clearBoard();
+    renderEdges();
+    renderNodes();
+    applyCamera();
+    renderHud();
+    setTurnUI();
   }
 
-  bindBtn(btnToggleUI, () => {
-    document.body.classList.toggle("uiHidden");
-  });
+  // ---------- Game init ----------
+  function initPiecesFromStartNodes(){
+    const startsByColor = { red:[], blue:[], green:[], yellow:[] };
+    for (const n of nodeById.values()){
+      if (String(n.type||"").toLowerCase() === "start"){
+        const c = String(n.color||"").toLowerCase();
+        if (startsByColor[c]) startsByColor[c].push(String(n.id));
+      }
+    }
+    const pieces = [];
+    for (const c of COLORS){
+      const startNode = startsByColor[c][0] || findAnyNormalNodeId() || findAnyNodeId();
+      for (let i=1;i<=5;i++){
+        pieces.push({ id:`${c}_${i}`, color:c, nodeId:startNode });
+      }
+    }
+    state.pieces = pieces;
+    state.selectedPieceId = pieces[0]?.id || null;
+  }
 
-  bindBtn(btnDebug, () => {
-    if (!debugOverlay) return;
-    if (debugOverlay.hasAttribute('hidden')) openDebug();
-    else closeDebug();
-  });
-  bindBtn(btnDebugClose, () => closeDebug());
+  function findAnyNormalNodeId(){
+    for (const n of nodeById.values()){
+      if (String(n.type||"normal").toLowerCase() === "normal") return String(n.id);
+    }
+    return null;
+  }
+  function findAnyNodeId(){
+    for (const n of nodeById.values()) return String(n.id);
+    return null;
+  }
 
-  bindBtn(btnRoll, () => {
-    // if bonus roll available, it's fine. If already rolled and not bonus, block.
-    if (state.animating) return;
-    if (state.rolled){
-      setStatus("Du hast schon gewürfelt. Erst ziehen oder Zug beenden.", "warn");
+  function initLightsFromBoard(){
+    const initial = [];
+    for (const n of nodeById.values()){
+      if (String(n.type||"").toLowerCase() === "light_start"){
+        initial.push(String(n.id));
+      }
+    }
+    Rules.initLights(board, state, {
+      globalGoal: 5,
+      spawnAfterCollect: true,
+      seed: (Date.now() >>> 0),
+      initialActiveNodeIds: initial
+    });
+    // if none, spawn one
+    if (state.lights.active.length === 0){
+      Rules.spawnOneLightOnRandomFreeNormal(board, state, Rules.mulberry32(state.lights.seed));
+    }
+  }
+
+  function resetDynamicBarricades(){
+    state.barricades = [];
+  }
+
+  
+  function findStartNodeForColor(color){
+    const c = String(color||"").toLowerCase();
+    for (const n of nodeById.values()) {
+      if (String(n.type||"").toLowerCase()==="start" && String(n.color||"").toLowerCase()===c) return String(n.id);
+    }
+    return findAnyNormalNodeId() || findAnyNodeId();
+  }
+
+  async function spinWheelAndGrantJoker(){
+    if (!wheelOverlay || !wheelEl || !wheelResult || !wheelBtnClose) return null;
+    wheelOverlay.classList.remove("hidden");
+    wheelOverlay.setAttribute("aria-hidden","false");
+    wheelBtnClose.disabled = true;
+    wheelResult.textContent = "dreht…";
+
+    const options = [
+      { key:"j1", name:"1) Neuwurf" },
+      { key:"j2", name:"2) Alle Farben" },
+      { key:"j3", name:"3) Doppelwurf" },
+      { key:"j4", name:"4) Barikade versetzen" },
+      { key:"j5", name:"5) Durch Barikade" },
+    ];
+
+    const rng = Rules.mulberry32((gameState.wheelSeed ?? (Date.now()>>>0)));
+    gameState.wheelSeed = ((gameState.wheelSeed ?? (Date.now()>>>0)) + 1) >>> 0;
+
+    const pickIndex = Math.floor(rng() * options.length);
+    const picked = options[pickIndex];
+
+    const segDeg = 360 / options.length;
+    const targetDeg = 360*7 + (pickIndex * segDeg) + (segDeg/2);
+
+    wheelEl.style.transition = "transform 5s cubic-bezier(.1,.9,.0,1)";
+    wheelEl.style.transform = `rotate(${targetDeg}deg)`;
+
+    await new Promise(r => setTimeout(r, 5000));
+
+    const c = activeColor();
+    if (!gameState.jokers[c]) gameState.jokers[c] = { j1:0,j2:0,j3:0,j4:0,j5:0 };
+    gameState.jokers[c][picked.key] = (gameState.jokers[c][picked.key] ?? 0) + 1;
+
+    wheelResult.textContent = `✅ ${c.toUpperCase()} gewinnt: ${picked.name}`;
+    wheelBtnClose.disabled = false;
+    renderTurnAndJokers();
+    return picked;
+  }
+
+  function closeWheel(){
+    if (!wheelOverlay) return;
+    wheelOverlay.classList.add("hidden");
+    wheelOverlay.setAttribute("aria-hidden","true");
+  }
+
+  async function handleKnockoutIfAny(targetNodeId){
+    const occ = pieceAtNode(targetNodeId);
+    if (!occ) return null;
+
+    const ac = activeColor();
+    if (String(occ.color).toLowerCase() === String(ac).toLowerCase()) return null;
+
+    const startId = findStartNodeForColor(occ.color);
+    occ.nodeId = startId;
+    renderTokens();
+
+    await spinWheelAndGrantJoker();
+    return occ;
+  }
+
+
+// ---------- Movement / Validation ----------
+  function selectPiece(pieceId){
+    const ac = activeColor();
+    const p = state.pieces.find(x => x.id === pieceId);
+    if (p && String(p.color).toLowerCase() !== ac) {
+      setStatus(`Nur aktive Farbe (${ac.toUpperCase()}) darf ziehen.`, "warn");
       return;
     }
-    rollDice();
-  });
-
-  bindBtn(btnEndTurn, () => endTurn());
-
-  bindBtn(btnToggleLines, () => {
-    state.showLines = !state.showLines;
-    setText(btnToggleLines, `Linien: ${state.showLines ? "AN" : "AUS"}`);
-    renderEdges();
-    applyCamera();
-  });
-
-  bindBtn(btnFit, () => { computeFitCamera(); applyCamera(); });
-  bindBtn(btnResetView, () => { state.cam={x:0,y:0,scale:1}; computeFitCamera(); applyCamera(); });
-
-  bindBtn(btnRestart, async () => { await start(); });
-  bindBtn(btnSave, saveLocal);
-  bindBtn(btnLoad, loadLocal);
-
-  bindBtn(btnWheelClose, closeWheel);
-  bindBtn(btnDoneClose, closeDoneModal);
-  bindBtn(btnGoBoard2, () => {
-    // Placeholder: später board2 file laden / redirect
-    closeDoneModal();
-    setStatus("Board 2 kommt als nächster Schritt. (Hier später Redirect einbauen)", "warn");
-  });
-
-  // ---------- Camera interactions (pan/zoom) ----------
-// Wichtig (Tablet): KEIN dauerhaftes Pointer-Capture für Touch, sonst werden UI-Klicks „verschluckt“.
-// Wir managen Touch/Maus einheitlich über activePointers.
-let isPanning = false;
-let panPointerId = null;
-let panStart = { x:0, y:0 };
-let panCamStart = { x:0, y:0 };
-
-const activePointers = new Map(); // id -> {x,y}
-let pinch = null; // {startDist, startScale, startCamX, startCamY, midX, midY}
-
-function resetGestureState(){
-  isPanning = false;
-  panPointerId = null;
-  activePointers.clear();
-  pinch = null;
-}
-
-function beginPan(pointerId, x, y){
-  isPanning = true;
-  panPointerId = pointerId;
-  panStart = { x, y };
-  panCamStart = { x: cam.x, y: cam.y };
-}
-
-function beginPinch(){
-  const pts = Array.from(activePointers.values());
-  if (pts.length !== 2) return;
-  const a = pts[0], b = pts[1];
-  const midX = (a.x + b.x) / 2;
-  const midY = (a.y + b.y) / 2;
-  pinch = {
-    startDist: dist(a,b),
-    startScale: cam.scale,
-    startCamX: cam.x,
-    startCamY: cam.y,
-    midX, midY
-  };
-}
-
-function applyPinch(){
-  if (!pinch) return;
-  const pts = Array.from(activePointers.values());
-  if (pts.length !== 2) return;
-  const a = pts[0], b = pts[1];
-  const d = Math.max(10, dist(a,b));
-  const ratio = d / Math.max(10, pinch.startDist);
-  const newScale = clamp(pinch.startScale * ratio, 0.35, 3.0);
-
-  // Zoom um den initialen Mittelpunkt
-  const rect = boardShell.getBoundingClientRect();
-  const cx = pinch.midX - rect.left;
-  const cy = pinch.midY - rect.top;
-  // Weltpunkt unter dem Mittelpunkt bei Start
-  const worldX = (cx - pinch.startCamX) / pinch.startScale;
-  const worldY = (cy - pinch.startCamY) / pinch.startScale;
-
-  cam.scale = newScale;
-  cam.x = cx - worldX * newScale;
-  cam.y = cy - worldY * newScale;
-
-  applyCamera();
-}
-
-function isInteractiveTarget(ev){
-  const t = ev.target;
-  if (!t) return false;
-  // UI/Buttons/Inputs sollen IMMER klicken können
-  return !!t.closest?.('button, a, input, select, textarea, .panel, #debugOverlay, #debugBackdrop');
-}
-
-boardShell.addEventListener('pointerdown', (e) => {
-  if (isInteractiveTarget(e)) return;
-
-  // Nur linker Mausbutton
-  if (e.pointerType === 'mouse' && e.button !== 0) return;
-
-  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-  // Mouse/Pen: optional capture, Touch: NIE capture (sonst UI tot)
-  if (e.pointerType !== 'touch') {
-    try { boardShell.setPointerCapture(e.pointerId); } catch(_e){}
+    state.selectedPieceId = pieceId;
+    renderTokens();
+    setStatus(`Ausgewählt: ${pieceId}`, "good");
   }
 
-  if (activePointers.size === 1) {
-    beginPan(e.pointerId, e.clientX, e.clientY);
-    pinch = null;
-  } else if (activePointers.size === 2) {
-    isPanning = false;
-    panPointerId = null;
-    beginPinch();
+  function getSelectedPiece(){
+    return state.pieces.find(p => p.id === state.selectedPieceId) || null;
   }
 
-  // Verhindert Scroll/Back-gesture beim Draggen auf dem Board
-  if (e.cancelable) e.preventDefault();
-}, { passive: false });
-
-boardShell.addEventListener('pointermove', (e) => {
-  if (!activePointers.has(e.pointerId)) return;
-
-  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-  if (activePointers.size === 2) {
-    applyPinch();
-    return;
+  function isNodeBlocked(nodeId){
+    const n = nodeById.get(String(nodeId));
+    if (!n) return true;
+    const t = String(n.type||"normal").toLowerCase();
+    if (t === "barricade_fixed") return true;
+    return state.barricades.includes(String(nodeId));
   }
 
-  if (isPanning && e.pointerId === panPointerId) {
-    const dx = e.clientX - panStart.x;
-    const dy = e.clientY - panStart.y;
-    cam.x = panCamStart.x + dx;
-    cam.y = panCamStart.y + dy;
-    applyCamera();
-    if (e.cancelable) e.preventDefault();
-  }
-}, { passive: false });
-
-function endPointer(e){
-  if (!activePointers.has(e.pointerId)) return;
-
-  if (e.pointerType !== 'touch') {
-    try { boardShell.releasePointerCapture(e.pointerId); } catch(_e){}
+  function isOccupied(nodeId){
+    const id = String(nodeId);
+    return state.pieces.some(p => String(p.nodeId) === id);
   }
 
-  activePointers.delete(e.pointerId);
+  function canMoveOneStep(fromId, toId, diceValue){
+    const list = adjacency.get(String(fromId)) || [];
+    const link = list.find(x => String(x.to) === String(toId));
+    if (!link) return { ok:false, reason:"Nicht verbunden." };
 
-  if (e.pointerId === panPointerId) {
-    isPanning = false;
-    panPointerId = null;
+    // gate check (local)
+    if (link.gate){
+      const d = Number(diceValue);
+      if (link.gate.mode === "exact"){
+        if (d !== Number(link.gate.value)) return { ok:false, reason:`Tor: nur bei exakt ${link.gate.value}.` };
+      } else if (link.gate.mode === "range"){
+        const mn = Math.min(Number(link.gate.min), Number(link.gate.max));
+        const mx = Math.max(Number(link.gate.min), Number(link.gate.max));
+        if (d < mn || d > mx) return { ok:false, reason:`Tor: nur bei ${mn}–${mx}.` };
+      } else {
+        return { ok:false, reason:"Tor: unbekanntes Format." };
+      }
+    }
+
+    if (isNodeBlocked(toId)) return { ok:false, reason:"Ziel ist durch Barikade blockiert." };
+    if (isOccupied(toId)) return { ok:false, reason:"Ziel ist besetzt." };
+    return { ok:true, reason:"OK" };
   }
 
-  if (activePointers.size < 2) pinch = null;
+  function moveSelectedPieceTo(nodeId){
+    const piece = getSelectedPiece();
+    if (!piece) { setStatus("Keine Figur ausgewählt.", "warn"); return; }
 
-  // Wenn nach Pinch noch 1 Finger übrig ist: direkt weiter pannen
-  if (!isPanning && activePointers.size === 1) {
-    const only = Array.from(activePointers.entries())[0];
-    beginPan(only[0], only[1].x, only[1].y);
+    const from = String(piece.nodeId);
+    const to = String(nodeId);
+
+    const check = canMoveOneStep(from, to, state.diceValue);
+    if (!check.ok){ setStatus(check.reason, "warn"); return; }
+
+    piece.nodeId = to;
+
+    // lights rules
+    const res = Rules.onPieceArrived(board, state, piece.color, to);
+    if (res?.picked){
+      if (res.spawned){
+        setStatus(`💡 Licht eingesammelt! Neues Licht auf ${res.spawned}.`, "good");
+      } else {
+        setStatus(`💡 Licht eingesammelt! (${res.total}/${res.goal})`, "good");
+      }
+    } else {
+      setStatus(`Zug: ${piece.id} → ${to}`, "good");
+    }
+
+    renderTokens();
+    renderHud();
+    // offline: bei 6 darf man nochmal würfeln (gleicher Spieler bleibt dran)
+    if (gameState.diceValue === 6) {
+      setStatus(`🎲 6! Du darfst nochmal würfeln.`, "good");
+      renderTurnAndJokers();
+    } else {
+      nextTurn(1);
+    }
   }
-}
 
-boardShell.addEventListener('pointerup', endPointer, { passive: true });
-boardShell.addEventListener('pointercancel', endPointer, { passive: true });
-window.addEventListener('blur', () => { resetGestureState(); });
+  function onNodeClicked(nodeId){
+    moveSelectedPieceTo(nodeId);
+  }
 
-  function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy); }
-  function mid(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
+  // ---------- Events (Barricade / Light spawn) ----------
+  function spawnRandomBarricade(){
+    const rng = Rules.mulberry32((state.barricadesSeed ?? 999) >>> 0);
+    const placed = Rules.spawnBarricadeOnRandomFreeNormal(board, state, rng);
+    state.barricadesSeed = ((state.barricadesSeed ?? 999) + 1) >>> 0;
+    if (!placed){
+      setStatus("Keine Barikade platzierbar (keine freien normalen Felder / max erreicht).", "warn");
+      return;
+    }
+    setStatus(`🧱 Barikade gespawnt auf ${placed}`, "good");
+    renderTokens();
+  }
 
-  function makePinchState(p1,p2){
-    const rect = boardShell.getBoundingClientRect();
-    const m = mid(p1,p2);
-    const mLocal = { x:m.x-rect.left, y:m.y-rect.top };
-    return {
-      startDist: dist(p1,p2),
-      startScale: state.cam.scale,
-      startX: state.cam.x,
-      startY: state.cam.y,
-      midLocal: mLocal
+  function forceSpawnLight(){
+    const rng = Rules.mulberry32((state.lights.seed ?? 123) >>> 0);
+    const placed = Rules.spawnOneLightOnRandomFreeNormal(board, state, rng);
+    state.lights.seed = ((state.lights.seed ?? 123) + 1) >>> 0;
+    if (!placed){
+      setStatus("Kein Licht platzierbar (keine freien normalen Felder).", "warn");
+      return;
+    }
+    setStatus(`💡 Test: Licht gespawnt auf ${placed}`, "good");
+    renderTokens();
+    renderHud();
+    // offline: bei 6 darf man nochmal würfeln (gleicher Spieler bleibt dran)
+    if (gameState.diceValue === 6) {
+      setStatus(`🎲 6! Du darfst nochmal würfeln.`, "good");
+      renderTurnAndJokers();
+    } else {
+      nextTurn(1);
+    }
+  }
+
+  // ---------- Dice ----------
+  function syncDiceFromInput(){
+    state.diceValue = clampInt(diceValueInp.value, 1, 6);
+    diceValueInp.value = String(state.diceValue);
+    renderHud();
+    // offline: bei 6 darf man nochmal würfeln (gleicher Spieler bleibt dran)
+    if (gameState.diceValue === 6) {
+      setStatus(`🎲 6! Du darfst nochmal würfeln.`, "good");
+      renderTurnAndJokers();
+    } else {
+      nextTurn(1);
+    }
+  }
+
+  function rollDice(){
+    const v = clampInt(1 + Math.floor(Math.random()*6), 1, 6);
+    state.diceValue = v;
+    diceValueInp.value = String(v);
+    renderHud();
+    setStatus(`🎲 Gewürfelt: ${v}`, "good");
+  }
+
+  // ---------- Save/Load ----------
+  const LS_KEY = "lichtarena_rebuild_save_v1";
+  function saveLocal(){
+    const payload = {
+      selectedPieceId: state.selectedPieceId,
+      pieces: state.pieces,
+      turnIndex: state.turnIndex,
+      jokers: state.jokers,
+      barricades: state.barricades,
+      barricadesMax: state.barricadesMax,
+      barricadesSeed: state.barricadesSeed,
+      lights: state.lights,
+      diceValue: state.diceValue,
+      showLines: state.showLines,
+      cam: state.cam
     };
-  }
-  function applyPinch(ps, p1, p2){
-    const d = Math.max(10, dist(p1,p2));
-    const factor = d / ps.startDist;
-    const newScale = clamp(ps.startScale * factor, 0.35, 2.5);
-
-    // zoom around initial mid point
-    const mx = ps.midLocal.x;
-    const my = ps.midLocal.y;
-
-    state.cam.scale = newScale;
-    // adjust translation so point under finger stays
-    state.cam.x = mx - (mx - ps.startX) * (newScale/ps.startScale);
-    state.cam.y = my - (my - ps.startY) * (newScale/ps.startScale);
-    applyCamera();
+    localStorage.setItem(LS_KEY, JSON.stringify(payload));
+    setStatus("Gespeichert (LocalStorage).", "good");
   }
 
-  function zoomAt(mx,my,factor){
-    const old = state.cam.scale;
-    const ns = clamp(old*factor, 0.35, 2.5);
-    if (ns===old) return;
-    // keep (mx,my) stable
-    state.cam.x = mx - (mx - state.cam.x) * (ns/old);
-    state.cam.y = my - (my - state.cam.y) * (ns/old);
-    state.cam.scale = ns;
-    applyCamera();
+  function loadLocal(){
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw){ setStatus("Kein Save gefunden.", "warn"); return; }
+    try{
+      const p = JSON.parse(raw);
+      if (p && typeof p === "object"){
+        state.selectedPieceId = p.selectedPieceId ?? state.selectedPieceId;
+        state.pieces = Array.isArray(p.pieces) ? p.pieces : state.pieces;
+        state.turnIndex = typeof p.turnIndex === "number" ? p.turnIndex : state.turnIndex;
+        if (p.jokers && typeof p.jokers === "object") state.jokers = p.jokers;
+        state.barricades = Array.isArray(p.barricades) ? p.barricades : [];
+        state.barricadesMax = typeof p.barricadesMax === "number" ? p.barricadesMax : state.barricadesMax;
+        state.barricadesSeed = typeof p.barricadesSeed === "number" ? p.barricadesSeed : state.barricadesSeed;
+        if (p.lights && typeof p.lights === "object") state.lights = p.lights;
+        state.diceValue = typeof p.diceValue === "number" ? p.diceValue : state.diceValue;
+        diceValueInp.value = String(clampInt(state.diceValue,1,6));
+        state.showLines = (typeof p.showLines === "boolean") ? p.showLines : state.showLines;
+        if (p.cam && typeof p.cam === "object") state.cam = p.cam;
+        setStatus("Save geladen.", "good");
+        renderAll();
+      }
+    }catch(e){
+      console.error(e);
+      setStatus("Save ist kaputt/ungültig.", "bad");
+    }
   }
+
+  // ---------- Player turn controls ----------
+  showLinesButtonLabel();
+  function prevPlayer(){
+    state.turnIndex = (state.turnIndex - 1 + state.players.length) % state.players.length;
+    setTurnUI();
+    renderJokerTable();
+  }
+  function nextPlayer(){
+    state.turnIndex = (state.turnIndex + 1) % state.players.length;
+    setTurnUI();
+    renderJokerTable();
+  }
+
+  function showLinesButtonLabel(){
+    if (!linesState) return;
+    linesState.textContent = state.showLines ? "AN" : "AUS";
+  }
+
+  // ---------- Pan/Zoom input ----------
+  const PZ = {
+    pointers: new Map(),
+    isPanning: false,
+    panStart: { x:0, y:0, ox:0, oy:0 },
+    pinchStart: { dist:0, scale:1, cx:0, cy:0 }
+  };
+
+  function dist(a,b){
+    const dx = a.x-b.x, dy=a.y-b.y;
+    return Math.hypot(dx,dy);
+  }
+
+  boardShell.addEventListener("pointerdown", (e)=>{
+    boardShell.setPointerCapture(e.pointerId);
+    PZ.pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (PZ.pointers.size === 1){
+      PZ.isPanning = true;
+      PZ.panStart = { x:e.clientX, y:e.clientY, ox:state.cam.ox, oy:state.cam.oy };
+    } else if (PZ.pointers.size === 2){
+      const pts = Array.from(PZ.pointers.values());
+      PZ.pinchStart.dist = dist(pts[0], pts[1]);
+      PZ.pinchStart.scale = state.cam.scale;
+      PZ.pinchStart.cx = (pts[0].x + pts[1].x)/2;
+      PZ.pinchStart.cy = (pts[0].y + pts[1].y)/2;
+    }
+  });
+
+  boardShell.addEventListener("pointermove",(e)=>{
+    if (!PZ.pointers.has(e.pointerId)) return;
+    PZ.pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+
+    if (PZ.pointers.size === 1 && PZ.isPanning){
+      const dx = e.clientX - PZ.panStart.x;
+      const dy = e.clientY - PZ.panStart.y;
+      state.cam.ox = PZ.panStart.ox + dx;
+      state.cam.oy = PZ.panStart.oy + dy;
+      applyCamera();
+    } else if (PZ.pointers.size === 2){
+      const pts = Array.from(PZ.pointers.values());
+      const d = dist(pts[0], pts[1]);
+      const factor = (d / Math.max(10, PZ.pinchStart.dist));
+      const nextScale = clamp(PZ.pinchStart.scale * factor, state.cam.minScale, state.cam.maxScale);
+
+      // zoom around pinch center
+      const cx = PZ.pinchStart.cx;
+      const cy = PZ.pinchStart.cy;
+      const old = state.cam.scale;
+      const k = nextScale / old;
+      state.cam.ox = cx - (cx - state.cam.ox) * k;
+      state.cam.oy = cy - (cy - state.cam.oy) * k;
+      state.cam.scale = nextScale;
+      applyCamera();
+    }
+  });
+
+  function endPointer(e){
+    if (PZ.pointers.has(e.pointerId)) PZ.pointers.delete(e.pointerId);
+    if (PZ.pointers.size === 0){
+      PZ.isPanning = false;
+    }
+    if (PZ.pointers.size === 1){
+      // re-arm pan start
+      const pt = Array.from(PZ.pointers.values())[0];
+      if (pt){
+        PZ.panStart = { x:pt.x, y:pt.y, ox:state.cam.ox, oy:state.cam.oy };
+      }
+    }
+  }
+  boardShell.addEventListener("pointerup", endPointer);
+  boardShell.addEventListener("pointercancel", endPointer);
+
+  // wheel zoom
+  boardShell.addEventListener("wheel",(e)=>{
+    e.preventDefault();
+    const factor = (e.deltaY > 0) ? 0.92 : 1.08;
+    zoomAt(e.clientX, e.clientY, factor);
+  }, { passive:false });
+
+  // ---------- Wire UI ----------
+  if (btnRoll) btnRoll.addEventListener("click", rollDice);
+  if (diceValueInp) diceValueInp.addEventListener("change", syncDiceFromInput);
+  if (diceValueInp) diceValueInp.addEventListener("input", syncDiceFromInput);
+
+  if (btnSpawnBarricade) btnSpawnBarricade.addEventListener("click", spawnRandomBarricade);
+  if (btnClearDynamicBarricades) btnClearDynamicBarricades.addEventListener("click", () => {
+    state.barricades = [];
+    setStatus("Dynamische Barikaden gelöscht.", "good");
+    renderTokens();
+  });
+
+  if (btnForceSpawnLight) btnForceSpawnLight.addEventListener("click", forceSpawnLight);
+
+  if (btnRestart) btnRestart.addEventListener("click", async () => {
+    setStatus("Board wird neu geladen…", "warn");
+    await start();
+  });
+
+  if (btnSave) btnSave.addEventListener("click", saveLocal);
+  if (btnLoad) btnLoad.addEventListener("click", loadLocal);
+
+  if (btnPrevTurn) btnPrevTurn.addEventListener("click", () => nextTurn(-1));
+  if (btnNextTurn) btnNextTurn.addEventListener("click", () => nextTurn(1));
+
+  if (wheelBtnClose) wheelBtnClose.addEventListener("click", () => closeWheel());
+
+  if (btnFit) btnFit.addEventListener("click", () => { fitCamera(); });
+  if (btnResetView) btnResetView.addEventListener("click", () => { resetCamera(); fitCamera(); });
+  if (btnZoomOut) btnZoomOut.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 0.9); });
+  if (btnZoomIn) btnZoomIn.addEventListener("click", () => { const r=boardShell.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 1.1); });
+  if (btnToggleLines) btnToggleLines.addEventListener("click", () => {
+    state.showLines = !state.showLines;
+    showLinesButtonLabel();
+    renderEdges();
+  });
 
   // ---------- Start ----------
   async function start(){
     try{
-      setStatus("Lade Board…", "warn");
-      state.board = await loadBoard();
+      board = await loadBoard();
       buildMaps();
 
-      // set board title
-      const bname = state.board?.meta?.name ? String(state.board.meta.name) : "spielbrett";
-      setText(pillBoard, `Board: ${bname}`);
+      const bname = board?.meta?.name ? String(board.meta.name) : "spielbrett";
+      pillRule.textContent = "Regel: Board 1 startet mit Licht auf allen Lichtfeldern";
+      setStatus(`Board geladen: ${bname} • Nodes: ${(board.nodes||[]).length} • Edges: ${(board.edges||[]).length}`, "good");
 
-      // camera fit
-      computeFitCamera();
+      // reset state parts
+      state.pieces = [];
+      state.selectedPieceId = null;
+      resetDynamicBarricades();
+      syncDiceFromInput();
 
-      resetGame();
-      setText(btnToggleLines, `Linien: ${state.showLines ? "AN" : "AUS"}`);
-      applyCamera();
+      initPiecesFromStartNodes();
+      initLightsFromBoard();
+
+      // camera
+      resetCamera();
+      fitCamera();
+
+      renderAll();
+      setStatus(`Bereit. Start-Lichter aktiv: ${state.lights.active.length}`, "good");
     }catch(e){
       console.error(e);
-      setStatus(String(e?.message||e), "bad");
+      setStatus(String(e?.message || e), "bad");
     }
   }
 
   // kick off
   start();
-
 })();
