@@ -349,19 +349,22 @@
   }
 
   function computeFitCamera(){
-    // Safe: some HTML versions may miss #stage/#boardShell. Avoid crashing on tablet.
-    const fitEl = stage || boardShell || document.getElementById("stage") || document.getElementById("boardShell") || document.body;
-    if(!fitEl || !fitEl.getBoundingClientRect){
-      // Fallback: reasonable defaults
-      view.s = 1;
-      view.x = 40;
-      view.y = 40;
-      view._fittedOnce = true;
+    // Fit all nodes into the visible viewport. Robust against HTML id drift.
+    const container =
+      document.getElementById("boardShell") ||
+      document.getElementById("boardPanel") ||
+      document.getElementById("boardViewport") ||
+      document.getElementById("world") ||
+      document.getElementById("stage") ||
+      document.body;
+
+    if(!container || !container.getBoundingClientRect){
+      // fallback (do not crash)
+      state.cam = { x: 40, y: 40, scale: 1 };
       return;
     }
 
-    // fit nodes into viewport
-    const rect = boardShell.getBoundingClientRect();
+    const rect = container.getBoundingClientRect();
     const pad = 60;
 
     const xs=[], ys=[];
@@ -372,21 +375,24 @@
       state.cam = {x:0,y:0,scale:1};
       return;
     }
+
     const minX = Math.min(...xs), maxX=Math.max(...xs);
     const minY = Math.min(...ys), maxY=Math.max(...ys);
     const spanX = Math.max(1, maxX-minX);
     const spanY = Math.max(1, maxY-minY);
 
     const scale = Math.min((rect.width-pad*2)/spanX, (rect.height-pad*2)/spanY);
+
     // Center
     const cx = (minX+maxX)/2;
     const cy = (minY+maxY)/2;
     const vx = rect.width/2;
     const vy = rect.height/2;
+
     state.cam.scale = clamp(scale, 0.35, 2.2);
     state.cam.x = vx - cx*state.cam.scale;
     state.cam.y = vy - cy*state.cam.scale;
-  }
+}
 
   function renderEdges(){
     edgesSvg.innerHTML = "";
