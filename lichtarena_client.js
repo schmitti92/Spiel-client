@@ -613,7 +613,16 @@
 
     // Auto-turn: after a completed move, the next player is immediately on turn.
     // (Manual 'Zug beenden' button still exists for cases where a player cannot/does not want to move.)
+    
+    // 6er-Regel: Bei einer 6 darf der Spieler erneut würfeln
+    if(state.dice === 6){
+        state.rolled = false;
+        state.dice = null;
+        updateHUD();
+        return;
+    }
     endTurn();
+    
     return true;
   }
 
