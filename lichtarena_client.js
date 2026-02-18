@@ -129,6 +129,7 @@
 
     // game
     turnIndex: 0,
+    turnOrder: COLORS.slice(),
     dice: 0,
     rolled: false,
     canRollAgain: false,        // when dice==6
@@ -150,6 +151,7 @@
 
     // UI / view
     showLines: false,
+    showReachable: false,
     reachable: new Map(),       // nodeId -> path (array of nodeIds, including start+...+dest)
     animating: false,
 
