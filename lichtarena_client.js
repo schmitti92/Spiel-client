@@ -349,6 +349,17 @@
   }
 
   function computeFitCamera(){
+    // Safe: some HTML versions may miss #stage/#boardShell. Avoid crashing on tablet.
+    const fitEl = stage || boardShell || document.getElementById("stage") || document.getElementById("boardShell") || document.body;
+    if(!fitEl || !fitEl.getBoundingClientRect){
+      // Fallback: reasonable defaults
+      view.s = 1;
+      view.x = 40;
+      view.y = 40;
+      view._fittedOnce = true;
+      return;
+    }
+
     // fit nodes into viewport
     const rect = boardShell.getBoundingClientRect();
     const pad = 60;
