@@ -31,6 +31,79 @@
 
   // ---------- DOM ----------
   const $ = (id) => document.getElementById(id);
+  // =========================
+  // UI Contract (ID aliases + safe setters)
+  // =========================
+  const $first = (...ids) => {
+    for(const id of ids){
+      if(!id) continue;
+      const el = document.getElementById(id);
+      if(el) return el;
+    }
+    return null;
+  };
+
+  const setText = (el, v) => { if(el) el.textContent = String(v); };
+  const setHtml  = (el, v) => { if(el) el.innerHTML   = String(v); };
+  const safeAppend = (el, child) => { if(el && child) el.appendChild(child); };
+  const safeClear  = (el) => { if(el) el.innerHTML = ""; };
+
+  // Common alias groups (so HTML can evolve without crashing)
+  const UI_IDS = {
+    boardContainer: ["boardShell","boardPanel","boardViewport","world","stage"],
+    stage: ["stage","world","boardViewport"],
+    edgesSvg: ["edgesSvg","edges","svgEdges"],
+    statusLine: ["statusLine","status","hudStatus"],
+    playersPanel: ["playersPanel","players","playerList"],
+    jokerTable: ["jokerTable","jokers","jokerPanel"],
+    pillMode: ["pillMode"],
+    pillBoard: ["pillBoard"],
+    pillRule: ["pillRule"],
+    pillTurn: ["pillTurn"],
+    hudPlayer: ["hudPlayer"],
+    hudDice: ["hudDice"],
+    hudActiveLights: ["hudActiveLights"],
+    hudGlobal: ["hudGlobal"],
+    hudGoal: ["hudGoal"],
+    btnToggleLines: ["btnToggleLines","toggleLinesBtn"],
+    btnFit: ["btnFit","fitBtn"],
+    btnResetView: ["btnResetView","resetViewBtn"],
+  };
+
+  function resolveUI(){
+    return {
+      boardContainer: $first(...UI_IDS.boardContainer),
+      stage: $first(...UI_IDS.stage),
+      edgesSvg: $first(...UI_IDS.edgesSvg),
+      statusLine: $first(...UI_IDS.statusLine),
+      playersPanel: $first(...UI_IDS.playersPanel),
+      jokerTable: $first(...UI_IDS.jokerTable),
+
+      pillMode: $first(...UI_IDS.pillMode),
+      pillBoard: $first(...UI_IDS.pillBoard),
+      pillRule: $first(...UI_IDS.pillRule),
+      pillTurn: $first(...UI_IDS.pillTurn),
+
+      hudPlayer: $first(...UI_IDS.hudPlayer),
+      hudDice: $first(...UI_IDS.hudDice),
+      hudActiveLights: $first(...UI_IDS.hudActiveLights),
+      hudGlobal: $first(...UI_IDS.hudGlobal),
+      hudGoal: $first(...UI_IDS.hudGoal),
+
+      btnToggleLines: $first(...UI_IDS.btnToggleLines),
+      btnFit: $first(...UI_IDS.btnFit),
+      btnResetView: $first(...UI_IDS.btnResetView),
+    };
+  }
+
+  function uiSelfCheck(ui){
+    const required = ["boardContainer","stage"]; // must exist to render / interact
+    const optional = ["playersPanel","jokerTable","edgesSvg","statusLine","pillBoard","pillTurn","hudDice"];
+    const missReq = required.filter(k => !ui[k]);
+    const missOpt = optional.filter(k => !ui[k]);
+    return { missReq, missOpt };
+  }
+
   const setText = (el, v) => { if(el) el.textContent = String(v); };
   const setHtml = (el, v) => { if(el) el.innerHTML = String(v); };
 
@@ -348,21 +421,13 @@
   }
 
   function computeFitCamera(){
-    // Fit all nodes into the visible viewport. Robust against HTML id drift.
-    const container =
-      document.getElementById("boardShell") ||
-      document.getElementById("boardPanel") ||
-      document.getElementById("boardViewport") ||
-      document.getElementById("world") ||
-      document.getElementById("stage") ||
-      document.body;
+    const ui = resolveUI();
+    const container = ui.boardContainer || document.body;
 
     if(!container || !container.getBoundingClientRect){
       // fallback (do not crash)
-      state.view = state.view || {x:40,y:40,s:1};
-      state.view.s = 1;
-      state.view.x = 40;
-      state.view.y = 40;
+      state.cam = state.cam || { x: 40, y: 40, scale: 1 };
+      state.cam.x = 40; state.cam.y = 40; state.cam.scale = 1;
       return;
     }
 
@@ -374,10 +439,8 @@
       if (typeof n.x==="number" && typeof n.y==="number"){ xs.push(n.x); ys.push(n.y); }
     }
     if (!xs.length){
-      state.view = state.view || {x:0,y:0,s:1};
-      state.view.s = 1;
-      state.view.x = 0;
-      state.view.y = 0;
+      state.cam = state.cam || {x:0,y:0,scale:1};
+      state.cam.x = 0; state.cam.y = 0; state.cam.scale = 1;
       return;
     }
 
@@ -394,10 +457,11 @@
     const vx = rect.width/2;
     const vy = rect.height/2;
 
-    state.view = state.view || {x:0,y:0,s:1};
-    state.view.s = clamp(scale, 0.35, 2.2);
-    state.view.x = vx - cx*state.view.s;
-    state.view.y = vy - cy*state.view.s;
+    state.cam = state.cam || {x:0,y:0,scale:1};
+    state.cam.scale = clamp(scale, 0.35, 2.2);
+    state.cam.x = vx - cx*state.cam.scale;
+    state.cam.y = vy - cy*state.cam.scale;
+
 }
 
   function renderEdges(){
@@ -534,6 +598,22 @@
 
   // ---------- HUD / Panels ----------
   function updateHUD(){
+    const ui = resolveUI();
+
+    // Always keep these safe (even if optional panels are missing)
+    const c = String(state.turn || "").toLowerCase();
+    setText(ui.pillTurn, c ? `Am Zug: ${c.toUpperCase()}` : "Am Zug: –");
+    setText(ui.hudPlayer, c ? c.toUpperCase() : "–");
+    setText(ui.hudDice, state.rolled ? String(state.dice) : "–");
+    setText(ui.hudActiveLights, String(state.activeLights?.size ?? 0));
+    setText(ui.hudGlobal, String(state.globalCollected ?? 0));
+    setText(ui.hudGoal, String(state.globalGoal ?? 5));
+
+    // If complex panels are not present in this HTML layout, do not crash.
+    if(!ui.playersPanel || !ui.jokerTable){
+      return;
+    }
+
   // SAFE_GUARD_HUD: avoid null crashes if HTML is missing some panels
   const _playersPanel = document.getElementById("playersPanel");
   const _jokerTable = document.getElementById("jokerTable");
@@ -630,6 +710,10 @@
     else if (!state.selectedPieceId) hudHint.textContent = "Figur anklicken, dann ein blau markiertes Ziel wählen.";
     else hudHint.textContent = "Ziel anklicken (blau markiert).";
   }
+
+  // Backward-compat: keep old API name
+  function renderHud(){ return updateHUD(); }
+
 
   function jokerTotal(color){
     const inv = state.jokers[color] || {};
@@ -1150,6 +1234,15 @@ function computeReachable(){
 
   // ---------- Start ----------
   async function start(){
+    const ui0 = resolveUI();
+    const chk = uiSelfCheck(ui0);
+    if(chk.missReq.length){
+      setStatus(`UI fehlt: ${chk.missReq.join(', ')}`, 'bad');
+      // don't crash; keep running to allow minimal usage
+    } else if(chk.missOpt.length){
+      setStatus(`UI teilweise: fehlt ${chk.missOpt.join(', ')}`, 'warn');
+    }
+
     try{
       setStatus("Lade Board…", "warn");
       state.board = await loadBoard();
