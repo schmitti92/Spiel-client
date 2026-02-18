@@ -501,7 +501,14 @@
   function rollDice() {
     if (state.rolled) return;
     state.dice = randInt(1, 6);
-    state.rolled = true;
+    
+    // update 6er-Serie
+    const cp = state.turn;
+    if(cp && state.sixStreak){
+      if(state.dice === 6) state.sixStreak[cp] = (state.sixStreak[cp]||0) + 1;
+      else state.sixStreak[cp] = 0;
+    }
+state.rolled = true;
     updateHUD();
     state.needsRender = true;
   }
@@ -614,16 +621,39 @@
     // Auto-turn: after a completed move, the next player is immediately on turn.
     // (Manual 'Zug beenden' button still exists for cases where a player cannot/does not want to move.)
     
-    // 6er-Regel: Bei einer 6 darf der Spieler erneut würfeln
+    // 6er-Regel: Bei einer 6 darf der Spieler erneut würfeln – ABER 3×6 => zurück zum Start, Zug endet
+    const cp = state.turn;
+    const streak = (state.sixStreak && cp) ? (state.sixStreak[cp]||0) : 0;
+
     if(state.dice === 6){
+        if(streak >= 3){
+            // Strafe: die zuletzt gezogene Figur zurück zum Start
+            try{
+              const startId = getStartNodeIdForColor(cp);
+              if(startId){
+                // selectedPieceId ist in dieser Engine der aktuelle Steinindex (pieceIdx)
+                // Wir schicken genau den Stein zurück, der eben gezogen wurde.
+                const last = state.lastMovedPiece;
+                if(last && last.color === cp && typeof last.idx === 'number'){
+                  state.pieces[cp][last.idx].pos = startId;
+                }
+              }
+            }catch(_e){}
+            // Serie zurücksetzen und Zug beenden
+            if(state.sixStreak && cp) state.sixStreak[cp] = 0;
+            updateHUD();
+            endTurn();
+            return;
+        }
+
+        // normaler Extra-Wurf
         state.rolled = false;
         state.dice = null;
         updateHUD();
         return;
     }
     endTurn();
-    
-    return true;
+return true;
   }
 
   function onNodeClicked(nodeId) {
@@ -859,6 +889,10 @@
   // Reset
   // ============================================================
   async function resetGame() {
+    // 6er-Serie pro Spieler: 3×6 => zurück zum Start, Zug endet
+    state.sixStreak = {};
+    for(const c of state.players){ state.sixStreak[c] = 0; }
+
     clearSelection();
     state.rolled = false;
     state.dice = 0;
