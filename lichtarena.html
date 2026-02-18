@@ -2,152 +2,360 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Lichtarena (Offline)</title>
-  <link rel="stylesheet" href="lichtarena.css?v=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Lichtarena – Board 1</title>
+  <link rel="stylesheet" href="./lichtarena.css?v=1" />
   <style>
-    .topActions{ display:flex; gap:10px; align-items:center; }
-    /* Debug overlay (Tablet ohne Konsole) */
-    .debugOverlay{ position:fixed; inset:16px; background:rgba(8,10,14,.92);
-      border:1px solid rgba(255,255,255,.12); border-radius:16px;
-      box-shadow:0 20px 80px rgba(0,0,0,.55); z-index:9999;
-      display:flex; flex-direction:column; }
-    .debugHeader{ display:flex; align-items:center; justify-content:space-between;
-      padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.10); }
-    .debugTitle{ font-weight:700; opacity:.95; }
-    .debugClose{ appearance:none; border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06); color:#fff; padding:8px 10px;
-      border-radius:12px; cursor:pointer; }
-    .debugText{ margin:0; padding:12px 14px; overflow:auto; white-space:pre-wrap;
-      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size:12px; line-height:1.35; }
+    :root{
+      --safeTop: env(safe-area-inset-top, 0px);
+      --safeBot: env(safe-area-inset-bottom, 0px);
+      --barH: 54px;
+      --topH: 52px;
+      --sheetMaxW: 720px;
+    }
+    html,body{height:100%; overflow:hidden;}
+    body{
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(120,160,255,.12), transparent 60%),
+                  radial-gradient(1200px 800px at 80% 20%, rgba(120,255,210,.10), transparent 60%),
+                  #05070c;
+      color:#e9eefc;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Top compact bar */
+    header.topbar2{
+      height:calc(var(--topH) + var(--safeTop));
+      padding-top:var(--safeTop);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding-left:12px;
+      padding-right:12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: rgba(6,10,18,.70);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index:20;
+    }
+    .brand2{display:flex; flex-direction:column; line-height:1.05;}
+    .brand2 .t{font-weight:800; letter-spacing:.2px; font-size:15px;}
+    .brand2 .s{opacity:.7; font-size:11px;}
+    .topMini{display:flex; gap:10px; align-items:center; margin-left:auto;}
+    .chip{
+      display:flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(10,14,26,.55);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .chip strong{font-size:12px;}
+    .turnBadge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .turnBadge .dot{width:10px;height:10px;border-radius:99px;background:#ff5a6a; box-shadow: 0 0 0 4px rgba(255,90,106,.18);}
+    .dicePip{
+      width:28px; height:28px; border-radius:10px;
+      display:grid; place-items:center;
+      background: rgba(12,16,28,.70);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+      font-weight:800;
+    }
+    .btnUi{
+      margin-left:6px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(12,16,28,.55);
+      color:inherit;
+    }
+
+    /* Board area */
+    main{
+      position:relative;
+      flex:1;
+      min-height:0;
+    }
+    .boardViewport{
+      position:absolute;
+      inset:0;
+      padding-bottom:calc(var(--barH) + var(--safeBot));
+    }
+    #boardShell{
+      position:absolute;
+      inset:0;
+      overflow:hidden;
+      border-radius:0;
+    }
+    /* keep existing stage/edges sizing from css; just ensure full */
+    #edgesSvg, #stage{
+      position:absolute;
+      inset:0;
+    }
+
+    /* Bottom bar */
+    .bottombar{
+      height:calc(var(--barH) + var(--safeBot));
+      padding-bottom:var(--safeBot);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding-left:12px;
+      padding-right:12px;
+      border-top:1px solid rgba(255,255,255,.06);
+      background: rgba(6,10,18,.70);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index:20;
+    }
+    .bbBtn{
+      flex:1;
+      min-width:0;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(12,16,28,.60);
+      color:inherit;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+    .bbBtn.small{flex:0 0 auto; width:52px; padding:10px 0;}
+    .bbSub{opacity:.75; font-weight:600; font-size:12px;}
+
+    /* Sheets */
+    .sheetOverlay{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.42);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index:50;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:12px;
+      padding-bottom:calc(12px + var(--safeBot));
+    }
+    .sheetOverlay.show{display:flex;}
+    .sheet{
+      width:min(var(--sheetMaxW), 100%);
+      max-height:min(78vh, 720px);
+      overflow:auto;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(8,12,22,.92);
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      padding:14px;
+    }
+    .sheetHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      margin-bottom:12px;
+    }
+    .sheetTitle{font-weight:900; letter-spacing:.2px;}
+    .sheetClose{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(12,16,28,.55);
+      color:inherit;
+      font-weight:800;
+    }
+
+    /* Make leftover old UI elements non-intrusive (we keep IDs for logic, but display inside sheets) */
+    .hidden{display:none !important;}
+
+    /* Wheel overlay (reuse existing ids) */
+    #wheelOverlay{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index:80;
+    }
+    #wheelOverlay.show{display:flex;}
+    #wheel{
+      width:min(420px, 92vw);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(8,12,22,.95);
+      box-shadow: 0 30px 90px rgba(0,0,0,.7);
+      padding:14px;
+      text-align:center;
+    }
+    #wheel h3{margin:4px 0 8px 0;}
+    #wheelCanvas{width:100%; aspect-ratio: 1/1; border-radius:14px; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.10);}
+    #wheelResult{margin-top:10px; font-weight:900;}
+    #wheelBtnClose{margin-top:10px; width:100%; padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background: rgba(12,16,28,.65); color:inherit; font-weight:900;}
+
+    /* Tablet: hide brand sub, keep chips short */
+    @media (max-width: 920px){
+      .brand2 .s{display:none;}
+    }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="title">Lichtarena</div>
-      <div class="subtitle">Prototype – Offline (saubere Basis)</div>
-    </div>
 
-    <div class="pills" id="pills">
-      <span class="pill" id="pillMode">Modus: Offline lokal</span>
-      <span class="pill" id="pillBoard">Board: –</span>
-      <span class="pill" id="pillRule">Regel: Sammle 5 Lichter global → Board 2</span>
-      <span class="pill pillTurn" id="pillTurn">Am Zug: –</span>
-    </div>
-
-    <div class="topActions">
-      <button class="uiBtn" id="btnToggleUI" title="UI ein-/ausblenden">≡ UI</button>
-      <button class="uiBtn" id="btnDebug" title="Debug-Overlay (für Tablet ohne Konsole)">🐞</button>
-    </div>
-  </header>
-
-  <!-- Debug Overlay (zeigt JS-Fehler & Logs direkt im Spiel) -->
-  <div id="debugOverlay" class="debugOverlay" hidden>
-    <div class="debugHeader">
-      <div class="debugTitle">Debug</div>
-      <button id="btnDebugClose" class="debugClose">Schließen</button>
-    </div>
-    <pre id="debugText" class="debugText"></pre>
+<header class="topbar2">
+  <div class="brand2">
+    <div class="t">Lichtarena</div>
+    <div class="s">Board 1 – Offline</div>
   </div>
 
-  <main class="layout" id="layout">
-    <aside class="side" id="side">
-      <section class="card">
-        <h3>Spiel</h3>
-        <div class="row">
-          <div class="lbl">Spieler</div>
-          <div class="val" id="hudPlayer">–</div>
-        </div>
-        <div class="row">
-          <div class="lbl">Würfel</div>
-          <div class="val mono"><span id="hudDice">–</span></div>
-        </div>
-        <div class="row">
-          <button class="btn primary" id="btnRoll">Würfeln</button>
-          <button class="btn" id="btnEndTurn">Zug beenden</button>
-        </div>
-        <div class="hint" id="hudHint">Tip: Würfeln → Figur wählen → Ziel anklicken (exakt Würfel-Schritte, nur vorwärts).</div>
-      </section>
+  <div class="topMini" aria-label="Spielstatus">
+    <div class="chip">
+      <span class="bbSub">Am Zug</span>
+      <span class="turnBadge"><span id="turnDot" class="dot"></span><span id="turnLabel">RED</span></span>
+    </div>
+    <div class="chip">
+      <span class="bbSub">🎲</span>
+      <span id="hudDice" class="dicePip">6</span>
+    </div>
+    <div class="chip">
+      <span class="bbSub">💡</span>
+      <strong><span id="hudMyLights">0</span></strong><span class="bbSub">/</span><span id="hudLightGoal">5</span>
+      <span class="bbSub">· Global</span>
+      <strong><span id="hudLightTotal">0</span></strong><span class="bbSub">/</span><span id="hudLightGoal2">5</span>
+    </div>
+    <button id="btnOpenUi" class="btnUi" type="button">≡</button>
+  </div>
+</header>
 
-      <section class="card">
-        <h3>Licht</h3>
-        <div class="row">
-          <div class="lbl">Aktiv</div>
-          <div class="val mono"><span id="hudActiveLights">0</span></div>
-        </div>
-        <div class="row">
-          <div class="lbl">Global</div>
-          <div class="val mono"><span id="hudGlobal">0</span>/<span id="hudGoal">5</span></div>
-        </div>
-        <div class="players" id="playersPanel"></div>
-      </section>
+<main>
+  <div class="boardViewport">
+    <div id="boardShell" class="boardShell">
+      <svg id="edgesSvg" aria-hidden="true"></svg>
+      <div id="stage" aria-label="Felder"></div>
+    </div>
 
-      <section class="card">
-        <h3>Joker (pro Spieler)</h3>
-        <div class="jokerTable" id="jokerTable"></div>
-        <div class="hint">Start: 2× je Joker. Bei Rauswurf dreht das Glücksrad (5s) → aktiver Spieler gewinnt 1 Joker.</div>
-      </section>
-
-      <section class="card">
-        <h3>Ansicht</h3>
-        <div class="row">
-          <button class="btn" id="btnFit">Fit</button>
-          <button class="btn" id="btnResetView">Reset</button>
-          <button class="btn" id="btnToggleLines">Linien: AUS</button>
-        </div>
-        <div class="hint">Touch: 1 Finger ziehen = verschieben · 2 Finger = pinch-zoom · Maus: Scroll = zoom</div>
-      </section>
-
-      <section class="card">
-        <h3>Local</h3>
-        <div class="row">
-          <button class="btn" id="btnRestart">Restart</button>
-          <button class="btn" id="btnSave">Save</button>
-          <button class="btn" id="btnLoad">Load</button>
-        </div>
-        <div class="status" id="statusLine">Status: <span class="good">Lade…</span></div>
-      </section>
-    </aside>
-
-    <section class="boardShell" id="boardShell">
-      <div class="stage" id="stage">
-        <svg class="edges" id="edgesSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <!-- overlays -->
+    <div id="wheelOverlay" aria-label="Glücksrad">
+      <div id="wheel">
+        <h3>🎡 Glücksrad</h3>
+        <div class="bbSub">Der aktive Spieler gewinnt einen Joker (keine Nieten).</div>
+        <canvas id="wheelCanvas" width="600" height="600"></canvas>
+        <div id="wheelResult">–</div>
+        <button id="wheelBtnClose" type="button">OK</button>
       </div>
-    </section>
-  </main>
+    </div>
 
-  <!-- Glücksrad Modal -->
-  <div class="modal hidden" id="wheelModal" role="dialog" aria-modal="true">
-    <div class="modalCard">
-      <div class="modalHead">
-        <div class="modalTitle">Glücksrad – Joker Gewinn</div>
-        <button class="iconBtn" id="btnWheelClose" title="Schließen">✕</button>
-      </div>
-      <canvas id="wheelCanvas" width="520" height="520"></canvas>
-      <div class="modalFoot">
-        <div class="mono" id="wheelResult">–</div>
+    <div id="sheetOverlay" class="sheetOverlay" aria-hidden="true">
+      <div class="sheet" role="dialog" aria-modal="true" aria-label="Menü">
+        <div class="sheetHead">
+          <div id="sheetTitle" class="sheetTitle">Menü</div>
+          <button id="sheetClose" class="sheetClose" type="button">Schließen</button>
+        </div>
+
+        <!-- TURN -->
+        <section id="sheetTurn" class="sheetSection">
+          <div class="bbSub" style="margin-bottom:8px;">Spielerwechsel (offline Debug). Online später server-gesteuert.</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button id="btnPrevTurn" class="bbBtn small" type="button">◀</button>
+            <div style="flex:1; text-align:center;">
+              <div style="font-weight:900;">Am Zug: <span id="turnText">RED</span></div>
+              <div class="bbSub">6 = nochmal würfeln</div>
+            </div>
+            <button id="btnNextTurn" class="bbBtn small" type="button">▶</button>
+          </div>
+        </section>
+
+        <!-- ROLL -->
+        <section id="sheetDice" class="sheetSection" style="margin-top:14px;">
+          <div class="bbSub" style="margin-bottom:8px;">Würfel (Test)</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button id="btnRoll" class="bbBtn" type="button">Würfeln</button>
+            <div style="flex:0 0 150px;">
+              <div class="bbSub">Wert (1–6)</div>
+              <input id="diceValue" type="number" min="1" max="6" value="6" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.25); color:inherit;">
+            </div>
+          </div>
+        </section>
+
+        <!-- JOKERS -->
+        <section id="sheetJokers" class="sheetSection" style="margin-top:14px;">
+          <div class="bbSub" style="margin-bottom:8px;">Joker (aktiver Spieler)</div>
+          <div style="overflow:hidden; border-radius:14px; border:1px solid rgba(255,255,255,.10);">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr style="background: rgba(255,255,255,.06);">
+                  <th style="text-align:left; padding:10px 12px;">Joker</th>
+                  <th style="text-align:right; padding:10px 12px;">Anzahl</th>
+                </tr>
+              </thead>
+              <tbody id="jokerTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- DEV -->
+        <section id="sheetDev" class="sheetSection" style="margin-top:14px;">
+          <div class="bbSub" style="margin-bottom:8px;">Debug / Local</div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <button id="btnRestart" class="bbBtn" type="button">Restart (Board neu laden)</button>
+            <button id="btnSave" class="bbBtn" type="button">Save Local</button>
+            <button id="btnLoad" class="bbBtn" type="button">Load Local</button>
+            <button id="btnToggleLines" class="bbBtn" type="button">Linien: <span id="linesState">AUS</span></button>
+            <button id="btnFit" class="bbBtn" type="button">Fit</button>
+            <button id="btnZoomOut" class="bbBtn" type="button">−</button>
+            <div id="zoomPct" class="bbBtn" style="flex:0 0 90px; justify-content:center;">100%</div>
+            <button id="btnZoomIn" class="bbBtn" type="button">+</button>
+            <button id="btnResetView" class="bbBtn" type="button">Reset</button>
+          </div>
+
+          <!-- kept for compatibility; Board 1 has no barricade UI in "gameplay", but dev tools remain -->
+          <div class="bbSub" style="margin:14px 0 8px;">Dev Tools</div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <button id="btnForceSpawnLight" class="bbBtn" type="button">Test: Licht spawnen</button>
+            <button id="btnSpawnBarricade" class="bbBtn" type="button">Barikade spawnen</button>
+            <button id="btnClearDynamicBarricades" class="bbBtn" type="button">Barikaden löschen</button>
+            <span class="bbSub" style="align-self:center;">(Board 1 nutzt das im Gameplay nicht – nur zum Testen)</span>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="bbSub">Status</div>
+            <div id="statusLine" style="margin-top:6px; font-weight:700;">–</div>
+          </div>
+
+          <div style="display:none">
+            <!-- compatibility only -->
+            <span id="hudActiveLights">0</span>
+            <span id="hudLightGoal">5</span>
+          </div>
+        </section>
       </div>
     </div>
   </div>
+</main>
 
-  <!-- Board Complete Modal -->
-  <div class="modal hidden" id="doneModal" role="dialog" aria-modal="true">
-    <div class="modalCard">
-      <div class="modalHead">
-        <div class="modalTitle">Board 1 geschafft 🎉</div>
-        <button class="iconBtn" id="btnDoneClose" title="Schließen">✕</button>
-      </div>
-      <div class="modalBody">
-        Global wurden 5 Lichter gesammelt. Nächster Schritt: Board 2 laden.
-      </div>
-      <div class="modalFoot">
-        <button class="btn primary" id="btnGoBoard2">Weiter zu Board 2</button>
-      </div>
-    </div>
-  </div>
+<footer class="bottombar" aria-label="Spiel-Leiste">
+  <button id="bbRoll" class="bbBtn" type="button">🎲 <span>Würfeln</span></button>
+  <button id="bbJokers" class="bbBtn" type="button">🎴 <span>Joker</span></button>
+  <button id="bbTurn" class="bbBtn" type="button">👤 <span>Spieler</span></button>
+  <button id="bbDev" class="bbBtn small" type="button">⚙</button>
+</footer>
 
-  <script src="lichtarena_client.js?v=1"></script>
+<script src="./game_rules_lights_barricades.js?v=1"></script>
+<script src="./lichtarena_client.js?v=1"></script>
 </body>
 </html>
