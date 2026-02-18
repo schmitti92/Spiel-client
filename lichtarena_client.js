@@ -31,10 +31,9 @@
 
   // ---------- DOM ----------
   const $ = (id) => document.getElementById(id);
-  // Safe setters (avoid null crashes if HTML changes)
-  const setText = (el, v) => { if (el) el.textContent = String(v); };
-  const setHtml = (el, v) => { if (el) el.innerHTML = String(v); };
-  const setToggle = (el, cls, on) => { if (el) el.classList.toggle(cls, !!on); };
+  const setText = (el, v) => { if(el) el.textContent = String(v); };
+  const setHtml = (el, v) => { if(el) el.innerHTML = String(v); };
+
   const stage = $("stage");
   const edgesSvg = $("edgesSvg");
   const boardShell = $("boardShell");
@@ -82,7 +81,7 @@
   // ---------- Helpers ----------
   function setStatus(text, kind="good"){
     const cls = kind === "bad" ? "bad" : kind === "warn" ? "warn" : "good";
-    setHtml(statusLine, `Status: <span class="${cls}">${escapeHtml(text)}</span>`);
+    statusLine.innerHTML = `Status: <span class="${cls}">${escapeHtml(text)}</span>`;
   }
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({
@@ -360,7 +359,10 @@
 
     if(!container || !container.getBoundingClientRect){
       // fallback (do not crash)
-      state.cam = { x: 40, y: 40, scale: 1 };
+      state.view = state.view || {x:40,y:40,s:1};
+      state.view.s = 1;
+      state.view.x = 40;
+      state.view.y = 40;
       return;
     }
 
@@ -372,7 +374,10 @@
       if (typeof n.x==="number" && typeof n.y==="number"){ xs.push(n.x); ys.push(n.y); }
     }
     if (!xs.length){
-      state.cam = {x:0,y:0,scale:1};
+      state.view = state.view || {x:0,y:0,s:1};
+      state.view.s = 1;
+      state.view.x = 0;
+      state.view.y = 0;
       return;
     }
 
@@ -389,9 +394,10 @@
     const vx = rect.width/2;
     const vy = rect.height/2;
 
-    state.cam.scale = clamp(scale, 0.35, 2.2);
-    state.cam.x = vx - cx*state.cam.scale;
-    state.cam.y = vy - cy*state.cam.scale;
+    state.view = state.view || {x:0,y:0,s:1};
+    state.view.s = clamp(scale, 0.35, 2.2);
+    state.view.x = vx - cx*state.view.s;
+    state.view.y = vy - cy*state.view.s;
 }
 
   function renderEdges(){
@@ -528,22 +534,43 @@
 
   // ---------- HUD / Panels ----------
   function updateHUD(){
+  // SAFE_GUARD_HUD: avoid null crashes if HTML is missing some panels
+  const _playersPanel = document.getElementById("playersPanel");
+  const _jokerTable = document.getElementById("jokerTable");
+  const _hudPlayer = document.getElementById("hudPlayer");
+  const _hudDice = document.getElementById("hudDice");
+  const _hudActiveLights = document.getElementById("hudActiveLights");
+  const _hudGlobal = document.getElementById("hudGlobal");
+  const _hudGoal = document.getElementById("hudGoal");
+  const _pillTurn = document.getElementById("pillTurn");
+  try{
+    const c = String(state.turnColor||state.turn||"").toLowerCase();
+    if(c){ setText(_hudPlayer, c.toUpperCase()); setText(_pillTurn, `Am Zug: ${c.toUpperCase()}`); }
+    setText(_hudDice, state.rolled ? String(state.dice) : "–");
+    if(state.activeLights) setText(_hudActiveLights, String(state.activeLights.size||0));
+    if(typeof state.globalCollected==="number") setText(_hudGlobal, String(state.globalCollected));
+    if(typeof state.globalGoal==="number") setText(_hudGoal, String(state.globalGoal));
+  }catch(_e){}
+  if(!_playersPanel || !_jokerTable){
+    return; // stop before appendChild on null
+  }
+
     const c = activeColor();
-    setText(pillTurn, `Am Zug: ${c.toUpperCase()}`);
-    setText(hudPlayer, c.toUpperCase());
-    setText(hudDice, state.rolled ? String(state.dice) : "–");
-    setText(hudActiveLights, String(state.activeLights.size));
-    setText(hudGlobal, String(state.globalCollected));
-    setText(hudGoal, String(state.globalGoal));
+    pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
+    hudPlayer.textContent = c.toUpperCase();
+    hudDice.textContent = state.rolled ? String(state.dice) : "–";
+    hudActiveLights.textContent = String(state.activeLights.size);
+    hudGlobal.textContent = String(state.globalCollected);
+    hudGoal.textContent = String(state.globalGoal);
 
     // pills
-    setText(pillMode, "Modus: Offline lokal");
+    pillMode.textContent = "Modus: Offline lokal";
     const bname = state.board?.meta?.name ? String(state.board.meta.name) : "Board";
-    setText(pillBoard, `Board: ${bname}`);
-    setText(pillRule, `Regel: Sammle ${state.globalGoal} Lichter global → Board 2`);
+    pillBoard.textContent = `Board: ${bname}`;
+    pillRule.textContent = `Regel: Sammle ${state.globalGoal} Lichter global → Board 2`;
 
     // players panel
-    if(playersPanel) playersPanel.innerHTML = "";
+    playersPanel.innerHTML = "";
     for (const color of COLORS){
       const pc = document.createElement("div");
       pc.className = "playerCard";
@@ -583,7 +610,7 @@
 
     // joker table for active player
     const ac = activeColor();
-    if(jokerTable) jokerTable.innerHTML = "";
+    jokerTable.innerHTML = "";
     for (const j of JOKERS){
       const row = document.createElement("div");
       row.className = "jRow";
@@ -603,10 +630,6 @@
     else if (!state.selectedPieceId) hudHint.textContent = "Figur anklicken, dann ein blau markiertes Ziel wählen.";
     else hudHint.textContent = "Ziel anklicken (blau markiert).";
   }
-
-  // Backward-compat: old code called renderHud(); keep alias to prevent crashes.
-  function renderHud(){ return updateHUD(); }
-
 
   function jokerTotal(color){
     const inv = state.jokers[color] || {};
@@ -985,7 +1008,7 @@ function computeReachable(){
 
   bindBtn(btnToggleLines, () => {
     state.showLines = !state.showLines;
-    setText(btnToggleLines, `Linien: ${state.showLines ? "AN" : "AUS"}`);
+    btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
     renderEdges();
     applyCamera();
   });
@@ -1134,13 +1157,13 @@ function computeReachable(){
 
       // set board title
       const bname = state.board?.meta?.name ? String(state.board.meta.name) : "spielbrett";
-      setText(pillBoard, `Board: ${bname}`);
+      pillBoard.textContent = `Board: ${bname}`;
 
       // camera fit
       computeFitCamera();
 
       resetGame();
-      setText(btnToggleLines, `Linien: ${state.showLines ? "AN" : "AUS"}`);
+      btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
       applyCamera();
     }catch(e){
       console.error(e);
