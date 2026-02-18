@@ -601,9 +601,9 @@
     const ui = resolveUI();
 
     // Always keep these safe (even if optional panels are missing)
-    const c = String(state.turn || "").toLowerCase();
-    setText(ui.pillTurn, c ? `Am Zug: ${c.toUpperCase()}` : "Am Zug: –");
-    setText(ui.hudPlayer, c ? c.toUpperCase() : "–");
+    var __turn = String(state.turn || "").toLowerCase();
+    setText(ui.pillTurn, c ? `Am Zug: ${__turn.toUpperCase()}` : "Am Zug: –");
+    setText(ui.hudPlayer, __turn ? __turn.toUpperCase() : "–");
     setText(ui.hudDice, state.rolled ? String(state.dice) : "–");
     setText(ui.hudActiveLights, String(state.activeLights?.size ?? 0));
     setText(ui.hudGlobal, String(state.globalCollected ?? 0));
@@ -625,7 +625,7 @@
   const _pillTurn = document.getElementById("pillTurn");
   try{
     const c = String(state.turnColor||state.turn||"").toLowerCase();
-    if(c){ setText(_hudPlayer, c.toUpperCase()); setText(_pillTurn, `Am Zug: ${c.toUpperCase()}`); }
+    if(c){ setText(_hudPlayer, c.toUpperCase()); setText(_pillTurn, `Am Zug: ${__turn.toUpperCase()}`); }
     setText(_hudDice, state.rolled ? String(state.dice) : "–");
     if(state.activeLights) setText(_hudActiveLights, String(state.activeLights.size||0));
     if(typeof state.globalCollected==="number") setText(_hudGlobal, String(state.globalCollected));
@@ -636,7 +636,7 @@
   }
 
     const c = activeColor();
-    pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
+    pillTurn.textContent = `Am Zug: ${__turn.toUpperCase()}`;
     hudPlayer.textContent = c.toUpperCase();
     hudDice.textContent = state.rolled ? String(state.dice) : "–";
     hudActiveLights.textContent = String(state.activeLights.size);
