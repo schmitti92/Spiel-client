@@ -43,10 +43,10 @@
     return null;
   };
 
-  const setText = (el, v) => { if(el) el.textContent = String(v); };
-  const setHtml  = (el, v) => { if(el) el.innerHTML   = String(v); };
-  const safeAppend = (el, child) => { if(el && child) el.appendChild(child); };
-  const safeClear  = (el) => { if(el) el.innerHTML = ""; };
+  if (typeof setText === 'undefined') { var setText = (el, v) => { if(el) el.textContent = String(v); }; }
+  if (typeof setHtml === 'undefined') { var setHtml = (el, v) => { if(el) el.innerHTML = String(v); }; }
+  if (typeof safeAppend === 'undefined') { var safeAppend = (el, child) => { if(el && child) el.appendChild(child); }; }
+  if (typeof safeClear === 'undefined') { var safeClear = (el) => { if(el) el.innerHTML = ''; }; }
 
   // Common alias groups (so HTML can evolve without crashing)
   const UI_IDS = {
@@ -104,8 +104,8 @@
     return { missReq, missOpt };
   }
 
-  const setText = (el, v) => { if(el) el.textContent = String(v); };
-  const setHtml = (el, v) => { if(el) el.innerHTML = String(v); };
+  if (typeof setText === 'undefined') { var setText = (el, v) => { if(el) el.textContent = String(v); }; }
+  if (typeof setHtml === 'undefined') { var setHtml = (el, v) => { if(el) el.innerHTML = String(v); }; }
 
   const stage = $("stage");
   const edgesSvg = $("edgesSvg");
