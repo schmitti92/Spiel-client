@@ -342,6 +342,7 @@
       state.globalCollected = Number(p.globalCollected||0);
       state.globalGoal = Number(p.globalGoal||5);
       state.jokers = p.jokers || state.jokers;
+      normalizeJokers(1);
       state.dynamicBarricades = new Set(Array.isArray(p.dynamicBarricades) ? p.dynamicBarricades.map(String) : []);
 
       state.showLines = !!p.showLines;
@@ -638,6 +639,8 @@
         if (state.animating) return;
         toggleJoker(j.id);
       };
+      row.addEventListener("click", clicker);
+      row.addEventListener("pointerup", (e)=>{ e.preventDefault(); clicker(); }, {passive:false});
       name.addEventListener("click", clicker);
       name.addEventListener("pointerup", (e)=>{ e.preventDefault(); clicker(); }, {passive:false});
       count.addEventListener("click", clicker);
