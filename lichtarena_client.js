@@ -143,8 +143,6 @@
     canRollAgain: false,        // when dice==6
     selectedPieceId: null,
 
-
-    moved: false,
     // joker usage
     activeJokerId: null,        // currently selected joker (for this turn)
     jokerMode: null,            // {id, step, data} for multi-step jokers
@@ -226,11 +224,9 @@
     state.dice = 0;
     state.rolled = false;
     state.canRollAgain = false;
-    state.moved = false;
     state.selectedPieceId = null;
     state.animating = false;
 
-    state.moved = false;
     // pieces: Board 1 will use 4 pieces total? (dein späterer Plan)
     // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
     // Wenn du später 5 pro Farbe willst: hier umstellen.
@@ -565,7 +561,7 @@
     const c = activeColor();
     pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
     hudPlayer.textContent = c.toUpperCase();
-    hudDice.textContent = state.rolled ? String(state.dice) : "–";
+    hudDice.textContent = state.rolled ? String(state.dice) : (state.pendingJokerId==="j3" ? "– (Doppelwurf)" : "–");
     hudActiveLights.textContent = String(state.activeLights.size);
     hudGlobal.textContent = String(state.globalCollected);
     hudGoal.textContent = String(state.globalGoal);
@@ -768,10 +764,36 @@ function toggleJoker(jokerId){
   }
 
   if (jokerId === "j3"){ // Doppelwurf
-    if (!state.rolled){
-      setStatus("Doppelwurf geht erst nach dem Würfeln.", "warn");
+    if (state.moved){
+      setStatus("Doppelwurf nur vor dem Laufen.", "warn");
       return;
     }
+
+    // before rolling -> arm the joker, next roll will be 2 dice
+    if (!state.rolled){
+      state.pendingJokerId = (state.pendingJokerId === "j3") ? null : "j3";
+      updateHUD();
+      setStatus(state.pendingJokerId
+        ? "🎲 Doppelwurf aktiviert: Drücke jetzt Würfeln (2 Würfel werden addiert)."
+        : "Doppelwurf deaktiviert.", "good");
+      return;
+    }
+
+    // after rolling -> roll a second die and add it
+    const first = Number(state.dice) || 0;
+    const second = randInt(1,6);
+    const sum = first + second;
+
+    state.dice = sum;
+    state.canRollAgain = (first === 6 || second === 6);
+
+    consumeJoker(activeColor(), "j3");
+    computeReachable();
+    renderTokens();
+    updateHUD();
+    setStatus(`🎲 Doppelwurf: ${first} + ${second} = ${sum}`, "good");
+    return;
+  }
     if (state.moved){
       setStatus("Doppelwurf nur vor dem Laufen.", "warn");
       return;
@@ -810,14 +832,34 @@ function toggleJoker(jokerId){
 
   // Toggleable jokers that affect movement this turn (consumed after a move)
   if (jokerId === "j2"){ // Alle Farben
-    if (!state.rolled){
-      setStatus("Alle Farben: zuerst würfeln, dann darfst du eine beliebige Figur auswählen.", "warn");
-      return;
-    }
     if (state.moved){
       setStatus("Alle Farben nur vor dem Laufen aktivierbar.", "warn");
       return;
     }
+    if (!state.rolled){
+      setStatus("Alle Farben erst nach dem Würfeln aktivierbar.", "warn");
+      return;
+    }
+    state.activeJokerId = (state.activeJokerId === "j2") ? null : "j2";
+    clearJokerMode();
+    computeReachable();
+    renderTokens();
+    updateHUD();
+    setStatus(state.activeJokerId
+      ? "🌈 Alle Farben aktiv: du darfst eine beliebige Figur bewegen (für diesen Zug)."
+      : "Alle Farben deaktiviert.", "good");
+    return;
+  }
+    state.activeJokerId = (state.activeJokerId === "j2") ? null : "j2";
+    clearJokerMode();
+    if (state.rolled) computeReachable();
+    renderTokens();
+    updateHUD();
+    setStatus(state.activeJokerId
+      ? "🌈 Alle Farben aktiv: du darfst (nach dem Würfeln) eine beliebige Figur bewegen."
+      : "Alle Farben deaktiviert.", "good");
+    return;
+  }
     state.activeJokerId = (state.activeJokerId === "j2") ? null : "j2";
     clearJokerMode();
     computeReachable();
@@ -853,7 +895,29 @@ function toggleJoker(jokerId){
   function rollDice(){
     if (state.animating) return;
     const c = activeColor();
-    // only active player's piece can be moved
+
+    // Doppelwurf armed before rolling -> roll 2 dice and add them
+    if (state.pendingJokerId === "j3"){
+      const have = Number(state.jokers[c]?.["j3"] ?? 0) || 0;
+      if (have <= 0){
+        state.pendingJokerId = null;
+        setStatus("Doppelwurf nicht verfügbar.", "warn");
+      } else {
+        const d1 = randInt(1,6);
+        const d2 = randInt(1,6);
+        state.dice = d1 + d2;
+        state.rolled = true;
+        state.canRollAgain = (d1 === 6 || d2 === 6);
+        state.pendingJokerId = null;
+        consumeJoker(c, "j3");
+        setStatus(`🎲 ${c.toUpperCase()} Doppelwurf: ${d1} + ${d2} = ${state.dice}` + (state.canRollAgain ? " (6 → Bonuswurf möglich)" : ""), "good");
+        computeReachable();
+        updateHUD();
+        return;
+      }
+    }
+
+    // normal roll
     state.dice = randInt(1,6);
     state.rolled = true;
     state.canRollAgain = (state.dice===6);
@@ -872,6 +936,8 @@ function toggleJoker(jokerId){
     state.canRollAgain = false;
     // clear one-turn joker selection/modes
     state.activeJokerId = null;
+    state.pendingJokerId = null;
+    state.pendingJokerId = null;
     clearJokerMode();
     clearExpiredShields();
 
@@ -889,9 +955,9 @@ function toggleJoker(jokerId){
     if (!p) return;
 
     // Allow selecting other colors only if "Alle Farben" joker is active and we are in this turn before moving.
-    const canAny = (state.activeJokerId === "j2") && state.rolled && !state.moved;
+    const canAny = (state.activeJokerId === "j2") && state.rolled;
     if (p.color !== activeColor() && !canAny){
-      setStatus("Du kannst nur Figuren der aktiven Farbe auswählen – außer Joker „Alle Farben“ ist aktiv (nach dem Würfeln, vor dem Laufen).", "warn");
+      setStatus("Du kannst nur die Figur des aktiven Spielers bewegen (außer mit Joker „Alle Farben“ nach dem Würfeln).", "warn");
       return;
     }
 
@@ -1000,7 +1066,7 @@ function handleTokenClick(pieceId){
     // Auswahl-Usability: Klick auf ein Feld mit eigenen Figuren (vor dem Würfeln oder auf dem aktuellen Feld)
     // wechselt die ausgewählte Figur (zyklisch), damit man sie klar auswählen kann.
     const sp0 = getSelectedPiece();
-    const canAny = (state.activeJokerId === "j2") && state.rolled && !state.moved; // Joker „Alle Farben“
+    const canAny = (state.activeJokerId === "j2") && state.rolled; // Joker „Alle Farben“
     const selectableHere = piecesAt(nodeId).filter(p => canAny ? true : (p.color === myColor));
 
     // Auswahl ist jederzeit erlaubt, solange noch nicht gelaufen wurde:
@@ -1042,8 +1108,6 @@ function handleTokenClick(pieceId){
     const fromNode = String(piece.nodeId);
 
     await moveAlongPath(piece, path);
-
-    state.moved = true;
 
     // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad
     const occ = piecesAt(to).filter(p => p.id !== piece.id);
