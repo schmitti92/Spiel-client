@@ -748,6 +748,10 @@ function toggleJoker(jokerId){
       setStatus("Neuwurf geht erst nach dem Würfeln.", "warn");
       return;
     }
+    if (state.moved){
+      setStatus("Neuwurf nur vor dem Laufen.", "warn");
+      return;
+    }
     const was = state.dice;
     state.dice = randInt(1,6);
     state.canRollAgain = (state.dice===6);
