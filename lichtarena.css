@@ -195,7 +195,8 @@ body{
   box-shadow: 0 0 0 2px rgba(90,162,255,.18), 0 16px 40px rgba(0,0,0,.25);
 }
 .node.selected{
-  outline: 2px solid rgba(255,255,255,.35);
+  outline: 3px solid rgba(255,255,255,.55);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.12), 0 18px 48px rgba(0,0,0,.30);
 }
 .node.start-red{ border-color: rgba(255,90,106,.45); }
 .node.start-blue{ border-color: rgba(90,162,255,.45); }
@@ -222,8 +223,18 @@ body{
   border-width:2px;
 }
 .token.sel{
-  outline:2px solid rgba(255,255,255,.55);
+  outline:3px solid rgba(255,255,255,.75);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.18), 0 0 22px rgba(255,255,255,.28), 0 10px 26px rgba(0,0,0,.30);
+  transform: scale(1.06);
+  animation: pulseSel 1.1s ease-in-out infinite;
 }
+
+@keyframes pulseSel{
+  0%{ transform: scale(1.06); }
+  50%{ transform: scale(1.12); }
+  100%{ transform: scale(1.06); }
+}
+
 .token.label{
   position:absolute;
   bottom:-18px;
