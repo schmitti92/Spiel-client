@@ -167,6 +167,9 @@
     animating: false,
     moved: false,
 
+    // Defensive shields per color (turns remaining)
+    shields: { red:0, blue:0, green:0, yellow:0 },
+
     // camera
     cam: { x:0, y:0, scale:1 },
   };
@@ -224,7 +227,13 @@
     state.turnIndex = 0;
     state.dice = 0;
     state.rolled = false;
+    // Shield duration ticks down at each completed turn
+    for (const k of Object.keys(state.shields||{})){
+      const v = Number(state.shields[k]||0) || 0;
+      if (v > 0) state.shields[k] = v - 1;
+    }
     state.moved = false;
+    state.shields = { red:0, blue:0, green:0, yellow:0 };
     state.canRollAgain = false;
     state.moved = false;
     state.selectedPieceId = null;
@@ -1049,6 +1058,12 @@ function handleTokenClick(pieceId){
       if (lastNode !== String(nodeId)) k = 0;
       const opp = opponents[k % opponents.length];
       state.jokerMode.data = { k: (k+1), lastNode: String(nodeId) };
+
+      // Schutzschild: geschützte Figuren dürfen nicht getauscht werden
+      if (isShielded(sel.color) || isShielded(opp.color)){
+        setStatus("Aktion nicht möglich.", "warn");
+        return;
+      }
 
       // swap node positions
       const aNode = String(sel.nodeId);
