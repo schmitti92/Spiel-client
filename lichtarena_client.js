@@ -225,10 +225,15 @@
     // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
     // Wenn du später 5 pro Farbe willst: hier umstellen.
     state.pieces = [];
+    // 4 Spielfiguren pro Farbe (wie klassisches Barikade-Feeling)
+    // Start: alle Figuren einer Farbe stehen auf dem ersten Startfeld dieser Farbe (Stacking erlaubt).
+    const PIECES_PER_COLOR = 4;
     for (const color of COLORS){
       const starts = state.startByColor.get(color) || [];
-      const startNode = starts[0] || findAnyNormalNodeId() || findAnyNodeId();
-      state.pieces.push({ id:`${color}_1`, color, nodeId:startNode });
+      const startNode = String(starts[0] || findAnyNormalNodeId() || findAnyNodeId());
+      for (let i=1;i<=PIECES_PER_COLOR;i++){
+        state.pieces.push({ id:`${color}_${i}`, color, nodeId:startNode });
+      }
     }
     state.selectedPieceId = state.pieces[0]?.id || null;
 
@@ -482,8 +487,11 @@
       const stack = nodeEl.querySelector(".tokenStack");
       if (!stack) continue;
 
-      // show up to 1 big token (Board 1: 1 token per node expected)
-      for (const p of list.slice(0,1)){
+      // Tokens pro Feld:
+      // - 1 Figur: groß anzeigen
+      // - mehrere Figuren: bis zu 4 kleine Tokens (klickbar), darüber "+N" Hinweis
+      if (list.length === 1){
+        const p = list[0];
         const tok = document.createElement("div");
         tok.className = "token big" + (p.id===state.selectedPieceId ? " sel" : "");
         tok.style.background = colorToCss(p.color);
@@ -493,8 +501,27 @@
           selectPiece(p.id);
         });
         stack.appendChild(tok);
+      } else {
+        const show = list.slice(0,4);
+        for (const p of show){
+          const tok = document.createElement("div");
+          tok.className = "token" + (p.id===state.selectedPieceId ? " sel" : "");
+          tok.style.background = colorToCss(p.color);
+          tok.title = `Figur ${p.id}`;
+          tok.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            selectPiece(p.id);
+          });
+          stack.appendChild(tok);
+        }
+        if (list.length > 4){
+          const lbl = document.createElement("div");
+          lbl.className = "token label";
+          lbl.textContent = `+${list.length - 4}`;
+          stack.appendChild(lbl);
+        }
       }
-    }
+}
 
     // update node classes (reachable/selected/light)
     for (const nodeEl of Array.from(stage.querySelectorAll(".node"))){
