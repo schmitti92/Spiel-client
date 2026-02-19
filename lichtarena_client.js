@@ -621,9 +621,20 @@
     }
 
     // hint
-    if (!state.rolled) hudHint.textContent = "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).";
-    else if (!state.selectedPieceId) hudHint.textContent = "Figur anklicken, dann ein blau markiertes Ziel wählen.";
-    else hudHint.textContent = "Ziel anklicken (blau markiert).";
+    const sp = getSelectedPiece();
+    const spNum = sp ? (String(sp.id).split("_")[1] || "") : "";
+    const spTag = sp ? `Ausgewählt: ${sp.color.toUpperCase()}${spNum ? " #" + spNum : ""}` : "";
+    if (!state.rolled){
+      hudHint.textContent = spTag
+        ? `${spTag} — Würfeln → dann Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).`
+        : "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).";
+    } else if (!state.selectedPieceId){
+      hudHint.textContent = "Figur anklicken (eigene Farbe), dann ein blau markiertes Ziel wählen.";
+    } else {
+      hudHint.textContent = spTag
+        ? `${spTag} — Ziel anklicken (blau markiert).`
+        : "Ziel anklicken (blau markiert).";
+    }
   }
 
   // Backward-compat alias: older code calls renderHud()
@@ -700,6 +711,28 @@
     if (state.animating) return;
 
     const myColor = activeColor();
+
+    // Auswahl-Usability: Klick auf ein Feld mit eigenen Figuren (vor dem Würfeln oder auf dem aktuellen Feld)
+    // wechselt die ausgewählte Figur (zyklisch), damit man sie klar auswählen kann.
+    const myHere = piecesAt(nodeId).filter(p => p.color === myColor);
+    const sp0 = getSelectedPiece();
+    if (myHere.length > 0 && (!state.rolled || (sp0 && String(sp0.nodeId) === String(nodeId)) || !sp0)){
+      myHere.sort((a,b) => String(a.id).localeCompare(String(b.id)));
+      let next = myHere[0];
+      if (sp0 && String(sp0.nodeId) === String(nodeId)){
+        const i = myHere.findIndex(p => p.id === sp0.id);
+        next = myHere[(i + 1) % myHere.length];
+      }
+      state.selectedPieceId = next.id;
+      if (state.rolled) computeReachable();
+      renderTokens();
+      updateHUD();
+      setStatus(`Ausgewählt: ${myColor.toUpperCase()} ${String(next.id)}`, "good");
+
+      // Vor dem Würfeln (oder Klick auf das aktuelle Feld) ist das nur Auswahl – kein Zug.
+      if (!state.rolled || (sp0 && String(sp0.nodeId) === String(nodeId))) return;
+    }
+
     const piece = state.pieces.find(p => p.id === state.selectedPieceId);
 
     if (!piece || piece.color !== myColor){
