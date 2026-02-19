@@ -1022,8 +1022,9 @@ function handleTokenClick(pieceId){
 
     const piece = state.pieces.find(p => p.id === state.selectedPieceId);
 
-    if (!piece || piece.color !== myColor){
-      setStatus("Erst eine eigene Figur auswählen (aktiver Spieler).","warn");
+    const allowAnyColor = (state.activeJokerId === "j2") && state.rolled && !state.moved; // Alle Farben
+    if (!piece || (!allowAnyColor && piece.color !== myColor)){
+      setStatus("Erst eine Figur auswählen (eigene Farbe – außer mit Joker „Alle Farben“ nach dem Würfeln).","warn");
       return;
     }
     if (!state.rolled){
