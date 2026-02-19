@@ -143,6 +143,8 @@
     canRollAgain: false,        // when dice==6
     selectedPieceId: null,
 
+
+    moved: false,
     // joker usage
     activeJokerId: null,        // currently selected joker (for this turn)
     jokerMode: null,            // {id, step, data} for multi-step jokers
@@ -887,9 +889,9 @@ function toggleJoker(jokerId){
     if (!p) return;
 
     // Allow selecting other colors only if "Alle Farben" joker is active and we are in this turn before moving.
-    const canAny = (state.activeJokerId === "j2") && state.rolled;
+    const canAny = (state.activeJokerId === "j2") && state.rolled && !state.moved;
     if (p.color !== activeColor() && !canAny){
-      setStatus("Du kannst nur Figuren der aktiven Farbe auswählen – außer Joker „Alle Farben“ ist aktiv (nach dem Würfeln).", "warn");
+      setStatus("Du kannst nur Figuren der aktiven Farbe auswählen – außer Joker „Alle Farben“ ist aktiv (nach dem Würfeln, vor dem Laufen).", "warn");
       return;
     }
 
@@ -998,7 +1000,7 @@ function handleTokenClick(pieceId){
     // Auswahl-Usability: Klick auf ein Feld mit eigenen Figuren (vor dem Würfeln oder auf dem aktuellen Feld)
     // wechselt die ausgewählte Figur (zyklisch), damit man sie klar auswählen kann.
     const sp0 = getSelectedPiece();
-    const canAny = (state.activeJokerId === "j2") && state.rolled; // Joker „Alle Farben“
+    const canAny = (state.activeJokerId === "j2") && state.rolled && !state.moved; // Joker „Alle Farben“
     const selectableHere = piecesAt(nodeId).filter(p => canAny ? true : (p.color === myColor));
 
     // Auswahl ist jederzeit erlaubt, solange noch nicht gelaufen wurde:
@@ -1041,6 +1043,8 @@ function handleTokenClick(pieceId){
 
     await moveAlongPath(piece, path);
 
+    state.moved = true;
+
     // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad
     const occ = piecesAt(to).filter(p => p.id !== piece.id);
     if (occ.length){
@@ -1074,8 +1078,6 @@ function handleTokenClick(pieceId){
     } else {
       setStatus(`Zug: ${piece.color.toUpperCase()} → ${to}`,"good");
     }
-
-    state.moved = true;
 
     // Consume turn-jokers that are applied on movement
     if (state.activeJokerId === "j2" || state.activeJokerId === "j5"){
