@@ -1,1216 +1,713 @@
-/* Lichtarena – saubere neue Grundarchitektur (Offline)
-   Dateien/Struktur:
-   - lichtarena.html lädt nur lichtarena.css + lichtarena_client.js
-   - Board-Datei: ./lichtarena_board_1.json (separat von barikade board.json)
-   Ziele Board 1:
-   - Vorwärts-Edges (from->to). Rückwärts verboten.
-   - Würfel-Schritte müssen komplett genutzt werden (exakt N Schritte).
-   - Rauswerfen: Wenn Ziel-Feld belegt (anderer Spieler) -> Gegner zurück zum Start.
-     Danach Glücksrad 5s: aktiver Spieler bekommt 1 Joker (keine Nieten).
-   - Bei Würfel=6: aktiver Spieler darf erneut würfeln.
-   - Lichtfelder sind gold; verschwinden nach Einsammeln.
-   - Wenn kein Licht auf dem Feld: neues Licht zufällig auf freies Normalfeld.
-   - Anzeige gesammelt (pro Spieler + global). Bei global=5: Board1 done modal.
-*/
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Lichtarena – Figuren auswählen & laufen (stabil)</title>
+  <style>
+    :root { --bg:#0b0f17; --panel:#121a2a; --text:#e9eefc; --muted:#aab6d6; --line:rgba(255,255,255,.10); }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: radial-gradient(1200px 800px at 20% 10%, #1b2a5a 0%, var(--bg) 60%);
+      color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 12px; }
+    .top {
+      display:flex; gap:12px; flex-wrap:wrap; align-items:stretch;
+    }
+    .card {
+      background: rgba(18,26,42,.92);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+      padding: 12px;
+    }
+    .hud { flex: 1 1 360px; min-width: 320px; }
+    .controls { flex: 1 1 320px; min-width: 320px; display:flex; flex-direction:column; gap:10px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .lbl { color: var(--muted); font-size: 12px; }
+    .big { font-size: 18px; font-weight: 700; }
+    button, select {
+      appearance:none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+    }
+    button:active { transform: translateY(1px); }
+    button[disabled] { opacity:.55; cursor:not-allowed; }
+    select { font-weight: 600; }
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      font-size: 12px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; }
+    .msg { margin-top: 8px; padding: 10px; border-radius: 12px; border: 1px dashed var(--line); color: var(--muted); }
+    .boardCard { margin-top: 12px; padding: 10px; }
+    canvas {
+      width: 100%;
+      height: auto;
+      display:block;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      touch-action: none; /* wichtig für Tablet */
+    }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+    .k { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:2px 6px; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.05); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="card hud">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div class="lbl">Aktiver Spieler</div>
+          <div class="big" id="turnLabel">–</div>
+        </div>
+        <div class="pill" title="Würfel">
+          <span class="lbl">Wurf:</span>
+          <span class="big" id="diceLabel">–</span>
+        </div>
+      </div>
 
+      <div class="row" style="margin-top:10px;">
+        <div class="pill" style="flex:1 1 auto;">
+          <span class="lbl">Ausgewählte Figur:</span>
+          <span id="selLabel">keine</span>
+        </div>
+        <div class="pill" style="flex:0 0 auto;" title="Ziehe erst eine Figur an, dann würfeln, dann laufen. Figur kannst du jederzeit wechseln.">
+          <span class="lbl">Regel:</span>
+          <span>Figur jederzeit wechselbar ✅</span>
+        </div>
+      </div>
+
+      <div class="msg" id="msg">Tipp: Tippe/Klicke eine Figur im Haus an, um sie auszuwählen. Dann würfeln. Dann ein Ziel-Feld antippen/klicken.</div>
+
+      <div class="hint">
+        Demo-Board: Einfaches Grid mit vier Häusern + Lauf-Feldern.
+        Das ist bewusst <b>stabil</b>: Auswahl ist nur Status und zerstört nie das Board.
+      </div>
+    </div>
+
+    <div class="card controls">
+      <div class="row">
+        <button id="btnRoll">🎲 Würfeln</button>
+        <button id="btnEnd">➡️ Nächster Spieler</button>
+        <button id="btnReset">↩️ Reset</button>
+      </div>
+      <div class="row">
+        <span class="lbl">Spieler:</span>
+        <select id="playersSel">
+          <option value="2">2 Spieler</option>
+          <option value="3">3 Spieler</option>
+          <option value="4" selected>4 Spieler</option>
+        </select>
+        <span class="lbl">Figuren/Farbe:</span>
+        <select id="perColorSel">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
+        </select>
+      </div>
+
+      <div class="row" style="gap:8px;">
+        <span class="pill"><span class="dot" style="background:#ff4d4d"></span> Rot</span>
+        <span class="pill"><span class="dot" style="background:#4dff7a"></span> Grün</span>
+        <span class="pill"><span class="dot" style="background:#4da3ff"></span> Blau</span>
+        <span class="pill"><span class="dot" style="background:#ffd24d"></span> Gelb</span>
+      </div>
+
+      <div class="hint">
+        <b>Wichtig:</b> Du kannst die Figur auch <i>nach dem Würfeln</i> noch wechseln – solange du noch nicht gelaufen bist.
+        <br/>Wenn du ein Ziel wählst, wird exakt <b>die aktuell ausgewählte Figur</b> bewegt.
+      </div>
+    </div>
+  </div>
+
+  <div class="card boardCard">
+    <canvas id="c" width="900" height="650"></canvas>
+    <div class="hint">
+      Steuerung: <span class="k">Figur antippen</span> → <span class="k">Würfeln</span> → <span class="k">Ziel antippen</span>.
+      <br/>Du kannst auch: Figur antippen → Figur wechseln → würfeln → Figur wechseln → Ziel.
+    </div>
+  </div>
+</div>
+
+<script>
 (() => {
-  "use strict";
+  // =========================
+  // Helpers
+  // =========================
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 
-  // ---------- Constants ----------
-    // Board selection via URL param (?board=1 / ?board=2 ...)
-  const BOARD_MAP = {
-    "1": "./lichtarena_board_1.json",
-    "2": "./lichtarena_board_2.json"
+  // =========================
+  // Canvas
+  // =========================
+  const canvas = $("c");
+  const ctx = canvas.getContext("2d", { alpha: true });
+
+  function fitCanvasToCSS() {
+    // Zeichnen in Canvas-Pixeln (width/height), aber Input muss in Canvas-Koordinaten.
+    // Wir lassen width/height fix (stabil) und skalieren Input.
+  }
+
+  // =========================
+  // UI
+  // =========================
+  const ui = {
+    turnLabel: $("turnLabel"),
+    diceLabel: $("diceLabel"),
+    selLabel: $("selLabel"),
+    msg: $("msg"),
+    btnRoll: $("btnRoll"),
+    btnEnd: $("btnEnd"),
+    btnReset: $("btnReset"),
+    playersSel: $("playersSel"),
+    perColorSel: $("perColorSel"),
   };
-  const qs = new URLSearchParams(location.search);
-  const boardKey = (qs.get("board") || "1").trim();
-  const BOARD_URL = BOARD_MAP[boardKey] || BOARD_MAP["1"];
-  const LS_KEY = "lichtarena_offline_save_clean_v1";
-  const COLORS = ["red","blue","green","yellow"];
 
-  const JOKERS = [
-    { id:"j1", name:"Neuwurf" },
-    { id:"j2", name:"Alle Farben" },
-    { id:"j3", name:"Doppelwurf" },
-    { id:"j4", name:"Barikade versetzen" },
-    { id:"j5", name:"Durch Barikade" },
+  const setMsg = (t) => ui.msg.textContent = String(t);
+
+  // =========================
+  // Game State (stabil)
+  // =========================
+  const COLORS = [
+    { name: "Rot",  key:"R", fill:"#ff4d4d" },
+    { name: "Grün", key:"G", fill:"#4dff7a" },
+    { name: "Blau", key:"B", fill:"#4da3ff" },
+    { name: "Gelb", key:"Y", fill:"#ffd24d" },
   ];
 
-  // ---------- DOM ----------
-  const $ = (id) => document.getElementById(id);
-  const stage = $("stage");
-  const edgesSvg = $("edgesSvg");
-  const boardShell = $("boardShell");
-
-  const pillMode = $("pillMode");
-  const pillBoard = $("pillBoard");
-  const pillRule = $("pillRule");
-  const pillTurn = $("pillTurn");
-
-  const btnToggleUI = $("btnToggleUI");
-  const layout = $("layout");
-  const side = $("side");
-
-  const btnRoll = $("btnRoll");
-  const btnEndTurn = $("btnEndTurn");
-  const btnFit = $("btnFit");
-  const btnResetView = $("btnResetView");
-  const btnToggleLines = $("btnToggleLines");
-  const btnRestart = $("btnRestart");
-  const btnSave = $("btnSave");
-  const btnLoad = $("btnLoad");
-
-  const hudPlayer = $("hudPlayer");
-  const hudDice = $("hudDice");
-  const hudActiveLights = $("hudActiveLights");
-  const hudGlobal = $("hudGlobal");
-  const hudGoal = $("hudGoal");
-  const hudHint = $("hudHint");
-  const statusLine = $("statusLine");
-
-  const playersPanel = $("playersPanel");
-  const jokerTable = $("jokerTable");
-
-  // wheel modal
-  const wheelModal = $("wheelModal");
-  const wheelCanvas = $("wheelCanvas");
-  const wheelResult = $("wheelResult");
-  const btnWheelClose = $("btnWheelClose");
-
-  // done modal
-  const doneModal = $("doneModal");
-  const btnDoneClose = $("btnDoneClose");
-  const btnGoBoard2 = $("btnGoBoard2");
-
-  // ---------- Helpers ----------
-  function setStatus(text, kind="good"){
-    const cls = kind === "bad" ? "bad" : kind === "warn" ? "warn" : "good";
-    statusLine.innerHTML = `Status: <span class="${cls}">${escapeHtml(text)}</span>`;
-  }
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[c]));
-  }
-  function colorToCss(c){
-    c = String(c||"").toLowerCase();
-    if (c==="red") return "rgba(255,90,106,.95)";
-    if (c==="blue") return "rgba(90,162,255,.95)";
-    if (c==="green") return "rgba(46,229,157,.95)";
-    if (c==="yellow") return "rgba(255,210,80,.95)";
-    return "rgba(255,255,255,.9)";
-  }
-  function badgeColor(c){
-    c = String(c||"").toLowerCase();
-    if (c==="red") return "rgba(255,90,106,.9)";
-    if (c==="blue") return "rgba(90,162,255,.9)";
-    if (c==="green") return "rgba(46,229,157,.9)";
-    if (c==="yellow") return "rgba(255,210,80,.9)";
-    return "rgba(255,255,255,.8)";
-  }
-  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
-  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
-
-  function isNodeBlocked(nodeId){
-    const id = String(nodeId);
-    const n = state.nodeById.get(id);
-    if(!n) return true;
-    const t = String(n.type||"normal").toLowerCase();
-    if(t==="barricade_fixed") return true; // reserved for later boards
-    // dynamic barricades (future): allow either Set or Array storage
-    if(state.dynamicBarricades){
-      if(state.dynamicBarricades instanceof Set && state.dynamicBarricades.has(id)) return true;
-      if(Array.isArray(state.dynamicBarricades) && state.dynamicBarricades.includes(id)) return true;
-    }
-    return false;
-  }
-
-  // ---------- State ----------
   const state = {
-    board: null,
-    nodeById: new Map(),
-    outgoing: new Map(),        // from -> [{to}] (visual arrows)
-    incoming: new Map(),        // to -> [{from}] (optional)
-    neighbors: new Map(),       // undirected movement graph: node -> [neighbor]
-    startByColor: new Map(),    // color -> [nodeId]
-
-    // game
-    turnIndex: 0,
-    dice: 0,
-    rolled: false,
-    canRollAgain: false,        // when dice==6
-    selectedPieceId: null,
-
-    // pieces: {id,color,nodeId}
-    pieces: [],
-
-    // lights
-    activeLights: new Set(),    // nodeIds
-    collected: { red:0, blue:0, green:0, yellow:0 },
-    globalCollected: 0,
-    globalGoal: 5,
-
-    // jokers inventory per color
-    jokers: {
-      red:{}, blue:{}, green:{}, yellow:{}
-    },
-
-    // UI / view
-    showLines: false,
-    reachable: new Map(),       // nodeId -> path (array of nodeIds, including start+...+dest)
-    animating: false,
-
-    // camera
-    cam: { x:0, y:0, scale:1 },
+    playersCount: 4,
+    piecesPerColor: 4,
+    players: [],
+    currentPlayerIndex: 0,
+    dice: null,
+    hasRolled: false,
+    selectedPieceId: null, // <— robust: nur ID speichern
+    awaitingMove: false,
   };
 
-  // ---------- Load Board ----------
-  async function loadBoard(){
-    const url = `${BOARD_URL}?v=${Date.now()}`;
-    const res = await fetch(url, { cache:"no-store" });
-    if (!res.ok) throw new Error(`Board konnte nicht geladen werden: ${BOARD_URL} (HTTP ${res.status})`);
-    return await res.json();
-  }
+  // Board: simples Grid + "Häuser" + "Lauf-Felder"
+  const board = {
+    cols: 13,
+    rows: 9,
+    cell: 60,
+    offsetX: 60,
+    offsetY: 60,
+    // definierte Haus-Zellen (je Farbe) & Laufpfad (Liste von Zellen)
+    houses: {},  // key -> array of cells
+    path: [],    // list of cells (x,y)
+  };
 
-  function buildMaps(){
-    state.nodeById = new Map();
-    state.outgoing = new Map();
-    state.incoming = new Map();
-    state.neighbors = new Map();
-    state.startByColor = new Map();
-
-    for (const n of (state.board.nodes||[])){
-      state.nodeById.set(String(n.id), n);
-      if (String(n.type||"").toLowerCase()==="start"){
-        const color = String(n.color||"").toLowerCase();
-        if (!state.startByColor.has(color)) state.startByColor.set(color, []);
-        state.startByColor.get(color).push(String(n.id));
-      }
-    }
-
-    const addOut = (a,b) => {
-      if (!state.outgoing.has(a)) state.outgoing.set(a, []);
-      state.outgoing.get(a).push({to:b});
-    };
-    const addIn = (a,b) => {
-      if (!state.incoming.has(b)) state.incoming.set(b, []);
-      state.incoming.get(b).push({from:a});
-    };
-    const addNei = (a,b) => {
-      if (!state.neighbors.has(a)) state.neighbors.set(a, []);
-      state.neighbors.get(a).push(b);
+  function buildBoard() {
+    // Häuser: 2x2 Blöcke in den Ecken (mit je 4 Slots)
+    // Koordinaten im Grid (0..cols-1, 0..rows-1)
+    board.houses = {
+      R: [ {x:1,y:1},{x:2,y:1},{x:1,y:2},{x:2,y:2} ],
+      G: [ {x:10,y:1},{x:11,y:1},{x:10,y:2},{x:11,y:2} ],
+      B: [ {x:1,y:6},{x:2,y:6},{x:1,y:7},{x:2,y:7} ],
+      Y: [ {x:10,y:6},{x:11,y:6},{x:10,y:7},{x:11,y:7} ],
     };
 
-    // IMPORTANT: directed edges
-    for (const e of (state.board.edges||[])){
-      const a = String(e.from), b = String(e.to);
-      if (!state.nodeById.has(a) || !state.nodeById.has(b)) continue;
-      addOut(a,b);
-      addIn(a,b);
-      addNei(a,b);
-      addNei(b,a);
-    }
-  }
-
-  // ---------- Init Game ----------
-  function resetGame(){
-    state.turnIndex = 0;
-    state.dice = 0;
-    state.rolled = false;
-    state.canRollAgain = false;
-    state.selectedPieceId = null;
-    state.animating = false;
-
-    // pieces: Board 1 will use 4 pieces total? (dein späterer Plan)
-    // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
-    // Wenn du später 5 pro Farbe willst: hier umstellen.
-    state.pieces = [];
-    // 4 Spielfiguren pro Farbe (wie klassisches Barikade-Feeling)
-    // Start: alle Figuren einer Farbe stehen auf dem ersten Startfeld dieser Farbe (Stacking erlaubt).
-    const PIECES_PER_COLOR = 4;
-    for (const color of COLORS){
-      const starts = state.startByColor.get(color) || [];
-      // Ziel: Jede Figur startet/steht im Haus auf einem eigenen Startfeld (keine Stapelung im Haus).
-      // Fallback: Wenn ein Board weniger Startfelder hat, nutzen wir das erste verfügbare.
-      const fallbackHome = String(starts[0] || findAnyNormalNodeId() || findAnyNodeId());
-
-      for (let i = 1; i <= PIECES_PER_COLOR; i++){
-        const homeNodeId = String(starts[i-1] || fallbackHome);
-        state.pieces.push({
-          id: `${color}_${i}`,
-          color,
-          homeNodeId,
-          nodeId: homeNodeId
-        });
-      }
-    }
-    state.selectedPieceId = state.pieces[0]?.id || null;
-
-    // jokers: 2× je Typ pro Spieler
-    for (const color of COLORS){
-      state.jokers[color] = {};
-      for (const j of JOKERS) state.jokers[color][j.id] = 2;
-    }
-
-    // lights: start with ALL light_start nodes active
-    state.activeLights = new Set();
-    for (const n of state.nodeById.values()){
-      if (String(n.type||"").toLowerCase()==="light_start"){
-        state.activeLights.add(String(n.id));
-      }
-    }
-    // if none, spawn 2 lights on random free normals
-    if (state.activeLights.size===0){
-      spawnRandomLight();
-      spawnRandomLight();
-    }
-
-    state.collected = { red:0, blue:0, green:0, yellow:0 };
-    state.globalCollected = 0;
-    state.globalGoal = Number(state.board?.meta?.lightRule?.globalGoal || 5) || 5;
-
-    state.reachable = new Map();
-
-    renderAll();
-    updateHUD();
-    setStatus(`Bereit. Start-Lichter aktiv: ${state.activeLights.size}`, "good");
-  }
-
-  function findAnyNormalNodeId(){
-    for (const n of state.nodeById.values()){
-      if (String(n.type||"normal").toLowerCase()==="normal") return String(n.id);
-    }
-    return null;
-  }
-  function findAnyNodeId(){
-    for (const n of state.nodeById.values()) return String(n.id);
-    return null;
-  }
-
-  function activeColor(){
-    return COLORS[state.turnIndex % COLORS.length];
-  }
-
-  // ---------- Save/Load ----------
-  function saveLocal(){
-    const payload = {
-      v:1,
-      turnIndex: state.turnIndex,
-      dice: state.dice,
-      rolled: state.rolled,
-      canRollAgain: state.canRollAgain,
-      selectedPieceId: state.selectedPieceId,
-      pieces: state.pieces,
-      activeLights: Array.from(state.activeLights),
-      collected: state.collected,
-      globalCollected: state.globalCollected,
-      globalGoal: state.globalGoal,
-      jokers: state.jokers,
-      showLines: state.showLines,
-      cam: state.cam
-    };
-    localStorage.setItem(LS_KEY, JSON.stringify(payload));
-    setStatus("✅ Gespeichert.", "good");
-  }
-
-  function loadLocal(){
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw){ setStatus("Kein Save gefunden.", "warn"); return; }
-    try{
-      const p = JSON.parse(raw);
-      if (!p || p.v!==1) throw new Error("Ungültiges Save-Format");
-
-      state.turnIndex = p.turnIndex|0;
-      state.dice = p.dice|0;
-      state.rolled = !!p.rolled;
-      state.canRollAgain = !!p.canRollAgain;
-      state.selectedPieceId = p.selectedPieceId ?? null;
-
-      state.pieces = Array.isArray(p.pieces) ? p.pieces : state.pieces;
-      state.activeLights = new Set(Array.isArray(p.activeLights) ? p.activeLights.map(String) : []);
-      state.collected = p.collected || state.collected;
-      state.globalCollected = Number(p.globalCollected||0);
-      state.globalGoal = Number(p.globalGoal||5);
-      state.jokers = p.jokers || state.jokers;
-
-      state.showLines = !!p.showLines;
-      state.cam = p.cam || state.cam;
-
-      state.reachable = new Map();
-      renderAll();
-      applyCamera();
-      updateHUD();
-      setStatus("✅ Save geladen.", "good");
-    }catch(e){
-      console.error(e);
-      setStatus("Save ist kaputt/ungültig.", "bad");
-    }
-  }
-
-  // ---------- Rendering ----------
-  function clearStage(){
-    edgesSvg.innerHTML = "";
-    for (const el of Array.from(stage.querySelectorAll(".node"))) el.remove();
-  }
-
-  // Camera transform on stage children
-  function applyCamera(){
-    const t = `translate(${state.cam.x}px, ${state.cam.y}px) scale(${state.cam.scale})`;
-    // apply to SVG + nodes via CSS transform origin 0 0
-    edgesSvg.style.transformOrigin = "0 0";
-    edgesSvg.style.transform = t;
-    for (const el of Array.from(stage.querySelectorAll(".node"))){
-      el.style.transform = `translate(-50%,-50%) ${t}`;
-      // careful: node already uses translate(-50%,-50%); we append camera transform.
-    }
-  }
-
-  function computeFitCamera(){
-    // fit nodes into viewport
-    const rect = boardShell.getBoundingClientRect();
-    const pad = 60;
-
-    const xs=[], ys=[];
-    for (const n of state.nodeById.values()){
-      if (typeof n.x==="number" && typeof n.y==="number"){ xs.push(n.x); ys.push(n.y); }
-    }
-    if (!xs.length){
-      state.cam = {x:0,y:0,scale:1};
-      return;
-    }
-    const minX = Math.min(...xs), maxX=Math.max(...xs);
-    const minY = Math.min(...ys), maxY=Math.max(...ys);
-    const spanX = Math.max(1, maxX-minX);
-    const spanY = Math.max(1, maxY-minY);
-
-    const scale = Math.min((rect.width-pad*2)/spanX, (rect.height-pad*2)/spanY);
-    // Center
-    const cx = (minX+maxX)/2;
-    const cy = (minY+maxY)/2;
-    const vx = rect.width/2;
-    const vy = rect.height/2;
-    state.cam.scale = clamp(scale, 0.35, 2.2);
-    state.cam.x = vx - cx*state.cam.scale;
-    state.cam.y = vy - cy*state.cam.scale;
-  }
-
-  function renderEdges(){
-    edgesSvg.innerHTML = "";
-    if (!state.showLines) return;
-
-    // arrows for directed edges
-    // create marker
-    const defs = document.createElementNS("http://www.w3.org/2000/svg","defs");
-    const marker = document.createElementNS("http://www.w3.org/2000/svg","marker");
-    marker.setAttribute("id","arrowHead");
-    marker.setAttribute("viewBox","0 0 10 10");
-    marker.setAttribute("refX","9");
-    marker.setAttribute("refY","5");
-    marker.setAttribute("markerWidth","6");
-    marker.setAttribute("markerHeight","6");
-    marker.setAttribute("orient","auto-start-reverse");
-    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-    path.setAttribute("d","M 0 0 L 10 5 L 0 10 z");
-    path.setAttribute("class","edgeArrow");
-    marker.appendChild(path);
-    defs.appendChild(marker);
-    edgesSvg.appendChild(defs);
-
-    for (const e of (state.board.edges||[])){
-      const a = state.nodeById.get(String(e.from));
-      const b = state.nodeById.get(String(e.to));
-      if (!a || !b) continue;
-
-      const line = document.createElementNS("http://www.w3.org/2000/svg","line");
-      line.setAttribute("x1", String(a.x));
-      line.setAttribute("y1", String(a.y));
-      line.setAttribute("x2", String(b.x));
-      line.setAttribute("y2", String(b.y));
-      line.setAttribute("class","edgeLine");
-      line.setAttribute("marker-end","url(#arrowHead)");
-      edgesSvg.appendChild(line);
-    }
-  }
-
-  function nodeClass(nid){
-    const n = state.nodeById.get(String(nid));
-    const cls = ["node"];
-
-    const t = String(n?.type||"normal").toLowerCase();
-    if (t==="start"){
-      const c = String(n?.color||"").toLowerCase();
-      cls.push(`start-${c||"red"}`);
-    }
-    if (state.activeLights.has(String(nid))) cls.push("light");
-
-    if (state.reachable.has(String(nid))) cls.push("reachable");
-
-    // selected node highlight: selected piece is on nid
-    const sp = getSelectedPiece();
-    if (sp && String(sp.nodeId)===String(nid)) cls.push("selected");
-
-    return cls.join(" ");
-  }
-
-  function renderNodes(){
-    for (const n of (state.board.nodes||[])){
-      const nid = String(n.id);
-      const el = document.createElement("div");
-      el.className = nodeClass(nid);
-      el.style.left = `${n.x}px`;
-      el.style.top = `${n.y}px`;
-      el.dataset.id = nid;
-
-      const stack = document.createElement("div");
-      stack.className = "tokenStack";
-      el.appendChild(stack);
-
-      el.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        onNodeClicked(nid);
-      });
-
-      stage.appendChild(el);
-    }
-    renderTokens();
-  }
-
-  function renderTokens(){
-    // clear stacks
-    for (const nodeEl of Array.from(stage.querySelectorAll(".node"))){
-      const stack = nodeEl.querySelector(".tokenStack");
-      if (stack) stack.innerHTML = "";
-    }
-
-    // group pieces by node
-    const byNode = new Map();
-    for (const p of state.pieces){
-      const nid = String(p.nodeId);
-      if (!byNode.has(nid)) byNode.set(nid, []);
-      byNode.get(nid).push(p);
-    }
-
-    for (const [nid, list] of byNode.entries()){
-      const nodeEl = stage.querySelector(`.node[data-id="${CSS.escape(nid)}"]`);
-      if (!nodeEl) continue;
-      const stack = nodeEl.querySelector(".tokenStack");
-      if (!stack) continue;
-
-      // Tokens pro Feld:
-      // - 1 Figur: groß anzeigen
-      // - mehrere Figuren: bis zu 4 kleine Tokens (klickbar), darüber "+N" Hinweis
-      if (list.length === 1){
-        const p = list[0];
-        const tok = document.createElement("div");
-        tok.className = "token big" + (p.id===state.selectedPieceId ? " sel" : "");
-        tok.style.background = colorToCss(p.color);
-        tok.title = `Figur ${p.id}`;
-        tok.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          selectPiece(p.id);
-        });
-        stack.appendChild(tok);
-      } else {
-        const show = list.slice(0,4);
-        for (const p of show){
-          const tok = document.createElement("div");
-          tok.className = "token" + (p.id===state.selectedPieceId ? " sel" : "");
-          tok.style.background = colorToCss(p.color);
-          tok.title = `Figur ${p.id}`;
-          tok.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            selectPiece(p.id);
-          });
-          stack.appendChild(tok);
-        }
-        if (list.length > 4){
-          const lbl = document.createElement("div");
-          lbl.className = "token label";
-          lbl.textContent = `+${list.length - 4}`;
-          stack.appendChild(lbl);
-        }
-      }
-}
-
-    // update node classes (reachable/selected/light)
-    for (const nodeEl of Array.from(stage.querySelectorAll(".node"))){
-      const nid = nodeEl.dataset.id;
-      nodeEl.className = nodeClass(nid);
-    }
-
-    applyCamera();
-  }
-
-  function renderAll(){
-    clearStage();
-    renderEdges();
-    renderNodes();
-    applyCamera();
-  }
-
-  // ---------- HUD / Panels ----------
-  function updateHUD(){
-    const c = activeColor();
-    pillTurn.textContent = `Am Zug: ${c.toUpperCase()}`;
-    hudPlayer.textContent = c.toUpperCase();
-    hudDice.textContent = state.rolled ? String(state.dice) : "–";
-    hudActiveLights.textContent = String(state.activeLights.size);
-    hudGlobal.textContent = String(state.globalCollected);
-    hudGoal.textContent = String(state.globalGoal);
-
-    // pills
-    pillMode.textContent = "Modus: Offline lokal";
-    const bname = state.board?.meta?.name ? String(state.board.meta.name) : "Board";
-    pillBoard.textContent = `Board: ${bname}`;
-    pillRule.textContent = `Regel: Sammle ${state.globalGoal} Lichter global → Board 2`;
-
-    // players panel
-    playersPanel.innerHTML = "";
-    for (const color of COLORS){
-      const pc = document.createElement("div");
-      pc.className = "playerCard";
-      const left = document.createElement("div");
-      left.className = "pcLeft";
-      const badge = document.createElement("div");
-      badge.className = "badge";
-      badge.style.background = badgeColor(color);
-      left.appendChild(badge);
-
-      const txt = document.createElement("div");
-      const name = document.createElement("div");
-      name.className = "pcName";
-      name.textContent = color.toUpperCase() + (color===c ? " (am Zug)" : "");
-      const sub = document.createElement("div");
-      sub.className = "pcSub";
-      sub.textContent = `Lichter: ${state.collected[color] || 0}`;
-      txt.appendChild(name);
-      txt.appendChild(sub);
-      left.appendChild(txt);
-
-      const right = document.createElement("div");
-      right.className = "pcRight";
-      const big = document.createElement("div");
-      big.className = "big";
-      big.textContent = `Joker: ${jokerTotal(color)}`;
-      const small = document.createElement("div");
-      small.className = "small";
-      small.textContent = `Figur: ${pieceOfColor(color)?.nodeId ?? "–"}`;
-      right.appendChild(big);
-      right.appendChild(small);
-
-      pc.appendChild(left);
-      pc.appendChild(right);
-      playersPanel.appendChild(pc);
-    }
-
-    // joker table for active player
-    const ac = activeColor();
-    jokerTable.innerHTML = "";
-    for (const j of JOKERS){
-      const row = document.createElement("div");
-      row.className = "jRow";
-      const name = document.createElement("div");
-      name.className = "jName";
-      name.textContent = j.name;
-      const count = document.createElement("div");
-      count.className = "jCount";
-      count.textContent = String(state.jokers[ac]?.[j.id] ?? 0);
-      row.appendChild(name);
-      row.appendChild(count);
-      jokerTable.appendChild(row);
-    }
-
-    // hint
-    const sp = getSelectedPiece();
-    const spNum = sp ? (String(sp.id).split("_")[1] || "") : "";
-    const spTag = sp ? `Ausgewählt: ${sp.color.toUpperCase()}${spNum ? " #" + spNum : ""}` : "";
-    if (!state.rolled){
-      hudHint.textContent = spTag
-        ? `${spTag} — Würfeln → dann Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).`
-        : "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).";
-    } else if (!state.selectedPieceId){
-      hudHint.textContent = "Figur anklicken (eigene Farbe), dann ein blau markiertes Ziel wählen.";
-    } else {
-      hudHint.textContent = spTag
-        ? `${spTag} — Ziel anklicken (blau markiert).`
-        : "Ziel anklicken (blau markiert).";
-    }
-  }
-
-  // Backward-compat alias: older code calls renderHud()
-  // Keep function name to avoid crashes (no gameplay change).
-  function renderHud(){
-    try{ updateHUD(); }catch(_e){}
-  }
-
-
-  function jokerTotal(color){
-    const inv = state.jokers[color] || {};
-    return Object.values(inv).reduce((a,b)=>a+(Number(b)||0),0);
-  }
-
-  function pieceOfColor(color){
-    return state.pieces.find(p => p.color===color) || null;
-  }
-
-  // ---------- Turn / Dice ----------
-  function rollDice(){
-    if (state.animating) return;
-    const c = activeColor();
-    // only active player's piece can be moved
-    state.dice = randInt(1,6);
-    state.rolled = true;
-    state.canRollAgain = (state.dice===6);
-    setStatus(`🎲 ${c.toUpperCase()} würfelt: ${state.dice}` + (state.canRollAgain ? " (6 → Bonuswurf möglich)" : ""), "good");
-    computeReachable();
-    updateHUD();
-  }
-
-  function endTurn(){
-    if (state.animating) return;
-    // If dice==6 and player hasn't used bonus roll yet, allow to keep turn if they roll again:
-    // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
-    state.turnIndex = (state.turnIndex + 1) % COLORS.length;
-    state.rolled = false;
-    state.dice = 0;
-    state.canRollAgain = false;
-    state.selectedPieceId = pieceOfColor(activeColor())?.id ?? null;
-    state.reachable = new Map();
-    renderTokens();
-    updateHUD();
-    setStatus(`Zug: ${activeColor().toUpperCase()} ist dran.`, "good");
-  }
-
-  // ---------- Selection / Movement ----------
-  function selectPiece(id){
-    if (state.animating) return;
-    const p = state.pieces.find(x => x.id===id);
-    if (!p) return;
-
-    // Only active player's piece selectable
-    if (p.color !== activeColor()){
-      setStatus("Du kannst nur die Figur des aktiven Spielers bewegen.", "warn");
-      return;
-    }
-    state.selectedPieceId = id;
-    if (state.rolled) computeReachable();
-    renderTokens();
-    updateHUD();
-  }
-
-  function getSelectedPiece(){
-    return state.pieces.find(p => p.id===state.selectedPieceId) || null;
-  }
-
-    function piecesAt(nodeId){
-    const id = String(nodeId);
-    return state.pieces.filter(p => String(p.nodeId) === id);
-  }
-
-  async function onNodeClicked(nodeId){
-    if (state.animating) return;
-
-    const myColor = activeColor();
-
-    // Auswahl-Usability: Klick auf ein Feld mit eigenen Figuren (vor dem Würfeln oder auf dem aktuellen Feld)
-    // wechselt die ausgewählte Figur (zyklisch), damit man sie klar auswählen kann.
-    const myHere = piecesAt(nodeId).filter(p => p.color === myColor);
-    const sp0 = getSelectedPiece();
-    if (myHere.length > 0 && (!state.rolled || (sp0 && String(sp0.nodeId) === String(nodeId)) || !sp0)){
-      myHere.sort((a,b) => String(a.id).localeCompare(String(b.id)));
-      let next = myHere[0];
-      if (sp0 && String(sp0.nodeId) === String(nodeId)){
-        const i = myHere.findIndex(p => p.id === sp0.id);
-        next = myHere[(i + 1) % myHere.length];
-      }
-      state.selectedPieceId = next.id;
-      if (state.rolled) computeReachable();
-      renderTokens();
-      updateHUD();
-      setStatus(`Ausgewählt: ${myColor.toUpperCase()} ${String(next.id)}`, "good");
-
-      // Vor dem Würfeln (oder Klick auf das aktuelle Feld) ist das nur Auswahl – kein Zug.
-      if (!state.rolled || (sp0 && String(sp0.nodeId) === String(nodeId))) return;
-    }
-
-    const piece = state.pieces.find(p => p.id === state.selectedPieceId);
-
-    if (!piece || piece.color !== myColor){
-      setStatus("Erst eine eigene Figur auswählen (aktiver Spieler).","warn");
-      return;
-    }
-    if (!state.rolled){
-      setStatus("Erst würfeln.","warn");
-      return;
-    }
-
-    const to = String(nodeId);
-    const path = state.reachable?.get(to) || null;
-    if (!path){
-      setStatus("Zielknoten nicht erreichbar (exakt Würfel-Schritte, ohne Hin-und-her-Hüpfen).","warn");
-      return;
-    }
-
-    const diceWas = state.dice;
-
-    await moveAlongPath(piece, path);
-
-    // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad
-    const occ = piecesAt(to).filter(p => p.id !== piece.id);
-    if (occ.length){
-      const victim = occ[0];
-      if (victim.color !== piece.color){
-        const starts = state.startByColor.get(victim.color) || [];
-        victim.nodeId = String(victim.homeNodeId || starts[0] || victim.nodeId);
-        renderTokens();
-
-        await runWheelReward(piece.color);
-        renderHud();
-      }
-    }
-
-    // Nach Ankunft: Licht einsammeln
-    if (state.activeLights.has(to)){
-      state.activeLights.delete(to);
-      state.globalCollected = (state.globalCollected|0) + 1;
-            state.collected[piece.color] = (state.collected[piece.color]||0) + 1;
-
-      if (state.activeLights.size === 0){
-        spawnRandomLight();
-      }
-
-            if (state.globalCollected >= state.globalGoal){
-                setStatus(`🏁 Board 1 geschafft! (${state.globalGoal} Lichter) – weiter zu Board 2.`,`good`);
-        openDoneModal();
-      } else {
-                setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.globalGoal}`,"good");
-      }
-    } else {
-      setStatus(`Zug: ${piece.color.toUpperCase()} → ${to}`,"good");
-    }
-
-    // Zug-Reset / Bonuswurf bei 6
-    state.rolled = false;
-    state.dice = null;
-    state.reachable = new Map();
-    renderHud();
-    renderTokens();
-
-    if (diceWas === 6){
-      setStatus("🎲 6 gewürfelt: Du darfst nochmal würfeln!","good");
-      return;
-    }
-
-    endTurn();
-  }
-
-  async function moveAlongPath(piece, path){
-    state.animating = true;
-    try{
-      for (let i=1;i<path.length;i++){
-        piece.nodeId = String(path[i]);
-        renderTokens();
-        await sleep(120);
-      }
-    } finally {
-      state.animating = false;
-    }
-  }
-
-
-
-      function canonEdgeKey(a,b){
-    const x=String(a), y=String(b);
-    return (x<y)? `${x}__${y}` : `${y}__${x}`;
-  }
-
-function computeReachable(){
-    state.reachable = new Map();
-    if (!state.rolled || !state.selectedPieceId) return;
-
-    const piece = state.pieces.find(p => p.id === state.selectedPieceId);
-    if (!piece) return;
-
-    const steps = Number(state.dice || 0);
-    if (!Number.isFinite(steps) || steps <= 0) return;
-
-    const startId = String(piece.nodeId);
-
-    const dfs = (cur, rem, usedEdges, visitedNodes, path) => {
-      if (rem === 0){
-        if (!state.reachable.has(cur)) state.reachable.set(cur, path.slice());
-        return;
-      }
-
-      const neigh = state.neighbors.get(cur) || [];
-      for (const to of neigh){
-        const edgeKey = canonEdgeKey(cur, to);
-        if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
-        if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
-        if (isNodeBlocked(to)) continue;
-
-        const nextUsed = new Set(usedEdges); nextUsed.add(edgeKey);
-        const nextVisited = new Set(visitedNodes); nextVisited.add(to);
-
-        path.push(to);
-        dfs(to, rem - 1, nextUsed, nextVisited, path);
-        path.pop();
-      }
-    };
-
-    dfs(startId, steps, new Set(), new Set([startId]), [startId]);
-  }
-
-
-
-  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-
-  // ---------- Lights ----------
-  function spawnRandomLight(){
-    // choose random free normal node
-    const normals = [];
-    const occupied = new Set(state.pieces.map(p => String(p.nodeId)));
-    for (const n of state.nodeById.values()){
-      const t = String(n.type||"normal").toLowerCase();
-      if (t!=="normal") continue;
-      const id = String(n.id);
-      if (occupied.has(id)) continue;
-      if (state.activeLights.has(id)) continue;
-      normals.push(id);
-    }
-    if (!normals.length) return null;
-    const pick = normals[randInt(0, normals.length-1)];
-    state.activeLights.add(pick);
-    renderTokens();
-    updateHUD();
-    return pick;
-  }
-
-  // ---------- Wheel (Joker reward) ----------
-  function openWheel(){
-    wheelModal.classList.remove("hidden");
-    wheelResult.textContent = "Dreht…";
-  }
-  function closeWheel(){
-    wheelModal.classList.add("hidden");
-  }
-
-  async function runWheelReward(color){
-    openWheel();
-    const ctx = wheelCanvas.getContext("2d");
-    const size = wheelCanvas.width;
-    const cx = size/2, cy=size/2;
-    const radius = size/2 - 18;
-
-    const slices = JOKERS.map(j => j.name);
-    const sliceCount = slices.length;
-    const sliceAngle = (Math.PI*2)/sliceCount;
-
-    // choose result uniformly
-    const winnerIndex = randInt(0, sliceCount-1);
-    const winner = JOKERS[winnerIndex];
-
-    // animation: 5s rotation ending at winner under pointer (top)
-    const start = performance.now();
-    const duration = 5000;
-    const spins = 6 + Math.random()*3; // 6-9 spins
-    const targetAngle = (Math.PI*1.5) - (winnerIndex*sliceAngle + sliceAngle/2); // pointer at top
-    const endRot = spins*2*Math.PI + targetAngle;
-
-    function draw(rot){
-      ctx.clearRect(0,0,size,size);
-
-      // background circle
-      ctx.save();
-      ctx.translate(cx,cy);
-
-      // slices
-      for (let i=0;i<sliceCount;i++){
-        const a0 = rot + i*sliceAngle;
-        const a1 = a0 + sliceAngle;
-
-        ctx.beginPath();
-        ctx.moveTo(0,0);
-        ctx.arc(0,0,radius,a0,a1);
-        ctx.closePath();
-
-        // alternating brightness
-        const alpha = i%2===0 ? 0.22 : 0.14;
-        ctx.fillStyle = `rgba(90,162,255,${alpha})`;
-        ctx.fill();
-
-        ctx.strokeStyle = "rgba(255,255,255,.14)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // text
-        ctx.save();
-        ctx.rotate(a0 + sliceAngle/2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "rgba(255,255,255,.92)";
-        ctx.font = "bold 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-        ctx.fillText(slices[i], radius-20, 6);
-        ctx.restore();
-      }
-
-      // center hub
-      ctx.beginPath();
-      ctx.arc(0,0,60,0,Math.PI*2);
-      ctx.fillStyle = "rgba(12,16,26,.92)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.18)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.fillStyle = "rgba(255,255,255,.9)";
-      ctx.font = "800 16px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-      ctx.textAlign = "center";
-      ctx.fillText("JOKER", 0, 6);
-
-      ctx.restore();
-
-      // pointer (top)
-      ctx.beginPath();
-      ctx.moveTo(cx, cy-radius-6);
-      ctx.lineTo(cx-14, cy-radius+22);
-      ctx.lineTo(cx+14, cy-radius+22);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(244,200,74,.95)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(0,0,0,.35)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-
-    function easeOutCubic(t){ return 1 - Math.pow(1-t,3); }
-
-    return await new Promise(resolve => {
-      function frame(now){
-        const t = clamp((now-start)/duration, 0, 1);
-        const e = easeOutCubic(t);
-        const rot = e*endRot;
-        draw(rot);
-        if (t<1) requestAnimationFrame(frame);
-        else {
-          // reward
-          state.jokers[color][winner.id] = (state.jokers[color][winner.id]||0) + 1;
-          wheelResult.textContent = `Gewonnen: ${winner.name}`;
-          updateHUD();
-          setTimeout(() => { closeWheel(); resolve(); }, 650);
-        }
-      }
-      requestAnimationFrame(frame);
+    // Einfacher Laufpfad: Rahmen + Mittelkreuz (nur Demo)
+    const p = [];
+    // oberer Rand
+    for (let x=3; x<=9; x++) p.push({x, y:1});
+    // rechter Rand
+    for (let y=2; y<=6; y++) p.push({x:9, y});
+    // unterer Rand
+    for (let x=8; x>=3; x--) p.push({x, y:6});
+    // linker Rand
+    for (let y=5; y>=2; y--) p.push({x:3, y});
+    // kleines Kreuz in der Mitte
+    p.push({x:6,y:2},{x:6,y:3},{x:6,y:4},{x:6,y:5});
+    p.push({x:5,y:4},{x:4,y:4},{x:7,y:4},{x:8,y:4});
+    // remove duplicates
+    const seen = new Set();
+    board.path = p.filter(c => {
+      const k = c.x + "," + c.y;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
     });
   }
 
-  // ---------- Done Modal ----------
-  function openDoneModal(){
-    doneModal.classList.remove("hidden");
-  }
-  function closeDoneModal(){
-    doneModal.classList.add("hidden");
+  // =========================
+  // Players & Pieces
+  // =========================
+  function makePlayers() {
+    state.players = [];
+    for (let i=0; i<state.playersCount; i++) {
+      const c = COLORS[i];
+      state.players.push({
+        index: i,
+        colorKey: c.key,
+        colorName: c.name,
+        fill: c.fill,
+      });
+    }
+    state.currentPlayerIndex = 0;
   }
 
-  // ---------- UI Wire ----------
-  // Tablet/Touch: ensure buttons always react (some browsers suppress/delay plain "click").
-  function bindBtn(el, fn){
-    if (!el) return;
-    const handler = (e) => {
-      // ignore right/middle mouse
-      if (e?.pointerType === "mouse" && typeof e.button === "number" && e.button !== 0) return;
-      try { e?.preventDefault?.(); } catch {}
-      try { e?.stopPropagation?.(); } catch {}
-      fn(e);
+  function makePieces() {
+    // Jede Figur startet in einem Haus-Slot (einzeln auf eigenes Feld im Haus)
+    const pieces = [];
+    for (const pl of state.players) {
+      const slots = board.houses[pl.colorKey];
+      for (let k=0; k<state.piecesPerColor; k++) {
+        const slot = slots[k % slots.length];
+        pieces.push({
+          id: pl.colorKey + "_" + k,
+          owner: pl.colorKey,
+          index: k,
+          // position: grid cell
+          gx: slot.x,
+          gy: slot.y,
+          // pathIndex (wenn auf dem Laufpfad), sonst null
+          pathIndex: null,
+          selected: false,
+        });
+      }
+    }
+    state.pieces = pieces;
+
+    // Auswahl resetten (stabil)
+    state.selectedPieceId = null;
+    state.hasRolled = false;
+    state.awaitingMove = false;
+    state.dice = null;
+  }
+
+  function currentPlayer() {
+    return state.players[state.currentPlayerIndex];
+  }
+
+  function getPieceById(id) {
+    return state.pieces.find(p => p.id === id) || null;
+  }
+
+  function clearSelection() {
+    for (const p of state.pieces) p.selected = false;
+    state.selectedPieceId = null;
+    ui.selLabel.textContent = "keine";
+  }
+
+  function selectPiece(piece) {
+    const pl = currentPlayer();
+    if (!piece || piece.owner !== pl.colorKey) {
+      setMsg("Du kannst nur deine eigenen Figuren auswählen.");
+      return;
+    }
+
+    // Selection is ONLY status (stabil)
+    for (const p of state.pieces) p.selected = false;
+    piece.selected = true;
+    state.selectedPieceId = piece.id;
+
+    ui.selLabel.textContent = `${pl.colorName} #${piece.index+1}`;
+    setMsg("Figur ausgewählt. Du kannst jederzeit wechseln. Dann würfeln, dann Ziel wählen.");
+    redraw();
+  }
+
+  // =========================
+  // Move Logic (Demo, aber stabil)
+  // =========================
+  function rollDice() {
+    state.dice = randInt(1, 6);
+    state.hasRolled = true;
+    state.awaitingMove = true;
+    ui.diceLabel.textContent = String(state.dice);
+
+    if (!state.selectedPieceId) {
+      setMsg("Gewürfelt. Bitte zuerst eine Figur auswählen (du kannst auch jetzt noch wechseln), dann Ziel wählen.");
+    } else {
+      setMsg("Gewürfelt. Du kannst die Figur noch wechseln. Dann ein Ziel-Feld antippen.");
+    }
+    redraw();
+  }
+
+  function endTurn() {
+    state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.playersCount;
+    state.hasRolled = false;
+    state.awaitingMove = false;
+    state.dice = null;
+    ui.diceLabel.textContent = "–";
+    // Optional: Auswahl beim Spielerwechsel löschen (sauber)
+    clearSelection();
+    updateTurnUI();
+    setMsg("Nächster Spieler. Wähle eine Figur, würfle, dann ziehe.");
+    redraw();
+  }
+
+  function canMoveTo(cell) {
+    // Du darfst nur auf Laufpfad-Zellen ziehen (Demo)
+    // Schrittzahl = dice, aber wir erlauben "Ziel-Auswahl": Ziel muss exakt dice Schritte auf Pfad liegen.
+    if (!state.awaitingMove || !state.hasRolled) return false;
+    if (!state.selectedPieceId) return false;
+
+    const piece = getPieceById(state.selectedPieceId);
+    if (!piece) return false;
+
+    // piece muss im Haus oder auf Pfad sein
+    // Wenn im Haus: wir lassen als Startpunkt den ersten Pfad-Knoten je Farbe (Demo)
+    // Wenn auf Pfad: Start = pathIndex
+
+    const pl = currentPlayer();
+    if (piece.owner !== pl.colorKey) return false;
+
+    const targetIndex = board.path.findIndex(c => c.x === cell.x && c.y === cell.y);
+    if (targetIndex === -1) return false;
+
+    let startIndex;
+    if (piece.pathIndex == null) {
+      // Startpunkte je Farbe (Demo, fix = 0, 4, 8, 12 verteilt)
+      const startMap = { R:0, G: Math.floor(board.path.length*0.25), B: Math.floor(board.path.length*0.5), Y: Math.floor(board.path.length*0.75) };
+      startIndex = startMap[piece.owner] ?? 0;
+    } else {
+      startIndex = piece.pathIndex;
+    }
+
+    const steps = state.dice;
+    const expected = (startIndex + steps) % board.path.length;
+    return targetIndex === expected;
+  }
+
+  function moveSelectedTo(cell) {
+    if (!state.awaitingMove || !state.hasRolled) {
+      setMsg("Du musst zuerst würfeln.");
+      return;
+    }
+    if (!state.selectedPieceId) {
+      setMsg("Bitte zuerst eine Figur auswählen.");
+      return;
+    }
+    const piece = getPieceById(state.selectedPieceId);
+    if (!piece) return;
+
+    const pl = currentPlayer();
+    if (piece.owner !== pl.colorKey) {
+      setMsg("Du kannst nur deine eigenen Figuren ziehen.");
+      return;
+    }
+
+    if (!canMoveTo(cell)) {
+      setMsg("Ungültiges Ziel. Tipp: Ziel muss exakt dem Würfelwurf entsprechen (Demo-Regel).");
+      return;
+    }
+
+    // Set piece onto path
+    const idx = board.path.findIndex(c => c.x === cell.x && c.y === cell.y);
+    piece.pathIndex = idx;
+    piece.gx = cell.x;
+    piece.gy = cell.y;
+
+    // Zug abgeschlossen
+    state.awaitingMove = false;
+
+    // Extra-Regel: bei 6 nochmal würfeln (wie du wolltest)
+    if (state.dice === 6) {
+      state.hasRolled = false;
+      state.dice = null;
+      ui.diceLabel.textContent = "–";
+      setMsg("Du hast eine 6! Du darfst nochmal würfeln. Figur kannst du jederzeit wechseln.");
+    } else {
+      state.hasRolled = false;
+      state.dice = null;
+      ui.diceLabel.textContent = "–";
+      setMsg("Zug ausgeführt. Du kannst die Figur wechseln oder den Spieler wechseln.");
+    }
+
+    redraw();
+  }
+
+  // =========================
+  // Drawing
+  // =========================
+  function cellToPx(gx, gy) {
+    return {
+      x: board.offsetX + gx * board.cell,
+      y: board.offsetY + gy * board.cell
     };
-    el.addEventListener("click", handler);
-    el.addEventListener("pointerup", handler, { passive:false });
   }
 
-  bindBtn(btnToggleUI, () => {
-    document.body.classList.toggle("uiHidden");
-  });
+  function drawGrid() {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
 
-  bindBtn(btnRoll, () => {
-    // if bonus roll available, it's fine. If already rolled and not bonus, block.
-    if (state.animating) return;
-    if (state.rolled){
-      setStatus("Du hast schon gewürfelt. Erst ziehen oder Zug beenden.", "warn");
+    // Background glow
+    const g = ctx.createRadialGradient(w*0.5, h*0.35, 50, w*0.5, h*0.4, 520);
+    g.addColorStop(0, "rgba(90,120,255,.10)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+
+    // Grid
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.lineWidth = 1;
+
+    for (let x=0; x<=board.cols; x++) {
+      const px = board.offsetX + x * board.cell;
+      ctx.beginPath();
+      ctx.moveTo(px, board.offsetY);
+      ctx.lineTo(px, board.offsetY + board.rows * board.cell);
+      ctx.stroke();
+    }
+    for (let y=0; y<=board.rows; y++) {
+      const py = board.offsetY + y * board.cell;
+      ctx.beginPath();
+      ctx.moveTo(board.offsetX, py);
+      ctx.lineTo(board.offsetX + board.cols * board.cell, py);
+      ctx.stroke();
+    }
+  }
+
+  function drawCells() {
+    // Häuser
+    const houseStyle = (fill) => {
+      ctx.fillStyle = fill;
+      ctx.globalAlpha = 0.15;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    };
+
+    for (const c of COLORS) {
+      const slots = board.houses[c.key];
+      for (const s of slots) {
+        const p = cellToPx(s.x, s.y);
+        ctx.beginPath();
+        ctx.roundRect(p.x+6, p.y+6, board.cell-12, board.cell-12, 12);
+        houseStyle(c.fill);
+        ctx.strokeStyle = "rgba(255,255,255,.10)";
+        ctx.stroke();
+      }
+    }
+
+    // Pfad-Felder
+    for (const cell of board.path) {
+      const p = cellToPx(cell.x, cell.y);
+      ctx.beginPath();
+      ctx.roundRect(p.x+8, p.y+8, board.cell-16, board.cell-16, 12);
+
+      // Highlight: gültige Ziele
+      if (canMoveTo(cell)) {
+        ctx.fillStyle = "rgba(255,215,0,.18)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,215,0,.55)";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      } else {
+        ctx.fillStyle = "rgba(255,255,255,.05)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,.10)";
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawPiece(piece) {
+    const p = cellToPx(piece.gx, piece.gy);
+    const cx = p.x + board.cell/2;
+    const cy = p.y + board.cell/2;
+
+    // Base
+    const owner = COLORS.find(c => c.key === piece.owner);
+    ctx.fillStyle = owner ? owner.fill : "#fff";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 16, 0, Math.PI*2);
+    ctx.fill();
+
+    // small shadow ring
+    ctx.strokeStyle = "rgba(0,0,0,.35)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 16, 0, Math.PI*2);
+    ctx.stroke();
+
+    // Selected ring
+    if (piece.selected) {
+      ctx.strokeStyle = "gold";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 22, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+    }
+
+    // Index label
+    ctx.fillStyle = "rgba(0,0,0,.65)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 9, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = "white";
+    ctx.font = "bold 12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(piece.index+1), cx, cy+0.5);
+  }
+
+  function redraw() {
+    drawGrid();
+    drawCells();
+
+    // pieces above
+    for (const piece of state.pieces) drawPiece(piece);
+
+    // overlay: current player frame
+    const pl = currentPlayer();
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, canvas.width-20, canvas.height-20);
+    ctx.restore();
+
+    // Top-left badge
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.35)";
+    ctx.beginPath();
+    ctx.roundRect(20, 20, 260, 50, 14);
+    ctx.fill();
+    ctx.fillStyle = pl.fill;
+    ctx.beginPath();
+    ctx.arc(45, 45, 10, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = "white";
+    ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Aktiv: " + pl.colorName, 65, 45);
+    ctx.restore();
+  }
+
+  // =========================
+  // Input (Tablet-sicher)
+  // =========================
+  function getCanvasPosFromEvent(ev) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = (ev.touches && ev.touches[0]) ? ev.touches[0].clientX : ev.clientX;
+    const clientY = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY;
+    const x = (clientX - rect.left) * (canvas.width / rect.width);
+    const y = (clientY - rect.top) * (canvas.height / rect.height);
+    return { x, y };
+  }
+
+  function pxToCell(x, y) {
+    const gx = Math.floor((x - board.offsetX) / board.cell);
+    const gy = Math.floor((y - board.offsetY) / board.cell);
+    if (gx < 0 || gy < 0 || gx >= board.cols || gy >= board.rows) return null;
+    return { x: gx, y: gy };
+  }
+
+  function cellEquals(a,b){ return a && b && a.x===b.x && a.y===b.y; }
+
+  function handleTap(ev) {
+    ev.preventDefault();
+    const pos = getCanvasPosFromEvent(ev);
+    const cell = pxToCell(pos.x, pos.y);
+    if (!cell) return;
+
+    // 1) check if a piece is in that cell
+    // If multiple overlap (sollte nicht passieren), pick selected or first
+    const piecesHere = state.pieces.filter(p => p.gx === cell.x && p.gy === cell.y);
+    if (piecesHere.length) {
+      // If tapped a piece: selection can ALWAYS happen (vor dem Laufen wechseln können)
+      // BUT only own pieces selectable
+      selectPiece(piecesHere[0]);
+      return;
+    }
+
+    // 2) otherwise: target cell move attempt
+    if (state.awaitingMove && state.hasRolled) {
+      moveSelectedTo(cell);
+    }
+  }
+
+  canvas.addEventListener("click", handleTap, { passive:false });
+  canvas.addEventListener("touchstart", handleTap, { passive:false });
+
+  // =========================
+  // UI Wiring
+  // =========================
+  function updateTurnUI() {
+    const pl = currentPlayer();
+    ui.turnLabel.textContent = pl.colorName;
+  }
+
+  ui.btnRoll.addEventListener("click", () => {
+    if (state.hasRolled && state.awaitingMove) {
+      setMsg("Du hast schon gewürfelt. Wähle jetzt ein Ziel (Figur kannst du noch wechseln).");
       return;
     }
     rollDice();
   });
 
-  bindBtn(btnEndTurn, () => endTurn());
+  ui.btnEnd.addEventListener("click", () => endTurn());
 
-  bindBtn(btnToggleLines, () => {
-    state.showLines = !state.showLines;
-    btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
-    renderEdges();
-    applyCamera();
+  ui.btnReset.addEventListener("click", () => {
+    initGame();
+    setMsg("Reset. Wähle eine Figur, würfle, dann ziehe.");
   });
 
-  bindBtn(btnFit, () => { computeFitCamera(); applyCamera(); });
-  bindBtn(btnResetView, () => { state.cam={x:0,y:0,scale:1}; computeFitCamera(); applyCamera(); });
-
-  bindBtn(btnRestart, async () => { await start(); });
-  bindBtn(btnSave, saveLocal);
-  bindBtn(btnLoad, loadLocal);
-
-  bindBtn(btnWheelClose, closeWheel);
-  bindBtn(btnDoneClose, closeDoneModal);
-  bindBtn(btnGoBoard2, () => {
-    // Weiterleitung auf Board 2 (Datei: lichtarena_board_2.json)
-    closeDoneModal();
-    const url = new URL(location.href);
-    url.searchParams.set("board","2");
-    url.searchParams.set("v", String(Date.now()));
-    location.href = url.toString();
+  ui.playersSel.addEventListener("change", () => {
+    state.playersCount = parseInt(ui.playersSel.value, 10);
+    initGame();
+    setMsg("Spieleranzahl geändert. Wähle eine Figur, würfle, dann ziehe.");
   });
 
-  // ---------- Camera interactions (pan/zoom) ----------
-  let isPanning = false;
-  let panStart = {x:0,y:0,cx:0,cy:0};
-  let pinch = null;
+  ui.perColorSel.addEventListener("change", () => {
+    state.piecesPerColor = parseInt(ui.perColorSel.value, 10);
+    initGame();
+    setMsg("Figuren pro Farbe geändert. Wähle eine Figur, würfle, dann ziehe.");
+  });
 
-  // Wenn wir auf dem Stage-Element immer Pointer-Capture aktivieren,
-  // gehen Klicks auf Nodes/Tokens (besonders auf Tablets) kaputt.
-  // Daher: pannen/zoomen nur, wenn der Nutzer wirklich den Hintergrund zieht.
-  function isInteractiveTarget(el){
-    if (!el) return false;
-    return !!el.closest(
-      ".node, .token, .panel, .btn, button, input, select, textarea, label, a, .jokerRow, .playerCard, .pill, .topbar"
-    );
+  // =========================
+  // Init
+  // =========================
+  function initGame() {
+    buildBoard();
+    makePlayers();
+    makePieces();
+    updateTurnUI();
+    ui.diceLabel.textContent = "–";
+    ui.selLabel.textContent = "keine";
+    redraw();
   }
 
-  stage.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    const rect = boardShell.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const zoom = e.deltaY < 0 ? 1.08 : 0.92;
-    zoomAt(mx,my,zoom);
-  }, { passive:false });
-
-  stage.addEventListener("pointerdown", (e) => {
-    // Nicht pannen, wenn auf Node/Token/UI geklickt wird.
-    if (isInteractiveTarget(e.target)) return;
-    try{ stage.setPointerCapture(e.pointerId); }catch(_){ }
-    isPanning = true;
-    panStart = { x:e.clientX, y:e.clientY, cx:state.cam.x, cy:state.cam.y };
-  });
-
-  stage.addEventListener("pointermove", (e) => {
-    if (!isPanning || pinch) return;
-    // pan
-    const dx = e.clientX - panStart.x;
-    const dy = e.clientY - panStart.y;
-    state.cam.x = panStart.cx + dx;
-    state.cam.y = panStart.cy + dy;
-    applyCamera();
-  });
-
-  stage.addEventListener("pointerup", (e) => {
-    try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
-    isPanning = false;
-  });
-
-  // Touch pinch using pointer events: track two active pointers
-  const activePointers = new Map();
-  stage.addEventListener("pointerdown", (e) => {
-    if (e.pointerType!=="touch") return;
-    if (isInteractiveTarget(e.target)) return;
-    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-    if (activePointers.size===2){
-      const pts = Array.from(activePointers.values());
-      pinch = makePinchState(pts[0], pts[1]);
-    }
-  });
-  stage.addEventListener("pointermove", (e) => {
-    if (e.pointerType!=="touch") return;
-    if (!activePointers.has(e.pointerId)) return;
-    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-    if (activePointers.size===2 && pinch){
-      const pts = Array.from(activePointers.values());
-      applyPinch(pinch, pts[0], pts[1]);
-    }
-  });
-  stage.addEventListener("pointerup", (e) => {
-    if (e.pointerType!=="touch") return;
-    activePointers.delete(e.pointerId);
-    if (activePointers.size<2) pinch = null;
-  });
-  stage.addEventListener("pointercancel", (e) => {
-    if (e.pointerType!=="touch") return;
-    activePointers.delete(e.pointerId);
-    if (activePointers.size<2) pinch = null;
-  });
-
-  function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy); }
-  function mid(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
-
-  function makePinchState(p1,p2){
-    const rect = boardShell.getBoundingClientRect();
-    const m = mid(p1,p2);
-    const mLocal = { x:m.x-rect.left, y:m.y-rect.top };
-    return {
-      startDist: dist(p1,p2),
-      startScale: state.cam.scale,
-      startX: state.cam.x,
-      startY: state.cam.y,
-      midLocal: mLocal
+  // Canvas roundRect polyfill for older browsers
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+      const rr = (typeof r === "number") ? {tl:r,tr:r,br:r,bl:r} : r;
+      this.beginPath();
+      this.moveTo(x + rr.tl, y);
+      this.lineTo(x + w - rr.tr, y);
+      this.quadraticCurveTo(x + w, y, x + w, y + rr.tr);
+      this.lineTo(x + w, y + h - rr.br);
+      this.quadraticCurveTo(x + w, y + h, x + w - rr.br, y + h);
+      this.lineTo(x + rr.bl, y + h);
+      this.quadraticCurveTo(x, y + h, x, y + h - rr.bl);
+      this.lineTo(x, y + rr.tl);
+      this.quadraticCurveTo(x, y, x + rr.tl, y);
+      this.closePath();
+      return this;
     };
   }
-  function applyPinch(ps, p1, p2){
-    const d = Math.max(10, dist(p1,p2));
-    const factor = d / ps.startDist;
-    const newScale = clamp(ps.startScale * factor, 0.35, 2.5);
 
-    // zoom around initial mid point
-    const mx = ps.midLocal.x;
-    const my = ps.midLocal.y;
-
-    state.cam.scale = newScale;
-    // adjust translation so point under finger stays
-    state.cam.x = mx - (mx - ps.startX) * (newScale/ps.startScale);
-    state.cam.y = my - (my - ps.startY) * (newScale/ps.startScale);
-    applyCamera();
-  }
-
-  function zoomAt(mx,my,factor){
-    const old = state.cam.scale;
-    const ns = clamp(old*factor, 0.35, 2.5);
-    if (ns===old) return;
-    // keep (mx,my) stable
-    state.cam.x = mx - (mx - state.cam.x) * (ns/old);
-    state.cam.y = my - (my - state.cam.y) * (ns/old);
-    state.cam.scale = ns;
-    applyCamera();
-  }
-
-  // ---------- Start ----------
-  async function start(){
-    try{
-      setStatus("Lade Board…", "warn");
-      state.board = await loadBoard();
-      buildMaps();
-
-      // set board title
-      const bname = state.board?.meta?.name ? String(state.board.meta.name) : "spielbrett";
-      pillBoard.textContent = `Board: ${bname}`;
-
-      // camera fit
-      computeFitCamera();
-
-      resetGame();
-      btnToggleLines.textContent = `Linien: ${state.showLines ? "AN" : "AUS"}`;
-      applyCamera();
-    }catch(e){
-      console.error(e);
-      setStatus(String(e?.message||e), "bad");
-    }
-  }
-
-  // kick off
-  start();
-
+  initGame();
 })();
+</script>
+</body>
+</html>
+```0
