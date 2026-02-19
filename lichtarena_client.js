@@ -230,9 +230,18 @@
     const PIECES_PER_COLOR = 4;
     for (const color of COLORS){
       const starts = state.startByColor.get(color) || [];
-      const startNode = String(starts[0] || findAnyNormalNodeId() || findAnyNodeId());
-      for (let i=1;i<=PIECES_PER_COLOR;i++){
-        state.pieces.push({ id:`${color}_${i}`, color, nodeId:startNode });
+      // Ziel: Jede Figur startet/steht im Haus auf einem eigenen Startfeld (keine Stapelung im Haus).
+      // Fallback: Wenn ein Board weniger Startfelder hat, nutzen wir das erste verfügbare.
+      const fallbackHome = String(starts[0] || findAnyNormalNodeId() || findAnyNodeId());
+
+      for (let i = 1; i <= PIECES_PER_COLOR; i++){
+        const homeNodeId = String(starts[i-1] || fallbackHome);
+        state.pieces.push({
+          id: `${color}_${i}`,
+          color,
+          homeNodeId,
+          nodeId: homeNodeId
+        });
       }
     }
     state.selectedPieceId = state.pieces[0]?.id || null;
@@ -719,7 +728,7 @@
       const victim = occ[0];
       if (victim.color !== piece.color){
         const starts = state.startByColor.get(victim.color) || [];
-        victim.nodeId = String(starts[0] || victim.nodeId);
+        victim.nodeId = String(victim.homeNodeId || starts[0] || victim.nodeId);
         renderTokens();
 
         await runWheelReward(piece.color);
