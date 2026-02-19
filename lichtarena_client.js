@@ -1027,6 +1027,45 @@ function handleTokenClick(pieceId){
       }
     }
 
+
+    // Multi-step Joker: Spielertauschen (j7) – vor dem Würfeln
+    if (state.jokerMode && state.jokerMode.id === "j7"){
+      const me = activeColor();
+      const sel = getSelectedPiece();
+      if (!sel || sel.color !== me){
+        setStatus("Spielertauschen: wähle zuerst deine eigene Figur aus.", "warn");
+        return;
+      }
+      const here = piecesAt(nodeId);
+      const opponents = here.filter(p => p.color !== me);
+      if (opponents.length === 0){
+        setStatus("Spielertauschen: tippe eine gegnerische Figur an.", "warn");
+        return;
+      }
+      opponents.sort((a,b) => String(a.id).localeCompare(String(b.id)));
+      // Zyklisch: wiederholt auf dasselbe Feld tippen wechselt den Gegner
+      let k = Number(state.jokerMode.data?.k || 0) || 0;
+      const lastNode = String(state.jokerMode.data?.lastNode ?? "");
+      if (lastNode !== String(nodeId)) k = 0;
+      const opp = opponents[k % opponents.length];
+      state.jokerMode.data = { k: (k+1), lastNode: String(nodeId) };
+
+      // swap node positions
+      const aNode = String(sel.nodeId);
+      const bNode = String(opp.nodeId);
+      sel.nodeId = bNode;
+      opp.nodeId = aNode;
+
+      // consume joker and exit mode
+      consumeJoker(me, "j7");
+      clearJokerMode();
+      state.activeJokerId = null;
+      computeReachable();
+      renderTokens();
+      updateHUD();
+      setStatus(`🔁 Getauscht: ${sel.color.toUpperCase()} ↔ ${opp.color.toUpperCase()}`, "good");
+      return;
+    }
     const myColor = activeColor();
 
     // Auswahl-Usability: Klick auf ein Feld mit eigenen Figuren (vor dem Würfeln oder auf dem aktuellen Feld)
