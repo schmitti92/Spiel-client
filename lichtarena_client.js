@@ -919,74 +919,57 @@ function toggleJoker(jokerId){
 function handleTokenClick(pieceId){
   if (state.animating) return;
 
-  // If we are in swap-joker mode: select opponent token to swap with selected piece.
+  // Joker j7: Spielertauschen (nur vor dem Würfeln)
   if (state.jokerMode && state.jokerMode.id === "j7"){
+    if (state.rolled){
+      setStatus("Spielertauschen ist nur vor dem Würfeln möglich.", "warn");
+      return;
+    }
+    if (state.moved){
+      setStatus("Spielertauschen nur vor dem Laufen.", "warn");
+      return;
+    }
 
-    // Multi-step Joker: Spielertauschen (vor dem Würfeln)
-    if (state.jokerMode && state.jokerMode.id === "j7"){
-      const c = activeColor();
-      const my = getSelectedPiece();
-      if (!my || my.color !== c){
-        // Nutzer kann zuerst seine Figur auswählen (Haus/Start) – wir blocken nicht, nur Hinweis.
-        setStatus("Spielertauschen: Wähle zuerst eine deiner Figuren aus.", "warn");
-        // weiterlaufen lassen -> die normale Auswahl-Logik unten greift
+    const c = activeColor();
+    const a = getSelectedPiece(); // eigene ausgewählte Figur
+    const b = state.pieces.find(p => p.id === pieceId) || null; // angeklickte Figur
+
+    if (!b){
+      setStatus("Spielertauschen: ungültige Figur.", "warn");
+      return;
+    }
+
+    // Wenn noch keine eigene Figur gewählt ist oder falsche Farbe: erst auswählen
+    if (!a || a.color !== c){
+      if (b.color === c){
+        selectPiece(b.id);
+        setStatus("🔁 Spielertauschen: Jetzt eine gegnerische Figur antippen.", "good");
       } else {
-        const here = piecesAt(nodeId).filter(p => p.color !== c);
-        if (here.length > 0){
-          here.sort((a,b) => String(a.id).localeCompare(String(b.id)));
-          const opp = here[0];
-
-          // Swap positions
-          const aPos = String(my.nodeId);
-          const bPos = String(opp.nodeId);
-          my.nodeId = bPos;
-          opp.nodeId = aPos;
-
-          consumeJoker(c, "j7");
-          clearJokerMode();
-          state.activeJokerId = null;
-
-          // stay before rolling; recompute reachable only if rolled (shouldn't be)
-          if (state.rolled) computeReachable();
-          renderTokens();
-          updateHUD();
-          setStatus(`🔁 Getauscht: ${my.color.toUpperCase()} ↔ ${opp.color.toUpperCase()}`, "good");
-          return;
-        }
+        setStatus("Spielertauschen: Wähle zuerst eine deiner Figuren aus.", "warn");
       }
-      // if clicked empty or own-only field, let selection logic handle
+      return;
     }
 
-    const myColor = activeColor();
-    const a = state.pieces.find(p => p.id === state.selectedPieceId);
-    const b = state.pieces.find(p => p.id === pieceId);
-    if (!a || !b){
-      setStatus("Spielertausch: ungültige Figur.", "warn");
-      return;
-    }
-    if (a.color !== myColor){
-      setStatus("Spielertausch: zuerst eine eigene Figur (am Zug) auswählen.", "warn");
-      return;
-    }
-    if (b.color === myColor){
-      // allow switching own selected piece while in swap mode
+    // Eigene Figur ist gewählt: Klick auf eigene Figur -> Auswahl wechseln
+    if (b.color === c){
       selectPiece(b.id);
-      setStatus("Spielertausch: jetzt eine gegnerische Figur antippen.", "warn");
+      setStatus("🔁 Spielertauschen: Jetzt eine gegnerische Figur antippen.", "good");
       return;
     }
-    // swap positions
+
+    // Gegner angeklickt -> Swap
     const aPos = String(a.nodeId);
     const bPos = String(b.nodeId);
     a.nodeId = bPos;
     b.nodeId = aPos;
 
-    consumeJoker(myColor, "j7");
+    consumeJoker(c, "j7");
     clearJokerMode();
     state.activeJokerId = null;
-    computeReachable();
+
     renderTokens();
     updateHUD();
-    setStatus(`🔁 Spielertausch: ${a.id} ↔ ${b.id}`, "good");
+    setStatus(`🔁 Getauscht: ${a.color.toUpperCase()} ↔ ${b.color.toUpperCase()}`, "good");
     return;
   }
 
