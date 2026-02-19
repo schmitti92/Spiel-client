@@ -165,6 +165,7 @@
     showLines: false,
     reachable: new Map(),       // nodeId -> path (array of nodeIds, including start+...+dest)
     animating: false,
+    moved: false,
 
     // camera
     cam: { x:0, y:0, scale:1 },
@@ -224,8 +225,10 @@
     state.dice = 0;
     state.rolled = false;
     state.canRollAgain = false;
+    state.moved = false;
     state.selectedPieceId = null;
     state.animating = false;
+    state.moved = false;
 
     // pieces: Board 1 will use 4 pieces total? (dein späterer Plan)
     // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
@@ -810,12 +813,16 @@ function toggleJoker(jokerId){
       setStatus("Alle Farben: zuerst würfeln, dann darfst du eine beliebige Figur auswählen.", "warn");
       return;
     }
+    if (state.moved){
+      setStatus("Alle Farben nur vor dem Laufen aktivierbar.", "warn");
+      return;
+    }
     state.activeJokerId = (state.activeJokerId === "j2") ? null : "j2";
     clearJokerMode();
     computeReachable();
     renderTokens();
     updateHUD();
-    setStatus(state.activeJokerId ? "🌈 Alle Farben aktiv: du darfst eine beliebige Figur bewegen." : "Alle Farben deaktiviert.", "good");
+    setStatus(state.activeJokerId ? "🌈 Alle Farben aktiv: du darfst eine beliebige Figur bewegen (für diesen Zug)." : "Alle Farben deaktiviert.", "good");
     return;
   }
 
@@ -848,6 +855,7 @@ function toggleJoker(jokerId){
     // only active player's piece can be moved
     state.dice = randInt(1,6);
     state.rolled = true;
+    state.moved = false;
     state.canRollAgain = (state.dice===6);
     setStatus(`🎲 ${c.toUpperCase()} würfelt: ${state.dice}` + (state.canRollAgain ? " (6 → Bonuswurf möglich)" : ""), "good");
     computeReachable();
@@ -881,7 +889,7 @@ function toggleJoker(jokerId){
     if (!p) return;
 
     // Allow selecting other colors only if "Alle Farben" joker is active and we are in this turn before moving.
-    const canAny = (state.activeJokerId === "j2") && state.rolled;
+    const canAny = (state.activeJokerId === "j2") && state.rolled && !state.moved;
     if (p.color !== activeColor() && !canAny){
       setStatus("Du kannst nur die Figur des aktiven Spielers bewegen (außer mit Joker „Alle Farben“ nach dem Würfeln).", "warn");
       return;
@@ -992,7 +1000,7 @@ function handleTokenClick(pieceId){
     // Auswahl-Usability: Klick auf ein Feld mit eigenen Figuren (vor dem Würfeln oder auf dem aktuellen Feld)
     // wechselt die ausgewählte Figur (zyklisch), damit man sie klar auswählen kann.
     const sp0 = getSelectedPiece();
-    const canAny = (state.activeJokerId === "j2") && state.rolled; // Joker „Alle Farben“
+    const canAny = (state.activeJokerId === "j2") && state.rolled && !state.moved; // Joker „Alle Farben“
     const selectableHere = piecesAt(nodeId).filter(p => canAny ? true : (p.color === myColor));
 
     // Auswahl ist jederzeit erlaubt, solange noch nicht gelaufen wurde:
@@ -1033,6 +1041,7 @@ function handleTokenClick(pieceId){
     const diceWas = state.dice;
     const fromNode = String(piece.nodeId);
 
+    state.moved = true;
     await moveAlongPath(piece, path);
 
     // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad
