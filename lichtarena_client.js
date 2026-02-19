@@ -768,13 +768,24 @@ function toggleJoker(jokerId){
       setStatus("Doppelwurf geht erst nach dem Würfeln.", "warn");
       return;
     }
-    const was = state.dice;
-    state.dice = (Number(state.dice)||0) * 2;
+    if (state.moved){
+      setStatus("Doppelwurf nur vor dem Laufen.", "warn");
+      return;
+    }
+
+    const first = Number(state.dice) || 0;
+    const second = randInt(1,6);
+    const sum = first + second;
+
+    // "6 nochmal" bleibt erhalten, wenn einer der beiden Würfe eine 6 war
+    state.dice = sum;
+    state.canRollAgain = (first === 6 || second === 6);
+
     consumeJoker(c, "j3");
     computeReachable();
     renderTokens();
     updateHUD();
-    setStatus(`🎲 Doppelwurf: ${was} → ${state.dice}`, "good");
+    setStatus(`🎲 Doppelwurf: ${first} + ${second} = ${sum}`, "good");
     return;
   }
 
