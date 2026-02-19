@@ -976,23 +976,25 @@ function handleTokenClick(pieceId){
 
     // Auswahl-Usability: Klick auf ein Feld mit eigenen Figuren (vor dem Würfeln oder auf dem aktuellen Feld)
     // wechselt die ausgewählte Figur (zyklisch), damit man sie klar auswählen kann.
-    const myHere = piecesAt(nodeId).filter(p => p.color === myColor);
     const sp0 = getSelectedPiece();
-    if (myHere.length > 0 && (!state.rolled || (sp0 && String(sp0.nodeId) === String(nodeId)) || !sp0)){
-      myHere.sort((a,b) => String(a.id).localeCompare(String(b.id)));
-      let next = myHere[0];
-      if (sp0 && String(sp0.nodeId) === String(nodeId)){
-        const i = myHere.findIndex(p => p.id === sp0.id);
-        next = myHere[(i + 1) % myHere.length];
-      }
-      state.selectedPieceId = next.id;
-      if (state.rolled) computeReachable();
-      renderTokens();
-      updateHUD();
-      setStatus(`Ausgewählt: ${myColor.toUpperCase()} ${String(next.id)}`, "good");
+    const canAny = (state.activeJokerId === "j2") && state.rolled; // Joker „Alle Farben“
+    const selectableHere = piecesAt(nodeId).filter(p => canAny ? true : (p.color === myColor));
 
-      // Vor dem Würfeln (oder Klick auf das aktuelle Feld) ist das nur Auswahl – kein Zug.
-      if (!state.rolled || (sp0 && String(sp0.nodeId) === String(nodeId))) return;
+    // Auswahl ist jederzeit erlaubt, solange noch nicht gelaufen wurde:
+    // Klick auf ein Feld mit (eigener) Figur(en) = NUR Auswahl, kein Zug – auch nach dem Würfeln.
+    if (selectableHere.length > 0){
+      selectableHere.sort((a,b) => String(a.id).localeCompare(String(b.id)));
+      let next = selectableHere[0];
+
+      // Zyklisch durchwechseln, wenn man erneut dasselbe Feld anklickt
+      if (sp0 && String(sp0.nodeId) === String(nodeId)){
+        const i = selectableHere.findIndex(p => p.id === sp0.id);
+        next = selectableHere[(i + 1) % selectableHere.length];
+      }
+
+      selectPiece(next.id);
+      setStatus(`Ausgewählt: ${String(next.color).toUpperCase()} ${String(next.id)}`, "good");
+      return;
     }
 
     const piece = state.pieces.find(p => p.id === state.selectedPieceId);
