@@ -224,6 +224,7 @@
     state.turnIndex = 0;
     state.dice = 0;
     state.rolled = false;
+    state.moved = false;
     state.canRollAgain = false;
     state.moved = false;
     state.selectedPieceId = null;
@@ -879,6 +880,7 @@ function toggleJoker(jokerId){
     // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
     state.turnIndex = (state.turnIndex + 1) % COLORS.length;
     state.rolled = false;
+    state.moved = false;
     state.dice = 0;
     state.canRollAgain = false;
     // clear one-turn joker selection/modes
@@ -1134,6 +1136,7 @@ function handleTokenClick(pieceId){
 
     // Zug-Reset / Bonuswurf bei 6
     state.rolled = false;
+    state.moved = false;
     state.dice = null;
     state.reachable = new Map();
     renderHud();
