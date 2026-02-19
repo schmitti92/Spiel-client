@@ -354,3 +354,12 @@ body{
   0%,100%{ filter: brightness(1); }
   50%{ filter: brightness(1.12); }
 }
+
+
+/* Joker interaction */
+.jName, .jCount{ cursor:pointer; user-select:none; -webkit-user-select:none; }
+.jName.active{
+  border-color: rgba(244,200,74,.85);
+  box-shadow: 0 0 0 2px rgba(244,200,74,.25), 0 10px 30px rgba(244,200,74,.12);
+  background: rgba(244,200,74,.10);
+}
