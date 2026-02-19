@@ -738,9 +738,17 @@ function toggleJoker(jokerId){
   }
 
   if (jokerId === "j7"){ // Spielertauschen
+    if (state.rolled){
+      setStatus("Spielertauschen ist nur vor dem Würfeln möglich.", "warn");
+      return;
+    }
+    if (state.moved){
+      setStatus("Spielertauschen nur vor dem Laufen.", "warn");
+      return;
+    }
     state.activeJokerId = jokerId;
     state.jokerMode = { id:"j7", step:"pickOpponent", data:{} };
-    setStatus("Spielertauschen: wähle deine Figur, dann tippe eine gegnerische Figur an.", "good");
+    setStatus("🔁 Spielertauschen aktiv: Wähle deine Figur (falls noch nicht), dann tippe eine gegnerische Figur an.", "good");
     updateHUD();
     return;
   }
@@ -908,6 +916,42 @@ function handleTokenClick(pieceId){
 
   // If we are in swap-joker mode: select opponent token to swap with selected piece.
   if (state.jokerMode && state.jokerMode.id === "j7"){
+
+    // Multi-step Joker: Spielertauschen (vor dem Würfeln)
+    if (state.jokerMode && state.jokerMode.id === "j7"){
+      const c = activeColor();
+      const my = getSelectedPiece();
+      if (!my || my.color !== c){
+        // Nutzer kann zuerst seine Figur auswählen (Haus/Start) – wir blocken nicht, nur Hinweis.
+        setStatus("Spielertauschen: Wähle zuerst eine deiner Figuren aus.", "warn");
+        // weiterlaufen lassen -> die normale Auswahl-Logik unten greift
+      } else {
+        const here = piecesAt(nodeId).filter(p => p.color !== c);
+        if (here.length > 0){
+          here.sort((a,b) => String(a.id).localeCompare(String(b.id)));
+          const opp = here[0];
+
+          // Swap positions
+          const aPos = String(my.nodeId);
+          const bPos = String(opp.nodeId);
+          my.nodeId = bPos;
+          opp.nodeId = aPos;
+
+          consumeJoker(c, "j7");
+          clearJokerMode();
+          state.activeJokerId = null;
+
+          // stay before rolling; recompute reachable only if rolled (shouldn't be)
+          if (state.rolled) computeReachable();
+          renderTokens();
+          updateHUD();
+          setStatus(`🔁 Getauscht: ${my.color.toUpperCase()} ↔ ${opp.color.toUpperCase()}`, "good");
+          return;
+        }
+      }
+      // if clicked empty or own-only field, let selection logic handle
+    }
+
     const myColor = activeColor();
     const a = state.pieces.find(p => p.id === state.selectedPieceId);
     const b = state.pieces.find(p => p.id === pieceId);
