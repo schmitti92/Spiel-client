@@ -224,9 +224,11 @@
     state.dice = 0;
     state.rolled = false;
     state.canRollAgain = false;
+    state.moved = false;
     state.selectedPieceId = null;
     state.animating = false;
 
+    state.moved = false;
     // pieces: Board 1 will use 4 pieces total? (dein späterer Plan)
     // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
     // Wenn du später 5 pro Farbe willst: hier umstellen.
@@ -810,6 +812,10 @@ function toggleJoker(jokerId){
       setStatus("Alle Farben: zuerst würfeln, dann darfst du eine beliebige Figur auswählen.", "warn");
       return;
     }
+    if (state.moved){
+      setStatus("Alle Farben nur vor dem Laufen aktivierbar.", "warn");
+      return;
+    }
     state.activeJokerId = (state.activeJokerId === "j2") ? null : "j2";
     clearJokerMode();
     computeReachable();
@@ -883,7 +889,7 @@ function toggleJoker(jokerId){
     // Allow selecting other colors only if "Alle Farben" joker is active and we are in this turn before moving.
     const canAny = (state.activeJokerId === "j2") && state.rolled;
     if (p.color !== activeColor() && !canAny){
-      setStatus("Du kannst nur die Figur des aktiven Spielers bewegen (außer mit Joker „Alle Farben“ nach dem Würfeln).", "warn");
+      setStatus("Du kannst nur Figuren der aktiven Farbe auswählen – außer Joker „Alle Farben“ ist aktiv (nach dem Würfeln).", "warn");
       return;
     }
 
@@ -1068,6 +1074,8 @@ function handleTokenClick(pieceId){
     } else {
       setStatus(`Zug: ${piece.color.toUpperCase()} → ${to}`,"good");
     }
+
+    state.moved = true;
 
     // Consume turn-jokers that are applied on movement
     if (state.activeJokerId === "j2" || state.activeJokerId === "j5"){
