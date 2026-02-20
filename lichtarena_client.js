@@ -168,7 +168,11 @@
     moved: false,
 
     // Defensive shields per color (turns remaining)
-    shields: { red:0, blue:0, green:0, yellow:0 },
+    // Turn counter (increments at end of each player's turn)
+    turnCounter: 0,
+
+    // Shield protection per color: turn index until which protection is active (exclusive)
+    shieldUntil: { red:0, blue:0, green:0, yellow:0 },
 
     // camera
     cam: { x:0, y:0, scale:1 },
@@ -227,13 +231,10 @@
     state.turnIndex = 0;
     state.dice = 0;
     state.rolled = false;
-    // Shield duration ticks down at each completed turn
-    for (const k of Object.keys(state.shields||{})){
-      const v = Number(state.shields[k]||0) || 0;
-      if (v > 0) state.shields[k] = v - 1;
-    }
+    state.turnCounter = (Number(state.turnCounter)||0) + 1;
     state.moved = false;
-    state.shields = { red:0, blue:0, green:0, yellow:0 };
+    state.turnCounter = 0;
+    state.shieldUntil = { red:0, blue:0, green:0, yellow:0 };
     state.canRollAgain = false;
     state.moved = false;
     state.selectedPieceId = null;
