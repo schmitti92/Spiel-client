@@ -138,7 +138,7 @@
 
     // game
     turnIndex: 0,
-    shieldUntilByColor: { red:0, blue:0, green:0, yellow:0 },
+    turnCount: 0, // increases each completed turn
     dice: 0,
     rolled: false,
     canRollAgain: false,        // when dice==6
@@ -230,7 +230,7 @@
   // ---------- Init Game ----------
   function resetGame(){
     state.turnIndex = 0;
-    state.shieldUntilByColor = { red:0, blue:0, green:0, yellow:0 };
+    state.turnCount = 0;
     state.dice = 0;
     state.rolled = false;
     state.turnCounter = (Number(state.turnCounter)||0) + 1;
@@ -715,28 +715,25 @@ function consumeJoker(color, jokerId){
   updateHUD();
 }
 
-function isColorShielded(color){
-  const c = String(color||"").toLowerCase();
-  const until = Number(state.shieldUntilByColor?.[c] ?? 0) || 0;
-  return state.turnIndex < until;
-}
-
 function isShielded(arg){
-  // Accept piece object or color string
-  if (typeof arg === "string") return isColorShielded(arg);
-  const piece = arg;
-  const until = Number(piece?.shieldUntilTurnIndex);
-  if (Number.isFinite(until)) return state.turnIndex < until;
-  return isColorShielded(piece?.color);
+  // arg can be a piece object or a color string
+  if (!arg) return false;
+  if (typeof arg === "string"){
+    const c = arg.toLowerCase();
+    const until = Math.max(0, ...state.pieces.filter(p=>p && p.color===c).map(p=>Number(p.shieldUntilTurnCount)||0));
+    return (Number(state.turnCount)||0) < until;
+  }
+  const until = Number(arg?.shieldUntilTurnCount);
+  if (!Number.isFinite(until)) return false;
+  return (Number(state.turnCount)||0) < until;
 }
-
 
 function clearExpiredShields(){
   for (const p of state.pieces){
     if (!p) continue;
-    const until = Number(p.shieldUntilTurnIndex);
+    const until = Number(p.shieldUntilTurnCount);
     if (Number.isFinite(until) && state.turnIndex >= until){
-      delete p.shieldUntilTurnIndex;
+      delete p.shieldUntilTurnCount;
     }
   }
 }
@@ -827,29 +824,13 @@ function toggleJoker(jokerId){
   }
 
   if (jokerId === "j6"){ // Schutzschild
-    if (state.moved){
-      setStatus("Schutzschild nur vor dem Laufen möglich.", "warn");
+    const p = getSelectedPiece();
+    if (!p || p.color !== c){
+      setStatus("Schutzschild: bitte zuerst eine eigene Figur auswählen.", "warn");
       return;
     }
-    const have = Number(state.jokers?.[c]?.["j6"] ?? 0) || 0;
-    if (have <= 0){
-      setStatus("Kein Joker verfügbar.", "warn");
-      return;
-    }
-    // 2 komplette Spielrunden = 2 volle Zyklen aller Spieler (COLORS.length Züge pro Runde)
-    const turns = COLORS.length * 2;
-    const now = Number(state.turnIndex)||0;
-    // +1 damit es sich nicht zu kurz anfühlt, wenn du ihn im eigenen Zug aktivierst
-    state.shieldUntilByColor[c] = Math.max(Number(state.shieldUntilByColor?.[c]||0)||0, now + turns + 1);
-
-    consumeJoker(c, "j6");
-    // Versteckt: neutraler Text, kein Icon
-    setStatus("Joker benutzt.", "good");
-    updateHUD();
-    return;
-  }
     // shield lasts until next time this color is active again
-    p.shieldUntilTurnIndex = state.turnIndex + COLORS.length;
+    p.shieldUntilTurnCount = state.turnIndex + COLORS.length;
     consumeJoker(c, "j6");
     renderTokens();
     updateHUD();
@@ -917,6 +898,7 @@ function toggleJoker(jokerId){
     // If dice==6 and player hasn't used bonus roll yet, allow to keep turn if they roll again:
     // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
     state.turnIndex = (state.turnIndex + 1) % COLORS.length;
+    state.turnCount = (Number(state.turnCount)||0) + 1;
     state.rolled = false;
     state.moved = false;
     state.dice = 0;
@@ -1148,20 +1130,6 @@ function handleTokenClick(pieceId){
     }
 
     const to = String(nodeId);
-
-    // Schutzschild: Auf ein Feld mit geschützten gegnerischen Figuren darf nicht gezogen werden
-    {
-      const occAll = piecesAt(to);
-      if (occAll.length){
-        const me = activeColor();
-        const protectedOpp = occAll.some(p => p.color !== me && isColorShielded(p.color));
-        if (protectedOpp){
-          setStatus("Ziel ist blockiert.", "warn");
-          return;
-        }
-      }
-    }
-
     const path = state.reachable?.get(to) || null;
     if (!path){
       setStatus("Zielknoten nicht erreichbar (exakt Würfel-Schritte, ohne Hin-und-her-Hüpfen).","warn");
@@ -1180,11 +1148,6 @@ function handleTokenClick(pieceId){
       const victim = occ[0];
       if (victim.color !== piece.color){
         const starts = state.startByColor.get(victim.color) || [];
-        // Schutzschild: geschützte Figuren können nicht rausgeworfen werden
-        if (isColorShielded(victim.color)){
-          setStatus("Ziel ist blockiert.", "warn");
-          return;
-        }
         victim.nodeId = String(victim.homeNodeId || starts[0] || victim.nodeId);
         renderTokens();
 
