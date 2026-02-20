@@ -33,6 +33,15 @@
     url.searchParams.set("v", String(Date.now()));
     location.href = url.toString();
   };
+  const gotoBoardDev = (k) => {
+    // Dev/Test helper: always jumps to target board and forces dev=1 in URL
+    const url = new URL(location.href);
+    url.searchParams.set("board", String(k));
+    url.searchParams.set("dev","1");
+    url.searchParams.set("v", String(Date.now()));
+    location.href = url.toString();
+  };
+
   const LS_KEY = "lichtarena_offline_save_clean_v1";
   const COLORS = ["red","blue","green","yellow"];
 
@@ -1464,11 +1473,13 @@ function computeReachable(){
 
   bindBtn(btnWheelClose, closeWheel);
   bindBtn(btnDoneClose, closeDoneModal);
-  // Dev button binds
+  // Dev/Test: Board 2 button (always available; does not change gameplay unless clicked)
+  const btnDevBoard2 = $("btnDevBoard2");
+  bindBtn(btnDevBoard2, () => gotoBoardDev(2));
+
+  // Extra dev helpers only when dev=1
   if (devMode){
-    const btnDevBoard2 = $("btnDevBoard2");
     const btnDevWin = $("btnDevWin");
-    bindBtn(btnDevBoard2, () => gotoBoard(2));
     bindBtn(btnDevWin, () => {
       state.globalCollected = state.globalGoal;
       renderHud();
