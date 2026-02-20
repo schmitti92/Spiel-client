@@ -23,6 +23,7 @@
     "2": "./lichtarena_board_2.json"
   };
   const qs = new URLSearchParams(location.search);
+  const IS_DEV = (qs.get("dev") === "1");
   const boardKey = (qs.get("board") || "1").trim();
   const BOARD_URL = BOARD_MAP[boardKey] || BOARD_MAP["1"];
   const LS_KEY = "lichtarena_offline_save_clean_v1";
@@ -130,6 +131,7 @@
   // ---------- State ----------
   const state = {
     board: null,
+    boardKey: boardKey,
     nodeById: new Map(),
     outgoing: new Map(),        // from -> [{to}] (visual arrows)
     incoming: new Map(),        // to -> [{from}] (optional)
@@ -185,6 +187,60 @@
     if (!res.ok) throw new Error(`Board konnte nicht geladen werden: ${BOARD_URL} (HTTP ${res.status})`);
     return await res.json();
   }
+
+  async function fetchBoardByKey(key){
+    const url0 = BOARD_MAP[String(key)] || BOARD_MAP["1"];
+    const url = `${url0}?v=${Date.now()}`;
+    const res = await fetch(url, { cache:"no-store" });
+    if (!res.ok) throw new Error(`Board konnte nicht geladen werden: ${res.status}`);
+    return await res.json();
+  }
+
+  async function switchToBoard(key, { preserveJokers=true, preserveShield=true } = {}){
+    const nextKey = String(key);
+    const nextBoard = await fetchBoardByKey(nextKey);
+
+    // Preserve cross-board state
+    const keep = {
+      jokers: preserveJokers ? JSON.parse(JSON.stringify(state.jokers)) : null,
+      shieldUntil: preserveShield ? JSON.parse(JSON.stringify(state.shieldUntil)) : null,
+      turnCounter: preserveShield ? (Number(state.turnCounter)||0) : 0,
+      turnIndex: state.turnIndex,
+    };
+
+    // Update URL (so refresh stays on that board)
+    try{
+      const nqs = new URLSearchParams(location.search);
+      nqs.set("board", nextKey);
+      if (IS_DEV) nqs.set("dev","1");
+      history.replaceState(null, "", `${location.pathname}?${nqs.toString()}`);
+    }catch(_){}
+
+    // Apply board and rebuild
+    state.board = nextBoard;
+    state.boardKey = nextKey;
+    buildMaps();
+    // set board title
+    const bname = nextBoard?.meta?.name ? String(nextBoard.meta.name) : `Board ${nextKey}`;
+    pillBoard.textContent = `Board: ${bname}`;
+
+    computeFitCamera();
+    applyCamera();
+
+
+    // Reset board-local gameplay (pieces spawn in house on the new board)
+    resetGame();
+
+    // Restore preserved state
+    if (keep.jokers) state.jokers = keep.jokers;
+    if (keep.shieldUntil) state.shieldUntil = keep.shieldUntil;
+    if (preserveShield) state.turnCounter = keep.turnCounter;
+    state.turnIndex = keep.turnIndex; // keep whose turn it is
+
+    renderAll();
+    updateHUD();
+  }
+
 
   function buildMaps(){
     state.nodeById = new Map();
@@ -1178,8 +1234,14 @@ function handleTokenClick(pieceId){
       }
 
             if (state.globalCollected >= state.globalGoal){
-                setStatus(`🏁 Board 1 geschafft! (${state.globalGoal} Lichter) – weiter zu Board 2.`,`good`);
-        openDoneModal();
+        if (String(state.boardKey||"1")==="1"){
+          setStatus(`🏁 Board 1 geschafft! (${state.globalGoal} Lichter) – Board 2 wird geladen…`,`good`);
+          await switchToBoard("2", { preserveJokers:true, preserveShield:true });
+          setStatus("✅ Willkommen auf Board 2.", "good");
+        } else {
+          setStatus(`🏁 Ziel erreicht! (${state.globalGoal} Lichter)`, "good");
+          openDoneModal();
+        }
       } else {
                 setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.globalGoal}`,"good");
       }
@@ -1416,7 +1478,43 @@ function computeReachable(){
     doneModal.classList.add("hidden");
   }
 
-  // ---------- UI Wire ----------
+  
+  function initDevTools(){
+    // Inject a small dev button into the sidebar (does not affect normal gameplay)
+    try{
+      const side = document.getElementById("side");
+      if (!side) return;
+      let box = document.getElementById("devTools");
+      if (!box){
+        box = document.createElement("div");
+        box.id = "devTools";
+        box.className = "panel";
+        box.innerHTML = `
+          <div class="panelTitle">DEV</div>
+          <div class="panelBody">
+            <button id="btnDevBoard2" class="btn danger" type="button">TEST: Board 2 starten</button>
+          </div>
+        `;
+        // Insert after playersPanel if possible, else append
+        const playersPanel = document.getElementById("playersPanel");
+        if (playersPanel && playersPanel.parentElement === side){
+          side.insertBefore(box, playersPanel.nextSibling);
+        } else {
+          side.appendChild(box);
+        }
+      }
+      const b = document.getElementById("btnDevBoard2");
+      bindBtn(b, async () => {
+        setStatus("DEV: Wechsel zu Board 2…", "warn");
+        await switchToBoard("2", { preserveJokers:true, preserveShield:true });
+        setStatus("DEV: Board 2 bereit.", "good");
+      });
+    }catch(e){
+      console.warn("dev tools init failed", e);
+    }
+  }
+
+// ---------- UI Wire ----------
   // Tablet/Touch: ensure buttons always react (some browsers suppress/delay plain "click").
   function bindBtn(el, fn){
     if (!el) return;
@@ -1595,6 +1693,9 @@ function computeReachable(){
   // ---------- Start ----------
   async function start(){
     try{
+      // Dev tools (only when ?dev=1)
+      if (IS_DEV) initDevTools();
+
       setStatus("Lade Board…", "warn");
       state.board = await loadBoard();
       buildMaps();
