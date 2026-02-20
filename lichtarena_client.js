@@ -23,9 +23,16 @@
     "2": "./lichtarena_board_2.json"
   };
   const qs = new URLSearchParams(location.search);
-  const IS_DEV = (qs.get("dev") === "1");
   const boardKey = (qs.get("board") || "1").trim();
   const BOARD_URL = BOARD_MAP[boardKey] || BOARD_MAP["1"];
+  const devMode = (qs.get("dev") === "1");
+  const gotoBoard = (k) => {
+    const url = new URL(location.href);
+    url.searchParams.set("board", String(k));
+    if (devMode) url.searchParams.set("dev","1");
+    url.searchParams.set("v", String(Date.now()));
+    location.href = url.toString();
+  };
   const LS_KEY = "lichtarena_offline_save_clean_v1";
   const COLORS = ["red","blue","green","yellow"];
 
@@ -53,6 +60,20 @@
   const btnToggleUI = $("btnToggleUI");
   const layout = $("layout");
   const side = $("side");
+  // Dev tools (nur sichtbar mit ?dev=1)
+  if (devMode && side){
+    const card = document.createElement("section");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>DEV</h3>
+      <div class="row">
+        <button class="btn" id="btnDevBoard2">TEST: Board 2 starten</button>
+        <button class="btn" id="btnDevWin">TEST: +5 Licht</button>
+      </div>
+      <div class="hint">Nur für Tests. Im normalen Spiel unsichtbar.</div>
+    `;
+    side.insertBefore(card, side.firstChild);
+  }
 
   const btnRoll = $("btnRoll");
   const btnEndTurn = $("btnEndTurn");
@@ -131,7 +152,6 @@
   // ---------- State ----------
   const state = {
     board: null,
-    boardKey: boardKey,
     nodeById: new Map(),
     outgoing: new Map(),        // from -> [{to}] (visual arrows)
     incoming: new Map(),        // to -> [{from}] (optional)
@@ -187,60 +207,6 @@
     if (!res.ok) throw new Error(`Board konnte nicht geladen werden: ${BOARD_URL} (HTTP ${res.status})`);
     return await res.json();
   }
-
-  async function fetchBoardByKey(key){
-    const url0 = BOARD_MAP[String(key)] || BOARD_MAP["1"];
-    const url = `${url0}?v=${Date.now()}`;
-    const res = await fetch(url, { cache:"no-store" });
-    if (!res.ok) throw new Error(`Board konnte nicht geladen werden: ${res.status}`);
-    return await res.json();
-  }
-
-  async function switchToBoard(key, { preserveJokers=true, preserveShield=true } = {}){
-    const nextKey = String(key);
-    const nextBoard = await fetchBoardByKey(nextKey);
-
-    // Preserve cross-board state
-    const keep = {
-      jokers: preserveJokers ? JSON.parse(JSON.stringify(state.jokers)) : null,
-      shieldUntil: preserveShield ? JSON.parse(JSON.stringify(state.shieldUntil)) : null,
-      turnCounter: preserveShield ? (Number(state.turnCounter)||0) : 0,
-      turnIndex: state.turnIndex,
-    };
-
-    // Update URL (so refresh stays on that board)
-    try{
-      const nqs = new URLSearchParams(location.search);
-      nqs.set("board", nextKey);
-      if (IS_DEV) nqs.set("dev","1");
-      history.replaceState(null, "", `${location.pathname}?${nqs.toString()}`);
-    }catch(_){}
-
-    // Apply board and rebuild
-    state.board = nextBoard;
-    state.boardKey = nextKey;
-    buildMaps();
-    // set board title
-    const bname = nextBoard?.meta?.name ? String(nextBoard.meta.name) : `Board ${nextKey}`;
-    pillBoard.textContent = `Board: ${bname}`;
-
-    computeFitCamera();
-    applyCamera();
-
-
-    // Reset board-local gameplay (pieces spawn in house on the new board)
-    resetGame();
-
-    // Restore preserved state
-    if (keep.jokers) state.jokers = keep.jokers;
-    if (keep.shieldUntil) state.shieldUntil = keep.shieldUntil;
-    if (preserveShield) state.turnCounter = keep.turnCounter;
-    state.turnIndex = keep.turnIndex; // keep whose turn it is
-
-    renderAll();
-    updateHUD();
-  }
-
 
   function buildMaps(){
     state.nodeById = new Map();
@@ -769,21 +735,19 @@ function consumeJoker(color, jokerId){
   updateHUD();
 }
 
-function isShielded(pieceOrColor){
-  const c = typeof pieceOrColor === "string"
-    ? pieceOrColor
-    : (pieceOrColor?.color || "");
-  const key = String(c).toLowerCase();
-  const until = Number(state.shieldUntil?.[key] ?? 0) || 0;
-  const now = Number(state.turnCounter ?? 0) || 0;
-  return now < until;
+function isShielded(piece){
+  const until = Number(piece?.shieldUntilTurnIndex);
+  if (!Number.isFinite(until)) return false;
+  return state.turnIndex < until;
 }
 
 function clearExpiredShields(){
-  const now = Number(state.turnCounter ?? 0) || 0;
-  for (const k of Object.keys(state.shieldUntil||{})){
-    const until = Number(state.shieldUntil[k]||0) || 0;
-    if (until <= now) state.shieldUntil[k] = 0;
+  for (const p of state.pieces){
+    if (!p) continue;
+    const until = Number(p.shieldUntilTurnIndex);
+    if (Number.isFinite(until) && state.turnIndex >= until){
+      delete p.shieldUntilTurnIndex;
+    }
   }
 }
 
@@ -873,24 +837,17 @@ function toggleJoker(jokerId){
   }
 
   if (jokerId === "j6"){ // Schutzschild
-    if (state.moved){
-      setStatus("Aktion nicht möglich.", "warn");
+    const p = getSelectedPiece();
+    if (!p || p.color !== c){
+      setStatus("Schutzschild: bitte zuerst eine eigene Figur auswählen.", "warn");
       return;
     }
-    const have = Number(state.jokers?.[c]?.["j6"] ?? 0) || 0;
-    if (have <= 0){
-      setStatus("Aktion nicht möglich.", "warn");
-      return;
-    }
-    // 2 komplette Spielrunden = 2 volle Zyklen aller Spieler
-    const now = Number(state.turnCounter ?? 0) || 0;
-    const duration = COLORS.length * 2;
-    state.shieldUntil[c] = Math.max(Number(state.shieldUntil?.[c]||0)||0, now + duration);
+    // shield lasts until next time this color is active again
+    p.shieldUntilTurnIndex = state.turnIndex + COLORS.length;
     consumeJoker(c, "j6");
-    // keine sichtbare Anzeige
     renderTokens();
     updateHUD();
-    setStatus("Joker benutzt.", "good");
+    setStatus("🛡️ Schutzschild aktiv (bis zu deinem nächsten Zug).", "good");
     return;
   }
 
@@ -953,8 +910,6 @@ function toggleJoker(jokerId){
     if (state.animating) return;
     // If dice==6 and player hasn't used bonus roll yet, allow to keep turn if they roll again:
     // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
-    // advance global turn counter (monotonic) for shield duration
-    state.turnCounter = (Number(state.turnCounter||0) + 1);
     state.turnIndex = (state.turnIndex + 1) % COLORS.length;
     state.rolled = false;
     state.moved = false;
@@ -1187,16 +1142,6 @@ function handleTokenClick(pieceId){
     }
 
     const to = String(nodeId);
-
-    // Schutzschild: geschützte gegnerische Figuren blockieren das Zielfeld
-    const occAll = piecesAt(to);
-    if (occAll.length){
-      const protectedOpp = occAll.some(p => p.color !== piece.color && isShielded(p.color));
-      if (protectedOpp){
-        setStatus("Ziel ist blockiert.", "warn");
-        return;
-      }
-    }
     const path = state.reachable?.get(to) || null;
     if (!path){
       setStatus("Zielknoten nicht erreichbar (exakt Würfel-Schritte, ohne Hin-und-her-Hüpfen).","warn");
@@ -1234,14 +1179,8 @@ function handleTokenClick(pieceId){
       }
 
             if (state.globalCollected >= state.globalGoal){
-        if (String(state.boardKey||"1")==="1"){
-          setStatus(`🏁 Board 1 geschafft! (${state.globalGoal} Lichter) – Board 2 wird geladen…`,`good`);
-          await switchToBoard("2", { preserveJokers:true, preserveShield:true });
-          setStatus("✅ Willkommen auf Board 2.", "good");
-        } else {
-          setStatus(`🏁 Ziel erreicht! (${state.globalGoal} Lichter)`, "good");
-          openDoneModal();
-        }
+                setStatus(`🏁 Board 1 geschafft! (${state.globalGoal} Lichter) – weiter zu Board 2.`,`good`);
+        openDoneModal();
       } else {
                 setStatus(`💡 Licht eingesammelt! Global: ${state.globalCollected}/${state.globalGoal}`,"good");
       }
@@ -1478,43 +1417,7 @@ function computeReachable(){
     doneModal.classList.add("hidden");
   }
 
-  
-  function initDevTools(){
-    // Inject a small dev button into the sidebar (does not affect normal gameplay)
-    try{
-      const side = document.getElementById("side");
-      if (!side) return;
-      let box = document.getElementById("devTools");
-      if (!box){
-        box = document.createElement("div");
-        box.id = "devTools";
-        box.className = "panel";
-        box.innerHTML = `
-          <div class="panelTitle">DEV</div>
-          <div class="panelBody">
-            <button id="btnDevBoard2" class="btn danger" type="button">TEST: Board 2 starten</button>
-          </div>
-        `;
-        // Insert after playersPanel if possible, else append
-        const playersPanel = document.getElementById("playersPanel");
-        if (playersPanel && playersPanel.parentElement === side){
-          side.insertBefore(box, playersPanel.nextSibling);
-        } else {
-          side.appendChild(box);
-        }
-      }
-      const b = document.getElementById("btnDevBoard2");
-      bindBtn(b, async () => {
-        setStatus("DEV: Wechsel zu Board 2…", "warn");
-        await switchToBoard("2", { preserveJokers:true, preserveShield:true });
-        setStatus("DEV: Board 2 bereit.", "good");
-      });
-    }catch(e){
-      console.warn("dev tools init failed", e);
-    }
-  }
-
-// ---------- UI Wire ----------
+  // ---------- UI Wire ----------
   // Tablet/Touch: ensure buttons always react (some browsers suppress/delay plain "click").
   function bindBtn(el, fn){
     if (!el) return;
@@ -1561,13 +1464,23 @@ function computeReachable(){
 
   bindBtn(btnWheelClose, closeWheel);
   bindBtn(btnDoneClose, closeDoneModal);
+  // Dev button binds
+  if (devMode){
+    const btnDevBoard2 = $("btnDevBoard2");
+    const btnDevWin = $("btnDevWin");
+    bindBtn(btnDevBoard2, () => gotoBoard(2));
+    bindBtn(btnDevWin, () => {
+      state.globalCollected = state.globalGoal;
+      renderHud();
+      openDoneModal();
+    });
+  }
+
   bindBtn(btnGoBoard2, () => {
     // Weiterleitung auf Board 2 (Datei: lichtarena_board_2.json)
     closeDoneModal();
     const url = new URL(location.href);
-    url.searchParams.set("board","2");
-    url.searchParams.set("v", String(Date.now()));
-    location.href = url.toString();
+    gotoBoard(2);
   });
 
   // ---------- Camera interactions (pan/zoom) ----------
@@ -1693,9 +1606,6 @@ function computeReachable(){
   // ---------- Start ----------
   async function start(){
     try{
-      // Dev tools (only when ?dev=1)
-      if (IS_DEV) initDevTools();
-
       setStatus("Lade Board…", "warn");
       state.board = await loadBoard();
       buildMaps();
