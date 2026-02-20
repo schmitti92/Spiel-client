@@ -363,3 +363,12 @@ body{
   box-shadow: 0 0 0 2px rgba(244,200,74,.25), 0 10px 30px rgba(244,200,74,.12);
   background: rgba(244,200,74,.10);
 }
+
+
+/* Dev test button */
+.devRow .btn{
+  width:100%;
+  font-weight:700;
+  opacity:.9;
+}
+.devRow .btn:hover{ opacity:1; }
