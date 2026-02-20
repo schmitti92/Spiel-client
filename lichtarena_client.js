@@ -138,7 +138,6 @@
 
     // game
     turnIndex: 0,
-    turnCount: 0, // increases each completed turn
     dice: 0,
     rolled: false,
     canRollAgain: false,        // when dice==6
@@ -230,7 +229,6 @@
   // ---------- Init Game ----------
   function resetGame(){
     state.turnIndex = 0;
-    state.turnCount = 0;
     state.dice = 0;
     state.rolled = false;
     state.turnCounter = (Number(state.turnCounter)||0) + 1;
@@ -715,26 +713,21 @@ function consumeJoker(color, jokerId){
   updateHUD();
 }
 
-function isShielded(arg){
-  // arg can be a piece object or a color string
-  if (!arg) return false;
-  if (typeof arg === "string"){
-    const c = arg.toLowerCase();
-    const until = Math.max(0, ...state.pieces.filter(p=>p && p.color===c).map(p=>Number(p.shieldUntilTurnCount)||0));
-    return (Number(state.turnCount)||0) < until;
-  }
-  const until = Number(arg?.shieldUntilTurnCount);
-  if (!Number.isFinite(until)) return false;
-  return (Number(state.turnCount)||0) < until;
+function isShielded(pieceOrColor){
+  const c = typeof pieceOrColor === "string"
+    ? pieceOrColor
+    : (pieceOrColor?.color || "");
+  const key = String(c).toLowerCase();
+  const until = Number(state.shieldUntil?.[key] ?? 0) || 0;
+  const now = Number(state.turnCounter ?? 0) || 0;
+  return now < until;
 }
 
 function clearExpiredShields(){
-  for (const p of state.pieces){
-    if (!p) continue;
-    const until = Number(p.shieldUntilTurnCount);
-    if (Number.isFinite(until) && state.turnIndex >= until){
-      delete p.shieldUntilTurnCount;
-    }
+  const now = Number(state.turnCounter ?? 0) || 0;
+  for (const k of Object.keys(state.shieldUntil||{})){
+    const until = Number(state.shieldUntil[k]||0) || 0;
+    if (until <= now) state.shieldUntil[k] = 0;
   }
 }
 
@@ -824,17 +817,24 @@ function toggleJoker(jokerId){
   }
 
   if (jokerId === "j6"){ // Schutzschild
-    const p = getSelectedPiece();
-    if (!p || p.color !== c){
-      setStatus("Schutzschild: bitte zuerst eine eigene Figur auswählen.", "warn");
+    if (state.moved){
+      setStatus("Aktion nicht möglich.", "warn");
       return;
     }
-    // shield lasts until next time this color is active again
-    p.shieldUntilTurnCount = state.turnIndex + COLORS.length;
+    const have = Number(state.jokers?.[c]?.["j6"] ?? 0) || 0;
+    if (have <= 0){
+      setStatus("Aktion nicht möglich.", "warn");
+      return;
+    }
+    // 2 komplette Spielrunden = 2 volle Zyklen aller Spieler
+    const now = Number(state.turnCounter ?? 0) || 0;
+    const duration = COLORS.length * 2;
+    state.shieldUntil[c] = Math.max(Number(state.shieldUntil?.[c]||0)||0, now + duration);
     consumeJoker(c, "j6");
+    // keine sichtbare Anzeige
     renderTokens();
     updateHUD();
-    setStatus("🛡️ Schutzschild aktiv (bis zu deinem nächsten Zug).", "good");
+    setStatus("Joker benutzt.", "good");
     return;
   }
 
@@ -897,8 +897,9 @@ function toggleJoker(jokerId){
     if (state.animating) return;
     // If dice==6 and player hasn't used bonus roll yet, allow to keep turn if they roll again:
     // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
+    // advance global turn counter (monotonic) for shield duration
+    state.turnCounter = (Number(state.turnCounter||0) + 1);
     state.turnIndex = (state.turnIndex + 1) % COLORS.length;
-    state.turnCount = (Number(state.turnCount)||0) + 1;
     state.rolled = false;
     state.moved = false;
     state.dice = 0;
@@ -1130,6 +1131,16 @@ function handleTokenClick(pieceId){
     }
 
     const to = String(nodeId);
+
+    // Schutzschild: geschützte gegnerische Figuren blockieren das Zielfeld
+    const occAll = piecesAt(to);
+    if (occAll.length){
+      const protectedOpp = occAll.some(p => p.color !== piece.color && isShielded(p.color));
+      if (protectedOpp){
+        setStatus("Ziel ist blockiert.", "warn");
+        return;
+      }
+    }
     const path = state.reachable?.get(to) || null;
     if (!path){
       setStatus("Zielknoten nicht erreichbar (exakt Würfel-Schritte, ohne Hin-und-her-Hüpfen).","warn");
