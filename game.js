@@ -753,9 +753,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   if(serverLabel) serverLabel.textContent = SERVER_URL;
 
   let ws=null;
-  // Start-Joker-Boost (online): Host setzt nach Start automatisch 2x pro Joker-Art
-  let _pendingStartJokerBoost = false;
+  // Start-Joker Setup: Host setzt beim Spielstart automatisch 2x pro Joker-Art (nur Barikade Action-Modus)
+  let _pendingStartJokerInit = false;
   let _pendingStartMode = "classic";
+  const _START_JOKER_COUNTS = { allColors:2, barricade:2, reroll:2, double:2 };
 
   // Net watchdog: detects "silent" sockets that look connected but receive no messages
   let _lastNetMsgAt = Date.now();
@@ -1023,6 +1024,84 @@ if(actionEffectsState){
     try{ ws.send(JSON.stringify(obj)); return true; }catch(_e){ return false; }
   }
 
+  // Host-only: ensure each player starts with 2 jokers of the 4 Barikade types (Action-Modus).
+  // Additiv und sicher: wird nur 1x direkt nach Start ausgeführt, danach nie wieder.
+  function maybeInitStartJokers(remoteState){
+    try{
+      if(!_pendingStartJokerInit) return;
+      if(netMode !== "host") { _pendingStartJokerInit = false; return; }
+      if(_pendingStartMode !== "action") { _pendingStartJokerInit = false; return; }
+      if(!remoteState || typeof remoteState !== "object") return;
+
+      // Clone so we never mutate incoming objects unexpectedly
+      const st = JSON.parse(JSON.stringify(remoteState));
+
+      // Ensure action container
+      if(!st.action || typeof st.action !== "object") st.action = {};
+      st.mode = "action";
+
+      // Determine participating colors
+      const colors = Array.isArray(st.players) && st.players.length ? st.players.slice()
+                   : (Array.isArray(st.activeColors) && st.activeColors.length ? st.activeColors.slice()
+                   : (Array.isArray(PLAYERS) && PLAYERS.length ? PLAYERS.slice() : ["red","blue"]));
+
+      const uniq = [];
+      const seen = new Set();
+      for(const c of colors){
+        const cc = String(c||"").toLowerCase().trim();
+        if(!cc || seen.has(cc)) continue;
+        seen.add(cc);
+        uniq.push(cc);
+      }
+      if(!uniq.length) uniq.push("red","blue");
+
+      // 1) Count-based structure (legacy / simple)
+      if(!st.action.jokersByColor || typeof st.action.jokersByColor !== "object") st.action.jokersByColor = {};
+      for(const c of uniq){
+        const cur = (st.action.jokersByColor[c] && typeof st.action.jokersByColor[c] === "object") ? st.action.jokersByColor[c] : {};
+        st.action.jokersByColor[c] = {
+          ...cur,
+          allColors: Math.max(Number(cur.allColors||0), _START_JOKER_COUNTS.allColors),
+          barricade: Math.max(Number(cur.barricade||0), _START_JOKER_COUNTS.barricade),
+          reroll: Math.max(Number(cur.reroll||0), _START_JOKER_COUNTS.reroll),
+          double: Math.max(Number(cur.double||0), _START_JOKER_COUNTS.double),
+        };
+      }
+
+      // 2) Owned-list structure (preferred by UI + some server builds)
+      //    st.action.jokersOwned[ownerColor] = [{type:"allColors", color:"red"}, ...]
+      if(!st.action.jokersOwned || typeof st.action.jokersOwned !== "object") st.action.jokersOwned = {};
+      const TYPES = ["allColors","barricade","reroll","double"];
+      for(const owner of uniq){
+        const arr = Array.isArray(st.action.jokersOwned[owner]) ? st.action.jokersOwned[owner].slice() : [];
+        // Count existing
+        const counts = {allColors:0,barricade:0,reroll:0,double:0};
+        for(const j of arr){
+          const t = String(j && j.type || "");
+          if(counts.hasOwnProperty(t)) counts[t] += 1;
+        }
+        // Add missing up to target (do NOT remove extras, just ensure at least 2)
+        for(const t of TYPES){
+          const target = _START_JOKER_COUNTS[t] || 2;
+          while((counts[t]||0) < target){
+            arr.push({ type: t, color: owner });
+            counts[t] += 1;
+          }
+        }
+        st.action.jokersOwned[owner] = arr;
+      }
+
+      _pendingStartJokerInit = false;
+
+      // Import back to server (host only)
+      wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_jokers_2" });
+      toast("Start-Joker gesetzt (2x)");
+    }catch(_e){
+      // keep pending so we can try again on next snapshot
+    }
+  }
+
+
   function setNetPlayers(list){
     lastNetPlayers = Array.isArray(list) ? list : [];
     rosterById = new Map();
@@ -1166,45 +1245,6 @@ try{ ws = new WebSocket(SERVER_URL); }
       if(!msg) return;
       const type = msg.type;
 
-      function _maybeBoostStartJokers(remoteState){
-        try{
-          if(!_pendingStartJokerBoost) return;
-          if(netMode!=="host") { _pendingStartJokerBoost=false; return; }
-          if(_pendingStartMode!=="action") { _pendingStartJokerBoost=false; return; }
-          if(!remoteState || typeof remoteState!=="object") return;
-
-          const st = JSON.parse(JSON.stringify(remoteState));
-          if(!st.action || typeof st.action!=="object") st.action = {};
-          if(!st.action.jokersByColor || typeof st.action.jokersByColor!=="object") st.action.jokersByColor = {};
-
-          const colors = Array.isArray(st.players) ? st.players.slice() : (Array.isArray(PLAYERS)?PLAYERS.slice():[]);
-          const uniq = [];
-          const seen = new Set();
-          for(const c of colors){
-            const cc = String(c||"").toLowerCase().trim();
-            if(!cc || seen.has(cc)) continue;
-            seen.add(cc);
-            uniq.push(cc);
-          }
-
-          for(const c of uniq){
-            const cur = st.action.jokersByColor[c] && typeof st.action.jokersByColor[c]==="object" ? st.action.jokersByColor[c] : {};
-            st.action.jokersByColor[c] = {
-              ...cur,
-              allColors: 2,
-              barricade: 2,
-              reroll: 2,
-              double: 2,
-            };
-          }
-
-          _pendingStartJokerBoost = false;
-          wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_jokers_2" });
-          toast("Start-Joker gesetzt (2x)");
-        }catch(_e){ /* ignore */ }
-      }
-
-
       if(type==="hello"){
         if(msg.clientId) clientId = msg.clientId;
         return;
@@ -1227,9 +1267,8 @@ try{ ws = new WebSocket(SERVER_URL); }
       if(type==="snapshot" || type==="started" || type==="place_barricade"){
         if(msg.state){
           applyRemoteState(msg.state);
+          maybeInitStartJokers(msg.state);
           writeHostAutosave(msg.state);
-          _maybeBoostStartJokers(msg.state);
-          _maybeBoostStartJokers(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
@@ -1240,8 +1279,8 @@ try{ ws = new WebSocket(SERVER_URL); }
         if(typeof msg.value==="number") setDiceFaceAnimated(msg.value);
         if(msg.state){
           applyRemoteState(msg.state);
+          maybeInitStartJokers(msg.state);
           writeHostAutosave(msg.state);
-          _maybeBoostStartJokers(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
@@ -1252,6 +1291,7 @@ try{ ws = new WebSocket(SERVER_URL); }
         if(msg.action) queueMoveFx(msg.action);
         if(msg.state){
           applyRemoteState(msg.state);
+          maybeInitStartJokers(msg.state);
           writeHostAutosave(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
@@ -1850,6 +1890,28 @@ function toast(msg){
       winner:null
     };
 
+
+
+    // Start-Joker (offline Action-Modus): 2x pro Joker-Art (Anzeige + kompatibel zu Online-Structure)
+    try{
+      const _m = (actionModeToggle && actionModeToggle.checked) ? "action" : "classic";
+      state.mode = _m;
+      if(_m === "action"){
+        state.action = state.action && typeof state.action==="object" ? state.action : {};
+        state.action.jokersByColor = state.action.jokersByColor && typeof state.action.jokersByColor==="object" ? state.action.jokersByColor : {};
+        state.action.jokersOwned = state.action.jokersOwned && typeof state.action.jokersOwned==="object" ? state.action.jokersOwned : {};
+        const cols = Array.isArray(PLAYERS) ? PLAYERS.slice() : ["red","blue"];
+        for(const c of cols){
+          state.action.jokersByColor[c] = { allColors:2, barricade:2, reroll:2, double:2 };
+          const arr = [];
+          for(const t of ["allColors","barricade","reroll","double"]){
+            arr.push({type:t, color:c});
+            arr.push({type:t, color:c});
+          }
+          state.action.jokersOwned[c] = arr;
+        }
+      }
+    }catch(_e){}
     // 🔥 BRUTAL: Barikaden starten auf ALLEN RUN-Feldern (außer Ziel)
     for(const id of runNodes){
       if(id===goalNodeId) continue;
@@ -2701,8 +2763,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
     const _m = (actionModeToggle && actionModeToggle.checked ? "action" : "classic");
     _pendingStartMode = _m;
-    _pendingStartJokerBoost = true;
-    wsSend({type:"start", mode:_m, ts:Date.now(), startJokers:{allColors:2,barricade:2,reroll:2,double:2}});
+    _pendingStartJokerInit = (_m === "action");
+    wsSend({type:"start", mode:_m, ts:Date.now(), startJokers:_START_JOKER_COUNTS});
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
