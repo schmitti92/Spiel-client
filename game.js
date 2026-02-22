@@ -1804,6 +1804,29 @@ function toast(msg){
       winner:null
     };
 
+    // ===== Start-Joker (offline only) =====
+    // Wunsch: Bei Spielbeginn hat jeder Spieler 2 Joker von jeder Art.
+    // Wichtig: Online ist der Server autoritativ – dort NICHT erzwingen, um Desync zu vermeiden.
+    if(netMode==="offline"){
+      if(!state.action) state.action = {};
+      if(!state.action.jokersByColor){
+        const idHas = (id)=>!!document.getElementById(id);
+        const types = [];
+        // auto-detect which joker UI exists in this Barikade build (prevents wrong extra jokers)
+        if(idHas("jokerChooseBtn")||idHas("jokerChooseState")) types.push("choose");
+        if(idHas("jokerSumBtn")||idHas("jokerSumState")||idHas("jokerSummeBtn")) types.push("summe");
+        if(idHas("jokerAllColorsBtn")||idHas("jokerAllColorsState")) types.push("allColors");
+        if(idHas("jokerBarricadeBtn")||idHas("jokerBarricadeState")) types.push("barricade");
+        if(idHas("jokerRerollBtn")||idHas("jokerRerollState")) types.push("reroll");
+        if(idHas("jokerDoubleBtn")||idHas("jokerDoubleState")) types.push("double");
+        // fallback (falls UI-Ids abweichen): nutze vorhandene Typen aus dem State oder Standard-4
+        const finalTypes = (types.length? types : (state.action?.jokersByColor?.[PLAYERS?.[0]] ? Object.keys(state.action.jokersByColor[PLAYERS[0]]) : ["choose","summe","allColors","barricade"]));
+        const startCounts = Object.fromEntries(finalTypes.map(t=>[t,2]));
+        state.action.jokersByColor = Object.fromEntries(PLAYERS.map(c=>[c, {...startCounts}]));
+      }
+      if(!state.action.effects) state.action.effects = {};
+    }
+
     // 🔥 BRUTAL: Barikaden starten auf ALLEN RUN-Feldern (außer Ziel)
     for(const id of runNodes){
       if(id===goalNodeId) continue;
