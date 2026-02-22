@@ -755,6 +755,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   let ws=null;
   // Start-Joker Setup: Host setzt beim Spielstart automatisch 2x pro Joker-Art (nur Barikade Action-Modus)
   let _pendingStartJokerInit = false;
+  let _pendingStartStarterPick = false; // Host: Startspieler per Glücksrad
+  let _pendingStartStarterColor = null;  // 'red'|'blue'|'green'|'yellow'
+
   let _pendingStartMode = "classic";
   const _START_JOKER_COUNTS = { allColors:2, barricade:2, reroll:2, double:2 };
 
@@ -1267,6 +1270,8 @@ try{ ws = new WebSocket(SERVER_URL); }
       if(type==="snapshot" || type==="started" || type==="place_barricade"){
         if(msg.state){
           applyRemoteState(msg.state);
+          maybeInitStartStarter(msg.state);
+          maybeInitStartStarter(msg.state);
           maybeInitStartJokers(msg.state);
           writeHostAutosave(msg.state);
         }
@@ -2749,6 +2754,219 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
   canvas.addEventListener("pointerup", onPointerUp);
   canvas.addEventListener("pointercancel", onPointerUp);
 
+  // ===== Start-Glücksrad (entscheidet Startspieler) =====
+  // Additiv: Host zeigt beim Start ein Glücksrad und setzt danach den Startspieler via import_state.
+  function _ensureStartWheelUI(){
+    try{
+      if(document.getElementById("startWheelOverlay")) return;
+      const style = document.createElement("style");
+      style.id = "startWheelStyle";
+      style.textContent = `
+#startWheelOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.62);z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+#startWheelOverlay.show{opacity:1;pointer-events:auto;}
+#startWheelCard{width:min(560px,94vw);border-radius:18px;background:#111;box-shadow:0 12px 50px rgba(0,0,0,.55);padding:16px 16px 18px 16px;border:1px solid rgba(255,255,255,.12);}
+#startWheelTitle{font-weight:900;font-size:18px;margin:0;}
+#startWheelSub{opacity:.85;margin:6px 0 0 0;line-height:1.35;font-size:13px;}
+#startWheelWrap{display:flex;align-items:center;justify-content:center;padding:10px 0 6px 0;}
+#startWheelCanvas{width:min(360px,78vw);height:auto;max-width:360px;aspect-ratio:1/1;}
+#startWheelPointer{width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:18px solid rgba(255,255,255,.9);filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));margin:0 auto -6px auto;}
+#startWheelResult{margin-top:10px;font-weight:900;font-size:16px;min-height:22px;}
+#startWheelHint{opacity:.7;font-size:12px;margin-top:6px;}
+      `;
+      document.head.appendChild(style);
+
+      const overlay = document.createElement("div");
+      overlay.id = "startWheelOverlay";
+      overlay.innerHTML = `
+        <div id="startWheelCard">
+          <div>
+            <div id="startWheelTitle">Startspieler wird ausgelost…</div>
+            <p id="startWheelSub">Das Glücksrad dreht…</p>
+          </div>
+          <div id="startWheelPointer"></div>
+          <div id="startWheelWrap">
+            <canvas id="startWheelCanvas" width="720" height="720"></canvas>
+          </div>
+          <div id="startWheelResult"></div>
+          <div id="startWheelHint">Der Gewinner beginnt die Partie.</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }catch(_e){}
+  }
+
+  function _startWheelDraw(angleRad, colors){
+    const cvs = document.getElementById("startWheelCanvas");
+    if(!cvs) return;
+    const ctx = cvs.getContext("2d");
+    const w=cvs.width,h=cvs.height,cx=w/2,cy=h/2;
+    const r = Math.min(w,h)*0.44;
+
+    ctx.clearRect(0,0,w,h);
+
+    // ring
+    ctx.beginPath();
+    ctx.arc(cx,cy,r+18,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,.08)";
+    ctx.fill();
+
+    const segN = Math.max(2, colors.length||0);
+    const seg = (Math.PI*2)/segN;
+
+    for(let i=0;i<segN;i++){
+      const col = colors[i%colors.length] || "red";
+      const a0 = angleRad + i*seg - Math.PI/2;
+      const a1 = a0 + seg;
+
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,a0,a1);
+      ctx.closePath();
+
+      // use game palette if available
+      const fill = (COLORS && COLORS[col]) ? COLORS[col] : col;
+      ctx.fillStyle = fill;
+      ctx.globalAlpha = 0.78;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle="rgba(0,0,0,.35)";
+      ctx.lineWidth=4;
+      ctx.stroke();
+
+      // label
+      const mid=(a0+a1)/2;
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(mid);
+      ctx.textAlign="right";
+      ctx.textBaseline="middle";
+      ctx.fillStyle="rgba(255,255,255,.95)";
+      ctx.font="900 34px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+      const lbl = (PLAYER_NAME && PLAYER_NAME[col]) ? PLAYER_NAME[col] : String(col);
+      ctx.fillText(lbl, r-18, 0);
+      ctx.restore();
+    }
+
+    // hub
+    ctx.beginPath();
+    ctx.arc(cx,cy,r*0.18,0,Math.PI*2);
+    ctx.fillStyle="rgba(0,0,0,.55)";
+    ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.20)";
+    ctx.lineWidth=6;
+    ctx.stroke();
+
+    ctx.fillStyle="rgba(255,255,255,.92)";
+    ctx.font="900 34px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText("START", cx, cy);
+  }
+
+  let _startWheelAngle = 0;
+
+  function startWheelSpin(colors, durationMs=2800){
+    return new Promise((resolve)=>{
+      try{
+        _ensureStartWheelUI();
+        const overlay = document.getElementById("startWheelOverlay");
+        const res = document.getElementById("startWheelResult");
+        const sub = document.getElementById("startWheelSub");
+        if(res) res.textContent = "";
+        if(sub) sub.textContent = "Das Glücksrad dreht…";
+
+        const cols = Array.isArray(colors) && colors.length ? colors.slice() : ["red","blue"];
+        // pick winner
+        const idx = Math.floor(Math.random()*cols.length);
+        const winner = cols[idx];
+
+        // compute final angle so that idx segment center is at pointer (top)
+        const seg = (Math.PI*2)/cols.length;
+        const center = (idx + 0.5)*seg;
+        const base = -center;
+        const spins = 6 + Math.floor(Math.random()*3);
+        const finalAngle = base + spins*Math.PI*2;
+
+        const startAngle = _startWheelAngle;
+        const delta = finalAngle - startAngle;
+
+        const t0 = performance.now();
+        const easeOutCubic = (t)=> 1 - Math.pow(1-t,3);
+
+        if(overlay) overlay.classList.add("show");
+
+        const tick = (now)=>{
+          const t = Math.min(1, (now - t0)/durationMs);
+          const eased = easeOutCubic(t);
+          _startWheelAngle = startAngle + delta*eased;
+          _startWheelDraw(_startWheelAngle, cols);
+          if(t<1) requestAnimationFrame(tick);
+          else{
+            if(res) res.textContent = "Startspieler: " + ((PLAYER_NAME && PLAYER_NAME[winner]) ? PLAYER_NAME[winner] : String(winner));
+            window.setTimeout(()=>{
+              try{ if(overlay) overlay.classList.remove("show"); }catch(_e){}
+              resolve(winner);
+            }, 950);
+          }
+        };
+
+        _startWheelDraw(_startWheelAngle, cols);
+        requestAnimationFrame(tick);
+      }catch(_e){
+        // fallback: no UI
+        const cols = Array.isArray(colors) && colors.length ? colors : ["red","blue"];
+        resolve(cols[Math.floor(Math.random()*cols.length)]);
+      }
+    });
+  }
+
+  function maybeInitStartStarter(remoteState){
+    try{
+      if(!_pendingStartStarterPick) return;
+      if(netMode !== "host") { _pendingStartStarterPick=false; return; }
+      if(!_pendingStartStarterColor) { _pendingStartStarterPick=false; return; }
+      if(!remoteState || typeof remoteState !== "object") return;
+
+      const st = JSON.parse(JSON.stringify(remoteState));
+
+      // Support server protocol (turnColor/phase/rolled) and legacy (currentPlayer/dice)
+      if(st.turnColor != null) st.turnColor = _pendingStartStarterColor;
+      if(st.currentPlayer != null) st.currentPlayer = _pendingStartStarterColor;
+
+      if(st.phase != null) st.phase = "need_roll";
+      if(st.rolled != null) st.rolled = null;
+      if(st.dice != null) st.dice = null;
+
+      _pendingStartStarterPick = false;
+      const starter = _pendingStartStarterColor;
+      _pendingStartStarterColor = null;
+
+      wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_player", starter });
+      toast("Startspieler gesetzt: " + (PLAYER_NAME && PLAYER_NAME[starter] ? PLAYER_NAME[starter] : starter));
+    }catch(_e){
+      _pendingStartStarterPick = false;
+    }
+  }
+
+  async function hostStartWithWheel(mode){
+    try{
+      const colors = getActiveColors();
+      if(!Array.isArray(colors) || colors.length < 2){
+        toast("Mindestens 2 Spieler nötig");
+        return;
+      }
+      const winner = await startWheelSpin(colors, 2800);
+      _pendingStartStarterColor = winner;
+      _pendingStartStarterPick = true;
+      // proceed with normal start; starter will be applied on first snapshot
+      wsSend({type:"start", mode:mode, ts:Date.now(), startJokers:_START_JOKER_COUNTS, starter:winner});
+    }catch(_e){
+      wsSend({type:"start", mode:mode, ts:Date.now(), startJokers:_START_JOKER_COUNTS});
+    }
+  }
+
+
   // ===== Buttons =====
   debugToggle && debugToggle.addEventListener("click", () => {
     if(!debugLogEl) return;
@@ -2763,8 +2981,9 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
     const _m = (actionModeToggle && actionModeToggle.checked ? "action" : "classic");
     _pendingStartMode = _m;
-    _pendingStartJokerInit = (_m === "action");
-    wsSend({type:"start", mode:_m, ts:Date.now(), startJokers:_START_JOKER_COUNTS});
+    _pendingStartJokerInit = true;
+    // Neu: Startspieler per Glücksrad bestimmen (Host)
+    hostStartWithWheel(_m);
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
