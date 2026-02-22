@@ -753,6 +753,10 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   if(serverLabel) serverLabel.textContent = SERVER_URL;
 
   let ws=null;
+  // Start-Joker-Boost (online): Host setzt nach Start automatisch 2x pro Joker-Art
+  let _pendingStartJokerBoost = false;
+  let _pendingStartMode = "classic";
+
   // Net watchdog: detects "silent" sockets that look connected but receive no messages
   let _lastNetMsgAt = Date.now();
   let _netWatchdogIv = null;
@@ -1162,6 +1166,45 @@ try{ ws = new WebSocket(SERVER_URL); }
       if(!msg) return;
       const type = msg.type;
 
+      function _maybeBoostStartJokers(remoteState){
+        try{
+          if(!_pendingStartJokerBoost) return;
+          if(netMode!=="host") { _pendingStartJokerBoost=false; return; }
+          if(_pendingStartMode!=="action") { _pendingStartJokerBoost=false; return; }
+          if(!remoteState || typeof remoteState!=="object") return;
+
+          const st = JSON.parse(JSON.stringify(remoteState));
+          if(!st.action || typeof st.action!=="object") st.action = {};
+          if(!st.action.jokersByColor || typeof st.action.jokersByColor!=="object") st.action.jokersByColor = {};
+
+          const colors = Array.isArray(st.players) ? st.players.slice() : (Array.isArray(PLAYERS)?PLAYERS.slice():[]);
+          const uniq = [];
+          const seen = new Set();
+          for(const c of colors){
+            const cc = String(c||"").toLowerCase().trim();
+            if(!cc || seen.has(cc)) continue;
+            seen.add(cc);
+            uniq.push(cc);
+          }
+
+          for(const c of uniq){
+            const cur = st.action.jokersByColor[c] && typeof st.action.jokersByColor[c]==="object" ? st.action.jokersByColor[c] : {};
+            st.action.jokersByColor[c] = {
+              ...cur,
+              allColors: 2,
+              barricade: 2,
+              reroll: 2,
+              double: 2,
+            };
+          }
+
+          _pendingStartJokerBoost = false;
+          wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_jokers_2" });
+          toast("Start-Joker gesetzt (2x)");
+        }catch(_e){ /* ignore */ }
+      }
+
+
       if(type==="hello"){
         if(msg.clientId) clientId = msg.clientId;
         return;
@@ -1185,6 +1228,8 @@ try{ ws = new WebSocket(SERVER_URL); }
         if(msg.state){
           applyRemoteState(msg.state);
           writeHostAutosave(msg.state);
+          _maybeBoostStartJokers(msg.state);
+          _maybeBoostStartJokers(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
@@ -1196,6 +1241,7 @@ try{ ws = new WebSocket(SERVER_URL); }
         if(msg.state){
           applyRemoteState(msg.state);
           writeHostAutosave(msg.state);
+          _maybeBoostStartJokers(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
@@ -1803,29 +1849,6 @@ function toast(msg){
       barricades:new Set(),
       winner:null
     };
-
-    // ===== Start-Joker (offline only) =====
-    // Wunsch: Bei Spielbeginn hat jeder Spieler 2 Joker von jeder Art.
-    // Wichtig: Online ist der Server autoritativ – dort NICHT erzwingen, um Desync zu vermeiden.
-    if(netMode==="offline"){
-      if(!state.action) state.action = {};
-      if(!state.action.jokersByColor){
-        const idHas = (id)=>!!document.getElementById(id);
-        const types = [];
-        // auto-detect which joker UI exists in this Barikade build (prevents wrong extra jokers)
-        if(idHas("jokerChooseBtn")||idHas("jokerChooseState")) types.push("choose");
-        if(idHas("jokerSumBtn")||idHas("jokerSumState")||idHas("jokerSummeBtn")) types.push("summe");
-        if(idHas("jokerAllColorsBtn")||idHas("jokerAllColorsState")) types.push("allColors");
-        if(idHas("jokerBarricadeBtn")||idHas("jokerBarricadeState")) types.push("barricade");
-        if(idHas("jokerRerollBtn")||idHas("jokerRerollState")) types.push("reroll");
-        if(idHas("jokerDoubleBtn")||idHas("jokerDoubleState")) types.push("double");
-        // fallback (falls UI-Ids abweichen): nutze vorhandene Typen aus dem State oder Standard-4
-        const finalTypes = (types.length? types : (state.action?.jokersByColor?.[PLAYERS?.[0]] ? Object.keys(state.action.jokersByColor[PLAYERS[0]]) : ["choose","summe","allColors","barricade"]));
-        const startCounts = Object.fromEntries(finalTypes.map(t=>[t,2]));
-        state.action.jokersByColor = Object.fromEntries(PLAYERS.map(c=>[c, {...startCounts}]));
-      }
-      if(!state.action.effects) state.action.effects = {};
-    }
 
     // 🔥 BRUTAL: Barikaden starten auf ALLEN RUN-Feldern (außer Ziel)
     for(const id of runNodes){
@@ -2676,7 +2699,10 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
-    wsSend({type:"start", mode: (actionModeToggle && actionModeToggle.checked ? "action" : "classic"), ts:Date.now()});
+    const _m = (actionModeToggle && actionModeToggle.checked ? "action" : "classic");
+    _pendingStartMode = _m;
+    _pendingStartJokerBoost = true;
+    wsSend({type:"start", mode:_m, ts:Date.now(), startJokers:{allColors:2,barricade:2,reroll:2,double:2}});
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
@@ -3189,13 +3215,13 @@ function enqueueWheel(list) {
 // Note: Pure UI. Server already decides the result. No game-state changes here.
 const _WHEEL_SEGMENTS = [
   { key: "allColors", label: "Alle Farben" },
+  { key: "none",      label: "Niete" },
   { key: "barricade", label: "Barikade" },
+  { key: "none",      label: "Niete" },
   { key: "reroll",    label: "Neu-Wurf" },
+  { key: "none",      label: "Niete" },
   { key: "double",    label: "Doppelwurf" },
-  { key: "allColors", label: "Alle Farben" },
-  { key: "barricade", label: "Barikade" },
-  { key: "reroll",    label: "Neu-Wurf" },
-  { key: "double",    label: "Doppelwurf" },
+  { key: "none",      label: "Niete" },
 ];
 
 let _wheelAngle = 0; // radians (0 = segment 0 centered at top after calibration)
@@ -3235,7 +3261,7 @@ function _wheelEnsureUI() {
         <canvas id="wheelCanvas" width="720" height="720"></canvas>
       </div>
       <div id="wheelResult"></div>
-      <div id="wheelHint">Immer Gewinn (keine Nieten)</div>
+      <div id="wheelHint">50% Joker, 50% Niete</div>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -3308,20 +3334,23 @@ function _wheelDraw(angleRad) {
   ctx.fillText("RAD", cx, cy);
 }
 
-function _wheelPickAnyIndex(){
-  return Math.floor(Math.random() * _WHEEL_SEGMENTS.length);
-}
 function _wheelResolveIndex(resultKey) {
-  const key = String(resultKey || "").trim().toLowerCase();
-
-  // Wenn Server/Code "none" oder leer liefert: trotzdem Gewinn anzeigen
-  if (!key || key === "none") return _wheelPickAnyIndex();
-
-  for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
-    if (String(_WHEEL_SEGMENTS[i].key).toLowerCase() === key) return i;
+  const key = String(resultKey || "").trim();
+  if (!key) {
+    // pick a "none" segment
+    const noneIdx = [];
+    for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) if (_WHEEL_SEGMENTS[i].key === "none") noneIdx.push(i);
+    return noneIdx.length ? noneIdx[Math.floor(Math.random() * noneIdx.length)] : 0;
   }
-  // unbekannter Key → trotzdem irgendein Gewinn
-  return _wheelPickAnyIndex();
+  const k = key.toLowerCase();
+  for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
+    if (_WHEEL_SEGMENTS[i].key.toLowerCase() === k) return i;
+  }
+  // if server sends "allColors" etc.
+  for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
+    if (_WHEEL_SEGMENTS[i].key.toLowerCase() === k.replace(/[^a-z]/g, "")) return i;
+  }
+  return 0;
 }
 
 function _wheelNext() {
