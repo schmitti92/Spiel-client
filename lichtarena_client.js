@@ -25,23 +25,6 @@
   const qs = new URLSearchParams(location.search);
   const boardKey = (qs.get("board") || "1").trim();
   const BOARD_URL = BOARD_MAP[boardKey] || BOARD_MAP["1"];
-  const devMode = (qs.get("dev") === "1");
-  const gotoBoard = (k) => {
-    const url = new URL(location.href);
-    url.searchParams.set("board", String(k));
-    if (devMode) url.searchParams.set("dev","1");
-    url.searchParams.set("v", String(Date.now()));
-    location.href = url.toString();
-  };
-  const gotoBoardDev = (k) => {
-    // Dev/Test helper: always jumps to target board and forces dev=1 in URL
-    const url = new URL(location.href);
-    url.searchParams.set("board", String(k));
-    url.searchParams.set("dev","1");
-    url.searchParams.set("v", String(Date.now()));
-    location.href = url.toString();
-  };
-
   const LS_KEY = "lichtarena_offline_save_clean_v1";
   const COLORS = ["red","blue","green","yellow"];
 
@@ -50,9 +33,7 @@
     { id:"j2", name:"Alle Farben" },
     { id:"j3", name:"Doppelwurf" },
     { id:"j4", name:"Barikade versetzen" },
-    { id:"j5", name:"Durch Barikaden laufen" },
-    { id:"j6", name:"Schutzschild" },
-    { id:"j7", name:"Spielertauschen" },
+    { id:"j5", name:"Durch Barikade" },
   ];
 
   // ---------- DOM ----------
@@ -69,20 +50,6 @@
   const btnToggleUI = $("btnToggleUI");
   const layout = $("layout");
   const side = $("side");
-  // Dev tools (nur sichtbar mit ?dev=1)
-  if (devMode && side){
-    const card = document.createElement("section");
-    card.className = "card";
-    card.innerHTML = `
-      <h3>DEV</h3>
-      <div class="row">
-        <button class="btn" id="btnDevBoard2">TEST: Board 2 starten</button>
-        <button class="btn" id="btnDevWin">TEST: +5 Licht</button>
-      </div>
-      <div class="hint">Nur für Tests. Im normalen Spiel unsichtbar.</div>
-    `;
-    side.insertBefore(card, side.firstChild);
-  }
 
   const btnRoll = $("btnRoll");
   const btnEndTurn = $("btnEndTurn");
@@ -174,10 +141,6 @@
     canRollAgain: false,        // when dice==6
     selectedPieceId: null,
 
-    // joker usage
-    activeJokerId: null,        // currently selected joker (for this turn)
-    jokerMode: null,            // {id, step, data} for multi-step jokers
-
     // pieces: {id,color,nodeId}
     pieces: [],
 
@@ -196,14 +159,6 @@
     showLines: false,
     reachable: new Map(),       // nodeId -> path (array of nodeIds, including start+...+dest)
     animating: false,
-    moved: false,
-
-    // Defensive shields per color (turns remaining)
-    // Turn counter (increments at end of each player's turn)
-    turnCounter: 0,
-
-    // Shield protection per color: turn index until which protection is active (exclusive)
-    shieldUntil: { red:0, blue:0, green:0, yellow:0 },
 
     // camera
     cam: { x:0, y:0, scale:1 },
@@ -262,15 +217,9 @@
     state.turnIndex = 0;
     state.dice = 0;
     state.rolled = false;
-    state.turnCounter = (Number(state.turnCounter)||0) + 1;
-    state.moved = false;
-    state.turnCounter = 0;
-    state.shieldUntil = { red:0, blue:0, green:0, yellow:0 };
     state.canRollAgain = false;
-    state.moved = false;
     state.selectedPieceId = null;
     state.animating = false;
-    state.moved = false;
 
     // pieces: Board 1 will use 4 pieces total? (dein späterer Plan)
     // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
@@ -297,10 +246,10 @@
     }
     state.selectedPieceId = state.pieces[0]?.id || null;
 
-    // jokers: 1× je Typ pro Spieler (Spielbeginn)
+    // jokers: 2× je Typ pro Spieler
     for (const color of COLORS){
       state.jokers[color] = {};
-      for (const j of JOKERS) state.jokers[color][j.id] = 1;
+      for (const j of JOKERS) state.jokers[color][j.id] = 2;
     }
 
     // lights: start with ALL light_start nodes active
@@ -357,7 +306,6 @@
       globalCollected: state.globalCollected,
       globalGoal: state.globalGoal,
       jokers: state.jokers,
-      dynamicBarricades: state.dynamicBarricades ? Array.from(state.dynamicBarricades) : [],
       showLines: state.showLines,
       cam: state.cam
     };
@@ -384,8 +332,6 @@
       state.globalCollected = Number(p.globalCollected||0);
       state.globalGoal = Number(p.globalGoal||5);
       state.jokers = p.jokers || state.jokers;
-      normalizeJokers(1);
-      state.dynamicBarricades = new Set(Array.isArray(p.dynamicBarricades) ? p.dynamicBarricades.map(String) : []);
 
       state.showLines = !!p.showLines;
       state.cam = p.cam || state.cam;
@@ -497,6 +443,9 @@
     }
     if (state.activeLights.has(String(nid))) cls.push("light");
 
+    // event fields (board JSON: type="special")
+    if (t==="special") cls.push("event");
+
     if (state.reachable.has(String(nid))) cls.push("reachable");
 
     // selected node highlight: selected piece is on nid
@@ -518,6 +467,14 @@
       const stack = document.createElement("div");
       stack.className = "tokenStack";
       el.appendChild(stack);
+
+      // Event icon for special nodes
+      if (String(n.type||"").toLowerCase()==="special"){
+        const mark = document.createElement("div");
+        mark.className = "eventMark";
+        mark.textContent = "🃏";
+        el.appendChild(mark);
+      }
 
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
@@ -561,7 +518,7 @@
         tok.title = `Figur ${p.id}`;
         tok.addEventListener("click", (ev) => {
           ev.stopPropagation();
-          handleTokenClick(p.id);
+          selectPiece(p.id);
         });
         stack.appendChild(tok);
       } else {
@@ -573,7 +530,7 @@
           tok.title = `Figur ${p.id}`;
           tok.addEventListener("click", (ev) => {
             ev.stopPropagation();
-            handleTokenClick(p.id);
+            selectPiece(p.id);
           });
           stack.appendChild(tok);
         }
@@ -657,57 +614,27 @@
       playersPanel.appendChild(pc);
     }
 
-    // joker table for active player (click to activate)
+    // joker table for active player
     const ac = activeColor();
     jokerTable.innerHTML = "";
     for (const j of JOKERS){
       const row = document.createElement("div");
       row.className = "jRow";
-      row.dataset.jid = j.id;
-
       const name = document.createElement("div");
       name.className = "jName";
       name.textContent = j.name;
-
       const count = document.createElement("div");
       count.className = "jCount";
-      const n = Number(state.jokers[ac]?.[j.id] ?? 0) || 0;
-      count.textContent = String(n);
-
-      // active styling
-      if (state.activeJokerId === j.id) name.classList.add("active");
-
-      const clicker = () => {
-        if (state.animating) return;
-        toggleJoker(j.id);
-      };
-      row.addEventListener("click", clicker);
-      row.addEventListener("pointerup", (e)=>{ e.preventDefault(); clicker(); }, {passive:false});
-      name.addEventListener("click", clicker);
-      name.addEventListener("pointerup", (e)=>{ e.preventDefault(); clicker(); }, {passive:false});
-      count.addEventListener("click", clicker);
-      count.addEventListener("pointerup", (e)=>{ e.preventDefault(); clicker(); }, {passive:false});
-
+      count.textContent = String(state.jokers[ac]?.[j.id] ?? 0);
       row.appendChild(name);
       row.appendChild(count);
       jokerTable.appendChild(row);
     }
 
     // hint
-    const sp = getSelectedPiece();
-    const spNum = sp ? (String(sp.id).split("_")[1] || "") : "";
-    const spTag = sp ? `Ausgewählt: ${sp.color.toUpperCase()}${spNum ? " #" + spNum : ""}` : "";
-    if (!state.rolled){
-      hudHint.textContent = spTag
-        ? `${spTag} — Würfeln → dann Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).`
-        : "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).";
-    } else if (!state.selectedPieceId){
-      hudHint.textContent = "Figur anklicken (eigene Farbe), dann ein blau markiertes Ziel wählen.";
-    } else {
-      hudHint.textContent = spTag
-        ? `${spTag} — Ziel anklicken (blau markiert).`
-        : "Ziel anklicken (blau markiert).";
-    }
+    if (!state.rolled) hudHint.textContent = "Würfeln → dann Figur wählen → Ziel anklicken (exakt Würfel‑Schritte, ohne Hin‑und‑her‑Hüpfen).";
+    else if (!state.selectedPieceId) hudHint.textContent = "Figur anklicken, dann ein blau markiertes Ziel wählen.";
+    else hudHint.textContent = "Ziel anklicken (blau markiert).";
   }
 
   // Backward-compat alias: older code calls renderHud()
@@ -722,181 +649,6 @@
     return Object.values(inv).reduce((a,b)=>a+(Number(b)||0),0);
   }
 
-
-function ensureDynamicBarricades(){
-  if (!state.dynamicBarricades){
-    state.dynamicBarricades = new Set();
-  } else if (Array.isArray(state.dynamicBarricades)){
-    state.dynamicBarricades = new Set(state.dynamicBarricades.map(String));
-  } else if (!(state.dynamicBarricades instanceof Set)){
-    // fallback
-    state.dynamicBarricades = new Set();
-  }
-}
-
-function clearJokerMode(){
-  state.jokerMode = null;
-}
-
-function consumeJoker(color, jokerId){
-  const inv = state.jokers[color] || (state.jokers[color] = {});
-  inv[jokerId] = Math.max(0, (Number(inv[jokerId])||0) - 1);
-  updateHUD();
-}
-
-function isShielded(piece){
-  const until = Number(piece?.shieldUntilTurnIndex);
-  if (!Number.isFinite(until)) return false;
-  return state.turnIndex < until;
-}
-
-function clearExpiredShields(){
-  for (const p of state.pieces){
-    if (!p) continue;
-    const until = Number(p.shieldUntilTurnIndex);
-    if (Number.isFinite(until) && state.turnIndex >= until){
-      delete p.shieldUntilTurnIndex;
-    }
-  }
-}
-
-function toggleJoker(jokerId){
-  const c = activeColor();
-  const count = Number(state.jokers[c]?.[jokerId] ?? 0) || 0;
-  if (count <= 0){
-    setStatus("Du hast diesen Joker nicht.", "warn");
-    return;
-  }
-
-  // Multi-step jokers activate a mode and wait for user interaction
-  if (jokerId === "j4"){ // Barikade versetzen
-    ensureDynamicBarricades();
-    if (state.dynamicBarricades.size === 0){
-      setStatus("Es gibt aktuell keine Barikade zum Versetzen.", "warn");
-      return;
-    }
-    state.activeJokerId = jokerId;
-    state.jokerMode = { id:"j4", step:"pickSource", data:{} };
-    setStatus("Barikade versetzen: tippe die Barikade an, die du bewegen willst.", "good");
-    updateHUD();
-    return;
-  }
-
-  if (jokerId === "j7"){ // Spielertauschen
-    if (state.rolled){
-      setStatus("Spielertauschen ist nur vor dem Würfeln möglich.", "warn");
-      return;
-    }
-    if (state.moved){
-      setStatus("Spielertauschen nur vor dem Laufen.", "warn");
-      return;
-    }
-    state.activeJokerId = jokerId;
-    state.jokerMode = { id:"j7", step:"pickOpponent", data:{} };
-    setStatus("🔁 Spielertauschen aktiv: Wähle deine Figur (falls noch nicht), dann tippe eine gegnerische Figur an.", "good");
-    updateHUD();
-    return;
-  }
-
-  // Immediate jokers
-  if (jokerId === "j1"){ // Neuwurf
-    if (!state.rolled){
-      setStatus("Neuwurf geht erst nach dem Würfeln.", "warn");
-      return;
-    }
-    if (state.moved){
-      setStatus("Neuwurf nur vor dem Laufen.", "warn");
-      return;
-    }
-    const was = state.dice;
-    state.dice = randInt(1,6);
-    state.canRollAgain = (state.dice===6);
-    consumeJoker(c, "j1");
-    computeReachable();
-    renderTokens();
-    updateHUD();
-    setStatus(`🎲 Neuwurf: ${was} → ${state.dice}`, "good");
-    return;
-  }
-
-  if (jokerId === "j3"){ // Doppelwurf
-    if (!state.rolled){
-      setStatus("Doppelwurf geht erst nach dem Würfeln.", "warn");
-      return;
-    }
-    if (state.moved){
-      setStatus("Doppelwurf nur vor dem Laufen.", "warn");
-      return;
-    }
-
-    const first = Number(state.dice) || 0;
-    const second = randInt(1,6);
-    const sum = first + second;
-
-    // "6 nochmal" bleibt erhalten, wenn einer der beiden Würfe eine 6 war
-    state.dice = sum;
-    state.canRollAgain = (first === 6 || second === 6);
-
-    consumeJoker(c, "j3");
-    computeReachable();
-    renderTokens();
-    updateHUD();
-    setStatus(`🎲 Doppelwurf: ${first} + ${second} = ${sum}`, "good");
-    return;
-  }
-
-  if (jokerId === "j6"){ // Schutzschild
-    const p = getSelectedPiece();
-    if (!p || p.color !== c){
-      setStatus("Schutzschild: bitte zuerst eine eigene Figur auswählen.", "warn");
-      return;
-    }
-    // shield lasts until next time this color is active again
-    p.shieldUntilTurnIndex = state.turnIndex + COLORS.length;
-    consumeJoker(c, "j6");
-    renderTokens();
-    updateHUD();
-    setStatus("🛡️ Schutzschild aktiv (bis zu deinem nächsten Zug).", "good");
-    return;
-  }
-
-  // Toggleable jokers that affect movement this turn (consumed after a move)
-  if (jokerId === "j2"){ // Alle Farben
-    if (!state.rolled){
-      setStatus("Alle Farben: zuerst würfeln, dann darfst du eine beliebige Figur auswählen.", "warn");
-      return;
-    }
-    if (state.moved){
-      setStatus("Alle Farben nur vor dem Laufen aktivierbar.", "warn");
-      return;
-    }
-    state.activeJokerId = (state.activeJokerId === "j2") ? null : "j2";
-    clearJokerMode();
-    computeReachable();
-    renderTokens();
-    updateHUD();
-    setStatus(state.activeJokerId ? "🌈 Alle Farben aktiv: du darfst eine beliebige Figur bewegen (für diesen Zug)." : "Alle Farben deaktiviert.", "good");
-    return;
-  }
-
-  if (jokerId === "j5"){ // Durch Barikaden laufen
-    if (!state.rolled){
-      setStatus("Durch Barikaden laufen: erst würfeln.", "warn");
-      return;
-    }
-    state.activeJokerId = (state.activeJokerId === "j5") ? null : "j5";
-    clearJokerMode();
-    computeReachable();
-    renderTokens();
-    updateHUD();
-    setStatus(state.activeJokerId ? "🧱 Durch Barikaden laufen aktiv (für diesen Zug)." : "Durch Barikaden laufen deaktiviert.", "good");
-    return;
-  }
-
-  // fallback
-  setStatus("Dieser Joker ist noch nicht verdrahtet.", "warn");
-}
-
   function pieceOfColor(color){
     return state.pieces.find(p => p.color===color) || null;
   }
@@ -908,7 +660,6 @@ function toggleJoker(jokerId){
     // only active player's piece can be moved
     state.dice = randInt(1,6);
     state.rolled = true;
-    state.moved = false;
     state.canRollAgain = (state.dice===6);
     setStatus(`🎲 ${c.toUpperCase()} würfelt: ${state.dice}` + (state.canRollAgain ? " (6 → Bonuswurf möglich)" : ""), "good");
     computeReachable();
@@ -921,14 +672,8 @@ function toggleJoker(jokerId){
     // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
     state.turnIndex = (state.turnIndex + 1) % COLORS.length;
     state.rolled = false;
-    state.moved = false;
     state.dice = 0;
     state.canRollAgain = false;
-    // clear one-turn joker selection/modes
-    state.activeJokerId = null;
-    clearJokerMode();
-    clearExpiredShields();
-
     state.selectedPieceId = pieceOfColor(activeColor())?.id ?? null;
     state.reachable = new Map();
     renderTokens();
@@ -942,81 +687,16 @@ function toggleJoker(jokerId){
     const p = state.pieces.find(x => x.id===id);
     if (!p) return;
 
-    // Allow selecting other colors only if "Alle Farben" joker is active and we are in this turn before moving.
-    const canAny = (state.activeJokerId === "j2") && state.rolled && !state.moved;
-    if (p.color !== activeColor() && !canAny){
-      setStatus("Du kannst nur die Figur des aktiven Spielers bewegen (außer mit Joker „Alle Farben“ nach dem Würfeln).", "warn");
+    // Only active player's piece selectable
+    if (p.color !== activeColor()){
+      setStatus("Du kannst nur die Figur des aktiven Spielers bewegen.", "warn");
       return;
     }
-
     state.selectedPieceId = id;
     if (state.rolled) computeReachable();
     renderTokens();
     updateHUD();
   }
-
-
-
-function handleTokenClick(pieceId){
-  if (state.animating) return;
-
-  // Joker j7: Spielertauschen (nur vor dem Würfeln)
-  if (state.jokerMode && state.jokerMode.id === "j7"){
-    if (state.rolled){
-      setStatus("Spielertauschen ist nur vor dem Würfeln möglich.", "warn");
-      return;
-    }
-    if (state.moved){
-      setStatus("Spielertauschen nur vor dem Laufen.", "warn");
-      return;
-    }
-
-    const c = activeColor();
-    const a = getSelectedPiece(); // eigene ausgewählte Figur
-    const b = state.pieces.find(p => p.id === pieceId) || null; // angeklickte Figur
-
-    if (!b){
-      setStatus("Spielertauschen: ungültige Figur.", "warn");
-      return;
-    }
-
-    // Wenn noch keine eigene Figur gewählt ist oder falsche Farbe: erst auswählen
-    if (!a || a.color !== c){
-      if (b.color === c){
-        selectPiece(b.id);
-        setStatus("🔁 Spielertauschen: Jetzt eine gegnerische Figur antippen.", "good");
-      } else {
-        setStatus("Spielertauschen: Wähle zuerst eine deiner Figuren aus.", "warn");
-      }
-      return;
-    }
-
-    // Eigene Figur ist gewählt: Klick auf eigene Figur -> Auswahl wechseln
-    if (b.color === c){
-      selectPiece(b.id);
-      setStatus("🔁 Spielertauschen: Jetzt eine gegnerische Figur antippen.", "good");
-      return;
-    }
-
-    // Gegner angeklickt -> Swap
-    const aPos = String(a.nodeId);
-    const bPos = String(b.nodeId);
-    a.nodeId = bPos;
-    b.nodeId = aPos;
-
-    consumeJoker(c, "j7");
-    clearJokerMode();
-    state.activeJokerId = null;
-
-    renderTokens();
-    updateHUD();
-    setStatus(`🔁 Getauscht: ${a.color.toUpperCase()} ↔ ${b.color.toUpperCase()}`, "good");
-    return;
-  }
-
-  // normal selection
-  selectPiece(pieceId);
-}
 
   function getSelectedPiece(){
     return state.pieces.find(p => p.id===state.selectedPieceId) || null;
@@ -1030,119 +710,11 @@ function handleTokenClick(pieceId){
   async function onNodeClicked(nodeId){
     if (state.animating) return;
 
-    // Multi-step Joker: Barikade versetzen
-    if (state.jokerMode && state.jokerMode.id === "j4"){
-      const c = activeColor();
-      ensureDynamicBarricades();
-      const id = String(nodeId);
-      if (state.jokerMode.step === "pickSource"){
-        if (!state.dynamicBarricades.has(id)){
-          setStatus("Barikade versetzen: tippe zuerst auf eine bestehende Barikade.", "warn");
-          return;
-        }
-        state.jokerMode.data = { from:id };
-        state.jokerMode.step = "pickTarget";
-        setStatus("Barikade versetzen: jetzt ein freies Zielfeld antippen.", "good");
-        return;
-      }
-      if (state.jokerMode.step === "pickTarget"){
-        const from = state.jokerMode.data?.from;
-        const n = state.nodeById.get(id);
-        const t = String(n?.type||"normal").toLowerCase();
-        const occupied = piecesAt(id).length > 0;
-        if (!n || t !== "normal" || occupied){
-          setStatus("Barikade versetzen: Ziel muss ein freies Normalfeld sein.", "warn");
-          return;
-        }
-        // move barricade
-        if (from) state.dynamicBarricades.delete(String(from));
-        state.dynamicBarricades.add(id);
-        consumeJoker(c, "j4");
-        clearJokerMode();
-        state.activeJokerId = null;
-        computeReachable();
-        renderTokens();
-        updateHUD();
-        setStatus("🧱 Barikade versetzt.", "good");
-        return;
-      }
-    }
-
-
-    // Multi-step Joker: Spielertauschen (j7) – vor dem Würfeln
-    if (state.jokerMode && state.jokerMode.id === "j7"){
-      const me = activeColor();
-      const sel = getSelectedPiece();
-      if (!sel || sel.color !== me){
-        setStatus("Spielertauschen: wähle zuerst deine eigene Figur aus.", "warn");
-        return;
-      }
-      const here = piecesAt(nodeId);
-      const opponents = here.filter(p => p.color !== me);
-      if (opponents.length === 0){
-        setStatus("Spielertauschen: tippe eine gegnerische Figur an.", "warn");
-        return;
-      }
-      opponents.sort((a,b) => String(a.id).localeCompare(String(b.id)));
-      // Zyklisch: wiederholt auf dasselbe Feld tippen wechselt den Gegner
-      let k = Number(state.jokerMode.data?.k || 0) || 0;
-      const lastNode = String(state.jokerMode.data?.lastNode ?? "");
-      if (lastNode !== String(nodeId)) k = 0;
-      const opp = opponents[k % opponents.length];
-      state.jokerMode.data = { k: (k+1), lastNode: String(nodeId) };
-
-      // Schutzschild: geschützte Figuren dürfen nicht getauscht werden
-      if (isShielded(sel.color) || isShielded(opp.color)){
-        setStatus("Aktion nicht möglich.", "warn");
-        return;
-      }
-
-      // swap node positions
-      const aNode = String(sel.nodeId);
-      const bNode = String(opp.nodeId);
-      sel.nodeId = bNode;
-      opp.nodeId = aNode;
-
-      // consume joker and exit mode
-      consumeJoker(me, "j7");
-      clearJokerMode();
-      state.activeJokerId = null;
-      computeReachable();
-      renderTokens();
-      updateHUD();
-      setStatus(`🔁 Getauscht: ${sel.color.toUpperCase()} ↔ ${opp.color.toUpperCase()}`, "good");
-      return;
-    }
     const myColor = activeColor();
-
-    // Auswahl-Usability: Klick auf ein Feld mit eigenen Figuren (vor dem Würfeln oder auf dem aktuellen Feld)
-    // wechselt die ausgewählte Figur (zyklisch), damit man sie klar auswählen kann.
-    const sp0 = getSelectedPiece();
-    const canAny = (state.activeJokerId === "j2") && state.rolled && !state.moved; // Joker „Alle Farben“
-    const selectableHere = piecesAt(nodeId).filter(p => canAny ? true : (p.color === myColor));
-
-    // Auswahl ist jederzeit erlaubt, solange noch nicht gelaufen wurde:
-    // Klick auf ein Feld mit (eigener) Figur(en) = NUR Auswahl, kein Zug – auch nach dem Würfeln.
-    if (selectableHere.length > 0){
-      selectableHere.sort((a,b) => String(a.id).localeCompare(String(b.id)));
-      let next = selectableHere[0];
-
-      // Zyklisch durchwechseln, wenn man erneut dasselbe Feld anklickt
-      if (sp0 && String(sp0.nodeId) === String(nodeId)){
-        const i = selectableHere.findIndex(p => p.id === sp0.id);
-        next = selectableHere[(i + 1) % selectableHere.length];
-      }
-
-      selectPiece(next.id);
-      setStatus(`Ausgewählt: ${String(next.color).toUpperCase()} ${String(next.id)}`, "good");
-      return;
-    }
-
     const piece = state.pieces.find(p => p.id === state.selectedPieceId);
 
-    const allowAnyColor = (state.activeJokerId === "j2") && state.rolled && !state.moved; // Alle Farben
-    if (!piece || (!allowAnyColor && piece.color !== myColor)){
-      setStatus("Erst eine Figur auswählen (eigene Farbe – außer mit Joker „Alle Farben“ nach dem Würfeln).","warn");
+    if (!piece || piece.color !== myColor){
+      setStatus("Erst eine eigene Figur auswählen (aktiver Spieler).","warn");
       return;
     }
     if (!state.rolled){
@@ -1158,9 +730,7 @@ function handleTokenClick(pieceId){
     }
 
     const diceWas = state.dice;
-    const fromNode = String(piece.nodeId);
 
-    state.moved = true;
     await moveAlongPath(piece, path);
 
     // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad
@@ -1197,15 +767,8 @@ function handleTokenClick(pieceId){
       setStatus(`Zug: ${piece.color.toUpperCase()} → ${to}`,"good");
     }
 
-    // Consume turn-jokers that are applied on movement
-    if (state.activeJokerId === "j2" || state.activeJokerId === "j5"){
-      consumeJoker(myColor, state.activeJokerId);
-      state.activeJokerId = null;
-    }
-
     // Zug-Reset / Bonuswurf bei 6
     state.rolled = false;
-    state.moved = false;
     state.dice = null;
     state.reachable = new Map();
     renderHud();
@@ -1262,7 +825,7 @@ function computeReachable(){
         const edgeKey = canonEdgeKey(cur, to);
         if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
         if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
-        if (isNodeBlocked(to) && !(state.activeJokerId === "j5")) continue;
+        if (isNodeBlocked(to)) continue;
 
         const nextUsed = new Set(usedEdges); nextUsed.add(edgeKey);
         const nextVisited = new Set(visitedNodes); nextVisited.add(to);
@@ -1473,25 +1036,13 @@ function computeReachable(){
 
   bindBtn(btnWheelClose, closeWheel);
   bindBtn(btnDoneClose, closeDoneModal);
-  // Dev/Test: Board 2 button (always available; does not change gameplay unless clicked)
-  const btnDevBoard2 = $("btnDevBoard2");
-  bindBtn(btnDevBoard2, () => gotoBoardDev(2));
-
-  // Extra dev helpers only when dev=1
-  if (devMode){
-    const btnDevWin = $("btnDevWin");
-    bindBtn(btnDevWin, () => {
-      state.globalCollected = state.globalGoal;
-      renderHud();
-      openDoneModal();
-    });
-  }
-
   bindBtn(btnGoBoard2, () => {
     // Weiterleitung auf Board 2 (Datei: lichtarena_board_2.json)
     closeDoneModal();
     const url = new URL(location.href);
-    gotoBoard(2);
+    url.searchParams.set("board","2");
+    url.searchParams.set("v", String(Date.now()));
+    location.href = url.toString();
   });
 
   // ---------- Camera interactions (pan/zoom) ----------
