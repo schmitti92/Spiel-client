@@ -29,7 +29,7 @@
     .names{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     @media(min-width:700px){ .names{ grid-template-columns:1fr 1fr 1fr 1fr; } }
 
-    .names button{ padding:12px 10px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(2,6,23,.35); font-weight:900; cursor:pointer; }
+    .names button{ padding:14px 12px; border-radius:18px; border:1px solid rgba(255,255,255,.22); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.18)); color:#f8fbff; font-weight:950; letter-spacing:.2px; text-shadow:0 2px 10px rgba(0,0,0,.45); cursor:pointer; }
     .names button:active{ transform:scale(.99); }
 
     table{ width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px; border:1px solid rgba(255,255,255,.10); }
@@ -38,6 +38,18 @@
     tr:last-child td{ border-bottom:none; }
 
     .hint{ color:rgba(255,255,255,.65); font-size:12px; line-height:1.35; }
+
+
+    .joinedWrap{ margin-top:10px; padding:10px; border-radius:14px; border:1px dashed rgba(255,255,255,.16); background:rgba(0,0,0,.14); }
+    .joinedTitle{ font-weight:900; font-size:12px; color:rgba(255,255,255,.75); margin-bottom:6px; }
+    .joinedList{ display:flex; flex-wrap:wrap; gap:8px; }
+    .tag{ display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); font-size:12px; color:#e9eefc; }
+    .dot{ width:10px; height:10px; border-radius:999px; background:rgba(255,255,255,.35); box-shadow:0 0 0 2px rgba(0,0,0,.18) inset; }
+    .dot.red{ background:#ef4444; }
+    .dot.blue{ background:#3b82f6; }
+    .dot.green{ background:#22c55e; }
+    .dot.yellow{ background:#eab308; }
+
 
     #toast{ position:fixed; left:50%; bottom:20px; transform:translateX(-50%);
       padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14);
@@ -79,6 +91,11 @@
               <button id="joinBtn" class="btn blue" type="button">Beitreten</button>
             </div>
             <div class="hint" style="margin-top:8px">Wir verbinden erst im Spiel – hier legen wir nur alles fest.</div>
+            <div class="joinedWrap">
+              <div class="joinedTitle">Beigetreten (live)</div>
+              <div id="joinedList" class="joinedList"><span class="hint">– noch niemand –</span></div>
+              <div class="hint" style="margin-top:6px">Tipp: Du siehst hier alle, die den Raum bereits im Spiel geöffnet haben.</div>
+            </div>
           </div>
         </div>
 
@@ -174,6 +191,7 @@
         const r = normRoom(rc);
         localStorage.setItem('barikade_room', r);
         roomPill.textContent = 'Raum: ' + (r || '–');
+        if(r) startPresence(r); else stopPresence();
       }
       function setActionMode(on){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
@@ -190,7 +208,77 @@
         colorPill.textContent = 'Farbe: ' + (c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':'Gelb');
       }
 
-      // Restore last selections
+      
+      // ===== Presence (wer ist im Raum schon im Spiel beigetreten) =====
+      // Wir verbinden die Lobby NICHT per WebSocket (damit kein Doppel-Join entsteht),
+      // sondern fragen den Server per HTTP ab. Dafür braucht der Server den Endpoint:
+      //   GET /room/<CODE>  (CORS: *)
+      const SERVER_WS = "wss://spiel-server.onrender.com";
+      const SERVER_HTTP = SERVER_WS.replace(/^ws:/, "http:").replace(/^wss:/, "https:");
+      let presenceIv = null;
+      let lastPresenceRoom = "";
+
+      function renderJoined(players){
+        const wrap = document.getElementById('joinedList');
+        if(!wrap) return;
+        wrap.innerHTML = "";
+        const list = Array.isArray(players) ? players : [];
+        if(!list.length){
+          const span = document.createElement('span');
+          span.className = 'hint';
+          span.textContent = '– noch niemand –';
+          wrap.appendChild(span);
+          return;
+        }
+        for(const p of list){
+          const tag = document.createElement('span');
+          tag.className = 'tag';
+          const dot = document.createElement('span');
+          const c = String(p?.color||'').toLowerCase();
+          dot.className = 'dot' + (c ? (' ' + c) : '');
+          tag.appendChild(dot);
+          const txt = document.createElement('span');
+          txt.textContent = String(p?.name || 'Spieler') + (p?.isHost ? ' (Host)' : '');
+          tag.appendChild(txt);
+          wrap.appendChild(tag);
+        }
+      }
+
+      async function fetchPresence(roomCode){
+        const rc = normRoom(roomCode);
+        if(!rc) return;
+        try{
+          const res = await fetch(`${SERVER_HTTP}/room/${encodeURIComponent(rc)}`, { cache:'no-store' });
+          if(!res.ok) { renderJoined([]); return; }
+          const data = await res.json();
+          const players = Array.isArray(data?.players) ? data.players : [];
+          renderJoined(players);
+        }catch(_e){
+          // offline / server down: keep last view, don't spam toasts
+        }
+      }
+
+      function startPresence(roomCode){
+        const rc = normRoom(roomCode);
+        if(!rc) return;
+        lastPresenceRoom = rc;
+        // ensure room exists on server (so lobby can show presence even before game opens)
+        try{ fetch(`${SERVER_HTTP}/room/${encodeURIComponent(rc)}/ensure`, { method:'POST' }); }catch(_e){}
+        fetchPresence(rc);
+        clearInterval(presenceIv);
+        presenceIv = setInterval(()=>{
+          if(!lastPresenceRoom) return;
+          fetchPresence(lastPresenceRoom);
+        }, 1200);
+      }
+
+      function stopPresence(){
+        lastPresenceRoom = "";
+        clearInterval(presenceIv);
+        presenceIv = null;
+      }
+
+// Restore last selections
       (function restore(){
         const r = localStorage.getItem('barikade_room') || '';
         const m = localStorage.getItem('barikade_mode') || 'offline';
