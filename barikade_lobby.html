@@ -129,7 +129,7 @@
 
       <div class="card">
         <h2 style="margin:0 0 10px 0; font-size:16px">Barikade‑Statistik</h2>
-        <div class="hint" style="margin-bottom:10px">Layout steht schon. Firebase‑Anbindung für echte Werte machen wir als nächsten Schritt, ohne die Spielfunktionen anzutasten.</div>
+        <div class="hint" style="margin-bottom:10px">Zeigt eure Lifetime‑Stats aus Firebase (wird live aktualisiert).<br><span class="hint">Hinweis: &quot;Gast&quot; zählt nicht in die Statistik.</span></div>
         <table>
           <thead>
             <tr>
@@ -147,7 +147,7 @@
           </tbody>
         </table>
         <div class="hint" style="margin-top:10px">
-          Global: Spiele insgesamt: <span class="k">–</span> · Gesamtspielzeit: <span class="k">–</span>
+          Global: Spiele insgesamt: <span id="globalGames" class="k">–</span> · Gesamtspielzeit: <span id="globalTime" class="k">–</span>
         </div>
       </div>
     </div>
@@ -217,6 +217,73 @@
       const SERVER_HTTP = SERVER_WS.replace(/^ws:/, "http:").replace(/^wss:/, "https:");
       let presenceIv = null;
       let lastPresenceRoom = "";
+
+
+      // ===== Lifetime Stats (Firebase via Server endpoint) =====
+      let statsIv = null;
+      async function fetchStats(){
+        try{
+          const r = await fetch(SERVER_HTTP + "/api/barikade/stats", { cache: "no-store" });
+          const j = await r.json();
+          if(!j || !j.ok || !j.enabled){
+            renderStats(null);
+            return;
+          }
+          renderStats(j);
+        }catch(_e){
+          renderStats(null);
+        }
+      }
+
+      function fmtTime(ms){
+        ms = Number(ms||0)||0;
+        const s = Math.floor(ms/1000);
+        const h = Math.floor(s/3600);
+        const m = Math.floor((s%3600)/60);
+        if(h>0) return `${h}h ${m}m`;
+        return `${m}m`;
+      }
+      function avgRoll(rollSum, rollCount){
+        const c = Number(rollCount||0)||0;
+        const s = Number(rollSum||0)||0;
+        if(c<=0) return "–";
+        return (s/c).toFixed(2).replace(".", ",");
+      }
+
+      function renderStats(payload){
+        const body = $("statsBody");
+        const gG = $("globalGames");
+        const gT = $("globalTime");
+        const names = ["David","Vanessa","Christoph"];
+        const players = payload?.players || null;
+
+        if(gG) gG.textContent = payload?.global ? String(payload.global.totalGames||0) : "–";
+        if(gT) gT.textContent = payload?.global ? fmtTime(payload.global.totalPlayTimeMs||0) : "–";
+
+        if(!body) return;
+        // rebuild tbody to keep it simple
+        body.innerHTML = "";
+        for(const n of names){
+          const p = players ? players[n] : null;
+          const games = p ? (p.games ?? 0) : "–";
+          const wins  = p ? (p.wins ?? 0) : "–";
+          const a = p ? avgRoll(p.rollSum, p.rollCount) : "–";
+          const t = p ? fmtTime(p.playTimeMs || 0) : "–";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${n}</td><td>${games}</td><td>${wins}</td><td>${a}</td><td>${t}</td>`;
+          body.appendChild(tr);
+        }
+      }
+
+      function startStats(){
+        stopStats();
+        fetchStats();
+        statsIv = setInterval(fetchStats, 2500);
+      }
+      function stopStats(){
+        if(statsIv) clearInterval(statsIv);
+        statsIv = null;
+      }
 
       function renderJoined(players){
         const wrap = document.getElementById('joinedList');
