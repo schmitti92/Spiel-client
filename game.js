@@ -419,13 +419,6 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const jokerRerollState = $("jokerRerollState");
   const actionEffectsState = $("actionEffectsState");
 
-  // Init Action-Modus aus Lobby (nur UI/Startwahl). Keine Spiellogik entfernen.
-  try{
-    const am = localStorage.getItem("barikade_action_mode");
-    if(actionModeToggle) actionModeToggle.checked = (am === "action");
-  }catch(_e){}
-
-
 
   
   const jokerAllColorsBtn = $("jokerAllColorsBtn");
@@ -3616,7 +3609,29 @@ dice.style.bottom = "";
     if(dock() || tries > 40) clearInterval(iv);
   }, 120);
 
-  window.addEventListener("load", () => { try{ dock(); }catch(_e){} });
+  
+
+// =========================
+// Back to Lobby (safe leave)
+// =========================
+(function wireBackToLobby(){
+  const btn = document.getElementById("backLobbyBtn");
+  if(!btn) return;
+  btn.addEventListener("click", () => {
+    try{
+      // Close WS to ensure server sees disconnect and lobby "joined" list updates.
+      if(ws && (ws.readyState===0 || ws.readyState===1)){
+        try{ ws.close(); }catch(_e){}
+      }
+    }catch(_e){}
+    // Clear transient session token so next start is clean
+    try{ localStorage.removeItem("barikade_sessionToken"); }catch(_e){}
+    // Navigate back
+    window.location.href = "barikade_lobby.html";
+  });
+})();
+
+window.addEventListener("load", () => { try{ dock(); }catch(_e){} });
 })();
 
 
@@ -3835,21 +3850,4 @@ function _wheelNext() {
   // initial draw and start animation
   _wheelDraw(_wheelAngle);
   requestAnimationFrame(tick);
-}
-document.getElementById("backToLobbyBtn")?.addEventListener("click", () => {
-  leaveRoomAndReturn();
-});
-
-function leaveRoomAndReturn() {
-  try {
-    if (window.ws && window.ws.readyState === WebSocket.OPEN) {
-      ws.close();
-    }
-  } catch (e) {}
-
-  // Optional: Room/Spielstatus löschen
-  localStorage.removeItem("barikade_room");
-  localStorage.removeItem("barikade_profile");
-
-  window.location.href = "barikade_lobby.html";
 }
