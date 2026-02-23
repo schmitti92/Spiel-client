@@ -29,7 +29,7 @@
     .names{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     @media(min-width:700px){ .names{ grid-template-columns:1fr 1fr 1fr 1fr; } }
 
-    .names button{ padding:14px 12px; border-radius:18px; border:1px solid rgba(255,255,255,.22); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.18)); color:#f8fbff; font-weight:950; letter-spacing:.2px; text-shadow:0 2px 10px rgba(0,0,0,.45); cursor:pointer; }
+    .names button{ padding:12px 10px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(2,6,23,.35); font-weight:900; cursor:pointer; }
     .names button:active{ transform:scale(.99); }
 
     table{ width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px; border:1px solid rgba(255,255,255,.10); }
@@ -39,18 +39,6 @@
 
     .hint{ color:rgba(255,255,255,.65); font-size:12px; line-height:1.35; }
 
-
-    .joinedWrap{ margin-top:10px; padding:10px; border-radius:14px; border:1px dashed rgba(255,255,255,.16); background:rgba(0,0,0,.14); }
-    .joinedTitle{ font-weight:900; font-size:12px; color:rgba(255,255,255,.75); margin-bottom:6px; }
-    .joinedList{ display:flex; flex-wrap:wrap; gap:8px; }
-    .tag{ display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); font-size:12px; color:#e9eefc; }
-    .dot{ width:10px; height:10px; border-radius:999px; background:rgba(255,255,255,.35); box-shadow:0 0 0 2px rgba(0,0,0,.18) inset; }
-    .dot.red{ background:#ef4444; }
-    .dot.blue{ background:#3b82f6; }
-    .dot.green{ background:#22c55e; }
-    .dot.yellow{ background:#eab308; }
-
-
     #toast{ position:fixed; left:50%; bottom:20px; transform:translateX(-50%);
       padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14);
       opacity:0; pointer-events:none; transition:.15s; z-index:9999; max-width:min(92vw,900px);
@@ -58,6 +46,11 @@
     #toast.show{ opacity:1; }
 
     .k{ color:rgba(255,255,255,.55); font-weight:700; }
+  
+.names button{ color:#e9eefc; font-weight:800; }
+.names button[disabled]{ opacity:.35; filter:grayscale(1); }
+.colors button[disabled]{ opacity:.35; filter:grayscale(1); }
+
   </style>
 </head>
 <body>
@@ -91,11 +84,6 @@
               <button id="joinBtn" class="btn blue" type="button">Beitreten</button>
             </div>
             <div class="hint" style="margin-top:8px">Wir verbinden erst im Spiel – hier legen wir nur alles fest.</div>
-            <div class="joinedWrap">
-              <div class="joinedTitle">Beigetreten (live)</div>
-              <div id="joinedList" class="joinedList"><span class="hint">– noch niemand –</span></div>
-              <div class="hint" style="margin-top:6px">Tipp: Du siehst hier alle, die den Raum bereits im Spiel geöffnet haben.</div>
-            </div>
           </div>
         </div>
 
@@ -123,13 +111,18 @@
           <button type="button" data-name="Gast">Gast</button>
         </div>
 
-        <div style="height:12px"></div>
+<div style="height:12px"></div>
+<div class="hint" id="presenceBox" style="padding:10px; border:1px solid var(--line); border-radius:14px">
+  <div style="font-weight:700; margin-bottom:6px">Im Raum</div>
+  <div id="presenceList" style="font-size:13px; color:var(--muted)">–</div>
+</div>
+
         <div class="hint">Hinweis: Gast spielt mit, zählt aber nicht in die Statistik (so wie du es wolltest).</div>
       </div>
 
       <div class="card">
         <h2 style="margin:0 0 10px 0; font-size:16px">Barikade‑Statistik</h2>
-        <div class="hint" style="margin-bottom:10px">Zeigt eure Lifetime‑Stats aus Firebase (wird live aktualisiert).<br><span class="hint">Hinweis: &quot;Gast&quot; zählt nicht in die Statistik.</span></div>
+        <div class="hint" style="margin-bottom:10px">Layout steht schon. Firebase‑Anbindung für echte Werte machen wir als nächsten Schritt, ohne die Spielfunktionen anzutasten.</div>
         <table>
           <thead>
             <tr>
@@ -147,7 +140,7 @@
           </tbody>
         </table>
         <div class="hint" style="margin-top:10px">
-          Global: Spiele insgesamt: <span id="globalGames" class="k">–</span> · Gesamtspielzeit: <span id="globalTime" class="k">–</span>
+          Global: Spiele insgesamt: <span class="k">–</span> · Gesamtspielzeit: <span class="k">–</span>
         </div>
       </div>
     </div>
@@ -166,6 +159,122 @@
       const modePill = $("modePill");
       const roomPill = $("roomPill");
       const colorPill = $("colorPill");
+
+
+// Server base (same as game.js, but HTTP for fetch)
+const WS_BASE = "wss://spiel-server.onrender.com";
+const HTTP_BASE = WS_BASE.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+const presenceList = $("presenceList");
+
+function getMyNameKey(){ return String(localStorage.getItem("barikade_nameKey")||"").trim(); }
+
+async function fetchPresence(){
+  const rc = normRoom(roomInp.value);
+  if(!rc) return null;
+  try{
+    const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/presence`, { cache:"no-store" });
+    const j = await r.json();
+    if(!j || !j.ok) return null;
+    return j;
+  }catch(_e){ return null; }
+}
+
+async function reserveMe(nameKey){
+  const rc = normRoom(roomInp.value);
+  if(!rc) return { ok:false };
+  const color = String(localStorage.getItem("barikade_color")||"").toLowerCase();
+  try{
+    const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/reserve`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ nameKey, color, status:"lobby" })
+    });
+    const j = await r.json().catch(()=>null);
+    if(!r.ok) return { ok:false, error:j?.error || "ERR", holder:j?.holder };
+    return { ok:true, data:j };
+  }catch(_e){ return { ok:false, error:"NET" }; }
+}
+
+function renderPresence(p){
+  if(!presenceList) return;
+
+  if(!p){
+    presenceList.textContent = "–";
+    return;
+  }
+
+  const res = p.reservations || {};
+  const locks = p.colorLocks || {};
+  const players = Array.isArray(p.players) ? p.players : [];
+
+  // Build lines
+  const lines = [];
+  const order = ["David","Vanessa","Christoph","Gast"];
+  for(const nk of order){
+    const r = res[nk];
+    const inLobby = !!r;
+    const st = r?.status === "in_game" ? "im Spiel" : (inLobby ? "bereit" : "frei");
+    const col = r?.color ? r.color.toUpperCase() : "–";
+    // connected status from websocket players
+    let conn = null;
+    const pl = players.find(x => String(x.name||"") === nk);
+    if(pl) conn = pl.connected ? "online" : "offline";
+    lines.push(`${nk}: ${st} • Farbe: ${col} ${conn ? "• "+conn : ""}`);
+  }
+  presenceList.innerHTML = lines.map(s=>`<div style="margin:3px 0">${s}</div>`).join("");
+
+  // Apply color locking UI
+  const my = getMyNameKey();
+  document.querySelectorAll('[data-color]').forEach(btn=>{
+    const c = String(btn.getAttribute("data-color")||"").toLowerCase();
+    const holder = locks[c] || null;
+    const shouldDisable = holder && holder !== my;
+    btn.disabled = !!shouldDisable;
+    btn.title = holder ? `Belegt von ${holder}` : "";
+  });
+
+  // Disable name buttons if already taken (ready or in_game), except allow re-click if it's me
+  
+document.querySelectorAll('.names [data-name]').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const rc = normRoom(roomInp.value);
+    if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
+    const nameKey = String(btn.getAttribute('data-name')||'').trim();
+    if(!nameKey){ return; }
+
+    // Reserve name+color so other devices see it immediately.
+    const r = await reserveMe(nameKey);
+    if(!r.ok){
+      if(r.error === "COLOR_TAKEN"){
+        toast('Farbe ist schon belegt – wähle eine andere');
+      } else {
+        toast('Name ist schon belegt – nimm einen anderen');
+      }
+      // refresh presence quickly
+      const p = await fetchPresence();
+      renderPresence(p);
+      return;
+    }
+
+    localStorage.setItem("barikade_nameKey", nameKey);
+
+    // Start Barikade
+    window.location.href = "barikade.html";
+  });
+});
+}
+
+// Poll presence every 2.5s when room is set
+let presenceTimer = null;
+function startPresencePoll(){
+  if(presenceTimer) return;
+  presenceTimer = setInterval(async ()=>{
+    const rc = normRoom(roomInp.value);
+    if(!rc) return;
+    const p = await fetchPresence();
+    renderPresence(p);
+  }, 2500);
+}
 
       function toast(t){
         toastEl.textContent = String(t||"");
@@ -191,7 +300,6 @@
         const r = normRoom(rc);
         localStorage.setItem('barikade_room', r);
         roomPill.textContent = 'Raum: ' + (r || '–');
-        if(r) startPresence(r); else stopPresence();
       }
       function setActionMode(on){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
@@ -208,144 +316,7 @@
         colorPill.textContent = 'Farbe: ' + (c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':'Gelb');
       }
 
-      
-      // ===== Presence (wer ist im Raum schon im Spiel beigetreten) =====
-      // Wir verbinden die Lobby NICHT per WebSocket (damit kein Doppel-Join entsteht),
-      // sondern fragen den Server per HTTP ab. Dafür braucht der Server den Endpoint:
-      //   GET /room/<CODE>  (CORS: *)
-      const SERVER_WS = "wss://spiel-server.onrender.com";
-      const SERVER_HTTP = SERVER_WS.replace(/^ws:/, "http:").replace(/^wss:/, "https:");
-      let presenceIv = null;
-      let lastPresenceRoom = "";
-
-
-      // ===== Lifetime Stats (Firebase via Server endpoint) =====
-      let statsIv = null;
-      async function fetchStats(){
-        try{
-          const r = await fetch(SERVER_HTTP + "/api/barikade/stats", { cache: "no-store" });
-          const j = await r.json();
-          if(!j || !j.ok || !j.enabled){
-            renderStats(null);
-            return;
-          }
-          renderStats(j);
-        }catch(_e){
-          renderStats(null);
-        }
-      }
-
-      function fmtTime(ms){
-        ms = Number(ms||0)||0;
-        const s = Math.floor(ms/1000);
-        const h = Math.floor(s/3600);
-        const m = Math.floor((s%3600)/60);
-        if(h>0) return `${h}h ${m}m`;
-        return `${m}m`;
-      }
-      function avgRoll(rollSum, rollCount){
-        const c = Number(rollCount||0)||0;
-        const s = Number(rollSum||0)||0;
-        if(c<=0) return "–";
-        return (s/c).toFixed(2).replace(".", ",");
-      }
-
-      function renderStats(payload){
-        const body = $("statsBody");
-        const gG = $("globalGames");
-        const gT = $("globalTime");
-        const names = ["David","Vanessa","Christoph"];
-        const players = payload?.players || null;
-
-        if(gG) gG.textContent = payload?.global ? String(payload.global.totalGames||0) : "–";
-        if(gT) gT.textContent = payload?.global ? fmtTime(payload.global.totalPlayTimeMs||0) : "–";
-
-        if(!body) return;
-        // rebuild tbody to keep it simple
-        body.innerHTML = "";
-        for(const n of names){
-          const p = players ? players[n] : null;
-          const games = p ? (p.games ?? 0) : "–";
-          const wins  = p ? (p.wins ?? 0) : "–";
-          const a = p ? avgRoll(p.rollSum, p.rollCount) : "–";
-          const t = p ? fmtTime(p.playTimeMs || 0) : "–";
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${n}</td><td>${games}</td><td>${wins}</td><td>${a}</td><td>${t}</td>`;
-          body.appendChild(tr);
-        }
-      }
-
-      function startStats(){
-        stopStats();
-        fetchStats();
-        statsIv = setInterval(fetchStats, 2500);
-      }
-      function stopStats(){
-        if(statsIv) clearInterval(statsIv);
-        statsIv = null;
-      }
-
-      function renderJoined(players){
-        const wrap = document.getElementById('joinedList');
-        if(!wrap) return;
-        wrap.innerHTML = "";
-        const list = Array.isArray(players) ? players : [];
-        if(!list.length){
-          const span = document.createElement('span');
-          span.className = 'hint';
-          span.textContent = '– noch niemand –';
-          wrap.appendChild(span);
-          return;
-        }
-        for(const p of list){
-          const tag = document.createElement('span');
-          tag.className = 'tag';
-          const dot = document.createElement('span');
-          const c = String(p?.color||'').toLowerCase();
-          dot.className = 'dot' + (c ? (' ' + c) : '');
-          tag.appendChild(dot);
-          const txt = document.createElement('span');
-          txt.textContent = String(p?.name || 'Spieler') + (p?.isHost ? ' (Host)' : '');
-          tag.appendChild(txt);
-          wrap.appendChild(tag);
-        }
-      }
-
-      async function fetchPresence(roomCode){
-        const rc = normRoom(roomCode);
-        if(!rc) return;
-        try{
-          const res = await fetch(`${SERVER_HTTP}/room/${encodeURIComponent(rc)}`, { cache:'no-store' });
-          if(!res.ok) { renderJoined([]); return; }
-          const data = await res.json();
-          const players = Array.isArray(data?.players) ? data.players : [];
-          renderJoined(players);
-        }catch(_e){
-          // offline / server down: keep last view, don't spam toasts
-        }
-      }
-
-      function startPresence(roomCode){
-        const rc = normRoom(roomCode);
-        if(!rc) return;
-        lastPresenceRoom = rc;
-        // ensure room exists on server (so lobby can show presence even before game opens)
-        try{ fetch(`${SERVER_HTTP}/room/${encodeURIComponent(rc)}/ensure`, { method:'POST' }); }catch(_e){}
-        fetchPresence(rc);
-        clearInterval(presenceIv);
-        presenceIv = setInterval(()=>{
-          if(!lastPresenceRoom) return;
-          fetchPresence(lastPresenceRoom);
-        }, 1200);
-      }
-
-      function stopPresence(){
-        lastPresenceRoom = "";
-        clearInterval(presenceIv);
-        presenceIv = null;
-      }
-
-// Restore last selections
+      // Restore last selections
       (function restore(){
         const r = localStorage.getItem('barikade_room') || '';
         const m = localStorage.getItem('barikade_mode') || 'offline';
