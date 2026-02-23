@@ -25,6 +25,16 @@
   const qs = new URLSearchParams(location.search);
   const boardKey = (qs.get("board") || "1").trim();
   const BOARD_URL = BOARD_MAP[boardKey] || BOARD_MAP["1"];
+  // Dev mode via URL param (?dev=1) – enables test shortcuts without affecting normal gameplay
+  const devMode = (qs.get("dev") === "1");
+  const gotoBoard = (k) => {
+    const url = new URL(location.href);
+    url.searchParams.set("board", String(k));
+    if (devMode) url.searchParams.set("dev","1");
+    url.searchParams.set("v", String(Date.now())); // cache-bust
+    location.href = url.toString();
+  };
+
   const LS_KEY = "lichtarena_offline_save_clean_v1";
   const COLORS = ["red","blue","green","yellow"];
 
@@ -50,6 +60,21 @@
   const btnToggleUI = $("btnToggleUI");
   const layout = $("layout");
   const side = $("side");
+
+  // Dev UI (only visible with ?dev=1) – lets you test Board 2 without finishing Board 1
+  if (devMode && side){
+    const devCard = document.createElement("section");
+    devCard.className = "card";
+    devCard.innerHTML = `
+      <h3>DEV</h3>
+      <div class="row">
+        <button class="btn" id="btnDevBoard2">Board 2 testen</button>
+      </div>
+      <div class="hint">Nur sichtbar mit <code>?dev=1</code>. Im normalen Spiel unsichtbar.</div>
+    `;
+    side.insertBefore(devCard, side.firstChild);
+  }
+
 
   const btnRoll = $("btnRoll");
   const btnEndTurn = $("btnEndTurn");
@@ -230,18 +255,9 @@
     const PIECES_PER_COLOR = 4;
     for (const color of COLORS){
       const starts = state.startByColor.get(color) || [];
-      // Ziel: Jede Figur startet/steht im Haus auf einem eigenen Startfeld (keine Stapelung im Haus).
-      // Fallback: Wenn ein Board weniger Startfelder hat, nutzen wir das erste verfügbare.
-      const fallbackHome = String(starts[0] || findAnyNormalNodeId() || findAnyNodeId());
-
-      for (let i = 1; i <= PIECES_PER_COLOR; i++){
-        const homeNodeId = String(starts[i-1] || fallbackHome);
-        state.pieces.push({
-          id: `${color}_${i}`,
-          color,
-          homeNodeId,
-          nodeId: homeNodeId
-        });
+      const startNode = String(starts[0] || findAnyNormalNodeId() || findAnyNodeId());
+      for (let i=1;i<=PIECES_PER_COLOR;i++){
+        state.pieces.push({ id:`${color}_${i}`, color, nodeId:startNode });
       }
     }
     state.selectedPieceId = state.pieces[0]?.id || null;
@@ -443,9 +459,6 @@
     }
     if (state.activeLights.has(String(nid))) cls.push("light");
 
-    // event fields (board JSON: type="special")
-    if (t==="special") cls.push("event");
-
     if (state.reachable.has(String(nid))) cls.push("reachable");
 
     // selected node highlight: selected piece is on nid
@@ -467,14 +480,6 @@
       const stack = document.createElement("div");
       stack.className = "tokenStack";
       el.appendChild(stack);
-
-      // Event icon for special nodes
-      if (String(n.type||"").toLowerCase()==="special"){
-        const mark = document.createElement("div");
-        mark.className = "eventMark";
-        mark.textContent = "🃏";
-        el.appendChild(mark);
-      }
 
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
@@ -739,7 +744,7 @@
       const victim = occ[0];
       if (victim.color !== piece.color){
         const starts = state.startByColor.get(victim.color) || [];
-        victim.nodeId = String(victim.homeNodeId || starts[0] || victim.nodeId);
+        victim.nodeId = String(starts[0] || victim.nodeId);
         renderTokens();
 
         await runWheelReward(piece.color);
@@ -1039,13 +1044,16 @@ function computeReachable(){
   bindBtn(btnGoBoard2, () => {
     // Weiterleitung auf Board 2 (Datei: lichtarena_board_2.json)
     closeDoneModal();
-    const url = new URL(location.href);
-    url.searchParams.set("board","2");
-    url.searchParams.set("v", String(Date.now()));
-    location.href = url.toString();
+    gotoBoard(2);
   });
 
-  // ---------- Camera interactions (pan/zoom) ----------
+  // DEV: Board 2 testen (ohne Board 1 zu beenden)
+  if (devMode){
+    const btnDevBoard2 = $("btnDevBoard2");
+    bindBtn(btnDevBoard2, () => gotoBoard(2));
+  }
+
+// ---------- Camera interactions (pan/zoom) ----------
   let isPanning = false;
   let panStart = {x:0,y:0,cx:0,cy:0};
   let pinch = null;
