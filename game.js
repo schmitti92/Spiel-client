@@ -3836,3 +3836,20 @@ function _wheelNext() {
   _wheelDraw(_wheelAngle);
   requestAnimationFrame(tick);
 }
+document.getElementById("backToLobbyBtn")?.addEventListener("click", () => {
+  leaveRoomAndReturn();
+});
+
+function leaveRoomAndReturn() {
+  try {
+    if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+      ws.close();
+    }
+  } catch (e) {}
+
+  // Optional: Room/Spielstatus löschen
+  localStorage.removeItem("barikade_room");
+  localStorage.removeItem("barikade_profile");
+
+  window.location.href = "barikade_lobby.html";
+}
