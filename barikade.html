@@ -54,6 +54,14 @@
     body.compact #onlineBox{ display:none !important; }
     body.compact #actionToggleRow{ display:none !important; }
     body.compact #colorPick{ display:none !important; }
+  
+    /* Always hide the compact status summary (requested): Status / Board / Feldanzahl / Barikaden */
+    #statusHeader,
+    #statusRowBoard,
+    #statusRowBarr{
+      display:none !important;
+    }
+
   </style>
 </head>
 
@@ -121,9 +129,9 @@
 
       <!-- Status -->
       <div style="height:16px"></div>
-      <h3>Status</h3>
-      <div class="kv"><span>Board</span><span id="boardInfo">–</span></div>
-      <div class="kv"><span>Barikaden</span><span id="barrInfo">–</span></div>
+      <h3 id="statusHeader">Status</h3>
+      <div id="statusRowBoard" class="kv"><span>Board</span><span id="boardInfo">–</span></div>
+      <div id="statusRowBarr" class="kv"><span>Barikaden</span><span id="barrInfo">–</span></div>
 
       <!-- Online -->
       <div style="height:16px"></div>
