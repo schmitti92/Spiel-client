@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Barikade – Lobby</title>
+  <link rel="stylesheet" href="styles.css?v=barikade_lobby1" />
+  <style>
+    :root{ --bg:#0b0f16; --card:rgba(15,23,42,.65); --line:rgba(255,255,255,.10); --muted:rgba(255,255,255,.70); }
+    body{ margin:0; background:radial-gradient(1200px 800px at 20% 10%, #1b2a5a 0%, var(--bg) 60%); color:#e9eefc; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+    .wrap{ max-width:980px; margin:0 auto; padding:16px; }
+    .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .title{ font-weight:900; font-size:18px; }
+    .sub{ color:rgba(255,255,255,.65); font-size:12px; }
+    .card{ margin-top:12px; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:14px; }
+    .grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+    @media(min-width:900px){ .grid{ grid-template-columns: 1.1fr .9fr; } }
+
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .btn{ padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); color:#e9eefc; font-weight:800; cursor:pointer; }
+    .btn.primary{ background:rgba(34,197,94,.14); }
+    .btn.blue{ background:rgba(59,130,246,.14); }
+    .btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+    .pill{ padding:8px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.22); font-size:12px; color:rgba(255,255,255,.75); }
+
+    input[type="text"]{ width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:#e9eefc; outline:none; }
+
+    .names{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media(min-width:700px){ .names{ grid-template-columns:1fr 1fr 1fr 1fr; } }
+
+    .names button{ padding:12px 10px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(2,6,23,.35); font-weight:900; cursor:pointer; }
+    .names button:active{ transform:scale(.99); }
+
+    table{ width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px; border:1px solid rgba(255,255,255,.10); }
+    th,td{ padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.08); font-size:13px; }
+    th{ text-align:left; color:rgba(255,255,255,.75); font-weight:900; background:rgba(0,0,0,.18); }
+    tr:last-child td{ border-bottom:none; }
+
+    .hint{ color:rgba(255,255,255,.65); font-size:12px; line-height:1.35; }
+
+    #toast{ position:fixed; left:50%; bottom:20px; transform:translateX(-50%);
+      padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14);
+      opacity:0; pointer-events:none; transition:.15s; z-index:9999; max-width:min(92vw,900px);
+    }
+    #toast.show{ opacity:1; }
+
+    .k{ color:rgba(255,255,255,.55); font-weight:700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="title">Barikade – Lobby</div>
+        <div class="sub">Hier wählst du Raum, Farbe, Action‑Modus und deinen Namen. Im Spiel selbst bleibt es übersichtlich.</div>
+      </div>
+      <div class="row">
+        <a class="btn" href="index.html" style="text-decoration:none;">← Zurück</a>
+        <span id="modePill" class="pill">Modus: –</span>
+        <span id="roomPill" class="pill">Raum: –</span>
+        <span id="colorPill" class="pill">Farbe: –</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2 style="margin:0 0 10px 0; font-size:16px">1) Raum & Verbindung</h2>
+        <div class="row" style="align-items:stretch">
+          <div style="flex:1">
+            <div class="k" style="margin-bottom:6px">Raumcode</div>
+            <input id="roomInp" type="text" inputmode="text" placeholder="z.B. AB12" />
+            <div class="hint" style="margin-top:8px">Tipp: Host erstellt einen neuen Raum (Code teilen). Alle anderen treten mit dem Code bei.</div>
+          </div>
+          <div style="min-width:220px">
+            <div class="k" style="margin-bottom:6px">Aktion</div>
+            <div class="row">
+              <button id="hostMakeBtn" class="btn primary" type="button">Host (neu)</button>
+              <button id="joinBtn" class="btn blue" type="button">Beitreten</button>
+            </div>
+            <div class="hint" style="margin-top:8px">Wir verbinden erst im Spiel – hier legen wir nur alles fest.</div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+        <h2 style="margin:0 0 10px 0; font-size:16px">2) Farbe & Action‑Modus</h2>
+        <div class="row">
+          <button class="btn" type="button" data-color="red">🔴 Rot</button>
+          <button class="btn" type="button" data-color="blue">🔵 Blau</button>
+          <button class="btn" type="button" data-color="green">🟢 Grün</button>
+          <button class="btn" type="button" data-color="yellow">🟡 Gelb</button>
+          <label class="pill" style="display:flex; gap:10px; align-items:center; margin-left:auto;">
+            <input id="actionToggle" type="checkbox" />
+            Action‑Modus
+          </label>
+        </div>
+        <div class="hint" style="margin-top:8px">Farbe bleibt im Spiel frei wechselbar – hier setzen wir nur deine Wunschfarbe für den Raum.</div>
+
+        <div style="height:12px"></div>
+        <h2 style="margin:0 0 10px 0; font-size:16px">3) Name wählen (Stats sichtbar)</h2>
+        <div class="hint" style="margin-bottom:10px">Wenn du klickst, startest du Barikade direkt mit deinen Einstellungen.</div>
+        <div class="names">
+          <button type="button" data-name="David">David</button>
+          <button type="button" data-name="Vanessa">Vanessa</button>
+          <button type="button" data-name="Christoph">Christoph</button>
+          <button type="button" data-name="Gast">Gast</button>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="hint">Hinweis: Gast spielt mit, zählt aber nicht in die Statistik (so wie du es wolltest).</div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 10px 0; font-size:16px">Barikade‑Statistik</h2>
+        <div class="hint" style="margin-bottom:10px">Layout steht schon. Firebase‑Anbindung für echte Werte machen wir als nächsten Schritt, ohne die Spielfunktionen anzutasten.</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Spiele</th>
+              <th>Siege</th>
+              <th>Ø‑Wurf</th>
+              <th>Spielzeit gesamt</th>
+            </tr>
+          </thead>
+          <tbody id="statsBody">
+            <tr><td>David</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>Vanessa</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>Christoph</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+          </tbody>
+        </table>
+        <div class="hint" style="margin-top:10px">
+          Global: Spiele insgesamt: <span class="k">–</span> · Gesamtspielzeit: <span class="k">–</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    (function(){
+      const $ = (id)=>document.getElementById(id);
+      const toastEl = $("toast");
+      const roomInp = $("roomInp");
+      const hostMakeBtn = $("hostMakeBtn");
+      const joinBtn = $("joinBtn");
+      const actionToggle = $("actionToggle");
+      const modePill = $("modePill");
+      const roomPill = $("roomPill");
+      const colorPill = $("colorPill");
+
+      function toast(t){
+        toastEl.textContent = String(t||"");
+        toastEl.classList.add('show');
+        clearTimeout(toastEl._t);
+        toastEl._t = setTimeout(()=>toastEl.classList.remove('show'), 1600);
+      }
+
+      function randCode(len=4){
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let s=""; for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+        return s;
+      }
+      function normRoom(v){
+        return String(v||"").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
+      }
+
+      function setMode(m){
+        localStorage.setItem('barikade_mode', m);
+        modePill.textContent = 'Modus: ' + (m === 'host' ? 'Host' : (m === 'client' ? 'Client' : '–'));
+      }
+      function setRoom(rc){
+        const r = normRoom(rc);
+        localStorage.setItem('barikade_room', r);
+        roomPill.textContent = 'Raum: ' + (r || '–');
+      }
+      function setActionMode(on){
+        localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
+      }
+      function setRequestedColor(color){
+        const c = String(color||"").toLowerCase().trim();
+        if(!['red','blue','green','yellow'].includes(c)) return;
+        // global fallback + room-specific like game.js does
+        try{ localStorage.setItem('barikade_requested_color', c); }catch(_e){}
+        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || "");
+        if(r) {
+          try{ localStorage.setItem('barikade_requested_color_' + r, c); }catch(_e){}
+        }
+        colorPill.textContent = 'Farbe: ' + (c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':'Gelb');
+      }
+
+      // Restore last selections
+      (function restore(){
+        const r = localStorage.getItem('barikade_room') || '';
+        const m = localStorage.getItem('barikade_mode') || 'offline';
+        const am = localStorage.getItem('barikade_action_mode') || 'classic';
+        roomInp.value = r;
+        setMode(m);
+        setRoom(r);
+        actionToggle.checked = (am === 'action');
+        const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
+        if(c) setRequestedColor(c);
+      })();
+
+      hostMakeBtn.addEventListener('click', ()=>{
+        const r = normRoom(roomInp.value);
+        const rc = r || randCode(4);
+        roomInp.value = rc;
+        setRoom(rc);
+        setMode('host');
+        toast('Host: Raum ' + rc);
+      });
+
+      joinBtn.addEventListener('click', ()=>{
+        const rc = normRoom(roomInp.value);
+        if(!rc){ toast('Bitte Raumcode eingeben'); return; }
+        setRoom(rc);
+        setMode('client');
+        toast('Client: Raum ' + rc);
+      });
+
+      document.querySelectorAll('[data-color]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const rc = normRoom(roomInp.value);
+          if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
+          setRoom(rc);
+          setRequestedColor(btn.getAttribute('data-color'));
+          toast('Wunschfarbe gespeichert');
+        });
+      });
+
+      actionToggle.addEventListener('change', ()=>{
+        setActionMode(!!actionToggle.checked);
+        toast(actionToggle.checked ? 'Action‑Modus: AN' : 'Action‑Modus: AUS');
+      });
+
+      document.querySelectorAll('[data-name]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const mode = localStorage.getItem('barikade_mode') || 'offline';
+          const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+          if(!(mode === 'host' || mode === 'client')){ toast('Bitte Host oder Beitreten wählen'); return; }
+          if(!rc){ toast('Bitte Raumcode setzen'); return; }
+
+          const name = String(btn.getAttribute('data-name')||'Spieler');
+          localStorage.setItem('barikade_playerName', name);
+          // Gast zählt nicht → markieren (nur als Flag für später)
+          localStorage.setItem('barikade_isGuest', name.toLowerCase()==='gast' ? '1' : '0');
+
+          // ensure room persisted
+          setRoom(rc);
+          // ensure action mode persisted
+          setActionMode(!!actionToggle.checked);
+
+          // go to game (compact UI)
+          location.href = 'barikade.html?compact=1';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
