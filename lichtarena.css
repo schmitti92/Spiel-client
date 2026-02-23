@@ -356,32 +356,9 @@ body{
 }
 
 
-/* ===== Ereignisfelder (Board JSON: type="special") ===== */
-.node.event{
-  box-shadow: 0 0 0 2px rgba(180,120,255,.35), 0 0 18px rgba(180,120,255,.25);
-}
-.node.event::after{
-  content:'';
-  position:absolute;
-  inset:-6px;
-  border-radius:14px;
-  background: radial-gradient(circle at 50% 50%, rgba(180,120,255,.22), rgba(180,120,255,0) 60%);
-  pointer-events:none;
-}
-.node .eventMark{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:16px;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,.55));
-  opacity:.95;
-  pointer-events:none;
-}
-@keyframes laEventPulse{
-  0%{ transform:scale(1); opacity:.80 }
-  50%{ transform:scale(1.06); opacity:1 }
-  100%{ transform:scale(1); opacity:.80 }
-}
-.node.event .eventMark{ animation: laEventPulse 1.6s ease-in-out infinite; }
+/* --- Event fields (type=special) --- */
+.node.event{ box-shadow: 0 0 0 2px rgba(180,120,255,.35), 0 0 18px rgba(180,120,255,.25); }
+.node.event::after{ content:''; position:absolute; inset:-6px; border-radius:14px; background: radial-gradient(circle at 50% 50%, rgba(180,120,255,.22), rgba(180,120,255,0) 60%); pointer-events:none; }
+.node .eventMark{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:16px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.55)); opacity:.95; pointer-events:none; }
+@keyframes laPulse{ 0%{ transform:scale(1); opacity:.8 } 50%{ transform:scale(1.05); opacity:1 } 100%{ transform:scale(1); opacity:.8 } }
+.node.event .eventMark{ animation: laPulse 1.6s ease-in-out infinite; }
