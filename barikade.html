@@ -49,6 +49,11 @@
     .kv { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06); }
     .joker-grid { display:grid; grid-template-columns: 1fr; gap:10px; margin-top:10px; }
     .joker-btn { padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#e6edf3; font-weight:800; cursor:pointer; }
+
+    /* Compact UI (Lobby steuert Raum/Farbe/Action) – KEINE Funktionen entfernen, nur ausblenden */
+    body.compact #onlineBox{ display:none !important; }
+    body.compact #actionToggleRow{ display:none !important; }
+    body.compact #colorPick{ display:none !important; }
   </style>
 </head>
 
@@ -86,7 +91,7 @@
       <!-- Joker / Action -->
       <div style="height:14px"></div>
       <h3>Joker</h3>
-      <div class="row" style="justify-content:space-between;">
+      <div id="actionToggleRow" class="row" style="justify-content:space-between;">
         <label style="display:flex;align-items:center;gap:10px;opacity:.9;">
           <input id="actionModeToggle" type="checkbox" />
           Action-Modus (Joker-Extra)
@@ -122,34 +127,36 @@
 
       <!-- Online -->
       <div style="height:16px"></div>
-      <h3>Online</h3>
-      <div style="opacity:.75; font-size:13px; line-height:1.35; margin-bottom:10px;">
-        Server ist fest hinterlegt. Du brauchst nur noch einen Raumcode.
-      </div>
-      <div class="kv"><span>Server</span><span id="serverLabel">–</span></div>
+      <div id="onlineBox">
+        <h3>Online</h3>
+        <div style="opacity:.75; font-size:13px; line-height:1.35; margin-bottom:10px;">
+          Server ist fest hinterlegt. Du brauchst nur noch einen Raumcode.
+        </div>
+        <div class="kv"><span>Server</span><span id="serverLabel">–</span></div>
 
-      <div class="row" style="margin-top:10px;">
-        <input id="roomCode" placeholder="Raumcode" style="flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:#e6edf3;" />
-      </div>
+        <div class="row" style="margin-top:10px;">
+          <input id="roomCode" placeholder="Raumcode" style="flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:#e6edf3;" />
+        </div>
 
-      <div class="row" style="margin-top:10px;">
-        <button id="hostBtn" class="btn">Host</button>
-        <button id="joinBtn" class="btn">Beitreten</button>
-        <button id="leaveBtn" class="btn">Trennen</button>
-      </div>
+        <div class="row" style="margin-top:10px;">
+          <button id="hostBtn" class="btn">Host</button>
+          <button id="joinBtn" class="btn">Beitreten</button>
+          <button id="leaveBtn" class="btn">Trennen</button>
+        </div>
 
-      <div class="kv" style="margin-top:10px;"><span>Status</span><span id="netStatus">Offline</span></div>
-      <div class="kv"><span>Spieler</span><span id="netPlayers">–</span></div>
-      <div class="kv"><span>Meine Farbe</span><span id="myColor">–</span></div>
+        <div class="kv" style="margin-top:10px;"><span>Status</span><span id="netStatus">Offline</span></div>
+        <div class="kv"><span>Spieler</span><span id="netPlayers">–</span></div>
+        <div class="kv"><span>Meine Farbe</span><span id="myColor">–</span></div>
 
-      <!-- Host Tools (müssen existieren, game.js blendet sie host-only ein) -->
-      <div id="hostTools" class="row" style="display:none; margin-top:12px;">
-        <button id="saveBtn" class="btn">Save</button>
-        <button id="loadBtn" class="btn">Load</button>
-        <button id="restoreBtn" class="btn">Restore</button>
-        <input id="loadFile" type="file" accept="application/json" style="display:none;" />
+        <!-- Host Tools (müssen existieren, game.js blendet sie host-only ein) -->
+        <div id="hostTools" class="row" style="display:none; margin-top:12px;">
+          <button id="saveBtn" class="btn">Save</button>
+          <button id="loadBtn" class="btn">Load</button>
+          <button id="restoreBtn" class="btn">Restore</button>
+          <input id="loadFile" type="file" accept="application/json" style="display:none;" />
+        </div>
+        <div id="autoSaveInfo" style="display:none; margin-top:8px; opacity:.75; font-size:12px;">Auto-Save: –</div>
       </div>
-      <div id="autoSaveInfo" style="display:none; margin-top:8px; opacity:.75; font-size:12px;">Auto-Save: –</div>
 
       <!-- Resume (optional, wird genutzt) -->
       <div class="row" style="margin-top:12px;">
@@ -176,6 +183,19 @@
   </div>
 
   <!-- WICHTIG: game.js muss exakt so heißen und im gleichen Ordner liegen -->
+  <script>
+    // Apply compact UI and lobby-selected defaults BEFORE game.js runs.
+    (function(){
+      const qs = new URLSearchParams(location.search);
+      if(qs.get('compact') === '1') document.body.classList.add('compact');
+      // action mode from lobby
+      const am = (localStorage.getItem('barikade_action_mode') || 'classic');
+      document.addEventListener('DOMContentLoaded', ()=>{
+        const t = document.getElementById('actionModeToggle');
+        if(t) t.checked = (am === 'action');
+      });
+    })();
+  </script>
   <script src="game.js"></script>
 </body>
 </html>
