@@ -3667,13 +3667,9 @@ function enqueueWheel(list) {
 // Note: Pure UI. Server already decides the result. No game-state changes here.
 const _WHEEL_SEGMENTS = [
   { key: "allColors", label: "Alle Farben" },
-  { key: "none",      label: "Niete" },
   { key: "barricade", label: "Barikade" },
-  { key: "none",      label: "Niete" },
   { key: "reroll",    label: "Neu-Wurf" },
-  { key: "none",      label: "Niete" },
   { key: "double",    label: "Doppelwurf" },
-  { key: "none",      label: "Niete" },
 ];
 
 let _wheelAngle = 0; // radians (0 = segment 0 centered at top after calibration)
@@ -3690,6 +3686,10 @@ function _wheelEnsureUI() {
 #wheelHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
 #wheelTitle{font-weight:800;font-size:18px;margin:0;}
 #wheelSub{opacity:.85;margin:6px 0 0 0;line-height:1.35;font-size:13px;}
+#wheelBig{margin-top:10px;font-weight:900;font-size:28px;letter-spacing:.2px;line-height:1.1;text-transform:uppercase;text-align:center;}
+@media (max-width:420px){#wheelBig{font-size:22px;}}
+#wheelQuote{margin-top:8px;font-size:15px;line-height:1.35;color:#d7d7ff;text-align:center;opacity:.95;}
+
 #wheelWrap{display:flex;align-items:center;justify-content:center;padding:10px 0 6px 0;}
 #wheelCanvas{width:min(360px,78vw);height:auto;max-width:360px;aspect-ratio:1/1;}
 #wheelPointer{width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:18px solid rgba(255,255,255,.9);filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));margin:0 auto -6px auto;}
@@ -3706,6 +3706,8 @@ function _wheelEnsureUI() {
         <div>
           <div id="wheelTitle">Gluecksrad</div>
           <p id="wheelSub">Das Rad dreht...</p>
+          <div id="wheelBig"></div>
+          <div id="wheelQuote"></div>
         </div>
       </div>
       <div id="wheelPointer"></div>
@@ -3713,7 +3715,7 @@ function _wheelEnsureUI() {
         <canvas id="wheelCanvas" width="720" height="720"></canvas>
       </div>
       <div id="wheelResult"></div>
-      <div id="wheelHint">50% Joker, 50% Niete</div>
+      <div id="wheelHint">Joker-Rad (ohne Nieten)</div>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -3789,18 +3791,17 @@ function _wheelDraw(angleRad) {
 function _wheelResolveIndex(resultKey) {
   const key = String(resultKey || "").trim();
   if (!key) {
-    // pick a "none" segment
-    const noneIdx = [];
-    for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) if (_WHEEL_SEGMENTS[i].key === "none") noneIdx.push(i);
-    return noneIdx.length ? noneIdx[Math.floor(Math.random() * noneIdx.length)] : 0;
+    // Fallback: random segment (keine Nieten mehr)
+    return Math.floor(Math.random() * _WHEEL_SEGMENTS.length);
   }
   const k = key.toLowerCase();
   for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
     if (_WHEEL_SEGMENTS[i].key.toLowerCase() === k) return i;
   }
-  // if server sends "allColors" etc.
+  // if server sends "allColors" etc. with odd formatting
+  const norm = k.replace(/[^a-z]/g, "");
   for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
-    if (_WHEEL_SEGMENTS[i].key.toLowerCase() === k.replace(/[^a-z]/g, "")) return i;
+    if (_WHEEL_SEGMENTS[i].key.toLowerCase() === norm) return i;
   }
   return 0;
 }
@@ -3815,9 +3816,21 @@ function _wheelNext() {
   const title = document.getElementById("wheelTitle");
   const sub = document.getElementById("wheelSub");
   const res = document.getElementById("wheelResult");
+  const big = document.getElementById("wheelBig");
+  const quote = document.getElementById("wheelQuote");
+
+  const _colorName = (c)=>({RED:"Rot",BLUE:"Blau",GREEN:"Gruen",YELLOW:"Gelb"}[String(c||"").toUpperCase()] || String(c||""));
+  const attackerName = String(item.attackerName || "").trim();
+  const victimName = String(item.victimName || "").trim();
+  const attackerLabel = attackerName || (_colorName(item.targetColor) || "Jemand");
+  const victimLabel = victimName || (_colorName(item.jokerColor) || "jemanden");
+  const headline = attackerLabel + " schmeisst " + victimLabel + " raus!";
+  if (big) big.textContent = headline;
+  if (quote) quote.textContent = String(item.quote || "");
+
 
   const targetColor = String(item.targetColor || "").toUpperCase();
-  const durationMs = Math.max(1200, Number(item.durationMs || 10000));
+  const durationMs = 5000; // Christoph-Wunsch: immer 5 Sekunden
 
   title.textContent = "Gluecksrad fuer " + (targetColor || "Spieler");
   sub.textContent = "Das Rad dreht...";
@@ -3854,7 +3867,7 @@ function _wheelNext() {
         const pretty = (_WHEEL_SEGMENTS[idx] && _WHEEL_SEGMENTS[idx].key !== "none") ? _WHEEL_SEGMENTS[idx].label : String(r);
         res.textContent = "Joker gewonnen: " + pretty;
       } else {
-        res.textContent = "Leider kein Joker.";
+        res.textContent = "Kein Joker erhalten.";
       }
       // hide shortly after
       window.setTimeout(() => {
