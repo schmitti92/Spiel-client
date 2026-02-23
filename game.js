@@ -1273,6 +1273,20 @@ try{ ws = new WebSocket(SERVER_URL); }
         if(msg.clientId) clientId = msg.clientId;
         return;
       }
+if(type==="start_spin"){
+  try{
+    const cols = Array.isArray(msg.activeColors) && msg.activeColors.length ? msg.activeColors.map(c=>String(c||"").toLowerCase().trim()).filter(Boolean) : getActiveColors();
+    const dur = Number(msg.durationMs || 4200) || 4200;
+    const winner = String(msg.starterColor || "").toLowerCase().trim();
+    // Run the same wheel animation on ALL clients, but with the server-chosen winner.
+    startWheelSpin(cols, dur, winner).then(()=>{}).catch(()=>{});
+    // While spinning, disable start button to avoid double actions.
+    try{ if(startBtn) startBtn.disabled = true; }catch(_e){}
+    window.setTimeout(()=>{ try{ updateStartButton(); }catch(_e){} }, dur + 1200);
+  }catch(_e){}
+  return;
+}
+
       if(type==="room_update"){
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         if(Array.isArray(msg.allowedColors)){
@@ -1931,7 +1945,7 @@ function toast(msg){
   overlayOk.addEventListener("click", hideOverlay);
 
   async function loadBoard(){
-    const res = await fetch("board.json", {cache:"no-store"});
+    const res = await fetch("board.json", { cache:"force-cache" });
     if(!res.ok) throw new Error("board.json nicht gefunden");
     return await res.json();
   }
@@ -2998,7 +3012,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
 
   let _startWheelAngle = 0;
 
-  function startWheelSpin(colors, durationMs=2800){
+  function startWheelSpin(colors, durationMs=2800, forcedWinner=null){
     return new Promise((resolve)=>{
       try{
         _ensureStartWheelUI();
@@ -3009,8 +3023,11 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
         if(sub) sub.textContent = "Das Glücksrad dreht…";
 
         const cols = Array.isArray(colors) && colors.length ? colors.slice() : ["red","blue"];
-        // pick winner
-        const idx = Math.floor(Math.random()*cols.length);
+        // pick winner (server-chef can force a winner)
+        let idx = -1;
+        const fw = forcedWinner ? String(forcedWinner).toLowerCase().trim() : null;
+        if(fw) idx = cols.findIndex(c => String(c).toLowerCase() === fw);
+        if(idx < 0) idx = Math.floor(Math.random()*cols.length);
         const winner = cols[idx];
 
         // compute final angle so that idx segment center is at pointer (top)
@@ -3114,8 +3131,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     const _m = (actionModeToggle && actionModeToggle.checked ? "action" : "classic");
     _pendingStartMode = _m;
     _pendingStartJokerInit = true;
-    // Neu: Startspieler per Glücksrad bestimmen (Host)
-    hostStartWithWheel(_m);
+    // Neu: Startspieler per Glücksrad bestimmen (server-chef, für alle sichtbar)
+    wsSend({ type:"start_request", mode:_m, ts:Date.now() });
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
