@@ -624,6 +624,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const DEFAULT_PLAYERS = ["red","blue","green","yellow"];
   const PLAYER_NAME = {red:"Rot", blue:"Blau", green:"Grün", yellow:"Gelb"};
 
+  // Prevent showing the win overlay multiple times (snapshot + event)
+  let winShown = false;
+
   let PLAYERS = ["red","blue"];
   function setPlayers(arg){
     if(Array.isArray(arg)){
@@ -1304,6 +1307,20 @@ try{ ws = new WebSocket(SERVER_URL); }
         return;
       }
 
+      if(type==="game_over"){
+        const wc = (msg.winnerColor ? String(msg.winnerColor) : null);
+        if(state){
+          state.phase = 'game_over';
+          state.winner = wc;
+        }
+        if(wc && !winShown){
+          winShown = true;
+          showEpicWin(wc);
+        }
+        updateTurnUI();
+        return;
+      }
+
       // Host Save/Load: server sends back a JSON snapshot for download
       if(type==="export_state"){
         pendingSaveExport = false;
@@ -1468,7 +1485,7 @@ try{ ws = new WebSocket(SERVER_URL); }
         placingChoices: [],
         pieces: Object.fromEntries(players.map(c => [c, piecesByColor[c] || []])),
         barricades: new Set(server.barricades.map(String)),
-        winner: null,
+        winner: (server.winnerColor ? String(server.winnerColor) : null),
         goalNodeId: server.goal ? String(server.goal) : goalNodeId,
         // optional info from server (used by some UIs)
         activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
@@ -1506,6 +1523,11 @@ try{ ws = new WebSocket(SERVER_URL); }
           toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
         }
       }catch(e){}
+
+      if ((server.finished || server.phase === 'game_over') && state.winner && !winShown) {
+        winShown = true;
+        showEpicWin(state.winner);
+      }
 
       updateTurnUI(); updateStartButton(); draw();
     updateActionUI_J1();
@@ -1798,6 +1820,94 @@ function toast(msg){
     overlaySub.textContent=sub||"";
     overlayHint.textContent=hint||"";
     overlay.classList.add("show");
+  }
+
+  // Legendary win screen (works for offline + online)
+  let winFxRunning = false;
+  function ensureWinCanvas(){
+    const ov = $('overlay');
+    if(!ov) return null;
+    let c = document.getElementById('winFx');
+    if(!c){
+      c = document.createElement('canvas');
+      c.id = 'winFx';
+      c.style.position = 'absolute';
+      c.style.inset = '0';
+      c.style.width = '100%';
+      c.style.height = '100%';
+      c.style.pointerEvents = 'none';
+      c.style.opacity = '0.9';
+      ov.appendChild(c);
+      // ensure overlay is relative
+      if(getComputedStyle(ov).position === 'static') ov.style.position = 'relative';
+    }
+    return c;
+  }
+
+  function startWinFx(){
+    if(winFxRunning) return;
+    const c = ensureWinCanvas();
+    if(!c) return;
+    const ov = $('overlay');
+    const g = c.getContext('2d');
+    winFxRunning = true;
+
+    const parts = [];
+    const rand = (a,b)=>Math.random()*(b-a)+a;
+    const resize = ()=>{
+      const r = ov.getBoundingClientRect();
+      c.width = Math.max(1, Math.floor(r.width));
+      c.height = Math.max(1, Math.floor(r.height));
+    };
+    resize();
+    window.addEventListener('resize', resize, { passive:true });
+
+    for(let i=0;i<180;i++){
+      parts.push({
+        x: rand(0,c.width),
+        y: rand(-c.height*0.15, c.height*0.05),
+        vx: rand(-2.0,2.0),
+        vy: rand(1.4,4.4),
+        s: rand(2,5),
+        rot: rand(0,Math.PI*2),
+        vr: rand(-0.22,0.22),
+        life: rand(900,1700)
+      });
+    }
+
+    const t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    function frame(t){
+      const age = t - t0;
+      g.clearRect(0,0,c.width,c.height);
+      g.save();
+      g.globalCompositeOperation = 'lighter';
+      for(const p of parts){
+        if(age > p.life) continue;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.03;
+        p.rot += p.vr;
+        g.save();
+        g.translate(p.x,p.y);
+        g.rotate(p.rot);
+        g.globalAlpha = Math.max(0, 1 - age/p.life);
+        g.fillRect(-p.s, -p.s*0.6, p.s*2, p.s*1.2);
+        g.restore();
+      }
+      g.restore();
+      if(age < 1900 && ov.classList.contains('show')){
+        requestAnimationFrame(frame);
+      } else {
+        winFxRunning = false;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function showEpicWin(winnerColor){
+    const name = PLAYER_NAME[winnerColor] || String(winnerColor||'?');
+    showOverlay('🏆 EPISCHER SIEG 🏆', `${name} gewinnt!`, 'Erste Figur auf dem Zielfeld.');
+    startWinFx();
   }
   function hideOverlay(){ overlay.classList.remove("show"); }
   overlayOk.addEventListener("click", hideOverlay);
@@ -2215,8 +2325,12 @@ function toast(msg){
   }
 
   function checkWin(){
+    // Gewinner: wer als erstes mit EINER Figur im Ziel ist.
     for(const c of getActiveColors()){
-      if(state.pieces[c].filter(p=>p.pos==="goal").length===5){ state.winner=c; return; }
+      if(state.pieces[c].some(p=>p.pos==="goal")){
+        state.winner=c;
+        return;
+      }
     }
   }
 
@@ -2261,7 +2375,7 @@ function toast(msg){
       }catch(e){}
 
       updateTurnUI(); updateStartButton(); draw();
-        showOverlay("🎉 Spiel vorbei", `${PLAYER_NAME[state.winner]} gewinnt!`, "Tippe Reset für ein neues Spiel.");
+        showEpicWin(state.winner);
         return;
       }
       endTurn();
