@@ -419,6 +419,13 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const jokerRerollState = $("jokerRerollState");
   const actionEffectsState = $("actionEffectsState");
 
+  // Init Action-Modus aus Lobby (nur UI/Startwahl). Keine Spiellogik entfernen.
+  try{
+    const am = localStorage.getItem("barikade_action_mode");
+    if(actionModeToggle) actionModeToggle.checked = (am === "action");
+  }catch(_e){}
+
+
 
   
   const jokerAllColorsBtn = $("jokerAllColorsBtn");
@@ -623,6 +630,14 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
   const DEFAULT_PLAYERS = ["red","blue","green","yellow"];
   const PLAYER_NAME = {red:"Rot", blue:"Blau", green:"Grün", yellow:"Gelb"};
+
+  // Additiv: Namen pro Farbe aus der Lobby/Room-Roster (Server) – nur Anzeige, keine Regeln.
+  let nameByColor = { red:null, blue:null, green:null, yellow:null };
+  function labelForColor(c){
+    const k = String(c||"").toLowerCase();
+    const n = nameByColor && nameByColor[k];
+    return (n && String(n).trim()) ? String(n).trim() : (PLAYER_NAME[k] || k || "–");
+  }
 
   // Prevent showing the win overlay multiple times (snapshot + event)
   let winShown = false;
@@ -1113,10 +1128,19 @@ if(actionEffectsState){
     rosterById = new Map();
     for(const p of lastNetPlayers){ if(p && p.id) rosterById.set(p.id, p); }
 
+    // Build display names by color (server roster includes p.name + p.color)
+    nameByColor = { red:null, blue:null, green:null, yellow:null };
+    for(const p of lastNetPlayers){
+      const col = (p && p.color) ? String(p.color).toLowerCase() : "";
+      const nm  = (p && p.name) ? String(p.name).trim() : "";
+      if(col && nm && nameByColor[col] == null) nameByColor[col] = nm;
+    }
+
     const me = rosterById.get(clientId);
     myColor = (me && me.color) ? me.color : null;
 
     if(myColorEl){
+      // Meine Farbe bleibt farbbasiert, damit es klar ist (Name steht oben im Turn-Label).
       myColorEl.textContent = myColor ? PLAYER_NAME[myColor] : "–";
       myColorEl.style.color = myColor ? COLORS[myColor] : "var(--muted)";
     updateStartButton();
@@ -1234,10 +1258,11 @@ try{ ws = new WebSocket(SERVER_URL); }
       setNetStatus("Verbunden – join…", true);
 
       const sessionToken = getSessionToken();
+      const savedName = (()=>{ try{ return (localStorage.getItem('barikade_playerName')||'').trim(); }catch(_e){ return ''; } })();
       wsSend({
         type: "join",
         room: roomCode,
-        name: (netMode === "host" ? "Host" : "Client"),
+        name: savedName || (netMode === "host" ? "Host" : "Client"),
         asHost: (netMode === "host"),
         sessionToken,
         requestedColor: getRequestedColor(),
@@ -1905,7 +1930,7 @@ function toast(msg){
   }
 
   function showEpicWin(winnerColor){
-    const name = PLAYER_NAME[winnerColor] || String(winnerColor||'?');
+    const name = labelForColor(winnerColor);
     showOverlay('🏆 EPISCHER SIEG 🏆', `${name} gewinnt!`, 'Erste Figur auf dem Zielfeld.');
     startWinFx();
   }
@@ -2069,7 +2094,7 @@ function toast(msg){
     }
 
     const c=state.currentPlayer;
-    turnText.textContent = state.winner ? `${PLAYER_NAME[state.winner]} gewinnt!` : `${PLAYER_NAME[c]} ist dran`;
+    turnText.textContent = state.winner ? `${labelForColor(state.winner)} gewinnt!` : `${labelForColor(c)} ist dran`;
     turnDot.style.background = COLORS[c];
 
     const isMyTurn = (netMode==="offline") ? true : (myColor && myColor===state.currentPlayer);
@@ -3017,7 +3042,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
           _startWheelDraw(_startWheelAngle, cols);
           if(t<1) requestAnimationFrame(tick);
           else{
-            if(res) res.textContent = "Startspieler: " + ((PLAYER_NAME && PLAYER_NAME[winner]) ? PLAYER_NAME[winner] : String(winner));
+            if(res) res.textContent = "Startspieler: " + labelForColor(winner);
             window.setTimeout(()=>{
               try{ if(overlay) overlay.classList.remove("show"); }catch(_e){}
               resolve(winner);
@@ -3057,7 +3082,7 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
       _pendingStartStarterColor = null;
 
       wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_player", starter });
-      toast("Startspieler gesetzt: " + (PLAYER_NAME && PLAYER_NAME[starter] ? PLAYER_NAME[starter] : starter));
+      toast("Startspieler gesetzt: " + labelForColor(starter));
     }catch(_e){
       _pendingStartStarterPick = false;
     }
