@@ -182,110 +182,6 @@ body{
 }
 
 
-/* =========================================================
-   BARIKADE (barikade.html) – hochwertiges Responsive Layout
-   - nur Layout/UX, keine Spiellogik
-   - optimiert für Tablet (Portrait + Landscape)
-========================================================= */
-
-/* Baseline: besseres Spacing + sichere Höhenberechnung */
-.app{
-  /* falls barikade.html Inline-CSS nicht geladen wäre: */
-  width:100%;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Canvas soll sich dynamisch an die Viewport-Höhe anpassen */
-.boardWrap canvas#c{
-  height: clamp(520px, calc(100dvh - 140px), 760px);
-}
-
-/* Rechte Seite: wie ein "Card Panel" mit sauberem Scroll */
-.app > .panel{
-  max-height: calc(100dvh - 110px);
-  overflow: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Buttons: bessere Touch-Targets */
-.btn{
-  min-height: 42px;
-}
-
-/* =========================================================
-   TABLET LANDSCAPE (typisch ~1024px breit)
-   - Board groß, Panel rechts stabil, keine tote Fläche
-========================================================= */
-@media (min-width: 900px) and (max-width: 1280px) and (orientation: landscape){
-  .app{
-    grid-template-columns: minmax(0, 1fr) clamp(320px, 34vw, 440px) !important;
-    gap: 14px !important;
-    padding: 14px !important;
-    align-items: start;
-  }
-
-  .boardWrap{
-    min-height: 0;
-  }
-
-  .boardWrap canvas#c{
-    height: clamp(560px, calc(100dvh - 120px), 820px);
-  }
-
-  .app > .panel{
-    position: sticky;
-    top: 74px; /* unter der Topbar */
-    max-height: calc(100dvh - 90px);
-    padding: 14px;
-  }
-
-  /* Joker-Buttons: grid für bessere Nutzung */
-  .joker-grid{
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-}
-
-/* =========================================================
-   TABLET PORTRAIT / kleinere Breiten
-   - Panel unter dem Board, große Controls, schöner Flow
-========================================================= */
-@media (max-width: 900px){
-  .app{
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-    padding: 12px !important;
-  }
-
-  .boardWrap{
-    border-radius: 18px;
-  }
-
-  .boardWrap canvas#c{
-    height: clamp(520px, 64vh, 720px);
-  }
-
-  .app > .panel{
-    max-height: none;
-  }
-
-  /* Topbar Buttons sollen nicht gequetscht wirken */
-  .rightActions{
-    gap: 8px;
-  }
-}
-
-/* =========================================================
-   Extra: sehr große Screens – etwas mehr Luft
-========================================================= */
-@media (min-width: 1400px){
-  .app{ padding: 18px !important; gap: 18px !important; }
-  .boardWrap canvas#c{ height: clamp(620px, calc(100dvh - 150px), 860px); }
-}
-
-
 .dice-low { box-shadow: 0 0 0 rgba(0,0,0,0); }
 .dice-mid { box-shadow: 0 0 12px rgba(255,255,255,0.35); }
 .dice-high { box-shadow: 0 0 22px rgba(255,215,0,0.75); }
@@ -774,3 +670,122 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
   cursor:not-allowed;
   box-shadow:none;
 }
+
+
+/* =========================================================
+   HIGH-QUALITY RESPONSIVE LAYOUT (Tablet-first polish)
+   - no functional changes
+   - only layout/spacing/sizing improvements
+   ========================================================= */
+
+/* Make main area behave like an app viewport (prevents huge empty zones) */
+:root{
+  --topbarH: 72px;
+  --sideW: 380px;
+  --sideWwide: 420px;
+}
+
+.topbar{
+  min-height: var(--topbarH);
+}
+
+.main{
+  /* Fill the remaining viewport height under the topbar */
+  height: calc(100dvh - var(--topbarH));
+  align-content: stretch;
+}
+
+/* Board & side panel should stretch equally */
+.boardWrap{
+  min-height: 0; /* allow it to shrink within grid height */
+  height: 100%;
+}
+
+.side{
+  min-height: 0;
+  height: 100%;
+  padding-right: 0; /* remove extra right padding that can cause "dead area" on tablets */
+}
+
+.side .card{
+  overflow: auto;
+  max-height: 100%;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Slightly wider side panel on large screens */
+@media (min-width: 1200px){
+  .main{ grid-template-columns: 1fr var(--sideWwide); }
+}
+
+/* ===== TABLET LANDSCAPE (best use of space) ===== */
+@media (min-width: 760px) and (max-width: 1100px) and (orientation: landscape){
+  .main{
+    grid-template-columns: 1.55fr 1fr;
+    gap: 14px;
+    padding: 12px;
+    height: calc(100dvh - var(--topbarH));
+  }
+  .boardWrap{
+    border-radius: 18px;
+  }
+  .side{
+    gap: 12px;
+  }
+  /* make the right panel feel "anchored" */
+  .side .card{
+    position: sticky;
+    top: calc(var(--topbarH) + 12px);
+    max-height: calc(100dvh - var(--topbarH) - 24px);
+  }
+  .btn{ padding: 12px 14px; border-radius: 16px; }
+}
+
+/* ===== TABLET PORTRAIT (stacked, no squeezed panel) ===== */
+@media (min-width: 600px) and (max-width: 980px) and (orientation: portrait){
+  .main{
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100dvh - var(--topbarH));
+  }
+  .boardWrap{
+    height: min(62dvh, 720px);
+    min-height: 520px;
+  }
+  .side{
+    height: auto;
+  }
+  .side .card{
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+}
+
+/* ===== PHONE (stacked, big touch targets) ===== */
+@media (max-width: 599px){
+  :root{ --topbarH: 86px; }
+  .topbar{ padding: 10px; }
+  .brand{ min-width: auto; }
+  .main{
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100dvh - var(--topbarH));
+    padding: 10px;
+    gap: 10px;
+  }
+  .boardWrap{
+    height: min(58dvh, 640px);
+    min-height: 420px;
+    border-radius: 16px;
+  }
+  .side{ gap: 10px; }
+  .btn{ padding: 12px 14px; border-radius: 16px; }
+  input,select{ padding: 12px 14px; border-radius: 16px; }
+}
+
+/* Prevent horizontal overflow glitches on tablets */
+body{ overflow-x: hidden; }
