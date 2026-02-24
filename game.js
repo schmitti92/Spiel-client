@@ -73,17 +73,12 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     const el = document.getElementById('debugLog');
     if(el){
       try{
-        el.textContent += args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' ') + "
-";
+        el.textContent += args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' ') + "\n";
         el.scrollTop = el.scrollHeight;
       }catch(_e){}
     }
   }
 
-
-  // ===== Pending flags (prevent ReferenceErrors) =====
-  let pendingSaveExport = false;
-  let pendingStartFinalize = false;
 
   // ===== UI refs =====
   const canvas = $("c");
@@ -460,54 +455,51 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
 // ===== Joker #3: Neu-Wurf (UI inject, additive) =====
-function ensureActionJoker3UI(){
-  try{
-    if(!actionCard) return;
+  function ensureActionJoker3UI(){
+    try{
+      if(!actionCard) return;
+      try{ ensureActionJoker3UI(); }catch(_e){}
 
-    // Add status row if missing
-    if(!document.getElementById("jokerRerollState")){
-      const row = document.createElement("div");
-      row.className = "kv";
+      // Add status row if missing
+      if(!document.getElementById("jokerRerollState")){
+        const row = document.createElement("div");
+        row.className = "kv";
+        const left = document.createElement("span");
+        left.textContent = "🔁 Neu‑Wurf";
+        const right = document.createElement("span");
+        right.id = "jokerRerollState";
+        right.textContent = "–";
+        row.appendChild(left);
+        row.appendChild(right);
 
-      const left = document.createElement("span");
-      left.textContent = "🔁 Neu-Wurf";
-
-      const right = document.createElement("span");
-      right.id = "jokerRerollState";
-      right.textContent = "–";
-
-      row.appendChild(left);
-      row.appendChild(right);
-
-      const afterSpan = document.getElementById("jokerBarricadeState");
-      const afterKv = afterSpan ? afterSpan.closest(".kv") : null;
-
-      if(afterKv && afterKv.parentElement){
-        afterKv.parentElement.insertBefore(row, afterKv.nextSibling);
-      }else{
-        actionCard.appendChild(row);
+        const afterSpan = document.getElementById("jokerBarricadeState");
+        const afterKv = afterSpan ? afterSpan.closest(".kv") : null;
+        if(afterKv && afterKv.parentElement){
+          afterKv.parentElement.insertBefore(row, afterKv.nextSibling);
+        } else {
+          actionCard.appendChild(row);
+        }
       }
-    }
 
-    // Add button if missing
-    if(!document.getElementById("jokerRerollBtn")){
-      const grid = actionCard.querySelector(".joker-grid");
-      if(grid){
-        const btn = document.createElement("button");
-        btn.id = "jokerRerollBtn";
-        btn.className = "joker-btn";
-        btn.type = "button";
-        btn.textContent = "🔁 Neu-Wurf nutzen";
-        grid.appendChild(btn);
+      // Add button if missing
+      if(!document.getElementById("jokerRerollBtn")){
+        const grid = actionCard.querySelector(".joker-grid");
+        if(grid){
+          const btn = document.createElement("button");
+          btn.id = "jokerRerollBtn";
+          btn.className = "joker-btn";
+          btn.type = "button";
+          btn.textContent = "🔁 Neu‑Wurf nutzen";
+          grid.appendChild(btn);
+        }
       }
-    }
 
-    // refresh local ref
-    jokerRerollBtn = document.getElementById("jokerRerollBtn");
-  }catch(_e){}
-}
-ensureActionJoker3UI();
-  
+      // refresh local ref
+      jokerRerollBtn = document.getElementById("jokerRerollBtn");
+    }catch(_e){}
+  }
+  ensureActionJoker3UI();
+
 // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
   // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
@@ -989,10 +981,10 @@ ensureActionJoker3UI();
         }catch(_e){ return null; }
       }
 
-      function fmtCount(total){ return String(Math.max(0, Number(total)||0)); }
-
-
-
+      function fmtCount(total){
+        if(total<=0) return "verbraucht";
+        return `bereit (x${total})`;
+      }
 
       function fmtWithOrigin(typeKey, legacyVal){
         const sum = ownedSummary(typeKey);
@@ -1013,39 +1005,14 @@ ensureActionJoker3UI();
         return my ? `${base} (${colorLabel(my)})` : base;
       }
 
-            // --- Joker UI (Count-only, keine "verbraucht"-Texte) ---
-      function getCount(typeKey, legacyVal){
-        const sum = ownedSummary(typeKey);
-        if(sum && typeof sum.total === "number") return sum.total;
-        // fallback to legacy number
-        return jokerCountVal(legacyVal);
-      }
-
-      const cAll = getCount("allColors", js && my ? js[my]?.allColors : null);
-      const cBar = getCount("barricade", js && my ? js[my]?.barricade : null);
-      const cRe  = getCount("reroll",    js && my ? js[my]?.reroll    : null);
-      const cDo  = getCount("double",    js && my ? js[my]?.double    : null);
-
-      // keep state spans existing but set them to pure numbers (optional)
-      if(jokerAllColorsState) jokerAllColorsState.textContent = fmtCount(cAll);
-      if(jokerBarricadeState) jokerBarricadeState.textContent = fmtCount(cBar);
-      if(jokerRerollState) jokerRerollState.textContent = fmtCount(cRe);
-      if(jokerDoubleState) jokerDoubleState.textContent = fmtCount(cDo);
+      if(jokerChooseState) jokerChooseState.textContent = fmtWithOrigin("choose", js && my ? js[my]?.choose : null);
+      if(jokerSumState) jokerSumState.textContent = fmtWithOrigin("sum", js && my ? js[my]?.sum : null);
+      if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColors", js && my ? js[my]?.allColors : null);
+      if(jokerBarricadeState) jokerBarricadeState.textContent = fmtWithOrigin("barricade", js && my ? js[my]?.barricade : null);
+      if(jokerRerollState) jokerRerollState.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
+      if(jokerDoubleState) jokerDoubleState.textContent = fmtWithOrigin("double", js && my ? js[my]?.double : null);
       const rrEl = document.getElementById("jokerRerollState");
-      if(rrEl) rrEl.textContent = fmtCount(cRe);
-
-      // Update buttons: Count badge + disabled when 0
-      function setBtnCount(btn, typeKey, count){
-        if(!btn) return;
-        const c = Math.max(0, Number(count)||0);
-        const badge = btn.querySelector('.j-count[data-jcount="'+typeKey+'"]') || btn.querySelector('.j-count');
-        if(badge) badge.textContent = String(c);
-        btn.disabled = (c <= 0);
-      }
-      setBtnCount(jokerAllColorsBtn, "allColors", cAll);
-      setBtnCount(jokerBarricadeBtn, "barricade", cBar);
-      setBtnCount(jokerRerollBtn, "reroll", cRe);
-      setBtnCount(jokerDoubleBtn, "double", cDo);
+      if(rrEl) rrEl.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
 
 if(actionEffectsState){
         if(!eff){ actionEffectsState.textContent = "–"; }
@@ -1316,16 +1283,6 @@ if(type==="start_spin"){
     startWheelSpin(cols, dur, winner).then(()=>{}).catch(()=>{});
     // While spinning, disable start button to avoid double actions.
     try{ if(startBtn) startBtn.disabled = true; }catch(_e){}
-    // Host finalizes start after the spin (server waits for msg.type==="start")
-    try{
-      if(isMeHost() && !pendingStartFinalize){
-        pendingStartFinalize = true;
-        window.setTimeout(()=>{
-          try{ wsSend({type:"start"}); }catch(_e){}
-          pendingStartFinalize = false;
-        }, dur + 80);
-      }
-    }catch(_e){}
     window.setTimeout(()=>{ try{ updateStartButton(); }catch(_e){} }, dur + 1200);
   }catch(_e){}
   return;
@@ -2609,59 +2566,9 @@ function toast(msg){
 
 
   function draw(){
-    if(!board) return;
+    if(!board||!state) return;
     const rect=canvas.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
-
-    // If we have no state yet (e.g. client waiting for server snapshot),
-    // still render the board so the UI never looks "empty".
-    if(!state){
-      // grid
-      const grid=Math.max(10,(board.ui?.gridSize||20))*view.s;
-      ctx.save();
-      ctx.strokeStyle="rgba(28,36,51,0.75)";
-      ctx.lineWidth=1;
-      const ox=(view.x*view.s)%grid, oy=(view.y*view.s)%grid;
-      for(let x=-ox;x<rect.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rect.height);ctx.stroke();}
-      for(let y=-oy;y<rect.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rect.width,y);ctx.stroke();}
-      ctx.restore();
-
-      // edges
-      ctx.save();
-      ctx.lineWidth=3; ctx.strokeStyle=COLORS.edge;
-      for(const e of board.edges||[]){
-        const a=nodeById.get(String(e[0])), b=nodeById.get(String(e[1]));
-        if(!a||!b||a.kind!=="board"||b.kind!=="board") continue;
-        const sa=worldToScreen(a), sb=worldToScreen(b);
-        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
-      }
-      ctx.restore();
-
-      // nodes
-      const r0=Math.max(16, board.ui?.nodeRadius || 20);
-      for(const n of board.nodes){
-        const s=worldToScreen(n);
-        let fill=COLORS.node;
-        if(n.kind==="board"){
-          if(n.id===goalNodeId) fill=COLORS.goal;
-          else if(n.flags?.startColor) fill=COLORS.node;
-          else if(n.flags?.run) fill=COLORS.run;
-        }else if(n.kind==="house"){
-          fill=COLORS[n.flags?.houseColor]||COLORS.node;
-        }
-        ctx.beginPath(); ctx.fillStyle=fill; ctx.arc(s.x,s.y,r0,0,Math.PI*2); ctx.fill();
-        ctx.lineWidth=3; ctx.strokeStyle=COLORS.stroke; ctx.stroke();
-      }
-
-      // hint text
-      ctx.save();
-      ctx.fillStyle="rgba(230,237,243,0.78)";
-      ctx.font="700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      ctx.textAlign="center";
-      ctx.fillText("Warte auf Spielstand vom Server…", rect.width/2, 34);
-      ctx.restore();
-      return;
-    }
 
     // grid
     const grid=Math.max(10,(board.ui?.gridSize||20))*view.s;
@@ -2890,8 +2797,8 @@ if(selected){
   }
 
   function onPointerDown(ev){
-      const stateReady = !!state;
-      canvas.setPointerCapture(ev.pointerId);
+      if (!state) { return; }
+canvas.setPointerCapture(ev.pointerId);
     const sp=pointerPos(ev);
     // double-tap (or double-click) to auto-fit board (tablet safe)
     const nowTs = Date.now();
@@ -2916,13 +2823,11 @@ if(selected){
     const wp=screenToWorld(sp);
     const hit=hitNode(wp);
 
-    const isMyTurn = (netMode!=="client") || (stateReady && myColor && myColor===state.currentPlayer);
-    const actionBlocked = (netMode==="client") && (!stateReady || !myColor || !isMyTurn);
-    // IMPORTANT: even if actions are blocked (not your turn / no color / waiting for snapshot),
-    // camera controls (pan/zoom) must still work. We only show the hint on a real tap (not drag).
-    onPointerDown._blockedMsg = actionBlocked
-      ? (!stateReady ? "Warte auf Server…" : (!myColor ? "Bitte Farbe wählen" : "Du bist nicht dran"))
-      : "";
+    const isMyTurn = (netMode!=="client") || (myColor && myColor===state.currentPlayer);
+    if(netMode==="client" && (!myColor || !isMyTurn) && (phase==="placing_barricade" || phase==="need_move" || phase==="need_roll")){
+      toast(!myColor ? "Bitte Farbe wählen" : "Du bist nicht dran");
+      return;
+    }
 
 if(phase==="placing_barricade" && hit && hit.kind==="board"){
   // ONLINE: Server entscheidet immer (Host + Client senden)
@@ -2997,22 +2902,8 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     }
   }
   function onPointerUp(ev){
-    // If actions are blocked (not your turn / no color / waiting), we still allow pan/zoom.
-    // Show the hint only on a real tap (no drag).
-    const sp = pointerPos(ev);
-    const blockedMsg = onPointerDown._blockedMsg || "";
-
     if(pointerMap.has(ev.pointerId)) pointerMap.delete(ev.pointerId);
-    if(pointerMap.size===0){
-      let wasTap = false;
-      if(panStart){
-        const dx = sp.x - panStart.sx;
-        const dy = sp.y - panStart.sy;
-        wasTap = (dx*dx + dy*dy) < (10*10);
-      }
-      if(blockedMsg && wasTap){ toast(blockedMsg); }
-      isPanning=false; panStart=null; onPointerMove._pinch=null; saveView();
-    }
+    if(pointerMap.size===0){ isPanning=false; panStart=null; onPointerMove._pinch=null; saveView(); }
   }
 
   canvas.addEventListener("pointerdown", onPointerDown);
@@ -4015,3 +3906,4 @@ function _wheelNext() {
     wsSend({ type:"forfeit", ts:Date.now() });
     toast("Du hast aufgegeben…");
   });
+
