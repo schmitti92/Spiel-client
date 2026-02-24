@@ -503,6 +503,138 @@ let pendingSaveExport = false;
   }
   ensureActionJoker3UI();
 
+  // ===== Epic Joker UI (visual only, keeps IDs/handlers) =====
+  function ensureEpicJokerUI(){
+    try{
+      if(!actionCard) return;
+
+      // 1) CSS (only once)
+      if(!document.getElementById("epicJokerStyles")){
+        const st = document.createElement("style");
+        st.id = "epicJokerStyles";
+        st.textContent = `
+          .epic-jokers{ margin-top:12px; padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:16px;
+            background: radial-gradient(900px 380px at 10% 0%, rgba(255,255,255,.06), rgba(255,255,255,.02) 60%, rgba(0,0,0,0) 100%);
+            box-shadow: 0 18px 50px rgba(0,0,0,.25);
+          }
+          .epic-jokers .title{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px; }
+          .epic-jokers .title b{ font-size:16px; letter-spacing:.2px; }
+          .epic-jokers .title span{ font-size:12px; opacity:.7; }
+          .epic-jokers .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+          @media (min-width: 880px){ .epic-jokers .grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+          .joker-tile{ position:relative; padding:10px; border-radius:16px; border:1px solid rgba(255,255,255,.10);
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+          }
+          .joker-tile .hdr{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+          .joker-tile .name{ font-weight:800; font-size:14px; display:flex; align-items:center; gap:8px; }
+          .joker-tile .badge{ min-width:38px; height:26px; padding:0 10px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center;
+            font-weight:900; letter-spacing:.3px; font-size:13px;
+            background: rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.14);
+          }
+          .joker-tile .origin{ font-size:12px; opacity:.75; min-height:16px; margin-bottom:8px; }
+          .joker-tile .joker-btn{ width:100%; border-radius:14px; padding:12px 12px; font-weight:800; }
+          .joker-tile.off .badge{ opacity:.55; }
+          .joker-tile.off .origin{ opacity:.55; }
+          .joker-tile.off .joker-btn{ opacity:.45; }
+          /* Keep legacy kv rows readable but less dominant */
+          #actionCard .kv{ opacity:.75; }
+        `;
+        document.head.appendChild(st);
+      }
+
+      // 2) Create container once
+      let wrap = document.getElementById("epicJokers");
+      if(!wrap){
+        wrap = document.createElement("div");
+        wrap.id = "epicJokers";
+        wrap.className = "epic-jokers";
+
+        const title = document.createElement("div");
+        title.className = "title";
+        const left = document.createElement("b");
+        left.textContent = "Joker‑Arsenal";
+        const right = document.createElement("span");
+        right.textContent = "4 Powers • ein Klick = nutzen";
+        title.appendChild(left);
+        title.appendChild(right);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        wrap.appendChild(title);
+        wrap.appendChild(grid);
+
+        // Insert at top of action card (after hint if present)
+        const hint = document.getElementById("actionHint");
+        const anchor = hint ? hint.parentElement : actionCard;
+        if(anchor){
+          // put after hint row if possible
+          if(hint && hint.nextSibling) anchor.insertBefore(wrap, hint.nextSibling);
+          else anchor.insertBefore(wrap, anchor.firstChild);
+        } else {
+          actionCard.insertBefore(wrap, actionCard.firstChild);
+        }
+
+        const mkTile = (key, icon, name, btnId, badgeId, originId) => {
+          const tile = document.createElement("div");
+          tile.className = "joker-tile";
+          tile.dataset.jkey = key;
+
+          const hdr = document.createElement("div");
+          hdr.className = "hdr";
+
+          const nm = document.createElement("div");
+          nm.className = "name";
+          nm.textContent = icon + " " + name;
+
+          const badge = document.createElement("div");
+          badge.className = "badge";
+          badge.id = badgeId;
+          badge.textContent = "0";
+
+          hdr.appendChild(nm);
+          hdr.appendChild(badge);
+
+          const origin = document.createElement("div");
+          origin.className = "origin";
+          origin.id = originId;
+          origin.textContent = "–";
+
+          tile.appendChild(hdr);
+          tile.appendChild(origin);
+
+          // Move existing button into tile (keeps handlers/ids)
+          let btn = document.getElementById(btnId);
+          if(!btn){
+            btn = document.createElement("button");
+            btn.id = btnId;
+            btn.className = "joker-btn";
+            btn.type = "button";
+            btn.textContent = icon + " " + name + " nutzen";
+          }else{
+            // ensure class for consistent styling
+            btn.classList.add("joker-btn");
+          }
+          btn.textContent = icon + " " + name + " nutzen";
+          tile.appendChild(btn);
+
+          grid.appendChild(tile);
+        };
+
+        mkTile("allColors", "🌈", "Alle Farben", "jokerAllColorsBtn", "jokerAllColorsBadge", "jokerAllColorsOrigin");
+        mkTile("barricade", "🧱", "Barikade",   "jokerBarricadeBtn", "jokerBarricadeBadge", "jokerBarricadeOrigin");
+        mkTile("reroll",   "🔁", "Neu‑Wurf",   "jokerRerollBtn", "jokerRerollBadge", "jokerRerollOrigin");
+        mkTile("double",   "🎲🎲", "Doppelwurf", "jokerDoubleBtn", "jokerDoubleBadge", "jokerDoubleOrigin");
+      }
+
+      // 3) De-emphasize old grid (kept for fallback/IDs)
+      const oldGrid = actionCard.querySelector(".joker-grid");
+      if(oldGrid) oldGrid.style.display = "none";
+    }catch(_e){}
+  }
+  try{ ensureEpicJokerUI(); }catch(_e){}
+
+
   // ===== Epic Joker UI (visual only, NO gameplay changes) =====
   // Ziel: 4 klare Buttons (Name + Anzahl), weniger Text, nicht verwirrend.
   // WICHTIG: Wir bewegen nur DOM-Elemente & stylen sie. IDs/Clicks bleiben gleich.
@@ -1216,6 +1348,40 @@ if(jokerChooseState) jokerChooseState.textContent = fmtWithOrigin("choose", js &
       if(jokerDoubleState) jokerDoubleState.textContent = fmtWithOrigin("double", js && my ? js[my]?.double : null);
       const rrEl = document.getElementById("jokerRerollState");
       if(rrEl) rrEl.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
+
+      // --- Epic Joker tiles (visual, no logic change) ---
+      function setEpic(typeKey, legacyVal, badgeId, originId, tileKey){
+        try{
+          const badge = document.getElementById(badgeId);
+          const origin = document.getElementById(originId);
+          const tile = actionCard ? actionCard.querySelector('.joker-tile[data-jkey="'+tileKey+'"]') : null;
+
+          const sum = ownedSummary(typeKey);
+          let total = 0;
+          let originStr = "–";
+          if(sum){
+            total = sum.total || 0;
+            const keys = Object.keys(sum.by||{}).filter(k => (sum.by||{})[k]>0).sort();
+            originStr = keys.length ? keys.map(k => `${colorLabel(k)}×${sum.by[k]}`).join(", ") : "–";
+          }else{
+            total = jokerCountVal(legacyVal);
+            originStr = (total>0 && my) ? colorLabel(my) : "–";
+          }
+
+          if(badge) badge.textContent = String(total);
+          if(origin) origin.textContent = originStr;
+
+          if(tile){
+            tile.classList.toggle("off", !(total>0));
+          }
+        }catch(_e){}
+      }
+
+      setEpic("allColors", js && my ? js[my]?.allColors : null, "jokerAllColorsBadge", "jokerAllColorsOrigin", "allColors");
+      setEpic("barricade", js && my ? js[my]?.barricade : null, "jokerBarricadeBadge", "jokerBarricadeOrigin", "barricade");
+      setEpic("reroll",   js && my ? js[my]?.reroll   : null, "jokerRerollBadge",   "jokerRerollOrigin",   "reroll");
+      setEpic("double",   js && my ? js[my]?.double   : null, "jokerDoubleBadge",   "jokerDoubleOrigin",   "double");
+
 
 if(actionEffectsState){
         if(!eff){ actionEffectsState.textContent = "–"; }
