@@ -120,10 +120,19 @@
         <div class="kv"><span>🔁 Neu-Wurf</span><span id="jokerRerollState">–</span></div>
         <div class="kv"><span>✨ Effekte</span><span id="actionEffectsState">–</span></div>
 
-        <div class="joker-grid">
-          <button id="jokerAllColorsBtn" class="joker-btn" type="button">🌈 Alle Farben nutzen</button>
-          <button id="jokerBarricadeBtn" class="joker-btn" type="button">🧱 Barikade nutzen</button>
-          <!-- reroll/double Buttons werden von game.js additiv injiziert -->
+                <div class="joker-grid joker-grid-4">
+          <button id="jokerAllColorsBtn" class="joker-btn joker-power" type="button">
+            <span class="j-ico">🌈</span><span class="j-name">Alle Farben</span><span class="j-count" data-jcount="allColors">0</span>
+          </button>
+          <button id="jokerBarricadeBtn" class="joker-btn joker-power" type="button">
+            <span class="j-ico">🧱</span><span class="j-name">Barikade</span><span class="j-count" data-jcount="barricade">0</span>
+          </button>
+          <button id="jokerRerollBtn" class="joker-btn joker-power" type="button">
+            <span class="j-ico">🔁</span><span class="j-name">Neu‑Wurf</span><span class="j-count" data-jcount="reroll">0</span>
+          </button>
+          <button id="jokerDoubleBtn" class="joker-btn joker-power" type="button">
+            <span class="j-ico">🎲🎲</span><span class="j-name">Doppelwurf</span><span class="j-count" data-jcount="double">0</span>
+          </button>
         </div>
       </div>
 
