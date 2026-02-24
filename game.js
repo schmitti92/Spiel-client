@@ -73,12 +73,17 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
     const el = document.getElementById('debugLog');
     if(el){
       try{
-        el.textContent += args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' ') + "\n";
+        el.textContent += args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' ') + "
+";
         el.scrollTop = el.scrollHeight;
       }catch(_e){}
     }
   }
 
+
+  // ===== Pending flags (prevent ReferenceErrors) =====
+  let pendingSaveExport = false;
+  let pendingStartFinalize = false;
 
   // ===== UI refs =====
   const canvas = $("c");
@@ -1311,6 +1316,16 @@ if(type==="start_spin"){
     startWheelSpin(cols, dur, winner).then(()=>{}).catch(()=>{});
     // While spinning, disable start button to avoid double actions.
     try{ if(startBtn) startBtn.disabled = true; }catch(_e){}
+    // Host finalizes start after the spin (server waits for msg.type==="start")
+    try{
+      if(isMeHost() && !pendingStartFinalize){
+        pendingStartFinalize = true;
+        window.setTimeout(()=>{
+          try{ wsSend({type:"start"}); }catch(_e){}
+          pendingStartFinalize = false;
+        }, dur + 80);
+      }
+    }catch(_e){}
     window.setTimeout(()=>{ try{ updateStartButton(); }catch(_e){} }, dur + 1200);
   }catch(_e){}
   return;
