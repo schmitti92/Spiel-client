@@ -666,9 +666,6 @@ ensureActionJoker3UI();
 
   const AUTO_CENTER_ALWAYS = true; // immer beim Start zentrieren (überschreibt gespeicherte Ansicht)
   let pointerMap=new Map(), isPanning=false, panStart=null;
-  // Tablet/Client UX: Auch wenn man NICHT dran ist, soll Zoomen/Verschieben immer gehen.
-  // Wir blockieren nur Gameplay-Aktionen (Move/Barricade/Roll), nicht die Kamera.
-  let lockTap = null; // { id, x, y, ts }
 
   // ===== View persistence (Tablet-safe) =====
   const VIEW_KEY = "barikade_view_v2";
@@ -2687,7 +2684,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       }
     }
 
-    if(phase==="placing_barricade"){
+    if(!actionLocked && phase==="placing_barricade"){
       ctx.save();
       ctx.lineWidth=6;
       ctx.strokeStyle="rgba(255,209,102,0.9)";
@@ -2855,13 +2852,24 @@ canvas.setPointerCapture(ev.pointerId);
     const hit=hitNode(wp);
 
     const isMyTurn = (netMode!=="client") || (myColor && myColor===state.currentPlayer);
-    const inputLocked = (netMode==="client" && (!myColor || !isMyTurn) && (phase==="placing_barricade" || phase==="need_move" || phase==="need_roll"));
-    // Wenn inputLocked: Kamera (Pan/Zoom) bleibt aktiv. Hinweis kommt nur bei echtem Tap (onPointerUp).
-    if(inputLocked){
-      lockTap = { id: ev.pointerId, x: sp.x, y: sp.y, ts: Date.now() };
+
+    // FIX (Tablet/UX): Board-Pan/Zoom IMMER erlauben (auch wenn du nicht dran bist).
+    // Gameplay-Aktionen (ziehen, Barikade platzieren, Auswahl) bleiben gesperrt,
+    // aber Kamera/Ansicht soll frei bleiben.
+    const actionLocked = (netMode==="client" && (!myColor || !isMyTurn) &&
+      (phase==="placing_barricade" || phase==="need_move" || phase==="need_roll"));
+    if(actionLocked){
+      // Merke mögliche Info-Nachricht, aber unterdrücke beim Drag.
+      onPointerDown._lockInfo = {
+        x: sp.x, y: sp.y,
+        msg: (!myColor ? "Bitte Farbe wählen" : "Du bist nicht dran")
+      };
+    } else {
+      onPointerDown._lockInfo = null;
     }
 
-if(!inputLocked && phase==="placing_barricade" && hit && hit.kind==="board"){
+
+if(phase==="placing_barricade" && hit && hit.kind==="board"){
   // ONLINE: Server entscheidet immer (Host + Client senden)
   if(netMode!=="offline"){
     wsSend({type:"place_barricade", nodeId: hit.id, ts:Date.now()});
@@ -2876,11 +2884,11 @@ if(!inputLocked && phase==="placing_barricade" && hit && hit.kind==="board"){
     // IMPORTANT: In 'need_roll' (vor dem Würfeln) müssen Klicks ebenfalls
     // ausgewertet werden, sonst funktionieren Action-Mode Joker (z.B. Barikade)
     // nicht, weil der Click-Handler bisher nur in 'need_move' aktiv war.
-    if(!inputLocked && phase==="need_roll"){
+    if(!actionLocked && phase==="need_roll"){
       if(trySelectAtNode(hit)) { draw(); return; }
     }
 
-    if(!inputLocked && phase==="need_move"){
+    if(!actionLocked && phase==="need_move"){
       if(trySelectAtNode(hit)) { draw(); return; }
       if(selected && hit && hit.kind==="board"){
         if(netMode!=="offline"){
@@ -2934,25 +2942,19 @@ if(!inputLocked && phase==="placing_barricade" && hit && hit.kind==="board"){
     }
   }
   function onPointerUp(ev){
-    if(pointerMap.has(ev.pointerId)) pointerMap.delete(ev.pointerId);
-    // Wenn der Nutzer nicht dran ist: Hinweis nur bei Tap (damit Drag/Pan nicht nervt)
-    if(lockTap && lockTap.id===ev.pointerId){
-      const moved = (() => {
-        try{
-          const r = canvas.getBoundingClientRect();
-          const x = (typeof ev.clientX === 'number') ? (ev.clientX - r.left) : lockTap.x;
-          const y = (typeof ev.clientY === 'number') ? (ev.clientY - r.top)  : lockTap.y;
-          return Math.hypot(x - lockTap.x, y - lockTap.y);
-        }catch(_e){
-          return 0;
+    // If actions are locked (not your turn), only show info when it was a TAP (not a DRAG).
+    try{
+      const li = onPointerDown._lockInfo;
+      if(li && pointerMap.size===1 && pointerMap.has(ev.pointerId)){
+        const cur = pointerMap.get(ev.pointerId);
+        const dx = (cur.x - li.x), dy = (cur.y - li.y);
+        if((dx*dx + dy*dy) < (18*18)){
+          toast(li.msg);
         }
-      })();
-      const dt = Date.now() - lockTap.ts;
-      if(moved < 10 && dt < 700){
-        toast(!myColor ? "Bitte Farbe wählen" : "Du bist nicht dran");
       }
-      lockTap = null;
-    }
+    }catch(_e){}
+
+    if(pointerMap.has(ev.pointerId)) pointerMap.delete(ev.pointerId);
     if(pointerMap.size===0){ isPanning=false; panStart=null; onPointerMove._pinch=null; saveView(); }
   }
 
