@@ -2594,9 +2594,59 @@ function toast(msg){
 
 
   function draw(){
-    if(!board||!state) return;
+    if(!board) return;
     const rect=canvas.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
+
+    // If we have no state yet (e.g. client waiting for server snapshot),
+    // still render the board so the UI never looks "empty".
+    if(!state){
+      // grid
+      const grid=Math.max(10,(board.ui?.gridSize||20))*view.s;
+      ctx.save();
+      ctx.strokeStyle="rgba(28,36,51,0.75)";
+      ctx.lineWidth=1;
+      const ox=(view.x*view.s)%grid, oy=(view.y*view.s)%grid;
+      for(let x=-ox;x<rect.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rect.height);ctx.stroke();}
+      for(let y=-oy;y<rect.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rect.width,y);ctx.stroke();}
+      ctx.restore();
+
+      // edges
+      ctx.save();
+      ctx.lineWidth=3; ctx.strokeStyle=COLORS.edge;
+      for(const e of board.edges||[]){
+        const a=nodeById.get(String(e[0])), b=nodeById.get(String(e[1]));
+        if(!a||!b||a.kind!=="board"||b.kind!=="board") continue;
+        const sa=worldToScreen(a), sb=worldToScreen(b);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+      }
+      ctx.restore();
+
+      // nodes
+      const r0=Math.max(16, board.ui?.nodeRadius || 20);
+      for(const n of board.nodes){
+        const s=worldToScreen(n);
+        let fill=COLORS.node;
+        if(n.kind==="board"){
+          if(n.id===goalNodeId) fill=COLORS.goal;
+          else if(n.flags?.startColor) fill=COLORS.node;
+          else if(n.flags?.run) fill=COLORS.run;
+        }else if(n.kind==="house"){
+          fill=COLORS[n.flags?.houseColor]||COLORS.node;
+        }
+        ctx.beginPath(); ctx.fillStyle=fill; ctx.arc(s.x,s.y,r0,0,Math.PI*2); ctx.fill();
+        ctx.lineWidth=3; ctx.strokeStyle=COLORS.stroke; ctx.stroke();
+      }
+
+      // hint text
+      ctx.save();
+      ctx.fillStyle="rgba(230,237,243,0.78)";
+      ctx.font="700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign="center";
+      ctx.fillText("Warte auf Spielstand vom Server…", rect.width/2, 34);
+      ctx.restore();
+      return;
+    }
 
     // grid
     const grid=Math.max(10,(board.ui?.gridSize||20))*view.s;
@@ -2684,7 +2734,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       }
     }
 
-    if(!actionLocked && phase==="placing_barricade"){
+    if(phase==="placing_barricade"){
       ctx.save();
       ctx.lineWidth=6;
       ctx.strokeStyle="rgba(255,209,102,0.9)";
@@ -2825,8 +2875,8 @@ if(selected){
   }
 
   function onPointerDown(ev){
-      if (!state) { return; }
-canvas.setPointerCapture(ev.pointerId);
+      const stateReady = !!state;
+      canvas.setPointerCapture(ev.pointerId);
     const sp=pointerPos(ev);
     // double-tap (or double-click) to auto-fit board (tablet safe)
     const nowTs = Date.now();
@@ -2851,23 +2901,13 @@ canvas.setPointerCapture(ev.pointerId);
     const wp=screenToWorld(sp);
     const hit=hitNode(wp);
 
-    const isMyTurn = (netMode!=="client") || (myColor && myColor===state.currentPlayer);
-
-    // FIX (Tablet/UX): Board-Pan/Zoom IMMER erlauben (auch wenn du nicht dran bist).
-    // Gameplay-Aktionen (ziehen, Barikade platzieren, Auswahl) bleiben gesperrt,
-    // aber Kamera/Ansicht soll frei bleiben.
-    const actionLocked = (netMode==="client" && (!myColor || !isMyTurn) &&
-      (phase==="placing_barricade" || phase==="need_move" || phase==="need_roll"));
-    if(actionLocked){
-      // Merke mögliche Info-Nachricht, aber unterdrücke beim Drag.
-      onPointerDown._lockInfo = {
-        x: sp.x, y: sp.y,
-        msg: (!myColor ? "Bitte Farbe wählen" : "Du bist nicht dran")
-      };
-    } else {
-      onPointerDown._lockInfo = null;
-    }
-
+    const isMyTurn = (netMode!=="client") || (stateReady && myColor && myColor===state.currentPlayer);
+    const actionBlocked = (netMode==="client") && (!stateReady || !myColor || !isMyTurn);
+    // IMPORTANT: even if actions are blocked (not your turn / no color / waiting for snapshot),
+    // camera controls (pan/zoom) must still work. We only show the hint on a real tap (not drag).
+    onPointerDown._blockedMsg = actionBlocked
+      ? (!stateReady ? "Warte auf Server…" : (!myColor ? "Bitte Farbe wählen" : "Du bist nicht dran"))
+      : "";
 
 if(phase==="placing_barricade" && hit && hit.kind==="board"){
   // ONLINE: Server entscheidet immer (Host + Client senden)
@@ -2884,11 +2924,11 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     // IMPORTANT: In 'need_roll' (vor dem Würfeln) müssen Klicks ebenfalls
     // ausgewertet werden, sonst funktionieren Action-Mode Joker (z.B. Barikade)
     // nicht, weil der Click-Handler bisher nur in 'need_move' aktiv war.
-    if(!actionLocked && phase==="need_roll"){
+    if(phase==="need_roll"){
       if(trySelectAtNode(hit)) { draw(); return; }
     }
 
-    if(!actionLocked && phase==="need_move"){
+    if(phase==="need_move"){
       if(trySelectAtNode(hit)) { draw(); return; }
       if(selected && hit && hit.kind==="board"){
         if(netMode!=="offline"){
@@ -2942,20 +2982,22 @@ if(phase==="placing_barricade" && hit && hit.kind==="board"){
     }
   }
   function onPointerUp(ev){
-    // If actions are locked (not your turn), only show info when it was a TAP (not a DRAG).
-    try{
-      const li = onPointerDown._lockInfo;
-      if(li && pointerMap.size===1 && pointerMap.has(ev.pointerId)){
-        const cur = pointerMap.get(ev.pointerId);
-        const dx = (cur.x - li.x), dy = (cur.y - li.y);
-        if((dx*dx + dy*dy) < (18*18)){
-          toast(li.msg);
-        }
-      }
-    }catch(_e){}
+    // If actions are blocked (not your turn / no color / waiting), we still allow pan/zoom.
+    // Show the hint only on a real tap (no drag).
+    const sp = pointerPos(ev);
+    const blockedMsg = onPointerDown._blockedMsg || "";
 
     if(pointerMap.has(ev.pointerId)) pointerMap.delete(ev.pointerId);
-    if(pointerMap.size===0){ isPanning=false; panStart=null; onPointerMove._pinch=null; saveView(); }
+    if(pointerMap.size===0){
+      let wasTap = false;
+      if(panStart){
+        const dx = sp.x - panStart.sx;
+        const dy = sp.y - panStart.sy;
+        wasTap = (dx*dx + dy*dy) < (10*10);
+      }
+      if(blockedMsg && wasTap){ toast(blockedMsg); }
+      isPanning=false; panStart=null; onPointerMove._pinch=null; saveView();
+    }
   }
 
   canvas.addEventListener("pointerdown", onPointerDown);
