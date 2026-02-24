@@ -122,7 +122,7 @@
 
       <div class="card">
         <h2 style="margin:0 0 10px 0; font-size:16px">Barikade‑Statistik</h2>
-        <div class="hint" style="margin-bottom:10px">Layout steht schon. Firebase‑Anbindung für echte Werte machen wir als nächsten Schritt, ohne die Spielfunktionen anzutasten.</div>
+        <div class="hint" style="margin-bottom:10px">Live‑Statistik (aus Firebase). „Gast“ wird nicht gezählt. Aktualisiert sich automatisch.</div>
         <table>
           <thead>
             <tr>
@@ -134,9 +134,7 @@
             </tr>
           </thead>
           <tbody id="statsBody">
-            <tr><td>David</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
-            <tr><td>Vanessa</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
-            <tr><td>Christoph</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td colspan="5" style="color:rgba(255,255,255,.65)">Lade…</td></tr>
           </tbody>
         </table>
         <div class="hint" style="margin-top:10px">
@@ -253,6 +251,7 @@ document.querySelectorAll('.names [data-name]').forEach(btn=>{
       // refresh presence quickly
       const p = await fetchPresence();
       renderPresence(p);
+    refreshStats();
       return;
     }
 
@@ -268,6 +267,7 @@ document.querySelectorAll('.names [data-name]').forEach(btn=>{
 let presenceTimer = null;
 function startPresencePoll(){
   if(presenceTimer) return;
+  refreshStats();
   presenceTimer = setInterval(async ()=>{
     const rc = normRoom(roomInp.value);
     if(!rc) return;
@@ -383,6 +383,50 @@ function startPresencePoll(){
         });
       });
     })();
-  </script>
+  
+
+// ---------- Stats ----------
+function fmtTime(ms){
+  ms = Math.max(0, Number(ms||0)||0);
+  const s = Math.floor(ms/1000);
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  const mm = String(m).padStart(2,"0");
+  return h ? `${h}h ${mm}m` : `${m}m`;
+}
+function fmtAvg(v){
+  const n = Number(v||0)||0;
+  return n ? n.toFixed(2) : "–";
+}
+async function refreshStats(){
+  try{
+    const r = await fetch(`${HTTP_BASE}/stats`, { cache:"no-store" });
+    const j = await r.json();
+    const body = $("statsBody");
+    if(!body) return;
+    const rows = Array.isArray(j?.rows) ? j.rows : [];
+    if(!rows.length){
+      body.innerHTML = `<tr><td colspan="5" style="color:rgba(255,255,255,.65)">Noch keine Statistik (oder Firebase offline).</td></tr>`;
+      return;
+    }
+    // Sort: wins desc, games desc (server already does, but keep stable)
+    rows.sort((a,b)=> (b.wins-b.games*0) - (a.wins-a.games*0));
+    body.innerHTML = rows.slice(0,50).map(x => {
+      const name = String(x.name||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return `<tr>
+        <td>${name}</td>
+        <td>${Number(x.games||0)||0}</td>
+        <td>${Number(x.wins||0)||0}</td>
+        <td>${(Number(x.avgRoll||0)||0) ? (Number(x.avgRoll||0)||0).toFixed(2) : "–"}</td>
+        <td>${fmtTime(x.playMs||0)}</td>
+      </tr>`;
+    }).join("");
+  }catch(_e){
+    const body = $("statsBody");
+    if(body) body.innerHTML = `<tr><td colspan="5" style="color:rgba(255,255,255,.65)">Statistik gerade nicht erreichbar.</td></tr>`;
+  }
+}
+
+</script>
 </body>
 </html>
