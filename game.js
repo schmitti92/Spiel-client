@@ -455,50 +455,52 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   }
 
 // ===== Joker #3: Neu-Wurf (UI inject, additive) =====
-  function ensureActionJoker3UI(){
-    try{
-      if(!actionCard) return;
-      try{ ensureActionJoker3UI(); }catch(_e){}
+function ensureActionJoker3UI(){
+  try{
+    if(!actionCard) return;
 
-      // Add status row if missing
-      if(!document.getElementById("jokerRerollState")){
-        const row = document.createElement("div");
-        row.className = "kv";
-        const left = document.createElement("span");
-        left.textContent = "🔁 Neu‑Wurf";
-        const right = document.createElement("span");
-        right.id = "jokerRerollState";
-        right.textContent = "–";
-        row.appendChild(left);
-        row.appendChild(right);
+    // Add status row if missing
+    if(!document.getElementById("jokerRerollState")){
+      const row = document.createElement("div");
+      row.className = "kv";
 
-        const afterSpan = document.getElementById("jokerBarricadeState");
-        const afterKv = afterSpan ? afterSpan.closest(".kv") : null;
-        if(afterKv && afterKv.parentElement){
-          afterKv.parentElement.insertBefore(row, afterKv.nextSibling);
-        } else {
-          actionCard.appendChild(row);
-        }
+      const left = document.createElement("span");
+      left.textContent = "🔁 Neu-Wurf";
+
+      const right = document.createElement("span");
+      right.id = "jokerRerollState";
+      right.textContent = "–";
+
+      row.appendChild(left);
+      row.appendChild(right);
+
+      const afterSpan = document.getElementById("jokerBarricadeState");
+      const afterKv = afterSpan ? afterSpan.closest(".kv") : null;
+
+      if(afterKv && afterKv.parentElement){
+        afterKv.parentElement.insertBefore(row, afterKv.nextSibling);
+      }else{
+        actionCard.appendChild(row);
       }
+    }
 
-      // Add button if missing
-      if(!document.getElementById("jokerRerollBtn")){
-        const grid = actionCard.querySelector(".joker-grid");
-        if(grid){
-          const btn = document.createElement("button");
-          btn.id = "jokerRerollBtn";
-          btn.className = "joker-btn";
-          btn.type = "button";
-          btn.textContent = "🔁 Neu‑Wurf nutzen";
-          grid.appendChild(btn);
-        }
+    // Add button if missing
+    if(!document.getElementById("jokerRerollBtn")){
+      const grid = actionCard.querySelector(".joker-grid");
+      if(grid){
+        const btn = document.createElement("button");
+        btn.id = "jokerRerollBtn";
+        btn.className = "joker-btn";
+        btn.type = "button";
+        btn.textContent = "🔁 Neu-Wurf nutzen";
+        grid.appendChild(btn);
       }
+    }
 
-      // refresh local ref
-      jokerRerollBtn = document.getElementById("jokerRerollBtn");
-    }catch(_e){}
-  }
-  ensureActionJoker3UI();
+    // refresh local ref
+    jokerRerollBtn = document.getElementById("jokerRerollBtn");
+  }catch(_e){}
+}
 
 // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
