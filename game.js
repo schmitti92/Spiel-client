@@ -501,7 +501,8 @@ function ensureActionJoker3UI(){
     jokerRerollBtn = document.getElementById("jokerRerollBtn");
   }catch(_e){}
 }
-
+ensureActionJoker3UI();
+  
 // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
   // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
