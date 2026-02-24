@@ -461,7 +461,7 @@ let pendingSaveExport = false;
   function ensureActionJoker3UI(){
     try{
       if(!actionCard) return;
-      try{ ensureActionJoker3UI(); }catch(_e){}
+      // (fixed) no self-recursion
 
       // Add status row if missing
       if(!document.getElementById("jokerRerollState")){
@@ -502,6 +502,172 @@ let pendingSaveExport = false;
     }catch(_e){}
   }
   ensureActionJoker3UI();
+
+  // ===== Epic Joker UI (visual only, NO gameplay changes) =====
+  // Ziel: 4 klare Buttons (Name + Anzahl), weniger Text, nicht verwirrend.
+  // WICHTIG: Wir bewegen nur DOM-Elemente & stylen sie. IDs/Clicks bleiben gleich.
+  function ensureEpicJokerUI(){
+    try{
+      if(!actionCard) return;
+
+      // 1) Inject styles once
+      if(!document.getElementById("epicJokerStyles")){
+        const st = document.createElement("style");
+        st.id = "epicJokerStyles";
+        st.textContent = `
+          /* Epic Joker Grid */
+          #actionCard .epicJokerGrid{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:10px;
+            margin-top:10px;
+          }
+          #actionCard .epicJokerBtn{
+            position:relative;
+            display:flex;
+            align-items:center;
+            justify-content:flex-start;
+            gap:10px;
+            padding:12px 12px;
+            border-radius:14px;
+            border:1px solid rgba(255,255,255,.10);
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+            box-shadow: 0 10px 22px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+            cursor:pointer;
+            user-select:none;
+            transform: translateZ(0);
+            transition: transform .12s ease, filter .12s ease, border-color .12s ease;
+            min-height:54px;
+            text-align:left;
+            width:100%;
+          }
+          #actionCard .epicJokerBtn:hover{
+            transform: translateY(-1px) scale(1.01);
+            border-color: rgba(255,255,255,.18);
+            filter: brightness(1.05);
+          }
+          #actionCard .epicJokerBtn:active{
+            transform: translateY(0px) scale(.995);
+            filter: brightness(.98);
+          }
+          #actionCard .epicJokerBtn .ejIcon{
+            width:36px; height:36px;
+            display:grid; place-items:center;
+            border-radius:12px;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.18), rgba(255,255,255,.05) 60%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+            font-size:18px;
+          }
+          #actionCard .epicJokerBtn .ejName{
+            font-weight:900;
+            letter-spacing:.2px;
+            font-size:14px;
+            line-height:1.05;
+          }
+          #actionCard .epicJokerBtn .ejSub{
+            display:block;
+            opacity:.75;
+            font-weight:700;
+            font-size:11px;
+            margin-top:2px;
+          }
+          #actionCard .epicJokerBtn .ejCount{
+            margin-left:auto;
+            font-weight:1000;
+            padding:6px 10px;
+            border-radius:999px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+            min-width:44px;
+            text-align:center;
+          }
+          #actionCard .epicJokerBtn.ejEmpty{
+            opacity:.45;
+            filter: grayscale(.35);
+          }
+
+          /* Hide verbose legacy rows */
+          #actionCard .kv.ejHideRow{ display:none !important; }
+          /* If old .joker-grid exists, hide it (we re-home buttons) */
+          #actionCard .joker-grid.ejOldGridHidden{ display:none !important; }
+        `;
+        document.head.appendChild(st);
+      }
+
+      // 2) Hide verbose state rows (we show counts on buttons instead)
+      const hideIds = ["jokerAllColorsState","jokerBarricadeState","jokerRerollState","jokerDoubleState","jokerChooseState","jokerSumState"];
+      hideIds.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        const row = el.closest(".kv") || el.closest("div") || el.parentElement;
+        if(row) row.classList.add("ejHideRow");
+      });
+
+      // 3) Create epic grid container once
+      let grid = document.getElementById("epicJokerGrid");
+      if(!grid){
+        grid = document.createElement("div");
+        grid.id = "epicJokerGrid";
+        grid.className = "epicJokerGrid";
+        // Insert near the bottom but above effects / below hint
+        // Prefer: after actionHint
+        if(actionHint && actionHint.parentElement){
+          const parent = actionHint.parentElement;
+          // try to place after hint text node
+          parent.insertBefore(grid, actionHint.nextSibling);
+        }else{
+          actionCard.appendChild(grid);
+        }
+      }
+
+      // 4) Ensure we have references to all 4 buttons
+      const bAll = document.getElementById("jokerAllColorsBtn");
+      const bBar = document.getElementById("jokerBarricadeBtn");
+      const bRe  = document.getElementById("jokerRerollBtn");
+      const bDo  = document.getElementById("jokerDoubleBtn");
+
+      // If old grid exists, hide it to reduce clutter
+      const oldGrid = actionCard.querySelector(".joker-grid");
+      if(oldGrid) oldGrid.classList.add("ejOldGridHidden");
+
+      function makeEpic(btn, key, icon, name, sub){
+        if(!btn) return;
+        btn.classList.add("epicJokerBtn");
+        btn.dataset.jokerKey = key;
+
+        // Build layout once
+        if(!btn.querySelector(".ejIcon")){
+          btn.innerHTML = `
+            <span class="ejIcon">${icon}</span>
+            <span class="ejText">
+              <span class="ejName">${name}</span>
+              <span class="ejSub">${sub||""}</span>
+            </span>
+            <span class="ejCount" id="ejCount_${key}">x0</span>
+          `;
+        }else{
+          // ensure count id exists
+          const c = btn.querySelector(".ejCount");
+          if(c && !c.id) c.id = `ejCount_${key}`;
+        }
+
+        // Move into epic grid (keeps click listeners)
+        if(btn.parentElement !== grid){
+          grid.appendChild(btn);
+        }
+      }
+
+      makeEpic(bAll, "allColors", "🌈", "Alle Farben", "alle Farben nutzbar");
+      makeEpic(bBar, "barricade", "🧱", "Barikade", "Barikade versetzen");
+      makeEpic(bRe,  "reroll",   "🔁", "Neu‑Wurf", "würfle nochmal");
+      makeEpic(bDo,  "double",   "🎲", "Doppelwurf", "2 Würfel zählen");
+
+    }catch(_e){}
+  }
+  // run once on load (safe if elements appear later)
+  try{ ensureEpicJokerUI(); }catch(_e){}
+
 
 // Color picker (A1.1)
   // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
@@ -1008,7 +1174,41 @@ let pendingSaveExport = false;
         return my ? `${base} (${colorLabel(my)})` : base;
       }
 
-      if(jokerChooseState) jokerChooseState.textContent = fmtWithOrigin("choose", js && my ? js[my]?.choose : null);
+      
+      // Epic Joker Buttons: counts directly on buttons (visual only)
+      try{ ensureEpicJokerUI(); }catch(_e){}
+      function setEpicBadge(key, cnt){
+        try{
+          const el = document.getElementById(`ejCount_${key}`);
+          const btn = actionCard ? actionCard.querySelector(`#joker${key==="allColors"?"AllColors":key==="barricade"?"Barricade":key==="reroll"?"Reroll":"Double"}Btn`) : null;
+          if(el) el.textContent = `x${Math.max(0, cnt|0)}`;
+          // mark empty visually, but DO NOT disable (no gameplay change)
+          const b = document.querySelector(`#joker${key==="allColors"?"AllColors":key==="barricade"?"Barricade":key==="reroll"?"Reroll":"Double"}Btn`);
+          if(b){
+            b.classList.toggle("ejEmpty", !(cnt>0));
+            // add tooltip with full legacy/origin info for power users (no clutter)
+            try{
+              const legacyVal = js && my ? js[my]?.[key] : null;
+              b.title = fmtWithOrigin(key, legacyVal);
+            }catch(_e){}
+          }
+        }catch(_e){}
+      }
+
+      function countFor(typeKey){
+        const sum = ownedSummary(typeKey);
+        if(sum) return sum.total||0;
+        // fallback to legacy counts in jokersByColor
+        const legacyVal = js && my ? js[my]?.[typeKey] : null;
+        return jokerCountVal(legacyVal);
+      }
+
+      setEpicBadge("allColors", countFor("allColors"));
+      setEpicBadge("barricade", countFor("barricade"));
+      setEpicBadge("reroll", countFor("reroll"));
+      setEpicBadge("double", countFor("double"));
+
+if(jokerChooseState) jokerChooseState.textContent = fmtWithOrigin("choose", js && my ? js[my]?.choose : null);
       if(jokerSumState) jokerSumState.textContent = fmtWithOrigin("sum", js && my ? js[my]?.sum : null);
       if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColors", js && my ? js[my]?.allColors : null);
       if(jokerBarricadeState) jokerBarricadeState.textContent = fmtWithOrigin("barricade", js && my ? js[my]?.barricade : null);
