@@ -1284,6 +1284,33 @@ if(type==="start_spin"){
     const winner = String(msg.starterColor || "").toLowerCase().trim();
     // Run the same wheel animation on ALL clients, but with the server-chosen winner.
     startWheelSpin(cols, dur, winner).then(()=>{}).catch(()=>{});
+
+// IMPORTANT: In the current server protocol, 'start_request' only triggers the spin.
+// The actual game state is created ONLY after the host sends a follow-up {type:'start'}.
+// To make this reliable (mobile timers, focus changes, etc.), auto-send 'start'
+// from the host once the spin duration has elapsed.
+try{
+  if(netMode === "host"){
+    // Guard against double-starts / repeated spins.
+    window.__pendingHostStartAfterSpin = {
+      at: Date.now(),
+      dur,
+      starterColor: winner,
+      mode: String(msg.mode || _pendingStartMode || (actionModeToggle && actionModeToggle.checked ? "action" : "classic") || "classic")
+    };
+    window.setTimeout(()=>{
+      try{
+        // If we already started meanwhile, do nothing.
+        if(state && state.started) return;
+        if(!ws || ws.readyState!==1) return;
+        const p = window.__pendingHostStartAfterSpin;
+        if(!p) return;
+        // Send the definitive start to the server (server is truth, will validate again).
+        wsSend({ type:"start", mode: p.mode, ts: Date.now(), starterColor: p.starterColor, startJokers: _START_JOKER_COUNTS });
+      }catch(_e){}
+    }, dur + 60);
+  }
+}catch(_e){}
     // While spinning, disable start button to avoid double actions.
     try{ if(startBtn) startBtn.disabled = true; }catch(_e){}
     window.setTimeout(()=>{ try{ updateStartButton(); }catch(_e){} }, dur + 1200);
