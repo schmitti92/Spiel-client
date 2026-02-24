@@ -981,9 +981,9 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         }catch(_e){ return null; }
       }
 
-      function fmtCount(total){
-        if(total<=0) return "verbraucht";
-        return `bereit (x${total})`;
+      function fmtCount(total){ return String(Math.max(0, Number(total)||0)); }
+
+)`;
       }
 
       function fmtWithOrigin(typeKey, legacyVal){
@@ -1005,14 +1005,39 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
         return my ? `${base} (${colorLabel(my)})` : base;
       }
 
-      if(jokerChooseState) jokerChooseState.textContent = fmtWithOrigin("choose", js && my ? js[my]?.choose : null);
-      if(jokerSumState) jokerSumState.textContent = fmtWithOrigin("sum", js && my ? js[my]?.sum : null);
-      if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColors", js && my ? js[my]?.allColors : null);
-      if(jokerBarricadeState) jokerBarricadeState.textContent = fmtWithOrigin("barricade", js && my ? js[my]?.barricade : null);
-      if(jokerRerollState) jokerRerollState.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
-      if(jokerDoubleState) jokerDoubleState.textContent = fmtWithOrigin("double", js && my ? js[my]?.double : null);
+            // --- Joker UI (Count-only, keine "verbraucht"-Texte) ---
+      function getCount(typeKey, legacyVal){
+        const sum = ownedSummary(typeKey);
+        if(sum && typeof sum.total === "number") return sum.total;
+        // fallback to legacy number
+        return jokerCountVal(legacyVal);
+      }
+
+      const cAll = getCount("allColors", js && my ? js[my]?.allColors : null);
+      const cBar = getCount("barricade", js && my ? js[my]?.barricade : null);
+      const cRe  = getCount("reroll",    js && my ? js[my]?.reroll    : null);
+      const cDo  = getCount("double",    js && my ? js[my]?.double    : null);
+
+      // keep state spans existing but set them to pure numbers (optional)
+      if(jokerAllColorsState) jokerAllColorsState.textContent = fmtCount(cAll);
+      if(jokerBarricadeState) jokerBarricadeState.textContent = fmtCount(cBar);
+      if(jokerRerollState) jokerRerollState.textContent = fmtCount(cRe);
+      if(jokerDoubleState) jokerDoubleState.textContent = fmtCount(cDo);
       const rrEl = document.getElementById("jokerRerollState");
-      if(rrEl) rrEl.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
+      if(rrEl) rrEl.textContent = fmtCount(cRe);
+
+      // Update buttons: Count badge + disabled when 0
+      function setBtnCount(btn, typeKey, count){
+        if(!btn) return;
+        const c = Math.max(0, Number(count)||0);
+        const badge = btn.querySelector('.j-count[data-jcount="'+typeKey+'"]') || btn.querySelector('.j-count');
+        if(badge) badge.textContent = String(c);
+        btn.disabled = (c <= 0);
+      }
+      setBtnCount(jokerAllColorsBtn, "allColors", cAll);
+      setBtnCount(jokerBarricadeBtn, "barricade", cBar);
+      setBtnCount(jokerRerollBtn, "reroll", cRe);
+      setBtnCount(jokerDoubleBtn, "double", cDo);
 
 if(actionEffectsState){
         if(!eff){ actionEffectsState.textContent = "–"; }
