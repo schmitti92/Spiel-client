@@ -96,6 +96,7 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
   const startBtn = $("startBtn");
   const endBtn  = $("endBtn");
   const skipBtn = $("skipBtn");
+  const forfeitBtn = $("forfeitBtn");
   const resetBtn= $("resetBtn");
   const resumeBtn = $("resumeBtn");
   // Host tools (Save/Load) - host only
@@ -1300,6 +1301,16 @@ if(type==="start_spin"){
         netCanStart = !!msg.canStart;
       if (msg.jokerAwardMode) netJokerAwardMode = msg.jokerAwardMode;
         updateStartButton();
+        return;
+      }
+
+      if(type==="forfeit"){
+        try{
+          if(msg.state) applyRemoteState(msg.state);
+          const by = String(msg.by||"").toUpperCase();
+          const w = String(msg.winner|| (msg.state && msg.state.winnerColor) || "").toUpperCase();
+          toast(`${by} hat aufgegeben! Gewinner: ${w}`);
+        }catch(_e){}
         return;
       }
       if(type==="snapshot" || type==="started" || type==="place_barricade"){
@@ -3881,3 +3892,18 @@ function _wheelNext() {
   _wheelDraw(_wheelAngle);
   requestAnimationFrame(tick);
 }
+
+  // ---------- Aufgeben (Forfeit) ----------
+  if(forfeitBtn) forfeitBtn.addEventListener("click", () => {
+    if(netMode==="offline"){
+      toast("Aufgeben ist nur im Online-Spiel (Server) aktiv.");
+      return;
+    }
+    if(!myColor){ toast("Bitte Farbe wählen"); return; }
+    if(!ws || ws.readyState!==1){ toast("Keine Verbindung"); return; }
+    const ok = confirm("Wirklich aufgeben? Gewinner ist dann der Spieler, der am nächsten am Ziel ist.");
+    if(!ok) return;
+    wsSend({ type:"forfeit", ts:Date.now() });
+    toast("Du hast aufgegeben…");
+  });
+
