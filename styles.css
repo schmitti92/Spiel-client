@@ -607,3 +607,66 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 #jokerCard .toggleRow input{
   transform: translateY(1px);
 }
+
+
+/* === Joker Power UI === */
+/* Joker-Panel: weniger Text, mehr Game-UI */
+#actionCard .kv{ display:none; } /* Zahlen stehen direkt auf den Buttons */
+#actionCard #actionHint{ margin-bottom:12px; }
+#actionCard .joker-grid{ display:grid; grid-template-columns:1fr; gap:10px; }
+@media (min-width: 900px){
+  #actionCard .joker-grid{ grid-template-columns:1fr 1fr; }
+}
+
+.joker-btn.joker-power{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  width:100%;
+  padding:14px 14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  color:#eaf1ff;
+  font-weight:800;
+  letter-spacing:.2px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.28);
+  transition: transform .08s ease, filter .2s ease, box-shadow .2s ease;
+}
+
+.joker-btn.joker-power .j-ico{
+  width:40px; height:40px;
+  display:grid; place-items:center;
+  border-radius:14px;
+  background: rgba(0,0,0,.22);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
+  font-size:20px;
+}
+
+.joker-btn.joker-power .j-name{
+  flex:1;
+  font-size:15px;
+}
+
+.joker-btn.joker-power .j-count{
+  min-width:44px;
+  height:32px;
+  display:grid; place-items:center;
+  border-radius:999px;
+  background: rgba(0,0,0,.30);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+  font-weight:900;
+}
+
+.joker-btn.joker-power:not(:disabled):active{
+  transform: translateY(1px) scale(.995);
+}
+
+.joker-btn.joker-power:disabled{
+  opacity:.55;
+  filter: grayscale(.25);
+  cursor:not-allowed;
+  box-shadow:none;
+}
