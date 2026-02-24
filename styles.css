@@ -672,120 +672,92 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 }
 
 
-/* =========================================================
-   HIGH-QUALITY RESPONSIVE LAYOUT (Tablet-first polish)
-   - no functional changes
-   - only layout/spacing/sizing improvements
-   ========================================================= */
 
-/* Make main area behave like an app viewport (prevents huge empty zones) */
+/* ============================================================
+   Barikade – Tablet/Responsive Layout Upgrade (Layout only)
+   - nutzt barikade.html Struktur: .topbar, .app, .boardWrap, .panel, canvas#c
+   - keine Gameplay-Änderungen
+   ============================================================ */
+
 :root{
-  --topbarH: 72px;
-  --sideW: 380px;
-  --sideWwide: 420px;
+  --gap: 16px;
+  --panelW: 420px;
 }
 
-.topbar{
-  min-height: var(--topbarH);
+/* Make the main area behave like an app viewport */
+.app{
+  align-items: stretch;
+  min-height: calc(100dvh - 72px);
 }
 
-.main{
-  /* Fill the remaining viewport height under the topbar */
-  height: calc(100dvh - var(--topbarH));
-  align-content: stretch;
-}
-
-/* Board & side panel should stretch equally */
+/* Board: always fill available height nicely (without stretching too much) */
 .boardWrap{
-  min-height: 0; /* allow it to shrink within grid height */
-  height: 100%;
+  min-height: clamp(520px, 70dvh, 860px);
 }
 
-.side{
-  min-height: 0;
-  height: 100%;
-  padding-right: 0; /* remove extra right padding that can cause "dead area" on tablets */
+/* Canvas should never collapse */
+#c{
+  width: 100%;
+  height: clamp(560px, 70dvh, 860px);
 }
 
-.side .card{
+/* Panel: better scrolling and spacing */
+.panel{
+  max-height: calc(100dvh - 92px);
   overflow: auto;
-  max-height: 100%;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Slightly wider side panel on large screens */
-@media (min-width: 1200px){
-  .main{ grid-template-columns: 1fr var(--sideWwide); }
+/* Buttons on touch devices: a bit larger targets */
+@media (pointer: coarse){
+  .btn{ padding: 12px 14px; border-radius: 14px; }
+  .joker-btn{ padding: 12px 14px; }
+  .dicePill{ width: 74px; height: 74px; border-radius: 16px; }
+  #diceCube{ width: 60px; height: 60px; }
 }
 
-/* ===== TABLET LANDSCAPE (best use of space) ===== */
-@media (min-width: 760px) and (max-width: 1100px) and (orientation: landscape){
-  .main{
-    grid-template-columns: 1.55fr 1fr;
-    gap: 14px;
-    padding: 12px;
-    height: calc(100dvh - var(--topbarH));
+/* ===== Tablet Portrait: stack (board on top, panel below) ===== */
+@media (min-width: 700px) and (max-width: 1100px) and (orientation: portrait){
+  .app{
+    grid-template-columns: 1fr !important;
+    gap: var(--gap) !important;
+    padding: 14px !important;
   }
-  .boardWrap{
-    border-radius: 18px;
+  .boardWrap{ min-height: clamp(520px, 60dvh, 820px); }
+  #c{ height: clamp(520px, 60dvh, 820px); }
+  .panel{ max-height: none; }
+}
+
+/* ===== Tablet Landscape: board big left, panel sticky right ===== */
+@media (min-width: 900px) and (max-width: 1360px) and (orientation: landscape){
+  .app{
+    grid-template-columns: minmax(520px, 1fr) minmax(340px, var(--panelW)) !important;
+    gap: var(--gap) !important;
+    padding: 14px !important;
   }
-  .side{
-    gap: 12px;
-  }
-  /* make the right panel feel "anchored" */
-  .side .card{
+
+  .panel{
     position: sticky;
-    top: calc(var(--topbarH) + 12px);
-    max-height: calc(100dvh - var(--topbarH) - 24px);
+    top: 84px; /* under the topbar */
+    max-height: calc(100dvh - 98px);
   }
-  .btn{ padding: 12px 14px; border-radius: 16px; }
-}
 
-/* ===== TABLET PORTRAIT (stacked, no squeezed panel) ===== */
-@media (min-width: 600px) and (max-width: 980px) and (orientation: portrait){
-  .main{
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    min-height: calc(100dvh - var(--topbarH));
-  }
   .boardWrap{
-    height: min(62dvh, 720px);
-    min-height: 520px;
+    min-height: clamp(520px, calc(100dvh - 110px), 900px);
   }
-  .side{
-    height: auto;
-  }
-  .side .card{
-    position: relative;
-    top: auto;
-    max-height: none;
+  #c{
+    height: clamp(520px, calc(100dvh - 110px), 900px);
   }
 }
 
-/* ===== PHONE (stacked, big touch targets) ===== */
-@media (max-width: 599px){
-  :root{ --topbarH: 86px; }
-  .topbar{ padding: 10px; }
-  .brand{ min-width: auto; }
-  .main{
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    min-height: calc(100dvh - var(--topbarH));
-    padding: 10px;
-    gap: 10px;
+/* ===== Small screens: keep everything readable ===== */
+@media (max-width: 699px){
+  .app{
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 12px !important;
   }
-  .boardWrap{
-    height: min(58dvh, 640px);
-    min-height: 420px;
-    border-radius: 16px;
-  }
-  .side{ gap: 10px; }
-  .btn{ padding: 12px 14px; border-radius: 16px; }
-  input,select{ padding: 12px 14px; border-radius: 16px; }
+  .boardWrap{ min-height: 58dvh; }
+  #c{ height: 58dvh; }
 }
-
-/* Prevent horizontal overflow glitches on tablets */
-body{ overflow-x: hidden; }
