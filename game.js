@@ -8,6 +8,9 @@
 
 let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
+// FIX (Stabilität): Wird in WS-Flow genutzt, muss aber existieren, sonst bricht ws.onmessage ab
+let pendingSaveExport = false;
+
 (() => {
   const $ = (id) => document.getElementById(id);
 
@@ -2096,6 +2099,9 @@ function toast(msg){
 
       updateTurnUI(); updateStartButton(); draw();
     try{ ensureFittedOnce(); }catch(_e){}
+
+      // draw board immediately even before server state arrives
+      requestDraw();
   }
 
   function updateTurnUI(){
@@ -2566,7 +2572,8 @@ function toast(msg){
 
 
   function draw(){
-    if(!board||!state) return;
+    if(!board) return;
+    const hasState = !!state;
     const rect=canvas.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
 
@@ -2643,14 +2650,14 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         ctx.font="bold 13px system-ui";
         ctx.textAlign="center"; ctx.textBaseline="middle";
         ctx.fillText(String(n.flags.houseSlot), s.x, s.y);
-        drawHousePieces(n, s.x, s.y, r);
+        if(hasState) drawHousePieces(n, s.x, s.y, r);
 
-        if(selected && n.flags && n.flags.houseColor===selected.color && Number(n.flags.houseSlot)===selected.index+1){
+        if(hasState && selected && n.flags && n.flags.houseColor===selected.color && Number(n.flags.houseSlot)===selected.index+1){
           drawSelectionRing(s.x, s.y, r*0.85);
         }
       }
 
-      if(n.kind==="board" && state.barricades.has(n.id)){
+      if(n.kind==="board" && hasState && state.barricades && state.barricades.has(n.id)){
         drawBarricadeIcon(s.x,s.y,r);
         if(actionBarricadeFrom === n.id) drawSelectionRing(s.x, s.y, r*0.85);
       }
@@ -2669,7 +2676,22 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       ctx.restore();
     }
 
-    // pieces stacked
+    
+    // Wenn noch kein Server-State da ist: Board trotzdem anzeigen (leer)
+    if(!hasState){
+      try{
+        ctx.save();
+        ctx.fillStyle = "rgba(230,237,243,0.85)";
+        ctx.font = "600 14px system-ui";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText("Warte auf Spielstart…", 12, 12);
+        ctx.restore();
+      }catch(_e){}
+      return;
+    }
+
+// pieces stacked
     const stacks=new Map();
     // Show ALL colors always (also unchosen)
     for(const c of PLAYERS){
