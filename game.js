@@ -983,8 +983,8 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 
       function fmtCount(total){ return String(Math.max(0, Number(total)||0)); }
 
-)`;
-      }
+
+
 
       function fmtWithOrigin(typeKey, legacyVal){
         const sum = ownedSummary(typeKey);
@@ -3931,4 +3931,3 @@ function _wheelNext() {
     wsSend({ type:"forfeit", ts:Date.now() });
     toast("Du hast aufgegeben…");
   });
-
