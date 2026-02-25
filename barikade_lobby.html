@@ -46,7 +46,7 @@
     #toast.show{ opacity:1; }
 
     .k{ color:rgba(255,255,255,.55); font-weight:700; }
-  
+
 .names button{ color:#e9eefc; font-weight:800; }
 .names button[disabled]{ opacity:.35; filter:grayscale(1); }
 .colors button[disabled]{ opacity:.35; filter:grayscale(1); }
@@ -122,7 +122,7 @@
 
       <div class="card">
         <h2 style="margin:0 0 10px 0; font-size:16px">Barikade‑Statistik</h2>
-        <div class="hint" style="margin-bottom:10px">Live‑Statistik (aus Firebase). „Gast“ wird nicht gezählt. Aktualisiert sich automatisch.</div>
+        <div class="hint" style="margin-bottom:10px">Statistik wird live vom Server geladen (Gast zählt nicht). Falls offline: Platzhalter.</div>
         <table>
           <thead>
             <tr>
@@ -134,11 +134,13 @@
             </tr>
           </thead>
           <tbody id="statsBody">
-            <tr><td colspan="5" style="color:rgba(255,255,255,.65)">Lade…</td></tr>
+            <tr><td>David</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>Vanessa</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            <tr><td>Christoph</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
           </tbody>
         </table>
         <div class="hint" style="margin-top:10px">
-          Global: Spiele insgesamt: <span class="k">–</span> · Gesamtspielzeit: <span class="k">–</span>
+          Global: Spiele insgesamt: <span class="k" id="globalGames">–</span> · Gesamtspielzeit: <span class="k" id="globalTime">–</span>
         </div>
       </div>
     </div>
@@ -231,43 +233,13 @@ function renderPresence(p){
     btn.title = holder ? `Belegt von ${holder}` : "";
   });
 
-  // Disable name buttons if already taken (ready or in_game), except allow re-click if it's me
-  
-document.querySelectorAll('.names [data-name]').forEach(btn=>{
-  btn.addEventListener('click', async ()=>{
-    const rc = normRoom(roomInp.value);
-    if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
-    const nameKey = String(btn.getAttribute('data-name')||'').trim();
-    if(!nameKey){ return; }
-
-    // Reserve name+color so other devices see it immediately.
-    const r = await reserveMe(nameKey);
-    if(!r.ok){
-      if(r.error === "COLOR_TAKEN"){
-        toast('Farbe ist schon belegt – wähle eine andere');
-      } else {
-        toast('Name ist schon belegt – nimm einen anderen');
-      }
-      // refresh presence quickly
-      const p = await fetchPresence();
-      renderPresence(p);
-    refreshStats();
-      return;
-    }
-
-    localStorage.setItem("barikade_nameKey", nameKey);
-
-    // Start Barikade
-    window.location.href = "barikade.html";
-  });
-});
+  // NOTE: Name-Button Clicks werden weiter unten (global) registriert.
 }
 
 // Poll presence every 2.5s when room is set
 let presenceTimer = null;
 function startPresencePoll(){
   if(presenceTimer) return;
-  refreshStats();
   presenceTimer = setInterval(async ()=>{
     const rc = normRoom(roomInp.value);
     if(!rc) return;
@@ -327,32 +299,43 @@ function startPresencePoll(){
         actionToggle.checked = (am === 'action');
         const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
         if(c) setRequestedColor(c);
+
+        // Start presence polling if room exists
+        if(normRoom(r)) startPresencePoll();
       })();
 
-      hostMakeBtn.addEventListener('click', ()=>{
+      hostMakeBtn.addEventListener('click', async ()=>{
         const r = normRoom(roomInp.value);
         const rc = r || randCode(4);
         roomInp.value = rc;
         setRoom(rc);
         setMode('host');
         toast('Host: Raum ' + rc);
+        startPresencePoll();
+        const p = await fetchPresence();
+        renderPresence(p);
       });
 
-      joinBtn.addEventListener('click', ()=>{
+      joinBtn.addEventListener('click', async ()=>{
         const rc = normRoom(roomInp.value);
         if(!rc){ toast('Bitte Raumcode eingeben'); return; }
         setRoom(rc);
         setMode('client');
         toast('Client: Raum ' + rc);
+        startPresencePoll();
+        const p = await fetchPresence();
+        renderPresence(p);
       });
 
       document.querySelectorAll('[data-color]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
+        btn.addEventListener('click', async ()=>{
           const rc = normRoom(roomInp.value);
           if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
           setRoom(rc);
           setRequestedColor(btn.getAttribute('data-color'));
           toast('Wunschfarbe gespeichert');
+          const p = await fetchPresence();
+          renderPresence(p);
         });
       });
 
@@ -361,72 +344,105 @@ function startPresencePoll(){
         toast(actionToggle.checked ? 'Action‑Modus: AN' : 'Action‑Modus: AUS');
       });
 
-      document.querySelectorAll('[data-name]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
+      // Name wählen → zuerst reservieren, dann starten
+      document.querySelectorAll('.names [data-name]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
           const mode = localStorage.getItem('barikade_mode') || 'offline';
           const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
           if(!(mode === 'host' || mode === 'client')){ toast('Bitte Host oder Beitreten wählen'); return; }
           if(!rc){ toast('Bitte Raumcode setzen'); return; }
 
-          const name = String(btn.getAttribute('data-name')||'Spieler');
-          localStorage.setItem('barikade_playerName', name);
-          // Gast zählt nicht → markieren (nur als Flag für später)
-          localStorage.setItem('barikade_isGuest', name.toLowerCase()==='gast' ? '1' : '0');
+          const nameKey = String(btn.getAttribute('data-name')||'').trim();
+          if(!nameKey) return;
 
-          // ensure room persisted
+          // Reserve name+color so other devices see it immediately.
+          const rr = await reserveMe(nameKey);
+          if(!rr.ok){
+            if(rr.error === "COLOR_TAKEN"){
+              toast('Farbe ist schon belegt – wähle eine andere');
+            } else {
+              toast('Name ist schon belegt – nimm einen anderen');
+            }
+            const p = await fetchPresence();
+            renderPresence(p);
+            return;
+          }
+
+          // Persist
+          localStorage.setItem("barikade_nameKey", nameKey);
+          localStorage.setItem('barikade_playerName', nameKey);
+          localStorage.setItem('barikade_isGuest', nameKey.toLowerCase()==='gast' ? '1' : '0');
+
+          // ensure room persisted + action mode
           setRoom(rc);
-          // ensure action mode persisted
           setActionMode(!!actionToggle.checked);
 
           // go to game (compact UI)
           location.href = 'barikade.html?compact=1';
         });
       });
-    })();
-  
 
-// ---------- Stats ----------
-function fmtTime(ms){
-  ms = Math.max(0, Number(ms||0)||0);
-  const s = Math.floor(ms/1000);
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  const mm = String(m).padStart(2,"0");
-  return h ? `${h}h ${mm}m` : `${m}m`;
-}
-function fmtAvg(v){
-  const n = Number(v||0)||0;
-  return n ? n.toFixed(2) : "–";
-}
-async function refreshStats(){
-  try{
-    const r = await fetch(`${HTTP_BASE}/stats`, { cache:"no-store" });
-    const j = await r.json();
-    const body = $("statsBody");
-    if(!body) return;
-    const rows = Array.isArray(j?.rows) ? j.rows : [];
-    if(!rows.length){
-      body.innerHTML = `<tr><td colspan="5" style="color:rgba(255,255,255,.65)">Noch keine Statistik (oder Firebase offline).</td></tr>`;
-      return;
-    }
-    // Sort: wins desc, games desc (server already does, but keep stable)
-    rows.sort((a,b)=> (b.wins-b.games*0) - (a.wins-a.games*0));
-    body.innerHTML = rows.slice(0,50).map(x => {
-      const name = String(x.name||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-      return `<tr>
-        <td>${name}</td>
-        <td>${Number(x.games||0)||0}</td>
-        <td>${Number(x.wins||0)||0}</td>
-        <td>${(Number(x.avgRoll||0)||0) ? (Number(x.avgRoll||0)||0).toFixed(2) : "–"}</td>
-        <td>${fmtTime(x.playMs||0)}</td>
-      </tr>`;
-    }).join("");
-  }catch(_e){
-    const body = $("statsBody");
-    if(body) body.innerHTML = `<tr><td colspan="5" style="color:rgba(255,255,255,.65)">Statistik gerade nicht erreichbar.</td></tr>`;
-  }
-}
+      // ---------- Stats (read-only, does not affect gameplay) ----------
+      const statsBody = $("statsBody");
+      const globalSpiele = $("globalGames");
+      const globalZeit = $("globalTime");
 
-</script>
+      function fmtAvg(v){
+        if (v == null || !isFinite(v)) return "–";
+        return (Math.round(v * 100) / 100).toFixed(2);
+      }
+      function fmtPlay(ms){
+        const m = Math.max(0, Math.floor((ms||0)/60000));
+        const h = Math.floor(m/60);
+        const mm = m%60;
+        if (h>0) return `${h}h ${String(mm).padStart(2,'0')}m`;
+        return `${m}m`;
+      }
+
+      async function refreshStats(){
+        try{
+          const r = await fetch(HTTP_BASE + "/stats", { cache: "no-store" });
+          const j = await r.json();
+          if(!j || !j.ok) throw new Error("no stats");
+
+          // Server liefert: { ok:true, rows:[...] }
+          const rows = Array.isArray(j.rows) ? j.rows : [];
+
+          // Render rows
+          if (statsBody){
+            if(rows.length === 0){
+              statsBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted)">–</td></tr>`;
+            } else {
+              statsBody.innerHTML = rows.map(p=>{
+                const name = String(p.name||"Spieler");
+                const games = (p.games ?? 0);
+                const wins  = (p.wins ?? 0);
+                const avg   = fmtAvg(p.avgRoll);
+                const pt    = fmtPlay(p.playMs || 0);
+                return `<tr><td>${name}</td><td>${games}</td><td>${wins}</td><td>${avg}</td><td>${pt}</td></tr>`;
+              }).join("");
+            }
+          }
+
+          // Global: Summe aus rows (ohne Gast, falls doch mal drin)
+          const filtered = rows.filter(x => String(x.name||"").toLowerCase() !== "gast");
+          const globalGamesSum = filtered.reduce((a,x)=> a + (Number(x.games)||0), 0);
+
+          // playMs: pro Spieler "Gesamtspielzeit" (oft identisch) → max ist sinnvoll
+          const globalPlayMsMax = filtered.reduce((a,x)=> Math.max(a, Number(x.playMs)||0), 0);
+
+          if (globalSpiele) globalSpiele.textContent = String(globalGamesSum || 0);
+          if (globalZeit) globalZeit.textContent = fmtPlay(globalPlayMsMax || 0);
+        }catch(_e){
+          // keep placeholders
+        }
+      }
+
+      // refresh every 5s (cheap)
+      refreshStats();
+      setInterval(refreshStats, 5000);
+
+})();
+  </script>
 </body>
 </html>
