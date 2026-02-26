@@ -46,7 +46,7 @@
     #toast.show{ opacity:1; }
 
     .k{ color:rgba(255,255,255,.55); font-weight:700; }
-
+  
 .names button{ color:#e9eefc; font-weight:800; }
 .names button[disabled]{ opacity:.35; filter:grayscale(1); }
 .colors button[disabled]{ opacity:.35; filter:grayscale(1); }
@@ -179,24 +179,6 @@ async function fetchPresence(){
   }catch(_e){ return null; }
 }
 
-async function ensureRoom(rc){
-  const code = normRoom(rc);
-  if(!code) return { ok:false, error:"NO_CODE" };
-  try{
-    const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(code)}/ensure`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: "{}"
-    });
-    const j = await r.json().catch(()=>null);
-    if(!r.ok || !j?.ok) return { ok:false, error: j?.error || "ERR" };
-    return { ok:true, data:j };
-  }catch(_e){
-    return { ok:false, error:"NET" };
-  }
-}
-
-
 async function reserveMe(nameKey){
   const rc = normRoom(roomInp.value);
   if(!rc) return { ok:false };
@@ -208,27 +190,7 @@ async function reserveMe(nameKey){
       body: JSON.stringify({ nameKey, color, status:"lobby" })
     });
     const j = await r.json().catch(()=>null);
-
-    if(!r.ok){
-      const err = j?.error || "ERR";
-
-      // If the room does not exist yet (e.g. server restart) the lobby reserve will 404 NO_ROOM.
-      // Create the room once and retry so the user does not see a false "Name ist schon belegt".
-      if(err === "NO_ROOM"){
-        await ensureRoom(rc);
-        const r2 = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/reserve`, {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ nameKey, color, status:"lobby" })
-        });
-        const j2 = await r2.json().catch(()=>null);
-        if(!r2.ok) return { ok:false, error:j2?.error || "ERR", holder:j2?.holder };
-        return { ok:true, data:j2 };
-      }
-
-      return { ok:false, error: err, holder:j?.holder };
-    }
-
+    if(!r.ok) return { ok:false, error:j?.error || "ERR", holder:j?.holder };
     return { ok:true, data:j };
   }catch(_e){ return { ok:false, error:"NET" }; }
 }
@@ -271,7 +233,35 @@ function renderPresence(p){
     btn.title = holder ? `Belegt von ${holder}` : "";
   });
 
-  // NOTE: Name-Button Clicks werden weiter unten (global) registriert.
+  // Disable name buttons if already taken (ready or in_game), except allow re-click if it's me
+  
+document.querySelectorAll('.names [data-name]').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const rc = normRoom(roomInp.value);
+    if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
+    const nameKey = String(btn.getAttribute('data-name')||'').trim();
+    if(!nameKey){ return; }
+
+    // Reserve name+color so other devices see it immediately.
+    const r = await reserveMe(nameKey);
+    if(!r.ok){
+      if(r.error === "COLOR_TAKEN"){
+        toast('Farbe ist schon belegt – wähle eine andere');
+      } else {
+        toast('Name ist schon belegt – nimm einen anderen');
+      }
+      // refresh presence quickly
+      const p = await fetchPresence();
+      renderPresence(p);
+      return;
+    }
+
+    localStorage.setItem("barikade_nameKey", nameKey);
+
+    // Start Barikade
+    window.location.href = "barikade.html";
+  });
+});
 }
 
 // Poll presence every 2.5s when room is set
@@ -337,45 +327,32 @@ function startPresencePoll(){
         actionToggle.checked = (am === 'action');
         const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
         if(c) setRequestedColor(c);
-
-        // Start presence polling if room exists
-        if(normRoom(r)) startPresencePoll();
       })();
 
-      hostMakeBtn.addEventListener('click', async ()=>{
+      hostMakeBtn.addEventListener('click', ()=>{
         const r = normRoom(roomInp.value);
         const rc = r || randCode(4);
         roomInp.value = rc;
         setRoom(rc);
         setMode('host');
-        await ensureRoom(rc);
         toast('Host: Raum ' + rc);
-        startPresencePoll();
-        const p = await fetchPresence();
-        renderPresence(p);
       });
 
-      joinBtn.addEventListener('click', async ()=>{
+      joinBtn.addEventListener('click', ()=>{
         const rc = normRoom(roomInp.value);
         if(!rc){ toast('Bitte Raumcode eingeben'); return; }
         setRoom(rc);
         setMode('client');
-        await ensureRoom(rc);
         toast('Client: Raum ' + rc);
-        startPresencePoll();
-        const p = await fetchPresence();
-        renderPresence(p);
       });
 
       document.querySelectorAll('[data-color]').forEach(btn=>{
-        btn.addEventListener('click', async ()=>{
+        btn.addEventListener('click', ()=>{
           const rc = normRoom(roomInp.value);
           if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
           setRoom(rc);
           setRequestedColor(btn.getAttribute('data-color'));
           toast('Wunschfarbe gespeichert');
-          const p = await fetchPresence();
-          renderPresence(p);
         });
       });
 
@@ -384,45 +361,28 @@ function startPresencePoll(){
         toast(actionToggle.checked ? 'Action‑Modus: AN' : 'Action‑Modus: AUS');
       });
 
-      // Name wählen → zuerst reservieren, dann starten
-      document.querySelectorAll('.names [data-name]').forEach(btn=>{
-        btn.addEventListener('click', async ()=>{
+      document.querySelectorAll('[data-name]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
           const mode = localStorage.getItem('barikade_mode') || 'offline';
           const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
           if(!(mode === 'host' || mode === 'client')){ toast('Bitte Host oder Beitreten wählen'); return; }
           if(!rc){ toast('Bitte Raumcode setzen'); return; }
 
-          const nameKey = String(btn.getAttribute('data-name')||'').trim();
-          if(!nameKey) return;
+          const name = String(btn.getAttribute('data-name')||'Spieler');
+          localStorage.setItem('barikade_playerName', name);
+          // Gast zählt nicht → markieren (nur als Flag für später)
+          localStorage.setItem('barikade_isGuest', name.toLowerCase()==='gast' ? '1' : '0');
 
-          // Reserve name+color so other devices see it immediately.
-          const rr = await reserveMe(nameKey);
-          if(!rr.ok){
-            if(rr.error === "COLOR_TAKEN"){
-              toast('Farbe ist schon belegt – wähle eine andere');
-            } else if(rr.error === "NO_ROOM"){
-              toast('Raum ist noch nicht erstellt – drücke Host/Beitreten erneut');
-            } else {
-              toast('Name ist schon belegt – nimm einen anderen');
-            }
-            const p = await fetchPresence();
-            renderPresence(p);
-            return;
-          }
-
-          // Persist
-          localStorage.setItem("barikade_nameKey", nameKey);
-          localStorage.setItem('barikade_playerName', nameKey);
-          localStorage.setItem('barikade_isGuest', nameKey.toLowerCase()==='gast' ? '1' : '0');
-
-          // ensure room persisted + action mode
+          // ensure room persisted
           setRoom(rc);
+          // ensure action mode persisted
           setActionMode(!!actionToggle.checked);
 
           // go to game (compact UI)
           location.href = 'barikade.html?compact=1';
         });
       });
+    
 
       // ---------- Stats (read-only, does not affect gameplay) ----------
       const statsBody = $("statsBody");
@@ -446,35 +406,27 @@ function startPresencePoll(){
           const r = await fetch(HTTP_BASE + "/stats", { cache: "no-store" });
           const j = await r.json();
           if(!j || !j.ok) throw new Error("no stats");
-
-          // Server liefert: { ok:true, rows:[...] }
-          const rows = Array.isArray(j.rows) ? j.rows : [];
+          const players = Array.isArray(j.players) ? j.players : [];
 
           // Render rows
           if (statsBody){
-            if(rows.length === 0){
+            if(players.length === 0){
               statsBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted)">–</td></tr>`;
             } else {
-              statsBody.innerHTML = rows.map(p=>{
+              statsBody.innerHTML = players.map(p=>{
                 const name = String(p.name||"Spieler");
                 const games = (p.games ?? 0);
                 const wins  = (p.wins ?? 0);
                 const avg   = fmtAvg(p.avgRoll);
-                const pt    = fmtPlay(p.playMs || 0);
+                const pt    = p.playTime ? String(p.playTime) : fmtPlay(p.playTimeMs||0);
                 return `<tr><td>${name}</td><td>${games}</td><td>${wins}</td><td>${avg}</td><td>${pt}</td></tr>`;
               }).join("");
             }
           }
 
-          // Global: Summe aus rows (ohne Gast, falls doch mal drin)
-          const filtered = rows.filter(x => String(x.name||"").toLowerCase() !== "gast");
-          const globalGamesSum = filtered.reduce((a,x)=> a + (Number(x.games)||0), 0);
-
-          // playMs: pro Spieler "Gesamtspielzeit" (oft identisch) → max ist sinnvoll
-          const globalPlayMsMax = filtered.reduce((a,x)=> Math.max(a, Number(x.playMs)||0), 0);
-
-          if (globalSpiele) globalSpiele.textContent = String(globalGamesSum || 0);
-          if (globalZeit) globalZeit.textContent = fmtPlay(globalPlayMsMax || 0);
+          // Global line
+          if (globalSpiele) globalSpiele.textContent = String(j.global?.games ?? "–");
+          if (globalZeit) globalZeit.textContent = String(j.global?.playTime ?? "–");
         }catch(_e){
           // keep placeholders
         }
@@ -483,6 +435,7 @@ function startPresencePoll(){
       // refresh every 5s (cheap)
       refreshStats();
       setInterval(refreshStats, 5000);
+
 
 })();
   </script>
