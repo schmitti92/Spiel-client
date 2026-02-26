@@ -3756,7 +3756,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
       }
       wsSend({ type: "use_joker", joker: "allcolors" });
     });
-});
+  }
 
   // Barrikade-Joker: VOR dem Wurf aktivieren, danach Quelle+Ziel klicken
   jokerBarricadeBtn.addEventListener("click", () => {
@@ -3789,8 +3789,6 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
       // Otherwise: activate on server
       wsSend({ type: "use_joker", joker: "barricade" });
     });
-});
-  }
 
 
   // Helper: robust access to action joker set for current player (server snapshot is source of truth)
@@ -3858,7 +3856,6 @@ function hasJoker(obj, key){ return jokerCount(obj, key) > 0; }
 
       wsSend({ type: "use_joker", joker: "double" });
     });
-});
   };
 
   // bind now + also after UI injection
