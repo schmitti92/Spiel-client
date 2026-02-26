@@ -84,7 +84,16 @@ let pendingSaveExport = false;
 
 
   // ===== UI refs =====
-  const canvas = $("c");
+  let canvas = $("c");
+  if(!canvas){
+    console.warn("[ui] Canvas #c not found – creating fallback canvas (cache/HTML mismatch?)");
+    canvas = document.createElement("canvas");
+    canvas.id = "c";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    document.body.appendChild(canvas);
+  }
+
   const ctx = canvas.getContext("2d");
   const toastEl = $("toast");
   const netBannerEl = $("netBanner");
@@ -936,6 +945,7 @@ let pendingSaveExport = false;
 
   // Prevent showing the win overlay multiple times (snapshot + event)
   let winShown = false;
+let awardsShown = false;
 
   let PLAYERS = ["red","blue"];
   function setPlayers(arg){
@@ -1963,9 +1973,16 @@ try{
         }
       }catch(e){}
 
+      if(!(server.finished || server.phase === 'game_over')){ winShown = false; awardsShown = false; }
+
       if ((server.finished || server.phase === 'game_over') && state.winner && !winShown) {
         winShown = true;
         showEpicWin(state.winner);
+        if(!awardsShown){
+          awardsShown = true;
+          const awards = (st && st.matchAwards) || (server && server.matchAwards) || [];
+          setTimeout(()=>{ try{ runTitleCeremony(awards); }catch(_e){} }, 1200);
+        }
       }
 
       updateTurnUI(); updateStartButton(); draw();
@@ -2343,7 +2360,115 @@ function toast(msg){
     requestAnimationFrame(frame);
   }
 
-  function showEpicWin(winnerColor){
+  
+// ---------- End-of-game Title Ceremony (per match) ----------
+function ensureAwardsStyles(){
+  if(document.getElementById("baAwardsStyles")) return;
+  const st = document.createElement("style");
+  st.id = "baAwardsStyles";
+  st.textContent = `
+    #baAwardsOverlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99999;
+      background: radial-gradient(900px 600px at 50% 40%, rgba(255,255,255,.10), rgba(0,0,0,.82) 70%);
+      backdrop-filter: blur(4px);
+    }
+    #baAwardsCard{ width:min(920px,92vw); border-radius:24px; padding:22px 18px; border:1px solid rgba(255,255,255,.12);
+      background: rgba(5,10,22,.55);
+      box-shadow: 0 12px 50px rgba(0,0,0,.55);
+      text-align:center;
+      transform: translateY(10px) scale(.98);
+      opacity:0;
+      transition: .22s ease;
+    }
+    #baAwardsOverlay.show #baAwardsCard{ transform: translateY(0) scale(1); opacity:1; }
+    #baAwardsTitle{ font-weight:1000; letter-spacing:.2px; font-size:clamp(22px,4.2vw,44px); }
+    #baAwardsValue{ margin-top:12px; font-weight:950; font-size:clamp(20px,3.6vw,38px); opacity:0; transform: translateY(6px); transition:.22s ease; }
+    #baAwardsName{ margin-top:10px; font-weight:900; font-size:clamp(18px,3vw,30px); color: rgba(255,255,255,.86);
+      opacity:0; transform: translateY(6px); transition:.22s ease;
+    }
+    #baAwardsValue.show, #baAwardsName.show{ opacity:1; transform: translateY(0); }
+    #baAwardsSub{ margin-top:12px; font-size:13px; color: rgba(255,255,255,.62); }
+  `;
+  document.head.appendChild(st);
+}
+function ensureAwardsUI(){
+  ensureAwardsStyles();
+  let ov = document.getElementById("baAwardsOverlay");
+  if(ov) return ov;
+  ov = document.createElement("div");
+  ov.id = "baAwardsOverlay";
+  ov.innerHTML = `
+    <div id="baAwardsCard">
+      <div id="baAwardsTitle">Titel</div>
+      <div id="baAwardsValue">Wert</div>
+      <div id="baAwardsName">Name</div>
+      <div id="baAwardsSub">Titel‑Ehrung (dieses Spiel)</div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  return ov;
+}
+function fmtAwardValue(a){
+  if(!a) return "";
+  const v = a.value;
+  const unit = a.unit || "";
+  if(v==null || v===undefined || (typeof v==="number" && !isFinite(v))) return unit ? unit : "–";
+  // number formatting: keep as given (server already rounded for seconds)
+  return unit ? `${v} ${unit}` : String(v);
+}
+function fmtWinners(a){
+  const ws = Array.isArray(a?.winners) ? a.winners.filter(Boolean) : [];
+  if(ws.length===0) return "–";
+  return ws.join(" & ");
+}
+let _awardsRunning = false;
+async function runTitleCeremony(awards){
+  if(_awardsRunning) return;
+  const arr = Array.isArray(awards) ? awards : [];
+  if(arr.length===0) return;
+  _awardsRunning = true;
+  const ov = ensureAwardsUI();
+  const card = document.getElementById("baAwardsCard");
+  const tEl = document.getElementById("baAwardsTitle");
+  const vEl = document.getElementById("baAwardsValue");
+  const nEl = document.getElementById("baAwardsName");
+
+  const wait = (ms)=>new Promise(r=>setTimeout(r, ms));
+
+  ov.style.display = "flex";
+  // for each title: title -> value -> name, total 5s
+  for(const a of arr){
+    // reset
+    vEl.classList.remove("show");
+    nEl.classList.remove("show");
+    tEl.textContent = String(a.title||"Titel");
+    vEl.textContent = fmtAwardValue(a);
+    nEl.textContent = fmtWinners(a);
+
+    ov.classList.add("show");
+    await wait(220);
+
+    // Step 1: Title (≈1.2s)
+    await wait(1000);
+
+    // Step 2: Value
+    vEl.classList.add("show");
+    await wait(1200);
+
+    // Step 3: Name(s)
+    nEl.classList.add("show");
+    await wait(2400);
+
+    // Fade out between titles
+    ov.classList.remove("show");
+    await wait(260);
+  }
+
+  ov.style.display = "none";
+  _awardsRunning = false;
+}
+// ------------------------------------------------------
+
+function showEpicWin(winnerColor){
     const name = labelForColor(winnerColor);
     showOverlay('🏆 EPISCHER SIEG 🏆', `${name} gewinnt!`, 'Erste Figur auf dem Zielfeld.');
     startWinFx();
@@ -2818,6 +2943,11 @@ function toast(msg){
 
       updateTurnUI(); updateStartButton(); draw();
         showEpicWin(state.winner);
+        if(!awardsShown){
+          awardsShown = true;
+          const awards = (st && st.matchAwards) || (server && server.matchAwards) || [];
+          setTimeout(()=>{ try{ runTitleCeremony(awards); }catch(_e){} }, 1200);
+        }
         return;
       }
       endTurn();
