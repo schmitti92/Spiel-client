@@ -3746,43 +3746,50 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
 // ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
   if(jokerAllColorsBtn){
   jokerAllColorsBtn.addEventListener("click", () => {
-    if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
-    if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
-    if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
-    // All-Colors-Joker ist nach dem Wurf (need_move) sinnvoll
-    if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Joker"); return; }
-    const set = getMyJokerSet();
-    if(!hasJoker(set,"allColors")) { toast("Alle Farben nicht verfügbar"); return; }
-    wsSend({ type: "use_joker", joker: "allcolors" });
-  });
+      if (!isActionMode) return;
+      const eff = state?.action?.effects || {};
+      // Toggle: if already active for me -> cancel
+      if (eff.allColorsBy && myColor && String(eff.allColorsBy).toLowerCase() === String(myColor).toLowerCase()) {
+        wsSend({ type: "cancel_joker", joker: "allcolors" });
+        toast("Alle-Farben Joker abgewählt");
+        return;
+      }
+      wsSend({ type: "use_joker", joker: "allcolors" });
+    });
+});
 
   // Barrikade-Joker: VOR dem Wurf aktivieren, danach Quelle+Ziel klicken
   jokerBarricadeBtn.addEventListener("click", () => {
-    if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
-    if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
-    if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
+      if (!isActionMode) return;
 
-    const eff = (state.action && state.action.effects) ? state.action.effects : {};
-    const effAllActive = !!eff.allColors;
-    const effBarrActive = !!eff.barricadeBy;
-    const effActiveForMe = (eff.barricadeBy === myColor);
+      const eff = state?.action?.effects || {};
+      const effByMe = (eff.barricadeBy && myColor && String(eff.barricadeBy).toLowerCase() === String(myColor).toLowerCase());
 
-    // Wenn Effekt schon aktiv ist: direkt Auswahlmodus starten
-    if(effActiveForMe){
-      actionBarricadeActive = true;
-      actionBarricadeFrom = null;
-      toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
-      draw();
-      return;
-    }
+      // Toggle OFF: cancel local selection / effect
+      if (actionBarricadeActive || actionBarricadeFrom || pendingBarricadePick) {
+        actionBarricadeActive = false;
+        actionBarricadeFrom = null;
+        pendingBarricadePick = false;
+        if (effByMe) wsSend({ type: "cancel_joker", joker: "barricade" });
+        toast("Barikade-Joker abgewählt");
+        draw();
+        return;
+      }
 
-    // Sonst: Joker jetzt aktivieren (nur vor dem Wurf)
-    if(state.phase!=="need_roll") { toast("Barikade nur vor dem Würfeln"); return; }
-    const set = getMyJokerSet();
-    if(!hasJoker(set,"barricade")) { toast("Barikade nicht verfügbar"); return; }
-    pendingBarricadePick = true;
-    wsSend({ type: "use_joker", joker: "barricade" });
-  });
+      // If effect already active (server-side), we enter selection mode
+      if (effByMe) {
+        actionBarricadeActive = true;
+        actionBarricadeFrom = null;
+        pendingBarricadePick = true;
+        toast("Barikade-Joker aktiv: Quelle wählen (oder Joker erneut klicken zum Abbrechen)");
+        draw();
+        return;
+      }
+
+      // Otherwise: activate on server
+      wsSend({ type: "use_joker", joker: "barricade" });
+    });
+});
   }
 
 
@@ -3835,18 +3842,58 @@ function hasJoker(obj, key){ return jokerCount(obj, key) > 0; }
     if(!jokerDoubleBtn || jokerDoubleBtn.__bound) return;
     jokerDoubleBtn.__bound = true;
     jokerDoubleBtn.addEventListener("click", () => {
-      if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
-      if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
-      if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
-      if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
-      if(state.phase!=="need_roll" || state.dice!=null) { toast("Doppelwurf nur vor dem Würfeln"); return; }
-      const set = getMyJokerSet();
-      if(!hasJoker(set,"double")) { toast("Doppelwurf nicht verfügbar"); return; }
+      if (!isActionMode) return;
+
+      const eff = state?.action?.effects || {};
+      const pendingByMe = !!(eff.doubleRoll && myColor
+        && String(eff.doubleRoll.by).toLowerCase() === String(myColor).toLowerCase()
+        && eff.doubleRoll.pending === true);
+
+      // Toggle: cancel pending double-roll (before rolling)
+      if (pendingByMe) {
+        wsSend({ type: "cancel_joker", joker: "double" });
+        toast("Doppelwurf abgewählt");
+        return;
+      }
+
       wsSend({ type: "use_joker", joker: "double" });
     });
+});
   };
 
   // bind now + also after UI injection
+  // ESC cancels active joker selection (no risk, client-side convenience)
+  if (!window.__barikadeEscJokerBound) {
+    window.__barikadeEscJokerBound = true;
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      try {
+        const eff = state?.action?.effects || {};
+        const effByMe = (eff.barricadeBy && myColor && String(eff.barricadeBy).toLowerCase() === String(myColor).toLowerCase());
+        if (actionBarricadeActive || actionBarricadeFrom || pendingBarricadePick) {
+          actionBarricadeActive = false;
+          actionBarricadeFrom = null;
+          pendingBarricadePick = false;
+          if (effByMe) wsSend({ type: 'cancel_joker', joker: 'barricade' });
+          toast('Joker abgewählt');
+          draw();
+          return;
+        }
+        const allByMe = (eff.allColorsBy && myColor && String(eff.allColorsBy).toLowerCase() === String(myColor).toLowerCase());
+        if (allByMe) {
+          wsSend({ type: 'cancel_joker', joker: 'allcolors' });
+          toast('Joker abgewählt');
+          return;
+        }
+        const dblByMe = !!(eff.doubleRoll && myColor && String(eff.doubleRoll.by).toLowerCase() === String(myColor).toLowerCase() && eff.doubleRoll.pending === true);
+        if (dblByMe) {
+          wsSend({ type: 'cancel_joker', joker: 'double' });
+          toast('Joker abgewählt');
+          return;
+        }
+      } catch (_e) {}
+    });
+  }
   bindReroll();
   bindDouble();
 
