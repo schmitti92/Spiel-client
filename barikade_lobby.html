@@ -179,6 +179,24 @@ async function fetchPresence(){
   }catch(_e){ return null; }
 }
 
+async function ensureRoom(rc){
+  const code = normRoom(rc);
+  if(!code) return { ok:false, error:"NO_CODE" };
+  try{
+    const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(code)}/ensure`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: "{}"
+    });
+    const j = await r.json().catch(()=>null);
+    if(!r.ok || !j?.ok) return { ok:false, error: j?.error || "ERR" };
+    return { ok:true, data:j };
+  }catch(_e){
+    return { ok:false, error:"NET" };
+  }
+}
+
+
 async function reserveMe(nameKey){
   const rc = normRoom(roomInp.value);
   if(!rc) return { ok:false };
@@ -190,7 +208,27 @@ async function reserveMe(nameKey){
       body: JSON.stringify({ nameKey, color, status:"lobby" })
     });
     const j = await r.json().catch(()=>null);
-    if(!r.ok) return { ok:false, error:j?.error || "ERR", holder:j?.holder };
+
+    if(!r.ok){
+      const err = j?.error || "ERR";
+
+      // If the room does not exist yet (e.g. server restart) the lobby reserve will 404 NO_ROOM.
+      // Create the room once and retry so the user does not see a false "Name ist schon belegt".
+      if(err === "NO_ROOM"){
+        await ensureRoom(rc);
+        const r2 = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/reserve`, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ nameKey, color, status:"lobby" })
+        });
+        const j2 = await r2.json().catch(()=>null);
+        if(!r2.ok) return { ok:false, error:j2?.error || "ERR", holder:j2?.holder };
+        return { ok:true, data:j2 };
+      }
+
+      return { ok:false, error: err, holder:j?.holder };
+    }
+
     return { ok:true, data:j };
   }catch(_e){ return { ok:false, error:"NET" }; }
 }
@@ -310,6 +348,7 @@ function startPresencePoll(){
         roomInp.value = rc;
         setRoom(rc);
         setMode('host');
+        await ensureRoom(rc);
         toast('Host: Raum ' + rc);
         startPresencePoll();
         const p = await fetchPresence();
@@ -321,6 +360,7 @@ function startPresencePoll(){
         if(!rc){ toast('Bitte Raumcode eingeben'); return; }
         setRoom(rc);
         setMode('client');
+        await ensureRoom(rc);
         toast('Client: Raum ' + rc);
         startPresencePoll();
         const p = await fetchPresence();
@@ -360,6 +400,8 @@ function startPresencePoll(){
           if(!rr.ok){
             if(rr.error === "COLOR_TAKEN"){
               toast('Farbe ist schon belegt – wähle eine andere');
+            } else if(rr.error === "NO_ROOM"){
+              toast('Raum ist noch nicht erstellt – drücke Host/Beitreten erneut');
             } else {
               toast('Name ist schon belegt – nimm einen anderen');
             }
