@@ -1024,6 +1024,13 @@ let awardsShown = false;
   let legalMovesByPiece=new Map();
   let state=null;
 
+  // Helper: some older patches referenced a missing variable "isActionMode".
+  // Keep it as a function so all callers can safely use it.
+  function isActionMode(){
+    try{ return String(state?.mode || "classic") === "action"; }catch(_e){}
+    return false;
+  }
+
   function clearLocalState(){
     state = null;
     legalMovesByPiece = new Map();
@@ -3746,7 +3753,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
 // ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
   if(jokerAllColorsBtn){
   jokerAllColorsBtn.addEventListener("click", () => {
-      if (!isActionMode) return;
+      if (!isActionMode()) return;
       const eff = state?.action?.effects || {};
       // Toggle: if already active for me -> cancel
       if (eff.allColorsBy && myColor && String(eff.allColorsBy).toLowerCase() === String(myColor).toLowerCase()) {
@@ -3760,7 +3767,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
 
   // Barrikade-Joker: VOR dem Wurf aktivieren, danach Quelle+Ziel klicken
   jokerBarricadeBtn.addEventListener("click", () => {
-      if (!isActionMode) return;
+      if (!isActionMode()) return;
 
       const eff = state?.action?.effects || {};
       const effByMe = (eff.barricadeBy && myColor && String(eff.barricadeBy).toLowerCase() === String(myColor).toLowerCase());
@@ -3840,7 +3847,7 @@ function hasJoker(obj, key){ return jokerCount(obj, key) > 0; }
     if(!jokerDoubleBtn || jokerDoubleBtn.__bound) return;
     jokerDoubleBtn.__bound = true;
     jokerDoubleBtn.addEventListener("click", () => {
-      if (!isActionMode) return;
+      if (!isActionMode()) return;
 
       const eff = state?.action?.effects || {};
       const pendingByMe = !!(eff.doubleRoll && myColor
