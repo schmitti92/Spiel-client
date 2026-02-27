@@ -144,12 +144,31 @@
   }
 
   function randomStartNodeIdForColor(color){
-    const starts = (state.startByColor.get(String(color).toLowerCase()) || []).map(String);
-    // Board-2/3: Startfelder können verstreut sein → bewusst einfach RANDOM (wie du willst).
-    // Stacking ist erlaubt, daher keine "frei"-Logik nötig.
-    const pick = pickRandom(starts);
-    return String(pick || starts[0] || findAnyNormalNodeId() || findAnyNodeId());
+    const c = String(color).toLowerCase();
+    const starts = (state.startByColor.get(c) || []).map(String);
+
+    // Regel: pro Feld darf nur 1 Figur stehen.
+    // Deshalb: wenn möglich ein FREIES Startfeld wählen (zufällig).
+    const occupied = new Set(state.pieces.map(p => String(p.nodeId)));
+    const freeStarts = starts.filter(id => !occupied.has(String(id)));
+
+    const pick = pickRandom(freeStarts.length ? freeStarts : starts);
+    if (pick && !occupied.has(String(pick))) return String(pick);
+
+    // Fallback, falls alle Startfelder belegt sind:
+    // Nimm irgendein freies normales Feld. (Wenn es wirklich keines gibt, bleibt als letzter Notfall ein Startfeld.)
+    const freeNormals = [];
+    for (const n of state.nodeById.values()){
+      const t = String(n.type||"normal").toLowerCase();
+      if (t !== "normal") continue;
+      const id = String(n.id);
+      if (occupied.has(id)) continue;
+      freeNormals.push(id);
+    }
+    const alt = pickRandom(freeNormals);
+    return String(alt || pick || starts[0] || findAnyNormalNodeId() || findAnyNodeId());
   }
+
 
   function isNodeBlocked(nodeId){
     const id = String(nodeId);
@@ -284,11 +303,33 @@
       const starts = (state.startByColor.get(color) || []).map(String);
       const count = piecesPerColor(color);
 
+      // Regel: pro Feld nur 1 Figur (keine eigenen Stacks).
+      const occupied = new Set(state.pieces.map(p => String(p.nodeId)));
+
       for (let i=1; i<=count; i++){
-        const nodeId = String(
-          starts[i-1] || starts[0] || findAnyNormalNodeId() || findAnyNodeId()
-        );
+        // bevorzugt: i-tes Startfeld, sonst irgendein freies Startfeld, sonst freies normales Feld
+        let nodeId = starts[i-1] || null;
+
+        if (!nodeId || occupied.has(String(nodeId))){
+          const freeStart = starts.find(id => !occupied.has(String(id)));
+          nodeId = freeStart || null;
+        }
+
+        if (!nodeId || occupied.has(String(nodeId))){
+          const freeNormals = [];
+          for (const n of state.nodeById.values()){
+            const t = String(n.type||"normal").toLowerCase();
+            if (t !== "normal") continue;
+            const id = String(n.id);
+            if (occupied.has(id)) continue;
+            freeNormals.push(id);
+          }
+          nodeId = pickRandom(freeNormals) || nodeId || starts[0] || findAnyNormalNodeId() || findAnyNodeId();
+        }
+
+        nodeId = String(nodeId);
         state.pieces.push({ id:`${color}_${i}`, color, nodeId });
+        occupied.add(nodeId);
       }
     }
 
@@ -695,13 +736,17 @@
   function rollDice(){
     if (state.animating) return;
     const c = activeColor();
-    // only active player's piece can be moved
     state.dice = randInt(1,6);
     state.rolled = true;
     state.canRollAgain = (state.dice===6);
+
+    // Nach dem Würfeln soll man die Figur auswählen.
+    state.selectedPieceId = null;
+    state.reachable = new Map();
+
     setStatus(`🎲 ${c.toUpperCase()} würfelt: ${state.dice}` + (state.canRollAgain ? " (6 → Bonuswurf möglich)" : ""), "good");
-    computeReachable();
     updateHUD();
+    renderTokens();
   }
 
   function endTurn(){
@@ -712,7 +757,7 @@
     state.rolled = false;
     state.dice = 0;
     state.canRollAgain = false;
-    state.selectedPieceId = pieceOfColor(activeColor())?.id ?? null;
+    state.selectedPieceId = null;
     state.reachable = new Map();
     renderTokens();
     updateHUD();
@@ -768,6 +813,13 @@
     }
 
     const diceWas = state.dice;
+
+    // Sicherheit: eigenes Feld darf nicht besetzt sein
+    const occDest = piecesAt(to).filter(p => p.id !== piece.id);
+    if (occDest.length && occDest[0].color === piece.color){
+      setStatus("Du darfst nicht auf ein Feld mit eigener Figur ziehen.","warn");
+      return;
+    }
 
     await moveAlongPath(piece, path);
 
@@ -863,6 +915,17 @@ function computeReachable(){
         if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
         if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
         if (isNodeBlocked(to)) continue;
+
+        // Regel: pro Feld nur 1 Figur.
+        // - Zwischenschritte: niemals über belegte Felder laufen.
+        // - Ziel (letzter Schritt): Gegner darf dort stehen (Capture), eigene Figur nicht.
+        const occ = piecesAt(to);
+        if (occ.length){
+          const o = occ[0];
+          if (rem > 1) continue; // nicht über Figuren laufen
+          if (String(o.color) === String(piece.color)) continue; // eigene blockt immer
+          // Gegner ist okay, wenn rem==1 (Capture auf Ziel)
+        }
 
         const nextUsed = new Set(usedEdges); nextUsed.add(edgeKey);
         const nextVisited = new Set(visitedNodes); nextVisited.add(to);
