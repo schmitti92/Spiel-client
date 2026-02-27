@@ -786,13 +786,21 @@
 
     const myColor = activeColor();
 
-    // UX: Wenn nach dem Würfeln noch keine Figur gewählt ist,
-    // darf man die eigene Figur auch durch Klick auf das Feld auswählen.
-    // (Auf Tablets ist Token-Click manchmal fummelig.)
+    // UX: Figur wechseln per Feld-Klick (super wichtig auf Tablet).
+    // Wenn man auf ein Feld tippt, auf dem eine eigene Figur steht,
+    // soll das IMMER als Figur-Auswahl gelten (und NICHT als "Ziel anklicken").
+    // So kann man nach dem Würfeln bequem umwählen, ohne die Tokens exakt treffen zu müssen.
     const ownHere = piecesAt(nodeId).filter(p => p.color === myColor);
-    if (state.rolled && !state.selectedPieceId && ownHere.length){
-      selectPiece(ownHere[0].id);
-      setStatus("✅ Figur ausgewählt. Jetzt ein blau markiertes Ziel wählen.", "good");
+    if (state.rolled && ownHere.length){
+      // Wenn noch keine Figur gewählt ist ODER man eine andere Figur wählen will:
+      if (!state.selectedPieceId || ownHere[0].id !== state.selectedPieceId){
+        selectPiece(ownHere[0].id);
+        setStatus("✅ Figur ausgewählt. Jetzt ein blau markiertes Ziel wählen.", "good");
+        return;
+      }
+      // Wenn man die aktuell gewählte Figur antippt: nichts weiter tun (kein Move).
+      // (Verhindert, dass ein Tap auf das Startfeld als 'Ziel' missverstanden wird.)
+      setStatus("ℹ️ Figur ist schon ausgewählt. Jetzt ein blau markiertes Ziel wählen.", "warn");
       return;
     }
 
