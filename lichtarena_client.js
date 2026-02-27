@@ -217,6 +217,36 @@ function initLogDock(){
   append("info","Log bereit. Tippe unten rechts auf LOG.");
 }
 
+function ensureEventFieldStyles(){
+  if (document.getElementById("laEventFieldStyles")) return;
+  const style = document.createElement("style");
+  style.id = "laEventFieldStyles";
+  style.textContent = `
+    .node.event{
+      box-shadow: 0 0 0 2px rgba(255,200,90,.28), 0 0 22px rgba(255,200,90,.16);
+      background: rgba(255,200,90,.06);
+    }
+    .node.event .eventIcon{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px;
+      opacity:.95;
+      text-shadow: 0 0 10px rgba(255,210,120,.35), 0 0 18px rgba(255,210,120,.25);
+      pointer-events:none;
+      transform: translateY(-1px);
+    }
+    .node.event::after{
+      content:'';
+      position:absolute; inset:-6px;
+      border-radius:14px;
+      background: radial-gradient(circle at 50% 50%, rgba(255,210,120,.18), rgba(255,210,120,0) 62%);
+      pointer-events:none;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+
   const playersPanel = $("playersPanel");
   const jokerTable = $("jokerTable");
 
@@ -687,6 +717,7 @@ function isNodeBlocked(nodeId){
     const cls = ["node"];
 
     const t = String(n?.type||"normal").toLowerCase();
+    if (t==="special") cls.push("event");
     if (t==="start"){
       const c = String(n?.color||"").toLowerCase();
       cls.push(`start-${c||"red"}`);
@@ -714,6 +745,13 @@ function isNodeBlocked(nodeId){
       const stack = document.createElement("div");
       stack.className = "tokenStack";
       el.appendChild(stack);
+
+      if (String(n?.type||"normal").toLowerCase()==="special"){
+        const ico = document.createElement("div");
+        ico.className = "eventIcon";
+        ico.textContent = "⚡";
+        el.appendChild(ico);
+      }
 
       bindBtn(el, (ev) => { onNodeClicked(nid); });
 
@@ -1485,6 +1523,7 @@ if (isNodeBlocked(to)) continue;
   async function start(){
     try{
       initLogDock();
+      ensureEventFieldStyles();
       setStatus("Lade Board…", "warn");
       state.board = await loadBoard();
       buildMaps();
