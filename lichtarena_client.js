@@ -1294,21 +1294,45 @@ if (isNodeBlocked(to)){
   }
 
 
+  function isStartNodeId(id){
+    const n = state.nodeById.get(String(id));
+    return !!n && String(n.type||"normal").toLowerCase()==="start";
+  }
+
+  function isAdjacentToAnyStart(nodeId){
+    const id = String(nodeId);
+    const neigh = state.neighbors.get(id) || [];
+    for (const nb of neigh){
+      if (isStartNodeId(nb)) return true;
+    }
+    return false;
+  }
+
   function computeBarricadeTargets(){
     const targets = new Set();
     const occupied = new Set(state.pieces.map(p => String(p.nodeId)));
+
     for (const n of state.nodeById.values()){
       const t = String(n.type||"normal").toLowerCase();
+
       // Barrikaden dürfen nur auf freie normale Felder
       if (t !== "normal") continue;
+
       const id = String(n.id);
+
+      // darf nicht neben Startfeldern liegen (Board 2/3 wichtiger, weil Startfelder verteilt sind)
+      if (isAdjacentToAnyStart(id)) continue;
+
+      // kein Feld belegt / keine Lichter / keine andere Barrikade
       if (occupied.has(id)) continue;
       if (state.activeLights.has(id)) continue;
       if (isBarricadeAt(id)) continue;
+
       targets.add(id);
     }
     return targets;
   }
+
 
 
   // ---------- Wheel (Joker reward) ----------
