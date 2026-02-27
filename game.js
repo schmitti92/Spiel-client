@@ -947,6 +947,10 @@ let pendingSaveExport = false;
   let winShown = false;
 let awardsShown = false;
 
+  // Post-match XP overlay coordination
+  let pendingPostMatchRewards = null;
+  let awardsCeremonyDone = false;
+
   let PLAYERS = ["red","blue"];
   function setPlayers(arg){
     if(Array.isArray(arg)){
@@ -1774,6 +1778,19 @@ try{
           showEpicWin(wc);
         }
         updateTurnUI();
+        return;
+      }
+
+      // Post-match XP/Level rewards (server is chef)
+      if(type==="post_match_rewards"){
+        try{
+          pendingPostMatchRewards = msg;
+          // If awards ceremony already finished, show XP overlay now.
+          if(awardsCeremonyDone){
+            showPostMatchXpOverlay(pendingPostMatchRewards);
+            pendingPostMatchRewards = null;
+          }
+        }catch(_e){}
         return;
       }
 
@@ -2806,8 +2823,210 @@ async function runTitleCeremony(awards){
 
   btnNext.disabled = true;
   // keep overlay open until user closes
+
+  // Signal: titles are fully assigned (used to trigger XP overlay)
+  try{
+    awardsCeremonyDone = true;
+    document.dispatchEvent(new CustomEvent("ba_awards_done"));
+  }catch(_e){}
 }
 // ------------------------------------------------------
+
+// ================= Post-Match XP / Level Overlay =================
+function ensureXpStyles(){
+  if(document.getElementById("baXpStyles")) return;
+  const style = document.createElement("style");
+  style.id = "baXpStyles";
+  style.textContent = `
+    #baXpOverlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99999; background:rgba(0,0,0,.66); backdrop-filter: blur(6px); }
+    #baXpOverlay.show{ display:flex; }
+    #baXpCard{ width:min(860px, calc(100vw - 24px)); border-radius:18px; padding:16px; background:rgba(18,26,42,.96); box-shadow: 0 18px 60px rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.10); }
+    #baXpTop{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+    #baXpBadge{ display:inline-flex; align-items:center; gap:8px; font-weight:800; padding:8px 12px; border-radius:999px; background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06)); border:1px solid rgba(255,255,255,.10); }
+    #baXpSub{ color:rgba(255,255,255,.70); font-size:13px; }
+    #baXpList{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+    .xpRow{ border-radius:14px; padding:12px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); }
+    .xpRowTop{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .xpName{ font-weight:800; letter-spacing:.2px; }
+    .xpMeta{ color:rgba(255,255,255,.72); font-size:13px; }
+    .xpBarOuter{ margin-top:10px; height:12px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; }
+    .xpBarInner{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, rgba(180,120,255,.95), rgba(255,210,120,.95)); }
+    .xpHint{ margin-top:10px; color:rgba(255,255,255,.55); font-size:12px; }
+    #baXpControls{ display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:14px; }
+  `;
+  document.head.appendChild(style);
+}
+
+function ensureXpUI(){
+  ensureXpStyles();
+  let ov = document.getElementById("baXpOverlay");
+  if(ov) return ov;
+  ov = document.createElement("div");
+  ov.id = "baXpOverlay";
+  ov.innerHTML = `
+    <div id="baXpCard" role="dialog" aria-modal="true">
+      <div id="baXpTop">
+        <div>
+          <div id="baXpBadge">✨ Level‑Belohnungen</div>
+          <div id="baXpSub">XP wird serverseitig vergeben (nach der Siegerehrung).</div>
+        </div>
+        <div id="baXpControls">
+          <button class="baBtn baBtnGhost" id="baXpSkipBtn">⏩ Skip</button>
+          <button class="baBtn baBtnPrimary" id="baXpCloseBtn">Weiter ▶</button>
+        </div>
+      </div>
+      <div id="baXpList"></div>
+      <div class="xpHint">Teilnahme +30 · Sieg +100 · Joker +5 · Rauswurf +5 · Titel +10</div>
+    </div>
+  `;
+  document.body.appendChild(ov);
+  return ov;
+}
+
+function showPostMatchXpOverlay(payload){
+  const msg = payload && typeof payload === "object" ? payload : null;
+  const rewards = Array.isArray(msg?.rewards) ? msg.rewards : [];
+  if(rewards.length===0) return;
+
+  const rules = msg?.rules || { levelBase:200, levelStep:50 };
+  const xpNeeded = (L)=>{
+    const lv = Math.max(1, Math.floor(Number(L)||1));
+    return Math.max(1, Math.floor(Number(rules.levelBase||200) + Number(rules.levelStep||50)*(lv-1)));
+  };
+
+  const ov = ensureXpUI();
+  const list = document.getElementById("baXpList");
+  const btnClose = document.getElementById("baXpCloseBtn");
+  const btnSkip = document.getElementById("baXpSkipBtn");
+
+  // Build rows
+  list.innerHTML = "";
+  const rows = [];
+  for(const r of rewards){
+    const color = String(r.color||"").toLowerCase();
+    const name = String(r.name||labelForColor(color)||color||"Spieler");
+    const levelB = Number(r.levelBefore||1)||1;
+    const levelA = Number(r.levelAfter||levelB)||levelB;
+    const xpGain = Math.max(0, Math.floor(Number(r.xpGain)||0));
+    const titles = Math.max(0, Math.floor(Number(r.titles)||0));
+    const kicks = Math.max(0, Math.floor(Number(r.kicks)||0));
+    const jokers = Math.max(0, Math.floor(Number(r.jokersUsed)||0));
+    const xpStart = Math.max(0, Math.floor(Number(r.xpInLevelBefore)||0));
+
+    const el = document.createElement("div");
+    el.className = "xpRow";
+    el.innerHTML = `
+      <div class="xpRowTop">
+        <div class="xpName">${escapeHtml(name)} <span class="xpMeta">(Lvl <span data-lv>${levelB}</span>)</span></div>
+        <div class="xpMeta">+${xpGain} XP · Titel ${titles} · Kicks ${kicks} · Joker ${jokers}</div>
+      </div>
+      <div class="xpBarOuter"><div class="xpBarInner" data-bar></div></div>
+      <div class="xpMeta">XP: <span data-xp>${xpStart}</span>/<span data-need>${xpNeeded(levelB)}</span></div>
+    `;
+    list.appendChild(el);
+    rows.push({
+      el,
+      bar: el.querySelector("[data-bar]"),
+      lvEl: el.querySelector("[data-lv]"),
+      xpEl: el.querySelector("[data-xp]"),
+      needEl: el.querySelector("[data-need]"),
+      level: levelB,
+      xp: xpStart,
+      remaining: xpGain,
+      done:false,
+    });
+  }
+
+  // helpers
+  function setBar(row){
+    const need = xpNeeded(row.level);
+    const pct = need>0 ? Math.max(0, Math.min(1, row.xp/need)) : 0;
+    if(row.bar) row.bar.style.width = (pct*100).toFixed(2)+"%";
+    if(row.lvEl) row.lvEl.textContent = String(row.level);
+    if(row.xpEl) row.xpEl.textContent = String(Math.floor(row.xp));
+    if(row.needEl) row.needEl.textContent = String(need);
+  }
+  for(const r of rows) setBar(r);
+
+  let raf = 0;
+  let skip = false;
+  const SPEED = 220; // XP per second per player (visual)
+
+  function finishAll(){
+    skip = true;
+    for(const row of rows){
+      while(row.remaining > 0){
+        const need = xpNeeded(row.level);
+        const take = Math.min(row.remaining, Math.max(0, need - row.xp));
+        row.xp += take;
+        row.remaining -= take;
+        if(row.xp >= need && row.remaining > 0){
+          row.level += 1;
+          row.xp = 0;
+        }
+      }
+      row.done = true;
+      setBar(row);
+    }
+    if(raf) cancelAnimationFrame(raf);
+    raf = 0;
+  }
+
+  function tick(ts){
+    const dt = 16/1000;
+    let allDone = true;
+    for(const row of rows){
+      if(row.done) continue;
+      allDone = false;
+      if(row.remaining <= 0){ row.done = true; setBar(row); continue; }
+      const need = xpNeeded(row.level);
+      const add = skip ? row.remaining : Math.min(row.remaining, SPEED*dt);
+      const space = Math.max(0, need - row.xp);
+      const take = Math.min(add, space);
+      row.xp += take;
+      row.remaining -= take;
+
+      if(row.xp >= need && row.remaining > 0){
+        // Level up jump
+        row.level += 1;
+        row.xp = 0;
+      }
+      setBar(row);
+    }
+    if(!allDone) raf = requestAnimationFrame(tick);
+    else raf = 0;
+  }
+
+  function close(){
+    try{ if(raf) cancelAnimationFrame(raf); }catch(_e){}
+    raf = 0;
+    ov.classList.remove("show");
+    ov.style.display = "none";
+  }
+
+  btnSkip.onclick = ()=>{ finishAll(); };
+  btnClose.onclick = ()=>{ close(); };
+
+  ov.style.display = "flex";
+  ov.classList.add("show");
+  raf = requestAnimationFrame(tick);
+}
+
+// When the awards ceremony is fully assigned, show pending rewards if any
+try{
+  document.addEventListener("ba_awards_done", ()=>{
+    if(pendingPostMatchRewards){
+      showPostMatchXpOverlay(pendingPostMatchRewards);
+      pendingPostMatchRewards = null;
+    }
+  });
+}catch(_e){}
+
+function escapeHtml(s){
+  const str = String(s||"");
+  return str.replace(/[&<>"']/g, (ch)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
+}
+
 
 function showEpicWin(winnerColor){
     const name = labelForColor(winnerColor);
