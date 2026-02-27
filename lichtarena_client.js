@@ -138,6 +138,19 @@
   function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
   function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 
+  function pickRandom(arr){
+    if(!Array.isArray(arr) || arr.length===0) return null;
+    return arr[randInt(0, arr.length-1)];
+  }
+
+  function randomStartNodeIdForColor(color){
+    const starts = (state.startByColor.get(String(color).toLowerCase()) || []).map(String);
+    // Board-2/3: Startfelder können verstreut sein → bewusst einfach RANDOM (wie du willst).
+    // Stacking ist erlaubt, daher keine "frei"-Logik nötig.
+    const pick = pickRandom(starts);
+    return String(pick || starts[0] || findAnyNormalNodeId() || findAnyNodeId());
+  }
+
   function isNodeBlocked(nodeId){
     const id = String(nodeId);
     const n = state.nodeById.get(id);
@@ -252,16 +265,34 @@
     // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
     // Wenn du später 5 pro Farbe willst: hier umstellen.
     state.pieces = [];
-    // 4 Spielfiguren pro Farbe (wie klassisches Barikade-Feeling)
-    // Start: alle Figuren einer Farbe stehen auf dem ersten Startfeld dieser Farbe (Stacking erlaubt).
-    const PIECES_PER_COLOR = 4;
+
+    // Figuren pro Farbe: aus Board-Meta (fallback 4)
+    const piecesPerColor = (color) => {
+      const mp = state.board?.meta?.players;
+      if (Array.isArray(mp)){
+        const row = mp.find(x => String(x?.color||"").toLowerCase() === String(color).toLowerCase());
+        const n = Number(row?.pieces);
+        if (Number.isFinite(n) && n > 0) return Math.floor(n);
+      }
+      return 4;
+    };
+
+    // Startaufstellung:
+    // - wenn genug Startfelder vorhanden: je Figur ein Startfeld
+    // - sonst: Rest stapelt auf dem ersten Startfeld
     for (const color of COLORS){
-      const starts = state.startByColor.get(color) || [];
-      const startNode = String(starts[0] || findAnyNormalNodeId() || findAnyNodeId());
-      for (let i=1;i<=PIECES_PER_COLOR;i++){
-        state.pieces.push({ id:`${color}_${i}`, color, nodeId:startNode });
+      const starts = (state.startByColor.get(color) || []).map(String);
+      const count = piecesPerColor(color);
+
+      for (let i=1; i<=count; i++){
+        const nodeId = String(
+          starts[i-1] || starts[0] || findAnyNormalNodeId() || findAnyNodeId()
+        );
+        state.pieces.push({ id:`${color}_${i}`, color, nodeId });
       }
     }
+
+    // Standard-Auswahl: erste Figur
     state.selectedPieceId = state.pieces[0]?.id || null;
 
     // jokers: 2× je Typ pro Spieler
@@ -745,8 +776,7 @@
     if (occ.length){
       const victim = occ[0];
       if (victim.color !== piece.color){
-        const starts = state.startByColor.get(victim.color) || [];
-        victim.nodeId = String(starts[0] || victim.nodeId);
+                victim.nodeId = randomStartNodeIdForColor(victim.color);
         renderTokens();
 
         await runWheelReward(piece.color);
