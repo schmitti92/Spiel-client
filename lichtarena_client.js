@@ -794,6 +794,17 @@
     if (state.animating) return;
 
     const myColor = activeColor();
+
+    // UX: Wenn nach dem Würfeln noch keine Figur gewählt ist,
+    // darf man die eigene Figur auch durch Klick auf das Feld auswählen.
+    // (Auf Tablets ist Token-Click manchmal fummelig.)
+    const ownHere = piecesAt(nodeId).filter(p => p.color === myColor);
+    if (state.rolled && !state.selectedPieceId && ownHere.length){
+      selectPiece(ownHere[0].id);
+      setStatus("✅ Figur ausgewählt. Jetzt ein blau markiertes Ziel wählen.", "good");
+      return;
+    }
+
     const piece = state.pieces.find(p => p.id === state.selectedPieceId);
 
     if (!piece || piece.color !== myColor){
