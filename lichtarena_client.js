@@ -555,10 +555,7 @@
       stack.className = "tokenStack";
       el.appendChild(stack);
 
-      el.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        onNodeClicked(nid);
-      });
+      bindBtn(el, (ev) => { onNodeClicked(nid); });
 
       stage.appendChild(el);
     }
@@ -595,10 +592,7 @@
         tok.className = "token big" + (p.id===state.selectedPieceId ? " sel" : "");
         tok.style.background = colorToCss(p.color);
         tok.title = `Figur ${p.id}`;
-        tok.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          selectPiece(p.id);
-        });
+        bindBtn(tok, (ev) => { selectPiece(p.id); });
         stack.appendChild(tok);
       } else {
         const show = list.slice(0,4);
@@ -607,10 +601,7 @@
           tok.className = "token" + (p.id===state.selectedPieceId ? " sel" : "");
           tok.style.background = colorToCss(p.color);
           tok.title = `Figur ${p.id}`;
-          tok.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            selectPiece(p.id);
-          });
+          bindBtn(tok, (ev) => { selectPiece(p.id); });
           stack.appendChild(tok);
         }
         if (list.length > 4){
