@@ -126,6 +126,97 @@
   const hudHint = $("hudHint");
   const statusLine = $("statusLine");
 
+// ---------- In-Game Log (Tablet-friendly "Console") ----------
+// Shows console.log/warn/error + window errors inside the game UI.
+function initLogDock(){
+  if (document.getElementById("logDock")) return;
+  const style = document.createElement("style");
+  style.id = "logDockStyles";
+  style.textContent = `
+    #logDock{ position:fixed; left:10px; right:10px; bottom:10px; max-height:42vh; z-index:9999;
+      background:rgba(10,14,22,.92); border:1px solid rgba(255,255,255,.14); border-radius:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,.45); overflow:hidden; display:none; }
+    #logDock.open{ display:block; }
+    #logDockHeader{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.10); }
+    #logDockHeader .title{ font-weight:800; letter-spacing:.4px; opacity:.95; }
+    #logDockHeader .actions{ display:flex; gap:8px; align-items:center; }
+    #logDockHeader button{ border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.92); padding:6px 10px; border-radius:10px; font-weight:700; }
+    #logDockBody{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size:12px; line-height:1.3; padding:10px 12px; overflow:auto; max-height:34vh; }
+    #logDockBody .l{ padding:2px 0; white-space:pre-wrap; word-break:break-word; }
+    #logDockBody .info{ color: rgba(200,220,255,.92); }
+    #logDockBody .warn{ color: rgba(255,220,120,.96); }
+    #logDockBody .err{ color: rgba(255,130,150,.96); }
+    #logFab{ position:fixed; right:12px; bottom:12px; z-index:10000;
+      border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.08); color:rgba(255,255,255,.92);
+      padding:10px 12px; border-radius:999px; font-weight:900; letter-spacing:.4px; }
+  `;
+  document.head.appendChild(style);
+
+  const dock = document.createElement("div");
+  dock.id = "logDock";
+  dock.innerHTML = `
+    <div id="logDockHeader">
+      <div class="title">LOG</div>
+      <div class="actions">
+        <button id="logClear">Clear</button>
+        <button id="logClose">Schließen</button>
+      </div>
+    </div>
+    <div id="logDockBody"></div>
+  `;
+  document.body.appendChild(dock);
+
+  const fab = document.createElement("button");
+  fab.id = "logFab";
+  fab.textContent = "LOG";
+  document.body.appendChild(fab);
+
+  const body = dock.querySelector("#logDockBody");
+  const btnClose = dock.querySelector("#logClose");
+  const btnClear = dock.querySelector("#logClear");
+
+  const append = (kind, msg) => {
+    const line = document.createElement("div");
+    line.className = `l ${kind}`;
+    const ts = new Date();
+    const hh = String(ts.getHours()).padStart(2,"0");
+    const mm = String(ts.getMinutes()).padStart(2,"0");
+    const ss = String(ts.getSeconds()).padStart(2,"0");
+    line.textContent = `[${hh}:${mm}:${ss}] ${msg}`;
+    body.appendChild(line);
+    // limit lines
+    while (body.childNodes.length > 200) body.removeChild(body.firstChild);
+    body.scrollTop = body.scrollHeight;
+  };
+
+  // wrap console
+  const orig = {
+    log: console.log.bind(console),
+    warn: console.warn.bind(console),
+    error: console.error.bind(console),
+  };
+  console.log = (...a) => { orig.log(...a); append("info", a.map(String).join(" ")); };
+  console.warn = (...a) => { orig.warn(...a); append("warn", a.map(String).join(" ")); };
+  console.error = (...a) => { orig.error(...a); append("err", a.map(String).join(" ")); };
+
+  window.addEventListener("error", (e) => {
+    append("err", `JS Error: ${e.message} @ ${e.filename}:${e.lineno}:${e.colno}`);
+  });
+  window.addEventListener("unhandledrejection", (e) => {
+    append("err", `Promise Rejection: ${String(e.reason)}`);
+  });
+
+  fab.addEventListener("click", () => dock.classList.toggle("open"));
+  btnClose.addEventListener("click", () => dock.classList.remove("open"));
+  btnClear.addEventListener("click", () => { body.innerHTML = ""; append("info","(cleared)"); });
+
+  // first line
+  append("info","Log bereit. Tippe unten rechts auf LOG.");
+}
+
   const playersPanel = $("playersPanel");
   const jokerTable = $("jokerTable");
 
@@ -201,7 +292,35 @@
   }
 
 
-  function isNodeBlocked(nodeId){
+  function isForeignStartNode(nodeId, pieceColor){
+  const id = String(nodeId);
+  const n = state.nodeById.get(id);
+  if(!n) return false;
+  const t = String(n.type||"normal").toLowerCase();
+  if(t!=="start") return false;
+  const c = String(n.color||"").toLowerCase();
+  return c && c !== String(pieceColor||"").toLowerCase();
+}
+
+function occupiedByAny(nodeId){
+  const id = String(nodeId);
+  return state.pieces.some(p => String(p.nodeId) === id);
+}
+
+function occupiedByOwn(nodeId, myColor){
+  const id = String(nodeId);
+  const c = String(myColor||"").toLowerCase();
+  return state.pieces.some(p => String(p.nodeId) === id && String(p.color).toLowerCase() === c);
+}
+
+function occupiedByEnemy(nodeId, myColor){
+  const id = String(nodeId);
+  const c = String(myColor||"").toLowerCase();
+  return state.pieces.some(p => String(p.nodeId) === id && String(p.color).toLowerCase() !== c);
+}
+
+function isNodeBlocked(nodeId){
+
     const id = String(nodeId);
     const n = state.nodeById.get(id);
     if(!n) return true;
@@ -214,23 +333,6 @@
     }
     return false;
   }
-
-  // Startfelder-Regel:
-  // Andere Spieler dürfen NICHT auf andersfarbige Startfelder laufen oder sie betreten.
-  // (Gilt sowohl für Zwischen-Schritte als auch für das Zielfeld.)
-  function isForeignStartForPiece(nodeId, pieceColor){
-    const id = String(nodeId);
-    const n = state.nodeById.get(id);
-    if(!n) return false;
-    const t = String(n.type || "normal").toLowerCase();
-    if(t !== "start") return false;
-    const c = String(n.color || "").toLowerCase();
-    const pc = String(pieceColor || "").toLowerCase();
-    // Wenn Startfeld eine Farbe hat und sie != Spielerfarbe ist → verboten
-    if(c && pc && c !== pc) return true;
-    return false;
-  }
-
 
   // ---------- State ----------
   const state = {
@@ -874,10 +976,6 @@
     }
 
     const to = String(nodeId);
-    if (isForeignStartForPiece(to, piece.color)){
-      setStatus("Du darfst nicht auf das Startfeld einer anderen Farbe ziehen.","warn");
-      return;
-    }
     const path = state.reachable?.get(to) || null;
     if (!path){
       setStatus("Zielknoten nicht erreichbar (exakt Würfel-Schritte, ohne Hin-und-her-Hüpfen).","warn");
@@ -986,13 +1084,21 @@ function computeReachable(){
         const edgeKey = canonEdgeKey(cur, to);
         if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
         if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
-        if (isNodeBlocked(to)) continue;
-for (const to of neigh){
-        const edgeKey = canonEdgeKey(cur, to);
-        if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
-        if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
-        if (isNodeBlocked(to)) continue;
-        if (isForeignStartForPiece(to, piece.color)) continue; // can't enter other colors' start fields
+        
+// rule: cannot enter/step over other-color start fields
+if (isForeignStartNode(to, piece.color)) continue;
+
+// rule: no stacking (1 piece per field). Intermediate steps cannot land on any occupied node.
+// Destination is allowed only if occupied by an ENEMY (capture).
+if (rem - 1 > 0){
+  if (occupiedByAny(to)) continue;
+} else {
+  // destination
+  if (occupiedByOwn(to, piece.color)) continue;
+  // enemy destination is allowed (capture)
+}
+
+if (isNodeBlocked(to)) continue;
 
         // Regel: pro Feld nur 1 Figur.
         // - Zwischenschritte: niemals über belegte Felder laufen.
@@ -1249,15 +1355,11 @@ for (const to of neigh){
     gotoBoard(2);
   });
 
-  // Board 2 Button (immer aktiv):
-  // In lichtarena.html existiert der Button #btnDevBoard2 dauerhaft.
-  // Früher war er nur mit ?dev=1 gebunden → wir binden ihn jetzt immer.
-  const btnDevBoard2 = $("btnDevBoard2");
-  bindBtn(btnDevBoard2, () => {
-    // sofort zu Board 2 springen
-    gotoBoard(2);
-  });
-
+  // Board 2 button: always available (also without ?dev=1)
+  {
+    const btnDevBoard2 = $("btnDevBoard2");
+    bindBtn(btnDevBoard2, () => gotoBoard(2));
+  }
 
 // ---------- Camera interactions (pan/zoom) ----------
   let isPanning = false;
@@ -1382,6 +1484,7 @@ for (const to of neigh){
   // ---------- Start ----------
   async function start(){
     try{
+      initLogDock();
       setStatus("Lade Board…", "warn");
       state.board = await loadBoard();
       buildMaps();
