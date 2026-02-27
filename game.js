@@ -2369,57 +2369,212 @@ function toast(msg){
 
   
 // ---------- End-of-game Title Ceremony (per match) ----------
+
 function ensureAwardsStyles(){
   if(document.getElementById("baAwardsStyles")) return;
   const st = document.createElement("style");
   st.id = "baAwardsStyles";
   st.textContent = `
-    #baAwardsOverlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99999;
-      background: radial-gradient(900px 600px at 50% 40%, rgba(255,255,255,.10), rgba(0,0,0,.82) 70%);
-      backdrop-filter: blur(4px);
+    #baAwardsOverlay{
+      position:fixed; inset:0; display:none;
+      align-items:center; justify-content:center;
+      z-index:99999;
+      background:
+        radial-gradient(1200px 700px at 50% 35%, rgba(255,255,255,.12), rgba(0,0,0,.86) 72%),
+        radial-gradient(900px 500px at 20% 15%, rgba(120,80,255,.18), rgba(0,0,0,0) 60%),
+        radial-gradient(900px 500px at 80% 20%, rgba(0,190,255,.12), rgba(0,0,0,0) 62%);
+      backdrop-filter: blur(6px);
     }
-    #baAwardsCard{ width:min(920px,92vw); border-radius:24px; padding:22px 18px; border:1px solid rgba(255,255,255,.12);
-      background: rgba(5,10,22,.55);
-      box-shadow: 0 12px 50px rgba(0,0,0,.55);
+    #baAwardsOverlay.show{ display:flex; }
+
+    #baAwardsConfetti{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      pointer-events:none;
+    }
+
+    #baAwardsCard{
+      width:min(980px,92vw);
+      border-radius: 26px;
+      padding: 18px 18px 16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(10,16,35,.72), rgba(5,10,22,.52));
+      box-shadow:
+        0 18px 70px rgba(0,0,0,.60),
+        0 0 0 1px rgba(255,255,255,.06) inset;
       text-align:center;
-      transform: translateY(10px) scale(.98);
+      transform: translateY(14px) scale(.98);
       opacity:0;
-      transition: .22s ease;
+      transition: .28s cubic-bezier(.2,.9,.2,1);
+      position:relative;
+      overflow:hidden;
     }
-    #baAwardsOverlay.show #baAwardsCard{ transform: translateY(0) scale(1); opacity:1; }
-    #baAwardsTitle{ font-weight:1000; letter-spacing:.2px; font-size:clamp(22px,4.2vw,44px); }
-    #baAwardsValue{ margin-top:12px; font-weight:950; font-size:clamp(20px,3.6vw,38px); opacity:0; transform: translateY(6px); transition:.22s ease; }
-    #baAwardsName{ margin-top:10px; font-weight:900; font-size:clamp(18px,3vw,30px); color: rgba(255,255,255,.86);
-      opacity:0; transform: translateY(6px); transition:.22s ease;
+    #baAwardsOverlay.show #baAwardsCard{
+      transform: translateY(0) scale(1);
+      opacity:1;
     }
-    #baAwardsValue.show, #baAwardsName.show{ opacity:1; transform: translateY(0); }
-    #baAwardsSub{ margin-top:12px; font-size:13px; color: rgba(255,255,255,.62); }
+
+    #baAwardsCard::before{
+      content:'';
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(800px 320px at 50% 0%, rgba(255,255,255,.10), rgba(0,0,0,0) 55%),
+        radial-gradient(600px 220px at 15% 10%, rgba(120,80,255,.20), rgba(0,0,0,0) 60%),
+        radial-gradient(600px 220px at 85% 10%, rgba(0,190,255,.16), rgba(0,0,0,0) 62%);
+      filter: blur(0px);
+      pointer-events:none;
+      opacity:.9;
+    }
+
+    #baAwardsTop{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      position:relative;
+      padding: 6px 6px 10px;
+    }
+    #baAwardsBadge{
+      display:inline-flex; align-items:center; gap:8px;
+      font-weight:900;
+      letter-spacing:.3px;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.92);
+      user-select:none;
+    }
+    #baAwardsStep{
+      font-weight:800;
+      font-size: 13px;
+      color: rgba(255,255,255,.72);
+      user-select:none;
+    }
+
+    #baAwardsTitle{
+      position:relative;
+      font-weight:1000;
+      letter-spacing:.2px;
+      font-size: clamp(24px,4.4vw,46px);
+      margin-top: 6px;
+      text-shadow: 0 10px 30px rgba(0,0,0,.45);
+    }
+
+    #baAwardsValue{
+      position:relative;
+      margin-top: 12px;
+      font-weight: 950;
+      font-size: clamp(20px,3.7vw,40px);
+      opacity:0;
+      transform: translateY(10px) scale(.98);
+      transition: .28s cubic-bezier(.2,.9,.2,1);
+      filter: drop-shadow(0 10px 25px rgba(0,0,0,.45));
+    }
+    #baAwardsName{
+      position:relative;
+      margin-top: 10px;
+      font-weight: 900;
+      font-size: clamp(18px,3.1vw,32px);
+      color: rgba(255,255,255,.90);
+      opacity:0;
+      transform: translateY(10px) scale(.98);
+      transition: .28s cubic-bezier(.2,.9,.2,1);
+    }
+    #baAwardsValue.show, #baAwardsName.show{
+      opacity:1;
+      transform: translateY(0) scale(1);
+    }
+
+    #baAwardsSub{
+      position:relative;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,.62);
+    }
+
+    #baAwardsControls{
+      display:flex; flex-wrap:wrap;
+      justify-content:center; align-items:center;
+      gap:10px;
+      margin-top: 14px;
+      position:relative;
+    }
+    .baBtn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.92);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .baBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.18); }
+    .baBtn:active{ transform: translateY(0px) scale(.99); }
+    .baBtnPrimary{
+      background: linear-gradient(180deg, rgba(120,80,255,.28), rgba(255,255,255,.10));
+      border-color: rgba(120,80,255,.38);
+    }
+    .baBtnGhost{
+      background: rgba(0,0,0,.18);
+      border-color: rgba(255,255,255,.12);
+    }
+    .baBtn[disabled]{ opacity:.45; cursor:not-allowed; transform:none; }
+
+    #baAwardsHint{
+      font-size: 12px;
+      color: rgba(255,255,255,.58);
+      margin-top: 8px;
+      user-select:none;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      #baAwardsCard, #baAwardsValue, #baAwardsName{ transition:none !important; }
+    }
   `;
   document.head.appendChild(st);
 }
+
 function ensureAwardsUI(){
   ensureAwardsStyles();
   let ov = document.getElementById("baAwardsOverlay");
   if(ov) return ov;
+
   ov = document.createElement("div");
   ov.id = "baAwardsOverlay";
   ov.innerHTML = `
-    <div id="baAwardsCard">
+    <canvas id="baAwardsConfetti"></canvas>
+    <div id="baAwardsCard" role="dialog" aria-modal="true">
+      <div id="baAwardsTop">
+        <div id="baAwardsBadge">🏆 Siegerehrung</div>
+        <div id="baAwardsStep">–</div>
+      </div>
       <div id="baAwardsTitle">Titel</div>
       <div id="baAwardsValue">Wert</div>
       <div id="baAwardsName">Name</div>
       <div id="baAwardsSub">Titel‑Ehrung (dieses Spiel)</div>
+
+      <div id="baAwardsControls">
+        <button class="baBtn baBtnGhost" id="baAwardsAutoBtn" title="Automatisch weiter / Pause">⏯ Auto</button>
+        <button class="baBtn baBtnPrimary" id="baAwardsNextBtn">Weiter ▶</button>
+        <button class="baBtn" id="baAwardsRestartBtn" title="Neues Spiel (nur Host)">↻ Neue Runde</button>
+        <button class="baBtn baBtnGhost" id="baAwardsCloseBtn">Schließen ✕</button>
+      </div>
+      <div id="baAwardsHint">Leertaste/Enter = Weiter · Esc = Schließen</div>
     </div>
   `;
   document.body.appendChild(ov);
   return ov;
 }
+
 function fmtAwardValue(a){
   if(!a) return "";
   const v = a.value;
   const unit = a.unit || "";
   if(v==null || v===undefined || (typeof v==="number" && !isFinite(v))) return unit ? unit : "–";
-  // number formatting: keep as given (server already rounded for seconds)
   return unit ? `${v} ${unit}` : String(v);
 }
 function fmtWinners(a){
@@ -2427,51 +2582,230 @@ function fmtWinners(a){
   if(ws.length===0) return "–";
   return ws.join(" & ");
 }
+
+// --- Premium Ceremony: confetti + sound + auto-advance (no auto-close) ---
 let _awardsRunning = false;
 async function runTitleCeremony(awards){
   if(_awardsRunning) return;
   const arr = Array.isArray(awards) ? awards : [];
   if(arr.length===0) return;
+
   _awardsRunning = true;
+
   const ov = ensureAwardsUI();
+  const canvas = document.getElementById("baAwardsConfetti");
   const card = document.getElementById("baAwardsCard");
   const tEl = document.getElementById("baAwardsTitle");
   const vEl = document.getElementById("baAwardsValue");
   const nEl = document.getElementById("baAwardsName");
+  const stepEl = document.getElementById("baAwardsStep");
+
+  const btnNext = document.getElementById("baAwardsNextBtn");
+  const btnAuto = document.getElementById("baAwardsAutoBtn");
+  const btnClose = document.getElementById("baAwardsCloseBtn");
+  const btnRestart = document.getElementById("baAwardsRestartBtn");
+
+  // Host-only button (best-effort)
+  try{
+    let amHost = false;
+    if(typeof rosterById!=="undefined" && typeof clientId!=="undefined" && rosterById && rosterById.get){
+      const me = rosterById.get(clientId);
+      amHost = !!(me && me.isHost);
+    }
+    btnRestart.disabled = !amHost;
+  }catch(_e){ btnRestart.disabled = true; }
+
+  // Canvas sizing
+  const dpr = Math.max(1, Math.min(2, (window.devicePixelRatio||1)));
+  function resizeCanvas(){
+    const r = ov.getBoundingClientRect();
+    canvas.width = Math.floor(r.width * dpr);
+    canvas.height = Math.floor(r.height * dpr);
+    canvas.style.width = r.width+"px";
+    canvas.style.height = r.height+"px";
+  }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas, { passive:true });
+
+  const ctx = canvas.getContext("2d");
+  const conf = [];
+  let confRaf = 0;
+
+  function spawnBurst(intensity=26){
+    const w = canvas.width, h = canvas.height;
+    const cx = w*0.5, cy = h*0.36;
+    for(let i=0;i<intensity;i++){
+      conf.push({
+        x: cx + (Math.random()-0.5)*40*dpr,
+        y: cy + (Math.random()-0.5)*20*dpr,
+        vx: (Math.random()-0.5) * 8*dpr,
+        vy: (-Math.random()*8 - 4) * dpr,
+        g: (0.26 + Math.random()*0.22) * dpr,
+        r: (3 + Math.random()*4) * dpr,
+        a: 1,
+        rot: Math.random()*Math.PI,
+        vr: (Math.random()-0.5)*0.18,
+      });
+    }
+  }
+
+  function tickConfetti(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=conf.length-1;i>=0;i--){
+      const p = conf[i];
+      p.vy += p.g;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.a *= 0.992;
+      if(p.y > canvas.height + 50*dpr || p.a < 0.02){ conf.splice(i,1); continue; }
+
+      // simple glitter: no fixed colors; use bright HSL by time + randomness
+      const hue = (Date.now()/18 + i*23) % 360;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, Math.max(0, p.a));
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = `hsl(${hue} 95% 70%)`;
+      ctx.fillRect(-p.r, -p.r*0.55, p.r*2, p.r*1.1);
+      ctx.restore();
+    }
+    confRaf = requestAnimationFrame(tickConfetti);
+  }
+
+  // Sound (no external files)
+  let audioCtx = null;
+  function beep(kind="hit"){
+    try{
+      if(!audioCtx){
+        audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      }
+      const t0 = audioCtx.currentTime;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "sine";
+      const base = (kind==="win") ? 880 : (kind==="value") ? 660 : 520;
+      o.frequency.setValueAtTime(base, t0);
+      o.frequency.exponentialRampToValueAtTime(base*1.2, t0+0.06);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.12, t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+0.18);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t0); o.stop(t0+0.22);
+    }catch(_e){}
+  }
 
   const wait = (ms)=>new Promise(r=>setTimeout(r, ms));
 
+  let idx = 0;
+  let auto = true;
+  let resolveNext = null;
+  const nextPromise = ()=>new Promise(r=>resolveNext = r);
+
+  function goNext(){
+    if(resolveNext){ const r = resolveNext; resolveNext=null; r(true); }
+  }
+
+  function closeNow(){
+    try{ ov.classList.remove("show"); }catch(_e){}
+    ov.style.display = "none";
+    try{ if(confRaf) cancelAnimationFrame(confRaf); }catch(_e){}
+    confRaf = 0;
+    conf.length = 0;
+    try{ window.removeEventListener("resize", resizeCanvas); }catch(_e){}
+    try{ document.removeEventListener("keydown", onKeyDown); }catch(_e){}
+    _awardsRunning = false;
+  }
+
+  function onKeyDown(e){
+    if(!ov || ov.style.display==="none") return;
+    if(e.key === "Escape"){ e.preventDefault(); closeNow(); return; }
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); goNext(); return; }
+  }
+
+  // Bind controls (idempotent per run)
+  btnNext.onclick = ()=>goNext();
+  btnAuto.onclick = ()=>{
+    auto = !auto;
+    btnAuto.textContent = auto ? "⏯ Auto" : "⏸ Pause";
+    if(typeof toast==="function") toast(auto ? "Auto an" : "Pause");
+  };
+  btnClose.onclick = ()=>closeNow();
+  btnRestart.onclick = ()=>{
+    // Best-effort: use existing reset button, otherwise websocket reset
+    try{
+      if(typeof resetBtn!=="undefined" && resetBtn && typeof resetBtn.click==="function"){
+        resetBtn.click();
+      }else if(typeof wsSend==="function"){
+        wsSend({ type:"reset" });
+      }
+      if(typeof toast==="function") toast("Neue Runde…");
+    }catch(_e){}
+  };
+
+  document.addEventListener("keydown", onKeyDown);
+
   ov.style.display = "flex";
-  // for each title: title -> value -> name, total 5s
-  for(const a of arr){
-    // reset
+  ov.classList.add("show");
+  spawnBurst(46);
+  beep("win");
+  tickConfetti();
+
+  // Sequence
+  while(idx < arr.length){
+    const a = arr[idx];
+    const total = arr.length;
+
+    // Stage content
+    stepEl.textContent = `${idx+1}/${total}`;
     vEl.classList.remove("show");
     nEl.classList.remove("show");
+
     tEl.textContent = String(a.title||"Titel");
     vEl.textContent = fmtAwardValue(a);
     nEl.textContent = fmtWinners(a);
 
-    ov.classList.add("show");
+    // Animate in
     await wait(220);
+    beep("hit");
+    spawnBurst(20);
 
-    // Step 1: Title (≈1.2s)
-    await wait(1000);
-
-    // Step 2: Value
+    await wait(650);
     vEl.classList.add("show");
-    await wait(1200);
+    beep("value");
 
-    // Step 3: Name(s)
+    await wait(650);
     nEl.classList.add("show");
-    await wait(2400);
 
-    // Fade out between titles
-    ov.classList.remove("show");
-    await wait(260);
+    // Wait for next: auto-advance after 9000ms, but never auto-close
+    const p = nextPromise();
+    if(auto){
+      setTimeout(()=>{ try{ goNext(); }catch(_e){} }, 9000);
+    }
+    await p;
+
+    // between awards
+    idx++;
+    if(idx < arr.length){
+      // subtle transition
+      vEl.classList.remove("show");
+      nEl.classList.remove("show");
+      await wait(180);
+    }
   }
 
-  ov.style.display = "none";
-  _awardsRunning = false;
+  // Finale screen (no auto close)
+  stepEl.textContent = `Fertig`;
+  tEl.textContent = "🏆 Finale";
+  vEl.textContent = "Alle Titel vergeben";
+  nEl.textContent = "GG";
+  vEl.classList.add("show");
+  nEl.classList.add("show");
+  spawnBurst(70);
+  beep("win");
+
+  btnNext.disabled = true;
+  // keep overlay open until user closes
 }
 // ------------------------------------------------------
 
