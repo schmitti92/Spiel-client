@@ -44,6 +44,8 @@
     { id:"j3", name:"Doppelwurf" },
     { id:"j4", name:"Barikade versetzen" },
     { id:"j5", name:"Durch Barikade" },
+    { id:"j6", name:"Schutzschild" },
+    { id:"j7", name:"Spieler tauschen" },
   ];
 
   // ---------- DOM ----------
