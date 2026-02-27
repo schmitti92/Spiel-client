@@ -38,6 +38,10 @@
   const LS_KEY = "lichtarena_offline_save_clean_v1";
   const COLORS = ["red","blue","green","yellow"];
 
+  // Spieleranzahl (offline): 2–4 Spieler
+  const PLAYER_COUNT_KEY = "la_playersCount_v1";
+  const initialPlayersCount = Math.max(2, Math.min(4, Number(localStorage.getItem(PLAYER_COUNT_KEY) || "4") || 4));
+
   const JOKERS = [
     { id:"j1", name:"Neuwurf" },
     { id:"j2", name:"Alle Farben" },
@@ -75,6 +79,33 @@
       <div class="hint">Nur sichtbar mit <code>?dev=1</code>. Im normalen Spiel unsichtbar.</div>
     `;
     side.insertBefore(devCard, side.firstChild);
+  }
+
+  // Spieleranzahl UI (offline). Ändert die Spieler-Reihenfolge (RED → BLUE → GREEN → YELLOW) und startet das Spiel neu.
+  if (side){
+    const card = document.createElement("section");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>Spieleranzahl</h3>
+      <div class="row">
+        <label style="display:flex;align-items:center;gap:10px;width:100%;">
+          <span style="min-width:110px;color:var(--muted);">Spieler</span>
+          <select id="selPlayersCount" class="btn" style="flex:1;padding:10px 12px;">
+            <option value="2">2 Spieler</option>
+            <option value="3">3 Spieler</option>
+            <option value="4">4 Spieler</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <button class="btn" id="btnApplyPlayersCount">Anwenden (Neustart)</button>
+      </div>
+      <div class="hint">Hinweis: Anwenden setzt das laufende Spiel zurück (offline). Speichere vorher, falls nötig.</div>
+    `;
+    // unter die DEV-Karte (falls vorhanden), sonst ganz oben
+    const firstCard = side.querySelector(".card");
+    if (firstCard && firstCard.nextSibling) side.insertBefore(card, firstCard.nextSibling);
+    else side.insertBefore(card, side.firstChild);
   }
 
 
@@ -193,6 +224,10 @@
     neighbors: new Map(),       // undirected movement graph: node -> [neighbor]
     startByColor: new Map(),    // color -> [nodeId]
 
+    // players
+    playersCount: initialPlayersCount,
+    activeColors: COLORS.slice(0, initialPlayersCount),
+
     // game
     turnIndex: 0,
     dice: 0,
@@ -299,7 +334,7 @@
     // Startaufstellung:
     // - wenn genug Startfelder vorhanden: je Figur ein Startfeld
     // - sonst: Rest stapelt auf dem ersten Startfeld
-    for (const color of COLORS){
+    for (const color of state.activeColors){
       const starts = (state.startByColor.get(color) || []).map(String);
       const count = piecesPerColor(color);
 
@@ -337,7 +372,7 @@
     state.selectedPieceId = state.pieces[0]?.id || null;
 
     // jokers: 2× je Typ pro Spieler
-    for (const color of COLORS){
+    for (const color of state.activeColors){
       state.jokers[color] = {};
       for (const j of JOKERS) state.jokers[color][j.id] = 2;
     }
@@ -378,13 +413,16 @@
   }
 
   function activeColor(){
-    return COLORS[state.turnIndex % COLORS.length];
+    const arr = state.activeColors && state.activeColors.length ? state.activeColors : COLORS;
+    return arr[state.turnIndex % arr.length];
   }
 
   // ---------- Save/Load ----------
   function saveLocal(){
     const payload = {
       v:1,
+      playersCount: state.playersCount,
+      activeColors: state.activeColors,
       turnIndex: state.turnIndex,
       dice: state.dice,
       rolled: state.rolled,
@@ -410,13 +448,16 @@
       const p = JSON.parse(raw);
       if (!p || p.v!==1) throw new Error("Ungültiges Save-Format");
 
+      state.playersCount = Math.max(2, Math.min(4, Number(p.playersCount || initialPlayersCount || 4) || 4));
+      state.activeColors = Array.isArray(p.activeColors) && p.activeColors.length ? p.activeColors.map(x=>String(x).toLowerCase()).filter(x=>COLORS.includes(x)).slice(0, state.playersCount) : COLORS.slice(0, state.playersCount);
+
       state.turnIndex = p.turnIndex|0;
       state.dice = p.dice|0;
       state.rolled = !!p.rolled;
       state.canRollAgain = !!p.canRollAgain;
       state.selectedPieceId = p.selectedPieceId ?? null;
 
-      state.pieces = Array.isArray(p.pieces) ? p.pieces : state.pieces;
+      state.pieces = Array.isArray(p.pieces) ? p.pieces.filter(pp => state.activeColors.includes(String(pp?.color||'').toLowerCase())) : state.pieces;
       state.activeLights = new Set(Array.isArray(p.activeLights) ? p.activeLights.map(String) : []);
       state.collected = p.collected || state.collected;
       state.globalCollected = Number(p.globalCollected||0);
@@ -647,7 +688,7 @@
 
     // players panel
     playersPanel.innerHTML = "";
-    for (const color of COLORS){
+    for (const color of (state.activeColors?.length?state.activeColors:COLORS)){
       const pc = document.createElement("div");
       pc.className = "playerCard";
       const left = document.createElement("div");
@@ -744,7 +785,7 @@
     if (state.animating) return;
     // If dice==6 and player hasn't used bonus roll yet, allow to keep turn if they roll again:
     // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
-    state.turnIndex = (state.turnIndex + 1) % COLORS.length;
+    state.turnIndex = (state.turnIndex + 1) % (state.activeColors?.length || COLORS.length);
     state.rolled = false;
     state.dice = 0;
     state.canRollAgain = false;
@@ -1113,6 +1154,35 @@ function computeReachable(){
     el.addEventListener("click", handler);
     el.addEventListener("pointerup", handler, { passive:false });
   }
+
+  // Spieleranzahl: UI initialisieren + anwenden
+  const selPlayersCount = $("selPlayersCount");
+  const btnApplyPlayersCount = $("btnApplyPlayersCount");
+  if (selPlayersCount){
+    selPlayersCount.value = String(state.playersCount || initialPlayersCount || 4);
+  }
+  bindBtn(btnApplyPlayersCount, () => {
+    const n = Math.max(2, Math.min(4, Number(selPlayersCount?.value || state.playersCount || 4) || 4));
+    if (n === (state.playersCount || 4)){
+      setStatus("Spieleranzahl unverändert.", "warn");
+      return;
+    }
+    // Speichern (nur Setting), dann Neustart
+    try{ localStorage.setItem(PLAYER_COUNT_KEY, String(n)); }catch(_e){}
+    state.playersCount = n;
+    state.activeColors = COLORS.slice(0, n);
+
+    // Neustart: laufendes Spiel wird zurückgesetzt (offline)
+    state.turnIndex = 0;
+    state.rolled = false;
+    state.dice = 0;
+    state.canRollAgain = false;
+    state.selectedPieceId = null;
+    state.reachable = new Map();
+
+    resetGame();
+    setStatus(`✅ Spieleranzahl gesetzt: ${n}. Neues Spiel gestartet.`, "good");
+  });
 
   bindBtn(btnToggleUI, () => {
     document.body.classList.toggle("uiHidden");
