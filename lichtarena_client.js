@@ -247,6 +247,36 @@ function ensureEventFieldStyles(){
 }
 
 
+function ensureBarricadeStyles(){
+  if (document.getElementById("laBarricadeStyles")) return;
+  const style = document.createElement("style");
+  style.id = "laBarricadeStyles";
+  style.textContent = `
+    .node.barricade{
+      box-shadow: 0 0 0 2px rgba(255,255,255,.10), 0 0 26px rgba(120,200,255,.10);
+    }
+    .node .barricadeIcon{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      filter: drop-shadow(0 10px 14px rgba(0,0,0,.55));
+      pointer-events:none;
+      opacity:.92;
+    }
+    .node.barricadeTarget{
+      outline: 3px solid rgba(120,255,200,.55);
+      box-shadow: 0 0 0 2px rgba(120,255,200,.22), 0 0 26px rgba(120,255,200,.18);
+      transform: translateZ(0) scale(1.03);
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+
+
   const playersPanel = $("playersPanel");
   const jokerTable = $("jokerTable");
 
@@ -349,14 +379,22 @@ function occupiedByEnemy(nodeId, myColor){
   return state.pieces.some(p => String(p.nodeId) === id && String(p.color).toLowerCase() !== c);
 }
 
-function isNodeBlocked(nodeId){
 
+function isBarricadeAt(nodeId){
+  const id = String(nodeId);
+  return !!(state.barricades && (state.barricades instanceof Set ? state.barricades.has(id) : Array.isArray(state.barricades) ? state.barricades.includes(id) : false));
+}
+
+function isNodeBlocked(nodeId){
     const id = String(nodeId);
     const n = state.nodeById.get(id);
     if(!n) return true;
-    const t = String(n.type||"normal").toLowerCase();
-    if(t==="barricade_fixed") return true; // reserved for later boards
-    // dynamic barricades (future): allow either Set or Array storage
+
+    // Barrikaden-Block: wir behandeln Barrikaden als "Objekt auf einem Feld"
+    // (nicht als fester Node-Typ), damit man sie versetzen kann, ohne Board-JSON zu ändern.
+    if (isBarricadeAt(id)) return true;
+
+    // Backward-compat: falls alte Saves noch dynamicBarricades nutzen
     if(state.dynamicBarricades){
       if(state.dynamicBarricades instanceof Set && state.dynamicBarricades.has(id)) return true;
       if(Array.isArray(state.dynamicBarricades) && state.dynamicBarricades.includes(id)) return true;
@@ -386,6 +424,13 @@ function isNodeBlocked(nodeId){
 
     // pieces: {id,color,nodeId}
     pieces: [],
+
+    
+    // barricades (Barikade-Regel)
+    // Wir speichern aktuelle Barrikaden-Positionen separat, damit "versetzen" ohne Board-JSON geht.
+    barricades: new Set(),      // nodeIds
+    pendingBarricade: null,     // { fromId, color } wenn Spieler nach dem Landen eine Barrikade umsetzen muss
+    barricadeTargets: new Set(),// erlaubte Ziel-Felder (nur während pendingBarricade)
 
     // lights
     activeLights: new Set(),    // nodeIds
@@ -463,6 +508,16 @@ function isNodeBlocked(nodeId){
     state.canRollAgain = false;
     state.selectedPieceId = null;
     state.animating = false;
+
+    // barricades: initial aus Board (type === barricade_fixed)
+    state.barricades = new Set();
+    for (const n of state.nodeById.values()){
+      if (String(n.type||"").toLowerCase() === "barricade_fixed"){
+        state.barricades.add(String(n.id));
+      }
+    }
+    state.pendingBarricade = null;
+    state.barricadeTargets = new Set();
 
     // pieces: Board 1 will use 4 pieces total? (dein späterer Plan)
     // Für saubere Basis: pro Farbe 1 Figur auf erstem Startfeld (4 Figuren).
@@ -724,6 +779,9 @@ function isNodeBlocked(nodeId){
     }
     if (state.activeLights.has(String(nid))) cls.push("light");
 
+    if (isBarricadeAt(nid)) cls.push("barricade");
+    if (state.barricadeTargets && state.barricadeTargets.has(String(nid))) cls.push("barricadeTarget");
+
     if (state.reachable.has(String(nid))) cls.push("reachable");
 
     // selected node highlight: selected piece is on nid
@@ -754,6 +812,14 @@ function isNodeBlocked(nodeId){
       }
 
       bindBtn(el, (ev) => { onNodeClicked(nid); });
+
+      
+      if (isBarricadeAt(nid)){
+        const b = document.createElement("div");
+        b.className = "barricadeIcon";
+        b.textContent = "🧱";
+        el.appendChild(b);
+      }
 
       stage.appendChild(el);
     }
@@ -940,6 +1006,7 @@ function isNodeBlocked(nodeId){
 
   function endTurn(){
     if (state.animating) return;
+    if (state.pendingBarricade){ toast('Erst die Barikade umsetzen!'); return; }
     // If dice==6 and player hasn't used bonus roll yet, allow to keep turn if they roll again:
     // We'll implement: ending turn always passes, bonus roll is optional by pressing Würfeln again after move (we keep same turn).
     state.turnIndex = (state.turnIndex + 1) % (state.activeColors?.length || COLORS.length);
@@ -983,6 +1050,26 @@ function isNodeBlocked(nodeId){
     if (state.animating) return;
 
     const myColor = activeColor();
+
+    // Barrikade-Umsetzen-Modus: erst Ziel-Feld wählen, dann geht es weiter.
+    if (state.pendingBarricade){
+      const id = String(nodeId);
+      if (!state.barricadeTargets || !state.barricadeTargets.has(id)){
+        toast("Hier kannst du die Barikade nicht hinsetzen.");
+        return;
+      }
+      // umsetzen
+      const fromId = String(state.pendingBarricade.fromId);
+      state.barricades.delete(fromId);
+      state.barricades.add(id);
+      state.pendingBarricade = null;
+      state.barricadeTargets = new Set();
+      toast("🧱 Barikade versetzt.");
+      renderAll();
+      // nach dem Umsetzen kann (wie gewohnt) der Zug beendet werden / weitergehen
+      return;
+    }
+
 
     // UX: Figur wechseln per Feld-Klick (super wichtig auf Tablet).
     // Wenn man auf ein Feld tippt, auf dem eine eigene Figur steht,
@@ -1031,7 +1118,22 @@ function isNodeBlocked(nodeId){
 
     await moveAlongPath(piece, path);
 
-    // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad
+    // Nach Ankunft: Barikade-Regel (wie Barikade)
+    if (isBarricadeAt(to)){
+      // Figur steht jetzt auf dem Feld, die Barikade muss umgesetzt werden.
+      state.barricades.delete(to);
+      state.pendingBarricade = { fromId: to, color: piece.color };
+      state.barricadeTargets = computeBarricadeTargets();
+      setStatus("🧱 Barikade! Tippe ein freies Feld, um sie umzusetzen.", "warn");
+      // Zug ist gelaufen, aber erst nach Umsetzen darf es weitergehen.
+      state.rolled = false;
+      state.dice = null;
+      state.reachable = new Map();
+      renderAll();
+      return;
+    }
+
+    // Nach Ankunft: ggf. Rausschmeißen (Capture) + Glücksrad (Capture) + Glücksrad
     const occ = piecesAt(to).filter(p => p.id !== piece.id);
     if (occ.length){
       const victim = occ[0];
@@ -1136,7 +1238,11 @@ if (rem - 1 > 0){
   // enemy destination is allowed (capture)
 }
 
-if (isNodeBlocked(to)) continue;
+if (isNodeBlocked(to)){
+  // Barrikade darf NUR als Ziel (letzter Schritt) betreten werden,
+  // damit die Figur "auf der Barrikade landet" und sie danach umgesetzt wird.
+  if (!(rem - 1 === 0 && isBarricadeAt(to))) continue;
+}
 
         // Regel: pro Feld nur 1 Figur.
         // - Zwischenschritte: niemals über belegte Felder laufen.
@@ -1176,6 +1282,7 @@ if (isNodeBlocked(to)) continue;
       const id = String(n.id);
       if (occupied.has(id)) continue;
       if (state.activeLights.has(id)) continue;
+      if (isBarricadeAt(id)) continue;
       normals.push(id);
     }
     if (!normals.length) return null;
@@ -1185,6 +1292,24 @@ if (isNodeBlocked(to)) continue;
     updateHUD();
     return pick;
   }
+
+
+  function computeBarricadeTargets(){
+    const targets = new Set();
+    const occupied = new Set(state.pieces.map(p => String(p.nodeId)));
+    for (const n of state.nodeById.values()){
+      const t = String(n.type||"normal").toLowerCase();
+      // Barrikaden dürfen nur auf freie normale Felder
+      if (t !== "normal") continue;
+      const id = String(n.id);
+      if (occupied.has(id)) continue;
+      if (state.activeLights.has(id)) continue;
+      if (isBarricadeAt(id)) continue;
+      targets.add(id);
+    }
+    return targets;
+  }
+
 
   // ---------- Wheel (Joker reward) ----------
   function openWheel(){
@@ -1524,6 +1649,7 @@ if (isNodeBlocked(to)) continue;
     try{
       initLogDock();
       ensureEventFieldStyles();
+    ensureBarricadeStyles();
       setStatus("Lade Board…", "warn");
       state.board = await loadBoard();
       buildMaps();
