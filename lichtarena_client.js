@@ -215,6 +215,23 @@
     return false;
   }
 
+  // Startfelder-Regel:
+  // Andere Spieler dürfen NICHT auf andersfarbige Startfelder laufen oder sie betreten.
+  // (Gilt sowohl für Zwischen-Schritte als auch für das Zielfeld.)
+  function isForeignStartForPiece(nodeId, pieceColor){
+    const id = String(nodeId);
+    const n = state.nodeById.get(id);
+    if(!n) return false;
+    const t = String(n.type || "normal").toLowerCase();
+    if(t !== "start") return false;
+    const c = String(n.color || "").toLowerCase();
+    const pc = String(pieceColor || "").toLowerCase();
+    // Wenn Startfeld eine Farbe hat und sie != Spielerfarbe ist → verboten
+    if(c && pc && c !== pc) return true;
+    return false;
+  }
+
+
   // ---------- State ----------
   const state = {
     board: null,
@@ -857,6 +874,10 @@
     }
 
     const to = String(nodeId);
+    if (isForeignStartForPiece(to, piece.color)){
+      setStatus("Du darfst nicht auf das Startfeld einer anderen Farbe ziehen.","warn");
+      return;
+    }
     const path = state.reachable?.get(to) || null;
     if (!path){
       setStatus("Zielknoten nicht erreichbar (exakt Würfel-Schritte, ohne Hin-und-her-Hüpfen).","warn");
@@ -966,6 +987,12 @@ function computeReachable(){
         if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
         if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
         if (isNodeBlocked(to)) continue;
+for (const to of neigh){
+        const edgeKey = canonEdgeKey(cur, to);
+        if (usedEdges.has(edgeKey)) continue;   // no back-and-forth over same edge
+        if (visitedNodes.has(to)) continue;     // no visiting a node twice in same move
+        if (isNodeBlocked(to)) continue;
+        if (isForeignStartForPiece(to, piece.color)) continue; // can't enter other colors' start fields
 
         // Regel: pro Feld nur 1 Figur.
         // - Zwischenschritte: niemals über belegte Felder laufen.
@@ -1222,11 +1249,15 @@ function computeReachable(){
     gotoBoard(2);
   });
 
-  // DEV: Board 2 testen (ohne Board 1 zu beenden)
-  if (devMode){
-    const btnDevBoard2 = $("btnDevBoard2");
-    bindBtn(btnDevBoard2, () => gotoBoard(2));
-  }
+  // Board 2 Button (immer aktiv):
+  // In lichtarena.html existiert der Button #btnDevBoard2 dauerhaft.
+  // Früher war er nur mit ?dev=1 gebunden → wir binden ihn jetzt immer.
+  const btnDevBoard2 = $("btnDevBoard2");
+  bindBtn(btnDevBoard2, () => {
+    // sofort zu Board 2 springen
+    gotoBoard(2);
+  });
+
 
 // ---------- Camera interactions (pan/zoom) ----------
   let isPanning = false;
