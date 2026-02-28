@@ -1309,28 +1309,60 @@ if (isNodeBlocked(to)){
   }
 
   function computeBarricadeTargets(){
-    const targets = new Set();
+    // Ziel-Felder für Barikade versetzen
+    // Regelwunsch: NICHT direkt neben einem Startfeld platzieren.
+    // Problem: Auf Board 2/3 können Startfelder verteilt sein → strenge Regel kann 0 gültige Felder ergeben.
+    // Lösung: 2-pass:
+    //   Pass 1 (strict): keine Nachbarn von Startfeldern
+    //   Pass 2 (fallback): falls leer, dann Nachbarn erlaubt (aber nie AUF Startfeldern)
     const occupied = new Set(state.pieces.map(p => String(p.nodeId)));
 
-    for (const n of state.nodeById.values()){
+    const isStart = (id) => {
+      const n = state.nodeById.get(String(id));
+      return !!n && String(n.type||"normal").toLowerCase()==="start";
+    };
+    const isAdjacentToAnyStart = (id) => {
+      const neigh = state.neighbors.get(String(id)) || [];
+      for (const nb of neigh){
+        if (isStart(nb)) return true;
+      }
+      return false;
+    };
+
+    const baseOk = (id) => {
+      const n = state.nodeById.get(String(id));
+      if (!n) return false;
       const t = String(n.type||"normal").toLowerCase();
+      if (t !== "normal") return false;
 
-      // Barrikaden dürfen nur auf freie normale Felder
-      if (t !== "normal") continue;
+      // nie auf Startfeldern (sicherheitshalber, auch wenn t==="normal" sollte)
+      if (isStart(id)) return false;
 
+      // kein Feld belegt / keine Lichter / keine andere Barikade
+      if (occupied.has(id)) return false;
+      if (state.activeLights.has(id)) return false;
+      if (isBarricadeAt(id)) return false;
+
+      return true;
+    };
+
+    const strict = new Set();
+    const relaxed = new Set();
+
+    for (const n of state.nodeById.values()){
       const id = String(n.id);
+      if (!baseOk(id)) continue;
 
-      // darf nicht neben Startfeldern liegen (Board 2/3 wichtiger, weil Startfelder verteilt sind)
-      if (isAdjacentToAnyStart(id)) continue;
+      // relaxed: erlaubt auch neben Startfeldern
+      relaxed.add(id);
 
-      // kein Feld belegt / keine Lichter / keine andere Barrikade
-      if (occupied.has(id)) continue;
-      if (state.activeLights.has(id)) continue;
-      if (isBarricadeAt(id)) continue;
-
-      targets.add(id);
+      // strict: nicht neben Startfeldern
+      if (!isAdjacentToAnyStart(id)) strict.add(id);
     }
-    return targets;
+
+    // Wenn strict leer ist (kommt auf Board 2/3 vor), relaxen wir automatisch,
+    // damit die Barikade IMMER gesetzt werden kann.
+    return (strict.size ? strict : relaxed);
   }
 
 
