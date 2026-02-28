@@ -301,6 +301,18 @@ function ensureBarricadeStyles(){
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
     }[c]));
   }
+
+
+  // Simple toast helper (tablet-friendly): avoids ReferenceError and keeps game running.
+  // Shows message in Status line and logs it.
+  function toast(msg, kind="warn"){
+    try{
+      const k = (kind==="bad"||kind==="error") ? "bad" : (kind==="good" ? "good" : "warn");
+      setStatus(String(msg), k);
+    }catch(_e){}
+    try{ console.log("[toast]", msg); }catch(_e){}
+  }
+
   function colorToCss(c){
     c = String(c||"").toLowerCase();
     if (c==="red") return "rgba(255,90,106,.95)";
