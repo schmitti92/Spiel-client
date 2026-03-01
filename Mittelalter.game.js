@@ -14,6 +14,7 @@
 const canvas = document.getElementById("boardCanvas");
 const ctx = canvas.getContext("2d");
 const btnRoll = document.getElementById("btnRoll");
+const btnFit = document.getElementById("btnFit");
 const dieBox = document.getElementById("dieBox");
 const statusLine = document.getElementById("statusLine");
 
@@ -23,6 +24,61 @@ const TEAM_COLORS = {
   3: "#42d17a",
   4: "#ffd166"
 };
+
+// ---------- Camera (Pan / Zoom) ----------
+// World = Node-Koordinaten aus board.json
+// Screen = Canvas Pixel (CSS px)
+// Wir zeichnen in World-Koordinaten und transformieren mit cam.
+const cam = {
+  x: 0,   // translate in screen px
+  y: 0,
+  s: 1    // scale
+};
+
+const camLimits = { minS: 0.35, maxS: 2.5 };
+
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+function screenToWorld(sx, sy){
+  // sx/sy sind CSS-Pixel relativ zum Canvas
+  return {
+    x: (sx - cam.x) / cam.s,
+    y: (sy - cam.y) / cam.s
+  };
+}
+
+function applyZoomAt(screenX, screenY, factor){
+  const before = screenToWorld(screenX, screenY);
+  cam.s = clamp(cam.s * factor, camLimits.minS, camLimits.maxS);
+  const after = screenToWorld(screenX, screenY);
+  // cursor stays fixed: adjust translation
+  cam.x += (after.x - before.x) * cam.s;
+  cam.y += (after.y - before.y) * cam.s;
+}
+
+function fitToBoard(padding=40){
+  if(!nodes || !nodes.length) return;
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  for(const n of nodes){
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x);
+    maxY = Math.max(maxY, n.y);
+  }
+  const cw = canvas.clientWidth;
+  const ch = canvas.clientHeight;
+  const bw = Math.max(1, (maxX - minX));
+  const bh = Math.max(1, (maxY - minY));
+  const sX = (cw - padding*2) / bw;
+  const sY = (ch - padding*2) / bh;
+  cam.s = clamp(Math.min(sX, sY), camLimits.minS, camLimits.maxS);
+
+  // center bbox
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  cam.x = cw/2 - cx*cam.s;
+  cam.y = ch/2 - cy*cam.s;
+}
 
 let board, nodes=[], edges=[];
 let nodesById = new Map();
@@ -239,19 +295,19 @@ function placeBarricadeAt(nodeId){
   return true;
 }
 
-// ---------- Click / Tap ----------
-canvas.addEventListener("click",(e)=>{
-  const rect=canvas.getBoundingClientRect();
-  const x=e.clientX-rect.left;
-  const y=e.clientY-rect.top;
-
-  // hit test
-  const R=18;
+// ---------- Input (Tap/Click + Pan/Zoom) ----------
+function hitTestWorld(wx, wy){
+  const R = 18; // node radius (world units)
   let hit=null;
   for(const n of nodes){
-    const dx=x-n.x,dy=y-n.y;
+    const dx=wx-n.x, dy=wy-n.y;
     if(dx*dx+dy*dy<=R*R){ hit=n; break; }
   }
+  return hit;
+}
+
+function handleTapAtWorld(wx, wy){
+  const hit = hitTestWorld(wx, wy);
   if(!hit) return;
 
   if(state.phase==="chooseTarget"){
@@ -277,7 +333,130 @@ canvas.addEventListener("click",(e)=>{
     placeBarricadeAt(hit.id);
     return;
   }
-});
+}
+
+// Pointer-Tracking (1 Finger / Maus = Pan, Tap = Auswahl; 2 Finger = Pinch Zoom)
+const pointers = new Map(); // id -> {x,y}
+let isPanning = false;
+let panStart = null; // {x,y, camX, camY}
+let tapCandidate = null; // {x,y,t}
+
+function getLocalXY(e){
+  const rect = canvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+canvas.addEventListener("pointerdown",(e)=>{
+  canvas.setPointerCapture(e.pointerId);
+  const p = getLocalXY(e);
+  pointers.set(e.pointerId, p);
+
+  if(pointers.size===1){
+    isPanning = true;
+    panStart = { x: p.x, y: p.y, camX: cam.x, camY: cam.y };
+    tapCandidate = { x: p.x, y: p.y, t: performance.now() };
+  }else{
+    // multi-touch: not a tap
+    tapCandidate = null;
+  }
+},{passive:true});
+
+canvas.addEventListener("pointermove",(e)=>{
+  if(!pointers.has(e.pointerId)) return;
+  const p = getLocalXY(e);
+  const prev = pointers.get(e.pointerId);
+  pointers.set(e.pointerId, p);
+
+  if(pointers.size===1 && isPanning && panStart){
+    const dx = p.x - panStart.x;
+    const dy = p.y - panStart.y;
+    cam.x = panStart.camX + dx;
+    cam.y = panStart.camY + dy;
+
+    // wenn merklich bewegt -> kein Tap
+    if(tapCandidate){
+      const mx = p.x - tapCandidate.x;
+      const my = p.y - tapCandidate.y;
+      if((mx*mx + my*my) > 36) tapCandidate = null; // >6px
+    }
+    return;
+  }
+
+  if(pointers.size===2){
+    // Pinch: compute distance/center between two pointers
+    const pts = Array.from(pointers.values());
+    const a = pts[0], b = pts[1];
+    const cx = (a.x + b.x)/2;
+    const cy = (a.y + b.y)/2;
+    const dist = Math.hypot(a.x-b.x, a.y-b.y);
+
+    // store last dist on canvas dataset
+    const last = canvas._pinchLastDist;
+    if(typeof last === "number" && last > 0){
+      const factor = dist / last;
+      // limit huge jumps
+      const safe = clamp(factor, 0.85, 1.15);
+      applyZoomAt(cx, cy, safe);
+    }
+    canvas._pinchLastDist = dist;
+    tapCandidate = null;
+  }
+},{passive:true});
+
+function endPointer(e){
+  if(!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+
+  if(pointers.size<2){
+    canvas._pinchLastDist = null;
+  }
+
+  // Tap if candidate still valid and single pointer ended
+  if(tapCandidate && pointers.size===0){
+    const p = getLocalXY(e);
+    const dt = performance.now() - tapCandidate.t;
+    const dx = p.x - tapCandidate.x;
+    const dy = p.y - tapCandidate.y;
+    if(dt < 350 && (dx*dx+dy*dy) <= 36){
+      const w = screenToWorld(p.x, p.y);
+      handleTapAtWorld(w.x, w.y);
+    }
+  }
+
+  if(pointers.size===0){
+    isPanning = false;
+    panStart = null;
+    tapCandidate = null;
+  }
+}
+
+canvas.addEventListener("pointerup", endPointer, {passive:true});
+canvas.addEventListener("pointercancel", endPointer, {passive:true});
+
+// Mouse wheel zoom (desktop)
+canvas.addEventListener("wheel",(e)=>{
+  e.preventDefault();
+  const p = getLocalXY(e);
+  const dir = Math.sign(e.deltaY);
+  const factor = dir > 0 ? 0.92 : 1.08;
+  applyZoomAt(p.x, p.y, factor);
+},{passive:false});
+
+// Doppeltipp/Doppelklick = zentrieren
+let lastTapTime = 0;
+canvas.addEventListener("pointerup",(e)=>{
+  const now = performance.now();
+  if(now - lastTapTime < 280){
+    fitToBoard(60);
+    lastTapTime = 0;
+  }else{
+    lastTapTime = now;
+  }
+},{passive:true});
+
+// Button "Zentrieren"
+btnFit?.addEventListener("click", ()=> fitToBoard(60));
+
 
 // ---------- Würfeln ----------
 btnRoll.addEventListener("click",()=>{
@@ -311,6 +490,10 @@ function draw(){
   }
 
   ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+
+  ctx.save();
+  ctx.translate(cam.x, cam.y);
+  ctx.scale(cam.s, cam.s);
 
   // Edges
   ctx.lineWidth=2;
@@ -371,6 +554,8 @@ function draw(){
     ctx.stroke();
   }
 
+  ctx.restore();
+
   requestAnimationFrame(draw);
 }
 
@@ -393,6 +578,7 @@ async function load(){
   }
 
   initPieces();
+  fitToBoard(60);
   state.phase="needRoll";
   dieBox.textContent="–";
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
