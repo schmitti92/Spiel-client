@@ -1,76 +1,30 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mittelalter – Prototyp</title>
-  <link rel="stylesheet" href="Mittelalter.style.css?v=20260301-010308" />
-<script>
-  window.BUILD_ID = "20260301-010308";
-</script>
+
+  <!-- 🔒 CACHE-SCHUTZ -->
+  <!-- Ändere nur die Versionsnummer unten bei Updates -->
+  <script>
+    const VERSION = "20260301-011116";
+  </script>
+
+  <link rel="stylesheet" href="Mittelalter.style.css?v=20260301-011116" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="title">
-      <div class="h1">Mittelalter – Prototyp</div>
-      <div class="h2" id="statusLine">Lade Board…</div>
-    </div>
 
-    <div class="controls">
-      <button id="btnFit" class="btn secondary" title="Ansicht zentrieren">Zentrieren</button>
-      <button id="btnRoll" class="btn primary">🎲 Würfeln</button>
-      <div class="die" id="dieBox" aria-label="Würfelwert">–</div>
-    </div>
-  </header>
+  <h1>Mittelalter – Prototyp</h1>
+  <div id="statusLine">Lade...</div>
 
-  <main class="main">
-    <div class="canvasWrap">
-      <canvas id="boardCanvas"></canvas>
-      <div class="hint" id="hint">
-        • Tippe eine Figur deiner Farbe an → dann ein leuchtendes Zielfeld.<br/>
-        • Bei <b>6</b> darfst du nochmal würfeln.<br/>
-        • Gegnerische Figuren können rausgeworfen werden.<br/>
-        • Nie direkt zurück aufs Feld, wo die Figur vorher stand.
-      </div>
-    </div>
+  <button id="btnRoll">🎲 Würfeln</button>
+  <div id="dieBox">–</div>
 
-    <aside class="sidebar" id="sidebar">
-      <div class="card">
-        <div class="cardTitle">Zug</div>
-        <div class="kv">
-          <div>Spieler</div><div id="curPlayer">–</div>
-          <div>Phase</div><div id="curPhase">–</div>
-        </div>
-      </div>
+  <canvas id="boardCanvas" width="1200" height="800"></canvas>
 
-      <div class="card">
-        <div class="cardTitle">Legende</div>
-        <div class="legend">
-          <div class="row"><span class="dot normal"></span> Normal</div>
-          <div class="row"><span class="dot start"></span> Start</div>
-          <div class="row"><span class="dot barricade"></span> Barrikade</div>
-          <div class="row"><span class="dot obstacle"></span> Hindernis (minRoll)</div>
-          <div class="row"><span class="dot portal"></span> Portal</div>
-          <div class="row"><span class="dot boss"></span> Boss</div>
-        </div>
-      </div>
+  <!-- JS mit ?v= -->
+  <script src="Mittelalter.game.js?v=20260301-011116"></script>
 
-      <div class="card">
-        <div class="cardTitle">Rausgeworfen (Reserve)</div>
-        <div class="small" id="reserveInfo">–</div>
-      </div>
-
-      <div class="card">
-        <div class="cardTitle">Bedienung</div>
-        <div class="small">
-          • 1 Finger ziehen = Board verschieben<br/>
-          • Pinch / Mausrad = Zoom<br/>
-          • Doppeltipp = zentrieren
-        </div>
-      </div>
-    </aside>
-  </main>
-
-  <script src="Mittelalter.game.js?v=20260301-010308"></script>
 </body>
 </html>
