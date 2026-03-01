@@ -257,6 +257,7 @@ const barricades = new Set(); // nodeId
 
 const state = {
   players:[1,2,3,4],
+  playerCount:4,
   turn:0,
   roll:null,
   phase:"loading", // loading | needRoll | choosePiece | chooseTarget | usePortal | placeBarricade
@@ -272,6 +273,33 @@ const state = {
 };
 
 function currentTeam(){ return state.players[state.turn]; }
+
+function setPlayerCount(n, opts={reset:true}){
+  const nn = Math.max(1, Math.min(4, Number(n)||4));
+  state.playerCount = nn;
+  state.players = Array.from({length: nn}, (_,i)=>i+1);
+  state.turn = 0;
+
+  // Reset running turn state
+  state.roll = null;
+  state.selected = null;
+  state.highlighted.clear();
+  state.placeHighlighted.clear();
+  ensurePortalState();
+  state.portalHighlighted.clear();
+  state.portalUsedThisTurn = false;
+  state.pendingSix = false;
+
+  if(opts.reset){
+    initPieces();
+    initEventFieldsFromBoard();
+    fitToBoard(60);
+  }
+
+  dieBox.textContent = "–";
+  state.phase = "needRoll";
+  setStatus(`Spieleranzahl: ${nn}. Team ${currentTeam()} ist dran: Würfeln.`);
+}
 
 function isStartNode(id){
   const n = nodesById.get(id);
@@ -448,7 +476,8 @@ function initPieces(){
   }
 
   // Auf ALLEN Startfeldern eine Figur (wie vorher)
-  const starts = nodes.filter(n=>n.type==="start");
+  const active = new Set(state.players);
+  const starts = nodes.filter(n=>n.type==="start" && active.has(Number(n.props?.startTeam)));
   let i=0;
   for(const s of starts){
     const id="p"+(++i);
@@ -667,7 +696,7 @@ function handleTapAtWorld(wx, wy){
 
   // 1) Figur wählen / wechseln (nach dem Wurf)
   const occId = state.occupied.get(hit.id);
-  if(occId && (state.phase==="choosePiece" || state.phase==="chooseTarget") && state.roll){
+  if(occId && (state.phase==="choosePiece") && state.roll){
     const occPiece = state.pieces.find(p=>p.id===occId);
     if(occPiece && occPiece.team === currentTeam()){
       state.selected = occPiece.id;
@@ -890,7 +919,30 @@ btnRoll.addEventListener("click",()=>{
   setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Tippe eine eigene Figur an, um sie zu bewegen.`);
 });
 
-// ---------- Render ----------
+// ---------- Spieleranzahl (1–4) ----------
+const selPlayerCount = document.getElementById("playerCount");
+if(selPlayerCount){
+  // Default = 4
+  selPlayerCount.value = String(state.players.length || 4);
+
+  selPlayerCount.addEventListener("change", ()=>{
+    const n = Number(selPlayerCount.value || 4);
+
+    // Nur vor dem Laufen umstellen (sicher)
+    const safeToChange = (state.phase === "needRoll") && (state.roll === null) && (!state.selected);
+    if(!safeToChange){
+      console.warn("[PLAYERS] change blocked during active move/roll");
+      // reset select back
+      selPlayerCount.value = String(state.players.length || 4);
+      setStatus("Spieleranzahl nur ändern, wenn noch NICHT gewürfelt wurde.");
+      return;
+    }
+    setPlayerCount(n, {reset:true});
+  });
+}
+
+
+// ---------- Render -----------
 function draw(){
   // Canvas auf CSS-Größe setzen (einfach)
   const dpr = Math.max(1, window.devicePixelRatio||1);
@@ -987,31 +1039,6 @@ function draw(){
     ctx.stroke();
     ctx.restore();
   }
-
-  // Event-Felder (sichtbar)
-  ensureEventState();
-  if(state.eventActive && state.eventActive.size){
-    for(const id of state.eventActive){
-      const n = nodesById.get(id);
-      if(!n) continue;
-      ctx.save();
-      ctx.strokeStyle="rgba(190,120,255,.85)";
-      ctx.lineWidth=3;
-      ctx.beginPath();
-      ctx.rect(n.x-12, n.y-12, 24, 24);
-      ctx.stroke();
-      ctx.fillStyle="rgba(190,120,255,.16)";
-      ctx.fillRect(n.x-12, n.y-12, 24, 24);
-
-      ctx.fillStyle="rgba(240,230,255,.95)";
-      ctx.font="14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      ctx.textAlign="center";
-      ctx.textBaseline="middle";
-      ctx.fillText("★", n.x, n.y+0.5);
-      ctx.restore();
-    }
-  }
-
 
     // Pieces
   const selectedId = state.selected;
@@ -1151,6 +1178,7 @@ async function load(){
 
   initPieces();
   initEventFieldsFromBoard();
+  if(selPlayerCount) selPlayerCount.value = String(state.players.length||4);
   fitToBoard(60);
   state.phase="needRoll";
   dieBox.textContent="–";
