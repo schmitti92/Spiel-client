@@ -875,7 +875,7 @@ function draw(){
   }
 
     // Pieces
-  const activeTeam = currentTeam();
+  const selectedId = state.selected;
   for(const p of state.pieces){
     if(!p.node) continue;
     const n=nodesById.get(p.node);
@@ -890,8 +890,8 @@ function draw(){
     ctx.lineWidth=2;
     ctx.stroke();
 
-    // Active team ring (nur aktuelles Team umranden)
-    if(p.team === activeTeam){
+    // Selected piece ring (nur die ausgewählte Figur umranden)
+    if(selectedId && p.id === selectedId){
       ctx.save();
       ctx.strokeStyle="rgba(255,255,255,.95)";
       ctx.lineWidth=3;
