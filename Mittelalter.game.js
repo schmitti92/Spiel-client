@@ -667,7 +667,7 @@ function handleTapAtWorld(wx, wy){
 
   // 1) Figur wählen / wechseln (nach dem Wurf)
   const occId = state.occupied.get(hit.id);
-  if(occId && (state.phase==="choosePiece") && state.roll){
+  if(occId && (state.phase==="choosePiece" || state.phase==="chooseTarget") && state.roll){
     const occPiece = state.pieces.find(p=>p.id===occId);
     if(occPiece && occPiece.team === currentTeam()){
       state.selected = occPiece.id;
@@ -987,6 +987,31 @@ function draw(){
     ctx.stroke();
     ctx.restore();
   }
+
+  // Event-Felder (sichtbar)
+  ensureEventState();
+  if(state.eventActive && state.eventActive.size){
+    for(const id of state.eventActive){
+      const n = nodesById.get(id);
+      if(!n) continue;
+      ctx.save();
+      ctx.strokeStyle="rgba(190,120,255,.85)";
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.rect(n.x-12, n.y-12, 24, 24);
+      ctx.stroke();
+      ctx.fillStyle="rgba(190,120,255,.16)";
+      ctx.fillRect(n.x-12, n.y-12, 24, 24);
+
+      ctx.fillStyle="rgba(240,230,255,.95)";
+      ctx.font="14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.fillText("★", n.x, n.y+0.5);
+      ctx.restore();
+    }
+  }
+
 
     // Pieces
   const selectedId = state.selected;
