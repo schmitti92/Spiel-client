@@ -105,3 +105,18 @@ html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-
 .dot.portal{ background:rgba(124,92,255,.55); }
 .dot.boss{ background:rgba(255,107,107,.35); outline:2px solid rgba(255,107,107,.25); }
 
+
+
+/* Spieleranzahl */
+.pc{ display:flex; align-items:center; gap:8px; padding:0 6px; }
+.pcLabel{ font:600 12px system-ui,-apple-system,Segoe UI,Roboto,Arial; opacity:.8; }
+.pcSelect{
+  height:38px;
+  border-radius:12px;
+  padding:0 10px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.14);
+  color:rgba(240,245,255,.92);
+  outline:none;
+}
+.pcSelect:focus{ border-color:rgba(120,200,255,.55); box-shadow:0 0 0 3px rgba(120,200,255,.18); }
