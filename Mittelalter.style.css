@@ -1,112 +1,50 @@
-/* Mittelalter – historisch realistisches Theme (nur Design, keine Logik) */
+/* Tablet-friendly UI */
 :root{
-  /* textures */
-  --wood:url("medieval_wood_bg.png");
-  --parchment:url("medieval_parchment_panel.png");
-
-  /* palette */
-  --ink:#2b1b12;
-  --inkSoft:rgba(43,27,18,.75);
-  --parch:#f1e2bf;
-  --parch2:#e6d1a6;
-  --edge:rgba(60,35,20,.28);
-  --edge2:rgba(20,12,8,.22);
-
-  --good:#2f7d4f;
-  --warn:#b07a1b;
-  --bad:#8d2b2b;
-
-  --btnWood1:#5a3a22;
-  --btnWood2:#3a2516;
-  --metal:#7a6a55;
-  --metal2:#3e352b;
-
-  --accent:#7a1f1f; /* tiefrot (Wachssiegel) */
+  --bg:#0b0f14;
+  --panel:#0f1621;
+  --panel2:#0c131d;
+  --text:#e8eef7;
+  --muted:#a7b3c7;
+  --line:rgba(255,255,255,.08);
+  --good:#41d17a;
+  --warn:#ffcc66;
+  --bad:#ff6b6b;
+  --accent:#7c5cff;
 }
 
 *{ box-sizing:border-box; }
+html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
-html,body{
-  height:100%;
-  margin:0;
-  color:var(--ink);
-  font-family: "EB Garamond", ui-serif, Georgia, "Times New Roman", serif;
-  background:
-    linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.15)),
-    var(--wood);
-  background-size: cover;
-  background-attachment: fixed;
-}
-
-/* ---------- Topbar ---------- */
 .topbar{
   display:flex; gap:12px; align-items:center; justify-content:space-between;
-  padding:10px 12px;
-  border-bottom:1px solid var(--edge);
-  background:
-    linear-gradient(180deg, rgba(241,226,191,.92), rgba(230,209,166,.85));
+  padding:10px 12px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(124,92,255,.14), rgba(0,0,0,0));
   position:sticky; top:0; z-index:5;
-  box-shadow: 0 8px 18px rgba(0,0,0,.18);
 }
-.title .h1{
-  font-family: "Cinzel", ui-serif, Georgia, serif;
-  font-weight:800;
-  letter-spacing:.6px;
-  font-size:16px;
-  color:rgba(30,18,12,.92);
-  text-shadow: 0 1px 0 rgba(255,255,255,.35);
-}
-.title .h2{ font-size:12px; color:rgba(43,27,18,.72); margin-top:2px; }
+.title .h1{ font-weight:800; letter-spacing:.2px; font-size:16px; }
+.title .h2{ font-size:12px; color:var(--muted); margin-top:2px; }
 
 .controls{ display:flex; align-items:center; gap:10px; }
-
-/* ---------- Buttons (Holz + Eisen) ---------- */
 .btn{
-  border:1px solid rgba(40,25,15,.30);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.10)),
-    linear-gradient(180deg, var(--btnWood1), var(--btnWood2));
-  color:rgba(255,248,235,.95);
-  padding:10px 12px;
-  border-radius:12px;
-  font-weight:800;
-  letter-spacing:.2px;
+  border:1px solid var(--line); background:var(--panel);
+  color:var(--text); padding:10px 12px; border-radius:12px;
+  font-weight:700; letter-spacing:.2px;
   touch-action:manipulation;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    0 6px 14px rgba(0,0,0,.25);
 }
-.btn.primary{
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,.10), rgba(0,0,0,0) 55%),
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.14)),
-    linear-gradient(180deg, #7a1f1f, #4c1212);
-  border-color:rgba(60,18,18,.38);
-}
-.btn.secondary{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.12)),
-    linear-gradient(180deg, #4c3a2a, #2e2218);
-}
+.btn.primary{ background:rgba(124,92,255,.22); border-color:rgba(124,92,255,.35); }
+.btn.secondary{ background:rgba(255,255,255,.06); }
 .btn:active{ transform:translateY(1px); }
 
-/* ---------- Dice box ---------- */
 .die{
   min-width:44px; height:40px; display:grid; place-items:center;
-  border-radius:12px;
-  border:1px solid rgba(40,25,15,.32);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.10)),
-    linear-gradient(180deg, #f3e2ba, #d9c193);
+  border-radius:12px; border:1px solid var(--line);
+  background:rgba(0,0,0,.2);
   font-size:18px; font-weight:900;
-  color:rgba(35,20,12,.92);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 6px 14px rgba(0,0,0,.22);
 }
 
-/* ---------- Layout ---------- */
 .main{
   display:grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 280px;
   height: calc(100% - 62px);
 }
 @media (max-width: 980px){
@@ -114,115 +52,216 @@ html,body{
   .sidebar{ position:relative; width:100%; }
 }
 
-/* ---------- Board parchment "table" ---------- */
-.canvasWrap{
-  position:relative;
-  min-height: 60vh;
-  padding: 16px;
-}
-
-/* parchment underlay (3D) */
-.canvasWrap::before{
-  content:"";
-  position:absolute;
-  inset: 10px;
-  background: var(--parchment);
-  background-size: cover;
-  background-position:center;
-  border-radius: 18px;
-  box-shadow:
-    0 18px 40px rgba(0,0,0,.38),
-    inset 0 1px 0 rgba(255,255,255,.40);
-  filter: saturate(.98) contrast(1.02);
-  pointer-events:none;
-  z-index:0;
-}
-
-/* subtle inner vignette */
-.canvasWrap::after{
-  content:"";
-  position:absolute;
-  inset: 10px;
-  border-radius: 18px;
-  box-shadow: inset 0 0 0 1px rgba(60,35,20,.18), inset 0 0 60px rgba(0,0,0,.12);
-  pointer-events:none;
-  z-index:0;
-}
-
+.canvasWrap{ position:relative; min-height: 60vh; }
 #boardCanvas{
-  position:relative;
-  z-index:1;
   width:100%; height:100%;
   display:block;
-  touch-action:none; /* pan/zoom handled by JS */
-  background: transparent;
-}
-
-/* ---------- Hint on parchment ---------- */
-.hint{
-  position:absolute; left:26px; bottom:22px;
-  padding:10px 12px;
-  border-radius:14px;
-  background: rgba(241,226,191,.82);
-  border:1px solid rgba(60,35,20,.22);
-  color: rgba(43,27,18,.82);
-  font-size:13px;
-  backdrop-filter: blur(6px);
-  max-width:min(520px, 92vw);
-  z-index:2;
-  box-shadow: 0 10px 22px rgba(0,0,0,.18);
-}
-
-/* ---------- Sidebar parchment cards ---------- */
-.sidebar{
-  border-left:1px solid var(--edge);
-  padding:10px;
+  touch-action:none; /* we implement our own pan/zoom */
   background:
-    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.04));
+    radial-gradient(circle at 50% 30%, rgba(124,92,255,.12), rgba(0,0,0,0) 55%),
+    radial-gradient(circle at 30% 70%, rgba(65,209,122,.08), rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+}
+
+.hint{
+  position:absolute; left:10px; bottom:10px;
+  padding:10px 12px; border-radius:14px;
+  background:rgba(10,15,22,.72);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:12px;
+  backdrop-filter: blur(8px);
+  max-width:min(520px, 92vw);
+}
+
+.sidebar{
+  border-left:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+  padding:10px;
 }
 .card{
-  background:
-    linear-gradient(180deg, rgba(241,226,191,.92), rgba(230,209,166,.86));
-  border:1px solid rgba(60,35,20,.22);
+  background:rgba(15,22,33,.75);
+  border:1px solid var(--line);
   border-radius:16px;
   padding:12px;
   margin-bottom:10px;
-  box-shadow: 0 10px 22px rgba(0,0,0,.18);
 }
 .cardTitle{
-  font-family:"Cinzel", ui-serif, Georgia, serif;
-  font-weight:800;
+  font-weight:900;
   font-size:13px;
-  letter-spacing:.5px;
   margin-bottom:10px;
-  color:rgba(30,18,12,.92);
+  color:#dfe7ff;
 }
-.kv{ display:grid; grid-template-columns: 1fr 1fr; gap:8px 10px; font-size:13px; }
-.kv div:nth-child(odd){ color:rgba(43,27,18,.72); font-weight:700; }
-.small{ font-size:13px; color:rgba(43,27,18,.78); line-height:1.35; }
+.kv{ display:grid; grid-template-columns: 1fr 1fr; gap:8px 10px; font-size:12px; }
+.kv div:nth-child(odd){ color:var(--muted); }
+.small{ font-size:12px; color:var(--muted); line-height:1.35; }
 
-.legend .row{ display:flex; align-items:center; gap:10px; margin:8px 0; font-size:13px; color:rgba(43,27,18,.78); }
+.legend .row{ display:flex; align-items:center; gap:10px; margin:8px 0; font-size:12px; color:var(--muted); }
+.dot{ width:12px; height:12px; border-radius:50%; border:1px solid rgba(255,255,255,.12); display:inline-block; }
+.dot.normal{ background:rgba(255,255,255,.12); }
+.dot.start{ background:rgba(65,209,122,.5); }
+.dot.barricade{ background:rgba(255,204,102,.55); }
+.dot.obstacle{ background:rgba(255,107,107,.55); }
+.dot.portal{ background:rgba(124,92,255,.55); }
+.dot.boss{ background:rgba(255,107,107,.35); outline:2px solid rgba(255,107,107,.25); }
 
-/* legend dots (dezent, historisch) */
-.dot{ width:12px; height:12px; border-radius:50%; border:1px solid rgba(40,25,15,.22); display:inline-block; }
-.dot.normal{ background:rgba(60,35,20,.18); }
-.dot.start{ background:rgba(47,125,79,.42); }
-.dot.barricade{ background:rgba(176,122,27,.45); }
-.dot.obstacle{ background:rgba(141,43,43,.42); }
-.dot.portal{ background:rgba(70,55,45,.35); }
-.dot.boss{ background:rgba(141,43,43,.22); outline:2px solid rgba(141,43,43,.18); }
 
-/* ---------- Spieleranzahl ---------- */
+
+/* Spieleranzahl */
 .pc{ display:flex; align-items:center; gap:8px; padding:0 6px; }
-.pcLabel{ font:700 12px "EB Garamond", ui-serif, Georgia, serif; opacity:.8; color:rgba(43,27,18,.85); }
+.pcLabel{ font:600 12px system-ui,-apple-system,Segoe UI,Roboto,Arial; opacity:.8; }
 .pcSelect{
   height:38px;
   border-radius:12px;
   padding:0 10px;
-  background:rgba(241,226,191,.86);
-  border:1px solid rgba(60,35,20,.25);
-  color:rgba(43,27,18,.92);
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.14);
+  color:rgba(240,245,255,.92);
   outline:none;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
 }
-.pcSelect:focus{ border-color:rgba(122,31,31,.55); box-shadow:0 0 0 3px rgba(122,31,31,.18); }
+.pcSelect:focus{ border-color:rgba(120,200,255,.55); box-shadow:0 0 0 3px rgba(120,200,255,.18); }
+
+
+/* =========================
+   Medieval Theme: Old Map
+   ========================= */
+:root{
+  --ink: rgba(40,28,18,.92);
+  --inkSoft: rgba(40,28,18,.70);
+  --parchment1: #f3e7c9;
+  --parchment2: #ead8ab;
+  --parchment3: #ddc58f;
+  --wood1:#6a4a2f;
+  --wood2:#4f3623;
+  --gold:#c8a64b;
+  --seal:#8b1f24;
+}
+
+/* Page background: parchment + vignette + subtle “map lines” */
+body{
+  background:
+    radial-gradient(1200px 900px at 50% 38%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+    radial-gradient(1200px 900px at 50% 38%, rgba(0,0,0,.22), rgba(0,0,0,0) 58%),
+    radial-gradient(1400px 1100px at 50% 45%, rgba(0,0,0,.32), rgba(0,0,0,0) 58%),
+    repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+    repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+    radial-gradient(1600px 1100px at 50% 38%, var(--parchment1) 0%, var(--parchment2) 58%, var(--parchment3) 100%);
+  color: var(--ink);
+  font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+}
+
+/* Top panel / controls -> wood + brass */
+#topBar, .topBar, .panel, #sidePanel{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.08)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 6px, rgba(0,0,0,.04) 6px, rgba(0,0,0,.04) 14px),
+    linear-gradient(180deg, var(--wood1), var(--wood2));
+  border: 1px solid rgba(0,0,0,.35);
+  box-shadow: 0 18px 45px rgba(0,0,0,.25);
+}
+
+button, .btn{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18)),
+    linear-gradient(180deg, #8b6a3f, #5d4327);
+  border: 1px solid rgba(0,0,0,.45);
+  color: rgba(255,250,235,.92);
+  border-radius: 12px;
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+
+button:hover, .btn:hover{
+  filter: brightness(1.05);
+}
+
+select, input{
+  background: rgba(255,250,235,.75);
+  border: 1px solid rgba(0,0,0,.35);
+  border-radius: 10px;
+  color: var(--ink);
+}
+
+/* Status line like an ink label */
+#statusLine{
+  color: rgba(255,250,235,.92);
+  text-shadow: 0 1px 0 rgba(0,0,0,.55);
+}
+
+/* Canvas frame like an old map */
+#boardCanvas{
+  background:
+    radial-gradient(900px 600px at 50% 45%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+    radial-gradient(1000px 700px at 50% 45%, rgba(0,0,0,.18), rgba(0,0,0,0) 58%),
+    radial-gradient(1000px 700px at 50% 45%, var(--parchment1) 0%, var(--parchment2) 62%, var(--parchment3) 100%);
+  border: 10px solid rgba(60,45,30,.55);
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.12), 0 22px 55px rgba(0,0,0,.25);
+}
+
+/* Debug console toggle – make it less “sci-fi” */
+#osConsoleToggle{
+  background: rgba(60,45,30,.55) !important;
+  border: 1px solid rgba(0,0,0,.35) !important;
+}
+
+
+
+/* =========================
+   THEME: Holz-Tisch + Pergament-Panels (wie vorher)
+   (nur Design-Overrides, keine Layout-Änderung)
+   ========================= */
+:root{
+  --bg: #3b2a1d;            /* base wood */
+  --panel: rgba(245,232,196,.92);   /* parchment panels */
+  --panel2: rgba(235,219,182,.90);
+  --text: rgba(38,26,18,.92);       /* ink */
+  --muted: rgba(38,26,18,.70);
+  --line: rgba(0,0,0,.16);
+  --accent: #8b1f24;        /* wax red accent */
+}
+
+/* Wood table background */
+html,body{
+  background:
+    radial-gradient(1200px 900px at 50% 35%, rgba(255,255,255,.12), rgba(255,255,255,0) 55%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035), rgba(255,255,255,.035) 6px, rgba(0,0,0,.05) 6px, rgba(0,0,0,.05) 14px),
+    linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.12)),
+    linear-gradient(90deg, #3b2a1d 0%, #4b3423 50%, #3b2a1d 100%) !important;
+  color: var(--text);
+  font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+}
+
+/* Topbar subtle */
+.topbar{
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.10)) !important;
+  border-bottom: 1px solid rgba(0,0,0,.22) !important;
+}
+
+/* Panels -> parchment */
+.panel{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.45), rgba(0,0,0,0) 42%),
+    linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%) !important;
+  border: 1px solid rgba(0,0,0,.18) !important;
+  box-shadow: 0 14px 30px rgba(0,0,0,.18) !important;
+}
+
+/* Buttons -> wood-ish */
+button{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.18)),
+    linear-gradient(180deg, #6a4a2f, #4f3623) !important;
+  border: 1px solid rgba(0,0,0,.35) !important;
+  color: rgba(255,250,235,.92) !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+
+/* Canvas: keep your current board look (no giant spotlight) */
+#boardCanvas{
+  background: rgba(0,0,0,0) !important;
+}
+
+/* Side panel headings readable */
+.panel h3, .panel .title{
+  color: rgba(38,26,18,.92) !important;
+}
