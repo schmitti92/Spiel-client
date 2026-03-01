@@ -6,6 +6,7 @@
 // - Gegner dürfen rausgeworfen werden (zur Reserve/Start zurück, wenn frei)
 // - Zielfelder (genau Wurfweite) leuchten
 // - Anti-Hüpfen: ein Zug darf NICHT direkt aufs Feld zurück, wo die Figur vorher stand
+// - NEU: Figuren dürfen übersprungen werden (besetzte Felder blocken den Weg NICHT)
 
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -38,19 +39,13 @@
     if (need) {
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS px coords
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     return { w, h, dpr };
   }
 
   // ---------- Camera ----------
-  const cam = {
-    x: 0,
-    y: 0,
-    scale: 1,
-    minScale: 0.35,
-    maxScale: 2.8
-  };
+  const cam = { x: 0, y: 0, scale: 1, minScale: 0.35, maxScale: 2.8 };
 
   function worldToScreen(wx, wy) {
     return { x: (wx - cam.x) * cam.scale, y: (wy - cam.y) * cam.scale };
@@ -69,32 +64,33 @@
 
   // ---------- Game state ----------
   const state = {
-    players: [1,2,3,4],      // teams 1..4
-    turnIndex: 0,            // index in players
-    phase: "loading",        // loading | needRoll | choosePiece | chooseTarget
+    players: [1, 2, 3, 4],
+    turnIndex: 0,
+    phase: "loading",
     roll: null,
     selectedPieceId: null,
-    highlightedTargets: new Set(), // nodeId
-    highlightedPaths: new Map(),   // nodeId -> prev map for reconstruct (optional)
-    pieces: [],              // {id, team, nodeId|null, homeStartId, prevNodeId|null}
-    occupied: new Map(),     // nodeId -> pieceId
-    reserve: []              // pieceIds currently offboard
+    highlightedTargets: new Set(),
+    highlightedPaths: new Map(),
+    pieces: [],
+    occupied: new Map(),
+    reserve: []
   };
+  state.piecesById = new Map();
 
   // ---------- Helpers ----------
   function setStatus(text) { statusLine.textContent = text; }
   function setDie(v) { dieBox.textContent = v == null ? "–" : String(v); }
+
   function setSidebar() {
     const team = state.players[state.turnIndex];
     curPlayerEl.textContent = team ? `Team ${team}` : "–";
     curPhaseEl.textContent = ({
-      loading:"Lade…",
-      needRoll:"Würfeln",
-      choosePiece:"Figur wählen",
-      chooseTarget:"Zielfeld wählen"
+      loading: "Lade…",
+      needRoll: "Würfeln",
+      choosePiece: "Figur wählen",
+      chooseTarget: "Zielfeld wählen"
     })[state.phase] || state.phase;
 
-    // Reserve list compact
     const grouped = {};
     for (const pid of state.reserve) {
       const p = state.piecesById.get(pid);
@@ -124,10 +120,6 @@
     return true;
   }
 
-  // Store fast lookup for pieces
-  state.piecesById = new Map();
-
-  // ---------- Init pieces: one on EVERY start node ----------
   function initPiecesOnStarts() {
     state.pieces.length = 0;
     state.piecesById.clear();
@@ -139,22 +131,14 @@
     for (const s of startNodes) {
       const team = Number(s.props.startTeam);
       const id = `p_${++i}`;
-      const piece = {
-        id,
-        team,
-        nodeId: s.id,
-        homeStartId: s.id,
-        prevNodeId: null
-      };
+      const piece = { id, team, nodeId: s.id, homeStartId: s.id, prevNodeId: null };
       state.pieces.push(piece);
       state.piecesById.set(id, piece);
       state.occupied.set(s.id, id);
     }
   }
 
-  function currentTeam() {
-    return state.players[state.turnIndex];
-  }
+  function currentTeam() { return state.players[state.turnIndex]; }
 
   function clearHighlights() {
     state.highlightedTargets.clear();
@@ -172,8 +156,10 @@
     setSidebar();
   }
 
-  // ---------- Compute reachable targets exactly N steps ----------
-  // Constraint: first step cannot go back to prevNodeId (anti-hop).
+  // ✅ NEU: Figuren dürfen übersprungen werden.
+  // Nur das END-Feld wird geprüft:
+  // - eigenes Stück dort -> verboten
+  // - gegnerisches Stück dort -> erlaubt (kick)
   function computeTargetsForPiece(piece, steps) {
     clearHighlights();
     if (!piece || piece.nodeId == null) return;
@@ -181,43 +167,42 @@
     const start = piece.nodeId;
     const prev = piece.prevNodeId;
 
-    // BFS by depth
     const q = [{ id: start, depth: 0 }];
     const visited = new Set([`${start}|0`]);
-    // For reconstruct: store parent by (node|depth) -> parentNodeId
     const parent = new Map();
 
     while (q.length) {
       const cur = q.shift();
+
       if (cur.depth === steps) {
-        // end node candidate
-        if (cur.id !== start) { // must move
-          state.highlightedTargets.add(cur.id);
+        if (cur.id !== start) {
+          // Endfeld-Prüfung
+          const occ = state.occupied.get(cur.id);
+          if (!occ) {
+            state.highlightedTargets.add(cur.id);
+          } else {
+            const occPiece = state.piecesById.get(occ);
+            if (occPiece && occPiece.team !== piece.team) {
+              // Gegner drauf -> darf landen (kick)
+              state.highlightedTargets.add(cur.id);
+            }
+          }
         }
         continue;
       }
 
       const neigh = adj.get(cur.id) || [];
       for (const nb of neigh) {
-        // anti-hop: first step cannot go to prev
+        // Anti-Hop: erster Schritt nicht direkt zurück
         if (cur.depth === 0 && prev && nb === prev) continue;
 
         const nbNode = nodesById.get(nb);
         if (!nbNode) continue;
 
-        // obstacle gating
+        // Hindernis-Gate
         if (!canEnterNode(nbNode, steps)) continue;
 
-        // one per field rule (but allow occupied by opponent at END only)
-        // for intermediate steps we also disallow stepping through occupied fields to keep it clean:
-        const occ = state.occupied.get(nb);
-        const occPiece = occ ? state.piecesById.get(occ) : null;
-        if (occPiece && occPiece.id !== piece.id) {
-          // if not last step -> cannot pass through
-          if (cur.depth + 1 < steps) continue;
-          // if last step -> can land only if opponent
-          if (occPiece.team === piece.team) continue;
-        }
+        // ❗ KEIN blockieren durch Figuren unterwegs (Überspringen erlaubt)
 
         const key = `${nb}|${cur.depth + 1}`;
         if (visited.has(key)) continue;
@@ -227,9 +212,7 @@
       }
     }
 
-    // build path map for endpoints (optional)
     for (const endId of state.highlightedTargets) {
-      // store backtracking chain keyed by nodeId for quick usage; we just store parent map
       state.highlightedPaths.set(endId, parent);
     }
   }
@@ -243,12 +226,10 @@
   function kickPiece(kickedPiece) {
     if (!kickedPiece || kickedPiece.nodeId == null) return;
 
-    // Remove from board
     state.occupied.delete(kickedPiece.nodeId);
     kickedPiece.nodeId = null;
     kickedPiece.prevNodeId = null;
 
-    // Try respawn to home start if free
     const home = kickedPiece.homeStartId;
     if (home && !state.occupied.has(home)) {
       kickedPiece.nodeId = home;
@@ -256,7 +237,6 @@
       return;
     }
 
-    // Else any free start of same team
     const starts = nodes.filter(n => n.type === "start" && n.props && Number(n.props.startTeam) === kickedPiece.team);
     for (const s of starts) {
       if (!state.occupied.has(s.id)) {
@@ -266,7 +246,6 @@
       }
     }
 
-    // Else reserve
     if (!state.reserve.includes(kickedPiece.id)) state.reserve.push(kickedPiece.id);
   }
 
@@ -279,20 +258,16 @@
     if (occ && occ !== piece.id) {
       const other = state.piecesById.get(occ);
       if (!other) return false;
-      if (other.team === piece.team) return false;
-      // Kick opponent
-      kickPiece(other);
-      // make sure target is now free
+      if (other.team === piece.team) return false; // eigenes Feld nie
+      kickPiece(other); // Gegner kicken
       if (state.occupied.has(targetNodeId)) return false;
     }
 
-    // Move
     state.occupied.delete(from);
     piece.prevNodeId = from;
     piece.nodeId = targetNodeId;
     state.occupied.set(targetNodeId, piece.id);
 
-    // Remove from reserve if it was there
     const idx = state.reserve.indexOf(piece.id);
     if (idx >= 0) state.reserve.splice(idx, 1);
 
@@ -316,9 +291,8 @@
     nextTurn();
   }
 
-  // ---------- Input: click/tap ----------
+  // ---------- Input ----------
   function findNodeAtWorld(wx, wy) {
-    // pick nearest node within radius
     const r = (board?.ui?.radius ?? 18);
     const pickR = r * 1.35;
     let best = null;
@@ -326,8 +300,8 @@
     for (const n of nodes) {
       const dx = wx - n.x;
       const dy = wy - n.y;
-      const d2 = dx*dx + dy*dy;
-      if (d2 <= pickR*pickR && d2 < bestD2) {
+      const d2 = dx * dx + dy * dy;
+      if (d2 <= pickR * pickR && d2 < bestD2) {
         best = n;
         bestD2 = d2;
       }
@@ -341,7 +315,6 @@
     if (!n) return;
 
     if (state.phase === "needRoll") {
-      // allow selecting piece before rolling to reduce taps
       const piece = pickPieceAt(n.id);
       if (piece && piece.team === currentTeam()) {
         state.selectedPieceId = piece.id;
@@ -364,13 +337,11 @@
     }
 
     if (state.phase === "chooseTarget") {
-      // click target
       if (!state.selectedPieceId) return;
       const piece = state.piecesById.get(state.selectedPieceId);
       if (!piece) return;
 
       if (!state.highlightedTargets.has(n.id)) {
-        // allow reselect piece
         const maybePiece = pickPieceAt(n.id);
         if (maybePiece && maybePiece.team === currentTeam()) {
           state.selectedPieceId = maybePiece.id;
@@ -390,14 +361,13 @@
     }
   }
 
-  // ---------- Pan/Zoom (touch + mouse) ----------
-  let pointers = new Map(); // pointerId -> {x,y}
+  // ---------- Pan/Zoom ----------
+  let pointers = new Map();
   let lastTapTime = 0;
 
   function pointerDown(e) {
     canvas.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    // Double-tap to fit
     const now = Date.now();
     if (now - lastTapTime < 280) {
       fitToBoard();
@@ -405,6 +375,16 @@
     } else {
       lastTapTime = now;
     }
+  }
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function zoomAtScreen(sx, sy, factor) {
+    const before = screenToWorld(sx, sy);
+    cam.scale = clamp(cam.scale * factor, cam.minScale, cam.maxScale);
+    const after = screenToWorld(sx, sy);
+    cam.x += (before.x - after.x);
+    cam.y += (before.y - after.y);
   }
 
   function pointerMove(e) {
@@ -415,24 +395,17 @@
 
     const arr = Array.from(pointers.values());
     if (arr.length === 1) {
-      // pan
       const dx = (cur.x - prev.x) / cam.scale;
       const dy = (cur.y - prev.y) / cam.scale;
       cam.x -= dx;
       cam.y -= dy;
     } else if (arr.length === 2) {
-      // pinch zoom
-      const [a,b] = arr;
-      const prevA = prev; // not perfect, but ok for prototype
-      const dist = Math.hypot(a.x-b.x, a.y-b.y);
-
-      // store dist per move using lastPinchDist
+      const [a, b] = arr;
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
       if (pointerMove.lastPinchDist == null) pointerMove.lastPinchDist = dist;
-
       const ratio = dist / pointerMove.lastPinchDist;
       pointerMove.lastPinchDist = dist;
-
-      const center = { x:(a.x+b.x)/2, y:(a.y+b.y)/2 };
+      const center = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
       zoomAtScreen(center.x, center.y, ratio);
     }
   }
@@ -441,35 +414,18 @@
   function pointerUp(e) {
     if (pointers.has(e.pointerId)) pointers.delete(e.pointerId);
     if (pointers.size < 2) pointerMove.lastPinchDist = null;
-
-    // treat as tap if it was quick and not moved much
-    // (we keep it simple: use click handler for mouse/touch)
   }
-
-  function zoomAtScreen(sx, sy, factor) {
-    const before = screenToWorld(sx, sy);
-    cam.scale = clamp(cam.scale * factor, cam.minScale, cam.maxScale);
-    const after = screenToWorld(sx, sy);
-    cam.x += (before.x - after.x);
-    cam.y += (before.y - after.y);
-  }
-
-  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 
   canvas.addEventListener("pointerdown", pointerDown);
   canvas.addEventListener("pointermove", pointerMove);
   canvas.addEventListener("pointerup", pointerUp);
   canvas.addEventListener("pointercancel", pointerUp);
 
-  // Click/tap selection
   canvas.addEventListener("click", (e) => {
     const rect = canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-    onTap(sx, sy);
+    onTap(e.clientX - rect.left, e.clientY - rect.top);
   });
 
-  // Wheel zoom (desktop)
   canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
@@ -477,31 +433,17 @@
     const sy = e.clientY - rect.top;
     const factor = Math.pow(1.0015, -e.deltaY);
     zoomAtScreen(sx, sy, factor);
-  }, { passive:false });
+  }, { passive: false });
 
   // ---------- Drawing ----------
   function draw() {
     const { w, h } = resizeCanvasToDisplaySize();
-    ctx.clearRect(0,0,w,h);
+    ctx.clearRect(0, 0, w, h);
 
     if (!board) {
       requestAnimationFrame(draw);
       return;
     }
-
-    // background grid hint (subtle)
-    ctx.save();
-    ctx.globalAlpha = 0.08;
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1;
-    const grid = 100;
-    for (let x = (-(cam.x*cam.scale)%grid); x < w; x += grid) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-    }
-    for (let y = (-(cam.y*cam.scale)%grid); y < h; y += grid) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-    }
-    ctx.restore();
 
     // edges
     ctx.save();
@@ -522,27 +464,24 @@
 
     const r = board.ui?.radius ?? 18;
 
-    // node glow for targets
+    // targets glow
     ctx.save();
     for (const nid of state.highlightedTargets) {
       const n = nodesById.get(nid);
       if (!n) continue;
       const s = worldToScreen(n.x, n.y);
-      // big glow
       ctx.beginPath();
-      ctx.arc(s.x, s.y, r*1.55*cam.scale, 0, Math.PI*2);
+      ctx.arc(s.x, s.y, r * 1.55 * cam.scale, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(124,92,255,.12)";
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(s.x, s.y, r*1.15*cam.scale, 0, Math.PI*2);
+      ctx.arc(s.x, s.y, r * 1.15 * cam.scale, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(124,92,255,.20)";
       ctx.fill();
-
-      // ring
       ctx.lineWidth = 3;
       ctx.strokeStyle = "rgba(200,180,255,.7)";
       ctx.beginPath();
-      ctx.arc(s.x, s.y, r*0.95*cam.scale, 0, Math.PI*2);
+      ctx.arc(s.x, s.y, r * 0.95 * cam.scale, 0, Math.PI * 2);
       ctx.stroke();
     }
     ctx.restore();
@@ -552,9 +491,8 @@
       const s = worldToScreen(n.x, n.y);
       const rr = r * cam.scale;
 
-      // base
       ctx.beginPath();
-      ctx.arc(s.x, s.y, rr, 0, Math.PI*2);
+      ctx.arc(s.x, s.y, rr, 0, Math.PI * 2);
 
       let fill = "rgba(255,255,255,.10)";
       if (n.type === "start") fill = "rgba(65,209,122,.18)";
@@ -566,45 +504,17 @@
       ctx.fillStyle = fill;
       ctx.fill();
 
-      // outline
       ctx.lineWidth = Math.max(1, 2 * cam.scale);
       ctx.strokeStyle = "rgba(255,255,255,.14)";
       ctx.stroke();
 
-      // special marks
       if (n.type === "obstacle") {
         const mr = minRollFor(n) ?? "?";
         ctx.fillStyle = "rgba(255,255,255,.75)";
-        ctx.font = `${Math.max(10, 12*cam.scale)}px system-ui, sans-serif`;
+        ctx.font = `${Math.max(10, 12 * cam.scale)}px system-ui, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(String(mr), s.x, s.y);
-      }
-      if (n.type === "portal") {
-        ctx.strokeStyle = "rgba(180,160,255,.75)";
-        ctx.lineWidth = Math.max(2, 3*cam.scale);
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, rr*0.62, 0, Math.PI*2);
-        ctx.stroke();
-      }
-      if (n.type === "boss") {
-        ctx.strokeStyle = "rgba(255,107,107,.7)";
-        ctx.lineWidth = Math.max(2, 3*cam.scale);
-        ctx.beginPath();
-        ctx.moveTo(s.x-rr*0.55, s.y);
-        ctx.lineTo(s.x+rr*0.55, s.y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(s.x, s.y-rr*0.55);
-        ctx.lineTo(s.x, s.y+rr*0.55);
-        ctx.stroke();
-      }
-      if (n.type === "barricade") {
-        ctx.strokeStyle = "rgba(255,204,102,.75)";
-        ctx.lineWidth = Math.max(2, 3*cam.scale);
-        ctx.beginPath();
-        ctx.rect(s.x-rr*0.38, s.y-rr*0.38, rr*0.76, rr*0.76);
-        ctx.stroke();
       }
     }
 
@@ -614,33 +524,32 @@
       const n = nodesById.get(p.nodeId);
       if (!n) continue;
       const s = worldToScreen(n.x, n.y);
-      const rr = r*0.62*cam.scale;
+      const rr = r * 0.62 * cam.scale;
 
       ctx.beginPath();
-      ctx.arc(s.x, s.y, rr, 0, Math.PI*2);
+      ctx.arc(s.x, s.y, rr, 0, Math.PI * 2);
       ctx.fillStyle = TEAM_COLORS[p.team] || "#fff";
       ctx.globalAlpha = 0.92;
       ctx.fill();
       ctx.globalAlpha = 1;
 
-      // selection ring
       if (state.selectedPieceId === p.id) {
         ctx.strokeStyle = "rgba(255,255,255,.9)";
-        ctx.lineWidth = Math.max(2, 3*cam.scale);
+        ctx.lineWidth = Math.max(2, 3 * cam.scale);
         ctx.beginPath();
-        ctx.arc(s.x, s.y, rr*1.25, 0, Math.PI*2);
+        ctx.arc(s.x, s.y, rr * 1.25, 0, Math.PI * 2);
         ctx.stroke();
       }
-      // tiny outline
+
       ctx.strokeStyle = "rgba(0,0,0,.35)";
-      ctx.lineWidth = Math.max(1, 2*cam.scale);
+      ctx.lineWidth = Math.max(1, 2 * cam.scale);
       ctx.stroke();
     }
 
     requestAnimationFrame(draw);
   }
 
-  // ---------- Fit to board ----------
+  // ---------- Fit ----------
   function computeBounds() {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (const n of nodes) {
@@ -656,8 +565,8 @@
     if (!bounds) return;
     const { w, h } = resizeCanvasToDisplaySize();
     const pad = 80;
-    const bw = (bounds.maxX - bounds.minX) + pad*2;
-    const bh = (bounds.maxY - bounds.minY) + pad*2;
+    const bw = (bounds.maxX - bounds.minX) + pad * 2;
+    const bh = (bounds.maxY - bounds.minY) + pad * 2;
     const sx = w / bw;
     const sy = h / bh;
     cam.scale = clamp(Math.min(sx, sy), cam.minScale, cam.maxScale);
@@ -670,21 +579,15 @@
   // ---------- Roll ----------
   btnRoll.addEventListener("click", () => {
     if (state.phase === "loading") return;
-
-    if (state.phase !== "needRoll") {
-      // allow re-roll only if in needRoll (prevents mistakes)
-      return;
-    }
+    if (state.phase !== "needRoll") return;
 
     state.roll = randInt(1, 6);
     setDie(state.roll);
 
-    // If no piece selected yet -> choosePiece
     if (!state.selectedPieceId) {
       state.phase = "choosePiece";
       setStatus(`Team ${currentTeam()}: Wurf = ${state.roll}. Figur wählen.`);
     } else {
-      // piece already selected -> show targets immediately
       const p = state.piecesById.get(state.selectedPieceId);
       if (p && p.team === currentTeam() && p.nodeId != null) {
         computeTargetsForPiece(p, state.roll);
@@ -726,12 +629,11 @@
     initPiecesOnStarts();
     fitToBoard();
 
-    // Determine which teams exist (from start nodes)
     const teams = new Set();
     for (const n of nodes) {
       if (n.type === "start" && n.props && n.props.startTeam) teams.add(Number(n.props.startTeam));
     }
-    state.players = Array.from(teams).sort((a,b)=>a-b);
+    state.players = Array.from(teams).sort((a, b) => a - b);
     state.turnIndex = 0;
 
     state.phase = "needRoll";
@@ -751,7 +653,6 @@
     setSidebar();
   });
 
-  // Kick-start render loop
   window.addEventListener("resize", () => resizeCanvasToDisplaySize());
   requestAnimationFrame(draw);
 })();
