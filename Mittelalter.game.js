@@ -922,6 +922,21 @@ async function load(){
   edges=board.edges||[];
 
   nodesById=new Map(nodes.map(n=>[n.id,n]));
+
+  // --- Safety: Startfelder dürfen NICHT miteinander verbunden sein (sonst startet eine Farbe "im Weg" einer anderen).
+  // Falls im Board versehentlich ein Edge zwischen zwei Startfeldern verschiedener Teams liegt (z.B. Grün <-> Braun),
+  // entfernen wir ihn hier automatisch, ohne am Board-JSON rumzuschrauben.
+  edges = (edges||[]).filter(e=>{
+    const a = nodesById.get(e.a);
+    const b = nodesById.get(e.b);
+    if(!a || !b) return false;
+    if(a.type==="start" && b.type==="start"){
+      const ta = Number(a.props?.startTeam);
+      const tb = Number(b.props?.startTeam);
+      if(ta && tb && ta !== tb) return false;
+    }
+    return true;
+  });
   adj=new Map();
   for(const n of nodes) adj.set(n.id,[]);
   for(const e of edges){
