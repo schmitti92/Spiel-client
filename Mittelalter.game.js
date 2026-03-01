@@ -13,6 +13,10 @@
 
 const canvas = document.getElementById("boardCanvas");
 const ctx = canvas.getContext("2d");
+
+// Expose for helper render functions (avoid scope issues)
+window.__ma_canvas = canvas;
+window.__ma_ctx = ctx;
 const btnRoll = document.getElementById("btnRoll");
 const btnFit = document.getElementById("btnFit");
 const dieBox = document.getElementById("dieBox");
@@ -986,6 +990,55 @@ if(selPlayerCount){
 }
 
 
+
+// ---------- Wax Seal Render (Eventfelder) ----------
+function drawWaxSeal(x,y,baseR,opts={}){
+  const r = (opts.r || baseR);
+  ctx.save();
+
+  // wax gradient
+  const g = ctx.createRadialGradient(x-r*0.35, y-r*0.35, r*0.2, x, y, r*1.15);
+  g.addColorStop(0, "rgba(210,60,70,.95)");
+  g.addColorStop(0.55, "rgba(150,30,36,.92)");
+  g.addColorStop(1, "rgba(90,18,22,.92)");
+
+  // main wax blob
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
+
+  // irregular edge strokes (gives "pressed wax" feel)
+  ctx.strokeStyle = "rgba(255,235,220,.22)";
+  ctx.lineWidth = Math.max(1.5, r*0.12);
+  ctx.beginPath();
+  ctx.arc(x,y,r-0.8,0,Math.PI*2);
+  ctx.stroke();
+
+  // inner ring
+  ctx.strokeStyle = "rgba(0,0,0,.25)";
+  ctx.lineWidth = Math.max(1, r*0.08);
+  ctx.beginPath();
+  ctx.arc(x,y,r*0.62,0,Math.PI*2);
+  ctx.stroke();
+
+  // stamp icon
+  ctx.fillStyle = "rgba(255,245,235,.92)";
+  ctx.font = `${Math.round(r*0.95)}px ui-serif, Georgia, serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("✦", x, y+0.5);
+
+  // subtle shadow
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = "rgba(0,0,0,.10)";
+  ctx.beginPath();
+  ctx.arc(x+r*0.15, y+r*0.2, r*0.92, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
 // ---------- Render -----------
 function draw(){
   // Canvas auf CSS-Größe setzen (einfach)
@@ -1051,6 +1104,13 @@ function draw(){
     ctx.strokeStyle="rgba(255,255,255,.12)";
     ctx.stroke();
 
+
+    // Ereignisfeld: Wachssiegel (richtig sichtbar)
+    ensureEventState();
+    if(state.eventActive && state.eventActive.has(n.id)){
+      // Seal should be on top of node dot
+      drawWaxSeal(n.x, n.y, 14, {});
+    }
     // Portal-Ring + Symbol
     if(n.type==="portal"){
       ctx.save();
@@ -1260,6 +1320,9 @@ draw();
 // Compass + Burned Edge
 // =====================
 function drawCompass(){
+  const canvas = window.__ma_canvas || document.getElementById("boardCanvas");
+  const ctx = window.__ma_ctx || (canvas ? canvas.getContext("2d") : null);
+  if(!canvas || !ctx) return;
   const cx = 90;
   const cy = canvas.height - 90;
   const r  = 45;
@@ -1303,6 +1366,9 @@ function drawCompass(){
 }
 
 function drawBurnedEdges(){
+  const canvas = window.__ma_canvas || document.getElementById("boardCanvas");
+  const ctx = window.__ma_ctx || (canvas ? canvas.getContext("2d") : null);
+  if(!canvas || !ctx) return;
   const g = ctx.createRadialGradient(
     canvas.width/2,
     canvas.height/2,
