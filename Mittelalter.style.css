@@ -1,50 +1,112 @@
-/* Tablet-friendly UI */
+/* Mittelalter – historisch realistisches Theme (nur Design, keine Logik) */
 :root{
-  --bg:#0b0f14;
-  --panel:#0f1621;
-  --panel2:#0c131d;
-  --text:#e8eef7;
-  --muted:#a7b3c7;
-  --line:rgba(255,255,255,.08);
-  --good:#41d17a;
-  --warn:#ffcc66;
-  --bad:#ff6b6b;
-  --accent:#7c5cff;
+  /* textures */
+  --wood:url("medieval_wood_bg.png");
+  --parchment:url("medieval_parchment_panel.png");
+
+  /* palette */
+  --ink:#2b1b12;
+  --inkSoft:rgba(43,27,18,.75);
+  --parch:#f1e2bf;
+  --parch2:#e6d1a6;
+  --edge:rgba(60,35,20,.28);
+  --edge2:rgba(20,12,8,.22);
+
+  --good:#2f7d4f;
+  --warn:#b07a1b;
+  --bad:#8d2b2b;
+
+  --btnWood1:#5a3a22;
+  --btnWood2:#3a2516;
+  --metal:#7a6a55;
+  --metal2:#3e352b;
+
+  --accent:#7a1f1f; /* tiefrot (Wachssiegel) */
 }
 
 *{ box-sizing:border-box; }
-html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
+html,body{
+  height:100%;
+  margin:0;
+  color:var(--ink);
+  font-family: "EB Garamond", ui-serif, Georgia, "Times New Roman", serif;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.15)),
+    var(--wood);
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+/* ---------- Topbar ---------- */
 .topbar{
   display:flex; gap:12px; align-items:center; justify-content:space-between;
-  padding:10px 12px; border-bottom:1px solid var(--line);
-  background:linear-gradient(180deg, rgba(124,92,255,.14), rgba(0,0,0,0));
+  padding:10px 12px;
+  border-bottom:1px solid var(--edge);
+  background:
+    linear-gradient(180deg, rgba(241,226,191,.92), rgba(230,209,166,.85));
   position:sticky; top:0; z-index:5;
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
 }
-.title .h1{ font-weight:800; letter-spacing:.2px; font-size:16px; }
-.title .h2{ font-size:12px; color:var(--muted); margin-top:2px; }
+.title .h1{
+  font-family: "Cinzel", ui-serif, Georgia, serif;
+  font-weight:800;
+  letter-spacing:.6px;
+  font-size:16px;
+  color:rgba(30,18,12,.92);
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+}
+.title .h2{ font-size:12px; color:rgba(43,27,18,.72); margin-top:2px; }
 
 .controls{ display:flex; align-items:center; gap:10px; }
+
+/* ---------- Buttons (Holz + Eisen) ---------- */
 .btn{
-  border:1px solid var(--line); background:var(--panel);
-  color:var(--text); padding:10px 12px; border-radius:12px;
-  font-weight:700; letter-spacing:.2px;
+  border:1px solid rgba(40,25,15,.30);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.10)),
+    linear-gradient(180deg, var(--btnWood1), var(--btnWood2));
+  color:rgba(255,248,235,.95);
+  padding:10px 12px;
+  border-radius:12px;
+  font-weight:800;
+  letter-spacing:.2px;
   touch-action:manipulation;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 6px 14px rgba(0,0,0,.25);
 }
-.btn.primary{ background:rgba(124,92,255,.22); border-color:rgba(124,92,255,.35); }
-.btn.secondary{ background:rgba(255,255,255,.06); }
+.btn.primary{
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,.10), rgba(0,0,0,0) 55%),
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.14)),
+    linear-gradient(180deg, #7a1f1f, #4c1212);
+  border-color:rgba(60,18,18,.38);
+}
+.btn.secondary{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.12)),
+    linear-gradient(180deg, #4c3a2a, #2e2218);
+}
 .btn:active{ transform:translateY(1px); }
 
+/* ---------- Dice box ---------- */
 .die{
   min-width:44px; height:40px; display:grid; place-items:center;
-  border-radius:12px; border:1px solid var(--line);
-  background:rgba(0,0,0,.2);
+  border-radius:12px;
+  border:1px solid rgba(40,25,15,.32);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.10)),
+    linear-gradient(180deg, #f3e2ba, #d9c193);
   font-size:18px; font-weight:900;
+  color:rgba(35,20,12,.92);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 6px 14px rgba(0,0,0,.22);
 }
 
+/* ---------- Layout ---------- */
 .main{
   display:grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: 1fr 300px;
   height: calc(100% - 62px);
 }
 @media (max-width: 980px){
@@ -52,71 +114,115 @@ html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-
   .sidebar{ position:relative; width:100%; }
 }
 
-.canvasWrap{ position:relative; min-height: 60vh; }
+/* ---------- Board parchment "table" ---------- */
+.canvasWrap{
+  position:relative;
+  min-height: 60vh;
+  padding: 16px;
+}
+
+/* parchment underlay (3D) */
+.canvasWrap::before{
+  content:"";
+  position:absolute;
+  inset: 10px;
+  background: var(--parchment);
+  background-size: cover;
+  background-position:center;
+  border-radius: 18px;
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.40);
+  filter: saturate(.98) contrast(1.02);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* subtle inner vignette */
+.canvasWrap::after{
+  content:"";
+  position:absolute;
+  inset: 10px;
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 1px rgba(60,35,20,.18), inset 0 0 60px rgba(0,0,0,.12);
+  pointer-events:none;
+  z-index:0;
+}
+
 #boardCanvas{
+  position:relative;
+  z-index:1;
   width:100%; height:100%;
   display:block;
-  touch-action:none; /* we implement our own pan/zoom */
-  background:
-    radial-gradient(circle at 50% 30%, rgba(124,92,255,.12), rgba(0,0,0,0) 55%),
-    radial-gradient(circle at 30% 70%, rgba(65,209,122,.08), rgba(0,0,0,0) 60%),
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+  touch-action:none; /* pan/zoom handled by JS */
+  background: transparent;
 }
 
+/* ---------- Hint on parchment ---------- */
 .hint{
-  position:absolute; left:10px; bottom:10px;
-  padding:10px 12px; border-radius:14px;
-  background:rgba(10,15,22,.72);
-  border:1px solid var(--line);
-  color:var(--muted);
-  font-size:12px;
-  backdrop-filter: blur(8px);
+  position:absolute; left:26px; bottom:22px;
+  padding:10px 12px;
+  border-radius:14px;
+  background: rgba(241,226,191,.82);
+  border:1px solid rgba(60,35,20,.22);
+  color: rgba(43,27,18,.82);
+  font-size:13px;
+  backdrop-filter: blur(6px);
   max-width:min(520px, 92vw);
+  z-index:2;
+  box-shadow: 0 10px 22px rgba(0,0,0,.18);
 }
 
+/* ---------- Sidebar parchment cards ---------- */
 .sidebar{
-  border-left:1px solid var(--line);
-  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+  border-left:1px solid var(--edge);
   padding:10px;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.04));
 }
 .card{
-  background:rgba(15,22,33,.75);
-  border:1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(241,226,191,.92), rgba(230,209,166,.86));
+  border:1px solid rgba(60,35,20,.22);
   border-radius:16px;
   padding:12px;
   margin-bottom:10px;
+  box-shadow: 0 10px 22px rgba(0,0,0,.18);
 }
 .cardTitle{
-  font-weight:900;
+  font-family:"Cinzel", ui-serif, Georgia, serif;
+  font-weight:800;
   font-size:13px;
+  letter-spacing:.5px;
   margin-bottom:10px;
-  color:#dfe7ff;
+  color:rgba(30,18,12,.92);
 }
-.kv{ display:grid; grid-template-columns: 1fr 1fr; gap:8px 10px; font-size:12px; }
-.kv div:nth-child(odd){ color:var(--muted); }
-.small{ font-size:12px; color:var(--muted); line-height:1.35; }
+.kv{ display:grid; grid-template-columns: 1fr 1fr; gap:8px 10px; font-size:13px; }
+.kv div:nth-child(odd){ color:rgba(43,27,18,.72); font-weight:700; }
+.small{ font-size:13px; color:rgba(43,27,18,.78); line-height:1.35; }
 
-.legend .row{ display:flex; align-items:center; gap:10px; margin:8px 0; font-size:12px; color:var(--muted); }
-.dot{ width:12px; height:12px; border-radius:50%; border:1px solid rgba(255,255,255,.12); display:inline-block; }
-.dot.normal{ background:rgba(255,255,255,.12); }
-.dot.start{ background:rgba(65,209,122,.5); }
-.dot.barricade{ background:rgba(255,204,102,.55); }
-.dot.obstacle{ background:rgba(255,107,107,.55); }
-.dot.portal{ background:rgba(124,92,255,.55); }
-.dot.boss{ background:rgba(255,107,107,.35); outline:2px solid rgba(255,107,107,.25); }
+.legend .row{ display:flex; align-items:center; gap:10px; margin:8px 0; font-size:13px; color:rgba(43,27,18,.78); }
 
+/* legend dots (dezent, historisch) */
+.dot{ width:12px; height:12px; border-radius:50%; border:1px solid rgba(40,25,15,.22); display:inline-block; }
+.dot.normal{ background:rgba(60,35,20,.18); }
+.dot.start{ background:rgba(47,125,79,.42); }
+.dot.barricade{ background:rgba(176,122,27,.45); }
+.dot.obstacle{ background:rgba(141,43,43,.42); }
+.dot.portal{ background:rgba(70,55,45,.35); }
+.dot.boss{ background:rgba(141,43,43,.22); outline:2px solid rgba(141,43,43,.18); }
 
-
-/* Spieleranzahl */
+/* ---------- Spieleranzahl ---------- */
 .pc{ display:flex; align-items:center; gap:8px; padding:0 6px; }
-.pcLabel{ font:600 12px system-ui,-apple-system,Segoe UI,Roboto,Arial; opacity:.8; }
+.pcLabel{ font:700 12px "EB Garamond", ui-serif, Georgia, serif; opacity:.8; color:rgba(43,27,18,.85); }
 .pcSelect{
   height:38px;
   border-radius:12px;
   padding:0 10px;
-  background:rgba(255,255,255,.10);
-  border:1px solid rgba(255,255,255,.14);
-  color:rgba(240,245,255,.92);
+  background:rgba(241,226,191,.86);
+  border:1px solid rgba(60,35,20,.25);
+  color:rgba(43,27,18,.92);
   outline:none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
 }
-.pcSelect:focus{ border-color:rgba(120,200,255,.55); box-shadow:0 0 0 3px rgba(120,200,255,.18); }
+.pcSelect:focus{ border-color:rgba(122,31,31,.55); box-shadow:0 0 0 3px rgba(122,31,31,.18); }
