@@ -95,8 +95,6 @@ const state = {
   selected:null,
   highlighted:new Set(),       // Move targets
   placeHighlighted:new Set(),  // Barricade placement targets
-  portalHighlighted:new Set(), // Portal targets (Teleport)
-  portalUsedThisTurn:false,
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
@@ -114,18 +112,18 @@ function isPortalNode(id){
   return !!n && n.type === "portal";
 }
 
-function isFreeForPortal(id){
-  // Zielportal muss frei sein (1 Figur pro Feld) – Barrikade darf dort liegen (dann wird sie ggf. aufgenommen)
+function isFreeForPortalTarget(id, currentPortalId){
+  // Zielportal muss ein anderes Portal sein und frei (1 Figur pro Feld)
+  if(id === currentPortalId) return false;
+  if(!isPortalNode(id)) return false;
   if(state.occupied.has(id)) return false;
-  return isPortalNode(id);
+  return true;
 }
 
 function computePortalTargets(currentPortalId){
   state.portalHighlighted.clear();
   for(const n of nodes){
-    if(n.type !== "portal") continue;
-    if(n.id === currentPortalId) continue;
-    if(isFreeForPortal(n.id)){
+    if(isFreeForPortalTarget(n.id, currentPortalId)){
       state.portalHighlighted.add(n.id);
     }
   }
@@ -149,10 +147,10 @@ function nextTurn(){
   state.selected=null;
   state.highlighted.clear();
   state.placeHighlighted.clear();
+  state.portalHighlighted.clear();
+  state.portalUsedThisTurn=false;
   state.phase="needRoll";
   state.pendingSix=false;
-  state.portalUsedThisTurn=false;
-  state.portalHighlighted.clear();
   dieBox.textContent="–";
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
 }
@@ -162,9 +160,9 @@ function staySameTeamNeedRoll(msg){
   state.selected=null;
   state.highlighted.clear();
   state.placeHighlighted.clear();
-  state.phase="needRoll";
-  state.portalUsedThisTurn=false;
   state.portalHighlighted.clear();
+  state.portalUsedThisTurn=false;
+  state.phase="needRoll";
   dieBox.textContent="–";
   setStatus(msg || `Team ${currentTeam()} ist dran: Würfeln.`);
 }
@@ -275,10 +273,12 @@ function move(piece,target){
     const other=state.pieces.find(p=>p.id===occ);
     if(other && other.team===piece.team) return false;
 
-    // ❗ Portal-Schutz: Figuren auf Portal können NICHT geschmissen werden.
+    // Portal-Schutz: Figuren auf Portal können NICHT geschmissen werden.
+    // => Das Feld ist dann blockiert.
     if(other && other.node && isPortalNode(other.node)){
-      return false; // Ziel ist blockiert
+      return false;
     }
+
     if(other) kickToStart(other);
   }
 
@@ -287,6 +287,30 @@ function move(piece,target){
   piece.node=target;
   state.occupied.set(target,piece.id);
   return true;
+}
+
+function afterLandingNoPortal(piece){
+  const team = piece.team;
+
+  // ✅ Wenn auf dem Zielfeld eine Barrikade liegt -> aufnehmen und danach platzieren
+  if(barricades.has(piece.node)){
+    barricades.delete(piece.node);
+    state.carry[team] = (state.carry[team]||0) + 1;
+
+    // Placement Phase
+    computePlaceTargets();
+    state.phase = "placeBarricade";
+    setStatus(`Team ${team}: Barrikade aufgenommen! Tippe ein freies Feld zum Platzieren.`);
+    return;
+  }
+
+  // normal weiter
+  if(state.pendingSix){
+    state.pendingSix=false;
+    staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
+  }else{
+    nextTurn();
+  }
 }
 
 function afterLanding(piece){
@@ -304,9 +328,7 @@ function afterLanding(piece){
     return;
   }
 
-  // Keine Barrikade aufgenommen -> normal weiter
-  // ✅ Portal: Wenn du auf einem Portal landest, darfst du dich auf ein anderes Portal teleportieren (frei wählbar).
-  // (nur 1x pro Zug; Teleport-Ziel muss frei sein)
+  // ✅ Portal: Nach dem Landen darf man frei auf ein anderes Portal springen (einmal pro Zug)
   if(isPortalNode(piece.node) && !state.portalUsedThisTurn){
     computePortalTargets(piece.node);
     if(state.portalHighlighted.size > 0){
@@ -316,7 +338,7 @@ function afterLanding(piece){
     }
   }
 
-  // Keine Barrikade/kein Portal -> normal weiter
+  // normal weiter
   if(state.pendingSix){
     state.pendingSix=false;
     staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
@@ -361,7 +383,7 @@ function handleTapAtWorld(wx, wy){
 
   // 1) Figur wählen / wechseln (nach dem Wurf)
   const occId = state.occupied.get(hit.id);
-  if(occId && (state.phase==="choosePiece" || state.phase==="chooseTarget") && state.roll){
+  if(occId && (state.phase==="choosePiece") && state.roll){
     const occPiece = state.pieces.find(p=>p.id===occId);
     if(occPiece && occPiece.team === currentTeam()){
       state.selected = occPiece.id;
@@ -372,13 +394,19 @@ function handleTapAtWorld(wx, wy){
     }
   }
 
-  // 2) Portal benutzen (Teleport)
+  // 2) Portal benutzen (Teleport) — wird nach dem Landen auf einem Portal angeboten
   if(state.phase==="usePortal"){
-    // Tippe aktuelles Portal nochmal = bleiben
-    if(hit.id === state.pieces.find(p=>p.id===state.selected)?.node){
+    const piece = state.pieces.find(p=>p.id===state.selected);
+    if(!piece) return;
+
+    const currentPortalId = piece.node;
+
+    // Tippe aktuelles Portal nochmal = NICHT teleportieren
+    if(hit.id === currentPortalId){
       state.portalHighlighted.clear();
       state.portalUsedThisTurn = true;
-      // danach normal weiter (6 / next turn)
+
+      // Nach Portal-Entscheidung: 6 => nochmal würfeln, sonst Zugwechsel
       if(state.pendingSix){
         state.pendingSix=false;
         staySameTeamNeedRoll(`Team ${currentTeam()}: Du hast eine 6! Nochmal würfeln.`);
@@ -388,26 +416,26 @@ function handleTapAtWorld(wx, wy){
       return;
     }
 
+    // nur auf markierte Portale tippen
     if(!state.portalHighlighted.has(hit.id)) return;
 
-    const piece = state.pieces.find(p=>p.id===state.selected);
-    if(!piece) return;
-
-    // Teleport: Ziel muss frei sein (isFreeForPortal prüft occupied)
+    // Teleportieren: Ziel ist frei (1 Figur pro Feld) — Barrikade kann dort liegen (wird dann aufgenommen)
     state.occupied.delete(piece.node);
     piece.prev = piece.node;
     piece.node = hit.id;
     state.occupied.set(hit.id, piece.id);
 
+    // Portal darf in diesem Zug nicht nochmal genutzt werden
     state.portalHighlighted.clear();
     state.portalUsedThisTurn = true;
 
-    // Nach Teleport ggf. Barrikade aufnehmen etc. (Portal aber nicht nochmal in diesem Zug)
-    afterLanding(piece);
+    // Nach Teleport prüfen wir Barrikade (oder sonstiges) — Portal NICHT erneut anbieten
+    // => wir rufen eine "afterLandingNoPortal" Variante auf.
+    afterLandingNoPortal(piece);
     return;
   }
 
-  // 3) Ziel klicken (bewegen)
+  // 2) Ziel klicken (bewegen)
   if(state.phase==="chooseTarget"){
     if(!state.highlighted.has(hit.id)) return;
 
@@ -427,7 +455,7 @@ function handleTapAtWorld(wx, wy){
     return;
   }
 
-  // 4) Barrikade platzieren
+  // 3) Barrikade platzieren
   if(state.phase==="placeBarricade"){
     placeBarricadeAt(hit.id);
     return;
@@ -725,8 +753,6 @@ async function load(){
   initPieces();
   fitToBoard(60);
   state.phase="needRoll";
-  state.portalUsedThisTurn=false;
-  state.portalHighlighted.clear();
   dieBox.textContent="–";
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
 }
