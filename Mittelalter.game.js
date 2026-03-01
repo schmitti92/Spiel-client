@@ -262,7 +262,9 @@ const state = {
   phase:"loading", // loading | needRoll | choosePiece | chooseTarget | usePortal | placeBarricade
   selected:null,
   highlighted:new Set(),       // Move targets
-  placeHighlighted:new Set(),  // Barricade placement targets
+  placeHighlighted:new Set(),
+  eventActive:new Set(),
+  lastEvent:null,  // Barricade placement targets
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
@@ -303,6 +305,16 @@ function isFreeForBarricade(id){
 }
 
 function setStatus(t){ statusLine.textContent = t; }
+
+function ensurePortalState(){
+  if(!state.portalHighlighted) state.portalHighlighted = new Set();
+  if(typeof state.portalUsedThisTurn !== "boolean") state.portalUsedThisTurn = false;
+}
+
+function ensureEventState(){
+  if(!state.eventActive) state.eventActive = new Set();
+  if(!("lastEvent" in state)) state.lastEvent = null;
+}
 
 // ---------- Event Cards (Ereignisse) ----------
 const EVENT_DECK = [
@@ -362,6 +374,7 @@ function pickRandomEventCard(){
 }
 
 function initEventFieldsFromBoard(){
+  ensureEventState();
   state.eventActive.clear();
   for(const n of nodes){
     const isEvent = (n.type==="event") || (n.props && (n.props.event===true || n.props.kind==="event"));
@@ -382,17 +395,13 @@ function isEligibleEventSpawnNode(id){
 }
 
 function relocateEventField(fromId){
+  ensureEventState();
   const eligible = nodes.filter(nn=>isEligibleEventSpawnNode(nn.id)).map(nn=>nn.id);
   if(!eligible.length) return;
   const toId = eligible[Math.floor(Math.random()*eligible.length)];
   state.eventActive.delete(fromId);
   state.eventActive.add(toId);
   console.info("[EVENT] relocated", fromId, "->", toId);
-}
-
-function ensurePortalState(){
-  if(!state.portalHighlighted) state.portalHighlighted = new Set();
-  if(typeof state.portalUsedThisTurn !== "boolean") state.portalUsedThisTurn = false;
 }
 
 function nextTurn(){
@@ -551,6 +560,7 @@ function afterLandingNoPortal(piece){
   const team = piece.team;
 
   // ✅ Ereignisfeld: Karte ziehen, dann Feld zufällig neu platzieren (nicht Start/Portal)
+  ensureEventState();
   if(state.eventActive && state.eventActive.has(piece.node)){
     const card = pickRandomEventCard();
     state.lastEvent = card;
@@ -978,28 +988,6 @@ function draw(){
     ctx.restore();
   }
 
-  // Event-Felder (sichtbar)
-  if(state.eventActive && state.eventActive.size){
-    for(const id of state.eventActive){
-      const n = nodesById.get(id);
-      if(!n) continue;
-      ctx.save();
-      ctx.strokeStyle="rgba(190,120,255,.85)";
-      ctx.lineWidth=3;
-      ctx.beginPath();
-      ctx.rect(n.x-12, n.y-12, 24, 24);
-      ctx.stroke();
-      ctx.fillStyle="rgba(190,120,255,.16)";
-      ctx.fillRect(n.x-12, n.y-12, 24, 24);
-      ctx.fillStyle="rgba(240,230,255,.95)";
-      ctx.font="14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      ctx.textAlign="center";
-      ctx.textBaseline="middle";
-      ctx.fillText("★", n.x, n.y+0.5);
-      ctx.restore();
-    }
-  }
-
     // Pieces
   const selectedId = state.selected;
   for(const p of state.pieces){
@@ -1070,6 +1058,42 @@ async function load(){
     if(!adj.has(e.b)) adj.set(e.b,[]);
     adj.get(e.a).push(e.b);
     adj.get(e.b).push(e.a);
+  }
+
+  // --- Auto-Fix: Start-Ausgang fehlt? ---
+  // Wenn ein Startfeld keine Verbindung zu einem Nicht-Start-Feld hat, kann die Figur nicht "rauslaufen".
+  // Wir verbinden es dann automatisch mit dem nächstgelegenen Nicht-Start-Knoten.
+  // (Ändert NICHT dein board.json dauerhaft, ist nur ein Runtime-Fix.)
+  const startNodes = nodes.filter(n=>n.type==="start");
+  for(const s of startNodes){
+    const neigh = adj.get(s.id) || [];
+    const hasExit = neigh.some(id=> (nodesById.get(id)?.type) !== "start");
+    if(hasExit) continue;
+
+    // suche nächstgelegenen Nicht-Start-Knoten
+    let best = null;
+    let bestD = Infinity;
+    for(const n of nodes){
+      if(n.id === s.id) continue;
+      if(n.type === "start") continue;
+      const dx = n.x - s.x;
+      const dy = n.y - s.y;
+      const d2 = dx*dx + dy*dy;
+      if(d2 < bestD){
+        bestD = d2;
+        best = n;
+      }
+    }
+    if(!best) continue;
+
+    // Edge hinzufügen
+    edges.push({a: s.id, b: best.id});
+    if(!adj.has(s.id)) adj.set(s.id, []);
+    if(!adj.has(best.id)) adj.set(best.id, []);
+    adj.get(s.id).push(best.id);
+    adj.get(best.id).push(s.id);
+
+    console.warn("[AUTO-FIX] Start-Ausgang hinzugefügt:", s.id, "->", best.id);
   }
 
   initPieces();
