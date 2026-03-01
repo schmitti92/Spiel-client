@@ -193,6 +193,15 @@ const TEAM_COLORS = {
   4: "#b08a2e"  // Gold – Wappengold
 };
 
+// Wappen/Banner je Team (Mittelalter-Feeling)
+const TEAM_META = {
+  1: { name: "Haus Löwe",   icon: "🦁" },
+  2: { name: "Haus Adler",  icon: "🦅" },
+  3: { name: "Haus Drache", icon: "🐉" },
+  4: { name: "Haus Krone",  icon: "👑" }
+};
+
+
 // ---------- Camera (Pan / Zoom) ----------
 // World = Node-Koordinaten aus board.json
 // Screen = Canvas Pixel (CSS px)
@@ -332,7 +341,42 @@ function isFreeForBarricade(id){
   return true;
 }
 
-function setStatus(t){ statusLine.textContent = t; }
+function renderTeamBadge(team){
+  const meta = TEAM_META[team] || {name:`Team ${team}`, icon:"🏰"};
+  const col  = TEAM_COLORS[team] || "#888";
+  // Inline styles to avoid needing HTML/CSS changes
+  return `<span style="
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; margin-right:10px;
+    border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18)), linear-gradient(180deg, rgba(139,106,63,.95), rgba(93,67,39,.95));
+    border:1px solid rgba(0,0,0,.45);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
+    color:rgba(255,250,235,.95);
+    text-shadow:0 1px 0 rgba(0,0,0,.45);
+    font:700 12px ui-serif, Georgia, serif;
+  ">
+    <span style="font-size:16px; line-height:1">${meta.icon}</span>
+    <span style="display:inline-flex; align-items:center; gap:8px;">
+      <span style="opacity:.92">${meta.name}</span>
+      <span style="
+        width:10px; height:10px; border-radius:999px;
+        background:${col};
+        box-shadow:0 0 0 2px rgba(255,255,255,.18), 0 2px 10px rgba(0,0,0,.25);
+      "></span>
+    </span>
+  </span>`;
+}
+
+function setStatus(t){
+  const team = currentTeam?.() ? currentTeam() : null;
+  // Keep the original text but prepend a banner if we know the team
+  if(team && statusLine){
+    statusLine.innerHTML = renderTeamBadge(team) + `<span style="vertical-align:middle;">${String(t).replace(/</g,'&lt;')}</span>`;
+  }else if(statusLine){
+    statusLine.textContent = t;
+  }
+}
 
 function ensurePortalState(){
   if(!state.portalHighlighted) state.portalHighlighted = new Set();
@@ -951,7 +995,9 @@ function draw(){
   if(canvas.width!==w || canvas.height!==h){
     canvas.width=w; canvas.height=h;
     ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
+    drawCompass();
+  drawBurnedEdges();
+}
 
   ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
 
@@ -970,7 +1016,9 @@ function draw(){
     ctx.moveTo(a.x,a.y);
     ctx.lineTo(b.x,b.y);
     ctx.stroke();
-  }
+    drawCompass();
+  drawBurnedEdges();
+}
 
     // Nodes + Highlights
   const R=18;
@@ -989,8 +1037,12 @@ function draw(){
       // wenn es ein Highlight ist, bleibt das Highlight stärker, ansonsten Portal-Farbton
       if(!state.highlighted.has(n.id) && !(state.phase==="placeBarricade" && state.placeHighlighted.has(n.id))){
         fill="rgba(76,160,255,.22)";
-      }
-    }
+        drawCompass();
+  drawBurnedEdges();
+}
+      drawCompass();
+  drawBurnedEdges();
+}
 
     ctx.fillStyle=fill;
     ctx.fill();
@@ -1023,8 +1075,12 @@ function draw(){
       ctx.textBaseline="middle";
       ctx.fillText("⟲", n.x, n.y+0.5);
       ctx.restore();
-    }
-  }
+      drawCompass();
+  drawBurnedEdges();
+}
+    drawCompass();
+  drawBurnedEdges();
+}
 
   // Barrikaden als Overlay (sichtbar, aber können "versteckt" sein: du darfst sie trotzdem auf Ereignisfelder setzen)
   // Wenn du sie wirklich unsichtbar auf Ereignis willst: sag Bescheid, dann mache ich "Ereignis überdeckt Barrikade optisch".
@@ -1038,7 +1094,9 @@ function draw(){
     ctx.rect(n.x-12, n.y-12, 24, 24);
     ctx.stroke();
     ctx.restore();
-  }
+    drawCompass();
+  drawBurnedEdges();
+}
 
     // Pieces
   const selectedId = state.selected;
@@ -1071,12 +1129,18 @@ function draw(){
       ctx.arc(n.x,n.y,18.5,0,Math.PI*2);
       ctx.stroke();
       ctx.restore();
-    }
-  }
+      drawCompass();
+  drawBurnedEdges();
+}
+    drawCompass();
+  drawBurnedEdges();
+}
 
   ctx.restore();
 
   requestAnimationFrame(draw);
+  drawCompass();
+  drawBurnedEdges();
 }
 
 // ---------- Load ----------
@@ -1189,3 +1253,66 @@ load();
 draw();
 
 })();
+
+
+// =====================
+// Medieval Map Addon
+// Compass + Burned Edge
+// =====================
+function drawCompass(){
+  const cx = 90;
+  const cy = canvas.height - 90;
+  const r  = 45;
+
+  ctx.save();
+  ctx.globalAlpha = 0.85;
+
+  // outer circle
+  ctx.strokeStyle = "rgba(120,90,40,.9)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.stroke();
+
+  // 8 spikes
+  for(let i=0;i<8;i++){
+    const angle = i * Math.PI/4;
+    const len = (i%2===0)? r : r*0.6;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(angle)*len, cy + Math.sin(angle)*len);
+    ctx.stroke();
+  }
+
+  // north highlight
+  ctx.fillStyle = "rgba(200,166,75,.9)";
+  ctx.beginPath();
+  ctx.moveTo(cx, cy-r);
+  ctx.lineTo(cx-6, cy-20);
+  ctx.lineTo(cx+6, cy-20);
+  ctx.closePath();
+  ctx.fill();
+
+  // N label
+  ctx.fillStyle="rgba(80,60,30,.9)";
+  ctx.font="18px Georgia";
+  ctx.textAlign="center";
+  ctx.fillText("N", cx, cy-r-10);
+
+  ctx.restore();
+}
+
+function drawBurnedEdges(){
+  const g = ctx.createRadialGradient(
+    canvas.width/2,
+    canvas.height/2,
+    Math.min(canvas.width,canvas.height)/2.5,
+    canvas.width/2,
+    canvas.height/2,
+    Math.max(canvas.width,canvas.height)/1.1
+  );
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(1, "rgba(40,25,10,.45)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
