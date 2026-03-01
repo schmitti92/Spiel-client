@@ -282,6 +282,8 @@ function isPortalNode(id){
 }
 
 function computePortalTargets(currentPortalId){
+  ensurePortalState();
+  ensurePortalState();
   state.portalHighlighted.clear();
   for(const n of nodes){
     if(n.type !== "portal") continue;
@@ -302,12 +304,19 @@ function isFreeForBarricade(id){
 
 function setStatus(t){ statusLine.textContent = t; }
 
+function ensurePortalState(){
+  if(!state.portalHighlighted) state.portalHighlighted = new Set();
+  if(typeof state.portalUsedThisTurn !== "boolean") state.portalUsedThisTurn = false;
+}
+
 function nextTurn(){
+  ensurePortalState();
   state.turn = (state.turn+1)%state.players.length;
   state.roll=null;
   state.selected=null;
   state.highlighted.clear();
   state.placeHighlighted.clear();
+  ensurePortalState();
   state.portalHighlighted.clear();
   state.portalUsedThisTurn=false;
   state.phase="needRoll";
@@ -317,10 +326,12 @@ function nextTurn(){
 }
 
 function staySameTeamNeedRoll(msg){
+  ensurePortalState();
   state.roll=null;
   state.selected=null;
   state.highlighted.clear();
   state.placeHighlighted.clear();
+  ensurePortalState();
   state.portalHighlighted.clear();
   state.portalUsedThisTurn=false;
   state.phase="needRoll";
@@ -561,7 +572,8 @@ function handleTapAtWorld(wx, wy){
 
     // Tippe aktuelles Portal nochmal = bleiben (Portal ist damit "verbraucht")
     if(hit.id === curPortal){
-      state.portalHighlighted.clear();
+      ensurePortalState();
+  state.portalHighlighted.clear();
       state.portalUsedThisTurn = true;
       afterLandingNoPortal(piece); // beendet Zug sauber / 6 nochmal
       return;
@@ -575,7 +587,8 @@ function handleTapAtWorld(wx, wy){
     piece.node = hit.id;
     state.occupied.set(hit.id, piece.id);
 
-    state.portalHighlighted.clear();
+    ensurePortalState();
+  state.portalHighlighted.clear();
     state.portalUsedThisTurn = true;
 
     // Nach Teleport: Barrikade prüfen / sonst Zug beenden
