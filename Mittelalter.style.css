@@ -1,443 +1,306 @@
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Barikade – Lobby</title>
-  <link rel="stylesheet" href="styles.css?v=barikade_lobby1" />
-  <style>
-    :root{ --bg:#0b0f16; --card:rgba(15,23,42,.65); --line:rgba(255,255,255,.10); --muted:rgba(255,255,255,.70); }
-    body{ margin:0; background:radial-gradient(1200px 800px at 20% 10%, #1b2a5a 0%, var(--bg) 60%); color:#e9eefc; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
-    .wrap{ max-width:980px; margin:0 auto; padding:16px; }
-    .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .title{ font-weight:900; font-size:18px; }
-    .sub{ color:rgba(255,255,255,.65); font-size:12px; }
-    .card{ margin-top:12px; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:14px; }
-    .grid{ display:grid; grid-template-columns:1fr; gap:12px; }
-    @media(min-width:900px){ .grid{ grid-template-columns: 1.1fr .9fr; } }
-
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .btn{ padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); color:#e9eefc; font-weight:800; cursor:pointer; }
-    .btn.primary{ background:rgba(34,197,94,.14); }
-    .btn.blue{ background:rgba(59,130,246,.14); }
-    .btn:disabled{ opacity:.45; cursor:not-allowed; }
-
-    .pill{ padding:8px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.22); font-size:12px; color:rgba(255,255,255,.75); }
-
-    input[type="text"]{ width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:#e9eefc; outline:none; }
-
-    .names{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media(min-width:700px){ .names{ grid-template-columns:1fr 1fr 1fr 1fr; } }
-
-    .names button{ padding:12px 10px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(2,6,23,.35); font-weight:900; cursor:pointer; }
-    .names button:active{ transform:scale(.99); }
-
-    table{ width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px; border:1px solid rgba(255,255,255,.10); }
-    th,td{ padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.08); font-size:13px; }
-    th{ text-align:left; color:rgba(255,255,255,.75); font-weight:900; background:rgba(0,0,0,.18); }
-    tr:last-child td{ border-bottom:none; }
-
-    .hint{ color:rgba(255,255,255,.65); font-size:12px; line-height:1.35; }
-
-    #toast{ position:fixed; left:50%; bottom:20px; transform:translateX(-50%);
-      padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14);
-      opacity:0; pointer-events:none; transition:.15s; z-index:9999; max-width:min(92vw,900px);
-    }
-    #toast.show{ opacity:1; }
-
-    .k{ color:rgba(255,255,255,.55); font-weight:700; }
-  
-.names button{ color:#e9eefc; font-weight:800; }
-.names button[disabled]{ opacity:.35; filter:grayscale(1); }
-.colors button[disabled]{ opacity:.35; filter:grayscale(1); }
-
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="top">
-      <div>
-        <div class="title">Barikade – Lobby</div>
-        <div class="sub">Hier wählst du Raum, Farbe, Action‑Modus und deinen Namen. Im Spiel selbst bleibt es übersichtlich.</div>
-      </div>
-      <div class="row">
-        <a class="btn" href="index.html" style="text-decoration:none;">← Zurück</a>
-        <span id="modePill" class="pill">Modus: –</span>
-        <span id="roomPill" class="pill">Raum: –</span>
-        <span id="colorPill" class="pill">Farbe: –</span>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2 style="margin:0 0 10px 0; font-size:16px">1) Raum & Verbindung</h2>
-        <div class="row" style="align-items:stretch">
-          <div style="flex:1">
-            <div class="k" style="margin-bottom:6px">Raumcode</div>
-            <input id="roomInp" type="text" inputmode="text" placeholder="z.B. AB12" />
-            <div class="hint" style="margin-top:8px">Tipp: Host erstellt einen neuen Raum (Code teilen). Alle anderen treten mit dem Code bei.</div>
-          </div>
-          <div style="min-width:220px">
-            <div class="k" style="margin-bottom:6px">Aktion</div>
-            <div class="row">
-              <button id="hostMakeBtn" class="btn primary" type="button">Host (neu)</button>
-              <button id="joinBtn" class="btn blue" type="button">Beitreten</button>
-            </div>
-            <div class="hint" style="margin-top:8px">Wir verbinden erst im Spiel – hier legen wir nur alles fest.</div>
-          </div>
-        </div>
-
-        <div style="height:12px"></div>
-        <h2 style="margin:0 0 10px 0; font-size:16px">2) Farbe & Action‑Modus</h2>
-        <div class="row">
-          <button class="btn" type="button" data-color="red">🔴 Rot</button>
-          <button class="btn" type="button" data-color="blue">🔵 Blau</button>
-          <button class="btn" type="button" data-color="green">🟢 Grün</button>
-          <button class="btn" type="button" data-color="yellow">🟡 Gelb</button>
-          <label class="pill" style="display:flex; gap:10px; align-items:center; margin-left:auto;">
-            <input id="actionToggle" type="checkbox" />
-            Action‑Modus
-          </label>
-        </div>
-        <div class="hint" style="margin-top:8px">Farbe bleibt im Spiel frei wechselbar – hier setzen wir nur deine Wunschfarbe für den Raum.</div>
-
-        <div style="height:12px"></div>
-        <h2 style="margin:0 0 10px 0; font-size:16px">3) Name wählen (Stats sichtbar)</h2>
-        <div class="hint" style="margin-bottom:10px">Wenn du klickst, startest du Barikade direkt mit deinen Einstellungen.</div>
-        <div class="names">
-          <button type="button" data-name="David">David</button>
-          <button type="button" data-name="Vanessa">Vanessa</button>
-          <button type="button" data-name="Christoph">Christoph</button>
-          <button type="button" data-name="Gast">Gast</button>
-        </div>
-
-<div style="height:12px"></div>
-<div class="hint" id="presenceBox" style="padding:10px; border:1px solid var(--line); border-radius:14px">
-  <div style="font-weight:700; margin-bottom:6px">Im Raum</div>
-  <div id="presenceList" style="font-size:13px; color:var(--muted)">–</div>
-</div>
-
-        <div class="hint">Hinweis: Gast spielt mit, zählt aber nicht in die Statistik (so wie du es wolltest).</div>
-      </div>
-
-      <div class="card">
-        <h2 style="margin:0 0 10px 0; font-size:16px">Barikade‑Statistik</h2>
-        <div class="hint" style="margin-bottom:10px">Statistik wird live vom Server geladen (Gast zählt nicht). Falls offline: Platzhalter.</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Spiele</th>
-              <th>Siege</th>
-              <th>Ø‑Wurf</th>
-              <th>Spielzeit gesamt</th>
-            </tr>
-          </thead>
-          <tbody id="statsBody">
-            <tr><td>David</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
-            <tr><td>Vanessa</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
-            <tr><td>Christoph</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
-          </tbody>
-        </table>
-        <div class="hint" style="margin-top:10px">
-          Global: Spiele insgesamt: <span class="k" id="globalGames">–</span> · Gesamtspielzeit: <span class="k" id="globalTime">–</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast"></div>
-
-  <script>
-    (function(){
-      const $ = (id)=>document.getElementById(id);
-      const toastEl = $("toast");
-      const roomInp = $("roomInp");
-      const hostMakeBtn = $("hostMakeBtn");
-      const joinBtn = $("joinBtn");
-      const actionToggle = $("actionToggle");
-      const modePill = $("modePill");
-      const roomPill = $("roomPill");
-      const colorPill = $("colorPill");
-
-
-// Server base (same as game.js, but HTTP for fetch)
-const WS_BASE = "wss://spiel-server.onrender.com";
-const HTTP_BASE = WS_BASE.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
-const presenceList = $("presenceList");
-
-function getMyNameKey(){ return String(localStorage.getItem("barikade_nameKey")||"").trim(); }
-
-async function fetchPresence(){
-  const rc = normRoom(roomInp.value);
-  if(!rc) return null;
-  try{
-    const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/presence`, { cache:"no-store" });
-    const j = await r.json();
-    if(!j || !j.ok) return null;
-    return j;
-  }catch(_e){ return null; }
+/* Tablet-friendly UI */
+:root{
+  --bg:#0b0f14;
+  --panel:#0f1621;
+  --panel2:#0c131d;
+  --text:#e8eef7;
+  --muted:#a7b3c7;
+  --line:rgba(255,255,255,.08);
+  --good:#41d17a;
+  --warn:#ffcc66;
+  --bad:#ff6b6b;
+  --accent:#7c5cff;
 }
 
-async function reserveMe(nameKey){
-  const rc = normRoom(roomInp.value);
-  if(!rc) return { ok:false };
-  const color = String(localStorage.getItem("barikade_color")||"").toLowerCase();
-  try{
-    const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/reserve`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ nameKey, color, status:"lobby" })
-    });
-    const j = await r.json().catch(()=>null);
-    if(!r.ok) return { ok:false, error:j?.error || "ERR", holder:j?.holder };
-    return { ok:true, data:j };
-  }catch(_e){ return { ok:false, error:"NET" }; }
+*{ box-sizing:border-box; }
+html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+.topbar{
+  display:flex; gap:12px; align-items:center; justify-content:space-between;
+  padding:10px 12px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(124,92,255,.14), rgba(0,0,0,0));
+  position:sticky; top:0; z-index:5;
+}
+.title .h1{ font-weight:800; letter-spacing:.2px; font-size:16px; }
+.title .h2{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+.controls{ display:flex; align-items:center; gap:10px; }
+.btn{
+  border:1px solid var(--line); background:var(--panel);
+  color:var(--text); padding:10px 12px; border-radius:12px;
+  font-weight:700; letter-spacing:.2px;
+  touch-action:manipulation;
+}
+.btn.primary{ background:rgba(124,92,255,.22); border-color:rgba(124,92,255,.35); }
+.btn.secondary{ background:rgba(255,255,255,.06); }
+.btn:active{ transform:translateY(1px); }
+
+.die{
+  min-width:44px; height:40px; display:grid; place-items:center;
+  border-radius:12px; border:1px solid var(--line);
+  background:rgba(0,0,0,.2);
+  font-size:18px; font-weight:900;
 }
 
-function renderPresence(p){
-  if(!presenceList) return;
-
-  if(!p){
-    presenceList.textContent = "–";
-    return;
-  }
-
-  const res = p.reservations || {};
-  const locks = p.colorLocks || {};
-  const players = Array.isArray(p.players) ? p.players : [];
-
-  // Build lines
-  const lines = [];
-  const order = ["David","Vanessa","Christoph","Gast"];
-  for(const nk of order){
-    const r = res[nk];
-    const inLobby = !!r;
-    const st = r?.status === "in_game" ? "im Spiel" : (inLobby ? "bereit" : "frei");
-    const col = r?.color ? r.color.toUpperCase() : "–";
-    // connected status from websocket players
-    let conn = null;
-    const pl = players.find(x => String(x.name||"") === nk);
-    if(pl) conn = pl.connected ? "online" : "offline";
-    lines.push(`${nk}: ${st} • Farbe: ${col} ${conn ? "• "+conn : ""}`);
-  }
-  presenceList.innerHTML = lines.map(s=>`<div style="margin:3px 0">${s}</div>`).join("");
-
-  // Apply color locking UI
-  const my = getMyNameKey();
-  document.querySelectorAll('[data-color]').forEach(btn=>{
-    const c = String(btn.getAttribute("data-color")||"").toLowerCase();
-    const holder = locks[c] || null;
-    const shouldDisable = holder && holder !== my;
-    btn.disabled = !!shouldDisable;
-    btn.title = holder ? `Belegt von ${holder}` : "";
-  });
-
-  // Disable name buttons if already taken (ready or in_game), except allow re-click if it's me
-  
-document.querySelectorAll('.names [data-name]').forEach(btn=>{
-  btn.addEventListener('click', async ()=>{
-    const rc = normRoom(roomInp.value);
-    if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
-    const nameKey = String(btn.getAttribute('data-name')||'').trim();
-    if(!nameKey){ return; }
-
-    // Reserve name+color so other devices see it immediately.
-    const r = await reserveMe(nameKey);
-    if(!r.ok){
-      if(r.error === "COLOR_TAKEN"){
-        toast('Farbe ist schon belegt – wähle eine andere');
-      } else {
-        toast('Name ist schon belegt – nimm einen anderen');
-      }
-      // refresh presence quickly
-      const p = await fetchPresence();
-      renderPresence(p);
-      return;
-    }
-
-    localStorage.setItem("barikade_nameKey", nameKey);
-
-    // Start Barikade
-    window.location.href = "barikade.html";
-  });
-});
+.main{
+  display:grid;
+  grid-template-columns: 1fr 280px;
+  height: calc(100% - 62px);
+}
+@media (max-width: 980px){
+  .main{ grid-template-columns: 1fr; grid-template-rows: 1fr auto; height:auto; }
+  .sidebar{ position:relative; width:100%; }
 }
 
-// Poll presence every 2.5s when room is set
-let presenceTimer = null;
-function startPresencePoll(){
-  if(presenceTimer) return;
-  presenceTimer = setInterval(async ()=>{
-    const rc = normRoom(roomInp.value);
-    if(!rc) return;
-    const p = await fetchPresence();
-    renderPresence(p);
-  }, 2500);
+.canvasWrap{ position:relative; min-height: 60vh; }
+#boardCanvas{
+  width:100%; height:100%;
+  display:block;
+  touch-action:none; /* we implement our own pan/zoom */
+  background:
+    radial-gradient(circle at 50% 30%, rgba(124,92,255,.12), rgba(0,0,0,0) 55%),
+    radial-gradient(circle at 30% 70%, rgba(65,209,122,.08), rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
 }
 
-      function toast(t){
-        toastEl.textContent = String(t||"");
-        toastEl.classList.add('show');
-        clearTimeout(toastEl._t);
-        toastEl._t = setTimeout(()=>toastEl.classList.remove('show'), 1600);
-      }
+.hint{
+  position:absolute; left:10px; bottom:10px;
+  padding:10px 12px; border-radius:14px;
+  background:rgba(10,15,22,.72);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:12px;
+  backdrop-filter: blur(8px);
+  max-width:min(520px, 92vw);
+}
 
-      function randCode(len=4){
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let s=""; for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
-        return s;
-      }
-      function normRoom(v){
-        return String(v||"").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
-      }
+.sidebar{
+  border-left:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+  padding:10px;
+}
+.card{
+  background:rgba(15,22,33,.75);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
+  margin-bottom:10px;
+}
+.cardTitle{
+  font-weight:900;
+  font-size:13px;
+  margin-bottom:10px;
+  color:#dfe7ff;
+}
+.kv{ display:grid; grid-template-columns: 1fr 1fr; gap:8px 10px; font-size:12px; }
+.kv div:nth-child(odd){ color:var(--muted); }
+.small{ font-size:12px; color:var(--muted); line-height:1.35; }
 
-      function setMode(m){
-        localStorage.setItem('barikade_mode', m);
-        modePill.textContent = 'Modus: ' + (m === 'host' ? 'Host' : (m === 'client' ? 'Client' : '–'));
-      }
-      function setRoom(rc){
-        const r = normRoom(rc);
-        localStorage.setItem('barikade_room', r);
-        roomPill.textContent = 'Raum: ' + (r || '–');
-      }
-      function setActionMode(on){
-        localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
-      }
-      function setRequestedColor(color){
-        const c = String(color||"").toLowerCase().trim();
-        if(!['red','blue','green','yellow'].includes(c)) return;
-        // global fallback + room-specific like game.js does
-        try{ localStorage.setItem('barikade_requested_color', c); }catch(_e){}
-        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || "");
-        if(r) {
-          try{ localStorage.setItem('barikade_requested_color_' + r, c); }catch(_e){}
-        }
-        colorPill.textContent = 'Farbe: ' + (c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':'Gelb');
-      }
-
-      // Restore last selections
-      (function restore(){
-        const r = localStorage.getItem('barikade_room') || '';
-        const m = localStorage.getItem('barikade_mode') || 'offline';
-        const am = localStorage.getItem('barikade_action_mode') || 'classic';
-        roomInp.value = r;
-        setMode(m);
-        setRoom(r);
-        actionToggle.checked = (am === 'action');
-        const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
-        if(c) setRequestedColor(c);
-      })();
-
-      hostMakeBtn.addEventListener('click', ()=>{
-        const r = normRoom(roomInp.value);
-        const rc = r || randCode(4);
-        roomInp.value = rc;
-        setRoom(rc);
-        setMode('host');
-        toast('Host: Raum ' + rc);
-      });
-
-      joinBtn.addEventListener('click', ()=>{
-        const rc = normRoom(roomInp.value);
-        if(!rc){ toast('Bitte Raumcode eingeben'); return; }
-        setRoom(rc);
-        setMode('client');
-        toast('Client: Raum ' + rc);
-      });
-
-      document.querySelectorAll('[data-color]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const rc = normRoom(roomInp.value);
-          if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
-          setRoom(rc);
-          setRequestedColor(btn.getAttribute('data-color'));
-          toast('Wunschfarbe gespeichert');
-        });
-      });
-
-      actionToggle.addEventListener('change', ()=>{
-        setActionMode(!!actionToggle.checked);
-        toast(actionToggle.checked ? 'Action‑Modus: AN' : 'Action‑Modus: AUS');
-      });
-
-      document.querySelectorAll('[data-name]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const mode = localStorage.getItem('barikade_mode') || 'offline';
-          const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
-          if(!(mode === 'host' || mode === 'client')){ toast('Bitte Host oder Beitreten wählen'); return; }
-          if(!rc){ toast('Bitte Raumcode setzen'); return; }
-
-          const name = String(btn.getAttribute('data-name')||'Spieler');
-          localStorage.setItem('barikade_playerName', name);
-          // Gast zählt nicht → markieren (nur als Flag für später)
-          localStorage.setItem('barikade_isGuest', name.toLowerCase()==='gast' ? '1' : '0');
-
-          // ensure room persisted
-          setRoom(rc);
-          // ensure action mode persisted
-          setActionMode(!!actionToggle.checked);
-
-          // go to game (compact UI)
-          location.href = 'barikade.html?compact=1';
-        });
-      });
-    
-
-      // ---------- Stats (read-only, does not affect gameplay) ----------
-      const statsBody = $("statsBody");
-      const globalSpiele = $("globalGames");
-      const globalZeit = $("globalTime");
-
-      function fmtAvg(v){
-        if (v == null || !isFinite(v)) return "–";
-        return (Math.round(v * 100) / 100).toFixed(2);
-      }
-      function fmtPlay(ms){
-        const m = Math.max(0, Math.floor((ms||0)/60000));
-        const h = Math.floor(m/60);
-        const mm = m%60;
-        if (h>0) return `${h}h ${String(mm).padStart(2,'0')}m`;
-        return `${m}m`;
-      }
-
-      async function refreshStats(){
-        try{
-          const r = await fetch(HTTP_BASE + "/stats", { cache: "no-store" });
-          const j = await r.json();
-          if(!j || !j.ok) throw new Error("no stats");
-          const players = Array.isArray(j.players) ? j.players : [];
-
-          // Render rows
-          if (statsBody){
-            if(players.length === 0){
-              statsBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted)">–</td></tr>`;
-            } else {
-              statsBody.innerHTML = players.map(p=>{
-                const name = String(p.name||"Spieler");
-                const games = (p.games ?? 0);
-                const wins  = (p.wins ?? 0);
-                const avg   = fmtAvg(p.avgRoll);
-                const pt    = p.playTime ? String(p.playTime) : fmtPlay(p.playTimeMs||0);
-                return `<tr><td>${name}</td><td>${games}</td><td>${wins}</td><td>${avg}</td><td>${pt}</td></tr>`;
-              }).join("");
-            }
-          }
-
-          // Global line
-          if (globalSpiele) globalSpiele.textContent = String(j.global?.games ?? "–");
-          if (globalZeit) globalZeit.textContent = String(j.global?.playTime ?? "–");
-        }catch(_e){
-          // keep placeholders
-        }
-      }
-
-      // refresh every 5s (cheap)
-      refreshStats();
-      setInterval(refreshStats, 5000);
+.legend .row{ display:flex; align-items:center; gap:10px; margin:8px 0; font-size:12px; color:var(--muted); }
+.dot{ width:12px; height:12px; border-radius:50%; border:1px solid rgba(255,255,255,.12); display:inline-block; }
+.dot.normal{ background:rgba(255,255,255,.12); }
+.dot.start{ background:rgba(65,209,122,.5); }
+.dot.barricade{ background:rgba(255,204,102,.55); }
+.dot.obstacle{ background:rgba(255,107,107,.55); }
+.dot.portal{ background:rgba(124,92,255,.55); }
+.dot.boss{ background:rgba(255,107,107,.35); outline:2px solid rgba(255,107,107,.25); }
 
 
-})();
-  </script>
-</body>
-</html>
+
+/* Spieleranzahl */
+.pc{ display:flex; align-items:center; gap:8px; padding:0 6px; }
+.pcLabel{ font:600 12px system-ui,-apple-system,Segoe UI,Roboto,Arial; opacity:.8; }
+.pcSelect{
+  height:38px;
+  border-radius:12px;
+  padding:0 10px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.14);
+  color:rgba(240,245,255,.92);
+  outline:none;
+}
+.pcSelect:focus{ border-color:rgba(120,200,255,.55); box-shadow:0 0 0 3px rgba(120,200,255,.18); }
+
+
+/* =========================
+   Medieval Theme: Old Map
+   ========================= */
+:root{
+  --ink: rgba(40,28,18,.92);
+  --inkSoft: rgba(40,28,18,.70);
+  --parchment1: #f3e7c9;
+  --parchment2: #ead8ab;
+  --parchment3: #ddc58f;
+  --wood1:#6a4a2f;
+  --wood2:#4f3623;
+  --gold:#c8a64b;
+  --seal:#8b1f24;
+}
+
+/* Page background: parchment + vignette + subtle “map lines” */
+body{
+  background:
+    radial-gradient(1200px 900px at 50% 38%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+    radial-gradient(1200px 900px at 50% 38%, rgba(0,0,0,.22), rgba(0,0,0,0) 58%),
+    radial-gradient(1400px 1100px at 50% 45%, rgba(0,0,0,.32), rgba(0,0,0,0) 58%),
+    repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+    repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+    radial-gradient(1600px 1100px at 50% 38%, var(--parchment1) 0%, var(--parchment2) 58%, var(--parchment3) 100%);
+  color: var(--ink);
+  font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+}
+
+/* Top panel / controls -> wood + brass */
+#topBar, .topBar, .panel, #sidePanel{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.08)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 6px, rgba(0,0,0,.04) 6px, rgba(0,0,0,.04) 14px),
+    linear-gradient(180deg, var(--wood1), var(--wood2));
+  border: 1px solid rgba(0,0,0,.35);
+  box-shadow: 0 18px 45px rgba(0,0,0,.25);
+}
+
+button, .btn{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18)),
+    linear-gradient(180deg, #8b6a3f, #5d4327);
+  border: 1px solid rgba(0,0,0,.45);
+  color: rgba(255,250,235,.92);
+  border-radius: 12px;
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+
+button:hover, .btn:hover{
+  filter: brightness(1.05);
+}
+
+select, input{
+  background: rgba(255,250,235,.75);
+  border: 1px solid rgba(0,0,0,.35);
+  border-radius: 10px;
+  color: var(--ink);
+}
+
+/* Status line like an ink label */
+#statusLine{
+  color: rgba(255,250,235,.92);
+  text-shadow: 0 1px 0 rgba(0,0,0,.55);
+}
+
+/* Canvas frame like an old map */
+#boardCanvas{
+  background:
+    radial-gradient(900px 600px at 50% 45%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+    radial-gradient(1000px 700px at 50% 45%, rgba(0,0,0,.18), rgba(0,0,0,0) 58%),
+    radial-gradient(1000px 700px at 50% 45%, var(--parchment1) 0%, var(--parchment2) 62%, var(--parchment3) 100%);
+  border: 10px solid rgba(60,45,30,.55);
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.12), 0 22px 55px rgba(0,0,0,.25);
+}
+
+/* Debug console toggle – make it less “sci-fi” */
+#osConsoleToggle{
+  background: rgba(60,45,30,.55) !important;
+  border: 1px solid rgba(0,0,0,.35) !important;
+}
+
+
+
+/* =========================
+   Medieval Theme: Old Map (FULL OVERRIDES)
+   Keeps layout from base CSS, but remaps colors + canvas background.
+   ========================= */
+:root{
+  /* Remap existing UI vars used throughout the app */
+  --bg:#ead8ab;            /* page parchment */
+  --panel:#5d4327;         /* wood */
+  --panel2:#4f3623;        /* darker wood */
+  --text:rgba(40,28,18,.92); /* ink */
+  --muted:rgba(40,28,18,.70);
+  --line:rgba(0,0,0,.18);
+  --accent:#c8a64b;        /* brass */
+  --good:#2f7a4b;
+  --warn:#b08a2e;
+  --bad:#8b1f24;
+
+  /* theme extras */
+  --ink: rgba(40,28,18,.92);
+  --inkSoft: rgba(40,28,18,.70);
+  --parchment1: #f3e7c9;
+  --parchment2: #ead8ab;
+  --parchment3: #ddc58f;
+  --wood1:#6a4a2f;
+  --wood2:#4f3623;
+  --gold:#c8a64b;
+  --seal:#8b1f24;
+}
+
+/* Page background: parchment + vignette + subtle “map lines” */
+body{
+  background:
+    radial-gradient(1200px 900px at 50% 38%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+    radial-gradient(1400px 1100px at 50% 45%, rgba(0,0,0,.16), rgba(0,0,0,0) 58%),
+    repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+    repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+    radial-gradient(1600px 1100px at 50% 38%, var(--parchment1) 0%, var(--parchment2) 58%, var(--parchment3) 100%);
+  color: var(--ink);
+  font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+}
+
+/* Panels: wood + brass */
+#topBar, .topBar, .panel, #sidePanel, .card, .box{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.08)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 6px, rgba(0,0,0,.04) 6px, rgba(0,0,0,.04) 14px),
+    linear-gradient(180deg, var(--wood1), var(--wood2)) !important;
+  border: 1px solid rgba(0,0,0,.35) !important;
+  box-shadow: 0 18px 45px rgba(0,0,0,.20) !important;
+  color: rgba(255,250,235,.92);
+}
+
+/* Buttons */
+button, .btn{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18)),
+    linear-gradient(180deg, #8b6a3f, #5d4327) !important;
+  border: 1px solid rgba(0,0,0,.45) !important;
+  color: rgba(255,250,235,.92) !important;
+  border-radius: 12px;
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+button:hover, .btn:hover{ filter: brightness(1.05); }
+
+/* Inputs */
+select, input{
+  background: rgba(255,250,235,.75) !important;
+  border: 1px solid rgba(0,0,0,.35) !important;
+  border-radius: 10px;
+  color: var(--ink) !important;
+}
+
+/* Status line label */
+#statusLine{
+  color: rgba(255,250,235,.92);
+  text-shadow: 0 1px 0 rgba(0,0,0,.55);
+}
+
+/* Canvas: parchment sheet (NO spotlight circle) */
+#boardCanvas{
+  background:
+    repeating-linear-gradient(90deg, rgba(70,55,38,.035), rgba(70,55,38,.035) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+    repeating-linear-gradient(0deg, rgba(70,55,38,.025), rgba(70,55,38,.025) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+    linear-gradient(180deg, rgba(255,255,255,.35), rgba(0,0,0,0) 35%),
+    linear-gradient(180deg, var(--parchment1) 0%, var(--parchment2) 60%, var(--parchment3) 100%) !important;
+  border: 10px solid rgba(60,45,30,.55) !important;
+  border-radius: 18px !important;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.12), 0 22px 55px rgba(0,0,0,.18) !important;
+}
+
+/* Legend dots readable on wood */
+.legendDot{ box-shadow: 0 0 0 2px rgba(0,0,0,.25); }
+
+/* On-screen console toggle less sci-fi */
+#osConsoleToggle{
+  background: rgba(60,45,30,.55) !important;
+  border: 1px solid rgba(0,0,0,.35) !important;
+}
