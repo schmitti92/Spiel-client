@@ -1230,7 +1230,7 @@ function draw(){
 // ---------- Load ----------
 async function load(){
   const V = (typeof window !== "undefined" && window.BUILD_ID) ? window.BUILD_ID : String(Date.now());
-  const url = `Mitteralter.board.json?v=${V}`;
+  const url = `Mittelalter.board.json?v=${V}`;
 
   setStatus("Lade Board...");
   console.info("[LOAD] fetching", url);
