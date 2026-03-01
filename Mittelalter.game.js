@@ -304,6 +304,92 @@ function isFreeForBarricade(id){
 
 function setStatus(t){ statusLine.textContent = t; }
 
+// ---------- Event Cards (Ereignisse) ----------
+const EVENT_DECK = [
+  { id:"gold", title:"Goldfund", text:"+1 Barrikade in Reserve (als Beute).", effect:"addCarry" },
+  { id:"trap", title:"Falle!", text:"Nächster Wurf -2 (min. 1).", effect:"nextRollMinus2" },
+  { id:"blessing", title:"Segen", text:"Du darfst sofort 1 Feld extra gehen (optional).", effect:"bonusStep" },
+  { id:"swap", title:"Tauschhandel", text:"Tausche Position mit einer beliebigen eigenen Figur.", effect:"swapOwn" }
+];
+
+function showEventOverlay(card, onClose){
+  let ov = document.getElementById("eventOverlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "eventOverlay";
+    ov.style.cssText = "position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99997; background:rgba(0,0,0,.55);";
+    ov.innerHTML = `
+      <div style="
+        width:min(520px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:18px 18px 14px;
+        background:rgba(12,14,22,.92);
+        border:1px solid rgba(255,255,255,.12);
+        box-shadow:0 18px 60px rgba(0,0,0,.55);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        color:rgba(240,245,255,.95);
+        font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      ">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div style="width:38px; height:38px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:rgba(180,120,255,.18); border:1px solid rgba(180,120,255,.25);">✨</div>
+          <div style="flex:1;">
+            <div id="eventTitle" style="font-weight:800; font-size:18px; line-height:1.1;">Event</div>
+            <div style="opacity:.75; font-size:12px;">Ereigniskarte</div>
+          </div>
+        </div>
+        <div id="eventText" style="opacity:.92; font-size:14px; line-height:1.35; margin:10px 0 14px;"></div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button id="eventOkBtn" style="all:unset; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.12); cursor:pointer; border:1px solid rgba(255,255,255,.14);">OK</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(ov);
+  }
+  ov.querySelector("#eventTitle").textContent = card.title;
+  ov.querySelector("#eventText").textContent = card.text;
+  ov.style.display = "flex";
+  const btn = ov.querySelector("#eventOkBtn");
+  const close = ()=>{
+    ov.style.display="none";
+    btn.onclick=null;
+    onClose && onClose();
+  };
+  btn.onclick = close;
+}
+
+function pickRandomEventCard(){
+  return EVENT_DECK[Math.floor(Math.random()*EVENT_DECK.length)];
+}
+
+function initEventFieldsFromBoard(){
+  state.eventActive.clear();
+  for(const n of nodes){
+    const isEvent = (n.type==="event") || (n.props && (n.props.event===true || n.props.kind==="event"));
+    if(isEvent) state.eventActive.add(n.id);
+  }
+  console.info("[EVENT] init:", Array.from(state.eventActive));
+}
+
+function isEligibleEventSpawnNode(id){
+  const n = nodesById.get(id);
+  if(!n) return false;
+  if(n.type==="start" || n.type==="portal") return false;
+  if(n.type==="boss") return false;
+  if(n.type==="barricade" || n.type==="obstacle") return false;
+  if(state.eventActive.has(id)) return false;
+  if(state.occupied.has(id)) return false;
+  return true;
+}
+
+function relocateEventField(fromId){
+  const eligible = nodes.filter(nn=>isEligibleEventSpawnNode(nn.id)).map(nn=>nn.id);
+  if(!eligible.length) return;
+  const toId = eligible[Math.floor(Math.random()*eligible.length)];
+  state.eventActive.delete(fromId);
+  state.eventActive.add(toId);
+  console.info("[EVENT] relocated", fromId, "->", toId);
+}
+
 function ensurePortalState(){
   if(!state.portalHighlighted) state.portalHighlighted = new Set();
   if(typeof state.portalUsedThisTurn !== "boolean") state.portalUsedThisTurn = false;
@@ -463,6 +549,24 @@ function move(piece,target){
 
 function afterLandingNoPortal(piece){
   const team = piece.team;
+
+  // ✅ Ereignisfeld: Karte ziehen, dann Feld zufällig neu platzieren (nicht Start/Portal)
+  if(state.eventActive && state.eventActive.has(piece.node)){
+    const card = pickRandomEventCard();
+    state.lastEvent = card;
+    console.info('[EVENT] draw', card.id, 'on', piece.node);
+
+    // Feld erst nach OK verschieben, damit man es noch sieht
+    showEventOverlay(card, ()=>{
+      relocateEventField(piece.node);
+      // Danach normal weiter (Barrikade prüfen / Zug beenden)
+      afterLandingNoPortal(piece);
+    });
+
+    // Temporär aus eventActive entfernen, damit recursion nicht sofort wieder triggert
+    state.eventActive.delete(piece.node);
+    return;
+  }
 
   // ✅ Barrikade aufgenommen?
   if(barricades.has(piece.node)){
@@ -874,6 +978,28 @@ function draw(){
     ctx.restore();
   }
 
+  // Event-Felder (sichtbar)
+  if(state.eventActive && state.eventActive.size){
+    for(const id of state.eventActive){
+      const n = nodesById.get(id);
+      if(!n) continue;
+      ctx.save();
+      ctx.strokeStyle="rgba(190,120,255,.85)";
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.rect(n.x-12, n.y-12, 24, 24);
+      ctx.stroke();
+      ctx.fillStyle="rgba(190,120,255,.16)";
+      ctx.fillRect(n.x-12, n.y-12, 24, 24);
+      ctx.fillStyle="rgba(240,230,255,.95)";
+      ctx.font="14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.fillText("★", n.x, n.y+0.5);
+      ctx.restore();
+    }
+  }
+
     // Pieces
   const selectedId = state.selected;
   for(const p of state.pieces){
@@ -947,6 +1073,7 @@ async function load(){
   }
 
   initPieces();
+  initEventFieldsFromBoard();
   fitToBoard(60);
   state.phase="needRoll";
   dieBox.textContent="–";
