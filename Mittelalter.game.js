@@ -168,23 +168,28 @@ function initPieces(){
 function computeMoveTargets(piece,steps){
   state.highlighted.clear();
 
-  const start=piece.node;
-  const prev=piece.prev;
+  const start = piece.node;
+  const prev = piece.prev;
 
-  const q=[{id:start,d:0}];
-  const visited=new Set([start+"|0"]);
+  // Anti-Hüpfen:
+  // - Schritt 1 nicht direkt zurück aufs vorherige Feld (prev)
+  // - UND generell nicht direkt zurück zum Feld, von dem man gerade kam (A->B->A)
+  //
+  // Dafür tracken wir pro BFS-State auch das "from" (Vorgängerfeld).
+  const q = [{ id: start, d: 0, from: prev || null }];
+  const visited = new Set([start+"|0|"+(prev||"null")]);
 
   while(q.length){
-    const cur=q.shift();
+    const cur = q.shift();
 
-    if(cur.d===steps){
-      if(cur.id!==start){
-        const occ=state.occupied.get(cur.id);
+    if(cur.d === steps){
+      if(cur.id !== start){
+        const occ = state.occupied.get(cur.id);
         if(!occ){
           state.highlighted.add(cur.id);
         }else{
-          const op=state.pieces.find(x=>x.id===occ);
-          if(op && op.team!==piece.team){
+          const op = state.pieces.find(x=>x.id===occ);
+          if(op && op.team !== piece.team){
             state.highlighted.add(cur.id);
           }
         }
@@ -194,19 +199,18 @@ function computeMoveTargets(piece,steps){
 
     for(const nb of (adj.get(cur.id)||[])){
 
-      // Anti-Hüpfen: erster Schritt nicht direkt zurück
-      if(cur.d===0 && prev && nb===prev) continue;
+      // Kein Zurück-Hüpfen (A->B->A)
+      if(cur.from && nb === cur.from) continue;
 
       // ✅ Barrikade blockt Zwischen-Schritte (nicht überspringen!)
-      // Wenn auf nb eine Barrikade liegt und wir NICHT genau dort landen, ist der Pfad blockiert.
       if(barricades.has(nb) && (cur.d+1) < steps) continue;
 
-      const key=nb+"|"+(cur.d+1);
+      // visited muss auch den Vorgänger berücksichtigen, sonst schneiden wir legitime Pfade ab
+      const key = nb+"|"+(cur.d+1)+"|"+cur.id;
       if(visited.has(key)) continue;
       visited.add(key);
 
-      // ✅ Figuren unterwegs blocken NICHT (überspringen erlaubt)
-      q.push({id:nb,d:cur.d+1});
+      q.push({ id: nb, d: cur.d+1, from: cur.id });
     }
   }
 }
