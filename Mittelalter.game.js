@@ -11,6 +11,18 @@
 
 (() => {
 
+
+  // --- BUILD-ID Handshake (Cache-Schutz) ---
+  const __EXPECTED_BUILD = "20260301-010308";
+  if (typeof window !== "undefined") {
+    const bid = window.BUILD_ID || null;
+    if (bid && bid !== __EXPECTED_BUILD) {
+      alert("Update-Mix erkannt (Cache). Bitte Seite hart neu laden.");
+    }
+    if (!bid) {
+      console.warn("BUILD_ID fehlt – Cache-Schutz deaktiviert.");
+    }
+  }
 const canvas = document.getElementById("boardCanvas");
 const ctx = canvas.getContext("2d");
 const btnRoll = document.getElementById("btnRoll");
@@ -376,7 +388,7 @@ function draw(){
 
 // ---------- Load ----------
 async function load(){
-  const V = (typeof window !== "undefined" && window.BUILD_ID) ? window.BUILD_ID : String(Date.now());
+  const V = (typeof window !== "undefined" && window.BUILD_ID) ? window.BUILD_ID : "20260301-010308";
   const res=await fetch(`Mitteralter.board.json?v=${V}`,{cache:"no-store"});
   board=await res.json();
   nodes=board.nodes||[];
