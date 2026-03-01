@@ -357,44 +357,137 @@ function showEventOverlay(card, onClose){
   if(!ov){
     ov = document.createElement("div");
     ov.id = "eventOverlay";
-    ov.style.cssText = "position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99997; background:rgba(0,0,0,.55);";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99997",
+      "background:rgba(0,0,0,.48)"
+    ].join(";") + ";";
+
     ov.innerHTML = `
-      <div style="
-        width:min(520px, calc(100vw - 28px));
+      <div id="eventCard" style="
+        width:min(560px, calc(100vw - 28px));
         border-radius:18px;
         padding:18px 18px 14px;
-        background:rgba(12,14,22,.92);
-        border:1px solid rgba(255,255,255,.12);
-        box-shadow:0 18px 60px rgba(0,0,0,.55);
-        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-        color:rgba(240,245,255,.95);
-        font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+        background:
+          radial-gradient(900px 380px at 50% 10%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.22);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
       ">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-          <div style="width:38px; height:38px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:rgba(180,120,255,.18); border:1px solid rgba(180,120,255,.25);">✨</div>
+        <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:10px;">
+          <div style="
+            width:44px; height:44px; border-radius:16px;
+            display:flex; align-items:center; justify-content:center;
+            background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(0,0,0,.10)),
+                       radial-gradient(circle at 35% 35%, rgba(200,55,65,.98), rgba(90,14,18,.96));
+            border:1px solid rgba(0,0,0,.28);
+            box-shadow: inset 0 0 0 2px rgba(255,240,232,.12);
+            color:rgba(255,245,235,.92);
+            font-weight:900;
+          ">✦</div>
+
           <div style="flex:1;">
-            <div id="eventTitle" style="font-weight:800; font-size:18px; line-height:1.1;">Event</div>
-            <div style="opacity:.75; font-size:12px;">Ereigniskarte</div>
+            <div id="eventTitle" style="font-weight:900; font-size:20px; letter-spacing:.2px; line-height:1.15;">Ereignis</div>
+            <div style="opacity:.72; font-size:12px; margin-top:2px;">Ereigniskarte (Wachssiegel)</div>
           </div>
+
+          <button id="eventCloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
         </div>
-        <div id="eventText" style="opacity:.92; font-size:14px; line-height:1.35; margin:10px 0 14px;"></div>
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button id="eventOkBtn" style="all:unset; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.12); cursor:pointer; border:1px solid rgba(255,255,255,.14);">OK</button>
+
+        <div id="eventText" style="
+          font-size:15px;
+          line-height:1.4;
+          padding:12px 12px;
+          border-radius:14px;
+          background:rgba(255,255,255,.35);
+          border:1px dashed rgba(0,0,0,.18);
+          margin-bottom:12px;
+          white-space:pre-wrap;
+        "></div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center;">
+          <button id="eventOk" style="
+            cursor:pointer;
+            padding:10px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.35);
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.18)),
+              linear-gradient(180deg, #6a4a2f, #4f3623);
+            color:rgba(255,250,235,.92);
+            font-weight:800;
+            text-shadow:0 1px 0 rgba(0,0,0,.45);
+          ">Annehmen</button>
         </div>
+
+        <div style="
+          position:absolute; right:14px; bottom:12px;
+          width:58px; height:58px; border-radius:22px;
+          background:
+            radial-gradient(circle at 35% 35%, rgba(200,55,65,.98), rgba(90,14,18,.96));
+          border:1px solid rgba(0,0,0,.30);
+          box-shadow: 0 14px 26px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,240,232,.10);
+          display:flex; align-items:center; justify-content:center;
+          color:rgba(255,245,235,.92);
+          font-size:18px; font-weight:900;
+          transform: rotate(-8deg);
+          opacity:.92;
+          pointer-events:none;
+        ">✦</div>
       </div>
     `;
+
     document.body.appendChild(ov);
+
+    // Prevent closing by clicking inside card
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov) doClose();
+    });
+
+    function doClose(){
+      ov.style.display="none";
+      if(typeof onClose==="function") onClose();
+    }
+
+    ov._doClose = doClose;
+
+    ov.querySelector("#eventOk").addEventListener("click", doClose);
+    ov.querySelector("#eventCloseX").addEventListener("click", doClose);
   }
-  ov.querySelector("#eventTitle").textContent = card.title;
-  ov.querySelector("#eventText").textContent = card.text;
-  ov.style.display = "flex";
-  const btn = ov.querySelector("#eventOkBtn");
-  const close = ()=>{
-    ov.style.display="none";
-    btn.onclick=null;
-    onClose && onClose();
-  };
-  btn.onclick = close;
+
+  // update content + show
+  ov.querySelector("#eventTitle").textContent = card?.title || "Ereignis";
+  ov.querySelector("#eventText").textContent = card?.text || "";
+  ov.style.display="flex";
+
+  // If onClose changes between calls, update handler
+  ov._doClose = (function(){
+    return function(){
+      ov.style.display="none";
+      if(typeof onClose==="function") onClose();
+    };
+  })();
+
+  // Rebind buttons to new onClose
+  const okBtn = ov.querySelector("#eventOk");
+  const xBtn  = ov.querySelector("#eventCloseX");
+  okBtn.onclick = ov._doClose;
+  xBtn.onclick  = ov._doClose;
 }
 
 function pickRandomEventCard(){
