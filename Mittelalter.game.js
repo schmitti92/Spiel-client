@@ -874,11 +874,14 @@ function draw(){
     ctx.restore();
   }
 
-  // Pieces
+    // Pieces
+  const activeTeam = currentTeam();
   for(const p of state.pieces){
     if(!p.node) continue;
     const n=nodesById.get(p.node);
     if(!n) continue;
+
+    // Piece body
     ctx.beginPath();
     ctx.arc(n.x,n.y,12,0,Math.PI*2);
     ctx.fillStyle=TEAM_COLORS[p.team] || "#fff";
@@ -886,6 +889,23 @@ function draw(){
     ctx.strokeStyle="rgba(0,0,0,.35)";
     ctx.lineWidth=2;
     ctx.stroke();
+
+    // Active team ring (nur aktuelles Team umranden)
+    if(p.team === activeTeam){
+      ctx.save();
+      ctx.strokeStyle="rgba(255,255,255,.95)";
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,16,0,Math.PI*2);
+      ctx.stroke();
+
+      ctx.strokeStyle="rgba(0,0,0,.45)";
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,18.5,0,Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   ctx.restore();
