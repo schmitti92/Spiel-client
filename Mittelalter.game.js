@@ -399,6 +399,7 @@ canvas.addEventListener("pointermove",(e)=>{
       applyZoomAt(cx, cy, safe);
     }
     canvas._pinchLastDist = dist;
+    lastPinchAt = performance.now();
     tapCandidate = null;
   }
 },{passive:true});
@@ -418,6 +419,16 @@ function endPointer(e){
     const dx = p.x - tapCandidate.x;
     const dy = p.y - tapCandidate.y;
     if(dt < 350 && (dx*dx+dy*dy) <= 36){
+      // Double-tap only if no pinch recently (prevents "spring back" after zoom)
+      const now = performance.now();
+      if(now - lastPinchAt > 450){
+        if(now - lastTapTime < 280){
+          fitToBoard(60);
+          lastTapTime = 0;
+        }else{
+          lastTapTime = now;
+        }
+      }
       const w = screenToWorld(p.x, p.y);
       handleTapAtWorld(w.x, w.y);
     }
@@ -442,17 +453,14 @@ canvas.addEventListener("wheel",(e)=>{
   applyZoomAt(p.x, p.y, factor);
 },{passive:false});
 
-// Doppeltipp/Doppelklick = zentrieren
+// Doppeltipp (Touch) + Doppelklick (Mouse) = zentrieren
 let lastTapTime = 0;
-canvas.addEventListener("pointerup",(e)=>{
-  const now = performance.now();
-  if(now - lastTapTime < 280){
-    fitToBoard(60);
-    lastTapTime = 0;
-  }else{
-    lastTapTime = now;
-  }
-},{passive:true});
+let lastPinchAt = 0;
+
+// Mouse double click
+canvas.addEventListener("dblclick", (e)=>{
+  fitToBoard(60);
+});
 
 // Button "Zentrieren"
 btnFit?.addEventListener("click", ()=> fitToBoard(60));
