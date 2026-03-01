@@ -13,10 +13,6 @@
 
 const canvas = document.getElementById("boardCanvas");
 const ctx = canvas.getContext("2d");
-
-// Expose for helper render functions (avoid scope issues)
-window.__ma_canvas = canvas;
-window.__ma_ctx = ctx;
 const btnRoll = document.getElementById("btnRoll");
 const btnFit = document.getElementById("btnFit");
 const dieBox = document.getElementById("dieBox");
@@ -197,15 +193,6 @@ const TEAM_COLORS = {
   4: "#b08a2e"  // Gold – Wappengold
 };
 
-// Wappen/Banner je Team (Mittelalter-Feeling)
-const TEAM_META = {
-  1: { name: "Haus Löwe",   icon: "🦁" },
-  2: { name: "Haus Adler",  icon: "🦅" },
-  3: { name: "Haus Drache", icon: "🐉" },
-  4: { name: "Haus Krone",  icon: "👑" }
-};
-
-
 // ---------- Camera (Pan / Zoom) ----------
 // World = Node-Koordinaten aus board.json
 // Screen = Canvas Pixel (CSS px)
@@ -345,42 +332,7 @@ function isFreeForBarricade(id){
   return true;
 }
 
-function renderTeamBadge(team){
-  const meta = TEAM_META[team] || {name:`Team ${team}`, icon:"🏰"};
-  const col  = TEAM_COLORS[team] || "#888";
-  // Inline styles to avoid needing HTML/CSS changes
-  return `<span style="
-    display:inline-flex; align-items:center; gap:8px;
-    padding:6px 10px; margin-right:10px;
-    border-radius:14px;
-    background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18)), linear-gradient(180deg, rgba(139,106,63,.95), rgba(93,67,39,.95));
-    border:1px solid rgba(0,0,0,.45);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
-    color:rgba(255,250,235,.95);
-    text-shadow:0 1px 0 rgba(0,0,0,.45);
-    font:700 12px ui-serif, Georgia, serif;
-  ">
-    <span style="font-size:16px; line-height:1">${meta.icon}</span>
-    <span style="display:inline-flex; align-items:center; gap:8px;">
-      <span style="opacity:.92">${meta.name}</span>
-      <span style="
-        width:10px; height:10px; border-radius:999px;
-        background:${col};
-        box-shadow:0 0 0 2px rgba(255,255,255,.18), 0 2px 10px rgba(0,0,0,.25);
-      "></span>
-    </span>
-  </span>`;
-}
-
-function setStatus(t){
-  const team = currentTeam?.() ? currentTeam() : null;
-  // Keep the original text but prepend a banner if we know the team
-  if(team && statusLine){
-    statusLine.innerHTML = renderTeamBadge(team) + `<span style="vertical-align:middle;">${String(t).replace(/</g,'&lt;')}</span>`;
-  }else if(statusLine){
-    statusLine.textContent = t;
-  }
-}
+function setStatus(t){ statusLine.textContent = t; }
 
 function ensurePortalState(){
   if(!state.portalHighlighted) state.portalHighlighted = new Set();
@@ -990,55 +942,6 @@ if(selPlayerCount){
 }
 
 
-
-// ---------- Wax Seal Render (Eventfelder) ----------
-function drawWaxSeal(x,y,baseR,opts={}){
-  const r = (opts.r || baseR);
-  ctx.save();
-
-  // wax gradient
-  const g = ctx.createRadialGradient(x-r*0.35, y-r*0.35, r*0.2, x, y, r*1.15);
-  g.addColorStop(0, "rgba(210,60,70,.95)");
-  g.addColorStop(0.55, "rgba(150,30,36,.92)");
-  g.addColorStop(1, "rgba(90,18,22,.92)");
-
-  // main wax blob
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x,y,r,0,Math.PI*2);
-  ctx.fill();
-
-  // irregular edge strokes (gives "pressed wax" feel)
-  ctx.strokeStyle = "rgba(255,235,220,.22)";
-  ctx.lineWidth = Math.max(1.5, r*0.12);
-  ctx.beginPath();
-  ctx.arc(x,y,r-0.8,0,Math.PI*2);
-  ctx.stroke();
-
-  // inner ring
-  ctx.strokeStyle = "rgba(0,0,0,.25)";
-  ctx.lineWidth = Math.max(1, r*0.08);
-  ctx.beginPath();
-  ctx.arc(x,y,r*0.62,0,Math.PI*2);
-  ctx.stroke();
-
-  // stamp icon
-  ctx.fillStyle = "rgba(255,245,235,.92)";
-  ctx.font = `${Math.round(r*0.95)}px ui-serif, Georgia, serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("✦", x, y+0.5);
-
-  // subtle shadow
-  ctx.globalCompositeOperation = "multiply";
-  ctx.fillStyle = "rgba(0,0,0,.10)";
-  ctx.beginPath();
-  ctx.arc(x+r*0.15, y+r*0.2, r*0.92, 0, Math.PI*2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
 // ---------- Render -----------
 function draw(){
   // Canvas auf CSS-Größe setzen (einfach)
@@ -1048,9 +951,7 @@ function draw(){
   if(canvas.width!==w || canvas.height!==h){
     canvas.width=w; canvas.height=h;
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    drawCompass();
-  drawBurnedEdges();
-}
+  }
 
   ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
 
@@ -1069,9 +970,7 @@ function draw(){
     ctx.moveTo(a.x,a.y);
     ctx.lineTo(b.x,b.y);
     ctx.stroke();
-    drawCompass();
-  drawBurnedEdges();
-}
+  }
 
     // Nodes + Highlights
   const R=18;
@@ -1090,12 +989,8 @@ function draw(){
       // wenn es ein Highlight ist, bleibt das Highlight stärker, ansonsten Portal-Farbton
       if(!state.highlighted.has(n.id) && !(state.phase==="placeBarricade" && state.placeHighlighted.has(n.id))){
         fill="rgba(76,160,255,.22)";
-        drawCompass();
-  drawBurnedEdges();
-}
-      drawCompass();
-  drawBurnedEdges();
-}
+      }
+    }
 
     ctx.fillStyle=fill;
     ctx.fill();
@@ -1104,13 +999,6 @@ function draw(){
     ctx.strokeStyle="rgba(255,255,255,.12)";
     ctx.stroke();
 
-
-    // Ereignisfeld: Wachssiegel (richtig sichtbar)
-    ensureEventState();
-    if(state.eventActive && state.eventActive.has(n.id)){
-      // Seal should be on top of node dot
-      drawWaxSeal(n.x, n.y, 14, {});
-    }
     // Portal-Ring + Symbol
     if(n.type==="portal"){
       ctx.save();
@@ -1135,12 +1023,8 @@ function draw(){
       ctx.textBaseline="middle";
       ctx.fillText("⟲", n.x, n.y+0.5);
       ctx.restore();
-      drawCompass();
-  drawBurnedEdges();
-}
-    drawCompass();
-  drawBurnedEdges();
-}
+    }
+  }
 
   // Barrikaden als Overlay (sichtbar, aber können "versteckt" sein: du darfst sie trotzdem auf Ereignisfelder setzen)
   // Wenn du sie wirklich unsichtbar auf Ereignis willst: sag Bescheid, dann mache ich "Ereignis überdeckt Barrikade optisch".
@@ -1154,9 +1038,7 @@ function draw(){
     ctx.rect(n.x-12, n.y-12, 24, 24);
     ctx.stroke();
     ctx.restore();
-    drawCompass();
-  drawBurnedEdges();
-}
+  }
 
     // Pieces
   const selectedId = state.selected;
@@ -1189,18 +1071,12 @@ function draw(){
       ctx.arc(n.x,n.y,18.5,0,Math.PI*2);
       ctx.stroke();
       ctx.restore();
-      drawCompass();
-  drawBurnedEdges();
-}
-    drawCompass();
-  drawBurnedEdges();
-}
+    }
+  }
 
   ctx.restore();
 
   requestAnimationFrame(draw);
-  drawCompass();
-  drawBurnedEdges();
 }
 
 // ---------- Load ----------
@@ -1313,131 +1189,3 @@ load();
 draw();
 
 })();
-
-
-// =====================
-// Medieval Map Addon
-// Compass + Burned Edge
-// =====================
-function drawCompass(){
-  const canvas = window.__ma_canvas || document.getElementById("boardCanvas");
-  const ctx = window.__ma_ctx || (canvas ? canvas.getContext("2d") : null);
-  if(!canvas || !ctx) return;
-  const cx = 90;
-  const cy = canvas.height - 90;
-  const r  = 45;
-
-  ctx.save();
-  ctx.globalAlpha = 0.85;
-
-  // outer circle
-  ctx.strokeStyle = "rgba(120,90,40,.9)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.stroke();
-
-  // 8 spikes
-  for(let i=0;i<8;i++){
-    const angle = i * Math.PI/4;
-    const len = (i%2===0)? r : r*0.6;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + Math.cos(angle)*len, cy + Math.sin(angle)*len);
-    ctx.stroke();
-  }
-
-  // north highlight
-  ctx.fillStyle = "rgba(200,166,75,.9)";
-  ctx.beginPath();
-  ctx.moveTo(cx, cy-r);
-  ctx.lineTo(cx-6, cy-20);
-  ctx.lineTo(cx+6, cy-20);
-  ctx.closePath();
-  ctx.fill();
-
-  // N label
-  ctx.fillStyle="rgba(80,60,30,.9)";
-  ctx.font="18px Georgia";
-  ctx.textAlign="center";
-  ctx.fillText("N", cx, cy-r-10);
-
-  ctx.restore();
-}
-
-function drawBurnedEdges(){
-  const canvas = window.__ma_canvas || document.getElementById("boardCanvas");
-  const ctx = window.__ma_ctx || (canvas ? canvas.getContext("2d") : null);
-  if(!canvas || !ctx) return;
-
-  const w = canvas.width, h = canvas.height;
-
-  ctx.save();
-  ctx.globalCompositeOperation = "multiply";
-  ctx.globalAlpha = 0.9;
-
-  // Soft vignette (rectangular, not circular mask)
-  const vg = ctx.createRadialGradient(w*0.5, h*0.5, Math.min(w,h)*0.35, w*0.5, h*0.5, Math.max(w,h)*0.85);
-  vg.addColorStop(0, "rgba(0,0,0,0)");
-  vg.addColorStop(1, "rgba(55,34,18,.22)");
-  ctx.fillStyle = vg;
-  ctx.fillRect(0,0,w,h);
-
-  // Burned edges via linear gradients (subtle)
-  const edge = Math.max(70, Math.min(w,h)*0.12);
-
-  // top
-  let g = ctx.createLinearGradient(0,0,0,edge);
-  g.addColorStop(0, "rgba(55,34,18,.35)");
-  g.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,w,edge);
-
-  // bottom
-  g = ctx.createLinearGradient(0,h-edge,0,h);
-  g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(1, "rgba(55,34,18,.35)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0,h-edge,w,edge);
-
-  // left
-  g = ctx.createLinearGradient(0,0,edge,0);
-  g.addColorStop(0, "rgba(55,34,18,.32)");
-  g.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,edge,h);
-
-  // right
-  g = ctx.createLinearGradient(w-edge,0,w,0);
-  g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(1, "rgba(55,34,18,.32)");
-  ctx.fillStyle = g;
-  ctx.fillRect(w-edge,0,edge,h);
-
-  // Corner soot (very light)
-  const cg = ctx.createRadialGradient(0,0,0,0,0,edge*1.2);
-  cg.addColorStop(0, "rgba(55,34,18,.28)");
-  cg.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = cg;
-  ctx.fillRect(0,0,edge*1.2,edge*1.2);
-
-  const cg2 = ctx.createRadialGradient(w,0,0,w,0,edge*1.2);
-  cg2.addColorStop(0, "rgba(55,34,18,.26)");
-  cg2.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = cg2;
-  ctx.fillRect(w-edge*1.2,0,edge*1.2,edge*1.2);
-
-  const cg3 = ctx.createRadialGradient(0,h,0,0,h,edge*1.2);
-  cg3.addColorStop(0, "rgba(55,34,18,.26)");
-  cg3.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = cg3;
-  ctx.fillRect(0,h-edge*1.2,edge*1.2,edge*1.2);
-
-  const cg4 = ctx.createRadialGradient(w,h,0,w,h,edge*1.2);
-  cg4.addColorStop(0, "rgba(55,34,18,.24)");
-  cg4.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = cg4;
-  ctx.fillRect(w-edge*1.2,h-edge*1.2,edge*1.2,edge*1.2);
-
-  ctx.restore();
-}
