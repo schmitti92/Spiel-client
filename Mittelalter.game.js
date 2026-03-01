@@ -537,7 +537,7 @@ function draw(){
     ctx.stroke();
   }
 
-  // Nodes + Highlights
+    // Nodes + Highlights
   const R=18;
   for(const n of nodes){
     ctx.beginPath();
@@ -547,12 +547,47 @@ function draw(){
     if(state.highlighted.has(n.id)) fill="rgba(124,92,255,.38)";
     if(state.phase==="placeBarricade" && state.placeHighlighted.has(n.id)) fill="rgba(65,209,122,.28)";
 
+    // Portal sichtbar machen (rein optisch, noch keine Teleport-Logik)
+    // Board-Editor setzt dafür n.type==="portal" (optional auch props.portalKey / portalId)
+    if(n.type==="portal"){
+      // wenn es ein Highlight ist, bleibt das Highlight stärker, ansonsten Portal-Farbton
+      if(!state.highlighted.has(n.id) && !(state.phase==="placeBarricade" && state.placeHighlighted.has(n.id))){
+        fill="rgba(76,160,255,.22)";
+      }
+    }
+
     ctx.fillStyle=fill;
     ctx.fill();
 
     // outline
     ctx.strokeStyle="rgba(255,255,255,.12)";
     ctx.stroke();
+
+    // Portal-Ring + Symbol
+    if(n.type==="portal"){
+      ctx.save();
+      // Außenring
+      ctx.strokeStyle="rgba(120,200,255,.75)";
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,R+4,0,Math.PI*2);
+      ctx.stroke();
+
+      // Innenring
+      ctx.strokeStyle="rgba(120,200,255,.35)";
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,R-6,0,Math.PI*2);
+      ctx.stroke();
+
+      // kleines Portal-Symbol (∿) in der Mitte
+      ctx.fillStyle="rgba(210,240,255,.85)";
+      ctx.font="14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.fillText("⟲", n.x, n.y+0.5);
+      ctx.restore();
+    }
   }
 
   // Barrikaden als Overlay (sichtbar, aber können "versteckt" sein: du darfst sie trotzdem auf Ereignisfelder setzen)
