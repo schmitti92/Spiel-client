@@ -91,7 +91,7 @@ const state = {
   players:[1,2,3,4],
   turn:0,
   roll:null,
-  phase:"loading", // loading | needRoll | chooseTarget | placeBarricade
+  phase:"loading", // loading | needRoll | choosePiece | chooseTarget | placeBarricade
   selected:null,
   highlighted:new Set(),       // Move targets
   placeHighlighted:new Set(),  // Barricade placement targets
@@ -314,6 +314,20 @@ function handleTapAtWorld(wx, wy){
   const hit = hitTestWorld(wx, wy);
   if(!hit) return;
 
+  // 1) Figur wählen / wechseln (nach dem Wurf)
+  const occId = state.occupied.get(hit.id);
+  if(occId && (state.phase==="choosePiece" || state.phase==="chooseTarget") && state.roll){
+    const occPiece = state.pieces.find(p=>p.id===occId);
+    if(occPiece && occPiece.team === currentTeam()){
+      state.selected = occPiece.id;
+      computeMoveTargets(occPiece, state.roll);
+      state.phase = "chooseTarget";
+      setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Tippe ein leuchtendes Zielfeld.`);
+      return;
+    }
+  }
+
+  // 2) Ziel klicken (bewegen)
   if(state.phase==="chooseTarget"){
     if(!state.highlighted.has(hit.id)) return;
 
@@ -333,6 +347,7 @@ function handleTapAtWorld(wx, wy){
     return;
   }
 
+  // 3) Barrikade platzieren
   if(state.phase==="placeBarricade"){
     placeBarricadeAt(hit.id);
     return;
@@ -477,17 +492,19 @@ btnRoll.addEventListener("click",()=>{
   state.roll=Math.floor(Math.random()*6)+1;
   dieBox.textContent=state.roll;
 
-  // simple Auswahl wie bisher: erste Figur des Teams
-  const piece = state.pieces.find(p=>p.team===currentTeam() && p.node);
-  if(!piece){
+  // Nach dem Wurf darf man die Figur wählen (oder wechseln).
+  state.selected = null;
+  state.highlighted.clear();
+  state.phase = "choosePiece";
+
+  // Wenn keine Figur dieses Teams auf dem Board ist -> Hinweis
+  const any = state.pieces.some(p=>p.team===currentTeam() && p.node);
+  if(!any){
     setStatus(`Team ${currentTeam()}: Keine Figur auf dem Board.`);
     return;
   }
 
-  state.selected=piece.id;
-  computeMoveTargets(piece,state.roll);
-  state.phase="chooseTarget";
-  setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Tippe ein leuchtendes Zielfeld.`);
+  setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Tippe eine eigene Figur an, um sie zu bewegen.`);
 });
 
 // ---------- Render ----------
