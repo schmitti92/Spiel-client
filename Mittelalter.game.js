@@ -1030,8 +1030,36 @@ function draw(){
 // ---------- Load ----------
 async function load(){
   const V = (typeof window !== "undefined" && window.BUILD_ID) ? window.BUILD_ID : String(Date.now());
-  const res=await fetch(`Mittelalter.board.json?v=${V}`,{cache:"no-store"});
-  board=await res.json();
+  const url = `Mitteralter.board.json?v=${V}`;
+
+  setStatus("Lade Board...");
+  console.info("[LOAD] fetching", url);
+
+  const ac = new AbortController();
+  const t = setTimeout(()=>ac.abort(), 12000);
+
+  try{
+    const res = await fetch(url, { cache:"no-store", signal: ac.signal });
+    console.info("[LOAD] status", res.status, res.statusText, "content-type:", res.headers.get("content-type"));
+
+    if(!res.ok){
+      const txt = await res.text().catch(()=>"(no body)");
+      console.error("[LOAD] fetch failed", res.status, res.statusText, txt.slice(0,400));
+      setStatus(`Board-Fehler: HTTP ${res.status}`);
+      return;
+    }
+
+    // Parse JSON (catch parsing errors)
+    board = await res.json();
+  }catch(err){
+    console.error("[LOAD] exception", err);
+    const msg = (err && err.name === "AbortError") ? "Timeout beim Laden" : (err?.message || String(err));
+    setStatus(`Board-Fehler: ${msg}`);
+    return;
+  }finally{
+    clearTimeout(t);
+  }
+
   nodes=board.nodes||[];
   edges=board.edges||[];
 
