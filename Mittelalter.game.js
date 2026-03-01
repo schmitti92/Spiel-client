@@ -187,10 +187,10 @@ function installOnScreenConsole(){
 document.addEventListener("DOMContentLoaded", installOnScreenConsole);
 
 const TEAM_COLORS = {
-  1: "#ff5151",
-  2: "#3aa0ff",
-  3: "#42d17a",
-  4: "#ffd166"
+  1: "#b33a3a", // Rot – Wappenrot
+  2: "#2f5fa7", // Blau – Wappenblau
+  3: "#2f7a4b", // Grün – Wappengrün
+  4: "#b08a2e"  // Gold – Wappengold
 };
 
 // ---------- Camera (Pan / Zoom) ----------
@@ -942,6 +942,56 @@ if(selPlayerCount){
 }
 
 
+
+// ---------- Eventfelder: Wachssiegel (nur optisch) ----------
+function drawWaxSeal(x,y,baseR){
+  const r = baseR;
+  ctx.save();
+
+  // soft shadow
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = "rgba(0,0,0,.18)";
+  ctx.beginPath();
+  ctx.arc(x+r*0.18, y+r*0.22, r*1.02, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.globalCompositeOperation = "source-over";
+
+  // wax gradient
+  const g = ctx.createRadialGradient(x-r*0.35, y-r*0.35, r*0.25, x, y, r*1.25);
+  g.addColorStop(0, "rgba(200,55,65,.98)");
+  g.addColorStop(0.55, "rgba(135,25,32,.95)");
+  g.addColorStop(1, "rgba(80,14,18,.95)");
+
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
+
+  // pressed edge
+  ctx.strokeStyle = "rgba(255,235,220,.22)";
+  ctx.lineWidth = Math.max(1.5, r*0.12);
+  ctx.beginPath();
+  ctx.arc(x,y,r-0.6,0,Math.PI*2);
+  ctx.stroke();
+
+  // inner ring
+  ctx.strokeStyle = "rgba(0,0,0,.28)";
+  ctx.lineWidth = Math.max(1, r*0.08);
+  ctx.beginPath();
+  ctx.arc(x,y,r*0.62,0,Math.PI*2);
+  ctx.stroke();
+
+  // stamp symbol
+  ctx.fillStyle = "rgba(255,245,235,.92)";
+  ctx.font = `${Math.round(r*0.95)}px ui-serif, Georgia, serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("✦", x, y+0.5);
+
+  ctx.restore();
+}
+
 // ---------- Render -----------
 function draw(){
   // Canvas auf CSS-Größe setzen (einfach)
@@ -999,6 +1049,11 @@ function draw(){
     ctx.strokeStyle="rgba(255,255,255,.12)";
     ctx.stroke();
 
+    // Ereignisfelder: als Wachssiegel richtig sichtbar
+    if(state.eventActive && state.eventActive.has(n.id)){
+      drawWaxSeal(n.x, n.y, 14);
+    }
+
     // Portal-Ring + Symbol
     if(n.type==="portal"){
       ctx.save();
@@ -1052,20 +1107,20 @@ function draw(){
     ctx.arc(n.x,n.y,12,0,Math.PI*2);
     ctx.fillStyle=TEAM_COLORS[p.team] || "#fff";
     ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.35)";
+    ctx.strokeStyle="rgba(20,12,6,.55)";
     ctx.lineWidth=2;
     ctx.stroke();
 
     // Selected piece ring (nur die ausgewählte Figur umranden)
     if(selectedId && p.id === selectedId){
       ctx.save();
-      ctx.strokeStyle="rgba(255,255,255,.95)";
+      ctx.strokeStyle="rgba(200,166,75,.95)";
       ctx.lineWidth=3;
       ctx.beginPath();
       ctx.arc(n.x,n.y,16,0,Math.PI*2);
       ctx.stroke();
 
-      ctx.strokeStyle="rgba(0,0,0,.45)";
+      ctx.strokeStyle="rgba(35,25,16,.55)";
       ctx.lineWidth=1.5;
       ctx.beginPath();
       ctx.arc(n.x,n.y,18.5,0,Math.PI*2);
