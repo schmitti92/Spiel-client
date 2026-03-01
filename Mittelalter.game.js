@@ -91,12 +91,12 @@ const state = {
   players:[1,2,3,4],
   turn:0,
   roll:null,
-  phase:"loading", // loading | needRoll | choosePiece | chooseTarget | placeBarricade
+  phase:"loading", // loading | needRoll | choosePiece | chooseTarget | usePortal | placeBarricade
   selected:null,
   highlighted:new Set(),       // Move targets
   placeHighlighted:new Set(),  // Barricade placement targets
   portalHighlighted:new Set(), // Portal targets (Teleport)
-  portalUsedThisTurn:false
+  portalUsedThisTurn:false,
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
