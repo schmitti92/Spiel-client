@@ -1369,16 +1369,75 @@ function drawBurnedEdges(){
   const canvas = window.__ma_canvas || document.getElementById("boardCanvas");
   const ctx = window.__ma_ctx || (canvas ? canvas.getContext("2d") : null);
   if(!canvas || !ctx) return;
-  const g = ctx.createRadialGradient(
-    canvas.width/2,
-    canvas.height/2,
-    Math.min(canvas.width,canvas.height)/2.5,
-    canvas.width/2,
-    canvas.height/2,
-    Math.max(canvas.width,canvas.height)/1.1
-  );
-  g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(1, "rgba(40,25,10,.45)");
+
+  const w = canvas.width, h = canvas.height;
+
+  ctx.save();
+  ctx.globalCompositeOperation = "multiply";
+  ctx.globalAlpha = 0.9;
+
+  // Soft vignette (rectangular, not circular mask)
+  const vg = ctx.createRadialGradient(w*0.5, h*0.5, Math.min(w,h)*0.35, w*0.5, h*0.5, Math.max(w,h)*0.85);
+  vg.addColorStop(0, "rgba(0,0,0,0)");
+  vg.addColorStop(1, "rgba(55,34,18,.22)");
+  ctx.fillStyle = vg;
+  ctx.fillRect(0,0,w,h);
+
+  // Burned edges via linear gradients (subtle)
+  const edge = Math.max(70, Math.min(w,h)*0.12);
+
+  // top
+  let g = ctx.createLinearGradient(0,0,0,edge);
+  g.addColorStop(0, "rgba(55,34,18,.35)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = g;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillRect(0,0,w,edge);
+
+  // bottom
+  g = ctx.createLinearGradient(0,h-edge,0,h);
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(1, "rgba(55,34,18,.35)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,h-edge,w,edge);
+
+  // left
+  g = ctx.createLinearGradient(0,0,edge,0);
+  g.addColorStop(0, "rgba(55,34,18,.32)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,edge,h);
+
+  // right
+  g = ctx.createLinearGradient(w-edge,0,w,0);
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(1, "rgba(55,34,18,.32)");
+  ctx.fillStyle = g;
+  ctx.fillRect(w-edge,0,edge,h);
+
+  // Corner soot (very light)
+  const cg = ctx.createRadialGradient(0,0,0,0,0,edge*1.2);
+  cg.addColorStop(0, "rgba(55,34,18,.28)");
+  cg.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = cg;
+  ctx.fillRect(0,0,edge*1.2,edge*1.2);
+
+  const cg2 = ctx.createRadialGradient(w,0,0,w,0,edge*1.2);
+  cg2.addColorStop(0, "rgba(55,34,18,.26)");
+  cg2.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = cg2;
+  ctx.fillRect(w-edge*1.2,0,edge*1.2,edge*1.2);
+
+  const cg3 = ctx.createRadialGradient(0,h,0,0,h,edge*1.2);
+  cg3.addColorStop(0, "rgba(55,34,18,.26)");
+  cg3.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = cg3;
+  ctx.fillRect(0,h-edge*1.2,edge*1.2,edge*1.2);
+
+  const cg4 = ctx.createRadialGradient(w,h,0,w,h,edge*1.2);
+  cg4.addColorStop(0, "rgba(55,34,18,.24)");
+  cg4.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = cg4;
+  ctx.fillRect(w-edge*1.2,h-edge*1.2,edge*1.2,edge*1.2);
+
+  ctx.restore();
 }
