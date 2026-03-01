@@ -1,28 +1,20 @@
-// Mittelalter – Phase 1.1 (mit Barrikaden)
-// ✅ Figuren dürfen übersprungen werden (AUßER Barrikaden – die blocken den Weg!)
-// ✅ Nur Endfeld wird geprüft (1 Figur pro Feld)
-// ✅ Gegner können geschmissen werden
-// ✅ Bei 6: nochmal würfeln (nach evtl. Barrikaden-Platzierung)
-// ✅ Barrikade:
-//    - darf NICHT übersprungen werden (blockt Zwischen-Schritte)
-//    - wenn du drauf landest: automatisch aufnehmen
-//    - danach: irgendwo frei platzieren (auch auf Ereignisfelder / Spezialfelder)
-//    - (Sicherheit) NICHT auf Startfelder platzieren
+// Mittelalter – stabile Version + Barrikaden (OHNE Funktionsverlust zur Basis)
+// - Figuren dürfen übersprungen werden (Figuren blocken den Weg NICHT)
+// - Nur Endfeld wird geprüft (1 Figur pro Feld)
+// - 6 = nochmal würfeln (nach evtl. Barrikaden-Platzierung)
+// - Gegner können geschmissen werden
+// - Anti-Hüpfen aktiv (nicht direkt zurück aufs vorherige Feld)
+// - Barrikaden:
+//   * dürfen NICHT übersprungen werden (blocken den Laufweg zwischen Start und Ziel)
+//   * wenn man drauf landet: aufnehmen
+//   * danach: irgendwo frei platzieren (auch auf Ereignis-/Spezialfeldern)
+//   * nicht auf Startfeldern platzieren
+//
+// Hinweis: Dieses File bleibt bewusst nah an deiner geposteten Basis-Version.
+// (Auto-Auswahl der ersten Team-Figur bleibt wie in deiner Basis.)
 
 (() => {
 
-
-  // --- BUILD-ID Handshake (Cache-Schutz) ---
-  const __EXPECTED_BUILD = "20260301-010308";
-  if (typeof window !== "undefined") {
-    const bid = window.BUILD_ID || null;
-    if (bid && bid !== __EXPECTED_BUILD) {
-      alert("Update-Mix erkannt (Cache). Bitte Seite hart neu laden.");
-    }
-    if (!bid) {
-      console.warn("BUILD_ID fehlt – Cache-Schutz deaktiviert.");
-    }
-  }
 const canvas = document.getElementById("boardCanvas");
 const ctx = canvas.getContext("2d");
 const btnRoll = document.getElementById("btnRoll");
@@ -40,40 +32,38 @@ let board, nodes=[], edges=[];
 let nodesById = new Map();
 let adj = new Map();
 
-// Barrikaden-Positionen (separat vom Node-Type, damit wir sie "wegnehmen" & woanders platzieren können)
-const barricades = new Set(); // nodeId
+// --- Barrikaden als dynamisches Overlay (nicht mehr "Node-Type") ---
+const barricades = new Set(); // nodeId -> barricade liegt dort
 
 const state = {
   players:[1,2,3,4],
   turn:0,
   roll:null,
-  phase:"loading", // loading | needRoll | chooseTarget | placeBarricade
+  phase:"loading",          // loading | needRoll | chooseTarget | placeBarricade
   selected:null,
-  highlighted:new Set(),       // Move targets
-  placeHighlighted:new Set(),  // Barricade placement targets
+  highlighted:new Set(),     // Zielfelder für Bewegung
+  placeHighlighted:new Set(),// mögliche Felder für Barrikaden-Platzierung
   pieces:[],
   occupied:new Map(),
-  carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
-  pendingSix:false            // ob nach Aktion nochmal gewürfelt werden darf
+  carry:{1:0,2:0,3:0,4:0},   // wie viele Barrikaden trägt Team x
+  pendingSix:false           // merken, ob nach dieser Aktion nochmal gewürfelt werden darf
 };
 
 function currentTeam(){ return state.players[state.turn]; }
 
-function isStartNode(id){
-  const n = nodesById.get(id);
+function isStartNode(nodeId){
+  const n = nodesById.get(nodeId);
   return !!n && n.type === "start";
 }
 
-function isFreeForBarricade(id){
-  // frei heißt: kein Spieler drauf UND keine Barrikade drauf
-  if (state.occupied.has(id)) return false;
-  if (barricades.has(id)) return false;
-  // Sicherheit: nicht auf Start platzieren
-  if (isStartNode(id)) return false;
+function isFreeForBarricade(nodeId){
+  // frei heißt: kein Spieler und keine Barrikade
+  if(state.occupied.has(nodeId)) return false;
+  if(barricades.has(nodeId)) return false;
+  // Sicherheit: nicht auf Startfeldern
+  if(isStartNode(nodeId)) return false;
   return true;
 }
-
-function setStatus(t){ statusLine.textContent = t; }
 
 function nextTurn(){
   state.turn = (state.turn+1)%state.players.length;
@@ -84,33 +74,34 @@ function nextTurn(){
   state.phase="needRoll";
   state.pendingSix=false;
   dieBox.textContent="–";
-  setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
+  statusLine.textContent=`Team ${currentTeam()} ist dran`;
 }
 
-function staySameTeamNeedRoll(msg){
+function stayNeedRollSameTeam(msg){
   state.roll=null;
   state.selected=null;
   state.highlighted.clear();
   state.placeHighlighted.clear();
   state.phase="needRoll";
   dieBox.textContent="–";
-  setStatus(msg || `Team ${currentTeam()} ist dran: Würfeln.`);
+  statusLine.textContent = msg || `Team ${currentTeam()} ist dran`;
 }
 
 function initPieces(){
-  state.pieces=[];
+  state.pieces = [];
   state.occupied.clear();
   state.carry = {1:0,2:0,3:0,4:0};
-
-  // Barrikaden initial aus dem Board lesen: nodes mit type "barricade"
+  state.placeHighlighted.clear();
   barricades.clear();
+
+  // Barrikaden aus dem Board lesen (Nodes mit type:"barricade") => als Overlay speichern
   for(const n of nodes){
     if(n.type === "barricade"){
       barricades.add(n.id);
     }
   }
 
-  // Auf ALLEN Startfeldern eine Figur (wie vorher)
+  // Figuren auf Startfeldern
   const starts = nodes.filter(n=>n.type==="start");
   let i=0;
   for(const s of starts){
@@ -121,7 +112,17 @@ function initPieces(){
   }
 }
 
-function computeMoveTargets(piece,steps){
+function computePlaceTargets(){
+  state.placeHighlighted.clear();
+  for(const n of nodes){
+    if(isFreeForBarricade(n.id)){
+      state.placeHighlighted.add(n.id);
+    }
+  }
+}
+
+// Bewegung: Figuren dürfen übersprungen werden, aber Barrikaden blocken Zwischen-Schritte
+function computeTargets(piece,steps){
   state.highlighted.clear();
 
   const start=piece.node;
@@ -153,8 +154,9 @@ function computeMoveTargets(piece,steps){
       // Anti-Hüpfen: erster Schritt nicht direkt zurück
       if(cur.d===0 && prev && nb===prev) continue;
 
-      // ✅ Barrikade blockt Zwischen-Schritte (nicht überspringen!)
-      // Wenn auf nb eine Barrikade liegt und wir NICHT genau dort landen, ist der Pfad blockiert.
+      // ✅ Barrikade blockt Zwischen-Schritte (nicht überspringen)
+      // Wenn auf dem nächsten Feld eine Barrikade liegt, ist das nur erlaubt,
+      // wenn es GENAU das Zielfeld (letzter Schritt) wäre.
       if(barricades.has(nb) && (cur.d+1) < steps) continue;
 
       const key=nb+"|"+(cur.d+1);
@@ -167,38 +169,17 @@ function computeMoveTargets(piece,steps){
   }
 }
 
-function computePlaceTargets(){
-  state.placeHighlighted.clear();
-  for(const n of nodes){
-    if(isFreeForBarricade(n.id)){
-      state.placeHighlighted.add(n.id);
-    }
-  }
-}
-
-function kickToStart(other){
-  // Gegner "schmeißen": zurück auf ein freies Startfeld seines Teams, sonst bleibt er in "Reserve" (node=null)
-  state.occupied.delete(other.node);
-  other.node = null;
-  other.prev = null;
-
-  const starts = nodes.filter(n=>n.type==="start" && Number(n.props?.startTeam)===other.team);
-  for(const s of starts){
-    if(!state.occupied.has(s.id)){
-      other.node = s.id;
-      state.occupied.set(s.id, other.id);
-      return;
-    }
-  }
-  // kein freies Startfeld -> bleibt offboard
-}
-
 function move(piece,target){
   const occ=state.occupied.get(target);
   if(occ){
     const other=state.pieces.find(p=>p.id===occ);
     if(other && other.team===piece.team) return false;
-    if(other) kickToStart(other);
+    // Gegner schmeißen: einfach vom Feld nehmen (wie in deiner Basis)
+    if(other){
+      state.occupied.delete(other.node);
+      other.node=null;
+      other.prev=null;
+    }
   }
 
   state.occupied.delete(piece.node);
@@ -211,22 +192,21 @@ function move(piece,target){
 function afterLanding(piece){
   const team = piece.team;
 
-  // ✅ Wenn auf dem Zielfeld eine Barrikade liegt -> aufnehmen und danach platzieren
+  // Wenn auf dem Zielfeld eine Barrikade lag -> aufnehmen und platzieren
   if(barricades.has(piece.node)){
     barricades.delete(piece.node);
     state.carry[team] = (state.carry[team]||0) + 1;
 
-    // Placement Phase
     computePlaceTargets();
     state.phase = "placeBarricade";
-    setStatus(`Team ${team}: Barrikade aufgenommen! Tippe ein freies Feld zum Platzieren.`);
+    statusLine.textContent = `Team ${team}: Barrikade aufgenommen! Feld zum Platzieren tippen.`;
     return;
   }
 
-  // Keine Barrikade aufgenommen -> normal weiter
+  // Kein Barrikaden-Event
   if(state.pendingSix){
-    state.pendingSix=false;
-    staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
+    state.pendingSix = false;
+    stayNeedRollSameTeam(`6! Team ${team} darf nochmal würfeln.`);
   }else{
     nextTurn();
   }
@@ -234,99 +214,85 @@ function afterLanding(piece){
 
 function placeBarricadeAt(nodeId){
   const team = currentTeam();
+  if(state.phase!=="placeBarricade") return false;
   if(!state.placeHighlighted.has(nodeId)) return false;
   if((state.carry[team]||0) <= 0) return false;
 
   barricades.add(nodeId);
   state.carry[team] -= 1;
-
-  // Nach Platzierung: wenn 6 -> nochmal würfeln, sonst Zugwechsel
   state.placeHighlighted.clear();
+
   if(state.pendingSix){
-    state.pendingSix=false;
-    staySameTeamNeedRoll(`Team ${team}: Barrikade platziert + 6! Nochmal würfeln.`);
+    state.pendingSix = false;
+    stayNeedRollSameTeam(`Barrikade platziert + 6! Team ${team} würfelt nochmal.`);
   }else{
     nextTurn();
   }
   return true;
 }
 
-// ---------- Click / Tap ----------
+// --- Input ---
 canvas.addEventListener("click",(e)=>{
   const rect=canvas.getBoundingClientRect();
   const x=e.clientX-rect.left;
   const y=e.clientY-rect.top;
 
-  // hit test
-  const R=18;
-  let hit=null;
+  // Hit-Test Nodes (wie Basis)
   for(const n of nodes){
     const dx=x-n.x,dy=y-n.y;
-    if(dx*dx+dy*dy<=R*R){ hit=n; break; }
-  }
-  if(!hit) return;
+    if(dx*dx+dy*dy<=18*18){
 
-  if(state.phase==="chooseTarget"){
-    if(!state.highlighted.has(hit.id)) return;
+      if(state.phase==="chooseTarget"){
+        if(!state.highlighted.has(n.id)) return;
 
-    const piece=state.pieces.find(p=>p.id===state.selected);
-    if(!piece) return;
+        const piece=state.pieces.find(p=>p.id===state.selected);
+        if(!piece) return;
 
-    if(move(piece,hit.id)){
-      // merken ob 6 (extra roll) – gilt erst NACH evtl. Barrikadenplatzierung
-      state.pendingSix = (state.roll === 6);
+        if(move(piece,n.id)){
+          // 6 merken (Extra-Wurf erst nach evtl. Barrikaden-Platzierung)
+          state.pendingSix = (state.roll === 6);
 
-      // Move-Ende: Targets reset
-      state.highlighted.clear();
+          // Bewegungs-Highlights reset
+          state.highlighted.clear();
 
-      // Landing logic (barricade pickup etc.)
-      afterLanding(piece);
+          // Landing-Logik (Barrikade aufnehmen etc.)
+          afterLanding(piece);
+        }
+        return;
+      }
+
+      if(state.phase==="placeBarricade"){
+        placeBarricadeAt(n.id);
+        return;
+      }
+
+      return;
     }
-    return;
-  }
-
-  if(state.phase==="placeBarricade"){
-    placeBarricadeAt(hit.id);
-    return;
   }
 });
 
-// ---------- Würfeln ----------
 btnRoll.addEventListener("click",()=>{
   if(state.phase!=="needRoll") return;
 
   state.roll=Math.floor(Math.random()*6)+1;
   dieBox.textContent=state.roll;
 
-  // simple Auswahl wie bisher: erste Figur des Teams
-  const piece = state.pieces.find(p=>p.team===currentTeam() && p.node);
-  if(!piece){
-    setStatus(`Team ${currentTeam()}: Keine Figur auf dem Board.`);
+  // Funktionsgleich zur Basis: erste Figur des Teams wird verwendet
+  const first = state.pieces.find(p=>p.team===currentTeam() && p.node);
+  if(!first){
+    statusLine.textContent = `Team ${currentTeam()}: Keine Figur auf dem Board.`;
     return;
   }
 
-  state.selected=piece.id;
-  computeMoveTargets(piece,state.roll);
-  state.phase="chooseTarget";
-  setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Tippe ein leuchtendes Zielfeld.`);
+  state.selected = first.id;
+  computeTargets(first,state.roll);
+  state.phase = "chooseTarget";
 });
 
-// ---------- Render ----------
 function draw(){
-  // Canvas auf CSS-Größe setzen (einfach)
-  const dpr = Math.max(1, window.devicePixelRatio||1);
-  const w = Math.floor(canvas.clientWidth * dpr);
-  const h = Math.floor(canvas.clientHeight * dpr);
-  if(canvas.width!==w || canvas.height!==h){
-    canvas.width=w; canvas.height=h;
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-
-  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
   // Edges
-  ctx.lineWidth=2;
-  ctx.strokeStyle="rgba(255,255,255,.18)";
   for(const e of edges){
     const a=nodesById.get(e.a);
     const b=nodesById.get(e.b);
@@ -334,35 +300,29 @@ function draw(){
     ctx.beginPath();
     ctx.moveTo(a.x,a.y);
     ctx.lineTo(b.x,b.y);
+    ctx.strokeStyle="rgba(255,255,255,.2)";
     ctx.stroke();
   }
 
-  // Nodes + Highlights
-  const R=18;
+  // Nodes
   for(const n of nodes){
     ctx.beginPath();
-    ctx.arc(n.x,n.y,R,0,Math.PI*2);
+    ctx.arc(n.x,n.y,18,0,Math.PI*2);
 
-    let fill="rgba(255,255,255,.10)";
-    if(state.highlighted.has(n.id)) fill="rgba(124,92,255,.38)";
-    if(state.phase==="placeBarricade" && state.placeHighlighted.has(n.id)) fill="rgba(65,209,122,.28)";
-
-    ctx.fillStyle=fill;
+    let fill = "rgba(255,255,255,.1)";
+    if(state.highlighted.has(n.id)) fill = "rgba(124,92,255,.4)";
+    if(state.phase==="placeBarricade" && state.placeHighlighted.has(n.id)) fill = "rgba(65,209,122,.26)";
+    ctx.fillStyle = fill;
     ctx.fill();
-
-    // outline
-    ctx.strokeStyle="rgba(255,255,255,.12)";
-    ctx.stroke();
   }
 
-  // Barrikaden als Overlay (sichtbar, aber können "versteckt" sein: du darfst sie trotzdem auf Ereignisfelder setzen)
-  // Wenn du sie wirklich unsichtbar auf Ereignis willst: sag Bescheid, dann mache ich "Ereignis überdeckt Barrikade optisch".
+  // Barrikaden zeichnen (gelbes Quadrat)
   for(const id of barricades){
     const n = nodesById.get(id);
     if(!n) continue;
     ctx.save();
-    ctx.strokeStyle="rgba(255,204,102,.85)";
-    ctx.lineWidth=3;
+    ctx.strokeStyle = "rgba(255,204,102,.9)";
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.rect(n.x-12, n.y-12, 24, 24);
     ctx.stroke();
@@ -376,24 +336,20 @@ function draw(){
     if(!n) continue;
     ctx.beginPath();
     ctx.arc(n.x,n.y,12,0,Math.PI*2);
-    ctx.fillStyle=TEAM_COLORS[p.team] || "#fff";
+    ctx.fillStyle=TEAM_COLORS[p.team];
     ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.35)";
-    ctx.lineWidth=2;
-    ctx.stroke();
   }
 
   requestAnimationFrame(draw);
 }
 
-// ---------- Load ----------
 async function load(){
-  const V = (typeof window !== "undefined" && window.BUILD_ID) ? window.BUILD_ID : "20260301-010308";
-  const res=await fetch(`Mitteralter.board.json?v=${V}`,{cache:"no-store"});
+  // Cache-Schutz: nutze VERSION wenn vorhanden, sonst Timestamp
+  const V = (typeof VERSION !== "undefined" && VERSION) ? VERSION : Date.now();
+  const res=await fetch("Mitteralter.board.json?v="+V,{cache:"no-store"});
   board=await res.json();
-  nodes=board.nodes||[];
-  edges=board.edges||[];
-
+  nodes=board.nodes;
+  edges=board.edges;
   nodesById=new Map(nodes.map(n=>[n.id,n]));
   adj=new Map();
   for(const n of nodes) adj.set(n.id,[]);
@@ -406,8 +362,7 @@ async function load(){
 
   initPieces();
   state.phase="needRoll";
-  dieBox.textContent="–";
-  setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
+  statusLine.textContent=`Team ${currentTeam()} ist dran`;
 }
 
 load();
