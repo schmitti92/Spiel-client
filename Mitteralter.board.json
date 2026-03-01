@@ -472,7 +472,9 @@
       "y": 375,
       "type": "normal",
       "zone": "",
-      "props": {}
+      "props": {
+        "event": true
+      }
     },
     {
       "id": "n_58",
@@ -480,7 +482,9 @@
       "y": 325,
       "type": "normal",
       "zone": "",
-      "props": {}
+      "props": {
+        "event": true
+      }
     },
     {
       "id": "n_59",
@@ -547,7 +551,9 @@
       "y": 325,
       "type": "normal",
       "zone": "",
-      "props": {}
+      "props": {
+        "event": true
+      }
     },
     {
       "id": "n_68",
@@ -555,7 +561,9 @@
       "y": 375,
       "type": "normal",
       "zone": "",
-      "props": {}
+      "props": {
+        "event": true
+      }
     },
     {
       "id": "n_69",
@@ -964,7 +972,9 @@
       "y": 325,
       "type": "normal",
       "zone": "",
-      "props": {}
+      "props": {
+        "event": true
+      }
     },
     {
       "id": "n_118",
@@ -972,7 +982,9 @@
       "y": 375,
       "type": "normal",
       "zone": "",
-      "props": {}
+      "props": {
+        "event": true
+      }
     },
     {
       "id": "n_119",
