@@ -384,7 +384,7 @@
       "id": "n_47",
       "x": 975,
       "y": 425,
-      "type": "normal",
+      "type": "event",
       "zone": "",
       "props": {}
     },
@@ -400,7 +400,7 @@
       "id": "n_49",
       "x": 875,
       "y": 425,
-      "type": "normal",
+      "type": "event",
       "zone": "",
       "props": {}
     },
@@ -506,7 +506,7 @@
       "id": "n_62",
       "x": 975,
       "y": 275,
-      "type": "normal",
+      "type": "event",
       "zone": "",
       "props": {}
     },
@@ -569,7 +569,7 @@
       "id": "n_69",
       "x": 825,
       "y": 275,
-      "type": "normal",
+      "type": "event",
       "zone": "",
       "props": {}
     },
@@ -617,7 +617,7 @@
       "id": "n_75",
       "x": 1025,
       "y": 275,
-      "type": "normal",
+      "type": "event",
       "zone": "",
       "props": {}
     },
@@ -946,7 +946,7 @@
       "id": "n_60",
       "x": 875,
       "y": 275,
-      "type": "normal",
+      "type": "event",
       "zone": "",
       "props": {}
     },
@@ -970,7 +970,7 @@
       "id": "n_113",
       "x": 925,
       "y": 325,
-      "type": "normal",
+      "type": "event",
       "zone": "",
       "props": {
         "event": true
@@ -980,7 +980,7 @@
       "id": "n_118",
       "x": 925,
       "y": 375,
-      "type": "normal",
+      "type": "event",
       "zone": "",
       "props": {
         "event": true
