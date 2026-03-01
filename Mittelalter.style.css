@@ -120,3 +120,86 @@ html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-
   outline:none;
 }
 .pcSelect:focus{ border-color:rgba(120,200,255,.55); box-shadow:0 0 0 3px rgba(120,200,255,.18); }
+
+
+/* =========================
+   Medieval Theme: Old Map
+   ========================= */
+:root{
+  --ink: rgba(40,28,18,.92);
+  --inkSoft: rgba(40,28,18,.70);
+  --parchment1: #f3e7c9;
+  --parchment2: #ead8ab;
+  --parchment3: #ddc58f;
+  --wood1:#6a4a2f;
+  --wood2:#4f3623;
+  --gold:#c8a64b;
+  --seal:#8b1f24;
+}
+
+/* Page background: parchment + vignette + subtle “map lines” */
+body{
+  background:
+    radial-gradient(1200px 900px at 50% 38%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+    radial-gradient(1200px 900px at 50% 38%, rgba(0,0,0,.22), rgba(0,0,0,0) 58%),
+    radial-gradient(1400px 1100px at 50% 45%, rgba(0,0,0,.32), rgba(0,0,0,0) 58%),
+    repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+    repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+    radial-gradient(1600px 1100px at 50% 38%, var(--parchment1) 0%, var(--parchment2) 58%, var(--parchment3) 100%);
+  color: var(--ink);
+  font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+}
+
+/* Top panel / controls -> wood + brass */
+#topBar, .topBar, .panel, #sidePanel{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.08)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 6px, rgba(0,0,0,.04) 6px, rgba(0,0,0,.04) 14px),
+    linear-gradient(180deg, var(--wood1), var(--wood2));
+  border: 1px solid rgba(0,0,0,.35);
+  box-shadow: 0 18px 45px rgba(0,0,0,.25);
+}
+
+button, .btn{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18)),
+    linear-gradient(180deg, #8b6a3f, #5d4327);
+  border: 1px solid rgba(0,0,0,.45);
+  color: rgba(255,250,235,.92);
+  border-radius: 12px;
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+
+button:hover, .btn:hover{
+  filter: brightness(1.05);
+}
+
+select, input{
+  background: rgba(255,250,235,.75);
+  border: 1px solid rgba(0,0,0,.35);
+  border-radius: 10px;
+  color: var(--ink);
+}
+
+/* Status line like an ink label */
+#statusLine{
+  color: rgba(255,250,235,.92);
+  text-shadow: 0 1px 0 rgba(0,0,0,.55);
+}
+
+/* Canvas frame like an old map */
+#boardCanvas{
+  background:
+    radial-gradient(900px 600px at 50% 45%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+    radial-gradient(1000px 700px at 50% 45%, rgba(0,0,0,.18), rgba(0,0,0,0) 58%),
+    radial-gradient(1000px 700px at 50% 45%, var(--parchment1) 0%, var(--parchment2) 62%, var(--parchment3) 100%);
+  border: 10px solid rgba(60,45,30,.55);
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.12), 0 22px 55px rgba(0,0,0,.25);
+}
+
+/* Debug console toggle – make it less “sci-fi” */
+#osConsoleToggle{
+  background: rgba(60,45,30,.55) !important;
+  border: 1px solid rgba(0,0,0,.35) !important;
+}
