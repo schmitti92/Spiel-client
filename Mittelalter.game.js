@@ -18,6 +18,174 @@ const btnFit = document.getElementById("btnFit");
 const dieBox = document.getElementById("dieBox");
 const statusLine = document.getElementById("statusLine");
 
+
+// ---------- On-Screen Console (Debug Overlay) ----------
+// Hilft besonders auf Tablet/Handy, wenn man DevTools nicht sieht.
+// Toggle: Taste ` (Backtick) oder Button oben rechts (klein).
+function installOnScreenConsole(){
+  if(document.getElementById("osConsole")) return;
+
+  const wrap = document.createElement("div");
+  wrap.id = "osConsole";
+  wrap.style.cssText = [
+    "position:fixed",
+    "right:12px",
+    "bottom:12px",
+    "width:min(520px, calc(100vw - 24px))",
+    "max-height:40vh",
+    "display:none",
+    "flex-direction:column",
+    "z-index:99999",
+    "border-radius:14px",
+    "overflow:hidden",
+    "background:rgba(10,12,18,.92)",
+    "box-shadow:0 12px 40px rgba(0,0,0,.45)",
+    "backdrop-filter: blur(10px)",
+    "-webkit-backdrop-filter: blur(10px)",
+    "border:1px solid rgba(255,255,255,.10)"
+  ].join(";");
+
+  const bar = document.createElement("div");
+  bar.style.cssText = [
+    "display:flex",
+    "align-items:center",
+    "gap:8px",
+    "padding:10px 12px",
+    "background:rgba(255,255,255,.06)",
+    "border-bottom:1px solid rgba(255,255,255,.08)",
+    "font:600 12px system-ui, -apple-system, Segoe UI, Roboto, Arial",
+    "color:rgba(240,245,255,.92)",
+    "user-select:none",
+    "cursor:move"
+  ].join(";");
+
+  const title = document.createElement("div");
+  title.textContent = "Debug Console";
+  title.style.flex = "1";
+
+  const btnClear = document.createElement("button");
+  btnClear.textContent = "Clear";
+  btnClear.style.cssText = "all:unset; padding:6px 10px; border-radius:10px; background:rgba(255,255,255,.10); cursor:pointer;";
+  btnClear.onmouseenter=()=>btnClear.style.background="rgba(255,255,255,.16)";
+  btnClear.onmouseleave=()=>btnClear.style.background="rgba(255,255,255,.10)";
+
+  const btnHide = document.createElement("button");
+  btnHide.textContent = "Hide";
+  btnHide.style.cssText = "all:unset; padding:6px 10px; border-radius:10px; background:rgba(255,255,255,.10); cursor:pointer;";
+  btnHide.onmouseenter=()=>btnHide.style.background="rgba(255,255,255,.16)";
+  btnHide.onmouseleave=()=>btnHide.style.background="rgba(255,255,255,.10)";
+
+  const body = document.createElement("div");
+  body.id = "osConsoleBody";
+  body.style.cssText = [
+    "padding:10px 12px",
+    "overflow:auto",
+    "font:12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    "color:rgba(235,245,255,.92)",
+    "line-height:1.35",
+    "white-space:pre-wrap"
+  ].join(";");
+
+  bar.appendChild(title);
+  bar.appendChild(btnClear);
+  bar.appendChild(btnHide);
+  wrap.appendChild(bar);
+  wrap.appendChild(body);
+  document.body.appendChild(wrap);
+
+  // Small toggle button (top-right)
+  const tbtn = document.createElement("button");
+  tbtn.id = "osConsoleToggle";
+  tbtn.textContent = "🪲";
+  tbtn.title = "Debug Console (`)";
+  tbtn.style.cssText = [
+    "position:fixed",
+    "right:14px",
+    "top:74px",
+    "z-index:99998",
+    "width:42px",
+    "height:42px",
+    "border-radius:14px",
+    "border:1px solid rgba(255,255,255,.12)",
+    "background:rgba(10,12,18,.55)",
+    "color:rgba(240,245,255,.92)",
+    "box-shadow:0 10px 30px rgba(0,0,0,.35)",
+    "cursor:pointer"
+  ].join(";");
+  document.body.appendChild(tbtn);
+
+  function toggle(show){
+    const isShown = wrap.style.display !== "none";
+    const next = (typeof show === "boolean") ? show : !isShown;
+    wrap.style.display = next ? "flex" : "none";
+  }
+  tbtn.addEventListener("click", ()=>toggle());
+  btnHide.addEventListener("click", ()=>toggle(false));
+  btnClear.addEventListener("click", ()=>{ body.textContent=""; });
+
+  window.addEventListener("keydown",(e)=>{
+    if(e.key === "`"){ toggle(); }
+  });
+
+  // Drag window (mouse/touch)
+  let drag = null;
+  const startDrag = (clientX, clientY)=>{
+    const r = wrap.getBoundingClientRect();
+    drag = { ox: clientX - r.left, oy: clientY - r.top };
+  };
+  const moveDrag = (clientX, clientY)=>{
+    if(!drag) return;
+    wrap.style.right = "auto";
+    wrap.style.bottom = "auto";
+    wrap.style.left = Math.max(8, Math.min(window.innerWidth - 8, clientX - drag.ox)) + "px";
+    wrap.style.top  = Math.max(8, Math.min(window.innerHeight - 8, clientY - drag.oy)) + "px";
+  };
+  const endDrag = ()=>{ drag = null; };
+
+  bar.addEventListener("pointerdown",(e)=>{ bar.setPointerCapture(e.pointerId); startDrag(e.clientX,e.clientY); });
+  bar.addEventListener("pointermove",(e)=>{ moveDrag(e.clientX,e.clientY); });
+  bar.addEventListener("pointerup", endDrag);
+  bar.addEventListener("pointercancel", endDrag);
+
+  const fmt = (args)=>args.map(a=>{
+    try{
+      if(typeof a === "string") return a;
+      return JSON.stringify(a, null, 2);
+    }catch(_){ return String(a); }
+  }).join(" ");
+
+  function addLine(level, args){
+    const t = new Date().toLocaleTimeString();
+    const line = `[${t}] ${level}: ${fmt(args)}\n`;
+    body.textContent += line;
+    body.scrollTop = body.scrollHeight;
+  }
+
+  // Hook console
+  const orig = {
+    log: console.log.bind(console),
+    warn: console.warn.bind(console),
+    error: console.error.bind(console),
+    info: console.info.bind(console)
+  };
+  console.log = (...a)=>{ orig.log(...a); addLine("LOG", a); };
+  console.info = (...a)=>{ orig.info(...a); addLine("INFO", a); };
+  console.warn = (...a)=>{ orig.warn(...a); addLine("WARN", a); };
+  console.error = (...a)=>{ orig.error(...a); addLine("ERR", a); };
+
+  // Global errors
+  window.addEventListener("error",(e)=>{
+    addLine("JS-ERROR", [e.message, e.filename+":"+e.lineno+":"+e.colno]);
+  });
+  window.addEventListener("unhandledrejection",(e)=>{
+    addLine("PROMISE", [String(e.reason)]);
+  });
+
+  addLine("READY", ["On-screen console installed. Press ` or click 🪲."]);
+}
+
+document.addEventListener("DOMContentLoaded", installOnScreenConsole);
+
 const TEAM_COLORS = {
   1: "#ff5151",
   2: "#3aa0ff",
