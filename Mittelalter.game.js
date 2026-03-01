@@ -187,10 +187,10 @@ function installOnScreenConsole(){
 document.addEventListener("DOMContentLoaded", installOnScreenConsole);
 
 const TEAM_COLORS = {
-  1: "#ff5151",
-  2: "#3aa0ff",
-  3: "#42d17a",
-  4: "#ffd166"
+  1: "#b33a3a", // Rot – Wappenrot
+  2: "#2f5fa7", // Blau – Wappenblau
+  3: "#2f7a4b", // Grün – Wappengrün
+  4: "#b08a2e"  // Gold – Wappengold
 };
 
 // ---------- Camera (Pan / Zoom) ----------
@@ -1052,20 +1052,20 @@ function draw(){
     ctx.arc(n.x,n.y,12,0,Math.PI*2);
     ctx.fillStyle=TEAM_COLORS[p.team] || "#fff";
     ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.35)";
+    ctx.strokeStyle="rgba(20,12,6,.55)";
     ctx.lineWidth=2;
     ctx.stroke();
 
     // Selected piece ring (nur die ausgewählte Figur umranden)
     if(selectedId && p.id === selectedId){
       ctx.save();
-      ctx.strokeStyle="rgba(255,255,255,.95)";
+      ctx.strokeStyle="rgba(200,166,75,.95)";
       ctx.lineWidth=3;
       ctx.beginPath();
       ctx.arc(n.x,n.y,16,0,Math.PI*2);
       ctx.stroke();
 
-      ctx.strokeStyle="rgba(0,0,0,.45)";
+      ctx.strokeStyle="rgba(35,25,16,.55)";
       ctx.lineWidth=1.5;
       ctx.beginPath();
       ctx.arc(n.x,n.y,18.5,0,Math.PI*2);
