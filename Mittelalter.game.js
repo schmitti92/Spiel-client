@@ -1030,7 +1030,7 @@ function draw(){
 // ---------- Load ----------
 async function load(){
   const V = (typeof window !== "undefined" && window.BUILD_ID) ? window.BUILD_ID : String(Date.now());
-  const res=await fetch(`Mitteralter.board.json?v=${V}`,{cache:"no-store"});
+  const res=await fetch(`Mittelalter.board.json?v=${V}`,{cache:"no-store"});
   board=await res.json();
   nodes=board.nodes||[];
   edges=board.edges||[];
