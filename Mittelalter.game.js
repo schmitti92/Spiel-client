@@ -1103,16 +1103,8 @@ function draw(){
   ctx.scale(cam.s, cam.s);
 
   // Edges
-  // WICHTIG: Linien-Dicke nicht mit dem Zoom "wegskalieren" lassen.
-  // Sonst werden die Pfade bei cam.s < 1 extrem dünn und praktisch unsichtbar.
-  const edgeW = 2.6 / Math.max(0.55, cam.s);
-  ctx.lineWidth = edgeW;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  // Edle, gut sichtbare "Holz/Tinte"-Linien statt ultra-heller Fäden
-  ctx.strokeStyle = "rgba(30, 20, 14, 0.38)";
-  ctx.shadowColor = "rgba(0,0,0,0.25)";
-  ctx.shadowBlur = 2.5 / Math.max(0.75, cam.s);
+  ctx.lineWidth=2;
+  ctx.strokeStyle="rgba(255,255,255,.18)";
   for(const e of edges){
     const a=nodesById.get(e.a);
     const b=nodesById.get(e.b);
@@ -1122,7 +1114,6 @@ function draw(){
     ctx.lineTo(b.x,b.y);
     ctx.stroke();
   }
-  ctx.shadowBlur = 0;
 
     // Nodes + Highlights
   const R=18;
