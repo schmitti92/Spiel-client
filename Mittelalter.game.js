@@ -433,9 +433,9 @@ function ensureEventState(){
 
 // ---------- Zielpunkte (Sammelziel) ----------
 function isFreeForGoal(id){
-  // Zielpunkt darf nicht auf Figuren oder Barrikaden liegen
+  // Zielpunkt darf NICHT auf Figuren liegen.
+  // ABER: Er DARF unter einer Barrikade liegen (versteckt).
   if(state.occupied.has(id)) return false;
-  if(barricades.has(id)) return false;
   return true;
 }
 
@@ -479,6 +479,9 @@ function maybeCaptureGoal(piece){
   if(!piece || !piece.node) return false;
 
   if(piece.node !== state.goalNodeId) return false;
+
+  // Wenn hier eine Barrikade liegt, ist der Zielpunkt "versteckt" und kann nicht eingesammelt werden.
+  if(barricades.has(piece.node)) return false;
 
   // Punkt einsammeln
   const t = piece.team;
@@ -753,11 +756,18 @@ function initEventFieldsFromBoard(){
 function isEligibleEventSpawnNode(id){
   const n = nodesById.get(id);
   if(!n) return false;
+
+  // Start/Portal/Boss meiden (Fairness / Logik)
   if(n.type==="start" || n.type==="portal") return false;
   if(n.type==="boss") return false;
-  if(n.type==="barricade" || n.type==="obstacle") return false;
+
+  // Hindernisse meiden (aber: Barrikaden dürfen darüber liegen -> "versteckt" ist erlaubt)
+  if(n.type==="obstacle") return false;
+
+  // nicht auf ein bereits aktives Eventfeld / nicht auf Figuren
   if(state.eventActive.has(id)) return false;
   if(state.occupied.has(id)) return false;
+
   return true;
 }
 
@@ -927,13 +937,24 @@ function move(piece,target){
 function afterLandingNoPortal(piece){
   const team = piece.team;
 
-  // 🎯 Zielpunkt einsammeln?
+  // ✅ Barrikade aufgenommen? (hat Priorität, weil Ziel/Event darunter "versteckt" sein können)
+  if(barricades.has(piece.node)){
+    barricades.delete(piece.node);
+    state.carry[team] = (state.carry[team]||0) + 1;
+
+    computePlaceTargets();
+    state.phase = "placeBarricade";
+    setStatus(`Team ${team}: Barrikade aufgenommen! Tippe ein freies Feld zum Platzieren.`);
+    return;
+  }
+
+  // 🎯 Zielpunkt einsammeln? (nur wenn KEINE Barrikade drauf liegt)
   if(maybeCaptureGoal(piece)){
     if(state.gameOver) return; // bei Sieg sofort stoppen
     // weiter mit normalen Landing-Effekten
   }
 
-  // ✅ Ereignisfeld: Karte ziehen, dann Feld zufällig neu platzieren (nicht Start/Portal)
+  // ✅ Ereignisfeld: Karte ziehen (nur wenn KEINE Barrikade drauf liegt)
   ensureEventState();
   if(state.eventActive && state.eventActive.has(piece.node)){
     const card = pickRandomEventCard();
@@ -943,23 +964,12 @@ function afterLandingNoPortal(piece){
     // Feld erst nach OK verschieben, damit man es noch sieht
     showEventOverlay(card, ()=>{
       relocateEventField(piece.node);
-      // Danach normal weiter (Barrikade prüfen / Zug beenden)
+      // Danach normal weiter (Ziel prüfen / Zug beenden)
       afterLandingNoPortal(piece);
     });
 
     // Temporär aus eventActive entfernen, damit recursion nicht sofort wieder triggert
     state.eventActive.delete(piece.node);
-    return;
-  }
-
-  // ✅ Barrikade aufgenommen?
-  if(barricades.has(piece.node)){
-    barricades.delete(piece.node);
-    state.carry[team] = (state.carry[team]||0) + 1;
-
-    computePlaceTargets();
-    state.phase = "placeBarricade";
-    setStatus(`Team ${team}: Barrikade aufgenommen! Tippe ein freies Feld zum Platzieren.`);
     return;
   }
 
@@ -975,13 +985,7 @@ function afterLandingNoPortal(piece){
 function afterLanding(piece){
   const team = piece.team;
 
-  // 🎯 Zielpunkt einsammeln?
-  if(maybeCaptureGoal(piece)){
-    if(state.gameOver) return; // bei Sieg sofort stoppen
-    // weiter mit normalen Landing-Effekten
-  }
-
-  // ✅ Barrikade aufgenommen?
+  // ✅ Barrikade aufgenommen? (hat Priorität, weil Ziel/Event darunter "versteckt" sein können)
   if(barricades.has(piece.node)){
     barricades.delete(piece.node);
     state.carry[team] = (state.carry[team]||0) + 1;
@@ -989,6 +993,29 @@ function afterLanding(piece){
     computePlaceTargets();
     state.phase = "placeBarricade";
     setStatus(`Team ${team}: Barrikade aufgenommen! Tippe ein freies Feld zum Platzieren.`);
+    return;
+  }
+
+  // 🎯 Zielpunkt einsammeln? (nur wenn KEINE Barrikade drauf liegt)
+  if(maybeCaptureGoal(piece)){
+    if(state.gameOver) return; // bei Sieg sofort stoppen
+    // weiter mit normalen Landing-Effekten
+  }
+
+  // ✅ Ereignisfeld: Karte ziehen (nur wenn KEINE Barrikade drauf liegt)
+  ensureEventState();
+  if(state.eventActive && state.eventActive.has(piece.node)){
+    const card = pickRandomEventCard();
+    state.lastEvent = card;
+    console.info('[EVENT] draw', card.id, 'on', piece.node);
+
+    showEventOverlay(card, ()=>{
+      relocateEventField(piece.node);
+      afterLanding(piece);
+    });
+
+    // Temporär entfernen, damit wir nicht sofort wieder triggert
+    state.eventActive.delete(piece.node);
     return;
   }
 
