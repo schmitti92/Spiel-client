@@ -840,15 +840,14 @@ function computeMoveTargets(piece,steps){
   state.highlighted.clear();
 
   const start = piece.node;
-  const prev = piece.prev;
 
-  // Anti-Hüpfen:
-  // - Schritt 1 nicht direkt zurück aufs vorherige Feld (prev)
-  // - UND generell nicht direkt zurück zum Feld, von dem man gerade kam (A->B->A)
+  // Anti-Hüpfen (nur INNERHALB dieses Wurfs):
+  // Verhindert nur A->B->A im selben Pfad.
+  // WICHTIG: NICHT das vorherige Feld aus dem letzten Zug sperren!
   //
-  // Dafür tracken wir pro BFS-State auch das "from" (Vorgängerfeld).
-  const q = [{ id: start, d: 0, from: prev || null }];
-  const visited = new Set([start+"|0|"+(prev||"null")]);
+  // Dafür tracken wir pro BFS-State das "from" (Vorgängerfeld) und blocken nur den direkten Rücksprung.
+  const q = [{ id: start, d: 0, from: null }];
+  const visited = new Set([start+"|0|null"]);
 
   while(q.length){
     const cur = q.shift();
