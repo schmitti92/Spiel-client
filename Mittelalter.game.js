@@ -269,7 +269,13 @@ const state = {
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
-  pendingSix:false            // ob nach Aktion nochmal gewürfelt werden darf
+  pendingSix:false,            // ob nach Aktion nochmal gewürfelt werden darf
+
+  // --- Zielpunkte (Sammelziel) ---
+  goalScores: {1:0,2:0,3:0,4:0}, // Punkte pro Team
+  goalNodeId: null,             // aktuelles Zielpunkt-Feld (nodeId)
+  goalToWin: 10,                // wer zuerst 10 sammelt gewinnt
+  gameOver: false               // Spiel beendet?
 };
 
 function currentTeam(){ return state.players[state.turn]; }
@@ -293,6 +299,12 @@ function setPlayerCount(n, opts={reset:true}){
   if(opts.reset){
     initPieces();
     initEventFieldsFromBoard();
+
+    // Zielpunkte zurücksetzen
+    state.goalScores = {1:0,2:0,3:0,4:0};
+    state.gameOver = false;
+    spawnGoalRandom(true);
+
     fitToBoard(60);
   }
 
@@ -342,6 +354,166 @@ function ensurePortalState(){
 function ensureEventState(){
   if(!state.eventActive) state.eventActive = new Set();
   if(!("lastEvent" in state)) state.lastEvent = null;
+}
+
+
+// ---------- Zielpunkte (Sammelziel) ----------
+function isFreeForGoal(id){
+  // Zielpunkt darf nicht auf Figuren oder Barrikaden liegen
+  if(state.occupied.has(id)) return false;
+  if(barricades.has(id)) return false;
+  return true;
+}
+
+function spawnGoalRandom(force=false){
+  // Wählt ein zufälliges Feld für den Zielpunkt
+  // - nur wenn noch keiner existiert oder force=true
+  if(state.gameOver) return;
+  if(state.goalNodeId && !force) return;
+
+  if(!nodes || nodes.length===0) return;
+
+  const candidates = nodes
+    .filter(n => n && n.id)
+    // optional: Start/Portal meiden, damit es fair bleibt
+    .filter(n => n.type !== "start" && n.type !== "portal")
+    .map(n => n.id)
+    .filter(id => isFreeForGoal(id));
+
+  // Fallback: wenn zu restriktiv, nimm wirklich "irgendwo frei"
+  const fallback = nodes.map(n=>n.id).filter(id => isFreeForGoal(id));
+
+  const pool = (candidates.length ? candidates : fallback);
+  if(!pool.length) return;
+
+  // Nicht exakt dasselbe Feld wie vorher (wenn möglich)
+  let pick = pool[Math.floor(Math.random()*pool.length)];
+  if(state.goalNodeId && pool.length > 1){
+    let tries = 0;
+    while(pick === state.goalNodeId && tries < 10){
+      pick = pool[Math.floor(Math.random()*pool.length)];
+      tries++;
+    }
+  }
+
+  state.goalNodeId = pick;
+}
+
+function maybeCaptureGoal(piece){
+  if(state.gameOver) return false;
+  if(!state.goalNodeId) return false;
+  if(!piece || !piece.node) return false;
+
+  if(piece.node !== state.goalNodeId) return false;
+
+  // Punkt einsammeln
+  const t = piece.team;
+  state.goalScores[t] = (state.goalScores[t]||0) + 1;
+
+  // Sieg?
+  if(state.goalScores[t] >= state.goalToWin){
+    state.gameOver = true;
+    state.phase = "gameOver";
+    setStatus(`🏆 Team ${t} gewinnt! (${state.goalToWin} Zielpunkte erreicht)`);
+    showWinOverlay(t);
+    return true;
+  }
+
+  // Neu spawnen
+  state.goalNodeId = null;
+  spawnGoalRandom(true);
+  setStatus(`🎯 Team ${t} sammelt einen Zielpunkt! Stand: ${state.goalScores[t]}/${state.goalToWin}`);
+  return true;
+}
+
+function showWinOverlay(team){
+  let ov = document.getElementById("winOverlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "winOverlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.55)"
+    ].join(";");
+
+    ov.innerHTML = `
+      <div style="
+        width:min(640px, calc(100vw - 28px));
+        border-radius:22px;
+        padding:22px 20px 18px;
+        background:
+          radial-gradient(900px 380px at 50% 10%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.22);
+        box-shadow:0 26px 90px rgba(0,0,0,.62);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+      ">
+        <div style="font:800 28px 'Cinzel', ui-serif, Georgia, serif; letter-spacing:.5px; margin-bottom:8px;">
+          🏆 Sieg!
+        </div>
+        <div id="winText" style="font:600 18px 'EB Garamond', ui-serif, Georgia, serif; line-height:1.35; margin-bottom:14px;">
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button id="btnWinRestart" style="
+            all:unset; cursor:pointer;
+            padding:10px 14px; border-radius:12px;
+            background:rgba(60,40,20,.12);
+            border:1px solid rgba(0,0,0,.18);
+            font:700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial;
+          ">Neu starten</button>
+          <button id="btnWinClose" style="
+            all:unset; cursor:pointer;
+            padding:10px 14px; border-radius:12px;
+            background:rgba(60,40,20,.18);
+            border:1px solid rgba(0,0,0,.18);
+            font:700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial;
+          ">Schließen</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(ov);
+
+    ov.addEventListener("click",(e)=>{
+      if(e.target === ov) ov.style.display="none";
+    });
+
+    ov.querySelector("#btnWinClose").addEventListener("click",()=>{
+      ov.style.display="none";
+    });
+
+    ov.querySelector("#btnWinRestart").addEventListener("click",()=>{
+      // Soft-Reset: Punkte + Figuren zurück (kein Reload nötig)
+      state.goalScores = {1:0,2:0,3:0,4:0};
+      state.gameOver = false;
+      initPieces();
+      initEventFieldsFromBoard();
+      state.goalNodeId = null;
+      spawnGoalRandom(true);
+      state.phase = "needRoll";
+      state.turn = 0;
+      state.roll = null;
+      state.selected = null;
+      state.highlighted.clear();
+      state.placeHighlighted.clear();
+      ensurePortalState();
+      state.portalHighlighted.clear();
+      state.portalUsedThisTurn = false;
+      state.pendingSix = false;
+
+      dieBox.textContent="–";
+      setStatus(`Neustart! Team ${currentTeam()} ist dran: Würfeln.`);
+      ov.style.display="none";
+    });
+  }
+
+  const winText = ov.querySelector("#winText");
+  winText.textContent = `Team ${team} hat als erstes ${state.goalToWin} Zielpunkte gesammelt.`;
+  ov.style.display="flex";
 }
 
 // ---------- Event Cards (Ereignisse) ----------
@@ -681,6 +853,12 @@ function move(piece,target){
 function afterLandingNoPortal(piece){
   const team = piece.team;
 
+  // 🎯 Zielpunkt einsammeln?
+  if(maybeCaptureGoal(piece)){
+    if(state.gameOver) return; // bei Sieg sofort stoppen
+    // weiter mit normalen Landing-Effekten
+  }
+
   // ✅ Ereignisfeld: Karte ziehen, dann Feld zufällig neu platzieren (nicht Start/Portal)
   ensureEventState();
   if(state.eventActive && state.eventActive.has(piece.node)){
@@ -722,6 +900,12 @@ function afterLandingNoPortal(piece){
 
 function afterLanding(piece){
   const team = piece.team;
+
+  // 🎯 Zielpunkt einsammeln?
+  if(maybeCaptureGoal(piece)){
+    if(state.gameOver) return; // bei Sieg sofort stoppen
+    // weiter mit normalen Landing-Effekten
+  }
 
   // ✅ Barrikade aufgenommen?
   if(barricades.has(piece.node)){
@@ -784,6 +968,7 @@ function hitTestWorld(wx, wy){
 }
 
 function handleTapAtWorld(wx, wy){
+  if(state.gameOver) return;
   const hit = hitTestWorld(wx, wy);
   if(!hit) return;
 
@@ -992,6 +1177,7 @@ btnFit?.addEventListener("click", ()=> fitToBoard(60));
 
 // ---------- Würfeln ----------
 btnRoll.addEventListener("click",()=>{
+  if(state.gameOver) return;
   if(state.phase!=="needRoll") return;
 
   state.roll=Math.floor(Math.random()*6)+1;
@@ -1085,6 +1271,87 @@ function drawWaxSeal(x,y,baseR){
   ctx.restore();
 }
 
+// ---------- Zielpunkt (Render) ----------
+function drawGoalToken(x,y){
+  const r = 13;
+  ctx.save();
+  // Glow
+  const g = ctx.createRadialGradient(x,y,2,x,y,24);
+  g.addColorStop(0, "rgba(255,215,120,.95)");
+  g.addColorStop(1, "rgba(255,215,120,0)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x,y,24,0,Math.PI*2);
+  ctx.fill();
+
+  // Coin
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle = "rgba(255,215,120,.95)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(80,50,15,.65)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Star
+  ctx.fillStyle = "rgba(60,35,10,.75)";
+  ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("★", x, y+0.5);
+  ctx.restore();
+}
+
+// ---------- HUD (Screen) ----------
+function drawHUD(){
+  // kleine Punkteanzeige oben links
+  const pad = 12;
+  const x = pad;
+  const y = pad;
+  const w = 220;
+  const h = 126;
+
+  ctx.save();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "rgba(10,12,18,.55)";
+  ctx.strokeStyle = "rgba(255,255,255,.12)";
+  ctx.lineWidth = 1;
+  roundRect(ctx, x, y, w, h, 14);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(245,250,255,.92)";
+  ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText(`Zielpunkte (bis ${state.goalToWin})`, x+12, y+10);
+
+  const lines = [1,2,3,4].map(t=>`Team ${t}: ${(state.goalScores?.[t]||0)}/${state.goalToWin}`);
+  ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  lines.forEach((txt,i)=>{
+    ctx.fillStyle = "rgba(245,250,255,.92)";
+    ctx.fillText(txt, x+12, y+34 + i*20);
+  });
+
+  if(state.gameOver){
+    ctx.fillStyle = "rgba(255,215,120,.95)";
+    ctx.fillText("Spiel beendet", x+12, y+34 + 4*20);
+  }
+
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr, y);
+  ctx.arcTo(x+w, y, x+w, y+h, rr);
+  ctx.arcTo(x+w, y+h, x, y+h, rr);
+  ctx.arcTo(x, y+h, x, y, rr);
+  ctx.arcTo(x, y, x+w, y, rr);
+  ctx.closePath();
+}
+
 // ---------- Render -----------
 function draw(){
   // Canvas auf CSS-Größe setzen (einfach)
@@ -1174,6 +1441,12 @@ function draw(){
     }
   }
 
+  // 🎯 Zielpunkt zeichnen
+  if(state.goalNodeId){
+    const gn = nodesById.get(state.goalNodeId);
+    if(gn) drawGoalToken(gn.x, gn.y);
+  }
+
   // Barrikaden als Overlay (sichtbar, aber können "versteckt" sein: du darfst sie trotzdem auf Ereignisfelder setzen)
   // Wenn du sie wirklich unsichtbar auf Ereignis willst: sag Bescheid, dann mache ich "Ereignis überdeckt Barrikade optisch".
   for(const id of barricades){
@@ -1223,6 +1496,9 @@ function draw(){
   }
 
   ctx.restore();
+
+  // HUD (Screen overlay)
+  drawHUD();
 
   requestAnimationFrame(draw);
 }
@@ -1326,6 +1602,12 @@ async function load(){
 
   initPieces();
   initEventFieldsFromBoard();
+
+  // Zielpunkte initialisieren
+  state.goalScores = {1:0,2:0,3:0,4:0};
+  state.gameOver = false;
+  state.goalNodeId = null;
+  spawnGoalRandom(true);
   if(selPlayerCount) selPlayerCount.value = String(state.players.length||4);
   fitToBoard(60);
   state.phase="needRoll";
