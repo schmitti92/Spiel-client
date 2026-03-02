@@ -343,7 +343,11 @@ const state = {
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
-  pendingSix:false,            // ob nach Aktion nochmal gewürfelt werden darf
+  pendingSix:false,
+
+  // --- Landing continuation (after placing a picked-up barricade) ---
+  resumeLanding: null,
+            // ob nach Aktion nochmal gewürfelt werden darf
 
   // --- Zielpunkte (Sammelziel) ---
   goalScores: {1:0,2:0,3:0,4:0}, // Punkte pro Team
@@ -933,13 +937,20 @@ function move(piece,target){
   return true;
 }
 
-function afterLandingNoPortal(piece){
+function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
   const team = piece.team;
 
-  // ✅ Barrikade aufgenommen? (hat Priorität, weil Ziel/Event darunter "versteckt" sein können)
-  if(barricades.has(piece.node)){
+  // ✅ 1) Barrikade aufgenommen?
+  // Wichtig: Anti-Funktionsverlust + saubere State-Machine:
+  // - Wenn man auf einer Barrikade landet, wird zuerst aufgenommen
+  // - Danach platziert man sie
+  // - Danach wird das Landefeld (Ziel/Event/Portal) weiter ausgewertet
+  if(!opts.fromBarricade && barricades.has(piece.node)){
     barricades.delete(piece.node);
     state.carry[team] = (state.carry[team]||0) + 1;
+
+    // Merke, dass wir nach der Platzierung hier weiter machen müssen
+    state.resumeLanding = { pieceId: piece.id, allowPortal: !!opts.allowPortal, nodeId: piece.node };
 
     computePlaceTargets();
     state.phase = "placeBarricade";
@@ -947,61 +958,13 @@ function afterLandingNoPortal(piece){
     return;
   }
 
-  // 🎯 Zielpunkt einsammeln? (nur wenn KEINE Barrikade drauf liegt)
+  // 🎯 2) Zielpunkt einsammeln?
   if(maybeCaptureGoal(piece)){
     if(state.gameOver) return; // bei Sieg sofort stoppen
     // weiter mit normalen Landing-Effekten
   }
 
-  // ✅ Ereignisfeld: Karte ziehen (nur wenn KEINE Barrikade drauf liegt)
-  ensureEventState();
-  if(state.eventActive && state.eventActive.has(piece.node)){
-    const card = pickRandomEventCard();
-    state.lastEvent = card;
-    console.info('[EVENT] draw', card.id, 'on', piece.node);
-
-    // Feld erst nach OK verschieben, damit man es noch sieht
-    showEventOverlay(card, ()=>{
-      relocateEventField(piece.node);
-      // Danach normal weiter (Ziel prüfen / Zug beenden)
-      afterLandingNoPortal(piece);
-    });
-
-    // Temporär aus eventActive entfernen, damit recursion nicht sofort wieder triggert
-    state.eventActive.delete(piece.node);
-    return;
-  }
-
-  // ✅ Zug beenden / 6 = nochmal
-  if(state.pendingSix){
-    state.pendingSix=false;
-    staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
-  }else{
-    nextTurn();
-  }
-}
-
-function afterLanding(piece){
-  const team = piece.team;
-
-  // ✅ Barrikade aufgenommen? (hat Priorität, weil Ziel/Event darunter "versteckt" sein können)
-  if(barricades.has(piece.node)){
-    barricades.delete(piece.node);
-    state.carry[team] = (state.carry[team]||0) + 1;
-
-    computePlaceTargets();
-    state.phase = "placeBarricade";
-    setStatus(`Team ${team}: Barrikade aufgenommen! Tippe ein freies Feld zum Platzieren.`);
-    return;
-  }
-
-  // 🎯 Zielpunkt einsammeln? (nur wenn KEINE Barrikade drauf liegt)
-  if(maybeCaptureGoal(piece)){
-    if(state.gameOver) return; // bei Sieg sofort stoppen
-    // weiter mit normalen Landing-Effekten
-  }
-
-  // ✅ Ereignisfeld: Karte ziehen (nur wenn KEINE Barrikade drauf liegt)
+  // 🎴 3) Ereignisfeld: Karte ziehen
   ensureEventState();
   if(state.eventActive && state.eventActive.has(piece.node)){
     const card = pickRandomEventCard();
@@ -1010,7 +973,8 @@ function afterLanding(piece){
 
     showEventOverlay(card, ()=>{
       relocateEventField(piece.node);
-      afterLanding(piece);
+      // Nach dem OK weiter mit Portal / Turn-Ende (ohne Barrikade-Check erneut)
+      resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true });
     });
 
     // Temporär entfernen, damit wir nicht sofort wieder triggert
@@ -1018,8 +982,8 @@ function afterLanding(piece){
     return;
   }
 
-  // ✅ Portal-Einfluss NUR wenn man AUF einem Portal steht
-  if(isPortalNode(piece.node) && !state.portalUsedThisTurn){
+  // 🌀 4) Portal (optional, z.B. nach Teleport nicht nochmal)
+  if(opts.allowPortal && isPortalNode(piece.node) && !state.portalUsedThisTurn){
     computePortalTargets(piece.node);
     if(state.portalHighlighted.size > 0){
       state.phase = "usePortal";
@@ -1028,13 +992,21 @@ function afterLanding(piece){
     }
   }
 
-  // ✅ Zug beenden / 6 = nochmal
+  // ✅ 5) Zug beenden / 6 = nochmal
   if(state.pendingSix){
     state.pendingSix=false;
     staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
   }else{
     nextTurn();
   }
+}
+
+function afterLandingNoPortal(piece){
+  return resolveLanding(piece, { allowPortal:false, fromBarricade:false });
+}
+
+function afterLanding(piece){
+  return resolveLanding(piece, { allowPortal:true, fromBarricade:false });
 }
 
 function placeBarricadeAt(nodeId){
@@ -1045,8 +1017,24 @@ function placeBarricadeAt(nodeId){
   barricades.add(nodeId);
   state.carry[team] -= 1;
 
-  // Nach Platzierung: wenn 6 -> nochmal würfeln, sonst Zugwechsel
+  // Nach Platzierung:
+  // Wenn wir gerade eine Barrikade von einem Landefeld aufgenommen haben, muss
+  // danach das Landefeld (Ziel / Ereignis / Portal / Turn-Ende) weiter ausgewertet werden.
   state.placeHighlighted.clear();
+
+  if(state.resumeLanding && state.resumeLanding.pieceId){
+    const info = state.resumeLanding;
+    state.resumeLanding = null;
+
+    const p = state.pieces.find(pp => pp.id === info.pieceId);
+    if(p){
+      // Weiter mit der Landelogik (ohne erneuten Barrikaden-Check)
+      resolveLanding(p, { allowPortal: !!info.allowPortal, fromBarricade: true });
+      return true;
+    }
+  }
+
+  // Fallback: normales Ende nach Barrikaden-Platzierung
   if(state.pendingSix){
     state.pendingSix=false;
     staySameTeamNeedRoll(`Team ${team}: Barrikade platziert + 6! Nochmal würfeln.`);
