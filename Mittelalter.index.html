@@ -20,6 +20,7 @@
     </div>
 
     <div class="controls">
+      <button id="btnMenu" class="btn secondary menuBtn" title="Menü">☰ Menü</button>
       <button id="btnFit" class="btn secondary" title="Ansicht zentrieren">Zentrieren</button>
       <button id="btnRoll" class="btn primary">🎲 Würfeln</button>
       <div class="pc">
@@ -46,6 +47,7 @@
       </div>
     </div>
 
+    <div class="backdrop" id="backdrop" aria-hidden="true"></div>
     <aside class="sidebar" id="sidebar">
       <div class="card">
         <div class="cardTitle">Zug</div>
@@ -84,5 +86,21 @@
   </main>
 
   <script src="Mittelalter.game.js?v=76"></script>
+
+  <script>
+    // Mobile/Tablet: Sidebar als aufklappbares Menü (kein Funktionsverlust – nur UI).
+    (function(){
+      const btn = document.getElementById('btnMenu');
+      const backdrop = document.getElementById('backdrop');
+      const toggle = () => document.body.classList.toggle('sidebarOpen');
+      const close = () => document.body.classList.remove('sidebarOpen');
+      if(btn) btn.addEventListener('click', toggle);
+      if(backdrop) backdrop.addEventListener('click', close);
+      // Wenn Bildschirm wieder groß wird: Menü sicher schließen
+      window.addEventListener('resize', () => {
+        if(window.innerWidth > 980) close();
+      });
+    })();
+  </script>
 </body>
 </html>
