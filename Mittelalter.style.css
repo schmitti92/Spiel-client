@@ -25,7 +25,6 @@ html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-
 .title .h2{ font-size:12px; color:var(--muted); margin-top:2px; }
 
 .controls{ display:flex; align-items:center; gap:10px; }
-.menuBtn{ display:none; }
 .btn{
   border:1px solid var(--line); background:var(--panel);
   color:var(--text); padding:10px 12px; border-radius:12px;
@@ -49,37 +48,8 @@ html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-
   height: calc(100% - 62px);
 }
 @media (max-width: 980px){
-  /* Auf kleineren Screens wird die Sidebar als Drawer geöffnet */
-  .menuBtn{ display:inline-flex; }
-  .main{ grid-template-columns: 1fr; height: calc(100% - 62px); }
-
-  .sidebar{
-    position:fixed;
-    top:62px;
-    right:0;
-    bottom:0;
-    width:min(320px, 86vw);
-    transform: translateX(110%);
-    transition: transform .2s ease;
-    z-index:20;
-    border-left:1px solid var(--line);
-    overflow:auto;
-    padding-bottom:20px;
-    background:linear-gradient(180deg, rgba(15,22,33,.92), rgba(10,15,22,.86));
-    backdrop-filter: blur(10px);
-  }
-
-  body.sidebarOpen .sidebar{ transform: translateX(0); }
-
-  .backdrop{
-    display:none;
-    position:fixed;
-    inset:0;
-    top:62px;
-    background: rgba(0,0,0,.45);
-    z-index:19;
-  }
-  body.sidebarOpen .backdrop{ display:block; }
+  .main{ grid-template-columns: 1fr; grid-template-rows: 1fr auto; height:auto; }
+  .sidebar{ position:relative; width:100%; }
 }
 
 .canvasWrap{ position:relative; min-height: 60vh; }
@@ -109,9 +79,6 @@ html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-
   background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
   padding:10px;
 }
-
-/* Standard: kein Overlay */
-.backdrop{ display:none; }
 .card{
   background:rgba(15,22,33,.75);
   border:1px solid var(--line);
