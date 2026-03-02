@@ -207,6 +207,78 @@ const camLimits = { minS: 0.35, maxS: 2.5 };
 
 function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 
+// --- Camera bounds (prevents "board flies away") ---
+// We clamp cam.x/cam.y so the board stays within the viewport with a margin.
+// Works for all scales (pinch/wheel) and prevents the "jump" after fast zoom.
+let _boardBoundsCache = null; // {minX,maxX,minY,maxY}
+
+function computeBoardBoundsWorld(padWorld=26){
+  if(!nodes || !nodes.length) return {minX:0,maxX:0,minY:0,maxY:0};
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  for(const n of nodes){
+    if(!n) continue;
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x);
+    maxY = Math.max(maxY, n.y);
+  }
+  // expand bounds a bit so nodes on the edge are still reachable
+  return {
+    minX: minX - padWorld,
+    minY: minY - padWorld,
+    maxX: maxX + padWorld,
+    maxY: maxY + padWorld
+  };
+}
+
+function clampCameraToBoard(marginPx=70){
+  if(!canvas) return;
+  const cw = canvas.clientWidth || canvas.width || 0;
+  const ch = canvas.clientHeight || canvas.height || 0;
+  if(cw<=0 || ch<=0) return;
+
+  // cache bounds (recompute only if missing)
+  const b = _boardBoundsCache || (_boardBoundsCache = computeBoardBoundsWorld(28));
+  const s = cam.s || 1;
+
+  // screen-space bounds given current cam
+  const minSX = b.minX * s + cam.x;
+  const maxSX = b.maxX * s + cam.x;
+  const minSY = b.minY * s + cam.y;
+  const maxSY = b.maxY * s + cam.y;
+
+  const viewMinX = marginPx;
+  const viewMaxX = cw - marginPx;
+  const viewMinY = marginPx;
+  const viewMaxY = ch - marginPx;
+
+  const boardW = (b.maxX - b.minX) * s;
+  const boardH = (b.maxY - b.minY) * s;
+
+  // If board is smaller than view area -> keep it centered (prevents drifting)
+  if(boardW < (viewMaxX - viewMinX)){
+    const centerX = (b.minX + b.maxX)/2;
+    cam.x = cw/2 - centerX * s;
+  }else{
+    // Constraints:
+    // maxSX >= viewMinX  => cam.x >= viewMinX - b.maxX*s
+    // minSX <= viewMaxX  => cam.x <= viewMaxX - b.minX*s
+    const minCamX = viewMinX - b.maxX * s;
+    const maxCamX = viewMaxX - b.minX * s;
+    cam.x = clamp(cam.x, minCamX, maxCamX);
+  }
+
+  if(boardH < (viewMaxY - viewMinY)){
+    const centerY = (b.minY + b.maxY)/2;
+    cam.y = ch/2 - centerY * s;
+  }else{
+    const minCamY = viewMinY - b.maxY * s;
+    const maxCamY = viewMaxY - b.minY * s;
+    cam.y = clamp(cam.y, minCamY, maxCamY);
+  }
+}
+
+
 function screenToWorld(sx, sy){
   // sx/sy sind CSS-Pixel relativ zum Canvas
   return {
@@ -222,6 +294,7 @@ function applyZoomAt(screenX, screenY, factor){
   // cursor stays fixed: adjust translation
   cam.x += (after.x - before.x) * cam.s;
   cam.y += (after.y - before.y) * cam.s;
+  clampCameraToBoard(70);
 }
 
 function fitToBoard(padding=40){
@@ -246,6 +319,7 @@ function fitToBoard(padding=40){
   const cy = (minY + maxY) / 2;
   cam.x = cw/2 - cx*cam.s;
   cam.y = ch/2 - cy*cam.s;
+  clampCameraToBoard(70);
 }
 
 let board, nodes=[], edges=[];
@@ -1088,8 +1162,11 @@ canvas.addEventListener("pointerdown",(e)=>{
     panStart = { x: p.x, y: p.y, camX: cam.x, camY: cam.y };
     tapCandidate = { x: p.x, y: p.y, t: performance.now() };
   }else{
-    // multi-touch: not a tap
+    // multi-touch: not a tap / stop panning baseline (prevents jump after pinch)
     tapCandidate = null;
+    isPanning = false;
+    panStart = null;
+    canvas._pinchLastDist = null;
   }
 },{passive:true});
 
@@ -1104,6 +1181,7 @@ canvas.addEventListener("pointermove",(e)=>{
     const dy = p.y - panStart.y;
     cam.x = panStart.camX + dx;
     cam.y = panStart.camY + dy;
+    clampCameraToBoard(70);
 
     // wenn merklich bewegt -> kein Tap
     if(tapCandidate){
@@ -1115,6 +1193,9 @@ canvas.addEventListener("pointermove",(e)=>{
   }
 
   if(pointers.size===2){
+    // Pinch: stop panning baseline (prevents jump when pinch ends)
+    isPanning = false;
+    panStart = null;
     // Pinch: compute distance/center between two pointers
     const pts = Array.from(pointers.values());
     const a = pts[0], b = pts[1];
@@ -1142,6 +1223,14 @@ function endPointer(e){
 
   if(pointers.size<2){
     canvas._pinchLastDist = null;
+  }
+
+  // If pinch ends and one pointer remains: reset pan baseline to prevent "jump"
+  if(pointers.size===1){
+    const only = Array.from(pointers.values())[0];
+    isPanning = true;
+    panStart = { x: only.x, y: only.y, camX: cam.x, camY: cam.y };
+    tapCandidate = null;
   }
 
   // Tap if candidate still valid and single pointer ended
@@ -1561,6 +1650,9 @@ async function load(){
 
   nodes=board.nodes||[];
   edges=board.edges||[];
+
+  // reset cached bounds when a new board loads
+  _boardBoundsCache = null;
 
   nodesById=new Map(nodes.map(n=>[n.id,n]));
 
