@@ -994,6 +994,20 @@ function handleTapAtWorld(wx, wy){
     }
   }
 
+  // 1b) Figur wechseln auch NACH Auswahl (solange der Zug noch nicht ausgeführt wurde)
+  // Wunsch: Nach Auswahl einer Figur soll man eine andere eigene Figur anklicken können.
+  if(occId && (state.phase==="chooseTarget") && state.roll){
+    const occPiece = state.pieces.find(p=>p.id===occId);
+    if(occPiece && occPiece.team === currentTeam()){
+      state.selected = occPiece.id;
+      computeMoveTargets(occPiece, state.roll);
+      // Phase bleibt chooseTarget
+      setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Figur gewechselt – tippe ein leuchtendes Zielfeld.`);
+      return;
+    }
+  }
+
+
   // 2) Portal benutzen (Teleport)
   if(state.phase==="usePortal"){
     const piece = state.pieces.find(p=>p.id===state.selected);
