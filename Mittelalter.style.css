@@ -265,3 +265,110 @@ button{
 .panel h3, .panel .title{
   color: rgba(38,26,18,.92) !important;
 }
+
+/* ================================
+   Readability + Dice Boost (v1)
+   - makes top text and dice clearly readable
+   - improves sidebar contrast
+   - NO gameplay logic touched
+================================= */
+
+.topbar{
+  /* slightly stronger separation from patterned background */
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.15)),
+    inherit;
+}
+
+.title .h1{
+  font-size: 20px;
+  font-weight: 900;
+  color: rgba(255,250,235,.96);
+  text-shadow: 0 2px 0 rgba(0,0,0,.45), 0 0 12px rgba(0,0,0,.35);
+}
+
+.title .h2{
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,250,235,.88);
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
+
+/* Bigger, clearer dice */
+.die, #dieBox{
+  min-width: 84px;
+  height: 64px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 215, 0, .70);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,.20), rgba(255,255,255,0) 45%),
+    radial-gradient(circle at 50% 60%, rgba(255,215,0,.18), rgba(0,0,0,.55) 60%),
+    linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.35));
+  font-size: 36px;
+  font-weight: 950;
+  color: #ffffff;
+  text-shadow: 0 2px 0 rgba(0,0,0,.55);
+  box-shadow: 0 0 22px rgba(255,215,0,.35), 0 10px 25px rgba(0,0,0,.35);
+}
+
+/* Buttons more legible */
+.btn{
+  font-size: 16px;
+  font-weight: 800;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-shadow: 0 1px 0 rgba(0,0,0,.55);
+}
+
+.btn.primary{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.18)),
+    linear-gradient(180deg, rgba(124,92,255,.55), rgba(124,92,255,.22));
+  border-color: rgba(124,92,255,.65);
+}
+
+.btn.secondary{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.22)),
+    rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.22);
+}
+
+/* Sidebar / cards: more contrast + larger text */
+.sidebar{
+  background: rgba(10, 15, 25, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.card{
+  background: rgba(10, 15, 25, 0.80);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 25px rgba(0,0,0,.35);
+}
+
+.cardTitle{
+  font-size: 16px;
+  font-weight: 950;
+  color: rgba(255, 215, 0, .95);
+  text-shadow: 0 1px 0 rgba(0,0,0,.55);
+}
+
+.kv{
+  font-size: 14px;
+}
+
+#curPlayer, #curPhase, #reserveInfo{
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,250,235,.92);
+}
+
+/* Tablet: even bigger */
+@media (max-width: 900px){
+  .title .h1{ font-size: 22px; }
+  .title .h2{ font-size: 16px; }
+  .btn{ font-size: 18px; padding: 14px 18px; }
+  .die, #dieBox{ min-width: 92px; height: 72px; font-size: 44px; }
+  .cardTitle{ font-size: 18px; }
+  .kv{ font-size: 15px; }
+}
