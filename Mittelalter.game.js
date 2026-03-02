@@ -958,11 +958,20 @@ function placeBarricadeAt(nodeId){
 
 // ---------- Input (Tap/Click + Pan/Zoom) ----------
 function hitTestWorld(wx, wy){
-  const R = 18; // node radius (world units)
-  let hit=null;
+  // UX-Fix: Wenn man rausgezoomt ist (cam.s < 1), werden die Felder sehr klein.
+  // Dann fühlt es sich so an, als müsste man 2–3x klicken.
+  // Lösung: Hit-Radius in *Screen-Pixeln* stabil halten und in World-Einheiten umrechnen.
+  // => Je weiter rausgezoomt, desto größer wird der World-Radius.
+  const desiredScreenR = 22; // px (angenehm "klickbar" auch am Tablet)
+  const minWorldR = 18;      // nie kleiner als Node-Kreis
+  const maxWorldR = 42;      // Sicherheitsklemme, damit man keine Nachbarfelder "mitnimmt"
+
+  const R = clamp(desiredScreenR / (cam.s || 1), minWorldR, maxWorldR);
+
+  let hit = null;
   for(const n of nodes){
-    const dx=wx-n.x, dy=wy-n.y;
-    if(dx*dx+dy*dy<=R*R){ hit=n; break; }
+    const dx = wx - n.x, dy = wy - n.y;
+    if(dx*dx + dy*dy <= R*R){ hit = n; break; }
   }
   return hit;
 }
