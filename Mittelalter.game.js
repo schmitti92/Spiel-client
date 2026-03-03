@@ -526,7 +526,6 @@ const BOSS_TYPES = {
     name: "Der Jäger",
     icon: "☠",
     color: "rgba(220,70,70,.95)",
-    hp: 3,
     traits: [
       "Läuft Richtung Führender",
       "Berührung: Figur zurück auf Start",
@@ -583,7 +582,6 @@ function spawnBoss(type="hunter", preferredNodeId=null){
     type,
     name: def.name,
     node: nodeId,
-    hp: def.hp,
     alive: true,
     visible: true,
     meta: {
@@ -595,6 +593,19 @@ function spawnBoss(type="hunter", preferredNodeId=null){
   updateBossUI();
   console.info("[BOSS] spawned", boss.type, boss.id, "at", boss.node);
   return boss;
+}
+
+
+function maybeDefeatBossAtNode(nodeId, byTeam){
+  ensureBossState();
+  const b = state.bosses.find(x => x.alive !== false && x.node === nodeId);
+  if(!b) return false;
+  // Boss ist sofort besiegbar: Landest du drauf, verschwindet er.
+  b.alive = false;
+  b.node = null;
+  updateBossUI();
+  setStatus(`Team ${byTeam}: Boss besiegt (${(BOSS_TYPES[b.type]?.name)||b.name||b.type})!`);
+  return true;
 }
 
 function despawnBoss(bossId){
@@ -905,7 +916,7 @@ function updateBossUI(){
     name.style.cssText = "font-weight:900; margin-bottom:2px;";
     const meta = document.createElement("div");
     meta.style.cssText = "opacity:.78; font-weight:600; font-size:12px; margin-bottom:6px;";
-    meta.textContent = `HP: ${b.hp} · Feld: ${b.node}`;
+    meta.textContent = `Feld: ${b.node}`;
 
     const ul = document.createElement("ul");
     ul.style.cssText = "margin:0; padding-left:16px; opacity:.9; font-weight:600; font-size:12px; line-height:1.3;";
@@ -1662,6 +1673,12 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     return;
   }
 
+  // 👹 Boss auf dem Feld? -> sofort besiegt (bevor Ziel/Event ausgewertet wird)
+  if(maybeDefeatBossAtNode(piece.node, team)){
+    // nach Boss-Besiegung geht der Zug normal weiter (Ziel/Event kann trotzdem passieren)
+  }
+
+
   // 🎯 2) Zielpunkt einsammeln?
   if(maybeCaptureGoal(piece)){
     if(state.gameOver) return; // bei Sieg sofort stoppen
@@ -2350,13 +2367,6 @@ function drawBossEntity(boss, t){
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText("☠", x, y+0.5);
-
-  // HP tiny
-  if(typeof boss.hp === "number"){
-    ctx.font = "bold 10px system-ui, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,.9)";
-    ctx.fillText(String(boss.hp), x, y+18);
-  }
 
   ctx.restore();
 }
