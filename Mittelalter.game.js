@@ -679,16 +679,19 @@ function bossCollideAt(nodeId, boss){
   return true;
 }
 
-function moveBossOneStep(boss){
+function moveBossOneStep(boss, force=false){
   if(!boss || boss.alive===false || !boss.node) return;
 
   const def = BOSS_TYPES[boss.type];
   if(!def) return;
 
-  // Balancing: nur jeden X. Tick bewegen
+  // Balancing: nur jeden X. Tick bewegen (außer im Debug-Force-Step)
   const every = Number(boss.meta?.moveEvery || 1);
-  if(every > 1){
-    if((state.bossTick % every) !== 0) return;
+  if(!force && every > 1){
+    if(((state.bossTick||0) % every) !== 0) {
+      if(state.bossDebug) console.info("[BOSS] skip (moveEvery)", boss.id, "tick", state.bossTick, "every", every);
+      return;
+    }
   }
 
   if(boss.type === "hunter"){
@@ -700,7 +703,13 @@ function moveBossOneStep(boss){
     if(!goalIds.length) return;
 
     const step = bfsNextStep(boss.node, goalIds, bossBlocked);
-    if(!step || step === boss.node) return;
+    if(!step || step === boss.node){
+      if(state.bossDebug){
+        const neigh = (adj.get(boss.node)||[]).slice(0,12);
+        console.warn("[BOSS] no-step", boss.id, "at", boss.node, "neigh", neigh, "goals", goalIds.slice(0,6), "tick", state.bossTick);
+      }
+      return;
+    }
 
     boss.node = step;
     bossCollideAt(step, boss);
@@ -712,7 +721,7 @@ function bossStepOnce(){
   ensureBossState();
   const alive = state.bosses.filter(b=>b.alive!==false);
   for(const b of alive){
-    moveBossOneStep(b);
+    moveBossOneStep(b, true); // force one move for testing
   }
   updateBossUI();
 }
@@ -732,8 +741,9 @@ function updateBossesAfterPlayerAction(){
 
   if(state.bossAuto){
     const alive = state.bosses.filter(b=>b.alive!==false);
+    if(state.bossDebug) console.info("[BOSS] auto-step tick", state.bossTick, "alive", alive.map(x=>x.id));
     for(const b of alive){
-      moveBossOneStep(b);
+      moveBossOneStep(b, false);
     }
   }
   updateBossUI();
@@ -2716,14 +2726,30 @@ async function load(){
   }
 
 
-  // --- Auto-Fix: Boss-Spawn-Feld ohne Verbindung? ---
-  // Wenn ein Boss-Spawn-Knoten keine Kante hat, kann der Boss nie laufen.
-  // Wir verbinden ihn runtime-mäßig mit dem nächstgelegenen Nicht-Boss-Knoten.
+  // --- Auto-Fix: Boss-Spawn-Felder müssen mit dem "Haupt-Graph" verbunden sein ---
+  // Problem: Ein Boss-Spawn kann zwar Nachbarn haben, aber nur im Boss-Subgraph hängen → Boss findet keinen Pfad zu Spielern.
+  // Fix: Wenn vom Boss-Spawn KEIN Nicht-Boss-Feld erreichbar ist, verbinden wir runtime-mäßig zum nächstgelegenen Nicht-Boss-Knoten.
   // (Ändert NICHT dein board.json dauerhaft, ist nur ein Runtime-Fix.)
+  function canReachNonBoss(startId){
+    const q=[startId];
+    const seen=new Set([startId]);
+    while(q.length){
+      const cur=q.shift();
+      const nn=adj.get(cur)||[];
+      for(const nb of nn){
+        if(seen.has(nb)) continue;
+        seen.add(nb);
+        const node = nodesById.get(nb);
+        if(node && node.type !== "boss") return true;
+        q.push(nb);
+      }
+    }
+    return false;
+  }
+
   const bossNodes = nodes.filter(n=>n.type==="boss");
   for(const s of bossNodes){
-    const neigh = adj.get(s.id) || [];
-    if(neigh.length > 0) continue;
+    if(canReachNonBoss(s.id)) continue;
 
     let best = null;
     let bestD = Infinity;
@@ -2748,7 +2774,7 @@ async function load(){
     adj.get(s.id).push(best.id);
     adj.get(best.id).push(s.id);
 
-    console.warn("[AUTO-FIX] Boss-Spawn-Ausgang hinzugefügt:", s.id, "->", best.id);
+    console.warn("[AUTO-FIX] Boss-Spawn verbunden:", s.id, "->", best.id);
   }
 
   initPieces();
