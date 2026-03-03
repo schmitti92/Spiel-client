@@ -2294,6 +2294,57 @@ function drawBossSpawnLegendary(x,y,t){
 }
 
 
+
+// ---------- Boss Entity ----------
+function drawBossEntity(boss, t){
+  const n = nodesById.get(boss.node);
+  if(!n) return;
+  const x = n.x, y = n.y;
+
+  // Visible/stealth handling (future)
+  const visible = (boss.visible !== false);
+
+  ctx.save();
+
+  // Base aura
+  const pulse = 0.55 + 0.45*Math.sin(t*2.6 + (boss._pulseSeed||0));
+  ctx.globalAlpha = visible ? 1 : 0.15;
+
+  // Outer glow ring
+  ctx.shadowColor = "rgba(255,80,40,.75)";
+  ctx.shadowBlur  = 20 + pulse*14;
+
+  ctx.beginPath();
+  ctx.arc(x, y, 22 + pulse*2.0, 0, Math.PI*2);
+  ctx.strokeStyle = "rgba(255,150,80,.95)";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Inner dark core
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.arc(x, y, 14, 0, Math.PI*2);
+  ctx.fillStyle = "rgba(20,10,6,.75)";
+  ctx.fill();
+
+  // Icon
+  ctx.fillStyle = "rgba(255,220,180,.95)";
+  ctx.font = "bold 16px serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("☠", x, y+0.5);
+
+  // HP tiny
+  if(typeof boss.hp === "number"){
+    ctx.font = "bold 10px system-ui, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,.9)";
+    ctx.fillText(String(boss.hp), x, y+18);
+  }
+
+  ctx.restore();
+}
+
+
 // ---------- HUD (Screen) ----------
 function drawHUD(){
   // kleine Punkteanzeige oben links
@@ -2495,6 +2546,18 @@ function draw(){
   for(const n of nodes){
     if(n.type === "boss"){
       drawBossSpawnLegendary(n.x, n.y, _tBoss);
+    }
+  }
+
+
+
+  // Bosses (entities)
+  if(state.bosses && state.bosses.length){
+    const tSec = (performance.now()/1000);
+    for(const b of state.bosses){
+      if(!b || b.alive===false || !b.node) continue;
+      if(b._pulseSeed==null) b._pulseSeed = (Math.random()*10);
+      drawBossEntity(b, tSec);
     }
   }
 
