@@ -655,19 +655,23 @@ const BOSS_TYPES = {
     moveEvery: 1,
     respectsShield: true
   }
-,
-destroyer: {
-  name: "Der Zerstörer",
-  icon: "⛏",
-  color: "rgba(255,160,60,.95)",
-  traits: [
-    "Zerstört jede Runde 1 Barrikade",
-    "Steuert Barrikaden an (wenn vorhanden)",
-    "Berührung: Figur zurück auf Start"
-  ],
-  moveEvery: 1,
-  respectsShield: true
-}
+
+  ,
+  destroyer: {
+    name: "Der Zerstörer",
+    icon: "⚔",
+    color: "rgba(255,140,60,.95)",
+    traits: [
+      "Bewegt sich nur am Rundenende",
+      "Läuft dann 3 Felder",
+      "Zerstört dabei Barrikaden (und zusätzlich 1 zufällige Barrikade)"
+    ],
+    // bewegt sich NUR am Ende einer kompletten Runde (alle Spieler einmal dran)
+    moveOnRoundEnd: true,
+    stepsPerMove: 3,
+    respectsShield: true
+  }
+
 };
 
 function ensureBossState(){
@@ -678,6 +682,7 @@ function ensureBossState(){
   if(typeof state.bossTick !== "number") state.bossTick = 0;
   if(typeof state.bossAuto !== "boolean") state.bossAuto = true;
   if(typeof state.bossDebug !== "boolean") state.bossDebug = true;
+  if(typeof state._bossRoundEndFlag !== "boolean") state._bossRoundEndFlag = false;
 }
 
 function getBossSpawnNodes(){
@@ -831,20 +836,6 @@ function bossCollideAt(nodeId, boss){
   return true;
 }
 
-// Zerstörer: "schmettert" jede Figur auf seinem Weg zurück auf Start (ignoriert Schutzschild)
-function destroyerSmashAt(nodeId, boss){
-  const occId = state.occupied.get(nodeId);
-  if(!occId) return false;
-  const p = state.pieces.find(x=>x.id===occId);
-  if(!p) return false;
-
-  // Ignoriert Schild komplett
-  kickToStart(p);
-  console.info("[BOSS] destroyer smash", boss?.id, "-> kick", p.id);
-  return true;
-}
-
-
 function moveBossOneStep(boss, force=false){
   if(!boss || boss.alive===false || !boss.node) return;
 
@@ -886,29 +877,41 @@ if(!goalIds.length) return;
     boss.node = step;
     bossCollideAt(step, boss);
   }
+  else if(boss.type === "destroyer"){
+    // Priorität: nächste Barrikade jagen und dabei zerstören
+    let goalIds = [];
+    if(barricades && barricades.size){
+      goalIds = Array.from(barricades).filter(id=>!isStartNode(id));
+    }
+    // Fallback: Richtung führendes Team (ohne Startfelder)
+    if(!goalIds.length){
+      const t = leadingTeam();
+      goalIds = getTeamPieceNodes(t).filter(id=>!isStartNode(id));
+      if(!goalIds.length){
+        goalIds = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
+      }
+    }
+    if(!goalIds.length) return;
 
+    const step = bfsNextStep(boss.node, goalIds, bossBlocked);
+    if(!step || step === boss.node){
+      if(state.bossDebug){
+        const neigh = (adj.get(boss.node)||[]).slice(0,12);
+        console.warn("[BOSS] no-step", boss.id, "at", boss.node, "neigh", neigh, "goals", goalIds.slice(0,6), "tick", state.bossTick);
+      }
+      return;
+    }
 
-if(boss.type === "destroyer"){
-  // Ziel: nächste Barrikade, sonst zufällig laufen
-  const goals = Array.from(barricades||[]).filter(id=>!isStartNode(id));
-  let step = null;
-  if(goals.length){
-    step = bfsNextStep(boss.node, goals, bossBlocked);
+    // Zerstörer: Barrikade auf dem Schritt wird sofort zerstört
+    if(barricades.has(step)){
+      barricades.delete(step);
+      if(state.bossDebug) console.info("[BOSS] destroyer broke barricade at", step, "boss", boss.id);
+    }
+
+    boss.node = step;
+    bossCollideAt(step, boss);
   }
-  if(!step || step === boss.node){
-    const neigh = (adj.get(boss.node)||[]).filter(nid=>!bossBlocked(nid, boss.node));
-    if(!neigh.length) return;
-    step = neigh[Math.floor(Math.random()*neigh.length)];
-  }
 
-  if(barricades.has(step)){
-    barricades.delete(step);
-    if(state.bossDebug) console.info("[BOSS] destroyer broke barricade at", step, "boss", boss.id);
-  }
-
-  boss.node = step;
-  destroyerSmashAt(step, boss);
-}
 }
 
 
@@ -929,57 +932,46 @@ function clearBosses(){
   updateBossUI();
 }
 
-function updateBossesAfterPlayerAction(endOfRound=false){
+function updateBossesAfterPlayerAction(){
   ensureBossState();
   // Tick nach jedem abgeschlossenen Spielerzug (Move+Landing)
   state.bossTick = (state.bossTick||0) + 1;
 
-  // --- Passive Effekte NUR am RUNDENENDE ---
-  // Der Zerstörer entfernt jede Runde zusätzlich 1 zufällige Barrikade (falls vorhanden)
-  if(endOfRound){
-    try{
-      const aliveNow = state.bosses.filter(b=>b.alive!==false);
-      const destroyers = aliveNow.filter(b=>b.type==="destroyer");
-      if(destroyers.length && (barricades && barricades.size)){
-        const arr = Array.from(barricades).filter(id=>!isStartNode(id));
-        if(arr.length){
-          const pick = arr[Math.floor(Math.random()*arr.length)];
-          barricades.delete(pick);
-          if(state.bossDebug) console.info("[BOSS] destroyer passive removed barricade at", pick);
-        }
-      }
-    }catch(e){}
-  }
-
   if(state.bossAuto){
     const alive = state.bosses.filter(b=>b.alive!==false);
-    if(state.bossDebug) console.info("[BOSS] auto-step tick", state.bossTick, "endOfRound", !!endOfRound, "alive", alive.map(x=>x.id));
+    if(state.bossDebug) console.info("[BOSS] auto-step tick", state.bossTick, "alive", alive.map(x=>x.id), "roundEnd", !!state._bossRoundEndFlag);
 
     for(const b of alive){
-      // ZERSTÖRER: nur am Rundenende + 3 Schritte
-      if(b.type === "destroyer"){
-        if(!endOfRound) continue;
-        for(let i=0;i<3;i++){
-          moveBossOneStep(b, true); // force: ignoriert moveEvery
+      const def = BOSS_TYPES[b.type];
+      if(!def) continue;
+
+      // Boss, der nur am Rundenende agiert
+      if(def.moveOnRoundEnd){
+        if(!state._bossRoundEndFlag) continue;
+
+        const steps = Math.max(1, Number(def.stepsPerMove||3));
+        for(let i=0;i<steps;i++){
+          moveBossOneStep(b, false);
+        }
+
+        // Extra-Effekt: 1 zufällige Barrikade zusätzlich zerstören (wenn vorhanden)
+        if(barricades && barricades.size){
+          const arr = Array.from(barricades);
+          const pick = arr[Math.floor(Math.random()*arr.length)];
+          barricades.delete(pick);
+          if(state.bossDebug) console.info("[BOSS] destroyer extra broke barricade at", pick, "boss", b.id);
         }
         continue;
       }
 
-      // andere Bosse: wie gehabt nach jedem Spielerzug
+      // Standard: pro Boss-Phase 1 Schritt (unter Berücksichtigung moveEvery)
       moveBossOneStep(b, false);
     }
   }
 
-  updateBossUI();
-}catch(e){}
+  // RoundEnd-Flag ist nur für diese Boss-Phase gültig
+  state._bossRoundEndFlag = false;
 
-  if(state.bossAuto){
-    const alive = state.bosses.filter(b=>b.alive!==false);
-    if(state.bossDebug) console.info("[BOSS] auto-step tick", state.bossTick, "alive", alive.map(x=>x.id));
-    for(const b of alive){
-      moveBossOneStep(b, false);
-    }
-  }
   updateBossUI();
 }
 
@@ -988,7 +980,7 @@ function updateBossesAfterPlayerAction(endOfRound=false){
 // ---- Boss Phase Helper ----
 // Läuft nach jedem abgeschlossenen Spielerzug einmal, damit der Boss "zwischen" den Zügen agiert.
 // Blockiert in der kurzen Zeit Eingaben, damit es keine Race-Conditions gibt (Boss vs. Spieler-Click).
-function runBossPhaseThen(done, ctx){
+function runBossPhaseThen(done){
   try{
     if(state.gameOver) return;
     ensureBossState();
@@ -1005,7 +997,7 @@ function runBossPhaseThen(done, ctx){
 
     // kleiner Delay -> fühlt sich "Phase" an und verhindert gleichzeitige Clicks auf Touch-Geräten
     setTimeout(()=>{
-      updateBossesAfterPlayerAction(!!(ctx && ctx.endOfRound));
+      updateBossesAfterPlayerAction();
       // done setzt anschließend wieder eine sinnvolle Phase (needRoll / choosePiece / etc.)
       done && done();
       // falls done nichts gesetzt hat, zurückfallen
@@ -1080,14 +1072,27 @@ function ensureBossPanel(){
     return b;
   }
 
+  // Spawn selector (Test)
+  const sel = document.createElement('select');
+  sel.id = 'bossSpawnSelect';
+  sel.style.cssText = 'grid-column:1 / -1; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(10,12,18,.35); color:rgba(245,250,255,.92); font-weight:800;';
+  // Options from BOSS_TYPES
+  for(const k of Object.keys(BOSS_TYPES)){
+    const o = document.createElement('option');
+    o.value = k;
+    o.textContent = (BOSS_TYPES[k]?.name) ? BOSS_TYPES[k].name : k;
+    sel.appendChild(o);
+  }
+  dbg.appendChild(sel);
+
+  const btnSpawn = mkBtn('btnBossSpawn','Spawn Boss');
   const btnSpawnHunter = mkBtn('btnBossSpawnHunter','Spawn Jäger');
-  const btnSpawnDestroyer = mkBtn('btnBossSpawnDestroyer','Spawn Zerstörer');
   const btnStep = mkBtn('btnBossStep','Boss Step');
   const btnToggle = mkBtn('btnBossToggleAI','Boss AI: AN');
   const btnClear = mkBtn('btnBossClear','Clear Bosses');
 
+  dbg.appendChild(btnSpawn);
   dbg.appendChild(btnSpawnHunter);
-  dbg.appendChild(btnSpawnDestroyer);
   dbg.appendChild(btnStep);
   dbg.appendChild(btnToggle);
   dbg.appendChild(btnClear);
@@ -1101,8 +1106,8 @@ function ensureBossPanel(){
   host.appendChild(dbg);
 
   // Wire once
+  btnSpawn.onclick = ()=>{ const t = document.getElementById('bossSpawnSelect')?.value || 'hunter'; spawnBoss(t); };
   btnSpawnHunter.onclick = ()=>{ spawnBoss('hunter'); };
-  btnSpawnDestroyer.onclick = ()=>{ spawnBoss('destroyer'); };
   btnStep.onclick = ()=>{ bossStepOnce(); };
   btnClear.onclick = ()=>{ clearBosses(); };
   btnToggle.onclick = ()=>{
@@ -1969,10 +1974,12 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
 
   // ✅ 5) Zug beenden / 6 = nochmal
   // 👹 Boss-Phase nach abgeschlossenem Spielerzug (Move + Landing)
+  // Rundenende-Marker (für Bosse, die nur am Rundenende agieren)
+  ensureBossState();
+  state._bossRoundEndFlag = (!state.pendingSix) && (state.turn === state.players.length-1);
   // WICHTIG:
   // - Boss bewegt sich erst NACH allen Spieler-Aktionen (inkl. Barrikade/Events/Portale)
   // - Boss bewegt sich VOR dem Spielerwechsel / erneuten Würfeln (bei 6)
-  const endOfRound = (!state.pendingSix && state.turn === (state.players.length-1));
   runBossPhaseThen(()=>{
     if(state.pendingSix){
       state.pendingSix=false;
@@ -1980,7 +1987,7 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     }else{
       nextTurn();
     }
-  }, { endOfRound });
+  });
 }
 
 function afterLandingNoPortal(piece){
