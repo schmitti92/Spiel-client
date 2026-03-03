@@ -663,6 +663,12 @@ function bfsNextStep(startId, goalIds, blockedFn){
 }
 
 function bossBlocked(nextId, fromId){
+  // Boss ignoriert Startfelder komplett:
+  // - darf NICHT darauf laufen
+  // - darf sie auch nicht als Zwischen-Schritt nutzen
+  const nn = nodesById.get(nextId);
+  if(nn && nn.type === "start") return true;
+
   // Barrikaden blocken NICHT mehr hart, sonst kann ein Boss komplett eingesperrt werden.
   // (Falls er auf eine Barrikade tritt, wird sie beim Schritt entfernt.)
 
@@ -709,11 +715,12 @@ function moveBossOneStep(boss, force=false){
 
   if(boss.type === "hunter"){
     const t = leadingTeam();
-    const goals = getTeamPieceNodes(t);
-    // Wenn kein Ziel existiert (Team offboard), fallback: irgendeine Figur
-    const fallback = state.pieces.filter(p=>p.node).map(p=>p.node);
+    // Boss berücksichtigt Startfelder nicht als Ziel (und jagt keine Figuren, die noch im Start stehen)
+    const goals = getTeamPieceNodes(t).filter(id=>!isStartNode(id));
+    // Wenn kein Ziel existiert (Team offboard / alle Figuren im Start), fallback: irgendeine Figur, aber auch ohne Startfelder
+    const fallback = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
     const goalIds = goals.length ? goals : fallback;
-    if(!goalIds.length) return;
+if(!goalIds.length) return;
 
     const step = bfsNextStep(boss.node, goalIds, bossBlocked);
     if(!step || step === boss.node){
