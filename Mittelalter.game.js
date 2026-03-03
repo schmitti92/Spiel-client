@@ -189,6 +189,7 @@ function installOnScreenConsole(){
 }
 
 document.addEventListener("DOMContentLoaded", installOnScreenConsole);
+document.addEventListener("DOMContentLoaded", ()=>{ try{ ensureTopTurnUI(); }catch(_){ } });
 
 const TEAM_COLORS = {
   1: "#b33a3a", // Rot – Wappenrot
@@ -507,7 +508,63 @@ function isFreeForBarricade(id){
   return true;
 }
 
-function setStatus(t){ statusLine.textContent = t; }
+// --- Turn indicator in top status bar (always visible) ---
+let _statusTextEl = null;
+let _turnBadgeEl = null;
+
+function ensureTopTurnUI(){
+  if(!statusLine) return;
+
+  // Transform statusLine into: [badge][text]
+  if(!_statusTextEl){
+    // keep existing text
+    const prevText = statusLine.textContent || "";
+    statusLine.textContent = "";
+
+    _turnBadgeEl = document.createElement("span");
+    _turnBadgeEl.id = "turnBadge";
+    _turnBadgeEl.style.cssText = [
+      "display:inline-flex",
+      "align-items:center",
+      "gap:6px",
+      "padding:6px 10px",
+      "margin-right:10px",
+      "border-radius:999px",
+      "font:800 12px system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "letter-spacing:.2px",
+      "border:1px solid rgba(255,255,255,.18)",
+      "box-shadow:0 8px 22px rgba(0,0,0,.22)",
+      "vertical-align:middle",
+      "user-select:none"
+    ].join(";");
+
+    _statusTextEl = document.createElement("span");
+    _statusTextEl.id = "statusText";
+    _statusTextEl.textContent = prevText;
+
+    statusLine.appendChild(_turnBadgeEl);
+    statusLine.appendChild(_statusTextEl);
+  }
+
+  updateTurnBadge();
+}
+
+function updateTurnBadge(){
+  if(!_turnBadgeEl) return;
+  const t = currentTeam ? currentTeam() : 1;
+  const col = TEAM_COLORS[t] || "#888";
+  _turnBadgeEl.textContent = `▶ Team ${t} dran`;
+  _turnBadgeEl.style.background = col;
+  _turnBadgeEl.style.color = "rgba(255,255,255,.95)";
+}
+
+// Status text (kept separate from the badge)
+function setStatus(t){
+  ensureTopTurnUI();
+  if(_statusTextEl) _statusTextEl.textContent = t;
+  else if(statusLine) statusLine.textContent = t;
+  updateTurnBadge();
+}
 
 function ensurePortalState(){
   if(!state.portalHighlighted) state.portalHighlighted = new Set();
@@ -1815,23 +1872,30 @@ function placeBarricadeAt(nodeId){
 
 // ---------- Input (Tap/Click + Pan/Zoom) ----------
 function hitTestWorld(wx, wy){
-  // UX-Fix: Wenn man rausgezoomt ist (cam.s < 1), werden die Felder sehr klein.
-  // Dann fühlt es sich so an, als müsste man 2–3x klicken.
-  // Lösung: Hit-Radius in *Screen-Pixeln* stabil halten und in World-Einheiten umrechnen.
-  // => Je weiter rausgezoomt, desto größer wird der World-Radius.
-  const desiredScreenR = 22; // px (angenehm "klickbar" auch am Tablet)
+  // UX-Fix:
+  // - Der Hit-Radius bleibt in SCREEN-Pixeln ungefähr gleich (auch beim Rauszoomen).
+  // - Wir wählen den NÄCHSTEN Node innerhalb des Radius (nicht "erster Treffer" in Array-Reihenfolge),
+  //   damit man auch bei Zoom-out zuverlässig das richtige Feld / die richtige Figur trifft.
+  const desiredScreenR = 26; // px (klickbar auf Tablet)
   const minWorldR = 18;      // nie kleiner als Node-Kreis
-  const maxWorldR = 42;      // Sicherheitsklemme, damit man keine Nachbarfelder "mitnimmt"
+  const maxWorldR = 44;      // Sicherheitsklemme (sonst zu viel "Mitnehmen")
 
   const R = clamp(desiredScreenR / (cam.s || 1), minWorldR, maxWorldR);
+  const R2 = R*R;
 
-  let hit = null;
+  let best = null;
+  let bestD2 = Infinity;
   for(const n of nodes){
     const dx = wx - n.x, dy = wy - n.y;
-    if(dx*dx + dy*dy <= R*R){ hit = n; break; }
+    const d2 = dx*dx + dy*dy;
+    if(d2 <= R2 && d2 < bestD2){
+      best = n;
+      bestD2 = d2;
+    }
   }
-  return hit;
+  return best;
 }
+
 
 function handleTapAtWorld(wx, wy){
   if(state.gameOver) return;
@@ -2076,7 +2140,7 @@ canvas.addEventListener("pointermove",(e)=>{
     if(tapCandidate){
       const mx = p.x - tapCandidate.x;
       const my = p.y - tapCandidate.y;
-      if((mx*mx + my*my) > 36) tapCandidate = null; // >6px
+      if((mx*mx + my*my) > 144) tapCandidate = null; // >12px // >6px
     }
     return;
   }
@@ -2128,7 +2192,7 @@ function endPointer(e){
     const dt = performance.now() - tapCandidate.t;
     const dx = p.x - tapCandidate.x;
     const dy = p.y - tapCandidate.y;
-    if(dt < 350 && (dx*dx+dy*dy) <= 36){
+    if(dt < 450 && (dx*dx+dy*dy) <= 144){
       // Double-tap only if no pinch recently (prevents "spring back" after zoom)
       const now = performance.now();
       if(now - lastPinchAt > 450){
