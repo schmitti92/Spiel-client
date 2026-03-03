@@ -668,22 +668,6 @@ destroyer: {
   moveEvery: 1,
   respectsShield: true
 }
-
-,
-bannmage: {
-  name: "Der Bannmagier",
-  icon: "⛓",
-  color: "rgba(140,90,220,.95)",
-  traits: [
-    "Solange er lebt: Keine Joker benutzbar",
-    "Jagt den Spieler mit den meisten Jokern",
-    "Berührung: Figur zurück auf Start"
-  ],
-  moveEvery: 1,
-  respectsShield: true,
-  locksJokers: true
-}
-
 };
 
 function ensureBossState(){
@@ -694,17 +678,9 @@ function ensureBossState(){
   if(typeof state.bossTick !== "number") state.bossTick = 0;
   if(typeof state.bossAuto !== "boolean") state.bossAuto = true;
   if(typeof state.bossDebug !== "boolean") state.bossDebug = true;
-
-}
-
-function isJokerLockedByBoss(){
-  try{
-    return (state.bosses||[]).some(b=>b && b.alive!==false && (BOSS_TYPES[b.type]?.locksJokers));
-  }catch(_){ return false; }
 }
 
 function getBossSpawnNodes(){
-
   return nodes.filter(n=>n && n.type==="boss").map(n=>n.id);
 }
 
@@ -748,7 +724,6 @@ function spawnBoss(type="hunter", preferredNodeId=null){
   };
   state.bosses.push(boss);
   updateBossUI();
-  updateJokerUI();
   console.info("[BOSS] spawned", boss.type, boss.id, "at", boss.node);
   return boss;
 }
@@ -762,7 +737,6 @@ function maybeDefeatBossAtNode(nodeId, byTeam){
   b.alive = false;
   b.node = null;
   updateBossUI();
-  updateJokerUI();
   setStatus(`Team ${byTeam}: Boss besiegt (${(BOSS_TYPES[b.type]?.name)||b.name||b.type})!`);
   return true;
 }
@@ -773,7 +747,6 @@ function despawnBoss(bossId){
   if(!b) return;
   b.alive = false;
   updateBossUI();
-  updateJokerUI();
   console.info("[BOSS] despawn", bossId);
 }
 
@@ -920,49 +893,10 @@ if(boss.type === "destroyer"){
   }
 
   boss.node = step;
-  
-  bossCollideAt(step, boss);
-}
-
-if(boss.type === "bannmage"){
-  // Ziel: Spieler mit den meisten Jokern (summe über alle Joker-Arten)
-  let bestTeam = null;
-  let bestSum = -1;
-  for(const t of (state.players||[1,2,3,4])){
-    let sum = 0;
-    try{
-      const inv = (state.jokers && state.jokers[t]) ? state.jokers[t] : {};
-      for(const k in inv) sum += Number(inv[k]||0);
-    }catch(_){}
-    if(sum > bestSum){
-      bestSum = sum;
-      bestTeam = t;
-    }
-  }
-
-  // Ziele: Figuren dieses Teams, aber NIE auf Startfeldern
-  let goals = [];
-  if(bestTeam!=null){
-    goals = getTeamPieceNodes(bestTeam).filter(id=>!isStartNode(id));
-  }
-  if(!goals.length){
-    goals = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
-  }
-
-  let step = null;
-  if(goals.length){
-    step = bfsNextStep(boss.node, goals, bossBlocked);
-  }
-  if(!step || step === boss.node){
-    const neigh = (adj.get(boss.node)||[]).filter(nid=>!bossBlocked(nid, boss.node));
-    if(!neigh.length) return;
-    step = neigh[Math.floor(Math.random()*neigh.length)];
-  }
-
-  boss.node = step;
   bossCollideAt(step, boss);
 }
 }
+
 
 function bossStepOnce(){
   ensureBossState();
@@ -979,7 +913,6 @@ function clearBosses(){
     b.alive = false;
   }
   updateBossUI();
-  updateJokerUI();
 }
 
 function updateBossesAfterPlayerAction(){
@@ -1110,32 +1043,14 @@ function ensureBossPanel(){
     return b;
   }
 
-  const selBossType = document.createElement('select');
-  selBossType.id = 'bossSpawnType';
-  selBossType.style.cssText = [
-    'grid-column:1 / -1',
-    'padding:10px 10px',
-    'border-radius:12px',
-    'border:1px solid rgba(255,255,255,.12)',
-    'background:rgba(10,12,18,.35)',
-    'color:rgba(245,250,255,.92)',
-    'font-weight:800',
-    'letter-spacing:.2px'
-  ].join(';');
-  // Optionen (nur Boss-Typen, die wir aktuell implementiert haben)
-  const bossOptions = [
-    { value:'hunter', label:'Jäger' },
-    { value:'destroyer', label:'Zerstörer' },
-    { value:'bannmage', label:'Bannmagier' }
-  ];
-  bossOptions.forEach(o=>{
-    const opt = document.createElement('option');
-    opt.value = o.value;
-    opt.textContent = o.label;
-    selBossType.appendChild(opt);
-  });
+  const btnSpawnHunter = mkBtn('btnBossSpawnHunter','Spawn Jäger');
+  const btnSpawnDestroyer = mkBtn('btnBossSpawnDestroyer','Spawn Zerstörer');
+  const btnStep = mkBtn('btnBossStep','Boss Step');
+  const btnToggle = mkBtn('btnBossToggleAI','Boss AI: AN');
+  const btnClear = mkBtn('btnBossClear','Clear Bosses');
 
-  const btnSpawnSelected = mkBtn('btnBossSpawnSelected','Boss spawnen');
+  dbg.appendChild(btnSpawnHunter);
+  dbg.appendChild(btnSpawnDestroyer);
   dbg.appendChild(btnStep);
   dbg.appendChild(btnToggle);
   dbg.appendChild(btnClear);
@@ -1149,7 +1064,8 @@ function ensureBossPanel(){
   host.appendChild(dbg);
 
   // Wire once
-  btnSpawnSelected.onclick = ()=>{ const t = (document.getElementById('bossSpawnType')||selBossType).value; spawnBoss(t); };
+  btnSpawnHunter.onclick = ()=>{ spawnBoss('hunter'); };
+  btnSpawnDestroyer.onclick = ()=>{ spawnBoss('destroyer'); };
   btnStep.onclick = ()=>{ bossStepOnce(); };
   btnClear.onclick = ()=>{ clearBosses(); };
   btnToggle.onclick = ()=>{
@@ -1274,7 +1190,6 @@ function renderJokerButtons(){
 
 function jokerIsUsableNow(joker){
   if(state.gameOver) return false;
-  if(isJokerLockedByBoss()) return false;
   if(state.jokerMode) return false; // während eines Joker-Modus keine anderen starten
 
   const beforeOk = (state.phase === "needRoll") && (state.roll === null);
@@ -1291,7 +1206,6 @@ function updateJokerUI(){
 
   const team = currentTeam();
   const hint = [];
-  if(isJokerLockedByBoss()) hint.push("⛓ Bannmagier aktiv: Joker gesperrt");
   if(state.jokerMode === "swapPickA") hint.push("Spieler tauschen: Figur A wählen");
   if(state.jokerMode === "swapPickB") hint.push("Spieler tauschen: Figur B wählen");
   if(state.jokerMode === "moveBarricadePick") hint.push("Barrikade versetzen: Barrikade wählen");
@@ -1363,11 +1277,6 @@ function rollDice(){
 function tryUseJoker(jokerId){
   if(state.gameOver) return;
   ensureJokerState();
-  if(isJokerLockedByBoss()){
-    setStatus(`Joker gesperrt: Der Bannmagier lebt!`);
-    updateJokerUI();
-    return;
-  }
 
   const team = currentTeam();
   const joker = JOKERS.find(j=>j.id===jokerId);
