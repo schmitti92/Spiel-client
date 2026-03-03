@@ -22,149 +22,6 @@ const statusLine = document.getElementById("statusLine");
 const jokerButtonsWrap = document.getElementById("jokerButtons");
 const jokerHint = document.getElementById("jokerHint");
 
-// Boss UI (Sidebar)
-const bossEmpty = document.getElementById("bossEmpty");
-const bossList = document.getElementById("bossList");
-
-
-// ---------- Boss Sidebar ----------
-const BOSS_META = {
-  hunter: {
-    name: "Der Jäger",
-    props: [
-      "Bewegt sich automatisch Richtung Führender.",
-      "Berührung: Figur zurück auf Start."
-    ],
-    icon: "hunter"
-  },
-  destroyer: {
-    name: "Der Zerstörer",
-    props: [
-      "Zerstört jede Runde 1 zufällige Barrikade.",
-      "Beim Tod: 2 Barrikaden setzen."
-    ],
-    icon: "destroyer"
-  },
-  darkbringer: {
-    name: "Der Dunkelbringer",
-    props: [
-      "Zielpunkte verschwinden solange er lebt.",
-      "Kein Sieg möglich."
-    ],
-    icon: "dark"
-  },
-  banmage: {
-    name: "Der Bannmagier",
-    props: [
-      "Keine Joker dürfen benutzt werden.",
-      "Joker-Buttons sind deaktiviert."
-    ],
-    icon: "ban"
-  },
-  parasite: {
-    name: "Der Parasit",
-    props: [
-      "Jagt Spieler mit den meisten Jokern.",
-      "Berührung: klaut 1 Joker, wird stärker."
-    ],
-    icon: "parasite"
-  },
-  shadow: {
-    name: "Der Schatten",
-    props: [
-      "Unsichtbar (sichtbar erst im 1-Feld-Umkreis).",
-      "Schmeißt nur bei direkter Kollision."
-    ],
-    icon: "shadow"
-  },
-  worldbreaker: {
-    name: "Der Weltenbrecher",
-    props: [
-      "Beim Spawn werden Figuren zufällig versetzt."
-    ],
-    icon: "world"
-  },
-  madness: {
-    name: "Der Wahnsinn",
-    props: [
-      "Deaktiviert jede Runde zufällig 1 Regel."
-    ],
-    icon: "mad"
-  },
-  magnet: {
-    name: "Der Magnet",
-    props: [
-      "Zieht jede Runde Figuren 1 Feld näher zu sich.",
-      "Barrikaden auf Landung werden entfernt."
-    ],
-    icon: "magnet"
-  }
-};
-
-function bossIconSVG(kind){
-  // Simple inline icons (no external assets)
-  switch(kind){
-    case "hunter": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="2"/></svg>';
-    case "destroyer": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h6"/><path d="M4 17l8-8"/><path d="M9 12l3 3"/><path d="M14 2l8 8-4 4-8-8z"/></svg>';
-    case "dark": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9a7 7 0 0 0 9 9z"/></svg>';
-    case "ban": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M7 17L17 7"/></svg>';
-    case "parasite": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c4 3 6 6 6 10a6 6 0 1 1-12 0c0-4 2-7 6-10z"/><path d="M9 14c1 1 2 1 3 0s2-1 3 0"/></svg>';
-    case "shadow": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="2"/></svg>';
-    case "world": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18"/><path d="M12 3c-3 3-3 15 0 18"/></svg>';
-    case "mad": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.9 4.9l2.8 2.8"/><path d="M16.3 16.3l2.8 2.8"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.9 19.1l2.8-2.8"/><path d="M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="3"/></svg>';
-    case "magnet": return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v8a5 5 0 0 0 10 0V2"/><path d="M7 6h10"/></svg>';
-    default: return '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l9 4-9 4-9-4 9-4z"/><path d="M3 10v8l9 4 9-4v-8"/></svg>';
-  }
-}
-
-function getActiveBosses(){
-  // Future-proof: supports either state.bosses[] or the current state.boss
-  if(state && Array.isArray(state.bosses)) return state.bosses.filter(b=>b && b.active !== false && b.node);
-  if(state && state.boss && state.boss.active && state.boss.node) return [state.boss];
-  return [];
-}
-
-function updateBossSidebar(){
-  if(!bossEmpty || !bossList) return;
-  const bosses = getActiveBosses().slice(0, 2);
-  bossList.innerHTML = "";
-  if(bosses.length === 0){
-    bossEmpty.style.display = "block";
-    return;
-  }
-  bossEmpty.style.display = "none";
-
-  for(const b of bosses){
-    const type = b.type || "hunter";
-    const meta = BOSS_META[type] || { name: "Boss", props: [], icon: type };
-    const el = document.createElement("div");
-    el.className = "bossCard";
-
-    const av = document.createElement("div");
-    av.className = "bossAvatar";
-    av.innerHTML = bossIconSVG(meta.icon);
-
-    const body = document.createElement("div");
-    body.className = "bossMeta";
-    const pos = b.node ? `Feld: ${b.node}` : "–";
-    const hp = (typeof b.hp === "number" && b.hp > 0 && b.hp !== 999) ? ` • HP ${b.hp}` : "";
-
-    const ul = meta.props && meta.props.length
-      ? `<ul>${meta.props.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`
-      : "";
-
-    body.innerHTML = `
-      <div class="bossName">${escapeHtml(meta.name)}</div>
-      <div class="bossPos">${escapeHtml(pos)}${hp}</div>
-      <div class="bossProps">${ul}</div>
-    `;
-
-    el.appendChild(av);
-    el.appendChild(body);
-    bossList.appendChild(el);
-  }
-}
-
 
 // ---------- On-Screen Console (Debug Overlay) ----------
 // Hilft besonders auf Tablet/Handy, wenn man DevTools nicht sieht.
@@ -559,12 +416,16 @@ const state = {
   goalScores: {1:0,2:0,3:0,4:0}, // Punkte pro Team
   goalNodeId: null,             // aktuelles Zielpunkt-Feld (nodeId)
   goalToWin: 10,                // wer zuerst 10 sammelt gewinnt
+  gameOver: false,              // Spiel beendet?
 
-  // --- Boss-System ---
-  boss: { active:false, type:null, node:null, hp:0, power:1, visible:true },
-  turnCount: 0, // zählt komplette Spielerzüge (für Boss-Spawn/Timing)
-  gameOver: false               // Spiel beendet?
+  // --- Boss System (max 2 gleichzeitig) ---
+  bosses: [],                    // [{id,type,node,hp,visible,meta:{...}}]
+  bossMaxActive: 2,
+  bossIdSeq: 1,
+  bossSpawnNodes: [],            // wird aus board nodes[type=boss] gefüllt
+  bossTick: 0                    // Counter (für "jeden 2. Zug" etc.)
 };
+
 
 function currentTeam(){ return state.players[state.turn]; }
 
@@ -613,7 +474,6 @@ function setPlayerCount(n, opts={reset:true}){
 
   renderJokerButtons();
   updateJokerUI();
-  updateBossSidebar();
 }
 
 function isStartNode(id){
@@ -644,8 +504,6 @@ function isFreeForBarricade(id){
   if (barricades.has(id)) return false;
   // Sicherheit: nicht auf Start platzieren
   if (isStartNode(id)) return false;
-  // nicht auf Boss
-  if (isBossNode(id) || (nodesById.get(id)?.type==="boss")) return false;
   return true;
 }
 
@@ -660,6 +518,329 @@ function ensureEventState(){
   if(!state.eventActive) state.eventActive = new Set();
   if(!("lastEvent" in state)) state.lastEvent = null;
 }
+
+
+// ---------- Boss System ----------
+const BOSS_TYPES = {
+  hunter: {
+    name: "Der Jäger",
+    icon: "☠",
+    color: "rgba(220,70,70,.95)",
+    hp: 3,
+    traits: [
+      "Läuft Richtung Führender",
+      "Berührung: Figur zurück auf Start",
+      "Barrikaden blocken den Weg"
+    ],
+    // Balancing: bewegt sich nur jeden 2. Spielerzug
+    moveEvery: 2,
+    respectsShield: true
+  }
+};
+
+function ensureBossState(){
+  if(!Array.isArray(state.bosses)) state.bosses = [];
+  if(typeof state.bossMaxActive !== "number") state.bossMaxActive = 2;
+  if(typeof state.bossIdSeq !== "number") state.bossIdSeq = 1;
+  if(!Array.isArray(state.bossSpawnNodes)) state.bossSpawnNodes = [];
+  if(typeof state.bossTick !== "number") state.bossTick = 0;
+}
+
+function getBossSpawnNodes(){
+  return nodes.filter(n=>n && n.type==="boss").map(n=>n.id);
+}
+
+function isNodeBlockedForBoss(nodeId){
+  const n = nodesById.get(nodeId);
+  if(!n) return true;
+  if(n.type === "start") return true;
+  if(state.bosses.some(b=>b.alive!==false && b.node===nodeId)) return true;
+  return false;
+}
+
+function spawnBoss(type="hunter", preferredNodeId=null){
+  ensureBossState();
+  const def = BOSS_TYPES[type];
+  if(!def) return null;
+
+  const alive = state.bosses.filter(b=>b.alive!==false);
+  if(alive.length >= state.bossMaxActive) return null;
+
+  if(!state.bossSpawnNodes.length) state.bossSpawnNodes = getBossSpawnNodes();
+  const pool = state.bossSpawnNodes.length ? state.bossSpawnNodes.slice() : nodes.map(n=>n.id);
+
+  let nodeId = preferredNodeId;
+  if(!nodeId || isNodeBlockedForBoss(nodeId)){
+    const candidates = pool.filter(id=>!isNodeBlockedForBoss(id));
+    if(!candidates.length) return null;
+    nodeId = candidates[Math.floor(Math.random()*candidates.length)];
+  }
+
+  const boss = {
+    id: "b"+(state.bossIdSeq++),
+    type,
+    name: def.name,
+    node: nodeId,
+    hp: def.hp,
+    alive: true,
+    visible: true,
+    meta: {
+      moveEvery: def.moveEvery || 1,
+      respectsShield: !!def.respectsShield
+    }
+  };
+  state.bosses.push(boss);
+  updateBossUI();
+  console.info("[BOSS] spawned", boss.type, boss.id, "at", boss.node);
+  return boss;
+}
+
+function despawnBoss(bossId){
+  ensureBossState();
+  const b = state.bosses.find(x=>x.id===bossId);
+  if(!b) return;
+  b.alive = false;
+  updateBossUI();
+  console.info("[BOSS] despawn", bossId);
+}
+
+function leadingTeam(){
+  let bestT = currentTeam();
+  let best = -1;
+  for(const t of state.players){
+    const sc = Number(state.goalScores?.[t]||0);
+    if(sc > best){ best=sc; bestT=t; }
+  }
+  return bestT;
+}
+
+function getTeamPieceNodes(team){
+  return state.pieces.filter(p=>p.node && p.team===team).map(p=>p.node);
+}
+
+function bfsNextStep(startId, goalIds, blockedFn){
+  if(!startId || !goalIds || !goalIds.length) return null;
+  const goals = new Set(goalIds);
+  if(goals.has(startId)) return startId;
+
+  const q = [startId];
+  const prev = new Map();
+  prev.set(startId, null);
+
+  while(q.length){
+    const cur = q.shift();
+    for(const nb of (adj.get(cur)||[])){
+      if(prev.has(nb)) continue;
+      if(blockedFn && blockedFn(nb, cur)) continue;
+      prev.set(nb, cur);
+      if(goals.has(nb)){
+        // reconstruct first step
+        let step = nb;
+        let p = prev.get(step);
+        while(p && p !== startId){
+          step = p;
+          p = prev.get(step);
+        }
+        return step;
+      }
+      q.push(nb);
+    }
+  }
+  return null;
+}
+
+function bossBlocked(nextId, fromId){
+  // Barrikaden blocken den Weg
+  if(barricades.has(nextId)) return true;
+  // Schutzschild blockt Zwischen-Schritt (Boss darf nicht "drüber laufen")
+  const occId = state.occupied.get(nextId);
+  if(occId){
+    const p = state.pieces.find(x=>x.id===occId);
+    if(p && p.shielded) return true;
+  }
+  return false;
+}
+
+function bossCollideAt(nodeId, boss){
+  const occId = state.occupied.get(nodeId);
+  if(!occId) return false;
+  const p = state.pieces.find(x=>x.id===occId);
+  if(!p) return false;
+
+  // Jäger: Berührung => zurück auf Start (sofern Schild nicht schützt)
+  const def = BOSS_TYPES[boss.type];
+  const respectsShield = boss?.meta?.respectsShield ?? true;
+  if(respectsShield && p.shielded) return false;
+
+  kickToStart(p);
+  console.info("[BOSS] collide", boss.type, boss.id, "-> kick", p.id);
+  return true;
+}
+
+function moveBossOneStep(boss){
+  if(!boss || boss.alive===false || !boss.node) return;
+
+  const def = BOSS_TYPES[boss.type];
+  if(!def) return;
+
+  // Balancing: nur jeden X. Tick bewegen
+  const every = Number(boss.meta?.moveEvery || 1);
+  if(every > 1){
+    if((state.bossTick % every) !== 0) return;
+  }
+
+  if(boss.type === "hunter"){
+    const t = leadingTeam();
+    const goals = getTeamPieceNodes(t);
+    // Wenn kein Ziel existiert (Team offboard), fallback: irgendeine Figur
+    const fallback = state.pieces.filter(p=>p.node).map(p=>p.node);
+    const goalIds = goals.length ? goals : fallback;
+    if(!goalIds.length) return;
+
+    const step = bfsNextStep(boss.node, goalIds, bossBlocked);
+    if(!step || step === boss.node) return;
+
+    boss.node = step;
+    bossCollideAt(step, boss);
+  }
+}
+
+function updateBossesAfterPlayerAction(){
+  ensureBossState();
+  // Tick nach jedem abgeschlossenen Spielerzug (Move+Landing)
+  state.bossTick = (state.bossTick||0) + 1;
+
+  const alive = state.bosses.filter(b=>b.alive!==false);
+  for(const b of alive){
+    moveBossOneStep(b);
+  }
+  updateBossUI();
+}
+
+function bossFieldHighlightDraw(n, R){
+  // Spawn-Felder (type=boss) leicht markieren
+  ctx.save();
+  ctx.strokeStyle = "rgba(220,70,70,.55)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(n.x,n.y,R+6,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(255,220,220,.22)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6,6]);
+  ctx.beginPath();
+  ctx.arc(n.x,n.y,R+10,0,Math.PI*2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+// ---- Boss UI in Sidebar ----
+function ensureBossPanel(){
+  // Wir hängen es unter die Joker-Buttons (rechts in der Sidebar)
+  const anchor = jokerButtonsWrap || document.getElementById("sidebar") || document.body;
+  let host = document.getElementById("bossPanel");
+  if(host) return host;
+
+  host = document.createElement("div");
+  host.id = "bossPanel";
+  host.style.cssText = [
+    "margin-top:12px",
+    "padding:12px",
+    "border-radius:14px",
+    "background:rgba(10,12,18,.42)",
+    "border:1px solid rgba(255,255,255,.10)",
+    "color:rgba(245,250,255,.92)",
+    "font:600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial"
+  ].join(";");
+
+  const title = document.createElement("div");
+  title.textContent = "Bosse";
+  title.style.cssText = "font-weight:800; margin-bottom:8px; letter-spacing:.2px;";
+  host.appendChild(title);
+
+  const list = document.createElement("div");
+  list.id = "bossPanelList";
+  host.appendChild(list);
+
+  // Insert after jokerButtonsWrap if possible
+  if(jokerButtonsWrap && jokerButtonsWrap.parentElement){
+    jokerButtonsWrap.parentElement.appendChild(host);
+  }else{
+    anchor.appendChild(host);
+  }
+
+  return host;
+}
+
+function updateBossUI(){
+  ensureBossState();
+  const panel = ensureBossPanel();
+  const list = document.getElementById("bossPanelList");
+  if(!list) return;
+
+  const alive = state.bosses.filter(b=>b.alive!==false);
+  if(!alive.length){
+    list.innerHTML = "<div style='opacity:.75'>Kein Boss aktiv</div>";
+    return;
+  }
+
+  list.innerHTML = "";
+  for(const b of alive){
+    const def = BOSS_TYPES[b.type] || {};
+    const card = document.createElement("div");
+    card.style.cssText = [
+      "display:flex",
+      "gap:10px",
+      "align-items:flex-start",
+      "padding:10px",
+      "border-radius:12px",
+      "background:rgba(255,255,255,.06)",
+      "border:1px solid rgba(255,255,255,.10)",
+      "margin-bottom:8px"
+    ].join(";");
+
+    const icon = document.createElement("div");
+    icon.textContent = def.icon || "☠";
+    icon.style.cssText = [
+      "width:38px","height:38px",
+      "border-radius:14px",
+      "display:flex","align-items:center","justify-content:center",
+      "background:"+(def.color || 'rgba(220,70,70,.95)'),
+      "color:rgba(255,245,235,.95)",
+      "font-weight:900",
+      "border:1px solid rgba(0,0,0,.25)"
+    ].join(";");
+
+    const body = document.createElement("div");
+    body.style.flex = "1";
+    const name = document.createElement("div");
+    name.textContent = def.name || b.name || b.type;
+    name.style.cssText = "font-weight:900; margin-bottom:2px;";
+    const meta = document.createElement("div");
+    meta.style.cssText = "opacity:.78; font-weight:600; font-size:12px; margin-bottom:6px;";
+    meta.textContent = `HP: ${b.hp} · Feld: ${b.node}`;
+
+    const ul = document.createElement("ul");
+    ul.style.cssText = "margin:0; padding-left:16px; opacity:.9; font-weight:600; font-size:12px; line-height:1.3;";
+    const traits = def.traits || [];
+    for(const t of traits){
+      const li = document.createElement("li");
+      li.textContent = t;
+      ul.appendChild(li);
+    }
+
+    body.appendChild(name);
+    body.appendChild(meta);
+    body.appendChild(ul);
+
+    card.appendChild(icon);
+    card.appendChild(body);
+    list.appendChild(card);
+  }
+}
+
 
 // ---------- Joker UI + Logic ----------
 function renderJokerButtons(){
@@ -1160,161 +1341,6 @@ function initEventFieldsFromBoard(){
   console.info("[EVENT] init:", Array.from(state.eventActive));
 }
 
-
-// ---------- Boss System ----------
-function getBossSpawnNodeIds(){
-  return nodes.filter(n=>n.type==="boss").map(n=>n.id);
-}
-
-function isBossActive(){
-  return !!(state.boss && state.boss.active && state.boss.node);
-}
-
-function isBossNode(nodeId){
-  return isBossActive() && state.boss.node === nodeId;
-}
-
-// Spawn hunter boss on a random boss-spawn node (n.type==="boss")
-function spawnBoss(type){
-  const spawns = getBossSpawnNodeIds();
-  if(!spawns.length) return false;
-  const nodeId = spawns[Math.floor(Math.random()*spawns.length)];
-  state.boss.active = true;
-  state.boss.type = type || "hunter";
-  state.boss.node = nodeId;
-  state.boss.hp = 999; // (Hunter is an environmental boss for now; HP later if you want fights)
-  state.boss.power = 1;
-  state.boss.visible = true;
-  console.info("[BOSS] spawn", state.boss.type, "at", nodeId);
-  updateBossSidebar();
-  return true;
-}
-
-function despawnBoss(){
-  if(!state.boss) return;
-  console.info("[BOSS] despawn", state.boss.type);
-  state.boss.active=false;
-  state.boss.type=null;
-  state.boss.node=null;
-  state.boss.hp=0;
-  state.boss.power=1;
-  state.boss.visible=true;
-  updateBossSidebar();
-}
-
-// Determine leading team by goal points (tie -> lowest team number)
-function getLeadingTeam(){
-  const teams = state.players.slice();
-  teams.sort((a,b)=>{
-    const da = state.goalScores[a]||0;
-    const db = state.goalScores[b]||0;
-    if(db!==da) return db-da;
-    return a-b;
-  });
-  return teams[0] || 1;
-}
-
-function getStartNodeIdForTeam(team){
-  const s = nodes.find(n=>n.type==="start" && Number(n.props?.startTeam)===Number(team));
-  return s ? s.id : null;
-}
-
-// BFS shortest path from startId to any of targetIds, avoiding barricades and occupied nodes
-function bfsNextStepTowards(startId, targetIds){
-  const targets = new Set(targetIds);
-  const q=[startId];
-  const prev=new Map();
-  prev.set(startId,null);
-
-  while(q.length){
-    const cur=q.shift();
-    if(targets.has(cur)){
-      // reconstruct first step
-      let step=cur;
-      let p=prev.get(step);
-      while(p && p!==startId){
-        step=p;
-        p=prev.get(step);
-      }
-      return (cur===startId) ? null : step;
-    }
-    const nbs = adj.get(cur) || [];
-    for(const nb of nbs){
-      if(prev.has(nb)) continue;
-
-      // avoid barricades and occupied nodes (boss cannot pass through)
-      if(barricades.has(nb)) continue;
-      if(state.occupied.has(nb)) continue;
-
-      prev.set(nb,cur);
-      q.push(nb);
-    }
-  }
-  return null;
-}
-
-function bossTickAfterFullTurn(){
-  if(state.gameOver) return;
-
-  // Simple spawn rule for now (for testing):
-  // after 8 full turns, spawn Hunter if no boss is active yet.
-  state.turnCount = (state.turnCount||0) + 1;
-  if(!isBossActive() && state.turnCount === 8){
-    spawnBoss("hunter");
-  }
-
-  if(!isBossActive()) return;
-
-  if(state.boss.type === "hunter"){
-    bossMoveHunter();
-  }
-}
-
-function bossMoveHunter(){
-  const bossNode = state.boss.node;
-  if(!bossNode) return;
-
-  // Hunter targets the leading team
-  const leadTeam = getLeadingTeam();
-  const leadPieces = state.pieces.filter(p=>p.team===leadTeam && p.node);
-  if(!leadPieces.length) return;
-
-  // Pick nearest lead piece by BFS distance (approx by trying each as target; ok for small graphs)
-  const targetIds = leadPieces.map(p=>p.node);
-
-  const next = bfsNextStepTowards(bossNode, targetIds);
-  if(!next) return;
-
-  // If next is occupied by a piece, handle collision (send to start) unless shielded.
-  const occId = state.occupied.get(next);
-  if(occId){
-    const victim = state.pieces.find(p=>p.id===occId);
-    if(victim){
-      if(victim.shielded){
-        // shield blocks the hunter: boss does not enter
-        return;
-      }
-      const startId = getStartNodeIdForTeam(victim.team);
-      if(startId && !state.occupied.has(startId) && !isBossNode(startId)){
-        state.occupied.delete(victim.node);
-        victim.prev = victim.node;
-        victim.node = startId;
-        state.occupied.set(startId, victim.id);
-        console.info("[BOSS] hunter touched -> back to start", victim.id);
-      }else{
-        // if start occupied, just do nothing (safe)
-        console.warn("[BOSS] hunter touch but start blocked");
-      }
-    }
-    // Boss stays in place after attack
-    return;
-  }
-
-  // Move boss
-  state.boss.node = next;
-  updateBossSidebar();
-}
-
 function isEligibleEventSpawnNode(id){
   const n = nodesById.get(id);
   if(!n) return false;
@@ -1434,7 +1460,7 @@ function computeMoveTargets(piece,steps){
       if(cur.id !== start){
         const occ = state.occupied.get(cur.id);
         if(!occ){
-          if(!isBossNode(cur.id)) state.highlighted.add(cur.id);
+          state.highlighted.add(cur.id);
         }else{
           const op = state.pieces.find(x=>x.id===occ);
           // Wenn Ziel eine Figur hat:
@@ -1587,11 +1613,14 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
   }
 
   // ✅ 5) Zug beenden / 6 = nochmal
+  // 👹 Boss-Update nach abgeschlossenem Spielerzug (Move + Landing)
+  // (passiert erst ganz am Ende, damit Boss nicht in Zwischen-Phasen eingreift)
+  updateBossesAfterPlayerAction();
+
   if(state.pendingSix){
     state.pendingSix=false;
     staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
   }else{
-    bossTickAfterFullTurn();
     nextTurn();
   }
 }
@@ -1634,7 +1663,6 @@ function placeBarricadeAt(nodeId){
     state.pendingSix=false;
     staySameTeamNeedRoll(`Team ${team}: Barrikade platziert + 6! Nochmal würfeln.`);
   }else{
-    bossTickAfterFullTurn();
     nextTurn();
   }
   return true;
@@ -2241,9 +2269,11 @@ function draw(){
     ctx.strokeStyle="rgba(255,255,255,.12)";
     ctx.stroke();
 
-    // Ereignisfelder: als Wachssiegel richtig sichtbar
+    // Ereignisfelder: als Wachssiegel richtig sichtbar (unter Barrikaden versteckbar)
     if(state.eventActive && state.eventActive.has(n.id)){
-      drawWaxSeal(n.x, n.y, 14);
+      if(!barricades.has(n.id)){
+        drawWaxSeal(n.x, n.y, 14);
+      }
     }
 
     // Portal-Ring + Symbol
@@ -2273,57 +2303,60 @@ function draw(){
     }
   }
 
-  // 🎯 Zielpunkt zeichnen
+  // 🎯 Zielpunkt zeichnen (unter Barrikaden versteckbar)
   if(state.goalNodeId){
     const gn = nodesById.get(state.goalNodeId);
-    if(gn) drawGoalToken(gn.x, gn.y);
+    if(gn && !barricades.has(state.goalNodeId)){
+      drawGoalToken(gn.x, gn.y);
+    }
   }
 
-  // Barrikaden als Overlay (sichtbar, aber können "versteckt" sein: du darfst sie trotzdem auf Ereignisfelder setzen)
-  // Wenn du sie wirklich unsichtbar auf Ereignis willst: sag Bescheid, dann mache ich "Ereignis überdeckt Barrikade optisch".
+  // Barrikaden als Overlay (decken Ziel/Ereignis optisch komplett ab)
   for(const id of barricades){
     const n = nodesById.get(id);
     if(!n) continue;
+
+    const s = 36; // Größe der Barrikade (muss größer als Ziel-Glow sein)
+    const x = n.x - s/2;
+    const y = n.y - s/2;
+
     ctx.save();
-    ctx.strokeStyle="rgba(255,204,102,.85)";
-    ctx.lineWidth=3;
+
+    // Shadow
+    ctx.fillStyle = "rgba(0,0,0,.28)";
+    ctx.fillRect(x+2.5, y+3.0, s, s);
+
+    // Wood-like fill
+    const g = ctx.createLinearGradient(x, y, x, y+s);
+    g.addColorStop(0, "rgba(115,78,44,.98)");
+    g.addColorStop(.55, "rgba(92,60,33,.98)");
+    g.addColorStop(1, "rgba(70,44,24,.98)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y, s, s);
+
+    // Plank lines
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.rect(n.x-12, n.y-12, 24, 24);
+    ctx.moveTo(x+3, y+s*0.33);
+    ctx.lineTo(x+s-3, y+s*0.33);
+    ctx.moveTo(x+3, y+s*0.66);
+    ctx.lineTo(x+s-3, y+s*0.66);
     ctx.stroke();
+
+    // Frame
+    ctx.strokeStyle = "rgba(255,204,102,.95)";
+    ctx.lineWidth = 3.5;
+    ctx.strokeRect(x+1.5, y+1.5, s-3, s-3);
+
+    // Nails
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    const nail = (nx,ny)=>{ ctx.beginPath(); ctx.arc(nx,ny,2.1,0,Math.PI*2); ctx.fill(); };
+    nail(x+7, y+7); nail(x+s-7, y+7); nail(x+7, y+s-7); nail(x+s-7, y+s-7);
+
     ctx.restore();
   }
 
-
-
-  // Boss (Hunter etc.)
-  if(isBossActive()){
-    const bn = nodesById.get(state.boss.node);
-    if(bn){
-      ctx.save();
-      // big dark core
-      ctx.globalAlpha = 0.95;
-      ctx.fillStyle = "rgba(20,20,20,.85)";
-      ctx.beginPath();
-      ctx.arc(bn.x, bn.y, 20, 0, Math.PI*2);
-      ctx.fill();
-
-      // red glow ring
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = "rgba(255,80,80,.85)";
-      ctx.beginPath();
-      ctx.arc(bn.x, bn.y, 24, 0, Math.PI*2);
-      ctx.stroke();
-
-      // skull icon
-      ctx.globalAlpha = 0.95;
-      ctx.fillStyle = "rgba(255,255,255,.92)";
-      ctx.font = "bold 18px system-ui";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("☠", bn.x, bn.y+1);
-      ctx.restore();
-    }
-  }
     // Pieces
   const selectedId = state.selected;
   for(const p of state.pieces){
@@ -2479,6 +2512,13 @@ async function load(){
 
   initPieces();
   initEventFieldsFromBoard();
+
+  // Boss-System initialisieren (keine Bosse aktiv beim Start)
+  ensureBossState();
+  state.bosses = [];
+  state.bossSpawnNodes = getBossSpawnNodes();
+  state.bossTick = 0;
+  updateBossUI();
 
   // Zielpunkte initialisieren
   state.goalScores = {1:0,2:0,3:0,4:0};
