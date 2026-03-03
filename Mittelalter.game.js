@@ -1826,6 +1826,41 @@ function drawGoalToken(x,y){
   ctx.restore();
 }
 
+
+function drawBossSpawnMarker(x,y){
+  // Marker der IMMER sichtbar ist (auch wenn Barrikade/Figur drauf steht)
+  // -> nur optisch: "Boss-Respawn-Feld"
+  ctx.save();
+  // Outer glow ring
+  ctx.globalAlpha = 0.95;
+  ctx.strokeStyle = "rgba(255,95,95,.85)";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(x,y,26,0,Math.PI*2);
+  ctx.stroke();
+
+  // Inner dashed ring
+  ctx.globalAlpha = 0.65;
+  ctx.setLineDash([6,6]);
+  ctx.strokeStyle = "rgba(255,210,140,.75)";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(x,y,19,0,Math.PI*2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Small skull icon (subtle)
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = "rgba(255,235,215,.92)";
+  ctx.font = "16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("☠", x, y-0.5);
+
+  ctx.restore();
+}
+
+
 // ---------- HUD (Screen) ----------
 function drawHUD(){
   // kleine Punkteanzeige oben links
@@ -2018,6 +2053,14 @@ function draw(){
     ctx.fillStyle = "rgba(0,0,0,.22)";
     const nail = (nx,ny)=>{ ctx.beginPath(); ctx.arc(nx,ny,2.1,0,Math.PI*2); ctx.fill(); };
     nail(x+7, y+7); nail(x+s-7, y+7); nail(x+7, y+s-7); nail(x+s-7, y+s-7);
+  // Boss-Spawn-Felder (immer sichtbar)
+  for(const n of nodes){
+    if(n.type === "boss"){
+      drawBossSpawnMarker(n.x, n.y);
+    }
+  }
+
+
 
     ctx.restore();
   }
