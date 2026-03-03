@@ -2715,6 +2715,42 @@ async function load(){
     console.warn("[AUTO-FIX] Start-Ausgang hinzugefügt:", s.id, "->", best.id);
   }
 
+
+  // --- Auto-Fix: Boss-Spawn-Feld ohne Verbindung? ---
+  // Wenn ein Boss-Spawn-Knoten keine Kante hat, kann der Boss nie laufen.
+  // Wir verbinden ihn runtime-mäßig mit dem nächstgelegenen Nicht-Boss-Knoten.
+  // (Ändert NICHT dein board.json dauerhaft, ist nur ein Runtime-Fix.)
+  const bossNodes = nodes.filter(n=>n.type==="boss");
+  for(const s of bossNodes){
+    const neigh = adj.get(s.id) || [];
+    if(neigh.length > 0) continue;
+
+    let best = null;
+    let bestD = Infinity;
+    for(const n of nodes){
+      if(!n || n.id === s.id) continue;
+      if(n.type === "boss") continue; // nicht Boss->Boss verbinden
+      // Start-Felder meiden (Boss soll nicht in Startzonen "spawnen")
+      if(n.type === "start") continue;
+      const dx = n.x - s.x;
+      const dy = n.y - s.y;
+      const d2 = dx*dx + dy*dy;
+      if(d2 < bestD){
+        bestD = d2;
+        best = n;
+      }
+    }
+    if(!best) continue;
+
+    edges.push({a: s.id, b: best.id});
+    if(!adj.has(s.id)) adj.set(s.id, []);
+    if(!adj.has(best.id)) adj.set(best.id, []);
+    adj.get(s.id).push(best.id);
+    adj.get(best.id).push(s.id);
+
+    console.warn("[AUTO-FIX] Boss-Spawn-Ausgang hinzugefügt:", s.id, "->", best.id);
+  }
+
   initPieces();
   initEventFieldsFromBoard();
 
