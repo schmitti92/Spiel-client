@@ -1934,9 +1934,11 @@ function draw(){
     ctx.strokeStyle="rgba(255,255,255,.12)";
     ctx.stroke();
 
-    // Ereignisfelder: als Wachssiegel richtig sichtbar
+    // Ereignisfelder: als Wachssiegel richtig sichtbar (unter Barrikaden versteckbar)
     if(state.eventActive && state.eventActive.has(n.id)){
-      drawWaxSeal(n.x, n.y, 14);
+      if(!barricades.has(n.id)){
+        drawWaxSeal(n.x, n.y, 14);
+      }
     }
 
     // Portal-Ring + Symbol
@@ -1966,23 +1968,57 @@ function draw(){
     }
   }
 
-  // 🎯 Zielpunkt zeichnen
+  // 🎯 Zielpunkt zeichnen (unter Barrikaden versteckbar)
   if(state.goalNodeId){
     const gn = nodesById.get(state.goalNodeId);
-    if(gn) drawGoalToken(gn.x, gn.y);
+    if(gn && !barricades.has(state.goalNodeId)){
+      drawGoalToken(gn.x, gn.y);
+    }
   }
 
-  // Barrikaden als Overlay (sichtbar, aber können "versteckt" sein: du darfst sie trotzdem auf Ereignisfelder setzen)
-  // Wenn du sie wirklich unsichtbar auf Ereignis willst: sag Bescheid, dann mache ich "Ereignis überdeckt Barrikade optisch".
+  // Barrikaden als Overlay (decken Ziel/Ereignis optisch komplett ab)
   for(const id of barricades){
     const n = nodesById.get(id);
     if(!n) continue;
+
+    const s = 36; // Größe der Barrikade (muss größer als Ziel-Glow sein)
+    const x = n.x - s/2;
+    const y = n.y - s/2;
+
     ctx.save();
-    ctx.strokeStyle="rgba(255,204,102,.85)";
-    ctx.lineWidth=3;
+
+    // Shadow
+    ctx.fillStyle = "rgba(0,0,0,.28)";
+    ctx.fillRect(x+2.5, y+3.0, s, s);
+
+    // Wood-like fill
+    const g = ctx.createLinearGradient(x, y, x, y+s);
+    g.addColorStop(0, "rgba(115,78,44,.98)");
+    g.addColorStop(.55, "rgba(92,60,33,.98)");
+    g.addColorStop(1, "rgba(70,44,24,.98)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y, s, s);
+
+    // Plank lines
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.rect(n.x-12, n.y-12, 24, 24);
+    ctx.moveTo(x+3, y+s*0.33);
+    ctx.lineTo(x+s-3, y+s*0.33);
+    ctx.moveTo(x+3, y+s*0.66);
+    ctx.lineTo(x+s-3, y+s*0.66);
     ctx.stroke();
+
+    // Frame
+    ctx.strokeStyle = "rgba(255,204,102,.95)";
+    ctx.lineWidth = 3.5;
+    ctx.strokeRect(x+1.5, y+1.5, s-3, s-3);
+
+    // Nails
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    const nail = (nx,ny)=>{ ctx.beginPath(); ctx.arc(nx,ny,2.1,0,Math.PI*2); ctx.fill(); };
+    nail(x+7, y+7); nail(x+s-7, y+7); nail(x+7, y+s-7); nail(x+s-7, y+s-7);
+
     ctx.restore();
   }
 
