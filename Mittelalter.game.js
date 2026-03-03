@@ -2229,6 +2229,71 @@ function drawGoalToken(x,y){
   ctx.restore();
 }
 
+// ---------- Boss Spawn Marker (legendary) ----------
+function drawBossSpawnLegendary(x,y,t){
+  // t in seconds
+  const pulse = 0.55 + 0.45*Math.sin(t*2.2);
+  const rOuter = 28 + pulse*2.5;
+  const rInner = 18;
+
+  ctx.save();
+
+  // Soft glow
+  ctx.shadowColor = "rgba(255,170,60,.65)";
+  ctx.shadowBlur = 18 + pulse*10;
+
+  // Outer rune ring (gold -> ember)
+  const grad = ctx.createLinearGradient(x-rOuter, y-rOuter, x+rOuter, y+rOuter);
+  grad.addColorStop(0, "rgba(255,220,140,.95)");
+  grad.addColorStop(0.55, "rgba(255,120,60,.92)");
+  grad.addColorStop(1, "rgba(255,220,140,.95)");
+
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(x,y,rOuter,0,Math.PI*2);
+  ctx.stroke();
+
+  // Rotating dashed ring
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = "rgba(255,230,170,.70)";
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([5, 6]);
+  ctx.lineDashOffset = -t*18;
+  ctx.beginPath();
+  ctx.arc(x,y,rOuter-7,0,Math.PI*2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Inner dark seal
+  ctx.fillStyle = "rgba(30,10,6,.65)";
+  ctx.beginPath();
+  ctx.arc(x,y,rInner,0,Math.PI*2);
+  ctx.fill();
+
+  // Inner rim
+  ctx.strokeStyle = "rgba(255,200,120,.55)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x,y,rInner,0,Math.PI*2);
+  ctx.stroke();
+
+  // Icon
+  ctx.fillStyle = "rgba(255,230,170,.92)";
+  ctx.font = "16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("☠", x, y+0.5);
+
+  // Small crown sparkle
+  ctx.font = "13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = "rgba(255,215,120,.95)";
+  ctx.fillText("♛", x, y-13.5);
+
+  ctx.restore();
+}
+
+
 // ---------- HUD (Screen) ----------
 function drawHUD(){
   // kleine Punkteanzeige oben links
@@ -2424,6 +2489,15 @@ function draw(){
 
     ctx.restore();
   }
+
+  // 👑 Boss-Respawn-Felder (legendär sichtbar)
+  const _tBoss = (typeof performance !== "undefined" ? performance.now() : Date.now()) / 1000;
+  for(const n of nodes){
+    if(n.type === "boss"){
+      drawBossSpawnLegendary(n.x, n.y, _tBoss);
+    }
+  }
+
 
     // Pieces
   const selectedId = state.selected;
