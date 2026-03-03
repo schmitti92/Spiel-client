@@ -765,37 +765,42 @@ function updateBossesAfterPlayerAction(){
     }
   }
   updateBossUI();
+}
 
-// --- Boss-Phase (klar getrennt vom Spielerzug) ---
-// Ablauf: Spieler beendet Zug -> Bossphase (Bosse laufen) -> nächster Spieler.
-// Wichtig: Bei einer 6 (Nochmal würfeln) gibt es KEINE Bossphase, weil der Zug nicht endet.
-function beginBossPhaseThenNextTurn(team){
-  ensureBossState();
 
-  // Wenn keine Bosse aktiv sind oder Boss-AI aus ist: direkt weiter
-  const alive = state.bosses.filter(b=>b.alive!==false);
-  if(!alive.length || !state.bossAuto){
-    nextTurn();
-    return;
-  }
 
-  state.phase = "bossPhase";
-  updateJokerUI();
-  setStatus(`Bossphase: Bosse bewegen sich...`);
+// ---- Boss Phase Helper ----
+// Läuft nach jedem abgeschlossenen Spielerzug einmal, damit der Boss "zwischen" den Zügen agiert.
+// Blockiert in der kurzen Zeit Eingaben, damit es keine Race-Conditions gibt (Boss vs. Spieler-Click).
+function runBossPhaseThen(done){
+  try{
+    if(state.gameOver) return;
+    ensureBossState();
 
-  // Ein Frame rendern, dann bewegen (fühlt sich sauber getrennt an)
-  requestAnimationFrame(()=>{
+    const hasAlive = (state.bosses||[]).some(b=>b.alive!==false);
+    if(!state.bossAuto || !hasAlive){
+      done && done();
+      return;
+    }
+
+    const prevPhase = state.phase;
+    state.phase = "bossPhase";
+    setStatus("Boss bewegt sich...");
+
+    // kleiner Delay -> fühlt sich "Phase" an und verhindert gleichzeitige Clicks auf Touch-Geräten
     setTimeout(()=>{
-      // Jetzt wirklich bewegen
       updateBossesAfterPlayerAction();
-      // Danach ist der nächste Spieler dran
-      nextTurn();
-    }, 180);
-  });
+      // done setzt anschließend wieder eine sinnvolle Phase (needRoll / choosePiece / etc.)
+      done && done();
+      // falls done nichts gesetzt hat, zurückfallen
+      if(state.phase === "bossPhase") state.phase = prevPhase || "needRoll";
+    }, 220);
+  }catch(e){
+    console.warn("[BOSS] bossPhase error", e);
+    // Niemals hängen bleiben:
+    done && done();
+  }
 }
-
-}
-
 function bossFieldHighlightDraw(n, R){
   // Spawn-Felder (type=boss) leicht markieren
   ctx.save();
@@ -1744,13 +1749,18 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
   }
 
   // ✅ 5) Zug beenden / 6 = nochmal
-  // 👹 Bossphase gibt es nur, wenn der Zug wirklich endet (also NICHT bei 6/Extrarunde).
-  if(state.pendingSix){
-    state.pendingSix=false;
-    staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
-  }else{
-    beginBossPhaseThenNextTurn(team);
-  }
+  // 👹 Boss-Phase nach abgeschlossenem Spielerzug (Move + Landing)
+  // WICHTIG:
+  // - Boss bewegt sich erst NACH allen Spieler-Aktionen (inkl. Barrikade/Events/Portale)
+  // - Boss bewegt sich VOR dem Spielerwechsel / erneuten Würfeln (bei 6)
+  runBossPhaseThen(()=>{
+    if(state.pendingSix){
+      state.pendingSix=false;
+      staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
+    }else{
+      nextTurn();
+    }
+  });
 }
 
 function afterLandingNoPortal(piece){
@@ -1791,7 +1801,7 @@ function placeBarricadeAt(nodeId){
     state.pendingSix=false;
     staySameTeamNeedRoll(`Team ${team}: Barrikade platziert + 6! Nochmal würfeln.`);
   }else{
-    beginBossPhaseThenNextTurn(team);
+    nextTurn();
   }
   return true;
 }
