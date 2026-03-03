@@ -18,6 +18,10 @@ const btnFit = document.getElementById("btnFit");
 const dieBox = document.getElementById("dieBox");
 const statusLine = document.getElementById("statusLine");
 
+// Joker UI (Sidebar)
+const jokerButtonsWrap = document.getElementById("jokerButtons");
+const jokerHint = document.getElementById("jokerHint");
+
 
 // ---------- On-Screen Console (Debug Overlay) ----------
 // Hilft besonders auf Tablet/Handy, wenn man DevTools nicht sieht.
@@ -193,6 +197,58 @@ const TEAM_COLORS = {
   4: "#b08a2e"  // Gold – Wappengold
 };
 
+// ---------- Joker System ----------
+// Regeln (User):
+// - Jeder Spieler startet mit 1 von jedem Joker.
+// - Max 3 pro Sorte.
+// - Beliebig viele Joker pro Zug.
+// - Vor dem Wurf: Doppelwurf, Barrikade versetzen, Spieler tauschen
+// - Nach dem Wurf: Neuwurf, Schutzschild, Alle Farben
+
+const JOKER_MAX_PER_TYPE = 3;
+
+const JOKERS = [
+  { id:"double",      name:"Doppelwurf",            timing:"before" },
+  { id:"moveBarricade", name:"Barrikade versetzen", timing:"before" },
+  { id:"swap",        name:"Spieler tauschen",     timing:"before" },
+  { id:"reroll",      name:"Neuwurf",              timing:"after"  },
+  { id:"shield",      name:"Schutzschild",         timing:"after"  },
+  { id:"allcolors",   name:"Alle Farben",          timing:"after"  }
+];
+
+function baseJokerLoadout(){
+  const inv = {};
+  for(const j of JOKERS) inv[j.id] = 1;
+  return inv;
+}
+
+function ensureJokerState(){
+  if(!state.jokers) state.jokers = {1:baseJokerLoadout(),2:baseJokerLoadout(),3:baseJokerLoadout(),4:baseJokerLoadout()};
+  if(!state.jokerFlags) state.jokerFlags = { double:false, allcolors:false };
+  if(!state.jokerMode) state.jokerMode = null; // swapPickA|swapPickB|moveBarricadePick|moveBarricadePlace|shieldPick
+  if(!state.jokerData) state.jokerData = {};
+  if(!state.jokerHighlighted) state.jokerHighlighted = new Set();
+}
+
+function jokerCount(team, id){
+  ensureJokerState();
+  const inv = state.jokers[team] || {};
+  return Number(inv[id] || 0);
+}
+
+function consumeJoker(team, id){
+  ensureJokerState();
+  if(jokerCount(team,id) <= 0) return false;
+  state.jokers[team][id] = jokerCount(team,id) - 1;
+  return true;
+}
+
+function addJoker(team, id, amount=1){
+  ensureJokerState();
+  const cur = jokerCount(team,id);
+  state.jokers[team][id] = clamp(cur + (amount||0), 0, JOKER_MAX_PER_TYPE);
+}
+
 // ---------- Camera (Pan / Zoom) ----------
 // World = Node-Koordinaten aus board.json
 // Screen = Canvas Pixel (CSS px)
@@ -338,12 +394,19 @@ const state = {
   selected:null,
   highlighted:new Set(),       // Move targets
   placeHighlighted:new Set(),
+  jokerHighlighted:new Set(),  // Joker placement targets (e.g. barricade move)
   eventActive:new Set(),
   lastEvent:null,  // Barricade placement targets
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
   pendingSix:false,
+
+  // Joker inventory & state
+  jokers: {1:baseJokerLoadout(),2:baseJokerLoadout(),3:baseJokerLoadout(),4:baseJokerLoadout()},
+  jokerFlags: { double:false, allcolors:false },
+  jokerMode: null,
+  jokerData: {},
 
   // --- Landing continuation (after placing a picked-up barricade) ---
   resumeLanding: null,
@@ -363,6 +426,17 @@ function setPlayerCount(n, opts={reset:true}){
   state.playerCount = nn;
   state.players = Array.from({length: nn}, (_,i)=>i+1);
   state.turn = 0;
+
+  // Joker: reset inventory for active players (start with 1 each)
+  ensureJokerState();
+  for(let t=1;t<=4;t++){
+    state.jokers[t] = baseJokerLoadout();
+  }
+  state.jokerFlags.double = false;
+  state.jokerFlags.allcolors = false;
+  state.jokerMode = null;
+  state.jokerData = {};
+  state.jokerHighlighted.clear();
 
   // Reset running turn state
   state.roll = null;
@@ -389,6 +463,9 @@ function setPlayerCount(n, opts={reset:true}){
   dieBox.textContent = "–";
   state.phase = "needRoll";
   setStatus(`Spieleranzahl: ${nn}. Team ${currentTeam()} ist dran: Würfeln.`);
+
+  renderJokerButtons();
+  updateJokerUI();
 }
 
 function isStartNode(id){
@@ -432,6 +509,182 @@ function ensurePortalState(){
 function ensureEventState(){
   if(!state.eventActive) state.eventActive = new Set();
   if(!("lastEvent" in state)) state.lastEvent = null;
+}
+
+// ---------- Joker UI + Logic ----------
+function renderJokerButtons(){
+  if(!jokerButtonsWrap) return;
+  if(jokerButtonsWrap._built) return;
+  jokerButtonsWrap._built = true;
+
+  jokerButtonsWrap.innerHTML = "";
+  const btns = {};
+  for(const j of JOKERS){
+    const b = document.createElement("button");
+    b.className = "jokerBtn";
+    b.type = "button";
+    b.dataset.jokerId = j.id;
+
+    const label = document.createElement("span");
+    label.textContent = j.name;
+
+    const count = document.createElement("span");
+    count.className = "jokerCount";
+    count.textContent = "0";
+
+    b.appendChild(label);
+    b.appendChild(count);
+
+    b.addEventListener("click", ()=>{
+      tryUseJoker(j.id);
+    });
+    jokerButtonsWrap.appendChild(b);
+    btns[j.id] = { btn:b, countEl: count };
+  }
+  state._jokerBtns = btns;
+  updateJokerUI();
+}
+
+function jokerIsUsableNow(joker){
+  if(state.gameOver) return false;
+  if(state.jokerMode) return false; // während eines Joker-Modus keine anderen starten
+
+  const beforeOk = (state.phase === "needRoll") && (state.roll === null);
+  const afterOk = (state.roll !== null) && (state.phase === "choosePiece" || state.phase === "chooseTarget");
+
+  if(joker.timing === "before") return beforeOk;
+  return afterOk;
+}
+
+function updateJokerUI(){
+  if(!jokerButtonsWrap) return;
+  ensureJokerState();
+  renderJokerButtons();
+
+  const team = currentTeam();
+  const hint = [];
+  if(state.jokerMode === "swapPickA") hint.push("Spieler tauschen: Figur A wählen");
+  if(state.jokerMode === "swapPickB") hint.push("Spieler tauschen: Figur B wählen");
+  if(state.jokerMode === "moveBarricadePick") hint.push("Barrikade versetzen: Barrikade wählen");
+  if(state.jokerMode === "moveBarricadePlace") hint.push("Barrikade versetzen: Ziel-Feld wählen");
+  if(state.jokerMode === "shieldPick") hint.push("Schutzschild: eigene Figur wählen");
+  if(!hint.length){
+    if(state.phase === "needRoll") hint.push("Vor dem Wurf nutzbar: Doppelwurf / Barrikade / Spieler tauschen");
+    else if(state.phase === "choosePiece" || state.phase === "chooseTarget") hint.push("Nach dem Wurf nutzbar: Neuwurf / Schutzschild / Alle Farben");
+    else hint.push("–");
+  }
+  if(jokerHint) jokerHint.textContent = hint.join(" · ");
+
+  const btns = state._jokerBtns || {};
+  for(const j of JOKERS){
+    const ref = btns[j.id];
+    if(!ref) continue;
+    ref.countEl.textContent = String(jokerCount(team, j.id));
+
+    const usable = jokerIsUsableNow(j) && jokerCount(team, j.id) > 0;
+    ref.btn.disabled = !usable;
+
+    // Active toggles
+    let on = false;
+    if(j.id === "double" && state.jokerFlags.double) on = true;
+    if(j.id === "allcolors" && state.jokerFlags.allcolors) on = true;
+    ref.btn.classList.toggle("on", on);
+  }
+}
+
+function setJokerMode(mode, data={}){
+  ensureJokerState();
+  state.jokerMode = mode;
+  state.jokerData = data || {};
+  state.jokerHighlighted.clear();
+  updateJokerUI();
+}
+
+function clearJokerMode(msg){
+  ensureJokerState();
+  state.jokerMode = null;
+  state.jokerData = {};
+  state.jokerHighlighted.clear();
+  if(msg) setStatus(msg);
+  updateJokerUI();
+}
+
+function beginChoosePieceAfterRoll(){
+  // Nach (Neu-)Wurf: Figur wählen (oder wechseln)
+  state.selected = null;
+  state.highlighted.clear();
+  state.phase = "choosePiece";
+  const any = state.pieces.some(p=>p.node);
+  if(!any){
+    setStatus(`Team ${currentTeam()}: Keine Figur auf dem Board.`);
+  }
+  updateJokerUI();
+}
+
+function rollDice(){
+  const a = Math.floor(Math.random()*6)+1;
+  if(state.jokerFlags.double){
+    const b = Math.floor(Math.random()*6)+1;
+    state.jokerFlags.double = false; // verbraucht beim Wurf
+    return a + b;
+  }
+  return a;
+}
+
+function tryUseJoker(jokerId){
+  if(state.gameOver) return;
+  ensureJokerState();
+
+  const team = currentTeam();
+  const joker = JOKERS.find(j=>j.id===jokerId);
+  if(!joker) return;
+
+  if(jokerCount(team, jokerId) <= 0) return;
+  if(!jokerIsUsableNow(joker)) return;
+
+  // Consume first (prevents double click abuse)
+  if(!consumeJoker(team, jokerId)) return;
+
+  if(jokerId === "double"){
+    state.jokerFlags.double = true;
+    setStatus(`Team ${team}: Doppelwurf aktiv. Jetzt würfeln.`);
+    updateJokerUI();
+    return;
+  }
+
+  if(jokerId === "reroll"){
+    // nur nach dem Wurf
+    state.roll = rollDice();
+    dieBox.textContent = state.roll;
+    setStatus(`Team ${team}: Neuwurf! Wurf ${state.roll}.`);
+    beginChoosePieceAfterRoll();
+    return;
+  }
+
+  if(jokerId === "allcolors"){
+    state.jokerFlags.allcolors = true;
+    setStatus(`Team ${team}: Alle Farben aktiv – du darfst jede Figur wählen.`);
+    updateJokerUI();
+    return;
+  }
+
+  if(jokerId === "moveBarricade"){
+    setJokerMode("moveBarricadePick");
+    setStatus(`Team ${team}: Joker Barrikade versetzen – tippe eine Barrikade an.`);
+    return;
+  }
+
+  if(jokerId === "swap"){
+    setJokerMode("swapPickA");
+    setStatus(`Team ${team}: Joker Spieler tauschen – wähle Figur A.`);
+    return;
+  }
+
+  if(jokerId === "shield"){
+    setJokerMode("shieldPick");
+    setStatus(`Team ${team}: Schutzschild – wähle eine eigene Figur.`);
+    return;
+  }
 }
 
 
@@ -787,11 +1040,17 @@ function relocateEventField(fromId){
 
 function nextTurn(){
   ensurePortalState();
+  ensureJokerState();
   state.turn = (state.turn+1)%state.players.length;
   state.roll=null;
   state.selected=null;
   state.highlighted.clear();
   state.placeHighlighted.clear();
+  state.jokerHighlighted.clear();
+  state.jokerMode = null;
+  state.jokerData = {};
+  state.jokerFlags.double = false;
+  state.jokerFlags.allcolors = false;
   ensurePortalState();
   state.portalHighlighted.clear();
   state.portalUsedThisTurn=false;
@@ -799,20 +1058,30 @@ function nextTurn(){
   state.pendingSix=false;
   dieBox.textContent="–";
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
+
+  updateJokerUI();
 }
 
 function staySameTeamNeedRoll(msg){
   ensurePortalState();
+  ensureJokerState();
   state.roll=null;
   state.selected=null;
   state.highlighted.clear();
   state.placeHighlighted.clear();
+  state.jokerHighlighted.clear();
+  state.jokerMode = null;
+  state.jokerData = {};
+  state.jokerFlags.double = false;
+  state.jokerFlags.allcolors = false;
   ensurePortalState();
   state.portalHighlighted.clear();
   state.portalUsedThisTurn=false;
   state.phase="needRoll";
   dieBox.textContent="–";
   setStatus(msg || `Team ${currentTeam()} ist dran: Würfeln.`);
+
+  updateJokerUI();
 }
 
 function initPieces(){
@@ -863,7 +1132,10 @@ function computeMoveTargets(piece,steps){
           state.highlighted.add(cur.id);
         }else{
           const op = state.pieces.find(x=>x.id===occ);
-          if(op && op.team !== piece.team){
+          // Wenn Ziel eine Figur hat:
+          // - Gegner darf geschmissen werden (außer Schutzschild)
+          // - Eigene Figur blockt
+          if(op && op.team !== piece.team && !op.shielded){
             state.highlighted.add(cur.id);
           }
         }
@@ -878,6 +1150,15 @@ function computeMoveTargets(piece,steps){
 
       // ✅ Barrikade blockt Zwischen-Schritte (nicht überspringen!)
       if(barricades.has(nb) && (cur.d+1) < steps) continue;
+
+      // 🛡 Schutzschild blockt Zwischen-Schritte (niemand darf drüber laufen)
+      if((cur.d+1) < steps){
+        const occ = state.occupied.get(nb);
+        if(occ){
+          const op = state.pieces.find(x=>x.id===occ);
+          if(op && op.shielded) continue;
+        }
+      }
 
       // visited muss auch den Vorgänger berücksichtigen, sonst schneiden wir legitime Pfade ab
       const key = nb+"|"+(cur.d+1)+"|"+cur.id;
@@ -921,6 +1202,9 @@ function move(piece,target){
     const other=state.pieces.find(p=>p.id===occ);
     if(other && other.team===piece.team) return false;
 
+    // Schutzschild: darf nicht geschmissen werden
+    if(other && other.shielded) return false;
+
     // Portal-Schutz: Figuren auf Portal können NICHT geschmissen werden.
     // => Feld bleibt blockiert.
     if(other && other.node && isPortalNode(other.node)){
@@ -934,6 +1218,9 @@ function move(piece,target){
   piece.prev=piece.node;
   piece.node=target;
   state.occupied.set(target,piece.id);
+
+  // Schutzschild endet, sobald diese Figur bewegt wird
+  if(piece.shielded) piece.shielded = false;
   return true;
 }
 
@@ -955,6 +1242,7 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     computePlaceTargets();
     state.phase = "placeBarricade";
     setStatus(`Team ${team}: Barrikade aufgenommen! Tippe ein freies Feld zum Platzieren.`);
+    updateJokerUI();
     return;
   }
 
@@ -988,6 +1276,7 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     if(state.portalHighlighted.size > 0){
       state.phase = "usePortal";
       setStatus(`Team ${team}: Portal! Tippe ein anderes freies Portal (oder tippe dein Portal nochmal = bleiben).`);
+      updateJokerUI();
       return;
     }
   }
@@ -1069,11 +1358,117 @@ function handleTapAtWorld(wx, wy){
   const hit = hitTestWorld(wx, wy);
   if(!hit) return;
 
+  // Joker modes have priority
+  ensureJokerState();
+  if(state.jokerMode){
+    const team = currentTeam();
+
+    // --- Barrikade versetzen ---
+    if(state.jokerMode === "moveBarricadePick"){
+      if(!barricades.has(hit.id)){
+        setStatus(`Team ${team}: Tippe eine Barrikade an.`);
+        return;
+      }
+      // choose origin
+      state.jokerData = { fromId: hit.id };
+      // compute possible targets
+      state.jokerHighlighted.clear();
+      for(const n of nodes){
+        if(isFreeForBarricade(n.id) || n.id === hit.id) state.jokerHighlighted.add(n.id);
+      }
+      state.jokerMode = "moveBarricadePlace";
+      setStatus(`Team ${team}: Barrikade gewählt. Tippe das neue Feld.`);
+      updateJokerUI();
+      return;
+    }
+
+    if(state.jokerMode === "moveBarricadePlace"){
+      const fromId = state.jokerData?.fromId;
+      if(!fromId || !barricades.has(fromId)){
+        clearJokerMode(`Team ${team}: Barrikade nicht mehr vorhanden.`);
+        return;
+      }
+      if(!state.jokerHighlighted.has(hit.id)) return;
+      // move
+      barricades.delete(fromId);
+      barricades.add(hit.id);
+      clearJokerMode(`Team ${team}: Barrikade versetzt.`);
+      return;
+    }
+
+    // --- Spieler tauschen ---
+    if(state.jokerMode === "swapPickA"){
+      const occId = state.occupied.get(hit.id);
+      if(!occId){
+        setStatus(`Team ${team}: Wähle eine Figur.`);
+        return;
+      }
+      const p = state.pieces.find(x=>x.id===occId);
+      if(!p || !p.node){
+        setStatus(`Team ${team}: Ungültige Figur.`);
+        return;
+      }
+      state.jokerData = { aId: p.id };
+      state.jokerMode = "swapPickB";
+      setStatus(`Team ${team}: Figur A gewählt. Wähle Figur B.`);
+      updateJokerUI();
+      return;
+    }
+
+    if(state.jokerMode === "swapPickB"){
+      const occId = state.occupied.get(hit.id);
+      if(!occId){
+        setStatus(`Team ${team}: Wähle eine Figur.`);
+        return;
+      }
+      const a = state.pieces.find(x=>x.id===state.jokerData?.aId);
+      const b = state.pieces.find(x=>x.id===occId);
+      if(!a || !b || !a.node || !b.node){
+        clearJokerMode(`Team ${team}: Tausch nicht möglich.`);
+        return;
+      }
+      if(a.id === b.id){
+        setStatus(`Team ${team}: Wähle eine andere Figur als B.`);
+        return;
+      }
+
+      // swap nodes and occupied
+      const aNode = a.node;
+      const bNode = b.node;
+      state.occupied.set(aNode, b.id);
+      state.occupied.set(bNode, a.id);
+      a.node = bNode;
+      b.node = aNode;
+      a.prev = null;
+      b.prev = null;
+
+      clearJokerMode(`Team ${team}: Figuren getauscht.`);
+      return;
+    }
+
+    // --- Schutzschild ---
+    if(state.jokerMode === "shieldPick"){
+      const occId = state.occupied.get(hit.id);
+      if(!occId){
+        setStatus(`Team ${team}: Wähle eine eigene Figur.`);
+        return;
+      }
+      const p = state.pieces.find(x=>x.id===occId);
+      if(!p || p.team !== team){
+        setStatus(`Team ${team}: Nur eigene Figur!`);
+        return;
+      }
+      p.shielded = true;
+      clearJokerMode(`Team ${team}: Schutzschild aktiv auf einer Figur (bis sie bewegt wird).`);
+      return;
+    }
+  }
+
   // 1) Figur wählen / wechseln (nach dem Wurf)
   const occId = state.occupied.get(hit.id);
   if(occId && (state.phase==="choosePiece") && state.roll){
     const occPiece = state.pieces.find(p=>p.id===occId);
-    if(occPiece && occPiece.team === currentTeam()){
+    if(occPiece && (occPiece.team === currentTeam() || state.jokerFlags.allcolors)){
       state.selected = occPiece.id;
       computeMoveTargets(occPiece, state.roll);
       state.phase = "chooseTarget";
@@ -1086,7 +1481,7 @@ function handleTapAtWorld(wx, wy){
   // Wunsch: Nach Auswahl einer Figur soll man eine andere eigene Figur anklicken können.
   if(occId && (state.phase==="chooseTarget") && state.roll){
     const occPiece = state.pieces.find(p=>p.id===occId);
-    if(occPiece && occPiece.team === currentTeam()){
+    if(occPiece && (occPiece.team === currentTeam() || state.jokerFlags.allcolors)){
       state.selected = occPiece.id;
       computeMoveTargets(occPiece, state.roll);
       // Phase bleibt chooseTarget
@@ -1306,7 +1701,8 @@ btnRoll.addEventListener("click",()=>{
   if(state.gameOver) return;
   if(state.phase!=="needRoll") return;
 
-  state.roll=Math.floor(Math.random()*6)+1;
+  ensureJokerState();
+  state.roll = rollDice();
   dieBox.textContent=state.roll;
 
   // Nach dem Wurf darf man die Figur wählen (oder wechseln).
@@ -1322,6 +1718,8 @@ btnRoll.addEventListener("click",()=>{
   }
 
   setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Tippe eine eigene Figur an, um sie zu bewegen.`);
+
+  updateJokerUI();
 });
 
 // ---------- Spieleranzahl (1–4) ----------
@@ -1517,6 +1915,7 @@ function draw(){
     let fill="rgba(255,255,255,.10)";
     if(state.highlighted.has(n.id)) fill="rgba(124,92,255,.38)";
     if(state.phase==="placeBarricade" && state.placeHighlighted.has(n.id)) fill="rgba(65,209,122,.28)";
+    if(state.jokerMode==="moveBarricadePlace" && state.jokerHighlighted && state.jokerHighlighted.has(n.id)) fill="rgba(255,204,102,.28)";
     if(state.phase==="usePortal" && state.portalHighlighted.has(n.id)) fill="rgba(120,200,255,.35)";
 
     // Portal sichtbar machen (rein optisch, noch keine Teleport-Logik)
@@ -1602,6 +2001,17 @@ function draw(){
     ctx.strokeStyle="rgba(20,12,6,.55)";
     ctx.lineWidth=2;
     ctx.stroke();
+
+    // Shield ring
+    if(p.shielded){
+      ctx.save();
+      ctx.strokeStyle="rgba(120,200,255,.92)";
+      ctx.lineWidth=4;
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,17,0,Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // Selected piece ring (nur die ausgewählte Figur umranden)
     if(selectedId && p.id === selectedId){
@@ -1742,6 +2152,11 @@ async function load(){
   state.phase="needRoll";
   dieBox.textContent="–";
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
+
+  // Joker UI init
+  ensureJokerState();
+  renderJokerButtons();
+  updateJokerUI();
 }
 
 load();
