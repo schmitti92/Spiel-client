@@ -145,6 +145,62 @@ html,body{ height:100%; margin:0; background:var(--bg); color:var(--text); font-
   font-size: 14px;
 }
 
+
+/* Boss sidebar */
+.bossWrap{ display:block; }
+.bossEmpty{
+  font-size:12px;
+  color: var(--muted);
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,.18);
+  background: rgba(0,0,0,.16);
+  text-align:center;
+}
+.bossList{ display:grid; grid-template-columns:1fr; gap:10px; }
+.bossCard{
+  display:grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.22);
+}
+.bossAvatar{
+  width:56px; height:56px;
+  border-radius: 16px;
+  display:flex; align-items:center; justify-content:center;
+  border: 1px solid rgba(255,255,255,.18);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,107,107,.20), rgba(0,0,0,.10) 60%),
+    radial-gradient(circle at 70% 70%, rgba(124,92,255,.18), rgba(0,0,0,.10) 62%);
+  box-shadow: 0 10px 22px rgba(0,0,0,.35) inset, 0 10px 20px rgba(0,0,0,.25);
+}
+.bossAvatar svg{ width:34px; height:34px; opacity:.92; }
+.bossMeta{ min-width:0; }
+.bossName{
+  font-family: "Cinzel", serif;
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(255,255,255,.92);
+  letter-spacing: .25px;
+}
+.bossPos{
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255,255,255,.70);
+}
+.bossProps{
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height:1.35;
+}
+.bossProps ul{ margin: 6px 0 0 16px; padding:0; }
+.bossProps li{ margin: 2px 0; }
+
+
 .legend .row{ display:flex; align-items:center; gap:10px; margin:8px 0; font-size:12px; color:var(--muted); }
 .dot{ width:12px; height:12px; border-radius:50%; border:1px solid rgba(255,255,255,.12); display:inline-block; }
 .dot.normal{ background:rgba(255,255,255,.12); }
