@@ -544,6 +544,8 @@ function ensureBossState(){
   if(typeof state.bossIdSeq !== "number") state.bossIdSeq = 1;
   if(!Array.isArray(state.bossSpawnNodes)) state.bossSpawnNodes = [];
   if(typeof state.bossTick !== "number") state.bossTick = 0;
+  if(typeof state.bossAuto !== "boolean") state.bossAuto = true;
+  if(typeof state.bossDebug !== "boolean") state.bossDebug = true;
 }
 
 function getBossSpawnNodes(){
@@ -705,14 +707,34 @@ function moveBossOneStep(boss){
   }
 }
 
+
+function bossStepOnce(){
+  ensureBossState();
+  const alive = state.bosses.filter(b=>b.alive!==false);
+  for(const b of alive){
+    moveBossOneStep(b);
+  }
+  updateBossUI();
+}
+
+function clearBosses(){
+  ensureBossState();
+  for(const b of state.bosses){
+    b.alive = false;
+  }
+  updateBossUI();
+}
+
 function updateBossesAfterPlayerAction(){
   ensureBossState();
   // Tick nach jedem abgeschlossenen Spielerzug (Move+Landing)
   state.bossTick = (state.bossTick||0) + 1;
 
-  const alive = state.bosses.filter(b=>b.alive!==false);
-  for(const b of alive){
-    moveBossOneStep(b);
+  if(state.bossAuto){
+    const alive = state.bosses.filter(b=>b.alive!==false);
+    for(const b of alive){
+      moveBossOneStep(b);
+    }
   }
   updateBossUI();
 }
@@ -764,6 +786,50 @@ function ensureBossPanel(){
   list.id = "bossPanelList";
   host.appendChild(list);
 
+  // --- Debug Controls (immer sichtbar) ---
+  const dbg = document.createElement('div');
+  dbg.id = 'bossDebugControls';
+  dbg.style.cssText = 'margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;';
+
+  function mkBtn(id, label){
+    const b = document.createElement('button');
+    b.id = id;
+    b.textContent = label;
+    b.className = 'btn small';
+    b.style.cssText = 'padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:rgba(245,250,255,.92); font-weight:800; letter-spacing:.2px;';
+    b.onmouseenter = ()=>{ b.style.background='rgba(255,255,255,.10)'; };
+    b.onmouseleave = ()=>{ b.style.background='rgba(255,255,255,.06)'; };
+    return b;
+  }
+
+  const btnSpawnHunter = mkBtn('btnBossSpawnHunter','Spawn Jäger');
+  const btnStep = mkBtn('btnBossStep','Boss Step');
+  const btnToggle = mkBtn('btnBossToggleAI','Boss AI: AN');
+  const btnClear = mkBtn('btnBossClear','Clear Bosses');
+
+  dbg.appendChild(btnSpawnHunter);
+  dbg.appendChild(btnStep);
+  dbg.appendChild(btnToggle);
+  dbg.appendChild(btnClear);
+
+  const hint = document.createElement('div');
+  hint.id = 'bossDebugHint';
+  hint.style.cssText = 'grid-column:1 / -1; margin-top:2px; opacity:.7; font-size:12px; line-height:1.25;';
+  hint.textContent = 'Test-Modus: Spawnen, Step, AI togglen, Clear.';
+  dbg.appendChild(hint);
+
+  host.appendChild(dbg);
+
+  // Wire once
+  btnSpawnHunter.onclick = ()=>{ spawnBoss('hunter'); };
+  btnStep.onclick = ()=>{ bossStepOnce(); };
+  btnClear.onclick = ()=>{ clearBosses(); };
+  btnToggle.onclick = ()=>{
+    ensureBossState();
+    state.bossAuto = !state.bossAuto;
+    btnToggle.textContent = 'Boss AI: ' + (state.bossAuto ? 'AN' : 'AUS');
+  };
+
   // Insert after jokerButtonsWrap if possible
   if(jokerButtonsWrap && jokerButtonsWrap.parentElement){
     jokerButtonsWrap.parentElement.appendChild(host);
@@ -777,6 +843,8 @@ function ensureBossPanel(){
 function updateBossUI(){
   ensureBossState();
   const panel = ensureBossPanel();
+  const tgl = document.getElementById("btnBossToggleAI");
+  if(tgl){ ensureBossState(); tgl.textContent = "Boss AI: " + (state.bossAuto ? "AN" : "AUS"); }
   const list = document.getElementById("bossPanelList");
   if(!list) return;
 
