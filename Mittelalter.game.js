@@ -550,6 +550,46 @@ function setStatus(t){
   updateTurnBadge();
 }
 
+
+function ensureFixedUILayout(){
+  if(window.__fixedUILayoutApplied) return;
+  window.__fixedUILayoutApplied = true;
+
+  // Prevent the whole page from scrolling/zooming while interacting with the board.
+  try{
+    document.documentElement.style.height = "100%";
+    document.body.style.height = "100%";
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+    document.body.style.touchAction = "none";
+  }catch(e){}
+
+  const css = `
+    html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
+    /* Canvas should be the only "moving" thing via pan offsets in code, UI stays fixed */
+    #boardCanvas { touch-action:none; }
+    /* Right sidebar fixed */
+    #sidebar { position:fixed !important; right:14px; top:86px; bottom:14px; z-index:50; overflow:auto; }
+    /* Top status/turn line fixed */
+    #statusLine { position:fixed !important; left:14px; top:14px; z-index:60; }
+  `;
+  const st = document.createElement("style");
+  st.id = "fixedUILayoutStyles";
+  st.textContent = css;
+  document.head.appendChild(st);
+
+  // If the sidebar is inside another positioned container, force it to be fixed anyway.
+  const sb = document.getElementById("sidebar");
+  if(sb){
+    sb.style.position = "fixed";
+    sb.style.right = "14px";
+    sb.style.top = "86px";
+    sb.style.bottom = "14px";
+    sb.style.zIndex = "50";
+    sb.style.overflow = "auto";
+  }
+}
+
 function ensurePortalState(){
   if(!state.portalHighlighted) state.portalHighlighted = new Set();
   if(typeof state.portalUsedThisTurn !== "boolean") state.portalUsedThisTurn = false;
@@ -2739,6 +2779,7 @@ async function load(){
   const url = `Mittelalter.board.json?v=${V}`;
 
   setStatus("Lade Board...");
+  ensureFixedUILayout();
   console.info("[LOAD] fetching", url);
 
   const ac = new AbortController();
