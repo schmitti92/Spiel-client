@@ -532,8 +532,8 @@ const BOSS_TYPES = {
       "Berührung: Figur zurück auf Start",
       "Barrikaden blocken den Weg"
     ],
-    // Balancing: bewegt sich nur jeden 2. Spielerzug
-    moveEvery: 2,
+    // bewegt sich nach jedem Spielerzug
+    moveEvery: 1,
     respectsShield: true
   }
 };
@@ -652,8 +652,9 @@ function bfsNextStep(startId, goalIds, blockedFn){
 }
 
 function bossBlocked(nextId, fromId){
-  // Barrikaden blocken den Weg
-  if(barricades.has(nextId)) return true;
+  // Barrikaden blocken NICHT mehr hart, sonst kann ein Boss komplett eingesperrt werden.
+  // (Falls er auf eine Barrikade tritt, wird sie beim Schritt entfernt.)
+
   // Schutzschild blockt Zwischen-Schritt (Boss darf nicht "drüber laufen")
   const occId = state.occupied.get(nextId);
   if(occId){
@@ -662,6 +663,7 @@ function bossBlocked(nextId, fromId){
   }
   return false;
 }
+
 
 function bossCollideAt(nodeId, boss){
   const occId = state.occupied.get(nodeId);
@@ -709,6 +711,11 @@ function moveBossOneStep(boss, force=false){
         console.warn("[BOSS] no-step", boss.id, "at", boss.node, "neigh", neigh, "goals", goalIds.slice(0,6), "tick", state.bossTick);
       }
       return;
+    }
+    // Falls ein Boss auf eine Barrikade tritt: Barrikade wird entfernt (sonst kann er komplett stecken bleiben).
+    if(barricades.has(step)){
+      barricades.delete(step);
+      if(state.bossDebug) console.info("[BOSS] broke barricade at", step, "boss", boss.id);
     }
 
     boss.node = step;
