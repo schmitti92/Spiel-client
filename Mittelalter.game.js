@@ -12,6 +12,7 @@
 (() => {
 
 const canvas = document.getElementById("boardCanvas");
+canvas.style.touchAction = "none";
 const ctx = canvas.getContext("2d");
 const btnRoll = document.getElementById("btnRoll");
 const btnFit = document.getElementById("btnFit");
@@ -294,45 +295,28 @@ function clampCameraToBoard(marginPx=70){
   const ch = canvas.clientHeight || canvas.height || 0;
   if(cw<=0 || ch<=0) return;
 
-  // cache bounds (recompute only if missing)
   const b = _boardBoundsCache || (_boardBoundsCache = computeBoardBoundsWorld(28));
   const s = cam.s || 1;
-
-  // screen-space bounds given current cam
-  const minSX = b.minX * s + cam.x;
-  const maxSX = b.maxX * s + cam.x;
-  const minSY = b.minY * s + cam.y;
-  const maxSY = b.maxY * s + cam.y;
 
   const viewMinX = marginPx;
   const viewMaxX = cw - marginPx;
   const viewMinY = marginPx;
   const viewMaxY = ch - marginPx;
 
-  const boardW = (b.maxX - b.minX) * s;
-  const boardH = (b.maxY - b.minY) * s;
+  // Allowed cam ranges so the whole board stays inside the viewport (with margins).
+  // Works for BOTH cases:
+  // - board larger than view: you can pan, but can't lose the board
+  // - board smaller than view: you can still pan a bit, but it remains fully visible
+  let minCamX = viewMaxX - b.maxX * s;
+  let maxCamX = viewMinX - b.minX * s;
+  if(minCamX > maxCamX){ const t=minCamX; minCamX=maxCamX; maxCamX=t; }
 
-  // If board is smaller than view area -> keep it centered (prevents drifting)
-  if(boardW < (viewMaxX - viewMinX)){
-    const centerX = (b.minX + b.maxX)/2;
-    cam.x = cw/2 - centerX * s;
-  }else{
-    // Constraints:
-    // maxSX >= viewMinX  => cam.x >= viewMinX - b.maxX*s
-    // minSX <= viewMaxX  => cam.x <= viewMaxX - b.minX*s
-    const minCamX = viewMinX - b.maxX * s;
-    const maxCamX = viewMaxX - b.minX * s;
-    cam.x = clamp(cam.x, minCamX, maxCamX);
-  }
+  let minCamY = viewMaxY - b.maxY * s;
+  let maxCamY = viewMinY - b.minY * s;
+  if(minCamY > maxCamY){ const t=minCamY; minCamY=maxCamY; maxCamY=t; }
 
-  if(boardH < (viewMaxY - viewMinY)){
-    const centerY = (b.minY + b.maxY)/2;
-    cam.y = ch/2 - centerY * s;
-  }else{
-    const minCamY = viewMinY - b.maxY * s;
-    const maxCamY = viewMaxY - b.minY * s;
-    cam.y = clamp(cam.y, minCamY, maxCamY);
-  }
+  cam.x = clamp(cam.x, minCamX, maxCamX);
+  cam.y = clamp(cam.y, minCamY, maxCamY);
 }
 
 
