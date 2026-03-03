@@ -561,17 +561,56 @@ function ensureFixedUILayout(){
     document.body.style.height = "100%";
     document.body.style.overflow = "hidden";
     document.body.style.overscrollBehavior = "none";
-    document.body.style.touchAction = "none";
+    // Allow normal tapping on UI controls; canvas itself handles pan/zoom.
+    document.body.style.touchAction = "manipulation";
   }catch(e){}
 
   const css = `
     html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
-    /* Canvas should be the only "moving" thing via pan offsets in code, UI stays fixed */
-    #boardCanvas { touch-action:none; }
-    /* Right sidebar fixed */
-    #sidebar { position:fixed !important; right:14px; top:86px; bottom:14px; z-index:50; overflow:auto; }
-    /* Top status/turn line fixed */
-    #statusLine { position:fixed !important; left:14px; top:14px; z-index:60; }
+
+    /* Lock the UI: topbar + sidebar fixed, only the canvas content pans/zooms */
+    .topbar{
+      position:fixed !important;
+      top:0; left:0; right:0;
+      z-index:100;
+    }
+
+    /* Main area becomes a fixed viewport below the topbar */
+    .main{
+      position:fixed !important;
+      left:0; right:0;
+      top:62px; bottom:0;
+      height:auto !important;
+      overflow:hidden !important;
+    }
+
+    /* Sidebar fixed on the right (desktop/tablet). */
+    #sidebar{
+      position:fixed !important;
+      top:62px; right:0; bottom:0;
+      width:280px;
+      z-index:90;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Canvas area fills remaining space left of the sidebar */
+    .canvasWrap{
+      position:fixed !important;
+      top:62px; left:0;
+      right:280px; bottom:0;
+      min-height:0 !important;
+    }
+    #boardCanvas{ width:100% !important; height:100% !important; display:block; touch-action:none; }
+
+    /* Status line should stay readable but not shift layout */
+    #statusLine{ position:relative !important; }
+
+    /* Mobile: stack sidebar under the board */
+    @media (max-width: 980px){
+      #sidebar{ position:fixed !important; left:0; right:0; bottom:0; top:auto; width:auto; max-height:46vh; }
+      .canvasWrap{ right:0; bottom:46vh; }
+    }
   `;
   const st = document.createElement("style");
   st.id = "fixedUILayoutStyles";
@@ -582,10 +621,10 @@ function ensureFixedUILayout(){
   const sb = document.getElementById("sidebar");
   if(sb){
     sb.style.position = "fixed";
-    sb.style.right = "14px";
-    sb.style.top = "86px";
-    sb.style.bottom = "14px";
-    sb.style.zIndex = "50";
+    sb.style.right = "0";
+    sb.style.top = "62px";
+    sb.style.bottom = "0";
+    sb.style.zIndex = "90";
     sb.style.overflow = "auto";
   }
 }
