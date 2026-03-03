@@ -661,34 +661,13 @@ destroyer: {
   icon: "⛏",
   color: "rgba(255,160,60,.95)",
   traits: [
-    "Bewegt sich NUR nach kompletter Runde",
-    "Läuft bis zu 3 Felder pro Boss-Phase",
-    "Überrollt Figuren auf dem Weg (zurück auf Start)",
-    "Zerstört Barrikaden beim Betreten + 1 zufällige pro Runde"
-  ],
-  // bewegt sich nur am Rundenende (nachdem alle Teams dran waren)
-  moveEvery: 1,
-  moveOnRoundEnd: true,
-  stepsPerMove: 3,
-  respectsShield: false
-}
-
-
-,
-bannmage: {
-  name: "Der Bannmagier",
-  icon: "⛓",
-  color: "rgba(140,90,220,.95)",
-  traits: [
-    "Solange er lebt: Keine Joker benutzbar",
-    "Jagt den Spieler mit den meisten Jokern",
+    "Zerstört jede Runde 1 Barrikade",
+    "Steuert Barrikaden an (wenn vorhanden)",
     "Berührung: Figur zurück auf Start"
   ],
   moveEvery: 1,
-  respectsShield: true,
-  locksJokers: true
+  respectsShield: true
 }
-
 };
 
 function ensureBossState(){
@@ -699,17 +678,9 @@ function ensureBossState(){
   if(typeof state.bossTick !== "number") state.bossTick = 0;
   if(typeof state.bossAuto !== "boolean") state.bossAuto = true;
   if(typeof state.bossDebug !== "boolean") state.bossDebug = true;
-
-}
-
-function isJokerLockedByBoss(){
-  try{
-    return (state.bosses||[]).some(b=>b && b.alive!==false && (BOSS_TYPES[b.type]?.locksJokers));
-  }catch(_){ return false; }
 }
 
 function getBossSpawnNodes(){
-
   return nodes.filter(n=>n && n.type==="boss").map(n=>n.id);
 }
 
@@ -748,13 +719,11 @@ function spawnBoss(type="hunter", preferredNodeId=null){
     visible: true,
     meta: {
       moveEvery: def.moveEvery || 1,
-      respectsShield: !!def.respectsShield,
-      stepsPerMove: def.stepsPerMove || 1
+      respectsShield: !!def.respectsShield
     }
   };
   state.bosses.push(boss);
   updateBossUI();
-  updateJokerUI();
   console.info("[BOSS] spawned", boss.type, boss.id, "at", boss.node);
   return boss;
 }
@@ -768,7 +737,6 @@ function maybeDefeatBossAtNode(nodeId, byTeam){
   b.alive = false;
   b.node = null;
   updateBossUI();
-  updateJokerUI();
   setStatus(`Team ${byTeam}: Boss besiegt (${(BOSS_TYPES[b.type]?.name)||b.name||b.type})!`);
   return true;
 }
@@ -779,7 +747,6 @@ function despawnBoss(bossId){
   if(!b) return;
   b.alive = false;
   updateBossUI();
-  updateJokerUI();
   console.info("[BOSS] despawn", bossId);
 }
 
@@ -864,6 +831,20 @@ function bossCollideAt(nodeId, boss){
   return true;
 }
 
+// Zerstörer: "schmettert" jede Figur auf seinem Weg zurück auf Start (ignoriert Schutzschild)
+function destroyerSmashAt(nodeId, boss){
+  const occId = state.occupied.get(nodeId);
+  if(!occId) return false;
+  const p = state.pieces.find(x=>x.id===occId);
+  if(!p) return false;
+
+  // Ignoriert Schild komplett
+  kickToStart(p);
+  console.info("[BOSS] destroyer smash", boss?.id, "-> kick", p.id);
+  return true;
+}
+
+
 function moveBossOneStep(boss, force=false){
   if(!boss || boss.alive===false || !boss.node) return;
 
@@ -908,70 +889,8 @@ if(!goalIds.length) return;
 
 
 if(boss.type === "destroyer"){
-  // Der Zerstörer läuft "brutal" bis zu 3 Felder pro Boss-Phase.
-  // Figuren auf dem Weg werden zurück auf Start gesetzt (Schutzschild hilft NICHT gegen den Zerstörer).
-  const stepsPerMove = Number(def.stepsPerMove || boss.meta?.stepsPerMove || 3);
-
-  for(let i=0;i<stepsPerMove;i++){
-    // Ziel: nächste Barrikade, sonst zufällig laufen
-    const goals = Array.from(barricades||[]).filter(id=>!isStartNode(id));
-    let step = null;
-    if(goals.length){
-      step = bfsNextStep(boss.node, goals, bossBlocked);
-    }
-    if(!step || step === boss.node){
-      const neigh = (adj.get(boss.node)||[]).filter(nid=>!bossBlocked(nid, boss.node));
-      if(!neigh.length) return;
-      step = neigh[Math.floor(Math.random()*neigh.length)];
-    }
-
-    // Barrikade zerstören, falls betreten
-    if(barricades.has(step)){
-      barricades.delete(step);
-      if(state.bossDebug) console.info("[BOSS] destroyer broke barricade at", step, "boss", boss.id);
-    }
-
-    // Schritt ausführen
-    boss.node = step;
-
-    // Figuren auf dem Weg zurück auf Start (ignore shield)
-    const occId = state.occupied.get(step);
-    if(occId){
-      const p = state.pieces.find(x=>x.id===occId);
-      if(p){
-        kickToStart(p);
-        if(state.bossDebug) console.info("[BOSS] destroyer ran over", p.id, "at", step);
-      }
-    }
-  }
-} 
-
-
-if(boss.type === "bannmage"){
-  // Ziel: Spieler mit den meisten Jokern (summe über alle Joker-Arten)
-  let bestTeam = null;
-  let bestSum = -1;
-  for(const t of (state.players||[1,2,3,4])){
-    let sum = 0;
-    try{
-      const inv = (state.jokers && state.jokers[t]) ? state.jokers[t] : {};
-      for(const k in inv) sum += Number(inv[k]||0);
-    }catch(_){}
-    if(sum > bestSum){
-      bestSum = sum;
-      bestTeam = t;
-    }
-  }
-
-  // Ziele: Figuren dieses Teams, aber NIE auf Startfeldern
-  let goals = [];
-  if(bestTeam!=null){
-    goals = getTeamPieceNodes(bestTeam).filter(id=>!isStartNode(id));
-  }
-  if(!goals.length){
-    goals = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
-  }
-
+  // Ziel: nächste Barrikade, sonst zufällig laufen
+  const goals = Array.from(barricades||[]).filter(id=>!isStartNode(id));
   let step = null;
   if(goals.length){
     step = bfsNextStep(boss.node, goals, bossBlocked);
@@ -982,10 +901,16 @@ if(boss.type === "bannmage"){
     step = neigh[Math.floor(Math.random()*neigh.length)];
   }
 
+  if(barricades.has(step)){
+    barricades.delete(step);
+    if(state.bossDebug) console.info("[BOSS] destroyer broke barricade at", step, "boss", boss.id);
+  }
+
   boss.node = step;
-  bossCollideAt(step, boss);
+  destroyerSmashAt(step, boss);
 }
 }
+
 
 function bossStepOnce(){
   ensureBossState();
@@ -1002,40 +927,56 @@ function clearBosses(){
     b.alive = false;
   }
   updateBossUI();
-  updateJokerUI();
 }
 
-function updateBossesAfterPlayerAction(ctx={}){
+function updateBossesAfterPlayerAction(endOfRound=false){
   ensureBossState();
   // Tick nach jedem abgeschlossenen Spielerzug (Move+Landing)
   state.bossTick = (state.bossTick||0) + 1;
 
-  const endOfRound = !!ctx.endOfRound;
-
-
-// Passive Effekte
-  if(endOfRound){
+  // --- Passive Effekte NUR am RUNDENENDE ---
   // Der Zerstörer entfernt jede Runde zusätzlich 1 zufällige Barrikade (falls vorhanden)
-  try{
-    const aliveNow = state.bosses.filter(b=>b.alive!==false);
-    const destroyers = aliveNow.filter(b=>b.type==="destroyer");
-    if(destroyers.length && (barricades && barricades.size)){
-      const arr = Array.from(barricades).filter(id=>!isStartNode(id));
-      if(arr.length){
-        const pick = arr[Math.floor(Math.random()*arr.length)];
-        barricades.delete(pick);
-        if(state.bossDebug) console.info("[BOSS] destroyer passive removed barricade at", pick);
+  if(endOfRound){
+    try{
+      const aliveNow = state.bosses.filter(b=>b.alive!==false);
+      const destroyers = aliveNow.filter(b=>b.type==="destroyer");
+      if(destroyers.length && (barricades && barricades.size)){
+        const arr = Array.from(barricades).filter(id=>!isStartNode(id));
+        if(arr.length){
+          const pick = arr[Math.floor(Math.random()*arr.length)];
+          barricades.delete(pick);
+          if(state.bossDebug) console.info("[BOSS] destroyer passive removed barricade at", pick);
+        }
       }
-    }
-  }catch(e){}
-
+    }catch(e){}
   }
+
+  if(state.bossAuto){
+    const alive = state.bosses.filter(b=>b.alive!==false);
+    if(state.bossDebug) console.info("[BOSS] auto-step tick", state.bossTick, "endOfRound", !!endOfRound, "alive", alive.map(x=>x.id));
+
+    for(const b of alive){
+      // ZERSTÖRER: nur am Rundenende + 3 Schritte
+      if(b.type === "destroyer"){
+        if(!endOfRound) continue;
+        for(let i=0;i<3;i++){
+          moveBossOneStep(b, true); // force: ignoriert moveEvery
+        }
+        continue;
+      }
+
+      // andere Bosse: wie gehabt nach jedem Spielerzug
+      moveBossOneStep(b, false);
+    }
+  }
+
+  updateBossUI();
+}catch(e){}
+
   if(state.bossAuto){
     const alive = state.bosses.filter(b=>b.alive!==false);
     if(state.bossDebug) console.info("[BOSS] auto-step tick", state.bossTick, "alive", alive.map(x=>x.id));
     for(const b of alive){
-      const def = BOSS_TYPES[b.type];
-      if(def && def.moveOnRoundEnd && !endOfRound) continue;
       moveBossOneStep(b, false);
     }
   }
@@ -1047,7 +988,7 @@ function updateBossesAfterPlayerAction(ctx={}){
 // ---- Boss Phase Helper ----
 // Läuft nach jedem abgeschlossenen Spielerzug einmal, damit der Boss "zwischen" den Zügen agiert.
 // Blockiert in der kurzen Zeit Eingaben, damit es keine Race-Conditions gibt (Boss vs. Spieler-Click).
-function runBossPhaseThen(done){
+function runBossPhaseThen(done, ctx){
   try{
     if(state.gameOver) return;
     ensureBossState();
@@ -1064,8 +1005,7 @@ function runBossPhaseThen(done){
 
     // kleiner Delay -> fühlt sich "Phase" an und verhindert gleichzeitige Clicks auf Touch-Geräten
     setTimeout(()=>{
-      const endOfRound = (!state.pendingSix && state.turn === state.players.length-1);
-      updateBossesAfterPlayerAction({ endOfRound });
+      updateBossesAfterPlayerAction(!!(ctx && ctx.endOfRound));
       // done setzt anschließend wieder eine sinnvolle Phase (needRoll / choosePiece / etc.)
       done && done();
       // falls done nichts gesetzt hat, zurückfallen
@@ -1140,32 +1080,14 @@ function ensureBossPanel(){
     return b;
   }
 
-  const selBossType = document.createElement('select');
-  selBossType.id = 'bossSpawnType';
-  selBossType.style.cssText = [
-    'grid-column:1 / -1',
-    'padding:10px 10px',
-    'border-radius:12px',
-    'border:1px solid rgba(255,255,255,.12)',
-    'background:rgba(10,12,18,.35)',
-    'color:rgba(245,250,255,.92)',
-    'font-weight:800',
-    'letter-spacing:.2px'
-  ].join(';');
-  // Optionen (nur Boss-Typen, die wir aktuell implementiert haben)
-  const bossOptions = [
-    { value:'hunter', label:'Jäger' },
-    { value:'destroyer', label:'Zerstörer' },
-    { value:'bannmage', label:'Bannmagier' }
-  ];
-  bossOptions.forEach(o=>{
-    const opt = document.createElement('option');
-    opt.value = o.value;
-    opt.textContent = o.label;
-    selBossType.appendChild(opt);
-  });
+  const btnSpawnHunter = mkBtn('btnBossSpawnHunter','Spawn Jäger');
+  const btnSpawnDestroyer = mkBtn('btnBossSpawnDestroyer','Spawn Zerstörer');
+  const btnStep = mkBtn('btnBossStep','Boss Step');
+  const btnToggle = mkBtn('btnBossToggleAI','Boss AI: AN');
+  const btnClear = mkBtn('btnBossClear','Clear Bosses');
 
-  const btnSpawnSelected = mkBtn('btnBossSpawnSelected','Boss spawnen');
+  dbg.appendChild(btnSpawnHunter);
+  dbg.appendChild(btnSpawnDestroyer);
   dbg.appendChild(btnStep);
   dbg.appendChild(btnToggle);
   dbg.appendChild(btnClear);
@@ -1179,7 +1101,8 @@ function ensureBossPanel(){
   host.appendChild(dbg);
 
   // Wire once
-  btnSpawnSelected.onclick = ()=>{ const t = (document.getElementById('bossSpawnType')||selBossType).value; spawnBoss(t); };
+  btnSpawnHunter.onclick = ()=>{ spawnBoss('hunter'); };
+  btnSpawnDestroyer.onclick = ()=>{ spawnBoss('destroyer'); };
   btnStep.onclick = ()=>{ bossStepOnce(); };
   btnClear.onclick = ()=>{ clearBosses(); };
   btnToggle.onclick = ()=>{
@@ -1304,7 +1227,6 @@ function renderJokerButtons(){
 
 function jokerIsUsableNow(joker){
   if(state.gameOver) return false;
-  if(isJokerLockedByBoss()) return false;
   if(state.jokerMode) return false; // während eines Joker-Modus keine anderen starten
 
   const beforeOk = (state.phase === "needRoll") && (state.roll === null);
@@ -1321,7 +1243,6 @@ function updateJokerUI(){
 
   const team = currentTeam();
   const hint = [];
-  if(isJokerLockedByBoss()) hint.push("⛓ Bannmagier aktiv: Joker gesperrt");
   if(state.jokerMode === "swapPickA") hint.push("Spieler tauschen: Figur A wählen");
   if(state.jokerMode === "swapPickB") hint.push("Spieler tauschen: Figur B wählen");
   if(state.jokerMode === "moveBarricadePick") hint.push("Barrikade versetzen: Barrikade wählen");
@@ -1393,11 +1314,6 @@ function rollDice(){
 function tryUseJoker(jokerId){
   if(state.gameOver) return;
   ensureJokerState();
-  if(isJokerLockedByBoss()){
-    setStatus(`Joker gesperrt: Der Bannmagier lebt!`);
-    updateJokerUI();
-    return;
-  }
 
   const team = currentTeam();
   const joker = JOKERS.find(j=>j.id===jokerId);
@@ -2056,6 +1972,7 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
   // WICHTIG:
   // - Boss bewegt sich erst NACH allen Spieler-Aktionen (inkl. Barrikade/Events/Portale)
   // - Boss bewegt sich VOR dem Spielerwechsel / erneuten Würfeln (bei 6)
+  const endOfRound = (!state.pendingSix && state.turn === (state.players.length-1));
   runBossPhaseThen(()=>{
     if(state.pendingSix){
       state.pendingSix=false;
@@ -2063,7 +1980,7 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     }else{
       nextTurn();
     }
-  });
+  }, { endOfRound });
 }
 
 function afterLandingNoPortal(piece){
