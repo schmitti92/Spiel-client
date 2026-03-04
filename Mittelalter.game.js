@@ -3193,6 +3193,7 @@ async function load(){
     for(const n of nodes){
       if(n.id === s.id) continue;
       if(n.type === "start") continue;
+      if(n.type === "barricade") continue;
       const dx = n.x - s.x;
       const dy = n.y - s.y;
       const d2 = dx*dx + dy*dy;
@@ -3218,7 +3219,7 @@ async function load(){
   // Problem: Ein Boss-Spawn kann zwar Nachbarn haben, aber nur im Boss-Subgraph hängen → Boss findet keinen Pfad zu Spielern.
   // Fix: Wenn vom Boss-Spawn KEIN Nicht-Boss-Feld erreichbar ist, verbinden wir runtime-mäßig zum nächstgelegenen Nicht-Boss-Knoten.
   // (Ändert NICHT dein board.json dauerhaft, ist nur ein Runtime-Fix.)
-  function canReachNonBoss(startId){
+  function canReachWalkable(startId){
     const q=[startId];
     const seen=new Set([startId]);
     while(q.length){
@@ -3228,7 +3229,8 @@ async function load(){
         if(seen.has(nb)) continue;
         seen.add(nb);
         const node = nodesById.get(nb);
-        if(node && node.type !== "boss") return true;
+        // "Walkable" = Boss kann dorthin laufen (kein Boss/Start/Barrikade)
+        if(node && node.type !== "boss" && node.type !== "start" && node.type !== "barricade") return true;
         q.push(nb);
       }
     }
@@ -3237,7 +3239,7 @@ async function load(){
 
   const bossNodes = nodes.filter(n=>n.type==="boss");
   for(const s of bossNodes){
-    if(canReachNonBoss(s.id)) continue;
+    if(canReachWalkable(s.id)) continue;
 
     let best = null;
     let bestD = Infinity;
