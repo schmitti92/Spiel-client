@@ -513,6 +513,21 @@ function isFreeForBarricade(id){
   return true;
 }
 
+function relocateBarricadeRandom(excludeIds){
+  // Wählt ein zufälliges freies Feld (für Barrikaden), optional mit Ausschlussliste.
+  const ex = excludeIds || new Set();
+  const candidates = [];
+  for(const n of nodes){
+    const id = n.id;
+    if(ex.has(id)) continue;
+    if(!isFreeForBarricade(id)) continue;
+    candidates.push(id);
+  }
+  if(!candidates.length) return null;
+  return candidates[Math.floor(Math.random()*candidates.length)];
+}
+
+
 // --- Turn indicator in top status bar (always visible) ---
 let _statusTextEl = null;
 let _turnBadgeEl = null;
@@ -704,7 +719,7 @@ const BOSS_TYPES = {
       "Auf dem Weg: Spieler verlieren 1 zufälligen Joker",
       "Auf dem Zielfeld (⭐): Spieler wird auf Start geworfen",
       "Bei Treffer: teleportiert (min. 6 Felder Abstand zum Treffer-Spieler)",
-      "Kann NICHT über Barrikaden laufen (wenn blockiert: Zug verfällt)"
+      "Darf auf Barrikaden landen (versetzt sie), aber nicht darüber springen"
     ],
     moveOnRoundEnd: true,
     stepsPerMove: 5,
@@ -943,9 +958,10 @@ function bossBlocked(nextId, fromId, boss){
   const nn = nodesById.get(nextId);
   if(nn && nn.type === "start") return true;
 
-  // Boss 3 (Der Räuber): Barrikaden blocken hart (er darf NICHT drauf / drüber).
+  // Boss 3 (Der Räuber): darf auf Barrikaden LANDEN (und versetzt sie). Bewegung ist Schritt-für-Schritt,
+// daher gibt es kein "Drüberspringen" – Barrikaden werden hier NICHT hart geblockt.
   if(boss && boss.type === "reaper"){
-    if(barricades && barricades.has(nextId)) return true;
+    // not blocked here
   }
 
   // Schutzschild blockt Zwischen-Schritt (Boss darf nicht "drüber laufen")
@@ -1009,11 +1025,7 @@ function moveBossOneStep(boss, force=false){
     // Wenn kein Ziel existiert (Team offboard / alle Figuren im Start), fallback: irgendeine Figur, aber auch ohne Startfelder
     const fallback = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
     const goalIds = goals.length ? goals : fallback;
-if(!goalIds.length){
-      const rnd = nodes.filter(n=>n && n.id && !(nodesById.get(n.id)?.type==="start")).map(n=>n.id);
-      if(rnd.length) goalIds = [ rnd[Math.floor(Math.random()*rnd.length)] ];
-    }
-    if(!goalIds.length) return;
+if(!goalIds.length) return;
 
     const step = bfsNextStep(boss.node, goalIds, (n,f)=>bossBlocked(n,f,boss));
     if(!step || step === boss.node){
@@ -1045,10 +1057,6 @@ if(!goalIds.length){
       if(!goalIds.length){
         goalIds = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
       }
-    }
-    if(!goalIds.length){
-      const rnd = nodes.filter(n=>n && n.id && !(nodesById.get(n.id)?.type==="start")).map(n=>n.id);
-      if(rnd.length) goalIds = [ rnd[Math.floor(Math.random()*rnd.length)] ];
     }
     if(!goalIds.length) return;
 
@@ -1084,11 +1092,6 @@ if(!goalIds.length){
         goalIds = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
       }
     }
-    if(!goalIds.length){
-      // Wenn noch keine Figuren außerhalb des Starts sind (Spielbeginn), wandert der Boss Richtung zufälliges freies Feld
-      const rnd = nodes.filter(n=>n && n.id && !(nodesById.get(n.id)?.type==="start")).map(n=>n.id);
-      if(rnd.length) goalIds = [ rnd[Math.floor(Math.random()*rnd.length)] ];
-    }
     if(!goalIds.length) return;
 
     const step = bfsNextStep(boss.node, goalIds, (n,f)=>bossBlocked(n,f,boss));
@@ -1100,7 +1103,27 @@ if(!goalIds.length){
       return;
     }
 
-    // Räuber darf nicht auf Barrikaden laufen -> BFS blockt bereits.
+    // Räuber darf auf Barrikaden LANDEN: er nimmt sie auf und versetzt sie sofort neu.
+    if(barricades && barricades.has(step)){
+      barricades.delete(step);
+
+      const ex = new Set([step]);
+      // niemals auf einen Boss setzen (inkl. sich selbst)
+      if(Array.isArray(state.bosses)){
+        for(const bb of state.bosses){
+          if(bb && bb.alive!==false && bb.node) ex.add(bb.node);
+        }
+      }
+
+      const newId = relocateBarricadeRandom(ex);
+      if(newId){
+        barricades.add(newId);
+        if(state.bossDebug) console.info("[BOSS] reaper moved barricade", step, "->", newId, "boss", boss.id);
+      } else {
+        if(state.bossDebug) console.warn("[BOSS] reaper removed barricade but found no free place", step, "boss", boss.id);
+      }
+    }
+
     boss.node = step;
     bossCollideAt(step, boss);
   }
@@ -1178,12 +1201,6 @@ function runBossPhaseThen(done){
   try{
     if(state.gameOver) return;
     ensureBossState();
-
-    // Round-End Flag: gilt für Bosse, die nur am Rundenende laufen.
-    // Wichtig: Boss-Phase läuft VOR dem Spielerwechsel. Also prüfen wir,
-    // ob der nächste "echte" Spielerwechsel (ohne pendingSix) eine Runde abschließt.
-    const _willAdvance = !state.pendingSix;
-    state._bossRoundEndFlag = _willAdvance && (state.players.length <= 1 || state.turn === state.players.length - 1);
 
     const hasAlive = (state.bosses||[]).some(b=>b.alive!==false);
     if(!state.bossAuto || !hasAlive){
@@ -3193,7 +3210,6 @@ async function load(){
     for(const n of nodes){
       if(n.id === s.id) continue;
       if(n.type === "start") continue;
-      if(n.type === "barricade") continue;
       const dx = n.x - s.x;
       const dy = n.y - s.y;
       const d2 = dx*dx + dy*dy;
@@ -3219,7 +3235,7 @@ async function load(){
   // Problem: Ein Boss-Spawn kann zwar Nachbarn haben, aber nur im Boss-Subgraph hängen → Boss findet keinen Pfad zu Spielern.
   // Fix: Wenn vom Boss-Spawn KEIN Nicht-Boss-Feld erreichbar ist, verbinden wir runtime-mäßig zum nächstgelegenen Nicht-Boss-Knoten.
   // (Ändert NICHT dein board.json dauerhaft, ist nur ein Runtime-Fix.)
-  function canReachWalkable(startId){
+  function canReachNonBoss(startId){
     const q=[startId];
     const seen=new Set([startId]);
     while(q.length){
@@ -3229,8 +3245,7 @@ async function load(){
         if(seen.has(nb)) continue;
         seen.add(nb);
         const node = nodesById.get(nb);
-        // "Walkable" = Boss kann dorthin laufen (kein Boss/Start/Barrikade)
-        if(node && node.type !== "boss" && node.type !== "start" && node.type !== "barricade") return true;
+        if(node && node.type !== "boss") return true;
         q.push(nb);
       }
     }
@@ -3239,7 +3254,7 @@ async function load(){
 
   const bossNodes = nodes.filter(n=>n.type==="boss");
   for(const s of bossNodes){
-    if(canReachWalkable(s.id)) continue;
+    if(canReachNonBoss(s.id)) continue;
 
     let best = null;
     let bestD = Infinity;
