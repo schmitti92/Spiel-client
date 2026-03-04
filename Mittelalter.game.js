@@ -726,6 +726,22 @@ const BOSS_TYPES = {
     respectsShield: true
   }
 
+  ,
+  guardian: {
+    name: "Der Wächter",
+    icon: "🛡",
+    color: "rgba(120,220,255,.95)",
+    traits: [
+      "Läuft nicht",
+      "Teleportiert alle 2 Spielrunden zufällig (auch auf Boss-Felder möglich)",
+      "Platziert am Rundenende 1 zusätzliche Barrikade (Eventfelder erlaubt)",
+      "Blockiert den Zielpunkt (⭐), wenn er darauf steht"
+    ],
+    moveOnRoundEnd: true,
+    stepsPerMove: 0,
+    respectsShield: true
+  }
+
 
 };
 
@@ -738,6 +754,7 @@ function ensureBossState(){
   if(typeof state.bossAuto !== "boolean") state.bossAuto = true;
   if(typeof state.bossDebug !== "boolean") state.bossDebug = true;
   if(typeof state._bossRoundEndFlag !== "boolean") state._bossRoundEndFlag = false;
+  if(typeof state.bossRoundNum !== "number") state.bossRoundNum = 0;
 }
 
 function getBossSpawnNodes(){
@@ -1154,6 +1171,11 @@ function updateBossesAfterPlayerAction(){
   // Tick nach jedem abgeschlossenen Spielerzug (Move+Landing)
   state.bossTick = (state.bossTick||0) + 1;
 
+  // Spielrunde zählt nur am Rundenende (alle Teams einmal dran)
+  if(state._bossRoundEndFlag){
+    state.bossRoundNum = (state.bossRoundNum||0) + 1;
+  }
+
   if(state.bossAuto){
     const alive = state.bosses.filter(b=>b.alive!==false);
     if(state.bossDebug) console.info("[BOSS] auto-step tick", state.bossTick, "alive", alive.map(x=>x.id), "roundEnd", !!state._bossRoundEndFlag);
@@ -1165,6 +1187,29 @@ function updateBossesAfterPlayerAction(){
       // Boss, der nur am Rundenende agiert
       if(def.moveOnRoundEnd){
         if(!state._bossRoundEndFlag) continue;
+
+        // Boss 4: Der Wächter – läuft nicht, teleportiert jede 2. Spielrunde, platziert jede Runde 1 Barrikade
+        if(b.type === "guardian"){
+          // 1) Barrikade zusätzlich platzieren (Eventfelder erlaubt). Nicht auf Start / nicht auf Figur / nicht auf vorhandene Barrikade.
+          if(barricades){
+            const exclude = new Set();
+            // optional: Zielpunkt nicht zusätzlich blockieren durch Barrikade
+            if(state.goalNodeId) exclude.add(state.goalNodeId);
+            const spot = relocateBarricadeRandom(exclude);
+            if(spot){
+              barricades.add(spot);
+              if(state.bossDebug) console.info("[BOSS] guardian placed extra barricade at", spot, "round", state.bossRoundNum);
+            }
+          }
+
+          // 2) Teleport alle 2 Spielrunden (gerade Zahlen). Teleport darf auch auf Boss-Felder.
+          if((state.bossRoundNum % 2) === 0){
+            const old = b.node;
+            teleportBossRandomFree(b, old, 0, null); // keine Distanzregel
+            if(state.bossDebug) console.info("[BOSS] guardian teleported", old, "->", b.node, "round", state.bossRoundNum);
+          }
+          continue;
+        }
 
         const steps = Math.max(1, Number(def.stepsPerMove||3));
         for(let i=0;i<steps;i++){
@@ -1641,6 +1686,12 @@ function maybeCaptureGoal(piece){
 
   // Wenn hier eine Barrikade liegt, ist der Zielpunkt "versteckt" und kann nicht eingesammelt werden.
   if(barricades.has(piece.node)) return false;
+
+  // Boss 4 (Wächter) blockiert den Zielpunkt komplett, wenn er darauf steht.
+  if(state.bosses && state.bosses.some(b=>b.alive!==false && b.type==="guardian" && b.node===piece.node)){
+    setStatus("🛡 Der Wächter blockiert den Zielpunkt!");
+    return false;
+  }
 
   // Punkt einsammeln
   const t = piece.team;
