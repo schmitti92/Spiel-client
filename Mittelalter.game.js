@@ -1009,7 +1009,11 @@ function moveBossOneStep(boss, force=false){
     // Wenn kein Ziel existiert (Team offboard / alle Figuren im Start), fallback: irgendeine Figur, aber auch ohne Startfelder
     const fallback = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
     const goalIds = goals.length ? goals : fallback;
-if(!goalIds.length) return;
+if(!goalIds.length){
+      const rnd = nodes.filter(n=>n && n.id && !(nodesById.get(n.id)?.type==="start")).map(n=>n.id);
+      if(rnd.length) goalIds = [ rnd[Math.floor(Math.random()*rnd.length)] ];
+    }
+    if(!goalIds.length) return;
 
     const step = bfsNextStep(boss.node, goalIds, (n,f)=>bossBlocked(n,f,boss));
     if(!step || step === boss.node){
@@ -1041,6 +1045,10 @@ if(!goalIds.length) return;
       if(!goalIds.length){
         goalIds = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
       }
+    }
+    if(!goalIds.length){
+      const rnd = nodes.filter(n=>n && n.id && !(nodesById.get(n.id)?.type==="start")).map(n=>n.id);
+      if(rnd.length) goalIds = [ rnd[Math.floor(Math.random()*rnd.length)] ];
     }
     if(!goalIds.length) return;
 
@@ -1075,6 +1083,11 @@ if(!goalIds.length) return;
       if(!goalIds.length){
         goalIds = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
       }
+    }
+    if(!goalIds.length){
+      // Wenn noch keine Figuren außerhalb des Starts sind (Spielbeginn), wandert der Boss Richtung zufälliges freies Feld
+      const rnd = nodes.filter(n=>n && n.id && !(nodesById.get(n.id)?.type==="start")).map(n=>n.id);
+      if(rnd.length) goalIds = [ rnd[Math.floor(Math.random()*rnd.length)] ];
     }
     if(!goalIds.length) return;
 
@@ -1165,6 +1178,12 @@ function runBossPhaseThen(done){
   try{
     if(state.gameOver) return;
     ensureBossState();
+
+    // Round-End Flag: gilt für Bosse, die nur am Rundenende laufen.
+    // Wichtig: Boss-Phase läuft VOR dem Spielerwechsel. Also prüfen wir,
+    // ob der nächste "echte" Spielerwechsel (ohne pendingSix) eine Runde abschließt.
+    const _willAdvance = !state.pendingSix;
+    state._bossRoundEndFlag = _willAdvance && (state.players.length <= 1 || state.turn === state.players.length - 1);
 
     const hasAlive = (state.bosses||[]).some(b=>b.alive!==false);
     if(!state.bossAuto || !hasAlive){
