@@ -743,7 +743,21 @@ const BOSS_TYPES = {
   }
 
 
-};
+,
+  magnet: {
+    name: "Der Magnet",
+    icon: "🧲",
+    color: "rgba(80,170,255,.95)",
+    traits: [
+      "Zieht alle Figuren am Rundenende 1 Feld näher zu sich (Startfelder inkl.)",
+      "Wenn Zielfeld belegt: Figur rutscht 1 Feld weiter (Reihenfolge Team 1→4)",
+      "Landung auf Barrikade: Spieler platziert sie neu",
+      "Zielpunkte/Ereignisse werden normal eingesammelt"
+    ],
+    moveOnRoundEnd: true,
+    stepsPerMove: 0,
+    respectsShield: true
+  }};
 
 function ensureBossState(){
   if(!Array.isArray(state.bosses)) state.bosses = [];
@@ -1211,7 +1225,83 @@ function updateBossesAfterPlayerAction(){
           continue;
         }
 
-        const steps = Math.max(1, Number(def.stepsPerMove||3));
+        
+
+        // Magnet: zieht alle Spielfiguren 1 Feld Richtung Boss (Startfelder inkl.)
+        if(b.type === "magnet"){
+          const targetId = b.node;
+
+          // BFS-Distanzen vom Boss
+          const dist = new Map();
+          const q = [targetId];
+          dist.set(targetId, 0);
+          while(q.length){
+            const cur = q.shift();
+            const curD = dist.get(cur);
+            const nbs = adj.get(cur) || [];
+            for(const nb of nbs){
+              if(!dist.has(nb)){
+                dist.set(nb, curD + 1);
+                q.push(nb);
+              }
+            }
+          }
+
+          const nextToward = (fromId)=>{
+            const d0 = dist.get(fromId);
+            if(d0==null) return null;
+            let best = null;
+            let bestD = d0;
+            for(const nb of (adj.get(fromId)||[])){
+              const dn = dist.get(nb);
+              if(dn==null) continue;
+              if(dn < bestD){
+                bestD = dn;
+                best = nb;
+              }
+            }
+            return best;
+          };
+
+          const pullPieces = state.pieces
+            .filter(p=>p && p.node)
+            .slice()
+            .sort((a,b2)=>a.team-b2.team);
+
+          for(const p of pullPieces){
+            const step1 = nextToward(p.node);
+            if(!step1) continue;
+
+            let dest = step1;
+
+            // Wenn belegt -> 1 Feld weiter (falls möglich)
+            if(state.occupied.has(dest)){
+              const step2 = nextToward(dest);
+              if(step2 && !state.occupied.has(step2)){
+                dest = step2;
+              } else {
+                continue;
+              }
+            }
+
+            // Move ohne Schmeißen (Magnet schiebt nur)
+            state.occupied.delete(p.node);
+            p.prev = p.node;
+            p.node = dest;
+            state.occupied.set(dest, p.id);
+
+            // Schild endet sobald bewegt
+            if(p.shielded) p.shielded = false;
+
+            // Landeeffekte (Barrikade aufnehmen/setzen, Event/Ziel)
+            resolveLanding(p, {allowPortal:true, fromBarricade:false});
+          }
+
+          // Magnet selbst bewegt sich nicht
+          continue;
+        }
+
+const steps = Math.max(1, Number(def.stepsPerMove||3));
         for(let i=0;i<steps;i++){
           moveBossOneStep(b, false);
         }
