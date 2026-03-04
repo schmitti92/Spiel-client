@@ -751,9 +751,87 @@ function maybeDefeatBossAtNode(nodeId, byTeam){
   }
 
   // Treffer 1: Teleport
-  const ok = teleportBossRandomFree(b, nodeId, 6);
+  // Regel: Mindestabstand (z.B. 6 Felder) gilt NUR zum Spieler, der den Boss getroffen hat.
+  const ok = teleportBossRandomFree(b, nodeId, 6, byTeam);
   updateBossUI();
   setStatus(`Team ${byTeam}: Boss getroffen (1/2) – teleportiert${ok ? "" : " (kein freies Feld gefunden)"}!`);
+  return true;
+}
+
+// Teleportiert den Boss auf ein zufälliges freies Feld.
+// - Der Boss darf nicht auf Startfelder.
+// - Der Mindestabstand (in Feldern/Schritten auf dem Graphen) gilt NUR zu den Figuren des Teams `byTeam`.
+//   (Andere Teams dürfen näher sein.)
+function teleportBossRandomFree(boss, fromNodeId, minDist=0, byTeam=null){
+  ensureBossState();
+  if(!boss || boss.alive===false) return false;
+
+  const team = Number(byTeam||0);
+  const teamNodes = team ? getTeamPieceNodes(team) : [];
+
+  // Kandidaten: alle Nodes, die nicht blockiert sind
+  const candidates = [];
+  for(const n of nodes){
+    if(!n || !n.id) continue;
+    const id = n.id;
+    if(id === fromNodeId) continue;
+    if(isNodeBlockedForBoss(id)) continue;
+    // Boss nicht direkt auf eine Figur
+    if(state.occupied.has(id)) continue;
+    // Optional: nicht direkt auf Barrikade teleportieren (wir wollen „frei“)
+    if(barricades && barricades.has(id)) continue;
+    candidates.push(id);
+  }
+  if(!candidates.length) return false;
+
+  const randPick = (arr)=>arr[Math.floor(Math.random()*arr.length)];
+
+  // Keine Distanzregel nötig?
+  if(!minDist || minDist <= 0 || !teamNodes.length){
+    boss.node = randPick(candidates);
+    return true;
+  }
+
+  // BFS-Distanz von einem Start zu allen Knoten
+  const bfsDistances = (startId)=>{
+    const dist = new Map();
+    dist.set(startId, 0);
+    const q = [startId];
+    while(q.length){
+      const cur = q.shift();
+      const d = dist.get(cur);
+      for(const nb of (adj.get(cur)||[])){
+        // Boss ignoriert Startfelder komplett als „begehbar“
+        const nn = nodesById.get(nb);
+        if(nn && nn.type === "start") continue;
+        if(dist.has(nb)) continue;
+        dist.set(nb, d+1);
+        q.push(nb);
+      }
+    }
+    return dist;
+  };
+
+  // Wir wollen: Abstand(candidate -> irgendeine Figur von byTeam) >= minDist
+  // Für performance: Distanzkarten pro Kandidat sind ok (Board ist klein).
+  const good = [];
+  for(const cand of candidates){
+    const dist = bfsDistances(cand);
+    let best = Infinity;
+    for(const tnode of teamNodes){
+      const d = dist.get(tnode);
+      if(typeof d === "number" && d < best) best = d;
+    }
+    if(best >= minDist) good.push(cand);
+  }
+
+  if(good.length){
+    boss.node = randPick(good);
+    return true;
+  }
+
+  // Fallback: wenn kein Feld den Mindestabstand schafft, teleportiere trotzdem irgendwo frei.
+  boss.node = randPick(candidates);
   return true;
 }
 
