@@ -1901,11 +1901,12 @@ const FORCE_EVENT_EVERY_LANDING = true;
 const FORCE_EVENT_CARD_ID = null;
 
 const EVENT_DECK = [
-  { id:"joker_pick6", title:"Zufälliger Joker", text:"Wähle 1 von 6 Karten – du bekommst den Joker dahinter.", effect:"joker_pick6" },
-  { id:"gold", title:"Goldfund", text:"+1 Barrikade in Reserve (als Beute).", effect:"addCarry" },
-  { id:"trap", title:"Falle!", text:"Nächster Wurf -2 (min. 1).", effect:"nextRollMinus2" },
-  { id:"blessing", title:"Segen", text:"Du darfst sofort 1 Feld extra gehen (optional).", effect:"bonusStep" },
-  { id:"swap", title:"Tauschhandel", text:"Tausche Position mit einer beliebigen eigenen Figur.", effect:"swapOwn" }
+  { 
+    id:"joker_pick6",
+    title:"Zufälliger Joker",
+    text:"Wähle 1 von 6 Karten – du bekommst den Joker dahinter.",
+    effect:"joker_pick6"
+  }
 ];
 
 function showEventOverlay(card, onClose){
