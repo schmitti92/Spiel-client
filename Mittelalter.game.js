@@ -245,6 +245,27 @@ function consumeJoker(team, id){
   return true;
 }
 
+
+function removeRandomJoker(team, amount=1){
+  ensureJokerState();
+  amount = Math.max(1, amount|0);
+  let removed = 0;
+  for(let i=0;i<amount;i++){
+    const pool = [];
+    for(const j of JOKERS){
+      const c = jokerCount(team, j.id);
+      if(c>0) pool.push(j.id);
+    }
+    if(!pool.length) break;
+    const id = pool[Math.floor(Math.random()*pool.length)];
+    const c = jokerCount(team,id);
+    state.jokers[team][id] = clamp(c-1,0,JOKER_MAX);
+    removed++;
+  }
+  if(removed) updateJokerUI();
+  return removed;
+}
+
 function addJoker(team, id, amount=1){
   ensureJokerState();
   const cur = jokerCount(team,id);
@@ -672,6 +693,25 @@ const BOSS_TYPES = {
     respectsShield: true
   }
 
+  ,
+  reaper: {
+    name: "Der Räuber",
+    icon: "🗡",
+    color: "rgba(140,90,255,.95)",
+    traits: [
+      "Bewegt sich nur am Rundenende",
+      "Läuft dann 5 Felder",
+      "Auf dem Weg: Spieler verlieren 1 zufälligen Joker",
+      "Auf dem Zielfeld (⭐): Spieler wird auf Start geworfen",
+      "Bei Treffer: teleportiert (min. 6 Felder Abstand zum Treffer-Spieler)",
+      "Kann NICHT über Barrikaden laufen (wenn blockiert: Zug verfällt)"
+    ],
+    moveOnRoundEnd: true,
+    stepsPerMove: 5,
+    respectsShield: true
+  }
+
+
 };
 
 function ensureBossState(){
@@ -739,7 +779,16 @@ function maybeDefeatBossAtNode(nodeId, byTeam){
   const b = state.bosses.find(x => x.alive !== false && x.node === nodeId);
   if(!b) return false;
 
-  // Boss braucht 2 Treffer. Bei Treffer 1 teleportiert er (min. 6 Felder Abstand).
+  // Standard: Bosse sind sofort besiegbar (1 Treffer) – AUSSER Boss 3 (Der Räuber) braucht 2 Treffer.
+  if(b.type !== "reaper"){
+    b.alive = false;
+    b.node = null;
+    updateBossUI();
+    setStatus(`Team ${byTeam}: Boss besiegt (${(BOSS_TYPES[b.type]?.name)||b.name||b.type})!`);
+    return true;
+  }
+
+  // Boss 3: braucht 2 Treffer. Treffer 1 => Teleport (min. 6 Felder Abstand nur zum Treffer-Spieler).
   b.hits = (b.hits || 0) + 1;
 
   if(b.hits >= 2){
@@ -750,8 +799,6 @@ function maybeDefeatBossAtNode(nodeId, byTeam){
     return true;
   }
 
-  // Treffer 1: Teleport
-  // Regel: Mindestabstand (z.B. 6 Felder) gilt NUR zum Spieler, der den Boss getroffen hat.
   const ok = teleportBossRandomFree(b, nodeId, 6, byTeam);
   updateBossUI();
   setStatus(`Team ${byTeam}: Boss getroffen (1/2) – teleportiert${ok ? "" : " (kein freies Feld gefunden)"}!`);
@@ -889,15 +936,17 @@ function bfsNextStep(startId, goalIds, blockedFn){
   return null;
 }
 
-function bossBlocked(nextId, fromId){
+function bossBlocked(nextId, fromId, boss){
   // Boss ignoriert Startfelder komplett:
   // - darf NICHT darauf laufen
   // - darf sie auch nicht als Zwischen-Schritt nutzen
   const nn = nodesById.get(nextId);
   if(nn && nn.type === "start") return true;
 
-  // Barrikaden blocken NICHT mehr hart, sonst kann ein Boss komplett eingesperrt werden.
-  // (Falls er auf eine Barrikade tritt, wird sie beim Schritt entfernt.)
+  // Boss 3 (Der Räuber): Barrikaden blocken hart (er darf NICHT drauf / drüber).
+  if(boss && boss.type === "reaper"){
+    if(barricades && barricades.has(nextId)) return true;
+  }
 
   // Schutzschild blockt Zwischen-Schritt (Boss darf nicht "drüber laufen")
   const occId = state.occupied.get(nextId);
@@ -915,11 +964,24 @@ function bossCollideAt(nodeId, boss){
   const p = state.pieces.find(x=>x.id===occId);
   if(!p) return false;
 
-  // Jäger: Berührung => zurück auf Start (sofern Schild nicht schützt)
-  const def = BOSS_TYPES[boss.type];
   const respectsShield = boss?.meta?.respectsShield ?? true;
   if(respectsShield && p.shielded) return false;
 
+  // Boss 3: nur auf dem Zielfeld (⭐) wird geschmissen, sonst Joker klauen.
+  if(boss.type === "reaper"){
+    if(state.goalNodeId && nodeId === state.goalNodeId){
+      kickToStart(p);
+      console.info("[BOSS] reaper hit GOAL -> kick", p.id);
+      return true;
+    }
+    // sonst: 1 zufälligen Joker verlieren
+    if(removeRandomJoker(p.team, 1)){
+      console.info("[BOSS] reaper stole random joker from team", p.team);
+    }
+    return true;
+  }
+
+  // Standard (Jäger/Zerstörer): Berührung => zurück auf Start
   kickToStart(p);
   console.info("[BOSS] collide", boss.type, boss.id, "-> kick", p.id);
   return true;
@@ -949,7 +1011,7 @@ function moveBossOneStep(boss, force=false){
     const goalIds = goals.length ? goals : fallback;
 if(!goalIds.length) return;
 
-    const step = bfsNextStep(boss.node, goalIds, bossBlocked);
+    const step = bfsNextStep(boss.node, goalIds, (n,f)=>bossBlocked(n,f,boss));
     if(!step || step === boss.node){
       if(state.bossDebug){
         const neigh = (adj.get(boss.node)||[]).slice(0,12);
@@ -982,7 +1044,7 @@ if(!goalIds.length) return;
     }
     if(!goalIds.length) return;
 
-    const step = bfsNextStep(boss.node, goalIds, bossBlocked);
+    const step = bfsNextStep(boss.node, goalIds, (n,f)=>bossBlocked(n,f,boss));
     if(!step || step === boss.node){
       if(state.bossDebug){
         const neigh = (adj.get(boss.node)||[]).slice(0,12);
@@ -1000,6 +1062,36 @@ if(!goalIds.length) return;
     boss.node = step;
     bossCollideAt(step, boss);
   }
+
+  else if(boss.type === "reaper"){
+    // Boss 3 (Der Räuber): jagt bevorzugt das Zielfeld (⭐), sonst Richtung führendes Team.
+    let goalIds = [];
+    if(state.goalNodeId && !isStartNode(state.goalNodeId)){
+      goalIds = [state.goalNodeId];
+    }
+    if(!goalIds.length){
+      const t = leadingTeam();
+      goalIds = getTeamPieceNodes(t).filter(id=>!isStartNode(id));
+      if(!goalIds.length){
+        goalIds = state.pieces.filter(p=>p.node && !isStartNode(p.node)).map(p=>p.node);
+      }
+    }
+    if(!goalIds.length) return;
+
+    const step = bfsNextStep(boss.node, goalIds, (n,f)=>bossBlocked(n,f,boss));
+    if(!step || step === boss.node){
+      if(state.bossDebug){
+        const neigh = (adj.get(boss.node)||[]).slice(0,12);
+        console.warn("[BOSS] no-step", boss.id, "at", boss.node, "neigh", neigh, "goals", goalIds.slice(0,6), "tick", state.bossTick);
+      }
+      return;
+    }
+
+    // Räuber darf nicht auf Barrikaden laufen -> BFS blockt bereits.
+    boss.node = step;
+    bossCollideAt(step, boss);
+  }
+
 
 }
 
@@ -1043,8 +1135,8 @@ function updateBossesAfterPlayerAction(){
           moveBossOneStep(b, false);
         }
 
-        // Extra-Effekt: 1 zufällige Barrikade zusätzlich zerstören (wenn vorhanden)
-        if(barricades && barricades.size){
+        // Extra-Effekt: nur Der Zerstörer zerstört zusätzlich 1 zufällige Barrikade
+        if(b.type === "destroyer" && barricades && barricades.size){
           const arr = Array.from(barricades);
           const pick = arr[Math.floor(Math.random()*arr.length)];
           barricades.delete(pick);
