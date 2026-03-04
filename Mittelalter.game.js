@@ -402,19 +402,7 @@ const state = {
   placeHighlighted:new Set(),
   jokerHighlighted:new Set(),  // Joker placement targets (e.g. barricade move)
   eventActive:new Set(),
-  lastEvent:null,
-
-  // --- Event / Spezial-Effekte ---
-  effectFlags: {
-    forceEventId: null,          // zum Testen: nächste Karte fixieren
-    forceExtraRoll: false,       // Extra-Wurf vom Event
-    skipBarricadesOnce: false,   // nächster Move darf Barrikaden auf dem Weg überspringen
-  },
-
-  // --- Zusätzliche Felder (visuell) ---
-  lightFields: new Set(),        // spawned light fields (optional)
-  doubleGoalNodeId: null,        // Zielfeld mit doppelten Punkten (optional)
-  // Barricade placement targets
+  lastEvent:null,  // Barricade placement targets
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
@@ -477,6 +465,9 @@ function setPlayerCount(n, opts={reset:true}){
   if(opts.reset){
     initPieces();
     initEventFieldsFromBoard();
+    ensureEventRuntime();
+    buildEventDeck();
+    ensureEventTestPanel();
 
     // Zielpunkte zurücksetzen
     state.goalScores = {1:0,2:0,3:0,4:0};
@@ -492,9 +483,6 @@ function setPlayerCount(n, opts={reset:true}){
 
   renderJokerButtons();
   updateJokerUI();
-
-  // Event-Test UI
-  try{ ensureEventTesterPanel(); }catch(e){ console.warn('[EVENT] tester ui failed', e); }
 }
 
 function isStartNode(id){
@@ -1784,12 +1772,10 @@ function spawnGoalRandom(force=false){
 
 function maybeCaptureGoal(piece){
   if(state.gameOver) return false;
+  if(!state.goalNodeId) return false;
   if(!piece || !piece.node) return false;
 
-  const isNormal = (piece.node === state.goalNodeId);
-  const isDouble = (state.doubleGoalNodeId && piece.node === state.doubleGoalNodeId);
-
-  if(!isNormal && !isDouble) return false;
+  if(piece.node !== state.goalNodeId) return false;
 
   // Wenn hier eine Barrikade liegt, ist der Zielpunkt "versteckt" und kann nicht eingesammelt werden.
   if(barricades.has(piece.node)) return false;
@@ -1800,17 +1786,9 @@ function maybeCaptureGoal(piece){
     return false;
   }
 
-  // Punkte
+  // Punkt einsammeln
   const t = piece.team;
-  const add = isDouble ? 2 : 1;
-  state.goalScores[t] = (state.goalScores[t]||0) + add;
-
-  // Doppelziel wird nach Capture entfernt und neu gespawnt (später wieder durch Event)
-  if(isDouble){
-    state.doubleGoalNodeId = null;
-  }else{
-    state.goalNodeId = null;
-  }
+  state.goalScores[t] = (state.goalScores[t]||0) + 1;
 
   // Sieg?
   if(state.goalScores[t] >= state.goalToWin){
@@ -1821,10 +1799,10 @@ function maybeCaptureGoal(piece){
     return true;
   }
 
-  // Normalziel immer neu spawnen, falls es weg ist
-  if(!state.goalNodeId) spawnGoalRandom(true);
-
-  setStatus(`🎯 Team ${t} sammelt ${add} Zielpunkt${add===2?"e":""}! Stand: ${state.goalScores[t]}/${state.goalToWin}`);
+  // Neu spawnen
+  state.goalNodeId = null;
+  spawnGoalRandom(true);
+  setStatus(`🎯 Team ${t} sammelt einen Zielpunkt! Stand: ${state.goalScores[t]}/${state.goalToWin}`);
   return true;
 }
 
@@ -1918,453 +1896,124 @@ function showWinOverlay(team){
   ov.style.display="flex";
 }
 
-// ---------- Event Cards (Ereignisse) ----------
-// Ziel: Alle Karten liegen als "gewichteter Pool" vor (Anzahl = Häufigkeit).
-// Testen: Rechts im Sidebar gibt es einen "Event-Test" Bereich, dort kannst du jede Karte manuell auslösen.
 
-function ensureEventState(){
+// ---------- Event Cards (Ereignisse) ----------
+// Ziel: Alle Karten als gewichteten Pool (Anzahl = Gewicht), Overlay anzeigen, Effekt ausführen,
+// und ein Test-Panel im Sidebar zum gezielten Testen einzelner Karten.
+
+function ensureEventRuntime(){
   if(!state.eventActive) state.eventActive = new Set();
   if(!("lastEvent" in state)) state.lastEvent = null;
-  if(!state.effectFlags) state.effectFlags = { forceEventId:null, forceExtraRoll:false, skipBarricadesOnce:false };
-  if(!state.lightFields) state.lightFields = new Set();
-  if(!("doubleGoalNodeId" in state)) state.doubleGoalNodeId = null;
+  if(!state.eventFlags) state.eventFlags = {
+    skipBarricadesNextMove:false,
+    eventChainDepth:0
+  };
+  if(!state.lightNodes) state.lightNodes = new Set();
+  if(!("doubleGoalNodeId" in state)) state.doubleGoalNodeId = null; // Ziel mit doppelten Punkten
+  if(!("eventFixedCardId" in state)) state.eventFixedCardId = null; // Test: nächste Karte fix
 }
 
-function giveRandomJoker(team, amount=1){
-  ensureJokerState();
-  const pool = (JOKERS||[]).map(j=>j.id).filter(Boolean);
-  if(!pool.length) return 0;
-  let given = 0;
-  for(let i=0;i<Math.max(1,amount|0);i++){
-    const id = pool[Math.floor(Math.random()*pool.length)];
-    addJoker(team, id, 1);
-    given++;
-  }
-  updateJokerUI();
-  return given;
-}
+const EVENT_CARD_DEFS = [
+  // 🃏 Joker
+  { id:"joker_random",  title:"Zufälliger Joker", text:"Du erhältst einen zufälligen Joker.", type:"joker_random" },
+  { id:"joker_wheel",   title:"Glücksrad", text:"Glücksrad: Zufälliger Joker + Anzahl (1–3).", type:"joker_wheel" },
+  { id:"joker_rain",    title:"Joker-Regen", text:"Alle anderen Spieler erhalten 2 zufällige Joker.", type:"joker_rain" },
 
-function giveRandomJokerToOthers(amountEach=1){
-  const me = currentTeam();
-  for(const t of state.players){
-    if(t === me) continue;
-    giveRandomJoker(t, amountEach);
-  }
-}
+  // 🧱 Barrikaden
+  { id:"barr_move_1",   title:"Barrikade versetzen", text:"Du darfst 1 Barrikade versetzen.", type:"barricade_move", amount:1 },
+  { id:"barr_move_2",   title:"Zwei Barrikaden versetzen", text:"Du darfst 2 Barrikaden versetzen.", type:"barricade_move", amount:2 },
+  { id:"barr_shuffle",  title:"Barrikaden mischen", text:"Alle Barrikaden werden neu gemischt.", type:"barricade_shuffle" },
+  { id:"barr_invasion", title:"Barrikaden-Invasion", text:"Auf allen Ereignisfeldern und dem Zielfeld werden zusätzliche Barrikaden platziert.", type:"barricade_invasion" },
+  { id:"barr_half",     title:"Barrikaden verschwinden", text:"Die Hälfte der Barrikaden verschwindet vom Brett.", type:"barricade_half_remove" },
+  { id:"barr_jump",     title:"Barrikaden-Sprung", text:"Du darfst nochmal würfeln und darfst Barrikaden auf dem Weg überspringen (1x).", type:"barricade_jump" },
 
-function removeAllJokers(team){
-  ensureJokerState();
-  for(const j of JOKERS){
-    state.jokers[team][j.id] = 0;
-  }
-  updateJokerUI();
-}
+  // ⚙ Spielmechanik
+  { id:"boss_1",        title:"Boss erscheint", text:"1 Boss erscheint auf dem Brett.", type:"boss_spawn", amount:1 },
+  { id:"boss_2",        title:"Zwei Bosse erscheinen", text:"2 Bosse erscheinen auf dem Brett.", type:"boss_spawn", amount:2 },
+  { id:"extra_roll",    title:"Extra-Wurf", text:"Du darfst nochmal würfeln.", type:"extra_roll" },
+  { id:"start_spawn",   title:"Startfeld-Spawn", text:"Alle Spieler auf dem Startfeld werden zufällig aufs Brett gespawnt (nicht auf Zielfeld, Startfelder, Bossfelder, Portale oder Barrikaden).", type:"start_spawn" },
+  { id:"all_to_start",  title:"Zurück zum Start", text:"Alle Spieler müssen aufs Startfeld.", type:"all_to_start" },
+  { id:"lose_jokers",   title:"Jokerverlust", text:"Du verlierst alle Joker.", type:"lose_all_jokers" },
+  { id:"respawn_events",title:"Ereignisfelder neu", text:"Alle Ereignisfelder werden neu gespawnt.", type:"respawn_events" },
+  { id:"double_goal",   title:"Doppel-Ziel", text:"Ein Zielfeld mit doppelten Punkten wird gespawnt.", type:"double_goal_spawn" },
+  { id:"dice_duel",     title:"Würfel-Duell", text:"Alle würfeln: niedrigster Wurf gibt dem höchsten Wurf 1 zufälligen Joker.", type:"dice_duel" },
 
-function clampInt(v,a,b){ v = Number(v||0); return Math.max(a, Math.min(b, v|0)); }
+  // 🏆 Siegpunkte
+  { id:"lose_point",    title:"Siegpunkt verlieren", text:"Du verlierst 1 Siegpunkt.", type:"lose_point", amount:1 },
+  { id:"gain_point",    title:"Siegpunkt erhalten", text:"Du erhältst 1 Siegpunkt.", type:"gain_point", amount:1 },
+  { id:"gain_2",        title:"Doppel-Siegpunkt", text:"Du erhältst 2 Siegpunkte.", type:"gain_point", amount:2 },
+  { id:"points_trade",  title:"Punktetausch", text:"Spieler mit den meisten Siegpunkten gibt dem Spieler mit den wenigsten 1 Siegpunkt.", type:"points_trade" },
+  { id:"steal_point",   title:"Siegpunkt klauen", text:"Klaue 1 Siegpunkt von einem Mitspieler.", type:"steal_point", amount:1 },
 
-const EVENT_DECK = []; // built by buildEventDeck()
+  // 🧍 Bewegung
+  { id:"shuffle_pieces",title:"Figuren mischen", text:"Alle Spielfiguren werden gemischt.", type:"shuffle_pieces" },
+  { id:"back_self",     title:"Zurück aus Start", text:"Du musst zurück aufs Startfeld.", type:"back_to_start_self" },
+  { id:"back_others",   title:"Alle zurück", text:"Alle anderen Spieler müssen komplett zurück aufs Startfeld.", type:"back_to_start_others" },
+  { id:"move_5",        title:"Sprint", text:"Laufe 5 Felder.", type:"move_forward", amount:5 },
+  { id:"move_10",       title:"Mega-Sprint", text:"Laufe 10 Felder.", type:"move_forward", amount:10 },
 
-function addEventCards(type, title, text, count, extra={}){
-  for(let i=0;i<(count|0);i++){
-    EVENT_DECK.push({ id: `${type}:${title}`.replace(/\s+/g,"_"), type, title, text, ...extra });
+  // ✨ Spezial
+  { id:"light_spawn",   title:"Lichtfeld erscheint", text:"Ein zusätzliches Lichtfeld erscheint auf dem Brett.", type:"light_spawn", amount:1 }
+];
+
+const EVENT_DECK = []; // expanded weighted deck (built at runtime)
+
+function addEventCards(defId, count){
+  const def = EVENT_CARD_DEFS.find(d=>d.id===defId);
+  if(!def) return;
+  for(let i=0;i<count;i++){
+    EVENT_DECK.push(def);
   }
 }
 
 function buildEventDeck(){
   EVENT_DECK.length = 0;
 
-  // 🃏 Joker-Karten
-  addEventCards("joker_random","Zufälliger Joker","Du erhältst einen zufälligen Joker.",50);
-  addEventCards("joker_wheel","Glücksrad","Erst wird ein Joker ausgewählt, danach die Anzahl (1–3 Stück).",10);
-  addEventCards("joker_rain","Joker-Regen","Alle anderen Spieler erhalten 2 zufällige Joker.",10);
+  // 🃏 Joker-Karten (50 / 10 / 10)
+  addEventCards("joker_random", 50);
+  addEventCards("joker_wheel",  10);
+  addEventCards("joker_rain",   10);
 
-  // 🧱 Barrikaden-Karten
-  addEventCards("barricade_move","Barrikade versetzen","Du darfst 1 Barrikade versetzen.",5,{amount:1});
-  addEventCards("barricade_move","Zwei Barrikaden versetzen","Du darfst 2 Barrikaden versetzen.",3,{amount:2});
-  addEventCards("barricade_shuffle","Barrikaden mischen","Alle Barrikaden werden neu gemischt.",1);
-  addEventCards("barricade_invasion","Barrikaden-Invasion","Auf allen Ereignisfeldern und dem Zielfeld werden zusätzliche Barrikaden platziert.",2);
-  addEventCards("barricade_half_vanish","Barrikaden verschwinden","Die Hälfte aller Barrikaden verschwindet vom Brett.",1);
-  addEventCards("barricade_jump","Barrikaden-Sprung","Du darfst noch einmal würfeln und Barrikaden auf deinem Weg überspringen.",1);
+  // 🧱 Barrikaden-Karten (5 / 3 / 1 / 2 / 1 / 1)
+  addEventCards("barr_move_1",  5);
+  addEventCards("barr_move_2",  3);
+  addEventCards("barr_shuffle", 1);
+  addEventCards("barr_invasion",2);
+  addEventCards("barr_half",    1);
+  addEventCards("barr_jump",    1);
 
   // ⚙ Spielmechanik-Karten
-  addEventCards("boss_spawn","Boss erscheint","1 Boss erscheint auf dem Brett.",5,{amount:1});
-  addEventCards("boss_spawn","Zwei Bosse erscheinen","2 Bosse erscheinen.",1,{amount:2});
-  addEventCards("extra_roll","Extra-Wurf","Du darfst noch einmal würfeln.",3);
-  addEventCards("startfield_spawn","Startfeld-Spawn","Alle Spieler auf dem Startfeld werden zufällig aufs Brett gespawnt (nicht auf Zielfeld/Start/Boss/Portal/Barrikade).",1);
-  addEventCards("all_to_start","Zurück zum Start","Alle Spieler müssen zurück auf das Startfeld.",1);
-  addEventCards("lose_all_jokers","Jokerverlust","Du verlierst alle Joker.",1);
-  addEventCards("events_respawn","Ereignisfelder neu","Alle Ereignisfelder werden neu gespawnt.",2);
-  addEventCards("double_goal","Doppel-Ziel","Ein Zielfeld mit doppelten Punkten erscheint.",3);
-  addEventCards("dice_duel","Würfel-Duell","Alle würfeln. Niedrigster Wurf gibt dem höchsten einen zufälligen Joker.",1);
+  addEventCards("boss_1",        5);
+  addEventCards("boss_2",        1);
+  addEventCards("extra_roll",    3);
+  addEventCards("start_spawn",   1);
+  addEventCards("all_to_start",  1);
+  addEventCards("lose_jokers",   1);
+  addEventCards("respawn_events",2);
+  addEventCards("double_goal",   3);
+  addEventCards("dice_duel",     1);
 
-  // 🏆 Siegpunkt-Karten
-  addEventCards("lose_point","Siegpunkt verlieren","Du verlierst 1 Siegpunkt.",1,{amount:1});
-  addEventCards("gain_point","Siegpunkt erhalten","Du erhältst 1 Siegpunkt.",5,{amount:1});
-  addEventCards("gain_point","Doppel-Siegpunkt","Du erhältst 2 Siegpunkte.",2,{amount:2});
-  addEventCards("point_swap","Punktetausch","Meiste Punkte gibt dem wenigsten 1 Punkt.",2);
-  addEventCards("steal_point","Siegpunkt klauen","Klaue 1 Siegpunkt von einem Mitspieler.",1);
+  // 🏆 Siegpunkte
+  addEventCards("lose_point",    1);
+  addEventCards("gain_point",    5);
+  addEventCards("gain_2",        2);
+  addEventCards("points_trade",  2);
+  addEventCards("steal_point",   1);
 
-  // 🧍 Spieler-Bewegung
-  addEventCards("mix_figures","Figuren mischen","Alle Spielfiguren werden zufällig neu verteilt.",1);
-  addEventCards("self_to_start","Zurück aus Start","Du musst zurück zum Startfeld.",1);
-  addEventCards("others_to_start","Alle zurück","Alle anderen Spieler müssen komplett zurück aufs Startfeld.",1);
-  addEventCards("move_forward","Sprint","Laufe 5 Felder.",5,{amount:5});
-  addEventCards("move_forward","Mega-Sprint","Laufe 10 Felder.",5,{amount:10});
+  // 🧍 Bewegung
+  addEventCards("shuffle_pieces",1);
+  addEventCards("back_self",     1);
+  addEventCards("back_others",   1);
+  addEventCards("move_5",        5);
+  addEventCards("move_10",       5);
 
-  // ✨ Spezialfelder
-  addEventCards("light_spawn","Lichtfeld erscheint","Ein zusätzliches Lichtfeld erscheint auf dem Brett.",5);
+  // ✨ Spezial
+  addEventCards("light_spawn",   5);
 
   console.info("[EVENT] deck built:", EVENT_DECK.length);
 }
 
-function pickRandomEventCard(){
-  ensureEventState();
-  // Test: fixe nächste Karte
-  if(state.effectFlags && state.effectFlags.forceEventId){
-    const id = state.effectFlags.forceEventId;
-    const c = EVENT_DECK.find(x=>x.id===id) || EVENT_DECK.find(x=>x.title===id);
-    state.effectFlags.forceEventId = null;
-    return c || EVENT_DECK[Math.floor(Math.random()*EVENT_DECK.length)];
-  }
-  return EVENT_DECK[Math.floor(Math.random()*EVENT_DECK.length)];
-}
-
-function randomFreeSpawnNode(){
-  const blocked = new Set();
-  // block: goal, double-goal, starts, portals, boss fields, barricades, occupied, event fields
-  if(state.goalNodeId) blocked.add(state.goalNodeId);
-  if(state.doubleGoalNodeId) blocked.add(state.doubleGoalNodeId);
-  for(const n of nodes){
-    if(n.type==="start" || n.type==="portal" || n.type==="boss") blocked.add(n.id);
-  }
-  for(const id of barricades) blocked.add(id);
-  for(const [id] of state.occupied) blocked.add(id);
-  for(const id of (state.eventActive||[])) blocked.add(id);
-
-  const candidates = nodes
-    .filter(n=>n && n.id)
-    .filter(n=>!blocked.has(n.id))
-    .filter(n=>n.type!=="obstacle")
-    .map(n=>n.id);
-
-  if(!candidates.length) return null;
-  return candidates[Math.floor(Math.random()*candidates.length)];
-}
-
-function spawnDoubleGoal(){
-  // Spawn nur, wenn nicht schon vorhanden
-  if(state.doubleGoalNodeId) return;
-  const blocked = new Set();
-  if(state.goalNodeId) blocked.add(state.goalNodeId);
-  for(const id of barricades) blocked.add(id);
-  for(const [id] of state.occupied) blocked.add(id);
-
-  const candidates = nodes
-    .filter(n=>n && n.id)
-    .filter(n=>n.type!=="start" && n.type!=="portal" && n.type!=="boss" && n.type!=="obstacle")
-    .map(n=>n.id)
-    .filter(id=>!blocked.has(id));
-
-  if(!candidates.length) return;
-  state.doubleGoalNodeId = candidates[Math.floor(Math.random()*candidates.length)];
-}
-
-function respawnAllEventFields(){
-  ensureEventState();
-  const count = state.eventActive ? state.eventActive.size : 0;
-  state.eventActive.clear();
-  const eligible = nodes.filter(nn=>isEligibleEventSpawnNode(nn.id)).map(nn=>nn.id);
-  // Wenn eligible zu klein, fallback: init vom Board
-  if(eligible.length < count){
-    initEventFieldsFromBoard();
-    return;
-  }
-  // pick unique
-  const pool = eligible.slice();
-  for(let i=0;i<count;i++){
-    const k = Math.floor(Math.random()*pool.length);
-    const id = pool.splice(k,1)[0];
-    state.eventActive.add(id);
-  }
-  console.info("[EVENT] respawn all:", Array.from(state.eventActive));
-}
-
-function shuffleBarricades(){
-  const num = barricades.size;
-  if(!num) return;
-
-  barricades.clear();
-  const placed = new Set();
-  for(let i=0;i<num;i++){
-    const id = relocateBarricadeRandom(placed);
-    if(!id) break;
-    placed.add(id);
-    barricades.add(id);
-  }
-}
-
-function placeExtraBarricadeAt(id){
-  if(!id) return false;
-  if(!isFreeForBarricade(id)) return false;
-  barricades.add(id);
-  return true;
-}
-
-function applyEventCard(card, piece){
-  ensureEventState();
-  ensureJokerState();
-  ensureBossState();
-
-  const team = piece?.team || currentTeam();
-  const amt = clampInt(card?.amount, 0, 99);
-
-  console.info("[EVENT] apply", card?.type, card?.title, "team", team);
-
-  switch(card.type){
-
-    // 🃏 Joker
-    case "joker_random":{
-      giveRandomJoker(team, 1);
-      break;
-    }
-
-    case "joker_wheel":{
-      // Joker wählen + Menge (1-3)
-      const amount = 1 + Math.floor(Math.random()*3);
-      giveRandomJoker(team, amount);
-      break;
-    }
-
-    case "joker_rain":{
-      giveRandomJokerToOthers(2);
-      break;
-    }
-
-    // 🧱 Barrikaden
-    case "barricade_move":{
-      const n = Math.max(1, amt||1);
-      for(let i=0;i<n;i++){
-        if(!barricades.size) break;
-        const arr = Array.from(barricades);
-        const from = arr[Math.floor(Math.random()*arr.length)];
-        barricades.delete(from);
-
-        const ex = new Set([from]);
-        // nicht direkt auf Bosse
-        for(const b of (state.bosses||[])){
-          if(b && b.alive!==false && b.node) ex.add(b.node);
-        }
-        const to = relocateBarricadeRandom(ex);
-        if(to) barricades.add(to);
-      }
-      break;
-    }
-
-    case "barricade_shuffle":{
-      shuffleBarricades();
-      break;
-    }
-
-    case "barricade_invasion":{
-      // auf alle Eventfelder + Ziel + Doppelziel je 1 Barrikade (wenn frei)
-      for(const id of (state.eventActive||[])) placeExtraBarricadeAt(id);
-      placeExtraBarricadeAt(state.goalNodeId);
-      placeExtraBarricadeAt(state.doubleGoalNodeId);
-      break;
-    }
-
-    case "barricade_half_vanish":{
-      const arr = Array.from(barricades);
-      const removeN = Math.floor(arr.length/2);
-      for(let i=0;i<removeN;i++){
-        const k = Math.floor(Math.random()*arr.length);
-        const id = arr.splice(k,1)[0];
-        barricades.delete(id);
-      }
-      break;
-    }
-
-    case "barricade_jump":{
-      // einmal Barrikaden überspringen + Extra-Wurf
-      if(state.effectFlags) state.effectFlags.skipBarricadesOnce = true;
-      if(state.effectFlags) state.effectFlags.forceExtraRoll = true;
-      break;
-    }
-
-    // ⚙ Mechanik
-    case "boss_spawn":{
-      const n = Math.max(1, amt||1);
-      const types = Object.keys(BOSS_TYPES||{});
-      for(let i=0;i<n;i++){
-        const t = types.length ? types[Math.floor(Math.random()*types.length)] : "hunter";
-        spawnBoss(t);
-      }
-      break;
-    }
-
-    case "extra_roll":{
-      if(state.effectFlags) state.effectFlags.forceExtraRoll = true;
-      break;
-    }
-
-    case "startfield_spawn":{
-      // alle Figuren auf Startfeldern -> random spawn
-      for(const p of state.pieces){
-        if(!p.node) continue;
-        if(!isStartNode(p.node)) continue;
-
-        const to = randomFreeSpawnNode();
-        if(!to) continue;
-        state.occupied.delete(p.node);
-        p.prev = p.node;
-        p.node = to;
-        state.occupied.set(to, p.id);
-      }
-      break;
-    }
-
-    case "all_to_start":{
-      for(const p of state.pieces){
-        if(!p.node) continue;
-        kickToStart(p);
-      }
-      break;
-    }
-
-    case "lose_all_jokers":{
-      removeAllJokers(team);
-      break;
-    }
-
-    case "events_respawn":{
-      respawnAllEventFields();
-      break;
-    }
-
-    case "double_goal":{
-      spawnDoubleGoal();
-      break;
-    }
-
-    case "dice_duel":{
-      const rolls = state.players.map(t=>({t, r:1+Math.floor(Math.random()*6)}));
-      rolls.sort((a,b)=>a.r-b.r);
-      const low = rolls[0];
-      const high = rolls[rolls.length-1];
-      if(low && high && low.t !== high.t){
-        // low gibt high einen random joker
-        if(removeRandomJoker(low.t, 1)){
-          giveRandomJoker(high.t, 1);
-        }else{
-          // wenn low keinen joker hat -> high bekommt trotzdem einen (für Spaß)
-          giveRandomJoker(high.t, 1);
-        }
-        setStatus(`🎲 Würfel-Duell: Team ${low.t} (${low.r}) -> Team ${high.t} (${high.r}) bekommt 1 Joker.`);
-      }
-      break;
-    }
-
-    // 🏆 Punkte
-    case "lose_point":{
-      state.goalScores[team] = Math.max(0, (state.goalScores[team]||0) - 1);
-      break;
-    }
-
-    case "gain_point":{
-      state.goalScores[team] = (state.goalScores[team]||0) + Math.max(1, amt||1);
-      // Sieg direkt prüfen
-      if(state.goalScores[team] >= state.goalToWin){
-        state.gameOver = true;
-        state.phase = "gameOver";
-        setStatus(`🏆 Team ${team} gewinnt! (${state.goalToWin} Zielpunkte erreicht)`);
-        showWinOverlay(team);
-      }
-      break;
-    }
-
-    case "point_swap":{
-      // meiste gibt wenigste 1
-      let maxT = null, minT = null, maxV=-Infinity, minV=Infinity;
-      for(const t of state.players){
-        const v = Number(state.goalScores[t]||0);
-        if(v>maxV){maxV=v; maxT=t;}
-        if(v<minV){minV=v; minT=t;}
-      }
-      if(maxT!=null && minT!=null && maxT!==minT && (state.goalScores[maxT]||0)>0){
-        state.goalScores[maxT] -= 1;
-        state.goalScores[minT] += 1;
-      }
-      break;
-    }
-
-    case "steal_point":{
-      const others = state.players.filter(t=>t!==team && (state.goalScores[t]||0)>0);
-      if(others.length){
-        const victim = others[Math.floor(Math.random()*others.length)];
-        state.goalScores[victim] -= 1;
-        state.goalScores[team] = (state.goalScores[team]||0) + 1;
-      }
-      break;
-    }
-
-    // 🧍 Bewegung / Positionen
-    case "mix_figures":{
-      const onBoard = state.pieces.filter(p=>p.node);
-      const nodesArr = onBoard.map(p=>p.node);
-      // shuffle nodes
-      for(let i=nodesArr.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        const tmp = nodesArr[i]; nodesArr[i]=nodesArr[j]; nodesArr[j]=tmp;
-      }
-      // reassign
-      state.occupied.clear();
-      for(let i=0;i<onBoard.length;i++){
-        onBoard[i].prev = onBoard[i].node;
-        onBoard[i].node = nodesArr[i];
-        state.occupied.set(nodesArr[i], onBoard[i].id);
-      }
-      break;
-    }
-
-    case "self_to_start":{
-      if(piece) kickToStart(piece);
-      break;
-    }
-
-    case "others_to_start":{
-      for(const p of state.pieces){
-        if(!p.node) continue;
-        if(p.team === team) continue;
-        kickToStart(p);
-      }
-      break;
-    }
-
-    case "move_forward":{
-      // Automatisch (Testspiel): random gültiges Zielfeld nach N Schritten
-      if(!piece || !piece.node) break;
-      computeMoveTargets(piece, Math.max(1, amt||1));
-      const opts = Array.from(state.highlighted);
-      state.highlighted.clear();
-      if(opts.length){
-        const target = opts[Math.floor(Math.random()*opts.length)];
-        move(piece, target);
-        // Landing sofort auswerten (ohne Portal doppelt zu triggern)
-        afterLanding(piece);
-      }
-      break;
-    }
-
-    // ✨ Spezial
-    case "light_spawn":{
-      // Lichtfeld auf random freien Node
-      const to = randomFreeSpawnNode();
-      if(to) state.lightFields.add(to);
-      break;
-    }
-  }
-}
-
+// ---- Overlay (bestehender Look, nur content per Karte) ----
 function showEventOverlay(card, onAccept){
   let ov = document.getElementById("eventOverlay");
   if(!ov){
@@ -2407,7 +2056,7 @@ function showEventOverlay(card, onAccept){
 
           <div style="flex:1;">
             <div id="eventTitle" style="font-weight:900; font-size:20px; letter-spacing:.2px; line-height:1.15;">Ereignis</div>
-            <div id="eventId" style="opacity:.65; font-size:11px; margin-top:2px;"></div>
+            <div style="opacity:.72; font-size:12px; margin-top:2px;">Ereigniskarte (Wachssiegel)</div>
           </div>
 
           <button id="eventCloseX" title="Schließen" style="
@@ -2468,25 +2117,579 @@ function showEventOverlay(card, onAccept){
     document.body.appendChild(ov);
 
     ov.addEventListener("click",(e)=>{
-      if(e.target===ov) ov.style.display="none";
+      if(e.target===ov) ov._doClose && ov._doClose();
     });
   }
 
   ov.querySelector("#eventTitle").textContent = card?.title || "Ereignis";
-  ov.querySelector("#eventId").textContent = card?.type ? `Typ: ${card.type}` : "";
-  ov.querySelector("#eventText").textContent = card?.text || "";
+  ov.querySelector("#eventText").textContent  = card?.text  || "";
   ov.style.display="flex";
 
-  const close = ()=>{ ov.style.display="none"; };
-  ov.querySelector("#eventCloseX").onclick = close;
-  ov.querySelector("#eventOk").onclick = ()=>{
-    close();
-    onAccept && onAccept();
+  ov._doClose = ()=>{
+    ov.style.display="none";
+    if(typeof onAccept==="function") onAccept();
   };
+
+  ov.querySelector("#eventOk").onclick = ov._doClose;
+  ov.querySelector("#eventCloseX").onclick = ov._doClose;
 }
 
-// --- Event Tester (Sidebar) ---
-function ensureEventTesterPanel(){
+// ---- Ziehen (mit optionalem Fix aus Testpanel) ----
+function pickRandomEventCard(){
+  ensureEventRuntime();
+  if(state.eventFixedCardId){
+    const def = EVENT_CARD_DEFS.find(d=>d.id===state.eventFixedCardId);
+    state.eventFixedCardId = null; // nur 1x
+    return def || EVENT_DECK[Math.floor(Math.random()*EVENT_DECK.length)];
+  }
+  return EVENT_DECK[Math.floor(Math.random()*EVENT_DECK.length)];
+}
+
+// ---- Helpers (Joker / Spawn / Punkte / Bewegung) ----
+function randomJokerId(){
+  return JOKERS[Math.floor(Math.random()*JOKERS.length)].id;
+}
+
+function giveRandomJoker(team, amount=1){
+  ensureJokerState();
+  for(let i=0;i<amount;i++){
+    const id = randomJokerId();
+    addJoker(team, id, 1);
+  }
+  updateJokerUI();
+}
+
+function giveRandomJokerToOthers(amountEach=2){
+  const me = currentTeam();
+  for(const t of state.players){
+    if(t===me) continue;
+    giveRandomJoker(t, amountEach);
+  }
+}
+
+function removeAllJokers(team){
+  ensureJokerState();
+  for(const j of JOKERS){
+    state.jokers[team][j.id] = 0;
+  }
+  updateJokerUI();
+}
+
+function addVictoryPoints(team, amount){
+  if(state.gameOver) return;
+  state.goalScores[team] = Math.max(0, (state.goalScores[team]||0) + (amount|0));
+}
+
+function isForbiddenSpawnNode(id){
+  const n = nodesById.get(id);
+  if(!n) return true;
+  if(n.type==="start" || n.type==="portal" || n.type==="boss") return true;
+  if(state.goalNodeId && id===state.goalNodeId) return true;
+  if(state.doubleGoalNodeId && id===state.doubleGoalNodeId) return true;
+  if(barricades.has(id)) return true;
+  if(state.occupied.has(id)) return true;
+  if(state.eventActive && state.eventActive.has(id)) return true;
+  return false;
+}
+
+function pickRandomFreeSpawnNode(){
+  const pool = nodes.map(n=>n.id).filter(id=>!isForbiddenSpawnNode(id));
+  if(!pool.length) return null;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function respawnAllEventFields(){
+  ensureEventRuntime();
+  // Wir behalten die ANZAHL an Eventfeldern und verteilen neu.
+  const count = state.eventActive ? state.eventActive.size : 0;
+  state.eventActive.clear();
+
+  const eligible = nodes
+    .filter(n=>n && n.id)
+    .filter(n=>n.type!=="start" && n.type!=="portal" && n.type!=="boss" && n.type!=="obstacle")
+    .map(n=>n.id)
+    .filter(id=>!state.occupied.has(id)); // Event darf nicht unter Figur liegen
+
+  // fallback
+  const fallback = nodes.map(n=>n.id).filter(id=>!state.occupied.has(id));
+
+  const pool = eligible.length ? eligible : fallback;
+  const pickUnique = ()=>{
+    if(!pool.length) return null;
+    const id = pool.splice(Math.floor(Math.random()*pool.length),1)[0];
+    return id;
+  };
+
+  for(let i=0;i<count;i++){
+    const id = pickUnique();
+    if(!id) break;
+    state.eventActive.add(id);
+  }
+  console.info("[EVENT] respawn all:", Array.from(state.eventActive));
+}
+
+function shuffleArray(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function relocateBarricadesAll(){
+  // mischt alle Barrikaden neu, behält Anzahl
+  const count = barricades.size;
+  barricades.clear();
+
+  const candidates = nodes.map(n=>n.id).filter(id=>isFreeForBarricade(id));
+  shuffleArray(candidates);
+
+  for(let i=0;i<count && i<candidates.length;i++){
+    barricades.add(candidates[i]);
+  }
+}
+
+function relocateSomeBarricades(amount){
+  amount = Math.max(1, amount|0);
+  const arr = Array.from(barricades);
+  if(!arr.length) return;
+
+  shuffleArray(arr);
+  const moveIds = arr.slice(0, Math.min(amount, arr.length));
+
+  for(const fromId of moveIds){
+    barricades.delete(fromId);
+
+    const ex = new Set([fromId]);
+    // niemals auf Boss / Figur / Start
+    if(Array.isArray(state.bosses)){
+      for(const b of state.bosses){
+        if(b && b.alive!==false && b.node) ex.add(b.node);
+      }
+    }
+
+    const toId = relocateBarricadeRandom(ex);
+    if(toId) barricades.add(toId);
+    else barricades.add(fromId); // fallback: zurück
+  }
+}
+
+function removeHalfBarricades(){
+  const arr = Array.from(barricades);
+  shuffleArray(arr);
+  const removeCount = Math.floor(arr.length/2);
+  for(let i=0;i<removeCount;i++){
+    barricades.delete(arr[i]);
+  }
+}
+
+function spawnExtraBarricadesOnEventsAndGoal(){
+  ensureEventRuntime();
+  const targets = new Set();
+  if(state.eventActive){
+    for(const id of state.eventActive) targets.add(id);
+  }
+  if(state.goalNodeId) targets.add(state.goalNodeId);
+  if(state.doubleGoalNodeId) targets.add(state.doubleGoalNodeId);
+
+  for(const id of targets){
+    // wenn schon Barrikade drauf: ok (nicht doppelt)
+    if(barricades.has(id)) continue;
+    // wir erlauben Barrikade auch auf Eventfeldern / Zielfeldern, aber nicht auf Start / Figur
+    if(!isFreeForBarricade(id)) continue;
+    barricades.add(id);
+  }
+}
+
+function spawnBosses(amount){
+  ensureBossState();
+  const keys = Object.keys(BOSS_TYPES);
+  for(let i=0;i<(amount|0);i++){
+    const t = keys[Math.floor(Math.random()*keys.length)];
+    spawnBoss(t);
+  }
+}
+
+function movePieceForwardSteps(piece, steps){
+  // nutzt bestehende Move-Targets (BFS) und wählt ein zufälliges Ziel
+  if(!piece || !piece.node) return false;
+  if(!steps || steps<=0) return false;
+
+  // Guard gegen Event-Kaskaden
+  ensureEventRuntime();
+  if(state.eventFlags.eventChainDepth > 3) return false;
+
+  // Temporär: Barrikaden überspringen?
+  const origCompute = computeMoveTargets;
+  if(state.eventFlags.skipBarricadesNextMove){
+    // Für 1 Move: computeMoveTargets "ohne Barrikadenblocker" – wir machen einen lokalen Re-Compute.
+    state.highlighted.clear();
+    const start = piece.node;
+    const q = [{ id: start, d: 0, from: null }];
+    const visited = new Set([start+"|0|null"]);
+    while(q.length){
+      const cur = q.shift();
+      if(cur.d === steps){
+        if(cur.id !== start){
+          const occ = state.occupied.get(cur.id);
+          if(!occ){
+            state.highlighted.add(cur.id);
+          }else{
+            const op = state.pieces.find(x=>x.id===occ);
+            if(op && op.team !== piece.team && !op.shielded){
+              // Portal-Schutz beachten
+              if(!(op && op.node && isPortalNode(op.node))) state.highlighted.add(cur.id);
+            }
+          }
+        }
+        continue;
+      }
+      for(const nb of (adj.get(cur.id)||[])){
+        if(cur.from && nb === cur.from) continue;
+        // ✅ Barrikaden NICHT blocken, wenn skip aktiv
+        // 🛡 Schutzschild blockt Zwischen-Schritte
+        if((cur.d+1) < steps){
+          const occ = state.occupied.get(nb);
+          if(occ){
+            const op = state.pieces.find(x=>x.id===occ);
+            if(op && op.shielded) continue;
+          }
+        }
+        const key = nb+"|"+(cur.d+1)+"|"+cur.id;
+        if(visited.has(key)) continue;
+        visited.add(key);
+        q.push({ id: nb, d: cur.d+1, from: cur.id });
+      }
+    }
+    // Flag verbrauchen
+    state.eventFlags.skipBarricadesNextMove = false;
+  }else{
+    computeMoveTargets(piece, steps);
+  }
+
+  const targets = Array.from(state.highlighted);
+  state.highlighted.clear();
+  if(!targets.length) return false;
+
+  const target = targets[Math.floor(Math.random()*targets.length)];
+  if(move(piece, target)){
+    state.eventFlags.eventChainDepth++;
+    afterLanding(piece);
+    state.eventFlags.eventChainDepth--;
+    return true;
+  }
+  return false;
+}
+
+// ---- Doppel-Ziel (2x Punkte) ----
+function spawnDoubleGoal(){
+  ensureEventRuntime();
+  const candidates = nodes
+    .filter(n=>n && n.id)
+    .filter(n=>n.type !== "start" && n.type !== "portal" && n.type !== "boss")
+    .map(n=>n.id)
+    .filter(id=>isFreeForGoal(id))
+    .filter(id=>id !== state.goalNodeId);
+
+  const pool = candidates.length ? candidates : nodes.map(n=>n.id).filter(id=>isFreeForGoal(id) && id!==state.goalNodeId);
+  if(!pool.length) return null;
+
+  const pick = pool[Math.floor(Math.random()*pool.length)];
+  state.doubleGoalNodeId = pick;
+  return pick;
+}
+
+function maybeCaptureDoubleGoal(piece){
+  ensureEventRuntime();
+  if(!state.doubleGoalNodeId) return false;
+  if(!piece || !piece.node) return false;
+  if(piece.node !== state.doubleGoalNodeId) return false;
+
+  if(barricades.has(piece.node)) return false;
+  if(state.bosses && state.bosses.some(b=>b.alive!==false && b.type==="guardian" && b.node===piece.node)){
+    setStatus("🛡 Der Wächter blockiert das Doppel-Ziel!");
+    return false;
+  }
+
+  const t = piece.team;
+  state.goalScores[t] = (state.goalScores[t]||0) + 2;
+
+  // Sieg?
+  if(state.goalScores[t] >= state.goalToWin){
+    state.gameOver = true;
+    state.phase = "gameOver";
+    setStatus(`🏆 Team ${t} gewinnt! (${state.goalToWin} Zielpunkte erreicht)`);
+    showWinOverlay(t);
+    return true;
+  }
+
+  // Doppelziel verschwindet, normaler Zielpunkt bleibt
+  state.doubleGoalNodeId = null;
+  setStatus(`✨ Team ${t} sammelt DOPPELT! (+2) Stand: ${state.goalScores[t]}/${state.goalToWin}`);
+  return true;
+}
+
+// ---- Haupt-Effekt-Abarbeitung ----
+function applyEventCard(card, piece){
+  ensureEventRuntime();
+  if(!card) return { endTurn:false };
+
+  const team = piece?.team || currentTeam();
+
+  switch(card.type){
+
+    // 🃏 Joker
+    case "joker_random":
+      giveRandomJoker(team, 1);
+      setStatus(`🃏 Team ${team}: Zufälliger Joker erhalten.`);
+      return { endTurn:false };
+
+    case "joker_wheel":{
+      const id = randomJokerId();
+      const amount = 1 + Math.floor(Math.random()*3);
+      addJoker(team, id, amount);
+      updateJokerUI();
+      setStatus(`🎰 Team ${team}: Glücksrad -> ${amount}× ${JOKERS.find(j=>j.id===id)?.name || id}`);
+      return { endTurn:false };
+    }
+
+    case "joker_rain":
+      giveRandomJokerToOthers(2);
+      setStatus(`🌧 Joker-Regen: Alle anderen erhalten 2 Joker.`);
+      return { endTurn:false };
+
+    // 🧱 Barrikaden
+    case "barricade_move":
+      relocateSomeBarricades(card.amount||1);
+      setStatus(`🧱 Barrikade(n) versetzt: ${card.amount||1}`);
+      return { endTurn:false };
+
+    case "barricade_shuffle":
+      relocateBarricadesAll();
+      setStatus("🧱 Barrikaden wurden neu gemischt.");
+      return { endTurn:false };
+
+    case "barricade_invasion":
+      spawnExtraBarricadesOnEventsAndGoal();
+      setStatus("🧱 Barrikaden-Invasion: Extra-Barrikaden platziert.");
+      return { endTurn:false };
+
+    case "barricade_half_remove":
+      removeHalfBarricades();
+      setStatus("🧱 Die Hälfte der Barrikaden ist verschwunden.");
+      return { endTurn:false };
+
+    case "barricade_jump":
+      state.eventFlags.skipBarricadesNextMove = true;
+      setStatus(`🧱✨ Team ${team}: Nächster Zug: Barrikaden überspringen + Extra-Wurf!`);
+      return { endTurn:true, staySameTeam:true, reason:"extraRoll" };
+
+    // ⚙ Spielmechanik
+    case "boss_spawn":
+      spawnBosses(card.amount||1);
+      setStatus(`👹 Boss-Spawn: ${card.amount||1} Boss(e) erschienen.`);
+      return { endTurn:false };
+
+    case "extra_roll":
+      setStatus(`🎲 Team ${team}: Extra-Wurf!`);
+      return { endTurn:true, staySameTeam:true, reason:"extraRoll" };
+
+    case "start_spawn":{
+      // alle Figuren, die aktuell auf einem Startfeld stehen, aufs Brett spawnen
+      const moved = [];
+      for(const p of state.pieces){
+        if(!p || !p.node) continue;
+        if(!isStartNode(p.node)) continue;
+
+        const dest = pickRandomFreeSpawnNode();
+        if(!dest) continue;
+
+        state.occupied.delete(p.node);
+        p.prev = p.node;
+        p.node = dest;
+        state.occupied.set(dest, p.id);
+        moved.push(p.id);
+      }
+      setStatus(`🧭 Start-Spawn: ${moved.length} Figur(en) wurden aufs Brett gesetzt.`);
+      return { endTurn:false };
+    }
+
+    case "all_to_start":{
+      for(const p of state.pieces){
+        if(!p || !p.node) continue;
+        kickToStart(p);
+      }
+      setStatus("↩ Alle Spieler zurück aufs Startfeld.");
+      return { endTurn:false };
+    }
+
+    case "lose_all_jokers":
+      removeAllJokers(team);
+      setStatus(`❌ Team ${team}: Alle Joker verloren.`);
+      return { endTurn:false };
+
+    case "respawn_events":
+      respawnAllEventFields();
+      setStatus("🔄 Ereignisfelder wurden neu gespawnt.");
+      return { endTurn:false };
+
+    case "double_goal_spawn":
+      spawnDoubleGoal();
+      setStatus("✨ Doppel-Ziel wurde gespawnt.");
+      return { endTurn:false };
+
+    case "dice_duel":{
+      const rolls = {};
+      for(const t of state.players){
+        rolls[t] = 1 + Math.floor(Math.random()*6);
+      }
+      let minT = state.players[0], maxT = state.players[0];
+      for(const t of state.players){
+        if(rolls[t] < rolls[minT]) minT = t;
+        if(rolls[t] > rolls[maxT]) maxT = t;
+      }
+      // bei Gleichstand: egal – wir lassen so
+      giveRandomJoker(maxT, 1);
+      setStatus(`🎲 Würfel-Duell: Team ${minT} (${rolls[minT]}) gibt Team ${maxT} (${rolls[maxT]}) 1 Joker.`);
+      return { endTurn:false };
+    }
+
+    // 🏆 Siegpunkte
+    case "lose_point":
+      addVictoryPoints(team, -Math.abs(card.amount||1));
+      setStatus(`➖ Team ${team}: -1 Siegpunkt (Stand: ${state.goalScores[team]}/${state.goalToWin})`);
+      return { endTurn:false };
+
+    case "gain_point":
+      addVictoryPoints(team, Math.abs(card.amount||1));
+      setStatus(`➕ Team ${team}: +${Math.abs(card.amount||1)} Siegpunkt(e) (Stand: ${state.goalScores[team]}/${state.goalToWin})`);
+      return { endTurn:false };
+
+    case "points_trade":{
+      let maxT = state.players[0], minT = state.players[0];
+      for(const t of state.players){
+        if((state.goalScores[t]||0) > (state.goalScores[maxT]||0)) maxT=t;
+        if((state.goalScores[t]||0) < (state.goalScores[minT]||0)) minT=t;
+      }
+      if(maxT !== minT && (state.goalScores[maxT]||0) > 0){
+        state.goalScores[maxT] = Math.max(0, (state.goalScores[maxT]||0) - 1);
+        state.goalScores[minT] = (state.goalScores[minT]||0) + 1;
+        setStatus(`🔁 Punktetausch: Team ${maxT} -> Team ${minT} (1 Punkt).`);
+      }else{
+        setStatus("🔁 Punktetausch: Keine Änderung möglich.");
+      }
+      return { endTurn:false };
+    }
+
+    case "steal_point":{
+      const candidates = state.players.filter(t=>t!==team && (state.goalScores[t]||0) > 0);
+      if(!candidates.length){
+        setStatus("🦊 Klauen: Niemand hat einen Siegpunkt.");
+        return { endTurn:false };
+      }
+      const victim = candidates[Math.floor(Math.random()*candidates.length)];
+      state.goalScores[victim] = Math.max(0, (state.goalScores[victim]||0) - 1);
+      state.goalScores[team] = (state.goalScores[team]||0) + 1;
+      setStatus(`🦊 Team ${team} klaut 1 Siegpunkt von Team ${victim}.`);
+      return { endTurn:false };
+    }
+
+    // 🧍 Bewegung
+    case "shuffle_pieces":{
+      const onBoard = state.pieces.filter(p=>p && p.node);
+      const nodesNow = onBoard.map(p=>p.node);
+      shuffleArray(nodesNow);
+
+      // clear occupied for those nodes
+      for(const p of onBoard){
+        state.occupied.delete(p.node);
+      }
+      for(let i=0;i<onBoard.length;i++){
+        onBoard[i].prev = onBoard[i].node;
+        onBoard[i].node = nodesNow[i];
+        state.occupied.set(nodesNow[i], onBoard[i].id);
+      }
+      setStatus("🌀 Alle Figuren wurden gemischt.");
+      return { endTurn:false };
+    }
+
+    case "back_to_start_self":
+      if(piece) kickToStart(piece);
+      setStatus(`↩ Team ${team}: Figur zurück aufs Startfeld.`);
+      return { endTurn:false };
+
+    case "back_to_start_others":
+      for(const p of state.pieces){
+        if(!p || !p.node) continue;
+        if(p.team === team) continue;
+        kickToStart(p);
+      }
+      setStatus("↩ Alle anderen zurück aufs Startfeld.");
+      return { endTurn:false };
+
+    case "move_forward":
+      if(piece){
+        movePieceForwardSteps(piece, card.amount||5);
+        setStatus(`🏃 Team ${team}: Sprint (${card.amount||5}).`);
+      }
+      return { endTurn:false };
+
+    // ✨ Spezial
+    case "light_spawn":{
+      // wähle ein zufälliges freies Feld (nicht start/portal/boss)
+      const pool = nodes
+        .filter(n=>n && n.id)
+        .filter(n=>n.type!=="start" && n.type!=="portal" && n.type!=="boss")
+        .map(n=>n.id)
+        .filter(id=>!state.occupied.has(id));
+
+      if(pool.length){
+        const id = pool[Math.floor(Math.random()*pool.length)];
+        state.lightNodes.add(id);
+      }
+      setStatus("✨ Ein Lichtfeld ist erschienen.");
+      return { endTurn:false };
+    }
+
+    default:
+      console.warn("[EVENT] unknown card type", card.type, card);
+      return { endTurn:false };
+  }
+}
+
+// ---- Event ziehen + abwickeln (mit sauberem Turn-Ende) ----
+function triggerEventForPiece(piece, eventNodeId){
+  ensureEventRuntime();
+  const card = pickRandomEventCard();
+  state.lastEvent = card;
+  console.info("[EVENT] draw", card.id, "on", eventNodeId);
+
+  showEventOverlay(card, ()=>{
+    const res = applyEventCard(card, piece);
+
+    // Eventfeld wird neu gespawnt (wie vorher)
+    relocateEventField(eventNodeId);
+
+    // Wenn Doppelziel / Licht etc.: Rendering passiert automatisch
+    // Falls Karte direkt den Zug beenden soll (Extra-Wurf etc.)
+    if(res && res.endTurn && res.staySameTeam){
+      // Wir beenden den Zug jetzt sauber, ohne nochmal Portal/6-Logik zu doppeln.
+      // Boss-Phase trotzdem wie normal:
+      ensureBossState();
+      state._bossRoundEndFlag = (state.turn === state.players.length-1);
+      runBossPhaseThen(()=>{
+        staySameTeamNeedRoll(`Team ${currentTeam()}: Extra-Wurf!`);
+      });
+      return;
+    }
+
+    // Danach normal weiter: Portal / Turn-Ende (ohne erneuten Event-Trigger an gleicher Stelle)
+    resolveLanding(piece, { allowPortal:true, fromBarricade:true });
+  });
+}
+
+// ---- Event-Test Panel (Sidebar) ----
+function ensureEventTestPanel(){
   const anchor = jokerButtonsWrap || document.getElementById("sidebar") || document.body;
   let host = document.getElementById("eventTestPanel");
   if(host) return host;
@@ -2503,201 +2706,131 @@ function ensureEventTesterPanel(){
     "font:600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial"
   ].join(";");
 
-  host.innerHTML = `
-    <div style="font-weight:900; margin-bottom:8px; letter-spacing:.2px;">Event-Test</div>
-    <div style="opacity:.75; font-size:12px; line-height:1.25; margin-bottom:8px;">
-      Ziehe gezielt einzelne Karten (ohne auf ein Eventfeld zu laufen).
-    </div>
-    <select id="eventTestSelect" style="width:100%; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(10,12,18,.35); color:rgba(245,250,255,.92); font-weight:800;"></select>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
-      <button id="btnEventTestDraw" class="btn small" style="padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:rgba(245,250,255,.92); font-weight:900;">Jetzt auslösen</button>
-      <button id="btnEventTestForce" class="btn small" style="padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:rgba(245,250,255,.92); font-weight:900;">Nächstes Event fix</button>
-    </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
-      <button id="btnEventTestClearForce" class="btn small" style="padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:rgba(245,250,255,.92); font-weight:900;">Fix löschen</button>
-      <button id="btnEventTestLog" class="btn small" style="padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:rgba(245,250,255,.92); font-weight:900;">Deck zählen</button>
-    </div>
-    <div id="eventTestHint" style="opacity:.72; font-size:12px; margin-top:8px; line-height:1.25;">–</div>
-  `;
+  const title = document.createElement("div");
+  title.textContent = "Event-Test";
+  title.style.cssText = "font-weight:900; margin-bottom:8px; letter-spacing:.2px;";
+  host.appendChild(title);
 
-  if(jokerButtonsWrap && jokerButtonsWrap.parentElement){
+  const sel = document.createElement("select");
+  sel.id = "eventTestSelect";
+  sel.style.cssText = "width:100%; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(10,12,18,.35); color:rgba(245,250,255,.92); font-weight:800;";
+
+  // options
+  const o0 = document.createElement("option");
+  o0.value = "";
+  o0.textContent = "— Karte wählen —";
+  sel.appendChild(o0);
+
+  for(const def of EVENT_CARD_DEFS){
+    const o = document.createElement("option");
+    o.value = def.id;
+    o.textContent = def.title;
+    sel.appendChild(o);
+  }
+
+  host.appendChild(sel);
+
+  const grid = document.createElement("div");
+  grid.style.cssText = "margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;";
+
+  function mkBtn(id, label){
+    const b = document.createElement("button");
+    b.id = id;
+    b.textContent = label;
+    b.style.cssText = "padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:rgba(245,250,255,.92); font-weight:900; cursor:pointer;";
+    b.onmouseenter = ()=>{ b.style.background="rgba(255,255,255,.10)"; };
+    b.onmouseleave = ()=>{ b.style.background="rgba(255,255,255,.06)"; };
+    return b;
+  }
+
+  const btnNow = mkBtn("btnEventTestNow","Jetzt auslösen");
+  const btnFix = mkBtn("btnEventTestFix","Nächstes fix");
+  const btnClr = mkBtn("btnEventTestClear","Fix löschen");
+  const btnCount = mkBtn("btnEventTestCount","Deck zählen");
+
+  grid.appendChild(btnNow);
+  grid.appendChild(btnFix);
+  grid.appendChild(btnClr);
+  grid.appendChild(btnCount);
+
+  host.appendChild(grid);
+
+  const hint = document.createElement("div");
+  hint.style.cssText = "margin-top:8px; opacity:.75; font-size:12px; line-height:1.25;";
+  hint.textContent = "Tipp: 'Nächstes fix' → dann auf ein Ereignisfeld laufen, um GENAU diese Karte zu ziehen.";
+  host.appendChild(hint);
+
+  // Wire
+  btnNow.onclick = ()=>{
+    ensureEventRuntime();
+    const id = sel.value;
+    const def = EVENT_CARD_DEFS.find(d=>d.id===id);
+    if(!def){
+      setStatus("Event-Test: Bitte eine Karte auswählen.");
+      return;
+    }
+    const piece = state.pieces.find(p=>p && p.team===currentTeam() && p.node) || state.pieces.find(p=>p && p.node);
+    if(!piece){
+      setStatus("Event-Test: Keine Figur auf dem Board.");
+      return;
+    }
+    // Fake event node: nutzen das aktuelle Feld als "source"
+    triggerEventForPiece(piece, piece.node);
+  };
+
+  btnFix.onclick = ()=>{
+    ensureEventRuntime();
+    const id = sel.value;
+    if(!id){
+      setStatus("Event-Test: Bitte eine Karte auswählen.");
+      return;
+    }
+    state.eventFixedCardId = id;
+    setStatus("Event-Test: Nächste Ereigniskarte ist fix gesetzt.");
+  };
+
+  btnClr.onclick = ()=>{
+    ensureEventRuntime();
+    state.eventFixedCardId = null;
+    setStatus("Event-Test: Fix gelöscht.");
+  };
+
+  btnCount.onclick = ()=>{
+    const counts = {};
+    for(const c of EVENT_DECK){
+      counts[c.id] = (counts[c.id]||0) + 1;
+    }
+    console.info("[EVENT] deck counts", counts);
+    setStatus("Event-Test: Deck-Zählung in der Konsole (🪲).");
+  };
+
+  // Insert after boss panel if exists, else after joker buttons
+  const bossPanel = document.getElementById("bossPanel");
+  if(bossPanel && bossPanel.parentElement){
+    bossPanel.parentElement.appendChild(host);
+  }else if(jokerButtonsWrap && jokerButtonsWrap.parentElement){
     jokerButtonsWrap.parentElement.appendChild(host);
   }else{
     anchor.appendChild(host);
   }
 
-  const sel = host.querySelector("#eventTestSelect");
-  const hint = host.querySelector("#eventTestHint");
-
-  const unique = [];
-  const seen = new Set();
-  for(const c of EVENT_DECK){
-    if(seen.has(c.title)) continue;
-    seen.add(c.title);
-    unique.push(c);
-  }
-  unique.sort((a,b)=>String(a.title).localeCompare(String(b.title)));
-
-  for(const c of unique){
-    const o = document.createElement("option");
-    o.value = c.id;
-    o.textContent = `${c.title} (${c.type})`;
-    sel.appendChild(o);
-  }
-
-  host.querySelector("#btnEventTestDraw").onclick = ()=>{
-    const id = sel.value;
-    const card = EVENT_DECK.find(x=>x.id===id);
-    const piece = state.pieces.find(p=>p.team===currentTeam() && p.node) || state.pieces.find(p=>p.team===currentTeam());
-    showEventOverlay(card, ()=>{
-      applyEventCard(card, piece);
-    });
-    hint.textContent = `Ausgelöst: ${card?.title || id}`;
-  };
-
-  host.querySelector("#btnEventTestForce").onclick = ()=>{
-    const id = sel.value;
-    state.effectFlags.forceEventId = id;
-    const card = EVENT_DECK.find(x=>x.id===id);
-    hint.textContent = `Nächstes Eventfeld zieht fix: ${card?.title || id}`;
-  };
-
-  host.querySelector("#btnEventTestClearForce").onclick = ()=>{
-    state.effectFlags.forceEventId = null;
-    hint.textContent = "Fixierung entfernt.";
-  };
-
-  host.querySelector("#btnEventTestLog").onclick = ()=>{
-    // Zählen nach Titel
-    const counts = {};
-    for(const c of EVENT_DECK){
-      counts[c.title] = (counts[c.title]||0)+1;
-    }
-    console.info("[EVENT] counts", counts);
-    hint.textContent = "Deck-Zählung in Konsole (🪲) geloggt.";
-  };
-
   return host;
 }
 
-function initEventFieldsFromBoard(){
-  ensureEventState();
-  state.eventActive.clear();
-  for(const n of nodes){
-    const isEvent = (n.type==="event") || (n.props && (n.props.event===true || n.props.kind==="event"));
-    if(isEvent) state.eventActive.add(n.id);
-  }
-  console.info("[EVENT] init:", Array.from(state.eventActive));
-}
-
-function isEligibleEventSpawnNode(id){
-  const n = nodesById.get(id);
-  if(!n) return false;
-
-  // Start/Portal/Boss meiden
-  if(n.type==="start" || n.type==="portal" || n.type==="boss") return false;
-
-  if(n.type==="obstacle") return false;
-
-  if(state.eventActive.has(id)) return false;
-  if(state.occupied.has(id)) return false;
-
-  return true;
-}
-
-function relocateEventField(fromId){
-  ensureEventState();
-  const eligible = nodes.filter(nn=>isEligibleEventSpawnNode(nn.id)).map(nn=>nn.id);
-  if(!eligible.length) return;
-  const toId = eligible[Math.floor(Math.random()*eligible.length)];
-  state.eventActive.delete(fromId);
-  state.eventActive.add(toId);
-  console.info("[EVENT] relocated", fromId, "->", toId);
-}
-
-
-// ---------- Landing / Turn-Ende ----------
-
-function ensureBarricadeCarryState(){
-  if(!state.barricadeHeld) state.barricadeHeld = {};
-  for(const t of state.players){
-    if(!(t in state.barricadeHeld)) state.barricadeHeld[t] = 0;
-  }
-}
-
-// Alias für ältere Calls
-function afterLanding(piece, opts){
-  return resolveLanding(piece, opts);
-}
-
-function resolveLanding(piece, opts){
-  const o = Object.assign({ allowPortal:true, fromBarricade:false, fromEvent:false }, opts||{});
-  if(state.gameOver) return;
-  if(!piece || !piece.node) return;
-
-  ensureEventState();
-  ensureBarricadeCarryState();
-
-  const team = piece.team;
-
-  // 1) Barrikade aufnehmen -> Platziermodus
-  if(!o.fromBarricade && barricades.has(piece.node)){
-    // Barrikade aufnehmen
-    barricades.delete(piece.node);
-    state.barricadeHeld[team] = (state.barricadeHeld[team]||0) + 1;
-    state.phase = "placeBarricade";
-    state.barricadePlacerPieceId = piece.id;
-    setStatus(`🧱 Team ${team}: Barrikade aufgenommen. Tippe ein freies Feld zum Platzieren.`);
-    return;
-  }
-
-  // 2) Eventfeld
-  if(!o.fromEvent && state.eventActive && state.eventActive.has(piece.node)){
-    const card = pickRandomEventCard();
-    state.lastEvent = card;
-
-    showEventOverlay(card, ()=>{
-      // Effekt anwenden
-      try{ applyEventCard(card, piece); }catch(e){ console.warn("[EVENT] apply failed", e); }
-
-      // Eventfeld danach neu spawnen
-      try{ relocateEventField(piece.node); }catch(e){}
-
-      // Weiter (Portal/Turn-Ende) ohne das Event nochmal zu triggern
-      resolveLanding(piece, { allowPortal:o.allowPortal, fromBarricade:o.fromBarricade, fromEvent:true });
-    });
-
-    return;
-  }
-
-  // 3) Zielpunkt
-  if(maybeCaptureGoal(piece)){
-    // maybeCaptureGoal entscheidet ggf. schon über GameOver
-    // wenn nicht gameOver, geht es normal weiter (Portal/Turn-Ende)
-    if(state.gameOver) return;
-  }
-
-  // 4) Portal (Teleport-Auswahl)
-  if(o.allowPortal && isPortalNode(piece.node)){
-    computePortalTargets(piece.node);
-    if(state.portalHighlighted.size){
-      state.phase = "portalSelect";
-      state.portalFrom = piece.node;
-      state.portalPieceId = piece.id;
-      setStatus(`🌀 Team ${team}: Portal! Tippe ein Ziel-Portal.`);
-      return;
+// ---- Hook: Double-Goal capture into landing flow ----
+// (Wir ergänzen die bestehende maybeCaptureGoal Logik ohne Funktionsverlust)
+const _orig_maybeCaptureGoal = maybeCaptureGoal;
+maybeCaptureGoal = function(piece){
+  // erst Doppelziel prüfen
+  try{
+    if(maybeCaptureDoubleGoal(piece)){
+      if(state.gameOver) return true;
     }
-  }
+  }catch(e){ console.warn("[EVENT] doubleGoal capture error", e); }
 
-  // 5) Turn-Ende (6 oder Extra-Wurf)
-  if(state.pendingSix || (state.effectFlags && state.effectFlags.forceExtraRoll)){
-    state.pendingSix = false;
-    if(state.effectFlags) state.effectFlags.forceExtraRoll = false;
-    staySameTeamNeedRoll(`Team ${team}: Nochmal würfeln!`);
-  }else{
-    nextTurn();
-  }
-}
+  // dann normaler Zielpunkt
+  return _orig_maybeCaptureGoal(piece);
+};
 
 
 // ---------- Input (Tap/Click + Pan/Zoom) ----------
@@ -2731,27 +2864,6 @@ function handleTapAtWorld(wx, wy){
   if(state.gameOver) return;
   const hit = hitTestWorld(wx, wy);
   if(!hit) return;
-
-  
-  // --- Barrikade platzieren (nach Barrikade-Aufnahme) ---
-  if(state.phase === "placeBarricade"){
-    const team = currentTeam();
-    if(!isFreeForBarricade(hit.id)){
-      setStatus(`Team ${team}: Wähle ein freies Feld (nicht Start) für die Barrikade.`);
-      return;
-    }
-    barricades.add(hit.id);
-    if(!state.barricadeHeld) state.barricadeHeld = {};
-    state.barricadeHeld[team] = Math.max(0, (state.barricadeHeld[team]||0) - 1);
-
-    const pid = state.barricadePlacerPieceId;
-    const piece = state.pieces.find(p=>p.id===pid) || state.pieces.find(p=>p.team===team);
-
-    state.barricadePlacerPieceId = null;
-    // weiter mit Landeeffekten (Event/Ziel/Portal/Turn-Ende) – aber keine Barrikade erneut aufnehmen
-    resolveLanding(piece, {allowPortal:true, fromBarricade:true, fromEvent:false});
-    return;
-  }
 
   // Joker modes have priority
   ensureJokerState();
@@ -2931,9 +3043,6 @@ function handleTapAtWorld(wx, wy){
 
       // Move-Ende: Targets reset
       state.highlighted.clear();
-
-      // Event: Barrikaden-Sprung gilt nur für den NÄCHSTEN Move
-      if(state.effectFlags && state.effectFlags.skipBarricadesOnce) state.effectFlags.skipBarricadesOnce = false;
 
       // Landing logic (barricade pickup etc.)
       afterLanding(piece);
@@ -3224,36 +3333,6 @@ function drawGoalToken(x,y){
   ctx.restore();
 }
 
-
-// ---------- Doppel-Zielpunkt (Render) ----------
-function drawDoubleGoalToken(x,y){
-  const r = 14;
-  ctx.save();
-  const g = ctx.createRadialGradient(x,y,2,x,y,28);
-  g.addColorStop(0, "rgba(255,235,160,.95)");
-  g.addColorStop(1, "rgba(255,235,160,0)");
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x,y,28,0,Math.PI*2);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(x,y,r,0,Math.PI*2);
-  ctx.fillStyle = "rgba(255,235,160,.95)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(80,50,15,.70)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(60,35,10,.80)";
-  ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("2×", x, y-5);
-  ctx.fillText("★", x, y+7);
-  ctx.restore();
-}
-
 // ---------- Boss Spawn Marker (legendary) ----------
 function drawBossSpawnLegendary(x,y,t){
   // t in seconds
@@ -3505,25 +3584,6 @@ function draw(){
     }
   }
 
-  // ✨ Lichtfelder (unter Barrikaden versteckbar)
-  if(state.lightFields && state.lightFields.size){
-    for(const id of state.lightFields){
-      if(barricades.has(id)) continue;
-      const ln = nodesById.get(id);
-      if(!ln) continue;
-      // kleines Glow-Orb
-      ctx.save();
-      const g = ctx.createRadialGradient(ln.x,ln.y,2,ln.x,ln.y,22);
-      g.addColorStop(0, "rgba(210,245,255,.95)");
-      g.addColorStop(1, "rgba(210,245,255,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(ln.x,ln.y,22,0,Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-    }
-  }
-
   // 🎯 Zielpunkt zeichnen (unter Barrikaden versteckbar)
   if(state.goalNodeId){
     const gn = nodesById.get(state.goalNodeId);
@@ -3532,15 +3592,67 @@ function draw(){
     }
   }
 
-  // 🎯 Doppel-Zielpunkt (2× Punkte)
+  
+
+  // ✨ Doppel-Zielpunkt (2×) zeichnen (unter Barrikaden versteckbar)
+  ensureEventRuntime();
   if(state.doubleGoalNodeId){
     const dn = nodesById.get(state.doubleGoalNodeId);
     if(dn && !barricades.has(state.doubleGoalNodeId)){
-      drawDoubleGoalToken(dn.x, dn.y);
+      // etwas größer + "2★"
+      ctx.save();
+      const x = dn.x, y = dn.y;
+      const r = 15;
+
+      // Glow
+      const g2 = ctx.createRadialGradient(x,y,2,x,y,28);
+      g2.addColorStop(0, "rgba(170,120,255,.95)");
+      g2.addColorStop(1, "rgba(170,120,255,0)");
+      ctx.fillStyle = g2;
+      ctx.beginPath(); ctx.arc(x,y,28,0,Math.PI*2); ctx.fill();
+
+      // Coin
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle = "rgba(190,150,255,.95)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(45,25,80,.65)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(35,20,60,.85)";
+      ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("2★", x, y+0.5);
+      ctx.restore();
     }
   }
 
-  // Barrikaden als Overlay (decken Ziel/Ereignis optisch komplett ab)
+  // ✨ Lichtfelder (optional – nur visual, fürs Testspiel)
+  if(state.lightNodes && state.lightNodes.size){
+    for(const id of state.lightNodes){
+      const ln = nodesById.get(id);
+      if(!ln) continue;
+      ctx.save();
+      const x=ln.x, y=ln.y;
+      const g = ctx.createRadialGradient(x,y,2,x,y,26);
+      g.addColorStop(0, "rgba(255,255,255,.85)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x,y,26,0,Math.PI*2); ctx.fill();
+
+      ctx.strokeStyle = "rgba(255,255,255,.65)";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x,y,18,0,Math.PI*2); ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("✧", x, y+0.5);
+      ctx.restore();
+    }
+  }
+// Barrikaden als Overlay (decken Ziel/Ereignis optisch komplett ab)
   for(const id of barricades){
     const n = nodesById.get(id);
     if(!n) continue;
@@ -3813,10 +3925,11 @@ async function load(){
     console.warn("[AUTO-FIX] Boss-Spawn verbunden:", s.id, "->", best.id);
   }
 
-  buildEventDeck();
-
   initPieces();
   initEventFieldsFromBoard();
+  ensureEventRuntime();
+  buildEventDeck();
+  ensureEventTestPanel();
 
   // Boss-System initialisieren (keine Bosse aktiv beim Start)
   ensureBossState();
