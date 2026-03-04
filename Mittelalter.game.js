@@ -738,11 +738,22 @@ function maybeDefeatBossAtNode(nodeId, byTeam){
   ensureBossState();
   const b = state.bosses.find(x => x.alive !== false && x.node === nodeId);
   if(!b) return false;
-  // Boss ist sofort besiegbar: Landest du drauf, verschwindet er.
-  b.alive = false;
-  b.node = null;
+
+  // Boss braucht 2 Treffer. Bei Treffer 1 teleportiert er (min. 6 Felder Abstand).
+  b.hits = (b.hits || 0) + 1;
+
+  if(b.hits >= 2){
+    b.alive = false;
+    b.node = null;
+    updateBossUI();
+    setStatus(`Team ${byTeam}: Boss besiegt (${(BOSS_TYPES[b.type]?.name)||b.name||b.type})!`);
+    return true;
+  }
+
+  // Treffer 1: Teleport
+  const ok = teleportBossRandomFree(b, nodeId, 6);
   updateBossUI();
-  setStatus(`Team ${byTeam}: Boss besiegt (${(BOSS_TYPES[b.type]?.name)||b.name||b.type})!`);
+  setStatus(`Team ${byTeam}: Boss getroffen (1/2) – teleportiert${ok ? "" : " (kein freies Feld gefunden)"}!`);
   return true;
 }
 
