@@ -1979,7 +1979,7 @@ function spawnExtraBarricades(count=3){
     .map(n=>n.id)
     .filter(id=>{
       if(!id) return false;
-      if(isStartField(id)) return false;
+      if((nodesById.get(id)?.type)==='start') return false;
       if(typeof isPortalField === "function" && isPortalField(id)) return false;
       if(typeof isBossField === "function" && isBossField(id)) return false;
 
