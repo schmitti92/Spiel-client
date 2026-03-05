@@ -4602,6 +4602,22 @@ function draw(){
       }
     }
 
+    // Grund-Tints für Special-Felder (nur wenn kein starkes Highlight dominiert)
+    const hardHL = state.highlighted.has(n.id)
+      || (state.phase==="placeBarricade" && state.placeHighlighted.has(n.id))
+      || (state.jokerMode==="moveBarricadePlace" && state.jokerHighlighted && state.jokerHighlighted.has(n.id))
+      || (state.phase==="usePortal" && state.portalHighlighted.has(n.id));
+    if(!hardHL){
+      // Ereignisfeld: rot markieren (unter Barrikaden darf es unsichtbar bleiben)
+      if(state.eventActive && state.eventActive.has(n.id) && !barricades.has(n.id)){
+        fill = "rgba(220,60,60,.22)";
+      }
+      // Zielfeld / Zielpunkte: gold markieren
+      if(state.goalNodeId && n.id===state.goalNodeId && !barricades.has(n.id)){
+        fill = "rgba(255,205,80,.26)";
+      }
+    }
+
     ctx.fillStyle=fill;
     ctx.fill();
 
