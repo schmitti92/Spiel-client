@@ -1966,44 +1966,85 @@ function shuffleAllBarricades(){
     return true;
   });
 
-  // Erst versuchen wir: alle neuen Plätze NICHT gleich alt (sichtbarer Shuffle)
-  let candidates = baseCandidates.filter(id=>!barricades.has(id));
-
-  // Wenn zu wenig, erlauben wir auch alte Plätze als Fallback
-  if(candidates.length < count){
-    candidates = baseCandidates.slice();
-  }
-
-  // Shuffle candidates
-  for(let i=candidates.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-  }
-
-  // Neue Plätze wählen (unique)
-  const picked = [];
-  const used = new Set();
-  for(const id of candidates){
-    if(used.has(id)) continue;
-    used.add(id);
-    picked.push(id);
-    if(picked.length >= count) break;
-  }
-
-  // Worst-case: wenn immer noch zu wenig (sehr kleines Board), dann abbrechen
-  if(picked.length <= 0){
-    console.warn("[BARRICADE] shuffle: no valid candidates");
+  if(baseCandidates.length <= 0){
+    console.warn("[BARRICADE] shuffle: no valid baseCandidates");
     return;
   }
+
+  // Helper: array shuffle
+  const shuffleArr = (arr)=>{
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  // Wir versuchen ein paar Mal, damit es NICHT zufällig identisch bleibt.
+  let picked = null;
+
+  for(let attempt=0; attempt<10; attempt++){
+    // Erst versuchen wir: alle neuen Plätze NICHT gleich alt (sichtbarer Shuffle)
+    let candidates = baseCandidates.filter(id=>!barricades.has(id));
+
+    // Wenn zu wenig, erlauben wir auch alte Plätze als Fallback
+    if(candidates.length < count){
+      candidates = baseCandidates.slice();
+    }
+
+    shuffleArr(candidates);
+
+    const tmp = [];
+    const used = new Set();
+    for(const id of candidates){
+      if(used.has(id)) continue;
+      used.add(id);
+      tmp.push(id);
+      if(tmp.length >= count) break;
+    }
+
+    if(tmp.length <= 0) continue;
+
+    // Falls identisch (Set-Vergleich), nochmal versuchen
+    const same =
+      tmp.length === old.length &&
+      tmp.every(id => barricades.has(id)) &&
+      old.every(id => tmp.includes(id));
+
+    if(!same){
+      picked = tmp;
+      break;
+    }
+
+    // Wenn identisch, Versuch wiederholen
+  }
+
+  // Fallback: wenn wir es nicht schaffen, nehmen wir trotzdem ein Ergebnis
+  if(!picked){
+    // Notfalls: nutze baseCandidates, aber durchmischen
+    const candidates = shuffleArr(baseCandidates.slice());
+    picked = candidates.slice(0, Math.min(count, candidates.length));
+  }
+
+  const beforeSet = new Set(old);
+  const afterSet = new Set(picked);
 
   barricades.clear();
   for(const id of picked){
     barricades.add(id);
   }
 
-  console.info("[BARRICADE] shuffle: after", Array.from(barricades));
+  // Delta für Debug / Vertrauen
+  let moved = 0;
+  for(const id of beforeSet){
+    if(!afterSet.has(id)) moved++;
+  }
+
+  console.info("[BARRICADE] shuffle: after", Array.from(barricades), "moved:", moved, "of", count);
+
   draw();
 }
+
 
 
 const EVENT_DECK = [
