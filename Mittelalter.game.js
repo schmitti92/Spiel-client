@@ -1953,8 +1953,131 @@ const EVENT_DECK = [
     title:"Figuren mischen",
     text:"Alle Spielfiguren (außer Start, Schild, Portal) werden neu gemischt.",
     effect:"shuffle_pieces"
+  },
+  {
+    id:"start_spawn",
+    title:"Startfeld-Spawn",
+    text:"Alle Figuren auf Startfeldern werden nacheinander (0,5s) auf freie Felder verteilt.",
+    effect:"start_spawn"
   }
 ];
+
+// ---- Event Effect: Startfeld-Spawn (nur komplett freie Felder) ----
+function isEventNode(id){
+  // Eventfelder kommen aus state.eventActive (wird aus Board initialisiert / respawned)
+  return !!id && state.eventActive && state.eventActive.has(id);
+}
+function isGoalNode(id){
+  return !!id && state.goalNodeId && id === state.goalNodeId;
+}
+function isBossNode(id){
+  const n = nodesById.get(id);
+  return !!n && n.type === "boss";
+}
+function isPlainFreeNode(id){
+  const n = nodesById.get(id);
+  if(!n) return false;
+  // "Komplett frei": normaler Knoten, keine Spezialtypen
+  if(n.type !== "normal") return false;
+  if(isGoalNode(id)) return false;
+  if(isStartNode(id)) return false;
+  if(isPortalNode(id)) return false;
+  if(isBossNode(id)) return false;
+  if(isEventNode(id)) return false;
+  if(barricades && barricades.has(id)) return false;
+  if(state.occupied && state.occupied.has(id)) return false;
+  return true;
+}
+
+function spawnStartPiecesRoundRobin(onDone){
+  // sammle alle Figuren, die auf Start stehen
+  const startPieces = state.pieces.filter(p=>p && p.node && isStartNode(p.node));
+  if(!startPieces.length){
+    setStatus("⚔ Startfeld-Spawn: Keine Figuren auf Startfeldern.");
+    if(onDone) onDone();
+    return;
+  }
+
+  // freie Felder (komplett frei)
+  const free = nodes.map(n=>n.id).filter(isPlainFreeNode);
+
+  if(!free.length){
+    setStatus("⚔ Startfeld-Spawn: Keine freien Felder gefunden.");
+    if(onDone) onDone();
+    return;
+  }
+
+  // Shuffle freie Felder
+  for(let i=free.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    const t=free[i]; free[i]=free[j]; free[j]=t;
+  }
+
+  // Gruppiere nach Team für gleichmäßige Verteilung
+  const byTeam = new Map();
+  for(const p of startPieces){
+    if(!byTeam.has(p.team)) byTeam.set(p.team, []);
+    byTeam.get(p.team).push(p);
+  }
+  // Shuffle innerhalb Team für Chaos
+  for(const arr of byTeam.values()){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      const t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+  }
+
+  // Round-robin Reihenfolge: nach state.players (damit konsistent)
+  const teamOrder = (state.players && state.players.length) ? state.players.slice() : [1,2,3,4];
+
+  // Baue Zuweisungen (max free.length)
+  const assigns = [];
+  let idxFree = 0;
+  while(idxFree < free.length){
+    let any = false;
+    for(const t of teamOrder){
+      const arr = byTeam.get(t);
+      if(arr && arr.length && idxFree < free.length){
+        assigns.push({ piece: arr.pop(), node: free[idxFree++] });
+        any = true;
+      }
+    }
+    if(!any) break;
+  }
+
+  const overflow = startPieces.length - assigns.length;
+
+  // während Spawn: keine Event-Trigger durch die künstlichen Positionswechsel
+  const prevPhase = state.phase;
+  state._suspendEvents = true;
+  state.phase = "spawning";
+  setStatus(`⚔ Startfeld-Spawn: ${assigns.length} Figur(en) werden verteilt${overflow>0 ? ` (${overflow} bleiben auf Start)` : ""}…`);
+
+  let k=0;
+  function step(){
+    if(k >= assigns.length){
+      state._suspendEvents = false;
+      state.phase = prevPhase;
+      draw();
+      setStatus(`⚔ Startfeld-Spawn abgeschlossen: ${assigns.length} verteilt${overflow>0 ? `, ${overflow} auf Start geblieben` : ""}.`);
+      if(onDone) onDone();
+      return;
+    }
+    const {piece, node} = assigns[k++];
+    // move piece + occupied map
+    if(piece && piece.node){
+      state.occupied.delete(piece.node);
+      piece.prev = piece.node;
+      piece.node = node;
+      state.occupied.set(node, piece.id);
+    }
+    draw();
+    setTimeout(step, 500);
+  }
+  step();
+}
+
+
 
 // ---- Event Reward: alle 6 Joker (+1 je Typ, capped) ----
 function grantAllSixJokers(team){
@@ -3158,6 +3281,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         shufflePiecesSmart();
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'start_spawn'){
+      showEventOverlay(card, ()=>{
+        spawnStartPiecesRoundRobin(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
     } else {
       showEventOverlay(card, ()=>{
         // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
@@ -3208,6 +3337,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         shufflePiecesSmart();
         relocateEventField(piece.node);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'start_spawn'){
+      showEventOverlay(card, ()=>{
+        spawnStartPiecesRoundRobin(()=>{
+          relocateEventField(piece.node);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
       });
     } else {
       showEventOverlay(card, ()=>{
