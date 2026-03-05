@@ -1928,6 +1928,36 @@ const FORCE_EVENT_EVERY_LANDING = true;
 const FORCE_EVENT_CARD_ID = null;
 let eventForceCardId = null; // UI: forced event card (persistent until changed)
 
+
+function shuffleAllBarricades(){
+  const old = Array.from(barricades);
+  const count = old.length;
+
+  const occupied = new Set();
+  for(const p of (state.pieces || [])){
+    occupied.add(p.node);
+  }
+
+  const candidates = nodes.map(n=>n.id).filter(id=>{
+    if(nodesById.get(id)?.type === "start") return false;
+    if(occupied.has(id)) return false;
+    return true;
+  });
+
+  for(let i=candidates.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  barricades.clear();
+
+  for(let i=0;i<count && i<candidates.length;i++){
+    barricades.add(candidates[i]);
+  }
+
+  draw();
+}
+
 const EVENT_DECK = [
 { 
     id:"joker_pick6",
@@ -2000,6 +2030,12 @@ const EVENT_DECK = [
     title:"Barrikaden-Reset",
     text:"Alle Barrikaden werden auf die Startpositionen zurückgesetzt (gleiche Anzahl).",
     effect:"barricades_reset_initial"
+  },
+  {
+    id:"barricades_shuffle",
+    title:"Barrikaden mischen",
+    text:"Alle Barrikaden werden neu gemischt und an neue Stellen gespawnt.",
+    effect:"barricades_shuffle"
   }
 ];
 
@@ -3376,7 +3412,14 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
       resolveLanding(piece, nextOpts);
     });
-  } else {
+   } else if(card && card.effect === 'barricades_shuffle'){
+      showEventOverlay(card, ()=>{
+        shuffleAllBarricades();
+        setStatus("🧱 Alle Barrikaden wurden neu gemischt.");
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else {
     showEventOverlay(card, ()=>{
       resolveLanding(piece, nextOpts);
     });
