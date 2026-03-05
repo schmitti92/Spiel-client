@@ -1890,7 +1890,20 @@ function showWinOverlay(team){
 
   const winText = ov.querySelector("#winText");
   winText.textContent = `Team ${team} hat als erstes ${state.goalToWin} Zielpunkte gesammelt.`;
+  markOverlayOpened(ov);
   ov.style.display="flex";
+}
+
+
+// ---------- UI Safety Helpers (Anti Auto-Tap) ----------
+// Problem: On mobile/tablet the click/tap that triggers the landing/event can "fall through" into the overlay
+// and instantly click a card/button. We block input for a short grace period.
+function markOverlayOpened(ov){
+  ov._openedAt = performance.now();
+}
+function overlayClickAllowed(ov, ms=350){
+  const t = (ov && ov._openedAt) ? ov._openedAt : 0;
+  return (performance.now() - t) >= ms;
 }
 
 // ---------- Event Cards (Ereignisse) ----------
@@ -2019,7 +2032,7 @@ function showEventOverlay(card, onClose){
 
     // Prevent closing by clicking inside card
     ov.addEventListener("click",(e)=>{
-      if(e.target===ov) doClose();
+      if(e.target===ov){ if(!overlayClickAllowed(ov)) return; doClose(); }
     });
 
     function doClose(){
@@ -2187,7 +2200,7 @@ function showJokerPick6Overlay(team, onClose){
     el.addEventListener("mouseenter", ()=>{ if(chosen<0){ el.style.transform="scale(1.03)"; el.style.filter="brightness(1.05)"; }});
     el.addEventListener("mouseleave", ()=>{ if(chosen<0){ el.style.transform="scale(1)"; el.style.filter="none"; }});
 
-    el.addEventListener("click", ()=>{
+    el.addEventListener("click", ()=>{ if(!overlayClickAllowed(ov)) return;
       if(chosen>=0) return;
       chosen = i;
 
@@ -2228,9 +2241,10 @@ function showJokerPick6Overlay(team, onClose){
     if(typeof onClose==="function") onClose();
   }
   ov._doClose = doClose;
-  okBtn.onclick = doClose;
-  xBtn.onclick  = doClose;
+  okBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+  xBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
 
+  markOverlayOpened(ov);
   ov.style.display="flex";
 }
 
@@ -2467,7 +2481,7 @@ function showJokerWheelOverlay(team, onClose){
 
     // close via backdrop
     ov.addEventListener("click",(e)=>{
-      if(e.target===ov) ov._doClose && ov._doClose();
+      if(e.target===ov){ if(!overlayClickAllowed(ov)) return; ov._doClose && ov._doClose(); }
     });
   }
 
@@ -2537,7 +2551,7 @@ function showJokerWheelOverlay(team, onClose){
   function fillSlot1(){
     slot1.innerHTML = "";
     // repeat list 6x
-    for(let r=0;r<6;r++){
+    for(let r=0;r<18;r++){
       for(const it of items) slot1.appendChild(slotRowJoker(it));
     }
   }
@@ -2569,42 +2583,48 @@ function showJokerWheelOverlay(team, onClose){
     if(typeof onClose==="function") onClose();
   }
   ov._doClose = doClose;
-  okBtn.onclick = doClose;
-  closeX.onclick = doClose;
+  okBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+  closeX.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
 
   // Spin helper: slot animation for 5s, then stop at target index (center window)
+  
   function spinSlot(slotEl, itemCountPerCycle, pickIndex, rowHeight, durationMs=5000){
     return new Promise((resolve)=>{
       const totalItems = slotEl.children.length;
-      // We want to land on a specific row near the middle of the repeated list
-      // Choose a cycle near the end so it looks like it spun a lot.
-      const baseCycles = Math.floor(totalItems / itemCountPerCycle) - 2;
-      const cycle = Math.max(2, baseCycles);
-      const targetRow = cycle * itemCountPerCycle + pickIndex;
+      const totalCycles = Math.max(1, Math.floor(totalItems / itemCountPerCycle));
 
-      // viewport center approx at 50%: our list has padding 18px; we land row center at that highlight
-      // We'll compute translate such that targetRow's top aligns to middle highlight top (approx 50% - 24px)
-      const highlightTop = (168/2) - (rowHeight/2); // 168px window height
-      const translate = -(targetRow * (rowHeight + (slotEl===slot2?12:10))) + highlightTop;
+      // Immer viele Runden drehen (schnell -> langsam)
+      const minRounds = 10;
+      const cycle = Math.min(totalCycles - 2, Math.max(minRounds, Math.floor(totalCycles * 0.75)));
+      const targetRow = Math.max(0, cycle * itemCountPerCycle + pickIndex);
 
-      slotEl.style.transition = `transform ${durationMs}ms cubic-bezier(.08,.82,.12,1)`;
-      // Kick: add extra long scroll before stopping (start from 0)
+      const gap = (slotEl.id==="jwSlot2") ? 12 : 10;
+      const highlightTop = (168/2) - (rowHeight/2);
+      const translate = -(targetRow * (rowHeight + gap)) + highlightTop;
+
+      // Reset
+      slotEl.style.transition = "none";
+      slotEl.style.transform = "translateY(0px)";
+
       requestAnimationFrame(()=>{
-        slotEl.style.transform = `translateY(${translate}px)`;
-      });
-
-      setTimeout(()=>{
-        // little settle
-        slotEl.style.transition = "transform 240ms ease-out";
-        slotEl.style.transform = `translateY(${translate-2}px)`;
-        setTimeout(()=>{
-          slotEl.style.transition = "transform 180ms ease-in";
+        requestAnimationFrame(()=>{
+          slotEl.style.transition = `transform ${durationMs}ms cubic-bezier(.08,.88,.12,1)`;
           slotEl.style.transform = `translateY(${translate}px)`;
-          setTimeout(resolve, 190);
-        }, 250);
-      }, durationMs);
+
+          setTimeout(()=>{
+            slotEl.style.transition = "transform 260ms ease-out";
+            slotEl.style.transform = `translateY(${translate-3}px)`;
+            setTimeout(()=>{
+              slotEl.style.transition = "transform 180ms ease-in";
+              slotEl.style.transform = `translateY(${translate}px)`;
+              setTimeout(resolve, 190);
+            }, 270);
+          }, durationMs);
+        });
+      });
     });
   }
+
 
   startBtn.disabled = false;
   startBtn.style.cursor = "pointer";
@@ -2615,7 +2635,7 @@ function showJokerWheelOverlay(team, onClose){
   win2.style.display="none";
   sub.textContent = "Wähle dein Schicksal…";
 
-  startBtn.onclick = async ()=>{
+  startBtn.onclick = async ()=>{ if(!overlayClickAllowed(ov)) return;
     if(spun) return;
     spun = true;
     startBtn.disabled = true;
@@ -2666,6 +2686,7 @@ function showJokerWheelOverlay(team, onClose){
     sub.textContent = "Fertig!";
   };
 
+  markOverlayOpened(ov);
   ov.style.display="flex";
 }
 
@@ -2945,12 +2966,16 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     console.info('[EVENT] draw (forced)', card.id, 'on', piece.node);
 
     if(card && card.effect === 'joker_pick6'){
-      showJokerPick6Overlay(currentTeam(), ()=>{
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      showEventOverlay(card, ()=>{
+        showJokerPick6Overlay(currentTeam(), ()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
       });
     } else if(card && card.effect === 'joker_wheel'){
-      showJokerWheelOverlay(currentTeam(), ()=>{
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      showEventOverlay(card, ()=>{
+        showJokerWheelOverlay(currentTeam(), ()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
       });
     } else {
       showEventOverlay(card, ()=>{
@@ -2968,14 +2993,18 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     console.info('[EVENT] draw', card.id, 'on', piece.node);
 
     if(card && card.effect === 'joker_pick6'){
-      showJokerPick6Overlay(currentTeam(), ()=>{
-        relocateEventField(piece.node);
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      showEventOverlay(card, ()=>{
+        showJokerPick6Overlay(currentTeam(), ()=>{
+          relocateEventField(piece.node);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
       });
     } else if(card && card.effect === 'joker_wheel'){
-      showJokerWheelOverlay(currentTeam(), ()=>{
-        relocateEventField(piece.node);
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      showEventOverlay(card, ()=>{
+        showJokerWheelOverlay(currentTeam(), ()=>{
+          relocateEventField(piece.node);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
       });
     } else {
       showEventOverlay(card, ()=>{
