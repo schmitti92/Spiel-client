@@ -2190,23 +2190,32 @@ function shuffleBarricadesRandomly(){
 // 1 pro Feld. Erlaubt: Ereignisfelder & Zielfeld.
 // Verboten: Start/Portal/Boss, Felder mit Figur.
 // Wenn dort schon eine Barrikade liegt, bleibt es dabei (kein Stack).
+
+// ---- Event Effect: Barrikaden auf alle Ereignisfelder + Zielfeld ----
+// 1 pro Feld. Erlaubt: Ereignisfelder & Zielfeld.
+// Verboten: Start/Portal/Boss, Felder mit Figur.
+// Wenn dort schon eine Barrikade liegt, bleibt es dabei (kein Stack).
 function placeBarricadesOnEventAndGoal(){
   const occupied = new Set();
   for(const p of (state.pieces || [])) occupied.add(p.node);
 
-  // Ereignisfelder: nutze die aktive Event-Set-Quelle (robust)
+  // Ereignisfelder robust ermitteln:
+  // 1) state.eventActive (falls befüllt)
+  // 2) Fallback: node.type / node.zone / props mit "event"
   const eventIds = [];
-  if(state.eventActive && typeof state.eventActive.forEach === "function"){
+  if(state.eventActive && typeof state.eventActive.forEach === "function" && state.eventActive.size>0){
     state.eventActive.forEach(id=>eventIds.push(id));
   }else{
-    // Fallback: node.type / props
     for(const n of nodes){
-      const isEvent = (n.type==="event") || (n.props && (n.props.event===true || n.props.kind==="event"));
+      const t = String(n.type||"").toLowerCase();
+      const z = String(n.zone||"").toLowerCase();
+      const pk = String((n.props && (n.props.kind||n.props.type||n.props.zone))||"").toLowerCase();
+      const isEvent = (t==="event") || t.includes("event") || z.includes("event") || (n.props && (n.props.event===true)) || pk.includes("event");
       if(isEvent) eventIds.push(n.id);
     }
   }
 
-  // Zielfeld: in diesem Projekt ist es state.goalNodeId
+  // Zielfeld ist state.goalNodeId
   const goalId = state.goalNodeId || null;
 
   const targets = [...eventIds];
@@ -2218,25 +2227,22 @@ function placeBarricadesOnEventAndGoal(){
     if(!n) continue;
 
     // Sperren
-    if(typeof isStartNode === "function" && isStartNode(id)) continue;
     if(n.type === "start") continue;
-
-    if(typeof isPortalNode === "function" && isPortalNode(id)) continue;
     if(n.type === "portal") continue;
-
     if(typeof isBossField === "function" && isBossField(id)) continue;
 
     if(occupied.has(id)) continue;
     if(barricades.has(id)) continue;
 
-    // ✅ Erlaubt: Eventfelder & Zielfeld
     barricades.add(id);
     placed++;
   }
 
   draw();
+  console.info("[BARRICADE] invasion:", {events:eventIds.length, goal:goalId, placed});
   return {placed, eventCount: eventIds.length, hasGoal: !!goalId};
 }
+
 
 
 
