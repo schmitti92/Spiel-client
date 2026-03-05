@@ -1930,33 +1930,81 @@ let eventForceCardId = null; // UI: forced event card (persistent until changed)
 
 
 function shuffleAllBarricades(){
+  // Mische alle aktuell vorhandenen Barrikaden (dynamisch in `barricades`)
+  // Ziel: sichtbar neue Positionen – wenn möglich NICHT dieselben wie vorher.
   const old = Array.from(barricades);
   const count = old.length;
 
-  const occupied = new Set();
-  for(const p of (state.pieces || [])){
-    occupied.add(p.node);
+  console.info("[BARRICADE] shuffle: before", old);
+
+  if(count <= 0){
+    console.warn("[BARRICADE] shuffle: no barricades to shuffle");
+    return;
   }
 
-  const candidates = nodes.map(n=>n.id).filter(id=>{
+  const occupied = new Set();
+  for(const p of (state.pieces || [])){
+    if(p && p.node) occupied.add(p.node);
+  }
+
+  // Kandidaten: grundsätzlich freie Felder.
+  // Barrikaden dürfen laut Regel auf Ereignis- und Siegpunktfeldern liegen.
+  // NICHT auf Start, Portal, Boss, belegt (Figur).
+  const baseCandidates = nodes.map(n=>n.id).filter(id=>{
+    if(!id) return false;
+
+    // Start blocken
     if(nodesById.get(id)?.type === "start") return false;
+
+    // Portal/Boss blocken (falls Funktionen existieren)
+    if(typeof isPortalField === "function" && isPortalField(id)) return false;
+    if(typeof isBossField === "function" && isBossField(id)) return false;
+
+    // Figuren blocken
     if(occupied.has(id)) return false;
+
     return true;
   });
 
+  // Erst versuchen wir: alle neuen Plätze NICHT gleich alt (sichtbarer Shuffle)
+  let candidates = baseCandidates.filter(id=>!barricades.has(id));
+
+  // Wenn zu wenig, erlauben wir auch alte Plätze als Fallback
+  if(candidates.length < count){
+    candidates = baseCandidates.slice();
+  }
+
+  // Shuffle candidates
   for(let i=candidates.length-1;i>0;i--){
     const j = Math.floor(Math.random()*(i+1));
     [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
   }
 
-  barricades.clear();
-
-  for(let i=0;i<count && i<candidates.length;i++){
-    barricades.add(candidates[i]);
+  // Neue Plätze wählen (unique)
+  const picked = [];
+  const used = new Set();
+  for(const id of candidates){
+    if(used.has(id)) continue;
+    used.add(id);
+    picked.push(id);
+    if(picked.length >= count) break;
   }
 
+  // Worst-case: wenn immer noch zu wenig (sehr kleines Board), dann abbrechen
+  if(picked.length <= 0){
+    console.warn("[BARRICADE] shuffle: no valid candidates");
+    return;
+  }
+
+  barricades.clear();
+  for(const id of picked){
+    barricades.add(id);
+  }
+
+  console.info("[BARRICADE] shuffle: after", Array.from(barricades));
   draw();
 }
+
 
 const EVENT_DECK = [
 { 
