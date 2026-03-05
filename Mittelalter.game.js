@@ -1959,8 +1959,53 @@ const EVENT_DECK = [
     title:"Startfeld-Spawn",
     text:"Alle Figuren auf Startfeldern werden nacheinander (0,5s) auf freie Felder verteilt.",
     effect:"start_spawn"
+  },
+  {
+    id:"spawn_barricades3",
+    title:"Barrikaden-Verstärkung",
+    text:"3 zusätzliche Barrikaden erscheinen (auch auf Ereignis- & Siegpunktfeldern).",
+    effect:"spawn_barricades3"
   }
 ];
+
+// ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
+// Darf auf Ereignisfeldern & Siegpunktfeld spawnen.
+// NICHT auf Start, Portal, Boss, belegt (Figur), oder vorhandene Barrikade.
+function spawnExtraBarricades(count=3){
+  ensureBarricadeState && ensureBarricadeState(); // if exists
+  const occupied = new Set();
+  for(const p of state.pieces || []) occupied.add(p.node);
+  const barred = new Set((state.barricades || []).map(b=>b.node));
+
+  const candidates = nodes
+    .map(n=>n.id)
+    .filter(id=>{
+      if(isStartField(id)) return false;
+      if(isPortalField && isPortalField(id)) return false;
+      if(isBossField && isBossField(id)) return false;
+      if(occupied.has(id)) return false;
+      if(barred.has(id)) return false;
+      return true; // event + goal allowed
+    });
+
+  // shuffle
+  for(let i=candidates.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  let placed = 0;
+  for(const id of candidates){
+    if(placed>=count) break;
+    state.barricades.push({ node:id });
+    placed++;
+  }
+
+  draw();
+  return placed;
+}
+
+
 
 // ---- Event Effect: Startfeld-Spawn (nur komplett freie Felder) ----
 function isEventNode(id){
@@ -3287,6 +3332,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
       });
+    } else if(card && card.effect === 'spawn_barricades3'){
+      showEventOverlay(card, ()=>{
+        const placed = spawnExtraBarricades(3);
+        setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
@@ -3344,6 +3395,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           relocateEventField(piece.node);
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
+      });
+    } else if(card && card.effect === 'spawn_barricades3'){
+      showEventOverlay(card, ()=>{
+        const placed = spawnExtraBarricades(3);
+        setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
       showEventOverlay(card, ()=>{
