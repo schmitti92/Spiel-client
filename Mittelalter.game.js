@@ -1941,6 +1941,12 @@ const EVENT_DECK = [
     title:"Alle 6 Joker",
     text:"Du erhältst +1 von jedem Joker (6 Stück).",
     effect:"jokers_all6"
+  },
+  {
+    id:"joker_rain",
+    title:"Joker-Regen",
+    text:"Alle anderen Spieler erhalten 2 zufällige Joker.",
+    effect:"joker_rain"
   }
 ];
 
@@ -1963,6 +1969,30 @@ function grantAllSixJokers(team){
   }
   return gained;
 }
+// ---- Event Effect: Joker-Regen (alle anderen erhalten 2 zufällige Joker; 2 verschiedene) ----
+function applyJokerRain(sourceTeam){
+  ensureJokerState();
+  const jokerIds = JOKERS.map(j=>j.id);
+
+  for(const team of state.players){
+    if(team === sourceTeam) continue;
+
+    // pick 2 different jokers (no reroll even if max reached)
+    const a = jokerIds[Math.floor(Math.random()*jokerIds.length)];
+    let b = a;
+    // ensure different
+    if(jokerIds.length > 1){
+      while(b === a) b = jokerIds[Math.floor(Math.random()*jokerIds.length)];
+    }
+
+    addJoker(team, a, 1);
+    addJoker(team, b, 1);
+  }
+
+  updateJokerUI();
+}
+
+
 
 
 
@@ -3070,6 +3100,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'joker_rain'){
+      showEventOverlay(card, ()=>{
+        applyJokerRain(currentTeam());
+        setStatus(`🌧️ Joker‑Regen! Team ${currentTeam()} hat alle anderen beschenkt.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
@@ -3104,6 +3140,14 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         const gained = grantAllSixJokers(currentTeam());
         const ok = gained.filter(x=>x.gained>0).map(x=>x.name).join(', ');
         setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'joker_rain'){
+      showEventOverlay(card, ()=>{
+        applyJokerRain(currentTeam());
+        setStatus(`🌧️ Joker‑Regen! Team ${currentTeam()} hat alle anderen beschenkt.`);
+        // Wenn es ein echtes Ereignisfeld war, bleibt die alte Logik: Eventfeld wandert weiter
         relocateEventField(piece.node);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
