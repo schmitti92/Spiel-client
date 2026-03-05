@@ -3045,9 +3045,8 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
 }
 
   // 🎴 3) Ereignisfeld: Karte ziehen
-  // TEST: Jede Landung löst eine Karte aus (außer wir kommen gerade aus einer Event-/Barrikaden-Fortsetzung
-  // oder wir sind in der Boss-Phase, damit es nicht spammt).
-  if(FORCE_EVENT_EVERY_LANDING && !opts._eventTriggered && state.phase !== "bossPhase"){
+  // TEST/Regel: Jede Landung löst eine Karte aus (außer wir kommen gerade aus einer Event-/Barrikaden-Fortsetzung).
+  if(FORCE_EVENT_EVERY_LANDING && !opts._eventTriggered){
     const card = pickRandomEventCard();
     state.lastEvent = card;
     console.info('[EVENT] draw (forced)', card.id, 'on', piece.node);
