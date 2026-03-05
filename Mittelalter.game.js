@@ -1894,11 +1894,25 @@ function showWinOverlay(team){
 }
 
 // ---------- Event Cards (Ereignisse) ----------
+// TEST-MODUS: Wenn true, zieht JEDES Betreten eines Feldes eine Ereigniskarte (ideal zum Testen).
+// Für normales Spiel einfach auf false stellen.
+const FORCE_EVENT_EVERY_LANDING = true;
+// TEST-Helfer: Wenn gesetzt (z.B. "joker_pick6"), wird immer diese Karte gezogen.
+const FORCE_EVENT_CARD_ID = null;
+
 const EVENT_DECK = [
-  { id:"gold", title:"Goldfund", text:"+1 Barrikade in Reserve (als Beute).", effect:"addCarry" },
-  { id:"trap", title:"Falle!", text:"Nächster Wurf -2 (min. 1).", effect:"nextRollMinus2" },
-  { id:"blessing", title:"Segen", text:"Du darfst sofort 1 Feld extra gehen (optional).", effect:"bonusStep" },
-  { id:"swap", title:"Tauschhandel", text:"Tausche Position mit einer beliebigen eigenen Figur.", effect:"swapOwn" }
+  { 
+    id:"joker_pick6",
+    title:"Zufälliger Joker",
+    text:"Wähle 1 von 6 Karten – du bekommst den Joker dahinter.",
+    effect:"joker_pick6"
+  },
+  {
+    id:"joker_wheel",
+    title:"Joker-Glücksrad",
+    text:"Drehe das Glücksrad: Erst Joker, dann Anzahl (1–3).",
+    effect:"joker_wheel"
+  }
 ];
 
 function showEventOverlay(card, onClose){
@@ -2039,7 +2053,628 @@ function showEventOverlay(card, onClose){
   xBtn.onclick  = ov._doClose;
 }
 
+
+function showJokerPick6Overlay(team, onClose){
+  ensureJokerState();
+
+  let ov = document.getElementById("jokerPick6Overlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "jokerPick6Overlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.52)"
+    ].join(";") + ";";
+
+    ov.innerHTML = `
+      <div style="
+        width:min(720px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:16px;
+        background:
+          radial-gradient(900px 380px at 50% 10%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.22);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
+      ">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;">
+          <div>
+            <div style="font-weight:900; font-size:20px; letter-spacing:.2px;">🃏 Zufälliger Joker</div>
+            <div style="opacity:.72; font-size:12px; margin-top:2px;">Wähle eine Karte – danach werden alle umgedreht.</div>
+          </div>
+          <button id="jp6CloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
+        </div>
+
+        <div id="jp6Grid" style="
+          display:grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap:12px;
+          margin: 12px 0 14px;
+        "></div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center;">
+          <div id="jp6Result" style="flex:1; opacity:.85; font-weight:800;"></div>
+          <button id="jp6Ok" disabled style="
+            cursor:not-allowed;
+            padding:10px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.35);
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.18)),
+              linear-gradient(180deg, #6a4a2f, #4f3623);
+            color:rgba(255,250,235,.92);
+            font-weight:900;
+            text-shadow:0 1px 0 rgba(0,0,0,.45);
+            opacity:.55;
+          ">OK</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(ov);
+
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov) ov._doClose && ov._doClose();
+    });
+  }
+
+  // build a fresh 6-card layout each time
+  const grid = ov.querySelector("#jp6Grid");
+  const result = ov.querySelector("#jp6Result");
+  const okBtn = ov.querySelector("#jp6Ok");
+  const xBtn  = ov.querySelector("#jp6CloseX");
+
+  grid.innerHTML = "";
+  result.textContent = "";
+  okBtn.disabled = true;
+  okBtn.style.cursor = "not-allowed";
+  okBtn.style.opacity = ".55";
+
+  // random jokers behind each card
+  const picks = [];
+  for(let i=0;i<6;i++){
+    const j = JOKERS[Math.floor(Math.random()*JOKERS.length)];
+    picks.push(j);
+  }
+
+  let chosen = -1;
+
+  function cardStyle(){
+    return [
+      "user-select:none",
+      "height:120px",
+      "border-radius:16px",
+      "border:1px solid rgba(0,0,0,.28)",
+      "box-shadow: inset 0 0 0 2px rgba(255,240,232,.10), 0 14px 28px rgba(0,0,0,.20)",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "text-align:center",
+      "padding:10px",
+      "cursor:pointer",
+      "font-weight:900",
+      "letter-spacing:.2px",
+      "background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(0,0,0,.12)), radial-gradient(circle at 35% 35%, rgba(200,55,65,.95), rgba(90,14,18,.96))",
+      "color:rgba(255,245,235,.95)",
+      "transform: translateZ(0)",
+      "transition: transform .18s ease, filter .18s ease, opacity .18s ease"
+    ].join(";");
+  }
+
+  const cardEls = [];
+  for(let i=0;i<6;i++){
+    const el = document.createElement("div");
+    el.className = "jp6Card";
+    el.setAttribute("data-idx", String(i));
+    el.style.cssText = cardStyle();
+    el.innerHTML = `<div style="font-size:26px; line-height:1;">🃏</div><div style="font-size:12px; opacity:.9; margin-top:6px;">Karte ${i+1}</div>`;
+    el.addEventListener("mouseenter", ()=>{ if(chosen<0){ el.style.transform="scale(1.03)"; el.style.filter="brightness(1.05)"; }});
+    el.addEventListener("mouseleave", ()=>{ if(chosen<0){ el.style.transform="scale(1)"; el.style.filter="none"; }});
+
+    el.addEventListener("click", ()=>{
+      if(chosen>=0) return;
+      chosen = i;
+
+      // flip reveal (simple: swap content + visual)
+      for(let k=0;k<6;k++){
+        const c = cardEls[k];
+        const j = picks[k];
+        c.style.cursor = "default";
+        c.style.transform = "rotateY(180deg)";
+        c.style.background = "linear-gradient(180deg, rgba(255,255,255,.22), rgba(0,0,0,.14)), linear-gradient(180deg, #6a4a2f, #4f3623)";
+        c.style.color = "rgba(255,250,235,.95)";
+        c.innerHTML = `<div style="transform: rotateY(180deg);"><div style="font-size:14px; opacity:.9;">Joker</div><div style="font-size:18px; margin-top:6px;">${j.name}</div></div>`;
+        if(k!==i) c.style.opacity = ".72";
+      }
+
+      // highlight chosen
+      const chosenEl = cardEls[i];
+      chosenEl.style.opacity = "1";
+      chosenEl.style.boxShadow = "inset 0 0 0 2px rgba(255,240,232,.20), 0 0 0 3px rgba(255,215,120,.75), 0 18px 36px rgba(0,0,0,.28)";
+
+      // apply reward
+      const reward = picks[i];
+      addJoker(team, reward.id, 1);
+      updateJokerUI();
+
+      result.textContent = `Team ${team} bekommt: ${reward.name} (+1)`;
+      okBtn.disabled = false;
+      okBtn.style.cursor = "pointer";
+      okBtn.style.opacity = "1";
+    });
+
+    cardEls.push(el);
+    grid.appendChild(el);
+  }
+
+  function doClose(){
+    ov.style.display="none";
+    if(typeof onClose==="function") onClose();
+  }
+  ov._doClose = doClose;
+  okBtn.onclick = doClose;
+  xBtn.onclick  = doClose;
+
+  ov.style.display="flex";
+}
+
+
+function showJokerWheelOverlay(team, onClose){
+  ensureJokerState();
+
+  // Helper: mapping id -> display (mittelalterlich)
+  const items = JOKERS.map(j=>({
+    id: j.id,
+    name: (j.name || j.id).replace(/\s+/g," ").trim(),
+    icon: (j.id==="double") ? "🎲" :
+          (j.id==="moveBarricade") ? "🧱" :
+          (j.id==="swap") ? "🔁" :
+          (j.id==="reroll") ? "🎯" :
+          (j.id==="shield") ? "🛡" :
+          (j.id==="allcolors") ? "🌈" : "✦"
+  }));
+
+  let ov = document.getElementById("jokerWheelOverlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "jokerWheelOverlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.58)"
+    ].join(";") + ";";
+
+    ov.innerHTML = `
+      <div style="
+        width:min(840px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:16px;
+        background:
+          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.25);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
+        overflow:hidden;
+      ">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div style="
+            width:44px; height:44px; border-radius:16px;
+            display:flex; align-items:center; justify-content:center;
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.14)),
+              radial-gradient(circle at 35% 35%, rgba(200,55,65,.98), rgba(90,14,18,.96));
+            border:1px solid rgba(0,0,0,.28);
+            box-shadow: inset 0 0 0 2px rgba(255,240,232,.12);
+            color:rgba(255,245,235,.92);
+            font-weight:900;
+          ">🎰</div>
+
+          <div style="flex:1;">
+            <div style="font-weight:900; font-size:20px; letter-spacing:.2px; line-height:1.15;">Joker‑Glücksrad</div>
+            <div id="jwSub" style="opacity:.75; font-size:12px; margin-top:2px;">Wähle dein Schicksal…</div>
+          </div>
+
+          <button id="jwCloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.1fr .9fr; gap:14px;">
+          <!-- LEFT: Slot 1 Joker -->
+          <div style="
+            border-radius:16px;
+            padding:12px;
+            background:rgba(255,255,255,.30);
+            border:1px solid rgba(0,0,0,.14);
+          ">
+            <div style="font-weight:900; margin-bottom:8px;">Rad I – Joker</div>
+
+            <div style="display:flex; gap:10px; align-items:flex-start;">
+              <!-- Slot window -->
+              <div style="
+                position:relative;
+                width:100%;
+                max-width:360px;
+                height:168px;
+                border-radius:14px;
+                background:linear-gradient(180deg, rgba(80,55,35,.28), rgba(30,20,12,.12));
+                border:1px solid rgba(0,0,0,.22);
+                box-shadow: inset 0 0 0 2px rgba(255,240,200,.08);
+                overflow:hidden;
+              ">
+                <div style="
+                  position:absolute; inset:0;
+                  background:radial-gradient(circle at 35% 25%, rgba(255,235,190,.25), rgba(0,0,0,0) 60%);
+                  pointer-events:none;
+                "></div>
+
+                <div id="jwSlot1" style="
+                  position:absolute; left:0; right:0;
+                  top:0;
+                  display:flex;
+                  flex-direction:column;
+                  gap:10px;
+                  padding:18px 14px;
+                  transform: translateY(0);
+                "></div>
+
+                <!-- viewport highlight -->
+                <div style="
+                  position:absolute; left:10px; right:10px;
+                  top:50%; transform: translateY(-50%);
+                  height:48px;
+                  border-radius:12px;
+                  border:2px solid rgba(200,55,65,.65);
+                  box-shadow: 0 0 0 3px rgba(255,240,232,.12) inset;
+                  pointer-events:none;
+                "></div>
+              </div>
+
+              <!-- Legend list -->
+              <div style="
+                flex:1;
+                min-width:210px;
+                max-height:168px;
+                overflow:auto;
+                border-radius:14px;
+                padding:10px 10px;
+                background:rgba(255,255,255,.22);
+                border:1px dashed rgba(0,0,0,.18);
+                font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+                color: rgba(38,26,18,.88);
+              ">
+                <div style="font-weight:800; font-size:12px; opacity:.85; margin-bottom:6px;">Alle Joker</div>
+                <div id="jwLegend" style="display:flex; flex-direction:column; gap:6px; font-size:13px;"></div>
+              </div>
+            </div>
+
+            <div id="jwWin1" style="margin-top:10px; font-weight:900; display:none;"></div>
+          </div>
+
+          <!-- RIGHT: Slot 2 Amount -->
+          <div style="
+            border-radius:16px;
+            padding:12px;
+            background:rgba(255,255,255,.30);
+            border:1px solid rgba(0,0,0,.14);
+          ">
+            <div style="font-weight:900; margin-bottom:8px;">Rad II – Anzahl</div>
+
+            <div style="
+              position:relative;
+              width:100%;
+              height:168px;
+              border-radius:14px;
+              background:linear-gradient(180deg, rgba(80,55,35,.28), rgba(30,20,12,.12));
+              border:1px solid rgba(0,0,0,.22);
+              box-shadow: inset 0 0 0 2px rgba(255,240,200,.08);
+              overflow:hidden;
+            ">
+              <div id="jwSlot2" style="
+                position:absolute; left:0; right:0;
+                top:0;
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+                padding:18px 14px;
+                transform: translateY(0);
+                align-items:center;
+              "></div>
+
+              <div style="
+                position:absolute; left:10px; right:10px;
+                top:50%; transform: translateY(-50%);
+                height:52px;
+                border-radius:12px;
+                border:2px solid rgba(200,55,65,.65);
+                box-shadow: 0 0 0 3px rgba(255,240,232,.12) inset;
+                pointer-events:none;
+              "></div>
+            </div>
+
+            <div id="jwWin2" style="margin-top:10px; font-weight:900; display:none;"></div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center; margin-top:12px;">
+          <button id="jwStart" style="
+            cursor:pointer;
+            padding:11px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.35);
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.18)),
+              linear-gradient(180deg, #6a4a2f, #4f3623);
+            color:rgba(255,250,235,.92);
+            font-weight:900;
+            text-shadow:0 1px 0 rgba(0,0,0,.45);
+            min-width:170px;
+          ">🎰 Drehen!</button>
+
+          <button id="jwOk" style="
+            cursor:not-allowed;
+            padding:11px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.25);
+            background:rgba(255,255,255,.45);
+            color:rgba(38,26,18,.55);
+            font-weight:900;
+            opacity:.65;
+            min-width:160px;
+          " disabled>Schließen</button>
+        </div>
+
+        <div style="
+          position:absolute; right:-60px; top:-60px;
+          width:220px; height:220px; border-radius:50%;
+          background:radial-gradient(circle at 30% 30%, rgba(200,55,65,.38), rgba(90,14,18,0) 70%);
+          pointer-events:none;
+          transform: rotate(18deg);
+        "></div>
+      </div>
+    `;
+
+    document.body.appendChild(ov);
+
+    // close via backdrop
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov) ov._doClose && ov._doClose();
+    });
+  }
+
+  // Fill legend + slots
+  const slot1 = ov.querySelector("#jwSlot1");
+  const slot2 = ov.querySelector("#jwSlot2");
+  const legend = ov.querySelector("#jwLegend");
+  const startBtn = ov.querySelector("#jwStart");
+  const okBtn = ov.querySelector("#jwOk");
+  const closeX = ov.querySelector("#jwCloseX");
+  const sub = ov.querySelector("#jwSub");
+  const win1 = ov.querySelector("#jwWin1");
+  const win2 = ov.querySelector("#jwWin2");
+
+  legend.innerHTML = "";
+  for(const it of items){
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; gap:8px; align-items:center;";
+    row.innerHTML = `<span style="width:18px; text-align:center;">${it.icon}</span><span style="font-weight:800;">${it.name}</span>`;
+    legend.appendChild(row);
+  }
+
+  // Helper build row element for slot1
+  function slotRowJoker(it){
+    const d = document.createElement("div");
+    d.style.cssText = [
+      "height:38px",
+      "display:flex",
+      "align-items:center",
+      "justify-content:flex-start",
+      "gap:10px",
+      "padding:0 10px",
+      "border-radius:12px",
+      "background:rgba(255,255,255,.20)",
+      "border:1px solid rgba(0,0,0,.10)",
+      "font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "font-weight:900",
+      "color:rgba(245,250,255,.92)",
+      "text-shadow:0 1px 0 rgba(0,0,0,.55)"
+    ].join(";");
+    d.innerHTML = `<span style="width:22px; text-align:center;">${it.icon}</span><span>${it.name}</span>`;
+    return d;
+  }
+
+  function slotRowAmt(n){
+    const d = document.createElement("div");
+    d.style.cssText = [
+      "height:42px",
+      "width:100%",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "border-radius:12px",
+      "background:rgba(255,255,255,.20)",
+      "border:1px solid rgba(0,0,0,.10)",
+      "font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "font-weight:900",
+      "font-size:18px",
+      "color:rgba(245,250,255,.92)",
+      "text-shadow:0 1px 0 rgba(0,0,0,.55)"
+    ].join(";");
+    d.textContent = `×${n}`;
+    return d;
+  }
+
+  // Prepare slot contents (repeat for smooth scroll illusion)
+  function fillSlot1(){
+    slot1.innerHTML = "";
+    // repeat list 6x
+    for(let r=0;r<6;r++){
+      for(const it of items) slot1.appendChild(slotRowJoker(it));
+    }
+  }
+  function fillSlot2(){
+    slot2.innerHTML = "";
+    const nums = [1,2,3];
+    for(let r=0;r<10;r++){
+      for(const n of nums) slot2.appendChild(slotRowAmt(n));
+    }
+  }
+  fillSlot1();
+  fillSlot2();
+
+  // State
+  let spun = false;
+  let chosenJoker = null;
+  let chosenAmt = null;
+
+  function enableClose(){
+    okBtn.disabled = false;
+    okBtn.style.cursor = "pointer";
+    okBtn.style.opacity = "1";
+    okBtn.style.color = "rgba(38,26,18,.88)";
+    okBtn.style.background = "rgba(255,255,255,.70)";
+  }
+
+  function doClose(){
+    ov.style.display="none";
+    if(typeof onClose==="function") onClose();
+  }
+  ov._doClose = doClose;
+  okBtn.onclick = doClose;
+  closeX.onclick = doClose;
+
+  // Spin helper: slot animation for 5s, then stop at target index (center window)
+  function spinSlot(slotEl, itemCountPerCycle, pickIndex, rowHeight, durationMs=5000){
+    return new Promise((resolve)=>{
+      const totalItems = slotEl.children.length;
+      // We want to land on a specific row near the middle of the repeated list
+      // Choose a cycle near the end so it looks like it spun a lot.
+      const baseCycles = Math.floor(totalItems / itemCountPerCycle) - 2;
+      const cycle = Math.max(2, baseCycles);
+      const targetRow = cycle * itemCountPerCycle + pickIndex;
+
+      // viewport center approx at 50%: our list has padding 18px; we land row center at that highlight
+      // We'll compute translate such that targetRow's top aligns to middle highlight top (approx 50% - 24px)
+      const highlightTop = (168/2) - (rowHeight/2); // 168px window height
+      const translate = -(targetRow * (rowHeight + (slotEl===slot2?12:10))) + highlightTop;
+
+      slotEl.style.transition = `transform ${durationMs}ms cubic-bezier(.08,.82,.12,1)`;
+      // Kick: add extra long scroll before stopping (start from 0)
+      requestAnimationFrame(()=>{
+        slotEl.style.transform = `translateY(${translate}px)`;
+      });
+
+      setTimeout(()=>{
+        // little settle
+        slotEl.style.transition = "transform 240ms ease-out";
+        slotEl.style.transform = `translateY(${translate-2}px)`;
+        setTimeout(()=>{
+          slotEl.style.transition = "transform 180ms ease-in";
+          slotEl.style.transform = `translateY(${translate}px)`;
+          setTimeout(resolve, 190);
+        }, 250);
+      }, durationMs);
+    });
+  }
+
+  startBtn.disabled = false;
+  startBtn.style.cursor = "pointer";
+  okBtn.disabled = true;
+  okBtn.style.cursor = "not-allowed";
+  okBtn.style.opacity = ".65";
+  win1.style.display="none";
+  win2.style.display="none";
+  sub.textContent = "Wähle dein Schicksal…";
+
+  startBtn.onclick = async ()=>{
+    if(spun) return;
+    spun = true;
+    startBtn.disabled = true;
+    startBtn.style.opacity = ".65";
+    startBtn.style.cursor = "not-allowed";
+    sub.textContent = "Rad I dreht…";
+
+    // pick joker
+    const pickJ = Math.floor(Math.random()*items.length);
+    await spinSlot(slot1, items.length, pickJ, 38, 5000);
+    chosenJoker = items[pickJ];
+
+    // double suspense
+    win1.style.display="block";
+    win1.textContent = `✨ Gewonnen: ${chosenJoker.name}!`;
+    sub.textContent = "Rad I beendet…";
+
+    // Short pause for drama
+    await new Promise(r=>setTimeout(r, 900));
+
+    // spin amount
+    sub.textContent = "Rad II dreht…";
+    const nums = [1,2,3];
+    const pickA = Math.floor(Math.random()*nums.length);
+    await spinSlot(slot2, nums.length, pickA, 42, 5000);
+    chosenAmt = nums[pickA];
+
+    win2.style.display="block";
+    win2.textContent = `➕ Anzahl: ×${chosenAmt}`;
+    sub.textContent = "Belohnung…";
+
+    // payout with cap behavior (4A)
+    const before = jokerCount(team, chosenJoker.id);
+    addJoker(team, chosenJoker.id, chosenAmt);
+    const after = jokerCount(team, chosenJoker.id);
+    updateJokerUI();
+
+    const gained = Math.max(0, after - before);
+    if(gained <= 0){
+      setStatus(`🎰 Team ${team}: ${chosenJoker.name} war bereits max (${JOKER_MAX_PER_TYPE}/${JOKER_MAX_PER_TYPE}).`);
+    }else if(gained < chosenAmt){
+      setStatus(`🎰 Team ${team}: ${chosenJoker.name} +${gained} (Max erreicht).`);
+    }else{
+      setStatus(`🎰 Team ${team}: ${chosenJoker.name} +${gained}.`);
+    }
+
+    enableClose();
+    sub.textContent = "Fertig!";
+  };
+
+  ov.style.display="flex";
+}
+
+
 function pickRandomEventCard(){
+  if(FORCE_EVENT_CARD_ID){
+    const forced = EVENT_DECK.find(c=>c && c.id===FORCE_EVENT_CARD_ID);
+    if(forced) return forced;
+  }
   return EVENT_DECK[Math.floor(Math.random()*EVENT_DECK.length)];
 }
 
@@ -2302,17 +2937,53 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
   }
 
   // 🎴 3) Ereignisfeld: Karte ziehen
+  // TEST: Jede Landung löst eine Karte aus (außer wir kommen gerade aus einer Event-/Barrikaden-Fortsetzung
+  // oder wir sind in der Boss-Phase, damit es nicht spammt).
+  if(FORCE_EVENT_EVERY_LANDING && !opts._eventTriggered && state.phase !== "bossPhase"){
+    const card = pickRandomEventCard();
+    state.lastEvent = card;
+    console.info('[EVENT] draw (forced)', card.id, 'on', piece.node);
+
+    if(card && card.effect === 'joker_pick6'){
+      showJokerPick6Overlay(currentTeam(), ()=>{
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'joker_wheel'){
+      showJokerWheelOverlay(currentTeam(), ()=>{
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else {
+      showEventOverlay(card, ()=>{
+        // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    }
+    return;
+  }
+
   ensureEventState();
   if(state.eventActive && state.eventActive.has(piece.node)){
     const card = pickRandomEventCard();
     state.lastEvent = card;
     console.info('[EVENT] draw', card.id, 'on', piece.node);
 
-    showEventOverlay(card, ()=>{
-      relocateEventField(piece.node);
-      // Nach dem OK weiter mit Portal / Turn-Ende (ohne Barrikade-Check erneut)
-      resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true });
-    });
+    if(card && card.effect === 'joker_pick6'){
+      showJokerPick6Overlay(currentTeam(), ()=>{
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'joker_wheel'){
+      showJokerWheelOverlay(currentTeam(), ()=>{
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else {
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        // Nach dem OK weiter mit Portal / Turn-Ende (ohne Barrikade-Check erneut)
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    }
 
     // Temporär entfernen, damit wir nicht sofort wieder triggert
     state.eventActive.delete(piece.node);
