@@ -481,6 +481,7 @@ function setPlayerCount(n, opts={reset:true}){
 
   renderJokerButtons();
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function isStartNode(id){
@@ -1581,6 +1582,7 @@ function renderJokerButtons(){
   }
   state._jokerBtns = btns;
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function jokerIsUsableNow(joker){
@@ -1636,6 +1638,7 @@ function setJokerMode(mode, data={}){
   state.jokerData = data || {};
   state.jokerHighlighted.clear();
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function clearJokerMode(msg){
@@ -1645,6 +1648,7 @@ function clearJokerMode(msg){
   state.jokerHighlighted.clear();
   if(msg) setStatus(msg);
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function beginChoosePieceAfterRoll(){
@@ -1657,6 +1661,7 @@ function beginChoosePieceAfterRoll(){
     setStatus(`Team ${currentTeam()}: Keine Figur auf dem Board.`);
   }
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function rollDice(){
@@ -2795,6 +2800,7 @@ function nextTurn(){
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
 
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function staySameTeamNeedRoll(msg){
@@ -2817,6 +2823,7 @@ function staySameTeamNeedRoll(msg){
   setStatus(msg || `Team ${currentTeam()} ist dran: Würfeln.`);
 
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function initPieces(){
@@ -3536,6 +3543,7 @@ btnRoll.addEventListener("click",()=>{
   setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Tippe eine eigene Figur an, um sie zu bewegen.`);
 
   updateJokerUI();
+  ensureEventSelectUI();
 });
 
 // ---------- Spieleranzahl (1–4) ----------
@@ -4199,13 +4207,12 @@ async function load(){
   ensureJokerState();
   renderJokerButtons();
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
-load();
-draw();
 
-})();
-// ---- Sidebar UI: Karte auswählen (Force) ----
+
+// ---- Sidebar UI: Ereigniskarte fürs nächste Feld auswählen (Test-Modus) ----
 function ensureEventSelectUI(){
   const sidebar = document.getElementById("sidePanel") || document.getElementById("sidebar") || document.body;
   const hostParent = (typeof jokerButtonsWrap !== "undefined" && jokerButtonsWrap && jokerButtonsWrap.parentElement) ? jokerButtonsWrap.parentElement : sidebar;
@@ -4267,5 +4274,8 @@ function ensureEventSelectUI(){
   hostParent.appendChild(box);
   return box;
 }
+load();
+draw();
 
-
+})();
+// (Event-Test UI ist nun im Spiel-Scope integriert)
