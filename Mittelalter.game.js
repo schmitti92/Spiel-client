@@ -418,6 +418,7 @@ const state = {
   // --- Event continuation (after mandatory mini-actions) ---
   eventPendingContinue: null,
   eventMoveBarricadesRemaining: 0,
+  initialBarricadeLayout: null,
 
   // --- Landing continuation (after placing a picked-up barricade) ---
   resumeLanding: null,
@@ -1993,6 +1994,12 @@ const EVENT_DECK = [
     title:"Zwei Barrikaden versetzen",
     text:"Du musst 2 Barrikaden auf andere Felder versetzen.",
     effect:"move_barricade2"
+  },
+  {
+    id:"barricades_reset_initial",
+    title:"Barrikaden-Reset",
+    text:"Alle Barrikaden werden auf die Startpositionen zurückgesetzt (gleiche Anzahl).",
+    effect:"barricades_reset_initial"
   }
 ];
 
@@ -2038,6 +2045,55 @@ function spawnExtraBarricades(count=3){
   draw();
   return placed;
 }
+
+// ---- Event Effect: Barrikaden auf Start-Layout zurücksetzen ----
+// - gleiche Anzahl + gleiche Startpositionen wie beim Spielstart
+// - zu viele (zusätzliche) werden entfernt
+// - wenn Startpositionen gerade blockiert sind: Ersatz-Barrikaden werden auf freie Felder gespawnt
+function resetBarricadesToInitial(){
+  // Fallback: falls Snapshot fehlt, neu aus Board-Nodes lesen
+  let layout = (Array.isArray(state.initialBarricadeLayout) && state.initialBarricadeLayout.length>0)
+    ? state.initialBarricadeLayout.slice()
+    : nodes.filter(n=>n.type==="barricade").map(n=>n.id);
+
+  const targetCount = layout.length;
+
+  const occupied = new Set();
+  for(const p of (state.pieces||[])) occupied.add(p.node);
+
+  const bossOcc = new Set();
+  if(Array.isArray(state.bosses)){
+    for(const bb of state.bosses){
+      if(bb && bb.alive!==false && bb.node) bossOcc.add(bb.node);
+    }
+  }
+
+  barricades.clear();
+
+  let placed = 0;
+  for(const id of layout){
+    if(!id) continue;
+    if(occupied.has(id)) continue;
+    if(bossOcc.has(id)) continue;
+    // Start/Portal/Boss sollten im Layout eh nicht vorkommen, aber sicher ist sicher:
+    if((nodesById.get(id)?.type)==='start') continue;
+    if(typeof isPortalField === "function" && isPortalField(id)) continue;
+    if(typeof isBossField === "function" && isBossField(id)) continue;
+
+    barricades.add(id);
+    placed++;
+  }
+
+  // Ersatz spawnen, falls durch Blockierung weniger gesetzt werden konnte
+  const missing = Math.max(0, targetCount - barricades.size);
+  if(missing>0){
+    spawnExtraBarricades(missing);
+  }
+
+  draw();
+  return { targetCount, placed: barricades.size, missing };
+}
+
 
 
 
@@ -3121,6 +3177,11 @@ function initPieces(){
     }
   }
 
+  // Snapshot: Start-Layout der Barrikaden merken (für Reset-Events)
+  if(!state.initialBarricadeLayout || !Array.isArray(state.initialBarricadeLayout) || state.initialBarricadeLayout.length===0){
+    state.initialBarricadeLayout = Array.from(barricades);
+  }
+
   // Auf ALLEN Startfeldern eine Figur (wie vorher)
   const active = new Set(state.players);
   const starts = nodes.filter(n=>n.type==="start" && active.has(Number(n.props?.startTeam)));
@@ -3410,6 +3471,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setJokerMode("moveBarricadePick");
         setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld. (noch ${state.eventMoveBarricadesRemaining})`);
       });
+    } else if(card && card.effect === 'barricades_reset_initial'){
+      showEventOverlay(card, ()=>{
+        const r = resetBarricadesToInitial();
+        setStatus(`🧱 Barrikaden-Reset: ${r.placed}/${r.targetCount} gesetzt${r.missing?(' (+'+r.missing+' Ersatz)'):''}.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
@@ -3521,6 +3588,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         state.jokerHighlighted.clear();
         setJokerMode("moveBarricadePick");
         setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld. (noch ${state.eventMoveBarricadesRemaining})`);
+      });
+    } else if(card && card.effect === 'barricades_reset_initial'){
+      showEventOverlay(card, ()=>{
+        const r = resetBarricadesToInitial();
+        setStatus(`🧱 Barrikaden-Reset: ${r.placed}/${r.targetCount} gesetzt${r.missing?(' (+'+r.missing+' Ersatz)'):''}.`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
       showEventOverlay(card, ()=>{
