@@ -417,6 +417,7 @@ const state = {
 
   // --- Event continuation (after mandatory mini-actions) ---
   eventPendingContinue: null,
+  eventMoveBarricadesRemaining: 0,
 
   // --- Landing continuation (after placing a picked-up barricade) ---
   resumeLanding: null,
@@ -1986,6 +1987,12 @@ const EVENT_DECK = [
     title:"Barrikade versetzen",
     text:"Du musst 1 Barrikade auf ein anderes Feld versetzen.",
     effect:"move_barricade1"
+  },
+  {
+    id:"move_barricade2",
+    title:"Zwei Barrikaden versetzen",
+    text:"Du musst 2 Barrikaden auf andere Felder versetzen.",
+    effect:"move_barricade2"
   }
 ];
 
@@ -3389,6 +3396,20 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setJokerMode("moveBarricadePick");
         setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld.`);
       });
+    } else if(card && card.effect === 'move_barricade2'){
+      showEventOverlay(card, ()=>{
+        if(barricades.size<=0){
+          setStatus(`🧱 Keine Barrikaden auf dem Brett – nichts zu versetzen.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+
+        state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
+        state.eventMoveBarricadesRemaining = Math.min(2, barricades.size);
+        state.jokerHighlighted.clear();
+        setJokerMode("moveBarricadePick");
+        setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld. (noch ${state.eventMoveBarricadesRemaining})`);
+      });
     } else {
       showEventOverlay(card, ()=>{
         // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
@@ -3484,6 +3505,22 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         state.jokerHighlighted.clear();
         setJokerMode("moveBarricadePick");
         setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld.`);
+      });
+    } else if(card && card.effect === 'move_barricade2'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+
+        if(barricades.size<=0){
+          setStatus(`🧱 Keine Barrikaden auf dem Brett – nichts zu versetzen.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+
+        state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
+        state.eventMoveBarricadesRemaining = Math.min(2, barricades.size);
+        state.jokerHighlighted.clear();
+        setJokerMode("moveBarricadePick");
+        setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld. (noch ${state.eventMoveBarricadesRemaining})`);
       });
     } else {
       showEventOverlay(card, ()=>{
@@ -3639,11 +3676,24 @@ function handleTapAtWorld(wx, wy){
       clearJokerMode(`Team ${team}: Barrikade versetzt.`);
       // If an event requires a barricade move, resume landing afterwards
       if(state.eventPendingContinue){
+        // If an event requires one or more barricade moves, resume only after required moves are done
         const info = state.eventPendingContinue;
-        state.eventPendingContinue = null;
         const p2 = state.pieces.find(pp=>pp.id===info.pieceId);
-        if(p2){
-          resolveLanding(p2, { allowPortal: !!info.allowPortal, fromBarricade: true, _eventTriggered: true });
+
+        if(state.eventMoveBarricadesRemaining>0){
+          state.eventMoveBarricadesRemaining--;
+        }
+
+        if(state.eventMoveBarricadesRemaining>0){
+          // Need more moves: keep mode active
+          setJokerMode("moveBarricadePick");
+          setStatus(`Team ${currentTeam()}: EVENT – noch ${state.eventMoveBarricadesRemaining} Barrikade(n) versetzen.`);
+        }else{
+          // Done: resume landing
+          state.eventPendingContinue = null;
+          if(p2){
+            resolveLanding(p2, { allowPortal: !!info.allowPortal, fromBarricade: true, _eventTriggered: true });
+          }
         }
       }
 
