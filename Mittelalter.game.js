@@ -1972,23 +1972,29 @@ const EVENT_DECK = [
 // Darf auf Ereignisfeldern & Siegpunktfeld spawnen.
 // NICHT auf Start, Portal, Boss, belegt (Figur), oder vorhandene Barrikade.
 function spawnExtraBarricades(count=3){
-  ensureBarricadeState && ensureBarricadeState(); // if exists
   const occupied = new Set();
-  for(const p of state.pieces || []) occupied.add(p.node);
-  const barred = new Set((state.barricades || []).map(b=>b.node));
+  for(const p of (state.pieces || [])) occupied.add(p.node);
 
   const candidates = nodes
     .map(n=>n.id)
     .filter(id=>{
+      if(!id) return false;
       if(isStartField(id)) return false;
-      if(isPortalField && isPortalField(id)) return false;
-      if(isBossField && isBossField(id)) return false;
+      if(typeof isPortalField === "function" && isPortalField(id)) return false;
+      if(typeof isBossField === "function" && isBossField(id)) return false;
+
+      // Figuren blocken
       if(occupied.has(id)) return false;
-      if(barred.has(id)) return false;
-      return true; // event + goal allowed
+
+      // vorhandene Barrikaden blocken (egal ob statisch (node.type) oder dynamisch (Set))
+      if(barricades && barricades.has(id)) return false;
+      const n = nodesById && nodesById.get ? nodesById.get(id) : null;
+      if(n && n.type === "barricade") return false;
+
+      return true; // Event + Ziel + Siegpunkt ist erlaubt
     });
 
-  // shuffle
+  // Shuffle
   for(let i=candidates.length-1;i>0;i--){
     const j = Math.floor(Math.random()*(i+1));
     [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
@@ -1997,7 +2003,7 @@ function spawnExtraBarricades(count=3){
   let placed = 0;
   for(const id of candidates){
     if(placed>=count) break;
-    state.barricades.push({ node:id });
+    if(barricades) barricades.add(id); // ✅ Das ist die echte Barrikaden-Quelle im Spiel
     placed++;
   }
 
