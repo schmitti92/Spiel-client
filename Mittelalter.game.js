@@ -263,6 +263,7 @@ function removeRandomJoker(team, amount=1){
     removed++;
   }
   if(removed) updateJokerUI();
+  ensureEventSelectUI();
   return removed;
 }
 
@@ -1912,9 +1913,10 @@ function overlayClickAllowed(ov, ms=350){
 const FORCE_EVENT_EVERY_LANDING = true;
 // TEST-Helfer: Wenn gesetzt (z.B. "joker_pick6"), wird immer diese Karte gezogen.
 const FORCE_EVENT_CARD_ID = null;
+let eventForceCardId = null; // UI: forced event card (persistent until changed)
 
 const EVENT_DECK = [
-  { 
+{ 
     id:"joker_pick6",
     title:"Zufälliger Joker",
     text:"Wähle 1 von 6 Karten – du bekommst den Joker dahinter.",
@@ -1925,8 +1927,36 @@ const EVENT_DECK = [
     title:"Joker-Glücksrad",
     text:"Drehe das Glücksrad: Erst Joker, dann Anzahl (1–3).",
     effect:"joker_wheel"
+  },
+  {
+    id:"jokers_all6",
+    title:"Alle 6 Joker",
+    text:"Du erhältst +1 von jedem Joker (6 Stück).",
+    effect:"jokers_all6"
   }
 ];
+
+// ---- Event Reward: alle 6 Joker (+1 je Typ, capped) ----
+function grantAllSixJokers(team){
+  ensureJokerState();
+  const before = {};
+  for(const j of JOKERS) before[j.id] = jokerCount(team, j.id);
+
+  for(const j of JOKERS){
+    addJoker(team, j.id, 1);
+  }
+  updateJokerUI();
+
+  const gained = [];
+  for(const j of JOKERS){
+    const a = jokerCount(team, j.id);
+    const g = Math.max(0, a - before[j.id]);
+    gained.push({ id:j.id, name:j.name||j.id, gained:g, now:a });
+  }
+  return gained;
+}
+
+
 
 function showEventOverlay(card, onClose){
   let ov = document.getElementById("eventOverlay");
@@ -2692,6 +2722,12 @@ function showJokerWheelOverlay(team, onClose){
 
 
 function pickRandomEventCard(){
+  // UI-forced card (persistent)
+  if(eventForceCardId){
+    const forced = EVENT_DECK.find(c=>c.id===eventForceCardId);
+    if(forced) return forced;
+  }
+
   if(FORCE_EVENT_CARD_ID){
     const forced = EVENT_DECK.find(c=>c && c.id===FORCE_EVENT_CARD_ID);
     if(forced) return forced;
@@ -2977,6 +3013,13 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
       });
+    } else if(card && card.effect === 'jokers_all6'){
+      showEventOverlay(card, ()=>{
+        const gained = grantAllSixJokers(currentTeam());
+        const ok = gained.filter(x=>x.gained>0).map(x=>x.name).join(', ');
+        setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
@@ -3005,6 +3048,14 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
           relocateEventField(piece.node);
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
+      });
+    } else if(card && card.effect === 'jokers_all6'){
+      showEventOverlay(card, ()=>{
+        const gained = grantAllSixJokers(currentTeam());
+        const ok = gained.filter(x=>x.gained>0).map(x=>x.name).join(', ');
+        setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
       showEventOverlay(card, ()=>{
@@ -4154,3 +4205,67 @@ load();
 draw();
 
 })();
+// ---- Sidebar UI: Karte auswählen (Force) ----
+function ensureEventSelectUI(){
+  const sidebar = document.getElementById("sidePanel") || document.getElementById("sidebar") || document.body;
+  const hostParent = (typeof jokerButtonsWrap !== "undefined" && jokerButtonsWrap && jokerButtonsWrap.parentElement) ? jokerButtonsWrap.parentElement : sidebar;
+
+  let box = document.getElementById("eventForceBox");
+  if(box) return box;
+
+  box = document.createElement("div");
+  box.id = "eventForceBox";
+  box.style.cssText = "margin-top:12px; padding:10px; border-radius:14px; background:rgba(10,12,18,.42); border:1px solid rgba(255,255,255,.10); color:rgba(245,250,255,.92); font:700 13px system-ui, -apple-system, Segoe UI, Roboto, Arial;";
+
+  const h = document.createElement("div");
+  h.textContent = "Event wählen (Test)";
+  h.style.cssText = "font-weight:900; margin-bottom:8px; letter-spacing:.2px;";
+  box.appendChild(h);
+
+  const sel = document.createElement("select");
+  sel.id = "eventForceSelect";
+  sel.style.cssText = "width:100%; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(10,12,18,.35); color:rgba(245,250,255,.92); font-weight:800;";
+  box.appendChild(sel);
+
+  const hint = document.createElement("div");
+  hint.style.cssText = "margin-top:8px; opacity:.75; font-size:12px; line-height:1.25;";
+  hint.textContent = "Diese Auswahl bleibt aktiv, bis du sie änderst. (Nächste Felder ziehen diese Karte)";
+  box.appendChild(hint);
+
+  function rebuildOptions(){
+    sel.innerHTML = "";
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = "— Zufällig —";
+    sel.appendChild(opt0);
+
+    const seen = new Set();
+    for(const c of EVENT_DECK){
+      if(seen.has(c.id)) continue;
+      seen.add(c.id);
+      const o = document.createElement("option");
+      o.value = c.id;
+      o.textContent = c.title;
+      sel.appendChild(o);
+    }
+
+    sel.value = eventForceCardId || "";
+  }
+
+  rebuildOptions();
+
+  sel.addEventListener("change", ()=>{
+    eventForceCardId = sel.value || null;
+    if(eventForceCardId){
+      const c = EVENT_DECK.find(x=>x.id===eventForceCardId);
+      setStatus(`🧪 Test aktiv: ${c ? c.title : eventForceCardId}`);
+    }else{
+      setStatus("🧪 Test aus: Ereigniskarten wieder zufällig.");
+    }
+  });
+
+  hostParent.appendChild(box);
+  return box;
+}
+
+
