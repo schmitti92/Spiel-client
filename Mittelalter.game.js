@@ -1953,11 +1953,15 @@ function shuffleAllBarricades(){
   const baseCandidates = nodes.map(n=>n.id).filter(id=>{
     if(!id) return false;
 
-    // Start blocken
+    // Start blocken (robust)
+    if(typeof isStartNode === "function" && isStartNode(id)) return false;
     if(nodesById.get(id)?.type === "start") return false;
 
-    // Portal/Boss blocken (falls Funktionen existieren)
+    // Portal blocken (robust)
+    if(nodesById.get(id)?.type === "portal") return false;
     if(typeof isPortalField === "function" && isPortalField(id)) return false;
+
+    // Boss blocken (falls vorhanden)
     if(typeof isBossField === "function" && isBossField(id)) return false;
 
     // Figuren blocken
