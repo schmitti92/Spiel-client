@@ -1802,7 +1802,10 @@ function maybeCaptureGoal(piece){
     return true;
   }
 
-  // Neu spawnen
+  // Für Test/Regel: Zielfeld triggert immer auch eine Ereigniskarte (1x pro Landung)
+  state._goalCapturedThisLanding = t;
+
+// Neu spawnen
   state.goalNodeId = null;
   spawnGoalRandom(true);
   setStatus(`🎯 Team ${t} sammelt einen Zielpunkt! Stand: ${state.goalScores[t]}/${state.goalToWin}`);
@@ -2999,6 +3002,47 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     if(state.gameOver) return; // bei Sieg sofort stoppen
     // weiter mit normalen Landing-Effekten
   }
+
+
+
+// 🎯 Extra-Regel: Wenn du einen Zielpunkt eingesammelt hast, ziehst du SOFORT auch eine Ereigniskarte.
+// (Damit Testen einfacher ist und das Zielfeld "besonders" bleibt.)
+if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
+  const card = pickRandomEventCard();
+  state.lastEvent = card;
+  console.info('[EVENT] draw (goal)', card.id, 'after goal capture on', piece.node);
+
+  // Flag sofort löschen (wird nur einmal pro Landung gebraucht)
+  state._goalCapturedThisLanding = null;
+
+  const nextOpts = { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true, _goalEventTriggered: true };
+
+  if(card && card.effect === 'joker_pick6'){
+    showEventOverlay(card, ()=>{
+      showJokerPick6Overlay(currentTeam(), ()=>{
+        resolveLanding(piece, nextOpts);
+      });
+    });
+  } else if(card && card.effect === 'joker_wheel'){
+    showEventOverlay(card, ()=>{
+      showJokerWheelOverlay(currentTeam(), ()=>{
+        resolveLanding(piece, nextOpts);
+      });
+    });
+  } else if(card && card.effect === 'jokers_all6'){
+    showEventOverlay(card, ()=>{
+      const gained = grantAllSixJokers(currentTeam());
+      const ok = gained.filter(x=>x.gained>0).map(x=>x.name).join(', ');
+      setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
+      resolveLanding(piece, nextOpts);
+    });
+  } else {
+    showEventOverlay(card, ()=>{
+      resolveLanding(piece, nextOpts);
+    });
+  }
+  return;
+}
 
   // 🎴 3) Ereignisfeld: Karte ziehen
   // TEST: Jede Landung löst eine Karte aus (außer wir kommen gerade aus einer Event-/Barrikaden-Fortsetzung
