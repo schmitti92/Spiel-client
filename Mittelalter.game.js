@@ -2185,23 +2185,31 @@ function shuffleBarricadesRandomly(){
 // ---- Event Effect: Barrikaden auf alle Ereignisfelder + Zielfeld ----
 // 1 pro Feld. Erlaubt: Ereignisfelder & Zielfeld. Verboten: Start/Portal/Boss, Felder mit Figur.
 // Wenn dort schon eine Barrikade liegt, bleibt es dabei (kein Stack).
+
+// ---- Event Effect: Barrikaden auf alle Ereignisfelder + Zielfeld ----
+// 1 pro Feld. Erlaubt: Ereignisfelder & Zielfeld.
+// Verboten: Start/Portal/Boss, Felder mit Figur.
+// Wenn dort schon eine Barrikade liegt, bleibt es dabei (kein Stack).
 function placeBarricadesOnEventAndGoal(){
   const occupied = new Set();
   for(const p of (state.pieces || [])) occupied.add(p.node);
 
-  // event fields: nodes with type "event"
-  const eventNodes = nodes.filter(n => n.type === "event").map(n => n.id);
+  // Ereignisfelder: nutze die aktive Event-Set-Quelle (robust)
+  const eventIds = [];
+  if(state.eventActive && typeof state.eventActive.forEach === "function"){
+    state.eventActive.forEach(id=>eventIds.push(id));
+  }else{
+    // Fallback: node.type / props
+    for(const n of nodes){
+      const isEvent = (n.type==="event") || (n.props && (n.props.event===true || n.props.kind==="event"));
+      if(isEvent) eventIds.push(n.id);
+    }
+  }
 
-  // goal nodes: current goal might be tracked; try common variants
-  let goalId = null;
-  if(typeof state.goalNode === "string") goalId = state.goalNode;
-  if(!goalId && typeof state.goalId === "string") goalId = state.goalId;
-  if(!goalId && typeof state.goal === "string") goalId = state.goal;
-  if(!goalId && typeof currentGoalNodeId === "function") goalId = currentGoalNodeId();
-  if(!goalId && typeof getGoalNodeId === "function") goalId = getGoalNodeId();
+  // Zielfeld: in diesem Projekt ist es state.goalNodeId
+  const goalId = state.goalNodeId || null;
 
-  const targets = [];
-  for(const id of eventNodes) targets.push(id);
+  const targets = [...eventIds];
   if(goalId) targets.push(goalId);
 
   let placed = 0;
@@ -2209,20 +2217,27 @@ function placeBarricadesOnEventAndGoal(){
     const n = nodesById.get(id);
     if(!n) continue;
 
+    // Sperren
+    if(typeof isStartNode === "function" && isStartNode(id)) continue;
     if(n.type === "start") continue;
+
+    if(typeof isPortalNode === "function" && isPortalNode(id)) continue;
     if(n.type === "portal") continue;
+
     if(typeof isBossField === "function" && isBossField(id)) continue;
 
     if(occupied.has(id)) continue;
     if(barricades.has(id)) continue;
 
+    // ✅ Erlaubt: Eventfelder & Zielfeld
     barricades.add(id);
     placed++;
   }
 
   draw();
-  return {placed, eventCount: eventNodes.length, hasGoal: !!goalId};
+  return {placed, eventCount: eventIds.length, hasGoal: !!goalId};
 }
+
 
 
 
