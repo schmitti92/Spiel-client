@@ -1947,6 +1947,12 @@ const EVENT_DECK = [
     title:"Joker-Regen",
     text:"Alle anderen Spieler erhalten 2 zufällige Joker.",
     effect:"joker_rain"
+  },
+  {
+    id:"shuffle_pieces",
+    title:"Figuren mischen",
+    text:"Alle Spielfiguren (außer Start, Schild, Portal) werden neu gemischt.",
+    effect:"shuffle_pieces"
   }
 ];
 
@@ -1969,6 +1975,47 @@ function grantAllSixJokers(team){
   }
   return gained;
 }
+
+
+// ---- Event Effect: Figuren mischen (Permutation) ----
+function shufflePiecesSmart(){
+  // Eligible pieces: not on start, not shielded, not on portal
+  const eligible = state.pieces.filter(p=>{
+    if(!p.node) return false;
+    if(isStartNode(p.node)) return false;
+    if(p.shielded) return false;
+    if(isPortalNode(p.node)) return false;
+    return true;
+  });
+
+  if(eligible.length < 2){
+    setStatus("🌀 Figuren mischen: Zu wenige Figuren zum Mischen.");
+    return;
+  }
+
+  // Collect current nodes and shuffle them
+  const nodesList = eligible.map(p=>p.node);
+  for(let i=nodesList.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    const tmp = nodesList[i]; nodesList[i]=nodesList[j]; nodesList[j]=tmp;
+  }
+
+  // Clear occupied for these nodes first
+  for(const p of eligible){
+    state.occupied.delete(p.node);
+  }
+
+  // Reassign
+  for(let i=0;i<eligible.length;i++){
+    const p = eligible[i];
+    p.prev = p.node;
+    p.node = nodesList[i];
+    state.occupied.set(p.node, p.id);
+  }
+
+  setStatus(`🌀 Figuren gemischt: ${eligible.length} Figuren wurden neu verteilt.`);
+}
+
 // ---- Event Effect: Joker-Regen (alle anderen erhalten 2 zufällige Joker; 2 verschiedene) ----
 function applyJokerRain(sourceTeam){
   ensureJokerState();
@@ -3106,6 +3153,11 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🌧️ Joker‑Regen! Team ${currentTeam()} hat alle anderen beschenkt.`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'shuffle_pieces'){
+      showEventOverlay(card, ()=>{
+        shufflePiecesSmart();
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
@@ -3148,6 +3200,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         applyJokerRain(currentTeam());
         setStatus(`🌧️ Joker‑Regen! Team ${currentTeam()} hat alle anderen beschenkt.`);
         // Wenn es ein echtes Ereignisfeld war, bleibt die alte Logik: Eventfeld wandert weiter
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'shuffle_pieces'){
+      showEventOverlay(card, ()=>{
+        shufflePiecesSmart();
         relocateEventField(piece.node);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
