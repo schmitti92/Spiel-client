@@ -415,6 +415,9 @@ const state = {
   jokerMode: null,
   jokerData: {},
 
+  // --- Event continuation (after mandatory mini-actions) ---
+  eventPendingContinue: null,
+
   // --- Landing continuation (after placing a picked-up barricade) ---
   resumeLanding: null,
             // ob nach Aktion nochmal gewürfelt werden darf
@@ -1977,6 +1980,12 @@ const EVENT_DECK = [
     title:"Barrikaden-Nachschub",
     text:"5 zusätzliche Barrikaden erscheinen (auch auf Ereignis- & Siegpunktfeldern).",
     effect:"spawn_barricades5"
+  },
+  {
+    id:"move_barricade1",
+    title:"Barrikade versetzen",
+    text:"Du musst 1 Barrikade auf ein anderes Feld versetzen.",
+    effect:"move_barricade1"
   }
 ];
 
@@ -3368,6 +3377,18 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'move_barricade1'){
+      showEventOverlay(card, ()=>{
+        if(barricades.size<=0){
+          setStatus(`🧱 Keine Barrikaden auf dem Brett – nichts zu versetzen.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+        state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
+        state.jokerHighlighted.clear();
+        setJokerMode("moveBarricadePick");
+        setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld.`);
+      });
     } else {
       showEventOverlay(card, ()=>{
         // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
@@ -3446,6 +3467,23 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
         relocateEventField(piece.node);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'move_barricade1'){
+      showEventOverlay(card, ()=>{
+        // Eventfeld wird direkt neu gespawnt (damit es nicht hängen bleibt)
+        relocateEventField(piece.node);
+
+        if(barricades.size<=0){
+          setStatus(`🧱 Keine Barrikaden auf dem Brett – nichts zu versetzen.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+
+        // Pflicht-Aktion: Barrikade versetzen (ohne Joker zu verbrauchen)
+        state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
+        state.jokerHighlighted.clear();
+        setJokerMode("moveBarricadePick");
+        setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld.`);
       });
     } else {
       showEventOverlay(card, ()=>{
@@ -3599,6 +3637,16 @@ function handleTapAtWorld(wx, wy){
       barricades.delete(fromId);
       barricades.add(hit.id);
       clearJokerMode(`Team ${team}: Barrikade versetzt.`);
+      // If an event requires a barricade move, resume landing afterwards
+      if(state.eventPendingContinue){
+        const info = state.eventPendingContinue;
+        state.eventPendingContinue = null;
+        const p2 = state.pieces.find(pp=>pp.id===info.pieceId);
+        if(p2){
+          resolveLanding(p2, { allowPortal: !!info.allowPortal, fromBarricade: true, _eventTriggered: true });
+        }
+      }
+
       return;
     }
 
