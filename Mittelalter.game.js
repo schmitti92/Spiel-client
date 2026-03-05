@@ -1928,129 +1928,6 @@ const FORCE_EVENT_EVERY_LANDING = true;
 const FORCE_EVENT_CARD_ID = null;
 let eventForceCardId = null; // UI: forced event card (persistent until changed)
 
-
-function shuffleAllBarricades(){
-  // Mische alle aktuell vorhandenen Barrikaden (dynamisch in `barricades`)
-  // Ziel: sichtbar neue Positionen – wenn möglich NICHT dieselben wie vorher.
-  const old = Array.from(barricades);
-  const count = old.length;
-
-  console.info("[BARRICADE] shuffle: before", old);
-
-  if(count <= 0){
-    console.warn("[BARRICADE] shuffle: no barricades to shuffle");
-    return;
-  }
-
-  const occupied = new Set();
-  for(const p of (state.pieces || [])){
-    if(p && p.node) occupied.add(p.node);
-  }
-
-  // Kandidaten: grundsätzlich freie Felder.
-  // Barrikaden dürfen laut Regel auf Ereignis- und Siegpunktfeldern liegen.
-  // NICHT auf Start, Portal, Boss, belegt (Figur).
-  const baseCandidates = nodes.map(n=>n.id).filter(id=>{
-    if(!id) return false;
-
-    // Start blocken (robust)
-    if(typeof isStartNode === "function" && isStartNode(id)) return false;
-    if(nodesById.get(id)?.type === "start") return false;
-
-    // Portal blocken (robust)
-    if(nodesById.get(id)?.type === "portal") return false;
-    if(typeof isPortalField === "function" && isPortalField(id)) return false;
-
-    // Boss blocken (falls vorhanden)
-    if(typeof isBossField === "function" && isBossField(id)) return false;
-
-    // Figuren blocken
-    if(occupied.has(id)) return false;
-
-    return true;
-  });
-
-  if(baseCandidates.length <= 0){
-    console.warn("[BARRICADE] shuffle: no valid baseCandidates");
-    return;
-  }
-
-  // Helper: array shuffle
-  const shuffleArr = (arr)=>{
-    for(let i=arr.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
-
-  // Wir versuchen ein paar Mal, damit es NICHT zufällig identisch bleibt.
-  let picked = null;
-
-  for(let attempt=0; attempt<10; attempt++){
-    // Erst versuchen wir: alle neuen Plätze NICHT gleich alt (sichtbarer Shuffle)
-    let candidates = baseCandidates.filter(id=>!barricades.has(id));
-
-    // Wenn zu wenig, erlauben wir auch alte Plätze als Fallback
-    if(candidates.length < count){
-      candidates = baseCandidates.slice();
-    }
-
-    shuffleArr(candidates);
-
-    const tmp = [];
-    const used = new Set();
-    for(const id of candidates){
-      if(used.has(id)) continue;
-      used.add(id);
-      tmp.push(id);
-      if(tmp.length >= count) break;
-    }
-
-    if(tmp.length <= 0) continue;
-
-    // Falls identisch (Set-Vergleich), nochmal versuchen
-    const same =
-      tmp.length === old.length &&
-      tmp.every(id => barricades.has(id)) &&
-      old.every(id => tmp.includes(id));
-
-    if(!same){
-      picked = tmp;
-      break;
-    }
-
-    // Wenn identisch, Versuch wiederholen
-  }
-
-  // Fallback: wenn wir es nicht schaffen, nehmen wir trotzdem ein Ergebnis
-  if(!picked){
-    // Notfalls: nutze baseCandidates, aber durchmischen
-    const candidates = shuffleArr(baseCandidates.slice());
-    picked = candidates.slice(0, Math.min(count, candidates.length));
-  }
-
-  const beforeSet = new Set(old);
-  const afterSet = new Set(picked);
-
-  barricades.clear();
-  for(const id of picked){
-    barricades.add(id);
-  }
-
-  // Delta für Debug / Vertrauen
-  let moved = 0;
-  for(const id of beforeSet){
-    if(!afterSet.has(id)) moved++;
-  }
-
-  console.info("[BARRICADE] shuffle: after", Array.from(barricades), "moved:", moved, "of", count);
-
-  draw();
-}
-
-
-
 const EVENT_DECK = [
 { 
     id:"joker_pick6",
@@ -2123,14 +2000,14 @@ const EVENT_DECK = [
     title:"Barrikaden-Reset",
     text:"Alle Barrikaden werden auf die Startpositionen zurückgesetzt (gleiche Anzahl).",
     effect:"barricades_reset_initial"
-  },
+  }
+,
   {
     id:"barricades_shuffle",
     title:"Barrikaden mischen",
-    text:"Alle Barrikaden werden neu gemischt und an neue Stellen gespawnt.",
+    text:"Alle Barrikaden werden neu gemischt und auf neue Felder verteilt.",
     effect:"barricades_shuffle"
-  }
-];
+  }];
 
 // ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
 // Darf auf Ereignisfeldern & Siegpunktfeld spawnen.
@@ -2222,6 +2099,79 @@ function resetBarricadesToInitial(){
   draw();
   return { targetCount, placed: barricades.size, missing };
 }
+
+// ---- Event Effect: Barrikaden neu mischen ----
+// Setzt alle aktuell vorhandenen Barrikaden (Anzahl bleibt gleich) auf neue zufällige Felder.
+// Regeln (wie von dir gewünscht):
+// - NICHT auf Startfelder
+// - NICHT auf Portalfelder
+// - NICHT auf Felder, auf denen eine Spielfigur steht
+// - NICHT auf Bossfelder
+// - Ziel-/Ereignis-/Siegpunktfelder sind erlaubt (wenn sie normale Felder sind)
+function shuffleBarricadesRandomly(){
+  const count = barricades ? barricades.size : 0;
+  if(count<=0){
+    draw();
+    return { count:0, placed:0, reason:"no_barricades" };
+  }
+
+  const occupied = new Set();
+  for(const p of (state.pieces || [])){
+    if(p && p.node) occupied.add(p.node);
+  }
+
+  const bossOcc = new Set();
+  if(Array.isArray(state.bosses)){
+    for(const bb of state.bosses){
+      if(bb && bb.alive!==false && bb.node) bossOcc.add(bb.node);
+    }
+  }
+
+  // Kandidaten: alle Node-IDs, die nicht verboten sind
+  const candidates = nodes
+    .map(n=>n.id)
+    .filter(id=>{
+      if(!id) return false;
+      const n = nodesById.get(id);
+      if(!n) return false;
+
+      // Start
+      if(n.type === "start") return false;
+
+      // Portal/Boss (falls Helfer existieren, nutzen)
+      if(typeof isPortalField === "function" && isPortalField(id)) return false;
+      if(typeof isBossField === "function" && isBossField(id)) return false;
+      if(bossOcc.has(id)) return false;
+
+      // Figuren blocken
+      if(occupied.has(id)) return false;
+
+      // Keine Barrikade auf Barrikade (wir setzen neu)
+      // (Wichtig: wir clearen gleich barricades, deshalb hier nicht checken)
+
+      // Optional: wenn Board statische barricade Nodes hätte, blocken:
+      if(n.type === "barricade") return false;
+
+      return true;
+    });
+
+  // Shuffle (Fisher-Yates)
+  for(let i=candidates.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  barricades.clear();
+
+  const maxPlace = Math.min(count, candidates.length);
+  for(let i=0;i<maxPlace;i++){
+    barricades.add(candidates[i]);
+  }
+
+  draw();
+  return { count, placed: maxPlace, shortage: Math.max(0, count - maxPlace) };
+}
+
 
 
 
@@ -3505,14 +3455,7 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
       resolveLanding(piece, nextOpts);
     });
-   } else if(card && card.effect === 'barricades_shuffle'){
-      showEventOverlay(card, ()=>{
-        shuffleAllBarricades();
-        setStatus("🧱 Alle Barrikaden wurden neu gemischt.");
-        relocateEventField(piece.node);
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
-      });
-    } else {
+  } else {
     showEventOverlay(card, ()=>{
       resolveLanding(piece, nextOpts);
     });
@@ -3606,6 +3549,26 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         state.jokerHighlighted.clear();
         setJokerMode("moveBarricadePick");
         setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld. (noch ${state.eventMoveBarricadesRemaining})`);
+      });
+        } else if(card && card.effect === 'barricades_shuffle'){
+      showEventOverlay(card, ()=>{
+        const r = shuffleBarricadesRandomly();
+        if(r.shortage){
+          setStatus(`🧱 Barrikaden gemischt: ${r.placed}/${r.count} gesetzt (zu wenig freie Felder!)`);
+        } else {
+          setStatus(`🧱 Barrikaden gemischt: ${r.placed} Barrikaden neu verteilt.`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+        } else if(card && card.effect === 'barricades_shuffle'){
+      showEventOverlay(card, ()=>{
+        const r = shuffleBarricadesRandomly();
+        if(r.shortage){
+          setStatus(`🧱 Barrikaden gemischt: ${r.placed}/${r.count} gesetzt (zu wenig freie Felder!)`);
+        } else {
+          setStatus(`🧱 Barrikaden gemischt: ${r.placed} Barrikaden neu verteilt.`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else if(card && card.effect === 'barricades_reset_initial'){
       showEventOverlay(card, ()=>{
