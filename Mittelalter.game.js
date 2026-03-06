@@ -2034,6 +2034,12 @@ const EVENT_DECK = [
     title:"Ein Boss erscheint",
     text:"Ein zufälliger Boss erscheint auf einem freien Bossfeld. Maximal 2 Bosse gleichzeitig.",
     effect:"spawn_one_boss"
+  },
+  {
+    id:"spawn_two_bosses",
+    title:"Zwei Bosse erscheinen",
+    text:"Bis zu zwei zufällige Bosse erscheinen auf freien Bossfeldern. Maximal 2 Bosse insgesamt.",
+    effect:"spawn_two_bosses"
   }
 ];
 
@@ -2087,6 +2093,21 @@ function spawnExtraBarricades(count=3){
 
 
 
+
+function spawnTwoBossesFromEvent(){
+  ensureBossState();
+  const results=[];
+
+  for(let i=0;i<2;i++){
+    const r = spawnRandomBossFromEvent();
+    if(!r.ok) break;
+    results.push(r);
+  }
+
+  draw();
+  console.info("[BOSS] event spawn two", results);
+  return results;
+}
 function spawnRandomBossFromEvent(){
   ensureBossState();
 
