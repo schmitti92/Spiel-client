@@ -120,77 +120,8 @@ button:hover{
 
 </div>
 
-<script>
+<div style="margin-top:14px;font-size:12px;opacity:0.75">Aktuell läuft die Lobby im sicheren Testmodus. Der echte Render-Server wird im nächsten Schritt angebunden.</div>
 
-let roomCode = null
-let players = []
-
-function createRoom(){
-
-    roomCode = Math.floor(1000 + Math.random()*9000)
-
-    document.getElementById("roomInfo").innerText =
-    "Raum erstellt: " + roomCode
-
-    players = []
-    addPlayer()
-}
-
-function joinRoom(){
-
-    roomCode = document.getElementById("roomInput").value
-
-    if(!roomCode){
-        alert("Bitte Raumcode eingeben")
-        return
-    }
-
-    document.getElementById("roomInfo").innerText =
-    "Verbunden mit Raum: " + roomCode
-
-    addPlayer()
-}
-
-function addPlayer(){
-
-    const name =
-    document.getElementById("nameInput").value || "Spieler"
-
-    players.push(name)
-
-    updatePlayerList()
-}
-
-function updatePlayerList(){
-
-    const list = document.getElementById("playerList")
-
-    list.innerHTML = ""
-
-    players.forEach(p=>{
-        const div = document.createElement("div")
-        div.className="player"
-        div.innerText=p
-        list.appendChild(div)
-    })
-}
-
-function startGame(){
-
-    if(!roomCode){
-        alert("Kein Raum aktiv")
-        return
-    }
-
-    window.location.href="Mittelalter.index.html"
-}
-
-function goBack(){
-
-    window.location.href="index.html"
-}
-
-</script>
-
+<script src="mittelalter.online.js?v=1"></script>
 </body>
 </html>
