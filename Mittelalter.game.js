@@ -6898,71 +6898,306 @@ function stealOnePointSimple(thiefTeam){
 }
 
 
-// ===== Online Multiplayer Hook (Mittelalter Server) =====
+
+
+
+// ===== Online Multiplayer Layer (Host ist Chef) =====
 const SERVER_URL = "wss://mittelalter-server.onrender.com";
 let ws = null;
 let onlinePlayerName = null;
 let onlineRoomCode = null;
-let onlineIsHost = null;
+let onlineIsHost = false;
+let onlineSelfPlayerId = null;
+let onlineConnected = false;
+let onlineLastSnapshotHash = "";
+let onlineBroadcastTimer = null;
+let onlineApplyingSnapshot = false;
+
+function isOnlineSession(){
+  const packedMode = sessionStorage.getItem("mittelalterLastMode") || "";
+  const room = (sessionStorage.getItem("roomCode") || "").trim();
+  return packedMode === "online" && !!room;
+}
+
+function stableStringify(obj){
+  return JSON.stringify(obj);
+}
+
+function makeOnlineSnapshot(){
+  ensurePortalState();
+  ensureEventState();
+  ensureJokerState();
+  ensureBossState();
+  return {
+    state: {
+      players: state.players.slice(),
+      playerCount: state.playerCount,
+      turn: state.turn,
+      roll: state.roll,
+      phase: state.phase,
+      selected: state.selected,
+      highlighted: Array.from(state.highlighted || []),
+      placeHighlighted: Array.from(state.placeHighlighted || []),
+      jokerHighlighted: Array.from(state.jokerHighlighted || []),
+      portalHighlighted: Array.from(state.portalHighlighted || []),
+      eventActive: Array.from(state.eventActive || []),
+      lastEvent: state.lastEvent || null,
+      pieces: (state.pieces || []).map(p => ({...p})),
+      occupied: Array.from((state.occupied || new Map()).entries()),
+      carry: {...(state.carry || {})},
+      jokers: JSON.parse(JSON.stringify(state.jokers || {})),
+      jokerFlags: {...(state.jokerFlags || {})},
+      jokerMode: state.jokerMode || null,
+      jokerData: JSON.parse(JSON.stringify(state.jokerData || {})),
+      eventPendingContinue: state.eventPendingContinue ? {...state.eventPendingContinue} : null,
+      eventMoveBarricadesRemaining: state.eventMoveBarricadesRemaining || 0,
+      resumeLanding: state.resumeLanding ? {...state.resumeLanding} : null,
+      pendingSix: !!state.pendingSix,
+      extraRoll: !!state.extraRoll,
+      ignoreBarricadesThisTurn: !!state.ignoreBarricadesThisTurn,
+      goalScores: {...(state.goalScores || {})},
+      goalNodeId: state.goalNodeId || null,
+      bonusGoalNodeId: state.bonusGoalNodeId || null,
+      bonusGoalValue: state.bonusGoalValue || 2,
+      bonusLightNodeId: state.bonusLightNodeId || null,
+      goalToWin: state.goalToWin,
+      gameOver: !!state.gameOver,
+      bosses: JSON.parse(JSON.stringify(state.bosses || [])),
+      bossMaxActive: state.bossMaxActive,
+      bossIdSeq: state.bossIdSeq,
+      bossSpawnNodes: (state.bossSpawnNodes || []).slice(),
+      bossTick: state.bossTick,
+      bossAuto: !!state.bossAuto,
+      bossDebug: !!state.bossDebug,
+      _bossRoundEndFlag: !!state._bossRoundEndFlag,
+      bossRoundNum: state.bossRoundNum || 0,
+      barricades: Array.from(barricades || []),
+      initialBarricadeLayout: Array.isArray(state.initialBarricadeLayout) ? state.initialBarricadeLayout.slice() : null,
+      portalUsedThisTurn: !!state.portalUsedThisTurn,
+      _goalCapturedThisLanding: state._goalCapturedThisLanding || null,
+    }
+  };
+}
+
+function applyOnlineSnapshot(payload){
+  if(!payload || !payload.state) return;
+  const snap = payload.state;
+  onlineApplyingSnapshot = true;
+  try{
+    state.players = Array.isArray(snap.players) ? snap.players.slice() : state.players;
+    state.playerCount = Number(snap.playerCount || state.playerCount || 4);
+    state.turn = Number(snap.turn || 0);
+    state.roll = snap.roll;
+    state.phase = snap.phase || state.phase;
+    state.selected = snap.selected || null;
+    state.highlighted = new Set(snap.highlighted || []);
+    state.placeHighlighted = new Set(snap.placeHighlighted || []);
+    state.jokerHighlighted = new Set(snap.jokerHighlighted || []);
+    ensurePortalState();
+    state.portalHighlighted = new Set(snap.portalHighlighted || []);
+    state.eventActive = new Set(snap.eventActive || []);
+    state.lastEvent = snap.lastEvent || null;
+    state.pieces = Array.isArray(snap.pieces) ? snap.pieces.map(p => ({...p})) : state.pieces;
+    state.occupied = new Map(snap.occupied || []);
+    state.carry = {...(snap.carry || state.carry || {})};
+    state.jokers = JSON.parse(JSON.stringify(snap.jokers || state.jokers || {}));
+    state.jokerFlags = {...(snap.jokerFlags || state.jokerFlags || {})};
+    state.jokerMode = snap.jokerMode || null;
+    state.jokerData = JSON.parse(JSON.stringify(snap.jokerData || {}));
+    state.eventPendingContinue = snap.eventPendingContinue ? {...snap.eventPendingContinue} : null;
+    state.eventMoveBarricadesRemaining = Number(snap.eventMoveBarricadesRemaining || 0);
+    state.resumeLanding = snap.resumeLanding ? {...snap.resumeLanding} : null;
+    state.pendingSix = !!snap.pendingSix;
+    state.extraRoll = !!snap.extraRoll;
+    state.ignoreBarricadesThisTurn = !!snap.ignoreBarricadesThisTurn;
+    state.goalScores = {...(snap.goalScores || state.goalScores || {})};
+    state.goalNodeId = snap.goalNodeId || null;
+    state.bonusGoalNodeId = snap.bonusGoalNodeId || null;
+    state.bonusGoalValue = Number(snap.bonusGoalValue || 2);
+    state.bonusLightNodeId = snap.bonusLightNodeId || null;
+    state.goalToWin = Number(snap.goalToWin || state.goalToWin || 10);
+    state.gameOver = !!snap.gameOver;
+    ensureBossState();
+    state.bosses = JSON.parse(JSON.stringify(snap.bosses || []));
+    state.bossMaxActive = Number(snap.bossMaxActive || state.bossMaxActive || 2);
+    state.bossIdSeq = Number(snap.bossIdSeq || state.bossIdSeq || 1);
+    state.bossSpawnNodes = Array.isArray(snap.bossSpawnNodes) ? snap.bossSpawnNodes.slice() : [];
+    state.bossTick = Number(snap.bossTick || 0);
+    state.bossAuto = !!snap.bossAuto;
+    state.bossDebug = !!snap.bossDebug;
+    state._bossRoundEndFlag = !!snap._bossRoundEndFlag;
+    state.bossRoundNum = Number(snap.bossRoundNum || 0);
+    barricades.clear();
+    for(const id of (snap.barricades || [])) barricades.add(id);
+    state.initialBarricadeLayout = Array.isArray(snap.initialBarricadeLayout) ? snap.initialBarricadeLayout.slice() : state.initialBarricadeLayout;
+    state.portalUsedThisTurn = !!snap.portalUsedThisTurn;
+    state._goalCapturedThisLanding = snap._goalCapturedThisLanding || null;
+    if(dieBox) dieBox.textContent = (state.roll == null ? '–' : String(state.roll));
+    updateJokerUI();
+    ensureEventSelectUI();
+    updateBossUI();
+    draw();
+  } finally {
+    onlineApplyingSnapshot = false;
+  }
+}
+
+function scheduleOnlineStateBroadcast(){
+  if(onlineApplyingSnapshot) return;
+  if(!isOnlineSession() || !onlineIsHost) return;
+  if(!ws || ws.readyState !== 1) return;
+  if(onlineBroadcastTimer) return;
+  onlineBroadcastTimer = setTimeout(()=>{
+    onlineBroadcastTimer = null;
+    try{
+      const payload = makeOnlineSnapshot();
+      const hash = stableStringify(payload);
+      if(hash === onlineLastSnapshotHash) return;
+      onlineLastSnapshotHash = hash;
+      ws.send(JSON.stringify({ type:'state_update', state: payload }));
+    }catch(err){
+      console.warn('[ONLINE] state_update failed', err);
+    }
+  }, 120);
+}
+
+function sendOnlineAction(action){
+  if(!isOnlineSession() || onlineIsHost) return false;
+  if(!ws || ws.readyState !== 1) return false;
+  ws.send(JSON.stringify({ type:'action_request', action }));
+  return true;
+}
+
+function processIncomingOnlineAction(msg){
+  if(!onlineIsHost) return;
+  if(!msg || !msg.action) return;
+  const action = msg.action;
+  try{
+    if(action.kind === 'roll_click'){
+      if(state.gameOver) return;
+      if(state.phase !== 'needRoll') return;
+      ensureJokerState();
+      state.roll = rollDice();
+      dieBox.textContent = state.roll;
+      state.selected = null;
+      state.highlighted.clear();
+      state.phase = 'choosePiece';
+      setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Wähle eine Figur.`);
+      updateJokerUI();
+      ensureEventSelectUI();
+      draw();
+      return;
+    }
+    if(action.kind === 'tap_world'){
+      handleTapAtWorld(Number(action.wx), Number(action.wy));
+      return;
+    }
+    if(action.kind === 'use_joker'){
+      tryUseJoker(action.jokerId);
+      return;
+    }
+  } catch(err){
+    console.warn('[ONLINE] action processing failed', err, action);
+  }
+}
 
 function connectMittelalterServer(){
-  onlinePlayerName = sessionStorage.getItem("playerName") || "Spieler";
-  onlineRoomCode = (sessionStorage.getItem("roomCode") || "").trim().toUpperCase();
-  onlineIsHost = sessionStorage.getItem("isHost") || "false";
+  onlinePlayerName = sessionStorage.getItem('playerName') || 'Spieler';
+  onlineRoomCode = (sessionStorage.getItem('roomCode') || '').trim().toUpperCase();
+  onlineIsHost = sessionStorage.getItem('isHost') === 'true';
+  if(!isOnlineSession() || !onlineRoomCode) return;
 
   try{
     ws = new WebSocket(SERVER_URL);
-
     ws.onopen = ()=>{
-      console.log("Verbunden mit Mittelalter Server");
-
-      if(onlineRoomCode){
-        ws.send(JSON.stringify({
-          type: "sync_request",
-          roomCode: onlineRoomCode,
-          name: onlinePlayerName,
-          isHost: onlineIsHost === "true"
-        }));
+      onlineConnected = true;
+      console.log('Verbunden mit Mittelalter Server');
+      ws.send(JSON.stringify({
+        type: 'sync_request',
+        roomCode: onlineRoomCode,
+        name: onlinePlayerName,
+        isHost: onlineIsHost
+      }));
+      if(onlineIsHost){
+        setTimeout(scheduleOnlineStateBroadcast, 300);
       }
     };
 
     ws.onmessage = (e)=>{
       try{
         const msg = JSON.parse(e.data);
-
-        if(msg.type === "roll_result" && dieBox){
-          dieBox.textContent = msg.value;
+        if(msg.type === 'room_state'){
+          if(msg.self?.playerId) onlineSelfPlayerId = msg.self.playerId;
+          console.log('Spieler im Raum:', (msg.room?.players || []).map(p => p.name));
+          if(!onlineIsHost && msg.snapshot?.state){
+            applyOnlineSnapshot(msg.snapshot);
+          }
+          return;
         }
-
-        if(msg.type === "room_state"){
-          console.log("Spieler im Raum:", (msg.room?.players || []).map(p => p.name));
+        if(msg.type === 'state_update'){
+          if(msg.fromPlayerId === onlineSelfPlayerId && onlineIsHost) return;
+          if(msg.state && !onlineIsHost){
+            applyOnlineSnapshot(msg.state);
+          }
+          return;
         }
-
-        if(msg.type === "error_message"){
-          console.log("Serverfehler:", msg.message);
+        if(msg.type === 'action_request'){
+          if(onlineIsHost){
+            processIncomingOnlineAction(msg);
+          }
+          return;
         }
-      }catch(err){}
+        if(msg.type === 'error_message'){
+          console.log('Serverfehler:', msg.message);
+        }
+      }catch(err){
+        console.warn('[ONLINE] message parse failed', err);
+      }
     };
-
     ws.onclose = ()=>{
-      console.log("Server Verbindung geschlossen");
+      onlineConnected = false;
+      console.log('Server Verbindung geschlossen');
     };
   }catch(err){
-    console.log("Server Verbindung fehlgeschlagen");
+    console.log('Server Verbindung fehlgeschlagen');
   }
 }
 
-window.addEventListener("load", ()=>{
-  connectMittelalterServer();
-
-  if(btnRoll && !btnRoll.dataset.onlineHooked){
-    btnRoll.dataset.onlineHooked = "1";
-    btnRoll.addEventListener("click", ()=>{
-      if(ws && ws.readyState===1){
-        ws.send(JSON.stringify({ type:"roll_request" }));
-      }
-    });
+// Non-host input -> action_request instead of local execution
+btnRoll?.addEventListener('click', (e)=>{
+  if(!isOnlineSession() || onlineIsHost) return;
+  if(sendOnlineAction({ kind:'roll_click' })){
+    e.preventDefault();
+    e.stopImmediatePropagation();
   }
-});
-// ===== Ende Online Hook =====
+}, true);
 
+const __origHandleTapAtWorld = handleTapAtWorld;
+handleTapAtWorld = function(wx, wy){
+  if(isOnlineSession() && !onlineIsHost){
+    sendOnlineAction({ kind:'tap_world', wx, wy });
+    return;
+  }
+  return __origHandleTapAtWorld(wx, wy);
+};
+
+const __origTryUseJoker = tryUseJoker;
+tryUseJoker = function(jokerId){
+  if(isOnlineSession() && !onlineIsHost){
+    sendOnlineAction({ kind:'use_joker', jokerId });
+    return;
+  }
+  return __origTryUseJoker(jokerId);
+};
+
+const __origDrawOnline = draw;
+draw = function(){
+  const r = __origDrawOnline.apply(this, arguments);
+  scheduleOnlineStateBroadcast();
+  return r;
+};
+
+window.addEventListener('load', ()=>{
+  connectMittelalterServer();
+});
+// ===== Ende Online Multiplayer Layer =====
