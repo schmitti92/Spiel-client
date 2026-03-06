@@ -263,6 +263,7 @@ function removeRandomJoker(team, amount=1){
     removed++;
   }
   if(removed) updateJokerUI();
+  ensureEventSelectUI();
   return removed;
 }
 
@@ -407,12 +408,19 @@ const state = {
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
   pendingSix:false,
+  extraRoll:false,
 
   // Joker inventory & state
   jokers: {1:baseJokerLoadout(),2:baseJokerLoadout(),3:baseJokerLoadout(),4:baseJokerLoadout()},
   jokerFlags: { double:false, allcolors:false },
   jokerMode: null,
   jokerData: {},
+
+  // --- Event continuation (after mandatory mini-actions) ---
+  eventPendingContinue: null,
+  eventMoveBarricadesRemaining: 0,
+  initialBarricadeLayout: null,
+  ignoreBarricadesThisTurn: false,
 
   // --- Landing continuation (after placing a picked-up barricade) ---
   resumeLanding: null,
@@ -421,6 +429,8 @@ const state = {
   // --- Zielpunkte (Sammelziel) ---
   goalScores: {1:0,2:0,3:0,4:0}, // Punkte pro Team
   goalNodeId: null,             // aktuelles Zielpunkt-Feld (nodeId)
+  bonusGoalNodeId: null,        // zusätzliches Einmal-Zielfeld mit doppelten Punkten
+  bonusGoalValue: 2,            // Punktewert des Bonus-Zielfelds
   goalToWin: 10,                // wer zuerst 10 sammelt gewinnt
   gameOver: false,              // Spiel beendet?
 
@@ -461,6 +471,8 @@ function setPlayerCount(n, opts={reset:true}){
   state.portalHighlighted.clear();
   state.portalUsedThisTurn = false;
   state.pendingSix = false;
+  state.extraRoll = false;
+  state.ignoreBarricadesThisTurn = false;
 
   if(opts.reset){
     initPieces();
@@ -469,6 +481,7 @@ function setPlayerCount(n, opts={reset:true}){
     // Zielpunkte zurücksetzen
     state.goalScores = {1:0,2:0,3:0,4:0};
     state.gameOver = false;
+    state.bonusGoalNodeId = null;
     spawnGoalRandom(true);
 
     fitToBoard(60);
@@ -480,6 +493,7 @@ function setPlayerCount(n, opts={reset:true}){
 
   renderJokerButtons();
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function isStartNode(id){
@@ -1580,6 +1594,7 @@ function renderJokerButtons(){
   }
   state._jokerBtns = btns;
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function jokerIsUsableNow(joker){
@@ -1635,6 +1650,7 @@ function setJokerMode(mode, data={}){
   state.jokerData = data || {};
   state.jokerHighlighted.clear();
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function clearJokerMode(msg){
@@ -1644,6 +1660,7 @@ function clearJokerMode(msg){
   state.jokerHighlighted.clear();
   if(msg) setStatus(msg);
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function beginChoosePieceAfterRoll(){
@@ -1656,6 +1673,7 @@ function beginChoosePieceAfterRoll(){
     setStatus(`Team ${currentTeam()}: Keine Figur auf dem Board.`);
   }
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function rollDice(){
@@ -1767,11 +1785,70 @@ function spawnGoalRandom(force=false){
   state.goalNodeId = pick;
 }
 
+
+function isFreeForBonusGoal(id){
+  if(!id) return false;
+  const n = nodesById.get(id);
+  if(!n) return false;
+  if(state.occupied.has(id)) return false;
+  if(n.type === "start" || n.type === "portal" || n.type === "boss") return false;
+  if(state.goalNodeId && id === state.goalNodeId) return false;
+  if(state.bonusGoalNodeId && id === state.bonusGoalNodeId) return false;
+  return true;
+}
+
+function spawnBonusGoalDoubleOneShot(force=false){
+  if(state.gameOver) return { ok:false, reason:"game_over" };
+  if(state.bonusGoalNodeId && !force) return { ok:false, reason:"already_exists", nodeId: state.bonusGoalNodeId };
+
+  const candidates = nodes
+    .filter(n => n && n.id)
+    .filter(n => isFreeForBonusGoal(n.id))
+    .map(n => n.id);
+
+  if(!candidates.length){
+    return { ok:false, reason:"no_free_field" };
+  }
+
+  let pick = candidates[Math.floor(Math.random()*candidates.length)];
+  state.bonusGoalNodeId = pick;
+  draw();
+  console.info("[GOAL] bonus double spawned", { nodeId: pick, value: state.bonusGoalValue || 2 });
+  return { ok:true, nodeId: pick, value: state.bonusGoalValue || 2 };
+}
+
 function maybeCaptureGoal(piece){
   if(state.gameOver) return false;
-  if(!state.goalNodeId) return false;
   if(!piece || !piece.node) return false;
 
+  // Bonus-Zielfeld zuerst prüfen (einmalig, doppelte Punkte, kein Respawn)
+  if(state.bonusGoalNodeId && piece.node === state.bonusGoalNodeId){
+    if(barricades.has(piece.node)) return false;
+
+    if(state.bosses && state.bosses.some(b=>b.alive!==false && b.type==="guardian" && b.node===piece.node)){
+      setStatus("🛡 Der Wächter blockiert den Zielpunkt!");
+      return false;
+    }
+
+    const t = piece.team;
+    const value = Number(state.bonusGoalValue || 2);
+    state.goalScores[t] = (state.goalScores[t]||0) + value;
+    state._goalCapturedThisLanding = t;
+    state.bonusGoalNodeId = null;
+
+    if(state.goalScores[t] >= state.goalToWin){
+      state.gameOver = true;
+      state.phase = "gameOver";
+      setStatus(`🏆 Team ${t} gewinnt! (${state.goalToWin} Zielpunkte erreicht)`);
+      showWinOverlay(t);
+      return true;
+    }
+
+    setStatus(`🌟 Team ${t} sammelt das Doppel-Zielfeld! +${value} Punkte. Stand: ${state.goalScores[t]}/${state.goalToWin}`);
+    return true;
+  }
+
+  if(!state.goalNodeId) return false;
   if(piece.node !== state.goalNodeId) return false;
 
   // Wenn hier eine Barrikade liegt, ist der Zielpunkt "versteckt" und kann nicht eingesammelt werden.
@@ -1795,6 +1872,9 @@ function maybeCaptureGoal(piece){
     showWinOverlay(t);
     return true;
   }
+
+  // Für Test/Regel: Zielfeld triggert immer auch eine Ereigniskarte (1x pro Landung)
+  state._goalCapturedThisLanding = t;
 
   // Neu spawnen
   state.goalNodeId = null;
@@ -1870,6 +1950,7 @@ function showWinOverlay(team){
       initPieces();
       initEventFieldsFromBoard();
       state.goalNodeId = null;
+      state.bonusGoalNodeId = null;
       spawnGoalRandom(true);
       state.phase = "needRoll";
       state.turn = 0;
@@ -1881,6 +1962,8 @@ function showWinOverlay(team){
       state.portalHighlighted.clear();
       state.portalUsedThisTurn = false;
       state.pendingSix = false;
+      state.extraRoll = false;
+      state.ignoreBarricadesThisTurn = false;
 
       dieBox.textContent="–";
       setStatus(`Neustart! Team ${currentTeam()} ist dran: Würfeln.`);
@@ -1890,16 +1973,978 @@ function showWinOverlay(team){
 
   const winText = ov.querySelector("#winText");
   winText.textContent = `Team ${team} hat als erstes ${state.goalToWin} Zielpunkte gesammelt.`;
+  markOverlayOpened(ov);
   ov.style.display="flex";
 }
 
+
+// ---------- UI Safety Helpers (Anti Auto-Tap) ----------
+// Problem: On mobile/tablet the click/tap that triggers the landing/event can "fall through" into the overlay
+// and instantly click a card/button. We block input for a short grace period.
+function markOverlayOpened(ov){
+  ov._openedAt = performance.now();
+}
+function overlayClickAllowed(ov, ms=350){
+  const t = (ov && ov._openedAt) ? ov._openedAt : 0;
+  return (performance.now() - t) >= ms;
+}
+
 // ---------- Event Cards (Ereignisse) ----------
+// TEST-MODUS: Wenn true, zieht JEDES Betreten eines Feldes eine Ereigniskarte (ideal zum Testen).
+// Für normales Spiel einfach auf false stellen.
+const FORCE_EVENT_EVERY_LANDING = true;
+// TEST-Helfer: Wenn gesetzt (z.B. "joker_pick6"), wird immer diese Karte gezogen.
+const FORCE_EVENT_CARD_ID = null;
+let eventForceCardId = null; // UI: forced event card (persistent until changed)
+
 const EVENT_DECK = [
-  { id:"gold", title:"Goldfund", text:"+1 Barrikade in Reserve (als Beute).", effect:"addCarry" },
-  { id:"trap", title:"Falle!", text:"Nächster Wurf -2 (min. 1).", effect:"nextRollMinus2" },
-  { id:"blessing", title:"Segen", text:"Du darfst sofort 1 Feld extra gehen (optional).", effect:"bonusStep" },
-  { id:"swap", title:"Tauschhandel", text:"Tausche Position mit einer beliebigen eigenen Figur.", effect:"swapOwn" }
+{ 
+    id:"joker_pick6",
+    title:"Zufälliger Joker",
+    text:"Wähle 1 von 6 Karten – du bekommst den Joker dahinter.",
+    effect:"joker_pick6"
+  },
+  {
+    id:"joker_wheel",
+    title:"Joker-Glücksrad",
+    text:"Drehe das Glücksrad: Erst Joker, dann Anzahl (1–3).",
+    effect:"joker_wheel"
+  },
+  {
+    id:"jokers_all6",
+    title:"Alle 6 Joker",
+    text:"Du erhältst +1 von jedem Joker (6 Stück).",
+    effect:"jokers_all6"
+  },
+  {
+    id:"joker_rain",
+    title:"Joker-Regen",
+    text:"Alle anderen Spieler erhalten 2 zufällige Joker.",
+    effect:"joker_rain"
+  },
+  {
+    id:"shuffle_pieces",
+    title:"Figuren mischen",
+    text:"Alle Spielfiguren (außer Start, Schild, Portal) werden neu gemischt.",
+    effect:"shuffle_pieces"
+  },
+  {
+    id:"start_spawn",
+    title:"Startfeld-Spawn",
+    text:"Alle Figuren auf Startfeldern werden nacheinander (0,5s) auf freie Felder verteilt.",
+    effect:"start_spawn"
+  },
+  {
+    id:"spawn_barricades3",
+    title:"Barrikaden-Verstärkung",
+    text:"3 zusätzliche Barrikaden erscheinen (auch auf Ereignis- & Siegpunktfeldern).",
+    effect:"spawn_barricades3"
+  },
+  {
+    id:"spawn_barricades10",
+    title:"Barrikaden-Invasion",
+    text:"10 zusätzliche Barrikaden erscheinen (auch auf Ereignis- & Siegpunktfeldern).",
+    effect:"spawn_barricades10"
+  },
+  {
+    id:"spawn_barricades5",
+    title:"Barrikaden-Nachschub",
+    text:"5 zusätzliche Barrikaden erscheinen (auch auf Ereignis- & Siegpunktfeldern).",
+    effect:"spawn_barricades5"
+  },
+  {
+    id:"move_barricade1",
+    title:"Barrikade versetzen",
+    text:"Du musst 1 Barrikade auf ein anderes Feld versetzen.",
+    effect:"move_barricade1"
+  },
+  {
+    id:"move_barricade2",
+    title:"Zwei Barrikaden versetzen",
+    text:"Du musst 2 Barrikaden auf andere Felder versetzen.",
+    effect:"move_barricade2"
+  },
+  {
+    id:"barricades_reset_initial",
+    title:"Barrikaden-Reset",
+    text:"Alle Barrikaden werden auf die Startpositionen zurückgesetzt (gleiche Anzahl).",
+    effect:"barricades_reset_initial"
+  }
+,
+  {
+    id:"barricades_shuffle",
+    title:"Barrikaden mischen",
+    text:"Alle Barrikaden werden neu gemischt und auf neue Felder verteilt.",
+    effect:"barricades_shuffle"
+  },
+  {
+    id:"barricades_on_event_and_goal",
+    title:"Barrikaden-Invasion",
+    text:"Auf jedes Ereignisfeld und auf das Zielfeld wird je 1 zusätzliche Barrikade platziert.",
+    effect:"barricades_on_event_and_goal"
+  },
+  {
+    id:"barricades_half_remove",
+    title:"Barrikaden verfallen",
+    text:"Die Hälfte aller Barrikaden verschwindet vom Brett.",
+    effect:"barricades_half_remove"
+  },
+  {
+    id:"barricade_jump_reroll",
+    title:"Sturmangriff",
+    text:"Du darfst nochmal würfeln. Für diesen ganzen Zug darfst du Barrikaden auf dem Weg überspringen. Landest du auf einer Barrikade, sammelst du sie ein und darfst sie neu platzieren.",
+    effect:"barricade_jump_reroll"
+  },
+  {
+    id:"spawn_one_boss",
+    title:"Ein Boss erscheint",
+    text:"Ein zufälliger Boss erscheint auf einem freien Bossfeld. Maximal 2 Bosse gleichzeitig.",
+    effect:"spawn_one_boss"
+  },
+  {
+    id:"spawn_two_bosses",
+    title:"Zwei Bosse erscheinen",
+    text:"Bis zu zwei zufällige Bosse erscheinen auf freien Bossfeldern. Maximal 2 Bosse insgesamt.",
+    effect:"spawn_two_bosses"
+  },
+  {
+    id:"extra_roll_event",
+    title:"Du darfst nochmal würfeln",
+    text:"Du darfst sofort noch einmal würfeln.",
+    effect:"extra_roll_event"
+  },
+  {
+    id:"all_to_start",
+    title:"Alle zurück zum Start",
+    text:"Alle Spieler müssen zurück auf ihre Startfelder.",
+    effect:"all_to_start"
+  },
+  {
+    id:"lose_all_jokers",
+    title:"Du verlierst alle Joker",
+    text:"Alle Joker deines Teams gehen verloren.",
+    effect:"lose_all_jokers"
+  },
+  {
+    id:"respawn_all_events",
+    title:"Ereignisfelder neu",
+    text:"Alle 6 Ereignisfelder werden nacheinander neu gespawnt.",
+    effect:"respawn_all_events"
+  }
+  ,
+  {
+    id:"spawn_double_goal",
+    title:"Doppel-Zielfeld",
+    text:"Ein zusätzliches Zielfeld mit doppelten Punkten erscheint. Es ist einmalig und spawnt nach dem Einsammeln nicht neu.",
+    effect:"spawn_double_goal"
+  }
+  ,
+  {
+    id:"dice_duel",
+    title:"Würfel-Duell",
+    text:"Alle würfeln automatisch. Der niedrigste Wurf gibt dem höchsten Wurf 1 zufälligen Joker. Bei Gleichstand wird erneut gewürfelt. Hat der Verlierer keinen Joker, geht der Gewinner leer aus.",
+    effect:"dice_duel"
+  }
+  ,
+  {
+    id:"lose_one_point",
+    title:"Du verlierst 1 Siegpunkt",
+    text:"Dein Team verliert 1 Siegpunkt. Minimum ist 0.",
+    effect:"lose_one_point"
+  }
+  ,
+  {
+    id:"gain_one_point",
+    title:"Du bekommst 1 Siegpunkt",
+    text:"Dein Team erhält 1 Siegpunkt.",
+    effect:"gain_one_point"
+  }
+  ,
+  {
+    id:"gain_two_points",
+    title:"Du erhältst 2 Siegpunkte",
+    text:"Dein Team erhält 2 Siegpunkte.",
+    effect:"gain_two_points"
+  }
+  ,
+  {
+    id:"point_transfer_most_to_least",
+    title:"Punktetausch",
+    text:"Das Team mit den meisten Siegpunkten gibt dem Team mit den wenigsten 1 Siegpunkt. Bei Gleichstand entscheidet ein Glücksrad.",
+    effect:"point_transfer_most_to_least"
+  }
+  ,
+  {
+    id:"back_to_start",
+    title:"Zurück zum Start",
+    text:"Alle eigenen Figuren müssen zurück auf die Startfelder deines Teams.",
+    effect:"back_to_start"
+  }
+  ,
+  {
+    id:"others_to_start",
+    title:"Alle anderen zurück zum Start",
+    text:"Alle anderen Spieler müssen komplett zurück auf ihre Startfelder.",
+    effect:"others_to_start"
+  }
+  ,
+  {
+    id:"steal_one_point",
+    title:"Klaue 1 Siegpunkt",
+    text:"Du klaust 1 Siegpunkt von einem zufälligen Mitspieler.",
+    effect:"steal_one_point"
+  }
 ];
+
+// ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
+// Darf auf Ereignisfeldern & Siegpunktfeld spawnen.
+// NICHT auf Start, Portal, Boss, belegt (Figur), oder vorhandene Barrikade.
+function spawnExtraBarricades(count=3){
+  const occupied = new Set();
+  for(const p of (state.pieces || [])) occupied.add(p.node);
+
+  const candidates = nodes
+    .map(n=>n.id)
+    .filter(id=>{
+      if(!id) return false;
+      if((nodesById.get(id)?.type)==='start') return false;
+      if(typeof isPortalField === "function" && isPortalField(id)) return false;
+      if(typeof isBossField === "function" && isBossField(id)) return false;
+
+      // Figuren blocken
+      if(occupied.has(id)) return false;
+
+      // vorhandene Barrikaden blocken (egal ob statisch (node.type) oder dynamisch (Set))
+      if(barricades && barricades.has(id)) return false;
+      const n = nodesById && nodesById.get ? nodesById.get(id) : null;
+      if(n && n.type === "barricade") return false;
+
+      return true; // Event + Ziel + Siegpunkt ist erlaubt
+    });
+
+  // Shuffle
+  for(let i=candidates.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  let placed = 0;
+  for(const id of candidates){
+    if(placed>=count) break;
+    if(barricades) barricades.add(id); // ✅ Das ist die echte Barrikaden-Quelle im Spiel
+    placed++;
+  }
+
+  draw();
+  return placed;
+}
+
+// ---- Event Effect: Barrikaden auf Start-Layout zurücksetzen ----
+// - gleiche Anzahl + gleiche Startpositionen wie beim Spielstart
+// - zu viele (zusätzliche) werden entfernt
+// - wenn Startpositionen gerade blockiert sind: Ersatz-Barrikaden werden auf freie Felder gespawnt
+
+
+
+
+function spawnTwoBossesFromEvent(){
+  ensureBossState();
+  const results=[];
+
+  for(let i=0;i<2;i++){
+    const r = spawnRandomBossFromEvent();
+    if(!r.ok) break;
+    results.push(r);
+  }
+
+  draw();
+  console.info("[BOSS] event spawn two", results);
+  return results;
+}
+function spawnRandomBossFromEvent(){
+  ensureBossState();
+
+  const alive = (state.bosses || []).filter(b => b && b.alive !== false);
+  if(alive.length >= 2){
+    draw();
+    console.info("[BOSS] event spawn blocked: max active reached");
+    return { ok:false, reason:"max_active", active: alive.length };
+  }
+
+  let bossFields = nodes.filter(n => n && n.type === "boss").map(n => n.id);
+  bossFields = bossFields.filter(id => {
+    if(!id) return false;
+    if(state.occupied && state.occupied.has(id)) return false;
+    if(barricades && barricades.has(id)) return false;
+    if(state.goalNodeId && id === state.goalNodeId) return false;
+    if(state.eventActive && state.eventActive.has(id)) return false;
+    if(alive.some(b => b.node === id)) return false;
+    return true;
+  });
+
+  if(!bossFields.length){
+    draw();
+    console.info("[BOSS] event spawn blocked: no free boss field");
+    return { ok:false, reason:"no_free_boss_field", active: alive.length };
+  }
+
+  const bossTypes = Object.keys(BOSS_TYPES || {});
+  if(!bossTypes.length){
+    draw();
+    console.info("[BOSS] event spawn blocked: no boss types");
+    return { ok:false, reason:"no_boss_types", active: alive.length };
+  }
+
+  const type = bossTypes[Math.floor(Math.random() * bossTypes.length)];
+  const nodeId = bossFields[Math.floor(Math.random() * bossFields.length)];
+
+  const boss = spawnBoss(type, nodeId);
+  draw();
+
+  if(!boss){
+    console.info("[BOSS] event spawn failed", { type, nodeId });
+    return { ok:false, reason:"spawn_failed", active: alive.length };
+  }
+
+  console.info("[BOSS] event spawned", { type: boss.type, id: boss.id, node: boss.node });
+  return { ok:true, type: boss.type, id: boss.id, node: boss.node, active: (state.bosses || []).filter(b => b && b.alive !== false).length };
+}
+
+
+
+
+function removeAllJokersFromTeam(team){
+  ensureJokerState();
+
+  const inv = {};
+  let removed = 0;
+
+  for(const j of JOKERS){
+    removed += Number(jokerCount(team, j.id) || 0);
+    inv[j.id] = 0;
+  }
+
+  state.jokers[team] = inv;
+  updateJokerUI();
+  ensureEventSelectUI();
+  console.info("[EVENT] all jokers removed", { team, removed });
+  return { team, removed };
+}
+
+
+
+function sendOtherTeamsPiecesToStart(exceptTeam){
+  const otherPieces = (state.pieces || []).filter(p => p && p.team !== exceptTeam);
+
+  const startsByTeam = new Map();
+  for(const n of nodes){
+    if(n && n.type === "start"){
+      const t = Number(n.props?.startTeam || 0);
+      if(!startsByTeam.has(t)) startsByTeam.set(t, []);
+      startsByTeam.get(t).push(n.id);
+    }
+  }
+
+  let moved = 0;
+  const reset = [];
+
+  // Nur die anderen Teams aus occupied entfernen.
+  // Das aktive Team bleibt komplett unangetastet.
+  for(const p of otherPieces){
+    if(p && p.node){
+      state.occupied.delete(p.node);
+    }
+  }
+
+  const usedStarts = new Set();
+
+  for(const p of otherPieces){
+    const starts = (startsByTeam.get(p.team) || []).filter(id => !usedStarts.has(id));
+    let placed = false;
+
+    for(const sid of starts){
+      if(!state.occupied.has(sid)){
+        if(p.node !== sid) moved++;
+        p.prev = p.node || null;
+        p.node = sid;
+        p.shielded = false;
+        state.occupied.set(sid, p.id);
+        usedStarts.add(sid);
+        reset.push(p.id);
+        placed = true;
+        break;
+      }
+    }
+
+    if(!placed){
+      p.prev = p.node || null;
+      p.node = null;
+      p.shielded = false;
+    }
+  }
+
+  draw();
+  console.info("[EVENT] others_to_start", { exceptTeam, moved, reset });
+  return { ok:true, exceptTeam, moved, total:otherPieces.length, reset };
+}
+
+function sendTeamPiecesToStart(team){
+  if(!team) return { ok:false, reason:"no_team", moved:0, total:0 };
+
+  const teamPieces = (state.pieces || []).filter(p => p && p.team === team);
+  const teamStarts = nodes
+    .filter(n => n && n.type === "start" && Number(n.props?.startTeam) === team)
+    .map(n => n.id);
+
+  if(!teamStarts.length){
+    draw();
+    return { ok:false, reason:"no_start_fields", team, moved:0, total:teamPieces.length };
+  }
+
+  // Alle eigenen Figuren erst aus occupied entfernen
+  for(const p of teamPieces){
+    if(p && p.node){
+      state.occupied.delete(p.node);
+    }
+  }
+
+  let moved = 0;
+  const reset = [];
+
+  for(let i=0; i<teamPieces.length; i++){
+    const p = teamPieces[i];
+    const target = teamStarts[i] || null;
+
+    p.prev = p.node || null;
+    p.shielded = false;
+
+    if(target){
+      if(p.node !== target) moved++;
+      p.node = target;
+      state.occupied.set(target, p.id);
+      reset.push(p.id);
+    } else {
+      p.node = null;
+    }
+  }
+
+  draw();
+  console.info("[EVENT] back_to_start_team", { team, moved, reset });
+  return { ok:true, team, moved, total:teamPieces.length, reset };
+}
+
+function sendAllPlayersToStart(){
+  let moved = 0;
+  const reset = [];
+
+  // belegung neu aufbauen
+  state.occupied.clear();
+
+  const startsByTeam = new Map();
+  for(const n of nodes){
+    if(n.type === "start"){
+      const t = Number(n.props?.startTeam || 0);
+      if(!startsByTeam.has(t)) startsByTeam.set(t, []);
+      startsByTeam.get(t).push(n.id);
+    }
+  }
+
+  for(const p of state.pieces){
+    if(!p) continue;
+    const teamStarts = startsByTeam.get(p.team) || [];
+    let placed = false;
+
+    for(const sid of teamStarts){
+      if(!state.occupied.has(sid)){
+        if(p.node !== sid) moved++;
+        p.prev = p.node || null;
+        p.node = sid;
+        p.shielded = false;
+        state.occupied.set(sid, p.id);
+        placed = true;
+        reset.push(p.id);
+        break;
+      }
+    }
+
+    if(!placed){
+      p.prev = p.node || null;
+      p.node = null;
+      p.shielded = false;
+    }
+  }
+
+  state.selected = null;
+  state.highlighted.clear();
+  state.placeHighlighted.clear();
+  state.jokerHighlighted.clear();
+
+  draw();
+  console.info("[EVENT] all_to_start", { moved, reset });
+  return { moved, total: state.pieces.length };
+}
+
+function grantExtraRollFromEvent(){
+  state.extraRoll = true;
+  console.info("[EVENT] extra roll granted");
+  return true;
+}
+
+function activateBarricadeJumpReroll(){
+  state.ignoreBarricadesThisTurn = true;
+  state.roll = null;
+  state.selected = null;
+  state.highlighted.clear();
+  state.placeHighlighted.clear();
+  ensurePortalState();
+  state.portalHighlighted.clear();
+  state.portalUsedThisTurn = false;
+  state.phase = "needRoll";
+  dieBox.textContent = "–";
+  setStatus(`⚔️ Sturmangriff! Team ${currentTeam()} darf sofort nochmal würfeln und ignoriert Barrikaden auf dem Weg bis der Zug endet.`);
+  updateJokerUI();
+  ensureEventSelectUI();
+  draw();
+  console.info("[EVENT] storm attack active for team", currentTeam());
+  return true;
+}
+
+function removeHalfBarricades(){
+  const arr = Array.from(barricades || []);
+  const total = arr.length;
+  if(total <= 0){
+    draw();
+    return { total:0, removed:0, left:0 };
+  }
+
+  // Bei ungerader Zahl wird abgerundet: 5 -> 2 weg, 3 bleiben
+  const removeCount = Math.floor(total / 2);
+
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+
+  for(let i=0;i<removeCount;i++){
+    barricades.delete(arr[i]);
+  }
+
+  draw();
+  console.info("[BARRICADE] half remove:", { total, removed: removeCount, left: barricades.size });
+  return { total, removed: removeCount, left: barricades.size };
+}
+
+function resetBarricadesToInitial(){
+  // Fallback: falls Snapshot fehlt, neu aus Board-Nodes lesen
+  let layout = (Array.isArray(state.initialBarricadeLayout) && state.initialBarricadeLayout.length>0)
+    ? state.initialBarricadeLayout.slice()
+    : nodes.filter(n=>n.type==="barricade").map(n=>n.id);
+
+  const targetCount = layout.length;
+
+  const occupied = new Set();
+  for(const p of (state.pieces||[])) occupied.add(p.node);
+
+  const bossOcc = new Set();
+  if(Array.isArray(state.bosses)){
+    for(const bb of state.bosses){
+      if(bb && bb.alive!==false && bb.node) bossOcc.add(bb.node);
+    }
+  }
+
+  barricades.clear();
+
+  let placed = 0;
+  for(const id of layout){
+    if(!id) continue;
+    if(occupied.has(id)) continue;
+    if(bossOcc.has(id)) continue;
+    // Start/Portal/Boss sollten im Layout eh nicht vorkommen, aber sicher ist sicher:
+    if((nodesById.get(id)?.type)==='start') continue;
+    if(typeof isPortalField === "function" && isPortalField(id)) continue;
+    if(typeof isBossField === "function" && isBossField(id)) continue;
+
+    barricades.add(id);
+    placed++;
+  }
+
+  // Ersatz spawnen, falls durch Blockierung weniger gesetzt werden konnte
+  const missing = Math.max(0, targetCount - barricades.size);
+  if(missing>0){
+    spawnExtraBarricades(missing);
+  }
+
+  draw();
+  return { targetCount, placed: barricades.size, missing };
+}
+
+// ---- Event Effect: Barrikaden neu mischen ----
+// Setzt alle aktuell vorhandenen Barrikaden (Anzahl bleibt gleich) auf neue zufällige Felder.
+// Regeln (wie von dir gewünscht):
+// - NICHT auf Startfelder
+// - NICHT auf Portalfelder
+// - NICHT auf Felder, auf denen eine Spielfigur steht
+// - NICHT auf Bossfelder
+// - Ziel-/Ereignis-/Siegpunktfelder sind erlaubt (wenn sie normale Felder sind)
+function shuffleBarricadesRandomly(){
+  const count = barricades ? barricades.size : 0;
+  if(count<=0){
+    draw();
+    return { count:0, placed:0, reason:"no_barricades" };
+  }
+
+  const occupied = new Set();
+  for(const p of (state.pieces || [])){
+    if(p && p.node) occupied.add(p.node);
+  }
+
+  const bossOcc = new Set();
+  if(Array.isArray(state.bosses)){
+    for(const bb of state.bosses){
+      if(bb && bb.alive!==false && bb.node) bossOcc.add(bb.node);
+    }
+  }
+
+  // Kandidaten: alle Node-IDs, die nicht verboten sind
+  const candidates = nodes
+    .map(n=>n.id)
+    .filter(id=>{
+      if(!id) return false;
+      const n = nodesById.get(id);
+      if(!n) return false;
+
+      // Start
+      if(n.type === "start") return false;
+
+      // Portal
+      if(n.type === "portal") return false;
+      if(typeof isPortalField === "function" && isPortalField(id)) return false;
+
+      // Boss (falls Helfer existieren, nutzen)
+      if(typeof isBossField === "function" && isBossField(id)) return false;
+      if(bossOcc.has(id)) return false;
+
+      // Figuren blocken
+      if(occupied.has(id)) return false;
+
+      // Keine Barrikade auf Barrikade (wir setzen neu)
+      // (Wichtig: wir clearen gleich barricades, deshalb hier nicht checken)
+
+      // Optional: wenn Board statische barricade Nodes hätte, blocken:
+      if(n.type === "barricade") return false;
+
+      return true;
+    });
+
+  // Shuffle (Fisher-Yates)
+  for(let i=candidates.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  barricades.clear();
+
+  const maxPlace = Math.min(count, candidates.length);
+  for(let i=0;i<maxPlace;i++){
+    barricades.add(candidates[i]);
+  }
+
+  draw();
+  return { count, placed: maxPlace, shortage: Math.max(0, count - maxPlace) };
+}
+
+// ---- Event Effect: Barrikaden auf alle Ereignisfelder + Zielfeld ----
+// 1 pro Feld. Erlaubt: Ereignisfelder & Zielfeld. Verboten: Start/Portal/Boss, Felder mit Figur.
+// Wenn dort schon eine Barrikade liegt, bleibt es dabei (kein Stack).
+
+// ---- Event Effect: Barrikaden auf alle Ereignisfelder + Zielfeld ----
+// 1 pro Feld. Erlaubt: Ereignisfelder & Zielfeld.
+// Verboten: Start/Portal/Boss, Felder mit Figur.
+// Wenn dort schon eine Barrikade liegt, bleibt es dabei (kein Stack).
+
+// ---- Event Effect: Barrikaden auf alle Ereignisfelder + Zielfeld ----
+// 1 pro Feld. Erlaubt: Ereignisfelder & Zielfeld.
+// Verboten: Start/Portal/Boss, Felder mit Figur.
+// Wenn dort schon eine Barrikade liegt, bleibt es dabei (kein Stack).
+function placeBarricadesOnEventAndGoal(){
+  // Nur auf AKTUELL freie Felder:
+  // - aktuelle Eventfelder aus state.eventActive
+  // - aktuelles Siegpunktfeld aus state.goalNodeId
+  // - NICHT auf Start / Portal / Boss
+  // - NICHT auf Figuren
+  // - NICHT wenn schon Barrikade dort liegt
+  const occupied = new Set();
+  for(const p of (state.pieces || [])){
+    if(p && p.node) occupied.add(p.node);
+  }
+
+  const targets = [];
+  if(state.eventActive && typeof state.eventActive.forEach === "function"){
+    state.eventActive.forEach(id => {
+      if(id) targets.push(id);
+    });
+  }
+
+  if(state.goalNodeId) targets.push(state.goalNodeId);
+
+  let placed = 0;
+  let skippedOccupied = 0;
+  let skippedBlocked = 0;
+  let skippedAlreadyBarricade = 0;
+
+  for(const id of targets){
+    const n = nodesById.get(id);
+    if(!n) continue;
+
+    // blockierte Spezialfelder
+    if(n.type === "start" || n.type === "portal" || n.type === "boss"){
+      skippedBlocked++;
+      continue;
+    }
+
+    // nur freie Felder
+    if(occupied.has(id)){
+      skippedOccupied++;
+      continue;
+    }
+    if(barricades.has(id)){
+      skippedAlreadyBarricade++;
+      continue;
+    }
+
+    barricades.add(id);
+    placed++;
+  }
+
+  draw();
+  console.info("[BARRICADE] invasion:", {
+    targets: targets.slice(),
+    placed,
+    skippedOccupied,
+    skippedBlocked,
+    skippedAlreadyBarricade
+  });
+
+  return {
+    placed,
+    targetCount: targets.length,
+    skippedOccupied,
+    skippedBlocked,
+    skippedAlreadyBarricade
+  };
+}
+
+
+
+
+
+
+
+
+
+// ---- Event Effect: Startfeld-Spawn (nur komplett freie Felder) ----
+function isEventNode(id){
+  // Eventfelder kommen aus state.eventActive (wird aus Board initialisiert / respawned)
+  return !!id && state.eventActive && state.eventActive.has(id);
+}
+function isGoalNode(id){
+  return !!id && state.goalNodeId && id === state.goalNodeId;
+}
+function isBossNode(id){
+  const n = nodesById.get(id);
+  return !!n && n.type === "boss";
+}
+function isPlainFreeNode(id){
+  const n = nodesById.get(id);
+  if(!n) return false;
+  // "Komplett frei": normaler Knoten, keine Spezialtypen
+  if(n.type !== "normal") return false;
+  if(isGoalNode(id)) return false;
+  if(isStartNode(id)) return false;
+  if(isPortalNode(id)) return false;
+  if(isBossNode(id)) return false;
+  if(isEventNode(id)) return false;
+  if(barricades && barricades.has(id)) return false;
+  if(state.occupied && state.occupied.has(id)) return false;
+  return true;
+}
+
+function spawnStartPiecesRoundRobin(onDone){
+  // sammle alle Figuren, die auf Start stehen
+  const startPieces = state.pieces.filter(p=>p && p.node && isStartNode(p.node));
+  if(!startPieces.length){
+    setStatus("⚔ Startfeld-Spawn: Keine Figuren auf Startfeldern.");
+    if(onDone) onDone();
+    return;
+  }
+
+  // freie Felder (komplett frei)
+  const free = nodes.map(n=>n.id).filter(isPlainFreeNode);
+
+  if(!free.length){
+    setStatus("⚔ Startfeld-Spawn: Keine freien Felder gefunden.");
+    if(onDone) onDone();
+    return;
+  }
+
+  // Shuffle freie Felder
+  for(let i=free.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    const t=free[i]; free[i]=free[j]; free[j]=t;
+  }
+
+  // Gruppiere nach Team für gleichmäßige Verteilung
+  const byTeam = new Map();
+  for(const p of startPieces){
+    if(!byTeam.has(p.team)) byTeam.set(p.team, []);
+    byTeam.get(p.team).push(p);
+  }
+  // Shuffle innerhalb Team für Chaos
+  for(const arr of byTeam.values()){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      const t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+  }
+
+  // Round-robin Reihenfolge: nach state.players (damit konsistent)
+  const teamOrder = (state.players && state.players.length) ? state.players.slice() : [1,2,3,4];
+
+  // Baue Zuweisungen (max free.length)
+  const assigns = [];
+  let idxFree = 0;
+  while(idxFree < free.length){
+    let any = false;
+    for(const t of teamOrder){
+      const arr = byTeam.get(t);
+      if(arr && arr.length && idxFree < free.length){
+        assigns.push({ piece: arr.pop(), node: free[idxFree++] });
+        any = true;
+      }
+    }
+    if(!any) break;
+  }
+
+  const overflow = startPieces.length - assigns.length;
+
+  // während Spawn: keine Event-Trigger durch die künstlichen Positionswechsel
+  const prevPhase = state.phase;
+  state._suspendEvents = true;
+  state.phase = "spawning";
+  setStatus(`⚔ Startfeld-Spawn: ${assigns.length} Figur(en) werden verteilt${overflow>0 ? ` (${overflow} bleiben auf Start)` : ""}…`);
+
+  let k=0;
+  function step(){
+    if(k >= assigns.length){
+      state._suspendEvents = false;
+      state.phase = prevPhase;
+      draw();
+      setStatus(`⚔ Startfeld-Spawn abgeschlossen: ${assigns.length} verteilt${overflow>0 ? `, ${overflow} auf Start geblieben` : ""}.`);
+      if(onDone) onDone();
+      return;
+    }
+    const {piece, node} = assigns[k++];
+    // move piece + occupied map
+    if(piece && piece.node){
+      state.occupied.delete(piece.node);
+      piece.prev = piece.node;
+      piece.node = node;
+      state.occupied.set(node, piece.id);
+    }
+    draw();
+    setTimeout(step, 500);
+  }
+  step();
+}
+
+
+
+// ---- Event Reward: alle 6 Joker (+1 je Typ, capped) ----
+function grantAllSixJokers(team){
+  ensureJokerState();
+  const before = {};
+  for(const j of JOKERS) before[j.id] = jokerCount(team, j.id);
+
+  for(const j of JOKERS){
+    addJoker(team, j.id, 1);
+  }
+  updateJokerUI();
+
+  const gained = [];
+  for(const j of JOKERS){
+    const a = jokerCount(team, j.id);
+    const g = Math.max(0, a - before[j.id]);
+    gained.push({ id:j.id, name:j.name||j.id, gained:g, now:a });
+  }
+  return gained;
+}
+
+
+// ---- Event Effect: Figuren mischen (Permutation) ----
+function shufflePiecesSmart(){
+  // Eligible pieces: not on start, not shielded, not on portal
+  const eligible = state.pieces.filter(p=>{
+    if(!p.node) return false;
+    if(isStartNode(p.node)) return false;
+    if(p.shielded) return false;
+    if(isPortalNode(p.node)) return false;
+    return true;
+  });
+
+  if(eligible.length < 2){
+    setStatus("🌀 Figuren mischen: Zu wenige Figuren zum Mischen.");
+    return;
+  }
+
+  // Collect current nodes and shuffle them
+  const nodesList = eligible.map(p=>p.node);
+  for(let i=nodesList.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    const tmp = nodesList[i]; nodesList[i]=nodesList[j]; nodesList[j]=tmp;
+  }
+
+  // Clear occupied for these nodes first
+  for(const p of eligible){
+    state.occupied.delete(p.node);
+  }
+
+  // Reassign
+  for(let i=0;i<eligible.length;i++){
+    const p = eligible[i];
+    p.prev = p.node;
+    p.node = nodesList[i];
+    state.occupied.set(p.node, p.id);
+  }
+
+  setStatus(`🌀 Figuren gemischt: ${eligible.length} Figuren wurden neu verteilt.`);
+}
+
+// ---- Event Effect: Joker-Regen (alle anderen erhalten 2 zufällige Joker; 2 verschiedene) ----
+function applyJokerRain(sourceTeam){
+  ensureJokerState();
+  const jokerIds = JOKERS.map(j=>j.id);
+
+  for(const team of state.players){
+    if(team === sourceTeam) continue;
+
+    // pick 2 different jokers (no reroll even if max reached)
+    const a = jokerIds[Math.floor(Math.random()*jokerIds.length)];
+    let b = a;
+    // ensure different
+    if(jokerIds.length > 1){
+      while(b === a) b = jokerIds[Math.floor(Math.random()*jokerIds.length)];
+    }
+
+    addJoker(team, a, 1);
+    addJoker(team, b, 1);
+  }
+
+  updateJokerUI();
+}
+
+
+
+
 
 function showEventOverlay(card, onClose){
   let ov = document.getElementById("eventOverlay");
@@ -2005,7 +3050,7 @@ function showEventOverlay(card, onClose){
 
     // Prevent closing by clicking inside card
     ov.addEventListener("click",(e)=>{
-      if(e.target===ov) doClose();
+      if(e.target===ov){ if(!overlayClickAllowed(ov)) return; doClose(); }
     });
 
     function doClose(){
@@ -2039,15 +3084,1520 @@ function showEventOverlay(card, onClose){
   xBtn.onclick  = ov._doClose;
 }
 
+
+function showJokerPick6Overlay(team, onClose){
+  ensureJokerState();
+
+  let ov = document.getElementById("jokerPick6Overlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "jokerPick6Overlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.52)"
+    ].join(";") + ";";
+
+    ov.innerHTML = `
+      <div style="
+        width:min(720px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:16px;
+        background:
+          radial-gradient(900px 380px at 50% 10%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.22);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
+      ">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;">
+          <div>
+            <div style="font-weight:900; font-size:20px; letter-spacing:.2px;">🃏 Zufälliger Joker</div>
+            <div style="opacity:.72; font-size:12px; margin-top:2px;">Wähle eine Karte – danach werden alle umgedreht.</div>
+          </div>
+          <button id="jp6CloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
+        </div>
+
+        <div id="jp6Grid" style="
+          display:grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap:12px;
+          margin: 12px 0 14px;
+        "></div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center;">
+          <div id="jp6Result" style="flex:1; opacity:.85; font-weight:800;"></div>
+          <button id="jp6Ok" disabled style="
+            cursor:not-allowed;
+            padding:10px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.35);
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.18)),
+              linear-gradient(180deg, #6a4a2f, #4f3623);
+            color:rgba(255,250,235,.92);
+            font-weight:900;
+            text-shadow:0 1px 0 rgba(0,0,0,.45);
+            opacity:.55;
+          ">OK</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(ov);
+
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov) ov._doClose && ov._doClose();
+    });
+  }
+
+  // build a fresh 6-card layout each time
+  const grid = ov.querySelector("#jp6Grid");
+  const result = ov.querySelector("#jp6Result");
+  const okBtn = ov.querySelector("#jp6Ok");
+  const xBtn  = ov.querySelector("#jp6CloseX");
+
+  grid.innerHTML = "";
+  result.textContent = "";
+  okBtn.disabled = true;
+  okBtn.style.cursor = "not-allowed";
+  okBtn.style.opacity = ".55";
+
+  // random jokers behind each card
+  const picks = [];
+  for(let i=0;i<6;i++){
+    const j = JOKERS[Math.floor(Math.random()*JOKERS.length)];
+    picks.push(j);
+  }
+
+  let chosen = -1;
+
+  function cardStyle(){
+    return [
+      "user-select:none",
+      "height:120px",
+      "border-radius:16px",
+      "border:1px solid rgba(0,0,0,.28)",
+      "box-shadow: inset 0 0 0 2px rgba(255,240,232,.10), 0 14px 28px rgba(0,0,0,.20)",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "text-align:center",
+      "padding:10px",
+      "cursor:pointer",
+      "font-weight:900",
+      "letter-spacing:.2px",
+      "background:linear-gradient(180deg, rgba(255,255,255,.20), rgba(0,0,0,.12)), radial-gradient(circle at 35% 35%, rgba(200,55,65,.95), rgba(90,14,18,.96))",
+      "color:rgba(255,245,235,.95)",
+      "transform: translateZ(0)",
+      "transition: transform .18s ease, filter .18s ease, opacity .18s ease"
+    ].join(";");
+  }
+
+  const cardEls = [];
+  for(let i=0;i<6;i++){
+    const el = document.createElement("div");
+    el.className = "jp6Card";
+    el.setAttribute("data-idx", String(i));
+    el.style.cssText = cardStyle();
+    el.innerHTML = `<div style="font-size:26px; line-height:1;">🃏</div><div style="font-size:12px; opacity:.9; margin-top:6px;">Karte ${i+1}</div>`;
+    el.addEventListener("mouseenter", ()=>{ if(chosen<0){ el.style.transform="scale(1.03)"; el.style.filter="brightness(1.05)"; }});
+    el.addEventListener("mouseleave", ()=>{ if(chosen<0){ el.style.transform="scale(1)"; el.style.filter="none"; }});
+
+    el.addEventListener("click", ()=>{ if(!overlayClickAllowed(ov)) return;
+      if(chosen>=0) return;
+      chosen = i;
+
+      // flip reveal (simple: swap content + visual)
+      for(let k=0;k<6;k++){
+        const c = cardEls[k];
+        const j = picks[k];
+        c.style.cursor = "default";
+        c.style.transform = "rotateY(180deg)";
+        c.style.background = "linear-gradient(180deg, rgba(255,255,255,.22), rgba(0,0,0,.14)), linear-gradient(180deg, #6a4a2f, #4f3623)";
+        c.style.color = "rgba(255,250,235,.95)";
+        c.innerHTML = `<div style="transform: rotateY(180deg);"><div style="font-size:14px; opacity:.9;">Joker</div><div style="font-size:18px; margin-top:6px;">${j.name}</div></div>`;
+        if(k!==i) c.style.opacity = ".72";
+      }
+
+      // highlight chosen
+      const chosenEl = cardEls[i];
+      chosenEl.style.opacity = "1";
+      chosenEl.style.boxShadow = "inset 0 0 0 2px rgba(255,240,232,.20), 0 0 0 3px rgba(255,215,120,.75), 0 18px 36px rgba(0,0,0,.28)";
+
+      // apply reward
+      const reward = picks[i];
+      addJoker(team, reward.id, 1);
+      updateJokerUI();
+
+      result.textContent = `Team ${team} bekommt: ${reward.name} (+1)`;
+      okBtn.disabled = false;
+      okBtn.style.cursor = "pointer";
+      okBtn.style.opacity = "1";
+    });
+
+    cardEls.push(el);
+    grid.appendChild(el);
+  }
+
+  function doClose(){
+    ov.style.display="none";
+    if(typeof onClose==="function") onClose();
+  }
+  ov._doClose = doClose;
+  okBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+  xBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+
+  markOverlayOpened(ov);
+  ov.style.display="flex";
+}
+
+
+
+
+
+
+function gainTwoGoalPointsFromTeam(team){
+  const before = Number((state.goalScores && state.goalScores[team]) || 0);
+  const after = before + 2;
+  state.goalScores[team] = after;
+  draw();
+  console.info("[EVENT] gain_two_points", { team, before, after });
+  return { team, before, after };
+}
+
+function gainOneGoalPointFromTeam(team){
+  const before = Number((state.goalScores && state.goalScores[team]) || 0);
+  const after = before + 1;
+  state.goalScores[team] = after;
+  draw();
+  console.info("[EVENT] gain_one_point", { team, before, after });
+  return { team, before, after };
+}
+
+function loseOneGoalPointFromTeam(team){
+  const before = Number((state.goalScores && state.goalScores[team]) || 0);
+  const after = Math.max(0, before - 1);
+  state.goalScores[team] = after;
+  draw();
+  console.info("[EVENT] lose_one_point", { team, before, after, lost: before - after });
+  return { team, before, after, lost: before - after };
+}
+
+
+function resolveMostToLeastPointTransfer(){
+  const teams = (state.players || []).slice();
+  const scores = {};
+  for(const t of teams){
+    scores[t] = Number((state.goalScores && state.goalScores[t]) || 0);
+  }
+
+  let maxScore = -Infinity;
+  let minScore = Infinity;
+  for(const t of teams){
+    if(scores[t] > maxScore) maxScore = scores[t];
+    if(scores[t] < minScore) minScore = scores[t];
+  }
+
+  let donorCandidates = teams.filter(t => scores[t] === maxScore);
+  let receiverCandidates = teams.filter(t => scores[t] === minScore);
+
+  return {
+    teams,
+    scores,
+    maxScore,
+    minScore,
+    donorCandidates,
+    receiverCandidates
+  };
+}
+
+function applyMostToLeastPointTransfer(donor, receiver){
+  const beforeDonor = Number((state.goalScores && state.goalScores[donor]) || 0);
+  const beforeReceiver = Number((state.goalScores && state.goalScores[receiver]) || 0);
+
+  if(donor === receiver){
+    draw();
+    return {
+      ok:false,
+      reason:"same_team",
+      donor, receiver,
+      donorBefore: beforeDonor,
+      receiverBefore: beforeReceiver
+    };
+  }
+
+  if(beforeDonor <= 0){
+    draw();
+    return {
+      ok:false,
+      reason:"donor_has_zero",
+      donor, receiver,
+      donorBefore: beforeDonor,
+      receiverBefore: beforeReceiver
+    };
+  }
+
+  state.goalScores[donor] = beforeDonor - 1;
+  state.goalScores[receiver] = beforeReceiver + 1;
+  draw();
+
+  console.info("[EVENT] point_transfer_most_to_least", {
+    donor, receiver,
+    donorBefore: beforeDonor,
+    donorAfter: state.goalScores[donor],
+    receiverBefore: beforeReceiver,
+    receiverAfter: state.goalScores[receiver]
+  });
+
+  return {
+    ok:true,
+    donor, receiver,
+    donorBefore: beforeDonor,
+    donorAfter: state.goalScores[donor],
+    receiverBefore: beforeReceiver,
+    receiverAfter: state.goalScores[receiver]
+  };
+}
+
+function showPointTransferWheelOverlay(onClose){
+  let ov = document.getElementById("pointTransferOverlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "pointTransferOverlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.58)"
+    ].join(";");
+
+    ov.innerHTML = `
+      <div style="
+        width:min(900px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:16px;
+        background:
+          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.25);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
+        overflow:hidden;
+      ">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <div style="
+            width:44px; height:44px; border-radius:16px;
+            display:flex; align-items:center; justify-content:center;
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.14)),
+              radial-gradient(circle at 35% 35%, rgba(200,55,65,.98), rgba(90,14,18,.96));
+            border:1px solid rgba(0,0,0,.28);
+            box-shadow: inset 0 0 0 2px rgba(255,240,232,.12);
+            color:rgba(255,245,235,.92);
+            font-weight:900;
+          ">⚖️</div>
+          <div style="flex:1;">
+            <div style="font-weight:900; font-size:20px; letter-spacing:.2px; line-height:1.15;">Punktetausch</div>
+            <div id="ptSub" style="opacity:.75; font-size:12px; margin-top:2px;">Das Glücksrad entscheidet…</div>
+          </div>
+          <button id="ptCloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
+        </div>
+
+        <div id="ptScoreboard" style="
+          display:grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap:10px;
+          margin:12px 0 14px;
+        "></div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div style="padding:12px; border-radius:14px; background:rgba(255,255,255,.30); border:1px solid rgba(0,0,0,.14);">
+            <div style="font:900 15px system-ui, -apple-system, Segoe UI, Roboto, Arial; margin-bottom:8px;">👑 Gibt 1 Punkt ab</div>
+            <div id="ptDonorRow" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+          </div>
+          <div style="padding:12px; border-radius:14px; background:rgba(255,255,255,.30); border:1px solid rgba(0,0,0,.14);">
+            <div style="font:900 15px system-ui, -apple-system, Segoe UI, Roboto, Arial; margin-bottom:8px;">🪙 Bekommt 1 Punkt</div>
+            <div id="ptReceiverRow" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+          </div>
+        </div>
+
+        <div id="ptResult" style="
+          min-height:74px;
+          padding:12px;
+          border-radius:14px;
+          background:rgba(255,255,255,.30);
+          border:1px dashed rgba(0,0,0,.18);
+          font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+          font-weight:800;
+          line-height:1.4;
+          white-space:pre-wrap;
+        "></div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:12px;">
+          <button id="ptOk" disabled style="
+            cursor:not-allowed;
+            padding:11px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.25);
+            background:rgba(255,255,255,.45);
+            color:rgba(38,26,18,.55);
+            font-weight:900;
+            opacity:.65;
+            min-width:160px;
+          ">Schließen</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(ov);
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov){ if(!overlayClickAllowed(ov)) return; ov._doClose && ov._doClose(); }
+    });
+  }
+
+  const scoreboard = ov.querySelector("#ptScoreboard");
+  const donorRow = ov.querySelector("#ptDonorRow");
+  const receiverRow = ov.querySelector("#ptReceiverRow");
+  const result = ov.querySelector("#ptResult");
+  const sub = ov.querySelector("#ptSub");
+  const okBtn = ov.querySelector("#ptOk");
+  const closeX = ov.querySelector("#ptCloseX");
+
+  const info = resolveMostToLeastPointTransfer();
+  scoreboard.innerHTML = "";
+  donorRow.innerHTML = "";
+  receiverRow.innerHTML = "";
+  result.textContent = "Die Spielstände werden ausgewertet…";
+
+  const cardRefs = new Map();
+  const wheelRefs = { donor:new Map(), receiver:new Map() };
+
+  for(const team of info.teams){
+    const wrap = document.createElement("div");
+    wrap.style.cssText = [
+      "border-radius:16px",
+      "padding:12px",
+      "background:rgba(255,255,255,.30)",
+      "border:1px solid rgba(0,0,0,.14)",
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "gap:8px",
+      "min-height:114px"
+    ].join(";");
+
+    const title = document.createElement("div");
+    title.textContent = `Team ${team}`;
+    title.style.cssText = "font:900 16px system-ui, -apple-system, Segoe UI, Roboto, Arial; color:rgba(38,26,18,.92);";
+
+    const colorDot = document.createElement("div");
+    colorDot.style.cssText = `width:20px;height:20px;border-radius:999px;background:${TEAM_COLORS[team]||"#999"}; border:1px solid rgba(0,0,0,.2);`;
+
+    const score = document.createElement("div");
+    score.id = `ptScore_${team}`;
+    score.style.cssText = "font:900 28px system-ui, -apple-system, Segoe UI, Roboto, Arial; color:rgba(30,20,14,.92);";
+    score.textContent = String(info.scores[team]);
+
+    const note = document.createElement("div");
+    note.style.cssText = "font:700 12px system-ui, -apple-system, Segoe UI, Roboto, Arial; opacity:.78;";
+    note.textContent = "Siegpunkte";
+
+    wrap.appendChild(title);
+    wrap.appendChild(colorDot);
+    wrap.appendChild(score);
+    wrap.appendChild(note);
+    scoreboard.appendChild(wrap);
+    cardRefs.set(team, { wrap, score });
+  }
+
+  function makeWheelToken(team, labelText){
+    const token = document.createElement("div");
+    token.style.cssText = [
+      "min-width:96px",
+      "padding:10px 12px",
+      "border-radius:14px",
+      "background:rgba(255,255,255,.44)",
+      "border:2px solid rgba(0,0,0,.12)",
+      "box-shadow:0 8px 18px rgba(0,0,0,.12)",
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "gap:6px",
+      "font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "font-weight:900"
+    ].join(";");
+
+    token.innerHTML = `
+      <div style="width:18px;height:18px;border-radius:999px;background:${TEAM_COLORS[team]||"#999"}; border:1px solid rgba(0,0,0,.2);"></div>
+      <div>Team ${team}</div>
+      <div style="font-size:12px; opacity:.74;">${labelText}</div>
+    `;
+    return token;
+  }
+
+  for(const team of info.donorCandidates){
+    const el = makeWheelToken(team, `${info.scores[team]} Punkte`);
+    donorRow.appendChild(el);
+    wheelRefs.donor.set(team, el);
+  }
+  for(const team of info.receiverCandidates){
+    const el = makeWheelToken(team, `${info.scores[team]} Punkte`);
+    receiverRow.appendChild(el);
+    wheelRefs.receiver.set(team, el);
+  }
+
+  okBtn.disabled = true;
+  okBtn.style.cursor = "not-allowed";
+  okBtn.style.opacity = ".65";
+  closeX.disabled = true;
+  closeX.style.opacity = ".5";
+  let finished = false;
+
+  function enableClose(){
+    finished = true;
+    okBtn.disabled = false;
+    okBtn.style.cursor = "pointer";
+    okBtn.style.opacity = "1";
+    okBtn.style.color = "rgba(38,26,18,.88)";
+    okBtn.style.background = "rgba(255,255,255,.70)";
+    closeX.disabled = false;
+    closeX.style.opacity = "1";
+  }
+  function doClose(){
+    if(!finished) return;
+    ov.style.display = "none";
+    if(typeof onClose === "function") onClose();
+  }
+  ov._doClose = doClose;
+  okBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+  closeX.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+
+  function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+  async function animateWheelPick(candidates, mapRef, label){
+    const arr = candidates.slice();
+    if(!arr.length) return null;
+
+    for(const el of mapRef.values()){
+      el.style.borderColor = "rgba(0,0,0,.12)";
+      el.style.boxShadow = "0 8px 18px rgba(0,0,0,.12)";
+      el.style.transform = "scale(1)";
+    }
+
+    const steps = Math.max(12, arr.length * 5);
+    let current = arr[0];
+    for(let i=0;i<steps;i++){
+      const pick = arr[Math.floor(Math.random()*arr.length)];
+      current = pick;
+      for(const [team, el] of mapRef.entries()){
+        if(team === pick){
+          el.style.borderColor = "rgba(200,55,65,.75)";
+          el.style.boxShadow = "0 0 0 4px rgba(200,55,65,.18) inset, 0 10px 24px rgba(0,0,0,.18)";
+          el.style.transform = "scale(1.05)";
+        }else{
+          el.style.borderColor = "rgba(0,0,0,.12)";
+          el.style.boxShadow = "0 8px 18px rgba(0,0,0,.12)";
+          el.style.transform = "scale(1)";
+        }
+      }
+      sub.textContent = `${label}: Glücksrad dreht…`;
+      await sleep(120 + i*8);
+    }
+
+    for(const [team, el] of mapRef.entries()){
+      if(team === current){
+        el.style.borderColor = "rgba(40,140,70,.75)";
+        el.style.boxShadow = "0 0 0 4px rgba(40,140,70,.18) inset, 0 10px 24px rgba(0,0,0,.18)";
+        el.style.transform = "scale(1.06)";
+      }else{
+        el.style.borderColor = "rgba(0,0,0,.12)";
+        el.style.boxShadow = "0 8px 18px rgba(0,0,0,.12)";
+        el.style.transform = "scale(1)";
+      }
+    }
+    return current;
+  }
+
+  async function run(){
+    result.textContent =
+      `Höchster Stand: ${info.maxScore}\n` +
+      `Niedrigster Stand: ${info.minScore}\n\n` +
+      `Bei Gleichstand entscheidet das Glücksrad.`;
+
+    await sleep(500);
+
+    const donor = await animateWheelPick(info.donorCandidates, wheelRefs.donor, "Abgeber");
+    await sleep(500);
+
+    let receiverCandidates = info.receiverCandidates.slice();
+    if(receiverCandidates.length > 1){
+      // if all equal or same team appears in both pools, receiver should be a different team when possible
+      const filtered = receiverCandidates.filter(t => t !== donor);
+      if(filtered.length) receiverCandidates = filtered;
+    }
+
+    // rebuild receiver row if filtered changed
+    if(receiverCandidates.length !== info.receiverCandidates.length){
+      receiverRow.innerHTML = "";
+      wheelRefs.receiver.clear();
+      for(const team of receiverCandidates){
+        const el = makeWheelToken(team, `${info.scores[team]} Punkte`);
+        receiverRow.appendChild(el);
+        wheelRefs.receiver.set(team, el);
+      }
+    }
+
+    await sleep(250);
+    const receiver = await animateWheelPick(receiverCandidates, wheelRefs.receiver, "Empfänger");
+    await sleep(300);
+
+    const applied = applyMostToLeastPointTransfer(donor, receiver);
+
+    if(!applied.ok){
+      if(applied.reason === "donor_has_zero"){
+        result.textContent =
+          `👑 Abgeber: Team ${donor} (${applied.donorBefore})\n` +
+          `🪙 Empfänger: Team ${receiver} (${applied.receiverBefore})\n\n` +
+          `Team ${donor} hat keinen Siegpunkt zum Abgeben. Es passiert nichts.`;
+        setStatus(`⚖️ Punktetausch: Team ${donor} hat keinen Siegpunkt.`);
+      }else{
+        result.textContent =
+          `👑 Abgeber: Team ${donor}\n` +
+          `🪙 Empfänger: Team ${receiver}\n\n` +
+          `Dieselbe Mannschaft wurde zweimal gewählt. Es passiert nichts.`;
+        setStatus(`⚖️ Punktetausch: Kein Transfer möglich.`);
+      }
+    }else{
+      const donorScoreEl = cardRefs.get(donor)?.score;
+      const receiverScoreEl = cardRefs.get(receiver)?.score;
+      if(donorScoreEl) donorScoreEl.textContent = String(applied.donorAfter);
+      if(receiverScoreEl) receiverScoreEl.textContent = String(applied.receiverAfter);
+
+      result.textContent =
+        `👑 Abgeber: Team ${donor} (${applied.donorBefore} → ${applied.donorAfter})\n` +
+        `🪙 Empfänger: Team ${receiver} (${applied.receiverBefore} → ${applied.receiverAfter})\n\n` +
+        `Team ${donor} gibt Team ${receiver} 1 Siegpunkt.`;
+      setStatus(`⚖️ Punktetausch: Team ${donor} gibt Team ${receiver} 1 Siegpunkt.`);
+    }
+
+    sub.textContent = "Punktetausch beendet!";
+    enableClose();
+  }
+
+  markOverlayOpened(ov);
+  ov.style.display = "flex";
+  run();
+}
+
+
+function transferRandomJokerBetweenTeams(fromTeam, toTeam){
+  ensureJokerState();
+  const pool = [];
+  for(const j of JOKERS){
+    const c = jokerCount(fromTeam, j.id);
+    if(c > 0) pool.push(j.id);
+  }
+  if(!pool.length){
+    updateJokerUI();
+    ensureEventSelectUI();
+    return { ok:false, reason:"no_joker" };
+  }
+  const id = pool[Math.floor(Math.random()*pool.length)];
+  state.jokers[fromTeam][id] = Math.max(0, jokerCount(fromTeam, id) - 1);
+  addJoker(toTeam, id, 1);
+  updateJokerUI();
+  ensureEventSelectUI();
+  return { ok:true, jokerId:id, jokerName:(JOKERS.find(j=>j.id===id)?.name || id) };
+}
+
+function showDiceDuelOverlay(onClose){
+  ensureJokerState();
+
+  let ov = document.getElementById("diceDuelOverlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "diceDuelOverlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.58)"
+    ].join(";");
+
+    ov.innerHTML = `
+      <div style="
+        width:min(860px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:16px;
+        background:
+          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.25);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
+        overflow:hidden;
+      ">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <div style="
+            width:44px; height:44px; border-radius:16px;
+            display:flex; align-items:center; justify-content:center;
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.14)),
+              radial-gradient(circle at 35% 35%, rgba(200,55,65,.98), rgba(90,14,18,.96));
+            border:1px solid rgba(0,0,0,.28);
+            box-shadow: inset 0 0 0 2px rgba(255,240,232,.12);
+            color:rgba(255,245,235,.92);
+            font-weight:900;
+          ">🎲</div>
+          <div style="flex:1;">
+            <div style="font-weight:900; font-size:20px; letter-spacing:.2px; line-height:1.15;">Würfel-Duell</div>
+            <div id="ddSub" style="opacity:.75; font-size:12px; margin-top:2px;">Alle würfeln automatisch…</div>
+          </div>
+          <button id="ddCloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
+        </div>
+
+        <div id="ddRow" style="
+          display:grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap:10px;
+          margin:12px 0 14px;
+        "></div>
+
+        <div id="ddResult" style="
+          min-height:60px;
+          padding:12px;
+          border-radius:14px;
+          background:rgba(255,255,255,.30);
+          border:1px dashed rgba(0,0,0,.18);
+          font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+          font-weight:800;
+          line-height:1.4;
+          white-space:pre-wrap;
+        "></div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:12px;">
+          <button id="ddOk" disabled style="
+            cursor:not-allowed;
+            padding:11px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.25);
+            background:rgba(255,255,255,.45);
+            color:rgba(38,26,18,.55);
+            font-weight:900;
+            opacity:.65;
+            min-width:160px;
+          ">Schließen</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(ov);
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov){ if(!overlayClickAllowed(ov)) return; ov._doClose && ov._doClose(); }
+    });
+  }
+
+  const row = ov.querySelector("#ddRow");
+  const result = ov.querySelector("#ddResult");
+  const sub = ov.querySelector("#ddSub");
+  const okBtn = ov.querySelector("#ddOk");
+  const closeX = ov.querySelector("#ddCloseX");
+
+  const teams = state.players.slice();
+  row.innerHTML = "";
+  result.textContent = "Die Würfel rollen…";
+  sub.textContent = "Alle würfeln automatisch…";
+
+  const cardRefs = new Map();
+  for(const team of teams){
+    const wrap = document.createElement("div");
+    wrap.style.cssText = [
+      "border-radius:16px",
+      "padding:12px",
+      "background:rgba(255,255,255,.30)",
+      "border:1px solid rgba(0,0,0,.14)",
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "gap:10px",
+      "min-height:146px"
+    ].join(";");
+
+    const title = document.createElement("div");
+    title.textContent = `Team ${team}`;
+    title.style.cssText = "font:900 16px system-ui, -apple-system, Segoe UI, Roboto, Arial; color:rgba(38,26,18,.92);";
+
+    const colorDot = document.createElement("div");
+    colorDot.style.cssText = `width:18px;height:18px;border-radius:999px;background:${TEAM_COLORS[team]||"#999"}; border:1px solid rgba(0,0,0,.2);`;
+
+    const die = document.createElement("div");
+    die.style.cssText = [
+      "width:64px","height:64px","border-radius:16px",
+      "display:flex","align-items:center","justify-content:center",
+      "font:900 28px system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "background:rgba(255,255,255,.88)",
+      "color:rgba(30,20,14,.92)",
+      "border:3px solid rgba(0,0,0,.15)",
+      "box-shadow:0 12px 24px rgba(0,0,0,.18)"
+    ].join(";");
+    die.textContent = "🎲";
+
+    const line = document.createElement("div");
+    line.style.cssText = "font:800 13px system-ui, -apple-system, Segoe UI, Roboto, Arial; opacity:.82;";
+    line.textContent = "wartet…";
+
+    wrap.appendChild(title);
+    wrap.appendChild(colorDot);
+    wrap.appendChild(die);
+    wrap.appendChild(line);
+    row.appendChild(wrap);
+    cardRefs.set(team, { wrap, die, line });
+  }
+
+  okBtn.disabled = true;
+  okBtn.style.cursor = "not-allowed";
+  okBtn.style.opacity = ".65";
+  closeX.disabled = true;
+  closeX.style.opacity = ".5";
+  let finished = false;
+
+  function enableClose(){
+    finished = true;
+    okBtn.disabled = false;
+    okBtn.style.cursor = "pointer";
+    okBtn.style.opacity = "1";
+    okBtn.style.color = "rgba(38,26,18,.88)";
+    okBtn.style.background = "rgba(255,255,255,.70)";
+    closeX.disabled = false;
+    closeX.style.opacity = "1";
+  }
+
+  function doClose(){
+    if(!finished) return;
+    ov.style.display = "none";
+    if(typeof onClose === "function") onClose();
+  }
+  ov._doClose = doClose;
+  okBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+  closeX.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+
+  function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+  async function animateTeamRoll(team){
+    const ref = cardRefs.get(team);
+    if(!ref) return 1;
+    ref.line.textContent = "würfelt…";
+    const faces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+    for(let i=0;i<8;i++){
+      ref.die.textContent = faces[Math.floor(Math.random()*6)];
+      ref.die.style.transform = `rotate(${(-12 + Math.random()*24).toFixed(1)}deg) scale(${(0.95 + Math.random()*0.12).toFixed(2)})`;
+      await sleep(80);
+    }
+    const val = Math.floor(Math.random()*6) + 1;
+    ref.die.textContent = String(val);
+    ref.die.style.transform = "rotate(0deg) scale(1)";
+    ref.line.textContent = `Wurf: ${val}`;
+    return val;
+  }
+
+  async function run(){
+    const rolls = {};
+    let highestTeams = [];
+    let lowestTeams = [];
+
+    while(true){
+      sub.textContent = "Alle würfeln automatisch…";
+      for(const team of teams){
+        const ref = cardRefs.get(team);
+        ref.wrap.style.boxShadow = "none";
+        ref.wrap.style.borderColor = "rgba(0,0,0,.14)";
+      }
+
+      for(const team of teams){
+        rolls[team] = await animateTeamRoll(team);
+        await sleep(220);
+      }
+
+      let maxVal = Math.max(...teams.map(t=>rolls[t]));
+      let minVal = Math.min(...teams.map(t=>rolls[t]));
+      highestTeams = teams.filter(t=>rolls[t]===maxVal);
+      lowestTeams  = teams.filter(t=>rolls[t]===minVal);
+
+      if(highestTeams.length===1 && lowestTeams.length===1 && highestTeams[0] !== lowestTeams[0]){
+        break;
+      }
+
+      const parts = [];
+      if(highestTeams.length>1) parts.push(`Höchster Gleichstand: Team ${highestTeams.join(", Team ")}`);
+      if(lowestTeams.length>1 || highestTeams[0]===lowestTeams[0]) parts.push(`Niedrigster Gleichstand: Team ${lowestTeams.join(", Team ")}`);
+      result.textContent = parts.join("\n") + "\n\nGleichstand – diese Teams würfeln nochmal.";
+      sub.textContent = "Gleichstand – nochmal würfeln…";
+
+      const rerollTeams = Array.from(new Set([...highestTeams, ...lowestTeams]));
+      await sleep(900);
+
+      for(const team of rerollTeams){
+        const ref = cardRefs.get(team);
+        ref.wrap.style.borderColor = "rgba(200,55,65,.65)";
+        ref.wrap.style.boxShadow = "0 0 0 3px rgba(200,55,65,.18) inset";
+        ref.line.textContent = "Nochmal!";
+      }
+
+      for(const team of rerollTeams){
+        rolls[team] = await animateTeamRoll(team);
+        await sleep(220);
+      }
+
+      maxVal = Math.max(...teams.map(t=>rolls[t]));
+      minVal = Math.min(...teams.map(t=>rolls[t]));
+      highestTeams = teams.filter(t=>rolls[t]===maxVal);
+      lowestTeams  = teams.filter(t=>rolls[t]===minVal);
+
+      if(highestTeams.length===1 && lowestTeams.length===1 && highestTeams[0] !== lowestTeams[0]){
+        break;
+      }
+      // while repeats until unique
+    }
+
+    const winner = highestTeams[0];
+    const loser = lowestTeams[0];
+
+    const winRef = cardRefs.get(winner);
+    const loseRef = cardRefs.get(loser);
+    if(winRef){
+      winRef.wrap.style.borderColor = "rgba(40,140,70,.65)";
+      winRef.wrap.style.boxShadow = "0 0 0 3px rgba(40,140,70,.18) inset";
+    }
+    if(loseRef){
+      loseRef.wrap.style.borderColor = "rgba(200,55,65,.65)";
+      loseRef.wrap.style.boxShadow = "0 0 0 3px rgba(200,55,65,.18) inset";
+    }
+
+    const r = transferRandomJokerBetweenTeams(loser, winner);
+    if(!r.ok){
+      result.textContent =
+        `🏆 Höchster Wurf: Team ${winner} (${rolls[winner]})\n`+
+        `💀 Niedrigster Wurf: Team ${loser} (${rolls[loser]})\n\n`+
+        `Team ${loser} hat keinen Joker. Team ${winner} geht leer aus.`;
+      setStatus(`🎲 Würfel-Duell: Team ${winner} gewinnt, aber Team ${loser} hat keinen Joker.`);
+    }else{
+      result.textContent =
+        `🏆 Höchster Wurf: Team ${winner} (${rolls[winner]})\n`+
+        `💀 Niedrigster Wurf: Team ${loser} (${rolls[loser]})\n\n`+
+        `Team ${loser} gibt Team ${winner} den Joker: ${r.jokerName}`;
+      setStatus(`🎲 Würfel-Duell: Team ${loser} gibt Team ${winner} den Joker ${r.jokerName}.`);
+    }
+
+    sub.textContent = "Duell beendet!";
+    enableClose();
+  }
+
+  markOverlayOpened(ov);
+  ov.style.display = "flex";
+  run();
+}
+
+function showJokerWheelOverlay(team, onClose){
+  ensureJokerState();
+
+  // Helper: mapping id -> display (mittelalterlich)
+  const items = JOKERS.map(j=>({
+    id: j.id,
+    name: (j.name || j.id).replace(/\s+/g," ").trim(),
+    icon: (j.id==="double") ? "🎲" :
+          (j.id==="moveBarricade") ? "🧱" :
+          (j.id==="swap") ? "🔁" :
+          (j.id==="reroll") ? "🎯" :
+          (j.id==="shield") ? "🛡" :
+          (j.id==="allcolors") ? "🌈" : "✦"
+  }));
+
+  let ov = document.getElementById("jokerWheelOverlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "jokerWheelOverlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.58)"
+    ].join(";") + ";";
+
+    ov.innerHTML = `
+      <div style="
+        width:min(840px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:16px;
+        background:
+          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.25);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
+        overflow:hidden;
+      ">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div style="
+            width:44px; height:44px; border-radius:16px;
+            display:flex; align-items:center; justify-content:center;
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.14)),
+              radial-gradient(circle at 35% 35%, rgba(200,55,65,.98), rgba(90,14,18,.96));
+            border:1px solid rgba(0,0,0,.28);
+            box-shadow: inset 0 0 0 2px rgba(255,240,232,.12);
+            color:rgba(255,245,235,.92);
+            font-weight:900;
+          ">🎰</div>
+
+          <div style="flex:1;">
+            <div style="font-weight:900; font-size:20px; letter-spacing:.2px; line-height:1.15;">Joker‑Glücksrad</div>
+            <div id="jwSub" style="opacity:.75; font-size:12px; margin-top:2px;">Wähle dein Schicksal…</div>
+          </div>
+
+          <button id="jwCloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.1fr .9fr; gap:14px;">
+          <!-- LEFT: Slot 1 Joker -->
+          <div style="
+            border-radius:16px;
+            padding:12px;
+            background:rgba(255,255,255,.30);
+            border:1px solid rgba(0,0,0,.14);
+          ">
+            <div style="font-weight:900; margin-bottom:8px;">Rad I – Joker</div>
+
+            <div style="display:flex; gap:10px; align-items:flex-start;">
+              <!-- Slot window -->
+              <div style="
+                position:relative;
+                width:100%;
+                max-width:360px;
+                height:168px;
+                border-radius:14px;
+                background:linear-gradient(180deg, rgba(80,55,35,.28), rgba(30,20,12,.12));
+                border:1px solid rgba(0,0,0,.22);
+                box-shadow: inset 0 0 0 2px rgba(255,240,200,.08);
+                overflow:hidden;
+              ">
+                <div style="
+                  position:absolute; inset:0;
+                  background:radial-gradient(circle at 35% 25%, rgba(255,235,190,.25), rgba(0,0,0,0) 60%);
+                  pointer-events:none;
+                "></div>
+
+                <div id="jwSlot1" style="
+                  position:absolute; left:0; right:0;
+                  top:0;
+                  display:flex;
+                  flex-direction:column;
+                  gap:10px;
+                  padding:18px 14px;
+                  transform: translateY(0);
+                "></div>
+
+                <!-- viewport highlight -->
+                <div style="
+                  position:absolute; left:10px; right:10px;
+                  top:50%; transform: translateY(-50%);
+                  height:48px;
+                  border-radius:12px;
+                  border:2px solid rgba(200,55,65,.65);
+                  box-shadow: 0 0 0 3px rgba(255,240,232,.12) inset;
+                  pointer-events:none;
+                "></div>
+              </div>
+
+              <!-- Legend list -->
+              <div style="
+                flex:1;
+                min-width:210px;
+                max-height:168px;
+                overflow:auto;
+                border-radius:14px;
+                padding:10px 10px;
+                background:rgba(255,255,255,.22);
+                border:1px dashed rgba(0,0,0,.18);
+                font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+                color: rgba(38,26,18,.88);
+              ">
+                <div style="font-weight:800; font-size:12px; opacity:.85; margin-bottom:6px;">Alle Joker</div>
+                <div id="jwLegend" style="display:flex; flex-direction:column; gap:6px; font-size:13px;"></div>
+              </div>
+            </div>
+
+            <div id="jwWin1" style="margin-top:10px; font-weight:900; display:none;"></div>
+          </div>
+
+          <!-- RIGHT: Slot 2 Amount -->
+          <div style="
+            border-radius:16px;
+            padding:12px;
+            background:rgba(255,255,255,.30);
+            border:1px solid rgba(0,0,0,.14);
+          ">
+            <div style="font-weight:900; margin-bottom:8px;">Rad II – Anzahl</div>
+
+            <div style="
+              position:relative;
+              width:100%;
+              height:168px;
+              border-radius:14px;
+              background:linear-gradient(180deg, rgba(80,55,35,.28), rgba(30,20,12,.12));
+              border:1px solid rgba(0,0,0,.22);
+              box-shadow: inset 0 0 0 2px rgba(255,240,200,.08);
+              overflow:hidden;
+            ">
+              <div id="jwSlot2" style="
+                position:absolute; left:0; right:0;
+                top:0;
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+                padding:18px 14px;
+                transform: translateY(0);
+                align-items:center;
+              "></div>
+
+              <div style="
+                position:absolute; left:10px; right:10px;
+                top:50%; transform: translateY(-50%);
+                height:52px;
+                border-radius:12px;
+                border:2px solid rgba(200,55,65,.65);
+                box-shadow: 0 0 0 3px rgba(255,240,232,.12) inset;
+                pointer-events:none;
+              "></div>
+            </div>
+
+            <div id="jwWin2" style="margin-top:10px; font-weight:900; display:none;"></div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center; margin-top:12px;">
+          <button id="jwStart" style="
+            cursor:pointer;
+            padding:11px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.35);
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.18)),
+              linear-gradient(180deg, #6a4a2f, #4f3623);
+            color:rgba(255,250,235,.92);
+            font-weight:900;
+            text-shadow:0 1px 0 rgba(0,0,0,.45);
+            min-width:170px;
+          ">🎰 Drehen!</button>
+
+          <button id="jwOk" style="
+            cursor:not-allowed;
+            padding:11px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.25);
+            background:rgba(255,255,255,.45);
+            color:rgba(38,26,18,.55);
+            font-weight:900;
+            opacity:.65;
+            min-width:160px;
+          " disabled>Schließen</button>
+        </div>
+
+        <div style="
+          position:absolute; right:-60px; top:-60px;
+          width:220px; height:220px; border-radius:50%;
+          background:radial-gradient(circle at 30% 30%, rgba(200,55,65,.38), rgba(90,14,18,0) 70%);
+          pointer-events:none;
+          transform: rotate(18deg);
+        "></div>
+      </div>
+    `;
+
+    document.body.appendChild(ov);
+
+    // close via backdrop
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov){ if(!overlayClickAllowed(ov)) return; ov._doClose && ov._doClose(); }
+    });
+  }
+
+  // Fill legend + slots
+  const slot1 = ov.querySelector("#jwSlot1");
+  const slot2 = ov.querySelector("#jwSlot2");
+  const legend = ov.querySelector("#jwLegend");
+  const startBtn = ov.querySelector("#jwStart");
+  const okBtn = ov.querySelector("#jwOk");
+  const closeX = ov.querySelector("#jwCloseX");
+  const sub = ov.querySelector("#jwSub");
+  const win1 = ov.querySelector("#jwWin1");
+  const win2 = ov.querySelector("#jwWin2");
+
+  legend.innerHTML = "";
+  for(const it of items){
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; gap:8px; align-items:center;";
+    row.innerHTML = `<span style="width:18px; text-align:center;">${it.icon}</span><span style="font-weight:800;">${it.name}</span>`;
+    legend.appendChild(row);
+  }
+
+  // Helper build row element for slot1
+  function slotRowJoker(it){
+    const d = document.createElement("div");
+    d.style.cssText = [
+      "height:38px",
+      "display:flex",
+      "align-items:center",
+      "justify-content:flex-start",
+      "gap:10px",
+      "padding:0 10px",
+      "border-radius:12px",
+      "background:rgba(255,255,255,.20)",
+      "border:1px solid rgba(0,0,0,.10)",
+      "font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "font-weight:900",
+      "color:rgba(245,250,255,.92)",
+      "text-shadow:0 1px 0 rgba(0,0,0,.55)"
+    ].join(";");
+    d.innerHTML = `<span style="width:22px; text-align:center;">${it.icon}</span><span>${it.name}</span>`;
+    return d;
+  }
+
+  function slotRowAmt(n){
+    const d = document.createElement("div");
+    d.style.cssText = [
+      "height:42px",
+      "width:100%",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "border-radius:12px",
+      "background:rgba(255,255,255,.20)",
+      "border:1px solid rgba(0,0,0,.10)",
+      "font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "font-weight:900",
+      "font-size:18px",
+      "color:rgba(245,250,255,.92)",
+      "text-shadow:0 1px 0 rgba(0,0,0,.55)"
+    ].join(";");
+    d.textContent = `×${n}`;
+    return d;
+  }
+
+  // Prepare slot contents (repeat for smooth scroll illusion)
+  function fillSlot1(){
+    slot1.innerHTML = "";
+    // repeat list 6x
+    for(let r=0;r<18;r++){
+      for(const it of items) slot1.appendChild(slotRowJoker(it));
+    }
+  }
+  function fillSlot2(){
+    slot2.innerHTML = "";
+    const nums = [1,2,3];
+    for(let r=0;r<10;r++){
+      for(const n of nums) slot2.appendChild(slotRowAmt(n));
+    }
+  }
+  fillSlot1();
+  fillSlot2();
+
+  // State
+  let spun = false;
+  let chosenJoker = null;
+  let chosenAmt = null;
+
+  function enableClose(){
+    okBtn.disabled = false;
+    okBtn.style.cursor = "pointer";
+    okBtn.style.opacity = "1";
+    okBtn.style.color = "rgba(38,26,18,.88)";
+    okBtn.style.background = "rgba(255,255,255,.70)";
+  }
+
+  function doClose(){
+    ov.style.display="none";
+    if(typeof onClose==="function") onClose();
+  }
+  ov._doClose = doClose;
+  okBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+  closeX.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+
+  // Spin helper: slot animation for 5s, then stop at target index (center window)
+  
+  function spinSlot(slotEl, itemCountPerCycle, pickIndex, rowHeight, durationMs=5000){
+    return new Promise((resolve)=>{
+      const totalItems = slotEl.children.length;
+      const totalCycles = Math.max(1, Math.floor(totalItems / itemCountPerCycle));
+
+      // Immer viele Runden drehen (schnell -> langsam)
+      const minRounds = 10;
+      const cycle = Math.min(totalCycles - 2, Math.max(minRounds, Math.floor(totalCycles * 0.75)));
+      const targetRow = Math.max(0, cycle * itemCountPerCycle + pickIndex);
+
+      const gap = (slotEl.id==="jwSlot2") ? 12 : 10;
+      const highlightTop = (168/2) - (rowHeight/2);
+      const translate = -(targetRow * (rowHeight + gap)) + highlightTop;
+
+      // Reset
+      slotEl.style.transition = "none";
+      slotEl.style.transform = "translateY(0px)";
+
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          slotEl.style.transition = `transform ${durationMs}ms cubic-bezier(.08,.88,.12,1)`;
+          slotEl.style.transform = `translateY(${translate}px)`;
+
+          setTimeout(()=>{
+            slotEl.style.transition = "transform 260ms ease-out";
+            slotEl.style.transform = `translateY(${translate-3}px)`;
+            setTimeout(()=>{
+              slotEl.style.transition = "transform 180ms ease-in";
+              slotEl.style.transform = `translateY(${translate}px)`;
+              setTimeout(resolve, 190);
+            }, 270);
+          }, durationMs);
+        });
+      });
+    });
+  }
+
+
+  startBtn.disabled = false;
+  startBtn.style.cursor = "pointer";
+  okBtn.disabled = true;
+  okBtn.style.cursor = "not-allowed";
+  okBtn.style.opacity = ".65";
+  win1.style.display="none";
+  win2.style.display="none";
+  sub.textContent = "Wähle dein Schicksal…";
+
+  startBtn.onclick = async ()=>{ if(!overlayClickAllowed(ov)) return;
+    if(spun) return;
+    spun = true;
+    startBtn.disabled = true;
+    startBtn.style.opacity = ".65";
+    startBtn.style.cursor = "not-allowed";
+    sub.textContent = "Rad I dreht…";
+
+    // pick joker
+    const pickJ = Math.floor(Math.random()*items.length);
+    await spinSlot(slot1, items.length, pickJ, 38, 5000);
+    chosenJoker = items[pickJ];
+
+    // double suspense
+    win1.style.display="block";
+    win1.textContent = `✨ Gewonnen: ${chosenJoker.name}!`;
+    sub.textContent = "Rad I beendet…";
+
+    // Short pause for drama
+    await new Promise(r=>setTimeout(r, 900));
+
+    // spin amount
+    sub.textContent = "Rad II dreht…";
+    const nums = [1,2,3];
+    const pickA = Math.floor(Math.random()*nums.length);
+    await spinSlot(slot2, nums.length, pickA, 42, 5000);
+    chosenAmt = nums[pickA];
+
+    win2.style.display="block";
+    win2.textContent = `➕ Anzahl: ×${chosenAmt}`;
+    sub.textContent = "Belohnung…";
+
+    // payout with cap behavior (4A)
+    const before = jokerCount(team, chosenJoker.id);
+    addJoker(team, chosenJoker.id, chosenAmt);
+    const after = jokerCount(team, chosenJoker.id);
+    updateJokerUI();
+
+    const gained = Math.max(0, after - before);
+    if(gained <= 0){
+      setStatus(`🎰 Team ${team}: ${chosenJoker.name} war bereits max (${JOKER_MAX_PER_TYPE}/${JOKER_MAX_PER_TYPE}).`);
+    }else if(gained < chosenAmt){
+      setStatus(`🎰 Team ${team}: ${chosenJoker.name} +${gained} (Max erreicht).`);
+    }else{
+      setStatus(`🎰 Team ${team}: ${chosenJoker.name} +${gained}.`);
+    }
+
+    enableClose();
+    sub.textContent = "Fertig!";
+  };
+
+  markOverlayOpened(ov);
+  ov.style.display="flex";
+}
+
+
 function pickRandomEventCard(){
+  // UI-forced card (persistent)
+  if(eventForceCardId){
+    const forced = EVENT_DECK.find(c=>c.id===eventForceCardId);
+    if(forced) return forced;
+  }
+
+  if(FORCE_EVENT_CARD_ID){
+    const forced = EVENT_DECK.find(c=>c && c.id===FORCE_EVENT_CARD_ID);
+    if(forced) return forced;
+  }
   return EVENT_DECK[Math.floor(Math.random()*EVENT_DECK.length)];
 }
 
+
+function getEligibleRespawnEventTargets(excludeIds=new Set()){
+  const occupied = new Set();
+  for(const p of (state.pieces || [])){
+    if(p && p.node) occupied.add(p.node);
+  }
+
+  const aliveBosses = new Set();
+  if(Array.isArray(state.bosses)){
+    for(const b of state.bosses){
+      if(b && b.alive !== false && b.node) aliveBosses.add(b.node);
+    }
+  }
+
+  return nodes
+    .filter(n => n && n.id)
+    .filter(n => n.type !== "start")
+    .filter(n => n.type !== "portal")
+    .filter(n => n.type !== "boss")
+    .filter(n => !occupied.has(n.id))
+    .filter(n => !aliveBosses.has(n.id))
+    .filter(n => !excludeIds.has(n.id))
+    .filter(n => !(state.goalNodeId && n.id === state.goalNodeId))
+    .map(n => n.id);
+}
+
+function respawnAllEventFieldsSequential(onDone){
+  ensureEventState();
+
+  const current = Array.from(state.eventActive || []);
+  if(!current.length){
+    draw();
+    console.info("[EVENT] respawn_all_events: no active event fields");
+    if(typeof onDone === "function") onDone({ moved:0, total:0 });
+    return;
+  }
+
+  const oldSet = new Set(current);
+
+  // Neue Ziele einmalig bestimmen:
+  // - keine Start/Portal/Boss
+  // - keine Spieler
+  // - nicht auf dem aktuellen Zielpunkt
+  // - Barrikaden sind ERLAUBT
+  // - neue Eventfelder sollen nicht auf alten Eventfeldern bleiben
+  let pool = getEligibleRespawnEventTargets(oldSet);
+
+  // Fallback, falls zu wenig freie Felder: alte Eventfelder wieder erlauben
+  if(pool.length < current.length){
+    pool = getEligibleRespawnEventTargets(new Set());
+  }
+
+  // Shuffle
+  for(let i = pool.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  const targets = pool.slice(0, current.length);
+  const total = Math.min(current.length, targets.length);
+
+  // Wenn zu wenig Ziele existieren, nur so viele wie möglich umsetzen
+  const pairs = [];
+  for(let i=0;i<total;i++){
+    pairs.push({ from: current[i], to: targets[i] });
+  }
+
+  let idx = 0;
+  let moved = 0;
+  const prevPhase = state.phase;
+  state.phase = "eventRespawn";
+
+  function step(){
+    if(idx >= pairs.length){
+      state.phase = prevPhase === "eventRespawn" ? "needRoll" : prevPhase;
+      draw();
+      console.info("[EVENT] respawn_all_events done", { moved, total: current.length, pairs });
+      if(typeof onDone === "function") onDone({ moved, total: current.length, pairs });
+      return;
+    }
+
+    const pair = pairs[idx++];
+    state.eventActive.delete(pair.from);
+    state.eventActive.add(pair.to);
+    moved++;
+    draw();
+    setTimeout(step, 200);
+  }
+
+  draw();
+  step();
+}
 function initEventFieldsFromBoard(){
   ensureEventState();
   state.eventActive.clear();
   for(const n of nodes){
-    const isEvent = (n.type==="event") || (n.props && (n.props.event===true || n.props.kind==="event"));
+    const t = String(n.type||"").toLowerCase();
+    const z = String(n.zone||"").toLowerCase();
+    const pk = String((n.props && (n.props.kind||n.props.type||n.props.zone))||"").toLowerCase();
+
+    const isEvent =
+      (t==="event") || t.includes("event") ||
+      (z==="event") || z.includes("event") ||
+      (n.props && n.props.event===true) ||
+      (pk==="event") || pk.includes("event");
+
     if(isEvent) state.eventActive.add(n.id);
   }
   console.info("[EVENT] init:", Array.from(state.eventActive));
@@ -2099,10 +4649,13 @@ function nextTurn(){
   state.portalUsedThisTurn=false;
   state.phase="needRoll";
   state.pendingSix=false;
+  state.extraRoll=false;
+  state.ignoreBarricadesThisTurn = false;
   dieBox.textContent="–";
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
 
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function staySameTeamNeedRoll(msg){
@@ -2125,6 +4678,7 @@ function staySameTeamNeedRoll(msg){
   setStatus(msg || `Team ${currentTeam()} ist dran: Würfeln.`);
 
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
 function initPieces(){
@@ -2138,6 +4692,11 @@ function initPieces(){
     if(n.type === "barricade"){
       barricades.add(n.id);
     }
+  }
+
+  // Snapshot: Start-Layout der Barrikaden merken (für Reset-Events)
+  if(!state.initialBarricadeLayout || !Array.isArray(state.initialBarricadeLayout) || state.initialBarricadeLayout.length===0){
+    state.initialBarricadeLayout = Array.from(barricades);
   }
 
   // Auf ALLEN Startfeldern eine Figur (wie vorher)
@@ -2192,7 +4751,8 @@ function computeMoveTargets(piece,steps){
       if(cur.from && nb === cur.from) continue;
 
       // ✅ Barrikade blockt Zwischen-Schritte (nicht überspringen!)
-      if(barricades.has(nb) && (cur.d+1) < steps) continue;
+      // Ausnahme: Sturmangriff ignoriert Barrikaden auf dem Weg für den ganzen Zug.
+      if(!state.ignoreBarricadesThisTurn && barricades.has(nb) && (cur.d+1) < steps) continue;
 
       // 🛡 Schutzschild blockt Zwischen-Schritte (niemand darf drüber laufen)
       if((cur.d+1) < steps){
@@ -2301,18 +4861,564 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
     // weiter mit normalen Landing-Effekten
   }
 
+
+
+// 🎯 Extra-Regel: Wenn du einen Zielpunkt eingesammelt hast, ziehst du SOFORT auch eine Ereigniskarte.
+// (Damit Testen einfacher ist und das Zielfeld "besonders" bleibt.)
+if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
+  const card = pickRandomEventCard();
+  state.lastEvent = card;
+  console.info('[EVENT] draw (goal)', card.id, 'after goal capture on', piece.node);
+
+  // Flag sofort löschen (wird nur einmal pro Landung gebraucht)
+  state._goalCapturedThisLanding = null;
+
+  const nextOpts = { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true, _goalEventTriggered: true };
+
+  if(card && card.effect === 'joker_pick6'){
+    showEventOverlay(card, ()=>{
+      showJokerPick6Overlay(currentTeam(), ()=>{
+        resolveLanding(piece, nextOpts);
+      });
+    });
+  } else if(card && card.effect === 'joker_wheel'){
+    showEventOverlay(card, ()=>{
+      showJokerWheelOverlay(currentTeam(), ()=>{
+        resolveLanding(piece, nextOpts);
+      });
+    });
+  } else if(card && card.effect === 'jokers_all6'){
+    showEventOverlay(card, ()=>{
+      const gained = grantAllSixJokers(currentTeam());
+      const ok = gained.filter(x=>x.gained>0).map(x=>x.name).join(', ');
+      setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
+      resolveLanding(piece, nextOpts);
+    });
+  } else {
+    showEventOverlay(card, ()=>{
+      resolveLanding(piece, nextOpts);
+    });
+  }
+  return;
+}
+
   // 🎴 3) Ereignisfeld: Karte ziehen
+  // TEST/Regel: Jede Landung löst eine Karte aus (außer wir kommen gerade aus einer Event-/Barrikaden-Fortsetzung).
+  if(FORCE_EVENT_EVERY_LANDING && !opts._eventTriggered){
+    const card = pickRandomEventCard();
+    state.lastEvent = card;
+    console.info('[EVENT] draw (forced)', card.id, 'on', piece.node);
+
+    if(card && card.effect === 'joker_pick6'){
+      showEventOverlay(card, ()=>{
+        showJokerPick6Overlay(currentTeam(), ()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'joker_wheel'){
+      showEventOverlay(card, ()=>{
+        showJokerWheelOverlay(currentTeam(), ()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'jokers_all6'){
+      showEventOverlay(card, ()=>{
+        const gained = grantAllSixJokers(currentTeam());
+        const ok = gained.filter(x=>x.gained>0).map(x=>x.name).join(', ');
+        setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'joker_rain'){
+      showEventOverlay(card, ()=>{
+        applyJokerRain(currentTeam());
+        setStatus(`🌧️ Joker‑Regen! Team ${currentTeam()} hat alle anderen beschenkt.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'shuffle_pieces'){
+      showEventOverlay(card, ()=>{
+        shufflePiecesSmart();
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'start_spawn'){
+      showEventOverlay(card, ()=>{
+        spawnStartPiecesRoundRobin(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'spawn_barricades3'){
+      showEventOverlay(card, ()=>{
+        const placed = spawnExtraBarricades(3);
+        setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'spawn_barricades10'){
+      showEventOverlay(card, ()=>{
+        const placed = spawnExtraBarricades(10);
+        setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'spawn_barricades5'){
+      showEventOverlay(card, ()=>{
+        const placed = spawnExtraBarricades(5);
+        setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'move_barricade1'){
+      showEventOverlay(card, ()=>{
+        if(barricades.size<=0){
+          setStatus(`🧱 Keine Barrikaden auf dem Brett – nichts zu versetzen.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+        state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
+        state.jokerHighlighted.clear();
+        setJokerMode("moveBarricadePick");
+        setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld.`);
+      });
+    } else if(card && card.effect === 'move_barricade2'){
+      showEventOverlay(card, ()=>{
+        if(barricades.size<=0){
+          setStatus(`🧱 Keine Barrikaden auf dem Brett – nichts zu versetzen.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+        state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
+        state.eventMoveBarricadesRemaining = Math.min(2, barricades.size);
+        state.jokerHighlighted.clear();
+        setJokerMode("moveBarricadePick");
+        setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld. (noch ${state.eventMoveBarricadesRemaining})`);
+      });
+    } else if(card && card.effect === 'barricades_shuffle'){
+      showEventOverlay(card, ()=>{
+        const r = shuffleBarricadesRandomly();
+        if(r.shortage){
+          setStatus(`🧱 Barrikaden gemischt: ${r.placed}/${r.count} gesetzt (zu wenig freie Felder!)`);
+        } else {
+          setStatus(`🧱 Barrikaden gemischt: ${r.placed} Barrikaden neu verteilt.`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricades_reset_initial'){
+      showEventOverlay(card, ()=>{
+        const r = resetBarricadesToInitial();
+        setStatus(`🧱 Barrikaden-Reset: ${r.placed}/${r.targetCount} gesetzt${r.missing?(' (+'+r.missing+' Ersatz)'):''}.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricades_on_event_and_goal'){
+      showEventOverlay(card, ()=>{
+        const r = placeBarricadesOnEventAndGoal();
+        setStatus(`🧱 Barrikaden platziert: ${r.placed}/${r.targetCount}.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricades_half_remove'){
+      showEventOverlay(card, ()=>{
+        const r = removeHalfBarricades();
+        setStatus(`🧱 ${r.removed} Barrikaden verschwinden. Übrig: ${r.left}.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricade_jump_reroll'){
+      showEventOverlay(card, ()=>{
+        activateBarricadeJumpReroll();
+      });
+    } else if(card && card.effect === 'spawn_one_boss'){
+      showEventOverlay(card, ()=>{
+        const r = spawnRandomBossFromEvent();
+        if(!r.ok){
+          if(r.reason === "max_active"){
+            setStatus(`👹 Boss-Event: Maximal 2 Bosse sind bereits aktiv.`);
+          } else if(r.reason === "no_free_boss_field"){
+            setStatus(`👹 Boss-Event: Kein freies Bossfeld verfügbar.`);
+          } else {
+            setStatus(`👹 Boss-Event: Boss konnte nicht erscheinen.`);
+          }
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+        const bossName = (BOSS_TYPES[r.type] && BOSS_TYPES[r.type].name) ? BOSS_TYPES[r.type].name : r.type;
+        setStatus(`👹 ${bossName} erscheint auf ${r.node}!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'spawn_two_bosses'){
+      showEventOverlay(card, ()=>{
+        const res = spawnTwoBossesFromEvent();
+        if(!res.length){
+          setStatus(`👹 Boss-Event: Kein Boss konnte erscheinen.`);
+        } else if(res.length === 1){
+          const bossName = (BOSS_TYPES[res[0].type] && BOSS_TYPES[res[0].type].name) ? BOSS_TYPES[res[0].type].name : res[0].type;
+          setStatus(`👹 ${bossName} erscheint! (1/2 möglich)`);
+        } else {
+          setStatus(`👹 Zwei Bosse erscheinen auf den Bossfeldern!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'extra_roll_event'){
+      showEventOverlay(card, ()=>{
+        grantExtraRollFromEvent();
+        setStatus(`🎲 Du darfst sofort nochmal würfeln!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'all_to_start'){
+      showEventOverlay(card, ()=>{
+        const r = sendAllPlayersToStart();
+        setStatus(`🏰 Alle zurück zum Start! ${r.moved} Figuren wurden versetzt.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'lose_all_jokers'){
+      showEventOverlay(card, ()=>{
+        const r = removeAllJokersFromTeam(currentTeam());
+        setStatus(`💀 Team ${r.team} verliert alle Joker! (${r.removed} entfernt)`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'respawn_all_events'){
+      showEventOverlay(card, ()=>{
+        setStatus(`✨ Magische Kräfte verschieben die Ereignisfelder…`);
+        respawnAllEventFieldsSequential((r)=>{
+          setStatus(`✨ Ereignisfelder neu gespawnt: ${r.moved}/${r.total}.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'spawn_double_goal'){
+      showEventOverlay(card, ()=>{
+        const r = spawnBonusGoalDoubleOneShot(false);
+        if(!r.ok){
+          if(r.reason === "already_exists"){
+            setStatus(`🌟 Das Doppel-Zielfeld ist bereits auf dem Brett.`);
+          } else {
+            setStatus(`🌟 Kein freies Feld für das Doppel-Zielfeld gefunden.`);
+          }
+        } else {
+          setStatus(`🌟 Ein Doppel-Zielfeld erscheint auf ${r.nodeId}!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'dice_duel'){
+      showEventOverlay(card, ()=>{
+        showDiceDuelOverlay(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'lose_one_point'){
+      showEventOverlay(card, ()=>{
+        const r = loseOneGoalPointFromTeam(currentTeam());
+        if(r.lost > 0){
+          setStatus(`💀 Team ${r.team} verliert 1 Siegpunkt! Stand: ${r.after}/${state.goalToWin}`);
+        } else {
+          setStatus(`💀 Team ${r.team} hatte keinen Siegpunkt zu verlieren.`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'gain_one_point'){
+      showEventOverlay(card, ()=>{
+        const r = gainOneGoalPointFromTeam(currentTeam());
+        setStatus(`✨ Team ${r.team} erhält 1 Siegpunkt! Stand: ${r.after}/${state.goalToWin}`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'gain_two_points'){
+      showEventOverlay(card, ()=>{
+        const r = gainTwoGoalPointsFromTeam(currentTeam());
+        setStatus(`🏆 Team ${r.team} erhält 2 Siegpunkte! Stand: ${r.after}/${state.goalToWin}`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'point_transfer_most_to_least'){
+      showEventOverlay(card, ()=>{
+        showPointTransferWheelOverlay(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'others_to_start'){
+      showEventOverlay(card, ()=>{
+        const r = sendOtherTeamsPiecesToStart(currentTeam());
+        setStatus(`↩️ Alle anderen Spieler müssen zurück aufs Startfeld!`);
+        resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'back_to_start'){
+      showEventOverlay(card, ()=>{
+        const r = sendTeamPiecesToStart(currentTeam());
+        if(r.ok){
+          setStatus(`↩️ Alle Figuren von Team ${r.team} müssen zurück aufs Startfeld!`);
+        } else {
+          setStatus(`↩️ Zurück-zum-Start konnte nicht ausgeführt werden.`);
+        }
+        resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
+      });
+    } else {
+      showEventOverlay(card, ()=>{
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    }
+    return;
+  }
   ensureEventState();
   if(state.eventActive && state.eventActive.has(piece.node)){
     const card = pickRandomEventCard();
     state.lastEvent = card;
     console.info('[EVENT] draw', card.id, 'on', piece.node);
 
-    showEventOverlay(card, ()=>{
-      relocateEventField(piece.node);
-      // Nach dem OK weiter mit Portal / Turn-Ende (ohne Barrikade-Check erneut)
-      resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true });
-    });
+    if(card && card.effect === 'joker_pick6'){
+      showEventOverlay(card, ()=>{
+        showJokerPick6Overlay(currentTeam(), ()=>{
+          relocateEventField(piece.node);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'joker_wheel'){
+      showEventOverlay(card, ()=>{
+        showJokerWheelOverlay(currentTeam(), ()=>{
+          relocateEventField(piece.node);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'jokers_all6'){
+      showEventOverlay(card, ()=>{
+        const gained = grantAllSixJokers(currentTeam());
+        const ok = gained.filter(x=>x.gained>0).map(x=>x.name).join(', ');
+        setStatus(`🎁 Team ${currentTeam()}: Alle 6 Joker! ${ok ? ('+'+ok) : '(Max erreicht)'}`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'joker_rain'){
+      showEventOverlay(card, ()=>{
+        applyJokerRain(currentTeam());
+        setStatus(`🌧️ Joker‑Regen! Team ${currentTeam()} hat alle anderen beschenkt.`);
+        // Wenn es ein echtes Ereignisfeld war, bleibt die alte Logik: Eventfeld wandert weiter
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'shuffle_pieces'){
+      showEventOverlay(card, ()=>{
+        shufflePiecesSmart();
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'start_spawn'){
+      showEventOverlay(card, ()=>{
+        spawnStartPiecesRoundRobin(()=>{
+          relocateEventField(piece.node);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'spawn_barricades3'){
+      showEventOverlay(card, ()=>{
+        const placed = spawnExtraBarricades(3);
+        setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'spawn_barricades10'){
+      showEventOverlay(card, ()=>{
+        const placed = spawnExtraBarricades(10);
+        setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'spawn_barricades5'){
+      showEventOverlay(card, ()=>{
+        const placed = spawnExtraBarricades(5);
+        setStatus(`🧱 ${placed} neue Barrikaden erscheinen!`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'move_barricade1'){
+      showEventOverlay(card, ()=>{
+        // Eventfeld wird direkt neu gespawnt (damit es nicht hängen bleibt)
+        relocateEventField(piece.node);
+
+        if(barricades.size<=0){
+          setStatus(`🧱 Keine Barrikaden auf dem Brett – nichts zu versetzen.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+
+        // Pflicht-Aktion: Barrikade versetzen (ohne Joker zu verbrauchen)
+        state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
+        state.jokerHighlighted.clear();
+        setJokerMode("moveBarricadePick");
+        setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld.`);
+      });
+    } else if(card && card.effect === 'move_barricade2'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+
+        if(barricades.size<=0){
+          setStatus(`🧱 Keine Barrikaden auf dem Brett – nichts zu versetzen.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+
+        state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
+        state.eventMoveBarricadesRemaining = Math.min(2, barricades.size);
+        state.jokerHighlighted.clear();
+        setJokerMode("moveBarricadePick");
+        setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld. (noch ${state.eventMoveBarricadesRemaining})`);
+      });
+    } else if(card && card.effect === 'barricades_reset_initial'){
+      showEventOverlay(card, ()=>{
+        const r = resetBarricadesToInitial();
+        setStatus(`🧱 Barrikaden-Reset: ${r.placed}/${r.targetCount} gesetzt${r.missing?(' (+'+r.missing+' Ersatz)'):''}.`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricades_on_event_and_goal'){
+      showEventOverlay(card, ()=>{
+        const r = placeBarricadesOnEventAndGoal();
+        setStatus(`🧱 Barrikaden platziert: ${r.placed}/${r.targetCount}.`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricades_half_remove'){
+      showEventOverlay(card, ()=>{
+        const r = removeHalfBarricades();
+        setStatus(`🧱 ${r.removed} Barrikaden verschwinden. Übrig: ${r.left}.`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricade_jump_reroll'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        activateBarricadeJumpReroll();
+      });
+    } else if(card && card.effect === 'spawn_one_boss'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = spawnRandomBossFromEvent();
+        if(!r.ok){
+          if(r.reason === "max_active"){
+            setStatus(`👹 Boss-Event: Maximal 2 Bosse sind bereits aktiv.`);
+          } else if(r.reason === "no_free_boss_field"){
+            setStatus(`👹 Boss-Event: Kein freies Bossfeld verfügbar.`);
+          } else {
+            setStatus(`👹 Boss-Event: Boss konnte nicht erscheinen.`);
+          }
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+        const bossName = (BOSS_TYPES[r.type] && BOSS_TYPES[r.type].name) ? BOSS_TYPES[r.type].name : r.type;
+        setStatus(`👹 ${bossName} erscheint auf ${r.node}!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'spawn_two_bosses'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const res = spawnTwoBossesFromEvent();
+        if(!res.length){
+          setStatus(`👹 Boss-Event: Kein Boss konnte erscheinen.`);
+        } else if(res.length === 1){
+          const bossName = (BOSS_TYPES[res[0].type] && BOSS_TYPES[res[0].type].name) ? BOSS_TYPES[res[0].type].name : res[0].type;
+          setStatus(`👹 ${bossName} erscheint! (1/2 möglich)`);
+        } else {
+          setStatus(`👹 Zwei Bosse erscheinen auf den Bossfeldern!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'extra_roll_event'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        grantExtraRollFromEvent();
+        setStatus(`🎲 Du darfst sofort nochmal würfeln!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'all_to_start'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = sendAllPlayersToStart();
+        setStatus(`🏰 Alle zurück zum Start! ${r.moved} Figuren wurden versetzt.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'lose_all_jokers'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = removeAllJokersFromTeam(currentTeam());
+        setStatus(`💀 Team ${r.team} verliert alle Joker! (${r.removed} entfernt)`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'respawn_all_events'){
+      showEventOverlay(card, ()=>{
+        // Das ausgelöste Eventfeld wird ganz normal mit in den Respawn einbezogen.
+        setStatus(`✨ Magische Kräfte verschieben die Ereignisfelder…`);
+        respawnAllEventFieldsSequential((r)=>{
+          setStatus(`✨ Ereignisfelder neu gespawnt: ${r.moved}/${r.total}.`);
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'spawn_double_goal'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = spawnBonusGoalDoubleOneShot(false);
+        if(!r.ok){
+          if(r.reason === "already_exists"){
+            setStatus(`🌟 Das Doppel-Zielfeld ist bereits auf dem Brett.`);
+          } else {
+            setStatus(`🌟 Kein freies Feld für das Doppel-Zielfeld gefunden.`);
+          }
+        } else {
+          setStatus(`🌟 Ein Doppel-Zielfeld erscheint auf ${r.nodeId}!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'dice_duel'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        showDiceDuelOverlay(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'lose_one_point'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = loseOneGoalPointFromTeam(currentTeam());
+        if(r.lost > 0){
+          setStatus(`💀 Team ${r.team} verliert 1 Siegpunkt! Stand: ${r.after}/${state.goalToWin}`);
+        } else {
+          setStatus(`💀 Team ${r.team} hatte keinen Siegpunkt zu verlieren.`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'gain_one_point'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = gainOneGoalPointFromTeam(currentTeam());
+        setStatus(`✨ Team ${r.team} erhält 1 Siegpunkt! Stand: ${r.after}/${state.goalToWin}`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'gain_two_points'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = gainTwoGoalPointsFromTeam(currentTeam());
+        setStatus(`🏆 Team ${r.team} erhält 2 Siegpunkte! Stand: ${r.after}/${state.goalToWin}`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'point_transfer_most_to_least'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        showPointTransferWheelOverlay(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
+    } else if(card && card.effect === 'others_to_start'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = sendOtherTeamsPiecesToStart(currentTeam());
+        setStatus(`↩️ Alle anderen Spieler müssen zurück aufs Startfeld!`);
+        resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'back_to_start'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = sendTeamPiecesToStart(currentTeam());
+        if(r.ok){
+          setStatus(`↩️ Alle Figuren von Team ${r.team} müssen zurück aufs Startfeld!`);
+        } else {
+          setStatus(`↩️ Zurück-zum-Start konnte nicht ausgeführt werden.`);
+        }
+        resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
+      });
+    } else {
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        // Nach dem OK weiter mit Portal / Turn-Ende (ohne Barrikade-Check erneut)
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    }
 
     // Temporär entfernen, damit wir nicht sofort wieder triggert
     state.eventActive.delete(piece.node);
@@ -2339,9 +5445,19 @@ function resolveLanding(piece, opts={allowPortal:true, fromBarricade:false}){
   // - Boss bewegt sich erst NACH allen Spieler-Aktionen (inkl. Barrikade/Events/Portale)
   // - Boss bewegt sich VOR dem Spielerwechsel / erneuten Würfeln (bei 6)
   runBossPhaseThen(()=>{
-    if(state.pendingSix){
-      state.pendingSix=false;
-      staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
+    if(state.pendingSix || state.extraRoll){
+      const hadSix = !!state.pendingSix;
+      const hadExtra = !!state.extraRoll;
+      state.pendingSix = false;
+      state.extraRoll = false;
+
+      if(hadSix && hadExtra){
+        staySameTeamNeedRoll(`Team ${team}: 6 + Extra-Wurf! Nochmal würfeln.`);
+      }else if(hadSix){
+        staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
+      }else{
+        staySameTeamNeedRoll(`Team ${team}: Extra-Wurf! Nochmal würfeln.`);
+      }
     }else{
       nextTurn();
     }
@@ -2458,6 +5574,29 @@ function handleTapAtWorld(wx, wy){
       barricades.delete(fromId);
       barricades.add(hit.id);
       clearJokerMode(`Team ${team}: Barrikade versetzt.`);
+      // If an event requires a barricade move, resume landing afterwards
+      if(state.eventPendingContinue){
+        // If an event requires one or more barricade moves, resume only after required moves are done
+        const info = state.eventPendingContinue;
+        const p2 = state.pieces.find(pp=>pp.id===info.pieceId);
+
+        if(state.eventMoveBarricadesRemaining>0){
+          state.eventMoveBarricadesRemaining--;
+        }
+
+        if(state.eventMoveBarricadesRemaining>0){
+          // Need more moves: keep mode active
+          setJokerMode("moveBarricadePick");
+          setStatus(`Team ${currentTeam()}: EVENT – noch ${state.eventMoveBarricadesRemaining} Barrikade(n) versetzen.`);
+        }else{
+          // Done: resume landing
+          state.eventPendingContinue = null;
+          if(p2){
+            resolveLanding(p2, { allowPortal: !!info.allowPortal, fromBarricade: true, _eventTriggered: true });
+          }
+        }
+      }
+
       return;
     }
 
@@ -2785,6 +5924,7 @@ btnRoll.addEventListener("click",()=>{
   setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Tippe eine eigene Figur an, um sie zu bewegen.`);
 
   updateJokerUI();
+  ensureEventSelectUI();
 });
 
 // ---------- Spieleranzahl (1–4) ----------
@@ -3101,6 +6241,22 @@ function draw(){
       }
     }
 
+    // Grund-Tints für Special-Felder (nur wenn kein starkes Highlight dominiert)
+    const hardHL = state.highlighted.has(n.id)
+      || (state.phase==="placeBarricade" && state.placeHighlighted.has(n.id))
+      || (state.jokerMode==="moveBarricadePlace" && state.jokerHighlighted && state.jokerHighlighted.has(n.id))
+      || (state.phase==="usePortal" && state.portalHighlighted.has(n.id));
+    if(!hardHL){
+      // Ereignisfeld: rot markieren (unter Barrikaden darf es unsichtbar bleiben)
+      if(state.eventActive && state.eventActive.has(n.id) && !barricades.has(n.id)){
+        fill = "rgba(220,60,60,.22)";
+      }
+      // Zielfeld / Zielpunkte: gold markieren
+      if(state.goalNodeId && n.id===state.goalNodeId && !barricades.has(n.id)){
+        fill = "rgba(255,205,80,.26)";
+      }
+    }
+
     ctx.fillStyle=fill;
     ctx.fill();
 
@@ -3147,6 +6303,21 @@ function draw(){
     const gn = nodesById.get(state.goalNodeId);
     if(gn && !barricades.has(state.goalNodeId)){
       drawGoalToken(gn.x, gn.y);
+    }
+  }
+
+  // 🌟 Doppel-Zielfeld (einmalig, +2 Punkte)
+  if(state.bonusGoalNodeId){
+    const bn = nodesById.get(state.bonusGoalNodeId);
+    if(bn && !barricades.has(state.bonusGoalNodeId)){
+      drawGoalToken(bn.x, bn.y);
+      ctx.save();
+      ctx.fillStyle = "rgba(88,38,8,.88)";
+      ctx.font = "bold 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("×2", bn.x, bn.y + 18);
+      ctx.restore();
     }
   }
 
@@ -3448,9 +6619,90 @@ async function load(){
   ensureJokerState();
   renderJokerButtons();
   updateJokerUI();
+  ensureEventSelectUI();
 }
 
+
+
+// ---- Sidebar UI: Ereigniskarte fürs nächste Feld auswählen (Test-Modus) ----
+function ensureEventSelectUI(){
+  const sidebar = document.getElementById("sidePanel") || document.getElementById("sidebar") || document.body;
+  const hostParent = (typeof jokerButtonsWrap !== "undefined" && jokerButtonsWrap && jokerButtonsWrap.parentElement) ? jokerButtonsWrap.parentElement : sidebar;
+
+  let box = document.getElementById("eventForceBox");
+  if(box) return box;
+
+  box = document.createElement("div");
+  box.id = "eventForceBox";
+  box.style.cssText = "margin-top:12px; padding:10px; border-radius:14px; background:rgba(10,12,18,.42); border:1px solid rgba(255,255,255,.10); color:rgba(245,250,255,.92); font:700 13px system-ui, -apple-system, Segoe UI, Roboto, Arial;";
+
+  const h = document.createElement("div");
+  h.textContent = "Event wählen (Test)";
+  h.style.cssText = "font-weight:900; margin-bottom:8px; letter-spacing:.2px;";
+  box.appendChild(h);
+
+  const sel = document.createElement("select");
+  sel.id = "eventForceSelect";
+  sel.style.cssText = "width:100%; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(10,12,18,.35); color:rgba(245,250,255,.92); font-weight:800;";
+  box.appendChild(sel);
+
+  const hint = document.createElement("div");
+  hint.style.cssText = "margin-top:8px; opacity:.75; font-size:12px; line-height:1.25;";
+  hint.textContent = "Diese Auswahl bleibt aktiv, bis du sie änderst. (Nächste Felder ziehen diese Karte)";
+  box.appendChild(hint);
+
+  function rebuildOptions(){
+    sel.innerHTML = "";
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = "— Zufällig —";
+    sel.appendChild(opt0);
+
+    const seen = new Set();
+    for(const c of EVENT_DECK){
+      if(seen.has(c.id)) continue;
+      seen.add(c.id);
+      const o = document.createElement("option");
+      o.value = c.id;
+      o.textContent = c.title;
+      sel.appendChild(o);
+    }
+
+    sel.value = eventForceCardId || "";
+  }
+
+  rebuildOptions();
+
+  sel.addEventListener("change", ()=>{
+    eventForceCardId = sel.value || null;
+    if(eventForceCardId){
+      const c = EVENT_DECK.find(x=>x.id===eventForceCardId);
+      setStatus(`🧪 Test aktiv: ${c ? c.title : eventForceCardId}`);
+    }else{
+      setStatus("🧪 Test aus: Ereigniskarten wieder zufällig.");
+    }
+  });
+
+  hostParent.appendChild(box);
+  return box;
+}
 load();
 draw();
 
 })();
+// (Event-Test UI ist nun im Spiel-Scope integriert)
+
+
+function stealOnePointSimple(thiefTeam){
+  const teams = (state.players || []).filter(t => t !== thiefTeam);
+  const candidates = teams.filter(t => (state.goalScores?.[t]||0) > 0);
+  if(!candidates.length){
+    setStatus("🪙 Niemand hat einen Siegpunkt.");
+    return;
+  }
+  const victim = candidates[Math.floor(Math.random()*candidates.length)];
+  state.goalScores[victim] = (state.goalScores[victim]||0) - 1;
+  state.goalScores[thiefTeam] = (state.goalScores[thiefTeam]||0) + 1;
+  draw();
+  setStatus(`🪙 Team ${thiefTeam} klaut 1 Siegpunkt von Team ${victim}`);
+}
