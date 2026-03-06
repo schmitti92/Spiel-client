@@ -2338,17 +2338,23 @@ function sendOtherTeamsPiecesToStart(exceptTeam){
     }
   }
 
+  let moved = 0;
+  const reset = [];
+
+  // Nur die anderen Teams aus occupied entfernen.
+  // Das aktive Team bleibt komplett unangetastet.
   for(const p of otherPieces){
-    if(p.node){
+    if(p && p.node){
       state.occupied.delete(p.node);
     }
   }
 
-  const used = new Set();
-  let moved = 0;
+  const usedStarts = new Set();
 
   for(const p of otherPieces){
-    const starts = (startsByTeam.get(p.team) || []).filter(id => !used.has(id));
+    const starts = (startsByTeam.get(p.team) || []).filter(id => !usedStarts.has(id));
+    let placed = false;
+
     for(const sid of starts){
       if(!state.occupied.has(sid)){
         if(p.node !== sid) moved++;
@@ -2356,15 +2362,23 @@ function sendOtherTeamsPiecesToStart(exceptTeam){
         p.node = sid;
         p.shielded = false;
         state.occupied.set(sid, p.id);
-        used.add(sid);
+        usedStarts.add(sid);
+        reset.push(p.id);
+        placed = true;
         break;
       }
+    }
+
+    if(!placed){
+      p.prev = p.node || null;
+      p.node = null;
+      p.shielded = false;
     }
   }
 
   draw();
-  console.info("[EVENT] others_to_start", { exceptTeam, moved });
-  return { ok:true, moved };
+  console.info("[EVENT] others_to_start", { exceptTeam, moved, reset });
+  return { ok:true, exceptTeam, moved, total:otherPieces.length, reset };
 }
 
 function sendTeamPiecesToStart(team){
@@ -5110,13 +5124,6 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`↩️ Alle anderen Spieler müssen zurück aufs Startfeld!`);
         resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
       });
-    } else if(card && card.effect === 'others_to_start'){
-      showEventOverlay(card, ()=>{
-        relocateEventField(piece.node);
-        const r = sendOtherTeamsPiecesToStart(currentTeam());
-        setStatus(`↩️ Alle anderen Spieler müssen zurück aufs Startfeld!`);
-        resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
-      });
     } else if(card && card.effect === 'back_to_start'){
       showEventOverlay(card, ()=>{
         const r = sendTeamPiecesToStart(currentTeam());
@@ -5379,6 +5386,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         showPointTransferWheelOverlay(()=>{
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
+      });
+    } else if(card && card.effect === 'others_to_start'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = sendOtherTeamsPiecesToStart(currentTeam());
+        setStatus(`↩️ Alle anderen Spieler müssen zurück aufs Startfeld!`);
+        resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
       });
     } else if(card && card.effect === 'back_to_start'){
       showEventOverlay(card, ()=>{
