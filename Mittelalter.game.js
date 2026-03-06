@@ -2199,9 +2199,6 @@ function placeBarricadesOnEventAndGoal(){
   const occupied = new Set();
   for(const p of (state.pieces || [])) occupied.add(p.node);
 
-  // Ereignisfelder robust ermitteln:
-  // 1) state.eventActive (falls befüllt)
-  // 2) Fallback: node.type / node.zone / props mit "event"
   const eventIds = [];
   if(state.eventActive && typeof state.eventActive.forEach === "function" && state.eventActive.size>0){
     state.eventActive.forEach(id=>eventIds.push(id));
@@ -2210,28 +2207,34 @@ function placeBarricadesOnEventAndGoal(){
       const t = String(n.type||"").toLowerCase();
       const z = String(n.zone||"").toLowerCase();
       const pk = String((n.props && (n.props.kind||n.props.type||n.props.zone))||"").toLowerCase();
-      const isEvent = (t==="event") || t.includes("event") || z.includes("event") || (n.props && (n.props.event===true)) || pk.includes("event");
+      const isEvent =
+        (t==="event") || t.includes("event") ||
+        (z==="event") || z.includes("event") ||
+        (n.props && n.props.event===true) ||
+        (pk==="event") || pk.includes("event");
       if(isEvent) eventIds.push(n.id);
     }
   }
 
-  // Zielfeld ist state.goalNodeId
   const goalId = state.goalNodeId || null;
 
   const targets = [...eventIds];
   if(goalId) targets.push(goalId);
 
   let placed = 0;
+  let skippedOccupied = 0;
+  let skippedBlocked = 0;
+
   for(const id of targets){
     const n = nodesById.get(id);
     if(!n) continue;
 
     // Sperren
-    if(n.type === "start") continue;
-    if(n.type === "portal") continue;
-    if(typeof isBossField === "function" && isBossField(id)) continue;
+    if(n.type === "start") { skippedBlocked++; continue; }
+    if(n.type === "portal") { skippedBlocked++; continue; }
+    if(typeof isBossField === "function" && isBossField(id)) { skippedBlocked++; continue; }
 
-    if(occupied.has(id)) continue;
+    if(occupied.has(id)) { skippedOccupied++; continue; }
     if(barricades.has(id)) continue;
 
     barricades.add(id);
@@ -2239,7 +2242,7 @@ function placeBarricadesOnEventAndGoal(){
   }
 
   draw();
-  console.info("[BARRICADE] invasion:", {events:eventIds.length, goal:goalId, placed});
+  console.info("[BARRICADE] invasion:", {events:eventIds.length, goal:goalId, placed, skippedOccupied, skippedBlocked});
   return {placed, eventCount: eventIds.length, hasGoal: !!goalId};
 }
 
@@ -3236,7 +3239,16 @@ function initEventFieldsFromBoard(){
   ensureEventState();
   state.eventActive.clear();
   for(const n of nodes){
-    const isEvent = (n.type==="event") || (n.props && (n.props.event===true || n.props.kind==="event"));
+    const t = String(n.type||"").toLowerCase();
+    const z = String(n.zone||"").toLowerCase();
+    const pk = String((n.props && (n.props.kind||n.props.type||n.props.zone))||"").toLowerCase();
+
+    const isEvent =
+      (t==="event") || t.includes("event") ||
+      (z==="event") || z.includes("event") ||
+      (n.props && n.props.event===true) ||
+      (pk==="event") || pk.includes("event");
+
     if(isEvent) state.eventActive.add(n.id);
   }
   console.info("[EVENT] init:", Array.from(state.eventActive));
