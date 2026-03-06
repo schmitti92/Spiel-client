@@ -2013,6 +2013,12 @@ const EVENT_DECK = [
     title:"Barrikaden-Invasion",
     text:"Auf jedes Ereignisfeld und auf das Zielfeld wird je 1 zusätzliche Barrikade platziert.",
     effect:"barricades_on_event_and_goal"
+  },
+  {
+    id:"barricades_half_remove",
+    title:"Barrikaden verfallen",
+    text:"Die Hälfte aller Barrikaden verschwindet vom Brett.",
+    effect:"barricades_half_remove"
   }
 ];
 
@@ -2063,6 +2069,32 @@ function spawnExtraBarricades(count=3){
 // - gleiche Anzahl + gleiche Startpositionen wie beim Spielstart
 // - zu viele (zusätzliche) werden entfernt
 // - wenn Startpositionen gerade blockiert sind: Ersatz-Barrikaden werden auf freie Felder gespawnt
+
+function removeHalfBarricades(){
+  const arr = Array.from(barricades || []);
+  const total = arr.length;
+  if(total <= 0){
+    draw();
+    return { total:0, removed:0, left:0 };
+  }
+
+  // Bei ungerader Zahl wird abgerundet: 5 -> 2 weg, 3 bleiben
+  const removeCount = Math.floor(total / 2);
+
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+
+  for(let i=0;i<removeCount;i++){
+    barricades.delete(arr[i]);
+  }
+
+  draw();
+  console.info("[BARRICADE] half remove:", { total, removed: removeCount, left: barricades.size });
+  return { total, removed: removeCount, left: barricades.size };
+}
+
 function resetBarricadesToInitial(){
   // Fallback: falls Snapshot fehlt, neu aus Board-Nodes lesen
   let layout = (Array.isArray(state.initialBarricadeLayout) && state.initialBarricadeLayout.length>0)
@@ -3675,6 +3707,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🧱 Barrikaden platziert: ${r.placed}/${r.targetCount}.`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'barricades_half_remove'){
+      showEventOverlay(card, ()=>{
+        const r = removeHalfBarricades();
+        setStatus(`🧱 ${r.removed} Barrikaden verschwinden. Übrig: ${r.left}.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -3796,6 +3834,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       showEventOverlay(card, ()=>{
         const r = placeBarricadesOnEventAndGoal();
         setStatus(`🧱 Barrikaden platziert: ${r.placed}/${r.targetCount}.`);
+        relocateEventField(piece.node);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricades_half_remove'){
+      showEventOverlay(card, ()=>{
+        const r = removeHalfBarricades();
+        setStatus(`🧱 ${r.removed} Barrikaden verschwinden. Übrig: ${r.left}.`);
         relocateEventField(piece.node);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
