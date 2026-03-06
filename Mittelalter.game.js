@@ -7185,10 +7185,6 @@ tryUseJoker = function(jokerId){
   console.warn('[ONLINE] tryUseJoker missing', { jokerId });
 };
 
-const __origDrawOnline = draw;
-draw = function(){
-  return __origDrawOnline.apply(this, arguments);
-};
 
 window.addEventListener('load', ()=>{
   connectMittelalterServer();
