@@ -408,6 +408,7 @@ const state = {
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
   pendingSix:false,
+  extraRoll:false,
 
   // Joker inventory & state
   jokers: {1:baseJokerLoadout(),2:baseJokerLoadout(),3:baseJokerLoadout(),4:baseJokerLoadout()},
@@ -468,6 +469,7 @@ function setPlayerCount(n, opts={reset:true}){
   state.portalHighlighted.clear();
   state.portalUsedThisTurn = false;
   state.pendingSix = false;
+  state.extraRoll = false;
   state.ignoreBarricadesThisTurn = false;
 
   if(opts.reset){
@@ -1159,14 +1161,7 @@ if(!goalIds.length) return;
       if(newId){
         barricades.add(newId);
         if(state.bossDebug) console.info("[BOSS] reaper moved barricade", step, "->", newId, "boss", boss.id);
-      
-    } else if(card && card.effect === 'extra_roll_event'){
-      showEventOverlay(card, ()=>{
-        grantExtraRollFromEvent();
-        setStatus(`🎲 Du darfst sofort nochmal würfeln!`);
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
-      });
-} else {
+      } else {
         if(state.bossDebug) console.warn("[BOSS] reaper removed barricade but found no free place", step, "boss", boss.id);
       }
     }
@@ -1904,6 +1899,7 @@ function showWinOverlay(team){
       state.portalHighlighted.clear();
       state.portalUsedThisTurn = false;
       state.pendingSix = false;
+      state.extraRoll = false;
       state.ignoreBarricadesThisTurn = false;
 
       dieBox.textContent="–";
@@ -2056,13 +2052,6 @@ const EVENT_DECK = [
   }
 ];
 
-
-
-// ---- Event Effect: Extra Würfelwurf ----
-function grantExtraRollFromEvent(){
-  state.extraRoll = true;
-  console.info("[EVENT] extra roll granted");
-}
 // ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
 // Darf auf Ereignisfeldern & Siegpunktfeld spawnen.
 // NICHT auf Start, Portal, Boss, belegt (Figur), oder vorhandene Barrikade.
@@ -2175,6 +2164,13 @@ function spawnRandomBossFromEvent(){
 
   console.info("[BOSS] event spawned", { type: boss.type, id: boss.id, node: boss.node });
   return { ok:true, type: boss.type, id: boss.id, node: boss.node, active: (state.bosses || []).filter(b => b && b.alive !== false).length };
+}
+
+
+function grantExtraRollFromEvent(){
+  state.extraRoll = true;
+  console.info("[EVENT] extra roll granted");
+  return true;
 }
 
 function activateBarricadeJumpReroll(){
@@ -3475,6 +3471,7 @@ function nextTurn(){
   state.portalUsedThisTurn=false;
   state.phase="needRoll";
   state.pendingSix=false;
+  state.extraRoll=false;
   state.ignoreBarricadesThisTurn = false;
   dieBox.textContent="–";
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
@@ -3876,6 +3873,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         }
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'extra_roll_event'){
+      showEventOverlay(card, ()=>{
+        grantExtraRollFromEvent();
+        setStatus(`🎲 Du darfst sofort nochmal würfeln!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -4045,6 +4048,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         }
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'extra_roll_event'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        grantExtraRollFromEvent();
+        setStatus(`🎲 Du darfst sofort nochmal würfeln!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         relocateEventField(piece.node);
@@ -4078,9 +4088,19 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
   // - Boss bewegt sich erst NACH allen Spieler-Aktionen (inkl. Barrikade/Events/Portale)
   // - Boss bewegt sich VOR dem Spielerwechsel / erneuten Würfeln (bei 6)
   runBossPhaseThen(()=>{
-    if(state.pendingSix){
-      state.pendingSix=false;
-      staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
+    if(state.pendingSix || state.extraRoll){
+      const hadSix = !!state.pendingSix;
+      const hadExtra = !!state.extraRoll;
+      state.pendingSix = false;
+      state.extraRoll = false;
+
+      if(hadSix && hadExtra){
+        staySameTeamNeedRoll(`Team ${team}: 6 + Extra-Wurf! Nochmal würfeln.`);
+      }else if(hadSix){
+        staySameTeamNeedRoll(`Team ${team}: Du hast eine 6! Nochmal würfeln.`);
+      }else{
+        staySameTeamNeedRoll(`Team ${team}: Extra-Wurf! Nochmal würfeln.`);
+      }
     }else{
       nextTurn();
     }
