@@ -2159,6 +2159,13 @@ const EVENT_DECK = [
     text:"Dein Team erhält 1 Siegpunkt.",
     effect:"gain_one_point"
   }
+  ,
+  {
+    id:"gain_two_points",
+    title:"Du erhältst 2 Siegpunkte",
+    text:"Dein Team erhält 2 Siegpunkte.",
+    effect:"gain_two_points"
+  }
 ];
 
 // ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
@@ -3132,6 +3139,16 @@ function showJokerPick6Overlay(team, onClose){
 
 
 
+
+
+function gainTwoGoalPointsFromTeam(team){
+  const before = Number((state.goalScores && state.goalScores[team]) || 0);
+  const after = before + 2;
+  state.goalScores[team] = after;
+  draw();
+  console.info("[EVENT] gain_two_points", { team, before, after });
+  return { team, before, after };
+}
 
 function gainOneGoalPointFromTeam(team){
   const before = Number((state.goalScores && state.goalScores[team]) || 0);
@@ -4547,6 +4564,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`✨ Team ${r.team} erhält 1 Siegpunkt! Stand: ${r.after}/${state.goalToWin}`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'gain_two_points'){
+      showEventOverlay(card, ()=>{
+        const r = gainTwoGoalPointsFromTeam(currentTeam());
+        setStatus(`🏆 Team ${r.team} erhält 2 Siegpunkte! Stand: ${r.after}/${state.goalToWin}`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -4784,6 +4807,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         relocateEventField(piece.node);
         const r = gainOneGoalPointFromTeam(currentTeam());
         setStatus(`✨ Team ${r.team} erhält 1 Siegpunkt! Stand: ${r.after}/${state.goalToWin}`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'gain_two_points'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = gainTwoGoalPointsFromTeam(currentTeam());
+        setStatus(`🏆 Team ${r.team} erhält 2 Siegpunkte! Stand: ${r.after}/${state.goalToWin}`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
