@@ -2196,54 +2196,71 @@ function shuffleBarricadesRandomly(){
 // Verboten: Start/Portal/Boss, Felder mit Figur.
 // Wenn dort schon eine Barrikade liegt, bleibt es dabei (kein Stack).
 function placeBarricadesOnEventAndGoal(){
+  // Nur auf AKTUELL freie Felder:
+  // - aktuelle Eventfelder aus state.eventActive
+  // - aktuelles Siegpunktfeld aus state.goalNodeId
+  // - NICHT auf Start / Portal / Boss
+  // - NICHT auf Figuren
+  // - NICHT wenn schon Barrikade dort liegt
   const occupied = new Set();
-  for(const p of (state.pieces || [])) occupied.add(p.node);
-
-  const eventIds = [];
-  if(state.eventActive && typeof state.eventActive.forEach === "function" && state.eventActive.size>0){
-    state.eventActive.forEach(id=>eventIds.push(id));
-  }else{
-    for(const n of nodes){
-      const t = String(n.type||"").toLowerCase();
-      const z = String(n.zone||"").toLowerCase();
-      const pk = String((n.props && (n.props.kind||n.props.type||n.props.zone))||"").toLowerCase();
-      const isEvent =
-        (t==="event") || t.includes("event") ||
-        (z==="event") || z.includes("event") ||
-        (n.props && n.props.event===true) ||
-        (pk==="event") || pk.includes("event");
-      if(isEvent) eventIds.push(n.id);
-    }
+  for(const p of (state.pieces || [])){
+    if(p && p.node) occupied.add(p.node);
   }
 
-  const goalId = state.goalNodeId || null;
+  const targets = [];
+  if(state.eventActive && typeof state.eventActive.forEach === "function"){
+    state.eventActive.forEach(id => {
+      if(id) targets.push(id);
+    });
+  }
 
-  const targets = [...eventIds];
-  if(goalId) targets.push(goalId);
+  if(state.goalNodeId) targets.push(state.goalNodeId);
 
   let placed = 0;
   let skippedOccupied = 0;
   let skippedBlocked = 0;
+  let skippedAlreadyBarricade = 0;
 
   for(const id of targets){
     const n = nodesById.get(id);
     if(!n) continue;
 
-    // Sperren
-    if(n.type === "start") { skippedBlocked++; continue; }
-    if(n.type === "portal") { skippedBlocked++; continue; }
-    if(typeof isBossField === "function" && isBossField(id)) { skippedBlocked++; continue; }
+    // blockierte Spezialfelder
+    if(n.type === "start" || n.type === "portal" || n.type === "boss"){
+      skippedBlocked++;
+      continue;
+    }
 
-    if(occupied.has(id)) { skippedOccupied++; continue; }
-    if(barricades.has(id)) continue;
+    // nur freie Felder
+    if(occupied.has(id)){
+      skippedOccupied++;
+      continue;
+    }
+    if(barricades.has(id)){
+      skippedAlreadyBarricade++;
+      continue;
+    }
 
     barricades.add(id);
     placed++;
   }
 
   draw();
-  console.info("[BARRICADE] invasion:", {events:eventIds.length, goal:goalId, placed, skippedOccupied, skippedBlocked});
-  return {placed, eventCount: eventIds.length, hasGoal: !!goalId};
+  console.info("[BARRICADE] invasion:", {
+    targets: targets.slice(),
+    placed,
+    skippedOccupied,
+    skippedBlocked,
+    skippedAlreadyBarricade
+  });
+
+  return {
+    placed,
+    targetCount: targets.length,
+    skippedOccupied,
+    skippedBlocked,
+    skippedAlreadyBarricade
+  };
 }
 
 
@@ -3630,30 +3647,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
           return;
         }
-
         state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
         state.eventMoveBarricadesRemaining = Math.min(2, barricades.size);
         state.jokerHighlighted.clear();
         setJokerMode("moveBarricadePick");
         setStatus(`Team ${currentTeam()}: EVENT – tippe eine Barrikade an, dann das Zielfeld. (noch ${state.eventMoveBarricadesRemaining})`);
       });
-        } else if(card && card.effect === 'barricades_shuffle'){
-      showEventOverlay(card, ()=>{
-        const r = shuffleBarricadesRandomly();
-        if(r.shortage){
-          setStatus(`🧱 Barrikaden gemischt: ${r.placed}/${r.count} gesetzt (zu wenig freie Felder!)`);
-        } else if(card && card.effect === 'barricades_on_event_and_goal'){
-      showEventOverlay(card, ()=>{
-        const r = placeBarricadesOnEventAndGoal();
-        setStatus(`🧱 Barrikaden platziert: ${r.placed} (Events: ${r.eventCount}${r.hasGoal ? ", +Ziel" : ""}).`);
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
-      });
-    } else {
-          setStatus(`🧱 Barrikaden gemischt: ${r.placed} Barrikaden neu verteilt.`);
-        }
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
-      });
-        } else if(card && card.effect === 'barricades_shuffle'){
+    } else if(card && card.effect === 'barricades_shuffle'){
       showEventOverlay(card, ()=>{
         const r = shuffleBarricadesRandomly();
         if(r.shortage){
@@ -3669,15 +3669,19 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🧱 Barrikaden-Reset: ${r.placed}/${r.targetCount} gesetzt${r.missing?(' (+'+r.missing+' Ersatz)'):''}.`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'barricades_on_event_and_goal'){
+      showEventOverlay(card, ()=>{
+        const r = placeBarricadesOnEventAndGoal();
+        setStatus(`🧱 Barrikaden platziert: ${r.placed}/${r.targetCount}.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
-        // Nach OK weiter mit Portal / Turn-Ende (ohne erneutes Event-Triggern)
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     }
     return;
   }
-
   ensureEventState();
   if(state.eventActive && state.eventActive.has(piece.node)){
     const card = pickRandomEventCard();
@@ -3791,7 +3795,7 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
     } else if(card && card.effect === 'barricades_on_event_and_goal'){
       showEventOverlay(card, ()=>{
         const r = placeBarricadesOnEventAndGoal();
-        setStatus(`🧱 Barrikaden platziert: ${r.placed} (Events: ${r.eventCount}${r.hasGoal ? ", +Ziel" : ""}).`);
+        setStatus(`🧱 Barrikaden platziert: ${r.placed}/${r.targetCount}.`);
         relocateEventField(piece.node);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
