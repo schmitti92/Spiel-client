@@ -99,6 +99,60 @@
     </aside>
   </main>
 
+
+  <div id="onlineBadge" style="position:fixed;left:12px;bottom:12px;z-index:9999;background:rgba(14,22,38,.92);color:#fff;border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.35);font:14px/1.35 Arial,Helvetica,sans-serif;backdrop-filter:blur(6px);max-width:280px">
+    <div style="font-weight:700;margin-bottom:4px">Lobby-Info</div>
+    <div id="onlineBadgeText">Prüfe Lobby-Daten…</div>
+  </div>
+  <script>
+(function () {
+  function readLobbySession() {
+    let packed = {};
+    try {
+      packed = JSON.parse(sessionStorage.getItem('mittelalterLobby') || '{}');
+    } catch (err) {
+      console.warn('[Mittelalter] mittelalterLobby konnte nicht gelesen werden:', err);
+    }
+
+    const playerName = sessionStorage.getItem('playerName') || packed.playerName || '';
+    const roomCode = sessionStorage.getItem('roomCode') || packed.roomCode || '';
+    const isHostRaw = sessionStorage.getItem('isHost');
+    const isHost = isHostRaw ? isHostRaw === 'true' : !!packed.isHost;
+    const lastMode = sessionStorage.getItem('mittelalterLastMode') || packed.lastMode || 'offline-mock';
+
+    return {
+      playerName: String(playerName || '').trim(),
+      roomCode: String(roomCode || '').trim().toUpperCase(),
+      isHost,
+      lastMode
+    };
+  }
+
+  const session = readLobbySession();
+  window.MITTELALTER_SESSION = session;
+
+  console.log('[Mittelalter] Spieler:', session.playerName);
+  console.log('[Mittelalter] Raum:', session.roomCode);
+  console.log('[Mittelalter] Host:', session.isHost);
+  console.log('[Mittelalter] Modus:', session.lastMode);
+
+  if (!session.playerName || !session.roomCode) {
+    alert('Lobby nicht korrekt gestartet. Du wirst zurück zur Mittelalter-Lobby geleitet.');
+    window.location.href = 'Mittelalter.lobby.html';
+    return;
+  }
+
+  const badge = document.getElementById('onlineBadgeText');
+  if (badge) {
+    badge.innerHTML =
+      'Spieler: <b>' + session.playerName + '</b><br>' +
+      'Raum: <b>' + session.roomCode + '</b><br>' +
+      'Rolle: <b>' + (session.isHost ? 'Host' : 'Mitspieler') + '</b><br>' +
+      'Modus: <b>' + (session.lastMode === 'online' ? 'Online' : 'Offline-Test') + '</b>';
+  }
+})();
+  </script>
+
   <script src="Mittelalter.game.js?v=207"></script>
 </body>
 </html>
