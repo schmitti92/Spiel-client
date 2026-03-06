@@ -2177,7 +2177,7 @@ const EVENT_DECK = [
   {
     id:"back_to_start",
     title:"Zurück zum Start",
-    text:"Alle eigenen Figuren müssen zurück auf die Startfelder deines Teams.",
+    text:"Alle anderen Spieler müssen komplett zurück auf ihre Startfelder.",
     effect:"back_to_start"
   }
 ];
@@ -2361,6 +2361,60 @@ function sendTeamPiecesToStart(team){
   draw();
   console.info("[EVENT] back_to_start_team", { team, moved, reset });
   return { ok:true, team, moved, total:teamPieces.length, reset };
+}
+
+
+function sendOtherTeamsPiecesToStart(exceptTeam){
+  const otherPieces = (state.pieces || []).filter(p => p && p.team !== exceptTeam);
+
+  const startsByTeam = new Map();
+  for(const n of nodes){
+    if(n && n.type === "start"){
+      const t = Number(n.props?.startTeam || 0);
+      if(!startsByTeam.has(t)) startsByTeam.set(t, []);
+      startsByTeam.get(t).push(n.id);
+    }
+  }
+
+  for(const p of otherPieces){
+    if(p && p.node){
+      state.occupied.delete(p.node);
+    }
+  }
+
+  let moved = 0;
+  const reset = [];
+
+  const usedStarts = new Set();
+
+  for(const p of otherPieces){
+    const teamStarts = (startsByTeam.get(p.team) || []).filter(id => !usedStarts.has(id));
+    let placed = false;
+
+    for(const sid of teamStarts){
+      if(!state.occupied.has(sid)){
+        if(p.node !== sid) moved++;
+        p.prev = p.node || null;
+        p.node = sid;
+        p.shielded = false;
+        state.occupied.set(sid, p.id);
+        usedStarts.add(sid);
+        placed = true;
+        reset.push(p.id);
+        break;
+      }
+    }
+
+    if(!placed){
+      p.prev = p.node || null;
+      p.node = null;
+      p.shielded = false;
+    }
+  }
+
+  draw();
+  console.info("[EVENT] back_to_start_others", { exceptTeam, moved, reset });
+  return { ok:true, exceptTeam, moved, total:otherPieces.length, reset };
 }
 
 function sendAllPlayersToStart(){
@@ -5057,9 +5111,9 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       });
     } else if(card && card.effect === 'back_to_start'){
       showEventOverlay(card, ()=>{
-        const r = sendTeamPiecesToStart(currentTeam());
+        const r = sendOtherTeamsPiecesToStart(currentTeam());
         if(r.ok){
-          setStatus(`↩️ Alle Figuren von Team ${r.team} müssen zurück aufs Startfeld!`);
+          setStatus(`↩️ Alle anderen Spieler müssen zurück aufs Startfeld! (${r.moved} Figuren)`);
         } else {
           setStatus(`↩️ Zurück-zum-Start konnte nicht ausgeführt werden.`);
         }
@@ -5321,9 +5375,9 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
     } else if(card && card.effect === 'back_to_start'){
       showEventOverlay(card, ()=>{
         relocateEventField(piece.node);
-        const r = sendTeamPiecesToStart(currentTeam());
+        const r = sendOtherTeamsPiecesToStart(currentTeam());
         if(r.ok){
-          setStatus(`↩️ Alle Figuren von Team ${r.team} müssen zurück aufs Startfeld!`);
+          setStatus(`↩️ Alle anderen Spieler müssen zurück aufs Startfeld! (${r.moved} Figuren)`);
         } else {
           setStatus(`↩️ Zurück-zum-Start konnte nicht ausgeführt werden.`);
         }
