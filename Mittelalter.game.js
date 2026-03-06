@@ -429,6 +429,8 @@ const state = {
   // --- Zielpunkte (Sammelziel) ---
   goalScores: {1:0,2:0,3:0,4:0}, // Punkte pro Team
   goalNodeId: null,             // aktuelles Zielpunkt-Feld (nodeId)
+  bonusGoalNodeId: null,        // zusätzliches Einmal-Zielfeld mit doppelten Punkten
+  bonusGoalValue: 2,            // Punktewert des Bonus-Zielfelds
   goalToWin: 10,                // wer zuerst 10 sammelt gewinnt
   gameOver: false,              // Spiel beendet?
 
@@ -479,6 +481,7 @@ function setPlayerCount(n, opts={reset:true}){
     // Zielpunkte zurücksetzen
     state.goalScores = {1:0,2:0,3:0,4:0};
     state.gameOver = false;
+    state.bonusGoalNodeId = null;
     spawnGoalRandom(true);
 
     fitToBoard(60);
@@ -1782,11 +1785,70 @@ function spawnGoalRandom(force=false){
   state.goalNodeId = pick;
 }
 
+
+function isFreeForBonusGoal(id){
+  if(!id) return false;
+  const n = nodesById.get(id);
+  if(!n) return false;
+  if(state.occupied.has(id)) return false;
+  if(n.type === "start" || n.type === "portal" || n.type === "boss") return false;
+  if(state.goalNodeId && id === state.goalNodeId) return false;
+  if(state.bonusGoalNodeId && id === state.bonusGoalNodeId) return false;
+  return true;
+}
+
+function spawnBonusGoalDoubleOneShot(force=false){
+  if(state.gameOver) return { ok:false, reason:"game_over" };
+  if(state.bonusGoalNodeId && !force) return { ok:false, reason:"already_exists", nodeId: state.bonusGoalNodeId };
+
+  const candidates = nodes
+    .filter(n => n && n.id)
+    .filter(n => isFreeForBonusGoal(n.id))
+    .map(n => n.id);
+
+  if(!candidates.length){
+    return { ok:false, reason:"no_free_field" };
+  }
+
+  let pick = candidates[Math.floor(Math.random()*candidates.length)];
+  state.bonusGoalNodeId = pick;
+  draw();
+  console.info("[GOAL] bonus double spawned", { nodeId: pick, value: state.bonusGoalValue || 2 });
+  return { ok:true, nodeId: pick, value: state.bonusGoalValue || 2 };
+}
+
 function maybeCaptureGoal(piece){
   if(state.gameOver) return false;
-  if(!state.goalNodeId) return false;
   if(!piece || !piece.node) return false;
 
+  // Bonus-Zielfeld zuerst prüfen (einmalig, doppelte Punkte, kein Respawn)
+  if(state.bonusGoalNodeId && piece.node === state.bonusGoalNodeId){
+    if(barricades.has(piece.node)) return false;
+
+    if(state.bosses && state.bosses.some(b=>b.alive!==false && b.type==="guardian" && b.node===piece.node)){
+      setStatus("🛡 Der Wächter blockiert den Zielpunkt!");
+      return false;
+    }
+
+    const t = piece.team;
+    const value = Number(state.bonusGoalValue || 2);
+    state.goalScores[t] = (state.goalScores[t]||0) + value;
+    state._goalCapturedThisLanding = t;
+    state.bonusGoalNodeId = null;
+
+    if(state.goalScores[t] >= state.goalToWin){
+      state.gameOver = true;
+      state.phase = "gameOver";
+      setStatus(`🏆 Team ${t} gewinnt! (${state.goalToWin} Zielpunkte erreicht)`);
+      showWinOverlay(t);
+      return true;
+    }
+
+    setStatus(`🌟 Team ${t} sammelt das Doppel-Zielfeld! +${value} Punkte. Stand: ${state.goalScores[t]}/${state.goalToWin}`);
+    return true;
+  }
+
+  if(!state.goalNodeId) return false;
   if(piece.node !== state.goalNodeId) return false;
 
   // Wenn hier eine Barrikade liegt, ist der Zielpunkt "versteckt" und kann nicht eingesammelt werden.
@@ -1814,7 +1876,7 @@ function maybeCaptureGoal(piece){
   // Für Test/Regel: Zielfeld triggert immer auch eine Ereigniskarte (1x pro Landung)
   state._goalCapturedThisLanding = t;
 
-// Neu spawnen
+  // Neu spawnen
   state.goalNodeId = null;
   spawnGoalRandom(true);
   setStatus(`🎯 Team ${t} sammelt einen Zielpunkt! Stand: ${state.goalScores[t]}/${state.goalToWin}`);
@@ -1888,6 +1950,7 @@ function showWinOverlay(team){
       initPieces();
       initEventFieldsFromBoard();
       state.goalNodeId = null;
+      state.bonusGoalNodeId = null;
       spawnGoalRandom(true);
       state.phase = "needRoll";
       state.turn = 0;
@@ -2067,6 +2130,13 @@ const EVENT_DECK = [
     title:"Ereignisfelder neu",
     text:"Alle 6 Ereignisfelder werden nacheinander neu gespawnt.",
     effect:"respawn_all_events"
+  }
+  ,
+  {
+    id:"spawn_double_goal",
+    title:"Doppel-Zielfeld",
+    text:"Ein zusätzliches Zielfeld mit doppelten Punkten erscheint. Es ist einmalig und spawnt nach dem Einsammeln nicht neu.",
+    effect:"spawn_double_goal"
   }
 ];
 
@@ -4080,6 +4150,20 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
       });
+    } else if(card && card.effect === 'spawn_double_goal'){
+      showEventOverlay(card, ()=>{
+        const r = spawnBonusGoalDoubleOneShot(false);
+        if(!r.ok){
+          if(r.reason === "already_exists"){
+            setStatus(`🌟 Das Doppel-Zielfeld ist bereits auf dem Brett.`);
+          } else {
+            setStatus(`🌟 Kein freies Feld für das Doppel-Zielfeld gefunden.`);
+          }
+        } else {
+          setStatus(`🌟 Ein Doppel-Zielfeld erscheint auf ${r.nodeId}!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -4278,6 +4362,21 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           setStatus(`✨ Ereignisfelder neu gespawnt: ${r.moved}/${r.total}.`);
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
+      });
+    } else if(card && card.effect === 'spawn_double_goal'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = spawnBonusGoalDoubleOneShot(false);
+        if(!r.ok){
+          if(r.reason === "already_exists"){
+            setStatus(`🌟 Das Doppel-Zielfeld ist bereits auf dem Brett.`);
+          } else {
+            setStatus(`🌟 Kein freies Feld für das Doppel-Zielfeld gefunden.`);
+          }
+        } else {
+          setStatus(`🌟 Ein Doppel-Zielfeld erscheint auf ${r.nodeId}!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
       showEventOverlay(card, ()=>{
@@ -5170,6 +5269,21 @@ function draw(){
     const gn = nodesById.get(state.goalNodeId);
     if(gn && !barricades.has(state.goalNodeId)){
       drawGoalToken(gn.x, gn.y);
+    }
+  }
+
+  // 🌟 Doppel-Zielfeld (einmalig, +2 Punkte)
+  if(state.bonusGoalNodeId){
+    const bn = nodesById.get(state.bonusGoalNodeId);
+    if(bn && !barricades.has(state.bonusGoalNodeId)){
+      drawGoalToken(bn.x, bn.y);
+      ctx.save();
+      ctx.fillStyle = "rgba(88,38,8,.88)";
+      ctx.font = "bold 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("×2", bn.x, bn.y + 18);
+      ctx.restore();
     }
   }
 
