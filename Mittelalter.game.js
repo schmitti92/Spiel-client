@@ -7136,6 +7136,7 @@ function connectMittelalterServer(){
           return;
         }
         if(msg.type === 'server_action'){
+          console.log('[ONLINE] server_action', msg.action?.kind, msg.actionSeq, msg.action);
           processIncomingServerAction(msg);
           return;
         }
@@ -7164,22 +7165,24 @@ btnRoll?.addEventListener('click', (e)=>{
   }
 }, true);
 
-const __origHandleTapAtWorld = handleTapAtWorld;
+const __origHandleTapAtWorld = (typeof handleTapAtWorld === 'function') ? handleTapAtWorld : null;
 handleTapAtWorld = function(wx, wy){
   if(isOnlineSession() && !onlineExecutingServerAction){
     sendOnlineAction({ kind:'tap_world', wx, wy });
     return;
   }
-  return __origHandleTapAtWorld(wx, wy);
+  if(__origHandleTapAtWorld) return __origHandleTapAtWorld(wx, wy);
+  console.warn('[ONLINE] handleTapAtWorld missing', { wx, wy });
 };
 
-const __origTryUseJoker = tryUseJoker;
+const __origTryUseJoker = (typeof tryUseJoker === 'function') ? tryUseJoker : null;
 tryUseJoker = function(jokerId){
   if(isOnlineSession() && !onlineExecutingServerAction){
     sendOnlineAction({ kind:'use_joker', jokerId });
     return;
   }
-  return __origTryUseJoker(jokerId);
+  if(__origTryUseJoker) return __origTryUseJoker(jokerId);
+  console.warn('[ONLINE] tryUseJoker missing', { jokerId });
 };
 
 const __origDrawOnline = draw;
