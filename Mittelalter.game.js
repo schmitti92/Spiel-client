@@ -419,6 +419,7 @@ const state = {
   eventPendingContinue: null,
   eventMoveBarricadesRemaining: 0,
   initialBarricadeLayout: null,
+  ignoreBarricadesThisTurn: false,
 
   // --- Landing continuation (after placing a picked-up barricade) ---
   resumeLanding: null,
@@ -467,6 +468,7 @@ function setPlayerCount(n, opts={reset:true}){
   state.portalHighlighted.clear();
   state.portalUsedThisTurn = false;
   state.pendingSix = false;
+  state.ignoreBarricadesThisTurn = false;
 
   if(opts.reset){
     initPieces();
@@ -1895,6 +1897,7 @@ function showWinOverlay(team){
       state.portalHighlighted.clear();
       state.portalUsedThisTurn = false;
       state.pendingSix = false;
+      state.ignoreBarricadesThisTurn = false;
 
       dieBox.textContent="–";
       setStatus(`Neustart! Team ${currentTeam()} ist dran: Würfeln.`);
@@ -2019,6 +2022,12 @@ const EVENT_DECK = [
     title:"Barrikaden verfallen",
     text:"Die Hälfte aller Barrikaden verschwindet vom Brett.",
     effect:"barricades_half_remove"
+  },
+  {
+    id:"barricade_jump_reroll",
+    title:"Sturmangriff",
+    text:"Du darfst nochmal würfeln. Für diesen ganzen Zug darfst du Barrikaden auf dem Weg überspringen. Landest du auf einer Barrikade, sammelst du sie ein und darfst sie neu platzieren.",
+    effect:"barricade_jump_reroll"
   }
 ];
 
@@ -2069,6 +2078,26 @@ function spawnExtraBarricades(count=3){
 // - gleiche Anzahl + gleiche Startpositionen wie beim Spielstart
 // - zu viele (zusätzliche) werden entfernt
 // - wenn Startpositionen gerade blockiert sind: Ersatz-Barrikaden werden auf freie Felder gespawnt
+
+
+function activateBarricadeJumpReroll(){
+  state.ignoreBarricadesThisTurn = true;
+  state.roll = null;
+  state.selected = null;
+  state.highlighted.clear();
+  state.placeHighlighted.clear();
+  ensurePortalState();
+  state.portalHighlighted.clear();
+  state.portalUsedThisTurn = false;
+  state.phase = "needRoll";
+  dieBox.textContent = "–";
+  setStatus(`⚔️ Sturmangriff! Team ${currentTeam()} darf sofort nochmal würfeln und ignoriert Barrikaden auf dem Weg bis der Zug endet.`);
+  updateJokerUI();
+  ensureEventSelectUI();
+  draw();
+  console.info("[EVENT] storm attack active for team", currentTeam());
+  return true;
+}
 
 function removeHalfBarricades(){
   const arr = Array.from(barricades || []);
@@ -3349,6 +3378,7 @@ function nextTurn(){
   state.portalUsedThisTurn=false;
   state.phase="needRoll";
   state.pendingSix=false;
+  state.ignoreBarricadesThisTurn = false;
   dieBox.textContent="–";
   setStatus(`Team ${currentTeam()} ist dran: Würfeln.`);
 
@@ -3449,7 +3479,8 @@ function computeMoveTargets(piece,steps){
       if(cur.from && nb === cur.from) continue;
 
       // ✅ Barrikade blockt Zwischen-Schritte (nicht überspringen!)
-      if(barricades.has(nb) && (cur.d+1) < steps) continue;
+      // Ausnahme: Sturmangriff ignoriert Barrikaden auf dem Weg für den ganzen Zug.
+      if(!state.ignoreBarricadesThisTurn && barricades.has(nb) && (cur.d+1) < steps) continue;
 
       // 🛡 Schutzschild blockt Zwischen-Schritte (niemand darf drüber laufen)
       if((cur.d+1) < steps){
@@ -3713,6 +3744,10 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🧱 ${r.removed} Barrikaden verschwinden. Übrig: ${r.left}.`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'barricade_jump_reroll'){
+      showEventOverlay(card, ()=>{
+        activateBarricadeJumpReroll();
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -3843,6 +3878,11 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🧱 ${r.removed} Barrikaden verschwinden. Übrig: ${r.left}.`);
         relocateEventField(piece.node);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'barricade_jump_reroll'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        activateBarricadeJumpReroll();
       });
     } else {
       showEventOverlay(card, ()=>{
