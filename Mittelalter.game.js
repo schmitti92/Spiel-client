@@ -3843,6 +3843,19 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`👹 ${bossName} erscheint auf ${r.node}!`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'spawn_two_bosses'){
+      showEventOverlay(card, ()=>{
+        const res = spawnTwoBossesFromEvent();
+        if(!res.length){
+          setStatus(`👹 Boss-Event: Kein Boss konnte erscheinen.`);
+        } else if(res.length === 1){
+          const bossName = (BOSS_TYPES[res[0].type] && BOSS_TYPES[res[0].type].name) ? BOSS_TYPES[res[0].type].name : res[0].type;
+          setStatus(`👹 ${bossName} erscheint! (1/2 möglich)`);
+        } else {
+          setStatus(`👹 Zwei Bosse erscheinen auf den Bossfeldern!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -3996,6 +4009,20 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         }
         const bossName = (BOSS_TYPES[r.type] && BOSS_TYPES[r.type].name) ? BOSS_TYPES[r.type].name : r.type;
         setStatus(`👹 ${bossName} erscheint auf ${r.node}!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'spawn_two_bosses'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const res = spawnTwoBossesFromEvent();
+        if(!res.length){
+          setStatus(`👹 Boss-Event: Kein Boss konnte erscheinen.`);
+        } else if(res.length === 1){
+          const bossName = (BOSS_TYPES[res[0].type] && BOSS_TYPES[res[0].type].name) ? BOSS_TYPES[res[0].type].name : res[0].type;
+          setStatus(`👹 ${bossName} erscheint! (1/2 möglich)`);
+        } else {
+          setStatus(`👹 Zwei Bosse erscheinen auf den Bossfeldern!`);
+        }
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
