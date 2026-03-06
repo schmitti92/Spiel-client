@@ -6896,3 +6896,38 @@ function stealOnePointSimple(thiefTeam){
   draw();
   setStatus(`🪙 Team ${thiefTeam} klaut 1 Siegpunkt von Team ${victim}`);
 }
+
+
+// ===== Online Multiplayer Hook (Mittelalter Server) =====
+const SERVER_URL = "wss://mittelalter-server.onrender.com";
+let ws=null;
+
+function connectMittelalterServer(){
+  try{
+    ws = new WebSocket(SERVER_URL);
+    ws.onopen = ()=>console.log("Verbunden mit Mittelalter Server");
+    ws.onmessage = (e)=>{
+      try{
+        const msg = JSON.parse(e.data);
+        if(msg.type==="roll_result" && dieBox){
+          dieBox.textContent = msg.value;
+        }
+      }catch(err){}
+    };
+  }catch(err){
+    console.log("Server Verbindung fehlgeschlagen");
+  }
+}
+
+window.addEventListener("load", ()=>{
+  connectMittelalterServer();
+  if(btnRoll){
+    btnRoll.addEventListener("click", ()=>{
+      if(ws && ws.readyState===1){
+        ws.send(JSON.stringify({type:"roll_request"}));
+      }
+    });
+  }
+});
+// ===== Ende Online Hook =====
+
