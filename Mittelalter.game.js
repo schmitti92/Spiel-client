@@ -2181,11 +2181,21 @@ function spawnRandomBossFromEvent(){
 
 
 
-function removeAllJokersFromPlayer(player){
-  if(!player) return;
-  player.jokers = {};
-  console.info("[EVENT] all jokers removed", player.id);
+function removeAllJokersFromTeam(team){
+  ensureJokerState();
+  const inv = state.jokers[team] || {};
+  let removed = 0;
+  for(const j of JOKERS){
+    removed += Number(inv[j.id] || 0);
+    inv[j.id] = 0;
+  }
+  state.jokers[team] = inv;
+  updateJokerUI();
+  ensureEventSelectUI();
+  console.info("[EVENT] all jokers removed", { team, removed });
+  return { team, removed };
 }
+
 function sendAllPlayersToStart(){
   let moved = 0;
   const reset = [];
@@ -3951,36 +3961,14 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       });
     } else if(card && card.effect === 'all_to_start'){
       showEventOverlay(card, ()=>{
-        relocateEventField(piece.node);
         const r = sendAllPlayersToStart();
         setStatus(`🏰 Alle zurück zum Start! ${r.moved} Figuren wurden versetzt.`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else if(card && card.effect === 'lose_all_jokers'){
       showEventOverlay(card, ()=>{
-        relocateEventField(piece.node);
-        const p = state.pieces[state.selected];
-        removeAllJokersFromPlayer(p);
-        setStatus(`💀 Alle deine Joker sind verloren gegangen!`);
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
-      });
-    }
-      showEventOverlay(card, ()=>{
-        const r = sendAllPlayersToStart();
-        setStatus(`🏰 Alle zurück zum Start! ${r.moved} Figuren wurden versetzt.`);
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
-      });
-    } else if(card && card.effect === 'lose_all_jokers'){
-      showEventOverlay(card, ()=>{
-        const p = state.pieces[state.selected];
-        removeAllJokersFromPlayer(p);
-        setStatus(`💀 Alle deine Joker sind verloren gegangen!`);
-        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
-      });
-    }
-      showEventOverlay(card, ()=>{
-        const r = sendAllPlayersToStart();
-        setStatus(`🏰 Alle zurück zum Start! ${r.moved} Figuren wurden versetzt.`);
+        const r = removeAllJokersFromTeam(currentTeam());
+        setStatus(`💀 Team ${r.team} verliert alle Joker! (${r.removed} entfernt)`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
@@ -4164,6 +4152,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         relocateEventField(piece.node);
         const r = sendAllPlayersToStart();
         setStatus(`🏰 Alle zurück zum Start! ${r.moved} Figuren wurden versetzt.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'lose_all_jokers'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = removeAllJokersFromTeam(currentTeam());
+        setStatus(`💀 Team ${r.team} verliert alle Joker! (${r.removed} entfernt)`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
