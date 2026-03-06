@@ -6900,19 +6900,53 @@ function stealOnePointSimple(thiefTeam){
 
 // ===== Online Multiplayer Hook (Mittelalter Server) =====
 const SERVER_URL = "wss://mittelalter-server.onrender.com";
-let ws=null;
+let ws = null;
+let onlinePlayerName = null;
+let onlineRoomCode = null;
+let onlineIsHost = null;
 
 function connectMittelalterServer(){
+  onlinePlayerName = sessionStorage.getItem("playerName") || "Spieler";
+  onlineRoomCode = sessionStorage.getItem("roomCode") || "";
+  onlineIsHost = sessionStorage.getItem("isHost") || "false";
+
   try{
     ws = new WebSocket(SERVER_URL);
-    ws.onopen = ()=>console.log("Verbunden mit Mittelalter Server");
+
+    ws.onopen = ()=>{
+      console.log("Verbunden mit Mittelalter Server");
+
+      if(onlineRoomCode){
+        ws.send(JSON.stringify({
+          type: "join_room",
+          roomCode: onlineRoomCode,
+          name: onlinePlayerName
+        }));
+
+        ws.send(JSON.stringify({ type: "sync_request" }));
+      }
+    };
+
     ws.onmessage = (e)=>{
       try{
         const msg = JSON.parse(e.data);
-        if(msg.type==="roll_result" && dieBox){
+
+        if(msg.type === "roll_result" && dieBox){
           dieBox.textContent = msg.value;
         }
+
+        if(msg.type === "room_state"){
+          console.log("Spieler im Raum:", (msg.room?.players || []).map(p => p.name));
+        }
+
+        if(msg.type === "error_message"){
+          console.log("Serverfehler:", msg.message);
+        }
       }catch(err){}
+    };
+
+    ws.onclose = ()=>{
+      console.log("Server Verbindung geschlossen");
     };
   }catch(err){
     console.log("Server Verbindung fehlgeschlagen");
@@ -6921,10 +6955,12 @@ function connectMittelalterServer(){
 
 window.addEventListener("load", ()=>{
   connectMittelalterServer();
-  if(btnRoll){
+
+  if(btnRoll && !btnRoll.dataset.onlineHooked){
+    btnRoll.dataset.onlineHooked = "1";
     btnRoll.addEventListener("click", ()=>{
       if(ws && ws.readyState===1){
-        ws.send(JSON.stringify({type:"roll_request"}));
+        ws.send(JSON.stringify({ type:"roll_request" }));
       }
     });
   }
