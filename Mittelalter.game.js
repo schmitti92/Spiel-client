@@ -1663,6 +1663,24 @@ function clearJokerMode(msg){
   ensureEventSelectUI();
 }
 
+
+function beginSprintEventMove(steps){
+  steps = Math.max(1, Number(steps) || 1);
+  state.roll = steps;
+  state.selected = null;
+  state.highlighted.clear();
+  state.placeHighlighted.clear();
+  ensurePortalState();
+  state.portalHighlighted.clear();
+  state.portalUsedThisTurn = false;
+  state.phase = "choosePiece";
+  dieBox.textContent = String(steps);
+  setStatus(`🏃 Team ${currentTeam()}: Wähle 1 eigene Figur und laufe ${steps} Felder.`);
+  updateJokerUI();
+  ensureEventSelectUI();
+  draw();
+}
+
 function beginChoosePieceAfterRoll(){
   // Nach (Neu-)Wurf: Figur wählen (oder wechseln)
   state.selected = null;
@@ -2193,6 +2211,20 @@ const EVENT_DECK = [
     title:"Klaue 1 Siegpunkt",
     text:"Du klaust 1 Siegpunkt von einem zufälligen Mitspieler.",
     effect:"steal_one_point"
+  }
+  ,
+  {
+    id:"sprint_5",
+    title:"Laufe 5 Felder",
+    text:"Du darfst sofort 1 eigene Figur um 5 Felder bewegen.",
+    effect:"sprint_5"
+  }
+  ,
+  {
+    id:"sprint_10",
+    title:"Laufe 10 Felder",
+    text:"Du darfst sofort 1 eigene Figur um 10 Felder bewegen.",
+    effect:"sprint_10"
   }
 ];
 
@@ -5141,6 +5173,14 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         }
         resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'sprint_5'){
+      showEventOverlay(card, ()=>{
+        beginSprintEventMove(5);
+      });
+    } else if(card && card.effect === 'sprint_10'){
+      showEventOverlay(card, ()=>{
+        beginSprintEventMove(10);
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -5411,6 +5451,16 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           setStatus(`↩️ Zurück-zum-Start konnte nicht ausgeführt werden.`);
         }
         resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'sprint_5'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        beginSprintEventMove(5);
+      });
+    } else if(card && card.effect === 'sprint_10'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        beginSprintEventMove(10);
       });
     } else {
       showEventOverlay(card, ()=>{
