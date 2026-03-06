@@ -6907,7 +6907,7 @@ let onlineIsHost = null;
 
 function connectMittelalterServer(){
   onlinePlayerName = sessionStorage.getItem("playerName") || "Spieler";
-  onlineRoomCode = sessionStorage.getItem("roomCode") || "";
+  onlineRoomCode = (sessionStorage.getItem("roomCode") || "").trim().toUpperCase();
   onlineIsHost = sessionStorage.getItem("isHost") || "false";
 
   try{
@@ -6918,12 +6918,11 @@ function connectMittelalterServer(){
 
       if(onlineRoomCode){
         ws.send(JSON.stringify({
-          type: "join_room",
+          type: "sync_request",
           roomCode: onlineRoomCode,
-          name: onlinePlayerName
+          name: onlinePlayerName,
+          isHost: onlineIsHost === "true"
         }));
-
-        ws.send(JSON.stringify({ type: "sync_request" }));
       }
     };
 
