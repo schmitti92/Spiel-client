@@ -2145,6 +2145,13 @@ const EVENT_DECK = [
     text:"Alle würfeln automatisch. Der niedrigste Wurf gibt dem höchsten Wurf 1 zufälligen Joker. Bei Gleichstand wird erneut gewürfelt. Hat der Verlierer keinen Joker, geht der Gewinner leer aus.",
     effect:"dice_duel"
   }
+  ,
+  {
+    id:"lose_one_point",
+    title:"Du verlierst 1 Siegpunkt",
+    text:"Dein Team verliert 1 Siegpunkt. Minimum ist 0.",
+    effect:"lose_one_point"
+  }
 ];
 
 // ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
@@ -3116,6 +3123,16 @@ function showJokerPick6Overlay(team, onClose){
 }
 
 
+
+
+function loseOneGoalPointFromTeam(team){
+  const before = Number((state.goalScores && state.goalScores[team]) || 0);
+  const after = Math.max(0, before - 1);
+  state.goalScores[team] = after;
+  draw();
+  console.info("[EVENT] lose_one_point", { team, before, after, lost: before - after });
+  return { team, before, after, lost: before - after };
+}
 
 function transferRandomJokerBetweenTeams(fromTeam, toTeam){
   ensureJokerState();
@@ -4497,6 +4514,16 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
       });
+    } else if(card && card.effect === 'lose_one_point'){
+      showEventOverlay(card, ()=>{
+        const r = loseOneGoalPointFromTeam(currentTeam());
+        if(r.lost > 0){
+          setStatus(`💀 Team ${r.team} verliert 1 Siegpunkt! Stand: ${r.after}/${state.goalToWin}`);
+        } else {
+          setStatus(`💀 Team ${r.team} hatte keinen Siegpunkt zu verlieren.`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -4717,6 +4744,17 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         showDiceDuelOverlay(()=>{
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
+      });
+    } else if(card && card.effect === 'lose_one_point'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = loseOneGoalPointFromTeam(currentTeam());
+        if(r.lost > 0){
+          setStatus(`💀 Team ${r.team} verliert 1 Siegpunkt! Stand: ${r.after}/${state.goalToWin}`);
+        } else {
+          setStatus(`💀 Team ${r.team} hatte keinen Siegpunkt zu verlieren.`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
       showEventOverlay(card, ()=>{
