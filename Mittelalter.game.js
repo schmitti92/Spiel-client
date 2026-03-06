@@ -1159,7 +1159,14 @@ if(!goalIds.length) return;
       if(newId){
         barricades.add(newId);
         if(state.bossDebug) console.info("[BOSS] reaper moved barricade", step, "->", newId, "boss", boss.id);
-      } else {
+      
+    } else if(card && card.effect === 'extra_roll_event'){
+      showEventOverlay(card, ()=>{
+        grantExtraRollFromEvent();
+        setStatus(`🎲 Du darfst sofort nochmal würfeln!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+} else {
         if(state.bossDebug) console.warn("[BOSS] reaper removed barricade but found no free place", step, "boss", boss.id);
       }
     }
@@ -2040,9 +2047,22 @@ const EVENT_DECK = [
     title:"Zwei Bosse erscheinen",
     text:"Bis zu zwei zufällige Bosse erscheinen auf freien Bossfeldern. Maximal 2 Bosse insgesamt.",
     effect:"spawn_two_bosses"
+  },
+  {
+    id:"extra_roll_event",
+    title:"Du darfst nochmal würfeln",
+    text:"Du darfst sofort noch einmal würfeln.",
+    effect:"extra_roll_event"
   }
 ];
 
+
+
+// ---- Event Effect: Extra Würfelwurf ----
+function grantExtraRollFromEvent(){
+  state.extraRoll = true;
+  console.info("[EVENT] extra roll granted");
+}
 // ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
 // Darf auf Ereignisfeldern & Siegpunktfeld spawnen.
 // NICHT auf Start, Portal, Boss, belegt (Figur), oder vorhandene Barrikade.
