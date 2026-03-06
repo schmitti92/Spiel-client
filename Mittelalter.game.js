@@ -431,6 +431,7 @@ const state = {
   goalNodeId: null,             // aktuelles Zielpunkt-Feld (nodeId)
   bonusGoalNodeId: null,        // zusätzliches Einmal-Zielfeld mit doppelten Punkten
   bonusGoalValue: 2,            // Punktewert des Bonus-Zielfelds
+  bonusLightNodeId: null,       // zusätzliches Einmal-Lichtfeld (+1 Punkt, verschwindet nach Einsammeln)
   goalToWin: 10,                // wer zuerst 10 sammelt gewinnt
   gameOver: false,              // Spiel beendet?
 
@@ -482,6 +483,7 @@ function setPlayerCount(n, opts={reset:true}){
     state.goalScores = {1:0,2:0,3:0,4:0};
     state.gameOver = false;
     state.bonusGoalNodeId = null;
+    state.bonusLightNodeId = null;
     spawnGoalRandom(true);
 
     fitToBoard(60);
@@ -1804,6 +1806,39 @@ function spawnGoalRandom(force=false){
 }
 
 
+
+function isFreeForBonusLight(id){
+  if(!id) return false;
+  const n = nodesById.get(id);
+  if(!n) return false;
+  if(state.occupied.has(id)) return false;
+  if(n.type === "start" || n.type === "portal" || n.type === "boss") return false;
+  if(state.goalNodeId && id === state.goalNodeId) return false;
+  if(state.bonusGoalNodeId && id === state.bonusGoalNodeId) return false;
+  if(state.bonusLightNodeId && id === state.bonusLightNodeId) return false;
+  return true;
+}
+
+function spawnBonusLightOneShot(force=false){
+  if(state.gameOver) return { ok:false, reason:"game_over" };
+  if(state.bonusLightNodeId && !force) return { ok:false, reason:"already_exists", nodeId: state.bonusLightNodeId };
+
+  const candidates = nodes
+    .filter(n => n && n.id)
+    .filter(n => isFreeForBonusLight(n.id))
+    .map(n => n.id);
+
+  if(!candidates.length){
+    return { ok:false, reason:"no_free_field" };
+  }
+
+  const pick = candidates[Math.floor(Math.random()*candidates.length)];
+  state.bonusLightNodeId = pick;
+  draw();
+  console.info("[LIGHT] bonus light spawned", { nodeId: pick });
+  return { ok:true, nodeId: pick };
+}
+
 function isFreeForBonusGoal(id){
   if(!id) return false;
   const n = nodesById.get(id);
@@ -1838,6 +1873,32 @@ function spawnBonusGoalDoubleOneShot(force=false){
 function maybeCaptureGoal(piece){
   if(state.gameOver) return false;
   if(!piece || !piece.node) return false;
+
+  // Einmal-Lichtfeld zuerst prüfen (+1 Punkt, verschwindet danach)
+  if(state.bonusLightNodeId && piece.node === state.bonusLightNodeId){
+    if(barricades.has(piece.node)) return false;
+
+    if(state.bosses && state.bosses.some(b=>b.alive!==false && b.type==="guardian" && b.node===piece.node)){
+      setStatus("🛡 Der Wächter blockiert den Zielpunkt!");
+      return false;
+    }
+
+    const t = piece.team;
+    state.goalScores[t] = (state.goalScores[t]||0) + 1;
+    state._goalCapturedThisLanding = t;
+    state.bonusLightNodeId = null;
+
+    if(state.goalScores[t] >= state.goalToWin){
+      state.gameOver = true;
+      state.phase = "gameOver";
+      setStatus(`🏆 Team ${t} gewinnt! (${state.goalToWin} Zielpunkte erreicht)`);
+      showWinOverlay(t);
+      return true;
+    }
+
+    setStatus(`✨ Team ${t} sammelt das Lichtfeld! +1 Punkt. Stand: ${state.goalScores[t]}/${state.goalToWin}`);
+    return true;
+  }
 
   // Bonus-Zielfeld zuerst prüfen (einmalig, doppelte Punkte, kein Respawn)
   if(state.bonusGoalNodeId && piece.node === state.bonusGoalNodeId){
@@ -1969,6 +2030,7 @@ function showWinOverlay(team){
       initEventFieldsFromBoard();
       state.goalNodeId = null;
       state.bonusGoalNodeId = null;
+      state.bonusLightNodeId = null;
       spawnGoalRandom(true);
       state.phase = "needRoll";
       state.turn = 0;
@@ -2225,6 +2287,13 @@ const EVENT_DECK = [
     title:"Laufe 10 Felder",
     text:"Du darfst sofort 1 eigene Figur um 10 Felder bewegen.",
     effect:"sprint_10"
+  }
+  ,
+  {
+    id:"spawn_bonus_light",
+    title:"Zusätzliches Lichtfeld",
+    text:"Ein zusätzliches Lichtfeld erscheint auf dem Brett. Nach dem Einsammeln verschwindet es wieder.",
+    effect:"spawn_bonus_light"
   }
 ];
 
@@ -5181,6 +5250,20 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       showEventOverlay(card, ()=>{
         beginSprintEventMove(10);
       });
+    } else if(card && card.effect === 'spawn_bonus_light'){
+      showEventOverlay(card, ()=>{
+        const r = spawnBonusLightOneShot(false);
+        if(!r.ok){
+          if(r.reason === "already_exists"){
+            setStatus(`✨ Das zusätzliche Lichtfeld ist bereits auf dem Brett.`);
+          } else {
+            setStatus(`✨ Kein freies Feld für das zusätzliche Lichtfeld gefunden.`);
+          }
+        } else {
+          setStatus(`✨ Ein zusätzliches Lichtfeld erscheint auf ${r.nodeId}!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -5461,6 +5544,21 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       showEventOverlay(card, ()=>{
         relocateEventField(piece.node);
         beginSprintEventMove(10);
+      });
+    } else if(card && card.effect === 'spawn_bonus_light'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = spawnBonusLightOneShot(false);
+        if(!r.ok){
+          if(r.reason === "already_exists"){
+            setStatus(`✨ Das zusätzliche Lichtfeld ist bereits auf dem Brett.`);
+          } else {
+            setStatus(`✨ Kein freies Feld für das zusätzliche Lichtfeld gefunden.`);
+          }
+        } else {
+          setStatus(`✨ Ein zusätzliches Lichtfeld erscheint auf ${r.nodeId}!`);
+        }
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
       showEventOverlay(card, ()=>{
