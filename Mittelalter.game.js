@@ -2049,6 +2049,12 @@ const EVENT_DECK = [
     title:"Du darfst nochmal würfeln",
     text:"Du darfst sofort noch einmal würfeln.",
     effect:"extra_roll_event"
+  },
+  {
+    id:"all_to_start",
+    title:"Alle zurück zum Start",
+    text:"Alle Spieler müssen zurück auf ihre Startfelder.",
+    effect:"all_to_start"
   }
 ];
 
@@ -2166,6 +2172,58 @@ function spawnRandomBossFromEvent(){
   return { ok:true, type: boss.type, id: boss.id, node: boss.node, active: (state.bosses || []).filter(b => b && b.alive !== false).length };
 }
 
+
+
+function sendAllPlayersToStart(){
+  let moved = 0;
+  const reset = [];
+
+  // belegung neu aufbauen
+  state.occupied.clear();
+
+  const startsByTeam = new Map();
+  for(const n of nodes){
+    if(n.type === "start"){
+      const t = Number(n.props?.startTeam || 0);
+      if(!startsByTeam.has(t)) startsByTeam.set(t, []);
+      startsByTeam.get(t).push(n.id);
+    }
+  }
+
+  for(const p of state.pieces){
+    if(!p) continue;
+    const teamStarts = startsByTeam.get(p.team) || [];
+    let placed = false;
+
+    for(const sid of teamStarts){
+      if(!state.occupied.has(sid)){
+        if(p.node !== sid) moved++;
+        p.prev = p.node || null;
+        p.node = sid;
+        p.shielded = false;
+        state.occupied.set(sid, p.id);
+        placed = true;
+        reset.push(p.id);
+        break;
+      }
+    }
+
+    if(!placed){
+      p.prev = p.node || null;
+      p.node = null;
+      p.shielded = false;
+    }
+  }
+
+  state.selected = null;
+  state.highlighted.clear();
+  state.placeHighlighted.clear();
+  state.jokerHighlighted.clear();
+
+  draw();
+  console.info("[EVENT] all_to_start", { moved, reset });
+  return { moved, total: state.pieces.length };
+}
 
 function grantExtraRollFromEvent(){
   state.extraRoll = true;
@@ -3879,6 +3937,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🎲 Du darfst sofort nochmal würfeln!`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'all_to_start'){
+      showEventOverlay(card, ()=>{
+        const r = sendAllPlayersToStart();
+        setStatus(`🏰 Alle zurück zum Start! ${r.moved} Figuren wurden versetzt.`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -4053,6 +4117,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         relocateEventField(piece.node);
         grantExtraRollFromEvent();
         setStatus(`🎲 Du darfst sofort nochmal würfeln!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'all_to_start'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = sendAllPlayersToStart();
+        setStatus(`🏰 Alle zurück zum Start! ${r.moved} Figuren wurden versetzt.`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
