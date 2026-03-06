@@ -2138,6 +2138,13 @@ const EVENT_DECK = [
     text:"Ein zusätzliches Zielfeld mit doppelten Punkten erscheint. Es ist einmalig und spawnt nach dem Einsammeln nicht neu.",
     effect:"spawn_double_goal"
   }
+  ,
+  {
+    id:"dice_duel",
+    title:"Würfel-Duell",
+    text:"Alle würfeln automatisch. Der niedrigste Wurf gibt dem höchsten Wurf 1 zufälligen Joker. Bei Gleichstand wird erneut gewürfelt. Hat der Verlierer keinen Joker, geht der Gewinner leer aus.",
+    effect:"dice_duel"
+  }
 ];
 
 // ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
@@ -3108,6 +3115,326 @@ function showJokerPick6Overlay(team, onClose){
   ov.style.display="flex";
 }
 
+
+
+function transferRandomJokerBetweenTeams(fromTeam, toTeam){
+  ensureJokerState();
+  const pool = [];
+  for(const j of JOKERS){
+    const c = jokerCount(fromTeam, j.id);
+    if(c > 0) pool.push(j.id);
+  }
+  if(!pool.length){
+    updateJokerUI();
+    ensureEventSelectUI();
+    return { ok:false, reason:"no_joker" };
+  }
+  const id = pool[Math.floor(Math.random()*pool.length)];
+  state.jokers[fromTeam][id] = Math.max(0, jokerCount(fromTeam, id) - 1);
+  addJoker(toTeam, id, 1);
+  updateJokerUI();
+  ensureEventSelectUI();
+  return { ok:true, jokerId:id, jokerName:(JOKERS.find(j=>j.id===id)?.name || id) };
+}
+
+function showDiceDuelOverlay(onClose){
+  ensureJokerState();
+
+  let ov = document.getElementById("diceDuelOverlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "diceDuelOverlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.58)"
+    ].join(";");
+
+    ov.innerHTML = `
+      <div style="
+        width:min(860px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:16px;
+        background:
+          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.25);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
+        overflow:hidden;
+      ">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <div style="
+            width:44px; height:44px; border-radius:16px;
+            display:flex; align-items:center; justify-content:center;
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.14)),
+              radial-gradient(circle at 35% 35%, rgba(200,55,65,.98), rgba(90,14,18,.96));
+            border:1px solid rgba(0,0,0,.28);
+            box-shadow: inset 0 0 0 2px rgba(255,240,232,.12);
+            color:rgba(255,245,235,.92);
+            font-weight:900;
+          ">🎲</div>
+          <div style="flex:1;">
+            <div style="font-weight:900; font-size:20px; letter-spacing:.2px; line-height:1.15;">Würfel-Duell</div>
+            <div id="ddSub" style="opacity:.75; font-size:12px; margin-top:2px;">Alle würfeln automatisch…</div>
+          </div>
+          <button id="ddCloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
+        </div>
+
+        <div id="ddRow" style="
+          display:grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap:10px;
+          margin:12px 0 14px;
+        "></div>
+
+        <div id="ddResult" style="
+          min-height:60px;
+          padding:12px;
+          border-radius:14px;
+          background:rgba(255,255,255,.30);
+          border:1px dashed rgba(0,0,0,.18);
+          font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+          font-weight:800;
+          line-height:1.4;
+          white-space:pre-wrap;
+        "></div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:12px;">
+          <button id="ddOk" disabled style="
+            cursor:not-allowed;
+            padding:11px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.25);
+            background:rgba(255,255,255,.45);
+            color:rgba(38,26,18,.55);
+            font-weight:900;
+            opacity:.65;
+            min-width:160px;
+          ">Schließen</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(ov);
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov){ if(!overlayClickAllowed(ov)) return; ov._doClose && ov._doClose(); }
+    });
+  }
+
+  const row = ov.querySelector("#ddRow");
+  const result = ov.querySelector("#ddResult");
+  const sub = ov.querySelector("#ddSub");
+  const okBtn = ov.querySelector("#ddOk");
+  const closeX = ov.querySelector("#ddCloseX");
+
+  const teams = state.players.slice();
+  row.innerHTML = "";
+  result.textContent = "Die Würfel rollen…";
+  sub.textContent = "Alle würfeln automatisch…";
+
+  const cardRefs = new Map();
+  for(const team of teams){
+    const wrap = document.createElement("div");
+    wrap.style.cssText = [
+      "border-radius:16px",
+      "padding:12px",
+      "background:rgba(255,255,255,.30)",
+      "border:1px solid rgba(0,0,0,.14)",
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "gap:10px",
+      "min-height:146px"
+    ].join(";");
+
+    const title = document.createElement("div");
+    title.textContent = `Team ${team}`;
+    title.style.cssText = "font:900 16px system-ui, -apple-system, Segoe UI, Roboto, Arial; color:rgba(38,26,18,.92);";
+
+    const colorDot = document.createElement("div");
+    colorDot.style.cssText = `width:18px;height:18px;border-radius:999px;background:${TEAM_COLORS[team]||"#999"}; border:1px solid rgba(0,0,0,.2);`;
+
+    const die = document.createElement("div");
+    die.style.cssText = [
+      "width:64px","height:64px","border-radius:16px",
+      "display:flex","align-items:center","justify-content:center",
+      "font:900 28px system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "background:rgba(255,255,255,.88)",
+      "color:rgba(30,20,14,.92)",
+      "border:3px solid rgba(0,0,0,.15)",
+      "box-shadow:0 12px 24px rgba(0,0,0,.18)"
+    ].join(";");
+    die.textContent = "🎲";
+
+    const line = document.createElement("div");
+    line.style.cssText = "font:800 13px system-ui, -apple-system, Segoe UI, Roboto, Arial; opacity:.82;";
+    line.textContent = "wartet…";
+
+    wrap.appendChild(title);
+    wrap.appendChild(colorDot);
+    wrap.appendChild(die);
+    wrap.appendChild(line);
+    row.appendChild(wrap);
+    cardRefs.set(team, { wrap, die, line });
+  }
+
+  okBtn.disabled = true;
+  okBtn.style.cursor = "not-allowed";
+  okBtn.style.opacity = ".65";
+  closeX.disabled = true;
+  closeX.style.opacity = ".5";
+  let finished = false;
+
+  function enableClose(){
+    finished = true;
+    okBtn.disabled = false;
+    okBtn.style.cursor = "pointer";
+    okBtn.style.opacity = "1";
+    okBtn.style.color = "rgba(38,26,18,.88)";
+    okBtn.style.background = "rgba(255,255,255,.70)";
+    closeX.disabled = false;
+    closeX.style.opacity = "1";
+  }
+
+  function doClose(){
+    if(!finished) return;
+    ov.style.display = "none";
+    if(typeof onClose === "function") onClose();
+  }
+  ov._doClose = doClose;
+  okBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+  closeX.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+
+  function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+  async function animateTeamRoll(team){
+    const ref = cardRefs.get(team);
+    if(!ref) return 1;
+    ref.line.textContent = "würfelt…";
+    const faces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+    for(let i=0;i<8;i++){
+      ref.die.textContent = faces[Math.floor(Math.random()*6)];
+      ref.die.style.transform = `rotate(${(-12 + Math.random()*24).toFixed(1)}deg) scale(${(0.95 + Math.random()*0.12).toFixed(2)})`;
+      await sleep(80);
+    }
+    const val = Math.floor(Math.random()*6) + 1;
+    ref.die.textContent = String(val);
+    ref.die.style.transform = "rotate(0deg) scale(1)";
+    ref.line.textContent = `Wurf: ${val}`;
+    return val;
+  }
+
+  async function run(){
+    const rolls = {};
+    let highestTeams = [];
+    let lowestTeams = [];
+
+    while(true){
+      sub.textContent = "Alle würfeln automatisch…";
+      for(const team of teams){
+        const ref = cardRefs.get(team);
+        ref.wrap.style.boxShadow = "none";
+        ref.wrap.style.borderColor = "rgba(0,0,0,.14)";
+      }
+
+      for(const team of teams){
+        rolls[team] = await animateTeamRoll(team);
+        await sleep(220);
+      }
+
+      let maxVal = Math.max(...teams.map(t=>rolls[t]));
+      let minVal = Math.min(...teams.map(t=>rolls[t]));
+      highestTeams = teams.filter(t=>rolls[t]===maxVal);
+      lowestTeams  = teams.filter(t=>rolls[t]===minVal);
+
+      if(highestTeams.length===1 && lowestTeams.length===1 && highestTeams[0] !== lowestTeams[0]){
+        break;
+      }
+
+      const parts = [];
+      if(highestTeams.length>1) parts.push(`Höchster Gleichstand: Team ${highestTeams.join(", Team ")}`);
+      if(lowestTeams.length>1 || highestTeams[0]===lowestTeams[0]) parts.push(`Niedrigster Gleichstand: Team ${lowestTeams.join(", Team ")}`);
+      result.textContent = parts.join("\n") + "\n\nGleichstand – diese Teams würfeln nochmal.";
+      sub.textContent = "Gleichstand – nochmal würfeln…";
+
+      const rerollTeams = Array.from(new Set([...highestTeams, ...lowestTeams]));
+      await sleep(900);
+
+      for(const team of rerollTeams){
+        const ref = cardRefs.get(team);
+        ref.wrap.style.borderColor = "rgba(200,55,65,.65)";
+        ref.wrap.style.boxShadow = "0 0 0 3px rgba(200,55,65,.18) inset";
+        ref.line.textContent = "Nochmal!";
+      }
+
+      for(const team of rerollTeams){
+        rolls[team] = await animateTeamRoll(team);
+        await sleep(220);
+      }
+
+      maxVal = Math.max(...teams.map(t=>rolls[t]));
+      minVal = Math.min(...teams.map(t=>rolls[t]));
+      highestTeams = teams.filter(t=>rolls[t]===maxVal);
+      lowestTeams  = teams.filter(t=>rolls[t]===minVal);
+
+      if(highestTeams.length===1 && lowestTeams.length===1 && highestTeams[0] !== lowestTeams[0]){
+        break;
+      }
+      // while repeats until unique
+    }
+
+    const winner = highestTeams[0];
+    const loser = lowestTeams[0];
+
+    const winRef = cardRefs.get(winner);
+    const loseRef = cardRefs.get(loser);
+    if(winRef){
+      winRef.wrap.style.borderColor = "rgba(40,140,70,.65)";
+      winRef.wrap.style.boxShadow = "0 0 0 3px rgba(40,140,70,.18) inset";
+    }
+    if(loseRef){
+      loseRef.wrap.style.borderColor = "rgba(200,55,65,.65)";
+      loseRef.wrap.style.boxShadow = "0 0 0 3px rgba(200,55,65,.18) inset";
+    }
+
+    const r = transferRandomJokerBetweenTeams(loser, winner);
+    if(!r.ok){
+      result.textContent =
+        `🏆 Höchster Wurf: Team ${winner} (${rolls[winner]})\n`+
+        `💀 Niedrigster Wurf: Team ${loser} (${rolls[loser]})\n\n`+
+        `Team ${loser} hat keinen Joker. Team ${winner} geht leer aus.`;
+      setStatus(`🎲 Würfel-Duell: Team ${winner} gewinnt, aber Team ${loser} hat keinen Joker.`);
+    }else{
+      result.textContent =
+        `🏆 Höchster Wurf: Team ${winner} (${rolls[winner]})\n`+
+        `💀 Niedrigster Wurf: Team ${loser} (${rolls[loser]})\n\n`+
+        `Team ${loser} gibt Team ${winner} den Joker: ${r.jokerName}`;
+      setStatus(`🎲 Würfel-Duell: Team ${loser} gibt Team ${winner} den Joker ${r.jokerName}.`);
+    }
+
+    sub.textContent = "Duell beendet!";
+    enableClose();
+  }
+
+  markOverlayOpened(ov);
+  ov.style.display = "flex";
+  run();
+}
 
 function showJokerWheelOverlay(team, onClose){
   ensureJokerState();
@@ -4164,6 +4491,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         }
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'dice_duel'){
+      showEventOverlay(card, ()=>{
+        showDiceDuelOverlay(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -4377,6 +4710,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           setStatus(`🌟 Ein Doppel-Zielfeld erscheint auf ${r.nodeId}!`);
         }
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'dice_duel'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        showDiceDuelOverlay(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
       });
     } else {
       showEventOverlay(card, ()=>{
