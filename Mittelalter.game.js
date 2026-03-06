@@ -2166,6 +2166,13 @@ const EVENT_DECK = [
     text:"Dein Team erhält 2 Siegpunkte.",
     effect:"gain_two_points"
   }
+  ,
+  {
+    id:"point_transfer_most_to_least",
+    title:"Punktetausch",
+    text:"Das Team mit den meisten Siegpunkten gibt dem Team mit den wenigsten 1 Siegpunkt. Bei Gleichstand entscheidet ein Glücksrad.",
+    effect:"point_transfer_most_to_least"
+  }
 ];
 
 // ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
@@ -3167,6 +3174,425 @@ function loseOneGoalPointFromTeam(team){
   console.info("[EVENT] lose_one_point", { team, before, after, lost: before - after });
   return { team, before, after, lost: before - after };
 }
+
+
+function resolveMostToLeastPointTransfer(){
+  const teams = (state.players || []).slice();
+  const scores = {};
+  for(const t of teams){
+    scores[t] = Number((state.goalScores && state.goalScores[t]) || 0);
+  }
+
+  let maxScore = -Infinity;
+  let minScore = Infinity;
+  for(const t of teams){
+    if(scores[t] > maxScore) maxScore = scores[t];
+    if(scores[t] < minScore) minScore = scores[t];
+  }
+
+  let donorCandidates = teams.filter(t => scores[t] === maxScore);
+  let receiverCandidates = teams.filter(t => scores[t] === minScore);
+
+  return {
+    teams,
+    scores,
+    maxScore,
+    minScore,
+    donorCandidates,
+    receiverCandidates
+  };
+}
+
+function applyMostToLeastPointTransfer(donor, receiver){
+  const beforeDonor = Number((state.goalScores && state.goalScores[donor]) || 0);
+  const beforeReceiver = Number((state.goalScores && state.goalScores[receiver]) || 0);
+
+  if(donor === receiver){
+    draw();
+    return {
+      ok:false,
+      reason:"same_team",
+      donor, receiver,
+      donorBefore: beforeDonor,
+      receiverBefore: beforeReceiver
+    };
+  }
+
+  if(beforeDonor <= 0){
+    draw();
+    return {
+      ok:false,
+      reason:"donor_has_zero",
+      donor, receiver,
+      donorBefore: beforeDonor,
+      receiverBefore: beforeReceiver
+    };
+  }
+
+  state.goalScores[donor] = beforeDonor - 1;
+  state.goalScores[receiver] = beforeReceiver + 1;
+  draw();
+
+  console.info("[EVENT] point_transfer_most_to_least", {
+    donor, receiver,
+    donorBefore: beforeDonor,
+    donorAfter: state.goalScores[donor],
+    receiverBefore: beforeReceiver,
+    receiverAfter: state.goalScores[receiver]
+  });
+
+  return {
+    ok:true,
+    donor, receiver,
+    donorBefore: beforeDonor,
+    donorAfter: state.goalScores[donor],
+    receiverBefore: beforeReceiver,
+    receiverAfter: state.goalScores[receiver]
+  };
+}
+
+function showPointTransferWheelOverlay(onClose){
+  let ov = document.getElementById("pointTransferOverlay");
+  if(!ov){
+    ov = document.createElement("div");
+    ov.id = "pointTransferOverlay";
+    ov.style.cssText = [
+      "position:fixed","inset:0","display:none",
+      "align-items:center","justify-content:center",
+      "z-index:99998",
+      "background:rgba(0,0,0,.58)"
+    ].join(";");
+
+    ov.innerHTML = `
+      <div style="
+        width:min(900px, calc(100vw - 28px));
+        border-radius:18px;
+        padding:16px;
+        background:
+          radial-gradient(900px 420px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 65%),
+          repeating-linear-gradient(90deg, rgba(70,55,38,.05), rgba(70,55,38,.05) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 26px),
+          repeating-linear-gradient(0deg, rgba(70,55,38,.03), rgba(70,55,38,.03) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 34px),
+          linear-gradient(180deg, #f3e7c9 0%, #ead8ab 60%, #ddc58f 100%);
+        border:1px solid rgba(0,0,0,.25);
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        color:rgba(38,26,18,.92);
+        font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+        position:relative;
+        overflow:hidden;
+      ">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <div style="
+            width:44px; height:44px; border-radius:16px;
+            display:flex; align-items:center; justify-content:center;
+            background:
+              linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.14)),
+              radial-gradient(circle at 35% 35%, rgba(200,55,65,.98), rgba(90,14,18,.96));
+            border:1px solid rgba(0,0,0,.28);
+            box-shadow: inset 0 0 0 2px rgba(255,240,232,.12);
+            color:rgba(255,245,235,.92);
+            font-weight:900;
+          ">⚖️</div>
+          <div style="flex:1;">
+            <div style="font-weight:900; font-size:20px; letter-spacing:.2px; line-height:1.15;">Punktetausch</div>
+            <div id="ptSub" style="opacity:.75; font-size:12px; margin-top:2px;">Das Glücksrad entscheidet…</div>
+          </div>
+          <button id="ptCloseX" title="Schließen" style="
+            border:1px solid rgba(0,0,0,.22);
+            background:rgba(255,255,255,.55);
+            color:rgba(38,26,18,.85);
+            border-radius:12px;
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px;
+            cursor:pointer;
+          ">✕</button>
+        </div>
+
+        <div id="ptScoreboard" style="
+          display:grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap:10px;
+          margin:12px 0 14px;
+        "></div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div style="padding:12px; border-radius:14px; background:rgba(255,255,255,.30); border:1px solid rgba(0,0,0,.14);">
+            <div style="font:900 15px system-ui, -apple-system, Segoe UI, Roboto, Arial; margin-bottom:8px;">👑 Gibt 1 Punkt ab</div>
+            <div id="ptDonorRow" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+          </div>
+          <div style="padding:12px; border-radius:14px; background:rgba(255,255,255,.30); border:1px solid rgba(0,0,0,.14);">
+            <div style="font:900 15px system-ui, -apple-system, Segoe UI, Roboto, Arial; margin-bottom:8px;">🪙 Bekommt 1 Punkt</div>
+            <div id="ptReceiverRow" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+          </div>
+        </div>
+
+        <div id="ptResult" style="
+          min-height:74px;
+          padding:12px;
+          border-radius:14px;
+          background:rgba(255,255,255,.30);
+          border:1px dashed rgba(0,0,0,.18);
+          font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+          font-weight:800;
+          line-height:1.4;
+          white-space:pre-wrap;
+        "></div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:12px;">
+          <button id="ptOk" disabled style="
+            cursor:not-allowed;
+            padding:11px 14px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.25);
+            background:rgba(255,255,255,.45);
+            color:rgba(38,26,18,.55);
+            font-weight:900;
+            opacity:.65;
+            min-width:160px;
+          ">Schließen</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(ov);
+    ov.addEventListener("click",(e)=>{
+      if(e.target===ov){ if(!overlayClickAllowed(ov)) return; ov._doClose && ov._doClose(); }
+    });
+  }
+
+  const scoreboard = ov.querySelector("#ptScoreboard");
+  const donorRow = ov.querySelector("#ptDonorRow");
+  const receiverRow = ov.querySelector("#ptReceiverRow");
+  const result = ov.querySelector("#ptResult");
+  const sub = ov.querySelector("#ptSub");
+  const okBtn = ov.querySelector("#ptOk");
+  const closeX = ov.querySelector("#ptCloseX");
+
+  const info = resolveMostToLeastPointTransfer();
+  scoreboard.innerHTML = "";
+  donorRow.innerHTML = "";
+  receiverRow.innerHTML = "";
+  result.textContent = "Die Spielstände werden ausgewertet…";
+
+  const cardRefs = new Map();
+  const wheelRefs = { donor:new Map(), receiver:new Map() };
+
+  for(const team of info.teams){
+    const wrap = document.createElement("div");
+    wrap.style.cssText = [
+      "border-radius:16px",
+      "padding:12px",
+      "background:rgba(255,255,255,.30)",
+      "border:1px solid rgba(0,0,0,.14)",
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "gap:8px",
+      "min-height:114px"
+    ].join(";");
+
+    const title = document.createElement("div");
+    title.textContent = `Team ${team}`;
+    title.style.cssText = "font:900 16px system-ui, -apple-system, Segoe UI, Roboto, Arial; color:rgba(38,26,18,.92);";
+
+    const colorDot = document.createElement("div");
+    colorDot.style.cssText = `width:20px;height:20px;border-radius:999px;background:${TEAM_COLORS[team]||"#999"}; border:1px solid rgba(0,0,0,.2);`;
+
+    const score = document.createElement("div");
+    score.id = `ptScore_${team}`;
+    score.style.cssText = "font:900 28px system-ui, -apple-system, Segoe UI, Roboto, Arial; color:rgba(30,20,14,.92);";
+    score.textContent = String(info.scores[team]);
+
+    const note = document.createElement("div");
+    note.style.cssText = "font:700 12px system-ui, -apple-system, Segoe UI, Roboto, Arial; opacity:.78;";
+    note.textContent = "Siegpunkte";
+
+    wrap.appendChild(title);
+    wrap.appendChild(colorDot);
+    wrap.appendChild(score);
+    wrap.appendChild(note);
+    scoreboard.appendChild(wrap);
+    cardRefs.set(team, { wrap, score });
+  }
+
+  function makeWheelToken(team, labelText){
+    const token = document.createElement("div");
+    token.style.cssText = [
+      "min-width:96px",
+      "padding:10px 12px",
+      "border-radius:14px",
+      "background:rgba(255,255,255,.44)",
+      "border:2px solid rgba(0,0,0,.12)",
+      "box-shadow:0 8px 18px rgba(0,0,0,.12)",
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "gap:6px",
+      "font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      "font-weight:900"
+    ].join(";");
+
+    token.innerHTML = `
+      <div style="width:18px;height:18px;border-radius:999px;background:${TEAM_COLORS[team]||"#999"}; border:1px solid rgba(0,0,0,.2);"></div>
+      <div>Team ${team}</div>
+      <div style="font-size:12px; opacity:.74;">${labelText}</div>
+    `;
+    return token;
+  }
+
+  for(const team of info.donorCandidates){
+    const el = makeWheelToken(team, `${info.scores[team]} Punkte`);
+    donorRow.appendChild(el);
+    wheelRefs.donor.set(team, el);
+  }
+  for(const team of info.receiverCandidates){
+    const el = makeWheelToken(team, `${info.scores[team]} Punkte`);
+    receiverRow.appendChild(el);
+    wheelRefs.receiver.set(team, el);
+  }
+
+  okBtn.disabled = true;
+  okBtn.style.cursor = "not-allowed";
+  okBtn.style.opacity = ".65";
+  closeX.disabled = true;
+  closeX.style.opacity = ".5";
+  let finished = false;
+
+  function enableClose(){
+    finished = true;
+    okBtn.disabled = false;
+    okBtn.style.cursor = "pointer";
+    okBtn.style.opacity = "1";
+    okBtn.style.color = "rgba(38,26,18,.88)";
+    okBtn.style.background = "rgba(255,255,255,.70)";
+    closeX.disabled = false;
+    closeX.style.opacity = "1";
+  }
+  function doClose(){
+    if(!finished) return;
+    ov.style.display = "none";
+    if(typeof onClose === "function") onClose();
+  }
+  ov._doClose = doClose;
+  okBtn.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+  closeX.onclick = ()=>{ if(!overlayClickAllowed(ov)) return; doClose(); };
+
+  function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+  async function animateWheelPick(candidates, mapRef, label){
+    const arr = candidates.slice();
+    if(!arr.length) return null;
+
+    for(const el of mapRef.values()){
+      el.style.borderColor = "rgba(0,0,0,.12)";
+      el.style.boxShadow = "0 8px 18px rgba(0,0,0,.12)";
+      el.style.transform = "scale(1)";
+    }
+
+    const steps = Math.max(12, arr.length * 5);
+    let current = arr[0];
+    for(let i=0;i<steps;i++){
+      const pick = arr[Math.floor(Math.random()*arr.length)];
+      current = pick;
+      for(const [team, el] of mapRef.entries()){
+        if(team === pick){
+          el.style.borderColor = "rgba(200,55,65,.75)";
+          el.style.boxShadow = "0 0 0 4px rgba(200,55,65,.18) inset, 0 10px 24px rgba(0,0,0,.18)";
+          el.style.transform = "scale(1.05)";
+        }else{
+          el.style.borderColor = "rgba(0,0,0,.12)";
+          el.style.boxShadow = "0 8px 18px rgba(0,0,0,.12)";
+          el.style.transform = "scale(1)";
+        }
+      }
+      sub.textContent = `${label}: Glücksrad dreht…`;
+      await sleep(120 + i*8);
+    }
+
+    for(const [team, el] of mapRef.entries()){
+      if(team === current){
+        el.style.borderColor = "rgba(40,140,70,.75)";
+        el.style.boxShadow = "0 0 0 4px rgba(40,140,70,.18) inset, 0 10px 24px rgba(0,0,0,.18)";
+        el.style.transform = "scale(1.06)";
+      }else{
+        el.style.borderColor = "rgba(0,0,0,.12)";
+        el.style.boxShadow = "0 8px 18px rgba(0,0,0,.12)";
+        el.style.transform = "scale(1)";
+      }
+    }
+    return current;
+  }
+
+  async function run(){
+    result.textContent =
+      `Höchster Stand: ${info.maxScore}\n` +
+      `Niedrigster Stand: ${info.minScore}\n\n` +
+      `Bei Gleichstand entscheidet das Glücksrad.`;
+
+    await sleep(500);
+
+    const donor = await animateWheelPick(info.donorCandidates, wheelRefs.donor, "Abgeber");
+    await sleep(500);
+
+    let receiverCandidates = info.receiverCandidates.slice();
+    if(receiverCandidates.length > 1){
+      // if all equal or same team appears in both pools, receiver should be a different team when possible
+      const filtered = receiverCandidates.filter(t => t !== donor);
+      if(filtered.length) receiverCandidates = filtered;
+    }
+
+    // rebuild receiver row if filtered changed
+    if(receiverCandidates.length !== info.receiverCandidates.length){
+      receiverRow.innerHTML = "";
+      wheelRefs.receiver.clear();
+      for(const team of receiverCandidates){
+        const el = makeWheelToken(team, `${info.scores[team]} Punkte`);
+        receiverRow.appendChild(el);
+        wheelRefs.receiver.set(team, el);
+      }
+    }
+
+    await sleep(250);
+    const receiver = await animateWheelPick(receiverCandidates, wheelRefs.receiver, "Empfänger");
+    await sleep(300);
+
+    const applied = applyMostToLeastPointTransfer(donor, receiver);
+
+    if(!applied.ok){
+      if(applied.reason === "donor_has_zero"){
+        result.textContent =
+          `👑 Abgeber: Team ${donor} (${applied.donorBefore})\n` +
+          `🪙 Empfänger: Team ${receiver} (${applied.receiverBefore})\n\n` +
+          `Team ${donor} hat keinen Siegpunkt zum Abgeben. Es passiert nichts.`;
+        setStatus(`⚖️ Punktetausch: Team ${donor} hat keinen Siegpunkt.`);
+      }else{
+        result.textContent =
+          `👑 Abgeber: Team ${donor}\n` +
+          `🪙 Empfänger: Team ${receiver}\n\n` +
+          `Dieselbe Mannschaft wurde zweimal gewählt. Es passiert nichts.`;
+        setStatus(`⚖️ Punktetausch: Kein Transfer möglich.`);
+      }
+    }else{
+      const donorScoreEl = cardRefs.get(donor)?.score;
+      const receiverScoreEl = cardRefs.get(receiver)?.score;
+      if(donorScoreEl) donorScoreEl.textContent = String(applied.donorAfter);
+      if(receiverScoreEl) receiverScoreEl.textContent = String(applied.receiverAfter);
+
+      result.textContent =
+        `👑 Abgeber: Team ${donor} (${applied.donorBefore} → ${applied.donorAfter})\n` +
+        `🪙 Empfänger: Team ${receiver} (${applied.receiverBefore} → ${applied.receiverAfter})\n\n` +
+        `Team ${donor} gibt Team ${receiver} 1 Siegpunkt.`;
+      setStatus(`⚖️ Punktetausch: Team ${donor} gibt Team ${receiver} 1 Siegpunkt.`);
+    }
+
+    sub.textContent = "Punktetausch beendet!";
+    enableClose();
+  }
+
+  markOverlayOpened(ov);
+  ov.style.display = "flex";
+  run();
+}
+
 
 function transferRandomJokerBetweenTeams(fromTeam, toTeam){
   ensureJokerState();
@@ -4570,6 +4996,12 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         setStatus(`🏆 Team ${r.team} erhält 2 Siegpunkte! Stand: ${r.after}/${state.goalToWin}`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
+    } else if(card && card.effect === 'point_transfer_most_to_least'){
+      showEventOverlay(card, ()=>{
+        showPointTransferWheelOverlay(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -4815,6 +5247,13 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         const r = gainTwoGoalPointsFromTeam(currentTeam());
         setStatus(`🏆 Team ${r.team} erhält 2 Siegpunkte! Stand: ${r.after}/${state.goalToWin}`);
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
+    } else if(card && card.effect === 'point_transfer_most_to_least'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        showPointTransferWheelOverlay(()=>{
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+        });
       });
     } else {
       showEventOverlay(card, ()=>{
