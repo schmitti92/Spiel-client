@@ -2173,6 +2173,13 @@ const EVENT_DECK = [
     text:"Das Team mit den meisten Siegpunkten gibt dem Team mit den wenigsten 1 Siegpunkt. Bei Gleichstand entscheidet ein Glücksrad.",
     effect:"point_transfer_most_to_least"
   }
+  ,
+  {
+    id:"back_to_start",
+    title:"Zurück zum Start",
+    text:"Alle eigenen Figuren müssen zurück auf die Startfelder deines Teams.",
+    effect:"back_to_start"
+  }
 ];
 
 // ---- Event Effect: 3 zusätzliche Barrikaden spawnen ----
@@ -2308,6 +2315,52 @@ function removeAllJokersFromTeam(team){
   ensureEventSelectUI();
   console.info("[EVENT] all jokers removed", { team, removed });
   return { team, removed };
+}
+
+
+function sendTeamPiecesToStart(team){
+  if(!team) return { ok:false, reason:"no_team", moved:0, total:0 };
+
+  const teamPieces = (state.pieces || []).filter(p => p && p.team === team);
+  const teamStarts = nodes
+    .filter(n => n && n.type === "start" && Number(n.props?.startTeam) === team)
+    .map(n => n.id);
+
+  if(!teamStarts.length){
+    draw();
+    return { ok:false, reason:"no_start_fields", team, moved:0, total:teamPieces.length };
+  }
+
+  // Alle eigenen Figuren erst aus occupied entfernen
+  for(const p of teamPieces){
+    if(p && p.node){
+      state.occupied.delete(p.node);
+    }
+  }
+
+  let moved = 0;
+  const reset = [];
+
+  for(let i=0; i<teamPieces.length; i++){
+    const p = teamPieces[i];
+    const target = teamStarts[i] || null;
+
+    p.prev = p.node || null;
+    p.shielded = false;
+
+    if(target){
+      if(p.node !== target) moved++;
+      p.node = target;
+      state.occupied.set(target, p.id);
+      reset.push(p.id);
+    } else {
+      p.node = null;
+    }
+  }
+
+  draw();
+  console.info("[EVENT] back_to_start_team", { team, moved, reset });
+  return { ok:true, team, moved, total:teamPieces.length, reset };
 }
 
 function sendAllPlayersToStart(){
@@ -5002,6 +5055,16 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
       });
+    } else if(card && card.effect === 'back_to_start'){
+      showEventOverlay(card, ()=>{
+        const r = sendTeamPiecesToStart(currentTeam());
+        if(r.ok){
+          setStatus(`↩️ Alle Figuren von Team ${r.team} müssen zurück aufs Startfeld!`);
+        } else {
+          setStatus(`↩️ Zurück-zum-Start konnte nicht ausgeführt werden.`);
+        }
+        resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -5254,6 +5317,17 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
         showPointTransferWheelOverlay(()=>{
           resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
         });
+      });
+    } else if(card && card.effect === 'back_to_start'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = sendTeamPiecesToStart(currentTeam());
+        if(r.ok){
+          setStatus(`↩️ Alle Figuren von Team ${r.team} müssen zurück aufs Startfeld!`);
+        } else {
+          setStatus(`↩️ Zurück-zum-Start konnte nicht ausgeführt werden.`);
+        }
+        resolveLanding(piece, { allowPortal: false, fromBarricade: true, _eventTriggered: true });
       });
     } else {
       showEventOverlay(card, ()=>{
