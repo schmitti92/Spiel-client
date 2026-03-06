@@ -27,6 +27,21 @@ function renderPlayers(players){
     });
 }
 
+
+function persistLobbySession(modeOverride){
+    const packed = {
+        playerName: playerName || '',
+        roomCode: roomCode || '',
+        isHost: !!isHost,
+        lastMode: modeOverride || 'online'
+    };
+    sessionStorage.setItem('mittelalterLobby', JSON.stringify(packed));
+    sessionStorage.setItem('mittelalterLastMode', packed.lastMode);
+    sessionStorage.setItem('playerName', packed.playerName);
+    sessionStorage.setItem('roomCode', packed.roomCode);
+    sessionStorage.setItem('isHost', packed.isHost ? 'true' : 'false');
+}
+
 function sendToServer(payload){
     if(socket && socket.readyState === WebSocket.OPEN){
         socket.send(JSON.stringify(payload));
@@ -59,9 +74,7 @@ function connectServer(){
             roomCode = msg.room?.roomCode || roomCode;
             isHost = true;
 
-            sessionStorage.setItem("playerName", playerName || "Spieler");
-            sessionStorage.setItem("roomCode", roomCode || "");
-            sessionStorage.setItem("isHost", "true");
+            persistLobbySession("online");
 
             const roomInput = qs("roomInput");
             if(roomInput) roomInput.value = roomCode || "";
@@ -75,9 +88,7 @@ function connectServer(){
             roomCode = msg.room?.roomCode || roomCode;
             isHost = false;
 
-            sessionStorage.setItem("playerName", playerName || "Spieler");
-            sessionStorage.setItem("roomCode", roomCode || "");
-            sessionStorage.setItem("isHost", "false");
+            persistLobbySession("online");
 
             setRoomInfo("Verbunden mit Raum: " + roomCode);
             renderPlayers(msg.room?.players || []);
@@ -94,8 +105,9 @@ function connectServer(){
 
         if(msg.type === "game_started"){
             if(msg.room?.roomCode){
-                sessionStorage.setItem("roomCode", msg.room.roomCode);
+                roomCode = msg.room.roomCode;
             }
+            persistLobbySession("online");
             window.location.href = "Mittelalter.index.html";
             return;
         }
@@ -115,9 +127,8 @@ function createRoom(){
     roomCode = null;
     isHost = true;
 
-    sessionStorage.setItem("playerName", playerName);
-    sessionStorage.removeItem("roomCode");
-    sessionStorage.setItem("isHost", "true");
+    roomCode = "";
+    persistLobbySession("online");
 
     setRoomInfo("Erstelle Raum...");
     renderPlayers([playerName]);
@@ -138,9 +149,7 @@ function joinRoom(){
     }
 
     isHost = false;
-    sessionStorage.setItem("playerName", playerName);
-    sessionStorage.setItem("roomCode", roomCode);
-    sessionStorage.setItem("isHost", "false");
+    persistLobbySession("online");
 
     setRoomInfo("Verbinde mit Raum: " + roomCode + " ...");
 
