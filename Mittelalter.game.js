@@ -5260,6 +5260,8 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
             setStatus(`✨ Kein freies Feld für das zusätzliche Lichtfeld gefunden.`);
           }
         } else {
+          draw();
+          draw();
           setStatus(`✨ Ein zusätzliches Lichtfeld erscheint auf ${r.nodeId}!`);
         }
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -5556,6 +5558,8 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
             setStatus(`✨ Kein freies Feld für das zusätzliche Lichtfeld gefunden.`);
           }
         } else {
+          draw();
+          draw();
           setStatus(`✨ Ein zusätzliches Lichtfeld erscheint auf ${r.nodeId}!`);
         }
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -6465,6 +6469,44 @@ function draw(){
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("×2", bn.x, bn.y + 18);
+      ctx.restore();
+    }
+  }
+
+  // ✨ Zusätzliches Lichtfeld (einmalig, +1 Punkt)
+  if(state.bonusLightNodeId){
+    const ln = nodesById.get(state.bonusLightNodeId);
+    if(ln && !barricades.has(state.bonusLightNodeId)){
+      // eigener Look statt normales Zieltoken
+      ctx.save();
+
+      const glow = ctx.createRadialGradient(ln.x, ln.y, 2, ln.x, ln.y, 28);
+      glow.addColorStop(0, "rgba(255,245,180,.98)");
+      glow.addColorStop(1, "rgba(255,245,180,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(ln.x, ln.y, 28, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(ln.x, ln.y, 12, 0, Math.PI*2);
+      ctx.fillStyle = "rgba(255,250,210,.98)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(180,140,40,.85)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255,245,170,.95)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(ln.x, ln.y, 17, 0, Math.PI*2);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(120,90,20,.95)";
+      ctx.font = "bold 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("✦", ln.x, ln.y + 0.5);
       ctx.restore();
     }
   }
