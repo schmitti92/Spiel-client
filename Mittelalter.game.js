@@ -2028,6 +2028,12 @@ const EVENT_DECK = [
     title:"Sturmangriff",
     text:"Du darfst nochmal würfeln. Für diesen ganzen Zug darfst du Barrikaden auf dem Weg überspringen. Landest du auf einer Barrikade, sammelst du sie ein und darfst sie neu platzieren.",
     effect:"barricade_jump_reroll"
+  },
+  {
+    id:"spawn_one_boss",
+    title:"Ein Boss erscheint",
+    text:"Ein zufälliger Boss erscheint auf einem freien Bossfeld. Maximal 2 Bosse gleichzeitig.",
+    effect:"spawn_one_boss"
   }
 ];
 
@@ -2079,6 +2085,56 @@ function spawnExtraBarricades(count=3){
 // - zu viele (zusätzliche) werden entfernt
 // - wenn Startpositionen gerade blockiert sind: Ersatz-Barrikaden werden auf freie Felder gespawnt
 
+
+
+function spawnRandomBossFromEvent(){
+  ensureBossState();
+
+  const alive = (state.bosses || []).filter(b => b && b.alive !== false);
+  if(alive.length >= 2){
+    draw();
+    console.info("[BOSS] event spawn blocked: max active reached");
+    return { ok:false, reason:"max_active", active: alive.length };
+  }
+
+  let bossFields = nodes.filter(n => n && n.type === "boss").map(n => n.id);
+  bossFields = bossFields.filter(id => {
+    if(!id) return false;
+    if(state.occupied && state.occupied.has(id)) return false;
+    if(barricades && barricades.has(id)) return false;
+    if(state.goalNodeId && id === state.goalNodeId) return false;
+    if(state.eventActive && state.eventActive.has(id)) return false;
+    if(alive.some(b => b.node === id)) return false;
+    return true;
+  });
+
+  if(!bossFields.length){
+    draw();
+    console.info("[BOSS] event spawn blocked: no free boss field");
+    return { ok:false, reason:"no_free_boss_field", active: alive.length };
+  }
+
+  const bossTypes = Object.keys(BOSS_TYPES || {});
+  if(!bossTypes.length){
+    draw();
+    console.info("[BOSS] event spawn blocked: no boss types");
+    return { ok:false, reason:"no_boss_types", active: alive.length };
+  }
+
+  const type = bossTypes[Math.floor(Math.random() * bossTypes.length)];
+  const nodeId = bossFields[Math.floor(Math.random() * bossFields.length)];
+
+  const boss = spawnBoss(type, nodeId);
+  draw();
+
+  if(!boss){
+    console.info("[BOSS] event spawn failed", { type, nodeId });
+    return { ok:false, reason:"spawn_failed", active: alive.length };
+  }
+
+  console.info("[BOSS] event spawned", { type: boss.type, id: boss.id, node: boss.node });
+  return { ok:true, type: boss.type, id: boss.id, node: boss.node, active: (state.bosses || []).filter(b => b && b.alive !== false).length };
+}
 
 function activateBarricadeJumpReroll(){
   state.ignoreBarricadesThisTurn = true;
@@ -3748,6 +3804,24 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       showEventOverlay(card, ()=>{
         activateBarricadeJumpReroll();
       });
+    } else if(card && card.effect === 'spawn_one_boss'){
+      showEventOverlay(card, ()=>{
+        const r = spawnRandomBossFromEvent();
+        if(!r.ok){
+          if(r.reason === "max_active"){
+            setStatus(`👹 Boss-Event: Maximal 2 Bosse sind bereits aktiv.`);
+          } else if(r.reason === "no_free_boss_field"){
+            setStatus(`👹 Boss-Event: Kein freies Bossfeld verfügbar.`);
+          } else {
+            setStatus(`👹 Boss-Event: Boss konnte nicht erscheinen.`);
+          }
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+        const bossName = (BOSS_TYPES[r.type] && BOSS_TYPES[r.type].name) ? BOSS_TYPES[r.type].name : r.type;
+        setStatus(`👹 ${bossName} erscheint auf ${r.node}!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+      });
     } else {
       showEventOverlay(card, ()=>{
         resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
@@ -3883,6 +3957,25 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       showEventOverlay(card, ()=>{
         relocateEventField(piece.node);
         activateBarricadeJumpReroll();
+      });
+    } else if(card && card.effect === 'spawn_one_boss'){
+      showEventOverlay(card, ()=>{
+        relocateEventField(piece.node);
+        const r = spawnRandomBossFromEvent();
+        if(!r.ok){
+          if(r.reason === "max_active"){
+            setStatus(`👹 Boss-Event: Maximal 2 Bosse sind bereits aktiv.`);
+          } else if(r.reason === "no_free_boss_field"){
+            setStatus(`👹 Boss-Event: Kein freies Bossfeld verfügbar.`);
+          } else {
+            setStatus(`👹 Boss-Event: Boss konnte nicht erscheinen.`);
+          }
+          resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
+          return;
+        }
+        const bossName = (BOSS_TYPES[r.type] && BOSS_TYPES[r.type].name) ? BOSS_TYPES[r.type].name : r.type;
+        setStatus(`👹 ${bossName} erscheint auf ${r.node}!`);
+        resolveLanding(piece, { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true });
       });
     } else {
       showEventOverlay(card, ()=>{
