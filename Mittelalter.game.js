@@ -6901,7 +6901,7 @@ function stealOnePointSimple(thiefTeam){
 
 
 
-// ===== Online Multiplayer Layer (Host ist Chef) =====
+// ===== Online Multiplayer Layer (Server serialisiert alle Aktionen) =====
 const SERVER_URL = "wss://mittelalter-server.onrender.com";
 let ws = null;
 let onlinePlayerName = null;
@@ -6912,6 +6912,9 @@ let onlineConnected = false;
 let onlineLastSnapshotHash = "";
 let onlineBroadcastTimer = null;
 let onlineApplyingSnapshot = false;
+let onlineExecutingServerAction = false;
+let onlineLastServerActionSeq = 0;
+let onlineExpectedPlayerCount = null;
 
 function isOnlineSession(){
   const packedMode = sessionStorage.getItem("mittelalterLastMode") || "";
@@ -7043,36 +7046,25 @@ function applyOnlineSnapshot(payload){
 }
 
 function scheduleOnlineStateBroadcast(){
-  if(onlineApplyingSnapshot) return;
-  if(!isOnlineSession() || !onlineIsHost) return;
-  if(!ws || ws.readyState !== 1) return;
-  if(onlineBroadcastTimer) return;
-  onlineBroadcastTimer = setTimeout(()=>{
-    onlineBroadcastTimer = null;
-    try{
-      const payload = makeOnlineSnapshot();
-      const hash = stableStringify(payload);
-      if(hash === onlineLastSnapshotHash) return;
-      onlineLastSnapshotHash = hash;
-      ws.send(JSON.stringify({ type:'state_update', state: payload }));
-    }catch(err){
-      console.warn('[ONLINE] state_update failed', err);
-    }
-  }, 120);
+  // Stufe 1 server-authoritative: keine Client-Snapshots mehr senden.
 }
 
 function sendOnlineAction(action){
-  if(!isOnlineSession() || onlineIsHost) return false;
+  if(!isOnlineSession()) return false;
   if(!ws || ws.readyState !== 1) return false;
   ws.send(JSON.stringify({ type:'action_request', action }));
   return true;
 }
 
-function processIncomingOnlineAction(msg){
-  if(!onlineIsHost) return;
+function processIncomingServerAction(msg){
   if(!msg || !msg.action) return;
+  const seq = Number(msg.actionSeq || 0);
+  if(seq && seq <= onlineLastServerActionSeq) return;
+  if(seq) onlineLastServerActionSeq = seq;
+
   const action = msg.action;
   try{
+    onlineExecutingServerAction = true;
     if(action.kind === 'roll_click'){
       if(state.gameOver) return;
       if(state.phase !== 'needRoll') return;
@@ -7097,7 +7089,9 @@ function processIncomingOnlineAction(msg){
       return;
     }
   } catch(err){
-    console.warn('[ONLINE] action processing failed', err, action);
+    console.warn('[ONLINE] server_action processing failed', err, action);
+  } finally {
+    onlineExecutingServerAction = false;
   }
 }
 
@@ -7118,9 +7112,6 @@ function connectMittelalterServer(){
         name: onlinePlayerName,
         isHost: onlineIsHost
       }));
-      if(onlineIsHost){
-        setTimeout(scheduleOnlineStateBroadcast, 300);
-      }
     };
 
     ws.onmessage = (e)=>{
@@ -7128,23 +7119,24 @@ function connectMittelalterServer(){
         const msg = JSON.parse(e.data);
         if(msg.type === 'room_state'){
           if(msg.self?.playerId) onlineSelfPlayerId = msg.self.playerId;
+          if(msg.room?.playerCount) onlineExpectedPlayerCount = Number(msg.room.playerCount || 0) || null;
           console.log('Spieler im Raum:', (msg.room?.players || []).map(p => p.name));
-          if(!onlineIsHost && msg.snapshot?.state){
+          if(onlineExpectedPlayerCount && Number(state.playerCount || 0) !== onlineExpectedPlayerCount){
+            try{ setPlayerCount(onlineExpectedPlayerCount, { reset:true }); }catch(_e){}
+          }
+          if(msg.snapshot?.state){
             applyOnlineSnapshot(msg.snapshot);
           }
           return;
         }
         if(msg.type === 'state_update'){
-          if(msg.fromPlayerId === onlineSelfPlayerId && onlineIsHost) return;
-          if(msg.state && !onlineIsHost){
+          if(msg.state){
             applyOnlineSnapshot(msg.state);
           }
           return;
         }
-        if(msg.type === 'action_request'){
-          if(onlineIsHost){
-            processIncomingOnlineAction(msg);
-          }
+        if(msg.type === 'server_action'){
+          processIncomingServerAction(msg);
           return;
         }
         if(msg.type === 'error_message'){
@@ -7165,7 +7157,7 @@ function connectMittelalterServer(){
 
 // Non-host input -> action_request instead of local execution
 btnRoll?.addEventListener('click', (e)=>{
-  if(!isOnlineSession() || onlineIsHost) return;
+  if(!isOnlineSession() || onlineExecutingServerAction) return;
   if(sendOnlineAction({ kind:'roll_click' })){
     e.preventDefault();
     e.stopImmediatePropagation();
@@ -7174,7 +7166,7 @@ btnRoll?.addEventListener('click', (e)=>{
 
 const __origHandleTapAtWorld = handleTapAtWorld;
 handleTapAtWorld = function(wx, wy){
-  if(isOnlineSession() && !onlineIsHost){
+  if(isOnlineSession() && !onlineExecutingServerAction){
     sendOnlineAction({ kind:'tap_world', wx, wy });
     return;
   }
@@ -7183,7 +7175,7 @@ handleTapAtWorld = function(wx, wy){
 
 const __origTryUseJoker = tryUseJoker;
 tryUseJoker = function(jokerId){
-  if(isOnlineSession() && !onlineIsHost){
+  if(isOnlineSession() && !onlineExecutingServerAction){
     sendOnlineAction({ kind:'use_joker', jokerId });
     return;
   }
@@ -7192,9 +7184,7 @@ tryUseJoker = function(jokerId){
 
 const __origDrawOnline = draw;
 draw = function(){
-  const r = __origDrawOnline.apply(this, arguments);
-  scheduleOnlineStateBroadcast();
-  return r;
+  return __origDrawOnline.apply(this, arguments);
 };
 
 window.addEventListener('load', ()=>{
