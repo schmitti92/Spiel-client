@@ -2059,7 +2059,7 @@ const EVENT_DECK = [
   {
     id:"lose_all_jokers",
     title:"Du verlierst alle Joker",
-    text:"Alle deine Joker gehen verloren.",
+    text:"Alle Joker deines Teams gehen verloren.",
     effect:"lose_all_jokers"
   }
 ];
@@ -2183,12 +2183,15 @@ function spawnRandomBossFromEvent(){
 
 function removeAllJokersFromTeam(team){
   ensureJokerState();
-  const inv = state.jokers[team] || {};
+
+  const inv = {};
   let removed = 0;
+
   for(const j of JOKERS){
-    removed += Number(inv[j.id] || 0);
+    removed += Number(jokerCount(team, j.id) || 0);
     inv[j.id] = 0;
   }
+
   state.jokers[team] = inv;
   updateJokerUI();
   ensureEventSelectUI();
