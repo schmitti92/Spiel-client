@@ -16,17 +16,36 @@
   function loadState() {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return { ...DEFAULT_STATE };
-      return { ...DEFAULT_STATE, ...JSON.parse(raw) };
+      const parsed = raw ? JSON.parse(raw) : {};
+      return {
+        ...DEFAULT_STATE,
+        ...parsed,
+        playerName: parsed.playerName || sessionStorage.getItem('playerName') || '',
+        roomCode: parsed.roomCode || sessionStorage.getItem('roomCode') || '',
+        isHost: parsed.isHost ?? (sessionStorage.getItem('isHost') === 'true')
+      };
     } catch (err) {
       console.warn('[Mittelalter Lobby] Konnte Session-State nicht laden:', err);
-      return { ...DEFAULT_STATE };
+      return {
+        ...DEFAULT_STATE,
+        playerName: sessionStorage.getItem('playerName') || '',
+        roomCode: sessionStorage.getItem('roomCode') || '',
+        isHost: sessionStorage.getItem('isHost') === 'true'
+      };
     }
+  }
+
+  function persistCompatFields(state) {
+    sessionStorage.setItem('playerName', state.playerName || '');
+    sessionStorage.setItem('roomCode', state.roomCode || '');
+    sessionStorage.setItem('isHost', state.isHost ? 'true' : 'false');
+    sessionStorage.setItem('mittelalterLastMode', state.lastMode || 'offline-mock');
   }
 
   function saveState(patch = {}) {
     const next = { ...loadState(), ...patch };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    persistCompatFields(next);
     return next;
   }
 
