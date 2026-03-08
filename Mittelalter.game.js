@@ -743,6 +743,9 @@ function buildFullSyncSnapshot(){
     goalNodeId: state.goalNodeId || null,
     bonusGoalNodeId: state.bonusGoalNodeId || null,
     bonusLightNodeId: state.bonusLightNodeId || null,
+    goalToWin: Number(state.goalToWin || 10),
+    gameOver: !!state.gameOver,
+    winnerTeam: state.winnerTeam || null,
     bosses: Array.isArray(state.bosses) ? state.bosses.map(b => ({
       id: b.id,
       type: b.type,
@@ -793,6 +796,9 @@ function applyServerSnapshot(snapshot, opts={}){
   if('goalNodeId' in snapshot) state.goalNodeId = snapshot.goalNodeId || null;
   if('bonusGoalNodeId' in snapshot) state.bonusGoalNodeId = snapshot.bonusGoalNodeId || null;
   if('bonusLightNodeId' in snapshot) state.bonusLightNodeId = snapshot.bonusLightNodeId || null;
+  if('goalToWin' in snapshot) state.goalToWin = Number(snapshot.goalToWin || 10) || 10;
+  if('gameOver' in snapshot) state.gameOver = !!snapshot.gameOver;
+  if('winnerTeam' in snapshot) state.winnerTeam = snapshot.winnerTeam || null;
   if(Array.isArray(snapshot.bosses)) state.bosses = snapshot.bosses.map(b => Object.assign({}, b));
   if('selected' in snapshot) state.selected = snapshot.selected || null;
   if('pendingSix' in snapshot) state.pendingSix = !!snapshot.pendingSix;
@@ -992,14 +998,21 @@ function connectOnlineAuthority(){
         dieBox.textContent = '–';
         online.suppressTurnBroadcast = false;
       }
+      if(msg.gameState?.phase === 'gameOver' && state.gameOver){
+        showWinOverlay(state.winnerTeam || currentTeam());
+      }
       draw();
       return;
     }
     if(type === 'event_card'){
       if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
+      if(msg.info) setStatus(String(msg.info));
       if(msg.card){
         showEventOverlay(msg.card, ()=>{});
         pushOnlineTrace(`[EVENT] ${msg.card.id || 'card'}`);
+      }
+      if(state.gameOver){
+        showWinOverlay(state.winnerTeam || currentTeam());
       }
       draw();
       return;
