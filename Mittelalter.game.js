@@ -579,12 +579,33 @@ function requestServerRoll(reason='main'){
 function broadcastTurnStateOnline(infoText){
   if(!isOnlineAuthorityActive()) return;
   if(online.suppressTurnBroadcast) return;
-  if(online.authoritativeMoveActorId && online.playerId !== online.authoritativeMoveActorId) return;
-  sendServerAction('turn_update', {
+
+  const payload = {
     turnIndex: Number(state.turn || 0),
     phase: String(state.phase || 'needRoll'),
     info: infoText || null
-  });
+  };
+
+  if(online.authoritativeMoveActorId){
+    if(online.playerId !== online.authoritativeMoveActorId) return;
+    sendServerAction('finish_move', payload);
+    return;
+  }
+
+  sendServerAction('turn_update', payload);
+}
+function buildServerMoveSnapshot(){
+  return {
+    roll: Number(state.roll || 0),
+    ignoreBarricadesThisTurn: !!state.ignoreBarricadesThisTurn,
+    pieces: state.pieces.map(p => ({
+      id: p.id,
+      team: Number(p.team || 0),
+      node: p.node || null,
+      shielded: !!p.shielded
+    })),
+    barricades: Array.from(barricades || [])
+  };
 }
 function requestServerMove(pieceId, targetId, legalTargets){
   if(!isOnlineAuthorityActive()) return false;
@@ -596,7 +617,8 @@ function requestServerMove(pieceId, targetId, legalTargets){
   return sendServerAction('move_request', {
     pieceId: String(pieceId || ''),
     targetId: String(targetId || ''),
-    legalTargets: targets
+    legalTargets: targets,
+    stateSnapshot: buildServerMoveSnapshot()
   });
 }
 function applyAuthoritativeMove(moveMsg){
@@ -677,6 +699,7 @@ function connectOnlineAuthority(){
     }
     if(type === 'game_started'){
       online.joined = true;
+      online.authoritativeMoveActorId = null;
       if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:true });
       state.phase = 'needRoll';
       state.roll = null;
@@ -685,6 +708,7 @@ function connectOnlineAuthority(){
       return;
     }
     if(type === 'game_roll'){
+      online.authoritativeMoveActorId = null;
       if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
       applyAuthoritativeRoll(msg.roll);
       return;
@@ -6177,6 +6201,7 @@ function handleTapAtWorld(wx, wy){
     if(!piece) return;
 
     if(isOnlineAuthorityActive()){
+      setStatus(`Server prüft den Zug...`);
       requestServerMove(piece.id, hit.id, Array.from(state.highlighted));
       return;
     }
