@@ -992,6 +992,14 @@ function connectOnlineAuthority(){
         dieBox.textContent = '–';
         online.suppressTurnBroadcast = false;
       }
+      if(typeof msg.info === 'string' && msg.info.trim()){
+        setStatus(msg.info.trim());
+      }else if(isLocalPlayersTurn()){
+        setStatus(`Du bist dran. Der Server würfelt für Team ${currentTeam()}.`);
+      }else{
+        setStatus(`Team ${currentTeam()} ist dran – Wurf wird vom Server gesteuert.`);
+      }
+      pushOnlineTrace(`[TURN] phase=${msg.gameState?.phase || '-'} turn=${msg.gameState?.turnIndex ?? '-'}`);
       draw();
       return;
     }
