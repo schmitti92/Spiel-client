@@ -995,6 +995,15 @@ function connectOnlineAuthority(){
       draw();
       return;
     }
+    if(type === 'event_card'){
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
+      if(msg.card){
+        showEventOverlay(msg.card, ()=>{});
+        pushOnlineTrace(`[EVENT] ${msg.card.id || 'card'}`);
+      }
+      draw();
+      return;
+    }
     if(type === 'trace_event'){
       const msgLine = `[TRACE] ${msg.stage || 'trace'}${msg.reason ? ` | ${msg.reason}` : ''}${msg.targetId ? ` | ${msg.targetId}` : ''}${typeof msg.computedCount === 'number' ? ` | targets=${msg.computedCount}` : ''}`;
       console.info('[ONLINE TRACE]', msg);
