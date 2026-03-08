@@ -6901,7 +6901,8 @@ function stealOnePointSimple(thiefTeam){
 
 
 
-// ===== Online Multiplayer Layer (Server serialisiert alle Aktionen) =====
+
+// ===== Online Multiplayer Layer (stabile Lobby-Verbindung / keine Fake-Aktionen) =====
 const SERVER_URL = "wss://mittelalter-server.onrender.com";
 let ws = null;
 let onlinePlayerName = null;
@@ -6909,282 +6910,230 @@ let onlineRoomCode = null;
 let onlineIsHost = false;
 let onlineSelfPlayerId = null;
 let onlineConnected = false;
-let onlineLastSnapshotHash = "";
-let onlineBroadcastTimer = null;
-let onlineApplyingSnapshot = false;
-let onlineExecutingServerAction = false;
-let onlineLastServerActionSeq = 0;
 let onlineExpectedPlayerCount = null;
+let onlineHeartbeatTimer = null;
+let onlineReconnectTimer = null;
+let onlineManualClose = false;
 
 function isOnlineSession(){
-  const packedMode = sessionStorage.getItem("mittelalterLastMode") || "";
-  const room = (sessionStorage.getItem("roomCode") || "").trim();
+  const packedMode = sessionStorage.getItem("mittelalterLastMode") || localStorage.getItem("mittelalterLastMode") || "";
+  const room = (sessionStorage.getItem("roomCode") || localStorage.getItem("roomCode") || "").trim();
   return packedMode === "online" && !!room;
 }
 
-function stableStringify(obj){
-  return JSON.stringify(obj);
-}
-
-function makeOnlineSnapshot(){
-  ensurePortalState();
-  ensureEventState();
-  ensureJokerState();
-  ensureBossState();
-  return {
-    state: {
-      players: state.players.slice(),
-      playerCount: state.playerCount,
-      turn: state.turn,
-      roll: state.roll,
-      phase: state.phase,
-      selected: state.selected,
-      highlighted: Array.from(state.highlighted || []),
-      placeHighlighted: Array.from(state.placeHighlighted || []),
-      jokerHighlighted: Array.from(state.jokerHighlighted || []),
-      portalHighlighted: Array.from(state.portalHighlighted || []),
-      eventActive: Array.from(state.eventActive || []),
-      lastEvent: state.lastEvent || null,
-      pieces: (state.pieces || []).map(p => ({...p})),
-      occupied: Array.from((state.occupied || new Map()).entries()),
-      carry: {...(state.carry || {})},
-      jokers: JSON.parse(JSON.stringify(state.jokers || {})),
-      jokerFlags: {...(state.jokerFlags || {})},
-      jokerMode: state.jokerMode || null,
-      jokerData: JSON.parse(JSON.stringify(state.jokerData || {})),
-      eventPendingContinue: state.eventPendingContinue ? {...state.eventPendingContinue} : null,
-      eventMoveBarricadesRemaining: state.eventMoveBarricadesRemaining || 0,
-      resumeLanding: state.resumeLanding ? {...state.resumeLanding} : null,
-      pendingSix: !!state.pendingSix,
-      extraRoll: !!state.extraRoll,
-      ignoreBarricadesThisTurn: !!state.ignoreBarricadesThisTurn,
-      goalScores: {...(state.goalScores || {})},
-      goalNodeId: state.goalNodeId || null,
-      bonusGoalNodeId: state.bonusGoalNodeId || null,
-      bonusGoalValue: state.bonusGoalValue || 2,
-      bonusLightNodeId: state.bonusLightNodeId || null,
-      goalToWin: state.goalToWin,
-      gameOver: !!state.gameOver,
-      bosses: JSON.parse(JSON.stringify(state.bosses || [])),
-      bossMaxActive: state.bossMaxActive,
-      bossIdSeq: state.bossIdSeq,
-      bossSpawnNodes: (state.bossSpawnNodes || []).slice(),
-      bossTick: state.bossTick,
-      bossAuto: !!state.bossAuto,
-      bossDebug: !!state.bossDebug,
-      _bossRoundEndFlag: !!state._bossRoundEndFlag,
-      bossRoundNum: state.bossRoundNum || 0,
-      barricades: Array.from(barricades || []),
-      initialBarricadeLayout: Array.isArray(state.initialBarricadeLayout) ? state.initialBarricadeLayout.slice() : null,
-      portalUsedThisTurn: !!state.portalUsedThisTurn,
-      _goalCapturedThisLanding: state._goalCapturedThisLanding || null,
-    }
-  };
-}
-
-function applyOnlineSnapshot(payload){
-  if(!payload || !payload.state) return;
-  const snap = payload.state;
-  onlineApplyingSnapshot = true;
-  try{
-    state.players = Array.isArray(snap.players) ? snap.players.slice() : state.players;
-    state.playerCount = Number(snap.playerCount || state.playerCount || 4);
-    state.turn = Number(snap.turn || 0);
-    state.roll = snap.roll;
-    state.phase = snap.phase || state.phase;
-    state.selected = snap.selected || null;
-    state.highlighted = new Set(snap.highlighted || []);
-    state.placeHighlighted = new Set(snap.placeHighlighted || []);
-    state.jokerHighlighted = new Set(snap.jokerHighlighted || []);
-    ensurePortalState();
-    state.portalHighlighted = new Set(snap.portalHighlighted || []);
-    state.eventActive = new Set(snap.eventActive || []);
-    state.lastEvent = snap.lastEvent || null;
-    state.pieces = Array.isArray(snap.pieces) ? snap.pieces.map(p => ({...p})) : state.pieces;
-    state.occupied = new Map(snap.occupied || []);
-    state.carry = {...(snap.carry || state.carry || {})};
-    state.jokers = JSON.parse(JSON.stringify(snap.jokers || state.jokers || {}));
-    state.jokerFlags = {...(snap.jokerFlags || state.jokerFlags || {})};
-    state.jokerMode = snap.jokerMode || null;
-    state.jokerData = JSON.parse(JSON.stringify(snap.jokerData || {}));
-    state.eventPendingContinue = snap.eventPendingContinue ? {...snap.eventPendingContinue} : null;
-    state.eventMoveBarricadesRemaining = Number(snap.eventMoveBarricadesRemaining || 0);
-    state.resumeLanding = snap.resumeLanding ? {...snap.resumeLanding} : null;
-    state.pendingSix = !!snap.pendingSix;
-    state.extraRoll = !!snap.extraRoll;
-    state.ignoreBarricadesThisTurn = !!snap.ignoreBarricadesThisTurn;
-    state.goalScores = {...(snap.goalScores || state.goalScores || {})};
-    state.goalNodeId = snap.goalNodeId || null;
-    state.bonusGoalNodeId = snap.bonusGoalNodeId || null;
-    state.bonusGoalValue = Number(snap.bonusGoalValue || 2);
-    state.bonusLightNodeId = snap.bonusLightNodeId || null;
-    state.goalToWin = Number(snap.goalToWin || state.goalToWin || 10);
-    state.gameOver = !!snap.gameOver;
-    ensureBossState();
-    state.bosses = JSON.parse(JSON.stringify(snap.bosses || []));
-    state.bossMaxActive = Number(snap.bossMaxActive || state.bossMaxActive || 2);
-    state.bossIdSeq = Number(snap.bossIdSeq || state.bossIdSeq || 1);
-    state.bossSpawnNodes = Array.isArray(snap.bossSpawnNodes) ? snap.bossSpawnNodes.slice() : [];
-    state.bossTick = Number(snap.bossTick || 0);
-    state.bossAuto = !!snap.bossAuto;
-    state.bossDebug = !!snap.bossDebug;
-    state._bossRoundEndFlag = !!snap._bossRoundEndFlag;
-    state.bossRoundNum = Number(snap.bossRoundNum || 0);
-    barricades.clear();
-    for(const id of (snap.barricades || [])) barricades.add(id);
-    state.initialBarricadeLayout = Array.isArray(snap.initialBarricadeLayout) ? snap.initialBarricadeLayout.slice() : state.initialBarricadeLayout;
-    state.portalUsedThisTurn = !!snap.portalUsedThisTurn;
-    state._goalCapturedThisLanding = snap._goalCapturedThisLanding || null;
-    if(dieBox) dieBox.textContent = (state.roll == null ? '–' : String(state.roll));
-    updateJokerUI();
-    ensureEventSelectUI();
-    updateBossUI();
-    draw();
-  } finally {
-    onlineApplyingSnapshot = false;
+function clearOnlineTimers(){
+  if(onlineHeartbeatTimer){
+    clearInterval(onlineHeartbeatTimer);
+    onlineHeartbeatTimer = null;
+  }
+  if(onlineReconnectTimer){
+    clearTimeout(onlineReconnectTimer);
+    onlineReconnectTimer = null;
   }
 }
 
-function scheduleOnlineStateBroadcast(){
-  // Stufe 1 server-authoritative: keine Client-Snapshots mehr senden.
+function startOnlineHeartbeat(){
+  if(onlineHeartbeatTimer) clearInterval(onlineHeartbeatTimer);
+  onlineHeartbeatTimer = setInterval(()=>{
+    if(!ws || ws.readyState !== WebSocket.OPEN) return;
+    try{
+      ws.send(JSON.stringify({ type:'ping' }));
+    }catch(_err){}
+  }, 10000);
 }
 
-function sendOnlineAction(action){
-  if(!isOnlineSession()) return false;
-  if(!ws || ws.readyState !== 1) return false;
-  ws.send(JSON.stringify({ type:'action_request', action }));
-  return true;
+function syncOnlineBadge(){
+  const badge = document.getElementById('onlineBadgeText');
+  if(!badge) return;
+  const lines = [
+    'Spieler: <b>' + (onlinePlayerName || sessionStorage.getItem('playerName') || '–') + '</b>',
+    'Raum: <b>' + (onlineRoomCode || sessionStorage.getItem('roomCode') || '–') + '</b>',
+    'ID: <b>' + (onlineSelfPlayerId || sessionStorage.getItem('playerId') || '–') + '</b>',
+    'Rolle: <b>' + (onlineIsHost ? 'Host' : 'Mitspieler') + '</b>',
+    'Modus: <b>' + (isOnlineSession() ? 'Online' : 'Lokal') + '</b>',
+    'Server: <b>' + (onlineConnected ? 'verbunden' : 'getrennt') + '</b>'
+  ];
+  badge.innerHTML = lines.join('<br>');
 }
 
-function processIncomingServerAction(msg){
-  if(!msg || !msg.action) return;
-  const seq = Number(msg.actionSeq || 0);
-  if(seq && seq <= onlineLastServerActionSeq) return;
-  if(seq) onlineLastServerActionSeq = seq;
+function updateOnlinePlayerCount(room){
+  const count = Number(room?.playerCount || room?.players?.length || 0) || null;
+  if(!count) return;
+  onlineExpectedPlayerCount = count;
+  if(Number(state.playerCount || 0) !== count){
+    try{
+      setPlayerCount(count, { reset:true });
+    }catch(err){
+      console.warn('[ONLINE] playerCount sync failed', err, count);
+    }
+  }
+}
 
-  const action = msg.action;
+function handleOnlineMessage(msg){
+  if(!msg || typeof msg !== 'object') return;
+
+  switch(msg.type){
+    case 'hello':
+      return;
+
+    case 'pong':
+    case 'noop':
+      return;
+
+    case 'room_created':
+    case 'room_joined': {
+      if(msg.self?.playerId){
+        onlineSelfPlayerId = String(msg.self.playerId || '').trim();
+        try{
+          sessionStorage.setItem('playerId', onlineSelfPlayerId);
+          localStorage.setItem('playerId', onlineSelfPlayerId);
+          const packed = JSON.parse(sessionStorage.getItem('mittelalterLobby') || '{}');
+          packed.playerId = onlineSelfPlayerId;
+          sessionStorage.setItem('mittelalterLobby', JSON.stringify(packed));
+          localStorage.setItem('mittelalterLobby', JSON.stringify({
+            ...(JSON.parse(localStorage.getItem('mittelalterLobby') || '{}')),
+            playerId: onlineSelfPlayerId
+          }));
+        }catch(_err){}
+      }
+      if(typeof msg.self?.isHost === 'boolean') onlineIsHost = !!msg.self.isHost;
+      if(msg.room){
+        updateOnlinePlayerCount(msg.room);
+        console.log('Spieler im Raum:', (msg.room.players || []).map(p => p.name));
+      }
+      syncOnlineBadge();
+      return;
+    }
+
+    case 'room_state': {
+      if(msg.room){
+        updateOnlinePlayerCount(msg.room);
+        const players = (msg.room.players || []).map(p => p.name);
+        console.log('Spieler im Raum:', players);
+        const me = (msg.room.players || []).find(p => p.id === onlineSelfPlayerId || p.name === onlinePlayerName);
+        if(me){
+          onlineIsHost = !!me.isHost;
+          onlineSelfPlayerId = me.id || onlineSelfPlayerId;
+        }
+      }
+      syncOnlineBadge();
+      return;
+    }
+
+    case 'game_started':
+      if(msg.room){
+        updateOnlinePlayerCount(msg.room);
+      }
+      syncOnlineBadge();
+      return;
+
+    case 'state_update':
+    case 'server_action':
+      // Aktueller stabiler Server unterstützt noch keine Spiellogik-Sync.
+      // Darum bewusst ignorieren statt Fehler/Warnung.
+      return;
+
+    case 'error_message':
+      console.log('Serverfehler:', msg.message);
+      return;
+
+    default:
+      return;
+  }
+}
+
+function sendInitialOnlineSync(){
+  if(!ws || ws.readyState !== WebSocket.OPEN) return;
   try{
-    onlineExecutingServerAction = true;
-    if(action.kind === 'roll_click'){
-      if(state.gameOver) return;
-      if(state.phase !== 'needRoll') return;
-      ensureJokerState();
-      state.roll = rollDice();
-      dieBox.textContent = state.roll;
-      state.selected = null;
-      state.highlighted.clear();
-      state.phase = 'choosePiece';
-      setStatus(`Team ${currentTeam()}: Wurf ${state.roll}. Wähle eine Figur.`);
-      updateJokerUI();
-      ensureEventSelectUI();
-      draw();
-      return;
-    }
-    if(action.kind === 'tap_world'){
-      handleTapAtWorld(Number(action.wx), Number(action.wy));
-      return;
-    }
-    if(action.kind === 'use_joker'){
-      tryUseJoker(action.jokerId);
-      return;
-    }
-  } catch(err){
-    console.warn('[ONLINE] server_action processing failed', err, action);
-  } finally {
-    onlineExecutingServerAction = false;
+    ws.send(JSON.stringify({
+      type: 'sync_request',
+      roomCode: onlineRoomCode,
+      playerId: onlineSelfPlayerId,
+      name: onlinePlayerName,
+      isHost: onlineIsHost
+    }));
+  }catch(err){
+    console.warn('[ONLINE] sync_request failed', err);
   }
 }
 
 function connectMittelalterServer(){
-  onlinePlayerName = sessionStorage.getItem('playerName') || 'Spieler';
-  onlineRoomCode = (sessionStorage.getItem('roomCode') || '').trim().toUpperCase();
-  onlineIsHost = sessionStorage.getItem('isHost') === 'true';
+  onlinePlayerName = sessionStorage.getItem('playerName') || localStorage.getItem('playerName') || 'Spieler';
+  onlineRoomCode = (sessionStorage.getItem('roomCode') || localStorage.getItem('roomCode') || '').trim().toUpperCase();
+  onlineSelfPlayerId = (sessionStorage.getItem('playerId') || localStorage.getItem('playerId') || '').trim() || null;
+  onlineIsHost = (sessionStorage.getItem('isHost') || localStorage.getItem('isHost') || '') === 'true';
+
+  syncOnlineBadge();
   if(!isOnlineSession() || !onlineRoomCode) return;
+
+  clearOnlineTimers();
+  onlineManualClose = false;
 
   try{
     ws = new WebSocket(SERVER_URL);
-    ws.onopen = ()=>{
-      onlineConnected = true;
-      console.log('Verbunden mit Mittelalter Server');
-      ws.send(JSON.stringify({
-        type: 'sync_request',
-        roomCode: onlineRoomCode,
-        name: onlinePlayerName,
-        isHost: onlineIsHost
-      }));
-    };
-
-    ws.onmessage = (e)=>{
-      try{
-        const msg = JSON.parse(e.data);
-        if(msg.type === 'room_state'){
-          if(msg.self?.playerId) onlineSelfPlayerId = msg.self.playerId;
-          if(msg.room?.playerCount) onlineExpectedPlayerCount = Number(msg.room.playerCount || 0) || null;
-          console.log('Spieler im Raum:', (msg.room?.players || []).map(p => p.name));
-          if(onlineExpectedPlayerCount && Number(state.playerCount || 0) !== onlineExpectedPlayerCount){
-            try{ setPlayerCount(onlineExpectedPlayerCount, { reset:true }); }catch(_e){}
-          }
-          if(msg.snapshot?.state){
-            applyOnlineSnapshot(msg.snapshot);
-          }
-          return;
-        }
-        if(msg.type === 'state_update'){
-          if(msg.state){
-            applyOnlineSnapshot(msg.state);
-          }
-          return;
-        }
-        if(msg.type === 'server_action'){
-          console.log('[ONLINE] server_action', msg.action?.kind, msg.actionSeq, msg.action);
-          processIncomingServerAction(msg);
-          return;
-        }
-        if(msg.type === 'error_message'){
-          console.log('Serverfehler:', msg.message);
-        }
-      }catch(err){
-        console.warn('[ONLINE] message parse failed', err);
-      }
-    };
-    ws.onclose = ()=>{
-      onlineConnected = false;
-      console.log('Server Verbindung geschlossen');
-    };
   }catch(err){
+    onlineConnected = false;
+    syncOnlineBadge();
     console.log('Server Verbindung fehlgeschlagen');
+    return;
   }
+
+  ws.onopen = ()=>{
+    onlineConnected = true;
+    console.log('Verbunden mit Mittelalter Server');
+    syncOnlineBadge();
+    startOnlineHeartbeat();
+    sendInitialOnlineSync();
+  };
+
+  ws.onmessage = (e)=>{
+    let msg = null;
+    try{
+      if(typeof e.data === 'string'){
+        msg = JSON.parse(e.data);
+      }else if(e.data && typeof e.data.text === 'function'){
+        e.data.text().then((txt)=>{
+          try{
+            const parsed = JSON.parse(txt);
+            handleOnlineMessage(parsed);
+          }catch(_err){
+            // absichtlich still: keine Spam-Warnungen mehr
+          }
+        }).catch(()=>{});
+        return;
+      }else{
+        return;
+      }
+    }catch(_err){
+      return;
+    }
+
+    handleOnlineMessage(msg);
+  };
+
+  ws.onclose = ()=>{
+    onlineConnected = false;
+    syncOnlineBadge();
+    clearOnlineTimers();
+    console.log('Server Verbindung geschlossen');
+    if(!onlineManualClose && isOnlineSession()){
+      onlineReconnectTimer = setTimeout(()=>{
+        connectMittelalterServer();
+      }, 1500);
+    }
+  };
+
+  ws.onerror = ()=>{
+    onlineConnected = false;
+    syncOnlineBadge();
+  };
 }
 
-// Non-host input -> action_request instead of local execution
-btnRoll?.addEventListener('click', (e)=>{
-  if(!isOnlineSession() || onlineExecutingServerAction) return;
-  if(sendOnlineAction({ kind:'roll_click' })){
-    e.preventDefault();
-    e.stopImmediatePropagation();
-  }
-}, true);
-
-const __origHandleTapAtWorld = (typeof handleTapAtWorld === 'function') ? handleTapAtWorld : null;
-handleTapAtWorld = function(wx, wy){
-  if(isOnlineSession() && !onlineExecutingServerAction){
-    sendOnlineAction({ kind:'tap_world', wx, wy });
-    return;
-  }
-  if(__origHandleTapAtWorld) return __origHandleTapAtWorld(wx, wy);
-  console.warn('[ONLINE] handleTapAtWorld missing', { wx, wy });
-};
-
-const __origTryUseJoker = (typeof tryUseJoker === 'function') ? tryUseJoker : null;
-tryUseJoker = function(jokerId){
-  if(isOnlineSession() && !onlineExecutingServerAction){
-    sendOnlineAction({ kind:'use_joker', jokerId });
-    return;
-  }
-  if(__origTryUseJoker) return __origTryUseJoker(jokerId);
-  console.warn('[ONLINE] tryUseJoker missing', { jokerId });
-};
-
+window.addEventListener('beforeunload', ()=>{
+  onlineManualClose = true;
+  clearOnlineTimers();
+  try{ ws && ws.close(); }catch(_err){}
+});
 
 window.addEventListener('load', ()=>{
   connectMittelalterServer();
