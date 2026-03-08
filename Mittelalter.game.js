@@ -527,10 +527,14 @@ function applyServerRoomState(room, opts={}){
     }
   }
 
+  const snap = room.gameState?.snapshot || null;
+  if(snap) applyServerSnapshot(snap, { silentDraw:true });
+
   if(!isLocalPlayersTurn()){
     setStatus(`Team ${currentTeam()} ist dran – Wurf wird vom Server gesteuert.`);
   }
 }
+
 function applyAuthoritativeRoll(roll){
   if(!roll) return;
   if(typeof roll.turnIndex === 'number'){
@@ -588,13 +592,114 @@ function broadcastTurnStateOnline(infoText){
 
   if(online.authoritativeMoveActorId){
     if(online.playerId !== online.authoritativeMoveActorId) return;
+    payload.stateSnapshot = buildFullSyncSnapshot();
     sendServerAction('finish_move', payload);
     return;
   }
 
   sendServerAction('turn_update', payload);
 }
+
+function buildFullSyncSnapshot(){
+  ensureEventState();
+  ensureBossState();
+  ensurePortalState();
+  ensureJokerState();
+  return {
+    turnIndex: Number(state.turn || 0),
+    phase: String(state.phase || 'needRoll'),
+    roll: Number(state.roll || 0),
+    pendingSix: !!state.pendingSix,
+    extraRoll: !!state.extraRoll,
+    ignoreBarricadesThisTurn: !!state.ignoreBarricadesThisTurn,
+    selected: state.selected || null,
+    pieces: state.pieces.map(p => ({
+      id: p.id,
+      team: Number(p.team || 0),
+      node: p.node || null,
+      prev: p.prev || null,
+      shielded: !!p.shielded
+    })),
+    barricades: Array.from(barricades || []),
+    eventActive: Array.from(state.eventActive || []),
+    carry: Object.assign({}, state.carry || {}),
+    goalScores: Object.assign({}, state.goalScores || {}),
+    goalNodeId: state.goalNodeId || null,
+    bonusGoalNodeId: state.bonusGoalNodeId || null,
+    bonusLightNodeId: state.bonusLightNodeId || null,
+    bosses: Array.isArray(state.bosses) ? state.bosses.map(b => ({
+      id: b.id,
+      type: b.type,
+      name: b.name,
+      node: b.node || null,
+      alive: b.alive !== false,
+      visible: b.visible !== false,
+      hits: Number(b.hits || 0),
+      meta: b.meta || {}
+    })) : []
+  };
+}
+
+function applyServerSnapshot(snapshot, opts={}){
+  if(!snapshot || typeof snapshot !== 'object') return false;
+  ensureEventState();
+  ensureBossState();
+  ensurePortalState();
+  ensureJokerState();
+
+  if(Array.isArray(snapshot.pieces)){
+    state.pieces = snapshot.pieces.map(p => ({
+      id: p.id,
+      team: Number(p.team || 0),
+      node: p.node || null,
+      prev: p.prev || null,
+      shielded: !!p.shielded
+    }));
+    state.occupied.clear();
+    for(const p of state.pieces){
+      if(p && p.node) state.occupied.set(p.node, p.id);
+    }
+  }
+  if(Array.isArray(snapshot.barricades)){
+    barricades.clear();
+    for(const id of snapshot.barricades){
+      if(id) barricades.add(id);
+    }
+  }
+  if(Array.isArray(snapshot.eventActive)){
+    state.eventActive.clear();
+    for(const id of snapshot.eventActive){
+      if(id) state.eventActive.add(id);
+    }
+  }
+  if(snapshot.carry && typeof snapshot.carry === 'object') state.carry = Object.assign({1:0,2:0,3:0,4:0}, snapshot.carry);
+  if(snapshot.goalScores && typeof snapshot.goalScores === 'object') state.goalScores = Object.assign({1:0,2:0,3:0,4:0}, snapshot.goalScores);
+  if('goalNodeId' in snapshot) state.goalNodeId = snapshot.goalNodeId || null;
+  if('bonusGoalNodeId' in snapshot) state.bonusGoalNodeId = snapshot.bonusGoalNodeId || null;
+  if('bonusLightNodeId' in snapshot) state.bonusLightNodeId = snapshot.bonusLightNodeId || null;
+  if(Array.isArray(snapshot.bosses)) state.bosses = snapshot.bosses.map(b => Object.assign({}, b));
+  if('selected' in snapshot) state.selected = snapshot.selected || null;
+  if('pendingSix' in snapshot) state.pendingSix = !!snapshot.pendingSix;
+  if('extraRoll' in snapshot) state.extraRoll = !!snapshot.extraRoll;
+  if('ignoreBarricadesThisTurn' in snapshot) state.ignoreBarricadesThisTurn = !!snapshot.ignoreBarricadesThisTurn;
+  if('roll' in snapshot){
+    state.roll = Number(snapshot.roll || 0) || null;
+    dieBox.textContent = state.roll ? String(state.roll) : '–';
+  }
+  if(typeof snapshot.turnIndex === 'number') state.turn = Math.max(0, Math.min(state.players.length - 1, Number(snapshot.turnIndex) || 0));
+  if(snapshot.phase) state.phase = String(snapshot.phase);
+
+  state.highlighted.clear();
+  state.placeHighlighted.clear();
+  state.jokerHighlighted.clear();
+  state.portalHighlighted.clear();
+  online.lastSnapshotAt = Date.now();
+  if(!opts.silentDraw) draw();
+  return true;
+}
+
 function buildServerMoveSnapshot(){
+  const full = buildFullSyncSnapshot();
   return {
     roll: Number(state.roll || 0),
     ignoreBarricadesThisTurn: !!state.ignoreBarricadesThisTurn,
@@ -604,7 +709,14 @@ function buildServerMoveSnapshot(){
       node: p.node || null,
       shielded: !!p.shielded
     })),
-    barricades: Array.from(barricades || [])
+    barricades: Array.from(barricades || []),
+    eventActive: full.eventActive,
+    carry: full.carry,
+    goalScores: full.goalScores,
+    goalNodeId: full.goalNodeId,
+    bonusGoalNodeId: full.bonusGoalNodeId,
+    bonusLightNodeId: full.bonusLightNodeId,
+    bosses: full.bosses
   };
 }
 function requestServerMove(pieceId, targetId, legalTargets){
@@ -621,12 +733,26 @@ function requestServerMove(pieceId, targetId, legalTargets){
     stateSnapshot: buildServerMoveSnapshot()
   });
 }
-function applyAuthoritativeMove(moveMsg){
+function applyAuthoritativeMove(moveMsg, snapshot){
   if(!moveMsg) return;
   if(typeof moveMsg.turnIndex === 'number'){
     state.turn = Math.max(0, Math.min(state.players.length - 1, Number(moveMsg.turnIndex) || 0));
   }
   online.authoritativeMoveActorId = moveMsg.byPlayerId || null;
+
+  const snap = snapshot || moveMsg.snapshot || null;
+  if(snap){
+    applyServerSnapshot(snap, { silentDraw:true });
+    state.selected = moveMsg.pieceId || null;
+    state.roll = Number(moveMsg.roll || state.roll || 0) || null;
+    dieBox.textContent = state.roll ? String(state.roll) : '–';
+    state.highlighted.clear();
+    state.placeHighlighted.clear();
+    ensurePortalState();
+    state.portalHighlighted.clear();
+    draw();
+    return;
+  }
 
   const piece = state.pieces.find(p => p.id === moveMsg.pieceId);
   if(!piece){
@@ -715,7 +841,7 @@ function connectOnlineAuthority(){
     }
     if(type === 'game_move'){
       if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
-      applyAuthoritativeMove(msg.move);
+      applyAuthoritativeMove(msg.move, msg.snapshot || msg.move?.snapshot || msg.room?.gameState?.snapshot || null);
       return;
     }
     if(type === 'game_turn_state'){
