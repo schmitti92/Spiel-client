@@ -1,184 +1,281 @@
-const SERVER_URL = "wss://mittelalter-server.onrender.com";
+(() => {
+  const STORAGE_KEY = 'mittelalterLobby';
+  const DEFAULT_SERVER = localStorage.getItem('mittelalterServerUrl') || 'https://mittelalter-server.onrender.com';
 
-let socket = null;
-let roomCode = null;
-let playerName = null;
-let isHost = false;
+  let socket = null;
+  let currentServer = DEFAULT_SERVER;
+  let reconnectTimer = null;
+  let intentionallyClosed = false;
 
-function qs(id){
-    return document.getElementById(id);
-}
+  const $ = (id) => document.getElementById(id);
 
-function setRoomInfo(text){
-    const el = qs("roomInfo");
-    if(el) el.innerText = text;
-}
+  function normalizeName(name) {
+    return String(name || '').trim().slice(0, 24) || 'Spieler';
+  }
 
-function renderPlayers(players){
-    const list = qs("playerList");
-    if(!list) return;
+  function normalizeRoom(code) {
+    return String(code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  }
 
-    list.innerHTML = "";
-    (players || []).forEach(p=>{
-        const div = document.createElement("div");
-        div.className = "player";
-        div.innerText = typeof p === "string" ? p : (p.name || "Spieler");
-        list.appendChild(div);
-    });
-}
-
-
-function persistLobbySession(modeOverride){
-    const packed = {
-        playerName: playerName || '',
-        roomCode: roomCode || '',
-        isHost: !!isHost,
-        lastMode: modeOverride || 'online'
-    };
-    sessionStorage.setItem('mittelalterLobby', JSON.stringify(packed));
-    sessionStorage.setItem('mittelalterLastMode', packed.lastMode);
-    sessionStorage.setItem('playerName', packed.playerName);
-    sessionStorage.setItem('roomCode', packed.roomCode);
-    sessionStorage.setItem('isHost', packed.isHost ? 'true' : 'false');
-}
-
-function sendToServer(payload){
-    if(socket && socket.readyState === WebSocket.OPEN){
-        socket.send(JSON.stringify(payload));
+  function loadState() {
+    try {
+      return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+    } catch (_err) {
+      return {};
     }
-}
+  }
 
-function connectServer(){
-    socket = new WebSocket(SERVER_URL);
-
-    socket.onopen = () => {
-        console.log("Verbunden mit Mittelalter Server");
+  function saveState(patch = {}) {
+    const next = {
+      playerName: '',
+      roomCode: '',
+      playerId: '',
+      isHost: false,
+      players: [],
+      started: false,
+      connected: false,
+      serverUrl: currentServer,
+      ...loadState(),
+      ...patch,
     };
 
-    socket.onmessage = (event) => {
-        let msg;
-        try{
-            msg = JSON.parse(event.data);
-        }catch(err){
-            console.log("Ungültige Server-Nachricht");
-            return;
-        }
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    sessionStorage.setItem('playerName', next.playerName || '');
+    sessionStorage.setItem('roomCode', next.roomCode || '');
+    sessionStorage.setItem('playerId', next.playerId || '');
+    sessionStorage.setItem('isHost', next.isHost ? 'true' : 'false');
+    sessionStorage.setItem('mittelalterLastMode', 'online');
+    localStorage.setItem('mittelalterServerUrl', next.serverUrl || currentServer);
+    return next;
+  }
 
-        console.log("Server:", msg);
+  function setInfo(text, isError = false) {
+    const el = $('roomInfo');
+    if (!el) return;
+    el.innerText = text || '';
+    el.style.color = isError ? '#ffb4b4' : '';
+  }
 
-        if(msg.type === "hello"){
-            return;
-        }
+  function renderPlayers(players = []) {
+    const list = $('playerList');
+    if (!list) return;
+    list.innerHTML = '';
 
-        if(msg.type === "room_created"){
-            roomCode = msg.room?.roomCode || roomCode;
-            isHost = true;
-
-            persistLobbySession("online");
-
-            const roomInput = qs("roomInput");
-            if(roomInput) roomInput.value = roomCode || "";
-
-            setRoomInfo("Raum erstellt: " + roomCode);
-            renderPlayers(msg.room?.players || []);
-            return;
-        }
-
-        if(msg.type === "room_joined"){
-            roomCode = msg.room?.roomCode || roomCode;
-            isHost = false;
-
-            persistLobbySession("online");
-
-            setRoomInfo("Verbunden mit Raum: " + roomCode);
-            renderPlayers(msg.room?.players || []);
-            return;
-        }
-
-        if(msg.type === "room_state"){
-            renderPlayers(msg.room?.players || []);
-            if(msg.room?.roomCode){
-                setRoomInfo("Raum: " + msg.room.roomCode + (msg.info ? " • " + msg.info : ""));
-            }
-            return;
-        }
-
-        if(msg.type === "game_started"){
-            if(msg.room?.roomCode){
-                roomCode = msg.room.roomCode;
-            }
-            persistLobbySession("online");
-            window.location.href = "Mittelalter.index.html";
-            return;
-        }
-
-        if(msg.type === "error_message"){
-            alert(msg.message || "Serverfehler");
-        }
-    };
-
-    socket.onclose = () => {
-        console.log("Server Verbindung geschlossen");
-    };
-}
-
-function createRoom(){
-    playerName = (qs("nameInput")?.value || "Spieler").trim() || "Spieler";
-    roomCode = null;
-    isHost = true;
-
-    roomCode = "";
-    persistLobbySession("online");
-
-    setRoomInfo("Erstelle Raum...");
-    renderPlayers([playerName]);
-
-    sendToServer({
-        type:"create_room",
-        name:playerName
-    });
-}
-
-function joinRoom(){
-    playerName = (qs("nameInput")?.value || "Spieler").trim() || "Spieler";
-    roomCode = (qs("roomInput")?.value || "").trim().toUpperCase();
-
-    if(!roomCode){
-        alert("Bitte Raumcode eingeben");
-        return;
+    if (!players.length) {
+      const div = document.createElement('div');
+      div.className = 'player';
+      div.innerText = 'Noch keine Spieler im Raum';
+      list.appendChild(div);
+      return;
     }
 
-    isHost = false;
-    persistLobbySession("online");
-
-    setRoomInfo("Verbinde mit Raum: " + roomCode + " ...");
-
-    sendToServer({
-        type:"join_room",
-        roomCode:roomCode,
-        name:playerName
+    players.forEach((player) => {
+      const div = document.createElement('div');
+      div.className = 'player';
+      const label = `${player.name}${player.isHost ? ' 👑' : ''}${player.connected === false ? ' (getrennt)' : ''}`;
+      div.innerText = label;
+      list.appendChild(div);
     });
-}
+  }
 
-function startGame(){
-    if(!roomCode){
-        alert("Kein Raum aktiv");
-        return;
+  function syncUi() {
+    const state = loadState();
+    if ($('nameInput')) $('nameInput').value = state.playerName || '';
+    if ($('roomInput')) $('roomInput').value = state.roomCode || '';
+
+    renderPlayers(state.players || []);
+
+    const hasRoom = !!state.roomCode;
+    const startBtn = document.querySelector('.startBtn');
+    if (startBtn) {
+      startBtn.disabled = !hasRoom || !state.connected || !state.isHost;
+      startBtn.style.opacity = startBtn.disabled ? '0.6' : '1';
+      startBtn.style.cursor = startBtn.disabled ? 'not-allowed' : 'pointer';
+      startBtn.innerText = state.isHost ? 'Spiel starten' : 'Auf Host warten';
     }
 
-    sendToServer({
-        type:"start_game"
+    const serverBox = $('serverStatus');
+    if (serverBox) {
+      const serverText = state.serverUrl || currentServer;
+      serverBox.innerText = `Server: ${serverText}`;
+    }
+  }
+
+  function toWsUrl(httpUrl) {
+    return httpUrl.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
+  }
+
+  function send(msg) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      setInfo('Keine aktive Verbindung zum Server.', true);
+      return false;
+    }
+    socket.send(JSON.stringify(msg));
+    return true;
+  }
+
+  function handleRoomState(room, infoText) {
+    const state = loadState();
+    const me = (room.players || []).find((p) => p.id === state.playerId);
+
+    saveState({
+      roomCode: room.roomCode || state.roomCode,
+      isHost: !!me?.isHost,
+      players: room.players || [],
+      started: !!room.gameState?.started,
+      connected: true,
     });
-}
 
-window.createRoom = createRoom;
-window.joinRoom = joinRoom;
-window.startGame = startGame;
+    setInfo(infoText || `Raum ${room.roomCode} aktiv · ${room.players.length} Spieler`);
+    syncUi();
+  }
 
-window.addEventListener("beforeunload", ()=>{
-    try{
-        sendToServer({ type:"leave_room" });
-    }catch(err){}
-});
+  function handleMessage(raw) {
+    let msg;
+    try {
+      msg = JSON.parse(raw.data);
+    } catch (_err) {
+      setInfo('Antwort vom Server konnte nicht gelesen werden.', true);
+      return;
+    }
 
-window.addEventListener("load", connectServer);
+    if (msg.type === 'hello') {
+      const state = loadState();
+      const roomCode = normalizeRoom(state.roomCode);
+      if (roomCode) send({ type: 'sync_request' });
+      setInfo('Verbunden. Du kannst jetzt einen Raum erstellen oder beitreten.');
+      syncUi();
+      return;
+    }
+
+    if (msg.type === 'room_created') {
+      saveState({
+        roomCode: msg.room.roomCode,
+        playerId: msg.self.playerId,
+        playerName: msg.self.name,
+        isHost: true,
+        players: msg.room.players,
+        started: false,
+        connected: true,
+      });
+      handleRoomState(msg.room, `Raum erstellt: ${msg.room.roomCode}`);
+      return;
+    }
+
+    if (msg.type === 'room_joined') {
+      saveState({
+        roomCode: msg.room.roomCode,
+        playerId: msg.self.playerId,
+        playerName: msg.self.name,
+        isHost: false,
+        players: msg.room.players,
+        started: !!msg.room.gameState?.started,
+        connected: true,
+      });
+      handleRoomState(msg.room, `Du bist Raum ${msg.room.roomCode} beigetreten.`);
+      return;
+    }
+
+    if (msg.type === 'room_state') {
+      handleRoomState(msg.room, msg.info || `Raum ${msg.room.roomCode} synchronisiert.`);
+      return;
+    }
+
+    if (msg.type === 'game_started') {
+      if (msg.room) handleRoomState(msg.room, msg.info || 'Spiel startet …');
+      const state = loadState();
+      window.location.href = `Mittelalter.index.html?room=${encodeURIComponent(state.roomCode)}`;
+      return;
+    }
+
+    if (msg.type === 'error_message') {
+      setInfo(msg.message || 'Serverfehler.', true);
+      return;
+    }
+  }
+
+  function connect() {
+    intentionallyClosed = false;
+    clearTimeout(reconnectTimer);
+
+    try {
+      socket = new WebSocket(toWsUrl(currentServer));
+    } catch (err) {
+      setInfo(`WebSocket konnte nicht geöffnet werden: ${err.message}`, true);
+      return;
+    }
+
+    setInfo('Verbinde mit Server …');
+    syncUi();
+
+    socket.addEventListener('open', () => {
+      saveState({ connected: true, serverUrl: currentServer });
+      syncUi();
+    });
+
+    socket.addEventListener('message', handleMessage);
+
+    socket.addEventListener('close', () => {
+      saveState({ connected: false });
+      syncUi();
+      if (!intentionallyClosed) {
+        setInfo('Verbindung getrennt. Neuer Verbindungsversuch …', true);
+        reconnectTimer = setTimeout(connect, 1500);
+      }
+    });
+
+    socket.addEventListener('error', () => {
+      setInfo('Verbindung zum Mittelalter-Server fehlgeschlagen.', true);
+    });
+  }
+
+  window.createRoom = function createRoom() {
+    const playerName = normalizeName($('nameInput')?.value);
+    $('nameInput').value = playerName;
+    saveState({ playerName });
+    send({ type: 'create_room', name: playerName });
+  };
+
+  window.joinRoom = function joinRoom() {
+    const playerName = normalizeName($('nameInput')?.value);
+    const roomCode = normalizeRoom($('roomInput')?.value);
+    $('nameInput').value = playerName;
+    $('roomInput').value = roomCode;
+
+    if (!roomCode) {
+      setInfo('Bitte einen Raumcode eingeben.', true);
+      return;
+    }
+
+    saveState({ playerName, roomCode });
+    send({ type: 'join_room', roomCode, name: playerName });
+  };
+
+  window.startGame = function startGame() {
+    const state = loadState();
+    if (!state.isHost) {
+      setInfo('Nur der Host darf das Spiel starten.', true);
+      return;
+    }
+    send({ type: 'start_game' });
+  };
+
+  window.goBack = function goBack() {
+    intentionallyClosed = true;
+    try {
+      send({ type: 'leave_room' });
+    } catch (_err) {}
+    try {
+      socket?.close();
+    } catch (_err) {}
+    window.location.href = 'index.html';
+  };
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const state = loadState();
+    if ($('nameInput')) $('nameInput').value = state.playerName || '';
+    if ($('roomInput')) $('roomInput').value = state.roomCode || '';
+    syncUi();
+    connect();
+  });
+})();
