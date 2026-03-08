@@ -851,6 +851,33 @@ function requestServerMove(pieceId, targetId, legalTargets){
     stateSnapshot: buildServerMoveSnapshot()
   });
 }
+function continueAuthoritativeLanding(moveMsg){
+  if(!moveMsg || !moveMsg.byPlayerId) return false;
+  if(online.playerId !== moveMsg.byPlayerId) return false;
+
+  const piece = state.pieces.find(p => p && p.id === moveMsg.pieceId);
+  if(!piece || !piece.node){
+    console.warn('[ONLINE] moved piece missing for authoritative landing', moveMsg);
+    pushOnlineTrace('[GAME_MOVE] landing skipped (piece missing)');
+    return false;
+  }
+
+  pushOnlineTrace(`[LANDING] resolve piece=${piece.id} node=${piece.node}`);
+  window.setTimeout(()=>{
+    try{
+      afterLanding(piece);
+    }catch(err){
+      console.error('[ONLINE] authoritative landing failed', err);
+      pushOnlineTrace(`[LANDING_ERR] ${err?.message || err}`);
+      try{
+        if(online.ws && online.ws.readyState === WebSocket.OPEN){
+          online.ws.send(JSON.stringify({ type:'sync_request' }));
+        }
+      }catch(_){ }
+    }
+  }, 0);
+  return true;
+}
 function applyAuthoritativeMove(moveMsg, snapshot){
   const snap = snapshot || moveMsg?.snapshot || online.room?.gameState?.snapshot || null;
 
@@ -875,6 +902,7 @@ function applyAuthoritativeMove(moveMsg, snapshot){
     setStatus(moveMsg?.byName ? `${moveMsg.byName} hat gezogen. Server-Stand übernommen.` : 'Zug vom Server übernommen.');
     pushOnlineTrace(`[GAME_MOVE] ${moveMsg?.pieceId || '-'} -> ${moveMsg?.targetId || '-'} phase=${state.phase}`);
     draw();
+    continueAuthoritativeLanding(moveMsg);
     return true;
   }
 
