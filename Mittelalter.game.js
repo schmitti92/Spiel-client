@@ -403,7 +403,9 @@ const state = {
   placeHighlighted:new Set(),
   jokerHighlighted:new Set(),  // Joker placement targets (e.g. barricade move)
   eventActive:new Set(),
-  lastEvent:null,  // Barricade placement targets
+  lastEvent:null,  // letzte Ereigniskarte
+  pendingEventCardId:null,
+  lastEventCardId:null,
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
@@ -738,6 +740,8 @@ function buildFullSyncSnapshot(){
     })),
     barricades: Array.from(barricades || []),
     eventActive: Array.from(state.eventActive || []),
+    pendingEventCardId: state.pendingEventCardId || null,
+    lastEventCardId: state.lastEventCardId || (state.lastEvent ? state.lastEvent.id : null),
     carry: Object.assign({}, state.carry || {}),
     goalScores: Object.assign({}, state.goalScores || {}),
     goalNodeId: state.goalNodeId || null,
@@ -787,6 +791,12 @@ function applyServerSnapshot(snapshot, opts={}){
     for(const id of snapshot.eventActive){
       if(id) state.eventActive.add(id);
     }
+  }
+  if('pendingEventCardId' in snapshot) state.pendingEventCardId = snapshot.pendingEventCardId || null;
+  if('lastEventCardId' in snapshot) state.lastEventCardId = snapshot.lastEventCardId || null;
+  if(state.lastEventCardId){
+    const eventCard = Array.isArray(EVENT_DECK) ? EVENT_DECK.find(c => c && c.id === state.lastEventCardId) : null;
+    if(eventCard) state.lastEvent = eventCard;
   }
   if(snapshot.carry && typeof snapshot.carry === 'object') state.carry = Object.assign({1:0,2:0,3:0,4:0}, snapshot.carry);
   if(snapshot.goalScores && typeof snapshot.goalScores === 'object') state.goalScores = Object.assign({1:0,2:0,3:0,4:0}, snapshot.goalScores);
@@ -862,7 +872,7 @@ function continueAuthoritativeLanding(moveMsg){
     return false;
   }
 
-  pushOnlineTrace(`[LANDING] resolve piece=${piece.id} node=${piece.node}`);
+  pushOnlineTrace(`[LANDING] resolve piece=${piece.id} node=${piece.node}${state.pendingEventCardId ? ` event=${state.pendingEventCardId}` : ''}`);
   window.setTimeout(()=>{
     try{
       afterLanding(piece);
@@ -5194,6 +5204,24 @@ function showJokerWheelOverlay(team, onClose){
   ov.style.display="flex";
 }
 
+
+
+function consumeAuthoritativeEventCard(){
+  const cardId = state.pendingEventCardId || null;
+  if(!cardId) return null;
+  const card = Array.isArray(EVENT_DECK) ? EVENT_DECK.find(c => c && c.id === cardId) : null;
+  state.pendingEventCardId = null;
+  if(card){
+    state.lastEvent = card;
+    state.lastEventCardId = card.id || null;
+    console.info('[EVENT][SERVER] authoritative card', { id: card.id, title: card.title, effect: card.effect });
+    pushOnlineTrace(`[EVENT] server card=${card.id}`);
+    return card;
+  }
+  console.warn('[EVENT][SERVER] unknown card id from server', cardId);
+  pushOnlineTrace(`[EVENT] unknown server card=${cardId}`);
+  return null;
+}
 
 function pickRandomEventCard(){
   // UI-forced card (persistent)
