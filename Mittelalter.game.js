@@ -190,7 +190,7 @@ function installOnScreenConsole(){
 }
 
 document.addEventListener("DOMContentLoaded", installOnScreenConsole);
-document.addEventListener("DOMContentLoaded", ()=>{ try{ ensureTopTurnUI(); }catch(_){ } });
+document.addEventListener("DOMContentLoaded", ()=>{ try{ ensureTopTurnUI(); }catch(_){ } try{ ensureOnlineDebugBadge(); }catch(_){ } });
 
 const TEAM_COLORS = {
   1: "#b33a3a", // Rot – Wappenrot
@@ -457,7 +457,16 @@ const online = {
   currentTurnPlayerId: null,
   suppressTurnBroadcast: false,
   initDone: false,
-  authoritativeMoveActorId: null
+  authoritativeMoveActorId: null,
+  reqSeq: 1,
+  pendingAction: null,
+  pendingRequestId: null,
+  pendingSince: 0,
+  pendingTimer: null,
+  lastAckAt: 0,
+  lastIncomingAt: 0,
+  lastError: null,
+  debugBadgeEl: null
 };
 
 function qp(name){
@@ -491,6 +500,93 @@ function isOnlineAuthorityActive(){
 function isLocalPlayersTurn(){
   if(!isOnlineAuthorityActive()) return true;
   return !!online.currentTurnPlayerId && online.currentTurnPlayerId === online.playerId;
+}
+
+function ensureOnlineDebugBadge(){
+  if(online.debugBadgeEl) return online.debugBadgeEl;
+  const el = document.createElement('div');
+  el.id = 'onlineDebugBadge';
+  el.style.cssText = [
+    'position:fixed',
+    'left:12px',
+    'bottom:12px',
+    'z-index:99996',
+    'padding:10px 12px',
+    'border-radius:14px',
+    'background:rgba(10,12,18,.82)',
+    'border:1px solid rgba(255,255,255,.12)',
+    'box-shadow:0 10px 30px rgba(0,0,0,.28)',
+    'color:rgba(240,245,255,.92)',
+    'font:600 12px system-ui, -apple-system, Segoe UI, Roboto, Arial',
+    'max-width:min(420px, calc(100vw - 24px))',
+    'white-space:pre-line',
+    'pointer-events:none'
+  ].join(';');
+  document.body.appendChild(el);
+  online.debugBadgeEl = el;
+  updateOnlineDebugBadge();
+  return el;
+}
+function onlineStateLabel(){
+  if(!online.enabled) return 'offline';
+  if(!online.connected) return 'socket getrennt';
+  if(!online.joined) return 'verbunden, join läuft';
+  return 'online';
+}
+function updateOnlineDebugBadge(){
+  const el = ensureOnlineDebugBadge();
+  const lines = [];
+  lines.push(`Online: ${onlineStateLabel()}`);
+  lines.push(`Raum: ${online.roomCode || '–'} | Spieler: ${online.playerId || '–'}`);
+  if(online.pendingAction){
+    const age = online.pendingSince ? Math.max(0, Math.round((Date.now() - online.pendingSince)/1000)) : 0;
+    lines.push(`Warte auf: ${online.pendingAction} (${age}s)`);
+  }else{
+    lines.push('Warte auf: –');
+  }
+  if(online.lastError) lines.push(`Fehler: ${online.lastError}`);
+  el.textContent = lines.join('
+');
+}
+function clearPendingRequest(reason='ok'){
+  if(online.pendingTimer){
+    clearTimeout(online.pendingTimer);
+    online.pendingTimer = null;
+  }
+  online.pendingAction = null;
+  online.pendingRequestId = null;
+  online.pendingSince = 0;
+  if(reason !== 'ok' && reason) online.lastError = reason;
+  updateOnlineDebugBadge();
+}
+function startPendingRequest(action, requestId){
+  if(online.pendingTimer) clearTimeout(online.pendingTimer);
+  online.pendingAction = action;
+  online.pendingRequestId = requestId;
+  online.pendingSince = Date.now();
+  online.lastError = null;
+  online.pendingTimer = setTimeout(()=>{
+    const label = action === 'move_request' ? 'Zugantwort' : (action === 'roll_request' ? 'Würfelantwort' : 'Serverantwort');
+    online.lastError = `${label} fehlt`;
+    setStatus(`${label} fehlt. Prüfe Render-Deploy / Socket / Serverlog.`);
+    console.warn('[ONLINE] timeout waiting for response', action, requestId);
+    updateOnlineDebugBadge();
+    try{
+      if(online.ws && online.ws.readyState === WebSocket.OPEN){
+        online.ws.send(JSON.stringify({ type:'sync_request' }));
+      }
+    }catch(_){ }
+  }, 4500);
+  updateOnlineDebugBadge();
+}
+function markOnlineIncoming(type){
+  online.lastIncomingAt = Date.now();
+  if(type === 'error_message') return;
+  if(type === 'action_ack') return;
+  if(type === 'game_roll' || type === 'game_move' || type === 'game_turn_state' || type === 'room_state' || type === 'game_started'){
+    clearPendingRequest('ok');
+  }
+  updateOnlineDebugBadge();
 }
 function syncLocalTurnOwnerFromRoom(room){
   if(!room || !room.players || !room.players.length) return;
@@ -565,10 +661,16 @@ function applyAuthoritativeRoll(roll){
 }
 function sendServerAction(action, payload={}){
   if(!isOnlineAuthorityActive()) return false;
+  const requestId = `req_${Date.now()}_${online.reqSeq++}`;
+  const packet = { type:'server_action', action, requestId, ...payload };
   try{
-    online.ws.send(JSON.stringify({ type:'server_action', action, ...payload }));
+    online.ws.send(JSON.stringify(packet));
+    if(action === 'roll_request' || action === 'move_request') startPendingRequest(action, requestId);
+    console.info('[ONLINE] sent', action, requestId, packet);
     return true;
   }catch(err){
+    online.lastError = `send failed: ${action}`;
+    updateOnlineDebugBadge();
     console.warn('[ONLINE] send failed', action, err);
     return false;
   }
@@ -579,6 +681,7 @@ function requestServerRoll(reason='main'){
     setStatus(`Nicht du bist dran. Team ${currentTeam()} würfelt über den Server.`);
     return true;
   }
+  setStatus('Server würfelt...');
   return sendServerAction('roll_request', {
     reason,
     double: !!state.jokerFlags.double
@@ -730,6 +833,7 @@ function requestServerMove(pieceId, targetId, legalTargets){
     return true;
   }
   const targets = Array.isArray(legalTargets) ? legalTargets.filter(Boolean) : [];
+  setStatus('Server prüft den Zug...');
   return sendServerAction('move_request', {
     pieceId: String(pieceId || ''),
     targetId: String(targetId || ''),
@@ -783,6 +887,8 @@ function connectOnlineAuthority(){
 
   online.ws.addEventListener('open', ()=>{
     online.connected = true;
+    online.lastError = null;
+    updateOnlineDebugBadge();
     console.info('[ONLINE] connected', online.serverUrl, online.roomCode, online.playerId);
     try{
       online.ws.send(JSON.stringify({
@@ -801,6 +907,16 @@ function connectOnlineAuthority(){
     try{ msg = JSON.parse(ev.data); }catch(err){ console.warn('[ONLINE] message parse failed', err); return; }
     const type = msg?.type;
     if(type === 'hello') return;
+    markOnlineIncoming(type);
+    if(type === 'action_ack'){
+      online.lastAckAt = Date.now();
+      console.info('[ONLINE] ack', msg.action, msg.requestId || null, msg.phase || null);
+      if(msg.requestId && online.pendingRequestId && msg.requestId === online.pendingRequestId){
+        online.lastError = null;
+        updateOnlineDebugBadge();
+      }
+      return;
+    }
     if(type === 'room_joined' || type === 'room_created'){
       online.joined = true;
       if(msg.self?.playerId) online.playerId = msg.self.playerId;
@@ -856,6 +972,7 @@ function connectOnlineAuthority(){
       return;
     }
     if(type === 'error_message'){
+      clearPendingRequest(String(msg.message || 'Serverfehler'));
       console.warn('[ONLINE] server error', msg.message);
       if(msg.message) setStatus(String(msg.message));
       return;
@@ -865,12 +982,16 @@ function connectOnlineAuthority(){
   online.ws.addEventListener('close', ()=>{
     online.connected = false;
     online.joined = false;
+    clearPendingRequest('Socket getrennt');
     console.warn('[ONLINE] disconnected');
   });
   online.ws.addEventListener('error', (err)=>{
+    online.lastError = 'Socket-Fehler';
+    updateOnlineDebugBadge();
     console.warn('[ONLINE] socket error', err);
   });
 }
+
 
 function currentTeam(){ return state.players[state.turn]; }
 
