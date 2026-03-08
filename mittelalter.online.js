@@ -45,6 +45,7 @@
     sessionStorage.setItem('playerId', next.playerId || '');
     sessionStorage.setItem('isHost', next.isHost ? 'true' : 'false');
     sessionStorage.setItem('mittelalterLastMode', 'online');
+    sessionStorage.setItem('mittelalterGameOnlineMode', 'lobby_only');
     localStorage.setItem('mittelalterServerUrl', next.serverUrl || currentServer);
     return next;
   }
@@ -96,8 +97,7 @@
 
     const serverBox = $('serverStatus');
     if (serverBox) {
-      const serverText = state.serverUrl || currentServer;
-      serverBox.innerText = `Server: ${serverText}`;
+      serverBox.innerText = `Server: ${state.serverUrl || currentServer}`;
     }
   }
 
@@ -139,58 +139,56 @@
       return;
     }
 
-    if (msg.type === 'hello') {
-      const state = loadState();
-      const roomCode = normalizeRoom(state.roomCode);
-      if (roomCode) send({ type: 'sync_request' });
-      setInfo('Verbunden. Du kannst jetzt einen Raum erstellen oder beitreten.');
-      syncUi();
-      return;
-    }
-
-    if (msg.type === 'room_created') {
-      saveState({
-        roomCode: msg.room.roomCode,
-        playerId: msg.self.playerId,
-        playerName: msg.self.name,
-        isHost: true,
-        players: msg.room.players,
-        started: false,
-        connected: true,
-      });
-      handleRoomState(msg.room, `Raum erstellt: ${msg.room.roomCode}`);
-      return;
-    }
-
-    if (msg.type === 'room_joined') {
-      saveState({
-        roomCode: msg.room.roomCode,
-        playerId: msg.self.playerId,
-        playerName: msg.self.name,
-        isHost: false,
-        players: msg.room.players,
-        started: !!msg.room.gameState?.started,
-        connected: true,
-      });
-      handleRoomState(msg.room, `Du bist Raum ${msg.room.roomCode} beigetreten.`);
-      return;
-    }
-
-    if (msg.type === 'room_state') {
-      handleRoomState(msg.room, msg.info || `Raum ${msg.room.roomCode} synchronisiert.`);
-      return;
-    }
-
-    if (msg.type === 'game_started') {
-      if (msg.room) handleRoomState(msg.room, msg.info || 'Spiel startet …');
-      const state = loadState();
-      window.location.href = `Mittelalter.index.html?room=${encodeURIComponent(state.roomCode)}`;
-      return;
-    }
-
-    if (msg.type === 'error_message') {
-      setInfo(msg.message || 'Serverfehler.', true);
-      return;
+    switch (msg.type) {
+      case 'hello': {
+        const state = loadState();
+        const roomCode = normalizeRoom(state.roomCode);
+        if (roomCode) send({ type: 'sync_request' });
+        setInfo('Verbunden. Du kannst jetzt einen Raum erstellen oder beitreten.');
+        syncUi();
+        return;
+      }
+      case 'room_created':
+        saveState({
+          roomCode: msg.room.roomCode,
+          playerId: msg.self.playerId,
+          playerName: msg.self.name,
+          isHost: true,
+          players: msg.room.players,
+          started: false,
+          connected: true,
+        });
+        handleRoomState(msg.room, `Raum erstellt: ${msg.room.roomCode}`);
+        return;
+      case 'room_joined':
+        saveState({
+          roomCode: msg.room.roomCode,
+          playerId: msg.self.playerId,
+          playerName: msg.self.name,
+          isHost: false,
+          players: msg.room.players,
+          started: !!msg.room.gameState?.started,
+          connected: true,
+        });
+        handleRoomState(msg.room, `Du bist Raum ${msg.room.roomCode} beigetreten.`);
+        return;
+      case 'room_state':
+        handleRoomState(msg.room, msg.info || `Raum ${msg.room.roomCode} synchronisiert.`);
+        return;
+      case 'game_started': {
+        if (msg.room) handleRoomState(msg.room, msg.info || 'Spiel startet …');
+        const state = loadState();
+        window.location.href = `Mittelalter.index.html?room=${encodeURIComponent(state.roomCode)}`;
+        return;
+      }
+      case 'error_message':
+        setInfo(msg.message || 'Serverfehler.', true);
+        return;
+      case 'noop':
+      case 'pong':
+        return;
+      default:
+        return;
     }
   }
 
@@ -231,7 +229,7 @@
 
   window.createRoom = function createRoom() {
     const playerName = normalizeName($('nameInput')?.value);
-    $('nameInput').value = playerName;
+    if ($('nameInput')) $('nameInput').value = playerName;
     saveState({ playerName });
     send({ type: 'create_room', name: playerName });
   };
@@ -239,8 +237,8 @@
   window.joinRoom = function joinRoom() {
     const playerName = normalizeName($('nameInput')?.value);
     const roomCode = normalizeRoom($('roomInput')?.value);
-    $('nameInput').value = playerName;
-    $('roomInput').value = roomCode;
+    if ($('nameInput')) $('nameInput').value = playerName;
+    if ($('roomInput')) $('roomInput').value = roomCode;
 
     if (!roomCode) {
       setInfo('Bitte einen Raumcode eingeben.', true);
@@ -262,12 +260,8 @@
 
   window.goBack = function goBack() {
     intentionallyClosed = true;
-    try {
-      send({ type: 'leave_room' });
-    } catch (_err) {}
-    try {
-      socket?.close();
-    } catch (_err) {}
+    try { send({ type: 'leave_room' }); } catch (_err) {}
+    try { socket?.close(); } catch (_err) {}
     window.location.href = 'index.html';
   };
 
