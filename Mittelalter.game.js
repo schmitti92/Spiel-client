@@ -443,6 +443,243 @@ const state = {
   bossTick: 0                    // Counter (für "jeden 2. Zug" etc.)
 };
 
+// ---------- Online / Server-Autorität (Würfel) ----------
+const online = {
+  enabled: false,
+  roomCode: null,
+  playerId: null,
+  playerName: null,
+  serverUrl: null,
+  ws: null,
+  connected: false,
+  joined: false,
+  room: null,
+  currentTurnPlayerId: null,
+  suppressTurnBroadcast: false,
+  initDone: false
+};
+
+function qp(name){
+  try{ return new URLSearchParams(location.search).get(name); }catch(_){ return null; }
+}
+function lsGet(keys){
+  for(const k of keys){
+    try{
+      const v = localStorage.getItem(k);
+      if(v) return v;
+    }catch(_){ }
+  }
+  return null;
+}
+function resolveOnlineContext(){
+  const roomCode = (qp('roomCode') || qp('room') || qp('code') || lsGet(['mittelalter_room_code','mittelalterRoomCode','roomCode']) || '').trim().toUpperCase();
+  const playerId = (qp('playerId') || qp('pid') || lsGet(['mittelalter_player_id','mittelalterPlayerId','playerId']) || '').trim();
+  const playerName = (qp('name') || lsGet(['mittelalter_player_name','mittelalterPlayerName','playerName']) || 'Spieler').trim();
+  const serverUrlRaw = (qp('serverUrl') || qp('server') || qp('ws') || qp('wss') || lsGet(['mittelalter_server_url','mittelalterServerUrl','serverUrl']) || '').trim();
+  if(!roomCode || !playerId || !serverUrlRaw) return null;
+  let wsUrl = serverUrlRaw;
+  if(/^https?:\/\//i.test(wsUrl)){
+    wsUrl = wsUrl.replace(/^http/i, 'ws');
+  }
+  if(!/^wss?:\/\//i.test(wsUrl)) return null;
+  return { roomCode, playerId, playerName, serverUrl: wsUrl };
+}
+function isOnlineAuthorityActive(){
+  return !!(online.enabled && online.connected && online.joined);
+}
+function isLocalPlayersTurn(){
+  if(!isOnlineAuthorityActive()) return true;
+  return !!online.currentTurnPlayerId && online.currentTurnPlayerId === online.playerId;
+}
+function syncLocalTurnOwnerFromRoom(room){
+  if(!room || !room.players || !room.players.length) return;
+  const idx = Math.max(0, Math.min(room.players.length - 1, Number(room.gameState?.turnIndex || 0)));
+  online.currentTurnPlayerId = room.players[idx]?.id || null;
+}
+function applyServerRoomState(room, opts={}){
+  if(!room) return;
+  online.room = room;
+  syncLocalTurnOwnerFromRoom(room);
+
+  const playerCount = Number(room.playerCount || (room.players ? room.players.length : state.players.length) || state.players.length || 4);
+  if(!online.initDone){
+    setPlayerCount(playerCount, { reset:true });
+    online.initDone = true;
+  } else if(playerCount !== state.players.length){
+    setPlayerCount(playerCount, { reset:true });
+  }
+
+  const turnIndex = Math.max(0, Math.min(playerCount - 1, Number(room.gameState?.turnIndex || 0)));
+  state.turn = turnIndex;
+  updateTurnBadge();
+
+  if(opts.forceNeedRoll || room.gameState?.phase === 'needRoll'){
+    if(state.phase === 'loading' || state.phase === 'needRoll' || opts.forceNeedRoll){
+      state.roll = null;
+      state.selected = null;
+      state.highlighted.clear();
+      state.placeHighlighted.clear();
+      ensurePortalState();
+      state.portalHighlighted.clear();
+      state.phase = 'needRoll';
+      dieBox.textContent = '–';
+    }
+  }
+
+  if(!isLocalPlayersTurn()){
+    setStatus(`Team ${currentTeam()} ist dran – Wurf wird vom Server gesteuert.`);
+  }
+}
+function applyAuthoritativeRoll(roll){
+  if(!roll) return;
+  if(typeof roll.turnIndex === 'number'){
+    state.turn = Math.max(0, Math.min(state.players.length - 1, Number(roll.turnIndex)||0));
+  }
+  ensureJokerState();
+  state.roll = Number(roll.value || 0);
+  dieBox.textContent = String(state.roll || '–');
+  state.selected = null;
+  state.highlighted.clear();
+  state.phase = 'choosePiece';
+  if(roll.double) state.jokerFlags.double = false;
+
+  const actor = roll.byName || (roll.team ? `Team ${roll.team}` : 'Jemand');
+  const parts = Array.isArray(roll.parts) && roll.parts.length ? ` (${roll.parts.join(' + ')})` : '';
+  if(isLocalPlayersTurn()){
+    setStatus(`${actor} würfelt ${roll.value}${parts}. Tippe eine eigene Figur an, um sie zu bewegen.`);
+  }else{
+    setStatus(`${actor} würfelt ${roll.value}${parts}. Alle Spieler sehen den Wurf.`);
+  }
+  updateTurnBadge();
+  updateJokerUI();
+  ensureEventSelectUI();
+}
+function sendServerAction(action, payload={}){
+  if(!isOnlineAuthorityActive()) return false;
+  try{
+    online.ws.send(JSON.stringify({ type:'server_action', action, ...payload }));
+    return true;
+  }catch(err){
+    console.warn('[ONLINE] send failed', action, err);
+    return false;
+  }
+}
+function requestServerRoll(reason='main'){
+  if(!isOnlineAuthorityActive()) return false;
+  if(!isLocalPlayersTurn()){
+    setStatus(`Nicht du bist dran. Team ${currentTeam()} würfelt über den Server.`);
+    return true;
+  }
+  return sendServerAction('roll_request', {
+    reason,
+    double: !!state.jokerFlags.double
+  });
+}
+function broadcastTurnStateOnline(infoText){
+  if(!isOnlineAuthorityActive()) return;
+  if(online.suppressTurnBroadcast) return;
+  sendServerAction('turn_update', {
+    turnIndex: Number(state.turn || 0),
+    phase: String(state.phase || 'needRoll'),
+    info: infoText || null
+  });
+}
+function connectOnlineAuthority(){
+  const ctx = resolveOnlineContext();
+  if(!ctx) return;
+  online.enabled = true;
+  online.roomCode = ctx.roomCode;
+  online.playerId = ctx.playerId;
+  online.playerName = ctx.playerName;
+  online.serverUrl = ctx.serverUrl;
+
+  try{
+    online.ws = new WebSocket(online.serverUrl);
+  }catch(err){
+    console.warn('[ONLINE] websocket init failed', err);
+    return;
+  }
+
+  online.ws.addEventListener('open', ()=>{
+    online.connected = true;
+    console.info('[ONLINE] connected', online.serverUrl, online.roomCode, online.playerId);
+    try{
+      online.ws.send(JSON.stringify({
+        type: 'join_room',
+        roomCode: online.roomCode,
+        playerId: online.playerId,
+        name: online.playerName || 'Spieler'
+      }));
+    }catch(err){
+      console.warn('[ONLINE] join send failed', err);
+    }
+  });
+
+  online.ws.addEventListener('message', (ev)=>{
+    let msg = null;
+    try{ msg = JSON.parse(ev.data); }catch(err){ console.warn('[ONLINE] message parse failed', err); return; }
+    const type = msg?.type;
+    if(type === 'hello') return;
+    if(type === 'room_joined' || type === 'room_created'){
+      online.joined = true;
+      if(msg.self?.playerId) online.playerId = msg.self.playerId;
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
+      if(sendServerAction('turn_update', { turnIndex:Number(state.turn||0), phase:String(state.phase||'needRoll') })){
+        // only as soft sync for reconnect; server validates later on real actions
+      }
+      try{ online.ws.send(JSON.stringify({ type:'sync_request' })); }catch(_){ }
+      return;
+    }
+    if(type === 'room_state'){
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
+      return;
+    }
+    if(type === 'game_started'){
+      online.joined = true;
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:true });
+      state.phase = 'needRoll';
+      state.roll = null;
+      dieBox.textContent = '–';
+      setStatus(`Spiel gestartet. Team ${currentTeam()} ist dran. Der Server würfelt.`);
+      return;
+    }
+    if(type === 'game_roll'){
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
+      applyAuthoritativeRoll(msg.roll);
+      return;
+    }
+    if(type === 'game_turn_state'){
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll: msg.gameState?.phase === 'needRoll' });
+      if(msg.gameState?.phase === 'needRoll'){
+        online.suppressTurnBroadcast = true;
+        state.roll = null;
+        state.selected = null;
+        state.highlighted.clear();
+        state.placeHighlighted.clear();
+        ensurePortalState();
+        state.portalHighlighted.clear();
+        state.phase = 'needRoll';
+        dieBox.textContent = '–';
+        online.suppressTurnBroadcast = false;
+      }
+      return;
+    }
+    if(type === 'error_message'){
+      console.warn('[ONLINE] server error', msg.message);
+      if(msg.message) setStatus(String(msg.message));
+      return;
+    }
+  });
+
+  online.ws.addEventListener('close', ()=>{
+    online.connected = false;
+    online.joined = false;
+    console.warn('[ONLINE] disconnected');
+  });
+  online.ws.addEventListener('error', (err)=>{
+    console.warn('[ONLINE] socket error', err);
+  });
+}
 
 function currentTeam(){ return state.players[state.turn]; }
 
@@ -4757,6 +4994,7 @@ function nextTurn(){
 
   updateJokerUI();
   ensureEventSelectUI();
+  broadcastTurnStateOnline(`Team ${currentTeam()} ist dran: Würfeln.`);
 }
 
 function staySameTeamNeedRoll(msg){
@@ -4780,6 +5018,7 @@ function staySameTeamNeedRoll(msg){
 
   updateJokerUI();
   ensureEventSelectUI();
+  broadcastTurnStateOnline(msg || `Team ${currentTeam()} ist dran: Würfeln.`);
 }
 
 function initPieces(){
@@ -5688,6 +5927,10 @@ function hitTestWorld(wx, wy){
 
 function handleTapAtWorld(wx, wy){
   if(state.gameOver) return;
+  if(isOnlineAuthorityActive() && !isLocalPlayersTurn()){
+    setStatus(`Nicht du bist dran. Team ${currentTeam()} steuert gerade den Zug.`);
+    return;
+  }
   const hit = hitTestWorld(wx, wy);
   if(!hit) return;
 
@@ -6058,6 +6301,12 @@ btnRoll.addEventListener("click",()=>{
   if(state.phase!=="needRoll") return;
 
   ensureJokerState();
+
+  if(isOnlineAuthorityActive()){
+    requestServerRoll('main');
+    return;
+  }
+
   state.roll = rollDice();
   dieBox.textContent=state.roll;
 
@@ -6876,6 +7125,7 @@ function ensureEventSelectUI(){
   hostParent.appendChild(box);
   return box;
 }
+connectOnlineAuthority();
 load();
 draw();
 
