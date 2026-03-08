@@ -115,10 +115,12 @@
     }
 
     const playerName = sessionStorage.getItem('playerName') || packed.playerName || '';
-    const roomCode = sessionStorage.getItem('roomCode') || packed.roomCode || '';
+    const params = new URLSearchParams(location.search);
+    const roomFromUrl = params.get('room') || '';
+    const roomCode = roomFromUrl || sessionStorage.getItem('roomCode') || packed.roomCode || '';
     const isHostRaw = sessionStorage.getItem('isHost');
     const isHost = isHostRaw ? isHostRaw === 'true' : !!packed.isHost;
-    const lastMode = sessionStorage.getItem('mittelalterLastMode') || packed.lastMode || ((roomCode || packed.roomCode) ? 'online' : 'offline-mock');
+    const lastMode = sessionStorage.getItem('mittelalterLastMode') || packed.lastMode || 'online';
 
     return {
       playerName: String(playerName || '').trim(),
@@ -153,6 +155,6 @@
 })();
   </script>
 
-  <script src="Mittelalter.game.js?v=54?v=214"></script>
+  <script src="Mittelalter.game.js?v=207"></script>
 </body>
 </html>
