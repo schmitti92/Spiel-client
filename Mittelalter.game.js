@@ -852,32 +852,40 @@ function requestServerMove(pieceId, targetId, legalTargets){
   });
 }
 function applyAuthoritativeMove(moveMsg, snapshot){
-  if(!moveMsg) return;
-  if(typeof moveMsg.turnIndex === 'number'){
+  const snap = snapshot || moveMsg?.snapshot || online.room?.gameState?.snapshot || null;
+
+  if(moveMsg && typeof moveMsg.turnIndex === 'number'){
     state.turn = Math.max(0, Math.min(state.players.length - 1, Number(moveMsg.turnIndex) || 0));
   }
-  online.authoritativeMoveActorId = moveMsg.byPlayerId || null;
 
-  const snap = snapshot || moveMsg.snapshot || null;
+  // Server ist Chef: sobald game_move kommt, übernehmen wir nur noch den Server-Stand.
+  online.authoritativeMoveActorId = moveMsg?.byPlayerId || null;
+  online.lastError = null;
+
   if(snap){
     applyServerSnapshot(snap, { silentDraw:true });
-    state.selected = moveMsg.pieceId || null;
-    state.roll = Number(moveMsg.roll || state.roll || 0) || null;
-    dieBox.textContent = state.roll ? String(state.roll) : '–';
+    state.selected = null;
     state.highlighted.clear();
     state.placeHighlighted.clear();
     ensurePortalState();
     state.portalHighlighted.clear();
+    state.phase = String(snap.phase || 'resolveMove');
+    state.roll = Number(snap.roll || moveMsg?.roll || state.roll || 0) || null;
+    dieBox.textContent = state.roll ? String(state.roll) : '–';
+    setStatus(moveMsg?.byName ? `${moveMsg.byName} hat gezogen. Server-Stand übernommen.` : 'Zug vom Server übernommen.');
+    pushOnlineTrace(`[GAME_MOVE] ${moveMsg?.pieceId || '-'} -> ${moveMsg?.targetId || '-'} phase=${state.phase}`);
     draw();
-    return;
+    return true;
   }
 
   console.warn('[ONLINE] authoritative move without snapshot -> requesting sync', moveMsg);
+  pushOnlineTrace('[GAME_MOVE] ohne Snapshot -> sync_request');
   try{
     if(online.ws && online.ws.readyState === WebSocket.OPEN){
       online.ws.send(JSON.stringify({ type:'sync_request' }));
     }
   }catch(_){ }
+  return false;
 }
 function connectOnlineAuthority(){
   const ctx = resolveOnlineContext();
@@ -960,8 +968,13 @@ function connectOnlineAuthority(){
       return;
     }
     if(type === 'game_move'){
+      console.info('[ONLINE] game_move received', msg);
+      pushOnlineTrace(`[RECV] game_move req=${msg.requestId || '-'} piece=${msg.move?.pieceId || '-'} target=${msg.move?.targetId || '-'}`);
       if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
-      applyAuthoritativeMove(msg.move, msg.snapshot || msg.move?.snapshot || msg.room?.gameState?.snapshot || null);
+      const ok = applyAuthoritativeMove(msg.move, msg.snapshot || msg.move?.snapshot || msg.room?.gameState?.snapshot || null);
+      if(!ok){
+        setStatus('game_move kam ohne Snapshot an – Synchronisierung wird angefordert.');
+      }
       return;
     }
     if(type === 'game_turn_state'){
