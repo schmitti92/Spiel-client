@@ -146,6 +146,13 @@
       packedLocal.playerName ||
       '';
 
+    const playerId =
+      safeGet(sessionStorage, 'playerId') ||
+      safeGet(localStorage, 'playerId') ||
+      packedSession.playerId ||
+      packedLocal.playerId ||
+      '';
+
     const roomCode =
       roomFromUrl ||
       safeGet(sessionStorage, 'roomCode') ||
@@ -165,6 +172,7 @@
 
     return {
       playerName: String(playerName || '').trim(),
+      playerId: String(playerId || '').trim(),
       roomCode: String(roomCode || '').trim().toUpperCase(),
       isHost,
       lastMode,
@@ -178,6 +186,7 @@
 
   safeSet(sessionStorage, 'playerName', session.playerName || '');
   safeSet(sessionStorage, 'roomCode', session.roomCode || '');
+  safeSet(sessionStorage, 'playerId', session.playerId || '');
   safeSet(sessionStorage, 'isHost', session.isHost ? 'true' : 'false');
   safeSet(sessionStorage, 'mittelalterLastMode', session.lastMode || 'online');
   safeSet(sessionStorage, 'mittelalterServerHttp', SERVER_HTTP);
@@ -185,6 +194,7 @@
 
   safeSet(localStorage, 'playerName', session.playerName || '');
   safeSet(localStorage, 'roomCode', session.roomCode || '');
+  safeSet(localStorage, 'playerId', session.playerId || '');
   safeSet(localStorage, 'isHost', session.isHost ? 'true' : 'false');
   safeSet(localStorage, 'mittelalterLastMode', session.lastMode || 'online');
   safeSet(localStorage, 'mittelalterServerHttp', SERVER_HTTP);
@@ -193,6 +203,7 @@
   const packed = {
     playerName: session.playerName,
     roomCode: session.roomCode,
+    playerId: session.playerId,
     isHost: session.isHost,
     lastMode: session.lastMode,
     serverHttp: SERVER_HTTP,
@@ -217,6 +228,7 @@
     badge.innerHTML =
       'Spieler: <b>' + session.playerName + '</b><br>' +
       'Raum: <b>' + session.roomCode + '</b><br>' +
+      'ID: <b>' + (session.playerId || '–') + '</b><br>' +
       'Rolle: <b>' + (session.isHost ? 'Host' : 'Mitspieler') + '</b><br>' +
       'Modus: <b>' + (session.lastMode === 'online' ? 'Online' : 'Offline-Test') + '</b>';
   }
@@ -242,6 +254,7 @@
             const payload = {
               type: 'join_room',
               roomCode: session.roomCode,
+              playerId: session.playerId,
               name: session.playerName
             };
             ws.send(JSON.stringify(payload));
@@ -261,6 +274,6 @@
 })();
   </script>
 
-  <script src="Mittelalter.game.js?v=221"></script>
+  <script src="Mittelalter.game.js?v=222"></script>
 </body>
 </html>
