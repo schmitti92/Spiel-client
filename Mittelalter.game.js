@@ -545,7 +545,15 @@ function updateOnlineDebugBadge(){
     lines.push('Warte auf: –');
   }
   if(online.lastError) lines.push(`Fehler: ${online.lastError}`);
+  const traceLines = Array.isArray(online.traceLines) ? online.traceLines.slice(-4) : [];
+  for(const line of traceLines) lines.push(line);
   el.textContent = lines.join('\n');
+}
+function pushOnlineTrace(line){
+  if(!Array.isArray(online.traceLines)) online.traceLines = [];
+  online.traceLines.push(String(line || ''));
+  if(online.traceLines.length > 12) online.traceLines.splice(0, online.traceLines.length - 12);
+  updateOnlineDebugBadge();
 }
 function clearPendingRequest(reason='ok'){
   if(online.pendingTimer){
@@ -569,6 +577,7 @@ function startPendingRequest(action, requestId){
     online.lastError = `${label} fehlt`;
     setStatus(`${label} fehlt. Prüfe Render-Deploy / Socket / Serverlog.`);
     console.warn('[ONLINE] timeout waiting for response', action, requestId);
+    pushOnlineTrace(`[TIMEOUT] ${action} req=${requestId}`);
     updateOnlineDebugBadge();
     try{
       if(online.ws && online.ws.readyState === WebSocket.OPEN){
@@ -665,6 +674,7 @@ function sendServerAction(action, payload={}){
   try{
     online.ws.send(JSON.stringify(packet));
     if(action === 'roll_request' || action === 'move_request') startPendingRequest(action, requestId);
+    pushOnlineTrace(`[SEND] ${action} req=${requestId}`);
     console.info('[ONLINE] sent', action, requestId, packet);
     return true;
   }catch(err){
@@ -832,6 +842,7 @@ function requestServerMove(pieceId, targetId, legalTargets){
     return true;
   }
   const targets = Array.isArray(legalTargets) ? legalTargets.filter(Boolean) : [];
+  pushOnlineTrace(`send move piece=${pieceId} target=${targetId} opts=${targets.length}`);
   setStatus('Server prüft den Zug...');
   return sendServerAction('move_request', {
     pieceId: String(pieceId || ''),
@@ -910,6 +921,7 @@ function connectOnlineAuthority(){
     if(type === 'action_ack'){
       online.lastAckAt = Date.now();
       console.info('[ONLINE] ack', msg.action, msg.requestId || null, msg.phase || null);
+      pushOnlineTrace(`[ACK] ${msg.action || '-'} phase=${msg.phase || '-'} req=${msg.requestId || '-'}`);
       if(msg.requestId && online.pendingRequestId && msg.requestId === online.pendingRequestId){
         online.lastError = null;
         updateOnlineDebugBadge();
@@ -970,9 +982,16 @@ function connectOnlineAuthority(){
       draw();
       return;
     }
+    if(type === 'trace_event'){
+      const msgLine = `[TRACE] ${msg.stage || 'trace'}${msg.reason ? ` | ${msg.reason}` : ''}${msg.targetId ? ` | ${msg.targetId}` : ''}${typeof msg.computedCount === 'number' ? ` | targets=${msg.computedCount}` : ''}`;
+      console.info('[ONLINE TRACE]', msg);
+      pushOnlineTrace(msgLine);
+      return;
+    }
     if(type === 'error_message'){
       clearPendingRequest(String(msg.message || 'Serverfehler'));
       console.warn('[ONLINE] server error', msg.message);
+      pushOnlineTrace(`[ERR] ${msg.message || 'server error'}`);
       if(msg.message) setStatus(String(msg.message));
       return;
     }
