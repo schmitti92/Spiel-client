@@ -106,32 +106,100 @@
   </div>
   <script>
 (function () {
-  function readLobbySession() {
-    let packed = {};
-    try {
-      packed = JSON.parse(sessionStorage.getItem('mittelalterLobby') || '{}');
-    } catch (err) {
-      console.warn('[Mittelalter] mittelalterLobby konnte nicht gelesen werden:', err);
-    }
+  const SERVER_HTTP = 'https://mittelalter-server.onrender.com';
+  const SERVER_WS = SERVER_HTTP.replace(/^http/i, 'ws');
 
-    const playerName = sessionStorage.getItem('playerName') || packed.playerName || '';
+  function safeGet(storage, key) {
+    try {
+      return storage.getItem(key) || '';
+    } catch (err) {
+      return '';
+    }
+  }
+
+  function safeSet(storage, key, value) {
+    try {
+      storage.setItem(key, value);
+    } catch (err) {}
+  }
+
+  function readPacked(storage, key) {
+    try {
+      return JSON.parse(storage.getItem(key) || '{}') || {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function readLobbySession() {
+    const packedSession = readPacked(sessionStorage, 'mittelalterLobby');
+    const packedLocal = readPacked(localStorage, 'mittelalterLobby');
     const params = new URLSearchParams(location.search);
-    const roomFromUrl = params.get('room') || '';
-    const roomCode = roomFromUrl || sessionStorage.getItem('roomCode') || packed.roomCode || '';
-    const isHostRaw = sessionStorage.getItem('isHost');
-    const isHost = isHostRaw ? isHostRaw === 'true' : !!packed.isHost;
-    const lastMode = sessionStorage.getItem('mittelalterLastMode') || packed.lastMode || 'online';
+    const roomFromUrl = (params.get('room') || '').trim().toUpperCase();
+    const playerFromUrl = (params.get('player') || '').trim();
+
+    const playerName =
+      safeGet(sessionStorage, 'playerName') ||
+      safeGet(localStorage, 'playerName') ||
+      playerFromUrl ||
+      packedSession.playerName ||
+      packedLocal.playerName ||
+      '';
+
+    const roomCode =
+      roomFromUrl ||
+      safeGet(sessionStorage, 'roomCode') ||
+      safeGet(localStorage, 'roomCode') ||
+      packedSession.roomCode ||
+      packedLocal.roomCode ||
+      '';
+
+    const isHostRaw = safeGet(sessionStorage, 'isHost') || safeGet(localStorage, 'isHost');
+    const isHost = isHostRaw ? isHostRaw === 'true' : !!(packedSession.isHost || packedLocal.isHost);
+    const lastMode =
+      safeGet(sessionStorage, 'mittelalterLastMode') ||
+      safeGet(localStorage, 'mittelalterLastMode') ||
+      packedSession.lastMode ||
+      packedLocal.lastMode ||
+      'online';
 
     return {
       playerName: String(playerName || '').trim(),
       roomCode: String(roomCode || '').trim().toUpperCase(),
       isHost,
-      lastMode
+      lastMode,
+      serverHttp: SERVER_HTTP,
+      serverWs: SERVER_WS
     };
   }
 
   const session = readLobbySession();
   window.MITTELALTER_SESSION = session;
+
+  safeSet(sessionStorage, 'playerName', session.playerName || '');
+  safeSet(sessionStorage, 'roomCode', session.roomCode || '');
+  safeSet(sessionStorage, 'isHost', session.isHost ? 'true' : 'false');
+  safeSet(sessionStorage, 'mittelalterLastMode', session.lastMode || 'online');
+  safeSet(sessionStorage, 'mittelalterServerHttp', SERVER_HTTP);
+  safeSet(sessionStorage, 'mittelalterServerWs', SERVER_WS);
+
+  safeSet(localStorage, 'playerName', session.playerName || '');
+  safeSet(localStorage, 'roomCode', session.roomCode || '');
+  safeSet(localStorage, 'isHost', session.isHost ? 'true' : 'false');
+  safeSet(localStorage, 'mittelalterLastMode', session.lastMode || 'online');
+  safeSet(localStorage, 'mittelalterServerHttp', SERVER_HTTP);
+  safeSet(localStorage, 'mittelalterServerWs', SERVER_WS);
+
+  const packed = {
+    playerName: session.playerName,
+    roomCode: session.roomCode,
+    isHost: session.isHost,
+    lastMode: session.lastMode,
+    serverHttp: SERVER_HTTP,
+    serverWs: SERVER_WS
+  };
+  safeSet(sessionStorage, 'mittelalterLobby', JSON.stringify(packed));
+  safeSet(localStorage, 'mittelalterLobby', JSON.stringify(packed));
 
   console.log('[Mittelalter] Spieler:', session.playerName);
   console.log('[Mittelalter] Raum:', session.roomCode);
@@ -152,9 +220,47 @@
       'Rolle: <b>' + (session.isHost ? 'Host' : 'Mitspieler') + '</b><br>' +
       'Modus: <b>' + (session.lastMode === 'online' ? 'Online' : 'Offline-Test') + '</b>';
   }
+
+  const NativeWebSocket = window.WebSocket;
+  if (NativeWebSocket && !window.__mittelalterAutoJoinPatched) {
+    window.__mittelalterAutoJoinPatched = true;
+
+    function WrappedWebSocket(url, protocols) {
+      const ws = protocols !== undefined ? new NativeWebSocket(url, protocols) : new NativeWebSocket(url);
+      const targetUrl = String(url || '');
+      const isMittelalterSocket =
+        targetUrl.includes('mittelalter-server') ||
+        targetUrl.includes('onrender.com') ||
+        targetUrl === SERVER_WS;
+
+      if (isMittelalterSocket) {
+        let joined = false;
+        ws.addEventListener('open', function () {
+          if (joined) return;
+          joined = true;
+          try {
+            const payload = {
+              type: 'join_room',
+              roomCode: session.roomCode,
+              name: session.playerName
+            };
+            ws.send(JSON.stringify(payload));
+            console.log('[Mittelalter] Auto-Join gesendet:', payload);
+          } catch (err) {
+            console.warn('[Mittelalter] Auto-Join fehlgeschlagen:', err);
+          }
+        });
+      }
+      return ws;
+    }
+
+    WrappedWebSocket.prototype = NativeWebSocket.prototype;
+    Object.setPrototypeOf(WrappedWebSocket, NativeWebSocket);
+    window.WebSocket = WrappedWebSocket;
+  }
 })();
   </script>
 
-  <script src="Mittelalter.game.js?v=220"></script>
+  <script src="Mittelalter.game.js?v=221"></script>
 </body>
 </html>
