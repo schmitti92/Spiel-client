@@ -403,12 +403,7 @@ const state = {
   placeHighlighted:new Set(),
   jokerHighlighted:new Set(),  // Joker placement targets (e.g. barricade move)
   eventActive:new Set(),
-  lastEvent:null,  // letzte Ereigniskarte
-  pendingEventCardId:null,
-  lastEventCardId:null,
-  serverAppliedEventEffect:null,
-  serverAppliedEventInfo:null,
-  pendingInteractiveEvent:null,
+  lastEvent:null,  // Barricade placement targets
   pieces:[],
   occupied:new Map(),
   carry: {1:0,2:0,3:0,4:0},    // wie viele Barrikaden trägt Team x
@@ -743,12 +738,6 @@ function buildFullSyncSnapshot(){
     })),
     barricades: Array.from(barricades || []),
     eventActive: Array.from(state.eventActive || []),
-    pendingEventCardId: state.pendingEventCardId || null,
-    lastEventCardId: state.lastEventCardId || (state.lastEvent ? state.lastEvent.id : null),
-    serverAppliedEventEffect: state.serverAppliedEventEffect || null,
-    serverAppliedEventInfo: state.serverAppliedEventInfo || null,
-    pendingInteractiveEvent: state.pendingInteractiveEvent || null,
-    jokers: JSON.parse(JSON.stringify(state.jokers || {1:baseJokerLoadout(),2:baseJokerLoadout(),3:baseJokerLoadout(),4:baseJokerLoadout()})),
     carry: Object.assign({}, state.carry || {}),
     goalScores: Object.assign({}, state.goalScores || {}),
     goalNodeId: state.goalNodeId || null,
@@ -799,16 +788,6 @@ function applyServerSnapshot(snapshot, opts={}){
       if(id) state.eventActive.add(id);
     }
   }
-  if('pendingEventCardId' in snapshot) state.pendingEventCardId = snapshot.pendingEventCardId || null;
-  if('lastEventCardId' in snapshot) state.lastEventCardId = snapshot.lastEventCardId || null;
-  if('serverAppliedEventEffect' in snapshot) state.serverAppliedEventEffect = snapshot.serverAppliedEventEffect || null;
-  if('serverAppliedEventInfo' in snapshot) state.serverAppliedEventInfo = snapshot.serverAppliedEventInfo || null;
-  if('pendingInteractiveEvent' in snapshot) state.pendingInteractiveEvent = snapshot.pendingInteractiveEvent || null;
-  if(snapshot.jokers && typeof snapshot.jokers === 'object') state.jokers = JSON.parse(JSON.stringify(snapshot.jokers));
-  if(state.lastEventCardId){
-    const eventCard = Array.isArray(EVENT_DECK) ? EVENT_DECK.find(c => c && c.id === state.lastEventCardId) : null;
-    if(eventCard) state.lastEvent = eventCard;
-  }
   if(snapshot.carry && typeof snapshot.carry === 'object') state.carry = Object.assign({1:0,2:0,3:0,4:0}, snapshot.carry);
   if(snapshot.goalScores && typeof snapshot.goalScores === 'object') state.goalScores = Object.assign({1:0,2:0,3:0,4:0}, snapshot.goalScores);
   if('goalNodeId' in snapshot) state.goalNodeId = snapshot.goalNodeId || null;
@@ -856,14 +835,6 @@ function buildServerMoveSnapshot(){
     bosses: full.bosses
   };
 }
-function hasPendingServerBarricadeEvent(){
-  return !!(state.pendingInteractiveEvent && state.pendingInteractiveEvent.type === 'move_barricade');
-}
-function sendInteractiveEventStep(step, payload={}){
-  if(!isOnlineAuthorityActive()) return false;
-  return sendServerAction('interactive_event_step', Object.assign({ step }, payload || {}));
-}
-
 function requestServerMove(pieceId, targetId, legalTargets){
   if(!isOnlineAuthorityActive()) return false;
   if(!isLocalPlayersTurn()){
@@ -879,33 +850,6 @@ function requestServerMove(pieceId, targetId, legalTargets){
     legalTargets: targets,
     stateSnapshot: buildServerMoveSnapshot()
   });
-}
-function continueAuthoritativeLanding(moveMsg){
-  if(!moveMsg || !moveMsg.byPlayerId) return false;
-  if(online.playerId !== moveMsg.byPlayerId) return false;
-
-  const piece = state.pieces.find(p => p && p.id === moveMsg.pieceId);
-  if(!piece || !piece.node){
-    console.warn('[ONLINE] moved piece missing for authoritative landing', moveMsg);
-    pushOnlineTrace('[GAME_MOVE] landing skipped (piece missing)');
-    return false;
-  }
-
-  pushOnlineTrace(`[LANDING] resolve piece=${piece.id} node=${piece.node}${state.pendingEventCardId ? ` event=${state.pendingEventCardId}` : ''}`);
-  window.setTimeout(()=>{
-    try{
-      afterLanding(piece);
-    }catch(err){
-      console.error('[ONLINE] authoritative landing failed', err);
-      pushOnlineTrace(`[LANDING_ERR] ${err?.message || err}`);
-      try{
-        if(online.ws && online.ws.readyState === WebSocket.OPEN){
-          online.ws.send(JSON.stringify({ type:'sync_request' }));
-        }
-      }catch(_){ }
-    }
-  }, 0);
-  return true;
 }
 function applyAuthoritativeMove(moveMsg, snapshot){
   const snap = snapshot || moveMsg?.snapshot || online.room?.gameState?.snapshot || null;
@@ -931,7 +875,6 @@ function applyAuthoritativeMove(moveMsg, snapshot){
     setStatus(moveMsg?.byName ? `${moveMsg.byName} hat gezogen. Server-Stand übernommen.` : 'Zug vom Server übernommen.');
     pushOnlineTrace(`[GAME_MOVE] ${moveMsg?.pieceId || '-'} -> ${moveMsg?.targetId || '-'} phase=${state.phase}`);
     draw();
-    continueAuthoritativeLanding(moveMsg);
     return true;
   }
 
@@ -1048,30 +991,6 @@ function connectOnlineAuthority(){
         state.phase = 'needRoll';
         dieBox.textContent = '–';
         online.suppressTurnBroadcast = false;
-      }
-      if(typeof msg.info === 'string' && msg.info.trim()){
-        setStatus(msg.info.trim());
-      }else if(isLocalPlayersTurn()){
-        setStatus(`Du bist dran. Der Server würfelt für Team ${currentTeam()}.`);
-      }else{
-        setStatus(`Team ${currentTeam()} ist dran – Wurf wird vom Server gesteuert.`);
-      }
-      pushOnlineTrace(`[TURN] phase=${msg.gameState?.phase || '-'} turn=${msg.gameState?.turnIndex ?? '-'}`);
-      draw();
-      return;
-    }
-    if(type === 'interactive_event_state'){
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
-      if(msg.snapshot) applyServerSnapshot(msg.snapshot, { silentDraw:true });
-      if(msg.info) setStatus(String(msg.info));
-      if(!state.pendingInteractiveEvent && online.authoritativeMoveActorId && online.room?.gameState?.lastMove?.byPlayerId === online.playerId){
-        const pId = online.room?.gameState?.lastMove?.pieceId || null;
-        const p2 = state.pieces.find(pp=>pp && pp.id === pId);
-        clearJokerMode();
-        if(p2){
-          resolveLanding(p2, { allowPortal:true, fromBarricade:true, _eventTriggered:true });
-          return;
-        }
       }
       draw();
       return;
@@ -5240,63 +5159,6 @@ function showJokerWheelOverlay(team, onClose){
 }
 
 
-
-function consumeAuthoritativeEventCard(){
-  const cardId = state.pendingEventCardId || null;
-  if(!cardId) return null;
-  const card = Array.isArray(EVENT_DECK) ? EVENT_DECK.find(c => c && c.id === cardId) : null;
-  state.pendingEventCardId = null;
-  if(card){
-    state.lastEvent = card;
-    state.lastEventCardId = card.id || null;
-    console.info('[EVENT][SERVER] authoritative card', { id: card.id, title: card.title, effect: card.effect });
-    pushOnlineTrace(`[EVENT] server card=${card.id}`);
-    return card;
-  }
-  console.warn('[EVENT][SERVER] unknown card id from server', cardId);
-  pushOnlineTrace(`[EVENT] unknown server card=${cardId}`);
-  return null;
-}
-
-
-function isServerAppliedSimpleEventEffect(effect){
-  return [
-    'extra_roll_event',
-    'barricades_half_remove',
-    'spawn_one_boss',
-    'spawn_two_bosses',
-    'respawn_all_events',
-    'gain_one_point',
-    'gain_two_points',
-    'lose_one_point',
-    'all_to_start',
-    'back_to_start',
-    'others_to_start',
-    'spawn_bonus_light',
-    'spawn_double_goal',
-    'joker_pick6',
-    'joker_wheel',
-    'dice_duel'
-  ].includes(String(effect || ''));
-}
-
-function consumeServerAppliedSimpleEvent(card, piece, nextOpts){
-  if(!card) return false;
-  if(String(state.serverAppliedEventEffect || '') !== String(card.effect || '')) return false;
-  if(!isServerAppliedSimpleEventEffect(card.effect)) return false;
-
-  const msg = state.serverAppliedEventInfo || null;
-  state.serverAppliedEventEffect = null;
-  state.serverAppliedEventInfo = null;
-  state.pendingEventCardId = null;
-
-  showEventOverlay(card, ()=>{
-    if(msg) setStatus(msg);
-    resolveLanding(piece, nextOpts);
-  });
-  return true;
-}
-
 function pickRandomEventCard(){
   // UI-forced card (persistent)
   if(eventForceCardId){
@@ -5730,9 +5592,6 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
     state.lastEvent = card;
     console.info('[EVENT] draw (forced)', card.id, 'on', piece.node);
 
-    const nextOpts = { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true };
-    if(consumeServerAppliedSimpleEvent(card, piece, nextOpts)) return;
-
     if(card && card.effect === 'joker_pick6'){
       showEventOverlay(card, ()=>{
         showJokerPick6Overlay(currentTeam(), ()=>{
@@ -6002,9 +5861,6 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
     state.lastEvent = card;
     console.info('[EVENT] draw', card.id, 'on', piece.node);
 
-    const nextOpts = { allowPortal: !!opts.allowPortal, fromBarricade: true, _eventTriggered: true };
-    if(consumeServerAppliedSimpleEvent(card, piece, nextOpts)) return;
-
     if(card && card.effect === 'joker_pick6'){
       showEventOverlay(card, ()=>{
         showJokerPick6Overlay(currentTeam(), ()=>{
@@ -6071,12 +5927,7 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       });
     } else if(card && card.effect === 'move_barricade1'){
       showEventOverlay(card, ()=>{
-        if(isOnlineAuthorityActive() && online.authoritativeMoveActorId === online.playerId && hasPendingServerBarricadeEvent()){
-          state.jokerHighlighted.clear();
-          setJokerMode("moveBarricadePick");
-          setStatus(`Team ${currentTeam()}: SERVER-EVENT – tippe eine Barrikade an, dann das Zielfeld.`);
-          return;
-        }
+        // Eventfeld wird direkt neu gespawnt (damit es nicht hängen bleibt)
         relocateEventField(piece.node);
 
         if(barricades.size<=0){
@@ -6085,6 +5936,7 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
           return;
         }
 
+        // Pflicht-Aktion: Barrikade versetzen (ohne Joker zu verbrauchen)
         state.eventPendingContinue = { pieceId: piece.id, allowPortal: !!opts.allowPortal };
         state.jokerHighlighted.clear();
         setJokerMode("moveBarricadePick");
@@ -6092,12 +5944,6 @@ if(state._goalCapturedThisLanding && !opts._goalEventTriggered){
       });
     } else if(card && card.effect === 'move_barricade2'){
       showEventOverlay(card, ()=>{
-        if(isOnlineAuthorityActive() && online.authoritativeMoveActorId === online.playerId && hasPendingServerBarricadeEvent()){
-          state.jokerHighlighted.clear();
-          setJokerMode("moveBarricadePick");
-          setStatus(`Team ${currentTeam()}: SERVER-EVENT – tippe eine Barrikade an, dann das Zielfeld.`);
-          return;
-        }
         relocateEventField(piece.node);
 
         if(barricades.size<=0){
@@ -6442,18 +6288,6 @@ function handleTapAtWorld(wx, wy){
         setStatus(`Team ${team}: Tippe eine Barrikade an.`);
         return;
       }
-      if(isOnlineAuthorityActive() && online.authoritativeMoveActorId === online.playerId && hasPendingServerBarricadeEvent()){
-        state.jokerData = { fromId: hit.id };
-        state.jokerHighlighted.clear();
-        for(const n of nodes){
-          if(isFreeForBarricade(n.id) || n.id === hit.id) state.jokerHighlighted.add(n.id);
-        }
-        state.jokerMode = "moveBarricadePlace";
-        setStatus(`Team ${team}: Server prüft die Barrikade...`);
-        sendInteractiveEventStep('pick', { sourceId: hit.id });
-        updateJokerUI();
-        return;
-      }
       // choose origin
       state.jokerData = { fromId: hit.id };
       // compute possible targets
@@ -6474,11 +6308,6 @@ function handleTapAtWorld(wx, wy){
         return;
       }
       if(!state.jokerHighlighted.has(hit.id)) return;
-      if(isOnlineAuthorityActive() && online.authoritativeMoveActorId === online.playerId && hasPendingServerBarricadeEvent()){
-        setStatus(`Team ${team}: Server versetzt die Barrikade...`);
-        sendInteractiveEventStep('place', { targetId: hit.id });
-        return;
-      }
       // move
       barricades.delete(fromId);
       barricades.add(hit.id);
