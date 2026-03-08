@@ -14,7 +14,9 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    min-height:100vh;
+    padding:20px;
+    box-sizing:border-box;
 }
 
 .panel{
@@ -38,6 +40,7 @@ input{
     border-radius:6px;
     border:none;
     font-size:15px;
+    box-sizing:border-box;
 }
 
 button{
@@ -72,7 +75,8 @@ button:hover{
 #roomInfo{
     margin-top:10px;
     font-size:14px;
-    opacity:0.8;
+    opacity:0.9;
+    min-height:18px;
 }
 
 .startBtn{
@@ -90,6 +94,13 @@ button:hover{
 .backBtn:hover{
     background:#777;
 }
+
+.meta{
+    margin-top:12px;
+    font-size:12px;
+    opacity:0.75;
+    line-height:1.45;
+}
 </style>
 </head>
 
@@ -105,11 +116,12 @@ button:hover{
 <button onclick="createRoom()">Raum erstellen</button>
 
 <label>Raumcode</label>
-<input id="roomInput" placeholder="z.B. 1234">
+<input id="roomInput" placeholder="z.B. EX6R">
 
 <button onclick="joinRoom()">Raum beitreten</button>
 
-<div id="roomInfo"></div>
+<div id="roomInfo">Verbinde mit Server …</div>
+<div class="meta" id="serverStatus">Server: –</div>
 
 <h3>Spieler</h3>
 <div id="playerList"></div>
@@ -118,10 +130,10 @@ button:hover{
 
 <button class="backBtn" onclick="goBack()">Zur Spielauswahl</button>
 
+<div class="meta">Online-Modus aktiv. Kein Offline-Mock mehr in der Lobby.</div>
+
 </div>
 
-<div style="margin-top:14px;font-size:12px;opacity:0.75">Aktuell läuft die Lobby im sicheren Testmodus. Der echte Render-Server wird im nächsten Schritt angebunden.</div>
-
-<script src="mittelalter.online.js?v=1"></script>
+<script src="mittelalter.online.js?v=2"></script>
 </body>
 </html>
