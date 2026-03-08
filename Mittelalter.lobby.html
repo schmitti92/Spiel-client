@@ -1,281 +1,139 @@
-(() => {
-  const STORAGE_KEY = 'mittelalterLobby';
-  const DEFAULT_SERVER = localStorage.getItem('mittelalterServerUrl') || 'https://mittelalter-server.onrender.com';
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Mittelalter – Lobby</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  let socket = null;
-  let currentServer = DEFAULT_SERVER;
-  let reconnectTimer = null;
-  let intentionallyClosed = false;
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#0b1220;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+    box-sizing:border-box;
+}
 
-  const $ = (id) => document.getElementById(id);
+.panel{
+    background:#121a2b;
+    padding:30px;
+    border-radius:12px;
+    width:420px;
+    box-shadow:0 0 25px rgba(0,0,0,0.6);
+}
 
-  function normalizeName(name) {
-    return String(name || '').trim().slice(0, 24) || 'Spieler';
-  }
+h1{
+    margin-top:0;
+    text-align:center;
+}
 
-  function normalizeRoom(code) {
-    return String(code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-  }
+input{
+    width:100%;
+    padding:10px;
+    margin-top:6px;
+    margin-bottom:14px;
+    border-radius:6px;
+    border:none;
+    font-size:15px;
+    box-sizing:border-box;
+}
 
-  function loadState() {
-    try {
-      return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
-    } catch (_err) {
-      return {};
-    }
-  }
+button{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    border:none;
+    border-radius:6px;
+    background:#2e7df6;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
 
-  function saveState(patch = {}) {
-    const next = {
-      playerName: '',
-      roomCode: '',
-      playerId: '',
-      isHost: false,
-      players: [],
-      started: false,
-      connected: false,
-      serverUrl: currentServer,
-      ...loadState(),
-      ...patch,
-    };
+button:hover{
+    background:#3f8cff;
+}
 
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    sessionStorage.setItem('playerName', next.playerName || '');
-    sessionStorage.setItem('roomCode', next.roomCode || '');
-    sessionStorage.setItem('playerId', next.playerId || '');
-    sessionStorage.setItem('isHost', next.isHost ? 'true' : 'false');
-    sessionStorage.setItem('mittelalterLastMode', 'online');
-    sessionStorage.setItem('mittelalterGameOnlineMode', 'lobby_only');
-    localStorage.setItem('playerName', next.playerName || '');
-    localStorage.setItem('roomCode', next.roomCode || '');
-    localStorage.setItem('playerId', next.playerId || '');
-    localStorage.setItem('isHost', next.isHost ? 'true' : 'false');
-    localStorage.setItem('mittelalterLastMode', 'online');
-    localStorage.setItem('mittelalterGameOnlineMode', 'lobby_only');
-    localStorage.setItem('mittelalterServerUrl', next.serverUrl || currentServer);
-    return next;
-  }
+#playerList{
+    margin-top:20px;
+    background:#0b1220;
+    padding:10px;
+    border-radius:6px;
+    min-height:60px;
+}
 
-  function setInfo(text, isError = false) {
-    const el = $('roomInfo');
-    if (!el) return;
-    el.innerText = text || '';
-    el.style.color = isError ? '#ffb4b4' : '';
-  }
+.player{
+    padding:6px;
+    border-bottom:1px solid rgba(255,255,255,0.1);
+}
 
-  function renderPlayers(players = []) {
-    const list = $('playerList');
-    if (!list) return;
-    list.innerHTML = '';
+#roomInfo{
+    margin-top:10px;
+    font-size:14px;
+    opacity:0.9;
+    min-height:18px;
+}
 
-    if (!players.length) {
-      const div = document.createElement('div');
-      div.className = 'player';
-      div.innerText = 'Noch keine Spieler im Raum';
-      list.appendChild(div);
-      return;
-    }
+.startBtn{
+    background:#22c55e;
+}
 
-    players.forEach((player) => {
-      const div = document.createElement('div');
-      div.className = 'player';
-      const label = `${player.name}${player.isHost ? ' 👑' : ''}${player.connected === false ? ' (getrennt)' : ''}`;
-      div.innerText = label;
-      list.appendChild(div);
-    });
-  }
+.startBtn:hover{
+    background:#34d977;
+}
 
-  function syncUi() {
-    const state = loadState();
-    if ($('nameInput')) $('nameInput').value = state.playerName || '';
-    if ($('roomInput')) $('roomInput').value = state.roomCode || '';
+.backBtn{
+    background:#555;
+}
 
-    renderPlayers(state.players || []);
+.backBtn:hover{
+    background:#777;
+}
 
-    const hasRoom = !!state.roomCode;
-    const startBtn = document.querySelector('.startBtn');
-    if (startBtn) {
-      startBtn.disabled = !hasRoom || !state.connected || !state.isHost;
-      startBtn.style.opacity = startBtn.disabled ? '0.6' : '1';
-      startBtn.style.cursor = startBtn.disabled ? 'not-allowed' : 'pointer';
-      startBtn.innerText = state.isHost ? 'Spiel starten' : 'Auf Host warten';
-    }
+.meta{
+    margin-top:12px;
+    font-size:12px;
+    opacity:0.75;
+    line-height:1.45;
+}
+</style>
+</head>
 
-    const serverBox = $('serverStatus');
-    if (serverBox) {
-      serverBox.innerText = `Server: ${state.serverUrl || currentServer}`;
-    }
-  }
+<body>
 
-  function toWsUrl(httpUrl) {
-    return httpUrl.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
-  }
+<div class="panel">
 
-  function send(msg) {
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      setInfo('Keine aktive Verbindung zum Server.', true);
-      return false;
-    }
-    socket.send(JSON.stringify(msg));
-    return true;
-  }
+<h1>Mittelalter Lobby</h1>
 
-  function handleRoomState(room, infoText) {
-    const state = loadState();
-    const me = (room.players || []).find((p) => p.id === state.playerId);
+<label>Dein Name</label>
+<input id="nameInput" placeholder="Name eingeben">
 
-    saveState({
-      roomCode: room.roomCode || state.roomCode,
-      isHost: !!me?.isHost,
-      players: room.players || [],
-      started: !!room.gameState?.started,
-      connected: true,
-    });
+<button onclick="createRoom()">Raum erstellen</button>
 
-    setInfo(infoText || `Raum ${room.roomCode} aktiv · ${room.players.length} Spieler`);
-    syncUi();
-  }
+<label>Raumcode</label>
+<input id="roomInput" placeholder="z.B. EX6R">
 
-  function handleMessage(raw) {
-    let msg;
-    try {
-      msg = JSON.parse(raw.data);
-    } catch (_err) {
-      setInfo('Antwort vom Server konnte nicht gelesen werden.', true);
-      return;
-    }
+<button onclick="joinRoom()">Raum beitreten</button>
 
-    switch (msg.type) {
-      case 'hello': {
-        const state = loadState();
-        const roomCode = normalizeRoom(state.roomCode);
-        if (roomCode) send({ type: 'sync_request' });
-        setInfo('Verbunden. Du kannst jetzt einen Raum erstellen oder beitreten.');
-        syncUi();
-        return;
-      }
-      case 'room_created':
-        saveState({
-          roomCode: msg.room.roomCode,
-          playerId: msg.self.playerId,
-          playerName: msg.self.name,
-          isHost: true,
-          players: msg.room.players,
-          started: false,
-          connected: true,
-        });
-        handleRoomState(msg.room, `Raum erstellt: ${msg.room.roomCode}`);
-        return;
-      case 'room_joined':
-        saveState({
-          roomCode: msg.room.roomCode,
-          playerId: msg.self.playerId,
-          playerName: msg.self.name,
-          isHost: false,
-          players: msg.room.players,
-          started: !!msg.room.gameState?.started,
-          connected: true,
-        });
-        handleRoomState(msg.room, `Du bist Raum ${msg.room.roomCode} beigetreten.`);
-        return;
-      case 'room_state':
-        handleRoomState(msg.room, msg.info || `Raum ${msg.room.roomCode} synchronisiert.`);
-        return;
-      case 'game_started': {
-        if (msg.room) handleRoomState(msg.room, msg.info || 'Spiel startet …');
-        const state = loadState();
-        window.location.href = `Mittelalter.index.html?room=${encodeURIComponent(state.roomCode)}&player=${encodeURIComponent(state.playerName || '')}`;
-        return;
-      }
-      case 'error_message':
-        setInfo(msg.message || 'Serverfehler.', true);
-        return;
-      case 'noop':
-      case 'pong':
-        return;
-      default:
-        return;
-    }
-  }
+<div id="roomInfo">Verbinde mit Server …</div>
+<div class="meta" id="serverStatus">Server: –</div>
 
-  function connect() {
-    intentionallyClosed = false;
-    clearTimeout(reconnectTimer);
+<h3>Spieler</h3>
+<div id="playerList"></div>
 
-    try {
-      socket = new WebSocket(toWsUrl(currentServer));
-    } catch (err) {
-      setInfo(`WebSocket konnte nicht geöffnet werden: ${err.message}`, true);
-      return;
-    }
+<button class="startBtn" onclick="startGame()">Spiel starten</button>
 
-    setInfo('Verbinde mit Server …');
-    syncUi();
+<button class="backBtn" onclick="goBack()">Zur Spielauswahl</button>
 
-    socket.addEventListener('open', () => {
-      saveState({ connected: true, serverUrl: currentServer });
-      syncUi();
-    });
+<div class="meta">Online-Modus aktiv. Kein Offline-Mock mehr in der Lobby.</div>
 
-    socket.addEventListener('message', handleMessage);
+</div>
 
-    socket.addEventListener('close', () => {
-      saveState({ connected: false });
-      syncUi();
-      if (!intentionallyClosed) {
-        setInfo('Verbindung getrennt. Neuer Verbindungsversuch …', true);
-        reconnectTimer = setTimeout(connect, 1500);
-      }
-    });
-
-    socket.addEventListener('error', () => {
-      setInfo('Verbindung zum Mittelalter-Server fehlgeschlagen.', true);
-    });
-  }
-
-  window.createRoom = function createRoom() {
-    const playerName = normalizeName($('nameInput')?.value);
-    if ($('nameInput')) $('nameInput').value = playerName;
-    saveState({ playerName });
-    send({ type: 'create_room', name: playerName });
-  };
-
-  window.joinRoom = function joinRoom() {
-    const playerName = normalizeName($('nameInput')?.value);
-    const roomCode = normalizeRoom($('roomInput')?.value);
-    if ($('nameInput')) $('nameInput').value = playerName;
-    if ($('roomInput')) $('roomInput').value = roomCode;
-
-    if (!roomCode) {
-      setInfo('Bitte einen Raumcode eingeben.', true);
-      return;
-    }
-
-    saveState({ playerName, roomCode });
-    send({ type: 'join_room', roomCode, name: playerName });
-  };
-
-  window.startGame = function startGame() {
-    const state = loadState();
-    if (!state.isHost) {
-      setInfo('Nur der Host darf das Spiel starten.', true);
-      return;
-    }
-    send({ type: 'start_game' });
-  };
-
-  window.goBack = function goBack() {
-    intentionallyClosed = true;
-    try { send({ type: 'leave_room' }); } catch (_err) {}
-    try { socket?.close(); } catch (_err) {}
-    window.location.href = 'index.html';
-  };
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const state = loadState();
-    if ($('nameInput')) $('nameInput').value = state.playerName || '';
-    if ($('roomInput')) $('roomInput').value = state.roomCode || '';
-    syncUi();
-    connect();
-  });
-})();
+<script src="mittelalter.online.js?v=5"></script>
+</body>
+</html>
