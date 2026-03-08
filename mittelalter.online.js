@@ -46,6 +46,12 @@
     sessionStorage.setItem('isHost', next.isHost ? 'true' : 'false');
     sessionStorage.setItem('mittelalterLastMode', 'online');
     sessionStorage.setItem('mittelalterGameOnlineMode', 'lobby_only');
+    localStorage.setItem('playerName', next.playerName || '');
+    localStorage.setItem('roomCode', next.roomCode || '');
+    localStorage.setItem('playerId', next.playerId || '');
+    localStorage.setItem('isHost', next.isHost ? 'true' : 'false');
+    localStorage.setItem('mittelalterLastMode', 'online');
+    localStorage.setItem('mittelalterGameOnlineMode', 'lobby_only');
     localStorage.setItem('mittelalterServerUrl', next.serverUrl || currentServer);
     return next;
   }
@@ -178,7 +184,7 @@
       case 'game_started': {
         if (msg.room) handleRoomState(msg.room, msg.info || 'Spiel startet …');
         const state = loadState();
-        window.location.href = `Mittelalter.index.html?room=${encodeURIComponent(state.roomCode)}`;
+        window.location.href = `Mittelalter.index.html?room=${encodeURIComponent(state.roomCode)}&player=${encodeURIComponent(state.playerName || '')}`;
         return;
       }
       case 'error_message':
