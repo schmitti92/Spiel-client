@@ -545,8 +545,7 @@ function updateOnlineDebugBadge(){
     lines.push('Warte auf: –');
   }
   if(online.lastError) lines.push(`Fehler: ${online.lastError}`);
-  el.textContent = lines.join('
-');
+  el.textContent = lines.join('\n');
 }
 function clearPendingRequest(reason='ok'){
   if(online.pendingTimer){
