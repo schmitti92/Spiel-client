@@ -456,7 +456,8 @@ const online = {
   room: null,
   currentTurnPlayerId: null,
   suppressTurnBroadcast: false,
-  initDone: false
+  initDone: false,
+  authoritativeMoveActorId: null
 };
 
 function qp(name){
@@ -578,11 +579,51 @@ function requestServerRoll(reason='main'){
 function broadcastTurnStateOnline(infoText){
   if(!isOnlineAuthorityActive()) return;
   if(online.suppressTurnBroadcast) return;
+  if(online.authoritativeMoveActorId && online.playerId !== online.authoritativeMoveActorId) return;
   sendServerAction('turn_update', {
     turnIndex: Number(state.turn || 0),
     phase: String(state.phase || 'needRoll'),
     info: infoText || null
   });
+}
+function requestServerMove(pieceId, targetId, legalTargets){
+  if(!isOnlineAuthorityActive()) return false;
+  if(!isLocalPlayersTurn()){
+    setStatus(`Nicht du bist dran. Team ${currentTeam()} steuert gerade den Zug.`);
+    return true;
+  }
+  const targets = Array.isArray(legalTargets) ? legalTargets.filter(Boolean) : [];
+  return sendServerAction('move_request', {
+    pieceId: String(pieceId || ''),
+    targetId: String(targetId || ''),
+    legalTargets: targets
+  });
+}
+function applyAuthoritativeMove(moveMsg){
+  if(!moveMsg) return;
+  if(typeof moveMsg.turnIndex === 'number'){
+    state.turn = Math.max(0, Math.min(state.players.length - 1, Number(moveMsg.turnIndex) || 0));
+  }
+  online.authoritativeMoveActorId = moveMsg.byPlayerId || null;
+
+  const piece = state.pieces.find(p => p.id === moveMsg.pieceId);
+  if(!piece){
+    console.warn('[ONLINE] move piece not found', moveMsg);
+    return;
+  }
+
+  state.selected = moveMsg.pieceId;
+  state.roll = Number(moveMsg.roll || state.roll || 0);
+  dieBox.textContent = String(state.roll || '–');
+  state.highlighted.clear();
+  state.placeHighlighted.clear();
+  ensurePortalState();
+  state.portalHighlighted.clear();
+
+  if(move(piece, moveMsg.targetId)){
+    state.pendingSix = (state.roll === 6);
+    afterLanding(piece);
+  }
 }
 function connectOnlineAuthority(){
   const ctx = resolveOnlineContext();
@@ -648,7 +689,13 @@ function connectOnlineAuthority(){
       applyAuthoritativeRoll(msg.roll);
       return;
     }
+    if(type === 'game_move'){
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
+      applyAuthoritativeMove(msg.move);
+      return;
+    }
     if(type === 'game_turn_state'){
+      online.authoritativeMoveActorId = null;
       if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll: msg.gameState?.phase === 'needRoll' });
       if(msg.gameState?.phase === 'needRoll'){
         online.suppressTurnBroadcast = true;
@@ -6128,6 +6175,11 @@ function handleTapAtWorld(wx, wy){
 
     const piece=state.pieces.find(p=>p.id===state.selected);
     if(!piece) return;
+
+    if(isOnlineAuthorityActive()){
+      requestServerMove(piece.id, hit.id, Array.from(state.highlighted));
+      return;
+    }
 
     if(move(piece,hit.id)){
       // merken ob 6 (extra roll) – gilt erst NACH evtl. Barrikadenplatzierung
