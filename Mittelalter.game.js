@@ -533,6 +533,10 @@ function applyServerRoomState(room, opts={}){
   if(!isLocalPlayersTurn()){
     setStatus(`Team ${currentTeam()} ist dran – Wurf wird vom Server gesteuert.`);
   }
+
+  if(!opts.silentDraw){
+    draw();
+  }
 }
 
 function applyAuthoritativeRoll(roll){
@@ -754,24 +758,12 @@ function applyAuthoritativeMove(moveMsg, snapshot){
     return;
   }
 
-  const piece = state.pieces.find(p => p.id === moveMsg.pieceId);
-  if(!piece){
-    console.warn('[ONLINE] move piece not found', moveMsg);
-    return;
-  }
-
-  state.selected = moveMsg.pieceId;
-  state.roll = Number(moveMsg.roll || state.roll || 0);
-  dieBox.textContent = String(state.roll || '–');
-  state.highlighted.clear();
-  state.placeHighlighted.clear();
-  ensurePortalState();
-  state.portalHighlighted.clear();
-
-  if(move(piece, moveMsg.targetId)){
-    state.pendingSix = (state.roll === 6);
-    afterLanding(piece);
-  }
+  console.warn('[ONLINE] authoritative move without snapshot -> requesting sync', moveMsg);
+  try{
+    if(online.ws && online.ws.readyState === WebSocket.OPEN){
+      online.ws.send(JSON.stringify({ type:'sync_request' }));
+    }
+  }catch(_){ }
 }
 function connectOnlineAuthority(){
   const ctx = resolveOnlineContext();
@@ -812,7 +804,7 @@ function connectOnlineAuthority(){
     if(type === 'room_joined' || type === 'room_created'){
       online.joined = true;
       if(msg.self?.playerId) online.playerId = msg.self.playerId;
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:false });
       if(sendServerAction('turn_update', { turnIndex:Number(state.turn||0), phase:String(state.phase||'needRoll') })){
         // only as soft sync for reconnect; server validates later on real actions
       }
@@ -820,13 +812,13 @@ function connectOnlineAuthority(){
       return;
     }
     if(type === 'room_state'){
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:false });
       return;
     }
     if(type === 'game_started'){
       online.joined = true;
       online.authoritativeMoveActorId = null;
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:true });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:true, silentDraw:false });
       state.phase = 'needRoll';
       state.roll = null;
       dieBox.textContent = '–';
@@ -835,18 +827,19 @@ function connectOnlineAuthority(){
     }
     if(type === 'game_roll'){
       online.authoritativeMoveActorId = null;
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
       applyAuthoritativeRoll(msg.roll);
+      draw();
       return;
     }
     if(type === 'game_move'){
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
       applyAuthoritativeMove(msg.move, msg.snapshot || msg.move?.snapshot || msg.room?.gameState?.snapshot || null);
       return;
     }
     if(type === 'game_turn_state'){
       online.authoritativeMoveActorId = null;
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll: msg.gameState?.phase === 'needRoll' });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll: msg.gameState?.phase === 'needRoll', silentDraw:true });
       if(msg.gameState?.phase === 'needRoll'){
         online.suppressTurnBroadcast = true;
         state.roll = null;
@@ -859,6 +852,7 @@ function connectOnlineAuthority(){
         dieBox.textContent = '–';
         online.suppressTurnBroadcast = false;
       }
+      draw();
       return;
     }
     if(type === 'error_message'){
