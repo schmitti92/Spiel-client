@@ -819,6 +819,7 @@ function applyServerSnapshot(snapshot, opts={}){
   if(state.phase === 'placeBarricade'){
     computePlaceTargets();
   }
+  try{ updateBossUI(); }catch(_){ }
   online.lastSnapshotAt = Date.now();
   if(!opts.silentDraw) draw();
   return true;
