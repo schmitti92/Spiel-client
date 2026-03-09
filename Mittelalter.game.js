@@ -1973,6 +1973,10 @@ const steps = Math.max(1, Number(def.stepsPerMove||3));
 function runBossPhaseThen(done){
   try{
     if(state.gameOver) return;
+    if(isOnlineAuthorityActive()){
+      done && done();
+      return;
+    }
     ensureBossState();
 
     const hasAlive = (state.bosses||[]).some(b=>b.alive!==false);
@@ -2096,11 +2100,40 @@ function ensureBossPanel(){
   host.appendChild(dbg);
 
   // Wire once
-  btnSpawn.onclick = ()=>{ const t = document.getElementById('bossSpawnSelect')?.value || 'hunter'; spawnBoss(t); };
-  btnSpawnHunter.onclick = ()=>{ spawnBoss('hunter'); };
-  btnStep.onclick = ()=>{ bossStepOnce(); };
-  btnClear.onclick = ()=>{ clearBosses(); };
+  btnSpawn.onclick = ()=>{
+    const t = document.getElementById('bossSpawnSelect')?.value || 'hunter';
+    if(isOnlineAuthorityActive()){
+      sendServerAction('boss_spawn_debug', { bossType: t });
+      return;
+    }
+    spawnBoss(t);
+  };
+  btnSpawnHunter.onclick = ()=>{
+    if(isOnlineAuthorityActive()){
+      sendServerAction('boss_spawn_debug', { bossType: 'hunter' });
+      return;
+    }
+    spawnBoss('hunter');
+  };
+  btnStep.onclick = ()=>{
+    if(isOnlineAuthorityActive()){
+      sendServerAction('boss_step_debug', {});
+      return;
+    }
+    bossStepOnce();
+  };
+  btnClear.onclick = ()=>{
+    if(isOnlineAuthorityActive()){
+      sendServerAction('boss_clear_debug', {});
+      return;
+    }
+    clearBosses();
+  };
   btnToggle.onclick = ()=>{
+    if(isOnlineAuthorityActive()){
+      setStatus('Boss-AI wird online nur vom Server gesteuert.');
+      return;
+    }
     ensureBossState();
     state.bossAuto = !state.bossAuto;
     btnToggle.textContent = 'Boss AI: ' + (state.bossAuto ? 'AN' : 'AUS');
@@ -2120,7 +2153,20 @@ function updateBossUI(){
   ensureBossState();
   const panel = ensureBossPanel();
   const tgl = document.getElementById("btnBossToggleAI");
-  if(tgl){ ensureBossState(); tgl.textContent = "Boss AI: " + (state.bossAuto ? "AN" : "AUS"); }
+  if(tgl){
+    ensureBossState();
+    if(isOnlineAuthorityActive()){
+      tgl.textContent = "Server-Chef";
+      tgl.disabled = true;
+      tgl.style.opacity = ".6";
+      tgl.style.cursor = "not-allowed";
+    }else{
+      tgl.textContent = "Boss AI: " + (state.bossAuto ? "AN" : "AUS");
+      tgl.disabled = false;
+      tgl.style.opacity = "1";
+      tgl.style.cursor = "pointer";
+    }
+  }
   const list = document.getElementById("bossPanelList");
   if(!list) return;
 
