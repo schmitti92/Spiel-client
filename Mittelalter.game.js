@@ -815,6 +815,10 @@ function applyServerSnapshot(snapshot, opts={}){
   state.placeHighlighted.clear();
   state.jokerHighlighted.clear();
   state.portalHighlighted.clear();
+  state.resumeLanding = null;
+  if(state.phase === 'placeBarricade'){
+    computePlaceTargets();
+  }
   online.lastSnapshotAt = Date.now();
   if(!opts.silentDraw) draw();
   return true;
@@ -855,6 +859,22 @@ function requestServerMove(pieceId, targetId, legalTargets){
     targetId: String(targetId || ''),
     legalTargets: targets,
     stateSnapshot: buildServerMoveSnapshot()
+  });
+}
+function requestServerPlaceBarricade(nodeId){
+  if(!isOnlineAuthorityActive()) return false;
+  if(!isLocalPlayersTurn()){
+    setStatus(`Nicht du bist dran. Team ${currentTeam()} platziert die Barrikade über den Server.`);
+    return true;
+  }
+  if(!state.placeHighlighted || !state.placeHighlighted.has(nodeId)){
+    setStatus('Dieses Feld ist für die Barrikade nicht erlaubt.');
+    return false;
+  }
+  pushOnlineTrace(`send barricade node=${nodeId}`);
+  setStatus('Server platziert die Barrikade...');
+  return sendServerAction('place_barricade', {
+    nodeId: String(nodeId || '')
   });
 }
 function applyAuthoritativeMove(moveMsg, snapshot){
@@ -6515,6 +6535,10 @@ function handleTapAtWorld(wx, wy){
 
   // 3) Barrikade platzieren
   if(state.phase==="placeBarricade"){
+    if(isOnlineAuthorityActive()){
+      requestServerPlaceBarricade(hit.id);
+      return;
+    }
     placeBarricadeAt(hit.id);
     return;
   }
