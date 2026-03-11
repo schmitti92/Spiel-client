@@ -618,7 +618,11 @@ function applyServerRoomState(room, opts={}){
   state.turn = turnIndex;
   updateTurnBadge();
 
-  if(opts.forceNeedRoll || room.gameState?.phase === 'needRoll'){
+  const snap = room.gameState?.snapshot || null;
+  const authoritativePhase = String(snap?.phase || room.gameState?.phase || 'needRoll');
+  const shouldResetForNeedRoll = opts.forceNeedRoll || authoritativePhase === 'needRoll';
+
+  if(shouldResetForNeedRoll){
     if(state.phase === 'loading' || state.phase === 'needRoll' || opts.forceNeedRoll){
       state.roll = null;
       state.selected = null;
@@ -631,12 +635,8 @@ function applyServerRoomState(room, opts={}){
     }
   }
 
-  const snap = room.gameState?.snapshot || null;
   if(snap) applyServerSnapshot(snap, { silentDraw:true });
-
-  if(!isLocalPlayersTurn()){
-    setStatus(`Team ${currentTeam()} ist dran – Wurf wird vom Server gesteuert.`);
-  }
+  updateStatusFromAuthoritativeState(opts.infoText || room.info || null);
 
   if(!opts.silentDraw){
     draw();
@@ -825,53 +825,8 @@ function applyServerSnapshot(snapshot, opts={}){
   return true;
 }
 
-
-function updateStatusFromAuthoritativeState(infoText){
-  if (typeof infoText === 'string' && infoText.trim()) {
-    setStatus(infoText.trim());
-    return;
-  }
-  if (!isOnlineAuthorityActive()) return;
-
-  if (state.gameOver) {
-    setStatus(`🏆 Team ${state.winnerTeam || currentTeam()} gewinnt!`);
-    return;
-  }
-
-  const isMine = isLocalPlayersTurn();
-  const team = currentTeam();
-
-  if (state.phase === 'placeBarricade') {
-    setStatus(isMine
-      ? `Team ${team}: Platziere die aufgenommene Barrikade auf ein freies Feld.`
-      : `Team ${team} platziert gerade eine Barrikade.`);
-    return;
-  }
-
-  if (state.phase === 'choosePiece' || state.phase === 'chooseTarget') {
-    if (state.roll) {
-      setStatus(isMine
-        ? `Team ${team}: Wurf ${state.roll}. Wähle eine eigene Figur und ziehe.`
-        : `Team ${team} zieht gerade. Wurf: ${state.roll}.`);
-    } else {
-      setStatus(isMine
-        ? `Team ${team}: Wähle eine Figur.`
-        : `Team ${team} ist am Zug.`);
-    }
-    return;
-  }
-
-  if (state.phase === 'needRoll') {
-    setStatus(isMine
-      ? `Team ${team} ist dran: Würfeln.`
-      : `Team ${team} ist dran. Der Server wartet auf den Wurf.`);
-    return;
-  }
-
-  if (state.phase === 'resolveMove') {
-    setStatus('Server löst den Zug auf...');
-    return;
-  }
+function resolveIncomingPhase(msg){
+  return String(msg?.room?.gameState?.snapshot?.phase || msg?.gameState?.snapshot?.phase || msg?.gameState?.phase || msg?.room?.gameState?.phase || state.phase || 'needRoll');
 }
 
 function buildServerMoveSnapshot(){
@@ -1023,17 +978,17 @@ function connectOnlineAuthority(){
       return;
     }
     if(type === 'room_state'){
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:false });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:false, infoText: msg.info || null });
       return;
     }
     if(type === 'game_started'){
       online.joined = true;
       online.authoritativeMoveActorId = null;
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:true, silentDraw:false });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:true, silentDraw:false, infoText: msg.info || null });
       state.phase = 'needRoll';
       state.roll = null;
       dieBox.textContent = '–';
-      setStatus(`Spiel gestartet. Team ${currentTeam()} ist dran. Der Server würfelt.`);
+      updateStatusFromAuthoritativeState(msg.info || `Spiel gestartet. Team ${currentTeam()} ist dran. Der Server würfelt.`);
       return;
     }
     if(type === 'game_roll'){
@@ -1046,17 +1001,20 @@ function connectOnlineAuthority(){
     if(type === 'game_move'){
       console.info('[ONLINE] game_move received', msg);
       pushOnlineTrace(`[RECV] game_move req=${msg.requestId || '-'} piece=${msg.move?.pieceId || '-'} target=${msg.move?.targetId || '-'}`);
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true, infoText: msg.info || null });
       const ok = applyAuthoritativeMove(msg.move, msg.snapshot || msg.move?.snapshot || msg.room?.gameState?.snapshot || null);
       if(!ok){
         setStatus('game_move kam ohne Snapshot an – Synchronisierung wird angefordert.');
+      } else {
+        updateStatusFromAuthoritativeState(msg.info || null);
       }
       return;
     }
     if(type === 'game_turn_state'){
       online.authoritativeMoveActorId = null;
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll: msg.gameState?.phase === 'needRoll', silentDraw:true });
-      if(msg.gameState?.phase === 'needRoll'){
+      const incomingPhase = resolveIncomingPhase(msg);
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll: incomingPhase === 'needRoll', silentDraw:true, infoText: msg.info || null });
+      if(incomingPhase === 'needRoll' && (!msg.room?.gameState?.snapshot || !Number(msg.room.gameState.snapshot.roll || 0))){
         online.suppressTurnBroadcast = true;
         state.roll = null;
         state.selected = null;
@@ -1068,17 +1026,18 @@ function connectOnlineAuthority(){
         dieBox.textContent = '–';
         online.suppressTurnBroadcast = false;
       }
-      if(msg.gameState?.phase === 'gameOver' && state.gameOver){
+      updateStatusFromAuthoritativeState(msg.info || null);
+      if(incomingPhase === 'gameOver' && state.gameOver){
         showWinOverlay(state.winnerTeam || currentTeam());
       }
       draw();
       return;
     }
     if(type === 'event_card'){
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
-      if(msg.info) setStatus(String(msg.info));
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true, infoText: msg.info || null });
+      updateStatusFromAuthoritativeState(msg.info || null);
       if(msg.card){
-        showEventOverlay(msg.card, ()=>{});
+        showEventOverlay(msg.card, ()=>{ updateStatusFromAuthoritativeState(msg.info || null); });
         pushOnlineTrace(`[EVENT] ${msg.card.id || 'card'}`);
       }
       if(state.gameOver){
