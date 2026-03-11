@@ -618,11 +618,7 @@ function applyServerRoomState(room, opts={}){
   state.turn = turnIndex;
   updateTurnBadge();
 
-  const snap = room.gameState?.snapshot || null;
-  const authoritativePhase = String(snap?.phase || room.gameState?.phase || 'needRoll');
-  const shouldResetForNeedRoll = opts.forceNeedRoll || authoritativePhase === 'needRoll';
-
-  if(shouldResetForNeedRoll){
+  if(opts.forceNeedRoll || room.gameState?.phase === 'needRoll'){
     if(state.phase === 'loading' || state.phase === 'needRoll' || opts.forceNeedRoll){
       state.roll = null;
       state.selected = null;
@@ -635,8 +631,12 @@ function applyServerRoomState(room, opts={}){
     }
   }
 
+  const snap = room.gameState?.snapshot || null;
   if(snap) applyServerSnapshot(snap, { silentDraw:true });
-  updateStatusFromAuthoritativeState(opts.infoText || room.info || null);
+
+  if(!isLocalPlayersTurn()){
+    setStatus(`Team ${currentTeam()} ist dran – Wurf wird vom Server gesteuert.`);
+  }
 
   if(!opts.silentDraw){
     draw();
@@ -755,7 +755,9 @@ function buildFullSyncSnapshot(){
       visible: b.visible !== false,
       hits: Number(b.hits || 0),
       meta: b.meta || {}
-    })) : []
+    })) : [],
+    jokers: JSON.parse(JSON.stringify(state.jokers || {1:baseJokerLoadout(),2:baseJokerLoadout(),3:baseJokerLoadout(),4:baseJokerLoadout()})),
+    jokerFlags: Object.assign({ double:false, allcolors:false }, state.jokerFlags || {})
   };
 }
 
@@ -800,6 +802,8 @@ function applyServerSnapshot(snapshot, opts={}){
   if('gameOver' in snapshot) state.gameOver = !!snapshot.gameOver;
   if('winnerTeam' in snapshot) state.winnerTeam = snapshot.winnerTeam || null;
   if(Array.isArray(snapshot.bosses)) state.bosses = snapshot.bosses.map(b => Object.assign({}, b));
+  if(snapshot.jokers && typeof snapshot.jokers === 'object') state.jokers = JSON.parse(JSON.stringify(snapshot.jokers));
+  if(snapshot.jokerFlags && typeof snapshot.jokerFlags === 'object') state.jokerFlags = Object.assign({ double:false, allcolors:false }, snapshot.jokerFlags);
   if('selected' in snapshot) state.selected = snapshot.selected || null;
   if('pendingSix' in snapshot) state.pendingSix = !!snapshot.pendingSix;
   if('extraRoll' in snapshot) state.extraRoll = !!snapshot.extraRoll;
@@ -820,13 +824,10 @@ function applyServerSnapshot(snapshot, opts={}){
     computePlaceTargets();
   }
   try{ updateBossUI(); }catch(_){ }
+  try{ updateJokerUI(); }catch(_){ }
   online.lastSnapshotAt = Date.now();
   if(!opts.silentDraw) draw();
   return true;
-}
-
-function resolveIncomingPhase(msg){
-  return String(msg?.room?.gameState?.snapshot?.phase || msg?.gameState?.snapshot?.phase || msg?.gameState?.phase || msg?.room?.gameState?.phase || state.phase || 'needRoll');
 }
 
 function buildServerMoveSnapshot(){
@@ -881,6 +882,18 @@ function requestServerPlaceBarricade(nodeId){
   return sendServerAction('place_barricade', {
     nodeId: String(nodeId || '')
   });
+}
+
+function requestServerJokerUse(jokerId, extra={}){
+  if(!isOnlineAuthorityActive()) return false;
+  if(!isLocalPlayersTurn()){
+    setStatus(`Nicht du bist dran. Team ${currentTeam()} nutzt Joker über den Server.`);
+    return true;
+  }
+  const payload = Object.assign({ jokerId: String(jokerId || '') }, extra || {});
+  pushOnlineTrace(`[SEND] joker_use ${payload.jokerId}`);
+  setStatus('Server prüft den Joker...');
+  return sendServerAction('joker_use', payload);
 }
 function applyAuthoritativeMove(moveMsg, snapshot){
   const snap = snapshot || moveMsg?.snapshot || online.room?.gameState?.snapshot || null;
@@ -978,17 +991,17 @@ function connectOnlineAuthority(){
       return;
     }
     if(type === 'room_state'){
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:false, infoText: msg.info || null });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:false });
       return;
     }
     if(type === 'game_started'){
       online.joined = true;
       online.authoritativeMoveActorId = null;
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:true, silentDraw:false, infoText: msg.info || null });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:true, silentDraw:false });
       state.phase = 'needRoll';
       state.roll = null;
       dieBox.textContent = '–';
-      updateStatusFromAuthoritativeState(msg.info || `Spiel gestartet. Team ${currentTeam()} ist dran. Der Server würfelt.`);
+      setStatus(`Spiel gestartet. Team ${currentTeam()} ist dran. Der Server würfelt.`);
       return;
     }
     if(type === 'game_roll'){
@@ -1001,20 +1014,17 @@ function connectOnlineAuthority(){
     if(type === 'game_move'){
       console.info('[ONLINE] game_move received', msg);
       pushOnlineTrace(`[RECV] game_move req=${msg.requestId || '-'} piece=${msg.move?.pieceId || '-'} target=${msg.move?.targetId || '-'}`);
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true, infoText: msg.info || null });
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
       const ok = applyAuthoritativeMove(msg.move, msg.snapshot || msg.move?.snapshot || msg.room?.gameState?.snapshot || null);
       if(!ok){
         setStatus('game_move kam ohne Snapshot an – Synchronisierung wird angefordert.');
-      } else {
-        updateStatusFromAuthoritativeState(msg.info || null);
       }
       return;
     }
     if(type === 'game_turn_state'){
       online.authoritativeMoveActorId = null;
-      const incomingPhase = resolveIncomingPhase(msg);
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll: incomingPhase === 'needRoll', silentDraw:true, infoText: msg.info || null });
-      if(incomingPhase === 'needRoll' && (!msg.room?.gameState?.snapshot || !Number(msg.room.gameState.snapshot.roll || 0))){
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll: msg.gameState?.phase === 'needRoll', silentDraw:true });
+      if(msg.gameState?.phase === 'needRoll'){
         online.suppressTurnBroadcast = true;
         state.roll = null;
         state.selected = null;
@@ -1026,18 +1036,17 @@ function connectOnlineAuthority(){
         dieBox.textContent = '–';
         online.suppressTurnBroadcast = false;
       }
-      updateStatusFromAuthoritativeState(msg.info || null);
-      if(incomingPhase === 'gameOver' && state.gameOver){
+      if(msg.gameState?.phase === 'gameOver' && state.gameOver){
         showWinOverlay(state.winnerTeam || currentTeam());
       }
       draw();
       return;
     }
     if(type === 'event_card'){
-      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true, infoText: msg.info || null });
-      updateStatusFromAuthoritativeState(msg.info || null);
+      if(msg.room) applyServerRoomState(msg.room, { forceNeedRoll:false, silentDraw:true });
+      if(msg.info) setStatus(String(msg.info));
       if(msg.card){
-        showEventOverlay(msg.card, ()=>{ updateStatusFromAuthoritativeState(msg.info || null); });
+        showEventOverlay(msg.card, ()=>{});
         pushOnlineTrace(`[EVENT] ${msg.card.id || 'card'}`);
       }
       if(state.gameOver){
@@ -2393,6 +2402,28 @@ function tryUseJoker(jokerId){
 
   if(jokerCount(team, jokerId) <= 0) return;
   if(!jokerIsUsableNow(joker)) return;
+
+  if(isOnlineAuthorityActive()){
+    if(jokerId === 'double' || jokerId === 'reroll' || jokerId === 'allcolors'){
+      requestServerJokerUse(jokerId);
+      return;
+    }
+    if(jokerId === 'moveBarricade'){
+      setJokerMode('moveBarricadePick');
+      setStatus(`Team ${team}: Joker Barrikade versetzen – tippe eine Barrikade an.`);
+      return;
+    }
+    if(jokerId === 'swap'){
+      setJokerMode('swapPickA');
+      setStatus(`Team ${team}: Joker Spieler tauschen – wähle Figur A.`);
+      return;
+    }
+    if(jokerId === 'shield'){
+      setJokerMode('shieldPick');
+      setStatus(`Team ${team}: Schutzschild – wähle eine eigene Figur.`);
+      return;
+    }
+  }
 
   // Consume first (prevents double click abuse)
   if(!consumeJoker(team, jokerId)) return;
@@ -6405,6 +6436,11 @@ function handleTapAtWorld(wx, wy){
         return;
       }
       if(!state.jokerHighlighted.has(hit.id)) return;
+      if(isOnlineAuthorityActive()){
+        requestServerJokerUse('moveBarricade', { fromNodeId: String(fromId || ''), toNodeId: String(hit.id || '') });
+        clearJokerMode(`Team ${team}: Barrikaden-Joker an Server gesendet.`);
+        return;
+      }
       // move
       barricades.delete(fromId);
       barricades.add(hit.id);
@@ -6471,6 +6507,12 @@ function handleTapAtWorld(wx, wy){
         return;
       }
 
+      if(isOnlineAuthorityActive()){
+        requestServerJokerUse('swap', { pieceAId: String(a.id || ''), pieceBId: String(b.id || '') });
+        clearJokerMode(`Team ${team}: Tausch-Joker an Server gesendet.`);
+        return;
+      }
+
       // swap nodes and occupied
       const aNode = a.node;
       const bNode = b.node;
@@ -6495,6 +6537,11 @@ function handleTapAtWorld(wx, wy){
       const p = state.pieces.find(x=>x.id===occId);
       if(!p || p.team !== team){
         setStatus(`Team ${team}: Nur eigene Figur!`);
+        return;
+      }
+      if(isOnlineAuthorityActive()){
+        requestServerJokerUse('shield', { pieceId: String(p.id || '') });
+        clearJokerMode(`Team ${team}: Schutzschild an Server gesendet.`);
         return;
       }
       p.shielded = true;
