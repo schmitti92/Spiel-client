@@ -825,6 +825,55 @@ function applyServerSnapshot(snapshot, opts={}){
   return true;
 }
 
+
+function updateStatusFromAuthoritativeState(infoText){
+  if (typeof infoText === 'string' && infoText.trim()) {
+    setStatus(infoText.trim());
+    return;
+  }
+  if (!isOnlineAuthorityActive()) return;
+
+  if (state.gameOver) {
+    setStatus(`🏆 Team ${state.winnerTeam || currentTeam()} gewinnt!`);
+    return;
+  }
+
+  const isMine = isLocalPlayersTurn();
+  const team = currentTeam();
+
+  if (state.phase === 'placeBarricade') {
+    setStatus(isMine
+      ? `Team ${team}: Platziere die aufgenommene Barrikade auf ein freies Feld.`
+      : `Team ${team} platziert gerade eine Barrikade.`);
+    return;
+  }
+
+  if (state.phase === 'choosePiece' || state.phase === 'chooseTarget') {
+    if (state.roll) {
+      setStatus(isMine
+        ? `Team ${team}: Wurf ${state.roll}. Wähle eine eigene Figur und ziehe.`
+        : `Team ${team} zieht gerade. Wurf: ${state.roll}.`);
+    } else {
+      setStatus(isMine
+        ? `Team ${team}: Wähle eine Figur.`
+        : `Team ${team} ist am Zug.`);
+    }
+    return;
+  }
+
+  if (state.phase === 'needRoll') {
+    setStatus(isMine
+      ? `Team ${team} ist dran: Würfeln.`
+      : `Team ${team} ist dran. Der Server wartet auf den Wurf.`);
+    return;
+  }
+
+  if (state.phase === 'resolveMove') {
+    setStatus('Server löst den Zug auf...');
+    return;
+  }
+}
+
 function buildServerMoveSnapshot(){
   const full = buildFullSyncSnapshot();
   return {
