@@ -1424,9 +1424,255 @@ if(actionEffectsState){
     netStatus.style.color = good ? "var(--green)" : "var(--muted)";
   }
 
+  function teamToColor(team){
+    const idx = Math.max(1, Math.min(4, Number(team || 0))) - 1;
+    return PLAYERS[idx] || PLAYERS[0];
+  }
+
+  function indexToColor(idx){
+    return PLAYERS[Math.max(0, Math.min(PLAYERS.length - 1, Number(idx || 0)))] || PLAYERS[0];
+  }
+
+  function decorateServerPlayers(list){
+    const arr = Array.isArray(list) ? list : [];
+    return arr.map((p, idx) => ({
+      ...p,
+      team: idx + 1,
+      color: teamToColor(idx + 1),
+      role: p && p.isHost ? "Host" : "Spieler"
+    }));
+  }
+
+  function mapServerPhaseToClient(phase){
+    const ph = String(phase || "").trim();
+    if(ph === "placeBarricade") return "placing_barricade";
+    if(ph === "gameOver") return "game_over";
+    if(ph === "needRoll" || ph === "lobby") return "need_roll";
+    return "need_move";
+  }
+
+  function buildActionStateFromServerSnapshot(snapshot){
+    const jokersByColor = { red:{}, blue:{}, green:{}, yellow:{} };
+    for(let team=1; team<=4; team+=1){
+      const color = teamToColor(team);
+      const inv = snapshot && snapshot.jokers && snapshot.jokers[team] ? snapshot.jokers[team] : {};
+      jokersByColor[color] = {
+        allColors: Number(inv.allcolors || 0),
+        barricade: Number(inv.moveBarricade || 0),
+        reroll: Number(inv.reroll || 0),
+        double: Number(inv.double || 0),
+        shield: Number(inv.shield || 0),
+        swap: Number(inv.swap || 0)
+      };
+    }
+
+    const turnColor = indexToColor(snapshot && typeof snapshot.turnIndex === "number" ? snapshot.turnIndex : 0);
+    const effects = {};
+    if(snapshot && snapshot.jokerFlags && snapshot.jokerFlags.allcolors){
+      effects.allColors = true;
+      effects.allColorsBy = turnColor;
+    }
+    if(snapshot && snapshot.jokerFlags && snapshot.jokerFlags.double){
+      effects.doubleRoll = { pending:true, by: turnColor };
+    }
+    if(snapshot && snapshot.pendingBarricadePlacement){
+      effects.barricadeBy = teamToColor(snapshot.pendingBarricadePlacement.team || ((snapshot.turnIndex || 0) + 1));
+    }
+
+    return { jokersByColor, effects };
+  }
+
+  function buildLegacyStateFromServerRoom(room){
+    const gs = room && room.gameState ? room.gameState : {};
+    const snap = gs && gs.snapshot ? gs.snapshot : null;
+    if(!snap || !Array.isArray(snap.pieces)) return null;
+
+    const players = [...PLAYERS];
+    const piecesByColor = Object.fromEntries(players.map(c => [c, []]));
+    const counts = { red:0, blue:0, green:0, yellow:0 };
+
+    for(const piece of snap.pieces){
+      const color = teamToColor(piece && piece.team);
+      const idx = counts[color] || 0;
+      counts[color] = idx + 1;
+      let pos = "house";
+      if(piece && piece.node) pos = String(piece.node);
+      piecesByColor[color][idx] = {
+        pos,
+        pieceId: piece && piece.id ? piece.id : `${color}-${idx+1}`,
+        shielded: !!(piece && piece.shielded)
+      };
+    }
+
+    for(const color of players){
+      const minSlots = Math.max(5, piecesByColor[color].length);
+      while(piecesByColor[color].length < minSlots){
+        piecesByColor[color].push({ pos:"house", pieceId:`${color}-pad-${piecesByColor[color].length+1}` });
+      }
+    }
+
+    const turnColor = indexToColor(gs && typeof gs.turnIndex === "number" ? gs.turnIndex : 0);
+    return {
+      started: !!gs.started,
+      players,
+      currentPlayer: turnColor,
+      dice: Number(snap.roll || gs.lastRoll || 0) || null,
+      phase: mapServerPhaseToClient(gs.phase || snap.phase || "needRoll"),
+      placingChoices: [],
+      pieces: piecesByColor,
+      barricades: Array.isArray(snap.barricades) ? snap.barricades.map(String) : [],
+      winner: snap.gameOver ? teamToColor(snap.winnerTeam || ((gs.turnIndex || 0) + 1)) : null,
+      winnerColor: snap.gameOver ? teamToColor(snap.winnerTeam || ((gs.turnIndex || 0) + 1)) : null,
+      goalNodeId: snap.goalNodeId ? String(snap.goalNodeId) : goalNodeId,
+      activeColors: players.slice(),
+      mode: "action",
+      action: buildActionStateFromServerSnapshot(snap),
+      serverBosses: Array.isArray(snap.bosses) ? snap.bosses : [],
+      goalScores: snap.goalScores || null,
+      carry: snap.carry || null,
+      __serverChef: true
+    };
+  }
+
+  function normalizeIncomingServerMessage(msg){
+    if(!msg || typeof msg !== "object") return msg;
+    const type = String(msg.type || "").trim();
+    const room = msg.room && typeof msg.room === "object" ? msg.room : null;
+    const players = room ? decorateServerPlayers(room.players) : (Array.isArray(msg.players) ? decorateServerPlayers(msg.players) : null);
+    const legacyState = room ? buildLegacyStateFromServerRoom(room) : null;
+
+    if(type === "room_created" || type === "room_joined"){
+      return {
+        ...msg,
+        type: "room_update",
+        players,
+        canStart: !!(room && room.players && room.players.length >= 2),
+        roomCode: room && room.roomCode ? room.roomCode : (msg.roomCode || roomCode || "")
+      };
+    }
+
+    if(type === "room_state"){
+      return {
+        ...msg,
+        type: legacyState ? "snapshot" : "room_update",
+        state: legacyState || undefined,
+        players,
+        canStart: !!(room && room.players && room.players.length >= 2)
+      };
+    }
+
+    if(type === "game_started"){
+      return {
+        ...msg,
+        type: "started",
+        state: legacyState,
+        players,
+        canStart: false
+      };
+    }
+
+    if(type === "game_roll"){
+      return {
+        ...msg,
+        type: "roll",
+        value: msg.roll && typeof msg.roll.value === "number" ? msg.roll.value : null,
+        state: legacyState,
+        players
+      };
+    }
+
+    if(type === "game_move"){
+      return {
+        ...msg,
+        type: "move",
+        action: msg.move || null,
+        state: legacyState,
+        players
+      };
+    }
+
+    if(type === "game_turn_state"){
+      return {
+        ...msg,
+        type: "snapshot",
+        state: legacyState,
+        players
+      };
+    }
+
+    if(type === "event_card"){
+      return {
+        ...msg,
+        type: "snapshot",
+        state: legacyState,
+        players,
+        _eventInfo: msg.card && (msg.card.title || msg.card.text) ? `${msg.card.title || "Ereignis"}: ${msg.card.text || ""}`.trim() : (msg.info || "Ereignis")
+      };
+    }
+
+    if(type === "error_message"){
+      return { ...msg, type: "error", code: msg.code || "", message: msg.message || "Server-Fehler" };
+    }
+
+    return msg;
+  }
+
+  function translateOutgoingMessage(obj){
+    if(!obj || typeof obj !== "object") return obj;
+    const type = String(obj.type || "").trim();
+
+    if(type === "start" || type === "start_request"){
+      return { type:"start_game" };
+    }
+
+    if(type === "resume"){
+      return { type:"sync_request" };
+    }
+
+    const legacyActionTypes = new Set([
+      "roll_request",
+      "move_request",
+      "place_barricade",
+      "end_turn",
+      "skip_turn",
+      "reset",
+      "forfeit",
+      "use_joker",
+      "cancel_joker",
+      "action_barricade_move"
+    ]);
+
+    if(legacyActionTypes.has(type)){
+      const actionMsg = { ...obj, type:"server_action", action:type };
+      if(type === "use_joker"){
+        actionMsg.action = "joker_use";
+        const rawJoker = String(obj.joker || obj.jokerId || "").trim().toLowerCase();
+        const jokerMap = { allcolors:"allcolors", barricade:"moveBarricade", reroll:"reroll", double:"double", shield:"shield", swap:"swap" };
+        actionMsg.jokerId = jokerMap[rawJoker] || rawJoker;
+      }else if(type === "cancel_joker"){
+        actionMsg.action = "turn_update";
+      }else if(type === "action_barricade_move"){
+        actionMsg.action = "joker_use";
+        actionMsg.jokerId = "moveBarricade";
+        actionMsg.fromNodeId = obj.from;
+        actionMsg.toNodeId = obj.to;
+      }else if(type === "end_turn" || type === "skip_turn" || type === "reset" || type === "forfeit"){
+        actionMsg.action = "turn_update";
+      }
+      return actionMsg;
+    }
+
+    return obj;
+  }
+
   function wsSend(obj){
     if(!ws || ws.readyState!==1) return false;
-    try{ ws.send(JSON.stringify(obj)); return true; }catch(_e){ return false; }
+    try{
+      const payload = translateOutgoingMessage(obj);
+      if(!payload) return false;
+      ws.send(JSON.stringify(payload));
+      return true;
+    }catch(_e){ return false; }
   }
 
   // Host-only: ensure each player starts with 2 jokers of the 4 Barikade types (Action-Modus).
@@ -1641,28 +1887,44 @@ try{ ws = new WebSocket(SERVER_URL); }
       hideNetBanner();
       setNetStatus("Verbunden – join…", true);
 
-      const sessionToken = getSessionToken();
       const savedName = (()=>{ try{ return (localStorage.getItem('barikade_playerName')||'').trim(); }catch(_e){ return ''; } })();
-      wsSend({
-        type: "join",
-        room: roomCode,
-        name: savedName || (netMode === "host" ? "Host" : "Client"),
-        asHost: (netMode === "host"),
-        sessionToken,
-        requestedColor: getRequestedColor(),
-        ts: Date.now()
-      });
+      if(netMode === "host"){
+        wsSend({
+          type: "create_room",
+          name: savedName || "Host",
+          ts: Date.now()
+        });
+      }else{
+        wsSend({
+          type: "join_room",
+          roomCode: roomCode,
+          name: savedName || "Client",
+          playerId: clientId || "",
+          ts: Date.now()
+        });
+      }
     };
 
     ws.onmessage = (ev) => {
       _lastNetMsgAt = Date.now();
-      const msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
+      let msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
       if(!msg) return;
+      msg = normalizeIncomingServerMessage(msg) || msg;
       const type = msg.type;
 
       if(type==="hello"){
         if(msg.clientId) clientId = msg.clientId;
         return;
+      }
+
+      if(type==="room_update" && msg.roomCode){
+        roomCode = normalizeRoomCode(msg.roomCode) || roomCode;
+        if(roomCodeInp) roomCodeInp.value = roomCode || "";
+      }
+
+      if((msg.self && msg.self.playerId) || (msg.self && msg.self.id)){
+        clientId = msg.self.playerId || msg.self.id;
+        saveSession();
       }
 if(type==="start_spin"){
   try{
@@ -1739,6 +2001,7 @@ try{
           writeHostAutosave(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        if(msg._eventInfo) toast(msg._eventInfo);
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
         return;
       }
@@ -1925,6 +2188,29 @@ try{
   function applyRemoteState(remote){
     const st = (typeof remote==="string") ? safeJsonParse(remote) : remote;
     if(!st || typeof st!=="object") return;
+
+    if(st.__serverChef){
+      if(st.barricades && Array.isArray(st.barricades)) st.barricades = new Set(st.barricades);
+      state = st;
+      if(st.players && Array.isArray(st.players) && st.players.length>=2) setPlayers(st.players);
+      phase = typeof st.phase === "string" ? st.phase : (st.winner ? "game_over" : (st.dice==null ? "need_roll" : "need_move"));
+      placingChoices = [];
+      legalTargets = [];
+      legalMovesAll = [];
+      legalMovesByPiece = new Map();
+      selected = null;
+      if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
+      setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
+      if(!(st.finished || st.phase === 'game_over')){ winShown = false; awardsShown = false; }
+      if(st.winner && !winShown){
+        winShown = true;
+        showEpicWin(st.winner);
+      }
+      updateTurnUI(); updateStartButton(); draw();
+      updateActionUI_J1();
+      ensureFittedOnce();
+      return;
+    }
 
     // --- Server-state adapter (serverfinal protocol) ---
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
