@@ -3928,6 +3928,48 @@ function showEpicWin(winnerColor){
     }
     ctx.restore();
   }
+  function getBossVisual(type){
+    const t = String(type || '').toLowerCase();
+    if(t === 'hunter') return { label:'H', fill:'#8b0000', glow:'rgba(255,77,77,0.35)' };
+    if(t === 'guardian') return { label:'G', fill:'#204a87', glow:'rgba(92,172,255,0.35)' };
+    if(t === 'magnet') return { label:'M', fill:'#6a1b9a', glow:'rgba(200,120,255,0.35)' };
+    if(t === 'destroyer') return { label:'D', fill:'#8a4b08', glow:'rgba(255,170,60,0.35)' };
+    if(t === 'reaper') return { label:'R', fill:'#1f1f1f', glow:'rgba(255,255,255,0.28)' };
+    return { label:'B', fill:'#333333', glow:'rgba(255,255,255,0.25)' };
+  }
+  function drawBosses(r){
+    const bosses = Array.isArray(state && state.serverBosses) ? state.serverBosses : [];
+    if(!bosses.length) return;
+    for(const boss of bosses){
+      if(!boss || boss.alive === false || !boss.node) continue;
+      const n = nodeById.get(String(boss.node));
+      if(!n) continue;
+      const s = worldToScreen(n);
+      const vis = getBossVisual(boss.type);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = vis.glow;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, r*1.35, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle = vis.fill;
+      ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, r*0.72, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.98)';
+      ctx.font = 'bold 15px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(vis.label, s.x, s.y);
+      ctx.restore();
+    }
+  }
 
   // Request a redraw on the next animation frame (prevents spamming draw() calls)
   function requestDraw(){
@@ -4083,6 +4125,8 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       const s=worldToScreen(n);
       drawStack(arr, s.x, s.y, r);
     }
+
+    drawBosses(r);
 
     // ===== animated moving piece (drawn ON TOP of nodes & pieces) =====
     if(moveAnim){
