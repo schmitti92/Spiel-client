@@ -12,7 +12,125 @@ let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
 let pendingSaveExport = false;
 
 (() => {
-  const $ = (id) => document.getElementById(id);
+  const ID_ALIASES = {
+    c: "boardCanvas",
+    rollBtn: "btnRoll",
+    turnText: "curPlayer",
+    boardInfo: "statusLine"
+  };
+
+  function ensureCompatDom(){
+    try{
+      const q = (id) => document.getElementById(id);
+      const make = (tag, id, parent=document.body) => {
+        let el = q(id);
+        if(el) return el;
+        el = document.createElement(tag);
+        el.id = id;
+        el.style.display = 'none';
+        parent.appendChild(el);
+        return el;
+      };
+
+      // Canvas / dice
+      const dieBox = q('dieBox');
+      if(dieBox && !q('diceCube')){
+        dieBox.textContent = '';
+        dieBox.style.position = 'relative';
+        const cube = document.createElement('div');
+        cube.id = 'diceCube';
+        dieBox.appendChild(cube);
+      }
+
+      // Main turn UI compatibility
+      if(!q('turnDot')){
+        const host = q('curPlayer')?.parentElement || q('sidebar') || document.body;
+        const dot = document.createElement('span');
+        dot.id = 'turnDot';
+        dot.className = 'dot';
+        dot.style.display = 'inline-block';
+        dot.style.width = '10px';
+        dot.style.height = '10px';
+        dot.style.borderRadius = '999px';
+        dot.style.marginLeft = '8px';
+        host.appendChild(dot);
+      }
+      if(!q('turnText') && q('curPlayer')) q('curPlayer').id = 'turnText';
+      if(!q('boardInfo') && q('statusLine')){
+        // keep existing id, alias lookup handles it
+      }
+      make('div','barrInfo', q('reserveInfo')?.parentElement || q('sidebar') || document.body);
+
+      // Toast + overlay
+      make('div','toast', document.body);
+      let overlay = q('overlay');
+      if(!overlay){
+        overlay = document.createElement('div');
+        overlay.id = 'overlay';
+        overlay.style.display = 'none';
+        overlay.innerHTML = '<div id="overlayTitle"></div><div id="overlaySub"></div><div id="overlayHint"></div><button id="overlayOk" type="button">OK</button>';
+        document.body.appendChild(overlay);
+      }
+      make('div','overlayTitle', overlay);
+      make('div','overlaySub', overlay);
+      make('div','overlayHint', overlay);
+      make('button','overlayOk', overlay);
+      q('overlayOk').type = 'button';
+      if(!q('overlayOk').textContent) q('overlayOk').textContent = 'OK';
+
+      // Online/debug placeholders required by advanced JS but missing in slim HTML
+      ['netBanner','debugToggle','debugLog','startBtn','endBtn','skipBtn','forfeitBtn','resetBtn','resumeBtn','hostTools','saveBtn','loadBtn','restoreBtn','autoSaveInfo','serverLabel','roomCode','hostBtn','joinBtn','leaveBtn','netStatus','netPlayers','myColor','loadFile','backLobbyBtn','startWheelOverlay','startWheelCanvas','startWheelSub','startWheelResult','wheelOverlay','wheelCanvas','wheelTitle','wheelSub','wheelResult','wheelQuote','wheelBig'].forEach((id)=>{
+        const tag = (id === 'loadFile' || id === 'roomCode') ? 'input' : ((id.endsWith('Btn') || id in {overlayOk:1,hostBtn:1,joinBtn:1,leaveBtn:1,startBtn:1,endBtn:1,skipBtn:1,forfeitBtn:1,resetBtn:1,resumeBtn:1,saveBtn:1,loadBtn:1,restoreBtn:1,debugToggle:1,backLobbyBtn:1}) ? 'button' : 'div');
+        const el = make(tag, id, document.body);
+        if(id === 'loadFile') el.type = 'file';
+        if(id === 'roomCode') el.type = 'text';
+        if(tag === 'button') el.type = 'button';
+      });
+
+      // Action/Joker compatibility on top of current sidebar card
+      let actionCard = q('actionCard');
+      const jokerCard = q('jokerCard') || q('sidebar') || document.body;
+      if(!actionCard){
+        actionCard = jokerCard;
+        actionCard.id = 'actionCard';
+      }
+      if(!q('actionHint')){
+        const el = document.createElement('div');
+        el.id = 'actionHint';
+        actionCard.appendChild(el);
+      }
+      if(!actionCard.querySelector('.joker-grid')){
+        const grid = document.createElement('div');
+        grid.className = 'joker-grid';
+        actionCard.appendChild(grid);
+      }
+      ['jokerChooseState','jokerSumState','jokerAllColorsState','jokerBarricadeState','jokerRerollState','jokerDoubleState','actionEffectsState'].forEach((id)=>make('span', id, actionCard));
+      ['jokerAllColorsBtn','jokerBarricadeBtn'].forEach((id)=>{
+        if(!q(id)){
+          const btn = document.createElement('button');
+          btn.id = id;
+          btn.type = 'button';
+          btn.className = 'joker-btn';
+          btn.textContent = id === 'jokerAllColorsBtn' ? '🌈 Alle Farben nutzen' : '🧱 Barikade nutzen';
+          actionCard.querySelector('.joker-grid').appendChild(btn);
+        }
+      });
+
+      if(!q('actionModeToggle')){
+        const inp = document.createElement('input');
+        inp.id = 'actionModeToggle';
+        inp.type = 'checkbox';
+        inp.style.display = 'none';
+        document.body.appendChild(inp);
+      }
+    }catch(_e){}
+  }
+
+  function $(id) {
+    return document.getElementById(id) || document.getElementById(ID_ALIASES[id] || '');
+  }
+
+  ensureCompatDom();
 
 
   // ===== C1: UX stability fixes (NO functional changes) =====
@@ -3033,8 +3151,8 @@ function showEpicWin(winnerColor){
     showOverlay('🏆 EPISCHER SIEG 🏆', `${name} gewinnt!`, 'Erste Figur auf dem Zielfeld.');
     startWinFx();
   }
-  function hideOverlay(){ overlay.classList.remove("show"); }
-  overlayOk.addEventListener("click", hideOverlay);
+  function hideOverlay(){ if(overlay) overlay.classList.remove("show"); }
+  if(overlayOk) overlayOk.addEventListener("click", hideOverlay);
 
   async function loadBoard(){
     const res = await fetch("board.json", { cache:"force-cache" });
@@ -4319,7 +4437,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
   }
 
   // Barrikade-Joker: VOR dem Wurf aktivieren, danach Quelle+Ziel klicken
-  jokerBarricadeBtn.addEventListener("click", () => {
+  if(jokerBarricadeBtn) jokerBarricadeBtn.addEventListener("click", () => {
       if (!isActionMode()) return;
 
       const eff = state?.action?.effects || {};
@@ -4467,7 +4585,7 @@ rollBtn.addEventListener("click", () => {
     if(netMode==="host") broadcastState("state");
   });
 
-  endBtn.addEventListener("click", () => {
+  if(endBtn) endBtn.addEventListener("click", () => {
     if(netMode!=="offline"){
       if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
       sendOnlineAction("end_turn");
@@ -4489,7 +4607,7 @@ rollBtn.addEventListener("click", () => {
     if(netMode==="host") broadcastState("state");
   });
 
-  resetBtn.addEventListener("click", () => {
+  if(resetBtn) resetBtn.addEventListener("click", () => {
     if(netMode==="offline"){
       newGame();
       return;
@@ -4499,7 +4617,7 @@ rollBtn.addEventListener("click", () => {
   });
 
   // Online actions
-  hostBtn.addEventListener("click", () => {
+  if(hostBtn) hostBtn.addEventListener("click", () => {
     netMode = "host";
     clientId = clientId || ("H-" + randId(8));
     roomCode = normalizeRoomCode(roomCodeInp.value) || randId(6);
@@ -4509,7 +4627,7 @@ rollBtn.addEventListener("click", () => {
     toast("Host gestartet – teile den Raumcode");
   });
 
-  joinBtn.addEventListener("click", () => {
+  if(joinBtn) joinBtn.addEventListener("click", () => {
     netMode = "client";
     clientId = clientId || ("C-" + randId(8));
     roomCode = normalizeRoomCode(roomCodeInp.value);
@@ -4537,7 +4655,7 @@ rollBtn.addEventListener("click", () => {
   // Handlers werden zentral ueber bindColorPickHandlers() gebunden,
   // damit es auch funktioniert, wenn die Buttons erst per JS erzeugt wurden.
   bindColorPickHandlers();
-leaveBtn.addEventListener("click", () => {
+if(leaveBtn) leaveBtn.addEventListener("click", () => {
     netMode = "offline";
     saveSession();
     disconnectWS();
