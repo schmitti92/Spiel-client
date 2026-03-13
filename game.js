@@ -947,10 +947,6 @@ let pendingSaveExport = false;
   let winShown = false;
 let awardsShown = false;
 
-  // Post-match XP overlay coordination
-  let pendingPostMatchRewards = null;
-  let awardsCeremonyDone = false;
-
   let PLAYERS = ["red","blue"];
   function setPlayers(arg){
     if(Array.isArray(arg)){
@@ -1424,255 +1420,9 @@ if(actionEffectsState){
     netStatus.style.color = good ? "var(--green)" : "var(--muted)";
   }
 
-  function teamToColor(team){
-    const idx = Math.max(1, Math.min(4, Number(team || 0))) - 1;
-    return PLAYERS[idx] || PLAYERS[0];
-  }
-
-  function indexToColor(idx){
-    return PLAYERS[Math.max(0, Math.min(PLAYERS.length - 1, Number(idx || 0)))] || PLAYERS[0];
-  }
-
-  function decorateServerPlayers(list){
-    const arr = Array.isArray(list) ? list : [];
-    return arr.map((p, idx) => ({
-      ...p,
-      team: idx + 1,
-      color: teamToColor(idx + 1),
-      role: p && p.isHost ? "Host" : "Spieler"
-    }));
-  }
-
-  function mapServerPhaseToClient(phase){
-    const ph = String(phase || "").trim();
-    if(ph === "placeBarricade") return "placing_barricade";
-    if(ph === "gameOver") return "game_over";
-    if(ph === "needRoll" || ph === "lobby") return "need_roll";
-    return "need_move";
-  }
-
-  function buildActionStateFromServerSnapshot(snapshot){
-    const jokersByColor = { red:{}, blue:{}, green:{}, yellow:{} };
-    for(let team=1; team<=4; team+=1){
-      const color = teamToColor(team);
-      const inv = snapshot && snapshot.jokers && snapshot.jokers[team] ? snapshot.jokers[team] : {};
-      jokersByColor[color] = {
-        allColors: Number(inv.allcolors || 0),
-        barricade: Number(inv.moveBarricade || 0),
-        reroll: Number(inv.reroll || 0),
-        double: Number(inv.double || 0),
-        shield: Number(inv.shield || 0),
-        swap: Number(inv.swap || 0)
-      };
-    }
-
-    const turnColor = indexToColor(snapshot && typeof snapshot.turnIndex === "number" ? snapshot.turnIndex : 0);
-    const effects = {};
-    if(snapshot && snapshot.jokerFlags && snapshot.jokerFlags.allcolors){
-      effects.allColors = true;
-      effects.allColorsBy = turnColor;
-    }
-    if(snapshot && snapshot.jokerFlags && snapshot.jokerFlags.double){
-      effects.doubleRoll = { pending:true, by: turnColor };
-    }
-    if(snapshot && snapshot.pendingBarricadePlacement){
-      effects.barricadeBy = teamToColor(snapshot.pendingBarricadePlacement.team || ((snapshot.turnIndex || 0) + 1));
-    }
-
-    return { jokersByColor, effects };
-  }
-
-  function buildLegacyStateFromServerRoom(room){
-    const gs = room && room.gameState ? room.gameState : {};
-    const snap = gs && gs.snapshot ? gs.snapshot : null;
-    if(!snap || !Array.isArray(snap.pieces)) return null;
-
-    const players = [...PLAYERS];
-    const piecesByColor = Object.fromEntries(players.map(c => [c, []]));
-    const counts = { red:0, blue:0, green:0, yellow:0 };
-
-    for(const piece of snap.pieces){
-      const color = teamToColor(piece && piece.team);
-      const idx = counts[color] || 0;
-      counts[color] = idx + 1;
-      let pos = "house";
-      if(piece && piece.node) pos = String(piece.node);
-      piecesByColor[color][idx] = {
-        pos,
-        pieceId: piece && piece.id ? piece.id : `${color}-${idx+1}`,
-        shielded: !!(piece && piece.shielded)
-      };
-    }
-
-    for(const color of players){
-      const minSlots = Math.max(5, piecesByColor[color].length);
-      while(piecesByColor[color].length < minSlots){
-        piecesByColor[color].push({ pos:"house", pieceId:`${color}-pad-${piecesByColor[color].length+1}` });
-      }
-    }
-
-    const turnColor = indexToColor(gs && typeof gs.turnIndex === "number" ? gs.turnIndex : 0);
-    return {
-      started: !!gs.started,
-      players,
-      currentPlayer: turnColor,
-      dice: Number(snap.roll || gs.lastRoll || 0) || null,
-      phase: mapServerPhaseToClient(gs.phase || snap.phase || "needRoll"),
-      placingChoices: [],
-      pieces: piecesByColor,
-      barricades: Array.isArray(snap.barricades) ? snap.barricades.map(String) : [],
-      winner: snap.gameOver ? teamToColor(snap.winnerTeam || ((gs.turnIndex || 0) + 1)) : null,
-      winnerColor: snap.gameOver ? teamToColor(snap.winnerTeam || ((gs.turnIndex || 0) + 1)) : null,
-      goalNodeId: snap.goalNodeId ? String(snap.goalNodeId) : goalNodeId,
-      activeColors: players.slice(),
-      mode: "action",
-      action: buildActionStateFromServerSnapshot(snap),
-      serverBosses: Array.isArray(snap.bosses) ? snap.bosses : [],
-      goalScores: snap.goalScores || null,
-      carry: snap.carry || null,
-      __serverChef: true
-    };
-  }
-
-  function normalizeIncomingServerMessage(msg){
-    if(!msg || typeof msg !== "object") return msg;
-    const type = String(msg.type || "").trim();
-    const room = msg.room && typeof msg.room === "object" ? msg.room : null;
-    const players = room ? decorateServerPlayers(room.players) : (Array.isArray(msg.players) ? decorateServerPlayers(msg.players) : null);
-    const legacyState = room ? buildLegacyStateFromServerRoom(room) : null;
-
-    if(type === "room_created" || type === "room_joined"){
-      return {
-        ...msg,
-        type: "room_update",
-        players,
-        canStart: !!(room && room.players && room.players.length >= 2),
-        roomCode: room && room.roomCode ? room.roomCode : (msg.roomCode || roomCode || "")
-      };
-    }
-
-    if(type === "room_state"){
-      return {
-        ...msg,
-        type: legacyState ? "snapshot" : "room_update",
-        state: legacyState || undefined,
-        players,
-        canStart: !!(room && room.players && room.players.length >= 2)
-      };
-    }
-
-    if(type === "game_started"){
-      return {
-        ...msg,
-        type: "started",
-        state: legacyState,
-        players,
-        canStart: false
-      };
-    }
-
-    if(type === "game_roll"){
-      return {
-        ...msg,
-        type: "roll",
-        value: msg.roll && typeof msg.roll.value === "number" ? msg.roll.value : null,
-        state: legacyState,
-        players
-      };
-    }
-
-    if(type === "game_move"){
-      return {
-        ...msg,
-        type: "move",
-        action: msg.move || null,
-        state: legacyState,
-        players
-      };
-    }
-
-    if(type === "game_turn_state"){
-      return {
-        ...msg,
-        type: "snapshot",
-        state: legacyState,
-        players
-      };
-    }
-
-    if(type === "event_card"){
-      return {
-        ...msg,
-        type: "snapshot",
-        state: legacyState,
-        players,
-        _eventInfo: msg.card && (msg.card.title || msg.card.text) ? `${msg.card.title || "Ereignis"}: ${msg.card.text || ""}`.trim() : (msg.info || "Ereignis")
-      };
-    }
-
-    if(type === "error_message"){
-      return { ...msg, type: "error", code: msg.code || "", message: msg.message || "Server-Fehler" };
-    }
-
-    return msg;
-  }
-
-  function translateOutgoingMessage(obj){
-    if(!obj || typeof obj !== "object") return obj;
-    const type = String(obj.type || "").trim();
-
-    if(type === "start" || type === "start_request"){
-      return { type:"start_game" };
-    }
-
-    if(type === "resume"){
-      return { type:"sync_request" };
-    }
-
-    const legacyActionTypes = new Set([
-      "roll_request",
-      "move_request",
-      "place_barricade",
-      "end_turn",
-      "skip_turn",
-      "reset",
-      "forfeit",
-      "use_joker",
-      "cancel_joker",
-      "action_barricade_move"
-    ]);
-
-    if(legacyActionTypes.has(type)){
-      const actionMsg = { ...obj, type:"server_action", action:type };
-      if(type === "use_joker"){
-        actionMsg.action = "joker_use";
-        const rawJoker = String(obj.joker || obj.jokerId || "").trim().toLowerCase();
-        const jokerMap = { allcolors:"allcolors", barricade:"moveBarricade", reroll:"reroll", double:"double", shield:"shield", swap:"swap" };
-        actionMsg.jokerId = jokerMap[rawJoker] || rawJoker;
-      }else if(type === "cancel_joker"){
-        actionMsg.action = "turn_update";
-      }else if(type === "action_barricade_move"){
-        actionMsg.action = "joker_use";
-        actionMsg.jokerId = "moveBarricade";
-        actionMsg.fromNodeId = obj.from;
-        actionMsg.toNodeId = obj.to;
-      }else if(type === "end_turn" || type === "skip_turn" || type === "reset" || type === "forfeit"){
-        actionMsg.action = "turn_update";
-      }
-      return actionMsg;
-    }
-
-    return obj;
-  }
-
   function wsSend(obj){
     if(!ws || ws.readyState!==1) return false;
-    try{
-      const payload = translateOutgoingMessage(obj);
-      if(!payload) return false;
-      ws.send(JSON.stringify(payload));
-      return true;
-    }catch(_e){ return false; }
+    try{ ws.send(JSON.stringify(obj)); return true; }catch(_e){ return false; }
   }
 
   // Host-only: ensure each player starts with 2 jokers of the 4 Barikade types (Action-Modus).
@@ -1887,44 +1637,28 @@ try{ ws = new WebSocket(SERVER_URL); }
       hideNetBanner();
       setNetStatus("Verbunden – join…", true);
 
+      const sessionToken = getSessionToken();
       const savedName = (()=>{ try{ return (localStorage.getItem('barikade_playerName')||'').trim(); }catch(_e){ return ''; } })();
-      if(netMode === "host"){
-        wsSend({
-          type: "create_room",
-          name: savedName || "Host",
-          ts: Date.now()
-        });
-      }else{
-        wsSend({
-          type: "join_room",
-          roomCode: roomCode,
-          name: savedName || "Client",
-          playerId: clientId || "",
-          ts: Date.now()
-        });
-      }
+      wsSend({
+        type: "join",
+        room: roomCode,
+        name: savedName || (netMode === "host" ? "Host" : "Client"),
+        asHost: (netMode === "host"),
+        sessionToken,
+        requestedColor: getRequestedColor(),
+        ts: Date.now()
+      });
     };
 
     ws.onmessage = (ev) => {
       _lastNetMsgAt = Date.now();
-      let msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
+      const msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
       if(!msg) return;
-      msg = normalizeIncomingServerMessage(msg) || msg;
       const type = msg.type;
 
       if(type==="hello"){
         if(msg.clientId) clientId = msg.clientId;
         return;
-      }
-
-      if(type==="room_update" && msg.roomCode){
-        roomCode = normalizeRoomCode(msg.roomCode) || roomCode;
-        if(roomCodeInp) roomCodeInp.value = roomCode || "";
-      }
-
-      if((msg.self && msg.self.playerId) || (msg.self && msg.self.id)){
-        clientId = msg.self.playerId || msg.self.id;
-        saveSession();
       }
 if(type==="start_spin"){
   try{
@@ -2001,7 +1735,6 @@ try{
           writeHostAutosave(msg.state);
         }
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        if(msg._eventInfo) toast(msg._eventInfo);
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
         return;
       }
@@ -2041,19 +1774,6 @@ try{
           showEpicWin(wc);
         }
         updateTurnUI();
-        return;
-      }
-
-      // Post-match XP/Level rewards (server is chef)
-      if(type==="post_match_rewards"){
-        try{
-          pendingPostMatchRewards = msg;
-          // If awards ceremony already finished, show XP overlay now.
-          if(awardsCeremonyDone){
-            showPostMatchXpOverlay(pendingPostMatchRewards);
-            pendingPostMatchRewards = null;
-          }
-        }catch(_e){}
         return;
       }
 
@@ -2188,29 +1908,6 @@ try{
   function applyRemoteState(remote){
     const st = (typeof remote==="string") ? safeJsonParse(remote) : remote;
     if(!st || typeof st!=="object") return;
-
-    if(st.__serverChef){
-      if(st.barricades && Array.isArray(st.barricades)) st.barricades = new Set(st.barricades);
-      state = st;
-      if(st.players && Array.isArray(st.players) && st.players.length>=2) setPlayers(st.players);
-      phase = typeof st.phase === "string" ? st.phase : (st.winner ? "game_over" : (st.dice==null ? "need_roll" : "need_move"));
-      placingChoices = [];
-      legalTargets = [];
-      legalMovesAll = [];
-      legalMovesByPiece = new Map();
-      selected = null;
-      if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
-      setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
-      if(!(st.finished || st.phase === 'game_over')){ winShown = false; awardsShown = false; }
-      if(st.winner && !winShown){
-        winShown = true;
-        showEpicWin(st.winner);
-      }
-      updateTurnUI(); updateStartButton(); draw();
-      updateActionUI_J1();
-      ensureFittedOnce();
-      return;
-    }
 
     // --- Server-state adapter (serverfinal protocol) ---
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
@@ -2672,212 +2369,57 @@ function toast(msg){
 
   
 // ---------- End-of-game Title Ceremony (per match) ----------
-
 function ensureAwardsStyles(){
   if(document.getElementById("baAwardsStyles")) return;
   const st = document.createElement("style");
   st.id = "baAwardsStyles";
   st.textContent = `
-    #baAwardsOverlay{
-      position:fixed; inset:0; display:none;
-      align-items:center; justify-content:center;
-      z-index:99999;
-      background:
-        radial-gradient(1200px 700px at 50% 35%, rgba(255,255,255,.12), rgba(0,0,0,.86) 72%),
-        radial-gradient(900px 500px at 20% 15%, rgba(120,80,255,.18), rgba(0,0,0,0) 60%),
-        radial-gradient(900px 500px at 80% 20%, rgba(0,190,255,.12), rgba(0,0,0,0) 62%);
-      backdrop-filter: blur(6px);
+    #baAwardsOverlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99999;
+      background: radial-gradient(900px 600px at 50% 40%, rgba(255,255,255,.10), rgba(0,0,0,.82) 70%);
+      backdrop-filter: blur(4px);
     }
-    #baAwardsOverlay.show{ display:flex; }
-
-    #baAwardsConfetti{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      pointer-events:none;
-    }
-
-    #baAwardsCard{
-      width:min(980px,92vw);
-      border-radius: 26px;
-      padding: 18px 18px 16px;
-      border:1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(10,16,35,.72), rgba(5,10,22,.52));
-      box-shadow:
-        0 18px 70px rgba(0,0,0,.60),
-        0 0 0 1px rgba(255,255,255,.06) inset;
+    #baAwardsCard{ width:min(920px,92vw); border-radius:24px; padding:22px 18px; border:1px solid rgba(255,255,255,.12);
+      background: rgba(5,10,22,.55);
+      box-shadow: 0 12px 50px rgba(0,0,0,.55);
       text-align:center;
-      transform: translateY(14px) scale(.98);
-      opacity:0;
-      transition: .28s cubic-bezier(.2,.9,.2,1);
-      position:relative;
-      overflow:hidden;
-    }
-    #baAwardsOverlay.show #baAwardsCard{
-      transform: translateY(0) scale(1);
-      opacity:1;
-    }
-
-    #baAwardsCard::before{
-      content:'';
-      position:absolute; inset:-2px;
-      background:
-        radial-gradient(800px 320px at 50% 0%, rgba(255,255,255,.10), rgba(0,0,0,0) 55%),
-        radial-gradient(600px 220px at 15% 10%, rgba(120,80,255,.20), rgba(0,0,0,0) 60%),
-        radial-gradient(600px 220px at 85% 10%, rgba(0,190,255,.16), rgba(0,0,0,0) 62%);
-      filter: blur(0px);
-      pointer-events:none;
-      opacity:.9;
-    }
-
-    #baAwardsTop{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px;
-      position:relative;
-      padding: 6px 6px 10px;
-    }
-    #baAwardsBadge{
-      display:inline-flex; align-items:center; gap:8px;
-      font-weight:900;
-      letter-spacing:.3px;
-      font-size: 13px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      color: rgba(255,255,255,.92);
-      user-select:none;
-    }
-    #baAwardsStep{
-      font-weight:800;
-      font-size: 13px;
-      color: rgba(255,255,255,.72);
-      user-select:none;
-    }
-
-    #baAwardsTitle{
-      position:relative;
-      font-weight:1000;
-      letter-spacing:.2px;
-      font-size: clamp(24px,4.4vw,46px);
-      margin-top: 6px;
-      text-shadow: 0 10px 30px rgba(0,0,0,.45);
-    }
-
-    #baAwardsValue{
-      position:relative;
-      margin-top: 12px;
-      font-weight: 950;
-      font-size: clamp(20px,3.7vw,40px);
-      opacity:0;
       transform: translateY(10px) scale(.98);
-      transition: .28s cubic-bezier(.2,.9,.2,1);
-      filter: drop-shadow(0 10px 25px rgba(0,0,0,.45));
-    }
-    #baAwardsName{
-      position:relative;
-      margin-top: 10px;
-      font-weight: 900;
-      font-size: clamp(18px,3.1vw,32px);
-      color: rgba(255,255,255,.90);
       opacity:0;
-      transform: translateY(10px) scale(.98);
-      transition: .28s cubic-bezier(.2,.9,.2,1);
+      transition: .22s ease;
     }
-    #baAwardsValue.show, #baAwardsName.show{
-      opacity:1;
-      transform: translateY(0) scale(1);
+    #baAwardsOverlay.show #baAwardsCard{ transform: translateY(0) scale(1); opacity:1; }
+    #baAwardsTitle{ font-weight:1000; letter-spacing:.2px; font-size:clamp(22px,4.2vw,44px); }
+    #baAwardsValue{ margin-top:12px; font-weight:950; font-size:clamp(20px,3.6vw,38px); opacity:0; transform: translateY(6px); transition:.22s ease; }
+    #baAwardsName{ margin-top:10px; font-weight:900; font-size:clamp(18px,3vw,30px); color: rgba(255,255,255,.86);
+      opacity:0; transform: translateY(6px); transition:.22s ease;
     }
-
-    #baAwardsSub{
-      position:relative;
-      margin-top: 12px;
-      font-size: 13px;
-      color: rgba(255,255,255,.62);
-    }
-
-    #baAwardsControls{
-      display:flex; flex-wrap:wrap;
-      justify-content:center; align-items:center;
-      gap:10px;
-      margin-top: 14px;
-      position:relative;
-    }
-    .baBtn{
-      appearance:none;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.08);
-      color: rgba(255,255,255,.92);
-      padding: 10px 14px;
-      border-radius: 14px;
-      font-weight: 900;
-      letter-spacing:.2px;
-      cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-      user-select:none;
-    }
-    .baBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.18); }
-    .baBtn:active{ transform: translateY(0px) scale(.99); }
-    .baBtnPrimary{
-      background: linear-gradient(180deg, rgba(120,80,255,.28), rgba(255,255,255,.10));
-      border-color: rgba(120,80,255,.38);
-    }
-    .baBtnGhost{
-      background: rgba(0,0,0,.18);
-      border-color: rgba(255,255,255,.12);
-    }
-    .baBtn[disabled]{ opacity:.45; cursor:not-allowed; transform:none; }
-
-    #baAwardsHint{
-      font-size: 12px;
-      color: rgba(255,255,255,.58);
-      margin-top: 8px;
-      user-select:none;
-    }
-
-    @media (prefers-reduced-motion: reduce){
-      #baAwardsCard, #baAwardsValue, #baAwardsName{ transition:none !important; }
-    }
+    #baAwardsValue.show, #baAwardsName.show{ opacity:1; transform: translateY(0); }
+    #baAwardsSub{ margin-top:12px; font-size:13px; color: rgba(255,255,255,.62); }
   `;
   document.head.appendChild(st);
 }
-
 function ensureAwardsUI(){
   ensureAwardsStyles();
   let ov = document.getElementById("baAwardsOverlay");
   if(ov) return ov;
-
   ov = document.createElement("div");
   ov.id = "baAwardsOverlay";
   ov.innerHTML = `
-    <canvas id="baAwardsConfetti"></canvas>
-    <div id="baAwardsCard" role="dialog" aria-modal="true">
-      <div id="baAwardsTop">
-        <div id="baAwardsBadge">🏆 Siegerehrung</div>
-        <div id="baAwardsStep">–</div>
-      </div>
+    <div id="baAwardsCard">
       <div id="baAwardsTitle">Titel</div>
       <div id="baAwardsValue">Wert</div>
       <div id="baAwardsName">Name</div>
       <div id="baAwardsSub">Titel‑Ehrung (dieses Spiel)</div>
-
-      <div id="baAwardsControls">
-        <button class="baBtn baBtnGhost" id="baAwardsAutoBtn" title="Automatisch weiter / Pause">⏯ Auto</button>
-        <button class="baBtn baBtnPrimary" id="baAwardsNextBtn">Weiter ▶</button>
-        <button class="baBtn" id="baAwardsRestartBtn" title="Neues Spiel (nur Host)">↻ Neue Runde</button>
-        <button class="baBtn baBtnGhost" id="baAwardsCloseBtn">Schließen ✕</button>
-      </div>
-      <div id="baAwardsHint">Leertaste/Enter = Weiter · Esc = Schließen</div>
     </div>
   `;
   document.body.appendChild(ov);
   return ov;
 }
-
 function fmtAwardValue(a){
   if(!a) return "";
   const v = a.value;
   const unit = a.unit || "";
   if(v==null || v===undefined || (typeof v==="number" && !isFinite(v))) return unit ? unit : "–";
+  // number formatting: keep as given (server already rounded for seconds)
   return unit ? `${v} ${unit}` : String(v);
 }
 function fmtWinners(a){
@@ -2885,434 +2427,53 @@ function fmtWinners(a){
   if(ws.length===0) return "–";
   return ws.join(" & ");
 }
-
-// --- Premium Ceremony: confetti + sound + auto-advance (no auto-close) ---
 let _awardsRunning = false;
 async function runTitleCeremony(awards){
   if(_awardsRunning) return;
   const arr = Array.isArray(awards) ? awards : [];
   if(arr.length===0) return;
-
   _awardsRunning = true;
-
   const ov = ensureAwardsUI();
-  const canvas = document.getElementById("baAwardsConfetti");
   const card = document.getElementById("baAwardsCard");
   const tEl = document.getElementById("baAwardsTitle");
   const vEl = document.getElementById("baAwardsValue");
   const nEl = document.getElementById("baAwardsName");
-  const stepEl = document.getElementById("baAwardsStep");
-
-  const btnNext = document.getElementById("baAwardsNextBtn");
-  const btnAuto = document.getElementById("baAwardsAutoBtn");
-  const btnClose = document.getElementById("baAwardsCloseBtn");
-  const btnRestart = document.getElementById("baAwardsRestartBtn");
-
-  // Host-only button (best-effort)
-  try{
-    let amHost = false;
-    if(typeof rosterById!=="undefined" && typeof clientId!=="undefined" && rosterById && rosterById.get){
-      const me = rosterById.get(clientId);
-      amHost = !!(me && me.isHost);
-    }
-    btnRestart.disabled = !amHost;
-  }catch(_e){ btnRestart.disabled = true; }
-
-  // Canvas sizing
-  const dpr = Math.max(1, Math.min(2, (window.devicePixelRatio||1)));
-  function resizeCanvas(){
-    const r = ov.getBoundingClientRect();
-    canvas.width = Math.floor(r.width * dpr);
-    canvas.height = Math.floor(r.height * dpr);
-    canvas.style.width = r.width+"px";
-    canvas.style.height = r.height+"px";
-  }
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas, { passive:true });
-
-  const ctx = canvas.getContext("2d");
-  const conf = [];
-  let confRaf = 0;
-
-  function spawnBurst(intensity=26){
-    const w = canvas.width, h = canvas.height;
-    const cx = w*0.5, cy = h*0.36;
-    for(let i=0;i<intensity;i++){
-      conf.push({
-        x: cx + (Math.random()-0.5)*40*dpr,
-        y: cy + (Math.random()-0.5)*20*dpr,
-        vx: (Math.random()-0.5) * 8*dpr,
-        vy: (-Math.random()*8 - 4) * dpr,
-        g: (0.26 + Math.random()*0.22) * dpr,
-        r: (3 + Math.random()*4) * dpr,
-        a: 1,
-        rot: Math.random()*Math.PI,
-        vr: (Math.random()-0.5)*0.18,
-      });
-    }
-  }
-
-  function tickConfetti(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for(let i=conf.length-1;i>=0;i--){
-      const p = conf[i];
-      p.vy += p.g;
-      p.x += p.vx;
-      p.y += p.vy;
-      p.rot += p.vr;
-      p.a *= 0.992;
-      if(p.y > canvas.height + 50*dpr || p.a < 0.02){ conf.splice(i,1); continue; }
-
-      // simple glitter: no fixed colors; use bright HSL by time + randomness
-      const hue = (Date.now()/18 + i*23) % 360;
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, Math.max(0, p.a));
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.fillStyle = `hsl(${hue} 95% 70%)`;
-      ctx.fillRect(-p.r, -p.r*0.55, p.r*2, p.r*1.1);
-      ctx.restore();
-    }
-    confRaf = requestAnimationFrame(tickConfetti);
-  }
-
-  // Sound (no external files)
-  let audioCtx = null;
-  function beep(kind="hit"){
-    try{
-      if(!audioCtx){
-        audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-      }
-      const t0 = audioCtx.currentTime;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = "sine";
-      const base = (kind==="win") ? 880 : (kind==="value") ? 660 : 520;
-      o.frequency.setValueAtTime(base, t0);
-      o.frequency.exponentialRampToValueAtTime(base*1.2, t0+0.06);
-      g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(0.12, t0+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0+0.18);
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(t0); o.stop(t0+0.22);
-    }catch(_e){}
-  }
 
   const wait = (ms)=>new Promise(r=>setTimeout(r, ms));
 
-  let idx = 0;
-  let auto = true;
-  let resolveNext = null;
-  const nextPromise = ()=>new Promise(r=>resolveNext = r);
-
-  function goNext(){
-    if(resolveNext){ const r = resolveNext; resolveNext=null; r(true); }
-  }
-
-  function closeNow(){
-    try{ ov.classList.remove("show"); }catch(_e){}
-    ov.style.display = "none";
-    try{ if(confRaf) cancelAnimationFrame(confRaf); }catch(_e){}
-    confRaf = 0;
-    conf.length = 0;
-    try{ window.removeEventListener("resize", resizeCanvas); }catch(_e){}
-    try{ document.removeEventListener("keydown", onKeyDown); }catch(_e){}
-    _awardsRunning = false;
-  }
-
-  function onKeyDown(e){
-    if(!ov || ov.style.display==="none") return;
-    if(e.key === "Escape"){ e.preventDefault(); closeNow(); return; }
-    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); goNext(); return; }
-  }
-
-  // Bind controls (idempotent per run)
-  btnNext.onclick = ()=>goNext();
-  btnAuto.onclick = ()=>{
-    auto = !auto;
-    btnAuto.textContent = auto ? "⏯ Auto" : "⏸ Pause";
-    if(typeof toast==="function") toast(auto ? "Auto an" : "Pause");
-  };
-  btnClose.onclick = ()=>closeNow();
-  btnRestart.onclick = ()=>{
-    // Best-effort: use existing reset button, otherwise websocket reset
-    try{
-      if(typeof resetBtn!=="undefined" && resetBtn && typeof resetBtn.click==="function"){
-        resetBtn.click();
-      }else if(typeof wsSend==="function"){
-        wsSend({ type:"reset" });
-      }
-      if(typeof toast==="function") toast("Neue Runde…");
-    }catch(_e){}
-  };
-
-  document.addEventListener("keydown", onKeyDown);
-
   ov.style.display = "flex";
-  ov.classList.add("show");
-  spawnBurst(46);
-  beep("win");
-  tickConfetti();
-
-  // Sequence
-  while(idx < arr.length){
-    const a = arr[idx];
-    const total = arr.length;
-
-    // Stage content
-    stepEl.textContent = `${idx+1}/${total}`;
+  // for each title: title -> value -> name, total 5s
+  for(const a of arr){
+    // reset
     vEl.classList.remove("show");
     nEl.classList.remove("show");
-
     tEl.textContent = String(a.title||"Titel");
     vEl.textContent = fmtAwardValue(a);
     nEl.textContent = fmtWinners(a);
 
-    // Animate in
+    ov.classList.add("show");
     await wait(220);
-    beep("hit");
-    spawnBurst(20);
 
-    await wait(650);
+    // Step 1: Title (≈1.2s)
+    await wait(1000);
+
+    // Step 2: Value
     vEl.classList.add("show");
-    beep("value");
+    await wait(1200);
 
-    await wait(650);
+    // Step 3: Name(s)
     nEl.classList.add("show");
+    await wait(2400);
 
-    // Wait for next: auto-advance after 9000ms, but never auto-close
-    const p = nextPromise();
-    if(auto){
-      setTimeout(()=>{ try{ goNext(); }catch(_e){} }, 9000);
-    }
-    await p;
-
-    // between awards
-    idx++;
-    if(idx < arr.length){
-      // subtle transition
-      vEl.classList.remove("show");
-      nEl.classList.remove("show");
-      await wait(180);
-    }
+    // Fade out between titles
+    ov.classList.remove("show");
+    await wait(260);
   }
 
-  // Finale screen (no auto close)
-  stepEl.textContent = `Fertig`;
-  tEl.textContent = "🏆 Finale";
-  vEl.textContent = "Alle Titel vergeben";
-  nEl.textContent = "GG";
-  vEl.classList.add("show");
-  nEl.classList.add("show");
-  spawnBurst(70);
-  beep("win");
-
-  btnNext.disabled = true;
-  // keep overlay open until user closes
-
-  // Signal: titles are fully assigned (used to trigger XP overlay)
-  try{
-    awardsCeremonyDone = true;
-    document.dispatchEvent(new CustomEvent("ba_awards_done"));
-  }catch(_e){}
+  ov.style.display = "none";
+  _awardsRunning = false;
 }
 // ------------------------------------------------------
-
-// ================= Post-Match XP / Level Overlay =================
-function ensureXpStyles(){
-  if(document.getElementById("baXpStyles")) return;
-  const style = document.createElement("style");
-  style.id = "baXpStyles";
-  style.textContent = `
-    #baXpOverlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99999; background:rgba(0,0,0,.66); backdrop-filter: blur(6px); }
-    #baXpOverlay.show{ display:flex; }
-    #baXpCard{ width:min(860px, calc(100vw - 24px)); border-radius:18px; padding:16px; background:rgba(18,26,42,.96); box-shadow: 0 18px 60px rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.10); }
-    #baXpTop{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-    #baXpBadge{ display:inline-flex; align-items:center; gap:8px; font-weight:800; padding:8px 12px; border-radius:999px; background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06)); border:1px solid rgba(255,255,255,.10); }
-    #baXpSub{ color:rgba(255,255,255,.70); font-size:13px; }
-    #baXpList{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
-    .xpRow{ border-radius:14px; padding:12px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); }
-    .xpRowTop{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-    .xpName{ font-weight:800; letter-spacing:.2px; }
-    .xpMeta{ color:rgba(255,255,255,.72); font-size:13px; }
-    .xpBarOuter{ margin-top:10px; height:12px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; }
-    .xpBarInner{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, rgba(180,120,255,.95), rgba(255,210,120,.95)); }
-    .xpHint{ margin-top:10px; color:rgba(255,255,255,.55); font-size:12px; }
-    #baXpControls{ display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:14px; }
-  `;
-  document.head.appendChild(style);
-}
-
-function ensureXpUI(){
-  ensureXpStyles();
-  let ov = document.getElementById("baXpOverlay");
-  if(ov) return ov;
-  ov = document.createElement("div");
-  ov.id = "baXpOverlay";
-  ov.innerHTML = `
-    <div id="baXpCard" role="dialog" aria-modal="true">
-      <div id="baXpTop">
-        <div>
-          <div id="baXpBadge">✨ Level‑Belohnungen</div>
-          <div id="baXpSub">XP wird serverseitig vergeben (nach der Siegerehrung).</div>
-        </div>
-        <div id="baXpControls">
-          <button class="baBtn baBtnGhost" id="baXpSkipBtn">⏩ Skip</button>
-          <button class="baBtn baBtnPrimary" id="baXpCloseBtn">Weiter ▶</button>
-        </div>
-      </div>
-      <div id="baXpList"></div>
-      <div class="xpHint">Teilnahme +30 · Sieg +100 · Joker +5 · Rauswurf +5 · Titel +10</div>
-    </div>
-  `;
-  document.body.appendChild(ov);
-  return ov;
-}
-
-function showPostMatchXpOverlay(payload){
-  const msg = payload && typeof payload === "object" ? payload : null;
-  const rewards = Array.isArray(msg?.rewards) ? msg.rewards : [];
-  if(rewards.length===0) return;
-
-  const rules = msg?.rules || { levelBase:200, levelStep:50 };
-  const xpNeeded = (L)=>{
-    const lv = Math.max(1, Math.floor(Number(L)||1));
-    return Math.max(1, Math.floor(Number(rules.levelBase||200) + Number(rules.levelStep||50)*(lv-1)));
-  };
-
-  const ov = ensureXpUI();
-  const list = document.getElementById("baXpList");
-  const btnClose = document.getElementById("baXpCloseBtn");
-  const btnSkip = document.getElementById("baXpSkipBtn");
-
-  // Build rows
-  list.innerHTML = "";
-  const rows = [];
-  for(const r of rewards){
-    const color = String(r.color||"").toLowerCase();
-    const name = String(r.name||labelForColor(color)||color||"Spieler");
-    const levelB = Number(r.levelBefore||1)||1;
-    const levelA = Number(r.levelAfter||levelB)||levelB;
-    const xpGain = Math.max(0, Math.floor(Number(r.xpGain)||0));
-    const titles = Math.max(0, Math.floor(Number(r.titles)||0));
-    const kicks = Math.max(0, Math.floor(Number(r.kicks)||0));
-    const jokers = Math.max(0, Math.floor(Number(r.jokersUsed)||0));
-    const xpStart = Math.max(0, Math.floor(Number(r.xpInLevelBefore)||0));
-
-    const el = document.createElement("div");
-    el.className = "xpRow";
-    el.innerHTML = `
-      <div class="xpRowTop">
-        <div class="xpName">${escapeHtml(name)} <span class="xpMeta">(Lvl <span data-lv>${levelB}</span>)</span></div>
-        <div class="xpMeta">+${xpGain} XP · Titel ${titles} · Kicks ${kicks} · Joker ${jokers}</div>
-      </div>
-      <div class="xpBarOuter"><div class="xpBarInner" data-bar></div></div>
-      <div class="xpMeta">XP: <span data-xp>${xpStart}</span>/<span data-need>${xpNeeded(levelB)}</span></div>
-    `;
-    list.appendChild(el);
-    rows.push({
-      el,
-      bar: el.querySelector("[data-bar]"),
-      lvEl: el.querySelector("[data-lv]"),
-      xpEl: el.querySelector("[data-xp]"),
-      needEl: el.querySelector("[data-need]"),
-      level: levelB,
-      xp: xpStart,
-      remaining: xpGain,
-      done:false,
-    });
-  }
-
-  // helpers
-  function setBar(row){
-    const need = xpNeeded(row.level);
-    const pct = need>0 ? Math.max(0, Math.min(1, row.xp/need)) : 0;
-    if(row.bar) row.bar.style.width = (pct*100).toFixed(2)+"%";
-    if(row.lvEl) row.lvEl.textContent = String(row.level);
-    if(row.xpEl) row.xpEl.textContent = String(Math.floor(row.xp));
-    if(row.needEl) row.needEl.textContent = String(need);
-  }
-  for(const r of rows) setBar(r);
-
-  let raf = 0;
-  let skip = false;
-  const SPEED = 220; // XP per second per player (visual)
-
-  function finishAll(){
-    skip = true;
-    for(const row of rows){
-      while(row.remaining > 0){
-        const need = xpNeeded(row.level);
-        const take = Math.min(row.remaining, Math.max(0, need - row.xp));
-        row.xp += take;
-        row.remaining -= take;
-        if(row.xp >= need && row.remaining > 0){
-          row.level += 1;
-          row.xp = 0;
-        }
-      }
-      row.done = true;
-      setBar(row);
-    }
-    if(raf) cancelAnimationFrame(raf);
-    raf = 0;
-  }
-
-  function tick(ts){
-    const dt = 16/1000;
-    let allDone = true;
-    for(const row of rows){
-      if(row.done) continue;
-      allDone = false;
-      if(row.remaining <= 0){ row.done = true; setBar(row); continue; }
-      const need = xpNeeded(row.level);
-      const add = skip ? row.remaining : Math.min(row.remaining, SPEED*dt);
-      const space = Math.max(0, need - row.xp);
-      const take = Math.min(add, space);
-      row.xp += take;
-      row.remaining -= take;
-
-      if(row.xp >= need && row.remaining > 0){
-        // Level up jump
-        row.level += 1;
-        row.xp = 0;
-      }
-      setBar(row);
-    }
-    if(!allDone) raf = requestAnimationFrame(tick);
-    else raf = 0;
-  }
-
-  function close(){
-    try{ if(raf) cancelAnimationFrame(raf); }catch(_e){}
-    raf = 0;
-    ov.classList.remove("show");
-    ov.style.display = "none";
-  }
-
-  btnSkip.onclick = ()=>{ finishAll(); };
-  btnClose.onclick = ()=>{ close(); };
-
-  ov.style.display = "flex";
-  ov.classList.add("show");
-  raf = requestAnimationFrame(tick);
-}
-
-// When the awards ceremony is fully assigned, show pending rewards if any
-try{
-  document.addEventListener("ba_awards_done", ()=>{
-    if(pendingPostMatchRewards){
-      showPostMatchXpOverlay(pendingPostMatchRewards);
-      pendingPostMatchRewards = null;
-    }
-  });
-}catch(_e){}
-
-function escapeHtml(s){
-  const str = String(s||"");
-  return str.replace(/[&<>"']/g, (ch)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
-}
-
 
 function showEpicWin(winnerColor){
     const name = labelForColor(winnerColor);
@@ -5339,3 +4500,4 @@ function _wheelNext() {
     wsSend({ type:"forfeit", ts:Date.now() });
     toast("Du hast aufgegeben…");
   });
+
