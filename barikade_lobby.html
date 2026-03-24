@@ -273,6 +273,25 @@
     .switch input:checked{ background: rgba(124,92,255,.40); border-color: rgba(124,92,255,.45); }
     .switch input:checked::after{ left: 22px; }
 
+
+    .joker-count-row{ align-items:center; }
+    .joker-count-btn{
+      min-width:52px;
+      height:42px;
+      padding:0 14px;
+      border-radius:12px;
+    }
+    .joker-count-btn.active{
+      background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(33,198,255,.55));
+      border-color: rgba(124,92,255,.35);
+      box-shadow: 0 18px 42px rgba(124,92,255,.20), 0 12px 28px rgba(0,0,0,.28);
+    }
+    .joker-count-btn.host-only-disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+
     /* Better focus visibility for keyboard */
     :focus-visible{ outline: none; box-shadow: 0 0 0 3px rgba(124,92,255,.28), 0 0 0 1px rgba(255,255,255,.10) inset; }
 
@@ -365,6 +384,18 @@
             Action‑Modus
           </label>
         </div>
+
+        <div id="jokerCountWrap" style="height:12px"></div>
+        <h2 id="jokerCountTitle" style="margin:0 0 10px 0; font-size:16px">Joker pro Sorte</h2>
+        <div id="jokerCountHint" class="hint" style="margin-bottom:8px">Wähle vor dem Start 1 bis 5 Joker pro Sorte. Ohne Auswahl kein Start im Action‑Modus.</div>
+        <div id="jokerCountRow" class="row joker-count-row">
+          <button class="btn joker-count-btn" type="button" data-joker-count="1">1</button>
+          <button class="btn joker-count-btn" type="button" data-joker-count="2">2</button>
+          <button class="btn joker-count-btn" type="button" data-joker-count="3">3</button>
+          <button class="btn joker-count-btn" type="button" data-joker-count="4">4</button>
+          <button class="btn joker-count-btn" type="button" data-joker-count="5">5</button>
+          <span id="jokerCountInfo" class="hint" style="margin-left:auto">Noch nicht gewählt</span>
+        </div>
         
 
         <div style="height:12px"></div>
@@ -425,6 +456,11 @@
       const modePill = $("modePill");
       const roomPill = $("roomPill");
       const colorPill = $("colorPill");
+      const jokerCountWrap = $("jokerCountWrap");
+      const jokerCountTitle = $("jokerCountTitle");
+      const jokerCountHint = $("jokerCountHint");
+      const jokerCountInfo = $("jokerCountInfo");
+      const jokerCountBtns = Array.from(document.querySelectorAll('[data-joker-count]'));
 
 // Server base (same as game.js, but HTTP for fetch)
 const WS_BASE = "wss://spiel-server.onrender.com";
@@ -589,6 +625,50 @@ function startPresencePoll(){
       function setActionMode(on){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
       }
+
+      function jokerCountKey(){
+        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || "");
+        return 'barikade_joker_count_' + (r || 'room');
+      }
+      function getSelectedJokerCount(){
+        try{
+          const roomScoped = localStorage.getItem(jokerCountKey());
+          const legacy = localStorage.getItem('barikade_joker_count');
+          const raw = roomScoped ?? legacy ?? '';
+          const n = Number(raw);
+          return Number.isInteger(n) && n >= 1 && n <= 5 ? n : null;
+        }catch(_e){ return null; }
+      }
+      function setSelectedJokerCount(n){
+        const val = Number(n);
+        if(!Number.isInteger(val) || val < 1 || val > 5) return;
+        try{
+          localStorage.setItem(jokerCountKey(), String(val));
+          localStorage.setItem('barikade_joker_count', String(val));
+        }catch(_e){}
+      }
+      function isHostMode(){
+        return (localStorage.getItem('barikade_mode') || 'offline') === 'host';
+      }
+      function refreshJokerCountUI(){
+        const actionOn = !!actionToggle.checked;
+        const host = isHostMode();
+        const selected = getSelectedJokerCount();
+        if(jokerCountWrap) jokerCountWrap.style.display = actionOn ? 'block' : 'none';
+        if(jokerCountTitle) jokerCountTitle.style.display = actionOn ? 'block' : 'none';
+        if(jokerCountHint) jokerCountHint.style.display = actionOn ? 'block' : 'none';
+        if(jokerCountInfo){
+          jokerCountInfo.textContent = !actionOn ? 'Classic‑Modus' : (selected ? `Gewählt: ${selected} pro Sorte` : 'Noch nicht gewählt');
+        }
+        for(const btn of jokerCountBtns){
+          const v = Number(btn.getAttribute('data-joker-count') || '');
+          const active = selected === v;
+          btn.classList.toggle('active', active);
+          btn.disabled = !actionOn || !host;
+          btn.classList.toggle('host-only-disabled', !actionOn || !host);
+          btn.title = !actionOn ? 'Nur im Action‑Modus relevant' : (!host ? 'Nur der Host kann die Jokerzahl wählen' : '');
+        }
+      }
       function setRequestedColor(color){
         const c = String(color||"").toLowerCase().trim();
         if(!['red','blue','green','yellow'].includes(c)) return;
@@ -615,6 +695,7 @@ function startPresencePoll(){
 
         // Start presence polling if room exists
         if(normRoom(r)) startPresencePoll();
+        refreshJokerCountUI();
       })();
 
       hostMakeBtn.addEventListener('click', async ()=>{
@@ -628,6 +709,7 @@ function startPresencePoll(){
         startPresencePoll();
         const p = await fetchPresence();
         renderPresence(p);
+        refreshJokerCountUI();
       });
 
       joinBtn.addEventListener('click', async ()=>{
@@ -640,6 +722,7 @@ function startPresencePoll(){
         startPresencePoll();
         const p = await fetchPresence();
         renderPresence(p);
+        refreshJokerCountUI();
       });
 
       document.querySelectorAll('[data-color]').forEach(btn=>{
@@ -656,7 +739,20 @@ function startPresencePoll(){
 
       actionToggle.addEventListener('change', ()=>{
         setActionMode(!!actionToggle.checked);
+        refreshJokerCountUI();
         toast(actionToggle.checked ? 'Action‑Modus: AN' : 'Action‑Modus: AUS');
+      });
+
+      jokerCountBtns.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          if(!actionToggle.checked){ toast('Erst Action‑Modus aktivieren'); return; }
+          if(!isHostMode()){ toast('Nur der Host kann die Jokerzahl wählen'); return; }
+          const v = Number(btn.getAttribute('data-joker-count') || '');
+          if(!Number.isInteger(v) || v < 1 || v > 5) return;
+          setSelectedJokerCount(v);
+          refreshJokerCountUI();
+          toast(`Joker: ${v} pro Sorte`);
+        });
       });
 
       // Name wählen → zuerst reservieren, dann starten
@@ -693,6 +789,10 @@ function startPresencePoll(){
           // ensure room persisted + action mode
           setRoom(rc);
           setActionMode(!!actionToggle.checked);
+          if(actionToggle.checked && !getSelectedJokerCount()){
+            toast('Host muss 1 bis 5 Joker wählen');
+            return;
+          }
 
           // go to game (compact UI)
           location.href = 'barikade.html?compact=1';
