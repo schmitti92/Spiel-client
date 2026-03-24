@@ -1089,7 +1089,21 @@ let awardsShown = false;
   let _pendingStartStarterColor = null;  // 'red'|'blue'|'green'|'yellow'
 
   let _pendingStartMode = "classic";
-  const _START_JOKER_COUNTS = { allColors:2, barricade:2, reroll:2, double:2 };
+  
+  function getLobbyJokerCount(){
+    try{
+      const keyRoom = "barikade_joker_count_" + normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+      const raw = localStorage.getItem(keyRoom) ?? localStorage.getItem("barikade_joker_count");
+      const n = Number(raw);
+      return Number.isInteger(n) && n >= 1 && n <= 5 ? n : null;
+    }catch(_e){ return null; }
+  }
+  function getStartJokerCounts(){
+    const n = getLobbyJokerCount();
+    if(!n) return null;
+    return { allColors:n, barricade:n, reroll:n, double:n };
+  }
+
 
   // Net watchdog: detects "silent" sockets that look connected but receive no messages
   let _lastNetMsgAt = Date.now();
@@ -1434,6 +1448,13 @@ if(actionEffectsState){
       if(_pendingStartMode !== "action") { _pendingStartJokerInit = false; return; }
       if(!remoteState || typeof remoteState !== "object") return;
 
+      const startCounts = getStartJokerCounts();
+      if(!startCounts){
+        _pendingStartJokerInit = false;
+        toast("Host muss in der Lobby 1 bis 5 Joker wählen");
+        return;
+      }
+
       // Clone so we never mutate incoming objects unexpectedly
       const st = JSON.parse(JSON.stringify(remoteState));
 
@@ -1462,10 +1483,10 @@ if(actionEffectsState){
         const cur = (st.action.jokersByColor[c] && typeof st.action.jokersByColor[c] === "object") ? st.action.jokersByColor[c] : {};
         st.action.jokersByColor[c] = {
           ...cur,
-          allColors: Math.max(Number(cur.allColors||0), _START_JOKER_COUNTS.allColors),
-          barricade: Math.max(Number(cur.barricade||0), _START_JOKER_COUNTS.barricade),
-          reroll: Math.max(Number(cur.reroll||0), _START_JOKER_COUNTS.reroll),
-          double: Math.max(Number(cur.double||0), _START_JOKER_COUNTS.double),
+          allColors: Math.max(Number(cur.allColors||0), startCounts.allColors),
+          barricade: Math.max(Number(cur.barricade||0), startCounts.barricade),
+          reroll: Math.max(Number(cur.reroll||0), startCounts.reroll),
+          double: Math.max(Number(cur.double||0), startCounts.double),
         };
       }
 
@@ -1483,7 +1504,7 @@ if(actionEffectsState){
         }
         // Add missing up to target (do NOT remove extras, just ensure at least 2)
         for(const t of TYPES){
-          const target = _START_JOKER_COUNTS[t] || 2;
+          const target = startCounts[t] || 1;
           while((counts[t]||0) < target){
             arr.push({ type: t, color: owner });
             counts[t] += 1;
@@ -1495,8 +1516,8 @@ if(actionEffectsState){
       _pendingStartJokerInit = false;
 
       // Import back to server (host only)
-      wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_jokers_2" });
-      toast("Start-Joker gesetzt (2x)");
+      wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_jokers_selected" });
+      toast("Start-Joker gesetzt");
     }catch(_e){
       // keep pending so we can try again on next snapshot
     }
@@ -1689,7 +1710,7 @@ try{
         const p = window.__pendingHostStartAfterSpin;
         if(!p) return;
         // Send the definitive start to the server (server is truth, will validate again).
-        wsSend({ type:"start", mode: p.mode, ts: Date.now(), starterColor: p.starterColor, startJokers: _START_JOKER_COUNTS });
+        wsSend({ type:"start", mode: p.mode, ts: Date.now(), starterColor: p.starterColor, startJokers: (getStartJokerCounts() || undefined) });
       }catch(_e){}
     }, dur + 60);
   }
@@ -2588,11 +2609,12 @@ function showEpicWin(winnerColor){
         state.action.jokersOwned = state.action.jokersOwned && typeof state.action.jokersOwned==="object" ? state.action.jokersOwned : {};
         const cols = Array.isArray(PLAYERS) ? PLAYERS.slice() : ["red","blue"];
         for(const c of cols){
-          state.action.jokersByColor[c] = { allColors:2, barricade:2, reroll:2, double:2 };
+          const startCounts = getStartJokerCounts() || { allColors:2, barricade:2, reroll:2, double:2 };
+        state.action.jokersByColor[c] = { allColors:startCounts.allColors, barricade:startCounts.barricade, reroll:startCounts.reroll, double:startCounts.double };
           const arr = [];
           for(const t of ["allColors","barricade","reroll","double"]){
-            arr.push({type:t, color:c});
-            arr.push({type:t, color:c});
+            const count = Number(startCounts[t] || 0);
+            for(let i=0;i<count;i++) arr.push({type:t, color:c});
           }
           state.action.jokersOwned[c] = arr;
         }
@@ -3690,6 +3712,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
     const _m = (actionModeToggle && actionModeToggle.checked ? "action" : "classic");
+    if(_m === "action" && !getStartJokerCounts()){ toast("Host muss in der Lobby 1 bis 5 Joker wählen"); return; }
     _pendingStartMode = _m;
     _pendingStartJokerInit = true;
     // Neu: Startspieler per Glücksrad bestimmen (server-chef, für alle sichtbar)
