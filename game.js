@@ -2452,42 +2452,74 @@ function ensureAwardsStyles(){
   }
   function updateEmojiUI(){
     const running = !!(state && state.started && !state.winner);
-    const onlineReady = !!(netMode !== "offline" && ws && ws.readyState === 1);
+    const onlineReady = !!(typeof netMode !== "undefined" && netMode !== "offline" && ws && ws.readyState === 1);
     const canUse = running && onlineReady;
-    if(emojiBar) emojiBar.style.display = running ? "flex" : "none";
-    for(const btn of [emojiLaughBtn, emojiAngryBtn, emojiCoolBtn]){
+    const bar = document.getElementById("emojiBar") || emojiBar;
+    if(bar) bar.style.display = running ? "flex" : "none";
+    for(const id of ["emojiLaughBtn","emojiAngryBtn","emojiCoolBtn"]){
+      const btn = document.getElementById(id);
       if(btn) btn.disabled = !canUse;
     }
   }
+
+  function ensureEmojiOverlayDom(){
+    let overlay = document.getElementById("emojiOverlay");
+    let iconEl = document.getElementById("emojiOverlayIcon");
+    let nameEl = document.getElementById("emojiOverlayName");
+    if(!overlay){
+      overlay = document.createElement("div");
+      overlay.id = "emojiOverlay";
+      overlay.innerHTML = '<div class="emojiOverlayCard"><div id="emojiOverlayIcon">😀</div><div id="emojiOverlayName">Spieler</div></div>';
+      document.body.appendChild(overlay);
+      iconEl = document.getElementById("emojiOverlayIcon");
+      nameEl = document.getElementById("emojiOverlayName");
+    }
+    return { overlay, iconEl, nameEl };
+  }
+
   function showEmojiOverlay(name, emoji){
     const key = normalizeEmojiKey(emoji);
     const icon = EMOJI_MAP[key] || String(emoji || "").trim() || "😀";
-    if(emojiOverlayIcon) emojiOverlayIcon.textContent = icon;
-    if(emojiOverlayName) emojiOverlayName.textContent = String(name || "Spieler");
-    if(!emojiOverlay) return;
-    emojiOverlay.classList.remove("show");
-    void emojiOverlay.offsetWidth;
-    emojiOverlay.classList.add("show");
+    const dom = ensureEmojiOverlayDom();
+    if(dom.iconEl) dom.iconEl.textContent = icon;
+    if(dom.nameEl) dom.nameEl.textContent = String(name || "Spieler");
+    if(!dom.overlay) return;
+    dom.overlay.classList.remove("show");
+    void dom.overlay.offsetWidth;
+    dom.overlay.classList.add("show");
     if(emojiOverlayTimer) clearTimeout(emojiOverlayTimer);
     emojiOverlayTimer = setTimeout(()=>{
-      try{ emojiOverlay.classList.remove("show"); }catch(_e){}
+      try{ dom.overlay.classList.remove("show"); }catch(_e){}
     }, 2200);
   }
+
   function sendEmojiReaction(kind){
     const key = normalizeEmojiKey(kind);
     if(!key) return;
     if(!(state && state.started) || state.winner){ toast("Spiel läuft nicht"); return; }
-    if(netMode === "offline" || !ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
+    if(typeof netMode === "undefined" || netMode === "offline" || !ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
     const now = Date.now();
     if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
     lastEmojiSentAt = now;
+
+    // sofort lokal anzeigen; die Server-Antwort zeigt es danach auf allen, auch auf dem Sender
+    try{
+      const myName = (typeof labelForColor === "function" && myColor) ? labelForColor(myColor) : "Spieler";
+      showEmojiOverlay(myName, key);
+    }catch(_e){}
+
     const ok = wsSend({ type:"emoji_send", emoji:key, ts:now });
-    if(!ok){ lastEmojiSentAt = 0; toast("Emoji konnte nicht an den Server gesendet werden"); }
+    if(!ok){
+      lastEmojiSentAt = 0;
+      toast("Emoji konnte nicht an den Server gesendet werden");
+    }
   }
+
   function bindEmojiButtons(){
-    const pairs = [[emojiLaughBtn, "laugh"],[emojiAngryBtn, "angry"],[emojiCoolBtn, "cool"]];
+    const pairs = [["emojiLaughBtn", "laugh"],["emojiAngryBtn", "angry"],["emojiCoolBtn", "cool"]];
     for(const pair of pairs){
-      const btn = pair[0]; const key = pair[1];
+      const btn = document.getElementById(pair[0]);
+      const key = pair[1];
       if(!btn || btn.__emojiBound) continue;
       btn.__emojiBound = true;
       btn.addEventListener("click", ()=> sendEmojiReaction(key));
