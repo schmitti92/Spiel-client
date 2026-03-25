@@ -118,7 +118,6 @@ let pendingSaveExport = false;
   const restoreBtn = $("restoreBtn");
   const loadFile = $("loadFile");
   const autoSaveInfo = $("autoSaveInfo");
-  bindEmojiButtons();
 
   // Ensure we always have a container for host-only controls (mobile/older index.html may miss #hostTools)
   let hostToolsBox = hostTools;
