@@ -2480,6 +2480,8 @@ function ensureAwardsStyles(){
     const now = Date.now();
     if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
     lastEmojiSentAt = now;
+    // optimistic local overlay so the sender always sees immediate feedback
+    try{ showEmojiOverlay(labelForColor(myColor) || "Spieler", key); }catch(_e){}
     const ok = wsSend({ type:"emoji_send", emoji:key, ts:now });
     if(!ok){ lastEmojiSentAt = 0; toast("Emoji konnte nicht gesendet werden"); }
   }
@@ -2494,7 +2496,15 @@ function ensureAwardsStyles(){
     updateEmojiUI();
   }
 
-  bindEmojiButtons(); // emoji init
+  function initEmojiOverlaySystem(){
+    try{ bindEmojiButtons(); }catch(_e){}
+    try{ updateEmojiUI(); }catch(_e){}
+  }
+
+  // robust init: some devices/pages restore DOM late, so bind more than once safely
+  try{ initEmojiOverlaySystem(); }catch(_e){}
+  try{ window.addEventListener("load", initEmojiOverlaySystem, { once:true }); }catch(_e){}
+  try{ document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) initEmojiOverlaySystem(); }); }catch(_e){}
 
 function ensureAwardsUI(){
   ensureAwardsStyles();
