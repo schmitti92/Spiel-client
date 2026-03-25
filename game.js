@@ -439,6 +439,7 @@ let pendingSaveExport = false;
   const jokerAllColorsState = $("jokerAllColorsState");
   const jokerBarricadeState = $("jokerBarricadeState");
   const jokerRerollState = $("jokerRerollState");
+  let jokerDoubleState = $("jokerDoubleState");
   const actionEffectsState = $("actionEffectsState");
 
 
@@ -2493,6 +2494,8 @@ function ensureAwardsStyles(){
     updateEmojiUI();
   }
 
+  bindEmojiButtons(); // emoji init
+
 function ensureAwardsUI(){
   ensureAwardsStyles();
   let ov = document.getElementById("baAwardsOverlay");
@@ -3848,7 +3851,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
   try{ ensureActionJoker4UI(); }catch(_e){}
   try{ hideLegacyChooseSumUI(); }catch(_e){}
 
-  let jokerDoubleState = $("jokerDoubleState");
+  jokerDoubleState = $("jokerDoubleState");
   let jokerDoubleBtn = $("jokerDoubleBtn");
 // ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
   if(jokerAllColorsBtn){
