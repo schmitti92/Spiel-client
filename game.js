@@ -99,66 +99,10 @@ let pendingSaveExport = false;
   const netBannerEl = $("netBanner");
   const debugToggle = $("debugToggle");
   const debugLogEl = $("debugLog");
-  const emojiBar = $("emojiBar");
-  const emojiLaughBtn = $("emojiLaughBtn");
-  const emojiAngryBtn = $("emojiAngryBtn");
-  const emojiCoolBtn = $("emojiCoolBtn");
-  const emojiOverlay = $("emojiOverlay");
-  const emojiOverlaySymbol = $("emojiOverlaySymbol");
-  const emojiOverlayName = $("emojiOverlayName");
 
 
   // Run UX stability fixes once after we have DOM.
   applyUxStabilityFixes();
-  let emojiOverlayTimer = null;
-  let emojiCooldownUntil = 0;
-  const EMOJI_MAP = { laugh:"😂", angry:"😡", cool:"😎" };
-
-  function getMyDisplayName(){
-    try{
-      const me = rosterById && clientId ? rosterById.get(clientId) : null;
-      if(me && me.name) return String(me.name);
-    }catch(_e){}
-    try{
-      const nm = (localStorage.getItem("barikade_playerName") || "").trim();
-      if(nm) return nm;
-    }catch(_e){}
-    return myColor ? (PLAYER_NAME[myColor] || "Spieler") : "Spieler";
-  }
-
-  function updateEmojiButtons(){
-    try{
-      const canUse = !!(emojiBar && ws && ws.readyState===1 && state && state.started && !state.winner);
-      if(emojiBar) emojiBar.style.display = canUse ? "flex" : "none";
-      const disabled = !canUse || Date.now() < emojiCooldownUntil;
-      for(const btn of [emojiLaughBtn, emojiAngryBtn, emojiCoolBtn]){ if(btn) btn.disabled = disabled; }
-    }catch(_e){}
-  }
-
-  function showEmojiOverlayBig(symbol, name){
-    try{
-      if(!emojiOverlay || !emojiOverlaySymbol || !emojiOverlayName) return;
-      emojiOverlaySymbol.textContent = symbol || "😀";
-      emojiOverlayName.textContent = name || "Spieler";
-      emojiOverlay.classList.add("show");
-      if(emojiOverlayTimer) clearTimeout(emojiOverlayTimer);
-      emojiOverlayTimer = setTimeout(()=>{ try{ emojiOverlay.classList.remove("show"); }catch(_e){} }, 2100);
-    }catch(_e){}
-  }
-
-  function sendEmoji(kind){
-    try{
-      if(!ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
-      if(!state || !state.started) { toast("Erst im Spiel nutzbar"); return; }
-      if(Date.now() < emojiCooldownUntil) { toast("Emoji kurz auf Cooldown"); return; }
-      const emoji = String(kind || "").trim();
-      if(!EMOJI_MAP[emoji]) return;
-      emojiCooldownUntil = Date.now() + 2000;
-      updateEmojiButtons();
-      wsSend({ type:"emoji_send", emoji, ts:Date.now() });
-      setTimeout(updateEmojiButtons, 2050);
-    }catch(_e){}
-  }
 
   const rollBtn = $("rollBtn");
   const startBtn = $("startBtn");
@@ -174,6 +118,7 @@ let pendingSaveExport = false;
   const restoreBtn = $("restoreBtn");
   const loadFile = $("loadFile");
   const autoSaveInfo = $("autoSaveInfo");
+  bindEmojiButtons();
 
   // Ensure we always have a container for host-only controls (mobile/older index.html may miss #hostTools)
   let hostToolsBox = hostTools;
@@ -384,6 +329,15 @@ let pendingSaveExport = false;
   const turnDot = $("turnDot");
   const boardInfo = $("boardInfo");
   const barrInfo  = $("barrInfo");
+  const emojiBar = $("emojiBar");
+  const emojiLaughBtn = $("emojiLaughBtn");
+  const emojiAngryBtn = $("emojiAngryBtn");
+  const emojiCoolBtn = $("emojiCoolBtn");
+  const emojiOverlay = $("emojiOverlay");
+  const emojiOverlayIcon = $("emojiOverlayIcon");
+  const emojiOverlayName = $("emojiOverlayName");
+  let emojiOverlayTimer = null;
+  let lastEmojiSentAt = 0;
 
   // ===== Legendary Dice (visual only, isolated) =====
   // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
@@ -1641,7 +1595,6 @@ if(actionEffectsState){
 
     // host-only controls visibility
     updateHostToolsUI();
-    updateEmojiButtons();
   }
 
   function updateStartButton(){
@@ -1736,6 +1689,12 @@ try{ ws = new WebSocket(SERVER_URL); }
 
       if(type==="hello"){
         if(msg.clientId) clientId = msg.clientId;
+        updateEmojiUI();
+        return;
+      }
+
+      if(type==="emoji_event"){
+        try{ showEmojiOverlay(msg.name || msg.playerName || "Spieler", msg.emoji || msg.emojiKey || msg.icon || "😀"); }catch(_e){}
         return;
       }
 if(type==="start_spin"){
@@ -1792,17 +1751,7 @@ try{
         netCanStart = !!msg.canStart;
       if (msg.jokerAwardMode) netJokerAwardMode = msg.jokerAwardMode;
         updateStartButton();
-        updateEmojiButtons();
-        return;
-      }
-
-      if(type==="emoji_event") {
-        try{
-          const key = String(msg.emoji || "").trim();
-          const symbol = EMOJI_MAP[key] || msg.symbol || "😀";
-          const who = String(msg.playerName || msg.name || "Spieler");
-          showEmojiOverlayBig(symbol, who);
-        }catch(_e){}
+        updateEmojiUI();
         return;
       }
 
@@ -1823,8 +1772,8 @@ try{
           maybeInitStartJokers(msg.state);
           writeHostAutosave(msg.state);
         }
+        updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        updateEmojiButtons();
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
         return;
       }
@@ -1836,8 +1785,8 @@ try{
           maybeInitStartJokers(msg.state);
           writeHostAutosave(msg.state);
         }
+        updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        updateEmojiButtons();
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
         return;
       }
@@ -1849,8 +1798,8 @@ try{
           maybeInitStartJokers(msg.state);
           writeHostAutosave(msg.state);
         }
+        updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        updateEmojiButtons();
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
         return;
       }
@@ -1866,6 +1815,7 @@ try{
           showEpicWin(wc);
         }
         updateTurnUI();
+        updateEmojiUI();
         return;
       }
 
@@ -1911,6 +1861,7 @@ try{
 
     ws.onerror = () => { setNetStatus("Fehler – Reconnect…", false); showNetBanner("Verbindungsfehler – Reconnect läuft…"); };
     ws.onclose = () => {
+      updateEmojiUI();
       try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
       try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
       _netWatchdogIv=null; _netPingIv=null;
@@ -1932,7 +1883,6 @@ try{
     setNetStatus("Offline", false);
     hideNetBanner();
     updateHostToolsUI();
-    updateEmojiButtons();
   }
 
   function saveSession(){
@@ -2490,6 +2440,60 @@ function ensureAwardsStyles(){
   `;
   document.head.appendChild(st);
 }
+
+  const EMOJI_MAP = { laugh:"😂", angry:"😡", cool:"😎" };
+  function normalizeEmojiKey(value){
+    const v = String(value || "").trim();
+    if(v === "😂" || v.toLowerCase() === "laugh") return "laugh";
+    if(v === "😡" || v.toLowerCase() === "angry") return "angry";
+    if(v === "😎" || v.toLowerCase() === "cool") return "cool";
+    return "";
+  }
+  function updateEmojiUI(){
+    const running = !!(state && state.started && !state.winner);
+    const onlineReady = !!(netMode !== "offline" && ws && ws.readyState === 1);
+    const canUse = running && onlineReady;
+    if(emojiBar) emojiBar.style.display = running ? "flex" : "none";
+    for(const btn of [emojiLaughBtn, emojiAngryBtn, emojiCoolBtn]){
+      if(btn) btn.disabled = !canUse;
+    }
+  }
+  function showEmojiOverlay(name, emoji){
+    const key = normalizeEmojiKey(emoji);
+    const icon = EMOJI_MAP[key] || String(emoji || "").trim() || "😀";
+    if(emojiOverlayIcon) emojiOverlayIcon.textContent = icon;
+    if(emojiOverlayName) emojiOverlayName.textContent = String(name || "Spieler");
+    if(!emojiOverlay) return;
+    emojiOverlay.classList.remove("show");
+    void emojiOverlay.offsetWidth;
+    emojiOverlay.classList.add("show");
+    if(emojiOverlayTimer) clearTimeout(emojiOverlayTimer);
+    emojiOverlayTimer = setTimeout(()=>{
+      try{ emojiOverlay.classList.remove("show"); }catch(_e){}
+    }, 2200);
+  }
+  function sendEmojiReaction(kind){
+    const key = normalizeEmojiKey(kind);
+    if(!key) return;
+    if(!(state && state.started) || state.winner){ toast("Spiel läuft nicht"); return; }
+    if(netMode === "offline" || !ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
+    const now = Date.now();
+    if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
+    lastEmojiSentAt = now;
+    const ok = wsSend({ type:"emoji_send", emoji:key, ts:now });
+    if(!ok){ lastEmojiSentAt = 0; toast("Emoji konnte nicht gesendet werden"); }
+  }
+  function bindEmojiButtons(){
+    const pairs = [[emojiLaughBtn, "laugh"],[emojiAngryBtn, "angry"],[emojiCoolBtn, "cool"]];
+    for(const pair of pairs){
+      const btn = pair[0]; const key = pair[1];
+      if(!btn || btn.__emojiBound) continue;
+      btn.__emojiBound = true;
+      btn.addEventListener("click", ()=> sendEmojiReaction(key));
+    }
+    updateEmojiUI();
+  }
+
 function ensureAwardsUI(){
   ensureAwardsStyles();
   let ov = document.getElementById("baAwardsOverlay");
@@ -2733,6 +2737,7 @@ function showEpicWin(winnerColor){
       if(endBtn)  endBtn.disabled  = true;
       if(skipBtn) skipBtn.disabled = true;
       updateColorPickUI();
+      updateEmojiUI();
       return;
     }
 
@@ -2753,6 +2758,7 @@ function showEpicWin(winnerColor){
     }
 
     updateColorPickUI();
+    updateEmojiUI();
   }
 
   function endTurn(){
