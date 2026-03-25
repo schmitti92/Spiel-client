@@ -6,7 +6,7 @@
   <title>Barikade</title>
 
   <!-- Deine CSS Datei (muss im gleichen Ordner liegen) -->
-  <link rel="stylesheet" href="styles.css?v=barikade_emoji_1" />
+  <link rel="stylesheet" href="styles.css?v=barikade_joker_1" />
 
   <style>
     /* Minimal-Layout, damit alles sichtbar bleibt, auch wenn styles.css mal fehlt */
@@ -38,15 +38,6 @@
     #netBanner { position:fixed; top:14px; left:50%; transform:translateX(-50%); padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14); opacity:0; pointer-events:none; transition:.15s; z-index:9999; max-width:min(92vw,900px); }
     #netBanner.show { opacity:1; pointer-events:auto; }
 
-    .emojiBar { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
-    .emojiBtn { width:46px; height:46px; border-radius:14px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.08); color:#fff; font-size:24px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-    .emojiBtn:disabled { opacity:.45; cursor:not-allowed; }
-    .emojiOverlay { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0; transform:scale(.88); transition:opacity .18s ease, transform .18s ease; z-index:10020; }
-    .emojiOverlay.show { opacity:1; transform:scale(1); }
-    .emojiOverlayCard { min-width:min(78vw,520px); max-width:90vw; padding:28px 22px; border-radius:28px; background:rgba(5,10,18,.78); border:1px solid rgba(255,255,255,.16); box-shadow:0 20px 70px rgba(0,0,0,.45); text-align:center; backdrop-filter: blur(6px); }
-    .emojiOverlaySymbol { font-size:clamp(82px, 18vw, 180px); line-height:1; filter:drop-shadow(0 8px 24px rgba(0,0,0,.35)); }
-    .emojiOverlayName { margin-top:10px; font-size:clamp(20px, 4vw, 34px); font-weight:900; letter-spacing:.02em; }
-
     #debugLog { display:none; margin-top:10px; padding:10px; border-radius:12px; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.10); white-space:pre-wrap; max-height:180px; overflow:auto; font-size:12px; }
 
     /* Overlay */
@@ -71,6 +62,19 @@
       display:none !important;
     }
 
+
+    /* Emoji reactions */
+    .emojiBar { display:flex; align-items:center; gap:10px; padding:4px 6px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+    .emojiBtn { width:52px; height:52px; border-radius:18px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.07); color:#fff; font-size:31px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,.22); }
+    .emojiBtn:disabled { opacity:.45; cursor:not-allowed; }
+    .emojiBtn:active { transform:scale(.96); }
+    #emojiOverlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:10020; pointer-events:none; }
+    #emojiOverlay.show { display:flex; }
+    .emojiOverlayCard { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-width:min(80vw,420px); padding:18px 22px; border-radius:28px; background:rgba(8,12,20,.26); backdrop-filter: blur(2px); }
+    #emojiOverlayIcon { font-size:132px; line-height:1; filter:drop-shadow(0 12px 30px rgba(0,0,0,.55)); animation:emojiPop .22s cubic-bezier(.2,.9,.2,1); }
+    #emojiOverlayName { font-size:28px; font-weight:900; color:#fff; text-shadow:0 6px 18px rgba(0,0,0,.55); letter-spacing:.2px; }
+    @keyframes emojiPop { 0%{ transform:scale(.55); opacity:0; } 70%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
+
   </style>
 </head>
 
@@ -83,7 +87,7 @@
 
     <div class="rightActions">
       <div class="pill"><span id="turnDot" class="dot"></span> <span id="turnText">–</span></div>
-      <div id="emojiBar" class="emojiBar">
+      <div id="emojiBar" class="emojiBar" aria-label="Emojis im Spiel">
         <button id="emojiLaughBtn" class="emojiBtn" type="button" title="Lachen">😂</button>
         <button id="emojiAngryBtn" class="emojiBtn" type="button" title="Wütend">😡</button>
         <button id="emojiCoolBtn" class="emojiBtn" type="button" title="Cool">😎</button>
@@ -199,16 +203,16 @@
     </div>
   </div>
 
-  <div id="emojiOverlay" class="emojiOverlay" aria-hidden="true">
-    <div class="emojiOverlayCard">
-      <div id="emojiOverlaySymbol" class="emojiOverlaySymbol">😂</div>
-      <div id="emojiOverlayName" class="emojiOverlayName">Spieler</div>
-    </div>
-  </div>
-
   <!-- Toast & Banner -->
   <div id="toast"></div>
   <div id="netBanner"></div>
+
+  <div id="emojiOverlay" aria-hidden="true">
+    <div class="emojiOverlayCard">
+      <div id="emojiOverlayIcon">😂</div>
+      <div id="emojiOverlayName">Spieler</div>
+    </div>
+  </div>
 
   <!-- Overlay -->
   <div id="overlay">
@@ -236,7 +240,7 @@
       });
     })();
   </script>
-  <script src="game.js?v=barikade_emoji_1"></script>
+  <script src="game.js?v=barikade_emoji_fix_1"></script>
 </body>
 </html>
 
