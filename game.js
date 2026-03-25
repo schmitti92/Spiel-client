@@ -4279,6 +4279,21 @@ leaveBtn.addEventListener("click", () => {
       console.error(err);
     }
   })();
+
+  // Expose a tiny safe runtime bridge for helpers that were appended outside the main scope.
+  // This does not remove any function; it only prevents ReferenceErrors in late-bound UI handlers.
+  try{
+    window.__barikadeRuntime = {
+      getNetMode: () => netMode,
+      getMyColor: () => myColor,
+      hasState: () => !!state,
+      isStarted: () => !!(state && state.started && !state.winner),
+      isConnected: () => !!(ws && ws.readyState === 1),
+      send: (obj) => wsSend(obj),
+      toast: (msg) => toast(msg),
+      closeSocket: () => { try{ if(ws && (ws.readyState===0 || ws.readyState===1)) ws.close(); }catch(_e){} }
+    };
+  }catch(_e){}
 })();
 
 
@@ -4354,14 +4369,10 @@ dice.style.bottom = "";
   if(!btn) return;
   btn.addEventListener("click", () => {
     try{
-      // Close WS to ensure server sees disconnect and lobby "joined" list updates.
-      if(ws && (ws.readyState===0 || ws.readyState===1)){
-        try{ ws.close(); }catch(_e){}
-      }
+      const rt = window.__barikadeRuntime;
+      if(rt && typeof rt.closeSocket === "function") rt.closeSocket();
     }catch(_e){}
-    // Clear transient session token so next start is clean
     try{ localStorage.removeItem("barikade_sessionToken"); }catch(_e){}
-    // Navigate back
     window.location.href = "barikade_lobby.html";
   });
 })();
@@ -4601,16 +4612,24 @@ function _wheelNext() {
 }
 
   // ---------- Aufgeben (Forfeit) ----------
-  if(forfeitBtn) forfeitBtn.addEventListener("click", () => {
-    if(netMode==="offline"){
-      toast("Aufgeben ist nur im Online-Spiel (Server) aktiv.");
-      return;
-    }
-    if(!myColor){ toast("Bitte Farbe wählen"); return; }
-    if(!ws || ws.readyState!==1){ toast("Keine Verbindung"); return; }
-    const ok = confirm("Wirklich aufgeben? Gewinner ist dann der Spieler, der am nächsten am Ziel ist.");
-    if(!ok) return;
-    wsSend({ type:"forfeit", ts:Date.now() });
-    toast("Du hast aufgegeben…");
-  });
+  (function wireForfeitButton(){
+    const btn = document.getElementById("forfeitBtn");
+    if(!btn) return;
+    btn.addEventListener("click", () => {
+      const rt = window.__barikadeRuntime;
+      const toast = (msg) => { try{ if(rt && typeof rt.toast === "function") rt.toast(msg); }catch(_e){} };
+      if(!rt){ toast("Runtime nicht bereit"); return; }
+      if(rt.getNetMode && rt.getNetMode() === "offline"){
+        toast("Aufgeben ist nur im Online-Spiel (Server) aktiv.");
+        return;
+      }
+      if(rt.getMyColor && !rt.getMyColor()){ toast("Bitte Farbe wählen"); return; }
+      if(rt.isConnected && !rt.isConnected()){ toast("Keine Verbindung"); return; }
+      if(rt.isStarted && !rt.isStarted()){ toast("Es läuft kein Spiel"); return; }
+      const ok = confirm("Wirklich aufgeben? Gewinner ist dann der Spieler, der am nächsten am Ziel ist.");
+      if(!ok) return;
+      try{ rt.send({ type:"forfeit", ts:Date.now() }); }catch(_e){ toast("Aufgeben konnte nicht gesendet werden"); return; }
+      toast("Du hast aufgegeben…");
+    });
+  })();
 
