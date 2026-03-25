@@ -1759,7 +1759,7 @@ try{
         try{
           if(msg.state) applyRemoteState(msg.state);
           const by = String(msg.by||"").toUpperCase();
-          const w = String(msg.winner|| (msg.state && msg.state.winnerColor) || "").toUpperCase();
+          const w = String(msg.winnerColor || msg.winner || (msg.state && msg.state.winnerColor) || "").toUpperCase();
           toast(`${by} hat aufgegeben! Gewinner: ${w}`);
         }catch(_e){}
         return;
