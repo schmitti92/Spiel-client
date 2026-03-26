@@ -1681,32 +1681,61 @@ try{ ws = new WebSocket(SERVER_URL); }
       });
     };
 
-    ws.onmessage = (ev) => {
-      _lastNetMsgAt = Date.now();
-      const msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
-      if(!msg) return;
-      const type = msg.type;
+    ws.onmessage = (event) => {
+  let msg;
+  try {
+    msg = JSON.parse(event.data);
+  } catch (e) {
+    return;
+  }
 
-      if(type==="hello"){
-        if(msg.clientId) clientId = msg.clientId;
-        updateEmojiUI();
-        return;
+  const type = msg.type;
+
+  // 🔥 DEBUG IMMER
+  try { console.log("WS MSG:", msg); } catch(e){}
+
+  // ---------- EMOJI ----------
+  if (type === "emoji_event") {
+    try {
+      const emojiMap = {
+        laugh: "😂",
+        angry: "😡",
+        cool: "😎"
+      };
+
+      const emojiChar =
+        msg.icon ||
+        emojiMap[msg.emoji] ||
+        msg.emoji ||
+        "😀";
+
+      showEmojiOverlay(
+        msg.name || "Spieler",
+        emojiChar
+      );
+
+      // Tablet Debug
+      if (typeof toast === "function") {
+        toast("Emoji empfangen");
       }
 
-      if(type==="emoji_ack"){
-        try{ toast("Emoji bestätigt"); }catch(_e){}
-        return;
-      }
-      if(type==="emoji_event"){
-        try{ initEmojiOverlaySystem(); }catch(_e){}
-        try{
-          const nm = msg.name || msg.playerName || "Spieler";
-          const em = msg.icon || msg.emoji || msg.emojiKey || "😀";
-          try{ toast("Emoji empfangen"); }catch(_e){}
-          showEmojiOverlay(nm, em);
-        }catch(_e){}
-        return;
-      }
+    } catch (e) {
+      console.log("EMOJI ERROR:", e);
+    }
+    return;
+  }
+
+  // ---------- ACK ----------
+  if (type === "emoji_ack") {
+    if (typeof toast === "function") {
+      toast("Emoji bestätigt");
+    }
+    return;
+  }
+
+  // 👉 WICHTIG: Rest NICHT zerstören!
+  // ↓ hier muss dein alter Code weiterlaufen ↓
+};
 if(type==="start_spin"){
   try{
     const cols = Array.isArray(msg.activeColors) && msg.activeColors.length ? msg.activeColors.map(c=>String(c||"").toLowerCase().trim()).filter(Boolean) : getActiveColors();
