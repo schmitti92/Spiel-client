@@ -1694,13 +1694,15 @@ try{ ws = new WebSocket(SERVER_URL); }
       }
 
       if(type==="emoji_ack"){
-        try{ toast("Server hat Emoji bestätigt"); }catch(_e){}
         return;
       }
       if(type==="emoji_event"){
         try{ initEmojiOverlaySystem(); }catch(_e){}
-        try{ toast("Emoji von Server empfangen"); }catch(_e){}
-        try{ showEmojiOverlay(msg.name || msg.playerName || "Spieler", msg.icon || msg.emoji || msg.emojiKey || "😀"); }catch(_e){}
+        try{
+          const nm = msg.name || msg.playerName || "Spieler";
+          const em = msg.icon || msg.emoji || msg.emojiKey || "😀";
+          requestAnimationFrame(() => showEmojiOverlay(nm, em));
+        }catch(_e){}
         return;
       }
 if(type==="start_spin"){
@@ -2486,24 +2488,8 @@ function ensureAwardsStyles(){
       overlayEl.setAttribute("aria-hidden", "true");
       document.body.appendChild(overlayEl);
     }
-    if(!iconEl){
-      iconEl = document.createElement("div");
-      iconEl.id = "emojiOverlayIcon";
-    }
-    if(!nameEl){
-      nameEl = document.createElement("div");
-      nameEl.id = "emojiOverlayName";
-    }
-    if(!iconEl.parentElement || !nameEl.parentElement){
-      const card = document.createElement("div");
-      card.className = "emojiOverlayCard";
-      card.appendChild(iconEl);
-      card.appendChild(nameEl);
-      overlayEl.innerHTML = "";
-      overlayEl.appendChild(card);
-    }
 
-    // force styles inline so it also works if CSS is stale/cached
+    // force robust overlay styles even if CSS/cache is stale
     overlayEl.style.position = "fixed";
     overlayEl.style.inset = "0";
     overlayEl.style.display = "flex";
@@ -2511,20 +2497,33 @@ function ensureAwardsStyles(){
     overlayEl.style.justifyContent = "center";
     overlayEl.style.zIndex = "10020";
     overlayEl.style.pointerEvents = "none";
-    overlayEl.style.background = "transparent";
 
-    const card = overlayEl.firstElementChild;
-    if(card){
-      card.style.display = "flex";
-      card.style.flexDirection = "column";
-      card.style.alignItems = "center";
-      card.style.justifyContent = "center";
-      card.style.gap = "10px";
-      card.style.minWidth = "min(80vw,420px)";
-      card.style.padding = "18px 22px";
-      card.style.borderRadius = "28px";
-      card.style.background = "rgba(8,12,20,.26)";
-      card.style.backdropFilter = "blur(2px)";
+    let card = overlayEl.querySelector(".emojiOverlayCard");
+    if(!card){
+      card = document.createElement("div");
+      card.className = "emojiOverlayCard";
+      overlayEl.appendChild(card);
+    }
+    card.style.display = "flex";
+    card.style.flexDirection = "column";
+    card.style.alignItems = "center";
+    card.style.justifyContent = "center";
+    card.style.gap = "10px";
+    card.style.minWidth = "min(80vw,420px)";
+    card.style.padding = "18px 22px";
+    card.style.borderRadius = "28px";
+    card.style.background = "rgba(8,12,20,.26)";
+    card.style.backdropFilter = "blur(2px)";
+
+    if(!iconEl){
+      iconEl = document.createElement("div");
+      iconEl.id = "emojiOverlayIcon";
+      card.appendChild(iconEl);
+    }
+    if(!nameEl){
+      nameEl = document.createElement("div");
+      nameEl.id = "emojiOverlayName";
+      card.appendChild(nameEl);
     }
 
     iconEl.style.fontSize = "132px";
@@ -2542,6 +2541,7 @@ function ensureAwardsStyles(){
     overlayEl.classList.remove("show");
     void overlayEl.offsetWidth;
     overlayEl.classList.add("show");
+    overlayEl.style.opacity = "1";
 
     if(emojiOverlayTimer) clearTimeout(emojiOverlayTimer);
     emojiOverlayTimer = setTimeout(()=>{
@@ -2559,7 +2559,6 @@ function ensureAwardsStyles(){
     const now = Date.now();
     if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
     lastEmojiSentAt = now;
-    toast("Emoji an Server gesendet");
     const ok = wsSend({ type:"emoji_send", emoji:key, ts:now });
     if(!ok){
       lastEmojiSentAt = 0;
@@ -2574,9 +2573,9 @@ function ensureAwardsStyles(){
     ];
     for(const pair of pairs){
       const btn = pair[0]; const key = pair[1];
-      if(!btn || btn.__emojiBound) continue;
+      if(!btn) continue;
+      btn.onclick = ()=> sendEmojiReaction(key);
       btn.__emojiBound = true;
-      btn.addEventListener("click", ()=> sendEmojiReaction(key));
     }
     updateEmojiUI();
   }
