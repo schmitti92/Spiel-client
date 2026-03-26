@@ -1694,6 +1694,7 @@ try{ ws = new WebSocket(SERVER_URL); }
       }
 
       if(type==="emoji_ack"){
+        try{ toast("Emoji bestätigt"); }catch(_e){}
         return;
       }
       if(type==="emoji_event"){
@@ -1701,7 +1702,8 @@ try{ ws = new WebSocket(SERVER_URL); }
         try{
           const nm = msg.name || msg.playerName || "Spieler";
           const em = msg.icon || msg.emoji || msg.emojiKey || "😀";
-          requestAnimationFrame(() => showEmojiOverlay(nm, em));
+          try{ toast("Emoji empfangen"); }catch(_e){}
+          showEmojiOverlay(nm, em);
         }catch(_e){}
         return;
       }
@@ -2489,14 +2491,15 @@ function ensureAwardsStyles(){
       document.body.appendChild(overlayEl);
     }
 
-    // force robust overlay styles even if CSS/cache is stale
     overlayEl.style.position = "fixed";
     overlayEl.style.inset = "0";
     overlayEl.style.display = "flex";
     overlayEl.style.alignItems = "center";
     overlayEl.style.justifyContent = "center";
-    overlayEl.style.zIndex = "10020";
+    overlayEl.style.zIndex = "2147483647";
     overlayEl.style.pointerEvents = "none";
+    overlayEl.style.visibility = "visible";
+    overlayEl.style.opacity = "1";
 
     let card = overlayEl.querySelector(".emojiOverlayCard");
     if(!card){
@@ -2512,8 +2515,9 @@ function ensureAwardsStyles(){
     card.style.minWidth = "min(80vw,420px)";
     card.style.padding = "18px 22px";
     card.style.borderRadius = "28px";
-    card.style.background = "rgba(8,12,20,.26)";
-    card.style.backdropFilter = "blur(2px)";
+    card.style.background = "rgba(8,12,20,.55)";
+    card.style.backdropFilter = "blur(6px)";
+    card.style.boxShadow = "0 16px 46px rgba(0,0,0,.55)";
 
     if(!iconEl){
       iconEl = document.createElement("div");
@@ -2541,7 +2545,6 @@ function ensureAwardsStyles(){
     overlayEl.classList.remove("show");
     void overlayEl.offsetWidth;
     overlayEl.classList.add("show");
-    overlayEl.style.opacity = "1";
 
     if(emojiOverlayTimer) clearTimeout(emojiOverlayTimer);
     emojiOverlayTimer = setTimeout(()=>{
@@ -2560,6 +2563,7 @@ function ensureAwardsStyles(){
     if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
     lastEmojiSentAt = now;
     const ok = wsSend({ type:"emoji_send", emoji:key, ts:now });
+    if(ok){ try{ toast("Emoji an Server gesendet"); }catch(_e){} }
     if(!ok){
       lastEmojiSentAt = 0;
       toast("Emoji konnte nicht an den Server gesendet werden");
