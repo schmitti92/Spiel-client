@@ -1,4 +1,3 @@
-
 // --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
 (() => {
   if (typeof window.init !== 'function') window.init = () => {};
@@ -1682,61 +1681,23 @@ try{ ws = new WebSocket(SERVER_URL); }
       });
     };
 
-    ws.onmessage = (event) => {
-  let msg;
-  try {
-    msg = JSON.parse(event.data);
-  } catch (e) {
-    return;
-  }
+    ws.onmessage = (ev) => {
+      _lastNetMsgAt = Date.now();
+      const msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
+      if(!msg) return;
+      const type = msg.type;
 
-  const type = msg.type;
-
-  // 🔥 DEBUG IMMER
-  try { console.log("WS MSG:", msg); } catch(e){}
-
-  // ---------- EMOJI ----------
-  if (type === "emoji_event") {
-    try {
-      const emojiMap = {
-        laugh: "😂",
-        angry: "😡",
-        cool: "😎"
-      };
-
-      const emojiChar =
-        msg.icon ||
-        emojiMap[msg.emoji] ||
-        msg.emoji ||
-        "😀";
-
-      showEmojiOverlay(
-        msg.name || "Spieler",
-        emojiChar
-      );
-
-      // Tablet Debug
-      if (typeof toast === "function") {
-        toast("Emoji empfangen");
+      if(type==="hello"){
+        if(msg.clientId) clientId = msg.clientId;
+        updateEmojiUI();
+        return;
       }
 
-    } catch (e) {
-      console.log("EMOJI ERROR:", e);
-    }
-    return;
-  }
-
-  // ---------- ACK ----------
-  if (type === "emoji_ack") {
-    if (typeof toast === "function") {
-      toast("Emoji bestätigt");
-    }
-    return;
-  }
-
-  // 👉 WICHTIG: Rest NICHT zerstören!
-  // ↓ hier muss dein alter Code weiterlaufen ↓
-};
+      if(type==="emoji_event"){
+        try{ initEmojiOverlaySystem(); }catch(_e){}
+        try{ showEmojiOverlay(msg.name || msg.playerName || "Spieler", msg.icon || msg.emoji || msg.emojiKey || "😀"); }catch(_e){}
+        return;
+      }
 if(type==="start_spin"){
   try{
     const cols = Array.isArray(msg.activeColors) && msg.activeColors.length ? msg.activeColors.map(c=>String(c||"").toLowerCase().trim()).filter(Boolean) : getActiveColors();
@@ -2518,60 +2479,52 @@ function ensureAwardsStyles(){
       overlayEl = document.createElement("div");
       overlayEl.id = "emojiOverlay";
       overlayEl.setAttribute("aria-hidden", "true");
+      overlayEl.style.position = "fixed";
+      overlayEl.style.inset = "0";
+      overlayEl.style.display = "none";
+      overlayEl.style.alignItems = "center";
+      overlayEl.style.justifyContent = "center";
+      overlayEl.style.zIndex = "10020";
+      overlayEl.style.pointerEvents = "none";
+
+      const card = document.createElement("div");
+      card.className = "emojiOverlayCard";
+      card.style.display = "flex";
+      card.style.flexDirection = "column";
+      card.style.alignItems = "center";
+      card.style.justifyContent = "center";
+      card.style.gap = "10px";
+      card.style.minWidth = "min(80vw,420px)";
+      card.style.padding = "18px 22px";
+      card.style.borderRadius = "28px";
+      card.style.background = "rgba(8,12,20,.26)";
+      card.style.backdropFilter = "blur(2px)";
+
+      iconEl = document.createElement("div");
+      iconEl.id = "emojiOverlayIcon";
+      iconEl.style.fontSize = "132px";
+      iconEl.style.lineHeight = "1";
+      iconEl.style.filter = "drop-shadow(0 12px 30px rgba(0,0,0,.55))";
+
+      nameEl = document.createElement("div");
+      nameEl.id = "emojiOverlayName";
+      nameEl.style.fontSize = "28px";
+      nameEl.style.fontWeight = "900";
+      nameEl.style.color = "#fff";
+      nameEl.style.textShadow = "0 6px 18px rgba(0,0,0,.55)";
+      nameEl.style.letterSpacing = ".2px";
+
+      card.appendChild(iconEl);
+      card.appendChild(nameEl);
+      overlayEl.appendChild(card);
       document.body.appendChild(overlayEl);
     }
 
-    overlayEl.style.position = "fixed";
-    overlayEl.style.inset = "0";
+    if(iconEl) iconEl.textContent = icon;
+    if(nameEl) nameEl.textContent = String(name || "Spieler");
+    if(!overlayEl) return;
+
     overlayEl.style.display = "flex";
-    overlayEl.style.alignItems = "center";
-    overlayEl.style.justifyContent = "center";
-    overlayEl.style.zIndex = "2147483647";
-    overlayEl.style.pointerEvents = "none";
-    overlayEl.style.visibility = "visible";
-    overlayEl.style.opacity = "1";
-
-    let card = overlayEl.querySelector(".emojiOverlayCard");
-    if(!card){
-      card = document.createElement("div");
-      card.className = "emojiOverlayCard";
-      overlayEl.appendChild(card);
-    }
-    card.style.display = "flex";
-    card.style.flexDirection = "column";
-    card.style.alignItems = "center";
-    card.style.justifyContent = "center";
-    card.style.gap = "10px";
-    card.style.minWidth = "min(80vw,420px)";
-    card.style.padding = "18px 22px";
-    card.style.borderRadius = "28px";
-    card.style.background = "rgba(8,12,20,.55)";
-    card.style.backdropFilter = "blur(6px)";
-    card.style.boxShadow = "0 16px 46px rgba(0,0,0,.55)";
-
-    if(!iconEl){
-      iconEl = document.createElement("div");
-      iconEl.id = "emojiOverlayIcon";
-      card.appendChild(iconEl);
-    }
-    if(!nameEl){
-      nameEl = document.createElement("div");
-      nameEl.id = "emojiOverlayName";
-      card.appendChild(nameEl);
-    }
-
-    iconEl.style.fontSize = "132px";
-    iconEl.style.lineHeight = "1";
-    iconEl.style.filter = "drop-shadow(0 12px 30px rgba(0,0,0,.55))";
-    nameEl.style.fontSize = "28px";
-    nameEl.style.fontWeight = "900";
-    nameEl.style.color = "#fff";
-    nameEl.style.textShadow = "0 6px 18px rgba(0,0,0,.55)";
-    nameEl.style.letterSpacing = ".2px";
-
-    iconEl.textContent = icon;
-    nameEl.textContent = String(name || "Spieler");
-
     overlayEl.classList.remove("show");
     void overlayEl.offsetWidth;
     overlayEl.classList.add("show");
@@ -2588,16 +2541,12 @@ function ensureAwardsStyles(){
     const key = normalizeEmojiKey(kind);
     if(!key) return;
     if(!(state && state.started) || state.winner){ toast("Spiel läuft nicht"); return; }
-    if(!ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
+    if(netMode === "offline" || !ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
     const now = Date.now();
     if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
     lastEmojiSentAt = now;
     const ok = wsSend({ type:"emoji_send", emoji:key, ts:now });
-    if(ok){ try{ toast("Emoji an Server gesendet"); }catch(_e){} }
-    if(!ok){
-      lastEmojiSentAt = 0;
-      toast("Emoji konnte nicht an den Server gesendet werden");
-    }
+    if(!ok){ lastEmojiSentAt = 0; toast("Emoji konnte nicht an den Server gesendet werden"); }
   }
   function bindEmojiButtons(){
     const pairs = [
@@ -2607,9 +2556,9 @@ function ensureAwardsStyles(){
     ];
     for(const pair of pairs){
       const btn = pair[0]; const key = pair[1];
-      if(!btn) continue;
-      btn.onclick = ()=> sendEmojiReaction(key);
+      if(!btn || btn.__emojiBound) continue;
       btn.__emojiBound = true;
+      btn.addEventListener("click", ()=> sendEmojiReaction(key));
     }
     updateEmojiUI();
   }
