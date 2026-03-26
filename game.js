@@ -1735,8 +1735,7 @@ try{ ws = new WebSocket(SERVER_URL); }
 
   // 👉 WICHTIG: Rest NICHT zerstören!
   // ↓ hier muss dein alter Code weiterlaufen ↓
-};
-if(type==="start_spin"){
+      if(type==="start_spin"){
   try{
     const cols = Array.isArray(msg.activeColors) && msg.activeColors.length ? msg.activeColors.map(c=>String(c||"").toLowerCase().trim()).filter(Boolean) : getActiveColors();
     const dur = Number(msg.durationMs || 4200) || 4200;
