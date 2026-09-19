@@ -43,26 +43,11 @@ let pendingSaveExport = false;
       sidePanel.style.overflowY = 'auto';
       sidePanel.style.webkitOverflowScrolling = 'touch';
 
-      // Make sure dice isn't clipped by the dice pill (index.html had overflow:hidden)
+      // Dice sizing is controlled centrally by styles.css.
+      // Keep only the overflow safety here so JS no longer fights the responsive layout.
       const dicePill = sidePanel.querySelector('.dicePill');
       if(dicePill){
         dicePill.style.overflow = 'visible';
-        // Give it a predictable box so large dice stays inside the panel
-        // (still responsive; doesn't break desktop)
-        const maxSize = Math.min(190, Math.max(92, Math.floor(sidePanel.clientWidth * 0.40)));
-        dicePill.style.width = maxSize + 'px';
-        dicePill.style.height = maxSize + 'px';
-        dicePill.style.flex = '0 0 auto';
-        // keep a small inner padding so it doesn't touch the panel edge
-        dicePill.style.padding = '6px';
-        dicePill.style.boxSizing = 'border-box';
-      }
-
-      // Let the cube fill the pill; pips scale automatically with CSS grid
-      const diceCube = document.getElementById('diceCube');
-      if(diceCube && dicePill){
-        diceCube.style.width = '100%';
-        diceCube.style.height = '100%';
       }
     }catch(_e){}
   }
@@ -245,7 +230,7 @@ let pendingSaveExport = false;
       if(!rect || !rect.width) return;
 
       // Größe proportional zur Würfelfläche (Tablet: gut sichtbar)
-      const pipSize = Math.max(14, Math.round(rect.width * 0.16)); // ~16% der Würfelseite
+      const pipSize = Math.max(10, Math.min(12, Math.round(rect.width * 0.165))); // sichtbar, aber sauber innerhalb der 3x3-Fläche
       const pipColor = "#111"; // dunkler für mehr Kontrast
 
       // Zellen zentrieren (Fallback, falls CSS fehlt)
@@ -1696,6 +1681,8 @@ try{ ws = new WebSocket(SERVER_URL); }
 
       if(type==="emoji_event"){
         try{ initEmojiOverlaySystem(); }catch(_e){}
+        // Eigene Reaktion wurde bereits sofort lokal gezeigt. Das Server-Echo nicht doppelt anzeigen.
+        if(msg.playerId === clientId && consumeLocalEmojiReaction(msg.reactionId)) return;
         try{ showEmojiOverlay(msg.name || msg.playerName || "Spieler", msg.icon || msg.emoji || msg.emojiKey || "😀"); }catch(_e){}
         return;
       }
@@ -2547,6 +2534,32 @@ function ensureAwardsStyles(){
       }catch(_e){}
     }, 2200);
   }
+  const localEmojiReactionIds = new Map();
+  function rememberLocalEmojiReaction(id){
+    if(!id) return;
+    const now = Date.now();
+    localEmojiReactionIds.set(String(id), now);
+    for(const [rid, ts] of localEmojiReactionIds){
+      if(now - ts > 15000) localEmojiReactionIds.delete(rid);
+    }
+  }
+  function consumeLocalEmojiReaction(id){
+    const rid = String(id || "");
+    if(!rid || !localEmojiReactionIds.has(rid)) return false;
+    localEmojiReactionIds.delete(rid);
+    return true;
+  }
+  function getLocalEmojiName(){
+    try{
+      const mine = Array.isArray(players) ? players.find(p => p && p.id === clientId) : null;
+      if(mine && mine.name) return String(mine.name);
+    }catch(_e){}
+    try{
+      const saved = String(localStorage.getItem("barikade_playerName") || "").trim();
+      if(saved) return saved;
+    }catch(_e){}
+    return netMode === "host" ? "Host" : "Spieler";
+  }
   function sendEmojiReaction(kind){
     const key = normalizeEmojiKey(kind);
     if(!key) return;
@@ -2555,8 +2568,16 @@ function ensureAwardsStyles(){
     const now = Date.now();
     if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
     lastEmojiSentAt = now;
-    const ok = wsSend({ type:"emoji_send", emoji:key, ts:now });
-    if(!ok){ lastEmojiSentAt = 0; toast("Emoji konnte nicht an den Server gesendet werden"); }
+    const reactionId = `${clientId || "local"}-${now}-${Math.random().toString(36).slice(2,8)}`;
+    rememberLocalEmojiReaction(reactionId);
+    // Sofortige Rückmeldung auf dem eigenen Gerät; das Server-Echo wird dedupliziert.
+    showEmojiOverlay(getLocalEmojiName(), key);
+    const ok = wsSend({ type:"emoji_send", emoji:key, reactionId, ts:now });
+    if(!ok){
+      localEmojiReactionIds.delete(reactionId);
+      lastEmojiSentAt = 0;
+      toast("Emoji konnte nicht an den Server gesendet werden");
+    }
   }
   function bindEmojiButtons(){
     const pairs = [
