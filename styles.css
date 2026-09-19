@@ -607,3 +607,473 @@ input:focus{border-color: rgba(77,163,255,.55); box-shadow: 0 0 0 2px rgba(77,16
 #jokerCard .toggleRow input{
   transform: translateY(1px);
 }
+
+
+/* Canvas palette: game.js reads these values from document.documentElement.
+   The lobby defines its own later :root block, so it keeps its lobby palette. */
+:root{
+  --bg:#060912;
+  --panel:#121a2b;
+  --panel2:#0c1220;
+  --text:#eef3ff;
+  --muted:#9eabc3;
+  --line:#283653;
+  --btn:#182238;
+  --btn2:#22304d;
+  --accent:#8a7cff;
+  --node:#3b5f8f;
+  --stroke:rgba(3,7,14,.88);
+  --edge:rgba(141,178,229,.26);
+  --goal:#f8fbff;
+  --run:#78b7ff;
+}
+
+/* ==============================================================
+   BARIKADE VISUAL REFRESH 2026 · Game
+   Reines UI-Layer. Keine Spielregeln, IDs oder Netzwerklogik.
+   ============================================================== */
+body.game-page{
+  --bg:#060912;
+  --panel:#121a2b;
+  --panel2:#0c1220;
+  --text:#eef3ff;
+  --muted:#9eabc3;
+  --line:#283653;
+  --btn:#182238;
+  --btn2:#22304d;
+  --accent:#8a7cff;
+  --node:#35547f;
+  --edge:rgba(148,177,224,.24);
+  --stroke:rgba(3,7,14,.82);
+  --run:#6aaaff;
+  min-height:100%;
+  background:
+    radial-gradient(900px 680px at 7% -8%,rgba(124,92,255,.27),transparent 62%),
+    radial-gradient(780px 620px at 100% 8%,rgba(31,196,242,.14),transparent 60%),
+    linear-gradient(150deg,#070a12 0%,#0a1020 48%,#050811 100%);
+  color:var(--text);
+  overflow-x:hidden;
+}
+body.game-page::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:linear-gradient(to bottom,#000,transparent 85%);
+}
+body.game-page .topbar{
+  position:sticky;top:0;z-index:50;
+  min-height:74px;padding:10px 16px;gap:16px;
+  background:linear-gradient(180deg,rgba(8,12,23,.94),rgba(7,11,21,.82));
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 12px 35px rgba(0,0,0,.22);
+  backdrop-filter:blur(18px) saturate(130%);
+  -webkit-backdrop-filter:blur(18px) saturate(130%);
+}
+body.game-page .brand{
+  min-width:210px;position:relative;padding-left:52px;gap:1px !important;
+}
+body.game-page .brand::before{
+  content:"B";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:40px;height:40px;display:grid;place-items:center;border-radius:13px;
+  color:#fff;font-size:20px;font-weight:950;
+  background:linear-gradient(145deg,#8876ff,#29bce8);
+  box-shadow:0 10px 28px rgba(92,85,236,.26),inset 0 1px 0 rgba(255,255,255,.28);
+}
+body.game-page .brand .t{
+  font-size:20px !important;font-weight:950 !important;letter-spacing:-.35px;
+  background:linear-gradient(100deg,#fff,#d9e2ff 64%,#9de7ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+body.game-page .brand .s{font-size:11.5px !important;color:rgba(225,233,250,.57);letter-spacing:.12px;}
+body.game-page .rightActions{gap:7px;justify-content:flex-end;}
+body.game-page .rightActions .btn{
+  min-height:40px;padding:0 12px;border-radius:12px;
+  background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.09);
+  box-shadow:none;font-size:12.5px;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease;
+}
+body.game-page .rightActions .btn:hover{
+  transform:translateY(-1px);background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.15);
+  box-shadow:0 10px 24px rgba(0,0,0,.18);
+}
+body.game-page #endBtn{background:rgba(67,209,147,.11);border-color:rgba(67,209,147,.22);}
+body.game-page #skipBtn{background:rgba(255,189,79,.09);border-color:rgba(255,189,79,.20);}
+body.game-page #forfeitBtn{background:rgba(239,68,68,.12) !important;border-color:rgba(239,68,68,.26) !important;}
+body.game-page #resetBtn{opacity:.72;}
+body.game-page .topbar .pill{
+  min-height:40px;padding:0 13px;border-radius:13px;background:rgba(10,16,30,.72);
+  border:1px solid rgba(255,255,255,.095);box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+}
+body.game-page #turnDot{width:11px;height:11px;box-shadow:0 0 0 4px rgba(255,255,255,.055),0 0 18px currentColor;}
+body.game-page #turnText{font-size:12.5px;font-weight:850;}
+body.game-page .emojiBar{
+  height:42px;gap:3px;padding:3px;border-radius:13px;background:rgba(10,16,30,.65);
+  border-color:rgba(255,255,255,.085);
+}
+body.game-page .emojiBtn{
+  width:34px;height:34px;border:0;border-radius:10px;font-size:21px;background:transparent;box-shadow:none;
+  transition:transform .12s ease,background .12s ease;
+}
+body.game-page .emojiBtn:hover{transform:translateY(-1px) scale(1.05);background:rgba(255,255,255,.07);}
+
+body.game-page .app{
+  display:grid !important;grid-template-columns:minmax(0,1fr) 330px !important;
+  gap:14px !important;padding:14px !important;min-height:calc(100vh - 74px) !important;height:calc(100vh - 74px);
+  max-width:1720px;margin:0 auto;width:100%;
+}
+body.game-page .boardWrap{
+  position:relative;min-width:0;min-height:520px !important;height:100%;
+  border-radius:24px !important;overflow:hidden !important;
+  border:1px solid rgba(148,177,224,.13) !important;
+  background:
+    radial-gradient(620px 520px at 50% 48%,rgba(70,111,172,.12),transparent 70%),
+    linear-gradient(160deg,rgba(14,22,39,.98),rgba(7,12,23,.98)) !important;
+  box-shadow:0 28px 80px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.04),inset 0 0 80px rgba(50,94,161,.055);
+}
+body.game-page .boardWrap::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    linear-gradient(rgba(143,174,220,.026) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(143,174,220,.026) 1px,transparent 1px);
+  background-size:32px 32px;
+  mask-image:radial-gradient(circle at center,#000 28%,transparent 94%);
+}
+body.game-page .boardWrap::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:2;border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),inset 0 0 70px rgba(2,6,14,.28);
+}
+body.game-page #c{position:relative;z-index:1;width:100% !important;height:100% !important;}
+
+body.game-page .app>.panel{
+  position:relative;height:100%;min-height:0;padding:16px !important;margin:0 !important;overflow-y:auto;
+  border-radius:24px !important;border:1px solid rgba(255,255,255,.09) !important;
+  background:linear-gradient(165deg,rgba(20,29,50,.90),rgba(9,14,26,.84)) !important;
+  box-shadow:0 24px 64px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.045);
+  scrollbar-width:thin;scrollbar-color:rgba(139,124,255,.35) transparent;
+}
+body.game-page .app>.panel::before{
+  content:"";position:absolute;left:18px;right:18px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(139,124,255,.58),rgba(56,216,255,.34),transparent);
+}
+body.game-page .app>.panel h3{
+  margin:5px 0 10px !important;display:flex;align-items:center;gap:8px;
+  font-size:12px !important;font-weight:900 !important;letter-spacing:.85px;text-transform:uppercase;color:rgba(213,223,244,.68);
+}
+body.game-page .app>.panel h3::before{
+  content:"";width:6px;height:6px;border-radius:50%;background:linear-gradient(135deg,#907fff,#40d8ff);box-shadow:0 0 12px rgba(104,137,255,.65);
+}
+body.game-page .app>.panel>.row:first-of-type{
+  padding:9px;border:1px solid rgba(255,255,255,.065);border-radius:18px;background:rgba(4,9,18,.32);
+}
+body.game-page #rollBtn{
+  min-height:54px;flex:1;padding:0 18px;border-radius:14px;font-size:16px;font-weight:950;letter-spacing:.1px;
+  background:linear-gradient(135deg,#7e6df2,#625bea 55%,#27b7e4 130%);
+  border-color:rgba(185,181,255,.24);box-shadow:0 16px 34px rgba(92,80,225,.21);
+}
+body.game-page #rollBtn:not(:disabled):hover{filter:brightness(1.08);transform:translateY(-1px);}
+body.game-page .dicePill{
+  width:70px !important;height:70px !important;margin-left:auto;border-radius:18px !important;
+  background:radial-gradient(circle at 35% 20%,rgba(255,255,255,.09),rgba(3,7,14,.52)) !important;
+  border-color:rgba(255,255,255,.095) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(0,0,0,.24);
+}
+body.game-page #diceCube{
+  width:54px !important;height:54px !important;border-radius:15px !important;padding:7px !important;gap:4px !important;
+  background:linear-gradient(145deg,#fff,#dfe7f2 82%) !important;
+  border:1px solid rgba(255,255,255,.88) !important;
+  box-shadow:inset 0 1px 0 #fff,inset 0 -4px 8px rgba(36,54,77,.12),0 13px 26px rgba(0,0,0,.35) !important;
+}
+body.game-page #diceCube .pip{background:#111827 !important;box-shadow:inset 0 1px 1px rgba(255,255,255,.18),0 1px 2px rgba(0,0,0,.16);}
+
+body.game-page #actionCard{
+  padding:12px;border-radius:18px;background:rgba(4,9,18,.31);border:1px solid rgba(255,255,255,.06);
+}
+body.game-page #actionHint{color:rgba(224,231,246,.62);}
+body.game-page #actionCard>.kv{
+  margin:0;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.045);font-size:11.5px;color:rgba(216,225,242,.65);
+}
+body.game-page .joker-grid-4{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;margin-top:12px !important;}
+body.game-page .joker-btn{
+  min-height:82px;padding:11px 10px !important;display:grid;grid-template-columns:32px 1fr auto;grid-template-areas:"ico name count";align-items:center;gap:7px;
+  text-align:left;border-radius:15px !important;background:linear-gradient(155deg,rgba(35,47,76,.82),rgba(13,20,36,.82)) !important;
+  border:1px solid rgba(255,255,255,.075) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+  transition:transform .14s ease,border-color .14s ease,background .14s ease;
+}
+body.game-page .joker-btn:hover{transform:translateY(-1px);border-color:rgba(139,124,255,.32) !important;background:linear-gradient(155deg,rgba(52,58,96,.90),rgba(16,25,44,.90)) !important;}
+body.game-page .joker-btn .j-ico{grid-area:ico;font-size:24px;}
+body.game-page .joker-btn .j-name{grid-area:name;font-size:12px;line-height:1.15;}
+body.game-page .joker-btn .j-count{
+  grid-area:count;min-width:24px;height:24px;padding:0 6px;display:grid;place-items:center;border-radius:999px;
+  background:rgba(139,124,255,.16);border:1px solid rgba(139,124,255,.22);font-size:11px;
+}
+body.game-page .app>.panel .kv{color:rgba(218,227,244,.62);border-color:rgba(255,255,255,.05);}
+body.game-page #onlineBox{
+  padding:12px;border-radius:17px;background:rgba(4,9,18,.28);border:1px solid rgba(255,255,255,.055);
+}
+body.game-page #roomCode{background:rgba(2,6,13,.48) !important;border-color:rgba(255,255,255,.085) !important;}
+body.game-page #startBtn{background:rgba(67,209,147,.12);border-color:rgba(67,209,147,.24);}
+body.game-page #resumeBtn{background:rgba(56,180,255,.11);border-color:rgba(56,180,255,.23);}
+body.game-page #debugToggle,#hostTools{opacity:.74;}
+body.game-page #debugLog{border-radius:14px;background:#050910;border-color:rgba(255,255,255,.065);}
+body.game-page #overlay{
+  background:rgba(2,5,12,.72) !important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+body.game-page .overlayCard{
+  border-radius:24px !important;padding:22px !important;background:linear-gradient(155deg,#18213a,#0b1120) !important;
+  border-color:rgba(255,255,255,.10) !important;box-shadow:0 28px 90px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.06);
+}
+body.game-page #toast,body.game-page #netBanner{
+  background:rgba(8,13,25,.94) !important;border-color:rgba(255,255,255,.11) !important;
+  box-shadow:0 18px 48px rgba(0,0,0,.35);backdrop-filter:blur(14px);
+}
+body.game-page :focus-visible{outline:none;box-shadow:0 0 0 3px rgba(139,124,255,.26) !important;}
+
+@media(max-width:1120px){
+  body.game-page .app{grid-template-columns:minmax(0,1fr) 300px !important;gap:10px !important;padding:10px !important;}
+  body.game-page .brand .s{display:none;}
+  body.game-page .brand{min-width:155px;}
+  body.game-page .rightActions .btn{padding:0 9px;font-size:11.5px;}
+}
+@media(max-width:900px){
+  body.game-page{overflow:auto !important;}
+  body.game-page .topbar{position:sticky;align-items:flex-start;padding:9px 10px;}
+  body.game-page .brand{min-width:145px;padding-left:45px;}
+  body.game-page .brand::before{width:36px;height:36px;border-radius:11px;}
+  body.game-page .brand .t{font-size:17px !important;}
+  body.game-page .rightActions{flex:1 1 100%;display:flex;overflow-x:auto;flex-wrap:nowrap;padding:3px 0 2px;scrollbar-width:none;}
+  body.game-page .rightActions::-webkit-scrollbar{display:none;}
+  body.game-page .rightActions>*{flex:0 0 auto;}
+  body.game-page .app{
+    display:flex !important;flex-direction:column !important;height:auto !important;min-height:0 !important;padding:9px !important;
+  }
+  body.game-page .boardWrap{height:min(68vh,720px);min-height:500px !important;border-radius:20px !important;}
+  body.game-page .app>.panel{height:auto !important;max-height:none !important;overflow:visible !important;border-radius:20px !important;}
+  body.game-page .joker-grid-4{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+}
+@media(max-width:560px){
+  body.game-page .topbar{gap:7px;}
+  body.game-page .emojiBar{order:10;}
+  body.game-page .boardWrap{height:64vh;min-height:430px !important;}
+  body.game-page .app>.panel{padding:12px !important;}
+  body.game-page .joker-grid-4{grid-template-columns:1fr !important;}
+  body.game-page .joker-btn{min-height:64px;}
+}
+@media(prefers-reduced-motion:reduce){
+  body.game-page *,body.game-page *::before,body.game-page *::after{animation:none !important;transition:none !important;scroll-behavior:auto !important;}
+}
+
+/* =============================================================
+   GAME PAGE – migrated from barikade.html (Step 1 cleanup)
+   Same rules, centralized here; no gameplay changes.
+   ============================================================= */
+    /* Minimal-Layout, damit alles sichtbar bleibt, auch wenn styles.css mal fehlt */
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#0b0f16; color:#e6edf3; }
+    .app { display:grid; grid-template-columns: 1fr 380px; gap:16px; padding:16px; }
+    @media (max-width: 900px){ .app { grid-template-columns: 1fr; } }
+
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
+    .brand { display:flex; flex-direction:column; gap:2px; }
+    .brand .t { font-weight:900; font-size:18px; }
+    .brand .s { opacity:.75; font-size:12px; }
+
+    .rightActions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .pill { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+    .dot { width:10px; height:10px; border-radius:50%; background:#666; display:inline-block; }
+    .btn { padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#e6edf3; font-weight:700; cursor:pointer; }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+
+    .boardWrap { border-radius:18px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); overflow:hidden; min-height:520px; }
+    canvas { width:100%; height:620px; display:block; touch-action:none; }
+
+    .panel { border-radius:18px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); padding:14px; }
+    .panel h3 { margin:6px 0 12px 0; font-size:16px; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .dicePill { margin-left:auto; width:66px; height:66px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    #diceCube { width:54px; height:54px; }
+    #toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14); opacity:0; pointer-events:none; transition:.15s; z-index:9999; }
+    #toast.show { opacity:1; }
+    #netBanner { position:fixed; top:14px; left:50%; transform:translateX(-50%); padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14); opacity:0; pointer-events:none; transition:.15s; z-index:9999; max-width:min(92vw,900px); }
+    #netBanner.show { opacity:1; pointer-events:auto; }
+
+    #debugLog { display:none; margin-top:10px; padding:10px; border-radius:12px; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.10); white-space:pre-wrap; max-height:180px; overflow:auto; font-size:12px; }
+
+    /* Overlay */
+    #overlay { position:fixed; inset:0; background:rgba(0,0,0,.66); display:none; align-items:center; justify-content:center; z-index:9998; }
+    #overlay.show { display:flex; }
+    .overlayCard { width:min(520px,92vw); border-radius:18px; background:#101521; border:1px solid rgba(255,255,255,.12); padding:16px; }
+    .overlayCard h2 { margin:0 0 8px 0; }
+    .overlayCard p { margin:6px 0; opacity:.85; }
+    .kv { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+    .joker-grid { display:grid; grid-template-columns: 1fr; gap:10px; margin-top:10px; }
+    .joker-btn { padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#e6edf3; font-weight:800; cursor:pointer; }
+
+    /* Compact UI (Lobby steuert Raum/Farbe/Action) – KEINE Funktionen entfernen, nur ausblenden */
+    body.compact #onlineBox{ display:none !important; }
+    body.compact #actionToggleRow{ display:none !important; }
+    body.compact #colorPick{ display:none !important; }
+  
+    /* UI: dauerhaft ausblenden (Anzeige-Infos) */
+    .status, .boardInfo, .boardStats,
+    #status, #boardInfo, #boardStats,
+    #statsBox, #boardBox, #boardMeta, #boardStatsBox {
+      display:none !important;
+    }
+
+
+    /* Emoji reactions */
+    .emojiBar { display:flex; align-items:center; gap:10px; padding:4px 6px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+    .emojiBtn { width:52px; height:52px; border-radius:18px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.07); color:#fff; font-size:31px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,.22); }
+    .emojiBtn:disabled { opacity:.45; cursor:not-allowed; }
+    .emojiBtn:active { transform:scale(.96); }
+    #emojiOverlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:10020; pointer-events:none; }
+    #emojiOverlay.show { display:flex; }
+    .emojiOverlayCard { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-width:min(80vw,420px); padding:18px 22px; border-radius:28px; background:rgba(8,12,20,.26); backdrop-filter: blur(2px); }
+    #emojiOverlayIcon { font-size:132px; line-height:1; filter:drop-shadow(0 12px 30px rgba(0,0,0,.55)); animation:emojiPop .22s cubic-bezier(.2,.9,.2,1); }
+    #emojiOverlayName { font-size:28px; font-weight:900; color:#fff; text-shadow:0 6px 18px rgba(0,0,0,.55); letter-spacing:.2px; }
+    @keyframes emojiPop { 0%{ transform:scale(.55); opacity:0; } 70%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
+
+  
+
+/* =============================================================
+   GAME PAGE – Joker power feedback (Step 4, visual only)
+   ============================================================= */
+#jokerFxOverlay{
+  position:fixed;inset:0;z-index:10040;display:grid;place-items:center;
+  pointer-events:none;opacity:0;visibility:hidden;
+}
+#jokerFxOverlay.show{visibility:visible;animation:jokerFxOverlay .92s ease both;}
+#jokerFxOverlay .jokerFxBurst{
+  position:relative;width:min(310px,72vw);aspect-ratio:1;display:grid;place-items:center;
+}
+#jokerFxOverlay .jokerFxBurst::before,
+#jokerFxOverlay .jokerFxBurst::after{
+  content:"";position:absolute;inset:14%;border-radius:50%;
+}
+#jokerFxOverlay .jokerFxBurst::before{
+  border:2px solid rgba(255,255,255,.72);
+  box-shadow:0 0 40px var(--joker-fx-glow,rgba(139,124,255,.65)),inset 0 0 38px var(--joker-fx-glow,rgba(139,124,255,.28));
+  animation:jokerFxRing .78s cubic-bezier(.16,.8,.28,1) both;
+}
+#jokerFxOverlay .jokerFxBurst::after{
+  inset:24%;background:radial-gradient(circle,rgba(255,255,255,.20),transparent 68%);
+  filter:blur(2px);animation:jokerFxHalo .82s ease-out both;
+}
+#jokerFxOverlay .jokerFxCore{
+  position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:22px 26px;border-radius:28px;background:rgba(8,13,24,.54);
+  border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 22px 70px rgba(0,0,0,.38);animation:jokerFxCore .82s cubic-bezier(.18,.84,.24,1) both;
+}
+#jokerFxOverlay .jokerFxIcon{
+  font-size:clamp(64px,11vw,104px);line-height:1;filter:drop-shadow(0 12px 26px rgba(0,0,0,.42));
+}
+#jokerFxOverlay .jokerFxTitle{
+  color:#fff;font-size:clamp(17px,3vw,25px);font-weight:950;letter-spacing:.2px;text-shadow:0 4px 16px rgba(0,0,0,.46);
+}
+#jokerFxOverlay.fx-allcolors{--joker-fx-glow:rgba(103,220,255,.70);}
+#jokerFxOverlay.fx-allcolors .jokerFxBurst::before{border:0;background:conic-gradient(from 0deg,#ff5b78,#ffd465,#62e4a6,#5cc8ff,#9b7bff,#ff6ec7,#ff5b78);padding:2px;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;animation:jokerFxRainbow .86s ease-out both;}
+#jokerFxOverlay.fx-barricade{--joker-fx-glow:rgba(226,236,255,.58);}
+#jokerFxOverlay.fx-barricade .jokerFxIcon{animation:jokerFxBarricade .72s cubic-bezier(.2,.9,.22,1) both;}
+#jokerFxOverlay.fx-reroll{--joker-fx-glow:rgba(80,205,255,.72);}
+#jokerFxOverlay.fx-reroll .jokerFxIcon{animation:jokerFxReroll .72s cubic-bezier(.18,.8,.28,1) both;}
+#jokerFxOverlay.fx-double{--joker-fx-glow:rgba(255,193,84,.72);}
+#jokerFxOverlay.fx-double .jokerFxIcon{animation:jokerFxDouble .72s cubic-bezier(.16,.9,.22,1) both;}
+@keyframes jokerFxOverlay{0%{opacity:0}12%{opacity:1}72%{opacity:1}100%{opacity:0}}
+@keyframes jokerFxCore{0%{opacity:0;transform:scale(.68) translateY(14px)}58%{opacity:1;transform:scale(1.05) translateY(-2px)}100%{opacity:1;transform:scale(1)}}
+@keyframes jokerFxRing{0%{opacity:0;transform:scale(.55)}35%{opacity:1}100%{opacity:0;transform:scale(1.55)}}
+@keyframes jokerFxHalo{0%{opacity:0;transform:scale(.7)}35%{opacity:.9}100%{opacity:0;transform:scale(1.38)}}
+@keyframes jokerFxRainbow{0%{opacity:0;transform:scale(.62) rotate(-30deg)}38%{opacity:1}100%{opacity:0;transform:scale(1.48) rotate(115deg)}}
+@keyframes jokerFxBarricade{0%{transform:translateY(-30px) scale(.78);opacity:0}56%{transform:translateY(6px) scale(1.06);opacity:1}72%{transform:translateY(-3px) scale(.98)}100%{transform:none;opacity:1}}
+@keyframes jokerFxReroll{0%{transform:scale(.64) rotate(-260deg);opacity:0}70%{transform:scale(1.06) rotate(18deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes jokerFxDouble{0%{transform:scale(.52) rotate(-12deg);opacity:0}52%{transform:scale(1.12) rotate(5deg);opacity:1}76%{transform:scale(.96) rotate(-2deg)}100%{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  #jokerFxOverlay.show,#jokerFxOverlay .jokerFxBurst::before,#jokerFxOverlay .jokerFxBurst::after,#jokerFxOverlay .jokerFxCore,#jokerFxOverlay .jokerFxIcon{animation-duration:.01ms !important;}
+}
+
+/* =============================================================
+   GAME PAGE – Winner presentation (Step 7, visual only)
+   ============================================================= */
+body.game-page #overlay.win-overlay{
+  --winner-color:#8b7cff;
+  background:
+    radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--winner-color) 24%,transparent),transparent 38%),
+    rgba(2,5,12,.82) !important;
+}
+body.game-page #overlay.win-overlay .overlayCard{
+  position:relative;z-index:4;width:min(620px,92vw) !important;padding:30px 26px 24px !important;text-align:center;
+  border-radius:30px !important;
+  background:linear-gradient(160deg,rgba(29,40,68,.98),rgba(8,13,25,.98)) !important;
+  box-shadow:0 34px 110px rgba(0,0,0,.60),0 0 54px color-mix(in srgb,var(--winner-color) 46%,transparent),inset 0 1px 0 rgba(255,255,255,.09) !important;
+  overflow:hidden;animation:winCardEnter .62s cubic-bezier(.18,.9,.22,1) both;
+}
+body.game-page #overlay.win-overlay .overlayCard::before{
+  content:"";position:absolute;inset:-42% 22% 58%;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--winner-color) 48%,white 6%),transparent 68%);filter:blur(10px);opacity:.55;pointer-events:none;
+}
+body.game-page #overlay.win-overlay .overlayCard::after{
+  content:"";position:absolute;left:12%;right:12%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.88),var(--winner-color),transparent);pointer-events:none;
+}
+body.game-page #overlay.win-overlay #overlayTitle{
+  position:relative;margin:0 0 12px !important;font-size:clamp(29px,5vw,48px);font-weight:1000;letter-spacing:-1px;
+  background:linear-gradient(105deg,#fff,#fff0c7 48%,#c7eaff);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 9px 18px rgba(0,0,0,.28));
+}
+body.game-page #overlay.win-overlay #overlaySub{position:relative;font-size:clamp(22px,4vw,34px);font-weight:950;color:#fff;opacity:1;margin:4px 0 7px;text-shadow:0 0 24px color-mix(in srgb,var(--winner-color) 60%,transparent);}
+body.game-page #overlay.win-overlay #overlayHint{position:relative;color:rgba(230,237,251,.68);font-size:14px;margin:0 auto 18px;}
+body.game-page #overlay.win-overlay #overlayOk{
+  position:relative;min-width:150px;justify-content:center;background:linear-gradient(135deg,color-mix(in srgb,var(--winner-color) 82%,#6d63ff),color-mix(in srgb,var(--winner-color) 48%,#2ab9e8));
+  border-color:rgba(255,255,255,.20);box-shadow:0 14px 34px color-mix(in srgb,var(--winner-color) 30%,transparent);
+}
+body.game-page #winFx{z-index:5;}
+@keyframes winCardEnter{0%{opacity:0;transform:translateY(22px) scale(.88)}62%{opacity:1;transform:translateY(-3px) scale(1.025)}100%{transform:none}}
+@media(prefers-reduced-motion:reduce){body.game-page #overlay.win-overlay .overlayCard{animation:none!important}}
+
+/* =============================================================
+   GAME PAGE – Tablet / phone final pass (Step 8)
+   ============================================================= */
+body.game-page .boardWrap{overscroll-behavior:contain;}
+body.game-page .rightActions{scroll-padding-inline:8px;}
+body.game-page .rightActions>*{scroll-snap-align:start;}
+body.game-page .pill{flex:0 0 auto;}
+body.game-page #turnText{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+@supports(padding:max(0px)){
+  body.game-page .topbar{
+    padding-top:max(10px,env(safe-area-inset-top));
+    padding-left:max(16px,env(safe-area-inset-left));
+    padding-right:max(16px,env(safe-area-inset-right));
+  }
+  body.game-page .app{padding-bottom:max(12px,env(safe-area-inset-bottom)) !important;}
+}
+
+@media(pointer:coarse){
+  body.game-page .btn,
+  body.game-page .joker-btn,
+  body.game-page input,
+  body.game-page select{min-height:44px;touch-action:manipulation;}
+  body.game-page .emojiBtn{width:48px;height:48px;min-height:48px;touch-action:manipulation;}
+  body.game-page .joker-btn{min-height:60px;}
+}
+
+@media(max-width:900px){
+  body.game-page .rightActions{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
+  body.game-page #turnText{max-width:190px;}
+  body.game-page .pill{min-height:40px;}
+  body.game-page .app>.panel{box-shadow:0 18px 55px rgba(0,0,0,.20);}
+}
+
+@media(max-width:560px){
+  body.game-page .topbar{padding-left:9px;padding-right:9px;}
+  body.game-page .brand{padding-left:43px;min-width:138px;}
+  body.game-page .brand .t{font-size:16px !important;}
+  body.game-page .rightActions{gap:6px;}
+  body.game-page .rightActions .btn{min-height:40px;padding:0 10px;font-size:11.5px;}
+  body.game-page .pill{min-height:40px;padding:7px 10px;}
+  body.game-page #turnText{max-width:145px;font-size:12px;}
+  body.game-page .emojiBar{gap:5px;padding:3px 4px;}
+  body.game-page .emojiBtn{width:42px;height:42px;min-height:42px;border-radius:13px;font-size:25px;}
+  body.game-page .boardWrap{height:min(64svh,650px);min-height:min(430px,58svh) !important;}
+  body.game-page .app>.panel{border-radius:18px !important;}
+  body.game-page #jokerFxOverlay .jokerFxCore{padding:18px 20px;border-radius:22px;}
+}
