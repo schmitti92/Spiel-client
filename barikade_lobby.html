@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Barikade – Lobby</title>
-  <link rel="stylesheet" href="styles.css?v=barikade_lobby1" />
+  <link rel="stylesheet" href="styles.css?v=barikade_visual_20260919_5" />
   <style>
 
     :root{
@@ -337,9 +337,221 @@
       transform:translateX(-50%) translateY(-2px);
     }
 
+
+    /* =========================================================
+       BARIKADE VISUAL REFRESH 2026 · Lobby
+       Nur Darstellung – bestehende IDs/JS-Verhalten bleiben gleich.
+       ========================================================= */
+    body.lobby-page{
+      --accent:#8b7cff;
+      --accent2:#38d8ff;
+      --good:#45e39a;
+      --warn:#ffc55c;
+      --surface:rgba(12,18,34,.72);
+      --surface-strong:rgba(16,23,43,.88);
+      --hairline:rgba(255,255,255,.105);
+      min-height:100%;
+      background:
+        radial-gradient(900px 700px at -8% -6%, rgba(124,92,255,.34), transparent 60%),
+        radial-gradient(760px 560px at 106% 3%, rgba(33,198,255,.20), transparent 58%),
+        radial-gradient(800px 680px at 52% 112%, rgba(255,184,77,.09), transparent 62%),
+        linear-gradient(155deg,#070a12 0%,#0a1020 48%,#060811 100%);
+    }
+    body.lobby-page::after{
+      content:""; position:fixed; inset:0; pointer-events:none; z-index:-1;
+      background:
+        linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.015) 1px, transparent 1px);
+      background-size:46px 46px;
+      mask-image:linear-gradient(to bottom,rgba(0,0,0,.85),transparent 78%);
+    }
+    body.lobby-page .wrap{max-width:1240px;padding:28px 22px 36px;}
+    body.lobby-page .top{
+      align-items:center;margin-bottom:22px;padding:8px 4px 6px;
+    }
+    body.lobby-page .title{
+      display:flex;align-items:center;gap:13px;
+      font-size:clamp(25px,3vw,36px);font-weight:950;letter-spacing:-.7px;
+      background:linear-gradient(110deg,#fff 0%,#e8ebff 52%,#aeeeff 100%);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    body.lobby-page .title::before{
+      content:"B"; width:44px;height:44px;display:grid;place-items:center;flex:0 0 auto;
+      border-radius:14px;color:#fff;font-size:22px;letter-spacing:0;
+      background:linear-gradient(145deg,rgba(139,124,255,.98),rgba(41,187,236,.86));
+      box-shadow:0 12px 32px rgba(76,96,255,.28),inset 0 1px 0 rgba(255,255,255,.28);
+      -webkit-text-fill-color:#fff;
+    }
+    body.lobby-page .sub{font-size:14px;color:rgba(233,238,252,.66);margin-left:58px;}
+    body.lobby-page .top>.row{gap:8px;}
+    body.lobby-page .top>.row .btn,
+    body.lobby-page .top>.row .pill{height:38px;padding:0 12px;box-shadow:none;background:rgba(12,18,34,.56);}
+    body.lobby-page .grid{grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:18px;}
+    body.lobby-page .card{
+      padding:20px;border-radius:24px;
+      background:linear-gradient(165deg,rgba(24,33,58,.84),rgba(10,15,28,.72));
+      border:1px solid rgba(255,255,255,.105);
+      box-shadow:0 26px 70px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.055);
+    }
+    body.lobby-page .card::before{
+      content:"";position:absolute;left:18px;right:18px;top:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(164,177,255,.56),rgba(101,220,255,.36),transparent);
+      z-index:2;
+    }
+    body.lobby-page .card::after{opacity:.42;}
+    body.lobby-page .card h2{
+      font-size:17px;letter-spacing:-.15px;margin-bottom:14px;display:flex;align-items:center;gap:9px;
+    }
+    body.lobby-page .card:first-child h2::before{
+      content:"01";font-size:10px;letter-spacing:.8px;color:#d7d0ff;padding:5px 7px;border-radius:8px;
+      background:rgba(139,124,255,.15);border:1px solid rgba(139,124,255,.2);
+    }
+    body.lobby-page .card:nth-child(2) h2::before{
+      content:"02";font-size:10px;letter-spacing:.8px;color:#aeefff;padding:5px 7px;border-radius:8px;
+      background:rgba(56,216,255,.12);border:1px solid rgba(56,216,255,.18);
+    }
+    body.lobby-page input[type="text"]{
+      height:50px;border-radius:15px;background:rgba(5,9,18,.62);font-size:16px;font-weight:800;
+      letter-spacing:.8px;text-transform:uppercase;border-color:rgba(255,255,255,.12);
+    }
+    body.lobby-page input[type="text"]:focus{
+      border-color:rgba(139,124,255,.62);box-shadow:0 0 0 4px rgba(139,124,255,.10),0 16px 38px rgba(0,0,0,.26);
+    }
+    body.lobby-page .btn{
+      border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.045));
+      border-color:rgba(255,255,255,.105);box-shadow:0 10px 28px rgba(0,0,0,.18);
+    }
+    body.lobby-page .btn.primary{
+      background:linear-gradient(135deg,#806cf7 0%,#625cef 45%,#2ab9e8 130%);
+      border-color:rgba(194,188,255,.28);box-shadow:0 16px 38px rgba(96,82,235,.25);
+    }
+    body.lobby-page #joinBtn{
+      background:linear-gradient(135deg,rgba(33,198,255,.22),rgba(80,120,255,.16));
+      border-color:rgba(77,196,255,.25);
+    }
+    body.lobby-page [data-color]{position:relative;padding-left:15px;padding-right:15px;}
+    body.lobby-page [data-color="red"]{border-color:rgba(255,77,109,.30);}
+    body.lobby-page [data-color="blue"]{border-color:rgba(96,165,250,.30);}
+    body.lobby-page [data-color="green"]{border-color:rgba(45,212,191,.30);}
+    body.lobby-page [data-color="yellow"]{border-color:rgba(251,191,36,.30);}
+    body.lobby-page [data-color].active{
+      transform:translateY(-1px);box-shadow:0 0 0 3px rgba(255,255,255,.06),0 14px 30px rgba(0,0,0,.24);
+      background:rgba(255,255,255,.12);
+    }
+    body.lobby-page .switch{height:44px;background:rgba(5,9,18,.34);}
+    body.lobby-page .joker-count-row{
+      margin-top:3px;padding:10px;border-radius:16px;background:rgba(5,9,18,.28);border:1px solid rgba(255,255,255,.055);
+    }
+    body.lobby-page .joker-count-btn{min-width:48px;border-radius:12px;box-shadow:none;}
+    body.lobby-page .names{gap:9px;margin-top:8px;}
+    body.lobby-page .names button{
+      height:48px;border-radius:14px;background:rgba(5,9,18,.36);box-shadow:none;
+    }
+    body.lobby-page .names button:hover{background:rgba(139,124,255,.13);border-color:rgba(139,124,255,.34);}
+    body.lobby-page #presenceBox{
+      margin-top:2px;padding:13px !important;border-radius:16px !important;background:rgba(5,9,18,.30);
+      border-color:rgba(255,255,255,.065) !important;
+    }
+    body.lobby-page .chip{background:rgba(16,24,44,.82);box-shadow:none;border-color:rgba(255,255,255,.085);}
+    body.lobby-page table{overflow:hidden;border-radius:14px;background:rgba(5,9,18,.24);}
+    body.lobby-page th{background:rgba(255,255,255,.025);}
+    body.lobby-page tbody tr{transition:background .15s ease;}
+    body.lobby-page tbody tr:hover{background:rgba(139,124,255,.055);}
+    body.lobby-page #toast{z-index:9999;border-radius:14px;background:rgba(8,13,25,.94);}
+    @media(max-width:980px){
+      body.lobby-page .wrap{padding:18px 14px 28px;}
+      body.lobby-page .grid{grid-template-columns:1fr;}
+      body.lobby-page .sub{margin-left:0;}
+      body.lobby-page .top{align-items:flex-start;}
+      body.lobby-page .top>.row{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;}
+      body.lobby-page .top>.row>*{flex:0 0 auto;}
+      body.lobby-page .card{padding:16px;border-radius:20px;}
+    }
+    @media(max-width:560px){
+      body.lobby-page .title::before{width:40px;height:40px;border-radius:12px;}
+      body.lobby-page .names{grid-template-columns:repeat(2,minmax(0,1fr));}
+      body.lobby-page [data-color]{flex:1 1 calc(50% - 6px);}
+      body.lobby-page .switch{margin-left:0 !important;width:100%;justify-content:space-between;}
+      body.lobby-page #jokerCountInfo{width:100%;margin-left:0 !important;}
+    }
+    /* Step 5 – Lobby micro-interactions (visual only) */
+    body.lobby-page .btn{position:relative;overflow:hidden;isolation:isolate;}
+    body.lobby-page .btn::after{
+      content:"";position:absolute;inset:auto;left:50%;top:50%;width:12px;height:12px;border-radius:50%;
+      background:rgba(255,255,255,.22);transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;z-index:-1;
+    }
+    body.lobby-page .btn:active::after{animation:lobbyBtnRipple .38s ease-out;}
+    body.lobby-page #hostMakeBtn.mode-active,
+    body.lobby-page #joinBtn.mode-active{
+      transform:translateY(-1px);box-shadow:0 0 0 3px rgba(255,255,255,.055),0 18px 42px rgba(54,102,255,.22);
+    }
+    body.lobby-page #hostMakeBtn.mode-active::before,
+    body.lobby-page #joinBtn.mode-active::before{
+      content:"";position:absolute;inset:0;border-radius:inherit;border:1px solid rgba(255,255,255,.20);pointer-events:none;
+      animation:modeActiveGlow 1.8s ease-in-out infinite;
+    }
+    body.lobby-page [data-color]{transition:transform .16s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,filter .18s ease;}
+    body.lobby-page [data-color].active{
+      transform:translateY(-2px) scale(1.018);
+    }
+    body.lobby-page [data-color].active::before{
+      content:"✓";position:absolute;right:7px;top:6px;width:18px;height:18px;display:grid;place-items:center;
+      border-radius:50%;font-size:11px;font-weight:1000;background:rgba(255,255,255,.92);color:#09101d;
+      box-shadow:0 5px 14px rgba(0,0,0,.28);animation:colorCheckIn .26s cubic-bezier(.2,.9,.2,1) both;
+    }
+    body.lobby-page .pill.pill-bump{animation:pillBump .34s cubic-bezier(.2,.85,.25,1);}
+    body.lobby-page .chip{transform-origin:center;}
+    body.lobby-page .chip.chip-enter{animation:chipEnter .34s cubic-bezier(.2,.9,.24,1) both;}
+    body.lobby-page .chip.chip-change{animation:chipChange .44s cubic-bezier(.2,.85,.24,1) both;}
+    body.lobby-page .chip.ready:not(.offline) .dot{
+      background:#43d193;box-shadow:0 0 0 3px rgba(67,209,147,.10),0 0 14px rgba(67,209,147,.42);
+      animation:readyDotPulse 1.9s ease-in-out infinite;
+    }
+    body.lobby-page .chip.in_game:not(.offline){
+      border-color:rgba(65,197,255,.20);background:linear-gradient(135deg,rgba(30,56,88,.72),rgba(15,28,51,.82));
+    }
+    body.lobby-page .chip.in_game:not(.offline) .dot{box-shadow:0 0 0 3px rgba(33,198,255,.10),0 0 15px rgba(33,198,255,.44);}
+    body.lobby-page .switch input:checked{box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 0 18px rgba(124,92,255,.18);}
+    body.lobby-page .joker-count-btn.active{animation:jokerCountPop .30s cubic-bezier(.2,.9,.22,1);}
+    @keyframes lobbyBtnRipple{0%{opacity:.42;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(18)}}
+    @keyframes modeActiveGlow{0%,100%{opacity:.30}50%{opacity:.82}}
+    @keyframes colorCheckIn{0%{opacity:0;transform:scale(.4) rotate(-18deg)}75%{opacity:1;transform:scale(1.12) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
+    @keyframes pillBump{0%{transform:scale(1)}45%{transform:scale(1.055)}100%{transform:scale(1)}}
+    @keyframes chipEnter{0%{opacity:0;transform:translateY(8px) scale(.94)}100%{opacity:1;transform:none}}
+    @keyframes chipChange{0%{transform:scale(1)}42%{transform:scale(1.055);box-shadow:0 0 0 3px rgba(139,124,255,.12)}100%{transform:scale(1)}}
+    @keyframes readyDotPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.18);filter:brightness(1.18)}}
+    @keyframes jokerCountPop{0%{transform:scale(.92)}70%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+    @supports(padding:max(0px)){
+      body.lobby-page .wrap{
+        padding-left:max(22px,env(safe-area-inset-left));
+        padding-right:max(22px,env(safe-area-inset-right));
+        padding-bottom:max(36px,env(safe-area-inset-bottom));
+      }
+    }
+    @media(pointer:coarse){
+      body.lobby-page .btn,
+      body.lobby-page .names button,
+      body.lobby-page [data-color],
+      body.lobby-page .joker-count-btn,
+      body.lobby-page input[type="text"],
+      body.lobby-page .switch{min-height:44px;touch-action:manipulation;}
+    }
+    @media(max-width:560px){
+      body.lobby-page .wrap{padding-left:12px;padding-right:12px;}
+      body.lobby-page .top>.row .btn,body.lobby-page .top>.row .pill{height:40px;}
+      body.lobby-page .card{padding:14px;}
+      body.lobby-page input[type="text"]{height:48px;}
+      body.lobby-page .presenceChips{gap:6px;}
+      body.lobby-page .chip{max-width:100%;white-space:normal;line-height:1.15;}
+    }
+    @media(prefers-reduced-motion:reduce){
+      body.lobby-page *,body.lobby-page *::before,body.lobby-page *::after{scroll-behavior:auto !important;transition:none !important;animation:none !important;}
+    }
+
   </style>
 </head>
-<body>
+<body class="lobby-page">
   <div class="wrap">
     <div class="top">
       <div>
@@ -533,6 +745,8 @@ async function reserveMe(nameKey){
   }catch(_e){ return { ok:false, error:"NET" }; }
 }
 
+const presenceVisualState = new Map();
+
 function renderPresence(p){
   if(!presenceList) return;
 
@@ -559,8 +773,12 @@ function renderPresence(p){
     const pl = players.find(x => String(x.name||"") === nk);
     if(pl) conn = pl.connected ? "online" : "offline";
     const offlineClass = (conn === "offline") ? " offline" : "";
+    const sig = `${stKey}|${col}|${conn||""}`;
+    const prevSig = presenceVisualState.get(nk);
+    const visualClass = prevSig == null ? " chip-enter" : (prevSig !== sig ? " chip-change" : "");
+    presenceVisualState.set(nk, sig);
     chips.push(`
-      <div class="chip ${stKey}${offlineClass}">
+      <div class="chip ${stKey}${offlineClass}${visualClass}" data-player="${nk}">
         <span class="dot"></span>
         <span class="name">${nk}</span>
         <span class="meta">${stLabel}</span>
@@ -613,14 +831,28 @@ function startPresencePoll(){
         return String(v||"").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
       }
 
+      function bumpPill(el){
+        if(!el) return;
+        el.classList.remove('pill-bump');
+        void el.offsetWidth;
+        el.classList.add('pill-bump');
+      }
+      function syncModeButtons(m){
+        hostMakeBtn.classList.toggle('mode-active', m === 'host');
+        joinBtn.classList.toggle('mode-active', m === 'client');
+      }
+
       function setMode(m){
         localStorage.setItem('barikade_mode', m);
         modePill.textContent = 'Modus: ' + (m === 'host' ? 'Host' : (m === 'client' ? 'Client' : '–'));
+        syncModeButtons(m);
+        bumpPill(modePill);
       }
       function setRoom(rc){
         const r = normRoom(rc);
         localStorage.setItem('barikade_room', r);
         roomPill.textContent = 'Raum: ' + (r || '–');
+        bumpPill(roomPill);
       }
       function setActionMode(on){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
@@ -679,6 +911,10 @@ function startPresencePoll(){
           try{ localStorage.setItem('barikade_requested_color_' + r, c); }catch(_e){}
         }
         colorPill.textContent = 'Farbe: ' + (c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':'Gelb');
+        document.querySelectorAll('[data-color]').forEach(btn=>{
+          btn.classList.toggle('active', String(btn.getAttribute('data-color')||'').toLowerCase() === c);
+        });
+        bumpPill(colorPill);
       }
 
       // Restore last selections
