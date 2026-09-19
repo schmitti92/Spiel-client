@@ -6,79 +6,10 @@
   <title>Barikade</title>
 
   <!-- Deine CSS Datei (muss im gleichen Ordner liegen) -->
-  <link rel="stylesheet" href="styles.css?v=barikade_joker_2" />
-
-  <style>
-    /* Minimal-Layout, damit alles sichtbar bleibt, auch wenn styles.css mal fehlt */
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#0b0f16; color:#e6edf3; }
-    .app { display:grid; grid-template-columns: 1fr 380px; gap:16px; padding:16px; }
-    @media (max-width: 900px){ .app { grid-template-columns: 1fr; } }
-
-    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
-    .brand { display:flex; flex-direction:column; gap:2px; }
-    .brand .t { font-weight:900; font-size:18px; }
-    .brand .s { opacity:.75; font-size:12px; }
-
-    .rightActions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .pill { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
-    .dot { width:10px; height:10px; border-radius:50%; background:#666; display:inline-block; }
-    .btn { padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#e6edf3; font-weight:700; cursor:pointer; }
-    .btn:disabled { opacity:.45; cursor:not-allowed; }
-
-    .boardWrap { border-radius:18px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); overflow:hidden; min-height:520px; }
-    canvas { width:100%; height:620px; display:block; touch-action:none; }
-
-    .panel { border-radius:18px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); padding:14px; }
-    .panel h3 { margin:6px 0 12px 0; font-size:16px; }
-    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .dicePill { margin-left:auto; width:66px; height:66px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); display:flex; align-items:center; justify-content:center; overflow:hidden; }
-    #diceCube { width:54px; height:54px; }
-    #toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14); opacity:0; pointer-events:none; transition:.15s; z-index:9999; }
-    #toast.show { opacity:1; }
-    #netBanner { position:fixed; top:14px; left:50%; transform:translateX(-50%); padding:10px 14px; border-radius:14px; background:rgba(0,0,0,.72); border:1px solid rgba(255,255,255,.14); opacity:0; pointer-events:none; transition:.15s; z-index:9999; max-width:min(92vw,900px); }
-    #netBanner.show { opacity:1; pointer-events:auto; }
-
-    #debugLog { display:none; margin-top:10px; padding:10px; border-radius:12px; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.10); white-space:pre-wrap; max-height:180px; overflow:auto; font-size:12px; }
-
-    /* Overlay */
-    #overlay { position:fixed; inset:0; background:rgba(0,0,0,.66); display:none; align-items:center; justify-content:center; z-index:9998; }
-    #overlay.show { display:flex; }
-    .overlayCard { width:min(520px,92vw); border-radius:18px; background:#101521; border:1px solid rgba(255,255,255,.12); padding:16px; }
-    .overlayCard h2 { margin:0 0 8px 0; }
-    .overlayCard p { margin:6px 0; opacity:.85; }
-    .kv { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06); }
-    .joker-grid { display:grid; grid-template-columns: 1fr; gap:10px; margin-top:10px; }
-    .joker-btn { padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#e6edf3; font-weight:800; cursor:pointer; }
-
-    /* Compact UI (Lobby steuert Raum/Farbe/Action) – KEINE Funktionen entfernen, nur ausblenden */
-    body.compact #onlineBox{ display:none !important; }
-    body.compact #actionToggleRow{ display:none !important; }
-    body.compact #colorPick{ display:none !important; }
-  
-    /* UI: dauerhaft ausblenden (Anzeige-Infos) */
-    .status, .boardInfo, .boardStats,
-    #status, #boardInfo, #boardStats,
-    #statsBox, #boardBox, #boardMeta, #boardStatsBox {
-      display:none !important;
-    }
-
-
-    /* Emoji reactions */
-    .emojiBar { display:flex; align-items:center; gap:10px; padding:4px 6px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
-    .emojiBtn { width:52px; height:52px; border-radius:18px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.07); color:#fff; font-size:31px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,.22); }
-    .emojiBtn:disabled { opacity:.45; cursor:not-allowed; }
-    .emojiBtn:active { transform:scale(.96); }
-    #emojiOverlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:10020; pointer-events:none; }
-    #emojiOverlay.show { display:flex; }
-    .emojiOverlayCard { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-width:min(80vw,420px); padding:18px 22px; border-radius:28px; background:rgba(8,12,20,.26); backdrop-filter: blur(2px); }
-    #emojiOverlayIcon { font-size:132px; line-height:1; filter:drop-shadow(0 12px 30px rgba(0,0,0,.55)); animation:emojiPop .22s cubic-bezier(.2,.9,.2,1); }
-    #emojiOverlayName { font-size:28px; font-weight:900; color:#fff; text-shadow:0 6px 18px rgba(0,0,0,.55); letter-spacing:.2px; }
-    @keyframes emojiPop { 0%{ transform:scale(.55); opacity:0; } 70%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
-
-  </style>
+  <link rel="stylesheet" href="styles.css?v=barikade_visual_20260919_5" />
 </head>
 
-<body>
+<body class="game-page">
   <div class="topbar">
     <div class="brand">
       <div class="t">Barikade</div>
@@ -240,7 +171,7 @@
       });
     })();
   </script>
-  <script src="game.js?v=barikade_emoji_server_100_1"></script>
+  <script src="game.js?v=barikade_visual_20260919_6"></script>
 </body>
 </html>
 
