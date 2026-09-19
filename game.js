@@ -1681,8 +1681,16 @@ try{ ws = new WebSocket(SERVER_URL); }
 
       if(type==="emoji_event"){
         try{ initEmojiOverlaySystem(); }catch(_e){}
-        // Eigene Reaktion wurde bereits sofort lokal gezeigt. Das Server-Echo nicht doppelt anzeigen.
-        if(msg.playerId === clientId && consumeLocalEmojiReaction(msg.reactionId)) return;
+        const emojiEventId = String(msg.eventId || msg.reactionId || "").trim();
+
+        // Empfang immer serverseitig bestätigen. Bei Retry/Reconnect kann dasselbe Event
+        // erneut eintreffen; die Anzeige wird deshalb lokal dedupliziert.
+        if(emojiEventId) wsSend({ type:"emoji_ack", eventId:emojiEventId, ts:Date.now() });
+        if(emojiEventId && hasSeenEmojiEvent(emojiEventId)) return;
+        if(emojiEventId) rememberSeenEmojiEvent(emojiEventId);
+
+        // Eigene Reaktion wurde bereits sofort lokal gezeigt. Server-Echo nicht doppelt anzeigen.
+        if(msg.playerId === clientId && consumeLocalEmojiReaction(emojiEventId || msg.reactionId)) return;
         try{ showEmojiOverlay(msg.name || msg.playerName || "Spieler", msg.icon || msg.emoji || msg.emojiKey || "😀"); }catch(_e){}
         return;
       }
@@ -2534,6 +2542,24 @@ function ensureAwardsStyles(){
       }catch(_e){}
     }, 2200);
   }
+  const seenEmojiEventIds = new Map();
+  function pruneSeenEmojiEvents(){
+    const now = Date.now();
+    for(const [id, ts] of seenEmojiEventIds){
+      if(now - ts > 30000) seenEmojiEventIds.delete(id);
+    }
+  }
+  function hasSeenEmojiEvent(id){
+    if(!id) return false;
+    pruneSeenEmojiEvents();
+    return seenEmojiEventIds.has(String(id));
+  }
+  function rememberSeenEmojiEvent(id){
+    if(!id) return;
+    pruneSeenEmojiEvents();
+    seenEmojiEventIds.set(String(id), Date.now());
+  }
+
   const localEmojiReactionIds = new Map();
   function rememberLocalEmojiReaction(id){
     if(!id) return;
