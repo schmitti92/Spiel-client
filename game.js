@@ -1399,7 +1399,7 @@ let awardsShown = false;
 
       // Hint text
       if(actionHint){
-        actionHint.textContent = (mode === "action") ? (ac ? "Joker-Status (Anzeige):" : "Action-Modus aktiv (Status lädt…)") : ((actionModeToggle && actionModeToggle.checked) ? "Action-Modus aktiv (warte auf Server…)" : (ac ? "Joker-Status (Anzeige):" : "Action-Modus aktiv (Status lädt…)"));
+        actionHint.textContent = (mode === "action") ? (ac ? "Deine Joker" : "Joker werden vorbereitet …") : ((actionModeToggle && actionModeToggle.checked) ? "Joker werden vorbereitet …" : (ac ? "Deine Joker" : "Joker werden vorbereitet …"));
       }
 
       const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
@@ -1676,43 +1676,113 @@ if(actionEffectsState){
 
   function syncV103Sidebar(){
     try{
+      const sidebar = document.querySelector('.gameSidebar');
       const label = document.getElementById("sideTurnLabel");
       const meta = document.getElementById("sideTurnMeta");
       const dot = document.getElementById("sideTurnDot");
+      const avatar = document.getElementById("sideTurnAvatar");
+      const phaseBadge = document.getElementById("sidePhaseBadge");
+      const waiting = document.getElementById("sidebarWaiting");
+      const waitingTitle = document.getElementById("sidebarWaitingTitle");
+      const waitingText = document.getElementById("sidebarWaitingText");
+      const waitingPlayers = document.getElementById("sidebarWaitingPlayers");
+      const waitingRoom = document.getElementById("sidebarWaitingRoom");
+      const activeControls = document.getElementById("activeTurnControls");
+      const jokerSection = document.getElementById("jokerSection");
       const badge = document.getElementById("actionModeBadge");
       const classicNotice = document.getElementById("classicModeNotice");
 
+      const started = !!(state && state.started);
       const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : "";
       const winner = state && state.winner ? String(state.winner).toLowerCase() : "";
       const isMyTurn = netMode === "offline" ? true : !!(myColor && c && myColor === c);
+      const connectedPlayers = (lastNetPlayers || []).filter(p => p && p.connected !== false && p.color).length;
+      const me = rosterById && clientId ? rosterById.get(clientId) : null;
+      const amHost = !!(me && me.isHost);
+      const fallbackAction = !!(actionModeToggle && actionModeToggle.checked);
+      const isAction = String(state && state.mode || (fallbackAction ? "action" : "classic")) === "action";
+
+      if(sidebar){
+        sidebar.classList.toggle('isPregame', !started && !winner);
+        sidebar.classList.toggle('isPlaying', started && !winner);
+        sidebar.classList.toggle('isGameOver', !!winner);
+        sidebar.classList.toggle('isMyTurn', !!(started && isMyTurn && !winner));
+        sidebar.classList.toggle('isActionMode', !!isAction);
+      }
 
       if(label){
         if(winner) label.textContent = `${labelForColor(winner)} gewinnt!`;
-        else if(c) label.textContent = labelForColor(c);
-        else label.textContent = "Spiel noch nicht gestartet";
+        else if(started && c) label.textContent = isMyTurn ? 'Dein Zug' : labelForColor(c);
+        else label.textContent = connectedPlayers >= 2 ? 'Bereit zum Start' : 'Warte auf Mitspieler';
       }
+
       if(dot){
         dot.style.background = (winner ? COLORS[winner] : (c ? COLORS[c] : "#667085")) || "#667085";
-        dot.classList.toggle("pulse", !!c && !winner);
+        dot.classList.toggle("pulse", !!started && !!c && !winner);
       }
+
+      if(avatar){
+        const avatarColor = winner || c || myColor || '';
+        const avatarName = avatarColor ? labelForColor(avatarColor) : '';
+        avatar.textContent = avatarName ? avatarName.trim().charAt(0).toUpperCase() : 'B';
+        avatar.style.setProperty('--turn-color', (avatarColor && COLORS[avatarColor]) ? COLORS[avatarColor] : '#7d73ff');
+      }
+
       if(meta){
-        if(winner) meta.textContent = "Partie beendet";
-        else if(!state || !state.started) meta.textContent = "Warte auf den Spielstart.";
+        if(winner) meta.textContent = "Partie beendet · Revanche möglich.";
+        else if(!started){
+          if(connectedPlayers < 2) meta.textContent = "Mindestens zwei Spieler werden benötigt.";
+          else if(amHost) meta.textContent = "Alle bereit? Dann kannst du die Partie starten.";
+          else meta.textContent = "Warte darauf, dass der Host die Partie startet.";
+        }
         else if(!isMyTurn) meta.textContent = `Warte auf ${labelForColor(c)}.`;
-        else if(phase === "need_roll") meta.textContent = "Du bist dran · jetzt würfeln.";
-        else if(phase === "need_move") meta.textContent = "Du bist dran · Figur auswählen und ziehen.";
-        else if(phase === "placing_barricade") meta.textContent = "Du bist dran · Barikade platzieren.";
+        else if(phase === "need_roll") meta.textContent = "Würfeln und deinen Zug starten.";
+        else if(phase === "need_move") meta.textContent = "Figur auswählen und ziehen.";
+        else if(phase === "placing_barricade") meta.textContent = "Eine neue Position für die Barikade wählen.";
         else if(phase === "game_over") meta.textContent = "Partie beendet.";
         else meta.textContent = "Dein Zug läuft.";
       }
 
-      const fallbackAction = !!(actionModeToggle && actionModeToggle.checked);
-      const isAction = String(state && state.mode || (fallbackAction ? "action" : "classic")) === "action";
+      if(phaseBadge){
+        let txt = 'WARTEN';
+        if(winner) txt = 'ENDE';
+        else if(!started) txt = connectedPlayers >= 2 ? 'BEREIT' : 'WARTEN';
+        else if(!isMyTurn) txt = 'WARTEN';
+        else if(phase === 'need_roll') txt = 'WÜRFELN';
+        else if(phase === 'need_move') txt = 'ZIEHEN';
+        else if(phase === 'placing_barricade') txt = 'BARRIKADE';
+        phaseBadge.textContent = txt;
+        phaseBadge.dataset.phase = txt.toLowerCase();
+      }
+
+      if(waiting){
+        waiting.style.display = (!started && !winner) ? 'grid' : 'none';
+      }
+      if(activeControls){
+        activeControls.style.display = (started && !winner) ? 'block' : 'none';
+      }
+      if(waitingPlayers) waitingPlayers.textContent = String(connectedPlayers || 1);
+      if(waitingRoom) waitingRoom.textContent = roomCode || (roomCodeInp && roomCodeInp.value) || '–';
+      if(waitingTitle){
+        waitingTitle.textContent = connectedPlayers >= 2 ? (amHost ? 'Bereit zum Start' : 'Warte auf den Host') : 'Warte auf Mitspieler';
+      }
+      if(waitingText){
+        if(connectedPlayers < 2) waitingText.textContent = 'Öffne die Lobby auf einem zweiten Gerät oder lade einen Mitspieler in den Raum ein.';
+        else if(amHost) waitingText.textContent = `${connectedPlayers} Spieler sind verbunden. Du kannst die Partie jetzt starten.`;
+        else waitingText.textContent = `${connectedPlayers} Spieler sind verbunden. Der Host startet die Partie.`;
+      }
+      if(startBtn){
+        startBtn.style.display = (!started && !winner && amHost) ? '' : 'none';
+      }
+
       if(badge){
         badge.textContent = isAction ? "⚡ Action" : "Classic";
         badge.classList.toggle("isAction", isAction);
       }
-      if(classicNotice) classicNotice.style.display = isAction ? "none" : "flex";
+      if(classicNotice) classicNotice.style.display = "none";
+      if(jokerSection){
+        jokerSection.style.display = (started && !winner && isAction) ? '' : 'none';
+      }
 
       renderPlayerStrip();
     }catch(_e){}
