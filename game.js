@@ -1096,6 +1096,8 @@ let awardsShown = false;
   
   function getLobbyJokerCount(){
     try{
+      const urlCount = Number(new URLSearchParams(location.search).get("jokerCount"));
+      if(Number.isInteger(urlCount) && urlCount >= 1 && urlCount <= 5) return urlCount;
       const keyRoom = "barikade_joker_count_" + normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
       const raw = localStorage.getItem(keyRoom) ?? localStorage.getItem("barikade_joker_count");
       const n = Number(raw);
@@ -1446,85 +1448,14 @@ if(actionEffectsState){
   // Host-only: ensure each player starts with 2 jokers of the 4 Barikade types (Action-Modus).
   // Additiv und sicher: wird nur 1x direkt nach Start ausgeführt, danach nie wieder.
   function maybeInitStartJokers(remoteState){
+    // V9.5: Start-Joker sind vollständig serverautoritär.
+    // Sobald ein Action-Snapshot mit Joker-State ankommt, ist die Initialisierung bestätigt.
     try{
       if(!_pendingStartJokerInit) return;
-      if(netMode !== "host") { _pendingStartJokerInit = false; return; }
-      if(_pendingStartMode !== "action") { _pendingStartJokerInit = false; return; }
-      if(!remoteState || typeof remoteState !== "object") return;
-
-      const startCounts = getStartJokerCounts();
-      if(!startCounts){
+      if(remoteState && remoteState.mode === "action" && remoteState.action){
         _pendingStartJokerInit = false;
-        toast("Host muss in der Lobby 1 bis 5 Joker wählen");
-        return;
       }
-
-      // Clone so we never mutate incoming objects unexpectedly
-      const st = JSON.parse(JSON.stringify(remoteState));
-
-      // Ensure action container
-      if(!st.action || typeof st.action !== "object") st.action = {};
-      st.mode = "action";
-
-      // Determine participating colors
-      const colors = Array.isArray(st.players) && st.players.length ? st.players.slice()
-                   : (Array.isArray(st.activeColors) && st.activeColors.length ? st.activeColors.slice()
-                   : (Array.isArray(PLAYERS) && PLAYERS.length ? PLAYERS.slice() : ["red","blue"]));
-
-      const uniq = [];
-      const seen = new Set();
-      for(const c of colors){
-        const cc = String(c||"").toLowerCase().trim();
-        if(!cc || seen.has(cc)) continue;
-        seen.add(cc);
-        uniq.push(cc);
-      }
-      if(!uniq.length) uniq.push("red","blue");
-
-      // 1) Count-based structure (legacy / simple)
-      if(!st.action.jokersByColor || typeof st.action.jokersByColor !== "object") st.action.jokersByColor = {};
-      for(const c of uniq){
-        const cur = (st.action.jokersByColor[c] && typeof st.action.jokersByColor[c] === "object") ? st.action.jokersByColor[c] : {};
-        st.action.jokersByColor[c] = {
-          ...cur,
-          allColors: Math.max(Number(cur.allColors||0), startCounts.allColors),
-          barricade: Math.max(Number(cur.barricade||0), startCounts.barricade),
-          reroll: Math.max(Number(cur.reroll||0), startCounts.reroll),
-          double: Math.max(Number(cur.double||0), startCounts.double),
-        };
-      }
-
-      // 2) Owned-list structure (preferred by UI + some server builds)
-      //    st.action.jokersOwned[ownerColor] = [{type:"allColors", color:"red"}, ...]
-      if(!st.action.jokersOwned || typeof st.action.jokersOwned !== "object") st.action.jokersOwned = {};
-      const TYPES = ["allColors","barricade","reroll","double"];
-      for(const owner of uniq){
-        const arr = Array.isArray(st.action.jokersOwned[owner]) ? st.action.jokersOwned[owner].slice() : [];
-        // Count existing
-        const counts = {allColors:0,barricade:0,reroll:0,double:0};
-        for(const j of arr){
-          const t = String(j && j.type || "");
-          if(counts.hasOwnProperty(t)) counts[t] += 1;
-        }
-        // Add missing up to target (do NOT remove extras, just ensure at least 2)
-        for(const t of TYPES){
-          const target = startCounts[t] || 1;
-          while((counts[t]||0) < target){
-            arr.push({ type: t, color: owner });
-            counts[t] += 1;
-          }
-        }
-        st.action.jokersOwned[owner] = arr;
-      }
-
-      _pendingStartJokerInit = false;
-
-      // Import back to server (host only)
-      wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_jokers_selected" });
-      toast("Start-Joker gesetzt");
-    }catch(_e){
-      // keep pending so we can try again on next snapshot
-    }
+    }catch(_e){}
   }
 
 
@@ -1749,7 +1680,8 @@ try{
         const p = window.__pendingHostStartAfterSpin;
         if(!p) return;
         // Send the definitive start to the server (server is truth, will validate again).
-        wsSend({ type:"start", mode: p.mode, ts: Date.now(), starterColor: p.starterColor, startJokers: (getStartJokerCounts() || undefined) });
+        const jc = (p.mode === "action") ? getLobbyJokerCount() : null;
+        wsSend({ type:"start", mode: p.mode, ts: Date.now(), starterColor: p.starterColor, jokerStartCount:(jc || undefined) });
       }catch(_e){}
     }, dur + 60);
   }
@@ -1763,6 +1695,14 @@ try{
 
       if(type==="room_update"){
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        try{
+          const jc = Number(msg.jokerStartCount);
+          if(Number.isInteger(jc) && jc >= 1 && jc <= 5){
+            const rc = normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+            if(rc) localStorage.setItem("barikade_joker_count_" + rc, String(jc));
+            localStorage.setItem("barikade_joker_count", String(jc));
+          }
+        }catch(_e){}
         if(Array.isArray(msg.allowedColors)){
           const s = new Set();
           for(const c of msg.allowedColors){
@@ -4177,9 +4117,11 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
       _pendingStartStarterColor = winner;
       _pendingStartStarterPick = true;
       // proceed with normal start; starter will be applied on first snapshot
-      wsSend({type:"start", mode:mode, ts:Date.now(), startJokers:_START_JOKER_COUNTS, starter:winner});
+      const jc = (mode === "action") ? getLobbyJokerCount() : null;
+      wsSend({type:"start", mode:mode, ts:Date.now(), jokerStartCount:(jc || undefined), starterColor:winner});
     }catch(_e){
-      wsSend({type:"start", mode:mode, ts:Date.now(), startJokers:_START_JOKER_COUNTS});
+      const jc = (mode === "action") ? getLobbyJokerCount() : null;
+      wsSend({type:"start", mode:mode, ts:Date.now(), jokerStartCount:(jc || undefined)});
     }
   }
 
@@ -4231,11 +4173,17 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
     if(state && state.started){ toast("Spiel läuft bereits"); return; }
     if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
     const _m = (actionModeToggle && actionModeToggle.checked ? "action" : "classic");
-    if(_m === "action" && !getStartJokerCounts()){ toast("Host muss in der Lobby 1 bis 5 Joker wählen"); return; }
+    const _jokerCount = (_m === "action") ? getLobbyJokerCount() : null;
+    if(_m === "action" && !_jokerCount){ toast("Host muss in der Lobby 1 bis 5 Joker wählen"); return; }
     _pendingStartMode = _m;
-    _pendingStartJokerInit = true;
+    // Server ist Chef: Joker werden serverseitig erzeugt; kein nachträglicher Client-Import mehr nötig.
+    _pendingStartJokerInit = false;
+    if(_m === "action"){
+      // Bestehender Server-Befehl + atomare Übergabe im start_request. WebSocket erhält Reihenfolge.
+      wsSend({ type:"set_joker_start_count", count:_jokerCount, ts:Date.now() });
+    }
     // Neu: Startspieler per Glücksrad bestimmen (server-chef, für alle sichtbar)
-    wsSend({ type:"start_request", mode:_m, ts:Date.now() });
+    wsSend({ type:"start_request", mode:_m, jokerStartCount:(_jokerCount || undefined), ts:Date.now() });
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
