@@ -1622,3 +1622,523 @@ body.game-page #diceCube[data-dice-style="royal"]::after{
   box-shadow:0 6px 15px rgba(111,74,10,.38),inset 0 1px 0 rgba(255,255,255,.52) !important;
   text-shadow:0 1px 0 rgba(255,255,255,.44) !important;
 }
+
+/* =============================================================
+   V10.3 — PLAYER STRIP + CLEAN GAME SIDEBAR
+   Visual/UI hierarchy only. Gameplay and server authority unchanged.
+   ============================================================= */
+body.game-page{
+  --v103-strip-h:90px;
+}
+
+/* Top bar becomes quieter: turn, reactions, lobby only. */
+body.game-page .topbar{
+  min-height:66px;
+  padding-top:8px;
+  padding-bottom:8px;
+}
+body.game-page .turnTopPill{
+  min-width:150px;
+  justify-content:center;
+}
+body.game-page #backLobbyBtn{
+  background:rgba(255,255,255,.065);
+}
+
+/* ---------- live player strip ---------- */
+body.game-page .playerStripShell{
+  position:relative;
+  z-index:35;
+  width:100%;
+  padding:9px 14px 0;
+  background:linear-gradient(180deg,rgba(7,11,21,.82),rgba(7,11,21,.25),transparent);
+}
+body.game-page .playerStrip{
+  width:min(100%,1692px);
+  min-height:72px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+body.game-page .playerStripEmpty{
+  grid-column:1/-1;
+  min-height:66px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:rgba(205,216,237,.48);
+  font-size:12px;
+  font-weight:800;
+  border:1px dashed rgba(255,255,255,.07);
+  border-radius:16px;
+  background:rgba(9,14,26,.38);
+}
+body.game-page .playerStripCard{
+  --player-color:#8a7cff;
+  position:relative;
+  min-width:0;
+  min-height:66px;
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+  padding:8px 10px;
+  overflow:hidden;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.075);
+  background:linear-gradient(150deg,rgba(23,32,53,.86),rgba(8,14,26,.82));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 26px rgba(0,0,0,.14);
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+body.game-page .playerStripCard::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:3px;
+  background:var(--player-color);
+  opacity:.68;
+  box-shadow:0 0 18px var(--player-color);
+}
+body.game-page .playerStripCard.isActive{
+  transform:translateY(-2px);
+  border-color:color-mix(in srgb,var(--player-color) 50%,rgba(255,255,255,.15));
+  background:linear-gradient(150deg,color-mix(in srgb,var(--player-color) 14%,rgba(23,32,53,.94)),rgba(8,14,26,.88));
+  box-shadow:0 11px 30px color-mix(in srgb,var(--player-color) 18%,transparent),inset 0 1px 0 rgba(255,255,255,.055);
+}
+body.game-page .playerStripCard.isActive::after{
+  content:"";
+  position:absolute;
+  inset:auto 14px 0;
+  height:2px;
+  border-radius:999px;
+  background:var(--player-color);
+  box-shadow:0 0 12px var(--player-color);
+}
+body.game-page .playerStripCard.isMe{
+  outline:1px solid rgba(255,255,255,.07);
+  outline-offset:-4px;
+}
+body.game-page .playerStripCard.isOffline{
+  opacity:.56;
+  filter:saturate(.65);
+}
+body.game-page .playerStripAvatar{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  color:#fff;
+  font-size:17px;
+  font-weight:950;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--player-color) 48%,#1a2131),rgba(15,22,38,.98));
+  border:1px solid color-mix(in srgb,var(--player-color) 45%,rgba(255,255,255,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 18px rgba(0,0,0,.22);
+}
+body.game-page .playerStripBody{min-width:0;}
+body.game-page .playerStripNameRow{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  margin-bottom:4px;
+}
+body.game-page .playerStripNameRow strong{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#f3f6ff;
+  font-size:13px;
+  font-weight:950;
+  letter-spacing:.05px;
+}
+body.game-page .stripBadge{
+  flex:0 0 auto;
+  padding:2px 5px;
+  border-radius:999px;
+  font-size:7.5px;
+  line-height:1.2;
+  font-weight:950;
+  letter-spacing:.5px;
+}
+body.game-page .meBadge{color:#dcd7ff;background:rgba(139,124,255,.15);border:1px solid rgba(139,124,255,.24);}
+body.game-page .hostBadge{color:#ffe7a6;background:rgba(255,193,73,.13);border:1px solid rgba(255,193,73,.22);}
+body.game-page .activeBadge{color:#dff9ff;background:rgba(58,206,255,.13);border:1px solid rgba(58,206,255,.22);}
+body.game-page .playerStripMeta{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:rgba(209,219,239,.58);
+  font-size:9.5px;
+  font-weight:750;
+  white-space:nowrap;
+  overflow:hidden;
+}
+body.game-page .playerStripMeta>span:not(.stripColorDot){
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+body.game-page .stripColorDot{
+  flex:0 0 7px;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  box-shadow:0 0 10px currentColor;
+}
+body.game-page .stripOffline{color:#ff9aa8 !important;}
+
+/* app now accounts for the player strip on desktop/tablet */
+@media (min-width:901px){
+  body.game-page .app{
+    min-height:calc(100vh - 66px - var(--v103-strip-h)) !important;
+    height:calc(100vh - 66px - var(--v103-strip-h)) !important;
+    padding-top:9px !important;
+  }
+  body.game-page .boardWrap{
+    min-height:430px !important;
+  }
+}
+
+/* ---------- redesigned sidebar ---------- */
+body.game-page .gameSidebar{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  padding:12px !important;
+}
+body.game-page .sideSection{
+  position:relative;
+  margin:0;
+  padding:11px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.065);
+  background:rgba(4,9,18,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+body.game-page .sideSectionHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+}
+body.game-page .sideKicker{
+  margin-bottom:3px;
+  color:rgba(151,167,198,.48);
+  font-size:8.5px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:1.25px;
+}
+body.game-page .sideSection h3{
+  margin:0 !important;
+  color:#eef3ff !important;
+  font-size:15px !important;
+  line-height:1.1;
+  letter-spacing:-.15px !important;
+  text-transform:none !important;
+}
+body.game-page .sideSection h3::before{display:none !important;}
+
+body.game-page .sideTurnCard{
+  padding:12px;
+  background:
+    radial-gradient(360px 160px at 4% 0%,rgba(137,116,255,.13),transparent 68%),
+    linear-gradient(155deg,rgba(19,28,49,.78),rgba(5,10,20,.66));
+  border-color:rgba(139,124,255,.12);
+}
+body.game-page .turnSectionHead{margin-bottom:10px;}
+body.game-page .sideTurnLabel{
+  color:#f5f7ff;
+  font-size:19px;
+  line-height:1.04;
+  font-weight:950;
+  letter-spacing:-.45px;
+}
+body.game-page .sideTurnMeta{
+  margin-top:4px;
+  color:rgba(211,221,241,.56);
+  font-size:10.5px;
+  line-height:1.25;
+  font-weight:700;
+}
+body.game-page .sideTurnDot{
+  --dot-color:#667085;
+  flex:0 0 18px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#667085;
+  border:3px solid rgba(255,255,255,.10);
+  box-shadow:0 0 0 5px rgba(255,255,255,.025),0 0 20px currentColor;
+}
+body.game-page .sideTurnDot.pulse{animation:v103TurnDot 1.35s ease-in-out infinite;}
+@keyframes v103TurnDot{0%,100%{transform:scale(.92);filter:brightness(.95)}50%{transform:scale(1.08);filter:brightness(1.22)}}
+
+body.game-page .diceActionRow{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 82px;
+  align-items:center;
+  gap:9px;
+  padding:8px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.055);
+  background:rgba(2,7,15,.34);
+}
+body.game-page .diceActionRow #rollBtn{
+  min-height:70px !important;
+  height:70px;
+  font-size:17px !important;
+  border-radius:15px !important;
+}
+body.game-page .diceActionRow .dicePill{
+  width:76px !important;
+  height:76px !important;
+  min-width:76px !important;
+  margin:0 !important;
+}
+body.game-page .diceActionRow #diceCube{
+  width:61px !important;
+  height:61px !important;
+}
+body.game-page .turnActions{
+  display:grid;
+  grid-template-columns:1.35fr 1fr;
+  gap:7px;
+  margin-top:8px;
+}
+body.game-page .turnActionBtn{
+  min-height:42px;
+  padding:0 9px;
+  border-radius:12px;
+  font-size:11.5px;
+  white-space:nowrap;
+}
+body.game-page .endTurnBtn{
+  color:#dffced;
+  background:linear-gradient(145deg,rgba(54,199,132,.17),rgba(25,111,83,.12));
+  border-color:rgba(67,209,147,.22);
+}
+body.game-page .skipTurnBtn{
+  color:#ffefc8;
+  background:linear-gradient(145deg,rgba(255,191,73,.13),rgba(129,86,19,.08));
+  border-color:rgba(255,189,79,.18);
+}
+body.game-page .modeBadge{
+  flex:0 0 auto;
+  padding:5px 8px;
+  border-radius:999px;
+  color:rgba(218,226,241,.66);
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.075);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.25px;
+}
+body.game-page .modeBadge.isAction{
+  color:#e7e1ff;
+  background:rgba(139,124,255,.14);
+  border-color:rgba(139,124,255,.24);
+  box-shadow:0 0 18px rgba(139,124,255,.08);
+}
+body.game-page .classicModeNotice{
+  min-height:42px;
+  align-items:center;
+  justify-content:center;
+  border-radius:13px;
+  color:rgba(201,212,233,.48);
+  background:rgba(3,8,17,.30);
+  border:1px dashed rgba(255,255,255,.06);
+  font-size:10.5px;
+  font-weight:750;
+}
+body.game-page .jokerSection #actionCard{
+  margin-top:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+}
+body.game-page .jokerSection #actionHint{
+  margin:0 0 7px !important;
+  color:rgba(211,220,239,.45) !important;
+  font-size:9.5px !important;
+}
+/* The detailed legacy status remains in DOM for compatibility, but the main UI is the button grid. */
+body.game-page .jokerLegacyStatus{display:none;}
+body.game-page #actionCard .epicJokerGrid{
+  gap:7px !important;
+  margin-top:0 !important;
+}
+body.game-page #actionCard .epicJokerBtn{
+  min-height:66px !important;
+  padding:8px !important;
+  border-radius:13px !important;
+}
+body.game-page #actionCard .epicJokerBtn .ejIcon{
+  width:31px !important;
+  height:31px !important;
+  flex-basis:31px !important;
+  font-size:17px !important;
+}
+body.game-page #actionCard .epicJokerBtn .ejName{font-size:11.5px !important;}
+body.game-page #actionCard .epicJokerBtn .ejSub{font-size:9px !important;}
+body.game-page #actionCard .epicJokerBtn .ejCount{min-width:30px !important;font-size:10px !important;}
+
+body.game-page .statusSection{padding-bottom:9px;}
+body.game-page .statusSection .sideSectionHead{margin-bottom:7px;}
+body.game-page .statusCompact{
+  margin:0 !important;
+  gap:6px;
+}
+body.game-page .statusMini{
+  min-height:46px;
+  padding:6px 7px;
+}
+body.game-page .statusMini>span{font-size:8.4px;}
+body.game-page .statusMini>strong{font-size:11px;}
+
+/* ---------- one drawer for rare/technical controls ---------- */
+body.game-page .gameToolsDetails{
+  margin:0;
+  border:1px solid rgba(255,255,255,.055);
+  border-radius:16px;
+  background:rgba(3,8,17,.26);
+  overflow:hidden;
+}
+body.game-page .gameToolsDetails>summary{
+  list-style:none;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  cursor:pointer;
+  user-select:none;
+  color:rgba(221,229,245,.68);
+  font-size:11px;
+  font-weight:900;
+}
+body.game-page .gameToolsDetails>summary::-webkit-details-marker{display:none;}
+body.game-page .gameToolsDetails>summary small{
+  min-width:0;
+  margin-left:auto;
+  color:rgba(172,187,213,.38);
+  font-size:8.8px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+body.game-page .gameToolsDetails>summary::after{
+  content:"⌄";
+  color:rgba(174,189,215,.55);
+  font-size:14px;
+  transition:transform .15s ease;
+}
+body.game-page .gameToolsDetails[open]>summary::after{transform:rotate(180deg);}
+body.game-page .gameToolsBody{
+  padding:9px;
+  border-top:1px solid rgba(255,255,255,.04);
+}
+body.game-page .toolRow{
+  padding:8px 9px;
+  border-radius:13px;
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.045);
+}
+body.game-page .toolToggleLabel{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  cursor:pointer;
+}
+body.game-page .toolToggleLabel>span{display:flex;flex-direction:column;gap:2px;min-width:0;}
+body.game-page .toolToggleLabel strong{color:rgba(231,237,249,.78);font-size:10.5px;}
+body.game-page .toolToggleLabel small{color:rgba(183,196,219,.42);font-size:8.8px;line-height:1.2;}
+body.game-page #actionModeToggle{accent-color:#8a7cff;transform:scale(1.05);}
+body.game-page .toolButtonGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin-top:7px;
+}
+body.game-page .toolButtonGrid .btn{
+  min-width:0;
+  min-height:38px;
+  padding:0 7px;
+  font-size:9.5px;
+}
+body.game-page .dangerBtn{color:#ffd7dc;background:rgba(239,68,68,.10) !important;border-color:rgba(239,68,68,.18) !important;}
+body.game-page .subtleDangerBtn{color:rgba(255,213,219,.70);background:rgba(239,68,68,.055) !important;border-color:rgba(239,68,68,.10) !important;}
+body.game-page .innerConnectionDetails{margin-top:8px;}
+body.game-page .innerConnectionDetails>summary{min-height:39px;}
+
+/* Tablet: keep all four players visible, but compact. */
+@media (min-width:901px) and (max-width:1180px){
+  body.game-page{--v103-strip-h:84px;}
+  body.game-page .playerStripShell{padding-left:10px;padding-right:10px;}
+  body.game-page .playerStrip{gap:6px;}
+  body.game-page .playerStripCard{grid-template-columns:37px minmax(0,1fr);gap:7px;padding:7px 8px;}
+  body.game-page .playerStripAvatar{width:36px;height:36px;border-radius:11px;font-size:15px;}
+  body.game-page .playerStripNameRow strong{font-size:11.5px;}
+  body.game-page .playerStripMeta{gap:5px;font-size:8.4px;}
+  body.game-page .stripBadge{font-size:6.7px;padding:2px 4px;}
+  body.game-page .gameSidebar{padding:10px !important;gap:7px;}
+  body.game-page .sideSection{padding:9px;}
+  body.game-page .sideTurnLabel{font-size:17px;}
+  body.game-page .diceActionRow{grid-template-columns:minmax(0,1fr) 74px;}
+  body.game-page .diceActionRow #rollBtn{height:64px;min-height:64px !important;font-size:15px !important;}
+  body.game-page .diceActionRow .dicePill{width:68px !important;height:68px !important;min-width:68px !important;}
+  body.game-page .diceActionRow #diceCube{width:55px !important;height:55px !important;}
+}
+
+/* Mobile/portrait: player cards become a horizontal carousel above the board. */
+@media (max-width:900px){
+  body.game-page .playerStripShell{
+    padding:7px 9px 0;
+    overflow:hidden;
+  }
+  body.game-page .playerStrip{
+    min-height:63px;
+    display:flex;
+    overflow-x:auto;
+    gap:7px;
+    padding-bottom:3px;
+    scroll-snap-type:x proximity;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  body.game-page .playerStrip::-webkit-scrollbar{display:none;}
+  body.game-page .playerStripCard{
+    flex:0 0 min(78vw,265px);
+    min-height:59px;
+    grid-template-columns:38px minmax(0,1fr);
+    padding:7px 9px;
+    scroll-snap-align:start;
+  }
+  body.game-page .playerStripAvatar{width:36px;height:36px;font-size:14px;border-radius:11px;}
+  body.game-page .playerStripNameRow strong{font-size:12px;}
+  body.game-page .playerStripMeta{font-size:8.6px;}
+  body.game-page .app{padding-top:7px !important;}
+  body.game-page .gameSidebar{padding:10px !important;}
+}
+
+@media (max-width:560px){
+  body.game-page .topbar .turnTopPill{display:none;}
+  body.game-page .rightActions{justify-content:flex-end;}
+  body.game-page .sideTurnLabel{font-size:18px;}
+  body.game-page .diceActionRow{grid-template-columns:minmax(0,1fr) 74px;}
+  body.game-page .turnActions{grid-template-columns:1fr 1fr;}
+  body.game-page .toolButtonGrid{grid-template-columns:1fr 1fr;}
+  body.game-page .toolButtonGrid #resetBtn{grid-column:1/-1;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  body.game-page .sideTurnDot.pulse{animation:none !important;}
+}
