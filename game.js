@@ -1,10 +1,10 @@
-// Barikade V10.3 – Spielerleiste + aufgeräumte Sidebar · serverautoritaer
-(function barikadeGameV103Bootstrap(){
-  if (window.__BARIKADE_GAME_V103_LOADED__) {
-    console.warn('[Barikade V10.3] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+// Barikade V10.5 – Rematch/Revanche · auf Basis V10.4 · serverautoritaer
+(function barikadeGameV105Bootstrap(){
+  if (window.__BARIKADE_GAME_V105_LOADED__) {
+    console.warn('[Barikade V10.5] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
-  window.__BARIKADE_GAME_V103_LOADED__ = true;
+  window.__BARIKADE_GAME_V105_LOADED__ = true;
 
 // --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
 (() => {
@@ -344,6 +344,239 @@ let pendingSaveExport = false;
   let emojiOverlayTimer = null;
   let lastEmojiSentAt = 0;
 
+  // ===== V10.4: Sounds + direktes Spiel-Feedback (rein visuell/akustisch) =====
+  const soundToggleBtn = $("soundToggleBtn");
+  const gameFeedback = $("gameFeedback");
+  const gameFeedbackIcon = $("gameFeedbackIcon");
+  const gameFeedbackTitle = $("gameFeedbackTitle");
+  const gameFeedbackSub = $("gameFeedbackSub");
+  const gamePulse = $("gamePulse");
+  const V104_SOUND_KEY = "barikade_sound_enabled_v104";
+
+  let v104SoundEnabled = true;
+  let v104AudioCtx = null;
+  let v104FeedbackTimer = null;
+  let v104PulseTimer = null;
+  let v104LastTurnColor = null;
+
+  try{
+    const raw = localStorage.getItem(V104_SOUND_KEY);
+    if(raw === "0") v104SoundEnabled = false;
+  }catch(_e){}
+
+  function v104UpdateSoundButton(){
+    if(!soundToggleBtn) return;
+    soundToggleBtn.textContent = v104SoundEnabled ? "🔊" : "🔇";
+    soundToggleBtn.title = v104SoundEnabled ? "Sound ausschalten" : "Sound einschalten";
+    soundToggleBtn.setAttribute("aria-label", soundToggleBtn.title);
+    soundToggleBtn.setAttribute("aria-pressed", v104SoundEnabled ? "true" : "false");
+    soundToggleBtn.classList.toggle("is-muted", !v104SoundEnabled);
+  }
+
+  function v104EnsureAudio(){
+    if(!v104SoundEnabled) return null;
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      if(!v104AudioCtx) v104AudioCtx = new AC();
+      if(v104AudioCtx.state === "suspended") v104AudioCtx.resume().catch(()=>{});
+      return v104AudioCtx;
+    }catch(_e){ return null; }
+  }
+
+  function v104Tone(freq=440, dur=.09, vol=.035, type="sine", delay=0){
+    if(!v104SoundEnabled) return;
+    const ac = v104EnsureAudio();
+    if(!ac) return;
+    try{
+      const t0 = ac.currentTime + Math.max(0, Number(delay)||0);
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(Math.max(40, Number(freq)||440), t0);
+      gain.gain.setValueAtTime(.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.001, Number(vol)||.035), t0 + .012);
+      gain.gain.exponentialRampToValueAtTime(.0001, t0 + Math.max(.04, Number(dur)||.09));
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start(t0);
+      osc.stop(t0 + Math.max(.05, Number(dur)||.09) + .025);
+    }catch(_e){}
+  }
+
+  function v104Sound(kind){
+    if(!v104SoundEnabled) return;
+    switch(String(kind||"")){
+      case "ui":
+        v104Tone(620,.07,.025,"sine",0); v104Tone(820,.08,.018,"sine",.055); break;
+      case "turn":
+        v104Tone(610,.10,.030,"sine",0); v104Tone(820,.13,.027,"sine",.09); break;
+      case "roll":
+        v104Tone(170,.055,.022,"square",0); v104Tone(240,.055,.019,"square",.055); v104Tone(330,.07,.016,"triangle",.11); break;
+      case "move":
+        v104Tone(330,.055,.016,"triangle",0); v104Tone(430,.055,.014,"triangle",.055); break;
+      case "six":
+        v104Tone(660,.10,.030,"sine",0); v104Tone(880,.12,.028,"sine",.09); v104Tone(1100,.16,.025,"sine",.18); break;
+      case "kick":
+        v104Tone(150,.10,.035,"sawtooth",0); v104Tone(92,.18,.030,"square",.055); break;
+      case "joker":
+        v104Tone(520,.09,.028,"triangle",0); v104Tone(740,.11,.026,"sine",.08); v104Tone(980,.14,.021,"sine",.16); break;
+      case "barricade":
+        v104Tone(220,.08,.026,"square",0); v104Tone(180,.11,.020,"triangle",.075); break;
+      case "win":
+        v104Tone(523,.16,.031,"sine",0); v104Tone(659,.16,.029,"sine",.14); v104Tone(784,.18,.028,"sine",.28); v104Tone(1047,.34,.026,"sine",.43); break;
+    }
+  }
+
+  function v104CanHaptic(){
+    try{
+      if(typeof navigator.vibrate !== "function") return false;
+      if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+      return true;
+    }catch(_e){ return false; }
+  }
+  function v104Haptic(pattern){
+    try{ if(v104CanHaptic()) navigator.vibrate(pattern); }catch(_e){}
+  }
+
+  function v104ShowFeedback(kind, icon, title, sub, duration=1150){
+    if(!gameFeedback) return;
+    try{
+      if(v104FeedbackTimer){ clearTimeout(v104FeedbackTimer); v104FeedbackTimer=null; }
+      gameFeedback.className = `gameFeedback is-${String(kind||"turn")}`;
+      if(gameFeedbackIcon) gameFeedbackIcon.textContent = icon || "🎲";
+      if(gameFeedbackTitle) gameFeedbackTitle.textContent = title || "";
+      if(gameFeedbackSub) gameFeedbackSub.textContent = sub || "";
+      gameFeedback.setAttribute("aria-hidden","false");
+      void gameFeedback.offsetWidth;
+      gameFeedback.classList.add("show");
+      v104FeedbackTimer = setTimeout(()=>{
+        try{ gameFeedback.classList.remove("show"); gameFeedback.setAttribute("aria-hidden","true"); }catch(_e){}
+      }, Math.max(500, Number(duration)||1150));
+    }catch(_e){}
+  }
+
+  function v104Flash(kind){
+    if(!gamePulse) return;
+    try{
+      if(v104PulseTimer){ clearTimeout(v104PulseTimer); v104PulseTimer=null; }
+      gamePulse.className = "gamePulse";
+      void gamePulse.offsetWidth;
+      gamePulse.classList.add(`flash-${String(kind||"turn")}`);
+      v104PulseTimer = setTimeout(()=>{ try{ gamePulse.className="gamePulse"; }catch(_e){} }, 850);
+    }catch(_e){}
+  }
+
+  function v104IsMine(color){
+    const c = String(color||"").toLowerCase();
+    if(!c) return false;
+    return netMode === "offline" ? true : !!(myColor && String(myColor).toLowerCase() === c);
+  }
+
+  function v104SyncTurnFeedback(){
+    try{
+      const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : "";
+      const running = !!(state && state.started && !state.winner && phase !== "game_over");
+      const mine = running && v104IsMine(c);
+      document.body.classList.toggle("v104-my-turn", !!mine);
+
+      if(!c){ v104LastTurnColor = null; return; }
+      const changed = c !== v104LastTurnColor;
+      if(changed && mine){
+        v104ShowFeedback("turn","👉","DEIN ZUG",`${labelForColor(c)} · du bist dran.`,1350);
+        v104Flash("turn");
+        v104Sound("turn");
+        v104Haptic(35);
+      }
+      v104LastTurnColor = c;
+    }catch(_e){}
+  }
+
+  function v104OnRoll(value, doubleRoll, rollerColor){
+    const v = Number(value);
+    v104Sound("roll");
+    if(Array.isArray(doubleRoll) && doubleRoll.length >= 2){
+      const a=Number(doubleRoll[0]), b=Number(doubleRoll[1]);
+      setTimeout(()=>v104Sound("joker"),120);
+      v104ShowFeedback("joker","🎲🎲","DOPPELWURF",`${a} + ${b} = ${v}`,1250);
+      v104Flash("joker");
+      if(v104IsMine(rollerColor)) v104Haptic([25,40,25]);
+      return;
+    }
+    if(v === 6){
+      setTimeout(()=>v104Sound("six"),145);
+      v104ShowFeedback("six","🎉","SECHS!",`${labelForColor(rollerColor)} darf nach dem Zug noch einmal würfeln.`,1450);
+      v104Flash("six");
+      try{
+        if(diceEl){ diceEl.classList.remove("v104-six-hit"); void diceEl.offsetWidth; diceEl.classList.add("v104-six-hit"); setTimeout(()=>diceEl.classList.remove("v104-six-hit"),650); }
+      }catch(_e){}
+      if(v104IsMine(rollerColor)) v104Haptic([35,45,55]);
+    }
+  }
+
+  function v104OnMove(action){
+    if(!action) return;
+    const attackerColor = parseColorFromPieceId(action.pieceId);
+    const kicked = Array.isArray(action.kickedPieces) ? action.kickedPieces : [];
+    if(kicked.length){
+      const victimColor = parseColorFromPieceId(kicked[0]);
+      const a = labelForColor(attackerColor);
+      const v = labelForColor(victimColor);
+      v104ShowFeedback("kick","💥","RAUSGEWORFEN!",`${a} schickt ${v} zurück ins Haus.`,1350);
+      v104Flash("kick");
+      v104Sound("kick");
+      if(v104IsMine(attackerColor) || v104IsMine(victimColor)) v104Haptic([55,35,75]);
+      return;
+    }
+    if(action.pickedBarricade){
+      v104ShowFeedback("barricade","🧱","BARIKADE",`${labelForColor(attackerColor)} nimmt eine Barikade auf.`,1050);
+      v104Sound("barricade");
+      if(v104IsMine(attackerColor)) v104Haptic(30);
+      return;
+    }
+    v104Sound("move");
+  }
+
+  function v104JokerLabel(kind){
+    const k=String(kind||"").toLowerCase();
+    if(k==="allcolors" || k==="allcolorsby") return "Alle Farben";
+    if(k==="barricade") return "Barikade";
+    if(k==="reroll") return "Neu-Wurf";
+    if(k==="double") return "Doppelwurf";
+    return "Joker";
+  }
+  function v104OnJoker(kind){
+    const actor = state && state.currentPlayer ? state.currentPlayer : "";
+    const label = v104JokerLabel(kind);
+    v104ShowFeedback("joker","🃏","JOKER AKTIV",`${labelForColor(actor)} aktiviert „${label}“.`,1200);
+    v104Flash("joker");
+    v104Sound("joker");
+    if(v104IsMine(actor)) v104Haptic([25,35,25]);
+  }
+  function v104OnJokerCanceled(kind){
+    const label = v104JokerLabel(kind);
+    v104ShowFeedback("joker","↩️","JOKER ZURÜCK",`${label} wurde abgebrochen.`,850);
+    v104Sound("ui");
+  }
+  function v104OnWin(winnerColor){
+    v104Sound("win");
+    v104Flash("six");
+    if(v104IsMine(winnerColor)) v104Haptic([60,45,60,45,110]);
+  }
+
+  v104UpdateSoundButton();
+  try{
+    document.addEventListener("pointerdown",()=>{ if(v104SoundEnabled) v104EnsureAudio(); },{once:true,capture:true,passive:true});
+  }catch(_e){}
+  if(soundToggleBtn){
+    soundToggleBtn.addEventListener("click",()=>{
+      v104SoundEnabled = !v104SoundEnabled;
+      try{ localStorage.setItem(V104_SOUND_KEY, v104SoundEnabled ? "1" : "0"); }catch(_e){}
+      v104UpdateSoundButton();
+      if(v104SoundEnabled){ v104EnsureAudio(); v104Sound("ui"); }
+    });
+  }
+
   // ===== Legendary Dice (visual only, isolated) =====
   // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
   // Entfernt keine Funktion – nur Optik für den Würfel.
@@ -436,12 +669,10 @@ let pendingSaveExport = false;
   const netPlayersEl = $("netPlayers");
   const myColorEl = $("myColor");
 
-  // ===== Action-Mode (J1: Anzeige-Only, kein Gameplay-Risiko) =====
+  // ===== Action-Mode: vier serverautorisierte Joker =====
   const actionModeToggle = $("actionModeToggle");
   const actionCard = $("actionCard");
   const actionHint = $("actionHint");
-  const jokerChooseState = $("jokerChooseState");
-  const jokerSumState = $("jokerSumState");
   const jokerAllColorsState = $("jokerAllColorsState");
   const jokerBarricadeState = $("jokerBarricadeState");
   const jokerRerollState = $("jokerRerollState");
@@ -456,33 +687,7 @@ let pendingSaveExport = false;
 
   
 
-  // ===== Visual: Hide legacy jokers (Choose + Summe) =====
-  // NOTE: Only visual removal. No gameplay logic is removed on server/client.
-  function hideLegacyChooseSumUI(){
-    try{
-      const ids = ["jokerChooseState","jokerSumState"];
-      ids.forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        // hide the row that contains the state label
-        const row = el.closest("div") || el.parentElement;
-        if(row) row.style.display = "none";
-      });
-
-      // hide any related buttons inside action card (if they exist)
-      if(actionCard){
-        const btns = actionCard.querySelectorAll("button");
-        btns.forEach(b=>{
-          const t = (b.textContent || "").toLowerCase();
-          if(t.includes("choose") || t.includes("summe") || t.includes("sum")) {
-            b.style.display = "none";
-          }
-        });
-      }
-    }catch(_e){}
-  }
-
-// ===== Joker #3: Neu-Wurf (UI inject, additive) =====
+  // ===== Joker #3: Neu-Wurf (UI inject, additive) =====
   function ensureActionJoker3UI(){
     try{
       if(!actionCard) return;
@@ -527,138 +732,6 @@ let pendingSaveExport = false;
     }catch(_e){}
   }
   ensureActionJoker3UI();
-
-  // ===== Epic Joker UI (visual only, keeps IDs/handlers) =====
-  function ensureEpicJokerUI(){
-    try{
-      if(!actionCard) return;
-
-      // 1) CSS (only once)
-      if(!document.getElementById("epicJokerStyles")){
-        const st = document.createElement("style");
-        st.id = "epicJokerStyles";
-        st.textContent = `
-          .epic-jokers{ margin-top:12px; padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:16px;
-            background: radial-gradient(900px 380px at 10% 0%, rgba(255,255,255,.06), rgba(255,255,255,.02) 60%, rgba(0,0,0,0) 100%);
-            box-shadow: 0 18px 50px rgba(0,0,0,.25);
-          }
-          .epic-jokers .title{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px; }
-          .epic-jokers .title b{ font-size:16px; letter-spacing:.2px; }
-          .epic-jokers .title span{ font-size:12px; opacity:.7; }
-          .epic-jokers .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-          @media (min-width: 880px){ .epic-jokers .grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-          .joker-tile{ position:relative; padding:10px; border-radius:16px; border:1px solid rgba(255,255,255,.10);
-            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-          }
-          .joker-tile .hdr{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
-          .joker-tile .name{ font-weight:800; font-size:14px; display:flex; align-items:center; gap:8px; }
-          .joker-tile .badge{ min-width:38px; height:26px; padding:0 10px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center;
-            font-weight:900; letter-spacing:.3px; font-size:13px;
-            background: rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.14);
-          }
-          .joker-tile .origin{ font-size:12px; opacity:.75; min-height:16px; margin-bottom:8px; }
-          .joker-tile .joker-btn{ width:100%; border-radius:14px; padding:12px 12px; font-weight:800; }
-          .joker-tile.off .badge{ opacity:.55; }
-          .joker-tile.off .origin{ opacity:.55; }
-          .joker-tile.off .joker-btn{ opacity:.45; }
-          /* Keep legacy kv rows readable but less dominant */
-          #actionCard .kv{ opacity:.75; }
-        `;
-        document.head.appendChild(st);
-      }
-
-      // 2) Create container once
-      let wrap = document.getElementById("epicJokers");
-      if(!wrap){
-        wrap = document.createElement("div");
-        wrap.id = "epicJokers";
-        wrap.className = "epic-jokers";
-
-        const title = document.createElement("div");
-        title.className = "title";
-        const left = document.createElement("b");
-        left.textContent = "Joker‑Arsenal";
-        const right = document.createElement("span");
-        right.textContent = "4 Powers • ein Klick = nutzen";
-        title.appendChild(left);
-        title.appendChild(right);
-
-        const grid = document.createElement("div");
-        grid.className = "grid";
-        wrap.appendChild(title);
-        wrap.appendChild(grid);
-
-        // Insert at top of action card (after hint if present)
-        const hint = document.getElementById("actionHint");
-        const anchor = hint ? hint.parentElement : actionCard;
-        if(anchor){
-          // put after hint row if possible
-          if(hint && hint.nextSibling) anchor.insertBefore(wrap, hint.nextSibling);
-          else anchor.insertBefore(wrap, anchor.firstChild);
-        } else {
-          actionCard.insertBefore(wrap, actionCard.firstChild);
-        }
-
-        const mkTile = (key, icon, name, btnId, badgeId, originId) => {
-          const tile = document.createElement("div");
-          tile.className = "joker-tile";
-          tile.dataset.jkey = key;
-
-          const hdr = document.createElement("div");
-          hdr.className = "hdr";
-
-          const nm = document.createElement("div");
-          nm.className = "name";
-          nm.textContent = icon + " " + name;
-
-          const badge = document.createElement("div");
-          badge.className = "badge";
-          badge.id = badgeId;
-          badge.textContent = "0";
-
-          hdr.appendChild(nm);
-          hdr.appendChild(badge);
-
-          const origin = document.createElement("div");
-          origin.className = "origin";
-          origin.id = originId;
-          origin.textContent = "–";
-
-          tile.appendChild(hdr);
-          tile.appendChild(origin);
-
-          // Move existing button into tile (keeps handlers/ids)
-          let btn = document.getElementById(btnId);
-          if(!btn){
-            btn = document.createElement("button");
-            btn.id = btnId;
-            btn.className = "joker-btn";
-            btn.type = "button";
-            btn.textContent = icon + " " + name + " nutzen";
-          }else{
-            // ensure class for consistent styling
-            btn.classList.add("joker-btn");
-          }
-          btn.textContent = icon + " " + name + " nutzen";
-          tile.appendChild(btn);
-
-          grid.appendChild(tile);
-        };
-
-        mkTile("allColors", "🌈", "Alle Farben", "jokerAllColorsBtn", "jokerAllColorsBadge", "jokerAllColorsOrigin");
-        mkTile("barricade", "🧱", "Barikade",   "jokerBarricadeBtn", "jokerBarricadeBadge", "jokerBarricadeOrigin");
-        mkTile("reroll",   "🔁", "Neu‑Wurf",   "jokerRerollBtn", "jokerRerollBadge", "jokerRerollOrigin");
-        mkTile("double",   "🎲🎲", "Doppelwurf", "jokerDoubleBtn", "jokerDoubleBadge", "jokerDoubleOrigin");
-      }
-
-      // 3) De-emphasize old grid (kept for fallback/IDs)
-      const oldGrid = actionCard.querySelector(".joker-grid");
-      if(oldGrid) oldGrid.style.display = "none";
-    }catch(_e){}
-  }
-  try{ ensureEpicJokerUI(); }catch(_e){}
-
 
   // ===== Epic Joker UI (visual only, NO gameplay changes) =====
   // Ziel: 4 klare Buttons (Name + Anzahl), weniger Text, nicht verwirrend.
@@ -753,7 +826,7 @@ let pendingSaveExport = false;
       }
 
       // 2) Hide verbose state rows (we show counts on buttons instead)
-      const hideIds = ["jokerAllColorsState","jokerBarricadeState","jokerRerollState","jokerDoubleState","jokerChooseState","jokerSumState"];
+      const hideIds = ["jokerAllColorsState","jokerBarricadeState","jokerRerollState","jokerDoubleState"];
       hideIds.forEach(id=>{
         const el = document.getElementById(id);
         if(!el) return;
@@ -939,6 +1012,8 @@ let pendingSaveExport = false;
   const overlaySub = $("overlaySub");
   const overlayHint = $("overlayHint");
   const overlayOk = $("overlayOk");
+  const overlayRematch = $("overlayRematch");
+  const rematchBtn = $("rematchBtn");
 
   const CSS = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const COLORS = {
@@ -1108,8 +1183,6 @@ let awardsShown = false;
   let ws=null;
   // Start-Joker Setup: Host setzt beim Spielstart automatisch 2x pro Joker-Art (nur Barikade Action-Modus)
   let _pendingStartJokerInit = false;
-  let _pendingStartStarterPick = false; // Host: Startspieler per Glücksrad
-  let _pendingStartStarterColor = null;  // 'red'|'blue'|'green'|'yellow'
 
   let _pendingStartMode = "classic";
   
@@ -1312,7 +1385,7 @@ let awardsShown = false;
   }
 
 
-  // ===== Action-Mode UI (J1: nur anzeigen, NICHT eingreifen) =====
+  // ===== Action-Mode UI =====
   function updateActionUI_J1(){
     try{
       if(!actionCard) return;
@@ -1427,9 +1500,7 @@ let awardsShown = false;
       setEpicBadge("reroll", countFor("reroll"));
       setEpicBadge("double", countFor("double"));
 
-if(jokerChooseState) jokerChooseState.textContent = fmtWithOrigin("choose", js && my ? js[my]?.choose : null);
-      if(jokerSumState) jokerSumState.textContent = fmtWithOrigin("sum", js && my ? js[my]?.sum : null);
-      if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColors", js && my ? js[my]?.allColors : null);
+if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColors", js && my ? js[my]?.allColors : null);
       if(jokerBarricadeState) jokerBarricadeState.textContent = fmtWithOrigin("barricade", js && my ? js[my]?.barricade : null);
       if(jokerRerollState) jokerRerollState.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
       if(jokerDoubleState) jokerDoubleState.textContent = fmtWithOrigin("double", js && my ? js[my]?.double : null);
@@ -1674,7 +1745,6 @@ if(actionEffectsState){
     updateColorPickUI();
     applyActiveDiceStyle();
     updateActionUI_J1();
-    updateActionUI_J1();
 
     // Host: keep state players in sync with chosen colors
     if(netMode==="host" && state){
@@ -1714,6 +1784,7 @@ if(actionEffectsState){
 
     // host-only controls visibility
     updateHostToolsUI();
+    updateRematchUI();
   }
 
   function updateStartButton(){
@@ -1728,6 +1799,48 @@ if(actionEffectsState){
   function isMeHost(){
     const me = rosterById.get(clientId);
     return !!(me && me.isHost);
+  }
+
+  function isGameOverNow(){
+    return !!(state && (state.winner || state.phase === "game_over" || phase === "game_over"));
+  }
+
+  function updateRematchUI(){
+    const over = isGameOverNow();
+    const allowed = over && (netMode === "offline" || isMeHost());
+    if(rematchBtn){
+      rematchBtn.hidden = !allowed;
+      rematchBtn.disabled = !allowed;
+    }
+    // Der Overlay-Button ist nur sichtbar, solange auch der Siegesdialog offen ist.
+    if(overlayRematch){
+      const overlayOpen = !!(overlay && overlay.classList.contains("show") && overlay.classList.contains("win-overlay"));
+      overlayRematch.hidden = !(allowed && overlayOpen);
+      overlayRematch.disabled = !(allowed && overlayOpen);
+    }
+  }
+
+  function requestRematch(){
+    if(!isGameOverNow()){ toast("Die Partie ist noch nicht beendet"); return; }
+
+    if(netMode === "offline"){
+      try{ cancelTitleCeremony(); }catch(_e){}
+      hideOverlay();
+      winShown = false; awardsShown = false;
+      v104LastTurnColor = null;
+      newGame();
+      try{ v104ShowFeedback("turn","🔁","NEUE RUNDE","Das Brett wurde neu aufgebaut.",1300); v104Sound("ui"); }catch(_e){}
+      updateRematchUI();
+      return;
+    }
+
+    if(!isMeHost()){ toast("Nur der Host kann eine Revanche starten"); return; }
+    if(!ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
+
+    if(rematchBtn) rematchBtn.disabled = true;
+    if(overlayRematch) overlayRematch.disabled = true;
+    toast("Revanche wird vorbereitet …");
+    wsSend({ type:"rematch", ts:Date.now() });
   }
 
   // Host-only UI block (Save/Load)
@@ -1888,6 +2001,30 @@ try{
   return;
 }
 
+      if(type==="rematch_started"){
+        try{ cancelTitleCeremony(); }catch(_e){}
+        try{ hideOverlay(); }catch(_e){}
+        winShown = false;
+        awardsShown = false;
+        v104LastTurnColor = null;
+        if(rematchBtn) rematchBtn.disabled = false;
+        if(overlayRematch) overlayRematch.disabled = false;
+        if(msg.state){
+          applyRemoteState(msg.state);
+          maybeInitStartJokers(msg.state);
+          writeHostAutosave(msg.state);
+        }
+        const starter = String(msg.starterColor || (msg.state && msg.state.turnColor) || "").toLowerCase();
+        try{
+          v104ShowFeedback("turn","🔁","NEUE RUNDE",starter ? `${labelForColor(starter)} beginnt.` : "Das Brett wurde neu aufgebaut.",1450);
+          v104Sound("ui");
+          if(v104IsMine(starter)) v104Haptic([30,35,30]);
+        }catch(_e){}
+        updateRematchUI();
+        updateEmojiUI();
+        return;
+      }
+
       if(type==="room_update"){
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         try{
@@ -1925,11 +2062,11 @@ try{
       if(type==="snapshot" || type==="started" || type==="place_barricade"){
         if(msg.state){
           applyRemoteState(msg.state);
-          maybeInitStartStarter(msg.state);
-          maybeInitStartStarter(msg.state);
           maybeInitStartJokers(msg.state);
           writeHostAutosave(msg.state);
         }
+        if(msg.joker) v104OnJoker(msg.joker);
+        if(msg.jokerCanceled) v104OnJokerCanceled(msg.jokerCanceled);
         updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
         if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
@@ -1938,6 +2075,7 @@ try{
       if(type==="roll"){
         // (108/26) small suspense + particles
         if(typeof msg.value==="number") setDiceFaceAnimated(msg.value);
+        try{ v104OnRoll(msg.value, msg.double, msg.state && msg.state.turnColor); }catch(_e){}
         if(msg.state){
           applyRemoteState(msg.state);
           maybeInitStartJokers(msg.state);
@@ -1951,6 +2089,7 @@ try{
       if(type==="move"){
         // (7/8/109) animate path + destination glow
         if(msg.action) queueMoveFx(msg.action);
+        try{ if(msg.action) v104OnMove(msg.action); }catch(_e){}
         if(msg.state){
           applyRemoteState(msg.state);
           maybeInitStartJokers(msg.state);
@@ -1973,6 +2112,7 @@ try{
           showEpicWin(wc);
         }
         updateTurnUI();
+        updateRematchUI();
         updateEmojiUI();
         return;
       }
@@ -1988,6 +2128,8 @@ try{
       if(type==="error"){
         const code = msg.code || "";
         const message = msg.message || "Server-Fehler";
+        if(rematchBtn) rematchBtn.disabled = !isGameOverNow();
+        if(overlayRematch) overlayRematch.disabled = !isGameOverNow();
         // If server has no running game state (e.g. after restart), unlock manual start.
         if(code==="NO_STATE" || /Spiel nicht gestartet/i.test(message)){
           debugLog("[server:NO_STATE]", code, message);
@@ -2196,8 +2338,8 @@ try{
       }
 
       updateTurnUI(); updateStartButton(); draw();
+      updateRematchUI();
     updateActionUI_J1();
-      updateActionUI_J1();
       ensureFittedOnce();
       return;
     }
@@ -2488,6 +2630,8 @@ function toast(msg){
     overlayTitle.textContent=title;
     overlaySub.textContent=sub||"";
     overlayHint.textContent=hint||"";
+    if(overlayOk) overlayOk.textContent = "OK";
+    if(overlayRematch){ overlayRematch.hidden = true; overlayRematch.disabled = true; }
     overlay.classList.add("show");
   }
 
@@ -2839,10 +2983,20 @@ function fmtWinners(a){
   return ws.join(" & ");
 }
 let _awardsRunning = false;
+let _awardsRunSeq = 0;
+function cancelTitleCeremony(){
+  _awardsRunSeq++;
+  _awardsRunning = false;
+  const ov = document.getElementById("baAwardsOverlay");
+  if(ov){ ov.classList.remove("show"); ov.style.display = "none"; }
+}
 async function runTitleCeremony(awards){
   if(_awardsRunning) return;
+  if(!(state && state.winner)) return;
   const arr = Array.isArray(awards) ? awards : [];
   if(arr.length===0) return;
+  const runSeq = ++_awardsRunSeq;
+  const stillCurrent = ()=> runSeq === _awardsRunSeq && !!(state && state.winner);
   _awardsRunning = true;
   const ov = ensureAwardsUI();
   const card = document.getElementById("baAwardsCard");
@@ -2863,41 +3017,50 @@ async function runTitleCeremony(awards){
     nEl.textContent = fmtWinners(a);
 
     ov.classList.add("show");
-    await wait(220);
+    await wait(220); if(!stillCurrent()){ cancelTitleCeremony(); return; }
 
     // Step 1: Title (≈1.2s)
-    await wait(1000);
+    await wait(1000); if(!stillCurrent()){ cancelTitleCeremony(); return; }
 
     // Step 2: Value
     vEl.classList.add("show");
-    await wait(1200);
+    await wait(1200); if(!stillCurrent()){ cancelTitleCeremony(); return; }
 
     // Step 3: Name(s)
     nEl.classList.add("show");
-    await wait(2400);
+    await wait(2400); if(!stillCurrent()){ cancelTitleCeremony(); return; }
 
     // Fade out between titles
     ov.classList.remove("show");
-    await wait(260);
+    await wait(260); if(!stillCurrent()){ cancelTitleCeremony(); return; }
   }
 
-  ov.style.display = "none";
+  if(runSeq === _awardsRunSeq) ov.style.display = "none";
   _awardsRunning = false;
 }
 // ------------------------------------------------------
 
 function showEpicWin(winnerColor){
+    try{ v104OnWin(winnerColor); }catch(_e){}
     const name = labelForColor(winnerColor);
-    showOverlay('🏆 SIEG! 🏆', `${name} gewinnt!`, 'Erste Figur auf dem Zielfeld.');
+    const hint = (netMode !== "offline" && !isMeHost())
+      ? 'Erste Figur auf dem Zielfeld. Warte auf den Host für eine Revanche.'
+      : 'Erste Figur auf dem Zielfeld. Ihr könnt direkt eine Revanche starten.';
+    showOverlay('🏆 SIEG! 🏆', `${name} gewinnt!`, hint);
     overlay.style.setProperty('--winner-color', (COLORS && COLORS[winnerColor]) ? COLORS[winnerColor] : '#8b7cff');
     overlay.classList.add('win-overlay');
+    if(overlayOk) overlayOk.textContent = 'Ergebnis schließen';
+    updateRematchUI();
     startWinFx(winnerColor);
   }
   function hideOverlay(){
     overlay.classList.remove("show","win-overlay");
     overlay.style.removeProperty("--winner-color");
+    if(overlayRematch){ overlayRematch.hidden = true; overlayRematch.disabled = true; }
   }
   overlayOk.addEventListener("click", hideOverlay);
+  if(overlayRematch) overlayRematch.addEventListener("click", requestRematch);
+  if(rematchBtn) rematchBtn.addEventListener("click", requestRematch);
 
   async function loadBoard(){
     const res = await fetch("board.json", { cache:"force-cache" });
@@ -3059,6 +3222,7 @@ function showEpicWin(winnerColor){
       updateColorPickUI();
       updateEmojiUI();
       syncV103Sidebar();
+      v104SyncTurnFeedback();
       return;
     }
 
@@ -3082,6 +3246,7 @@ function showEpicWin(winnerColor){
     updateColorPickUI();
     updateEmojiUI();
     syncV103Sidebar();
+    v104SyncTurnFeedback();
   }
 
   function endTurn(){
@@ -4056,7 +4221,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
   canvas.addEventListener("pointercancel", onPointerUp);
 
   // ===== Start-Glücksrad (entscheidet Startspieler) =====
-  // Additiv: Host zeigt beim Start ein Glücksrad und setzt danach den Startspieler via import_state.
+  // Alle Clients zeigen das Glücksrad; der Gewinner kommt ausschließlich vom Server.
   function _ensureStartWheelUI(){
     try{
       if(document.getElementById("startWheelOverlay")) return;
@@ -4283,54 +4448,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
     });
   }
 
-  function maybeInitStartStarter(remoteState){
-    try{
-      if(!_pendingStartStarterPick) return;
-      if(netMode !== "host") { _pendingStartStarterPick=false; return; }
-      if(!_pendingStartStarterColor) { _pendingStartStarterPick=false; return; }
-      if(!remoteState || typeof remoteState !== "object") return;
-
-      const st = JSON.parse(JSON.stringify(remoteState));
-
-      // Support server protocol (turnColor/phase/rolled) and legacy (currentPlayer/dice)
-      if(st.turnColor != null) st.turnColor = _pendingStartStarterColor;
-      if(st.currentPlayer != null) st.currentPlayer = _pendingStartStarterColor;
-
-      if(st.phase != null) st.phase = "need_roll";
-      if(st.rolled != null) st.rolled = null;
-      if(st.dice != null) st.dice = null;
-
-      _pendingStartStarterPick = false;
-      const starter = _pendingStartStarterColor;
-      _pendingStartStarterColor = null;
-
-      wsSend({ type:"import_state", state: st, ts: Date.now(), reason:"init_start_player", starter });
-      toast("Startspieler gesetzt: " + labelForColor(starter));
-    }catch(_e){
-      _pendingStartStarterPick = false;
-    }
-  }
-
-  async function hostStartWithWheel(mode){
-    try{
-      const colors = getActiveColors();
-      if(!Array.isArray(colors) || colors.length < 2){
-        toast("Mindestens 2 Spieler nötig");
-        return;
-      }
-      const winner = await startWheelSpin(colors, 2800);
-      _pendingStartStarterColor = winner;
-      _pendingStartStarterPick = true;
-      // proceed with normal start; starter will be applied on first snapshot
-      const jc = (mode === "action") ? getLobbyJokerCount() : null;
-      wsSend({type:"start", mode:mode, ts:Date.now(), jokerStartCount:(jc || undefined), starterColor:winner});
-    }catch(_e){
-      const jc = (mode === "action") ? getLobbyJokerCount() : null;
-      wsSend({type:"start", mode:mode, ts:Date.now(), jokerStartCount:(jc || undefined)});
-    }
-  }
-
-
+  // V10.6: Startspieler wird ausschließlich vom Server bestimmt.
   // ===== Visual Joker feedback (no rule/state changes) =====
   let jokerFxHideTimer = 0;
   function ensureJokerFxUI(){
@@ -4443,7 +4561,6 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
     }catch(_e){}
   }
   try{ ensureActionJoker4UI(); }catch(_e){}
-  try{ hideLegacyChooseSumUI(); }catch(_e){}
 
   jokerDoubleState = $("jokerDoubleState");
   let jokerDoubleBtn = $("jokerDoubleBtn");
