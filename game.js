@@ -1837,11 +1837,11 @@ if(actionEffectsState){
       </div>`;
     bossSection.appendChild(box);
     box.querySelectorAll('[data-boss-spawn]').forEach(btn=>btn.addEventListener('click',()=>{
-      if(!isCurrentHost()){ toast('Nur der Host kann Bosse testen'); return; }
+      if(!isMeHost()){ toast('Nur der Host kann Bosse testen'); return; }
       wsSend({type:'boss_test',action:'spawn',bossType:String(btn.dataset.bossSpawn||'')});
     }));
     box.querySelectorAll('[data-boss-action]').forEach(btn=>btn.addEventListener('click',()=>{
-      if(!isCurrentHost()){ toast('Nur der Host kann Bosse testen'); return; }
+      if(!isMeHost()){ toast('Nur der Host kann Bosse testen'); return; }
       wsSend({type:'boss_test',action:String(btn.dataset.bossAction||'')});
     }));
     return box;
@@ -1899,7 +1899,7 @@ if(actionEffectsState){
         bossRoundInfoEl.textContent=`${activeCount}/3 Bosse aktiv · ${evCount} Ereignisfelder · Runde ${Math.max(1,Number(bs?.round||1))}`;
       }
       const tools=ensureBossTestTools();
-      if(tools) tools.style.display=isCurrentHost()?'block':'none';
+      if(tools) tools.style.display=isMeHost()?'block':'none';
 
       const evt=bs?.lastEvent;
       const evtSeq=Number(evt?.seq||0);
