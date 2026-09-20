@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Barikade</title>
-  <link rel="stylesheet" href="styles.css?v=barikade_v10_8_display_20260920" />
+  <link rel="stylesheet" href="styles.css?v=barikade_v10_8_1_layout_20260920" />
 </head>
 
 <body class="game-page">
@@ -15,7 +15,6 @@
     </div>
 
     <div class="rightActions">
-      <div class="pill turnTopPill"><span id="turnDot" class="dot"></span> <span id="turnText">–</span></div>
       <div id="emojiBar" class="emojiBar" aria-label="Emojis im Spiel">
         <button id="emojiLaughBtn" class="emojiBtn" type="button" title="Lachen">😂</button>
         <button id="emojiAngryBtn" class="emojiBtn" type="button" title="Wütend">😡</button>
@@ -31,6 +30,9 @@
 
   <!-- V10.3: Live-Spielerleiste. Inhalt wird aus dem Server-Roster aufgebaut. -->
   <section class="playerStripShell" aria-label="Spielerübersicht">
+    <div class="playerStripTopRow">
+      <div class="pill turnTopPill stripTurnPill"><span id="turnDot" class="dot"></span> <span id="turnText">–</span></div>
+    </div>
     <div id="playerStrip" class="playerStrip">
       <div class="playerStripEmpty">Spieler werden geladen …</div>
     </div>
@@ -249,6 +251,6 @@
     })();
   </script>
 
-  <script src="game.js?v=barikade_v10_7_sidebar_20260920"></script>
+  <script src="game.js?v=barikade_v10_8_1_layout_20260920"></script>
 </body>
 </html>
