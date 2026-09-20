@@ -791,7 +791,7 @@ let pendingSaveExport = false;
     hunter:{
       key:"hunter", icon:"🐺", name:"Der Jäger", tag:"JÄGER", cadence:"nach jedem Würfelwurf", steps:"1 Feld",
       summary:"Jagt immer die nächstgelegene Spielfigur.",
-      effect:"Trifft er einen Spieler, wird dessen Figur auf das Startfeld zurückgesetzt.",
+      effect:"Trifft er einen Spieler, wird dessen Figur wie beim normalen Schmeißen zurück ins Haus gesetzt.",
       rule:"Barikadenregel: Trifft er eine Barikade, wird sie direkt hinter ihn versetzt.",
       portrait:"boss_hunter.svg", artClass:"bossCardArt--hunter"
     },
@@ -1833,6 +1833,7 @@ if(actionEffectsState){
         <button type="button" data-boss-spawn="curse">🧙 Fluchmeister</button>
         <button type="button" data-boss-spawn="shadow">👻 Schatten</button>
         <button type="button" data-boss-action="act">▶ Bossaktion</button>
+        <button type="button" data-boss-action="events">🎲 8 Ereignisfelder neu</button>
         <button type="button" data-boss-action="clear">🧹 Alle löschen</button>
       </div>`;
     bossSection.appendChild(box);
@@ -1894,9 +1895,10 @@ if(actionEffectsState){
         bossLastEventEl.textContent=a ? `${a.icon||'👹'} ${a.title||'Boss'} · ${a.text||''}` : (e ? `${e.icon||'🃏'} ${e.title||'Ereignis'} · ${e.effectText||''}` : 'Noch keine Bossaktion');
       }
       if(bossRoundInfoEl){
-        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : (Array.isArray(board?.meta?.eventFields)?board.meta.eventFields.length:6);
+        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : 8;
         const activeCount=slots.filter(s=>!!s?.boss).length;
-        bossRoundInfoEl.textContent=`${activeCount}/3 Bosse aktiv · ${evCount} Ereignisfelder · Runde ${Math.max(1,Number(bs?.round||1))}`;
+        const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:54;
+        bossRoundInfoEl.textContent=`${activeCount}/3 Bosse aktiv · ${evCount} Ereignisfelder · Karten ${deckRemaining}/54 · Runde ${Math.max(1,Number(bs?.round||1))}`;
       }
       const tools=ensureBossTestTools();
       if(tools) tools.style.display=isMeHost()?'block':'none';
@@ -3634,7 +3636,7 @@ function showEpicWin(winnerColor){
     }catch(_e){}
     try{
       state.bossMode = getLobbyBossMode();
-      state.boss = state.bossMode ? {slots:[],eventFields:Array.isArray(board?.meta?.eventFields)?board.meta.eventFields.slice():[],round:1,lastEvent:null,lastAction:null} : null;
+      state.boss = state.bossMode ? {slots:[],eventFields:[],round:1,lastEvent:null,lastAction:null} : null;
     }catch(_e){}
     // 🔥 BRUTAL: Barikaden starten auf ALLEN RUN-Feldern (außer Ziel)
     for(const id of runNodes){
@@ -4385,9 +4387,9 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       ctx.beginPath(); ctx.arc(s.x,s.y,r-2.2,Math.PI*1.04,Math.PI*1.88); ctx.stroke();
       ctx.restore();
 
-      const bossEventFieldIds = Array.isArray(state?.boss?.eventFields) && state.boss.eventFields.length
+      const bossEventFieldIds = Array.isArray(state?.boss?.eventFields)
         ? state.boss.eventFields.map(String)
-        : (Array.isArray(board?.meta?.eventFields) ? board.meta.eventFields.map(String) : []);
+        : [];
       if(n.kind==="board" && bossModeVisualActive() && bossEventFieldIds.includes(String(n.id))){
         ctx.save();
         ctx.shadowColor="rgba(180,110,255,.56)"; ctx.shadowBlur=15;
