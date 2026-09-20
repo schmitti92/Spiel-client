@@ -1090,6 +1090,16 @@
               Action‑Modus
             </label>
           </div>
+          <div class="room-mode-strip boss-mode-strip">
+            <div class="room-mode-copy">
+              <strong>👹 Action‑Bossmodus</strong>
+              <small>Zusätzlich: 6 Ereignisfelder, Ereigniskarten und 2 Bossfelder am Spielbrett.</small>
+            </div>
+            <label class="switch">
+              <input id="bossModeToggle" type="checkbox" />
+              Bossmodus
+            </label>
+          </div>
         </section>
 
         <section class="card profile-card">
@@ -1207,6 +1217,7 @@
       const hostMakeBtn = $("hostMakeBtn");
       const joinBtn = $("joinBtn");
       const actionToggle = $("actionToggle");
+      const bossModeToggle = $("bossModeToggle");
       const modePill = $("modePill");
       const roomPill = $("roomPill");
       const colorPill = $("colorPill");
@@ -1497,6 +1508,9 @@ function startPresencePoll(){
       function setActionMode(on){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
       }
+      function setBossMode(on){
+        localStorage.setItem('barikade_boss_mode', on ? 'boss' : 'off');
+      }
 
       const DICE_STYLES = new Set(['classic','neon','royal']);
       function normalizeDiceStyle(value){
@@ -1624,10 +1638,12 @@ function startPresencePoll(){
         const r = localStorage.getItem('barikade_room') || '';
         const m = localStorage.getItem('barikade_mode') || 'offline';
         const am = localStorage.getItem('barikade_action_mode') || 'classic';
+        const bm = localStorage.getItem('barikade_boss_mode') || 'off';
         roomInp.value = r;
         setMode(m);
         setRoom(r);
         actionToggle.checked = (am === 'action');
+        if(bossModeToggle) bossModeToggle.checked = (bm === 'boss');
         const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
         if(c) setRequestedColor(c);
         refreshDiceStyleUI();
@@ -1697,6 +1713,13 @@ function startPresencePoll(){
         refreshJokerCountUI();
         toast(actionToggle.checked ? 'Action‑Modus: AN' : 'Action‑Modus: AUS');
       });
+
+      if(bossModeToggle){
+        bossModeToggle.addEventListener('change', ()=>{
+          setBossMode(!!bossModeToggle.checked);
+          toast(bossModeToggle.checked ? 'Action‑Bossmodus: AN' : 'Action‑Bossmodus: AUS');
+        });
+      }
 
       jokerCountBtns.forEach(btn=>{
         btn.addEventListener('click', ()=>{
@@ -1779,6 +1802,7 @@ function startPresencePoll(){
         localStorage.setItem('barikade_isGuest', nameKey.toLowerCase()==='gast' ? '1' : '0');
         setRoom(rc);
         setActionMode(!!actionToggle.checked);
+        setBossMode(!!(bossModeToggle && bossModeToggle.checked));
 
         const selectedJokers = actionToggle.checked ? getSelectedJokerCount() : null;
         const qs = new URLSearchParams({ compact:'1' });
