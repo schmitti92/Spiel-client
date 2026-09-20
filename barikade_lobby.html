@@ -1037,8 +1037,12 @@ function startPresencePoll(){
             return;
           }
 
-          // go to game (compact UI)
-          location.href = 'barikade.html?compact=1';
+          // go to game (compact UI). Jokerzahl zusätzlich in URL übergeben,
+          // damit der Wert beim Seitenwechsel garantiert erhalten bleibt.
+          const selectedJokers = actionToggle.checked ? getSelectedJokerCount() : null;
+          const qs = new URLSearchParams({ compact:'1' });
+          if(selectedJokers) qs.set('jokerCount', String(selectedJokers));
+          location.href = 'barikade.html?' + qs.toString();
         });
       });
 
