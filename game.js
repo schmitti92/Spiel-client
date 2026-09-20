@@ -1679,21 +1679,33 @@ try{ ws = new WebSocket(SERVER_URL); }
         return;
       }
 
-      if(type==="emoji_event"){
-        try{ initEmojiOverlaySystem(); }catch(_e){}
-        const emojiEventId = String(msg.eventId || msg.reactionId || "").trim();
+      if(type==="emoji_show"){
+        // Only a server-issued command is allowed to trigger the visual reaction.
+        if(msg.serverCommand !== true) return;
+        const incomingRoom = String(msg.room || "").trim().toUpperCase();
+        const myRoom = String(roomCode || "").trim().toUpperCase();
+        if(incomingRoom && myRoom && incomingRoom !== myRoom) return;
 
-        // Empfang immer serverseitig bestätigen. Bei Retry/Reconnect kann dasselbe Event
-        // erneut eintreffen; die Anzeige wird deshalb lokal dedupliziert.
-        if(emojiEventId) wsSend({ type:"emoji_ack", eventId:emojiEventId, ts:Date.now() });
+        try{ initEmojiOverlaySystem(); }catch(_e){}
+        const emojiEventId = String(msg.eventId || "").trim();
         if(emojiEventId && hasSeenEmojiEvent(emojiEventId)) return;
         if(emojiEventId) rememberSeenEmojiEvent(emojiEventId);
-
-        // Eigene Reaktion wurde bereits sofort lokal gezeigt. Server-Echo nicht doppelt anzeigen.
-        if(msg.playerId === clientId && consumeLocalEmojiReaction(emojiEventId || msg.reactionId)) return;
-        try{ showEmojiOverlay(msg.name || msg.playerName || "Spieler", msg.icon || msg.emoji || msg.emojiKey || "😀"); }catch(_e){}
+        try{ showEmojiOverlay(msg.senderName || msg.name || "Spieler", msg.icon || msg.emoji || "😀"); }catch(_e){}
         return;
       }
+
+      if(type==="emoji_dispatch_result"){
+        // Diagnostic only. Never triggers the emoji itself.
+        try{
+          const n = Number(msg.delivered || 0);
+          console.log(`[emoji] Server zugestellt an ${n} Socket(s)`, msg.recipients || []);
+          if(n < 2 && Array.isArray(lastNetPlayers) && lastNetPlayers.filter(p=>p && p.connected!==false).length >= 2){
+            toast(`Smiley: Server erreicht nur ${n} Spieler`);
+          }
+        }catch(_e){}
+        return;
+      }
+
 if(type==="start_spin"){
   try{
     const cols = Array.isArray(msg.activeColors) && msg.activeColors.length ? msg.activeColors.map(c=>String(c||"").toLowerCase().trim()).filter(Boolean) : getActiveColors();
@@ -2594,15 +2606,14 @@ function ensureAwardsStyles(){
     const now = Date.now();
     if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
     lastEmojiSentAt = now;
-    const reactionId = `${clientId || "local"}-${now}-${Math.random().toString(36).slice(2,8)}`;
-    rememberLocalEmojiReaction(reactionId);
-    // Sofortige Rückmeldung auf dem eigenen Gerät; das Server-Echo wird dedupliziert.
-    showEmojiOverlay(getLocalEmojiName(), key);
-    const ok = wsSend({ type:"emoji_send", emoji:key, reactionId, ts:now });
+
+    // SERVER-AUTORITÄR: lokal wird NICHTS angezeigt.
+    // Erst der vom Server zurückgesendete Befehl {type:"emoji_show"}
+    // darf den Smiley auf irgendeinem Gerät auslösen – auch beim Absender.
+    const ok = wsSend({ type:"emoji_request", emoji:key, ts:now });
     if(!ok){
-      localEmojiReactionIds.delete(reactionId);
       lastEmojiSentAt = 0;
-      toast("Emoji konnte nicht an den Server gesendet werden");
+      toast("Emoji-Anfrage konnte nicht an den Server gesendet werden");
     }
   }
   function bindEmojiButtons(){
