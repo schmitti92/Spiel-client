@@ -1232,7 +1232,7 @@ let awardsShown = false;
   // Helper: some older patches referenced a missing variable "isActionMode".
   // Keep it as a function so all callers can safely use it.
   function isActionMode(){
-    try{ return String(state?.mode || "classic") === "action"; }catch(_e){}
+    try{ return !!(state?.action && (String(state?.mode || "classic") === "action" || state?.bossMode)); }catch(_e){}
     return false;
   }
 
@@ -1503,7 +1503,7 @@ let awardsShown = false;
     try{
       if(!actionCard) return;
       const mode = (state && state.mode) ? String(state.mode) : "classic";
-      const show = (mode === "action") || (!!(actionModeToggle && actionModeToggle.checked));
+      const show = (mode === "action") || !!(state && state.bossMode && state.action) || (!!(actionModeToggle && actionModeToggle.checked));
       actionCard.style.display = show ? "block" : "none";
       if(!show) return;
 
@@ -1512,7 +1512,7 @@ let awardsShown = false;
 
       // Hint text
       if(actionHint){
-        actionHint.textContent = (mode === "action") ? (ac ? "Deine Joker" : "Joker werden vorbereitet …") : ((actionModeToggle && actionModeToggle.checked) ? "Joker werden vorbereitet …" : (ac ? "Deine Joker" : "Joker werden vorbereitet …"));
+        actionHint.textContent = ac ? ((state && state.bossMode && mode !== "action") ? "Boss-Joker (Startbestand 0)" : "Deine Joker") : "Joker werden vorbereitet …";
       }
 
       const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
@@ -1705,6 +1705,34 @@ if(actionEffectsState){
     clearTimeout(_bossOverlayTimer);
     _bossOverlayTimer=setTimeout(()=>el.classList.remove("show"),3600);
   }
+  function ensureBossTestTools(){
+    if(!bossSection) return null;
+    let box=document.getElementById("bossTestTools");
+    if(box) return box;
+    box=document.createElement("div");
+    box.id="bossTestTools";
+    box.className="bossTestTools";
+    box.innerHTML=`
+      <div class="bossTestHead"><strong>🧪 Boss-Test</strong><small>nur Host</small></div>
+      <div class="bossTestGrid">
+        <button type="button" data-boss-spawn="hunter">🐺 Jäger</button>
+        <button type="button" data-boss-spawn="curse">🧙 Fluchmeister</button>
+        <button type="button" data-boss-spawn="shadow">👻 Schatten</button>
+        <button type="button" data-boss-action="act">▶ Bossaktion</button>
+        <button type="button" data-boss-action="clear">🧹 Alle löschen</button>
+      </div>`;
+    bossSection.appendChild(box);
+    box.querySelectorAll('[data-boss-spawn]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(!isCurrentHost()){ toast('Nur der Host kann Bosse testen'); return; }
+      wsSend({type:'boss_test',action:'spawn',bossType:String(btn.dataset.bossSpawn||'')});
+    }));
+    box.querySelectorAll('[data-boss-action]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(!isCurrentHost()){ toast('Nur der Host kann Bosse testen'); return; }
+      wsSend({type:'boss_test',action:String(btn.dataset.bossAction||'')});
+    }));
+    return box;
+  }
+
   function updateBossUI(){
     try{
       const enabled=bossModeVisualActive();
@@ -1718,9 +1746,10 @@ if(actionEffectsState){
         while(arr.length<2) arr.push(fallback[arr.length]);
         bossSlotsEl.innerHTML=arr.map((slot,i)=>{
           const boss=slot?.boss;
-          if(!boss) return `<div class="bossSlot empty"><span>${i===0?'Ⅰ':'Ⅱ'}</span><strong>${slot?.name||`Bossfeld ${i+1}`}</strong><small>frei</small></div>`;
-          const hp=Math.max(0,Number(boss.hp||0)), max=Math.max(1,Number(boss.maxHp||1));
-          return `<div class="bossSlot active"><span>${boss.icon||'👹'}</span><strong>${boss.name||'Boss'}</strong><small>HP ${hp}/${max} · ${slot?.name||`Feld ${i+1}`}</small></div>`;
+          if(!boss) return `<div class="bossSlot empty"><span>${i===0?'Ⅰ':'Ⅱ'}</span><strong>${slot?.name||`Bossfeld ${i+1}`}</strong><small>Portal frei</small></div>`;
+          const hp=1;
+          const where=boss.nodeId ? `im Spielfeld · ${boss.nodeId}` : `am Portal · ${slot?.name||`Feld ${i+1}`}`;
+          return `<div class="bossSlot active"><span>${boss.icon||'👹'}</span><strong>${boss.name||'Boss'}</strong><small>${hp}/1 Leben · ${where}</small></div>`;
         }).join('');
       }
       if(bossLastEventEl){
@@ -1729,8 +1758,11 @@ if(actionEffectsState){
       }
       if(bossRoundInfoEl){
         const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : (Array.isArray(board?.meta?.eventFields)?board.meta.eventFields.length:6);
-        bossRoundInfoEl.textContent=`${evCount} Ereignisfelder · Runde ${Math.max(1,Number(bs?.round||1))}`;
+        bossRoundInfoEl.textContent=`${evCount} Ereignisfelder · Runde ${Math.max(1,Number(bs?.round||1))} · 🐺 nach jedem Wurf`;
       }
+      const tools=ensureBossTestTools();
+      if(tools) tools.style.display=isCurrentHost()?'block':'none';
+
       const evt=bs?.lastEvent;
       const evtSeq=Number(evt?.seq||0);
       if(evt && evtSeq>_lastBossEventSeq){ _lastBossEventSeq=evtSeq; showBossEventCard(evt); }
@@ -2307,6 +2339,11 @@ try{
       if (msg.jokerAwardMode) netJokerAwardMode = msg.jokerAwardMode;
         updateStartButton();
         updateEmojiUI();
+        return;
+      }
+
+      if(type==="boss_test_result"){
+        if(msg.text) toast((msg.ok===false?'⚠️ ':'🧪 ')+String(msg.text));
         return;
       }
 
@@ -3637,13 +3674,13 @@ function showEpicWin(winnerColor){
 
       const turn = state.currentPlayer;
       const isMyTurnOnline = (netMode!=="offline") ? (myColor && myColor===turn) : true;
-      const allowAll = !!(isMyTurnOnline && state && state.mode==="action" && state.action && state.action.effects && state.action.effects.allColorsBy===turn);
+      const allowAll = !!(isMyTurnOnline && state && isActionMode() && state.action && state.action.effects && state.action.effects.allColorsBy===turn);
 
       // Action-Modus B2: Barikade-Joker (vor dem Wurf) – Barikade anklicken, dann Zielfeld
       const allowBarricadeJoker = !!(
         isMyTurnOnline &&
         state &&
-        state.mode === "action" &&
+        isActionMode() &&
         state.action &&
         state.action.effects &&
         state.action.effects.barricadeBy === turn &&
@@ -4272,6 +4309,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         const ss=worldToScreen(f);
         const slot=serverSlots.find(x=>String(x?.id||"")===String(f?.id||"")) || serverSlots[i] || null;
         const boss=slot?.boss || null;
+        const bossAtPortal=!!(boss && !boss.nodeId);
         const br=r*1.36;
         const pulse = 0.5 + 0.5 * Math.sin(tBoss * 3.1 + i * 0.9);
         const aura = boss ? 24 + 12*pulse : 16 + 8*pulse;
@@ -4340,16 +4378,36 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         ctx.textAlign="center";ctx.textBaseline="middle";
         ctx.fillStyle="rgba(250,242,255,.99)";
         ctx.font=`1000 ${Math.max(18,Math.round(br*.70))}px system-ui`;
-        ctx.fillText(boss?.icon || "👹",ss.x,ss.y-5);
+        ctx.fillText(bossAtPortal ? (boss?.icon || "👹") : (boss ? "↗" : "👹"),ss.x,ss.y-5);
 
         ctx.font=`900 ${Math.max(8,Math.round(br*.21))}px system-ui`;
         ctx.fillStyle=boss?"rgba(255,213,225,.96)":"rgba(240,224,255,.94)";
-        ctx.fillText(boss?`${Math.max(0,Number(boss.hp||0))}/${Math.max(1,Number(boss.maxHp||1))} HP`:`BOSSFELD ${i+1}`,ss.x,ss.y+br*.58);
+        ctx.fillText(bossAtPortal?`1/1 LEBEN`:(boss?`IM SPIEL`:`BOSSFELD ${i+1}`),ss.x,ss.y+br*.58);
 
         // label above the field
         ctx.font=`900 ${Math.max(9,Math.round(br*.22))}px system-ui`;
         ctx.fillStyle=boss?"rgba(255,125,160,.98)":"rgba(213,164,255,.94)";
-        ctx.fillText(boss?"BOSS AKTIV":"BOSS", ss.x, ss.y-br-13);
+        ctx.fillText(bossAtPortal?"BOSS START":(boss?"PORTAL":"BOSS"), ss.x, ss.y-br-13);
+        ctx.restore();
+      }
+    }
+
+    // Wandernde Bosse: sobald sie das Portal verlassen haben, stehen sie sichtbar auf normalen Brettfeldern.
+    if(bossModeVisualActive() && hasState && Array.isArray(state?.boss?.slots)){
+      for(const slot of state.boss.slots){
+        const boss=slot?.boss;
+        if(!boss?.nodeId) continue;
+        const n=nodeById.get(String(boss.nodeId)); if(!n) continue;
+        const s=worldToScreen(n);
+        ctx.save();
+        ctx.shadowColor="rgba(255,48,104,.82)"; ctx.shadowBlur=22;
+        ctx.fillStyle="rgba(35,7,19,.94)"; ctx.strokeStyle="rgba(255,112,155,.98)"; ctx.lineWidth=3.2;
+        ctx.beginPath(); ctx.arc(s.x,s.y,r*.82,0,Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.shadowColor="transparent";
+        ctx.fillStyle="rgba(255,255,255,.99)"; ctx.font=`1000 ${Math.max(18,Math.round(r*1.05))}px system-ui`;
+        ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(boss.icon||"👹",s.x,s.y-1);
+        ctx.fillStyle="rgba(255,119,157,.98)";ctx.font=`1000 ${Math.max(8,Math.round(r*.38))}px system-ui`;
+        ctx.fillText("BOSS",s.x,s.y+r*1.12);
         ctx.restore();
       }
     }
@@ -4437,6 +4495,29 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       const n=nodeById.get(nodeId); if(!n) continue;
       const s=worldToScreen(n);
       drawStack(arr, s.x, s.y, r);
+    }
+
+    // Wandernde Bosse auf dem normalen Spielfeld.
+    if(bossModeVisualActive() && Array.isArray(state?.boss?.slots)){
+      const activeBoardBosses=state.boss.slots.map((slot,i)=>({slot,boss:slot?.boss,i})).filter(x=>x.boss?.nodeId);
+      for(const x of activeBoardBosses){
+        const n=nodeById.get(String(x.boss.nodeId)); if(!n) continue;
+        const s=worldToScreen(n);
+        const hasPlayer=stacks.has(String(x.boss.nodeId));
+        const ox=hasPlayer ? r*.48 : 0;
+        const oy=hasPlayer ? -r*.48 : 0;
+        ctx.save();
+        ctx.shadowColor='rgba(255,54,104,.78)';ctx.shadowBlur=18;
+        ctx.fillStyle='rgba(28,6,18,.96)';ctx.strokeStyle='rgba(255,122,164,.98)';ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(s.x+ox,s.y+oy,r*.82,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.shadowColor='transparent';
+        ctx.fillStyle='rgba(255,255,255,.98)';ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.font=`1000 ${Math.max(18,Math.round(r*.95))}px system-ui`;
+        ctx.fillText(x.boss.icon||'👹',s.x+ox,s.y+oy-1);
+        ctx.fillStyle='rgba(255,198,218,.96)';ctx.font=`900 ${Math.max(8,Math.round(r*.38))}px system-ui`;
+        ctx.fillText('1♥',s.x+ox,s.y+oy+r*.92);
+        ctx.restore();
+      }
     }
 
     // ===== animated moving piece (drawn ON TOP of nodes & pieces) =====
@@ -5085,7 +5166,7 @@ function hasJoker(obj, key){ return jokerCount(obj, key) > 0; }
     jokerRerollBtn.addEventListener("click", () => {
       if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
       if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
-      if(String(state.mode||"classic")!=="action") { toast("Action-Modus ist nicht aktiv"); return; }
+      if(!isActionMode()) { toast("Joker sind in diesem Modus nicht aktiv"); return; }
       if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
       if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
       const set = getMyJokerSet();
@@ -5695,7 +5776,7 @@ function _wheelNext() {
   const victimName = String(item.victimName || "").trim();
   const attackerLabel = attackerName || (_colorName(item.targetColor) || "Jemand");
   const victimLabel = victimName || (_colorName(item.jokerColor) || "jemanden");
-  const headline = attackerLabel + " schmeisst " + victimLabel + " raus!";
+  const headline = String(item.headline || "").trim() || (attackerLabel + " schmeisst " + victimLabel + " raus!");
   if (big) big.textContent = headline;
   if (quote) quote.textContent = String(item.quote || "");
 
