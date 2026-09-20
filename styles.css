@@ -3364,3 +3364,166 @@ body.game-page .gameSidebar::-webkit-scrollbar-thumb{
     padding-right:10px !important;
   }
 }
+
+
+/* =========================================================
+   V10.8.7 – normal browser viewport fix
+   Android browser chrome reduces the real visual viewport.
+   Mirror fullscreen compactness automatically when height is tight.
+   ========================================================= */
+body.game-page.isCompactViewport .topbar{
+  min-height:44px !important;
+  padding:3px 8px !important;
+}
+body.game-page.isCompactViewport .brand{
+  min-width:145px !important;
+  padding-left:40px !important;
+}
+body.game-page.isCompactViewport .brand::before{
+  width:30px !important;
+  height:30px !important;
+  border-radius:10px !important;
+  font-size:16px !important;
+}
+body.game-page.isCompactViewport .brand .t{
+  font-size:15.5px !important;
+}
+body.game-page.isCompactViewport .brand .s{
+  display:none !important;
+}
+body.game-page.isCompactViewport .topbar > .playerStripShell{
+  height:42px !important;
+  min-height:42px !important;
+}
+body.game-page.isCompactViewport .topbar > .playerStripShell .playerStrip{
+  height:42px !important;
+  min-height:42px !important;
+}
+body.game-page.isCompactViewport .topbar > .playerStripShell .playerStripCard{
+  height:40px !important;
+  min-height:40px !important;
+  padding:3px 7px !important;
+  grid-template-columns:27px minmax(0,1fr) !important;
+}
+body.game-page.isCompactViewport .topbar > .playerStripShell .playerStripAvatar{
+  width:26px !important;
+  height:26px !important;
+  font-size:11px !important;
+}
+body.game-page.isCompactViewport .topbar > .playerStripShell .playerStripNameRow strong{
+  font-size:10.5px !important;
+}
+body.game-page.isCompactViewport .topbar > .playerStripShell .playerStripMeta{
+  font-size:7.5px !important;
+}
+body.game-page.isCompactViewport .emojiBtn{
+  width:48px !important;
+  height:48px !important;
+  min-height:48px !important;
+  font-size:29px !important;
+}
+body.game-page.isCompactViewport .displayToggleBtn,
+body.game-page.isCompactViewport .soundToggleBtn{
+  width:38px !important;
+  height:38px !important;
+  min-height:38px !important;
+  flex-basis:38px !important;
+}
+body.game-page.isCompactViewport .rightActions .btn{
+  min-height:38px !important;
+}
+body.game-page.isCompactViewport .app{
+  height:var(--game-content-h) !important;
+  min-height:var(--game-content-h) !important;
+  padding:5px 8px 6px !important;
+  gap:8px !important;
+  overflow:hidden !important;
+}
+body.game-page.isCompactViewport .boardWrap{
+  height:100% !important;
+  min-height:0 !important;
+}
+body.game-page.isCompactViewport .gameSidebar{
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+  touch-action:pan-y !important;
+  padding:8px !important;
+  gap:6px !important;
+}
+body.game-page.isCompactViewport .gameSidebar > *{
+  flex:0 0 auto !important;
+}
+body.game-page.isCompactViewport .sideSection{
+  padding:8px !important;
+  border-radius:16px !important;
+}
+body.game-page.isCompactViewport .sideTurnAvatar{
+  width:38px !important;
+  height:38px !important;
+  font-size:18px !important;
+}
+body.game-page.isCompactViewport .sideTurnLabel{
+  font-size:15px !important;
+}
+body.game-page.isCompactViewport .sideTurnMeta{
+  font-size:10.5px !important;
+  line-height:1.18 !important;
+}
+body.game-page.isCompactViewport .diceActionRow{
+  grid-template-columns:minmax(0,1fr) 74px !important;
+  gap:7px !important;
+}
+body.game-page.isCompactViewport .turnActions{
+  gap:7px !important;
+}
+body.game-page.isCompactViewport .turnActionBtn{
+  min-height:38px !important;
+  font-size:11px !important;
+}
+body.game-page.isCompactViewport .joker-grid-4{
+  gap:6px !important;
+}
+body.game-page.isCompactViewport .joker-btn{
+  min-height:58px !important;
+  padding:7px !important;
+  grid-template-columns:28px minmax(0,1fr) auto !important;
+  column-gap:5px !important;
+}
+body.game-page.isCompactViewport .joker-btn .j-ico{
+  font-size:20px !important;
+}
+body.game-page.isCompactViewport .joker-btn .j-name{
+  font-size:10.5px !important;
+}
+body.game-page.isCompactViewport .joker-btn .j-sub,
+body.game-page.isCompactViewport .joker-btn small{
+  font-size:8.5px !important;
+}
+body.game-page.isCompactViewport .statusGrid{
+  gap:6px !important;
+}
+body.game-page.isCompactViewport .statusTile{
+  min-height:54px !important;
+  padding:7px !important;
+}
+body.game-page.isCompactViewport .gameToolsDetails > summary,
+body.game-page.isCompactViewport .connectionDetails > summary{
+  min-height:42px !important;
+  padding:0 9px !important;
+}
+
+/* Make the independently scrolling sidebar explicit even outside fullscreen. */
+@media (min-width:901px){
+  body.game-page .gameSidebar{
+    height:var(--game-content-h) !important;
+    max-height:var(--game-content-h) !important;
+    min-height:0 !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    touch-action:pan-y !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+}
