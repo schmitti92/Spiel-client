@@ -1,10 +1,10 @@
-// Barikade V9.1 – Schutz gegen doppeltes Laden von game.js
-(function barikadeGameV91Bootstrap(){
-  if (window.__BARIKADE_GAME_V91_LOADED__) {
-    console.warn('[Barikade V9.1] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+// Barikade V9.2 DEBUG – serverautoritaerer Smiley mit Diagnose
+(function barikadeGameV92Bootstrap(){
+  if (window.__BARIKADE_GAME_V92_LOADED__) {
+    console.warn('[Barikade V9.2] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
-  window.__BARIKADE_GAME_V91_LOADED__ = true;
+  window.__BARIKADE_GAME_V92_LOADED__ = true;
 
 // --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
 (() => {
@@ -1688,8 +1688,12 @@ try{ ws = new WebSocket(SERVER_URL); }
       }
 
       if(type==="emoji_show"){
+        console.log('[emoji-v9.2] CLIENT_RECEIVED emoji_show', {room:msg.room,eventId:msg.eventId,sender:msg.senderName,emoji:msg.icon||msg.emoji,serverCommand:msg.serverCommand});
         // SERVER IST CHEF: Nur dieser Server-Befehl darf den Smiley anzeigen.
-        if(msg.serverCommand !== true) return;
+        if(msg.serverCommand !== true){
+          console.warn('[emoji-v9.2] CLIENT_REJECTED: serverCommand fehlt');
+          return;
+        }
         const incomingRoom = String(msg.room || "").trim().toUpperCase();
         const myRoom = String(roomCode || "").trim().toUpperCase();
         if(incomingRoom && myRoom && incomingRoom !== myRoom) return;
@@ -1703,7 +1707,16 @@ try{ ws = new WebSocket(SERVER_URL); }
             msg.senderName || msg.name || "Spieler",
             msg.icon || msg.emoji || "😀"
           );
-        }catch(_e){}
+          console.log('[emoji-v9.2] POPUP_SHOWN', msg.eventId || 'no-event-id');
+        }catch(_e){
+          console.error('[emoji-v9.2] POPUP_ERROR', _e);
+        }
+        return;
+      }
+
+      if(type==="emoji_debug"){
+        console.log('[emoji-v9.2] SERVER_DEBUG', msg);
+        try{ toast(`Smiley-Server: ${Number(msg.delivered||0)} Empfänger`); }catch(_e){}
         return;
       }
 
@@ -2542,6 +2555,13 @@ function ensureAwardsStyles(){
     if(nameEl) nameEl.textContent = String(name || "Spieler");
     if(!overlayEl) return;
 
+    // Immer erzwingen – auch wenn #emojiOverlay bereits aus HTML existiert.
+    Object.assign(overlayEl.style, {
+      position:"fixed", inset:"0", display:"flex", alignItems:"center",
+      justifyContent:"center", zIndex:"2147483647", pointerEvents:"none"
+    });
+    overlayEl.setAttribute("aria-hidden", "false");
+
     overlayEl.style.display = "flex";
     overlayEl.classList.remove("show");
     void overlayEl.offsetWidth;
@@ -2552,6 +2572,7 @@ function ensureAwardsStyles(){
       try{
         overlayEl.classList.remove("show");
         overlayEl.style.display = "none";
+        overlayEl.setAttribute("aria-hidden", "true");
       }catch(_e){}
     }, 2200);
   }
@@ -2612,7 +2633,9 @@ function ensureAwardsStyles(){
     // SERVER IST CHEF: Der Client fordert nur an und zeigt hier NICHTS an.
     // Erst ein spaeteres {type:"emoji_show", serverCommand:true} vom Server
     // darf showEmojiOverlay() ausloesen.
+    console.log('[emoji-v9.2] CLICK', {emoji:key, room:roomCode, wsState:ws?.readyState, clientId});
     const ok = wsSend({ type:"emoji_request", emoji:key, ts:now });
+    console.log('[emoji-v9.2] REQUEST_SENT', {ok, emoji:key, room:roomCode, wsState:ws?.readyState});
     if(!ok){
       lastEmojiSentAt = 0;
       toast("Smiley konnte nicht an den Server gesendet werden");
