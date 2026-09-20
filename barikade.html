@@ -1,10 +1,10 @@
-<!doctype html>
+ <!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Barikade</title>
-  <link rel="stylesheet" href="styles.css?v=barikade_v10_3_players_sidebar_20260920" />
+  <link rel="stylesheet" href="styles.css?v=barikade_v10_4_feedback_20260920" />
 </head>
 
 <body class="game-page">
@@ -22,6 +22,7 @@
         <button id="emojiCoolBtn" class="emojiBtn" type="button" title="Cool">😎</button>
         <button id="emojiPoopBtn" class="emojiBtn" type="button" title="Scheißhaufen">💩</button>
       </div>
+      <button id="soundToggleBtn" class="soundToggleBtn" type="button" title="Sound an/aus" aria-label="Sound an/aus" aria-pressed="true">🔊</button>
       <button id="backLobbyBtn" class="btn">⬅ Lobby</button>
     </div>
   </div>
@@ -78,10 +79,7 @@
         <div id="actionCard" style="display:none;">
           <div id="actionHint">Action-Modus aktiv</div>
 
-          <!-- Status-IDs bleiben für die vorhandene Spiellogik bestehen. -->
           <div class="jokerLegacyStatus" aria-label="Joker-Status">
-            <div class="kv"><span>🎯 Choose</span><span id="jokerChooseState">–</span></div>
-            <div class="kv"><span>➕ Summe</span><span id="jokerSumState">–</span></div>
             <div class="kv"><span>🌈 Alle Farben</span><span id="jokerAllColorsState">–</span></div>
             <div class="kv"><span>🧱 Barikade</span><span id="jokerBarricadeState">–</span></div>
             <div class="kv"><span>🔁 Neu-Wurf</span><span id="jokerRerollState">–</span></div>
@@ -138,6 +136,7 @@
           </div>
 
           <div class="toolButtonGrid">
+            <button id="rematchBtn" class="btn rematchBtn" type="button" hidden>🔁 Nochmal spielen</button>
             <button id="debugToggle" class="btn">🧪 Debug</button>
             <button id="forfeitBtn" class="btn dangerBtn">🏳 Aufgeben</button>
             <button id="resetBtn" class="btn subtleDangerBtn">↺ Reset</button>
@@ -198,12 +197,25 @@
     </div>
   </div>
 
+  <!-- V10.5: V10.4 Feedback + serverseitige Revanche/Rematch -->
+  <div id="gamePulse" class="gamePulse" aria-hidden="true"></div>
+  <div id="gameFeedback" class="gameFeedback" aria-live="polite" aria-hidden="true">
+    <div class="gameFeedbackCard">
+      <div id="gameFeedbackIcon" class="gameFeedbackIcon">🎲</div>
+      <div class="gameFeedbackText">
+        <strong id="gameFeedbackTitle">DEIN ZUG</strong>
+        <span id="gameFeedbackSub">Du bist dran.</span>
+      </div>
+    </div>
+  </div>
+
   <div id="overlay">
     <div class="overlayCard">
       <h2 id="overlayTitle">–</h2>
       <p id="overlaySub">–</p>
       <p id="overlayHint">–</p>
-      <div class="row" style="justify-content:flex-end; margin-top:12px;">
+      <div class="row overlayActions" style="justify-content:flex-end; margin-top:12px;">
+        <button id="overlayRematch" class="btn rematchPrimary" type="button" hidden>🔁 Nochmal spielen</button>
         <button id="overlayOk" class="btn">OK</button>
       </div>
     </div>
@@ -221,6 +233,6 @@
     })();
   </script>
 
-  <script src="game.js?v=barikade_v10_3_players_sidebar_20260920"></script>
+  <script src="game.js?v=barikade_v10_4_feedback_20260920"></script>
 </body>
 </html>
