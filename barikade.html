@@ -69,7 +69,7 @@
         <div class="kv"><span>🔁 Neu-Wurf</span><span id="jokerRerollState">–</span></div>
         <div class="kv"><span>✨ Effekte</span><span id="actionEffectsState">–</span></div>
 
-                <div class="joker-grid joker-grid-4">
+        <div class="joker-grid joker-grid-4">
           <button id="jokerAllColorsBtn" class="joker-btn joker-power" type="button">
             <span class="j-ico">🌈</span><span class="j-name">Alle Farben</span><span class="j-count" data-jcount="allColors">0</span>
           </button>
@@ -163,13 +163,11 @@
     </div>
   </div>
 
-  <!-- WICHTIG: game.js muss exakt so heißen und im gleichen Ordner liegen -->
   <script>
     // Apply compact UI and lobby-selected defaults BEFORE game.js runs.
     (function(){
       const qs = new URLSearchParams(location.search);
       if(qs.get('compact') === '1') document.body.classList.add('compact');
-      // action mode from lobby
       const am = (localStorage.getItem('barikade_action_mode') || 'classic');
       document.addEventListener('DOMContentLoaded', ()=>{
         const t = document.getElementById('actionModeToggle');
@@ -177,7 +175,98 @@
       });
     })();
   </script>
-  <script src="game.js?v=barikade_emoji_reliable_v2_20260919_2"></script>
+
+  <!-- V5 HARDWIRE: independent WebSocket listener for emoji events.
+       It runs in addition to game.js and therefore cannot be lost inside the normal game handler. -->
+  <script>
+  (function installBarikadeEmojiHardwireV5(){
+    if(window.__barikadeEmojiHardwireV5) return;
+    window.__barikadeEmojiHardwireV5 = true;
+
+    const NativeWS = window.WebSocket;
+    if(!NativeWS) return;
+    const seen = new Map();
+    let hideTimer = null;
+
+    function pruneSeen(){
+      const now = Date.now();
+      for(const [id,ts] of seen){ if(now-ts > 30000) seen.delete(id); }
+    }
+    function normalize(v){
+      const s = String(v||'').trim();
+      const l = s.toLowerCase();
+      if(s==='😂'||l==='laugh') return '😂';
+      if(s==='😡'||l==='angry') return '😡';
+      if(s==='😎'||l==='cool') return '😎';
+      return s || '😀';
+    }
+    function ensureOverlay(){
+      let ov = document.getElementById('emojiOverlay');
+      let icon = document.getElementById('emojiOverlayIcon');
+      let name = document.getElementById('emojiOverlayName');
+      if(!ov){
+        ov=document.createElement('div'); ov.id='emojiOverlay';
+        const card=document.createElement('div'); card.className='emojiOverlayCard';
+        icon=document.createElement('div'); icon.id='emojiOverlayIcon';
+        name=document.createElement('div'); name.id='emojiOverlayName';
+        card.append(icon,name); ov.append(card); document.body.appendChild(ov);
+      }
+      // Force visibility independent of cached/old CSS.
+      ov.style.position='fixed'; ov.style.inset='0'; ov.style.display='none';
+      ov.style.alignItems='center'; ov.style.justifyContent='center';
+      ov.style.zIndex='2147483647'; ov.style.pointerEvents='none';
+      const card=ov.querySelector('.emojiOverlayCard');
+      if(card){
+        card.style.display='flex'; card.style.flexDirection='column'; card.style.alignItems='center';
+        card.style.gap='10px'; card.style.padding='18px 22px'; card.style.borderRadius='28px';
+        card.style.background='rgba(8,12,20,.30)';
+      }
+      if(icon){ icon.style.fontSize='132px'; icon.style.lineHeight='1'; }
+      if(name){ name.style.fontSize='28px'; name.style.fontWeight='900'; name.style.color='#fff'; name.style.textShadow='0 6px 18px rgba(0,0,0,.65)'; }
+      return {ov,icon,name};
+    }
+    function showReaction(r){
+      if(!r) return;
+      const ts=Number(r.ts||Date.now());
+      if(Date.now()-ts > 15000) return; // never replay stale persisted reactions
+      const id=String(r.eventId||r.reactionId||`${r.senderId||r.playerId||'p'}:${ts}:${r.emoji||r.icon||''}`);
+      pruneSeen();
+      if(seen.has(id)) return;
+      seen.set(id,Date.now());
+      const {ov,icon,name}=ensureOverlay();
+      if(icon) icon.textContent=normalize(r.icon||r.emoji||r.emojiKey);
+      if(name) name.textContent=String(r.name||r.playerName||'Spieler');
+      ov.style.display='flex';
+      ov.classList.remove('show'); void ov.offsetWidth; ov.classList.add('show');
+      if(hideTimer) clearTimeout(hideTimer);
+      hideTimer=setTimeout(()=>{ try{ ov.classList.remove('show'); ov.style.display='none'; }catch(_e){} },2400);
+    }
+    function inspectMessage(ev){
+      try{
+        if(typeof ev.data!=='string') return;
+        const m=JSON.parse(ev.data);
+        if(!m || typeof m!=='object') return;
+        if(m.type==='emoji_event') showReaction(m);
+        if(m.emojiEvent) showReaction(m.emojiEvent);
+        if(m.state && m.state.uiReaction) showReaction(m.state.uiReaction);
+      }catch(_e){}
+    }
+
+    function WrappedWebSocket(url, protocols){
+      const ws = (protocols === undefined) ? new NativeWS(url) : new NativeWS(url, protocols);
+      ws.addEventListener('message', inspectMessage);
+      return ws;
+    }
+    WrappedWebSocket.prototype = NativeWS.prototype;
+    try{ Object.setPrototypeOf(WrappedWebSocket, NativeWS); }catch(_e){}
+    for(const k of ['CONNECTING','OPEN','CLOSING','CLOSED']){
+      try{ Object.defineProperty(WrappedWebSocket,k,{value:NativeWS[k],enumerable:true}); }catch(_e){}
+    }
+    window.WebSocket = WrappedWebSocket;
+  })();
+  </script>
+
+  <!-- Neue Versionskennung zwingt Browser/GitHub Pages, game.js frisch zu laden. -->
+  <script src="game.js?v=barikade_smiley_hardwire_v5_20260919"></script>
 </body>
 </html>
-
