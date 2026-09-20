@@ -1,10 +1,10 @@
-// Barikade V9.2 DEBUG – serverautoritaerer Smiley mit Diagnose
-(function barikadeGameV92Bootstrap(){
-  if (window.__BARIKADE_GAME_V92_LOADED__) {
-    console.warn('[Barikade V9.2] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+// Barikade V10.1 – serverautoritaer + persoenliche Würfeldesigns
+(function barikadeGameV101Bootstrap(){
+  if (window.__BARIKADE_GAME_V101_LOADED__) {
+    console.warn('[Barikade V10.1] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
-  window.__BARIKADE_GAME_V92_LOADED__ = true;
+  window.__BARIKADE_GAME_V101_LOADED__ = true;
 
 // --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
 (() => {
@@ -941,6 +941,12 @@ let pendingSaveExport = false;
 
   // Additiv: Namen pro Farbe aus der Lobby/Room-Roster (Server) – nur Anzeige, keine Regeln.
   let nameByColor = { red:null, blue:null, green:null, yellow:null };
+  let diceStyleByColor = { red:'classic', blue:'classic', green:'classic', yellow:'classic' };
+  const DICE_STYLE_LABEL = { classic:'Klassisch', neon:'Neon', royal:'Royal' };
+  function normalizeDiceStyle(value){
+    const v = String(value || '').toLowerCase().trim();
+    return (v === 'neon' || v === 'royal' || v === 'classic') ? v : 'classic';
+  }
   function labelForColor(c){
     const k = String(c||"").toLowerCase();
     const n = nameByColor && nameByColor[k];
@@ -1194,6 +1200,37 @@ let awardsShown = false;
       if(v) localStorage.setItem(reqColorKey(), v); else localStorage.removeItem(reqColorKey());
       // global fallback for old sessions
       if(v) localStorage.setItem("barikade_requested_color", v);
+    }catch(_e){}
+  }
+
+  function diceStyleStorageKey(){
+    const rc = roomCode || (roomCodeInp ? normalizeRoomCode(roomCodeInp.value) : '') || (()=>{ try{return normalizeRoomCode(localStorage.getItem('barikade_room')||'');}catch(_e){return '';} })();
+    const nk = (()=>{ try{return String(localStorage.getItem('barikade_nameKey')||localStorage.getItem('barikade_playerName')||'').trim();}catch(_e){return '';} })();
+    return nk ? `barikade_dice_style_${rc || 'room'}_${nk}` : `barikade_dice_style_${rc || 'room'}`;
+  }
+  function getRequestedDiceStyle(){
+    try{
+      const rc = roomCode || (roomCodeInp ? normalizeRoomCode(roomCodeInp.value) : '') || normalizeRoomCode(localStorage.getItem('barikade_room')||'');
+      const nk = String(localStorage.getItem('barikade_nameKey')||localStorage.getItem('barikade_playerName')||'').trim();
+      const named = nk ? localStorage.getItem(`barikade_dice_style_${rc || 'room'}_${nk}`) : null;
+      const roomScoped = localStorage.getItem(`barikade_dice_style_${rc || 'room'}`);
+      return normalizeDiceStyle(named || roomScoped || localStorage.getItem('barikade_dice_style') || 'classic');
+    }catch(_e){ return 'classic'; }
+  }
+  function activeDiceStyle(){
+    const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : '';
+    return normalizeDiceStyle((c && diceStyleByColor[c]) || getRequestedDiceStyle());
+  }
+  function applyActiveDiceStyle(){
+    try{
+      if(!diceEl) return;
+      const style = activeDiceStyle();
+      diceEl.setAttribute('data-dice-style', style);
+      const pill = diceEl.closest ? diceEl.closest('.dicePill') : diceEl.parentElement;
+      if(pill) pill.setAttribute('data-dice-style', style);
+      const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : '';
+      const who = c ? labelForColor(c) : '';
+      diceEl.title = `${DICE_STYLE_LABEL[style] || 'Klassisch'}${who ? ' · ' + who : ''}`;
     }catch(_e){}
   }
 
@@ -1467,10 +1504,12 @@ if(actionEffectsState){
 
     // Build display names by color (server roster includes p.name + p.color)
     nameByColor = { red:null, blue:null, green:null, yellow:null };
+    diceStyleByColor = { red:'classic', blue:'classic', green:'classic', yellow:'classic' };
     for(const p of lastNetPlayers){
       const col = (p && p.color) ? String(p.color).toLowerCase() : "";
       const nm  = (p && p.name) ? String(p.name).trim() : "";
       if(col && nm && nameByColor[col] == null) nameByColor[col] = nm;
+      if(col && diceStyleByColor.hasOwnProperty(col)) diceStyleByColor[col] = normalizeDiceStyle(p?.diceStyle);
     }
 
     const me = rosterById.get(clientId);
@@ -1483,6 +1522,7 @@ if(actionEffectsState){
     updateStartButton();
     }
     updateColorPickUI();
+    applyActiveDiceStyle();
     updateActionUI_J1();
     updateActionUI_J1();
 
@@ -1603,6 +1643,7 @@ try{ ws = new WebSocket(SERVER_URL); }
         asHost: (netMode === "host"),
         sessionToken,
         requestedColor: getRequestedColor(),
+        requestedDiceStyle: getRequestedDiceStyle(),
         ts: Date.now()
       });
     };
@@ -1965,7 +2006,8 @@ try{
       else if(ph==="place_barricade") phase="placing_barricade";
       else phase="need_roll";
 
-      // show dice
+      // show current player's selected dice design before the face animation
+      applyActiveDiceStyle();
       setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
       if(barrInfo) barrInfo.textContent = String(state.barricades.size);
 
@@ -2033,6 +2075,7 @@ try{
     }
 
     if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
+    applyActiveDiceStyle();
     setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
     // auto-enter Barrikade-Pick nach Server-Aktivierung
       try{
@@ -2853,6 +2896,7 @@ function showEpicWin(winnerColor){
     // Guard: can be called before we have a snapshot/state
     // (e.g. right after reconnect/assign or after a NO_STATE error)
     if(!state){
+      applyActiveDiceStyle();
       if(turnText) turnText.textContent = "Spiel nicht gestartet";
       if(turnDot) turnDot.style.background = "#555";
       if(rollBtn) rollBtn.disabled = true;
@@ -2863,6 +2907,7 @@ function showEpicWin(winnerColor){
       return;
     }
 
+    applyActiveDiceStyle();
     const c=state.currentPlayer;
     turnText.textContent = state.winner ? `${labelForColor(state.winner)} gewinnt!` : `${labelForColor(c)} ist dran`;
     turnDot.style.background = COLORS[c];
