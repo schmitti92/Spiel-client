@@ -1,10 +1,10 @@
- <!doctype html>
+<!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Barikade</title>
-  <link rel="stylesheet" href="styles.css?v=barikade_v10_4_feedback_20260920" />
+  <link rel="stylesheet" href="styles.css?v=barikade_v10_7_sidebar_20260920" />
 </head>
 
 <body class="game-page">
@@ -43,29 +43,50 @@
       <!-- Hauptzug: nur die Dinge, die man während eines normalen Zuges braucht -->
       <section class="sideSection sideTurnCard">
         <div class="sideSectionHead turnSectionHead">
-          <div>
-            <div class="sideKicker">AKTUELLER ZUG</div>
-            <div id="sideTurnLabel" class="sideTurnLabel">Spiel wird geladen …</div>
-            <div id="sideTurnMeta" class="sideTurnMeta">Verbindung zum Raum wird hergestellt.</div>
+          <div class="sideTurnIdentity">
+            <div id="sideTurnAvatar" class="sideTurnAvatar" aria-hidden="true">?</div>
+            <div class="sideTurnCopy">
+              <div class="sideKicker">SPIELZUG</div>
+              <div id="sideTurnLabel" class="sideTurnLabel">Spiel wird geladen …</div>
+              <div id="sideTurnMeta" class="sideTurnMeta">Verbindung zum Raum wird hergestellt.</div>
+            </div>
           </div>
-          <span id="sideTurnDot" class="sideTurnDot" aria-hidden="true"></span>
+          <div class="sideTurnIndicators">
+            <span id="sidePhaseBadge" class="sidePhaseBadge">WARTEN</span>
+            <span id="sideTurnDot" class="sideTurnDot" aria-hidden="true"></span>
+          </div>
         </div>
 
-        <div class="diceActionRow">
-          <button id="rollBtn" class="btn primaryRoll">🎲 Würfeln</button>
-          <div class="dicePill" aria-label="Aktueller Würfel">
-            <div id="diceCube" data-face="1"></div>
+        <div id="sidebarWaiting" class="sidebarWaiting" aria-live="polite">
+          <div class="sidebarWaitingIcon">👥</div>
+          <div class="sidebarWaitingCopy">
+            <strong id="sidebarWaitingTitle">Warte auf Mitspieler</strong>
+            <span id="sidebarWaitingText">Für den Spielstart werden mindestens zwei Spieler benötigt.</span>
           </div>
+          <div class="sidebarWaitingStats">
+            <span><b id="sidebarWaitingPlayers">1</b> Spieler</span>
+            <span>Raum <b id="sidebarWaitingRoom">–</b></span>
+          </div>
+          <button id="startBtn" class="btn sidebarStartBtn" type="button">▶ Spiel starten</button>
         </div>
 
-        <div class="turnActions">
-          <button id="endBtn" class="btn turnActionBtn endTurnBtn">✓ Zug beenden</button>
-          <button id="skipBtn" class="btn turnActionBtn skipTurnBtn">⏭ Aussetzen</button>
+        <div id="activeTurnControls" class="activeTurnControls">
+          <div class="diceActionRow">
+            <button id="rollBtn" class="btn primaryRoll">🎲 Würfeln</button>
+            <div class="dicePill" aria-label="Aktueller Würfel">
+              <div id="diceCube" data-face="1"></div>
+            </div>
+          </div>
+
+          <div class="turnActions">
+            <button id="endBtn" class="btn turnActionBtn endTurnBtn">✓ Zug beenden</button>
+            <button id="skipBtn" class="btn turnActionBtn skipTurnBtn">⏭ Aussetzen</button>
+          </div>
         </div>
       </section>
 
       <!-- Joker bleiben groß und direkt erreichbar, technische Details wandern nach unten -->
-      <section class="sideSection jokerSection">
+      <section id="jokerSection" class="sideSection jokerSection">
         <div class="sideSectionHead">
           <div>
             <div class="sideKicker">POWER-UPS</div>
@@ -104,25 +125,19 @@
         </div>
       </section>
 
-      <section class="sideSection statusSection">
-        <div class="sideSectionHead compactHead">
-          <div>
-            <div class="sideKicker">LIVE</div>
-            <h3>Spielstatus</h3>
-          </div>
-        </div>
-        <div class="statusCompact" aria-label="Spielstatus">
-          <div class="statusMini"><span>Board</span><strong id="boardInfo">–</strong></div>
-          <div class="statusMini"><span>🧱 Barikaden</span><strong id="barrInfo">–</strong></div>
-          <div class="statusMini statusNet"><span>Verbindung</span><strong id="netStatus">Offline</strong></div>
+      <section class="sideSection statusSection" aria-label="Spielstatus">
+        <div class="statusCompact">
+          <div class="statusMini"><span class="statusMiniIcon">▦</span><span>Board</span><strong id="boardInfo">–</strong></div>
+          <div class="statusMini"><span class="statusMiniIcon">🧱</span><span>Barikaden</span><strong id="barrInfo">–</strong></div>
+          <div class="statusMini statusNet"><span class="statusMiniIcon">●</span><span>Server</span><strong id="netStatus">Offline</strong></div>
         </div>
       </section>
 
       <!-- Alles selten Benötigte liegt jetzt bewusst in einem einzigen Werkzeug-Fach. -->
       <details id="gameToolsDetails" class="gameToolsDetails">
         <summary>
-          <span>⚙ Spiel & Technik</span>
-          <small>Optionen · Raum · Host-Werkzeuge</small>
+          <span>⚙ Mehr</span>
+          <small>Aufgeben · Verbindung · Host</small>
         </summary>
         <div class="gameToolsBody">
           <div id="actionToggleRow" class="toolRow">
@@ -177,7 +192,6 @@
               </div>
 
               <div class="row gameStartRow" style="margin-top:10px;">
-                <button id="startBtn" class="btn">Spiel starten</button>
                 <button id="resumeBtn" class="btn">Spiel fortsetzen</button>
               </div>
             </div>
@@ -233,6 +247,6 @@
     })();
   </script>
 
-  <script src="game.js?v=barikade_v10_4_feedback_20260920"></script>
+  <script src="game.js?v=barikade_v10_7_sidebar_20260920"></script>
 </body>
 </html>
