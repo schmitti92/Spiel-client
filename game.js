@@ -1,7 +1,7 @@
-// Barikade V10.5 – Rematch/Revanche · auf Basis V10.4 · serverautoritaer
+// Barikade V12.0 – Boss-/Ereignis-Release-Kandidat · serverautoritaer
 (function barikadeGameV105Bootstrap(){
   if (window.__BARIKADE_GAME_V105_LOADED__) {
-    console.warn('[Barikade V10.5] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    console.warn('[Barikade V12.0] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
@@ -177,20 +177,16 @@ let pendingSaveExport = false;
   } catch(_e) {}
 
 
-  // Notfall: Farben tauschen (Host-only)
-  let swapColorsBtn = $("swapColorsBtn");
-  try{
-    // Falls index.html den Button noch nicht hat, erzeugen wir ihn sicher per JS,
-    // damit du nur game.js tauschen musst.
-    if(!swapColorsBtn && hostToolsBox){
-      swapColorsBtn = document.createElement("button");
-      swapColorsBtn.id = "swapColorsBtn";
-      swapColorsBtn.className = "btn";
-      swapColorsBtn.textContent = "🔁 Rot ↔ Blau";
-      hostToolsBox.appendChild(swapColorsBtn);
+  // V12.0: Der alte Notfall-Button „Rot ↔ Blau“ wurde entfernt.
+  // Der Server unterstützt inzwischen vier Farben und hatte für diesen Legacy-Button
+  // bewusst keinen Handler mehr. So gibt es kein sichtbares Bedienelement ohne Wirkung.
+  try{ $("swapColorsBtn")?.remove(); }catch(_e){}
 
-      // Joker award mode toggle (Host only): who receives a Joker on kick-out?
+  // Joker award mode toggle (Host only): who receives a Joker on kick-out?
+  try{
+    if(hostToolsBox && !$("jokerAwardModeTools")){
       const jokerModeWrap = document.createElement("div");
+      jokerModeWrap.id = "jokerAwardModeTools";
       jokerModeWrap.style.marginTop = "10px";
       jokerModeWrap.style.display = "flex";
       jokerModeWrap.style.gap = "8px";
@@ -226,11 +222,9 @@ let pendingSaveExport = false;
         btnVictim.className  = (netJokerAwardMode === "victim")  ? "btn primary" : "btn";
       }
       updateJokerModeButtons();
-
       jokerModeWrap.appendChild(btnThrower);
       jokerModeWrap.appendChild(btnVictim);
       hostToolsBox.appendChild(jokerModeWrap);
-
     }
   }catch(_e){}
   const diceEl  = $("diceCube");
@@ -1132,7 +1126,7 @@ let pendingSaveExport = false;
 
   // Server can tell which colors are currently supported online.
   // (Additiv: if missing, fallback to red/blue)
-  let allowedColorsOnline = new Set(["red","blue"]);
+  let allowedColorsOnline = new Set(["red","blue","green","yellow"]);
 
   let _colorPickBound = false;
 
@@ -1784,6 +1778,9 @@ if(actionEffectsState){
 
   let _lastBossEventSeq = 0;
   let _lastBossActionSeq = 0;
+  // Nach Reconnect/Seiten-Reload die letzte bereits vergangene Boss-/Eventmeldung
+  // nur als Ausgangsstand uebernehmen, statt sie erneut als frische Karte einzublenden.
+  let _bossBaselineNextSnapshot = true;
   let _bossOverlayTimer = 0;
   function bossModeVisualActive(){
     try{
@@ -1799,9 +1796,30 @@ if(actionEffectsState){
     el=document.createElement("div");
     el.id="bossEventOverlay";
     el.setAttribute("aria-live","polite");
-    el.innerHTML='<div class="bossEventCard"><div class="bossEventIcon">🃏</div><div class="bossEventKicker">Ereigniskarte</div><div class="bossEventTitle">Ereignis</div><div class="bossEventText"></div><div class="bossEventEffect"></div></div>';
+    el.setAttribute("role","dialog");
+    el.setAttribute("aria-modal","true");
+    el.innerHTML=`<div class="bossEventCard" role="document">
+      <div class="bossEventGlow" aria-hidden="true"></div>
+      <div class="bossEventTop">
+        <div class="bossEventIcon">🃏</div>
+        <div class="bossEventHeadCopy">
+          <div class="bossEventKicker">EREIGNISKARTE</div>
+          <div class="bossEventTitle">Ereignis</div>
+        </div>
+      </div>
+      <div class="bossEventText"></div>
+      <div class="bossEventEffect"></div>
+      <div class="bossEventMeta">
+        <span class="bossEventPlayer">🎯 Spieler</span>
+        <span class="bossEventDeck">🃏 Karten –/54</span>
+      </div>
+      <button type="button" class="bossEventOk">OK · WEITER</button>
+    </div>`;
     document.body.appendChild(el);
-    el.addEventListener("click",()=>{ el.classList.remove("show"); });
+    const close=()=>{ el.classList.remove("show"); clearTimeout(_bossOverlayTimer); };
+    el.querySelector('.bossEventOk')?.addEventListener('click',(ev)=>{ev.stopPropagation();close();});
+    el.addEventListener("click",(ev)=>{ if(ev.target===el) close(); });
+    document.addEventListener('keydown',(ev)=>{ if(ev.key==='Escape' && el.classList.contains('show')) close(); });
     return el;
   }
   function showBossEventCard(evt){
@@ -1811,13 +1829,27 @@ if(actionEffectsState){
     const title=el.querySelector('.bossEventTitle');
     const txt=el.querySelector('.bossEventText');
     const effect=el.querySelector('.bossEventEffect');
+    const player=el.querySelector('.bossEventPlayer');
+    const deck=el.querySelector('.bossEventDeck');
+    const color=String(evt.color||'').toLowerCase();
     if(icon) icon.textContent=evt.icon||"🃏";
     if(title) title.textContent=evt.title||"Ereignis";
     if(txt) txt.textContent=evt.text||"";
     if(effect) effect.textContent=evt.effectText||"";
+    if(player){
+      player.textContent=color ? `🎯 ${labelForColor(color)}` : '🎯 Ereignis';
+      player.style.setProperty('--event-player-color',COLORS[color]||'#8a7cff');
+    }
+    if(deck){
+      const remaining=Number.isFinite(Number(evt.deckRemaining))?Number(evt.deckRemaining):null;
+      const size=Number.isFinite(Number(evt.deckSize))?Number(evt.deckSize):54;
+      deck.textContent=`🃏 ${remaining==null?'–':remaining}/${size} im Stapel`;
+    }
     el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
     clearTimeout(_bossOverlayTimer);
-    _bossOverlayTimer=setTimeout(()=>el.classList.remove("show"),3600);
+    // Sicherheits-Fallback: Die Karte bleibt lange genug lesbar und kann vorher per OK geschlossen werden.
+    _bossOverlayTimer=setTimeout(()=>el.classList.remove("show"),12000);
+    try{ el.querySelector('.bossEventOk')?.focus({preventScroll:true}); }catch(_e){}
   }
   function ensureBossTestTools(){
     if(!bossSection) return null;
@@ -1827,7 +1859,7 @@ if(actionEffectsState){
     box.id="bossTestTools";
     box.className="bossTestTools";
     box.innerHTML=`
-      <div class="bossTestHead"><strong>🧪 Boss-Test</strong><small>nur Host</small></div>
+      <div class="bossTestHead"><strong>🧪 Boss-/Ereignis-Test</strong><small>nur Host</small></div>
       <div class="bossTestGrid">
         <button type="button" data-boss-spawn="hunter">🐺 Jäger</button>
         <button type="button" data-boss-spawn="curse">🧙 Fluchmeister</button>
@@ -1835,8 +1867,33 @@ if(actionEffectsState){
         <button type="button" data-boss-action="act">▶ Bossaktion</button>
         <button type="button" data-boss-action="events">🎲 8 Ereignisfelder neu</button>
         <button type="button" data-boss-action="clear">🧹 Alle löschen</button>
+      </div>
+      <div class="bossEventTestRow" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px">
+        <select id="bossEventTestSelect" aria-label="Ereigniskarte zum Testen">
+          <option value="spawn_one">👹 Ein Boss erscheint</option>
+          <option value="spawn_two">☠️ Zwei Bosse erscheinen</option>
+          <option value="extra_roll">🎲 Nochmal würfeln</option>
+          <option value="roll_minus2">🥾 −2 nächster Wurf</option>
+          <option value="barrier_shuffle_all">🧱 Alle Barikaden neu</option>
+          <option value="boss_action_now">⚡ Bossaktion sofort</option>
+          <option value="joker_one">🎁 1 Joker</option>
+          <option value="player_positions_shuffle">🔀 Positionen tauschen</option>
+          <option value="boss_sleep">😴 Bosse setzen aus</option>
+          <option value="defeat_all_bosses">⚔️ Alle Bosse besiegt</option>
+          <option value="walk10">🚀 10 Felder laufen</option>
+          <option value="boss_teleport">🌀 Boss-Teleport</option>
+          <option value="bounty">🎯 Kopfgeld</option>
+          <option value="barrier_wander3">🧱 3 Barikaden wandern</option>
+          <option value="curse_wave">🧙 Fluchwelle</option>
+          <option value="skip_next_turn">⏸️ Nächste Runde aussetzen</option>
+          <option value="joker_two">🎁 2 Joker</option>
+          <option value="lose_all_jokers">💀 Alle Joker verlieren</option>
+          <option value="all_pieces_forward">⏩ Alle vorwärts</option>
+        </select>
+        <button type="button" id="bossEventTestBtn">🃏 Testen</button>
       </div>`;
-    bossSection.appendChild(box);
+    const debugMount=document.querySelector('#gameToolsDetails .gameToolsBody') || bossSection;
+    debugMount.appendChild(box);
     box.querySelectorAll('[data-boss-spawn]').forEach(btn=>btn.addEventListener('click',()=>{
       if(!isMeHost()){ toast('Nur der Host kann Bosse testen'); return; }
       wsSend({type:'boss_test',action:'spawn',bossType:String(btn.dataset.bossSpawn||'')});
@@ -1845,6 +1902,13 @@ if(actionEffectsState){
       if(!isMeHost()){ toast('Nur der Host kann Bosse testen'); return; }
       wsSend({type:'boss_test',action:String(btn.dataset.bossAction||'')});
     }));
+    const eventBtn=box.querySelector('#bossEventTestBtn');
+    const eventSel=box.querySelector('#bossEventTestSelect');
+    if(eventBtn) eventBtn.addEventListener('click',()=>{
+      if(!isMeHost()){ toast('Nur der Host kann Ereignisse testen'); return; }
+      const eventEffect=String(eventSel?.value||'');
+      wsSend({type:'boss_test',action:'event_card',eventEffect});
+    });
     return box;
   }
 
@@ -1866,7 +1930,7 @@ if(actionEffectsState){
           const boss=slot?.boss || null;
           const isActive=!!boss;
           const status=bossCardStatusText(slot,boss);
-          const slotName=slot?.name || (type==="hunter"?"Bossfeld I":"Bossfeld II");
+          const slotName=slot?.name || 'freies Portal';
           return `<article class="bossCard ${isActive?'isActive':'isIdle'} bossCard--${type}">
             <div class="bossCardArt ${meta.artClass}" aria-hidden="true">
               <img class="bossPortrait" src="${meta.portrait||''}" alt="${meta.name||'Boss'}" loading="lazy" />
@@ -1898,7 +1962,7 @@ if(actionEffectsState){
         const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : 8;
         const activeCount=slots.filter(s=>!!s?.boss).length;
         const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:54;
-        bossRoundInfoEl.textContent=`${activeCount}/3 Bosse aktiv · ${evCount} Ereignisfelder · Karten ${deckRemaining}/54 · Runde ${Math.max(1,Number(bs?.round||1))}`;
+        bossRoundInfoEl.textContent=`${activeCount}/2 Portale belegt · ${evCount} Ereignisfelder · Karten ${deckRemaining}/54 · Runde ${Math.max(1,Number(bs?.round||1))}`;
       }
       const tools=ensureBossTestTools();
       if(tools) tools.style.display=isMeHost()?'block':'none';
@@ -2054,6 +2118,7 @@ if(actionEffectsState){
       const classicNotice = document.getElementById("classicModeNotice");
 
       const started = !!(state && state.started);
+      const paused = !!(state && state.paused);
       const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : "";
       const winner = state && state.winner ? String(state.winner).toLowerCase() : "";
       const isMyTurn = netMode === "offline" ? true : !!(myColor && c && myColor === c);
@@ -2067,19 +2132,21 @@ if(actionEffectsState){
         sidebar.classList.toggle('isPregame', !started && !winner);
         sidebar.classList.toggle('isPlaying', started && !winner);
         sidebar.classList.toggle('isGameOver', !!winner);
-        sidebar.classList.toggle('isMyTurn', !!(started && isMyTurn && !winner));
+        sidebar.classList.toggle('isMyTurn', !!(started && isMyTurn && !winner && !paused));
         sidebar.classList.toggle('isActionMode', !!isAction);
+        sidebar.classList.toggle('isPaused', !!paused);
       }
 
       if(label){
         if(winner) label.textContent = `${labelForColor(winner)} gewinnt!`;
+        else if(started && paused) label.textContent = 'Spiel pausiert';
         else if(started && c) label.textContent = isMyTurn ? 'Dein Zug' : labelForColor(c);
         else label.textContent = connectedPlayers >= 2 ? 'Bereit zum Start' : 'Warte auf Mitspieler';
       }
 
       if(dot){
         dot.style.background = (winner ? COLORS[winner] : (c ? COLORS[c] : "#667085")) || "#667085";
-        dot.classList.toggle("pulse", !!started && !!c && !winner);
+        dot.classList.toggle("pulse", !!started && !!c && !winner && !paused);
       }
 
       if(avatar){
@@ -2096,6 +2163,7 @@ if(actionEffectsState){
           else if(amHost) meta.textContent = "Alle bereit? Dann kannst du die Partie starten.";
           else meta.textContent = "Warte darauf, dass der Host die Partie startet.";
         }
+        else if(paused) meta.textContent = amHost ? "Reconnect-Schutz aktiv. Wenn alle wieder da sind: Fortsetzen drücken." : "Reconnect-Schutz aktiv. Der Host setzt die Partie fort.";
         else if(!isMyTurn) meta.textContent = `Warte auf ${labelForColor(c)}.`;
         else if(phase === "need_roll") meta.textContent = "Würfeln und deinen Zug starten.";
         else if(phase === "need_move") meta.textContent = "Figur auswählen und ziehen.";
@@ -2108,6 +2176,7 @@ if(actionEffectsState){
         let txt = 'WARTEN';
         if(winner) txt = 'ENDE';
         else if(!started) txt = connectedPlayers >= 2 ? 'BEREIT' : 'WARTEN';
+        else if(paused) txt = 'PAUSE';
         else if(!isMyTurn) txt = 'WARTEN';
         else if(phase === 'need_roll') txt = 'WÜRFELN';
         else if(phase === 'need_move') txt = 'ZIEHEN';
@@ -2120,7 +2189,7 @@ if(actionEffectsState){
         waiting.style.display = (!started && !winner) ? 'grid' : 'none';
       }
       if(activeControls){
-        activeControls.style.display = (started && !winner) ? 'block' : 'none';
+        activeControls.style.display = (started && !winner && !paused) ? 'block' : 'none';
       }
       if(waitingPlayers) waitingPlayers.textContent = String(connectedPlayers || 1);
       if(waitingRoom) waitingRoom.textContent = roomCode || (roomCodeInp && roomCodeInp.value) || '–';
@@ -2309,6 +2378,7 @@ try{ ws = new WebSocket(SERVER_URL); }
     catch(_e){ setNetStatus("WebSocket nicht möglich", false); scheduleReconnect(); return; }
 
     ws.onopen = () => {
+      _bossBaselineNextSnapshot = true;
       stopReconnect();
       _lastNetMsgAt = Date.now();
       // Start watchdog only once per connection lifecycle
@@ -2732,7 +2802,13 @@ try{
         mode: String(server.mode || "classic"),
         action: (server.action && typeof server.action === "object") ? server.action : null,
         bossMode: !!server.bossMode,
-        boss: (server.boss && typeof server.boss === "object") ? server.boss : null
+        boss: (server.boss && typeof server.boss === "object") ? server.boss : null,
+        // Reconnect-/Persistenzstatus vom Server nicht mehr beim Adapter verwerfen.
+        paused: !!server.paused,
+        extraRollPending: !!server.extraRollPending,
+        eventMoveActive: (server.eventMoveActive && typeof server.eventMoveActive === "object") ? {...server.eventMoveActive} : null,
+        carryingByColor: (server.carryingByColor && typeof server.carryingByColor === "object") ? {...server.carryingByColor} : null,
+        rev: Number(server.rev||0)
       
       };
 
@@ -2788,6 +2864,12 @@ try{
       updateTurnUI(); updateStartButton(); draw();
       updateRematchUI();
       updateActionUI_J1();
+      if(_bossBaselineNextSnapshot){
+        const bb=state?.boss || null;
+        _lastBossEventSeq=Math.max(_lastBossEventSeq,Number(bb?.lastEvent?.seq||0));
+        _lastBossActionSeq=Math.max(_lastBossActionSeq,Number(bb?.lastAction?.seq||0));
+        _bossBaselineNextSnapshot=false;
+      }
       updateBossUI();
       ensureFittedOnce();
       return;
@@ -5597,15 +5679,6 @@ leaveBtn.addEventListener("click", () => {
     wsSend({ type:"import_state", state: v.state, ts: Date.now(), reason:"host_autosave_restore" });
     toast("Auto‑Save wiederherstellen…");
   });
-
-  // Host tool: Notfall – Farben tauschen (Rot ↔ Blau)
-  if(swapColorsBtn) swapColorsBtn.addEventListener("click", () => {
-    if(!isMeHost()) { toast("Nur Host"); return; }
-    if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
-    wsSend({ type:"swap_colors", ts: Date.now() });
-    toast("Farben tauschen…");
-  });
-
 
   // (Legacy) In aelteren Offline-Versionen gab es chooseColor().
   // Wir binden hier NICHT doppelt, um keine Doppel-Sends zu erzeugen.
