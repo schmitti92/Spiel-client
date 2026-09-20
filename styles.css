@@ -1565,3 +1565,60 @@ body.game-page .statusCompact #boardInfo{
 body.game-page.compact .connectionDetails #onlineBox{
   display:block !important;
 }
+
+
+/* =============================================================
+   V10.1 — PERSONAL DICE THEMES
+   Purely visual. The server still owns every roll value.
+   ============================================================= */
+body.game-page #diceCube[data-dice-style="classic"]{
+  background:linear-gradient(145deg,#ffffff 0%,#eef3f8 52%,#cfd9e7 100%) !important;
+  border-color:rgba(255,255,255,.98) !important;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,1),inset 0 -6px 11px rgba(29,48,72,.15),0 12px 24px rgba(0,0,0,.38),0 0 0 1px rgba(0,0,0,.11) !important;
+}
+body.game-page #diceCube[data-dice-style="classic"] .pip{
+  background:#070a10 !important;
+  box-shadow:inset 0 2px 2px rgba(255,255,255,.16),0 2px 3px rgba(0,0,0,.28) !important;
+}
+
+body.game-page .dicePill[data-dice-style="neon"]{
+  background:radial-gradient(circle at 40% 24%,rgba(49,217,255,.13),rgba(2,5,13,.86) 70%) !important;
+  border-color:rgba(75,222,255,.28) !important;
+  box-shadow:inset 0 1px 0 rgba(130,240,255,.10),0 0 26px rgba(41,190,255,.14),0 14px 32px rgba(0,0,0,.36) !important;
+}
+body.game-page #diceCube[data-dice-style="neon"]{
+  background:linear-gradient(145deg,#161c2c 0%,#080c16 48%,#02040a 100%) !important;
+  border-color:rgba(90,231,255,.72) !important;
+  box-shadow:inset 0 1px 0 rgba(175,246,255,.16),inset 0 -8px 14px rgba(0,0,0,.52),0 0 0 1px rgba(77,230,255,.22),0 0 24px rgba(54,204,255,.30),0 13px 27px rgba(0,0,0,.48) !important;
+}
+body.game-page #diceCube[data-dice-style="neon"] .pip{
+  background:#79efff !important;
+  box-shadow:0 0 5px rgba(91,232,255,.95),0 0 11px rgba(43,200,255,.72),inset 0 1px 1px rgba(255,255,255,.66) !important;
+}
+body.game-page #diceCube[data-dice-style="neon"]::after{
+  background:linear-gradient(145deg,#1bd1f2,#4e63ff) !important;
+  border-color:rgba(205,250,255,.96) !important;
+  box-shadow:0 0 16px rgba(44,210,255,.56),0 6px 15px rgba(34,47,132,.50) !important;
+}
+
+body.game-page .dicePill[data-dice-style="royal"]{
+  background:radial-gradient(circle at 36% 20%,rgba(255,223,134,.15),rgba(16,11,4,.68) 72%) !important;
+  border-color:rgba(237,194,91,.24) !important;
+  box-shadow:inset 0 1px 0 rgba(255,238,183,.10),0 0 24px rgba(225,170,56,.11),0 14px 32px rgba(0,0,0,.34) !important;
+}
+body.game-page #diceCube[data-dice-style="royal"]{
+  background:linear-gradient(145deg,#fff9df 0%,#f3e6bf 48%,#d8bd78 100%) !important;
+  border-color:#f3cf69 !important;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.82),inset 0 -7px 12px rgba(105,72,16,.18),0 0 0 1px rgba(105,72,16,.20),0 12px 25px rgba(0,0,0,.40),0 0 18px rgba(231,184,71,.16) !important;
+}
+body.game-page #diceCube[data-dice-style="royal"] .pip{
+  background:#5a3e0e !important;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.30),0 2px 3px rgba(78,49,5,.24) !important;
+}
+body.game-page #diceCube[data-dice-style="royal"]::after{
+  color:#2f2109 !important;
+  background:linear-gradient(145deg,#ffe7a2,#d6a943) !important;
+  border-color:#fff3c8 !important;
+  box-shadow:0 6px 15px rgba(111,74,10,.38),inset 0 1px 0 rgba(255,255,255,.52) !important;
+  text-shadow:0 1px 0 rgba(255,255,255,.44) !important;
+}
