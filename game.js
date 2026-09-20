@@ -4100,15 +4100,18 @@ function showEpicWin(winnerColor){
       ctx.save();
       ctx.lineCap="round";
       for(const f of board.meta.bossFields){
-        const anchor=nodeById.get(String(f?.anchor||""));
-        if(!anchor || typeof f?.x!=="number" || typeof f?.y!=="number") continue;
-        const a=worldToScreen(anchor), b=worldToScreen(f);
-        ctx.strokeStyle="rgba(199,145,255,.22)"; ctx.lineWidth=9;
-        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-        ctx.strokeStyle="rgba(218,181,255,.72)"; ctx.lineWidth=2.4;
-        ctx.setLineDash([7,6]);
-        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-        ctx.setLineDash([]);
+        if(typeof f?.x!=="number" || typeof f?.y!=="number") continue;
+        const anchors = Array.isArray(f?.anchors) ? f.anchors.map(v=>nodeById.get(String(v))).filter(Boolean) : (f?.anchor ? [nodeById.get(String(f.anchor))].filter(Boolean) : []);
+        const center=worldToScreen(f);
+        for(const anchor of anchors){
+          const a=worldToScreen(anchor);
+          ctx.strokeStyle="rgba(97,57,148,.34)"; ctx.lineWidth=10;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+          ctx.strokeStyle="rgba(218,181,255,.86)"; ctx.lineWidth=2.6;
+          ctx.setLineDash([7,6]);
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+          ctx.setLineDash([]);
+        }
       }
       ctx.restore();
     }
@@ -4259,28 +4262,91 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
 
     if(bossModeVisualActive() && Array.isArray(board?.meta?.bossFields)){
       const serverSlots=Array.isArray(state?.boss?.slots) ? state.boss.slots : [];
+      const tBoss = performance.now() / 1000;
       for(let i=0;i<board.meta.bossFields.length;i++){
         const f=board.meta.bossFields[i];
         if(typeof f?.x!=="number" || typeof f?.y!=="number") continue;
         const ss=worldToScreen(f);
         const slot=serverSlots.find(x=>String(x?.id||"")===String(f?.id||"")) || serverSlots[i] || null;
         const boss=slot?.boss || null;
-        const br=r*1.48;
+        const br=r*1.36;
+        const pulse = 0.5 + 0.5 * Math.sin(tBoss * 3.1 + i * 0.9);
+        const aura = boss ? 24 + 12*pulse : 16 + 8*pulse;
         ctx.save();
-        ctx.shadowColor=boss?"rgba(255,74,113,.38)":"rgba(146,91,214,.22)";
-        ctx.shadowBlur=boss?24:14;
-        const g=ctx.createRadialGradient(ss.x-br*.3,ss.y-br*.35,br*.08,ss.x,ss.y,br);
-        g.addColorStop(0,boss?"rgba(104,31,50,.98)":"rgba(64,42,92,.96)");
-        g.addColorStop(1,"rgba(12,10,20,.98)");
-        ctx.fillStyle=g; ctx.strokeStyle=boss?"rgba(255,121,149,.90)":"rgba(196,146,255,.72)";ctx.lineWidth=3;
-        ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+        // ominous outer aura
+        ctx.shadowColor=boss?"rgba(255,44,96,.60)":"rgba(170,82,255,.42)";
+        ctx.shadowBlur=aura;
+        ctx.strokeStyle=boss?`rgba(255,98,140,${(0.72+0.20*pulse).toFixed(3)})`:`rgba(203,150,255,${(0.60+0.18*pulse).toFixed(3)})`;
+        ctx.lineWidth=3.4;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br+8+2*pulse,0,Math.PI*2);ctx.stroke();
+        ctx.lineWidth=1.8;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br+15+3*pulse,0,Math.PI*2);ctx.stroke();
+
+        // dark spiky rune ring for a more evil look
         ctx.shadowColor="transparent";
-        ctx.fillStyle="rgba(247,238,255,.95)";ctx.textAlign="center";ctx.textBaseline="middle";
-        ctx.font=`1000 ${Math.max(18,Math.round(br*.72))}px system-ui`;
-        ctx.fillText(boss?.icon || "👹",ss.x,ss.y-3);
-        ctx.font=`900 ${Math.max(8,Math.round(br*.24))}px system-ui`;
-        ctx.fillStyle="rgba(231,214,255,.82)";
-        ctx.fillText(boss?`${Math.max(0,Number(boss.hp||0))}/${Math.max(1,Number(boss.maxHp||1))} HP`:`BOSS ${i+1}`,ss.x,ss.y+br*.58);
+        for(let k=0;k<8;k++){
+          const a=(Math.PI*2/8)*k + tBoss*0.22;
+          const a2=a + 0.18;
+          const a3=a - 0.18;
+          const r1=br+3;
+          const r2=br+14+4*pulse;
+          ctx.fillStyle=boss?"rgba(110,16,36,.92)":"rgba(82,34,118,.86)";
+          ctx.beginPath();
+          ctx.moveTo(ss.x + Math.cos(a)*r2, ss.y + Math.sin(a)*r2);
+          ctx.lineTo(ss.x + Math.cos(a2)*r1, ss.y + Math.sin(a2)*r1);
+          ctx.lineTo(ss.x + Math.cos(a3)*r1, ss.y + Math.sin(a3)*r1);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        const g=ctx.createRadialGradient(ss.x-br*.30,ss.y-br*.38,br*.08,ss.x,ss.y,br*1.04);
+        g.addColorStop(0,boss?"rgba(132,28,53,.99)":"rgba(84,42,120,.99)");
+        g.addColorStop(.45,boss?"rgba(58,10,22,.99)":"rgba(44,22,72,.99)");
+        g.addColorStop(1,"rgba(10,8,18,.995)");
+        ctx.fillStyle=g;
+        ctx.strokeStyle=boss?"rgba(255,120,150,.98)":"rgba(214,168,255,.96)";
+        ctx.lineWidth=3.2;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+        // inner ring and top sheen
+        ctx.strokeStyle=boss?"rgba(255,210,220,.18)":"rgba(255,255,255,.14)";
+        ctx.lineWidth=1.25;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br-4,0,Math.PI*2);ctx.stroke();
+        const glow=ctx.createRadialGradient(ss.x-br*.35, ss.y-br*.42, br*.05, ss.x-br*.22, ss.y-br*.28, br*.92);
+        glow.addColorStop(0, boss?"rgba(255,154,182,.26)":"rgba(232,206,255,.22)");
+        glow.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle=glow;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br-1,0,Math.PI*2);ctx.fill();
+
+        // small horns / crown silhouette
+        ctx.fillStyle=boss?"rgba(255,98,140,.88)":"rgba(205,154,255,.84)";
+        ctx.beginPath();
+        ctx.moveTo(ss.x-br*.42, ss.y-br*.62);
+        ctx.lineTo(ss.x-br*.14, ss.y-br*.98);
+        ctx.lineTo(ss.x-br*.02, ss.y-br*.54);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(ss.x+br*.42, ss.y-br*.62);
+        ctx.lineTo(ss.x+br*.14, ss.y-br*.98);
+        ctx.lineTo(ss.x+br*.02, ss.y-br*.54);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillStyle="rgba(250,242,255,.99)";
+        ctx.font=`1000 ${Math.max(18,Math.round(br*.70))}px system-ui`;
+        ctx.fillText(boss?.icon || "👹",ss.x,ss.y-5);
+
+        ctx.font=`900 ${Math.max(8,Math.round(br*.21))}px system-ui`;
+        ctx.fillStyle=boss?"rgba(255,213,225,.96)":"rgba(240,224,255,.94)";
+        ctx.fillText(boss?`${Math.max(0,Number(boss.hp||0))}/${Math.max(1,Number(boss.maxHp||1))} HP`:`BOSSFELD ${i+1}`,ss.x,ss.y+br*.58);
+
+        // label above the field
+        ctx.font=`900 ${Math.max(9,Math.round(br*.22))}px system-ui`;
+        ctx.fillStyle=boss?"rgba(255,125,160,.98)":"rgba(213,164,255,.94)";
+        ctx.fillText(boss?"BOSS AKTIV":"BOSS", ss.x, ss.y-br-13);
         ctx.restore();
       }
     }
