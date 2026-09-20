@@ -2142,3 +2142,182 @@ body.game-page .innerConnectionDetails>summary{min-height:39px;}
 @media (prefers-reduced-motion:reduce){
   body.game-page .sideTurnDot.pulse{animation:none !important;}
 }
+
+/* =========================================================
+   V10.4 – Sounds & Feedback
+   Reine UI-/Feedback-Schicht, keine Spielregeln.
+   ========================================================= */
+body.game-page .soundToggleBtn{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  flex:0 0 42px;
+  padding:0;
+  border-radius:13px;
+  border:1px solid rgba(255,255,255,.09);
+  background:linear-gradient(145deg,rgba(25,34,54,.88),rgba(8,13,24,.88));
+  color:#f2f6ff;
+  font-size:18px;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 22px rgba(0,0,0,.16);
+  transition:transform .16s ease,border-color .16s ease,filter .16s ease,background .16s ease;
+}
+body.game-page .soundToggleBtn:hover{transform:translateY(-1px);border-color:rgba(139,124,255,.25);filter:brightness(1.08)}
+body.game-page .soundToggleBtn:active{transform:translateY(0) scale(.96)}
+body.game-page .soundToggleBtn.is-muted{
+  color:rgba(210,219,236,.58);
+  background:rgba(7,12,22,.62);
+  border-color:rgba(255,255,255,.055);
+}
+
+body.game-page .gameFeedback{
+  position:fixed;
+  z-index:5200;
+  top:calc(66px + var(--v103-strip-h,78px) + 12px);
+  left:50%;
+  width:min(430px,calc(100vw - 28px));
+  pointer-events:none;
+  opacity:0;
+  transform:translate(-50%,-12px) scale(.96);
+  transition:opacity .18s ease,transform .22s cubic-bezier(.2,.8,.2,1);
+}
+body.game-page .gameFeedback.show{
+  opacity:1;
+  transform:translate(-50%,0) scale(1);
+}
+body.game-page .gameFeedbackCard{
+  min-height:68px;
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr);
+  align-items:center;
+  gap:11px;
+  padding:10px 14px;
+  border-radius:19px;
+  border:1px solid rgba(255,255,255,.11);
+  background:linear-gradient(145deg,rgba(13,20,35,.95),rgba(4,8,17,.95));
+  box-shadow:0 18px 50px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+body.game-page .gameFeedbackIcon{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  font-size:25px;
+  background:rgba(139,124,255,.14);
+  border:1px solid rgba(139,124,255,.19);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+body.game-page .gameFeedbackText{min-width:0;display:flex;flex-direction:column;gap:3px}
+body.game-page .gameFeedbackText strong{
+  color:#f5f7ff;
+  font-size:18px;
+  line-height:1.05;
+  font-weight:950;
+  letter-spacing:-.3px;
+}
+body.game-page .gameFeedbackText span{
+  color:rgba(208,219,239,.62);
+  font-size:10.5px;
+  line-height:1.3;
+  font-weight:750;
+}
+body.game-page .gameFeedback.is-turn .gameFeedbackCard{border-color:rgba(62,208,255,.23);box-shadow:0 18px 50px rgba(0,0,0,.34),0 0 35px rgba(62,208,255,.08)}
+body.game-page .gameFeedback.is-turn .gameFeedbackIcon{background:rgba(62,208,255,.13);border-color:rgba(62,208,255,.22)}
+body.game-page .gameFeedback.is-six .gameFeedbackCard{border-color:rgba(255,204,85,.28);box-shadow:0 18px 55px rgba(0,0,0,.36),0 0 42px rgba(255,193,73,.12)}
+body.game-page .gameFeedback.is-six .gameFeedbackIcon{background:rgba(255,193,73,.14);border-color:rgba(255,193,73,.24)}
+body.game-page .gameFeedback.is-kick .gameFeedbackCard{border-color:rgba(255,92,115,.27);box-shadow:0 18px 55px rgba(0,0,0,.36),0 0 42px rgba(255,82,110,.11)}
+body.game-page .gameFeedback.is-kick .gameFeedbackIcon{background:rgba(255,82,110,.13);border-color:rgba(255,82,110,.22)}
+body.game-page .gameFeedback.is-joker .gameFeedbackCard{border-color:rgba(166,122,255,.30);box-shadow:0 18px 55px rgba(0,0,0,.36),0 0 42px rgba(139,124,255,.12)}
+body.game-page .gameFeedback.is-joker .gameFeedbackIcon{background:rgba(139,124,255,.15);border-color:rgba(139,124,255,.24)}
+body.game-page .gameFeedback.is-barricade .gameFeedbackCard{border-color:rgba(255,167,76,.25)}
+body.game-page .gameFeedback.is-barricade .gameFeedbackIcon{background:rgba(255,157,67,.13);border-color:rgba(255,157,67,.22)}
+
+body.game-page .gamePulse{
+  position:fixed;
+  z-index:5100;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+  border:0 solid transparent;
+}
+body.game-page .gamePulse.flash-turn{animation:v104PulseTurn .62s ease-out both}
+body.game-page .gamePulse.flash-six{animation:v104PulseSix .72s ease-out both}
+body.game-page .gamePulse.flash-kick{animation:v104PulseKick .52s ease-out both}
+body.game-page .gamePulse.flash-joker{animation:v104PulseJoker .62s ease-out both}
+@keyframes v104PulseTurn{0%{opacity:.55;box-shadow:inset 0 0 0 5px rgba(60,207,255,.24),inset 0 0 70px rgba(60,207,255,.08)}100%{opacity:0;box-shadow:inset 0 0 0 0 rgba(60,207,255,0),inset 0 0 0 rgba(60,207,255,0)}}
+@keyframes v104PulseSix{0%{opacity:.72;box-shadow:inset 0 0 0 6px rgba(255,199,73,.30),inset 0 0 95px rgba(255,193,73,.13)}100%{opacity:0;box-shadow:inset 0 0 0 0 rgba(255,193,73,0),inset 0 0 0 rgba(255,193,73,0)}}
+@keyframes v104PulseKick{0%{opacity:.72;background:rgba(255,57,91,.055);box-shadow:inset 0 0 0 7px rgba(255,78,107,.28)}100%{opacity:0;background:transparent;box-shadow:inset 0 0 0 0 rgba(255,78,107,0)}}
+@keyframes v104PulseJoker{0%{opacity:.64;box-shadow:inset 0 0 0 6px rgba(148,112,255,.27),inset 0 0 90px rgba(139,124,255,.11)}100%{opacity:0;box-shadow:inset 0 0 0 0 rgba(139,124,255,0),inset 0 0 0 rgba(139,124,255,0)}}
+
+body.game-page.v104-my-turn #rollBtn:not(:disabled){
+  animation:v104RollReady 1.75s ease-in-out infinite;
+}
+body.game-page.v104-my-turn .playerStripCard.isMe.isActive{
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--player-color) 58%,transparent),0 0 28px color-mix(in srgb,var(--player-color) 23%,transparent),inset 0 1px 0 rgba(255,255,255,.07);
+}
+@keyframes v104RollReady{0%,100%{filter:brightness(1);box-shadow:0 0 0 rgba(139,124,255,0)}50%{filter:brightness(1.12);box-shadow:0 0 25px rgba(139,124,255,.18)}}
+
+/* stronger but still short dice hit when a 6 lands */
+body.game-page #diceCube.v104-six-hit{animation:v104SixHit .55s cubic-bezier(.2,.85,.2,1) both}
+@keyframes v104SixHit{0%{transform:scale(.86) rotate(-4deg)}45%{transform:scale(1.16) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
+
+@media (max-width:900px){
+  body.game-page .gameFeedback{top:130px;width:min(390px,calc(100vw - 20px))}
+  body.game-page .gameFeedbackCard{min-height:62px;grid-template-columns:42px minmax(0,1fr);padding:9px 11px;border-radius:17px}
+  body.game-page .gameFeedbackIcon{width:40px;height:40px;border-radius:13px;font-size:22px}
+  body.game-page .gameFeedbackText strong{font-size:16px}
+  body.game-page .gameFeedbackText span{font-size:9.8px}
+}
+@media (max-width:560px){
+  body.game-page .soundToggleBtn{width:38px;height:38px;flex-basis:38px;border-radius:12px;font-size:16px}
+  body.game-page .gameFeedback{top:116px}
+}
+@media (prefers-reduced-motion:reduce){
+  body.game-page.v104-my-turn #rollBtn:not(:disabled){animation:none !important}
+  body.game-page .gamePulse,
+  body.game-page #diceCube.v104-six-hit{animation:none !important}
+  body.game-page .gameFeedback{transition:none !important}
+}
+
+
+/* =========================================================
+   V10.5 – Revanche / Nochmal spielen
+   ========================================================= */
+body.game-page #rematchBtn[hidden],
+body.game-page #overlayRematch[hidden]{display:none !important;}
+body.game-page #rematchBtn{
+  grid-column:1 / -1;
+  min-height:46px;
+  font-weight:950;
+  letter-spacing:.1px;
+  color:#f7fbff;
+  border-color:rgba(83,221,162,.32) !important;
+  background:linear-gradient(135deg,rgba(43,191,132,.24),rgba(82,116,255,.18)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 10px 28px rgba(28,171,122,.10);
+}
+body.game-page #rematchBtn:hover{
+  border-color:rgba(83,221,162,.52) !important;
+  filter:brightness(1.10);
+}
+body.game-page .overlayActions{gap:9px;flex-wrap:wrap;}
+body.game-page #overlayRematch{
+  min-height:44px;
+  padding:0 17px;
+  border-radius:13px;
+  border:1px solid rgba(85,226,164,.36);
+  color:#fff;
+  font-weight:950;
+  background:linear-gradient(135deg,#1ea873,#536df0);
+  box-shadow:0 10px 28px rgba(23,157,108,.20),inset 0 1px 0 rgba(255,255,255,.18);
+}
+body.game-page #overlayRematch:hover{filter:brightness(1.10);transform:translateY(-1px);}
+body.game-page #overlayRematch:disabled,
+body.game-page #rematchBtn:disabled{opacity:.55;cursor:wait;transform:none;filter:none;}
+@media(max-width:560px){
+  body.game-page .overlayActions{justify-content:stretch !important;}
+  body.game-page .overlayActions .btn{flex:1 1 100%;}
+}
