@@ -52,7 +52,7 @@ let pendingSaveExport = false;
 
       // V10.3 player strip also consumes vertical space.
       const topH = topbar ? topbar.getBoundingClientRect().height : 0;
-      const stripH = playerStripShell ? playerStripShell.getBoundingClientRect().height : 0;
+      const stripH = (playerStripShell && topbar && topbar.contains(playerStripShell)) ? 0 : (playerStripShell ? playerStripShell.getBoundingClientRect().height : 0);
       // V10.8: use the REAL visible browser viewport. On Android tablets 100vh can
       // include browser/system UI and made the bottom of the board disappear.
       const pad = window.innerWidth <= 900 ? 10 : 12;
