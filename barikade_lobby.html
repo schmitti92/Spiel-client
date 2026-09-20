@@ -439,6 +439,37 @@
       background:rgba(255,255,255,.12);
     }
     body.lobby-page .switch{height:44px;background:rgba(5,9,18,.34);}
+    body.lobby-page .dice-select-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:9px;}
+    body.lobby-page .dice-style-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+    body.lobby-page .dice-style-card{
+      position:relative;min-width:0;min-height:96px;padding:11px 10px;display:flex;align-items:center;gap:10px;text-align:left;
+      color:var(--text);border:1px solid rgba(255,255,255,.09);border-radius:17px;cursor:pointer;
+      background:linear-gradient(155deg,rgba(19,28,49,.80),rgba(7,12,23,.70));
+      box-shadow:0 10px 24px rgba(0,0,0,.16);transition:transform .16s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+    }
+    body.lobby-page .dice-style-card:hover{transform:translateY(-2px);border-color:rgba(139,124,255,.30);background:linear-gradient(155deg,rgba(31,39,67,.88),rgba(9,16,29,.78));}
+    body.lobby-page .dice-style-card.active{border-color:rgba(139,124,255,.62);box-shadow:0 0 0 3px rgba(139,124,255,.10),0 14px 30px rgba(0,0,0,.24);}
+    body.lobby-page .dice-style-check{position:absolute;right:8px;top:7px;width:19px;height:19px;display:grid;place-items:center;border-radius:50%;font-size:11px;font-weight:1000;background:#f5f7ff;color:#101526;opacity:0;transform:scale(.55);transition:.16s ease;}
+    body.lobby-page .dice-style-card.active .dice-style-check{opacity:1;transform:scale(1);}
+    body.lobby-page .dice-style-copy{display:flex;flex-direction:column;gap:3px;min-width:0;}
+    body.lobby-page .dice-style-copy strong{font-size:13px;font-weight:950;white-space:nowrap;}
+    body.lobby-page .dice-style-copy small{font-size:10.5px;color:rgba(222,230,245,.55);line-height:1.2;}
+    body.lobby-page .dice-preview{
+      position:relative;flex:0 0 54px;width:54px;height:54px;border-radius:15px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:7px;gap:3px;
+      box-sizing:border-box;transform:rotate(-4deg);transition:transform .18s ease,filter .18s ease;
+    }
+    body.lobby-page .dice-style-card:hover .dice-preview{transform:rotate(2deg) scale(1.04);}
+    body.lobby-page .dice-style-card.preview-roll .dice-preview{animation:lobbyDicePreviewRoll .52s cubic-bezier(.2,.85,.24,1);}
+    body.lobby-page .dice-preview i{width:8px;height:8px;border-radius:50%;align-self:center;justify-self:center;opacity:0;}
+    body.lobby-page .dice-preview i:nth-child(1),body.lobby-page .dice-preview i:nth-child(2),body.lobby-page .dice-preview i:nth-child(3),body.lobby-page .dice-preview i:nth-child(4),body.lobby-page .dice-preview i:nth-child(5),body.lobby-page .dice-preview i:nth-child(6){opacity:1;}
+    body.lobby-page .dice-preview i:nth-child(1){grid-area:1/1} body.lobby-page .dice-preview i:nth-child(2){grid-area:1/3} body.lobby-page .dice-preview i:nth-child(3){grid-area:2/1} body.lobby-page .dice-preview i:nth-child(4){grid-area:2/3} body.lobby-page .dice-preview i:nth-child(5){grid-area:3/1} body.lobby-page .dice-preview i:nth-child(6){grid-area:3/3}
+    body.lobby-page .dice-preview-classic{background:linear-gradient(145deg,#fff,#dfe8f4);border:1px solid rgba(255,255,255,.92);box-shadow:inset 0 -5px 9px rgba(30,48,70,.16),0 8px 18px rgba(0,0,0,.28);}
+    body.lobby-page .dice-preview-classic i{background:#0a0d13;box-shadow:inset 0 1px 1px rgba(255,255,255,.18);}
+    body.lobby-page .dice-preview-neon{background:linear-gradient(145deg,#121726,#030711);border:1px solid rgba(83,226,255,.58);box-shadow:inset 0 0 18px rgba(44,205,255,.09),0 0 20px rgba(57,193,255,.22),0 8px 18px rgba(0,0,0,.34);}
+    body.lobby-page .dice-preview-neon i{background:#76efff;box-shadow:0 0 8px rgba(83,226,255,.92);}
+    body.lobby-page .dice-preview-royal{background:linear-gradient(145deg,#fff9df,#ead8a4);border:1px solid #f3cf69;box-shadow:inset 0 -5px 9px rgba(110,76,18,.13),0 0 0 1px rgba(129,90,21,.20),0 8px 18px rgba(0,0,0,.28);}
+    body.lobby-page .dice-preview-royal i{background:#5c4215;box-shadow:inset 0 1px 1px rgba(255,255,255,.34);}
+    @keyframes lobbyDicePreviewRoll{0%{transform:rotate(-4deg) scale(1)}45%{transform:rotate(175deg) scale(1.12)}100%{transform:rotate(356deg) scale(1)}}
     body.lobby-page .joker-count-row{
       margin-top:3px;padding:10px;border-radius:16px;background:rgba(5,9,18,.28);border:1px solid rgba(255,255,255,.055);
     }
@@ -470,6 +501,11 @@
     @media(max-width:560px){
       body.lobby-page .title::before{width:40px;height:40px;border-radius:12px;}
       body.lobby-page .names{grid-template-columns:repeat(2,minmax(0,1fr));}
+      body.lobby-page .dice-select-head{align-items:flex-start;flex-direction:column;gap:3px;}
+      body.lobby-page .dice-style-picker{grid-template-columns:1fr;}
+      body.lobby-page .dice-style-card{min-height:76px;}
+      body.lobby-page .dice-preview{flex-basis:48px;width:48px;height:48px;border-radius:13px;padding:6px;}
+      body.lobby-page .dice-preview i{width:7px;height:7px;}
       body.lobby-page [data-color]{flex:1 1 calc(50% - 6px);}
       body.lobby-page .switch{margin-left:0 !important;width:100%;justify-content:space-between;}
       body.lobby-page #jokerCountInfo{width:100%;margin-left:0 !important;}
@@ -562,6 +598,7 @@
         <span id="modePill" class="pill">Modus: –</span>
         <span id="roomPill" class="pill">Raum: –</span>
         <span id="colorPill" class="pill">Farbe: –</span>
+        <span id="dicePill" class="pill">Würfel: Klassisch</span>
       </div>
     </div>
 
@@ -595,6 +632,29 @@
             <input id="actionToggle" type="checkbox" />
             Action‑Modus
           </label>
+        </div>
+
+        <div style="height:14px"></div>
+        <div class="dice-select-head">
+          <h2 style="margin:0; font-size:16px">Dein Würfel</h2>
+          <span class="hint">Jeder Spieler kann seinen eigenen Würfel wählen.</span>
+        </div>
+        <div id="diceStylePicker" class="dice-style-picker" role="radiogroup" aria-label="Würfeldesign wählen">
+          <button class="dice-style-card active" type="button" data-dice-style="classic" role="radio" aria-checked="true">
+            <span class="dice-preview dice-preview-classic" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="dice-style-copy"><strong>Klassisch</strong><small>Klar & zeitlos</small></span>
+            <span class="dice-style-check">✓</span>
+          </button>
+          <button class="dice-style-card" type="button" data-dice-style="neon" role="radio" aria-checked="false">
+            <span class="dice-preview dice-preview-neon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="dice-style-copy"><strong>Neon</strong><small>Dunkel & leuchtend</small></span>
+            <span class="dice-style-check">✓</span>
+          </button>
+          <button class="dice-style-card" type="button" data-dice-style="royal" role="radio" aria-checked="false">
+            <span class="dice-preview dice-preview-royal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="dice-style-copy"><strong>Royal</strong><small>Elfenbein & Gold</small></span>
+            <span class="dice-style-check">✓</span>
+          </button>
         </div>
 
         <div id="jokerCountWrap" style="height:12px"></div>
@@ -668,6 +728,8 @@
       const modePill = $("modePill");
       const roomPill = $("roomPill");
       const colorPill = $("colorPill");
+      const dicePill = $("dicePill");
+      const diceStyleBtns = Array.from(document.querySelectorAll('[data-dice-style]'));
       const jokerCountWrap = $("jokerCountWrap");
       const jokerCountTitle = $("jokerCountTitle");
       const jokerCountHint = $("jokerCountHint");
@@ -720,11 +782,12 @@ async function reserveMe(nameKey){
     localStorage.getItem("barikade_color") ||
     ""
   ).toLowerCase().trim();
+  const diceStyle = getSelectedDiceStyle(nameKey);
   try{
     const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/reserve`, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ nameKey, color, status:"lobby" })
+      body: JSON.stringify({ nameKey, color, diceStyle, status:"lobby" })
     });
     const j = await r.json().catch(()=>null);
 
@@ -738,7 +801,7 @@ async function reserveMe(nameKey){
         const r2 = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/reserve`, {
           method:"POST",
           headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ nameKey, color, status:"lobby" })
+          body: JSON.stringify({ nameKey, color, diceStyle, status:"lobby" })
         });
         const j2 = await r2.json().catch(()=>null);
         if(!r2.ok) return { ok:false, error:j2?.error || "ERR", holder:j2?.holder };
@@ -775,9 +838,11 @@ function renderPresence(p){
     const stKey = (r?.status === "in_game") ? "in_game" : (inLobby ? "ready" : "free");
     const stLabel = (stKey === "in_game") ? "im Spiel" : (stKey === "ready" ? "bereit" : "frei");
     const col = r?.color ? r.color.toUpperCase() : "–";
+    const pl = players.find(x => String(x.name||"") === nk);
+    const diceStyle = normalizeDiceStyle(pl?.diceStyle || r?.diceStyle || "classic");
+    const diceLabel = diceStyleLabel(diceStyle);
     // connected status from websocket players
     let conn = null;
-    const pl = players.find(x => String(x.name||"") === nk);
     if(pl) conn = pl.connected ? "online" : "offline";
     const offlineClass = (conn === "offline") ? " offline" : "";
     const sig = `${stKey}|${col}|${conn||""}`;
@@ -791,6 +856,7 @@ function renderPresence(p){
         <span class="meta">${stLabel}</span>
         <span class="meta">·</span>
         <span class="meta">${col}</span>
+        <span class="meta">· 🎲 ${diceLabel}</span>
         ${conn ? `<span class="meta">· ${conn}</span>` : ""}
       </div>
     `);
@@ -865,6 +931,57 @@ function startPresencePoll(){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
       }
 
+      const DICE_STYLES = new Set(['classic','neon','royal']);
+      function normalizeDiceStyle(value){
+        const v = String(value || '').toLowerCase().trim();
+        return DICE_STYLES.has(v) ? v : 'classic';
+      }
+      function diceStyleLabel(style){
+        const s = normalizeDiceStyle(style);
+        return s === 'neon' ? 'Neon' : (s === 'royal' ? 'Royal' : 'Klassisch');
+      }
+      function diceStyleKey(nameKey){
+        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        const nk = String(nameKey || localStorage.getItem('barikade_nameKey') || '').trim();
+        return nk ? `barikade_dice_style_${r || 'room'}_${nk}` : `barikade_dice_style_${r || 'room'}`;
+      }
+      function getSelectedDiceStyle(nameKey){
+        try{
+          const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+          const roomOnly = localStorage.getItem(`barikade_dice_style_${r || 'room'}`);
+          const global = localStorage.getItem('barikade_dice_style');
+          // Vor der Namenswahl ist die aktuelle Raum-Auswahl maßgeblich.
+          // Nur bei einem explizit übergebenen Namen bevorzugen wir dessen gespeicherten Stil.
+          if(nameKey){
+            const roomName = localStorage.getItem(`barikade_dice_style_${r || 'room'}_${String(nameKey).trim()}`);
+            return normalizeDiceStyle(roomName || roomOnly || global || 'classic');
+          }
+          return normalizeDiceStyle(roomOnly || global || 'classic');
+        }catch(_e){ return 'classic'; }
+      }
+      function setSelectedDiceStyle(style, nameKey){
+        const v = normalizeDiceStyle(style);
+        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        try{
+          localStorage.setItem('barikade_dice_style', v);
+          localStorage.setItem(`barikade_dice_style_${r || 'room'}`, v);
+          const nk = String(nameKey || '').trim();
+          if(nk) localStorage.setItem(`barikade_dice_style_${r || 'room'}_${nk}`, v);
+        }catch(_e){}
+        refreshDiceStyleUI(v);
+      }
+      function refreshDiceStyleUI(forced){
+        const selected = normalizeDiceStyle(forced || getSelectedDiceStyle());
+        for(const btn of diceStyleBtns){
+          const active = normalizeDiceStyle(btn.getAttribute('data-dice-style')) === selected;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-checked', active ? 'true' : 'false');
+        }
+        if(dicePill){
+          dicePill.textContent = 'Würfel: ' + diceStyleLabel(selected);
+        }
+      }
+
       function jokerCountKey(){
         const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || "");
         return 'barikade_joker_count_' + (r || 'room');
@@ -935,6 +1052,7 @@ function startPresencePoll(){
         actionToggle.checked = (am === 'action');
         const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
         if(c) setRequestedColor(c);
+        refreshDiceStyleUI();
 
         // Start presence polling if room exists
         if(normRoom(r)) startPresencePoll();
@@ -980,6 +1098,18 @@ function startPresencePoll(){
         });
       });
 
+      diceStyleBtns.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const style = normalizeDiceStyle(btn.getAttribute('data-dice-style'));
+          setSelectedDiceStyle(style);
+          btn.classList.remove('preview-roll');
+          void btn.offsetWidth;
+          btn.classList.add('preview-roll');
+          window.setTimeout(()=>btn.classList.remove('preview-roll'), 560);
+          toast('Würfel: ' + diceStyleLabel(style));
+        });
+      });
+
       actionToggle.addEventListener('change', ()=>{
         setActionMode(!!actionToggle.checked);
         refreshJokerCountUI();
@@ -1009,7 +1139,10 @@ function startPresencePoll(){
           const nameKey = String(btn.getAttribute('data-name')||'').trim();
           if(!nameKey) return;
 
-          // Reserve name+color so other devices see it immediately.
+          // Würfeldesign gehört zum Spieler und wird raum-/namensbezogen gespeichert.
+          setSelectedDiceStyle(getSelectedDiceStyle(), nameKey);
+
+          // Reserve name+color+diceStyle so other devices see it immediately.
           const rr = await reserveMe(nameKey);
           if(!rr.ok){
             if(rr.error === "COLOR_TAKEN"){
