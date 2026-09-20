@@ -30,8 +30,9 @@ let pendingSaveExport = false;
     try{
       const topbar = document.querySelector('.topbar');
       const playerStripShell = document.querySelector('.playerStripShell');
+      const appShell = document.querySelector('.app');
       const sidePanel = document.querySelector('.app > .panel');
-      if(!sidePanel) return;
+      if(!sidePanel || !appShell) return;
 
       // Desktop/tablet: board + sidebar stay inside the viewport.
       // Mobile/portrait: the document may scroll naturally (the old hard lock fought the responsive CSS).
@@ -52,12 +53,19 @@ let pendingSaveExport = false;
       // V10.3 player strip also consumes vertical space.
       const topH = topbar ? topbar.getBoundingClientRect().height : 0;
       const stripH = playerStripShell ? playerStripShell.getBoundingClientRect().height : 0;
-      const pad = 16;
-      const maxH = Math.max(200, window.innerHeight - topH - stripH - pad*2);
+      // V10.8: use the REAL visible browser viewport. On Android tablets 100vh can
+      // include browser/system UI and made the bottom of the board disappear.
+      const pad = window.innerWidth <= 900 ? 10 : 12;
+      const maxH = Math.max(320, Math.floor(window.innerHeight - topH - stripH - pad));
+      document.documentElement.style.setProperty('--game-content-h', maxH + 'px');
       if(window.innerWidth <= 900){
+        appShell.style.height = '';
+        appShell.style.minHeight = '';
         sidePanel.style.maxHeight = 'none';
         sidePanel.style.overflowY = 'visible';
       }else{
+        appShell.style.height = maxH + 'px';
+        appShell.style.minHeight = maxH + 'px';
         sidePanel.style.maxHeight = maxH + 'px';
         sidePanel.style.overflowY = 'auto';
       }
@@ -346,6 +354,8 @@ let pendingSaveExport = false;
 
   // ===== V10.4: Sounds + direktes Spiel-Feedback (rein visuell/akustisch) =====
   const soundToggleBtn = $("soundToggleBtn");
+  const fullscreenBtn = $("fullscreenBtn");
+  const fitBoardBtn = $("fitBoardBtn");
   const gameFeedback = $("gameFeedback");
   const gameFeedbackIcon = $("gameFeedbackIcon");
   const gameFeedbackTitle = $("gameFeedbackTitle");
@@ -576,6 +586,80 @@ let pendingSaveExport = false;
       if(v104SoundEnabled){ v104EnsureAudio(); v104Sound("ui"); }
     });
   }
+
+  // ===== V10.8: Vollbild + Brett einpassen =====
+  function v108FullscreenElement(){
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+
+  function v108UpdateFullscreenButton(){
+    const nativeActive = !!v108FullscreenElement();
+    const fallbackActive = document.body.classList.contains("isFullscreenFallback");
+    const active = nativeActive || fallbackActive;
+    document.body.classList.toggle("isFullscreenGame", nativeActive);
+    if(fullscreenBtn){
+      fullscreenBtn.textContent = active ? "⤢" : "⛶";
+      fullscreenBtn.title = active ? "Vollbild verlassen" : "Vollbild einschalten";
+      fullscreenBtn.setAttribute("aria-label", fullscreenBtn.title);
+      fullscreenBtn.setAttribute("aria-pressed", active ? "true" : "false");
+      fullscreenBtn.classList.toggle("is-active", active);
+    }
+  }
+
+  function v108RefitBoard(delay=80){
+    setTimeout(()=>{
+      try{
+        applyUxStabilityFixes();
+        resize();
+        view._fittedOnce = false;
+        fitBoardToView();
+        view._fittedOnce = true;
+        draw();
+      }catch(_e){}
+    }, delay);
+  }
+
+  async function v108ToggleFullscreen(){
+    try{
+      const active = v108FullscreenElement();
+      if(active){
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if(exit) await exit.call(document);
+      }else{
+        const target = document.documentElement;
+        const req = target.requestFullscreen || target.webkitRequestFullscreen;
+        if(req){
+          await req.call(target);
+        }else{
+          // Fallback: compact focus layout when the browser exposes no Fullscreen API.
+          document.body.classList.toggle("isFullscreenFallback");
+          if(fullscreenBtn){
+            const on = document.body.classList.contains("isFullscreenFallback");
+            fullscreenBtn.classList.toggle("is-active", on);
+            fullscreenBtn.textContent = on ? "⤢" : "⛶";
+            fullscreenBtn.title = on ? "Fokusmodus verlassen" : "Vollbild/Fokusmodus";
+          }
+        }
+      }
+    }catch(err){
+      try{ toast("Vollbild konnte vom Browser nicht gestartet werden."); }catch(_e){}
+    }finally{
+      v108UpdateFullscreenButton();
+      v108RefitBoard(120);
+    }
+  }
+
+  if(fullscreenBtn) fullscreenBtn.addEventListener("click", v108ToggleFullscreen);
+  if(fitBoardBtn){
+    fitBoardBtn.addEventListener("click",()=>{
+      try{ v104Sound("ui"); }catch(_e){}
+      v108RefitBoard(20);
+      try{ toast("Brett eingepasst."); }catch(_e){}
+    });
+  }
+  document.addEventListener("fullscreenchange",()=>{ v108UpdateFullscreenButton(); v108RefitBoard(120); });
+  document.addEventListener("webkitfullscreenchange",()=>{ v108UpdateFullscreenButton(); v108RefitBoard(120); });
+  v108UpdateFullscreenButton();
 
   // ===== Legendary Dice (visual only, isolated) =====
   // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
@@ -3186,7 +3270,7 @@ function showEpicWin(winnerColor){
     const vw = rect.width, vh = rect.height;
     if(vw < 20 || vh < 20) return;
 
-    const pad = 70; // world units
+    const pad = 88; // V10.8: etwas mehr Sicherheitsrand, damit Häuser/Figuren nicht am Rand kleben
     const minX = b.minX - pad, maxX = b.maxX + pad;
     const minY = b.minY - pad, maxY = b.maxY + pad;
     const bw = (maxX - minX);
@@ -3668,7 +3752,32 @@ function showEpicWin(winnerColor){
     setTimeout(()=>{ if(!view._fittedOnce) { try{ ensureFittedOnce(); }catch(_e){} } }, 80);
 
   }
-  window.addEventListener("resize", resize);
+  let v108ResizeTimer = null;
+  let v108LastCanvasSize = { w:0, h:0 };
+  window.addEventListener("resize", ()=>{
+    resize();
+    clearTimeout(v108ResizeTimer);
+    v108ResizeTimer = setTimeout(()=>{
+      try{
+        applyUxStabilityFixes();
+        const rr = canvas.getBoundingClientRect();
+        const changedMeaningfully =
+          Math.abs(rr.width - v108LastCanvasSize.w) > 32 ||
+          Math.abs(rr.height - v108LastCanvasSize.h) > 32;
+        const forceFit =
+          !!v108FullscreenElement() ||
+          document.body.classList.contains("isFullscreenFallback") ||
+          changedMeaningfully;
+        if(forceFit){
+          view._fittedOnce = false;
+          fitBoardToView();
+          view._fittedOnce = true;
+          draw();
+        }
+        v108LastCanvasSize = { w:rr.width, h:rr.height };
+      }catch(_e){}
+    }, 110);
+  });
   window.addEventListener("orientationchange", ()=>{
     // force re-fit after rotation/addressbar changes
     view._fittedOnce = false;
