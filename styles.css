@@ -3270,3 +3270,38 @@ body.game-page.isFullscreenFallback .playerStripCard{
     order:20 !important;
   }
 }
+
+
+/* V10.8.5 sidebar scroll: make the entire right sidebar independently scrollable */
+body.game-page .gameSidebar{
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(139,124,255,.42) rgba(255,255,255,.04);
+}
+body.game-page .gameSidebar::-webkit-scrollbar{
+  width:10px;
+}
+body.game-page .gameSidebar::-webkit-scrollbar-track{
+  background:rgba(255,255,255,.03);
+  border-radius:999px;
+}
+body.game-page .gameSidebar::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,rgba(143,126,255,.75),rgba(59,189,255,.58));
+  border-radius:999px;
+  border:2px solid rgba(7,11,21,.35);
+}
+body.game-page .gameSidebar::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,rgba(153,137,255,.92),rgba(75,202,255,.75));
+}
+body.game-page .gameSidebar > :last-child{
+  margin-bottom:8px;
+}
+
+@media (min-width:901px){
+  body.game-page .gameSidebar{
+    max-height:100% !important;
+  }
+}
