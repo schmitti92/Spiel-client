@@ -1046,7 +1046,7 @@ function startPresencePoll(){
         });
       });
 
-      // ---------- Stats (read-only, does not affect gameplay) ----------
+      // ---------- Stats V9.6 (read-only, with Firebase diagnostics) ----------
       const statsBody = $("statsBody");
       const globalSpiele = $("globalGames");
       const globalZeit = $("globalTime");
@@ -1072,10 +1072,17 @@ function startPresencePoll(){
           // Server liefert: { ok:true, rows:[...] }
           const rows = Array.isArray(j.rows) ? j.rows : [];
 
-          // Render rows
+          // Render rows. "source:none" means this Render service has no usable Firestore config.
           if (statsBody){
             if(rows.length === 0){
-              statsBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted)">–</td></tr>`;
+              const noDb = String(j.source || "") === "none";
+              statsBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted)">${noDb ? "Statistik nicht verbunden (Firebase fehlt)" : "Noch keine Statistikdaten"}</td></tr>`;
+              if(noDb){
+                if (globalSpiele) globalSpiele.textContent = "–";
+                if (globalZeit) globalZeit.textContent = "–";
+                console.warn("[stats] Firestore nicht verbunden", { firebaseEnabled:j.firebaseEnabled, credentialsPresent:j.credentialsPresent });
+                return;
+              }
             } else {
               statsBody.innerHTML = rows.map(p=>{
                 const name = String(p.name||"Spieler");
@@ -1098,7 +1105,10 @@ function startPresencePoll(){
           if (globalSpiele) globalSpiele.textContent = String(globalGamesSum || 0);
           if (globalZeit) globalZeit.textContent = fmtPlay(globalPlayMsMax || 0);
         }catch(_e){
-          // keep placeholders
+          console.warn("[stats] Laden fehlgeschlagen", _e);
+          if(statsBody) statsBody.innerHTML = `<tr><td colspan="5" style="color:var(--muted)">Statistik konnte nicht geladen werden</td></tr>`;
+          if(globalSpiele) globalSpiele.textContent = "–";
+          if(globalZeit) globalZeit.textContent = "–";
         }
       }
 
