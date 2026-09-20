@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Barikade – Lobby</title>
+  <title>Barikade – Lobby V10.2.1</title>
   <link rel="stylesheet" href="styles.css?v=barikade_visual_20260919_5" />
   <style>
 
@@ -719,6 +719,290 @@
       body.lobby-page .color-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
       body.lobby-page .player-slots{grid-template-columns:1fr;}
       body.lobby-page .step-hint{display:none;}
+    }
+
+
+    /* ==========================================================
+       V10.2.1 – READABILITY & VISUAL HIERARCHY PASS
+       Tablet/desktop readability upgrade. No lobby/game logic changes.
+       ========================================================== */
+    body.lobby-page .wrap.lobby-v102{
+      max-width:1280px;
+      padding-top:22px;
+      padding-bottom:44px;
+    }
+
+    /* Cleaner brand: one logo tile instead of two competing marks */
+    body.lobby-page .lobby-brand{gap:15px;}
+    body.lobby-page .lobby-brand-mark{
+      width:56px;height:56px;border-radius:17px;font-size:29px;
+      box-shadow:0 18px 40px rgba(55,75,210,.30),inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    body.lobby-page .lobby-brand .title{
+      font-size:clamp(28px,2.35vw,34px);
+      line-height:1.05;
+      letter-spacing:-.55px;
+    }
+    body.lobby-page .lobby-brand .title::before{display:none;}
+    body.lobby-page .lobby-brand .sub{
+      margin-left:0;
+      margin-top:7px;
+      font-size:15px;
+      line-height:1.45;
+      color:rgba(233,238,252,.70);
+    }
+    body.lobby-page .lobby-status-row{gap:9px;}
+    body.lobby-page .lobby-status-row .pill,
+    body.lobby-page .lobby-status-row>.btn{
+      height:42px;
+      padding:0 14px;
+      font-size:13px;
+      border-color:rgba(255,255,255,.105);
+      background:rgba(8,13,25,.62);
+    }
+
+    /* Cards get a little more breathing room and clearer separation */
+    body.lobby-page .lobby-layout{gap:17px;}
+    body.lobby-page .lobby-main-stack,
+    body.lobby-page .lobby-side-stack{gap:17px;}
+    body.lobby-page .room-card,
+    body.lobby-page .profile-card,
+    body.lobby-page .players-card,
+    body.lobby-page .stats-card{
+      border-radius:25px;
+      border-color:rgba(255,255,255,.12);
+      box-shadow:0 28px 68px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.055);
+    }
+    body.lobby-page .room-card{padding:20px 21px;}
+    body.lobby-page .profile-card{padding:21px;}
+    body.lobby-page .players-card,
+    body.lobby-page .stats-card{padding:20px 21px;}
+
+    /* Main headings – deliberately much larger than V10.2 */
+    body.lobby-page .section-kicker{
+      font-size:12px;
+      letter-spacing:.16em;
+      color:rgba(178,195,230,.72);
+    }
+    body.lobby-page .room-title,
+    body.lobby-page .profile-title{
+      margin-top:5px;
+      font-size:23px;
+      line-height:1.15;
+      font-weight:1000;
+      letter-spacing:-.28px;
+      color:#f5f7ff;
+    }
+    body.lobby-page .players-card-head h2,
+    body.lobby-page .stats-card h2{
+      font-size:22px !important;
+      line-height:1.15;
+      font-weight:1000;
+      letter-spacing:-.25px;
+      color:#f5f7ff;
+    }
+    body.lobby-page .room-card-head,
+    body.lobby-page .profile-header{margin-bottom:16px;}
+    body.lobby-page .room-card-head>.hint,
+    body.lobby-page #profileModeHint,
+    body.lobby-page #roomPlayerCount{
+      font-size:12.5px;
+      color:rgba(224,232,247,.60);
+    }
+
+    /* Room controls are now visually as important as the cards around them */
+    body.lobby-page #roomInp{
+      height:62px;
+      font-size:24px;
+      padding-top:20px;
+      border-radius:16px;
+    }
+    body.lobby-page #copyRoomBtn{top:9px;width:44px;height:44px;}
+    body.lobby-page .room-actions .btn{
+      height:62px;
+      min-width:132px;
+      padding-inline:17px;
+      font-size:14px;
+    }
+    body.lobby-page .room-mode-strip{
+      margin-top:13px;
+      padding:13px 14px;
+      border-radius:16px;
+    }
+    body.lobby-page .room-mode-copy strong{font-size:14px;}
+    body.lobby-page .room-mode-copy small{font-size:12px;line-height:1.4;}
+    body.lobby-page .room-mode-strip .switch{font-size:13.5px;}
+
+    /* Profile summary */
+    body.lobby-page .profile-summary{
+      gap:10px;
+      margin-bottom:19px;
+      padding:12px;
+      border-radius:18px;
+      background:linear-gradient(135deg,rgba(124,92,255,.115),rgba(33,198,255,.055));
+    }
+    body.lobby-page .profile-summary-item{padding:11px 12px;border-radius:13px;}
+    body.lobby-page .profile-summary-item small{font-size:10px;margin-bottom:5px;}
+    body.lobby-page .profile-summary-item strong{font-size:14px;}
+    body.lobby-page .mini-color-dot{width:11px;height:11px;}
+
+    /* Steps need to be readable from normal tablet distance */
+    body.lobby-page .setup-step{margin-top:18px;}
+    body.lobby-page .setup-step-head{gap:10px;margin-bottom:10px;}
+    body.lobby-page .step-no{
+      width:27px;height:27px;border-radius:9px;
+      font-size:12px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    body.lobby-page .step-label{
+      font-size:15.5px;
+      line-height:1.2;
+      font-weight:1000;
+      color:#eef2ff;
+    }
+    body.lobby-page .step-hint{font-size:12px;color:rgba(224,232,247,.55);}
+
+    /* Player choice */
+    body.lobby-page .names.player-choice-grid{gap:10px;}
+    body.lobby-page .names.player-choice-grid button{
+      min-height:74px;
+      padding:11px 10px;
+      grid-template-columns:39px 1fr;
+      column-gap:10px;
+      border-radius:17px;
+    }
+    body.lobby-page .player-choice-avatar{
+      width:39px;height:39px;border-radius:12px;
+      font-size:14px;
+    }
+    body.lobby-page .player-choice-name{font-size:14px;}
+    body.lobby-page .player-choice-state{font-size:10.5px;margin-top:4px;}
+
+    /* Color choice */
+    body.lobby-page .color-choice-grid{gap:10px;}
+    body.lobby-page .color-choice-grid [data-color]{
+      height:50px;
+      padding:0 11px;
+      border-radius:14px;
+      font-size:14px;
+    }
+
+    /* Dice chooser – make the actual feature feel premium */
+    body.lobby-page .profile-card .dice-style-picker{gap:10px;}
+    body.lobby-page .profile-card .dice-style-card{
+      min-height:94px;
+      padding:12px;
+      border-radius:17px;
+    }
+    body.lobby-page .profile-card .dice-preview{
+      flex-basis:52px;width:52px;height:52px;
+      border-radius:14px;padding:7px;
+    }
+    body.lobby-page .profile-card .dice-preview i{width:7.5px;height:7.5px;}
+    body.lobby-page .dice-style-copy strong{font-size:14.5px;}
+    body.lobby-page .dice-style-copy small{font-size:11.5px;margin-top:1px;}
+    body.lobby-page .dice-style-check{width:22px;height:22px;font-size:12px;}
+
+    /* Action settings + ready area */
+    body.lobby-page .action-settings-box{
+      margin-top:18px;
+      padding:14px;
+      border-radius:17px;
+    }
+    body.lobby-page .action-settings-title strong{font-size:14.5px;}
+    body.lobby-page .action-settings-title small{font-size:11.5px;line-height:1.35;}
+    body.lobby-page #jokerCountInfo{font-size:11.5px;}
+    body.lobby-page .joker-count-btn{
+      min-width:54px;
+      height:48px;
+      font-size:14px;
+    }
+    body.lobby-page .ready-panel{
+      margin-top:18px;
+      padding-top:17px;
+      gap:14px;
+    }
+    body.lobby-page .ready-copy strong{font-size:14.5px;}
+    body.lobby-page .ready-copy small{font-size:11.5px;line-height:1.45;}
+    body.lobby-page #readyBtn{
+      min-width:220px;
+      height:56px;
+      font-size:14.5px;
+      border-radius:16px;
+      box-shadow:0 18px 42px rgba(68,91,220,.29);
+    }
+
+    /* Live player area – the names should be readable at a glance */
+    body.lobby-page .players-card-head{margin-bottom:14px;}
+    body.lobby-page .player-slots{gap:10px;}
+    body.lobby-page .player-slot{
+      min-height:88px;
+      padding:12px;
+      grid-template-columns:44px minmax(0,1fr);
+      gap:10px;
+      border-radius:17px;
+    }
+    body.lobby-page .player-slot-avatar{
+      width:44px;height:44px;border-radius:14px;
+      font-size:15px;
+    }
+    body.lobby-page .player-slot-name{font-size:14px;gap:7px;}
+    body.lobby-page .slot-badge{height:19px;padding:0 7px;font-size:8.5px;}
+    body.lobby-page .player-slot-meta{font-size:10.5px;gap:6px;margin-top:6px;line-height:1.35;}
+    body.lobby-page .slot-status-dot{width:8px;height:8px;}
+
+    /* Stats: V10.2 was too small on tablet */
+    body.lobby-page .stats-card table{
+      margin-top:13px;
+      font-size:12.5px;
+    }
+    body.lobby-page .stats-card th,
+    body.lobby-page .stats-card td{padding:11px 8px;}
+    body.lobby-page .stats-card th{
+      font-size:11px;
+      letter-spacing:.035em;
+      color:rgba(230,236,251,.72);
+    }
+    body.lobby-page .stats-card td{color:rgba(240,244,255,.88);}
+    body.lobby-page .stats-card>.hint{font-size:11.5px !important;}
+
+    /* Hover/focus polish without touching behavior */
+    body.lobby-page .names.player-choice-grid button,
+    body.lobby-page .color-choice-grid [data-color],
+    body.lobby-page .dice-style-card,
+    body.lobby-page .player-slot{
+      transition:transform .16s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
+    }
+    @media(hover:hover){
+      body.lobby-page .names.player-choice-grid button:not(:disabled):hover,
+      body.lobby-page .color-choice-grid [data-color]:not(:disabled):hover,
+      body.lobby-page .dice-style-card:not(:disabled):hover{
+        transform:translateY(-2px);
+      }
+    }
+
+    /* Tablet portrait / narrow desktop */
+    @media(max-width:1100px){
+      body.lobby-page .lobby-brand .title{font-size:28px;}
+      body.lobby-page .room-title,body.lobby-page .profile-title{font-size:21px;}
+      body.lobby-page .players-card-head h2,body.lobby-page .stats-card h2{font-size:20px !important;}
+      body.lobby-page .lobby-status-row .pill{font-size:12px;padding-inline:11px;}
+    }
+
+    /* Phone rules stay compact despite the larger desktop typography */
+    @media(max-width:720px){
+      body.lobby-page .wrap.lobby-v102{padding-top:14px;}
+      body.lobby-page .lobby-brand-mark{width:48px;height:48px;font-size:24px;}
+      body.lobby-page .lobby-brand .title{font-size:24px;}
+      body.lobby-page .lobby-brand .sub{font-size:13px;}
+      body.lobby-page .room-title,body.lobby-page .profile-title{font-size:19px;}
+      body.lobby-page .players-card-head h2,body.lobby-page .stats-card h2{font-size:19px !important;}
+      body.lobby-page .section-kicker{font-size:10.5px;}
+      body.lobby-page .step-label{font-size:14px;}
+      body.lobby-page .step-hint{font-size:10.5px;}
+      body.lobby-page .names.player-choice-grid button{min-height:68px;}
+      body.lobby-page .profile-card .dice-style-card{min-height:84px;}
+      body.lobby-page #readyBtn{min-width:0;}
     }
 
   </style>
