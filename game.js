@@ -781,6 +781,12 @@ let pendingSaveExport = false;
   let jokerDoubleState = $("jokerDoubleState");
   const actionEffectsState = $("actionEffectsState");
 
+  // ===== V10.9 Action-Bossmodus =====
+  const bossSection = $("bossSection");
+  const bossSlotsEl = $("bossSlots");
+  const bossLastEventEl = $("bossLastEvent");
+  const bossRoundInfoEl = $("bossRoundInfo");
+
 
   
   const jokerAllColorsBtn = $("jokerAllColorsBtn");
@@ -1287,6 +1293,11 @@ let awardsShown = false;
   let _pendingStartJokerInit = false;
 
   let _pendingStartMode = "classic";
+  let _pendingStartBossMode = false;
+
+  function getLobbyBossMode(){
+    try{ return (localStorage.getItem("barikade_boss_mode") || "off") === "boss"; }catch(_e){ return false; }
+  }
   
   function getLobbyJokerCount(){
     try{
@@ -1652,6 +1663,82 @@ if(actionEffectsState){
           if(eff.barricadeBy) parts.push("Barikade-Joker aktiv");
           actionEffectsState.textContent = parts.length ? parts.join(" • ") : "keine Effekte";
         }
+      }
+    }catch(_e){}
+  }
+
+
+  let _lastBossEventSeq = 0;
+  let _lastBossActionSeq = 0;
+  let _bossOverlayTimer = 0;
+  function bossModeVisualActive(){
+    try{
+      // Sobald ein Spielzustand existiert, ist nur noch der Serverzustand massgeblich.
+      // So kann die lokale Lobby-Einstellung eines Gastes den Host-Modus nicht optisch ueberschreiben.
+      if(state && state.started) return !!state.bossMode;
+      return !!getLobbyBossMode();
+    }catch(_e){ return false; }
+  }
+  function ensureBossEventOverlay(){
+    let el=document.getElementById("bossEventOverlay");
+    if(el) return el;
+    el=document.createElement("div");
+    el.id="bossEventOverlay";
+    el.setAttribute("aria-live","polite");
+    el.innerHTML='<div class="bossEventCard"><div class="bossEventIcon">🃏</div><div class="bossEventKicker">Ereigniskarte</div><div class="bossEventTitle">Ereignis</div><div class="bossEventText"></div><div class="bossEventEffect"></div></div>';
+    document.body.appendChild(el);
+    el.addEventListener("click",()=>{ el.classList.remove("show"); });
+    return el;
+  }
+  function showBossEventCard(evt){
+    if(!evt) return;
+    const el=ensureBossEventOverlay();
+    const icon=el.querySelector('.bossEventIcon');
+    const title=el.querySelector('.bossEventTitle');
+    const txt=el.querySelector('.bossEventText');
+    const effect=el.querySelector('.bossEventEffect');
+    if(icon) icon.textContent=evt.icon||"🃏";
+    if(title) title.textContent=evt.title||"Ereignis";
+    if(txt) txt.textContent=evt.text||"";
+    if(effect) effect.textContent=evt.effectText||"";
+    el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+    clearTimeout(_bossOverlayTimer);
+    _bossOverlayTimer=setTimeout(()=>el.classList.remove("show"),3600);
+  }
+  function updateBossUI(){
+    try{
+      const enabled=bossModeVisualActive();
+      if(bossSection) bossSection.hidden=!enabled;
+      if(!enabled) return;
+      const bs=state?.boss || null;
+      const slots=Array.isArray(bs?.slots) ? bs.slots : [];
+      if(bossSlotsEl){
+        const fallback=[{name:"Bossfeld I",boss:null},{name:"Bossfeld II",boss:null}];
+        const arr=slots.length ? slots.slice(0,2) : fallback.slice();
+        while(arr.length<2) arr.push(fallback[arr.length]);
+        bossSlotsEl.innerHTML=arr.map((slot,i)=>{
+          const boss=slot?.boss;
+          if(!boss) return `<div class="bossSlot empty"><span>${i===0?'Ⅰ':'Ⅱ'}</span><strong>${slot?.name||`Bossfeld ${i+1}`}</strong><small>frei</small></div>`;
+          const hp=Math.max(0,Number(boss.hp||0)), max=Math.max(1,Number(boss.maxHp||1));
+          return `<div class="bossSlot active"><span>${boss.icon||'👹'}</span><strong>${boss.name||'Boss'}</strong><small>HP ${hp}/${max} · ${slot?.name||`Feld ${i+1}`}</small></div>`;
+        }).join('');
+      }
+      if(bossLastEventEl){
+        const e=bs?.lastEvent;
+        bossLastEventEl.textContent=e ? `${e.icon||'🃏'} ${e.title||'Ereignis'}` : 'Noch keine Ereigniskarte';
+      }
+      if(bossRoundInfoEl){
+        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : (Array.isArray(board?.meta?.eventFields)?board.meta.eventFields.length:6);
+        bossRoundInfoEl.textContent=`${evCount} Ereignisfelder · Runde ${Math.max(1,Number(bs?.round||1))}`;
+      }
+      const evt=bs?.lastEvent;
+      const evtSeq=Number(evt?.seq||0);
+      if(evt && evtSeq>_lastBossEventSeq){ _lastBossEventSeq=evtSeq; showBossEventCard(evt); }
+      const act=bs?.lastAction;
+      const actSeq=Number(act?.seq||0);
+      if(act && actSeq>_lastBossActionSeq){
+        _lastBossActionSeq=actSeq;
+        if(act.text) toast(`${act.icon||'👹'} ${act.title||'Boss'}: ${act.text}`);
       }
     }catch(_e){}
   }
@@ -2150,7 +2237,8 @@ try{
       at: Date.now(),
       dur,
       starterColor: winner,
-      mode: String(msg.mode || _pendingStartMode || (actionModeToggle && actionModeToggle.checked ? "action" : "classic") || "classic")
+      mode: String(msg.mode || _pendingStartMode || (actionModeToggle && actionModeToggle.checked ? "action" : "classic") || "classic"),
+      bossMode: !!(msg.bossMode ?? _pendingStartBossMode ?? getLobbyBossMode())
     };
     window.setTimeout(()=>{
       try{
@@ -2161,7 +2249,7 @@ try{
         if(!p) return;
         // Send the definitive start to the server (server is truth, will validate again).
         const jc = (p.mode === "action") ? getLobbyJokerCount() : null;
-        wsSend({ type:"start", mode: p.mode, ts: Date.now(), starterColor: p.starterColor, jokerStartCount:(jc || undefined) });
+        wsSend({ type:"start", mode: p.mode, bossMode: !!p.bossMode, ts: Date.now(), starterColor: p.starterColor, jokerStartCount:(jc || undefined) });
       }catch(_e){}
     }, dur + 60);
   }
@@ -2429,6 +2517,7 @@ try{
     // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
+      const wasBossMode = !!(state && state.bossMode);
       // In Online-Mode we ALWAYS render all 4 Farben (auch wenn nicht gewählt),
       // damit Gelb/Grün im Haus sichtbar bleiben.
       const players = ["red","blue","green","yellow"];
@@ -2463,7 +2552,9 @@ try{
         activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
               ,
         mode: String(server.mode || "classic"),
-        action: (server.action && typeof server.action === "object") ? server.action : null
+        action: (server.action && typeof server.action === "object") ? server.action : null,
+        bossMode: !!server.bossMode,
+        boss: (server.boss && typeof server.boss === "object") ? server.boss : null
       
       };
 
@@ -2509,9 +2600,15 @@ try{
         }
       }
 
+      if(state.bossMode && !wasBossMode){
+        // Re-fit once when the authoritative server snapshot enables the side boss fields.
+        // Otherwise a guest that loaded the board before game start could keep the classic crop.
+        view._fittedOnce = false;
+      }
       updateTurnUI(); updateStartButton(); draw();
       updateRematchUI();
-    updateActionUI_J1();
+      updateActionUI_J1();
+      updateBossUI();
       ensureFittedOnce();
       return;
     }
@@ -3277,6 +3374,13 @@ function showEpicWin(winnerColor){
       if(n.x<minX) minX=n.x; if(n.x>maxX) maxX=n.x;
       if(n.y<minY) minY=n.y; if(n.y>maxY) maxY=n.y;
     }
+    if(bossModeVisualActive() && Array.isArray(board?.meta?.bossFields)){
+      for(const f of board.meta.bossFields){
+        if(typeof f?.x!=="number" || typeof f?.y!=="number") continue;
+        if(f.x<minX) minX=f.x; if(f.x>maxX) maxX=f.x;
+        if(f.y<minY) minY=f.y; if(f.y>maxY) maxY=f.y;
+      }
+    }
     if(!isFinite(minX)) return null;
     return {minX,maxX,minY,maxY};
   }
@@ -3349,6 +3453,10 @@ function showEpicWin(winnerColor){
           state.action.jokersOwned[c] = arr;
         }
       }
+    }catch(_e){}
+    try{
+      state.bossMode = getLobbyBossMode();
+      state.boss = state.bossMode ? {slots:[],eventFields:Array.isArray(board?.meta?.eventFields)?board.meta.eventFields.slice():[],round:1,lastEvent:null,lastAction:null} : null;
     }catch(_e){}
     // 🔥 BRUTAL: Barikaden starten auf ALLEN RUN-Feldern (außer Ziel)
     for(const id of runNodes){
@@ -3986,6 +4094,25 @@ function showEpicWin(winnerColor){
     for(let y=-oy;y<rect.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rect.width,y);ctx.stroke();}
     ctx.restore();
 
+    // Action-Bossmodus: zwei Spezialfelder sind sichtbar mit dem Brett verbunden,
+    // gehören aber bewusst NICHT zur normalen Laufroute.
+    if(bossModeVisualActive() && Array.isArray(board?.meta?.bossFields)){
+      ctx.save();
+      ctx.lineCap="round";
+      for(const f of board.meta.bossFields){
+        const anchor=nodeById.get(String(f?.anchor||""));
+        if(!anchor || typeof f?.x!=="number" || typeof f?.y!=="number") continue;
+        const a=worldToScreen(anchor), b=worldToScreen(f);
+        ctx.strokeStyle="rgba(199,145,255,.22)"; ctx.lineWidth=9;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        ctx.strokeStyle="rgba(218,181,255,.72)"; ctx.lineWidth=2.4;
+        ctx.setLineDash([7,6]);
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      ctx.restore();
+    }
+
     // edges – recessed board tracks (visual only)
     ctx.save();
     ctx.lineCap="round";
@@ -4077,6 +4204,19 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       ctx.beginPath(); ctx.arc(s.x,s.y,r-2.2,Math.PI*1.04,Math.PI*1.88); ctx.stroke();
       ctx.restore();
 
+      if(n.kind==="board" && bossModeVisualActive() && Array.isArray(board?.meta?.eventFields) && board.meta.eventFields.map(String).includes(String(n.id))){
+        ctx.save();
+        ctx.shadowColor="rgba(180,110,255,.56)"; ctx.shadowBlur=15;
+        ctx.strokeStyle="rgba(211,164,255,.90)"; ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+        ctx.shadowColor="transparent";
+        ctx.fillStyle="rgba(246,230,255,.96)";
+        ctx.font=`1000 ${Math.max(12,Math.round(r*.78))}px system-ui`;
+        ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText("?",s.x,s.y+0.5);
+        ctx.restore();
+      }
+
       // Visual-only goal treatment: stronger hierarchy without changing hitboxes or rules.
       if(n.kind==="board" && n.id===goalNodeId){
         ctx.save();
@@ -4113,6 +4253,35 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       if(n.kind==="board" && hasState && state.barricades && state.barricades.has(n.id)){
         drawBarricadeIcon(s.x,s.y,r);
         if(actionBarricadeFrom === n.id) drawSelectionRing(s.x, s.y, r*0.85);
+      }
+    }
+
+
+    if(bossModeVisualActive() && Array.isArray(board?.meta?.bossFields)){
+      const serverSlots=Array.isArray(state?.boss?.slots) ? state.boss.slots : [];
+      for(let i=0;i<board.meta.bossFields.length;i++){
+        const f=board.meta.bossFields[i];
+        if(typeof f?.x!=="number" || typeof f?.y!=="number") continue;
+        const ss=worldToScreen(f);
+        const slot=serverSlots.find(x=>String(x?.id||"")===String(f?.id||"")) || serverSlots[i] || null;
+        const boss=slot?.boss || null;
+        const br=r*1.48;
+        ctx.save();
+        ctx.shadowColor=boss?"rgba(255,74,113,.38)":"rgba(146,91,214,.22)";
+        ctx.shadowBlur=boss?24:14;
+        const g=ctx.createRadialGradient(ss.x-br*.3,ss.y-br*.35,br*.08,ss.x,ss.y,br);
+        g.addColorStop(0,boss?"rgba(104,31,50,.98)":"rgba(64,42,92,.96)");
+        g.addColorStop(1,"rgba(12,10,20,.98)");
+        ctx.fillStyle=g; ctx.strokeStyle=boss?"rgba(255,121,149,.90)":"rgba(196,146,255,.72)";ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.shadowColor="transparent";
+        ctx.fillStyle="rgba(247,238,255,.95)";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.font=`1000 ${Math.max(18,Math.round(br*.72))}px system-ui`;
+        ctx.fillText(boss?.icon || "👹",ss.x,ss.y-3);
+        ctx.font=`900 ${Math.max(8,Math.round(br*.24))}px system-ui`;
+        ctx.fillStyle="rgba(231,214,255,.82)";
+        ctx.fillText(boss?`${Math.max(0,Number(boss.hp||0))}/${Math.max(1,Number(boss.maxHp||1))} HP`:`BOSS ${i+1}`,ss.x,ss.y+br*.58);
+        ctx.restore();
       }
     }
 
@@ -4698,6 +4867,8 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
     const _jokerCount = (_m === "action") ? getLobbyJokerCount() : null;
     if(_m === "action" && !_jokerCount){ toast("Host muss in der Lobby 1 bis 5 Joker wählen"); return; }
     _pendingStartMode = _m;
+    const _bossMode = getLobbyBossMode();
+    _pendingStartBossMode = _bossMode;
     // Server ist Chef: Joker werden serverseitig erzeugt; kein nachträglicher Client-Import mehr nötig.
     _pendingStartJokerInit = false;
     if(_m === "action"){
@@ -4705,7 +4876,7 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
       wsSend({ type:"set_joker_start_count", count:_jokerCount, ts:Date.now() });
     }
     // Neu: Startspieler per Glücksrad bestimmen (server-chef, für alle sichtbar)
-    wsSend({ type:"start_request", mode:_m, jokerStartCount:(_jokerCount || undefined), ts:Date.now() });
+    wsSend({ type:"start_request", mode:_m, bossMode:_bossMode, jokerStartCount:(_jokerCount || undefined), ts:Date.now() });
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
