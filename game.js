@@ -793,21 +793,21 @@ let pendingSaveExport = false;
       summary:"Jagt immer die nächstgelegene Spielfigur.",
       effect:"Trifft er einen Spieler, wird dessen Figur auf das Startfeld zurückgesetzt.",
       rule:"Barikadenregel: Trifft er eine Barikade, wird sie direkt hinter ihn versetzt.",
-      portrait:"assets/boss_hunter.svg", artClass:"bossCardArt--hunter"
+      portrait:"boss_hunter.svg", artClass:"bossCardArt--hunter"
     },
     curse:{
       key:"curse", icon:"🧙", name:"Der Fluchmeister", tag:"FLUCHMEISTER", cadence:"nach jeder vollständigen Runde", steps:"5 Felder",
       summary:"Schwebt über das gesamte Brett und ignoriert Barikaden.",
       effect:"Jeder Spieler, den er auf seinem Weg überquert, wird sofort verflucht.",
       rule:"Fluch: Der nächste Würfelwurf dieses Spielers erhält −2. Barikaden bleiben liegen.",
-      portrait:"assets/boss_curse.svg", artClass:"bossCardArt--curse"
+      portrait:"boss_curse.svg", artClass:"bossCardArt--curse"
     },
     shadow:{
       key:"shadow", icon:"👻", name:"Der Schatten", tag:"SCHATTEN", cadence:"nach jeder vollständigen Runde", steps:"3 Felder",
       summary:"Jagt bevorzugt den Spieler mit den meisten Jokern.",
       effect:"Jeder Spieler, den er auf seinem Weg erwischt oder überspringt, verliert 1 zufälligen Joker.",
       rule:"Hat ein Spieler keinen Joker, bekommt er stattdessen 2 zufällige Joker über das Joker-Rad.",
-      portrait:"assets/boss_shadow.svg", artClass:"bossCardArt--shadow"
+      portrait:"boss_shadow.svg", artClass:"bossCardArt--shadow"
     }
   };
 
