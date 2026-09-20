@@ -1,3 +1,11 @@
+// Barikade V9.1 – Schutz gegen doppeltes Laden von game.js
+(function barikadeGameV91Bootstrap(){
+  if (window.__BARIKADE_GAME_V91_LOADED__) {
+    console.warn('[Barikade V9.1] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    return;
+  }
+  window.__BARIKADE_GAME_V91_LOADED__ = true;
+
 // --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
 (() => {
   if (typeof window.init !== 'function') window.init = () => {};
@@ -5035,3 +5043,5 @@ function _wheelNext() {
     });
   })();
 
+
+})();
