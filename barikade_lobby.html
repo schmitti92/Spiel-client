@@ -585,15 +585,155 @@
       body.lobby-page *,body.lobby-page *::before,body.lobby-page *::after{scroll-behavior:auto !important;transition:none !important;animation:none !important;}
     }
 
+
+    /* ==========================================================
+       V10.2 – PLAYER LOBBY REDESIGN
+       Pure lobby/UI upgrade. Existing room/server/game protocol stays intact.
+       ========================================================== */
+    body.lobby-page .wrap.lobby-v102{max-width:1240px;padding-top:18px;}
+    body.lobby-page .lobby-v102 .top{align-items:center;margin-bottom:16px;}
+    body.lobby-page .lobby-brand{display:flex;align-items:center;gap:12px;}
+    body.lobby-page .lobby-brand-mark{
+      width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:25px;
+      background:linear-gradient(145deg,rgba(124,92,255,.92),rgba(33,198,255,.68));
+      border:1px solid rgba(255,255,255,.24);box-shadow:0 14px 34px rgba(45,64,180,.26),inset 0 1px 0 rgba(255,255,255,.22);
+    }
+    body.lobby-page .lobby-brand .title{font-size:24px;}
+    body.lobby-page .lobby-brand .sub{margin-top:4px;max-width:none;}
+    body.lobby-page .lobby-status-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+    body.lobby-page .lobby-status-row .pill{height:38px;padding:0 11px;background:rgba(8,13,25,.54);box-shadow:none;}
+
+    body.lobby-page .lobby-layout{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(330px,.86fr);gap:14px;align-items:start;}
+    body.lobby-page .lobby-main-stack,body.lobby-page .lobby-side-stack{display:grid;gap:14px;min-width:0;}
+    body.lobby-page .room-card{padding:16px 17px;}
+    body.lobby-page .room-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    body.lobby-page .section-kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:900;color:rgba(167,184,220,.68);}
+    body.lobby-page .room-title{margin:3px 0 0;font-size:18px;font-weight:950;letter-spacing:.1px;}
+    body.lobby-page .room-code-shell{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:stretch;}
+    body.lobby-page .room-code-input-wrap{position:relative;}
+    body.lobby-page .room-code-input-wrap::before{content:'RAUM';position:absolute;left:13px;top:7px;font-size:9px;font-weight:950;letter-spacing:.15em;color:rgba(226,234,250,.48);z-index:2;pointer-events:none;}
+    body.lobby-page #roomInp{height:58px;padding:18px 50px 2px 13px;font-size:22px;font-weight:1000;letter-spacing:.14em;text-transform:uppercase;background:rgba(5,9,18,.48);}
+    body.lobby-page #copyRoomBtn{position:absolute;right:7px;top:8px;width:42px;height:42px;padding:0;border-radius:12px;box-shadow:none;}
+    body.lobby-page .room-actions{display:flex;gap:8px;align-items:stretch;}
+    body.lobby-page .room-actions .btn{height:58px;min-width:118px;}
+    body.lobby-page .room-mode-strip{margin-top:11px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(5,9,18,.28);border:1px solid rgba(255,255,255,.055);}
+    body.lobby-page .room-mode-copy strong{display:block;font-size:12.5px;}
+    body.lobby-page .room-mode-copy small{display:block;margin-top:2px;color:rgba(222,230,245,.56);font-size:11px;}
+
+    body.lobby-page .profile-card{padding:17px;}
+    body.lobby-page .profile-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;}
+    body.lobby-page .profile-title{margin:3px 0 0;font-size:18px;font-weight:950;}
+    body.lobby-page .profile-summary{
+      display:grid;grid-template-columns:1.2fr .8fr .9fr;gap:8px;margin-bottom:16px;padding:10px;border-radius:16px;
+      border:1px solid rgba(255,255,255,.07);background:linear-gradient(135deg,rgba(124,92,255,.085),rgba(33,198,255,.035));
+    }
+    body.lobby-page .profile-summary-item{min-width:0;padding:9px 10px;border-radius:12px;background:rgba(5,9,18,.35);}
+    body.lobby-page .profile-summary-item small{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:rgba(205,217,241,.45);margin-bottom:4px;}
+    body.lobby-page .profile-summary-item strong{display:flex;align-items:center;gap:7px;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    body.lobby-page .mini-color-dot{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 0 3px rgba(255,255,255,.05);background:rgba(255,255,255,.18);flex:0 0 auto;}
+    body.lobby-page .mini-color-dot.red{background:#ff5368;}body.lobby-page .mini-color-dot.blue{background:#45a4ff;}body.lobby-page .mini-color-dot.green{background:#45d38a;}body.lobby-page .mini-color-dot.yellow{background:#ffd34f;}
+
+    body.lobby-page .setup-step{margin-top:14px;}
+    body.lobby-page .setup-step:first-of-type{margin-top:0;}
+    body.lobby-page .setup-step-head{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+    body.lobby-page .step-no{width:23px;height:23px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:1000;background:rgba(124,92,255,.16);border:1px solid rgba(139,124,255,.26);color:#dcd7ff;}
+    body.lobby-page .step-label{font-size:13px;font-weight:950;}
+    body.lobby-page .step-hint{font-size:10.5px;color:rgba(222,230,245,.50);margin-left:auto;}
+
+    body.lobby-page .names.player-choice-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:0;}
+    body.lobby-page .names.player-choice-grid button{
+      min-height:65px;height:auto;padding:9px 8px;border-radius:15px;display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;column-gap:8px;text-align:left;justify-content:stretch;
+    }
+    body.lobby-page .player-choice-avatar{grid-row:1/3;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:13px;font-weight:1000;background:linear-gradient(145deg,rgba(124,92,255,.24),rgba(33,198,255,.12));border:1px solid rgba(255,255,255,.10);}
+    body.lobby-page .player-choice-name{font-size:12.5px;font-weight:950;align-self:end;line-height:1.05;}
+    body.lobby-page .player-choice-state{font-size:9.5px;color:rgba(220,229,246,.48);font-weight:750;align-self:start;margin-top:3px;}
+    body.lobby-page .names.player-choice-grid button.selected{border-color:rgba(124,92,255,.62);background:linear-gradient(145deg,rgba(124,92,255,.20),rgba(33,198,255,.08));box-shadow:0 0 0 2px rgba(124,92,255,.08),0 12px 26px rgba(0,0,0,.20);}
+    body.lobby-page .names.player-choice-grid button.selected .player-choice-state{color:#bfb6ff;}
+    body.lobby-page .names.player-choice-grid button.slot-occupied:not(.selected){opacity:.46;filter:saturate(.55);}
+
+    body.lobby-page .color-choice-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+    body.lobby-page .color-choice-grid [data-color]{height:45px;min-width:0;padding:0 9px;border-radius:13px;background:rgba(5,9,18,.36);box-shadow:none;}
+    body.lobby-page .color-choice-grid [data-color].active{background:rgba(124,92,255,.12);}
+
+    body.lobby-page .profile-card .dice-style-picker{gap:8px;}
+    body.lobby-page .profile-card .dice-style-card{min-height:82px;padding:10px;}
+    body.lobby-page .profile-card .dice-preview{flex-basis:46px;width:46px;height:46px;border-radius:13px;padding:6px;}
+    body.lobby-page .profile-card .dice-preview i{width:7px;height:7px;}
+
+    body.lobby-page .action-settings-box{margin-top:14px;padding:11px 12px;border-radius:15px;background:rgba(5,9,18,.27);border:1px solid rgba(255,255,255,.055);}
+    body.lobby-page .action-settings-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    body.lobby-page .action-settings-title strong{display:block;font-size:12.5px;}body.lobby-page .action-settings-title small{display:block;margin-top:2px;font-size:10px;color:rgba(222,230,245,.52);}
+    body.lobby-page .action-settings-box .joker-count-row{margin-top:9px;}
+
+    body.lobby-page .ready-panel{margin-top:15px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);}
+    body.lobby-page .ready-copy strong{display:block;font-size:12.5px;}body.lobby-page .ready-copy small{display:block;margin-top:3px;font-size:10.5px;color:rgba(222,230,245,.50);line-height:1.35;}
+    body.lobby-page #readyBtn{height:50px;min-width:190px;border-radius:15px;background:linear-gradient(135deg,#7863ff,#2ba7ff);border-color:rgba(141,128,255,.55);box-shadow:0 16px 36px rgba(68,91,220,.23);}
+    body.lobby-page #readyBtn:not(:disabled)::after{content:'→';position:static;width:auto;height:auto;background:none;opacity:1;transform:none;margin-left:8px;}
+
+    body.lobby-page .players-card{padding:16px 17px;}
+    body.lobby-page .players-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:11px;}
+    body.lobby-page .players-card-head h2{margin:3px 0 0;font-size:17px;}
+    body.lobby-page .player-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+    body.lobby-page .player-slot{position:relative;min-height:78px;padding:10px;border-radius:15px;border:1px solid rgba(255,255,255,.07);background:rgba(5,9,18,.31);display:grid;grid-template-columns:40px minmax(0,1fr);gap:9px;align-items:center;overflow:hidden;}
+    body.lobby-page .player-slot::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent,rgba(255,255,255,.025),transparent);}
+    body.lobby-page .player-slot.ready{border-color:rgba(67,209,147,.22);background:linear-gradient(135deg,rgba(28,74,59,.28),rgba(5,9,18,.35));}
+    body.lobby-page .player-slot.in_game{border-color:rgba(46,176,255,.26);background:linear-gradient(135deg,rgba(26,64,96,.34),rgba(5,9,18,.36));}
+    body.lobby-page .player-slot.is-me{box-shadow:inset 0 0 0 1px rgba(124,92,255,.25);}
+    body.lobby-page .player-slot-avatar{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-weight:1000;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);}
+    body.lobby-page .player-slot-main{min-width:0;}
+    body.lobby-page .player-slot-name{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    body.lobby-page .slot-badge{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:999px;font-size:8px;font-weight:1000;letter-spacing:.03em;background:rgba(124,92,255,.17);color:#cfc9ff;border:1px solid rgba(124,92,255,.18);}
+    body.lobby-page .slot-badge.host{background:rgba(255,190,67,.12);color:#ffd77d;border-color:rgba(255,190,67,.18);}
+    body.lobby-page .player-slot-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:5px;font-size:9.5px;color:rgba(219,229,247,.55);font-weight:750;}
+    body.lobby-page .slot-status-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.22);}.player-slot.ready .slot-status-dot{background:#43d193;box-shadow:0 0 9px rgba(67,209,147,.5)}.player-slot.in_game .slot-status-dot{background:#36b8ff;box-shadow:0 0 9px rgba(54,184,255,.5)}
+
+    body.lobby-page .stats-card{padding:16px 17px;}
+    body.lobby-page .stats-card table{font-size:11px;}
+    body.lobby-page .stats-card th,body.lobby-page .stats-card td{padding:9px 7px;}
+
+    @media(max-width:980px){
+      body.lobby-page .lobby-layout{grid-template-columns:1fr;}
+      body.lobby-page .lobby-side-stack{grid-template-columns:1fr;}
+      body.lobby-page .player-slots{grid-template-columns:repeat(4,minmax(0,1fr));}
+      body.lobby-page .player-slot{grid-template-columns:34px minmax(0,1fr);padding:9px;}.player-slot-avatar{width:34px;height:34px;}
+    }
+    @media(max-width:720px){
+      body.lobby-page .room-code-shell{grid-template-columns:1fr;}
+      body.lobby-page .room-actions{display:grid;grid-template-columns:1fr 1fr;}
+      body.lobby-page .room-actions .btn{height:48px;min-width:0;}
+      body.lobby-page .names.player-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      body.lobby-page .player-slots{grid-template-columns:repeat(2,minmax(0,1fr));}
+      body.lobby-page .profile-summary{grid-template-columns:1fr 1fr 1fr;}
+      body.lobby-page .ready-panel{grid-template-columns:1fr;}
+      body.lobby-page #readyBtn{width:100%;}
+    }
+    @media(max-width:520px){
+      body.lobby-page .lobby-v102 .top{align-items:flex-start;}
+      body.lobby-page .lobby-brand-mark{width:43px;height:43px;border-radius:13px;font-size:22px;}
+      body.lobby-page .lobby-brand .title{font-size:20px;}
+      body.lobby-page .lobby-status-row{width:100%;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;}
+      body.lobby-page .lobby-status-row>*{flex:0 0 auto;}
+      body.lobby-page .room-mode-strip{align-items:flex-start;flex-direction:column;}
+      body.lobby-page .room-mode-strip .switch{width:100%;}
+      body.lobby-page .profile-summary{grid-template-columns:1fr;}
+      body.lobby-page .color-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      body.lobby-page .player-slots{grid-template-columns:1fr;}
+      body.lobby-page .step-hint{display:none;}
+    }
+
   </style>
 </head>
 <body class="lobby-page">
-  <div class="wrap">
+  <div class="wrap lobby-v102">
     <div class="top">
-      <div>
-        <div class="title">Barikade – Lobby</div>
-</div>
-      <div class="row">
+      <div class="lobby-brand">
+        <div class="lobby-brand-mark">🧱</div>
+        <div>
+          <div class="title">Barikade – Spielerlobby</div>
+          <div class="sub">Raum wählen, Spielerprofil einstellen und gemeinsam ins Spiel starten.</div>
+        </div>
+      </div>
+      <div class="lobby-status-row">
         <a class="btn" href="index.html" style="text-decoration:none;">← Zurück</a>
         <span id="modePill" class="pill">Modus: –</span>
         <span id="roomPill" class="pill">Raum: –</span>
@@ -602,116 +742,140 @@
       </div>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <h2 style="margin:0 0 10px 0; font-size:16px">Raum</h2>
-        <div class="row" style="align-items:stretch">
-          <div style="flex:1">
-            <div class="k" style="margin-bottom:6px">Raumcode</div>
-            <input id="roomInp" type="text" inputmode="text" placeholder="z.B. AB12" />
-            
-          </div>
-          <div style="min-width:220px">
-            <div class="k" style="margin-bottom:6px">Aktion</div>
-            <div class="row">
-              <button id="hostMakeBtn" class="btn primary" type="button">Host (neu)</button>
-              <button id="joinBtn" class="btn blue" type="button">Beitreten</button>
+    <div class="lobby-layout">
+      <div class="lobby-main-stack">
+        <section class="card room-card">
+          <div class="room-card-head">
+            <div>
+              <div class="section-kicker">Spielraum</div>
+              <div class="room-title">Raum erstellen oder beitreten</div>
             </div>
-            
+            <span class="hint">Bis zu 4 Spieler</span>
           </div>
-        </div>
+          <div class="room-code-shell">
+            <div class="room-code-input-wrap">
+              <input id="roomInp" type="text" inputmode="text" autocomplete="off" placeholder="AB12" maxlength="10" aria-label="Raumcode" />
+              <button id="copyRoomBtn" class="btn" type="button" title="Raumcode kopieren" aria-label="Raumcode kopieren">⧉</button>
+            </div>
+            <div class="room-actions">
+              <button id="hostMakeBtn" class="btn primary" type="button">＋ Raum erstellen</button>
+              <button id="joinBtn" class="btn blue" type="button">→ Beitreten</button>
+            </div>
+          </div>
+          <div class="room-mode-strip">
+            <div class="room-mode-copy">
+              <strong>Spielmodus</strong>
+              <small>Classic bleibt unverändert. Action aktiviert die Joker-Einstellungen.</small>
+            </div>
+            <label class="switch">
+              <input id="actionToggle" type="checkbox" />
+              Action‑Modus
+            </label>
+          </div>
+        </section>
 
-        <div style="height:12px"></div>
-        <h2 style="margin:0 0 10px 0; font-size:16px">Farbe</h2>
-        <div class="row">
-          <button class="btn" type="button" data-color="red">🔴 Rot</button>
-          <button class="btn" type="button" data-color="blue">🔵 Blau</button>
-          <button class="btn" type="button" data-color="green">🟢 Grün</button>
-          <button class="btn" type="button" data-color="yellow">🟡 Gelb</button>
-          <label class="switch" style="margin-left:auto;">
-            <input id="actionToggle" type="checkbox" />
-            Action‑Modus
-          </label>
-        </div>
+        <section class="card profile-card">
+          <div class="profile-header">
+            <div>
+              <div class="section-kicker">Dein Profil</div>
+              <div class="profile-title">So trittst du dem Spiel bei</div>
+            </div>
+            <span class="hint" id="profileModeHint">Noch nicht bereit</span>
+          </div>
 
-        <div style="height:14px"></div>
-        <div class="dice-select-head">
-          <h2 style="margin:0; font-size:16px">Dein Würfel</h2>
-          <span class="hint">Jeder Spieler kann seinen eigenen Würfel wählen.</span>
-        </div>
-        <div id="diceStylePicker" class="dice-style-picker" role="radiogroup" aria-label="Würfeldesign wählen">
-          <button class="dice-style-card active" type="button" data-dice-style="classic" role="radio" aria-checked="true">
-            <span class="dice-preview dice-preview-classic" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
-            <span class="dice-style-copy"><strong>Klassisch</strong><small>Klar & zeitlos</small></span>
-            <span class="dice-style-check">✓</span>
-          </button>
-          <button class="dice-style-card" type="button" data-dice-style="neon" role="radio" aria-checked="false">
-            <span class="dice-preview dice-preview-neon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
-            <span class="dice-style-copy"><strong>Neon</strong><small>Dunkel & leuchtend</small></span>
-            <span class="dice-style-check">✓</span>
-          </button>
-          <button class="dice-style-card" type="button" data-dice-style="royal" role="radio" aria-checked="false">
-            <span class="dice-preview dice-preview-royal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
-            <span class="dice-style-copy"><strong>Royal</strong><small>Elfenbein & Gold</small></span>
-            <span class="dice-style-check">✓</span>
-          </button>
-        </div>
+          <div class="profile-summary" aria-live="polite">
+            <div class="profile-summary-item"><small>Spieler</small><strong id="summaryName">Noch wählen</strong></div>
+            <div class="profile-summary-item"><small>Farbe</small><strong><span id="summaryColorDot" class="mini-color-dot"></span><span id="summaryColor">Noch wählen</span></strong></div>
+            <div class="profile-summary-item"><small>Würfel</small><strong>🎲 <span id="summaryDice">Klassisch</span></strong></div>
+          </div>
 
-        <div id="jokerCountWrap" style="height:12px"></div>
-        <h2 id="jokerCountTitle" style="margin:0 0 10px 0; font-size:16px">Joker pro Sorte</h2>
-        <div id="jokerCountHint" class="hint" style="margin-bottom:8px">Wähle vor dem Start 1 bis 5 Joker pro Sorte. Ohne Auswahl kein Start im Action‑Modus.</div>
-        <div id="jokerCountRow" class="row joker-count-row">
-          <button class="btn joker-count-btn" type="button" data-joker-count="1">1</button>
-          <button class="btn joker-count-btn" type="button" data-joker-count="2">2</button>
-          <button class="btn joker-count-btn" type="button" data-joker-count="3">3</button>
-          <button class="btn joker-count-btn" type="button" data-joker-count="4">4</button>
-          <button class="btn joker-count-btn" type="button" data-joker-count="5">5</button>
-          <span id="jokerCountInfo" class="hint" style="margin-left:auto">Noch nicht gewählt</span>
-        </div>
-        
+          <div class="setup-step">
+            <div class="setup-step-head"><span class="step-no">1</span><span class="step-label">Spieler wählen</span><span class="step-hint">Dein Name im Raum</span></div>
+            <div class="names player-choice-grid">
+              <button type="button" data-name="David"><span class="player-choice-avatar">D</span><span class="player-choice-name">David</span><span class="player-choice-state">Auswählen</span></button>
+              <button type="button" data-name="Vanessa"><span class="player-choice-avatar">V</span><span class="player-choice-name">Vanessa</span><span class="player-choice-state">Auswählen</span></button>
+              <button type="button" data-name="Christoph"><span class="player-choice-avatar">C</span><span class="player-choice-name">Christoph</span><span class="player-choice-state">Auswählen</span></button>
+              <button type="button" data-name="Gast"><span class="player-choice-avatar">G</span><span class="player-choice-name">Gast</span><span class="player-choice-state">Auswählen</span></button>
+            </div>
+          </div>
 
-        <div style="height:12px"></div>
-        <h2 style="margin:0 0 10px 0; font-size:16px">Spieler</h2>
-        
-        <div class="names">
-          <button type="button" data-name="David">David</button>
-          <button type="button" data-name="Vanessa">Vanessa</button>
-          <button type="button" data-name="Christoph">Christoph</button>
-          <button type="button" data-name="Gast">Gast</button>
-        </div>
+          <div class="setup-step">
+            <div class="setup-step-head"><span class="step-no">2</span><span class="step-label">Farbe wählen</span><span class="step-hint">Jede Farbe nur einmal</span></div>
+            <div class="color-choice-grid">
+              <button class="btn" type="button" data-color="red">🔴 Rot</button>
+              <button class="btn" type="button" data-color="blue">🔵 Blau</button>
+              <button class="btn" type="button" data-color="green">🟢 Grün</button>
+              <button class="btn" type="button" data-color="yellow">🟡 Gelb</button>
+            </div>
+          </div>
 
-<div style="height:12px"></div>
-<div class="hint" id="presenceBox" style="padding:10px; border:1px solid var(--line); border-radius:14px">
-  <div style="font-weight:700; margin-bottom:6px">Im Raum</div>
-  <div id="presenceList" style="font-size:13px; color:var(--muted)">–</div>
-</div>
+          <div class="setup-step">
+            <div class="setup-step-head"><span class="step-no">3</span><span class="step-label">Würfel wählen</span><span class="step-hint">Dein persönliches Design</span></div>
+            <div id="diceStylePicker" class="dice-style-picker" role="radiogroup" aria-label="Würfeldesign wählen">
+              <button class="dice-style-card active" type="button" data-dice-style="classic" role="radio" aria-checked="true">
+                <span class="dice-preview dice-preview-classic" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <span class="dice-style-copy"><strong>Klassisch</strong><small>Klar & zeitlos</small></span><span class="dice-style-check">✓</span>
+              </button>
+              <button class="dice-style-card" type="button" data-dice-style="neon" role="radio" aria-checked="false">
+                <span class="dice-preview dice-preview-neon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <span class="dice-style-copy"><strong>Neon</strong><small>Dunkel & leuchtend</small></span><span class="dice-style-check">✓</span>
+              </button>
+              <button class="dice-style-card" type="button" data-dice-style="royal" role="radio" aria-checked="false">
+                <span class="dice-preview dice-preview-royal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <span class="dice-style-copy"><strong>Royal</strong><small>Elfenbein & Gold</small></span><span class="dice-style-check">✓</span>
+              </button>
+            </div>
+          </div>
 
-        
+          <div class="action-settings-box">
+            <div class="action-settings-top">
+              <div class="action-settings-title"><strong>⚡ Action-Einstellungen</strong><small>Nur aktiv, wenn oben Action-Modus eingeschaltet ist.</small></div>
+              <span id="jokerCountInfo" class="hint">Classic‑Modus</span>
+            </div>
+            <div id="jokerCountWrap" style="display:none"></div>
+            <div id="jokerCountTitle" style="display:none"></div>
+            <div id="jokerCountHint" class="hint" style="display:none">Wähle als Host 1 bis 5 Joker pro Sorte.</div>
+            <div id="jokerCountRow" class="row joker-count-row">
+              <button class="btn joker-count-btn" type="button" data-joker-count="1">1</button>
+              <button class="btn joker-count-btn" type="button" data-joker-count="2">2</button>
+              <button class="btn joker-count-btn" type="button" data-joker-count="3">3</button>
+              <button class="btn joker-count-btn" type="button" data-joker-count="4">4</button>
+              <button class="btn joker-count-btn" type="button" data-joker-count="5">5</button>
+            </div>
+          </div>
+
+          <div class="ready-panel">
+            <div class="ready-copy"><strong id="readyTitle">Profil vervollständigen</strong><small id="readyHint">Wähle Raum, Spieler und Farbe. Deinen Würfel kannst du jederzeit ändern.</small></div>
+            <button id="readyBtn" class="btn primary" type="button" disabled>Bereit & Spiel öffnen</button>
+          </div>
+        </section>
       </div>
 
-      <div class="card">
-        <h2 style="margin:0 0 10px 0; font-size:16px">Statistik</h2>
-        
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Spiele</th>
-              <th>Siege</th>
-              <th>Ø‑Wurf</th>
-              <th>Spielzeit gesamt</th>
-            </tr>
-          </thead>
-          <tbody id="statsBody">
-            <tr><td>David</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
-            <tr><td>Vanessa</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
-            <tr><td>Christoph</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
-          </tbody>
-        </table>
-        <div class="hint" style="margin-top:10px">
-          Spiele: <span class="k" id="globalGames">–</span> · Zeit: <span class="k" id="globalTime">–</span>
-        </div>
-      </div>
+      <aside class="lobby-side-stack">
+        <section class="card players-card">
+          <div class="players-card-head">
+            <div><div class="section-kicker">Live</div><h2>Spieler im Raum</h2></div>
+            <span class="hint" id="roomPlayerCount">0 / 4</span>
+          </div>
+          <div id="presenceBox">
+            <div id="presenceList" class="player-slots">Raum wählen …</div>
+          </div>
+        </section>
+
+        <section class="card stats-card">
+          <div class="section-kicker">Langzeitwerte</div>
+          <h2 style="margin-top:3px">Statistik</h2>
+          <table>
+            <thead><tr><th>Name</th><th>Spiele</th><th>Siege</th><th>Ø‑Wurf</th><th>Zeit</th></tr></thead>
+            <tbody id="statsBody">
+              <tr><td>David</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Vanessa</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Christoph</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            </tbody>
+          </table>
+          <div class="hint" style="margin-top:10px">Teilnahmen: <span class="k" id="globalGames">–</span> · Zeit: <span class="k" id="globalTime">–</span></div>
+        </section>
+      </aside>
     </div>
   </div>
 
@@ -735,6 +899,17 @@
       const jokerCountHint = $("jokerCountHint");
       const jokerCountInfo = $("jokerCountInfo");
       const jokerCountBtns = Array.from(document.querySelectorAll('[data-joker-count]'));
+      const readyBtn = $("readyBtn");
+      const copyRoomBtn = $("copyRoomBtn");
+      const summaryName = $("summaryName");
+      const summaryColor = $("summaryColor");
+      const summaryColorDot = $("summaryColorDot");
+      const summaryDice = $("summaryDice");
+      const readyTitle = $("readyTitle");
+      const readyHint = $("readyHint");
+      const profileModeHint = $("profileModeHint");
+      const roomPlayerCount = $("roomPlayerCount");
+      let selectedNameKey = "";
 
 // V9.4 FINAL: Lobby und Spiel nutzen denselben Render-Server; Farbreservierung nutzt dieselben Keys wie game.js.
 // Server base (same as game.js, but HTTP for fetch)
@@ -821,50 +996,56 @@ function renderPresence(p){
   if(!presenceList) return;
 
   if(!p){
-    presenceList.textContent = "–";
+    presenceList.innerHTML = '<div class="hint">Raum nicht erreichbar.</div>';
+    if(roomPlayerCount) roomPlayerCount.textContent = '0 / 4';
     return;
   }
 
   const res = p.reservations || {};
   const locks = p.colorLocks || {};
   const players = Array.isArray(p.players) ? p.players : [];
-
-  // Build chips
-  const chips = [];
   const order = ["David","Vanessa","Christoph","Gast"];
+  let occupied = 0;
+  const slots = [];
+
   for(const nk of order){
     const r = res[nk];
-    const inLobby = !!r;
-    const stKey = (r?.status === "in_game") ? "in_game" : (inLobby ? "ready" : "free");
-    const stLabel = (stKey === "in_game") ? "im Spiel" : (stKey === "ready" ? "bereit" : "frei");
-    const col = r?.color ? r.color.toUpperCase() : "–";
     const pl = players.find(x => String(x.name||"") === nk);
+    const hasPresence = !!r || !!pl;
+    if(hasPresence) occupied++;
+    const stKey = (r?.status === "in_game" || pl?.connected) ? "in_game" : (r ? "ready" : "free");
+    const stLabel = stKey === 'in_game' ? 'Im Spiel' : stKey === 'ready' ? 'Bereit' : 'Freier Platz';
+    const c = String(pl?.color || r?.color || '').toLowerCase();
     const diceStyle = normalizeDiceStyle(pl?.diceStyle || r?.diceStyle || "classic");
-    const diceLabel = diceStyleLabel(diceStyle);
-    // connected status from websocket players
-    let conn = null;
-    if(pl) conn = pl.connected ? "online" : "offline";
-    const offlineClass = (conn === "offline") ? " offline" : "";
-    const sig = `${stKey}|${col}|${conn||""}`;
+    const isHost = !!pl?.isHost;
+    const isMe = nk === selectedNameKey || nk === getMyNameKey();
+    const initials = nk.slice(0,1).toUpperCase();
+    const colorText = c ? colorLabel(c) : 'Keine Farbe';
+    const connection = pl ? (pl.connected ? 'online' : 'offline') : '';
+    const sig = `${stKey}|${c}|${diceStyle}|${isHost}|${connection}`;
     const prevSig = presenceVisualState.get(nk);
-    const visualClass = prevSig == null ? " chip-enter" : (prevSig !== sig ? " chip-change" : "");
+    const visualClass = prevSig == null ? ' chip-enter' : (prevSig !== sig ? ' chip-change' : '');
     presenceVisualState.set(nk, sig);
-    chips.push(`
-      <div class="chip ${stKey}${offlineClass}${visualClass}" data-player="${nk}">
-        <span class="dot"></span>
-        <span class="name">${nk}</span>
-        <span class="meta">${stLabel}</span>
-        <span class="meta">·</span>
-        <span class="meta">${col}</span>
-        <span class="meta">· 🎲 ${diceLabel}</span>
-        ${conn ? `<span class="meta">· ${conn}</span>` : ""}
+
+    slots.push(`
+      <div class="player-slot ${stKey}${isMe?' is-me':''}${visualClass}" data-player="${nk}">
+        <div class="player-slot-avatar">${hasPresence ? initials : '＋'}</div>
+        <div class="player-slot-main">
+          <div class="player-slot-name">${nk}${isMe?'<span class="slot-badge">DU</span>':''}${isHost?'<span class="slot-badge host">HOST</span>':''}</div>
+          <div class="player-slot-meta">
+            <span class="slot-status-dot"></span><span>${stLabel}</span>
+            ${hasPresence ? `<span>·</span><span>${colorText}</span><span>·</span><span>🎲 ${diceStyleLabel(diceStyle)}</span>` : ''}
+            ${connection ? `<span>· ${connection}</span>` : ''}
+          </div>
+        </div>
       </div>
     `);
   }
-  presenceList.innerHTML = `<div class="presenceChips">${chips.join("")}</div>`;
+  presenceList.innerHTML = slots.join('');
+  if(roomPlayerCount) roomPlayerCount.textContent = `${occupied} / 4`;
 
-  // Apply color locking UI
-  const my = getMyNameKey();
+  // Apply color locking UI.
+  const my = selectedNameKey || getMyNameKey();
   document.querySelectorAll('[data-color]').forEach(btn=>{
     const c = String(btn.getAttribute("data-color")||"").toLowerCase();
     const holder = locks[c] || null;
@@ -873,7 +1054,21 @@ function renderPresence(p){
     btn.title = holder ? `Belegt von ${holder}` : "";
   });
 
-  // NOTE: Name-Button Clicks werden weiter unten (global) registriert.
+  // Occupied names are visible but cannot be selected by a different local player.
+  document.querySelectorAll('.names [data-name]').forEach(btn=>{
+    const nk = String(btn.getAttribute('data-name')||'');
+    const occupiedByRoom = !!res[nk] || players.some(x=>String(x.name||'')===nk);
+    const own = nk === selectedNameKey || nk === getMyNameKey();
+    btn.classList.toggle('slot-occupied', occupiedByRoom && !own);
+    btn.disabled = occupiedByRoom && !own;
+    const state = btn.querySelector('.player-choice-state');
+    if(state){
+      if(own && nk === selectedNameKey) state.textContent = 'Ausgewählt · Du';
+      else if(occupiedByRoom) state.textContent = 'Belegt';
+      else state.textContent = 'Auswählen';
+    }
+  });
+  refreshProfileSummary();
 }
 
 // Poll presence every 2.5s when room is set
@@ -904,6 +1099,58 @@ function startPresencePoll(){
         return String(v||"").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
       }
 
+      function getSelectedColor(){
+        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        const c = String(localStorage.getItem('barikade_requested_color_'+r) || localStorage.getItem('barikade_requested_color') || localStorage.getItem('barikade_color') || '').toLowerCase();
+        return ['red','blue','green','yellow'].includes(c) ? c : '';
+      }
+      function colorLabel(c){ return c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':c==='yellow'?'Gelb':'Noch wählen'; }
+      function pendingNameKey(rc){ return 'barikade_pending_name_' + (normRoom(rc) || 'room'); }
+      function setSelectedName(nameKey){
+        const nk = String(nameKey || '').trim();
+        selectedNameKey = ['David','Vanessa','Christoph','Gast'].includes(nk) ? nk : '';
+        try{ localStorage.setItem(pendingNameKey(roomInp.value || localStorage.getItem('barikade_room') || ''), selectedNameKey); }catch(_e){}
+        document.querySelectorAll('.names [data-name]').forEach(btn=>{
+          const isSelected = String(btn.getAttribute('data-name')||'') === selectedNameKey;
+          btn.classList.toggle('selected', isSelected);
+          const state = btn.querySelector('.player-choice-state');
+          if(state && isSelected) state.textContent = 'Ausgewählt · Du';
+          else if(state && !btn.classList.contains('slot-occupied')) state.textContent = 'Auswählen';
+        });
+        refreshProfileSummary();
+      }
+      function restoreSelectedName(){
+        const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        let nk = '';
+        try{ nk = localStorage.getItem(pendingNameKey(rc)) || ''; }catch(_e){}
+        // Existing player name is only a fallback for the same remembered room.
+        if(!nk && rc && rc === normRoom(localStorage.getItem('barikade_room')||'')) nk = localStorage.getItem('barikade_nameKey') || '';
+        setSelectedName(nk);
+      }
+      function refreshProfileSummary(){
+        const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        const mode = localStorage.getItem('barikade_mode') || 'offline';
+        const c = getSelectedColor();
+        const dice = getSelectedDiceStyle(selectedNameKey || undefined);
+        if(summaryName) summaryName.textContent = selectedNameKey || 'Noch wählen';
+        if(summaryColor) summaryColor.textContent = colorLabel(c);
+        if(summaryColorDot){ summaryColorDot.className = 'mini-color-dot' + (c ? ' '+c : ''); }
+        if(summaryDice) summaryDice.textContent = diceStyleLabel(dice);
+        const hasMode = mode === 'host' || mode === 'client';
+        const actionNeedsJoker = !!actionToggle.checked && isHostMode() && !getSelectedJokerCount();
+        const ready = !!rc && hasMode && !!selectedNameKey && !!c && !actionNeedsJoker;
+        if(readyBtn) readyBtn.disabled = !ready;
+        if(profileModeHint) profileModeHint.textContent = mode === 'host' ? '👑 Host' : (mode === 'client' ? 'Mitspieler' : 'Noch kein Raum');
+        if(readyTitle) readyTitle.textContent = ready ? 'Alles bereit' : 'Profil vervollständigen';
+        if(readyHint){
+          if(!rc || !hasMode) readyHint.textContent = 'Erstelle zuerst einen Raum oder tritt einem Raum bei.';
+          else if(!selectedNameKey) readyHint.textContent = 'Wähle deinen Spielernamen.';
+          else if(!c) readyHint.textContent = 'Wähle eine freie Spielerfarbe.';
+          else if(actionNeedsJoker) readyHint.textContent = 'Im Action-Modus muss der Host noch die Jokerzahl wählen.';
+          else readyHint.textContent = `${selectedNameKey} · ${colorLabel(c)} · ${diceStyleLabel(dice)} – bereit für den Raum ${rc}.`;
+        }
+      }
+
       function bumpPill(el){
         if(!el) return;
         el.classList.remove('pill-bump');
@@ -920,12 +1167,14 @@ function startPresencePoll(){
         modePill.textContent = 'Modus: ' + (m === 'host' ? 'Host' : (m === 'client' ? 'Client' : '–'));
         syncModeButtons(m);
         bumpPill(modePill);
+        refreshProfileSummary();
       }
       function setRoom(rc){
         const r = normRoom(rc);
         localStorage.setItem('barikade_room', r);
         roomPill.textContent = 'Raum: ' + (r || '–');
         bumpPill(roomPill);
+        refreshProfileSummary();
       }
       function setActionMode(on){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
@@ -980,6 +1229,8 @@ function startPresencePoll(){
         if(dicePill){
           dicePill.textContent = 'Würfel: ' + diceStyleLabel(selected);
         }
+        if(summaryDice) summaryDice.textContent = diceStyleLabel(selected);
+        if(typeof refreshProfileSummary === 'function') refreshProfileSummary();
       }
 
       function jokerCountKey(){
@@ -1024,6 +1275,7 @@ function startPresencePoll(){
           btn.classList.toggle('host-only-disabled', !actionOn || !host);
           btn.title = !actionOn ? 'Nur im Action‑Modus relevant' : (!host ? 'Nur der Host kann die Jokerzahl wählen' : '');
         }
+        refreshProfileSummary();
       }
       function setRequestedColor(color){
         const c = String(color||"").toLowerCase().trim();
@@ -1035,10 +1287,18 @@ function startPresencePoll(){
           try{ localStorage.setItem('barikade_requested_color_' + r, c); }catch(_e){}
         }
         colorPill.textContent = 'Farbe: ' + (c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':'Gelb');
-        document.querySelectorAll('[data-color]').forEach(btn=>{
+        roomInp.addEventListener('keydown', (ev)=>{
+        if(ev.key === 'Enter'){
+          ev.preventDefault();
+          if(normRoom(roomInp.value)) joinBtn.click(); else hostMakeBtn.click();
+        }
+      });
+
+      document.querySelectorAll('[data-color]').forEach(btn=>{
           btn.classList.toggle('active', String(btn.getAttribute('data-color')||'').toLowerCase() === c);
         });
         bumpPill(colorPill);
+        refreshProfileSummary();
       }
 
       // Restore last selections
@@ -1053,6 +1313,8 @@ function startPresencePoll(){
         const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
         if(c) setRequestedColor(c);
         refreshDiceStyleUI();
+        restoreSelectedName();
+        refreshProfileSummary();
 
         // Start presence polling if room exists
         if(normRoom(r)) startPresencePoll();
@@ -1071,6 +1333,7 @@ function startPresencePoll(){
         const p = await fetchPresence();
         renderPresence(p);
         refreshJokerCountUI();
+        refreshProfileSummary();
       });
 
       joinBtn.addEventListener('click', async ()=>{
@@ -1084,6 +1347,7 @@ function startPresencePoll(){
         const p = await fetchPresence();
         renderPresence(p);
         refreshJokerCountUI();
+        refreshProfileSummary();
       });
 
       document.querySelectorAll('[data-color]').forEach(btn=>{
@@ -1128,55 +1392,80 @@ function startPresencePoll(){
         });
       });
 
-      // Name wählen → zuerst reservieren, dann starten
+      // Spielerwahl bleibt in der Lobby. Erst der große Bereit-Button reserviert und öffnet das Spiel.
       document.querySelectorAll('.names [data-name]').forEach(btn=>{
-        btn.addEventListener('click', async ()=>{
-          const mode = localStorage.getItem('barikade_mode') || 'offline';
-          const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
-          if(!(mode === 'host' || mode === 'client')){ toast('Bitte Host oder Beitreten wählen'); return; }
-          if(!rc){ toast('Bitte Raumcode setzen'); return; }
-
+        btn.addEventListener('click', ()=>{
+          if(btn.disabled) return;
           const nameKey = String(btn.getAttribute('data-name')||'').trim();
           if(!nameKey) return;
-
-          // Würfeldesign gehört zum Spieler und wird raum-/namensbezogen gespeichert.
+          setSelectedName(nameKey);
+          // Bestehende Würfelauswahl diesem Profil zuordnen, ohne sie zu verändern.
           setSelectedDiceStyle(getSelectedDiceStyle(), nameKey);
-
-          // Reserve name+color+diceStyle so other devices see it immediately.
-          const rr = await reserveMe(nameKey);
-          if(!rr.ok){
-            if(rr.error === "COLOR_TAKEN"){
-              toast('Farbe ist schon belegt – wähle eine andere');
-            } else if(rr.error === "NO_ROOM"){
-              toast('Raum ist noch nicht erstellt – drücke Host/Beitreten erneut');
-            } else {
-              toast('Name ist schon belegt – nimm einen anderen');
-            }
-            const p = await fetchPresence();
-            renderPresence(p);
-            return;
-          }
-
-          // Persist
-          localStorage.setItem("barikade_nameKey", nameKey);
-          localStorage.setItem('barikade_playerName', nameKey);
-          localStorage.setItem('barikade_isGuest', nameKey.toLowerCase()==='gast' ? '1' : '0');
-
-          // ensure room persisted + action mode
-          setRoom(rc);
-          setActionMode(!!actionToggle.checked);
-          if(actionToggle.checked && !getSelectedJokerCount()){
-            toast('Host muss 1 bis 5 Joker wählen');
-            return;
-          }
-
-          // go to game (compact UI). Jokerzahl zusätzlich in URL übergeben,
-          // damit der Wert beim Seitenwechsel garantiert erhalten bleibt.
-          const selectedJokers = actionToggle.checked ? getSelectedJokerCount() : null;
-          const qs = new URLSearchParams({ compact:'1' });
-          if(selectedJokers) qs.set('jokerCount', String(selectedJokers));
-          location.href = 'barikade.html?' + qs.toString();
+          toast(nameKey + ' ausgewählt');
         });
+      });
+
+      if(copyRoomBtn){
+        copyRoomBtn.addEventListener('click', async ()=>{
+          const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+          if(!rc){ toast('Noch kein Raumcode'); return; }
+          try{
+            await navigator.clipboard.writeText(rc);
+            toast('Raumcode ' + rc + ' kopiert');
+          }catch(_e){
+            try{
+              const ta=document.createElement('textarea'); ta.value=rc; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+              toast('Raumcode ' + rc + ' kopiert');
+            }catch(_e2){ toast('Raumcode: ' + rc); }
+          }
+        });
+      }
+
+      roomInp.addEventListener('input', ()=>{
+        const rc = normRoom(roomInp.value);
+        if(roomInp.value !== rc) roomInp.value = rc;
+        setRoom(rc);
+        restoreSelectedName();
+        if(rc) startPresencePoll();
+      });
+
+      readyBtn.addEventListener('click', async ()=>{
+        const mode = localStorage.getItem('barikade_mode') || 'offline';
+        const rc = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        const nameKey = String(selectedNameKey || '').trim();
+        const color = getSelectedColor();
+        if(!(mode === 'host' || mode === 'client')){ toast('Bitte erst Raum erstellen oder beitreten'); return; }
+        if(!rc){ toast('Bitte Raumcode setzen'); return; }
+        if(!nameKey){ toast('Bitte Spieler wählen'); return; }
+        if(!color){ toast('Bitte Farbe wählen'); return; }
+        if(actionToggle.checked && isHostMode() && !getSelectedJokerCount()){ toast('Host muss 1 bis 5 Joker wählen'); return; }
+
+        readyBtn.disabled = true;
+        readyBtn.textContent = 'Verbinde …';
+        setSelectedDiceStyle(getSelectedDiceStyle(), nameKey);
+
+        const rr = await reserveMe(nameKey);
+        if(!rr.ok){
+          readyBtn.textContent = 'Bereit & Spiel öffnen';
+          refreshProfileSummary();
+          if(rr.error === 'COLOR_TAKEN') toast('Farbe ist schon belegt – wähle eine andere');
+          else if(rr.error === 'NO_ROOM') toast('Raum ist noch nicht erstellt – drücke Raum erstellen/Beitreten erneut');
+          else if(rr.error === 'NET') toast('Server gerade nicht erreichbar');
+          else toast('Spieler ist schon belegt – wähle einen anderen');
+          const p = await fetchPresence(); renderPresence(p);
+          return;
+        }
+
+        localStorage.setItem('barikade_nameKey', nameKey);
+        localStorage.setItem('barikade_playerName', nameKey);
+        localStorage.setItem('barikade_isGuest', nameKey.toLowerCase()==='gast' ? '1' : '0');
+        setRoom(rc);
+        setActionMode(!!actionToggle.checked);
+
+        const selectedJokers = actionToggle.checked ? getSelectedJokerCount() : null;
+        const qs = new URLSearchParams({ compact:'1' });
+        if(selectedJokers) qs.set('jokerCount', String(selectedJokers));
+        location.href = 'barikade.html?' + qs.toString();
       });
 
       // ---------- Stats V9.6 (read-only, with Firebase diagnostics) ----------
