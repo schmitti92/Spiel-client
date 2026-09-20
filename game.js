@@ -1083,7 +1083,7 @@ let awardsShown = false;
   let interactionFxTimer = 0; // low-frequency canvas pulse while player is choosing a target
 
   // ===== Online =====
-  const SERVER_URL = "wss://spiel-server.onrender.com";
+  const SERVER_URL = "wss://serverfinal-ynbe.onrender.com";
   if(serverLabel) serverLabel.textContent = SERVER_URL;
 
   let ws=null;
