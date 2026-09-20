@@ -1680,28 +1680,21 @@ try{ ws = new WebSocket(SERVER_URL); }
       }
 
       if(type==="emoji_show"){
-        // Only a server-issued command is allowed to trigger the visual reaction.
+        // SERVER IST CHEF: Nur dieser Server-Befehl darf den Smiley anzeigen.
         if(msg.serverCommand !== true) return;
         const incomingRoom = String(msg.room || "").trim().toUpperCase();
         const myRoom = String(roomCode || "").trim().toUpperCase();
         if(incomingRoom && myRoom && incomingRoom !== myRoom) return;
 
-        try{ initEmojiOverlaySystem(); }catch(_e){}
-        const emojiEventId = String(msg.eventId || "").trim();
-        if(emojiEventId && hasSeenEmojiEvent(emojiEventId)) return;
-        if(emojiEventId) rememberSeenEmojiEvent(emojiEventId);
-        try{ showEmojiOverlay(msg.senderName || msg.name || "Spieler", msg.icon || msg.emoji || "😀"); }catch(_e){}
-        return;
-      }
+        const eventId = String(msg.eventId || "").trim();
+        if(eventId && hasSeenEmojiEvent(eventId)) return;
+        if(eventId) rememberSeenEmojiEvent(eventId);
 
-      if(type==="emoji_dispatch_result"){
-        // Diagnostic only. Never triggers the emoji itself.
         try{
-          const n = Number(msg.delivered || 0);
-          console.log(`[emoji] Server zugestellt an ${n} Socket(s)`, msg.recipients || []);
-          if(n < 2 && Array.isArray(lastNetPlayers) && lastNetPlayers.filter(p=>p && p.connected!==false).length >= 2){
-            toast(`Smiley: Server erreicht nur ${n} Spieler`);
-          }
+          showEmojiOverlay(
+            msg.senderName || msg.name || "Spieler",
+            msg.icon || msg.emoji || "😀"
+          );
         }catch(_e){}
         return;
       }
@@ -2603,17 +2596,18 @@ function ensureAwardsStyles(){
     if(!key) return;
     if(!(state && state.started) || state.winner){ toast("Spiel läuft nicht"); return; }
     if(netMode === "offline" || !ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
+
     const now = Date.now();
     if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
     lastEmojiSentAt = now;
 
-    // SERVER-AUTORITÄR: lokal wird NICHTS angezeigt.
-    // Erst der vom Server zurückgesendete Befehl {type:"emoji_show"}
-    // darf den Smiley auf irgendeinem Gerät auslösen – auch beim Absender.
+    // SERVER IST CHEF: Der Client fordert nur an und zeigt hier NICHTS an.
+    // Erst ein spaeteres {type:"emoji_show", serverCommand:true} vom Server
+    // darf showEmojiOverlay() ausloesen.
     const ok = wsSend({ type:"emoji_request", emoji:key, ts:now });
     if(!ok){
       lastEmojiSentAt = 0;
-      toast("Emoji-Anfrage konnte nicht an den Server gesendet werden");
+      toast("Smiley konnte nicht an den Server gesendet werden");
     }
   }
   function bindEmojiButtons(){
