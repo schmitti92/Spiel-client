@@ -787,6 +787,120 @@ let pendingSaveExport = false;
   const bossLastEventEl = $("bossLastEvent");
   const bossRoundInfoEl = $("bossRoundInfo");
 
+  const BOSS_CARD_META = {
+    hunter:{
+      key:"hunter", icon:"🐺", name:"Der Jäger", tag:"JÄGER", cadence:"nach jedem Würfelwurf", steps:"1 Feld",
+      summary:"Jagt immer die nächstgelegene Spielfigur.",
+      effect:"Trifft er einen Spieler, wird dessen Figur auf das Startfeld zurückgesetzt.",
+      rule:"Barikadenregel: Trifft er eine Barikade, wird sie direkt hinter ihn versetzt.",
+      portrait:"assets/boss_hunter.svg", artClass:"bossCardArt--hunter"
+    },
+    curse:{
+      key:"curse", icon:"🧙", name:"Der Fluchmeister", tag:"FLUCHMEISTER", cadence:"nach jeder vollständigen Runde", steps:"5 Felder",
+      summary:"Schwebt über das gesamte Brett und ignoriert Barikaden.",
+      effect:"Jeder Spieler, den er auf seinem Weg überquert, wird sofort verflucht.",
+      rule:"Fluch: Der nächste Würfelwurf dieses Spielers erhält −2. Barikaden bleiben liegen.",
+      portrait:"assets/boss_curse.svg", artClass:"bossCardArt--curse"
+    },
+    shadow:{
+      key:"shadow", icon:"👻", name:"Der Schatten", tag:"SCHATTEN", cadence:"nach jeder vollständigen Runde", steps:"3 Felder",
+      summary:"Jagt bevorzugt den Spieler mit den meisten Jokern.",
+      effect:"Jeder Spieler, den er auf seinem Weg erwischt oder überspringt, verliert 1 zufälligen Joker.",
+      rule:"Hat ein Spieler keinen Joker, bekommt er stattdessen 2 zufällige Joker über das Joker-Rad.",
+      portrait:"assets/boss_shadow.svg", artClass:"bossCardArt--shadow"
+    }
+  };
+
+  function bossCardStatusText(slot,boss){
+    if(!slot || !boss) return 'Noch nicht im Spiel';
+    if(boss.nodeId) return `Aktiv im Spielfeld · Position ${boss.nodeId}`;
+    return `Bereit am Portal · ${slot?.name||'Bossportal'}`;
+  }
+
+  let bossMoveFx = new Map();
+
+  function bossTheme(type){
+    const t=String(type||'');
+    if(t==='hunter') return {glow:'rgba(255,134,74,.72)', stroke:'rgba(255,190,116,.98)', fill:'rgba(59,18,12,.96)', trail:'rgba(255,161,84,.78)', soft:'rgba(255,161,84,.16)', label:'rgba(255,224,192,.96)'};
+    if(t==='curse') return {glow:'rgba(176,118,255,.78)', stroke:'rgba(222,189,255,.98)', fill:'rgba(30,10,58,.96)', trail:'rgba(190,130,255,.78)', soft:'rgba(190,130,255,.18)', label:'rgba(239,225,255,.96)'};
+    return {glow:'rgba(119,241,255,.74)', stroke:'rgba(208,252,255,.98)', fill:'rgba(12,32,46,.96)', trail:'rgba(118,235,244,.78)', soft:'rgba(118,235,244,.16)', label:'rgba(225,250,255,.96)'};
+  }
+
+  function snapshotBossLookup(b){
+    const map=new Map();
+    const slots=Array.isArray(b?.slots) ? b.slots : [];
+    for(const slot of slots){
+      const boss=slot?.boss;
+      if(!boss?.id) continue;
+      map.set(String(boss.id), {
+        id:String(boss.id),
+        nodeId: boss.nodeId ? String(boss.nodeId) : null,
+        lastMovedAt: Number(boss.lastMovedAt || 0),
+        lastPath: Array.isArray(boss.lastPath) ? boss.lastPath.map(String) : [],
+        icon: String(boss.icon||'👹'),
+        type: String(boss.type||'')
+      });
+    }
+    return map;
+  }
+
+  function syncBossMoveFx(prevBoss,nextBoss){
+    try{
+      const prev=snapshotBossLookup(prevBoss);
+      const next=snapshotBossLookup(nextBoss);
+      const now=performance.now();
+      for(const [id,boss] of next.entries()){
+        const old=prev.get(id) || null;
+        const oldNode=old?.nodeId || null;
+        const moved=!!boss.nodeId && (String(boss.nodeId)!==String(oldNode||'') || Number(boss.lastMovedAt||0)!==Number(old?.lastMovedAt||0));
+        if(!moved) continue;
+        const seq=[];
+        if(oldNode) seq.push(String(oldNode));
+        const path=Array.isArray(boss.lastPath) ? boss.lastPath.map(String).filter(Boolean) : [];
+        for(const pid of path){ if(!seq.length || seq[seq.length-1]!==pid) seq.push(pid); }
+        if(boss.nodeId && (!seq.length || seq[seq.length-1]!==String(boss.nodeId))) seq.push(String(boss.nodeId));
+        const clean=seq.filter(pid=>!!nodeById.get(String(pid)));
+        if(!clean.length && boss.nodeId && nodeById.get(String(boss.nodeId))) clean.push(String(boss.nodeId));
+        if(!clean.length) continue;
+        bossMoveFx.set(id, {
+          id,
+          nodes: clean,
+          start: now,
+          duration: Math.max(480, Math.max(1, clean.length-1) * 280),
+          pulseUntil: now + 1800,
+          icon: boss.icon || '👹',
+          type: boss.type || ''
+        });
+      }
+      for(const [id,fx] of bossMoveFx.entries()){
+        if(next.has(id)) continue;
+        if(now > Number(fx?.pulseUntil||0)) bossMoveFx.delete(id);
+      }
+    }catch(_e){}
+  }
+
+  function getBossFxState(boss){
+    const id=String(boss?.id||''); if(!id) return null;
+    const fx=bossMoveFx.get(id); if(!fx) return null;
+    const nodes=Array.isArray(fx.nodes) ? fx.nodes.map(nid=>nodeById.get(String(nid))).filter(Boolean) : [];
+    if(!nodes.length) return null;
+    const now=performance.now();
+    const pulse = now < Number(fx.pulseUntil || 0);
+    if(nodes.length < 2 || now >= Number(fx.start||0) + Number(fx.duration||0)){
+      if(!pulse && now > Number(fx.start||0) + Number(fx.duration||0) + 260){ bossMoveFx.delete(id); }
+      const last=nodes[nodes.length-1];
+      return {x:last.x,y:last.y,moving:false,pulse,trail:nodes,type:fx.type||boss?.type||''};
+    }
+    const total=Math.max(1,Number(fx.duration||1));
+    const p=Math.max(0,Math.min(1,(now-Number(fx.start||0))/total));
+    const steps=nodes.length-1;
+    const segF=p*steps;
+    const seg=Math.min(steps-1,Math.floor(segF));
+    const u=segF-seg;
+    const a=nodes[seg], b=nodes[seg+1];
+    return {x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u,moving:true,pulse:true,trail:nodes,type:fx.type||boss?.type||''};
+  }
+
 
   
   const jokerAllColorsBtn = $("jokerAllColorsBtn");
@@ -1741,24 +1855,48 @@ if(actionEffectsState){
       const bs=state?.boss || null;
       const slots=Array.isArray(bs?.slots) ? bs.slots : [];
       if(bossSlotsEl){
-        const fallback=[{name:"Bossfeld I",boss:null},{name:"Bossfeld II",boss:null}];
-        const arr=slots.length ? slots.slice(0,2) : fallback.slice();
-        while(arr.length<2) arr.push(fallback[arr.length]);
-        bossSlotsEl.innerHTML=arr.map((slot,i)=>{
-          const boss=slot?.boss;
-          if(!boss) return `<div class="bossSlot empty"><span>${i===0?'Ⅰ':'Ⅱ'}</span><strong>${slot?.name||`Bossfeld ${i+1}`}</strong><small>Portal frei</small></div>`;
-          const hp=1;
-          const where=boss.nodeId ? `im Spielfeld · ${boss.nodeId}` : `am Portal · ${slot?.name||`Feld ${i+1}`}`;
-          return `<div class="bossSlot active"><span>${boss.icon||'👹'}</span><strong>${boss.name||'Boss'}</strong><small>${hp}/1 Leben · ${where}</small></div>`;
+        const typeOrder=["hunter","curse","shadow"];
+        const byType={};
+        for(const slot of slots){ if(slot?.boss?.type) byType[String(slot.boss.type)] = slot; }
+        bossSlotsEl.innerHTML=typeOrder.map((type)=>{
+          const meta=BOSS_CARD_META[type];
+          if(!meta) return "";
+          const slot=byType[type] || null;
+          const boss=slot?.boss || null;
+          const isActive=!!boss;
+          const status=bossCardStatusText(slot,boss);
+          const slotName=slot?.name || (type==="hunter"?"Bossfeld I":"Bossfeld II");
+          return `<article class="bossCard ${isActive?'isActive':'isIdle'} bossCard--${type}">
+            <div class="bossCardArt ${meta.artClass}" aria-hidden="true">
+              <img class="bossPortrait" src="${meta.portrait||''}" alt="${meta.name||'Boss'}" loading="lazy" />
+              <div class="bossCardGlyph">${meta.icon||'👹'}</div>
+              <div class="bossCardTagline">${meta.tag||meta.name}</div>
+            </div>
+            <div class="bossCardBody">
+              <div class="bossCardTop">
+                <div>
+                  <div class="bossCardNameRow"><span class="bossCardIcon">${meta.icon||'👹'}</span><strong>${meta.name||'Boss'}</strong></div>
+                  <div class="bossCardMeta"><span>❤️ 1 Leben</span><span>👣 ${meta.steps||'-'}</span><span>⏱ ${meta.cadence||'-'}</span></div>
+                </div>
+                <span class="bossCardState ${isActive?'isActive':'isIdle'}">${isActive?'Aktiv':'Bereit'}</span>
+              </div>
+              <div class="bossCardDesc">${meta.summary||''}</div>
+              <div class="bossCardEffect">${meta.effect||''}</div>
+              <div class="bossCardRule">${meta.rule||''}</div>
+              <div class="bossCardStatus"><span>📍 ${status}</span><span>🚪 ${slotName}</span></div>
+            </div>
+          </article>`;
         }).join('');
       }
       if(bossLastEventEl){
         const e=bs?.lastEvent;
-        bossLastEventEl.textContent=e ? `${e.icon||'🃏'} ${e.title||'Ereignis'}` : 'Noch keine Ereigniskarte';
+        const a=bs?.lastAction;
+        bossLastEventEl.textContent=a ? `${a.icon||'👹'} ${a.title||'Boss'} · ${a.text||''}` : (e ? `${e.icon||'🃏'} ${e.title||'Ereignis'} · ${e.effectText||''}` : 'Noch keine Bossaktion');
       }
       if(bossRoundInfoEl){
         const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : (Array.isArray(board?.meta?.eventFields)?board.meta.eventFields.length:6);
-        bossRoundInfoEl.textContent=`${evCount} Ereignisfelder · Runde ${Math.max(1,Number(bs?.round||1))} · 🐺 nach jedem Wurf`;
+        const activeCount=slots.filter(s=>!!s?.boss).length;
+        bossRoundInfoEl.textContent=`${activeCount}/3 Bosse aktiv · ${evCount} Ereignisfelder · Runde ${Math.max(1,Number(bs?.round||1))}`;
       }
       const tools=ensureBossTestTools();
       if(tools) tools.style.display=isCurrentHost()?'block':'none';
@@ -2555,6 +2693,7 @@ try{
     if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
       const server = st;
       const wasBossMode = !!(state && state.bossMode);
+      const prevBossState = state?.boss || null;
       // In Online-Mode we ALWAYS render all 4 Farben (auch wenn nicht gewählt),
       // damit Gelb/Grün im Haus sichtbar bleiben.
       const players = ["red","blue","green","yellow"];
@@ -2594,6 +2733,8 @@ try{
         boss: (server.boss && typeof server.boss === "object") ? server.boss : null
       
       };
+
+      try{ syncBossMoveFx(prevBossState, state.boss); }catch(_e){}
 
       // map phases
       const ph = server.phase;
@@ -4397,8 +4538,11 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       for(const slot of state.boss.slots){
         const boss=slot?.boss;
         if(!boss?.nodeId) continue;
+        const fx=getBossFxState(boss);
+        if(fx?.moving) continue;
         const n=nodeById.get(String(boss.nodeId)); if(!n) continue;
-        const s=worldToScreen(n);
+        const posNode=fx ? {x:fx.x,y:fx.y} : n;
+        const s=worldToScreen(posNode);
         ctx.save();
         ctx.shadowColor="rgba(255,48,104,.82)"; ctx.shadowBlur=22;
         ctx.fillStyle="rgba(35,7,19,.94)"; ctx.strokeStyle="rgba(255,112,155,.98)"; ctx.lineWidth=3.2;
@@ -4500,24 +4644,92 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
     // Wandernde Bosse auf dem normalen Spielfeld.
     if(bossModeVisualActive() && Array.isArray(state?.boss?.slots)){
       const activeBoardBosses=state.boss.slots.map((slot,i)=>({slot,boss:slot?.boss,i})).filter(x=>x.boss?.nodeId);
+      let hasBossFxActive=false;
       for(const x of activeBoardBosses){
-        const n=nodeById.get(String(x.boss.nodeId)); if(!n) continue;
-        const s=worldToScreen(n);
-        const hasPlayer=stacks.has(String(x.boss.nodeId));
-        const ox=hasPlayer ? r*.48 : 0;
-        const oy=hasPlayer ? -r*.48 : 0;
+        const baseNode=nodeById.get(String(x.boss.nodeId)); if(!baseNode) continue;
+        const fx=getBossFxState(x.boss);
+        const posNode=fx ? {x:fx.x,y:fx.y} : baseNode;
+        const s=worldToScreen(posNode);
+        const theme=bossTheme(x.boss.type);
+        const tNow=performance.now()/1000;
+        const pulse=0.5 + 0.5*Math.sin(tNow*6.2 + x.i*0.9);
+        const boardHasPlayer=stacks.has(String(x.boss.nodeId)) && !fx?.moving;
+        const ox=boardHasPlayer ? r*.56 : 0;
+        const oy=boardHasPlayer ? -r*.56 : 0;
+        if(fx?.moving || fx?.pulse) hasBossFxActive=true;
+
         ctx.save();
-        ctx.shadowColor='rgba(255,54,104,.78)';ctx.shadowBlur=18;
-        ctx.fillStyle='rgba(28,6,18,.96)';ctx.strokeStyle='rgba(255,122,164,.98)';ctx.lineWidth=3;
-        ctx.beginPath();ctx.arc(s.x+ox,s.y+oy,r*.82,0,Math.PI*2);ctx.fill();ctx.stroke();
+        if(Array.isArray(fx?.trail) && fx.trail.length>1){
+          ctx.lineCap='round'; ctx.lineJoin='round';
+          ctx.strokeStyle=theme.trail;
+          ctx.lineWidth=Math.max(4,r*.42);
+          ctx.shadowColor=theme.glow; ctx.shadowBlur=18;
+          ctx.beginPath();
+          fx.trail.forEach((pn,idx)=>{
+            const ps=worldToScreen(pn);
+            if(idx===0) ctx.moveTo(ps.x,ps.y); else ctx.lineTo(ps.x,ps.y);
+          });
+          ctx.stroke();
+          ctx.shadowColor='transparent';
+          for(let idx=1;idx<fx.trail.length;idx++){
+            const ps=worldToScreen(fx.trail[idx]);
+            ctx.fillStyle=theme.trail;
+            ctx.beginPath();
+            ctx.arc(ps.x,ps.y,Math.max(3,r*.18),0,Math.PI*2);
+            ctx.fill();
+          }
+        }
+
+        ctx.shadowColor=theme.glow;
+        ctx.shadowBlur=22 + 12*pulse;
+        ctx.strokeStyle=theme.stroke;
+        ctx.lineWidth=3.8;
+        ctx.beginPath();
+        ctx.arc(s.x+ox,s.y+oy,r*1.18 + 4*pulse,0,Math.PI*2);
+        ctx.stroke();
+        ctx.fillStyle=theme.soft;
+        ctx.beginPath();
+        ctx.arc(s.x+ox,s.y+oy,r*1.10 + 2*pulse,0,Math.PI*2);
+        ctx.fill();
+
+        ctx.fillStyle=theme.fill;
+        ctx.strokeStyle=theme.stroke;
+        ctx.lineWidth=3.2;
+        ctx.beginPath();
+        ctx.arc(s.x+ox,s.y+oy,r*.90,0,Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+
         ctx.shadowColor='transparent';
-        ctx.fillStyle='rgba(255,255,255,.98)';ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.font=`1000 ${Math.max(18,Math.round(r*.95))}px system-ui`;
+        if(fx?.moving){
+          ctx.strokeStyle=theme.stroke;
+          ctx.lineWidth=2.2;
+          ctx.beginPath(); ctx.arc(s.x+ox,s.y+oy,r*1.18,Math.PI*0.22,Math.PI*1.10); ctx.stroke();
+          ctx.beginPath(); ctx.arc(s.x+ox,s.y+oy,r*1.34,Math.PI*1.24,Math.PI*1.92); ctx.stroke();
+        }
+
+        ctx.fillStyle='rgba(255,255,255,.99)';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font=`1000 ${Math.max(20,Math.round(r*1.02))}px system-ui`;
         ctx.fillText(x.boss.icon||'👹',s.x+ox,s.y+oy-1);
-        ctx.fillStyle='rgba(255,198,218,.96)';ctx.font=`900 ${Math.max(8,Math.round(r*.38))}px system-ui`;
-        ctx.fillText('1♥',s.x+ox,s.y+oy+r*.92);
+
+        ctx.fillStyle=theme.label;
+        ctx.font=`900 ${Math.max(8,Math.round(r*.36))}px system-ui`;
+        ctx.fillText('1♥',s.x+ox,s.y+oy+r*.94);
+
+        ctx.fillStyle='rgba(18,14,24,.92)';
+        ctx.strokeStyle=theme.stroke;
+        ctx.lineWidth=1.8;
+        const labelW=Math.max(40, r*1.95), labelH=Math.max(14, r*.64);
+        const labelX=s.x+ox-labelW/2, labelY=s.y+oy-r*1.82;
+        if(ctx.roundRect) ctx.beginPath(), ctx.roundRect(labelX,labelY,labelW,labelH,8); else {ctx.beginPath();ctx.rect(labelX,labelY,labelW,labelH);} 
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle=theme.label;
+        ctx.font=`900 ${Math.max(7,Math.round(r*.26))}px system-ui`;
+        ctx.fillText((x.boss.name||'Boss').replace('Der ',''), s.x+ox, labelY+labelH/2+0.5);
         ctx.restore();
       }
+      if(hasBossFxActive) requestInteractionFxTick();
     }
 
     // ===== animated moving piece (drawn ON TOP of nodes & pieces) =====
