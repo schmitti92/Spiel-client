@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Barikade</title>
-  <link rel="stylesheet" href="styles.css?v=barikade_v10_8_1_layout_20260920" />
+  <link rel="stylesheet" href="styles.css?v=barikade_v10_8_4_oneheader_20260920" />
 </head>
 
 <body class="game-page">
@@ -13,6 +13,13 @@
       <div class="t">Barikade</div>
       <div class="s">Online · Server steuert Würfel + Züge · 2–4 Spieler</div>
     </div>
+
+    <section class="playerStripShell" aria-label="Spielerübersicht">
+    <div class="turnStateBridge" aria-hidden="true"><span id="turnDot" class="dot"></span><span id="turnText">–</span></div>
+    <div id="playerStrip" class="playerStrip">
+      <div class="playerStripEmpty">Spieler werden geladen …</div>
+    </div>
+  </section>
 
     <div class="rightActions">
       <div id="emojiBar" class="emojiBar" aria-label="Emojis im Spiel">
@@ -28,15 +35,6 @@
     </div>
   </div>
 
-  <!-- V10.3: Live-Spielerleiste. Inhalt wird aus dem Server-Roster aufgebaut. -->
-  <section class="playerStripShell" aria-label="Spielerübersicht">
-    <div class="playerStripTopRow">
-      <div class="pill turnTopPill stripTurnPill"><span id="turnDot" class="dot"></span> <span id="turnText">–</span></div>
-    </div>
-    <div id="playerStrip" class="playerStrip">
-      <div class="playerStripEmpty">Spieler werden geladen …</div>
-    </div>
-  </section>
 
   <div class="app">
     <div class="boardWrap">
@@ -251,6 +249,6 @@
     })();
   </script>
 
-  <script src="game.js?v=barikade_v10_8_1_layout_20260920"></script>
+  <script src="game.js?v=barikade_v10_8_2_polish_20260920"></script>
 </body>
 </html>
