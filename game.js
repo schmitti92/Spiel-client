@@ -325,6 +325,7 @@ let pendingSaveExport = false;
   const emojiLaughBtn = $("emojiLaughBtn");
   const emojiAngryBtn = $("emojiAngryBtn");
   const emojiCoolBtn = $("emojiCoolBtn");
+  const emojiPoopBtn = $("emojiPoopBtn");
   const emojiOverlay = $("emojiOverlay");
   const emojiOverlayIcon = $("emojiOverlayIcon");
   const emojiOverlayName = $("emojiOverlayName");
@@ -2413,12 +2414,13 @@ function ensureAwardsStyles(){
   document.head.appendChild(st);
 }
 
-  const EMOJI_MAP = { laugh:"😂", angry:"😡", cool:"😎" };
+  const EMOJI_MAP = { laugh:"😂", angry:"😡", cool:"😎", poop:"💩" };
   function normalizeEmojiKey(value){
     const v = String(value || "").trim();
     if(v === "😂" || v.toLowerCase() === "laugh") return "laugh";
     if(v === "😡" || v.toLowerCase() === "angry") return "angry";
     if(v === "😎" || v.toLowerCase() === "cool") return "cool";
+    if(v === "💩" || v.toLowerCase() === "poop" || v.toLowerCase() === "shit") return "poop";
     return "";
   }
   function updateEmojiUI(){
@@ -2430,7 +2432,8 @@ function ensureAwardsStyles(){
     const btns = [
       document.getElementById("emojiLaughBtn"),
       document.getElementById("emojiAngryBtn"),
-      document.getElementById("emojiCoolBtn")
+      document.getElementById("emojiCoolBtn"),
+      document.getElementById("emojiPoopBtn")
     ];
 
     if(emojiBarEl) emojiBarEl.style.display = running ? "flex" : "none";
@@ -2585,7 +2588,8 @@ function ensureAwardsStyles(){
     const pairs = [
       [document.getElementById("emojiLaughBtn"), "laugh"],
       [document.getElementById("emojiAngryBtn"), "angry"],
-      [document.getElementById("emojiCoolBtn"), "cool"]
+      [document.getElementById("emojiCoolBtn"), "cool"],
+      [document.getElementById("emojiPoopBtn"), "poop"]
     ];
     for(const pair of pairs){
       const btn = pair[0]; const key = pair[1];
