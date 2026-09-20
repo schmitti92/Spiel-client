@@ -3096,3 +3096,177 @@ body.game-page.isFullscreenFallback .playerStripCard{
   padding-top:4px !important;
   padding-bottom:4px !important;
 }
+
+
+/* V10.8.4 ONE-LINE HEADER
+   Player cards live inside the topbar on landscape/tablet/desktop. */
+@media (min-width:901px){
+  body.game-page .topbar{
+    display:grid !important;
+    grid-template-columns:160px minmax(340px,1fr) auto !important;
+    align-items:center !important;
+    column-gap:10px !important;
+    min-height:58px !important;
+    height:58px !important;
+    padding:5px 10px !important;
+    flex-wrap:nowrap !important;
+  }
+  body.game-page .brand{
+    min-width:0 !important;
+    width:160px !important;
+    padding-left:43px !important;
+  }
+  body.game-page .brand::before{
+    width:34px !important;
+    height:34px !important;
+    border-radius:11px !important;
+    font-size:18px !important;
+  }
+  body.game-page .brand .t{
+    font-size:17px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+  }
+  body.game-page .brand .s{display:none !important;}
+
+  body.game-page .topbar > .playerStripShell{
+    position:relative !important;
+    z-index:auto !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:48px !important;
+    padding:0 !important;
+    margin:0 !important;
+    overflow:hidden !important;
+    background:none !important;
+  }
+  body.game-page .topbar > .playerStripShell .turnStateBridge,
+  body.game-page .topbar > .playerStripShell .playerStripTopRow,
+  body.game-page .topbar > .playerStripShell .turnTopPill{
+    display:none !important;
+  }
+  body.game-page .topbar > .playerStripShell .playerStrip{
+    width:100% !important;
+    height:48px !important;
+    min-height:48px !important;
+    margin:0 !important;
+    display:flex !important;
+    align-items:stretch !important;
+    gap:6px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scrollbar-width:none !important;
+    -webkit-overflow-scrolling:touch;
+  }
+  body.game-page .topbar > .playerStripShell .playerStrip::-webkit-scrollbar{display:none !important;}
+  body.game-page .topbar > .playerStripShell .playerStripCard{
+    flex:1 1 170px !important;
+    min-width:145px !important;
+    max-width:245px !important;
+    min-height:46px !important;
+    height:46px !important;
+    grid-template-columns:30px minmax(0,1fr) !important;
+    gap:7px !important;
+    padding:5px 8px !important;
+    border-radius:13px !important;
+  }
+  body.game-page .topbar > .playerStripShell .playerStripAvatar{
+    width:29px !important;
+    height:29px !important;
+    border-radius:9px !important;
+    font-size:12px !important;
+  }
+  body.game-page .topbar > .playerStripShell .playerStripNameRow{
+    gap:4px !important;
+    line-height:1 !important;
+  }
+  body.game-page .topbar > .playerStripShell .playerStripNameRow strong{
+    font-size:11.5px !important;
+    white-space:nowrap !important;
+  }
+  body.game-page .topbar > .playerStripShell .playerStripMeta{
+    margin-top:3px !important;
+    gap:4px !important;
+    font-size:8px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+  }
+  body.game-page .topbar > .playerStripShell .playerStripEmpty{
+    min-height:46px !important;
+    height:46px !important;
+    font-size:10px !important;
+  }
+
+  body.game-page .rightActions{
+    min-width:max-content !important;
+    gap:5px !important;
+    justify-content:flex-end !important;
+    flex-wrap:nowrap !important;
+  }
+  body.game-page .emojiBar{gap:5px !important;padding:3px 5px !important;}
+  body.game-page .emojiBtn{
+    width:45px !important;
+    height:45px !important;
+    min-height:45px !important;
+    border-radius:14px !important;
+    font-size:28px !important;
+  }
+  body.game-page .displayToggleBtn,
+  body.game-page .soundToggleBtn{
+    width:38px !important;
+    height:38px !important;
+    min-height:38px !important;
+    flex-basis:38px !important;
+    border-radius:11px !important;
+    font-size:17px !important;
+  }
+  body.game-page #backLobbyBtn{
+    min-height:38px !important;
+    height:38px !important;
+    padding:0 11px !important;
+    font-size:11.5px !important;
+  }
+  body.game-page .app{
+    padding-top:6px !important;
+  }
+}
+
+/* A little tighter on typical landscape tablets. */
+@media (min-width:901px) and (max-width:1180px){
+  body.game-page .topbar{
+    grid-template-columns:142px minmax(260px,1fr) auto !important;
+    column-gap:7px !important;
+    min-height:54px !important;
+    height:54px !important;
+    padding:4px 8px !important;
+  }
+  body.game-page .brand{width:142px !important;padding-left:39px !important;}
+  body.game-page .brand::before{width:31px !important;height:31px !important;font-size:16px !important;}
+  body.game-page .brand .t{font-size:15px !important;}
+  body.game-page .topbar > .playerStripShell{height:44px !important;}
+  body.game-page .topbar > .playerStripShell .playerStrip{height:44px !important;min-height:44px !important;}
+  body.game-page .topbar > .playerStripShell .playerStripCard{
+    flex-basis:145px !important;
+    min-width:132px !important;
+    min-height:42px !important;
+    height:42px !important;
+    grid-template-columns:27px minmax(0,1fr) !important;
+    padding:4px 6px !important;
+  }
+  body.game-page .topbar > .playerStripShell .playerStripAvatar{width:26px !important;height:26px !important;font-size:11px !important;}
+  body.game-page .topbar > .playerStripShell .playerStripNameRow strong{font-size:10.5px !important;}
+  body.game-page .topbar > .playerStripShell .playerStripMeta{font-size:7.4px !important;}
+  body.game-page .emojiBtn{width:42px !important;height:42px !important;min-height:42px !important;font-size:26px !important;}
+  body.game-page .displayToggleBtn,
+  body.game-page .soundToggleBtn{width:36px !important;height:36px !important;min-height:36px !important;flex-basis:36px !important;}
+  body.game-page #backLobbyBtn{height:36px !important;min-height:36px !important;padding:0 9px !important;}
+}
+
+/* Mobile keeps the safer two-row responsive layout. */
+@media (max-width:900px){
+  body.game-page .topbar > .playerStripShell{
+    flex:1 1 100% !important;
+    width:100% !important;
+    order:20 !important;
+  }
+}
