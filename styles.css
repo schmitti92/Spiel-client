@@ -3305,3 +3305,62 @@ body.game-page .gameSidebar > :last-child{
     max-height:100% !important;
   }
 }
+
+
+/* V10.8.6 REAL sidebar scroll fix
+   Flex children must not shrink, otherwise no real overflow area is created. */
+@media (min-width:901px){
+  body.game-page .app{
+    min-height:0 !important;
+    overflow:hidden !important;
+  }
+
+  body.game-page .gameSidebar{
+    box-sizing:border-box !important;
+    height:var(--game-content-h) !important;
+    min-height:0 !important;
+    max-height:var(--game-content-h) !important;
+    align-self:stretch !important;
+    overflow-y:scroll !important;
+    overflow-x:hidden !important;
+    touch-action:pan-y !important;
+    overscroll-behavior-y:contain !important;
+    scrollbar-gutter:stable !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+
+  body.game-page .gameSidebar > *{
+    flex:0 0 auto !important;
+    min-height:min-content;
+  }
+
+  body.game-page .gameSidebar .sideSection,
+  body.game-page .gameSidebar details,
+  body.game-page .gameSidebar .sidebarMore,
+  body.game-page .gameSidebar .statusSection{
+    flex-shrink:0 !important;
+  }
+}
+
+/* Make the scroll rail easy to see and grab on tablet/desktop. */
+body.game-page .gameSidebar::-webkit-scrollbar{
+  width:12px !important;
+}
+body.game-page .gameSidebar::-webkit-scrollbar-track{
+  background:rgba(255,255,255,.045) !important;
+  border-radius:999px !important;
+  margin-block:8px !important;
+}
+body.game-page .gameSidebar::-webkit-scrollbar-thumb{
+  min-height:52px;
+  background:linear-gradient(180deg,rgba(145,129,255,.88),rgba(64,195,255,.70)) !important;
+  border-radius:999px !important;
+  border:3px solid rgba(8,13,24,.85) !important;
+}
+
+/* Touch devices often hide scrollbar thumbs; keep the pane itself draggable. */
+@media (pointer:coarse) and (min-width:901px){
+  body.game-page .gameSidebar{
+    padding-right:10px !important;
+  }
+}
