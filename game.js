@@ -55,9 +55,21 @@ let pendingSaveExport = false;
       const stripH = (playerStripShell && topbar && topbar.contains(playerStripShell)) ? 0 : (playerStripShell ? playerStripShell.getBoundingClientRect().height : 0);
       // V10.8: use the REAL visible browser viewport. On Android tablets 100vh can
       // include browser/system UI and made the bottom of the board disappear.
-      const pad = window.innerWidth <= 900 ? 10 : 12;
-      const maxH = Math.max(320, Math.floor(window.innerHeight - topH - stripH - pad));
+      const vv = window.visualViewport || null;
+      const visibleH = Math.max(320, Math.floor(vv?.height || window.innerHeight || document.documentElement.clientHeight || 700));
+      const visibleW = Math.max(320, Math.floor(vv?.width || window.innerWidth || document.documentElement.clientWidth || 1000));
+      const pad = visibleW <= 900 ? 10 : 8;
+      const maxH = Math.max(320, Math.floor(visibleH - topH - stripH - pad));
       document.documentElement.style.setProperty('--game-content-h', maxH + 'px');
+      document.documentElement.style.setProperty('--game-visible-h', visibleH + 'px');
+      document.documentElement.style.setProperty('--game-visible-w', visibleW + 'px');
+
+      // Normal Android browser mode has much less vertical room than native fullscreen.
+      // Reuse a compact layout automatically so the board/sidebar remain fully reachable.
+      const nativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      const fallbackFs = document.body.classList.contains('isFullscreenFallback');
+      const compactNormal = !nativeFs && !fallbackFs && visibleW > 900 && visibleH < 900;
+      document.body.classList.toggle('isCompactViewport', compactNormal);
       if(window.innerWidth <= 900){
         appShell.style.height = '';
         appShell.style.minHeight = '';
@@ -83,6 +95,12 @@ let pendingSaveExport = false;
   // Apply now + on resize/orientation changes
   window.addEventListener('resize', () => { try{ applyUxStabilityFixes(); }catch(_e){} }, { passive:true });
   window.addEventListener('orientationchange', () => { try{ setTimeout(applyUxStabilityFixes, 50); }catch(_e){} });
+  try{
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', () => { try{ applyUxStabilityFixes(); }catch(_e){} }, { passive:true });
+      window.visualViewport.addEventListener('scroll', () => { try{ applyUxStabilityFixes(); }catch(_e){} }, { passive:true });
+    }
+  }catch(_e){}
 
   function debugLog(...args){
     try{ console.log(...args); }catch(_e){}
