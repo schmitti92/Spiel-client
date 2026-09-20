@@ -1782,6 +1782,8 @@ if(actionEffectsState){
   // nur als Ausgangsstand uebernehmen, statt sie erneut als frische Karte einzublenden.
   let _bossBaselineNextSnapshot = true;
   let _bossOverlayTimer = 0;
+  let _bossOverlayRevealTimer = 0;
+  let _pendingEventWheels = [];
   function bossModeVisualActive(){
     try{
       // Sobald ein Spielzustand existiert, ist nur noch der Serverzustand massgeblich.
@@ -1789,6 +1791,23 @@ if(actionEffectsState){
       if(state && state.started) return !!state.bossMode;
       return !!getLobbyBossMode();
     }catch(_e){ return false; }
+  }
+  function eventOverlayIsOpen(){
+    return !!document.getElementById("bossEventOverlay")?.classList.contains("show");
+  }
+  function queueWheelRespectingEventOverlay(items){
+    const list=Array.isArray(items)?items.filter(Boolean):[];
+    if(!list.length) return;
+    if(eventOverlayIsOpen()){
+      _pendingEventWheels.push(...list);
+      return;
+    }
+    enqueueWheel(list);
+  }
+  function flushPendingEventWheels(){
+    if(!_pendingEventWheels.length) return;
+    const list=_pendingEventWheels.splice(0,_pendingEventWheels.length);
+    window.setTimeout(()=>enqueueWheel(list),220);
   }
   function ensureBossEventOverlay(){
     let el=document.getElementById("bossEventOverlay");
@@ -1798,28 +1817,42 @@ if(actionEffectsState){
     el.setAttribute("aria-live","polite");
     el.setAttribute("role","dialog");
     el.setAttribute("aria-modal","true");
-    el.innerHTML=`<div class="bossEventCard" role="document">
-      <div class="bossEventGlow" aria-hidden="true"></div>
-      <div class="bossEventTop">
-        <div class="bossEventIcon">🃏</div>
-        <div class="bossEventHeadCopy">
-          <div class="bossEventKicker">EREIGNISKARTE</div>
-          <div class="bossEventTitle">Ereignis</div>
+    el.innerHTML=`<div class="bossEventFlip" role="document">
+      <div class="bossEventFlipInner">
+        <div class="bossEventBack" aria-hidden="true">
+          <div class="bossEventBackMark">?</div>
+          <div class="bossEventBackTitle">BARIKADE</div>
+          <div class="bossEventBackSub">EREIGNIS</div>
+        </div>
+        <div class="bossEventCard bossEventFront">
+          <div class="bossEventGlow" aria-hidden="true"></div>
+          <div class="bossEventTop">
+            <div class="bossEventIcon">🃏</div>
+            <div class="bossEventHeadCopy">
+              <div class="bossEventKicker">EREIGNISKARTE</div>
+              <div class="bossEventTitle">Ereignis</div>
+            </div>
+          </div>
+          <div class="bossEventText"></div>
+          <div class="bossEventEffect"></div>
+          <div class="bossEventMeta">
+            <span class="bossEventPlayer">🎯 Spieler</span>
+            <span class="bossEventDeck">🃏 Karten –/54</span>
+          </div>
+          <button type="button" class="bossEventOk" disabled>KARTE WIRD AUFGEDECKT …</button>
         </div>
       </div>
-      <div class="bossEventText"></div>
-      <div class="bossEventEffect"></div>
-      <div class="bossEventMeta">
-        <span class="bossEventPlayer">🎯 Spieler</span>
-        <span class="bossEventDeck">🃏 Karten –/54</span>
-      </div>
-      <button type="button" class="bossEventOk">OK · WEITER</button>
     </div>`;
     document.body.appendChild(el);
-    const close=()=>{ el.classList.remove("show"); clearTimeout(_bossOverlayTimer); };
+    const close=()=>{
+      if(!el.classList.contains("revealed")) return;
+      el.classList.remove("show","revealed");
+      clearTimeout(_bossOverlayTimer);
+      clearTimeout(_bossOverlayRevealTimer);
+      flushPendingEventWheels();
+    };
+    // Absichtlich NUR über OK schließen: Das Ereignis muss sichtbar bestätigt werden.
     el.querySelector('.bossEventOk')?.addEventListener('click',(ev)=>{ev.stopPropagation();close();});
-    el.addEventListener("click",(ev)=>{ if(ev.target===el) close(); });
-    document.addEventListener('keydown',(ev)=>{ if(ev.key==='Escape' && el.classList.contains('show')) close(); });
     return el;
   }
   function showBossEventCard(evt){
@@ -1831,6 +1864,7 @@ if(actionEffectsState){
     const effect=el.querySelector('.bossEventEffect');
     const player=el.querySelector('.bossEventPlayer');
     const deck=el.querySelector('.bossEventDeck');
+    const ok=el.querySelector('.bossEventOk');
     const color=String(evt.color||'').toLowerCase();
     if(icon) icon.textContent=evt.icon||"🃏";
     if(title) title.textContent=evt.title||"Ereignis";
@@ -1845,11 +1879,18 @@ if(actionEffectsState){
       const size=Number.isFinite(Number(evt.deckSize))?Number(evt.deckSize):54;
       deck.textContent=`🃏 ${remaining==null?'–':remaining}/${size} im Stapel`;
     }
-    el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
     clearTimeout(_bossOverlayTimer);
-    // Sicherheits-Fallback: Die Karte bleibt lange genug lesbar und kann vorher per OK geschlossen werden.
-    _bossOverlayTimer=setTimeout(()=>el.classList.remove("show"),12000);
-    try{ el.querySelector('.bossEventOk')?.focus({preventScroll:true}); }catch(_e){}
+    clearTimeout(_bossOverlayRevealTimer);
+    el.classList.remove("show","revealed");
+    if(ok){ ok.disabled=true; ok.textContent="KARTE WIRD AUFGEDECKT …"; }
+    void el.offsetWidth;
+    el.classList.add("show");
+    // Erst Kartenrückseite zeigen, danach sichtbar aufdecken.
+    _bossOverlayRevealTimer=setTimeout(()=>{
+      el.classList.add("revealed");
+      if(ok){ ok.disabled=false; ok.textContent="OK · WEITER"; }
+      try{ ok?.focus({preventScroll:true}); }catch(_e){}
+    },650);
   }
   function ensureBossTestTools(){
     if(!bossSection) return null;
@@ -1934,21 +1975,38 @@ if(actionEffectsState){
           return `<article class="bossCard ${isActive?'isActive':'isIdle'} bossCard--${type}">
             <div class="bossCardArt ${meta.artClass}" aria-hidden="true">
               <img class="bossPortrait" src="${meta.portrait||''}" alt="${meta.name||'Boss'}" loading="lazy" />
+              <div class="bossCardGlow"></div>
               <div class="bossCardGlyph">${meta.icon||'👹'}</div>
               <div class="bossCardTagline">${meta.tag||meta.name}</div>
             </div>
             <div class="bossCardBody">
               <div class="bossCardTop">
-                <div>
+                <div class="bossCardHeading">
+                  <div class="bossCardLabel">Wandernder Boss</div>
                   <div class="bossCardNameRow"><span class="bossCardIcon">${meta.icon||'👹'}</span><strong>${meta.name||'Boss'}</strong></div>
-                  <div class="bossCardMeta"><span>❤️ 1 Leben</span><span>👣 ${meta.steps||'-'}</span><span>⏱ ${meta.cadence||'-'}</span></div>
                 </div>
-                <span class="bossCardState ${isActive?'isActive':'isIdle'}">${isActive?'Aktiv':'Bereit'}</span>
+                <span class="bossCardState ${isActive?'isActive':'isIdle'}">${isActive?'Aktiv im Spiel':'Bereit'}</span>
               </div>
-              <div class="bossCardDesc">${meta.summary||''}</div>
-              <div class="bossCardEffect">${meta.effect||''}</div>
-              <div class="bossCardRule">${meta.rule||''}</div>
-              <div class="bossCardStatus"><span>📍 ${status}</span><span>🚪 ${slotName}</span></div>
+              <div class="bossCardMeta bossCardMeta--stats">
+                <span>❤️ 1 Leben</span>
+                <span>👣 ${meta.steps||'-'}</span>
+                <span>⏱ ${meta.cadence||'-'}</span>
+              </div>
+              <div class="bossCardSection bossCardSection--lore">
+                <div class="bossCardSectionTitle">Verhalten</div>
+                <div class="bossCardDesc">${meta.summary||''}</div>
+              </div>
+              <div class="bossCardSection bossCardSection--effect">
+                <div class="bossCardSectionTitle">Treffer-Effekt</div>
+                <div class="bossCardEffect">${meta.effect||''}</div>
+              </div>
+              <div class="bossCardSection bossCardSection--rule">
+                <div class="bossCardSectionTitle">Sonderregel</div>
+                <div class="bossCardRule">${meta.rule||''}</div>
+              </div>
+              <div class="bossCardFooter">
+                <div class="bossCardStatus"><span>📍 ${status}</span><span>🚪 ${slotName}</span></div>
+              </div>
             </div>
           </article>`;
         }).join('');
@@ -2576,7 +2634,7 @@ try{
         if(msg.jokerCanceled) v104OnJokerCanceled(msg.jokerCanceled);
         updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
+        if(Array.isArray(msg.wheel) && msg.wheel.length) queueWheelRespectingEventOverlay(msg.wheel);
         return;
       }
       if(type==="roll"){
@@ -2590,7 +2648,7 @@ try{
         }
         updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
+        if(Array.isArray(msg.wheel) && msg.wheel.length) queueWheelRespectingEventOverlay(msg.wheel);
         return;
       }
       if(type==="move"){
@@ -2604,7 +2662,7 @@ try{
         }
         updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        if(Array.isArray(msg.wheel) && msg.wheel.length) enqueueWheel(msg.wheel);
+        if(Array.isArray(msg.wheel) && msg.wheel.length) queueWheelRespectingEventOverlay(msg.wheel);
         return;
       }
 
