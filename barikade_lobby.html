@@ -674,6 +674,7 @@
       const jokerCountInfo = $("jokerCountInfo");
       const jokerCountBtns = Array.from(document.querySelectorAll('[data-joker-count]'));
 
+// V9.4 FINAL: Lobby und Spiel nutzen denselben Render-Server; Farbreservierung nutzt dieselben Keys wie game.js.
 // Server base (same as game.js, but HTTP for fetch)
 const WS_BASE = "wss://serverfinal-ynbe.onrender.com";
 const HTTP_BASE = WS_BASE.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
@@ -712,7 +713,13 @@ async function ensureRoom(rc){
 async function reserveMe(nameKey){
   const rc = normRoom(roomInp.value);
   if(!rc) return { ok:false };
-  const color = String(localStorage.getItem("barikade_color")||"").toLowerCase();
+  const roomColorKey = "barikade_requested_color_" + rc;
+  const color = String(
+    localStorage.getItem(roomColorKey) ||
+    localStorage.getItem("barikade_requested_color") ||
+    localStorage.getItem("barikade_color") ||
+    ""
+  ).toLowerCase().trim();
   try{
     const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/reserve`, {
       method:"POST",
@@ -905,7 +912,7 @@ function startPresencePoll(){
         const c = String(color||"").toLowerCase().trim();
         if(!['red','blue','green','yellow'].includes(c)) return;
         // global fallback + room-specific like game.js does
-        try{ localStorage.setItem('barikade_requested_color', c); }catch(_e){}
+        try{ localStorage.setItem('barikade_requested_color', c); localStorage.setItem('barikade_color', c); }catch(_e){}
         const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || "");
         if(r) {
           try{ localStorage.setItem('barikade_requested_color_' + r, c); }catch(_e){}
