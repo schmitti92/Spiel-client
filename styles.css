@@ -3584,3 +3584,65 @@ body.game-page .bossPortrait{position:absolute;inset:8px 8px 28px 8px;width:calc
 body.game-page .bossCardGlyph{position:absolute;right:6px;top:4px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:rgba(0,0,0,.34);border:1px solid rgba(255,255,255,.16);font-size:17px;z-index:2;margin-top:0;}
 body.game-page .bossCardTagline{z-index:2;backdrop-filter:blur(3px);}
 body.game-page .bossCardArt::after{content:"";position:absolute;left:10px;right:10px;bottom:28px;height:34px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.42));pointer-events:none;}
+
+
+/* ===== V11.8 Ereigniskarten – große, lesbare Kartenansicht ===== */
+#bossEventOverlay{
+  position:fixed;inset:0;z-index:99990;display:grid;place-items:center;
+  padding:18px;background:rgba(3,6,14,.68);backdrop-filter:blur(8px);
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility .18s ease;
+}
+#bossEventOverlay.show{opacity:1;visibility:visible;pointer-events:auto;}
+#bossEventOverlay .bossEventCard{
+  position:relative;width:min(92vw,520px);max-height:min(86vh,720px);overflow:auto;
+  border-radius:26px;padding:20px;border:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(165deg,rgba(23,28,46,.98),rgba(8,11,20,.99));
+  box-shadow:0 32px 90px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.08);
+  transform:translateY(18px) scale(.94);opacity:0;
+}
+#bossEventOverlay.show .bossEventCard{animation:bossEventCardIn .36s cubic-bezier(.2,.8,.2,1) forwards;}
+@keyframes bossEventCardIn{to{transform:translateY(0) scale(1);opacity:1;}}
+#bossEventOverlay .bossEventGlow{
+  position:absolute;inset:-80px -60px auto;height:220px;pointer-events:none;
+  background:radial-gradient(circle,rgba(145,102,255,.26),rgba(145,102,255,0) 67%);
+}
+#bossEventOverlay .bossEventTop{position:relative;display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+#bossEventOverlay .bossEventIcon{
+  flex:0 0 72px;width:72px;height:72px;display:grid;place-items:center;border-radius:21px;
+  font-size:42px;line-height:1;background:linear-gradient(145deg,rgba(157,113,255,.28),rgba(255,110,168,.13));
+  border:1px solid rgba(207,185,255,.26);box-shadow:0 12px 28px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.12);
+}
+#bossEventOverlay .bossEventHeadCopy{min-width:0;}
+#bossEventOverlay .bossEventKicker{font:900 10px/1.2 system-ui;letter-spacing:.19em;color:#b8a6ff;margin-bottom:5px;}
+#bossEventOverlay .bossEventTitle{font:950 clamp(22px,5vw,31px)/1.04 system-ui;color:#fff;letter-spacing:-.025em;overflow-wrap:anywhere;}
+#bossEventOverlay .bossEventText{
+  position:relative;margin-top:6px;padding:12px 14px;border-radius:15px;background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);font:700 13px/1.45 system-ui;color:#dbe3fb;
+}
+#bossEventOverlay .bossEventEffect{
+  position:relative;margin-top:10px;padding:14px 15px;border-radius:16px;
+  background:linear-gradient(145deg,rgba(126,91,255,.15),rgba(66,194,255,.08));
+  border:1px solid rgba(154,128,255,.22);font:850 14px/1.48 system-ui;color:#fff;
+}
+#bossEventOverlay .bossEventEffect::before{content:"WIRKUNG";display:block;margin-bottom:5px;font-size:9px;font-weight:950;letter-spacing:.17em;color:#ac9bff;}
+#bossEventOverlay .bossEventMeta{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px;}
+#bossEventOverlay .bossEventMeta span{
+  display:inline-flex;align-items:center;min-height:29px;padding:5px 9px;border-radius:999px;
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);font:800 10.5px/1 system-ui;color:#dfe6fb;
+}
+#bossEventOverlay .bossEventPlayer{box-shadow:inset 3px 0 0 var(--event-player-color,#8a7cff);}
+#bossEventOverlay .bossEventOk{
+  width:100%;min-height:48px;margin-top:16px;border:1px solid rgba(190,170,255,.3);border-radius:14px;
+  background:linear-gradient(135deg,rgba(120,86,255,.95),rgba(91,72,211,.95));color:#fff;
+  font:950 12px/1 system-ui;letter-spacing:.09em;cursor:pointer;box-shadow:0 10px 28px rgba(79,54,188,.28);
+}
+#bossEventOverlay .bossEventOk:hover{filter:brightness(1.08);}
+#bossEventOverlay .bossEventOk:focus-visible{outline:3px solid rgba(188,173,255,.38);outline-offset:3px;}
+@media(max-width:600px){
+  #bossEventOverlay{padding:12px;}
+  #bossEventOverlay .bossEventCard{width:min(96vw,500px);padding:16px;border-radius:22px;}
+  #bossEventOverlay .bossEventIcon{flex-basis:60px;width:60px;height:60px;font-size:34px;border-radius:18px;}
+  #bossEventOverlay .bossEventText{font-size:12px;}
+  #bossEventOverlay .bossEventEffect{font-size:13px;}
+}
+@media(prefers-reduced-motion:reduce){#bossEventOverlay.show .bossEventCard{animation:none;transform:none;opacity:1;}}
