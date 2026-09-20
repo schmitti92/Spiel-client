@@ -1,10 +1,10 @@
-// Barikade V10.1 – serverautoritaer + persoenliche Würfeldesigns
-(function barikadeGameV101Bootstrap(){
-  if (window.__BARIKADE_GAME_V101_LOADED__) {
-    console.warn('[Barikade V10.1] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+// Barikade V10.3 – Spielerleiste + aufgeräumte Sidebar · serverautoritaer
+(function barikadeGameV103Bootstrap(){
+  if (window.__BARIKADE_GAME_V103_LOADED__) {
+    console.warn('[Barikade V10.3] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
-  window.__BARIKADE_GAME_V101_LOADED__ = true;
+  window.__BARIKADE_GAME_V103_LOADED__ = true;
 
 // --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
 (() => {
@@ -29,26 +29,38 @@ let pendingSaveExport = false;
   function applyUxStabilityFixes(){
     try{
       const topbar = document.querySelector('.topbar');
+      const playerStripShell = document.querySelector('.playerStripShell');
       const sidePanel = document.querySelector('.app > .panel');
       if(!sidePanel) return;
 
-      // Ensure the document doesn't become scroll-container (prevents mobile "refresh-like" jumps)
-      // while the right panel gets its own scroll.
+      // Desktop/tablet: board + sidebar stay inside the viewport.
+      // Mobile/portrait: the document may scroll naturally (the old hard lock fought the responsive CSS).
       try{
         document.documentElement.style.height = '100%';
         document.body.style.height = '100%';
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
         document.body.style.overscrollBehavior = 'none';
         document.documentElement.style.overscrollBehavior = 'none';
+        if(window.innerWidth <= 900){
+          document.body.style.overflow = 'auto';
+          document.documentElement.style.overflow = 'auto';
+        }else{
+          document.body.style.overflow = 'hidden';
+          document.documentElement.style.overflow = 'hidden';
+        }
       }catch(_e){}
 
-      // Compute available height for right panel and enable smooth scrolling (tablet friendly)
+      // V10.3 player strip also consumes vertical space.
       const topH = topbar ? topbar.getBoundingClientRect().height : 0;
-      const pad = 16; // matches .app padding
-      const maxH = Math.max(200, window.innerHeight - topH - pad*2);
-      sidePanel.style.maxHeight = maxH + 'px';
-      sidePanel.style.overflowY = 'auto';
+      const stripH = playerStripShell ? playerStripShell.getBoundingClientRect().height : 0;
+      const pad = 16;
+      const maxH = Math.max(200, window.innerHeight - topH - stripH - pad*2);
+      if(window.innerWidth <= 900){
+        sidePanel.style.maxHeight = 'none';
+        sidePanel.style.overflowY = 'visible';
+      }else{
+        sidePanel.style.maxHeight = maxH + 'px';
+        sidePanel.style.overflowY = 'auto';
+      }
       sidePanel.style.webkitOverflowScrolling = 'touch';
 
       // Dice sizing is controlled centrally by styles.css.
@@ -1497,6 +1509,144 @@ if(actionEffectsState){
   }
 
 
+  // ===== V10.3: Live player strip + simplified sidebar state =====
+  function playerProgressForColor(color){
+    try{
+      const arr = state && state.pieces && Array.isArray(state.pieces[color]) ? state.pieces[color] : [];
+      const goal = arr.filter(pc => pc && pc.pos === "goal").length;
+      return { goal, total: arr.length || 5 };
+    }catch(_e){ return { goal:0, total:5 }; }
+  }
+
+  function playerForColor(color){
+    try{
+      return (lastNetPlayers || []).find(p => p && String(p.color || "").toLowerCase() === color) || null;
+    }catch(_e){ return null; }
+  }
+
+  function renderPlayerStrip(){
+    try{
+      const root = document.getElementById("playerStrip");
+      if(!root) return;
+
+      const order = ["red","blue","green","yellow"];
+      const rosterColors = [];
+      for(const p of (lastNetPlayers || [])){
+        const c = String(p && p.color || "").toLowerCase();
+        if(order.includes(c) && !rosterColors.includes(c)) rosterColors.push(c);
+      }
+      const stateColors = state && Array.isArray(state.activeColors) ? state.activeColors.map(c=>String(c||"").toLowerCase()) : [];
+      const localColors = state && Array.isArray(state.players) ? state.players.map(c=>String(c||"").toLowerCase()) : PLAYERS.slice();
+      let colors = rosterColors.length ? rosterColors : (stateColors.length ? stateColors : localColors);
+      colors = [...new Set(colors.filter(c=>order.includes(c)))].sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+
+      root.textContent = "";
+      if(!colors.length){
+        const empty = document.createElement("div");
+        empty.className = "playerStripEmpty";
+        empty.textContent = "Spieler werden geladen …";
+        root.appendChild(empty);
+        return;
+      }
+
+      for(const c of colors){
+        const p = playerForColor(c);
+        const name = (p && p.name) ? String(p.name) : labelForColor(c);
+        const isActive = !!(state && state.currentPlayer === c && !state.winner);
+        const isMe = !!((p && p.id && p.id === clientId) || (myColor && myColor === c));
+        const isHost = !!(p && (p.isHost || String(p.role||"").toLowerCase()==="host"));
+        const isOffline = !!(p && p.connected === false);
+        const diceStyle = normalizeDiceStyle((p && p.diceStyle) || diceStyleByColor[c]);
+        const progress = playerProgressForColor(c);
+
+        const card = document.createElement("article");
+        card.className = "playerStripCard" + (isActive ? " isActive" : "") + (isMe ? " isMe" : "") + (isOffline ? " isOffline" : "");
+        card.dataset.color = c;
+        card.style.setProperty("--player-color", COLORS[c] || "#8a7cff");
+
+        const avatar = document.createElement("div");
+        avatar.className = "playerStripAvatar";
+        avatar.textContent = (name.trim().charAt(0) || PLAYER_NAME[c].charAt(0)).toUpperCase();
+
+        const body = document.createElement("div");
+        body.className = "playerStripBody";
+        const nameRow = document.createElement("div");
+        nameRow.className = "playerStripNameRow";
+        const nm = document.createElement("strong");
+        nm.textContent = name;
+        nameRow.appendChild(nm);
+        if(isMe){ const b=document.createElement("span"); b.className="stripBadge meBadge"; b.textContent="DU"; nameRow.appendChild(b); }
+        if(isHost){ const b=document.createElement("span"); b.className="stripBadge hostBadge"; b.textContent="HOST"; nameRow.appendChild(b); }
+        if(isActive){ const b=document.createElement("span"); b.className="stripBadge activeBadge"; b.textContent="DRAN"; nameRow.appendChild(b); }
+
+        const meta = document.createElement("div");
+        meta.className = "playerStripMeta";
+        const colorDot = document.createElement("span");
+        colorDot.className = "stripColorDot";
+        colorDot.style.background = COLORS[c] || "#fff";
+        const colorTxt = document.createElement("span");
+        colorTxt.textContent = PLAYER_NAME[c] || c;
+        const diceTxt = document.createElement("span");
+        diceTxt.textContent = `🎲 ${DICE_STYLE_LABEL[diceStyle] || "Klassisch"}`;
+        const goalTxt = document.createElement("span");
+        goalTxt.textContent = `${progress.goal}/${progress.total} Ziel`;
+        meta.append(colorDot,colorTxt,diceTxt,goalTxt);
+        if(isOffline){
+          const off=document.createElement("span"); off.className="stripOffline"; off.textContent="offline"; meta.appendChild(off);
+        }
+
+        body.append(nameRow,meta);
+        card.append(avatar,body);
+        root.appendChild(card);
+      }
+      try{ applyUxStabilityFixes(); }catch(_e){}
+    }catch(_e){}
+  }
+
+  function syncV103Sidebar(){
+    try{
+      const label = document.getElementById("sideTurnLabel");
+      const meta = document.getElementById("sideTurnMeta");
+      const dot = document.getElementById("sideTurnDot");
+      const badge = document.getElementById("actionModeBadge");
+      const classicNotice = document.getElementById("classicModeNotice");
+
+      const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : "";
+      const winner = state && state.winner ? String(state.winner).toLowerCase() : "";
+      const isMyTurn = netMode === "offline" ? true : !!(myColor && c && myColor === c);
+
+      if(label){
+        if(winner) label.textContent = `${labelForColor(winner)} gewinnt!`;
+        else if(c) label.textContent = labelForColor(c);
+        else label.textContent = "Spiel noch nicht gestartet";
+      }
+      if(dot){
+        dot.style.background = (winner ? COLORS[winner] : (c ? COLORS[c] : "#667085")) || "#667085";
+        dot.classList.toggle("pulse", !!c && !winner);
+      }
+      if(meta){
+        if(winner) meta.textContent = "Partie beendet";
+        else if(!state || !state.started) meta.textContent = "Warte auf den Spielstart.";
+        else if(!isMyTurn) meta.textContent = `Warte auf ${labelForColor(c)}.`;
+        else if(phase === "need_roll") meta.textContent = "Du bist dran · jetzt würfeln.";
+        else if(phase === "need_move") meta.textContent = "Du bist dran · Figur auswählen und ziehen.";
+        else if(phase === "placing_barricade") meta.textContent = "Du bist dran · Barikade platzieren.";
+        else if(phase === "game_over") meta.textContent = "Partie beendet.";
+        else meta.textContent = "Dein Zug läuft.";
+      }
+
+      const fallbackAction = !!(actionModeToggle && actionModeToggle.checked);
+      const isAction = String(state && state.mode || (fallbackAction ? "action" : "classic")) === "action";
+      if(badge){
+        badge.textContent = isAction ? "⚡ Action" : "Classic";
+        badge.classList.toggle("isAction", isAction);
+      }
+      if(classicNotice) classicNotice.style.display = isAction ? "none" : "flex";
+
+      renderPlayerStrip();
+    }catch(_e){}
+  }
+
   function setNetPlayers(list){
     lastNetPlayers = Array.isArray(list) ? list : [];
     rosterById = new Map();
@@ -1558,6 +1708,9 @@ if(actionEffectsState){
       });
       netPlayersEl.textContent = parts.join(" · ");
     }
+
+    // V10.3 player strip/sidebar refresh
+    syncV103Sidebar();
 
     // host-only controls visibility
     updateHostToolsUI();
@@ -1872,6 +2025,7 @@ try{
       _netWatchdogIv=null; _netPingIv=null;
       setNetStatus("Getrennt – Reconnect…", false);
       showNetBanner("Verbindung getrennt – Reconnect läuft…");
+      try{ syncV103Sidebar(); }catch(_e){}
       if(netMode!=="offline") scheduleReconnect();
     };
   }
@@ -2904,6 +3058,7 @@ function showEpicWin(winnerColor){
       if(skipBtn) skipBtn.disabled = true;
       updateColorPickUI();
       updateEmojiUI();
+      syncV103Sidebar();
       return;
     }
 
@@ -2926,6 +3081,7 @@ function showEpicWin(winnerColor){
 
     updateColorPickUI();
     updateEmojiUI();
+    syncV103Sidebar();
   }
 
   function endTurn(){
@@ -4208,6 +4364,8 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
       jokerFxHideTimer=setTimeout(()=>{ try{el.classList.remove("show");}catch(_e){} },940);
     }catch(_e){}
   }
+
+  try{ syncV103Sidebar(); }catch(_e){}
 
   // ===== Buttons =====
   debugToggle && debugToggle.addEventListener("click", () => {
