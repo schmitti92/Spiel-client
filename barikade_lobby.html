@@ -878,13 +878,47 @@
     body.lobby-page .player-choice-name{font-size:14px;}
     body.lobby-page .player-choice-state{font-size:10.5px;margin-top:4px;}
 
-    /* Color choice */
+    /* Color choice – buttons are fully filled in their actual player color */
     body.lobby-page .color-choice-grid{gap:10px;}
     body.lobby-page .color-choice-grid [data-color]{
       height:50px;
       padding:0 11px;
       border-radius:14px;
       font-size:14px;
+      font-weight:950;
+      color:var(--color-text,#fff);
+      background:linear-gradient(145deg,var(--color-main),var(--color-deep));
+      border:1px solid var(--color-border);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 9px 20px var(--color-shadow);
+      text-shadow:0 1px 2px rgba(0,0,0,.34);
+    }
+    body.lobby-page .color-choice-grid [data-color="red"]{
+      --color-main:#f94f68;--color-deep:#a51e3a;--color-border:rgba(255,116,136,.62);--color-shadow:rgba(208,39,68,.22);
+    }
+    body.lobby-page .color-choice-grid [data-color="blue"]{
+      --color-main:#429cff;--color-deep:#1759b7;--color-border:rgba(105,184,255,.62);--color-shadow:rgba(38,111,221,.22);
+    }
+    body.lobby-page .color-choice-grid [data-color="green"]{
+      --color-main:#39d789;--color-deep:#0c8650;--color-border:rgba(104,231,166,.58);--color-shadow:rgba(22,169,102,.22);
+    }
+    body.lobby-page .color-choice-grid [data-color="yellow"]{
+      --color-main:#ffd84f;--color-deep:#d58a12;--color-border:rgba(255,225,115,.72);--color-shadow:rgba(213,151,28,.22);--color-text:#241900;
+      text-shadow:0 1px 0 rgba(255,255,255,.28);
+    }
+    body.lobby-page .color-choice-grid [data-color]:not(:disabled):hover{
+      filter:brightness(1.08) saturate(1.05);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 13px 26px var(--color-shadow);
+    }
+    body.lobby-page .color-choice-grid [data-color].active{
+      background:linear-gradient(145deg,var(--color-main),var(--color-deep));
+      border-color:rgba(255,255,255,.90);
+      box-shadow:0 0 0 3px rgba(255,255,255,.15),0 14px 30px var(--color-shadow),inset 0 1px 0 rgba(255,255,255,.25);
+      transform:translateY(-1px);
+    }
+    body.lobby-page .color-choice-grid [data-color]:disabled{
+      opacity:.32;
+      filter:grayscale(.35) saturate(.55);
+      box-shadow:none;
     }
 
     /* Dice chooser – make the actual feature feel premium */
