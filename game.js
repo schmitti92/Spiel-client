@@ -3332,7 +3332,7 @@ function showEpicWin(winnerColor){
   if(rematchBtn) rematchBtn.addEventListener("click", requestRematch);
 
   async function loadBoard(){
-    const res = await fetch("board.json", { cache:"force-cache" });
+    const res = await fetch("board.json?v=barikade_bossboard_v3_20260920_1548", { cache:"no-store" });
     if(!res.ok) throw new Error("board.json nicht gefunden");
     return await res.json();
   }
@@ -4207,7 +4207,10 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       ctx.beginPath(); ctx.arc(s.x,s.y,r-2.2,Math.PI*1.04,Math.PI*1.88); ctx.stroke();
       ctx.restore();
 
-      if(n.kind==="board" && bossModeVisualActive() && Array.isArray(board?.meta?.eventFields) && board.meta.eventFields.map(String).includes(String(n.id))){
+      const bossEventFieldIds = Array.isArray(state?.boss?.eventFields) && state.boss.eventFields.length
+        ? state.boss.eventFields.map(String)
+        : (Array.isArray(board?.meta?.eventFields) ? board.meta.eventFields.map(String) : []);
+      if(n.kind==="board" && bossModeVisualActive() && bossEventFieldIds.includes(String(n.id))){
         ctx.save();
         ctx.shadowColor="rgba(180,110,255,.56)"; ctx.shadowBlur=15;
         ctx.strokeStyle="rgba(211,164,255,.90)"; ctx.lineWidth=3;
