@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Barikade</title>
-  <link rel="stylesheet" href="styles.css?v=barikade_v12_2_bosscard_visual_upgrade_20260920" />
+  <link rel="stylesheet" href="styles.css?v=barikade_v12_8_final_ui_polish_20260922" />
 </head>
 
 <body class="game-page">
@@ -68,6 +68,11 @@
           <div class="sidebarWaitingStats">
             <span><b id="sidebarWaitingPlayers">1</b> Spieler</span>
             <span>Raum <b id="sidebarWaitingRoom">–</b></span>
+          </div>
+          <div id="pregameReady" class="pregameReady" aria-label="Spieler bereit">
+            <div class="pregameReadyHead"><span>STARTBEREITSCHAFT</span><strong id="pregameReadyText">1/4</strong></div>
+            <div class="pregameReadyTrack"><span id="pregameReadyFill"></span></div>
+            <div id="pregameReadyDots" class="pregameReadyDots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
           </div>
           <button id="startBtn" class="btn sidebarStartBtn" type="button">▶ Spiel starten</button>
         </div>
@@ -134,6 +139,11 @@
             <h3>Bosskarten</h3>
           </div>
           <span id="bossModeBadge" class="modeBadge bossModeBadge">👹 Aktiv</span>
+        </div>
+        <div class="bossOverview" id="bossOverview" aria-label="Bossmodus Übersicht">
+          <div class="bossOverviewCard bossOverviewCard--portal"><span>🚪 Portale</span><strong>0/2 belegt</strong><small>Bossportale warten auf neue Gegner</small></div>
+          <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>8 Felder</strong><small>54 Karten im gemischten Deck</small></div>
+          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde 1</strong><small>Jäger jagt bei jedem Wurf</small></div>
         </div>
         <div class="bossCards" id="bossSlots"></div>
         <div class="bossEventMini bossInfoBar">
@@ -265,6 +275,6 @@
     })();
   </script>
 
-  <script src="game.js?v=barikade_v12_2_bosscard_visual_upgrade_20260920"></script>
+  <script src="game.js?v=barikade_v12_8_final_ui_polish_20260922"></script>
 </body>
 </html>
