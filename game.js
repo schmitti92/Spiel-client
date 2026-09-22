@@ -565,6 +565,8 @@ let pendingSaveExport = false;
     if(k==="barricade") return "Barikade";
     if(k==="reroll") return "Neu-Wurf";
     if(k==="double") return "Doppelwurf";
+    if(k==="bossspawn") return "Boss spawnen";
+    if(k==="bossremove") return "Boss entfernen";
     return "Joker";
   }
   function v104OnJoker(kind){
@@ -773,6 +775,8 @@ let pendingSaveExport = false;
   const jokerBarricadeState = $("jokerBarricadeState");
   const jokerRerollState = $("jokerRerollState");
   let jokerDoubleState = $("jokerDoubleState");
+  const jokerBossSpawnState = $("jokerBossSpawnState");
+  const jokerBossRemoveState = $("jokerBossRemoveState");
   const actionEffectsState = $("actionEffectsState");
 
   // ===== V10.9 Action-Bossmodus =====
@@ -863,6 +867,7 @@ let pendingSaveExport = false;
 
   let bossMoveFx = new Map();
   let bossLifeFx = [];
+  const _bossRemovedByJokerIds = new Set();
 
   function bossTheme(type){
     const t=String(type||'');
@@ -1014,10 +1019,10 @@ let pendingSaveExport = false;
         kind:String(kind||'spawn'),
         x:pt.x,y:pt.y,
         start:now,
-        duration: kind==='defeat' ? 1650 : 1900,
+        duration: (kind==='defeat'||kind==='remove') ? 1650 : 1900,
         icon:String(bossInfo?.icon||'👹'),
         type:String(bossInfo?.type||''),
-        label:kind==='defeat'?'BOSS BESIEGT':'BOSS ERSCHEINT'
+        label:kind==='defeat'?'BOSS BESIEGT':kind==='remove'?'BOSS ENTFERNT':'BOSS ERSCHEINT'
       });
       if(bossLifeFx.length>10) bossLifeFx=bossLifeFx.slice(-10);
       requestInteractionFxTick();
@@ -1073,11 +1078,11 @@ let pendingSaveExport = false;
         ctx.globalAlpha=Math.max(0,1-p*1.05);
         ctx.font=`1000 ${Math.max(24,Math.round(r*1.45))}px system-ui`;
         ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='rgba(255,255,255,.98)';
-        ctx.fillText('💥',s.x,s.y-2-e*r*.28);
+        ctx.fillText(fx.kind==='remove'?'🌀':'💥',s.x,s.y-2-e*r*.28);
       }
       ctx.globalAlpha=Math.max(0,Math.min(1,(p<.18?p/.18:(1-p)/.35)));
       ctx.font=`1000 ${Math.max(9,Math.round(r*.42))}px system-ui`;
-      ctx.fillStyle=fx.kind==='defeat'?'rgba(255,232,164,.98)':theme.label;
+      ctx.fillStyle=fx.kind==='defeat'?'rgba(255,232,164,.98)':fx.kind==='remove'?'rgba(213,199,255,.98)':theme.label;
       ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText(fx.label,s.x,s.y-r*(2.15+p*.35));
       ctx.restore();
@@ -1097,7 +1102,11 @@ let pendingSaveExport = false;
           if(!prev.has(id)) addBossLifeFx('spawn',nextBoss,boss);
         }
         for(const [id,boss] of prev.entries()){
-          if(!next.has(id)) addBossLifeFx('defeat',prevBoss,boss);
+          if(!next.has(id)){
+            const removedByJoker=_bossRemovedByJokerIds.has(String(id));
+            addBossLifeFx(removedByJoker?'remove':'defeat',prevBoss,boss);
+            _bossRemovedByJokerIds.delete(String(id));
+          }
         }
       }
       for(const [id,boss] of next.entries()){
@@ -1157,6 +1166,8 @@ let pendingSaveExport = false;
   const jokerAllColorsBtn = $("jokerAllColorsBtn");
   const jokerBarricadeBtn = $("jokerBarricadeBtn");
   let jokerRerollBtn = $("jokerRerollBtn");
+  let jokerBossSpawnBtn = $("jokerBossSpawnBtn");
+  let jokerBossRemoveBtn = $("jokerBossRemoveBtn");
 
   
 
@@ -1299,7 +1310,7 @@ let pendingSaveExport = false;
       }
 
       // 2) Hide verbose state rows (we show counts on buttons instead)
-      const hideIds = ["jokerAllColorsState","jokerBarricadeState","jokerRerollState","jokerDoubleState"];
+      const hideIds = ["jokerAllColorsState","jokerBarricadeState","jokerRerollState","jokerDoubleState","jokerBossSpawnState","jokerBossRemoveState"];
       hideIds.forEach(id=>{
         const el = document.getElementById(id);
         if(!el) return;
@@ -1329,6 +1340,8 @@ let pendingSaveExport = false;
       const bBar = document.getElementById("jokerBarricadeBtn");
       const bRe  = document.getElementById("jokerRerollBtn");
       const bDo  = document.getElementById("jokerDoubleBtn");
+      const bBs  = document.getElementById("jokerBossSpawnBtn");
+      const bBr  = document.getElementById("jokerBossRemoveBtn");
 
       // If old grid exists, hide it to reduce clutter
       const oldGrid = actionCard.querySelector(".joker-grid");
@@ -1365,6 +1378,8 @@ let pendingSaveExport = false;
       makeEpic(bBar, "barricade", "🧱", "Barikade", "Barikade versetzen");
       makeEpic(bRe,  "reroll",   "🔁", "Neu‑Wurf", "würfle nochmal");
       makeEpic(bDo,  "double",   "🎲", "Doppelwurf", "2 Würfel zählen");
+      makeEpic(bBs,  "bossSpawn", "👹", "Boss spawnen", "zufälligen Boss rufen");
+      makeEpic(bBr,  "bossRemove", "🌀", "Boss entfernen", "aktiven Boss auswählen");
 
     }catch(_e){}
   }
@@ -1947,16 +1962,20 @@ let awardsShown = false;
       
       // Epic Joker Buttons: counts directly on buttons (visual only)
       try{ ensureEpicJokerUI(); }catch(_e){}
+      function jokerButtonIdForKey(key){
+        return ({
+          allColors:"jokerAllColorsBtn", barricade:"jokerBarricadeBtn", reroll:"jokerRerollBtn", double:"jokerDoubleBtn",
+          bossSpawn:"jokerBossSpawnBtn", bossRemove:"jokerBossRemoveBtn"
+        })[key] || "";
+      }
       function setEpicBadge(key, cnt){
         try{
           const el = document.getElementById(`ejCount_${key}`);
-          const btn = actionCard ? actionCard.querySelector(`#joker${key==="allColors"?"AllColors":key==="barricade"?"Barricade":key==="reroll"?"Reroll":"Double"}Btn`) : null;
+          const id = jokerButtonIdForKey(key);
+          const b = id ? document.getElementById(id) : null;
           if(el) el.textContent = `x${Math.max(0, cnt|0)}`;
-          // mark empty visually, but DO NOT disable (no gameplay change)
-          const b = document.querySelector(`#joker${key==="allColors"?"AllColors":key==="barricade"?"Barricade":key==="reroll"?"Reroll":"Double"}Btn`);
           if(b){
             b.classList.toggle("ejEmpty", !(cnt>0));
-            // add tooltip with full legacy/origin info for power users (no clutter)
             try{
               const legacyVal = js && my ? js[my]?.[key] : null;
               b.title = fmtWithOrigin(key, legacyVal);
@@ -1977,11 +1996,22 @@ let awardsShown = false;
       setEpicBadge("barricade", countFor("barricade"));
       setEpicBadge("reroll", countFor("reroll"));
       setEpicBadge("double", countFor("double"));
+      setEpicBadge("bossSpawn", countFor("bossSpawn"));
+      setEpicBadge("bossRemove", countFor("bossRemove"));
+
+      const bossJokersVisible=!!(state && state.bossMode);
+      const bsBtn=document.getElementById("jokerBossSpawnBtn");
+      const brBtn=document.getElementById("jokerBossRemoveBtn");
+      if(bsBtn) bsBtn.hidden=!bossJokersVisible;
+      if(brBtn) brBtn.hidden=!bossJokersVisible;
+      document.querySelectorAll(".bossOnlyJoker").forEach(el=>{ if(el.id!=="jokerBossSpawnBtn"&&el.id!=="jokerBossRemoveBtn") el.hidden=!bossJokersVisible; });
 
 if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColors", js && my ? js[my]?.allColors : null);
       if(jokerBarricadeState) jokerBarricadeState.textContent = fmtWithOrigin("barricade", js && my ? js[my]?.barricade : null);
       if(jokerRerollState) jokerRerollState.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
       if(jokerDoubleState) jokerDoubleState.textContent = fmtWithOrigin("double", js && my ? js[my]?.double : null);
+      if(jokerBossSpawnState) jokerBossSpawnState.textContent = fmtWithOrigin("bossSpawn", js && my ? js[my]?.bossSpawn : null);
+      if(jokerBossRemoveState) jokerBossRemoveState.textContent = fmtWithOrigin("bossRemove", js && my ? js[my]?.bossRemove : null);
       const rrEl = document.getElementById("jokerRerollState");
       if(rrEl) rrEl.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
 
@@ -2017,6 +2047,8 @@ if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColo
       setEpic("barricade", js && my ? js[my]?.barricade : null, "jokerBarricadeBadge", "jokerBarricadeOrigin", "barricade");
       setEpic("reroll",   js && my ? js[my]?.reroll   : null, "jokerRerollBadge",   "jokerRerollOrigin",   "reroll");
       setEpic("double",   js && my ? js[my]?.double   : null, "jokerDoubleBadge",   "jokerDoubleOrigin",   "double");
+      setEpic("bossSpawn", js && my ? js[my]?.bossSpawn : null, "jokerBossSpawnBadge", "jokerBossSpawnOrigin", "bossSpawn");
+      setEpic("bossRemove", js && my ? js[my]?.bossRemove : null, "jokerBossRemoveBadge", "jokerBossRemoveOrigin", "bossRemove");
 
 
 if(actionEffectsState){
@@ -2479,6 +2511,8 @@ if(actionEffectsState){
       }
       const fallbackAction = !!(actionModeToggle && actionModeToggle.checked);
       const isAction = String(state && state.mode || (fallbackAction ? "action" : "classic")) === "action";
+      const isBossJokerMode = !!(state && state.bossMode);
+      const jokerUiActive = isAction || isBossJokerMode;
 
       if(sidebar){
         sidebar.classList.toggle('isPregame', !started && !winner);
@@ -2558,12 +2592,12 @@ if(actionEffectsState){
       }
 
       if(badge){
-        badge.textContent = isAction ? "⚡ Action" : "Classic";
-        badge.classList.toggle("isAction", isAction);
+        badge.textContent = isAction && isBossJokerMode ? "⚡ Action + Boss" : isAction ? "⚡ Action" : isBossJokerMode ? "👹 Boss-Joker" : "Classic";
+        badge.classList.toggle("isAction", jokerUiActive);
       }
       if(classicNotice) classicNotice.style.display = "none";
       if(jokerSection){
-        jokerSection.style.display = (started && !winner && isAction) ? '' : 'none';
+        jokerSection.style.display = (started && !winner && jokerUiActive) ? '' : 'none';
       }
 
       renderPlayerStrip();
@@ -2922,6 +2956,7 @@ try{
         return;
       }
       if(type==="snapshot" || type==="started" || type==="place_barricade"){
+        if(msg.removedBossId) _bossRemovedByJokerIds.add(String(msg.removedBossId));
         if(msg.state){
           applyRemoteState(msg.state);
           maybeInitStartJokers(msg.state);
@@ -4840,8 +4875,10 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       let fill=COLORS.node;
       if(n.kind==="board"){
         if(n.id===goalNodeId) fill=COLORS.goal;
-        else if(n.flags?.startColor) fill=COLORS.node; // ✅ neutral start fields
-        else if(n.flags?.run) fill=COLORS.run;
+        else if(n.flags?.startColor) fill=COLORS.node; // Startfelder bleiben neutral
+        // Die alten hellblauen Markierungspunkte (run-Felder / ehemalige Barikadenfelder)
+        // werden bewusst nicht mehr separat hervorgehoben.
+        else fill=COLORS.node;
       }else if(n.kind==="house"){
         fill=COLORS[n.flags?.houseColor]||COLORS.node;
       }
@@ -5627,7 +5664,9 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
         allcolors:{icon:"🌈",title:"Alle Farben"},
         barricade:{icon:"🧱",title:"Barikade"},
         reroll:{icon:"🔁",title:"Neu-Wurf"},
-        double:{icon:"🎲🎲",title:"Doppelwurf"}
+        double:{icon:"🎲🎲",title:"Doppelwurf"},
+        bossspawn:{icon:"👹",title:"Boss spawnen"},
+        bossremove:{icon:"🌀",title:"Boss entfernen"}
       }[type];
       if(!data) return;
       const el=ensureJokerFxUI();
@@ -5776,6 +5815,80 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
     });
 
 
+  function closeBossRemovePicker(){
+    const el=document.getElementById("bossRemoveJokerOverlay");
+    if(el) el.classList.remove("show");
+  }
+  function openBossRemovePicker(){
+    try{
+      const active=(state?.boss?.slots||[]).filter(s=>s?.boss);
+      if(!active.length){ toast("Kein Boss aktiv"); return; }
+      let el=document.getElementById("bossRemoveJokerOverlay");
+      if(!el){
+        el=document.createElement("div");
+        el.id="bossRemoveJokerOverlay";
+        el.innerHTML=`<div class="bossRemoveJokerCard" role="dialog" aria-modal="true" aria-label="Boss entfernen">
+          <div class="bossRemoveJokerKicker">🌀 BOSS-JOKER</div>
+          <h3>Welchen Boss entfernen?</h3>
+          <p>Wähle einen aktuell aktiven Boss. Er verschwindet sofort und gibt keine Boss-Belohnung.</p>
+          <div class="bossRemoveJokerChoices"></div>
+          <button type="button" class="bossRemoveJokerCancel">Abbrechen</button>
+        </div>`;
+        document.body.appendChild(el);
+        el.querySelector(".bossRemoveJokerCancel")?.addEventListener("click",closeBossRemovePicker);
+        el.addEventListener("click",e=>{ if(e.target===el) closeBossRemovePicker(); });
+      }
+      const choices=el.querySelector(".bossRemoveJokerChoices");
+      if(choices){
+        choices.innerHTML=active.map(slot=>{
+          const b=slot.boss||{};
+          const meta=BOSS_CARD_META[String(b.type||"")]||{};
+          return `<button type="button" class="bossRemoveChoice" data-boss-id="${String(b.id||"")}" data-slot-id="${String(slot.id||"")}">
+            <span class="bossRemoveChoiceIcon">${meta.icon||b.icon||"👹"}</span>
+            <span><strong>${meta.name||b.name||"Boss"}</strong><small>${slot.name||"Bossportal"} · 1 Leben</small></span>
+            <span class="bossRemoveChoiceAction">ENTFERNEN</span>
+          </button>`;
+        }).join("");
+        choices.querySelectorAll(".bossRemoveChoice").forEach(btn=>btn.addEventListener("click",()=>{
+          const bossId=btn.dataset.bossId||"";
+          const slotId=btn.dataset.slotId||"";
+          closeBossRemovePicker();
+          playJokerFx("bossremove");
+          wsSend({type:"use_joker",joker:"bossremove",bossId,slotId,ts:Date.now()});
+        }));
+      }
+      el.classList.add("show");
+    }catch(_e){}
+  }
+
+  const bindBossJokers=()=>{
+    jokerBossSpawnBtn=document.getElementById("jokerBossSpawnBtn");
+    jokerBossRemoveBtn=document.getElementById("jokerBossRemoveBtn");
+    if(jokerBossSpawnBtn && !jokerBossSpawnBtn.__bound){
+      jokerBossSpawnBtn.__bound=true;
+      jokerBossSpawnBtn.addEventListener("click",()=>{
+        if(!state?.bossMode){ toast("Nur im Bossmodus verfügbar"); return; }
+        if(state?.currentPlayer!==myColor){ toast("Nicht dein Zug"); return; }
+        const set=getMyJokerSet();
+        if(!hasJoker(set,"bossSpawn")){ toast("Boss-spawnen-Joker nicht verfügbar"); return; }
+        const free=(state?.boss?.slots||[]).some(s=>!s?.boss);
+        if(!free){ toast("Beide Bossportale sind belegt – Joker bleibt erhalten"); return; }
+        playJokerFx("bossspawn");
+        wsSend({type:"use_joker",joker:"bossspawn",ts:Date.now()});
+      });
+    }
+    if(jokerBossRemoveBtn && !jokerBossRemoveBtn.__bound){
+      jokerBossRemoveBtn.__bound=true;
+      jokerBossRemoveBtn.addEventListener("click",()=>{
+        if(!state?.bossMode){ toast("Nur im Bossmodus verfügbar"); return; }
+        if(state?.currentPlayer!==myColor){ toast("Nicht dein Zug"); return; }
+        const set=getMyJokerSet();
+        if(!hasJoker(set,"bossRemove")){ toast("Boss-entfernen-Joker nicht verfügbar"); return; }
+        openBossRemovePicker();
+      });
+    }
+  };
+
   // Helper: robust access to action joker set for current player (server snapshot is source of truth)
 function getMyJokerSet(){
   try{
@@ -5880,6 +5993,7 @@ function hasJoker(obj, key){ return jokerCount(obj, key) > 0; }
   }
   bindReroll();
   bindDouble();
+  bindBossJokers();
 
 
 
@@ -6252,12 +6366,22 @@ function enqueueWheel(list) {
 
 // ----- Wheel UI (visual spinning wheel) -----
 // Note: Pure UI. Server already decides the result. No game-state changes here.
-const _WHEEL_SEGMENTS = [
+const _WHEEL_BASE_SEGMENTS = [
   { key: "allColors", label: "Alle Farben", short:"FARBEN", icon:"🌈", c1:"#7049d8", c2:"#3b245f" },
   { key: "barricade", label: "Barikade", short:"BARRIKADE", icon:"🧱", c1:"#d28a43", c2:"#674025" },
   { key: "reroll",    label: "Neu-Wurf", short:"NEU-WURF", icon:"🎲", c1:"#2d9fa5", c2:"#174b56" },
   { key: "double",    label: "Doppelwurf", short:"DOPPELWURF", icon:"⚡", c1:"#cc5f86", c2:"#692d52" },
 ];
+const _WHEEL_BOSS_SEGMENTS = [
+  { key:"bossSpawn", label:"Boss spawnen", short:"BOSS +", icon:"👹", c1:"#d85a4d", c2:"#70251f" },
+  { key:"bossRemove", label:"Boss entfernen", short:"BOSS −", icon:"🌀", c1:"#8b70e8", c2:"#3f2b86" },
+];
+let _wheelActiveSegments = _WHEEL_BASE_SEGMENTS;
+function _wheelSegmentsForItem(item){
+  const result=String(item?.result||"");
+  const bossResult=result==="bossSpawn"||result==="bossRemove";
+  return (bossResult || !!state?.bossMode) ? _WHEEL_BASE_SEGMENTS.concat(_WHEEL_BOSS_SEGMENTS) : _WHEEL_BASE_SEGMENTS;
+}
 
 let _wheelAngle = 0; // radians (0 = segment 0 centered at top after calibration)
 
@@ -6307,7 +6431,7 @@ function _wheelEnsureUI() {
         <div id="wheelWrap"><canvas id="wheelCanvas" width="720" height="720"></canvas></div>
       </div>
       <div id="wheelResult"></div>
-      <div id="wheelHint">4 Joker · keine Niete</div>
+      <div id="wheelHint">Joker · keine Niete</div>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -6336,10 +6460,10 @@ function _wheelDraw(angleRad) {
   ctx.strokeStyle='rgba(222,214,255,.24)';ctx.lineWidth=5;ctx.stroke();
   ctx.restore();
 
-  const segN = _WHEEL_SEGMENTS.length;
+  const segN = _wheelActiveSegments.length;
   const seg = (Math.PI * 2) / segN;
   for (let i = 0; i < segN; i++) {
-    const info=_WHEEL_SEGMENTS[i];
+    const info=_wheelActiveSegments[i];
     const a0 = angleRad + i * seg - Math.PI / 2;
     const a1 = a0 + seg;
     const grad=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
@@ -6381,16 +6505,16 @@ function _wheelResolveIndex(resultKey) {
   const key = String(resultKey || "").trim();
   if (!key) {
     // Fallback: random segment (keine Nieten mehr)
-    return Math.floor(Math.random() * _WHEEL_SEGMENTS.length);
+    return Math.floor(Math.random() * _wheelActiveSegments.length);
   }
   const k = key.toLowerCase();
-  for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
-    if (_WHEEL_SEGMENTS[i].key.toLowerCase() === k) return i;
+  for (let i = 0; i < _wheelActiveSegments.length; i++) {
+    if (_wheelActiveSegments[i].key.toLowerCase() === k) return i;
   }
   // if server sends "allColors" etc. with odd formatting
   const norm = k.replace(/[^a-z]/g, "");
-  for (let i = 0; i < _WHEEL_SEGMENTS.length; i++) {
-    if (_WHEEL_SEGMENTS[i].key.toLowerCase() === norm) return i;
+  for (let i = 0; i < _wheelActiveSegments.length; i++) {
+    if (_wheelActiveSegments[i].key.toLowerCase() === norm) return i;
   }
   return 0;
 }
@@ -6428,11 +6552,15 @@ function _wheelNext() {
 
   overlay.classList.add("show");
 
+  _wheelActiveSegments=_wheelSegmentsForItem(item);
+  const hint=document.getElementById("wheelHint");
+  if(hint) hint.textContent=`${_wheelActiveSegments.length} Joker · keine Niete${_wheelActiveSegments.length>4?" · Boss-Joker aktiv":""}`;
+
   // Determine target segment based on server result.
   const idx = _wheelResolveIndex(item.result);
 
   // Compute final angle so that the segment center lands at the pointer (top).
-  const seg = (Math.PI * 2) / _WHEEL_SEGMENTS.length;
+  const seg = (Math.PI * 2) / _wheelActiveSegments.length;
   const center = (idx + 0.5) * seg;
   const base = -center; // because draw rotates labels by angleRad and we subtract pi/2 inside draw
   const spins = 6 + Math.floor(Math.random() * 3); // 6..8 full rotations
@@ -6454,7 +6582,7 @@ function _wheelNext() {
     } else {
       const r = item.result;
       if (r) {
-        const pretty = (_WHEEL_SEGMENTS[idx] && _WHEEL_SEGMENTS[idx].key !== "none") ? _WHEEL_SEGMENTS[idx].label : String(r);
+        const pretty = (_wheelActiveSegments[idx] && _wheelActiveSegments[idx].key !== "none") ? _wheelActiveSegments[idx].label : String(r);
         res.textContent = "✨ Joker gewonnen: " + pretty;
         res.classList.add("win");
       } else {
