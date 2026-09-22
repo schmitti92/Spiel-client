@@ -4871,32 +4871,29 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         ? state.boss.eventFields.map(String)
         : [];
       if(n.kind==="board" && bossModeVisualActive() && bossEventFieldIds.includes(String(n.id))){
+        // Ereignisfelder bleiben gut sichtbar, aber komplett statisch:
+        // kein Pulsieren, kein Blinken und keine dauerhaft laufende Animation.
         ctx.save();
-        const t=performance.now()/1000;
-        const pulse=0.5+0.5*Math.sin(t*4.8 + Number(String(n.id).replace(/\D/g,''))*.17);
-        ctx.shadowColor="rgba(180,110,255,.68)"; ctx.shadowBlur=18+8*pulse;
-        ctx.strokeStyle="rgba(225,188,255,.96)"; ctx.lineWidth=3.2;
-        ctx.beginPath();ctx.arc(s.x,s.y,r+5+1.5*pulse,0,Math.PI*2);ctx.stroke();
-        ctx.strokeStyle="rgba(170,235,255,.78)"; ctx.lineWidth=1.8;
-        ctx.beginPath();ctx.arc(s.x,s.y,r+10+2.5*pulse,Math.PI*(0.15+pulse*.10),Math.PI*(1.18+pulse*.10));ctx.stroke();
-        ctx.beginPath();ctx.arc(s.x,s.y,r+10+2.5*pulse,Math.PI*(1.35+pulse*.06),Math.PI*(2.08+pulse*.06));ctx.stroke();
+        ctx.shadowColor="rgba(180,110,255,.46)";
+        ctx.shadowBlur=12;
+        ctx.strokeStyle="rgba(225,188,255,.94)";
+        ctx.lineWidth=3.2;
+        ctx.beginPath();ctx.arc(s.x,s.y,r+5,0,Math.PI*2);ctx.stroke();
+
         ctx.shadowColor="transparent";
-        ctx.fillStyle="rgba(123,71,202,.34)";
+        ctx.strokeStyle="rgba(170,235,255,.62)";
+        ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.arc(s.x,s.y,r+9,0,Math.PI*2);ctx.stroke();
+
+        ctx.fillStyle="rgba(123,71,202,.30)";
         ctx.beginPath();ctx.arc(s.x,s.y,r*.90,0,Math.PI*2);ctx.fill();
+
         ctx.fillStyle="rgba(246,230,255,.98)";
         ctx.font=`1000 ${Math.max(12,Math.round(r*.80))}px system-ui`;
-        ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
         ctx.fillText("?",s.x,s.y+0.5);
-        const sparkle=[[0,-1.12],[.98,.38],[-.92,.52]];
-        ctx.fillStyle="rgba(255,245,200,.92)";
-        sparkle.forEach(([dx,dy],idx)=>{
-          const a=t*1.6 + idx*2.1;
-          const px=s.x + (dx*r) + Math.cos(a)*1.8;
-          const py=s.y + (dy*r) + Math.sin(a)*1.8;
-          ctx.beginPath();ctx.arc(px,py,Math.max(1.8,r*.10)+pulse*.35,0,Math.PI*2);ctx.fill();
-        });
         ctx.restore();
-        requestInteractionFxTick();
       }
 
       // Visual-only goal treatment: stronger hierarchy without changing hitboxes or rules.
