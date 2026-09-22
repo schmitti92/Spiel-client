@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Barikade</title>
-  <link rel="stylesheet" href="styles.css?v=barikade_v12_8_final_ui_polish_20260922" />
+  <link rel="stylesheet" href="styles.css?v=barikade_v12_12_boss_jokers_20260922" />
 </head>
 
 <body class="game-page">
@@ -112,6 +112,8 @@
             <div class="kv"><span>🧱 Barikade</span><span id="jokerBarricadeState">–</span></div>
             <div class="kv"><span>🔁 Neu-Wurf</span><span id="jokerRerollState">–</span></div>
             <div class="kv"><span>🎲🎲 Doppelwurf</span><span id="jokerDoubleState">–</span></div>
+            <div class="kv bossOnlyJoker" hidden><span>👹 Boss spawnen</span><span id="jokerBossSpawnState">–</span></div>
+            <div class="kv bossOnlyJoker" hidden><span>🌀 Boss entfernen</span><span id="jokerBossRemoveState">–</span></div>
             <div class="kv"><span>✨ Effekte</span><span id="actionEffectsState">–</span></div>
           </div>
 
@@ -127,6 +129,12 @@
             </button>
             <button id="jokerDoubleBtn" class="joker-btn joker-power" type="button">
               <span class="j-ico">🎲🎲</span><span class="j-name">Doppelwurf</span><span class="j-count" data-jcount="double">0</span>
+            </button>
+            <button id="jokerBossSpawnBtn" class="joker-btn joker-power bossOnlyJoker" type="button" hidden>
+              <span class="j-ico">👹</span><span class="j-name">Boss spawnen</span><span class="j-count" data-jcount="bossSpawn">0</span>
+            </button>
+            <button id="jokerBossRemoveBtn" class="joker-btn joker-power bossOnlyJoker" type="button" hidden>
+              <span class="j-ico">🌀</span><span class="j-name">Boss entfernen</span><span class="j-count" data-jcount="bossRemove">0</span>
             </button>
           </div>
         </div>
@@ -275,6 +283,6 @@
     })();
   </script>
 
-  <script src="game.js?v=barikade_v12_9_static_eventfields_20260922"></script>
+  <script src="game.js?v=barikade_v12_12_boss_jokers_20260922"></script>
 </body>
 </html>
