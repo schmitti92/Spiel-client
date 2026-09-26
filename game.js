@@ -6416,13 +6416,18 @@ function _wheelEnsureUI() {
 #wheelQuote{margin:7px auto 0;max-width:440px;font-size:13px;line-height:1.35;color:#d9d0ff;text-align:center;opacity:.94;}
 #wheelStage{position:relative;margin:12px auto 4px;padding:10px 0 2px;}
 #wheelStage::before{content:"";position:absolute;left:50%;top:50%;width:min(390px,82vw);height:min(390px,82vw);transform:translate(-50%,-49%);border-radius:50%;background:radial-gradient(circle,rgba(126,101,255,.12),rgba(126,101,255,.025) 58%,transparent 72%);filter:blur(2px);pointer-events:none;}
-#wheelWrap{position:relative;display:flex;align-items:center;justify-content:center;padding:0 0 4px;}
-#wheelCanvas{position:relative;z-index:1;width:min(370px,79vw);height:auto;max-width:370px;aspect-ratio:1/1;filter:drop-shadow(0 18px 28px rgba(0,0,0,.36));}
+#wheelWrap{position:relative;display:flex;align-items:center;justify-content:center;padding:0 0 4px;min-height:min(370px,79vw);}
+#wheelVisual{position:relative;width:min(370px,79vw);height:min(370px,79vw);max-width:370px;max-height:370px;aspect-ratio:1/1;flex:0 0 auto;}
+#wheelCanvas{position:absolute;z-index:2;inset:0;width:100%;height:100%;display:block;border-radius:50%;background:transparent;}
+#wheelFallback{position:absolute;z-index:1;inset:0;border-radius:50%;overflow:hidden;box-shadow:0 18px 28px rgba(0,0,0,.36),0 0 0 5px rgba(222,214,255,.18);transform-origin:50% 50%;}
+#wheelFallback::after{content:"★";position:absolute;left:50%;top:50%;width:31%;height:31%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;border-radius:50%;background:radial-gradient(circle at 40% 35%,rgba(255,255,255,.20),rgba(54,48,82,.98) 38%,rgba(15,17,29,.99));border:4px solid rgba(255,255,255,.22);color:#ffefb4;font:1000 32px/1 system-ui;box-shadow:0 8px 18px rgba(0,0,0,.28);}
+.wheelFallbackLabel{position:absolute;left:50%;top:50%;width:92px;text-align:center;transform-origin:50% 50%;color:white;font:900 11px/1.1 system-ui;text-shadow:0 2px 5px rgba(0,0,0,.72);pointer-events:none;}
+.wheelFallbackLabel b{display:block;font-size:23px;line-height:1;margin-bottom:4px;}
 #wheelPointer{position:relative;z-index:3;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid #fff4c7;filter:drop-shadow(0 4px 8px rgba(0,0,0,.58));margin:0 auto -20px;}
 #wheelResult{position:relative;z-index:1;margin:10px auto 0;min-height:25px;width:fit-content;max-width:100%;padding:0;font-weight:900;font-size:15px;line-height:1.35;text-align:center;color:#f4f0ff;transition:.2s ease;}
 #wheelResult.win{padding:9px 13px;border-radius:14px;background:linear-gradient(180deg,rgba(255,213,112,.15),rgba(255,213,112,.07));border:1px solid rgba(255,225,147,.24);color:#ffeab2;box-shadow:0 8px 18px rgba(0,0,0,.18);}
 #wheelHint{position:relative;z-index:1;opacity:.62;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-top:9px;text-align:center;color:#c4cbe2;}
-@media (max-width:420px){#wheelCard{padding:17px 14px 15px;border-radius:25px;}#wheelTitle{font-size:21px;}#wheelBig{font-size:19px;}#wheelCanvas{width:min(340px,82vw);}}
+@media (max-width:420px){#wheelCard{padding:17px 14px 15px;border-radius:25px;}#wheelTitle{font-size:21px;}#wheelBig{font-size:19px;}#wheelVisual{width:min(340px,82vw);height:min(340px,82vw);}}
 @media(prefers-reduced-motion:reduce){#wheelOverlay{transition:none;}}
   `;
   document.head.appendChild(style);
@@ -6440,7 +6445,12 @@ function _wheelEnsureUI() {
       </div></div>
       <div id="wheelStage">
         <div id="wheelPointer"></div>
-        <div id="wheelWrap"><canvas id="wheelCanvas" width="720" height="720"></canvas></div>
+        <div id="wheelWrap">
+          <div id="wheelVisual">
+            <div id="wheelFallback" aria-hidden="true"></div>
+            <canvas id="wheelCanvas" width="720" height="720"></canvas>
+          </div>
+        </div>
       </div>
       <div id="wheelResult"></div>
       <div id="wheelHint">Joker · keine Niete</div>
@@ -6449,10 +6459,51 @@ function _wheelEnsureUI() {
   document.body.appendChild(overlay);
 }
 
+function _wheelBuildFallback(){
+  const disc=document.getElementById("wheelFallback");
+  if(!disc) return;
+
+  const segments=Array.isArray(_wheelActiveSegments)&&_wheelActiveSegments.length
+    ? _wheelActiveSegments
+    : _WHEEL_BASE_SEGMENTS;
+
+  const n=segments.length;
+  const slice=360/n;
+  const stops=[];
+  for(let i=0;i<n;i++){
+    const a0=(i*slice).toFixed(4);
+    const a1=((i+1)*slice).toFixed(4);
+    const c1=segments[i]?.c1||"#7657d8";
+    stops.push(`${c1} ${a0}deg ${a1}deg`);
+  }
+  disc.style.background=`conic-gradient(from -90deg, ${stops.join(",")})`;
+
+  disc.querySelectorAll(".wheelFallbackLabel").forEach(el=>el.remove());
+  for(let i=0;i<n;i++){
+    const info=segments[i]||{};
+    const mid=-90+(i+.5)*slice;
+    const rad=mid*Math.PI/180;
+    const radius=35.5;
+    const x=50+Math.cos(rad)*radius;
+    const y=50+Math.sin(rad)*radius;
+    const lab=document.createElement("div");
+    lab.className="wheelFallbackLabel";
+    lab.style.left=x+"%";
+    lab.style.top=y+"%";
+    lab.style.transform="translate(-50%,-50%)";
+    lab.innerHTML=`<b>${info.icon||"🎁"}</b>${info.short||info.label||"JOKER"}`;
+    disc.appendChild(lab);
+  }
+}
+
 function _wheelDraw(angleRad) {
+  const fallback=document.getElementById("wheelFallback");
+  if(fallback) fallback.style.transform=`rotate(${Number(angleRad||0)}rad)`;
+
   const cvs = document.getElementById("wheelCanvas");
   if (!cvs) return;
   const ctx = cvs.getContext("2d");
+  if(!ctx) return;
   const w = cvs.width, h = cvs.height;
   const cx = w / 2, cy = h / 2;
   const r = Math.min(w, h) * 0.405;
@@ -6565,6 +6616,7 @@ function _wheelNext() {
   overlay.classList.add("show");
 
   _wheelActiveSegments=_wheelSegmentsForItem(item);
+  _wheelBuildFallback();
   const hint=document.getElementById("wheelHint");
   if(hint) hint.textContent=`${_wheelActiveSegments.length} Joker · keine Niete${_wheelActiveSegments.length>4?" · Boss-Joker aktiv":""}`;
 
@@ -6588,7 +6640,10 @@ function _wheelNext() {
     const t = Math.min(1, (now - t0) / durationMs);
     const eased = easeOutCubic(t);
     _wheelAngle = startAngle + delta * eased;
-    _wheelDraw(_wheelAngle);
+    try{ _wheelDraw(_wheelAngle); }catch(_e){
+      const fb=document.getElementById("wheelFallback");
+      if(fb) fb.style.transform=`rotate(${Number(_wheelAngle||0)}rad)`;
+    }
     if (t < 1) {
       requestAnimationFrame(tick);
     } else {
@@ -6609,8 +6664,9 @@ function _wheelNext() {
     }
   };
 
-  // initial draw and start animation
-  _wheelDraw(_wheelAngle);
+  // Initial draw. Das DOM-Fallback bleibt sichtbar, selbst wenn ein Browser
+  // Canvas-Effekte nicht korrekt rendert.
+  try{ _wheelDraw(_wheelAngle); }catch(_e){ _wheelBuildFallback(); }
   requestAnimationFrame(tick);
 }
 
