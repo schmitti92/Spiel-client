@@ -3553,7 +3553,7 @@ function toast(msg){
     overlayHint.textContent=hint||"";
     if(overlayOk) overlayOk.textContent = "OK";
     if(overlayRematch){ overlayRematch.hidden = true; overlayRematch.disabled = true; }
-    overlay.classList.add("show");
+    _wheelOpenOverlay(overlay);
   }
 
   // Legendary win screen (works for offline + online)
@@ -6403,9 +6403,12 @@ function _wheelEnsureUI() {
   const style = document.createElement("style");
   style.id = "wheelStyle";
   style.textContent = `
-#wheelOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at 50% 16%,rgba(128,91,255,.22),transparent 28%),rgba(4,6,13,.84);backdrop-filter:blur(10px);z-index:9999;opacity:0;pointer-events:none;transition:opacity .22s ease;}
+#wheelOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;box-sizing:border-box!important;align-items:center;justify-content:center;padding:16px!important;border:0!important;background:radial-gradient(circle at 50% 16%,rgba(128,91,255,.22),transparent 28%),rgba(4,6,13,.92)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:2147483647!important;opacity:0;pointer-events:none;transition:opacity .22s ease;}
+#wheelOverlay[open],#wheelOverlay.show{display:flex!important;}
+#wheelOverlay:not([open]):not(.show){display:none!important;}
 #wheelOverlay.show{opacity:1;pointer-events:auto;}
-#wheelCard{position:relative;overflow:hidden;width:min(570px,95vw);border-radius:30px;background:linear-gradient(180deg,rgba(28,24,46,.985),rgba(9,12,22,.99));box-shadow:0 28px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);padding:20px 20px 18px;border:1px solid rgba(203,190,255,.20);}
+#wheelOverlay::backdrop{background:rgba(2,4,10,.58);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+#wheelCard{position:relative;z-index:2;overflow:hidden;width:min(570px,95vw);max-height:calc(100dvh - 32px);overflow-y:auto;border-radius:30px;background:linear-gradient(180deg,rgba(28,24,46,.995),rgba(9,12,22,.995));box-shadow:0 28px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);padding:20px 20px 18px;border:1px solid rgba(203,190,255,.20);}
 #wheelCard::before{content:"";position:absolute;inset:-80px auto auto -70px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(137,99,255,.34),transparent 68%);pointer-events:none;}
 #wheelHeader{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;text-align:center;}
 #wheelHeader>div{width:100%;}
@@ -6436,8 +6439,11 @@ function _wheelEnsureUI() {
   `;
   document.head.appendChild(style);
 
-  const overlay = document.createElement("div");
+  const overlay = document.createElement(
+    (typeof HTMLDialogElement!=="undefined") ? "dialog" : "div"
+  );
   overlay.id = "wheelOverlay";
+  overlay.dataset.topLayer = overlay.tagName==="DIALOG" ? "dialog" : "fallback";
   overlay.innerHTML = `
     <div id="wheelCard">
       <div id="wheelHeader"><div>
@@ -6460,6 +6466,10 @@ function _wheelEnsureUI() {
     </div>
   `;
   document.body.appendChild(overlay);
+
+  overlay.addEventListener("cancel",(ev)=>{
+    try{ ev.preventDefault(); }catch(_e){}
+  });
 }
 
 function _wheelSvgEl(tag,attrs={}){
@@ -6558,6 +6568,29 @@ function _wheelResolveIndex(resultKey) {
   return 0;
 }
 
+function _wheelOpenOverlay(overlay){
+  if(!overlay) return;
+  try{
+    if(overlay.tagName==="DIALOG" && typeof overlay.showModal==="function"){
+      if(!overlay.open) overlay.showModal();
+    }
+  }catch(_e){}
+  requestAnimationFrame(()=>overlay.classList.add("show"));
+}
+
+function _wheelCloseOverlay(overlay,done){
+  if(!overlay){ if(typeof done==="function") done(); return; }
+  overlay.classList.remove("show");
+  window.setTimeout(()=>{
+    try{
+      if(overlay.tagName==="DIALOG" && overlay.open && typeof overlay.close==="function"){
+        overlay.close();
+      }
+    }catch(_e){}
+    if(typeof done==="function") done();
+  },240);
+}
+
 function _wheelNext() {
   const item = _wheelQueue.shift();
   if (!item) { _wheelBusy = false; return; }
@@ -6631,8 +6664,7 @@ function _wheelNext() {
       }
       // hide shortly after
       window.setTimeout(() => {
-        overlay.classList.remove("show");
-        window.setTimeout(() => _wheelNext(), 250);
+        _wheelCloseOverlay(overlay,()=>window.setTimeout(() => _wheelNext(), 120));
       }, 1200);
     }
   };
