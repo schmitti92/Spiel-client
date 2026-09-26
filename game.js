@@ -4094,12 +4094,24 @@ function showEpicWin(winnerColor){
         state.action.jokersByColor = state.action.jokersByColor && typeof state.action.jokersByColor==="object" ? state.action.jokersByColor : {};
         state.action.jokersOwned = state.action.jokersOwned && typeof state.action.jokersOwned==="object" ? state.action.jokersOwned : {};
         const cols = Array.isArray(PLAYERS) ? PLAYERS.slice() : ["red","blue"];
+        const _bossModeAtStart = getLobbyBossMode();
         for(const c of cols){
           const startCounts = getStartJokerCounts() || { allColors:2, barricade:2, reroll:2, double:2 };
-        state.action.jokersByColor[c] = { allColors:startCounts.allColors, barricade:startCounts.barricade, reroll:startCounts.reroll, double:startCounts.double };
+          const bossStartCount = _bossModeAtStart ? Number(startCounts.allColors||2) : 0;
+          state.action.jokersByColor[c] = {
+            allColors:startCounts.allColors,
+            barricade:startCounts.barricade,
+            reroll:startCounts.reroll,
+            double:startCounts.double,
+            bossSpawn:bossStartCount,
+            bossRemove:bossStartCount
+          };
           const arr = [];
-          for(const t of ["allColors","barricade","reroll","double"]){
-            const count = Number(startCounts[t] || 0);
+          const types = _bossModeAtStart
+            ? ["allColors","barricade","reroll","double","bossSpawn","bossRemove"]
+            : ["allColors","barricade","reroll","double"];
+          for(const t of types){
+            const count = (t==="bossSpawn"||t==="bossRemove") ? bossStartCount : Number(startCounts[t] || 0);
             for(let i=0;i<count;i++) arr.push({type:t, color:c});
           }
           state.action.jokersOwned[c] = arr;
