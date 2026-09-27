@@ -2075,6 +2075,8 @@ if(actionEffectsState){
   let _bossOverlayTimer = 0;
   let _bossOverlayRevealTimer = 0;
   let _pendingEventWheels = [];
+  let _bossEventAckPendingSeq = 0;
+  let _bossEventAckTimer = 0;
   function bossModeVisualActive(){
     try{
       // Sobald ein Spielzustand existiert, ist nur noch der Serverzustand massgeblich.
@@ -2099,6 +2101,23 @@ if(actionEffectsState){
     if(!_pendingEventWheels.length) return;
     const list=_pendingEventWheels.splice(0,_pendingEventWheels.length);
     window.setTimeout(()=>enqueueWheel(list),220);
+  }
+  function closeBossEventOverlaySynced(seq=0){
+    const el=document.getElementById("bossEventOverlay");
+    if(!el){ flushPendingEventWheels(); return; }
+    const openSeq=Number(el.dataset.eventSeq||0);
+    const ackSeq=Number(seq||0);
+    // Ein verspätetes ACK einer älteren Karte darf eine neuere Karte nicht schließen.
+    if(ackSeq && openSeq && ackSeq!==openSeq) return;
+    el.classList.remove("show","revealed");
+    clearTimeout(_bossOverlayTimer);
+    clearTimeout(_bossOverlayRevealTimer);
+    _bossEventAckPendingSeq=0;
+    clearTimeout(_bossEventAckTimer);
+    _bossEventAckTimer=0;
+    const ok=el.querySelector('.bossEventOk');
+    if(ok){ ok.disabled=true; ok.textContent="BESTÄTIGT · WEITER"; }
+    flushPendingEventWheels();
   }
   function ensureBossEventOverlay(){
     let el=document.getElementById("bossEventOverlay");
@@ -2135,15 +2154,35 @@ if(actionEffectsState){
       </div>
     </div>`;
     document.body.appendChild(el);
-    const close=()=>{
+    const requestClose=()=>{
       if(!el.classList.contains("revealed")) return;
-      el.classList.remove("show","revealed");
-      clearTimeout(_bossOverlayTimer);
-      clearTimeout(_bossOverlayRevealTimer);
-      flushPendingEventWheels();
+      const seq=Number(el.dataset.eventSeq||0);
+      const eventColor=String(el.dataset.eventColor||"").toLowerCase();
+      const mine=String(myColor||"").toLowerCase();
+      const ok=el.querySelector('.bossEventOk');
+      if(!seq || !eventColor || mine!==eventColor) return;
+      if(_bossEventAckPendingSeq===seq) return;
+      _bossEventAckPendingSeq=seq;
+      if(ok){ ok.disabled=true; ok.textContent="WIRD FÜR ALLE BESTÄTIGT …"; }
+      const sent=wsSend({type:"boss_event_ack",seq});
+      clearTimeout(_bossEventAckTimer);
+      if(!sent){
+        _bossEventAckPendingSeq=0;
+        if(ok){ ok.disabled=false; ok.textContent="OK · FÜR ALLE WEITER"; }
+        try{ toast("Verbindung unterbrochen – bitte erneut bestätigen"); }catch(_e){}
+      }else{
+        // Falls die Verbindung genau zwischen Senden und Server-ACK abreißt,
+        // bleibt der Button nicht dauerhaft gesperrt.
+        _bossEventAckTimer=window.setTimeout(()=>{
+          if(_bossEventAckPendingSeq!==seq || !el.classList.contains("show")) return;
+          _bossEventAckPendingSeq=0;
+          if(ok){ ok.disabled=false; ok.textContent="OK · FÜR ALLE WEITER"; }
+          try{ toast("Bestätigung nicht angekommen – bitte erneut drücken"); }catch(_e){}
+        },4000);
+      }
     };
-    // Absichtlich NUR über OK schließen: Das Ereignis muss sichtbar bestätigt werden.
-    el.querySelector('.bossEventOk')?.addEventListener('click',(ev)=>{ev.stopPropagation();close();});
+    // Nur der auslösende Spieler bestätigt. Der Server schließt die Karte anschließend bei allen.
+    el.querySelector('.bossEventOk')?.addEventListener('click',(ev)=>{ev.stopPropagation();requestClose();});
     return el;
   }
   function showBossEventCard(evt){
@@ -2157,12 +2196,18 @@ if(actionEffectsState){
     const deck=el.querySelector('.bossEventDeck');
     const ok=el.querySelector('.bossEventOk');
     const color=String(evt.color||'').toLowerCase();
+    const seq=Number(evt.seq||0);
+    const mine=String(myColor||'').toLowerCase();
+    const mayConfirm=!!color && mine===color;
+    el.dataset.eventSeq=String(seq||0);
+    el.dataset.eventColor=color;
+    _bossEventAckPendingSeq=0;
     if(icon) icon.textContent=evt.icon||"🃏";
     if(title) title.textContent=evt.title||"Ereignis";
     if(txt) txt.textContent=evt.text||"";
     if(effect) effect.textContent=evt.effectText||"";
     if(player){
-      player.textContent=color ? `🎯 ${labelForColor(color)}` : '🎯 Ereignis';
+      player.textContent=color ? `🎯 ${(nameByColor && nameByColor[color]) || labelForColor(color)}` : '🎯 Ereignis';
       player.style.setProperty('--event-player-color',COLORS[color]||'#8a7cff');
     }
     if(deck){
@@ -2179,8 +2224,12 @@ if(actionEffectsState){
     // Erst Kartenrückseite zeigen, danach sichtbar aufdecken.
     _bossOverlayRevealTimer=setTimeout(()=>{
       el.classList.add("revealed");
-      if(ok){ ok.disabled=false; ok.textContent="OK · WEITER"; }
-      try{ ok?.focus({preventScroll:true}); }catch(_e){}
+      if(ok){
+        ok.disabled=!mayConfirm;
+        const waitName=(nameByColor && nameByColor[color]) || labelForColor(color);
+        ok.textContent=mayConfirm ? "OK · FÜR ALLE WEITER" : `WARTET AUF ${waitName} …`;
+      }
+      if(mayConfirm){ try{ ok?.focus({preventScroll:true}); }catch(_e){} }
     },650);
   }
   function ensureBossTestTools(){
@@ -2330,7 +2379,16 @@ if(actionEffectsState){
 
       const evt=bs?.lastEvent;
       const evtSeq=Number(evt?.seq||0);
-      if(evt && evtSeq>_lastBossEventSeq){ _lastBossEventSeq=evtSeq; showBossEventCard(evt); }
+      // Selbstheilung: Falls ein ACK-Paket beim Reconnect nicht sichtbar wurde,
+      // schließt ein späterer Snapshot eine serverseitig bereits bestätigte Karte ebenfalls.
+      if(evt?.confirmedAt && eventOverlayIsOpen()) {
+        const openSeq=Number(document.getElementById("bossEventOverlay")?.dataset?.eventSeq||0);
+        if(!openSeq || openSeq===evtSeq) closeBossEventOverlaySynced(evtSeq);
+      }
+      if(evt && evtSeq>_lastBossEventSeq){
+        _lastBossEventSeq=evtSeq;
+        if(!evt.confirmedAt) showBossEventCard(evt);
+      }
       const act=bs?.lastAction;
       const actSeq=Number(act?.seq||0);
       if(act && actSeq>_lastBossActionSeq){
@@ -2941,6 +2999,24 @@ try{
         return;
       }
 
+      if(type==="boss_event_ack"){
+        try{ closeBossEventOverlaySynced(Number(msg.seq||0)); }catch(_e){}
+        return;
+      }
+      if(type==="boss_event_ack_result"){
+        const seq=Number(msg.seq||0);
+        if(_bossEventAckPendingSeq===seq) _bossEventAckPendingSeq=0;
+        clearTimeout(_bossEventAckTimer);
+        _bossEventAckTimer=0;
+        const el=document.getElementById("bossEventOverlay");
+        const ok=el?.querySelector('.bossEventOk');
+        const eventColor=String(el?.dataset?.eventColor||"").toLowerCase();
+        const mine=String(myColor||"").toLowerCase();
+        if(ok && eventColor && mine===eventColor){ ok.disabled=false; ok.textContent="OK · FÜR ALLE WEITER"; }
+        if(msg.message) try{ toast(String(msg.message)); }catch(_e){}
+        return;
+      }
+
       if(type==="boss_test_result"){
         if(msg.text) toast((msg.ok===false?'⚠️ ':'🧪 ')+String(msg.text));
         return;
@@ -3256,7 +3332,13 @@ try{
       updateActionUI_J1();
       if(_bossBaselineNextSnapshot){
         const bb=state?.boss || null;
-        _lastBossEventSeq=Math.max(_lastBossEventSeq,Number(bb?.lastEvent?.seq||0));
+        const baselineEvent=bb?.lastEvent || null;
+        // Vergangene/bestaetigte Karten nach Reconnect nicht erneut zeigen.
+        // Eine NOCH OFFENE Karte dagegen muss wieder erscheinen, sonst koennte
+        // der ausloesende Spieler sie nach einem Reload niemals fuer alle bestaetigen.
+        if(!baselineEvent || baselineEvent.confirmedAt){
+          _lastBossEventSeq=Math.max(_lastBossEventSeq,Number(baselineEvent?.seq||0));
+        }
         _lastBossActionSeq=Math.max(_lastBossActionSeq,Number(bb?.lastAction?.seq||0));
         _bossBaselineNextSnapshot=false;
       }
@@ -4624,93 +4706,106 @@ function showEpicWin(winnerColor){
 
   function drawBarricadeIcon(x,y,r){
     ctx.save();
-    const rr=r*0.94;
 
-    // compact ground shadow – visual only, hitbox remains unchanged
-    ctx.fillStyle="rgba(0,0,0,0.42)";
-    ctx.beginPath();
-    ctx.ellipse(x, y+r*0.63, r*0.92, r*0.28, 0, 0, Math.PI*2);
-    ctx.fill();
-
-    // metallic outer body
-    ctx.shadowColor="rgba(18,30,48,0.70)";
-    ctx.shadowBlur=Math.max(10,r*0.62);
-    ctx.shadowOffsetY=4;
-    const shell=ctx.createRadialGradient(x-r*0.34,y-r*0.38,r*0.07,x,y,r*1.16);
-    shell.addColorStop(0,"rgba(142,160,190,0.98)");
-    shell.addColorStop(0.28,"rgba(51,63,83,0.99)");
-    shell.addColorStop(0.70,"rgba(15,22,34,0.99)");
-    shell.addColorStop(1,"rgba(3,7,12,1)");
-    ctx.fillStyle=shell;
-    ctx.strokeStyle="rgba(228,237,250,0.82)";
-    ctx.lineWidth=2.5;
-    ctx.beginPath();
-    ctx.arc(x,y,rr,0,Math.PI*2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.shadowColor="transparent";
-
-    // cold-blue outer sheen
-    ctx.strokeStyle="rgba(127,202,255,0.30)";
-    ctx.lineWidth=1.4;
-    ctx.beginPath();
-    ctx.arc(x,y,rr+2.6,Math.PI*1.03,Math.PI*1.88);
-    ctx.stroke();
-
-    // inner rim
-    ctx.strokeStyle="rgba(255,255,255,0.12)";
-    ctx.lineWidth=1.2;
-    ctx.beginPath();
-    ctx.arc(x,y,r*0.72,0,Math.PI*2);
-    ctx.stroke();
-
-    // two reinforced barrier planks
-    const plankW=r*1.08;
-    const plankH=Math.max(4,r*0.20);
-    const drawPlank=(yy)=>{
-      const grad=ctx.createLinearGradient(x-plankW/2,y+yy,x+plankW/2,y+yy);
-      grad.addColorStop(0,"rgba(174,187,207,0.96)");
-      grad.addColorStop(.45,"rgba(245,248,252,0.98)");
-      grad.addColorStop(1,"rgba(128,143,168,0.96)");
-      ctx.strokeStyle=grad;
-      ctx.lineWidth=plankH;
-      ctx.lineCap="round";
+    // V13: echte, sofort erkennbare Baustellen-Barikade statt runder Metall-Marker.
+    // Nur die Optik ändert sich; Feldposition, Hitbox und Spielregeln bleiben identisch.
+    const w = r * 1.78;
+    const plankH = Math.max(5, r * 0.27);
+    const legTop = y + r * 0.05;
+    const legBottom = y + r * 0.72;
+    const roundedRectPath = (rx, ry, rw, rh, radius) => {
+      const rr = Math.max(0, Math.min(radius, Math.abs(rw)/2, Math.abs(rh)/2));
       ctx.beginPath();
-      ctx.moveTo(x-plankW*.48,y+yy);
-      ctx.lineTo(x+plankW*.48,y+yy);
-      ctx.stroke();
-
-      // dark center stripe for better board readability
-      ctx.strokeStyle="rgba(35,43,58,0.66)";
-      ctx.lineWidth=Math.max(1.2,plankH*.26);
-      ctx.beginPath();
-      ctx.moveTo(x-plankW*.43,y+yy);
-      ctx.lineTo(x+plankW*.43,y+yy);
-      ctx.stroke();
-    };
-    drawPlank(-r*.25);
-    drawPlank(r*.25);
-
-    // support posts
-    ctx.strokeStyle="rgba(108,126,154,0.88)";
-    ctx.lineWidth=Math.max(2.4,r*0.13);
-    ctx.lineCap="round";
-    ctx.beginPath();ctx.moveTo(x-r*.36,y-r*.53);ctx.lineTo(x-r*.20,y+r*.54);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(x+r*.36,y-r*.53);ctx.lineTo(x+r*.20,y+r*.54);ctx.stroke();
-
-    // small reflective bolts
-    ctx.fillStyle="rgba(230,242,255,0.92)";
-    for(const bx of [-.34,.34]){
-      for(const by of [-.25,.25]){
-        ctx.beginPath();ctx.arc(x+r*bx,y+r*by,Math.max(1.4,r*.075),0,Math.PI*2);ctx.fill();
+      if(typeof ctx.roundRect === "function"){
+        ctx.roundRect(rx, ry, rw, rh, rr);
+      }else{
+        ctx.moveTo(rx+rr, ry);
+        ctx.lineTo(rx+rw-rr, ry); ctx.quadraticCurveTo(rx+rw, ry, rx+rw, ry+rr);
+        ctx.lineTo(rx+rw, ry+rh-rr); ctx.quadraticCurveTo(rx+rw, ry+rh, rx+rw-rr, ry+rh);
+        ctx.lineTo(rx+rr, ry+rh); ctx.quadraticCurveTo(rx, ry+rh, rx, ry+rh-rr);
+        ctx.lineTo(rx, ry+rr); ctx.quadraticCurveTo(rx, ry, rx+rr, ry);
+        ctx.closePath();
       }
-    }
+    };
 
-    // top specular glint
-    ctx.fillStyle="rgba(255,255,255,0.26)";
+    // soft floor shadow
+    ctx.fillStyle = "rgba(0,0,0,.42)";
     ctx.beginPath();
-    ctx.ellipse(x-r*.28,y-r*.48,r*.24,r*.095,-.35,0,Math.PI*2);
+    ctx.ellipse(x, y+r*.72, r*.96, r*.22, 0, 0, Math.PI*2);
     ctx.fill();
+
+    // sturdy dark support legs + feet
+    ctx.strokeStyle = "rgba(28,24,22,.98)";
+    ctx.lineWidth = Math.max(4, r*.18);
+    ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x-r*.48, legTop); ctx.lineTo(x-r*.30, legBottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+r*.48, legTop); ctx.lineTo(x+r*.30, legBottom); ctx.stroke();
+    ctx.lineWidth = Math.max(4.5, r*.20);
+    ctx.beginPath(); ctx.moveTo(x-r*.55,legBottom); ctx.lineTo(x-r*.10,legBottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+r*.10,legBottom); ctx.lineTo(x+r*.55,legBottom); ctx.stroke();
+
+    const drawPlank = (yy, tilt) => {
+      ctx.save();
+      ctx.translate(x, y+yy);
+      ctx.rotate(tilt);
+
+      // black outline gives the same bold readability as the barricade joker symbol
+      ctx.fillStyle = "rgba(25,19,15,.98)";
+      roundedRectPath(-w/2-2.2, -plankH/2-2.2, w+4.4, plankH+4.4, Math.max(3,plankH*.34));
+      ctx.fill();
+
+      const wood = ctx.createLinearGradient(-w/2,0,w/2,0);
+      wood.addColorStop(0,"#8c3f1d");
+      wood.addColorStop(.18,"#d36b2d");
+      wood.addColorStop(.50,"#f09a3d");
+      wood.addColorStop(.82,"#c55a26");
+      wood.addColorStop(1,"#713017");
+      ctx.fillStyle = wood;
+      roundedRectPath(-w/2, -plankH/2, w, plankH, Math.max(2.5,plankH*.28));
+      ctx.fill();
+
+      // bright hazard bands make it read as a barricade even on small boards
+      ctx.save();
+      roundedRectPath(-w/2, -plankH/2, w, plankH, Math.max(2.5,plankH*.28));
+      ctx.clip();
+      ctx.fillStyle = "rgba(255,236,188,.90)";
+      const stripeW = Math.max(5,r*.24);
+      for(let sx=-w; sx<w; sx+=stripeW*2.25){
+        ctx.beginPath();
+        ctx.moveTo(sx,-plankH);
+        ctx.lineTo(sx+stripeW,-plankH);
+        ctx.lineTo(sx+stripeW*1.8,plankH);
+        ctx.lineTo(sx+stripeW*.8,plankH);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // warm highlight along top edge
+      ctx.strokeStyle="rgba(255,224,176,.58)";
+      ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(-w*.43,-plankH*.30);ctx.lineTo(w*.43,-plankH*.30);ctx.stroke();
+
+      // steel bolts
+      ctx.fillStyle="#e9eef6";
+      ctx.strokeStyle="rgba(22,28,36,.75)";
+      ctx.lineWidth=1;
+      for(const bx of [-w*.38,w*.38]){
+        ctx.beginPath();ctx.arc(bx,0,Math.max(1.7,r*.08),0,Math.PI*2);ctx.fill();ctx.stroke();
+      }
+      ctx.restore();
+    };
+
+    drawPlank(-r*.25, -0.035);
+    drawPlank(r*.20, 0.035);
+
+    // subtle selection-like glow so the icon stays readable over dark/light board areas
+    ctx.strokeStyle="rgba(255,173,79,.28)";
+    ctx.lineWidth=1.3;
+    ctx.beginPath();
+    ctx.ellipse(x,y-r*.02,r*.98,r*.72,0,0,Math.PI*2);
+    ctx.stroke();
+
     ctx.restore();
   }
 
@@ -6368,6 +6463,8 @@ window.addEventListener("load", () => { try{ dock(); }catch(_e){} });
 // ---------- Wheel UI (client only, does not block gameplay) ----------
 let _wheelQueue = [];
 let _wheelBusy = false;
+let _wheelRunSerial = 0;
+let _wheelWatchdog = 0;
 
 function enqueueWheel(list) {
   try {
@@ -6439,9 +6536,13 @@ function _wheelEnsureUI() {
   `;
   document.head.appendChild(style);
 
-  const overlay = document.createElement((typeof HTMLDialogElement!=="undefined") ? "dialog" : "div");
+  // Absichtlich kein <dialog>: ein normales Fixed-Overlay ist auf Android/Samsung
+  // bei vielen aufeinanderfolgenden Öffnungen zuverlässiger als der Browser-Top-Layer.
+  const overlay = document.createElement("div");
   overlay.id = "wheelOverlay";
-  overlay.dataset.topLayer = overlay.tagName==="DIALOG" ? "dialog" : "fallback";
+  overlay.dataset.topLayer = "fixed-overlay";
+  overlay.setAttribute("role","dialog");
+  overlay.setAttribute("aria-modal","true");
   overlay.innerHTML = `
     <div id="wheelCard">
       <div id="wheelHeader"><div>
@@ -6464,7 +6565,6 @@ function _wheelEnsureUI() {
     </div>
   `;
   document.body.appendChild(overlay);
-  overlay.addEventListener("cancel",(ev)=>{ try{ev.preventDefault();}catch(_e){} });
 }
 
 function _wheelSvgEl(tag,attrs={}){
@@ -6565,117 +6665,130 @@ function _wheelResolveIndex(resultKey) {
 
 function _wheelOpenOverlay(overlay){
   if(!overlay) return;
-  try{
-    if(overlay.tagName==="DIALOG" && typeof overlay.showModal==="function" && !overlay.open){
-      overlay.showModal();
-    }
-  }catch(_e){}
   requestAnimationFrame(()=>overlay.classList.add("show"));
 }
 
 function _wheelCloseOverlay(overlay,done){
   if(!overlay){ if(typeof done==="function") done(); return; }
   overlay.classList.remove("show");
-  window.setTimeout(()=>{
-    try{
-      if(overlay.tagName==="DIALOG" && overlay.open && typeof overlay.close==="function") overlay.close();
-    }catch(_e){}
-    if(typeof done==="function") done();
-  },220);
+  window.setTimeout(()=>{ if(typeof done==="function") done(); },220);
 }
 
 function _wheelNext() {
   const item = _wheelQueue.shift();
-  if (!item) { _wheelBusy = false; return; }
+  if (!item) {
+    _wheelBusy = false;
+    clearTimeout(_wheelWatchdog);
+    _wheelWatchdog = 0;
+    return;
+  }
   _wheelBusy = true;
+  const runId = ++_wheelRunSerial;
+  let completed = false;
 
-  _wheelEnsureUI();
-  const overlay = document.getElementById("wheelOverlay");
-  const title = document.getElementById("wheelTitle");
-  const sub = document.getElementById("wheelSub");
-  const res = document.getElementById("wheelResult");
-  const big = document.getElementById("wheelBig");
-  const quote = document.getElementById("wheelQuote");
-
-  const _colorName = (c)=>({RED:"Rot",BLUE:"Blau",GREEN:"Gruen",YELLOW:"Gelb"}[String(c||"").toUpperCase()] || String(c||""));
-  const attackerName = String(item.attackerName || "").trim();
-  const victimName = String(item.victimName || "").trim();
-  const attackerLabel = attackerName || (_colorName(item.targetColor) || "Jemand");
-  const victimLabel = victimName || (_colorName(item.jokerColor) || "jemanden");
-  const headline = String(item.headline || "").trim() || (attackerLabel + " schmeisst " + victimLabel + " raus!");
-  if (big) big.textContent = headline;
-  if (quote) quote.textContent = String(item.quote || "");
-
-
-  const targetColor = String(item.targetColor || "").toUpperCase();
-  const durationMs = 5000; // Christoph-Wunsch: immer 5 Sekunden
-
-  title.textContent = "Glücksrad";
-  sub.textContent = targetColor ? `Joker-Belohnung für ${_colorName(targetColor)}` : "Das Rad entscheidet deinen Joker …";
-  res.textContent = "";
-  res.classList.remove("win");
-
-  // Erst Radinhalt vollständig aufbauen, DANN Dialog öffnen.
-  // Auf Samsung/Android wurde beim ersten showModal() sonst gelegentlich
-  // ein leerer Top-Layer gerendert; beim zweiten Öffnen war das Rad dann da.
-  _wheelActiveSegments=_wheelSegmentsForItem(item);
-  _wheelBuildSvg();
-  try{ _wheelDraw(_wheelAngle); }catch(_e){}
-
-  const hint=document.getElementById("wheelHint");
-  if(hint) hint.textContent=`${_wheelActiveSegments.length} Joker · keine Niete${_wheelActiveSegments.length>4?" · Boss-Joker aktiv":""}`;
-
-  // Einen Layout-Zyklus erzwingen, bevor das Dialogfenster in den Browser-Top-Layer kommt.
-  try{ document.getElementById("wheelVisual")?.getBoundingClientRect(); }catch(_e){}
-  _wheelOpenOverlay(overlay);
-
-  if(hint) hint.textContent=`${_wheelActiveSegments.length} Joker · keine Niete${_wheelActiveSegments.length>4?" · Boss-Joker aktiv":""}`;
-
-  // Determine target segment based on server result.
-  const idx = _wheelResolveIndex(item.result);
-
-  // Compute final angle so that the segment center lands at the pointer (top).
-  const seg = (Math.PI * 2) / _wheelActiveSegments.length;
-  const center = (idx + 0.5) * seg;
-  const base = -center; // because draw rotates labels by angleRad and we subtract pi/2 inside draw
-  const spins = 6 + Math.floor(Math.random() * 3); // 6..8 full rotations
-  const finalAngle = base + spins * Math.PI * 2;
-
-  const startAngle = _wheelAngle;
-  const delta = finalAngle - startAngle;
-
-  const t0 = performance.now();
-  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-
-  const tick = (now) => {
-    const t = Math.min(1, (now - t0) / durationMs);
-    const eased = easeOutCubic(t);
-    _wheelAngle = startAngle + delta * eased;
-    try{ _wheelDraw(_wheelAngle); }catch(_e){}
-    if (t < 1) {
-      requestAnimationFrame(tick);
-    } else {
-      const r = item.result;
-      if (r) {
-        const pretty = (_wheelActiveSegments[idx] && _wheelActiveSegments[idx].key !== "none") ? _wheelActiveSegments[idx].label : String(r);
-        res.textContent = "✨ Joker gewonnen: " + pretty;
-        res.classList.add("win");
-      } else {
-        res.textContent = "Kein Joker erhalten.";
-        res.classList.remove("win");
-      }
-      // hide shortly after
-      window.setTimeout(() => {
-        _wheelCloseOverlay(overlay,()=>window.setTimeout(() => _wheelNext(), 100));
-      }, 1200);
-    }
+  const failSafeContinue = ()=>{
+    if(completed || runId!==_wheelRunSerial) return;
+    completed = true;
+    clearTimeout(_wheelWatchdog);
+    _wheelWatchdog = 0;
+    try{
+      const overlay=document.getElementById("wheelOverlay");
+      if(overlay) overlay.classList.remove("show");
+    }catch(_e){}
+    window.setTimeout(()=>_wheelNext(),80);
   };
 
-  // Initial draw. Das DOM-Fallback bleibt sichtbar, selbst wenn ein Browser
-  // Canvas-Effekte nicht korrekt rendert.
-  try{ _wheelDraw(_wheelAngle); }catch(_e){}
-  requestAnimationFrame(tick);
+  try{
+    _wheelEnsureUI();
+    const overlay = document.getElementById("wheelOverlay");
+    const title = document.getElementById("wheelTitle");
+    const sub = document.getElementById("wheelSub");
+    const res = document.getElementById("wheelResult");
+    const big = document.getElementById("wheelBig");
+    const quote = document.getElementById("wheelQuote");
+
+    const _colorName = (c)=>({RED:"Rot",BLUE:"Blau",GREEN:"Gruen",YELLOW:"Gelb"}[String(c||"").toUpperCase()] || String(c||""));
+    const attackerName = String(item.attackerName || "").trim();
+    const victimName = String(item.victimName || "").trim();
+    const attackerLabel = attackerName || (_colorName(item.targetColor) || "Jemand");
+    const victimLabel = victimName || (_colorName(item.jokerColor) || "jemanden");
+    const headline = String(item.headline || "").trim() || (attackerLabel + " schmeisst " + victimLabel + " raus!");
+    if (big) big.textContent = headline;
+    if (quote) quote.textContent = String(item.quote || "");
+
+    const targetColor = String(item.targetColor || "").toUpperCase();
+    const durationMs = Math.max(1200, Number(item.durationMs || 5000) || 5000);
+
+    if(title) title.textContent = "Glücksrad";
+    if(sub) sub.textContent = targetColor ? `Joker-Belohnung für ${_colorName(targetColor)}` : "Das Rad entscheidet deinen Joker …";
+    if(res){ res.textContent = ""; res.classList.remove("win"); }
+
+    _wheelActiveSegments=_wheelSegmentsForItem(item);
+    _wheelBuildSvg();
+    try{ _wheelDraw(_wheelAngle); }catch(_e){}
+
+    const hint=document.getElementById("wheelHint");
+    if(hint) hint.textContent=`${_wheelActiveSegments.length} Joker · keine Niete${_wheelActiveSegments.length>4?" · Boss-Joker aktiv":""}`;
+    try{ document.getElementById("wheelVisual")?.getBoundingClientRect(); }catch(_e){}
+    _wheelOpenOverlay(overlay);
+
+    const idx = _wheelResolveIndex(item.result);
+    const seg = (Math.PI * 2) / _wheelActiveSegments.length;
+    const center = (idx + 0.5) * seg;
+    const base = -center;
+    const spins = 6 + Math.floor(Math.random() * 3);
+    const finalAngle = base + spins * Math.PI * 2;
+    const startAngle = Number.isFinite(_wheelAngle) ? _wheelAngle : 0;
+    const delta = finalAngle - startAngle;
+    const t0 = performance.now();
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+    const finish=(forced=false)=>{
+      if(completed || runId!==_wheelRunSerial) return;
+      completed=true;
+      clearTimeout(_wheelWatchdog);
+      _wheelWatchdog=0;
+      _wheelAngle=finalAngle;
+      try{ _wheelDraw(_wheelAngle); }catch(_e){}
+      const r=item.result;
+      if(res){
+        if(r){
+          const pretty=(_wheelActiveSegments[idx] && _wheelActiveSegments[idx].key!=="none") ? _wheelActiveSegments[idx].label : String(r);
+          res.textContent="✨ Joker gewonnen: "+pretty;
+          res.classList.add("win");
+        }else{
+          res.textContent="Kein Joker erhalten.";
+          res.classList.remove("win");
+        }
+      }
+      // Selbst wenn requestAnimationFrame auf einem Mobilgerät kurz aussetzt,
+      // beendet der Watchdog den Lauf und die Queue kann nicht dauerhaft hängen.
+      window.setTimeout(()=>{
+        _wheelCloseOverlay(overlay,()=>window.setTimeout(()=>_wheelNext(),100));
+      }, forced ? 300 : 1200);
+    };
+
+    const tick=(now)=>{
+      if(completed || runId!==_wheelRunSerial) return;
+      const t=Math.min(1,(now-t0)/durationMs);
+      const eased=easeOutCubic(t);
+      _wheelAngle=startAngle+delta*eased;
+      try{ _wheelDraw(_wheelAngle); }catch(_e){}
+      if(t<1) requestAnimationFrame(tick);
+      else finish(false);
+    };
+
+    // Harte Sicherung gegen einen dauerhaft blockierten Rad-Status.
+    clearTimeout(_wheelWatchdog);
+    _wheelWatchdog=window.setTimeout(()=>finish(true), durationMs+2200);
+    try{ _wheelDraw(_wheelAngle); }catch(_e){}
+    requestAnimationFrame(tick);
+  }catch(err){
+    try{ console.error("[joker-wheel] animation error",err); }catch(_e){}
+    failSafeContinue();
+  }
 }
+
 
   // ---------- Aufgeben (Forfeit) ----------
   (function wireForfeitButton(){
