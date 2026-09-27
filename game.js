@@ -358,6 +358,7 @@ let pendingSaveExport = false;
   const emojiAngryBtn = $("emojiAngryBtn");
   const emojiCoolBtn = $("emojiCoolBtn");
   const emojiPoopBtn = $("emojiPoopBtn");
+  const emojiClockBtn = $("emojiClockBtn");
   const emojiOverlay = $("emojiOverlay");
   const emojiOverlayIcon = $("emojiOverlayIcon");
   const emojiOverlayName = $("emojiOverlayName");
@@ -3846,13 +3847,15 @@ function ensureAwardsStyles(){
   document.head.appendChild(st);
 }
 
-  const EMOJI_MAP = { laugh:"😂", angry:"😡", cool:"😎", poop:"💩" };
+  const EMOJI_MAP = { laugh:"😂", angry:"😡", cool:"😎", poop:"💩", clock:"⏳" };
   function normalizeEmojiKey(value){
     const v = String(value || "").trim();
-    if(v === "😂" || v.toLowerCase() === "laugh") return "laugh";
-    if(v === "😡" || v.toLowerCase() === "angry") return "angry";
-    if(v === "😎" || v.toLowerCase() === "cool") return "cool";
-    if(v === "💩" || v.toLowerCase() === "poop" || v.toLowerCase() === "shit") return "poop";
+    const low = v.toLowerCase();
+    if(v === "😂" || low === "laugh") return "laugh";
+    if(v === "😡" || low === "angry") return "angry";
+    if(v === "😎" || low === "cool") return "cool";
+    if(v === "💩" || low === "poop" || low === "shit") return "poop";
+    if(v === "⏳" || v === "⌛" || low === "clock" || low === "hourglass" || low === "timer" || low === "zeituhr") return "clock";
     return "";
   }
   function updateEmojiUI(){
@@ -3865,7 +3868,8 @@ function ensureAwardsStyles(){
       document.getElementById("emojiLaughBtn"),
       document.getElementById("emojiAngryBtn"),
       document.getElementById("emojiCoolBtn"),
-      document.getElementById("emojiPoopBtn")
+      document.getElementById("emojiPoopBtn"),
+      document.getElementById("emojiClockBtn")
     ];
 
     if(emojiBarEl) emojiBarEl.style.display = running ? "flex" : "none";
@@ -3880,6 +3884,8 @@ function ensureAwardsStyles(){
     let overlayEl = document.getElementById("emojiOverlay");
     let iconEl = document.getElementById("emojiOverlayIcon");
     let nameEl = document.getElementById("emojiOverlayName");
+    let subEl = document.getElementById("emojiOverlaySub");
+    let countEl = document.getElementById("emojiOverlayCountdown");
 
     if(!overlayEl){
       overlayEl = document.createElement("div");
@@ -3900,7 +3906,7 @@ function ensureAwardsStyles(){
       card.style.alignItems = "center";
       card.style.justifyContent = "center";
       card.style.gap = "10px";
-      card.style.minWidth = "min(80vw,420px)";
+      card.style.minWidth = "min(84vw,460px)";
       card.style.padding = "18px 22px";
       card.style.borderRadius = "28px";
       card.style.background = "rgba(8,12,20,.26)";
@@ -3920,8 +3926,28 @@ function ensureAwardsStyles(){
       nameEl.style.textShadow = "0 6px 18px rgba(0,0,0,.55)";
       nameEl.style.letterSpacing = ".2px";
 
+      subEl = document.createElement("div");
+      subEl.id = "emojiOverlaySub";
+      subEl.style.fontSize = "22px";
+      subEl.style.fontWeight = "800";
+      subEl.style.color = "rgba(255,245,220,.96)";
+      subEl.style.textAlign = "center";
+      subEl.style.textShadow = "0 4px 14px rgba(0,0,0,.50)";
+      subEl.style.display = "none";
+
+      countEl = document.createElement("div");
+      countEl.id = "emojiOverlayCountdown";
+      countEl.style.fontSize = "42px";
+      countEl.style.fontWeight = "1000";
+      countEl.style.lineHeight = "1";
+      countEl.style.color = "#fff";
+      countEl.style.textShadow = "0 8px 18px rgba(0,0,0,.55)";
+      countEl.style.display = "none";
+
       card.appendChild(iconEl);
       card.appendChild(nameEl);
+      card.appendChild(subEl);
+      card.appendChild(countEl);
       overlayEl.appendChild(card);
       document.body.appendChild(overlayEl);
     }
@@ -3929,6 +3955,19 @@ function ensureAwardsStyles(){
     if(iconEl) iconEl.textContent = icon;
     if(nameEl) nameEl.textContent = String(name || "Spieler");
     if(!overlayEl) return;
+
+    if(emojiOverlayTimer) clearTimeout(emojiOverlayTimer);
+    try{ if(window.__emojiCountdownInterval) clearInterval(window.__emojiCountdownInterval); }catch(_e){}
+    try{ window.__emojiCountdownInterval = null; }catch(_e){}
+
+    if(subEl){
+      subEl.style.display = "none";
+      subEl.textContent = "";
+    }
+    if(countEl){
+      countEl.style.display = "none";
+      countEl.textContent = "";
+    }
 
     // Immer erzwingen – auch wenn #emojiOverlay bereits aus HTML existiert.
     Object.assign(overlayEl.style, {
@@ -3942,7 +3981,42 @@ function ensureAwardsStyles(){
     void overlayEl.offsetWidth;
     overlayEl.classList.add("show");
 
-    if(emojiOverlayTimer) clearTimeout(emojiOverlayTimer);
+    if(key === "clock") {
+      if(subEl){
+        subEl.textContent = "Ey wo hängts den";
+        subEl.style.display = "block";
+      }
+      if(countEl){
+        countEl.textContent = "3";
+        countEl.style.display = "block";
+      }
+      let remaining = 3;
+      try{
+        window.__emojiCountdownInterval = setInterval(()=>{
+          remaining -= 1;
+          if(!countEl) return;
+          if(remaining > 0){
+            countEl.textContent = String(remaining);
+          }else{
+            countEl.textContent = "";
+            clearInterval(window.__emojiCountdownInterval);
+            window.__emojiCountdownInterval = null;
+          }
+        }, 1000);
+      }catch(_e){}
+
+      emojiOverlayTimer = setTimeout(()=>{
+        try{
+          if(window.__emojiCountdownInterval) clearInterval(window.__emojiCountdownInterval);
+          window.__emojiCountdownInterval = null;
+          overlayEl.classList.remove("show");
+          overlayEl.style.display = "none";
+          overlayEl.setAttribute("aria-hidden", "true");
+        }catch(_e){}
+      }, 3200);
+      return;
+    }
+
     emojiOverlayTimer = setTimeout(()=>{
       try{
         overlayEl.classList.remove("show");
@@ -3951,6 +4025,7 @@ function ensureAwardsStyles(){
       }catch(_e){}
     }, 2200);
   }
+
   const seenEmojiEventIds = new Map();
   function pruneSeenEmojiEvents(){
     const now = Date.now();
@@ -4021,7 +4096,8 @@ function ensureAwardsStyles(){
       [document.getElementById("emojiLaughBtn"), "laugh"],
       [document.getElementById("emojiAngryBtn"), "angry"],
       [document.getElementById("emojiCoolBtn"), "cool"],
-      [document.getElementById("emojiPoopBtn"), "poop"]
+      [document.getElementById("emojiPoopBtn"), "poop"],
+      [document.getElementById("emojiClockBtn"), "clock"]
     ];
     for(const pair of pairs){
       const btn = pair[0]; const key = pair[1];
@@ -5214,6 +5290,70 @@ function showEpicWin(winnerColor){
     const ox=(view.x*view.s)%grid, oy=(view.y*view.s)%grid;
     for(let x=-ox;x<rect.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rect.height);ctx.stroke();}
     for(let y=-oy;y<rect.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rect.width,y);ctx.stroke();}
+    ctx.restore();
+  }
+
+  function drawStartFieldAccent(x,y,r,color,useWoodBoard){
+    const col = COLORS[color] || color || "#ffffff";
+    ctx.save();
+    if(useWoodBoard){
+      // Ruhige farbige Start-Markierung: lackierter Ring + kleine 1-Plakette.
+      ctx.strokeStyle = "rgba(88,52,25,.64)";
+      ctx.lineWidth = Math.max(2.6, r*.14);
+      ctx.beginPath(); ctx.arc(x,y,r+4,0,Math.PI*2); ctx.stroke();
+
+      ctx.strokeStyle = col;
+      ctx.lineWidth = Math.max(2.1, r*.11);
+      ctx.beginPath(); ctx.arc(x,y,r+1.6,0,Math.PI*2); ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255,245,224,.48)";
+      ctx.lineWidth = Math.max(.9, r*.04);
+      ctx.beginPath(); ctx.arc(x,y,r-.9,Math.PI*1.06,Math.PI*1.78); ctx.stroke();
+
+      // Kleines emailliertes Start-Abzeichen mit „1“.
+      const bx = x + r*.68;
+      const by = y - r*.64;
+      const br = Math.max(7, r*.34);
+      ctx.fillStyle = "rgba(88,52,25,.58)";
+      ctx.beginPath(); ctx.arc(bx,by,br+2.2,0,Math.PI*2); ctx.fill();
+      const badge=ctx.createRadialGradient(bx-br*.28,by-br*.32,br*.10,bx,by,br*1.05);
+      badge.addColorStop(0,"rgba(255,255,255,.92)");
+      badge.addColorStop(.24,col);
+      badge.addColorStop(.78,col);
+      badge.addColorStop(1,"rgba(42,24,16,.82)");
+      ctx.fillStyle = badge;
+      ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,244,218,.62)";
+      ctx.lineWidth = Math.max(.8, br*.14);
+      ctx.beginPath(); ctx.arc(bx,by,br*.78,Math.PI*1.06,Math.PI*1.84); ctx.stroke();
+      ctx.fillStyle = "rgba(255,251,247,.98)";
+      ctx.font = `900 ${Math.max(8,Math.round(br*.95))}px system-ui`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("1", bx, by+0.4);
+    }else{
+      // Klassisch: klarer farbiger Start-Ring + kleines Startbadge.
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = Math.max(2.4, r*.12);
+      ctx.beginPath(); ctx.arc(x,y,r+4,0,Math.PI*2); ctx.stroke();
+      ctx.shadowColor = "transparent";
+      ctx.strokeStyle = "rgba(255,255,255,.30)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(x,y,r+7,0,Math.PI*2); ctx.stroke();
+
+      const bx = x + r*.72;
+      const by = y - r*.68;
+      const br = Math.max(7, r*.34);
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "rgba(8,12,20,.56)"; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.98)";
+      ctx.font = `900 ${Math.max(8,Math.round(br*.95))}px system-ui`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("1", bx, by+0.4);
+    }
     ctx.restore();
   }
 
