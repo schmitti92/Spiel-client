@@ -1039,6 +1039,55 @@
       body.lobby-page #readyBtn{min-width:0;}
     }
 
+
+
+    /* V13.7 – serverautoritärer Farb-Slotautomat vor dem Startspieler-Rad */
+    body.lobby-page .color-wheel-mode-strip{border-color:rgba(255,197,76,.18);background:linear-gradient(135deg,rgba(255,184,61,.07),rgba(124,92,255,.07));}
+    body.lobby-page .color-wheel-panel{display:none;margin:17px 0 3px;padding:16px;border:1px solid rgba(255,255,255,.11);border-radius:24px;background:radial-gradient(circle at 50% -18%,rgba(255,206,92,.15),transparent 42%),linear-gradient(180deg,rgba(13,18,31,.95),rgba(5,8,16,.97));overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 42px rgba(0,0,0,.22);}
+    body.lobby-page.color-wheel-room .color-wheel-panel{display:block;}
+    body.lobby-page .color-slot-shell{position:relative;border:1px solid rgba(255,223,151,.24);border-radius:22px;padding:13px;background:linear-gradient(145deg,#473319 0%,#d7a442 4%,#5f4421 8%,#161926 13%,#0a0e18 100%);box-shadow:0 18px 42px rgba(0,0,0,.42),inset 0 0 0 2px rgba(255,238,190,.08);overflow:hidden;}
+    body.lobby-page .color-slot-shell::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 32%,rgba(255,255,255,.08) 40%,transparent 49% 100%);pointer-events:none;}
+    body.lobby-page .color-slot-marquee{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 12px;border-radius:15px;background:linear-gradient(180deg,rgba(13,16,26,.96),rgba(25,20,25,.96));border:1px solid rgba(255,221,139,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.07);}
+    body.lobby-page .color-slot-marquee-main{display:flex;align-items:center;gap:10px;min-width:0;}
+    body.lobby-page .color-slot-logo{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:radial-gradient(circle at 35% 25%,#fff4bf,#ffbe42 38%,#8b4f11 72%,#2c1a0e);box-shadow:0 0 18px rgba(255,188,64,.28);}
+    body.lobby-page .color-slot-marquee strong{display:block;font-size:15px;font-weight:1000;letter-spacing:.08em;color:#fff1c3;text-shadow:0 2px 12px rgba(255,183,61,.18);}
+    body.lobby-page .color-slot-marquee small{display:block;margin-top:2px;font-size:10px;color:rgba(224,232,247,.62);letter-spacing:.04em;}
+    body.lobby-page .slot-live{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);font-size:9.5px;font-weight:900;letter-spacing:.08em;color:#dfe7fb;}
+    body.lobby-page .slot-live::before{content:'';width:7px;height:7px;border-radius:50%;background:#7e879c;box-shadow:0 0 0 3px rgba(126,135,156,.10);}
+    body.lobby-page .color-slot-shell.is-spinning .slot-live::before{background:#ffcf55;box-shadow:0 0 14px rgba(255,207,85,.85);animation:slotPulse .6s ease-in-out infinite alternate;}
+    body.lobby-page .color-slot-reels{position:relative;display:grid;grid-template-columns:repeat(var(--slot-count,2),minmax(0,1fr));gap:10px;margin-top:11px;}
+    body.lobby-page .color-slot-player{position:relative;min-width:0;border-radius:17px;padding:9px;background:linear-gradient(180deg,rgba(46,52,70,.97),rgba(14,18,29,.98));border:1px solid rgba(255,255,255,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 10px 22px rgba(0,0,0,.22);overflow:hidden;}
+    body.lobby-page .color-slot-player::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% -10%,rgba(255,210,109,.13),transparent 46%);pointer-events:none;}
+    body.lobby-page .color-slot-name{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:6px;height:27px;padding:0 5px;font-size:11px;font-weight:1000;letter-spacing:.05em;color:#f5f7ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    body.lobby-page .slot-reel-viewport{position:relative;height:78px;border-radius:13px;overflow:hidden;background:#060911;border:2px solid rgba(255,224,149,.32);box-shadow:inset 0 10px 22px rgba(0,0,0,.75),inset 0 -10px 22px rgba(0,0,0,.55),0 5px 12px rgba(0,0,0,.28);}
+    body.lobby-page .slot-reel-viewport::before,body.lobby-page .slot-reel-viewport::after{content:'';position:absolute;z-index:6;left:0;right:0;height:19px;pointer-events:none;}
+    body.lobby-page .slot-reel-viewport::before{top:0;background:linear-gradient(180deg,rgba(2,4,9,.92),transparent);}
+    body.lobby-page .slot-reel-viewport::after{bottom:0;background:linear-gradient(0deg,rgba(2,4,9,.92),transparent);}
+    body.lobby-page .slot-reel-center{position:absolute;z-index:5;left:5px;right:5px;top:50%;height:54px;transform:translateY(-50%);border-top:1px solid rgba(255,232,170,.25);border-bottom:1px solid rgba(255,232,170,.25);box-shadow:0 0 20px rgba(255,197,76,.06);pointer-events:none;}
+    body.lobby-page .slot-reel-track{position:absolute;z-index:3;left:0;right:0;top:0;will-change:transform;transform:translateY(0);}
+    body.lobby-page .slot-reel-cell{height:78px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:1000;letter-spacing:.04em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.52);}
+    body.lobby-page .slot-reel-cell .slot-orb{width:29px;height:29px;border-radius:50%;border:3px solid rgba(255,255,255,.86);box-shadow:inset 0 3px 8px rgba(255,255,255,.34),inset 0 -4px 9px rgba(0,0,0,.32),0 4px 10px rgba(0,0,0,.38);}
+    body.lobby-page .slot-reel-cell.red .slot-orb{background:#ef4960}body.lobby-page .slot-reel-cell.blue .slot-orb{background:#3795ff}body.lobby-page .slot-reel-cell.green .slot-orb{background:#36cf83}body.lobby-page .slot-reel-cell.yellow .slot-orb{background:#ffd249}
+    body.lobby-page .slot-result-tag{position:relative;z-index:2;min-height:24px;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:9.5px;font-weight:950;letter-spacing:.05em;color:rgba(222,230,246,.64);}
+    body.lobby-page .color-slot-player.is-result .slot-result-tag{color:#fff0bc;}
+    body.lobby-page .color-slot-player.is-result{border-color:rgba(255,213,107,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 0 24px rgba(255,193,73,.10),0 10px 22px rgba(0,0,0,.24);}
+    body.lobby-page .color-slot-player.is-spinning .slot-reel-track{filter:blur(.75px) saturate(1.16);}
+    body.lobby-page .color-slot-player.is-spinning{animation:slotMachineShake .18s linear infinite alternate;}
+    body.lobby-page .color-wheel-copy{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;}
+    body.lobby-page .color-wheel-copy strong{display:block;font-size:16px;font-weight:1000;color:#f4f7ff;}
+    body.lobby-page .color-wheel-copy small{display:block;margin-top:4px;line-height:1.45;color:rgba(224,232,247,.62);font-size:11.5px;}
+    body.lobby-page .color-wheel-actions{display:flex;gap:9px;align-items:center;justify-content:flex-end;flex-wrap:wrap;}
+    body.lobby-page #spinColorsBtn{min-width:190px;background:linear-gradient(135deg,#ffb935,#d66a38 47%,#8c5cff);border-color:rgba(255,228,164,.30);box-shadow:0 13px 30px rgba(110,72,224,.20),inset 0 1px 0 rgba(255,255,255,.18);}
+    body.lobby-page #spinColorsBtn:disabled{opacity:.38;box-shadow:none;}
+    body.lobby-page .color-wheel-results{display:none;}
+    body.lobby-page.color-wheel-room .color-choice-grid{position:relative;}
+    body.lobby-page.color-wheel-room .color-choice-grid [data-color]{cursor:not-allowed;opacity:.42!important;filter:saturate(.60)!important;}
+    body.lobby-page.color-wheel-room .color-choice-grid [data-color].active{opacity:1!important;filter:none!important;box-shadow:0 0 0 3px rgba(255,255,255,.15),0 14px 30px var(--color-shadow),inset 0 1px 0 rgba(255,255,255,.25);}
+    @keyframes slotMachineShake{from{transform:translateY(-.35px)}to{transform:translateY(.35px)}}
+    @keyframes slotPulse{from{transform:scale(.88);opacity:.72}to{transform:scale(1.12);opacity:1}}
+    @media(max-width:820px){body.lobby-page .color-slot-reels{grid-template-columns:repeat(2,minmax(0,1fr))!important}.color-wheel-copy{grid-template-columns:1fr!important}.color-wheel-actions{justify-content:flex-start!important}}
+    @media(max-width:470px){body.lobby-page .color-slot-shell{padding:10px}.color-slot-reels{gap:7px}.color-slot-player{padding:6px!important}.slot-reel-viewport{height:68px!important}.slot-reel-cell{height:68px!important;font-size:11px!important}.slot-reel-cell .slot-orb{width:24px!important;height:24px!important}.color-slot-name{font-size:10px!important}.color-slot-marquee small{display:none!important}}
+
   </style>
 </head>
 <body class="lobby-page">
@@ -1100,6 +1149,16 @@
               Bossmodus
             </label>
           </div>
+          <div class="room-mode-strip color-wheel-mode-strip">
+            <div class="room-mode-copy">
+              <strong>🎰 Farb-Slots beim Spielstart</strong>
+              <small>Optional: Niemand wählt vorher eine Farbe. Für jeden anwesenden Spieler dreht gleichzeitig ein eigener Slot. Erst danach folgt im Spiel das Rad für den Startspieler.</small>
+            </div>
+            <label class="switch">
+              <input id="colorWheelToggle" type="checkbox" />
+              Farb-Slots
+            </label>
+          </div>
         </section>
 
         <section class="card profile-card">
@@ -1117,6 +1176,30 @@
             <div class="profile-summary-item"><small>Würfel</small><strong>🎲 <span id="summaryDice">Klassisch</span></strong></div>
           </div>
 
+          <div id="colorWheelPanel" class="color-wheel-panel" aria-live="polite">
+            <div id="colorSlotShell" class="color-slot-shell">
+              <div class="color-slot-marquee">
+                <div class="color-slot-marquee-main">
+                  <div class="color-slot-logo">🎰</div>
+                  <div><strong>FARB-AUTOMAT</strong><small>Server-Auslosung · jede Farbe nur einmal</small></div>
+                </div>
+                <span id="colorSlotLive" class="slot-live">BEREIT</span>
+              </div>
+              <div id="colorSlotReels" class="color-slot-reels" style="--slot-count:2"></div>
+            </div>
+            <div class="color-wheel-copy">
+              <div>
+                <strong id="colorWheelTitle">Farb-Slots bereit</strong>
+                <small id="colorWheelStatus">Jeder wählt zuerst nur Name und Würfel und meldet sich bereit. Danach startet der Host alle Spieler-Slots gleichzeitig.</small>
+              </div>
+              <div class="color-wheel-actions">
+                <button id="spinColorsBtn" class="btn primary" type="button" disabled>🎰 Farb-Slots starten</button>
+                <span id="colorWheelReadyCount" class="hint">0 Spieler bereit</span>
+              </div>
+              <div id="colorWheelResults" class="color-wheel-results"></div>
+            </div>
+          </div>
+
           <div class="setup-step">
             <div class="setup-step-head"><span class="step-no">1</span><span class="step-label">Spieler wählen</span><span class="step-hint">Dein Name im Raum</span></div>
             <div class="names player-choice-grid">
@@ -1128,7 +1211,7 @@
           </div>
 
           <div class="setup-step">
-            <div class="setup-step-head"><span class="step-no">2</span><span class="step-label">Farbe wählen</span><span class="step-hint">Jede Farbe nur einmal</span></div>
+            <div class="setup-step-head"><span class="step-no">2</span><span id="colorStepLabel" class="step-label">Farbe wählen</span><span id="colorStepHint" class="step-hint">Jede Farbe nur einmal</span></div>
             <div class="color-choice-grid">
               <button class="btn" type="button" data-color="red">🔴 Rot</button>
               <button class="btn" type="button" data-color="blue">🔵 Blau</button>
@@ -1218,6 +1301,18 @@
       const joinBtn = $("joinBtn");
       const actionToggle = $("actionToggle");
       const bossModeToggle = $("bossModeToggle");
+      const colorWheelToggle = $("colorWheelToggle");
+      const colorWheelPanel = $("colorWheelPanel");
+      const colorSlotShell = $("colorSlotShell");
+      const colorSlotReels = $("colorSlotReels");
+      const colorSlotLive = $("colorSlotLive");
+      const colorWheelTitle = $("colorWheelTitle");
+      const colorWheelStatus = $("colorWheelStatus");
+      const colorWheelResults = $("colorWheelResults");
+      const colorWheelReadyCount = $("colorWheelReadyCount");
+      const spinColorsBtn = $("spinColorsBtn");
+      const colorStepLabel = $("colorStepLabel");
+      const colorStepHint = $("colorStepHint");
       const modePill = $("modePill");
       const roomPill = $("roomPill");
       const colorPill = $("colorPill");
@@ -1239,6 +1334,14 @@
       const profileModeHint = $("profileModeHint");
       const roomPlayerCount = $("roomPlayerCount");
       let selectedNameKey = "";
+      let roomColorMode = "manual";
+      let roomColorsAssigned = false;
+      let myWheelReservationReady = false;
+      let lastColorWheelSeq = 0;
+      let wheelAnimatingSeq = 0;
+      let latestPresence = null;
+      let colorSlotsAnimating = false;
+      let colorSlotsRevealTimer = 0;
 
 // V9.4 FINAL: Lobby und Spiel nutzen denselben Render-Server; Farbreservierung nutzt dieselben Keys wie game.js.
 // Server base (same as game.js, but HTTP for fetch)
@@ -1279,13 +1382,7 @@ async function ensureRoom(rc){
 async function reserveMe(nameKey){
   const rc = normRoom(roomInp.value);
   if(!rc) return { ok:false };
-  const roomColorKey = "barikade_requested_color_" + rc;
-  const color = String(
-    localStorage.getItem(roomColorKey) ||
-    localStorage.getItem("barikade_requested_color") ||
-    localStorage.getItem("barikade_color") ||
-    ""
-  ).toLowerCase().trim();
+  const color = (roomColorMode === "wheel" && !roomColorsAssigned) ? "" : getSelectedColor();
   const diceStyle = getSelectedDiceStyle(nameKey);
   try{
     const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/reserve`, {
@@ -1330,9 +1427,27 @@ function renderPresence(p){
     return;
   }
 
+  latestPresence = p;
+  const previousColorMode = roomColorMode;
+  roomColorMode = p.colorMode === "wheel" ? "wheel" : "manual";
+  roomColorsAssigned = !!p.colorsAssigned;
   const res = p.reservations || {};
   const locks = p.colorLocks || {};
   const players = Array.isArray(p.players) ? p.players : [];
+  const myName = selectedNameKey || getMyNameKey();
+  myWheelReservationReady = !!(myName && res[myName]);
+  const colorRevealAt = Number(p.colorWheel?.revealAt || 0);
+  const colorServerNow = Number(p.ts || Date.now());
+  const colorRevealComplete = !colorRevealAt || colorServerNow >= colorRevealAt;
+
+  if(roomColorMode === "wheel"){
+    const assigned = myName ? String(res?.[myName]?.color || '').toLowerCase() : '';
+    if(roomColorsAssigned && colorRevealComplete && ['red','blue','green','yellow'].includes(assigned)) setRequestedColor(assigned, true);
+    else clearRequestedColorForRoom();
+  }
+  applyColorWheelUI();
+  renderColorWheelResult(p.colorWheel);
+  if(previousColorMode !== roomColorMode) refreshProfileSummary();
   const order = ["David","Vanessa","Christoph","Gast"];
   let occupied = 0;
   const slots = [];
@@ -1344,7 +1459,8 @@ function renderPresence(p){
     if(hasPresence) occupied++;
     const stKey = (r?.status === "in_game" || pl?.connected) ? "in_game" : (r ? "ready" : "free");
     const stLabel = stKey === 'in_game' ? 'Im Spiel' : stKey === 'ready' ? 'Bereit' : 'Freier Platz';
-    const c = String(pl?.color || r?.color || '').toLowerCase();
+    const rawColor = String(pl?.color || r?.color || '').toLowerCase();
+    const c = (roomColorMode === 'wheel' && roomColorsAssigned && !colorRevealComplete) ? '' : rawColor;
     const diceStyle = normalizeDiceStyle(pl?.diceStyle || r?.diceStyle || "classic");
     const isHost = !!pl?.isHost;
     const isMe = nk === selectedNameKey || nk === getMyNameKey();
@@ -1378,9 +1494,9 @@ function renderPresence(p){
   document.querySelectorAll('[data-color]').forEach(btn=>{
     const c = String(btn.getAttribute("data-color")||"").toLowerCase();
     const holder = locks[c] || null;
-    const shouldDisable = holder && holder !== my;
+    const shouldDisable = roomColorMode === "wheel" || (holder && holder !== my);
     btn.disabled = !!shouldDisable;
-    btn.title = holder ? `Belegt von ${holder}` : "";
+    btn.title = roomColorMode === "wheel" ? "Die Farbe wird vom Farb-Automaten zugelost" : (holder ? `Belegt von ${holder}` : "");
   });
 
   // Occupied names are visible but cannot be selected by a different local player.
@@ -1400,7 +1516,7 @@ function renderPresence(p){
   refreshProfileSummary();
 }
 
-// Poll presence every 2.5s when room is set
+// Farb-Slots sollen auf mehreren Geräten nahezu gleichzeitig starten; daher 0,7 s Polling in der Lobby.
 let presenceTimer = null;
 function startPresencePoll(){
   if(presenceTimer) return;
@@ -1409,7 +1525,7 @@ function startPresencePoll(){
     if(!rc) return;
     const p = await fetchPresence();
     renderPresence(p);
-  }, 2500);
+  }, 700);
 }
 
       function toast(t){
@@ -1430,10 +1546,21 @@ function startPresencePoll(){
 
       function getSelectedColor(){
         const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
-        const c = String(localStorage.getItem('barikade_requested_color_'+r) || localStorage.getItem('barikade_requested_color') || localStorage.getItem('barikade_color') || '').toLowerCase();
+        const key = 'barikade_requested_color_'+r;
+        let raw = null;
+        try{ raw = r ? localStorage.getItem(key) : null; }catch(_e){}
+        const c = String(raw !== null ? raw : (localStorage.getItem('barikade_requested_color') || localStorage.getItem('barikade_color') || '')).toLowerCase();
         return ['red','blue','green','yellow'].includes(c) ? c : '';
       }
+      function clearRequestedColorForRoom(){
+        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        if(r){ try{ localStorage.setItem('barikade_requested_color_'+r, ''); }catch(_e){} }
+        document.querySelectorAll('[data-color]').forEach(btn=>btn.classList.remove('active'));
+        if(colorPill) colorPill.textContent = roomColorMode === 'wheel' ? 'Farbe: wird per Slot ausgelost' : 'Farbe: –';
+      }
       function colorLabel(c){ return c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':c==='yellow'?'Gelb':'Noch wählen'; }
+      function colorEmoji(c){ return c==='red'?'🔴':c==='blue'?'🔵':c==='green'?'🟢':c==='yellow'?'🟡':'⚪'; }
+      function colorIndex(c){ return c==='red'?0:c==='blue'?1:c==='green'?2:c==='yellow'?3:0; }
       function pendingNameKey(rc){ return 'barikade_pending_name_' + (normRoom(rc) || 'room'); }
       function setSelectedName(nameKey){
         const nk = String(nameKey || '').trim();
@@ -1461,23 +1588,43 @@ function startPresencePoll(){
         const mode = localStorage.getItem('barikade_mode') || 'offline';
         const c = getSelectedColor();
         const dice = getSelectedDiceStyle(selectedNameKey || undefined);
+        const wheelMode = roomColorMode === 'wheel';
         if(summaryName) summaryName.textContent = selectedNameKey || 'Noch wählen';
-        if(summaryColor) summaryColor.textContent = colorLabel(c);
+        if(summaryColor) summaryColor.textContent = wheelMode && (!roomColorsAssigned || colorSlotsAnimating) ? 'Wird ausgelost' : colorLabel(c);
         if(summaryColorDot){ summaryColorDot.className = 'mini-color-dot' + (c ? ' '+c : ''); }
         if(summaryDice) summaryDice.textContent = diceStyleLabel(dice);
         const hasMode = mode === 'host' || mode === 'client';
         const actionNeedsJoker = !!actionToggle.checked && isHostMode() && !getSelectedJokerCount();
-        const ready = !!rc && hasMode && !!selectedNameKey && !!c && !actionNeedsJoker;
-        if(readyBtn) readyBtn.disabled = !ready;
+        const basicReady = !!rc && hasMode && !!selectedNameKey && !actionNeedsJoker;
+        const ready = wheelMode
+          ? (basicReady && (roomColorsAssigned ? (!!c && !colorSlotsAnimating) : !myWheelReservationReady))
+          : (basicReady && !!c);
+        if(readyBtn){
+          readyBtn.disabled = !ready;
+          if(wheelMode){
+            readyBtn.textContent = roomColorsAssigned ? (colorSlotsAnimating ? 'Farb-Slots drehen …' : 'Spiel öffnen') : (myWheelReservationReady ? 'Warte auf Farb-Slots …' : 'Bereit für Farb-Slots');
+          }else{
+            readyBtn.textContent = 'Bereit & Spiel öffnen';
+          }
+        }
         if(profileModeHint) profileModeHint.textContent = mode === 'host' ? '👑 Host' : (mode === 'client' ? 'Mitspieler' : 'Noch kein Raum');
-        if(readyTitle) readyTitle.textContent = ready ? 'Alles bereit' : 'Profil vervollständigen';
+        if(readyTitle){
+          if(wheelMode && roomColorsAssigned && colorSlotsAnimating) readyTitle.textContent = 'Farb-Slots laufen';
+          else if(wheelMode && myWheelReservationReady && !roomColorsAssigned) readyTitle.textContent = 'Bereit – Farbe wird ausgelost';
+          else readyTitle.textContent = ready ? (wheelMode && roomColorsAssigned ? 'Farbe zugelost' : 'Alles bereit') : 'Profil vervollständigen';
+        }
         if(readyHint){
           if(!rc || !hasMode) readyHint.textContent = 'Erstelle zuerst einen Raum oder tritt einem Raum bei.';
           else if(!selectedNameKey) readyHint.textContent = 'Wähle deinen Spielernamen.';
-          else if(!c) readyHint.textContent = 'Wähle eine freie Spielerfarbe.';
           else if(actionNeedsJoker) readyHint.textContent = 'Im Action-Modus muss der Host noch die Jokerzahl wählen.';
+          else if(wheelMode && !roomColorsAssigned && !myWheelReservationReady) readyHint.textContent = 'Melde dich bereit. Eine Farbe darfst du vorher nicht auswählen.';
+          else if(wheelMode && !roomColorsAssigned) readyHint.textContent = 'Du bist bereit. Der Host startet die Farb-Slots für alle Spieler gleichzeitig.';
+          else if(wheelMode && colorSlotsAnimating) readyHint.textContent = 'Die Farb-Slots drehen. Erst nach dem Stopp wird deine Farbe freigegeben.';
+          else if(wheelMode && !c) readyHint.textContent = 'Die Auslosung wurde noch nicht für dein Profil übernommen.';
+          else if(!wheelMode && !c) readyHint.textContent = 'Wähle eine freie Spielerfarbe.';
           else readyHint.textContent = `${selectedNameKey} · ${colorLabel(c)} · ${diceStyleLabel(dice)} – bereit für den Raum ${rc}.`;
         }
+        applyColorWheelUI();
       }
 
       function bumpPill(el){
@@ -1510,6 +1657,196 @@ function startPresencePoll(){
       }
       function setBossMode(on){
         localStorage.setItem('barikade_boss_mode', on ? 'boss' : 'off');
+      }
+
+      async function setServerColorMode(mode){
+        const rc = normRoom(roomInp.value);
+        if(!rc) return {ok:false,error:'NO_CODE'};
+        try{
+          const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/color-mode`, {
+            method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mode})
+          });
+          const j = await r.json().catch(()=>null);
+          if(!r.ok || !j?.ok) return {ok:false,error:j?.error||'ERR'};
+          renderPresence(j);
+          return {ok:true,data:j};
+        }catch(_e){ return {ok:false,error:'NET'}; }
+      }
+
+      async function spinServerColors(){
+        const rc = normRoom(roomInp.value);
+        if(!rc) return {ok:false,error:'NO_CODE'};
+        try{
+          const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/spin-colors`, {
+            method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'
+          });
+          const j = await r.json().catch(()=>null);
+          if(!r.ok || !j?.ok) return {ok:false,error:j?.error||'ERR'};
+          renderPresence(j);
+          return {ok:true,data:j};
+        }catch(_e){ return {ok:false,error:'NET'}; }
+      }
+
+      function slotColorLabel(c){ return colorLabel(String(c||'').toLowerCase()); }
+      function slotCellHtml(c){
+        const cc=['red','blue','green','yellow'].includes(String(c||'').toLowerCase())?String(c).toLowerCase():'red';
+        return `<div class="slot-reel-cell ${cc}"><span class="slot-orb"></span><span>${slotColorLabel(cc).toUpperCase()}</span></div>`;
+      }
+      function deterministicSlotColors(seq,index,count,finalColor){
+        const colors=['red','blue','green','yellow'];
+        let seed=((Number(seq)||1)*2654435761 + (index+1)*1013904223) >>> 0;
+        const arr=[];
+        for(let i=0;i<Math.max(8,count-1);i++){
+          seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+          let c=colors[seed%colors.length];
+          if(arr.length && c===arr[arr.length-1]) c=colors[(colors.indexOf(c)+1+(seed%3))%4];
+          arr.push(c);
+        }
+        arr.push(String(finalColor||'red').toLowerCase());
+        return arr;
+      }
+      function slotCardShell(nameKey,inner,tag='',extraClass=''){
+        const initials=String(nameKey||'Spieler').slice(0,1).toUpperCase();
+        return `<div class="color-slot-player ${extraClass}" data-slot-player="${String(nameKey||'Spieler')}">
+          <div class="color-slot-name"><span>${initials}</span><span>${String(nameKey||'Spieler')}</span></div>
+          <div class="slot-reel-viewport"><div class="slot-reel-center"></div>${inner}</div>
+          <div class="slot-result-tag">${tag||'🎰 BEREIT'}</div>
+        </div>`;
+      }
+      function renderSlotStandby(){
+        if(!colorSlotReels) return;
+        const res=latestPresence?.reservations||{};
+        const names=Object.keys(res).slice(0,4);
+        const shown=names.length?names:['Spieler 1','Spieler 2'];
+        colorSlotReels.style.setProperty('--slot-count',String(Math.max(2,Math.min(4,shown.length))));
+        colorSlotReels.innerHTML=shown.map(n=>slotCardShell(n,`<div class="slot-reel-track"><div class="slot-reel-cell"><span style="font-size:30px;opacity:.62">?</span></div></div>`,'🎰 BEREIT')).join('');
+      }
+      function renderSlotResults(assignments){
+        if(!colorSlotReels) return;
+        const list=Array.isArray(assignments)?assignments:[];
+        if(!list.length){ renderSlotStandby(); return; }
+        colorSlotReels.style.setProperty('--slot-count',String(Math.max(2,Math.min(4,list.length))));
+        colorSlotReels.innerHTML=list.map(a=>{
+          const c=String(a?.color||'red').toLowerCase();
+          return slotCardShell(a?.nameKey||'Spieler',`<div class="slot-reel-track">${slotCellHtml(c)}</div>`,`${colorEmoji(c)} ${slotColorLabel(c).toUpperCase()}`,'is-result');
+        }).join('');
+        colorSlotShell?.classList.remove('is-spinning');
+        if(colorSlotLive) colorSlotLive.textContent='FARBEN FEST';
+      }
+
+      function applyColorWheelUI(){
+        const wheelMode = roomColorMode === 'wheel';
+        document.body.classList.toggle('color-wheel-room', wheelMode);
+        if(colorWheelToggle){
+          colorWheelToggle.checked = wheelMode;
+          colorWheelToggle.disabled = !isHostMode();
+          colorWheelToggle.title = isHostMode() ? '' : 'Nur der Host kann die Farbvergabe festlegen';
+        }
+        if(colorStepLabel) colorStepLabel.textContent = wheelMode ? 'Farbe per Slot' : 'Farbe wählen';
+        if(colorStepHint) colorStepHint.textContent = wheelMode ? (roomColorsAssigned ? (colorSlotsAnimating?'Slots drehen …':'Vom Server zugelost') : 'Vorher keine Farbe auswählen') : 'Jede Farbe nur einmal';
+
+        const res = latestPresence?.reservations || {};
+        const readyCount = Object.keys(res).length;
+        if(colorWheelReadyCount) colorWheelReadyCount.textContent = `${readyCount} Spieler bereit`;
+        if(colorWheelTitle){
+          colorWheelTitle.textContent = colorSlotsAnimating ? '🎰 Farb-Slots drehen gleichzeitig …' : (roomColorsAssigned ? 'Farben stehen fest!' : 'Farb-Slots bereit');
+        }
+        if(colorWheelStatus){
+          colorWheelStatus.textContent = colorSlotsAnimating
+            ? 'Der Server hat die Farben bereits eindeutig festgelegt. Die Slots zeigen jetzt für alle die Auslosung – danach darf das Spiel geöffnet werden.'
+            : roomColorsAssigned
+              ? 'Die Farben sind serverseitig festgelegt. Als Nächstes entscheidet im Spiel das Startspieler-Rad, wer beginnt.'
+              : (myWheelReservationReady ? 'Du bist bereit. Sobald mindestens zwei Spieler angemeldet sind, kann der Host alle Slots gleichzeitig starten.' : 'Wähle nur Name und Würfel und melde dich bereit. Vor der Auslosung besitzt niemand eine Spielfarbe.');
+        }
+        if(spinColorsBtn){
+          spinColorsBtn.style.display = wheelMode && isHostMode() ? '' : 'none';
+          spinColorsBtn.disabled = !wheelMode || !isHostMode() || readyCount < 2 || !myWheelReservationReady || colorSlotsAnimating;
+          spinColorsBtn.textContent = roomColorsAssigned ? '🎰 Neu auslosen' : '🎰 Farb-Slots starten';
+        }
+        if(colorSlotLive && !colorSlotsAnimating) colorSlotLive.textContent = roomColorsAssigned ? 'FARBEN FEST' : 'BEREIT';
+      }
+
+      function renderColorWheelResult(wheel){
+        if(!colorSlotReels) return;
+        const assignments = Array.isArray(wheel?.assignments) ? wheel.assignments : [];
+        const seq = Number(wheel?.seq||0);
+        const spunAt = Number(wheel?.spunAt||0);
+        const duration = Math.max(1200,Number(wheel?.durationMs||4600));
+        const revealAt = Number(wheel?.revealAt || (spunAt ? spunAt+duration : 0));
+        const serverNow = Number(latestPresence?.ts || Date.now());
+
+        if(!seq || !assignments.length){
+          colorSlotsAnimating=false;
+          wheelAnimatingSeq=0;
+          clearTimeout(colorSlotsRevealTimer);
+          renderSlotStandby();
+          return;
+        }
+
+        // Solange dieselbe Sequenz sichtbar läuft, darf das 700-ms-Polling die DOM-Reels
+        // nicht neu aufbauen. Nach Ablauf der Server-Reveal-Zeit wird sauber finalisiert.
+        if(seq===wheelAnimatingSeq && colorSlotsAnimating){
+          if(revealAt && serverNow>=revealAt){
+            clearTimeout(colorSlotsRevealTimer);
+            colorSlotsAnimating=false;
+            wheelAnimatingSeq=0;
+            renderSlotResults(assignments);
+            if(colorWheelTitle) colorWheelTitle.textContent='Farben stehen fest!';
+            if(colorWheelStatus) colorWheelStatus.textContent='Die Farben sind eindeutig verteilt. Als Nächstes folgt im Spiel das Rad für den Startspieler.';
+            refreshProfileSummary();
+          }
+          return;
+        }
+
+        // Bereits vollständig aufgedeckte ältere Sequenz: nur Ergebnis darstellen.
+        if((revealAt && serverNow>=revealAt) || (seq<=lastColorWheelSeq && !colorSlotsAnimating)){
+          lastColorWheelSeq=Math.max(lastColorWheelSeq,seq);
+          colorSlotsAnimating=false;
+          wheelAnimatingSeq=0;
+          renderSlotResults(assignments);
+          return;
+        }
+
+        lastColorWheelSeq=seq;
+        wheelAnimatingSeq=seq;
+        colorSlotsAnimating=true;
+        clearTimeout(colorSlotsRevealTimer);
+        colorSlotShell?.classList.add('is-spinning');
+        if(colorSlotLive) colorSlotLive.textContent='AUSLOSUNG';
+        if(colorWheelTitle) colorWheelTitle.textContent='🎰 Alle Farb-Slots drehen …';
+        if(colorWheelStatus) colorWheelStatus.textContent=`${assignments.length} Spieler · ${assignments.length} Slots · jede Farbe wird genau einmal vergeben.`;
+
+        colorSlotReels.style.setProperty('--slot-count',String(Math.max(2,Math.min(4,assignments.length))));
+        const cellCount=24;
+        colorSlotReels.innerHTML=assignments.map((a,index)=>{
+          const colors=deterministicSlotColors(seq,index,cellCount,String(a?.color||'red'));
+          const track=`<div class="slot-reel-track" data-slot-track="${index}">${colors.map(slotCellHtml).join('')}</div>`;
+          return slotCardShell(a?.nameKey||'Spieler',track,'⚡ WIRD AUSGELOST','is-spinning');
+        }).join('');
+
+        const elapsed = spunAt ? Math.max(0,serverNow-spunAt) : 0;
+        const remaining = Math.max(180, duration-elapsed);
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          colorSlotReels.querySelectorAll('[data-slot-track]').forEach(track=>{
+            const viewport=track.closest('.slot-reel-viewport');
+            const h=Math.max(1,viewport?.clientHeight||78);
+            const cells=track.children.length;
+            track.style.transition=`transform ${remaining}ms cubic-bezier(.08,.66,.10,1)`;
+            track.style.transform=`translateY(-${Math.max(0,cells-1)*h}px)`;
+          });
+        }));
+
+        colorSlotsRevealTimer=window.setTimeout(()=>{
+          if(wheelAnimatingSeq!==seq) return;
+          colorSlotsAnimating=false;
+          wheelAnimatingSeq=0;
+          renderSlotResults(assignments);
+          if(colorWheelTitle) colorWheelTitle.textContent='Farben stehen fest!';
+          if(colorWheelStatus) colorWheelStatus.textContent='Die Farben sind eindeutig verteilt. Als Nächstes folgt im Spiel das Rad für den Startspieler.';
+          // Sofort einen frischen Server-Snapshot holen, damit die eigene zugeloste
+          // Farbe ohne zusätzliches Polling freigegeben wird und „Spiel öffnen“ aktiv ist.
+          fetchPresence().then(fresh=>{ if(fresh) renderPresence(fresh); else refreshProfileSummary(); }).catch(()=>refreshProfileSummary());
+        },remaining+70);
       }
 
       const DICE_STYLES = new Set(['classic','neon','royal']);
@@ -1609,27 +1946,17 @@ function startPresencePoll(){
         }
         refreshProfileSummary();
       }
-      function setRequestedColor(color){
+      function setRequestedColor(color, silent=false){
         const c = String(color||"").toLowerCase().trim();
         if(!['red','blue','green','yellow'].includes(c)) return;
-        // global fallback + room-specific like game.js does
         try{ localStorage.setItem('barikade_requested_color', c); localStorage.setItem('barikade_color', c); }catch(_e){}
         const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || "");
-        if(r) {
-          try{ localStorage.setItem('barikade_requested_color_' + r, c); }catch(_e){}
-        }
-        colorPill.textContent = 'Farbe: ' + (c==='red'?'Rot':c==='blue'?'Blau':c==='green'?'Grün':'Gelb');
-        roomInp.addEventListener('keydown', (ev)=>{
-        if(ev.key === 'Enter'){
-          ev.preventDefault();
-          if(normRoom(roomInp.value)) joinBtn.click(); else hostMakeBtn.click();
-        }
-      });
-
-      document.querySelectorAll('[data-color]').forEach(btn=>{
+        if(r) { try{ localStorage.setItem('barikade_requested_color_' + r, c); }catch(_e){} }
+        colorPill.textContent = 'Farbe: ' + colorLabel(c);
+        document.querySelectorAll('[data-color]').forEach(btn=>{
           btn.classList.toggle('active', String(btn.getAttribute('data-color')||'').toLowerCase() === c);
         });
-        bumpPill(colorPill);
+        if(!silent) bumpPill(colorPill);
         refreshProfileSummary();
       }
 
@@ -1661,6 +1988,7 @@ function startPresencePoll(){
         roomInp.value = rc;
         setRoom(rc);
         setMode('host');
+        applyColorWheelUI();
         await ensureRoom(rc);
         toast('Host: Raum ' + rc);
         startPresencePoll();
@@ -1675,6 +2003,7 @@ function startPresencePoll(){
         if(!rc){ toast('Bitte Raumcode eingeben'); return; }
         setRoom(rc);
         setMode('client');
+        applyColorWheelUI();
         await ensureRoom(rc);
         toast('Client: Raum ' + rc);
         startPresencePoll();
@@ -1688,6 +2017,7 @@ function startPresencePoll(){
         btn.addEventListener('click', async ()=>{
           const rc = normRoom(roomInp.value);
           if(!rc){ toast('Erst Raum wählen/erstellen'); return; }
+          if(roomColorMode === 'wheel'){ toast('Die Farbe wird vom Farb-Automaten zugelost'); return; }
           setRoom(rc);
           setRequestedColor(btn.getAttribute('data-color'));
           toast('Wunschfarbe gespeichert');
@@ -1721,6 +2051,42 @@ function startPresencePoll(){
         });
       }
 
+      if(colorWheelToggle){
+        colorWheelToggle.addEventListener('change', async ()=>{
+          if(!isHostMode()){
+            colorWheelToggle.checked = roomColorMode === 'wheel';
+            toast('Nur der Host kann die Farbvergabe ändern');
+            return;
+          }
+          const wanted = colorWheelToggle.checked ? 'wheel' : 'manual';
+          const rr = await setServerColorMode(wanted);
+          if(!rr.ok){
+            colorWheelToggle.checked = roomColorMode === 'wheel';
+            toast(rr.error === 'PLAYERS_ALREADY_IN_GAME' ? 'Farbmodus kann nach Spieleintritt nicht mehr geändert werden' : 'Farbmodus konnte nicht geändert werden');
+            return;
+          }
+          if(wanted === 'wheel') clearRequestedColorForRoom();
+          toast(wanted === 'wheel' ? 'Farb-Slots aktiviert' : 'Manuelle Farbwahl aktiviert');
+        });
+      }
+
+      if(spinColorsBtn){
+        spinColorsBtn.addEventListener('click', async ()=>{
+          if(!isHostMode()){ toast('Nur der Host kann die Farb-Slots starten'); return; }
+          spinColorsBtn.disabled = true;
+          const rr = await spinServerColors();
+          if(!rr.ok){
+            applyColorWheelUI();
+            if(rr.error === 'NO_PLAYERS' || rr.error === 'NEED_2P') toast('Mindestens zwei Spieler müssen bereit sein');
+            else if(rr.error === 'COLOR_SLOTS_SPINNING') toast('Die Farb-Slots drehen bereits');
+            else if(rr.error === 'PLAYERS_ALREADY_IN_GAME') toast('Auslosung ist nach Spieleintritt gesperrt');
+            else toast('Farb-Slots konnten nicht gestartet werden');
+            return;
+          }
+          toast('Farb-Slots gestartet');
+        });
+      }
+
       jokerCountBtns.forEach(btn=>{
         btn.addEventListener('click', ()=>{
           if(!actionToggle.checked){ toast('Erst Action‑Modus aktivieren'); return; }
@@ -1737,6 +2103,7 @@ function startPresencePoll(){
       document.querySelectorAll('.names [data-name]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
           if(btn.disabled) return;
+          if(roomColorMode === 'wheel' && myWheelReservationReady){ toast('Du bist bereits für die Farb-Slots angemeldet'); return; }
           const nameKey = String(btn.getAttribute('data-name')||'').trim();
           if(!nameKey) return;
           setSelectedName(nameKey);
@@ -1762,6 +2129,13 @@ function startPresencePoll(){
         });
       }
 
+      roomInp.addEventListener('keydown', (ev)=>{
+        if(ev.key === 'Enter'){
+          ev.preventDefault();
+          if(normRoom(roomInp.value)) joinBtn.click(); else hostMakeBtn.click();
+        }
+      });
+
       roomInp.addEventListener('input', ()=>{
         const rc = normRoom(roomInp.value);
         if(roomInp.value !== rc) roomInp.value = rc;
@@ -1778,7 +2152,8 @@ function startPresencePoll(){
         if(!(mode === 'host' || mode === 'client')){ toast('Bitte erst Raum erstellen oder beitreten'); return; }
         if(!rc){ toast('Bitte Raumcode setzen'); return; }
         if(!nameKey){ toast('Bitte Spieler wählen'); return; }
-        if(!color){ toast('Bitte Farbe wählen'); return; }
+        if(roomColorMode !== 'wheel' && !color){ toast('Bitte Farbe wählen'); return; }
+        if(roomColorMode === 'wheel' && roomColorsAssigned && !color){ toast('Deine zugeloste Farbe ist noch nicht synchronisiert'); return; }
         if(actionToggle.checked && isHostMode() && !getSelectedJokerCount()){ toast('Host muss 1 bis 5 Joker wählen'); return; }
 
         readyBtn.disabled = true;
@@ -1790,10 +2165,22 @@ function startPresencePoll(){
           readyBtn.textContent = 'Bereit & Spiel öffnen';
           refreshProfileSummary();
           if(rr.error === 'COLOR_TAKEN') toast('Farbe ist schon belegt – wähle eine andere');
+          else if(rr.error === 'COLOR_SLOTS_SPINNING') toast('Die Farb-Slots drehen noch – bitte kurz warten');
           else if(rr.error === 'NO_ROOM') toast('Raum ist noch nicht erstellt – drücke Raum erstellen/Beitreten erneut');
           else if(rr.error === 'NET') toast('Server gerade nicht erreichbar');
           else toast('Spieler ist schon belegt – wähle einen anderen');
           const p = await fetchPresence(); renderPresence(p);
+          return;
+        }
+
+        if(roomColorMode === 'wheel' && !roomColorsAssigned){
+          localStorage.setItem('barikade_nameKey', nameKey);
+          localStorage.setItem('barikade_playerName', nameKey);
+          myWheelReservationReady = true;
+          readyBtn.textContent = 'Warte auf Farb-Slots …';
+          const p = await fetchPresence();
+          if(p) renderPresence(p);
+          toast('Bereit für die Farb-Slots');
           return;
         }
 
