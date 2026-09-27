@@ -4850,14 +4850,15 @@ function showEpicWin(winnerColor){
     if(getBoardThemeVisual()==="wood"){
       ctx.save();
 
-      // Holzbrett: echtes kleines Mauersegment statt rundem Symbol.
-      // Es sitzt wie ein physischer Spielstein auf dem Feld und bleibt kompakt genug für die Wege.
-      const w=r*1.62;
+      // Holzbrett V13.13: physisches Mauer-Spielteil mit Sockel, Ziegelreihen,
+      // Oberseite und rechter Seitenfläche. Keine Animation – nur Materialtiefe.
+      const w=r*1.68;
       const h=r*1.18;
+      const depth=Math.max(3,r*.16);
       const left=x-w/2;
       const top=y-h/2;
       const rowH=h/3;
-      const mortar=Math.max(1,r*.055);
+      const mortar=Math.max(1,r*.050);
       const rr=Math.max(2.2,r*.11);
       const roundRect=(rx,ry,rw,rh,rad)=>{
         ctx.beginPath();
@@ -4871,57 +4872,118 @@ function showEpicWin(winnerColor){
         }
       };
 
-      // Bodenschatten.
-      ctx.fillStyle="rgba(53,28,13,.34)";
-      ctx.beginPath();ctx.ellipse(x,y+h*.49,w*.53,h*.18,0,0,Math.PI*2);ctx.fill();
+      // Kontakt-/Bodenschatten lässt das Teil wirklich auf dem Brett stehen.
+      ctx.fillStyle="rgba(57,30,15,.32)";
+      ctx.beginPath();ctx.ellipse(x+depth*.25,y+h*.54,w*.56,h*.18,0,0,Math.PI*2);ctx.fill();
+
+      // Kleiner steinerner Sockel unter der Mauer.
+      const baseY=top+h-r*.03;
+      const base=ctx.createLinearGradient(left,baseY,left,baseY+r*.24);
+      base.addColorStop(0,"#7e5945");
+      base.addColorStop(.55,"#5e3c2d");
+      base.addColorStop(1,"#3b271e");
+      ctx.fillStyle=base;
+      ctx.shadowColor="rgba(48,25,13,.25)";
+      ctx.shadowBlur=Math.max(3,r*.22);
+      ctx.shadowOffsetY=Math.max(1,r*.08);
+      roundRect(left-r*.08,baseY,w+r*.22,Math.max(4,r*.23),rr*.65);ctx.fill();
+      ctx.shadowColor="transparent";
+      ctx.strokeStyle="rgba(255,225,199,.22)";
+      ctx.lineWidth=Math.max(.8,r*.025);
+      roundRect(left-r*.08,baseY,w+r*.22,Math.max(4,r*.23),rr*.65);ctx.stroke();
 
       // Dunkle Rückwand / Fuge um die gesamte Mauer.
-      ctx.shadowColor="rgba(54,28,12,.30)";
-      ctx.shadowBlur=Math.max(4,r*.30);
-      ctx.shadowOffsetY=Math.max(2,r*.12);
-      ctx.fillStyle="#5e201b";
-      roundRect(left-r*.08,top-r*.08,w+r*.16,h+r*.16,rr+r*.05);ctx.fill();
-      ctx.shadowColor="transparent";
+      ctx.fillStyle="#4a2822";
+      roundRect(left-r*.07,top-r*.05,w+r*.15,h+r*.08,rr+r*.03);ctx.fill();
 
+      // Rechte Seitenfläche: kleine 3D-Tiefe statt flacher Stickeroptik.
+      const side=ctx.createLinearGradient(left+w,top,left+w+depth,top+h);
+      side.addColorStop(0,"#98604e");
+      side.addColorStop(.55,"#6c4035");
+      side.addColorStop(1,"#462b26");
+      ctx.fillStyle=side;
+      ctx.beginPath();
+      ctx.moveTo(left+w,top+r*.05);
+      ctx.lineTo(left+w+depth,top+depth*.72);
+      ctx.lineTo(left+w+depth,top+h-depth*.18);
+      ctx.lineTo(left+w,top+h);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(65,19,20,.44)";
+      ctx.lineWidth=Math.max(.8,r*.025);ctx.stroke();
+
+      // Drei versetzte Ziegelreihen.
       const rows=[
-        [0.00,0.52,0.48],
-        [0.00,0.34,0.34,0.32],
-        [0.00,0.46,0.54]
+        [0.50,0.50],
+        [0.34,0.33,0.33],
+        [0.46,0.54]
       ];
       for(let row=0;row<3;row++){
         const widths=rows[row];
         let cursor=left;
         const bh=rowH-mortar;
-        for(let j=1;j<widths.length;j++){
+        for(let j=0;j<widths.length;j++){
           const bw=w*widths[j]-mortar;
           const bx=cursor+mortar*.5;
           const by=top+row*rowH+mortar*.5;
           const brick=ctx.createLinearGradient(bx,by,bx,by+bh);
-          brick.addColorStop(0,"#ff9a80");
-          brick.addColorStop(.24,"#e8614e");
-          brick.addColorStop(.72,"#b52f31");
-          brick.addColorStop(1,"#761d24");
+          brick.addColorStop(0,"#e5a18a");
+          brick.addColorStop(.20,"#cb765f");
+          brick.addColorStop(.66,"#9f5144");
+          brick.addColorStop(1,"#6d3933");
           ctx.fillStyle=brick;
           roundRect(bx,by,bw,bh,Math.min(rr,bh*.22));ctx.fill();
-          ctx.strokeStyle="rgba(84,19,22,.58)";
-          ctx.lineWidth=Math.max(.7,r*.025);
+
+          // Fuge + abgeschrägte Lichtkante pro Stein.
+          ctx.strokeStyle="rgba(75,45,38,.64)";
+          ctx.lineWidth=Math.max(.8,r*.027);
           roundRect(bx,by,bw,bh,Math.min(rr,bh*.22));ctx.stroke();
-          ctx.strokeStyle="rgba(255,225,210,.28)";
+          ctx.strokeStyle="rgba(255,232,211,.25)";
           ctx.lineWidth=Math.max(.7,r*.022);
-          ctx.beginPath();ctx.moveTo(bx+bw*.10,by+bh*.20);ctx.lineTo(bx+bw*.88,by+bh*.20);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(bx+bw*.09,by+bh*.20);ctx.lineTo(bx+bw*.88,by+bh*.20);ctx.stroke();
+          ctx.strokeStyle="rgba(243,210,190,.12)";
+          ctx.beginPath();ctx.moveTo(bx+bw*.10,by+bh*.78);ctx.lineTo(bx+bw*.82,by+bh*.78);ctx.stroke();
           cursor += w*widths[j];
         }
       }
 
-      // Oberkante / kleine Kappe erzeugt echte Mauer-Tiefe.
-      const cap=ctx.createLinearGradient(left,top-r*.10,left,top+r*.08);
-      cap.addColorStop(0,"#ffb29c");cap.addColorStop(1,"#a83431");
-      ctx.fillStyle=cap;
-      roundRect(left+r*.02,top-r*.10,w-r*.04,Math.max(3,r*.16),rr*.65);ctx.fill();
+      // Sichtbare Oberseite der Mauer – wie bei einem kleinen Modellbauteil.
+      const topFace=ctx.createLinearGradient(left,top-depth,left,top+r*.10);
+      topFace.addColorStop(0,"#edb6a0");
+      topFace.addColorStop(.52,"#c87963");
+      topFace.addColorStop(1,"#915044");
+      ctx.fillStyle=topFace;
+      ctx.beginPath();
+      ctx.moveTo(left+r*.05,top);
+      ctx.lineTo(left+w-r*.04,top);
+      ctx.lineTo(left+w+depth,top+depth*.72);
+      ctx.lineTo(left+depth*.75,top+depth*.72);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(255,237,222,.28)";
+      ctx.lineWidth=Math.max(.8,r*.025);ctx.stroke();
 
-      ctx.strokeStyle="rgba(255,238,219,.30)";
+      // Zwei feine Fugen auf der Oberseite für echte Steinwirkung.
+      ctx.strokeStyle="rgba(94,35,31,.32)";
+      ctx.lineWidth=Math.max(.7,r*.022);
+      for(const f of [.34,.67]){
+        const tx=left+w*f;
+        ctx.beginPath();ctx.moveTo(tx,top+.5);ctx.lineTo(tx+depth*.25,top+depth*.55);ctx.stroke();
+      }
+
+      // Äußere ruhige Lichtkante.
+      ctx.strokeStyle="rgba(255,238,219,.22)";
       ctx.lineWidth=Math.max(1,r*.035);
-      roundRect(left-r*.02,top-r*.02,w+r*.04,h+r*.04,rr);ctx.stroke();
+      roundRect(left-r*.015,top-r*.01,w+r*.02,h+r*.02,rr);ctx.stroke();
+
+      // Zwei kleine Messingbolzen verknüpfen die Mauer optisch mit den übrigen Premium-Spielteilen.
+      for(const bx of [left+w*.20,left+w*.80]){
+        const by=baseY+r*.115;
+        const pr=Math.max(1.8,r*.065);
+        const stud=ctx.createRadialGradient(bx-pr*.35,by-pr*.38,pr*.10,bx,by,pr);
+        stud.addColorStop(0,"#fff0b7");stud.addColorStop(.32,"#d4aa59");stud.addColorStop(.72,"#946329");stud.addColorStop(1,"#5a351b");
+        ctx.fillStyle=stud;ctx.beginPath();ctx.arc(bx,by,pr,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="rgba(70,39,20,.48)";ctx.lineWidth=Math.max(.6,r*.018);
+        ctx.beginPath();ctx.arc(bx,by,pr,0,Math.PI*2);ctx.stroke();
+      }
       ctx.restore();
       return;
     }
@@ -5210,28 +5272,32 @@ function showEpicWin(winnerColor){
     const radius=Math.max(18,Math.min(38,22*view.s));
 
     ctx.save();
-    // Brettschatten: lässt die Spielfläche wie eine echte Platte über dem Tisch liegen.
+    // Brettschatten: echte, massive Brettplatte über dunklem Untergrund.
     ctx.shadowColor="rgba(0,0,0,.48)";
     ctx.shadowBlur=Math.max(18,30*view.s);
     ctx.shadowOffsetY=Math.max(7,12*view.s);
     const outer=ctx.createLinearGradient(br.x,br.y,br.x,br.y+br.h);
-    outer.addColorStop(0,"#81512f");
-    outer.addColorStop(.28,"#664025");
+    outer.addColorStop(0,"#855434");
+    outer.addColorStop(.26,"#684126");
     outer.addColorStop(.72,"#4b2d1a");
-    outer.addColorStop(1,"#382113");
+    outer.addColorStop(1,"#352012");
     ctx.fillStyle=outer;
     boardRoundRectPath(br.x,br.y,br.w,br.h,radius);
     ctx.fill();
     ctx.shadowColor="transparent";
 
-    // Dunkler massiver Holzrahmen.
+    // Rahmen mit leichter Fase und warmer Lichtkante.
     ctx.lineWidth=Math.max(8,14*view.s);
     ctx.strokeStyle="rgba(69,38,20,.98)";
     boardRoundRectPath(br.x+4,br.y+4,br.w-8,br.h-8,Math.max(14,radius-3));
     ctx.stroke();
     ctx.lineWidth=Math.max(2,3.4*view.s);
-    ctx.strokeStyle="rgba(222,164,102,.58)";
+    ctx.strokeStyle="rgba(226,170,104,.56)";
     boardRoundRectPath(br.x+9,br.y+9,br.w-18,br.h-18,Math.max(12,radius-7));
+    ctx.stroke();
+    ctx.lineWidth=Math.max(1.1,1.6*view.s);
+    ctx.strokeStyle="rgba(255,235,198,.30)";
+    boardRoundRectPath(br.x+13,br.y+12,br.w-26,br.h-24,Math.max(10,radius-10));
     ctx.stroke();
 
     // Helle Ahorn-/Buchenfläche.
@@ -5239,11 +5305,11 @@ function showEpicWin(winnerColor){
     const ix=br.x+inset, iy=br.y+inset, iw=br.w-inset*2, ih=br.h-inset*2;
     const innerRadius=Math.max(12,radius-inset*.42);
     const wood=ctx.createLinearGradient(ix,iy,ix+iw,iy+ih*.22);
-    wood.addColorStop(0,"#e8c58f");
-    wood.addColorStop(.22,"#f1d6a4");
-    wood.addColorStop(.48,"#dfb97d");
-    wood.addColorStop(.72,"#efd09b");
-    wood.addColorStop(1,"#d6aa70");
+    wood.addColorStop(0,"#ead0a0");
+    wood.addColorStop(.22,"#f3ddb1");
+    wood.addColorStop(.48,"#dfbb82");
+    wood.addColorStop(.72,"#efd4a4");
+    wood.addColorStop(1,"#d6ac72");
     ctx.fillStyle=wood;
     boardRoundRectPath(ix,iy,iw,ih,innerRadius);
     ctx.fill();
@@ -5277,14 +5343,52 @@ function showEpicWin(winnerColor){
       ctx.beginPath();ctx.ellipse(kx,ky,Math.max(12,rx),Math.max(5,ry),-.08,0,Math.PI*2);ctx.stroke();
       ctx.beginPath();ctx.ellipse(kx+3,ky,Math.max(7,rx*.62),Math.max(3,ry*.58),-.08,0,Math.PI*2);ctx.stroke();
     }
+
+    // Sehr dezente Planken-/Segment-Andeutung, damit das Brett noch mehr wie ein echtes Spielbrett wirkt.
+    ctx.strokeStyle="rgba(132,82,39,.060)";
+    ctx.lineWidth=Math.max(1,1.15*view.s);
+    for(const f of [.25,.50,.75]){
+      const yy=iy+ih*f;
+      ctx.beginPath();ctx.moveTo(ix+16,yy);ctx.lineTo(ix+iw-16,yy);ctx.stroke();
+    }
+
     // Sanfte Lichtlasur von oben links.
     const sheen=ctx.createLinearGradient(ix,iy,ix,iy+ih);
-    sheen.addColorStop(0,"rgba(255,249,225,.20)");
+    sheen.addColorStop(0,"rgba(255,249,225,.22)");
     sheen.addColorStop(.45,"rgba(255,255,255,.035)");
     sheen.addColorStop(1,"rgba(83,47,22,.10)");
     ctx.fillStyle=sheen;
     ctx.fillRect(ix,iy,iw,ih);
+    // Ruhige Gegenlicht-Lasur von unten für Tiefe.
+    const lower=ctx.createLinearGradient(ix,iy,ix,iy+ih);
+    lower.addColorStop(0,"rgba(255,255,255,0)");
+    lower.addColorStop(.72,"rgba(121,71,34,.03)");
+    lower.addColorStop(1,"rgba(82,48,25,.10)");
+    ctx.fillStyle=lower;
+    ctx.fillRect(ix,iy,iw,ih);
     ctx.restore();
+
+    // Kleine feste Messing-Pins in den Brett-Ecken – ruhig, hochwertig, nicht verspielt.
+    const pins=[
+      [ix+iw*.055, iy+ih*.065], [ix+iw*.945, iy+ih*.065],
+      [ix+iw*.055, iy+ih*.935], [ix+iw*.945, iy+ih*.935]
+    ];
+    for(const [px,py] of pins){
+      const pr=Math.max(3,3.7*view.s);
+      const pin=ctx.createRadialGradient(px-pr*.35,py-pr*.45,pr*.12,px,py,pr*1.08);
+      pin.addColorStop(0,"#fff6cc");
+      pin.addColorStop(.35,"#e9c670");
+      pin.addColorStop(.78,"#a96f2f");
+      pin.addColorStop(1,"#724018");
+      ctx.fillStyle=pin;
+      ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(90,50,23,.42)";
+      ctx.lineWidth=Math.max(.8,pr*.20);
+      ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="rgba(255,243,200,.46)";
+      ctx.lineWidth=Math.max(.7,pr*.11);
+      ctx.beginPath();ctx.arc(px,py,pr*.58,Math.PI*1.04,Math.PI*1.82);ctx.stroke();
+    }
 
     // Innenkante erzeugt den Eindruck einer echten gerahmten Brettplatte.
     ctx.lineWidth=Math.max(1.5,2.4*view.s);
@@ -5298,36 +5402,115 @@ function showEpicWin(winnerColor){
     ctx.restore();
   }
 
+  function drawWoodHouseSocket(x,y,r,color,slot){
+    ctx.save();
+    const col=color || "#ffffff";
+
+    // Farbige eingelassene Aufnahme statt aufgesetzter Scheibe.
+    ctx.fillStyle="rgba(73,42,22,.48)";
+    ctx.beginPath();ctx.arc(x,y,r*1.04,0,Math.PI*2);ctx.fill();
+
+    // Äußerer lackierter Farbring.
+    const rim=ctx.createRadialGradient(x-r*.30,y-r*.34,r*.06,x,y,r*1.02);
+    rim.addColorStop(0,"rgba(255,255,255,.72)");
+    rim.addColorStop(.20,col);
+    rim.addColorStop(.68,col);
+    rim.addColorStop(1,"rgba(38,25,20,.72)");
+    ctx.fillStyle=rim;
+    ctx.beginPath();ctx.arc(x,y,r*.94,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(64,39,25,.86)";
+    ctx.lineWidth=Math.max(2,r*.10);
+    ctx.beginPath();ctx.arc(x,y,r*.96,0,Math.PI*2);ctx.stroke();
+
+    // Messingfarbene schmale Einfassung verbindet Farbe und Holzbrett.
+    ctx.strokeStyle="rgba(231,192,111,.70)";
+    ctx.lineWidth=Math.max(1,r*.045);
+    ctx.beginPath();ctx.arc(x,y,r*.79,0,Math.PI*2);ctx.stroke();
+
+    // Holzboden in der Aufnahme – die Figur sitzt später genau darüber.
+    const inner=r*.60;
+    const well=ctx.createRadialGradient(x-r*.18,y-r*.22,r*.04,x,y,inner*1.08);
+    well.addColorStop(0,"#e9ca98");
+    well.addColorStop(.46,"#c99457");
+    well.addColorStop(1,"#784a29");
+    ctx.fillStyle=well;
+    ctx.beginPath();ctx.arc(x,y,inner,0,Math.PI*2);ctx.fill();
+
+    // Eingelassener Schatten oben/links und Lichtkante unten/rechts.
+    ctx.strokeStyle="rgba(61,35,20,.54)";
+    ctx.lineWidth=Math.max(1.2,r*.065);
+    ctx.beginPath();ctx.arc(x,y,inner*.96,Math.PI*1.03,Math.PI*1.84);ctx.stroke();
+    ctx.strokeStyle="rgba(255,234,195,.48)";
+    ctx.lineWidth=Math.max(.9,r*.042);
+    ctx.beginPath();ctx.arc(x,y,inner*.94,Math.PI*.06,Math.PI*.82);ctx.stroke();
+
+    // Slotnummer dezent wie eine Gravur; wird durch eine vorhandene Figur verdeckt.
+    if(slot){
+      ctx.fillStyle="rgba(83,47,25,.60)";
+      ctx.font=`800 ${Math.max(9,Math.round(r*.48))}px system-ui`;
+      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(String(slot),x,y+0.5);
+      ctx.strokeStyle="rgba(255,234,195,.22)";
+      ctx.lineWidth=.8;
+      ctx.strokeText(String(slot),x,y+0.5);
+    }
+
+    // Ruhiger Lackreflex oben links, statisch.
+    ctx.strokeStyle="rgba(255,255,255,.28)";
+    ctx.lineWidth=Math.max(1,r*.04);
+    ctx.beginPath();ctx.arc(x,y,r*.83,Math.PI*1.08,Math.PI*1.72);ctx.stroke();
+    ctx.restore();
+  }
+
   function drawWoodFieldWell(x,y,r){
     ctx.save();
 
-    // Äußere Vertiefung: dunkler Rand wirkt wie ins Holz gefräst.
-    ctx.shadowColor="rgba(58,31,13,.20)";
+    // Äußere Fräsung / Fase – das Feld wirkt wie sauber ins Brett eingearbeitet.
+    const outer=r;
+    ctx.shadowColor="rgba(58,31,13,.18)";
     ctx.shadowBlur=Math.max(2.5,r*.16);
     ctx.shadowOffsetY=Math.max(1,r*.07);
-    ctx.fillStyle="rgba(104,61,27,.56)";
-    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    const rim=ctx.createRadialGradient(x-r*.22,y-r*.28,r*.06,x,y,outer*1.02);
+    rim.addColorStop(0,"rgba(173,120,67,.72)");
+    rim.addColorStop(.45,"rgba(126,76,40,.72)");
+    rim.addColorStop(1,"rgba(88,49,24,.82)");
+    ctx.fillStyle=rim;
+    ctx.beginPath();ctx.arc(x,y,outer,0,Math.PI*2);ctx.fill();
     ctx.shadowColor="transparent";
 
-    // Innere Holzfläche liegt sichtbar etwas tiefer.
-    const ir=r*.82;
-    const well=ctx.createRadialGradient(x-r*.24,y-r*.28,r*.06,x,y,ir*1.08);
-    well.addColorStop(0,"#e8c58e");
-    well.addColorStop(.36,"#d4a66a");
-    well.addColorStop(.72,"#b77f43");
-    well.addColorStop(1,"#825229");
+    // Schmale innere Lichtkante auf der oberen Brettkante.
+    ctx.strokeStyle="rgba(255,231,188,.28)";
+    ctx.lineWidth=Math.max(1,r*.05);
+    ctx.beginPath();ctx.arc(x,y,outer*.95,Math.PI*1.08,Math.PI*1.82);ctx.stroke();
+
+    // Innere Holzmulde.
+    const ir=r*.80;
+    const well=ctx.createRadialGradient(x-r*.25,y-r*.30,r*.05,x,y,ir*1.08);
+    well.addColorStop(0,"#edcd98");
+    well.addColorStop(.30,"#d7ac74");
+    well.addColorStop(.68,"#b77f43");
+    well.addColorStop(1,"#804f29");
     ctx.fillStyle=well;
     ctx.beginPath();ctx.arc(x,y,ir,0,Math.PI*2);ctx.fill();
 
-    // Innen-Schatten oben/links – statisch, keine Animation.
-    ctx.strokeStyle="rgba(70,37,16,.50)";
+    // Dezenter Einsink-Schatten links/oben.
+    ctx.strokeStyle="rgba(70,37,16,.52)";
     ctx.lineWidth=Math.max(1.5,r*.105);
     ctx.beginPath();ctx.arc(x,y,ir*.95,Math.PI*1.03,Math.PI*1.86);ctx.stroke();
 
     // Lichtkante unten/rechts vermittelt Tiefe wie bei einer echten Mulde.
-    ctx.strokeStyle="rgba(255,235,197,.53)";
+    ctx.strokeStyle="rgba(255,236,202,.56)";
     ctx.lineWidth=Math.max(1,r*.065);
-    ctx.beginPath();ctx.arc(x,y,ir*.93,Math.PI*.05,Math.PI*.83);ctx.stroke();
+    ctx.beginPath();ctx.arc(x,y,ir*.93,Math.PI*.07,Math.PI*.84);ctx.stroke();
+
+    // Zentraler „Boden“ etwas glatter und minimal heller – schöner als reine Kugeloptik.
+    const baseR=ir*.52;
+    const base=ctx.createRadialGradient(x-r*.12,y-r*.16,r*.02,x,y,baseR);
+    base.addColorStop(0,"rgba(251,221,171,.66)");
+    base.addColorStop(.55,"rgba(222,181,122,.26)");
+    base.addColorStop(1,"rgba(179,122,67,0)");
+    ctx.fillStyle=base;
+    ctx.beginPath();ctx.arc(x,y,baseR,0,Math.PI*2);ctx.fill();
 
     // Sehr dezente Holzmaserung in der Mulde.
     ctx.save();
@@ -5341,6 +5524,10 @@ function showEpicWin(winnerColor){
       ctx.bezierCurveTo(x-ir*.35,yy-1.8,x+ir*.25,yy+2.2,x+ir,yy-.8);
       ctx.stroke();
     }
+    // feiner Ring am Muldenboden – wirkt wie ein sauber gefräster Abschluss.
+    ctx.strokeStyle="rgba(118,72,35,.12)";
+    ctx.lineWidth=Math.max(.7,r*.022);
+    ctx.beginPath();ctx.arc(x,y,ir*.40,0,Math.PI*2);ctx.stroke();
     ctx.restore();
     ctx.restore();
   }
@@ -5398,13 +5585,43 @@ function showEpicWin(winnerColor){
       const sa=worldToScreen(a), sb=worldToScreen(b);
 
       if(useWoodBoard){
+        // Holzbrett V13.13: gefräste Verbindung statt einfacher Linie.
+        // Drei ruhige Schichten ergeben Tiefe: Schattenkante, Nutboden, Lichtkante.
+        const dx=sb.x-sa.x, dy=sb.y-sa.y;
+        const len=Math.max(1,Math.hypot(dx,dy));
+        const nx=-dy/len, ny=dx/len;
+
+        // Äußerer Fräs-Schatten.
         ctx.shadowColor="transparent";
-        ctx.strokeStyle="rgba(82,47,22,.48)";
-        ctx.lineWidth=Math.max(4.8,6.4*view.s);
+        ctx.strokeStyle="rgba(72,40,20,.42)";
+        ctx.lineWidth=Math.max(5.4,7.0*view.s);
         ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
-        ctx.strokeStyle="rgba(241,207,158,.44)";
-        ctx.lineWidth=Math.max(1.2,1.7*view.s);
-        ctx.beginPath();ctx.moveTo(sa.x,sa.y+1.1);ctx.lineTo(sb.x,sb.y+1.1);ctx.stroke();
+
+        // Boden der gefrästen Nut mit leichter Holzvariation entlang der Strecke.
+        const groove=ctx.createLinearGradient(sa.x,sa.y,sb.x,sb.y);
+        groove.addColorStop(0,"rgba(151,101,55,.62)");
+        groove.addColorStop(.48,"rgba(126,78,40,.66)");
+        groove.addColorStop(1,"rgba(154,103,57,.60)");
+        ctx.strokeStyle=groove;
+        ctx.lineWidth=Math.max(3.0,4.0*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+
+        // Lichtkante auf einer festen Seite der Nut – kein Animations-/Blinkeffekt.
+        const off=Math.max(.65,1.0*view.s);
+        ctx.strokeStyle="rgba(248,220,177,.38)";
+        ctx.lineWidth=Math.max(.9,1.25*view.s);
+        ctx.beginPath();
+        ctx.moveTo(sa.x+nx*off,sa.y+ny*off);
+        ctx.lineTo(sb.x+nx*off,sb.y+ny*off);
+        ctx.stroke();
+
+        // Gegenkante macht die Fräsung auch auf sehr hellem Holz lesbar.
+        ctx.strokeStyle="rgba(74,41,20,.20)";
+        ctx.lineWidth=Math.max(.7,.95*view.s);
+        ctx.beginPath();
+        ctx.moveTo(sa.x-nx*off,sa.y-ny*off);
+        ctx.lineTo(sb.x-nx*off,sb.y-ny*off);
+        ctx.stroke();
       }else{
         // Originaler dunkler Brettstil.
         ctx.shadowColor="transparent";
@@ -5468,8 +5685,10 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         fill=COLORS[n.flags?.houseColor]||COLORS.node;
       }
 
-      // Holzbrett: normale Lauf-Felder als Mulden. Klassik: exakt die bisherigen Spielscheiben.
+      // Holzbrett: normale Lauf-Felder als Mulden und Häuser als eingelassene Farb-Aufnahmen.
+      // Klassik bleibt exakt beim bisherigen Scheiben-Look.
       if(useWoodBoard && n.kind==="board" && n.id!==goalNodeId) drawWoodFieldWell(s.x,s.y,r);
+      else if(useWoodBoard && n.kind==="house") drawWoodHouseSocket(s.x,s.y,r,fill,n.flags?.houseSlot);
       else drawClassicFieldTile(s.x,s.y,r,fill);
 
       const bossEventFieldIds = Array.isArray(state?.boss?.eventFields)
@@ -5480,25 +5699,45 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         // kein Pulsieren, kein Blinken und keine dauerhaft laufende Animation.
         ctx.save();
         if(useWoodBoard){
-          // Holzbrett: eingelassenes mystisches Medaillon mit Messing-/Violett-Rand.
-          ctx.fillStyle="rgba(73,42,24,.42)";
-          ctx.beginPath();ctx.arc(s.x,s.y,r+7,0,Math.PI*2);ctx.fill();
+          // Holzbrett V13.14: einheitliches Premium-Medaillon – dunkle Holzfräsung,
+          // gealtertes Messing und violettes Emaille. Komplett statisch.
+          ctx.fillStyle="rgba(67,39,23,.48)";
+          ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.fill();
 
-          const eg=ctx.createRadialGradient(s.x-r*.24,s.y-r*.30,r*.06,s.x,s.y,r*.92);
-          eg.addColorStop(0,"#9b73ba");
-          eg.addColorStop(.38,"#76508f");
-          eg.addColorStop(.76,"#4e315f");
-          eg.addColorStop(1,"#2b1d32");
-          ctx.fillStyle=eg;
-          ctx.beginPath();ctx.arc(s.x,s.y,r*.88,0,Math.PI*2);ctx.fill();
-
-          ctx.strokeStyle="rgba(103,57,26,.74)";ctx.lineWidth=Math.max(3,r*.16);
+          ctx.strokeStyle="rgba(74,43,24,.82)";ctx.lineWidth=Math.max(4,r*.19);
           ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
-          ctx.strokeStyle="rgba(232,194,122,.82)";ctx.lineWidth=Math.max(1.5,r*.075);
+          ctx.strokeStyle="rgba(244,214,166,.20)";ctx.lineWidth=Math.max(1,r*.045);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+6,Math.PI*1.04,Math.PI*1.80);ctx.stroke();
+
+          const brass=ctx.createRadialGradient(s.x-r*.28,s.y-r*.32,r*.05,s.x,s.y,r+3);
+          brass.addColorStop(0,"#fff0b7");
+          brass.addColorStop(.28,"#d4aa59");
+          brass.addColorStop(.68,"#946329");
+          brass.addColorStop(1,"#5a351b");
+          ctx.strokeStyle=brass;ctx.lineWidth=Math.max(2.2,r*.105);
           ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
-          ctx.strokeStyle="rgba(225,198,238,.62)";ctx.lineWidth=Math.max(1,r*.055);
-          ctx.beginPath();ctx.arc(s.x,s.y,r*.73,Math.PI*1.04,Math.PI*1.82);ctx.stroke();
-          ctx.fillStyle="rgba(250,237,255,.98)";
+
+          const eg=ctx.createRadialGradient(s.x-r*.24,s.y-r*.29,r*.05,s.x,s.y,r*.91);
+          eg.addColorStop(0,"#b68bc7");
+          eg.addColorStop(.30,"#805b91");
+          eg.addColorStop(.72,"#51375d");
+          eg.addColorStop(1,"#2a1f30");
+          ctx.fillStyle=eg;
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.84,0,Math.PI*2);ctx.fill();
+
+          ctx.strokeStyle="rgba(216,179,100,.58)";ctx.lineWidth=Math.max(1,r*.042);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.70,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle="rgba(234,199,126,.88)";
+          for(let k=0;k<4;k++){
+            const a=-Math.PI/2+k*Math.PI/2;
+            const px=s.x+Math.cos(a)*r*.66, py=s.y+Math.sin(a)*r*.66;
+            ctx.save();ctx.translate(px,py);ctx.rotate(a+Math.PI/4);
+            ctx.fillRect(-Math.max(1.4,r*.050),-Math.max(1.4,r*.050),Math.max(2.8,r*.10),Math.max(2.8,r*.10));
+            ctx.restore();
+          }
+          ctx.strokeStyle="rgba(242,226,247,.42)";ctx.lineWidth=Math.max(1,r*.042);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.61,Math.PI*1.05,Math.PI*1.78);ctx.stroke();
+          ctx.fillStyle="rgba(255,247,255,.98)";
         }else{
           ctx.shadowColor="rgba(180,110,255,.46)";
           ctx.shadowBlur=12;
@@ -5526,16 +5765,55 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       // Visual-only goal treatment: stronger hierarchy without changing hitboxes or rules.
       if(n.kind==="board" && n.id===goalNodeId){
         ctx.save();
-        ctx.shadowColor="rgba(255,190,76,0.48)";
-        ctx.shadowBlur=20;
-        ctx.strokeStyle="rgba(255,211,118,0.86)";
-        ctx.lineWidth=3;
-        ctx.beginPath(); ctx.arc(s.x,s.y,r+6,0,Math.PI*2); ctx.stroke();
-        ctx.shadowColor="transparent";
-        ctx.strokeStyle="rgba(255,240,196,0.42)";
-        ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.arc(s.x,s.y,r+10,0,Math.PI*2); ctx.stroke();
-        ctx.fillStyle="rgba(255,213,120,0.88)";
+        if(useWoodBoard){
+          // Holzbrett V13.14: Zielmedaillon aus derselben Messingfassung,
+          // aber mit hellem Elfenbein-Emaille für eine klare Zielhierarchie.
+          ctx.fillStyle="rgba(67,39,23,.46)";
+          ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(74,43,24,.82)";ctx.lineWidth=Math.max(4,r*.19);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+
+          const goalBrass=ctx.createRadialGradient(s.x-r*.28,s.y-r*.32,r*.05,s.x,s.y,r+3);
+          goalBrass.addColorStop(0,"#fff0b7");
+          goalBrass.addColorStop(.28,"#d4aa59");
+          goalBrass.addColorStop(.68,"#946329");
+          goalBrass.addColorStop(1,"#5a351b");
+          ctx.strokeStyle=goalBrass;ctx.lineWidth=Math.max(2.2,r*.105);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
+
+          const gg=ctx.createRadialGradient(s.x-r*.24,s.y-r*.28,r*.05,s.x,s.y,r*.91);
+          gg.addColorStop(0,"#fff8dd");
+          gg.addColorStop(.34,"#f1ddb0");
+          gg.addColorStop(.72,"#d4b16a");
+          gg.addColorStop(1,"#9b6e31");
+          ctx.fillStyle=gg;
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.84,0,Math.PI*2);ctx.fill();
+
+          ctx.strokeStyle="rgba(167,111,42,.44)";ctx.lineWidth=Math.max(.9,r*.038);
+          for(let k=0;k<8;k++){
+            const a=(Math.PI*2/8)*k;
+            ctx.beginPath();
+            ctx.moveTo(s.x+Math.cos(a)*(r*.62),s.y+Math.sin(a)*(r*.62));
+            ctx.lineTo(s.x+Math.cos(a)*(r*.73),s.y+Math.sin(a)*(r*.73));
+            ctx.stroke();
+          }
+          ctx.strokeStyle="rgba(223,185,103,.58)";ctx.lineWidth=Math.max(1,r*.042);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.62,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle="rgba(255,249,227,.48)";ctx.lineWidth=Math.max(1,r*.040);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.69,Math.PI*1.04,Math.PI*1.80);ctx.stroke();
+          ctx.fillStyle="rgba(117,74,24,.98)";
+        }else{
+          ctx.shadowColor="rgba(255,190,76,0.48)";
+          ctx.shadowBlur=20;
+          ctx.strokeStyle="rgba(255,211,118,0.86)";
+          ctx.lineWidth=3;
+          ctx.beginPath(); ctx.arc(s.x,s.y,r+6,0,Math.PI*2); ctx.stroke();
+          ctx.shadowColor="transparent";
+          ctx.strokeStyle="rgba(255,240,196,0.42)";
+          ctx.lineWidth=1.5;
+          ctx.beginPath(); ctx.arc(s.x,s.y,r+10,0,Math.PI*2); ctx.stroke();
+          ctx.fillStyle="rgba(255,213,120,0.88)";
+        }
         ctx.font=`900 ${Math.max(13,Math.round(r*0.72))}px system-ui`;
         ctx.textAlign="center";ctx.textBaseline="middle";
         ctx.fillText("★",s.x,s.y+0.5);
@@ -5543,12 +5821,15 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       }
 
       if(n.kind==="house" && n.flags?.houseSlot){
-        ctx.fillStyle="rgba(0,0,0,0.55)";
-        ctx.beginPath(); ctx.arc(s.x,s.y,r*0.55,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle="rgba(230,237,243,0.95)";
-        ctx.font="bold 13px system-ui";
-        ctx.textAlign="center"; ctx.textBaseline="middle";
-        ctx.fillText(String(n.flags.houseSlot), s.x, s.y);
+        if(!useWoodBoard){
+          // Klassisches Brett: bisherige dunkle Slotnummer unverändert.
+          ctx.fillStyle="rgba(0,0,0,0.55)";
+          ctx.beginPath(); ctx.arc(s.x,s.y,r*0.55,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle="rgba(230,237,243,0.95)";
+          ctx.font="bold 13px system-ui";
+          ctx.textAlign="center"; ctx.textBaseline="middle";
+          ctx.fillText(String(n.flags.houseSlot), s.x, s.y);
+        }
         if(hasState) drawHousePieces(n, s.x, s.y, r);
 
         if(hasState && selected && n.flags && n.flags.houseColor===selected.color && Number(n.flags.houseSlot)===selected.index+1){
@@ -5583,12 +5864,12 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
 
           // Messing-/Holzfassung.
           const rim=ctx.createRadialGradient(ss.x-br*.28,ss.y-br*.30,br*.08,ss.x,ss.y,br*1.12);
-          rim.addColorStop(0,"#f2d18c");rim.addColorStop(.28,"#a66d34");rim.addColorStop(.72,"#6f3f22");rim.addColorStop(1,"#3c2116");
+          rim.addColorStop(0,"#fff0b7");rim.addColorStop(.28,"#d4aa59");rim.addColorStop(.68,"#946329");rim.addColorStop(1,"#5a351b");
           ctx.fillStyle=rim;
           ctx.beginPath();ctx.arc(ss.x,ss.y,br+7,0,Math.PI*2);ctx.fill();
 
           // Acht feste Runen-Zacken – keine Bewegung.
-          ctx.fillStyle=boss?"rgba(137,37,49,.94)":"rgba(91,58,116,.90)";
+          ctx.fillStyle=boss?"rgba(123,52,61,.94)":"rgba(83,59,101,.92)";
           for(let k=0;k<8;k++){
             const a=(Math.PI*2/8)*k-Math.PI/2;
             const a2=a+.17, a3=a-.17;
@@ -5601,19 +5882,33 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
           }
 
           const pg=ctx.createRadialGradient(ss.x-br*.28,ss.y-br*.33,br*.07,ss.x,ss.y,br*1.02);
-          pg.addColorStop(0,boss?"#873343":"#79558e");
-          pg.addColorStop(.42,boss?"#51202c":"#523861");
-          pg.addColorStop(1,"#211820");
+          pg.addColorStop(0,boss?"#8a4851":"#846791");
+          pg.addColorStop(.42,boss?"#5c3038":"#55405f");
+          pg.addColorStop(1,"#241c25");
           ctx.fillStyle=pg;
-          ctx.strokeStyle=boss?"rgba(226,116,129,.92)":"rgba(199,165,216,.90)";
+          ctx.strokeStyle=boss?"rgba(214,137,143,.88)":"rgba(196,169,207,.86)";
           ctx.lineWidth=Math.max(2.4,r*.13);
           ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();ctx.stroke();
 
-          ctx.strokeStyle="rgba(247,223,178,.40)";ctx.lineWidth=Math.max(1,r*.05);
+          ctx.strokeStyle="rgba(245,221,174,.38)";ctx.lineWidth=Math.max(1,r*.05);
           ctx.beginPath();ctx.arc(ss.x,ss.y,br*.84,Math.PI*1.04,Math.PI*1.84);ctx.stroke();
+          ctx.strokeStyle="rgba(216,179,100,.46)";ctx.lineWidth=Math.max(1,r*.038);
+          ctx.beginPath();ctx.arc(ss.x,ss.y,br*.78,0,Math.PI*2);ctx.stroke();
+
+          // Feste Gravurstriche im Portalring. Keine Rotation, kein Pulsieren.
+          ctx.strokeStyle="rgba(216,179,100,.58)";
+          ctx.lineWidth=Math.max(1,r*.038);
+          for(let k=0;k<8;k++){
+            const a=(Math.PI*2/8)*k-Math.PI/2;
+            const r1=br*.91, r2=br*1.02;
+            ctx.beginPath();
+            ctx.moveTo(ss.x+Math.cos(a)*r1,ss.y+Math.sin(a)*r1);
+            ctx.lineTo(ss.x+Math.cos(a)*r2,ss.y+Math.sin(a)*r2);
+            ctx.stroke();
+          }
 
           // Kleine feste Hörner machen das Bossfeld sofort erkennbar.
-          ctx.fillStyle=boss?"#c65062":"#9d75ae";
+          ctx.fillStyle=boss?"#a95d65":"#8f719b";
           ctx.beginPath();ctx.moveTo(ss.x-br*.45,ss.y-br*.60);ctx.lineTo(ss.x-br*.17,ss.y-br*.94);ctx.lineTo(ss.x-br*.03,ss.y-br*.54);ctx.closePath();ctx.fill();
           ctx.beginPath();ctx.moveTo(ss.x+br*.45,ss.y-br*.60);ctx.lineTo(ss.x+br*.17,ss.y-br*.94);ctx.lineTo(ss.x+br*.03,ss.y-br*.54);ctx.closePath();ctx.fill();
 
@@ -5625,7 +5920,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
           ctx.fillStyle=boss?"rgba(255,215,215,.96)":"rgba(242,226,246,.94)";
           ctx.fillText(bossAtPortal?"1/1 LEBEN":(boss?"IM SPIEL":`BOSSFELD ${i+1}`),ss.x,ss.y+br*.58);
           ctx.font=`900 ${Math.max(9,Math.round(br*.22))}px system-ui`;
-          ctx.fillStyle=boss?"#b43f52":"#785288";
+          ctx.fillStyle=boss?"#8e4c55":"#70547b";
           ctx.fillText(bossAtPortal?"BOSS START":(boss?"PORTAL":"BOSS"),ss.x,ss.y-br-13);
           ctx.restore();
           continue;
