@@ -1,7 +1,7 @@
-// Barikade V12.5 – Boss-Spawn/Besiegt-FX + Joker-Glücksrad Visual Polish · serverautoritaer
+// Barikade V13.2 – Boss-Event-Sync-Härtung + Mauer-Barikaden · serverautoritaer
 (function barikadeGameV105Bootstrap(){
   if (window.__BARIKADE_GAME_V105_LOADED__) {
-    console.warn('[Barikade V12.5] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    console.warn('[Barikade V13.2] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
@@ -3000,7 +3000,14 @@ try{
       }
 
       if(type==="boss_event_ack"){
-        try{ closeBossEventOverlaySynced(Number(msg.seq||0)); }catch(_e){}
+        try{
+          const seq=Number(msg.seq||0);
+          if(state?.bossState?.lastEvent && Number(state.bossState.lastEvent.seq||0)===seq){
+            state.bossState.lastEvent.confirmedAt = Number(msg.confirmedAt||Date.now());
+            state.bossState.lastEvent.confirmedByColor = String(msg.byColor||state.bossState.lastEvent.confirmedByColor||"");
+          }
+          closeBossEventOverlaySynced(seq);
+        }catch(_e){}
         return;
       }
       if(type==="boss_event_ack_result"){
@@ -4707,12 +4714,46 @@ function showEpicWin(winnerColor){
   function drawBarricadeIcon(x,y,r){
     ctx.save();
 
-    // V13: echte, sofort erkennbare Baustellen-Barikade statt runder Metall-Marker.
-    // Nur die Optik ändert sich; Feldposition, Hitbox und Spielregeln bleiben identisch.
-    const w = r * 1.78;
-    const plankH = Math.max(5, r * 0.27);
-    const legTop = y + r * 0.05;
-    const legBottom = y + r * 0.72;
+    // V13.2: Kreis komplett mit Mauerwerk füllen – optisch näher am Joker-Symbol.
+    // So bleibt die Barikade auf dem Brett sofort als „Mauer / Barikade“ lesbar.
+    const outerR = r * 0.98;
+    const innerR = r * 0.84;
+    const mortar = Math.max(1.2, r * 0.05);
+    const brickH = Math.max(5, r * 0.23);
+    const brickW = Math.max(10, r * 0.45);
+
+    // Schatten / Auflage
+    ctx.fillStyle = "rgba(0,0,0,.38)";
+    ctx.beginPath();
+    ctx.ellipse(x, y + r*0.68, r*0.88, r*0.19, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Äußerer Ring
+    const ringGrad = ctx.createRadialGradient(x-r*0.18, y-r*0.20, r*0.12, x, y, outerR);
+    ringGrad.addColorStop(0, "#f2f6ff");
+    ringGrad.addColorStop(0.18, "#8fa2c3");
+    ringGrad.addColorStop(0.62, "#4a5d82");
+    ringGrad.addColorStop(1, "#1c2436");
+    ctx.fillStyle = ringGrad;
+    ctx.beginPath();
+    ctx.arc(x, y, outerR, 0, Math.PI*2);
+    ctx.fill();
+
+    // Innenfläche + Brick-Clip
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, innerR, 0, Math.PI*2);
+    ctx.clip();
+
+    const wallGrad = ctx.createLinearGradient(x, y-innerR, x, y+innerR);
+    wallGrad.addColorStop(0, "#ffb0a3");
+    wallGrad.addColorStop(0.18, "#ff7d69");
+    wallGrad.addColorStop(0.55, "#dc463f");
+    wallGrad.addColorStop(0.82, "#9e1f23");
+    wallGrad.addColorStop(1, "#5f1217");
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(x-innerR-2, y-innerR-2, innerR*2+4, innerR*2+4);
+
     const roundedRectPath = (rx, ry, rw, rh, radius) => {
       const rr = Math.max(0, Math.min(radius, Math.abs(rw)/2, Math.abs(rh)/2));
       ctx.beginPath();
@@ -4728,82 +4769,67 @@ function showEpicWin(winnerColor){
       }
     };
 
-    // soft floor shadow
-    ctx.fillStyle = "rgba(0,0,0,.42)";
+    // Ziegelreihen
+    const top = y - innerR + mortar*0.8;
+    const bottom = y + innerR - mortar*0.8;
+    let row = 0;
+    for(let yy = top; yy < bottom; yy += brickH + mortar){
+      const offset = (row % 2) ? -(brickW * 0.52) : 0;
+      for(let xx = x - innerR - brickW; xx < x + innerR + brickW; xx += brickW + mortar){
+        const bx = xx + offset;
+        const by = yy;
+        const bw = brickW;
+        const bh = brickH;
+
+        const brickGrad = ctx.createLinearGradient(bx, by, bx, by + bh);
+        brickGrad.addColorStop(0, "rgba(255,196,175,.92)");
+        brickGrad.addColorStop(0.28, "rgba(255,123,96,.96)");
+        brickGrad.addColorStop(0.72, "rgba(196,46,52,.98)");
+        brickGrad.addColorStop(1, "rgba(110,20,24,.98)");
+        ctx.fillStyle = brickGrad;
+        roundedRectPath(bx, by, bw, bh, Math.max(1.8, bh*0.18));
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(50,8,12,.34)";
+        ctx.lineWidth = Math.max(0.8, r*0.018);
+        roundedRectPath(bx, by, bw, bh, Math.max(1.8, bh*0.18));
+        ctx.stroke();
+
+        // leichter Lichtsaum oben links je Stein
+        ctx.strokeStyle = "rgba(255,235,220,.26)";
+        ctx.lineWidth = Math.max(0.7, r*0.016);
+        ctx.beginPath();
+        ctx.moveTo(bx + bw*0.10, by + bh*0.20);
+        ctx.lineTo(bx + bw*0.84, by + bh*0.20);
+        ctx.stroke();
+      }
+      row++;
+    }
+
+    // dezente Highlights / Tiefe
+    ctx.fillStyle = "rgba(255,255,255,.12)";
     ctx.beginPath();
-    ctx.ellipse(x, y+r*.72, r*.96, r*.22, 0, 0, Math.PI*2);
+    ctx.arc(x - r*0.22, y - r*0.26, r*0.30, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,.18)";
+    ctx.beginPath();
+    ctx.arc(x + r*0.32, y + r*0.34, r*0.34, 0, Math.PI*2);
     ctx.fill();
 
-    // sturdy dark support legs + feet
-    ctx.strokeStyle = "rgba(28,24,22,.98)";
-    ctx.lineWidth = Math.max(4, r*.18);
-    ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(x-r*.48, legTop); ctx.lineTo(x-r*.30, legBottom); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x+r*.48, legTop); ctx.lineTo(x+r*.30, legBottom); ctx.stroke();
-    ctx.lineWidth = Math.max(4.5, r*.20);
-    ctx.beginPath(); ctx.moveTo(x-r*.55,legBottom); ctx.lineTo(x-r*.10,legBottom); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x+r*.10,legBottom); ctx.lineTo(x+r*.55,legBottom); ctx.stroke();
+    ctx.restore();
 
-    const drawPlank = (yy, tilt) => {
-      ctx.save();
-      ctx.translate(x, y+yy);
-      ctx.rotate(tilt);
-
-      // black outline gives the same bold readability as the barricade joker symbol
-      ctx.fillStyle = "rgba(25,19,15,.98)";
-      roundedRectPath(-w/2-2.2, -plankH/2-2.2, w+4.4, plankH+4.4, Math.max(3,plankH*.34));
-      ctx.fill();
-
-      const wood = ctx.createLinearGradient(-w/2,0,w/2,0);
-      wood.addColorStop(0,"#8c3f1d");
-      wood.addColorStop(.18,"#d36b2d");
-      wood.addColorStop(.50,"#f09a3d");
-      wood.addColorStop(.82,"#c55a26");
-      wood.addColorStop(1,"#713017");
-      ctx.fillStyle = wood;
-      roundedRectPath(-w/2, -plankH/2, w, plankH, Math.max(2.5,plankH*.28));
-      ctx.fill();
-
-      // bright hazard bands make it read as a barricade even on small boards
-      ctx.save();
-      roundedRectPath(-w/2, -plankH/2, w, plankH, Math.max(2.5,plankH*.28));
-      ctx.clip();
-      ctx.fillStyle = "rgba(255,236,188,.90)";
-      const stripeW = Math.max(5,r*.24);
-      for(let sx=-w; sx<w; sx+=stripeW*2.25){
-        ctx.beginPath();
-        ctx.moveTo(sx,-plankH);
-        ctx.lineTo(sx+stripeW,-plankH);
-        ctx.lineTo(sx+stripeW*1.8,plankH);
-        ctx.lineTo(sx+stripeW*.8,plankH);
-        ctx.closePath();
-        ctx.fill();
-      }
-      ctx.restore();
-
-      // warm highlight along top edge
-      ctx.strokeStyle="rgba(255,224,176,.58)";
-      ctx.lineWidth=1.2;
-      ctx.beginPath();ctx.moveTo(-w*.43,-plankH*.30);ctx.lineTo(w*.43,-plankH*.30);ctx.stroke();
-
-      // steel bolts
-      ctx.fillStyle="#e9eef6";
-      ctx.strokeStyle="rgba(22,28,36,.75)";
-      ctx.lineWidth=1;
-      for(const bx of [-w*.38,w*.38]){
-        ctx.beginPath();ctx.arc(bx,0,Math.max(1.7,r*.08),0,Math.PI*2);ctx.fill();ctx.stroke();
-      }
-      ctx.restore();
-    };
-
-    drawPlank(-r*.25, -0.035);
-    drawPlank(r*.20, 0.035);
-
-    // subtle selection-like glow so the icon stays readable over dark/light board areas
-    ctx.strokeStyle="rgba(255,173,79,.28)";
-    ctx.lineWidth=1.3;
+    // innerer Ring / Glanz
+    ctx.strokeStyle = "rgba(255,250,243,.36)";
+    ctx.lineWidth = Math.max(1.1, r * 0.055);
     ctx.beginPath();
-    ctx.ellipse(x,y-r*.02,r*.98,r*.72,0,0,Math.PI*2);
+    ctx.arc(x, y, innerR, Math.PI*1.02, Math.PI*1.82);
+    ctx.stroke();
+
+    // äußerer dunkler Rand für Lesbarkeit
+    ctx.strokeStyle = "rgba(13,17,26,.92)";
+    ctx.lineWidth = Math.max(1.5, r * 0.09);
+    ctx.beginPath();
+    ctx.arc(x, y, outerR, 0, Math.PI*2);
     ctx.stroke();
 
     ctx.restore();
