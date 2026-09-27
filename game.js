@@ -6615,11 +6615,20 @@ function _wheelNext() {
   res.textContent = "";
   res.classList.remove("win");
 
-  _wheelOpenOverlay(overlay);
-
+  // Erst Radinhalt vollständig aufbauen, DANN Dialog öffnen.
+  // Auf Samsung/Android wurde beim ersten showModal() sonst gelegentlich
+  // ein leerer Top-Layer gerendert; beim zweiten Öffnen war das Rad dann da.
   _wheelActiveSegments=_wheelSegmentsForItem(item);
   _wheelBuildSvg();
+  try{ _wheelDraw(_wheelAngle); }catch(_e){}
+
   const hint=document.getElementById("wheelHint");
+  if(hint) hint.textContent=`${_wheelActiveSegments.length} Joker · keine Niete${_wheelActiveSegments.length>4?" · Boss-Joker aktiv":""}`;
+
+  // Einen Layout-Zyklus erzwingen, bevor das Dialogfenster in den Browser-Top-Layer kommt.
+  try{ document.getElementById("wheelVisual")?.getBoundingClientRect(); }catch(_e){}
+  _wheelOpenOverlay(overlay);
+
   if(hint) hint.textContent=`${_wheelActiveSegments.length} Joker · keine Niete${_wheelActiveSegments.length>4?" · Boss-Joker aktiv":""}`;
 
   // Determine target segment based on server result.
