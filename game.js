@@ -2984,6 +2984,7 @@ if(type==="start_spin"){
     const cols = Array.isArray(msg.activeColors) && msg.activeColors.length ? msg.activeColors.map(c=>String(c||"").toLowerCase().trim()).filter(Boolean) : getActiveColors();
     const dur = Number(msg.durationMs || 4200) || 4200;
     const winner = String(msg.starterColor || "").toLowerCase().trim();
+    if(msg.boardTheme) rememberBoardThemeVisual(msg.boardTheme);
     // Run the same wheel animation on ALL clients, but with the server-chosen winner.
     startWheelSpin(cols, dur, winner).then(()=>{}).catch(()=>{});
 
@@ -3066,6 +3067,7 @@ try{
         }
         netCanStart = !!msg.canStart;
       if (msg.jokerAwardMode) netJokerAwardMode = msg.jokerAwardMode;
+        if(msg.boardTheme) rememberBoardThemeVisual(msg.boardTheme);
         updateStartButton();
         updateEmojiUI();
         return;
@@ -3353,6 +3355,7 @@ try{
         mode: String(server.mode || "classic"),
         action: (server.action && typeof server.action === "object") ? server.action : null,
         bossMode: !!server.bossMode,
+        boardTheme: rememberBoardThemeVisual(server.boardTheme || getBoardThemeVisual()),
         boss: (server.boss && typeof server.boss === "object") ? server.boss : null,
         // Reconnect-/Persistenzstatus vom Server nicht mehr beim Adapter verwerfen.
         paused: !!server.paused,
@@ -4984,6 +4987,59 @@ function showEpicWin(winnerColor){
 
 
 
+  // ===== Brettdesign – serverseitig gewählt, Client zeichnet nur =====
+  function normalizeBoardThemeVisual(theme){
+    return String(theme||"").toLowerCase().trim() === "classic" ? "classic" : "wood";
+  }
+  function getBoardThemeVisual(){
+    try{
+      if(state && state.boardTheme) return normalizeBoardThemeVisual(state.boardTheme);
+      const rc=String(roomCode || localStorage.getItem("barikade_room") || "").trim().toUpperCase();
+      const scoped=rc ? localStorage.getItem("barikade_board_theme_"+rc) : null;
+      return normalizeBoardThemeVisual(scoped || localStorage.getItem("barikade_board_theme") || "wood");
+    }catch(_e){ return "wood"; }
+  }
+  function rememberBoardThemeVisual(theme){
+    const v=normalizeBoardThemeVisual(theme);
+    try{
+      const rc=String(roomCode || localStorage.getItem("barikade_room") || "").trim().toUpperCase();
+      if(rc) localStorage.setItem("barikade_board_theme_"+rc,v);
+      localStorage.setItem("barikade_board_theme",v);
+    }catch(_e){}
+    return v;
+  }
+
+  function drawClassicBoardGrid(rect){
+    const grid=Math.max(10,(board.ui?.gridSize||20))*view.s;
+    ctx.save();
+    ctx.strokeStyle="rgba(109,139,183,0.16)";
+    ctx.lineWidth=1;
+    const ox=(view.x*view.s)%grid, oy=(view.y*view.s)%grid;
+    for(let x=-ox;x<rect.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rect.height);ctx.stroke();}
+    for(let y=-oy;y<rect.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rect.width,y);ctx.stroke();}
+    ctx.restore();
+  }
+
+  function drawClassicFieldTile(x,y,r,fill){
+    ctx.save();
+    ctx.shadowColor="rgba(0,0,0,0.34)";
+    ctx.shadowBlur=7;
+    ctx.shadowOffsetY=3;
+    ctx.beginPath();ctx.fillStyle=fill;ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.shadowColor="transparent";
+    const ng=ctx.createRadialGradient(x-r*0.34,y-r*0.40,r*0.08,x,y,r*1.08);
+    ng.addColorStop(0,"rgba(255,255,255,0.34)");
+    ng.addColorStop(0.42,"rgba(255,255,255,0.07)");
+    ng.addColorStop(1,"rgba(0,0,0,0.30)");
+    ctx.fillStyle=ng;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.lineWidth=2.6;ctx.strokeStyle=COLORS.stroke;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+    ctx.lineWidth=1;ctx.strokeStyle="rgba(255,255,255,0.15)";
+    ctx.beginPath();ctx.arc(x,y,r-2.2,Math.PI*1.04,Math.PI*1.88);ctx.stroke();
+    ctx.restore();
+  }
+
   // ===== Premium Holzbrett – rein visuell, keine Spiellogik =====
   function boardRoundRectPath(x,y,w,h,radius){
     const rr=Math.max(0,Math.min(radius,Math.abs(w)/2,Math.abs(h)/2));
@@ -5160,8 +5216,10 @@ function showEpicWin(winnerColor){
     const rect=canvas.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
 
-    // Echtes Brettgefühl statt technischem Raster.
-    drawPremiumWoodBoard();
+    const boardTheme = getBoardThemeVisual();
+    const useWoodBoard = boardTheme === "wood";
+    if(useWoodBoard) drawPremiumWoodBoard();
+    else drawClassicBoardGrid(rect);
 
     // Action-Bossmodus: zwei Spezialfelder sind sichtbar mit dem Brett verbunden,
     // gehören aber bewusst NICHT zur normalen Laufroute.
@@ -5185,7 +5243,7 @@ function showEpicWin(winnerColor){
       ctx.restore();
     }
 
-    // Verbindungswege als ruhige, ins Holz eingelassene Rillen.
+    // Verbindungswege passen sich dem gewählten Brett an.
     ctx.save();
     ctx.lineCap="round";
     ctx.lineJoin="round";
@@ -5194,13 +5252,30 @@ function showEpicWin(winnerColor){
       if(!a||!b||a.kind!=="board"||b.kind!=="board") continue;
       const sa=worldToScreen(a), sb=worldToScreen(b);
 
-      ctx.strokeStyle="rgba(82,47,22,.48)";
-      ctx.lineWidth=Math.max(4.8,6.4*view.s);
-      ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
-
-      ctx.strokeStyle="rgba(241,207,158,.44)";
-      ctx.lineWidth=Math.max(1.2,1.7*view.s);
-      ctx.beginPath();ctx.moveTo(sa.x,sa.y+1.1);ctx.lineTo(sb.x,sb.y+1.1);ctx.stroke();
+      if(useWoodBoard){
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(82,47,22,.48)";
+        ctx.lineWidth=Math.max(4.8,6.4*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        ctx.strokeStyle="rgba(241,207,158,.44)";
+        ctx.lineWidth=Math.max(1.2,1.7*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y+1.1);ctx.lineTo(sb.x,sb.y+1.1);ctx.stroke();
+      }else{
+        // Originaler dunkler Brettstil.
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(2,6,13,0.62)";
+        ctx.lineWidth=7;
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        ctx.shadowColor="rgba(82,139,219,0.16)";
+        ctx.shadowBlur=8;
+        ctx.strokeStyle=COLORS.edge;
+        ctx.lineWidth=3.2;
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(213,229,255,0.10)";
+        ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y-0.7);ctx.lineTo(sb.x,sb.y-0.7);ctx.stroke();
+      }
     }
     ctx.restore();
 
@@ -5248,27 +5323,9 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         fill=COLORS[n.flags?.houseColor]||COLORS.node;
       }
 
-      // Normale Lauf-Felder sind echte Holzmulden. Häuser und Ziel behalten ihre
-      // eigene Farb-/Spezialhierarchie und bleiben dadurch sofort erkennbar.
-      if(n.kind==="board" && n.id!==goalNodeId){
-        drawWoodFieldWell(s.x,s.y,r);
-      }else{
-        ctx.save();
-        ctx.shadowColor="rgba(0,0,0,0.30)";
-        ctx.shadowBlur=6;
-        ctx.shadowOffsetY=2.5;
-        ctx.beginPath();ctx.fillStyle=fill;ctx.arc(s.x,s.y,r,0,Math.PI*2);ctx.fill();
-        ctx.shadowColor="transparent";
-        const ng=ctx.createRadialGradient(s.x-r*.34,s.y-r*.40,r*.08,s.x,s.y,r*1.08);
-        ng.addColorStop(0,"rgba(255,255,255,.32)");
-        ng.addColorStop(.42,"rgba(255,255,255,.06)");
-        ng.addColorStop(1,"rgba(0,0,0,.28)");
-        ctx.fillStyle=ng;
-        ctx.beginPath();ctx.arc(s.x,s.y,r,0,Math.PI*2);ctx.fill();
-        ctx.lineWidth=2.4;ctx.strokeStyle=COLORS.stroke;
-        ctx.beginPath();ctx.arc(s.x,s.y,r,0,Math.PI*2);ctx.stroke();
-        ctx.restore();
-      }
+      // Holzbrett: normale Lauf-Felder als Mulden. Klassik: exakt die bisherigen Spielscheiben.
+      if(useWoodBoard && n.kind==="board" && n.id!==goalNodeId) drawWoodFieldWell(s.x,s.y,r);
+      else drawClassicFieldTile(s.x,s.y,r,fill);
 
       const bossEventFieldIds = Array.isArray(state?.boss?.eventFields)
         ? state.boss.eventFields.map(String)
