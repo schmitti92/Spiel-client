@@ -1,7 +1,7 @@
-// Barikade V13.6 – persistente serverautoritäre Joker-Rad-Jobs · serverautoritaer
+// Barikade V13.6.1 – persistente serverautoritäre Joker-Rad-Jobs + Scope-Fix · serverautoritaer
 (function barikadeGameV105Bootstrap(){
   if (window.__BARIKADE_GAME_V105_LOADED__) {
-    console.warn('[Barikade V13.6] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    console.warn('[Barikade V13.6.1] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
@@ -6476,6 +6476,29 @@ leaveBtn.addEventListener("click", () => {
       toast: (msg) => toast(msg),
       closeSocket: () => { try{ if(ws && (ws.readyState===0 || ws.readyState===1)) ws.close(); }catch(_e){} }
     };
+
+    // V13.6.1: Die Rad-UI liegt historisch außerhalb dieses inneren Game-Scopes.
+    // Deshalb darf sie NICHT direkt auf `state` oder die privaten Wheel-Maps zugreifen.
+    // Diese schmale Bridge ist der einzige erlaubte Zugriff der UI auf den Spiel-Scope.
+    window.__barikadeWheelRuntime = {
+      isBossMode: () => !!(state && state.bossMode),
+      markRunning: (visualId) => {
+        const id=String(visualId||"");
+        if(id) _serverWheelState.set(id,"running");
+      },
+      releaseForRetry: (visualId) => {
+        const id=String(visualId||"");
+        if(id) _serverWheelState.delete(id);
+      },
+      markFinished: (jobId, visualId) => {
+        const jid=String(jobId||"");
+        const id=String(visualId||"");
+        if(!jid || !id) return false;
+        _serverWheelState.set(id,"finished");
+        rememberServerWheelFinished(id);
+        return reportServerWheelFinished(jid,id);
+      }
+    };
   }catch(_e){}
 })();
 
@@ -6590,10 +6613,14 @@ const _WHEEL_BOSS_SEGMENTS = [
   { key:"bossRemove", label:"Boss entfernen", short:"BOSS −", icon:"🌀", c1:"#8b70e8", c2:"#3f2b86" },
 ];
 let _wheelActiveSegments = _WHEEL_BASE_SEGMENTS;
+function _wheelRuntime(){
+  try{ return window.__barikadeWheelRuntime || null; }catch(_e){ return null; }
+}
 function _wheelSegmentsForItem(item){
   const result=String(item?.result||"");
   const bossResult=result==="bossSpawn"||result==="bossRemove";
-  return (bossResult || !!state?.bossMode) ? _WHEEL_BASE_SEGMENTS.concat(_WHEEL_BOSS_SEGMENTS) : _WHEEL_BASE_SEGMENTS;
+  const bossMode=!!(_wheelRuntime()?.isBossMode?.());
+  return (bossResult || bossMode) ? _WHEEL_BASE_SEGMENTS.concat(_WHEEL_BOSS_SEGMENTS) : _WHEEL_BASE_SEGMENTS;
 }
 
 let _wheelAngle = 0; // radians (0 = segment 0 centered at top after calibration)
@@ -6803,7 +6830,7 @@ function _wheelNext() {
     }catch(_e){}
     // Bei echtem Darstellungsfehler NICHT als fertig bestätigen. Den lokalen Zustand
     // freigeben, damit der nächste Server-Retry exakt dasselbe visualId erneut anbieten kann.
-    if(item?.__serverVisualId) _serverWheelState.delete(String(item.__serverVisualId));
+    if(item?.__serverVisualId) _wheelRuntime()?.releaseForRetry?.(String(item.__serverVisualId));
     window.setTimeout(()=>_wheelNext(),80);
   };
 
@@ -6843,7 +6870,7 @@ function _wheelNext() {
 
     // Ab hier ist der Radlauf tatsächlich sichtbar. Wiederholte Server-Pakete mit derselben
     // visualId werden während "running" ignoriert, aber noch NICHT als erledigt bestätigt.
-    if(item.__serverVisualId) _serverWheelState.set(String(item.__serverVisualId),"running");
+    if(item.__serverVisualId) _wheelRuntime()?.markRunning?.(String(item.__serverVisualId));
 
     const idx = _wheelResolveIndex(item.result);
     const TAU = Math.PI * 2;
@@ -6887,9 +6914,7 @@ function _wheelNext() {
       if(item.__serverWheelJobId && item.__serverVisualId){
         const visualId=String(item.__serverVisualId);
         const jobId=String(item.__serverWheelJobId);
-        _serverWheelState.set(visualId,"finished");
-        rememberServerWheelFinished(visualId);
-        reportServerWheelFinished(jobId,visualId);
+        _wheelRuntime()?.markFinished?.(jobId,visualId);
       }
       // Selbst wenn requestAnimationFrame auf einem Mobilgerät kurz aussetzt,
       // beendet der Watchdog den Lauf und die Queue kann nicht dauerhaft hängen.
