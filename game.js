@@ -1,7 +1,7 @@
-// Barikade V13.8 – Premium-Holzbrett + Holzmulden + stabiler Joker-Rad-Stand · serverautoritaer
+// Barikade V13.10 – Holzbrett Premium-Pass: Mauersegmente, Spielsteine, statische Spezialfelder · serverautoritaer
 (function barikadeGameV105Bootstrap(){
   if (window.__BARIKADE_GAME_V105_LOADED__) {
-    console.warn('[Barikade V13.8] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    console.warn('[Barikade V13.10] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
@@ -4750,6 +4750,60 @@ function showEpicWin(winnerColor){
   // ---- Canvas visual primitives (UI only) ----
   function drawPieceDisc(x, y, rr, color, opts={}){
     const col = COLORS[color] || color || "#ffffff";
+    const woodStyle = getBoardThemeVisual() === "wood";
+
+    if(woodStyle){
+      ctx.save();
+
+      // Holzbrett: lackierter, physischer Spielstein mit ruhiger Tiefe.
+      // Keine laufende Animation – nur Licht, Schatten und Materialwirkung.
+      if(opts.grounded !== false){
+        ctx.fillStyle="rgba(45,25,12,.30)";
+        ctx.beginPath();
+        ctx.ellipse(x, y+rr*.66, rr*.86, rr*.27, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      // Unterer Sockel / Seitenkante wie bei einem echten Kunststoff-Spielstein.
+      const base=ctx.createLinearGradient(x,y-rr,x,y+rr);
+      base.addColorStop(0,"rgba(255,255,255,.18)");
+      base.addColorStop(.30,col);
+      base.addColorStop(.76,col);
+      base.addColorStop(1,"rgba(18,12,10,.58)");
+      ctx.shadowColor="rgba(42,23,10,.35)";
+      ctx.shadowBlur=Math.max(5,rr*.42);
+      ctx.shadowOffsetY=Math.max(2,rr*.16);
+      ctx.fillStyle=base;
+      ctx.strokeStyle="rgba(35,25,22,.92)";
+      ctx.lineWidth=Math.max(2,rr*.12);
+      ctx.beginPath();ctx.arc(x,y,rr,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+      ctx.shadowColor="transparent";
+      // eingelassener Zierring – gibt dem Stein einen echten Brettspiel-Token-Look.
+      ctx.strokeStyle="rgba(25,22,20,.56)";
+      ctx.lineWidth=Math.max(1.5,rr*.095);
+      ctx.beginPath();ctx.arc(x,y,rr*.64,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="rgba(255,255,255,.30)";
+      ctx.lineWidth=Math.max(1,rr*.045);
+      ctx.beginPath();ctx.arc(x,y,rr*.58,Math.PI*1.06,Math.PI*1.88);ctx.stroke();
+
+      // Lackglanz oben links.
+      const gloss=ctx.createRadialGradient(x-rr*.34,y-rr*.39,rr*.02,x-rr*.24,y-rr*.27,rr*.58);
+      gloss.addColorStop(0,"rgba(255,255,255,.72)");
+      gloss.addColorStop(.42,"rgba(255,255,255,.18)");
+      gloss.addColorStop(1,"rgba(255,255,255,0)");
+      ctx.fillStyle=gloss;
+      ctx.beginPath();ctx.arc(x,y,rr*.91,0,Math.PI*2);ctx.fill();
+
+      // Kleine Lichtkante unten rechts für Materialtiefe.
+      ctx.strokeStyle="rgba(255,255,255,.16)";
+      ctx.lineWidth=Math.max(1,rr*.055);
+      ctx.beginPath();ctx.arc(x,y,rr*.86,Math.PI*.10,Math.PI*.78);ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    // Klassisches Brett: bisheriger Look unverändert.
     ctx.save();
 
     // contact shadow / small pedestal: omitted for airborne animated pawns
@@ -4793,6 +4847,87 @@ function showEpicWin(winnerColor){
   }
 
   function drawBarricadeIcon(x,y,r){
+    if(getBoardThemeVisual()==="wood"){
+      ctx.save();
+
+      // Holzbrett: echtes kleines Mauersegment statt rundem Symbol.
+      // Es sitzt wie ein physischer Spielstein auf dem Feld und bleibt kompakt genug für die Wege.
+      const w=r*1.62;
+      const h=r*1.18;
+      const left=x-w/2;
+      const top=y-h/2;
+      const rowH=h/3;
+      const mortar=Math.max(1,r*.055);
+      const rr=Math.max(2.2,r*.11);
+      const roundRect=(rx,ry,rw,rh,rad)=>{
+        ctx.beginPath();
+        const q=Math.max(0,Math.min(rad,Math.abs(rw)/2,Math.abs(rh)/2));
+        if(typeof ctx.roundRect==="function") ctx.roundRect(rx,ry,rw,rh,q);
+        else{
+          ctx.moveTo(rx+q,ry);ctx.lineTo(rx+rw-q,ry);ctx.quadraticCurveTo(rx+rw,ry,rx+rw,ry+q);
+          ctx.lineTo(rx+rw,ry+rh-q);ctx.quadraticCurveTo(rx+rw,ry+rh,rx+rw-q,ry+rh);
+          ctx.lineTo(rx+q,ry+rh);ctx.quadraticCurveTo(rx,ry+rh,rx,ry+rh-q);
+          ctx.lineTo(rx,ry+q);ctx.quadraticCurveTo(rx,ry,rx+q,ry);ctx.closePath();
+        }
+      };
+
+      // Bodenschatten.
+      ctx.fillStyle="rgba(53,28,13,.34)";
+      ctx.beginPath();ctx.ellipse(x,y+h*.49,w*.53,h*.18,0,0,Math.PI*2);ctx.fill();
+
+      // Dunkle Rückwand / Fuge um die gesamte Mauer.
+      ctx.shadowColor="rgba(54,28,12,.30)";
+      ctx.shadowBlur=Math.max(4,r*.30);
+      ctx.shadowOffsetY=Math.max(2,r*.12);
+      ctx.fillStyle="#5e201b";
+      roundRect(left-r*.08,top-r*.08,w+r*.16,h+r*.16,rr+r*.05);ctx.fill();
+      ctx.shadowColor="transparent";
+
+      const rows=[
+        [0.00,0.52,0.48],
+        [0.00,0.34,0.34,0.32],
+        [0.00,0.46,0.54]
+      ];
+      for(let row=0;row<3;row++){
+        const widths=rows[row];
+        let cursor=left;
+        const bh=rowH-mortar;
+        for(let j=1;j<widths.length;j++){
+          const bw=w*widths[j]-mortar;
+          const bx=cursor+mortar*.5;
+          const by=top+row*rowH+mortar*.5;
+          const brick=ctx.createLinearGradient(bx,by,bx,by+bh);
+          brick.addColorStop(0,"#ff9a80");
+          brick.addColorStop(.24,"#e8614e");
+          brick.addColorStop(.72,"#b52f31");
+          brick.addColorStop(1,"#761d24");
+          ctx.fillStyle=brick;
+          roundRect(bx,by,bw,bh,Math.min(rr,bh*.22));ctx.fill();
+          ctx.strokeStyle="rgba(84,19,22,.58)";
+          ctx.lineWidth=Math.max(.7,r*.025);
+          roundRect(bx,by,bw,bh,Math.min(rr,bh*.22));ctx.stroke();
+          ctx.strokeStyle="rgba(255,225,210,.28)";
+          ctx.lineWidth=Math.max(.7,r*.022);
+          ctx.beginPath();ctx.moveTo(bx+bw*.10,by+bh*.20);ctx.lineTo(bx+bw*.88,by+bh*.20);ctx.stroke();
+          cursor += w*widths[j];
+        }
+      }
+
+      // Oberkante / kleine Kappe erzeugt echte Mauer-Tiefe.
+      const cap=ctx.createLinearGradient(left,top-r*.10,left,top+r*.08);
+      cap.addColorStop(0,"#ffb29c");cap.addColorStop(1,"#a83431");
+      ctx.fillStyle=cap;
+      roundRect(left+r*.02,top-r*.10,w-r*.04,Math.max(3,r*.16),rr*.65);ctx.fill();
+
+      ctx.strokeStyle="rgba(255,238,219,.30)";
+      ctx.lineWidth=Math.max(1,r*.035);
+      roundRect(left-r*.02,top-r*.02,w+r*.04,h+r*.04,rr);ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    // Klassisches Brett: bisheriger runder Mauer-Marker unverändert.
+
     ctx.save();
 
     // V13.2: Kreis komplett mit Mauerwerk füllen – optisch näher am Joker-Symbol.
@@ -4914,7 +5049,7 @@ function showEpicWin(winnerColor){
     ctx.stroke();
 
     ctx.restore();
-  }
+    }
 
   function drawSelectionRing(x,y,r){
     ctx.save();
@@ -5232,12 +5367,22 @@ function showEpicWin(winnerColor){
         const center=worldToScreen(f);
         for(const anchor of anchors){
           const a=worldToScreen(anchor);
-          ctx.strokeStyle="rgba(97,57,148,.34)"; ctx.lineWidth=10;
-          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
-          ctx.strokeStyle="rgba(218,181,255,.86)"; ctx.lineWidth=2.6;
-          ctx.setLineDash([7,6]);
-          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
-          ctx.setLineDash([]);
+          if(useWoodBoard){
+            // Holzbrett: eingefräste, statische Portalverbindung statt Neon-Dash.
+            ctx.strokeStyle="rgba(70,39,22,.48)";ctx.lineWidth=Math.max(7,9*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(111,65,137,.70)";ctx.lineWidth=Math.max(2,2.7*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(235,203,255,.34)";ctx.lineWidth=Math.max(1,1.1*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y-1);ctx.lineTo(center.x,center.y-1);ctx.stroke();
+          }else{
+            ctx.strokeStyle="rgba(97,57,148,.34)"; ctx.lineWidth=10;
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(218,181,255,.86)"; ctx.lineWidth=2.6;
+            ctx.setLineDash([7,6]);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.setLineDash([]);
+          }
         }
       }
       ctx.restore();
@@ -5334,21 +5479,43 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         // Ereignisfelder bleiben gut sichtbar, aber komplett statisch:
         // kein Pulsieren, kein Blinken und keine dauerhaft laufende Animation.
         ctx.save();
-        ctx.shadowColor="rgba(180,110,255,.46)";
-        ctx.shadowBlur=12;
-        ctx.strokeStyle="rgba(225,188,255,.94)";
-        ctx.lineWidth=3.2;
-        ctx.beginPath();ctx.arc(s.x,s.y,r+5,0,Math.PI*2);ctx.stroke();
+        if(useWoodBoard){
+          // Holzbrett: eingelassenes mystisches Medaillon mit Messing-/Violett-Rand.
+          ctx.fillStyle="rgba(73,42,24,.42)";
+          ctx.beginPath();ctx.arc(s.x,s.y,r+7,0,Math.PI*2);ctx.fill();
 
-        ctx.shadowColor="transparent";
-        ctx.strokeStyle="rgba(170,235,255,.62)";
-        ctx.lineWidth=1.5;
-        ctx.beginPath();ctx.arc(s.x,s.y,r+9,0,Math.PI*2);ctx.stroke();
+          const eg=ctx.createRadialGradient(s.x-r*.24,s.y-r*.30,r*.06,s.x,s.y,r*.92);
+          eg.addColorStop(0,"#9b73ba");
+          eg.addColorStop(.38,"#76508f");
+          eg.addColorStop(.76,"#4e315f");
+          eg.addColorStop(1,"#2b1d32");
+          ctx.fillStyle=eg;
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.88,0,Math.PI*2);ctx.fill();
 
-        ctx.fillStyle="rgba(123,71,202,.30)";
-        ctx.beginPath();ctx.arc(s.x,s.y,r*.90,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(103,57,26,.74)";ctx.lineWidth=Math.max(3,r*.16);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle="rgba(232,194,122,.82)";ctx.lineWidth=Math.max(1.5,r*.075);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle="rgba(225,198,238,.62)";ctx.lineWidth=Math.max(1,r*.055);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.73,Math.PI*1.04,Math.PI*1.82);ctx.stroke();
+          ctx.fillStyle="rgba(250,237,255,.98)";
+        }else{
+          ctx.shadowColor="rgba(180,110,255,.46)";
+          ctx.shadowBlur=12;
+          ctx.strokeStyle="rgba(225,188,255,.94)";
+          ctx.lineWidth=3.2;
+          ctx.beginPath();ctx.arc(s.x,s.y,r+5,0,Math.PI*2);ctx.stroke();
 
-        ctx.fillStyle="rgba(246,230,255,.98)";
+          ctx.shadowColor="transparent";
+          ctx.strokeStyle="rgba(170,235,255,.62)";
+          ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.arc(s.x,s.y,r+9,0,Math.PI*2);ctx.stroke();
+
+          ctx.fillStyle="rgba(123,71,202,.30)";
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.90,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle="rgba(246,230,255,.98)";
+        }
+
         ctx.font=`1000 ${Math.max(12,Math.round(r*.80))}px system-ui`;
         ctx.textAlign="center";
         ctx.textBaseline="middle";
@@ -5407,6 +5574,63 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         const boss=slot?.boss || null;
         const bossAtPortal=!!(boss && !boss.nodeId);
         const br=r*1.36;
+
+        if(useWoodBoard){
+          // Holzbrett: statisches, eingelassenes Boss-Medaillon – bewusst ohne Pulsieren/Rotation.
+          ctx.save();
+          ctx.fillStyle="rgba(48,26,17,.42)";
+          ctx.beginPath();ctx.ellipse(ss.x,ss.y+br*.48,br*.88,br*.22,0,0,Math.PI*2);ctx.fill();
+
+          // Messing-/Holzfassung.
+          const rim=ctx.createRadialGradient(ss.x-br*.28,ss.y-br*.30,br*.08,ss.x,ss.y,br*1.12);
+          rim.addColorStop(0,"#f2d18c");rim.addColorStop(.28,"#a66d34");rim.addColorStop(.72,"#6f3f22");rim.addColorStop(1,"#3c2116");
+          ctx.fillStyle=rim;
+          ctx.beginPath();ctx.arc(ss.x,ss.y,br+7,0,Math.PI*2);ctx.fill();
+
+          // Acht feste Runen-Zacken – keine Bewegung.
+          ctx.fillStyle=boss?"rgba(137,37,49,.94)":"rgba(91,58,116,.90)";
+          for(let k=0;k<8;k++){
+            const a=(Math.PI*2/8)*k-Math.PI/2;
+            const a2=a+.17, a3=a-.17;
+            const r1=br+2, r2=br+13;
+            ctx.beginPath();
+            ctx.moveTo(ss.x+Math.cos(a)*r2,ss.y+Math.sin(a)*r2);
+            ctx.lineTo(ss.x+Math.cos(a2)*r1,ss.y+Math.sin(a2)*r1);
+            ctx.lineTo(ss.x+Math.cos(a3)*r1,ss.y+Math.sin(a3)*r1);
+            ctx.closePath();ctx.fill();
+          }
+
+          const pg=ctx.createRadialGradient(ss.x-br*.28,ss.y-br*.33,br*.07,ss.x,ss.y,br*1.02);
+          pg.addColorStop(0,boss?"#873343":"#79558e");
+          pg.addColorStop(.42,boss?"#51202c":"#523861");
+          pg.addColorStop(1,"#211820");
+          ctx.fillStyle=pg;
+          ctx.strokeStyle=boss?"rgba(226,116,129,.92)":"rgba(199,165,216,.90)";
+          ctx.lineWidth=Math.max(2.4,r*.13);
+          ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+          ctx.strokeStyle="rgba(247,223,178,.40)";ctx.lineWidth=Math.max(1,r*.05);
+          ctx.beginPath();ctx.arc(ss.x,ss.y,br*.84,Math.PI*1.04,Math.PI*1.84);ctx.stroke();
+
+          // Kleine feste Hörner machen das Bossfeld sofort erkennbar.
+          ctx.fillStyle=boss?"#c65062":"#9d75ae";
+          ctx.beginPath();ctx.moveTo(ss.x-br*.45,ss.y-br*.60);ctx.lineTo(ss.x-br*.17,ss.y-br*.94);ctx.lineTo(ss.x-br*.03,ss.y-br*.54);ctx.closePath();ctx.fill();
+          ctx.beginPath();ctx.moveTo(ss.x+br*.45,ss.y-br*.60);ctx.lineTo(ss.x+br*.17,ss.y-br*.94);ctx.lineTo(ss.x+br*.03,ss.y-br*.54);ctx.closePath();ctx.fill();
+
+          ctx.textAlign="center";ctx.textBaseline="middle";
+          ctx.fillStyle="rgba(255,247,238,.99)";
+          ctx.font=`1000 ${Math.max(18,Math.round(br*.70))}px system-ui`;
+          ctx.fillText(bossAtPortal ? (boss?.icon||"👹") : (boss?"↗":"👹"),ss.x,ss.y-5);
+          ctx.font=`900 ${Math.max(8,Math.round(br*.21))}px system-ui`;
+          ctx.fillStyle=boss?"rgba(255,215,215,.96)":"rgba(242,226,246,.94)";
+          ctx.fillText(bossAtPortal?"1/1 LEBEN":(boss?"IM SPIEL":`BOSSFELD ${i+1}`),ss.x,ss.y+br*.58);
+          ctx.font=`900 ${Math.max(9,Math.round(br*.22))}px system-ui`;
+          ctx.fillStyle=boss?"#b43f52":"#785288";
+          ctx.fillText(bossAtPortal?"BOSS START":(boss?"PORTAL":"BOSS"),ss.x,ss.y-br-13);
+          ctx.restore();
+          continue;
+        }
+
         const pulse = 0.5 + 0.5 * Math.sin(tBoss * 3.1 + i * 0.9);
         const aura = boss ? 24 + 12*pulse : 16 + 8*pulse;
         ctx.save();
@@ -5501,39 +5725,59 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         .filter(m => !m?.piece?.color || m.piece.color === selected.color);
       const targetIds = [...new Set(selectedMoves.map(m => String(m.toId)).filter(Boolean))];
       if(targetIds.length){
-        hasInteractivePulse = true;
-        const pulse = 0.5 + 0.5*Math.sin(performance.now()/260);
+        const pulse = useWoodBoard ? 0 : (0.5 + 0.5*Math.sin(performance.now()/260));
+        if(!useWoodBoard) hasInteractivePulse = true;
         for(const id of targetIds){
           const n=nodeById.get(id); if(!n) continue;
           const s=worldToScreen(n);
           ctx.save();
-          ctx.shadowColor="rgba(91,221,168,0.55)";
-          ctx.shadowBlur=12+8*pulse;
-          ctx.strokeStyle=`rgba(119,240,190,${(0.56+0.24*pulse).toFixed(3)})`;
-          ctx.lineWidth=3;
-          ctx.beginPath();ctx.arc(s.x,s.y,r+5+2*pulse,0,Math.PI*2);ctx.stroke();
-          ctx.shadowColor="transparent";
-          ctx.fillStyle=`rgba(80,215,157,${(0.055+0.045*pulse).toFixed(3)})`;
-          ctx.beginPath();ctx.arc(s.x,s.y,r+2,0,Math.PI*2);ctx.fill();
+          if(useWoodBoard){
+            ctx.shadowColor="transparent";
+            ctx.strokeStyle="rgba(49,129,88,.88)";
+            ctx.lineWidth=3;
+            ctx.beginPath();ctx.arc(s.x,s.y,r+5,0,Math.PI*2);ctx.stroke();
+            ctx.strokeStyle="rgba(220,244,220,.70)";
+            ctx.lineWidth=1.2;
+            ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.stroke();
+            ctx.fillStyle="rgba(62,154,101,.09)";
+            ctx.beginPath();ctx.arc(s.x,s.y,r+2,0,Math.PI*2);ctx.fill();
+          }else{
+            ctx.shadowColor="rgba(91,221,168,0.55)";
+            ctx.shadowBlur=12+8*pulse;
+            ctx.strokeStyle=`rgba(119,240,190,${(0.56+0.24*pulse).toFixed(3)})`;
+            ctx.lineWidth=3;
+            ctx.beginPath();ctx.arc(s.x,s.y,r+5+2*pulse,0,Math.PI*2);ctx.stroke();
+            ctx.shadowColor="transparent";
+            ctx.fillStyle=`rgba(80,215,157,${(0.055+0.045*pulse).toFixed(3)})`;
+            ctx.beginPath();ctx.arc(s.x,s.y,r+2,0,Math.PI*2);ctx.fill();
+          }
           ctx.restore();
         }
       }
     }
 
     if(phase==="placing_barricade"){
-      hasInteractivePulse = placingChoices.length > 0 || hasInteractivePulse;
-      const pulse = 0.5 + 0.5*Math.sin(performance.now()/240);
+      const pulse = useWoodBoard ? 0 : (0.5 + 0.5*Math.sin(performance.now()/240));
+      if(!useWoodBoard) hasInteractivePulse = placingChoices.length > 0 || hasInteractivePulse;
       ctx.save();
-      ctx.lineWidth=4.5+1.5*pulse;
-      ctx.strokeStyle=`rgba(255,209,102,${(0.72+0.22*pulse).toFixed(3)})`;
-      ctx.shadowColor="rgba(255,183,71,0.42)";
-      ctx.shadowBlur=9+7*pulse;
-      ctx.setLineDash([10,7]);
-      ctx.lineDashOffset=-(performance.now()/38)%17;
+      if(useWoodBoard){
+        ctx.lineWidth=3.6;
+        ctx.strokeStyle="rgba(166,111,43,.94)";
+        ctx.shadowColor="transparent";
+        ctx.setLineDash([7,5]);
+        ctx.lineDashOffset=0;
+      }else{
+        ctx.lineWidth=4.5+1.5*pulse;
+        ctx.strokeStyle=`rgba(255,209,102,${(0.72+0.22*pulse).toFixed(3)})`;
+        ctx.shadowColor="rgba(255,183,71,0.42)";
+        ctx.shadowBlur=9+7*pulse;
+        ctx.setLineDash([10,7]);
+        ctx.lineDashOffset=-(performance.now()/38)%17;
+      }
       for(const id of placingChoices){
         const n=nodeById.get(id); if(!n) continue;
         const s=worldToScreen(n);
-        ctx.beginPath(); ctx.arc(s.x,s.y,r+7+1.5*pulse,0,Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(s.x,s.y,r+7+(useWoodBoard?0:1.5*pulse),0,Math.PI*2); ctx.stroke();
       }
       ctx.restore();
     }
