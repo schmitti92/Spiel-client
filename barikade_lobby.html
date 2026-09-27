@@ -1041,6 +1041,31 @@
 
 
 
+    /* V13.9 – Brettdesign-Auswahl: ruhig, statisch, ohne Blink-/Pulseffekte */
+    body.lobby-page .board-theme-strip{display:block;padding:16px 17px;border-color:rgba(215,176,111,.18);background:linear-gradient(135deg,rgba(204,151,76,.055),rgba(71,101,152,.045));}
+    body.lobby-page .board-theme-strip .room-mode-copy{margin-bottom:12px;}
+    body.lobby-page .board-theme-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;}
+    body.lobby-page .board-theme-card{appearance:none;text-align:left;min-width:0;padding:10px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(8,12,21,.58);color:#f5f7ff;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);transition:border-color .16s ease,background .16s ease,box-shadow .16s ease,transform .16s ease;}
+    body.lobby-page .board-theme-card:not(:disabled):hover{transform:translateY(-1px);border-color:rgba(255,255,255,.20);}
+    body.lobby-page .board-theme-card.active{border-color:rgba(255,211,131,.52);background:linear-gradient(180deg,rgba(255,205,116,.09),rgba(255,255,255,.035));box-shadow:0 0 0 2px rgba(255,204,111,.08),inset 0 1px 0 rgba(255,255,255,.08);}
+    body.lobby-page .board-theme-card:disabled{cursor:default;opacity:.68;}
+    body.lobby-page .board-theme-card.active:disabled{opacity:1;}
+    body.lobby-page .board-theme-preview{position:relative;height:82px;border-radius:13px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px rgba(0,0,0,.10);}
+    body.lobby-page .board-theme-preview::before{content:'';position:absolute;inset:12px;border-radius:10px;}
+    body.lobby-page .board-theme-preview::after{content:'●  ●  ●  ●';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;letter-spacing:9px;font-size:18px;font-weight:900;}
+    body.lobby-page .board-theme-preview.classic{background-color:#08111f;background-image:linear-gradient(rgba(105,139,183,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(105,139,183,.10) 1px,transparent 1px);background-size:14px 14px;}
+    body.lobby-page .board-theme-preview.classic::before{border:1px solid rgba(97,125,168,.25);box-shadow:inset 0 0 18px rgba(18,42,75,.34);}
+    body.lobby-page .board-theme-preview.classic::after{color:#5f85b7;text-shadow:0 2px 5px #000;}
+    body.lobby-page .board-theme-preview.wood{background-color:#e4bd82;background-image:repeating-linear-gradient(2deg,rgba(115,69,31,.07) 0 1px,transparent 1px 15px),linear-gradient(100deg,#edce9b,#d9aa6d 52%,#efcf98);}
+    body.lobby-page .board-theme-preview.wood::before{border:5px solid #704626;box-shadow:inset 0 0 0 2px rgba(255,232,187,.58),0 2px 5px rgba(0,0,0,.24);}
+    body.lobby-page .board-theme-preview.wood::after{color:#a66d36;text-shadow:0 1px 0 rgba(255,226,180,.55);}
+    body.lobby-page .board-theme-card-copy{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:9px;}
+    body.lobby-page .board-theme-card-copy strong{font-size:13px;font-weight:950;}
+    body.lobby-page .board-theme-card-copy small{font-size:10px;color:rgba(224,231,246,.58);}
+    body.lobby-page .board-theme-check{display:grid;place-items:center;flex:0 0 auto;width:24px;height:24px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);font-size:12px;color:transparent;}
+    body.lobby-page .board-theme-card.active .board-theme-check{color:#2d210e;background:#ffd783;border-color:#ffe4aa;}
+    @media(max-width:600px){body.lobby-page .board-theme-choice{grid-template-columns:1fr 1fr}.board-theme-preview{height:68px!important}.board-theme-card-copy small{display:none}}
+
     /* V13.7 – serverautoritärer Farb-Slotautomat vor dem Startspieler-Rad */
     body.lobby-page .color-wheel-mode-strip{border-color:rgba(255,197,76,.18);background:linear-gradient(135deg,rgba(255,184,61,.07),rgba(124,92,255,.07));}
     body.lobby-page .color-wheel-panel{display:none;margin:17px 0 3px;padding:16px;border:1px solid rgba(255,255,255,.11);border-radius:24px;background:radial-gradient(circle at 50% -18%,rgba(255,206,92,.15),transparent 42%),linear-gradient(180deg,rgba(13,18,31,.95),rgba(5,8,16,.97));overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 42px rgba(0,0,0,.22);}
@@ -1148,6 +1173,22 @@
               <input id="bossModeToggle" type="checkbox" />
               Bossmodus
             </label>
+          </div>
+          <div class="room-mode-strip board-theme-strip">
+            <div class="room-mode-copy">
+              <strong>🪵 Brettdesign</strong>
+              <small>Der Host wählt das Spielbrett für den ganzen Raum. Die Wahl gilt für alle Spieler und bleibt auch bei Reconnect/Revanche erhalten.</small>
+            </div>
+            <div class="board-theme-choice" role="radiogroup" aria-label="Brettdesign wählen">
+              <button id="boardThemeClassic" class="board-theme-card" type="button" data-board-theme="classic" role="radio" aria-checked="false">
+                <div class="board-theme-preview classic" aria-hidden="true"></div>
+                <div class="board-theme-card-copy"><span><strong>Klassisch</strong><small>Dunkles Originalbrett</small></span><span class="board-theme-check">✓</span></div>
+              </button>
+              <button id="boardThemeWood" class="board-theme-card active" type="button" data-board-theme="wood" role="radio" aria-checked="true">
+                <div class="board-theme-preview wood" aria-hidden="true"></div>
+                <div class="board-theme-card-copy"><span><strong>Holzbrett</strong><small>Helles Premium-Holz</small></span><span class="board-theme-check">✓</span></div>
+              </button>
+            </div>
           </div>
           <div class="room-mode-strip color-wheel-mode-strip">
             <div class="room-mode-copy">
@@ -1302,6 +1343,7 @@
       const actionToggle = $("actionToggle");
       const bossModeToggle = $("bossModeToggle");
       const colorWheelToggle = $("colorWheelToggle");
+      const boardThemeBtns = Array.from(document.querySelectorAll('[data-board-theme]'));
       const colorWheelPanel = $("colorWheelPanel");
       const colorSlotShell = $("colorSlotShell");
       const colorSlotReels = $("colorSlotReels");
@@ -1335,6 +1377,7 @@
       const roomPlayerCount = $("roomPlayerCount");
       let selectedNameKey = "";
       let roomColorMode = "manual";
+      let roomBoardTheme = "wood";
       let roomColorsAssigned = false;
       let myWheelReservationReady = false;
       let lastColorWheelSeq = 0;
@@ -1430,6 +1473,13 @@ function renderPresence(p){
   latestPresence = p;
   const previousColorMode = roomColorMode;
   roomColorMode = p.colorMode === "wheel" ? "wheel" : "manual";
+  roomBoardTheme = String(p.boardTheme||"wood").toLowerCase() === "classic" ? "classic" : "wood";
+  try{
+    const rc=normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+    if(rc) localStorage.setItem('barikade_board_theme_'+rc, roomBoardTheme);
+    localStorage.setItem('barikade_board_theme', roomBoardTheme);
+  }catch(_e){}
+  applyBoardThemeUI();
   roomColorsAssigned = !!p.colorsAssigned;
   const res = p.reservations || {};
   const locks = p.colorLocks || {};
@@ -1657,6 +1707,32 @@ function startPresencePoll(){
       }
       function setBossMode(on){
         localStorage.setItem('barikade_boss_mode', on ? 'boss' : 'off');
+      }
+
+      function applyBoardThemeUI(){
+        boardThemeBtns.forEach(btn=>{
+          const theme=String(btn.getAttribute('data-board-theme')||'').toLowerCase();
+          const active=theme===roomBoardTheme;
+          btn.classList.toggle('active',active);
+          btn.setAttribute('aria-checked',active?'true':'false');
+          btn.disabled=!isHostMode();
+          btn.title=isHostMode() ? (active ? 'Aktuell ausgewählt' : 'Dieses Brett für alle wählen') : 'Nur der Host kann das Brettdesign ändern';
+        });
+      }
+
+      async function setServerBoardTheme(theme){
+        const rc=normRoom(roomInp.value);
+        if(!rc) return {ok:false,error:'NO_CODE'};
+        const normalized=String(theme||'').toLowerCase()==='classic'?'classic':'wood';
+        try{
+          const r=await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/board-theme`,{
+            method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({theme:normalized})
+          });
+          const j=await r.json().catch(()=>null);
+          if(!r.ok || !j?.ok) return {ok:false,error:j?.error||'ERR'};
+          renderPresence(j);
+          return {ok:true,data:j};
+        }catch(_e){ return {ok:false,error:'NET'}; }
       }
 
       async function setServerColorMode(mode){
@@ -1989,6 +2065,7 @@ function startPresencePoll(){
         setRoom(rc);
         setMode('host');
         applyColorWheelUI();
+        applyBoardThemeUI();
         await ensureRoom(rc);
         toast('Host: Raum ' + rc);
         startPresencePoll();
@@ -2004,6 +2081,7 @@ function startPresencePoll(){
         setRoom(rc);
         setMode('client');
         applyColorWheelUI();
+        applyBoardThemeUI();
         await ensureRoom(rc);
         toast('Client: Raum ' + rc);
         startPresencePoll();
@@ -2050,6 +2128,26 @@ function startPresencePoll(){
           toast(bossModeToggle.checked ? 'Action‑Bossmodus: AN' : 'Action‑Bossmodus: AUS');
         });
       }
+
+      boardThemeBtns.forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          if(!isHostMode()){ applyBoardThemeUI(); toast('Nur der Host kann das Brettdesign ändern'); return; }
+          const rc=normRoom(roomInp.value);
+          if(!rc){ toast('Bitte zuerst einen Raum erstellen'); return; }
+          const theme=String(btn.getAttribute('data-board-theme')||'').toLowerCase()==='classic'?'classic':'wood';
+          if(theme===roomBoardTheme){ toast(theme==='wood'?'Holzbrett ist bereits gewählt':'Klassisches Brett ist bereits gewählt'); return; }
+          boardThemeBtns.forEach(b=>b.disabled=true);
+          const rr=await setServerBoardTheme(theme);
+          if(!rr.ok){
+            applyBoardThemeUI();
+            if(rr.error==='PLAYERS_ALREADY_IN_GAME') toast('Brettdesign kann nach Spieleintritt nicht mehr geändert werden');
+            else if(rr.error==='NO_ROOM') toast('Raum ist noch nicht erstellt');
+            else toast('Brettdesign konnte nicht geändert werden');
+            return;
+          }
+          toast(theme==='wood'?'🪵 Holzbrett gewählt':'🌙 Klassisches Brett gewählt');
+        });
+      });
 
       if(colorWheelToggle){
         colorWheelToggle.addEventListener('change', async ()=>{
