@@ -4826,12 +4826,14 @@ function showEpicWin(winnerColor){
   // ---- Canvas visual primitives (UI only) ----
   function drawPieceDisc(x, y, rr, color, opts={}){
     const col = COLORS[color] || color || "#ffffff";
-    const woodStyle = getBoardThemeVisual() === "wood";
+    const pieceTheme = getBoardThemeVisual();
+    const premiumBoardStyle = pieceTheme !== "classic";
+    const stonePieceStyle = pieceTheme === "stone";
 
-    if(woodStyle){
+    if(premiumBoardStyle){
       ctx.save();
 
-      // Holzbrett: lackierter, physischer Spielstein mit ruhiger Tiefe.
+      // Premium-Bretter: lackierter, physischer Spielstein mit ruhiger Tiefe.
       // Keine laufende Animation – nur Licht, Schatten und Materialwirkung.
       if(opts.grounded !== false){
         ctx.fillStyle="rgba(45,25,12,.30)";
@@ -4846,11 +4848,11 @@ function showEpicWin(winnerColor){
       base.addColorStop(.30,col);
       base.addColorStop(.76,col);
       base.addColorStop(1,"rgba(18,12,10,.58)");
-      ctx.shadowColor="rgba(42,23,10,.35)";
+      ctx.shadowColor=stonePieceStyle?"rgba(0,0,0,.44)":"rgba(42,23,10,.35)";
       ctx.shadowBlur=Math.max(5,rr*.42);
       ctx.shadowOffsetY=Math.max(2,rr*.16);
       ctx.fillStyle=base;
-      ctx.strokeStyle="rgba(35,25,22,.92)";
+      ctx.strokeStyle=stonePieceStyle?"rgba(18,22,25,.94)":"rgba(35,25,22,.92)";
       ctx.lineWidth=Math.max(2,rr*.12);
       ctx.beginPath();ctx.arc(x,y,rr,0,Math.PI*2);ctx.fill();ctx.stroke();
 
@@ -5064,6 +5066,49 @@ function showEpicWin(winnerColor){
       return;
     }
 
+    if(getBoardThemeVisual()==="stone"){
+      ctx.save();
+      // Burgstein: kleine echte Steinmauer als Spielteil.
+      const w=r*1.70, h=r*1.18, d=Math.max(3,r*.15);
+      const left=x-w/2, top=y-h/2, rowH=h/3;
+      const roundRect=(rx,ry,rw,rh,rad)=>{
+        ctx.beginPath();
+        const q=Math.max(0,Math.min(rad,Math.abs(rw)/2,Math.abs(rh)/2));
+        if(typeof ctx.roundRect==="function") ctx.roundRect(rx,ry,rw,rh,q);
+        else{ctx.moveTo(rx+q,ry);ctx.lineTo(rx+rw-q,ry);ctx.quadraticCurveTo(rx+rw,ry,rx+rw,ry+q);ctx.lineTo(rx+rw,ry+rh-q);ctx.quadraticCurveTo(rx+rw,ry+rh,rx+rw-q,ry+rh);ctx.lineTo(rx+q,ry+rh);ctx.quadraticCurveTo(rx,ry+rh,rx,ry+rh-q);ctx.lineTo(rx,ry+q);ctx.quadraticCurveTo(rx,ry,rx+q,ry);ctx.closePath();}
+      };
+      ctx.fillStyle="rgba(0,0,0,.38)";ctx.beginPath();ctx.ellipse(x+d*.20,y+h*.55,w*.57,h*.18,0,0,Math.PI*2);ctx.fill();
+      const base=ctx.createLinearGradient(left,top+h,left,top+h+r*.24);
+      base.addColorStop(0,"#626a70");base.addColorStop(.55,"#42494f");base.addColorStop(1,"#272d31");
+      ctx.fillStyle=base;roundRect(left-r*.08,top+h-r*.03,w+r*.24,Math.max(4,r*.23),Math.max(2,r*.08));ctx.fill();
+      ctx.fillStyle="#22272b";roundRect(left-r*.06,top-r*.04,w+r*.14,h+r*.07,Math.max(2,r*.08));ctx.fill();
+      // Seitenfläche
+      const side=ctx.createLinearGradient(left+w,top,left+w+d,top+h);side.addColorStop(0,"#656d73");side.addColorStop(1,"#30363b");
+      ctx.fillStyle=side;ctx.beginPath();ctx.moveTo(left+w,top);ctx.lineTo(left+w+d,top+d*.7);ctx.lineTo(left+w+d,top+h);ctx.lineTo(left+w,top+h);ctx.closePath();ctx.fill();
+      const rows=[[.50,.50],[.34,.33,.33],[.46,.54]];
+      for(let row=0;row<3;row++){
+        let cursor=left;
+        for(const frac of rows[row]){
+          const gap=Math.max(1,r*.045);
+          const bw=w*frac-gap;
+          const bx=cursor+gap*.5, by=top+row*rowH+gap*.5, bh=rowH-gap;
+          const g=ctx.createLinearGradient(bx,by,bx,by+bh);
+          g.addColorStop(0,row===0?"#8a9298":"#7a8288");g.addColorStop(.52,"#5b6369");g.addColorStop(1,"#3b4247");
+          ctx.fillStyle=g;roundRect(bx,by,bw,bh,Math.max(1.5,r*.055));ctx.fill();
+          ctx.strokeStyle="rgba(20,24,27,.66)";ctx.lineWidth=Math.max(.7,r*.023);roundRect(bx,by,bw,bh,Math.max(1.5,r*.055));ctx.stroke();
+          ctx.strokeStyle="rgba(236,239,240,.18)";ctx.beginPath();ctx.moveTo(bx+bw*.09,by+bh*.19);ctx.lineTo(bx+bw*.84,by+bh*.19);ctx.stroke();
+          cursor += w*frac;
+        }
+      }
+      // Bronze-Bolzen verbinden die Mauer optisch mit dem Burgbrett.
+      for(const bx of [x-w*.34,x+w*.34]){
+        ctx.fillStyle="#b78c45";ctx.beginPath();ctx.arc(bx,top+rowH*.52,Math.max(1.6,r*.07),0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="rgba(35,27,15,.60)";ctx.lineWidth=.7;ctx.stroke();
+      }
+      ctx.restore();
+      return;
+    }
+
     // Klassisches Brett: bisheriger runder Mauer-Marker unverändert.
 
     ctx.save();
@@ -5262,7 +5307,8 @@ function showEpicWin(winnerColor){
 
   // ===== Brettdesign – serverseitig gewählt, Client zeichnet nur =====
   function normalizeBoardThemeVisual(theme){
-    return String(theme||"").toLowerCase().trim() === "classic" ? "classic" : "wood";
+    const v=String(theme||"").toLowerCase().trim();
+    return (v==="classic" || v==="wood" || v==="stone") ? v : "wood";
   }
   function getBoardThemeVisual(){
     try{
@@ -5293,7 +5339,7 @@ function showEpicWin(winnerColor){
     ctx.restore();
   }
 
-  function drawStartFieldAccent(x,y,r,color,useWoodBoard){
+  function drawStartFieldAccent(x,y,r,color,useWoodBoard,useStoneBoard=false){
     const col = COLORS[color] || color || "#ffffff";
     ctx.save();
     if(useWoodBoard){
@@ -5330,6 +5376,22 @@ function showEpicWin(winnerColor){
       ctx.font = `900 ${Math.max(8,Math.round(br*.95))}px system-ui`;
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText("1", bx, by+0.4);
+    }else if(useStoneBoard){
+      // Burgstein: farbiges Emaille-Inlay mit Bronzeplakette „1“.
+      ctx.strokeStyle="rgba(25,29,32,.82)";
+      ctx.lineWidth=Math.max(3,r*.15);
+      ctx.beginPath();ctx.arc(x,y,r+4,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="rgba(188,148,72,.82)";
+      ctx.lineWidth=Math.max(1.5,r*.07);
+      ctx.beginPath();ctx.arc(x,y,r+2.2,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle=col;
+      ctx.lineWidth=Math.max(2,r*.105);
+      ctx.beginPath();ctx.arc(x,y,r-.2,0,Math.PI*2);ctx.stroke();
+      const bx=x+r*.69, by=y-r*.65, br=Math.max(7,r*.34);
+      ctx.fillStyle="rgba(24,28,31,.92)";ctx.beginPath();ctx.arc(bx,by,br+2.2,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(193,151,72,.86)";ctx.lineWidth=Math.max(1,br*.13);ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(bx,by,br*.72,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fff";ctx.font=`900 ${Math.max(8,Math.round(br*.90))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("1",bx,by+.4);
     }else{
       // Klassisch: klarer farbiger Start-Ring + kleines Startbadge.
       ctx.shadowColor = col;
@@ -5542,6 +5604,154 @@ function showEpicWin(winnerColor){
     ctx.restore();
   }
 
+  function drawPremiumStoneBoard(){
+    const br=getBoardPlateScreenRect();
+    if(!br || br.w<20 || br.h<20) return;
+    const radius=Math.max(16,Math.min(34,20*view.s));
+
+    ctx.save();
+    // Massive Burgsteinplatte mit tiefer Schattenkante.
+    ctx.shadowColor="rgba(0,0,0,.58)";
+    ctx.shadowBlur=Math.max(18,32*view.s);
+    ctx.shadowOffsetY=Math.max(7,12*view.s);
+    const outer=ctx.createLinearGradient(br.x,br.y,br.x,br.y+br.h);
+    outer.addColorStop(0,"#343a40");
+    outer.addColorStop(.36,"#23292f");
+    outer.addColorStop(1,"#151a1f");
+    ctx.fillStyle=outer;
+    boardRoundRectPath(br.x,br.y,br.w,br.h,radius);ctx.fill();
+    ctx.shadowColor="transparent";
+
+    // Dunkle Randsteine mit Bronze-Inlay.
+    ctx.lineWidth=Math.max(9,15*view.s);
+    ctx.strokeStyle="rgba(25,29,33,.98)";
+    boardRoundRectPath(br.x+4,br.y+4,br.w-8,br.h-8,Math.max(12,radius-3));ctx.stroke();
+    ctx.lineWidth=Math.max(2,3.2*view.s);
+    ctx.strokeStyle="rgba(174,139,72,.70)";
+    boardRoundRectPath(br.x+10,br.y+10,br.w-20,br.h-20,Math.max(10,radius-7));ctx.stroke();
+    ctx.lineWidth=Math.max(1,1.25*view.s);
+    ctx.strokeStyle="rgba(236,210,144,.30)";
+    boardRoundRectPath(br.x+13,br.y+13,br.w-26,br.h-26,Math.max(9,radius-9));ctx.stroke();
+
+    const inset=Math.max(13,18*view.s);
+    const ix=br.x+inset, iy=br.y+inset, iw=br.w-inset*2, ih=br.h-inset*2;
+    const innerRadius=Math.max(10,radius-inset*.40);
+    const slab=ctx.createLinearGradient(ix,iy,ix+iw*.25,iy+ih);
+    slab.addColorStop(0,"#666d74");
+    slab.addColorStop(.28,"#555c63");
+    slab.addColorStop(.64,"#454c53");
+    slab.addColorStop(1,"#383f46");
+    ctx.fillStyle=slab;
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);ctx.fill();
+
+    ctx.save();
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);ctx.clip();
+
+    // Große ruhige Steinplatten-Fugen – deterministisch, kein Flimmern.
+    const rows=5;
+    ctx.lineWidth=Math.max(1,1.25*view.s);
+    for(let row=1;row<rows;row++){
+      const yy=iy+(ih/rows)*row;
+      ctx.strokeStyle="rgba(24,29,33,.28)";
+      ctx.beginPath();ctx.moveTo(ix,yy);ctx.lineTo(ix+iw,yy);ctx.stroke();
+      ctx.strokeStyle="rgba(255,255,255,.055)";
+      ctx.beginPath();ctx.moveTo(ix,yy+1.2);ctx.lineTo(ix+iw,yy+1.2);ctx.stroke();
+    }
+    for(let row=0;row<rows;row++){
+      const y0=iy+(ih/rows)*row;
+      const y1=iy+(ih/rows)*(row+1);
+      const offset=(row%2)*.12;
+      for(const frac of [.27+offset,.57+offset,.84+offset]){
+        if(frac>=.97) continue;
+        const xx=ix+iw*frac;
+        ctx.strokeStyle="rgba(26,30,34,.22)";
+        ctx.beginPath();ctx.moveTo(xx,y0+2);ctx.lineTo(xx,y1-2);ctx.stroke();
+        ctx.strokeStyle="rgba(255,255,255,.04)";
+        ctx.beginPath();ctx.moveTo(xx+1,y0+2);ctx.lineTo(xx+1,y1-2);ctx.stroke();
+      }
+    }
+
+    // Feine natürliche Schieferadern.
+    const veins=[
+      [.08,.20,.34,.16,.51,.22],
+      [.58,.10,.67,.18,.90,.15],
+      [.18,.67,.35,.61,.49,.69],
+      [.62,.78,.77,.73,.94,.80],
+      [.08,.88,.20,.82,.35,.86]
+    ];
+    ctx.lineWidth=Math.max(.75,.9*view.s);
+    for(let i=0;i<veins.length;i++){
+      const v=veins[i];
+      ctx.strokeStyle=i%2?"rgba(222,228,231,.070)":"rgba(22,27,31,.15)";
+      ctx.beginPath();
+      ctx.moveTo(ix+iw*v[0],iy+ih*v[1]);
+      ctx.bezierCurveTo(ix+iw*v[2],iy+ih*v[3],ix+iw*v[4],iy+ih*v[5],ix+iw*Math.min(.98,v[4]+.11),iy+ih*(v[5]+.015));
+      ctx.stroke();
+    }
+
+    // Licht von oben, Tiefe nach unten.
+    const sheen=ctx.createLinearGradient(ix,iy,ix,iy+ih);
+    sheen.addColorStop(0,"rgba(255,255,255,.105)");
+    sheen.addColorStop(.42,"rgba(255,255,255,.018)");
+    sheen.addColorStop(1,"rgba(0,0,0,.16)");
+    ctx.fillStyle=sheen;ctx.fillRect(ix,iy,iw,ih);
+    ctx.restore();
+
+    // Bronzenieten in den Ecken.
+    const pins=[[ix+iw*.055,iy+ih*.065],[ix+iw*.945,iy+ih*.065],[ix+iw*.055,iy+ih*.935],[ix+iw*.945,iy+ih*.935]];
+    for(const [px,py] of pins){
+      const pr=Math.max(3,3.8*view.s);
+      const g=ctx.createRadialGradient(px-pr*.35,py-pr*.4,pr*.1,px,py,pr);
+      g.addColorStop(0,"#f5dfa3");g.addColorStop(.34,"#c29a50");g.addColorStop(.76,"#80612e");g.addColorStop(1,"#4a3519");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(22,25,27,.56)";ctx.lineWidth=Math.max(.8,pr*.17);ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.stroke();
+    }
+
+    ctx.strokeStyle="rgba(17,21,24,.46)";ctx.lineWidth=Math.max(1.4,2.2*view.s);
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);ctx.stroke();
+    ctx.strokeStyle="rgba(226,214,181,.16)";ctx.lineWidth=Math.max(1,1.1*view.s);
+    boardRoundRectPath(ix+2,iy+2,iw-4,ih-4,Math.max(8,innerRadius-2));ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawStoneHouseSocket(x,y,r,color,slot){
+    ctx.save();
+    const col=color||"#fff";
+    ctx.fillStyle="rgba(18,22,25,.72)";ctx.beginPath();ctx.arc(x,y,r*1.05,0,Math.PI*2);ctx.fill();
+    const rim=ctx.createRadialGradient(x-r*.28,y-r*.32,r*.05,x,y,r);
+    rim.addColorStop(0,"rgba(255,255,255,.64)");rim.addColorStop(.19,col);rim.addColorStop(.68,col);rim.addColorStop(1,"rgba(20,24,27,.88)");
+    ctx.fillStyle=rim;ctx.beginPath();ctx.arc(x,y,r*.94,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(191,151,74,.76)";ctx.lineWidth=Math.max(1.2,r*.06);ctx.beginPath();ctx.arc(x,y,r*.80,0,Math.PI*2);ctx.stroke();
+    const inner=r*.59;
+    const well=ctx.createRadialGradient(x-r*.18,y-r*.22,r*.03,x,y,inner);
+    well.addColorStop(0,"#676f76");well.addColorStop(.48,"#4b5258");well.addColorStop(1,"#262c31");
+    ctx.fillStyle=well;ctx.beginPath();ctx.arc(x,y,inner,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(12,15,17,.60)";ctx.lineWidth=Math.max(1.2,r*.065);ctx.beginPath();ctx.arc(x,y,inner*.96,Math.PI*1.02,Math.PI*1.84);ctx.stroke();
+    ctx.strokeStyle="rgba(235,239,240,.18)";ctx.lineWidth=Math.max(.9,r*.04);ctx.beginPath();ctx.arc(x,y,inner*.93,Math.PI*.05,Math.PI*.82);ctx.stroke();
+    if(slot){
+      ctx.fillStyle="rgba(218,223,225,.38)";ctx.font=`800 ${Math.max(9,Math.round(r*.48))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(String(slot),x,y+.5);
+    }
+    ctx.restore();
+  }
+
+  function drawStoneFieldWell(x,y,r){
+    ctx.save();
+    const rim=ctx.createRadialGradient(x-r*.22,y-r*.27,r*.05,x,y,r*1.04);
+    rim.addColorStop(0,"#727a81");rim.addColorStop(.42,"#50585e");rim.addColorStop(1,"#23292e");
+    ctx.fillStyle=rim;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(11,14,16,.54)";ctx.lineWidth=Math.max(1.3,r*.075);ctx.beginPath();ctx.arc(x,y,r*.93,Math.PI*1.02,Math.PI*1.85);ctx.stroke();
+    const ir=r*.79;
+    const well=ctx.createRadialGradient(x-r*.22,y-r*.24,r*.04,x,y,ir*1.06);
+    well.addColorStop(0,"#666e75");well.addColorStop(.35,"#4e565d");well.addColorStop(.72,"#394047");well.addColorStop(1,"#252b30");
+    ctx.fillStyle=well;ctx.beginPath();ctx.arc(x,y,ir,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(235,239,240,.18)";ctx.lineWidth=Math.max(1,r*.052);ctx.beginPath();ctx.arc(x,y,ir*.92,Math.PI*.08,Math.PI*.82);ctx.stroke();
+    // Drei feine Meißel-/Steinadern, statisch.
+    ctx.strokeStyle="rgba(196,203,207,.075)";ctx.lineWidth=Math.max(.7,r*.025);
+    ctx.beginPath();ctx.moveTo(x-ir*.56,y-ir*.16);ctx.lineTo(x+ir*.52,y-ir*.24);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-ir*.46,y+ir*.17);ctx.lineTo(x+ir*.42,y+ir*.12);ctx.stroke();
+    ctx.restore();
+  }
+
   function drawWoodHouseSocket(x,y,r,color,slot){
     ctx.save();
     const col=color || "#ffffff";
@@ -5680,7 +5890,10 @@ function showEpicWin(winnerColor){
 
     const boardTheme = getBoardThemeVisual();
     const useWoodBoard = boardTheme === "wood";
+    const useStoneBoard = boardTheme === "stone";
+    const usePremiumBoard = useWoodBoard || useStoneBoard;
     if(useWoodBoard) drawPremiumWoodBoard();
+    else if(useStoneBoard) drawPremiumStoneBoard();
     else drawClassicBoardGrid(rect);
 
     // Action-Bossmodus: zwei Spezialfelder sind sichtbar mit dem Brett verbunden,
@@ -5701,6 +5914,14 @@ function showEpicWin(winnerColor){
             ctx.strokeStyle="rgba(111,65,137,.70)";ctx.lineWidth=Math.max(2,2.7*view.s);
             ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
             ctx.strokeStyle="rgba(235,203,255,.34)";ctx.lineWidth=Math.max(1,1.1*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y-1);ctx.lineTo(center.x,center.y-1);ctx.stroke();
+          }else if(useStoneBoard){
+            // Burgstein: in den Stein eingelassene violette Portalrinne.
+            ctx.strokeStyle="rgba(16,19,22,.72)";ctx.lineWidth=Math.max(7,9*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(87,65,101,.88)";ctx.lineWidth=Math.max(3,3.6*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(205,181,216,.25)";ctx.lineWidth=Math.max(1,1.0*view.s);
             ctx.beginPath();ctx.moveTo(a.x,a.y-1);ctx.lineTo(center.x,center.y-1);ctx.stroke();
           }else{
             ctx.strokeStyle="rgba(97,57,148,.34)"; ctx.lineWidth=10;
@@ -5762,6 +5983,24 @@ function showEpicWin(winnerColor){
         ctx.moveTo(sa.x-nx*off,sa.y-ny*off);
         ctx.lineTo(sb.x-nx*off,sb.y-ny*off);
         ctx.stroke();
+      }else if(useStoneBoard){
+        // Burgstein: eingemeißelte Rinne mit dunklem Grund und heller Stein-Fase.
+        const dx=sb.x-sa.x, dy=sb.y-sa.y;
+        const len=Math.max(1,Math.hypot(dx,dy));
+        const nx=-dy/len, ny=dx/len;
+        const off=Math.max(.65,.95*view.s);
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(15,19,22,.62)";
+        ctx.lineWidth=Math.max(5.5,7.1*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        const groove=ctx.createLinearGradient(sa.x,sa.y,sb.x,sb.y);
+        groove.addColorStop(0,"rgba(55,62,68,.94)");groove.addColorStop(.50,"rgba(43,50,56,.97)");groove.addColorStop(1,"rgba(58,65,71,.94)");
+        ctx.strokeStyle=groove;ctx.lineWidth=Math.max(3.2,4.1*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        ctx.strokeStyle="rgba(226,232,234,.17)";ctx.lineWidth=Math.max(.9,1.15*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x+nx*off,sa.y+ny*off);ctx.lineTo(sb.x+nx*off,sb.y+ny*off);ctx.stroke();
+        ctx.strokeStyle="rgba(8,11,13,.32)";ctx.lineWidth=Math.max(.7,.9*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x-nx*off,sa.y-ny*off);ctx.lineTo(sb.x-nx*off,sb.y-ny*off);ctx.stroke();
       }else{
         // Originaler dunkler Brettstil.
         ctx.shadowColor="transparent";
@@ -5825,11 +6064,17 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         fill=COLORS[n.flags?.houseColor]||COLORS.node;
       }
 
-      // Holzbrett: normale Lauf-Felder als Mulden und Häuser als eingelassene Farb-Aufnahmen.
-      // Klassik bleibt exakt beim bisherigen Scheiben-Look.
+      // Jedes Brett besitzt seine eigene Materialdarstellung der Felder.
       if(useWoodBoard && n.kind==="board" && n.id!==goalNodeId) drawWoodFieldWell(s.x,s.y,r);
       else if(useWoodBoard && n.kind==="house") drawWoodHouseSocket(s.x,s.y,r,fill,n.flags?.houseSlot);
+      else if(useStoneBoard && n.kind==="board") drawStoneFieldWell(s.x,s.y,r);
+      else if(useStoneBoard && n.kind==="house") drawStoneHouseSocket(s.x,s.y,r,fill,n.flags?.houseSlot);
       else drawClassicFieldTile(s.x,s.y,r,fill);
+
+      // Erstes Feld nach dem Haus ist in allen Designs klar als Feld 1 markiert.
+      if(n.kind==="board" && n.flags?.startColor){
+        drawStartFieldAccent(s.x,s.y,r,String(n.flags.startColor).toLowerCase(),useWoodBoard,useStoneBoard);
+      }
 
       const bossEventFieldIds = Array.isArray(state?.boss?.eventFields)
         ? state.boss.eventFields.map(String)
@@ -5878,6 +6123,20 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
           ctx.strokeStyle="rgba(242,226,247,.42)";ctx.lineWidth=Math.max(1,r*.042);
           ctx.beginPath();ctx.arc(s.x,s.y,r*.61,Math.PI*1.05,Math.PI*1.78);ctx.stroke();
           ctx.fillStyle="rgba(255,247,255,.98)";
+        }else if(useStoneBoard){
+          // Burgstein: Bronze-Fassung mit violettem Emaille im gemeißelten Sockel.
+          ctx.fillStyle="rgba(17,20,23,.76)";ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(26,31,35,.98)";ctx.lineWidth=Math.max(4,r*.19);ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+          const brass=ctx.createRadialGradient(s.x-r*.28,s.y-r*.32,r*.05,s.x,s.y,r+3);
+          brass.addColorStop(0,"#ead69c");brass.addColorStop(.30,"#b98e48");brass.addColorStop(.70,"#76572a");brass.addColorStop(1,"#453218");
+          ctx.strokeStyle=brass;ctx.lineWidth=Math.max(2.2,r*.105);ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
+          const eg=ctx.createRadialGradient(s.x-r*.22,s.y-r*.27,r*.04,s.x,s.y,r*.90);
+          eg.addColorStop(0,"#9a75ab");eg.addColorStop(.32,"#684d77");eg.addColorStop(.74,"#3f3049");eg.addColorStop(1,"#201923");
+          ctx.fillStyle=eg;ctx.beginPath();ctx.arc(s.x,s.y,r*.84,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(192,150,72,.60)";ctx.lineWidth=Math.max(1,r*.045);ctx.beginPath();ctx.arc(s.x,s.y,r*.69,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle="rgba(206,169,94,.88)";
+          for(let k=0;k<4;k++){const a=-Math.PI/2+k*Math.PI/2;const px=s.x+Math.cos(a)*r*.66,py=s.y+Math.sin(a)*r*.66;ctx.beginPath();ctx.arc(px,py,Math.max(1.6,r*.06),0,Math.PI*2);ctx.fill();}
+          ctx.fillStyle="rgba(250,244,255,.98)";
         }else{
           ctx.shadowColor="rgba(180,110,255,.46)";
           ctx.shadowBlur=12;
@@ -5942,6 +6201,18 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
           ctx.strokeStyle="rgba(255,249,227,.48)";ctx.lineWidth=Math.max(1,r*.040);
           ctx.beginPath();ctx.arc(s.x,s.y,r*.69,Math.PI*1.04,Math.PI*1.80);ctx.stroke();
           ctx.fillStyle="rgba(117,74,24,.98)";
+        }else if(useStoneBoard){
+          // Burgstein: bronzenes Ziel-Siegel mit hellem Elfenbein-Kern.
+          ctx.fillStyle="rgba(17,20,23,.78)";ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(26,31,35,.98)";ctx.lineWidth=Math.max(4,r*.19);ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+          const gb=ctx.createRadialGradient(s.x-r*.28,s.y-r*.32,r*.05,s.x,s.y,r+3);
+          gb.addColorStop(0,"#f4dfa6");gb.addColorStop(.30,"#bd934b");gb.addColorStop(.70,"#76582b");gb.addColorStop(1,"#453219");
+          ctx.strokeStyle=gb;ctx.lineWidth=Math.max(2.2,r*.105);ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
+          const gg=ctx.createRadialGradient(s.x-r*.22,s.y-r*.25,r*.04,s.x,s.y,r*.90);
+          gg.addColorStop(0,"#fff9e9");gg.addColorStop(.36,"#ded2b4");gg.addColorStop(.74,"#a99772");gg.addColorStop(1,"#63533a");
+          ctx.fillStyle=gg;ctx.beginPath();ctx.arc(s.x,s.y,r*.84,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(190,149,72,.62)";ctx.lineWidth=Math.max(1,r*.045);ctx.beginPath();ctx.arc(s.x,s.y,r*.66,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle="rgba(86,62,31,.98)";
         }else{
           ctx.shadowColor="rgba(255,190,76,0.48)";
           ctx.shadowBlur=20;
@@ -5961,7 +6232,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       }
 
       if(n.kind==="house" && n.flags?.houseSlot){
-        if(!useWoodBoard){
+        if(!usePremiumBoard){
           // Klassisches Brett: bisherige dunkle Slotnummer unverändert.
           ctx.fillStyle="rgba(0,0,0,0.55)";
           ctx.beginPath(); ctx.arc(s.x,s.y,r*0.55,0,Math.PI*2); ctx.fill();
@@ -6066,6 +6337,43 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
           continue;
         }
 
+        if(useStoneBoard){
+          // Burgstein: schweres eingelassenes Boss-Siegel aus Eisen, Bronze und dunklem Emaille.
+          ctx.save();
+          ctx.fillStyle="rgba(0,0,0,.34)";
+          ctx.beginPath();ctx.ellipse(ss.x,ss.y+br*.50,br*.90,br*.22,0,0,Math.PI*2);ctx.fill();
+
+          const outer=ctx.createRadialGradient(ss.x-br*.30,ss.y-br*.30,br*.06,ss.x,ss.y,br*1.12);
+          outer.addColorStop(0,"#7c858c");outer.addColorStop(.28,"#555d63");outer.addColorStop(.68,"#30363b");outer.addColorStop(1,"#171b1f");
+          ctx.fillStyle=outer;ctx.beginPath();ctx.arc(ss.x,ss.y,br+8,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(191,151,74,.78)";ctx.lineWidth=Math.max(2,r*.09);ctx.beginPath();ctx.arc(ss.x,ss.y,br+3,0,Math.PI*2);ctx.stroke();
+
+          // Acht feste Metallzacken / Runen.
+          ctx.fillStyle=boss?"rgba(111,49,57,.96)":"rgba(71,55,83,.96)";
+          for(let k=0;k<8;k++){
+            const a=(Math.PI*2/8)*k-Math.PI/2;
+            const a2=a+.16,a3=a-.16,r1=br+1,r2=br+12;
+            ctx.beginPath();ctx.moveTo(ss.x+Math.cos(a)*r2,ss.y+Math.sin(a)*r2);ctx.lineTo(ss.x+Math.cos(a2)*r1,ss.y+Math.sin(a2)*r1);ctx.lineTo(ss.x+Math.cos(a3)*r1,ss.y+Math.sin(a3)*r1);ctx.closePath();ctx.fill();
+          }
+
+          const core=ctx.createRadialGradient(ss.x-br*.26,ss.y-br*.30,br*.05,ss.x,ss.y,br);
+          core.addColorStop(0,boss?"#74434a":"#6f5b79");core.addColorStop(.42,boss?"#482a30":"#44374b");core.addColorStop(1,"#1d1b20");
+          ctx.fillStyle=core;ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle=boss?"rgba(189,118,127,.78)":"rgba(166,142,178,.76)";ctx.lineWidth=Math.max(2.2,r*.12);ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle="rgba(194,152,74,.55)";ctx.lineWidth=Math.max(1,r*.04);ctx.beginPath();ctx.arc(ss.x,ss.y,br*.79,0,Math.PI*2);ctx.stroke();
+          for(let k=0;k<8;k++){const a=(Math.PI*2/8)*k-Math.PI/2;const r1=br*.90,r2=br*1.01;ctx.beginPath();ctx.moveTo(ss.x+Math.cos(a)*r1,ss.y+Math.sin(a)*r1);ctx.lineTo(ss.x+Math.cos(a)*r2,ss.y+Math.sin(a)*r2);ctx.stroke();}
+
+          ctx.textAlign="center";ctx.textBaseline="middle";
+          ctx.fillStyle="rgba(250,246,240,.99)";ctx.font=`1000 ${Math.max(18,Math.round(br*.70))}px system-ui`;
+          ctx.fillText(bossAtPortal?(boss?.icon||"👹"):(boss?"↗":"👹"),ss.x,ss.y-5);
+          ctx.font=`900 ${Math.max(8,Math.round(br*.21))}px system-ui`;ctx.fillStyle=boss?"rgba(238,202,206,.95)":"rgba(226,215,232,.94)";
+          ctx.fillText(bossAtPortal?"1/1 LEBEN":(boss?"IM SPIEL":`BOSSFELD ${i+1}`),ss.x,ss.y+br*.58);
+          ctx.font=`900 ${Math.max(9,Math.round(br*.22))}px system-ui`;ctx.fillStyle=boss?"#9e656d":"#8a7393";
+          ctx.fillText(bossAtPortal?"BOSS START":(boss?"PORTAL":"BOSS"),ss.x,ss.y-br-13);
+          ctx.restore();
+          continue;
+        }
+
         const pulse = 0.5 + 0.5 * Math.sin(tBoss * 3.1 + i * 0.9);
         const aura = boss ? 24 + 12*pulse : 16 + 8*pulse;
         ctx.save();
@@ -6160,15 +6468,15 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         .filter(m => !m?.piece?.color || m.piece.color === selected.color);
       const targetIds = [...new Set(selectedMoves.map(m => String(m.toId)).filter(Boolean))];
       if(targetIds.length){
-        const pulse = useWoodBoard ? 0 : (0.5 + 0.5*Math.sin(performance.now()/260));
-        if(!useWoodBoard) hasInteractivePulse = true;
+        const pulse = usePremiumBoard ? 0 : (0.5 + 0.5*Math.sin(performance.now()/260));
+        if(!usePremiumBoard) hasInteractivePulse = true;
         for(const id of targetIds){
           const n=nodeById.get(id); if(!n) continue;
           const s=worldToScreen(n);
           ctx.save();
-          if(useWoodBoard){
+          if(usePremiumBoard){
             ctx.shadowColor="transparent";
-            ctx.strokeStyle="rgba(49,129,88,.88)";
+            ctx.strokeStyle=useStoneBoard?"rgba(123,181,147,.90)":"rgba(49,129,88,.88)";
             ctx.lineWidth=3;
             ctx.beginPath();ctx.arc(s.x,s.y,r+5,0,Math.PI*2);ctx.stroke();
             ctx.strokeStyle="rgba(220,244,220,.70)";
@@ -6192,12 +6500,12 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
     }
 
     if(phase==="placing_barricade"){
-      const pulse = useWoodBoard ? 0 : (0.5 + 0.5*Math.sin(performance.now()/240));
-      if(!useWoodBoard) hasInteractivePulse = placingChoices.length > 0 || hasInteractivePulse;
+      const pulse = usePremiumBoard ? 0 : (0.5 + 0.5*Math.sin(performance.now()/240));
+      if(!usePremiumBoard) hasInteractivePulse = placingChoices.length > 0 || hasInteractivePulse;
       ctx.save();
-      if(useWoodBoard){
+      if(usePremiumBoard){
         ctx.lineWidth=3.6;
-        ctx.strokeStyle="rgba(166,111,43,.94)";
+        ctx.strokeStyle=useStoneBoard?"rgba(193,151,72,.94)":"rgba(166,111,43,.94)";
         ctx.shadowColor="transparent";
         ctx.setLineDash([7,5]);
         ctx.lineDashOffset=0;
@@ -6212,7 +6520,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       for(const id of placingChoices){
         const n=nodeById.get(id); if(!n) continue;
         const s=worldToScreen(n);
-        ctx.beginPath(); ctx.arc(s.x,s.y,r+7+(useWoodBoard?0:1.5*pulse),0,Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(s.x,s.y,r+7+(usePremiumBoard?0:1.5*pulse),0,Math.PI*2); ctx.stroke();
       }
       ctx.restore();
     }
