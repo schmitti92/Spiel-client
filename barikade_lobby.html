@@ -1421,17 +1421,21 @@ async function fetchPresence(){
   }catch(_e){ return null; }
 }
 
-async function ensureRoom(rc){
+async function ensureRoom(rc, boardThemeOverride=null){
   const code = normRoom(rc);
   if(!code) return { ok:false, error:"NO_CODE" };
   try{
+    const asHost=(localStorage.getItem('barikade_mode')||'offline')==='host';
+    const wantedTheme=String(boardThemeOverride||'').toLowerCase();
+    const payload={
+      sessionToken:getLobbySessionToken(),
+      asHost
+    };
+    if(asHost && (wantedTheme==='classic' || wantedTheme==='wood')) payload.boardTheme=wantedTheme;
     const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(code)}/ensure`, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        sessionToken:getLobbySessionToken(),
-        asHost:(localStorage.getItem('barikade_mode')||'offline')==='host'
-      })
+      body: JSON.stringify(payload)
     });
     const j = await r.json().catch(()=>null);
     if(!r.ok || !j?.ok) return { ok:false, error: j?.error || "ERR" };
@@ -1743,34 +1747,26 @@ function startPresencePoll(){
         const rc=normRoom(roomInp.value);
         if(!rc) return {ok:false,error:'NO_CODE'};
         const normalized=String(theme||'').toLowerCase()==='classic'?'classic':'wood';
-        const body=()=>JSON.stringify({theme:normalized,sessionToken:getLobbySessionToken()});
 
-        // Render kann nach Inaktivität kurz schlafen. Für eine reine Lobby-Einstellung
-        // versuchen wir deshalb kontrolliert erneut, statt beim ersten Netzfehler aufzugeben.
+        // V13.9.2: Brettdesign und Host-/Raumerstellung laufen atomar über /ensure.
+        // Damit kann der Host das Brett auch wählen, bevor der Raum bereits existiert.
         let lastError='ERR';
         for(let attempt=0; attempt<3; attempt++){
-          try{
-            if(attempt>0){
-              await new Promise(r=>setTimeout(r,650*attempt));
-              // Raum/Host-Sitzung nach einem Server-Neustart erneut sicherstellen.
-              await ensureRoom(rc).catch(()=>null);
-            }
-            const r=await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/board-theme`,{
-              method:'POST',headers:{'Content-Type':'application/json'},body:body(),cache:'no-store'
-            });
-            const j=await r.json().catch(()=>null);
-            if(r.ok && j?.ok){
-              renderPresence(j);
-              return {ok:true,data:j};
-            }
-            lastError=j?.error||'ERR';
-            // Host-/Berechtigungsfehler werden durch Wiederholen nicht besser.
-            if(lastError==='NOT_HOST') return {ok:false,error:lastError};
-            if(lastError==='NO_ROOM') continue;
-            return {ok:false,error:lastError};
-          }catch(_e){
-            lastError='NET';
+          if(attempt>0) await new Promise(r=>setTimeout(r,650*attempt));
+          const ensured=await ensureRoom(rc,normalized);
+          if(ensured.ok){
+            roomBoardTheme=normalized;
+            try{
+              localStorage.setItem('barikade_board_theme_'+rc,normalized);
+              localStorage.setItem('barikade_board_theme',normalized);
+            }catch(_e){}
+            applyBoardThemeUI();
+            const fresh=await fetchPresence();
+            if(fresh) renderPresence(fresh);
+            return {ok:true,data:fresh||ensured.data};
           }
+          lastError=ensured.error||'ERR';
+          if(lastError==='NOT_HOST') return {ok:false,error:lastError};
         }
         return {ok:false,error:lastError};
       }
@@ -2085,6 +2081,11 @@ function startPresencePoll(){
         roomInp.value = r;
         setMode(m);
         setRoom(r);
+        try{
+          const savedTheme=String(localStorage.getItem('barikade_board_theme_'+normRoom(r)) || localStorage.getItem('barikade_board_theme') || 'wood').toLowerCase();
+          roomBoardTheme=savedTheme==='classic'?'classic':'wood';
+        }catch(_e){ roomBoardTheme='wood'; }
+        applyBoardThemeUI();
         actionToggle.checked = (am === 'action');
         if(bossModeToggle) bossModeToggle.checked = (bm === 'boss');
         const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
@@ -2106,7 +2107,11 @@ function startPresencePoll(){
         setMode('host');
         applyColorWheelUI();
         applyBoardThemeUI();
-        await ensureRoom(rc);
+        const ensured=await ensureRoom(rc,roomBoardTheme);
+        if(!ensured.ok){
+          toast(ensured.error==='NOT_HOST' ? 'Raumcode wird bereits von einem anderen Host verwendet' : 'Raum konnte nicht erstellt werden');
+          return;
+        }
         toast('Host: Raum ' + rc);
         startPresencePoll();
         const p = await fetchPresence();
@@ -2176,12 +2181,15 @@ function startPresencePoll(){
           if(!rc){ toast('Bitte zuerst einen Raum erstellen'); return; }
           const theme=String(btn.getAttribute('data-board-theme')||'').toLowerCase()==='classic'?'classic':'wood';
           if(theme===roomBoardTheme){ toast(theme==='wood'?'Holzbrett ist bereits gewählt':'Klassisches Brett ist bereits gewählt'); return; }
+          const previous=roomBoardTheme;
+          roomBoardTheme=theme;
+          applyBoardThemeUI();
           boardThemeBtns.forEach(b=>b.disabled=true);
           const rr=await setServerBoardTheme(theme);
           if(!rr.ok){
+            roomBoardTheme=previous;
             applyBoardThemeUI();
             if(rr.error==='NOT_HOST') toast('Nur der Host dieses Raums kann das Brettdesign ändern');
-            else if(rr.error==='NO_ROOM') toast('Raum ist noch nicht erstellt');
             else if(rr.error==='NET') toast('Server gerade nicht erreichbar – bitte gleich noch einmal versuchen');
             else toast('Brettdesign konnte nicht geändert werden');
             return;
