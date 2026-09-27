@@ -1,7 +1,7 @@
-// Barikade V13.4 – zuverlässiges Ereignisrad + sichere Mehrfachtests · serverautoritaer
+// Barikade V13.6 – persistente serverautoritäre Joker-Rad-Jobs · serverautoritaer
 (function barikadeGameV105Bootstrap(){
   if (window.__BARIKADE_GAME_V105_LOADED__) {
-    console.warn('[Barikade V13.4] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    console.warn('[Barikade V13.6] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
@@ -2074,61 +2074,91 @@ if(actionEffectsState){
   let _bossBaselineNextSnapshot = true;
   let _bossOverlayTimer = 0;
   let _bossOverlayRevealTimer = 0;
-  let _pendingEventWheels = [];
   let _bossEventAckPendingSeq = 0;
   let _bossEventAckTimer = 0;
 
-  // V13.4: Ereignis-Räder besitzen zwei getrennte Zustände:
-  // - queued: in DIESER laufenden Seite bereits zur Animation eingeplant
-  // - completed: Animation vollständig beendet; wird zusätzlich in sessionStorage gespeichert
-  // Dadurch gilt ein Rad nicht mehr schon beim Empfang als "gesehen". Ein Reload zwischen
-  // Empfang und tatsächlicher Animation kann es deshalb sauber über den Snapshot nachholen.
-  const _eventWheelQueuedMemory = new Set();
-  const _eventWheelCompletedMemory = new Set();
+  // V13.6: Ein einziger Client-Zustandsautomat für serverautoritär ausgelöste Räder.
+  // Der Server entscheidet IMMER, welches Rad existiert. Der Client darf nur anzeigen
+  // und anschließend "vollständig beendet" bestätigen.
+  // Zustände je visualId: queued -> running -> finished.
+  const _serverWheelState = new Map();
+  const _serverWheelFinishedLocal = new Set();
+  let _serverWheelStorageScope = "";
 
-  function eventWheelToken(seq,ts=0,batchId=""){
+  function serverWheelStorageScope(){
     const rc=String(roomCode||"").trim().toUpperCase()||"ROOM";
-    const explicit=String(batchId||"").trim();
-    return explicit ? `${rc}:${explicit}` : `${rc}:event-${Number(seq||0)}-${Number(ts||0)}`;
+    const color=String(myColor||"spectator").trim().toLowerCase()||"spectator";
+    return rc+":"+color;
   }
-  function eventWheelCompleted(token){
-    if(!token) return false;
-    if(_eventWheelCompletedMemory.has(token)) return true;
-    try{ return sessionStorage.getItem("barikade_eventwheel_done_"+token)==="1"; }catch(_e){ return false; }
+  function serverWheelStorageKey(){
+    return "barikade_wheel_finished_v136_"+serverWheelStorageScope().replace(/[^A-Za-z0-9:_-]/g,"_");
   }
-  function markEventWheelCompleted(token){
-    if(!token) return;
-    _eventWheelQueuedMemory.delete(token);
-    _eventWheelCompletedMemory.add(token);
-    try{ sessionStorage.setItem("barikade_eventwheel_done_"+token,"1"); }catch(_e){}
-  }
-  function releaseEventWheelQueued(token){
-    if(token) _eventWheelQueuedMemory.delete(token);
-  }
-  function scheduleConfirmedEventWheel(seq,wheels,ts=0,delay=160,batchId=""){
-    const list=Array.isArray(wheels)?wheels.filter(Boolean):[];
-    if(!seq || !list.length) return false;
-    const inferredBatch=String(batchId || list[0]?.eventWheelBatchId || "").trim();
-    const token=eventWheelToken(seq,ts,inferredBatch);
-    if(eventWheelCompleted(token) || _eventWheelQueuedMemory.has(token)) return false;
 
-    _eventWheelQueuedMemory.add(token);
-    const tagged=list.map((it,i)=>({
-      ...it,
-      __eventWheelToken:token,
-      __eventWheelLast:i===list.length-1
-    }));
+  function loadServerWheelFinishedLocal(){
+    const scope=serverWheelStorageScope();
+    if(_serverWheelStorageScope===scope) return;
+    _serverWheelStorageScope=scope;
+    _serverWheelFinishedLocal.clear();
+    try{
+      const raw=JSON.parse(localStorage.getItem(serverWheelStorageKey())||"[]");
+      if(Array.isArray(raw)) for(const id of raw.slice(-500)) if(id) _serverWheelFinishedLocal.add(String(id));
+    }catch(_e){}
+  }
 
-    window.setTimeout(()=>{
-      // Das Paket kam serverseitig bereits NACH dem Karten-ACK. Deshalb darf dieses
-      // Ereignisrad nicht noch einmal hinter einer später geöffneten Karte geparkt werden.
-      // Genau dieses Parken hatte bei schnellen Tests mehrere Räder angesammelt.
-      if(eventWheelCompleted(token)){
-        releaseEventWheelQueued(token);
-        return;
+  function rememberServerWheelFinished(visualId){
+    const id=String(visualId||"").trim();
+    if(!id) return;
+    loadServerWheelFinishedLocal();
+    _serverWheelFinishedLocal.add(id);
+    // Begrenzen, damit localStorage nicht unbegrenzt wächst.
+    while(_serverWheelFinishedLocal.size>500){
+      const first=_serverWheelFinishedLocal.values().next().value;
+      _serverWheelFinishedLocal.delete(first);
+    }
+    try{ localStorage.setItem(serverWheelStorageKey(),JSON.stringify([..._serverWheelFinishedLocal])); }catch(_e){}
+  }
+
+  function serverWheelWasFinished(visualId){
+    loadServerWheelFinishedLocal();
+    return _serverWheelFinishedLocal.has(String(visualId||""));
+  }
+
+  function reportServerWheelFinished(jobId,visualId){
+    const j=String(jobId||"").trim();
+    const v=String(visualId||"").trim();
+    if(!j||!v) return false;
+    return wsSend({type:"wheel_visual_finished",jobId:j,visualId:v});
+  }
+
+  function acceptServerWheelJob(msg){
+    if(!msg || msg.serverCommand!==true || Number(msg.protocol||0)!==1) return false;
+    const jobId=String(msg.jobId||"").trim();
+    const list=Array.isArray(msg.wheel)?msg.wheel.filter(Boolean):[];
+    if(!jobId || !list.length) return false;
+    const fresh=[];
+    for(const raw of list){
+      const visualId=String(raw?.visualId||"").trim();
+      if(!visualId) continue;
+
+      // Nach vollständigem Lauf lokal gemerkt: Bei verlorenem Finished-ACK wird nur
+      // noch einmal bestätigt, niemals ein zweites Rad abgespielt.
+      if(serverWheelWasFinished(visualId)){
+        _serverWheelState.set(visualId,"finished");
+        reportServerWheelFinished(jobId,visualId);
+        continue;
       }
-      enqueueWheel(tagged);
-    },Math.max(80,Number(delay)||160));
+
+      const status=_serverWheelState.get(visualId)||"";
+      if(status==="queued" || status==="running") continue;
+      if(status==="finished"){
+        reportServerWheelFinished(jobId,visualId);
+        continue;
+      }
+
+      _serverWheelState.set(visualId,"queued");
+      fresh.push({...raw,__serverVisualId:visualId,__serverWheelJobId:jobId});
+    }
+    if(fresh.length) enqueueWheel(fresh);
     return true;
   }
 
@@ -2143,28 +2173,9 @@ if(actionEffectsState){
   function eventOverlayIsOpen(){
     return !!document.getElementById("bossEventOverlay")?.classList.contains("show");
   }
-  function queueWheelRespectingEventOverlay(items){
-    // Ereignis-Räder laufen ausschließlich über boss_event_wheel.
-    // Falls ein alter/zusätzlicher Serverpfad sie versehentlich in msg.wheel mitschickt,
-    // werden sie hier verworfen statt ein zweites Mal in der Queue zu landen.
-    const list=Array.isArray(items)
-      ? items.filter(it=>it && !Number(it.eventSeq||0) && !String(it.eventWheelBatchId||""))
-      : [];
-    if(!list.length) return;
-    if(eventOverlayIsOpen()){
-      _pendingEventWheels.push(...list);
-      return;
-    }
-    enqueueWheel(list);
-  }
-  function flushPendingEventWheels(){
-    if(!_pendingEventWheels.length) return;
-    const list=_pendingEventWheels.splice(0,_pendingEventWheels.length);
-    window.setTimeout(()=>enqueueWheel(list),220);
-  }
   function closeBossEventOverlaySynced(seq=0){
     const el=document.getElementById("bossEventOverlay");
-    if(!el){ flushPendingEventWheels(); return; }
+    if(!el) return;
     const openSeq=Number(el.dataset.eventSeq||0);
     const ackSeq=Number(seq||0);
     // Ein verspätetes ACK einer älteren Karte darf eine neuere Karte nicht schließen.
@@ -2177,7 +2188,6 @@ if(actionEffectsState){
     _bossEventAckTimer=0;
     const ok=el.querySelector('.bossEventOk');
     if(ok){ ok.disabled=true; ok.textContent="BESTÄTIGT · WEITER"; }
-    flushPendingEventWheels();
   }
   function ensureBossEventOverlay(){
     let el=document.getElementById("bossEventOverlay");
@@ -2445,15 +2455,8 @@ if(actionEffectsState){
         const openSeq=Number(document.getElementById("bossEventOverlay")?.dataset?.eventSeq||0);
         if(!openSeq || openSeq===evtSeq) closeBossEventOverlaySynced(evtSeq);
       }
-      // Recovery-Pfad: Das ACK-Snapshot enthält wheelDispatchedAt. Sollte das
-      // separate Rad-Paket verloren gehen, kann ein kürzlich bestätigtes Ereignis
-      // das Rad trotzdem genau einmal starten. Alte Ereignisse werden nicht replayt.
-      if(evt?.confirmedAt && evt?.wheelDispatchedAt && Array.isArray(evt?.wheels) && evt.wheels.length){
-        const age=Date.now()-Number(evt.wheelDispatchedAt||0);
-        if(age>=0 && age<20000){
-          scheduleConfirmedEventWheel(evtSeq,evt.wheels,Number(evt.ts||0),160,String(evt.wheelBatchId||""));
-        }
-      }
+      // V13.6: Ereignis-Räder werden nicht aus Snapshots rekonstruiert.
+      // Nur persistente server_wheel_job-Befehle dürfen eine Rad-Animation auslösen.
       if(evt && evtSeq>_lastBossEventSeq){
         _lastBossEventSeq=evtSeq;
         if(!evt.confirmedAt) showBossEventCard(evt);
@@ -3080,16 +3083,14 @@ try{
         }catch(_e){}
         return;
       }
-      if(type==="boss_event_wheel"){
-        try{
-          const seq=Number(msg.seq||0);
-          const lastEvt=state?.boss?.lastEvent || state?.bossState?.lastEvent || null;
-          const ts=(lastEvt && Number(lastEvt.seq||0)===seq) ? Number(lastEvt.ts||0) : 0;
-          // Separates Server-Signal: wird erst NACH boss_event_ack gesendet.
-          scheduleConfirmedEventWheel(seq,msg.wheel,ts,160,String(msg.batchId||""));
-        }catch(_e){}
+      if(type==="server_wheel_job"){
+        try{ acceptServerWheelJob(msg); }catch(_e){}
         return;
       }
+      if(type==="wheel_visual_finished_ack") return;
+      // Alte Rad-Kanäle werden absichtlich ignoriert. Ab V13.6 existiert nur noch
+      // server_wheel_job -> Animation -> wheel_visual_finished.
+      if(type==="server_wheel_show" || type==="boss_event_wheel") return;
       if(type==="boss_event_ack_result"){
         const seq=Number(msg.seq||0);
         if(_bossEventAckPendingSeq===seq) _bossEventAckPendingSeq=0;
@@ -3129,7 +3130,6 @@ try{
         if(msg.jokerCanceled) v104OnJokerCanceled(msg.jokerCanceled);
         updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        if(Array.isArray(msg.wheel) && msg.wheel.length) queueWheelRespectingEventOverlay(msg.wheel);
         return;
       }
       if(type==="roll"){
@@ -3143,7 +3143,6 @@ try{
         }
         updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        if(Array.isArray(msg.wheel) && msg.wheel.length) queueWheelRespectingEventOverlay(msg.wheel);
         return;
       }
       if(type==="move"){
@@ -3157,7 +3156,6 @@ try{
         }
         updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
-        if(Array.isArray(msg.wheel) && msg.wheel.length) queueWheelRespectingEventOverlay(msg.wheel);
         return;
       }
 
@@ -6803,7 +6801,9 @@ function _wheelNext() {
       const overlay=document.getElementById("wheelOverlay");
       if(overlay) overlay.classList.remove("show");
     }catch(_e){}
-    if(item?.__eventWheelToken) releaseEventWheelQueued(String(item.__eventWheelToken));
+    // Bei echtem Darstellungsfehler NICHT als fertig bestätigen. Den lokalen Zustand
+    // freigeben, damit der nächste Server-Retry exakt dasselbe visualId erneut anbieten kann.
+    if(item?.__serverVisualId) _serverWheelState.delete(String(item.__serverVisualId));
     window.setTimeout(()=>_wheelNext(),80);
   };
 
@@ -6841,6 +6841,10 @@ function _wheelNext() {
     try{ document.getElementById("wheelVisual")?.getBoundingClientRect(); }catch(_e){}
     _wheelOpenOverlay(overlay);
 
+    // Ab hier ist der Radlauf tatsächlich sichtbar. Wiederholte Server-Pakete mit derselben
+    // visualId werden während "running" ignoriert, aber noch NICHT als erledigt bestätigt.
+    if(item.__serverVisualId) _serverWheelState.set(String(item.__serverVisualId),"running");
+
     const idx = _wheelResolveIndex(item.result);
     const TAU = Math.PI * 2;
     const seg = TAU / _wheelActiveSegments.length;
@@ -6849,8 +6853,9 @@ function _wheelNext() {
     const startAngle = Number.isFinite(_wheelAngle) ? _wheelAngle : 0;
     const startModulo = ((startAngle % TAU) + TAU) % TAU;
     const landingDelta = ((targetModulo - startModulo) + TAU) % TAU;
-    const spins = 6 + Math.floor(Math.random() * 3);
+    const spins = Math.max(6,Math.min(8,Number(item.spinTurns)||6));
     // Immer 6–8 VOLLE Vorwärtsumdrehungen PLUS den Weg zum Zielsegment.
+    // Die Anzahl der vollen Umdrehungen kommt ab V13.6 vom Server.
     // Vorher war finalAngle absolut; nach mehreren Läufen konnte delta fast 0 oder negativ sein.
     const delta = spins * TAU + landingDelta;
     const finalAngle = startAngle + delta;
@@ -6875,10 +6880,16 @@ function _wheelNext() {
           res.classList.remove("win");
         }
       }
-      // Erst JETZT gilt ein Ereignis-Rad wirklich als abgeschlossen. Dadurch kann ein
-      // Reload/kurzer Ausfall vor diesem Punkt das Rad über den Snapshot erneut herstellen.
-      if(item.__eventWheelLast && item.__eventWheelToken){
-        markEventWheelCompleted(String(item.__eventWheelToken));
+      // Erst nach vollständig beendetem Drehvorgang wird der persistente Serverauftrag
+      // für DIESES visualId bestätigt. Das lokale Finished-Merkmal wird zuerst geschrieben:
+      // Geht unmittelbar danach die WebSocket-Nachricht verloren oder lädt die Seite neu,
+      // beantwortet der Client den nächsten Server-Retry nur mit Finished statt erneut zu drehen.
+      if(item.__serverWheelJobId && item.__serverVisualId){
+        const visualId=String(item.__serverVisualId);
+        const jobId=String(item.__serverWheelJobId);
+        _serverWheelState.set(visualId,"finished");
+        rememberServerWheelFinished(visualId);
+        reportServerWheelFinished(jobId,visualId);
       }
       // Selbst wenn requestAnimationFrame auf einem Mobilgerät kurz aussetzt,
       // beendet der Watchdog den Lauf und die Queue kann nicht dauerhaft hängen.
