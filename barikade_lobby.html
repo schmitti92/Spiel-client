@@ -1394,6 +1394,22 @@ const presenceList = $("presenceList");
 
 function getMyNameKey(){ return String(localStorage.getItem("barikade_nameKey")||"").trim(); }
 
+function getLobbySessionToken(){
+  try{
+    let t=String(localStorage.getItem("barikade_sessionToken")||"").trim();
+    if(!t){
+      const bytes=new Uint8Array(12);
+      if(window.crypto?.getRandomValues) window.crypto.getRandomValues(bytes);
+      else for(let i=0;i<bytes.length;i++) bytes[i]=Math.floor(Math.random()*256);
+      t="S-"+Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
+      localStorage.setItem("barikade_sessionToken",t);
+    }
+    return t;
+  }catch(_e){
+    return "S-"+Date.now().toString(36)+Math.random().toString(36).slice(2,12);
+  }
+}
+
 async function fetchPresence(){
   const rc = normRoom(roomInp.value);
   if(!rc) return null;
@@ -1412,7 +1428,10 @@ async function ensureRoom(rc){
     const r = await fetch(`${HTTP_BASE}/room/${encodeURIComponent(code)}/ensure`, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body: "{}"
+      body: JSON.stringify({
+        sessionToken:getLobbySessionToken(),
+        asHost:(localStorage.getItem('barikade_mode')||'offline')==='host'
+      })
     });
     const j = await r.json().catch(()=>null);
     if(!r.ok || !j?.ok) return { ok:false, error: j?.error || "ERR" };
@@ -1724,15 +1743,36 @@ function startPresencePoll(){
         const rc=normRoom(roomInp.value);
         if(!rc) return {ok:false,error:'NO_CODE'};
         const normalized=String(theme||'').toLowerCase()==='classic'?'classic':'wood';
-        try{
-          const r=await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/board-theme`,{
-            method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({theme:normalized})
-          });
-          const j=await r.json().catch(()=>null);
-          if(!r.ok || !j?.ok) return {ok:false,error:j?.error||'ERR'};
-          renderPresence(j);
-          return {ok:true,data:j};
-        }catch(_e){ return {ok:false,error:'NET'}; }
+        const body=()=>JSON.stringify({theme:normalized,sessionToken:getLobbySessionToken()});
+
+        // Render kann nach Inaktivität kurz schlafen. Für eine reine Lobby-Einstellung
+        // versuchen wir deshalb kontrolliert erneut, statt beim ersten Netzfehler aufzugeben.
+        let lastError='ERR';
+        for(let attempt=0; attempt<3; attempt++){
+          try{
+            if(attempt>0){
+              await new Promise(r=>setTimeout(r,650*attempt));
+              // Raum/Host-Sitzung nach einem Server-Neustart erneut sicherstellen.
+              await ensureRoom(rc).catch(()=>null);
+            }
+            const r=await fetch(`${HTTP_BASE}/room/${encodeURIComponent(rc)}/board-theme`,{
+              method:'POST',headers:{'Content-Type':'application/json'},body:body(),cache:'no-store'
+            });
+            const j=await r.json().catch(()=>null);
+            if(r.ok && j?.ok){
+              renderPresence(j);
+              return {ok:true,data:j};
+            }
+            lastError=j?.error||'ERR';
+            // Host-/Berechtigungsfehler werden durch Wiederholen nicht besser.
+            if(lastError==='NOT_HOST') return {ok:false,error:lastError};
+            if(lastError==='NO_ROOM') continue;
+            return {ok:false,error:lastError};
+          }catch(_e){
+            lastError='NET';
+          }
+        }
+        return {ok:false,error:lastError};
       }
 
       async function setServerColorMode(mode){
@@ -2140,8 +2180,9 @@ function startPresencePoll(){
           const rr=await setServerBoardTheme(theme);
           if(!rr.ok){
             applyBoardThemeUI();
-            if(rr.error==='PLAYERS_ALREADY_IN_GAME') toast('Brettdesign kann nach Spieleintritt nicht mehr geändert werden');
+            if(rr.error==='NOT_HOST') toast('Nur der Host dieses Raums kann das Brettdesign ändern');
             else if(rr.error==='NO_ROOM') toast('Raum ist noch nicht erstellt');
+            else if(rr.error==='NET') toast('Server gerade nicht erreichbar – bitte gleich noch einmal versuchen');
             else toast('Brettdesign konnte nicht geändert werden');
             return;
           }
