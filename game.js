@@ -1,7 +1,7 @@
-// Barikade V13.2 – Boss-Event-Sync-Härtung + Mauer-Barikaden · serverautoritaer
+// Barikade V13.3 – Ereignisrad erst nach Karten-ACK · serverautoritaer
 (function barikadeGameV105Bootstrap(){
   if (window.__BARIKADE_GAME_V105_LOADED__) {
-    console.warn('[Barikade V13.2] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    console.warn('[Barikade V13.3] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
@@ -2077,6 +2077,33 @@ if(actionEffectsState){
   let _pendingEventWheels = [];
   let _bossEventAckPendingSeq = 0;
   let _bossEventAckTimer = 0;
+  const _eventWheelSeenMemory = new Set();
+  function eventWheelToken(seq,ts=0){
+    const rc=String(roomCode||"").trim().toUpperCase()||"ROOM";
+    return `${rc}:${Number(seq||0)}:${Number(ts||0)}`;
+  }
+  function eventWheelAlreadySeen(seq,ts=0){
+    const token=eventWheelToken(seq,ts);
+    if(_eventWheelSeenMemory.has(token)) return true;
+    try{ return sessionStorage.getItem("barikade_eventwheel_"+token)==="1"; }catch(_e){ return false; }
+  }
+  function markEventWheelSeen(seq,ts=0){
+    const token=eventWheelToken(seq,ts);
+    _eventWheelSeenMemory.add(token);
+    try{ sessionStorage.setItem("barikade_eventwheel_"+token,"1"); }catch(_e){}
+  }
+  function scheduleConfirmedEventWheel(seq,wheels,ts=0,delay=280){
+    const list=Array.isArray(wheels)?wheels.filter(Boolean):[];
+    if(!seq || !list.length || eventWheelAlreadySeen(seq,ts)) return false;
+    markEventWheelSeen(seq,ts);
+    window.setTimeout(()=>{
+      // Das Rad darf erst NACH dem Schließen der Ereigniskarte sichtbar werden.
+      // Falls ein Browser die Close-Animation noch nicht verarbeitet hat, bleibt
+      // es in der bestehenden Event-Warteschlange, statt darüber zu erscheinen.
+      queueWheelRespectingEventOverlay(list);
+    },Math.max(220,Number(delay)||280));
+    return true;
+  }
   function bossModeVisualActive(){
     try{
       // Sobald ein Spielzustand existiert, ist nur noch der Serverzustand massgeblich.
@@ -2384,6 +2411,15 @@ if(actionEffectsState){
       if(evt?.confirmedAt && eventOverlayIsOpen()) {
         const openSeq=Number(document.getElementById("bossEventOverlay")?.dataset?.eventSeq||0);
         if(!openSeq || openSeq===evtSeq) closeBossEventOverlaySynced(evtSeq);
+      }
+      // Recovery-Pfad: Das ACK-Snapshot enthält wheelDispatchedAt. Sollte das
+      // separate Rad-Paket verloren gehen, kann ein kürzlich bestätigtes Ereignis
+      // das Rad trotzdem genau einmal starten. Alte Ereignisse werden nicht replayt.
+      if(evt?.confirmedAt && evt?.wheelDispatchedAt && Array.isArray(evt?.wheels) && evt.wheels.length){
+        const age=Date.now()-Number(evt.wheelDispatchedAt||0);
+        if(age>=0 && age<20000){
+          scheduleConfirmedEventWheel(evtSeq,evt.wheels,Number(evt.ts||0),300);
+        }
       }
       if(evt && evtSeq>_lastBossEventSeq){
         _lastBossEventSeq=evtSeq;
@@ -3002,11 +3038,22 @@ try{
       if(type==="boss_event_ack"){
         try{
           const seq=Number(msg.seq||0);
-          if(state?.bossState?.lastEvent && Number(state.bossState.lastEvent.seq||0)===seq){
-            state.bossState.lastEvent.confirmedAt = Number(msg.confirmedAt||Date.now());
-            state.bossState.lastEvent.confirmedByColor = String(msg.byColor||state.bossState.lastEvent.confirmedByColor||"");
+          const lastEvt=state?.boss?.lastEvent || state?.bossState?.lastEvent || null;
+          if(lastEvt && Number(lastEvt.seq||0)===seq){
+            lastEvt.confirmedAt = Number(msg.confirmedAt||Date.now());
+            lastEvt.confirmedByColor = String(msg.byColor||lastEvt.confirmedByColor||"");
           }
           closeBossEventOverlaySynced(seq);
+        }catch(_e){}
+        return;
+      }
+      if(type==="boss_event_wheel"){
+        try{
+          const seq=Number(msg.seq||0);
+          const lastEvt=state?.boss?.lastEvent || state?.bossState?.lastEvent || null;
+          const ts=(lastEvt && Number(lastEvt.seq||0)===seq) ? Number(lastEvt.ts||0) : 0;
+          // Separates Server-Signal: wird erst NACH boss_event_ack gesendet.
+          scheduleConfirmedEventWheel(seq,msg.wheel,ts,300);
         }catch(_e){}
         return;
       }
