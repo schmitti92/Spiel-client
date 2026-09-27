@@ -1,7 +1,7 @@
-// Barikade V13.3 – Ereignisrad erst nach Karten-ACK · serverautoritaer
+// Barikade V13.4 – zuverlässiges Ereignisrad + sichere Mehrfachtests · serverautoritaer
 (function barikadeGameV105Bootstrap(){
   if (window.__BARIKADE_GAME_V105_LOADED__) {
-    console.warn('[Barikade V13.3] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    console.warn('[Barikade V13.4] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
@@ -2077,33 +2077,61 @@ if(actionEffectsState){
   let _pendingEventWheels = [];
   let _bossEventAckPendingSeq = 0;
   let _bossEventAckTimer = 0;
-  const _eventWheelSeenMemory = new Set();
-  function eventWheelToken(seq,ts=0){
+
+  // V13.4: Ereignis-Räder besitzen zwei getrennte Zustände:
+  // - queued: in DIESER laufenden Seite bereits zur Animation eingeplant
+  // - completed: Animation vollständig beendet; wird zusätzlich in sessionStorage gespeichert
+  // Dadurch gilt ein Rad nicht mehr schon beim Empfang als "gesehen". Ein Reload zwischen
+  // Empfang und tatsächlicher Animation kann es deshalb sauber über den Snapshot nachholen.
+  const _eventWheelQueuedMemory = new Set();
+  const _eventWheelCompletedMemory = new Set();
+
+  function eventWheelToken(seq,ts=0,batchId=""){
     const rc=String(roomCode||"").trim().toUpperCase()||"ROOM";
-    return `${rc}:${Number(seq||0)}:${Number(ts||0)}`;
+    const explicit=String(batchId||"").trim();
+    return explicit ? `${rc}:${explicit}` : `${rc}:event-${Number(seq||0)}-${Number(ts||0)}`;
   }
-  function eventWheelAlreadySeen(seq,ts=0){
-    const token=eventWheelToken(seq,ts);
-    if(_eventWheelSeenMemory.has(token)) return true;
-    try{ return sessionStorage.getItem("barikade_eventwheel_"+token)==="1"; }catch(_e){ return false; }
+  function eventWheelCompleted(token){
+    if(!token) return false;
+    if(_eventWheelCompletedMemory.has(token)) return true;
+    try{ return sessionStorage.getItem("barikade_eventwheel_done_"+token)==="1"; }catch(_e){ return false; }
   }
-  function markEventWheelSeen(seq,ts=0){
-    const token=eventWheelToken(seq,ts);
-    _eventWheelSeenMemory.add(token);
-    try{ sessionStorage.setItem("barikade_eventwheel_"+token,"1"); }catch(_e){}
+  function markEventWheelCompleted(token){
+    if(!token) return;
+    _eventWheelQueuedMemory.delete(token);
+    _eventWheelCompletedMemory.add(token);
+    try{ sessionStorage.setItem("barikade_eventwheel_done_"+token,"1"); }catch(_e){}
   }
-  function scheduleConfirmedEventWheel(seq,wheels,ts=0,delay=280){
+  function releaseEventWheelQueued(token){
+    if(token) _eventWheelQueuedMemory.delete(token);
+  }
+  function scheduleConfirmedEventWheel(seq,wheels,ts=0,delay=160,batchId=""){
     const list=Array.isArray(wheels)?wheels.filter(Boolean):[];
-    if(!seq || !list.length || eventWheelAlreadySeen(seq,ts)) return false;
-    markEventWheelSeen(seq,ts);
+    if(!seq || !list.length) return false;
+    const inferredBatch=String(batchId || list[0]?.eventWheelBatchId || "").trim();
+    const token=eventWheelToken(seq,ts,inferredBatch);
+    if(eventWheelCompleted(token) || _eventWheelQueuedMemory.has(token)) return false;
+
+    _eventWheelQueuedMemory.add(token);
+    const tagged=list.map((it,i)=>({
+      ...it,
+      __eventWheelToken:token,
+      __eventWheelLast:i===list.length-1
+    }));
+
     window.setTimeout(()=>{
-      // Das Rad darf erst NACH dem Schließen der Ereigniskarte sichtbar werden.
-      // Falls ein Browser die Close-Animation noch nicht verarbeitet hat, bleibt
-      // es in der bestehenden Event-Warteschlange, statt darüber zu erscheinen.
-      queueWheelRespectingEventOverlay(list);
-    },Math.max(220,Number(delay)||280));
+      // Das Paket kam serverseitig bereits NACH dem Karten-ACK. Deshalb darf dieses
+      // Ereignisrad nicht noch einmal hinter einer später geöffneten Karte geparkt werden.
+      // Genau dieses Parken hatte bei schnellen Tests mehrere Räder angesammelt.
+      if(eventWheelCompleted(token)){
+        releaseEventWheelQueued(token);
+        return;
+      }
+      enqueueWheel(tagged);
+    },Math.max(80,Number(delay)||160));
     return true;
   }
+
   function bossModeVisualActive(){
     try{
       // Sobald ein Spielzustand existiert, ist nur noch der Serverzustand massgeblich.
@@ -2116,7 +2144,12 @@ if(actionEffectsState){
     return !!document.getElementById("bossEventOverlay")?.classList.contains("show");
   }
   function queueWheelRespectingEventOverlay(items){
-    const list=Array.isArray(items)?items.filter(Boolean):[];
+    // Ereignis-Räder laufen ausschließlich über boss_event_wheel.
+    // Falls ein alter/zusätzlicher Serverpfad sie versehentlich in msg.wheel mitschickt,
+    // werden sie hier verworfen statt ein zweites Mal in der Queue zu landen.
+    const list=Array.isArray(items)
+      ? items.filter(it=>it && !Number(it.eventSeq||0) && !String(it.eventWheelBatchId||""))
+      : [];
     if(!list.length) return;
     if(eventOverlayIsOpen()){
       _pendingEventWheels.push(...list);
@@ -2418,7 +2451,7 @@ if(actionEffectsState){
       if(evt?.confirmedAt && evt?.wheelDispatchedAt && Array.isArray(evt?.wheels) && evt.wheels.length){
         const age=Date.now()-Number(evt.wheelDispatchedAt||0);
         if(age>=0 && age<20000){
-          scheduleConfirmedEventWheel(evtSeq,evt.wheels,Number(evt.ts||0),300);
+          scheduleConfirmedEventWheel(evtSeq,evt.wheels,Number(evt.ts||0),160,String(evt.wheelBatchId||""));
         }
       }
       if(evt && evtSeq>_lastBossEventSeq){
@@ -3053,7 +3086,7 @@ try{
           const lastEvt=state?.boss?.lastEvent || state?.bossState?.lastEvent || null;
           const ts=(lastEvt && Number(lastEvt.seq||0)===seq) ? Number(lastEvt.ts||0) : 0;
           // Separates Server-Signal: wird erst NACH boss_event_ack gesendet.
-          scheduleConfirmedEventWheel(seq,msg.wheel,ts,300);
+          scheduleConfirmedEventWheel(seq,msg.wheel,ts,160,String(msg.batchId||""));
         }catch(_e){}
         return;
       }
@@ -6738,7 +6771,9 @@ function _wheelResolveIndex(resultKey) {
 
 function _wheelOpenOverlay(overlay){
   if(!overlay) return;
-  requestAnimationFrame(()=>overlay.classList.add("show"));
+  // Direkt sichtbar schalten. Ein einzelnes verzögertes requestAnimationFrame konnte auf
+  // mobilen Browsern dazu führen, dass das Rad zwar lief, aber erst verspätet sichtbar wurde.
+  overlay.classList.add("show");
 }
 
 function _wheelCloseOverlay(overlay,done){
@@ -6768,6 +6803,7 @@ function _wheelNext() {
       const overlay=document.getElementById("wheelOverlay");
       if(overlay) overlay.classList.remove("show");
     }catch(_e){}
+    if(item?.__eventWheelToken) releaseEventWheelQueued(String(item.__eventWheelToken));
     window.setTimeout(()=>_wheelNext(),80);
   };
 
@@ -6806,13 +6842,18 @@ function _wheelNext() {
     _wheelOpenOverlay(overlay);
 
     const idx = _wheelResolveIndex(item.result);
-    const seg = (Math.PI * 2) / _wheelActiveSegments.length;
+    const TAU = Math.PI * 2;
+    const seg = TAU / _wheelActiveSegments.length;
     const center = (idx + 0.5) * seg;
-    const base = -center;
-    const spins = 6 + Math.floor(Math.random() * 3);
-    const finalAngle = base + spins * Math.PI * 2;
+    const targetModulo = ((-center % TAU) + TAU) % TAU;
     const startAngle = Number.isFinite(_wheelAngle) ? _wheelAngle : 0;
-    const delta = finalAngle - startAngle;
+    const startModulo = ((startAngle % TAU) + TAU) % TAU;
+    const landingDelta = ((targetModulo - startModulo) + TAU) % TAU;
+    const spins = 6 + Math.floor(Math.random() * 3);
+    // Immer 6–8 VOLLE Vorwärtsumdrehungen PLUS den Weg zum Zielsegment.
+    // Vorher war finalAngle absolut; nach mehreren Läufen konnte delta fast 0 oder negativ sein.
+    const delta = spins * TAU + landingDelta;
+    const finalAngle = startAngle + delta;
     const t0 = performance.now();
     const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
@@ -6833,6 +6874,11 @@ function _wheelNext() {
           res.textContent="Kein Joker erhalten.";
           res.classList.remove("win");
         }
+      }
+      // Erst JETZT gilt ein Ereignis-Rad wirklich als abgeschlossen. Dadurch kann ein
+      // Reload/kurzer Ausfall vor diesem Punkt das Rad über den Snapshot erneut herstellen.
+      if(item.__eventWheelLast && item.__eventWheelToken){
+        markEventWheelCompleted(String(item.__eventWheelToken));
       }
       // Selbst wenn requestAnimationFrame auf einem Mobilgerät kurz aussetzt,
       // beendet der Watchdog den Lauf und die Queue kann nicht dauerhaft hängen.
