@@ -1,7 +1,7 @@
-// Barikade V13.6.1 – persistente serverautoritäre Joker-Rad-Jobs + Scope-Fix · serverautoritaer
+// Barikade V13.8 – Premium-Holzbrett + Holzmulden + stabiler Joker-Rad-Stand · serverautoritaer
 (function barikadeGameV105Bootstrap(){
   if (window.__BARIKADE_GAME_V105_LOADED__) {
-    console.warn('[Barikade V13.6.1] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    console.warn('[Barikade V13.8] game.js wurde erneut geladen – zweite Ausführung blockiert.');
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
@@ -4984,21 +4984,184 @@ function showEpicWin(winnerColor){
 
 
 
+  // ===== Premium Holzbrett – rein visuell, keine Spiellogik =====
+  function boardRoundRectPath(x,y,w,h,radius){
+    const rr=Math.max(0,Math.min(radius,Math.abs(w)/2,Math.abs(h)/2));
+    ctx.beginPath();
+    if(typeof ctx.roundRect==="function"){
+      ctx.roundRect(x,y,w,h,rr);
+    }else{
+      ctx.moveTo(x+rr,y);
+      ctx.lineTo(x+w-rr,y); ctx.quadraticCurveTo(x+w,y,x+w,y+rr);
+      ctx.lineTo(x+w,y+h-rr); ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);
+      ctx.lineTo(x+rr,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-rr);
+      ctx.lineTo(x,y+rr); ctx.quadraticCurveTo(x,y,x+rr,y);
+      ctx.closePath();
+    }
+  }
+
+  function getBoardPlateScreenRect(){
+    const b=computeBounds();
+    if(!b) return null;
+    // Genug Rand für Häuser, Figuren, Barikaden und die Boss-Portale.
+    const pad=72;
+    const a=worldToScreen({x:b.minX-pad,y:b.minY-pad});
+    const z=worldToScreen({x:b.maxX+pad,y:b.maxY+pad});
+    return {
+      x:Math.min(a.x,z.x), y:Math.min(a.y,z.y),
+      w:Math.abs(z.x-a.x), h:Math.abs(z.y-a.y)
+    };
+  }
+
+  function drawPremiumWoodBoard(){
+    const br=getBoardPlateScreenRect();
+    if(!br || br.w<20 || br.h<20) return;
+    const radius=Math.max(18,Math.min(38,22*view.s));
+
+    ctx.save();
+    // Brettschatten: lässt die Spielfläche wie eine echte Platte über dem Tisch liegen.
+    ctx.shadowColor="rgba(0,0,0,.48)";
+    ctx.shadowBlur=Math.max(18,30*view.s);
+    ctx.shadowOffsetY=Math.max(7,12*view.s);
+    const outer=ctx.createLinearGradient(br.x,br.y,br.x,br.y+br.h);
+    outer.addColorStop(0,"#81512f");
+    outer.addColorStop(.28,"#664025");
+    outer.addColorStop(.72,"#4b2d1a");
+    outer.addColorStop(1,"#382113");
+    ctx.fillStyle=outer;
+    boardRoundRectPath(br.x,br.y,br.w,br.h,radius);
+    ctx.fill();
+    ctx.shadowColor="transparent";
+
+    // Dunkler massiver Holzrahmen.
+    ctx.lineWidth=Math.max(8,14*view.s);
+    ctx.strokeStyle="rgba(69,38,20,.98)";
+    boardRoundRectPath(br.x+4,br.y+4,br.w-8,br.h-8,Math.max(14,radius-3));
+    ctx.stroke();
+    ctx.lineWidth=Math.max(2,3.4*view.s);
+    ctx.strokeStyle="rgba(222,164,102,.58)";
+    boardRoundRectPath(br.x+9,br.y+9,br.w-18,br.h-18,Math.max(12,radius-7));
+    ctx.stroke();
+
+    // Helle Ahorn-/Buchenfläche.
+    const inset=Math.max(12,17*view.s);
+    const ix=br.x+inset, iy=br.y+inset, iw=br.w-inset*2, ih=br.h-inset*2;
+    const innerRadius=Math.max(12,radius-inset*.42);
+    const wood=ctx.createLinearGradient(ix,iy,ix+iw,iy+ih*.22);
+    wood.addColorStop(0,"#e8c58f");
+    wood.addColorStop(.22,"#f1d6a4");
+    wood.addColorStop(.48,"#dfb97d");
+    wood.addColorStop(.72,"#efd09b");
+    wood.addColorStop(1,"#d6aa70");
+    ctx.fillStyle=wood;
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);
+    ctx.fill();
+
+    // Maserung innerhalb der Holzfläche. Bewusst ohne Math.random(), damit nichts flimmert.
+    ctx.save();
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);
+    ctx.clip();
+    const lineCount=Math.max(12,Math.min(28,Math.round(ih/34)));
+    for(let i=0;i<lineCount;i++){
+      const baseY=iy+(i+.55)*(ih/lineCount);
+      const amp=2.2+((i*7)%5)*.55;
+      ctx.beginPath();
+      for(let px=ix-12,step=0;px<=ix+iw+12;px+=18,step++){
+        const yy=baseY+Math.sin((px-ix)*.021+i*.91)*amp+Math.sin((px-ix)*.006+i*1.7)*1.8;
+        if(step===0) ctx.moveTo(px,yy); else ctx.lineTo(px,yy);
+      }
+      ctx.strokeStyle=i%3===0?"rgba(119,73,35,.125)":"rgba(132,82,39,.075)";
+      ctx.lineWidth=i%4===0?1.45:.85;
+      ctx.stroke();
+    }
+    // Wenige ruhige Ast-/Maserungsbögen für natürliches Holzgefühl.
+    const knots=[
+      [ix+iw*.19,iy+ih*.27,iw*.075,ih*.034],
+      [ix+iw*.73,iy+ih*.61,iw*.060,ih*.029],
+      [ix+iw*.48,iy+ih*.84,iw*.045,ih*.023]
+    ];
+    ctx.strokeStyle="rgba(111,65,28,.10)";
+    ctx.lineWidth=1.1;
+    for(const [kx,ky,rx,ry] of knots){
+      ctx.beginPath();ctx.ellipse(kx,ky,Math.max(12,rx),Math.max(5,ry),-.08,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.ellipse(kx+3,ky,Math.max(7,rx*.62),Math.max(3,ry*.58),-.08,0,Math.PI*2);ctx.stroke();
+    }
+    // Sanfte Lichtlasur von oben links.
+    const sheen=ctx.createLinearGradient(ix,iy,ix,iy+ih);
+    sheen.addColorStop(0,"rgba(255,249,225,.20)");
+    sheen.addColorStop(.45,"rgba(255,255,255,.035)");
+    sheen.addColorStop(1,"rgba(83,47,22,.10)");
+    ctx.fillStyle=sheen;
+    ctx.fillRect(ix,iy,iw,ih);
+    ctx.restore();
+
+    // Innenkante erzeugt den Eindruck einer echten gerahmten Brettplatte.
+    ctx.lineWidth=Math.max(1.5,2.4*view.s);
+    ctx.strokeStyle="rgba(96,55,26,.40)";
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);
+    ctx.stroke();
+    ctx.lineWidth=Math.max(1,1.3*view.s);
+    ctx.strokeStyle="rgba(255,240,207,.52)";
+    boardRoundRectPath(ix+2,iy+2,iw-4,ih-4,Math.max(8,innerRadius-2));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawWoodFieldWell(x,y,r){
+    ctx.save();
+
+    // Äußere Vertiefung: dunkler Rand wirkt wie ins Holz gefräst.
+    ctx.shadowColor="rgba(58,31,13,.20)";
+    ctx.shadowBlur=Math.max(2.5,r*.16);
+    ctx.shadowOffsetY=Math.max(1,r*.07);
+    ctx.fillStyle="rgba(104,61,27,.56)";
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.shadowColor="transparent";
+
+    // Innere Holzfläche liegt sichtbar etwas tiefer.
+    const ir=r*.82;
+    const well=ctx.createRadialGradient(x-r*.24,y-r*.28,r*.06,x,y,ir*1.08);
+    well.addColorStop(0,"#e8c58e");
+    well.addColorStop(.36,"#d4a66a");
+    well.addColorStop(.72,"#b77f43");
+    well.addColorStop(1,"#825229");
+    ctx.fillStyle=well;
+    ctx.beginPath();ctx.arc(x,y,ir,0,Math.PI*2);ctx.fill();
+
+    // Innen-Schatten oben/links – statisch, keine Animation.
+    ctx.strokeStyle="rgba(70,37,16,.50)";
+    ctx.lineWidth=Math.max(1.5,r*.105);
+    ctx.beginPath();ctx.arc(x,y,ir*.95,Math.PI*1.03,Math.PI*1.86);ctx.stroke();
+
+    // Lichtkante unten/rechts vermittelt Tiefe wie bei einer echten Mulde.
+    ctx.strokeStyle="rgba(255,235,197,.53)";
+    ctx.lineWidth=Math.max(1,r*.065);
+    ctx.beginPath();ctx.arc(x,y,ir*.93,Math.PI*.05,Math.PI*.83);ctx.stroke();
+
+    // Sehr dezente Holzmaserung in der Mulde.
+    ctx.save();
+    ctx.beginPath();ctx.arc(x,y,ir*.84,0,Math.PI*2);ctx.clip();
+    ctx.strokeStyle="rgba(107,61,27,.13)";
+    ctx.lineWidth=.8;
+    for(let k=-1;k<=1;k++){
+      const yy=y+k*ir*.34;
+      ctx.beginPath();
+      ctx.moveTo(x-ir,yy+Math.sin(k*1.7)*1.2);
+      ctx.bezierCurveTo(x-ir*.35,yy-1.8,x+ir*.25,yy+2.2,x+ir,yy-.8);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.restore();
+  }
+
   function draw(){
     if(!board) return;
     const hasState = !!state;
     const rect=canvas.getBoundingClientRect();
     ctx.clearRect(0,0,rect.width,rect.height);
 
-    // grid
-    const grid=Math.max(10,(board.ui?.gridSize||20))*view.s;
-    ctx.save();
-    ctx.strokeStyle="rgba(109,139,183,0.16)";
-    ctx.lineWidth=1;
-    const ox=(view.x*view.s)%grid, oy=(view.y*view.s)%grid;
-    for(let x=-ox;x<rect.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rect.height);ctx.stroke();}
-    for(let y=-oy;y<rect.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rect.width,y);ctx.stroke();}
-    ctx.restore();
+    // Echtes Brettgefühl statt technischem Raster.
+    drawPremiumWoodBoard();
 
     // Action-Bossmodus: zwei Spezialfelder sind sichtbar mit dem Brett verbunden,
     // gehören aber bewusst NICHT zur normalen Laufroute.
@@ -5022,7 +5185,7 @@ function showEpicWin(winnerColor){
       ctx.restore();
     }
 
-    // edges – recessed board tracks (visual only)
+    // Verbindungswege als ruhige, ins Holz eingelassene Rillen.
     ctx.save();
     ctx.lineCap="round";
     ctx.lineJoin="round";
@@ -5031,22 +5194,13 @@ function showEpicWin(winnerColor){
       if(!a||!b||a.kind!=="board"||b.kind!=="board") continue;
       const sa=worldToScreen(a), sb=worldToScreen(b);
 
-      // dark under-stroke separates paths from the textured board
-      ctx.shadowColor="transparent";
-      ctx.strokeStyle="rgba(2,6,13,0.62)";
-      ctx.lineWidth=7;
+      ctx.strokeStyle="rgba(82,47,22,.48)";
+      ctx.lineWidth=Math.max(4.8,6.4*view.s);
       ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
 
-      // colored track + tiny highlight for depth
-      ctx.shadowColor="rgba(82,139,219,0.16)";
-      ctx.shadowBlur=8;
-      ctx.strokeStyle=COLORS.edge;
-      ctx.lineWidth=3.2;
-      ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
-      ctx.shadowColor="transparent";
-      ctx.strokeStyle="rgba(213,229,255,0.10)";
-      ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(sa.x,sa.y-0.7);ctx.lineTo(sb.x,sb.y-0.7);ctx.stroke();
+      ctx.strokeStyle="rgba(241,207,158,.44)";
+      ctx.lineWidth=Math.max(1.2,1.7*view.s);
+      ctx.beginPath();ctx.moveTo(sa.x,sa.y+1.1);ctx.lineTo(sb.x,sb.y+1.1);ctx.stroke();
     }
     ctx.restore();
 
@@ -5094,26 +5248,27 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         fill=COLORS[n.flags?.houseColor]||COLORS.node;
       }
 
-      // physical field tile: base color + light/shadow glaze + inner rim
-      ctx.save();
-      ctx.shadowColor="rgba(0,0,0,0.34)";
-      ctx.shadowBlur=7;
-      ctx.shadowOffsetY=3;
-      ctx.beginPath(); ctx.fillStyle=fill; ctx.arc(s.x,s.y,r,0,Math.PI*2); ctx.fill();
-      ctx.shadowColor="transparent";
-
-      const ng=ctx.createRadialGradient(s.x-r*0.34,s.y-r*0.40,r*0.08,s.x,s.y,r*1.08);
-      ng.addColorStop(0,"rgba(255,255,255,0.34)");
-      ng.addColorStop(0.42,"rgba(255,255,255,0.07)");
-      ng.addColorStop(1,"rgba(0,0,0,0.30)");
-      ctx.fillStyle=ng;
-      ctx.beginPath(); ctx.arc(s.x,s.y,r,0,Math.PI*2); ctx.fill();
-
-      ctx.lineWidth=2.6; ctx.strokeStyle=COLORS.stroke;
-      ctx.beginPath(); ctx.arc(s.x,s.y,r,0,Math.PI*2); ctx.stroke();
-      ctx.lineWidth=1; ctx.strokeStyle="rgba(255,255,255,0.15)";
-      ctx.beginPath(); ctx.arc(s.x,s.y,r-2.2,Math.PI*1.04,Math.PI*1.88); ctx.stroke();
-      ctx.restore();
+      // Normale Lauf-Felder sind echte Holzmulden. Häuser und Ziel behalten ihre
+      // eigene Farb-/Spezialhierarchie und bleiben dadurch sofort erkennbar.
+      if(n.kind==="board" && n.id!==goalNodeId){
+        drawWoodFieldWell(s.x,s.y,r);
+      }else{
+        ctx.save();
+        ctx.shadowColor="rgba(0,0,0,0.30)";
+        ctx.shadowBlur=6;
+        ctx.shadowOffsetY=2.5;
+        ctx.beginPath();ctx.fillStyle=fill;ctx.arc(s.x,s.y,r,0,Math.PI*2);ctx.fill();
+        ctx.shadowColor="transparent";
+        const ng=ctx.createRadialGradient(s.x-r*.34,s.y-r*.40,r*.08,s.x,s.y,r*1.08);
+        ng.addColorStop(0,"rgba(255,255,255,.32)");
+        ng.addColorStop(.42,"rgba(255,255,255,.06)");
+        ng.addColorStop(1,"rgba(0,0,0,.28)");
+        ctx.fillStyle=ng;
+        ctx.beginPath();ctx.arc(s.x,s.y,r,0,Math.PI*2);ctx.fill();
+        ctx.lineWidth=2.4;ctx.strokeStyle=COLORS.stroke;
+        ctx.beginPath();ctx.arc(s.x,s.y,r,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
 
       const bossEventFieldIds = Array.isArray(state?.boss?.eventFields)
         ? state.boss.eventFields.map(String)
