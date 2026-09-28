@@ -2218,7 +2218,7 @@ if(actionEffectsState){
           <div class="bossEventEffect"></div>
           <div class="bossEventMeta">
             <span class="bossEventPlayer">🎯 Spieler</span>
-            <span class="bossEventDeck">🃏 Karten –/54</span>
+            <span class="bossEventDeck">🃏 Karten –/106</span>
           </div>
           <button type="button" class="bossEventOk" disabled>KARTE WIRD AUFGEDECKT …</button>
         </div>
@@ -2283,7 +2283,7 @@ if(actionEffectsState){
     }
     if(deck){
       const remaining=Number.isFinite(Number(evt.deckRemaining))?Number(evt.deckRemaining):null;
-      const size=Number.isFinite(Number(evt.deckSize))?Number(evt.deckSize):54;
+      const size=Number.isFinite(Number(evt.deckSize))?Number(evt.deckSize):106;
       deck.textContent=`🃏 ${remaining==null?'–':remaining}/${size} im Stapel`;
     }
     clearTimeout(_bossOverlayTimer);
@@ -2303,6 +2303,116 @@ if(actionEffectsState){
       if(mayConfirm){ try{ ok?.focus({preventScroll:true}); }catch(_e){} }
     },650);
   }
+
+  function myPendingEventChoice(){
+    const ch=state?.boss?.pendingChoice;
+    if(!ch||String(ch.color||'')!==String(myColor||'')) return null;
+    return ch;
+  }
+
+  function ensureEventChoicePanel(){
+    let el=document.getElementById('eventChoicePanel');
+    if(el) return el;
+    el=document.createElement('div');
+    el.id='eventChoicePanel';
+    el.className='eventChoicePanel';
+    el.innerHTML=`<div class="eventChoiceCard">
+      <div class="eventChoiceTop"><span class="eventChoiceIcon">🃏</span><div><small>EREIGNIS-AUSWAHL</small><strong class="eventChoiceTitle">Auswahl erforderlich</strong></div></div>
+      <div class="eventChoiceText"></div>
+      <div class="eventChoiceButtons"></div>
+      <div class="eventChoiceHint">Die anderen Spieler warten, bis diese Auswahl abgeschlossen ist.</div>
+    </div>`;
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function eventChoiceSend(payload){
+    wsSend({type:'event_choice',...payload,ts:Date.now()});
+  }
+
+  function renderEventChoicePanel(){
+    const ch=myPendingEventChoice();
+    const el=ensureEventChoicePanel();
+    if(!ch){ el.classList.remove('show'); return; }
+    const textEl=el.querySelector('.eventChoiceText');
+    const btns=el.querySelector('.eventChoiceButtons');
+    const title=el.querySelector('.eventChoiceTitle');
+    if(title) title.textContent='Ereignis-Auswahl';
+    if(textEl) textEl.textContent=ch.message||'Treffe deine Auswahl auf dem Spielbrett.';
+    if(btns) btns.innerHTML='';
+    const addBtn=(label,fn,cls='')=>{
+      const b=document.createElement('button'); b.type='button'; b.className=cls; b.textContent=label; b.addEventListener('click',fn); btns?.appendChild(b); return b;
+    };
+    const type=String(ch.type||'');
+    if(type==='predict_parity'){
+      addBtn('⚪ Gerade',()=>eventChoiceSend({choice:'even'}));
+      addBtn('⚫ Ungerade',()=>eventChoiceSend({choice:'odd'}));
+    }else if(type==='adjust_roll'){
+      addBtn('−1',()=>eventChoiceSend({delta:-1}));
+      addBtn('Unverändert',()=>eventChoiceSend({delta:0}));
+      addBtn('+1',()=>eventChoiceSend({delta:1}));
+    }else if(type==='joker_lock'){
+      const cols=(state?.activeColors||['red','blue','green','yellow']).filter(c=>c!==myColor);
+      for(const c of cols) addBtn(`🔒 ${labelForColor(c)}`,()=>eventChoiceSend({targetColor:c}));
+    }else if(type==='joker_bet'){
+      const owned=Array.isArray(state?.action?.jokersOwned?.[myColor])?state.action.jokersOwned[myColor]:[];
+      const counts={}; for(const j of owned){const k=String(j?.type||''); if(k) counts[k]=(counts[k]||0)+1;}
+      const names={allColors:'🌈 Alle Farben',barricade:'🧱 Barikade',reroll:'🎲 Neu-Wurf',double:'🎲 Doppelwurf',bossSpawn:'👹 Boss spawnen',bossRemove:'⚔️ Boss entfernen'};
+      for(const [k,n] of Object.entries(counts)) addBtn(`${names[k]||k} ×${n}`,()=>eventChoiceSend({jokerType:k}));
+      addBtn('Wette ablehnen',()=>eventChoiceSend({jokerType:'skip'}),'secondary');
+    }else if(['boss_rage','boss_shield','boss_change'].includes(type)){
+      const slots=Array.isArray(state?.boss?.slots)?state.boss.slots:[];
+      for(const slot of slots){if(!slot?.boss) continue; addBtn(`${slot.boss.icon||'👹'} ${slot.boss.name||'Boss'}`,()=>eventChoiceSend({slotId:slot.id}));}
+    }else{
+      // Brettauswahl: kein Button nötig. Das Panel bleibt als klare Arbeitsanweisung stehen.
+      const stage=String(ch.stage||'');
+      if(stage==='to'||stage==='second'||stage==='opponent'){
+        const hint=document.createElement('div'); hint.className='eventChoiceBoardHint'; hint.textContent='👆 Jetzt das gewünschte Ziel direkt auf dem Spielbrett anklicken.'; btns?.appendChild(hint);
+      }else{
+        const hint=document.createElement('div'); hint.className='eventChoiceBoardHint'; hint.textContent='👆 Auswahl direkt auf dem Spielbrett anklicken.'; btns?.appendChild(hint);
+      }
+    }
+    el.classList.add('show');
+  }
+
+  function eventChoicePieceAtNode(nodeId){
+    const id=String(nodeId||'');
+    for(const c of ['red','blue','green','yellow']){
+      const arr=state?.pieces?.[c]||[];
+      for(let i=0;i<arr.length;i++) if(String(arr[i]?.pos||'')===id) return {color:c,index:i,pieceId:arr[i]?.pieceId||null};
+    }
+    return null;
+  }
+
+  function handleEventChoiceBoardClick(hit){
+    const ch=myPendingEventChoice();
+    if(!ch||!hit||hit.kind!=='board') return false;
+    const type=String(ch.type||'');
+    const nodeId=String(hit.id||'');
+    const pc=eventChoicePieceAtNode(nodeId);
+    if(type==='own_board_piece_home'){
+      if(!pc||pc.color!==myColor){toast('Eigene Brettfigur wählen');return true;} eventChoiceSend({pieceId:pc.pieceId});return true;
+    }
+    if(type==='swap_piece'){
+      if(ch.stage==='own'&&(!pc||pc.color!==myColor)){toast('Zuerst eigene Figur wählen');return true;}
+      if(ch.stage==='opponent'&&(!pc||pc.color===myColor)){toast('Jetzt gegnerische Figur wählen');return true;}
+      eventChoiceSend({pieceId:pc?.pieceId||''});return true;
+    }
+    if(type==='opponent_piece_back3'){
+      if(!pc||pc.color===myColor){toast('Gegnerische Figur wählen');return true;} eventChoiceSend({pieceId:pc.pieceId});return true;
+    }
+    if(type==='barrier_magnet'){
+      if(!pc||pc.color!==myColor){toast('Eigene Brettfigur wählen');return true;} eventChoiceSend({pieceId:pc.pieceId});return true;
+    }
+    if(['move_barrier','barrier_swap','barrier_lock','barrier_blast'].includes(type)){
+      eventChoiceSend({nodeId}); return true;
+    }
+    if(['roadblock','trap','miniportal'].includes(type)){
+      eventChoiceSend({nodeId}); return true;
+    }
+    return false;
+  }
+
   function ensureBossTestTools(){
     if(!bossSection) return null;
     let box=document.getElementById("bossTestTools");
@@ -2341,6 +2451,36 @@ if(actionEffectsState){
           <option value="joker_two">🎁 2 Joker</option>
           <option value="lose_all_jokers">💀 Alle Joker verlieren</option>
           <option value="all_pieces_forward">⏩ Alle vorwärts</option>
+          <option value="piece_home">🏠 Figur ins Haus</option>
+          <option value="walk20">🚀 20 Felder laufen</option>
+          <option value="boss_global_shield_3">🛡️ Boss-Schutz 3 Runden</option>
+          <option value="all_double_roll_round">🎲 Doppelwurf-Runde</option>
+          <option value="swap_piece_opponent">🔁 Figurentausch</option>
+          <option value="barrier_steal">🧱 Barikade klauen</option>
+          <option value="piece_event_shield">🛡️ Figuren-Schutzschild</option>
+          <option value="walk3">👣 Kleine Abkürzung</option>
+          <option value="opponent_back3">🔙 Rückwärtsgang</option>
+          <option value="exact_roll">🎯 Exakter Zug</option>
+          <option value="predict_parity">🔮 Vorhersage</option>
+          <option value="barrier_swap">🧱 Barikaden-Tausch</option>
+          <option value="barrier_lock">🔐 Feste Barikade</option>
+          <option value="barrier_magnet">🧲 Barikaden-Magnet</option>
+          <option value="roadblock_2rounds">🚧 Straßensperre</option>
+          <option value="barrier_blast">🧨 Sprengmeister</option>
+          <option value="barrier_ban">❌ Barikadenverbot</option>
+          <option value="six_hunt">6️⃣ Sechser-Jagd</option>
+          <option value="three_rule">3️⃣ Dreier-Regel</option>
+          <option value="minimum3">🎲 Minimum 3</option>
+          <option value="joker_bet">🃏 Joker-Wette</option>
+          <option value="joker_lock">🔒 Joker-Sperre</option>
+          <option value="boss_rage">👹 Boss wird wütend</option>
+          <option value="boss_shield_activation">🛡️ Boss-Schutz bis Aktivierung</option>
+          <option value="boss_change">🔀 Boss-Wechsel</option>
+          <option value="laggard4">👥 Nachzüglerhilfe</option>
+          <option value="trap">🕳️ Falle stellen</option>
+          <option value="miniportal">🚪 Miniportal</option>
+          <option value="all_leave_house">🏃 Alle raus</option>
+          <option value="barriers_gone_forever">💨 Keine Barikaden mehr</option>
         </select>
         <button type="button" id="bossEventTestBtn">🃏 Testen</button>
       </div>`;
@@ -2433,7 +2573,7 @@ if(actionEffectsState){
         const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : 8;
         const activeCount=slots.filter(s=>!!s?.boss).length;
         const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:54;
-        bossRoundInfoEl.textContent=`${activeCount}/2 Portale belegt · ${evCount} Ereignisfelder · Karten ${deckRemaining}/54 · Runde ${Math.max(1,Number(bs?.round||1))}`;
+        bossRoundInfoEl.textContent=`${activeCount}/2 Portale belegt · ${evCount} Ereignisfelder · Karten ${deckRemaining}/106 · Runde ${Math.max(1,Number(bs?.round||1))}`;
       }
       if(bossOverviewEl){
         const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : 8;
@@ -2442,7 +2582,7 @@ if(actionEffectsState){
         const roundNow=Math.max(1,Number(bs?.round||1));
         bossOverviewEl.innerHTML=`
           <div class="bossOverviewCard bossOverviewCard--portal"><span>🚪 Portale</span><strong>${activeCount}/2 belegt</strong><small>${activeCount===0?'Noch kein Boss aktiv':activeCount===1?'Ein Boss bedroht das Brett':'Maximale Gefahr: beide Portale belegt'}</small></div>
-          <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>${evCount} Felder</strong><small>${deckRemaining}/54 Karten im gemischten Deck</small></div>
+          <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>${evCount} Felder</strong><small>${deckRemaining}/106 Karten im gemischten Deck</small></div>
           <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde ${roundNow}</strong><small>Jäger jagt nach jedem Wurf · Fluchmeister & Schatten nach jeder Runde</small></div>`;
       }
       const tools=ensureBossTestTools();
@@ -3432,6 +3572,7 @@ try{
         _bossBaselineNextSnapshot=false;
       }
       updateBossUI();
+      renderEventChoicePanel();
       ensureFittedOnce();
       return;
     }
@@ -5283,6 +5424,16 @@ function showEpicWin(winnerColor){
       ctx.fillText(String(arr.length), x+r*0.58, y-r*0.58+0.5);
       ctx.restore();
     }
+
+    // Ereignis-Schutzschild direkt an der geschützten Figur sichtbar machen.
+    const shieldMap=state?.boss?.pieceEventShields||{};
+    if(arr.some(it=>it?.pieceId && shieldMap[String(it.pieceId)])){
+      ctx.save();
+      ctx.font=`900 ${Math.max(13,Math.round(r*0.72))}px system-ui`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("🛡️", x-r*0.68, y-r*0.68);
+      ctx.restore();
+    }
   }
 
   // Request a redraw on the next animation frame (prevents spamming draw() calls)
@@ -6161,6 +6312,37 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         ctx.restore();
       }
 
+      // V14 Spezialfelder aus Ereigniskarten: Fallen und dauerhaftes Miniportal.
+      if(n.kind==="board" && state?.boss){
+        const trap=(state.boss.traps||[]).find(t=>String(t?.nodeId||"")===String(n.id));
+        const portalA=String(state.boss?.miniPortal?.a||"")===String(n.id);
+        const portalB=String(state.boss?.miniPortal?.b||"")===String(n.id);
+        const pendingPortalFirst=(String(state.boss?.pendingChoice?.type||"")==="miniportal" && String(state.boss?.pendingChoice?.stage||"")==="second" && String(state.boss?.pendingChoice?.first||"")===String(n.id));
+        if(trap){
+          ctx.save();
+          ctx.fillStyle="rgba(18,12,10,.72)";ctx.strokeStyle="rgba(240,171,82,.92)";ctx.lineWidth=Math.max(2,r*.09);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.88,0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.font=`900 ${Math.max(12,Math.round(r*.72))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff3df";ctx.fillText("🕳️",s.x,s.y+.5);
+          ctx.restore();
+        }
+        if(pendingPortalFirst && !portalA && !portalB){
+          ctx.save();
+          ctx.strokeStyle="rgba(126,231,255,.98)";ctx.lineWidth=Math.max(3,r*.13);
+          ctx.setLineDash([Math.max(4,r*.18),Math.max(3,r*.12)]);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*1.04,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle="rgba(18,53,77,.84)";ctx.beginPath();ctx.arc(s.x,s.y,r*.72,0,Math.PI*2);ctx.fill();
+          ctx.font=`1000 ${Math.max(11,Math.round(r*.50))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#eaffff";ctx.fillText("A",s.x,s.y+.5);
+          ctx.restore();
+        }
+        if(portalA||portalB){
+          ctx.save();
+          const pg=ctx.createRadialGradient(s.x,s.y,r*.1,s.x,s.y,r*.95);pg.addColorStop(0,"rgba(137,225,255,.40)");pg.addColorStop(.55,"rgba(113,93,226,.45)");pg.addColorStop(1,"rgba(38,25,91,.85)");
+          ctx.fillStyle=pg;ctx.strokeStyle="rgba(201,231,255,.95)";ctx.lineWidth=Math.max(2.5,r*.11);ctx.beginPath();ctx.arc(s.x,s.y,r*.90,0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.font=`1000 ${Math.max(11,Math.round(r*.56))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText(portalA?"A":"B",s.x,s.y+.5);
+          ctx.restore();
+        }
+      }
+
       // Visual-only goal treatment: stronger hierarchy without changing hitboxes or rules.
       if(n.kind==="board" && n.id===goalNodeId){
         ctx.save();
@@ -6250,6 +6432,16 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
 
       if(n.kind==="board" && hasState && state.barricades && state.barricades.has(n.id)){
         drawBarricadeIcon(s.x,s.y,r);
+        const road=state?.boss?.roadblocks?.[String(n.id)];
+        const locked=state?.boss?.lockedBarricades?.[String(n.id)];
+        if(road||locked){
+          ctx.save();
+          ctx.fillStyle=road?"rgba(177,86,28,.96)":"rgba(34,47,73,.96)";
+          ctx.strokeStyle="rgba(255,255,255,.82)";ctx.lineWidth=Math.max(1.4,r*.055);
+          ctx.beginPath();ctx.arc(s.x+r*.57,s.y-r*.55,Math.max(8,r*.31),0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.font=`900 ${Math.max(10,Math.round(r*.42))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText(road?"🚧":"🔒",s.x+r*.57,s.y-r*.55+.5);
+          ctx.restore();
+        }
         if(actionBarricadeFrom === n.id) drawSelectionRing(s.x, s.y, r*0.85);
       }
     }
@@ -6556,7 +6748,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         }
         if(typeof pos==="string" && adj.has(pos)){
           if(!stacks.has(pos)) stacks.set(pos, []);
-          stacks.get(pos).push({color:c,index:i});
+          stacks.get(pos).push({color:c,index:i,pieceId:pid});
         }
       }
     }
@@ -6606,6 +6798,14 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         }
 
         drawBossTokenCanvas(s.x+ox,s.y+oy,r,x.boss,theme,{moving:!!fx?.moving,pulse});
+        if(Number(x.boss?.eventShieldActivations||0)>0 || Number(state?.boss?.globalBossShieldRounds||0)>0){
+          ctx.save();ctx.fillStyle="rgba(36,65,112,.96)";ctx.strokeStyle="rgba(219,239,255,.95)";ctx.lineWidth=Math.max(1.3,r*.055);
+          ctx.beginPath();ctx.arc(s.x+ox+r*.62,s.y+oy-r*.58,Math.max(8,r*.31),0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.font=`900 ${Math.max(10,Math.round(r*.42))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText("🛡️",s.x+ox+r*.62,s.y+oy-r*.58+.5);ctx.restore();
+        }
+        if(x.boss?.rageDoubleNext){
+          ctx.save();ctx.font=`900 ${Math.max(12,Math.round(r*.46))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("🔥",s.x+ox-r*.62,s.y+oy-r*.58);ctx.restore();
+        }
         ctx.restore();
       }
       if(hasBossFxActive) requestInteractionFxTick();
@@ -6686,6 +6886,29 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         requestDraw();
       }
     }
+    // V14: aktive globale Ereignis-Boni am Spielfeldrand sichtbar halten.
+    if(hasState && state?.boss){
+      const bs=state.boss; const badges=[];
+      if(Number(bs.globalBossShieldRounds||0)>0) badges.push(`🛡️ Boss-Schutz ${Number(bs.globalBossShieldRounds)} R.`);
+      const dd=bs.doubleDiceByColor && Object.values(bs.doubleDiceByColor).some(Boolean); if(dd) badges.push('🎲 Doppelwurf-Runde');
+      if(bs.miniPortal?.a&&bs.miniPortal?.b) badges.push('🚪 Miniportal aktiv');
+      if(bs.barricadesDisabled) badges.push('💨 Barikaden dauerhaft aus');
+      const trapN=Array.isArray(bs.traps)?bs.traps.length:0; if(trapN) badges.push(`🕳️ ${trapN} Falle${trapN===1?'':'n'}`);
+      if(badges.length){
+        ctx.save();
+        const x=14,y=14,padX=10,h=28,gap=6;
+        ctx.font='800 12px system-ui';ctx.textBaseline='middle';
+        let yy=y;
+        for(const label of badges){
+          const w=Math.ceil(ctx.measureText(label).width)+padX*2;
+          ctx.fillStyle='rgba(8,12,22,.86)';ctx.strokeStyle='rgba(255,255,255,.17)';ctx.lineWidth=1;
+          ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x,yy,w,h,10); else ctx.rect(x,yy,w,h); ctx.fill();ctx.stroke();
+          ctx.fillStyle='rgba(245,248,255,.96)';ctx.fillText(label,x+padX,yy+h/2+.5);yy+=h+gap;
+        }
+        ctx.restore();
+      }
+    }
+
 if(selected){
       const pc = state.pieces[selected.color]?.[selected.index];
       if(pc && typeof pc.pos==="string" && adj.has(pc.pos)){
@@ -6740,6 +6963,8 @@ canvas.setPointerCapture(ev.pointerId);
 
     const wp=screenToWorld(sp);
     const hit=hitNode(wp);
+    // Ereigniskarten-Auswahl hat Vorrang vor normalem Zug/Panning – auch wenn der Zug inzwischen weitergeschaltet wurde.
+    if(handleEventChoiceBoardClick(hit)){ draw(); return; }
       const isMyTurn = (netMode!=="client") || (myColor && myColor===state.currentPlayer);
       // IMPORTANT: Board-Panning soll immer gehen (auch wenn man nicht dran ist).
       // Wir blocken daher NICHT mehr den gesamten PointerDown, sondern nur Gameplay-Interaktion.
