@@ -2628,7 +2628,7 @@ if(actionEffectsState){
         bossOverviewEl.innerHTML=`
           <div class="bossOverviewCard bossOverviewCard--portal"><span>🚪 Portale</span><strong>${activeCount}/2 belegt</strong><small>${activeCount===0?'Noch kein Boss aktiv':activeCount===1?'Ein Boss bedroht das Brett':'Maximale Gefahr: beide Portale belegt'}</small></div>
           <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>${evCount} Felder</strong><small>${countdownText} · ${deckRemaining}/106 Karten</small></div>
-          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde ${roundNow}</strong><small>Jäger nach jedem Wurf · Doppelgänger nach Spielerbewegung · Fluchmeister, Schatten & Weltenfresser nach jeder Runde</small></div>`;
+          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde ${roundNow}</strong><small>Jäger nach jedem Wurf · Doppelgänger nach jeder Spielerbewegung · Fluchmeister, Schatten & Weltenfresser nach jeder vollständigen Runde</small></div>`;
       }
       const tools=ensureBossTestTools();
       if(tools) tools.style.display=isMeHost()?'block':'none';
