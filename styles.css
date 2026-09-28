@@ -4037,3 +4037,20 @@ body.game-page #jokerBossRemoveBtn.epicJokerBtn .ejIcon{
 #jokerFxOverlay.fx-bossremove .jokerFxIcon{animation:jokerFxBossRemove .78s cubic-bezier(.16,.9,.22,1) both;}
 @keyframes jokerFxBossSpawn{0%{opacity:0;transform:scale(.45) rotate(-16deg)}55%{opacity:1;transform:scale(1.16) rotate(4deg)}78%{transform:scale(.96) rotate(-2deg)}100%{opacity:1;transform:none}}
 @keyframes jokerFxBossRemove{0%{opacity:0;transform:scale(1.25) rotate(0)}45%{opacity:1;transform:scale(1) rotate(160deg)}100%{opacity:1;transform:scale(.94) rotate(360deg)}}
+
+/* ===== V14 Ereignis-Auswahl ===== */
+#eventChoicePanel.eventChoicePanel{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(18px);z-index:90000;width:min(92vw,560px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility .18s ease;}
+#eventChoicePanel.show{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+#eventChoicePanel .eventChoiceCard{border-radius:22px;padding:14px 15px 12px;border:1px solid rgba(207,190,255,.26);background:linear-gradient(180deg,rgba(25,21,45,.97),rgba(10,12,23,.98));box-shadow:0 18px 44px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(10px);}
+#eventChoicePanel .eventChoiceTop{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+#eventChoicePanel .eventChoiceIcon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:rgba(148,112,255,.18);border:1px solid rgba(210,192,255,.18);font-size:23px;}
+#eventChoicePanel small{display:block;color:#bba9ff;font:900 9px/1.2 system-ui;letter-spacing:.18em;margin-bottom:3px;}
+#eventChoicePanel strong{display:block;color:#fff;font:900 16px/1.15 system-ui;}
+#eventChoicePanel .eventChoiceText{color:#eef1ff;font:700 13px/1.4 system-ui;padding:9px 10px;border-radius:13px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);}
+#eventChoicePanel .eventChoiceButtons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+#eventChoicePanel button{appearance:none;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:9px 12px;background:linear-gradient(180deg,#906cff,#6846cc);color:#fff;font:850 12px/1.15 system-ui;cursor:pointer;box-shadow:0 7px 16px rgba(59,36,132,.28);}
+#eventChoicePanel button:hover{filter:brightness(1.08);transform:translateY(-1px);}
+#eventChoicePanel button.secondary{background:rgba(255,255,255,.07);box-shadow:none;color:#dfe5f6;}
+#eventChoicePanel .eventChoiceBoardHint{width:100%;padding:9px 10px;border-radius:12px;background:rgba(92,160,255,.09);border:1px solid rgba(125,183,255,.18);color:#dcecff;font:800 12px/1.35 system-ui;text-align:center;}
+#eventChoicePanel .eventChoiceHint{margin-top:9px;color:#9ca9c8;font:700 10px/1.35 system-ui;text-align:center;}
+@media(max-width:620px){#eventChoicePanel.eventChoicePanel{bottom:10px;width:min(95vw,560px)}#eventChoicePanel .eventChoiceCard{padding:12px;border-radius:18px}#eventChoicePanel button{flex:1 1 auto;min-width:110px}}
