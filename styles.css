@@ -4081,3 +4081,219 @@ body.game-page .bossCardArt--devourer .bossCardGlyph{
   border:1px solid rgba(255,255,255,.18);
   box-shadow:0 10px 24px rgba(0,0,0,.28);
 }
+
+
+/* ===== V18 Sidebar-Harmonie + Bossportraits ===== */
+@media (min-width: 1181px){
+  body.game-page .app{
+    grid-template-columns:minmax(0,1fr) clamp(380px, 28vw, 430px) !important;
+    gap:10px !important;
+    align-items:stretch !important;
+  }
+  body.game-page .boardWrap{
+    min-width:0 !important;
+  }
+  body.game-page .gameSidebar{
+    width:auto !important;
+    min-width:380px !important;
+    max-width:430px !important;
+    padding:14px !important;
+    gap:10px !important;
+  }
+}
+@media (min-width: 901px) and (max-width: 1180px){
+  body.game-page .app{
+    grid-template-columns:minmax(0,1fr) 350px !important;
+    gap:9px !important;
+  }
+  body.game-page .gameSidebar{
+    width:350px !important;
+    min-width:350px !important;
+    max-width:350px !important;
+    padding:12px !important;
+  }
+}
+body.game-page .boardWrap{
+  box-shadow:0 14px 34px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+body.game-page .gameSidebar{
+  background:linear-gradient(180deg,rgba(6,10,18,.74),rgba(4,7,14,.88)) !important;
+  border:1px solid rgba(255,255,255,.065) !important;
+  border-radius:26px !important;
+  box-shadow:0 16px 44px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.03) !important;
+}
+body.game-page .sideSection{
+  border-radius:20px !important;
+  padding:13px !important;
+}
+body.game-page .sideSectionHead{
+  margin-bottom:10px !important;
+  padding-bottom:8px !important;
+}
+body.game-page .sideKicker{
+  font-size:9px !important;
+  letter-spacing:1.45px !important;
+}
+body.game-page .sideSection h3{
+  font-size:16px !important;
+}
+body.game-page .sideTurnCard{
+  padding:14px !important;
+}
+body.game-page .sideTurnLabel{font-size:21px !important;}
+body.game-page .sideTurnMeta{font-size:11px !important;line-height:1.3 !important;}
+body.game-page .diceActionRow{grid-template-columns:minmax(0,1fr) 90px !important;gap:10px !important;}
+body.game-page .primaryRoll{min-height:66px !important;font-size:18px !important;border-radius:18px !important;}
+body.game-page .dicePill{min-height:66px !important;border-radius:18px !important;}
+body.game-page .turnActions{gap:10px !important;}
+body.game-page .turnActionBtn{min-height:48px !important;border-radius:16px !important;font-size:14px !important;}
+body.game-page .bossOverview{
+  grid-template-columns:1fr !important;
+  gap:9px !important;
+}
+body.game-page .bossOverviewCard{
+  border-radius:18px !important;
+  padding:12px 13px !important;
+}
+body.game-page .bossOverviewCard strong{font-size:17px !important;}
+body.game-page .bossInfoBar{
+  border-radius:18px !important;
+  padding:12px 13px !important;
+}
+body.game-page .statusCompact{
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+body.game-page .statusMini{
+  min-height:62px !important;
+  border-radius:16px !important;
+  padding:10px 11px !important;
+}
+body.game-page .jokerSection #actionCard{display:block !important;}
+body.game-page .jokerLegacyStatus{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:8px !important;
+  margin-bottom:12px !important;
+}
+body.game-page .jokerLegacyStatus .kv{
+  margin:0 !important;
+  padding:8px 10px !important;
+  min-height:44px !important;
+  border-radius:14px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.025)) !important;
+}
+body.game-page .joker-grid-4,
+body.game-page #actionCard .epicJokerGrid,
+body.game-page .joker-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
+}
+body.game-page .joker-btn,
+body.game-page #actionCard .epicJokerBtn{
+  min-height:120px !important;
+  border-radius:20px !important;
+  padding:12px 12px 12px 14px !important;
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+  gap:8px !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+body.game-page .joker-btn .j-ico,
+body.game-page #actionCard .epicJokerBtn .epicIco{
+  font-size:31px !important;
+  line-height:1 !important;
+}
+body.game-page .joker-btn .j-name,
+body.game-page #actionCard .epicJokerBtn .epicName{
+  font-size:15px !important;
+  line-height:1.1 !important;
+  font-weight:900 !important;
+  letter-spacing:-.02em !important;
+}
+body.game-page .joker-btn .j-count,
+body.game-page #actionCard .epicJokerBtn .epicCount{
+  top:10px !important;
+  right:10px !important;
+  min-width:28px !important;
+  height:28px !important;
+  border-radius:999px !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+}
+body.game-page .bossCards{gap:14px !important;}
+body.game-page .bossCard{
+  grid-template-columns:126px minmax(0,1fr) !important;
+  gap:14px !important;
+  padding:13px !important;
+  border-radius:24px !important;
+  background:
+    radial-gradient(500px 180px at 0% 0%,rgba(108,90,255,.08),transparent 65%),
+    linear-gradient(180deg,rgba(20,23,36,.985),rgba(8,12,20,.99)) !important;
+}
+body.game-page .bossCardArt{
+  min-height:172px !important;
+  border-radius:20px !important;
+  padding:8px !important;
+  border:1px solid rgba(255,255,255,.085) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.24) !important;
+}
+body.game-page .bossPortrait{
+  inset:7px 7px 36px 7px !important;
+  width:calc(100% - 14px) !important;
+  height:calc(100% - 43px) !important;
+  border-radius:15px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  filter:saturate(1.08) contrast(1.04) brightness(1.02) !important;
+}
+body.game-page .bossCardGlyph{
+  font-size:19px !important;
+  right:9px !important;
+  top:9px !important;
+  width:34px !important;
+  height:34px !important;
+  border-radius:999px !important;
+  background:rgba(8,12,20,.56) !important;
+  backdrop-filter:blur(8px) !important;
+}
+body.game-page .bossCardTagline{
+  left:8px !important;
+  right:8px !important;
+  bottom:8px !important;
+  border-radius:13px !important;
+  padding:7px 10px !important;
+  background:linear-gradient(180deg,rgba(5,7,12,.14),rgba(5,7,12,.62)) !important;
+  font-size:10px !important;
+  letter-spacing:1.15px !important;
+}
+body.game-page .bossCardTop{gap:8px !important;}
+body.game-page .bossCardLabel{font-size:10px !important;letter-spacing:1.15px !important;}
+body.game-page .bossCardNameRow strong{font-size:17px !important;}
+body.game-page .bossCardState{font-size:10px !important;padding:6px 9px !important;border-radius:999px !important;}
+body.game-page .bossCardMeta{gap:6px !important;}
+body.game-page .bossCardMeta span{border-radius:999px !important;padding:5px 8px !important;font-size:10px !important;}
+body.game-page .bossCardSection{border-radius:14px !important;padding:9px 10px !important;margin-top:7px !important;}
+body.game-page .bossCardSectionTitle{font-size:10px !important;letter-spacing:1.05px !important;}
+body.game-page .bossCardDesc,
+body.game-page .bossCardEffect,
+body.game-page .bossCardRule{font-size:12px !important;line-height:1.38 !important;}
+body.game-page .bossCardFooter{margin-top:8px !important;padding-top:8px !important;}
+body.game-page .bossCardStatus{display:flex !important;flex-direction:column !important;gap:4px !important;font-size:11px !important;}
+body.game-page .bossCardStatus span{display:block !important;}
+/* Realistic card-art tuning */
+body.game-page .bossCardArt--hunter{background:radial-gradient(circle at 52% 16%,rgba(255,208,128,.45),transparent 28%),linear-gradient(180deg,#4f170f 0%,#1a0807 100%) !important;}
+body.game-page .bossCardArt--curse{background:radial-gradient(circle at 52% 16%,rgba(182,132,255,.44),transparent 28%),linear-gradient(180deg,#38135d 0%,#130922 100%) !important;}
+body.game-page .bossCardArt--shadow{background:radial-gradient(circle at 52% 16%,rgba(140,238,255,.34),transparent 30%),linear-gradient(180deg,#183247 0%,#09111d 100%) !important;}
+body.game-page .bossCardArt--doppel{background:radial-gradient(circle at 52% 16%,rgba(255,223,140,.34),transparent 28%),linear-gradient(180deg,#3e2d10 0%,#15100a 100%) !important;}
+body.game-page .bossCardArt--devourer{background:radial-gradient(circle at 50% 12%,rgba(151,102,255,.42),transparent 32%),linear-gradient(180deg,#170b34 0%,#05050d 100%) !important;}
+@media (max-width: 900px){
+  body.game-page .gameSidebar{padding:10px !important;}
+  body.game-page .sideSection{padding:10px !important;}
+  body.game-page .jokerLegacyStatus{grid-template-columns:1fr !important;}
+}
+@media (max-width: 760px){
+  body.game-page .bossCard{grid-template-columns:102px minmax(0,1fr) !important;}
+  body.game-page .bossCardArt{min-height:146px !important;}
+  body.game-page .joker-btn,
+  body.game-page #actionCard .epicJokerBtn{min-height:108px !important;}
+}
