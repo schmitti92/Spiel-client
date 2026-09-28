@@ -793,21 +793,35 @@ let pendingSaveExport = false;
       summary:"Jagt immer die nächstgelegene Spielfigur.",
       effect:"Trifft er einen Spieler, wird dessen Figur wie beim normalen Schmeißen zurück ins Haus gesetzt.",
       rule:"Barikadenregel: Trifft er eine Barikade, wird sie direkt hinter ihn versetzt.",
-      portrait:"boss_hunter.svg", artClass:"bossCardArt--hunter"
+      portrait:"boss_hunter.svg", artClass:"bossCardArt--hunter", reward:"1 Joker"
     },
     curse:{
       key:"curse", icon:"🧙", name:"Der Fluchmeister", tag:"FLUCHMEISTER", cadence:"nach jeder vollständigen Runde", steps:"5 Felder",
       summary:"Schwebt über das gesamte Brett und ignoriert Barikaden.",
       effect:"Jeder Spieler, den er auf seinem Weg überquert, wird sofort verflucht.",
       rule:"Fluch: Der nächste Würfelwurf dieses Spielers erhält −2. Barikaden bleiben liegen.",
-      portrait:"boss_curse.svg", artClass:"bossCardArt--curse"
+      portrait:"boss_curse.svg", artClass:"bossCardArt--curse", reward:"1 Joker"
     },
     shadow:{
       key:"shadow", icon:"👻", name:"Der Schatten", tag:"SCHATTEN", cadence:"nach jeder vollständigen Runde", steps:"3 Felder",
       summary:"Jagt bevorzugt den Spieler mit den meisten Jokern.",
       effect:"Jeder Spieler, den er auf seinem Weg erwischt oder überspringt, verliert 1 zufälligen Joker.",
       rule:"Hat ein Spieler keinen Joker, bekommt er stattdessen 2 zufällige Joker über das Joker-Rad.",
-      portrait:"boss_shadow.svg", artClass:"bossCardArt--shadow"
+      portrait:"boss_shadow.svg", artClass:"bossCardArt--shadow", reward:"1 Joker"
+    },
+    doppel:{
+      key:"doppel", icon:"👥", name:"Der Doppelgänger", tag:"DOPPELGÄNGER", cadence:"nach jeder Spielerbewegung", steps:"wie Spieler",
+      summary:"Kopiert exakt die Schrittzahl des aktiven Spielers und jagt den Spieler mit den meisten Figuren auf dem Brett.",
+      effect:"Nur wenn er exakt auf einer Figur landet, wird sie zurück ins Haus geschickt.",
+      rule:"Barikaden dürfen nicht übersprungen werden. Exakte Landung auf einer beweglichen Barikade versetzt sie direkt vor einen Spieler. Doppelwurf und Neu-Wurf werden über die tatsächliche Spielerbewegung mitkopiert; der Barikaden-Joker wird als Gegenbarikade gespiegelt.",
+      portrait:null, artClass:"bossCardArt--doppel", reward:"2 Joker"
+    },
+    devourer:{
+      key:"devourer", icon:"🌌", name:"Der Weltenfresser", tag:"WELTENFRESSER", cadence:"nach jeder vollständigen Runde", steps:"Teleport",
+      summary:"Teleportiert nach jeder vollständigen Runde auf ein neues freies Feld und verändert die Wege auf dem Brett taktisch.",
+      effect:"Nach jeder vollständigen Runde verschwindet das alte schwarze Loch und ein neues freies Feld wird bis zur nächsten Runde komplett unpassierbar.",
+      rule:"Das schwarze Loch darf nie auf Figuren, Bosse, Barikaden, Ereignisfelder, Fallen, Miniportale, Ziel oder die geschützten Startreihen gesetzt werden und keinen einzigen Grundweg zum Ziel vollständig kappen.",
+      portrait:null, artClass:"bossCardArt--devourer", reward:"3 Joker"
     }
   };
 
@@ -822,10 +836,14 @@ let pendingSaveExport = false;
     if(direct.includes('hunter') || direct.includes('jäger') || direct.includes('jaeger')) return 'hunter';
     if(direct.includes('curse') || direct.includes('fluch')) return 'curse';
     if(direct.includes('shadow') || direct.includes('schatten')) return 'shadow';
+    if(direct.includes('doppel')) return 'doppel';
+    if(direct.includes('devourer') || direct.includes('weltenfresser')) return 'devourer';
     const blob=`${String(act?.title||'')} ${String(act?.text||'')}`.toLowerCase();
     if(blob.includes('jäger') || blob.includes('jaeger')) return 'hunter';
     if(blob.includes('fluchmeister')) return 'curse';
     if(blob.includes('schatten')) return 'shadow';
+    if(blob.includes('doppelgänger') || blob.includes('doppelgaenger') || blob.includes('doppel')) return 'doppel';
+    if(blob.includes('weltenfresser')) return 'devourer';
     return '';
   }
 
@@ -874,6 +892,8 @@ let pendingSaveExport = false;
     const t=String(type||'');
     if(t==='hunter') return {glow:'rgba(255,134,74,.72)', stroke:'rgba(255,190,116,.98)', fill:'rgba(59,18,12,.96)', trail:'rgba(255,161,84,.78)', soft:'rgba(255,161,84,.16)', label:'rgba(255,224,192,.96)'};
     if(t==='curse') return {glow:'rgba(176,118,255,.78)', stroke:'rgba(222,189,255,.98)', fill:'rgba(30,10,58,.96)', trail:'rgba(190,130,255,.78)', soft:'rgba(190,130,255,.18)', label:'rgba(239,225,255,.96)'};
+    if(t==='doppel') return {glow:'rgba(255,215,117,.72)', stroke:'rgba(255,234,174,.98)', fill:'rgba(55,40,12,.96)', trail:'rgba(255,218,119,.78)', soft:'rgba(255,218,119,.16)', label:'rgba(255,245,213,.96)'};
+    if(t==='devourer') return {glow:'rgba(162,93,255,.82)', stroke:'rgba(221,190,255,.98)', fill:'rgba(9,4,20,.98)', trail:'rgba(141,87,255,.82)', soft:'rgba(119,72,190,.22)', label:'rgba(244,231,255,.98)'};
     return {glow:'rgba(119,241,255,.74)', stroke:'rgba(208,252,255,.98)', fill:'rgba(12,32,46,.96)', trail:'rgba(118,235,244,.78)', soft:'rgba(118,235,244,.16)', label:'rgba(225,250,255,.96)'};
   }
 
@@ -1679,6 +1699,17 @@ let awardsShown = false;
   function getLobbyBossMode(){
     try{ return (localStorage.getItem("barikade_boss_mode") || "off") === "boss"; }catch(_e){ return false; }
   }
+
+  function getLobbyEventFieldCount(){
+    try{
+      const urlCount=Number(new URLSearchParams(location.search).get("eventFields"));
+      if(Number.isInteger(urlCount) && urlCount>=5 && urlCount<=20) return urlCount;
+      const rc=normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+      const raw=localStorage.getItem("barikade_event_field_count_" + rc) ?? localStorage.getItem("barikade_event_field_count");
+      const n=Number(raw);
+      return Number.isInteger(n) && n>=5 && n<=20 ? n : 8;
+    }catch(_e){ return 8; }
+  }
   
   function getLobbyJokerCount(){
     try{
@@ -2408,6 +2439,11 @@ if(actionEffectsState){
       eventChoiceSend({nodeId}); return true;
     }
     if(['roadblock','trap','miniportal'].includes(type)){
+      const n=nodeById.get(nodeId);
+      if(n?.flags?.noBarricade || n?.flags?.startColor){
+        toast('🛡️ Start-Schutzbereich: Hier dürfen keine Spezialfelder entstehen.');
+        return true;
+      }
       eventChoiceSend({nodeId}); return true;
     }
     return false;
@@ -2426,8 +2462,10 @@ if(actionEffectsState){
         <button type="button" data-boss-spawn="hunter">🐺 Jäger</button>
         <button type="button" data-boss-spawn="curse">🧙 Fluchmeister</button>
         <button type="button" data-boss-spawn="shadow">👻 Schatten</button>
+        <button type="button" data-boss-spawn="doppel">👥 Doppelgänger</button>
+        <button type="button" data-boss-spawn="devourer">🌌 Weltenfresser</button>
         <button type="button" data-boss-action="act">▶ Bossaktion</button>
-        <button type="button" data-boss-action="events">🎲 8 Ereignisfelder neu</button>
+        <button type="button" data-boss-action="events">🎲 Ereignisfelder neu</button>
         <button type="button" data-boss-action="clear">🧹 Alle löschen</button>
       </div>
       <div class="bossEventTestRow" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px">
@@ -2512,7 +2550,7 @@ if(actionEffectsState){
       const bs=state?.boss || null;
       const slots=Array.isArray(bs?.slots) ? bs.slots : [];
       if(bossSlotsEl){
-        const typeOrder=["hunter","curse","shadow"];
+        const typeOrder=["hunter","curse","shadow","doppel","devourer"];
         const byType={};
         for(const slot of slots){ if(slot?.boss?.type) byType[String(slot.boss.type)] = slot; }
         bossSlotsEl.innerHTML=typeOrder.map((type)=>{
@@ -2526,7 +2564,7 @@ if(actionEffectsState){
           const isJustActed=_recentBossActionType===type && performance.now()<_recentBossActionPulseUntil;
           return `<article class="bossCard ${isActive?'isActive':'isIdle'} ${isJustActed?'justActed':''} bossCard--${type}">
             <div class="bossCardArt ${meta.artClass}" aria-hidden="true">
-              <img class="bossPortrait" src="${meta.portrait||''}" alt="${meta.name||'Boss'}" loading="lazy" />
+              ${meta.portrait?`<img class="bossPortrait" src="${meta.portrait}" alt="${meta.name||'Boss'}" loading="lazy" />`:''}
               <div class="bossCardGlow"></div>
               <div class="bossCardGlyph">${meta.icon||'👹'}</div>
               <div class="bossCardTagline">${meta.tag||meta.name}</div>
@@ -2543,7 +2581,8 @@ if(actionEffectsState){
                 <span>❤️ 1 Leben</span>
                 <span>👣 ${meta.steps||'-'}</span>
                 <span>⏱ ${meta.cadence||'-'}</span>
-                <span>🎯 ${type==='hunter'?'Jagd':type==='curse'?'Fluch':'Jokerdruck'}</span>
+                <span>🎯 ${type==='hunter'?'Jagd':type==='curse'?'Fluch':type==='shadow'?'Jokerdruck':type==='doppel'?'Spiegel':'Schwarzes Loch'}</span>
+                <span>🏆 ${meta.reward||'1 Joker'}</span>
               </div>
               <div class="bossCardSection bossCardSection--lore">
                 <div class="bossCardSectionTitle">Verhalten</div>
@@ -2570,20 +2609,26 @@ if(actionEffectsState){
         bossLastEventEl.textContent=a ? `${a.icon||'👹'} ${a.title||'Boss'} · ${a.text||''}` : (e ? `${e.icon||'🃏'} ${e.title||'Ereignis'} · ${e.effectText||''}` : 'Noch keine Bossaktion');
       }
       if(bossRoundInfoEl){
-        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : 8;
+        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : Math.max(5,Math.min(20,Number(bs?.eventFieldCount||8)));
         const activeCount=slots.filter(s=>!!s?.boss).length;
-        const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:54;
-        bossRoundInfoEl.textContent=`${activeCount}/2 Portale belegt · ${evCount} Ereignisfelder · Karten ${deckRemaining}/106 · Runde ${Math.max(1,Number(bs?.round||1))}`;
+        const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:106;
+        const countdown=Math.max(0,Math.min(3,Number(bs?.bossEventCountdown ?? 3)));
+        const pending=!!bs?.bossCountdownPending;
+        const countdownText=pending?'Boss wartet auf freies Portal':`Boss in ${countdown} Ereignisfeld${countdown===1?'':'ern'}`;
+        bossRoundInfoEl.textContent=`${activeCount}/2 Portale · ${evCount} Ereignisfelder · 👹 ${countdownText} · Karten ${deckRemaining}/106 · Runde ${Math.max(1,Number(bs?.round||1))}`;
       }
       if(bossOverviewEl){
-        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : 8;
+        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : Math.max(5,Math.min(20,Number(bs?.eventFieldCount||8)));
         const activeCount=slots.filter(s=>!!s?.boss).length;
-        const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:54;
+        const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:106;
         const roundNow=Math.max(1,Number(bs?.round||1));
+        const countdown=Math.max(0,Math.min(3,Number(bs?.bossEventCountdown ?? 3)));
+        const pending=!!bs?.bossCountdownPending;
+        const countdownText=pending?'👹 Boss wartet auf ein freies Portal':`👹 Nächster Boss nach ${countdown} Ereignisfeld${countdown===1?'':'ern'}`;
         bossOverviewEl.innerHTML=`
           <div class="bossOverviewCard bossOverviewCard--portal"><span>🚪 Portale</span><strong>${activeCount}/2 belegt</strong><small>${activeCount===0?'Noch kein Boss aktiv':activeCount===1?'Ein Boss bedroht das Brett':'Maximale Gefahr: beide Portale belegt'}</small></div>
-          <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>${evCount} Felder</strong><small>${deckRemaining}/106 Karten im gemischten Deck</small></div>
-          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde ${roundNow}</strong><small>Jäger jagt nach jedem Wurf · Fluchmeister & Schatten nach jeder Runde</small></div>`;
+          <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>${evCount} Felder</strong><small>${countdownText} · ${deckRemaining}/106 Karten</small></div>
+          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde ${roundNow}</strong><small>Jäger nach jedem Wurf · Doppelgänger nach Spielerbewegung · Fluchmeister, Schatten & Weltenfresser nach jeder Runde</small></div>`;
       }
       const tools=ensureBossTestTools();
       if(tools) tools.style.display=isMeHost()?'block':'none';
@@ -3141,7 +3186,8 @@ try{
       dur,
       starterColor: winner,
       mode: String(msg.mode || _pendingStartMode || (actionModeToggle && actionModeToggle.checked ? "action" : "classic") || "classic"),
-      bossMode: !!(msg.bossMode ?? _pendingStartBossMode ?? getLobbyBossMode())
+      bossMode: !!(msg.bossMode ?? _pendingStartBossMode ?? getLobbyBossMode()),
+      eventFieldCount: Number(msg.eventFieldCount || getLobbyEventFieldCount())
     };
     window.setTimeout(()=>{
       try{
@@ -3152,7 +3198,7 @@ try{
         if(!p) return;
         // Send the definitive start to the server (server is truth, will validate again).
         const jc = (p.mode === "action") ? getLobbyJokerCount() : null;
-        wsSend({ type:"start", mode: p.mode, bossMode: !!p.bossMode, ts: Date.now(), starterColor: p.starterColor, jokerStartCount:(jc || undefined) });
+        wsSend({ type:"start", mode: p.mode, bossMode: !!p.bossMode, eventFieldCount:(p.eventFieldCount || undefined), ts: Date.now(), starterColor: p.starterColor, jokerStartCount:(jc || undefined) });
       }catch(_e){}
     }, dur + 60);
   }
@@ -3196,6 +3242,12 @@ try{
             const rc = normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
             if(rc) localStorage.setItem("barikade_joker_count_" + rc, String(jc));
             localStorage.setItem("barikade_joker_count", String(jc));
+          }
+          const efc=Number(msg.eventFieldCount);
+          if(Number.isInteger(efc) && efc>=5 && efc<=20){
+            const rc=normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+            if(rc) localStorage.setItem("barikade_event_field_count_" + rc,String(efc));
+            localStorage.setItem("barikade_event_field_count",String(efc));
           }
         }catch(_e){}
         if(Array.isArray(msg.allowedColors)){
@@ -4507,7 +4559,7 @@ function showEpicWin(winnerColor){
     }catch(_e){}
     try{
       state.bossMode = getLobbyBossMode();
-      state.boss = state.bossMode ? {slots:[],eventFields:[],round:1,lastEvent:null,lastAction:null} : null;
+      state.boss = state.bossMode ? {slots:[],eventFields:[],eventFieldCount:getLobbyEventFieldCount(),bossEventCountdown:3,bossCountdownPending:false,round:1,lastEvent:null,lastAction:null} : null;
     }catch(_e){}
     // 🔥 BRUTAL: Barikaden starten auf ALLEN RUN-Feldern (außer Ziel)
     for(const id of runNodes){
@@ -6343,6 +6395,28 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
         }
       }
 
+      // Weltenfresser: genau ein statisches schwarzes Loch. Keine Animation –
+      // es soll gefährlich und klar lesbar sein, ohne dauerhaft zu pulsieren.
+      if(n.kind==="board" && state?.boss?.blackHole && String(state.boss.blackHole.nodeId||"")===String(n.id)){
+        ctx.save();
+        ctx.shadowColor="rgba(80,24,132,.82)";ctx.shadowBlur=Math.max(10,r*.55);
+        const hg=ctx.createRadialGradient(s.x-r*.18,s.y-r*.18,r*.06,s.x,s.y,r*1.02);
+        hg.addColorStop(0,"rgba(0,0,0,1)");
+        hg.addColorStop(.46,"rgba(3,2,8,.99)");
+        hg.addColorStop(.72,"rgba(37,14,57,.96)");
+        hg.addColorStop(.90,"rgba(91,42,135,.92)");
+        hg.addColorStop(1,"rgba(12,7,18,.98)");
+        ctx.fillStyle=hg;ctx.beginPath();ctx.arc(s.x,s.y,r*1.02,0,Math.PI*2);ctx.fill();
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(214,177,255,.78)";ctx.lineWidth=Math.max(1.8,r*.075);
+        ctx.beginPath();ctx.arc(s.x,s.y,r*.90,0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle="rgba(139,77,202,.70)";ctx.lineWidth=Math.max(1.2,r*.05);
+        ctx.beginPath();ctx.arc(s.x,s.y,r*.64,0,Math.PI*2);ctx.stroke();
+        ctx.fillStyle="rgba(0,0,0,.99)";ctx.beginPath();ctx.arc(s.x,s.y,r*.43,0,Math.PI*2);ctx.fill();
+        ctx.font=`1000 ${Math.max(10,Math.round(r*.40))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="rgba(244,229,255,.96)";ctx.fillText("◉",s.x,s.y+.5);
+        ctx.restore();
+      }
+
       // Visual-only goal treatment: stronger hierarchy without changing hitboxes or rules.
       if(n.kind==="board" && n.id===goalNodeId){
         ctx.save();
@@ -6892,6 +6966,7 @@ const r=Math.max(16, board.ui?.nodeRadius || 20);
       if(Number(bs.globalBossShieldRounds||0)>0) badges.push(`🛡️ Boss-Schutz ${Number(bs.globalBossShieldRounds)} R.`);
       const dd=bs.doubleDiceByColor && Object.values(bs.doubleDiceByColor).some(Boolean); if(dd) badges.push('🎲 Doppelwurf-Runde');
       if(bs.miniPortal?.a&&bs.miniPortal?.b) badges.push('🚪 Miniportal aktiv');
+      if(bs.blackHole?.nodeId) badges.push(`🌌 Schwarzes Loch · ${String(bs.blackHole.nodeId)}`);
       if(bs.barricadesDisabled) badges.push('💨 Barikaden dauerhaft aus');
       const trapN=Array.isArray(bs.traps)?bs.traps.length:0; if(trapN) badges.push(`🕳️ ${trapN} Falle${trapN===1?'':'n'}`);
       if(badges.length){
@@ -7344,7 +7419,8 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
       wsSend({ type:"set_joker_start_count", count:_jokerCount, ts:Date.now() });
     }
     // Neu: Startspieler per Glücksrad bestimmen (server-chef, für alle sichtbar)
-    wsSend({ type:"start_request", mode:_m, bossMode:_bossMode, jokerStartCount:(_jokerCount || undefined), ts:Date.now() });
+    const _eventFieldCount = _bossMode ? getLobbyEventFieldCount() : undefined;
+    wsSend({ type:"start_request", mode:_m, bossMode:_bossMode, jokerStartCount:(_jokerCount || undefined), eventFieldCount:_eventFieldCount, ts:Date.now() });
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
