@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 400" role="img" aria-label="Der Schatten">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#244e67"/><stop offset="1" stop-color="#081019"/></linearGradient>
+  <radialGradient id="mist" cx="50%" cy="18%" r="42%"><stop offset="0" stop-color="#d2ffff" stop-opacity=".62"/><stop offset="1" stop-color="#d2ffff" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="320" height="400" rx="34" fill="url(#bg)"/>
+<rect width="320" height="400" rx="34" fill="url(#mist)"/>
+<path d="M44 362c28-60 66-92 116-92s88 32 116 92" fill="#0f2331" opacity=".92"/>
+<path d="M160 66c46 0 82 38 82 85 0 24-9 45-24 60l18 40-39-17c-11 5-23 7-37 7-46 0-82-38-82-85s36-90 82-90z" fill="#edfdfd" opacity=".96"/>
+<circle cx="136" cy="154" r="10" fill="#20475d"/><circle cx="184" cy="154" r="10" fill="#20475d"/>
+<path d="M132 191c10-15 46-15 56 0" stroke="#32637b" stroke-width="7" stroke-linecap="round" fill="none"/>
+<path d="M110 252c14 9 30 14 50 14 19 0 36-5 50-14" stroke="#73d6e4" stroke-width="11" stroke-linecap="round" fill="none" opacity=".95"/>
+<path d="M96 286c16 23 37 34 64 34 27 0 48-11 64-34" stroke="#cafcff" stroke-width="4" stroke-dasharray="6 8" fill="none" opacity=".8"/>
+<path d="M94 320c22 21 44 31 66 31s44-10 66-31" stroke="#163243" stroke-width="17" stroke-linecap="round" fill="none"/>
+<circle cx="98" cy="95" r="7" fill="#f0ffff" opacity=".75"/><circle cx="217" cy="93" r="9" fill="#f0ffff" opacity=".8"/><circle cx="245" cy="133" r="5" fill="#f0ffff" opacity=".7"/><circle cx="76" cy="139" r="4.5" fill="#f0ffff" opacity=".7"/>
+<ellipse cx="160" cy="364" rx="104" ry="18" fill="#03070a" opacity=".5"/>
+</svg>

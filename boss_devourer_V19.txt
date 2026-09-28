@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 400" role="img" aria-label="Der Weltenfresser">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d0f3b"/><stop offset="1" stop-color="#04050b"/></linearGradient>
+  <radialGradient id="star" cx="50%" cy="18%" r="40%"><stop offset="0" stop-color="#d8c7ff" stop-opacity=".62"/><stop offset="1" stop-color="#d8c7ff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="singularity" cx="50%" cy="45%" r="30%"><stop offset="0" stop-color="#05050a"/><stop offset=".45" stop-color="#160c2f"/><stop offset=".72" stop-color="#7d48ff"/><stop offset=".86" stop-color="#d6b9ff"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="320" height="400" rx="34" fill="url(#bg)"/>
+<rect width="320" height="400" rx="34" fill="url(#star)"/>
+<circle cx="160" cy="178" r="90" fill="url(#singularity)"/>
+<circle cx="160" cy="178" r="52" fill="#04050a"/>
+<path d="M72 166c27-50 70-76 88-76 24 0 42 29 42 65 0 35-14 57-14 57" fill="none" stroke="#d6c0ff" stroke-width="10" stroke-linecap="round" opacity=".8"/>
+<path d="M252 188c-28 48-69 70-86 70-24 0-44-27-44-63 0-37 16-61 16-61" fill="none" stroke="#8550ff" stroke-width="10" stroke-linecap="round" opacity=".84"/>
+<path d="M89 301c18-28 43-44 71-44 27 0 53 16 71 44" fill="none" stroke="#34175a" stroke-width="18" stroke-linecap="round"/>
+<path d="M70 326c25 20 55 30 90 30 35 0 65-10 90-30" stroke="#170b2a" stroke-width="18" stroke-linecap="round" fill="none"/>
+<circle cx="122" cy="163" r="7" fill="#ece4ff"/><circle cx="198" cy="193" r="6" fill="#ece4ff"/><circle cx="181" cy="140" r="5" fill="#ece4ff" opacity=".9"/><circle cx="91" cy="121" r="4" fill="#ece4ff" opacity=".7"/><circle cx="248" cy="129" r="4" fill="#ece4ff" opacity=".75"/>
+<ellipse cx="160" cy="365" rx="104" ry="18" fill="#020206" opacity=".58"/>
+</svg>
