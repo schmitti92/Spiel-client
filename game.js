@@ -1612,7 +1612,7 @@ let awardsShown = false;
   }
 
   // ===== Game state =====
-  let phase = "need_roll";            // need_roll | need_move | placing_barricade | game_over
+  let phase = "need_roll";            // need_roll | need_move | placing_barricade | event_wait | game_over
   let legalTargets = [];
   let placingChoices = [];
 
@@ -2270,7 +2270,7 @@ if(actionEffectsState){
       clearTimeout(_bossEventAckTimer);
       if(!sent){
         _bossEventAckPendingSeq=0;
-        if(ok){ ok.disabled=false; ok.textContent="OK · FÜR ALLE WEITER"; }
+        if(ok){ ok.disabled=false; ok.textContent="OK · EREIGNIS AUSLÖSEN"; }
         try{ toast("Verbindung unterbrochen – bitte erneut bestätigen"); }catch(_e){}
       }else{
         // Falls die Verbindung genau zwischen Senden und Server-ACK abreißt,
@@ -2278,7 +2278,7 @@ if(actionEffectsState){
         _bossEventAckTimer=window.setTimeout(()=>{
           if(_bossEventAckPendingSeq!==seq || !el.classList.contains("show")) return;
           _bossEventAckPendingSeq=0;
-          if(ok){ ok.disabled=false; ok.textContent="OK · FÜR ALLE WEITER"; }
+          if(ok){ ok.disabled=false; ok.textContent="OK · EREIGNIS AUSLÖSEN"; }
           try{ toast("Bestätigung nicht angekommen – bitte erneut drücken"); }catch(_e){}
         },4000);
       }
@@ -2329,7 +2329,7 @@ if(actionEffectsState){
       if(ok){
         ok.disabled=!mayConfirm;
         const waitName=(nameByColor && nameByColor[color]) || labelForColor(color);
-        ok.textContent=mayConfirm ? "OK · FÜR ALLE WEITER" : `WARTET AUF ${waitName} …`;
+        ok.textContent=mayConfirm ? "OK · EREIGNIS AUSLÖSEN" : `WARTET AUF ${waitName} …`;
       }
       if(mayConfirm){ try{ ok?.focus({preventScroll:true}); }catch(_e){} }
     },650);
@@ -2869,6 +2869,7 @@ if(actionEffectsState){
         else if(!isMyTurn) meta.textContent = `Warte auf ${labelForColor(c)}.`;
         else if(phase === "need_roll") meta.textContent = "Würfeln und deinen Zug starten.";
         else if(phase === "need_move") meta.textContent = "Figur auswählen und ziehen.";
+        else if(phase === "event_wait") meta.textContent = "Ereigniskarte bestätigen – danach wird der Effekt ausgelöst.";
         else if(phase === "placing_barricade") meta.textContent = "Eine neue Position für die Barikade wählen.";
         else if(phase === "game_over") meta.textContent = "Partie beendet.";
         else meta.textContent = "Dein Zug läuft.";
@@ -2882,6 +2883,7 @@ if(actionEffectsState){
         else if(!isMyTurn) txt = 'WARTEN';
         else if(phase === 'need_roll') txt = 'WÜRFELN';
         else if(phase === 'need_move') txt = 'ZIEHEN';
+        else if(phase === 'event_wait') txt = 'EREIGNIS';
         else if(phase === 'placing_barricade') txt = 'BARRIKADE';
         phaseBadge.textContent = txt;
         phaseBadge.dataset.phase = txt.toLowerCase();
@@ -3295,7 +3297,7 @@ try{
         const ok=el?.querySelector('.bossEventOk');
         const eventColor=String(el?.dataset?.eventColor||"").toLowerCase();
         const mine=String(myColor||"").toLowerCase();
-        if(ok && eventColor && mine===eventColor){ ok.disabled=false; ok.textContent="OK · FÜR ALLE WEITER"; }
+        if(ok && eventColor && mine===eventColor){ ok.disabled=false; ok.textContent="OK · EREIGNIS AUSLÖSEN"; }
         if(msg.message) try{ toast(String(msg.message)); }catch(_e){}
         return;
       }
@@ -3566,6 +3568,7 @@ try{
       if(ph==="need_roll") phase="need_roll";
       else if(ph==="need_move") phase="need_move";
       else if(ph==="place_barricade") phase="placing_barricade";
+      else if(ph==="event_wait") phase="event_wait";
       else phase="need_roll";
 
       // show current player's selected dice design before the face animation
@@ -4616,8 +4619,8 @@ function showEpicWin(winnerColor){
 
     const isMyTurn = (netMode==="offline") ? true : (myColor && myColor===state.currentPlayer);
     rollBtn.disabled = (phase!=="need_roll") || !isMyTurn;
-    endBtn.disabled  = (phase==="need_roll"||phase==="placing_barricade"||phase==="game_over") || !isMyTurn;
-    if(skipBtn) skipBtn.disabled = (phase==="placing_barricade"||phase==="game_over") || !isMyTurn;
+    endBtn.disabled  = (phase==="need_roll"||phase==="placing_barricade"||phase==="event_wait"||phase==="game_over") || !isMyTurn;
+    if(skipBtn) skipBtn.disabled = (phase==="placing_barricade"||phase==="event_wait"||phase==="game_over") || !isMyTurn;
 
     // While a move animation is running, lock the controls so the next action can't happen mid-hop
     if(isAnimatingMove){
