@@ -4054,3 +4054,30 @@ body.game-page #jokerBossRemoveBtn.epicJokerBtn .ejIcon{
 #eventChoicePanel .eventChoiceBoardHint{width:100%;padding:9px 10px;border-radius:12px;background:rgba(92,160,255,.09);border:1px solid rgba(125,183,255,.18);color:#dcecff;font:800 12px/1.35 system-ui;text-align:center;}
 #eventChoicePanel .eventChoiceHint{margin-top:9px;color:#9ca9c8;font:700 10px/1.35 system-ui;text-align:center;}
 @media(max-width:620px){#eventChoicePanel.eventChoicePanel{bottom:10px;width:min(95vw,560px)}#eventChoicePanel .eventChoiceCard{padding:12px;border-radius:18px}#eventChoicePanel button{flex:1 1 auto;min-width:110px}}
+
+/* ===== V15: neue Bosskarten – Doppelgänger & Weltenfresser ===== */
+body.game-page .bossCardArt--doppel{
+  background:
+    radial-gradient(circle at 50% 18%,rgba(255,230,158,.44),transparent 30%),
+    linear-gradient(180deg,rgba(89,66,24,.98),rgba(28,20,9,.98));
+}
+body.game-page .bossCardArt--devourer{
+  background:
+    radial-gradient(circle at 50% 18%,rgba(180,108,255,.46),transparent 28%),
+    radial-gradient(circle at 50% 58%,rgba(20,7,34,.96),rgba(6,3,12,.99) 66%),
+    linear-gradient(180deg,rgba(46,18,70,.98),rgba(7,4,13,.99));
+}
+body.game-page .bossCard--doppel{border-color:rgba(255,218,119,.26);}
+body.game-page .bossCard--doppel::before{background:linear-gradient(180deg,#ffdf82,#8b681f);}
+body.game-page .bossCard--devourer{border-color:rgba(183,114,255,.28);}
+body.game-page .bossCard--devourer::before{background:linear-gradient(180deg,#c88cff,#471c70);}
+body.game-page .bossCardArt--doppel .bossCardGlyph,
+body.game-page .bossCardArt--devourer .bossCardGlyph{
+  left:50%;right:auto;top:46%;
+  transform:translate(-50%,-50%);
+  width:58px;height:58px;
+  font-size:38px;
+  background:rgba(0,0,0,.28);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 10px 24px rgba(0,0,0,.28);
+}
