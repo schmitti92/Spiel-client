@@ -1116,6 +1116,27 @@
     @media(max-width:820px){body.lobby-page .color-slot-reels{grid-template-columns:repeat(2,minmax(0,1fr))!important}.color-wheel-copy{grid-template-columns:1fr!important}.color-wheel-actions{justify-content:flex-start!important}}
     @media(max-width:470px){body.lobby-page .color-slot-shell{padding:10px}.color-slot-reels{gap:7px}.color-slot-player{padding:6px!important}.slot-reel-viewport{height:68px!important}.slot-reel-cell{height:68px!important;font-size:11px!important}.slot-reel-cell .slot-orb{width:24px!important;height:24px!important}.color-slot-name{font-size:10px!important}.color-slot-marquee small{display:none!important}}
 
+  
+    /* V16: Ereignisfeld-Anzahl im Bossmodus */
+    body.lobby-page .event-field-setting{
+      margin-top:10px;padding:12px 14px;border-radius:15px;
+      border:1px solid rgba(180,110,255,.16);
+      background:linear-gradient(135deg,rgba(88,57,122,.14),rgba(5,9,18,.28));
+      display:none;gap:10px;
+    }
+    body.lobby-page .event-field-setting.show{display:grid;}
+    body.lobby-page .event-field-setting-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    body.lobby-page .event-field-setting-copy strong{display:block;font-size:12.5px;}
+    body.lobby-page .event-field-setting-copy small{display:block;margin-top:2px;font-size:10.5px;color:rgba(222,230,245,.56);line-height:1.35;}
+    body.lobby-page .event-field-count-badge{
+      min-width:48px;height:34px;padding:0 10px;border-radius:11px;display:grid;place-items:center;
+      font-size:15px;font-weight:1000;color:#f5edff;background:rgba(132,84,180,.22);
+      border:1px solid rgba(199,150,255,.24);
+    }
+    body.lobby-page .event-field-range{width:100%;accent-color:#a66eea;cursor:pointer;}
+    body.lobby-page .event-field-range:disabled{opacity:.45;cursor:not-allowed;}
+    body.lobby-page .event-field-scale{display:flex;justify-content:space-between;font-size:9.5px;color:rgba(222,230,245,.45);}
+
   </style>
 </head>
 <body class="lobby-page">
@@ -1170,12 +1191,23 @@
           <div class="room-mode-strip boss-mode-strip">
             <div class="room-mode-copy">
               <strong>👹 Action‑Bossmodus</strong>
-              <small>Zusätzlich: 6 Ereignisfelder, 2 Bossportale und 3 wandernde Bosse auf dem gesamten Spielbrett.</small>
+              <small>5 Bossarten, 2 Bossportale, Ereigniskarten und Boss-Countdown nach jeweils 3 ausgelösten Ereignisfeldern.</small>
             </div>
             <label class="switch">
               <input id="bossModeToggle" type="checkbox" />
               Bossmodus
             </label>
+          </div>
+          <div id="eventFieldSetting" class="event-field-setting">
+            <div class="event-field-setting-head">
+              <div class="event-field-setting-copy">
+                <strong>❓ Ereignisfelder gleichzeitig</strong>
+                <small>Host-Auswahl von 5 bis 20. Nach jedem betretenen Feld erscheint es an einer neuen erlaubten Stelle.</small>
+              </div>
+              <span id="eventFieldCountValue" class="event-field-count-badge">8</span>
+            </div>
+            <input id="eventFieldCountRange" class="event-field-range" type="range" min="5" max="20" step="1" value="8" aria-label="Anzahl Ereignisfelder" />
+            <div class="event-field-scale"><span>5</span><span>Boss nach je 3 Ereignissen</span><span>20</span></div>
           </div>
           <div class="room-mode-strip board-theme-strip">
             <div class="room-mode-copy">
@@ -1349,6 +1381,9 @@
       const joinBtn = $("joinBtn");
       const actionToggle = $("actionToggle");
       const bossModeToggle = $("bossModeToggle");
+      const eventFieldSetting = $("eventFieldSetting");
+      const eventFieldCountRange = $("eventFieldCountRange");
+      const eventFieldCountValue = $("eventFieldCountValue");
       const colorWheelToggle = $("colorWheelToggle");
       const boardThemeBtns = Array.from(document.querySelectorAll('[data-board-theme]'));
       const colorWheelPanel = $("colorWheelPanel");
@@ -1730,6 +1765,7 @@ function startPresencePoll(){
         syncModeButtons(m);
         bumpPill(modePill);
         refreshProfileSummary();
+        refreshEventFieldCountUI();
       }
       function setRoom(rc){
         const r = normRoom(rc);
@@ -1737,12 +1773,47 @@ function startPresencePoll(){
         roomPill.textContent = 'Raum: ' + (r || '–');
         bumpPill(roomPill);
         refreshProfileSummary();
+        refreshEventFieldCountUI();
       }
       function setActionMode(on){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
       }
       function setBossMode(on){
         localStorage.setItem('barikade_boss_mode', on ? 'boss' : 'off');
+        refreshEventFieldCountUI();
+      }
+
+      function eventFieldCountKey(){
+        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        return 'barikade_event_field_count_' + (r || 'room');
+      }
+      function getSelectedEventFieldCount(){
+        try{
+          const roomScoped=localStorage.getItem(eventFieldCountKey());
+          const global=localStorage.getItem('barikade_event_field_count');
+          const n=Number(roomScoped ?? global ?? 8);
+          return Number.isInteger(n) && n>=5 && n<=20 ? n : 8;
+        }catch(_e){ return 8; }
+      }
+      function setSelectedEventFieldCount(value){
+        const n=Math.max(5,Math.min(20,Math.floor(Number(value)||8)));
+        try{
+          localStorage.setItem(eventFieldCountKey(),String(n));
+          localStorage.setItem('barikade_event_field_count',String(n));
+        }catch(_e){}
+        return n;
+      }
+      function refreshEventFieldCountUI(){
+        const bossOn=!!(bossModeToggle && bossModeToggle.checked);
+        const host=isHostMode();
+        const n=getSelectedEventFieldCount();
+        if(eventFieldSetting) eventFieldSetting.classList.toggle('show',bossOn);
+        if(eventFieldCountRange){
+          eventFieldCountRange.value=String(n);
+          eventFieldCountRange.disabled=!bossOn || !host;
+          eventFieldCountRange.title=!bossOn?'Nur im Bossmodus relevant':(!host?'Nur der Host kann die Anzahl wählen':'5 bis 20 Ereignisfelder gleichzeitig');
+        }
+        if(eventFieldCountValue) eventFieldCountValue.textContent=String(n);
       }
 
       function applyBoardThemeUI(){
@@ -2101,6 +2172,7 @@ function startPresencePoll(){
         applyBoardThemeUI();
         actionToggle.checked = (am === 'action');
         if(bossModeToggle) bossModeToggle.checked = (bm === 'boss');
+        refreshEventFieldCountUI();
         const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
         if(c) setRequestedColor(c);
         refreshDiceStyleUI();
@@ -2184,6 +2256,20 @@ function startPresencePoll(){
         bossModeToggle.addEventListener('change', ()=>{
           setBossMode(!!bossModeToggle.checked);
           toast(bossModeToggle.checked ? 'Action‑Bossmodus: AN' : 'Action‑Bossmodus: AUS');
+        });
+      }
+
+      if(eventFieldCountRange){
+        eventFieldCountRange.addEventListener('input',()=>{
+          if(!isHostMode()) { refreshEventFieldCountUI(); return; }
+          const n=setSelectedEventFieldCount(eventFieldCountRange.value);
+          if(eventFieldCountValue) eventFieldCountValue.textContent=String(n);
+        });
+        eventFieldCountRange.addEventListener('change',()=>{
+          if(!isHostMode()) return;
+          const n=setSelectedEventFieldCount(eventFieldCountRange.value);
+          refreshEventFieldCountUI();
+          toast(`Ereignisfelder: ${n}`);
         });
       }
 
@@ -2354,6 +2440,7 @@ function startPresencePoll(){
         const selectedJokers = actionToggle.checked ? getSelectedJokerCount() : null;
         const qs = new URLSearchParams({ compact:'1' });
         if(selectedJokers) qs.set('jokerCount', String(selectedJokers));
+        if(bossModeToggle && bossModeToggle.checked) qs.set('eventFields', String(getSelectedEventFieldCount()));
         location.href = 'barikade.html?' + qs.toString();
       });
 
