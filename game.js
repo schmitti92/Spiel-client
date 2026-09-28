@@ -814,14 +814,14 @@ let pendingSaveExport = false;
       summary:"Kopiert exakt die Schrittzahl des aktiven Spielers und jagt den Spieler mit den meisten Figuren auf dem Brett.",
       effect:"Nur wenn er exakt auf einer Figur landet, wird sie zurück ins Haus geschickt.",
       rule:"Barikaden dürfen nicht übersprungen werden. Exakte Landung auf einer beweglichen Barikade versetzt sie direkt vor einen Spieler. Doppelwurf und Neu-Wurf werden über die tatsächliche Spielerbewegung mitkopiert; der Barikaden-Joker wird als Gegenbarikade gespiegelt.",
-      portrait:null, artClass:"bossCardArt--doppel", reward:"2 Joker"
+      portrait:"boss_doppel.svg", artClass:"bossCardArt--doppel", reward:"2 Joker"
     },
     devourer:{
       key:"devourer", icon:"🌌", name:"Der Weltenfresser", tag:"WELTENFRESSER", cadence:"nach jeder vollständigen Runde", steps:"Teleport",
       summary:"Teleportiert nach jeder vollständigen Runde auf ein neues freies Feld und verändert die Wege auf dem Brett taktisch.",
       effect:"Nach jeder vollständigen Runde verschwindet das alte schwarze Loch und ein neues freies Feld wird bis zur nächsten Runde komplett unpassierbar.",
       rule:"Das schwarze Loch darf nie auf Figuren, Bosse, Barikaden, Ereignisfelder, Fallen, Miniportale, Ziel oder die geschützten Startreihen gesetzt werden und keinen einzigen Grundweg zum Ziel vollständig kappen.",
-      portrait:null, artClass:"bossCardArt--devourer", reward:"3 Joker"
+      portrait:"boss_devourer.svg", artClass:"bossCardArt--devourer", reward:"3 Joker"
     }
   };
 
