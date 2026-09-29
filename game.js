@@ -921,8 +921,8 @@ let pendingSaveExport = false;
 
   const BOSS_CARD_META = {
     hunter:{
-      key:"hunter", icon:"🐺", name:"Der Jäger", tag:"JÄGER", cadence:"nach jedem Würfelwurf", steps:"1 Feld",
-      summary:"Jagt immer die nächstgelegene Spielfigur.",
+      key:"hunter", icon:"🐺", name:"Der Jäger", tag:"JÄGER", cadence:"nach jeder Spielerbewegung", steps:"1 Feld",
+      summary:"Jagt erst nachdem der aktive Spieler seine normale Bewegung abgeschlossen hat.",
       effect:"Trifft er einen Spieler, wird dessen Figur wie beim normalen Schmeißen zurück ins Haus gesetzt.",
       rule:"Barikadenregel: Trifft er eine Barikade, wird sie direkt hinter ihn versetzt.",
       portrait:"boss_hunter.svg", artClass:"bossCardArt--hunter", reward:"1 Joker"
@@ -949,9 +949,9 @@ let pendingSaveExport = false;
       portrait:"boss_doppel.svg", artClass:"bossCardArt--doppel", reward:"2 Joker"
     },
     devourer:{
-      key:"devourer", icon:"🌌", name:"Der Weltenfresser", tag:"WELTENFRESSER", cadence:"nach jeder vollständigen Runde", steps:"Teleport",
-      summary:"Teleportiert nach jeder vollständigen Runde auf ein neues freies Feld und verändert die Wege auf dem Brett taktisch.",
-      effect:"Nach jeder vollständigen Runde verschwindet das alte schwarze Loch und ein neues freies Feld wird bis zur nächsten Runde komplett unpassierbar.",
+      key:"devourer", icon:"🌌", name:"Der Weltenfresser", tag:"WELTENFRESSER", cadence:"alle 5 Spielzüge", steps:"Teleport",
+      summary:"Zählt abgeschlossene Spielerzüge. Nach jeweils 5 Spielzügen teleportiert er sich auf ein neues freies Feld.",
+      effect:"Bei jeder 5-Züge-Aktivierung verschwindet das alte schwarze Loch und ein neues freies Feld wird bis zur nächsten Aktivierung komplett unpassierbar.",
       rule:"Das schwarze Loch darf nie auf Figuren, Bosse, Barikaden, Ereignisfelder, Fallen, Miniportale, Ziel oder die geschützten Startreihen gesetzt werden und keinen einzigen Grundweg zum Ziel vollständig kappen.",
       portrait:"boss_devourer.svg", artClass:"bossCardArt--devourer", reward:"3 Joker"
     }
@@ -1014,6 +1014,100 @@ let pendingSaveExport = false;
         }
       }
     }catch(_e){}
+  }
+
+  function ensureBossArrivalOverlay(){
+    let el=document.getElementById('bossArrivalOverlay');
+    if(el) return el;
+    el=document.createElement('div');
+    el.id='bossArrivalOverlay';
+    el.setAttribute('aria-hidden','true');
+    el.innerHTML=`<div class="bossArrivalRift" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="bossArrivalCard" role="status" aria-live="polite">
+        <div class="bossArrivalKicker">⚠ BOSS-ALARM</div>
+        <div class="bossArrivalArt"><img class="bossArrivalPortrait" alt=""/><div class="bossArrivalGlyph">👹</div><div class="bossArrivalScan"></div></div>
+        <div class="bossArrivalCopy">
+          <div class="bossArrivalName">Boss erscheint</div>
+          <div class="bossArrivalRule"></div>
+          <div class="bossArrivalBadges"><span class="bossArrivalSide">BOSSFELD</span><span class="bossArrivalReward">🏆 1 Joker</span></div>
+          <button class="bossArrivalSkip" type="button">WEITER ›</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    const skip=el.querySelector('.bossArrivalSkip');
+    const closeNow=()=>{
+      clearTimeout(_bossArrivalTimer);
+      el.classList.remove('show');
+      el.setAttribute('aria-hidden','true');
+      _bossArrivalShowing=false;
+      setTimeout(showNextBossArrival,120);
+    };
+    if(skip) skip.addEventListener('click',(ev)=>{ev.stopPropagation();closeNow();});
+    el.addEventListener('click',(ev)=>{if(ev.target===el) closeNow();});
+    return el;
+  }
+
+  function showBossArrival(spawn){
+    try{
+      if(!spawn) return;
+      const type=String(spawn.bossType||'');
+      const meta=BOSS_CARD_META[type]||{};
+      const el=ensureBossArrivalOverlay();
+      const portrait=el.querySelector('.bossArrivalPortrait');
+      const glyph=el.querySelector('.bossArrivalGlyph');
+      const name=el.querySelector('.bossArrivalName');
+      const rule=el.querySelector('.bossArrivalRule');
+      const side=el.querySelector('.bossArrivalSide');
+      const reward=el.querySelector('.bossArrivalReward');
+      const kicker=el.querySelector('.bossArrivalKicker');
+      el.className=`theme-${type}`;
+      const source=String(spawn.source||'');
+      if(kicker){
+        kicker.textContent=source.startsWith('event_single')?'🃏 EREIGNIS-BOSS':source==='event_multi'?'☠️ DOPPEL-BOSS':source.startsWith('countdown')?'⏳ ZUSATZBOSS':source==='joker'?'🃏 JOKER-BOSS':source==='boss_test'?'🧪 TEST-BOSS':'⚠ BOSS-ALARM';
+      }
+      if(portrait){
+        if(meta.portrait){portrait.src=meta.portrait;portrait.alt=meta.name||'Boss';portrait.hidden=false;}
+        else{portrait.removeAttribute('src');portrait.hidden=true;}
+      }
+      if(glyph) glyph.textContent=meta.icon||spawn.icon||'👹';
+      if(name) name.textContent=meta.name||spawn.bossName||'Boss erscheint';
+      if(rule) rule.textContent=meta.summary||'Ein neuer Boss betritt das Spiel.';
+      if(side) side.textContent=`🚪 ${String(spawn.side||spawn.slotName||'Bossfeld')}`;
+      if(reward) reward.textContent=`🏆 ${meta.reward||'1 Joker'}`;
+      clearTimeout(_bossArrivalTimer);
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+      el.setAttribute('aria-hidden','false');
+      try{ playBossSpawnSound?.(); }catch(_e){}
+      _bossArrivalShowing=true;
+      _bossArrivalTimer=setTimeout(()=>{
+        el.classList.remove('show');
+        el.setAttribute('aria-hidden','true');
+        _bossArrivalShowing=false;
+        setTimeout(showNextBossArrival,180);
+      },2500);
+    }catch(_e){
+      _bossArrivalShowing=false;
+      setTimeout(showNextBossArrival,0);
+    }
+  }
+
+  function showNextBossArrival(){
+    if(_bossArrivalShowing||!_bossArrivalQueue.length) return;
+    const next=_bossArrivalQueue.shift();
+    showBossArrival(next);
+  }
+
+  function queueBossArrivals(items){
+    const arr=(Array.isArray(items)?items:[items]).filter(Boolean).sort((a,b)=>Number(a?.seq||0)-Number(b?.seq||0));
+    for(const item of arr){
+      const seq=Number(item?.seq||0);
+      if(!seq||seq<=_lastBossSpawnSeq) continue;
+      _lastBossSpawnSeq=seq;
+      _bossArrivalQueue.push(item);
+    }
+    showNextBossArrival();
   }
 
   let bossMoveFx = new Map();
@@ -1842,6 +1936,17 @@ let awardsShown = false;
       return Number.isInteger(n) && n>=5 && n<=20 ? n : 8;
     }catch(_e){ return 8; }
   }
+
+  function getLobbyBossEventTrigger(){
+    try{
+      const urlCount=Number(new URLSearchParams(location.search).get("bossTrigger"));
+      if(Number.isInteger(urlCount) && urlCount>=0 && urlCount<=10) return urlCount;
+      const rc=normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+      const raw=localStorage.getItem("barikade_boss_event_trigger_" + rc) ?? localStorage.getItem("barikade_boss_event_trigger");
+      const n=Number(raw);
+      return Number.isInteger(n) && n>=0 && n<=10 ? n : 3;
+    }catch(_e){ return 3; }
+  }
   
   function getLobbyJokerCount(){
     try{
@@ -2241,6 +2346,10 @@ if(actionEffectsState){
   let _bossOverlayRevealTimer = 0;
   let _bossEventAckPendingSeq = 0;
   let _bossEventAckTimer = 0;
+  let _lastBossSpawnSeq = 0;
+  let _bossArrivalTimer = 0;
+  let _bossArrivalQueue = [];
+  let _bossArrivalShowing = false;
 
   // V13.6: Ein einziger Client-Zustandsautomat für serverautoritär ausgelöste Räder.
   // Der Server entscheidet IMMER, welches Rad existiert. Der Client darf nur anzeigen
@@ -2508,7 +2617,24 @@ if(actionEffectsState){
       const b=document.createElement('button'); b.type='button'; b.className=cls; b.textContent=label; b.addEventListener('click',fn); btns?.appendChild(b); return b;
     };
     const type=String(ch.type||'');
-    if(type==='predict_parity'){
+    if(type==='boss_spawn_slot'){
+      const meta=BOSS_CARD_META[String(ch.bossType||'')]||{};
+      if(title) title.textContent=`${meta.icon||'👹'} ${meta.name||'Boss'} erscheint!`;
+      if(textEl) textEl.textContent=ch.message||'Wähle das Bossfeld.';
+      const preview=document.createElement('div');
+      preview.className=`bossSpawnChoicePreview bossSpawnChoicePreview--${String(ch.bossType||'generic')}`;
+      preview.innerHTML=`${meta.portrait?`<img src="${meta.portrait}" alt="${meta.name||'Boss'}">`:`<div class="bossSpawnChoiceGlyph">${meta.icon||'👹'}</div>`}<div><small>BOSS ENTHÜLLT</small><strong>${meta.name||'Boss'}</strong><span>${meta.summary||''}</span><em>🏆 ${meta.reward||'1 Joker'}</em></div>`;
+      btns?.appendChild(preview);
+      const slots=Array.isArray(state?.boss?.slots)?state.boss.slots:[];
+      slots.forEach((slot,index)=>{
+        if(slot?.boss) return;
+        const sid=String(slot?.id||'');
+        const left=sid.toLowerCase().includes('left')||index===0;
+        const right=sid.toLowerCase().includes('right')||index===1;
+        const label=left?'⬅ LINKS':right?'RECHTS ➡':`🚪 ${slot?.name||'Bossfeld'}`;
+        addBtn(label,()=>eventChoiceSend({slotId:sid}),left?'portalLeft':'portalRight');
+      });
+    }else if(type==='predict_parity'){
       addBtn('⚪ Gerade',()=>eventChoiceSend({choice:'even'}));
       addBtn('⚫ Ungerade',()=>eventChoiceSend({choice:'odd'}));
     }else if(type==='adjust_roll'){
@@ -2682,6 +2808,10 @@ if(actionEffectsState){
       if(!enabled) return;
       const bs=state?.boss || null;
       const slots=Array.isArray(bs?.slots) ? bs.slots : [];
+      const spawnHistory=Array.isArray(bs?.spawnHistory)?bs.spawnHistory:[];
+      const freshSpawns=spawnHistory.filter(x=>Number(x?.seq||0)>_lastBossSpawnSeq);
+      if(freshSpawns.length) queueBossArrivals(freshSpawns);
+      else if(bs?.lastSpawn && Number(bs.lastSpawn.seq||0)>_lastBossSpawnSeq) queueBossArrivals([bs.lastSpawn]);
       if(bossSlotsEl){
         const typeOrder=["hunter","curse","shadow","doppel","devourer"];
         const byType={};
@@ -2713,7 +2843,7 @@ if(actionEffectsState){
               <div class="bossCardMeta bossCardMeta--stats">
                 <span>❤️ 1 Leben</span>
                 <span>👣 ${meta.steps||'-'}</span>
-                <span>⏱ ${meta.cadence||'-'}</span>
+                <span>⏱ ${type==='devourer'?`${Math.max(0,Math.min(4,Number(boss?.turnsSinceAction||0)))}/5 Züge`:meta.cadence||'-'}</span>
                 <span>🎯 ${type==='hunter'?'Jagd':type==='curse'?'Fluch':type==='shadow'?'Jokerdruck':type==='doppel'?'Spiegel':'Schwarzes Loch'}</span>
                 <span>🏆 ${meta.reward||'1 Joker'}</span>
               </div>
@@ -2745,9 +2875,10 @@ if(actionEffectsState){
         const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : Math.max(5,Math.min(20,Number(bs?.eventFieldCount||8)));
         const activeCount=slots.filter(s=>!!s?.boss).length;
         const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:106;
-        const countdown=Math.max(0,Math.min(3,Number(bs?.bossEventCountdown ?? 3)));
-        const pending=!!bs?.bossCountdownPending;
-        const countdownText=pending?'Boss wartet auf freies Portal':`Boss in ${countdown} Ereignisfeld${countdown===1?'':'ern'}`;
+        const trigger=Math.max(0,Math.min(10,Math.floor(Number(bs?.bossEventTrigger ?? state?.bossEventTrigger ?? 3))));
+        const countdown=trigger<=0?0:Math.max(0,Math.min(trigger,Number(bs?.bossEventCountdown ?? trigger)));
+        const pending=trigger>0 && !!bs?.bossCountdownPending;
+        const countdownText=trigger<=0?'Zusatzboss aus':(pending?'Boss wartet auf freies Portal':`Boss in ${countdown} Ereigniskarte${countdown===1?'':'n'}`);
         bossRoundInfoEl.textContent=`${activeCount}/2 Portale · ${evCount} Ereignisfelder · 👹 ${countdownText} · Karten ${deckRemaining}/106 · Runde ${Math.max(1,Number(bs?.round||1))}`;
       }
       if(bossOverviewEl){
@@ -2755,13 +2886,14 @@ if(actionEffectsState){
         const activeCount=slots.filter(s=>!!s?.boss).length;
         const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:106;
         const roundNow=Math.max(1,Number(bs?.round||1));
-        const countdown=Math.max(0,Math.min(3,Number(bs?.bossEventCountdown ?? 3)));
-        const pending=!!bs?.bossCountdownPending;
-        const countdownText=pending?'👹 Boss wartet auf ein freies Portal':`👹 Nächster Boss nach ${countdown} Ereignisfeld${countdown===1?'':'ern'}`;
+        const trigger=Math.max(0,Math.min(10,Math.floor(Number(bs?.bossEventTrigger ?? state?.bossEventTrigger ?? 3))));
+        const countdown=trigger<=0?0:Math.max(0,Math.min(trigger,Number(bs?.bossEventCountdown ?? trigger)));
+        const pending=trigger>0 && !!bs?.bossCountdownPending;
+        const countdownText=trigger<=0?'👹 Automatischer Zusatzboss aus':(pending?'👹 Boss wartet auf ein freies Portal':`👹 Nächster Zusatzboss nach ${countdown} bestätigte${countdown===1?'r':'n'} Ereigniskarte${countdown===1?'':'n'}`);
         bossOverviewEl.innerHTML=`
           <div class="bossOverviewCard bossOverviewCard--portal"><span>🚪 Portale</span><strong>${activeCount}/2 belegt</strong><small>${activeCount===0?'Noch kein Boss aktiv':activeCount===1?'Ein Boss bedroht das Brett':'Maximale Gefahr: beide Portale belegt'}</small></div>
           <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>${evCount} Felder</strong><small>${countdownText} · ${deckRemaining}/106 Karten</small></div>
-          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde ${roundNow}</strong><small>Jäger nach jedem Wurf · Doppelgänger nach jeder Spielerbewegung · Fluchmeister, Schatten & Weltenfresser nach jeder vollständigen Runde</small></div>`;
+          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde ${roundNow}</strong><small>Jäger & Doppelgänger nach Spielerbewegung · Fluchmeister & Schatten pro Runde · Weltenfresser alle 5 Spielzüge</small></div>`;
       }
       const tools=ensureBossTestTools();
       if(tools) tools.style.display=isMeHost()?'block':'none';
@@ -3158,6 +3290,8 @@ if(actionEffectsState){
       overlayRematch.hidden = !(allowed && overlayOpen);
       overlayRematch.disabled = !(allowed && overlayOpen);
     }
+    const uvRematch=document.getElementById('uvRematch');
+    if(uvRematch){ uvRematch.hidden=!allowed; uvRematch.disabled=!allowed; }
   }
 
   function requestRematch(){
@@ -3165,6 +3299,7 @@ if(actionEffectsState){
 
     if(netMode === "offline"){
       try{ cancelTitleCeremony(); }catch(_e){}
+      try{ closeVictoryFinale(); }catch(_e){}
       hideOverlay();
       winShown = false; awardsShown = false;
       v104LastTurnColor = null;
@@ -3179,7 +3314,9 @@ if(actionEffectsState){
 
     if(rematchBtn) rematchBtn.disabled = true;
     if(overlayRematch) overlayRematch.disabled = true;
+    const uvRematch=document.getElementById('uvRematch'); if(uvRematch) uvRematch.disabled=true;
     toast("Revanche wird vorbereitet …");
+    try{ closeVictoryFinale(); }catch(_e){}
     wsSend({ type:"rematch", ts:Date.now() });
   }
 
@@ -3322,7 +3459,8 @@ try{
       starterColor: winner,
       mode: String(msg.mode || _pendingStartMode || (actionModeToggle && actionModeToggle.checked ? "action" : "classic") || "classic"),
       bossMode: !!(msg.bossMode ?? _pendingStartBossMode ?? getLobbyBossMode()),
-      eventFieldCount: Number(msg.eventFieldCount || getLobbyEventFieldCount())
+      eventFieldCount: Number(msg.eventFieldCount || getLobbyEventFieldCount()),
+      bossEventTrigger: Number.isFinite(Number(msg.bossEventTrigger)) ? Math.max(0,Math.min(10,Math.floor(Number(msg.bossEventTrigger)))) : getLobbyBossEventTrigger()
     };
     window.setTimeout(()=>{
       try{
@@ -3333,7 +3471,7 @@ try{
         if(!p) return;
         // Send the definitive start to the server (server is truth, will validate again).
         const jc = (p.mode === "action") ? getLobbyJokerCount() : null;
-        wsSend({ type:"start", mode: p.mode, bossMode: !!p.bossMode, eventFieldCount:(p.eventFieldCount || undefined), ts: Date.now(), starterColor: p.starterColor, jokerStartCount:(jc || undefined) });
+        wsSend({ type:"start", mode: p.mode, bossMode: !!p.bossMode, eventFieldCount:(p.eventFieldCount || undefined), bossEventTrigger:(Number.isInteger(p.bossEventTrigger)?p.bossEventTrigger:undefined), ts: Date.now(), starterColor: p.starterColor, jokerStartCount:(jc || undefined) });
       }catch(_e){}
     }, dur + 60);
   }
@@ -3494,10 +3632,12 @@ try{
         if(state){
           state.phase = 'game_over';
           state.winner = wc;
+          if(msg.summary&&typeof msg.summary==='object') state.matchSummary=msg.summary;
+          if(Array.isArray(msg.awards)) state.matchAwards=msg.awards;
         }
         if(wc && !winShown){
-          winShown = true;
-          showEpicWin(wc);
+          winShown = true; awardsShown = true;
+          showEpicWin(wc,msg.summary||state?.matchSummary,msg.awards||state?.matchAwards||[]);
         }
         updateTurnUI();
         updateRematchUI();
@@ -3691,7 +3831,13 @@ try{
         extraRollPending: !!server.extraRollPending,
         eventMoveActive: (server.eventMoveActive && typeof server.eventMoveActive === "object") ? {...server.eventMoveActive} : null,
         carryingByColor: (server.carryingByColor && typeof server.carryingByColor === "object") ? {...server.carryingByColor} : null,
-        rev: Number(server.rev||0)
+        rev: Number(server.rev||0),
+        finished: !!server.finished,
+        startedAt: Number(server.startedAt||0)||0,
+        finishedAt: Number(server.finishedAt||0)||0,
+        gameOverReason: String(server.gameOverReason||''),
+        matchSummary: (server.matchSummary&&typeof server.matchSummary==='object') ? server.matchSummary : null,
+        matchAwards: Array.isArray(server.matchAwards) ? server.matchAwards : []
       
       };
 
@@ -3728,16 +3874,14 @@ try{
         }
       }catch(e){}
 
-      if(!(server.finished || server.phase === 'game_over')){ winShown = false; awardsShown = false; }
+      if(!(server.finished || server.phase === 'game_over')){
+        winShown = false; awardsShown = false;
+        try{ closeVictoryFinale(); }catch(_e){}
+      }
 
       if ((server.finished || server.phase === 'game_over') && state.winner && !winShown) {
-        winShown = true;
-        showEpicWin(state.winner);
-        if(!awardsShown){
-          awardsShown = true;
-          const awards = (st && st.matchAwards) || (server && server.matchAwards) || [];
-          setTimeout(()=>{ try{ runTitleCeremony(awards); }catch(_e){} }, 1200);
-        }
+        winShown = true; awardsShown = true;
+        showEpicWin(state.winner,state.matchSummary,state.matchAwards);
       }
 
       if(state.bossMode && !wasBossMode){
@@ -3758,6 +3902,9 @@ try{
           _lastBossEventSeq=Math.max(_lastBossEventSeq,Number(baselineEvent?.seq||0));
         }
         _lastBossActionSeq=Math.max(_lastBossActionSeq,Number(bb?.lastAction?.seq||0));
+        const baselineSpawns=Array.isArray(bb?.spawnHistory)?bb.spawnHistory:[];
+        const baselineSpawnSeq=Math.max(Number(bb?.lastSpawn?.seq||0),...baselineSpawns.map(x=>Number(x?.seq||0)),0);
+        _lastBossSpawnSeq=Math.max(_lastBossSpawnSeq,baselineSpawnSeq);
         _bossBaselineNextSnapshot=false;
       }
       updateBossUI();
@@ -4060,7 +4207,7 @@ function toast(msg){
   // Legendary win screen (works for offline + online)
   let winFxRunning = false;
   function ensureWinCanvas(){
-    const ov = $('overlay');
+    const ov = document.getElementById('ultimateVictory') || $('overlay');
     if(!ov) return null;
     let c = document.getElementById('winFx');
     if(!c){
@@ -4083,7 +4230,7 @@ function toast(msg){
     if(winFxRunning) return;
     const c = ensureWinCanvas();
     if(!c) return;
-    const ov = $('overlay');
+    const ov = document.getElementById('ultimateVictory') || $('overlay');
     const g = c.getContext('2d');
     winFxRunning = true;
 
@@ -4449,107 +4596,174 @@ function ensureAwardsStyles(){
   try{ window.addEventListener("load", initEmojiOverlaySystem, { once:true }); }catch(_e){}
   try{ document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) initEmojiOverlaySystem(); }); }catch(_e){}
 
-function ensureAwardsUI(){
-  ensureAwardsStyles();
-  let ov = document.getElementById("baAwardsOverlay");
+function escHtml(v){
+  return String(v==null?'':v).replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));
+}
+function fmtFinalDuration(ms){
+  const sec=Math.max(0,Math.round((Number(ms)||0)/1000));
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+  if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function fmtFinalTurn(ms){
+  if(ms==null || !isFinite(Number(ms))) return '–';
+  const sec=Math.max(0,Number(ms)/1000);
+  return sec<10 ? `${sec.toFixed(1)}s` : `${Math.round(sec)}s`;
+}
+function fmtFinalRoll(v){
+  if(v==null || !isFinite(Number(v))) return '–';
+  return Number(v).toFixed(2).replace('.',',');
+}
+function ensureUltimateVictoryUI(){
+  let ov=document.getElementById('ultimateVictory');
   if(ov) return ov;
-  ov = document.createElement("div");
-  ov.id = "baAwardsOverlay";
-  ov.innerHTML = `
-    <div id="baAwardsCard">
-      <div id="baAwardsTitle">Titel</div>
-      <div id="baAwardsValue">Wert</div>
-      <div id="baAwardsName">Name</div>
-      <div id="baAwardsSub">Titel‑Ehrung (dieses Spiel)</div>
-    </div>
-  `;
+  ov=document.createElement('div');
+  ov.id='ultimateVictory';
+  ov.setAttribute('aria-live','polite');
+  ov.innerHTML=`
+    <canvas id="winFx" aria-hidden="true"></canvas>
+    <div class="uvGlow uvGlowA"></div><div class="uvGlow uvGlowB"></div>
+    <section class="uvHero" id="uvHero">
+      <div class="uvCrown" aria-hidden="true">♛</div>
+      <div class="uvTrophy" aria-hidden="true">🏆</div>
+      <div class="uvKicker">PARTIE ENTSCHIEDEN</div>
+      <div class="uvWinner" id="uvWinner">SIEGER</div>
+      <div class="uvWinWord">GEWINNT!</div>
+      <div class="uvHeroSub" id="uvHeroSub">Erste Figur im Ziel</div>
+      <button class="uvSkip" id="uvSkip" type="button">Ergebnis sofort anzeigen</button>
+    </section>
+    <section class="uvSummary" id="uvSummary" aria-label="Spielergebnis">
+      <header class="uvSummaryHead">
+        <div class="uvSummaryTrophy">🏆</div>
+        <div><div class="uvSummaryKicker">SIEGEREHRUNG</div><h2 id="uvSummaryTitle">–</h2><p id="uvSummarySub">Partie abgeschlossen</p></div>
+      </header>
+      <div class="uvMetrics" id="uvMetrics"></div>
+      <div class="uvSectionTitle"><span>Spielerleistung</span><small>Diese Partie</small></div>
+      <div class="uvPlayers" id="uvPlayers"></div>
+      <div class="uvSectionTitle uvHighlightsHead"><span>Highlights</span><small>auf einen Blick</small></div>
+      <div class="uvHighlights" id="uvHighlights"></div>
+      <div class="uvCareer" id="uvCareer" hidden></div>
+      <div class="uvActions">
+        <button id="uvRematch" class="btn uvRematch" type="button">🔁 Revanche</button>
+        <button id="uvClose" class="btn uvClose" type="button">Ergebnis schließen</button>
+      </div>
+    </section>`;
   document.body.appendChild(ov);
+  const skip=ov.querySelector('#uvSkip');
+  if(skip) skip.addEventListener('click',()=>revealUltimateVictorySummary(true));
+  const close=ov.querySelector('#uvClose');
+  if(close) close.addEventListener('click',closeVictoryFinale);
+  const rem=ov.querySelector('#uvRematch');
+  if(rem) rem.addEventListener('click',requestRematch);
+  ov.addEventListener('click',(ev)=>{
+    if(ov.classList.contains('heroOnly') && ev.target===ov) revealUltimateVictorySummary(true);
+  });
   return ov;
 }
-function fmtAwardValue(a){
-  if(!a) return "";
-  const v = a.value;
-  const unit = a.unit || "";
-  if(v==null || v===undefined || (typeof v==="number" && !isFinite(v))) return unit ? unit : "–";
-  // number formatting: keep as given (server already rounded for seconds)
-  return unit ? `${v} ${unit}` : String(v);
+let _uvRevealTimer=0;
+let _uvCurrentSummary=null;
+function closeVictoryFinale(){
+  clearTimeout(_uvRevealTimer); _uvRevealTimer=0;
+  const ov=document.getElementById('ultimateVictory');
+  if(ov) ov.classList.remove('show','heroOnly','summaryMode');
+  winFxRunning=false;
 }
-function fmtWinners(a){
-  const ws = Array.isArray(a?.winners) ? a.winners.filter(Boolean) : [];
-  if(ws.length===0) return "–";
-  return ws.join(" & ");
-}
-let _awardsRunning = false;
-let _awardsRunSeq = 0;
-function cancelTitleCeremony(){
-  _awardsRunSeq++;
-  _awardsRunning = false;
-  const ov = document.getElementById("baAwardsOverlay");
-  if(ov){ ov.classList.remove("show"); ov.style.display = "none"; }
-}
-async function runTitleCeremony(awards){
-  if(_awardsRunning) return;
-  if(!(state && state.winner)) return;
-  const arr = Array.isArray(awards) ? awards : [];
-  if(arr.length===0) return;
-  const runSeq = ++_awardsRunSeq;
-  const stillCurrent = ()=> runSeq === _awardsRunSeq && !!(state && state.winner);
-  _awardsRunning = true;
-  const ov = ensureAwardsUI();
-  const card = document.getElementById("baAwardsCard");
-  const tEl = document.getElementById("baAwardsTitle");
-  const vEl = document.getElementById("baAwardsValue");
-  const nEl = document.getElementById("baAwardsName");
-
-  const wait = (ms)=>new Promise(r=>setTimeout(r, ms));
-
-  ov.style.display = "flex";
-  // for each title: title -> value -> name, total 5s
-  for(const a of arr){
-    // reset
-    vEl.classList.remove("show");
-    nEl.classList.remove("show");
-    tEl.textContent = String(a.title||"Titel");
-    vEl.textContent = fmtAwardValue(a);
-    nEl.textContent = fmtWinners(a);
-
-    ov.classList.add("show");
-    await wait(220); if(!stillCurrent()){ cancelTitleCeremony(); return; }
-
-    // Step 1: Title (≈1.2s)
-    await wait(1000); if(!stillCurrent()){ cancelTitleCeremony(); return; }
-
-    // Step 2: Value
-    vEl.classList.add("show");
-    await wait(1200); if(!stillCurrent()){ cancelTitleCeremony(); return; }
-
-    // Step 3: Name(s)
-    nEl.classList.add("show");
-    await wait(2400); if(!stillCurrent()){ cancelTitleCeremony(); return; }
-
-    // Fade out between titles
-    ov.classList.remove("show");
-    await wait(260); if(!stillCurrent()){ cancelTitleCeremony(); return; }
+function cancelTitleCeremony(){ closeVictoryFinale(); }
+function renderUltimateVictorySummary(summary,winnerColor,awards){
+  const ov=ensureUltimateVictoryUI();
+  const safeSummary=(summary&&typeof summary==='object')?summary:{};
+  const rows=Array.isArray(safeSummary.players)?safeSummary.players:[];
+  const winner=String(winnerColor||safeSummary.winnerColor||'').toLowerCase();
+  const winnerName=safeSummary.winnerName||labelForColor(winner);
+  const reason=safeSummary.reason==='forfeit'?'Sieg nach Aufgabe':'Erste Figur im Ziel';
+  const title=ov.querySelector('#uvSummaryTitle'); if(title) title.textContent=`${winnerName} gewinnt!`;
+  const sub=ov.querySelector('#uvSummarySub'); if(sub) sub.textContent=reason;
+  const metrics=ov.querySelector('#uvMetrics');
+  if(metrics){
+    const vals=[
+      ['⏱','Partiedauer',fmtFinalDuration(safeSummary.durationMs)],
+      ['🔄','Züge',String(Number(safeSummary.totalTurns)||0)],
+      ['🎲','Würfe',String(Number(safeSummary.totalRolls)||0)],
+      ['👊','Rauswürfe',String(Number(safeSummary.totalKicks)||0)]
+    ];
+    metrics.innerHTML=vals.map(v=>`<div class="uvMetric"><span>${v[0]}</span><small>${v[1]}</small><strong>${escHtml(v[2])}</strong></div>`).join('');
   }
-
-  if(runSeq === _awardsRunSeq) ov.style.display = "none";
-  _awardsRunning = false;
-}
-// ------------------------------------------------------
-
-function showEpicWin(winnerColor){
-    try{ v104OnWin(winnerColor); }catch(_e){}
-    const name = labelForColor(winnerColor);
-    const hint = (netMode !== "offline" && !isMeHost())
-      ? 'Erste Figur auf dem Zielfeld. Warte auf den Host für eine Revanche.'
-      : 'Erste Figur auf dem Zielfeld. Ihr könnt direkt eine Revanche starten.';
-    showOverlay('🏆 SIEG! 🏆', `${name} gewinnt!`, hint);
-    overlay.style.setProperty('--winner-color', (COLORS && COLORS[winnerColor]) ? COLORS[winnerColor] : '#8b7cff');
-    overlay.classList.add('win-overlay');
-    if(overlayOk) overlayOk.textContent = 'Ergebnis schließen';
-    updateRematchUI();
-    startWinFx(winnerColor);
+  const playersEl=ov.querySelector('#uvPlayers');
+  if(playersEl){
+    if(rows.length){
+      playersEl.innerHTML=rows.map(r=>{
+        const c=String(r.color||'').toLowerCase();
+        const isWinner=c===winner;
+        return `<article class="uvPlayer ${isWinner?'isWinner':''}" style="--player-color:${escHtml(COLORS[c]||'#8b7cff')}">
+          <div class="uvPlayerIdentity"><span class="uvPlayerDot"></span><div><strong>${escHtml(r.name||labelForColor(c))}${isWinner?' <b>🏆</b>':''}</strong><small>${isWinner?'Sieger':'Mitspieler'}</small></div></div>
+          <div class="uvPlayerStats">
+            <span><small>Ø Zug</small><b>${escHtml(fmtFinalTurn(r.avgTurnMs))}</b></span>
+            <span><small>Ø Wurf</small><b>${escHtml(fmtFinalRoll(r.avgRoll))}</b></span>
+            <span><small>Raus</small><b>${Number(r.kills)||0}</b></span>
+            <span><small>Joker</small><b>${Number(r.jokersUsed)||0}</b></span>
+            <span><small>Sechsen</small><b>${Number(r.six)||0}</b></span>
+          </div>
+        </article>`;
+      }).join('');
+    }else{
+      playersEl.innerHTML='<div class="uvEmpty">Spielerwerte für diese Partie sind noch nicht verfügbar.</div>';
+    }
   }
+  const hi=Array.isArray(safeSummary.highlights)&&safeSummary.highlights.length?safeSummary.highlights:(Array.isArray(awards)?awards.slice(0,3):[]);
+  const hiEl=ov.querySelector('#uvHighlights');
+  if(hiEl){
+    hiEl.innerHTML=hi.length?hi.slice(0,3).map(a=>{
+      const winners=(Array.isArray(a.winners)?a.winners:[]).join(' & ')||'–';
+      const value=a.value==null?'–':a.value;
+      return `<div class="uvHighlight"><strong>${escHtml(a.title||'Highlight')}</strong><span>${escHtml(winners)}</span><small>${escHtml(String(value))}${a.unit?' · '+escHtml(a.unit):''}</small></div>`;
+    }).join(''):'<div class="uvEmpty">Keine besonderen Match-Highlights.</div>';
+  }
+  const rem=ov.querySelector('#uvRematch');
+  if(rem){
+    const allowed=(netMode==='offline'||isMeHost());
+    rem.hidden=!allowed; rem.disabled=!allowed;
+  }
+  const career=ov.querySelector('#uvCareer'); if(career){career.hidden=true;career.textContent='';}
+  loadVictoryLifetimeStats(winnerName).catch(()=>{});
+}
+async function loadVictoryLifetimeStats(winnerName){
+  const ov=document.getElementById('ultimateVictory'); if(!ov||!winnerName) return;
+  const career=ov.querySelector('#uvCareer'); if(!career) return;
+  try{
+    const base=String(SERVER_URL||'').replace(/^wss:/i,'https:').replace(/^ws:/i,'http:').replace(/\/$/,'');
+    const res=await fetch(base+'/stats',{cache:'no-store'}); if(!res.ok) return;
+    const data=await res.json(); const rows=Array.isArray(data?.rows)?data.rows:[];
+    const row=rows.find(r=>String(r?.name||'').trim().toLowerCase()===String(winnerName).trim().toLowerCase());
+    if(!row) return;
+    const games=Number(row.games)||0,wins=Number(row.wins)||0;
+    const avgMs=Number(row.avgGameMs)|| (games?((Number(row.playMs)||0)/games):0);
+    career.innerHTML=`<span>📊 Langzeitstatistik des Siegers</span><strong>${wins} Siege / ${games} Spiele</strong><small>Ø Partiedauer ${fmtFinalDuration(avgMs)}</small>`;
+    career.hidden=false;
+  }catch(_e){}
+}
+function revealUltimateVictorySummary(skip=false){
+  clearTimeout(_uvRevealTimer); _uvRevealTimer=0;
+  const ov=document.getElementById('ultimateVictory'); if(!ov) return;
+  ov.classList.remove('heroOnly'); ov.classList.add('summaryMode');
+}
+function showUltimateVictory(winnerColor,summary=null,awards=[]){
+  try{ v104OnWin(winnerColor); }catch(_e){}
+  const ov=ensureUltimateVictoryUI();
+  const name=(summary&&summary.winnerName)||labelForColor(winnerColor);
+  _uvCurrentSummary=summary||null;
+  ov.style.setProperty('--winner-color',(COLORS&&COLORS[winnerColor])?COLORS[winnerColor]:'#8b7cff');
+  const w=ov.querySelector('#uvWinner'); if(w) w.textContent=name;
+  const hs=ov.querySelector('#uvHeroSub'); if(hs) hs.textContent=(summary?.reason==='forfeit'?'Sieg nach Aufgabe':'Erste Figur erreicht das Ziel');
+  renderUltimateVictorySummary(summary,winnerColor,awards);
+  ov.classList.remove('summaryMode'); ov.classList.add('show','heroOnly');
+  startWinFx(winnerColor);
+  clearTimeout(_uvRevealTimer);
+  _uvRevealTimer=setTimeout(()=>revealUltimateVictorySummary(false),2200);
+  updateRematchUI();
+}
+function showEpicWin(winnerColor,summary=null,awards=[]){
+  showUltimateVictory(winnerColor,summary,awards);
+}
   function hideOverlay(){
     overlay.classList.remove("show","win-overlay");
     overlay.style.removeProperty("--winner-color");
@@ -4696,7 +4910,7 @@ function showEpicWin(winnerColor){
     }catch(_e){}
     try{
       state.bossMode = getLobbyBossMode();
-      state.boss = state.bossMode ? {slots:[],eventFields:[],eventFieldCount:getLobbyEventFieldCount(),bossEventCountdown:3,bossCountdownPending:false,round:1,lastEvent:null,lastAction:null} : null;
+      state.boss = state.bossMode ? {slots:[],eventFields:[],eventFieldCount:getLobbyEventFieldCount(),bossEventTrigger:getLobbyBossEventTrigger(),bossEventCountdown:getLobbyBossEventTrigger(),bossCountdownPending:false,round:1,lastEvent:null,lastAction:null} : null;
     }catch(_e){}
     // 🔥 BRUTAL: Barikaden starten auf ALLEN RUN-Feldern (außer Ziel)
     for(const id of runNodes){
@@ -5058,11 +5272,7 @@ function showEpicWin(winnerColor){
 
       updateTurnUI(); updateStartButton(); draw();
         showEpicWin(state.winner);
-        if(!awardsShown){
-          awardsShown = true;
-          const awards = (st && st.matchAwards) || (server && server.matchAwards) || [];
-          setTimeout(()=>{ try{ runTitleCeremony(awards); }catch(_e){} }, 1200);
-        }
+        awardsShown = true;
         return;
       }
       endTurn();
@@ -7557,7 +7767,8 @@ if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
     }
     // Neu: Startspieler per Glücksrad bestimmen (server-chef, für alle sichtbar)
     const _eventFieldCount = _bossMode ? getLobbyEventFieldCount() : undefined;
-    wsSend({ type:"start_request", mode:_m, bossMode:_bossMode, jokerStartCount:(_jokerCount || undefined), eventFieldCount:_eventFieldCount, ts:Date.now() });
+    const _bossEventTrigger = _bossMode ? getLobbyBossEventTrigger() : undefined;
+    wsSend({ type:"start_request", mode:_m, bossMode:_bossMode, jokerStartCount:(_jokerCount || undefined), eventFieldCount:_eventFieldCount, bossEventTrigger:_bossEventTrigger, ts:Date.now() });
   });
 
   // Host-only: unpause / continue after reconnect (server-side paused flag)
