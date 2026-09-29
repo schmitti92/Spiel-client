@@ -349,6 +349,138 @@ let pendingSaveExport = false;
     }catch(_e){ return null; }
   }
 
+
+  // ===== V21: zwei sichtbare Würfel + transparente Modifikatoranzeige =====
+  let diceSecondEl = null;
+  let diceMathEl = null;
+
+  function fillDicePips(el){
+    if(!el || el.querySelector('.dip')) return;
+    const frag=document.createDocumentFragment();
+    for(let i=1;i<=9;i++){
+      const d=document.createElement('span'); d.className=`dip p${i}`;
+      const p=document.createElement('span'); p.className='pip';
+      d.appendChild(p); frag.appendChild(d);
+    }
+    el.appendChild(frag);
+  }
+
+  function ensureEnhancedDiceUI(){
+    try{
+      if(!diceEl) return null;
+      const pill=diceEl.closest?.('.dicePill') || diceEl.parentElement;
+      if(!pill) return null;
+      pill.classList.add('dicePillEnhanced');
+
+      let wrap=pill.querySelector('#diceDockWrap');
+      if(!wrap){
+        wrap=document.createElement('div');
+        wrap.id='diceDockWrap';
+        pill.appendChild(wrap);
+      }
+      if(!wrap.contains(diceEl)) wrap.appendChild(diceEl);
+
+      if(!diceSecondEl || !diceSecondEl.isConnected){
+        diceSecondEl=document.createElement('div');
+        diceSecondEl.id='diceSecondCube';
+        diceSecondEl.className='diceVisualCube';
+        diceSecondEl.dataset.face='1';
+        diceSecondEl.hidden=true;
+        fillDicePips(diceSecondEl);
+        wrap.appendChild(diceSecondEl);
+      }
+
+      if(!diceMathEl || !diceMathEl.isConnected){
+        diceMathEl=document.createElement('div');
+        diceMathEl.id='diceMathStrip';
+        diceMathEl.className='diceMathStrip';
+        diceMathEl.hidden=true;
+        pill.appendChild(diceMathEl);
+      }
+      return {pill,wrap,second:diceSecondEl,math:diceMathEl};
+    }catch(_e){ return null; }
+  }
+
+  function setAuxDiceFace(el,face){
+    if(!el) return;
+    const n=Math.max(1,Math.min(6,Number(face)||1));
+    el.dataset.face=String(n);
+  }
+
+  function formatRollModifier(mod){
+    if(!mod || typeof mod!=='object') return '';
+    if(mod.kind==='minimum') return String(mod.label||'MIN');
+    const v=Number(mod.value||0);
+    if(!v) return String(mod.label||'');
+    return `${v>0?'+':''}${v}`;
+  }
+
+  function renderRollVisual(visual,fallbackValue){
+    try{
+      const ui=ensureEnhancedDiceUI();
+      if(!ui){ setDiceFaceAnimated(fallbackValue==null?0:Number(fallbackValue)); return; }
+      const validFallback=(fallbackValue==null?null:Number(fallbackValue));
+      if(validFallback==null || !Number.isFinite(validFallback)){
+        ui.pill.classList.remove('is-double-roll','has-roll-math');
+        if(diceSecondEl) diceSecondEl.hidden=true;
+        if(diceMathEl){diceMathEl.hidden=true;diceMathEl.innerHTML='';}
+        setDiceFaceAnimated(0);
+        return;
+      }
+
+      const rv=(visual && typeof visual==='object')?visual:null;
+      let dice=Array.isArray(rv?.dice)?rv.dice.map(Number).filter(n=>n>=1&&n<=6):[];
+      if(!dice.length){
+        if(validFallback>=1 && validFallback<=6) dice=[validFallback];
+        else dice=[Math.max(1,Math.min(6,validFallback))];
+      }
+      const isDouble=dice.length>=2;
+      const result=Number.isFinite(Number(rv?.result))?Number(rv.result):validFallback;
+      const base=Number.isFinite(Number(rv?.base))?Number(rv.base):(isDouble?dice[0]+dice[1]:dice[0]);
+      const mods=Array.isArray(rv?.mods)?rv.mods.filter(Boolean):[];
+
+      // Der erste Würfel zeigt IMMER den tatsächlich gewürfelten Rohwert, nicht den modifizierten Endwert.
+      setDiceFaceAnimated(dice[0]);
+      ui.pill.classList.toggle('is-double-roll',isDouble);
+      const row=ui.pill.closest('.diceActionRow');
+      if(row) row.classList.toggle('has-double-dice',isDouble);
+
+      if(diceSecondEl){
+        diceSecondEl.hidden=!isDouble;
+        if(isDouble) setAuxDiceFace(diceSecondEl,dice[1]);
+      }
+
+      const style=activeDiceStyle();
+      if(diceSecondEl) diceSecondEl.setAttribute('data-dice-style',style);
+
+      const needsMath=isDouble || mods.length>0 || base!==result;
+      ui.pill.classList.toggle('has-roll-math',needsMath);
+      if(diceMathEl){
+        diceMathEl.hidden=!needsMath;
+        if(needsMath){
+          const pieces=[];
+          if(isDouble){
+            pieces.push(`<span class="diceMathBase">${dice[0]} + ${dice[1]}</span>`);
+          }else{
+            pieces.push(`<span class="diceMathBase">Wurf ${dice[0]}</span>`);
+          }
+          for(const mod of mods){
+            const txt=formatRollModifier(mod);
+            if(!txt) continue;
+            const val=Number(mod?.value||0);
+            const cls=mod?.kind==='minimum'?'is-minimum':(val<0?'is-negative':'is-positive');
+            const title=String(mod?.source||'Effekt').replace(/"/g,'&quot;');
+            pieces.push(`<span class="diceModifierChip ${cls}" title="${title}">${txt}</span>`);
+          }
+          pieces.push(`<span class="diceMathEquals">=</span><strong class="diceMathResult">${result}</strong>`);
+          diceMathEl.innerHTML=pieces.join('');
+        }else diceMathEl.innerHTML='';
+      }
+    }catch(_e){
+      try{setDiceFaceAnimated(fallbackValue==null?0:Number(fallbackValue));}catch(_e2){}
+    }
+  }
+
   const turnText= $("turnText");
   const turnDot = $("turnDot");
   const boardInfo = $("boardInfo");
@@ -1838,6 +1970,7 @@ let awardsShown = false;
       diceEl.setAttribute('data-dice-style', style);
       const pill = diceEl.closest ? diceEl.closest('.dicePill') : diceEl.parentElement;
       if(pill) pill.setAttribute('data-dice-style', style);
+      try{ const ui=ensureEnhancedDiceUI(); if(ui?.second) ui.second.setAttribute('data-dice-style',style); }catch(_e){}
       const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : '';
       const who = c ? labelForColor(c) : '';
       diceEl.title = `${DICE_STYLE_LABEL[style] || 'Klassisch'}${who ? ' · ' + who : ''}`;
@@ -3330,8 +3463,8 @@ try{
         return;
       }
       if(type==="roll"){
-        // (108/26) small suspense + particles
-        if(typeof msg.value==="number") setDiceFaceAnimated(msg.value);
+        // V21: erst Rohwürfel/Modifikatoren anzeigen, nicht nur den Endwert.
+        if(!msg.state && typeof msg.value==="number") renderRollVisual(msg.rollVisual,msg.value);
         try{ v104OnRoll(msg.value, msg.double, msg.state && msg.state.turnColor); }catch(_e){}
         if(msg.state){
           applyRemoteState(msg.state);
@@ -3538,6 +3671,7 @@ try{
         players,
         currentPlayer: server.turnColor,
         dice: (server.rolled==null ? null : Number(server.rolled)),
+        rollVisual: (server.rollVisual && typeof server.rollVisual === "object") ? JSON.parse(JSON.stringify(server.rollVisual)) : null,
         phase: server.phase,
         placingChoices: [],
         pieces: Object.fromEntries(players.map(c => [c, piecesByColor[c] || []])),
@@ -3573,7 +3707,7 @@ try{
 
       // show current player's selected dice design before the face animation
       applyActiveDiceStyle();
-      setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
+      renderRollVisual(state.rollVisual, state.dice);
       if(barrInfo) barrInfo.textContent = String(state.barricades.size);
 
       // in online mode we let the server validate moves, so don't compute legalTargets
@@ -3660,7 +3794,7 @@ try{
 
     if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
     applyActiveDiceStyle();
-    setDiceFaceAnimated(state.dice==null ? 0 : Number(state.dice));
+    renderRollVisual(state.rollVisual, state.dice);
     // auto-enter Barrikade-Pick nach Server-Aktivierung
       try{
         const eff = (state.action && state.action.effects) ? state.action.effects : {};
@@ -4486,7 +4620,7 @@ function showEpicWin(winnerColor){
     const vw = rect.width, vh = rect.height;
     if(vw < 20 || vh < 20) return;
 
-    const pad = 88; // V10.8: etwas mehr Sicherheitsrand, damit Häuser/Figuren nicht am Rand kleben
+    const pad = (vw >= 760 ? 72 : 84); // V20: Desktop nutzt die verfügbare Fläche besser, mobil bleibt mehr Sicherheitsrand
     const minX = b.minX - pad, maxX = b.maxX + pad;
     const minY = b.minY - pad, maxY = b.maxY + pad;
     const bw = (maxX - minX);
