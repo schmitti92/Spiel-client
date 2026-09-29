@@ -4806,3 +4806,259 @@ body.game-page .diceMathStrip[hidden]{display:none !important;}
   body.game-page .dicePill.dicePillEnhanced.is-double-roll #diceCube,
   body.game-page .dicePill.dicePillEnhanced.is-double-roll .diceVisualCube{width:50px !important;height:50px !important;}
 }
+
+
+/* ===== V23 ULTIMATE VICTORY FINALE ===== */
+#ultimateVictory{
+  --winner-color:#8b7cff;
+  position:fixed; inset:0; z-index:120000; display:none;
+  align-items:center; justify-content:center; overflow:hidden;
+  background:
+    radial-gradient(900px 600px at 50% 36%,color-mix(in srgb,var(--winner-color) 26%,transparent),transparent 62%),
+    linear-gradient(180deg,rgba(2,5,11,.88),rgba(2,4,9,.97));
+  backdrop-filter:blur(14px) saturate(1.12);
+  color:#f8f9ff;
+}
+#ultimateVictory.show{display:flex;}
+#ultimateVictory #winFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:.96;}
+#ultimateVictory::before{
+  content:"";position:absolute;inset:-20%;z-index:0;pointer-events:none;
+  background:conic-gradient(from 0deg at 50% 50%,transparent 0 8%,color-mix(in srgb,var(--winner-color) 14%,transparent) 11%,transparent 17% 27%,rgba(255,209,102,.10) 31%,transparent 38% 100%);
+  animation:uvRotate 12s linear infinite;
+}
+#ultimateVictory::after{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.32;
+  background-image:radial-gradient(circle,rgba(255,255,255,.78) 0 1px,transparent 1.7px);
+  background-size:72px 72px;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 78%);
+}
+#ultimateVictory .uvGlow{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:1;opacity:.35;}
+#ultimateVictory .uvGlowA{width:42vw;height:42vw;left:-12vw;top:-14vw;background:var(--winner-color);animation:uvDriftA 5s ease-in-out infinite alternate;}
+#ultimateVictory .uvGlowB{width:36vw;height:36vw;right:-10vw;bottom:-15vw;background:#ffd166;opacity:.18;animation:uvDriftB 6s ease-in-out infinite alternate;}
+#ultimateVictory .uvHero,
+#ultimateVictory .uvSummary{position:relative;z-index:4;}
+#ultimateVictory .uvHero{
+  width:min(900px,92vw);text-align:center;padding:28px 20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .34s ease,transform .48s cubic-bezier(.2,.8,.2,1),filter .34s ease;
+}
+#ultimateVictory .uvCrown{
+  position:absolute;top:-18px;left:50%;transform:translateX(-50%) rotate(-7deg);
+  font-size:clamp(44px,7vw,84px);line-height:1;color:#ffd76e;
+  text-shadow:0 8px 24px rgba(255,202,80,.35);animation:uvCrownDrop .8s cubic-bezier(.17,.89,.24,1.35) both;
+}
+#ultimateVictory .uvTrophy{
+  margin-top:35px;font-size:clamp(92px,14vw,168px);line-height:.95;
+  filter:drop-shadow(0 24px 34px rgba(0,0,0,.45)) drop-shadow(0 0 28px color-mix(in srgb,var(--winner-color) 50%,transparent));
+  animation:uvTrophyMega 1s cubic-bezier(.18,.9,.22,1.2) both;
+}
+#ultimateVictory .uvKicker{margin-top:18px;font-size:clamp(11px,1.5vw,15px);font-weight:1000;letter-spacing:.28em;color:rgba(240,244,255,.68);}
+#ultimateVictory .uvWinner{
+  max-width:100%;margin-top:8px;font-size:clamp(42px,8vw,94px);line-height:.92;font-weight:1000;letter-spacing:-.055em;
+  color:#fff;text-wrap:balance;text-shadow:0 8px 34px color-mix(in srgb,var(--winner-color) 64%,transparent);
+  animation:uvWinnerRise .8s .16s cubic-bezier(.18,.9,.22,1.15) both;
+}
+#ultimateVictory .uvWinWord{
+  margin-top:8px;font-size:clamp(19px,3vw,36px);font-weight:1000;letter-spacing:.2em;
+  color:#ffd76e;text-shadow:0 0 22px rgba(255,211,110,.25);animation:uvWinnerRise .8s .27s both;
+}
+#ultimateVictory .uvHeroSub{margin-top:15px;font-size:clamp(13px,2vw,18px);font-weight:750;color:rgba(237,242,255,.72);animation:uvWinnerRise .7s .4s both;}
+#ultimateVictory .uvSkip{
+  margin-top:22px;padding:9px 15px;border-radius:999px;border:1px solid rgba(255,255,255,.13);
+  color:rgba(239,244,255,.70);background:rgba(255,255,255,.055);font:800 11px/1 system-ui;letter-spacing:.04em;cursor:pointer;
+  transition:.16s ease;animation:uvWinnerRise .7s .55s both;
+}
+#ultimateVictory .uvSkip:hover{color:#fff;background:rgba(255,255,255,.10);transform:translateY(-1px);}
+#ultimateVictory .uvSummary{
+  display:none;width:min(1120px,94vw);max-height:min(88vh,820px);overflow:auto;
+  padding:18px;border:1px solid color-mix(in srgb,var(--winner-color) 24%,rgba(255,255,255,.10));
+  border-radius:30px;background:
+    radial-gradient(800px 300px at 50% -10%,color-mix(in srgb,var(--winner-color) 16%,transparent),transparent 70%),
+    linear-gradient(180deg,rgba(17,22,34,.975),rgba(7,11,19,.985));
+  box-shadow:0 30px 90px rgba(0,0,0,.60),inset 0 1px 0 rgba(255,255,255,.07);
+  scrollbar-width:thin;scrollbar-color:rgba(124,109,255,.68) rgba(255,255,255,.04);
+}
+#ultimateVictory.summaryMode .uvHero{display:none;}
+#ultimateVictory.summaryMode .uvSummary{display:block;animation:uvSummaryIn .56s cubic-bezier(.18,.9,.22,1) both;}
+#ultimateVictory .uvSummaryHead{display:flex;align-items:center;gap:15px;padding:4px 4px 15px;border-bottom:1px solid rgba(255,255,255,.07);}
+#ultimateVictory .uvSummaryTrophy{width:68px;height:68px;display:grid;place-items:center;flex:0 0 68px;border-radius:21px;font-size:38px;background:linear-gradient(145deg,rgba(255,213,96,.18),rgba(255,255,255,.045));border:1px solid rgba(255,216,109,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}
+#ultimateVictory .uvSummaryKicker{font-size:9px;font-weight:1000;letter-spacing:.19em;color:rgba(219,226,245,.50);}
+#ultimateVictory .uvSummaryHead h2{margin:2px 0 0;font-size:clamp(25px,4vw,42px);line-height:1;font-weight:1000;letter-spacing:-.045em;text-shadow:0 0 24px color-mix(in srgb,var(--winner-color) 32%,transparent);}
+#ultimateVictory .uvSummaryHead p{margin:6px 0 0;color:rgba(222,231,248,.62);font-size:12px;font-weight:750;}
+#ultimateVictory .uvMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px;}
+#ultimateVictory .uvMetric{min-height:88px;padding:12px;border-radius:19px;border:1px solid rgba(255,255,255,.075);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:9px;align-items:center;}
+#ultimateVictory .uvMetric>span{grid-row:1/3;font-size:27px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25));}
+#ultimateVictory .uvMetric small{align-self:end;color:rgba(216,225,244,.55);font-size:10px;font-weight:850;letter-spacing:.04em;}
+#ultimateVictory .uvMetric strong{align-self:start;font-size:22px;line-height:1.05;font-weight:1000;color:#fff;}
+#ultimateVictory .uvSectionTitle{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:17px 2px 8px;font-size:13px;font-weight:950;color:#eef3ff;}
+#ultimateVictory .uvSectionTitle small{font-size:9px;text-transform:uppercase;letter-spacing:.11em;color:rgba(211,220,240,.42);}
+#ultimateVictory .uvPlayers{display:grid;gap:7px;}
+#ultimateVictory .uvPlayer{--player-color:#8b7cff;display:grid;grid-template-columns:minmax(155px,.9fr) minmax(0,1.8fr);align-items:center;gap:12px;padding:10px 12px;border-radius:18px;border:1px solid rgba(255,255,255,.065);background:rgba(255,255,255,.027);position:relative;overflow:hidden;}
+#ultimateVictory .uvPlayer::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--player-color);box-shadow:0 0 15px var(--player-color);}
+#ultimateVictory .uvPlayer.isWinner{border-color:color-mix(in srgb,var(--player-color) 28%,rgba(255,255,255,.08));background:linear-gradient(90deg,color-mix(in srgb,var(--player-color) 10%,transparent),rgba(255,255,255,.025));}
+#ultimateVictory .uvPlayerIdentity{display:flex;align-items:center;gap:9px;min-width:0;}
+#ultimateVictory .uvPlayerDot{width:14px;height:14px;border-radius:50%;flex:0 0 14px;background:var(--player-color);border:2px solid rgba(255,255,255,.22);box-shadow:0 0 14px var(--player-color);}
+#ultimateVictory .uvPlayerIdentity strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#ultimateVictory .uvPlayerIdentity small{display:block;margin-top:2px;font-size:9px;color:rgba(210,220,240,.48);}
+#ultimateVictory .uvPlayerStats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;}
+#ultimateVictory .uvPlayerStats span{padding:6px 7px;border-radius:11px;background:rgba(255,255,255,.035);text-align:center;min-width:0;}
+#ultimateVictory .uvPlayerStats small{display:block;font-size:8px;color:rgba(210,220,240,.46);white-space:nowrap;}
+#ultimateVictory .uvPlayerStats b{display:block;margin-top:2px;font-size:12px;color:#f6f8ff;white-space:nowrap;}
+#ultimateVictory .uvHighlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+#ultimateVictory .uvHighlight{min-height:82px;padding:11px 12px;border-radius:17px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(180deg,rgba(255,213,102,.06),rgba(255,255,255,.022));}
+#ultimateVictory .uvHighlight strong{display:block;font-size:12px;line-height:1.2;color:#fff;}
+#ultimateVictory .uvHighlight span{display:block;margin-top:7px;font-size:13px;font-weight:950;color:#ffd76e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#ultimateVictory .uvHighlight small{display:block;margin-top:3px;font-size:9px;color:rgba(219,226,242,.48);}
+#ultimateVictory .uvEmpty{grid-column:1/-1;padding:13px;border-radius:15px;background:rgba(255,255,255,.025);color:rgba(219,227,244,.48);font-size:11px;text-align:center;}
+#ultimateVictory .uvCareer{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:11px 13px;border-radius:17px;border:1px solid rgba(116,215,255,.10);background:linear-gradient(90deg,rgba(78,158,255,.07),rgba(255,255,255,.02));}
+#ultimateVictory .uvCareer[hidden]{display:none!important;}
+#ultimateVictory .uvCareer span{font-size:10px;font-weight:850;color:rgba(219,228,246,.56);}
+#ultimateVictory .uvCareer strong{font-size:12px;color:#f5f8ff;}
+#ultimateVictory .uvCareer small{font-size:10px;color:#8edcff;font-weight:850;}
+#ultimateVictory .uvActions{display:flex;justify-content:flex-end;gap:9px;margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.065);}
+#ultimateVictory .uvActions .btn{min-height:44px;padding:0 16px;border-radius:15px;font-weight:900;}
+#ultimateVictory .uvRematch{background:linear-gradient(180deg,color-mix(in srgb,var(--winner-color) 82%,#fff 18%),color-mix(in srgb,var(--winner-color) 76%,#000 24%))!important;border-color:color-mix(in srgb,var(--winner-color) 55%,#fff 15%)!important;box-shadow:0 10px 24px color-mix(in srgb,var(--winner-color) 25%,transparent)!important;}
+#ultimateVictory .uvClose{background:rgba(255,255,255,.055)!important;}
+@keyframes uvRotate{to{transform:rotate(360deg)}}
+@keyframes uvCrownDrop{0%{opacity:0;transform:translateX(-50%) translateY(-60px) rotate(-22deg) scale(.5)}70%{opacity:1;transform:translateX(-50%) translateY(8px) rotate(3deg) scale(1.15)}100%{transform:translateX(-50%) rotate(-7deg) scale(1)}}
+@keyframes uvTrophyMega{0%{opacity:0;transform:scale(.18) rotate(-18deg)}55%{opacity:1;transform:scale(1.18) rotate(5deg)}75%{transform:scale(.94) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes uvWinnerRise{0%{opacity:0;transform:translateY(28px) scale(.96);filter:blur(5px)}100%{opacity:1;transform:none;filter:none}}
+@keyframes uvSummaryIn{0%{opacity:0;transform:translateY(24px) scale(.975)}100%{opacity:1;transform:none}}
+@keyframes uvDriftA{to{transform:translate(8vw,5vh) scale(1.12)}}
+@keyframes uvDriftB{to{transform:translate(-7vw,-4vh) scale(1.1)}}
+@media(max-width:760px){
+  #ultimateVictory .uvSummary{width:95vw;max-height:91vh;padding:13px;border-radius:22px;}
+  #ultimateVictory .uvMetrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+  #ultimateVictory .uvMetric{min-height:72px;padding:9px;}
+  #ultimateVictory .uvPlayer{grid-template-columns:1fr;padding:10px;gap:8px;}
+  #ultimateVictory .uvPlayerStats{grid-template-columns:repeat(5,minmax(54px,1fr));overflow-x:auto;padding-bottom:2px;}
+  #ultimateVictory .uvHighlights{grid-template-columns:1fr;}
+  #ultimateVictory .uvCareer{grid-template-columns:1fr;gap:4px;}
+  #ultimateVictory .uvActions{position:sticky;bottom:-13px;margin-left:-13px;margin-right:-13px;padding:11px 13px 13px;background:linear-gradient(180deg,rgba(8,12,20,.75),rgba(8,12,20,.98));}
+}
+@media(prefers-reduced-motion:reduce){
+  #ultimateVictory::before,#ultimateVictory .uvGlow,#ultimateVictory .uvCrown,#ultimateVictory .uvTrophy,#ultimateVictory .uvWinner,#ultimateVictory .uvWinWord,#ultimateVictory .uvHeroSub,#ultimateVictory .uvSkip,#ultimateVictory.summaryMode .uvSummary{animation:none!important;transition:none!important;}
+}
+
+
+/* ===== V24 Boss-Enthuellung + Portalwahl ===== */
+#bossArrivalOverlay{
+  position:fixed;inset:0;z-index:88000;
+  display:grid;place-items:center;padding:18px;
+  opacity:0;visibility:hidden;pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 48%,rgba(130,85,255,.18),transparent 34%),
+    rgba(3,5,10,.72);
+  backdrop-filter:blur(8px);
+  transition:opacity .18s ease,visibility .18s ease;
+  overflow:hidden;
+}
+#bossArrivalOverlay.show{opacity:1;visibility:visible;pointer-events:auto;}
+#bossArrivalOverlay .bossArrivalRift{
+  position:absolute;left:50%;top:50%;width:min(72vw,680px);aspect-ratio:1;
+  transform:translate(-50%,-50%);pointer-events:none;filter:blur(.1px);
+}
+#bossArrivalOverlay .bossArrivalRift::before,
+#bossArrivalOverlay .bossArrivalRift::after,
+#bossArrivalOverlay .bossArrivalRift i{
+  content:"";position:absolute;inset:12%;border-radius:50%;
+  border:2px solid rgba(178,145,255,.34);
+  box-shadow:0 0 34px rgba(133,86,255,.28),inset 0 0 34px rgba(133,86,255,.12);
+}
+#bossArrivalOverlay .bossArrivalRift::after{inset:22%;border-style:dashed;opacity:.72;}
+#bossArrivalOverlay .bossArrivalRift i:nth-child(1){inset:4%;opacity:.28;}
+#bossArrivalOverlay .bossArrivalRift i:nth-child(2){inset:31%;opacity:.58;}
+#bossArrivalOverlay .bossArrivalRift i:nth-child(3){inset:40%;opacity:.30;}
+#bossArrivalOverlay.show .bossArrivalRift::before{animation:bossRiftSpin 2.9s linear 1;}
+#bossArrivalOverlay.show .bossArrivalRift::after{animation:bossRiftSpinReverse 2.5s linear 1;}
+#bossArrivalOverlay.show .bossArrivalRift i:nth-child(2){animation:bossRiftPulse 1.15s ease-in-out 2;}
+#bossArrivalOverlay .bossArrivalCard{
+  position:relative;z-index:2;width:min(92vw,620px);
+  display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;
+  padding:18px;border-radius:30px;
+  border:1px solid rgba(216,198,255,.22);
+  background:
+    radial-gradient(520px 180px at 8% 0%,rgba(147,104,255,.18),transparent 66%),
+    linear-gradient(180deg,rgba(21,22,35,.985),rgba(8,10,17,.99));
+  box-shadow:0 34px 90px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.07);
+  transform:translateY(20px) scale(.90);opacity:0;
+}
+#bossArrivalOverlay.show .bossArrivalCard{animation:bossArrivalCardIn .54s cubic-bezier(.18,.88,.24,1.18) forwards;}
+#bossArrivalOverlay .bossArrivalKicker{
+  position:absolute;left:22px;top:-14px;padding:8px 13px;border-radius:999px;
+  background:linear-gradient(180deg,#ff6f70,#c83145);border:1px solid rgba(255,255,255,.24);
+  color:#fff;font:950 10px/1 system-ui;letter-spacing:.18em;
+  box-shadow:0 10px 24px rgba(112,17,31,.34);
+}
+#bossArrivalOverlay .bossArrivalArt{
+  position:relative;min-height:240px;border-radius:23px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg,#271b42,#0b0b13);
+  box-shadow:0 18px 34px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.06);
+}
+#bossArrivalOverlay .bossArrivalPortrait{width:100%;height:100%;min-height:240px;object-fit:cover;display:block;filter:saturate(1.08) contrast(1.04);}
+#bossArrivalOverlay .bossArrivalGlyph{
+  position:absolute;right:10px;top:10px;width:42px;height:42px;display:grid;place-items:center;
+  border-radius:50%;font-size:23px;background:rgba(7,9,14,.62);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(7px);
+}
+#bossArrivalOverlay .bossArrivalScan{
+  position:absolute;left:0;right:0;top:-18%;height:24%;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.18),rgba(175,145,255,.25),transparent);
+  opacity:0;
+}
+#bossArrivalOverlay.show .bossArrivalScan{animation:bossArrivalScan 1.4s ease .24s 1;}
+#bossArrivalOverlay .bossArrivalCopy{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:16px 5px 8px 0;}
+#bossArrivalOverlay .bossArrivalName{font:1000 clamp(30px,5.4vw,48px)/.98 system-ui;color:#fff;letter-spacing:-.04em;text-shadow:0 7px 24px rgba(0,0,0,.46);}
+#bossArrivalOverlay .bossArrivalRule{margin-top:14px;color:#e7e9f6;font:750 14px/1.48 system-ui;max-width:36ch;}
+#bossArrivalOverlay .bossArrivalBadges{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px;}
+#bossArrivalOverlay .bossArrivalBadges span{padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.11);color:#f6f7ff;font:900 11px/1 system-ui;letter-spacing:.03em;}
+
+#bossArrivalOverlay .bossArrivalSkip{
+  align-self:flex-start;margin-top:18px;padding:10px 14px;border-radius:14px;
+  border:1px solid rgba(255,255,255,.13);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.05));
+  color:#fff;font:900 10px/1 system-ui;letter-spacing:.14em;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:transform .14s ease,filter .14s ease;
+}
+#bossArrivalOverlay .bossArrivalSkip:hover{filter:brightness(1.12);transform:translateY(-1px);}
+#bossArrivalOverlay.theme-hunter .bossArrivalCard{box-shadow:0 34px 90px rgba(0,0,0,.62),0 0 42px rgba(255,128,77,.13),inset 0 1px 0 rgba(255,255,255,.07);}
+#bossArrivalOverlay.theme-curse .bossArrivalCard{box-shadow:0 34px 90px rgba(0,0,0,.62),0 0 42px rgba(179,112,255,.15),inset 0 1px 0 rgba(255,255,255,.07);}
+#bossArrivalOverlay.theme-shadow .bossArrivalCard{box-shadow:0 34px 90px rgba(0,0,0,.62),0 0 42px rgba(101,225,255,.12),inset 0 1px 0 rgba(255,255,255,.07);}
+#bossArrivalOverlay.theme-doppel .bossArrivalCard{box-shadow:0 34px 90px rgba(0,0,0,.62),0 0 42px rgba(255,216,113,.14),inset 0 1px 0 rgba(255,255,255,.07);}
+#bossArrivalOverlay.theme-devourer .bossArrivalCard{box-shadow:0 34px 90px rgba(0,0,0,.66),0 0 54px rgba(130,78,255,.24),inset 0 1px 0 rgba(255,255,255,.07);}
+@keyframes bossArrivalCardIn{0%{opacity:0;transform:translateY(30px) scale(.84) rotateX(8deg)}60%{opacity:1;transform:translateY(-4px) scale(1.025) rotateX(0)}100%{opacity:1;transform:none}}
+@keyframes bossRiftSpin{to{transform:rotate(280deg)}}
+@keyframes bossRiftSpinReverse{to{transform:rotate(-240deg)}}
+@keyframes bossRiftPulse{0%,100%{transform:scale(.96);opacity:.4}50%{transform:scale(1.08);opacity:.85}}
+@keyframes bossArrivalScan{0%{top:-22%;opacity:0}14%{opacity:.85}84%{opacity:.42}100%{top:104%;opacity:0}}
+
+/* Ereigniskarte "Ein Boss erscheint": Boss zuerst enthuellen, dann Portal waehlen. */
+#eventChoicePanel .bossSpawnChoicePreview{
+  width:100%;display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px;align-items:center;
+  padding:10px;border-radius:17px;border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+#eventChoicePanel .bossSpawnChoicePreview img{width:88px;height:108px;object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 22px rgba(0,0,0,.30);}
+#eventChoicePanel .bossSpawnChoiceGlyph{width:88px;height:108px;display:grid;place-items:center;border-radius:14px;font-size:44px;background:rgba(0,0,0,.22);}
+#eventChoicePanel .bossSpawnChoicePreview small{margin:0 0 4px;color:#c9b8ff;}
+#eventChoicePanel .bossSpawnChoicePreview strong{font-size:18px;}
+#eventChoicePanel .bossSpawnChoicePreview span{display:block;margin-top:5px;color:#dce2f2;font:700 11px/1.35 system-ui;}
+#eventChoicePanel .bossSpawnChoicePreview em{display:inline-block;margin-top:7px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);color:#fff;font:850 10px/1 system-ui;font-style:normal;}
+#eventChoicePanel button.portalLeft,#eventChoicePanel button.portalRight{flex:1 1 180px;min-height:48px;font-size:13px;border-radius:15px;}
+#eventChoicePanel button.portalLeft{background:linear-gradient(180deg,#5e8dff,#3f62c8);}
+#eventChoicePanel button.portalRight{background:linear-gradient(180deg,#a66cff,#7446d1);}
+
+@media(max-width:680px){
+  #bossArrivalOverlay .bossArrivalCard{grid-template-columns:118px minmax(0,1fr);gap:12px;padding:13px;border-radius:24px;}
+  #bossArrivalOverlay .bossArrivalArt,#bossArrivalOverlay .bossArrivalPortrait{min-height:170px;}
+  #bossArrivalOverlay .bossArrivalName{font-size:28px;}
+  #bossArrivalOverlay .bossArrivalRule{font-size:12px;margin-top:9px;}
+  #bossArrivalOverlay .bossArrivalBadges{margin-top:11px;gap:6px;}
+  #bossArrivalOverlay .bossArrivalBadges span{font-size:9.5px;padding:6px 8px;}
+  #eventChoicePanel .bossSpawnChoicePreview{grid-template-columns:72px minmax(0,1fr);}
+  #eventChoicePanel .bossSpawnChoicePreview img,#eventChoicePanel .bossSpawnChoiceGlyph{width:72px;height:92px;}
+}
+@media(prefers-reduced-motion:reduce){
+  #bossArrivalOverlay.show .bossArrivalCard{animation:none;opacity:1;transform:none;}
+  #bossArrivalOverlay.show .bossArrivalRift::before,#bossArrivalOverlay.show .bossArrivalRift::after,#bossArrivalOverlay.show .bossArrivalRift i:nth-child(2),#bossArrivalOverlay.show .bossArrivalScan{animation:none;}
+}
