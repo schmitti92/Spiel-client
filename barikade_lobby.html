@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <!-- V25 FINAL LOBBY: Host-only settings + boss trigger 0-10 -->
   <title>Barikade – Lobby V10.2.1</title>
   <link rel="stylesheet" href="styles.css?v=barikade_visual_20260919_5" />
   <style>
@@ -1137,7 +1138,18 @@
     body.lobby-page .event-field-range:disabled{opacity:.45;cursor:not-allowed;}
     body.lobby-page .event-field-scale{display:flex;justify-content:space-between;font-size:9.5px;color:rgba(222,230,245,.45);}
 
-  </style>
+  
+    /* V22: Host-Einstellungen werden Mitspielern komplett ausgeblendet. */
+    body.lobby-page.lobby-client-mode .host-only-setting{display:none !important;}
+    body.lobby-page .client-host-settings-note{display:none;margin-top:14px;padding:14px 16px;border-radius:18px;border:1px solid rgba(96,165,250,.18);background:linear-gradient(180deg,rgba(30,64,175,.10),rgba(15,23,42,.34));color:rgba(226,232,240,.82);font-size:13px;line-height:1.4;align-items:flex-start;gap:10px;}
+    body.lobby-page .client-host-settings-note strong{display:block;color:#f8fafc;font-size:13.5px;margin-bottom:2px;}
+    body.lobby-page.lobby-client-mode .client-host-settings-note{display:flex;}
+    body.lobby-page .boss-trigger-setting{border-color:rgba(236,72,153,.18);background:linear-gradient(180deg,rgba(88,28,135,.10),rgba(15,23,42,.28));}
+    body.lobby-page .boss-trigger-setting .event-field-setting-copy strong{color:#f4e8ff;}
+    body.lobby-page .boss-trigger-setting .event-field-count-badge.off{min-width:56px;background:rgba(148,163,184,.10);color:#cbd5e1;border-color:rgba(148,163,184,.18);}
+    body.lobby-page .client-room-note{display:none;margin:0 0 10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(96,165,250,.12);background:rgba(59,130,246,.06);color:rgba(220,231,250,.72);font-size:12px;line-height:1.35;}
+    body.lobby-page.lobby-client-mode .client-room-note{display:block;}
+</style>
 </head>
 <body class="lobby-page">
   <div class="wrap lobby-v102">
@@ -1178,7 +1190,7 @@
               <button id="joinBtn" class="btn blue" type="button">→ Beitreten</button>
             </div>
           </div>
-          <div class="room-mode-strip">
+          <div class="room-mode-strip host-only-setting">
             <div class="room-mode-copy">
               <strong>Spielmodus</strong>
               <small>Classic bleibt unverändert. Action aktiviert die Joker-Einstellungen.</small>
@@ -1188,17 +1200,17 @@
               Action‑Modus
             </label>
           </div>
-          <div class="room-mode-strip boss-mode-strip">
+          <div class="room-mode-strip boss-mode-strip host-only-setting">
             <div class="room-mode-copy">
               <strong>👹 Action‑Bossmodus</strong>
-              <small>5 Bossarten, 2 Bossportale, Ereigniskarten und Boss-Countdown nach jeweils 3 ausgelösten Ereignisfeldern.</small>
+              <small>5 Bossarten, 2 Bossportale und Ereigniskarten. Der Host legt selbst fest, nach wie vielen bestätigten Ereigniskarten ein Zusatzboss erscheint.</small>
             </div>
             <label class="switch">
               <input id="bossModeToggle" type="checkbox" />
               Bossmodus
             </label>
           </div>
-          <div id="eventFieldSetting" class="event-field-setting">
+          <div id="eventFieldSetting" class="event-field-setting host-only-setting">
             <div class="event-field-setting-head">
               <div class="event-field-setting-copy">
                 <strong>❓ Ereignisfelder gleichzeitig</strong>
@@ -1207,9 +1219,24 @@
               <span id="eventFieldCountValue" class="event-field-count-badge">8</span>
             </div>
             <input id="eventFieldCountRange" class="event-field-range" type="range" min="5" max="20" step="1" value="8" aria-label="Anzahl Ereignisfelder" />
-            <div class="event-field-scale"><span>5</span><span>Boss nach je 3 Ereignissen</span><span>20</span></div>
+            <div class="event-field-scale"><span>5</span><span>gleichzeitig aktive Ereignisfelder</span><span>20</span></div>
           </div>
-          <div class="room-mode-strip board-theme-strip">
+          <div id="bossTriggerSetting" class="event-field-setting boss-trigger-setting host-only-setting">
+            <div class="event-field-setting-head">
+              <div class="event-field-setting-copy">
+                <strong>👹 Zusatzboss nach Ereigniskarten</strong>
+                <small>0 deaktiviert den automatischen Zusatzboss. 1 bis 10 bedeutet: Nach so vielen bestätigten Ereigniskarten erscheint ein zusätzlicher zufälliger Boss.</small>
+              </div>
+              <span id="bossTriggerValue" class="event-field-count-badge">3</span>
+            </div>
+            <input id="bossTriggerRange" class="event-field-range" type="range" min="0" max="10" step="1" value="3" aria-label="Ereigniskarten bis zum Zusatzboss" />
+            <div class="event-field-scale"><span>0 = Aus</span><span>bestätigte Ereigniskarten</span><span>10</span></div>
+          </div>
+          <div id="clientHostSettingsNote" class="client-host-settings-note" aria-live="polite">
+            <span aria-hidden="true">🔒</span>
+            <div><strong>Spieleinstellungen verwaltet der Host</strong><span>Bossmodus, Ereignisfelder, Zusatzboss-Intervall, Brettdesign und Joker werden nur dem Host angezeigt. Du kannst weiterhin Name, Farbe und Würfel für dich einstellen.</span></div>
+          </div>
+          <div class="room-mode-strip board-theme-strip host-only-setting">
             <div class="room-mode-copy">
               <strong>🪵 Brettdesign</strong>
               <small>Der Host wählt das Spielbrett für den ganzen Raum. Die Wahl gilt für alle Spieler und bleibt auch bei Reconnect/Revanche erhalten.</small>
@@ -1229,7 +1256,7 @@
               </button>
             </div>
           </div>
-          <div class="room-mode-strip color-wheel-mode-strip">
+          <div class="room-mode-strip color-wheel-mode-strip host-only-setting">
             <div class="room-mode-copy">
               <strong>🎰 Farb-Slots beim Spielstart</strong>
               <small>Optional: Niemand wählt vorher eine Farbe. Für jeden anwesenden Spieler dreht gleichzeitig ein eigener Slot. Erst danach folgt im Spiel das Rad für den Startspieler.</small>
@@ -1249,6 +1276,8 @@
             </div>
             <span class="hint" id="profileModeHint">Noch nicht bereit</span>
           </div>
+
+          <div class="client-room-note">Die Spieleinstellungen werden vom Host festgelegt. Du brauchst hier nur dein persönliches Profil auszuwählen und dich bereitzumelden.</div>
 
           <div class="profile-summary" aria-live="polite">
             <div class="profile-summary-item"><small>Spieler</small><strong id="summaryName">Noch wählen</strong></div>
@@ -1318,7 +1347,7 @@
             </div>
           </div>
 
-          <div class="action-settings-box">
+          <div class="action-settings-box host-only-setting">
             <div class="action-settings-top">
               <div class="action-settings-title"><strong>⚡ Action-Einstellungen</strong><small>Nur aktiv, wenn oben Action-Modus eingeschaltet ist.</small></div>
               <span id="jokerCountInfo" class="hint">Classic‑Modus</span>
@@ -1384,6 +1413,9 @@
       const eventFieldSetting = $("eventFieldSetting");
       const eventFieldCountRange = $("eventFieldCountRange");
       const eventFieldCountValue = $("eventFieldCountValue");
+      const bossTriggerSetting = $("bossTriggerSetting");
+      const bossTriggerRange = $("bossTriggerRange");
+      const bossTriggerValue = $("bossTriggerValue");
       const colorWheelToggle = $("colorWheelToggle");
       const boardThemeBtns = Array.from(document.querySelectorAll('[data-board-theme]'));
       const colorWheelPanel = $("colorWheelPanel");
@@ -1425,6 +1457,9 @@
       let lastColorWheelSeq = 0;
       let wheelAnimatingSeq = 0;
       let latestPresence = null;
+      let serverHostKnown = false;
+      let serverHostForMe = false;
+      let serverHostRoom = '';
       let colorSlotsAnimating = false;
       let colorSlotsRevealTimer = 0;
 
@@ -1556,6 +1591,20 @@ function renderPresence(p){
   const locks = p.colorLocks || {};
   const players = Array.isArray(p.players) ? p.players : [];
   const myName = selectedNameKey || getMyNameKey();
+  // V25: Hoststatus nicht nur aus localStorage ableiten. Sobald der Server
+  // einen Host für genau diesen Raum meldet, gilt diese Information als maßgeblich.
+  try{
+    const currentRoom = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+    const roomHasServerHost = players.some(x => !!x?.isHost);
+    serverHostRoom = currentRoom;
+    serverHostKnown = roomHasServerHost;
+    const myServerPlayer = players.find(x => String(x?.name||'') === String(myName||''));
+    serverHostForMe = !!myServerPlayer?.isHost;
+    if(serverHostKnown){
+      localStorage.setItem('barikade_mode', serverHostForMe ? 'host' : 'client');
+    }
+  }catch(_e){}
+  refreshHostSettingsVisibility();
   myWheelReservationReady = !!(myName && res[myName]);
   const colorRevealAt = Number(p.colorWheel?.revealAt || 0);
   const colorServerNow = Number(p.ts || Date.now());
@@ -1766,6 +1815,8 @@ function startPresencePoll(){
         bumpPill(modePill);
         refreshProfileSummary();
         refreshEventFieldCountUI();
+        refreshBossTriggerUI();
+        refreshHostSettingsVisibility();
       }
       function setRoom(rc){
         const r = normRoom(rc);
@@ -1774,6 +1825,7 @@ function startPresencePoll(){
         bumpPill(roomPill);
         refreshProfileSummary();
         refreshEventFieldCountUI();
+        refreshBossTriggerUI();
       }
       function setActionMode(on){
         localStorage.setItem('barikade_action_mode', on ? 'action' : 'classic');
@@ -1781,6 +1833,7 @@ function startPresencePoll(){
       function setBossMode(on){
         localStorage.setItem('barikade_boss_mode', on ? 'boss' : 'off');
         refreshEventFieldCountUI();
+        refreshBossTriggerUI();
       }
 
       function eventFieldCountKey(){
@@ -1814,6 +1867,53 @@ function startPresencePoll(){
           eventFieldCountRange.title=!bossOn?'Nur im Bossmodus relevant':(!host?'Nur der Host kann die Anzahl wählen':'5 bis 20 Ereignisfelder gleichzeitig');
         }
         if(eventFieldCountValue) eventFieldCountValue.textContent=String(n);
+      }
+
+      function bossTriggerKey(){
+        const r = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        return 'barikade_boss_event_trigger_' + (r || 'room');
+      }
+      function getSelectedBossTrigger(){
+        try{
+          const roomScoped=localStorage.getItem(bossTriggerKey());
+          const global=localStorage.getItem('barikade_boss_event_trigger');
+          const n=Number(roomScoped ?? global ?? 3);
+          return Number.isInteger(n) && n>=0 && n<=10 ? n : 3;
+        }catch(_e){ return 3; }
+      }
+      function setSelectedBossTrigger(value){
+        const raw=Math.floor(Number(value));
+        const n=Number.isInteger(raw)?Math.max(0,Math.min(10,raw)):3;
+        try{
+          localStorage.setItem(bossTriggerKey(),String(n));
+          localStorage.setItem('barikade_boss_event_trigger',String(n));
+        }catch(_e){}
+        return n;
+      }
+      function refreshBossTriggerUI(){
+        const bossOn=!!(bossModeToggle && bossModeToggle.checked);
+        const host=isHostMode();
+        const n=getSelectedBossTrigger();
+        if(bossTriggerSetting) bossTriggerSetting.classList.toggle('show',bossOn);
+        if(bossTriggerRange){
+          bossTriggerRange.value=String(n);
+          bossTriggerRange.disabled=!bossOn || !host;
+          bossTriggerRange.title=!bossOn?'Nur im Bossmodus relevant':(!host?'Nur der Host kann das Intervall wählen':'0 = aus, 1 bis 10 bestätigte Ereigniskarten');
+        }
+        if(bossTriggerValue){
+          bossTriggerValue.textContent=n===0?'AUS':String(n);
+          bossTriggerValue.classList.toggle('off',n===0);
+        }
+      }
+      function refreshHostSettingsVisibility(){
+        const host = isHostMode();
+        document.body.classList.toggle('lobby-client-mode', !host);
+        const note = document.getElementById('clientHostSettingsNote');
+        if(note){
+          const hostName = Array.isArray(latestPresence?.players) ? String(latestPresence.players.find(x=>x?.isHost)?.name||'Host') : 'Host';
+          const strong = note.querySelector('strong');
+          if(strong) strong.textContent = `Spieleinstellungen verwaltet ${hostName}`;
+        }
       }
 
       function applyBoardThemeUI(){
@@ -2120,6 +2220,8 @@ function startPresencePoll(){
         }catch(_e){}
       }
       function isHostMode(){
+        const currentRoom = normRoom(roomInp.value || localStorage.getItem('barikade_room') || '');
+        if(serverHostKnown && serverHostRoom && currentRoom === serverHostRoom) return !!serverHostForMe;
         return (localStorage.getItem('barikade_mode') || 'offline') === 'host';
       }
       function refreshJokerCountUI(){
@@ -2173,6 +2275,8 @@ function startPresencePoll(){
         actionToggle.checked = (am === 'action');
         if(bossModeToggle) bossModeToggle.checked = (bm === 'boss');
         refreshEventFieldCountUI();
+        refreshBossTriggerUI();
+        refreshHostSettingsVisibility();
         const c = (localStorage.getItem('barikade_requested_color_'+normRoom(r)) || localStorage.getItem('barikade_requested_color') || '');
         if(c) setRequestedColor(c);
         refreshDiceStyleUI();
@@ -2270,6 +2374,20 @@ function startPresencePoll(){
           const n=setSelectedEventFieldCount(eventFieldCountRange.value);
           refreshEventFieldCountUI();
           toast(`Ereignisfelder: ${n}`);
+        });
+      }
+
+      if(bossTriggerRange){
+        bossTriggerRange.addEventListener('input',()=>{
+          if(!isHostMode()) { refreshBossTriggerUI(); return; }
+          const n=setSelectedBossTrigger(bossTriggerRange.value);
+          if(bossTriggerValue){ bossTriggerValue.textContent=n===0?'AUS':String(n); bossTriggerValue.classList.toggle('off',n===0); }
+        });
+        bossTriggerRange.addEventListener('change',()=>{
+          if(!isHostMode()) return;
+          const n=setSelectedBossTrigger(bossTriggerRange.value);
+          refreshBossTriggerUI();
+          toast(n===0?'Automatischer Zusatzboss deaktiviert':`Zusatzboss nach ${n} bestätigte${n===1?'r':'n'} Ereigniskarte${n===1?'':'n'}`);
         });
       }
 
@@ -2440,7 +2558,10 @@ function startPresencePoll(){
         const selectedJokers = actionToggle.checked ? getSelectedJokerCount() : null;
         const qs = new URLSearchParams({ compact:'1' });
         if(selectedJokers) qs.set('jokerCount', String(selectedJokers));
-        if(bossModeToggle && bossModeToggle.checked) qs.set('eventFields', String(getSelectedEventFieldCount()));
+        if(bossModeToggle && bossModeToggle.checked){
+          qs.set('eventFields', String(getSelectedEventFieldCount()));
+          qs.set('bossTrigger', String(getSelectedBossTrigger()));
+        }
         location.href = 'barikade.html?' + qs.toString();
       });
 
