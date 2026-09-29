@@ -5062,3 +5062,65 @@ body.game-page .diceMathStrip[hidden]{display:none !important;}
   #bossArrivalOverlay.show .bossArrivalCard{animation:none;opacity:1;transform:none;}
   #bossArrivalOverlay.show .bossArrivalRift::before,#bossArrivalOverlay.show .bossArrivalRift::after,#bossArrivalOverlay.show .bossArrivalRift i:nth-child(2),#bossArrivalOverlay.show .bossArrivalScan{animation:none;}
 }
+
+
+/* ===== V28: Modifizierten Rohwurf deutlich durchstreichen ===== */
+body.game-page .dicePill.dicePillEnhanced.is-roll-overridden{
+  background:linear-gradient(180deg,rgba(79,18,26,.20),rgba(22,8,12,.12)) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,104,123,.18) !important;
+}
+body.game-page .dicePill.dicePillEnhanced.is-roll-overridden #diceDockWrap{
+  position:relative;
+}
+body.game-page #diceCube.is-struck-roll,
+body.game-page .diceVisualCube.is-struck-roll{
+  filter:saturate(.88) brightness(.95);
+}
+body.game-page #diceCube.is-struck-roll::before,
+body.game-page .diceVisualCube.is-struck-roll::before{
+  content:"";
+  position:absolute;
+  left:-8px;
+  right:-8px;
+  top:50%;
+  height:8px;
+  transform:translateY(-50%) rotate(-24deg);
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(255,92,116,.04),rgba(255,92,116,.92) 18%,rgba(255,226,231,.98) 50%,rgba(255,92,116,.92) 82%,rgba(255,92,116,.04));
+  box-shadow:0 0 0 1px rgba(120,17,33,.42),0 2px 10px rgba(157,27,49,.42);
+  z-index:5;
+  pointer-events:none;
+}
+body.game-page #diceCube.is-struck-roll::after,
+body.game-page .diceVisualCube.is-struck-roll::after{
+  box-shadow:0 5px 12px rgba(0,0,0,.34),0 0 0 2px rgba(255,92,116,.18);
+}
+body.game-page .diceMathBase.is-crossed{
+  position:relative;
+  color:rgba(255,221,226,.92) !important;
+  padding-inline:2px;
+}
+body.game-page .diceMathBase.is-crossed::after{
+  content:"";
+  position:absolute;
+  left:-2px;
+  right:-2px;
+  top:52%;
+  height:4px;
+  transform:translateY(-50%) rotate(-8deg);
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(255,85,107,.05),rgba(255,85,107,.95) 20%,rgba(255,235,240,.98) 50%,rgba(255,85,107,.95) 80%,rgba(255,85,107,.05));
+  box-shadow:0 0 0 1px rgba(109,18,31,.25);
+}
+body.game-page .dicePill.dicePillEnhanced.is-roll-overridden .diceMathStrip{
+  background:linear-gradient(180deg,rgba(29,8,12,.78),rgba(10,7,14,.72)) !important;
+  border-color:rgba(255,92,116,.20) !important;
+}
+body.game-page .dicePill.dicePillEnhanced.is-roll-negative .diceMathResult{
+  background:linear-gradient(145deg,#8b2234,#5f1322) !important;
+  border-color:rgba(255,205,214,.55) !important;
+  box-shadow:0 5px 12px rgba(101,18,34,.34) !important;
+}
+body.game-page .dicePill.dicePillEnhanced.is-roll-overridden .diceMathEquals{
+  color:rgba(255,223,228,.72) !important;
+}
