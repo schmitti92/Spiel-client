@@ -4474,3 +4474,335 @@ body.game-page #gameToolsDetails .gameToolsBody{
   body.game-page .bossCardArt{min-height:140px !important;}
   body.game-page .bossCardNameRow strong{font-size:16px !important;}
 }
+
+
+/* ===== V20 Screenshot-Polish: Brett + Sidebar als eine Einheit ===== */
+@media (min-width:1280px){
+  body.game-page .app{
+    width:calc(100% - 24px) !important;
+    max-width:1240px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+    grid-template-columns:minmax(0,1fr) 426px !important;
+    gap:10px !important;
+  }
+  body.game-page .gameSidebar{
+    width:426px !important;
+    min-width:426px !important;
+    max-width:426px !important;
+  }
+}
+@media (min-width:901px) and (max-width:1279px){
+  body.game-page .app{
+    width:calc(100% - 16px) !important;
+    max-width:none !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+    grid-template-columns:minmax(0,1fr) 356px !important;
+    gap:8px !important;
+  }
+  body.game-page .gameSidebar{
+    width:356px !important;
+    min-width:356px !important;
+    max-width:356px !important;
+  }
+}
+body.game-page .boardWrap{
+  min-width:0 !important;
+  background:
+    radial-gradient(ellipse at 58% 48%,rgba(80,95,135,.055),transparent 58%),
+    linear-gradient(180deg,rgba(13,19,32,.42),rgba(8,13,24,.50)) !important;
+}
+body.game-page #actionCard .epicJokerGrid{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
+}
+body.game-page #actionCard .epicJokerBtn,
+body.game-page .joker-btn{
+  position:relative !important;
+  min-height:102px !important;
+  padding:12px 46px 11px 12px !important;
+  border-radius:19px !important;
+  gap:8px !important;
+}
+body.game-page #actionCard .epicJokerBtn .ejIcon{
+  width:40px !important;
+  height:40px !important;
+  flex:0 0 40px !important;
+  font-size:22px !important;
+}
+body.game-page #actionCard .epicJokerBtn .ejText{
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+body.game-page #actionCard .epicJokerBtn .ejName{
+  display:block !important;
+  max-width:100% !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  word-break:normal !important;
+  hyphens:none !important;
+  font-size:14.5px !important;
+  line-height:1.08 !important;
+}
+body.game-page #actionCard .epicJokerBtn .ejSub{
+  display:-webkit-box !important;
+  -webkit-line-clamp:2 !important;
+  -webkit-box-orient:vertical !important;
+  overflow:hidden !important;
+  font-size:10.5px !important;
+  line-height:1.22 !important;
+  margin-top:4px !important;
+}
+body.game-page #actionCard .epicJokerBtn .ejCount{
+  position:absolute !important;
+  top:10px !important;
+  right:10px !important;
+  margin:0 !important;
+  min-width:34px !important;
+  height:26px !important;
+  padding:0 8px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:11px !important;
+}
+body.game-page .jokerSection{
+  padding-bottom:12px !important;
+}
+body.game-page .sideTurnCard{
+  flex:0 0 auto !important;
+}
+body.game-page .statusSection{
+  margin-bottom:1px !important;
+}
+body.game-page.isFullscreenGame .app,
+body.game-page.isFullscreenFallback .app{
+  max-width:1400px !important;
+}
+@media (max-width:900px){
+  body.game-page .app{width:auto !important;max-width:none !important;}
+  body.game-page #actionCard .epicJokerBtn,
+  body.game-page .joker-btn{min-height:98px !important;padding-right:44px !important;}
+}
+
+
+/* ===== V21 Doppelwurf + Modifikatoranzeige ===== */
+body.game-page .diceActionRow{
+  transition:grid-template-columns .18s ease;
+}
+body.game-page .diceActionRow.has-double-dice{
+  grid-template-columns:minmax(0,1fr) 142px !important;
+}
+body.game-page .dicePill.dicePillEnhanced{
+  width:100% !important;
+  min-width:92px !important;
+  height:76px !important;
+  min-height:76px !important;
+  padding:7px 8px !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  overflow:visible !important;
+  transition:min-height .18s ease,height .18s ease,width .18s ease;
+}
+body.game-page .dicePill.dicePillEnhanced.is-double-roll{
+  min-width:142px !important;
+}
+body.game-page .dicePill.dicePillEnhanced.has-roll-math{
+  height:104px !important;
+  min-height:104px !important;
+  justify-content:flex-start !important;
+}
+body.game-page .dicePill.dicePillEnhanced #diceDockWrap{
+  position:relative !important;
+  inset:auto !important;
+  width:100% !important;
+  min-height:62px !important;
+  flex:1 1 auto !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  transform:none !important;
+  transform-origin:center !important;
+  overflow:visible !important;
+}
+body.game-page .dicePill.dicePillEnhanced.is-double-roll #diceDockWrap{
+  gap:9px !important;
+}
+body.game-page .dicePill.dicePillEnhanced #diceCube,
+body.game-page .dicePill.dicePillEnhanced .diceVisualCube{
+  flex:0 0 auto !important;
+}
+body.game-page .dicePill.dicePillEnhanced.is-double-roll #diceCube,
+body.game-page .dicePill.dicePillEnhanced.is-double-roll .diceVisualCube{
+  width:54px !important;
+  height:54px !important;
+  padding:6px !important;
+  gap:3px !important;
+  border-radius:15px !important;
+}
+body.game-page .dicePill.dicePillEnhanced.is-double-roll #diceCube .pip,
+body.game-page .dicePill.dicePillEnhanced.is-double-roll .diceVisualCube .pip{
+  width:9px !important;
+  height:9px !important;
+  min-width:9px !important;
+  min-height:9px !important;
+}
+body.game-page .diceVisualCube{
+  position:relative;
+  box-sizing:border-box;
+  width:62px;
+  height:62px;
+  padding:7px;
+  gap:3px;
+  border-radius:17px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(3,1fr);
+  background:linear-gradient(145deg,#ffffff 0%,#eef3f8 52%,#cfd9e7 100%);
+  border:1px solid rgba(255,255,255,.98);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,1),inset 0 -6px 11px rgba(29,48,72,.15),0 10px 21px rgba(0,0,0,.34),0 0 0 1px rgba(0,0,0,.11);
+}
+body.game-page .diceVisualCube .dip{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+}
+body.game-page .diceVisualCube .pip{
+  width:10px;height:10px;min-width:10px;min-height:10px;border-radius:50%;
+  background:#070a10;
+  box-shadow:inset 0 2px 2px rgba(255,255,255,.16),0 2px 3px rgba(0,0,0,.28);
+  opacity:0;
+}
+body.game-page .diceVisualCube[data-face="1"] .p5 .pip{opacity:1;}
+body.game-page .diceVisualCube[data-face="2"] .p1 .pip,
+body.game-page .diceVisualCube[data-face="2"] .p9 .pip{opacity:1;}
+body.game-page .diceVisualCube[data-face="3"] .p1 .pip,
+body.game-page .diceVisualCube[data-face="3"] .p5 .pip,
+body.game-page .diceVisualCube[data-face="3"] .p9 .pip{opacity:1;}
+body.game-page .diceVisualCube[data-face="4"] .p1 .pip,
+body.game-page .diceVisualCube[data-face="4"] .p3 .pip,
+body.game-page .diceVisualCube[data-face="4"] .p7 .pip,
+body.game-page .diceVisualCube[data-face="4"] .p9 .pip{opacity:1;}
+body.game-page .diceVisualCube[data-face="5"] .p1 .pip,
+body.game-page .diceVisualCube[data-face="5"] .p3 .pip,
+body.game-page .diceVisualCube[data-face="5"] .p5 .pip,
+body.game-page .diceVisualCube[data-face="5"] .p7 .pip,
+body.game-page .diceVisualCube[data-face="5"] .p9 .pip{opacity:1;}
+body.game-page .diceVisualCube[data-face="6"] .p1 .pip,
+body.game-page .diceVisualCube[data-face="6"] .p3 .pip,
+body.game-page .diceVisualCube[data-face="6"] .p4 .pip,
+body.game-page .diceVisualCube[data-face="6"] .p6 .pip,
+body.game-page .diceVisualCube[data-face="6"] .p7 .pip,
+body.game-page .diceVisualCube[data-face="6"] .p9 .pip{opacity:1;}
+body.game-page .diceVisualCube::after{
+  content:attr(data-face);
+  position:absolute;
+  right:-5px;
+  bottom:-5px;
+  z-index:4;
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  color:#fff;
+  background:linear-gradient(145deg,#59647a,#252c3b);
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:0 5px 12px rgba(0,0,0,.34);
+  font:900 11px/1 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+}
+body.game-page .diceVisualCube[data-dice-style="neon"]{
+  background:linear-gradient(145deg,#161c2c 0%,#080c16 48%,#02040a 100%);
+  border-color:rgba(90,231,255,.72);
+  box-shadow:inset 0 1px 0 rgba(175,246,255,.16),inset 0 -8px 14px rgba(0,0,0,.52),0 0 0 1px rgba(77,230,255,.22),0 0 20px rgba(54,204,255,.25),0 11px 23px rgba(0,0,0,.45);
+}
+body.game-page .diceVisualCube[data-dice-style="neon"] .pip{
+  background:#79efff;
+  box-shadow:0 0 5px rgba(91,232,255,.95),0 0 11px rgba(43,200,255,.72),inset 0 1px 1px rgba(255,255,255,.66);
+}
+body.game-page .diceVisualCube[data-dice-style="neon"]::after{
+  background:linear-gradient(145deg,#1bd1f2,#4e63ff);
+  border-color:rgba(205,250,255,.96);
+}
+body.game-page .diceVisualCube[data-dice-style="royal"]{
+  background:linear-gradient(145deg,#fff9df 0%,#f3e6bf 48%,#d8bd78 100%);
+  border-color:#f3cf69;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.82),inset 0 -7px 12px rgba(105,72,16,.18),0 0 0 1px rgba(105,72,16,.20),0 10px 22px rgba(0,0,0,.38),0 0 16px rgba(231,184,71,.14);
+}
+body.game-page .diceVisualCube[data-dice-style="royal"] .pip{background:#5a3e0e;}
+body.game-page .diceVisualCube[data-dice-style="royal"]::after{
+  color:#2f2109;
+  background:linear-gradient(145deg,#ffe7a2,#d6a943);
+  border-color:#fff3c8;
+}
+body.game-page .diceMathStrip{
+  width:100%;
+  min-height:27px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  white-space:nowrap;
+  border-radius:10px;
+  padding:4px 6px;
+  box-sizing:border-box;
+  background:rgba(3,7,14,.58);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  color:#e9eefb;
+  font:800 10px/1 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+}
+body.game-page .diceMathBase{color:rgba(225,233,248,.72);font-weight:850;}
+body.game-page .diceModifierChip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:28px;
+  padding:4px 6px;
+  border-radius:999px;
+  font-weight:1000;
+  letter-spacing:.01em;
+}
+body.game-page .diceModifierChip.is-negative{
+  color:#ffd9df;
+  background:rgba(221,65,87,.20);
+  border:1px solid rgba(255,93,116,.38);
+  box-shadow:0 0 12px rgba(226,57,88,.12);
+}
+body.game-page .diceModifierChip.is-positive{
+  color:#d9ffe9;
+  background:rgba(59,193,123,.18);
+  border:1px solid rgba(89,227,153,.34);
+}
+body.game-page .diceModifierChip.is-minimum{
+  color:#fff0bf;
+  background:rgba(218,171,55,.18);
+  border:1px solid rgba(241,196,79,.35);
+}
+body.game-page .diceMathEquals{color:rgba(225,233,248,.48);font-weight:900;}
+body.game-page .diceMathResult{
+  min-width:25px;
+  height:25px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:8px;
+  color:#fff;
+  background:linear-gradient(145deg,#7864ff,#4a3bc9);
+  border:1px solid rgba(204,197,255,.56);
+  box-shadow:0 5px 12px rgba(58,44,154,.28);
+  font-size:13px;
+}
+body.game-page .diceVisualCube[hidden],
+body.game-page .diceMathStrip[hidden]{display:none !important;}
+@media (max-width:900px){
+  body.game-page .diceActionRow.has-double-dice{grid-template-columns:minmax(0,1fr) 132px !important;}
+  body.game-page .dicePill.dicePillEnhanced.is-double-roll{min-width:132px !important;}
+  body.game-page .dicePill.dicePillEnhanced.is-double-roll #diceCube,
+  body.game-page .dicePill.dicePillEnhanced.is-double-roll .diceVisualCube{width:50px !important;height:50px !important;}
+}
