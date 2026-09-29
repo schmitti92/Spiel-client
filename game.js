@@ -453,16 +453,24 @@ let pendingSaveExport = false;
       const style=activeDiceStyle();
       if(diceSecondEl) diceSecondEl.setAttribute('data-dice-style',style);
 
-      const needsMath=isDouble || mods.length>0 || base!==result;
-      ui.pill.classList.toggle('has-roll-math',needsMath);
+      const hasNegativeMod = mods.some(mod => Number(mod?.value||0) < 0);
+      const rollOverridden = mods.length>0 && base!==result;
+      const needsMath = isDouble || mods.length>0 || base!==result;
+      ui.pill.classList.toggle('has-roll-math', needsMath);
+      ui.pill.classList.toggle('is-roll-overridden', rollOverridden);
+      ui.pill.classList.toggle('is-roll-negative', hasNegativeMod);
+      try{
+        diceEl.classList.toggle('is-struck-roll', rollOverridden);
+        if(diceSecondEl) diceSecondEl.classList.toggle('is-struck-roll', rollOverridden && isDouble);
+      }catch(_e){}
       if(diceMathEl){
         diceMathEl.hidden=!needsMath;
         if(needsMath){
           const pieces=[];
           if(isDouble){
-            pieces.push(`<span class="diceMathBase">${dice[0]} + ${dice[1]}</span>`);
+            pieces.push(`<span class="diceMathBase ${rollOverridden?'is-crossed':''}">${dice[0]} + ${dice[1]}</span>`);
           }else{
-            pieces.push(`<span class="diceMathBase">Wurf ${dice[0]}</span>`);
+            pieces.push(`<span class="diceMathBase ${rollOverridden?'is-crossed':''}">Wurf ${dice[0]}</span>`);
           }
           for(const mod of mods){
             const txt=formatRollModifier(mod);
