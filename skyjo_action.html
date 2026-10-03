@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>SKYJO Action – Fan-Umsetzung</title>
+<title>SKYJO Action – V6 Cinematic Compact</title>
 <style>
 :root{
   --bg:#f5f3ec; --panel:#ffffff; --ink:#1f2933; --muted:#667085; --line:#d9d5ca;
@@ -226,6 +226,364 @@ body:before{
 .cloud-pill.local:before{content:"";width:7px;height:7px;border-radius:50%;background:#94a3b8}
 .joker-off-note{font-size:11px;color:var(--muted);margin-top:5px}.card.star.joker-off{filter:saturate(.45);box-shadow:inset 0 0 0 3px rgba(255,255,255,.28),0 7px 18px rgba(0,0,0,.20)}
 @media(max-width:640px){.cloud-row{align-items:stretch}.cloud-row button{flex:1 1 120px}.cloud-pill{padding:6px 8px;font-size:10px}}
+
+/* Online Multiplayer V4 */
+.online-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.online-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.online-status{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.16);font-size:13px;color:var(--muted)}
+.online-status.ok{border-color:rgba(46,204,113,.34);color:#bdf5d2}.online-status.err{border-color:rgba(255,92,92,.34);color:#ffd1d1}
+.lobby-card{max-width:920px;margin:20px auto}.lobby-head{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
+.player-list{display:grid;gap:10px;margin:18px 0}.player-slot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.04)}
+.player-slot.me{border-color:rgba(255,201,64,.45);box-shadow:0 0 0 2px rgba(255,201,64,.08) inset}.player-slot .num{width:32px;height:32px;display:grid;place-items:center;border-radius:11px;background:rgba(255,255,255,.08);font-weight:900}
+.player-slot .who{flex:1}.player-slot .who b{display:block}.player-slot .who small{color:var(--muted)}
+.lobby-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.setting-chip{padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.15)}.setting-chip b{display:block;font-size:15px}.setting-chip small{color:var(--muted)}
+.multiplayer-bar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;margin-bottom:12px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.16)}
+.waiting-note{padding:11px 14px;border-radius:13px;background:rgba(255,255,255,.06);color:var(--muted);font-weight:800}
+.you-tag{display:inline-flex;margin-left:6px;padding:2px 7px;border-radius:999px;background:rgba(255,201,64,.15);color:#ffd55f;font-size:10px;font-weight:900;vertical-align:middle}
+@media(max-width:760px){.online-mode-grid,.lobby-settings{grid-template-columns:1fr}.online-actions>*{flex:1 1 140px}}
+
+
+
+/* ==========================================================
+   V5 COMPACT TABLET UPDATE
+   Ziel: 2-Spieler-Partie im Querformat möglichst vollständig
+   auf einen Blick + direkte Stapelbedienung.
+   ========================================================== */
+.pile-card-hit{position:relative;display:inline-flex;flex-direction:column;align-items:center;gap:3px;border-radius:16px;padding:2px;transition:transform .12s ease,filter .12s ease}
+.pile-card-hit.enabled{cursor:pointer}
+.pile-card-hit.enabled:hover,.pile-card-hit.enabled:active{transform:translateY(-3px);filter:brightness(1.08)}
+.pile-card-hit.enabled .card{outline:2px solid rgba(255,224,94,.58);outline-offset:2px}
+.pile-tip{font-size:9px;font-weight:900;letter-spacing:.55px;text-transform:uppercase;color:#ffe36c;min-height:11px}
+.market-hit{display:inline-flex;border-radius:14px;transition:transform .12s ease,filter .12s ease}
+.market-hit.enabled{cursor:pointer}
+.market-hit.enabled:hover,.market-hit.enabled:active{transform:translateY(-3px);filter:brightness(1.08)}
+.market-hit.enabled .action-card{outline:2px solid rgba(255,224,94,.42);outline-offset:1px}
+.direct-hint{font-size:9px;color:#ffe36c;font-weight:800;margin-top:3px;letter-spacing:.2px}
+
+@media (min-width:900px) and (orientation:landscape){
+  :root{--card-w:clamp(50px,4.15vw,64px);--card-h:calc(var(--card-w)*1.32)}
+  html,body{overflow-x:hidden}
+  .app{max-width:1500px;padding:6px 10px calc(62px + env(safe-area-inset-bottom))}
+  .topbar{margin:-6px -10px 6px;padding:5px 10px;min-height:48px;border-radius:0 0 15px 15px}
+  .brand{gap:7px}.brandmark{width:28px;height:28px;border-radius:8px}.brand h1{font-size:14px}.brand small{font-size:9px}
+  .top-actions{gap:4px}.iconbtn{padding:6px 8px;border-radius:9px;font-size:12px}.cloud-pill{padding:5px 8px;font-size:10px}
+  .multiplayer-bar{margin:4px 0;padding:5px 10px;border-radius:10px;font-size:10px}
+  .status{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:4px 0 6px}
+  .stat{padding:4px 6px;border-radius:10px;min-height:38px}.stat b{font-size:12px;line-height:1.05}.stat span{font-size:8px}
+  .table-area{gap:6px}
+  .panel{margin:5px 0;padding:8px;border-radius:14px}
+  .center-table{grid-template-columns:minmax(260px,.78fr) minmax(500px,1.72fr);gap:7px;padding:7px;min-height:0}
+  .center-table:after{display:none}
+  .pilebox{padding:6px;border-radius:13px;min-height:0}.pilebox h4{margin:0 0 4px;font-size:9px;letter-spacing:.9px}
+  .pile-row{gap:6px;flex-wrap:nowrap}.count{font-size:8px;line-height:1.15;margin-top:2px}
+  .card{border-radius:11px;font-size:clamp(18px,2.5vw,28px);box-shadow:0 5px 0 rgba(0,0,0,.16),0 7px 12px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.5)}
+  .card.back:after{font-size:28px}.card .corner{font-size:8px}.card .center-value{font-size:clamp(20px,3vw,30px)}
+  .market{gap:5px;padding:0 2px 2px;overflow:visible;justify-content:center;align-items:stretch}
+  .action-card{width:clamp(78px,7.1vw,98px);min-height:82px;border-radius:11px;padding:5px;box-shadow:0 5px 10px rgba(0,0,0,.15)}
+  .action-card .emoji{font-size:21px;margin-bottom:1px}.action-card b{font-size:9px;line-height:1.08}.action-card small{font-size:7px;line-height:1.12;margin-top:2px}
+  .players{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .player,.player.active{grid-column:auto;padding:7px;border-radius:14px;min-width:0}
+  .player.active{box-shadow:0 0 0 2px rgba(255,217,72,.18),0 6px 16px rgba(0,0,0,.18)}
+  .player-head{margin-bottom:5px}.player-title{gap:6px}.avatar{width:24px;height:24px;font-size:11px}.player-name{font-size:11px}.scorechip{font-size:9px;padding:3px 6px}.player .hint{font-size:8px}
+  .gridwrap{display:flex;justify-content:center;gap:7px;flex-wrap:nowrap}.grid{gap:4px;grid-template-columns:repeat(4,var(--card-w))}
+  .extras{min-width:90px}.extras h5{font-size:8px;margin-bottom:3px}.extra-row{gap:3px}
+  .actions-owned{gap:4px;margin-top:5px;padding-top:5px;max-height:95px;overflow:auto}
+  .actions-owned .action-card{width:74px;min-height:65px}.actions-owned .action-card .emoji{font-size:17px}.actions-owned .action-card small{display:none}
+  .bottom-actions{padding:4px 8px calc(4px + env(safe-area-inset-bottom))}
+  .bottom-inner{max-width:1500px;display:grid;grid-template-columns:minmax(220px,.72fr) minmax(0,2.28fr);gap:7px;align-items:center}
+  .instruction{text-align:left;margin:0;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .action-buttons{gap:4px;padding:0;overflow-x:auto}.action-buttons button{min-width:0;flex:1 1 auto;padding:6px 8px;border-radius:9px;font-size:9px;white-space:nowrap}
+  .waiting-note{padding:5px 8px;font-size:9px;border-radius:9px}
+  .toast{top:58px;padding:7px 10px;font-size:10px}
+  .modal{max-height:82vh;padding:13px}.modal h3{font-size:16px}.modal p{font-size:11px}
+}
+
+/* Sehr breite Tablets/Desktops: beide Spieler + Tisch besonders kompakt. */
+@media (min-width:1200px) and (min-height:700px) and (max-height:1050px){
+  :root{--card-w:60px}
+  .players.players-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .players.players-2 .gridwrap{justify-content:center}
+}
+
+/* Hochformat/kleinere Geräte bleiben gut bedienbar, aber ebenfalls etwas dichter. */
+@media (max-width:899px){
+  .panel{margin:8px 0}
+  .player{padding:9px}
+  .pile-tip{font-size:8px}
+}
+
+/* ==========================================================
+   V6 CINEMATIC VISUAL UPDATE
+   Spektakulärer, aber ruhig: Ereignis-Animationen statt Dauerblinken.
+   ========================================================== */
+:root{
+  --gold:#ffd65a;
+  --gold2:#ffb72e;
+  --cyan:#62e8e0;
+  --violet:#9c7cff;
+  --felt:#082c2d;
+  --felt2:#041d20;
+}
+body{
+  background:
+    radial-gradient(900px 520px at 10% -5%,rgba(88,77,255,.18),transparent 60%),
+    radial-gradient(900px 520px at 90% 0%,rgba(0,220,185,.12),transparent 62%),
+    linear-gradient(180deg,#041416,#061d20 46%,#041416);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:
+    linear-gradient(115deg,transparent 0 42%,rgba(255,255,255,.018) 43% 44%,transparent 45% 100%),
+    radial-gradient(circle at 50% 120%,rgba(255,201,64,.06),transparent 36%);
+}
+.app{position:relative}
+.topbar{
+  border:1px solid rgba(98,232,224,.10);
+  background:linear-gradient(180deg,rgba(5,34,36,.96),rgba(3,25,28,.94));
+  box-shadow:0 12px 34px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.brandmark{
+  position:relative;overflow:hidden;
+  box-shadow:0 0 0 2px rgba(255,255,255,.08),0 7px 20px rgba(0,0,0,.28);
+}
+.brandmark:after{
+  content:"";position:absolute;inset:-40%;
+  background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);
+  transform:translateX(-120%) rotate(12deg);
+  animation:brandShine 5.8s ease-in-out infinite;
+}
+@keyframes brandShine{0%,74%{transform:translateX(-120%) rotate(12deg)}88%,100%{transform:translateX(120%) rotate(12deg)}}
+.iconbtn,.cloud-pill{
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));
+  border-color:rgba(255,255,255,.11);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 6px 18px rgba(0,0,0,.14);
+}
+.status{perspective:900px}
+.stat{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.025));
+  border-color:rgba(255,255,255,.10);
+}
+.stat:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 42%);
+}
+.center-table{
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 15%,rgba(57,230,207,.16),transparent 34%),
+    radial-gradient(circle at 20% 90%,rgba(132,95,255,.10),transparent 36%),
+    linear-gradient(180deg,#0b3a3a,#07292b 56%,#062326);
+  box-shadow:
+    inset 0 0 0 1px rgba(109,255,238,.08),
+    inset 0 22px 70px rgba(255,255,255,.025),
+    0 16px 38px rgba(0,0,0,.24);
+}
+.center-table:before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;
+  background-image:
+    repeating-radial-gradient(circle at 0 0,transparent 0 3px,rgba(255,255,255,.025) 4px 5px);
+}
+.pilebox{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(2,22,24,.58),rgba(2,17,20,.38));
+  border-color:rgba(255,255,255,.09);
+}
+.pilebox:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(125deg,rgba(255,255,255,.035),transparent 40%);
+}
+.card{
+  transform-style:preserve-3d;
+  box-shadow:
+    0 5px 0 rgba(0,0,0,.28),
+    0 10px 18px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.62),
+    inset 0 -1px 0 rgba(0,0,0,.12);
+}
+.card:before{
+  background:
+    linear-gradient(150deg,rgba(255,255,255,.42),transparent 33%,rgba(255,255,255,.04) 54%,rgba(0,0,0,.06));
+}
+.card.clickable:hover,.card.clickable:active{
+  transform:translateY(-5px) rotateX(4deg) rotateY(-3deg) scale(1.025);
+  box-shadow:0 7px 0 rgba(0,0,0,.24),0 16px 28px rgba(0,0,0,.33),0 0 0 2px rgba(255,223,91,.17);
+}
+.card.back{
+  background:
+    radial-gradient(circle at 50% 50%,rgba(255,255,255,.16) 0 2px,transparent 3px 16px,rgba(255,255,255,.06) 17px 18px,transparent 19px),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 5px,transparent 5px 10px),
+    linear-gradient(145deg,#4932a3 0%,#2460aa 52%,#079178 100%);
+}
+.card.back:after{
+  content:"✦";font-size:clamp(24px,3vw,40px);
+  color:#fff;text-shadow:0 0 16px rgba(255,255,255,.48),0 3px 7px rgba(0,0,0,.32);
+}
+.card.star{
+  background:
+    radial-gradient(circle at 50% 42%,rgba(255,255,255,.32),transparent 24%),
+    conic-gradient(from 12deg,#ffd73f,#ff866e,#b66bff,#5ba8ff,#45d9b4,#ffd73f);
+  box-shadow:0 5px 0 rgba(0,0,0,.25),0 10px 20px rgba(0,0,0,.24),0 0 20px rgba(255,214,90,.20);
+}
+.card.selected{
+  outline:3px solid var(--gold);outline-offset:2px;
+  box-shadow:0 5px 0 rgba(0,0,0,.24),0 12px 24px rgba(0,0,0,.28),0 0 26px rgba(255,214,90,.38);
+}
+.pile-card-hit.enabled{
+  filter:drop-shadow(0 0 12px rgba(255,216,74,.12));
+}
+.pile-card-hit.enabled:after{
+  content:"";position:absolute;inset:-5px;border-radius:18px;pointer-events:none;
+  border:1px solid rgba(255,221,88,.24);
+  box-shadow:0 0 18px rgba(255,213,70,.08);
+}
+.pile-tip{
+  padding:2px 7px;border-radius:999px;
+  background:rgba(255,214,90,.10);
+  border:1px solid rgba(255,214,90,.16);
+}
+.action-card{
+  overflow:hidden;
+  border-color:rgba(180,145,255,.34);
+  background:
+    radial-gradient(circle at 50% -10%,rgba(255,255,255,.22),transparent 37%),
+    linear-gradient(145deg,#5933a8,#353e9f 58%,#24458c);
+  box-shadow:0 5px 0 rgba(0,0,0,.20),0 10px 20px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.16);
+}
+.action-card:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,transparent 10%,rgba(255,255,255,.10) 38%,transparent 60%);
+  transform:translateX(-55%);
+  transition:transform .28s ease;
+}
+.action-card.clickable:hover:before,.market-hit.enabled:hover .action-card:before{transform:translateX(45%)}
+.action-card.attack{
+  background:radial-gradient(circle at 50% -10%,rgba(255,255,255,.20),transparent 36%),linear-gradient(145deg,#b83269,#81376f 58%,#56335f);
+  border-color:rgba(255,120,169,.38);
+}
+.action-card.defense{
+  background:radial-gradient(circle at 50% -10%,rgba(255,255,255,.24),transparent 36%),linear-gradient(145deg,#177a8c,#265fa1 58%,#34519a);
+  border-color:rgba(108,226,255,.40);
+}
+.action-card .emoji{
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.30));
+}
+.action-card b{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.26)}
+.action-card small{color:rgba(255,255,255,.73)}
+.action-type{
+  position:absolute;top:5px;right:5px;
+  padding:2px 5px;border-radius:999px;
+  font-size:6px;font-weight:950;letter-spacing:.55px;text-transform:uppercase;
+  background:rgba(0,0,0,.20);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.76)
+}
+.player{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 5% 0%,rgba(96,232,224,.07),transparent 32%),
+    linear-gradient(180deg,rgba(9,48,50,.97),rgba(7,35,38,.98));
+  border-color:rgba(255,255,255,.09);
+}
+.player:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(130deg,rgba(255,255,255,.025),transparent 30%);
+}
+.player.active{
+  border-color:rgba(255,213,77,.66)!important;
+  box-shadow:
+    0 0 0 2px rgba(255,216,82,.11),
+    0 12px 26px rgba(0,0,0,.24),
+    inset 0 0 24px rgba(255,209,68,.035)!important;
+}
+.player.active:after{
+  content:"AM ZUG";
+  position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  padding:2px 9px;border-radius:999px;
+  font-size:7px;font-weight:950;letter-spacing:1.1px;
+  color:#3b2a00;background:linear-gradient(180deg,#ffe887,#ffc43e);
+  box-shadow:0 4px 10px rgba(0,0,0,.23);
+}
+.avatar{
+  background:linear-gradient(145deg,#ffe57e,#ffb934);color:#4a3300;
+  box-shadow:0 4px 12px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.65)
+}
+.scorechip{
+  background:rgba(255,255,255,.07);color:#d7e8e9;border:1px solid rgba(255,255,255,.08)
+}
+.multiplayer-bar{
+  background:linear-gradient(90deg,rgba(73,54,147,.26),rgba(13,104,102,.25));
+  border-color:rgba(125,235,220,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+}
+.bottom-actions{
+  background:linear-gradient(180deg,rgba(3,25,28,.93),rgba(2,18,21,.98));
+  border-top-color:rgba(120,235,220,.12);
+  box-shadow:0 -14px 34px rgba(0,0,0,.28);
+}
+.action-buttons button{
+  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.035));
+  color:#eaf7f7;border-color:rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.action-buttons button.primary{
+  background:linear-gradient(135deg,#8a66ff,#5d8dff);
+  box-shadow:0 7px 18px rgba(95,92,238,.24),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.instruction{color:#f0fbfb}
+.modal{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(110,86,255,.10),transparent 34%),
+    linear-gradient(180deg,#0b3436,#08272a);
+  border:1px solid rgba(255,255,255,.10);
+}
+.drawn-stage{
+  display:grid;place-items:center;min-height:150px;margin:8px 0 12px;perspective:900px;
+}
+.drawn-stage .card{animation:drawCardReveal .48s cubic-bezier(.16,.8,.2,1) both}
+@keyframes drawCardReveal{
+  0%{opacity:0;transform:translateY(-24px) rotateY(78deg) scale(.72)}
+  65%{opacity:1;transform:translateY(3px) rotateY(-5deg) scale(1.04)}
+  100%{transform:none}
+}
+.game-fx{
+  position:fixed;inset:0;z-index:140;pointer-events:none;display:grid;place-items:center;
+  animation:fxFade .95s ease both;
+}
+.game-fx .fx-core{
+  min-width:220px;max-width:min(70vw,440px);
+  padding:14px 22px;border-radius:24px;text-align:center;
+  background:rgba(4,27,29,.84);border:1px solid rgba(255,255,255,.13);
+  box-shadow:0 24px 70px rgba(0,0,0,.48),0 0 45px rgba(105,235,219,.10);
+  backdrop-filter:blur(12px);
+  animation:fxPop .72s cubic-bezier(.16,.9,.24,1) both;
+}
+.game-fx .fx-icon{font-size:42px;line-height:1;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3))}
+.game-fx .fx-label{margin-top:7px;font-weight:950;font-size:16px;letter-spacing:.2px;color:white}
+.game-fx.turn .fx-core{border-color:rgba(255,215,79,.34);box-shadow:0 24px 70px rgba(0,0,0,.48),0 0 55px rgba(255,212,76,.18)}
+.game-fx.star .fx-core{border-color:rgba(255,216,90,.40);background:rgba(52,35,84,.88)}
+.game-fx.action .fx-core{border-color:rgba(165,129,255,.38);background:rgba(36,31,82,.88)}
+.game-fx.draw .fx-core{border-color:rgba(89,220,210,.34)}
+.game-fx.win .fx-core{border-color:rgba(255,218,97,.50);background:rgba(70,49,18,.90)}
+@keyframes fxFade{0%{opacity:0}12%,72%{opacity:1}100%{opacity:0}}
+@keyframes fxPop{0%{transform:scale(.72) translateY(14px);filter:blur(2px)}58%{transform:scale(1.045) translateY(-2px)}100%{transform:none}}
+.fx-spark{
+  position:fixed;z-index:139;pointer-events:none;width:8px;height:8px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 12px rgba(255,216,90,.55);
+  animation:sparkFly .8s ease-out both;
+}
+@keyframes sparkFly{
+  0%{opacity:1;transform:translate(0,0) scale(1)}
+  100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(.1)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+}
+@media (min-width:900px) and (orientation:landscape){
+  .player.active:after{top:4px;font-size:6px;padding:1px 7px}
+  .action-type{top:3px;right:3px;font-size:5px;padding:1px 4px}
+  .game-fx .fx-core{padding:10px 16px;min-width:190px}
+  .game-fx .fx-icon{font-size:34px}.game-fx .fx-label{font-size:13px}
+}
+
 </style>
 </head>
 <body>
@@ -254,28 +612,69 @@ let state=null;
 let ui={mode:'none',data:{},selected:[]};
 const $=s=>document.querySelector(s);
 const clone=o=>JSON.parse(JSON.stringify(o));
+
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+function visualFx(kind,label,emoji='✨',sparks=0){
+  try{
+    const wrap=document.createElement('div');wrap.className=`game-fx ${kind||''}`;
+    const core=document.createElement('div');core.className='fx-core';
+    const ic=document.createElement('div');ic.className='fx-icon';ic.textContent=emoji;
+    const tx=document.createElement('div');tx.className='fx-label';tx.textContent=label||'';
+    core.append(ic,tx);wrap.append(core);document.body.append(wrap);
+    setTimeout(()=>wrap.remove(),980);
+    const n=Math.max(0,Math.min(18,Number(sparks)||0));
+    for(let i=0;i<n;i++){
+      const s=document.createElement('i');s.className='fx-spark';
+      const a=(Math.PI*2*i/n)+(Math.random()-.5)*.35;
+      const d=70+Math.random()*120;
+      s.style.left=`${50+(Math.random()-.5)*4}%`;s.style.top=`${46+(Math.random()-.5)*4}%`;
+      s.style.setProperty('--sx',`${Math.cos(a)*d}px`);s.style.setProperty('--sy',`${Math.sin(a)*d}px`);
+      document.body.append(s);setTimeout(()=>s.remove(),900);
+    }
+  }catch(_e){}
+}
+
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function log(msg){if(!state)return; state.log.unshift(msg);state.log=state.log.slice(0,50);save();}
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');}
 function normalizeCloudRoom(v){return String(v||'').trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,20)}
 function randomCloudRoom(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<5;i++)out+=a[Math.floor(Math.random()*a.length)];return out}
-function cloudConfigSave(){try{localStorage.setItem(CLOUD_CFG_KEY,JSON.stringify({enabled:!!cloud.enabled,room:cloud.room||''}))}catch(_e){}}
-function cloudConfigLoad(){try{const x=JSON.parse(localStorage.getItem(CLOUD_CFG_KEY)||'null');if(x){cloud.enabled=!!x.enabled;cloud.room=normalizeCloudRoom(x.room)}}catch(_e){}const q=new URLSearchParams(location.search);const qr=normalizeCloudRoom(q.get('room'));if(qr){cloud.enabled=true;cloud.room=qr}}
+const DEVICE_KEY='skyjo_action_device_v2';
+function getDeviceId(){let x='';try{x=localStorage.getItem(DEVICE_KEY)||''}catch(_e){}if(!x){x='d_'+uid();try{localStorage.setItem(DEVICE_KEY,x)}catch(_e){}}return x}
+cloud.deviceId=getDeviceId();cloud.doc=null;cloud.role='';cloud.myName='';cloud.lastError='';cloud.serverOK=null;
+function identityKey(room){return `skyjo_identity_${normalizeCloudRoom(room)}`}
+function saveIdentity(){if(!cloud.room)return;try{localStorage.setItem(identityKey(cloud.room),JSON.stringify({id:cloud.deviceId,name:cloud.myName||''}))}catch(_e){}}
+function loadIdentity(room){try{const x=JSON.parse(localStorage.getItem(identityKey(room))||'null');if(x?.id===cloud.deviceId)return x}catch(_e){}return null}
+function cloudConfigSave(){try{localStorage.setItem(CLOUD_CFG_KEY,JSON.stringify({enabled:!!cloud.enabled,room:cloud.room||'',name:cloud.myName||''}))}catch(_e){}}
+function cloudConfigLoad(){try{const x=JSON.parse(localStorage.getItem(CLOUD_CFG_KEY)||'null');if(x){cloud.enabled=!!x.enabled;cloud.room=normalizeCloudRoom(x.room);cloud.myName=String(x.name||'')}}catch(_e){}const q=new URLSearchParams(location.search);const qr=normalizeCloudRoom(q.get('room'));if(qr){cloud.enabled=true;cloud.room=qr}}
 function migrateState(x){if(!x||x.version!==1)return null;if(!Number.isInteger(x.jokerCount))x.jokerCount=15;if(typeof x.jokerEnabled!=='boolean')x.jokerEnabled=true;return x}
-function save(){try{if(state){const raw=JSON.stringify(state);localStorage.setItem(SAVE_KEY,raw);if(cloud.enabled&&!cloud.applying)scheduleCloudPush(raw)}}catch(e){}}
+function isRoomDoc(x){return !!(x&&x.kind==='skyjo-room-v2'&&x.version===2&&x.lobby&&Array.isArray(x.lobby.players))}
+function myPlayerIndex(){if(!cloud.enabled||!isRoomDoc(cloud.doc))return -1;return cloud.doc.lobby.players.findIndex(p=>p.id===cloud.deviceId)}
+function actorIndex(){if(!state)return -1;return state.phase==='initialReveal'?Number(state.setupPlayer):Number(state.currentPlayer)}
+function isMyActorDevice(){if(!cloud.enabled)return true;const me=myPlayerIndex();return me>=0&&me===actorIndex()}
+function isHostDevice(){return !!(cloud.enabled&&isRoomDoc(cloud.doc)&&cloud.doc.lobby.hostId===cloud.deviceId)}
+function save(){try{if(state){const raw=JSON.stringify(state);localStorage.setItem(SAVE_KEY,raw);if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.applying){cloud.doc.game=clone(state);cloud.doc.lobby.status='playing';scheduleCloudPush(JSON.stringify(cloud.doc))}}}catch(e){console.warn('[save]',e)}}
 function load(){try{return migrateState(JSON.parse(localStorage.getItem(SAVE_KEY)))}catch(e){}return null}
 function jokerFunctionEnabled(){return !state||state.jokerEnabled!==false}
-function cloudBadgeHTML(){if(!cloud.enabled||!cloud.room)return '<span class="cloud-pill local">Lokal</span>';return `<span class="cloud-pill online">☁ ${escapeHTML(cloud.room)}</span>`}
-function scheduleCloudPush(raw){if(!cloud.enabled||!cloud.room||!state)return;if(raw===cloud.lastPushedJSON)return;cloud.pending=true;cloud.pendingJSON=raw;if(cloud.inFlight)return;setTimeout(flushCloudPush,120)}
-async function flushCloudPush(){if(cloud.inFlight||!cloud.pending||!cloud.enabled||!cloud.room)return;cloud.inFlight=true;cloud.pending=false;const raw=cloud.pendingJSON||JSON.stringify(state);try{const r=await fetch(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:JSON.parse(raw),baseRev:cloud.rev})});const j=await r.json().catch(()=>null);if(r.status===409&&j?.state){applyCloudState(j.state,j.rev||0);toast('Cloud war neuer – aktueller Stand wurde geladen');}else if(!r.ok||!j?.ok){throw new Error(j?.error||`HTTP ${r.status}`)}else{cloud.rev=Number(j.rev)||cloud.rev;cloud.lastPushedJSON=raw;cloud.lastStatus='online';cloudConfigSave()}}catch(e){cloud.lastStatus='error';console.warn('[skyjo cloud push]',e)}finally{cloud.inFlight=false;if(cloud.pending)setTimeout(flushCloudPush,80)}}
-async function fetchCloudRoom(room=cloud.room){const rc=normalizeCloudRoom(room);if(!rc)return null;try{const r=await fetch(`${CLOUD_BASE}/skyjo/${encodeURIComponent(rc)}`,{cache:'no-store'});const j=await r.json().catch(()=>null);if(!r.ok||!j?.ok)throw new Error(j?.error||`HTTP ${r.status}`);return j}catch(e){console.warn('[skyjo cloud load]',e);return null}}
-function applyCloudState(remote,rev){const x=migrateState(clone(remote));if(!x)return false;cloud.applying=true;state=x;cloud.rev=Number(rev)||0;const raw=JSON.stringify(state);cloud.lastPushedJSON=raw;try{localStorage.setItem(SAVE_KEY,raw)}catch(_e){}if(state.phase==='play')ui={mode:'turnChoice',data:{},selected:[]};else if(state.phase==='initialReveal')ui={mode:'setupReveal',data:{},selected:[]};else if(state.phase==='betweenRounds'||state.phase==='gameOver')ui={mode:'none',data:{},selected:[]};else ui={mode:'turnChoice',data:{},selected:[]};cloud.applying=false;render();return true}
-async function loadCloudRoom(){const input=$('#cloudRoom');const rc=normalizeCloudRoom(input?.value||cloud.room);if(!rc){toast('Bitte Raumcode eingeben');return}cloud.enabled=true;cloud.room=rc;cloudConfigSave();if(input)input.value=rc;toast('Cloud-Raum wird geladen …');const j=await fetchCloudRoom(rc);if(j?.found&&j.state){applyCloudState(j.state,j.rev||0);startCloudPolling();toast(`Raum ${rc} geladen`)}else if(j?.ok){cloud.rev=0;cloud.lastPushedJSON='';startCloudPolling();toast(`Raum ${rc} ist noch leer – starte ein neues Spiel`)}else toast('Cloud-Raum konnte nicht geladen werden')}
-function generateCloudRoom(){const input=$('#cloudRoom');const rc=randomCloudRoom();if(input)input.value=rc;cloud.room=rc;cloud.enabled=true;cloudConfigSave();toggleCloudFields();toast(`Raumcode ${rc} erstellt`)}
-function toggleCloudFields(){const sel=$('#cloudMode'),box=$('#cloudBox');if(!sel||!box)return;const on=sel.value==='cloud';box.style.display=on?'block':'none';cloud.enabled=on;if(on){const inp=$('#cloudRoom');if(inp&&!inp.value)inp.value=cloud.room||randomCloudRoom();cloud.room=normalizeCloudRoom(inp?.value||cloud.room)}cloudConfigSave()}
-function startCloudPolling(){if(cloud.pollTimer)clearInterval(cloud.pollTimer);if(!cloud.enabled||!cloud.room)return;cloud.pollTimer=setInterval(async()=>{if(cloud.inFlight||cloud.pending)return;const j=await fetchCloudRoom();if(j?.found&&j.state&&Number(j.rev||0)>Number(cloud.rev||0)){applyCloudState(j.state,j.rev||0);toast('☁ Spielstand synchronisiert')}},1400)}
-async function resetCloudRoom(){if(!cloud.enabled||!cloud.room)return;try{await fetch(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reset`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});cloud.rev=0;cloud.lastPushedJSON=''}catch(_e){}}
+function cloudBadgeHTML(){if(!cloud.enabled||!cloud.room)return '<span class="cloud-pill local">Lokal</span>';const me=myPlayerIndex();const nm=me>=0?cloud.doc.lobby.players[me]?.name:'';return `<span class="cloud-pill online">☁ ${escapeHTML(cloud.room)}${nm?' · '+escapeHTML(nm):''}</span>`}
+async function fetchJSON(url,opts={}){const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),8500);try{const r=await fetch(url,{...opts,signal:ctl.signal});const text=await r.text();let j=null;try{j=text?JSON.parse(text):null}catch(_e){}return {r,j,text}}finally{clearTimeout(tm)}}
+async function probeSkyjoServer(){try{const {r,j}=await fetchJSON(`${CLOUD_BASE}/skyjo/PINGCHECK`,{cache:'no-store'});if(r.ok&&j?.ok){cloud.serverOK=true;cloud.lastError='';return true}cloud.serverOK=false;cloud.lastError=r.status===404?'Render läuft noch mit einer alten server.js ohne SKYJO-Endpunkte.':'SKYJO-Server antwortet mit HTTP '+r.status;return false}catch(e){cloud.serverOK=false;cloud.lastError='Render-Server nicht erreichbar. Prüfe Deployment/URL.';console.warn('[skyjo probe]',e);return false}}
+async function fetchCloudRoom(room=cloud.room){const rc=normalizeCloudRoom(room);if(!rc)return null;try{const {r,j}=await fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(rc)}`,{cache:'no-store'});if(!r.ok||!j?.ok){cloud.lastError=r.status===404?'SKYJO-Endpunkte fehlen auf Render. Neue server.js deployen.':(j?.error||`HTTP ${r.status}`);return null}cloud.serverOK=true;cloud.lastError='';return j}catch(e){cloud.serverOK=false;cloud.lastError='Cloud-Raum konnte nicht geladen werden – Render nicht erreichbar oder server.js noch nicht aktualisiert.';console.warn('[skyjo cloud load]',e);return null}}
+function applyCloudDoc(remote,rev){if(!isRoomDoc(remote))return false;cloud.applying=true;cloud.doc=clone(remote);cloud.rev=Number(rev)||0;cloud.lastPushedJSON=JSON.stringify(cloud.doc);cloud.role=isHostDevice()?'host':'player';const me=myPlayerIndex();if(me>=0){cloud.myName=cloud.doc.lobby.players[me]?.name||cloud.myName;saveIdentity()}state=cloud.doc.game?migrateState(clone(cloud.doc.game)):null;if(state){const raw=JSON.stringify(state);try{localStorage.setItem(SAVE_KEY,raw)}catch(_e){}if(state.phase==='play')ui={mode:'turnChoice',data:{},selected:[]};else if(state.phase==='initialReveal')ui={mode:'setupReveal',data:{},selected:[]};else if(state.phase==='betweenRounds'||state.phase==='gameOver')ui={mode:'none',data:{},selected:[]};else ui={mode:'turnChoice',data:{},selected:[]}}else ui={mode:'none',data:{},selected:[]};cloud.applying=false;cloudConfigSave();render();return true}
+async function postCloudDoc(doc,baseRev=cloud.rev){try{const {r,j}=await fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:doc,baseRev})});if(r.status===409&&j?.state)return {ok:false,conflict:true,remote:j.state,rev:Number(j.rev)||0};if(!r.ok||!j?.ok){cloud.lastError=j?.error||`HTTP ${r.status}`;return {ok:false}}cloud.rev=Number(j.rev)||cloud.rev;cloud.serverOK=true;cloud.lastError='';return {ok:true,rev:cloud.rev}}catch(e){cloud.lastError='Speichern auf Render fehlgeschlagen.';console.warn('[skyjo cloud write]',e);return {ok:false}}}
+function scheduleCloudPush(raw){if(!cloud.enabled||!cloud.room||!isRoomDoc(cloud.doc))return;if(raw===cloud.lastPushedJSON)return;cloud.pending=true;cloud.pendingJSON=raw;if(cloud.inFlight)return;setTimeout(flushCloudPush,100)}
+async function flushCloudPush(){if(cloud.inFlight||!cloud.pending||!cloud.enabled||!cloud.room)return;cloud.inFlight=true;cloud.pending=false;const raw=cloud.pendingJSON||JSON.stringify(cloud.doc);try{const doc=JSON.parse(raw);const out=await postCloudDoc(doc,cloud.rev);if(out.conflict){applyCloudDoc(out.remote,out.rev);toast('☁ Neuerer Spielstand wurde geladen')}else if(!out.ok)throw new Error(cloud.lastError||'Cloudfehler');else{cloud.lastPushedJSON=raw;cloud.lastStatus='online';cloudConfigSave()}}catch(e){cloud.lastStatus='error';console.warn('[skyjo cloud push]',e)}finally{cloud.inFlight=false;if(cloud.pending)setTimeout(flushCloudPush,90)}}
+function roomSettingsFromSetup(){return {target:Math.max(20,Number($('#target')?.value)||100),beginner:$('#beginner')?.value==='1',jokerCount:Math.max(0,Math.min(30,Math.floor(Number($('#jokerCount')?.value)||0))),jokerEnabled:!!$('#jokerEnabled')?.checked}}
+async function createOnlineRoom(){const name=String($('#onlineName')?.value||'').trim();let rc=normalizeCloudRoom($('#cloudRoom')?.value||'');if(!name){toast('Bitte deinen Namen eingeben');return}if(!rc)rc=randomCloudRoom();cloud.enabled=true;cloud.room=rc;cloud.myName=name;cloudConfigSave();toast('Server wird geprüft …');if(!await probeSkyjoServer()){render();toast(cloud.lastError);return}const existing=await fetchCloudRoom(rc);if(existing?.found){toast('Dieser Raumcode existiert schon – bitte neuen Code wählen');return}const settings=roomSettingsFromSetup();const doc={kind:'skyjo-room-v2',version:2,lobby:{status:'lobby',hostId:cloud.deviceId,createdAt:Date.now(),settings,players:[{id:cloud.deviceId,name,joinedAt:Date.now()}]},game:null};cloud.rev=0;const out=await postCloudDoc(doc,0);if(!out.ok){toast(cloud.lastError||'Raum konnte nicht erstellt werden');return}cloud.doc=doc;cloud.role='host';saveIdentity();startCloudPolling();render();toast(`Raum ${rc} erstellt`)}
+async function joinOnlineRoom(){const name=String($('#onlineName')?.value||'').trim();const rc=normalizeCloudRoom($('#cloudRoom')?.value||'');if(!name||!rc){toast('Name und Raumcode eingeben');return}cloud.enabled=true;cloud.room=rc;cloud.myName=name;cloudConfigSave();if(!await probeSkyjoServer()){render();toast(cloud.lastError);return}for(let attempt=0;attempt<3;attempt++){const j=await fetchCloudRoom(rc);if(!j?.found||!isRoomDoc(j.state)){toast(j?.found?'Dieser Raum stammt aus einer alten SKYJO-Version.':'Raum nicht gefunden');return}let doc=clone(j.state);cloud.rev=Number(j.rev)||0;let idx=doc.lobby.players.findIndex(p=>p.id===cloud.deviceId);if(doc.lobby.status==='playing'&&idx<0){toast('Das Spiel läuft bereits – neue Spieler können nicht mehr beitreten');return}if(idx<0){if(doc.lobby.players.length>=8){toast('Raum ist voll');return}doc.lobby.players.push({id:cloud.deviceId,name,joinedAt:Date.now()});idx=doc.lobby.players.length-1}else doc.lobby.players[idx].name=name;const out=await postCloudDoc(doc,cloud.rev);if(out.conflict)continue;if(!out.ok){toast(cloud.lastError||'Beitreten fehlgeschlagen');return}cloud.doc=doc;cloud.role=doc.lobby.hostId===cloud.deviceId?'host':'player';saveIdentity();startCloudPolling();render();toast(`Mit ${rc} verbunden`);return}toast('Raum wurde gerade geändert – bitte erneut beitreten')}
+async function restoreOnlineRoom(){if(!cloud.enabled||!cloud.room)return;const ident=loadIdentity(cloud.room);if(ident?.name)cloud.myName=ident.name;const j=await fetchCloudRoom();if(j?.found&&isRoomDoc(j.state)){applyCloudDoc(j.state,j.rev||0);startCloudPolling()}else{cloud.doc=null;state=null;render()}}
+async function startOnlineGame(){if(!isHostDevice()){toast('Nur der Host kann starten');return}const ps=cloud.doc.lobby.players;if(ps.length<2){toast('Mindestens 2 Spieler müssen verbunden sein');return}const set=cloud.doc.lobby.settings||{};state=setupState(ps.map(p=>p.name),Number(set.target)||100,!!set.beginner,Number.isInteger(set.jokerCount)?set.jokerCount:15,set.jokerEnabled!==false);ui={mode:'setupReveal',data:{},selected:[]};cloud.doc.game=clone(state);cloud.doc.lobby.status='playing';cloud.doc.lobby.startedAt=Date.now();const out=await postCloudDoc(cloud.doc,cloud.rev);if(out.conflict){applyCloudDoc(out.remote,out.rev);toast('Lobby wurde aktualisiert – bitte nochmal starten');return}if(!out.ok){toast(cloud.lastError||'Start fehlgeschlagen');return}cloud.lastPushedJSON=JSON.stringify(cloud.doc);render();toast(`${state.players[0].name}: Decke 2 Karten auf`)}
+function leaveOnlineRoom(){cloud.enabled=false;cloud.room='';cloud.doc=null;cloud.rev=0;cloud.role='';cloud.lastError='';state=null;try{localStorage.removeItem(SAVE_KEY)}catch(_e){}cloudConfigSave();if(cloud.pollTimer)clearInterval(cloud.pollTimer);render()}
+async function loadCloudRoom(){return joinOnlineRoom()}
+function generateCloudRoom(){const input=$('#cloudRoom');const rc=randomCloudRoom();if(input)input.value=rc;cloud.room=rc;toast(`Raumcode ${rc} gewählt`)}
+function toggleCloudFields(){const sel=$('#cloudMode'),box=$('#cloudBox'),local=$('#localBox');if(!sel||!box)return;const on=sel.value==='cloud';box.style.display=on?'block':'none';if(local)local.style.display=on?'none':'block';cloud.enabled=on;if(on){const inp=$('#cloudRoom');if(inp&&!inp.value)inp.value=cloud.room||randomCloudRoom()}else{cloud.doc=null;cloud.room=''}cloudConfigSave();if(!on)setTimeout(updateNames,0)}
+function startCloudPolling(){if(cloud.pollTimer)clearInterval(cloud.pollTimer);if(!cloud.enabled||!cloud.room)return;cloud.pollTimer=setInterval(async()=>{if(cloud.inFlight||cloud.pending)return;const j=await fetchCloudRoom();if(j?.found&&isRoomDoc(j.state)&&Number(j.rev||0)>Number(cloud.rev||0)){applyCloudDoc(j.state,j.rev||0)}},950)}
+async function resetCloudRoom(){if(!cloud.enabled||!cloud.room)return;try{await fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reset`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});cloud.rev=0;cloud.lastPushedJSON=''}catch(_e){}}
 
 function newCard(type,value=null){return {id:uid(),type,value,faceUp:false}}
 function makePlayDeck(jokerCount=15){let d=[];for(let i=0;i<3;i++)d.push(newCard('number',-2));for(let i=0;i<11;i++)d.push(newCard('number',0));for(const v of [-1,1,2,3,4,5,6,7,8,9,10,11,12])for(let i=0;i<7;i++)d.push(newCard('number',v));const jc=Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0)));for(let i=0;i<jc;i++)d.push(newCard('star'));return shuffle(d)}
@@ -296,7 +695,7 @@ function startGame(names,target,beginner,jokerCount=15,jokerEnabled=true){state=
 function beginRound(){state.phase='initialReveal';state.roundEnder=null;state.finalTurnQueue=[];state.extraTurns=0;state.playDeck=makePlayDeck(state.jokerCount??15);state.playDiscard=[takePlayDirect()];state.playDiscard[0].faceUp=true;state.actionDeck=makeActionDeck(state.beginner);state.market=[];for(let i=0;i<4;i++)state.market.push(takeActionDirect());state.actionDiscard=[takeActionDirect()];for(const p of state.players){p.grid=[];p.extras=[];p.actions=[];p.ownTurn=0;for(let i=0;i<12;i++)p.grid.push(takePlayDirect())}state.setupPlayer=0;state.setupRevealed=0;state.currentPlayer=0;ui={mode:'setupReveal',data:{},selected:[]};log(`Runde ${state.round} beginnt.`);save();render()}
 function takePlayDirect(){return state.playDeck.pop()}
 function takeActionDirect(){return state.actionDeck.pop()}
-function selectCard(pi,zone,idx){if(!state)return;const p=state.players[pi],card=zone==='grid'?p.grid[idx]:p.extras[idx];if(!card)return;
+function selectCard(pi,zone,idx){if(!state)return;if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return;}const p=state.players[pi],card=zone==='grid'?p.grid[idx]:p.extras[idx];if(!card)return;
  if(ui.mode==='setupReveal'){if(pi!==state.setupPlayer||zone!=='grid'||card.faceUp)return;card.faceUp=true;state.setupRevealed++;let stars=jokerFunctionEnabled()&&card.type==='star'?1:0;log(`${p.name} deckt eine Startkarte auf.`);if(stars){queueStar(stars,'setupContinue',state.setupPlayer);return}setupContinue();return}
  if(ui.mode==='discardSwap'){if(pi!==state.currentPlayer)return;swapInDrawn(pi,zone,idx,ui.data.card,'discard');return}
  if(ui.mode==='drawnSwap'){if(pi!==state.currentPlayer)return;swapInDrawn(pi,zone,idx,ui.data.card,'deck');return}
@@ -308,16 +707,16 @@ function selectCard(pi,zone,idx){if(!state)return;const p=state.players[pi],card
 }
 function toggleSelection(x){const key=`${x.pi}:${x.zone}:${x.idx}`;const i=ui.selected.findIndex(s=>`${s.pi}:${s.zone}:${s.idx}`===key);if(i>=0)ui.selected.splice(i,1);else ui.selected.push(x);render()}
 function setupContinue(){if(state.setupRevealed<2){save();render();return}state.setupPlayer++;state.setupRevealed=0;if(state.setupPlayer<state.players.length){toast(`${state.players[state.setupPlayer].name}: Decke 2 Karten auf`);save();render();return}const sums=state.players.map(p=>p.grid.filter(c=>c&&c.faceUp).reduce((s,c)=>s+cardPoints(c),0));const max=Math.max(...sums),ties=sums.map((v,i)=>v===max?i:-1).filter(i=>i>=0);if(state.round===1){state.startPlayer=ties[Math.floor(Math.random()*ties.length)];state.currentPlayer=state.startPlayer;log(`${current().name} beginnt mit ${max} Startpunkten.`);}else{state.currentPlayer=state.startPlayer??0;log(`${current().name} beginnt als Beender der vorherigen Runde.`);}state.phase='play';startTurn();}
-function startTurn(){state.turnNo++;current().ownTurn++;ui={mode:'turnChoice',data:{},selected:[]};save();render();toast(`${current().name} ist am Zug`)}
+function startTurn(){state.turnNo++;current().ownTurn++;ui={mode:'turnChoice',data:{},selected:[]};save();render();toast(`${current().name} ist am Zug`);visualFx('turn',`${current().name} ist am Zug`,'🎯',6)}
 function actionAvailable(a,p){return p.ownTurn>=a.availableOwnTurn}
-function drawFromDiscard(){if(ui.mode!=='turnChoice')return;const c=state.playDiscard.pop();if(!c)return;ui={mode:'discardSwap',data:{card:c},selected:[]};render();toast('Wähle eine eigene Karte zum Tauschen')}
-function drawFromDeck(){if(ui.mode!=='turnChoice')return;const c=takePlay();if(!c){toast('Keine Spielkarte verfügbar');return}ui={mode:'drawnDecision',data:{card:c},selected:[]};showDrawnDecision(c)}
-function showDrawnDecision(c){modal(`<h3>${current().name}: Gezogene Karte</h3><p>Nur der aktuelle Spieler sollte diese Karte ansehen.</p><div style="display:flex;justify-content:center;margin:14px">${cardHTML(c,true,false)}</div><div class="modal-actions"><button class="primary" onclick="Game.keepDrawn()">Behalten & tauschen</button><button class="secondary" onclick="Game.discardDrawn()">Ablegen & Karte aufdecken</button></div>`,false)}
+function drawFromDiscard(){if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}if(ui.mode!=='turnChoice')return;const c=state.playDiscard.pop();if(!c)return;ui={mode:'discardSwap',data:{card:c},selected:[]};render();toast('Wähle eine eigene Karte zum Tauschen')}
+function drawFromDeck(){if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}if(ui.mode!=='turnChoice')return;const c=takePlay();if(!c){toast('Keine Spielkarte verfügbar');return}ui={mode:'drawnDecision',data:{card:c},selected:[]};showDrawnDecision(c)}
+function showDrawnDecision(c){modal(`<h3>🎴 ${current().name}: Gezogene Karte</h3><p>Nur der aktuelle Spieler sollte diese Karte ansehen.</p><div class="drawn-stage">${cardHTML(c,true,false)}</div><div class="modal-actions"><button class="primary" onclick="Game.keepDrawn()">✨ Behalten & tauschen</button><button class="secondary" onclick="Game.discardDrawn()">🂠 Ablegen & Karte aufdecken</button></div>`,false)}
 function keepDrawn(){closeModal();ui={mode:'drawnSwap',data:{card:ui.data.card},selected:[]};render();toast('Wähle eine eigene Karte zum Ersetzen')}
 function discardDrawn(){const c=ui.data.card;closeModal();c.faceUp=true;state.playDiscard.push(c);ui={mode:'flipOwn',data:{cont:'finishTurn'},selected:[]};render();toast('Decke jetzt eine verdeckte eigene Karte auf')}
 function swapInDrawn(pi,zone,idx,newCard,source,remaining){const p=state.players[pi],arr=zone==='grid'?p.grid:p.extras;const old=arr[idx];arr[idx]=newCard;newCard.faceUp=true;old.faceUp=true;state.playDiscard.push(old);log(`${p.name} tauscht eine Karte.`);let star=0;if(jokerFunctionEnabled()&&newCard.type==='star'&&(source==='discard'||source==='deck'||source==='draw3'))star=1;if(remaining&&remaining.length){for(const x of remaining){x.faceUp=true;state.playDiscard.push(x)}}if(star){queueStar(star,'finishTurn');return}afterMutation('finishTurn')}
-function takeActionMarket(i,fromStar=false){const a=state.market[i];if(!a)return;state.market[i]=null;refillMarket();const owner=fromStar?ui.data.owners[ui.data.ownerIndex]:state.currentPlayer;giveAction(owner,a);log(`${state.players[owner].name} nimmt „${ACTIONS[a.type].name}“${fromStar?' durch einen Stern':''}.`);if(fromStar){starChoiceDone();}else finishTurn();}
-function takeActionBlind(fromStar=false){const a=takeActionDeck();if(!a){toast('Keine Aktionskarte verfügbar');return}const owner=fromStar?ui.data.owners[ui.data.ownerIndex]:state.currentPlayer;giveAction(owner,a);log(`${state.players[owner].name} zieht eine verdeckte Aktionskarte${fromStar?' durch einen Stern':''}.`);if(fromStar){starChoiceDone()}else finishTurn()}
+function takeActionMarket(i,fromStar=false){const a=state.market[i];if(!a)return;state.market[i]=null;refillMarket();const owner=fromStar?ui.data.owners[ui.data.ownerIndex]:state.currentPlayer;giveAction(owner,a);visualFx('action',ACTIONS[a.type].name,ACTIONS[a.type].icon,7);log(`${state.players[owner].name} nimmt „${ACTIONS[a.type].name}“${fromStar?' durch einen Stern':''}.`);if(fromStar){starChoiceDone();}else finishTurn();}
+function takeActionBlind(fromStar=false){const a=takeActionDeck();if(!a){toast('Keine Aktionskarte verfügbar');return}const owner=fromStar?ui.data.owners[ui.data.ownerIndex]:state.currentPlayer;giveAction(owner,a);visualFx('action','Verdeckte Aktionskarte','⚡',6);log(`${state.players[owner].name} zieht eine verdeckte Aktionskarte${fromStar?' durch einen Stern':''}.`);if(fromStar){starChoiceDone()}else finishTurn()}
 function giveAction(pi,a){const p=state.players[pi];a.availableOwnTurn=p.ownTurn+1;p.actions.push(a);save()}
 function chooseActionTurn(){ui={mode:'chooseActionTurn',data:{},selected:[]};render()}
 function playOrDiscardAction(pi,idx){if(pi!==state.currentPlayer||ui.mode!=='chooseActionTurn')return;const p=current(),a=p.actions[idx];if(!a)return;if(!actionAvailable(a,p)){toast('Diese Aktionskarte ist noch gesperrt.');return}if(state.roundEnder!==null){toast('In der Schlussrunde dürfen Aktionskarten nicht gespielt oder abgelegt werden.');return}modal(`<h3>${ACTIONS[a.type].icon} ${ACTIONS[a.type].name}</h3><p>${ACTIONS[a.type].desc}</p><div class="modal-actions"><button class="primary" onclick="Game.confirmPlayAction(${idx})">Ausspielen</button><button class="secondary" onclick="Game.confirmDiscardAction(${idx})">Nur ablegen</button><button onclick="Game.closeModal()">Abbrechen</button></div>`)}
@@ -360,7 +759,7 @@ function meteorChoose(zone,idx){const pi=ui.data.target,p=state.players[pi];let 
 function meteorStarReturn(){const attacker=ui.data.attacker!==undefined?ui.data.attacker:null;meteorNext(attacker)}
 function meteorNext(){const d=ui.data;d.index++;if(d.index>=d.targets.length){afterMutation('finishTurn');return}d.target=d.targets[d.index];render();toast(`☄️ Wähle eine Karte bei ${state.players[d.target].name}`)}
 function queueStar(count,continuation,owner=state.currentPlayer){queueStarOwners(Array.from({length:count},()=>owner),continuation)}
-function queueStarOwners(owners,continuation){ui={mode:'starChoice',data:{owners,ownerIndex:0,continuation,meteorData:ui.mode==='meteorSelect'?clone(ui.data):null},selected:[]};showStarChoice()}
+function queueStarOwners(owners,continuation){visualFx('star','Joker-Stern aktiviert!','⭐',14);ui={mode:'starChoice',data:{owners,ownerIndex:0,continuation,meteorData:ui.mode==='meteorSelect'?clone(ui.data):null},selected:[]};showStarChoice()}
 function showStarChoice(){const owner=ui.data.owners[ui.data.ownerIndex];modal(`<h3>⭐ Sternkarte!</h3><p>${escapeHTML(state.players[owner].name)} darf sofort eine Aktionskarte nehmen. Wähle eine offene Karte oder ziehe verdeckt.</p><div class="market">${state.market.map((a,i)=>a?`<div onclick="Game.takeActionMarket(${i},true)">${actionHTML(a,true)}</div>`:'').join('')}</div><div class="modal-actions"><button class="primary" onclick="Game.takeActionBlind(true)">🎴 Verdeckt ziehen</button></div>`,false)}
 function starChoiceDone(){ui.data.ownerIndex++;if(ui.data.ownerIndex<ui.data.owners.length){showStarChoice();return}const cont=ui.data.continuation,meteorData=ui.data.meteorData;closeModal();if(cont==='setupContinue'){ui={mode:'setupReveal',data:{},selected:[]};setupContinue();return}if(cont==='meteorStarReturn'){const old=meteorData;if(old){ui={mode:'meteorSelect',data:old,selected:[]};state.currentPlayer=old.attacker;}meteorNext();return}afterMutation(cont||'finishTurn')}
 function afterMutation(cont){checkRoundTrigger();resolveMatches(state.currentPlayer,cont)}
@@ -378,33 +777,35 @@ function scorePrepare(pi){if(pi>=state.players.length){finishScoring();return}co
 function scoreNextPlayer(){const next=(ui.data.index??state.currentPlayer)+1;ui={mode:'scoringResolve',data:{index:next},selected:[]};scorePrepare(next)}
 function bestStarBonus(p){if(!jokerFunctionEnabled())return 0;const groups=[];for(let r=0;r<3;r++){const idx=[r*4,r*4+1,r*4+2,r*4+3].filter(i=>p.grid[i]);if(idx.length>=3&&idx.every(i=>p.grid[i].type==='star'))groups.push({idx,bonus:idx.length===4?-15:-10})}for(let c=0;c<4;c++){const idx=[c,c+4,c+8].filter(i=>p.grid[i]);if(idx.length===3&&idx.every(i=>p.grid[i].type==='star'))groups.push({idx,bonus:-10})}let best=0;function dfs(i,used,sum){if(i===groups.length){if(sum<best)best=sum;return}dfs(i+1,used,sum);const g=groups[i];if(g.idx.every(x=>!used.has(x))){const n=new Set(used);g.idx.forEach(x=>n.add(x));dfs(i+1,n,sum+g.bonus)}}dfs(0,new Set(),0);return best}
 function rawRoundScore(p){let s=0;for(const c of p.grid)if(c)s+=cardPoints(c);for(const c of p.extras)if(c)s+=cardPoints(c);s+=p.actions.length*10;s+=bestStarBonus(p);return s}
-function finishScoring(){const scores=state.players.map(rawRoundScore);const e=state.roundEnder;let final=scores.slice();if(e!==null&&scores[e]>0){const min=Math.min(...scores.filter((_,i)=>i!==e));if(min<=scores[e])final[e]=scores[e]*2}state.players.forEach((p,i)=>{p.lastRound=final[i];p.total+=final[i]});const rows=state.players.map((p,i)=>`<div class="choice"><b>${escapeHTML(p.name)}</b><small>Runde: ${final[i]}${final[i]!==scores[i]?` (verdoppelt aus ${scores[i]})`:''} · Gesamt: ${p.total}</small></div>`).join('');const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';save();const winner=[...state.players].sort((a,b)=>a.total-b.total)[0];modal(`<h3>${ended?'🏆 Spielende':'📊 Rundenwertung'}</h3><div class="choice-grid">${rows}</div>${ended?`<p><b>${escapeHTML(winner.name)}</b> hat mit ${winner.total} Punkten den niedrigsten Gesamtstand.</p>`:`<p>Die nächste Runde startet der Spieler, der diese Runde beendet hat.</p>`}<div class="modal-actions"><button class="primary" onclick="${ended?'Game.closeModal();Game.render()':'Game.nextRound()'}">${ended?'Ergebnis ansehen':'Nächste Runde'}</button></div>`,false);render()}
+function finishScoring(){const scores=state.players.map(rawRoundScore);const e=state.roundEnder;let final=scores.slice();if(e!==null&&scores[e]>0){const min=Math.min(...scores.filter((_,i)=>i!==e));if(min<=scores[e])final[e]=scores[e]*2}state.players.forEach((p,i)=>{p.lastRound=final[i];p.total+=final[i]});const rows=state.players.map((p,i)=>`<div class="choice"><b>${escapeHTML(p.name)}</b><small>Runde: ${final[i]}${final[i]!==scores[i]?` (verdoppelt aus ${scores[i]})`:''} · Gesamt: ${p.total}</small></div>`).join('');const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';save();const winner=[...state.players].sort((a,b)=>a.total-b.total)[0];visualFx(ended?'win':'action',ended?`${winner.name} gewinnt!`:'Runde beendet',ended?'🏆':'📊',ended?18:8);modal(`<h3>${ended?'🏆 Spielende':'📊 Rundenwertung'}</h3><div class="choice-grid">${rows}</div>${ended?`<p><b>${escapeHTML(winner.name)}</b> hat mit ${winner.total} Punkten den niedrigsten Gesamtstand.</p>`:`<p>Die nächste Runde startet der Spieler, der diese Runde beendet hat.</p>`}<div class="modal-actions"><button class="primary" onclick="${ended?'Game.closeModal();Game.render()':'Game.nextRound()'}">${ended?'Ergebnis ansehen':'Nächste Runde'}</button></div>`,false);render()}
 function nextRound(){closeModal();state.round++;state.startPlayer=state.roundEnder??0;beginRound()}
 function modal(html,closable=true){const back=$('#modalBack'),m=$('#modal');m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');back.classList.add('show')}
 function closeModal(){const b=$('#modalBack');if(b)b.classList.remove('show')}
 function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>Wer mit den zwei Startkarten die höchste Summe hat, beginnt. Bei Gleichstand entscheidet diese digitale Fassung zufällig.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne zählen 0 Punkte und können am Zugende freiwillig kurz den Wert einer Zahl in derselben kompletten Reihe/Spalte annehmen.</li><li>Reine Stern-Gruppen dürfen abgelegt werden, müssen aber nicht. Am Rundenende bringt eine vollständige 3er-Sterngruppe −10, eine waagerechte 4er-Sterngruppe −15; jeder Stern wird nur einmal für einen Bonus gezählt.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden am Zugende abgelegt – auch Minuszahlen. Dadurch kann nach dem Entfernen einer ganzen Spalte auch eine waagerechte 3er-Reihe entstehen. Kombinationen, die nur mit Sternen möglich sind, sind freiwillig.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, hat jeder andere Spieler noch genau einen Zug. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle Karten aufgedeckt und gewertet.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Funktion AUS“ lässt die Karten im Deck, deaktiviert aber Stern-Sondereffekt, Wildcard-Reihen und Sternbonus.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
 function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
 async function restart(){if(confirm('Aktuelles Spiel wirklich löschen und neu starten?')){localStorage.removeItem(SAVE_KEY);if(cloud.enabled&&cloud.room)await resetCloudRoom();state=null;ui={mode:'none',data:{},selected:[]};render()}}
-function setupView(){const cfgRoom=escapeHTML(cloud.room||'');return `<div class="panel hero"><div class="brandmark" style="margin:auto"></div><h2>SKYJO</h2><p>Fan-Umsetzung mit lokalem Spielstand oder synchronisiertem Firebase-Raum.</p><div class="setup-grid"><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div class="field"><label>Einsteiger-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="15"><div class="joker-off-note">Standard: 15. Mit 0 werden keine Jokerkarten ins Deck gemischt.</div></div><div class="field"><label>Joker-Funktion</label><div class="toggle-box"><span><b>Stern/Joker-Sondereffekt</b><div class="joker-off-note">AUS = Karten bleiben im Deck, aber kein Wildcard-Match, keine Gratis-Aktionskarte und kein Sternbonus.</div></span><input id="jokerEnabled" type="checkbox" checked></div></div><div class="field"><label>Spielstand</label><select id="cloudMode" onchange="Game.toggleCloudFields()"><option value="local" ${cloud.enabled?'':'selected'}>Nur lokal</option><option value="cloud" ${cloud.enabled?'selected':''}>Firebase-Raum synchronisieren</option></select></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="cloud-row"><div class="field"><label>Firebase-Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. SKY01"></div><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Code</button><button class="secondary" onclick="Game.loadCloudRoom()">☁ Raum laden</button></div><div class="cloud-info">Der Spielstand wird über deinen vorhandenen Render-Server in Firestore gespeichert. Geräte im selben Raum aktualisieren sich automatisch.</div></div><div class="setup-separator"></div><div id="names" class="names"></div><button class="primary wide" onclick="Game.startFromSetup()">Spiel starten</button><p class="hint">Pass-and-Play · 2–8 Spieler · Browser-Sicherung + optional Firebase</p></div>`}
-function updateNames(){const n=Number($('#playerCount').value),box=$('#names');if(!box)return;const previous=[...document.querySelectorAll('.pname')].map(x=>x.value);box.innerHTML=Array.from({length:n},(_,i)=>`<div class="field"><label>Spieler ${i+1}</label><input class="pname" value="${escapeHTML(previous[i]||`Spieler ${i+1}`)}"></div>`).join('')}
-async function startFromSetup(){const names=[...document.querySelectorAll('.pname')].map((x,i)=>x.value.trim()||`Spieler ${i+1}`),target=Math.max(20,Number($('#target').value)||100),beginner=$('#beginner').value==='1',jokerCount=Math.max(0,Math.min(30,Math.floor(Number($('#jokerCount').value)||0))),jokerEnabled=!!$('#jokerEnabled').checked;const mode=$('#cloudMode')?.value||'local';cloud.enabled=mode==='cloud';if(cloud.enabled){cloud.room=normalizeCloudRoom($('#cloudRoom')?.value||cloud.room);if(!cloud.room){toast('Bitte Firebase-Raumcode eingeben');return}cloudConfigSave();const existing=await fetchCloudRoom(cloud.room);if(existing?.found&&existing.state){const ok=confirm(`Im Raum ${cloud.room} existiert bereits ein Spiel.\n\nOK = vorhandenes Spiel laden\nAbbrechen = neues Spiel überschreibt den Raum`);if(ok){applyCloudState(existing.state,existing.rev||0);startCloudPolling();return}cloud.rev=Number(existing.rev)||0}else cloud.rev=0;startCloudPolling()}else{cloud.room='';cloud.rev=0;cloudConfigSave()}startGame(names,target,beginner,jokerCount,jokerEnabled)}
+function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');return `<div class="panel hero"><div class="brandmark" style="margin:auto"></div><h2>SKYJO</h2><p>Lokal auf einem Gerät oder echter Online-Mehrspieler mit einem Gerät pro Spieler.</p><div class="setup-grid"><div class="field"><label>Spielmodus</label><select id="cloudMode" onchange="Game.toggleCloudFields()"><option value="local" ${cloud.enabled?'':'selected'}>Lokal / Pass-and-Play</option><option value="cloud" ${cloud.enabled?'selected':''}>Online – mehrere Geräte</option></select></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div class="field"><label>Einsteiger-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="15"><div class="joker-off-note">Standard: 15.</div></div><div class="field"><label>Joker-Funktion</label><div class="toggle-box"><span><b>Stern/Joker-Sondereffekt</b><div class="joker-off-note">AUS = Karte bleibt im Deck, aber ohne Sonderfunktion.</div></span><input id="jokerEnabled" type="checkbox" checked></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken. Das Spiel startet erst, wenn mindestens 2 Spieler in der Lobby sind.</div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div><button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div></div>`}
+function updateNames(){const pc=$('#playerCount'),box=$('#names');if(!pc||!box)return;const n=Number(pc.value),previous=[...document.querySelectorAll('.pname')].map(x=>x.value);box.innerHTML=Array.from({length:n},(_,i)=>`<div class="field"><label>Spieler ${i+1}</label><input class="pname" value="${escapeHTML(previous[i]||`Spieler ${i+1}`)}"></div>`).join('')}
+function lobbyView(){const d=cloud.doc,l=d.lobby,set=l.settings||{},me=myPlayerIndex(),host=isHostDevice();const players=l.players.map((p,i)=>`<div class="player-slot ${i===me?'me':''}"><div class="num">${i+1}</div><div class="who"><b>${escapeHTML(p.name)}${i===me?'<span class="you-tag">DU</span>':''}</b><small>${p.id===l.hostId?'Host':'Mitspieler'}</small></div><div>${p.id===l.hostId?'👑':'✓'}</div></div>`).join('');return `<div class="panel lobby-card"><div class="lobby-head"><div><h2 style="margin:0">Online-Lobby · ${escapeHTML(cloud.room)}</h2><p class="hint">${l.players.length}/8 Spieler verbunden</p></div><button onclick="Game.leaveOnlineRoom()">← Lobby verlassen</button></div><div class="player-list">${players}</div><div class="lobby-settings"><div class="setting-chip"><small>Ziel</small><b>${Number(set.target)||100} Punkte</b></div><div class="setting-chip"><small>Jokerkarten</small><b>${Number.isInteger(set.jokerCount)?set.jokerCount:15}</b></div><div class="setting-chip"><small>Joker-Funktion</small><b>${set.jokerEnabled===false?'AUS':'AN'}</b></div></div><div class="setup-separator"></div>${host?(l.players.length>=2?'<button class="primary wide" onclick="Game.startOnlineGame()">🎮 Online-Spiel starten</button>':'<div class="waiting-note">Warte auf mindestens einen weiteren Spieler …</div>'):'<div class="waiting-note">Host startet das Spiel, sobald alle bereit sind …</div>'}</div>`}
+async function startFromSetup(){if($('#cloudMode')?.value==='cloud'){toast('Online bitte „Raum erstellen“ oder „Beitreten“ verwenden');return}const names=[...document.querySelectorAll('.pname')].map((x,i)=>x.value.trim()||`Spieler ${i+1}`),target=Math.max(20,Number($('#target').value)||100),beginner=$('#beginner').value==='1',jokerCount=Math.max(0,Math.min(30,Math.floor(Number($('#jokerCount').value)||0))),jokerEnabled=!!$('#jokerEnabled').checked;cloud.enabled=false;cloud.room='';cloud.doc=null;cloud.rev=0;cloudConfigSave();startGame(names,target,beginner,jokerCount,jokerEnabled)}
+
 function cardClass(c){if(!c)return'empty';if(!c.faceUp)return'back';if(c.type==='star')return'star';if(c.value<0)return'neg';if(c.value===0)return'zero';if(c.value<=4)return'low';if(c.value<=8)return'mid';return'high'}
 function cardHTML(c,forceFace=false,clickable=false,selected=false){if(!c)return`<div class="card empty"></div>`;const face=forceFace||c.faceUp,cls=face?(c.type==='star'?'star':c.value<0?'neg':c.value===0?'zero':c.value<=4?'low':c.value<=8?'mid':'high'):'back';const v=face?(c.type==='star'?'★':c.value):'';const off=(face&&c.type==='star'&&!jokerFunctionEnabled())?'joker-off':'';return `<div class="card ${cls} ${off} ${clickable?'clickable':''} ${selected?'selected':''}">${face?`<span class="corner tl">${v}</span><span class="center-value">${v}</span><span class="corner br">${v}</span>`:''}</div>`}
-function actionHTML(a,clickable=false,selected=false){if(!a)return'';const m=ACTIONS[a.type],locked=state&&state.players[state.currentPlayer]&&state.players[state.currentPlayer].actions.includes(a)&&!actionAvailable(a,state.players[state.currentPlayer]);return `<div class="action-card ${m.kind==='attack'?'attack':m.kind==='defense'?'defense':''} ${clickable?'clickable':''} ${selected?'selected':''} ${locked?'disabled':''}"><div class="emoji">${m.icon}</div><b>${m.name}</b><small>${m.desc}</small>${locked?'<span class="lock">🔒</span>':''}</div>`}
-function boardCardClickable(pi,zone,idx){if(!state)return false;const mode=ui.mode;if(mode==='setupReveal')return pi===state.setupPlayer&&zone==='grid';if(['discardSwap','drawnSwap','flipOwn','ownSwapSelect','draw3Target'].includes(mode))return pi===state.currentPlayer;if(mode==='otherSwapSelect')return pi===ui.data.a||pi===ui.data.b;if(mode==='meteorSelect')return pi===ui.data.target;return false}
+function actionHTML(a,clickable=false,selected=false){if(!a)return'';const m=ACTIONS[a.type],locked=state&&state.players[state.currentPlayer]&&state.players[state.currentPlayer].actions.includes(a)&&!actionAvailable(a,state.players[state.currentPlayer]);const kindLabel=m.kind==='attack'?'ANGRIFF':m.kind==='defense'?'SCHUTZ':'AKTION';return `<div class="action-card ${m.kind==='attack'?'attack':m.kind==='defense'?'defense':''} ${clickable?'clickable':''} ${selected?'selected':''} ${locked?'disabled':''}"><span class="action-type">${kindLabel}</span><div class="emoji">${m.icon}</div><b>${m.name}</b><small>${m.desc}</small>${locked?'<span class="lock">🔒</span>':''}</div>`}
+function boardCardClickable(pi,zone,idx){if(!state)return false;if(cloud.enabled&&!isMyActorDevice())return false;const mode=ui.mode;if(mode==='setupReveal')return pi===state.setupPlayer&&zone==='grid';if(['discardSwap','drawnSwap','flipOwn','ownSwapSelect','draw3Target'].includes(mode))return pi===state.currentPlayer;if(mode==='otherSwapSelect')return pi===ui.data.a||pi===ui.data.b;if(mode==='meteorSelect')return pi===ui.data.target;return false}
 function isSelected(pi,zone,idx){return ui.selected.some(s=>s.pi===pi&&s.zone===zone&&s.idx===idx)}
-function playerHTML(p,pi){const active=pi===state.currentPlayer;const cards=p.grid.map((c,i)=>`<div onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');return `<section class="player ${active?'active':''}"><div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div><div class="player-name">${escapeHTML(p.name)} ${active?'· am Zug':''}</div><div class="hint">${totalHidden(p)} verdeckt · ${p.actions.length} Aktionen</div></div></div><div class="scorechip">Gesamt ${p.total}</div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${p.actions.length?`<div class="actions-owned">${acts}</div>`:''}</section>`}
-function instructionText(){if(!state)return'';const p=current();switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return `${p.name}: Wähle genau eine Aktion`;case'discardSwap':return `${p.name}: Ablagekarte muss getauscht werden`;case'drawnSwap':return `${p.name}: Gezogene Karte in die eigene Auslage tauschen`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
-function bottomButtons(){if(!state||state.phase==='gameOver')return'';if(ui.mode==='turnChoice')return `<button class="primary" onclick="Game.drawFromDeck()">🎴 Spielkarte ziehen</button><button onclick="Game.drawFromDiscard()">🂠 Ablage nehmen</button><button onclick="Game.chooseActionTurn()">⚡ Aktionskarte spielen/ablegen</button><button onclick="Game.takeActionBlind(false)">⚡ Aktion verdeckt ziehen</button>${state.market.map((a,i)=>a?`<button onclick="Game.takeActionMarket(${i},false)">${ACTIONS[a.type].icon} ${ACTIONS[a.type].name}</button>`:'').join('')}`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
-function gameView(){const topDiscard=state.playDiscard[state.playDiscard.length-1];return `<div class="status"><div class="stat"><b>${state.round}</b><span>Runde</span></div><div class="stat"><b>${escapeHTML(current().name)}</b><span>${state.phase==='scoring'?'Wertung':'am Zug'}</span></div><div class="stat"><b>${state.playDeck.length}</b><span>Spielkarten</span></div><div class="stat"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat"><b>${state.jokerCount??15} · ${jokerFunctionEnabled()?'AN':'AUS'}</b><span>Jokerkarten · Funktion</span></div></div><div class="table-area"><section class="panel center-table"><div class="pilebox"><h4>Spielkarten</h4><div class="pile-row"><div>${cardHTML({type:'number',value:0,faceUp:false},false,false)}</div><div>${cardHTML(topDiscard,true,false)}</div></div><div class="count">Nachziehstapel ${state.playDeck.length} · Ablage ${state.playDiscard.length}</div></div><div class="pilebox"><h4>Aktionskarten-Auslage</h4><div class="market">${state.market.map(a=>a?actionHTML(a,false):'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div></section><div class="players">${state.players.map(playerHTML).join('')}</div><section class="panel"><h3>Letzte Ereignisse</h3><div class="log">${state.log.slice(0,8).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div></section></div><div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div></div></div>`}
-function render(){const app=$('#app');let content;if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><small>private Fan-Umsetzung</small></div></div><div class="top-actions">${cloudBadgeHTML()}<button class="iconbtn" onclick="Game.showRules()">📖 Regeln</button>${state?'<button class="iconbtn" onclick="Game.showLog()">🧾</button><button class="iconbtn" onclick="Game.restart()">↻</button>':''}</div></div>${content}`;if(!state)setTimeout(()=>{updateNames();toggleCloudFields()},0);save()}
+function playerHTML(p,pi){const active=pi===state.currentPlayer;const cards=p.grid.map((c,i)=>`<div onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');return `<section class="player ${active?'active':''}"><div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div><div class="player-name">${escapeHTML(p.name)} ${cloud.enabled&&pi===myPlayerIndex()?'<span class="you-tag">DU</span>':''} ${active?'· 🎯 am Zug':''}</div><div class="hint">${totalHidden(p)} verdeckt · ${p.actions.length} Aktionen</div></div></div><div class="scorechip">Gesamt ${p.total}</div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${p.actions.length?`<div class="actions-owned">${acts}</div>`:''}</section>`}
+function instructionText(){if(!state)return'';const p=current();if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return `${p.name}: Wähle genau eine Aktion`;case'discardSwap':return `${p.name}: Ablagekarte muss getauscht werden`;case'drawnSwap':return `${p.name}: Gezogene Karte in die eigene Auslage tauschen`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
+function bottomButtons(){if(!state||state.phase==='gameOver')return'';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice')return `<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button><button onclick="Game.drawFromDiscard()">🂠 Ablage</button><button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion spielen</button><button onclick="Game.takeActionBlind(false)">⚡ Aktion verdeckt</button>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
+function gameView(){const topDiscard=state.playDiscard[state.playDiscard.length-1];const canDirect=ui.mode==='turnChoice'&&(!cloud.enabled||isMyActorDevice());const mp=cloud.enabled?`<div class="multiplayer-bar"><b>☁ Raum ${escapeHTML(cloud.room)} · ${escapeHTML(cloud.myName||'Spieler')}</b><span>${isMyActorDevice()?'🟢 Du bist dran':'⏳ Warten'}</span></div>`:'';const deckClick=canDirect?'onclick="Game.drawFromDeck()" role="button" tabindex="0"':'';const discardClick=canDirect&&topDiscard?'onclick="Game.drawFromDiscard()" role="button" tabindex="0"':'';return `${mp}<div class="status"><div class="stat"><b>${state.round}</b><span>Runde</span></div><div class="stat"><b>${escapeHTML(current().name)}</b><span>${state.phase==='scoring'?'Wertung':'am Zug'}</span></div><div class="stat"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat"><b>${state.jokerCount??15} · ${jokerFunctionEnabled()?'AN':'AUS'}</b><span>Joker</span></div></div><div class="table-area"><section class="panel center-table"><div class="pilebox"><h4>Spielkarten · direkt antippen</h4><div class="pile-row"><div class="pile-card-hit ${canDirect?'enabled':''}" ${deckClick}>${cardHTML({type:'number',value:0,faceUp:false},false,canDirect)}<span class="pile-tip">${canDirect?'Ziehen':'Nachziehstapel'}</span></div><div class="pile-card-hit ${discardClick?'enabled':''}" ${discardClick}>${cardHTML(topDiscard,true,!!discardClick)}<span class="pile-tip">${discardClick?'Nehmen':'Ablage'}</span></div></div><div class="count">${state.playDeck.length} im Stapel · ${state.playDiscard.length} auf Ablage</div></div><div class="pilebox"><h4>Aktionskarten-Auslage · antippen zum Nehmen</h4><div class="market">${state.market.map((a,i)=>a?`<div class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}${canDirect?' · verdeckt über Button unten':''}</div></div></section><div class="players players-${state.players.length}">${state.players.map(playerHTML).join('')}</div></div><div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div></div></div>`}
+function render(){const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><small>Cinematic Table · Multiplayer</small></div></div><div class="top-actions">${cloudBadgeHTML()}<button class="iconbtn" onclick="Game.showRules()">📖 Regeln</button>${state?'<button class="iconbtn" onclick="Game.showLog()">🧾</button><button class="iconbtn" onclick="Game.restart()">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields()},0);if(state)save()}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
-window.Game={render,updateNames,startFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields};
+window.Game={render,updateNames,startFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom};
 cloudConfigLoad();
-const saved=load();if(saved){state=saved;if(state.phase==='play')ui={mode:'turnChoice',data:{},selected:[]};else if(state.phase==='initialReveal')ui={mode:'setupReveal',data:{},selected:[]};else if(state.phase==='betweenRounds'||state.phase==='gameOver')ui={mode:'none',data:{},selected:[]};else ui={mode:'turnChoice',data:{},selected:[]};}
+const saved=!cloud.enabled?load():null;if(saved){state=saved;if(state.phase==='play')ui={mode:'turnChoice',data:{},selected:[]};else if(state.phase==='initialReveal')ui={mode:'setupReveal',data:{},selected:[]};else if(state.phase==='betweenRounds'||state.phase==='gameOver')ui={mode:'none',data:{},selected:[]};else ui={mode:'turnChoice',data:{},selected:[]};}
 render();
-if(cloud.enabled&&cloud.room){(async()=>{const j=await fetchCloudRoom();if(j?.found&&j.state)applyCloudState(j.state,j.rev||0);startCloudPolling()})()}
+if(cloud.enabled&&cloud.room){restoreOnlineRoom()}
 })();
 </script>
 </body>
