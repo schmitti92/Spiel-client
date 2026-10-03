@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>SKYJO Action – Fan-Umsetzung</title>
+<style>
+:root{
+  --bg:#f5f3ec; --panel:#ffffff; --ink:#1f2933; --muted:#667085; --line:#d9d5ca;
+  --accent:#7c3aed; --accent2:#f59e0b; --good:#138a5b; --bad:#c2414d; --shadow:0 12px 32px rgba(31,41,51,.13);
+  --card-w:clamp(54px,15vw,88px); --card-h:calc(var(--card-w)*1.34);
+}
+*{box-sizing:border-box} html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#faf8f3,#f0ede4);color:var(--ink)}
+button,input,select{font:inherit} button{cursor:pointer}
+.app{max-width:1180px;margin:auto;padding:12px 12px calc(110px + env(safe-area-inset-bottom))}
+.topbar{position:sticky;top:0;z-index:20;margin:-12px -12px 12px;padding:10px 12px;background:rgba(250,248,243,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}.brandmark{width:34px;height:34px;border-radius:10px;background:conic-gradient(#fbbf24,#ef4444,#8b5cf6,#3b82f6,#10b981,#fbbf24);box-shadow:inset 0 0 0 4px #fff}.brand h1{font-size:17px;margin:0;white-space:nowrap}.brand small{display:block;color:var(--muted);font-size:11px}
+.top-actions{display:flex;gap:6px}.iconbtn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;color:var(--ink)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin:12px 0}.panel h2,.panel h3{margin-top:0}
+.hero{text-align:center;padding:26px 16px}.hero h2{font-size:clamp(26px,8vw,44px);margin:4px 0 6px}.hero p{color:var(--muted);max-width:720px;margin:0 auto 18px}
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;text-align:left}.field{display:flex;flex-direction:column;gap:6px}.field label{font-weight:700;font-size:13px}.field input,.field select{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;color:var(--ink)}
+.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:12px 0}.primary,.secondary,.danger{border:0;border-radius:13px;padding:12px 16px;font-weight:800}.primary{background:var(--accent);color:#fff}.secondary{background:#ede9fe;color:#5b21b6}.danger{background:#fee2e2;color:#991b1b}.wide{width:100%}.hint{font-size:12px;color:var(--muted)}
+.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px 10px;text-align:center}.stat b{display:block;font-size:16px}.stat span{font-size:11px;color:var(--muted)}
+.table-area{display:grid;grid-template-columns:1fr;gap:12px}.center-table{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}.pilebox{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;text-align:center}.pilebox h4{margin:0 0 8px;font-size:12px;color:var(--muted)}
+.pile-row{display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap}.count{font-size:11px;color:var(--muted)}
+.card{width:var(--card-w);height:var(--card-h);border-radius:12px;border:2px solid rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;position:relative;font-weight:900;font-size:clamp(20px,6vw,34px);box-shadow:0 5px 12px rgba(0,0,0,.12);user-select:none;transition:transform .12s,box-shadow .12s,outline .12s;background:#fff;color:#1f2933}
+.card.clickable:hover,.card.clickable:active{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.18)}.card.selected{outline:4px solid #7c3aed;outline-offset:2px}.card.disabled{opacity:.45;filter:grayscale(.2)}
+.card.back{background:linear-gradient(135deg,#312e81,#6d28d9 55%,#ec4899);color:#fff}.card.back:after{content:"✦";font-size:34px;opacity:.9}.card.star{background:conic-gradient(from 15deg,#fde047,#fb7185,#a78bfa,#60a5fa,#34d399,#fde047);color:#fff;text-shadow:0 2px 3px rgba(0,0,0,.35)}.card.neg{background:#dbeafe;color:#1e3a8a}.card.zero{background:#e0f2fe;color:#075985}.card.low{background:#dcfce7;color:#166534}.card.mid{background:#fef3c7;color:#92400e}.card.high{background:#fee2e2;color:#991b1b}.card.empty{border:2px dashed #c9c4b7;background:#faf9f5;color:#c0b9a8;box-shadow:none}.card.empty:after{content:"—"}
+.card .mini{position:absolute;top:5px;left:7px;font-size:10px;font-weight:800;opacity:.75}.card .lock{position:absolute;right:5px;top:4px;font-size:12px}.card .tag{position:absolute;bottom:4px;left:4px;right:4px;font-size:8px;font-weight:800;line-height:1.1;background:rgba(255,255,255,.82);border-radius:6px;padding:3px;color:#2f2350}
+.action-card{width:clamp(78px,22vw,118px);min-height:108px;border-radius:14px;border:2px solid #dbb6ef;background:linear-gradient(145deg,#fff1fb,#f3e8ff);padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 5px 12px rgba(92,42,120,.13);position:relative}.action-card.clickable:hover,.action-card.clickable:active{transform:translateY(-2px)}.action-card .emoji{font-size:28px}.action-card b{font-size:11px}.action-card small{font-size:9px;color:#70527c}.action-card.attack{background:linear-gradient(145deg,#fff1f2,#fae8ff);border-color:#f0a4b5}.action-card.defense{background:linear-gradient(145deg,#ecfeff,#e0f2fe);border-color:#7dd3fc}.action-card.disabled{opacity:.45}.action-card.selected{outline:4px solid var(--accent);outline-offset:2px}
+.market{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}.market .action-card{flex:0 0 auto}
+.players{display:grid;gap:12px}.player{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 8px 20px rgba(31,41,51,.08)}.player.active{border:2px solid #7c3aed;box-shadow:0 0 0 3px #ede9fe,0 10px 24px rgba(91,33,182,.13)}.player-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.player-title{display:flex;align-items:center;gap:8px}.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:#ede9fe;color:#5b21b6}.player-name{font-weight:900}.scorechip{font-size:12px;border-radius:999px;padding:5px 8px;background:#f3f4f6}.gridwrap{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(4,var(--card-w));gap:6px}.extras{min-width:120px;max-width:100%;}.extras h5{margin:0 0 6px;font-size:11px;color:var(--muted)}.extra-row{display:flex;gap:6px;flex-wrap:wrap}.actions-owned{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.bottom-actions{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:9px 10px calc(9px + env(safe-area-inset-bottom));box-shadow:0 -10px 25px rgba(31,41,51,.1)}.bottom-inner{max-width:1180px;margin:auto}.instruction{text-align:center;font-weight:800;font-size:13px;margin-bottom:7px}.action-buttons{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}.action-buttons button{flex:1 0 auto;min-width:112px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 11px;font-weight:800}.action-buttons button.primary{background:var(--accent);border-color:var(--accent);color:#fff}.action-buttons button:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:60;background:#1f2933;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);max-width:90vw;font-size:13px;display:none}.toast.show{display:block;animation:fade 2.4s both}@keyframes fade{0%{opacity:0;transform:translate(-50%,-8px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.modal-back{position:fixed;inset:0;z-index:80;background:rgba(17,24,39,.55);display:none;align-items:flex-end;justify-content:center;padding:12px}.modal-back.show{display:flex}.modal{width:min(680px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:22px 22px 16px 16px;padding:18px;box-shadow:0 25px 70px rgba(0,0,0,.3)}.modal h3{margin:0 0 8px}.modal p{color:var(--muted);font-size:13px}.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.modal-actions button{flex:1 1 140px}.choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.choice{border:1px solid var(--line);border-radius:13px;padding:10px;background:#fff;text-align:left}.choice b{display:block}.choice small{color:var(--muted)}
+.rules{font-size:14px;line-height:1.55}.rules h4{margin:16px 0 5px}.rules ul{padding-left:20px}.rules .note{padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #e5e7eb}.rules code{font-family:inherit;font-weight:800}
+.log{font-size:12px;color:#4b5563;max-height:160px;overflow:auto;background:#fafafa;border:1px solid #eee;border-radius:12px;padding:8px}.log div{padding:3px 0;border-bottom:1px dotted #e5e7eb}.log div:last-child{border:0}
+@media(min-width:760px){.center-table{grid-template-columns:1fr 2fr}.players{grid-template-columns:repeat(2,minmax(0,1fr))}.player.active{grid-column:1/-1}.modal-back{align-items:center}.modal{border-radius:22px}.status{grid-template-columns:repeat(4,minmax(120px,1fr))}}
+@media(max-width:480px){.app{padding-left:7px;padding-right:7px}.topbar{margin-left:-7px;margin-right:-7px}.brand small{display:none}.iconbtn{padding:7px 8px}.panel{border-radius:15px;padding:12px}.player{padding:9px}.grid{gap:4px}.status{gap:5px}.stat{padding:7px 4px}.stat b{font-size:14px}.stat span{font-size:9px}}
+
+
+/* ==========================================================
+   VISUAL UPDATE v2.0 – premium table / card redesign
+   ========================================================== */
+:root{
+  --bg:#071a1d;
+  --panel:#10272a;
+  --ink:#f7fbfb;
+  --muted:#9fb4b5;
+  --line:rgba(255,255,255,.12);
+  --accent:#ffcb3d;
+  --accent2:#ff7d38;
+  --good:#36d399;
+  --bad:#ff6674;
+  --shadow:0 18px 50px rgba(0,0,0,.34);
+  --card-w:clamp(58px,15vw,92px);
+  --card-h:calc(var(--card-w)*1.38);
+}
+html,body{
+  background:
+    radial-gradient(circle at 16% -10%,rgba(76,222,205,.16),transparent 28%),
+    radial-gradient(circle at 90% 2%,rgba(255,203,61,.12),transparent 24%),
+    linear-gradient(145deg,#061416 0%,#0b2528 48%,#07191c 100%);
+  color:var(--ink);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;z-index:-1;
+  background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 5px);
+  mix-blend-mode:soft-light;
+}
+.app{max-width:1240px;padding-top:14px}
+.topbar{
+  top:8px;margin:0 0 14px;padding:10px 12px;border:1px solid rgba(255,255,255,.11);
+  border-radius:18px;background:rgba(5,23,25,.78);backdrop-filter:blur(16px) saturate(135%);
+  box-shadow:0 12px 34px rgba(0,0,0,.26);
+}
+.brand{gap:10px}.brandmark{
+  width:39px;height:39px;border-radius:12px;
+  background:conic-gradient(from 10deg,#ffd84e,#ff8451,#ff5b74,#9d6cff,#45b7ff,#43dfb3,#ffd84e);
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.95),0 7px 18px rgba(0,0,0,.28);
+  transform:rotate(-4deg);
+}
+.brand h1{font-size:18px;letter-spacing:.3px}.brand small{color:#8fa8aa}
+.iconbtn{
+  border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.05));
+  color:#fff;border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.iconbtn:hover{background:rgba(255,255,255,.13)}
+.panel{
+  background:linear-gradient(180deg,rgba(20,49,52,.94),rgba(12,36,39,.96));
+  border:1px solid rgba(255,255,255,.11);border-radius:22px;box-shadow:var(--shadow);
+}
+.hero{position:relative;overflow:hidden;padding:34px 18px 28px}
+.hero:before,.hero:after{content:"";position:absolute;border-radius:999px;filter:blur(4px);pointer-events:none}
+.hero:before{width:260px;height:260px;right:-120px;top:-120px;background:rgba(255,203,61,.10)}
+.hero:after{width:220px;height:220px;left:-120px;bottom:-150px;background:rgba(61,219,198,.10)}
+.hero .brandmark{width:72px;height:72px;border-radius:20px;box-shadow:inset 0 0 0 6px white,0 16px 35px rgba(0,0,0,.30)}
+.hero h2{font-weight:950;letter-spacing:-1.8px;text-transform:uppercase;text-shadow:0 5px 22px rgba(0,0,0,.35)}
+.hero h2:after{content:" ACTION";color:var(--accent)}
+.hero p{color:#abc1c2}
+.field label{color:#dce8e8}.field input,.field select{
+  background:#0a2023;border:1px solid rgba(255,255,255,.13);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)
+}
+.field input:focus,.field select:focus{outline:3px solid rgba(255,203,61,.18);border-color:rgba(255,203,61,.55)}
+.primary,.secondary,.danger{border-radius:14px;min-height:44px;transition:transform .12s,filter .12s,box-shadow .12s}
+.primary{background:linear-gradient(135deg,#ffd84e,#ffad2f);color:#2b2107;box-shadow:0 9px 24px rgba(255,182,47,.22)}
+.primary:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.secondary{background:rgba(108,92,231,.20);color:#ddd7ff;border:1px solid rgba(169,157,255,.25)}
+.danger{background:rgba(255,102,116,.14);color:#ffc1c7;border:1px solid rgba(255,102,116,.24)}
+.hint,.count,.action-card small,.choice small{color:var(--muted)}
+.status{gap:10px}.stat{
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+  border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.16)
+}
+.stat b{font-size:18px;color:#fff}.stat span{color:#8fa7a9}
+.center-table{
+  position:relative;background:
+    radial-gradient(circle at 50% 35%,rgba(53,160,146,.16),transparent 44%),
+    linear-gradient(180deg,rgba(11,53,54,.97),rgba(8,38,40,.98));
+  border-color:rgba(95,224,207,.13)
+}
+.center-table:after{content:"SPIELTISCH";position:absolute;right:16px;bottom:10px;font-size:10px;font-weight:900;letter-spacing:2.2px;color:rgba(255,255,255,.10)}
+.pilebox{
+  background:rgba(4,23,25,.34);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:13px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)
+}
+.pilebox h4{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#9db3b4}
+.card{
+  border-radius:15px;border:1px solid rgba(255,255,255,.36);
+  box-shadow:0 8px 0 rgba(0,0,0,.19),0 12px 20px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.65);
+  overflow:hidden;transform:translateZ(0);font-weight:950;letter-spacing:-1px;
+}
+.card:before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.38),transparent 36%,rgba(0,0,0,.06));pointer-events:none}
+.card:after{position:absolute}
+.card.clickable{cursor:pointer}.card.clickable:hover{transform:translateY(-4px) rotate(-.5deg);box-shadow:0 10px 0 rgba(0,0,0,.17),0 18px 28px rgba(0,0,0,.30)}
+.card.selected{outline:4px solid #ffe36c;outline-offset:3px;filter:brightness(1.07)}
+.card.back{
+  border-color:rgba(255,255,255,.22);
+  background:
+    radial-gradient(circle at 30% 25%,rgba(255,255,255,.18) 0 2px,transparent 3px),
+    radial-gradient(circle at 70% 75%,rgba(255,255,255,.12) 0 2px,transparent 3px),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.045) 0 6px,transparent 6px 12px),
+    linear-gradient(145deg,#4f2a96,#1d5b98 54%,#0e8b78);
+}
+.card.back:after{content:"✦";font-size:40px;color:#fff;opacity:.9;text-shadow:0 3px 12px rgba(0,0,0,.35)}
+.card.star{background:conic-gradient(from 10deg,#ffd84e,#ff7b66,#b96cff,#5aa8ff,#4cdbb3,#ffd84e);color:white;text-shadow:0 3px 8px rgba(0,0,0,.33)}
+.card.neg{background:linear-gradient(145deg,#bde1ff,#7fc2f4);color:#103969}
+.card.zero{background:linear-gradient(145deg,#a7efff,#59d6ef);color:#075263}
+.card.low{background:linear-gradient(145deg,#c7f5bd,#78d98e);color:#175b2b}
+.card.mid{background:linear-gradient(145deg,#ffe991,#ffc95f);color:#704008}
+.card.high{background:linear-gradient(145deg,#ffb0b7,#f16d7c);color:#731522}
+.card.empty{background:rgba(255,255,255,.025);border:2px dashed rgba(255,255,255,.16);color:rgba(255,255,255,.20);box-shadow:none}
+.card.empty:before{display:none}.card.empty:after{content:"+";font-size:28px;color:rgba(255,255,255,.18)}
+.card .corner{position:absolute;z-index:2;font-size:11px;line-height:1;font-weight:950;letter-spacing:-.4px;color:currentColor;text-shadow:none}
+.card .corner.tl{left:7px;top:7px}.card .corner.br{right:7px;bottom:7px;transform:rotate(180deg)}
+.card .center-value{position:relative;z-index:1;font-size:1em}
+.action-card{
+  width:clamp(84px,22vw,124px);min-height:116px;border-radius:18px;
+  border:1px solid rgba(255,255,255,.22);padding:10px 8px;
+  background:
+    radial-gradient(circle at 20% 15%,rgba(255,255,255,.22),transparent 30%),
+    linear-gradient(150deg,#7b4bc0,#483a91 55%,#2a3974);
+  color:#fff;box-shadow:0 8px 0 rgba(0,0,0,.17),0 15px 28px rgba(0,0,0,.19);overflow:hidden;
+  transition:transform .13s,box-shadow .13s,filter .13s;
+}
+.action-card:before{content:"ACTION";position:absolute;top:6px;right:-19px;transform:rotate(38deg);font-size:7px;font-weight:950;letter-spacing:1.5px;color:rgba(255,255,255,.22)}
+.action-card .emoji{font-size:31px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.23));margin-bottom:3px}.action-card b{font-size:11px;line-height:1.15}.action-card small{font-size:8.8px;color:rgba(255,255,255,.72);line-height:1.2;margin-top:4px}
+.action-card.attack{background:radial-gradient(circle at 15% 15%,rgba(255,255,255,.20),transparent 28%),linear-gradient(145deg,#c53f68,#86315c 54%,#472958);border-color:rgba(255,172,190,.35)}
+.action-card.defense{background:radial-gradient(circle at 15% 15%,rgba(255,255,255,.22),transparent 28%),linear-gradient(145deg,#2e98b7,#226f98 55%,#29466f);border-color:rgba(151,231,255,.40)}
+.action-card.clickable:hover{transform:translateY(-4px) rotate(.4deg);box-shadow:0 9px 0 rgba(0,0,0,.15),0 18px 30px rgba(0,0,0,.26)}
+.action-card.selected{outline:4px solid #ffe36c;outline-offset:3px}.action-card.disabled{opacity:.42;filter:grayscale(.4)}
+.players{gap:14px}.player{
+  position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(18,48,51,.97),rgba(10,32,35,.98));
+  border:1px solid rgba(255,255,255,.10);border-radius:22px;padding:14px;box-shadow:0 14px 34px rgba(0,0,0,.23)
+}
+.player:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:rgba(255,255,255,.08)}
+.player.active{border:1px solid rgba(255,222,103,.64);box-shadow:0 0 0 3px rgba(255,203,61,.09),0 18px 42px rgba(0,0,0,.32)}
+.player.active:before{background:linear-gradient(#ffd84e,#ff9d3c);box-shadow:0 0 18px rgba(255,203,61,.45)}
+.player-head{margin-bottom:11px}.avatar{
+  width:34px;height:34px;background:linear-gradient(145deg,#ffdc58,#ffad34);color:#2a2108;border:2px solid rgba(255,255,255,.55);
+  box-shadow:0 5px 13px rgba(0,0,0,.20)
+}
+.player-name{font-size:15px}.scorechip{background:rgba(255,255,255,.07);color:#dce9e9;border:1px solid rgba(255,255,255,.09);padding:6px 9px}
+.actions-owned{border-top-color:rgba(255,255,255,.10)}
+.bottom-actions{
+  background:rgba(5,23,25,.90);border-top:1px solid rgba(255,255,255,.11);backdrop-filter:blur(16px) saturate(135%);
+  box-shadow:0 -12px 34px rgba(0,0,0,.27)
+}
+.instruction{color:#fff;font-size:13px}.action-buttons button{
+  border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.07);color:#fff;border-radius:13px;min-height:43px
+}
+.action-buttons button:hover{background:rgba(255,255,255,.11)}
+.action-buttons button.primary{background:linear-gradient(135deg,#ffd84e,#ffad2f);border-color:#ffd04a;color:#2a2108}
+.modal-back{background:rgba(0,10,12,.68);backdrop-filter:blur(7px)}
+.modal{
+  background:linear-gradient(180deg,#17383b,#0d292c);color:#fff;border:1px solid rgba(255,255,255,.13);box-shadow:0 30px 80px rgba(0,0,0,.50)
+}
+.modal p{color:#a9bfc0}.choice{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.10);color:#fff}.choice:hover{background:rgba(255,255,255,.09)}
+.rules .note{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.10)}
+.log{background:rgba(0,0,0,.15);border-color:rgba(255,255,255,.09);color:#b9cecf}.log div{border-bottom-color:rgba(255,255,255,.08)}
+.toast{top:82px;background:#fff;color:#12282a;border:1px solid rgba(0,0,0,.06);box-shadow:0 14px 36px rgba(0,0,0,.30);font-weight:800}
+@media(min-width:760px){
+  .players{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .player.active{grid-column:1/-1}
+  .center-table{grid-template-columns:minmax(230px,.72fr) minmax(0,1.55fr)}
+}
+@media(max-width:620px){
+  :root{--card-w:clamp(58px,21.2vw,82px)}
+  .topbar{top:5px;border-radius:15px}.brand h1{font-size:16px}.top-actions{gap:4px}.iconbtn{font-size:12px;padding:7px 8px}
+  .status{grid-template-columns:repeat(2,1fr)}
+  .center-table{grid-template-columns:1fr}.panel{border-radius:18px}.player{border-radius:18px}
+  .grid{width:100%;grid-template-columns:repeat(4,minmax(0,var(--card-w)));justify-content:center;gap:5px}
+  .gridwrap{justify-content:center}.market{margin-left:-2px;margin-right:-2px}
+  .action-card{min-height:108px}
+}
+
+
+/* V3: Joker-Regeln + Firebase/Cloud-Sync */
+.setup-separator{height:1px;background:rgba(255,255,255,.12);margin:14px 0}
+.toggle-box{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.78)}
+.toggle-box input{width:22px;height:22px;accent-color:var(--accent)}
+.cloud-row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.cloud-row .field{flex:1 1 180px}.cloud-row button{flex:0 0 auto}
+.cloud-info{margin-top:8px;padding:9px 11px;border:1px solid rgba(125,211,252,.35);background:rgba(14,116,144,.08);border-radius:12px;font-size:12px;color:var(--muted)}
+.cloud-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.07);font-size:11px;font-weight:900;color:#fff;white-space:nowrap}
+.cloud-pill.online:before{content:"";width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 10px rgba(74,222,128,.75)}
+.cloud-pill.local:before{content:"";width:7px;height:7px;border-radius:50%;background:#94a3b8}
+.joker-off-note{font-size:11px;color:var(--muted);margin-top:5px}.card.star.joker-off{filter:saturate(.45);box-shadow:inset 0 0 0 3px rgba(255,255,255,.28),0 7px 18px rgba(0,0,0,.20)}
+@media(max-width:640px){.cloud-row{align-items:stretch}.cloud-row button{flex:1 1 120px}.cloud-pill{padding:6px 8px;font-size:10px}}
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+<div id="toast" class="toast"></div>
+<div id="modalBack" class="modal-back"><div id="modal" class="modal"></div></div>
+<script>
+(() => {
+'use strict';
+const SAVE_KEY='skyjo_action_fan_v1';
+const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
+const CLOUD_BASE='https://spiel-server.onrender.com';
+let cloud={enabled:false,room:'',rev:0,inFlight:false,pending:false,pendingJSON:'',lastPushedJSON:'',applying:false,pollTimer:null,lastStatus:'local'};
+const ACTIONS={
+ ownswap:{name:'Eigene Karten tauschen',icon:'🔀',kind:'normal',desc:'Zwei eigene Karten tauschen; Ausrichtung neu wählen.'},
+ double:{name:'Doppelter Spielzug',icon:'⏩',kind:'normal',desc:'Danach zwei vollständige Züge hintereinander.'},
+ draw3:{name:'Drei Karten ziehen',icon:'3️⃣',kind:'normal',desc:'Drei ziehen, höchstens eine behalten.'},
+ enlight:{name:'Erleuchtung',icon:'🔎',kind:'normal',desc:'Eine komplette Reihe oder Spalte geheim ansehen.'},
+ react:{name:'Reaktivierung',icon:'♻️',kind:'normal',desc:'Eine Aktionskarte aus der Ablage sofort erneut spielen.'},
+ defense:{name:'Verteidigung',icon:'🛡️',kind:'defense',desc:'Blockt einen Angriff; aktiv gespielt = Extrazug.'},
+ swapother:{name:'Kartentausch Mitspieler',icon:'🔁',kind:'attack',desc:'Eine Karte zwischen zwei Spielern tauschen.'},
+ thief:{name:'Aktionskarten-Dieb',icon:'🥷',kind:'attack',desc:'Aktionskarte stehlen + Extrazug.'},
+ meteor:{name:'Meteoritenschauer',icon:'☄️',kind:'attack',desc:'Bei jedem Mitspieler eine Karte ersetzen.'}
+};
+let state=null;
+let ui={mode:'none',data:{},selected:[]};
+const $=s=>document.querySelector(s);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function log(msg){if(!state)return; state.log.unshift(msg);state.log=state.log.slice(0,50);save();}
+function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');}
+function normalizeCloudRoom(v){return String(v||'').trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,20)}
+function randomCloudRoom(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<5;i++)out+=a[Math.floor(Math.random()*a.length)];return out}
+function cloudConfigSave(){try{localStorage.setItem(CLOUD_CFG_KEY,JSON.stringify({enabled:!!cloud.enabled,room:cloud.room||''}))}catch(_e){}}
+function cloudConfigLoad(){try{const x=JSON.parse(localStorage.getItem(CLOUD_CFG_KEY)||'null');if(x){cloud.enabled=!!x.enabled;cloud.room=normalizeCloudRoom(x.room)}}catch(_e){}const q=new URLSearchParams(location.search);const qr=normalizeCloudRoom(q.get('room'));if(qr){cloud.enabled=true;cloud.room=qr}}
+function migrateState(x){if(!x||x.version!==1)return null;if(!Number.isInteger(x.jokerCount))x.jokerCount=15;if(typeof x.jokerEnabled!=='boolean')x.jokerEnabled=true;return x}
+function save(){try{if(state){const raw=JSON.stringify(state);localStorage.setItem(SAVE_KEY,raw);if(cloud.enabled&&!cloud.applying)scheduleCloudPush(raw)}}catch(e){}}
+function load(){try{return migrateState(JSON.parse(localStorage.getItem(SAVE_KEY)))}catch(e){}return null}
+function jokerFunctionEnabled(){return !state||state.jokerEnabled!==false}
+function cloudBadgeHTML(){if(!cloud.enabled||!cloud.room)return '<span class="cloud-pill local">Lokal</span>';return `<span class="cloud-pill online">☁ ${escapeHTML(cloud.room)}</span>`}
+function scheduleCloudPush(raw){if(!cloud.enabled||!cloud.room||!state)return;if(raw===cloud.lastPushedJSON)return;cloud.pending=true;cloud.pendingJSON=raw;if(cloud.inFlight)return;setTimeout(flushCloudPush,120)}
+async function flushCloudPush(){if(cloud.inFlight||!cloud.pending||!cloud.enabled||!cloud.room)return;cloud.inFlight=true;cloud.pending=false;const raw=cloud.pendingJSON||JSON.stringify(state);try{const r=await fetch(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:JSON.parse(raw),baseRev:cloud.rev})});const j=await r.json().catch(()=>null);if(r.status===409&&j?.state){applyCloudState(j.state,j.rev||0);toast('Cloud war neuer – aktueller Stand wurde geladen');}else if(!r.ok||!j?.ok){throw new Error(j?.error||`HTTP ${r.status}`)}else{cloud.rev=Number(j.rev)||cloud.rev;cloud.lastPushedJSON=raw;cloud.lastStatus='online';cloudConfigSave()}}catch(e){cloud.lastStatus='error';console.warn('[skyjo cloud push]',e)}finally{cloud.inFlight=false;if(cloud.pending)setTimeout(flushCloudPush,80)}}
+async function fetchCloudRoom(room=cloud.room){const rc=normalizeCloudRoom(room);if(!rc)return null;try{const r=await fetch(`${CLOUD_BASE}/skyjo/${encodeURIComponent(rc)}`,{cache:'no-store'});const j=await r.json().catch(()=>null);if(!r.ok||!j?.ok)throw new Error(j?.error||`HTTP ${r.status}`);return j}catch(e){console.warn('[skyjo cloud load]',e);return null}}
+function applyCloudState(remote,rev){const x=migrateState(clone(remote));if(!x)return false;cloud.applying=true;state=x;cloud.rev=Number(rev)||0;const raw=JSON.stringify(state);cloud.lastPushedJSON=raw;try{localStorage.setItem(SAVE_KEY,raw)}catch(_e){}if(state.phase==='play')ui={mode:'turnChoice',data:{},selected:[]};else if(state.phase==='initialReveal')ui={mode:'setupReveal',data:{},selected:[]};else if(state.phase==='betweenRounds'||state.phase==='gameOver')ui={mode:'none',data:{},selected:[]};else ui={mode:'turnChoice',data:{},selected:[]};cloud.applying=false;render();return true}
+async function loadCloudRoom(){const input=$('#cloudRoom');const rc=normalizeCloudRoom(input?.value||cloud.room);if(!rc){toast('Bitte Raumcode eingeben');return}cloud.enabled=true;cloud.room=rc;cloudConfigSave();if(input)input.value=rc;toast('Cloud-Raum wird geladen …');const j=await fetchCloudRoom(rc);if(j?.found&&j.state){applyCloudState(j.state,j.rev||0);startCloudPolling();toast(`Raum ${rc} geladen`)}else if(j?.ok){cloud.rev=0;cloud.lastPushedJSON='';startCloudPolling();toast(`Raum ${rc} ist noch leer – starte ein neues Spiel`)}else toast('Cloud-Raum konnte nicht geladen werden')}
+function generateCloudRoom(){const input=$('#cloudRoom');const rc=randomCloudRoom();if(input)input.value=rc;cloud.room=rc;cloud.enabled=true;cloudConfigSave();toggleCloudFields();toast(`Raumcode ${rc} erstellt`)}
+function toggleCloudFields(){const sel=$('#cloudMode'),box=$('#cloudBox');if(!sel||!box)return;const on=sel.value==='cloud';box.style.display=on?'block':'none';cloud.enabled=on;if(on){const inp=$('#cloudRoom');if(inp&&!inp.value)inp.value=cloud.room||randomCloudRoom();cloud.room=normalizeCloudRoom(inp?.value||cloud.room)}cloudConfigSave()}
+function startCloudPolling(){if(cloud.pollTimer)clearInterval(cloud.pollTimer);if(!cloud.enabled||!cloud.room)return;cloud.pollTimer=setInterval(async()=>{if(cloud.inFlight||cloud.pending)return;const j=await fetchCloudRoom();if(j?.found&&j.state&&Number(j.rev||0)>Number(cloud.rev||0)){applyCloudState(j.state,j.rev||0);toast('☁ Spielstand synchronisiert')}},1400)}
+async function resetCloudRoom(){if(!cloud.enabled||!cloud.room)return;try{await fetch(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reset`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});cloud.rev=0;cloud.lastPushedJSON=''}catch(_e){}}
+
+function newCard(type,value=null){return {id:uid(),type,value,faceUp:false}}
+function makePlayDeck(jokerCount=15){let d=[];for(let i=0;i<3;i++)d.push(newCard('number',-2));for(let i=0;i<11;i++)d.push(newCard('number',0));for(const v of [-1,1,2,3,4,5,6,7,8,9,10,11,12])for(let i=0;i<7;i++)d.push(newCard('number',v));const jc=Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0)));for(let i=0;i<jc;i++)d.push(newCard('star'));return shuffle(d)}
+function newAction(type){return {id:uid(),type,availableOwnTurn:0,stolen:false}}
+function makeActionDeck(beginner){let d=[];for(const t of Object.keys(ACTIONS)){if(beginner&&(t==='thief'||t==='meteor'))continue;for(let i=0;i<3;i++)d.push(newAction(t))}return shuffle(d)}
+function takePlay(){if(!state.playDeck.length){if(state.playDiscard.length<=1)return null;const top=state.playDiscard.pop();state.playDeck=shuffle(state.playDiscard.splice(0));state.playDiscard=[top];log('Der Spielkarten-Ablagestapel wurde neu gemischt.')}return state.playDeck.pop()||null}
+function takeActionDeck(){if(!state.actionDeck.length){if(state.actionDiscard.length<=1)return null;const top=state.actionDiscard.pop();state.actionDeck=shuffle(state.actionDiscard.splice(0));state.actionDiscard=[top];log('Der Aktionskarten-Ablagestapel wurde neu gemischt.')}return state.actionDeck.pop()||null}
+function refillMarket(){for(let i=0;i<4;i++)if(!state.market[i])state.market[i]=takeActionDeck();}
+function current(){return state.players[state.currentPlayer]}
+function visibleValue(card){return card.type==='star'?'★':card.value}
+function cardPoints(card){return card.type==='star'?0:Number(card.value||0)}
+function totalHidden(p){return p.grid.filter(c=>c&&!c.faceUp).length+p.extras.filter(c=>c&&!c.faceUp).length}
+function hasDefense(pi){return state.players[pi].actions.find(a=>a.type==='defense')}
+function consumeDefense(pi){const p=state.players[pi],idx=p.actions.findIndex(a=>a.type==='defense');if(idx<0)return false;const [a]=p.actions.splice(idx,1);state.actionDiscard.push(a);log(`${p.name}s Verteidigung blockt den Angriff.`);toast(`${p.name}: 🛡️ Angriff abgewehrt`);return true}
+function setupState(names,target,beginner,jokerCount=15,jokerEnabled=true){const playDeck=makePlayDeck(jokerCount),actionDeck=makeActionDeck(beginner);const players=names.map(n=>({name:n,total:0,grid:[],extras:[],actions:[],ownTurn:0,lastRound:0}));for(const p of players){for(let i=0;i<12;i++)p.grid.push(takeFrom(playDeck))}const playDiscard=[takeFrom(playDeck)];playDiscard[0].faceUp=true;const market=[];for(let i=0;i<4;i++)market.push(takeFrom(actionDeck));const actionDiscard=[takeFrom(actionDeck)];return {version:1,phase:'initialReveal',round:1,target,beginner,jokerCount:Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0))),jokerEnabled:!!jokerEnabled,players,playDeck,playDiscard,actionDeck,market,actionDiscard,currentPlayer:0,startPlayer:null,setupPlayer:0,setupRevealed:0,roundEnder:null,finalTurnQueue:[],extraTurns:0,log:[`Neues Spiel gestartet · ${jokerCount} Jokerkarten · Funktion ${jokerEnabled?'AN':'AUS'}.`],turnNo:0,gameOver:false}}
+function takeFrom(a){return a.pop()}
+function startGame(names,target,beginner,jokerCount=15,jokerEnabled=true){state=setupState(names,target,beginner,jokerCount,jokerEnabled);ui={mode:'setupReveal',data:{},selected:[]};save();render();toast(`${state.players[0].name}: Decke 2 Karten auf`)}
+function beginRound(){state.phase='initialReveal';state.roundEnder=null;state.finalTurnQueue=[];state.extraTurns=0;state.playDeck=makePlayDeck(state.jokerCount??15);state.playDiscard=[takePlayDirect()];state.playDiscard[0].faceUp=true;state.actionDeck=makeActionDeck(state.beginner);state.market=[];for(let i=0;i<4;i++)state.market.push(takeActionDirect());state.actionDiscard=[takeActionDirect()];for(const p of state.players){p.grid=[];p.extras=[];p.actions=[];p.ownTurn=0;for(let i=0;i<12;i++)p.grid.push(takePlayDirect())}state.setupPlayer=0;state.setupRevealed=0;state.currentPlayer=0;ui={mode:'setupReveal',data:{},selected:[]};log(`Runde ${state.round} beginnt.`);save();render()}
+function takePlayDirect(){return state.playDeck.pop()}
+function takeActionDirect(){return state.actionDeck.pop()}
+function selectCard(pi,zone,idx){if(!state)return;const p=state.players[pi],card=zone==='grid'?p.grid[idx]:p.extras[idx];if(!card)return;
+ if(ui.mode==='setupReveal'){if(pi!==state.setupPlayer||zone!=='grid'||card.faceUp)return;card.faceUp=true;state.setupRevealed++;let stars=jokerFunctionEnabled()&&card.type==='star'?1:0;log(`${p.name} deckt eine Startkarte auf.`);if(stars){queueStar(stars,'setupContinue',state.setupPlayer);return}setupContinue();return}
+ if(ui.mode==='discardSwap'){if(pi!==state.currentPlayer)return;swapInDrawn(pi,zone,idx,ui.data.card,'discard');return}
+ if(ui.mode==='drawnSwap'){if(pi!==state.currentPlayer)return;swapInDrawn(pi,zone,idx,ui.data.card,'deck');return}
+ if(ui.mode==='flipOwn'){if(pi!==state.currentPlayer||card.faceUp)return;card.faceUp=true;log(`${p.name} deckt eine Karte auf.`);const stars=jokerFunctionEnabled()&&card.type==='star'?1:0;if(stars){queueStar(1,ui.data.cont||'finishTurn');return}afterMutation(ui.data.cont||'finishTurn');return}
+ if(ui.mode==='ownSwapSelect'){if(pi!==state.currentPlayer)return;toggleSelection({pi,zone,idx});if(ui.selected.length===2)ownSwapOrientation();return}
+ if(ui.mode==='otherSwapSelect'){handleOtherSwapSelection(pi,zone,idx);return}
+ if(ui.mode==='meteorSelect'){if(pi!==ui.data.target)return;meteorChoose(zone,idx);return}
+ if(ui.mode==='draw3Target'){if(pi!==state.currentPlayer)return;swapInDrawn(pi,zone,idx,ui.data.card,'draw3',ui.data.remaining);return}
+}
+function toggleSelection(x){const key=`${x.pi}:${x.zone}:${x.idx}`;const i=ui.selected.findIndex(s=>`${s.pi}:${s.zone}:${s.idx}`===key);if(i>=0)ui.selected.splice(i,1);else ui.selected.push(x);render()}
+function setupContinue(){if(state.setupRevealed<2){save();render();return}state.setupPlayer++;state.setupRevealed=0;if(state.setupPlayer<state.players.length){toast(`${state.players[state.setupPlayer].name}: Decke 2 Karten auf`);save();render();return}const sums=state.players.map(p=>p.grid.filter(c=>c&&c.faceUp).reduce((s,c)=>s+cardPoints(c),0));const max=Math.max(...sums),ties=sums.map((v,i)=>v===max?i:-1).filter(i=>i>=0);if(state.round===1){state.startPlayer=ties[Math.floor(Math.random()*ties.length)];state.currentPlayer=state.startPlayer;log(`${current().name} beginnt mit ${max} Startpunkten.`);}else{state.currentPlayer=state.startPlayer??0;log(`${current().name} beginnt als Beender der vorherigen Runde.`);}state.phase='play';startTurn();}
+function startTurn(){state.turnNo++;current().ownTurn++;ui={mode:'turnChoice',data:{},selected:[]};save();render();toast(`${current().name} ist am Zug`)}
+function actionAvailable(a,p){return p.ownTurn>=a.availableOwnTurn}
+function drawFromDiscard(){if(ui.mode!=='turnChoice')return;const c=state.playDiscard.pop();if(!c)return;ui={mode:'discardSwap',data:{card:c},selected:[]};render();toast('Wähle eine eigene Karte zum Tauschen')}
+function drawFromDeck(){if(ui.mode!=='turnChoice')return;const c=takePlay();if(!c){toast('Keine Spielkarte verfügbar');return}ui={mode:'drawnDecision',data:{card:c},selected:[]};showDrawnDecision(c)}
+function showDrawnDecision(c){modal(`<h3>${current().name}: Gezogene Karte</h3><p>Nur der aktuelle Spieler sollte diese Karte ansehen.</p><div style="display:flex;justify-content:center;margin:14px">${cardHTML(c,true,false)}</div><div class="modal-actions"><button class="primary" onclick="Game.keepDrawn()">Behalten & tauschen</button><button class="secondary" onclick="Game.discardDrawn()">Ablegen & Karte aufdecken</button></div>`,false)}
+function keepDrawn(){closeModal();ui={mode:'drawnSwap',data:{card:ui.data.card},selected:[]};render();toast('Wähle eine eigene Karte zum Ersetzen')}
+function discardDrawn(){const c=ui.data.card;closeModal();c.faceUp=true;state.playDiscard.push(c);ui={mode:'flipOwn',data:{cont:'finishTurn'},selected:[]};render();toast('Decke jetzt eine verdeckte eigene Karte auf')}
+function swapInDrawn(pi,zone,idx,newCard,source,remaining){const p=state.players[pi],arr=zone==='grid'?p.grid:p.extras;const old=arr[idx];arr[idx]=newCard;newCard.faceUp=true;old.faceUp=true;state.playDiscard.push(old);log(`${p.name} tauscht eine Karte.`);let star=0;if(jokerFunctionEnabled()&&newCard.type==='star'&&(source==='discard'||source==='deck'||source==='draw3'))star=1;if(remaining&&remaining.length){for(const x of remaining){x.faceUp=true;state.playDiscard.push(x)}}if(star){queueStar(star,'finishTurn');return}afterMutation('finishTurn')}
+function takeActionMarket(i,fromStar=false){const a=state.market[i];if(!a)return;state.market[i]=null;refillMarket();const owner=fromStar?ui.data.owners[ui.data.ownerIndex]:state.currentPlayer;giveAction(owner,a);log(`${state.players[owner].name} nimmt „${ACTIONS[a.type].name}“${fromStar?' durch einen Stern':''}.`);if(fromStar){starChoiceDone();}else finishTurn();}
+function takeActionBlind(fromStar=false){const a=takeActionDeck();if(!a){toast('Keine Aktionskarte verfügbar');return}const owner=fromStar?ui.data.owners[ui.data.ownerIndex]:state.currentPlayer;giveAction(owner,a);log(`${state.players[owner].name} zieht eine verdeckte Aktionskarte${fromStar?' durch einen Stern':''}.`);if(fromStar){starChoiceDone()}else finishTurn()}
+function giveAction(pi,a){const p=state.players[pi];a.availableOwnTurn=p.ownTurn+1;p.actions.push(a);save()}
+function chooseActionTurn(){ui={mode:'chooseActionTurn',data:{},selected:[]};render()}
+function playOrDiscardAction(pi,idx){if(pi!==state.currentPlayer||ui.mode!=='chooseActionTurn')return;const p=current(),a=p.actions[idx];if(!a)return;if(!actionAvailable(a,p)){toast('Diese Aktionskarte ist noch gesperrt.');return}if(state.roundEnder!==null){toast('In der Schlussrunde dürfen Aktionskarten nicht gespielt oder abgelegt werden.');return}modal(`<h3>${ACTIONS[a.type].icon} ${ACTIONS[a.type].name}</h3><p>${ACTIONS[a.type].desc}</p><div class="modal-actions"><button class="primary" onclick="Game.confirmPlayAction(${idx})">Ausspielen</button><button class="secondary" onclick="Game.confirmDiscardAction(${idx})">Nur ablegen</button><button onclick="Game.closeModal()">Abbrechen</button></div>`)}
+function confirmDiscardAction(idx){closeModal();const [a]=current().actions.splice(idx,1);state.actionDiscard.push(a);log(`${current().name} legt „${ACTIONS[a.type].name}“ ungenutzt ab.`);finishTurn()}
+function confirmPlayAction(idx){closeModal();const [a]=current().actions.splice(idx,1);playAction(a,false)}
+function playAction(a,reactivated){const t=a.type;if(t==='react'){state.heldReacts=state.heldReacts||[];state.heldReacts.push(a);}else{state.actionDiscard.push(a);}log(`${current().name} spielt „${ACTIONS[a.type].name}“.`);
+ if(t==='double'){state.extraTurns+=2;finishTurn();return}
+ if(t==='defense'){state.extraTurns+=1;finishTurn();return}
+ if(t==='ownswap'){ui={mode:'ownSwapSelect',data:{},selected:[]};render();toast('Wähle zwei eigene Karten');return}
+ if(t==='draw3'){startDraw3();return}
+ if(t==='enlight'){startEnlightenment();return}
+ if(t==='react'){startReactivation(a.id);return}
+ if(t==='swapother'){startOtherSwap();return}
+ if(t==='thief'){startThief();return}
+ if(t==='meteor'){startMeteor();return}
+ finishTurn();}
+function ownSwapOrientation(){const [a,b]=ui.selected;modal(`<h3>Ausrichtung nach dem Tausch</h3><p>Du darfst beide Karten nach dem Tausch offen oder verdeckt ablegen. Verdeckte Karten werden nicht vorher gezeigt.</p><div class="choice-grid"><label class="choice"><input id="oa" type="checkbox" ${getSlot(a).faceUp?'checked':''}> Karte 1 danach offen</label><label class="choice"><input id="ob" type="checkbox" ${getSlot(b).faceUp?'checked':''}> Karte 2 danach offen</label></div><div class="modal-actions"><button class="primary" onclick="Game.finishOwnSwap()">Tausch durchführen</button></div>`,false)}
+function getSlot(s){const p=state.players[s.pi];return (s.zone==='grid'?p.grid:p.extras)[s.idx]}
+function setSlot(s,c){const p=state.players[s.pi];(s.zone==='grid'?p.grid:p.extras)[s.idx]=c}
+function finishOwnSwap(){const [sa,sb]=ui.selected,ca=getSlot(sa),cb=getSlot(sb),oldA=ca.faceUp,oldB=cb.faceUp;const openA=$('#oa').checked,openB=$('#ob').checked;setSlot(sa,cb);setSlot(sb,ca);cb.faceUp=openA;ca.faceUp=openB;closeModal();let stars=0;if(jokerFunctionEnabled()&&cb.type==='star'&&!oldB&&openA)stars++;if(jokerFunctionEnabled()&&ca.type==='star'&&!oldA&&openB)stars++;ui.selected=[];if(stars){queueStar(stars,'finishTurn');return}afterMutation('finishTurn')}
+function startDraw3(){const cards=[takePlay(),takePlay(),takePlay()].filter(Boolean);ui={mode:'draw3Choose',data:{cards},selected:[]};modal(`<h3>3 Karten ziehen</h3><p>Wähle höchstens eine Karte zum Behalten. Nicht gewählte Karten kommen auf den Ablagestapel.</p><div class="pile-row">${cards.map((c,i)=>`<div onclick="Game.draw3Pick(${i})">${cardHTML(c,true,true)}</div>`).join('')}</div><div class="modal-actions"><button class="secondary" onclick="Game.draw3None()">Keine behalten</button></div>`,false)}
+function draw3Pick(i){const cards=ui.data.cards,c=cards[i],rem=cards.filter((_,j)=>j!==i);closeModal();ui={mode:'draw3Target',data:{card:c,remaining:rem},selected:[]};render();toast('Wähle die eigene Karte, die ersetzt wird')}
+function draw3None(){const cards=ui.data.cards;for(const c of cards){c.faceUp=true;state.playDiscard.push(c)}closeModal();ui={mode:'flipOwn',data:{cont:'finishTurn'},selected:[]};render();toast('Keine behalten: Decke eine eigene verdeckte Karte auf')}
+function startEnlightenment(){const opts=state.players.map((p,i)=>`<option value="${i}">${escapeHTML(p.name)}</option>`).join('');modal(`<h3>🔎 Erleuchtung</h3><p>Wähle einen Spieler und eine vollständige Reihe oder Spalte. Nur der aktuelle Spieler schaut.</p><div class="field"><label>Spieler</label><select id="ep">${opts}</select></div><div class="field" style="margin-top:8px"><label>Linie</label><select id="eline"><option value="r0">Reihe 1</option><option value="r1">Reihe 2</option><option value="r2">Reihe 3</option><option value="c0">Spalte 1</option><option value="c1">Spalte 2</option><option value="c2">Spalte 3</option><option value="c3">Spalte 4</option></select></div><div class="modal-actions"><button class="primary" onclick="Game.showEnlightenment()">Geheim ansehen</button></div>`,false)}
+function lineIndexes(code){const n=Number(code.slice(1));if(code[0]==='r')return [n*4,n*4+1,n*4+2,n*4+3];return [n,n+4,n+8]}
+function showEnlightenment(){const pi=Number($('#ep').value),code=$('#eline').value,p=state.players[pi],idxs=lineIndexes(code);const cards=idxs.map(i=>p.grid[i]).filter(Boolean);modal(`<h3>Nur ${escapeHTML(current().name)} schauen</h3><p>${escapeHTML(p.name)} · ${code[0]==='r'?'Reihe':'Spalte'} ${Number(code.slice(1))+1}</p><div class="pile-row">${cards.map(c=>cardHTML(c,true,false)).join('')}</div><div class="modal-actions"><button class="primary" onclick="Game.finishEnlightenment()">Fertig</button></div>`,false)}
+function finishEnlightenment(){closeModal();finishTurn()}
+function startReactivation(excludeId){const cards=state.actionDiscard.filter(a=>a.id!==excludeId);if(!cards.length){toast('Keine andere Aktionskarte in der Ablage.');finishTurn();return}ui={mode:'reactivate',data:{excludeId},selected:[]};modal(`<h3>♻️ Reaktivierung</h3><p>Wähle eine Aktionskarte aus der Ablage. Sie wird sofort gespielt.</p><div class="choice-grid">${cards.slice().reverse().map(a=>`<button class="choice" onclick="Game.reactivate('${a.id}')"><b>${ACTIONS[a.type].icon} ${ACTIONS[a.type].name}</b><small>${ACTIONS[a.type].desc}</small></button>`).join('')}</div>`,false)}
+function reactivate(id){const idx=state.actionDiscard.findIndex(a=>a.id===id);if(idx<0)return;const [a]=state.actionDiscard.splice(idx,1);closeModal();playAction(a,true)}
+function startOtherSwap(){const other=(state.currentPlayer+1)%state.players.length;const optsA=state.players.map((p,i)=>`<option value="${i}" ${i===state.currentPlayer?'selected':''}>${escapeHTML(p.name)}</option>`).join('');const optsB=state.players.map((p,i)=>`<option value="${i}" ${i===other?'selected':''}>${escapeHTML(p.name)}</option>`).join('');modal(`<h3>🔁 Kartentausch Mitspieler</h3><p>Wähle zwei verschiedene Spieler. Danach jeweils eine Karte aus deren Auslage anklicken.</p><div class="choice-grid"><div class="field"><label>Spieler A</label><select id="spA">${optsA}</select></div><div class="field"><label>Spieler B</label><select id="spB">${optsB}</select></div></div><div class="modal-actions"><button class="primary" onclick="Game.beginOtherSwapSelection()">Weiter</button></div>`,false)}
+function beginOtherSwapSelection(){const a=Number($('#spA').value),b=Number($('#spB').value);if(a===b){toast('Bitte zwei verschiedene Spieler wählen.');return}if((a!==state.currentPlayer&&consumeDefense(a))||(b!==state.currentPlayer&&consumeDefense(b))){closeModal();finishTurn();return}closeModal();ui={mode:'otherSwapSelect',data:{a,b},selected:[]};render();toast(`Wähle je 1 Karte bei ${state.players[a].name} und ${state.players[b].name}`)}
+function handleOtherSwapSelection(pi,zone,idx){if(pi!==ui.data.a&&pi!==ui.data.b)return;const existing=ui.selected.find(s=>s.pi===pi);if(existing){ui.selected=ui.selected.filter(s=>s.pi!==pi)}ui.selected.push({pi,zone,idx});if(ui.selected.length===2&&ui.selected[0].pi!==ui.selected[1].pi){otherSwapOrientation();return}render()}
+function otherSwapOrientation(){const [a,b]=ui.selected;modal(`<h3>Ausrichtung nach dem Tausch</h3><p>Beide Karten dürfen am Ziel offen oder verdeckt abgelegt werden.</p><div class="choice-grid"><label class="choice"><input id="osa" type="checkbox" ${getSlot(a).faceUp?'checked':''}> Karte bei ${escapeHTML(state.players[a.pi].name)} danach offen</label><label class="choice"><input id="osb" type="checkbox" ${getSlot(b).faceUp?'checked':''}> Karte bei ${escapeHTML(state.players[b.pi].name)} danach offen</label></div><div class="modal-actions"><button class="primary" onclick="Game.finishOtherSwap()">Tauschen</button></div>`,false)}
+function finishOtherSwap(){const [sa,sb]=ui.selected,ca=getSlot(sa),cb=getSlot(sb),oldA=ca.faceUp,oldB=cb.faceUp;const openA=$('#osa').checked,openB=$('#osb').checked;setSlot(sa,cb);setSlot(sb,ca);cb.faceUp=openA;ca.faceUp=openB;closeModal();const owners=[];if(jokerFunctionEnabled()&&cb.type==='star'&&!oldB&&openA)owners.push(sa.pi);if(jokerFunctionEnabled()&&ca.type==='star'&&!oldA&&openB)owners.push(sb.pi);ui.selected=[];if(owners.length){queueStarOwners(owners,'finishTurn');return}afterMutation('finishTurn')}
+function startThief(){const options=[];state.players.forEach((p,pi)=>{if(pi===state.currentPlayer)return;p.actions.forEach((a,ai)=>options.push({pi,ai,a}))});if(!options.length){toast('Niemand hat eine Aktionskarte zum Stehlen.');state.extraTurns+=1;finishTurn();return}modal(`<h3>🥷 Aktionskarten-Dieb</h3><p>Wähle eine Aktionskarte eines Mitspielers. Eine Verteidigung blockt den Angriff.</p><div class="choice-grid">${options.map(o=>`<button class="choice" onclick="Game.thiefPick(${o.pi},${o.ai})"><b>${escapeHTML(state.players[o.pi].name)}</b><small>${ACTIONS[o.a.type].icon} ${ACTIONS[o.a.type].name}</small></button>`).join('')}</div>`,false)}
+function thiefPick(pi,ai){closeModal();if(consumeDefense(pi)){state.extraTurns+=1;finishTurn();return}const target=state.players[pi],a=target.actions[ai];if(!a){finishTurn();return}target.actions.splice(ai,1);a.availableOwnTurn=current().ownTurn+2;a.stolen=true;current().actions.push(a);state.extraTurns+=1;log(`${current().name} stiehlt ${state.players[pi].name} „${ACTIONS[a.type].name}“.`);finishTurn()}
+function startMeteor(){const targets=[];for(let k=1;k<state.players.length;k++){const pi=(state.currentPlayer+k)%state.players.length;if(consumeDefense(pi))continue;targets.push(pi)}if(!targets.length){finishTurn();return}ui={mode:'meteorSelect',data:{targets,target:targets[0],index:0,attacker:state.currentPlayer},selected:[]};render();toast(`☄️ Wähle eine Karte bei ${state.players[targets[0]].name}`)}
+function selectActionCard(pi,idx){if(ui.mode==='meteorSelect'&&pi===ui.data.target){meteorChoose('action',idx);return}if(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer){playOrDiscardAction(pi,idx);return}}
+function meteorChoose(zone,idx){const pi=ui.data.target,p=state.players[pi];let replacement=takePlay();if(!replacement){toast('Keine Ersatzkarte verfügbar.');meteorNext();return}replacement.faceUp=true;if(zone==='action'){const old=p.actions[idx];if(!old)return;p.actions.splice(idx,1);state.actionDiscard.push(old);p.extras.push(replacement);log(`☄️ Bei ${p.name} wird eine Aktionskarte entfernt; die Ersatz-Spielkarte liegt als Zusatzkarte aus.`)}else{const arr=zone==='grid'?p.grid:p.extras,old=arr[idx];if(!old)return;old.faceUp=true;state.playDiscard.unshift(old);arr[idx]=replacement;log(`☄️ Bei ${p.name} wird eine Spielkarte ersetzt.`)}let stars=jokerFunctionEnabled()&&replacement.type==='star'?1:0;if(stars){queueStar(1,'meteorStarReturn',pi);return}meteorNext()}
+function meteorStarReturn(){const attacker=ui.data.attacker!==undefined?ui.data.attacker:null;meteorNext(attacker)}
+function meteorNext(){const d=ui.data;d.index++;if(d.index>=d.targets.length){afterMutation('finishTurn');return}d.target=d.targets[d.index];render();toast(`☄️ Wähle eine Karte bei ${state.players[d.target].name}`)}
+function queueStar(count,continuation,owner=state.currentPlayer){queueStarOwners(Array.from({length:count},()=>owner),continuation)}
+function queueStarOwners(owners,continuation){ui={mode:'starChoice',data:{owners,ownerIndex:0,continuation,meteorData:ui.mode==='meteorSelect'?clone(ui.data):null},selected:[]};showStarChoice()}
+function showStarChoice(){const owner=ui.data.owners[ui.data.ownerIndex];modal(`<h3>⭐ Sternkarte!</h3><p>${escapeHTML(state.players[owner].name)} darf sofort eine Aktionskarte nehmen. Wähle eine offene Karte oder ziehe verdeckt.</p><div class="market">${state.market.map((a,i)=>a?`<div onclick="Game.takeActionMarket(${i},true)">${actionHTML(a,true)}</div>`:'').join('')}</div><div class="modal-actions"><button class="primary" onclick="Game.takeActionBlind(true)">🎴 Verdeckt ziehen</button></div>`,false)}
+function starChoiceDone(){ui.data.ownerIndex++;if(ui.data.ownerIndex<ui.data.owners.length){showStarChoice();return}const cont=ui.data.continuation,meteorData=ui.data.meteorData;closeModal();if(cont==='setupContinue'){ui={mode:'setupReveal',data:{},selected:[]};setupContinue();return}if(cont==='meteorStarReturn'){const old=meteorData;if(old){ui={mode:'meteorSelect',data:old,selected:[]};state.currentPlayer=old.attacker;}meteorNext();return}afterMutation(cont||'finishTurn')}
+function afterMutation(cont){checkRoundTrigger();resolveMatches(state.currentPlayer,cont)}
+function findMatches(pi){const p=state.players[pi],groups=[];for(let r=0;r<3;r++){const raw=[r*4,r*4+1,r*4+2,r*4+3],idx=raw.filter(i=>p.grid[i]);if(idx.length>=3)groups.push({name:`Reihe ${r+1}`,idx})}for(let c=0;c<4;c++){const raw=[c,c+4,c+8],idx=raw.filter(i=>p.grid[i]);if(idx.length>=3)groups.push({name:`Spalte ${c+1}`,idx})}const out=[];for(const g of groups){const cards=g.idx.map(i=>p.grid[i]);if(cards.some(c=>!c.faceUp))continue;if(!jokerFunctionEnabled()&&cards.some(c=>c.type==='star'))continue;const nums=[...new Set(cards.filter(c=>c.type==='number').map(c=>c.value))],stars=cards.filter(c=>c.type==='star').length;if(nums.length===1){out.push({...g,optional:stars>0,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`})}else if(nums.length===0&&stars===cards.length&&jokerFunctionEnabled()){out.push({...g,optional:true,pureStars:true,label:`${g.name}: nur Sterne`})}}return out}
+function resolveMatches(pi,cont){const matches=findMatches(pi),mandatory=matches.filter(m=>!m.optional);if(mandatory.length){if(mandatory.length===1){removeMatch(pi,mandatory[0]);resolveMatches(pi,cont);return}ui={mode:'matchChoice',data:{pi,cont,matches:mandatory,optional:false},selected:[]};showMatchChoice();return}const optional=matches.filter(m=>m.optional);if(optional.length){ui={mode:'matchChoice',data:{pi,cont,matches:optional,optional:true},selected:[]};showMatchChoice();return}continueAfter(cont)}
+function showMatchChoice(){const d=ui.data;modal(`<h3>${d.optional?'⭐ Joker-Kombination':'Gleiche Reihe gefunden'}</h3><p>${d.optional?'Mit Sternen ist das Ablegen freiwillig. Du kannst eine Kombination wählen oder die Sterne behalten.':'Eine reine Zahlenreihe muss abgelegt werden. Wähle bei Überschneidungen die Reihenfolge.'}</p><div class="choice-grid">${d.matches.map((m,i)=>`<button class="choice" onclick="Game.chooseMatch(${i})"><b>${escapeHTML(m.label)}</b><small>${m.idx.length} Karten ablegen</small></button>`).join('')}</div>${d.optional?`<div class="modal-actions"><button class="secondary" onclick="Game.skipOptionalMatches()">Keine Stern-Kombination ablegen</button></div>`:''}`,false)}
+function chooseMatch(i){const d=ui.data,m=d.matches[i];closeModal();removeMatch(d.pi,m);resolveMatches(d.pi,d.cont)}
+function skipOptionalMatches(){const cont=ui.data.cont;closeModal();continueAfter(cont)}
+function removeMatch(pi,m){const p=state.players[pi];for(const idx of m.idx){const c=p.grid[idx];if(c){c.faceUp=true;state.playDiscard.push(c);p.grid[idx]=null}}log(`${p.name} legt ${m.label} ab.`)}
+function continueAfter(cont){if(cont==='finishTurn')finishTurn();else if(cont==='scoreNext')scoreNextPlayer();else if(cont==='meteorNext')meteorNext();else if(cont==='setupContinue')setupContinue();else finishTurn()}
+function checkRoundTrigger(){if(state.roundEnder!==null)return;for(let i=0;i<state.players.length;i++){if(totalHidden(state.players[i])===0){state.roundEnder=state.currentPlayer;state.extraTurns=0;const q=[];for(let k=1;k<state.players.length;k++)q.push((state.currentPlayer+k)%state.players.length);state.finalTurnQueue=q;log(`${current().name} beendet die Runde. Alle anderen haben noch genau einen Zug.`);toast('🔔 Schlussrunde!');return}}}
+function finishTurn(){closeModal();if(state.heldReacts&&state.heldReacts.length){state.actionDiscard.push(...state.heldReacts);state.heldReacts=[];}checkRoundTrigger();if(state.roundEnder!==null){state.extraTurns=0;if(state.finalTurnQueue.length){state.currentPlayer=state.finalTurnQueue.shift();startTurn();return}startScoring();return}if(state.extraTurns>0){state.extraTurns--;startTurn();return}state.currentPlayer=(state.currentPlayer+1)%state.players.length;startTurn()}
+function startScoring(){state.phase='scoring';ui={mode:'scoring',data:{index:0},selected:[]};scorePrepare(0)}
+function scorePrepare(pi){if(pi>=state.players.length){finishScoring();return}const p=state.players[pi];for(const c of p.grid)if(c)c.faceUp=true;for(const c of p.extras)if(c)c.faceUp=true;state.currentPlayer=pi;ui={mode:'scoringResolve',data:{index:pi},selected:[]};resolveMatches(pi,'scoreNext');render()}
+function scoreNextPlayer(){const next=(ui.data.index??state.currentPlayer)+1;ui={mode:'scoringResolve',data:{index:next},selected:[]};scorePrepare(next)}
+function bestStarBonus(p){if(!jokerFunctionEnabled())return 0;const groups=[];for(let r=0;r<3;r++){const idx=[r*4,r*4+1,r*4+2,r*4+3].filter(i=>p.grid[i]);if(idx.length>=3&&idx.every(i=>p.grid[i].type==='star'))groups.push({idx,bonus:idx.length===4?-15:-10})}for(let c=0;c<4;c++){const idx=[c,c+4,c+8].filter(i=>p.grid[i]);if(idx.length===3&&idx.every(i=>p.grid[i].type==='star'))groups.push({idx,bonus:-10})}let best=0;function dfs(i,used,sum){if(i===groups.length){if(sum<best)best=sum;return}dfs(i+1,used,sum);const g=groups[i];if(g.idx.every(x=>!used.has(x))){const n=new Set(used);g.idx.forEach(x=>n.add(x));dfs(i+1,n,sum+g.bonus)}}dfs(0,new Set(),0);return best}
+function rawRoundScore(p){let s=0;for(const c of p.grid)if(c)s+=cardPoints(c);for(const c of p.extras)if(c)s+=cardPoints(c);s+=p.actions.length*10;s+=bestStarBonus(p);return s}
+function finishScoring(){const scores=state.players.map(rawRoundScore);const e=state.roundEnder;let final=scores.slice();if(e!==null&&scores[e]>0){const min=Math.min(...scores.filter((_,i)=>i!==e));if(min<=scores[e])final[e]=scores[e]*2}state.players.forEach((p,i)=>{p.lastRound=final[i];p.total+=final[i]});const rows=state.players.map((p,i)=>`<div class="choice"><b>${escapeHTML(p.name)}</b><small>Runde: ${final[i]}${final[i]!==scores[i]?` (verdoppelt aus ${scores[i]})`:''} · Gesamt: ${p.total}</small></div>`).join('');const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';save();const winner=[...state.players].sort((a,b)=>a.total-b.total)[0];modal(`<h3>${ended?'🏆 Spielende':'📊 Rundenwertung'}</h3><div class="choice-grid">${rows}</div>${ended?`<p><b>${escapeHTML(winner.name)}</b> hat mit ${winner.total} Punkten den niedrigsten Gesamtstand.</p>`:`<p>Die nächste Runde startet der Spieler, der diese Runde beendet hat.</p>`}<div class="modal-actions"><button class="primary" onclick="${ended?'Game.closeModal();Game.render()':'Game.nextRound()'}">${ended?'Ergebnis ansehen':'Nächste Runde'}</button></div>`,false);render()}
+function nextRound(){closeModal();state.round++;state.startPlayer=state.roundEnder??0;beginRound()}
+function modal(html,closable=true){const back=$('#modalBack'),m=$('#modal');m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');back.classList.add('show')}
+function closeModal(){const b=$('#modalBack');if(b)b.classList.remove('show')}
+function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>Wer mit den zwei Startkarten die höchste Summe hat, beginnt. Bei Gleichstand entscheidet diese digitale Fassung zufällig.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne zählen 0 Punkte und können am Zugende freiwillig kurz den Wert einer Zahl in derselben kompletten Reihe/Spalte annehmen.</li><li>Reine Stern-Gruppen dürfen abgelegt werden, müssen aber nicht. Am Rundenende bringt eine vollständige 3er-Sterngruppe −10, eine waagerechte 4er-Sterngruppe −15; jeder Stern wird nur einmal für einen Bonus gezählt.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden am Zugende abgelegt – auch Minuszahlen. Dadurch kann nach dem Entfernen einer ganzen Spalte auch eine waagerechte 3er-Reihe entstehen. Kombinationen, die nur mit Sternen möglich sind, sind freiwillig.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, hat jeder andere Spieler noch genau einen Zug. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle Karten aufgedeckt und gewertet.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Funktion AUS“ lässt die Karten im Deck, deaktiviert aber Stern-Sondereffekt, Wildcard-Reihen und Sternbonus.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
+function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
+async function restart(){if(confirm('Aktuelles Spiel wirklich löschen und neu starten?')){localStorage.removeItem(SAVE_KEY);if(cloud.enabled&&cloud.room)await resetCloudRoom();state=null;ui={mode:'none',data:{},selected:[]};render()}}
+function setupView(){const cfgRoom=escapeHTML(cloud.room||'');return `<div class="panel hero"><div class="brandmark" style="margin:auto"></div><h2>SKYJO</h2><p>Fan-Umsetzung mit lokalem Spielstand oder synchronisiertem Firebase-Raum.</p><div class="setup-grid"><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div class="field"><label>Einsteiger-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="15"><div class="joker-off-note">Standard: 15. Mit 0 werden keine Jokerkarten ins Deck gemischt.</div></div><div class="field"><label>Joker-Funktion</label><div class="toggle-box"><span><b>Stern/Joker-Sondereffekt</b><div class="joker-off-note">AUS = Karten bleiben im Deck, aber kein Wildcard-Match, keine Gratis-Aktionskarte und kein Sternbonus.</div></span><input id="jokerEnabled" type="checkbox" checked></div></div><div class="field"><label>Spielstand</label><select id="cloudMode" onchange="Game.toggleCloudFields()"><option value="local" ${cloud.enabled?'':'selected'}>Nur lokal</option><option value="cloud" ${cloud.enabled?'selected':''}>Firebase-Raum synchronisieren</option></select></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="cloud-row"><div class="field"><label>Firebase-Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. SKY01"></div><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Code</button><button class="secondary" onclick="Game.loadCloudRoom()">☁ Raum laden</button></div><div class="cloud-info">Der Spielstand wird über deinen vorhandenen Render-Server in Firestore gespeichert. Geräte im selben Raum aktualisieren sich automatisch.</div></div><div class="setup-separator"></div><div id="names" class="names"></div><button class="primary wide" onclick="Game.startFromSetup()">Spiel starten</button><p class="hint">Pass-and-Play · 2–8 Spieler · Browser-Sicherung + optional Firebase</p></div>`}
+function updateNames(){const n=Number($('#playerCount').value),box=$('#names');if(!box)return;const previous=[...document.querySelectorAll('.pname')].map(x=>x.value);box.innerHTML=Array.from({length:n},(_,i)=>`<div class="field"><label>Spieler ${i+1}</label><input class="pname" value="${escapeHTML(previous[i]||`Spieler ${i+1}`)}"></div>`).join('')}
+async function startFromSetup(){const names=[...document.querySelectorAll('.pname')].map((x,i)=>x.value.trim()||`Spieler ${i+1}`),target=Math.max(20,Number($('#target').value)||100),beginner=$('#beginner').value==='1',jokerCount=Math.max(0,Math.min(30,Math.floor(Number($('#jokerCount').value)||0))),jokerEnabled=!!$('#jokerEnabled').checked;const mode=$('#cloudMode')?.value||'local';cloud.enabled=mode==='cloud';if(cloud.enabled){cloud.room=normalizeCloudRoom($('#cloudRoom')?.value||cloud.room);if(!cloud.room){toast('Bitte Firebase-Raumcode eingeben');return}cloudConfigSave();const existing=await fetchCloudRoom(cloud.room);if(existing?.found&&existing.state){const ok=confirm(`Im Raum ${cloud.room} existiert bereits ein Spiel.\n\nOK = vorhandenes Spiel laden\nAbbrechen = neues Spiel überschreibt den Raum`);if(ok){applyCloudState(existing.state,existing.rev||0);startCloudPolling();return}cloud.rev=Number(existing.rev)||0}else cloud.rev=0;startCloudPolling()}else{cloud.room='';cloud.rev=0;cloudConfigSave()}startGame(names,target,beginner,jokerCount,jokerEnabled)}
+function cardClass(c){if(!c)return'empty';if(!c.faceUp)return'back';if(c.type==='star')return'star';if(c.value<0)return'neg';if(c.value===0)return'zero';if(c.value<=4)return'low';if(c.value<=8)return'mid';return'high'}
+function cardHTML(c,forceFace=false,clickable=false,selected=false){if(!c)return`<div class="card empty"></div>`;const face=forceFace||c.faceUp,cls=face?(c.type==='star'?'star':c.value<0?'neg':c.value===0?'zero':c.value<=4?'low':c.value<=8?'mid':'high'):'back';const v=face?(c.type==='star'?'★':c.value):'';const off=(face&&c.type==='star'&&!jokerFunctionEnabled())?'joker-off':'';return `<div class="card ${cls} ${off} ${clickable?'clickable':''} ${selected?'selected':''}">${face?`<span class="corner tl">${v}</span><span class="center-value">${v}</span><span class="corner br">${v}</span>`:''}</div>`}
+function actionHTML(a,clickable=false,selected=false){if(!a)return'';const m=ACTIONS[a.type],locked=state&&state.players[state.currentPlayer]&&state.players[state.currentPlayer].actions.includes(a)&&!actionAvailable(a,state.players[state.currentPlayer]);return `<div class="action-card ${m.kind==='attack'?'attack':m.kind==='defense'?'defense':''} ${clickable?'clickable':''} ${selected?'selected':''} ${locked?'disabled':''}"><div class="emoji">${m.icon}</div><b>${m.name}</b><small>${m.desc}</small>${locked?'<span class="lock">🔒</span>':''}</div>`}
+function boardCardClickable(pi,zone,idx){if(!state)return false;const mode=ui.mode;if(mode==='setupReveal')return pi===state.setupPlayer&&zone==='grid';if(['discardSwap','drawnSwap','flipOwn','ownSwapSelect','draw3Target'].includes(mode))return pi===state.currentPlayer;if(mode==='otherSwapSelect')return pi===ui.data.a||pi===ui.data.b;if(mode==='meteorSelect')return pi===ui.data.target;return false}
+function isSelected(pi,zone,idx){return ui.selected.some(s=>s.pi===pi&&s.zone===zone&&s.idx===idx)}
+function playerHTML(p,pi){const active=pi===state.currentPlayer;const cards=p.grid.map((c,i)=>`<div onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');return `<section class="player ${active?'active':''}"><div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div><div class="player-name">${escapeHTML(p.name)} ${active?'· am Zug':''}</div><div class="hint">${totalHidden(p)} verdeckt · ${p.actions.length} Aktionen</div></div></div><div class="scorechip">Gesamt ${p.total}</div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${p.actions.length?`<div class="actions-owned">${acts}</div>`:''}</section>`}
+function instructionText(){if(!state)return'';const p=current();switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return `${p.name}: Wähle genau eine Aktion`;case'discardSwap':return `${p.name}: Ablagekarte muss getauscht werden`;case'drawnSwap':return `${p.name}: Gezogene Karte in die eigene Auslage tauschen`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
+function bottomButtons(){if(!state||state.phase==='gameOver')return'';if(ui.mode==='turnChoice')return `<button class="primary" onclick="Game.drawFromDeck()">🎴 Spielkarte ziehen</button><button onclick="Game.drawFromDiscard()">🂠 Ablage nehmen</button><button onclick="Game.chooseActionTurn()">⚡ Aktionskarte spielen/ablegen</button><button onclick="Game.takeActionBlind(false)">⚡ Aktion verdeckt ziehen</button>${state.market.map((a,i)=>a?`<button onclick="Game.takeActionMarket(${i},false)">${ACTIONS[a.type].icon} ${ACTIONS[a.type].name}</button>`:'').join('')}`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
+function gameView(){const topDiscard=state.playDiscard[state.playDiscard.length-1];return `<div class="status"><div class="stat"><b>${state.round}</b><span>Runde</span></div><div class="stat"><b>${escapeHTML(current().name)}</b><span>${state.phase==='scoring'?'Wertung':'am Zug'}</span></div><div class="stat"><b>${state.playDeck.length}</b><span>Spielkarten</span></div><div class="stat"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat"><b>${state.jokerCount??15} · ${jokerFunctionEnabled()?'AN':'AUS'}</b><span>Jokerkarten · Funktion</span></div></div><div class="table-area"><section class="panel center-table"><div class="pilebox"><h4>Spielkarten</h4><div class="pile-row"><div>${cardHTML({type:'number',value:0,faceUp:false},false,false)}</div><div>${cardHTML(topDiscard,true,false)}</div></div><div class="count">Nachziehstapel ${state.playDeck.length} · Ablage ${state.playDiscard.length}</div></div><div class="pilebox"><h4>Aktionskarten-Auslage</h4><div class="market">${state.market.map(a=>a?actionHTML(a,false):'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div></section><div class="players">${state.players.map(playerHTML).join('')}</div><section class="panel"><h3>Letzte Ereignisse</h3><div class="log">${state.log.slice(0,8).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div></section></div><div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div></div></div>`}
+function render(){const app=$('#app');let content;if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><small>private Fan-Umsetzung</small></div></div><div class="top-actions">${cloudBadgeHTML()}<button class="iconbtn" onclick="Game.showRules()">📖 Regeln</button>${state?'<button class="iconbtn" onclick="Game.showLog()">🧾</button><button class="iconbtn" onclick="Game.restart()">↻</button>':''}</div></div>${content}`;if(!state)setTimeout(()=>{updateNames();toggleCloudFields()},0);save()}
+function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
+function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
+window.Game={render,updateNames,startFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields};
+cloudConfigLoad();
+const saved=load();if(saved){state=saved;if(state.phase==='play')ui={mode:'turnChoice',data:{},selected:[]};else if(state.phase==='initialReveal')ui={mode:'setupReveal',data:{},selected:[]};else if(state.phase==='betweenRounds'||state.phase==='gameOver')ui={mode:'none',data:{},selected:[]};else ui={mode:'turnChoice',data:{},selected:[]};}
+render();
+if(cloud.enabled&&cloud.room){(async()=>{const j=await fetchCloudRoom();if(j?.found&&j.state)applyCloudState(j.state,j.rev||0);startCloudPolling()})()}
+})();
+</script>
+</body>
+</html>
