@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>SKYJO Action – V17.0 Signature Table</title>
+<title>SKYJO Action – V17.1 Wohnzimmertisch</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -2989,6 +2989,243 @@ body.is-fullscreen .bottom-actions{padding:6px 10px calc(6px + env(safe-area-ins
   .bottom-inner{display:block!important}.instruction{margin-bottom:6px!important}.emoji-reaction-bar{margin-top:6px!important}.app{padding-bottom:150px!important}
 }
 
+
+
+/* ==========================================================
+   V17.1 WOHNZIMMERTISCH VARIANTE
+   Stilrichtung 2: realistischer Wohnzimmertisch, wärmer,
+   gemütlicher, natürlicher und etwas heller.
+   ========================================================== */
+:root{
+  --living-wood-1:#b07a4a;
+  --living-wood-2:#946238;
+  --living-wood-3:#6d4528;
+  --living-wood-4:#4b2e1a;
+  --living-felt-1:#315b4a;
+  --living-felt-2:#26483d;
+  --living-felt-3:#1b352e;
+  --living-paper:#f2e7d3;
+  --living-muted:#a8ada3;
+  --living-brass:#d9b37a;
+}
+html,body{
+  background:
+    radial-gradient(1300px 780px at 50% -6%, rgba(255,236,200,.24), transparent 56%),
+    radial-gradient(1100px 700px at 50% 118%, rgba(0,0,0,.32), transparent 46%),
+    linear-gradient(180deg,#5b4130 0%, #3f2d22 32%, #241a15 72%, #15100d 100%) !important;
+}
+body:before{
+  opacity:.18 !important;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 2px, transparent 2px 90px, rgba(0,0,0,.08) 90px 92px, transparent 92px 182px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 10px) !important;
+}
+body:after{
+  opacity:.55 !important;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,250,238,.10), transparent 18%),
+    radial-gradient(circle at 82% 12%, rgba(255,250,238,.07), transparent 16%),
+    radial-gradient(circle at 50% 50%, transparent 60%, rgba(0,0,0,.14) 100%) !important;
+}
+.app:before{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.13), transparent 10%, transparent 84%, rgba(0,0,0,.24)),
+    radial-gradient(circle at 14% 14%, rgba(255,236,200,.12), transparent 18%),
+    radial-gradient(circle at 86% 14%, rgba(255,236,200,.08), transparent 16%),
+    repeating-linear-gradient(12deg,
+      var(--living-wood-1) 0 20px,
+      var(--living-wood-2) 20px 38px,
+      var(--living-wood-3) 38px 58px,
+      var(--living-wood-2) 58px 84px,
+      var(--living-wood-4) 84px 98px,
+      var(--living-wood-2) 98px 122px) !important;
+  box-shadow:
+    0 36px 95px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 0 -14px 24px rgba(0,0,0,.22),
+    inset 12px 0 18px rgba(255,255,255,.05),
+    inset -12px 0 18px rgba(0,0,0,.12) !important;
+}
+.app:after{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.05), transparent 12%, transparent 84%, rgba(0,0,0,.14)),
+    radial-gradient(circle at 50% 0%, rgba(255,247,225,.08), transparent 20%),
+    linear-gradient(180deg,#4b5b51 0%, #32473e 56%, #243730 100%) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.025),
+    inset 0 18px 28px rgba(255,255,255,.03),
+    inset 0 -20px 36px rgba(0,0,0,.20),
+    0 0 0 1px rgba(0,0,0,.16) !important;
+}
+.topbar{
+  background:linear-gradient(180deg, rgba(36,31,27,.76), rgba(21,18,16,.88)) !important;
+  border-color:rgba(255,255,255,.10) !important;
+  box-shadow:0 16px 38px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.topbar:after{
+  background:linear-gradient(90deg, transparent, rgba(217,179,122,.72), transparent) !important;
+  box-shadow:0 0 18px rgba(217,179,122,.12) !important;
+}
+.brand h1{color:#f7f1e8 !important}
+.brand small{color:#d9b37a !important}
+.edition-chip{background:rgba(217,179,122,.10) !important; color:#ebd2a7 !important; border-color:rgba(217,179,122,.16) !important}
+.iconbtn,.cloud-pill{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)) !important; color:#f3ecdf !important}
+
+.premium-status-v17 .stat{
+  background:linear-gradient(180deg, rgba(57,74,65,.84), rgba(36,50,43,.92)) !important;
+  border-color:rgba(255,255,255,.08) !important;
+}
+.premium-status-v17 .stat:before{background:linear-gradient(90deg, transparent, rgba(217,179,122,.48), transparent) !important}
+.premium-status-v17 .stat b{color:#fbf6ed !important}
+.premium-status-v17 .stat span{color:#bac1b7 !important}
+
+.seat-label{
+  background:linear-gradient(180deg, rgba(109,69,40,.78), rgba(68,42,24,.88)) !important;
+  border-color:rgba(217,179,122,.14) !important;
+}
+.seat-label span{color:#d6c09e !important}
+.seat-label b{color:#fbf3e6 !important}
+
+.signature-center{
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,246,221,.08), transparent 20%),
+    radial-gradient(ellipse at 18% 46%, rgba(107,176,142,.06), transparent 28%),
+    radial-gradient(ellipse at 80% 44%, rgba(140,121,90,.05), transparent 28%),
+    linear-gradient(180deg, var(--living-felt-1) 0%, var(--living-felt-2) 56%, var(--living-felt-3) 100%) !important;
+  border-color:rgba(217,179,122,.14) !important;
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.28),
+    inset 0 0 0 1px rgba(255,255,255,.03),
+    inset 0 20px 34px rgba(255,255,255,.02),
+    inset 0 -26px 44px rgba(0,0,0,.15),
+    0 0 0 8px rgba(97,60,32,.34),
+    0 0 0 10px rgba(56,34,20,.86) !important;
+}
+.signature-center:after{content:"WOHNZIMMERTISCH" !important; color:rgba(248,234,206,.11) !important}
+.table-overline{color:#d8b37a !important}
+.table-center-title h3{color:#f8f1e5 !important}
+.table-center-title p{color:#c1c8bc !important}
+.table-center-metrics span{
+  background:rgba(255,255,255,.05) !important;
+  border-color:rgba(255,255,255,.07) !important;
+  color:#ebe8dc !important;
+}
+.table-widget{
+  background:linear-gradient(180deg, rgba(22,38,34,.60), rgba(10,19,18,.84)) !important;
+  border-color:rgba(255,255,255,.06) !important;
+}
+.real-hand-zone,.watch-panel,.play-pilebox,.action-pilebox,.table-note-box{background:linear-gradient(180deg, rgba(18,33,29,.76), rgba(9,18,17,.92)) !important}
+.watch-headline b,.watch-copy b,.section-heading h4,.real-hand-copy b{color:#f7f0e3 !important}
+.watch-copy small,.watch-headline span,.section-heading small,.count,.real-hand-copy small,.eyebrow{color:#b4bbb1 !important}
+.section-icon{background:rgba(255,255,255,.06) !important; color:#ebd2a7 !important}
+
+.signature-piles .pile-unit{
+  background:linear-gradient(180deg, rgba(122,78,47,.72), rgba(79,49,28,.88)) !important;
+  box-shadow:0 10px 20px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+.pile-overline{color:#f0dec0 !important}
+.pile-tip{
+  background:rgba(217,179,122,.10) !important;
+  border-color:rgba(217,179,122,.10) !important;
+  color:#eedabd !important;
+}
+.pile-count-chip,.buried-mini,.deck-count-badge{
+  background:linear-gradient(180deg, rgba(90,56,31,.96), rgba(56,35,20,.96)) !important;
+  border-color:rgba(217,179,122,.16) !important;
+  color:#fff1d7 !important;
+}
+.pile-card-hit.enabled:before,.market-hit.enabled:before,.action-blind-hit.enabled:before{
+  border-color:rgba(217,179,122,.28) !important;
+  box-shadow:0 0 18px rgba(217,179,122,.10) !important;
+}
+
+.player{
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,246,226,.04), transparent 24%),
+    linear-gradient(180deg, rgba(15,31,28,.72), rgba(8,18,17,.92)) !important;
+  border-color:rgba(255,255,255,.07) !important;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 0 0 7px rgba(94,58,33,.30),
+    0 0 0 9px rgba(48,29,18,.82) !important;
+}
+.player.active{
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 0 0 7px rgba(94,58,33,.34),
+    0 0 0 9px rgba(48,29,18,.84),
+    0 0 0 12px hsla(var(--player-hue),90%,64%,.05),
+    0 0 32px hsla(var(--player-hue),90%,64%,.07) !important;
+}
+.active-turn-banner{
+  background:rgba(217,179,122,.14) !important;
+  border-color:rgba(217,179,122,.14) !important;
+  color:#f3e5c7 !important;
+}
+.active-turn-banner b{color:#f3e5c7 !important}
+.avatar{color:#f5ede0 !important}
+.player-name{color:#faf5ea !important}
+.ai-tag,.you-tag,.active-tag,.meta-chip,.scorechip,.progress-chip{
+  background:rgba(255,255,255,.045) !important;
+  border-color:rgba(255,255,255,.06) !important;
+}
+.ai-tag,.you-tag,.active-tag,.meta-chip{color:#d8ddd4 !important}
+.scorechip b{color:#f8f2e6 !important}
+.scorechip small,.extras h5,.owned-title{color:#cdbb9b !important}
+.progress-chip{color:#ece4d7 !important}
+.match-actions,.actions-owned{border-top:1px solid rgba(255,255,255,.05) !important}
+.match-actions-title,.match-resolve-btn{color:#f0e0c3 !important}
+.match-resolve-btn{background:rgba(255,255,255,.04) !important; border-color:rgba(255,255,255,.06) !important}
+.reveal-meter{background:rgba(255,255,255,.05) !important}
+.player .card{
+  box-shadow:
+    0 10px 22px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.72),
+    inset 0 -1px 0 rgba(0,0,0,.08) !important;
+}
+
+.bottom-actions{
+  background:linear-gradient(180deg, rgba(20,18,17,.82), rgba(11,10,9,.96)) !important;
+  border-top:1px solid rgba(255,255,255,.08) !important;
+}
+.bottom-inner>.instruction{color:#e1dfd6 !important}
+.bottom-inner>.action-buttons button{
+  background:rgba(255,255,255,.05) !important;
+  border-color:rgba(255,255,255,.08) !important;
+  color:#f2ebde !important;
+}
+.bottom-inner>.action-buttons button.primary{
+  background:linear-gradient(180deg,#c99a5a,#a57539) !important;
+  border-color:#b78446 !important;
+  color:#fff8ef !important;
+}
+.emoji-bar-label{color:#bbbeb6 !important}
+.emoji-reaction-btn{
+  background:rgba(255,255,255,.05) !important;
+  border-color:rgba(255,255,255,.08) !important;
+}
+.motion-status-pill{
+  background:rgba(54,46,37,.92) !important;
+  border-color:rgba(255,255,255,.08) !important;
+  color:#f3ebdf !important;
+}
+.round-board-review-banner{
+  background:linear-gradient(180deg, rgba(110,72,42,.88), rgba(67,42,26,.92)) !important;
+  border-color:rgba(217,179,122,.16) !important;
+  color:#fff1da !important;
+}
+.round-board-review-banner small{color:#dbc9ad !important}
+
+.player-side .player, .dealer-side .signature-center{
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.10));
+}
+
+@media (max-width:980px){
+  .signature-center:after{letter-spacing:2.2px !important; font-size:9px !important}
+}
+
 </style>
 </head>
 <body>
@@ -4437,7 +4674,7 @@ function render(){if(state?.phase!=='scoringSequence')document.querySelector('.s
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V17.0 · Signature Table</small><span class="edition-chip">ATELIER</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V17.1 · Wohnzimmertisch</small><span class="edition-chip">WOHNZIMMER</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
