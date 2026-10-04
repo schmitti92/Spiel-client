@@ -2329,6 +2329,46 @@ body[data-players="2"] .player:not(.active){opacity:.88;filter:saturate(.90) bri
   .big-discard-main{font-size:10px}
   .big-discard-sub{font-size:7px!important}
 }
+
+
+/* ==========================================================
+   V15.11 STABLE UI · MITTIGE REAKTIONEN + NAVIGATION
+   ========================================================== */
+.top-actions .utility-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:38px;padding:7px 10px;white-space:nowrap;
+}
+.top-actions .utility-btn b{font-size:10px;letter-spacing:.2px}
+.top-actions .utility-btn .utility-ico{font-size:15px;line-height:1}
+
+/* Reaktions-Animationen erscheinen immer mittig über dem Spielfeld. */
+.emoji-reaction-fx.global{
+  position:fixed!important;
+  left:50%!important;
+  top:50%!important;
+  z-index:4000!important;
+  font-size:clamp(96px,11vw,150px)!important;
+  transform:translate(-50%,-42%) scale(.45) rotate(-8deg)!important;
+  filter:drop-shadow(0 18px 28px rgba(0,0,0,.48))!important;
+}
+.emoji-reaction-fx.global.show{
+  opacity:1!important;
+  transform:translate(-50%,-50%) scale(1) rotate(0deg)!important;
+}
+.emoji-reaction-fx.global.leave{
+  opacity:0!important;
+  transform:translate(-50%,-76%) scale(1.12) rotate(4deg)!important;
+}
+
+/* Emoji-Auswahl bleibt sauber mittig in der unteren Leiste. */
+.emoji-reaction-bar{justify-content:center!important}
+.emoji-reaction-list{justify-content:center!important}
+
+@media(max-width:1100px){
+  .top-actions .utility-btn b{display:none}
+  .top-actions .utility-btn{min-width:36px;padding:6px 8px}
+}
+
 </style>
 </head>
 <body>
@@ -2663,6 +2703,19 @@ async function joinOnlineRoom(){if(cloud.roomActionBusy){toast('Verbindung läuf
 async function restoreOnlineRoom(){if(!cloud.enabled||!cloud.room)return;const ident=loadIdentity(cloud.room);if(ident?.name)cloud.myName=ident.name;if(!await probeSkyjoServer()){cloud.doc=null;state=null;render();return}const j=await fetchCloudRoom(cloud.room,false);if(j?.found&&isRoomDoc(j.state)){applyCloudDoc(j.state,j.rev||0);cloud.pollErrors=0;startCloudPolling()}else{cloud.doc=null;state=null;render()}}
 async function startOnlineGame(){if(!isHostDevice()){toast('Nur der Host kann starten');return}const ps=cloud.doc.lobby.players;if(ps.length<2){toast('Mindestens 2 Spieler müssen verbunden sein');return}const set=cloud.doc.lobby.settings||{};state=setupState(ps.map(p=>p.name),Number(set.target)||100,!!set.beginner,Number.isInteger(set.jokerCount)?set.jokerCount:15,set.jokerEnabled!==false);ui={mode:'setupReveal',data:{},selected:[]};cloud.doc.game=clone(state);cloud.doc.lobby.status='playing';cloud.doc.lobby.startedAt=Date.now();const out=await postCloudDoc(cloud.doc,cloud.rev);if(out.conflict){if(out.remote)applyCloudDoc(out.remote,out.rev);toast('Lobby wurde aktualisiert – bitte nochmal starten');return}if(!out.ok){toast(cloud.lastError||'Start fehlgeschlagen');return}cloud.lastPushedJSON=JSON.stringify(cloud.doc);render();toast(`${state.players[0].name}: Decke 2 Karten auf`)}
 function leaveOnlineRoom(){cloud.enabled=false;cloud.room='';cloud.doc=null;cloud.rev=0;cloud.role='';cloud.lastError='';cloud.reactionSeq=0;cloud.pollBusy=false;cloud.pollErrors=0;cloud.roomActionBusy=false;state=null;try{localStorage.removeItem(SAVE_KEY)}catch(_e){}cloudConfigSave();if(cloud.pollTimer)clearTimeout(cloud.pollTimer);cloud.pollTimer=null;render()}
+function refreshPage(){
+ try{if(state)save();cloudConfigSave()}catch(_e){}
+ location.reload()
+}
+function backToLobby(){
+ const online=!!cloud.enabled;
+ const msg=online?'Zur Start-Lobby zurück? Der Online-Raum bleibt auf dem Server bestehen.':'Zur Start-Lobby zurück? Der aktuelle lokale Spielstand bleibt im Browser gespeichert.';
+ if(!confirm(msg))return;
+ try{closeModal()}catch(_e){}
+ clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';
+ if(online){leaveOnlineRoom();return}
+ state=null;ui={mode:'none',data:{},selected:[]};render()
+}
 async function loadCloudRoom(){return joinOnlineRoom()}
 function generateCloudRoom(){const input=$('#cloudRoom');const rc=randomCloudRoom();if(input)input.value=rc;cloud.room=rc;toast(`Raumcode ${rc} gewählt`)}
 function toggleCloudFields(){const sel=$('#cloudMode'),box=$('#cloudBox'),local=$('#localBox'),ai=$('#aiBox');if(!sel||!box)return;const mode=sel.value||'local',on=mode==='cloud';box.style.display=on?'block':'none';if(local)local.style.display=mode==='local'?'block':'none';if(ai)ai.style.display=mode==='ai'?'block':'none';cloud.enabled=on;if(on){const inp=$('#cloudRoom');if(inp&&!inp.value)inp.value=cloud.room||randomCloudRoom()}else{cloud.doc=null;cloud.room=''}document.querySelectorAll('.mode-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===mode));cloudConfigSave();if(mode==='local')setTimeout(updateNames,0)}
@@ -3708,11 +3761,10 @@ function showEmojiReaction(r){
  if(!r?.id||emojiReactionSeen.has(r.id))return;
  emojiReactionSeen.add(r.id);
  if(emojiReactionSeen.size>120){const first=emojiReactionSeen.values().next().value;emojiReactionSeen.delete(first)}
- const host=document.getElementById(`player-${r.actor}`)||document.body;
  const fx=document.createElement('div');
- fx.className='emoji-reaction-fx';
+ fx.className='emoji-reaction-fx global';
  fx.textContent=r.emoji;
- if(host!==document.body){host.appendChild(fx)}else{fx.classList.add('global');document.body.appendChild(fx)}
+ document.body.appendChild(fx);
  haptic(7);
  setTimeout(()=>fx.classList.add('show'),20);
  setTimeout(()=>fx.classList.add('leave'),1250);
@@ -3762,14 +3814,14 @@ function render(){if(state?.phase==='play'&&!state.pendingMatch&&ui.mode==='turn
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.8 · Smart Joker Scoring</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.11 · Stable UI</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
 // Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
 window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
-window.Game={render,updateNames,startFromSetup,startAIFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,focusMyBoard,showDisplaySettings,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction};
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,focusMyBoard,showDisplaySettings,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction};
 
 document.addEventListener('fullscreenchange',syncFullscreenState);
 document.addEventListener('webkitfullscreenchange',syncFullscreenState);
