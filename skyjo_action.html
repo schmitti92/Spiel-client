@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – V15.23 Finalscreen & Cache Fix</title>
+<title>SKYJO Action – V15.24 Turn Announcements</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -2989,6 +2989,111 @@ body.performance-mode.is-playing .emoji-reaction-fx{
 body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-index:70}
 .final-score-modal .modal-actions button.primary{min-height:46px}
 
+
+/* ==========================================================
+   V15.24 · GROSSE SPIELHINWEISE
+   Nur transform + opacity: auffällig, aber sehr leicht für Tablets.
+   ========================================================== */
+.game-announcement{
+  position:fixed;
+  inset:0;
+  z-index:4200;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+  padding:24px;
+  opacity:0;
+  background:rgba(1,11,14,.16);
+  transition:opacity .18s ease;
+}
+.game-announcement.show{opacity:1}
+.game-announcement.leave{opacity:0}
+
+.game-announcement-inner{
+  width:min(760px,88vw);
+  min-height:190px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:30px 34px;
+  border-radius:30px;
+  border:1px solid rgba(255,255,255,.18);
+  background:linear-gradient(145deg,rgba(5,31,34,.96),rgba(7,49,48,.96));
+  box-shadow:0 22px 54px rgba(0,0,0,.34);
+  transform:scale(.82) translateY(12px);
+  opacity:.2;
+  transition:transform .32s cubic-bezier(.2,.82,.2,1),opacity .24s ease;
+}
+.game-announcement.show .game-announcement-inner{
+  transform:scale(1) translateY(0);
+  opacity:1;
+}
+.game-announcement.leave .game-announcement-inner{
+  transform:scale(.96) translateY(-8px);
+  opacity:0;
+}
+
+.game-announcement-eyebrow{
+  margin-bottom:10px;
+  font-size:clamp(11px,1.7vw,17px);
+  font-weight:950;
+  letter-spacing:.22em;
+  color:rgba(255,255,255,.66);
+}
+.game-announcement-title{
+  font-size:clamp(42px,8vw,92px);
+  line-height:.92;
+  font-weight:1000;
+  letter-spacing:-.045em;
+  text-shadow:0 4px 18px rgba(0,0,0,.28);
+}
+.game-announcement-subtitle{
+  margin-top:16px;
+  max-width:640px;
+  font-size:clamp(14px,2.3vw,23px);
+  line-height:1.25;
+  font-weight:800;
+  color:rgba(255,255,255,.82);
+}
+
+.game-announcement.final-round .game-announcement-inner{
+  border-color:rgba(255,201,73,.42);
+  background:linear-gradient(145deg,rgba(43,31,7,.97),rgba(109,67,4,.96));
+}
+.game-announcement.final-round .game-announcement-title{
+  color:#ffd65a;
+}
+.game-announcement.final-round .game-announcement-eyebrow{
+  color:#ffe9a3;
+}
+
+.game-announcement.your-turn .game-announcement-inner{
+  border-color:rgba(80,241,205,.34);
+  background:linear-gradient(145deg,rgba(3,35,38,.97),rgba(5,83,73,.96));
+}
+.game-announcement.your-turn .game-announcement-title{
+  color:#8fffe0;
+}
+
+@media(max-width:650px){
+  .game-announcement{padding:14px}
+  .game-announcement-inner{
+    width:min(94vw,560px);
+    min-height:150px;
+    border-radius:22px;
+    padding:22px 18px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .game-announcement,
+  .game-announcement-inner{
+    transition-duration:.01ms!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2998,7 +3103,7 @@ body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-inde
 <script>
 (() => {
 'use strict';
-const SKYJO_BUILD='15.23';
+const SKYJO_BUILD='15.24';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -3021,6 +3126,109 @@ const $=s=>document.querySelector(s);
 const clone=o=>JSON.parse(JSON.stringify(o));
 
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+let gameAnnouncementEl=null;
+let gameAnnouncementTimer=null;
+let gameAnnouncementDelayTimer=null;
+let lastFinalRoundAnnouncement='';
+let lastOwnTurnAnnouncement='';
+
+function clearGameAnnouncement(){
+ if(gameAnnouncementTimer){clearTimeout(gameAnnouncementTimer);gameAnnouncementTimer=null}
+ if(gameAnnouncementDelayTimer){clearTimeout(gameAnnouncementDelayTimer);gameAnnouncementDelayTimer=null}
+ if(gameAnnouncementEl){try{gameAnnouncementEl.remove()}catch(_e){}gameAnnouncementEl=null}
+}
+
+function showGameAnnouncement(kind,title,subtitle='',delay=0){
+ const run=()=>{
+   clearGameAnnouncement();
+   const wrap=document.createElement('div');
+   wrap.className=`game-announcement ${kind||''}`;
+   wrap.setAttribute('aria-live','assertive');
+   wrap.setAttribute('role','status');
+
+   const inner=document.createElement('div');
+   inner.className='game-announcement-inner';
+
+   const eyebrow=document.createElement('div');
+   eyebrow.className='game-announcement-eyebrow';
+   eyebrow.textContent=kind==='final-round'?'🔔 SCHLUSSPHASE':'🎯 DEIN ZUG';
+
+   const main=document.createElement('div');
+   main.className='game-announcement-title';
+   main.textContent=title;
+
+   const sub=document.createElement('div');
+   sub.className='game-announcement-subtitle';
+   sub.textContent=subtitle||'';
+
+   inner.append(eyebrow,main);
+   if(subtitle)inner.append(sub);
+   wrap.append(inner);
+   document.body.append(wrap);
+   gameAnnouncementEl=wrap;
+
+   requestAnimationFrame(()=>wrap.classList.add('show'));
+
+   const stay=kind==='final-round'?1650:950;
+   gameAnnouncementTimer=setTimeout(()=>{
+     wrap.classList.add('leave');
+     gameAnnouncementTimer=setTimeout(()=>{
+       if(gameAnnouncementEl===wrap)gameAnnouncementEl=null;
+       try{wrap.remove()}catch(_e){}
+     },340)
+   },stay)
+ };
+
+ if(delay>0){
+   if(gameAnnouncementDelayTimer)clearTimeout(gameAnnouncementDelayTimer);
+   gameAnnouncementDelayTimer=setTimeout(()=>{gameAnnouncementDelayTimer=null;run()},delay)
+ }else run()
+}
+
+function syncGameAnnouncements(){
+ if(!state||state.phase!=='play')return;
+
+ let finalJustShown=false;
+
+ // LETZTE RUNDE: auf jedem Gerät genau einmal je Runde.
+ if(state.roundEnder!==null&&state.roundEnder!==undefined){
+   const finalKey=`${state.round}:${state.roundEnder}`;
+   if(finalKey!==lastFinalRoundAnnouncement){
+     lastFinalRoundAnnouncement=finalKey;
+     finalJustShown=true;
+     const enderName=state.players?.[state.roundEnder]?.name||'Ein Spieler';
+     const remaining=Math.max(0,(state.finalTurnQueue?.length||0)+(state.currentPlayer!==state.roundEnder?1:0));
+     showGameAnnouncement(
+       'final-round',
+       'LETZTE RUNDE',
+       remaining>0
+         ?`${enderName} ist fertig · alle anderen haben noch genau einen Zug`
+         :`${enderName} hat die Runde beendet`,
+       70
+     );
+     haptic([25,45,25])
+   }
+ }
+
+ // DU BIST DRAN: nur für den Menschen, dessen Gerät gerade am Zug ist.
+ // Bei lokalen Pass-and-Play-Partien bedeutet das: der aktuelle Mensch am Gerät.
+ if(ui.mode==='turnChoice'&&isMyActorDevice()&&!current()?.isAI){
+   const turnKey=`${state.round}:${state.turnNo}:${state.currentPlayer}`;
+   if(turnKey!==lastOwnTurnAnnouncement){
+     lastOwnTurnAnnouncement=turnKey;
+     const extra=state.roundEnder!==null?'LETZTER ZUG':'Dein Zug beginnt jetzt';
+     showGameAnnouncement(
+       'your-turn',
+       'DU BIST DRAN',
+       extra,
+       finalJustShown?2050:90
+     );
+     if(!finalJustShown)haptic([16,35,16])
+   }
+ }
+}
+
 function visualFx(kind,label,emoji='✨',sparks=0){
   try{
     fxFeedback(kind);
@@ -3438,7 +3646,7 @@ function applyCloudDoc(remote,rev){
      try{closeModal()}catch(_e){}
      roundSummarySeen='';
      scoreSequenceSeen='';
-     try{document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark').forEach(el=>el.remove())}catch(_e){}
+     try{document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement').forEach(el=>el.remove())}catch(_e){}
    }
    cloudConfigSave();
    /* Wichtig: render() läuft noch mit cloud.applying=true.
@@ -3534,6 +3742,7 @@ async function flushCloudPush(){
 }
 
 function stopCloudRoomRuntime(){
+ clearGameAnnouncement();
  if(cloud.pollTimer)clearTimeout(cloud.pollTimer);
  if(cloud.pushTimer)clearTimeout(cloud.pushTimer);
  cloud.pollTimer=null;
@@ -3573,7 +3782,7 @@ async function restoreOnlineRoom(){
  if(!cloud.enabled||!cloud.room)return;
  try{
    closeModal();
-   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark').forEach(el=>el.remove())
+   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement').forEach(el=>el.remove())
  }catch(_e){}
  roundSummarySeen='';scoreSequenceSeen='';
  state=null;ui={mode:'none',data:{},selected:[]};render();
@@ -4644,7 +4853,7 @@ async function returnFinishedGameToRoomLobby(){
 }
 
 async function restart(){if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann das Online-Spiel neu starten.');return}if(!confirm(cloud.enabled?'Online-Spiel beenden und mit allen Spielern in die Raum-Lobby zurückkehren?':'Aktuelles Spiel wirklich löschen und neu starten?'))return;clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';try{localStorage.removeItem(SAVE_KEY)}catch(_e){}if(cloud.enabled&&cloud.room&&isRoomDoc(cloud.doc)){await waitForCloudIdle(2500);const next=clone(cloud.doc);next.game=null;next.lobby.status='lobby';delete next.lobby.startedAt;const out=await postCloudDoc(next,cloud.rev);if(out?.conflict){if(out.remote)applyCloudDoc(out.remote,out.rev);toast('Raum wurde inzwischen geändert – bitte erneut versuchen.');return}if(!out?.ok){toast(cloud.lastError||'Online-Spiel konnte nicht zurückgesetzt werden.');return}cloud.doc=next;cloud.lastPushedJSON=JSON.stringify(next);state=null;ui={mode:'none',data:{},selected:[]};render();toast('↩ Alle Spieler sind wieder in der Online-Lobby');return}state=null;ui={mode:'none',data:{},selected:[]};render()}
-function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');const selectedMode=cloud.enabled?'cloud':'local';return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM LOBBY DELUXE</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field span-2"><label>Spielmodus</label><input id="cloudMode" type="hidden" value="${selectedMode}"><div class="mode-toggle"><button type="button" class="mode-btn ${selectedMode==='local'?'active':''}" data-mode="local" onclick="Game.selectSetupMode('local')"><span class="mode-emoji">🛋</span><span><b>Lokal</b><small>Pass-and-Play auf einem Gerät</small></span></button><button type="button" class="mode-btn" data-mode="ai" onclick="Game.selectSetupMode('ai')"><span class="mode-emoji">🤖</span><span><b>Computer</b><small>Spiele gegen 1–3 KI-Gegner</small></span></button><button type="button" class="mode-btn ${selectedMode==='cloud'?'active':''}" data-mode="cloud" onclick="Game.selectSetupMode('cloud')"><span class="mode-emoji">☁</span><span><b>Online</b><small>Mehrere Geräte im selben Raum</small></span></button></div></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field" style="display:none"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="8"><div class="joker-off-note">Standard: 8.</div></div><div class="field span-2"><label>Joker-Spezialeffekte</label><div id="jokerSpecialCard" class="joker-special-card disabled"><div class="joker-special-top"><div class="joker-special-icon">✨</div><div class="joker-special-copy"><b>Zusatzfähigkeiten für Joker</b><small>Der Joker bleibt immer Wildcard; bei der Endwertung übernimmt er automatisch den günstigsten Wert seiner Reihe oder Spalte.</small></div><label class="joker-switch"><input id="jokerEnabled" type="checkbox" onchange="Game.toggleJokerSpecialUI()"><span class="joker-slider"></span></label></div><div class="joker-special-body"><div class="joker-state-pill" id="jokerSpecialState">AUS</div><div class="joker-special-grid"><div class="joker-special-good"><h4>Mit Spezialeffekten</h4><ul><li>⭐ Stern kann eine Gratis-Aktion auslösen</li><li>⚡ Aktionskarten sind aktiv</li><li>🎯 Voller SKYJO-Action-Modus</li></ul></div><div class="joker-special-off"><h4>Wenn AUS</h4><ul><li>🃏 Joker bleibt Wildcard</li><li>🎯 Endwertung: günstigster Wert aus Reihe/Spalte</li><li>🏅 Jokerbonus bleibt: 3 = −10, 4 waagerecht = −15</li><li>🚫 Nur Aktionskarten und Gratis-Aktion sind aus</li></ul></div></div></div></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button><button class="secondary" onclick="Game.resetOnlineClient()">↻ Verbindung zurücksetzen</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken. <b>Client V15.23</b></div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div>${hasLocalSave()?'<button class="secondary wide resume-local-btn" onclick="Game.resumeLocalGame()">▶ Gespeichertes Spiel fortsetzen</button>':''}<button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Strategie & Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten, erkennt gefährliche Ablagen und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
+function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');const selectedMode=cloud.enabled?'cloud':'local';return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM LOBBY DELUXE</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field span-2"><label>Spielmodus</label><input id="cloudMode" type="hidden" value="${selectedMode}"><div class="mode-toggle"><button type="button" class="mode-btn ${selectedMode==='local'?'active':''}" data-mode="local" onclick="Game.selectSetupMode('local')"><span class="mode-emoji">🛋</span><span><b>Lokal</b><small>Pass-and-Play auf einem Gerät</small></span></button><button type="button" class="mode-btn" data-mode="ai" onclick="Game.selectSetupMode('ai')"><span class="mode-emoji">🤖</span><span><b>Computer</b><small>Spiele gegen 1–3 KI-Gegner</small></span></button><button type="button" class="mode-btn ${selectedMode==='cloud'?'active':''}" data-mode="cloud" onclick="Game.selectSetupMode('cloud')"><span class="mode-emoji">☁</span><span><b>Online</b><small>Mehrere Geräte im selben Raum</small></span></button></div></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field" style="display:none"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="8"><div class="joker-off-note">Standard: 8.</div></div><div class="field span-2"><label>Joker-Spezialeffekte</label><div id="jokerSpecialCard" class="joker-special-card disabled"><div class="joker-special-top"><div class="joker-special-icon">✨</div><div class="joker-special-copy"><b>Zusatzfähigkeiten für Joker</b><small>Der Joker bleibt immer Wildcard; bei der Endwertung übernimmt er automatisch den günstigsten Wert seiner Reihe oder Spalte.</small></div><label class="joker-switch"><input id="jokerEnabled" type="checkbox" onchange="Game.toggleJokerSpecialUI()"><span class="joker-slider"></span></label></div><div class="joker-special-body"><div class="joker-state-pill" id="jokerSpecialState">AUS</div><div class="joker-special-grid"><div class="joker-special-good"><h4>Mit Spezialeffekten</h4><ul><li>⭐ Stern kann eine Gratis-Aktion auslösen</li><li>⚡ Aktionskarten sind aktiv</li><li>🎯 Voller SKYJO-Action-Modus</li></ul></div><div class="joker-special-off"><h4>Wenn AUS</h4><ul><li>🃏 Joker bleibt Wildcard</li><li>🎯 Endwertung: günstigster Wert aus Reihe/Spalte</li><li>🏅 Jokerbonus bleibt: 3 = −10, 4 waagerecht = −15</li><li>🚫 Nur Aktionskarten und Gratis-Aktion sind aus</li></ul></div></div></div></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button><button class="secondary" onclick="Game.resetOnlineClient()">↻ Verbindung zurücksetzen</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken. <b>Client V15.24</b></div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div>${hasLocalSave()?'<button class="secondary wide resume-local-btn" onclick="Game.resumeLocalGame()">▶ Gespeichertes Spiel fortsetzen</button>':''}<button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Strategie & Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten, erkennt gefährliche Ablagen und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
 function toggleJokerSpecialUI(){const cb=$('#jokerEnabled'),f=$('#specialSetupField'),card=$('#jokerSpecialCard'),label=$('#jokerSpecialState');const on=!!(cb&&cb.checked);if(f)f.style.display=on?'flex':'none';if(card){card.classList.toggle('enabled',on);card.classList.toggle('disabled',!on)}if(label)label.textContent=on?'AKTIV':'AUS'}
 function updateNames(){const pc=$('#playerCount'),box=$('#names');if(!pc||!box)return;const n=Number(pc.value),previous=[...document.querySelectorAll('.pname')].map(x=>x.value);box.innerHTML=Array.from({length:n},(_,i)=>`<div class="field"><label>Spieler ${i+1}</label><input class="pname" value="${escapeHTML(previous[i]||`Spieler ${i+1}`)}"></div>`).join('')}
 function lobbyView(){const d=cloud.doc,l=d.lobby,set=l.settings||{},me=myPlayerIndex(),host=isHostDevice();const players=l.players.map((p,i)=>`<div class="player-slot ${i===me?'me':''}"><div class="num">${i+1}</div><div class="who"><b>${escapeHTML(p.name)}${i===me?'<span class="you-tag">DU</span>':''}</b><small>${p.id===l.hostId?'Host':'Mitspieler'}</small></div><div>${p.id===l.hostId?'👑':'✓'}</div></div>`).join('');return `<div class="panel lobby-card"><div class="lobby-head"><div><h2 style="margin:0">Online-Lobby · ${escapeHTML(cloud.room)}</h2><p class="hint">${l.players.length}/8 Spieler im Raum</p></div><button onclick="Game.leaveOnlineRoom()">← Lobby verlassen</button></div><div class="player-list">${players}</div><div class="lobby-settings"><div class="setting-chip"><small>Ziel</small><b>${Number(set.target)||100} Punkte</b></div><div class="setting-chip"><small>Jokerkarten</small><b>${Number.isInteger(set.jokerCount)?set.jokerCount:8}</b></div><div class="setting-chip"><small>Joker-Spezialeffekt</small><b>${set.jokerEnabled===false?'AUS':'AN'}</b></div></div><div class="setup-separator"></div>${host?(l.players.length>=2?'<button class="primary wide" onclick="Game.startOnlineGame()">🎮 Online-Spiel starten</button>':'<div class="waiting-note">Warte auf mindestens einen weiteren Spieler …</div>'):'<div class="waiting-note">Host startet das Spiel, sobald alle bereit sind …</div>'}</div>`}
@@ -5004,7 +5213,7 @@ function resumeTransientFlow(){
  if(ui.mode==='starChoice'){setTimeout(showStarChoice,40);return}
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.23 · Finalscreen & Cache Fix</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.24 · Turn Announcements</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
@@ -5017,7 +5226,7 @@ window.addEventListener('pageshow',e=>{
  if(!e.persisted)return;
  try{
    closeModal();
-   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark').forEach(el=>el.remove())
+   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement').forEach(el=>el.remove())
  }catch(_e){}
  roundSummarySeen='';scoreSequenceSeen='';
  if(cloud.enabled&&cloud.room){
@@ -5051,7 +5260,7 @@ if(saved){state=saved;ui=restorePlayUIFromState();}
 
 try{
   closeModal();
-  document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark').forEach(el=>el.remove())
+  document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement').forEach(el=>el.remove())
 }catch(_e){}
 
 render();
