@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>SKYJO Action – V6 Cinematic Compact</title>
+<title>SKYJO Action – V15 Premium Table</title>
+<meta name="theme-color" content="#061b1d" />
+<meta name="color-scheme" content="dark" />
 <style>
 :root{
   --bg:#f5f3ec; --panel:#ffffff; --ink:#1f2933; --muted:#667085; --line:#d9d5ca;
@@ -1289,6 +1291,446 @@ body[data-mode="drawnDecision"] .player.active .card-slot:has(.card.clickable),b
 .flow-lock-note{font-size:10px;opacity:.72}
 .match-resolve-btn.disabled,.match-resolve-btn:disabled{opacity:.48;filter:saturate(.55);cursor:not-allowed}
 
+
+/* === V14.1 DISCARD-FIRST SWAP === */
+#play-discard-pile.discard-commit-pop>.card{
+  animation:discardCommitPop .42s cubic-bezier(.2,.85,.22,1);
+}
+@keyframes discardCommitPop{
+  0%{transform:scale(.93);filter:brightness(1.18)}
+  55%{transform:scale(1.055);filter:brightness(1.10)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  #play-discard-pile.discard-commit-pop>.card{animation:none}
+}
+
+
+/* === V14.2 HARD DISCARD COMMIT === */
+#play-discard-pile[data-arrival-committed="1"]>.card{
+  box-shadow:0 0 0 2px rgba(255,221,92,.34),0 10px 24px rgba(0,0,0,.28);
+}
+
+
+/* ==========================================================
+   V15.0 PREMIUM TABLE — FINAL VISUAL PASS
+   Quiet luxury, better hierarchy, tablet-first polish.
+   ========================================================== */
+:root{
+  --v15-ink:#eaf8f6;
+  --v15-muted:#8fa9aa;
+  --v15-gold:#f6d15f;
+  --v15-mint:#79e6d4;
+  --v15-panel:rgba(7,31,34,.92);
+  --v15-panel-2:rgba(10,42,45,.88);
+  --v15-line:rgba(255,255,255,.105);
+  --v15-line-strong:rgba(255,255,255,.17);
+  --v15-shadow:0 18px 44px rgba(0,0,0,.27);
+}
+html{background:#031113}
+body{
+  background:
+    radial-gradient(1000px 600px at 50% -20%,hsla(var(--turn-hue),82%,60%,.115),transparent 64%),
+    radial-gradient(820px 520px at -8% 108%,rgba(47,211,185,.095),transparent 65%),
+    radial-gradient(760px 480px at 108% 88%,rgba(111,88,236,.075),transparent 67%),
+    linear-gradient(155deg,#020c0e 0%,#061b1d 48%,#031113 100%)!important;
+}
+body:before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.16;
+  background-image:
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,.22) 0 .5px,transparent .8px),
+    radial-gradient(circle at 75% 65%,rgba(255,255,255,.14) 0 .45px,transparent .75px);
+  background-size:10px 10px,13px 13px;
+}
+body:after{
+  opacity:.20!important;
+  background-size:96px 96px!important;
+}
+.app{max-width:1540px}
+
+/* HEADER */
+.topbar{
+  min-height:56px!important;
+  border-color:rgba(255,255,255,.11)!important;
+  background:
+    linear-gradient(180deg,rgba(10,39,42,.94),rgba(4,24,27,.93))!important;
+  box-shadow:0 16px 45px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.065)!important;
+}
+.brand{gap:11px!important}
+.brandmark{
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.72),0 8px 20px rgba(0,0,0,.28),0 0 22px hsla(var(--turn-hue),82%,62%,.10)!important;
+}
+.brand-copy{min-width:0}
+.brand h1{font-size:18px!important;line-height:1.02!important;letter-spacing:.15px!important}
+.brand-subline{display:flex;align-items:center;gap:7px;margin-top:3px}
+.brand-subline small{font-size:7px!important;color:#7f9b9d!important;letter-spacing:.7px!important}
+.edition-chip{
+  display:inline-flex;align-items:center;height:16px;padding:0 6px;border-radius:999px;
+  font-size:5.8px;font-weight:950;letter-spacing:1px;color:#bdd8d5;
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)
+}
+.top-actions{gap:5px!important}
+.iconbtn{
+  border-radius:12px!important;
+  border-color:rgba(255,255,255,.105)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035))!important;
+}
+.iconbtn:focus-visible,.pile-card-hit:focus-visible,.market-hit:focus-visible{
+  outline:2px solid var(--v15-gold)!important;outline-offset:3px!important
+}
+.cloud-pill{border-color:rgba(255,255,255,.11)!important;font-weight:850!important}
+
+/* STATUS RAIL */
+.premium-status{gap:7px!important;margin:5px 0 7px!important}
+.premium-status .stat{
+  min-height:48px;padding:7px 9px 6px!important;border-radius:14px!important;
+  display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:7px;align-items:center;
+  background:linear-gradient(180deg,rgba(17,52,55,.82),rgba(6,29,32,.92))!important;
+  border:1px solid rgba(255,255,255,.09)!important
+}
+.premium-status .stat:after{
+  content:attr(data-icon);grid-row:1/3;grid-column:1;width:25px;height:25px;border-radius:9px;
+  display:grid;place-items:center;font-size:11px;font-weight:950;color:#9fb9b8;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07)
+}
+.premium-status .stat b{grid-column:2;font-size:13px!important;line-height:1.1;color:#f5fbfa}
+.premium-status .stat span{grid-column:2;font-size:5.7px!important;line-height:1.1}
+.premium-status .turn-stat{
+  border-color:hsla(var(--turn-hue),75%,68%,.27)!important;
+  background:linear-gradient(180deg,hsla(var(--turn-hue),45%,24%,.30),rgba(7,31,34,.94))!important
+}
+.premium-status .turn-stat:after{
+  color:hsl(var(--turn-hue),80%,76%);background:hsla(var(--turn-hue),76%,60%,.10);
+  border-color:hsla(var(--turn-hue),78%,70%,.16)
+}
+
+/* TABLE */
+.center-table{
+  border-radius:22px!important;
+  border-color:rgba(113,231,213,.12)!important;
+  background:
+    radial-gradient(ellipse at 17% 42%,hsla(var(--turn-hue),82%,61%,.065),transparent 34%),
+    radial-gradient(ellipse at 83% 40%,rgba(120,94,255,.060),transparent 35%),
+    linear-gradient(165deg,rgba(9,48,49,.985),rgba(3,25,28,.995))!important;
+  box-shadow:0 22px 58px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.055),inset 0 0 80px rgba(0,0,0,.08)!important;
+}
+.center-table:after{
+  content:"PREMIUM TABLE · SKYJO ACTION"!important;
+  font-size:6px!important;letter-spacing:3.2px!important;color:rgba(255,255,255,.052)!important
+}
+.handbox,.watchbox,.pilebox{min-width:0}
+.pilebox{
+  border-radius:17px!important;
+  background:linear-gradient(180deg,rgba(2,26,29,.58),rgba(2,18,20,.43))!important;
+  border-color:rgba(255,255,255,.082)!important
+}
+.section-heading{
+  display:flex;align-items:center;justify-content:center;gap:7px;margin:0 0 7px;
+  min-height:27px
+}
+.section-heading .section-icon{
+  width:23px;height:23px;border-radius:8px;display:grid;place-items:center;font-size:11px;
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.075)
+}
+.section-heading h4{margin:0!important;font-size:9px!important;color:#c4d6d5!important;letter-spacing:1px!important}
+.section-heading small{display:block;margin-top:1px;font-size:5.5px;color:#748f91;text-transform:uppercase;letter-spacing:.7px;font-weight:850}
+
+/* PREMIUM PILES */
+.premium-piles{gap:16px!important;align-items:flex-end!important}
+.pile-unit{position:relative;display:grid;justify-items:center;gap:4px}
+.pile-overline{
+  font-size:5.8px;font-weight:950;letter-spacing:1.25px;color:#708c8e;
+  text-transform:uppercase
+}
+.pile-card-hit{
+  padding:5px 6px 7px!important;border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(0,0,0,.07));
+  border:1px solid rgba(255,255,255,.055)
+}
+.pile-card-hit:after{
+  content:"";position:absolute;left:13%;right:13%;bottom:-5px;height:7px;border-radius:50%;
+  background:rgba(0,0,0,.28);filter:blur(3px);z-index:-1;pointer-events:none
+}
+.pile-card-hit.enabled{
+  border-color:hsla(var(--turn-hue),76%,70%,.25);
+  box-shadow:0 0 0 2px hsla(var(--turn-hue),80%,65%,.055),0 10px 22px rgba(0,0,0,.18)
+}
+.pile-count-chip{
+  position:absolute;right:-5px;top:-6px;z-index:9;min-width:22px;height:22px;padding:0 5px;
+  display:grid;place-items:center;border-radius:999px;font-size:7px;font-weight:950;color:#d8e9e7;
+  background:#14383b;border:2px solid #082326;box-shadow:0 5px 12px rgba(0,0,0,.26)
+}
+.pile-count-chip.discard-count{background:#594817;color:#ffe999}
+.pile-tip{
+  min-width:58px!important;padding:3px 7px!important;font-size:6.5px!important;letter-spacing:.65px!important
+}
+.buried-mini{bottom:-12px!important;font-size:6.3px!important}
+
+/* CARDS */
+.card{
+  border-radius:13px!important;border-color:rgba(255,255,255,.52)!important;
+  box-shadow:0 7px 0 rgba(0,0,0,.235),0 14px 26px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.76),inset 0 -1px 0 rgba(0,0,0,.08)!important
+}
+.card:before{
+  border-radius:inherit;
+  background:
+    linear-gradient(125deg,rgba(255,255,255,.34),transparent 27% 72%,rgba(0,0,0,.055)),
+    radial-gradient(circle at 24% 11%,rgba(255,255,255,.48),transparent 16%)!important
+}
+.card .center-value{
+  letter-spacing:-1.7px;font-weight:950!important;
+  text-shadow:0 2px 0 rgba(255,255,255,.16),0 5px 10px rgba(0,0,0,.10)!important
+}
+.card .corner{
+  padding:2px 3px;border-radius:5px;background:rgba(255,255,255,.12);backdrop-filter:blur(2px)
+}
+.card.back{
+  border-color:rgba(162,209,234,.32)!important;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(255,255,255,.10) 0 1px,transparent 1.5px),
+    linear-gradient(135deg,transparent 0 46%,rgba(255,255,255,.055) 47% 53%,transparent 54%),
+    linear-gradient(45deg,transparent 0 46%,rgba(255,255,255,.038) 47% 53%,transparent 54%),
+    linear-gradient(145deg,#47329b 0%,#28619b 50%,#12837b 100%)!important;
+  background-size:10px 10px,20px 20px,20px 20px,100% 100%!important
+}
+.card.back:after{opacity:.94!important}
+.card.star{filter:saturate(.96)}
+.card.clickable:hover{
+  transform:translateY(-5px) scale(1.018)!important;
+  box-shadow:0 8px 0 rgba(0,0,0,.22),0 18px 30px rgba(0,0,0,.25),0 0 22px hsla(var(--turn-hue),75%,66%,.08)!important
+}
+.card-slot{border-radius:15px}
+body[data-mode="drawnDecision"] .player.active .card-slot:has(.card.clickable),
+body[data-mode="discardSwap"] .player.active .card-slot:has(.card.clickable),
+body[data-mode="flipOwn"] .player.active .card-slot:has(.card.clickable){
+  background:hsla(var(--player-hue),78%,60%,.035)
+}
+.match-ready-slot:after{
+  content:"KOMBI";position:absolute;right:-4px;top:-5px;z-index:8;padding:2px 5px;border-radius:999px;
+  font-size:5px;font-weight:950;letter-spacing:.7px;color:#5b4200;background:#ffe275;
+  border:1px solid rgba(255,255,255,.55);box-shadow:0 4px 10px rgba(0,0,0,.20)
+}
+
+/* PLAYER PANELS */
+.player{
+  border-radius:20px!important;
+  background:
+    radial-gradient(circle at 0% 0%,hsla(var(--player-hue),84%,65%,.075),transparent 30%),
+    linear-gradient(180deg,rgba(14,47,50,.95),rgba(5,27,30,.985))!important;
+  border-color:rgba(255,255,255,.085)!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05)!important
+}
+.player:before{width:3px!important}
+.player.active{
+  border-color:hsla(var(--player-hue),90%,74%,.48)!important;
+  box-shadow:0 0 0 2px hsla(var(--player-hue),84%,65%,.075),0 18px 46px rgba(0,0,0,.29),0 0 28px hsla(var(--player-hue),88%,62%,.085)!important
+}
+.player.active:after{
+  content:"AKTIVER SPIELER";position:absolute;right:9px;top:7px;bottom:auto;
+  font-size:5.2px;font-weight:950;letter-spacing:1.15px;color:hsl(var(--player-hue),76%,82%);
+  padding:3px 6px;border-radius:999px;background:hsla(var(--player-hue),78%,58%,.095);
+  border:1px solid hsla(var(--player-hue),82%,70%,.13);pointer-events:none
+}
+.player.mine:not(.active):after{
+  content:"DEIN FELD";position:absolute;right:10px;bottom:7px;top:auto;
+  font-size:5.5px;font-weight:950;letter-spacing:1.25px;color:hsla(var(--player-hue),75%,80%,.16)
+}
+.player-head{
+  padding-bottom:7px;margin-bottom:8px!important;border-bottom:1px solid rgba(255,255,255,.055)
+}
+.avatar{
+  width:31px!important;height:31px!important;border-radius:11px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 5px 12px rgba(0,0,0,.17)!important
+}
+.player-name{font-size:12px!important;line-height:1.05}
+.ai-tag,.you-tag,.active-tag{white-space:nowrap}
+.ai-tag,.you-tag{
+  display:inline-flex;padding:2px 5px;border-radius:999px;font-size:5.5px;font-weight:950;letter-spacing:.55px;
+  border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.045)
+}
+.ai-tag{color:#a8d8ff}.you-tag{color:#9df0dc}
+.player-meta-chips{gap:4px!important;margin-top:4px!important}
+.player-meta-chips .meta-chip{
+  display:inline-flex;align-items:center;min-height:16px;padding:2px 5px;border-radius:999px;
+  font-size:5.7px!important;font-weight:850;color:#8ea8a9;background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.055)
+}
+.player-meta-chips .meta-chip+span:before{display:none!important}
+.player-meta-chips .open-chip{color:#9fd6ce}
+.player-meta-chips .action-chip{color:#d3c6ff}
+.scorechip{border-radius:11px!important}
+.progress-chip{height:25px;display:grid!important;place-items:center}
+.reveal-meter{height:3px!important;margin-top:5px!important;border-radius:99px;overflow:hidden}
+.grid{
+  padding:3px;border-radius:16px;
+  background:rgba(0,0,0,.065);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)
+}
+
+/* MATCH / OPTIONAL ROW */
+.match-actions{
+  border-radius:13px!important;padding:7px 8px!important;
+  background:linear-gradient(180deg,rgba(255,208,76,.075),rgba(255,255,255,.018))!important
+}
+.match-actions-title{color:#eedb8a!important}
+.match-resolve-btn{
+  border-radius:10px!important;font-weight:900!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)
+}
+
+/* HAND ZONE */
+.real-hand-zone{
+  border-radius:19px!important;
+  background:
+    radial-gradient(circle at 13% 50%,hsla(var(--turn-hue),78%,65%,.085),transparent 36%),
+    linear-gradient(180deg,rgba(8,34,37,.96),rgba(4,24,27,.97))!important;
+  border-color:rgba(255,219,103,.16)!important;
+  box-shadow:0 14px 30px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.055)!important
+}
+.real-hand-zone:before{content:"HANDZONE · AKTUELLE KARTE"!important;color:rgba(255,223,123,.30)!important}
+.real-hand-card{
+  border-radius:15px!important;background:rgba(0,0,0,.10)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)
+}
+.real-hand-card.empty{
+  border:1px dashed rgba(255,255,255,.12)!important;color:rgba(255,255,255,.16)!important
+}
+.real-hand-copy .eyebrow{color:#829c9d!important;letter-spacing:1.15px!important}
+.real-hand-copy b{font-size:12px!important;letter-spacing:.05px}
+.real-hand-copy small{color:#7f999b!important;line-height:1.35}
+
+/* LIVE PANEL */
+.watch-panel{
+  border-radius:18px!important;
+  background:linear-gradient(180deg,rgba(7,28,39,.93),rgba(7,31,33,.90))!important;
+  border-color:rgba(255,255,255,.085)!important;
+  box-shadow:0 13px 28px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.045)!important
+}
+.watch-headline{
+  padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.05)
+}
+.watch-headline b{letter-spacing:.15px}
+.watch-headline span{
+  padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.055)
+}
+.watch-card-stage{
+  border-radius:13px!important;background:rgba(0,0,0,.10)!important;
+  border-color:rgba(255,255,255,.065)!important
+}
+.watch-copy b{color:#eef8f7!important}.watch-copy small{line-height:1.4}
+
+/* BOTTOM COMMAND BAR */
+.bottom-actions{
+  border-top-color:rgba(255,255,255,.10)!important;
+  background:linear-gradient(180deg,rgba(5,26,29,.94),rgba(2,16,18,.985))!important;
+  box-shadow:0 -16px 42px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.035)!important
+}
+.bottom-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;max-width:1500px!important}
+.instruction{
+  position:relative;text-align:left!important;margin:0!important;padding-left:19px;
+  color:#e7f4f3!important;font-size:10px!important;line-height:1.25!important
+}
+.instruction:before{
+  content:"";position:absolute;left:0;top:50%;width:8px;height:8px;border-radius:50%;
+  transform:translateY(-50%);background:hsl(var(--turn-hue),78%,63%);
+  box-shadow:0 0 0 4px hsla(var(--turn-hue),78%,63%,.08)
+}
+.action-buttons{padding:0!important;max-width:760px}
+.action-buttons button{
+  min-height:36px!important;padding:7px 12px!important;border-radius:11px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035))!important;
+  border-color:rgba(255,255,255,.09)!important;color:#eef7f6!important
+}
+.action-buttons button.primary{
+  background:linear-gradient(135deg,hsla(var(--turn-hue),76%,49%,.80),rgba(89,73,196,.92))!important;
+  border-color:hsla(var(--turn-hue),80%,70%,.18)!important
+}
+.turn-state-pill,.waiting-note,.ai-thinking{
+  border-radius:10px!important;padding:7px 10px!important;border:1px solid rgba(255,255,255,.08)!important;
+  background:rgba(255,255,255,.045)!important
+}
+
+/* MODALS */
+.modal-back{background:rgba(0,8,10,.74)!important;backdrop-filter:blur(10px) saturate(115%)!important}
+.modal{
+  border:1px solid rgba(255,255,255,.11)!important;
+  background:
+    radial-gradient(circle at 8% 0%,hsla(var(--turn-hue),75%,60%,.075),transparent 30%),
+    linear-gradient(180deg,rgba(13,43,46,.985),rgba(5,25,28,.995))!important;
+  box-shadow:0 34px 90px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.065)!important;
+}
+.modal h3{color:#f3fbfa!important;letter-spacing:-.15px}
+.modal p{color:#91aaab!important}
+.modal-actions button,.choice{
+  border-radius:12px!important;border-color:rgba(255,255,255,.09)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.035))!important
+}
+.modal-actions button.primary{
+  background:linear-gradient(135deg,hsla(var(--turn-hue),72%,48%,.80),#5f4dc5)!important;color:white!important
+}
+
+/* SETUP */
+.hero{
+  overflow:hidden!important;border-radius:24px!important;
+  background:
+    radial-gradient(circle at 15% 0%,rgba(255,218,88,.10),transparent 28%),
+    radial-gradient(circle at 90% 14%,rgba(82,220,202,.08),transparent 32%),
+    linear-gradient(165deg,rgba(11,43,46,.96),rgba(5,27,30,.99))!important
+}
+.setup-brand{display:flex;align-items:center;justify-content:center;gap:16px;text-align:left;margin:5px auto 14px}
+.setup-mark{margin:0!important;width:66px!important;height:66px!important;border-radius:20px!important;flex:0 0 66px}
+.setup-kicker{display:block;font-size:7px;font-weight:950;letter-spacing:1.8px;color:#789497;margin-bottom:4px}
+.hero .setup-brand h2{margin:0!important;font-size:34px!important;letter-spacing:-1.2px}
+.hero .setup-brand h2 em{font-style:normal;color:var(--accent)}
+.hero .setup-brand p{margin:4px 0 0!important;text-align:left}
+.setup-feature-row{
+  display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:-2px auto 15px
+}
+.setup-feature-row span{
+  padding:5px 8px;border-radius:999px;font-size:7px;font-weight:850;color:#a8c0c0;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)
+}
+.field input,.field select{
+  border-radius:12px!important;border-color:rgba(255,255,255,.09)!important;
+  background:rgba(0,0,0,.14)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)
+}
+.field label{letter-spacing:.45px}
+.toggle-box,.ai-setup-card{
+  border-radius:15px!important;border-color:rgba(255,255,255,.08)!important;background:rgba(255,255,255,.028)!important
+}
+
+/* Tablet landscape refinement */
+@media (min-width:900px) and (orientation:landscape){
+  .premium-status .stat{min-height:42px;padding:5px 7px!important}
+  .premium-status .stat:after{width:21px;height:21px;border-radius:7px;font-size:9px}
+  .premium-status .stat b{font-size:11px!important}
+  .bottom-inner{grid-template-columns:minmax(220px,1fr) auto}
+  .player-head{padding-bottom:5px;margin-bottom:6px!important}
+  .player-meta-chips{margin-top:2px!important}
+  .player-meta-chips .meta-chip{min-height:14px;padding:1px 4px;font-size:5.2px!important}
+  .premium-piles{gap:13px!important}
+  .section-heading{margin-bottom:4px}
+}
+@media (max-width:1050px) and (orientation:landscape){
+  .premium-status .stat:after{display:none}
+  .premium-status .stat{display:block;text-align:center;min-height:38px}
+  .bottom-inner{grid-template-columns:1fr auto;gap:8px}
+  .instruction{font-size:8.5px!important}
+  .edition-chip{display:none}
+}
+@media(max-width:760px){
+  .brand-subline .edition-chip{display:none}
+  .premium-status{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .premium-status .turn-stat{grid-column:1/-1;grid-row:1}
+  .premium-status .joker-stat{display:none}
+  .bottom-inner{display:block}
+  .instruction{text-align:center!important;margin-bottom:5px!important;padding-left:0}
+  .instruction:before{display:none}
+  .setup-brand{gap:10px}.setup-mark{width:52px!important;height:52px!important;flex-basis:52px}.hero .setup-brand h2{font-size:26px!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .card,.iconbtn,.player,.pile-card-hit,.action-card{transition:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -1349,9 +1791,52 @@ let audioCtx=null,wakeLock=null,pseudoFullscreen=false;
 function saveUIPrefs(){try{localStorage.setItem(UI_PREF_KEY,JSON.stringify(uiPrefs))}catch(_e){}}
 let motionBusy=false,motionQueueBusy=false,motionUnlockTimer=null,motionSessionStart=Date.now(),motionBusyUntil=0,motionRenderPending=false,motionActiveEvent=null;
 const motionSeen=new Set();
-function discardArrivalEvent(){if(motionActiveEvent&&(motionActiveEvent.type==='swap'||motionActiveEvent.type==='drawn-discard'))return motionActiveEvent;const list=state?.motionFeed||[];for(let i=list.length-1;i>=0;i--){const e=list[i];if(!e?.id||motionSeen.has(e.id))continue;if(!(Number(e.ts||0)>=motionSessionStart-8000||e.id===state?.watch?.id))continue;if(e.type==='swap'||e.type==='drawn-discard')return e}return null}
+const motionDiscardCommitted=new Set();
+function discardArrivalEvent(){
+ if(motionActiveEvent&&(motionActiveEvent.type==='swap'||motionActiveEvent.type==='drawn-discard')&&!motionDiscardCommitted.has(motionActiveEvent.id))return motionActiveEvent;
+ const list=state?.motionFeed||[];
+ for(let i=list.length-1;i>=0;i--){
+   const e=list[i];
+   if(!e?.id||motionSeen.has(e.id)||motionDiscardCommitted.has(e.id))continue;
+   if(!(Number(e.ts||0)>=motionSessionStart-8000||e.id===state?.watch?.id))continue;
+   if(e.type==='swap'||e.type==='drawn-discard')return e
+ }
+ return null
+}
 function discardArrivalPending(){return !!discardArrivalEvent()}
 function visualDiscardState(){const arr=state?.playDiscard||[];const pending=discardArrivalPending();if(pending&&arr.length){return {top:arr.length>1?arr[arr.length-2]:null,count:Math.max(0,arr.length-1),pending:true}}return {top:arr[arr.length-1]||null,count:arr.length,pending:false}}
+function commitDiscardArrival(e,card){
+ if(e?.id)motionDiscardCommitted.add(e.id);
+ showDiscardCardImmediately(card);
+ const pile=document.getElementById('play-discard-pile');
+ if(pile){
+   const tip=pile.querySelector('.pile-tip');
+   if(tip)tip.textContent='Ablage';
+   pile.setAttribute('data-arrival-committed','1');
+ }
+}
+function showDiscardCardImmediately(card){
+ if(!card)return;
+ const pile=document.getElementById('play-discard-pile');
+ if(!pile)return;
+ const current=pile.querySelector('.card');
+ const wrap=document.createElement('div');
+ wrap.innerHTML=cardHTML({...card,faceUp:true},true,false);
+ const fresh=wrap.firstElementChild;
+ if(current&&fresh)current.replaceWith(fresh);
+ const tip=pile.querySelector('.pile-tip');
+ if(tip)tip.textContent='Ablage';
+ pile.classList.remove('discard-commit-pop');
+ void pile.offsetWidth;
+ pile.classList.add('discard-commit-pop');
+ setTimeout(()=>pile?.classList.remove('discard-commit-pop'),520);
+ const box=pile.closest('.play-pilebox');
+ const count=box?.querySelector('.count');
+ if(count&&state){
+   const n=state.playDiscard?.length||0,buried=state.removedCards?.length||0;
+   count.textContent=`${state.playDeck.length} im Stapel · ${n} Ablagekarte${n===1?'':'n'}${buried?` · ${buried} gesperrt darunter`:''}`;
+ }
+}
 function motionSpec(){const level=uiPrefs.motion||'table';if(level==='normal')return {level,flight:420,arc:38,settle:85,swapGap:90,pause:65,flip:340,revealPause:80};if(level==='slow')return {level,flight:700,arc:54,settle:130,swapGap:135,pause:100,flip:450,revealPause:115};return {level:'table',flight:920,arc:74,settle:175,swapGap:170,pause:135,flip:520,revealPause:145}}
 function setMotionLevel(level){if(!['normal','slow','table'].includes(level))level='table';uiPrefs.motion=level;saveUIPrefs();showDisplaySettings();toast(level==='normal'?'⚡ Bewegung: normal':level==='slow'?'🎴 Bewegung: langsam':'🃏 Echter Tischmodus')}
 function rerenderAfterMotion(){if(motionRenderPending||!state)return;motionRenderPending=true;setTimeout(()=>{motionRenderPending=false;if(state)render()},0)}
@@ -1362,7 +1847,7 @@ function motionShouldBlock(e){if(!state||!e)return false;/* Alte Bewegungen dür
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function recentMotionCard(){const list=state?.motionFeed||[],now=Date.now();for(let i=list.length-1;i>=0;i--){const e=list[i];if(!e)continue;if(now-Number(e.ts||0)>7000)break;if(e.type==='swap'||e.type==='drawn-discard'||e.type==='turn'||e.type==='reveal'||e.type==='action-play'||e.type==='action-take'||e.type==='meteor')return null;if((e.type==='draw-deck'||e.type==='take-discard'||e.type==='decision-keep')&&e.card)return e}return null}
 function heldCardInfo(){if(!state)return null;const localHeld=(ui.mode==='drawnDecision'||ui.mode==='drawnSwap'||ui.mode==='discardSwap'||ui.mode==='draw3Target')&&ui.data?.card?{card:ui.data.card,actor:state.currentPlayer,type:ui.mode==='discardSwap'?'Ablagekarte':'Gezogene Karte',local:!isAIPlayer(state.currentPlayer),title:isAIPlayer(state.currentPlayer)?`${state.players[state.currentPlayer].name} spielt diese Karte`:''}:null;if(localHeld)return localHeld;const evt=recentMotionCard();if(evt?.card)return {card:evt.card,actor:evt.actor??state.currentPlayer,type:evt.typeLabel||'Live-Karte',local:false,title:evt.title||'',text:evt.text||''};return null}
-function handZoneHTML(){const h=heldCardInfo();const actor=h?state.players?.[h.actor]?.name:'';const decision=!!(h?.local&&ui.mode==='drawnDecision');return `<div id="table-hand-zone-anchor" class="real-hand-zone"><div id="table-hand-zone-card" class="real-hand-card ${h?'':'empty'}">${h?cardHTML({...h.card,faceUp:true},true,false):'✦'}</div><div class="real-hand-copy"><span class="eyebrow">${h?escapeHTML(h.type):'Hand-/Entscheidungszone'}</span><b>${h?(h.local?'Karte in deiner Hand':`${escapeHTML(actor)} hat diese Karte`):'Hier landet eine gezogene Karte zuerst'}</b><small>${h?(h.local?(decision?'Eigene Karte antippen: Sie wird zuerst aufgedeckt, dann sauber ausgetauscht. Oder auf die Ablage tippen.':'Diese Karte wird jetzt gespielt.'):escapeHTML(h.text||h.title||'Live vom anderen Spieler.')):'Stapel → Handzone → Spielfeld → alte Karte zur Ablage.'}</small>${decision?`<div class="direct-swap-hint">☝ Eigene Karte antippen = sofort tauschen</div><div class="real-hand-actions direct-only"><button class="drop" onclick="Game.discardDrawn()">🗑 Wegwerfen & Karte aufdecken</button></div>`:''}</div></div>`}
+function handZoneHTML(){const h=heldCardInfo();const actor=h?state.players?.[h.actor]?.name:'';const decision=!!(h?.local&&ui.mode==='drawnDecision');return `<div id="table-hand-zone-anchor" class="real-hand-zone"><div id="table-hand-zone-card" class="real-hand-card ${h?'':'empty'}">${h?cardHTML({...h.card,faceUp:true},true,false):'✦'}</div><div class="real-hand-copy"><span class="eyebrow">${h?escapeHTML(h.type):'Hand-/Entscheidungszone'}</span><b>${h?(h.local?'Karte in deiner Hand':`${escapeHTML(actor)} hat diese Karte`):'Hier landet eine gezogene Karte zuerst'}</b><small>${h?(h.local?(decision?'Eigene Karte antippen: Sie wird zuerst aufgedeckt, dann sauber ausgetauscht. Oder auf die Ablage tippen.':'Diese Karte wird jetzt gespielt.'):escapeHTML(h.text||h.title||'Live vom anderen Spieler.')):'Stapel → Handzone → alte Feldkarte offen zur Ablage → erst danach Handkarte ins Spielfeld.'}</small>${decision?`<div class="direct-swap-hint">☝ Eigene Karte antippen = sofort tauschen</div><div class="real-hand-actions direct-only"><button class="drop" onclick="Game.discardDrawn()">🗑 Wegwerfen & Karte aufdecken</button></div>`:''}</div></div>`}
 function motionFlightMarkup(e,cardOverride=null){if(e?.actionType&&!cardOverride){const a=ACTIONS[e.actionType];return `<div class="motion-fly action">${a?a.icon:'⚡'}</div>`}const c=cardOverride||e?.card||{type:'number',value:0,faceUp:false};return `<div class="motion-fly">${cardHTML({...c,faceUp:true},true,false)}</div>`}
 async function animateRealFlight(fromId,toId,e,cardOverride=null){const from=document.getElementById(fromId),to=document.getElementById(toId);if(!from||!to)return;const spec=motionSpec(),fr=from.getBoundingClientRect(),tr=to.getBoundingClientRect();const wrap=document.createElement('div');wrap.innerHTML=motionFlightMarkup(e,cardOverride);const fly=wrap.firstElementChild;if(!fly)return;document.body.append(fly);const sx=fr.left+fr.width/2,sy=fr.top+fr.height/2,tx=tr.left+tr.width/2,ty=tr.top+tr.height/2,dx=tx-sx,dy=ty-sy;fly.style.left=`${sx}px`;fly.style.top=`${sy}px`;const arc=Math.min(110,Math.max(26,spec.arc+Math.abs(dx)*.035));const scale=Math.max(.76,Math.min(1.08,(tr.width||74)/(fr.width||74)));let anim=null;try{anim=fly.animate([{transform:'translate(-50%,-50%) scale(.88) rotate(-2deg)',opacity:.96},{offset:.48,transform:`translate(calc(-50% + ${dx*.48}px),calc(-50% + ${dy*.48-arc}px)) scale(1.06) rotate(${dx>=0?3:-3}deg)`,opacity:1},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(${scale}) rotate(0deg)`,opacity:1}],{duration:spec.flight,easing:'cubic-bezier(.22,.78,.2,1)',fill:'forwards'});const finished=anim?.finished&&typeof anim.finished.then==='function'?anim.finished.catch(()=>null):sleep(spec.flight);await Promise.race([finished,sleep(spec.flight+350)])}catch(_e){await sleep(Math.min(spec.flight,1400))}finally{try{anim?.cancel?.()}catch(_e){}fly.remove()}if(!document.body.contains(to))return;to.classList.remove('motion-landing');void to.offsetWidth;to.classList.add('motion-landing');setTimeout(()=>to.classList.remove('motion-landing'),500);await sleep(spec.settle)}
 function swapLayerMarkup(oldCard,wasFaceUp){const back=cardHTML({type:'number',value:0,faceUp:false},false,false),front=cardHTML({...oldCard,faceUp:true},true,false);return `<div class="swap-reveal-card"><div class="swap-reveal-face back-face">${back}</div><div class="swap-reveal-face front-face">${front}</div></div>`}
@@ -1399,14 +1884,43 @@ function queueMotionEvent(type,data={}){if(!state)return null;state.motionFeed=A
 async function playMotionEvent(e){if(!e)return;const spec=motionSpec();let label=e.title||'Kartenbewegung';const block=motionShouldBlock(e);const maybeLock=(ms)=>{if(block)lockMotion(ms,label)};const masksDiscard=e.type==='swap'||e.type==='drawn-discard';motionActiveEvent=e;try{
  if(e.type==='turn'){pulseTarget(`player-${e.actor}`);await sleep(Math.min(260,spec.pause));return}
  if(e.type==='draw-deck'||e.type==='take-discard'){maybeLock(spec.flight+spec.settle+140);await animateRealFlight(e.srcId||'play-deck-pile','table-hand-zone-card',e);return}
- if(e.type==='drawn-discard'){maybeLock(spec.flight+spec.settle+140);await animateRealFlight('table-hand-zone-card','play-discard-pile',e);return}
+ if(e.type==='drawn-discard'){maybeLock(spec.flight+spec.settle+140);await animateRealFlight('table-hand-zone-card','play-discard-pile',e);commitDiscardArrival(e,e.card);return}
  if(e.type==='decision-keep'){maybeLock(Math.min(430,spec.flight*.45));pulseTarget('table-hand-zone-card');await sleep(Math.min(430,spec.flight*.45));return}
- if(e.type==='swap'){maybeLock(spec.flip+spec.revealPause+spec.flight*2+spec.swapGap+spec.settle*2+520);const revealCtx=await prepareSwapReveal(e);try{if(e.oldCard){if(revealCtx?.layer){revealCtx.layer.style.opacity='0';revealCtx.layer.style.transition='opacity .12s ease';await sleep(90)}await animateRealFlight(e.dstId,e.discardId||'play-discard-pile',e,e.oldCard)}await sleep(spec.swapGap);await animateRealFlight('table-hand-zone-card',e.dstId,e,e.card);clearSwapReveal(revealCtx,true);return}finally{clearSwapReveal(revealCtx,false)}}
+ if(e.type==='swap'){
+   maybeLock(spec.flip+spec.revealPause+spec.flight*2+spec.swapGap+spec.settle*2+980);
+   const revealCtx=await prepareSwapReveal(e);
+   try{
+     if(e.oldCard){
+       if(revealCtx?.layer){
+         revealCtx.layer.style.opacity='0';
+         revealCtx.layer.style.transition='opacity .12s ease';
+         await sleep(90)
+       }
+       /* PHASE 1: alte Feldkarte fliegt offen auf die Ablage. */
+       await animateRealFlight(e.dstId,e.discardId||'play-discard-pile',e,e.oldCard);
+       /* PHASE 2: die Ablage ist ab JETZT verbindlich sichtbar.
+          discardArrivalPending() darf sie nun auch bei Zwischen-Render/Sync nicht mehr verstecken. */
+       commitDiscardArrival(e,e.oldCard);
+       haptic(7);
+       await sleep(spec.level==='table'?520:spec.level==='slow'?400:300)
+     }
+     /* PHASE 3: erst jetzt verlässt die Handkarte die Handzone. */
+     await animateRealFlight('table-hand-zone-card',e.dstId,e,e.card);
+     clearSwapReveal(revealCtx,true);
+     return
+   }finally{
+     clearSwapReveal(revealCtx,false)
+   }
+ }
  if(e.type==='bury-row'){const cards=Array.isArray(e.cards)?e.cards:[],srcIds=Array.isArray(e.srcIds)?e.srcIds:[];maybeLock(Math.max(700,cards.length*(spec.flight+90)+spec.settle));for(let i=0;i<cards.length;i++){await animateRealFlight(srcIds[i]||`player-${e.actor}`,e.dstId||'play-discard-pile',e,cards[i]);if(i<cards.length-1)await sleep(70)}return}
  if(e.type==='action-take'||e.type==='action-play'||e.type==='meteor'){maybeLock(spec.flight+spec.settle+120);if(e.card||e.actionType)await animateRealFlight(e.srcId||'action-deck-pile',e.dstId||`player-${e.actor}`,e);else{pulseTarget(e.dstId||`player-${e.actor}`);await sleep(Math.min(320,spec.pause+100))}return}
  if(e.type==='reveal'){maybeLock(spec.flip+180);await animateCardReveal(e.dstId||`player-${e.actor}`,e.card);return}
  pulseTarget(e.dstId||`player-${e.actor}`);await sleep(Math.min(300,spec.pause))
- }finally{if(motionActiveEvent===e)motionActiveEvent=null;if(masksDiscard)rerenderAfterMotion()}}
+ }finally{
+   if(motionActiveEvent===e)motionActiveEvent=null;
+   if(masksDiscard)rerenderAfterMotion();
+   if(e?.id)setTimeout(()=>motionDiscardCommitted.delete(e.id),250)
+ }}
 async function runMotionQueue(){if(motionQueueBusy||!state)return;const feed=(state.motionFeed||[]).filter(e=>e?.id&&!motionSeen.has(e.id)&&(Number(e.ts||0)>=motionSessionStart-8000||e.id===state.watch?.id));if(!feed.length){if(motionBusy)unlockMotion(true);return}motionQueueBusy=true;try{for(const e of feed){motionSeen.add(e.id);await playMotionEvent(e);await sleep(motionSpec().pause)}}catch(err){console.warn('[motion queue]',err)}finally{motionQueueBusy=false;const more=(state?.motionFeed||[]).some(e=>e?.id&&!motionSeen.has(e.id)&&(Number(e.ts||0)>=motionSessionStart-8000||e.id===state.watch?.id));if(more)setTimeout(runMotionQueue,40);else unlockMotion(true)}}
 function haptic(pattern=8){try{if(uiPrefs.haptic&&navigator.vibrate)navigator.vibrate(pattern)}catch(_e){}}
 function ensureAudio(){try{if(!audioCtx){const A=window.AudioContext||window.webkitAudioContext;if(A)audioCtx=new A()}if(audioCtx?.state==='suspended')audioCtx.resume()}catch(_e){}return audioCtx}
@@ -1825,7 +2339,7 @@ function closeModal(){const b=$('#modalBack');if(b)b.classList.remove('show')}
 function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne zählen 0 Punkte und können am Zugende freiwillig kurz den Wert einer Zahl in derselben kompletten Reihe/Spalte annehmen.</li><li>Reine Stern-Gruppen dürfen entfernt werden, müssen aber nicht. Eine vollständige 3er-Sterngruppe bringt −10, eine waagerechte 4er-Sterngruppe −15. Wird sie vorher freiwillig abgeräumt, bleibt dieser Bonus gespeichert; jeder Stern zählt nur einmal für einen Bonus.</li></ul><h4>Gleiche Reihen</h4><p class="note"><b>Online-Schutz:</b> Solange die einmalige Ja/Nein-Entscheidung zu einer neuen Reihe offen ist, ist der normale Zug gesperrt. Ein Cloud-Sync kann dadurch keinen zweiten Zug mehr freigeben.</p><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Über „Reihe entfernen“ bzw. „Spalte entfernen“ räumst du sie freiwillig ab – auch Minuszahlen. Dadurch kann nach dem Entfernen einer ganzen Spalte auch eine waagerechte 3er-Reihe entstehen. Das Entfernen jeder vollständigen Kombination ist freiwillig. Beim ersten Entstehen erscheint einmal die Frage „Möchtest du diese Reihe jetzt entfernen?“. Mit Ja wird sie entfernt. Mit Nein bleibt sie liegen; für genau diese Kombination wird nicht erneut gefragt. Der Entfernen-Button bleibt trotzdem jederzeit verfügbar. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, hat jeder andere Spieler noch genau einen Zug. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle Karten aufgedeckt und gewertet. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards mit 0 Punkten funktionieren. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
 function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
 async function restart(){if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann das Online-Spiel neu starten.');return}if(confirm('Aktuelles Spiel wirklich löschen und neu starten?')){clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';localStorage.removeItem(SAVE_KEY);if(cloud.enabled&&cloud.room)await resetCloudRoom();state=null;ui={mode:'none',data:{},selected:[]};render()}}
-function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');return `<div class="panel hero"><div class="brandmark" style="margin:auto"></div><h2>SKYJO</h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p><div class="setup-grid"><div class="field"><label>Spielmodus</label><select id="cloudMode" onchange="Game.toggleCloudFields()"><option value="local" ${cloud.enabled?'':'selected'}>Lokal / Pass-and-Play</option><option value="ai">🤖 Gegen Computer</option><option value="cloud" ${cloud.enabled?'selected':''}>Online – mehrere Geräte</option></select></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="15"><div class="joker-off-note">Standard: 15.</div></div><div class="field"><label>Joker-Spezialeffekte</label><div class="toggle-box"><span><b>Zusatzfähigkeiten</b><div class="joker-off-note">AUS = Joker bleibt Wildcard, zählt 0 Punkte und behält den Jokerbonus (3 = −10 / 4 waagerecht = −15). Nur Aktionskarten und Gratis-Aktion sind aus.</div></span><input id="jokerEnabled" type="checkbox" checked onchange="Game.toggleJokerSpecialUI()"></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken.</div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div><button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
+function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM TABLE EDITION</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field"><label>Spielmodus</label><select id="cloudMode" onchange="Game.toggleCloudFields()"><option value="local" ${cloud.enabled?'':'selected'}>Lokal / Pass-and-Play</option><option value="ai">🤖 Gegen Computer</option><option value="cloud" ${cloud.enabled?'selected':''}>Online – mehrere Geräte</option></select></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="15"><div class="joker-off-note">Standard: 15.</div></div><div class="field"><label>Joker-Spezialeffekte</label><div class="toggle-box"><span><b>Zusatzfähigkeiten</b><div class="joker-off-note">AUS = Joker bleibt Wildcard, zählt 0 Punkte und behält den Jokerbonus (3 = −10 / 4 waagerecht = −15). Nur Aktionskarten und Gratis-Aktion sind aus.</div></span><input id="jokerEnabled" type="checkbox" checked onchange="Game.toggleJokerSpecialUI()"></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken.</div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div><button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
 function toggleJokerSpecialUI(){const cb=$('#jokerEnabled'),f=$('#specialSetupField');if(f)f.style.display=(cb&&cb.checked)?'flex':'none'}
 function updateNames(){const pc=$('#playerCount'),box=$('#names');if(!pc||!box)return;const n=Number(pc.value),previous=[...document.querySelectorAll('.pname')].map(x=>x.value);box.innerHTML=Array.from({length:n},(_,i)=>`<div class="field"><label>Spieler ${i+1}</label><input class="pname" value="${escapeHTML(previous[i]||`Spieler ${i+1}`)}"></div>`).join('')}
 function lobbyView(){const d=cloud.doc,l=d.lobby,set=l.settings||{},me=myPlayerIndex(),host=isHostDevice();const players=l.players.map((p,i)=>`<div class="player-slot ${i===me?'me':''}"><div class="num">${i+1}</div><div class="who"><b>${escapeHTML(p.name)}${i===me?'<span class="you-tag">DU</span>':''}</b><small>${p.id===l.hostId?'Host':'Mitspieler'}</small></div><div>${p.id===l.hostId?'👑':'✓'}</div></div>`).join('');return `<div class="panel lobby-card"><div class="lobby-head"><div><h2 style="margin:0">Online-Lobby · ${escapeHTML(cloud.room)}</h2><p class="hint">${l.players.length}/8 Spieler verbunden</p></div><button onclick="Game.leaveOnlineRoom()">← Lobby verlassen</button></div><div class="player-list">${players}</div><div class="lobby-settings"><div class="setting-chip"><small>Ziel</small><b>${Number(set.target)||100} Punkte</b></div><div class="setting-chip"><small>Jokerkarten</small><b>${Number.isInteger(set.jokerCount)?set.jokerCount:15}</b></div><div class="setting-chip"><small>Joker-Spezialeffekt</small><b>${set.jokerEnabled===false?'AUS':'AN'}</b></div></div><div class="setup-separator"></div>${host?(l.players.length>=2?'<button class="primary wide" onclick="Game.startOnlineGame()">🎮 Online-Spiel starten</button>':'<div class="waiting-note">Warte auf mindestens einen weiteren Spieler …</div>'):'<div class="waiting-note">Host startet das Spiel, sobald alle bereit sind …</div>'}</div>`}
@@ -1896,8 +2410,8 @@ function cardHTML(c,forceFace=false,clickable=false,selected=false){if(!c)return
 function actionHTML(a,clickable=false,selected=false){if(!a)return'';const m=ACTIONS[a.type],locked=state&&state.players[state.currentPlayer]&&state.players[state.currentPlayer].actions.includes(a)&&!actionAvailable(a,state.players[state.currentPlayer]);const kindLabel=m.kind==='attack'?'ANGRIFF':m.kind==='defense'?'SCHUTZ':'AKTION';return `<div class="action-card action-${escapeHTML(a.type)} ${m.kind==='attack'?'attack':m.kind==='defense'?'defense':''} ${clickable?'clickable':''} ${selected?'selected':''} ${locked?'disabled':''}" data-action-type="${escapeHTML(a.type)}"><span class="action-type">${kindLabel}</span><div class="emoji">${m.icon}</div><b>${m.name}</b><small>${m.desc}</small>${locked?'<span class="lock">🔒</span>':''}</div>`}
 function boardCardClickable(pi,zone,idx){if(!state)return false;if(isAIActor()&&!aiActing)return false;if(cloud.enabled&&!isMyActorDevice())return false;const mode=ui.mode;if(mode==='setupReveal')return pi===state.setupPlayer&&zone==='grid';if(['drawnDecision','discardSwap','drawnSwap','flipOwn','ownSwapSelect','draw3Target'].includes(mode))return pi===state.currentPlayer;if(mode==='otherSwapSelect')return pi===ui.data.a||pi===ui.data.b;if(mode==='meteorSelect')return pi===ui.data.target;return false}
 function isSelected(pi,zone,idx){return ui.selected.some(s=>s.pi===pi&&s.zone===zone&&s.idx===idx)}
-function playerHTML(p,pi){const active=pi===state.currentPlayer;const mine=cloud.enabled&&pi===myPlayerIndex();const matches=(state.phase==='play')?findMatches(pi):[];const matchSet=new Set(matches.flatMap(m=>m.idx));const canResolve=state.phase==='play'&&pi===state.currentPlayer&&!p.isAI&&['turnChoice','matchReady'].includes(ui.mode)&&(!cloud.enabled||isMyActorDevice())&&!motionBusy;const cards=p.grid.map((c,i)=>`<div id="cell-${pi}-grid-${i}" class="card-slot ${matchSet.has(i)?'match-ready-slot':''}" onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div id="cell-${pi}-extra-${i}" class="card-slot" onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');const total=Math.max(1,12+p.extras.length),hidden=totalHidden(p),pct=Math.max(0,Math.min(100,Math.round(((total-hidden)/total)*100)));const openCards=[...(p.grid||[]),...(p.extras||[])].filter(c=>c&&c.faceUp);const openSum=openCards.reduce((s,c)=>s+cardPoints(c),0);const hue=[43,188,145,282,18,215,325,92][pi%8];const matchActions=matches.length?`<div class="match-actions"><div class="match-actions-title">✨ Fertige Kombination · Entfernen jederzeit möglich</div>${matches.map((m,i)=>`<button class="match-resolve-btn optional ${canResolve?'':'disabled'}" ${canResolve?`onclick="Game.resolveBoardMatch(${pi},${i})"`:'disabled'}>${m.name.startsWith('Reihe')?'Reihe entfernen':'Spalte entfernen'} · ${escapeHTML(m.label.replace(/^.*?:\s*/,''))}</button>`).join('')}</div>`:'';return `<section id="player-${pi}" data-player="${pi}" class="player ${active?'active':''} ${mine?'mine':''} ${p.isAI?'ai-player':''}" style="--player-hue:${hue}"><div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div class="player-meta"><div class="player-name">${escapeHTML(p.name)} ${p.isAI?'<span class="ai-tag">🤖 COMPUTER</span>':''} ${mine?'<span class="you-tag">DU</span>':''} ${active?'<span class="active-tag">🎯 AM ZUG</span>':''}</div><div class="hint"><span>${hidden} verdeckt</span>${jokerSpecialsEnabled()?`<span>${p.actions.length} Aktionen</span>`:''}<span>offen ${openSum>=0?'+':''}${openSum}</span></div><div class="reveal-meter"><i style="width:${pct}%"></i></div></div></div><div class="score-stack"><div class="scorechip"><small>GESAMT</small><b>${p.total}</b></div><div class="progress-chip">${pct}%</div></div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${matchActions}${jokerSpecialsEnabled()&&p.actions.length?`<div class="actions-owned action-only-ui"><div class="owned-title">⚡ Eigene Aktionskarten</div>${acts}</div>`:''}</section>`}
-function instructionText(){if(!state)return'';const p=current();if(isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → aufdecken → tauschen · oder auf die Ablage legen`;case'matchReady':return `✨ Neue Kombination – einmal entscheiden. Danach bleibt sie ohne weitere Nachfrage liegen`;case'scoreSequence':return `📊 Rundenabrechnung läuft …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
+function playerHTML(p,pi){const active=pi===state.currentPlayer;const mine=cloud.enabled&&pi===myPlayerIndex();const matches=(state.phase==='play')?findMatches(pi):[];const matchSet=new Set(matches.flatMap(m=>m.idx));const canResolve=state.phase==='play'&&pi===state.currentPlayer&&!p.isAI&&['turnChoice','matchReady'].includes(ui.mode)&&(!cloud.enabled||isMyActorDevice())&&!motionBusy;const cards=p.grid.map((c,i)=>`<div id="cell-${pi}-grid-${i}" class="card-slot ${matchSet.has(i)?'match-ready-slot':''}" onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div id="cell-${pi}-extra-${i}" class="card-slot" onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');const total=Math.max(1,12+p.extras.length),hidden=totalHidden(p),pct=Math.max(0,Math.min(100,Math.round(((total-hidden)/total)*100)));const openCards=[...(p.grid||[]),...(p.extras||[])].filter(c=>c&&c.faceUp);const openSum=openCards.reduce((s,c)=>s+cardPoints(c),0);const hue=[43,188,145,282,18,215,325,92][pi%8];const matchActions=matches.length?`<div class="match-actions"><div class="match-actions-title">✨ Fertige Kombination · Entfernen jederzeit möglich</div>${matches.map((m,i)=>`<button class="match-resolve-btn optional ${canResolve?'':'disabled'}" ${canResolve?`onclick="Game.resolveBoardMatch(${pi},${i})"`:'disabled'}>${m.name.startsWith('Reihe')?'Reihe entfernen':'Spalte entfernen'} · ${escapeHTML(m.label.replace(/^.*?:\s*/,''))}</button>`).join('')}</div>`:'';return `<section id="player-${pi}" data-player="${pi}" class="player ${active?'active':''} ${mine?'mine':''} ${p.isAI?'ai-player':''}" style="--player-hue:${hue}"><div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div class="player-meta"><div class="player-name">${escapeHTML(p.name)} ${p.isAI?'<span class="ai-tag">🤖 COMPUTER</span>':''} ${mine?'<span class="you-tag">DU</span>':''} ${active?'<span class="active-tag">🎯 AM ZUG</span>':''}</div><div class="hint player-meta-chips"><span class="meta-chip hidden-chip">▦ ${hidden} verdeckt</span>${jokerSpecialsEnabled()?`<span class="meta-chip action-chip">⚡ ${p.actions.length} Aktionen</span>`:''}<span class="meta-chip open-chip">Σ ${openSum>=0?'+':''}${openSum} offen</span></div><div class="reveal-meter"><i style="width:${pct}%"></i></div></div></div><div class="score-stack"><div class="scorechip"><small>GESAMT</small><b>${p.total}</b></div><div class="progress-chip">${pct}%</div></div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${matchActions}${jokerSpecialsEnabled()&&p.actions.length?`<div class="actions-owned action-only-ui"><div class="owned-title">⚡ Eigene Aktionskarten</div>${acts}</div>`:''}</section>`}
+function instructionText(){if(!state)return'';const p=current();if(isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → alte Karte aufdecken → offen auf Ablage → danach Handkarte ins Feld`;case'matchReady':return `✨ Neue Kombination – einmal entscheiden. Danach bleibt sie ohne weitere Nachfrage liegen`;case'scoreSequence':return `📊 Rundenabrechnung läuft …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
 function bottomButtons(){if(!state||state.phase==='gameOver')return'';if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Bitte Ja oder Nein wählen</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
 function gameView(){
  const discardView=visualDiscardState(),topDiscard=discardView.top,discardCount=discardView.count,discardPending=discardView.pending,specials=jokerSpecialsEnabled(),buriedCount=state.removedCards?.length||0;
@@ -1910,12 +2424,12 @@ function gameView(){
  const discardClick=discardDropClick||discardTakeClick;
  const discardClass=canDropHeld?'discard-drop-target enabled':(discardTakeClick?'enabled':'');
  const discardTip=discardPending?'landet …':(canDropHeld?'🗑 HIER ABLEGEN':(discardTakeClick?'Nehmen':'Ablage'));
- const playArea=`<div class="pile-row"><div id="play-deck-pile" class="pile-card-hit ${canDirect?'enabled':''}" ${deckClick}>${cardHTML({type:'number',value:0,faceUp:false},false,canDirect)}<span class="pile-tip">${canDirect?'Ziehen':'Nachziehstapel'}</span></div><div id="play-discard-pile" class="pile-card-hit ${discardClass} ${buriedCount?'has-buried':''}" ${discardClick} data-buried="${buriedCount}">${cardHTML(topDiscard,true,!!discardClick)}${buriedCount?`<span class="buried-mini">${buriedCount} gesperrt darunter</span>`:''}<span class="pile-tip">${discardTip}</span></div></div>`;
- const actionArea=specials?`<div class="pilebox action-pilebox action-only-ui"><h4>Aktionskarten · offen oder verdeckt antippen</h4><div class="market">${actionBlindStackHTML(canDirect)}${state.market.map((a,i)=>a?`<div id="market-${i}" class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div>`:'';
- const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="watchbox">${watchPanelHTML()}</div><div class="pilebox play-pilebox"><h4>Spielkarten · direkt antippen</h4>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
+ const playArea=`<div class="pile-row premium-piles"><div class="pile-unit"><span class="pile-overline">NACHZIEHEN</span><div id="play-deck-pile" class="pile-card-hit ${canDirect?'enabled':''}" ${deckClick}><span class="pile-count-chip">${state.playDeck.length}</span>${cardHTML({type:'number',value:0,faceUp:false},false,canDirect)}<span class="pile-tip">${canDirect?'Ziehen':'Nachziehstapel'}</span></div></div><div class="pile-unit"><span class="pile-overline">ABLAGE</span><div id="play-discard-pile" class="pile-card-hit ${discardClass} ${buriedCount?'has-buried':''}" ${discardClick} data-buried="${buriedCount}"><span class="pile-count-chip discard-count">${discardCount}</span>${cardHTML(topDiscard,true,!!discardClick)}${buriedCount?`<span class="buried-mini">${buriedCount} gesperrt darunter</span>`:''}<span class="pile-tip">${discardTip}</span></div></div></div>`;
+ const actionArea=specials?`<div class="pilebox action-pilebox action-only-ui"><div class="section-heading"><span class="section-icon">⚡</span><div><h4>Aktionskarten</h4><small>Offen oder verdeckt antippen</small></div></div><div class="market">${actionBlindStackHTML(canDirect)}${state.market.map((a,i)=>a?`<div id="market-${i}" class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div>`:'';
+ const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="watchbox">${watchPanelHTML()}</div><div class="pilebox play-pilebox"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
  const playersHTML=state.players.map(playerHTML);
  const boards=state.players.length===2?`<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`:`<div class="table-area">${centerTable}<div class="players players-${state.players.length}">${playersHTML.join('')}</div></div>`;
- return `${mp}<div class="status"><div class="stat"><b>${state.round}</b><span>Runde</span></div><div class="stat"><b>${escapeHTML(current().name)}</b><span>${state.phase==='scoring'?'Wertung':'am Zug'}</span></div><div class="stat"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div></div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
+ return `${mp}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${state.phase==='scoring'?'Wertung':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div></div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
 
 function resumeTransientFlow(){
  if(!state||isModalOpen())return;
@@ -1934,7 +2448,7 @@ function render(){if(state?.phase==='play'&&!state.pendingMatch&&ui.mode==='turn
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><small>V14.0 · Final Stability</small></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.0 · Premium Table</small><span class="edition-chip">TABLE EDITION</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
