@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>SKYJO Action – V15 Premium Table</title>
+<title>SKYJO Action – V15.1 Defensive Expert AI</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -2339,7 +2339,7 @@ function closeModal(){const b=$('#modalBack');if(b)b.classList.remove('show')}
 function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne zählen 0 Punkte und können am Zugende freiwillig kurz den Wert einer Zahl in derselben kompletten Reihe/Spalte annehmen.</li><li>Reine Stern-Gruppen dürfen entfernt werden, müssen aber nicht. Eine vollständige 3er-Sterngruppe bringt −10, eine waagerechte 4er-Sterngruppe −15. Wird sie vorher freiwillig abgeräumt, bleibt dieser Bonus gespeichert; jeder Stern zählt nur einmal für einen Bonus.</li></ul><h4>Gleiche Reihen</h4><p class="note"><b>Online-Schutz:</b> Solange die einmalige Ja/Nein-Entscheidung zu einer neuen Reihe offen ist, ist der normale Zug gesperrt. Ein Cloud-Sync kann dadurch keinen zweiten Zug mehr freigeben.</p><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Über „Reihe entfernen“ bzw. „Spalte entfernen“ räumst du sie freiwillig ab – auch Minuszahlen. Dadurch kann nach dem Entfernen einer ganzen Spalte auch eine waagerechte 3er-Reihe entstehen. Das Entfernen jeder vollständigen Kombination ist freiwillig. Beim ersten Entstehen erscheint einmal die Frage „Möchtest du diese Reihe jetzt entfernen?“. Mit Ja wird sie entfernt. Mit Nein bleibt sie liegen; für genau diese Kombination wird nicht erneut gefragt. Der Entfernen-Button bleibt trotzdem jederzeit verfügbar. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, hat jeder andere Spieler noch genau einen Zug. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle Karten aufgedeckt und gewertet. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards mit 0 Punkten funktionieren. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
 function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
 async function restart(){if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann das Online-Spiel neu starten.');return}if(confirm('Aktuelles Spiel wirklich löschen und neu starten?')){clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';localStorage.removeItem(SAVE_KEY);if(cloud.enabled&&cloud.room)await resetCloudRoom();state=null;ui={mode:'none',data:{},selected:[]};render()}}
-function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM TABLE EDITION</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field"><label>Spielmodus</label><select id="cloudMode" onchange="Game.toggleCloudFields()"><option value="local" ${cloud.enabled?'':'selected'}>Lokal / Pass-and-Play</option><option value="ai">🤖 Gegen Computer</option><option value="cloud" ${cloud.enabled?'selected':''}>Online – mehrere Geräte</option></select></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="15"><div class="joker-off-note">Standard: 15.</div></div><div class="field"><label>Joker-Spezialeffekte</label><div class="toggle-box"><span><b>Zusatzfähigkeiten</b><div class="joker-off-note">AUS = Joker bleibt Wildcard, zählt 0 Punkte und behält den Jokerbonus (3 = −10 / 4 waagerecht = −15). Nur Aktionskarten und Gratis-Aktion sind aus.</div></span><input id="jokerEnabled" type="checkbox" checked onchange="Game.toggleJokerSpecialUI()"></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken.</div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div><button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
+function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM TABLE EDITION</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field"><label>Spielmodus</label><select id="cloudMode" onchange="Game.toggleCloudFields()"><option value="local" ${cloud.enabled?'':'selected'}>Lokal / Pass-and-Play</option><option value="ai">🤖 Gegen Computer</option><option value="cloud" ${cloud.enabled?'selected':''}>Online – mehrere Geräte</option></select></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="15"><div class="joker-off-note">Standard: 15.</div></div><div class="field"><label>Joker-Spezialeffekte</label><div class="toggle-box"><span><b>Zusatzfähigkeiten</b><div class="joker-off-note">AUS = Joker bleibt Wildcard, zählt 0 Punkte und behält den Jokerbonus (3 = −10 / 4 waagerecht = −15). Nur Aktionskarten und Gratis-Aktion sind aus.</div></span><input id="jokerEnabled" type="checkbox" checked onchange="Game.toggleJokerSpecialUI()"></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken.</div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div><button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Strategie & Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten, erkennt gefährliche Ablagen und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
 function toggleJokerSpecialUI(){const cb=$('#jokerEnabled'),f=$('#specialSetupField');if(f)f.style.display=(cb&&cb.checked)?'flex':'none'}
 function updateNames(){const pc=$('#playerCount'),box=$('#names');if(!pc||!box)return;const n=Number(pc.value),previous=[...document.querySelectorAll('.pname')].map(x=>x.value);box.innerHTML=Array.from({length:n},(_,i)=>`<div class="field"><label>Spieler ${i+1}</label><input class="pname" value="${escapeHTML(previous[i]||`Spieler ${i+1}`)}"></div>`).join('')}
 function lobbyView(){const d=cloud.doc,l=d.lobby,set=l.settings||{},me=myPlayerIndex(),host=isHostDevice();const players=l.players.map((p,i)=>`<div class="player-slot ${i===me?'me':''}"><div class="num">${i+1}</div><div class="who"><b>${escapeHTML(p.name)}${i===me?'<span class="you-tag">DU</span>':''}</b><small>${p.id===l.hostId?'Host':'Mitspieler'}</small></div><div>${p.id===l.hostId?'👑':'✓'}</div></div>`).join('');return `<div class="panel lobby-card"><div class="lobby-head"><div><h2 style="margin:0">Online-Lobby · ${escapeHTML(cloud.room)}</h2><p class="hint">${l.players.length}/8 Spieler verbunden</p></div><button onclick="Game.leaveOnlineRoom()">← Lobby verlassen</button></div><div class="player-list">${players}</div><div class="lobby-settings"><div class="setting-chip"><small>Ziel</small><b>${Number(set.target)||100} Punkte</b></div><div class="setting-chip"><small>Jokerkarten</small><b>${Number.isInteger(set.jokerCount)?set.jokerCount:15}</b></div><div class="setting-chip"><small>Joker-Spezialeffekt</small><b>${set.jokerEnabled===false?'AUS':'AN'}</b></div></div><div class="setup-separator"></div>${host?(l.players.length>=2?'<button class="primary wide" onclick="Game.startOnlineGame()">🎮 Online-Spiel starten</button>':'<div class="waiting-note">Warte auf mindestens einen weiteren Spieler …</div>'):'<div class="waiting-note">Host startet das Spiel, sobald alle bereit sind …</div>'}</div>`}
@@ -2380,7 +2380,166 @@ function aiChooseReveal(pi){const p=state.players[pi],hidden=[];p.grid.forEach((
 function aiDiscardRevealUtility(pi){const r=aiChooseReveal(pi),end=aiEndgameProfile(pi);let u=r?.score||0;if(end.ahead&&end.pressure)u+=.8;if(end.behind&&end.ownHidden<=2)u-=.7;return u}
 function aiExpectedDeckUtility(pi){const d=aiUnseenDistribution(pi),total=d.reduce((s,x)=>s+x.count,0);if(!total)return 0;let sum=0;for(const x of d){const target=aiBestTarget(pi,x.card),keep=target?target.score:-99,drop=aiDiscardRevealUtility(pi);sum+=x.count*Math.max(keep,drop)}return sum/total}
 function aiKeepThreshold(pi,fromDiscard=false){const diff=aiDifficulty(pi);if(diff==='easy')return fromDiscard?1.9:1.15;if(diff==='normal')return fromDiscard?.9:.45;const e=aiEndgameProfile(pi);let t=fromDiscard?.15:-.1;if(e.ahead&&(e.pressure||e.ownHidden<=2))t-=.55;if(e.behind&&e.ownHidden<=2)t+=.65;return t}
-function aiShouldTakeDiscard(pi,top,target){if(!top||!target)return false;const diff=aiDifficulty(pi);if(diff!=='hard')return target.score>=aiKeepThreshold(pi,true);const deckU=aiExpectedDeckUtility(pi);const certainty=.12;return target.score+certainty>=Math.max(aiKeepThreshold(pi,true),deckU-.05)}
+
+/* === V15.1 DEFENSIVE AI: Gegnerische Ablage-Chancen mitrechnen === */
+function aiNextPlayerAfter(pi){
+ if(!state||!state.players?.length)return -1;
+ if(state.extraTurns>0)return pi;
+ if(state.roundEnder!==null&&Array.isArray(state.finalTurnQueue)&&state.finalTurnQueue.length)return state.finalTurnQueue[0];
+ return (pi+1)%state.players.length
+}
+function aiPublicLineCompletionThreat(observerPi,oppPi,idx,candidate){
+ const p=state.players[oppPi];
+ if(!p||idx<0||idx>11||!candidate)return {score:0,complete:false,label:''};
+ let best={score:0,complete:false,label:''};
+ const lines=aiLineIndexesFor(idx);
+ for(const ids of lines){
+   const cards=ids.map(i=>i===idx?{...candidate,faceUp:true}:p.grid[i]).filter(Boolean);
+   if(cards.length<3||cards.some(c=>!c.faceUp))continue;
+   const nums=cards.filter(c=>c.type==='number');
+   const stars=cards.filter(c=>c.type==='star').length;
+   const values=[...new Set(nums.map(c=>Number(c.value)))];
+   let complete=false,pureStars=false;
+   if(values.length===1&&nums.length+stars===cards.length)complete=true;
+   else if(values.length===0&&stars===cards.length){complete=true;pureStars=true}
+   if(!complete)continue;
+   const positiveRemoved=cards.reduce((s,c)=>s+Math.max(0,cardPoints(c)),0);
+   const negativeKept=Math.abs(cards.reduce((s,c)=>s+Math.min(0,cardPoints(c)),0));
+   /* Positive Zahlenreihen sind besonders gefährlich: Gegner kann viele Punkte sofort loswerden.
+      Reine Jokergruppen sind ebenfalls wertvoll, werden aber etwas niedriger gewichtet,
+      da sie je nach Spielsituation lieber für den Jokerbonus liegen bleiben können. */
+   let score=pureStars?(cards.length===4?11:8.5):(8+positiveRemoved*.72+cards.length*.55);
+   if(negativeKept>0&&!pureStars)score-=negativeKept*.55;
+   const kind=ids.length===4?'Reihe':'Spalte';
+   const value=pureStars?'Joker':(values[0]??'');
+   if(score>best.score)best={score,complete:true,label:`${kind} ${value}`};
+ }
+ return best
+}
+function aiOpponentCardOpportunity(observerPi,oppPi,candidate){
+ const p=state.players[oppPi];
+ if(!p||oppPi===observerPi||!candidate)return {score:0,direct:0,target:null,label:''};
+ const candVal=aiCandidateValue(candidate);
+ let best={score:0,direct:0,target:null,label:''};
+ for(let idx=0;idx<p.grid.length;idx++){
+   const old=p.grid[idx];
+   if(!old)continue;
+   const completion=aiPublicLineCompletionThreat(observerPi,oppPi,idx,candidate);
+   let numericGain=0;
+   if(old.faceUp)numericGain=Math.max(0,cardPoints(old)-candVal);
+   else{
+     /* Keine verdeckte Gegnerkarte ausspähen: nur statistischen Erwartungswert benutzen. */
+     const expected=aiExpectedUnknown(observerPi,[candidate]);
+     numericGain=Math.max(0,expected-candVal)*.55
+   }
+   /* Bereits sichtbares Reihenpotenzial ist öffentlich und darf strategisch berücksichtigt werden. */
+   let publicPotential=0;
+   for(const ids of aiLineIndexesFor(idx)){
+     const others=ids.filter(i=>i!==idx).map(i=>p.grid[i]).filter(Boolean).filter(c=>c.faceUp);
+     const stars=others.filter(c=>c.type==='star').length;
+     const freq={};
+     for(const c of others)if(c.type==='number')freq[c.value]=(freq[c.value]||0)+1;
+     const matching=Math.max(0,...Object.values(freq))+stars;
+     if(matching>=2)publicPotential+=candidate.type==='star'?2.6:1.0;
+     else if(matching===1)publicPotential+=.25
+   }
+   const score=completion.score+numericGain*.72+publicPotential;
+   if(score>best.score)best={
+     score,
+     direct:completion.complete?completion.score:0,
+     target:{zone:'grid',idx},
+     label:completion.label||''
+   }
+ }
+ /* Zusatzkarten können zwar günstig getauscht werden, erzeugen aber keine Rasterreihe. */
+ for(let idx=0;idx<(p.extras||[]).length;idx++){
+   const old=p.extras[idx];
+   if(!old)continue;
+   const numericGain=old.faceUp?Math.max(0,cardPoints(old)-candVal):Math.max(0,aiExpectedUnknown(observerPi,[candidate])-candVal)*.45;
+   const score=numericGain*.6;
+   if(score>best.score)best={score,direct:0,target:{zone:'extra',idx},label:''}
+ }
+ return best
+}
+function aiOpponentDiscardThreat(aiPi,candidate){
+ if(!state||!candidate)return {score:0,direct:0,opponent:-1,label:''};
+ const next=aiNextPlayerAfter(aiPi);
+ let best={score:0,direct:0,opponent:-1,label:''};
+ for(let oi=0;oi<state.players.length;oi++){
+   if(oi===aiPi)continue;
+   const chance=aiOpponentCardOpportunity(aiPi,oi,candidate);
+   /* Der direkt folgende Spieler hat das Erstzugriffsrecht auf die Ablage.
+      Weitere Gegner werden nur schwach berücksichtigt, falls die Karte liegen bleibt. */
+   const weight=oi===next?1:(state.players.length===2?0:.24);
+   const score=chance.score*weight,direct=chance.direct*weight;
+   if(score>best.score)best={score,direct,opponent:oi,label:chance.label,target:chance.target}
+ }
+ return best
+}
+function aiExpectedOutgoingDiscardThreat(pi,target){
+ if(!target?.old)return 0;
+ const old=target.old;
+ if(old.faceUp)return aiOpponentDiscardThreat(pi,old).score;
+ const known=aiHiddenKnowledgeCard(pi,old);
+ if(known)return aiOpponentDiscardThreat(pi,{...known,faceUp:true}).score;
+ /* Bei einer unbekannten eigenen verdeckten Karte kennt auch die KI deren Wert nicht.
+    Deshalb wird der erwartete Gefahrenwert über die Restverteilung berechnet. */
+ const d=aiUnseenDistribution(pi);
+ let n=0,s=0;
+ for(const x of d){n+=x.count;s+=x.count*aiOpponentDiscardThreat(pi,x.card).score}
+ return n?s/n:0
+}
+function aiDrawnCardDecision(pi,candidate,target){
+ const diff=aiDifficulty(pi),threshold=aiKeepThreshold(pi,false);
+ const baseKeep=target?target.score:-99;
+ const threat=aiOpponentDiscardThreat(pi,candidate);
+ if(diff==='easy'){
+   return {keep:!!target&&baseKeep>=threshold,threat,keepUtility:baseKeep,dropUtility:aiDiscardRevealUtility(pi),reason:''}
+ }
+ const outgoing=target?aiExpectedOutgoingDiscardThreat(pi,target):99;
+ const reveal=aiDiscardRevealUtility(pi);
+ if(diff==='normal'){
+   /* Normal erkennt vor allem offensichtliche sofortige Dreier-/Viererreihen. */
+   const defensive=threat.direct>=8&&target&&baseKeep>=-2.4;
+   return {
+     keep:!!target&&(baseKeep>=threshold||defensive),
+     threat,keepUtility:baseKeep-outgoing*.28,dropUtility:reveal-threat.score*.42,
+     reason:defensive?'verhindert eine direkte Gegnerreihe':''
+   }
+ }
+ /* Expert: echte Folgenabwägung.
+    Behalten = eigener Nutzen minus Gefahr der herausgetauschten Karte.
+    Abwerfen = Nutzen des Aufdeckens minus Nutzen, den die Ablage dem Gegner schenkt. */
+ const keepUtility=baseKeep-outgoing*.58;
+ const dropUtility=reveal-threat.score*.82;
+ const strategicallyNecessary=threat.direct>=7.5&&baseKeep>=-4.0;
+ const keep=!!target&&(
+   (baseKeep>=threshold&&keepUtility>=dropUtility-.35) ||
+   strategicallyNecessary ||
+   keepUtility>=dropUtility+.20
+ );
+ return {
+   keep,threat,outgoing,keepUtility,dropUtility,
+   reason:strategicallyNecessary?(threat.label?`blockiert ${threat.label}`:'blockiert eine fertige Gegnerkombination'):(keepUtility>dropUtility?'vermeidet eine starke Ablagevorlage':'')
+ }
+}
+function aiShouldTakeDiscard(pi,top,target){
+ if(!top||!target)return false;
+ const diff=aiDifficulty(pi),threshold=aiKeepThreshold(pi,true);
+ const threat=aiOpponentDiscardThreat(pi,top);
+ if(diff==='easy')return target.score>=threshold;
+ const outgoing=aiExpectedOutgoingDiscardThreat(pi,target);
+ if(diff==='normal'){
+   /* Eine offen daliegende Karte, die dem nächsten Gegner sofort eine starke Reihe gäbe,
+      wird auch von Normal häufiger defensiv genommen. */
+   if(threat.direct>=9&&target.score>=-1.8)return true;
+   return target.score>=threshold
+ }
+ const deckU=aiExpectedDeckUtility(pi);
+ const denial=Math.max(-4,Math.min(12,threat.score-outgoing));
+ const effective=target.score+denial*.62;
+ return effective>=Math.max(threshold,deckU-.10)
+}
 function aiShouldResolveOptionalMatch(pi,m){const p=state.players[pi];if(m.pureStars)return true;const sum=m.idx.reduce((s,i)=>s+(p.grid[i]?cardPoints(p.grid[i]):0),0),diff=aiDifficulty(pi),end=aiEndgameProfile(pi);if(sum>0)return true;if(sum<0)return false;return diff==='hard'&&(end.ahead||end.pressure||end.ownHidden<=2)}
 function aiActionBaseValue(type){return ({double:9.5,draw3:7.8,defense:6.4,meteor:6.2,thief:6.0,swapother:5.1,enlight:3.8,ownswap:3.2,react:4.2})[type]||1}
 function aiBestOwnSwap(pi){const p=state.players[pi],ids=p.grid.map((c,i)=>c?.faceUp?i:-1).filter(i=>i>=0);let best=null;const before=ids.reduce((s,i)=>s+aiLinePotential(pi,i,p.grid[i]),0);for(let a=0;a<ids.length;a++)for(let b=a+1;b<ids.length;b++){const ia=ids[a],ib=ids[b],ca=p.grid[ia],cb=p.grid[ib];if(aiSameCardValue(ca,cb))continue;p.grid[ia]=cb;p.grid[ib]=ca;const after=ids.reduce((s,i)=>s+aiLinePotential(pi,i,p.grid[i]),0);p.grid[ia]=ca;p.grid[ib]=cb;const gain=after-before;if(!best||gain>best.gain)best={ia,ib,gain}}return best}
@@ -2401,7 +2560,34 @@ async function aiExecuteAction(pi,d){const p=state.players[pi];if(!d||!p.actions
 async function aiHandleDraw3(pi){if(ui.mode!=='draw3Choose')return;const cards=ui.data.cards||[];if(!cards.length){await aiDo(()=>draw3None());return}const choices=cards.map((card,i)=>{const target=aiBestTarget(pi,card);return {i,card,target,score:target?.score??-99}}).sort((a,b)=>b.score-a.score);const best=choices[0],drop=aiDiscardRevealUtility(pi),threshold=aiKeepThreshold(pi,false);await sleepMs(260);if(best?.target&&best.score>=Math.max(threshold,drop-.15)){await aiDo(()=>draw3Pick(best.i));await aiWaitMotion()}else{await aiDo(()=>draw3None());await aiWaitMotion();if(ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await sleepMs(180);await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion()}}}}
 async function aiHandleMeteor(pi){if(ui.mode!=='meteorSelect')return;const targetPi=Number(ui.data.target),pick=aiMeteorChoice(pi,targetPi);await sleepMs(240);if(pick){await aiDo(()=>meteorChoose(pick.zone,pick.idx));await aiWaitMotion()}else{await aiDo(()=>meteorNext());await aiWaitMotion()}}
 async function aiHandleMatchReady(pi){const matches=findMatches(pi);if(!matches.length){if(state.pendingMatch)continueMatchReady();return}const chosen=matches.find(m=>aiShouldResolveOptionalMatch(pi,m));if(chosen){await aiDo(()=>resolveBoardMatch(pi,matches.indexOf(chosen)));await aiWaitMotion()}else{await aiDo(()=>continueMatchReady());await aiWaitMotion()}}
-async function aiTakeTurn(pi){if(!state||state.currentPlayer!==pi||ui.mode!=='turnChoice')return;const action=aiActionDecision(pi);if(action){await sleepMs(430);await aiExecuteAction(pi,action);await aiWaitMotion();return}const top=state.playDiscard[state.playDiscard.length-1],dt=top?aiBestTarget(pi,top):null;if(top&&dt&&aiShouldTakeDiscard(pi,top,dt)&&!discardArrivalPending()){await sleepMs(420);await aiDo(()=>drawFromDiscard());await aiWaitMotion();if(state.currentPlayer===pi&&ui.mode==='discardSwap'){await sleepMs(250);await aiDo(()=>selectCard(pi,dt.zone,dt.idx));await aiWaitMotion()}return}await sleepMs(440);await aiDo(()=>drawFromDeck());await aiWaitMotion();if(state.currentPlayer!==pi||ui.mode!=='drawnDecision')return;const c=ui.data.card,target=aiBestTarget(pi,c),threshold=aiKeepThreshold(pi,false);if(target&&target.score>=threshold){await sleepMs(280);await aiDo(()=>selectCard(pi,target.zone,target.idx));await aiWaitMotion();return}await sleepMs(270);await aiDo(()=>discardDrawn());await aiWaitMotion();if(state.currentPlayer===pi&&ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await sleepMs(260);await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion()}}}
+async function aiTakeTurn(pi){
+ if(!state||state.currentPlayer!==pi||ui.mode!=='turnChoice')return;
+ const action=aiActionDecision(pi);
+ if(action){await sleepMs(430);await aiExecuteAction(pi,action);await aiWaitMotion();return}
+ const top=state.playDiscard[state.playDiscard.length-1],dt=top?aiBestTarget(pi,top):null;
+ if(top&&dt&&aiShouldTakeDiscard(pi,top,dt)&&!discardArrivalPending()){
+   const deny=aiOpponentDiscardThreat(pi,top);
+   if(aiDifficulty(pi)==='hard'&&deny.direct>=7.5)log(`${state.players[pi].name} nimmt ${cardShortText(top)} auch defensiv, um ${state.players[deny.opponent]?.name||'dem Gegner'} keine starke Kombination zu geben.`);
+   await sleepMs(420);await aiDo(()=>drawFromDiscard());await aiWaitMotion();
+   if(state.currentPlayer===pi&&ui.mode==='discardSwap'){await sleepMs(250);await aiDo(()=>selectCard(pi,dt.zone,dt.idx));await aiWaitMotion()}
+   return
+ }
+ await sleepMs(440);await aiDo(()=>drawFromDeck());await aiWaitMotion();
+ if(state.currentPlayer!==pi||ui.mode!=='drawnDecision')return;
+ const c=ui.data.card,target=aiBestTarget(pi,c),decision=aiDrawnCardDecision(pi,c,target);
+ if(decision.keep&&target){
+   if(decision.reason&&decision.threat?.score>=5){
+     const opp=state.players[decision.threat.opponent]?.name||'Gegner';
+     log(`${state.players[pi].name} behält ${cardShortText(c)} strategisch: ${decision.reason} bei ${opp}.`)
+   }
+   await sleepMs(280);await aiDo(()=>selectCard(pi,target.zone,target.idx));await aiWaitMotion();return
+ }
+ await sleepMs(270);await aiDo(()=>discardDrawn());await aiWaitMotion();
+ if(state.currentPlayer===pi&&ui.mode==='flipOwn'){
+   const r=aiChooseReveal(pi);
+   if(r){await sleepMs(260);await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion()}
+ }
+}
 async function runAIActor(pi){if(aiBusy||cloud.enabled||!state||!isAIPlayer(pi))return;aiBusy=true;try{for(let guard=0;guard<24;guard++){await aiWaitMotion();if(!state||cloud.enabled||actorIndex()!==pi||!isAIPlayer(pi))break;if(state.phase==='initialReveal'){if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}await aiInitialReveal(pi);if(state.phase==='initialReveal'&&state.setupPlayer===pi&&state.setupRevealed>=2)setupContinue();continue}if(state.phase!=='play')break;if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}if(ui.mode==='matchReady'||state.pendingMatch){await aiHandleMatchReady(pi);continue}if(ui.mode==='draw3Choose'){await aiHandleDraw3(pi);continue}if(ui.mode==='draw3Target'){const t=aiBestTarget(pi,ui.data.card);if(t){await aiDo(()=>selectCard(pi,t.zone,t.idx));await aiWaitMotion();continue}else{break}}if(ui.mode==='meteorSelect'){await aiHandleMeteor(pi);continue}if(ui.mode==='turnChoice'){await aiTakeTurn(pi);continue}if(ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion();continue}}break}}catch(e){console.warn('[AI V12]',e);toast('🤖 Computerzug wurde sicher beendet');if(state?.phase==='play'&&state.currentPlayer===pi&&ui.mode==='turnChoice')finishTurn()}finally{aiBusy=false;aiActing=false;scheduleAIIfNeeded(420)}}
 
 
@@ -2448,7 +2634,7 @@ function render(){if(state?.phase==='play'&&!state.pendingMatch&&ui.mode==='turn
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.0 · Premium Table</small><span class="edition-chip">TABLE EDITION</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.1 · Defensive Expert AI</small><span class="edition-chip">TABLE EDITION</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
