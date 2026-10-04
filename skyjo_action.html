@@ -2859,6 +2859,54 @@ body[data-players="3"][data-specials="off"] .center-seat .center-table{
   gap:8px!important;
 }
 
+
+/* ==========================================================
+   V15.17 · JOKER IM SPIEL
+   Jokeranzahl kann im laufenden Spiel nur erhöht werden.
+   ========================================================== */
+.joker-stat-manage{
+  cursor:pointer;
+  transition:transform .14s ease,border-color .14s ease,background .14s ease!important;
+}
+.joker-stat-manage:hover,
+.joker-stat-manage:active{
+  transform:translateY(-1px);
+  border-color:rgba(255,214,90,.38)!important;
+  background:linear-gradient(180deg,rgba(255,214,90,.10),rgba(255,255,255,.03))!important;
+}
+.joker-live-settings .settings-hero{margin-bottom:14px}
+.joker-live-count{
+  display:grid;
+  place-items:center;
+  gap:3px;
+  padding:15px;
+  border:1px solid rgba(255,214,90,.20);
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,214,90,.08),rgba(255,255,255,.025));
+}
+.joker-live-count span{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.8px}
+.joker-live-count strong{font-size:38px;line-height:1;color:#ffe37d}
+.joker-live-count small{font-size:10px;color:var(--muted);text-align:center}
+.joker-live-actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin-top:12px;
+}
+.joker-live-actions button{min-height:48px}
+.joker-live-limit{
+  margin-top:10px;
+  padding:8px 10px;
+  border-radius:11px;
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+  font-size:11px;
+  text-align:center;
+}
+@media(max-width:620px){
+  .joker-live-actions{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -3060,7 +3108,65 @@ function toggleHaptic(){uiPrefs.haptic=!uiPrefs.haptic;saveUIPrefs();if(uiPrefs.
 function toggleCinematic(){uiPrefs.cinematic=!uiPrefs.cinematic;saveUIPrefs();syncBodyMode();showDisplaySettings()}
 function toggleAutoFocus(){uiPrefs.autoFocus=!uiPrefs.autoFocus;saveUIPrefs();showDisplaySettings()}
 function focusMyBoard(){if(!state)return;let idx=cloud.enabled?myPlayerIndex():state.currentPlayer;if(idx<0)idx=state.currentPlayer;const el=document.getElementById(`player-${idx}`);if(el){el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});el.classList.remove('focus-flash');void el.offsetWidth;el.classList.add('focus-flash');setTimeout(()=>el.classList.remove('focus-flash'),900);haptic(7)}}
-function showDisplaySettings(){const ml=uiPrefs.motion||'table';modal(`<div class="display-settings"><div class="settings-hero"><div class="settings-orb">✦</div><div><h3>Darstellung & Spielgefühl</h3><p>High-End-Effekte lassen sich einzeln anpassen, ohne die Spiellogik zu verändern.</p></div></div><div class="settings-grid"><button class="setting-toggle ${uiPrefs.sound?'on':''}" onclick="Game.toggleSound();Game.showDisplaySettings()"><span>🔊</span><b>Sound</b><small>${uiPrefs.sound?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.haptic?'on':''}" onclick="Game.toggleHaptic()"><span>📳</span><b>Haptik</b><small>${uiPrefs.haptic?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.cinematic!==false?'on':''}" onclick="Game.toggleCinematic()"><span>✨</span><b>Cinematic FX</b><small>${uiPrefs.cinematic!==false?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.autoFocus?'on':''}" onclick="Game.toggleAutoFocus()"><span>🎯</span><b>Auto-Fokus</b><small>${uiPrefs.autoFocus?'AN':'AUS'}</small></button><div class="motion-settings"><div><div><b>🎴 Kartenbewegung</b><small>Wie schnell Karten wie am echten Tisch bewegt werden.</small></div><small>${ml==='normal'?'SCHNELL':ml==='slow'?'NORMAL':'TISCH · FLÜSSIG'}</small></div><div class="motion-levels"><button class="motion-level ${ml==='normal'?'on':''}" onclick="Game.setMotionLevel('normal')">⚡ Schnell</button><button class="motion-level ${ml==='slow'?'on':''}" onclick="Game.setMotionLevel('slow')">🎴 Normal</button><button class="motion-level ${ml==='table'?'on':''}" onclick="Game.setMotionLevel('table')">🃏 Tisch · flüssig</button></div></div></div>${state?'<div class="modal-actions"><button class="primary" onclick="Game.closeModal();Game.focusMyBoard()">🎯 Zu meinem Feld</button><button onclick="Game.closeModal()">Fertig</button></div>':'<div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>'}</div>`,false)}
+
+function canManageJokerCount(){
+ if(!state)return false;
+ if(cloud.enabled&&!isHostDevice())return false;
+ return true;
+}
+function showJokerCountManager(){
+ if(!state){toast('Kein laufendes Spiel');return}
+ const hostOnly=cloud.enabled&&!isHostDevice();
+ const currentCount=Math.max(0,Math.min(30,Math.floor(Number(state.jokerCount)||0)));
+ const remaining=Math.max(0,30-currentCount);
+ const inRound=state.phase==='play'||state.phase==='initialReveal';
+ const deckStars=Array.isArray(state.playDeck)?state.playDeck.filter(c=>c?.type==='star').length:0;
+ const note=hostOnly
+   ?'Nur der Host darf die Jokeranzahl eines Online-Spiels verändern.'
+   :(inRound
+      ?'Neue Joker werden sofort verdeckt in den Nachziehstapel gemischt und gelten auch in den nächsten Runden.'
+      :'Die neue Anzahl gilt ab der nächsten Runde. Während der laufenden Auswertung wird der aktuelle Stapel nicht mehr verändert.');
+ modal(`<div class="joker-live-settings">
+   <div class="settings-hero">
+     <div class="settings-orb">★</div>
+     <div><h3>Jokeranzahl im Spiel</h3><p>${note}</p></div>
+   </div>
+   <div class="joker-live-count">
+     <span>Aktuell eingestellt</span>
+     <strong>${currentCount}</strong>
+     <small>${inRound?`${deckStars} Joker liegen aktuell noch verdeckt im Nachziehstapel`:'Änderung gilt für die nächste Runde'}</small>
+   </div>
+   <div class="joker-live-actions">
+     <button class="primary" ${hostOnly||remaining<1?'disabled':''} onclick="Game.addJokersToGame(1)">★ +1 Joker</button>
+     <button class="primary" ${hostOnly||remaining<2?'disabled':''} onclick="Game.addJokersToGame(2)">★★ +2 Joker</button>
+     <button class="primary" ${hostOnly||remaining<5?'disabled':''} onclick="Game.addJokersToGame(5)">★★★★★ +5 Joker</button>
+   </div>
+   <div class="joker-live-limit">${remaining?`Noch maximal ${remaining} Joker zusätzlich möglich.`:'Maximum von 30 Jokern erreicht.'}</div>
+   <div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>
+ </div>`,false)
+}
+function addJokersToGame(amount){
+ if(!state)return;
+ if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann die Jokeranzahl ändern');return}
+ let add=Math.max(1,Math.floor(Number(amount)||1));
+ const before=Math.max(0,Math.min(30,Math.floor(Number(state.jokerCount)||0)));
+ add=Math.min(add,30-before);
+ if(add<=0){toast('Maximal 30 Joker möglich');showJokerCountManager();return}
+ state.jokerCount=before+add;
+ const immediate=state.phase==='play'||state.phase==='initialReveal';
+ if(immediate){
+   if(!Array.isArray(state.playDeck))state.playDeck=[];
+   for(let i=0;i<add;i++)state.playDeck.push(newCard('star'));
+   state.playDeck=shuffle(state.playDeck);
+ }
+ log(`${add} Joker${add===1?'':' '} zusätzlich eingestellt · jetzt ${state.jokerCount}.${immediate?' Sofort in den Nachziehstapel gemischt.':' Gilt ab der nächsten Runde.'}`);
+ save();
+ render();
+ toast(`★ ${add} Joker hinzugefügt · jetzt ${state.jokerCount}`);
+ setTimeout(showJokerCountManager,40)
+}
+
+function showDisplaySettings(){const ml=uiPrefs.motion||'table';modal(`<div class="display-settings"><div class="settings-hero"><div class="settings-orb">✦</div><div><h3>Darstellung & Spielgefühl</h3><p>High-End-Effekte lassen sich einzeln anpassen, ohne die Spiellogik zu verändern.</p></div></div><div class="settings-grid"><button class="setting-toggle ${uiPrefs.sound?'on':''}" onclick="Game.toggleSound();Game.showDisplaySettings()"><span>🔊</span><b>Sound</b><small>${uiPrefs.sound?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.haptic?'on':''}" onclick="Game.toggleHaptic()"><span>📳</span><b>Haptik</b><small>${uiPrefs.haptic?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.cinematic!==false?'on':''}" onclick="Game.toggleCinematic()"><span>✨</span><b>Cinematic FX</b><small>${uiPrefs.cinematic!==false?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.autoFocus?'on':''}" onclick="Game.toggleAutoFocus()"><span>🎯</span><b>Auto-Fokus</b><small>${uiPrefs.autoFocus?'AN':'AUS'}</small></button><div class="motion-settings"><div><div><b>🎴 Kartenbewegung</b><small>Wie schnell Karten wie am echten Tisch bewegt werden.</small></div><small>${ml==='normal'?'SCHNELL':ml==='slow'?'NORMAL':'TISCH · FLÜSSIG'}</small></div><div class="motion-levels"><button class="motion-level ${ml==='normal'?'on':''}" onclick="Game.setMotionLevel('normal')">⚡ Schnell</button><button class="motion-level ${ml==='slow'?'on':''}" onclick="Game.setMotionLevel('slow')">🎴 Normal</button><button class="motion-level ${ml==='table'?'on':''}" onclick="Game.setMotionLevel('table')">🃏 Tisch · flüssig</button></div></div></div>${state?'<div class="modal-actions"><button class="primary" onclick="Game.closeModal();Game.focusMyBoard()">🎯 Zu meinem Feld</button><button onclick="Game.showJokerCountManager()">★ Joker erhöhen</button><button onclick="Game.closeModal()">Fertig</button></div>':'<div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>'}</div>`,false)}
 function finaleBurst(){if(uiPrefs.cinematic===false)return;try{const layer=document.createElement('div');layer.className='finale-confetti';document.body.append(layer);const glyphs=['◆','●','✦','■'];for(let i=0;i<46;i++){const p=document.createElement('i');p.textContent=glyphs[i%glyphs.length];p.style.left=`${5+Math.random()*90}%`;p.style.setProperty('--drift',`${-70+Math.random()*140}px`);p.style.setProperty('--spin',`${180+Math.random()*720}deg`);p.style.setProperty('--delay',`${Math.random()*.45}s`);p.style.setProperty('--dur',`${1.4+Math.random()*1.3}s`);p.style.setProperty('--hue',`${Math.floor(Math.random()*360)}`);layer.append(p)}setTimeout(()=>layer.remove(),3100)}catch(_e){}}
 
 function toggleSound(){uiPrefs.sound=!uiPrefs.sound;saveUIPrefs();if(uiPrefs.sound)playFxSound('turn');syncChromeButtons();toast(uiPrefs.sound?'🔊 Sound an':'🔇 Sound aus')}
@@ -3177,7 +3283,7 @@ async function fetchJSON(url,opts={}){const {timeoutMs=25000,...fetchOpts}=opts|
 async function probeSkyjoServer(){const urls=[`${CLOUD_BASE}/skyjo-health`,`${CLOUD_BASE}/skyjo/PINGCHECK`];let last='keine Antwort';for(const url of urls){try{const {r,j}=await fetchJSON(url,{cache:'no-store',timeoutMs:65000});if(r.ok&&j?.ok){cloud.serverOK=true;cloud.lastStatus='online';cloud.lastError='';return true}last=`HTTP ${r.status}`}catch(e){last=e?.name==='AbortError'?'Zeitüberschreitung':(e?.message||String(e));console.warn('[skyjo probe]',url,e)}}cloud.serverOK=false;cloud.lastStatus='error';cloud.lastError=`Render-Server antwortet nicht zuverlässig (${last}). Bei Free-Render kann das Aufwachen bis zu 50 Sekunden dauern.`;return false}
 function processCloudReactions(items,seq){const serverSeq=Number(seq||0)||0;if(serverSeq<Number(cloud.reactionSeq||0))cloud.reactionSeq=0;for(const r of (Array.isArray(items)?items:[])){if(r?.emoji)showEmojiReaction(r)}cloud.reactionSeq=Math.max(Number(cloud.reactionSeq||0),serverSeq)}
 async function fetchCloudRoom(room=cloud.room,delta=false){const rc=normalizeCloudRoom(room);if(!rc)return null;try{let url=`${CLOUD_BASE}/skyjo/${encodeURIComponent(rc)}`;if(delta){const q=new URLSearchParams({rev:String(Number(cloud.rev||0)),reactionSeq:String(Number(cloud.reactionSeq||0))});url+=`?${q.toString()}`}const {r,j}=await fetchJSON(url,{cache:'no-store',timeoutMs:30000});if(!r.ok||!j?.ok){cloud.lastError=r.status===404?'SKYJO-Endpunkte fehlen auf Render. Neue server.js deployen.':(j?.error||`HTTP ${r.status}`);return null}if(delta)processCloudReactions(j?.reactions,j?.reactionSeq);else cloud.reactionSeq=Number(j?.reactionSeq||0)||0;cloud.serverOK=true;cloud.lastStatus='online';cloud.lastError='';return j}catch(e){cloud.serverOK=false;cloud.lastStatus='error';cloud.lastError=e?.name==='AbortError'?'Cloud-Raum antwortet zu langsam. Verbindung bleibt bestehen und wird erneut versucht.':'Cloud-Raum konnte nicht geladen werden.';console.warn('[skyjo cloud load]',e);return null}}
-function applyCloudDoc(remote,rev){if(!isRoomDoc(remote))return false;cloud.applying=true;cloud.doc=clone(remote);cloud.rev=Number(rev)||0;cloud.lastPushedJSON=JSON.stringify(cloud.doc);cloud.role=isHostDevice()?'host':'player';const me=myPlayerIndex();if(me>=0){cloud.myName=cloud.doc.lobby.players[me]?.name||cloud.myName;saveIdentity()}state=cloud.doc.game?migrateState(clone(cloud.doc.game)):null;if(state){const raw=JSON.stringify(state);try{localStorage.setItem(SAVE_KEY,raw)}catch(_e){}ui=restorePlayUIFromState()}else ui={mode:'none',data:{},selected:[]};cloud.applying=false;cloudConfigSave();render();return true}
+function applyCloudDoc(remote,rev){if(!isRoomDoc(remote))return false;const prevPhase=state?.phase||'',prevRound=Number(state?.round||0);cloud.applying=true;cloud.doc=clone(remote);cloud.rev=Number(rev)||0;cloud.lastPushedJSON=JSON.stringify(cloud.doc);cloud.role=isHostDevice()?'host':'player';const me=myPlayerIndex();if(me>=0){cloud.myName=cloud.doc.lobby.players[me]?.name||cloud.myName;saveIdentity()}state=cloud.doc.game?migrateState(clone(cloud.doc.game)):null;if(state){const raw=JSON.stringify(state);try{localStorage.setItem(SAVE_KEY,raw)}catch(_e){}ui=restorePlayUIFromState()}else ui={mode:'none',data:{},selected:[]};const roundAdvanced=!!state&&Number(state.round||0)>prevRound;const leftRoundSummary=(prevPhase==='betweenRounds'||prevPhase==='gameOver')&&!!state&&state.phase!=='betweenRounds'&&state.phase!=='gameOver';if(roundAdvanced||leftRoundSummary){try{closeModal()}catch(_e){}roundSummarySeen=''}cloud.applying=false;cloudConfigSave();render();return true}
 async function postCloudDoc(doc,baseRev=cloud.rev){try{const {r,j}=await fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:doc,baseRev}),timeoutMs:30000});if(r.status===409)return {ok:false,conflict:true,remote:j?.state||null,rev:Number(j?.rev)||0};if(!r.ok||!j?.ok){cloud.lastError=j?.error||`HTTP ${r.status}`;return {ok:false}}cloud.rev=Number(j.rev)||cloud.rev;cloud.serverOK=true;cloud.lastStatus='online';cloud.lastError='';return {ok:true,rev:cloud.rev}}catch(e){cloud.serverOK=false;cloud.lastStatus='error';cloud.lastError=e?.name==='AbortError'?'Speichern dauert zu lange – Verbindung wird erneut versucht.':'Speichern auf Render fehlgeschlagen.';console.warn('[skyjo cloud write]',e);return {ok:false}}}
 function scheduleCloudPush(raw){if(!cloud.enabled||!cloud.room||!isRoomDoc(cloud.doc))return;if(raw===cloud.lastPushedJSON)return;cloud.pending=true;cloud.pendingJSON=raw;if(cloud.inFlight)return;setTimeout(flushCloudPush,100)}
 async function flushCloudPush(){if(cloud.inFlight||!cloud.pending||!cloud.enabled||!cloud.room)return;cloud.inFlight=true;cloud.pending=false;const raw=cloud.pendingJSON||JSON.stringify(cloud.doc);try{const doc=JSON.parse(raw);const out=await postCloudDoc(doc,cloud.rev);if(out.conflict){if(out.remote)applyCloudDoc(out.remote,out.rev);else{const fresh=await fetchCloudRoom(cloud.room,false);if(fresh?.found&&isRoomDoc(fresh.state))applyCloudDoc(fresh.state,fresh.rev||0)}toast('☁ Neuerer Spielstand wurde geladen')}else if(!out.ok)throw new Error(cloud.lastError||'Cloudfehler');else{cloud.lastPushedJSON=raw;cloud.lastStatus='online';cloud.pollErrors=0;cloudConfigSave()}}catch(e){cloud.lastStatus='error';console.warn('[skyjo cloud push]',e)}finally{cloud.inFlight=false;if(cloud.pending)setTimeout(flushCloudPush,140)}}
@@ -3256,7 +3362,7 @@ function setupState(names,target,beginner,jokerCount=8,jokerEnabled=false,aiConf
 function takeFrom(a){return a.pop()}
 function startGame(names,target,beginner,jokerCount=8,jokerEnabled=false,aiConfig=null){state=setupState(names,target,beginner,jokerCount,jokerEnabled,aiConfig);ui={mode:'setupReveal',data:{},selected:[]};save();render();toast(`${state.players[0].name}: Decke 2 Karten auf`);scheduleAIIfNeeded()}
 function beginRound(){
- state.pendingMatch=null;state.turnFlow=null;state.phase='initialReveal';state.roundEnder=null;state.finalTurnQueue=[];state.extraTurns=0;state.roundJokerValues={};
+ state.pendingMatch=null;state.turnFlow=null;state.phase='initialReveal';state.roundEnder=null;state.finalTurnQueue=[];state.extraTurns=0;state.roundJokerValues={};state.lastRoundSummary=null;state.scoreSequence=null;state.roundClose=null;
  state.playDeck=makePlayDeck(state.jokerCount??8);state.playDiscard=[takePlayDirect()];state.playDiscard[0].faceUp=true;state.removedCards=[];state.dismissedMatches={};
  if(jokerSpecialsEnabled()){state.actionDeck=makeActionDeck(state.beginner);state.market=[];for(let i=0;i<4;i++)state.market.push(takeActionDirect());state.actionDiscard=[takeActionDirect()]}else{state.actionDeck=[];state.market=[];state.actionDiscard=[]}
  for(const p of state.players){p.grid=[];p.extras=[];p.actions=[];p.ownTurn=0;p.aiKnowledge={};p.bankedStarBonus=0;for(let i=0;i<12;i++)p.grid.push(takePlayDirect())}
@@ -3958,12 +4064,76 @@ function maybeShowRoundSummary(){
  const nextBtn=s.ended
    ?`<button class="primary" onclick="Game.closeModal();Game.render()">🏆 Ergebnis ansehen</button>`
    :(cloud.enabled&&!isHostDevice()
-      ?`<div class="waiting-note">⏳ Host startet die nächste Runde.</div>`
+      ?`<div class="waiting-note">⏳ Host startet die nächste Runde · automatische Synchronisierung läuft.</div>`
       :`<button class="primary" onclick="Game.nextRound()">▶ Runde ${s.round+1} starten</button>`);
 
  modal(`<div class="final-score-modal premium-score-summary">${hero}<div class="score-results premium-score-results">${rows}</div><div class="modal-actions">${nextBtn}</div></div>`,false)
 }
-function nextRound(){if(cloud.enabled&&!isHostDevice()){toast('Nur der Host startet die nächste Runde.');return}closeModal();const starter=Number.isInteger(state.roundEnder)?state.roundEnder:0;state.startPlayer=starter;state.round++;log(`${state.players[starter].name} hat die vorige Runde beendet und beginnt Runde ${state.round}.`);beginRound()}
+async function nextRound(){
+ if(cloud.enabled&&!isHostDevice()){toast('Nur der Host startet die nächste Runde.');return}
+ if(!state||state.phase!=='betweenRounds'){toast('Die nächste Runde kann gerade nicht gestartet werden.');return}
+ closeModal();
+ const starter=Number.isInteger(state.roundEnder)?state.roundEnder:0;
+ state.startPlayer=starter;
+ state.round++;
+ log(`${state.players[starter].name} hat die vorige Runde beendet und beginnt Runde ${state.round}.`);
+ beginRound();
+
+ if(!cloud.enabled)return;
+
+ const desiredGame=clone(state);
+ const desiredRound=Number(desiredGame.round||0);
+ toast(`☁ Runde ${desiredRound} wird für alle Spieler gestartet …`);
+
+ // Erst den normalen, bereits geplanten Save fertig werden lassen.
+ await waitForCloudIdle(5000);
+
+ // Danach serverseitig prüfen, ob exakt die neue Runde angekommen ist.
+ let remote=await fetchCloudRoom(cloud.room,false);
+ const remoteRound=Number(remote?.state?.game?.round||0);
+ const remotePhase=remote?.state?.game?.phase||'';
+ if(remote?.found&&isRoomDoc(remote.state)&&remoteRound===desiredRound&&remotePhase==='initialReveal'){
+   if(Number(remote.rev||0)>Number(cloud.rev||0))applyCloudDoc(remote.state,remote.rev||0);
+   toast(`☁ Runde ${desiredRound} läuft jetzt auf allen Geräten`);
+   return
+ }
+
+ // Falls der normale Save wegen einer Revision/Race Condition verlorenging:
+ // neuesten Raum holen und NUR den game-Teil durch die vom Host erzeugte neue Runde ersetzen.
+ if(remote?.found&&isRoomDoc(remote.state)){
+   const forced=clone(remote.state);
+   forced.game=clone(desiredGame);
+   forced.lobby.status='playing';
+   const baseRev=Number(remote.rev||0);
+   const out=await postCloudDoc(forced,baseRev);
+   if(out?.ok){
+     cloud.doc=forced;
+     cloud.rev=Number(out.rev)||baseRev;
+     cloud.lastPushedJSON=JSON.stringify(forced);
+     cloud.lastStatus='online';
+     cloud.serverOK=true;
+     state=clone(desiredGame);
+     ui=restorePlayUIFromState();
+     try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(_e){}
+     render();
+     toast(`☁ Runde ${desiredRound} wurde synchronisiert`);
+     return
+   }
+   if(out?.conflict){
+     const fresh=await fetchCloudRoom(cloud.room,false);
+     if(fresh?.found&&isRoomDoc(fresh.state)&&Number(fresh.state?.game?.round||0)===desiredRound){
+       applyCloudDoc(fresh.state,fresh.rev||0);
+       toast(`☁ Runde ${desiredRound} wurde synchronisiert`);
+       return
+     }
+   }
+ }
+
+ cloud.lastStatus='error';
+ cloud.lastError=`Runde ${desiredRound} konnte nicht bestätigt werden. Bitte kurz Aktualisieren drücken.`;
+ render();
+ toast('⚠ Neue Runde konnte nicht an alle Geräte bestätigt werden')
+}
 function modal(html,closable=true){const back=$('#modalBack'),m=$('#modal');m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');back.classList.add('show')}
 function closeModal(){const b=$('#modalBack');if(b)b.classList.remove('show')}
 function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne/Joker haben während des Spiels den Grundwert 0. Bei der Rundenabrechnung übernimmt jeder verbliebene Joker automatisch die niedrigste Zahl, die in seiner waagerechten Reihe oder senkrechten Spalte noch liegt. Beispiel: −2 und 3 in derselben Linie → der Joker zählt −2. Gibt es dort keine Zahl, bleibt er 0.</li><li>Reine Stern-Gruppen dürfen entfernt werden, müssen aber nicht. Eine vollständige 3er-Sterngruppe bringt −10, eine waagerechte 4er-Sterngruppe −15. Wird sie vorher freiwillig abgeräumt, bleibt dieser Bonus gespeichert; jeder Stern zählt nur einmal für einen Bonus.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Eine neu vollständige Kombination bleibt immer auf dem Brett liegen – es erscheint keine Nachfrage und sie wird während des normalen Spiels nicht automatisch entfernt. In deinem eigenen Zug kannst du sie über „Reihe entfernen“ bzw. „Spalte entfernen“ freiwillig selbst auflösen; das verbraucht nicht deine normale Hauptaktion. Auch Minuszahlen dürfen entfernt werden. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, erhält <b>genau der nächste Spieler</b> noch einen letzten Zug. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle noch verdeckten Karten langsam nacheinander aufgedeckt. Anschließend werden vollständige gleiche Reihen und Spalten automatisch geprüft: Sie werden nur abgeräumt, wenn das Entfernen punktetechnisch gleich gut oder besser ist. Eine Joker-Kombination mit günstigeren Minuspunkten darf deshalb bewusst liegen bleiben. Erst danach beginnt die Punktewertung. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards funktionieren; während des Spiels ist ihr Grundwert 0, bei der Endabrechnung gilt weiterhin die beste Zahl aus Reihe/Spalte. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
@@ -4302,7 +4472,7 @@ function gameView(){
  const playersHTML=state.players.map(playerHTML);
  const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
- return `${mp}${closing}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
+ return `${mp}${closing}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Erhöhen</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
 
 function resumeTransientFlow(){
  if(!state||isModalOpen())return;
@@ -4318,14 +4488,14 @@ function resumeTransientFlow(){
  if(ui.mode==='starChoice'){setTimeout(showStarChoice,40);return}
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.16 · Manuelle Reihen</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.18 · Runden-Sync Fix</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
 // Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
 window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
-window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,focusMyBoard,showDisplaySettings,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction};
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction};
 
 document.addEventListener('fullscreenchange',syncFullscreenState);
 document.addEventListener('webkitfullscreenchange',syncFullscreenState);
