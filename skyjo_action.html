@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>SKYJO Action – V15.7 Emoji Reactions</title>
+<title>SKYJO Action – V15.8 Smart Joker Scoring</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -2521,7 +2521,7 @@ function saveIdentity(){if(!cloud.room)return;try{localStorage.setItem(identityK
 function loadIdentity(room){try{const x=JSON.parse(localStorage.getItem(identityKey(room))||'null');if(x?.id===cloud.deviceId)return x}catch(_e){}return null}
 function cloudConfigSave(){try{localStorage.setItem(CLOUD_CFG_KEY,JSON.stringify({enabled:!!cloud.enabled,room:cloud.room||'',name:cloud.myName||''}))}catch(_e){}}
 function cloudConfigLoad(){try{const x=JSON.parse(localStorage.getItem(CLOUD_CFG_KEY)||'null');if(x){cloud.enabled=!!x.enabled;cloud.room=normalizeCloudRoom(x.room);cloud.myName=String(x.name||'')}}catch(_e){}const q=new URLSearchParams(location.search);const qr=normalizeCloudRoom(q.get('room'));if(qr){cloud.enabled=true;cloud.room=qr}}
-function migrateState(x){if(!x||x.version!==1)return null;if(!Array.isArray(x.motionFeed))x.motionFeed=[];if(!Array.isArray(x.reactionFeed))x.reactionFeed=[];if(!Array.isArray(x.removedCards))x.removedCards=[];if(!x.dismissedMatches||typeof x.dismissedMatches!=='object'||Array.isArray(x.dismissedMatches))x.dismissedMatches={};if(!Array.isArray(x.setupOrder))x.setupOrder=[];if(!Number.isInteger(x.setupOrderPos))x.setupOrderPos=0;if(!Number.isInteger(x.jokerCount))x.jokerCount=15;if(typeof x.jokerEnabled!=='boolean')x.jokerEnabled=true;if(x.turnFlow&&typeof x.turnFlow!=='object')x.turnFlow=null;if(x.roundClose&&typeof x.roundClose!=='object')x.roundClose=null;for(const p of (x.players||[])){if(typeof p.isAI!=='boolean')p.isAI=false;if(!['easy','normal','hard'].includes(p.aiDifficulty))p.aiDifficulty='normal';if(!p.aiKnowledge||typeof p.aiKnowledge!=='object')p.aiKnowledge={};if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0}/* Offene Reihenentscheidung bleibt Teil des Spielzustands. */if(x.pendingMatch&&x.phase!=='play')x.pendingMatch=null;return x}
+function migrateState(x){if(!x||x.version!==1)return null;if(!Array.isArray(x.motionFeed))x.motionFeed=[];if(!Array.isArray(x.reactionFeed))x.reactionFeed=[];if(!Array.isArray(x.removedCards))x.removedCards=[];if(!x.dismissedMatches||typeof x.dismissedMatches!=='object'||Array.isArray(x.dismissedMatches))x.dismissedMatches={};if(!Array.isArray(x.setupOrder))x.setupOrder=[];if(!Number.isInteger(x.setupOrderPos))x.setupOrderPos=0;if(!Number.isInteger(x.jokerCount))x.jokerCount=15;if(typeof x.jokerEnabled!=='boolean')x.jokerEnabled=true;if(!x.roundJokerValues||typeof x.roundJokerValues!=='object'||Array.isArray(x.roundJokerValues))x.roundJokerValues={};if(x.turnFlow&&typeof x.turnFlow!=='object')x.turnFlow=null;if(x.roundClose&&typeof x.roundClose!=='object')x.roundClose=null;for(const p of (x.players||[])){if(typeof p.isAI!=='boolean')p.isAI=false;if(!['easy','normal','hard'].includes(p.aiDifficulty))p.aiDifficulty='normal';if(!p.aiKnowledge||typeof p.aiKnowledge!=='object')p.aiKnowledge={};if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0}/* Offene Reihenentscheidung bleibt Teil des Spielzustands. */if(x.pendingMatch&&x.phase!=='play')x.pendingMatch=null;return x}
 function recoverInterruptedMatchDecision(){
  if(!state||state.phase!=='play'||state.pendingMatch)return false;
  const feed=Array.isArray(state.motionFeed)?state.motionFeed:[],latest=feed[feed.length-1];
@@ -2623,11 +2623,11 @@ function cardPoints(card){return card.type==='star'?0:Number(card.value||0)}
 function totalHidden(p){return p.grid.filter(c=>c&&!c.faceUp).length+p.extras.filter(c=>c&&!c.faceUp).length}
 function hasDefense(pi){return state.players[pi].actions.find(a=>a.type==='defense')}
 function consumeDefense(pi){const p=state.players[pi],idx=p.actions.findIndex(a=>a.type==='defense');if(idx<0)return false;const [a]=p.actions.splice(idx,1);state.actionDiscard.push(a);log(`${p.name}s Verteidigung blockt den Angriff.`);toast(`${p.name}: 🛡️ Angriff abgewehrt`);return true}
-function setupState(names,target,beginner,jokerCount=15,jokerEnabled=true,aiConfig=null){const playDeck=makePlayDeck(jokerCount),specials=jokerEnabled!==false,actionDeck=specials?makeActionDeck(beginner):[];const flags=aiConfig?.flags||[],diffs=aiConfig?.difficulties||[];const players=names.map((n,i)=>({name:n,total:0,grid:[],extras:[],actions:[],ownTurn:0,lastRound:0,bankedStarBonus:0,isAI:!!flags[i],aiDifficulty:diffs[i]||'normal',aiKnowledge:{}}));for(const p of players){for(let i=0;i<12;i++)p.grid.push(takeFrom(playDeck))}const playDiscard=[takeFrom(playDeck)];playDiscard[0].faceUp=true;const market=[];let actionDiscard=[];if(specials){for(let i=0;i<4;i++)market.push(takeFrom(actionDeck));const first=takeFrom(actionDeck);if(first)actionDiscard=[first]}return {version:1,phase:'initialReveal',round:1,target,beginner,jokerCount:Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0))),jokerEnabled:!!jokerEnabled,players,playDeck,playDiscard,removedCards:[],dismissedMatches:{},actionDeck,market,actionDiscard,currentPlayer:0,startPlayer:null,setupPlayer:0,setupRevealed:0,setupOrder:[],setupOrderPos:0,roundEnder:null,finalTurnQueue:[],extraTurns:0,log:[`Neues Spiel gestartet · ${jokerCount} Jokerkarten · Spezialeffekte ${jokerEnabled?'AN':'AUS'}.`],turnNo:0,turnFlow:null,reactionFeed:[],gameOver:false}}
+function setupState(names,target,beginner,jokerCount=15,jokerEnabled=true,aiConfig=null){const playDeck=makePlayDeck(jokerCount),specials=jokerEnabled!==false,actionDeck=specials?makeActionDeck(beginner):[];const flags=aiConfig?.flags||[],diffs=aiConfig?.difficulties||[];const players=names.map((n,i)=>({name:n,total:0,grid:[],extras:[],actions:[],ownTurn:0,lastRound:0,bankedStarBonus:0,isAI:!!flags[i],aiDifficulty:diffs[i]||'normal',aiKnowledge:{}}));for(const p of players){for(let i=0;i<12;i++)p.grid.push(takeFrom(playDeck))}const playDiscard=[takeFrom(playDeck)];playDiscard[0].faceUp=true;const market=[];let actionDiscard=[];if(specials){for(let i=0;i<4;i++)market.push(takeFrom(actionDeck));const first=takeFrom(actionDeck);if(first)actionDiscard=[first]}return {version:1,phase:'initialReveal',round:1,target,beginner,jokerCount:Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0))),jokerEnabled:!!jokerEnabled,players,playDeck,playDiscard,removedCards:[],dismissedMatches:{},actionDeck,market,actionDiscard,currentPlayer:0,startPlayer:null,setupPlayer:0,setupRevealed:0,setupOrder:[],setupOrderPos:0,roundEnder:null,finalTurnQueue:[],extraTurns:0,log:[`Neues Spiel gestartet · ${jokerCount} Jokerkarten · Spezialeffekte ${jokerEnabled?'AN':'AUS'}.`],turnNo:0,turnFlow:null,reactionFeed:[],roundJokerValues:{},gameOver:false}}
 function takeFrom(a){return a.pop()}
 function startGame(names,target,beginner,jokerCount=15,jokerEnabled=true,aiConfig=null){state=setupState(names,target,beginner,jokerCount,jokerEnabled,aiConfig);ui={mode:'setupReveal',data:{},selected:[]};save();render();toast(`${state.players[0].name}: Decke 2 Karten auf`);scheduleAIIfNeeded()}
 function beginRound(){
- state.pendingMatch=null;state.turnFlow=null;state.phase='initialReveal';state.roundEnder=null;state.finalTurnQueue=[];state.extraTurns=0;
+ state.pendingMatch=null;state.turnFlow=null;state.phase='initialReveal';state.roundEnder=null;state.finalTurnQueue=[];state.extraTurns=0;state.roundJokerValues={};
  state.playDeck=makePlayDeck(state.jokerCount??15);state.playDiscard=[takePlayDirect()];state.playDiscard[0].faceUp=true;state.removedCards=[];state.dismissedMatches={};
  if(jokerSpecialsEnabled()){state.actionDeck=makeActionDeck(state.beginner);state.market=[];for(let i=0;i<4;i++)state.market.push(takeActionDirect());state.actionDiscard=[takeActionDirect()]}else{state.actionDeck=[];state.market=[];state.actionDiscard=[]}
  for(const p of state.players){p.grid=[];p.extras=[];p.actions=[];p.ownTurn=0;p.aiKnowledge={};p.bankedStarBonus=0;for(let i=0;i<12;i++)p.grid.push(takePlayDirect())}
@@ -2738,7 +2738,28 @@ function queueStarOwners(owners,continuation){const meteorData=ui.mode==='meteor
 function showStarChoice(){if(ui.mode!=='starChoice')return;if(motionBusy||motionQueueBusy){setTimeout(showStarChoice,100);return}const owner=ui.data.owners[ui.data.ownerIndex];if(!hasActionChoiceAvailable()){toast('⭐ Keine Aktionskarte mehr verfügbar – Stern-Effekt verfällt.');setTimeout(starChoiceDone,220);return}if(!cloud.enabled&&isAIPlayer(owner)){closeModal();save();render();scheduleAIIfNeeded(420);return}if(cloud.enabled&&myPlayerIndex()!==owner)return;if(isModalOpen())return;modal(`<h3>⭐ Sternkarte!</h3><p>${escapeHTML(state.players[owner].name)} darf sofort eine Aktionskarte nehmen. Wähle eine offene Karte oder ziehe verdeckt.</p><div class="market">${state.market.map((a,i)=>a?`<div onclick="Game.takeActionMarket(${i},true)">${actionHTML(a,true)}</div>`:'').join('')}</div><div class="modal-actions"><button class="primary" onclick="Game.takeActionBlind(true)">🎴 Verdeckt ziehen</button></div>`,false)}
 function starChoiceDone(){if(ui.mode!=='starChoice')return;ui.data.ownerIndex++;if(ui.data.ownerIndex<ui.data.owners.length){save();render();setTimeout(showStarChoice,80);return}const cont=ui.data.continuation,meteorData=ui.data.meteorData;closeModal();if(cont==='setupContinue'){ui={mode:'setupReveal',data:{},selected:[]};save();setupContinue();return}if(cont==='meteorStarReturn'){const old=meteorData;if(old){ui={mode:'meteorSelect',data:old,selected:[]};state.currentPlayer=old.attacker;save()}meteorNext();return}afterMutation(cont||'finishTurn')}
 function afterMutation(cont){checkRoundTrigger();resolveMatches(state.currentPlayer,cont)}
-function findMatches(pi){const p=state.players[pi],groups=[];for(let r=0;r<3;r++){const raw=[r*4,r*4+1,r*4+2,r*4+3],idx=raw.filter(i=>p.grid[i]);if(idx.length>=3)groups.push({name:`Reihe ${r+1}`,idx})}for(let c=0;c<4;c++){const raw=[c,c+4,c+8],idx=raw.filter(i=>p.grid[i]);if(idx.length>=3)groups.push({name:`Spalte ${c+1}`,idx})}const out=[];for(const g of groups){const cards=g.idx.map(i=>p.grid[i]);if(cards.some(c=>!c.faceUp))continue;const nums=[...new Set(cards.filter(c=>c.type==='number').map(c=>c.value))],stars=cards.filter(c=>c.type==='star').length;const signature=`${g.name}:${cards.map(c=>c?.id||`${c?.type}:${c?.value}`).join('|')}`;if(nums.length===1){out.push({...g,key:signature,optional:true,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`})}else if(nums.length===0&&stars===cards.length){out.push({...g,key:signature,optional:true,pureStars:true,label:`${g.name}: nur Joker`})}}return out}
+function findMatchesInPlayer(p){
+ const groups=[];
+ for(let r=0;r<3;r++){
+   const raw=[r*4,r*4+1,r*4+2,r*4+3],idx=raw.filter(i=>p.grid[i]);
+   if(idx.length>=3)groups.push({name:`Reihe ${r+1}`,idx})
+ }
+ for(let c=0;c<4;c++){
+   const raw=[c,c+4,c+8],idx=raw.filter(i=>p.grid[i]);
+   if(idx.length>=3)groups.push({name:`Spalte ${c+1}`,idx})
+ }
+ const out=[];
+ for(const g of groups){
+   const cards=g.idx.map(i=>p.grid[i]);
+   if(cards.some(c=>!c.faceUp))continue;
+   const nums=[...new Set(cards.filter(c=>c.type==='number').map(c=>c.value))],stars=cards.filter(c=>c.type==='star').length;
+   const signature=`${g.name}:${cards.map(c=>c?.id||`${c?.type}:${c?.value}`).join('|')}`;
+   if(nums.length===1)out.push({...g,key:signature,optional:true,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`});
+   else if(nums.length===0&&stars===cards.length)out.push({...g,key:signature,optional:true,pureStars:true,label:`${g.name}: nur Joker`})
+ }
+ return out
+}
+function findMatches(pi){return findMatchesInPlayer(state.players[pi])}
 
 let activeMatchPromptKey='';
 function dismissedMatchList(pi){if(!state.dismissedMatches||typeof state.dismissedMatches!=='object')state.dismissedMatches={};const k=String(pi);if(!Array.isArray(state.dismissedMatches[k]))state.dismissedMatches[k]=[];return state.dismissedMatches[k]}
@@ -2886,10 +2907,11 @@ function roundCloseRevealOrder(){
 }
 function startScoring(){
  const revealOrder=roundCloseRevealOrder();
+ state.roundJokerValues={};
  state.pendingMatch=null;
  state.turnFlow=null;
  state.phase='roundReveal';
- state.roundClose={id:uid(),ownerDevice:cloud.enabled?cloud.deviceId:'local',createdAt:Date.now(),updatedAt:Date.now(),stage:'reveal',revealOrder,revealIndex:0,removePi:0,removedGroups:0,removedCards:0};
+ state.roundClose={id:uid(),ownerDevice:cloud.enabled?cloud.deviceId:'local',createdAt:Date.now(),updatedAt:Date.now(),stage:'reveal',revealOrder,revealIndex:0,removePi:0,removedGroups:0,removedCards:0,keptBetterGroups:0};
  ui={mode:'roundReveal',data:{stage:'reveal'},selected:[]};
  save();render();maybeStartRoundClose()
 }
@@ -2918,7 +2940,7 @@ async function runRoundClose(seqId){
    seq.updatedAt=Date.now();
    if(seq.stage==='reveal'){
      const list=Array.isArray(seq.revealOrder)?seq.revealOrder:[];
-     if(seq.revealIndex>=list.length){seq.stage='remove';seq.removePi=0;ui={mode:'roundReveal',data:{stage:'remove'},selected:[]};save();render();await sleepMs(650);continue}
+     if(seq.revealIndex>=list.length){state.roundJokerValues=buildRoundEndJokerValueMap();seq.stage='remove';seq.removePi=0;ui={mode:'roundReveal',data:{stage:'remove'},selected:[]};save();render();await sleepMs(650);continue}
      const ref=list[seq.revealIndex],c=roundCloseCard(ref);
      seq.revealIndex++;
      if(!c||c.faceUp){save();continue}
@@ -2936,21 +2958,41 @@ async function runRoundClose(seqId){
      if(seq.removePi>=state.players.length){seq.stage='ready';ui={mode:'roundReveal',data:{stage:'ready'},selected:[]};save();render();await sleepMs(900);continue}
      const pi=seq.removePi,matches=findMatches(pi);
      if(!matches.length){seq.removePi++;save();continue}
-     const m=matches[0],cards=m.idx.map(idx=>state.players[pi].grid[idx]).filter(Boolean).map(clone),srcIds=m.idx.map(idx=>`cell-${pi}-grid-${idx}`);
+
+     /* V15.8: Am Rundenende wird nicht mehr blind jede Joker-Kombination entfernt.
+        Wir vergleichen alle sinnvoll möglichen Abräumfolgen und behalten die Variante
+        mit den niedrigsten echten Endpunkten. Bei Gleichstand wird weiter abgeräumt. */
+     const plan=bestRoundEndRemovalPlan(pi);
+     const nextKey=plan.steps?.[0]?.key;
+     const m=nextKey?matches.find(x=>x.key===nextKey):null;
+     if(!m){
+       const p=state.players[pi],before=rawRoundScore(p),singleScores=matches.map(x=>scoreAfterSimulatedRemoval(p,x));
+       const bestAfter=singleScores.length?Math.min(...singleScores):before;
+       seq.keptBetterGroups=(seq.keptBetterGroups||0)+matches.length;
+       log(`${p.name}: ${matches.length} fertige Kombination(en) bleiben bei der Endwertung liegen, weil ${scoreFmt(before)} Punkte besser sind als Abräumen${Number.isFinite(bestAfter)?` (${scoreFmt(bestAfter)})`:''}. Joker werden zuerst optimal aufgelöst.`);
+       toast(`⭐ ${p.name}: Kombination bleibt · ${scoreFmt(before)} ist günstiger als Abräumen`);
+       seq.removePi++;
+       ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:seq.keptBetterGroups,smartKeep:true},selected:[]};
+       save();render();
+       await sleepMs(720);
+       continue
+     }
+
+     const cards=m.idx.map(idx=>state.players[pi].grid[idx]).filter(Boolean).map(clone),srcIds=m.idx.map(idx=>`cell-${pi}-grid-${idx}`);
      state.currentPlayer=pi;
-     queueMotionEvent('bury-row',{actor:pi,cards,srcIds,dstId:'play-discard-pile',title:`Rundenende · ${m.name} wird automatisch entfernt`,typeLabel:'AUTO-ABRÄUMEN',text:m.label});
+     queueMotionEvent('bury-row',{actor:pi,cards,srcIds,dstId:'play-discard-pile',title:`Rundenende · ${m.name} wird automatisch entfernt`,typeLabel:'AUTO-ABRÄUMEN',text:`${m.label} · punktetechnisch gleich gut oder besser`});
      removeMatch(pi,m);
      seq.removedGroups++;
      seq.removedCards+=cards.length;
-     ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards},selected:[]};
+     ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:seq.keptBetterGroups||0},selected:[]};
      save();render();
      await waitForMotionIdle(7000);
      await sleepMs(300);
      continue
    }
    if(seq.stage==='ready'){
-     const removedGroups=seq.removedGroups||0,removedCards=seq.removedCards||0;
-     log(`Rundenabschluss: alle Karten aufgedeckt; ${removedGroups} fertige Kombination(en) mit ${removedCards} Karten automatisch entfernt.`);
+     const removedGroups=seq.removedGroups||0,removedCards=seq.removedCards||0,keptBetterGroups=seq.keptBetterGroups||0;
+     log(`Rundenabschluss: alle Karten aufgedeckt; ${removedGroups} fertige Kombination(en) mit ${removedCards} Karten automatisch entfernt.${keptBetterGroups?` ${keptBetterGroups} Kombination(en) blieben liegen, weil ihre Joker-Endwertung günstiger war.`:''}`);
      state.roundClose=null;
      state.phase='scoring';
      ui={mode:'scoreSequence',data:{},selected:[]};
@@ -2966,7 +3008,7 @@ async function runRoundClose(seqId){
 function scorePrepare(pi){if(state.phase==='scoring')finishScoring()}
 function scoreNextPlayer(){if(state.phase==='scoring')finishScoring()}
 function bestStarBonus(p){const groups=[];for(let r=0;r<3;r++){const idx=[r*4,r*4+1,r*4+2,r*4+3].filter(i=>p.grid[i]);if(idx.length>=3&&idx.every(i=>p.grid[i].type==='star'))groups.push({idx,bonus:idx.length===4?-15:-10})}for(let c=0;c<4;c++){const idx=[c,c+4,c+8].filter(i=>p.grid[i]);if(idx.length===3&&idx.every(i=>p.grid[i].type==='star'))groups.push({idx,bonus:-10})}let best=0;function dfs(i,used,sum){if(i===groups.length){if(sum<best)best=sum;return}dfs(i+1,used,sum);const g=groups[i];if(g.idx.every(x=>!used.has(x))){const n=new Set(used);g.idx.forEach(x=>n.add(x));dfs(i+1,n,sum+g.bonus)}}dfs(0,new Set(),0);return best}
-function jokerEndValueForGrid(p,idx){
+function liveJokerEndValueForGrid(p,idx){
  const c=p?.grid?.[idx];
  if(!c||c.type!=='star')return c?cardPoints(c):0;
  const row=Math.floor(idx/4),col=idx%4,values=[];
@@ -2980,6 +3022,22 @@ function jokerEndValueForGrid(p,idx){
  }
  return values.length?Math.min(...values):0
 }
+function jokerEndValueForGrid(p,idx){
+ const c=p?.grid?.[idx];
+ if(!c||c.type!=='star')return c?cardPoints(c):0;
+ const locked=state?.roundJokerValues?.[c.id];
+ return Number.isFinite(locked)?Number(locked):liveJokerEndValueForGrid(p,idx)
+}
+function buildRoundEndJokerValueMap(){
+ const values={};
+ for(const p of state?.players||[]){
+   for(let i=0;i<(p.grid||[]).length;i++){
+     const c=p.grid[i];
+     if(c?.type==='star')values[c.id]=liveJokerEndValueForGrid(p,i)
+   }
+ }
+ return values
+}
 function endRoundCardValue(p,c,zone,idx){
  if(!c)return 0;
  if(c.type!=='star')return cardPoints(c);
@@ -2992,6 +3050,52 @@ function jokerEndLabel(p,idx){
  return `Joker → ${v>0?'+':''}${v}`
 }
 function rawRoundScore(p){let s=0;for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(c)s+=endRoundCardValue(p,c,'grid',i)}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(c)s+=endRoundCardValue(p,c,'extra',i)}if(jokerSpecialsEnabled())s+=p.actions.length*10;s+=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);return s}
+
+/* V15.8 SMART JOKER SCORING
+   Nach dem Aufdecken werden die Joker-Endwerte zuerst festgeschrieben. Eine fertige
+   Reihe/Spalte wird danach nur dann abgeräumt, wenn das Endergebnis dadurch nicht
+   schlechter wird (z. B. 0 + Joker(-2) + Joker(-1) = -3 bleibt liegen). */
+function simulateMatchRemovalForScore(p,m){
+ if(!p||!m)return p;
+ if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0;
+ if(m.pureStars){
+   const bonus=(m.idx.length===4&&m.name.startsWith('Reihe'))?-15:-10;
+   p.bankedStarBonus+=bonus
+ }
+ for(const idx of m.idx)if(p.grid[idx])p.grid[idx]=null;
+ return p
+}
+function scoreAfterSimulatedRemoval(p,m){
+ const q=clone(p);
+ simulateMatchRemovalForScore(q,m);
+ return rawRoundScore(q)
+}
+function roundEndPlanKey(p){
+ return `${p.grid.map(c=>c?c.id:'-').join(',')}|${Number(p.bankedStarBonus)||0}`
+}
+function bestRoundEndRemovalPlan(pi){
+ const source=state?.players?.[pi];
+ if(!source)return {score:0,steps:[],removedCards:0};
+ const memo=new Map();
+ function solve(p){
+   const key=roundEndPlanKey(p);
+   if(memo.has(key))return memo.get(key);
+   let best={score:rawRoundScore(p),steps:[],removedCards:0};
+   const matches=findMatchesInPlayer(p);
+   for(const m of matches){
+     const q=clone(p);
+     simulateMatchRemovalForScore(q,m);
+     const tail=solve(q);
+     const candidate={score:tail.score,steps:[{key:m.key,name:m.name,label:m.label},...tail.steps],removedCards:m.idx.length+tail.removedCards};
+     /* Niedrigere Punkte gewinnen. Bei exakt gleichem Ergebnis räumen wir mehr Karten ab,
+        damit normale 0er-/positive Reihen weiterhin automatisch verschwinden. */
+     if(candidate.score<best.score||(candidate.score===best.score&&candidate.removedCards>best.removedCards))best=candidate
+   }
+   memo.set(key,best);
+   return best
+ }
+ return solve(clone(source))
+}
 let scoreSequenceSeen='',roundSummarySeen='';
 function scoreItemsForPlayer(p){const items=[];for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(!c)continue;const v=endRoundCardValue(p,c,'grid',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?jokerEndLabel(p,i):String(c.value),jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(!c)continue;const v=endRoundCardValue(p,c,'extra',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?'Zusatz-Joker · 0':`Zusatz ${c.value}`,jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}if(jokerSpecialsEnabled())for(const a of p.actions)items.push({kind:'action',actionType:a.type,value:10,label:ACTIONS[a.type]?.name||'Aktionskarte'});const bonus=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);if(bonus)items.push({kind:'bonus',value:bonus,label:'Sternbonus'});return items}
 function scoreFmt(v){v=Number(v)||0;return `${v>0?'+':''}${v}`}
@@ -3509,7 +3613,7 @@ function actionHTML(a,clickable=false,selected=false){if(!a)return'';const m=ACT
 function boardCardClickable(pi,zone,idx){if(!state)return false;if(isAIActor()&&!aiActing)return false;if(cloud.enabled&&!isMyActorDevice())return false;const mode=ui.mode;if(mode==='setupReveal')return pi===state.setupPlayer&&zone==='grid';if(['drawnDecision','discardSwap','drawnSwap','flipOwn','ownSwapSelect','draw3Target'].includes(mode))return pi===state.currentPlayer;if(mode==='otherSwapSelect')return pi===ui.data.a||pi===ui.data.b;if(mode==='meteorSelect')return pi===ui.data.target;return false}
 function isSelected(pi,zone,idx){return ui.selected.some(s=>s.pi===pi&&s.zone===zone&&s.idx===idx)}
 function playerHTML(p,pi){const active=pi===state.currentPlayer;const mine=cloud.enabled&&pi===myPlayerIndex();const matches=(state.phase==='play')?findMatches(pi):[];const matchSet=new Set(matches.flatMap(m=>m.idx));const canResolve=state.phase==='play'&&pi===state.currentPlayer&&!p.isAI&&['turnChoice','matchReady'].includes(ui.mode)&&(!cloud.enabled||isMyActorDevice())&&!motionBusy;const cards=p.grid.map((c,i)=>`<div id="cell-${pi}-grid-${i}" class="card-slot ${matchSet.has(i)?'match-ready-slot':''}" onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div id="cell-${pi}-extra-${i}" class="card-slot" onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');const total=Math.max(1,12+p.extras.length),hidden=totalHidden(p),pct=Math.max(0,Math.min(100,Math.round(((total-hidden)/total)*100)));const openCards=[...(p.grid||[]),...(p.extras||[])].filter(c=>c&&c.faceUp);const openSum=openCards.reduce((s,c)=>s+cardPoints(c),0);const hue=[43,188,145,282,18,215,325,92][pi%8];const matchActions=matches.length?`<div class="match-actions"><div class="match-actions-title">✨ Fertige Kombination · Entfernen jederzeit möglich</div>${matches.map((m,i)=>`<button class="match-resolve-btn optional ${canResolve?'':'disabled'}" ${canResolve?`onclick="Game.resolveBoardMatch(${pi},${i})"`:'disabled'}>${m.name.startsWith('Reihe')?'Reihe entfernen':'Spalte entfernen'} · ${escapeHTML(m.label.replace(/^.*?:\s*/,''))}</button>`).join('')}</div>`:'';return `<section id="player-${pi}" data-player="${pi}" class="player ${active?'active':''} ${mine?'mine':''} ${p.isAI?'ai-player':''}" style="--player-hue:${hue}">${active?`<div class="active-turn-banner"><span>${p.isAI?'🤖':'🎯'}</span><b>${mine?'DEIN ZUG':p.isAI?'COMPUTER AM ZUG':'JETZT AM ZUG'}</b></div>`:''}<div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div class="player-meta"><div class="player-name">${escapeHTML(p.name)} ${p.isAI?'<span class="ai-tag">🤖 COMPUTER</span>':''} ${mine?'<span class="you-tag">DU</span>':''} ${active?'<span class="active-tag">🎯 AM ZUG</span>':''}</div><div class="hint player-meta-chips"><span class="meta-chip hidden-chip">▦ ${hidden} verdeckt</span>${jokerSpecialsEnabled()?`<span class="meta-chip action-chip">⚡ ${p.actions.length} Aktionen</span>`:''}<span class="meta-chip open-chip">Σ ${openSum>=0?'+':''}${openSum} offen</span></div><div class="reveal-meter"><i style="width:${pct}%"></i></div></div></div><div class="score-stack"><div class="scorechip"><small>GESAMT</small><b>${p.total}</b></div><div class="progress-chip">${pct}%</div></div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${matchActions}${jokerSpecialsEnabled()&&p.actions.length?`<div class="actions-owned action-only-ui"><div class="owned-title">⚡ Eigene Aktionskarten</div>${acts}</div>`:''}</section>`}
-function instructionText(){if(!state)return'';const p=current();if(isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → alte Karte aufdecken → offen auf Ablage → danach Handkarte ins Feld`;case'matchReady':return `✨ Neue Kombination – einmal entscheiden. Danach bleibt sie ohne weitere Nachfrage liegen`;case'roundReveal':{const st=ui.data?.stage||state.roundClose?.stage;if(st==='remove')return `✨ Rundenende: fertige Reihen werden automatisch abgeräumt …`;if(st==='ready')return `📊 Alle Karten offen – Punktewertung startet gleich …`;const i=ui.data?.index||state.roundClose?.revealIndex||0,t=ui.data?.total||state.roundClose?.revealOrder?.length||0;return `🔄 Rundenende: verdeckte Karten werden nacheinander aufgedeckt${t?` · ${i}/${t}`:''}`;}case'scoreSequence':return `📊 Score Show: Punkte werden langsam Karte für Karte addiert …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
+function instructionText(){if(!state)return'';const p=current();if(isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → alte Karte aufdecken → offen auf Ablage → danach Handkarte ins Feld`;case'matchReady':return `✨ Neue Kombination – einmal entscheiden. Danach bleibt sie ohne weitere Nachfrage liegen`;case'roundReveal':{const st=ui.data?.stage||state.roundClose?.stage;if(st==='remove')return `✨ Rundenende: Kombinationen werden mit Joker-Endwerten geprüft …`;if(st==='ready')return `📊 Alle Karten offen – Punktewertung startet gleich …`;const i=ui.data?.index||state.roundClose?.revealIndex||0,t=ui.data?.total||state.roundClose?.revealOrder?.length||0;return `🔄 Rundenende: verdeckte Karten werden nacheinander aufgedeckt${t?` · ${i}/${t}`:''}`;}case'scoreSequence':return `📊 Score Show: Punkte werden langsam Karte für Karte addiert …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
 function bottomButtons(){if(!state||state.phase==='gameOver')return'';if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Bitte Ja oder Nein wählen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
 const emojiReactionSeen=new Set();
 const EMOJI_REACTIONS=['👍','😂','😮','😭','😡','👏','🔥','❤️','🤔'];
@@ -3572,7 +3676,7 @@ function gameView(){
  const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="watchbox">${watchPanelHTML()}</div><div class="pilebox play-pilebox"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
  const playersHTML=state.players.map(playerHTML);
  const boards=state.players.length===2?`<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`:`<div class="table-area">${centerTable}<div class="players players-${state.players.length}">${playersHTML.join('')}</div></div>`;
- const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Fertige Reihen werden automatisch abgeräumt':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} Kombination(en) entfernt`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
+ const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
  return `${mp}${closing}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
 
 function resumeTransientFlow(){
@@ -3592,7 +3696,7 @@ function render(){if(state?.phase==='play'&&!state.pendingMatch&&ui.mode==='turn
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.7 · Emoji Reactions</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.8 · Smart Joker Scoring</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
