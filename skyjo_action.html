@@ -2251,6 +2251,7 @@ body[data-players="2"] .player:not(.active){opacity:.88;filter:saturate(.90) bri
 @media(max-width:900px){.active-turn-banner{height:22px;font-size:7px}.player.active .player-head{padding-top:25px!important}}
 
 
+/* === V15.12 EMOJI-REAKTION MITTIG + DOPPELTE GRÖSSE === */
 /* === V15.10 GROSSE EMOJI-REAKTIONEN + HAHA === */
 .app{padding-bottom:148px!important}
 .bottom-inner{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:7px 12px!important;align-items:center!important}
@@ -2263,11 +2264,12 @@ body[data-players="2"] .player:not(.active){opacity:.88;filter:saturate(.90) bri
 .emoji-reaction-btn:active{transform:scale(.88)}
 @media(hover:hover) and (pointer:fine){.emoji-reaction-btn:hover{transform:translateY(-2px) scale(1.08);background:rgba(255,255,255,.09);border-color:rgba(255,224,117,.18)}}
 .player{overflow:visible!important}
-.emoji-reaction-fx{position:absolute;z-index:60;left:50%;top:42%;font-size:76px;line-height:1;pointer-events:none;opacity:0;transform:translate(-50%,-35%) scale(.45) rotate(-8deg);filter:drop-shadow(0 12px 19px rgba(0,0,0,.38));transition:opacity .18s ease,transform .36s cubic-bezier(.18,.88,.24,1.28),filter .3s ease}
+/* V15.12: Reaktions-Emoji immer mittig im Bildschirm und 2x so groß */
+.emoji-reaction-fx{position:fixed!important;z-index:4000!important;left:50%!important;top:50%!important;font-size:152px;line-height:1;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.45) rotate(-8deg);filter:drop-shadow(0 18px 28px rgba(0,0,0,.42));transition:opacity .18s ease,transform .36s cubic-bezier(.18,.88,.24,1.28),filter .3s ease;will-change:transform,opacity}
 .emoji-reaction-fx.show{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg)}
-.emoji-reaction-fx.leave{opacity:0;transform:translate(-50%,-105%) scale(1.18) rotate(5deg);filter:drop-shadow(0 17px 22px rgba(0,0,0,.20))}
-.emoji-reaction-fx.global{position:fixed;left:50%;top:50%;z-index:4000}
-@media(max-width:900px){.app{padding-bottom:144px!important}.emoji-reaction-btn{width:39px;height:39px;font-size:23px;border-radius:12px}.emoji-reaction-list{gap:6px}.emoji-reaction-fx{font-size:68px}}
+.emoji-reaction-fx.leave{opacity:0;transform:translate(-50%,-50%) scale(1.18) rotate(5deg);filter:drop-shadow(0 22px 30px rgba(0,0,0,.20))}
+.emoji-reaction-fx.global{position:fixed!important;left:50%!important;top:50%!important;z-index:4000!important}
+@media(max-width:900px){.app{padding-bottom:144px!important}.emoji-reaction-btn{width:39px;height:39px;font-size:23px;border-radius:12px}.emoji-reaction-list{gap:6px}.emoji-reaction-fx{font-size:136px}}
 @media(max-width:650px){.bottom-inner{display:block!important}.emoji-reaction-bar{margin-top:5px;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.emoji-reaction-bar::-webkit-scrollbar{display:none}.emoji-reaction-list{min-width:max-content}}
 
 
@@ -3742,11 +3744,11 @@ function showEmojiReaction(r){
  if(!r?.id||emojiReactionSeen.has(r.id))return;
  emojiReactionSeen.add(r.id);
  if(emojiReactionSeen.size>120){const first=emojiReactionSeen.values().next().value;emojiReactionSeen.delete(first)}
- const host=document.getElementById(`player-${r.actor}`)||document.body;
  const fx=document.createElement('div');
- fx.className='emoji-reaction-fx';
+ fx.className='emoji-reaction-fx global';
  fx.textContent=r.emoji;
- if(host!==document.body){host.appendChild(fx)}else{fx.classList.add('global');document.body.appendChild(fx)}
+ /* Reaktion bewusst direkt an body hängen: immer exakt Bildschirmmitte, unabhängig vom Spielerfeld. */
+ document.body.appendChild(fx)
  haptic(7);
  setTimeout(()=>fx.classList.add('show'),20);
  setTimeout(()=>fx.classList.add('leave'),1250);
