@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>SKYJO Action – V15.8 Smart Joker Scoring</title>
+<title>SKYJO Action – V16.0 Premium Table</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -2361,539 +2361,6 @@ body[data-players="2"] .player:not(.active){opacity:.88;filter:saturate(.90) bri
 
 
 /* ==========================================================
-   V15.13 SPIELETISCH LOOK
-   Ziel: Das ganze Spiel soll wirken, als läge es auf einem
-   echten Tisch mit Holzrahmen und Filz-Spielfläche.
-   ========================================================== */
-:root{
-  --table-wood-1:#7b4f2c;
-  --table-wood-2:#5f381d;
-  --table-wood-3:#3d2312;
-  --table-felt-1:#154b45;
-  --table-felt-2:#0c3633;
-  --table-felt-3:#082624;
-}
-body{
-  background:
-    radial-gradient(1100px 680px at 50% -8%,rgba(255,222,160,.08),transparent 58%),
-    radial-gradient(900px 500px at 0% 100%,rgba(0,0,0,.26),transparent 56%),
-    radial-gradient(900px 500px at 100% 100%,rgba(0,0,0,.26),transparent 56%),
-    linear-gradient(180deg,#2b1b12 0%,#1f140e 52%,#140d09 100%) !important;
-}
-body:before{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:-2;opacity:.18;
-  background:
-    repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 2px,transparent 2px 96px),
-    repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 1px,transparent 1px 96px);
-}
-body:after{
-  opacity:.14 !important;
-  background-size:120px 120px !important;
-}
-.app{
-  position:relative;
-  isolation:isolate;
-  max-width:1500px;
-  padding-top:18px;
-}
-.app:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:34px;
-  z-index:-3;
-  background:
-    linear-gradient(145deg,rgba(255,255,255,.08),transparent 12%,transparent 88%,rgba(0,0,0,.24)),
-    repeating-linear-gradient(12deg,var(--table-wood-1) 0 18px,var(--table-wood-2) 18px 36px,var(--table-wood-3) 36px 54px,var(--table-wood-2) 54px 72px);
-  box-shadow:
-    0 30px 75px rgba(0,0,0,.42),
-    inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 -10px 18px rgba(0,0,0,.24),
-    inset 10px 0 18px rgba(255,255,255,.06),
-    inset -10px 0 18px rgba(0,0,0,.14);
-}
-.app:after{
-  content:"";
-  position:absolute;
-  inset:14px;
-  border-radius:26px;
-  z-index:-2;
-  background:
-    radial-gradient(circle at 50% 14%,rgba(255,233,161,.09),transparent 26%),
-    radial-gradient(circle at 18% 50%,hsla(var(--turn-hue),84%,62%,.06),transparent 26%),
-    radial-gradient(circle at 82% 48%,rgba(117,73,255,.06),transparent 28%),
-    linear-gradient(165deg,var(--table-felt-1),var(--table-felt-2) 52%,var(--table-felt-3));
-  box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.05),
-    inset 0 18px 34px rgba(255,255,255,.03),
-    inset 0 -20px 36px rgba(0,0,0,.22),
-    0 0 0 1px rgba(0,0,0,.22);
-}
-.topbar{
-  margin-top:10px;
-  border-radius:22px;
-  background:linear-gradient(180deg,rgba(17,48,43,.86),rgba(7,28,25,.90));
-  border-color:rgba(255,255,255,.11);
-  box-shadow:0 16px 36px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
-}
-.panel,.player,.center-table,.watch-panel,.score-seq-shell{
-  backdrop-filter:blur(2px);
-}
-.center-table{
-  border-radius:28px;
-  border:1px solid rgba(183,255,238,.13);
-  background:
-    radial-gradient(ellipse at 50% 4%,rgba(255,240,197,.10),transparent 22%),
-    radial-gradient(ellipse at 23% 46%,hsla(var(--turn-hue),84%,62%,.05),transparent 28%),
-    radial-gradient(ellipse at 78% 45%,rgba(113,91,255,.06),transparent 30%),
-    repeating-radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.010) 0 1px,transparent 1px 6px),
-    linear-gradient(165deg,#16534b,#0d3735 52%,#092826) !important;
-  box-shadow:
-    0 22px 55px rgba(0,0,0,.28),
-    inset 0 0 0 1px rgba(255,255,255,.04),
-    inset 0 18px 28px rgba(255,255,255,.025),
-    inset 0 -26px 46px rgba(0,0,0,.14),
-    0 0 0 10px rgba(76,41,18,.22);
-}
-.center-table:after{
-  content:"SPIELETISCH · SKYJO ACTION" !important;
-  color:rgba(255,244,220,.09) !important;
-}
-.pilebox,.watch-panel,.player,.panel{
-  border-color:rgba(255,255,255,.10) !important;
-}
-.player{
-  background:
-    radial-gradient(circle at 50% 0%,rgba(255,255,255,.04),transparent 26%),
-    radial-gradient(circle at 2% 0%,hsla(var(--player-hue),88%,66%,.06),transparent 29%),
-    linear-gradient(180deg,rgba(13,46,45,.93),rgba(7,29,30,.97)) !important;
-  box-shadow:
-    0 16px 38px rgba(0,0,0,.24),
-    inset 0 1px 0 rgba(255,255,255,.04),
-    inset 0 -18px 26px rgba(0,0,0,.10);
-}
-.player.active{
-  box-shadow:
-    0 0 0 1px hsla(var(--player-hue),92%,72%,.12),
-    0 16px 42px rgba(0,0,0,.30),
-    0 0 0 6px rgba(255,214,90,.055),
-    0 0 34px hsla(var(--player-hue),88%,62%,.10),
-    inset 0 1px 0 rgba(255,255,255,.08) !important;
-}
-body[data-players="2"] .table-area.two-player-layout{
-  gap:14px !important;
-}
-body[data-players="2"] .table-area.two-player-layout .board-col.left,
-body[data-players="2"] .table-area.two-player-layout .board-col.right,
-body[data-players="2"] .table-area.two-player-layout .center-table{
-  position:relative;
-}
-body[data-players="2"] .table-area.two-player-layout .board-col.left:before,
-body[data-players="2"] .table-area.two-player-layout .board-col.right:before,
-body[data-players="2"] .table-area.two-player-layout .center-table:before{
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
-}
-body[data-players="2"] .table-area.two-player-layout .board-col.left:after,
-body[data-players="2"] .table-area.two-player-layout .board-col.right:after{
-  content:"SPIELERPLATZ";
-  position:absolute;
-  left:50%;bottom:-8px;transform:translateX(-50%);
-  padding:3px 9px;border-radius:999px;
-  font-size:8px;font-weight:900;letter-spacing:1px;
-  color:rgba(255,240,211,.58);
-  background:rgba(69,38,18,.44);
-  border:1px solid rgba(255,220,171,.10);
-  box-shadow:0 6px 14px rgba(0,0,0,.18);
-  pointer-events:none;
-}
-.real-hand-zone,.watch-panel,.play-pilebox,.action-pilebox{
-  box-shadow:0 14px 28px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.03);
-}
-@media(max-width:1050px){
-  .app:before{border-radius:24px}
-  .app:after{inset:10px;border-radius:18px}
-  .topbar{border-radius:18px}
-  .center-table{box-shadow:0 18px 42px rgba(0,0,0,.26),inset 0 0 0 1px rgba(255,255,255,.04),inset 0 18px 28px rgba(255,255,255,.025),inset 0 -26px 46px rgba(0,0,0,.14),0 0 0 6px rgba(76,41,18,.18)}
-  body[data-players="2"] .table-area.two-player-layout .board-col.left:after,
-  body[data-players="2"] .table-area.two-player-layout .board-col.right:after{display:none}
-}
-
-
-
-/* ==========================================================
-   V15.14 PREMIUM HOLZTISCH
-   Ziel: Aufwendiger echter Holztisch mit eingelassenen
-   Spielflächen, warmem Holz, Filzmatten und mehr Tiefe.
-   ========================================================== */
-:root{
-  --wood-a:#91603a;
-  --wood-b:#734623;
-  --wood-c:#5b3419;
-  --wood-d:#3a2010;
-  --wood-edge:#2c160b;
-  --felt-main:#17483f;
-  --felt-dark:#0b2f2c;
-  --felt-player:#113b38;
-  --felt-player-2:#0b2b2c;
-  --brass:#d7ae58;
-  --ivory:rgba(255,246,224,.92);
-}
-
-/* Holztisch-Hintergrund im Raum */
-html,body{
-  background:
-    radial-gradient(1200px 760px at 50% -5%,rgba(255,228,163,.11),transparent 58%),
-    radial-gradient(900px 500px at 50% 120%,rgba(0,0,0,.38),transparent 50%),
-    linear-gradient(180deg,#2e1c12 0%,#1e130d 44%,#130c08 100%) !important;
-}
-body:before{
-  content:"" !important;
-  position:fixed;inset:0;pointer-events:none;z-index:-4;opacity:.25;
-  background:
-    repeating-linear-gradient(90deg,
-      rgba(255,255,255,.06) 0 2px,
-      transparent 2px 82px,
-      rgba(0,0,0,.12) 82px 84px,
-      transparent 84px 164px),
-    repeating-linear-gradient(0deg,
-      rgba(255,255,255,.012) 0 1px,
-      transparent 1px 10px);
-}
-body:after{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:-3;opacity:.30;
-  background:
-    radial-gradient(circle at 20% 15%,rgba(255,255,255,.05),transparent 16%),
-    radial-gradient(circle at 80% 12%,rgba(255,255,255,.045),transparent 18%),
-    radial-gradient(circle at 50% 50%,transparent 58%,rgba(0,0,0,.18) 100%) !important;
-  background-size:auto !important;
-  mask-image:none !important;
-}
-
-/* Gesamter Tisch */
-.app{
-  max-width:1540px;
-  margin-top:8px;
-  padding:16px 18px calc(115px + env(safe-area-inset-bottom));
-  position:relative;
-  isolation:isolate;
-}
-.app:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:36px;
-  z-index:-6;
-  background:
-    linear-gradient(145deg,rgba(255,255,255,.10),transparent 10%,transparent 88%,rgba(0,0,0,.30)),
-    radial-gradient(circle at 15% 18%,rgba(255,226,173,.12),transparent 18%),
-    radial-gradient(circle at 85% 15%,rgba(255,226,173,.08),transparent 14%),
-    repeating-linear-gradient(8deg,
-      var(--wood-a) 0 20px,
-      var(--wood-b) 20px 38px,
-      var(--wood-c) 38px 54px,
-      var(--wood-b) 54px 78px,
-      var(--wood-d) 78px 88px,
-      var(--wood-b) 88px 116px);
-  box-shadow:
-    0 34px 90px rgba(0,0,0,.45),
-    inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 -10px 18px rgba(0,0,0,.26),
-    inset 12px 0 18px rgba(255,255,255,.05),
-    inset -12px 0 18px rgba(0,0,0,.15);
-}
-.app:after{
-  content:"";
-  position:absolute;
-  inset:14px;
-  border-radius:28px;
-  z-index:-5;
-  background:
-    linear-gradient(145deg,rgba(255,255,255,.06),transparent 12%,transparent 85%,rgba(0,0,0,.18)),
-    radial-gradient(circle at 50% 0%,rgba(255,236,192,.07),transparent 18%),
-    linear-gradient(165deg,#22584b,#123a37 55%,#0b2b2c);
-  box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.035),
-    inset 0 18px 35px rgba(255,255,255,.025),
-    inset 0 -22px 42px rgba(0,0,0,.24),
-    0 0 0 1px rgba(0,0,0,.24);
-}
-
-/* Kopfleiste wie Namensschild auf dem Tisch */
-.topbar{
-  position:sticky;
-  top:10px;
-  margin:6px 2px 14px;
-  border-radius:22px;
-  border:1px solid rgba(255,244,220,.12) !important;
-  background:
-    linear-gradient(145deg,rgba(119,71,36,.94),rgba(74,42,20,.96)) !important;
-  box-shadow:
-    0 18px 38px rgba(0,0,0,.28),
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -10px 14px rgba(0,0,0,.15);
-}
-.topbar:before{
-  content:"";position:absolute;inset:6px;border-radius:16px;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 40%,rgba(0,0,0,.10));
-}
-.topbar:after{
-  left:20% !important; right:20% !important; bottom:5px !important;
-  background:linear-gradient(90deg,transparent,rgba(255,217,146,.72),transparent) !important;
-  box-shadow:0 0 18px rgba(255,200,95,.18) !important;
-}
-.brand h1,.brand small,.iconbtn,.cloud-pill{color:#fff7eb !important}
-.iconbtn,.cloud-pill{
-  border-color:rgba(255,244,220,.12) !important;
-  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03)) !important;
-}
-.brandmark{
-  box-shadow:0 0 0 2px rgba(255,255,255,.08),0 8px 22px rgba(0,0,0,.28) !important;
-}
-
-/* obere Statuskarten wie kleine Holzplaketten */
-.stat,.multiplayer-bar{
-  border-color:rgba(255,244,220,.10) !important;
-  background:linear-gradient(180deg,rgba(81,48,24,.82),rgba(51,29,14,.88)) !important;
-  box-shadow:0 10px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06) !important;
-}
-.stat span,.multiplayer-bar,.cloud-info{color:#e7d7bd !important}
-.stat b{color:#fff8ea !important}
-
-/* Spielfläche Mitte – eingelassenes Hauptfeld */
-.center-table{
-  position:relative;
-  border-radius:30px;
-  border:1px solid rgba(228,196,124,.18) !important;
-  background:
-    linear-gradient(145deg,rgba(255,255,255,.04),transparent 12%,transparent 88%,rgba(0,0,0,.14)),
-    radial-gradient(circle at 50% 6%,rgba(255,246,216,.08),transparent 18%),
-    radial-gradient(ellipse at 20% 48%,hsla(var(--turn-hue),80%,64%,.06),transparent 28%),
-    radial-gradient(ellipse at 80% 44%,rgba(121,93,255,.06),transparent 28%),
-    repeating-radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.010) 0 1px,transparent 1px 6px),
-    linear-gradient(165deg,var(--felt-main),#103935 54%,var(--felt-dark)) !important;
-  box-shadow:
-    0 22px 58px rgba(0,0,0,.32),
-    inset 0 0 0 1px rgba(255,255,255,.04),
-    inset 0 20px 34px rgba(255,255,255,.02),
-    inset 0 -28px 48px rgba(0,0,0,.18),
-    0 0 0 10px rgba(74,40,19,.42),
-    0 0 0 12px rgba(122,74,37,.58),
-    0 0 0 14px rgba(51,28,14,.95);
-}
-.center-table:before{
-  content:"";
-  position:absolute;inset:16px;border-radius:22px;pointer-events:none;z-index:0;
-  border:1px solid rgba(255,246,221,.045);
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);
-}
-.center-table:after{
-  content:"HOLZTISCH · SKYJO ACTION" !important;
-  right:20px !important;
-  bottom:14px !important;
-  color:rgba(255,241,214,.12) !important;
-  letter-spacing:3px !important;
-}
-.center-table > *{position:relative;z-index:1}
-
-/* mittlere Boxen wie eingelassene Fächer */
-.pilebox,.watch-panel,.real-hand-zone,.score-seq-shell,.score-seq-player-card{
-  border-radius:20px !important;
-  border:1px solid rgba(255,244,220,.08) !important;
-  background:
-    linear-gradient(180deg,rgba(14,47,43,.86),rgba(8,31,29,.93)) !important;
-  box-shadow:
-    0 14px 28px rgba(0,0,0,.18),
-    inset 0 1px 0 rgba(255,255,255,.04),
-    inset 0 -14px 24px rgba(0,0,0,.10) !important;
-}
-.watch-panel{background:linear-gradient(180deg,rgba(12,44,42,.90),rgba(8,31,30,.95)) !important}
-.section-heading h4,.pilebox h4,.watch-headline b,.watch-copy b{color:#f6ede0 !important}
-.section-heading small,.watch-headline span,.watch-copy small,.count,.hint,.player .hint{color:#cbbca2 !important}
-
-/* Kartenstapel auf Holzsockeln */
-.pile-row.premium-piles{gap:16px !important}
-.pile-unit{position:relative;padding:12px 10px 10px;border-radius:20px}
-.pile-unit:before{
-  content:"";
-  position:absolute;inset:0;border-radius:18px;z-index:-1;
-  background:linear-gradient(145deg,rgba(126,76,38,.85),rgba(73,42,21,.92));
-  box-shadow:0 10px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -8px 12px rgba(0,0,0,.10);
-}
-.pile-overline{color:#efdaba !important;text-shadow:0 1px 1px rgba(0,0,0,.25)}
-.pile-card-hit,.market-hit,.action-blind-hit{filter:drop-shadow(0 6px 8px rgba(0,0,0,.20))}
-.pile-card-hit.enabled:before,.market-hit.enabled:before,.action-blind-hit.enabled:before{
-  border-color:rgba(255,220,135,.28) !important;
-  box-shadow:0 0 18px rgba(255,214,116,.10) !important;
-}
-.pile-tip{
-  color:#fff1d2 !important;
-  background:rgba(78,46,23,.62) !important;
-  border-color:rgba(255,230,183,.10) !important;
-}
-.deck-count-badge,.pile-count-chip,.discard-count,.buried-mini{
-  background:linear-gradient(180deg,rgba(87,50,23,.94),rgba(57,31,13,.96)) !important;
-  color:#fff3dd !important;
-  border:1px solid rgba(255,227,177,.16) !important;
-}
-
-/* Spielerflächen als eigene Spielmatten auf dem Tisch */
-.player{
-  position:relative;
-  border-radius:26px !important;
-  padding:14px !important;
-  border:1px solid rgba(239,208,145,.14) !important;
-  background:
-    linear-gradient(145deg,rgba(255,255,255,.03),transparent 10%,transparent 90%,rgba(0,0,0,.12)),
-    radial-gradient(circle at 50% 0%,rgba(255,243,219,.05),transparent 22%),
-    radial-gradient(circle at 2% 0%,hsla(var(--player-hue),88%,66%,.05),transparent 29%),
-    linear-gradient(180deg,var(--felt-player),var(--felt-player-2)) !important;
-  box-shadow:
-    0 18px 38px rgba(0,0,0,.26),
-    inset 0 0 0 1px rgba(255,255,255,.035),
-    0 0 0 8px rgba(101,59,28,.42),
-    0 0 0 10px rgba(63,35,16,.92) !important;
-}
-.player:after{
-  content:"SPIELERFELD";
-  position:absolute;right:14px;bottom:10px;
-  font-size:8px;font-weight:950;letter-spacing:1.6px;
-  color:rgba(255,240,211,.12);
-  pointer-events:none;
-}
-.player.active{
-  box-shadow:
-    0 0 0 8px rgba(101,59,28,.46),
-    0 0 0 10px rgba(63,35,16,.94),
-    0 0 0 13px hsla(var(--player-hue),90%,64%,.06),
-    0 18px 44px rgba(0,0,0,.30),
-    0 0 36px hsla(var(--player-hue),90%,64%,.08) !important;
-}
-.player.active:before{box-shadow:0 0 18px hsla(var(--player-hue),90%,62%,.18) !important}
-.player-title,.player-meta,.player-head,.score-stack{position:relative;z-index:1}
-.avatar{
-  background:linear-gradient(145deg,rgba(255,225,165,.18),rgba(160,112,61,.12)) !important;
-  color:#ffefcf !important;
-  border-color:rgba(255,229,184,.20) !important;
-}
-.scorechip,.progress-chip{
-  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03)) !important;
-  border-color:rgba(255,244,220,.09) !important;
-}
-.scorechip b,.player-name,.active-tag{color:#fff7ea !important}
-.owned-title{color:#d4c2a6 !important}
-
-/* 2-Spieler-Anordnung noch stärker wie Tischplätze */
-body[data-players="2"] .table-area.two-player-layout{
-  grid-template-columns:minmax(0,1fr) minmax(360px,.74fr) minmax(0,1fr) !important;
-  align-items:stretch !important;
-  gap:20px !important;
-  padding:12px 10px 6px;
-}
-body[data-players="2"] .table-area.two-player-layout .center-table{
-  grid-column:2;
-  top:86px;
-}
-body[data-players="2"] .table-area.two-player-layout .board-col{
-  position:relative;
-  padding:6px 0 16px;
-}
-body[data-players="2"] .table-area.two-player-layout .board-col.left:after,
-body[data-players="2"] .table-area.two-player-layout .board-col.right:after{
-  content:"SITZPLATZ";
-  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
-  padding:4px 11px;border-radius:999px;
-  font-size:8px;font-weight:950;letter-spacing:1.1px;
-  color:#f5dfbd;background:rgba(80,45,22,.86);border:1px solid rgba(255,220,171,.12);
-  box-shadow:0 8px 16px rgba(0,0,0,.18);
-}
-
-/* Handzone und Aktions-/Punktboxen */
-.real-hand-zone{
-  background:
-    radial-gradient(circle at 15% 14%,rgba(255,255,255,.05),transparent 20%),
-    linear-gradient(180deg,rgba(17,57,50,.90),rgba(8,31,29,.94)) !important;
-}
-.real-hand-actions .drop,
-.drawn-decision-actions .drop,
-.drawn-decision-actions .keep,
-.score-seq-controls button,
-.action-buttons button,
-.primary,.secondary,.danger{
-  border-radius:14px !important;
-  border:1px solid rgba(255,237,202,.10) !important;
-  box-shadow:0 8px 18px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.08);
-}
-.primary,
-.action-buttons button.primary,
-.drawn-decision-actions .keep{
-  background:linear-gradient(180deg,#c89446,#9d672c) !important;
-  color:#fff7eb !important;
-}
-.secondary,
-.real-hand-actions .drop,
-.drawn-decision-actions .drop,
-.score-seq-controls button{
-  background:linear-gradient(180deg,rgba(93,56,28,.92),rgba(60,35,18,.95)) !important;
-  color:#fff0d6 !important;
-}
-
-/* Karten edler und plastischer */
-.card{
-  border-radius:16px !important;
-  border-color:rgba(255,255,255,.52) !important;
-  box-shadow:
-    0 7px 0 rgba(0,0,0,.25),
-    0 14px 26px rgba(0,0,0,.24),
-    inset 0 1px 0 rgba(255,255,255,.72),
-    inset 0 -1px 0 rgba(0,0,0,.08) !important;
-}
-.card.clickable:hover{transform:translateY(-7px) rotateX(3deg) scale(1.03) !important}
-.card.back{box-shadow:0 7px 0 rgba(0,0,0,.26),0 14px 28px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.65) !important}
-
-/* Aktionskarten ebenfalls holziger eingebunden */
-.action-card{
-  border-radius:18px !important;
-  box-shadow:0 8px 0 rgba(0,0,0,.18),0 14px 24px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.14) !important;
-}
-.action-pilebox{background:linear-gradient(180deg,rgba(16,46,45,.88),rgba(8,30,31,.95)) !important}
-
-/* Score-Overlay fügt sich in den Tisch ein */
-.score-seq-shell{
-  background:
-    linear-gradient(145deg,rgba(115,69,35,.95),rgba(73,40,19,.98)) !important;
-  border-color:rgba(255,229,177,.12) !important;
-}
-.score-seq-shell:before{
-  content:"";position:absolute;inset:12px;border-radius:24px;pointer-events:none;
-  background:linear-gradient(180deg,rgba(17,56,50,.90),rgba(8,31,29,.94));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
-}
-.score-seq-head,.score-seq-body,.score-seq-controls,.score-seq-note{position:relative;z-index:1}
-
-/* Emojis weiterhin mittig, aber etwas edler eingebunden */
-.emoji-reaction-fx{
-  text-shadow:0 8px 18px rgba(0,0,0,.42),0 0 22px rgba(255,236,182,.22) !important;
-}
-
-@media (max-width:1200px){
-  .app{padding-left:12px;padding-right:12px}
-  body[data-players="2"] .table-area.two-player-layout{grid-template-columns:minmax(0,1fr) minmax(320px,.70fr) minmax(0,1fr) !important;gap:14px !important}
-}
-@media (max-width:1050px){
-  .app:before{border-radius:24px}
-  .app:after{inset:10px;border-radius:18px}
-  .topbar{margin:2px 0 10px;border-radius:18px}
-  .center-table{box-shadow:0 16px 42px rgba(0,0,0,.30), inset 0 0 0 1px rgba(255,255,255,.04), inset 0 20px 34px rgba(255,255,255,.02), inset 0 -28px 48px rgba(0,0,0,.18), 0 0 0 6px rgba(74,40,19,.40), 0 0 0 8px rgba(122,74,37,.54), 0 0 0 10px rgba(51,28,14,.92)}
-  .player{box-shadow:0 16px 34px rgba(0,0,0,.24), inset 0 0 0 1px rgba(255,255,255,.035), 0 0 0 5px rgba(101,59,28,.42), 0 0 0 7px rgba(63,35,16,.92) !important}
-}
-@media (max-width:899px){
-  .app{padding:10px 10px calc(105px + env(safe-area-inset-bottom))}
-  .app:before{border-radius:20px}
-  .app:after{inset:8px;border-radius:15px}
-}
-
-
-/* ==========================================================
    V15.15 RUNDENKONTROLLE
    Nach der Wertung bleibt das End-Spielfeld prüfbar.
    ========================================================== */
@@ -2967,6 +2434,332 @@ body[data-mode="gameOverReview"] .player{
   .round-summary-actions{grid-template-columns:1fr}
   .round-board-review-banner{margin-left:0;margin-right:0;padding:10px 11px}
   .round-board-review-banner .review-eye{width:38px;height:38px;font-size:22px}
+}
+
+
+
+/* ==========================================================
+   V16.0 PREMIUM TABLE — COMPLETE VISUAL REBUILD
+   Modern walnut gaming table · deep felt · responsive height
+   architecture · clean fullscreen composition.
+   ========================================================== */
+:root{
+  --p-bg:#071012;
+  --p-felt:#0b302f;
+  --p-felt-hi:#12413d;
+  --p-felt-lo:#071f21;
+  --p-walnut:#59351f;
+  --p-walnut-hi:#765036;
+  --p-walnut-lo:#2e1a10;
+  --p-gold:#e8c16a;
+  --p-gold-soft:rgba(232,193,106,.18);
+  --p-line:rgba(232,244,239,.095);
+  --p-glass:rgba(5,25,27,.72);
+  --p-text:#f4f7f4;
+  --p-muted:#91aaa8;
+  --p-shadow:0 18px 44px rgba(0,0,0,.28);
+}
+
+/* ---------- 1. ROOM + TABLE ---------- */
+html,body{
+  min-height:100%;
+  background:
+    radial-gradient(1100px 620px at 50% -10%,rgba(153,107,66,.13),transparent 58%),
+    radial-gradient(900px 600px at 50% 115%,rgba(0,0,0,.48),transparent 56%),
+    linear-gradient(145deg,#0e1314,#070b0d 58%,#050809) !important;
+}
+body:before{
+  content:""!important;position:fixed;inset:0;z-index:-4;pointer-events:none;opacity:.42!important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px)!important;
+  background-size:36px 36px!important;
+  mix-blend-mode:normal!important;
+}
+body:after{
+  content:""!important;position:fixed;inset:0;z-index:-3;pointer-events:none;opacity:1!important;
+  background:radial-gradient(circle at 50% 42%,transparent 42%,rgba(0,0,0,.30) 100%)!important;
+  mask-image:none!important;
+}
+.app{
+  max-width:1580px!important;
+  min-height:calc(100vh - 10px)!important;
+  margin:10px auto 0!important;
+  padding:10px 12px 78px!important;
+  position:relative!important;
+  isolation:isolate!important;
+}
+.app:before{
+  content:"";position:absolute;inset:0;z-index:-3;border-radius:28px;
+  background:
+    linear-gradient(112deg,rgba(255,255,255,.075),transparent 15%,transparent 78%,rgba(0,0,0,.18)),
+    radial-gradient(900px 70px at 50% 0%,rgba(255,221,169,.055),transparent 65%),
+    linear-gradient(100deg,var(--p-walnut-lo),var(--p-walnut-hi) 18%,#4a2a18 42%,#67432a 68%,var(--p-walnut-lo));
+  box-shadow:0 28px 68px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -8px 16px rgba(0,0,0,.25);
+}
+.app:after{
+  content:"";position:absolute;inset:7px;z-index:-2;border-radius:22px;
+  background:
+    radial-gradient(700px 320px at 50% 8%,rgba(112,205,188,.055),transparent 64%),
+    radial-gradient(700px 480px at 8% 65%,rgba(58,187,168,.03),transparent 70%),
+    linear-gradient(155deg,var(--p-felt-hi),var(--p-felt) 48%,var(--p-felt-lo));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),inset 0 18px 38px rgba(255,255,255,.018),inset 0 -26px 50px rgba(0,0,0,.18);
+}
+
+/* ---------- 2. TOP CHROME ---------- */
+.topbar{
+  top:6px!important;margin:0 0 7px!important;padding:7px 9px!important;min-height:48px!important;border-radius:18px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  background:linear-gradient(180deg,rgba(7,25,27,.88),rgba(4,17,19,.92))!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.045)!important;
+}
+.topbar:before{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--p-walnut-hi),var(--p-gold),var(--p-walnut-hi),transparent);opacity:.55;pointer-events:none}
+.topbar:after{display:none!important}
+.brand{gap:9px!important}.brandmark{width:32px!important;height:32px!important;border-radius:10px!important;transform:none!important}
+.brandmark:after{display:none!important}
+.brand h1{font-size:16px!important;letter-spacing:.15px!important}.brand small{font-size:7px!important;color:#9db0ad!important;letter-spacing:.55px!important}
+.edition-chip{background:rgba(232,193,106,.09)!important;color:#dfc78c!important;border-color:rgba(232,193,106,.14)!important}
+.top-actions{gap:5px!important}
+.iconbtn,.cloud-pill{
+  min-width:36px!important;min-height:36px!important;padding:6px 8px!important;border-radius:11px!important;
+  border:1px solid rgba(255,255,255,.085)!important;background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.022))!important;
+  color:#eef5f2!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 5px 14px rgba(0,0,0,.12)!important;
+}
+.iconbtn:hover{transform:none!important;background:rgba(255,255,255,.08)!important}
+
+/* ---------- 3. ROOM + STATUS RAIL ---------- */
+.multiplayer-bar{
+  margin:3px 2px 6px!important;padding:6px 10px!important;min-height:30px!important;border-radius:11px!important;
+  background:rgba(3,24,25,.52)!important;border:1px solid rgba(255,255,255,.065)!important;
+  box-shadow:none!important;color:#c7d7d4!important;
+}
+.status{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:6px!important;margin:0 2px 8px!important}
+.stat{
+  min-height:43px!important;padding:5px 8px!important;border-radius:12px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.048),rgba(255,255,255,.018))!important;
+  border:1px solid rgba(255,255,255,.07)!important;box-shadow:none!important;
+}
+.stat:before{height:1px!important;opacity:.38!important}
+.stat b{font-size:13px!important;color:#eff7f4!important;line-height:1.05!important}.stat span{font-size:6px!important;color:#809795!important;letter-spacing:1px!important}
+.premium-status .turn-stat,.status .turn-stat{
+  border:1px solid rgba(232,193,106,.34)!important;background:linear-gradient(180deg,rgba(232,193,106,.075),rgba(255,255,255,.018))!important;
+  box-shadow:inset 0 0 0 1px rgba(232,193,106,.025)!important;
+}
+.premium-status .turn-stat b,.status .turn-stat b{font-size:14px!important;color:#f3d98f!important}
+
+/* ---------- 4. TWO-PLAYER TABLE GEOMETRY ---------- */
+body[data-players="2"]{
+  --card-w:clamp(64px,min(6.8vw,calc((100vh - 260px)/4)),108px)!important;
+  --card-h:calc(var(--card-w)*1.34)!important;
+}
+body[data-players="2"] .table-area.two-player-layout{
+  display:grid!important;grid-template-columns:minmax(0,1fr) clamp(286px,21.5vw,340px) minmax(0,1fr)!important;
+  align-items:stretch!important;gap:12px!important;padding:2px 2px 5px!important;min-width:0!important;
+}
+body[data-players="2"] .table-area.two-player-layout .board-col.left{grid-column:1!important}
+body[data-players="2"] .table-area.two-player-layout .center-table{grid-column:2!important;position:relative!important;top:auto!important;align-self:stretch!important;min-width:0!important}
+body[data-players="2"] .table-area.two-player-layout .board-col.right{grid-column:3!important}
+body[data-players="2"] .table-area.two-player-layout .board-col{min-width:0!important;padding:0!important}
+body[data-players="2"] .table-area.two-player-layout .board-col:after{display:none!important}
+
+/* ---------- 5. PLAYER MATS ---------- */
+.player{
+  min-width:0!important;min-height:0!important;height:100%;padding:10px!important;border-radius:20px!important;overflow:hidden!important;
+  display:flex!important;flex-direction:column!important;
+  background:
+    radial-gradient(440px 180px at 50% -10%,rgba(255,255,255,.045),transparent 64%),
+    linear-gradient(180deg,rgba(7,40,40,.88),rgba(4,27,29,.94))!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  box-shadow:0 14px 32px rgba(0,0,0,.19),inset 0 1px 0 rgba(255,255,255,.03)!important;
+  transform:none!important;opacity:1!important;filter:none!important;
+}
+.player:before{width:2px!important;background:linear-gradient(180deg,hsla(var(--player-hue),80%,66%,.68),transparent 78%)!important;box-shadow:none!important}
+.player:after{display:none!important}
+body[data-players="2"] .player:not(.active){opacity:1!important;filter:none!important}
+.player.active{
+  transform:none!important;border:1px solid hsla(var(--player-hue),82%,72%,.40)!important;
+  box-shadow:0 16px 36px rgba(0,0,0,.22),0 0 0 2px hsla(var(--player-hue),80%,68%,.055),inset 0 1px 0 rgba(255,255,255,.045)!important;
+}
+.active-turn-banner{
+  left:50%!important;right:auto!important;top:7px!important;transform:translateX(-50%)!important;width:auto!important;height:20px!important;padding:0 10px!important;border-radius:999px!important;
+  background:linear-gradient(90deg,rgba(232,193,106,.95),rgba(198,151,66,.92))!important;color:#2c210e!important;
+  border:1px solid rgba(255,239,194,.45)!important;box-shadow:0 5px 12px rgba(0,0,0,.18)!important;font-size:6px!important;letter-spacing:.95px!important;
+}
+.player.active .player-head{padding-top:22px!important}
+.player.active .active-tag{display:none!important}
+.player-head{margin-bottom:7px!important;min-height:40px!important;position:relative!important;z-index:2!important}
+.player-title{gap:7px!important}.avatar{width:29px!important;height:29px!important;font-size:10px!important;background:rgba(255,255,255,.055)!important;border-color:rgba(255,255,255,.08)!important;color:#f4eee3!important}
+.player-name{font-size:12px!important;line-height:1.15!important;color:#f5f8f5!important}.player-meta-chips{gap:4px!important;margin-top:3px!important}
+.meta-chip{font-size:6px!important;padding:2px 5px!important;border-radius:999px!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.05)!important;color:#9fb2af!important}
+.reveal-meter{height:2px!important;margin-top:4px!important;background:rgba(255,255,255,.055)!important}
+.score-stack{gap:5px!important}.scorechip{min-width:50px!important;padding:4px 7px!important;border-radius:11px!important;background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.06)!important}
+.scorechip small{font-size:5px!important}.scorechip b{font-size:13px!important}.progress-chip{font-size:7px!important;padding:4px 6px!important;background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.05)!important}
+.gridwrap{flex:1!important;min-height:0!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;overflow:visible!important;flex-wrap:nowrap!important}
+.grid{grid-template-columns:repeat(4,var(--card-w))!important;gap:clamp(5px,.55vw,8px)!important;justify-content:center!important;align-content:center!important}
+.extras{min-width:0!important}.actions-owned{flex:0 0 auto!important;margin-top:6px!important;padding-top:6px!important;max-height:84px!important;overflow:auto!important}
+.match-actions{flex:0 0 auto!important;margin-top:6px!important}
+
+/* ---------- 6. PLAYING CARDS ---------- */
+.card{
+  border-radius:14px!important;border:1px solid rgba(255,255,255,.42)!important;
+  box-shadow:0 4px 0 rgba(0,0,0,.23),0 9px 18px rgba(0,0,0,.21),inset 0 1px 0 rgba(255,255,255,.58)!important;
+}
+.card:before{opacity:.52!important}
+.card.clickable:hover{transform:translateY(-4px) scale(1.018)!important;filter:brightness(1.035)!important}
+.card.clickable:active{transform:translateY(-1px) scale(.985)!important}
+.card .center-value{font-size:clamp(24px,2.9vw,42px)!important}.card .corner{font-size:clamp(8px,.8vw,11px)!important}
+.card.back{
+  background:
+    radial-gradient(circle at 50% 50%,rgba(255,255,255,.13) 0 2px,transparent 3px 18px,rgba(255,255,255,.045) 19px 20px,transparent 21px),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.035) 0 5px,transparent 5px 10px),
+    linear-gradient(145deg,#433b8e,#246190 54%,#0b776f)!important;
+}
+.card.back:after{font-size:clamp(25px,2.9vw,40px)!important;opacity:.86!important}
+.card.empty{background:rgba(255,255,255,.018)!important;border:1.5px dashed rgba(255,255,255,.16)!important}
+
+/* ---------- 7. DEALER / CENTER COLUMN ---------- */
+.center-table{
+  height:100%;min-height:0!important;padding:8px!important;gap:7px!important;border-radius:19px!important;overflow:hidden!important;
+  display:grid!important;grid-template-columns:1fr!important;grid-template-rows:auto auto auto minmax(0,1fr)!important;
+  background:
+    radial-gradient(360px 200px at 50% 0%,rgba(232,193,106,.045),transparent 70%),
+    linear-gradient(180deg,rgba(4,32,32,.86),rgba(3,24,26,.93))!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  box-shadow:0 14px 32px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+
+.center-table:before{display:none!important}
+.center-table:not(.specials-off):before{
+  content:"✦"!important;display:grid!important;place-items:center!important;position:absolute!important;
+  left:50%!important;bottom:56px!important;transform:translateX(-50%)!important;width:86px!important;height:86px!important;border-radius:50%!important;
+  border:1px solid rgba(232,193,106,.055)!important;color:rgba(232,193,106,.075)!important;font-size:34px!important;z-index:0!important;pointer-events:none!important;
+  box-shadow:inset 0 0 0 8px rgba(232,193,106,.012)!important;background:radial-gradient(circle,rgba(232,193,106,.015),transparent 70%)!important;
+}
+.center-table:after{content:"DEALER ZONE"!important;right:10px!important;bottom:6px!important;font-size:6px!important;letter-spacing:1.6px!important;color:rgba(255,255,255,.10)!important}
+.center-table .handbox,.center-table .watchbox,.center-table .play-pilebox,.center-table .action-pilebox{min-width:0!important;min-height:0!important}
+.real-hand-zone,.watch-panel,.pilebox{
+  border-radius:14px!important;border:1px solid rgba(255,255,255,.065)!important;background:rgba(2,23,24,.46)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+.real-hand-zone{grid-template-columns:58px minmax(0,1fr)!important;min-height:82px!important;padding:7px 8px!important;gap:8px!important}
+.real-hand-zone:before{right:8px!important;top:5px!important;font-size:6px!important;letter-spacing:1.3px!important;color:rgba(232,193,106,.28)!important}
+.real-hand-card{min-height:66px!important;border-radius:11px!important}.real-hand-card .card{width:50px!important;height:67px!important;--card-w:50px!important}
+.real-hand-copy{gap:2px!important}.real-hand-copy .eyebrow{font-size:6px!important;color:#d9bd7d!important}.real-hand-copy b{font-size:10px!important}.real-hand-copy small{font-size:7px!important;line-height:1.25!important;color:#8fa6a3!important}
+.direct-swap-hint{font-size:7px!important;margin-top:3px!important;padding:4px 6px!important}.real-hand-actions.direct-only{margin-top:4px!important}
+.real-hand-actions.direct-only .drop,.real-hand-actions.direct-only .big-discard-btn{min-height:34px!important;padding:5px 8px!important;font-size:8px!important;border-radius:10px!important}
+.watch-panel{min-height:82px!important;padding:7px 8px!important;gap:5px!important}.watch-headline{margin:0!important}.watch-headline b{font-size:10px!important}.watch-headline span{font-size:6px!important}
+.watch-stage-wrap{grid-template-columns:54px minmax(0,1fr)!important;gap:7px!important}.watch-card-stage{min-height:62px!important;border-radius:10px!important}.watch-card-stage .card{width:48px!important;height:64px!important;--card-w:48px!important}.watch-copy b{font-size:9px!important}.watch-copy small{font-size:7px!important;line-height:1.25!important}
+.pilebox{padding:7px!important}.section-heading{margin-bottom:5px!important}.section-heading h4,.pilebox h4{font-size:8px!important;letter-spacing:1px!important;margin:0!important}.section-heading small{font-size:6px!important}.section-icon{font-size:12px!important}
+.premium-piles{gap:10px!important;align-items:end!important}.pile-unit{padding:0!important;background:none!important}.pile-unit:before{display:none!important}.pile-overline{font-size:6px!important;color:#879f9d!important}
+.play-pilebox .card{width:58px!important;height:78px!important;--card-w:58px!important}.pile-card-hit{padding:0!important}.pile-count-chip{min-width:17px!important;height:17px!important;font-size:6px!important}.pile-tip{font-size:6px!important;padding:2px 5px!important;margin-top:2px!important;background:rgba(232,193,106,.065)!important;border-color:rgba(232,193,106,.10)!important;color:#d8c390!important}.count{font-size:6px!important;margin-top:4px!important;color:#718a88!important}
+.action-pilebox{overflow:hidden!important}.market{gap:4px!important;padding:0!important;justify-content:center!important;overflow:hidden!important;align-items:stretch!important}.center-table .action-card{width:51px!important;min-height:68px!important;border-radius:10px!important;padding:4px!important;box-shadow:0 4px 9px rgba(0,0,0,.16)!important}.center-table .action-card .emoji{font-size:18px!important}.center-table .action-card b{font-size:6px!important;line-height:1.04!important}.center-table .action-card small{font-size:5px!important;line-height:1.05!important;margin-top:2px!important}.center-table .action-deck-back{width:49px!important;min-height:68px!important;border-radius:10px!important}.action-deck-back .bolt{font-size:17px!important}.action-deck-back b{font-size:5px!important}.action-deck-back small{font-size:4.5px!important}
+
+/* ---------- 8. BOTTOM COMMAND BAR ---------- */
+.app{padding-bottom:74px!important}
+.bottom-actions{
+  padding:5px 10px calc(5px + env(safe-area-inset-bottom))!important;
+  background:linear-gradient(180deg,rgba(4,19,21,.93),rgba(3,14,16,.98))!important;border-top:1px solid rgba(255,255,255,.07)!important;
+  box-shadow:0 -10px 28px rgba(0,0,0,.24)!important;
+}
+.bottom-inner{
+  max-width:1580px!important;display:grid!important;grid-template-columns:minmax(220px,1fr) auto minmax(220px,1fr)!important;grid-template-rows:auto!important;
+  align-items:center!important;gap:8px 12px!important;
+}
+.bottom-inner>.instruction{grid-column:1!important;grid-row:1!important;text-align:left!important;margin:0!important;font-size:9px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.bottom-inner>.action-buttons{grid-column:3!important;grid-row:1!important;justify-content:flex-end!important;gap:5px!important;min-width:0!important}
+.action-buttons button{min-height:38px!important;padding:6px 9px!important;border-radius:10px!important;font-size:8px!important;background:rgba(255,255,255,.045)!important;border-color:rgba(255,255,255,.075)!important;box-shadow:none!important}
+.action-buttons button.primary{background:linear-gradient(135deg,#d7b15c,#b7893f)!important;color:#251b0d!important;border-color:rgba(255,229,166,.30)!important}
+.emoji-reaction-bar{grid-column:2!important;grid-row:1!important;min-height:0!important;padding:0!important;border:0!important;gap:6px!important}
+.emoji-bar-label{display:none!important}.emoji-reaction-list{gap:4px!important}.emoji-reaction-btn{width:38px!important;height:38px!important;border-radius:11px!important;font-size:23px!important;background:rgba(255,255,255,.045)!important;border-color:rgba(255,255,255,.065)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important}
+.motion-status-pill{bottom:58px!important}
+
+/* ---------- 9. ROUND REVIEW / MODALS ---------- */
+.round-board-review-banner{margin:4px 2px 7px!important;padding:8px 11px!important;border-radius:13px!important;background:rgba(232,193,106,.065)!important;border-color:rgba(232,193,106,.14)!important;box-shadow:none!important}
+.round-board-review-banner .review-eye{width:32px!important;height:32px!important;border-radius:10px!important;font-size:18px!important}.round-board-review-banner b{font-size:10px!important}.round-board-review-banner small{font-size:7px!important;color:#a9b6af!important}
+.modal{border-radius:20px!important;background:linear-gradient(180deg,#103233,#071f22)!important;border-color:rgba(255,255,255,.08)!important}
+.round-review-note{background:rgba(232,193,106,.055)!important;border-color:rgba(232,193,106,.12)!important;color:#d9d0bc!important}
+
+/* ---------- 10. FULLSCREEN: ONE-SCREEN COMPOSITION ---------- */
+body.is-fullscreen{overflow:hidden!important}
+body.is-fullscreen .app{
+  width:100%!important;max-width:none!important;height:100dvh!important;margin:0!important;padding:5px 8px calc(61px + env(safe-area-inset-bottom))!important;overflow:hidden!important;
+}
+body.is-fullscreen .app:before{border-radius:0!important}
+body.is-fullscreen .app:after{inset:5px!important;border-radius:13px!important}
+body.is-fullscreen .topbar{top:0!important;min-height:44px!important;margin:0 0 4px!important;padding:5px 8px!important;border-radius:12px!important}
+body.is-fullscreen .brandmark{width:29px!important;height:29px!important}body.is-fullscreen .brand h1{font-size:14px!important}
+body.is-fullscreen .multiplayer-bar{margin:0 1px 4px!important;min-height:25px!important;padding:4px 8px!important;font-size:8px!important;border-radius:9px!important}
+body.is-fullscreen .status{margin:0 1px 5px!important;gap:5px!important}
+body.is-fullscreen .stat{min-height:38px!important;padding:4px 6px!important;border-radius:10px!important}body.is-fullscreen .stat b{font-size:12px!important}
+body.is-fullscreen[data-players="2"]{
+  --card-w:clamp(52px,min(7.5vw,calc((100dvh - 244px)/4)),116px)!important;
+  --card-h:calc(var(--card-w)*1.34)!important;
+}
+body.is-fullscreen[data-players="2"] .table-area.two-player-layout{
+  height:calc(100dvh - 184px)!important;min-height:0!important;max-height:none!important;
+  grid-template-columns:minmax(0,1fr) clamp(270px,20.5vw,328px) minmax(0,1fr)!important;
+  gap:9px!important;padding:0 1px 2px!important;overflow:hidden!important;
+}
+body.is-fullscreen[data-players="2"] .board-col,body.is-fullscreen[data-players="2"] .player,body.is-fullscreen[data-players="2"] .center-table{height:100%!important;min-height:0!important}
+body.is-fullscreen[data-players="2"] .player{padding:8px!important;border-radius:16px!important}
+body.is-fullscreen[data-players="2"] .player-head{margin-bottom:4px!important;min-height:35px!important}.player.active .player-head{padding-top:22px!important}
+body.is-fullscreen[data-players="2"] .grid{gap:clamp(4px,.42vw,7px)!important}
+body.is-fullscreen[data-players="2"] .card{border-radius:13px!important;font-size:inherit!important}
+body.is-fullscreen[data-players="2"] .card .center-value{font-size:clamp(22px,2.65vw,40px)!important}
+body.is-fullscreen[data-players="2"] .card .corner{font-size:clamp(7px,.72vw,10px)!important}
+body.is-fullscreen[data-players="2"] .center-table{padding:6px!important;gap:5px!important;border-radius:15px!important;grid-template-rows:auto auto auto minmax(0,1fr)!important}
+body.is-fullscreen .real-hand-zone{min-height:72px!important;padding:5px 7px!important;grid-template-columns:52px minmax(0,1fr)!important}body.is-fullscreen .real-hand-card{min-height:58px!important}
+body.is-fullscreen .watch-panel{min-height:72px!important;padding:5px 7px!important}body.is-fullscreen .watch-card-stage{min-height:56px!important}
+body.is-fullscreen .pilebox{padding:5px!important}body.is-fullscreen .play-pilebox .card{width:54px!important;height:72px!important;--card-w:54px!important}
+body.is-fullscreen .center-table .action-card{width:48px!important;min-height:62px!important}body.is-fullscreen .center-table .action-deck-back{width:46px!important;min-height:62px!important}
+body.is-fullscreen .bottom-actions{padding:4px 8px calc(4px + env(safe-area-inset-bottom))!important}
+body.is-fullscreen .bottom-inner{max-width:none!important;grid-template-columns:minmax(190px,1fr) auto minmax(190px,1fr)!important;gap:6px 9px!important}body.is-fullscreen .emoji-reaction-btn{width:36px!important;height:36px!important;font-size:22px!important}
+
+
+body.is-fullscreen[data-players="2"] .center-table.specials-off{height:auto!important;align-self:start!important;grid-template-rows:auto auto auto!important;min-height:0!important}
+body[data-players="2"] .center-table.specials-off{grid-template-rows:auto auto auto!important}
+
+/* ---------- 11. HEIGHT ADAPTATION ---------- */
+@media (min-width:1000px) and (max-height:820px){
+  .app{margin-top:4px!important;padding-top:6px!important;padding-bottom:68px!important}
+  .topbar{min-height:43px!important;padding:5px 7px!important;margin-bottom:4px!important}.brand small{display:none!important}
+  .multiplayer-bar{min-height:25px!important;padding:4px 8px!important;margin-bottom:4px!important}.status{margin-bottom:5px!important}.stat{min-height:37px!important;padding:3px 6px!important}
+  body[data-players="2"]{--card-w:clamp(54px,min(6.1vw,calc((100vh - 240px)/4)),92px)!important}
+  .player{padding:8px!important}.player-head{margin-bottom:4px!important}.grid{gap:5px!important}
+  .real-hand-copy small,.watch-copy small{font-size:6px!important}.center-table{padding:6px!important;gap:5px!important}
+  .bottom-inner{grid-template-columns:minmax(175px,1fr) auto minmax(175px,1fr)!important}.emoji-reaction-btn{width:35px!important;height:35px!important;font-size:21px!important}.action-buttons button{min-height:35px!important}
+}
+@media (min-width:900px) and (max-height:680px){
+  body[data-players="2"]{--card-w:clamp(48px,min(5.8vw,calc((100vh - 220px)/4)),78px)!important}
+  .topbar{min-height:39px!important}.iconbtn,.cloud-pill{min-width:31px!important;min-height:31px!important;padding:4px 6px!important}.brandmark{width:27px!important;height:27px!important}.brand h1{font-size:14px!important}
+  .multiplayer-bar{display:flex!important}.stat{min-height:33px!important}.stat span{font-size:5px!important}.stat b{font-size:11px!important}
+  .active-turn-banner{height:18px!important;font-size:5.5px!important}.player.active .player-head{padding-top:19px!important}
+  .real-hand-zone{min-height:64px!important}.watch-panel{min-height:64px!important}.real-hand-copy small,.watch-copy small{display:none!important}
+  .center-table .action-card{min-height:56px!important;width:44px!important}.center-table .action-deck-back{min-height:56px!important;width:43px!important}.center-table .action-card small{display:none!important}
+  .emoji-reaction-btn{width:32px!important;height:32px!important;font-size:19px!important}.action-buttons button{min-height:32px!important;padding:4px 7px!important}
+}
+@media (min-width:1000px) and (min-height:1000px){
+  body[data-players="2"]{--card-w:clamp(82px,min(6.45vw,calc((100vh - 300px)/4)),110px)!important}
+  .player{padding:12px!important}.player-head{margin-bottom:9px!important}.center-table{padding:9px!important;gap:8px!important}
+}
+
+/* ---------- 12. WIDTH FALLBACKS ---------- */
+@media (max-width:1180px) and (min-width:981px){
+  body[data-players="2"] .table-area.two-player-layout{grid-template-columns:minmax(0,1fr) 270px minmax(0,1fr)!important;gap:8px!important}
+  body[data-players="2"]{--card-w:clamp(60px,min(7.2vw,calc((100vh - 255px)/4)),86px)!important}
+  .center-table .action-card{width:45px!important}.center-table .action-deck-back{width:44px!important}.real-hand-copy small{font-size:6px!important}
+}
+@media (max-width:980px){
+  .app{margin-top:0!important;padding-left:8px!important;padding-right:8px!important}
+  body[data-players="2"] .table-area.two-player-layout{grid-template-columns:1fr!important;height:auto!important;overflow:visible!important}
+  body[data-players="2"] .table-area.two-player-layout .board-col.left,body[data-players="2"] .table-area.two-player-layout .center-table,body[data-players="2"] .table-area.two-player-layout .board-col.right{grid-column:auto!important;height:auto!important}
+  body[data-players="2"] .table-area.two-player-layout .center-table{order:2!important}body[data-players="2"] .table-area.two-player-layout .board-col.left{order:1!important}body[data-players="2"] .table-area.two-player-layout .board-col.right{order:3!important}
+  .bottom-inner{grid-template-columns:1fr auto!important;grid-template-rows:auto auto!important}.bottom-inner>.instruction{grid-column:1!important}.bottom-inner>.action-buttons{grid-column:2!important}.emoji-reaction-bar{grid-column:1/-1!important;grid-row:2!important;padding-top:4px!important}
+  .app{padding-bottom:116px!important}
+}
+@media (max-width:650px){
+  .status{grid-template-columns:repeat(2,1fr)!important}.joker-stat{grid-column:1/-1!important}.top-actions{overflow-x:auto!important;max-width:62vw!important}.brand small{display:none!important}
+  .bottom-inner{display:block!important}.emoji-reaction-bar{margin-top:5px!important;justify-content:flex-start!important;overflow-x:auto!important}.app{padding-bottom:142px!important}
 }
 
 </style>
@@ -4327,7 +4120,7 @@ function cardHTML(c,forceFace=false,clickable=false,selected=false){if(!c)return
 function actionHTML(a,clickable=false,selected=false){if(!a)return'';const m=ACTIONS[a.type],locked=state&&state.players[state.currentPlayer]&&state.players[state.currentPlayer].actions.includes(a)&&!actionAvailable(a,state.players[state.currentPlayer]);const kindLabel=m.kind==='attack'?'ANGRIFF':m.kind==='defense'?'SCHUTZ':'AKTION';return `<div class="action-card action-${escapeHTML(a.type)} ${m.kind==='attack'?'attack':m.kind==='defense'?'defense':''} ${clickable?'clickable':''} ${selected?'selected':''} ${locked?'disabled':''}" data-action-type="${escapeHTML(a.type)}"><span class="action-type">${kindLabel}</span><div class="emoji">${m.icon}</div><b>${m.name}</b><small>${m.desc}</small>${locked?'<span class="lock">🔒</span>':''}</div>`}
 function boardCardClickable(pi,zone,idx){if(!state)return false;if(isAIActor()&&!aiActing)return false;if(cloud.enabled&&!isMyActorDevice())return false;const mode=ui.mode;if(mode==='setupReveal')return pi===state.setupPlayer&&zone==='grid';if(['drawnDecision','discardSwap','drawnSwap','flipOwn','ownSwapSelect','draw3Target'].includes(mode))return pi===state.currentPlayer;if(mode==='otherSwapSelect')return pi===ui.data.a||pi===ui.data.b;if(mode==='meteorSelect')return pi===ui.data.target;return false}
 function isSelected(pi,zone,idx){return ui.selected.some(s=>s.pi===pi&&s.zone===zone&&s.idx===idx)}
-function playerHTML(p,pi){const active=pi===state.currentPlayer;const mine=cloud.enabled&&pi===myPlayerIndex();const matches=(state.phase==='play')?findMatches(pi):[];const matchSet=new Set(matches.flatMap(m=>m.idx));const canResolve=state.phase==='play'&&pi===state.currentPlayer&&!p.isAI&&['turnChoice','matchReady'].includes(ui.mode)&&(!cloud.enabled||isMyActorDevice())&&!motionBusy;const cards=p.grid.map((c,i)=>`<div id="cell-${pi}-grid-${i}" class="card-slot ${matchSet.has(i)?'match-ready-slot':''}" onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div id="cell-${pi}-extra-${i}" class="card-slot" onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');const total=Math.max(1,12+p.extras.length),hidden=totalHidden(p),pct=Math.max(0,Math.min(100,Math.round(((total-hidden)/total)*100)));const openCards=[...(p.grid||[]),...(p.extras||[])].filter(c=>c&&c.faceUp);const openSum=openCards.reduce((s,c)=>s+cardPoints(c),0);const hue=[43,188,145,282,18,215,325,92][pi%8];const matchActions=matches.length?`<div class="match-actions"><div class="match-actions-title">✨ Fertige Kombination · Entfernen jederzeit möglich</div>${matches.map((m,i)=>`<button class="match-resolve-btn optional ${canResolve?'':'disabled'}" ${canResolve?`onclick="Game.resolveBoardMatch(${pi},${i})"`:'disabled'}>${m.name.startsWith('Reihe')?'Reihe entfernen':'Spalte entfernen'} · ${escapeHTML(m.label.replace(/^.*?:\s*/,''))}</button>`).join('')}</div>`:'';return `<section id="player-${pi}" data-player="${pi}" class="player ${active?'active':''} ${mine?'mine':''} ${p.isAI?'ai-player':''}" style="--player-hue:${hue}">${active?`<div class="active-turn-banner"><span>${p.isAI?'🤖':'🎯'}</span><b>${mine?'DEIN ZUG':p.isAI?'COMPUTER AM ZUG':'JETZT AM ZUG'}</b></div>`:''}<div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div class="player-meta"><div class="player-name">${escapeHTML(p.name)} ${p.isAI?'<span class="ai-tag">🤖 COMPUTER</span>':''} ${mine?'<span class="you-tag">DU</span>':''} ${active?'<span class="active-tag">🎯 AM ZUG</span>':''}</div><div class="hint player-meta-chips"><span class="meta-chip hidden-chip">▦ ${hidden} verdeckt</span>${jokerSpecialsEnabled()?`<span class="meta-chip action-chip">⚡ ${p.actions.length} Aktionen</span>`:''}<span class="meta-chip open-chip">Σ ${openSum>=0?'+':''}${openSum} offen</span></div><div class="reveal-meter"><i style="width:${pct}%"></i></div></div></div><div class="score-stack"><div class="scorechip"><small>GESAMT</small><b>${p.total}</b></div><div class="progress-chip">${pct}%</div></div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${matchActions}${jokerSpecialsEnabled()&&p.actions.length?`<div class="actions-owned action-only-ui"><div class="owned-title">⚡ Eigene Aktionskarten</div>${acts}</div>`:''}</section>`}
+function playerHTML(p,pi){const active=state.phase==='initialReveal'?pi===state.setupPlayer:pi===state.currentPlayer;const mine=cloud.enabled&&pi===myPlayerIndex();const matches=(state.phase==='play')?findMatches(pi):[];const matchSet=new Set(matches.flatMap(m=>m.idx));const canResolve=state.phase==='play'&&pi===state.currentPlayer&&!p.isAI&&['turnChoice','matchReady'].includes(ui.mode)&&(!cloud.enabled||isMyActorDevice())&&!motionBusy;const cards=p.grid.map((c,i)=>`<div id="cell-${pi}-grid-${i}" class="card-slot ${matchSet.has(i)?'match-ready-slot':''}" onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div id="cell-${pi}-extra-${i}" class="card-slot" onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');const total=Math.max(1,12+p.extras.length),hidden=totalHidden(p),pct=Math.max(0,Math.min(100,Math.round(((total-hidden)/total)*100)));const openCards=[...(p.grid||[]),...(p.extras||[])].filter(c=>c&&c.faceUp);const openSum=openCards.reduce((s,c)=>s+cardPoints(c),0);const hue=[43,188,145,282,18,215,325,92][pi%8];const matchActions=matches.length?`<div class="match-actions"><div class="match-actions-title">✨ Fertige Kombination · Entfernen jederzeit möglich</div>${matches.map((m,i)=>`<button class="match-resolve-btn optional ${canResolve?'':'disabled'}" ${canResolve?`onclick="Game.resolveBoardMatch(${pi},${i})"`:'disabled'}>${m.name.startsWith('Reihe')?'Reihe entfernen':'Spalte entfernen'} · ${escapeHTML(m.label.replace(/^.*?:\s*/,''))}</button>`).join('')}</div>`:'';return `<section id="player-${pi}" data-player="${pi}" class="player ${active?'active':''} ${mine?'mine':''} ${p.isAI?'ai-player':''}" style="--player-hue:${hue}">${active?`<div class="active-turn-banner"><span>${p.isAI?'🤖':'🎯'}</span><b>${mine?'DEIN ZUG':p.isAI?'COMPUTER AM ZUG':'JETZT AM ZUG'}</b></div>`:''}<div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div class="player-meta"><div class="player-name">${escapeHTML(p.name)} ${p.isAI?'<span class="ai-tag">🤖 COMPUTER</span>':''} ${mine?'<span class="you-tag">DU</span>':''} ${active?'<span class="active-tag">🎯 AM ZUG</span>':''}</div><div class="hint player-meta-chips"><span class="meta-chip hidden-chip">▦ ${hidden} verdeckt</span>${jokerSpecialsEnabled()?`<span class="meta-chip action-chip">⚡ ${p.actions.length} Aktionen</span>`:''}<span class="meta-chip open-chip">Σ ${openSum>=0?'+':''}${openSum} offen</span></div><div class="reveal-meter"><i style="width:${pct}%"></i></div></div></div><div class="score-stack"><div class="scorechip"><small>GESAMT</small><b>${p.total}</b></div><div class="progress-chip">${pct}%</div></div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${matchActions}${jokerSpecialsEnabled()&&p.actions.length?`<div class="actions-owned action-only-ui"><div class="owned-title">⚡ Eigene Aktionskarten</div>${acts}</div>`:''}</section>`}
 function instructionText(){if(!state)return'';if(state.phase==='betweenRounds')return `👀 Runde ${state.round} beendet · Spielfeld kontrollieren oder Rundenergebnis öffnen · nichts startet automatisch`;if(state.phase==='gameOver')return `🏆 Spiel beendet · End-Spielfeld und Ergebnis bleiben zur Kontrolle verfügbar`;const p=current();if(isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → alte Karte aufdecken → offen auf Ablage → danach Handkarte ins Feld`;case'matchReady':return `✨ Neue Kombination – einmal entscheiden. Danach bleibt sie ohne weitere Nachfrage liegen`;case'roundReveal':{const st=ui.data?.stage||state.roundClose?.stage;if(st==='remove')return `✨ Rundenende: Kombinationen werden mit Joker-Endwerten geprüft …`;if(st==='ready')return `📊 Alle Karten offen – Punktewertung startet gleich …`;const i=ui.data?.index||state.roundClose?.revealIndex||0,t=ui.data?.total||state.roundClose?.revealOrder?.length||0;return `🔄 Rundenende: verdeckte Karten werden nacheinander aufgedeckt${t?` · ${i}/${t}`:''}`;}case'scoreSequence':return `📊 Score Show: Punkte werden langsam Karte für Karte addiert …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
 function bottomButtons(){if(!state)return'';if(state.phase==='betweenRounds'){const result=`<button onclick="Game.maybeShowRoundSummary(true)">📊 Rundenergebnis</button>`;if(cloud.enabled&&!isHostDevice())return `${result}<div class="waiting-note">⏳ Host startet die nächste Runde.</div>`;return `${result}<button class="primary next-round-review-btn" onclick="Game.nextRound()">▶ Runde ${state.round+1} starten</button>`}if(state.phase==='gameOver')return `<button onclick="Game.maybeShowRoundSummary(true)">🏆 Ergebnis öffnen</button>`;if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Bitte Ja oder Nein wählen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
 const emojiReactionSeen=new Set();
@@ -4393,8 +4186,9 @@ function gameView(){
  const boards=state.players.length===2?`<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`:`<div class="table-area">${centerTable}<div class="players players-${state.players.length}">${playersHTML.join('')}</div></div>`;
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
  const reviewBanner=state.phase==='betweenRounds'?`<div class="round-board-review-banner"><span class="review-eye">👀</span><div><b>End-Spielfeld von Runde ${state.round}</b><small>Jetzt in Ruhe nachschauen. Über „Rundenergebnis“ kommst du wieder zur Wertung. Die nächste Runde startet nur per Knopfdruck.</small></div></div>`:(state.phase==='gameOver'?`<div class="round-board-review-banner gameover"><span class="review-eye">🏆</span><div><b>End-Spielfeld</b><small>Das letzte Spielfeld bleibt sichtbar und kann kontrolliert werden.</small></div></div>`:'');
- const phaseLabel=state.phase==='betweenRounds'?'Kontrolle':state.phase==='gameOver'?'Spielende':(['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug');
- return `${mp}${closing}${reviewBanner}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${phaseLabel}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
+ const phaseLabel=state.phase==='betweenRounds'?'Kontrolle':state.phase==='gameOver'?'Spielende':state.phase==='initialReveal'?'Startkarten':(['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug');
+ const displayActorName=state.phase==='initialReveal'?(state.players[state.setupPlayer]?.name||current().name):current().name;
+ return `${mp}${closing}${reviewBanner}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(displayActorName)}</b><span>${phaseLabel}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
 
 function resumeTransientFlow(){
  if(!state||isModalOpen())return;
@@ -4413,7 +4207,7 @@ function render(){if(state?.phase!=='scoringSequence')document.querySelector('.s
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.15 · Rundenkontrolle</small><span class="edition-chip">HOLZTISCH</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V16.0 · Premium Table</small><span class="edition-chip">WALNUT</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
