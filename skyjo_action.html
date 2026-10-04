@@ -2251,25 +2251,84 @@ body[data-players="2"] .player:not(.active){opacity:.88;filter:saturate(.90) bri
 @media(max-width:900px){.active-turn-banner{height:22px;font-size:7px}.player.active .player-head{padding-top:25px!important}}
 
 
-/* === V15.7 EMOJI REACTIONS === */
-.app{padding-bottom:132px!important}
+/* === V15.10 GROSSE EMOJI-REAKTIONEN + HAHA === */
+.app{padding-bottom:148px!important}
 .bottom-inner{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:7px 12px!important;align-items:center!important}
 .bottom-inner>.instruction{grid-column:1!important;grid-row:1!important;margin:0!important}
 .bottom-inner>.action-buttons{grid-column:2!important;grid-row:1!important}
-.emoji-reaction-bar{grid-column:1/-1;grid-row:2;display:flex;align-items:center;justify-content:center;gap:8px;min-height:35px;padding:4px 7px 1px;border-top:1px solid rgba(255,255,255,.055)}
-.emoji-bar-label{font-size:5.5px;font-weight:1000;letter-spacing:1.25px;color:#607d7f;white-space:nowrap}
-.emoji-reaction-list{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap}
-.emoji-reaction-btn{width:31px;height:31px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.075);display:grid;place-items:center;font-size:17px;line-height:1;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 5px 10px rgba(0,0,0,.10);transition:transform .12s ease,background .12s ease,border-color .12s ease}
+.emoji-reaction-bar{grid-column:1/-1;grid-row:2;display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:6px 8px 3px;border-top:1px solid rgba(255,255,255,.055)}
+.emoji-bar-label{font-size:7px;font-weight:1000;letter-spacing:1.35px;color:#7d9b9d;white-space:nowrap}
+.emoji-reaction-list{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:nowrap}
+.emoji-reaction-btn{width:42px;height:42px;padding:0;border-radius:13px;border:1px solid rgba(255,255,255,.09);display:grid;place-items:center;font-size:25px;line-height:1;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 6px 13px rgba(0,0,0,.14);transition:transform .12s ease,background .12s ease,border-color .12s ease}
 .emoji-reaction-btn:active{transform:scale(.88)}
 @media(hover:hover) and (pointer:fine){.emoji-reaction-btn:hover{transform:translateY(-2px) scale(1.08);background:rgba(255,255,255,.09);border-color:rgba(255,224,117,.18)}}
 .player{overflow:visible!important}
-.emoji-reaction-fx{position:absolute;z-index:60;left:50%;top:42%;font-size:54px;line-height:1;pointer-events:none;opacity:0;transform:translate(-50%,-35%) scale(.45) rotate(-8deg);filter:drop-shadow(0 10px 15px rgba(0,0,0,.35));transition:opacity .18s ease,transform .36s cubic-bezier(.18,.88,.24,1.28),filter .3s ease}
+.emoji-reaction-fx{position:absolute;z-index:60;left:50%;top:42%;font-size:76px;line-height:1;pointer-events:none;opacity:0;transform:translate(-50%,-35%) scale(.45) rotate(-8deg);filter:drop-shadow(0 12px 19px rgba(0,0,0,.38));transition:opacity .18s ease,transform .36s cubic-bezier(.18,.88,.24,1.28),filter .3s ease}
 .emoji-reaction-fx.show{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg)}
 .emoji-reaction-fx.leave{opacity:0;transform:translate(-50%,-105%) scale(1.18) rotate(5deg);filter:drop-shadow(0 17px 22px rgba(0,0,0,.20))}
 .emoji-reaction-fx.global{position:fixed;left:50%;top:50%;z-index:4000}
-@media(max-width:900px){.app{padding-bottom:126px!important}.emoji-reaction-btn{width:29px;height:29px;font-size:16px;border-radius:9px}.emoji-reaction-list{gap:4px}}
+@media(max-width:900px){.app{padding-bottom:144px!important}.emoji-reaction-btn{width:39px;height:39px;font-size:23px;border-radius:12px}.emoji-reaction-list{gap:6px}.emoji-reaction-fx{font-size:68px}}
 @media(max-width:650px){.bottom-inner{display:block!important}.emoji-reaction-bar{margin-top:5px;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.emoji-reaction-bar::-webkit-scrollbar{display:none}.emoji-reaction-list{min-width:max-content}}
 
+
+
+/* === V15.9 GROSSER ABLEGE-BUTTON === */
+.real-hand-actions.direct-only{
+  display:grid;
+  grid-template-columns:1fr;
+  width:100%;
+  margin-top:9px;
+}
+.real-hand-actions.direct-only .big-discard-btn{
+  width:100%;
+  min-height:54px!important;
+  padding:8px 14px!important;
+  border:2px solid rgba(255,224,112,.72)!important;
+  border-radius:13px!important;
+  background:linear-gradient(135deg,#ffd95d,#ffad32)!important;
+  color:#352300!important;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  box-shadow:0 8px 0 rgba(126,75,0,.22),0 14px 26px rgba(255,174,50,.24),inset 0 1px 0 rgba(255,255,255,.58)!important;
+  text-shadow:none;
+  cursor:pointer;
+}
+.real-hand-actions.direct-only .big-discard-btn:hover{
+  filter:brightness(1.06);
+  transform:translateY(-1px);
+}
+.real-hand-actions.direct-only .big-discard-btn:active{
+  transform:translateY(2px) scale(.99);
+  box-shadow:0 4px 0 rgba(126,75,0,.22),0 8px 16px rgba(255,174,50,.20),inset 0 1px 0 rgba(255,255,255,.58)!important;
+}
+.big-discard-main{
+  display:block;
+  font-size:12px;
+  line-height:1.05;
+  font-weight:1000;
+  letter-spacing:.55px;
+}
+.big-discard-sub{
+  display:block!important;
+  color:#614000!important;
+  font-size:8px!important;
+  line-height:1.1;
+  font-weight:850;
+  opacity:.88;
+}
+@media (min-width:900px) and (orientation:landscape){
+  .real-hand-actions.direct-only .big-discard-btn{min-height:50px!important;padding:7px 10px!important}
+  .big-discard-main{font-size:11px}
+  .big-discard-sub{font-size:7px!important}
+}
+@media(max-width:640px){
+  .real-hand-actions.direct-only .big-discard-btn{min-height:48px!important;padding:7px 9px!important}
+  .big-discard-main{font-size:10px}
+  .big-discard-sub{font-size:7px!important}
+}
 </style>
 </head>
 <body>
@@ -2386,7 +2445,7 @@ function motionShouldBlock(e){if(!state||!e)return false;/* Alte Bewegungen dür
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function recentMotionCard(){const list=state?.motionFeed||[],now=Date.now();for(let i=list.length-1;i>=0;i--){const e=list[i];if(!e)continue;if(now-Number(e.ts||0)>7000)break;if(e.type==='swap'||e.type==='drawn-discard'||e.type==='turn'||e.type==='reveal'||e.type==='action-play'||e.type==='action-take'||e.type==='meteor')return null;if((e.type==='draw-deck'||e.type==='take-discard'||e.type==='decision-keep')&&e.card)return e}return null}
 function heldCardInfo(){if(!state)return null;const localHeld=(ui.mode==='drawnDecision'||ui.mode==='drawnSwap'||ui.mode==='discardSwap'||ui.mode==='draw3Target')&&ui.data?.card?{card:ui.data.card,actor:state.currentPlayer,type:ui.mode==='discardSwap'?'Ablagekarte':'Gezogene Karte',local:!isAIPlayer(state.currentPlayer),title:isAIPlayer(state.currentPlayer)?`${state.players[state.currentPlayer].name} spielt diese Karte`:''}:null;if(localHeld)return localHeld;const evt=recentMotionCard();if(evt?.card)return {card:evt.card,actor:evt.actor??state.currentPlayer,type:evt.typeLabel||'Live-Karte',local:false,title:evt.title||'',text:evt.text||''};return null}
-function handZoneHTML(){const h=heldCardInfo();const actor=h?state.players?.[h.actor]?.name:'';const decision=!!(h?.local&&ui.mode==='drawnDecision');return `<div id="table-hand-zone-anchor" class="real-hand-zone"><div id="table-hand-zone-card" class="real-hand-card ${h?'':'empty'}">${h?cardHTML({...h.card,faceUp:true},true,false):'✦'}</div><div class="real-hand-copy"><span class="eyebrow">${h?escapeHTML(h.type):'Hand-/Entscheidungszone'}</span><b>${h?(h.local?'Karte in deiner Hand':`${escapeHTML(actor)} hat diese Karte`):'Hier landet eine gezogene Karte zuerst'}</b><small>${h?(h.local?(decision?'Eigene Karte antippen: Sie wird zuerst aufgedeckt, dann sauber ausgetauscht. Oder auf die Ablage tippen.':'Diese Karte wird jetzt gespielt.'):escapeHTML(h.text||h.title||'Live vom anderen Spieler.')):'Stapel → Handzone → alte Feldkarte offen zur Ablage → erst danach Handkarte ins Spielfeld.'}</small>${decision?`<div class="direct-swap-hint">☝ Eigene Karte antippen = sofort tauschen</div><div class="real-hand-actions direct-only"><button class="drop" onclick="Game.discardDrawn()">🗑 Wegwerfen & Karte aufdecken</button></div>`:''}</div></div>`}
+function handZoneHTML(){const h=heldCardInfo();const actor=h?state.players?.[h.actor]?.name:'';const decision=!!(h?.local&&ui.mode==='drawnDecision');return `<div id="table-hand-zone-anchor" class="real-hand-zone"><div id="table-hand-zone-card" class="real-hand-card ${h?'':'empty'}">${h?cardHTML({...h.card,faceUp:true},true,false):'✦'}</div><div class="real-hand-copy"><span class="eyebrow">${h?escapeHTML(h.type):'Hand-/Entscheidungszone'}</span><b>${h?(h.local?'Karte in deiner Hand':`${escapeHTML(actor)} hat diese Karte`):'Hier landet eine gezogene Karte zuerst'}</b><small>${h?(h.local?(decision?'Eigene Karte antippen: Sie wird zuerst aufgedeckt, dann sauber ausgetauscht. Oder auf die Ablage tippen.':'Diese Karte wird jetzt gespielt.'):escapeHTML(h.text||h.title||'Live vom anderen Spieler.')):'Stapel → Handzone → alte Feldkarte offen zur Ablage → erst danach Handkarte ins Spielfeld.'}</small>${decision?`<div class="direct-swap-hint">☝ Eigene Karte antippen = sofort tauschen</div><div class="real-hand-actions direct-only"><button class="drop big-discard-btn" onclick="Game.discardDrawn()"><span class="big-discard-main">🗑️ KARTE AUF ABLAGE</span><small class="big-discard-sub">wegwerfen & eigene Karte aufdecken</small></button></div>`:''}</div></div>`}
 function motionFlightMarkup(e,cardOverride=null){if(e?.actionType&&!cardOverride){const a=ACTIONS[e.actionType];return `<div class="motion-fly action">${a?a.icon:'⚡'}</div>`}const c=cardOverride||e?.card||{type:'number',value:0,faceUp:false};return `<div class="motion-fly">${cardHTML({...c,faceUp:true},true,false)}</div>`}
 async function animateRealFlight(fromId,toId,e,cardOverride=null){const from=document.getElementById(fromId),to=document.getElementById(toId);if(!from||!to)return;const spec=motionSpec(),fr=from.getBoundingClientRect(),tr=to.getBoundingClientRect();const wrap=document.createElement('div');wrap.innerHTML=motionFlightMarkup(e,cardOverride);const fly=wrap.firstElementChild;if(!fly)return;document.body.append(fly);const sx=fr.left+fr.width/2,sy=fr.top+fr.height/2,tx=tr.left+tr.width/2,ty=tr.top+tr.height/2,dx=tx-sx,dy=ty-sy;fly.style.left=`${sx}px`;fly.style.top=`${sy}px`;const arc=Math.min(110,Math.max(26,spec.arc+Math.abs(dx)*.035));const scale=Math.max(.76,Math.min(1.08,(tr.width||74)/(fr.width||74)));let anim=null;try{anim=fly.animate([{transform:'translate(-50%,-50%) scale(.88) rotate(-2deg)',opacity:.96},{offset:.48,transform:`translate(calc(-50% + ${dx*.48}px),calc(-50% + ${dy*.48-arc}px)) scale(1.06) rotate(${dx>=0?3:-3}deg)`,opacity:1},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(${scale}) rotate(0deg)`,opacity:1}],{duration:spec.flight,easing:'cubic-bezier(.22,.78,.2,1)',fill:'forwards'});const finished=anim?.finished&&typeof anim.finished.then==='function'?anim.finished.catch(()=>null):sleep(spec.flight);await Promise.race([finished,sleep(spec.flight+350)])}catch(_e){await sleep(Math.min(spec.flight,1400))}finally{try{anim?.cancel?.()}catch(_e){}fly.remove()}if(!document.body.contains(to))return;to.classList.remove('motion-landing');void to.offsetWidth;to.classList.add('motion-landing');setTimeout(()=>to.classList.remove('motion-landing'),500);await sleep(spec.settle)}
 function swapLayerMarkup(oldCard,wasFaceUp){const back=cardHTML({type:'number',value:0,faceUp:false},false,false),front=cardHTML({...oldCard,faceUp:true},true,false);return `<div class="swap-reveal-card"><div class="swap-reveal-face back-face">${back}</div><div class="swap-reveal-face front-face">${front}</div></div>`}
@@ -3616,7 +3675,7 @@ function playerHTML(p,pi){const active=pi===state.currentPlayer;const mine=cloud
 function instructionText(){if(!state)return'';const p=current();if(isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → alte Karte aufdecken → offen auf Ablage → danach Handkarte ins Feld`;case'matchReady':return `✨ Neue Kombination – einmal entscheiden. Danach bleibt sie ohne weitere Nachfrage liegen`;case'roundReveal':{const st=ui.data?.stage||state.roundClose?.stage;if(st==='remove')return `✨ Rundenende: Kombinationen werden mit Joker-Endwerten geprüft …`;if(st==='ready')return `📊 Alle Karten offen – Punktewertung startet gleich …`;const i=ui.data?.index||state.roundClose?.revealIndex||0,t=ui.data?.total||state.roundClose?.revealOrder?.length||0;return `🔄 Rundenende: verdeckte Karten werden nacheinander aufgedeckt${t?` · ${i}/${t}`:''}`;}case'scoreSequence':return `📊 Score Show: Punkte werden langsam Karte für Karte addiert …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
 function bottomButtons(){if(!state||state.phase==='gameOver')return'';if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Bitte Ja oder Nein wählen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
 const emojiReactionSeen=new Set();
-const EMOJI_REACTIONS=['👍','😂','😮','😭','😡','👏','🔥','❤️','🤔'];
+const EMOJI_REACTIONS=['👍','😂','🤣','😮','😭','😡','👏','🔥','❤️','🤔'];
 function reactionActorIndex(){
  if(!state?.players?.length)return 0;
  if(cloud.enabled){const me=myPlayerIndex();return me>=0?me:state.currentPlayer}
