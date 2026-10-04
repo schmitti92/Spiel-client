@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – V15.26 Witze-Button</title>
+<title>SKYJO Action – V15.27 Heinz-Sticker + mehr Witze</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -3403,6 +3403,68 @@ body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-inde
   .joke-popup-card{padding:22px 18px 20px;border-radius:22px}
 }
 
+
+/* ==========================================================
+   V15.27 · HEINZ-STICKER
+   ========================================================== */
+.emoji-reaction-btn.heinz-reaction-btn{
+  transform:rotate(2deg);
+  background:linear-gradient(145deg,#d8efe8,#8cbdb0)!important;
+  border:2px solid rgba(255,255,255,.84)!important;
+  box-shadow:0 5px 0 rgba(21,73,70,.35),0 9px 16px rgba(0,0,0,.18)!important;
+  color:#143735!important;
+}
+.emoji-reaction-btn.heinz-reaction-btn:active{transform:rotate(2deg) scale(.88)!important}
+.heinz-mini{
+  display:block;
+  font-size:11px;
+  line-height:.82;
+  font-weight:1000;
+  letter-spacing:-.2px;
+}
+.heinz-sticker-fx{
+  width:auto;
+  min-width:min(74vw,520px);
+  padding:18px 22px 16px;
+  border-radius:24px;
+  border:4px solid rgba(255,255,255,.95);
+  background:linear-gradient(145deg,#f7fbfa,#d8ebe7 45%,#c0dad3 100%);
+  color:#183836;
+  box-shadow:0 10px 0 #65847f,0 22px 38px rgba(0,0,0,.32);
+  transform:translate(-50%,-35%) scale(.45) rotate(2deg)!important;
+  filter:none!important;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+.emoji-reaction-fx.heinz-sticker-fx.show{
+  transform:translate(-50%,-50%) scale(1) rotate(-2deg)!important;
+}
+.emoji-reaction-fx.heinz-sticker-fx.leave{
+  transform:translate(-50%,-94%) scale(1.1) rotate(4deg)!important;
+}
+.heinz-sticker-face{
+  font-size:68px;
+  line-height:1;
+  filter:drop-shadow(0 4px 5px rgba(0,0,0,.12));
+}
+.heinz-sticker-name{
+  font-size:15px;
+  font-weight:1000;
+  letter-spacing:.14em;
+  color:#4d6f69;
+}
+.heinz-sticker-text{
+  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-size:clamp(26px,4.3vw,46px);
+  line-height:.96;
+  text-align:center;
+  color:#173634;
+  letter-spacing:-1px;
+  text-shadow:0 1px 0 rgba(255,255,255,.6);
+}
+
 </style>
 </head>
 <body>
@@ -3412,7 +3474,7 @@ body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-inde
 <script>
 (() => {
 'use strict';
-const SKYJO_BUILD='15.26';
+const SKYJO_BUILD='15.27';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -5163,7 +5225,7 @@ async function returnFinishedGameToRoomLobby(){
 }
 
 async function restart(){if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann das Online-Spiel neu starten.');return}if(!confirm(cloud.enabled?'Online-Spiel beenden und mit allen Spielern in die Raum-Lobby zurückkehren?':'Aktuelles Spiel wirklich löschen und neu starten?'))return;clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';try{localStorage.removeItem(SAVE_KEY)}catch(_e){}if(cloud.enabled&&cloud.room&&isRoomDoc(cloud.doc)){await waitForCloudIdle(2500);const next=clone(cloud.doc);next.game=null;next.lobby.status='lobby';delete next.lobby.startedAt;const out=await postCloudDoc(next,cloud.rev);if(out?.conflict){if(out.remote)applyCloudDoc(out.remote,out.rev);toast('Raum wurde inzwischen geändert – bitte erneut versuchen.');return}if(!out?.ok){toast(cloud.lastError||'Online-Spiel konnte nicht zurückgesetzt werden.');return}cloud.doc=next;cloud.lastPushedJSON=JSON.stringify(next);state=null;ui={mode:'none',data:{},selected:[]};render();toast('↩ Alle Spieler sind wieder in der Online-Lobby');return}state=null;ui={mode:'none',data:{},selected:[]};render()}
-function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');const selectedMode=cloud.enabled?'cloud':'local';return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM LOBBY DELUXE</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field span-2"><label>Spielmodus</label><input id="cloudMode" type="hidden" value="${selectedMode}"><div class="mode-toggle"><button type="button" class="mode-btn ${selectedMode==='local'?'active':''}" data-mode="local" onclick="Game.selectSetupMode('local')"><span class="mode-emoji">🛋</span><span><b>Lokal</b><small>Pass-and-Play auf einem Gerät</small></span></button><button type="button" class="mode-btn" data-mode="ai" onclick="Game.selectSetupMode('ai')"><span class="mode-emoji">🤖</span><span><b>Computer</b><small>Spiele gegen 1–3 KI-Gegner</small></span></button><button type="button" class="mode-btn ${selectedMode==='cloud'?'active':''}" data-mode="cloud" onclick="Game.selectSetupMode('cloud')"><span class="mode-emoji">☁</span><span><b>Online</b><small>Mehrere Geräte im selben Raum</small></span></button></div></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field" style="display:none"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="8"><div class="joker-off-note">Standard: 8.</div></div><div class="field span-2"><label>Joker-Spezialeffekte</label><div id="jokerSpecialCard" class="joker-special-card disabled"><div class="joker-special-top"><div class="joker-special-icon">✨</div><div class="joker-special-copy"><b>Zusatzfähigkeiten für Joker</b><small>Der Joker bleibt immer Wildcard; bei der Endwertung übernimmt er automatisch den günstigsten Wert seiner Reihe oder Spalte.</small></div><label class="joker-switch"><input id="jokerEnabled" type="checkbox" onchange="Game.toggleJokerSpecialUI()"><span class="joker-slider"></span></label></div><div class="joker-special-body"><div class="joker-state-pill" id="jokerSpecialState">AUS</div><div class="joker-special-grid"><div class="joker-special-good"><h4>Mit Spezialeffekten</h4><ul><li>⭐ Stern kann eine Gratis-Aktion auslösen</li><li>⚡ Aktionskarten sind aktiv</li><li>🎯 Voller SKYJO-Action-Modus</li></ul></div><div class="joker-special-off"><h4>Wenn AUS</h4><ul><li>🃏 Joker bleibt Wildcard</li><li>🎯 Endwertung: günstigster Wert aus Reihe/Spalte</li><li>🏅 Jokerbonus bleibt: 3 = −10, 4 waagerecht = −15</li><li>🚫 Nur Aktionskarten und Gratis-Aktion sind aus</li></ul></div></div></div></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button><button class="secondary" onclick="Game.resetOnlineClient()">↻ Verbindung zurücksetzen</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken. <b>Client V15.26</b></div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div>${hasLocalSave()?'<button class="secondary wide resume-local-btn" onclick="Game.resumeLocalGame()">▶ Gespeichertes Spiel fortsetzen</button>':''}<button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Strategie & Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten, erkennt gefährliche Ablagen und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
+function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');const selectedMode=cloud.enabled?'cloud':'local';return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM LOBBY DELUXE</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field span-2"><label>Spielmodus</label><input id="cloudMode" type="hidden" value="${selectedMode}"><div class="mode-toggle"><button type="button" class="mode-btn ${selectedMode==='local'?'active':''}" data-mode="local" onclick="Game.selectSetupMode('local')"><span class="mode-emoji">🛋</span><span><b>Lokal</b><small>Pass-and-Play auf einem Gerät</small></span></button><button type="button" class="mode-btn" data-mode="ai" onclick="Game.selectSetupMode('ai')"><span class="mode-emoji">🤖</span><span><b>Computer</b><small>Spiele gegen 1–3 KI-Gegner</small></span></button><button type="button" class="mode-btn ${selectedMode==='cloud'?'active':''}" data-mode="cloud" onclick="Game.selectSetupMode('cloud')"><span class="mode-emoji">☁</span><span><b>Online</b><small>Mehrere Geräte im selben Raum</small></span></button></div></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field" style="display:none"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="8"><div class="joker-off-note">Standard: 8.</div></div><div class="field span-2"><label>Joker-Spezialeffekte</label><div id="jokerSpecialCard" class="joker-special-card disabled"><div class="joker-special-top"><div class="joker-special-icon">✨</div><div class="joker-special-copy"><b>Zusatzfähigkeiten für Joker</b><small>Der Joker bleibt immer Wildcard; bei der Endwertung übernimmt er automatisch den günstigsten Wert seiner Reihe oder Spalte.</small></div><label class="joker-switch"><input id="jokerEnabled" type="checkbox" onchange="Game.toggleJokerSpecialUI()"><span class="joker-slider"></span></label></div><div class="joker-special-body"><div class="joker-state-pill" id="jokerSpecialState">AUS</div><div class="joker-special-grid"><div class="joker-special-good"><h4>Mit Spezialeffekten</h4><ul><li>⭐ Stern kann eine Gratis-Aktion auslösen</li><li>⚡ Aktionskarten sind aktiv</li><li>🎯 Voller SKYJO-Action-Modus</li></ul></div><div class="joker-special-off"><h4>Wenn AUS</h4><ul><li>🃏 Joker bleibt Wildcard</li><li>🎯 Endwertung: günstigster Wert aus Reihe/Spalte</li><li>🏅 Jokerbonus bleibt: 3 = −10, 4 waagerecht = −15</li><li>🚫 Nur Aktionskarten und Gratis-Aktion sind aus</li></ul></div></div></div></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button><button class="secondary" onclick="Game.resetOnlineClient()">↻ Verbindung zurücksetzen</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken. <b>Client V15.27</b></div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div>${hasLocalSave()?'<button class="secondary wide resume-local-btn" onclick="Game.resumeLocalGame()">▶ Gespeichertes Spiel fortsetzen</button>':''}<button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Strategie & Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten, erkennt gefährliche Ablagen und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
 function toggleJokerSpecialUI(){const cb=$('#jokerEnabled'),f=$('#specialSetupField'),card=$('#jokerSpecialCard'),label=$('#jokerSpecialState');const on=!!(cb&&cb.checked);if(f)f.style.display=on?'flex':'none';if(card){card.classList.toggle('enabled',on);card.classList.toggle('disabled',!on)}if(label)label.textContent=on?'AKTIV':'AUS'}
 function updateNames(){const pc=$('#playerCount'),box=$('#names');if(!pc||!box)return;const n=Number(pc.value),previous=[...document.querySelectorAll('.pname')].map(x=>x.value);box.innerHTML=Array.from({length:n},(_,i)=>`<div class="field"><label>Spieler ${i+1}</label><input class="pname" value="${escapeHTML(previous[i]||`Spieler ${i+1}`)}"></div>`).join('')}
 function lobbyView(){const d=cloud.doc,l=d.lobby,set=l.settings||{},me=myPlayerIndex(),host=isHostDevice();const players=l.players.map((p,i)=>`<div class="player-slot ${i===me?'me':''}"><div class="num">${i+1}</div><div class="who"><b>${escapeHTML(p.name)}${i===me?'<span class="you-tag">DU</span>':''}</b><small>${p.id===l.hostId?'Host':'Mitspieler'}</small></div><div>${p.id===l.hostId?'👑':'✓'}</div></div>`).join('');return `<div class="panel lobby-card"><div class="lobby-head"><div><h2 style="margin:0">Online-Lobby · ${escapeHTML(cloud.room)}</h2><p class="hint">${l.players.length}/8 Spieler im Raum</p></div><button onclick="Game.leaveOnlineRoom()">← Lobby verlassen</button></div><div class="player-list">${players}</div><div class="lobby-settings"><div class="setting-chip"><small>Ziel</small><b>${Number(set.target)||100} Punkte</b></div><div class="setting-chip"><small>Jokerkarten</small><b>${Number.isInteger(set.jokerCount)?set.jokerCount:8}</b></div><div class="setting-chip"><small>Joker-Spezialeffekt</small><b>${set.jokerEnabled===false?'AUS':'AN'}</b></div></div><div class="setup-separator"></div>${host?(l.players.length>=2?'<button class="primary wide" onclick="Game.startOnlineGame()">🎮 Online-Spiel starten</button>':'<div class="waiting-note">Warte auf mindestens einen weiteren Spieler …</div>'):'<div class="waiting-note">Host startet das Spiel, sobald alle bereit sind …</div>'}</div>`}
@@ -5442,7 +5504,7 @@ function bottomButtons(){
  }
 if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Kombination bleibt liegen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
 const emojiReactionSeen=new Set();
-const EMOJI_REACTIONS=['👍','😂','🤣','HAHA','😮','😭','😡','👏','🔥','❤️','🤔'];
+const EMOJI_REACTIONS=['👍','😂','🤣','HAHA','HEINZ','😮','😭','😡','👏','🔥','❤️','🤔'];
 
 
 const GAME_JOKES=[
@@ -5475,7 +5537,27 @@ const GAME_JOKES=[
  'Was macht ein Frosch im Fitnessstudio? Quak-Squats.',
  'Warum haben Kalender so viele Freunde? Weil sie viele Dates haben.',
  'Wie heißt ein helles Mammut? Hellmut.',
- 'Was sagt der eine Aufzug zum anderen? Ich glaube, ich komme runter.'
+ 'Was sagt der eine Aufzug zum anderen? Ich glaube, ich komme runter.',
+ 'Warum hat der Besen schlechte Laune? Weil er immer ausgekehrt wird.',
+ 'Was macht ein Pirat am Computer? Er drückt die Enterbeute.',
+ 'Warum ging die Uhr in die Schule? Weil sie tickende Argumente hatte.',
+ 'Wie nennt man einen schlauen Bäcker? Brotfessor.',
+ 'Was sagt der Stuhl zum Tisch? Du hast echt gute Beine.',
+ 'Warum essen Informatiker keine Schokolade? Wegen der Cookies.',
+ 'Was ist klein, grün und dreieckig? Das kleine grüne Dreieck.',
+ 'Warum ist der Ballon pleite? Weil er ständig abgehoben hat.',
+ 'Was macht ein Schneemann im Sommer? Eine Pfütze.',
+ 'Wie heißt ein Hund ohne Beine? Ist egal, er kommt sowieso nicht.',
+ 'Warum war der Kühlschrank beleidigt? Weil man ihn dauernd kaltgestellt hat.',
+ 'Was sagt ein Baum zum anderen? Lass uns mal abhängen.',
+ 'Wie nennt man einen nervösen Igel? Einen Stachelkopf.',
+ 'Warum tragen Kühe Glocken? Weil ihre Hörner nicht funktionieren.',
+ 'Was ist schwarz-weiß und sitzt auf der Schaukel? Ein Schwinguin.',
+ 'Warum können Bleistifte nicht heiraten? Weil sie keinen richtigen Punkt setzen können.',
+ 'Was macht ein Apfel im Fitnessstudio? Er stemmt Birnen.',
+ 'Warum sind Geheimagenten schlechte DJs? Weil sie ständig undercover sind.',
+ 'Wie nennt man einen sehr höflichen Ritter? Sir Viette.',
+ 'Was sagt der Toast zum Brot? Du bist heute aber scheibchenweise gut drauf.'
 ];
 
 let jokePopupEl=null;
@@ -5487,7 +5569,7 @@ function clearJokePopup(){
  if(jokePopupEl){try{jokePopupEl.remove()}catch(_e){}jokePopupEl=null}
 }
 
-function showJokePopup(joke,remainingMs=5000){
+function showJokePopup(joke,remainingMs=8000){
  if(!joke)return;
  clearJokePopup();
 
@@ -5536,9 +5618,9 @@ function syncGameJoke(){
  const j=state?.funJoke;
  if(!j?.id||j.id===lastJokeSeen)return;
  const age=Date.now()-Number(j.ts||0);
- if(age<0||age>5000){lastJokeSeen=j.id;return}
+ if(age<0||age>8000){lastJokeSeen=j.id;return}
  lastJokeSeen=j.id;
- showJokePopup(j.text,5000-age)
+ showJokePopup(j.text,8000-age)
 }
 
 function tellRandomJoke(){
@@ -5569,7 +5651,17 @@ const TOILET_QUOTES=[
  'Der nächste Zug kommt direkt nach der Spülung.',
  'Auch Champions müssen mal auf den Porzellanthron.',
  'Pause! Einer spielt gerade die braune Sonderkarte.',
- 'Keine Sorge: Das Spiel ist nicht abgestürzt – nur jemand sitzt fest.'
+ 'Keine Sorge: Das Spiel ist nicht abgestürzt – nur jemand sitzt fest.',
+ 'Die Mission läuft – bitte kurz keine Störung im Kontrollzentrum.',
+ 'Kurzer Boxenstopp auf Keramik, gleich geht das Rennen weiter.',
+ 'Erst drücken, dann wieder Karten drücken.',
+ 'Auch große Taktiker brauchen manchmal eine stille Denkpause.',
+ 'Das Spiel macht kurz Pipi-Pause.',
+ 'Zwischen Spülung und Sieg liegt manchmal nur ein Knopfdruck.',
+ 'Bitte Geduld – hier wird gerade Ballast abgeworfen.',
+ 'Porzellanthron belegt – Wiederaufnahme nach ordnungsgemäßer Landung.',
+ 'Ein kleiner Schritt fürs Bad, ein großer fürs Bauchgefühl.',
+ 'Kurz weg vom Tisch, voll im Geschäft.'
 ];
 
 function toiletPauseActive(){
@@ -5676,7 +5768,7 @@ function reactionActorIndex(){
 }
 function emojiReactionBarHTML(){
  if(!state)return '';
- return `<div class="emoji-reaction-bar"><span class="emoji-bar-label">REAKTION</span><div class="emoji-reaction-list">${EMOJI_REACTIONS.map(e=>`<button type="button" class="emoji-reaction-btn ${e==='HAHA'?'haha-reaction-btn':''}" onclick="Game.sendEmojiReaction('${e}')" aria-label="${e} senden">${e==='HAHA'?'<span class="haha-mini">HA<br>HA</span>':e}</button>`).join('')}</div></div>`
+ return `<div class="emoji-reaction-bar"><span class="emoji-bar-label">REAKTION</span><div class="emoji-reaction-list">${EMOJI_REACTIONS.map(e=>`<button type="button" class="emoji-reaction-btn ${e==='HAHA'?'haha-reaction-btn':''} ${e==='HEINZ'?'heinz-reaction-btn':''}" onclick="Game.sendEmojiReaction('${e}')" aria-label="${e} senden">${e==='HAHA'?'<span class="haha-mini">HA<br>HA</span>':(e==='HEINZ'?'<span class="heinz-mini">👴<br>EY</span>':e)}</button>`).join('')}</div></div>`
 }
 function sendEmojiReaction(emoji){
  if(!state||!EMOJI_REACTIONS.includes(emoji))return;
@@ -5699,8 +5791,11 @@ function showEmojiReaction(r){
  if(emojiReactionSeen.size>120){const first=emojiReactionSeen.values().next().value;emojiReactionSeen.delete(first)}
  const fx=document.createElement('div');
  const isHaha=r.emoji==='HAHA';
- fx.className=`emoji-reaction-fx global ${isHaha?'haha-sticker-fx':''}`;
- fx.textContent=isHaha?'HAHA!':r.emoji;
+ const isHeinz=r.emoji==='HEINZ';
+ fx.className=`emoji-reaction-fx global ${isHaha?'haha-sticker-fx':''} ${isHeinz?'heinz-sticker-fx':''}`;
+ if(isHaha)fx.textContent='HAHA!';
+ else if(isHeinz)fx.innerHTML='<div class="heinz-sticker-face">👴</div><div class="heinz-sticker-name">HEINZ BECKER</div><div class="heinz-sticker-text">EY WO GÄNGTS DAN</div>';
+ else fx.textContent=r.emoji;
  document.body.appendChild(fx);
  haptic(7);
  setTimeout(()=>fx.classList.add('show'),20);
@@ -5749,7 +5844,7 @@ function resumeTransientFlow(){
  if(ui.mode==='starChoice'){setTimeout(showStarChoice,40);return}
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.26 · Witze-Button</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.27 · Heinz-Sticker + mehr Witze</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
