@@ -2329,6 +2329,33 @@ body[data-players="2"] .player:not(.active){opacity:.88;filter:saturate(.90) bri
   .big-discard-main{font-size:10px}
   .big-discard-sub{font-size:7px!important}
 }
+
+
+/* ==========================================================
+   V15.11 · SCORE CHECK + MANUAL CONFIRM + PAGE REFRESH
+   ========================================================== */
+.refresh-page-btn{font-size:17px;min-width:38px}
+.score-confirm-panel{
+  display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;
+  margin-top:10px;padding:10px;border:1px solid rgba(255,224,105,.22);border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,216,83,.075),rgba(255,255,255,.025));
+}
+.score-confirm-copy b{display:block;color:#fff;font-size:13px}.score-confirm-copy small{display:block;color:#9fb5b6;font-size:9px;margin-top:2px}
+.score-confirm-panel button{min-height:40px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;padding:8px 12px;font-weight:900;white-space:nowrap}
+.score-confirm-panel button.primary{background:linear-gradient(135deg,#ffd84e,#ffad2f);color:#2a2108;border-color:#ffd04a;box-shadow:0 7px 18px rgba(255,190,50,.18)}
+.score-confirm-panel button:hover{filter:brightness(1.08)}
+.score-audit-panel{display:none;margin-top:8px;padding:10px;border-radius:13px;border:1px solid rgba(98,232,224,.15);background:rgba(0,0,0,.15)}
+.score-audit-panel.show{display:grid;gap:8px}
+.score-audit-note{font-size:9px;color:#9fb5b6;line-height:1.35}
+.score-audit-player{padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(255,255,255,.035)}
+.score-audit-player-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.score-audit-player-head b{font-size:11px;color:#fff}.score-audit-player-head strong{font-size:14px;color:#ffe071}
+.score-audit-values{display:flex;gap:5px;flex-wrap:wrap}
+.score-audit-chip{display:inline-flex;align-items:center;gap:3px;padding:4px 6px;border-radius:8px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.07);font-size:9px;color:#dfecec}
+.score-audit-chip em{font-style:normal;font-weight:1000;color:#fff}
+.score-wait-confirm{padding:8px 11px;border-radius:10px;background:rgba(255,255,255,.055);color:#afc2c3;font-size:10px;font-weight:800}
+@media(max-width:900px){.score-confirm-panel{grid-template-columns:1fr 1fr}.score-confirm-copy{grid-column:1/-1}.score-confirm-panel button{white-space:normal}}
+@media(max-width:560px){.score-confirm-panel{grid-template-columns:1fr}.score-confirm-copy{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -3345,19 +3372,33 @@ async function runScoreSequenceVisual(seq){
  }).join('');
  const nextStarter=seq.roundEnder!==null&&seq.roundEnder!==undefined?seq.players.find(x=>Number(x.index)===Number(seq.roundEnder)):null;
  const fin=ov.querySelector('#score-seq-final');
+ const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;
+ const auditRows=seq.players.map(sp=>{
+   const chips=sp.items.map(it=>`<span class="score-audit-chip"><span>${escapeHTML(it.label)}</span><em>${scoreFmt(Number(it.value)||0)}</em></span>`).join('');
+   const doubled=sp.final!==sp.raw?`<span class="score-audit-chip"><span>Verdopplung</span><em>${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}</em></span>`:'';
+   return `<div class="score-audit-player"><div class="score-audit-player-head"><b>${escapeHTML(sp.name)}</b><strong>${scoreFmt(sp.final)}</strong></div><div class="score-audit-values">${chips}${doubled}</div></div>`
+ }).join('');
  fin.innerHTML=`<div class="score-final-heading">
    <div><small>RUNDE ${seq.round} KOMPLETT</small><h3>Zwischenstand</h3></div>
    ${nextStarter?`<div class="next-starter-chip">▶ Nächste Runde beginnt <b>${escapeHTML(nextStarter.name)}</b></div>`:''}
- </div>${finalRows}`;
+ </div>${finalRows}
+ <div class="score-confirm-panel">
+   <div class="score-confirm-copy"><b>✋ Noch nichts wird übernommen</b><small>Jetzt kannst du die Werte kontrollieren oder die komplette Zählung noch einmal abspielen.</small></div>
+   <button onclick="Game.toggleScoreAudit()">🔎 Selbst nachzählen</button>
+   <button onclick="Game.recountScoreSequence()">🔁 Nochmal zählen</button>
+   ${canCommit?'<button class="primary" onclick="Game.confirmScoreSequence()">✅ Punkte bestätigen</button>':'<div class="score-wait-confirm">⏳ Host muss die Punkte bestätigen</div>'}
+ </div>
+ <div id="score-audit-panel" class="score-audit-panel"><div class="score-audit-note">Alle gezählten Werte bleiben sichtbar. Addiere die Chips selbst und vergleiche die Summe rechts. Jokerwerte und Boni werden als eigene Posten angezeigt.</div>${auditRows}</div>`;
  fin.classList.add('show');
- await sleepMs(2200);
-
- const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;
- if(canCommit&&state?.scoreSequence?.id===seq.id)commitScoreSequence(seq);
- await sleepMs(450);
- ov.style.opacity='0';
- setTimeout(()=>{ov.remove();maybeShowRoundSummary()},400)
+ haptic([10,30,10]);
+ playFxSound('turn');
+ /* V15.11: Kein automatisches Übernehmen mehr. Die Score-Show bleibt offen,
+    bis die Punkte ausdrücklich bestätigt werden. */
 }
+function toggleScoreAudit(){const p=document.getElementById('score-audit-panel');if(!p)return;p.classList.toggle('show');const b=[...document.querySelectorAll('.score-confirm-panel button')].find(x=>x.textContent.includes('nachzählen'));if(b&&b.textContent.includes('Selbst'))b.textContent=p.classList.contains('show')?'🙈 Nachzählansicht schließen':'🔎 Selbst nachzählen'}
+function recountScoreSequence(){const seq=state?.scoreSequence;if(!seq)return;const old=document.querySelector('.score-sequence-overlay');if(old)old.remove();scoreSequenceSeen=seq.id;runScoreSequenceVisual(seq)}
+function confirmScoreSequence(){const seq=state?.scoreSequence;if(!seq){toast('Keine offene Punktewertung.');return}const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;if(!canCommit){toast('Nur der Host kann die Punkte bestätigen.');return}const ov=document.querySelector('.score-sequence-overlay');if(ov){ov.style.opacity='0';setTimeout(()=>ov.remove(),250)}commitScoreSequence(seq)}
+function reloadPage(){save();location.reload()}
 function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
 function maybeShowRoundSummary(){
  const s=state?.lastRoundSummary;
@@ -3751,18 +3792,18 @@ function resumeTransientFlow(){
  if(ui.mode==='otherSwapSelect'&&ui.selected?.length===2){setTimeout(otherSwapOrientation,40);return}
  if(ui.mode==='starChoice'){setTimeout(showStarChoice,40);return}
 }
-function render(){if(state?.phase==='play'&&!state.pendingMatch&&ui.mode==='turnChoice')recoverInterruptedMatchDecision();if(state?.phase==='play'&&state.pendingMatch&&ui.mode!=='matchReady'){
+function render(){if(state?.phase!=='scoringSequence')document.querySelector('.score-sequence-overlay')?.remove();if(state?.phase==='play'&&!state.pendingMatch&&ui.mode==='turnChoice')recoverInterruptedMatchDecision();if(state?.phase==='play'&&state.pendingMatch&&ui.mode!=='matchReady'){
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.8 · Smart Joker Scoring</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.11 · Score Check</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
 // Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
 window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
-window.Game={render,updateNames,startFromSetup,startAIFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,focusMyBoard,showDisplaySettings,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction};
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,focusMyBoard,showDisplaySettings,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,reloadPage,confirmScoreSequence,recountScoreSequence,toggleScoreAudit};
 
 document.addEventListener('fullscreenchange',syncFullscreenState);
 document.addEventListener('webkitfullscreenchange',syncFullscreenState);
