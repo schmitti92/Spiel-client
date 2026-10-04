@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – V15.30 Heinz 50 Sprüche · 4 Sekunden</title>
+<title>SKYJO Action – V15.31 Bibelverse</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -3483,6 +3483,126 @@ body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-inde
   line-height:1.02;
 }
 
+
+/* ==========================================================
+   V15.31 · BIBELVERS-BUTTON
+   ========================================================== */
+.bible-side-btn{
+  position:fixed;
+  right:12px;
+  top:calc(50% + 174px);
+  z-index:58;
+  transform:translateY(-50%);
+  width:62px;
+  min-height:70px;
+  padding:7px 5px;
+  border-radius:19px 0 0 19px;
+  border:1px solid rgba(255,255,255,.18);
+  border-right:0;
+  background:linear-gradient(160deg,rgba(38,78,108,.98),rgba(19,42,64,.98));
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  box-shadow:-8px 10px 24px rgba(0,0,0,.24);
+  cursor:pointer;
+}
+.bible-side-btn:active{transform:translateY(-50%) scale(.93)}
+.bible-side-icon{font-size:28px;line-height:1}
+.bible-side-label{
+  font-size:8px;
+  font-weight:1000;
+  letter-spacing:1px;
+  color:#d9efff;
+}
+
+.bible-popup{
+  position:fixed;
+  inset:0;
+  z-index:5200;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  pointer-events:none;
+  opacity:0;
+  background:rgba(0,0,0,.24);
+  transition:opacity .17s ease;
+}
+.bible-popup.show{opacity:1}
+.bible-popup.leave{opacity:0}
+
+.bible-popup-card{
+  width:min(780px,92vw);
+  padding:27px 30px 24px;
+  border-radius:28px;
+  border:1px solid rgba(255,255,255,.2);
+  background:linear-gradient(145deg,rgba(19,44,65,.98),rgba(40,82,111,.98));
+  box-shadow:0 22px 58px rgba(0,0,0,.42);
+  text-align:center;
+  transform:scale(.88) translateY(10px);
+  opacity:.35;
+  transition:transform .25s cubic-bezier(.2,.82,.2,1),opacity .2s ease;
+}
+.bible-popup.show .bible-popup-card{
+  transform:scale(1) translateY(0);
+  opacity:1;
+}
+.bible-popup.leave .bible-popup-card{
+  transform:scale(.96) translateY(-7px);
+  opacity:0;
+}
+.bible-popup-top{
+  color:#d8f0ff;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.18em;
+  margin-bottom:14px;
+}
+.bible-popup-text{
+  color:#fff;
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:clamp(22px,3.8vw,38px);
+  line-height:1.26;
+  font-weight:700;
+  text-wrap:balance;
+}
+.bible-popup-ref{
+  margin-top:15px;
+  color:#d9efff;
+  font-size:17px;
+  font-weight:900;
+  letter-spacing:.03em;
+}
+.bible-popup-progress{
+  width:min(420px,80%);
+  height:5px;
+  margin:22px auto 0;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+}
+.bible-popup-progress i{
+  display:block;
+  width:100%;
+  height:100%;
+  border-radius:inherit;
+  background:#d9efff;
+  transform-origin:left center;
+  transform:scaleX(1);
+}
+.bible-popup-progress i.run{
+  transform:scaleX(0);
+  transition-property:transform;
+  transition-timing-function:linear;
+}
+@media(max-width:700px){
+  .bible-side-btn{right:5px;top:calc(50% + 154px);width:52px;min-height:62px;border-radius:16px 0 0 16px}
+  .bible-side-icon{font-size:24px}
+  .bible-popup-card{padding:22px 18px 20px;border-radius:22px}
+}
+
 </style>
 </head>
 <body>
@@ -3492,7 +3612,7 @@ body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-inde
 <script>
 (() => {
 'use strict';
-const SKYJO_BUILD='15.30';
+const SKYJO_BUILD='15.31';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -4035,7 +4155,7 @@ function applyCloudDoc(remote,rev){
      try{closeModal()}catch(_e){}
      roundSummarySeen='';
      scoreSequenceSeen='';
-     try{document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup').forEach(el=>el.remove())}catch(_e){}
+     try{document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())}catch(_e){}
    }
    cloudConfigSave();
    /* Wichtig: render() läuft noch mit cloud.applying=true.
@@ -4133,6 +4253,7 @@ async function flushCloudPush(){
 function stopCloudRoomRuntime(){
  clearGameAnnouncement();
  clearJokePopup();
+ clearBiblePopup();
  if(cloud.pollTimer)clearTimeout(cloud.pollTimer);
  if(cloud.pushTimer)clearTimeout(cloud.pushTimer);
  cloud.pollTimer=null;
@@ -4172,7 +4293,7 @@ async function restoreOnlineRoom(){
  if(!cloud.enabled||!cloud.room)return;
  try{
    closeModal();
-   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup').forEach(el=>el.remove())
+   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())
  }catch(_e){}
  roundSummarySeen='';scoreSequenceSeen='';
  state=null;ui={mode:'none',data:{},selected:[]};render();
@@ -5243,7 +5364,7 @@ async function returnFinishedGameToRoomLobby(){
 }
 
 async function restart(){if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann das Online-Spiel neu starten.');return}if(!confirm(cloud.enabled?'Online-Spiel beenden und mit allen Spielern in die Raum-Lobby zurückkehren?':'Aktuelles Spiel wirklich löschen und neu starten?'))return;clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';try{localStorage.removeItem(SAVE_KEY)}catch(_e){}if(cloud.enabled&&cloud.room&&isRoomDoc(cloud.doc)){await waitForCloudIdle(2500);const next=clone(cloud.doc);next.game=null;next.lobby.status='lobby';delete next.lobby.startedAt;const out=await postCloudDoc(next,cloud.rev);if(out?.conflict){if(out.remote)applyCloudDoc(out.remote,out.rev);toast('Raum wurde inzwischen geändert – bitte erneut versuchen.');return}if(!out?.ok){toast(cloud.lastError||'Online-Spiel konnte nicht zurückgesetzt werden.');return}cloud.doc=next;cloud.lastPushedJSON=JSON.stringify(next);state=null;ui={mode:'none',data:{},selected:[]};render();toast('↩ Alle Spieler sind wieder in der Online-Lobby');return}state=null;ui={mode:'none',data:{},selected:[]};render()}
-function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');const selectedMode=cloud.enabled?'cloud':'local';return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM LOBBY DELUXE</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field span-2"><label>Spielmodus</label><input id="cloudMode" type="hidden" value="${selectedMode}"><div class="mode-toggle"><button type="button" class="mode-btn ${selectedMode==='local'?'active':''}" data-mode="local" onclick="Game.selectSetupMode('local')"><span class="mode-emoji">🛋</span><span><b>Lokal</b><small>Pass-and-Play auf einem Gerät</small></span></button><button type="button" class="mode-btn" data-mode="ai" onclick="Game.selectSetupMode('ai')"><span class="mode-emoji">🤖</span><span><b>Computer</b><small>Spiele gegen 1–3 KI-Gegner</small></span></button><button type="button" class="mode-btn ${selectedMode==='cloud'?'active':''}" data-mode="cloud" onclick="Game.selectSetupMode('cloud')"><span class="mode-emoji">☁</span><span><b>Online</b><small>Mehrere Geräte im selben Raum</small></span></button></div></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field" style="display:none"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="8"><div class="joker-off-note">Standard: 8.</div></div><div class="field span-2"><label>Joker-Spezialeffekte</label><div id="jokerSpecialCard" class="joker-special-card disabled"><div class="joker-special-top"><div class="joker-special-icon">✨</div><div class="joker-special-copy"><b>Zusatzfähigkeiten für Joker</b><small>Der Joker bleibt immer Wildcard; bei der Endwertung übernimmt er automatisch den günstigsten Wert seiner Reihe oder Spalte.</small></div><label class="joker-switch"><input id="jokerEnabled" type="checkbox" onchange="Game.toggleJokerSpecialUI()"><span class="joker-slider"></span></label></div><div class="joker-special-body"><div class="joker-state-pill" id="jokerSpecialState">AUS</div><div class="joker-special-grid"><div class="joker-special-good"><h4>Mit Spezialeffekten</h4><ul><li>⭐ Stern kann eine Gratis-Aktion auslösen</li><li>⚡ Aktionskarten sind aktiv</li><li>🎯 Voller SKYJO-Action-Modus</li></ul></div><div class="joker-special-off"><h4>Wenn AUS</h4><ul><li>🃏 Joker bleibt Wildcard</li><li>🎯 Endwertung: günstigster Wert aus Reihe/Spalte</li><li>🏅 Jokerbonus bleibt: 3 = −10, 4 waagerecht = −15</li><li>🚫 Nur Aktionskarten und Gratis-Aktion sind aus</li></ul></div></div></div></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button><button class="secondary" onclick="Game.resetOnlineClient()">↻ Verbindung zurücksetzen</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken. <b>Client V15.30</b></div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div>${hasLocalSave()?'<button class="secondary wide resume-local-btn" onclick="Game.resumeLocalGame()">▶ Gespeichertes Spiel fortsetzen</button>':''}<button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Strategie & Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten, erkennt gefährliche Ablagen und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
+function setupView(){const cfgRoom=escapeHTML(cloud.room||'');const nm=escapeHTML(cloud.myName||'');const st=cloud.lastError?`<div class="online-status err">⚠ ${escapeHTML(cloud.lastError)}</div>`:(cloud.serverOK===true?'<div class="online-status ok">● Render/SKYJO-Server erreichbar</div>':'');const selectedMode=cloud.enabled?'cloud':'local';return `<div class="panel hero"><div class="setup-brand"><div class="brandmark setup-mark"></div><div><span class="setup-kicker">PREMIUM LOBBY DELUXE</span><h2>SKYJO <em>ACTION</em></h2><p>Lokal, gegen Computer oder echter Online-Mehrspieler.</p></div></div><div class="setup-feature-row"><span>🎴 Flüssige Kartenbewegung</span><span>🤖 Expert-KI</span><span>☁ Echter Online-Modus</span></div><div class="setup-grid"><div class="field span-2"><label>Spielmodus</label><input id="cloudMode" type="hidden" value="${selectedMode}"><div class="mode-toggle"><button type="button" class="mode-btn ${selectedMode==='local'?'active':''}" data-mode="local" onclick="Game.selectSetupMode('local')"><span class="mode-emoji">🛋</span><span><b>Lokal</b><small>Pass-and-Play auf einem Gerät</small></span></button><button type="button" class="mode-btn" data-mode="ai" onclick="Game.selectSetupMode('ai')"><span class="mode-emoji">🤖</span><span><b>Computer</b><small>Spiele gegen 1–3 KI-Gegner</small></span></button><button type="button" class="mode-btn ${selectedMode==='cloud'?'active':''}" data-mode="cloud" onclick="Game.selectSetupMode('cloud')"><span class="mode-emoji">☁</span><span><b>Online</b><small>Mehrere Geräte im selben Raum</small></span></button></div></div><div class="field"><label>Zielpunktzahl</label><input id="target" type="number" min="20" max="500" value="100"></div><div id="specialSetupField" class="field" style="display:none"><label>Aktionskarten-Modus</label><select id="beginner"><option value="0">Nein – alle Aktionen</option><option value="1">Ja – ohne Dieb & Meteorit</option></select></div><div class="field"><label>Anzahl Jokerkarten</label><input id="jokerCount" type="number" min="0" max="30" step="1" value="8"><div class="joker-off-note">Standard: 8.</div></div><div class="field span-2"><label>Joker-Spezialeffekte</label><div id="jokerSpecialCard" class="joker-special-card disabled"><div class="joker-special-top"><div class="joker-special-icon">✨</div><div class="joker-special-copy"><b>Zusatzfähigkeiten für Joker</b><small>Der Joker bleibt immer Wildcard; bei der Endwertung übernimmt er automatisch den günstigsten Wert seiner Reihe oder Spalte.</small></div><label class="joker-switch"><input id="jokerEnabled" type="checkbox" onchange="Game.toggleJokerSpecialUI()"><span class="joker-slider"></span></label></div><div class="joker-special-body"><div class="joker-state-pill" id="jokerSpecialState">AUS</div><div class="joker-special-grid"><div class="joker-special-good"><h4>Mit Spezialeffekten</h4><ul><li>⭐ Stern kann eine Gratis-Aktion auslösen</li><li>⚡ Aktionskarten sind aktiv</li><li>🎯 Voller SKYJO-Action-Modus</li></ul></div><div class="joker-special-off"><h4>Wenn AUS</h4><ul><li>🃏 Joker bleibt Wildcard</li><li>🎯 Endwertung: günstigster Wert aus Reihe/Spalte</li><li>🏅 Jokerbonus bleibt: 3 = −10, 4 waagerecht = −15</li><li>🚫 Nur Aktionskarten und Gratis-Aktion sind aus</li></ul></div></div></div></div></div></div><div id="cloudBox" style="display:${cloud.enabled?'block':'none'}"><div class="setup-separator"></div><div class="online-mode-grid"><div class="field"><label>Dein Name</label><input id="onlineName" value="${nm}" maxlength="24" placeholder="z. B. Christoph"></div><div class="field"><label>Raumcode</label><input id="cloudRoom" maxlength="20" value="${cfgRoom}" placeholder="z. B. BNLY7"></div></div><div class="online-actions"><button class="secondary" onclick="Game.generateCloudRoom()">🎲 Neuer Code</button><button class="primary" onclick="Game.createOnlineRoom()">👑 Raum erstellen</button><button class="secondary" onclick="Game.joinOnlineRoom()">🔗 Beitreten</button><button class="secondary" onclick="Game.resetOnlineClient()">↻ Verbindung zurücksetzen</button></div>${st}<div class="cloud-info">Host erstellt den Raum. Auf dem zweiten Gerät denselben Code eingeben und „Beitreten“ drücken. <b>Client V15.31</b></div></div><div id="localBox" style="display:${cloud.enabled?'none':'block'}"><div class="setup-separator"></div><div class="field"><label>Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div>${hasLocalSave()?'<button class="secondary wide resume-local-btn" onclick="Game.resumeLocalGame()">▶ Gespeichertes Spiel fortsetzen</button>':''}<button class="primary wide" onclick="Game.startFromSetup()">Lokales Spiel starten</button></div><div id="aiBox" style="display:none"><div class="setup-separator"></div><div class="ai-setup-card"><h3>🤖 Computergegner</h3><p>Der Computer spielt selbstständig und wartet sichtbar zwischen seinen Aktionen.</p><div class="ai-grid"><div class="field"><label>Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label>Computergegner</label><select id="aiCount"><option value="1" selected>1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label>Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert · Strategie & Kartenzählung</option></select></div></div><div class="ai-fair-note">Fair Play: Der Computer kennt keine verdeckten Karten. Expert zählt nur öffentlich bekannte Karten, berechnet Wahrscheinlichkeiten, erkennt gefährliche Ablagen und plant das Endspiel.</div><button class="primary wide" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></div></div>`}
 function toggleJokerSpecialUI(){const cb=$('#jokerEnabled'),f=$('#specialSetupField'),card=$('#jokerSpecialCard'),label=$('#jokerSpecialState');const on=!!(cb&&cb.checked);if(f)f.style.display=on?'flex':'none';if(card){card.classList.toggle('enabled',on);card.classList.toggle('disabled',!on)}if(label)label.textContent=on?'AKTIV':'AUS'}
 function updateNames(){const pc=$('#playerCount'),box=$('#names');if(!pc||!box)return;const n=Number(pc.value),previous=[...document.querySelectorAll('.pname')].map(x=>x.value);box.innerHTML=Array.from({length:n},(_,i)=>`<div class="field"><label>Spieler ${i+1}</label><input class="pname" value="${escapeHTML(previous[i]||`Spieler ${i+1}`)}"></div>`).join('')}
 function lobbyView(){const d=cloud.doc,l=d.lobby,set=l.settings||{},me=myPlayerIndex(),host=isHostDevice();const players=l.players.map((p,i)=>`<div class="player-slot ${i===me?'me':''}"><div class="num">${i+1}</div><div class="who"><b>${escapeHTML(p.name)}${i===me?'<span class="you-tag">DU</span>':''}</b><small>${p.id===l.hostId?'Host':'Mitspieler'}</small></div><div>${p.id===l.hostId?'👑':'✓'}</div></div>`).join('');return `<div class="panel lobby-card"><div class="lobby-head"><div><h2 style="margin:0">Online-Lobby · ${escapeHTML(cloud.room)}</h2><p class="hint">${l.players.length}/8 Spieler im Raum</p></div><button onclick="Game.leaveOnlineRoom()">← Lobby verlassen</button></div><div class="player-list">${players}</div><div class="lobby-settings"><div class="setting-chip"><small>Ziel</small><b>${Number(set.target)||100} Punkte</b></div><div class="setting-chip"><small>Jokerkarten</small><b>${Number.isInteger(set.jokerCount)?set.jokerCount:8}</b></div><div class="setting-chip"><small>Joker-Spezialeffekt</small><b>${set.jokerEnabled===false?'AUS':'AN'}</b></div></div><div class="setup-separator"></div>${host?(l.players.length>=2?'<button class="primary wide" onclick="Game.startOnlineGame()">🎮 Online-Spiel starten</button>':'<div class="waiting-note">Warte auf mindestens einen weiteren Spieler …</div>'):'<div class="waiting-note">Host startet das Spiel, sobald alle bereit sind …</div>'}</div>`}
@@ -5660,6 +5781,168 @@ function jokeSideButtonHTML(){
 }
 
 
+
+const GAME_BIBLE_VERSES=[
+ {ref:'Philipper 4,13',text:'Ich vermag alles durch den, der mich mächtig macht, Christus.'},
+ {ref:'Sprüche 16,3',text:'Befiehl dem HERRN deine Werke, so werden deine Anschläge fortgehen.'},
+ {ref:'Sprüche 3,5',text:'Verlaß dich auf den HERRN von ganzem Herzen und verlaß dich nicht auf deinen Verstand.'},
+ {ref:'Sprüche 3,6',text:'Sondern gedenke an ihn in allen deinen Wegen, so wird er dich recht führen.'},
+ {ref:'Psalm 37,5',text:'Befiehl dem HERRN deine Wege und hoffe auf ihn; er wird\'s wohl machen.'},
+ {ref:'Psalm 118,24',text:'Dies ist der Tag, den der HERR macht; lasset uns freuen und fröhlich darinnen sein.'},
+ {ref:'Psalm 23,1',text:'Der HERR ist mein Hirte; mir wird nichts mangeln.'},
+ {ref:'Psalm 27,1',text:'Der HERR ist mein Licht und mein Heil; vor wem sollte ich mich fürchten?'},
+ {ref:'Psalm 46,2',text:'Gott ist unsre Zuversicht und Stärke, eine Hilfe in den großen Nöten.'},
+ {ref:'Psalm 55,23',text:'Wirf dein Anliegen auf den HERRN; der wird dich versorgen.'},
+ {ref:'Psalm 56,4',text:'Wenn ich mich fürchte, so hoffe ich auf dich.'},
+ {ref:'Psalm 84,13',text:'HERR Zebaoth, wohl dem Menschen, der sich auf dich verläßt!'},
+ {ref:'Psalm 90,12',text:'Lehre uns bedenken, daß wir sterben müssen, auf daß wir klug werden.'},
+ {ref:'Psalm 119,105',text:'Dein Wort ist meines Fußes Leuchte und ein Licht auf meinem Wege.'},
+ {ref:'Psalm 133,1',text:'Siehe, wie fein und lieblich ist\'s, daß Brüder einträchtig beieinander wohnen!'},
+ {ref:'Jesaja 40,31',text:'Die auf den HERRN harren, kriegen neue Kraft.'},
+ {ref:'Jesaja 41,10',text:'Fürchte dich nicht, ich bin mit dir; weiche nicht, denn ich bin dein Gott.'},
+ {ref:'Jesaja 43,2',text:'So du durchs Wasser gehst, will ich bei dir sein.'},
+ {ref:'Jeremia 17,7',text:'Gesegnet aber ist der Mann, der sich auf den HERRN verläßt.'},
+ {ref:'Jeremia 29,11',text:'Denn ich weiß wohl, was ich für Gedanken über euch habe, spricht der HERR: Gedanken des Friedens.'},
+ {ref:'Matthäus 5,9',text:'Selig sind die Friedfertigen; denn sie werden Gottes Kinder heißen.'},
+ {ref:'Matthäus 5,16',text:'Also lasset euer Licht leuchten vor den Leuten.'},
+ {ref:'Matthäus 6,34',text:'Darum sorget nicht für den andern Morgen; denn der morgende Tag wird für das Seine sorgen.'},
+ {ref:'Matthäus 7,12',text:'Alles nun, was ihr wollt, daß euch die Leute tun sollen, das tut ihr ihnen auch.'},
+ {ref:'Matthäus 11,28',text:'Kommet her zu mir alle, die ihr mühselig und beladen seid; ich will euch erquicken.'},
+ {ref:'Matthäus 18,20',text:'Wo zwei oder drei versammelt sind in meinem Namen, da bin ich mitten unter ihnen.'},
+ {ref:'Matthäus 19,26',text:'Bei den Menschen ist\'s unmöglich; aber bei Gott sind alle Dinge möglich.'},
+ {ref:'Matthäus 22,39',text:'Du sollst deinen Nächsten lieben wie dich selbst.'},
+ {ref:'Markus 9,23',text:'Alle Dinge sind möglich dem, der da glaubt.'},
+ {ref:'Markus 10,27',text:'Bei den Menschen ist\'s unmöglich, aber nicht bei Gott; denn alle Dinge sind möglich bei Gott.'},
+ {ref:'Lukas 6,31',text:'Wie ihr wollt, daß euch die Leute tun sollen, also tut ihnen gleich auch ihr.'},
+ {ref:'Lukas 12,25',text:'Welcher ist unter euch, ob er schon darum sorget, der da könnte eine Elle seiner Länge zusetzen?'},
+ {ref:'Johannes 8,12',text:'Ich bin das Licht der Welt; wer mir nachfolgt, der wird nicht wandeln in der Finsternis.'},
+ {ref:'Johannes 13,34',text:'Ein neu Gebot gebe ich euch, daß ihr euch untereinander liebet.'},
+ {ref:'Johannes 14,1',text:'Euer Herz erschrecke nicht! Glaubet an Gott und glaubet an mich!'},
+ {ref:'Johannes 14,6',text:'Ich bin der Weg und die Wahrheit und das Leben.'},
+ {ref:'Johannes 15,12',text:'Das ist mein Gebot, daß ihr euch untereinander liebet, gleichwie ich euch liebe.'},
+ {ref:'Johannes 16,33',text:'In der Welt habt ihr Angst; aber seid getrost, ich habe die Welt überwunden.'},
+ {ref:'Römer 5,3-4',text:'Trübsal bringt Geduld; Geduld aber bringt Erfahrung; Erfahrung aber bringt Hoffnung.'},
+ {ref:'Römer 8,28',text:'Wir wissen aber, daß denen, die Gott lieben, alle Dinge zum Besten dienen.'},
+ {ref:'Römer 12,10',text:'Die brüderliche Liebe untereinander sei herzlich.'},
+ {ref:'Römer 12,12',text:'Seid fröhlich in Hoffnung, geduldig in Trübsal, haltet an am Gebet.'},
+ {ref:'Römer 12,18',text:'Ist es möglich, soviel an euch ist, so habt mit allen Menschen Frieden.'},
+ {ref:'Römer 14,19',text:'Darum lasset uns dem nachstreben, was zum Frieden dient und was zur Besserung untereinander dient.'},
+ {ref:'1. Korinther 10,31',text:'Ihr esset nun oder trinket oder was ihr tut, so tut es alles zu Gottes Ehre.'},
+ {ref:'1. Korinther 13,4',text:'Die Liebe ist langmütig und freundlich.'},
+ {ref:'1. Korinther 13,7',text:'Sie verträgt alles, sie glaubt alles, sie hofft alles, sie duldet alles.'},
+ {ref:'1. Korinther 16,14',text:'Alle eure Dinge lasset in der Liebe geschehen!'},
+ {ref:'2. Korinther 5,7',text:'Denn wir wandeln im Glauben, und nicht im Schauen.'},
+ {ref:'2. Korinther 12,9',text:'Laß dir an meiner Gnade genügen; denn meine Kraft ist in den Schwachen mächtig.'},
+ {ref:'Galater 5,22',text:'Die Frucht aber des Geistes ist Liebe, Freude, Friede, Geduld, Freundlichkeit.'},
+ {ref:'Galater 6,9',text:'Lasset uns aber Gutes tun und nicht müde werden.'},
+ {ref:'Epheser 4,2',text:'Mit aller Demut und Sanftmut, mit Geduld, und vertraget einer den andern in der Liebe.'},
+ {ref:'Epheser 4,32',text:'Seid aber untereinander freundlich, herzlich und vergebet einer dem andern.'},
+ {ref:'Epheser 6,10',text:'Zuletzt, meine Brüder, seid stark in dem HERRN und in der Macht seiner Stärke.'},
+ {ref:'Philipper 2,3',text:'Nichts tut durch Zank oder eitle Ehre; sondern durch Demut achte einer den andern höher denn sich selbst.'},
+ {ref:'Philipper 4,4',text:'Freuet euch in dem HERRN allewege! Und abermals sage ich: Freuet euch!'},
+ {ref:'Philipper 4,6',text:'Sorget nichts! sondern in allen Dingen lasset eure Bitten im Gebet und Flehen mit Danksagung vor Gott kund werden.'},
+ {ref:'Kolosser 3,13',text:'Vertraget einer den andern und vergebet euch untereinander.'},
+ {ref:'Kolosser 3,15',text:'Der Friede Gottes regiere in euren Herzen.'},
+ {ref:'1. Thessalonicher 5,16',text:'Seid allezeit fröhlich.'},
+ {ref:'1. Thessalonicher 5,17',text:'Betet ohne Unterlaß.'},
+ {ref:'1. Thessalonicher 5,18',text:'Seid dankbar in allen Dingen.'},
+ {ref:'Hebräer 10,24',text:'Lasset uns untereinander unser selbst wahrnehmen mit Reizen zur Liebe und guten Werken.'},
+ {ref:'Hebräer 11,1',text:'Es ist aber der Glaube eine gewisse Zuversicht des, das man hofft.'},
+ {ref:'Hebräer 12,1',text:'Lasset uns laufen durch Geduld in dem Kampf, der uns verordnet ist.'},
+ {ref:'Jakobus 1,19',text:'Ein jeglicher Mensch sei schnell, zu hören, langsam aber, zu reden, und langsam zum Zorn.'},
+ {ref:'Jakobus 1,22',text:'Seid aber Täter des Worts und nicht Hörer allein.'},
+ {ref:'Jakobus 4,10',text:'Demütiget euch vor Gott, so wird er euch erhöhen.'},
+ {ref:'1. Petrus 4,8',text:'Vor allen Dingen aber habt untereinander eine inbrünstige Liebe.'},
+ {ref:'1. Petrus 5,7',text:'Alle eure Sorge werfet auf ihn; denn er sorgt für euch.'},
+ {ref:'1. Johannes 4,7',text:'Ihr Lieben, lasset uns untereinander liebhaben; denn die Liebe ist von Gott.'},
+ {ref:'1. Johannes 4,19',text:'Lasset uns ihn lieben; denn er hat uns zuerst geliebt.'}
+];
+
+let biblePopupEl=null;
+let biblePopupTimer=null;
+let lastBibleVerseSeen='';
+
+function clearBiblePopup(){
+ if(biblePopupTimer){clearTimeout(biblePopupTimer);biblePopupTimer=null}
+ if(biblePopupEl){try{biblePopupEl.remove()}catch(_e){}biblePopupEl=null}
+}
+
+function showBibleVersePopup(entry,remainingMs=8000){
+ if(!entry?.text)return;
+ clearBiblePopup();
+
+ const wrap=document.createElement('div');
+ wrap.className='bible-popup';
+ wrap.setAttribute('role','status');
+ wrap.setAttribute('aria-live','polite');
+
+ const card=document.createElement('div');
+ card.className='bible-popup-card';
+
+ const top=document.createElement('div');
+ top.className='bible-popup-top';
+ top.textContent='📖 BIBELVERS';
+
+ const verse=document.createElement('div');
+ verse.className='bible-popup-text';
+ verse.textContent='„'+entry.text+'“';
+
+ const ref=document.createElement('div');
+ ref.className='bible-popup-ref';
+ ref.textContent=entry.ref;
+
+ const timer=document.createElement('div');
+ timer.className='bible-popup-progress';
+ const bar=document.createElement('i');
+ timer.append(bar);
+
+ card.append(top,verse,ref,timer);
+ wrap.append(card);
+ document.body.append(wrap);
+ biblePopupEl=wrap;
+
+ requestAnimationFrame(()=>{
+   wrap.classList.add('show');
+   bar.style.transitionDuration=`${Math.max(250,remainingMs)}ms`;
+   requestAnimationFrame(()=>bar.classList.add('run'))
+ });
+
+ biblePopupTimer=setTimeout(()=>{
+   wrap.classList.add('leave');
+   biblePopupTimer=setTimeout(()=>{
+     if(biblePopupEl===wrap)biblePopupEl=null;
+     try{wrap.remove()}catch(_e){}
+   },260)
+ },Math.max(250,remainingMs))
+}
+
+function syncBibleVerse(){
+ const v=state?.bibleVerse;
+ if(!v?.id||v.id===lastBibleVerseSeen)return;
+ const age=Date.now()-Number(v.ts||0);
+ if(age<0||age>8000){lastBibleVerseSeen=v.id;return}
+ lastBibleVerseSeen=v.id;
+ showBibleVersePopup(v,8000-age)
+}
+
+function showRandomBibleVerse(){
+ if(!state)return;
+ if(toiletPauseActive()){toast('🚽 Erst die Toilettenpause beenden.');return}
+ let pool=GAME_BIBLE_VERSES;
+ const previous=state.bibleVerse?.ref||'';
+ if(pool.length>1)pool=pool.filter(v=>v.ref!==previous);
+ const entry=pool[Math.floor(Math.random()*pool.length)]||GAME_BIBLE_VERSES[0];
+ state.bibleVerse={id:uid(),ref:entry.ref,text:entry.text,ts:Date.now(),by:toiletPauseActor().name};
+ save();
+ syncBibleVerse();
+ toast('📖 Bibelvers')
+}
+
+function bibleSideButtonHTML(){
+ if(!state||!['initialReveal','play'].includes(state.phase)||toiletPauseActive())return '';
+ return `<button type="button" class="bible-side-btn" onclick="Game.showRandomBibleVerse()" title="Passenden Bibelvers anzeigen" aria-label="Passenden Bibelvers anzeigen"><span class="bible-side-icon">📖</span><span class="bible-side-label">BIBEL</span></button>`
+}
+
 const HEINZ_QUOTES=[
  'Ei, jetzt mal ganz langsam – die Welt läuft net fort.',
  'Also ehrlich, so ebbes muss man sich erst mal leisten können.',
@@ -5785,6 +6068,7 @@ function pauseForToilet(){
  try{closeModal()}catch(_e){}
  clearGameAnnouncement();
  clearJokePopup();
+ clearBiblePopup();
  save();
  render();
  toast(`🚽 ${who.name} macht Toilettenpause`);
@@ -5911,7 +6195,7 @@ function gameView(){
  const playersHTML=state.players.map(playerHTML);
  const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
- return `${mp}${closing}${toiletPauseButtonHTML()}${jokeSideButtonHTML()}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Erhöhen</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
+ return `${mp}${closing}${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Erhöhen</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
 
 function resumeTransientFlow(){
  if(!state||isModalOpen()||toiletPauseActive())return;
@@ -5927,20 +6211,20 @@ function resumeTransientFlow(){
  if(ui.mode==='starChoice'){setTimeout(showStarChoice,40);return}
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.30 · Heinz 50 Sprüche · 4 Sekunden</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.31 · Bibelverse</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
 // Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
 window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
-window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke};
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse};
 
 window.addEventListener('pageshow',e=>{
  if(!e.persisted)return;
  try{
    closeModal();
-   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup').forEach(el=>el.remove())
+   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())
  }catch(_e){}
  roundSummarySeen='';scoreSequenceSeen='';
  if(cloud.enabled&&cloud.room){
@@ -5974,7 +6258,7 @@ if(saved){state=saved;ui=restorePlayUIFromState();}
 
 try{
   closeModal();
-  document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup').forEach(el=>el.remove())
+  document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())
 }catch(_e){}
 
 render();
