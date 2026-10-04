@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>SKYJO Action – V16.0 Premium Table</title>
+<title>SKYJO Action – V17.0 Signature Table</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -2762,6 +2762,233 @@ body[data-players="2"] .center-table.specials-off{grid-template-rows:auto auto a
   .bottom-inner{display:block!important}.emoji-reaction-bar{margin-top:5px!important;justify-content:flex-start!important;overflow-x:auto!important}.app{padding-bottom:142px!important}
 }
 
+
+
+/* ==========================================================
+   V17.0 SIGNATURE TABLE REDESIGN
+   Komplett neuer Aufbau: realistischer, ruhiger, fotoähnlicher.
+   ========================================================== */
+:root{
+  --sig-wood-1:#6b4326;
+  --sig-wood-2:#4f2f1a;
+  --sig-wood-3:#2f1b10;
+  --sig-brass:#d8b06a;
+  --sig-brass-soft:rgba(216,176,106,.18);
+  --sig-felt-1:#143f3a;
+  --sig-felt-2:#0f322f;
+  --sig-felt-3:#082220;
+  --sig-paper:#ece2cf;
+  --sig-muted:#aebbb5;
+}
+html,body{
+  background:
+    radial-gradient(1300px 760px at 50% -4%,rgba(255,230,180,.10),transparent 55%),
+    radial-gradient(1200px 760px at 50% 120%,rgba(0,0,0,.42),transparent 45%),
+    linear-gradient(180deg,#2f2219 0%,#1b130f 56%,#0f0b09 100%) !important;
+}
+body:before{
+  content:"" !important;position:fixed;inset:0;pointer-events:none;z-index:-5;opacity:.24;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.055) 0 2px,transparent 2px 92px,rgba(0,0,0,.14) 92px 94px,transparent 94px 186px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 9px);
+}
+body:after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-4;opacity:.42;
+  background:
+    radial-gradient(circle at 15% 12%,rgba(255,255,255,.045),transparent 20%),
+    radial-gradient(circle at 85% 14%,rgba(255,255,255,.035),transparent 18%),
+    radial-gradient(circle at 50% 48%,transparent 60%,rgba(0,0,0,.18) 100%) !important;
+  background-size:auto !important;mask-image:none !important;
+}
+.app{
+  position:relative;isolation:isolate;max-width:1600px!important;
+  padding:16px 18px calc(118px + env(safe-area-inset-bottom))!important;
+}
+.app:before{
+  content:"";position:absolute;inset:0;border-radius:34px;z-index:-3;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.10),transparent 10%,transparent 85%,rgba(0,0,0,.26)),
+    radial-gradient(circle at 14% 12%,rgba(255,228,170,.10),transparent 18%),
+    radial-gradient(circle at 86% 12%,rgba(255,228,170,.07),transparent 16%),
+    repeating-linear-gradient(12deg,var(--sig-wood-1) 0 18px,var(--sig-wood-2) 18px 36px,var(--sig-wood-3) 36px 58px,var(--sig-wood-2) 58px 84px);
+  box-shadow:0 36px 95px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.16),inset 0 -14px 24px rgba(0,0,0,.25),inset 12px 0 18px rgba(255,255,255,.04),inset -12px 0 18px rgba(0,0,0,.13);
+}
+.app:after{
+  content:"";position:absolute;inset:14px;border-radius:25px;z-index:-2;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.06),transparent 12%,transparent 84%,rgba(0,0,0,.18)),
+    radial-gradient(circle at 50% 0%,rgba(255,243,207,.06),transparent 18%),
+    linear-gradient(180deg,#153e39 0%,#102f2d 50%,#0a2423 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03),inset 0 22px 34px rgba(255,255,255,.02),inset 0 -22px 40px rgba(0,0,0,.20),0 0 0 1px rgba(0,0,0,.22);
+}
+.topbar{
+  margin:2px 2px 14px!important;border-radius:22px!important;position:sticky;top:10px;z-index:20;
+  background:linear-gradient(180deg,rgba(11,28,27,.78),rgba(7,22,21,.92))!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05)!important;
+  backdrop-filter:blur(18px) saturate(118%);
+}
+.topbar:before{content:"";position:absolute;inset:8px;border-radius:14px;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent 40%,rgba(0,0,0,.10));}
+.topbar:after{bottom:-1px!important;left:22%!important;right:22%!important;background:linear-gradient(90deg,transparent,rgba(216,176,106,.8),transparent)!important;box-shadow:0 0 18px rgba(216,176,106,.15)!important}
+.brand h1{letter-spacing:.2px!important;color:#f3eee6!important}.brand small{color:#bfab7c!important;letter-spacing:1px!important}.edition-chip{background:rgba(216,176,106,.10)!important;color:#e8ce9f!important;border-color:rgba(216,176,106,.16)!important}
+.brandmark{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 10px 24px rgba(0,0,0,.28)!important}
+.iconbtn,.cloud-pill{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))!important;border-color:rgba(255,255,255,.08)!important;color:#efe9dc!important}
+
+.premium-status-v17{
+  position:relative;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px!important;margin:0 4px 16px!important;
+}
+.premium-status-v17 .stat{
+  border-radius:18px!important;padding:14px 16px 12px!important;
+  background:linear-gradient(180deg,rgba(16,46,44,.82),rgba(9,30,29,.92))!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+.premium-status-v17 .stat:before{background:linear-gradient(90deg,transparent,rgba(216,176,106,.44),transparent)!important;height:1px!important}
+.premium-status-v17 .stat b{color:#f8f3ea!important;font-size:18px!important}
+.premium-status-v17 .stat span{color:#8fa39d!important;font-size:10px!important;letter-spacing:1.2px!important}
+
+.table-area-premium{position:relative}
+.table-area-premium.two-player-premium{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(320px,.76fr) minmax(0,1fr)!important;gap:18px!important;align-items:start!important;
+}
+.table-area-premium.multi-player-premium{display:grid!important;gap:18px!important}
+.player-side,.dealer-side{min-width:0}
+.seat-label{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 8px 10px;padding:12px 14px;border-radius:18px;
+  background:linear-gradient(180deg,rgba(84,52,30,.76),rgba(53,31,17,.86));
+  border:1px solid rgba(216,176,106,.12);box-shadow:0 10px 24px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.seat-label span{font-size:10px;font-weight:900;letter-spacing:1.3px;color:#c2af8a}
+.seat-label b{font-size:14px;color:#f8f1e3}
+
+.signature-center{
+  border-radius:28px!important;padding:16px!important;overflow:hidden;position:relative;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,239,205,.08),transparent 20%),
+    radial-gradient(ellipse at 18% 46%,rgba(86,174,161,.07),transparent 28%),
+    radial-gradient(ellipse at 80% 44%,rgba(88,104,208,.05),transparent 28%),
+    linear-gradient(180deg,var(--sig-felt-1) 0%,var(--sig-felt-2) 56%,var(--sig-felt-3) 100%)!important;
+  border:1px solid rgba(216,176,106,.12)!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.30),inset 0 0 0 1px rgba(255,255,255,.03),inset 0 20px 34px rgba(255,255,255,.02),inset 0 -26px 44px rgba(0,0,0,.18),0 0 0 8px rgba(74,45,24,.38),0 0 0 10px rgba(44,26,15,.90)!important;
+}
+.signature-center:before{content:"";position:absolute;inset:16px;border-radius:20px;border:1px solid rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);pointer-events:none}
+.signature-center:after{content:"SIGNATURE TABLE"!important;right:18px!important;bottom:12px!important;color:rgba(244,228,197,.10)!important;letter-spacing:3.2px!important;font-size:10px!important}
+.table-center-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:4px 4px 14px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.05)}
+.table-overline{display:inline-block;font-size:10px;font-weight:900;letter-spacing:1.8px;color:#bea879;margin-bottom:6px}
+.table-center-title h3{margin:0;color:#f4eee2;font-size:24px;letter-spacing:.2px}
+.table-center-title p{margin:6px 0 0;color:#99aaa3;font-size:12px;line-height:1.45;max-width:420px}
+.table-center-metrics{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;align-self:flex-start}
+.table-center-metrics span{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);font-size:11px;font-weight:800;color:#d8e0d9}
+.table-center-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(255px,.9fr);gap:14px;align-items:start}
+.table-col{display:grid;gap:14px;align-content:start}
+.table-widget{min-width:0;border-radius:20px!important;background:linear-gradient(180deg,rgba(9,31,30,.68),rgba(5,21,21,.86))!important;border:1px solid rgba(255,255,255,.07)!important;box-shadow:0 14px 30px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.03)!important}
+.table-note-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.table-note-tile{padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.04)}.table-note-tile b{display:block;color:#f2eadd;font-size:12px;margin-bottom:4px}.table-note-tile small{display:block;color:#98aaa3;font-size:10px;line-height:1.4}
+
+.real-hand-zone,.watch-panel,.play-pilebox,.action-pilebox,.table-note-box{padding:14px!important}
+.real-hand-zone{background:linear-gradient(180deg,rgba(10,35,33,.86),rgba(6,24,23,.94))!important;border-radius:18px!important}
+.real-hand-copy b{color:#f3edde!important}.real-hand-copy small,.eyebrow,.watch-copy small,.watch-headline span,.section-heading small,.count{color:#90a39c!important}
+.watch-panel{background:linear-gradient(180deg,rgba(10,36,35,.90),rgba(6,24,24,.96))!important}
+.watch-headline b,.watch-copy b,.section-heading h4{color:#f2ece0!important}
+.section-heading{margin-bottom:10px!important}.section-icon{background:rgba(255,255,255,.05)!important;color:#e9d6ad!important}
+
+.signature-piles{justify-content:center!important;gap:18px!important}
+.signature-piles .pile-unit{padding:10px 10px 8px;border-radius:18px;background:linear-gradient(180deg,rgba(73,43,24,.70),rgba(48,29,18,.84));box-shadow:0 10px 18px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06)}
+.pile-overline{color:#ead9b5!important;letter-spacing:1.3px!important;font-size:9px!important}
+.pile-card-hit.enabled:before,.market-hit.enabled:before,.action-blind-hit.enabled:before{border-color:rgba(216,176,106,.26)!important;box-shadow:0 0 18px rgba(216,176,106,.10)!important}
+.pile-tip{background:rgba(216,176,106,.08)!important;border-color:rgba(216,176,106,.10)!important;color:#d5c19a!important}
+.pile-count-chip,.buried-mini,.deck-count-badge{background:linear-gradient(180deg,rgba(61,37,20,.96),rgba(39,23,13,.96))!important;border:1px solid rgba(216,176,106,.16)!important;color:#fff2d7!important}
+.market{gap:8px!important;justify-content:center!important;overflow:visible!important;padding:2px 2px 0!important}
+
+.player{
+  position:relative;border-radius:28px!important;padding:14px!important;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,243,218,.05),transparent 24%),
+    linear-gradient(180deg,rgba(8,34,33,.78),rgba(5,24,23,.94))!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.04),0 0 0 7px rgba(71,43,24,.34),0 0 0 9px rgba(43,25,15,.88)!important;
+}
+.player:before{left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,hsla(var(--player-hue),88%,68%,.78),hsla(var(--player-hue),78%,54%,.16))!important;opacity:.86!important}
+.player.active{box-shadow:0 18px 42px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.04),0 0 0 7px rgba(71,43,24,.36),0 0 0 9px rgba(43,25,15,.90),0 0 0 12px hsla(var(--player-hue),90%,64%,.06),0 0 34px hsla(var(--player-hue),90%,64%,.08)!important;border-color:rgba(255,255,255,.12)!important}
+.active-turn-banner{position:absolute;top:12px;right:12px;left:auto!important;display:flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:rgba(216,176,106,.12)!important;border:1px solid rgba(216,176,106,.16)!important;box-shadow:none!important;font-size:10px!important;color:#f2e4c4!important}
+.active-turn-banner b{font-size:10px!important;letter-spacing:.8px!important;color:#f2e4c4!important}
+.active-turn-banner span{font-size:12px!important}
+.player-head{gap:10px!important;margin-bottom:12px!important;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.05)}
+.avatar{width:36px!important;height:36px!important;border-radius:12px!important;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02))!important;border:1px solid rgba(255,255,255,.08)!important;color:#f1eadf!important;box-shadow:none!important}
+.player-name{font-size:15px!important;color:#f5efe2!important}.ai-tag,.you-tag,.active-tag{border-radius:999px!important;background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.07)!important;color:#ddd2bd!important;font-size:9px!important;padding:3px 7px!important}
+.player-meta-chips{gap:6px!important}.meta-chip{background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.05)!important;color:#aab7b2!important;border-radius:999px!important;padding:4px 8px!important;font-size:9px!important}
+.reveal-meter{height:6px!important;margin-top:8px!important;background:rgba(255,255,255,.05)!important}.reveal-meter>i{box-shadow:0 0 12px hsla(var(--player-hue),88%,65%,.16)!important}
+.scorechip,.progress-chip{background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.07)!important;box-shadow:none!important}
+.scorechip small{color:#93a69f!important}.scorechip b{color:#f6efe2!important}.progress-chip{color:#e4dccd!important}
+.gridwrap{justify-content:center!important;gap:12px!important}.grid{justify-content:center!important;align-content:start!important}
+.extras h5,.owned-title{color:#d5c4a6!important}
+.match-actions{margin-top:12px!important;padding-top:12px!important;border-top:1px solid rgba(255,255,255,.05)!important}
+.match-actions-title{color:#f0e2c0!important}
+.match-resolve-btn{background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important;color:#e9e2d3!important}
+.actions-owned{border-top:1px solid rgba(255,255,255,.05)!important}
+
+body[data-players="2"]{
+  --premium-card-w:clamp(74px,min(7.05vw,calc((100dvh - 315px)/3.2)),112px);
+  --premium-card-h:calc(var(--premium-card-w)*1.34);
+}
+body[data-players="2"] .player .card,body[data-players="2"] .player .grid .card{width:var(--premium-card-w)!important;height:var(--premium-card-h)!important;--card-w:var(--premium-card-w)!important;--card-h:var(--premium-card-h)!important;border-radius:16px!important}
+body[data-players="2"] .player .grid{grid-template-columns:repeat(4,var(--premium-card-w))!important;gap:8px!important}
+.player .card{box-shadow:0 9px 18px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.70),inset 0 -1px 0 rgba(0,0,0,.08)!important;border-color:rgba(255,255,255,.52)!important}
+.player .card.back{box-shadow:0 9px 18px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.72)!important}
+.player .card.clickable:hover{transform:translateY(-6px) scale(1.03)!important}
+.real-hand-card .card{width:58px!important;height:78px!important;--card-w:58px!important}.watch-card-stage .card{width:54px!important;height:72px!important;--card-w:54px!important}.play-pilebox .card{width:72px!important;height:96px!important;--card-w:72px!important}.action-pilebox .action-card{width:86px!important;min-height:110px!important}.action-pilebox .action-card .emoji{font-size:26px!important}.action-pilebox .action-card b{font-size:10px!important}.action-pilebox .action-card small{font-size:8px!important}
+.action-deck-back{width:82px!important;min-height:110px!important;border-radius:16px!important}
+
+.bottom-actions{
+  background:linear-gradient(180deg,rgba(8,23,23,.88),rgba(4,16,16,.96))!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;box-shadow:0 -18px 42px rgba(0,0,0,.28)!important;backdrop-filter:blur(18px) saturate(118%)!important;
+}
+.bottom-inner{max-width:1560px!important;display:grid!important;grid-template-columns:minmax(200px,1fr) auto minmax(220px,1fr)!important;gap:8px 12px!important;align-items:center!important}
+.bottom-inner>.instruction{grid-column:1!important;grid-row:1!important;text-align:left!important;margin:0!important;color:#d6dfdb!important;font-size:12px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.bottom-inner>.action-buttons{grid-column:2!important;grid-row:1!important;justify-content:center!important;gap:8px!important}.bottom-inner>.action-buttons button{background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.08)!important;color:#eee7da!important;border-radius:12px!important;min-height:42px!important}.bottom-inner>.action-buttons button.primary{background:linear-gradient(180deg,#c6954f,#9d6c34)!important;border-color:#b58145!important;color:#fffaf1!important}
+.emoji-reaction-bar{grid-column:3!important;grid-row:1!important;justify-self:end!important;margin:0!important;gap:8px!important}.emoji-bar-label{color:#a8b7b1!important;font-size:9px!important;letter-spacing:1.5px!important}.emoji-reaction-list{gap:6px!important}.emoji-reaction-btn{width:40px!important;height:40px!important;border-radius:12px!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important}
+.motion-status-pill{background:rgba(18,45,43,.92)!important;border-color:rgba(255,255,255,.08)!important;color:#f0eadf!important}
+.round-board-review-banner{background:linear-gradient(180deg,rgba(78,48,26,.88),rgba(50,30,18,.92))!important;border-color:rgba(216,176,106,.16)!important;color:#fff1d8!important;box-shadow:0 14px 30px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06)!important}
+.round-board-review-banner small{color:#d7c4a5!important}
+
+body.is-fullscreen .app{max-width:none!important;width:100%!important;min-height:100vh!important;padding:10px 12px calc(86px + env(safe-area-inset-bottom))!important}
+body.is-fullscreen .app:before{border-radius:18px!important}body.is-fullscreen .app:after{inset:8px!important;border-radius:14px!important}
+body.is-fullscreen .topbar{top:4px!important;margin-bottom:10px!important}
+body.is-fullscreen[data-players="2"]{
+  --premium-card-w:clamp(70px,min(7.2vw,calc((100dvh - 260px)/3.1)),116px);
+  --premium-card-h:calc(var(--premium-card-w)*1.34);
+}
+body.is-fullscreen .table-area-premium.two-player-premium{grid-template-columns:minmax(0,1fr) minmax(300px,.72fr) minmax(0,1fr)!important;gap:14px!important}
+body.is-fullscreen .signature-center{padding:12px!important}.table-center-grid{align-items:start}
+body.is-fullscreen .table-center-header{padding-bottom:10px!important;margin-bottom:8px!important}.table-center-title h3{font-size:20px!important}.table-center-title p{font-size:11px!important}
+body.is-fullscreen .premium-status-v17{gap:8px!important;margin-bottom:12px!important}.premium-status-v17 .stat{padding:12px 14px 10px!important}.premium-status-v17 .stat b{font-size:16px!important}
+body.is-fullscreen .play-pilebox .card{width:66px!important;height:88px!important;--card-w:66px!important}.real-hand-card .card{width:54px!important;height:72px!important;--card-w:54px!important}.watch-card-stage .card{width:50px!important;height:68px!important;--card-w:50px!important}.action-pilebox .action-card{width:74px!important;min-height:96px!important}.action-deck-back{width:72px!important;min-height:96px!important}
+body.is-fullscreen .bottom-actions{padding:6px 10px calc(6px + env(safe-area-inset-bottom))!important}body.is-fullscreen .emoji-reaction-btn{width:38px!important;height:38px!important}
+
+@media (max-height:860px){
+  body[data-players="2"]{--premium-card-w:clamp(64px,min(6.4vw,calc((100dvh - 255px)/3.35)),96px);--premium-card-h:calc(var(--premium-card-w)*1.34)}
+  .premium-status-v17 .stat{padding:12px 13px 10px!important}.premium-status-v17 .stat b{font-size:15px!important}
+  .seat-label{padding:10px 12px!important}.table-center-grid{grid-template-columns:minmax(0,1fr) minmax(226px,.82fr)!important;gap:12px!important}
+}
+@media (max-width:1180px){
+  .table-area-premium.two-player-premium{grid-template-columns:minmax(0,1fr) 300px minmax(0,1fr)!important;gap:14px!important}
+  body[data-players="2"]{--premium-card-w:clamp(64px,min(6.2vw,calc((100dvh - 300px)/3.3)),94px)}
+}
+@media (max-width:980px){
+  .premium-status-v17{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .table-area-premium.two-player-premium{grid-template-columns:1fr!important}
+  .dealer-side{order:2}.side-left{order:1}.side-right{order:3}
+  .table-center-grid{grid-template-columns:1fr!important}
+  .bottom-inner{grid-template-columns:1fr auto!important;grid-template-rows:auto auto!important}.bottom-inner>.instruction{grid-column:1!important;grid-row:1!important}.bottom-inner>.action-buttons{grid-column:2!important;grid-row:1!important}.emoji-reaction-bar{grid-column:1/-1!important;grid-row:2!important;justify-self:start!important;padding-top:2px!important}
+}
+@media (max-width:720px){
+  .app{padding:10px 10px calc(138px + env(safe-area-inset-bottom))!important}.app:before{border-radius:22px!important}.app:after{inset:8px!important;border-radius:16px!important}
+  .topbar{margin-bottom:10px!important}.table-center-title h3{font-size:19px!important}.table-center-title p{font-size:11px!important}.seat-label{margin:0 4px 8px!important}
+  .premium-status-v17{grid-template-columns:1fr!important}.player{padding:12px!important}
+  body[data-players="2"]{--premium-card-w:clamp(58px,min(18vw,calc((100dvh - 280px)/3.55)),88px)!important}
+  .real-hand-card .card{width:48px!important;height:64px!important;--card-w:48px!important}.watch-card-stage .card{width:46px!important;height:62px!important;--card-w:46px!important}.play-pilebox .card{width:58px!important;height:78px!important;--card-w:58px!important}.action-pilebox .action-card{width:62px!important;min-height:82px!important}.action-deck-back{width:60px!important;min-height:82px!important}
+  .bottom-inner{display:block!important}.instruction{margin-bottom:6px!important}.emoji-reaction-bar{margin-top:6px!important}.app{padding-bottom:150px!important}
+}
+
 </style>
 </head>
 <body>
@@ -4179,16 +4406,19 @@ function gameView(){
  const discardClick=discardDropClick||discardTakeClick;
  const discardClass=canDropHeld?'discard-drop-target enabled':(discardTakeClick?'enabled':'');
  const discardTip=discardPending?'landet …':(canDropHeld?'🗑 HIER ABLEGEN':(discardTakeClick?'Nehmen':'Ablage'));
- const playArea=`<div class="pile-row premium-piles"><div class="pile-unit"><span class="pile-overline">NACHZIEHEN</span><div id="play-deck-pile" class="pile-card-hit ${canDirect?'enabled':''}" ${deckClick}><span class="pile-count-chip">${state.playDeck.length}</span>${cardHTML({type:'number',value:0,faceUp:false},false,canDirect)}<span class="pile-tip">${canDirect?'Ziehen':'Nachziehstapel'}</span></div></div><div class="pile-unit"><span class="pile-overline">ABLAGE</span><div id="play-discard-pile" class="pile-card-hit ${discardClass} ${buriedCount?'has-buried':''}" ${discardClick} data-buried="${buriedCount}"><span class="pile-count-chip discard-count">${discardCount}</span>${cardHTML(topDiscard,true,!!discardClick)}${buriedCount?`<span class="buried-mini">${buriedCount} gesperrt darunter</span>`:''}<span class="pile-tip">${discardTip}</span></div></div></div>`;
- const actionArea=specials?`<div class="pilebox action-pilebox action-only-ui"><div class="section-heading"><span class="section-icon">⚡</span><div><h4>Aktionskarten</h4><small>Offen oder verdeckt antippen</small></div></div><div class="market">${actionBlindStackHTML(canDirect)}${state.market.map((a,i)=>a?`<div id="market-${i}" class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div>`:'';
- const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="watchbox">${watchPanelHTML()}</div><div class="pilebox play-pilebox"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
+ const playArea=`<div class="pile-row premium-piles signature-piles"><div class="pile-unit"><span class="pile-overline">NACHZIEHSTAPEL</span><div id="play-deck-pile" class="pile-card-hit ${canDirect?'enabled':''}" ${deckClick}><span class="pile-count-chip">${state.playDeck.length}</span>${cardHTML({type:'number',value:0,faceUp:false},false,canDirect)}<span class="pile-tip">${canDirect?'Karte ziehen':'Verdeckter Stapel'}</span></div></div><div class="pile-unit"><span class="pile-overline">ABLAGESTAPEL</span><div id="play-discard-pile" class="pile-card-hit ${discardClass} ${buriedCount?'has-buried':''}" ${discardClick} data-buried="${buriedCount}"><span class="pile-count-chip discard-count">${discardCount}</span>${cardHTML(topDiscard,true,!!discardClick)}${buriedCount?`<span class="buried-mini">${buriedCount} gesperrt darunter</span>`:''}<span class="pile-tip">${discardTip}</span></div></div></div>`;
+ const actionArea=specials?`<div class="pilebox action-pilebox action-only-ui table-widget"><div class="section-heading"><span class="section-icon">⚡</span><div><h4>Aktionsmarkt</h4><small>Offen nehmen oder verdeckt ziehen</small></div></div><div class="market">${actionBlindStackHTML(canDirect)}${state.market.map((a,i)=>a?`<div id="market-${i}" class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div>`:'';
+ const noteArea=!specials?`<div class="pilebox table-note-box table-widget"><div class="section-heading"><span class="section-icon">♟</span><div><h4>Tischmitte</h4><small>Ruhiger Modus ohne Aktionskarten</small></div></div><div class="table-note-grid"><div class="table-note-tile"><b>Fokus</b><small>Ziehstapel oder Ablage direkt antippen</small></div><div class="table-note-tile"><b>Handkarte</b><small>Gezogene Karte landet zuerst in der Handzone</small></div><div class="table-note-tile"><b>Rundenende</b><small>Offene Kontrolle vor der nächsten Runde bleibt erhalten</small></div></div></div>`:'';
+ const centerTable=`<section class="panel center-table signature-center ${specials?'':'specials-off'}"><div class="table-center-header"><div class="table-center-title"><span class="table-overline">SIGNATURE TABLE</span><h3>Spielzentrale</h3><p>${specials?'Realistischer Tischaufbau mit Handzone, Live-Ansicht, Spielkarten und Aktionsmarkt.':'Realistischer Tischaufbau mit Handzone, Live-Ansicht und Spielkartenstapeln.'}</p></div><div class="table-center-metrics"><span>Runde ${state.round}</span><span>${state.playDeck.length} Karten</span><span>${discardCount} Ablage</span></div></div><div class="table-center-grid"><div class="table-col table-col-left"><div class="handbox table-widget">${handZoneHTML()}</div><div class="watchbox table-widget">${watchPanelHTML()}</div></div><div class="table-col table-col-right"><div class="pilebox play-pilebox table-widget"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea||noteArea}</div></div></section>`;
  const playersHTML=state.players.map(playerHTML);
- const boards=state.players.length===2?`<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`:`<div class="table-area">${centerTable}<div class="players players-${state.players.length}">${playersHTML.join('')}</div></div>`;
+ const seatLabel=(pi)=>state.players[pi]?`<div class="seat-label"><span>SPIELERPLATZ</span><b>${escapeHTML(state.players[pi].name)}</b></div>`:'';
+ const boards=state.players.length===2?`<div class="table-area table-area-premium two-player-premium"><div class="player-side side-left">${seatLabel(0)}${playersHTML[0]||''}</div><div class="dealer-side">${centerTable}</div><div class="player-side side-right">${seatLabel(1)}${playersHTML[1]||''}</div></div>`:`<div class="table-area table-area-premium multi-player-premium"><div class="dealer-side wide">${centerTable}</div><div class="players players-${state.players.length}">${playersHTML.join('')}</div></div>`;
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
  const reviewBanner=state.phase==='betweenRounds'?`<div class="round-board-review-banner"><span class="review-eye">👀</span><div><b>End-Spielfeld von Runde ${state.round}</b><small>Jetzt in Ruhe nachschauen. Über „Rundenergebnis“ kommst du wieder zur Wertung. Die nächste Runde startet nur per Knopfdruck.</small></div></div>`:(state.phase==='gameOver'?`<div class="round-board-review-banner gameover"><span class="review-eye">🏆</span><div><b>End-Spielfeld</b><small>Das letzte Spielfeld bleibt sichtbar und kann kontrolliert werden.</small></div></div>`:'');
  const phaseLabel=state.phase==='betweenRounds'?'Kontrolle':state.phase==='gameOver'?'Spielende':state.phase==='initialReveal'?'Startkarten':(['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug');
  const displayActorName=state.phase==='initialReveal'?(state.players[state.setupPlayer]?.name||current().name):current().name;
- return `${mp}${closing}${reviewBanner}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(displayActorName)}</b><span>${phaseLabel}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
+ return `${mp}${closing}${reviewBanner}<div class="status premium-status premium-status-v17"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(displayActorName)}</b><span>${phaseLabel}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
+
 
 function resumeTransientFlow(){
  if(!state||isModalOpen())return;
@@ -4207,7 +4437,7 @@ function render(){if(state?.phase!=='scoringSequence')document.querySelector('.s
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V16.0 · Premium Table</small><span class="edition-chip">WALNUT</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V17.0 · Signature Table</small><span class="edition-chip">ATELIER</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
