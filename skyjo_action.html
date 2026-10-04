@@ -2518,6 +2518,457 @@ body[data-players="2"] .table-area.two-player-layout .board-col.right:after{
   body[data-players="2"] .table-area.two-player-layout .board-col.right:after{display:none}
 }
 
+
+
+/* ==========================================================
+   V15.14 PREMIUM HOLZTISCH
+   Ziel: Aufwendiger echter Holztisch mit eingelassenen
+   Spielflächen, warmem Holz, Filzmatten und mehr Tiefe.
+   ========================================================== */
+:root{
+  --wood-a:#91603a;
+  --wood-b:#734623;
+  --wood-c:#5b3419;
+  --wood-d:#3a2010;
+  --wood-edge:#2c160b;
+  --felt-main:#17483f;
+  --felt-dark:#0b2f2c;
+  --felt-player:#113b38;
+  --felt-player-2:#0b2b2c;
+  --brass:#d7ae58;
+  --ivory:rgba(255,246,224,.92);
+}
+
+/* Holztisch-Hintergrund im Raum */
+html,body{
+  background:
+    radial-gradient(1200px 760px at 50% -5%,rgba(255,228,163,.11),transparent 58%),
+    radial-gradient(900px 500px at 50% 120%,rgba(0,0,0,.38),transparent 50%),
+    linear-gradient(180deg,#2e1c12 0%,#1e130d 44%,#130c08 100%) !important;
+}
+body:before{
+  content:"" !important;
+  position:fixed;inset:0;pointer-events:none;z-index:-4;opacity:.25;
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,.06) 0 2px,
+      transparent 2px 82px,
+      rgba(0,0,0,.12) 82px 84px,
+      transparent 84px 164px),
+    repeating-linear-gradient(0deg,
+      rgba(255,255,255,.012) 0 1px,
+      transparent 1px 10px);
+}
+body:after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-3;opacity:.30;
+  background:
+    radial-gradient(circle at 20% 15%,rgba(255,255,255,.05),transparent 16%),
+    radial-gradient(circle at 80% 12%,rgba(255,255,255,.045),transparent 18%),
+    radial-gradient(circle at 50% 50%,transparent 58%,rgba(0,0,0,.18) 100%) !important;
+  background-size:auto !important;
+  mask-image:none !important;
+}
+
+/* Gesamter Tisch */
+.app{
+  max-width:1540px;
+  margin-top:8px;
+  padding:16px 18px calc(115px + env(safe-area-inset-bottom));
+  position:relative;
+  isolation:isolate;
+}
+.app:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:36px;
+  z-index:-6;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.10),transparent 10%,transparent 88%,rgba(0,0,0,.30)),
+    radial-gradient(circle at 15% 18%,rgba(255,226,173,.12),transparent 18%),
+    radial-gradient(circle at 85% 15%,rgba(255,226,173,.08),transparent 14%),
+    repeating-linear-gradient(8deg,
+      var(--wood-a) 0 20px,
+      var(--wood-b) 20px 38px,
+      var(--wood-c) 38px 54px,
+      var(--wood-b) 54px 78px,
+      var(--wood-d) 78px 88px,
+      var(--wood-b) 88px 116px);
+  box-shadow:
+    0 34px 90px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -10px 18px rgba(0,0,0,.26),
+    inset 12px 0 18px rgba(255,255,255,.05),
+    inset -12px 0 18px rgba(0,0,0,.15);
+}
+.app:after{
+  content:"";
+  position:absolute;
+  inset:14px;
+  border-radius:28px;
+  z-index:-5;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.06),transparent 12%,transparent 85%,rgba(0,0,0,.18)),
+    radial-gradient(circle at 50% 0%,rgba(255,236,192,.07),transparent 18%),
+    linear-gradient(165deg,#22584b,#123a37 55%,#0b2b2c);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.035),
+    inset 0 18px 35px rgba(255,255,255,.025),
+    inset 0 -22px 42px rgba(0,0,0,.24),
+    0 0 0 1px rgba(0,0,0,.24);
+}
+
+/* Kopfleiste wie Namensschild auf dem Tisch */
+.topbar{
+  position:sticky;
+  top:10px;
+  margin:6px 2px 14px;
+  border-radius:22px;
+  border:1px solid rgba(255,244,220,.12) !important;
+  background:
+    linear-gradient(145deg,rgba(119,71,36,.94),rgba(74,42,20,.96)) !important;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -10px 14px rgba(0,0,0,.15);
+}
+.topbar:before{
+  content:"";position:absolute;inset:6px;border-radius:16px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 40%,rgba(0,0,0,.10));
+}
+.topbar:after{
+  left:20% !important; right:20% !important; bottom:5px !important;
+  background:linear-gradient(90deg,transparent,rgba(255,217,146,.72),transparent) !important;
+  box-shadow:0 0 18px rgba(255,200,95,.18) !important;
+}
+.brand h1,.brand small,.iconbtn,.cloud-pill{color:#fff7eb !important}
+.iconbtn,.cloud-pill{
+  border-color:rgba(255,244,220,.12) !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03)) !important;
+}
+.brandmark{
+  box-shadow:0 0 0 2px rgba(255,255,255,.08),0 8px 22px rgba(0,0,0,.28) !important;
+}
+
+/* obere Statuskarten wie kleine Holzplaketten */
+.stat,.multiplayer-bar{
+  border-color:rgba(255,244,220,.10) !important;
+  background:linear-gradient(180deg,rgba(81,48,24,.82),rgba(51,29,14,.88)) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.stat span,.multiplayer-bar,.cloud-info{color:#e7d7bd !important}
+.stat b{color:#fff8ea !important}
+
+/* Spielfläche Mitte – eingelassenes Hauptfeld */
+.center-table{
+  position:relative;
+  border-radius:30px;
+  border:1px solid rgba(228,196,124,.18) !important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.04),transparent 12%,transparent 88%,rgba(0,0,0,.14)),
+    radial-gradient(circle at 50% 6%,rgba(255,246,216,.08),transparent 18%),
+    radial-gradient(ellipse at 20% 48%,hsla(var(--turn-hue),80%,64%,.06),transparent 28%),
+    radial-gradient(ellipse at 80% 44%,rgba(121,93,255,.06),transparent 28%),
+    repeating-radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.010) 0 1px,transparent 1px 6px),
+    linear-gradient(165deg,var(--felt-main),#103935 54%,var(--felt-dark)) !important;
+  box-shadow:
+    0 22px 58px rgba(0,0,0,.32),
+    inset 0 0 0 1px rgba(255,255,255,.04),
+    inset 0 20px 34px rgba(255,255,255,.02),
+    inset 0 -28px 48px rgba(0,0,0,.18),
+    0 0 0 10px rgba(74,40,19,.42),
+    0 0 0 12px rgba(122,74,37,.58),
+    0 0 0 14px rgba(51,28,14,.95);
+}
+.center-table:before{
+  content:"";
+  position:absolute;inset:16px;border-radius:22px;pointer-events:none;z-index:0;
+  border:1px solid rgba(255,246,221,.045);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);
+}
+.center-table:after{
+  content:"HOLZTISCH · SKYJO ACTION" !important;
+  right:20px !important;
+  bottom:14px !important;
+  color:rgba(255,241,214,.12) !important;
+  letter-spacing:3px !important;
+}
+.center-table > *{position:relative;z-index:1}
+
+/* mittlere Boxen wie eingelassene Fächer */
+.pilebox,.watch-panel,.real-hand-zone,.score-seq-shell,.score-seq-player-card{
+  border-radius:20px !important;
+  border:1px solid rgba(255,244,220,.08) !important;
+  background:
+    linear-gradient(180deg,rgba(14,47,43,.86),rgba(8,31,29,.93)) !important;
+  box-shadow:
+    0 14px 28px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.04),
+    inset 0 -14px 24px rgba(0,0,0,.10) !important;
+}
+.watch-panel{background:linear-gradient(180deg,rgba(12,44,42,.90),rgba(8,31,30,.95)) !important}
+.section-heading h4,.pilebox h4,.watch-headline b,.watch-copy b{color:#f6ede0 !important}
+.section-heading small,.watch-headline span,.watch-copy small,.count,.hint,.player .hint{color:#cbbca2 !important}
+
+/* Kartenstapel auf Holzsockeln */
+.pile-row.premium-piles{gap:16px !important}
+.pile-unit{position:relative;padding:12px 10px 10px;border-radius:20px}
+.pile-unit:before{
+  content:"";
+  position:absolute;inset:0;border-radius:18px;z-index:-1;
+  background:linear-gradient(145deg,rgba(126,76,38,.85),rgba(73,42,21,.92));
+  box-shadow:0 10px 18px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -8px 12px rgba(0,0,0,.10);
+}
+.pile-overline{color:#efdaba !important;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.pile-card-hit,.market-hit,.action-blind-hit{filter:drop-shadow(0 6px 8px rgba(0,0,0,.20))}
+.pile-card-hit.enabled:before,.market-hit.enabled:before,.action-blind-hit.enabled:before{
+  border-color:rgba(255,220,135,.28) !important;
+  box-shadow:0 0 18px rgba(255,214,116,.10) !important;
+}
+.pile-tip{
+  color:#fff1d2 !important;
+  background:rgba(78,46,23,.62) !important;
+  border-color:rgba(255,230,183,.10) !important;
+}
+.deck-count-badge,.pile-count-chip,.discard-count,.buried-mini{
+  background:linear-gradient(180deg,rgba(87,50,23,.94),rgba(57,31,13,.96)) !important;
+  color:#fff3dd !important;
+  border:1px solid rgba(255,227,177,.16) !important;
+}
+
+/* Spielerflächen als eigene Spielmatten auf dem Tisch */
+.player{
+  position:relative;
+  border-radius:26px !important;
+  padding:14px !important;
+  border:1px solid rgba(239,208,145,.14) !important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.03),transparent 10%,transparent 90%,rgba(0,0,0,.12)),
+    radial-gradient(circle at 50% 0%,rgba(255,243,219,.05),transparent 22%),
+    radial-gradient(circle at 2% 0%,hsla(var(--player-hue),88%,66%,.05),transparent 29%),
+    linear-gradient(180deg,var(--felt-player),var(--felt-player-2)) !important;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.26),
+    inset 0 0 0 1px rgba(255,255,255,.035),
+    0 0 0 8px rgba(101,59,28,.42),
+    0 0 0 10px rgba(63,35,16,.92) !important;
+}
+.player:after{
+  content:"SPIELERFELD";
+  position:absolute;right:14px;bottom:10px;
+  font-size:8px;font-weight:950;letter-spacing:1.6px;
+  color:rgba(255,240,211,.12);
+  pointer-events:none;
+}
+.player.active{
+  box-shadow:
+    0 0 0 8px rgba(101,59,28,.46),
+    0 0 0 10px rgba(63,35,16,.94),
+    0 0 0 13px hsla(var(--player-hue),90%,64%,.06),
+    0 18px 44px rgba(0,0,0,.30),
+    0 0 36px hsla(var(--player-hue),90%,64%,.08) !important;
+}
+.player.active:before{box-shadow:0 0 18px hsla(var(--player-hue),90%,62%,.18) !important}
+.player-title,.player-meta,.player-head,.score-stack{position:relative;z-index:1}
+.avatar{
+  background:linear-gradient(145deg,rgba(255,225,165,.18),rgba(160,112,61,.12)) !important;
+  color:#ffefcf !important;
+  border-color:rgba(255,229,184,.20) !important;
+}
+.scorechip,.progress-chip{
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03)) !important;
+  border-color:rgba(255,244,220,.09) !important;
+}
+.scorechip b,.player-name,.active-tag{color:#fff7ea !important}
+.owned-title{color:#d4c2a6 !important}
+
+/* 2-Spieler-Anordnung noch stärker wie Tischplätze */
+body[data-players="2"] .table-area.two-player-layout{
+  grid-template-columns:minmax(0,1fr) minmax(360px,.74fr) minmax(0,1fr) !important;
+  align-items:stretch !important;
+  gap:20px !important;
+  padding:12px 10px 6px;
+}
+body[data-players="2"] .table-area.two-player-layout .center-table{
+  grid-column:2;
+  top:86px;
+}
+body[data-players="2"] .table-area.two-player-layout .board-col{
+  position:relative;
+  padding:6px 0 16px;
+}
+body[data-players="2"] .table-area.two-player-layout .board-col.left:after,
+body[data-players="2"] .table-area.two-player-layout .board-col.right:after{
+  content:"SITZPLATZ";
+  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  padding:4px 11px;border-radius:999px;
+  font-size:8px;font-weight:950;letter-spacing:1.1px;
+  color:#f5dfbd;background:rgba(80,45,22,.86);border:1px solid rgba(255,220,171,.12);
+  box-shadow:0 8px 16px rgba(0,0,0,.18);
+}
+
+/* Handzone und Aktions-/Punktboxen */
+.real-hand-zone{
+  background:
+    radial-gradient(circle at 15% 14%,rgba(255,255,255,.05),transparent 20%),
+    linear-gradient(180deg,rgba(17,57,50,.90),rgba(8,31,29,.94)) !important;
+}
+.real-hand-actions .drop,
+.drawn-decision-actions .drop,
+.drawn-decision-actions .keep,
+.score-seq-controls button,
+.action-buttons button,
+.primary,.secondary,.danger{
+  border-radius:14px !important;
+  border:1px solid rgba(255,237,202,.10) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.primary,
+.action-buttons button.primary,
+.drawn-decision-actions .keep{
+  background:linear-gradient(180deg,#c89446,#9d672c) !important;
+  color:#fff7eb !important;
+}
+.secondary,
+.real-hand-actions .drop,
+.drawn-decision-actions .drop,
+.score-seq-controls button{
+  background:linear-gradient(180deg,rgba(93,56,28,.92),rgba(60,35,18,.95)) !important;
+  color:#fff0d6 !important;
+}
+
+/* Karten edler und plastischer */
+.card{
+  border-radius:16px !important;
+  border-color:rgba(255,255,255,.52) !important;
+  box-shadow:
+    0 7px 0 rgba(0,0,0,.25),
+    0 14px 26px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.72),
+    inset 0 -1px 0 rgba(0,0,0,.08) !important;
+}
+.card.clickable:hover{transform:translateY(-7px) rotateX(3deg) scale(1.03) !important}
+.card.back{box-shadow:0 7px 0 rgba(0,0,0,.26),0 14px 28px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.65) !important}
+
+/* Aktionskarten ebenfalls holziger eingebunden */
+.action-card{
+  border-radius:18px !important;
+  box-shadow:0 8px 0 rgba(0,0,0,.18),0 14px 24px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+.action-pilebox{background:linear-gradient(180deg,rgba(16,46,45,.88),rgba(8,30,31,.95)) !important}
+
+/* Score-Overlay fügt sich in den Tisch ein */
+.score-seq-shell{
+  background:
+    linear-gradient(145deg,rgba(115,69,35,.95),rgba(73,40,19,.98)) !important;
+  border-color:rgba(255,229,177,.12) !important;
+}
+.score-seq-shell:before{
+  content:"";position:absolute;inset:12px;border-radius:24px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(17,56,50,.90),rgba(8,31,29,.94));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.score-seq-head,.score-seq-body,.score-seq-controls,.score-seq-note{position:relative;z-index:1}
+
+/* Emojis weiterhin mittig, aber etwas edler eingebunden */
+.emoji-reaction-fx{
+  text-shadow:0 8px 18px rgba(0,0,0,.42),0 0 22px rgba(255,236,182,.22) !important;
+}
+
+@media (max-width:1200px){
+  .app{padding-left:12px;padding-right:12px}
+  body[data-players="2"] .table-area.two-player-layout{grid-template-columns:minmax(0,1fr) minmax(320px,.70fr) minmax(0,1fr) !important;gap:14px !important}
+}
+@media (max-width:1050px){
+  .app:before{border-radius:24px}
+  .app:after{inset:10px;border-radius:18px}
+  .topbar{margin:2px 0 10px;border-radius:18px}
+  .center-table{box-shadow:0 16px 42px rgba(0,0,0,.30), inset 0 0 0 1px rgba(255,255,255,.04), inset 0 20px 34px rgba(255,255,255,.02), inset 0 -28px 48px rgba(0,0,0,.18), 0 0 0 6px rgba(74,40,19,.40), 0 0 0 8px rgba(122,74,37,.54), 0 0 0 10px rgba(51,28,14,.92)}
+  .player{box-shadow:0 16px 34px rgba(0,0,0,.24), inset 0 0 0 1px rgba(255,255,255,.035), 0 0 0 5px rgba(101,59,28,.42), 0 0 0 7px rgba(63,35,16,.92) !important}
+}
+@media (max-width:899px){
+  .app{padding:10px 10px calc(105px + env(safe-area-inset-bottom))}
+  .app:before{border-radius:20px}
+  .app:after{inset:8px;border-radius:15px}
+}
+
+
+/* ==========================================================
+   V15.15 RUNDENKONTROLLE
+   Nach der Wertung bleibt das End-Spielfeld prüfbar.
+   ========================================================== */
+.round-review-note{
+  margin-top:14px;
+  padding:12px 14px;
+  border-radius:15px;
+  border:1px solid rgba(255,225,165,.16);
+  background:linear-gradient(180deg,rgba(117,71,35,.30),rgba(65,37,18,.34));
+  color:#f4e4c9;
+  font-size:12px;
+  line-height:1.45;
+}
+.round-summary-actions{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);
+  gap:10px!important;
+}
+.round-summary-actions .round-board-review-btn,
+.round-summary-actions .primary{
+  min-height:54px;
+  font-size:13px;
+  font-weight:950;
+}
+.round-board-review-banner{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:8px 4px 14px;
+  padding:12px 15px;
+  border-radius:18px;
+  border:1px solid rgba(255,226,166,.16);
+  background:
+    radial-gradient(circle at 4% 50%,rgba(255,221,150,.08),transparent 22%),
+    linear-gradient(180deg,rgba(105,63,31,.88),rgba(63,36,18,.92));
+  color:#fff5e4;
+  box-shadow:0 12px 28px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.round-board-review-banner .review-eye{
+  flex:0 0 auto;
+  width:44px;height:44px;
+  display:grid;place-items:center;
+  border-radius:14px;
+  font-size:25px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,239,205,.10);
+}
+.round-board-review-banner div{min-width:0}
+.round-board-review-banner b{display:block;font-size:13px;letter-spacing:.2px}
+.round-board-review-banner small{display:block;margin-top:3px;color:#dbc9ac;font-size:10px;line-height:1.35}
+.round-board-review-banner.gameover{
+  background:linear-gradient(180deg,rgba(111,76,25,.90),rgba(65,40,14,.94));
+}
+.next-round-review-btn{
+  min-height:46px!important;
+  font-size:12px!important;
+}
+body[data-mode="betweenRoundsReview"] .player .card,
+body[data-mode="gameOverReview"] .player .card{
+  cursor:default!important;
+}
+body[data-mode="betweenRoundsReview"] .player,
+body[data-mode="gameOverReview"] .player{
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.26),
+    inset 0 0 0 1px rgba(255,255,255,.035),
+    0 0 0 8px rgba(101,59,28,.42),
+    0 0 0 10px rgba(63,35,16,.92)!important;
+}
+@media(max-width:700px){
+  .round-summary-actions{grid-template-columns:1fr}
+  .round-board-review-banner{margin-left:0;margin-right:0;padding:10px 11px}
+  .round-board-review-banner .review-eye{width:38px;height:38px;font-size:22px}
+}
+
 </style>
 </head>
 <body>
@@ -3561,10 +4012,10 @@ function toggleScoreAudit(){const p=document.getElementById('score-audit-panel')
 function recountScoreSequence(){const seq=state?.scoreSequence;if(!seq)return;const old=document.querySelector('.score-sequence-overlay');if(old)old.remove();scoreSequenceSeen=seq.id;runScoreSequenceVisual(seq)}
 function confirmScoreSequence(){const seq=state?.scoreSequence;if(!seq){toast('Keine offene Punktewertung.');return}const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;if(!canCommit){toast('Nur der Host kann die Punkte bestätigen.');return}const ov=document.querySelector('.score-sequence-overlay');if(ov){ov.style.opacity='0';setTimeout(()=>ov.remove(),250)}commitScoreSequence(seq)}
 function reloadPage(){save();location.reload()}
-function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
-function maybeShowRoundSummary(){
+function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';ui={mode:ended?'gameOverReview':'betweenRoundsReview',data:{},selected:[]};state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
+function maybeShowRoundSummary(force=false){
  const s=state?.lastRoundSummary;
- if(!s||s.id===roundSummarySeen)return;
+ if(!s||(!force&&s.id===roundSummarySeen))return;
  if(document.querySelector('.score-sequence-overlay')){setTimeout(maybeShowRoundSummary,400);return}
  roundSummarySeen=s.id;
 
@@ -3603,14 +4054,16 @@ function maybeShowRoundSummary(){
    </div>`
  }
 
+ const reviewBtn=`<button class="secondary round-board-review-btn" onclick="Game.reviewRoundBoard()">👀 Spielfeld nochmal ansehen</button>`;
  const nextBtn=s.ended
    ?`<button class="primary" onclick="Game.closeModal();Game.render()">🏆 Ergebnis ansehen</button>`
    :(cloud.enabled&&!isHostDevice()
       ?`<div class="waiting-note">⏳ Host startet die nächste Runde.</div>`
       :`<button class="primary" onclick="Game.nextRound()">▶ Runde ${s.round+1} starten</button>`);
 
- modal(`<div class="final-score-modal premium-score-summary">${hero}<div class="score-results premium-score-results">${rows}</div><div class="modal-actions">${nextBtn}</div></div>`,false)
+ modal(`<div class="final-score-modal premium-score-summary">${hero}<div class="score-results premium-score-results">${rows}</div><div class="round-review-note">👀 Du kannst jetzt das komplette End-Spielfeld noch einmal kontrollieren. Die nächste Runde startet erst, wenn du sie ausdrücklich bestätigst.</div><div class="modal-actions round-summary-actions">${reviewBtn}${nextBtn}</div></div>`,false)
 }
+function reviewRoundBoard(){closeModal();if(state?.phase==='betweenRounds'||state?.phase==='gameOver'){render();toast(state.phase==='gameOver'?'👀 End-Spielfeld zur Kontrolle':'👀 End-Spielfeld bleibt sichtbar – starte die nächste Runde erst, wenn alles stimmt.')} }
 function nextRound(){if(cloud.enabled&&!isHostDevice()){toast('Nur der Host startet die nächste Runde.');return}closeModal();const starter=Number.isInteger(state.roundEnder)?state.roundEnder:0;state.startPlayer=starter;state.round++;log(`${state.players[starter].name} hat die vorige Runde beendet und beginnt Runde ${state.round}.`);beginRound()}
 function modal(html,closable=true){const back=$('#modalBack'),m=$('#modal');m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');back.classList.add('show')}
 function closeModal(){const b=$('#modalBack');if(b)b.classList.remove('show')}
@@ -3875,8 +4328,8 @@ function actionHTML(a,clickable=false,selected=false){if(!a)return'';const m=ACT
 function boardCardClickable(pi,zone,idx){if(!state)return false;if(isAIActor()&&!aiActing)return false;if(cloud.enabled&&!isMyActorDevice())return false;const mode=ui.mode;if(mode==='setupReveal')return pi===state.setupPlayer&&zone==='grid';if(['drawnDecision','discardSwap','drawnSwap','flipOwn','ownSwapSelect','draw3Target'].includes(mode))return pi===state.currentPlayer;if(mode==='otherSwapSelect')return pi===ui.data.a||pi===ui.data.b;if(mode==='meteorSelect')return pi===ui.data.target;return false}
 function isSelected(pi,zone,idx){return ui.selected.some(s=>s.pi===pi&&s.zone===zone&&s.idx===idx)}
 function playerHTML(p,pi){const active=pi===state.currentPlayer;const mine=cloud.enabled&&pi===myPlayerIndex();const matches=(state.phase==='play')?findMatches(pi):[];const matchSet=new Set(matches.flatMap(m=>m.idx));const canResolve=state.phase==='play'&&pi===state.currentPlayer&&!p.isAI&&['turnChoice','matchReady'].includes(ui.mode)&&(!cloud.enabled||isMyActorDevice())&&!motionBusy;const cards=p.grid.map((c,i)=>`<div id="cell-${pi}-grid-${i}" class="card-slot ${matchSet.has(i)?'match-ready-slot':''}" onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div id="cell-${pi}-extra-${i}" class="card-slot" onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');const total=Math.max(1,12+p.extras.length),hidden=totalHidden(p),pct=Math.max(0,Math.min(100,Math.round(((total-hidden)/total)*100)));const openCards=[...(p.grid||[]),...(p.extras||[])].filter(c=>c&&c.faceUp);const openSum=openCards.reduce((s,c)=>s+cardPoints(c),0);const hue=[43,188,145,282,18,215,325,92][pi%8];const matchActions=matches.length?`<div class="match-actions"><div class="match-actions-title">✨ Fertige Kombination · Entfernen jederzeit möglich</div>${matches.map((m,i)=>`<button class="match-resolve-btn optional ${canResolve?'':'disabled'}" ${canResolve?`onclick="Game.resolveBoardMatch(${pi},${i})"`:'disabled'}>${m.name.startsWith('Reihe')?'Reihe entfernen':'Spalte entfernen'} · ${escapeHTML(m.label.replace(/^.*?:\s*/,''))}</button>`).join('')}</div>`:'';return `<section id="player-${pi}" data-player="${pi}" class="player ${active?'active':''} ${mine?'mine':''} ${p.isAI?'ai-player':''}" style="--player-hue:${hue}">${active?`<div class="active-turn-banner"><span>${p.isAI?'🤖':'🎯'}</span><b>${mine?'DEIN ZUG':p.isAI?'COMPUTER AM ZUG':'JETZT AM ZUG'}</b></div>`:''}<div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div class="player-meta"><div class="player-name">${escapeHTML(p.name)} ${p.isAI?'<span class="ai-tag">🤖 COMPUTER</span>':''} ${mine?'<span class="you-tag">DU</span>':''} ${active?'<span class="active-tag">🎯 AM ZUG</span>':''}</div><div class="hint player-meta-chips"><span class="meta-chip hidden-chip">▦ ${hidden} verdeckt</span>${jokerSpecialsEnabled()?`<span class="meta-chip action-chip">⚡ ${p.actions.length} Aktionen</span>`:''}<span class="meta-chip open-chip">Σ ${openSum>=0?'+':''}${openSum} offen</span></div><div class="reveal-meter"><i style="width:${pct}%"></i></div></div></div><div class="score-stack"><div class="scorechip"><small>GESAMT</small><b>${p.total}</b></div><div class="progress-chip">${pct}%</div></div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${matchActions}${jokerSpecialsEnabled()&&p.actions.length?`<div class="actions-owned action-only-ui"><div class="owned-title">⚡ Eigene Aktionskarten</div>${acts}</div>`:''}</section>`}
-function instructionText(){if(!state)return'';const p=current();if(isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → alte Karte aufdecken → offen auf Ablage → danach Handkarte ins Feld`;case'matchReady':return `✨ Neue Kombination – einmal entscheiden. Danach bleibt sie ohne weitere Nachfrage liegen`;case'roundReveal':{const st=ui.data?.stage||state.roundClose?.stage;if(st==='remove')return `✨ Rundenende: Kombinationen werden mit Joker-Endwerten geprüft …`;if(st==='ready')return `📊 Alle Karten offen – Punktewertung startet gleich …`;const i=ui.data?.index||state.roundClose?.revealIndex||0,t=ui.data?.total||state.roundClose?.revealOrder?.length||0;return `🔄 Rundenende: verdeckte Karten werden nacheinander aufgedeckt${t?` · ${i}/${t}`:''}`;}case'scoreSequence':return `📊 Score Show: Punkte werden langsam Karte für Karte addiert …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
-function bottomButtons(){if(!state||state.phase==='gameOver')return'';if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Bitte Ja oder Nein wählen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
+function instructionText(){if(!state)return'';if(state.phase==='betweenRounds')return `👀 Runde ${state.round} beendet · Spielfeld kontrollieren oder Rundenergebnis öffnen · nichts startet automatisch`;if(state.phase==='gameOver')return `🏆 Spiel beendet · End-Spielfeld und Ergebnis bleiben zur Kontrolle verfügbar`;const p=current();if(isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → alte Karte aufdecken → offen auf Ablage → danach Handkarte ins Feld`;case'matchReady':return `✨ Neue Kombination – einmal entscheiden. Danach bleibt sie ohne weitere Nachfrage liegen`;case'roundReveal':{const st=ui.data?.stage||state.roundClose?.stage;if(st==='remove')return `✨ Rundenende: Kombinationen werden mit Joker-Endwerten geprüft …`;if(st==='ready')return `📊 Alle Karten offen – Punktewertung startet gleich …`;const i=ui.data?.index||state.roundClose?.revealIndex||0,t=ui.data?.total||state.roundClose?.revealOrder?.length||0;return `🔄 Rundenende: verdeckte Karten werden nacheinander aufgedeckt${t?` · ${i}/${t}`:''}`;}case'scoreSequence':return `📊 Score Show: Punkte werden langsam Karte für Karte addiert …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
+function bottomButtons(){if(!state)return'';if(state.phase==='betweenRounds'){const result=`<button onclick="Game.maybeShowRoundSummary(true)">📊 Rundenergebnis</button>`;if(cloud.enabled&&!isHostDevice())return `${result}<div class="waiting-note">⏳ Host startet die nächste Runde.</div>`;return `${result}<button class="primary next-round-review-btn" onclick="Game.nextRound()">▶ Runde ${state.round+1} starten</button>`}if(state.phase==='gameOver')return `<button onclick="Game.maybeShowRoundSummary(true)">🏆 Ergebnis öffnen</button>`;if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Bitte Ja oder Nein wählen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
 const emojiReactionSeen=new Set();
 const EMOJI_REACTIONS=['👍','😂','🤣','😮','😭','😡','👏','🔥','❤️','🤔'];
 function reactionActorIndex(){
@@ -3939,7 +4392,9 @@ function gameView(){
  const playersHTML=state.players.map(playerHTML);
  const boards=state.players.length===2?`<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`:`<div class="table-area">${centerTable}<div class="players players-${state.players.length}">${playersHTML.join('')}</div></div>`;
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
- return `${mp}${closing}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
+ const reviewBanner=state.phase==='betweenRounds'?`<div class="round-board-review-banner"><span class="review-eye">👀</span><div><b>End-Spielfeld von Runde ${state.round}</b><small>Jetzt in Ruhe nachschauen. Über „Rundenergebnis“ kommst du wieder zur Wertung. Die nächste Runde startet nur per Knopfdruck.</small></div></div>`:(state.phase==='gameOver'?`<div class="round-board-review-banner gameover"><span class="review-eye">🏆</span><div><b>End-Spielfeld</b><small>Das letzte Spielfeld bleibt sichtbar und kann kontrolliert werden.</small></div></div>`:'');
+ const phaseLabel=state.phase==='betweenRounds'?'Kontrolle':state.phase==='gameOver'?'Spielende':(['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug');
+ return `${mp}${closing}${reviewBanner}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${phaseLabel}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat" data-icon="★"><b>${state.jokerCount??15} · ${specials?'AN':'AUS'}</b><span>Joker · Spezialeffekt</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>`}
 
 function resumeTransientFlow(){
  if(!state||isModalOpen())return;
@@ -3958,14 +4413,14 @@ function render(){if(state?.phase!=='scoringSequence')document.querySelector('.s
  const d=state.pendingMatch;
  ui={mode:'matchReady',data:{pi:d.pi??state.currentPlayer,cont:d.cont||'finishTurn',matchKeys:Array.isArray(d.matchKeys)?d.matchKeys:[],activeMatchKey:null},selected:[]};
 }
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.11 · Score Check</small><span class="edition-chip">LUXE TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.15 · Rundenkontrolle</small><span class="edition-chip">HOLZTISCH</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button><button class="iconbtn refresh-page-btn" onclick="Game.reloadPage()" title="Komplette Seite aktualisieren">🔄</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neues Spiel / Spielstand löschen">↻</button>':''}</div></div>${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
 // Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
 window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
-window.Game={render,updateNames,startFromSetup,startAIFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,focusMyBoard,showDisplaySettings,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,reloadPage,confirmScoreSequence,recountScoreSequence,toggleScoreAudit};
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,cancelActionChoice,loadCloudRoom,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,focusMyBoard,showDisplaySettings,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,reviewRoundBoard,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,reloadPage,confirmScoreSequence,recountScoreSequence,toggleScoreAudit};
 
 document.addEventListener('fullscreenchange',syncFullscreenState);
 document.addEventListener('webkitfullscreenchange',syncFullscreenState);
