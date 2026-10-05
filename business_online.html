@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V4.2 · Würfelarena Premium</title>
+<title>Das große Business – V4.3 · Würfelarena Vollbild</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -5196,6 +5196,235 @@ body[data-market-stage="hot"] #roundDisplay::after{
   .dice-guide-row.result-current{transform:none}
 }
 
+
+/* =====================================================================
+   V4.3 · WÜRFELARENA VOLLBILD
+   Ziel: Anzeigetafel + Würfelfeld + Branchen-Auswirkung IMMER gleichzeitig
+   sichtbar. Kein Scrollen für die Kerninformationen.
+   ===================================================================== */
+.dice-arena-overlay{
+  position:fixed!important;inset:0!important;
+  padding:0!important;margin:0!important;
+  align-items:stretch!important;justify-content:stretch!important;
+  background:radial-gradient(circle at 50% 15%,rgba(45,94,142,.20),transparent 34%),rgba(2,7,14,.96)!important;
+}
+.dice-arena-card{
+  position:relative!important;
+  width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;
+  margin:0!important;padding:8px 10px 9px!important;border-radius:0!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-rows:48px 44px minmax(0,1fr) 56px!important;
+  gap:7px!important;
+  background:
+    radial-gradient(circle at 12% 8%,rgba(255,220,132,.10),transparent 22%),
+    radial-gradient(circle at 86% 6%,rgba(90,157,255,.12),transparent 25%),
+    linear-gradient(180deg,#102840 0%,#09192b 48%,#07121f 100%)!important;
+  border:0!important;
+  box-shadow:inset 0 0 0 1px rgba(255,228,164,.16)!important;
+}
+.dice-arena-card::before{border-radius:0!important}
+
+/* Kopf: alles auf einer Zeile, maximal platzsparend */
+.dice-arena-head{
+  min-height:0!important;height:48px!important;padding:0 4px!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+}
+.dice-arena-head>div:first-child{
+  min-width:0;display:flex!important;align-items:center!important;gap:12px!important;
+}
+.dice-arena-kicker{display:none!important}
+.dice-arena-title{font-size:25px!important;line-height:1!important;white-space:nowrap!important}
+.dice-arena-player{
+  margin:0!important;padding:6px 11px!important;min-height:31px!important;
+  font-size:12px!important;white-space:nowrap!important;
+}
+.dice-arena-close{width:38px!important;height:38px!important;border-radius:12px!important;font-size:20px!important}
+
+.dice-arena-phasebar{
+  height:44px!important;min-height:0!important;margin:0!important;padding:4px!important;
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.95fr) auto!important;gap:6px!important;
+  border-radius:14px!important;
+}
+#diceArenaRollInfo,#diceArenaBranchInfo{
+  min-height:34px!important;height:34px!important;padding:6px 10px!important;border-radius:10px!important;
+  font-size:11px!important;line-height:1.1!important;
+}
+.dice-arena-live-badge{height:34px!important;padding:0 12px!important;border-radius:10px!important;font-size:11px!important}
+
+/* Drei Spalten gleichzeitig sichtbar */
+.dice-arena-workspace{
+  min-height:0!important;height:100%!important;margin:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(300px,.92fr) minmax(420px,1.38fr) minmax(300px,.92fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  gap:8px!important;align-items:stretch!important;
+  overflow:hidden!important;
+}
+.dice-arena-mainstage{display:contents!important}
+.dice-guide-board{grid-column:1!important;grid-row:1!important;min-width:0!important;min-height:0!important}
+.dice-arena-board-wrap{grid-column:2!important;grid-row:1!important;min-width:0!important;min-height:0!important}
+.dice-arena-side{grid-column:3!important;grid-row:1!important;min-width:0!important;min-height:0!important}
+
+/* LINKES PANEL: alle 8 Kombinationen gleichzeitig */
+.dice-guide-board{
+  padding:9px!important;border-radius:17px!important;
+  display:grid!important;grid-template-rows:auto auto 27px minmax(0,1fr)!important;gap:5px!important;
+  overflow:hidden!important;
+}
+.dice-guide-header{min-height:0!important;align-items:center!important;gap:6px!important}
+.dice-guide-title{font-size:16px!important;line-height:1.02!important}
+.dice-guide-badge{padding:6px 8px!important;min-width:72px!important;border-radius:10px!important;font-size:14px!important}
+.dice-guide-legend{margin:0!important;font-size:9px!important;line-height:1.15!important;max-height:22px!important;overflow:hidden!important}
+.dice-guide-boardhead{
+  height:27px!important;margin:0!important;padding:5px 7px!important;border-radius:9px!important;
+  grid-template-columns:1.16fr .96fr .62fr!important;gap:5px!important;font-size:7.5px!important;
+}
+.dice-guide-rows{
+  min-height:0!important;height:100%!important;max-height:none!important;overflow:hidden!important;
+  padding:0!important;display:grid!important;grid-template-rows:repeat(8,minmax(0,1fr))!important;gap:4px!important;
+}
+.dice-guide-row{
+  min-height:0!important;height:auto!important;
+  grid-template-columns:1.16fr .96fr .62fr!important;gap:5px!important;
+  padding:3px 6px!important;border-radius:9px!important;
+}
+.dice-guide-combo{gap:2px!important;min-width:0!important;overflow:hidden!important}
+.dice-guide-face{transform:scale(.58)!important;transform-origin:left center!important;margin-right:-13px!important}
+.dice-guide-main{min-width:0!important;align-self:center!important}
+.dice-guide-label{font-size:10.5px!important;line-height:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.dice-guide-sub{display:none!important}
+.dice-guide-pay{min-width:51px!important;padding:5px 4px!important;border-radius:8px!important;font-size:12px!important}
+.dice-guide-row.result-current::after{right:3px!important;top:2px!important;padding:2px 4px!important;font-size:5.5px!important}
+
+/* MITTE: maximal große Wurffläche */
+.dice-arena-board-wrap{
+  height:100%!important;display:grid!important;grid-template-rows:27px minmax(0,1fr)!important;gap:5px!important;
+}
+.arena-board-topline{height:27px!important;padding:0 3px!important}
+.arena-board-kicker{font-size:9px!important}.arena-board-caption{font-size:9px!important}
+.dice-arena-board{
+  min-height:0!important;height:100%!important;width:100%!important;
+  border-width:8px!important;border-radius:20px!important;
+}
+.arena-board-stamp{left:14px!important;top:12px!important;padding:5px 8px!important;font-size:7px!important}
+.dice-arena-logo{top:12px!important;right:12px!important;width:52px!important;height:52px!important;font-size:17px!important}
+
+/* Haltebank: 5 feste Slots, garantiert getrennt */
+.dice-hold-zone{
+  left:14px!important;right:126px!important;width:auto!important;min-width:0!important;
+  bottom:12px!important;height:104px!important;border-radius:14px!important;
+}
+.dice-hold-title{left:10px!important;top:7px!important;font-size:8px!important}
+.dice-hold-sub{left:10px!important;right:8px!important;top:21px!important;font-size:8px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.dice-hold-slots{
+  left:9px!important;right:9px!important;bottom:8px!important;height:55px!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important;
+}
+.dice-hold-slots span{min-width:0!important;border-radius:10px!important;font-size:8px!important}
+
+.dice-throw-handle{
+  right:13px!important;left:auto!important;bottom:12px!important;width:102px!important;min-height:104px!important;
+  padding:7px!important;border-radius:15px!important;transform:none!important;
+}
+.throw-big-die{width:46px!important;height:46px!important;flex-basis:46px!important;font-size:23px!important;margin:0 auto 4px!important}
+.throw-caption{font-size:7px!important;line-height:1.12!important}.throw-caption b{font-size:8px!important}.throw-arrow{font-size:18px!important}
+.dice-arena-swipe-hint{
+  right:13px!important;left:auto!important;bottom:122px!important;max-width:102px!important;
+  padding:6px!important;border-radius:9px!important;font-size:7px!important;line-height:1.15!important;
+}
+.arena-die{width:clamp(48px,4.5vw,65px)!important;height:clamp(48px,4.5vw,65px)!important}
+
+/* RECHTS: Branchenwürfel + Auswirkung ohne Scrollen */
+.dice-arena-side{
+  height:100%!important;display:grid!important;grid-template-rows:116px minmax(0,1fr)!important;gap:7px!important;
+  overflow:hidden!important;
+}
+.branch-dock-card,.branch-payout-card{padding:8px!important;border-radius:17px!important;min-height:0!important}
+.branch-dock-card{overflow:visible!important}
+.branch-dock-headline{font-size:13px!important;margin:0 0 5px!important}
+.branch-dock-stage{grid-template-columns:82px minmax(0,1fr)!important;gap:8px!important}
+.branch-die-dock{width:78px!important;height:78px!important;border-radius:17px!important;border-width:3px!important}
+.branch-die-dock::before{inset:-6px!important;border-radius:21px!important}
+.branch-die-dock-face{font-size:38px!important}
+.branch-die-dock-text{font-size:12px!important;line-height:1.05!important}
+.branch-dock-sub{font-size:8px!important;line-height:1.15!important}
+
+.branch-payout-card{
+  display:grid!important;grid-template-rows:auto auto auto minmax(0,1fr)!important;gap:5px!important;
+  overflow:hidden!important;
+}
+.branch-payout-title{font-size:17px!important;line-height:1!important}
+.branch-payout-summary{margin:0!important;font-size:8.5px!important;line-height:1.16!important;max-height:35px!important;overflow:hidden!important}
+.branch-summary-chip{margin:2px 3px 0 0!important;padding:4px 6px!important;font-size:7px!important}
+.branch-payout-hero{margin:0!important;padding:7px!important;border-radius:12px!important;min-height:72px!important;max-height:102px!important;overflow:hidden!important}
+.branch-hero-wrap{gap:5px!important}.branch-hero-top{gap:6px!important}.branch-hero-player{font-size:12px!important}.branch-hero-player::before{font-size:6px!important}
+.branch-hero-text{margin-top:2px!important;font-size:8px!important;line-height:1.12!important;max-height:30px!important;overflow:hidden!important}
+.branch-hero-amount{min-width:67px!important;padding:7px!important;border-radius:9px!important;font-size:14px!important}
+.branch-hero-chips{gap:3px!important;max-height:22px!important;overflow:hidden!important}.branch-hero-chip{padding:3px 5px!important;font-size:6px!important}
+.branch-payout-rows{
+  min-height:0!important;max-height:none!important;height:100%!important;overflow:hidden!important;
+  margin:0!important;padding:0!important;display:grid!important;grid-auto-rows:minmax(0,1fr)!important;gap:4px!important;
+}
+.branch-payout-row{min-height:0!important;padding:5px 6px!important;border-radius:9px!important;gap:6px!important}
+.branch-payout-head{gap:5px!important}.branch-payout-name{font-size:10px!important}.branch-payout-tag{padding:2px 4px!important;font-size:6px!important}
+.branch-payout-meta{margin-top:2px!important;font-size:6.5px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.branch-payout-impact{margin-top:2px!important;font-size:7.5px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.branch-payout-value{min-width:57px!important;padding:6px 5px!important;border-radius:9px!important;font-size:12px!important}
+
+/* Footer immer sichtbar */
+.dice-arena-footer{
+  height:56px!important;margin:0!important;display:grid!important;grid-template-columns:126px minmax(0,1fr) 160px!important;gap:7px!important;align-items:stretch!important;
+}
+.dice-arena-footer button,.dice-arena-result{min-height:0!important;height:56px!important;border-radius:13px!important}
+.arena-secondary,.arena-primary{padding:0 10px!important;font-size:11px!important}
+.dice-arena-result{padding:6px 10px!important;font-size:10px!important;line-height:1.15!important}
+
+/* 1280x720 / kleine Tablet-Höhe: noch dichter, aber weiterhin alles sichtbar */
+@media (max-height:760px){
+  .dice-arena-card{grid-template-rows:42px 38px minmax(0,1fr) 50px!important;gap:5px!important;padding:6px 8px!important}
+  .dice-arena-head{height:42px!important}.dice-arena-title{font-size:21px!important}.dice-arena-player{min-height:27px!important;padding:4px 8px!important;font-size:10px!important}.dice-arena-close{width:33px!important;height:33px!important}
+  .dice-arena-phasebar{height:38px!important;padding:3px!important}#diceArenaRollInfo,#diceArenaBranchInfo,.dice-arena-live-badge{height:30px!important;min-height:30px!important;font-size:9px!important}
+  .dice-guide-title{font-size:14px!important}.dice-guide-legend{font-size:7px!important;max-height:17px!important}.dice-guide-boardhead{height:23px!important;font-size:6.5px!important}.dice-guide-rows{gap:2px!important}.dice-guide-row{padding:2px 5px!important}.dice-guide-label{font-size:9px!important}.dice-guide-pay{font-size:10px!important;padding:4px 3px!important;min-width:44px!important}.dice-guide-face{transform:scale(.52)!important;margin-right:-15px!important}
+  .arena-board-topline{height:22px!important}.dice-arena-board-wrap{grid-template-rows:22px minmax(0,1fr)!important}.arena-board-kicker,.arena-board-caption{font-size:7px!important}
+  .dice-hold-zone{height:88px!important;right:112px!important}.dice-hold-slots{height:45px!important}.dice-throw-handle{width:91px!important;min-height:88px!important}.throw-big-die{width:39px!important;height:39px!important;flex-basis:39px!important;font-size:20px!important}.dice-arena-swipe-hint{right:13px!important;bottom:105px!important;max-width:91px!important;font-size:6px!important}
+  .dice-arena-side{grid-template-rows:96px minmax(0,1fr)!important}.branch-dock-stage{grid-template-columns:64px minmax(0,1fr)!important}.branch-die-dock{width:61px!important;height:61px!important}.branch-die-dock-face{font-size:30px!important}.branch-dock-headline{font-size:11px!important}.branch-payout-title{font-size:14px!important}.branch-payout-hero{min-height:58px!important;max-height:72px!important}.branch-hero-text{max-height:20px!important;font-size:7px!important}.branch-hero-chips{display:none!important}.branch-payout-summary{max-height:24px!important;font-size:7px!important}.branch-payout-row{padding:3px 5px!important}.branch-payout-name{font-size:8.5px!important}.branch-payout-value{font-size:10px!important;min-width:50px!important;padding:5px 4px!important}
+  .dice-arena-footer,.dice-arena-footer button,.dice-arena-result{height:50px!important}.dice-arena-footer{grid-template-columns:110px minmax(0,1fr) 140px!important}.dice-arena-result{font-size:9px!important}.arena-secondary,.arena-primary{font-size:10px!important}
+}
+
+/* Bis 1050px Breite: weiterhin drei Spalten, nur kompakter */
+@media (max-width:1050px){
+  .dice-arena-workspace{grid-template-columns:minmax(245px,.9fr) minmax(350px,1.34fr) minmax(245px,.9fr)!important;gap:5px!important}
+  .dice-guide-board,.branch-dock-card,.branch-payout-card{padding:6px!important}
+  .dice-guide-title{font-size:13px!important}.dice-guide-badge{min-width:58px!important;font-size:11px!important;padding:5px!important}
+  .branch-payout-title{font-size:14px!important}.branch-dock-headline{font-size:11px!important}
+}
+
+
+/* V4.3 FINAL FEINSCHLIFF */
+.dice-guide-face{
+  width:25px!important;height:25px!important;min-width:25px!important;min-height:25px!important;
+  transform:none!important;margin:0!important;display:inline-block!important;position:relative!important;flex:0 0 25px!important;
+}
+.dice-guide-face .play-die-face{
+  position:relative!important;inset:auto!important;width:25px!important;height:25px!important;
+  display:block!important;border-radius:6px!important;background:linear-gradient(145deg,#fffef8,#e7e4d9)!important;
+  border:1px solid #7c8794!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 3px rgba(0,0,0,.2)!important;
+}
+.dice-guide-face .play-pip{width:4px!important;height:4px!important;min-width:4px!important;min-height:4px!important;background:#15191d!important}
+.dice-guide-combo{gap:3px!important;overflow:visible!important}
+.branch-payout-rows{
+  align-content:start!important;grid-auto-rows:55px!important;height:auto!important;overflow:hidden!important;
+}
+.branch-payout-row{min-height:55px!important}
+.branch-payout-name{font-size:11px!important}.branch-payout-meta{font-size:7px!important}.branch-payout-impact{font-size:8px!important}.branch-payout-value{font-size:13px!important}
+@media(max-height:760px){
+  .dice-guide-face{width:21px!important;height:21px!important;min-width:21px!important;min-height:21px!important;flex-basis:21px!important}
+  .dice-guide-face .play-die-face{width:21px!important;height:21px!important;border-radius:5px!important}
+  .dice-guide-face .play-pip{width:3.4px!important;height:3.4px!important;min-width:3.4px!important;min-height:3.4px!important}
+  .branch-payout-rows{grid-auto-rows:45px!important}.branch-payout-row{min-height:45px!important}
+}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -5257,7 +5486,7 @@ body[data-market-stage="hot"] #roundDisplay::after{
   <section class="market-board-strip">
     <div class="market-board-header">
       <div class="market-board-brand">
-        <div id="businessModeChip" class="market-mode-chip">ONLINE · V4.2</div>
+        <div id="businessModeChip" class="market-mode-chip">ONLINE · V4.3</div>
         <div>
           <div class="market-board-kicker">DAS GROSSE BUSINESS · AKTIENMARKT</div>
           <div class="market-board-title">Vier Chancen. Ein Investment pro Zug.</div>
@@ -6600,17 +6829,23 @@ function arenaHeldLayout(heldState=null){
 function arenaHeldPosition(i,heldState=null){
  const board=q("diceArenaBoard"),zone=q("diceHoldZone");
  const w=board?.clientWidth||700;
- const size=Math.min(72,Math.max(54,w*.056));
+ const size=Math.min(65,Math.max(48,(window.innerWidth||w)*.045));
+ const visual=size*.92;
  const layout=arenaHeldLayout(heldState);
  const slot=(layout.map[i]??0);
  if(zone){
-   const innerLeft=14,innerTop=56,innerRight=14,innerBottom=12;
-   const availW=Math.max(210,zone.clientWidth-innerLeft-innerRight);
+   const innerLeft=9,innerRight=9;
+   const availW=Math.max(180,zone.clientWidth-innerLeft-innerRight);
    const cellW=availW/5;
-   const y=zone.offsetTop+innerTop+Math.max(0,((zone.clientHeight-innerTop-innerBottom)-size*.92)/2);
-   return {x:zone.offsetLeft+innerLeft+slot*cellW+(cellW-size*.92)/2,y,angle:0,z:0};
+   const topReserve=zone.clientHeight<=92?27:34;
+   const y=zone.offsetTop+Math.max(topReserve,zone.clientHeight-visual-8);
+   return {
+     x:zone.offsetLeft+innerLeft+slot*cellW+(cellW-visual)/2,
+     y,
+     angle:0,z:0
+   };
  }
- return {x:20+slot*(size+8),y:(board?.clientHeight||400)-110,angle:0,z:0};
+ return {x:20+slot*(size+8),y:(board?.clientHeight||400)-visual-18,angle:0,z:0};
 }
 function arenaSafeSlots(seed=1,count=5){
  const board=q("diceArenaBoard");
@@ -7437,7 +7672,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V4.2";
+if(_boChip)_boChip.textContent="ONLINE · V4.3";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
