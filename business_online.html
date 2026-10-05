@@ -4,7 +4,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V4.9 · Flexible Rundenzahl</title>
+<title>Das große Business – V5.1 · Flexible Rundenzahl</title>
 <style>/* ================================================================
    DAS GROSSE BUSINESS · V4.7 TECHNISCHER GROSSPUTZ
    Bereinigt: veraltete Brett-/Karten-CSS, tote Fokusfunktion,
@@ -2138,7 +2138,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
   <section class="market-board-strip">
     <div class="market-board-header">
       <div class="market-board-brand">
-        <div id="businessModeChip" class="market-mode-chip">ONLINE · V4.9</div>
+        <div id="businessModeChip" class="market-mode-chip">ONLINE · V5.2</div>
         <div>
           <div class="market-board-kicker">DAS GROSSE BUSINESS · AKTIENMARKT</div>
           <div class="market-board-title">Vier Chancen. Ein Investment pro Zug.</div>
@@ -4119,7 +4119,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V4.9";
+if(_boChip)_boChip.textContent="ONLINE · V5.2";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
@@ -4576,6 +4576,334 @@ $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart")
       try{ if(typeof renderDiceArena === 'function') renderDiceArena(); }catch(_e){}
     }, 80);
   }
+})();
+</script>
+
+
+<style id="v51-card-visibility-fix">
+/* V5.1 – volle Kartenbilder wirklich sichtbar machen */
+.market-slot .invest-card .card-shell.realistic-market-card,
+.market-slot .invest-card .card-shell.startup-card,
+.depot-fan-card .card-shell.realistic-market-card,
+.depot-fan-card .card-shell.startup-card{
+  display:block !important;
+  position:absolute !important;
+  inset:0 !important;
+  overflow:hidden !important;
+  background:#081321 !important;
+}
+
+.market-slot .invest-card .card-shell .real-card-photo,
+.market-slot .invest-card .card-shell .startup-photo,
+.depot-fan-card .card-shell .real-card-photo,
+.depot-fan-card .card-shell .startup-photo{
+  display:block !important;
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:100% !important;
+  max-height:none !important;
+  background-size:cover !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+  border:0 !important;
+}
+
+.market-slot .invest-card .card-shell .real-card-body,
+.depot-fan-card .card-shell .real-card-body{
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  top:auto !important;
+  z-index:5 !important;
+  height:auto !important;
+  min-height:43% !important;
+  max-height:58% !important;
+  padding:64px 12px 10px !important;
+  background:
+    linear-gradient(180deg,
+      rgba(4,12,22,0) 0%,
+      rgba(4,12,22,.10) 10%,
+      rgba(4,12,22,.70) 38%,
+      rgba(4,12,22,.93) 72%,
+      rgba(4,12,22,.98) 100%) !important;
+  color:#fff !important;
+  border:0 !important;
+}
+
+.market-slot .invest-card .share-card .real-card-body,
+.market-slot .invest-card .business-card .real-card-body,
+.market-slot .invest-card .certificate-card .real-card-body{
+  background:
+    linear-gradient(180deg,
+      rgba(4,12,22,0) 0%,
+      rgba(4,12,22,.10) 10%,
+      rgba(4,12,22,.70) 38%,
+      rgba(4,12,22,.93) 72%,
+      rgba(4,12,22,.98) 100%) !important;
+}
+
+.market-slot .invest-card .card-shell .real-card-company,
+.depot-fan-card .card-shell .real-card-company{
+  color:#fff2bd !important;
+  text-shadow:0 2px 8px rgba(0,0,0,.85) !important;
+}
+
+.market-slot .invest-card .card-shell .real-card-desc{
+  color:rgba(245,250,255,.92) !important;
+  text-shadow:0 1px 5px rgba(0,0,0,.8) !important;
+}
+
+/* Kosten und Ertrag bleiben vor dem Text und gut sichtbar */
+.market-slot .invest-card .card-shell .real-card-price{
+  left:12px !important;
+  bottom:13px !important;
+  z-index:9 !important;
+  min-width:92px !important;
+  height:50px !important;
+  font-size:21px !important;
+}
+.market-slot .invest-card .card-shell .real-card-yield{
+  right:12px !important;
+  bottom:13px !important;
+  z-index:9 !important;
+  min-width:96px !important;
+  height:50px !important;
+}
+.market-slot .invest-card .card-shell .real-card-yield small{
+  font-size:8px !important;
+}
+.market-slot .invest-card .card-shell .real-card-yield b{
+  font-size:20px !important;
+}
+
+/* Firmenname oberhalb der Werte */
+.market-slot .invest-card .card-shell .real-card-body{
+  padding-bottom:70px !important;
+}
+.market-slot .invest-card .card-shell .real-card-company{
+  font-size:16px !important;
+  line-height:1.04 !important;
+}
+.market-slot .invest-card .card-shell .real-card-desc{
+  font-size:10px !important;
+  line-height:1.22 !important;
+  max-height:2.45em !important;
+}
+
+/* Depot: Bild bleibt voll sichtbar, Werte kompakt */
+.depot-fan-card .card-shell .real-card-body{
+  min-height:44% !important;
+  max-height:52% !important;
+  padding:34px 8px 44px !important;
+  background:linear-gradient(180deg,rgba(4,12,22,0),rgba(4,12,22,.78) 40%,rgba(4,12,22,.96)) !important;
+}
+.depot-fan-card .card-shell .real-card-price,
+.depot-fan-card .card-shell .real-card-yield{
+  z-index:9 !important;
+  bottom:7px !important;
+}
+.depot-fan-card .card-shell .real-card-company{
+  font-size:10px !important;
+  white-space:normal !important;
+}
+.depot-fan-card .card-shell .real-card-desc{
+  display:none !important;
+}
+
+/* Gehaltene Würfel: nie durch Balken/Label verdecken */
+.arena-die.held::after,
+.die.held::after,
+.arena-die.spectator-held::after{
+  display:none !important;
+  content:none !important;
+  opacity:0 !important;
+}
+.arena-die.held,
+.arena-die.spectator-held{
+  visibility:visible !important;
+  opacity:1 !important;
+  filter:none !important;
+}
+
+/* Slots nur als dezente Orientierung */
+.dice-hold-slots span{
+  color:rgba(255,235,176,.35) !important;
+  background:rgba(255,255,255,.025) !important;
+  border-color:rgba(255,229,151,.18) !important;
+}
+</style>
+
+
+<style id="v52-swipe-anywhere-style">
+/* V5.2 – auf der kompletten Würfelfläche wischen */
+#diceArenaBoard{
+  touch-action:none !important;
+  cursor:grab !important;
+}
+#diceArenaBoard.arena-swipe-active{
+  cursor:grabbing !important;
+  box-shadow:
+    inset 0 0 0 3px rgba(255,225,132,.30),
+    inset 0 0 52px rgba(255,225,132,.10),
+    0 20px 38px rgba(0,0,0,.28) !important;
+}
+#diceArenaBoard::after{
+  content:"ÜBERALL AUF DER FLÄCHE WISCHEN";
+  position:absolute;
+  left:50%;
+  top:18px;
+  transform:translateX(-50%);
+  z-index:3;
+  pointer-events:none;
+  padding:7px 12px;
+  border-radius:999px;
+  background:rgba(5,18,29,.60);
+  border:1px solid rgba(255,227,145,.16);
+  color:rgba(255,239,190,.72);
+  font:900 9px/1 Arial,sans-serif;
+  letter-spacing:.12em;
+}
+#diceArenaSwipeHint{
+  text-align:center !important;
+}
+</style>
+
+<script id="v52-swipe-anywhere-script">
+(function(){
+  const board = document.getElementById("diceArenaBoard");
+  const handle = document.getElementById("diceThrowHandle");
+  if(!board) return;
+
+  /* Alte Steuerung nur auf dem kleinen Würfelgriff entfernen. */
+  if(handle && typeof arenaPointerDown === "function"){
+    handle.removeEventListener("pointerdown", arenaPointerDown);
+    handle.removeEventListener("pointermove", arenaPointerMove);
+    handle.removeEventListener("pointerup", arenaPointerUp);
+    handle.removeEventListener("pointercancel", arenaPointerUp);
+  }
+
+  let swipe = null;
+  let suppressClickUntil = 0;
+
+  function canRollHere(){
+    return state.phase === "roll" &&
+      state.rolls < 3 &&
+      !state.locked &&
+      !diceArenaRolling &&
+      typeof diceArenaCanAct === "function" &&
+      diceArenaCanAct();
+  }
+
+  function resetVisual(){
+    board.classList.remove("arena-swipe-active");
+    if(handle){
+      handle.style.transform = "none";
+    }
+  }
+
+  function onDown(e){
+    if(!canRollHere()) return;
+    if(e.pointerType === "mouse" && e.button !== 0) return;
+
+    swipe = {
+      id:e.pointerId,
+      x:e.clientX,
+      y:e.clientY,
+      lastX:e.clientX,
+      lastY:e.clientY,
+      t:performance.now(),
+      moved:false
+    };
+
+    try{ board.setPointerCapture(e.pointerId); }catch(_e){}
+    board.classList.add("arena-swipe-active");
+  }
+
+  function onMove(e){
+    if(!swipe || e.pointerId !== swipe.id) return;
+
+    swipe.lastX = e.clientX;
+    swipe.lastY = e.clientY;
+
+    const dx = e.clientX - swipe.x;
+    const dy = e.clientY - swipe.y;
+    const dist = Math.hypot(dx,dy);
+
+    if(dist > 12){
+      swipe.moved = true;
+      e.preventDefault();
+
+      if(handle){
+        const tx = Math.max(-26,Math.min(26,dx*.10));
+        const ty = Math.max(-22,Math.min(16,dy*.08));
+        handle.style.transform = `translate(${tx}px,${ty}px) rotate(${dx*.018}deg)`;
+      }
+    }
+  }
+
+  function onEnd(e){
+    if(!swipe || e.pointerId !== swipe.id) return;
+
+    const p = swipe;
+    swipe = null;
+
+    const endX = Number.isFinite(e.clientX) ? e.clientX : p.lastX;
+    const endY = Number.isFinite(e.clientY) ? e.clientY : p.lastY;
+    const dx = endX - p.x;
+    const dy = endY - p.y;
+    const dist = Math.hypot(dx,dy);
+    const duration = Math.max(70,performance.now()-p.t);
+
+    resetVisual();
+
+    /* Kurzes Tippen bleibt weiterhin zum Würfel-Halten nutzbar. */
+    if(dist < 38 || duration > 1600){
+      return;
+    }
+
+    if(!canRollHere()) return;
+
+    suppressClickUntil = performance.now()+500;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const hint = document.getElementById("diceArenaSwipeHint");
+    if(hint){
+      hint.textContent = "🎲 Wurf!";
+      setTimeout(()=>{
+        if(hint) hint.textContent = "Überall auf der Würfelfläche wischen";
+      },650);
+    }
+
+    const power = typeof arenaClamp === "function"
+      ? arenaClamp(dist/170,.78,1.65)
+      : Math.max(.78,Math.min(1.65,dist/170));
+
+    rollDice({dx,dy,duration,power});
+  }
+
+  /* Nach einem echten Wisch darf ein Würfel darunter nicht zusätzlich
+     als "gehalten" angeklickt werden. */
+  board.addEventListener("click",function(e){
+    if(performance.now() < suppressClickUntil){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  },true);
+
+  board.addEventListener("pointerdown",onDown,{passive:true});
+  board.addEventListener("pointermove",onMove,{passive:false});
+  board.addEventListener("pointerup",onEnd,{passive:false});
+  board.addEventListener("pointercancel",function(e){
+    if(swipe && e.pointerId === swipe.id) swipe=null;
+    resetVisual();
+  },{passive:true});
+
+  const hint = document.getElementById("diceArenaSwipeHint");
+  if(hint) hint.textContent = "Überall auf der Würfelfläche wischen";
 })();
 </script>
 
