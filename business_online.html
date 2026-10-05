@@ -4680,6 +4680,110 @@ body[data-market-stage="hot"] #roundDisplay::after{
   font-size:.78em;
 }
 
+
+/* V3.7 Karten-Redesign: voller, klarer und mit großem Branchensymbol */
+.market-slot .invest-card{padding:0!important;overflow:hidden!important}
+.market-slot .invest-card .card-shell,
+.depot-fan-card .card-shell{
+  position:absolute;inset:0;display:grid!important;grid-template-rows:56% 44%!important;
+}
+.real-card-photo{
+  position:relative!important;
+  background-size:cover!important;
+  background-position:center!important;
+  border-bottom:1px solid rgba(83,58,20,.24)!important;
+  overflow:hidden!important;
+}
+.real-card-photo::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 78% 32%, rgba(255,255,255,.16), transparent 28%),
+    linear-gradient(180deg, rgba(7,12,20,.08) 0%, rgba(7,12,20,.15) 26%, rgba(7,12,20,.55) 100%);
+  pointer-events:none;
+}
+.real-card-bigicon{
+  position:absolute;right:8px;top:23px;z-index:2;
+  width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
+  font-size:26px;font-weight:900;color:#13253a;
+  background:radial-gradient(circle at 30% 30%, #fff8dc, #efcf73 58%, #a86d16 100%);
+  border:2px solid rgba(255,244,197,.92);
+  box-shadow:0 8px 16px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.55);
+}
+.real-card-branch{
+  left:7px!important;top:7px!important;right:auto!important;
+  padding:4px 8px!important;border-radius:999px!important;
+  font-size:7.4px!important;font-weight:900!important;letter-spacing:.2px!important;
+  background:rgba(10,18,31,.84)!important;color:#fff7d3!important;border:1px solid rgba(255,232,163,.65)!important;
+  z-index:2;
+}
+.real-card-price{
+  left:8px!important;bottom:8px!important;z-index:2;
+  min-width:54px!important;height:34px!important;padding:0 10px!important;
+  border-radius:999px!important;font-size:14px!important;font-weight:900!important;
+  color:#fff3c8!important;background:linear-gradient(180deg,#112840,#0a1321)!important;
+  border:2px solid #f0c860!important;box-shadow:0 7px 15px rgba(0,0,0,.28)!important;
+}
+.real-card-body{
+  display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
+  gap:4px!important;padding:7px 8px 8px!important;
+  background:linear-gradient(180deg,#fbf5e9 0%,#f3ead8 100%)!important;color:#0f1f34!important;
+}
+.real-card-company{
+  font-size:12.8px!important;line-height:1.04!important;font-weight:900!important;
+  min-height:26px!important;color:#0f2340!important;text-shadow:none!important;
+}
+.real-card-desc{
+  margin-top:0!important;font-size:7px!important;line-height:1.16!important;color:#5e5548!important;
+  min-height:24px!important;flex:1 1 auto!important;
+}
+.real-card-stats{
+  display:grid!important;grid-template-columns:1fr 1fr;gap:5px;margin-top:auto!important;
+}
+.real-card-stats.onecol{grid-template-columns:1fr!important}
+.real-card-stat{
+  border-radius:11px;padding:5px 4px 6px;text-align:center;
+  border:1px solid rgba(18,35,57,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 2px 4px rgba(0,0,0,.06);
+}
+.real-card-stat small{
+  display:block;font:900 7px Arial,sans-serif;letter-spacing:.55px;text-transform:uppercase;
+}
+.real-card-stat b{
+  display:block;margin-top:2px;font-size:12px;line-height:1;font-weight:900;
+}
+.real-card-stat.buy{
+  background:linear-gradient(180deg,#0f2f4d,#143a5b);color:#fff3cf;border-color:#1d4f78;
+}
+.real-card-stat.payout.yield{
+  background:linear-gradient(180deg,#315619,#467826);color:#f6ffe8;border-color:#568a31;
+}
+.real-card-stat.payout.cert{
+  background:linear-gradient(180deg,#7a5a12,#b98a29);color:#fff8da;border-color:#d7ab4b;
+}
+.real-card-stat.value.startup{
+  background:linear-gradient(180deg,#173350,#234b72);color:#fff6da;border-color:#2e6394;
+}
+.certificate-seal{
+  z-index:4!important;font-size:7px!important;letter-spacing:.8px!important;
+}
+.depot-fan-card .real-card-bigicon{width:30px;height:30px;font-size:17px;top:18px;right:6px}
+.depot-fan-card .real-card-price{min-width:40px!important;height:24px!important;font-size:10px!important;padding:0 7px!important}
+.depot-fan-card .real-card-company{font-size:9px!important;min-height:20px!important}
+.depot-fan-card .real-card-desc{font-size:5.8px!important;min-height:14px!important}
+.depot-fan-card .real-card-stats{gap:3px!important}
+.depot-fan-card .real-card-stat{padding:3px 2px 4px!important;border-radius:8px!important}
+.depot-fan-card .real-card-stat small{font-size:5.2px!important}
+.depot-fan-card .real-card-stat b{font-size:7px!important}
+.depot-fan-card .real-card-branch{font-size:5.4px!important;padding:2px 5px!important}
+@media (max-width:1100px){
+  .real-card-bigicon{width:38px;height:38px;font-size:22px;top:20px}
+  .real-card-company{font-size:11.5px!important}
+  .real-card-desc{font-size:6.6px!important;min-height:20px!important}
+  .real-card-price{min-width:48px!important;height:30px!important;font-size:12px!important}
+  .real-card-stat b{font-size:10px!important}
+  .real-card-stat small{font-size:6.4px!important}
+}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -5613,17 +5717,24 @@ function buildPrettyCard(card, mini=false){
  const startupCorp={reisen:"Urlaubsflieger",tech:"KI Solutions",food:"Frische Welt",sport:"StadionPlus",ent:"MediaStar"};
  const art=startup ? (cardArtByCorp[startupCorp[card.branch]]||"") : (cardArtByCorp[card.corp]||"");
  const desc=companyDescriptions[card.corp] || "";
+ const payoutLabel=cert?"Einmal":"Ertrag";
  if(startup){
    return `
    <div class="card-shell startup-card" style="--c1:${b.c1};--c2:${b.c2}">
      <button class="card-info" onclick="event.stopPropagation();showCardInfoById('${card.id}')">i</button>
      <div class="real-card-photo startup-photo" style="background-image:url('${art}')">
        <div class="real-card-branch">${b.icon} ${b.name}</div>
+       <div class="real-card-bigicon">${b.icon}</div>
      </div>
      <div class="real-card-body">
        <div class="real-card-company">${card.corp}</div>
-       <div class="real-card-desc">Dein Start-up</div>
-       <div class="real-card-bottom"><span>Grundwert</span><b>${card.value} Z</b></div>
+       <div class="real-card-desc">Dein Start-up in der Branche ${b.name}</div>
+       <div class="real-card-stats onecol">
+         <div class="real-card-stat value startup">
+           <small>GRUNDWERT</small>
+           <b>${card.value} Z</b>
+         </div>
+       </div>
      </div>
    </div>`;
  }
@@ -5633,14 +5744,21 @@ function buildPrettyCard(card, mini=false){
      <button class="card-info" onclick="event.stopPropagation();showCardInfoById('${card.id}')">i</button>
      <div class="real-card-photo" style="background-image:url('${art}')">
        <div class="real-card-branch">${b.icon} ${b.name}</div>
+       <div class="real-card-bigicon">${b.icon}</div>
        <div class="real-card-price">${card.cost} Z</div>
      </div>
      <div class="real-card-body">
        <div class="real-card-company">${card.corp}</div>
        <div class="real-card-desc">${desc}</div>
-       <div class="real-card-bottom">
-         <span>${cert?"Einmalauszahlung":"Ertrag"}</span>
-         <b>${card.value} Z</b>
+       <div class="real-card-stats">
+         <div class="real-card-stat buy">
+           <small>KOSTET</small>
+           <b>${card.cost} Z</b>
+         </div>
+         <div class="real-card-stat payout ${cert?"cert":"yield"}">
+           <small>${payoutLabel}</small>
+           <b>${card.value} Z</b>
+         </div>
        </div>
      </div>
    </div>`;
