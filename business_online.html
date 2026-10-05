@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V4.3 · Würfelarena Vollbild</title>
+<title>Das große Business – V4.6 · Zwei-Klick-Kauf</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -5425,6 +5425,716 @@ body[data-market-stage="hot"] #roundDisplay::after{
   .branch-payout-rows{grid-auto-rows:45px!important}.branch-payout-row{min-height:45px!important}
 }
 
+
+
+/* =================================================================
+   V4.4 · PREMIUM DESIGN / GESAMTES SPIEL AUFGEWERTET
+   ================================================================= */
+body{
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255,213,103,.12), transparent 20%),
+    radial-gradient(circle at 88% 14%, rgba(82,143,255,.16), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(15,108,175,.11), transparent 35%),
+    linear-gradient(180deg,#05101a 0%,#07192a 38%,#08111a 100%) !important;
+}
+#game{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0) 14%),
+    linear-gradient(180deg,#071421 0 47%, #081a2a 47% 100%);
+}
+#game::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.23;mix-blend-mode:soft-light;
+  background-image:
+   linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+   linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size:32px 32px;
+}
+.topbar,
+.players-panel,
+.log-panel,
+.market-board-strip,
+.depot-panel,
+.control-panel{
+  position:relative; overflow:hidden;
+  border:1px solid rgba(235,196,94,.28) !important;
+  box-shadow:0 12px 34px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.06) !important;
+  backdrop-filter:blur(10px);
+}
+.topbar{
+  background:
+    linear-gradient(180deg,rgba(17,57,93,.96),rgba(7,30,51,.98)) !important;
+}
+.topbar::after,
+.market-board-strip::after,
+.depot-panel::after,
+.players-panel::after,
+.log-panel::after,
+.control-panel::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,235,173,.55),transparent);
+  pointer-events:none;
+}
+.turn-pill{
+  box-shadow:0 12px 30px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.45) !important;
+}
+.market-board-strip{
+  background:
+    linear-gradient(180deg,rgba(13,34,52,.98),rgba(8,23,38,.98)) !important;
+}
+.market-board-strip::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(180deg,transparent 0 52%,rgba(247,205,95,.08) 52%,rgba(44,107,166,.12) 100%),
+    radial-gradient(circle at 50% -30%, rgba(255,223,140,.14), transparent 50%);
+}
+.market-board-title{letter-spacing:.01em;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+.market-board-help{
+  padding:10px 14px;border-radius:14px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+}
+.market-board-felt{
+  border:1px solid rgba(242,211,125,.26) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03), inset 0 25px 40px rgba(255,255,255,.02);
+}
+.board-market-overlay{
+  gap:14px !important;
+}
+.market-slot{filter:drop-shadow(0 14px 24px rgba(0,0,0,.24));}
+.market-status{
+  background:linear-gradient(180deg,#17334c,#0b2136) !important;
+  border:1px solid rgba(247,212,116,.4) !important;
+  color:#fff4c3 !important;
+  text-shadow:0 1px 0 rgba(0,0,0,.35);
+}
+.depot-panel{
+  background:
+    linear-gradient(180deg,rgba(8,26,42,.98),rgba(9,32,52,.96) 42%,rgba(12,45,70,.98) 100%) !important;
+}
+.depot-panel::before{
+  content:"";position:absolute;inset:auto 0 0 0;height:56%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(70,138,215,.04),rgba(255,202,93,.08));
+}
+.portfolio-head{
+  position:relative;z-index:1;padding-bottom:10px;margin-bottom:4px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.depot-summary span{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);
+  padding:7px 10px;border-radius:999px;
+}
+.portfolio-grid,.depot-list{position:relative;z-index:1}
+.portfolio-branch{
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.028)) !important;
+  border:1px solid rgba(236,196,78,.16) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.portfolio-branch-head{
+  padding:10px 12px !important;
+  background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.07),rgba(255,255,255,.03));
+  border-radius:14px;
+}
+.portfolio-branch-title{gap:10px !important;font-weight:900;letter-spacing:.01em}
+.portfolio-branch-icon{
+  width:42px !important;height:42px !important;border-radius:14px;
+  display:grid;place-items:center;font-size:23px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.05));
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 6px 16px rgba(0,0,0,.18);
+}
+.portfolio-branch-name{font-size:18px !important}
+.portfolio-branch-payout{
+  padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);font-size:12px !important;
+}
+.control-panel{
+  background:linear-gradient(180deg,rgba(11,36,58,.98),rgba(7,24,39,.98)) !important;
+}
+.control-row button,.release-btn,.top-icon-btn,.panel-tab{
+  box-shadow:0 8px 18px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* Karten – stark visuell getrennt */
+.card-shell{
+  border-radius:24px !important;
+  overflow:hidden !important;
+  background:linear-gradient(180deg,#f8eed1 0%,#efe3bd 100%) !important;
+  border:3px solid rgba(240,226,180,.92) !important;
+  box-shadow:0 14px 28px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.62), inset 0 -12px 24px rgba(0,0,0,.06) !important;
+  position:relative;
+}
+.card-shell::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 18%,transparent 82%,rgba(0,0,0,.03));
+}
+.card-shell.share-card{border-color:#71b8ff !important; box-shadow:0 18px 28px rgba(7,38,76,.30),0 0 0 3px rgba(113,184,255,.16), inset 0 1px 0 rgba(255,255,255,.62), inset 0 -10px 24px rgba(0,0,0,.05) !important;}
+.card-shell.business-card{border-color:#64d990 !important; box-shadow:0 18px 28px rgba(10,62,28,.26),0 0 0 3px rgba(100,217,144,.14), inset 0 1px 0 rgba(255,255,255,.62), inset 0 -10px 24px rgba(0,0,0,.05) !important;}
+.card-shell.certificate-card{border-color:#f1c14e !important; box-shadow:0 18px 28px rgba(79,47,7,.28),0 0 0 3px rgba(241,193,78,.18), inset 0 1px 0 rgba(255,255,255,.62), inset 0 -10px 24px rgba(0,0,0,.05) !important;}
+.market-share-card{outline:2px solid rgba(116,184,255,.18); outline-offset:5px; border-radius:28px;}
+.market-business-card{outline:2px solid rgba(100,217,144,.18); outline-offset:5px; border-radius:28px;}
+.market-certificate-card{outline:2px solid rgba(241,193,78,.22); outline-offset:5px; border-radius:28px;}
+.market-selected{transform:translateY(-4px) scale(1.018); filter:drop-shadow(0 14px 28px rgba(255,214,112,.26));}
+.invest-card.buyable{transition:transform .16s ease, filter .16s ease}
+.invest-card.buyable:active{transform:translateY(2px) scale(.99)}
+.real-card-type{
+  position:absolute;left:12px;top:10px;z-index:5;padding:6px 12px;
+  border-radius:999px;font:900 10px/1 Arial,sans-serif;letter-spacing:.12em;
+  color:white;text-shadow:0 1px 0 rgba(0,0,0,.28);
+  box-shadow:0 6px 14px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.real-card-type.type-share{background:linear-gradient(180deg,#479dff,#195c9d)}
+.real-card-type.type-business{background:linear-gradient(180deg,#4dcb7c,#1d834d)}
+.real-card-type.type-certificate{background:linear-gradient(180deg,#f0c864,#b98318)}
+.certificate-seal{
+  position:absolute;right:12px;top:10px;z-index:5;
+  padding:6px 10px;border-radius:12px;font:900 10px/1 Arial,sans-serif;letter-spacing:.08em;
+  color:#4f3200;background:linear-gradient(180deg,#fff0ba,#f2c965);border:1px solid rgba(103,67,0,.24);
+  box-shadow:0 8px 16px rgba(105,71,16,.24);
+}
+.card-info{
+  z-index:6 !important;
+  background:linear-gradient(180deg,#ffffff,#dbe7f3) !important;color:#11253a !important;
+  border:1px solid rgba(17,37,58,.18) !important; box-shadow:0 6px 12px rgba(0,0,0,.18) !important;
+}
+.real-card-photo{
+  height:57% !important;position:relative;overflow:hidden;
+  background-size:cover !important;background-position:center !important;
+  border-bottom:1px solid rgba(255,255,255,.2);
+}
+.real-card-photo::after{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,rgba(4,12,23,.04),rgba(4,12,23,.0) 30%,rgba(4,12,23,.58) 100%),
+    radial-gradient(circle at 20% 18%,rgba(255,255,255,.32),transparent 24%);
+}
+.real-card-branch,.real-card-price,.real-card-bigicon,.card-art-badge{z-index:2}
+.real-card-branch{
+  display:flex !important;align-items:center;gap:6px;
+  padding:6px 10px !important;border-radius:999px;
+  background:rgba(7,24,39,.72) !important;border:1px solid rgba(255,255,255,.16);
+  color:#fff7d6 !important;font:800 10px/1 Arial,sans-serif !important;letter-spacing:.02em;
+  box-shadow:0 6px 14px rgba(0,0,0,.22);
+}
+.branch-mark{font-size:14px;line-height:1}
+.card-art-badge{
+  position:absolute;left:12px;bottom:12px;padding:6px 10px;border-radius:12px;
+  background:rgba(255,255,255,.86);color:#0f2134;font:900 10px/1 Arial,sans-serif;letter-spacing:.08em;
+  box-shadow:0 8px 16px rgba(0,0,0,.18);
+}
+.real-card-bigicon{
+  position:absolute;right:12px;bottom:10px;width:54px;height:54px;display:grid;place-items:center;
+  border-radius:18px;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.22);box-shadow:0 8px 20px rgba(0,0,0,.20);
+}
+.real-card-bigicon span{font-size:28px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
+.real-card-price{
+  min-width:78px !important;height:42px !important;padding:0 12px !important;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:15px !important;background:linear-gradient(180deg,#fff2b0,#e3ba46) !important;color:#493000 !important;
+  font:900 18px/1 Arial,sans-serif !important;
+  border:1px solid rgba(94,61,1,.28);box-shadow:0 8px 16px rgba(118,86,22,.24);
+}
+.real-card-body{
+  display:flex;flex-direction:column;gap:7px;
+  padding:12px 12px 13px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.02));
+}
+.real-card-company{
+  font-size:15px !important;font-weight:900 !important;line-height:1.02 !important;
+  color:#18263a !important;letter-spacing:-.01em;
+}
+.card-meta-row{display:flex;gap:6px;flex-wrap:wrap}
+.card-tier-pill,.card-risk-pill,.card-footer-note{
+  font:800 10px/1 Arial,sans-serif;letter-spacing:.04em;
+}
+.card-tier-pill,.card-risk-pill{
+  padding:5px 8px;border-radius:999px;
+  border:1px solid rgba(13,34,52,.12);background:rgba(18,36,55,.06);color:#1a2b3c;
+}
+.card-risk-pill{background:rgba(255,199,88,.22);color:#5d3b05}
+.real-card-desc{
+  min-height:32px !important;
+  color:#3b4858 !important;font-size:10px !important;line-height:1.28 !important;
+}
+.real-card-stats{
+  display:grid !important;grid-template-columns:1fr 1fr;gap:7px;
+}
+.real-card-stats.onecol{grid-template-columns:1fr 1fr !important}
+.real-card-stat{
+  padding:9px 9px 10px !important;border-radius:14px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(233,236,241,.92));
+  border:1px solid rgba(17,37,58,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 5px 10px rgba(0,0,0,.06);
+}
+.real-card-stat small{display:block;color:#5f6f80;font:800 9px/1 Arial,sans-serif;letter-spacing:.08em;margin-bottom:4px}
+.real-card-stat b{display:block;font-size:18px !important;line-height:1;color:#10253b !important}
+.real-card-stat.payout b,.real-card-stat.value b{color:#0d7647 !important}
+.real-card-stat.buy b{color:#7b5100 !important}
+.real-card-stat.cert b{color:#995200 !important}
+.card-footer-note{
+  color:#46586a;padding-top:2px;line-height:1.25;
+}
+.depot-fan-card .real-card-bigicon{display:none !important}
+.depot-fan-card .card-art-badge{display:none !important}
+.depot-fan-card .real-card-type{left:8px;top:8px;padding:4px 8px;font-size:8px}
+.depot-fan-card .real-card-photo{height:54% !important}
+.depot-fan-card .real-card-company{font-size:11px !important}
+.depot-fan-card .real-card-desc{font-size:6.8px !important;min-height:20px !important}
+.depot-fan-card .real-card-price{min-width:48px !important;height:26px !important;font-size:11px !important;padding:0 8px !important}
+.depot-fan-card .real-card-stat{padding:5px 6px 6px !important;border-radius:10px !important}
+.depot-fan-card .real-card-stat small{font-size:6px !important;margin-bottom:3px}
+.depot-fan-card .real-card-stat b{font-size:10px !important}
+.depot-fan-card .card-tier-pill,.depot-fan-card .card-risk-pill{font-size:6px !important;padding:3px 5px}
+.depot-fan-card .card-footer-note{font-size:6px !important}
+
+/* 3D Würfel */
+.die,.rule-die,.arena-die,.branch-die-dock,.branch-die-dock-face{
+  box-shadow:0 12px 22px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.85), inset 8px 8px 12px rgba(255,255,255,.48), inset -10px -12px 14px rgba(92,87,77,.14) !important;
+}
+.die,.rule-die,.arena-die{
+  background:linear-gradient(145deg,#fffefa 0%,#efe4cb 62%,#e6d7b5 100%) !important;
+  border:1px solid rgba(120,101,61,.28) !important;
+  border-radius:18px !important;
+}
+.play-die-face,.rule-die{
+  position:relative;
+}
+.play-die-face::before,.rule-die::before{
+  content:"";position:absolute;inset:8% 8% auto auto;width:38%;height:38%;pointer-events:none;border-radius:12px;
+  background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(255,255,255,0) 72%);
+}
+.play-pip,.pip{
+  background:radial-gradient(circle at 35% 35%, #3f454b 0%, #11161b 70%, #000 100%) !important;
+  box-shadow:inset 1px 1px 1px rgba(255,255,255,.18), 0 1px 2px rgba(255,255,255,.18) !important;
+}
+.die.held,.arena-die.held,.spectator-held{
+  box-shadow:0 0 0 3px rgba(240,195,78,.3),0 12px 24px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.9), inset 8px 8px 12px rgba(255,255,255,.56), inset -10px -12px 14px rgba(92,87,77,.16) !important;
+}
+.dice-hold-zone,.branch-payout-card,.branch-dock-card,.arena-guide-card,.dice-arena-board-wrap{
+  box-shadow:0 12px 28px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.dice-arena-card{
+  background:linear-gradient(180deg,rgba(9,28,45,.985),rgba(6,20,32,.992)) !important;
+  border:1px solid rgba(235,196,94,.34) !important;
+  box-shadow:0 30px 80px rgba(0,0,0,.44), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.dice-arena-head{
+  background:linear-gradient(180deg,rgba(19,58,91,.95),rgba(10,31,50,.98)) !important;
+}
+.dice-arena-result{
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03)) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+.dice-guide-badge,.arena-primary,.arena-secondary{
+  box-shadow:0 10px 20px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+/* Score & Spieler */
+.score-dock .payout-row,
+#scoreDock .payout-row{
+  border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);
+}
+.score-current{background:linear-gradient(90deg,rgba(240,195,78,.18),rgba(240,195,78,.05)) !important;border-color:rgba(240,195,78,.34) !important;}
+.player-card{
+  border-radius:16px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.04)) !important;
+  box-shadow:0 10px 18px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.player-card.active{box-shadow:0 0 0 2px rgba(247,208,105,.35),0 12px 22px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05) !important;}
+.money{font-size:22px !important; letter-spacing:-.02em}
+.panel-title,.depot-title{letter-spacing:.01em}
+
+@media (max-width:1100px){
+  .portfolio-branch-name{font-size:16px !important}
+  .real-card-company{font-size:13px !important}
+  .real-card-desc{font-size:9px !important}
+  .real-card-stat b{font-size:15px !important}
+}
+
+
+
+/* =================================================================
+   V4.5 · DEEP AUDIT / FEINSCHLIFF KOMPLETTES SPIEL
+   ================================================================= */
+:root{
+  --gold-1:#f4d37b;
+  --gold-2:#c69733;
+  --gold-3:#7f5614;
+  --ink-1:#06131e;
+  --ink-2:#0a2034;
+  --ink-3:#10314e;
+  --panel-hi:rgba(255,255,255,.08);
+  --panel-lo:rgba(255,255,255,.03);
+}
+html,body{scrollbar-color:#8a6a29 #081623}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;
+  background:radial-gradient(circle at 20% 12%,rgba(255,255,255,.07),transparent 18%),radial-gradient(circle at 80% 20%,rgba(255,255,255,.05),transparent 14%),radial-gradient(circle at 50% 100%,rgba(255,212,123,.05),transparent 28%);
+}
+
+/* obere Leiste / Panels */
+.topbar{
+  min-height:64px !important;
+  background:
+    linear-gradient(180deg,rgba(16,61,98,.98),rgba(8,32,53,.98)) !important;
+  box-shadow:0 14px 36px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+.brand{font-size:17px !important; letter-spacing:.01em}
+.top-icon-btn{
+  border-radius:14px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04)) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+}
+.top-icon-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.top-stat{
+  border-radius:14px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04)) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+
+.players-panel,.log-panel,.depot-panel,.control-panel,.market-board-strip{
+  background-clip:padding-box;
+}
+.panel-title,.depot-title{
+  color:#f7dd9d !important;
+  text-shadow:0 2px 12px rgba(0,0,0,.28);
+}
+.players-panel{background:linear-gradient(180deg,rgba(9,29,45,.98),rgba(5,20,32,.98)) !important;}
+.log-panel{background:linear-gradient(180deg,rgba(11,31,48,.98),rgba(8,23,37,.98)) !important;}
+.control-panel{background:linear-gradient(180deg,rgba(13,36,58,.98),rgba(6,20,33,.98)) !important;}
+
+.player-card{
+  border:1px solid rgba(255,255,255,.08) !important;
+  padding:12px 12px 11px !important;
+}
+.player-card .pname{font-size:15px !important;font-weight:900 !important}
+.player-card .holdings{line-height:1.35 !important}
+.player-statline{
+  margin-top:8px !important;padding-top:8px !important;
+  border-top:1px solid rgba(255,255,255,.08);
+  color:#c9d8e4 !important;font-weight:800 !important;
+}
+
+/* Marktbalken */
+.market-board-strip{
+  padding:12px 270px 14px 12px !important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,221,127,.10),transparent 30%),
+    linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0) 18%),
+    linear-gradient(180deg,#244564 0%,#173049 20%,#0e2235 55%,#0a1928 100%) !important;
+}
+.market-board-strip::before{border-color:rgba(255,224,154,.22) !important}
+.market-board-felt{
+  padding:24px 12px 14px !important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,255,255,.08),transparent 40%),
+    linear-gradient(180deg,rgba(239,196,82,.10),rgba(239,196,82,.02) 22%,rgba(255,255,255,.02) 22%,rgba(255,255,255,.02) 100%),
+    linear-gradient(180deg,#0b2840 0%,#0b2840 42%,#0a1e30 42%,#081826 100%) !important;
+}
+.market-board-title{font-size:18px !important}
+.market-board-kicker{font-size:8px !important}
+.market-board-help{font-size:8px !important;color:#e6d4ab !important}
+.board-market-overlay{
+  gap:18px !important;
+  align-items:stretch !important;
+}
+.market-slot{
+  border-radius:28px !important;
+  padding:6px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01)) !important;
+  border:1px solid rgba(255,228,155,.10) !important;
+}
+.market-status{
+  min-height:32px !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  letter-spacing:.04em !important;
+}
+.market-buy-hint{
+  font-size:11px !important;
+  color:#f7df9d !important;
+}
+
+/* Unterer Depotbereich deutlicher */
+.depot-panel{
+  background:
+    linear-gradient(180deg,#0b2740 0%,#0b2135 18%,#0a1d2f 18%,#0a2337 100%) !important;
+}
+.depot-panel::before{
+  height:62% !important;
+  background:
+    linear-gradient(180deg,rgba(71,150,236,.04),rgba(84,154,214,.08) 46%,rgba(238,193,77,.10) 100%) !important;
+}
+.portfolio-head{margin-bottom:8px !important}
+.portfolio-head .depot-title{font-size:18px !important}
+.depot-summary{
+  gap:7px !important;
+}
+.depot-summary span{
+  font-weight:800 !important;color:#dbe6ee !important;
+  box-shadow:0 6px 14px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.portfolio-grid,.depot-list{
+  gap:12px !important;
+}
+.portfolio-branch{
+  padding:10px !important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.03)) !important;
+  border:1px solid rgba(243,204,100,.18) !important;
+}
+.portfolio-branch-head{
+  min-height:58px !important;
+  padding:0 !important;
+  background:none !important;
+}
+.portfolio-branch-title{
+  display:flex !important;align-items:center !important;gap:10px !important;
+}
+.portfolio-branch-icon{
+  width:48px !important;height:48px !important;border-radius:16px !important;
+  font-size:26px !important;
+}
+.portfolio-branch-name{font-size:19px !important;line-height:1 !important}
+.portfolio-branch-head > span:first-child{font-size:10px !important;line-height:1.22 !important}
+.portfolio-branch-head > span:last-child{font-size:7.5px !important;line-height:1.2 !important}
+.portfolio-card-wrap{
+  padding:8px !important;border-radius:16px;
+  background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.05);
+}
+.depot-fan.portfolio-card-grid{
+  grid-template-columns:repeat(auto-fit,minmax(148px,1fr)) !important;
+  gap:10px !important;
+}
+.depot-fan-card.portfolio-card{
+  height:152px !important;
+  border-radius:16px !important;
+  box-shadow:0 14px 24px rgba(0,0,0,.24) !important;
+}
+.portfolio-card .realistic-market-card,
+.portfolio-card .startup-card{grid-template-rows:57% 43% !important}
+.portfolio-card .real-card-photo{height:auto !important}
+.portfolio-card .real-card-type{font-size:8px !important;padding:4px 8px !important;left:8px !important;top:8px !important}
+.portfolio-card .real-card-branch{padding:4px 7px !important;font-size:8px !important}
+.portfolio-card .real-card-price{min-width:56px !important;height:28px !important;font-size:13px !important;padding:0 8px !important;border-radius:12px !important}
+.portfolio-card .real-card-body{padding:8px 8px 9px !important;gap:4px !important}
+.portfolio-card .real-card-company{font-size:10px !important;line-height:1.04 !important}
+.portfolio-card .card-meta-row{gap:4px !important}
+.portfolio-card .card-tier-pill,.portfolio-card .card-risk-pill{font-size:6px !important;padding:3px 5px !important}
+.portfolio-card .real-card-desc{display:block !important;min-height:18px !important;font-size:6.8px !important;line-height:1.18 !important;color:#4e5d6d !important}
+.portfolio-card .real-card-stats{gap:4px !important}
+.portfolio-card .real-card-stat{padding:5px 6px 6px !important;border-radius:9px !important}
+.portfolio-card .real-card-stat small{font-size:6px !important;margin-bottom:2px !important}
+.portfolio-card .real-card-stat b{font-size:11px !important}
+.portfolio-card .card-footer-note{display:none !important}
+
+/* Karten im Markt noch markanter */
+.premium-card .real-card-company{
+  text-wrap:balance;
+}
+.premium-card .real-card-body{
+  border-top:1px solid rgba(17,37,58,.09);
+}
+.share-card .real-card-photo{box-shadow:inset 0 -2px 0 rgba(101,173,255,.55)}
+.business-card .real-card-photo{box-shadow:inset 0 -2px 0 rgba(94,205,133,.55)}
+.certificate-card .real-card-photo{box-shadow:inset 0 -2px 0 rgba(241,193,78,.75)}
+.share-card .real-card-type{letter-spacing:.16em}
+.business-card .real-card-type{letter-spacing:.12em}
+.certificate-card .real-card-type{letter-spacing:.10em}
+.market-share-card .real-card-price{background:linear-gradient(180deg,#eef6ff,#8dc4ff) !important;color:#11375d !important}
+.market-business-card .real-card-price{background:linear-gradient(180deg,#effff5,#7bdd98) !important;color:#184d2a !important}
+.market-certificate-card .real-card-price{background:linear-gradient(180deg,#fff8dc,#f1c65d) !important;color:#684200 !important}
+.real-card-desc{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* Punkte-Panel */
+.panel-tabs{
+  gap:8px !important;
+}
+.panel-tab{
+  border-radius:12px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03)) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+.panel-tab.active{
+  background:linear-gradient(180deg,#f2d171,#b98728) !important;
+  color:#16283c !important;
+}
+.points-table th{
+  background:linear-gradient(180deg,#17334f,#10283e) !important;
+  color:#ffe6ab !important;
+}
+.points-table td,.points-table th{border-color:rgba(14,38,59,.18) !important}
+.points-table tr:nth-child(odd) td{background:rgba(255,255,255,.025)}
+.points-table tr:hover td{background:rgba(241,193,78,.10)}
+
+/* Würfelarena – Vollbild und absolut klar */
+.dice-arena-card{
+  width:min(99vw,1420px) !important;
+  height:min(96vh,900px) !important;
+  gap:12px !important;
+  padding:16px !important;
+  border-radius:28px !important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,223,129,.10),transparent 26%),
+    linear-gradient(180deg,rgba(18,59,92,.99),rgba(6,21,34,.995)) !important;
+}
+.dice-arena-head{padding:4px 6px !important}
+.dice-arena-title{font-size:clamp(26px,3.4vw,40px) !important}
+.dice-arena-player{font-size:13px !important}
+.dice-arena-phasebar{
+  min-height:44px !important;
+  padding:8px 14px !important;
+  font-size:12px !important;
+}
+.dice-arena-workspace{
+  grid-template-columns:minmax(0,1fr) 320px !important;
+  gap:14px !important;
+}
+.dice-arena-side{
+  gap:12px !important;
+}
+.branch-dock-card,.branch-payout-card,.arena-guide-card{
+  border-radius:18px !important;
+  padding:14px !important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035)) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+}
+.side-label{font-size:10px !important;color:#b8c8d4 !important}
+.branch-die-dock{width:114px !important;height:114px !important;border-radius:24px !important}
+.dice-arena-guide .guide-row,
+.arena-guide-table .guide-row,
+.rule-row{
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.05);
+}
+.dice-arena-board-wrap{gap:12px !important}
+.arena-board-topline{padding:0 2px 0 6px !important}
+.arena-board-kicker{font-size:12px !important}
+.arena-board-caption{font-size:13px !important}
+.dice-arena-board{
+  min-height:520px !important;
+  border-width:12px !important;
+  border-radius:28px !important;
+  background:
+    radial-gradient(circle at 50% 46%,rgba(255,255,255,.12),transparent 28%),
+    radial-gradient(circle at 14% 18%,rgba(255,255,255,.09),transparent 18%),
+    linear-gradient(180deg,#276744 0%,#1b5134 44%,#123020 100%) !important;
+}
+.dice-hold-zone{
+  width:50% !important;
+  height:124px !important;
+  border-radius:20px !important;
+  border-style:solid !important;
+  background:linear-gradient(180deg,rgba(5,28,18,.82),rgba(5,19,13,.90)) !important;
+}
+.dice-hold-title{font-size:11px !important}
+.dice-hold-sub{top:25px !important;font-size:8px !important}
+.dice-hold-slots{top:45px !important;bottom:10px !important;gap:8px !important}
+.dice-hold-slots span{border-radius:13px !important}
+.arena-die{box-shadow:0 18px 26px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.88), inset 10px 10px 16px rgba(255,255,255,.54), inset -12px -12px 16px rgba(126,118,100,.18) !important}
+.dice-arena-result{
+  min-height:58px !important;
+  padding:12px 14px !important;
+  font-size:14px !important;
+}
+.score-dock .payout-row,#scoreDock .payout-row{
+  padding:8px 10px !important;
+}
+
+/* Buttons */
+.arena-primary,.arena-secondary,.release-btn,.btn-primary,.btn-secondary{
+  border-radius:14px !important;
+  font-weight:900 !important;
+  letter-spacing:.02em !important;
+}
+.arena-primary,.btn-primary{
+  background:linear-gradient(180deg,#f0cf70,#b88627) !important;
+  color:#16283c !important;
+}
+.arena-secondary,.btn-secondary{
+  background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.05)) !important;
+  color:#ebf3f8 !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#8e6a2e,#d0a94d);border-radius:999px;border:2px solid rgba(9,25,38,1)}
+::-webkit-scrollbar-track{background:rgba(8,22,34,.92)}
+
+@media (max-width:1280px){
+  .dice-arena-workspace{grid-template-columns:minmax(0,1fr) 280px !important}
+  .depot-fan.portfolio-card-grid{grid-template-columns:repeat(auto-fit,minmax(132px,1fr)) !important}
+}
+@media (max-width:980px){
+  .dice-arena-card{width:min(100vw,1000px) !important;height:min(97vh,860px) !important;padding:12px !important}
+  .dice-arena-workspace{grid-template-columns:1fr !important}
+  .market-board-strip{padding-right:12px !important}
+}
+
+
+/* =================================================================
+   V4.6 · ZWEI NORMALE KLICKS ZUM KAUF
+   1. Klick = deutlich grau markieren, 2. Klick = kaufen.
+   ================================================================= */
+.market-slot .invest-card.market-selected{
+  transform:translateY(-4px) scale(1.018)!important;
+  filter:none!important;
+  outline:4px solid #b9c1c9!important;
+  outline-offset:3px!important;
+  box-shadow:
+    0 0 0 3px rgba(58,66,74,.82),
+    0 0 24px rgba(190,199,207,.30),
+    0 14px 28px rgba(0,0,0,.42)!important;
+}
+.market-slot .invest-card.market-selected::before{
+  content:"1× GEWÄHLT · NOCHMAL TIPPEN = KAUFEN"!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:24!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  padding:0 8px 15px!important;
+  border-radius:inherit!important;
+  background:linear-gradient(180deg,rgba(95,102,109,.26),rgba(42,49,56,.55))!important;
+  color:#fff!important;
+  text-shadow:0 2px 4px rgba(0,0,0,.85)!important;
+  font:900 9px/1.15 Arial,sans-serif!important;
+  letter-spacing:.05em!important;
+  text-align:center!important;
+  pointer-events:none!important;
+  box-sizing:border-box!important;
+}
+.market-slot .invest-card.market-selected .card-shell{
+  filter:grayscale(.82) saturate(.30) brightness(.84)!important;
+}
+.market-slot .market-status.select-status{
+  min-height:34px!important;
+  padding:6px 10px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,#d9dee3,#969fa8)!important;
+  color:#18232d!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  box-shadow:0 8px 16px rgba(0,0,0,.24)!important;
+  font:900 8px/1.1 Arial,sans-serif!important;
+  letter-spacing:.03em!important;
+}
+.second-tap-hint{
+  display:inline-block;
+  margin-top:5px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#d7dde2,#a7b0b8);
+  color:#15222d;
+  font:900 8px/1 Arial,sans-serif;
+  letter-spacing:.03em;
+}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -5486,13 +6196,13 @@ body[data-market-stage="hot"] #roundDisplay::after{
   <section class="market-board-strip">
     <div class="market-board-header">
       <div class="market-board-brand">
-        <div id="businessModeChip" class="market-mode-chip">ONLINE · V4.3</div>
+        <div id="businessModeChip" class="market-mode-chip">ONLINE · V4.6</div>
         <div>
           <div class="market-board-kicker">DAS GROSSE BUSINESS · AKTIENMARKT</div>
           <div class="market-board-title">Vier Chancen. Ein Investment pro Zug.</div>
         </div>
       </div>
-      <div class="market-board-help">Karte antippen → Kauf bestätigen → Zug endet automatisch</div>
+      <div class="market-board-help">1× tippen = markieren · 2× tippen = kaufen · Zug endet automatisch</div>
     </div>
     <div class="market-board-felt">
       <div class="market-board-label">OFFENE INVESTMENTS</div>
@@ -6395,40 +7105,62 @@ function buildPrettyCard(card, mini=false){
  const startupCorp={reisen:"Urlaubsflieger",tech:"KI Solutions",food:"Frische Welt",sport:"StadionPlus",ent:"MediaStar"};
  const art=startup ? (cardArtByCorp[startupCorp[card.branch]]||"") : (cardArtByCorp[card.corp]||"");
  const desc=companyDescriptions[card.corp] || "";
- const payoutLabel=cert?"Einmal":"Ertrag";
+ const payoutLabel=cert?"EINMAL":"ERTRAG";
+ const tierLabel=startup?"Gründungswert":(card.tier||"Investment");
+ const riskLabel=startup?"Grundinvestment":(cert?"Einmalchance":(card.risk||"mittel"));
+ const footerNote=startup
+   ? `${b.icon} Sicherer Startwert in ${b.name}`
+   : cert
+      ? `${b.icon} Wird nach der Auszahlung aus dem Depot entfernt.`
+      : `${b.icon} Dauerhafter Branchenertrag bei jedem passenden Treffer.`;
  if(startup){
    return `
-   <div class="card-shell startup-card business-card" style="--c1:${b.c1};--c2:${b.c2}">
+   <div class="card-shell startup-card business-card premium-card premium-startup" style="--c1:${b.c1};--c2:${b.c2}">
      <div class="real-card-type type-business">BUSINESS</div>
      <button class="card-info" onclick="event.stopPropagation();showCardInfoById('${card.id}')">i</button>
      <div class="real-card-photo startup-photo" style="background-image:url('${art}')">
-       <div class="real-card-branch">${b.icon} ${b.name}</div>
+       <div class="real-card-branch"><span class="branch-mark">${b.icon}</span><span>${b.name}</span></div>
+       <div class="card-art-badge">START-UP</div>
        <div class="real-card-bigicon"><span>${b.icon}</span></div>
      </div>
      <div class="real-card-body">
        <div class="real-card-company">${card.corp}</div>
-       <div class="real-card-desc">Dein Start-up in der Branche ${b.name}</div>
+       <div class="card-meta-row">
+         <span class="card-tier-pill">${tierLabel}</span>
+         <span class="card-risk-pill">${riskLabel}</span>
+       </div>
+       <div class="real-card-desc">Dein kostenloses Start-up in der Branche ${b.name}. Es liefert bei Treffern einen sicheren Grundwert und baut dein Imperium auf.</div>
        <div class="real-card-stats onecol">
+         <div class="real-card-stat buy startup">
+           <small>KOSTET</small>
+           <b>0 Z</b>
+         </div>
          <div class="real-card-stat value startup">
-           <small>GRUNDWERT</small>
+           <small>ERTRAG</small>
            <b>${card.value} Z</b>
          </div>
        </div>
+       <div class="card-footer-note">${footerNote}</div>
      </div>
    </div>`;
  }
  return `
-   <div class="card-shell realistic-market-card ${share?"share-card":""} ${cert?"certificate certificate-card":""}" style="--c1:${b.c1};--c2:${b.c2}">
-     <div class="real-card-type ${cert?"type-certificate":"type-share"}">${cert?"URKUNDE":"AKTIE"}</div>
-     ${cert?`<div class="certificate-seal">URKUNDE</div>`:""}
+   <div class="card-shell realistic-market-card premium-card ${share?"share-card":""} ${cert?"certificate certificate-card":""}" style="--c1:${b.c1};--c2:${b.c2}">
+     <div class="real-card-type ${cert?"type-certificate":"type-share"}">${cert?"AKTIENURKUNDE":"AKTIE"}</div>
+     ${cert?`<div class="certificate-seal">PREMIUM</div>`:""}
      <button class="card-info" onclick="event.stopPropagation();showCardInfoById('${card.id}')">i</button>
      <div class="real-card-photo" style="background-image:url('${art}')">
-       <div class="real-card-branch">${b.icon} ${b.name}</div>
+       <div class="real-card-branch"><span class="branch-mark">${b.icon}</span><span>${b.name}</span></div>
+       <div class="card-art-badge">${tierLabel}</div>
        <div class="real-card-bigicon"><span>${b.icon}</span></div>
        <div class="real-card-price">${card.cost} Z</div>
      </div>
      <div class="real-card-body">
        <div class="real-card-company">${card.corp}</div>
+       <div class="card-meta-row">
+         <span class="card-tier-pill">${tierLabel}</span>
+         <span class="card-risk-pill">${riskLabel}</span>
+       </div>
        <div class="real-card-desc">${desc}</div>
        <div class="real-card-stats">
          <div class="real-card-stat buy">
@@ -6440,11 +7172,10 @@ function buildPrettyCard(card, mini=false){
            <b>${card.value} Z</b>
          </div>
        </div>
+       <div class="card-footer-note">${footerNote}</div>
      </div>
    </div>`;
 }
-
-
 
 
 function findCardById(id){
@@ -6546,19 +7277,15 @@ function renderDepot(){
  });
 }
 
-let lastMarketTapId=null;
-let lastMarketTapAt=0;
 function handleMarketCardTap(id,idx,el){
  if(state.phase!=="invest"||state.bought||state.locked||state.gameEnded)return;
  const card=state.market[idx],p=state.players[state.current];
  if(!card||card.id!==id||p.cash<card.cost)return;
- const now=performance.now();
- const isDouble=lastMarketTapId===id && (now-lastMarketTapAt)<=480;
- lastMarketTapId=id;lastMarketTapAt=now;
- if(isDouble){
-   lastMarketTapId=null;lastMarketTapAt=0;
-   state.selectedMarket=id;
-   tone(740,.07,"sine",.025);
+
+ // Zwei normale Klicks statt Doppelklick:
+ // 1. Klick markiert die Karte grau, 2. Klick auf dieselbe Karte kauft sofort.
+ if(state.selectedMarket===id){
+   tone(760,.07,"sine",.026);
    buyCard(idx,el);
    return;
  }
@@ -6569,19 +7296,17 @@ function selectMarketCard(id){
  if(state.phase!=="invest"||state.bought||state.locked)return;
  const card=state.market.find(c=>c.id===id),p=state.players[state.current];
  if(!card||p.cash<card.cost)return;
- state.selectedMarket=(state.selectedMarket===id?null:id);
- tone(state.selectedMarket?560:320,.05,"sine",.018);
+ state.selectedMarket=id;
+ tone(560,.05,"sine",.018);
  renderMarket();renderControls();
- if(state.selectedMarket){
-   const b=branchObj(card.branch);
-   const before=branchPayoutPreview(p,card.branch);
-   const after=branchPayoutPreview(p,card.branch,card);
-   const recurringGain=after.recurring-before.recurring;
-   const extra=card.type==="Aktienurkunde"
-     ? `${b.icon} ${b.name}: +${card.value} Z beim nächsten Treffer · danach abgelegt`
-     : `${b.icon} ${b.name}: ${before.recurring} → ${after.recurring} Z/Treffer (+${recurringGain})`;
-   q("result").innerHTML=`<b>${card.corp}</b> · ${card.cost} Z · ${extra}`;
- }else q("result").textContent="Keine Karte ausgewählt. Du kannst den Zug auch ohne Kauf beenden.";
+ const b=branchObj(card.branch);
+ const before=branchPayoutPreview(p,card.branch);
+ const after=branchPayoutPreview(p,card.branch,card);
+ const recurringGain=after.recurring-before.recurring;
+ const extra=card.type==="Aktienurkunde"
+   ? `${b.icon} ${b.name}: +${card.value} Z beim nächsten Treffer · danach abgelegt`
+   : `${b.icon} ${b.name}: ${before.recurring} → ${after.recurring} Z/Treffer (+${recurringGain})`;
+ q("result").innerHTML=`<b>${card.corp}</b> · ${card.cost} Z · ${extra}<br><span class="second-tap-hint">Noch einmal auf die grau markierte Karte tippen = kaufen</span>`;
  saveGame(false);
 }
 function renderMarket(){
@@ -6600,12 +7325,12 @@ function renderMarket(){
    d.innerHTML=buildPrettyCard(card,false);
    if(can){
      d.onclick=()=>handleMarketCardTap(card.id,idx,d);
-     d.ondblclick=e=>{e.preventDefault();e.stopPropagation();if(state.phase==="invest"&&!state.bought&&!state.locked){state.selectedMarket=card.id;buyCard(idx,d)}};
+     d.ondblclick=e=>{e.preventDefault();e.stopPropagation();};
    }
 
    const tag=document.createElement("div");
    tag.className="market-status"+(selected?" select-status":"");
-   if(selected) tag.textContent="✓ ausgewählt";
+   if(selected) tag.textContent="1× gewählt · NOCHMAL TIPPEN = KAUFEN";
    else if(state.phase!=="invest") tag.textContent="🔒";
    else if(state.bought) tag.textContent="✓";
    else if(p.cash<card.cost) tag.textContent="💰";
@@ -6679,7 +7404,7 @@ function renderControls(){
      meta.textContent=`${chosen.corp} ausgewählt`;
      roll.disabled=state.locked;roll.textContent=`🛒 Kaufen ${chosen.cost} Z`;
    }else{
-     meta.textContent="Marktkarte antippen oder Zug ohne Kauf beenden";
+     meta.textContent="1× Karte markieren · dieselbe Karte 2× tippen = kaufen · oder Zug ohne Kauf beenden";
      roll.disabled=true;roll.textContent="🛒 Karte wählen";
    }
    end.disabled=state.locked;end.textContent="➡ Zug beenden";
@@ -6723,7 +7448,7 @@ q("rulesBtn").onclick=()=>{
    <div>1. Die <b>Würfelarena</b> öffnet sich zu Beginn deines Zuges. Den großen Würfel unten mit dem Finger nach oben auf das Brett wischen.</div>
    <div>2. Beim ersten Wurf rollen 5 Zahlenwürfel + Branchenwürfel. Danach kannst du Zahlenwürfel antippen und halten. Insgesamt sind bis zu 3 Würfe möglich.</div>
    <div>3. Würfelergebnis auszahlen lassen.</div>
-   <div>4. Höchstens eine Marktkarte kaufen: <b>Karte antippen → Kauf bestätigen</b>.</div>
+   <div>4. Höchstens eine Marktkarte kaufen: <b>1× Karte antippen = markieren · dieselbe Karte noch einmal antippen = kaufen</b>.</div>
 
    <h3>Faire Startregel</h3>
    <div>Der Startspieler wird zufällig ausgelost. Danach erhalten spätere Sitzpositionen einen kleinen Startausgleich von <b>6 Z je Position</b>.</div>
@@ -7672,7 +8397,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V4.3";
+if(_boChip)_boChip.textContent="ONLINE · V4.6";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
