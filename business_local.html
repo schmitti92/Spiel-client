@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V2.5 · Lokal</title>
+<title>Das große Business – V2.6 · Lokal</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -3225,6 +3225,302 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
   .compact-result{max-height:26px!important}
 }
 
+
+/* =================================================================
+   V2.6 · Würfeltisch + Punktetafel deutlich schöner
+   ================================================================= */
+
+/* Rechtes Bedienfeld */
+.control-panel{
+  background:
+    radial-gradient(circle at 20% 0%,rgba(255,214,113,.10),transparent 28%),
+    linear-gradient(180deg,#143a5b 0%,#0a2236 58%,#071828 100%)!important;
+  border:1px solid rgba(216,177,84,.56)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.18),
+    0 10px 24px rgba(0,0,0,.18)!important;
+  border-radius:19px!important;
+}
+.dice-header{
+  align-items:center!important;
+  padding-bottom:6px!important;
+  border-bottom:1px solid rgba(255,222,139,.12)!important;
+  margin-bottom:6px!important;
+}
+.panel-title.dice-title{
+  color:#ffe08a!important;
+  text-shadow:0 2px 6px rgba(0,0,0,.28)!important;
+  letter-spacing:.01em;
+}
+#phaseLabel{
+  display:inline-flex!important;
+  align-items:center!important;
+  margin-top:4px!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.045)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  color:#dbe7f0!important;
+  font:800 9px Arial,sans-serif!important;
+}
+.mini-cup{
+  box-shadow:0 10px 18px rgba(0,0,0,.22)!important;
+}
+.phase-stepper{
+  gap:6px!important;
+  margin:4px 0 7px!important;
+}
+.phase-step{
+  border-radius:12px!important;
+  min-height:36px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  color:#b8c8d4!important;
+  font:900 8.5px Arial,sans-serif!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+.phase-step span{
+  width:18px!important;height:18px!important;
+  font-size:9px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+.phase-step.active{
+  background:linear-gradient(180deg,rgba(236,192,76,.18),rgba(176,124,20,.16))!important;
+  border-color:rgba(236,192,76,.48)!important;
+  color:#fff1bd!important;
+  box-shadow:0 0 0 1px rgba(255,215,120,.08), inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.phase-step.active span{
+  background:linear-gradient(180deg,#f0c94f,#d39d24)!important;
+  color:#152132!important;
+}
+.phase-step.done{
+  background:linear-gradient(180deg,rgba(72,146,97,.22),rgba(36,92,57,.18))!important;
+  border-color:rgba(95,190,130,.34)!important;
+}
+.phase-step.done span{background:#51a46d!important}
+
+.dice-toolbar{
+  min-height:26px!important;
+  padding:5px 8px!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.045)!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+  margin-bottom:6px!important;
+}
+.dice-meta{
+  color:#cedae3!important;
+  font:800 8.5px Arial,sans-serif!important;
+  white-space:normal!important;
+  line-height:1.2!important;
+}
+.release-btn{
+  border-radius:10px!important;
+  padding:5px 8px!important;
+  background:linear-gradient(180deg,#143655,#0c2438)!important;
+  border:1px solid rgba(240,203,107,.22)!important;
+  color:#dfeaf2!important;
+}
+.release-btn:not(:disabled):hover{filter:brightness(1.08)}
+
+.branch-legend{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+  margin:0 0 8px!important;
+  min-height:0!important;
+}
+.branch-key{
+  flex-direction:column!important;
+  gap:3px!important;
+  min-height:38px!important;
+  padding:6px 4px!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+  color:#d7e3ec!important;
+  font:800 7.8px/1 Arial,sans-serif!important;
+  text-align:center!important;
+}
+.branch-key .bk-icon{
+  font-size:15px!important;
+  line-height:1!important;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.18));
+}
+.branch-key.current{
+  background:linear-gradient(180deg,rgba(239,196,76,.20),rgba(167,118,23,.18))!important;
+  color:#ffefb9!important;
+  border-color:rgba(239,196,76,.55)!important;
+  box-shadow:0 0 0 1px rgba(255,215,120,.08),0 0 16px rgba(234,188,64,.12)!important;
+}
+.branch-key.current::after{
+  left:20%!important;right:20%!important;bottom:4px!important;height:3px!important;
+  background:#efc44c!important;
+  opacity:.95;
+}
+.branch-key.news{
+  background:linear-gradient(180deg,rgba(219,120,126,.11),rgba(255,255,255,.035))!important;
+}
+.branch-key.news.current{
+  background:linear-gradient(180deg,rgba(211,77,86,.28),rgba(124,35,40,.18))!important;
+  border-color:rgba(238,124,132,.56)!important;
+  color:#ffe1e4!important;
+}
+
+.compact-tray{
+  padding:7px 8px 10px!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(255,250,232,.08),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(255,221,131,.18)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 -1px 0 rgba(0,0,0,.18)!important;
+}
+.dice-row{grid-template-columns:minmax(0,1fr) 66px!important;gap:8px!important}
+.dice-main{gap:7px!important}
+.dice-branch-row{gap:5px!important}
+.branch-label{
+  color:#ffe08a!important;
+  font:900 9px Arial,sans-serif!important;
+  letter-spacing:.02em;
+}
+.die,.branch-die{
+  border-radius:14px!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    0 8px 12px rgba(0,0,0,.10)!important;
+}
+.die{max-width:40px!important}
+.branch-die{max-width:50px!important}
+.die.held{
+  box-shadow:
+    0 0 0 2px rgba(255,215,120,.34),
+    inset 0 1px 0 rgba(255,255,255,.62),
+    0 10px 14px rgba(0,0,0,.12)!important;
+}
+.compact-result{
+  margin:7px 0 6px!important;
+  padding:7px 9px!important;
+  min-height:42px!important;
+  max-height:44px!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.045))!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  color:#e3edf4!important;
+  font:800 9px/1.25 Arial,sans-serif!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+.compact-controls{
+  gap:8px!important;
+  margin-top:1px!important;
+}
+.compact-controls button{
+  min-height:36px!important;
+  border-radius:12px!important;
+  padding:7px 6px!important;
+  font:900 9px Arial,sans-serif!important;
+  box-shadow:0 8px 16px rgba(0,0,0,.14)!important;
+}
+#rollBtn{background:linear-gradient(180deg,#f0d16b,#c68b1d)!important;color:#152133!important}
+#endBtn{background:linear-gradient(180deg,#2f6b50,#214839)!important}
+
+/* Linke Punkte-Tafel edler */
+.score-dock{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 12%),
+    linear-gradient(180deg,#f8efd4,#f1ddb1)!important;
+  border:1px solid rgba(208,163,57,.70)!important;
+  border-radius:14px!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.62),
+    0 4px 10px rgba(0,0,0,.08)!important;
+}
+.score-dock .payout-head{
+  display:grid!important;
+  grid-template-columns:1.6fr .72fr!important;
+  background:linear-gradient(180deg,#163857,#0b2338)!important;
+  color:#ffe6a1!important;
+  font:900 9px Georgia,serif!important;
+  border-bottom:1px solid rgba(168,121,25,.70)!important;
+}
+.score-dock .payout-head div{
+  padding:5px 5px!important;
+}
+.score-dock .payout-row{
+  grid-template-columns:1.6fr .72fr!important;
+  height:calc((100% - 26px)/8)!important;
+  border-bottom:1px solid rgba(169,134,60,.22)!important;
+  background:rgba(255,255,255,.11)!important;
+}
+.score-dock .payout-row:nth-child(odd){
+  background:rgba(255,255,255,.20)!important;
+}
+.score-dock .payout-left{
+  gap:6px!important;
+  padding:0 6px!important;
+}
+.score-dock .payout-name{
+  font:800 9px Georgia,serif!important;
+  color:#2c2008!important;
+  letter-spacing:.01em;
+}
+.score-dock .payout-value{
+  display:flex!important;align-items:center;justify-content:flex-end!important;
+  padding:0 6px!important;
+  font:900 9px Arial,sans-serif!important;
+  color:#3b2b08!important;
+}
+.score-dock .dice-strip{
+  min-width:42px!important;
+  gap:2px!important;
+}
+.score-dock .rule-die{
+  width:14px!important;height:14px!important;
+  border-radius:4px!important;
+  border:1px solid #8996a8!important;
+  background:linear-gradient(180deg,#ffffff,#eef2f6)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 1px 1px rgba(0,0,0,.06)!important;
+}
+.score-current{
+  background:linear-gradient(90deg,rgba(240,194,82,.24),rgba(255,255,255,.38))!important;
+  box-shadow:inset 0 0 0 1px rgba(226,176,58,.20)!important;
+}
+.score-current .payout-name,.score-current .payout-value{
+  color:#1f1704!important;
+  font-weight:900!important;
+}
+
+/* Tablet / flache Höhe weiter sauber */
+@media (orientation:landscape) and (max-height:900px){
+  .branch-legend{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+    margin-bottom:5px!important;
+  }
+  .branch-key{
+    min-height:32px!important;
+    padding:4px 2px!important;
+    font-size:7px!important;
+  }
+  .branch-key .bk-icon{font-size:12px!important}
+  .phase-step{min-height:30px!important}
+  .phase-step span{width:16px!important;height:16px!important}
+  .dice-toolbar{padding:4px 6px!important}
+  .compact-result{
+    min-height:32px!important;
+    max-height:34px!important;
+    padding:5px 7px!important;
+    font-size:8px!important;
+  }
+}
+@media (orientation:landscape) and (max-height:760px){
+  .branch-key > span:last-child{font-size:6.3px!important}
+  .score-dock .payout-name,.score-dock .payout-value{font-size:8px!important}
+}
+
 </style>
 </head>
 <body data-business-mode="local">
@@ -3245,7 +3541,7 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
     <button class="continue-btn hidden" id="continueBtn">▶ Gespeichertes Spiel fortsetzen</button>
     <div class="local-mode-explain">2–5 Personen spielen gemeinsam an diesem Gerät. Der Spielstand wird automatisch nur in diesem Browser gespeichert.</div>
     <div class="rule-mini">
-      V2.5 Lokal: Pass-&-Play mit Übergabebildschirm, Zugbilanz, kompakter Tablet-Würfeltisch, ausbalancierte Bank je Spielerzahl,
+      V2.6 Lokal: schönerer Würfeltisch, edlere Punktetafel, Pass-&-Play mit Übergabebildschirm, ausbalancierte Bank je Spielerzahl,
       zufälliger Startspieler, faire Schlussrunde, Autosave und 30 individuelle Kaufkarten.
     </div>
   </div>
@@ -3286,7 +3582,7 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
   <main class="board-wrap">
     <div class="focus-hint">▣ Fokusmodus oben rechts</div>
     <div class="board">
-      <div id="businessModeChip" class="board-chip">LOKAL · V2.5</div>
+      <div id="businessModeChip" class="board-chip">LOKAL · V2.6</div>
       <div id="payoutOverlay" class="payout-overlay legacy-payout"></div>
       <div id="boardMarket" class="board-market-overlay"></div>
     </div>
@@ -4086,8 +4382,16 @@ function renderMarket(){
 
 function renderBranchLegend(){
  const box=q("branchLegend");if(!box)return;
- const items=[...branches.map(b=>({id:b.id,icon:b.icon,label:b.name})),{id:"news",icon:"🐷",label:"News"}];
- box.innerHTML=items.map(x=>`<div class="branch-key ${x.id==="news"?"news":""} ${state.branchRoll===x.id?"current":""}" title="${x.label}"><span class="bk-icon">${x.icon}</span><span>${x.label}</span></div>`).join("");
+ const items=[
+   ...branches.map(b=>({id:b.id,icon:b.icon,label:b.name})),
+   {id:"news",icon:"🐷",label:"Börsennews"}
+ ];
+ box.innerHTML=items.map(x=>`
+   <div class="branch-key ${x.id==="news"?"news":""} ${state.branchRoll===x.id?"current":""}" title="${x.label}">
+     <span class="bk-icon">${x.icon}</span>
+     <span>${x.label}</span>
+   </div>
+ `).join("");
 }
 function renderDice(){
  const box=q("dice");box.innerHTML="";
