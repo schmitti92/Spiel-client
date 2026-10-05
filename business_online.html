@@ -2139,7 +2139,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
   <section class="market-board-strip">
     <div class="market-board-header">
       <div class="market-board-brand">
-        <div id="businessModeChip" class="market-mode-chip">ONLINE · V5.4</div>
+        <div id="businessModeChip" class="market-mode-chip">ONLINE · V5.5</div>
         <div>
           <div class="market-board-kicker">DAS GROSSE BUSINESS · AKTIENMARKT</div>
           <div class="market-board-title">Vier Chancen. Ein Investment pro Zug.</div>
@@ -4120,7 +4120,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V5.4";
+if(_boChip)_boChip.textContent="ONLINE · V5.5";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
@@ -5533,6 +5533,622 @@ $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart")
   if(caption) caption.textContent = "Live-Wurf";
 
   /* Direkt neu rendern, damit gehaltene Würfel sofort korrekt einsortiert sind. */
+  try{
+    if(typeof renderDiceArena === "function") renderDiceArena();
+  }catch(_e){}
+})();
+</script>
+
+
+<style id="v55-pc-arena-fix">
+/* ==========================================================
+   V5.5 – PC-Klick + überlappungsfreie Würfelarena
+   ========================================================== */
+
+/* Wirklich keine Wisch-Hinweise mehr. */
+#diceArenaSwipeHint,
+#diceThrowHandle,
+#diceArenaBoard::after{
+  display:none !important;
+  content:none !important;
+}
+
+/* Vollbild: feste, verlässliche Bereiche */
+.dice-arena-card{
+  width:100vw !important;
+  height:100dvh !important;
+  max-width:none !important;
+  max-height:none !important;
+  padding:7px 9px 8px !important;
+  display:grid !important;
+  grid-template-rows:42px 34px minmax(0,1fr) 48px !important;
+  gap:6px !important;
+  overflow:hidden !important;
+}
+
+.dice-arena-head{
+  height:42px !important;
+  min-height:42px !important;
+}
+.dice-arena-head>div:first-child{
+  min-width:0 !important;
+}
+.dice-arena-title{
+  font-size:22px !important;
+}
+.dice-arena-player{
+  min-height:27px !important;
+  padding:5px 9px !important;
+  font-size:10px !important;
+}
+.dice-arena-close{
+  width:34px !important;
+  height:34px !important;
+}
+
+.dice-arena-phasebar{
+  height:34px !important;
+  min-height:34px !important;
+  padding:3px !important;
+  gap:5px !important;
+}
+#diceArenaRollInfo,
+#diceArenaBranchInfo,
+.dice-arena-live-badge{
+  height:28px !important;
+  min-height:28px !important;
+  padding:4px 8px !important;
+  font-size:8.5px !important;
+  line-height:1 !important;
+}
+
+/* Drei eigenständige Spalten – nichts darf über seine Spalte hinaus. */
+.dice-arena-workspace{
+  min-width:0 !important;
+  min-height:0 !important;
+  height:100% !important;
+  display:grid !important;
+  grid-template-columns:
+    minmax(280px,.92fr)
+    minmax(360px,1.16fr)
+    minmax(275px,.88fr) !important;
+  grid-template-rows:minmax(0,1fr) !important;
+  gap:7px !important;
+  overflow:hidden !important;
+  align-items:stretch !important;
+}
+.dice-arena-mainstage{
+  display:contents !important;
+}
+.dice-guide-board{
+  grid-column:1 !important;
+  grid-row:1 !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+.dice-arena-board-wrap{
+  grid-column:2 !important;
+  grid-row:1 !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+.dice-arena-side{
+  grid-column:3 !important;
+  grid-row:1 !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+
+/* Linke Auszahlungstabelle */
+.dice-guide-board{
+  padding:7px !important;
+  display:grid !important;
+  grid-template-rows:34px 24px minmax(0,1fr) !important;
+  gap:4px !important;
+}
+.dice-guide-legend{
+  display:none !important;
+}
+.dice-guide-header{
+  min-height:34px !important;
+}
+.dice-guide-title{
+  font-size:13px !important;
+  line-height:1 !important;
+}
+.dice-guide-badge{
+  min-width:58px !important;
+  padding:5px 6px !important;
+  font-size:11px !important;
+}
+.dice-guide-boardhead{
+  height:24px !important;
+  min-height:24px !important;
+  margin:0 !important;
+  padding:4px 6px !important;
+  font-size:6.5px !important;
+}
+.dice-guide-rows{
+  height:100% !important;
+  min-height:0 !important;
+  display:grid !important;
+  grid-template-rows:repeat(8,minmax(0,1fr)) !important;
+  gap:3px !important;
+  overflow:hidden !important;
+}
+.dice-guide-row{
+  min-height:0 !important;
+  padding:2px 5px !important;
+  border-radius:8px !important;
+}
+.dice-guide-label{
+  font-size:9.5px !important;
+}
+.dice-guide-pay{
+  min-width:45px !important;
+  padding:4px !important;
+  font-size:10px !important;
+}
+.dice-guide-face{
+  width:22px !important;
+  height:22px !important;
+  min-width:22px !important;
+  min-height:22px !important;
+  flex:0 0 22px !important;
+  margin:0 !important;
+}
+.dice-guide-face .play-die-face{
+  width:22px !important;
+  height:22px !important;
+}
+
+/* Mittlere Wurffläche */
+.dice-arena-board-wrap{
+  height:100% !important;
+  display:grid !important;
+  grid-template-rows:20px minmax(0,1fr) !important;
+  gap:4px !important;
+}
+.arena-board-topline{
+  height:20px !important;
+  min-height:20px !important;
+  padding:0 3px !important;
+}
+.arena-board-kicker{
+  font-size:8px !important;
+}
+.arena-board-caption{
+  font-size:7px !important;
+  opacity:.66 !important;
+}
+.dice-arena-board{
+  position:relative !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  border-width:7px !important;
+  border-radius:18px !important;
+  overflow:hidden !important;
+  touch-action:none !important;
+}
+
+/* Würfe dürfen klar oberhalb des Haltefelds landen. */
+.dice-arena-layer{
+  position:absolute !important;
+  inset:0 !important;
+  overflow:hidden !important;
+  z-index:4 !important;
+  pointer-events:none !important;
+}
+.arena-die{
+  pointer-events:auto !important;
+  z-index:8 !important;
+  cursor:pointer !important;
+  user-select:none !important;
+  -webkit-user-select:none !important;
+}
+.arena-die.branch{
+  pointer-events:none !important;
+}
+
+/* Haltefeld: fester Bereich, keine Texte mitten zwischen Würfeln */
+.dice-hold-zone{
+  left:10px !important;
+  right:10px !important;
+  bottom:9px !important;
+  width:auto !important;
+  height:82px !important;
+  min-width:0 !important;
+  padding:7px 8px !important;
+  border-radius:13px !important;
+  overflow:hidden !important;
+  z-index:5 !important;
+}
+.dice-hold-title{
+  position:static !important;
+  height:15px !important;
+  display:flex !important;
+  align-items:center !important;
+  font-size:7px !important;
+  line-height:1 !important;
+  letter-spacing:.12em !important;
+}
+.dice-hold-sub{
+  display:none !important;
+}
+.dice-hold-slots{
+  position:absolute !important;
+  left:8px !important;
+  right:8px !important;
+  top:25px !important;
+  bottom:7px !important;
+  height:auto !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:6px !important;
+}
+.dice-hold-slots span{
+  height:auto !important;
+  min-width:0 !important;
+  font-size:0 !important;
+  border-radius:10px !important;
+}
+
+/* Rechts: Branchenwürfel und Ergebnis strikt getrennt */
+.dice-arena-side{
+  height:100% !important;
+  display:grid !important;
+  grid-template-rows:78px minmax(0,1fr) !important;
+  gap:6px !important;
+}
+.branch-dock-card{
+  height:78px !important;
+  min-height:78px !important;
+  padding:6px !important;
+  overflow:hidden !important;
+  position:relative !important;
+}
+.branch-dock-headline,
+.branch-dock-sub{
+  display:none !important;
+}
+.branch-dock-card .side-label{
+  height:12px !important;
+  margin:0 0 3px !important;
+  font-size:7px !important;
+}
+.branch-dock-stage{
+  height:53px !important;
+  display:grid !important;
+  grid-template-columns:52px minmax(0,1fr) !important;
+  gap:7px !important;
+  align-items:center !important;
+  overflow:hidden !important;
+}
+.branch-die-dock{
+  width:49px !important;
+  height:49px !important;
+  min-width:49px !important;
+  min-height:49px !important;
+  margin:0 !important;
+  border-width:2px !important;
+  border-radius:13px !important;
+}
+.branch-die-dock::before{
+  display:none !important;
+}
+.branch-die-dock-face{
+  font-size:24px !important;
+}
+.branch-dock-meta{
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+.branch-die-dock-text{
+  margin:0 !important;
+  min-height:0 !important;
+  text-align:left !important;
+  font-size:10px !important;
+  line-height:1.08 !important;
+  overflow:hidden !important;
+}
+.branch-die-dock-text span{
+  display:none !important;
+}
+
+/* Nur die wirklich nützliche Auswirkung anzeigen.
+   Die redundante Hero-Karte wurde entfernt, damit nichts kollidiert. */
+.branch-payout-card{
+  min-height:0 !important;
+  padding:7px !important;
+  display:grid !important;
+  grid-template-rows:12px 22px minmax(0,1fr) !important;
+  gap:4px !important;
+  overflow:hidden !important;
+}
+.branch-payout-card .side-label{
+  height:12px !important;
+  font-size:7px !important;
+}
+.branch-payout-title{
+  height:22px !important;
+  min-height:22px !important;
+  font-size:13px !important;
+  line-height:22px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+.branch-payout-summary,
+.branch-payout-hero{
+  display:none !important;
+}
+.branch-payout-rows{
+  min-height:0 !important;
+  height:100% !important;
+  max-height:none !important;
+  margin:0 !important;
+  padding:0 2px 0 0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:4px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+}
+.branch-payout-row{
+  flex:0 0 auto !important;
+  min-height:50px !important;
+  padding:5px 6px !important;
+  border-radius:8px !important;
+  gap:6px !important;
+}
+.branch-payout-name{
+  font-size:9px !important;
+}
+.branch-payout-tag{
+  padding:2px 4px !important;
+  font-size:5px !important;
+}
+.branch-payout-meta{
+  margin-top:2px !important;
+  font-size:6px !important;
+  line-height:1.05 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.branch-payout-impact{
+  margin-top:2px !important;
+  font-size:6.5px !important;
+  line-height:1.05 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.branch-payout-value{
+  min-width:51px !important;
+  padding:6px 4px !important;
+  border-radius:8px !important;
+  font-size:10px !important;
+}
+
+/* Fußleiste */
+.dice-arena-footer{
+  height:48px !important;
+  min-height:48px !important;
+  display:grid !important;
+  grid-template-columns:105px minmax(0,1fr) 140px !important;
+  gap:6px !important;
+}
+.dice-arena-footer button,
+.dice-arena-result{
+  height:48px !important;
+  min-height:48px !important;
+  border-radius:10px !important;
+}
+.arena-secondary,
+.arena-primary{
+  font-size:9px !important;
+  padding:0 8px !important;
+}
+.dice-arena-result{
+  padding:5px 8px !important;
+  font-size:9px !important;
+  line-height:1.1 !important;
+}
+
+/* 1366×768 und ähnliche PC-Auflösungen */
+@media (max-width:1380px){
+  .dice-arena-workspace{
+    grid-template-columns:
+      minmax(255px,.88fr)
+      minmax(345px,1.17fr)
+      minmax(250px,.84fr) !important;
+    gap:5px !important;
+  }
+  .dice-guide-title{font-size:12px !important;}
+  .dice-guide-face{
+    width:20px !important;height:20px !important;
+    min-width:20px !important;min-height:20px !important;
+    flex-basis:20px !important;
+  }
+  .dice-guide-face .play-die-face{
+    width:20px !important;height:20px !important;
+  }
+}
+
+/* Kleine PC-/Notebook-Höhen */
+@media (max-height:760px){
+  .dice-arena-card{
+    grid-template-rows:38px 31px minmax(0,1fr) 43px !important;
+    gap:4px !important;
+    padding:5px 7px !important;
+  }
+  .dice-arena-head{height:38px !important;min-height:38px !important;}
+  .dice-arena-title{font-size:19px !important;}
+  .dice-arena-phasebar{height:31px !important;min-height:31px !important;}
+  #diceArenaRollInfo,#diceArenaBranchInfo,.dice-arena-live-badge{
+    height:25px !important;min-height:25px !important;font-size:7.5px !important;
+  }
+  .dice-hold-zone{height:72px !important;}
+  .dice-hold-slots{top:22px !important;}
+  .dice-arena-side{grid-template-rows:70px minmax(0,1fr) !important;}
+  .branch-dock-card{height:70px !important;min-height:70px !important;}
+  .branch-dock-stage{height:46px !important;grid-template-columns:45px minmax(0,1fr) !important;}
+  .branch-die-dock{width:42px !important;height:42px !important;min-width:42px !important;min-height:42px !important;}
+  .branch-die-dock-face{font-size:21px !important;}
+  .branch-payout-row{min-height:43px !important;}
+  .dice-arena-footer,
+  .dice-arena-footer button,
+  .dice-arena-result{height:43px !important;min-height:43px !important;}
+}
+
+/* Falls das Fenster wirklich sehr schmal wird, zwei Zeilen statt Überlappung. */
+@media (max-width:980px){
+  .dice-arena-card{
+    overflow:auto !important;
+    height:auto !important;
+    min-height:100dvh !important;
+    grid-template-rows:auto auto auto auto !important;
+  }
+  .dice-arena-workspace{
+    grid-template-columns:1fr !important;
+    grid-template-rows:auto 500px auto !important;
+    overflow:visible !important;
+  }
+  .dice-guide-board{grid-column:1 !important;grid-row:1 !important;min-height:430px !important;}
+  .dice-arena-board-wrap{grid-column:1 !important;grid-row:2 !important;}
+  .dice-arena-side{grid-column:1 !important;grid-row:3 !important;min-height:350px !important;}
+}
+</style>
+
+<script id="v55-pc-click-layout-script">
+(function(){
+  const board = document.getElementById("diceArenaBoard");
+  const layer = document.getElementById("diceArenaLayer");
+  if(!board || !layer) return;
+
+  /*
+   * Wichtig für PC UND Touch:
+   * Ein Pointerdown direkt auf einem Zahlenwürfel darf nicht bis zum
+   * Vollflächen-Wischlistener des Bretts hochblubbern. Dadurch bleibt
+   * der normale Klick/Touch zum Halten zuverlässig erhalten.
+   */
+  function protectDie(el){
+    if(!el || el.dataset.pcHoldProtected === "1" || el.classList.contains("branch")) return;
+    el.dataset.pcHoldProtected = "1";
+    el.addEventListener("pointerdown", function(e){
+      e.stopPropagation();
+    }, false);
+  }
+
+  function protectAllDice(){
+    layer.querySelectorAll(".arena-die:not(.branch)").forEach(protectDie);
+  }
+
+  protectAllDice();
+
+  const observer = new MutationObserver(function(){
+    protectAllDice();
+  });
+  observer.observe(layer,{childList:true,subtree:true});
+
+  /*
+   * Normale Wurfpositionen liegen ausschließlich oberhalb des Haltefelds.
+   * Dadurch können geworfene Würfel nicht mehr mit den gehaltenen
+   * Würfeln oder dem Haltefeld kollidieren.
+   */
+  window.arenaSafeSlots = function(seed=1,count=5){
+    const boardEl = document.getElementById("diceArenaBoard");
+    const hold = document.getElementById("diceHoldZone");
+    const w = boardEl?.clientWidth || 600;
+    const h = boardEl?.clientHeight || 430;
+    const size = Math.min(64,Math.max(46,w*.105));
+
+    const holdTop = hold ? hold.offsetTop : Math.max(240,h-92);
+    const usableBottom = Math.max(size+30,holdTop-14);
+    const top = 38;
+    const usableH = Math.max(120,usableBottom-top-size);
+
+    const pts = [
+      [.16,.12],[.38,.10],[.62,.12],[.84,.11],
+      [.24,.38],[.50,.34],[.76,.38],
+      [.16,.66],[.39,.63],[.63,.65],[.84,.62]
+    ];
+
+    let x = (Number(seed)||1) >>> 0;
+    const rng = ()=>{
+      x ^= x << 13; x ^= x >>> 17; x ^= x << 5; x >>>= 0;
+      return x / 4294967296;
+    };
+    const shuffled = pts
+      .map((p,i)=>({p,k:rng()+i*.00001}))
+      .sort((a,b)=>a.k-b.k)
+      .map(v=>v.p);
+
+    return shuffled.slice(0,count).map(([nx,ny])=>({
+      x:Math.max(10,Math.min(w-size-10,nx*w-size/2)),
+      y:Math.max(top,Math.min(usableBottom-size,top+ny*usableH)),
+      angle:0,
+      z:0
+    }));
+  };
+
+  /*
+   * Gehaltene Würfel werden exakt in fünf getrennten Slots platziert.
+   */
+  window.arenaHeldPosition = function(i,heldState=null){
+    const boardEl = document.getElementById("diceArenaBoard");
+    const zone = document.getElementById("diceHoldZone");
+    const held = (heldState || state.held || []).map(Boolean);
+
+    let slot = 0;
+    for(let n=0;n<i;n++) if(held[n]) slot++;
+
+    const size = Math.min(52,Math.max(42,(boardEl?.clientWidth || 520)*.10));
+
+    if(zone){
+      const left=8,right=8,top=25,bottom=7;
+      const usableW=Math.max(180,zone.clientWidth-left-right);
+      const cellW=usableW/5;
+      const usableH=Math.max(size,zone.clientHeight-top-bottom);
+
+      return {
+        x:zone.offsetLeft+left+slot*cellW+(cellW-size)/2,
+        y:zone.offsetTop+top+(usableH-size)/2,
+        angle:0,
+        z:0
+      };
+    }
+
+    return {
+      x:15+slot*(size+7),
+      y:(boardEl?.clientHeight||380)-size-14,
+      angle:0,
+      z:0
+    };
+  };
+
+  /*
+   * Bei Resize/Projektor/Browser-Zoom Positionen sauber neu berechnen.
+   */
+  let resizeTimer = 0;
+  window.addEventListener("resize",function(){
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(function(){
+      try{
+        if(Array.isArray(window.diceArenaPositions)){
+          window.diceArenaPositions = arenaDefaultPositions();
+        }
+        if(typeof renderDiceArena === "function") renderDiceArena();
+      }catch(_e){}
+    },120);
+  });
+
+  /* Sofort auf den neuen Aufbau umstellen. */
   try{
     if(typeof renderDiceArena === "function") renderDiceArena();
   }catch(_e){}
