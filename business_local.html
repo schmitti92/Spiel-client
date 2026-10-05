@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V2.4 · Lokal</title>
+<title>Das große Business – V2.5 · Lokal</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -3094,6 +3094,137 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
 }
 @media(max-width:520px){.local-mode-nav{grid-template-columns:1fr}}
 
+
+/* =================================================================
+   V2.5 · Pass-&-Play + Tablet-Fit
+   ================================================================= */
+
+/* Spielerwechsel verdeckt das Brett wirklich, bis der nächste Spieler bereit ist. */
+.turn-transition{
+  pointer-events:none!important;
+  background:rgba(3,11,19,.18)!important;
+  backdrop-filter:blur(0);
+  -webkit-backdrop-filter:blur(0);
+}
+.turn-transition.show{
+  opacity:1!important;
+  pointer-events:auto!important;
+  background:rgba(3,11,19,.91)!important;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.turn-transition-card{
+  width:min(90vw,430px)!important;
+  padding:22px 26px!important;
+}
+.turn-transition-card .small{
+  letter-spacing:.12em;
+  color:#aebfca!important;
+}
+.turn-transition-card .name{
+  font-size:clamp(28px,5vw,40px)!important;
+  margin:4px 0 8px!important;
+}
+.handoff-balance{
+  margin:8px auto 0;
+  color:#dce7ef;
+  font:800 12px Arial,sans-serif;
+}
+.handoff-summary{
+  margin:9px auto 0;
+  padding:8px 10px;
+  border-radius:11px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.08);
+  color:#b9cbd6;
+  font:700 10px/1.35 Arial,sans-serif;
+}
+.handoff-summary .gain{color:#9ee0af;font-weight:900}
+.handoff-summary .loss{color:#ffaaa7;font-weight:900}
+.handoff-ready{
+  width:100%;
+  margin-top:14px;
+  min-height:44px;
+  border:0;
+  border-radius:13px;
+  cursor:pointer;
+  background:linear-gradient(180deg,#f2d46d,#c79128);
+  color:#172235;
+  font:900 13px Arial,sans-serif;
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+.handoff-ready:active{transform:scale(.99)}
+.handoff-tip{
+  margin-top:8px;
+  color:#8fa3b3;
+  font:700 9px Arial,sans-serif;
+}
+
+/* Auf Tablets im Querformat bekommt der Würfeltisch mehr echte Höhe.
+   Das Brett spannt weiterhin über beide rechten Zeilen und verliert dadurch
+   praktisch keinen Platz. */
+@media (orientation:landscape) and (max-height:900px){
+  #game{
+    grid-template-rows:48px minmax(0,1fr) 205px!important;
+  }
+  .control-panel{
+    padding:4px 6px!important;
+  }
+  .dice-header{min-height:24px!important}
+  .mini-cup-wrap{height:23px!important}
+  .mini-cup{width:31px!important;height:23px!important}
+  .phase-stepper{margin:1px 0 3px!important;gap:3px!important}
+  .phase-step{padding:2px 1px!important;font-size:7px!important}
+  .phase-step span{width:13px!important;height:13px!important;font-size:7px!important}
+  .dice-toolbar{min-height:16px!important}
+  .branch-legend{
+    min-height:18px!important;
+    margin:1px 0 2px!important;
+    gap:2px!important;
+  }
+  .branch-key{
+    min-height:18px!important;
+    padding:1px!important;
+  }
+  .branch-key .bk-icon{font-size:11px!important}
+  .branch-key > span:last-child{display:none!important}
+  .compact-tray{
+    padding:3px 5px 9px!important;
+  }
+  .dice-row{
+    grid-template-columns:minmax(0,1fr) 46px!important;
+    gap:5px!important;
+  }
+  .dice-main{gap:4px!important}
+  .die{max-width:32px!important;border-radius:7px!important}
+  .branch-die{max-width:35px!important}
+  .compact-result{
+    margin:2px 0!important;
+    min-height:24px!important;
+    max-height:29px!important;
+    padding:4px 5px!important;
+    font-size:8px!important;
+    line-height:1.15!important;
+  }
+  .compact-controls{
+    min-height:31px!important;
+    margin-top:2px!important;
+  }
+  .compact-controls button{
+    min-height:30px!important;
+    padding:5px 3px!important;
+    font-size:8px!important;
+  }
+}
+
+/* Sehr knappe Browserhöhe: nur Icons in der Branchenhilfe. */
+@media (orientation:landscape) and (max-height:760px){
+  #game{grid-template-rows:44px minmax(0,1fr) 198px!important}
+  .depot-fan{min-height:120px!important}
+  .depot-fan-card{width:84px!important;height:118px!important}
+  .compact-result{max-height:26px!important}
+}
+
 </style>
 </head>
 <body data-business-mode="local">
@@ -3114,7 +3245,7 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
     <button class="continue-btn hidden" id="continueBtn">▶ Gespeichertes Spiel fortsetzen</button>
     <div class="local-mode-explain">2–5 Personen spielen gemeinsam an diesem Gerät. Der Spielstand wird automatisch nur in diesem Browser gespeichert.</div>
     <div class="rule-mini">
-      V2.4 Lokal: Pass-&-Play für 2–5 Personen an einem Gerät, ausbalancierte Bank je Spielerzahl,
+      V2.5 Lokal: Pass-&-Play mit Übergabebildschirm, Zugbilanz, kompakter Tablet-Würfeltisch, ausbalancierte Bank je Spielerzahl,
       zufälliger Startspieler, faire Schlussrunde, Autosave und 30 individuelle Kaufkarten.
     </div>
   </div>
@@ -3155,7 +3286,7 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
   <main class="board-wrap">
     <div class="focus-hint">▣ Fokusmodus oben rechts</div>
     <div class="board">
-      <div id="businessModeChip" class="board-chip">LOKAL · V2.4</div>
+      <div id="businessModeChip" class="board-chip">LOKAL · V2.5</div>
       <div id="payoutOverlay" class="payout-overlay legacy-payout"></div>
       <div id="boardMarket" class="board-market-overlay"></div>
     </div>
@@ -3215,8 +3346,12 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
 
 <div id="turnTransition" class="turn-transition">
   <div class="turn-transition-card">
-    <div class="small">NÄCHSTER SPIELER</div>
+    <div id="turnTransitionLabel" class="small">NÄCHSTER SPIELER</div>
     <div id="turnTransitionName" class="name">Spieler</div>
+    <div id="turnTransitionBalance" class="handoff-balance"></div>
+    <div id="turnTransitionSummary" class="handoff-summary hidden"></div>
+    <button id="turnTransitionReady" class="handoff-ready" type="button">✓ Ich bin bereit</button>
+    <div class="handoff-tip">Gerät jetzt an den angezeigten Spieler weitergeben.</div>
   </div>
 </div>
 
@@ -3627,6 +3762,7 @@ q("startBtn").onclick=()=>{
  log(`🃏 Marktdeck: 20 Aktien + 10 Aktienurkunden · 📰 12 Börsennews.`);
  setLeftTab("score");
  render();
+ showLocalHandoff(null,null,true);
 };
 
 function resetTurnState(){
@@ -3639,6 +3775,7 @@ function resetTurnState(){
  state.branchResolved=false;
  state.locked=false;
  state.selectedMarket=null;
+ state.turnStartCash=state.players?.[state.current]?.cash ?? 0;
 }
 
 function finalThreshold(){
@@ -3674,7 +3811,7 @@ function renderMarketStage(){
 }
 function render(){
  if(!state.players.length)return;
- q("turnPill").textContent=`Am Zug: ${state.players[state.current].name}`;
+ q("turnPill").textContent=`Am Zug: ${state.players[state.current].name} · ${money(state.players[state.current].cash)}`;
  q("bankDisplay").textContent=`🏦 Bank: ${money(state.bank)}`;
  q("roundDisplay").textContent=`Runde ${Math.floor((state.turnNumber-1)/state.players.length)+1} · Zug ${state.turnNumber}${state.finalRound?" · SCHLUSSRUNDE":""}`;
  q("roundDisplay").classList.toggle("final-round",state.finalRound);
@@ -3906,8 +4043,16 @@ function selectMarketCard(id){
  state.selectedMarket=(state.selectedMarket===id?null:id);
  tone(state.selectedMarket?560:320,.05,"sine",.018);
  renderMarket();renderControls();
- if(state.selectedMarket)q("result").innerHTML=`Ausgewählt: <b>${card.corp}</b> · ${card.cost} Z → ${card.value} Z ${card.type==="Aktienurkunde"?"einmalig":"je Branchentreffer"}. Unten auf <b>Kaufen</b> tippen.`;
- else q("result").textContent="Keine Karte ausgewählt. Du kannst den Zug auch ohne Kauf beenden.";
+ if(state.selectedMarket){
+   const b=branchObj(card.branch);
+   const ownedNormal=p.cards.filter(c=>c.branch===card.branch&&c.type==="Aktie").length;
+   const afterNormal=ownedNormal+(card.type==="Aktie"?1:0);
+   const bonusAfter=branchBonus(afterNormal);
+   const extra=card.type==="Aktienurkunde"
+     ? `Einmalzahlung bei ${b.name}.`
+     : `${b.name}: danach ${afterNormal} normale Aktie${afterNormal===1?"":"n"}${bonusAfter?` · Bonus +${bonusAfter} Z`:""}.`;
+   q("result").innerHTML=`<b>${card.corp}</b> · ${card.cost} Z → ${card.value} Z. ${extra}`;
+ }else q("result").textContent="Keine Karte ausgewählt. Du kannst den Zug auch ohne Kauf beenden.";
 }
 function renderMarket(){
  const box=q("boardMarket");
@@ -4349,9 +4494,47 @@ function buyCard(idx,sourceEl){
    : "Karte gekauft. Zug jetzt beenden.";
  render();
 }
+
+function hideLocalHandoff(){
+ const tr=q("turnTransition");
+ if(tr)tr.classList.remove("show");
+}
+function showLocalHandoff(previous=null,delta=null,isFirst=false){
+ const tr=q("turnTransition");
+ if(!tr||!state.players?.length)return;
+ const current=state.players[state.current];
+ q("turnTransitionLabel").textContent=isFirst?"STARTSPIELER":"NÄCHSTER SPIELER";
+ q("turnTransitionName").textContent=current.name;
+ q("turnTransitionBalance").textContent=`Kontostand: ${money(current.cash)} · ${current.cards.length} Karte${current.cards.length===1?"":"n"}`;
+ const summary=q("turnTransitionSummary");
+ if(previous && Number.isFinite(delta)){
+   const cls=delta>0?"gain":delta<0?"loss":"";
+   const sign=delta>0?"+":"";
+   summary.innerHTML=`Vorheriger Zug: <b>${previous}</b> · Veränderung <span class="${cls}">${sign}${delta} Z</span>`;
+   summary.classList.remove("hidden");
+ }else{
+   summary.classList.add("hidden");
+   summary.textContent="";
+ }
+ tr.classList.add("show");
+}
+q("turnTransitionReady").onclick=()=>{
+ hideLocalHandoff();
+ tone(620,.06,"sine",.018);
+};
+document.addEventListener("keydown",e=>{
+ if((e.key==="Enter"||e.key===" ")&&q("turnTransition")?.classList.contains("show")){
+   e.preventDefault();q("turnTransitionReady").click();
+ }
+});
+
 function nextTurn(){
  if(state.gameEnded)return;
 
+ const previous=state.players[state.current];
+ const previousName=previous.name;
+ const previousStart=Number.isFinite(state.turnStartCash)?state.turnStartCash:previous.cash;
+ const previousDelta=previous.cash-previousStart;
  const next=(state.current+1)%state.players.length;
 
  if(state.finalRound && next===state.roundAnchor){
@@ -4365,14 +4548,12 @@ function nextTurn(){
  state.players[state.current].stats.turns++;
  resetTurnState();
 
- const tr=q("turnTransition"),tn=q("turnTransitionName");
- if(tn)tn.textContent=state.players[state.current].name;
- if(tr){tr.classList.add("show");setTimeout(()=>tr.classList.remove("show"),850)}
  soundTurn();
  setLeftTab("score");
  q("result").textContent=state.finalRound?"Schlussrunde: letzter Zug für diesen Spieler.":"Bereit zum ersten Wurf.";
  log(`➡️ <b>${state.players[state.current].name}</b> ist am Zug${state.finalRound?" · Schlussrunde":""}.`);
  render();
+ showLocalHandoff(previousName,previousDelta,false);
 }
 function endGame(){
  if(state.gameEnded)return;
