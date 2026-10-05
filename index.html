@@ -134,6 +134,14 @@
       background:linear-gradient(135deg,#77521a,#b8892e);
       border-color:var(--businessLine);color:#fff4d2;
     }
+    .business-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .business-actions .btn{margin-top:0}
+    .btn.business-local{
+      background:linear-gradient(135deg,#23593a,#34744b);
+      border-color:#4f8c62;color:#e9fff0;
+    }
+    .business-badges{display:flex;gap:5px;flex-wrap:wrap}
+    .business-badge.local{color:#c8f6d5;border-color:#396c49;background:#163120}
     .skyjo-title{
       display:flex;
       align-items:center;
@@ -209,11 +217,17 @@
       <article class="game business-card">
         <div class="business-title">
           <h2 style="margin:0">💼 Das große Business</h2>
-          <span class="business-badge">Online</span>
+          <div class="business-badges">
+            <span class="business-badge local">Lokal</span>
+            <span class="business-badge">Online</span>
+          </div>
         </div>
-        <p style="margin-top:8px">Wirtschaftsspiel mit Aktienmarkt, Branchenwürfel, Börsennews, Investments und gemeinsamer Online-Partie für 2–5 Spieler.</p>
-        <a class="btn business" href="barikade_lobby.html?game=business">Das große Business öffnen</a>
-        <div class="small">Startet über die gemeinsame Online-Lobby und verbindet alle Spieler über Render.</div>
+        <p style="margin-top:8px">Wirtschaftsspiel mit Aktienmarkt, Branchenwürfel, Börsennews und Investments für 2–5 Spieler.</p>
+        <div class="business-actions">
+          <a class="btn business-local" href="business.html?local=1">🏠 Lokal spielen</a>
+          <a class="btn business" href="business.html?online=1">🌐 Online spielen</a>
+        </div>
+        <div class="small">Lokal: alle an einem Gerät, ohne Render. Online: jedes Gerät verbindet sich über den Render-Server.</div>
       </article>
     </section>
 
