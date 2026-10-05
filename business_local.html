@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V2.7 · Lokal</title>
+<title>Das große Business – V2.8 · Lokal</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -3661,6 +3661,86 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
   }
 }
 
+
+/* =================================================================
+   V2.8 · Brett-Tabelle final
+   Nur die fehlerhaften Würfel des Hintergrundbilds werden überdeckt.
+   Die originale Tabelle samt Text und Goldrahmen bleibt unverändert.
+   Vermessen auf dem 1254 × 1254 px Brettbild.
+   ================================================================= */
+#payoutOverlay.board-payout-corrected{
+  display:none!important;
+}
+.board-dice-fix{
+  position:absolute!important;
+  left:30.54%!important;
+  top:34.53%!important;
+  width:9.08%!important;
+  height:22.18%!important;
+  z-index:19!important;
+  display:grid!important;
+  grid-template-rows:repeat(8,1fr)!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+.board-dice-row{
+  min-width:0!important;
+  min-height:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  padding:0 3.5%!important;
+  background:linear-gradient(90deg,#f7e3bf 0%,#f5dfb8 72%,#f4ddb5 100%)!important;
+  border-bottom:1px solid rgba(118,83,30,.19)!important;
+}
+.board-dice-row:first-child{
+  border-top:1px solid rgba(118,83,30,.16)!important;
+}
+.board-dice-row.current{
+  background:linear-gradient(90deg,#ffe9aa 0%,#f7d780 72%,#f1c967 100%)!important;
+}
+.board-dice-strip{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:2.4%!important;
+  min-width:0!important;
+}
+.board-dice-fix .rule-die{
+  position:relative!important;
+  flex:0 0 16.7%!important;
+  width:auto!important;
+  height:auto!important;
+  aspect-ratio:1/1!important;
+  border-radius:17%!important;
+  border:1px solid #7d8999!important;
+  background:linear-gradient(145deg,#ffffff 0%,#f4f6f8 55%,#e7ebef 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.98),
+    0 1px 2px rgba(0,0,0,.13)!important;
+}
+.board-dice-fix .pip{
+  width:18%!important;
+  height:18%!important;
+  min-width:0!important;
+  min-height:0!important;
+  background:#15191d!important;
+  border-radius:50%!important;
+}
+.board-dice-fix .rule-die .p1{left:17%!important;top:17%!important}
+.board-dice-fix .rule-die .p3{right:17%!important;top:17%!important}
+.board-dice-fix .rule-die .p4{left:17%!important;top:50%!important;transform:translateY(-50%)!important}
+.board-dice-fix .rule-die .p5{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important}
+.board-dice-fix .rule-die .p6{right:17%!important;top:50%!important;transform:translateY(-50%)!important}
+.board-dice-fix .rule-die .p7{left:17%!important;bottom:17%!important}
+.board-dice-fix .rule-die .p9{right:17%!important;bottom:17%!important}
+@media(max-width:1100px){
+  .board-dice-row{padding-left:3%!important;padding-right:2%!important}
+  .board-dice-strip{gap:2%!important}
+  .board-dice-fix .rule-die{flex-basis:16.8%!important}
+}
+
 </style>
 </head>
 <body data-business-mode="local">
@@ -3681,7 +3761,7 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
     <button class="continue-btn hidden" id="continueBtn">▶ Gespeichertes Spiel fortsetzen</button>
     <div class="local-mode-explain">2–5 Personen spielen gemeinsam an diesem Gerät. Der Spielstand wird automatisch nur in diesem Browser gespeichert.</div>
     <div class="rule-mini">
-      V2.7 Lokal: korrigierte Würfeltabelle direkt auf dem Brett, schönerer Würfeltisch, Pass-&-Play, ausbalancierte Bank je Spielerzahl,
+      V2.8 Lokal: korrekt integrierte Beispielwürfel im Originalbrett, schönerer Würfeltisch, Pass-&-Play, ausbalancierte Bank je Spielerzahl,
       zufälliger Startspieler, faire Schlussrunde, Autosave und 30 individuelle Kaufkarten.
     </div>
   </div>
@@ -3722,8 +3802,9 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
   <main class="board-wrap">
     <div class="focus-hint">▣ Fokusmodus oben rechts</div>
     <div class="board">
-      <div id="businessModeChip" class="board-chip">LOKAL · V2.7</div>
-      <div id="payoutOverlay" class="payout-overlay legacy-payout board-payout-corrected" aria-label="Korrekte Würfeltabelle"></div>
+      <div id="businessModeChip" class="board-chip">LOKAL · V2.8</div>
+      <div id="payoutOverlay" class="payout-overlay legacy-payout board-payout-corrected" aria-hidden="true"></div>
+      <div id="boardDiceFix" class="board-dice-fix" aria-label="Korrigierte Beispielwürfel"></div>
       <div id="boardMarket" class="board-market-overlay"></div>
     </div>
   </main>
@@ -4046,6 +4127,7 @@ function playDieHTML(face){
 }
 function renderPayoutOverlay(){
  const currentName=(state.rolls>0&&state.phase==="roll")?evaluate(state.dice).name:null;
+
  const tableHTML = `<div class="payout-head"><div>Würfelergebnis</div><div>Auszahlung</div></div>` +
    payoutRows.map(row=>`
       <div class="payout-row ${currentName===row.name?"score-current":""}">
@@ -4060,8 +4142,14 @@ function renderPayoutOverlay(){
  const score=q("scoreDock");
  if(score)score.innerHTML=tableHTML;
 
- const boardTable=q("payoutOverlay");
- if(boardTable)boardTable.innerHTML=tableHTML;
+ const fix=q("boardDiceFix");
+ if(fix){
+   fix.innerHTML=payoutRows.map((row,i)=>`
+     <div class="board-dice-row ${currentName===row.name?"current":""}" data-row="${i}">
+       <div class="board-dice-strip">${row.dice.map(d=>dieHTML(d)).join("")}</div>
+     </div>
+   `).join("");
+ }
 }
 
 function createDeck(){
