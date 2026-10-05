@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V3.3 · Online Arena-Dock</title>
+<title>Das große Business – V3.4 · Online Kompakt-Portfolio</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -4254,6 +4254,377 @@ body.business-online .business-turn-lock{
   .branch-payout-detail{display:none}
 }
 
+
+/* =================================================================
+   V3.4 · ONLINE KOMPAKT-PORTFOLIO
+   Brett deutlich kleiner, Markt daneben, gekaufte Karten darunter.
+   ================================================================= */
+
+/* Hauptlayout */
+#game{
+  grid-template-columns:210px minmax(0,1fr) 235px!important;
+  grid-template-rows:52px minmax(280px,39vh) minmax(0,1fr)!important;
+  gap:8px!important;
+  padding:8px!important;
+}
+.topbar{grid-column:1/4!important;grid-row:1!important}
+.players-panel{grid-column:1!important;grid-row:2!important}
+.score-log-panel{grid-column:1!important;grid-row:3!important}
+.control-panel{
+  grid-column:3!important;
+  grid-row:2!important;
+  min-height:0!important;
+  align-self:stretch!important;
+}
+.center-top{
+  grid-column:2!important;
+  grid-row:2!important;
+  min-width:0;min-height:0;
+  display:grid;
+  grid-template-columns:minmax(280px,.68fr) minmax(500px,1.32fr);
+  gap:8px;
+}
+
+/* Brett: nur noch kompakte Übersicht */
+.center-top > .board-wrap{
+  grid-column:1!important;
+  grid-row:1!important;
+  min-width:0!important;
+  min-height:0!important;
+  border-radius:16px!important;
+  padding:6px!important;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(27,62,80,.88),#071624 75%)!important;
+}
+.compact-board-wrap .board{
+  height:100%!important;
+  width:auto!important;
+  max-width:100%!important;
+  aspect-ratio:1/1!important;
+  flex:0 0 auto!important;
+  border-radius:10px!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.38)!important;
+}
+.compact-board-wrap .board-chip{
+  padding:4px 8px!important;
+  font-size:7px!important;
+}
+.compact-board-wrap .focus-hint{
+  font-size:7px!important;
+  top:5px!important;right:6px!important;
+}
+
+/* Offene Aktien verlassen das Brett und bekommen einen eigenen Markt. */
+.market-shelf{
+  grid-column:2;
+  min-width:0;min-height:0;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  border-radius:16px;
+  border:1px solid rgba(151,120,54,.70);
+  background:
+    radial-gradient(circle at 20% 0%,rgba(226,183,76,.08),transparent 32%),
+    linear-gradient(180deg,#102f49,#071827);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.market-shelf-head{
+  min-height:47px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:7px 10px;
+  border-bottom:1px solid rgba(255,220,131,.10);
+}
+.market-shelf-kicker,.portfolio-kicker{
+  color:#8fa4b4;
+  font:900 7px Arial,sans-serif;
+  letter-spacing:.15em;
+}
+.market-shelf-title{
+  color:#ffe099;
+  font:900 15px Georgia,serif;
+  margin-top:1px;
+}
+.market-shelf-hint{
+  color:#9eb0bc;
+  font:800 8px Arial,sans-serif;
+  text-align:right;
+}
+
+/* Alte pixelgenaue Brettpositionen komplett neutralisieren. */
+.market-shelf #boardMarket.board-market-overlay{
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  width:100%!important;height:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:8px!important;
+  align-items:stretch!important;
+  padding:8px!important;
+  z-index:1!important;
+  pointer-events:auto!important;
+}
+.market-shelf #boardMarket::before,
+.market-shelf #boardMarket::after{display:none!important}
+.market-shelf .market-slot,
+.market-shelf .market-slot:nth-child(1),
+.market-shelf .market-slot:nth-child(2),
+.market-shelf .market-slot:nth-child(3),
+.market-shelf .market-slot:nth-child(4){
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  width:auto!important;height:auto!important;
+  min-width:0!important;min-height:0!important;
+  padding:0!important;margin:0!important;
+  display:flex!important;align-items:stretch!important;justify-content:stretch!important;
+  pointer-events:auto!important;
+}
+.market-shelf .market-slot .invest-card{
+  width:100%!important;height:100%!important;
+  min-height:0!important;
+  transform:none!important;
+  border-radius:13px!important;
+  margin:0!important;
+}
+.market-shelf .market-slot .invest-card:hover{transform:translateY(-2px)!important}
+.market-shelf .realistic-market-card{
+  grid-template-rows:55% 45%!important;
+}
+.market-shelf .real-card-company{font-size:9px!important}
+.market-shelf .real-card-desc{font-size:5.5px!important;line-height:1.12!important}
+.market-shelf .real-card-bottom{font-size:5.8px!important}
+.market-shelf .real-card-bottom b{font-size:8px!important}
+.market-shelf .real-card-branch{font-size:5.3px!important}
+.market-shelf .real-card-price{font-size:8px!important;height:24px!important;min-width:31px!important}
+.market-shelf .market-status{font-size:5px!important}
+
+/* Portfolio nimmt die komplette untere Mitte + rechte Spalte ein. */
+.depot-panel.portfolio-panel{
+  grid-column:2/4!important;
+  grid-row:3!important;
+  min-width:0!important;min-height:0!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  padding:8px!important;
+  border-radius:17px!important;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(230,186,73,.07),transparent 25%),
+    linear-gradient(180deg,#0d2b43,#061724)!important;
+  border:1px solid rgba(134,106,50,.72)!important;
+}
+.portfolio-head{
+  min-height:43px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:2px 4px 7px;
+}
+.portfolio-head .depot-title{
+  display:block!important;
+  margin:1px 0 0!important;
+  padding:0!important;
+  border:0!important;background:none!important;
+  color:#ffe19a!important;
+  text-align:left!important;
+  font:900 15px Georgia,serif!important;
+}
+.depot-summary{
+  display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap;
+}
+.depot-summary span{
+  padding:4px 7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+  color:#afc0cc;
+  font:800 7px Arial,sans-serif;
+  white-space:nowrap;
+}
+.depot-summary b{color:#ffe099}
+
+/* Fünf feste Branchen-Spalten */
+.depot-list.portfolio-grid{
+  min-width:0;min-height:0;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:7px!important;
+  overflow:auto!important;
+  align-items:stretch!important;
+}
+.portfolio-branch{
+  min-width:0!important;min-height:0!important;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  border-radius:13px!important;
+  overflow:hidden!important;
+}
+.portfolio-branch-head{
+  display:block!important;
+  min-height:43px!important;
+  padding:6px 7px!important;
+}
+.portfolio-branch-head > span:first-child{
+  display:block;
+  color:#ffe29b;
+  font:900 9px Arial,sans-serif;
+  white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.portfolio-branch-head > span:last-child{
+  display:block!important;
+  margin-top:3px;
+  color:#9db0bd!important;
+  font:800 6.8px Arial,sans-serif!important;
+  white-space:normal!important;
+  line-height:1.15!important;
+}
+.portfolio-branch-head small{
+  display:block;
+  margin-top:1px;
+  font-size:6px;
+  color:#8ea2af;
+}
+.portfolio-card-wrap{
+  min-width:0!important;min-height:0!important;
+  overflow:auto!important;
+  padding:5px!important;
+}
+.depot-fan.portfolio-card-grid{
+  position:relative!important;
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:5px!important;
+  align-content:start!important;
+}
+.depot-fan-card.portfolio-card{
+  position:relative!important;
+  left:auto!important;top:auto!important;
+  width:100%!important;
+  height:112px!important;
+  transform:none!important;
+  border-radius:10px!important;
+  border-width:1px!important;
+  box-shadow:0 5px 9px rgba(0,0,0,.26)!important;
+}
+.portfolio-card .realistic-market-card,
+.portfolio-card .startup-card{
+  height:100%!important;
+}
+.portfolio-card .realistic-market-card{
+  grid-template-rows:54% 46%!important;
+}
+.portfolio-card .real-card-company{font-size:7px!important}
+.portfolio-card .real-card-desc{display:none!important}
+.portfolio-card .real-card-bottom{
+  margin-top:auto!important;
+  font-size:5.2px!important;
+  padding-top:2px!important;
+}
+.portfolio-card .real-card-bottom b{font-size:6.7px!important}
+.portfolio-card .real-card-branch{font-size:4.4px!important;padding:1px 3px!important}
+.portfolio-card .real-card-price{
+  min-width:24px!important;height:19px!important;
+  font-size:6.5px!important;padding:0 4px!important;
+}
+.portfolio-card .real-card-body{padding:3px 4px 4px!important}
+.portfolio-card .card-info{
+  width:16px!important;height:16px!important;
+  font-size:8px!important;left:3px!important;bottom:3px!important;
+}
+.portfolio-empty-slot{
+  grid-column:1/-1;
+  min-height:76px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;
+  border-radius:10px;
+  border:1px dashed rgba(255,255,255,.09);
+  color:#718795;
+  background:rgba(255,255,255,.018);
+}
+.portfolio-empty-slot span{font-size:20px;opacity:.45}
+.portfolio-empty-slot small{font:700 6.5px Arial,sans-serif}
+
+/* Rechte Zugsteuerung wird jetzt bewusst kompakt. */
+.control-panel{
+  padding:8px!important;
+  border-radius:16px!important;
+}
+.control-panel .dice-title{font-size:13px!important}
+.control-panel .phase-stepper{margin:5px 0 8px!important}
+.control-panel .compact-result{margin-top:8px!important}
+
+/* Fokusmodus vergrößert jetzt Übersicht + Markt gemeinsam. */
+body.board-focus #game{
+  grid-template-columns:1fr!important;
+  grid-template-rows:52px minmax(0,1fr)!important;
+}
+body.board-focus .topbar{grid-column:1!important;grid-row:1!important}
+body.board-focus .players-panel,
+body.board-focus .score-log-panel,
+body.board-focus .depot-panel,
+body.board-focus .control-panel{display:none!important}
+body.board-focus .center-top{
+  grid-column:1!important;grid-row:2!important;
+  grid-template-columns:minmax(360px,.7fr) minmax(620px,1.3fr)!important;
+}
+body.board-focus .compact-board-wrap .board{height:min(100%,72vh)!important}
+
+/* Tablet-Anpassungen */
+@media(max-width:1180px){
+  #game{
+    grid-template-columns:180px minmax(0,1fr) 210px!important;
+    grid-template-rows:48px minmax(260px,39vh) minmax(0,1fr)!important;
+    gap:6px!important;padding:6px!important;
+  }
+  .center-top{
+    grid-template-columns:minmax(250px,.62fr) minmax(390px,1.38fr);
+    gap:6px;
+  }
+  .market-shelf #boardMarket.board-market-overlay{
+    gap:5px!important;padding:6px!important;
+  }
+  .depot-fan-card.portfolio-card{height:102px!important}
+  .depot-summary span{padding:3px 5px;font-size:6.3px}
+}
+@media(max-width:980px){
+  #game{
+    grid-template-columns:155px minmax(0,1fr) 185px!important;
+    grid-template-rows:45px minmax(240px,38vh) minmax(0,1fr)!important;
+  }
+  .center-top{grid-template-columns:235px minmax(0,1fr)}
+  .market-shelf #boardMarket.board-market-overlay{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:repeat(2,minmax(0,1fr))!important;
+  }
+  .market-shelf-head{min-height:38px;padding:4px 7px}
+  .market-shelf-title{font-size:11px}
+  .market-shelf-hint{display:none}
+  .depot-list.portfolio-grid{gap:4px!important}
+  .depot-fan.portfolio-card-grid{grid-template-columns:1fr!important}
+  .depot-fan-card.portfolio-card{height:88px!important}
+  .portfolio-head{min-height:37px}
+  .depot-summary span:nth-child(n+3){display:none}
+}
+
+
+/* V3.4 FINAL · sehr schmale Tablets ohne abgeschnittenes Center-Layout */
+@media(max-width:1050px){
+  .center-top{
+    grid-template-columns:minmax(205px,215px) minmax(0,1fr)!important;
+  }
+  .market-shelf #boardMarket.board-market-overlay{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:repeat(2,minmax(0,1fr))!important;
+  }
+  .compact-board-wrap .board{
+    max-height:100%!important;
+    max-width:100%!important;
+  }
+}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -4312,20 +4683,37 @@ body.business-online .business-turn-lock{
     <div id="log" class="tab-hidden"></div>
   </section>
 
-  <main class="board-wrap">
-    <div class="focus-hint">▣ Fokusmodus oben rechts</div>
-    <div class="board">
-      <div id="businessModeChip" class="board-chip">ONLINE · V3.3</div>
-      <div id="payoutOverlay" class="payout-overlay legacy-payout board-payout-corrected" aria-hidden="true"></div>
-      <div id="boardDiceFix" class="board-dice-fix" aria-label="Korrigierte Beispielwürfel"></div>
-      <div id="boardMarket" class="board-market-overlay"></div>
-    </div>
-  </main>
+  <section class="center-top">
+    <main class="board-wrap compact-board-wrap">
+      <div class="focus-hint">▣ Übersicht vergrößern</div>
+      <div class="board">
+        <div id="businessModeChip" class="board-chip">ONLINE · V3.4</div>
+        <div id="payoutOverlay" class="payout-overlay legacy-payout board-payout-corrected" aria-hidden="true"></div>
+        <div id="boardDiceFix" class="board-dice-fix" aria-label="Korrigierte Beispielwürfel"></div>
+      </div>
+    </main>
 
-  <section class="depot-panel">
-    <div class="panel-title">Depot</div>
-    <div id="depotTitle" class="depot-title">Aktiver Spieler</div>
-    <div id="depot" class="depot-list"></div>
+    <section class="market-shelf">
+      <div class="market-shelf-head">
+        <div>
+          <div class="market-shelf-kicker">AKTIENMARKT</div>
+          <div class="market-shelf-title">Offene Investments</div>
+        </div>
+        <div class="market-shelf-hint">Karte auswählen → Kauf bestätigen</div>
+      </div>
+      <div id="boardMarket" class="board-market-overlay market-shelf-grid"></div>
+    </section>
+  </section>
+
+  <section class="depot-panel portfolio-panel">
+    <div class="portfolio-head">
+      <div>
+        <div class="portfolio-kicker">MEIN PORTFOLIO</div>
+        <div id="depotTitle" class="depot-title">Aktiver Spieler</div>
+      </div>
+      <div id="depotSummary" class="depot-summary"></div>
+    </div>
+    <div id="depot" class="depot-list portfolio-grid"></div>
   </section>
 
   <section class="control-panel">
@@ -5217,36 +5605,53 @@ function showCardInfoById(id){
 }
 function renderDepot(){
  const p=state.players[state.viewedPlayer];
- q("depotTitle").textContent = `Sichtbar: ${p.name}`;
- const box=q("depot"); box.innerHTML="";
- const groups = {};
+ const certCount=p.cards.filter(c=>c.type==="Aktienurkunde").length;
+ const recurringTotal=branches.reduce((sum,b)=>sum+branchPayoutPreview(p,b.id).recurring,0);
+ const normalCount=p.cards.filter(c=>c.type==="Aktie").length;
+
+ q("depotTitle").textContent=`${p.name}`;
+ const summary=q("depotSummary");
+ if(summary)summary.innerHTML=`
+   <span>🃏 <b>${p.cards.length}</b> Karten</span>
+   <span>📈 <b>${recurringTotal} Z</b> Branchenwert</span>
+   <span>🏢 <b>${normalCount}</b> Aktien</span>
+   <span>📜 <b>${certCount}</b> Urkunden</span>`;
+
+ const box=q("depot");box.innerHTML="";
+ const groups={};
  sortCards(p.cards).forEach(card=>{
-   if(!groups[card.branch]) groups[card.branch]=[];
+   if(!groups[card.branch])groups[card.branch]=[];
    groups[card.branch].push(card);
  });
- const branchesWithCards = branchOrder.filter(id=>groups[id]?.length);
- if(!branchesWithCards.length){
-   box.innerHTML=`<div class="depot-empty">Keine Karten vorhanden.</div>`;
-   return;
- }
- branchesWithCards.forEach(id=>{
+
+ branchOrder.forEach(id=>{
    const b=branchObj(id);
-   const cards=groups[id];
-   const step=26;
-   const minWidth=108 + Math.max(0, cards.length-1)*step + 8;
-   const fanCards=cards.map((card,i)=>{
-     const rot = (-6 + i*3.1).toFixed(2)+"deg";
-     const rise = (Math.abs((cards.length-1)/2 - i)*2.5).toFixed(1)+"px";
-     return `<div class="depot-fan-card" style="left:${i*step}px; --rot:${rot}; --rise:${rise}; background:linear-gradient(160deg,${b.c1},${b.c2})">${buildPrettyCard(card,true)}</div>`;
-   }).join("");
+   const cards=groups[id]||[];
    const wrapper=document.createElement("div");
-   wrapper.className="depot-group";
+   wrapper.className="depot-group portfolio-branch";
+
    const payout=branchPayoutPreview(p,id);
    const payoutText=payout.certPay
-     ? `${cards.length} Karte${cards.length>1?'n':''} · <b>${payout.recurring} Z</b>/Treffer + 📜 ${payout.certPay} Z einmalig`
-     : `${cards.length} Karte${cards.length>1?'n':''} · <b>${payout.recurring} Z</b>/Treffer`;
-   wrapper.innerHTML=`<div class="depot-group-head"><span>${b.icon} ${b.name}</span><span>${payoutText}</span></div>
-   <div class="depot-fan-wrap"><div class="depot-fan" style="width:${minWidth}px">${fanCards}</div></div>`;
+     ? `<b>${payout.recurring} Z</b>/Treffer <small>+ 📜 ${payout.certPay} Z einmalig</small>`
+     : `<b>${payout.recurring} Z</b>/Treffer`;
+
+   let cardHTML="";
+   if(cards.length){
+     cardHTML=cards.map(card=>
+       `<div class="depot-fan-card portfolio-card" style="background:linear-gradient(160deg,${b.c1},${b.c2})">${buildPrettyCard(card,true)}</div>`
+     ).join("");
+   }else{
+     cardHTML=`<div class="portfolio-empty-slot"><span>${b.icon}</span><small>Noch keine Beteiligung</small></div>`;
+   }
+
+   wrapper.innerHTML=`
+     <div class="depot-group-head portfolio-branch-head">
+       <span>${b.icon} ${b.name}</span>
+       <span>${payoutText}</span>
+     </div>
+     <div class="depot-fan-wrap portfolio-card-wrap">
+       <div class="depot-fan portfolio-card-grid">${cardHTML}</div>
+     </div>`;
    box.appendChild(wrapper);
  });
 }
@@ -6228,7 +6633,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V3.3";
+if(_boChip)_boChip.textContent="ONLINE · V3.4";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
