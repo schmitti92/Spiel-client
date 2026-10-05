@@ -1149,6 +1149,16 @@
     body.lobby-page .boss-trigger-setting .event-field-count-badge.off{min-width:56px;background:rgba(148,163,184,.10);color:#cbd5e1;border-color:rgba(148,163,184,.18);}
     body.lobby-page .client-room-note{display:none;margin:0 0 10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(96,165,250,.12);background:rgba(59,130,246,.06);color:rgba(220,231,250,.72);font-size:12px;line-height:1.35;}
     body.lobby-page.lobby-client-mode .client-room-note{display:block;}
+
+/* ===== Spielwechsel: Das große Business (additiv, Barikade bleibt unverändert) ===== */
+.game-switch-hub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 16px}
+.game-switch-item{display:flex;align-items:center;gap:12px;min-height:72px;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.10);text-decoration:none;color:var(--text);background:linear-gradient(160deg,rgba(24,33,58,.80),rgba(10,15,28,.70));box-shadow:0 14px 34px rgba(0,0,0,.20);transition:.16s ease}
+.game-switch-item:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.18)}
+.game-switch-item.active{border-color:rgba(139,124,255,.38);box-shadow:0 0 0 3px rgba(139,124,255,.06),0 14px 34px rgba(0,0,0,.20)}
+.game-switch-item.business{border-color:rgba(225,182,74,.28);background:linear-gradient(145deg,rgba(48,40,24,.84),rgba(15,19,29,.78))}
+.game-switch-icon{font-size:30px;line-height:1}.game-switch-copy{min-width:0}.game-switch-copy strong{display:block;font-size:15px}.game-switch-copy small{display:block;margin-top:3px;color:var(--muted2);font-size:11.5px;line-height:1.25}.game-switch-badge{margin-left:auto;padding:4px 7px;border-radius:999px;background:rgba(53,208,127,.12);border:1px solid rgba(53,208,127,.20);color:#9af0c0;font:900 9px system-ui}
+@media(max-width:680px){.game-switch-hub{grid-template-columns:1fr}.game-switch-item{min-height:62px}}
+
 </style>
 </head>
 <body class="lobby-page">
@@ -1169,6 +1179,16 @@
         <span id="dicePill" class="pill">Würfel: Klassisch</span>
       </div>
     </div>
+
+
+    <nav class="game-switch-hub" aria-label="Spiel auswählen">
+      <a class="game-switch-item active" href="barikade_lobby.html" aria-current="page">
+        <span class="game-switch-icon">🧱</span><span class="game-switch-copy"><strong>Barikade</strong><small>Aktuelle Lobby mit Action, Bossmodus, Ereignisfeldern und Brettdesign.</small></span><span class="game-switch-badge">ONLINE</span>
+      </a>
+      <a class="game-switch-item business" href="business.html?online=1">
+        <span class="game-switch-icon">💼</span><span class="game-switch-copy"><strong>Das große Business</strong><small>2–5 Spieler · Aktienmarkt · Branchenwürfel · Börsennews.</small></span><span class="game-switch-badge">ONLINE</span>
+      </a>
+    </nav>
 
     <div class="lobby-layout">
       <div class="lobby-main-stack">
