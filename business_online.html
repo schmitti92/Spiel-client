@@ -4054,10 +4054,10 @@ body.business-online .business-turn-lock{
 .dice-arena-side{
   min-height:0;
   display:grid;
-  grid-template-rows:auto minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1.15fr) minmax(0,.95fr);
   gap:9px;
 }
-.branch-dock-card,.branch-payout-card{
+.branch-dock-card,.branch-payout-card,.arena-guide-card{
   border-radius:16px;
   background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.035));
   border:1px solid rgba(255,255,255,.09);
@@ -4117,6 +4117,28 @@ body.business-online .business-turn-lock{
   display:flex;
   flex-direction:column;
 }
+.branch-payout-summary{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  padding-top:7px;
+}
+.branch-summary-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  min-height:22px;padding:3px 8px;border-radius:999px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  color:#dde8ee;font:800 8px/1 Arial,sans-serif;
+}
+.branch-summary-chip.gain{
+  background:rgba(54,141,87,.18);border-color:rgba(84,209,123,.28);color:#b6f1c7;
+}
+.branch-summary-chip.loss{
+  background:rgba(166,76,65,.18);border-color:rgba(232,117,101,.28);color:#ffd2cb;
+}
+.branch-summary-chip.neutral{
+  color:#9bb0bc;background:rgba(255,255,255,.04);
+}
+
 .branch-payout-title{
   color:#ffe09a;
   font:900 12px Georgia,serif;
@@ -4146,6 +4168,15 @@ body.business-online .business-turn-lock{
   border-color:rgba(234,190,70,.30);
   background:rgba(234,190,70,.075);
 }
+.branch-payout-row.affected{
+  border-color:rgba(90,214,138,.20);
+  background:rgba(77,165,110,.10);
+}
+.branch-payout-row.loss{
+  border-color:rgba(232,117,101,.24);
+  background:rgba(158,69,58,.11);
+}
+
 .branch-payout-name{
   min-width:0;
   color:#dce7ee;
@@ -4158,12 +4189,23 @@ body.business-online .business-turn-lock{
   font:700 7px Arial,sans-serif;
   margin-top:2px;
 }
+.branch-payout-impact{
+  display:block;
+  margin-top:3px;
+  color:#bfd0db;
+  font:800 7px Arial,sans-serif;
+}
+.branch-payout-impact.gain{color:#9fe3b2}
+.branch-payout-impact.loss{color:#ffb0a5}
+
 .branch-payout-value{
   min-width:39px;
   text-align:right;
   color:#9fe3b2;
   font:900 12px Arial,sans-serif;
 }
+.branch-payout-value.loss{color:#ffb0a5}
+
 .branch-payout-value.zero{color:#7e909c}
 .branch-payout-empty{
   padding:12px 7px;
@@ -4171,19 +4213,41 @@ body.business-online .business-turn-lock{
   text-align:center;
   font:700 8px/1.35 Arial,sans-serif;
 }
+.dice-guide-title{
+  color:#ffe09a;
+  font:900 11px Georgia,serif;
+  padding-bottom:7px;
+  border-bottom:1px solid rgba(255,221,131,.12);
+}
+.dice-guide-rows{
+  min-height:0;overflow:auto;
+  display:grid;gap:5px;align-content:start;
+  padding-top:7px;
+}
+.dice-guide-row{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;
+  padding:6px 7px;border-radius:10px;
+  background:rgba(255,255,255,.042);border:1px solid rgba(255,255,255,.055);
+}
+.dice-guide-main{min-width:0;display:grid;gap:4px}
+.dice-guide-combo{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.dice-guide-face{display:inline-flex;transform:scale(.74);transform-origin:left center; margin-right:-8px}
+.dice-guide-label{color:#dce7ee;font:800 8px/1.1 Arial,sans-serif}
+.dice-guide-pay{color:#ffe09a;font:900 10px Arial,sans-serif;white-space:nowrap}
+
 
 /* Haltebank unten links */
 .dice-hold-zone{
   position:absolute;
-  left:2.4%;bottom:3.5%;
-  width:35%;
-  min-width:190px;
-  height:126px;
+  left:2.4%;bottom:3.3%;
+  width:48%;
+  min-width:260px;
+  height:104px;
   z-index:2;
   border-radius:17px;
   background:
-    linear-gradient(180deg,rgba(6,26,18,.72),rgba(4,18,13,.78));
-  border:2px dashed rgba(242,201,91,.26);
+    linear-gradient(180deg,rgba(6,26,18,.78),rgba(4,18,13,.84));
+  border:2px dashed rgba(242,201,91,.28);
   box-shadow:inset 0 0 24px rgba(0,0,0,.18);
   pointer-events:none;
 }
@@ -4198,18 +4262,17 @@ body.business-online .business-turn-lock{
   color:#769083;font:700 7px Arial,sans-serif;
 }
 .dice-hold-slots{
-  position:absolute;left:9px;right:9px;bottom:8px;top:39px;
+  position:absolute;left:9px;right:9px;bottom:9px;top:40px;
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  grid-template-rows:repeat(2,1fr);
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  grid-template-rows:1fr;
   gap:5px;
 }
 .dice-hold-slots span{
   border-radius:11px;
-  border:1px dashed rgba(255,224,133,.14);
-  background:rgba(255,255,255,.018);
+  border:1px dashed rgba(255,224,133,.18);
+  background:rgba(255,255,255,.022);
 }
-.dice-hold-slots span:nth-child(5){grid-column:2}
 
 /* Wischgriff nach rechts, damit die Haltebank frei bleibt */
 .dice-throw-handle{
@@ -4249,7 +4312,7 @@ body.business-online .business-turn-lock{
 @media(max-width:760px){
   .dice-arena-workspace{grid-template-columns:minmax(0,1fr) 170px}
   .dice-arena-side{gap:5px}
-  .branch-dock-card,.branch-payout-card{padding:7px}
+  .branch-dock-card,.branch-payout-card,.arena-guide-card{padding:7px}
   .branch-payout-row{min-height:29px;padding:4px 5px}
   .branch-payout-detail{display:none}
 }
@@ -5045,9 +5108,16 @@ body[data-market-stage="hot"] #roundDisplay::after{
       <section class="branch-payout-card">
         <div class="side-label">AUSZAHLUNG</div>
         <div id="branchPayoutTitle" class="branch-payout-title">Noch kein Branchenwurf</div>
+        <div id="branchPayoutSummary" class="branch-payout-summary">Wer vom Branchenwurf betroffen ist, erscheint hier deutlich mit Gewinn oder Verlust.</div>
         <div id="branchPayoutRows" class="branch-payout-rows">
           <div class="branch-payout-empty">Beim ersten Wurf erscheint hier die Auszahlung pro Spieler.</div>
         </div>
+      </section>
+
+      <section class="arena-guide-card">
+        <div class="side-label">WURFHILFE</div>
+        <div class="dice-guide-title">Welche Kombination bringt wie viel?</div>
+        <div id="diceGuideRows" class="dice-guide-rows"></div>
       </section>
     </aside>
     </div>
@@ -6203,24 +6273,30 @@ function setArenaSpectatorMode(on,actor=""){
  if(badge){badge.classList.toggle("hidden",!on);badge.textContent=on?`LIVE · ${actor||"Wurf"}`:"LIVE"}
 }
 
-function arenaHeldPosition(i){
+function arenaHeldLayout(heldState=null){
+ const hs=(heldState||state.held||[]).map(Boolean),map={};
+ let slot=0;
+ for(let i=0;i<5;i++)if(hs[i])map[i]=slot++;
+ return {map,count:slot,held:hs};
+}
+function arenaHeldPosition(i,heldState=null){
  const board=q("diceArenaBoard"),zone=q("diceHoldZone");
  const w=board?.clientWidth||700;
  const size=Math.min(68,Math.max(48,w*.071));
+ const layout=arenaHeldLayout(heldState);
+ const slot=(layout.map[i]??0);
  if(zone){
-   const col=i%3,row=Math.floor(i/3);
-   const innerLeft=9,innerTop=39,innerRight=9,innerBottom=8;
-   const availW=Math.max(120,zone.clientWidth-innerLeft-innerRight);
-   const availH=Math.max(60,zone.clientHeight-innerTop-innerBottom);
-   const cellW=availW/3,cellH=availH/2;
+   const innerLeft=10,innerTop=40,innerRight=10,innerBottom=10;
+   const availW=Math.max(180,zone.clientWidth-innerLeft-innerRight);
+   const cellW=availW/5;
+   const y=zone.offsetTop+innerTop+Math.max(0,((zone.clientHeight-innerTop-innerBottom)-size*.92)/2);
    return {
-     x:zone.offsetLeft+innerLeft+col*cellW+(cellW-size*.92)/2,
-     y:zone.offsetTop+innerTop+row*cellH+(cellH-size*.92)/2,
+     x:zone.offsetLeft+innerLeft+slot*cellW+(cellW-size*.92)/2,
+     y,
      angle:0,z:0
    };
  }
- const col=i%3,row=Math.floor(i/3);
- return {x:18+col*(size+8),y:(board?.clientHeight||400)-126+40+row*(size*.72),angle:0,z:0};
+ return {x:20+slot*(size+8),y:(board?.clientHeight||400)-94,angle:0,z:0};
 }
 function arenaSafeSlots(seed=1,count=5){
  const board=q("diceArenaBoard");
@@ -6255,33 +6331,76 @@ function renderBranchDock(branchValue=null,pulse=false){
 function arenaEscapeHTML(v){
  return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
 }
+function diceGuideRowHTML(faces,label,payout){
+ return `<div class="dice-guide-row"><div class="dice-guide-main"><div class="dice-guide-combo">${faces.map(f=>`<span class="dice-guide-face">${playDieHTML(f)}</span>`).join("")}</div><div class="dice-guide-label">${label}</div></div><div class="dice-guide-pay">${payout}</div></div>`;
+}
+function renderDiceGuideTable(){
+ const box=q("diceGuideRows");if(!box)return;
+ box.innerHTML=[
+   [[1,1],"1 Paar","5 Z"],
+   [[1,1,5,5],"2 Paare","7 Z"],
+   [[4,4,4],"3 Gleiche","9 Z"],
+   [[1,2,3,4],"Kleine Straße","12 Z"],
+   [[3,3,5,5,5],"Full House","15 Z"],
+   [[4,4,4,4],"4 Gleiche","20 Z"],
+   [[1,2,3,4,5],"Große Straße","25 Z"],
+   [[6,6,6,6,6],"5 Gleiche","30 Z"]
+ ].map(r=>diceGuideRowHTML(r[0],r[1],r[2])).join("");
+}
 function renderBranchPayoutTable(){
- const title=q("branchPayoutTitle"),box=q("branchPayoutRows");if(!title||!box)return;
+ const title=q("branchPayoutTitle"),summary=q("branchPayoutSummary"),box=q("branchPayoutRows");if(!title||!box)return;
  const p=state.lastBranchPayout;
  if(!p || Number(p.turnNumber)!==Number(state.turnNumber)){
    title.textContent=state.branchRoll?(state.branchRoll==="news"?"Börsennews":"Wird ausgewertet …"):"Noch kein Branchenwurf";
+   if(summary)summary.innerHTML='<span class="branch-summary-chip neutral">Nach dem ersten Wurf siehst du hier sofort, wen der Branchenwurf betrifft.</span>';
    box.innerHTML='<div class="branch-payout-empty">Beim ersten Wurf erscheint hier die Auszahlung pro Spieler.</div>';
    return;
  }
+ const rows=Array.isArray(p.rows)?p.rows:[];
+ const affected=rows.filter(r=>Number(r.total||0)!==0);
  if(p.branchId==="news"){
    title.textContent="🐷 Börsennews";
-   box.innerHTML='<div class="branch-payout-empty">Keine normale Branchenauszahlung – die Börsennews wird separat ausgewertet.</div>';
+   if(summary)summary.innerHTML='<span class="branch-summary-chip neutral">Die Börsennews wurde ausgelöst. Gewinne oder Verluste stehen direkt im Spielprotokoll und in den Spielerständen.</span>';
+   box.innerHTML=rows.map(r=>{
+     const total=Number(r.total)||0;
+     const impactClass=total<0?"loss":total>0?"affected":"";
+     const impactText=total<0?`Zahlt ${Math.abs(total)} Z`:total>0?`Erhält ${total} Z`:"Kein direkter Effekt";
+     return `
+       <div class="branch-payout-row ${r.name===state.players?.[state.current]?.name?"active":""} ${impactClass}">
+         <div class="branch-payout-name">${arenaEscapeHTML(r.name)}
+           <span class="branch-payout-impact ${total<0?"loss":total>0?"gain":""}">${impactText}</span>
+         </div>
+         <div class="branch-payout-value ${total<0?"loss":total===0?"zero":""}">${total>0?`+${total} Z`:total<0?`-${Math.abs(total)} Z`:"0 Z"}</div>
+       </div>`;
+   }).join("") || '<div class="branch-payout-empty">Keine Auszahlung.</div>';
    return;
  }
  title.textContent=`${p.icon||""} ${p.branchName||"Branche"}`;
- const rows=Array.isArray(p.rows)?p.rows:[];
- box.innerHTML=rows.map(r=>`
-   <div class="branch-payout-row ${r.name===state.players?.[state.current]?.name?"active":""}">
+ if(summary){
+   summary.innerHTML=affected.length
+     ? affected.map(r=>`<span class="branch-summary-chip ${Number(r.total||0)<0?"loss":"gain"}">${arenaEscapeHTML(r.name)} ${Number(r.total||0)<0?`-${Math.abs(Number(r.total||0))}`:`+${Number(r.total||0)}`} Z</span>`).join("")
+     : '<span class="branch-summary-chip neutral">Niemand wurde von diesem Branchenwurf getroffen.</span>';
+ }
+ box.innerHTML=rows.map(r=>{
+   const total=Number(r.total)||0;
+   const impactClass=total<0?"loss":total>0?"affected":"";
+   const detail=(r.base||r.bonus||r.certPay)?`Start-ups/Aktien ${r.base||0} Z${r.bonus?` · Bonus +${r.bonus} Z`:""}${r.certPay?` · Urkunde +${r.certPay} Z`:""}`:"keine Beteiligung";
+   const impactText=total<0?`Muss ${Math.abs(total)} Z zahlen`:total>0?`Erhält ${total} Z aus ${arenaEscapeHTML(p.branchName||"der Branche")}`:"Kein Ertrag";
+   return `
+   <div class="branch-payout-row ${r.name===state.players?.[state.current]?.name?"active":""} ${impactClass}">
      <div class="branch-payout-name">${arenaEscapeHTML(r.name)}
-       <span class="branch-payout-detail">${(r.base||r.bonus||r.certPay)?`Aktien/Start-up ${r.base||0} Z${r.bonus?` · Bonus +${r.bonus} Z`:""}${r.certPay?` · Urkunde +${r.certPay} Z`:""}`:"keine Beteiligung"}</span>
+       <span class="branch-payout-detail">${detail}</span>
+       <span class="branch-payout-impact ${total<0?"loss":total>0?"gain":""}">${impactText}</span>
      </div>
-     <div class="branch-payout-value ${r.total?"":"zero"}">${r.total?`+${r.total} Z`:"0 Z"}</div>
+     <div class="branch-payout-value ${total<0?"loss":total===0?"zero":""}">${total>0?`+${total} Z`:total<0?`-${Math.abs(total)} Z`:"0 Z"}</div>
    </div>
- `).join("") || '<div class="branch-payout-empty">Keine Auszahlung.</div>';
+ `;}).join("") || '<div class="branch-payout-empty">Keine Auszahlung.</div>';
 }
+
 function arenaAnimateHold(i,el,hold,onDone){
  if(!el){onDone?.();return}
- const p=hold?arenaHeldPosition(i):(diceArenaPositions[i]||arenaSafeSlots(991+i,5)[i]||{x:80+i*60,y:120,angle:0});
+ const previewHeld=[...(state.held||[])];previewHeld[i]=!!hold;
+ const p=hold?arenaHeldPosition(i,previewHeld):(diceArenaPositions[i]||arenaSafeSlots(991+i,5)[i]||{x:80+i*60,y:120,angle:0});
  el.classList.add("moving-to-hold");
  el.style.left=p.x+"px";el.style.top=p.y+"px";
  el.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${p.angle||0}deg) scale(${hold?.92:1})`;
@@ -6304,7 +6423,7 @@ function renderArenaDiceLayer(dice,held,branchValue,rollNumber=1,spectator=false
    d.className=`arena-die${isHeld?" held":""}${spectator&&isHeld?" spectator-held":""}${diceArenaRolling?" rolling":""}`;
    d.dataset.index=String(i);d.innerHTML=arenaFaceContent(dice[i]);
 
-   const p=isHeld?arenaHeldPosition(i):(diceArenaPositions[i]||{x:30+i*75,y:120,angle:0,z:0});
+   const p=isHeld?arenaHeldPosition(i,state.held):(diceArenaPositions[i]||{x:30+i*75,y:120,angle:0,z:0});
    diceArenaPositions[i]={...p};
    d.style.left=p.x+"px";d.style.top=p.y+"px";
    d.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${p.angle||0}deg) scale(${isHeld?.92:1})`;
@@ -6317,7 +6436,7 @@ function renderArenaDiceLayer(dice,held,branchValue,rollNumber=1,spectator=false
        const willHold=!state.held[i];
        arenaAnimateHold(i,d,willHold,()=>{
          state.held[i]=willHold;
-         if(willHold)diceArenaPositions[i]=arenaHeldPosition(i);
+         if(willHold)diceArenaPositions[i]=arenaHeldPosition(i,state.held);
          else{
            const slot=arenaSafeSlots((state.turnNumber||1)*97+i*13,5)[i];
            if(slot)diceArenaPositions[i]=slot;
@@ -6360,7 +6479,7 @@ function renderDiceArena(){
 function showDiceArena(auto=false){
  if(state.gameEnded||state.phase!=="roll"||!diceArenaCanAct())return;
  const arena=q("diceArena");if(!arena)return;if(auto&&diceArenaLastAutoTurn===state.turnNumber)return;if(auto)diceArenaLastAutoTurn=state.turnNumber;
- setArenaSpectatorMode(false);arena.classList.remove("hidden");arena.setAttribute("aria-hidden","false");diceArenaPositions=arenaDefaultPositions();if(state.rolls===0){q("diceArenaLayer").innerHTML="";renderBranchDock(null,false);renderBranchPayoutTable()}renderDiceArena();
+ setArenaSpectatorMode(false);arena.classList.remove("hidden");arena.setAttribute("aria-hidden","false");diceArenaPositions=arenaDefaultPositions();renderDiceGuideTable();if(state.rolls===0){q("diceArenaLayer").innerHTML="";renderBranchDock(null,false);renderBranchPayoutTable()}renderDiceArena();
 }
 function hideDiceArena(force=false){
  if(diceArenaRolling&&!force)return;const arena=q("diceArena");if(!arena)return;
@@ -6481,7 +6600,7 @@ function arenaPointerUp(e){
  const power=arenaClamp(dist/180,.78,1.55);rollDice({dx,dy,duration,power});e.preventDefault();
 }
 function showSpectatorDiceArena(ev,done){
- if(!ev?.id)return;const arena=q("diceArena");if(!arena)return;setArenaSpectatorMode(true,ev.actor);arena.classList.remove("hidden");arena.setAttribute("aria-hidden","false");diceArenaPositions=arenaDefaultPositions();
+ if(!ev?.id)return;const arena=q("diceArena");if(!arena)return;renderDiceGuideTable();setArenaSpectatorMode(true,ev.actor);arena.classList.remove("hidden");arena.setAttribute("aria-hidden","false");diceArenaPositions=arenaDefaultPositions();
  if(q("diceArenaPlayer"))q("diceArenaPlayer").textContent=`${ev.actor} würfelt gerade …`;
  if(q("diceArenaRollInfo"))q("diceArenaRollInfo").textContent=`Live-Wurf ${ev.rollNumber||1} von 3`;
  if(q("diceArenaBranchInfo"))q("diceArenaBranchInfo").textContent=(ev.rollNumber||1)===1?"Branchenwürfel rollt mit":arenaBranchIcon(ev.finalBranch);
@@ -6493,6 +6612,7 @@ function showSpectatorDiceArena(ev,done){
 q("diceArenaClose").onclick=()=>hideDiceArena(false);
 q("diceArenaRelease").onclick=arenaReleaseAll;
 q("diceArenaTake").onclick=()=>{if(state.phase==="roll"&&state.rolls>0&&!state.locked){settleDice();hideDiceArena()}};
+renderDiceGuideTable();
 const arenaHandle=q("diceThrowHandle");
 arenaHandle.addEventListener("pointerdown",arenaPointerDown);arenaHandle.addEventListener("pointermove",arenaPointerMove);arenaHandle.addEventListener("pointerup",arenaPointerUp);arenaHandle.addEventListener("pointercancel",arenaPointerUp);
 arenaHandle.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&state.phase==="roll"&&state.rolls<3&&!state.locked){e.preventDefault();rollDice({dx:0,dy:-190,duration:280,power:1})}});
