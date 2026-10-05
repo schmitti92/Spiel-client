@@ -2,13 +2,13 @@
 <html lang="de">
 <head>
   <!--
-    V2.3 COPYABLE:
+    V3.0 LOCAL COPYABLE:
     Bilder wurden aus der HTML ausgelagert.
     Den Ordner "business-assets" zusammen mit business.html hochladen.
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V2.4 · Online</title>
+<title>Das große Business – V3.0 · Online</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -3053,23 +3053,6 @@ body[data-market-stage="final"] .board-wrap{
 }
 
 
-/* ==================================================================
-   V2.3 · lokales Pass-&-Play + gemeinsamer Render-Spielstand
-   ================================================================== */
-.business-online-shell{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at 20% 5%,rgba(229,183,68,.16),transparent 30%),radial-gradient(circle at 88% 15%,rgba(43,136,187,.12),transparent 32%),rgba(3,11,18,.95);font-family:Arial,sans-serif}
-.business-online-shell.hidden{display:none!important}.business-online-card{width:min(760px,96vw);max-height:94vh;overflow:auto;border-radius:24px;padding:20px;background:linear-gradient(180deg,#123754,#071826);border:2px solid #d9ae43;box-shadow:0 28px 75px rgba(0,0,0,.55)}
-.business-online-head{text-align:center}.business-online-head h1{margin:0;color:#ffe08a;font:900 28px Georgia,serif}.business-online-head p{margin:6px 0 0;color:#b9c8d3;font-size:12px}
-.bo-section{margin-top:14px;padding:13px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}.bo-k{font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#8ea4b5;margin-bottom:6px}.bo-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.bo-input{flex:1;min-width:160px;height:42px;border:1px solid rgba(255,255,255,.14);border-radius:11px;background:#071522;color:white;padding:0 11px;font:900 15px Arial,sans-serif;text-transform:uppercase;outline:none}.bo-btn{height:42px;border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:0 12px;background:#18354d;color:white;font:900 12px Arial,sans-serif;cursor:pointer}.bo-btn.gold{background:linear-gradient(#efd473,#ad771d);color:#162238;border-color:#f5df97}.bo-btn:disabled{opacity:.4;cursor:not-allowed}.bo-btn.back{background:#27394a}.bo-status{margin-top:9px;min-height:32px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.20);color:#cbd8e2;font-size:11px}
-.bo-names{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.bo-name{height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.055);color:white;font-weight:900;cursor:pointer}.bo-name.selected{border-color:#e8be56;background:rgba(232,190,86,.13)}.bo-custom{display:flex;gap:6px;margin-top:7px}.bo-custom input{text-transform:none}
-.bo-players{display:grid;gap:6px}.bo-player{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.045);font-size:12px}.bo-player b{font-size:13px}.bo-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#526274;margin-right:7px}.bo-dot.on{background:#51d88d;box-shadow:0 0 8px rgba(81,216,141,.48)}
-.bo-start-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.bo-note{text-align:center;margin-top:8px;color:#8fa4b4;font-size:10px}
-.business-net-pill{position:fixed;z-index:100;right:10px;bottom:10px;padding:5px 9px;border-radius:999px;background:rgba(6,19,31,.88);border:1px solid rgba(255,255,255,.12);color:#d9e6ef;font:900 9px Arial,sans-serif;pointer-events:none}.business-net-pill.bad{color:#ffb5b5;border-color:rgba(255,94,94,.32)}
-.business-turn-lock{position:fixed;z-index:90;left:50%;bottom:9px;transform:translateX(-50%);padding:6px 11px;border-radius:999px;background:rgba(5,18,30,.9);border:1px solid rgba(255,218,118,.18);color:#ffe09a;font:900 10px Arial,sans-serif;pointer-events:none}.business-turn-lock.hidden,.business-net-pill.hidden{display:none!important}
-body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.business-my-turn) #endBtn,body.business-online:not(.business-my-turn) #releaseBtn{pointer-events:none!important;opacity:.38!important}
-@media(max-width:620px){.bo-names{grid-template-columns:repeat(2,1fr)}.bo-start-row{grid-template-columns:1fr}.business-online-card{padding:14px;border-radius:19px}.business-online-head h1{font-size:23px}}
-
-
 /* ===== V2.3 · eindeutige Spielmodi ===== */
 .local-mode-nav{
   display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 auto 12px;
@@ -3094,6 +3077,581 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
 }
 @media(max-width:520px){.local-mode-nav{grid-template-columns:1fr}}
 
+
+/* =================================================================
+   V2.5 · Pass-&-Play + Tablet-Fit
+   ================================================================= */
+
+/* Spielerwechsel verdeckt das Brett wirklich, bis der nächste Spieler bereit ist. */
+.turn-transition{
+  pointer-events:none!important;
+  background:rgba(3,11,19,.18)!important;
+  backdrop-filter:blur(0);
+  -webkit-backdrop-filter:blur(0);
+}
+.turn-transition.show{
+  opacity:1!important;
+  pointer-events:auto!important;
+  background:rgba(3,11,19,.91)!important;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.turn-transition-card{
+  width:min(90vw,430px)!important;
+  padding:22px 26px!important;
+}
+.turn-transition-card .small{
+  letter-spacing:.12em;
+  color:#aebfca!important;
+}
+.turn-transition-card .name{
+  font-size:clamp(28px,5vw,40px)!important;
+  margin:4px 0 8px!important;
+}
+.handoff-balance{
+  margin:8px auto 0;
+  color:#dce7ef;
+  font:800 12px Arial,sans-serif;
+}
+.handoff-summary{
+  margin:9px auto 0;
+  padding:8px 10px;
+  border-radius:11px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.08);
+  color:#b9cbd6;
+  font:700 10px/1.35 Arial,sans-serif;
+}
+.handoff-summary .gain{color:#9ee0af;font-weight:900}
+.handoff-summary .loss{color:#ffaaa7;font-weight:900}
+.handoff-ready{
+  width:100%;
+  margin-top:14px;
+  min-height:44px;
+  border:0;
+  border-radius:13px;
+  cursor:pointer;
+  background:linear-gradient(180deg,#f2d46d,#c79128);
+  color:#172235;
+  font:900 13px Arial,sans-serif;
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+.handoff-ready:active{transform:scale(.99)}
+.handoff-tip{
+  margin-top:8px;
+  color:#8fa3b3;
+  font:700 9px Arial,sans-serif;
+}
+
+/* Auf Tablets im Querformat bekommt der Würfeltisch mehr echte Höhe.
+   Das Brett spannt weiterhin über beide rechten Zeilen und verliert dadurch
+   praktisch keinen Platz. */
+@media (orientation:landscape) and (max-height:900px){
+  #game{
+    grid-template-rows:48px minmax(0,1fr) 205px!important;
+  }
+  .control-panel{
+    padding:4px 6px!important;
+  }
+  .dice-header{min-height:24px!important}
+  .mini-cup-wrap{height:23px!important}
+  .mini-cup{width:31px!important;height:23px!important}
+  .phase-stepper{margin:1px 0 3px!important;gap:3px!important}
+  .phase-step{padding:2px 1px!important;font-size:7px!important}
+  .phase-step span{width:13px!important;height:13px!important;font-size:7px!important}
+  .dice-toolbar{min-height:16px!important}
+  .branch-legend{
+    min-height:18px!important;
+    margin:1px 0 2px!important;
+    gap:2px!important;
+  }
+  .branch-key{
+    min-height:18px!important;
+    padding:1px!important;
+  }
+  .branch-key .bk-icon{font-size:11px!important}
+  .branch-key > span:last-child{display:none!important}
+  .compact-tray{
+    padding:3px 5px 9px!important;
+  }
+  .dice-row{
+    grid-template-columns:minmax(0,1fr) 46px!important;
+    gap:5px!important;
+  }
+  .dice-main{gap:4px!important}
+  .die{max-width:32px!important;border-radius:7px!important}
+  .branch-die{max-width:35px!important}
+  .compact-result{
+    margin:2px 0!important;
+    min-height:24px!important;
+    max-height:29px!important;
+    padding:4px 5px!important;
+    font-size:8px!important;
+    line-height:1.15!important;
+  }
+  .compact-controls{
+    min-height:31px!important;
+    margin-top:2px!important;
+  }
+  .compact-controls button{
+    min-height:30px!important;
+    padding:5px 3px!important;
+    font-size:8px!important;
+  }
+}
+
+/* Sehr knappe Browserhöhe: nur Icons in der Branchenhilfe. */
+@media (orientation:landscape) and (max-height:760px){
+  #game{grid-template-rows:44px minmax(0,1fr) 198px!important}
+  .depot-fan{min-height:120px!important}
+  .depot-fan-card{width:84px!important;height:118px!important}
+  .compact-result{max-height:26px!important}
+}
+
+
+/* =================================================================
+   V2.6 · Würfeltisch + Punktetafel deutlich schöner
+   ================================================================= */
+
+/* Rechtes Bedienfeld */
+.control-panel{
+  background:
+    radial-gradient(circle at 20% 0%,rgba(255,214,113,.10),transparent 28%),
+    linear-gradient(180deg,#143a5b 0%,#0a2236 58%,#071828 100%)!important;
+  border:1px solid rgba(216,177,84,.56)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.18),
+    0 10px 24px rgba(0,0,0,.18)!important;
+  border-radius:19px!important;
+}
+.dice-header{
+  align-items:center!important;
+  padding-bottom:6px!important;
+  border-bottom:1px solid rgba(255,222,139,.12)!important;
+  margin-bottom:6px!important;
+}
+.panel-title.dice-title{
+  color:#ffe08a!important;
+  text-shadow:0 2px 6px rgba(0,0,0,.28)!important;
+  letter-spacing:.01em;
+}
+#phaseLabel{
+  display:inline-flex!important;
+  align-items:center!important;
+  margin-top:4px!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.045)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  color:#dbe7f0!important;
+  font:800 9px Arial,sans-serif!important;
+}
+.mini-cup{
+  box-shadow:0 10px 18px rgba(0,0,0,.22)!important;
+}
+.phase-stepper{
+  gap:6px!important;
+  margin:4px 0 7px!important;
+}
+.phase-step{
+  border-radius:12px!important;
+  min-height:36px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  color:#b8c8d4!important;
+  font:900 8.5px Arial,sans-serif!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+.phase-step span{
+  width:18px!important;height:18px!important;
+  font-size:9px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+.phase-step.active{
+  background:linear-gradient(180deg,rgba(236,192,76,.18),rgba(176,124,20,.16))!important;
+  border-color:rgba(236,192,76,.48)!important;
+  color:#fff1bd!important;
+  box-shadow:0 0 0 1px rgba(255,215,120,.08), inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.phase-step.active span{
+  background:linear-gradient(180deg,#f0c94f,#d39d24)!important;
+  color:#152132!important;
+}
+.phase-step.done{
+  background:linear-gradient(180deg,rgba(72,146,97,.22),rgba(36,92,57,.18))!important;
+  border-color:rgba(95,190,130,.34)!important;
+}
+.phase-step.done span{background:#51a46d!important}
+
+.dice-toolbar{
+  min-height:26px!important;
+  padding:5px 8px!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.045)!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+  margin-bottom:6px!important;
+}
+.dice-meta{
+  color:#cedae3!important;
+  font:800 8.5px Arial,sans-serif!important;
+  white-space:normal!important;
+  line-height:1.2!important;
+}
+.release-btn{
+  border-radius:10px!important;
+  padding:5px 8px!important;
+  background:linear-gradient(180deg,#143655,#0c2438)!important;
+  border:1px solid rgba(240,203,107,.22)!important;
+  color:#dfeaf2!important;
+}
+.release-btn:not(:disabled):hover{filter:brightness(1.08)}
+
+.branch-legend{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+  margin:0 0 8px!important;
+  min-height:0!important;
+}
+.branch-key{
+  flex-direction:column!important;
+  gap:3px!important;
+  min-height:38px!important;
+  padding:6px 4px!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+  color:#d7e3ec!important;
+  font:800 7.8px/1 Arial,sans-serif!important;
+  text-align:center!important;
+}
+.branch-key .bk-icon{
+  font-size:15px!important;
+  line-height:1!important;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.18));
+}
+.branch-key.current{
+  background:linear-gradient(180deg,rgba(239,196,76,.20),rgba(167,118,23,.18))!important;
+  color:#ffefb9!important;
+  border-color:rgba(239,196,76,.55)!important;
+  box-shadow:0 0 0 1px rgba(255,215,120,.08),0 0 16px rgba(234,188,64,.12)!important;
+}
+.branch-key.current::after{
+  left:20%!important;right:20%!important;bottom:4px!important;height:3px!important;
+  background:#efc44c!important;
+  opacity:.95;
+}
+.branch-key.news{
+  background:linear-gradient(180deg,rgba(219,120,126,.11),rgba(255,255,255,.035))!important;
+}
+.branch-key.news.current{
+  background:linear-gradient(180deg,rgba(211,77,86,.28),rgba(124,35,40,.18))!important;
+  border-color:rgba(238,124,132,.56)!important;
+  color:#ffe1e4!important;
+}
+
+.compact-tray{
+  padding:7px 8px 10px!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(255,250,232,.08),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(255,221,131,.18)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 -1px 0 rgba(0,0,0,.18)!important;
+}
+.dice-row{grid-template-columns:minmax(0,1fr) 66px!important;gap:8px!important}
+.dice-main{gap:7px!important}
+.dice-branch-row{gap:5px!important}
+.branch-label{
+  color:#ffe08a!important;
+  font:900 9px Arial,sans-serif!important;
+  letter-spacing:.02em;
+}
+.die,.branch-die{
+  border-radius:14px!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    0 8px 12px rgba(0,0,0,.10)!important;
+}
+.die{max-width:40px!important}
+.branch-die{max-width:50px!important}
+.die.held{
+  box-shadow:
+    0 0 0 2px rgba(255,215,120,.34),
+    inset 0 1px 0 rgba(255,255,255,.62),
+    0 10px 14px rgba(0,0,0,.12)!important;
+}
+.compact-result{
+  margin:7px 0 6px!important;
+  padding:7px 9px!important;
+  min-height:42px!important;
+  max-height:44px!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.045))!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  color:#e3edf4!important;
+  font:800 9px/1.25 Arial,sans-serif!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+.compact-controls{
+  gap:8px!important;
+  margin-top:1px!important;
+}
+.compact-controls button{
+  min-height:36px!important;
+  border-radius:12px!important;
+  padding:7px 6px!important;
+  font:900 9px Arial,sans-serif!important;
+  box-shadow:0 8px 16px rgba(0,0,0,.14)!important;
+}
+#rollBtn{background:linear-gradient(180deg,#f0d16b,#c68b1d)!important;color:#152133!important}
+#endBtn{background:linear-gradient(180deg,#2f6b50,#214839)!important}
+
+/* Linke Punkte-Tafel edler */
+.score-dock{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 12%),
+    linear-gradient(180deg,#f8efd4,#f1ddb1)!important;
+  border:1px solid rgba(208,163,57,.70)!important;
+  border-radius:14px!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.62),
+    0 4px 10px rgba(0,0,0,.08)!important;
+}
+.score-dock .payout-head{
+  display:grid!important;
+  grid-template-columns:1.6fr .72fr!important;
+  background:linear-gradient(180deg,#163857,#0b2338)!important;
+  color:#ffe6a1!important;
+  font:900 9px Georgia,serif!important;
+  border-bottom:1px solid rgba(168,121,25,.70)!important;
+}
+.score-dock .payout-head div{
+  padding:5px 5px!important;
+}
+.score-dock .payout-row{
+  grid-template-columns:1.6fr .72fr!important;
+  height:calc((100% - 26px)/8)!important;
+  border-bottom:1px solid rgba(169,134,60,.22)!important;
+  background:rgba(255,255,255,.11)!important;
+}
+.score-dock .payout-row:nth-child(odd){
+  background:rgba(255,255,255,.20)!important;
+}
+.score-dock .payout-left{
+  gap:6px!important;
+  padding:0 6px!important;
+}
+.score-dock .payout-name{
+  font:800 9px Georgia,serif!important;
+  color:#2c2008!important;
+  letter-spacing:.01em;
+}
+.score-dock .payout-value{
+  display:flex!important;align-items:center;justify-content:flex-end!important;
+  padding:0 6px!important;
+  font:900 9px Arial,sans-serif!important;
+  color:#3b2b08!important;
+}
+.score-dock .dice-strip{
+  min-width:42px!important;
+  gap:2px!important;
+}
+.score-dock .rule-die{
+  width:14px!important;height:14px!important;
+  border-radius:4px!important;
+  border:1px solid #8996a8!important;
+  background:linear-gradient(180deg,#ffffff,#eef2f6)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 1px 1px rgba(0,0,0,.06)!important;
+}
+.score-current{
+  background:linear-gradient(90deg,rgba(240,194,82,.24),rgba(255,255,255,.38))!important;
+  box-shadow:inset 0 0 0 1px rgba(226,176,58,.20)!important;
+}
+.score-current .payout-name,.score-current .payout-value{
+  color:#1f1704!important;
+  font-weight:900!important;
+}
+
+/* Tablet / flache Höhe weiter sauber */
+@media (orientation:landscape) and (max-height:900px){
+  .branch-legend{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+    margin-bottom:5px!important;
+  }
+  .branch-key{
+    min-height:32px!important;
+    padding:4px 2px!important;
+    font-size:7px!important;
+  }
+  .branch-key .bk-icon{font-size:12px!important}
+  .phase-step{min-height:30px!important}
+  .phase-step span{width:16px!important;height:16px!important}
+  .dice-toolbar{padding:4px 6px!important}
+  .compact-result{
+    min-height:32px!important;
+    max-height:34px!important;
+    padding:5px 7px!important;
+    font-size:8px!important;
+  }
+}
+@media (orientation:landscape) and (max-height:760px){
+  .branch-key > span:last-child{font-size:6.3px!important}
+  .score-dock .payout-name,.score-dock .payout-value{font-size:8px!important}
+}
+
+
+/* =================================================================
+   V2.8 · Brett-Tabelle final
+   Nur die fehlerhaften Würfel des Hintergrundbilds werden überdeckt.
+   Die originale Tabelle samt Text und Goldrahmen bleibt unverändert.
+   Vermessen auf dem 1254 × 1254 px Brettbild.
+   ================================================================= */
+#payoutOverlay.board-payout-corrected{
+  display:none!important;
+}
+.board-dice-fix{
+  position:absolute!important;
+  left:30.54%!important;
+  top:34.53%!important;
+  width:9.08%!important;
+  height:22.18%!important;
+  z-index:19!important;
+  display:grid!important;
+  grid-template-rows:repeat(8,1fr)!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+.board-dice-row{
+  min-width:0!important;
+  min-height:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  padding:0 3.5%!important;
+  background:linear-gradient(90deg,#f7e3bf 0%,#f5dfb8 72%,#f4ddb5 100%)!important;
+  border-bottom:1px solid rgba(118,83,30,.19)!important;
+}
+.board-dice-row:first-child{
+  border-top:1px solid rgba(118,83,30,.16)!important;
+}
+.board-dice-row.current{
+  background:linear-gradient(90deg,#ffe9aa 0%,#f7d780 72%,#f1c967 100%)!important;
+}
+.board-dice-strip{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:2.4%!important;
+  min-width:0!important;
+}
+.board-dice-fix .rule-die{
+  position:relative!important;
+  flex:0 0 16.7%!important;
+  width:auto!important;
+  height:auto!important;
+  aspect-ratio:1/1!important;
+  border-radius:17%!important;
+  border:1px solid #7d8999!important;
+  background:linear-gradient(145deg,#ffffff 0%,#f4f6f8 55%,#e7ebef 100%)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.98),
+    0 1px 2px rgba(0,0,0,.13)!important;
+}
+.board-dice-fix .pip{
+  width:18%!important;
+  height:18%!important;
+  min-width:0!important;
+  min-height:0!important;
+  background:#15191d!important;
+  border-radius:50%!important;
+}
+.board-dice-fix .rule-die .p1{left:17%!important;top:17%!important}
+.board-dice-fix .rule-die .p3{right:17%!important;top:17%!important}
+.board-dice-fix .rule-die .p4{left:17%!important;top:50%!important;transform:translateY(-50%)!important}
+.board-dice-fix .rule-die .p5{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important}
+.board-dice-fix .rule-die .p6{right:17%!important;top:50%!important;transform:translateY(-50%)!important}
+.board-dice-fix .rule-die .p7{left:17%!important;bottom:17%!important}
+.board-dice-fix .rule-die .p9{right:17%!important;bottom:17%!important}
+@media(max-width:1100px){
+  .board-dice-row{padding-left:3%!important;padding-right:2%!important}
+  .board-dice-strip{gap:2%!important}
+  .board-dice-fix .rule-die{flex-basis:16.8%!important}
+}
+
+
+/* =================================================================
+   V2.9 · Portfolio-Klarheit + sichere Wiederaufnahme
+   ================================================================= */
+.depot-group-head{gap:6px!important}
+.depot-group-head span:last-child{
+  color:#b9cad5!important;
+  font-size:8px!important;
+  white-space:nowrap!important
+}
+.depot-group-head span:last-child b{
+  color:#ffe083!important;
+  font-weight:900!important
+}
+.result.compact-result b{color:#ffe08a!important}
+.turn-transition.show{z-index:140!important}
+
+
+/* =================================================================
+   V3.0 · FINALER TABLET-FIT + AUDIT-FIXES
+   ================================================================= */
+/* Der Würfeltisch bekommt genug echte Höhe. Brettgröße bleibt gleich,
+   weil das Brett die beiden unteren Grid-Zeilen gemeinsam belegt. */
+#game{grid-template-rows:56px minmax(0,1fr) 320px!important}
+.control-panel{overflow:hidden!important}
+@media(orientation:landscape) and (max-height:900px){
+  #game{grid-template-rows:48px minmax(0,1fr) 300px!important}
+}
+@media(orientation:landscape) and (max-height:760px){
+  #game{grid-template-rows:44px minmax(0,1fr) 290px!important}
+}
+@media(max-width:1100px) and (orientation:landscape){
+  #game{grid-template-rows:48px minmax(0,1fr) 300px!important}
+}
+/* Kleine Transparenzkorrektur: Übergabebildschirm soll im sichtbaren Zustand
+   das Depot/Brett wirklich verdecken. */
+.turn-transition.show{background:rgba(3,11,19,.96)!important}
+
+/* ==================================================================
+   V2.3 · lokales Pass-&-Play + gemeinsamer Render-Spielstand
+   ================================================================== */
+.business-online-shell{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at 20% 5%,rgba(229,183,68,.16),transparent 30%),radial-gradient(circle at 88% 15%,rgba(43,136,187,.12),transparent 32%),rgba(3,11,18,.95);font-family:Arial,sans-serif}
+.business-online-shell.hidden{display:none!important}.business-online-card{width:min(760px,96vw);max-height:94vh;overflow:auto;border-radius:24px;padding:20px;background:linear-gradient(180deg,#123754,#071826);border:2px solid #d9ae43;box-shadow:0 28px 75px rgba(0,0,0,.55)}
+.business-online-head{text-align:center}.business-online-head h1{margin:0;color:#ffe08a;font:900 28px Georgia,serif}.business-online-head p{margin:6px 0 0;color:#b9c8d3;font-size:12px}
+.bo-section{margin-top:14px;padding:13px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}.bo-k{font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#8ea4b5;margin-bottom:6px}.bo-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.bo-input{flex:1;min-width:160px;height:42px;border:1px solid rgba(255,255,255,.14);border-radius:11px;background:#071522;color:white;padding:0 11px;font:900 15px Arial,sans-serif;text-transform:uppercase;outline:none}.bo-btn{height:42px;border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:0 12px;background:#18354d;color:white;font:900 12px Arial,sans-serif;cursor:pointer}.bo-btn.gold{background:linear-gradient(#efd473,#ad771d);color:#162238;border-color:#f5df97}.bo-btn:disabled{opacity:.4;cursor:not-allowed}.bo-btn.back{background:#27394a}.bo-status{margin-top:9px;min-height:32px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.20);color:#cbd8e2;font-size:11px}
+.bo-names{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.bo-name{height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.055);color:white;font-weight:900;cursor:pointer}.bo-name.selected{border-color:#e8be56;background:rgba(232,190,86,.13)}.bo-custom{display:flex;gap:6px;margin-top:7px}.bo-custom input{text-transform:none}
+.bo-players{display:grid;gap:6px}.bo-player{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.045);font-size:12px}.bo-player b{font-size:13px}.bo-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#526274;margin-right:7px}.bo-dot.on{background:#51d88d;box-shadow:0 0 8px rgba(81,216,141,.48)}
+.bo-start-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.bo-note{text-align:center;margin-top:8px;color:#8fa4b4;font-size:10px}
+.business-net-pill{position:fixed;z-index:100;right:10px;bottom:10px;padding:5px 9px;border-radius:999px;background:rgba(6,19,31,.88);border:1px solid rgba(255,255,255,.12);color:#d9e6ef;font:900 9px Arial,sans-serif;pointer-events:none}.business-net-pill.bad{color:#ffb5b5;border-color:rgba(255,94,94,.32)}
+.business-turn-lock{position:fixed;z-index:90;left:50%;bottom:9px;transform:translateX(-50%);padding:6px 11px;border-radius:999px;background:rgba(5,18,30,.9);border:1px solid rgba(255,218,118,.18);color:#ffe09a;font:900 10px Arial,sans-serif;pointer-events:none}.business-turn-lock.hidden,.business-net-pill.hidden{display:none!important}
+body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.business-my-turn) #endBtn,body.business-online:not(.business-my-turn) #releaseBtn{pointer-events:none!important;opacity:.38!important}
+@media(max-width:620px){.bo-names{grid-template-columns:repeat(2,1fr)}.bo-start-row{grid-template-columns:1fr}.business-online-card{padding:14px;border-radius:19px}.business-online-head h1{font-size:23px}}
+
+
+
+/* V3.0 ONLINE: Online hat kein Pass-&-Play-Verdeck. */
+body.business-online .turn-transition{display:none!important}
+body.business-online .handoff-ready{display:none!important}
+body.business-online .business-net-pill{bottom:8px!important}
+body.business-online .business-turn-lock{
+  bottom:8px!important;
+  max-width:70vw;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -3105,7 +3663,7 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
     <div class="local-mode-pill">🏠 LOKALES SPIEL · kein Internet nötig</div>
     <div class="local-mode-nav">
       <a class="home" href="index.html">← Spielauswahl</a>
-      <a class="online" href="business.html?online=1">🌐 Online spielen</a>
+      <a class="online" href="business_online.html">🌐 Online spielen</a>
     </div>
     <div style="text-align:center;font-family:Arial,sans-serif">Spieleranzahl</div>
     <div class="player-count" id="countButtons"></div>
@@ -3114,8 +3672,8 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
     <button class="continue-btn hidden" id="continueBtn">▶ Gespeichertes Spiel fortsetzen</button>
     <div class="local-mode-explain">2–5 Personen spielen gemeinsam an diesem Gerät. Der Spielstand wird automatisch nur in diesem Browser gespeichert.</div>
     <div class="rule-mini">
-      V2.3: lokale Pass-&-Play-Partie oder Online-Multiplayer, ausbalancierte Bank je Spielerzahl,
-      zufälliger Startspieler, faire Schlussrunde, Autosave und 30 individuelle Kaufkarten.
+      V3.0 Lokal: vollständig geprüfte Spiellogik, sichere Börsennews, tabletgerechter Würfeltisch, Doppel-Autosave,
+      korrekte Brettwürfel, Pass-&-Play, faire Schlussrunde und 30 individuelle Kaufkarten.
     </div>
   </div>
 </div>
@@ -3155,8 +3713,9 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
   <main class="board-wrap">
     <div class="focus-hint">▣ Fokusmodus oben rechts</div>
     <div class="board">
-      <div id="businessModeChip" class="board-chip">ONLINE · V2.4</div>
-      <div id="payoutOverlay" class="payout-overlay legacy-payout"></div>
+      <div id="businessModeChip" class="board-chip">ONLINE · V3.0</div>
+      <div id="payoutOverlay" class="payout-overlay legacy-payout board-payout-corrected" aria-hidden="true"></div>
+      <div id="boardDiceFix" class="board-dice-fix" aria-label="Korrigierte Beispielwürfel"></div>
       <div id="boardMarket" class="board-market-overlay"></div>
     </div>
   </main>
@@ -3215,8 +3774,12 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
 
 <div id="turnTransition" class="turn-transition">
   <div class="turn-transition-card">
-    <div class="small">NÄCHSTER SPIELER</div>
+    <div id="turnTransitionLabel" class="small">NÄCHSTER SPIELER</div>
     <div id="turnTransitionName" class="name">Spieler</div>
+    <div id="turnTransitionBalance" class="handoff-balance"></div>
+    <div id="turnTransitionSummary" class="handoff-summary hidden"></div>
+    <button id="turnTransitionReady" class="handoff-ready" type="button">✓ Ich bin bereit</button>
+    <div class="handoff-tip">Gerät jetzt an den angezeigten Spieler weitergeben.</div>
   </div>
 </div>
 
@@ -3257,12 +3820,12 @@ const certNames={
  ent:["Media Empire","Global Entertainment"]
 };
 const payoutRows = [
-  {name:"1 Paar", value:5, dice:[1,1]},
+  {name:"1 Paar", value:5, dice:[2,2]},
   {name:"2 Paare", value:7, dice:[2,2,5,5]},
   {name:"3 Gleiche", value:9, dice:[4,4,4]},
-  {name:"Kleine Straße", value:12, dice:[2,3,4,5]},
-  {name:"Full House", value:15, dice:[3,3,4,4,4]},
-  {name:"4 Gleiche", value:20, dice:[5,5,5,5]},
+  {name:"Kleine Straße", value:12, dice:[1,2,3,4]},
+  {name:"Full House", value:15, dice:[3,3,5,5,5]},
+  {name:"4 Gleiche", value:20, dice:[4,4,4,4]},
   {name:"Große Straße", value:25, dice:[1,2,3,4,5]},
   {name:"5 Gleiche", value:30, dice:[6,6,6,6,6]}
 ];
@@ -3295,37 +3858,73 @@ function soundNews(){tone(150,.11,"sawtooth",.022);setTimeout(()=>tone(120,.16,"
 function soundTurn(){tone(420,.06,"sine",.02);setTimeout(()=>tone(620,.09,"sine",.018),60)}
 
 const SAVE_KEY="dasGrosseBusiness_v17";
+const SAVE_BACKUP_KEY=SAVE_KEY+"_backup";
+const SAVE_SCHEMA_VERSION=22;
+let saveWarningShown=false;
 function saveToast(){
  const old=document.querySelector(".save-toast");if(old)old.remove();
  const el=document.createElement("div");el.className="save-toast";el.textContent="✓ Spiel gespeichert";
  document.body.appendChild(el);setTimeout(()=>el.remove(),1200);
 }
-function newsIdentityList(list){return (list||[]).map(e=>e?.headline).filter(Boolean)}
-function buildNewsFromHeadlines(headlines){
+function newsIdentityList(list){return (list||[]).map(e=>e?.id||e?.headline).filter(Boolean)}
+function buildNewsFromHeadlines(keys){
  const full=createNewsDeck();
- const byHeadline=new Map(full.map(e=>[e.headline,e]));
+ const byKey=new Map();
+ full.forEach(e=>{if(e.id)byKey.set(e.id,e);byKey.set(e.headline,e)});
  const aliases={
-  "Eine Branche stürzt ab!":"Börsenbeben!",
-  "Zwangsabgabe für Anleger!":"Teure Marktaufsicht greift durch!"
+  "Eine Branche stürzt ab!":"market_shock",
+  "Zwangsabgabe für Anleger!":"regulator_fees"
  };
- return (headlines||[]).map(h=>byHeadline.get(h)||byHeadline.get(aliases[h])).filter(Boolean);
+ return (keys||[]).map(k=>byKey.get(k)||byKey.get(aliases[k])).filter(Boolean);
+}
+function repairNewsCollections(deck,discard){
+ const full=createNewsDeck();
+ const byId=new Map(full.map(e=>[e.id,e]));
+ const seen=new Set();
+ const clean=list=>(Array.isArray(list)?list:[]).filter(e=>{
+   const id=e?.id;if(!id||!byId.has(id)||seen.has(id))return false;
+   seen.add(id);return true;
+ }).map(e=>byId.get(e.id));
+ const cleanDeck=clean(deck),cleanDiscard=clean(discard);
+ for(const e of full){if(!seen.has(e.id)){cleanDeck.push(e);seen.add(e.id)}}
+ return {deck:cleanDeck,discard:cleanDiscard};
+}
+function validSnapshotObject(snap){
+ return !!(snap && typeof snap==="object" && snap.state && Array.isArray(snap.state.players) && snap.state.players.length>=2 && snap.state.players.length<=5);
+}
+function safeParseSnapshot(raw){
+ if(!raw)return null;
+ try{
+  const snap=JSON.parse(raw);
+  return validSnapshotObject(snap)?snap:null;
+ }catch(_e){return null}
 }
 function saveGame(show=false){
  if(!state.players?.length||state.gameEnded)return;
  try{
   const snapshot={
-   version:20,
+   version:SAVE_SCHEMA_VERSION,
    savedAt:Date.now(),
    state:{...state,newsDeck:newsIdentityList(state.newsDeck),newsDiscard:newsIdentityList(state.newsDiscard)}
   };
+  const previous=localStorage.getItem(SAVE_KEY);
+  if(safeParseSnapshot(previous))localStorage.setItem(SAVE_BACKUP_KEY,previous);
   localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot));
   if(show)saveToast();
- }catch(e){}
+  saveWarningShown=false;
+ }catch(e){
+  if(!saveWarningShown){saveWarningShown=true;toast("⚠️ Spielstand konnte nicht gespeichert werden",false)}
+ }
 }
 function hasSavedGame(){
- try{return !!localStorage.getItem(SAVE_KEY)}catch(e){return false}
+ try{return !!(safeParseSnapshot(localStorage.getItem(SAVE_KEY))||safeParseSnapshot(localStorage.getItem(SAVE_BACKUP_KEY)))}catch(e){return false}
 }
-function clearSavedGame(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
+function clearSavedGame(){
+ try{
+  localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(SAVE_BACKUP_KEY);
+ }catch(e){}
+}
 
 function bankForPlayers(n){
  return ({2:520,3:900,4:1300,5:1950})[n]||900;
@@ -3357,62 +3956,128 @@ function normalTierForCard(card){
  return null;
 }
 function normalizeCard(card){
- if(!card)return card;
+ if(!card||typeof card!=="object")return null;
  if(card.type==="Start-up"){
-   card.cost=0;card.value=5;card.tier="Start-up";card.risk="Basis";
+   if(!branchOrder.includes(card.branch))return null;
+   card.id=card.id||uid();card.cost=0;card.value=5;card.tier="Start-up";card.risk="Basis";card.corp="Start-up";
    return card;
  }
  const t=normalTierForCard(card);
- if(t)Object.assign(card,t);
+ if(!t)return null;
+ card.id=card.id||uid();Object.assign(card,t);
  return card;
 }
+function cleanPlayerName(raw,fallback="Spieler"){
+ const cleaned=String(raw??"").replace(/<[^>]*>/g,"").replace(/[<>]/g,"").replace(/\s+/g," ").trim().slice(0,16);
+ return cleaned||fallback;
+}
+function uniquePlayerNames(names){
+ const used=new Set();
+ return names.map((raw,i)=>{
+   const base=cleanPlayerName(raw,`Spieler ${i+1}`);
+   let candidate=base,n=2;
+   while(used.has(candidate.toLocaleLowerCase("de-DE"))){
+     const suffix=` ${n++}`;
+     candidate=base.slice(0,Math.max(1,16-suffix.length))+suffix;
+   }
+   used.add(candidate.toLocaleLowerCase("de-DE"));
+   return candidate;
+ });
+}
 function migrateSavedState(s,version){
- const n=s.players?.length||2;
+ if(!s||!Array.isArray(s.players)||s.players.length<2||s.players.length>5)throw new Error("INVALID_PLAYERS");
+ const n=s.players.length;
  const newStart=bankForPlayers(n);
 
  if(!s.bankStart || version<20){
    const oldStart=s.bankStart||780;
-   const ratio=Math.max(0,Math.min(1,s.bank/Math.max(1,oldStart)));
+   const ratio=Math.max(0,Math.min(1,Number(s.bank||0)/Math.max(1,oldStart)));
    s.bankStart=newStart;
    s.bank=Math.round(newStart*ratio);
  }else{
    s.bankStart=newStart;
+   s.bank=Math.max(0,Number(s.bank)||0);
  }
 
- const normalizeList=list=>(list||[]).map(normalizeCard);
+ const normalizeList=list=>(Array.isArray(list)?list:[]).map(normalizeCard).filter(Boolean);
  s.deck=normalizeList(s.deck);
  s.market=normalizeList(s.market);
  s.discard=normalizeList(s.discard);
- (s.players||[]).forEach(p=>{
+
+ const statsDefault={diceIncome:0,branchIncome:0,spent:0,newsLoss:0,purchases:0,bestResult:"–",bestValue:0,turns:0};
+ const repairedNames=uniquePlayerNames(s.players.map((p,i)=>p?.name||`Spieler ${i+1}`));
+ s.players.forEach((p,i)=>{
+   p.name=repairedNames[i];
+   p.cash=Math.max(0,Number(p.cash)||0);
    p.cards=normalizeList(p.cards);
-   if(!p.stats)p.stats={diceIncome:0,branchIncome:0,spent:0,newsLoss:0,purchases:0,bestResult:"–",bestValue:0,turns:0};
+   let startupSeen=false;
+   p.cards=p.cards.filter(c=>c.type!=="Start-up" || (!startupSeen && (startupSeen=true)));
+   if(!startupSeen)p.cards.unshift(startupFor(i));
+   p.stats={...statsDefault,...(p.stats||{})};
  });
+ s.playerCount=n;
+
+ s.current=Number.isInteger(s.current)?Math.max(0,Math.min(n-1,s.current)):0;
+ s.viewedPlayer=Number.isInteger(s.viewedPlayer)?Math.max(0,Math.min(n-1,s.viewedPlayer)):s.current;
+ s.turnNumber=Math.max(1,Math.floor(Number(s.turnNumber)||1));
 
  if(!Number.isInteger(s.roundAnchor)){
-   const offset=((s.turnNumber||1)-1)%n;
-   s.roundAnchor=((s.current||0)-offset+n)%n;
- }
+   const offset=(s.turnNumber-1)%n;
+   s.roundAnchor=(s.current-offset+n)%n;
+ }else s.roundAnchor=((s.roundAnchor%n)+n)%n;
+
  if(typeof s.finalRound!=="boolean")s.finalRound=false;
  if(!s.lastBankStage)s.lastBankStage="calm";
- if(s.selectedMarket===undefined)s.selectedMarket=null;
+ if(!["roll","invest"].includes(s.phase))s.phase="roll";
+
+ s.rolls=Math.max(0,Math.min(3,Math.floor(Number(s.rolls)||0)));
+ s.dice=Array.isArray(s.dice)&&s.dice.length===5?s.dice.map(v=>Math.max(1,Math.min(6,Math.floor(Number(v)||1)))):[1,1,1,1,1];
+ s.held=Array.isArray(s.held)&&s.held.length===5?s.held.map(Boolean):[false,false,false,false,false];
+
+ const allowedBranches=new Set([...branches.map(b=>b.id),"news",null]);
+ if(!allowedBranches.has(s.branchRoll))s.branchRoll=null;
+
+ s.bought=!!s.bought;
+ s.branchResolved=!!s.branchResolved;
  s.locked=false;
+ s.gameEnded=false;
+
+ while(s.market.length<4 && s.deck.length)s.market.push(s.deck.pop());
+ if(s.selectedMarket===undefined||!s.market.some(c=>c.id===s.selectedMarket))s.selectedMarket=null;
+ if(!Number.isFinite(s.turnStartCash))s.turnStartCash=s.players[s.current].cash;
+
  return s;
 }
 function restoreSavedGame(){
+ let candidates=[];
  try{
-  const raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;
-  const snap=JSON.parse(raw);if(!snap?.state?.players?.length)return false;
-  const s=migrateSavedState(snap.state,snap.version||0);
-  s.newsDeck=buildNewsFromHeadlines(s.newsDeck);
-  s.newsDiscard=buildNewsFromHeadlines(s.newsDiscard);
-  state=s;
-  if(!state.players[state.current]?.stats)return false;
-  q("lobby").classList.add("hidden");q("game").classList.remove("hidden");
-  q("log").innerHTML="";
-  log(`💾 Gespeichertes Spiel auf V2.0 migriert · Runde ${Math.floor((state.turnNumber-1)/state.players.length)+1}.`);
-  if(state.finalRound)log(`🏁 <b>Schlussrunde läuft.</b> Nach Abschluss dieser Runde endet das Spiel.`);
-  setLeftTab("score");render();return true;
- }catch(e){return false}
+  candidates=[
+    {kind:"Hauptspeicher",snap:safeParseSnapshot(localStorage.getItem(SAVE_KEY))},
+    {kind:"Sicherung",snap:safeParseSnapshot(localStorage.getItem(SAVE_BACKUP_KEY))}
+  ];
+ }catch(_e){}
+ for(const candidate of candidates){
+  if(!candidate.snap)continue;
+  try{
+   const s=migrateSavedState(candidate.snap.state,candidate.snap.version||0);
+   s.newsDeck=buildNewsFromHeadlines(s.newsDeck);
+   s.newsDiscard=buildNewsFromHeadlines(s.newsDiscard);
+   const repairedNews=repairNewsCollections(s.newsDeck,s.newsDiscard);
+   s.newsDeck=repairedNews.deck;s.newsDiscard=repairedNews.discard;
+   state=s;
+   q("lobby").classList.add("hidden");q("game").classList.remove("hidden");
+   q("log").innerHTML="";
+   log(`💾 Spiel fortgesetzt (${candidate.kind}) · Runde ${Math.floor((state.turnNumber-1)/state.players.length)+1}.`);
+   if(candidate.kind==="Sicherung")log(`🛟 Der letzte gültige Sicherungsstand wurde automatisch wiederhergestellt.`);
+   if(state.finalRound)log(`🏁 <b>Schlussrunde läuft.</b> Nach Abschluss dieser Runde endet das Spiel.`);
+   setLeftTab("score");
+   render();
+   showLocalHandoff(null,null,false);
+   if(q("turnTransitionLabel"))q("turnTransitionLabel").textContent="SPIEL FORTSETZEN";
+   return true;
+  }catch(_e){}
+ }
+ return false;
 }
 function updateContinueButton(){
  const b=q("continueBtn");if(!b)return;b.classList.toggle("hidden",!hasSavedGame());
@@ -3474,10 +4139,9 @@ function playDieHTML(face){
  return `<div class="play-die-face">${map[face].map(p=>`<span class="play-pip ${p}"></span>`).join("")}</div>`;
 }
 function renderPayoutOverlay(){
- const box=q("scoreDock");
- if(!box)return;
  const currentName=(state.rolls>0&&state.phase==="roll")?evaluate(state.dice).name:null;
- box.innerHTML = `<div class="payout-head"><div>Würfelergebnis</div><div>Auszahlung</div></div>` +
+
+ const tableHTML = `<div class="payout-head"><div>Würfelergebnis</div><div>Auszahlung</div></div>` +
    payoutRows.map(row=>`
       <div class="payout-row ${currentName===row.name?"score-current":""}">
         <div class="payout-left">
@@ -3487,6 +4151,18 @@ function renderPayoutOverlay(){
         <div class="payout-value">${row.value} Z</div>
       </div>
    `).join("");
+
+ const score=q("scoreDock");
+ if(score)score.innerHTML=tableHTML;
+
+ const fix=q("boardDiceFix");
+ if(fix){
+   fix.innerHTML=payoutRows.map((row,i)=>`
+     <div class="board-dice-row ${currentName===row.name?"current":""}" data-row="${i}">
+       <div class="board-dice-strip">${row.dice.map(d=>dieHTML(d)).join("")}</div>
+     </div>
+   `).join("");
+ }
 }
 
 function createDeck(){
@@ -3513,6 +4189,7 @@ function startupFor(i){
 }
 function createNewsDeck(){
  const sectorNews=branches.map(b=>({
+   id:`crisis_${b.id}`,
    title:`Krise bei ${b.name}`,
    headline:`Schlechter Tag für ${b.name}!`,
    icon:b.icon,tone:"bad",severity:"BRANCHENKRISE",
@@ -3525,51 +4202,24 @@ function createNewsDeck(){
    }
  }));
  const extra=[
-  {
-   title:"Börsennews",headline:"Teure Marktaufsicht greift durch!",icon:"🏛️",tone:"warn",severity:"GEBÜHREN",
+  {id:"regulator_fees",title:"Börsennews",headline:"Teure Marktaufsicht greift durch!",icon:"🏛️",tone:"warn",severity:"GEBÜHREN",
    effect:"Jeder zahlt 5 Z je gekauftem Wertpapier, maximal 25 Z. Start-ups bleiben kostenlos.",
-   run(){state.players.forEach(p=>charge(p,Math.min(25,p.cards.filter(c=>c.type!=="Start-up").length*5),"Marktaufsicht"))}
-  },
-  {
-   title:"Börsennews",headline:"Zertifikate unter Beschuss!",icon:"📜",tone:"bad",severity:"URKUNDENRISIKO",
+   run(){state.players.forEach(p=>charge(p,Math.min(25,p.cards.filter(c=>c.type!=="Start-up").length*5),"Marktaufsicht"))}},
+  {id:"certificate_audit",title:"Börsennews",headline:"Zertifikate unter Beschuss!",icon:"📜",tone:"bad",severity:"URKUNDENRISIKO",
    effect:"Für jede gehaltene Aktienurkunde werden 10 Z fällig, maximal 20 Z.",
-   run(){state.players.forEach(p=>charge(p,Math.min(20,p.cards.filter(c=>c.type==="Aktienurkunde").length*10),"Urkundenprüfung"))}
-  },
-  {
-   title:"Börsennews",headline:"Fehlinvestition!",icon:"📉",tone:"bad",severity:"PANIKVERKAUF",
+   run(){state.players.forEach(p=>charge(p,Math.min(20,p.cards.filter(c=>c.type==="Aktienurkunde").length*10),"Urkundenprüfung"))}},
+  {id:"bad_investment",title:"Börsennews",headline:"Fehlinvestition!",icon:"📉",tone:"bad",severity:"PANIKVERKAUF",
    effect:"Jeder Spieler verliert seine günstigste normale Aktie. Start-ups und Aktienurkunden sind geschützt.",
-   run(){
-     state.players.forEach(p=>{
-       const normal=p.cards.filter(c=>c.type==="Aktie").sort((a,b)=>a.cost-b.cost);
-       if(normal.length){const doomed=normal[0];discardOne(p,c=>c.id===doomed.id,"Fehlinvestition")}
-     });
-   }
-  },
-  {
-   title:"Börsennews",headline:"Börsenbeben!",icon:"🌪️",tone:"bad",severity:"MARKTSCHOCK",
-   effect:"Alle Spieler zahlen 10 Z an die Bank.",
-   run(){state.players.forEach(p=>charge(p,10,"Börsenbeben"))}
-  },
-  {
-   title:"Börsennews",headline:"Depotgebühren explodieren!",icon:"🧾",tone:"warn",severity:"DEPOTKOSTEN",
-   effect:"Jeder zahlt 3 Z je gekauftem Wertpapier, maximal 18 Z.",
-   run(){state.players.forEach(p=>charge(p,Math.min(18,p.cards.filter(c=>c.type!=="Start-up").length*3),"Depotgebühren"))}
-  },
-  {
-   title:"Börsennews",headline:"Konjunkturpaket!",icon:"📈",tone:"good",severity:"AUFSCHWUNG",
-   effect:"Die Bank schüttet an jeden Spieler 5 Z aus.",
-   run(){state.players.forEach(p=>{if(state.bank>0)payFromBank(p,5,"aus dem Konjunkturpaket","other")})}
-  },
-  {
-   title:"Börsennews",headline:"Rettungspaket für kleine Vermögen!",icon:"🛟",tone:"good",severity:"RETTUNGSPAKET",
+   run(){state.players.forEach(p=>{const normal=p.cards.filter(c=>c.type==="Aktie").sort((a,b)=>a.cost-b.cost);if(normal.length){const doomed=normal[0];discardOne(p,c=>c.id===doomed.id,"Fehlinvestition")}})}},
+  {id:"market_shock",title:"Börsennews",headline:"Börsenbeben!",icon:"🌪️",tone:"bad",severity:"MARKTSCHOCK",
+   effect:"Alle Spieler zahlen 10 Z an die Bank.",run(){state.players.forEach(p=>charge(p,10,"Börsenbeben"))}},
+  {id:"depot_fees",title:"Börsennews",headline:"Depotgebühren explodieren!",icon:"🧾",tone:"warn",severity:"DEPOTKOSTEN",
+   effect:"Jeder zahlt 3 Z je gekauftem Wertpapier, maximal 18 Z.",run(){state.players.forEach(p=>charge(p,Math.min(18,p.cards.filter(c=>c.type!=="Start-up").length*3),"Depotgebühren"))}},
+  {id:"stimulus",title:"Börsennews",headline:"Konjunkturpaket!",icon:"📈",tone:"good",severity:"AUFSCHWUNG",
+   effect:"Die Bank schüttet an jeden Spieler 5 Z aus.",run(){state.players.forEach(p=>{if(state.bank>0||state.finalRound)payFromBank(p,5,"aus dem Konjunkturpaket","other")})}},
+  {id:"rescue",title:"Börsennews",headline:"Rettungspaket für kleine Vermögen!",icon:"🛟",tone:"good",severity:"RETTUNGSPAKET",
    effect:"Der aktuell bargeldärmste Spieler erhält 15 Z aus der Bank. Bei Gleichstand erhalten alle Betroffenen je 10 Z.",
-   run(){
-     const low=Math.min(...state.players.map(p=>p.cash));
-     const poor=state.players.filter(p=>p.cash===low);
-     const amount=poor.length>1?10:15;
-     poor.forEach(p=>{if(state.bank>0)payFromBank(p,amount,"aus dem Rettungspaket","other")});
-   }
-  }
+   run(){const low=Math.min(...state.players.map(p=>p.cash));const poor=state.players.filter(p=>p.cash===low);const amount=poor.length>1?10:15;poor.forEach(p=>{if(state.bank>0||state.finalRound)payFromBank(p,amount,"aus dem Rettungspaket","other")})}}
  ];
  return shuffle([...sectorNews,...extra]);
 }
@@ -3581,13 +4231,20 @@ function discardOne(p,predicate,label){
  log(`🗑️ ${p.name} verliert ${label}: <b>${card.corp}</b>.`);
 }
 function drawMarket(){while(state.market.length<4 && state.deck.length) state.market.push(state.deck.pop())}
-function drawNews(){if(!state.newsDeck.length){state.newsDeck=shuffle([...state.newsDiscard]);state.newsDiscard=[];log("📰 Der Börsennews-Stapel wurde neu gemischt.")}return state.newsDeck.pop()}
+function drawNews(){
+ if(!state.newsDeck.length){
+   if(state.newsDiscard.length){state.newsDeck=shuffle([...state.newsDiscard]);state.newsDiscard=[];log("📰 Der Börsennews-Stapel wurde neu gemischt.")}
+   else{state.newsDeck=createNewsDeck();log("🛟 Der Börsennews-Stapel wurde automatisch neu aufgebaut.")}
+ }
+ return state.newsDeck.pop();
+}
 
 q("startBtn").onclick=()=>{
  clearSavedGame();
  state.players=[];
+ const startNames=uniquePlayerNames(Array.from({length:state.playerCount},(_,i)=>q("name"+i).value));
  for(let i=0;i<state.playerCount;i++){
-   const name=q("name"+i).value.trim()||`Spieler ${i+1}`;
+   const name=startNames[i];
    state.players.push({
      name,cash:0,cards:[startupFor(i)],color:playerColors[i],
      stats:{diceIncome:0,branchIncome:0,spent:0,newsLoss:0,purchases:0,bestResult:"–",bestValue:0,turns:0}
@@ -3622,11 +4279,12 @@ q("startBtn").onclick=()=>{
 
  q("lobby").classList.add("hidden");q("game").classList.remove("hidden");q("log").innerHTML="";
  log(`🎲 Startspieler ausgelost: <b>${state.players[starter].name}</b>.`);
- log(`🏦 Bank für ${state.players.length} Spieler: <b>${state.bankStart} Z</b>.`);
+ log(`🏦 Gesamtkapital für ${state.players.length} Spieler: <b>${state.bankStart} Z</b> · Bank nach Startausgleich: <b>${state.bank} Z</b>.`);
  if(compensation.length)log(`⚖️ Startausgleich: ${compensation.join(" · ")}.`);
  log(`🃏 Marktdeck: 20 Aktien + 10 Aktienurkunden · 📰 12 Börsennews.`);
  setLeftTab("score");
  render();
+ showLocalHandoff(null,null,true);
 };
 
 function resetTurnState(){
@@ -3639,6 +4297,7 @@ function resetTurnState(){
  state.branchResolved=false;
  state.locked=false;
  state.selectedMarket=null;
+ state.turnStartCash=state.players?.[state.current]?.cash ?? 0;
 }
 
 function finalThreshold(){
@@ -3674,7 +4333,7 @@ function renderMarketStage(){
 }
 function render(){
  if(!state.players.length)return;
- q("turnPill").textContent=`Am Zug: ${state.players[state.current].name}`;
+ q("turnPill").textContent=`Am Zug: ${state.players[state.current].name} · ${money(state.players[state.current].cash)}`;
  q("bankDisplay").textContent=`🏦 Bank: ${money(state.bank)}`;
  q("roundDisplay").textContent=`Runde ${Math.floor((state.turnNumber-1)/state.players.length)+1} · Zug ${state.turnNumber}${state.finalRound?" · SCHLUSSRUNDE":""}`;
  q("roundDisplay").classList.toggle("final-round",state.finalRound);
@@ -3839,6 +4498,18 @@ function findCardById(id){
  for(const c of state.discard)if(c.id===id)return c;
  return null;
 }
+function branchPayoutPreview(player,branchId,extraCard=null){
+ const cards=(player?.cards||[]).filter(c=>c.branch===branchId);
+ if(extraCard)cards.push(extraCard);
+ const regular=cards.filter(c=>c.type!=="Aktienurkunde");
+ const normal=cards.filter(c=>c.type==="Aktie");
+ const certs=cards.filter(c=>c.type==="Aktienurkunde");
+ const base=regular.reduce((sum,c)=>sum+(Number(c.value)||0),0);
+ const certPay=certs.reduce((sum,c)=>sum+(Number(c.value)||0),0);
+ const bonus=branchBonus(normal.length);
+ const recurring=base+bonus;
+ return {base,certPay,bonus,recurring,total:recurring+certPay,normalCount:normal.length,cardCount:cards.length};
+}
 function investmentProfile(card){
  if(card.type==="Start-up")return {label:"Start-up",text:"kostenloser Grundwert"};
  if(card.type==="Aktienurkunde")return {label:"Einmal-Chance",text:`${card.cost} Z Einsatz → ${card.value} Z einmalig`};
@@ -3861,7 +4532,7 @@ function showCardInfoById(id){
     <p><b>Kaufpreis:</b> ${card.cost||0} Zillionen</p>
     <p><b>Profil:</b> ${investmentProfile(card).text}</p>
     <p><b>Ausschüttung:</b> ${income}</p>
-    <p><b>Branchenbonus:</b> Die Karte zählt für die Anzahl deiner Karten dieser Branche.</p>
+    <p><b>Branchenbonus:</b> Nur normale Aktien zählen für den Branchenbonus. Start-ups und Aktienurkunden erhöhen den Bonus nicht.</p>
     ${cert?`<p>📜 Die Aktienurkunde wird nach ihrer Ausschüttung aus deinem Depot entfernt.</p>`:""}
    </div>
   </div>`;
@@ -3893,7 +4564,11 @@ function renderDepot(){
    }).join("");
    const wrapper=document.createElement("div");
    wrapper.className="depot-group";
-   wrapper.innerHTML=`<div class="depot-group-head"><span>${b.icon} ${b.name}</span><span>${cards.length} Karte${cards.length>1?'n':''}</span></div>
+   const payout=branchPayoutPreview(p,id);
+   const payoutText=payout.certPay
+     ? `${cards.length} Karte${cards.length>1?'n':''} · <b>${payout.recurring} Z</b>/Treffer + 📜 ${payout.certPay} Z einmalig`
+     : `${cards.length} Karte${cards.length>1?'n':''} · <b>${payout.recurring} Z</b>/Treffer`;
+   wrapper.innerHTML=`<div class="depot-group-head"><span>${b.icon} ${b.name}</span><span>${payoutText}</span></div>
    <div class="depot-fan-wrap"><div class="depot-fan" style="width:${minWidth}px">${fanCards}</div></div>`;
    box.appendChild(wrapper);
  });
@@ -3906,8 +4581,17 @@ function selectMarketCard(id){
  state.selectedMarket=(state.selectedMarket===id?null:id);
  tone(state.selectedMarket?560:320,.05,"sine",.018);
  renderMarket();renderControls();
- if(state.selectedMarket)q("result").innerHTML=`Ausgewählt: <b>${card.corp}</b> · ${card.cost} Z → ${card.value} Z ${card.type==="Aktienurkunde"?"einmalig":"je Branchentreffer"}. Unten auf <b>Kaufen</b> tippen.`;
- else q("result").textContent="Keine Karte ausgewählt. Du kannst den Zug auch ohne Kauf beenden.";
+ if(state.selectedMarket){
+   const b=branchObj(card.branch);
+   const before=branchPayoutPreview(p,card.branch);
+   const after=branchPayoutPreview(p,card.branch,card);
+   const recurringGain=after.recurring-before.recurring;
+   const extra=card.type==="Aktienurkunde"
+     ? `${b.icon} ${b.name}: +${card.value} Z beim nächsten Treffer · danach abgelegt`
+     : `${b.icon} ${b.name}: ${before.recurring} → ${after.recurring} Z/Treffer (+${recurringGain})`;
+   q("result").innerHTML=`<b>${card.corp}</b> · ${card.cost} Z · ${extra}`;
+ }else q("result").textContent="Keine Karte ausgewählt. Du kannst den Zug auch ohne Kauf beenden.";
+ saveGame(false);
 }
 function renderMarket(){
  const box=q("boardMarket");
@@ -3941,8 +4625,16 @@ function renderMarket(){
 
 function renderBranchLegend(){
  const box=q("branchLegend");if(!box)return;
- const items=[...branches.map(b=>({id:b.id,icon:b.icon,label:b.name})),{id:"news",icon:"🐷",label:"News"}];
- box.innerHTML=items.map(x=>`<div class="branch-key ${x.id==="news"?"news":""} ${state.branchRoll===x.id?"current":""}" title="${x.label}"><span class="bk-icon">${x.icon}</span><span>${x.label}</span></div>`).join("");
+ const items=[
+   ...branches.map(b=>({id:b.id,icon:b.icon,label:b.name})),
+   {id:"news",icon:"🐷",label:"Börsennews"}
+ ];
+ box.innerHTML=items.map(x=>`
+   <div class="branch-key ${x.id==="news"?"news":""} ${state.branchRoll===x.id?"current":""}" title="${x.label}">
+     <span class="bk-icon">${x.icon}</span>
+     <span>${x.label}</span>
+   </div>
+ `).join("");
 }
 function renderDice(){
  const box=q("dice");box.innerHTML="";
@@ -3953,7 +4645,7 @@ function renderDice(){
    d.className="die"+(state.held[i]?" held":"")+(state.locked?" rolling":"");
    d.innerHTML=playDieHTML(v);
    d.title=state.held[i]?"Gehalten":"Zum Halten antippen";
-   d.onclick=()=>{if(state.rolls>0&&state.rolls<3&&state.phase==="roll"&&!state.locked){state.held[i]=!state.held[i];tone(state.held[i]?620:340,.05,"sine",.018);renderDice();renderPayoutOverlay()}};
+   d.onclick=()=>{if(state.rolls>0&&state.rolls<3&&state.phase==="roll"&&!state.locked){state.held[i]=!state.held[i];tone(state.held[i]?620:340,.05,"sine",.018);renderDice();renderPayoutOverlay();renderControls();saveGame(false)}};
    main.appendChild(d);
  });
  const lower=document.createElement("div");
@@ -4040,10 +4732,10 @@ q("rulesBtn").onclick=()=>{
 
    <h3>Faire Startregel</h3>
    <div>Der Startspieler wird zufällig ausgelost. Danach erhalten spätere Sitzpositionen einen kleinen Startausgleich von <b>6 Z je Position</b>.</div>
-   <div class="start-balance-note">Bankgröße: 2 Spieler 520 Z · 3 Spieler 900 Z · 4 Spieler 1300 Z · 5 Spieler 1950 Z.</div>
+   <div class="start-balance-note">Gesamtkapital: 2 Spieler 520 Z · 3 Spieler 900 Z · 4 Spieler 1300 Z · 5 Spieler 1950 Z. Der Startausgleich wird direkt aus diesem Bankkapital ausgezahlt.</div>
 
    <h3>Branchenbonus</h3>
-   <div>Für den Bonus zählen nur <b>gekaufte normale Aktien</b>. Start-ups und Aktienurkunden zählen nicht mit.</div>
+   <div>Für den Bonus zählen nur <b>gekaufte normale Aktien</b>. Start-ups und Aktienurkunden zählen nicht mit. Im Depot siehst du den aktuellen Ertrag je Branchentreffer.</div>
    <div class="bonus-table" style="grid-template-columns:repeat(3,1fr)">
     <div class="bonus-cell">2 Aktien<b>+4 Z</b></div>
     <div class="bonus-cell">3 Aktien<b>+8 Z</b></div>
@@ -4069,7 +4761,7 @@ q("releaseBtn").onclick=()=>{
  if(state.phase!=="roll"||state.locked||state.rolls===0||state.rolls>=3)return;
  state.held=[false,false,false,false,false];
  tone(330,.05,"sine",.018);
- renderDice();renderControls();renderPayoutOverlay();
+ renderDice();renderControls();renderPayoutOverlay();saveGame(false);
 };
 function updatePhaseStepper(){
  const steps=[...document.querySelectorAll(".phase-step")];
@@ -4349,9 +5041,47 @@ function buyCard(idx,sourceEl){
    : "Karte gekauft. Zug jetzt beenden.";
  render();
 }
+
+function hideLocalHandoff(){
+ const tr=q("turnTransition");
+ if(tr)tr.classList.remove("show");
+}
+function showLocalHandoff(previous=null,delta=null,isFirst=false){
+ const tr=q("turnTransition");
+ if(!tr||!state.players?.length)return;
+ const current=state.players[state.current];
+ q("turnTransitionLabel").textContent=isFirst?"STARTSPIELER":"NÄCHSTER SPIELER";
+ q("turnTransitionName").textContent=current.name;
+ q("turnTransitionBalance").textContent=`Kontostand: ${money(current.cash)} · ${current.cards.length} Karte${current.cards.length===1?"":"n"}`;
+ const summary=q("turnTransitionSummary");
+ if(previous && Number.isFinite(delta)){
+   const cls=delta>0?"gain":delta<0?"loss":"";
+   const sign=delta>0?"+":"";
+   summary.innerHTML=`Vorheriger Zug: <b>${previous}</b> · Veränderung <span class="${cls}">${sign}${delta} Z</span>`;
+   summary.classList.remove("hidden");
+ }else{
+   summary.classList.add("hidden");
+   summary.textContent="";
+ }
+ tr.classList.add("show");
+}
+q("turnTransitionReady").onclick=()=>{
+ hideLocalHandoff();
+ tone(620,.06,"sine",.018);
+};
+document.addEventListener("keydown",e=>{
+ if((e.key==="Enter"||e.key===" ")&&q("turnTransition")?.classList.contains("show")){
+   e.preventDefault();q("turnTransitionReady").click();
+ }
+});
+
 function nextTurn(){
  if(state.gameEnded)return;
 
+ const previous=state.players[state.current];
+ const previousName=previous.name;
+ const previousStart=Number.isFinite(state.turnStartCash)?state.turnStartCash:previous.cash;
+ const previousDelta=previous.cash-previousStart;
  const next=(state.current+1)%state.players.length;
 
  if(state.finalRound && next===state.roundAnchor){
@@ -4365,14 +5095,12 @@ function nextTurn(){
  state.players[state.current].stats.turns++;
  resetTurnState();
 
- const tr=q("turnTransition"),tn=q("turnTransitionName");
- if(tn)tn.textContent=state.players[state.current].name;
- if(tr){tr.classList.add("show");setTimeout(()=>tr.classList.remove("show"),850)}
  soundTurn();
  setLeftTab("score");
  q("result").textContent=state.finalRound?"Schlussrunde: letzter Zug für diesen Spieler.":"Bereit zum ersten Wurf.";
  log(`➡️ <b>${state.players[state.current].name}</b> ist am Zug${state.finalRound?" · Schlussrunde":""}.`);
  render();
+ showLocalHandoff(previousName,previousDelta,false);
 }
 function endGame(){
  if(state.gameEnded)return;
@@ -4380,17 +5108,20 @@ function endGame(){
  clearSavedGame();
  soundCash(); setTimeout(()=>soundCash(),90); setTimeout(()=>tone(840,.18,"triangle",.03),180);
  const sorted=[...state.players].sort((a,b)=>b.cash-a.cash);
- const best=sorted[0].cash, winners=sorted.filter(p=>p.cash===best).map(p=>p.name).join(" & ");
- const medals=["🥇","🥈","🥉","4.","5."];
- const rows=sorted.map((p,i)=>`
+ const best=sorted[0].cash, winnerList=sorted.filter(p=>p.cash===best).map(p=>p.name), winners=winnerList.join(" & ");
+ const rows=sorted.map((p,i)=>{
+   const rank=1+sorted.filter((other,j)=>j<i&&other.cash>p.cash).length;
+   const rankLabel=rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":`${rank}.`;
+   return `
    <div class="victory-row">
-     <div class="victory-rank">${medals[i]||i+1}</div>
+     <div class="victory-rank">${rankLabel}</div>
      <div>
        <div class="victory-player">${p.name}</div>
        <div class="victory-stats">🎲 ${p.stats.diceIncome} Z · 🏢 ${p.stats.branchIncome} Z · 🛒 ${p.stats.purchases} Käufe · Best: ${p.stats.bestResult}</div>
      </div>
      <div class="victory-money">${p.cash} Z</div>
-   </div>`).join("");
+   </div>`;
+ }).join("");
  const body = `
    <div class="victory-burst"></div>
    <div class="trophy-wrap"><div class="trophy">🏆</div></div>
@@ -4398,7 +5129,7 @@ function endGame(){
    <div class="victory-sub">Die Schlussrunde ist beendet · Gewertet wird nur Bargeld</div>
    <div class="victory-winner">
      <div class="name">${winners}</div>
-     <div class="cash">gewinnt mit ${best} Zillionen</div>
+     <div class="cash">${winnerList.length>1?"gewinnen":"gewinnt"} mit ${best} Zillionen</div>
    </div>
    <div class="victory-ranking">${rows}</div>`;
  modal("🏆 Spielende", body, "victory-mode");
@@ -4413,6 +5144,10 @@ document.addEventListener("keydown",e=>{
 });
 document.addEventListener("dblclick",e=>e.preventDefault(),{passive:false});
 </script>
+
+
+
+<!-- Online-Code in der Lokal-Datei absichtlich entfernt. -->
 
 
 <div id="businessOnlineShell" class="business-online-shell">
@@ -4443,7 +5178,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V2.3";
+if(_boChip)_boChip.textContent="ONLINE · V3.0";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
@@ -4462,7 +5197,16 @@ function boActiveName(){return state?.players?.[state.current]?.name||""}
 function boCanAct(){return cloud.gameApplied&&!state.gameEnded&&boActiveName()===cloud.name}
 function boUpdateTurnUI(){const mine=boCanAct();document.body.classList.toggle("business-my-turn",mine);const e=$bo("businessTurnLock");e.classList.toggle("hidden",!cloud.gameApplied||mine||state.gameEnded);if(cloud.gameApplied&&!mine&&!state.gameEnded)e.textContent=`Warte auf ${boActiveName()||"den aktiven Spieler"} …`}
 function boWireGame(){const s={...state,viewedPlayer:state.current,selectedMarket:null,newsDeck:newsIdentityList(state.newsDeck),newsDiscard:newsIdentityList(state.newsDiscard)};return JSON.parse(JSON.stringify(s))}
-function boHydrateGame(g){const s=migrateSavedState(JSON.parse(JSON.stringify(g)),20);s.newsDeck=buildNewsFromHeadlines(s.newsDeck);s.newsDiscard=buildNewsFromHeadlines(s.newsDiscard);return s}
+function boHydrateGame(g){
+ const raw=JSON.parse(JSON.stringify(g||{})),ended=!!raw.gameEnded;
+ const s=migrateSavedState(raw,22);
+ s.gameEnded=ended;
+ s.newsDeck=buildNewsFromHeadlines(s.newsDeck);
+ s.newsDiscard=buildNewsFromHeadlines(s.newsDiscard);
+ const repaired=repairNewsCollections(s.newsDeck,s.newsDiscard);
+ s.newsDeck=repaired.deck;s.newsDiscard=repaired.discard;
+ return s
+}
 function boRosterNames(game){return Array.isArray(game?.players)?game.players.map(p=>boNormName(p?.name)):[]}
 function boRenderPlayers(players=[],hostName=""){const box=$bo("boPlayers");box.innerHTML=players.length?players.map(p=>`<div class="bo-player"><span><span class="bo-dot ${p.online?"on":""}"></span><b>${p.name}</b></span><span>${p.name===hostName?"👑 Host":(p.online?"online":"offline")}</span></div>`).join(""):'<div class="bo-player"><span>Noch niemand im Raum</span></div>';const start=$bo("boStart");const onlineCount=players.filter(p=>p.online).length;start.style.display=cloud.mode==="host"?"block":"none";start.disabled=!(cloud.mode==="host"&&cloud.joined&&onlineCount>=2&&onlineCount<=5)}
 async function boGet(delta=true){if(!cloud.room)return null;const qs=delta&&cloud.rev?`?rev=${cloud.rev}`:"";const {r,j}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}${qs}`);if(!r.ok||!j?.ok)throw new Error(j?.error||`HTTP ${r.status}`);if(j.rev!=null)cloud.rev=Number(j.rev||0);return j}
@@ -4470,20 +5214,78 @@ async function boCreate(){if(!await boWake())return;let typed=boNormRoom($bo("bo
 async function boJoinRoom(){if(!await boWake())return;const rc=boNormRoom($bo("boRoom").value);if(!rc)return boStatus("Bitte Raumcode eingeben.");try{cloud.room=rc;const j=await boGet(false);if(!j?.found){cloud.room="";return boStatus("Raum nicht gefunden.")}cloud.room=rc;cloud.mode="client";localStorage.setItem("business_room",rc);localStorage.setItem("business_mode","client");boStatus(`Raum ${rc} gefunden. Jetzt deinen Namen wählen.`);boRenderPlayers(j.players||[],j.hostName||"");boNet(true,"Online")}catch(e){boNet(false,"Verbindung");boStatus("Raum konnte nicht geladen werden.")}}
 async function boClaimName(name){name=boNormName(name);if(!cloud.room)return boStatus("Zuerst Raum erstellen oder beitreten.");if(!name)return boStatus("Name fehlt.");try{const {r,j}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/join`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,name})});if(!r.ok||!j?.ok){const map={NAME_TAKEN:"Name ist bereits belegt.",FULL:"Raum ist voll.",STARTED:"Spiel läuft bereits.",FINISHED:"Partie ist bereits beendet.",NO_ROOM:"Raum existiert nicht."};return boStatus(map[j?.error]||"Beitritt fehlgeschlagen.")}cloud.name=name;cloud.joined=true;cloud.rev=Number(j.rev||cloud.rev);localStorage.setItem("business_name",name);document.querySelectorAll("[data-bo-name]").forEach(b=>b.classList.toggle("selected",b.dataset.boName===name));boStatus(`${name} ist bereit.`);boRenderPlayers(j.players||[],j.hostName||"");boHeartbeat();boNet(true,"Online");if((j.phase==="game"||j.phase==="finished")&&j.game)boApplyGame(j.game)}catch(e){boNet(false,"Verbindung");boStatus("Beitritt fehlgeschlagen.")}}
 async function boHeartbeat(){if(!cloud.joined||!cloud.room)return;try{await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/heartbeat`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION})});cloud.lastHeartbeatAt=Date.now()}catch(e){}}
-function boInitGame(names){state.players=names.map((name,i)=>({name,cash:0,cards:[startupFor(i)],color:playerColors[i],stats:{diceIncome:0,branchIncome:0,spent:0,newsLoss:0,purchases:0,bestResult:"–",bestValue:0,turns:0}}));state.playerCount=names.length;const starter=Math.floor(Math.random()*names.length);state.current=starter;state.viewedPlayer=starter;state.roundAnchor=starter;state.turnNumber=1;state.finalRound=false;state.lastBankStage="calm";state.bankStart=bankForPlayers(names.length);state.bank=state.bankStart;state.players.forEach(p=>p.stats.turns=0);state.players[starter].stats.turns=1;for(let pos=1;pos<names.length;pos++){const idx=(starter+pos)%names.length,bonus=startCompensation(pos);state.players[idx].cash+=bonus;state.bank-=bonus}state.deck=createDeck();state.market=[];state.discard=[];state.newsDeck=createNewsDeck();state.newsDiscard=[];drawMarket();resetTurnState();return boWireGame()}
+function boInitGame(names){
+ names=uniquePlayerNames((names||[]).map((n,i)=>cleanPlayerName(n,`Spieler ${i+1}`)));
+ state.players=names.map((name,i)=>({
+   name,cash:0,cards:[startupFor(i)],color:playerColors[i],
+   stats:{diceIncome:0,branchIncome:0,spent:0,newsLoss:0,purchases:0,bestResult:"–",bestValue:0,turns:0}
+ }));
+ state.playerCount=names.length;
+ const starter=Math.floor(Math.random()*names.length);
+ state.current=starter;state.viewedPlayer=starter;state.roundAnchor=starter;state.turnNumber=1;
+ state.finalRound=false;state.lastBankStage="calm";state.bankStart=bankForPlayers(names.length);state.bank=state.bankStart;
+ state.players.forEach(p=>p.stats.turns=0);state.players[starter].stats.turns=1;
+ for(let pos=1;pos<names.length;pos++){
+   const idx=(starter+pos)%names.length,bonus=startCompensation(pos);
+   state.players[idx].cash+=bonus;state.bank-=bonus
+ }
+ state.deck=createDeck();state.market=[];state.discard=[];state.newsDeck=createNewsDeck();state.newsDiscard=[];
+ drawMarket();resetTurnState();
+ return boWireGame()
+}
 async function boStart(){if(cloud.mode!=="host"||!cloud.joined)return;try{const cur=await boGet(false);const names=(cur.players||[]).filter(p=>p.online).map(p=>p.name);if(names.length<2||names.length>5)return boStatus("Es müssen 2 bis 5 Spieler gleichzeitig online sein.");const game=boInitGame(names);const {r,j}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/start`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,baseRev:cur.rev,game})});if(r.status===409){boStatus("Raum wurde gleichzeitig geändert – bitte erneut starten.");return}if(!r.ok||!j?.ok){boStatus("Spielstart fehlgeschlagen: "+(j?.error||"Fehler"));return}cloud.rev=Number(j.rev||cloud.rev);boApplyGame(j.game||game);boNet(true,"Online")}catch(e){boNet(false,"Start fehlgeschlagen")}}
-function boShowRemoteEnd(){if(!state.gameEnded||cloud.lastGameEnded)return;cloud.lastGameEnded=true;const sorted=[...state.players].sort((a,b)=>b.cash-a.cash),best=sorted[0]?.cash||0,winners=sorted.filter(p=>p.cash===best).map(p=>p.name).join(" & ");const medals=["🥇","🥈","🥉","4.","5."];const rows=sorted.map((p,i)=>`<div class="victory-row"><div class="victory-rank">${medals[i]||i+1}</div><div><div class="victory-player">${p.name}</div><div class="victory-stats">🎲 ${p.stats?.diceIncome||0} Z · 🏢 ${p.stats?.branchIncome||0} Z · 🛒 ${p.stats?.purchases||0} Käufe</div></div><div class="victory-money">${p.cash} Z</div></div>`).join("");modal("🏆 Spielende",`<div class="trophy-wrap"><div class="trophy">🏆</div></div><div class="victory-title">Spielende</div><div class="victory-winner"><div class="name">${winners}</div><div class="cash">gewinnt mit ${best} Zillionen</div></div><div class="victory-ranking">${rows}</div>`,"victory-mode");q("modalOk").textContent="Zur Spiele-Lobby";q("modalOk").onclick=boLeaveToLobby}
-function boApplyGame(game){const hadGame=cloud.gameApplied;const beforeCurrent=hadGame?state.current:null;const beforeNews=hadGame?newsIdentityList(state.newsDiscard):[];cloud.applying=true;state=boHydrateGame(game);cloud.lastRemoteJSON=JSON.stringify(boWireGame());cloud.lastPushedJSON=cloud.lastRemoteJSON;cloud.gameApplied=true;$bo("businessOnlineShell").classList.add("hidden");q("lobby").classList.add("hidden");q("game").classList.remove("hidden");setLeftTab("score");render();if(beforeCurrent!=null&&beforeCurrent!==state.current){const tr=q("turnTransition"),tn=q("turnTransitionName");if(tn)tn.textContent=state.players[state.current]?.name||"";if(tr){tr.classList.add("show");setTimeout(()=>tr.classList.remove("show"),850)}}if(hadGame&&state.newsDiscard.length>beforeNews.length){const headline=state.newsDiscard[state.newsDiscard.length-1]?.headline;const ev=createNewsDeck().find(x=>x.headline===headline);if(ev){const toneClass=ev.tone==="good"?"good-news":ev.tone==="warn"?"warn-news":"";modal("🐷 Börsenschwein!",`<div class="news-stage"><div class="news-card-visual ${toneClass}"><div class="mast">Börsennews</div><div class="news-icon-big">${ev.icon||"📰"}</div><div class="news-meta"><span class="news-badge ${ev.tone||"bad"}">${ev.severity||"EILMELDUNG"}</span></div><div class="headline">${ev.headline}</div><div class="effect">${ev.effect}</div></div></div>`,"news-mode")}}boUpdateTurnUI();boShowRemoteEnd();setTimeout(()=>cloud.applying=false,40)}
+function boShowRemoteEnd(){
+ if(!state.gameEnded||cloud.lastGameEnded)return;
+ cloud.lastGameEnded=true;
+ const sorted=[...state.players].sort((a,b)=>b.cash-a.cash);
+ const best=sorted[0]?.cash||0;
+ const winnerList=sorted.filter(p=>p.cash===best).map(p=>p.name);
+ const winners=winnerList.join(" & ");
+ const rows=sorted.map((p,i)=>{
+   const rank=1+sorted.filter((other,j)=>j<i&&other.cash>p.cash).length;
+   const rankLabel=rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":`${rank}.`;
+   return `<div class="victory-row"><div class="victory-rank">${rankLabel}</div><div><div class="victory-player">${p.name}</div><div class="victory-stats">🎲 ${p.stats?.diceIncome||0} Z · 🏢 ${p.stats?.branchIncome||0} Z · 🛒 ${p.stats?.purchases||0} Käufe</div></div><div class="victory-money">${p.cash} Z</div></div>`
+ }).join("");
+ modal("🏆 Spielende",`<div class="trophy-wrap"><div class="trophy">🏆</div></div><div class="victory-title">Spielende</div><div class="victory-winner"><div class="name">${winners}</div><div class="cash">${winnerList.length>1?"gewinnen":"gewinnt"} mit ${best} Zillionen</div></div><div class="victory-ranking">${rows}</div>`,"victory-mode");
+ q("modalOk").textContent="Zur Spielauswahl";q("modalOk").onclick=boLeaveToLobby
+}
+function boApplyGame(game){
+ const hadGame=cloud.gameApplied;
+ const beforeCurrent=hadGame?state.current:null;
+ const beforeNews=hadGame?newsIdentityList(state.newsDiscard):[];
+ cloud.applying=true;
+ state=boHydrateGame(game);
+ cloud.lastRemoteJSON=JSON.stringify(boWireGame());
+ cloud.lastPushedJSON=cloud.lastRemoteJSON;
+ cloud.gameApplied=true;
+ $bo("businessOnlineShell").classList.add("hidden");
+ q("lobby").classList.add("hidden");q("game").classList.remove("hidden");
+ hideLocalHandoff();
+ setLeftTab("score");render();
+ if(beforeCurrent!=null&&beforeCurrent!==state.current && state.players[state.current]?.name===cloud.name){
+   toast("🎯 Du bist am Zug");
+   soundTurn();
+ }
+ if(hadGame&&state.newsDiscard.length>beforeNews.length){
+   const last=state.newsDiscard[state.newsDiscard.length-1];
+   const ev=createNewsDeck().find(x=>x.id===last?.id||x.headline===last?.headline);
+   if(ev){
+     const toneClass=ev.tone==="good"?"good-news":ev.tone==="warn"?"warn-news":"";
+     modal("🐷 Börsenschwein!",`<div class="news-stage"><div class="news-card-visual ${toneClass}"><div class="mast">Börsennews</div><div class="news-icon-big">${ev.icon||"📰"}</div><div class="news-meta"><span class="news-badge ${ev.tone||"bad"}">${ev.severity||"EILMELDUNG"}</span></div><div class="headline">${ev.headline}</div><div class="effect">${ev.effect}</div></div></div>`,"news-mode")
+   }
+ }
+ boUpdateTurnUI();boShowRemoteEnd();
+ setTimeout(()=>cloud.applying=false,40)
+}
 function boQueueSnapshot(actor){if(!cloud.gameApplied||cloud.applying)return;cloud.pending={game:boWireGame(),actor:boNormName(actor||"")};cloud.dirty=true;boRunWriteQueue()}
 async function boRunWriteQueue(){if(cloud.inFlight||!cloud.pending)return;cloud.inFlight=true;clearTimeout(cloud.retryTimer);try{while(cloud.pending){const item=cloud.pending;cloud.pending=null;const payload=JSON.stringify(item.game);if(payload===cloud.lastPushedJSON){continue}let response;try{response=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/state`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,actorName:item.actor,baseRev:cloud.rev,game:item.game})})}catch(e){cloud.pending=item;boNet(false,"Verbindung unterbrochen");cloud.retryTimer=setTimeout(boRunWriteQueue,1800);return}const {r,j}=response;if(r.status===409||r.status===403){boNet(false,j?.error==="NOT_YOUR_TURN"?"Nicht am Zug":"Sync-Konflikt");const fresh=await boGet(false).catch(()=>null);cloud.pending=null;cloud.dirty=false;if(fresh?.game)boApplyGame(fresh.game);return}if(!r.ok||!j?.ok){cloud.pending=item;boNet(false,"Speichern fehlgeschlagen");cloud.retryTimer=setTimeout(boRunWriteQueue,1800);return}cloud.rev=Number(j.rev||cloud.rev+1);cloud.lastPushedJSON=payload;cloud.lastRemoteJSON=payload;boNet(true,"Online")}}finally{cloud.inFlight=false;if(!cloud.pending)cloud.dirty=false;if(cloud.pending&&!cloud.retryTimer)setTimeout(boRunWriteQueue,0)}}
 async function boPoll(){if(!cloud.room||cloud.pollBusy||cloud.dirty||cloud.inFlight)return;const now=Date.now(),gap=document.hidden?6000:(cloud.gameApplied?1100:1500);if(now-cloud.lastPollAt<gap)return;cloud.lastPollAt=now;cloud.pollBusy=true;try{const j=await boGet(true);boNet(true,"Online");boRenderPlayers(j.players||[],j.hostName||"");if(j.phase==="game"&&j.game&&!j.unchanged){const sig=JSON.stringify(j.game);if(sig!==cloud.lastPushedJSON&&sig!==cloud.lastRemoteJSON)boApplyGame(j.game)}else if(j.phase==="finished"&&j.game&&!j.unchanged){boApplyGame(j.game)}else if(!cloud.gameApplied)$bo("businessOnlineShell").classList.remove("hidden")}catch(e){boNet(false,"Render schläft / offline")}finally{cloud.pollBusy=false}}
 function boMarkDirty(){if(cloud.gameApplied&&boCanAct())cloud.dirty=true}
 function boWrapMutation(name,delay=30){const orig=window[name];if(typeof orig!=="function")return;window[name]=function(...args){if(cloud.gameApplied&&!boCanAct())return;const actor=boActiveName();cloud.dirty=true;const ret=orig.apply(this,args);setTimeout(()=>boQueueSnapshot(actor),delay);return ret}}
-function boPatchGame(){const localSave=saveGame;saveGame=function(show=false){if(BO_ONLINE)return;return localSave(show)};const origRoll=rollDice;rollDice=function(...args){if(!boCanAct())return;if(state.phase!=="roll"||state.rolls>=3||state.locked)return;cloud.dirty=true;return origRoll.apply(this,args)};boWrapMutation("finishRoll",40);boWrapMutation("settleDice",30);boWrapMutation("buyCard",40);boWrapMutation("nextTurn",40);const origEnd=endGame;endGame=function(...args){if(cloud.gameApplied&&!boCanAct()&&!state.gameEnded)return;const actor=boActiveName();cloud.dirty=true;const ret=origEnd.apply(this,args);cloud.lastGameEnded=true;if(q("modalOk")){q("modalOk").textContent="Zur Spiele-Lobby";q("modalOk").onclick=boLeaveToLobby}setTimeout(()=>boQueueSnapshot(actor),35);return ret};const release=q("releaseBtn");release?.addEventListener("click",()=>{if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("dice")?.addEventListener("click",e=>{if(boCanAct()&&e.target.closest(".die:not(.branch-die)"))setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("newGameBtn").onclick=boLeaveToLobby}
+function boPatchGame(){showLocalHandoff=function(){hideLocalHandoff()};hideLocalHandoff();const localSave=saveGame;saveGame=function(show=false){if(BO_ONLINE)return;return localSave(show)};const origRoll=rollDice;rollDice=function(...args){if(!boCanAct())return;if(state.phase!=="roll"||state.rolls>=3||state.locked)return;cloud.dirty=true;return origRoll.apply(this,args)};boWrapMutation("finishRoll",40);boWrapMutation("settleDice",30);boWrapMutation("buyCard",40);boWrapMutation("nextTurn",40);const origEnd=endGame;endGame=function(...args){if(cloud.gameApplied&&!boCanAct()&&!state.gameEnded)return;const actor=boActiveName();cloud.dirty=true;const ret=origEnd.apply(this,args);cloud.lastGameEnded=true;if(q("modalOk")){q("modalOk").textContent="Zur Spielauswahl";q("modalOk").onclick=boLeaveToLobby}setTimeout(()=>boQueueSnapshot(actor),35);return ret};const release=q("releaseBtn");release?.addEventListener("click",()=>{if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("dice")?.addEventListener("click",e=>{if(boCanAct()&&e.target.closest(".die:not(.branch-die)"))setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("newGameBtn").onclick=boLeaveToLobby}
 async function boResume(){cloud.room=boNormRoom(localStorage.getItem("business_room")||"");cloud.name=boNormName(localStorage.getItem("business_name")||"");cloud.mode=localStorage.getItem("business_mode")||"";$bo("boRoom").value=cloud.room;if(!cloud.room){$bo("businessOnlineShell").classList.remove("hidden");return}if(!await boWake()){$bo("businessOnlineShell").classList.remove("hidden");return}try{const j=await boGet(false);if(!j.found){cloud.room="";$bo("businessOnlineShell").classList.remove("hidden");return}if(cloud.name){const {r,j:joined}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/join`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,name:cloud.name})});if(r.ok&&joined?.ok){cloud.joined=true;cloud.rev=Number(joined.rev||cloud.rev);boRenderPlayers(joined.players||[],joined.hostName||"");if((joined.phase==="game"||joined.phase==="finished")&&joined.game){boApplyGame(joined.game);return}}}boRenderPlayers(j.players||[],j.hostName||"");$bo("businessOnlineShell").classList.remove("hidden");boStatus(`Raum ${cloud.room} geladen.`)}catch(e){$bo("businessOnlineShell").classList.remove("hidden");boNet(false,"Render nicht erreichbar")}}
 $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart").onclick=boStart;$bo("boBack").onclick=boLeaveToLobby;document.querySelectorAll("[data-bo-name]").forEach(b=>b.onclick=()=>boClaimName(b.dataset.boName));$bo("boCustomUse").onclick=()=>boClaimName($bo("boCustomName").value);$bo("boCustomName").addEventListener("keydown",e=>{if(e.key==="Enter")boClaimName(e.target.value)});$bo("businessOnlineShell").classList.remove("hidden");q("lobby").classList.add("hidden");q("game").classList.add("hidden");boPatchGame();boResume();setInterval(()=>{boPoll();if(cloud.joined&&Date.now()-cloud.lastHeartbeatAt>10000)boHeartbeat()},500);document.addEventListener("visibilitychange",()=>{if(!document.hidden)boPoll()});
 })();
 </script>
-
 </body>
 </html>
