@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V3.6 · Online Langspiel 20 Runden</title>
+<title>Das große Business – V3.8 · Online Kartenklarheit</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -4784,6 +4784,89 @@ body[data-market-stage="hot"] #roundDisplay::after{
   .real-card-stat small{font-size:6.4px!important}
 }
 
+
+/* V3.8 Klarere Kartensymbole + klare Trennung Aktie / Business */
+.real-card-type{
+  position:absolute;right:7px;top:7px;z-index:5;
+  padding:4px 8px;border-radius:999px;
+  font:900 7px/1 Arial,sans-serif;letter-spacing:.8px;text-transform:uppercase;
+  box-shadow:0 5px 12px rgba(0,0,0,.24);
+}
+.type-share{
+  background:linear-gradient(180deg,#27b2ff,#0f5fa9);
+  color:#effaff;border:1px solid rgba(213,244,255,.85);
+}
+.type-business{
+  background:linear-gradient(180deg,#ff8f48,#cb4c1f);
+  color:#fff7ea;border:1px solid rgba(255,225,190,.85);
+}
+.type-certificate{
+  background:linear-gradient(180deg,#f5d16a,#ab7f1a);
+  color:#fff8e1;border:1px solid rgba(255,240,191,.88);
+}
+.real-card-bigicon{
+  width:58px!important;height:58px!important;right:10px!important;top:24px!important;
+  border:3px solid rgba(255,251,228,.98)!important;
+  background:radial-gradient(circle at 30% 30%, #ffffff, #fff0ab 45%, #f0bf42 68%, #8d5511 100%)!important;
+  box-shadow:0 10px 20px rgba(0,0,0,.42), 0 0 0 3px rgba(6,16,27,.35), inset 0 2px 4px rgba(255,255,255,.65)!important;
+}
+.real-card-bigicon span{
+  display:block;
+  font-size:33px;
+  line-height:1;
+  filter:drop-shadow(0 2px 0 rgba(255,255,255,.45)) drop-shadow(0 3px 6px rgba(0,0,0,.28));
+}
+.real-card-photo::after{
+  content:"";position:absolute;inset:auto 10px 12px auto;width:66px;height:66px;border-radius:50%;
+  background:radial-gradient(circle, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 72%);
+  pointer-events:none;z-index:1;
+}
+.share-card{
+  border:3px solid #2eb7ff!important;
+  box-shadow:0 0 0 2px rgba(10,72,112,.36) inset, 0 8px 18px rgba(0,0,0,.26)!important;
+}
+.business-card{
+  border:3px solid #ff7f40!important;
+  box-shadow:0 0 0 2px rgba(116,44,17,.28) inset, 0 8px 18px rgba(0,0,0,.26)!important;
+}
+.certificate-card{
+  border:3px solid #e0b64f!important;
+  box-shadow:0 0 0 2px rgba(121,90,20,.28) inset, 0 8px 18px rgba(0,0,0,.26)!important;
+}
+.market-slot .invest-card .share-card .real-card-body{
+  background:linear-gradient(180deg,#f4fbff 0%,#deedf7 100%)!important;
+}
+.market-slot .invest-card .business-card .real-card-body{
+  background:linear-gradient(180deg,#fff4ea 0%,#f7e2cf 100%)!important;
+}
+.market-slot .invest-card .certificate-card .real-card-body{
+  background:linear-gradient(180deg,#fff7df 0%,#f1e4bf 100%)!important;
+}
+.market-slot .invest-card .real-card-branch{
+  max-width:calc(100% - 86px)!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.depot-fan-card .real-card-bigicon,
+.depot-fan-card .real-card-branch{
+  display:none!important;
+}
+.depot-fan-card .real-card-type{
+  right:5px;top:5px;padding:3px 6px;font-size:5.8px;letter-spacing:.5px;
+}
+.depot-fan-card .share-card{border-color:#2ca6e7!important}
+.depot-fan-card .business-card{border-color:#ff874d!important}
+.depot-fan-card .certificate-card{border-color:#dab44b!important}
+.depot-fan-card .card-shell{grid-template-rows:0 100%!important}
+.depot-fan-card .real-card-photo{display:none!important}
+.depot-fan-card .real-card-body{padding-top:16px!important}
+.depot-fan-card .real-card-company{font-size:9.2px!important;min-height:22px!important}
+.depot-fan-card .real-card-desc{font-size:6.1px!important;min-height:16px!important}
+@media (max-width:1100px){
+  .real-card-bigicon{width:50px!important;height:50px!important;top:26px!important}
+  .real-card-bigicon span{font-size:28px}
+  .real-card-type{font-size:6.2px;padding:3px 7px}
+}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -4845,7 +4928,7 @@ body[data-market-stage="hot"] #roundDisplay::after{
   <section class="market-board-strip">
     <div class="market-board-header">
       <div class="market-board-brand">
-        <div id="businessModeChip" class="market-mode-chip">ONLINE · V3.6</div>
+        <div id="businessModeChip" class="market-mode-chip">ONLINE · V3.8</div>
         <div>
           <div class="market-board-kicker">DAS GROSSE BUSINESS · AKTIENMARKT</div>
           <div class="market-board-title">Vier Chancen. Ein Investment pro Zug.</div>
@@ -5714,17 +5797,19 @@ function buildPrettyCard(card, mini=false){
  const b=branchObj(card.branch);
  const cert=card.type==="Aktienurkunde";
  const startup=card.type==="Start-up";
+ const share=!startup && !cert;
  const startupCorp={reisen:"Urlaubsflieger",tech:"KI Solutions",food:"Frische Welt",sport:"StadionPlus",ent:"MediaStar"};
  const art=startup ? (cardArtByCorp[startupCorp[card.branch]]||"") : (cardArtByCorp[card.corp]||"");
  const desc=companyDescriptions[card.corp] || "";
  const payoutLabel=cert?"Einmal":"Ertrag";
  if(startup){
    return `
-   <div class="card-shell startup-card" style="--c1:${b.c1};--c2:${b.c2}">
+   <div class="card-shell startup-card business-card" style="--c1:${b.c1};--c2:${b.c2}">
+     <div class="real-card-type type-business">BUSINESS</div>
      <button class="card-info" onclick="event.stopPropagation();showCardInfoById('${card.id}')">i</button>
      <div class="real-card-photo startup-photo" style="background-image:url('${art}')">
        <div class="real-card-branch">${b.icon} ${b.name}</div>
-       <div class="real-card-bigicon">${b.icon}</div>
+       <div class="real-card-bigicon"><span>${b.icon}</span></div>
      </div>
      <div class="real-card-body">
        <div class="real-card-company">${card.corp}</div>
@@ -5739,12 +5824,13 @@ function buildPrettyCard(card, mini=false){
    </div>`;
  }
  return `
-   <div class="card-shell realistic-market-card ${cert?"certificate":""}" style="--c1:${b.c1};--c2:${b.c2}">
+   <div class="card-shell realistic-market-card ${share?"share-card":""} ${cert?"certificate certificate-card":""}" style="--c1:${b.c1};--c2:${b.c2}">
+     <div class="real-card-type ${cert?"type-certificate":"type-share"}">${cert?"URKUNDE":"AKTIE"}</div>
      ${cert?`<div class="certificate-seal">URKUNDE</div>`:""}
      <button class="card-info" onclick="event.stopPropagation();showCardInfoById('${card.id}')">i</button>
      <div class="real-card-photo" style="background-image:url('${art}')">
        <div class="real-card-branch">${b.icon} ${b.name}</div>
-       <div class="real-card-bigicon">${b.icon}</div>
+       <div class="real-card-bigicon"><span>${b.icon}</span></div>
        <div class="real-card-price">${card.cost} Z</div>
      </div>
      <div class="real-card-body">
