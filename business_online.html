@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V3.1 · Online Würfelarena</title>
+<title>Das große Business – V3.3 · Online Arena-Dock</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -3948,6 +3948,312 @@ body.business-online .business-turn-lock{
 .modal{z-index:190!important}
 .market-stage-toast,.final-round-toast{z-index:176!important}
 
+
+/* =================================================================
+   V3.2 · LIVE 3D WÜRFELARENA
+   Mehr Tiefe, Sprünge, Schatten, Landungen und Online-Zuschauer.
+   ================================================================= */
+.dice-arena-board{
+  background:
+    radial-gradient(circle at 48% 42%,rgba(255,255,255,.055),transparent 31%),
+    repeating-radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.012) 0 1px,transparent 1px 5px),
+    repeating-linear-gradient(13deg,rgba(0,0,0,.018) 0 2px,transparent 2px 7px),
+    linear-gradient(145deg,#1b5135,#0e3925 52%,#082719)!important;
+  perspective:900px;
+}
+.dice-arena-board::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(125deg,rgba(255,255,255,.055),transparent 24%,transparent 70%,rgba(0,0,0,.10));
+  mix-blend-mode:soft-light;
+}
+.dice-arena-layer{z-index:3!important}
+.arena-die{
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  will-change:left,top,transform,filter;
+  filter:drop-shadow(var(--shadow-x,5px) var(--shadow-y,8px) var(--shadow-blur,6px) rgba(0,0,0,var(--shadow-alpha,.30)));
+  box-shadow:
+    inset 2px 2px 2px rgba(255,255,255,.95),
+    inset -7px -9px 0 rgba(35,42,48,.10),
+    0 1px 0 rgba(255,255,255,.55)!important;
+}
+.arena-die.rolling{
+  transition:none!important;
+}
+.arena-die.landed{
+  animation:arenaSettle .18s ease-out;
+}
+@keyframes arenaSettle{
+  0%{filter:brightness(1.13) drop-shadow(6px 10px 8px rgba(0,0,0,.34))}
+  100%{filter:brightness(1) drop-shadow(4px 6px 5px rgba(0,0,0,.26))}
+}
+.arena-impact{
+  position:absolute;width:7px;height:7px;border-radius:50%;z-index:2;pointer-events:none;
+  background:rgba(233,218,173,.32);
+  box-shadow:0 0 8px rgba(233,218,173,.18);
+  animation:arenaDust .42s ease-out forwards;
+}
+@keyframes arenaDust{
+  from{opacity:.72;transform:translate(-50%,-50%) scale(.5)}
+  to{opacity:0;transform:translate(var(--dust-x),var(--dust-y)) scale(2.4)}
+}
+.dice-arena-board.board-hit{animation:arenaBoardHit .13s linear}
+@keyframes arenaBoardHit{
+  0%,100%{transform:translate(0,0)}
+  30%{transform:translate(-1px,1px)}
+  65%{transform:translate(1px,-1px)}
+}
+.dice-arena-live-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;
+  background:rgba(177,33,40,.24);border:1px solid rgba(255,101,108,.38);
+  color:#ffd5d8;font:900 9px Arial,sans-serif;letter-spacing:.06em;white-space:nowrap;
+}
+.dice-arena-live-badge::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:#ff5058;
+  box-shadow:0 0 9px rgba(255,80,88,.9);animation:livePulse 1s ease-in-out infinite;
+}
+@keyframes livePulse{0%,100%{opacity:.55;transform:scale(.86)}50%{opacity:1;transform:scale(1.15)}}
+.dice-arena-live-badge.hidden{display:none!important}
+.dice-arena-overlay.spectator .dice-throw-handle,
+.dice-arena-overlay.spectator #diceArenaRelease,
+.dice-arena-overlay.spectator #diceArenaTake{
+  display:none!important;
+}
+.dice-arena-overlay.spectator .dice-arena-footer{
+  grid-template-columns:1fr!important;
+}
+.dice-arena-overlay.spectator .dice-arena-result{
+  min-height:46px;font-size:11px;
+  border-color:rgba(255,115,120,.15);
+}
+.dice-arena-overlay.spectator .dice-arena-swipe-hint{
+  display:none!important;
+}
+.dice-arena-overlay.spectator .dice-arena-player{
+  color:#ffd9a3;font-size:12px;
+}
+.arena-die.spectator-held{
+  border-color:#ecc44e;
+  box-shadow:0 0 0 3px rgba(236,196,78,.20),inset 2px 2px 2px rgba(255,255,255,.95),inset -7px -9px 0 rgba(35,42,48,.10)!important;
+}
+
+
+/* =================================================================
+   V3.3 · ARENA-DOCK / HALTEBANK / BRANCHEN-AUSZAHLUNG
+   ================================================================= */
+.dice-arena-card{
+  width:min(98vw,1180px)!important;
+}
+.dice-arena-workspace{
+  min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 230px;
+  gap:10px;
+}
+.dice-arena-workspace .dice-arena-board{min-width:0}
+.dice-arena-side{
+  min-height:0;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  gap:9px;
+}
+.branch-dock-card,.branch-payout-card{
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.035));
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+  padding:10px;
+}
+.side-label{
+  color:#91a6b5;
+  font:900 8px Arial,sans-serif;
+  letter-spacing:.13em;
+  margin-bottom:7px;
+}
+.branch-die-dock{
+  width:92px;height:92px;
+  margin:3px auto 8px;
+  border-radius:20px;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle at 30% 25%,rgba(255,255,255,.34),transparent 26%),
+    linear-gradient(145deg,#fff3c7,#e6ca70 66%,#b69532);
+  border:3px solid #d7b249;
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.65),
+    inset -8px -9px 0 rgba(75,48,0,.12),
+    0 12px 20px rgba(0,0,0,.28);
+  transition:.22s ease;
+}
+.branch-die-dock.empty{
+  opacity:.30;
+  filter:grayscale(.55);
+}
+.branch-die-dock.landed{
+  animation:branchDockLand .38s cubic-bezier(.2,.9,.3,1.2);
+  box-shadow:
+    0 0 0 4px rgba(241,196,73,.14),
+    0 0 25px rgba(241,196,73,.22),
+    inset 0 2px 1px rgba(255,255,255,.65),
+    inset -8px -9px 0 rgba(75,48,0,.12);
+}
+@keyframes branchDockLand{
+  0%{transform:scale(.72) rotate(-14deg);opacity:.25}
+  70%{transform:scale(1.08) rotate(3deg);opacity:1}
+  100%{transform:none}
+}
+.branch-die-dock-face{
+  font-size:43px;
+  filter:drop-shadow(0 4px 4px rgba(0,0,0,.16));
+}
+.branch-die-dock-text{
+  text-align:center;
+  color:#ffe6a1;
+  font:900 10px/1.25 Arial,sans-serif;
+  min-height:25px;
+}
+.branch-payout-card{
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.branch-payout-title{
+  color:#ffe09a;
+  font:900 12px Georgia,serif;
+  padding-bottom:7px;
+  border-bottom:1px solid rgba(255,221,131,.12);
+}
+.branch-payout-rows{
+  min-height:0;
+  overflow:auto;
+  display:grid;
+  align-content:start;
+  gap:5px;
+  padding-top:7px;
+}
+.branch-payout-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:7px;
+  align-items:center;
+  min-height:35px;
+  padding:6px 7px;
+  border-radius:9px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.055);
+}
+.branch-payout-row.active{
+  border-color:rgba(234,190,70,.30);
+  background:rgba(234,190,70,.075);
+}
+.branch-payout-name{
+  min-width:0;
+  color:#dce7ee;
+  font:800 9px Arial,sans-serif;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.branch-payout-detail{
+  display:block;
+  color:#899ead;
+  font:700 7px Arial,sans-serif;
+  margin-top:2px;
+}
+.branch-payout-value{
+  min-width:39px;
+  text-align:right;
+  color:#9fe3b2;
+  font:900 12px Arial,sans-serif;
+}
+.branch-payout-value.zero{color:#7e909c}
+.branch-payout-empty{
+  padding:12px 7px;
+  color:#8298a7;
+  text-align:center;
+  font:700 8px/1.35 Arial,sans-serif;
+}
+
+/* Haltebank unten links */
+.dice-hold-zone{
+  position:absolute;
+  left:2.4%;bottom:3.5%;
+  width:35%;
+  min-width:190px;
+  height:126px;
+  z-index:2;
+  border-radius:17px;
+  background:
+    linear-gradient(180deg,rgba(6,26,18,.72),rgba(4,18,13,.78));
+  border:2px dashed rgba(242,201,91,.26);
+  box-shadow:inset 0 0 24px rgba(0,0,0,.18);
+  pointer-events:none;
+}
+.dice-hold-title{
+  position:absolute;left:11px;top:8px;
+  color:#f2ca5a;
+  font:900 9px Arial,sans-serif;
+  letter-spacing:.12em;
+}
+.dice-hold-sub{
+  position:absolute;left:11px;top:23px;
+  color:#769083;font:700 7px Arial,sans-serif;
+}
+.dice-hold-slots{
+  position:absolute;left:9px;right:9px;bottom:8px;top:39px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(2,1fr);
+  gap:5px;
+}
+.dice-hold-slots span{
+  border-radius:11px;
+  border:1px dashed rgba(255,224,133,.14);
+  background:rgba(255,255,255,.018);
+}
+.dice-hold-slots span:nth-child(5){grid-column:2}
+
+/* Wischgriff nach rechts, damit die Haltebank frei bleibt */
+.dice-throw-handle{
+  left:72%!important;
+  width:min(42%,330px)!important;
+}
+.dice-arena-swipe-hint{
+  left:72%!important;
+}
+
+/* Würfel gleiten sichtbar in die Haltebank */
+.arena-die{
+  transition:
+    left .30s cubic-bezier(.2,.8,.2,1),
+    top .30s cubic-bezier(.2,.8,.2,1),
+    transform .30s cubic-bezier(.2,.8,.2,1),
+    box-shadow .18s ease,
+    border-color .18s ease;
+}
+.arena-die.moving-to-hold{
+  z-index:20!important;
+  filter:brightness(1.08);
+}
+.arena-die.held{
+  transform-origin:center!important;
+}
+
+/* Sicherer Rollbereich: unten bleibt die Haltebank frei */
+.dice-arena-logo{top:42%!important}
+
+@media(max-width:1000px){
+  .dice-arena-workspace{grid-template-columns:minmax(0,1fr) 190px}
+  .branch-die-dock{width:76px;height:76px;border-radius:17px}
+  .branch-die-dock-face{font-size:34px}
+  .dice-hold-zone{width:40%;min-width:175px;height:112px}
+}
+@media(max-width:760px){
+  .dice-arena-workspace{grid-template-columns:minmax(0,1fr) 170px}
+  .dice-arena-side{gap:5px}
+  .branch-dock-card,.branch-payout-card{padding:7px}
+  .branch-payout-row{min-height:29px;padding:4px 5px}
+  .branch-payout-detail{display:none}
+}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -4009,7 +4315,7 @@ body.business-online .business-turn-lock{
   <main class="board-wrap">
     <div class="focus-hint">▣ Fokusmodus oben rechts</div>
     <div class="board">
-      <div id="businessModeChip" class="board-chip">ONLINE · V3.1</div>
+      <div id="businessModeChip" class="board-chip">ONLINE · V3.3</div>
       <div id="payoutOverlay" class="payout-overlay legacy-payout board-payout-corrected" aria-hidden="true"></div>
       <div id="boardDiceFix" class="board-dice-fix" aria-label="Korrigierte Beispielwürfel"></div>
       <div id="boardMarket" class="board-market-overlay"></div>
@@ -4073,13 +4379,23 @@ body.business-online .business-turn-lock{
     <div class="dice-arena-phasebar">
       <div id="diceArenaRollInfo">1. Wurf · Branchenwürfel wird mitgeworfen</div>
       <div id="diceArenaBranchInfo" class="dice-arena-branch-info">Branche noch offen</div>
+      <div id="diceArenaLiveBadge" class="dice-arena-live-badge hidden">LIVE</div>
     </div>
 
+    <div class="dice-arena-workspace">
     <div id="diceArenaBoard" class="dice-arena-board">
       <div class="dice-arena-rail rail-top"></div>
       <div class="dice-arena-rail rail-bottom"></div>
       <div class="dice-arena-logo">DB</div>
       <div id="diceArenaLayer" class="dice-arena-layer"></div>
+
+      <div id="diceHoldZone" class="dice-hold-zone">
+        <div class="dice-hold-title">GEHALTEN</div>
+        <div class="dice-hold-sub">Antippen = hier ablegen</div>
+        <div class="dice-hold-slots">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
 
       <div id="diceThrowHandle" class="dice-throw-handle" role="button" tabindex="0" aria-label="Zum Würfeln nach oben wischen">
         <div class="throw-big-die"><span>🎲</span></div>
@@ -4090,6 +4406,25 @@ body.business-online .business-turn-lock{
       <div id="diceArenaSwipeHint" class="dice-arena-swipe-hint">
         Würfel auf das Brett schieben
       </div>
+    </div>
+
+    <aside class="dice-arena-side">
+      <section class="branch-dock-card">
+        <div class="side-label">BRANCHENWÜRFEL</div>
+        <div id="branchDieDock" class="branch-die-dock empty">
+          <div id="branchDieDockFace" class="branch-die-dock-face">◆</div>
+        </div>
+        <div id="branchDieDockText" class="branch-die-dock-text">Noch nicht gewürfelt</div>
+      </section>
+
+      <section class="branch-payout-card">
+        <div class="side-label">AUSZAHLUNG</div>
+        <div id="branchPayoutTitle" class="branch-payout-title">Noch kein Branchenwurf</div>
+        <div id="branchPayoutRows" class="branch-payout-rows">
+          <div class="branch-payout-empty">Beim ersten Wurf erscheint hier die Auszahlung pro Spieler.</div>
+        </div>
+      </section>
+    </aside>
     </div>
 
     <div class="dice-arena-footer">
@@ -4172,7 +4507,7 @@ let state={
  players:[],playerCount:2,current:0,viewedPlayer:0,bank:780,deck:[],market:[],discard:[],
  newsDeck:[],newsDiscard:[],
  dice:[1,1,1,1,1],held:[false,false,false,false,false],branchRoll:null,rolls:0,
- phase:"roll",bought:false,branchResolved:false,locked:false,gameEnded:false,turnNumber:1,selectedMarket:null,lastBankStage:"calm",bankStart:520,roundAnchor:0,finalRound:false
+ phase:"roll",bought:false,branchResolved:false,locked:false,gameEnded:false,turnNumber:1,selectedMarket:null,lastBankStage:"calm",bankStart:520,roundAnchor:0,finalRound:false,lastBranchPayout:null
 };
 
 function q(id){return document.getElementById(id)}
@@ -4383,6 +4718,7 @@ function migrateSavedState(s,version){
  while(s.market.length<4 && s.deck.length)s.market.push(s.deck.pop());
  if(s.selectedMarket===undefined||!s.market.some(c=>c.id===s.selectedMarket))s.selectedMarket=null;
  if(!Number.isFinite(s.turnStartCash))s.turnStartCash=s.players[s.current].cash;
+ if(!s.lastBranchPayout||typeof s.lastBranchPayout!=="object")s.lastBranchPayout=null;
 
  return s;
 }
@@ -4636,6 +4972,8 @@ function resetTurnState(){
  state.locked=false;
  state.selectedMarket=null;
  state.turnStartCash=state.players?.[state.current]?.cash ?? 0;
+ state.rollEvent=null;
+ state.lastBranchPayout=null;
 }
 
 function finalThreshold(){
@@ -5097,17 +5435,18 @@ q("rulesBtn").onclick=()=>{
 
 
 
+
 /* =================================================================
-   V3.1 · WÜRFELARENA
-   Phase 1: großes Overlay + Wischgeste
-   Phase 2: Rotation, Reibung, Randabpraller
-   Phase 3: leichte Würfel-Würfel-Kollisionen + Halten/Neuwerfen
+   V3.2 · LIVE 3D WÜRFELARENA
+   Deterministische Physik: derselbe Online-Wurf kann auf allen Geräten
+   mit demselben Seed, derselben Geste und demselben Ergebnis abgespielt werden.
    ================================================================= */
 let diceArenaPositions=[];
 let diceArenaRolling=false;
 let diceArenaPointer=null;
 let diceArenaLastAutoTurn=-1;
 let diceArenaRaf=0;
+let diceArenaSpectator=false;
 
 function diceArenaCanAct(){
  try{
@@ -5115,296 +5454,350 @@ function diceArenaCanAct(){
  }catch(_e){}
  return true;
 }
+function arenaClamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function arenaSeed(){
+ try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]||1}catch(_e){return (Date.now()^Math.floor(Math.random()*0xffffffff))>>>0||1}
+}
+function arenaRng(seed){
+ let x=(Number(seed)>>>0)||1;
+ return ()=>{x^=x<<13;x^=x>>>17;x^=x<<5;x>>>=0;return x/4294967296}
+}
+function arenaFaceFrom(seed,index,bucket){
+ let x=((seed>>>0)^Math.imul(index+17,0x9e3779b1)^Math.imul(bucket+31,0x85ebca6b))>>>0;
+ x^=x>>>16;x=Math.imul(x,0x7feb352d);x^=x>>>15;x=Math.imul(x,0x846ca68b);x^=x>>>16;
+ return 1+(x>>>0)%6;
+}
+function makeDiceRollEvent(finalDice,finalBranch,gesture={}){
+ const seed=arenaSeed(),dy=Number(gesture.dy||-190),dx=Number(gesture.dx||0);
+ const dirX=arenaClamp(dx/Math.max(90,Math.abs(dy)), -1,1);
+ const power=arenaClamp(Number(gesture.power)||Math.hypot(dx,dy)/180||1,.72,1.65);
+ return {
+   id:`T${state.turnNumber}-R${state.rolls+1}-${seed.toString(36)}`,
+   turnNumber:Number(state.turnNumber||1),rollNumber:Number(state.rolls||0)+1,
+   actor:state.players?.[state.current]?.name||"Spieler",seed,
+   gesture:{dirX,power},finalDice:finalDice.slice(0,5),finalBranch,
+   held:[...state.held],startDice:[...state.dice],createdAt:Date.now(),completed:false
+ };
+}
 function arenaBranchText(){
  if(!state.branchRoll)return "Branche noch offen";
  if(state.branchRoll==="news")return "🐷 Börsennews";
- const b=branchObj(state.branchRoll);
- return b?`${b.icon} ${b.name}`:"Branche";
+ const b=branchObj(state.branchRoll);return b?`${b.icon} ${b.name}`:"Branche";
 }
 function arenaDefaultPositions(){
- const board=q("diceArenaBoard");
- if(!board)return [];
+ const board=q("diceArenaBoard");if(!board)return [];
  const w=Math.max(500,board.clientWidth||700),h=Math.max(260,board.clientHeight||400);
- const size=Math.min(68,Math.max(48,w*.071));
- const gap=(w-size*5)/6;
- const y=Math.max(42,h*.42);
- const arr=[];
- for(let i=0;i<5;i++)arr.push({x:gap+(gap+size)*i,y,angle:(i-2)*3});
- arr.push({x:Math.max(20,w-size-42),y:Math.max(28,h*.15),angle:0});
+ const size=Math.min(68,Math.max(48,w*.071)),gap=(w-size*5)/6,y=Math.max(42,h*.42),arr=[];
+ for(let i=0;i<5;i++)arr.push({x:gap+(gap+size)*i,y,angle:(i-2)*3,z:0});
+ arr.push({x:Math.max(20,w-size-42),y:Math.max(28,h*.15),angle:0,z:0});
  return arr;
 }
-function ensureArenaPositions(){
- if(!Array.isArray(diceArenaPositions)||diceArenaPositions.length!==6)diceArenaPositions=arenaDefaultPositions();
+function ensureArenaPositions(){if(!Array.isArray(diceArenaPositions)||diceArenaPositions.length!==6)diceArenaPositions=arenaDefaultPositions()}
+function arenaFaceContent(face){return playDieHTML(arenaClamp(Number(face)||1,1,6))}
+function arenaBranchIcon(branch){return branch==="news"?"🐷":branchObj(branch)?.icon||"◆"}
+function setArenaSpectatorMode(on,actor=""){
+ diceArenaSpectator=!!on;
+ const arena=q("diceArena"),badge=q("diceArenaLiveBadge");
+ arena?.classList.toggle("spectator",!!on);
+ if(badge){badge.classList.toggle("hidden",!on);badge.textContent=on?`LIVE · ${actor||"Wurf"}`:"LIVE"}
 }
-function arenaFaceContent(face){
- return playDieHTML(Math.max(1,Math.min(6,Number(face)||1)));
-}
-function renderDiceArena(){
- const arena=q("diceArena");
- if(!arena||arena.classList.contains("hidden"))return;
- const player=state.players?.[state.current];
- if(q("diceArenaPlayer"))q("diceArenaPlayer").textContent=player?`${player.name} · ${money(player.cash)}`:"Spieler";
- if(q("diceArenaRollInfo")){
-   q("diceArenaRollInfo").textContent=state.rolls===0
-     ?"1. Wurf · Branchenwürfel wird mitgeworfen"
-     :state.rolls<3?`Wurf ${state.rolls+1} von 3 · gehaltene Würfel bleiben liegen`
-     :"3 Würfe abgeschlossen";
- }
- if(q("diceArenaBranchInfo"))q("diceArenaBranchInfo").textContent=arenaBranchText();
 
- const layer=q("diceArenaLayer");if(!layer)return;
- ensureArenaPositions();
- layer.innerHTML="";
- for(let i=0;i<5;i++){
-   const d=document.createElement("div");
-   d.className=`arena-die${state.held[i]?" held":""}${diceArenaRolling?" rolling":""}`;
-   d.dataset.index=String(i);
-   d.innerHTML=arenaFaceContent(state.dice[i]);
-   const p=diceArenaPositions[i]||{x:30+i*75,y:120,angle:0};
-   d.style.left=p.x+"px";d.style.top=p.y+"px";d.style.transform=`rotate(${p.angle||0}deg)`;
-   d.title=state.held[i]?"Gehalten – antippen zum Lösen":"Antippen zum Halten";
-   d.onclick=e=>{
-     e.stopPropagation();
-     if(diceArenaRolling||state.locked||state.rolls===0||state.rolls>=3||state.phase!=="roll"||!diceArenaCanAct())return;
-     state.held[i]=!state.held[i];
-     tone(state.held[i]?620:340,.05,"sine",.018);
-     renderDiceArena();renderDice();renderPayoutOverlay();renderControls();saveGame(false);
-     document.dispatchEvent(new CustomEvent("business-state-mutated",{detail:{reason:"held"}}));
+function arenaHeldPosition(i){
+ const board=q("diceArenaBoard"),zone=q("diceHoldZone");
+ const w=board?.clientWidth||700;
+ const size=Math.min(68,Math.max(48,w*.071));
+ if(zone){
+   const col=i%3,row=Math.floor(i/3);
+   const innerLeft=9,innerTop=39,innerRight=9,innerBottom=8;
+   const availW=Math.max(120,zone.clientWidth-innerLeft-innerRight);
+   const availH=Math.max(60,zone.clientHeight-innerTop-innerBottom);
+   const cellW=availW/3,cellH=availH/2;
+   return {
+     x:zone.offsetLeft+innerLeft+col*cellW+(cellW-size*.92)/2,
+     y:zone.offsetTop+innerTop+row*cellH+(cellH-size*.92)/2,
+     angle:0,z:0
    };
+ }
+ const col=i%3,row=Math.floor(i/3);
+ return {x:18+col*(size+8),y:(board?.clientHeight||400)-126+40+row*(size*.72),angle:0,z:0};
+}
+function arenaSafeSlots(seed=1,count=5){
+ const board=q("diceArenaBoard");
+ const w=board?.clientWidth||700,h=board?.clientHeight||400;
+ const size=Math.min(68,Math.max(48,w*.071));
+ const pts=[
+   [.18,.16],[.38,.15],[.58,.16],[.78,.16],
+   [.25,.35],[.48,.34],[.71,.35],[.84,.39],
+   [.39,.54],[.61,.54],[.79,.57],
+   [.52,.70],[.72,.70]
+ ];
+ const rng=arenaRng((Number(seed)||1)^0x51f2a7);
+ const shuffled=pts.map((p,i)=>({p,k:rng()+i*.00001})).sort((a,b)=>a.k-b.k).map(x=>x.p);
+ return shuffled.slice(0,count).map(([nx,ny])=>({
+   x:arenaClamp(nx*w-size/2,12,w-size-12),
+   y:arenaClamp(ny*h-size/2,12,h-size-145),
+   angle:0,z:0
+ }));
+}
+function renderBranchDock(branchValue=null,pulse=false){
+ const dock=q("branchDieDock"),face=q("branchDieDockFace"),txt=q("branchDieDockText");
+ if(!dock||!face||!txt)return;
+ if(!branchValue){
+   dock.classList.add("empty");dock.classList.remove("landed");
+   face.textContent="◆";txt.textContent="Noch nicht gewürfelt";return;
+ }
+ dock.classList.remove("empty");
+ if(pulse){dock.classList.remove("landed");void dock.offsetWidth;dock.classList.add("landed")}
+ face.textContent=arenaBranchIcon(branchValue);
+ txt.textContent=branchValue==="news"?"Börsennews":branchObj(branchValue)?.name||"Branche";
+}
+function arenaEscapeHTML(v){
+ return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
+}
+function renderBranchPayoutTable(){
+ const title=q("branchPayoutTitle"),box=q("branchPayoutRows");if(!title||!box)return;
+ const p=state.lastBranchPayout;
+ if(!p || Number(p.turnNumber)!==Number(state.turnNumber)){
+   title.textContent=state.branchRoll?(state.branchRoll==="news"?"Börsennews":"Wird ausgewertet …"):"Noch kein Branchenwurf";
+   box.innerHTML='<div class="branch-payout-empty">Beim ersten Wurf erscheint hier die Auszahlung pro Spieler.</div>';
+   return;
+ }
+ if(p.branchId==="news"){
+   title.textContent="🐷 Börsennews";
+   box.innerHTML='<div class="branch-payout-empty">Keine normale Branchenauszahlung – die Börsennews wird separat ausgewertet.</div>';
+   return;
+ }
+ title.textContent=`${p.icon||""} ${p.branchName||"Branche"}`;
+ const rows=Array.isArray(p.rows)?p.rows:[];
+ box.innerHTML=rows.map(r=>`
+   <div class="branch-payout-row ${r.name===state.players?.[state.current]?.name?"active":""}">
+     <div class="branch-payout-name">${arenaEscapeHTML(r.name)}
+       <span class="branch-payout-detail">${(r.base||r.bonus||r.certPay)?`Aktien/Start-up ${r.base||0} Z${r.bonus?` · Bonus +${r.bonus} Z`:""}${r.certPay?` · Urkunde +${r.certPay} Z`:""}`:"keine Beteiligung"}</span>
+     </div>
+     <div class="branch-payout-value ${r.total?"":"zero"}">${r.total?`+${r.total} Z`:"0 Z"}</div>
+   </div>
+ `).join("") || '<div class="branch-payout-empty">Keine Auszahlung.</div>';
+}
+function arenaAnimateHold(i,el,hold,onDone){
+ if(!el){onDone?.();return}
+ const p=hold?arenaHeldPosition(i):(diceArenaPositions[i]||arenaSafeSlots(991+i,5)[i]||{x:80+i*60,y:120,angle:0});
+ el.classList.add("moving-to-hold");
+ el.style.left=p.x+"px";el.style.top=p.y+"px";
+ el.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${p.angle||0}deg) scale(${hold?.92:1})`;
+ setTimeout(()=>{el.classList.remove("moving-to-hold");onDone?.()},300);
+}
+
+function renderArenaDiceLayer(dice,held,branchValue,rollNumber=1,spectator=false){
+ const layer=q("diceArenaLayer");if(!layer)return;
+ ensureArenaPositions();layer.innerHTML="";
+
+ // Beim Öffnen vor dem ersten echten Wurf bleibt das Brett komplett leer.
+ if(!spectator && state.rolls===0 && !diceArenaRolling){
+   renderBranchDock(null,false);
+   renderBranchPayoutTable();
+   return;
+ }
+
+ for(let i=0;i<5;i++){
+   const d=document.createElement("div"),isHeld=!!held[i];
+   d.className=`arena-die${isHeld?" held":""}${spectator&&isHeld?" spectator-held":""}${diceArenaRolling?" rolling":""}`;
+   d.dataset.index=String(i);d.innerHTML=arenaFaceContent(dice[i]);
+
+   const p=isHeld?arenaHeldPosition(i):(diceArenaPositions[i]||{x:30+i*75,y:120,angle:0,z:0});
+   diceArenaPositions[i]={...p};
+   d.style.left=p.x+"px";d.style.top=p.y+"px";
+   d.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${p.angle||0}deg) scale(${isHeld?.92:1})`;
+
+   if(!spectator){
+     d.title=isHeld?"Gehalten – antippen zum Lösen":"Antippen zum Halten";
+     d.onclick=e=>{
+       e.stopPropagation();
+       if(diceArenaRolling||state.locked||state.rolls===0||state.rolls>=3||state.phase!=="roll"||!diceArenaCanAct())return;
+       const willHold=!state.held[i];
+       arenaAnimateHold(i,d,willHold,()=>{
+         state.held[i]=willHold;
+         if(willHold)diceArenaPositions[i]=arenaHeldPosition(i);
+         else{
+           const slot=arenaSafeSlots((state.turnNumber||1)*97+i*13,5)[i];
+           if(slot)diceArenaPositions[i]=slot;
+         }
+         tone(willHold?620:340,.05,"sine",.018);
+         renderDiceArena();renderDice();renderPayoutOverlay();renderControls();saveGame(false);
+         document.dispatchEvent(new CustomEvent("business-state-mutated",{detail:{reason:"held"}}));
+       });
+     };
+   }
    layer.appendChild(d);
  }
 
- const bd=document.createElement("div");
- bd.className=`arena-die branch${diceArenaRolling&&state.rolls===0?" rolling":""}`;
- bd.dataset.index="5";
- bd.innerHTML=state.branchRoll
-   ? (state.branchRoll==="news"?"🐷":branchObj(state.branchRoll)?.icon||"◆")
-   :"◆";
- const bp=diceArenaPositions[5]||{x:520,y:45,angle:0};
- bd.style.left=bp.x+"px";bd.style.top=bp.y+"px";bd.style.transform=`rotate(${bp.angle||0}deg)`;
- layer.appendChild(bd);
-
- const best=state.rolls>0?evaluate(state.dice):null;
- const result=q("diceArenaResult");
- if(result)result.innerHTML=best
-   ? `Wurf ${state.rolls}/3 · <b>${best.name}</b>${best.value?` · ${best.value} Z`:""}`
-   :"Wische den großen Würfel nach oben auf das Brett.";
- const release=q("diceArenaRelease");
- if(release)release.disabled=state.rolls===0||state.rolls>=3||state.locked||!state.held.some(Boolean);
- const take=q("diceArenaTake");
- if(take)take.disabled=state.rolls===0||state.locked||state.phase!=="roll";
-
- const handle=q("diceThrowHandle");
- if(handle){
-   const canThrow=state.phase==="roll"&&state.rolls<3&&!state.locked&&!diceArenaRolling&&diceArenaCanAct();
-   handle.classList.toggle("disabled",!canThrow);
-   handle.style.opacity=canThrow?"1":".34";
-   handle.style.transform="translateX(-50%)";
+ // Branchenwürfel ist nur während des ersten Wurfs frei im Brett.
+ if(diceArenaRolling && Number(rollNumber)===1){
+   const bd=document.createElement("div");
+   bd.className="arena-die branch rolling";bd.dataset.index="5";
+   bd.innerHTML=branchValue?arenaBranchIcon(branchValue):"◆";
+   const bp=diceArenaPositions[5]||{x:520,y:45,angle:0,z:0};
+   bd.style.left=bp.x+"px";bd.style.top=bp.y+"px";bd.style.transform=`rotateZ(${bp.angle||0}deg)`;
+   layer.appendChild(bd);
  }
+ renderBranchDock(branchValue||state.branchRoll,false);
+ renderBranchPayoutTable();
+}
+function renderDiceArena(){
+ const arena=q("diceArena");if(!arena||arena.classList.contains("hidden")||diceArenaSpectator)return;
+ const player=state.players?.[state.current];
+ if(q("diceArenaPlayer"))q("diceArenaPlayer").textContent=player?`${player.name} · ${money(player.cash)}`:"Spieler";
+ if(q("diceArenaRollInfo"))q("diceArenaRollInfo").textContent=state.rolls===0?"1. Wurf · Branchenwürfel wird mitgeworfen":state.rolls<3?`Wurf ${state.rolls+1} von 3 · gehaltene Würfel bleiben liegen`:"3 Würfe abgeschlossen";
+ if(q("diceArenaBranchInfo"))q("diceArenaBranchInfo").textContent=arenaBranchText();
+ renderArenaDiceLayer(state.dice,state.held,state.branchRoll,state.rolls+1,false);
+ const best=state.rolls>0?evaluate(state.dice):null,result=q("diceArenaResult");
+ if(result)result.innerHTML=best?`Wurf ${state.rolls}/3 · <b>${best.name}</b>${best.value?` · ${best.value} Z`:""}`:"Wische den großen Würfel nach oben auf das Brett.";
+ const release=q("diceArenaRelease");if(release)release.disabled=state.rolls===0||state.rolls>=3||state.locked||!state.held.some(Boolean);
+ const take=q("diceArenaTake");if(take)take.disabled=state.rolls===0||state.locked||state.phase!=="roll";
+ const handle=q("diceThrowHandle");if(handle){const canThrow=state.phase==="roll"&&state.rolls<3&&!state.locked&&!diceArenaRolling&&diceArenaCanAct();handle.classList.toggle("disabled",!canThrow);handle.style.opacity=canThrow?"1":".34";handle.style.transform="translateX(-50%)"}
+ renderBranchDock(state.branchRoll,false);renderBranchPayoutTable();
 }
 function showDiceArena(auto=false){
  if(state.gameEnded||state.phase!=="roll"||!diceArenaCanAct())return;
- const arena=q("diceArena");if(!arena)return;
- if(auto&&diceArenaLastAutoTurn===state.turnNumber)return;
- if(auto)diceArenaLastAutoTurn=state.turnNumber;
- arena.classList.remove("hidden");arena.setAttribute("aria-hidden","false");
- diceArenaPositions=arenaDefaultPositions();
- renderDiceArena();
+ const arena=q("diceArena");if(!arena)return;if(auto&&diceArenaLastAutoTurn===state.turnNumber)return;if(auto)diceArenaLastAutoTurn=state.turnNumber;
+ setArenaSpectatorMode(false);arena.classList.remove("hidden");arena.setAttribute("aria-hidden","false");diceArenaPositions=arenaDefaultPositions();if(state.rolls===0){q("diceArenaLayer").innerHTML="";renderBranchDock(null,false);renderBranchPayoutTable()}renderDiceArena();
 }
-function hideDiceArena(){
- if(diceArenaRolling)return;
- const arena=q("diceArena");if(!arena)return;
- arena.classList.add("hidden");arena.setAttribute("aria-hidden","true");
+function hideDiceArena(force=false){
+ if(diceArenaRolling&&!force)return;const arena=q("diceArena");if(!arena)return;
+ arena.classList.add("hidden");arena.setAttribute("aria-hidden","true");setArenaSpectatorMode(false);
 }
-function autoOpenDiceArena(){
- if(state.phase!=="roll"||state.gameEnded||!diceArenaCanAct())return;
- showDiceArena(true);
-}
-function arenaRandomFace(){return 1+Math.floor(Math.random()*6)}
-function setArenaVisualFace(el,face,isBranch=false){
- if(!el)return;
- if(isBranch){
-   const items=[...branches.map(b=>b.icon),"🐷"];
-   el.textContent=items[Math.floor(Math.random()*items.length)];
- }else el.innerHTML=arenaFaceContent(face);
-}
-function startDiceArenaPhysics(finalDice,finalBranch,gesture,done){
- const board=q("diceArenaBoard"),layer=q("diceArenaLayer");
- if(!board||!layer){done();return}
- ensureArenaPositions();
- diceArenaRolling=true;
- renderDiceArena();
-
- const w=board.clientWidth,h=board.clientHeight;
- const dieEl=[...layer.querySelectorAll(".arena-die")];
- const size=dieEl[0]?.offsetWidth||58;
- const firstThrow=state.rolls===0;
- const moving=[];
- const now=performance.now();
- const dur=Math.max(120,Math.min(700,gesture?.duration||260));
- const gx=Number(gesture?.dx||0),gy=Number(gesture?.dy||-180);
- const swipeVX=Math.max(-520,Math.min(520,gx/dur*1000));
- const swipeVY=Math.max(-1050,Math.min(-390,gy/dur*1000));
- const power=Math.max(.75,Math.min(1.55,Number(gesture?.power)||1));
-
- for(let i=0;i<6;i++){
-   const branch=i===5;
-   if((i<5&&state.held[i])||(branch&&!firstThrow))continue;
-   const spread=(i-2.5)*17+(Math.random()-.5)*50;
-   diceArenaPositions[i]={
-     x:Math.max(14,Math.min(w-size-14,w*.48+spread)),
-     y:Math.max(14,h-size-82+Math.random()*18),
-     angle:(Math.random()-.5)*35
-   };
-   moving.push({
-     i,
-     x:diceArenaPositions[i].x,
-     y:diceArenaPositions[i].y,
-     vx:(swipeVX*.42+spread*3+(Math.random()-.5)*220)*power,
-     vy:(swipeVY+(Math.random()-.5)*220)*power,
-     angle:diceArenaPositions[i].angle,
-     av:(Math.random()>.5?1:-1)*(260+Math.random()*520)*power,
-     branch,
-     lastFaceBucket:-1
-   });
+function autoOpenDiceArena(){if(state.phase!=="roll"||state.gameEnded||!diceArenaCanAct())return;showDiceArena(true)}
+function arenaImpact(x,y,intensity=.5){
+ const board=q("diceArenaBoard");if(!board)return;
+ const count=intensity>.65?5:3;
+ for(let i=0;i<count;i++){
+   const p=document.createElement("span");p.className="arena-impact";p.style.left=x+"px";p.style.top=y+"px";
+   const a=Math.random()*Math.PI*2,d=(10+Math.random()*22)*(0.6+intensity);
+   p.style.setProperty("--dust-x",`${Math.cos(a)*d}px`);p.style.setProperty("--dust-y",`${Math.sin(a)*d}px`);board.appendChild(p);setTimeout(()=>p.remove(),480);
  }
- const start=performance.now();
- let last=start,lastClick=0;
+ if(intensity>.72){board.classList.remove("board-hit");void board.offsetWidth;board.classList.add("board-hit")}
+}
+function arenaThud(intensity=.5){
+ if(!soundOn)return;try{
+   audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+   const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type="triangle";o.frequency.value=72+intensity*55;g.gain.value=.006+intensity*.012;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.035+intensity*.04);o.stop(audioCtx.currentTime+.09)
+ }catch(_e){}
+}
+function setArenaVisualFace(el,face,isBranch=false,branchValue=null){if(!el)return;if(isBranch)el.textContent=branchValue?arenaBranchIcon(branchValue):[...branches.map(b=>b.icon),"🐷"][Math.max(0,(face-1)%6)];else el.innerHTML=arenaFaceContent(face)}
 
- function frame(t){
-   const dt=Math.min(.032,(t-last)/1000||.016);last=t;
-   const elapsed=(t-start)/1000;
-
-   // Bewegung + Reibung + Randabpraller
+function startDiceArenaPhysics(finalDice,finalBranch,gesture,done,eventMeta=null,spectator=false){
+ const board=q("diceArenaBoard"),layer=q("diceArenaLayer");if(!board||!layer){done?.();return}
+ const ev=eventMeta||makeDiceRollEvent(finalDice,finalBranch,gesture),rng=arenaRng(ev.seed),held=Array.isArray(ev.held)?ev.held:state.held;
+ const rollNumber=Number(ev.rollNumber||state.rolls+1),firstThrow=rollNumber===1;
+ ensureArenaPositions();diceArenaRolling=true;
+ if(spectator)renderArenaDiceLayer(ev.startDice||state.dice,held,firstThrow?null:(ev.finalBranch||state.branchRoll),rollNumber,true);else renderDiceArena();
+ const w=board.clientWidth,h=board.clientHeight,els=[...layer.querySelectorAll(".arena-die")],size=els[0]?.offsetWidth||58;
+ const power=arenaClamp(Number(ev.gesture?.power)||1,.72,1.65),dirX=arenaClamp(Number(ev.gesture?.dirX)||0,-1,1),moving=[];
+ const baseVX=dirX*w*.58,baseVY=-h*(1.45+.28*power),startY=Math.max(16,h-size-90);
+ for(let i=0;i<6;i++){
+   const branch=i===5;if((i<5&&held[i])||(branch&&!firstThrow))continue;
+   const spread=(i-2.5)*size*.24+(rng()-.5)*size*.92;
+   diceArenaPositions[i]={x:arenaClamp(w*.50+spread,14,w-size-14),y:startY+rng()*12,angle:(rng()-.5)*28,z:0};
+   moving.push({i,branch,x:diceArenaPositions[i].x,y:diceArenaPositions[i].y,z:0,
+     vx:(baseVX+spread*3.1+(rng()-.5)*w*.22)*power,vy:(baseVY+(rng()-.5)*h*.32)*power,
+     vz:(300+rng()*220)*power,angle:diceArenaPositions[i].angle,av:(rng()>.5?1:-1)*(330+rng()*680)*power,
+     tiltX:(rng()-.5)*35,tiltY:(rng()-.5)*35,tvx:(rng()-.5)*420,tvy:(rng()-.5)*420,lastGround:false});
+ }
+ const STEP=1/60,totalSteps=Math.round((1.75+rng()*.32)*60),start=performance.now();let simStep=0,lastSoundStep=-20;
+ function simOne(){
+   simStep++;
    for(const b of moving){
-     b.x+=b.vx*dt;b.y+=b.vy*dt;b.angle+=b.av*dt;
-     const friction=Math.pow(.095,dt);
-     b.vx*=friction;b.vy*=friction;b.av*=Math.pow(.16,dt);
-
-     let bounced=false;
-     if(b.x<10){b.x=10;b.vx=Math.abs(b.vx)*.68;bounced=true}
-     if(b.x>w-size-10){b.x=w-size-10;b.vx=-Math.abs(b.vx)*.68;bounced=true}
-     if(b.y<10){b.y=10;b.vy=Math.abs(b.vy)*.68;bounced=true}
-     if(b.y>h-size-10){b.y=h-size-10;b.vy=-Math.abs(b.vy)*.68;bounced=true}
-     if(bounced&&t-lastClick>75){tone(115+Math.random()*75,.018,"square",.006);lastClick=t}
+     b.x+=b.vx*STEP;b.y+=b.vy*STEP;b.z+=b.vz*STEP;b.vz-=970*STEP;b.angle+=b.av*STEP;b.tiltX+=b.tvx*STEP;b.tiltY+=b.tvy*STEP;
+     const planarF=Math.pow(.12,STEP),spinF=Math.pow(.19,STEP);b.vx*=planarF;b.vy*=planarF;b.av*=spinF;b.tvx*=Math.pow(.24,STEP);b.tvy*=Math.pow(.24,STEP);
+     if(b.z<=0){
+       if(b.vz< -82){const impact=arenaClamp(Math.abs(b.vz)/420,.25,1);b.z=0;b.vz=-b.vz*(.28+.08*rng());b.vx*=.86;b.vy*=.86;if(simStep-lastSoundStep>5){arenaThud(impact);lastSoundStep=simStep}arenaImpact(b.x+size/2,b.y+size/2,impact)}
+       else{b.z=0;b.vz=0}
+     }
+     let wall=false;
+     if(b.x<9){b.x=9;b.vx=Math.abs(b.vx)*.62;wall=true}if(b.x>w-size-9){b.x=w-size-9;b.vx=-Math.abs(b.vx)*.62;wall=true}
+     if(b.y<9){b.y=9;b.vy=Math.abs(b.vy)*.62;wall=true}if(b.y>h-size-9){b.y=h-size-9;b.vy=-Math.abs(b.vy)*.62;wall=true}
+     if(wall&&simStep-lastSoundStep>5){arenaThud(.35);lastSoundStep=simStep}
    }
-
-   // leichte Würfel-Würfel-Kollisionen
    const minD=size*.88;
    for(let a=0;a<moving.length;a++)for(let c=a+1;c<moving.length;c++){
-     const A=moving[a],B=moving[c];
-     const ax=A.x+size/2,ay=A.y+size/2,bx=B.x+size/2,by=B.y+size/2;
-     let dx=bx-ax,dy=by-ay,dist=Math.hypot(dx,dy);
-     if(dist>0&&dist<minD){
-       const nx=dx/dist,ny=dy/dist,over=minD-dist;
-       A.x-=nx*over*.5;A.y-=ny*over*.5;B.x+=nx*over*.5;B.y+=ny*over*.5;
-       const rel=(B.vx-A.vx)*nx+(B.vy-A.vy)*ny;
-       if(rel<0){
-         const impulse=-rel*.72;
-         A.vx-=impulse*nx;A.vy-=impulse*ny;B.vx+=impulse*nx;B.vy+=impulse*ny;
-       }
-     }
+     const A=moving[a],B=moving[c];if(Math.abs(A.z-B.z)>size*.45)continue;
+     const ax=A.x+size/2,ay=A.y+size/2,bx=B.x+size/2,by=B.y+size/2,dx=bx-ax,dy=by-ay,dist=Math.hypot(dx,dy);
+     if(dist>0&&dist<minD){const nx=dx/dist,ny=dy/dist,over=minD-dist;A.x-=nx*over*.5;A.y-=ny*over*.5;B.x+=nx*over*.5;B.y+=ny*over*.5;const rel=(B.vx-A.vx)*nx+(B.vy-A.vy)*ny;if(rel<0){const impulse=-rel*.68;A.vx-=impulse*nx;A.vy-=impulse*ny;B.vx+=impulse*nx;B.vy+=impulse*ny;A.av-=impulse*.28;B.av+=impulse*.28;if(simStep-lastSoundStep>5){arenaThud(.42);lastSoundStep=simStep}}}
    }
+ }
+ function paint(){
+   for(const b of moving){const el=layer.querySelector(`.arena-die[data-index="${b.i}"]`);if(!el)continue;el.style.left=b.x+"px";el.style.top=b.y+"px";
+     const lift=Math.min(28,b.z*.075),tx=arenaClamp(b.tiltX,-46,46),ty=arenaClamp(b.tiltY,-46,46),shadow=arenaClamp(5+lift*.28,5,14),alpha=arenaClamp(.34-lift*.006,.16,.34);
+     el.style.setProperty("--shadow-x",`${4+lift*.12}px`);el.style.setProperty("--shadow-y",`${6+lift*.18}px`);el.style.setProperty("--shadow-blur",`${shadow}px`);el.style.setProperty("--shadow-alpha",String(alpha));
+     el.style.transform=`perspective(520px) translateY(${-lift}px) rotateX(${tx}deg) rotateY(${ty}deg) rotateZ(${b.angle}deg) scale(${1+lift*.002})`;
+     const bucket=Math.floor(simStep/5);setArenaVisualFace(el,arenaFaceFrom(ev.seed,b.i,bucket),b.branch,null);
+   }
+ }
+ function finish(){
+   const movingNumber=moving.filter(b=>!b.branch);
+   const safe=arenaSafeSlots(ev.seed,movingNumber.length);
+   let n=0;
 
-   let maxSpeed=0;
-   for(const b of moving){
-     maxSpeed=Math.max(maxSpeed,Math.hypot(b.vx,b.vy));
+   // Endpositionen werden garantiert getrennt gesetzt.
+   for(const b of movingNumber){
+     const target=safe[n++]||{x:b.x,y:b.y,angle:Math.round(b.angle/90)*90,z:0};
+     b.x=target.x;b.y=target.y;b.z=0;
+     diceArenaPositions[b.i]={x:target.x,y:target.y,angle:Math.round(b.angle/90)*90,z:0};
      const el=layer.querySelector(`.arena-die[data-index="${b.i}"]`);
      if(el){
-       el.style.left=b.x+"px";el.style.top=b.y+"px";
-       el.style.transform=`rotate(${b.angle}deg)`;
-       const bucket=Math.floor(elapsed*11);
-       if(bucket!==b.lastFaceBucket){
-         b.lastFaceBucket=bucket;
-         setArenaVisualFace(el,arenaRandomFace(),b.branch);
-       }
-     }
-   }
-
-   if(elapsed<1.15 || (elapsed<2.05&&maxSpeed>38)){
-     diceArenaRaf=requestAnimationFrame(frame);return;
-   }
-
-   // sauber ausrollen und Endwerte setzen
-   for(const b of moving){
-     diceArenaPositions[b.i]={x:b.x,y:b.y,angle:Math.round(b.angle/90)*90};
-     const el=layer.querySelector(`.arena-die[data-index="${b.i}"]`);
-     if(el){
-       el.style.left=b.x+"px";el.style.top=b.y+"px";
-       el.style.transform=`rotate(${diceArenaPositions[b.i].angle}deg)`;
-       if(b.branch){
-         el.textContent=finalBranch==="news"?"🐷":branchObj(finalBranch)?.icon||"◆";
-       }else{
-         el.innerHTML=arenaFaceContent(finalDice[b.i]);
-       }
+       el.classList.add("settling");
+       el.style.left=target.x+"px";el.style.top=target.y+"px";
+       el.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${diceArenaPositions[b.i].angle}deg)`;
+       el.style.removeProperty("--shadow-blur");el.style.removeProperty("--shadow-alpha");
+       setArenaVisualFace(el,finalDice[b.i],false,finalBranch);
        el.classList.remove("rolling");
      }
    }
-   diceArenaRolling=false;
-   done();
+
+   const branchBody=moving.find(b=>b.branch);
+   if(branchBody){
+     const el=layer.querySelector('.arena-die[data-index="5"]');
+     if(el){el.style.opacity="0";el.style.transform+=" scale(.72)"}
+   }
+
+   setTimeout(()=>{
+     layer.querySelectorAll(".arena-die.settling").forEach(el=>el.classList.remove("settling"));
+     if(firstThrow)renderBranchDock(finalBranch,true);
+     diceArenaRolling=false;
+     done?.();
+   },300);
  }
- cancelAnimationFrame(diceArenaRaf);
- diceArenaRaf=requestAnimationFrame(frame);
+ function frame(t){const target=Math.min(totalSteps,Math.floor((t-start)/1000*60));while(simStep<target)simOne();paint();if(simStep<totalSteps){diceArenaRaf=requestAnimationFrame(frame)}else finish()}
+ cancelAnimationFrame(diceArenaRaf);diceArenaRaf=requestAnimationFrame(frame);
 }
 function arenaReleaseAll(){
- if(state.phase!=="roll"||state.locked||state.rolls===0||state.rolls>=3||!diceArenaCanAct())return;
- state.held=[false,false,false,false,false];
- tone(330,.05,"sine",.018);
- renderDiceArena();renderDice();renderControls();renderPayoutOverlay();saveGame(false);
- document.dispatchEvent(new CustomEvent("business-state-mutated",{detail:{reason:"release"}}));
+ if(state.phase!=="roll"||state.locked||state.rolls===0||state.rolls>=3||!diceArenaCanAct())return;state.held=[false,false,false,false,false];const rs=arenaSafeSlots((state.turnNumber||1)*131+state.rolls,5);for(let i=0;i<5;i++)if(rs[i])diceArenaPositions[i]=rs[i];tone(330,.05,"sine",.018);renderDiceArena();renderDice();renderControls();renderPayoutOverlay();saveGame(false);document.dispatchEvent(new CustomEvent("business-state-mutated",{detail:{reason:"release"}}));
 }
-function arenaPointerDown(e){
- if(state.phase!=="roll"||state.rolls>=3||state.locked||diceArenaRolling||!diceArenaCanAct())return;
- const handle=q("diceThrowHandle");if(!handle)return;
- diceArenaPointer={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now()};
- try{handle.setPointerCapture(e.pointerId)}catch(_e){}
- e.preventDefault();
-}
-function arenaPointerMove(e){
- if(!diceArenaPointer||e.pointerId!==diceArenaPointer.id)return;
- const handle=q("diceThrowHandle");if(!handle)return;
- const dx=e.clientX-diceArenaPointer.x,dy=e.clientY-diceArenaPointer.y;
- handle.style.transform=`translate(calc(-50% + ${dx*.22}px),${Math.max(-42,Math.min(14,dy*.18))}px) rotate(${dx*.025}deg)`;
- e.preventDefault();
-}
+function arenaPointerDown(e){if(state.phase!=="roll"||state.rolls>=3||state.locked||diceArenaRolling||!diceArenaCanAct())return;const handle=q("diceThrowHandle");if(!handle)return;diceArenaPointer={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now()};try{handle.setPointerCapture(e.pointerId)}catch(_e){}e.preventDefault()}
+function arenaPointerMove(e){if(!diceArenaPointer||e.pointerId!==diceArenaPointer.id)return;const handle=q("diceThrowHandle");if(!handle)return;const dx=e.clientX-diceArenaPointer.x,dy=e.clientY-diceArenaPointer.y;handle.style.transform=`translate(calc(-50% + ${dx*.22}px),${Math.max(-42,Math.min(14,dy*.18))}px) rotate(${dx*.025}deg)`;e.preventDefault()}
 function arenaPointerUp(e){
- if(!diceArenaPointer||e.pointerId!==diceArenaPointer.id)return;
- const p=diceArenaPointer;diceArenaPointer=null;
- const handle=q("diceThrowHandle");if(!handle)return;
- const dx=e.clientX-p.x,dy=e.clientY-p.y,duration=Math.max(80,performance.now()-p.t);
- const dist=Math.hypot(dx,dy);
- handle.style.transform="translateX(-50%)";
- const valid=(dy<-35&&dist>52)||(dy<-20&&dist>85);
- if(!valid){
-   handle.classList.remove("bad-swipe");void handle.offsetWidth;handle.classList.add("bad-swipe");
-   const hint=q("diceArenaSwipeHint");if(hint){hint.textContent="Kräftiger nach oben wischen ↑";setTimeout(()=>hint.textContent="Würfel auf das Brett schieben",1000)}
-   return;
- }
- const power=Math.max(.78,Math.min(1.55,dist/180));
- rollDice({dx,dy,duration,power});
- e.preventDefault();
+ if(!diceArenaPointer||e.pointerId!==diceArenaPointer.id)return;const p=diceArenaPointer;diceArenaPointer=null;const handle=q("diceThrowHandle");if(!handle)return;const dx=e.clientX-p.x,dy=e.clientY-p.y,duration=Math.max(80,performance.now()-p.t),dist=Math.hypot(dx,dy);handle.style.transform="translateX(-50%)";const valid=(dy<-35&&dist>52)||(dy<-20&&dist>85);
+ if(!valid){handle.classList.remove("bad-swipe");void handle.offsetWidth;handle.classList.add("bad-swipe");const hint=q("diceArenaSwipeHint");if(hint){hint.textContent="Kräftiger nach oben wischen ↑";setTimeout(()=>hint.textContent="Würfel auf das Brett schieben",1000)}return}
+ const power=arenaClamp(dist/180,.78,1.55);rollDice({dx,dy,duration,power});e.preventDefault();
+}
+function showSpectatorDiceArena(ev,done){
+ if(!ev?.id)return;const arena=q("diceArena");if(!arena)return;setArenaSpectatorMode(true,ev.actor);arena.classList.remove("hidden");arena.setAttribute("aria-hidden","false");diceArenaPositions=arenaDefaultPositions();
+ if(q("diceArenaPlayer"))q("diceArenaPlayer").textContent=`${ev.actor} würfelt gerade …`;
+ if(q("diceArenaRollInfo"))q("diceArenaRollInfo").textContent=`Live-Wurf ${ev.rollNumber||1} von 3`;
+ if(q("diceArenaBranchInfo"))q("diceArenaBranchInfo").textContent=(ev.rollNumber||1)===1?"Branchenwürfel rollt mit":arenaBranchIcon(ev.finalBranch);
+ if(q("diceArenaResult"))q("diceArenaResult").innerHTML=`🔴 <b>LIVE</b> · ${ev.actor} würfelt …`;
+ renderArenaDiceLayer(ev.startDice||[1,1,1,1,1],ev.held||[false,false,false,false,false],(ev.rollNumber||1)>1?ev.finalBranch:null,ev.rollNumber||1,true);
+ startDiceArenaPhysics(ev.finalDice,ev.finalBranch,ev.gesture||{},()=>{const best=evaluate(ev.finalDice);if(q("diceArenaResult"))q("diceArenaResult").innerHTML=`${ev.actor}: <b>${best.name}</b>${best.value?` · ${best.value} Z`:""}`;if((ev.rollNumber||1)===1)renderBranchDock(ev.finalBranch,true);renderBranchPayoutTable();done?.()},ev,true);
 }
 
-q("diceArenaClose").onclick=hideDiceArena;
+q("diceArenaClose").onclick=()=>hideDiceArena(false);
 q("diceArenaRelease").onclick=arenaReleaseAll;
-q("diceArenaTake").onclick=()=>{
- if(state.phase==="roll"&&state.rolls>0&&!state.locked){
-   settleDice();hideDiceArena();
- }
-};
+q("diceArenaTake").onclick=()=>{if(state.phase==="roll"&&state.rolls>0&&!state.locked){settleDice();hideDiceArena()}};
 const arenaHandle=q("diceThrowHandle");
-arenaHandle.addEventListener("pointerdown",arenaPointerDown);
-arenaHandle.addEventListener("pointermove",arenaPointerMove);
-arenaHandle.addEventListener("pointerup",arenaPointerUp);
-arenaHandle.addEventListener("pointercancel",arenaPointerUp);
-arenaHandle.addEventListener("keydown",e=>{
- if((e.key==="Enter"||e.key===" ")&&state.phase==="roll"&&state.rolls<3&&!state.locked){
-   e.preventDefault();
-   rollDice({dx:0,dy:-190,duration:280,power:1});
- }
-});
+arenaHandle.addEventListener("pointerdown",arenaPointerDown);arenaHandle.addEventListener("pointermove",arenaPointerMove);arenaHandle.addEventListener("pointerup",arenaPointerUp);arenaHandle.addEventListener("pointercancel",arenaPointerUp);
+arenaHandle.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&state.phase==="roll"&&state.rolls<3&&!state.locked){e.preventDefault();rollDice({dx:0,dy:-190,duration:280,power:1})}});
 
 q("releaseBtn").onclick=arenaReleaseAll;
+
 function updatePhaseStepper(){
  const steps=[...document.querySelectorAll(".phase-step")];
  steps.forEach(s=>s.classList.remove("active","done"));
@@ -5443,33 +5836,19 @@ function rollDice(gesture={dx:0,dy:-190,duration:280,power:1}){
  const firstThrow=state.rolls===0;
  const finalDice=state.dice.map((v,i)=>state.held[i]?v:1+Math.floor(Math.random()*6));
  let finalBranch=state.branchRoll;
- if(firstThrow){
-   const k=Math.floor(Math.random()*6);
-   finalBranch=k===5?"news":branches[k].id;
- }
- soundDice();
- renderControls();
- renderDice();
- renderDiceArena();
- startDiceArenaPhysics(finalDice,finalBranch,gesture,()=>finishRoll(finalDice,finalBranch));
+ if(firstThrow){const k=Math.floor(Math.random()*6);finalBranch=k===5?"news":branches[k].id}
+ const ev=makeDiceRollEvent(finalDice,finalBranch,gesture);state.rollEvent=ev;
+ try{if(typeof window.onDiceArenaRollPrepared==="function")window.onDiceArenaRollPrepared(ev)}catch(_e){}
+ soundDice();renderControls();renderDice();renderDiceArena();
+ startDiceArenaPhysics(finalDice,finalBranch,gesture,()=>finishRoll(finalDice,finalBranch),ev,false);
 }
 function finishRoll(finalDice=null,finalBranch=null){
  const firstThrow=state.rolls===0;
  if(!Array.isArray(finalDice))finalDice=state.dice.map((v,i)=>state.held[i]?v:1+Math.floor(Math.random()*6));
- if(firstThrow&&!finalBranch){
-   const k=Math.floor(Math.random()*6);
-   finalBranch=k===5?"news":branches[k].id;
- }
- state.dice=finalDice.slice(0,5);
- if(firstThrow)state.branchRoll=finalBranch;
- state.rolls++;
- state.locked=false;
- renderDice();
- if(firstThrow)resolveBranch();
- const best=evaluate(state.dice);
- q("result").innerHTML=`Wurf ${state.rolls}/3 · <b>${best.name}</b>${best.value?` = ${best.value} Z`:""}`;
- render();
- renderDiceArena();
+ if(firstThrow&&!finalBranch){const k=Math.floor(Math.random()*6);finalBranch=k===5?"news":branches[k].id}
+ state.dice=finalDice.slice(0,5);if(firstThrow)state.branchRoll=finalBranch;state.rolls++;state.locked=false;
+ if(state.rollEvent){state.rollEvent.completed=true;state.rollEvent.completedAt=Date.now()}
+ renderDice();if(firstThrow)resolveBranch();const best=evaluate(state.dice);q("result").innerHTML=`Wurf ${state.rolls}/3 · <b>${best.name}</b>${best.value?` = ${best.value} Z`:""}`;render();renderDiceArena();
 }
 
 function branchBonus(normalShareCount){return normalShareCount<2?0:Math.min(12,(normalShareCount-1)*4)}
@@ -5557,7 +5936,14 @@ function showBranchBanner(branch,rows){
 function resolveBranch(){
  if(state.branchResolved||state.gameEnded)return;
  state.branchResolved=true;
- if(state.branchRoll==="news"){resolveNews(); return}
+ if(state.branchRoll==="news"){
+   state.lastBranchPayout={
+     turnNumber:state.turnNumber,branchId:"news",branchName:"Börsennews",icon:"🐷",
+     rows:state.players.map(p=>({name:p.name,total:0,base:0,bonus:0,certPay:0}))
+   };
+   renderBranchPayoutTable();
+   resolveNews(); return
+ }
  const b=branchObj(state.branchRoll);
  log(`${b.icon} Branchenwürfel: <b>${b.name}</b>.`);
  const order=[]; for(let n=0;n<state.players.length;n++) order.push((state.current+n)%state.players.length);
@@ -5583,6 +5969,16 @@ function resolveBranch(){
      log(`📜 ${p.name}: ${certs.length} Aktienurkunde${certs.length>1?"n":""} eingelöst und abgelegt.`);
    }
  }
+ state.lastBranchPayout={
+   turnNumber:state.turnNumber,
+   branchId:b.id,branchName:b.name,icon:b.icon,
+   rows:state.players.map(p=>{
+     const r=summary.find(x=>x.name===p.name);
+     return r?{name:p.name,total:r.total,base:r.base,bonus:r.bonus,certPay:r.certPay}:{name:p.name,total:0,base:0,bonus:0,certPay:0};
+   })
+ };
+ renderBranchDock(b.id,true);
+ renderBranchPayoutTable();
  showBranchBanner(b,summary);
 }
 
@@ -5832,11 +6228,11 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V3.1";
+if(_boChip)_boChip.textContent="ONLINE · V3.3";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
-const cloud={room:"",name:"",mode:"",rev:0,joined:false,pollBusy:false,inFlight:false,pending:null,dirty:false,applying:false,lastRemoteJSON:"",lastPushedJSON:"",retryTimer:null,lastPollAt:0,lastHeartbeatAt:0,gameApplied:false,lastGameEnded:false};
+const cloud={room:"",name:"",mode:"",rev:0,joined:false,pollBusy:false,inFlight:false,pending:null,dirty:false,applying:false,lastRemoteJSON:"",lastPushedJSON:"",retryTimer:null,lastPollAt:0,lastHeartbeatAt:0,gameApplied:false,lastGameEnded:false,lastSeenRollEvent:"",spectating:false};
 function boNormRoom(v){return String(v||"").toUpperCase().replace(/[^A-Z0-9_-]/g,"").slice(0,10)}
 function boNormName(v){return String(v||"").trim().replace(/\s+/g," ").replace(/[<>\"'&]/g,"").slice(0,18)}
 function boToken(){try{let t=localStorage.getItem("business_sessionToken")||"";if(!t){const b=new Uint8Array(12);crypto.getRandomValues(b);t="B-"+[...b].map(x=>x.toString(16).padStart(2,"0")).join("");localStorage.setItem("business_sessionToken",t)}return t}catch(e){return "B-"+Date.now().toString(36)+Math.random().toString(36).slice(2)}}
@@ -5850,7 +6246,7 @@ function boLeaveToLobby(){localStorage.removeItem("business_room");localStorage.
 function boActiveName(){return state?.players?.[state.current]?.name||""}
 function boCanAct(){return cloud.gameApplied&&!state.gameEnded&&boActiveName()===cloud.name}
 window.businessCanUseDiceArena=()=>boCanAct();
-function boUpdateTurnUI(){const mine=boCanAct();document.body.classList.toggle("business-my-turn",mine);const e=$bo("businessTurnLock");e.classList.toggle("hidden",!cloud.gameApplied||mine||state.gameEnded);if(cloud.gameApplied&&!mine&&!state.gameEnded){e.textContent=`Warte auf ${boActiveName()||"den aktiven Spieler"} …`;hideDiceArena()}}
+function boUpdateTurnUI(){const mine=boCanAct();document.body.classList.toggle("business-my-turn",mine);const e=$bo("businessTurnLock");e.classList.toggle("hidden",!cloud.gameApplied||mine||state.gameEnded);if(cloud.gameApplied&&!mine&&!state.gameEnded){e.textContent=cloud.spectating?`🔴 LIVE · ${boActiveName()||"Spieler"} würfelt`:`Warte auf ${boActiveName()||"den aktiven Spieler"} …`;if(!cloud.spectating)hideDiceArena()}}
 function boWireGame(){const s={...state,viewedPlayer:state.current,selectedMarket:null,newsDeck:newsIdentityList(state.newsDeck),newsDiscard:newsIdentityList(state.newsDiscard)};return JSON.parse(JSON.stringify(s))}
 function boHydrateGame(g){
  const raw=JSON.parse(JSON.stringify(g||{})),ended=!!raw.gameEnded;
@@ -5905,44 +6301,34 @@ function boShowRemoteEnd(){
  q("modalOk").textContent="Zur Spielauswahl";q("modalOk").onclick=boLeaveToLobby
 }
 function boApplyGame(game){
- const hadGame=cloud.gameApplied;
- const beforeCurrent=hadGame?state.current:null;
- const beforeNews=hadGame?newsIdentityList(state.newsDiscard):[];
- cloud.applying=true;
- state=boHydrateGame(game);
- cloud.lastRemoteJSON=JSON.stringify(boWireGame());
- cloud.lastPushedJSON=cloud.lastRemoteJSON;
- cloud.gameApplied=true;
- $bo("businessOnlineShell").classList.add("hidden");
- q("lobby").classList.add("hidden");q("game").classList.remove("hidden");
- hideLocalHandoff();
- setLeftTab("score");render();
- if(beforeCurrent!=null&&beforeCurrent!==state.current && state.players[state.current]?.name===cloud.name){
-   toast("🎯 Du bist am Zug");
-   soundTurn();
- }
- if(hadGame&&state.newsDiscard.length>beforeNews.length){
-   const last=state.newsDiscard[state.newsDiscard.length-1];
-   const ev=createNewsDeck().find(x=>x.id===last?.id||x.headline===last?.headline);
-   if(ev){
-     const toneClass=ev.tone==="good"?"good-news":ev.tone==="warn"?"warn-news":"";
-     modal("🐷 Börsenschwein!",`<div class="news-stage"><div class="news-card-visual ${toneClass}"><div class="mast">Börsennews</div><div class="news-icon-big">${ev.icon||"📰"}</div><div class="news-meta"><span class="news-badge ${ev.tone||"bad"}">${ev.severity||"EILMELDUNG"}</span></div><div class="headline">${ev.headline}</div><div class="effect">${ev.effect}</div></div></div>`,"news-mode")
-   }
- }
+ const hadGame=cloud.gameApplied,beforeCurrent=hadGame?state.current:null,beforeNews=hadGame?newsIdentityList(state.newsDiscard):[];
+ const incomingEvent=game?.rollEvent||null;
+ const shouldSpectate=!!(incomingEvent?.id&&incomingEvent.actor!==cloud.name&&incomingEvent.id!==cloud.lastSeenRollEvent&&Number(incomingEvent.turnNumber||0)===Number(game?.turnNumber||0));
+ cloud.applying=true;state=boHydrateGame(game);cloud.lastRemoteJSON=JSON.stringify(boWireGame());cloud.lastPushedJSON=cloud.lastRemoteJSON;cloud.gameApplied=true;
+ $bo("businessOnlineShell").classList.add("hidden");q("lobby").classList.add("hidden");q("game").classList.remove("hidden");hideLocalHandoff();setLeftTab("score");render();
+ if(beforeCurrent!=null&&beforeCurrent!==state.current&&state.players[state.current]?.name===cloud.name){toast("🎯 Du bist am Zug");soundTurn()}
+ if(hadGame&&state.newsDiscard.length>beforeNews.length&&!shouldSpectate){const last=state.newsDiscard[state.newsDiscard.length-1],ev=createNewsDeck().find(x=>x.id===last?.id||x.headline===last?.headline);if(ev){const toneClass=ev.tone==="good"?"good-news":ev.tone==="warn"?"warn-news":"";modal("🐷 Börsenschwein!",`<div class="news-stage"><div class="news-card-visual ${toneClass}"><div class="mast">Börsennews</div><div class="news-icon-big">${ev.icon||"📰"}</div><div class="news-meta"><span class="news-badge ${ev.tone||"bad"}">${ev.severity||"EILMELDUNG"}</span></div><div class="headline">${ev.headline}</div><div class="effect">${ev.effect}</div></div></div>`,"news-mode")}}
  boUpdateTurnUI();boShowRemoteEnd();
- if(boCanAct()&&state.phase==="roll"&&!state.gameEnded){
-   setTimeout(()=>autoOpenDiceArena(),160);
- }else{
-   hideDiceArena();
- }
+ if(shouldSpectate){cloud.lastSeenRollEvent=incomingEvent.id;setTimeout(()=>boSpectateRoll(incomingEvent),25)}
+ else if(boCanAct()&&state.phase==="roll"&&!state.gameEnded){setTimeout(()=>autoOpenDiceArena(),160)}
+ else if(!cloud.spectating)hideDiceArena();
  setTimeout(()=>cloud.applying=false,40)
 }
 function boQueueSnapshot(actor){if(!cloud.gameApplied||cloud.applying)return;cloud.pending={game:boWireGame(),actor:boNormName(actor||"")};cloud.dirty=true;boRunWriteQueue()}
 async function boRunWriteQueue(){if(cloud.inFlight||!cloud.pending)return;cloud.inFlight=true;clearTimeout(cloud.retryTimer);try{while(cloud.pending){const item=cloud.pending;cloud.pending=null;const payload=JSON.stringify(item.game);if(payload===cloud.lastPushedJSON){continue}let response;try{response=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/state`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,actorName:item.actor,baseRev:cloud.rev,game:item.game})})}catch(e){cloud.pending=item;boNet(false,"Verbindung unterbrochen");cloud.retryTimer=setTimeout(boRunWriteQueue,1800);return}const {r,j}=response;if(r.status===409||r.status===403){boNet(false,j?.error==="NOT_YOUR_TURN"?"Nicht am Zug":"Sync-Konflikt");const fresh=await boGet(false).catch(()=>null);cloud.pending=null;cloud.dirty=false;if(fresh?.game)boApplyGame(fresh.game);return}if(!r.ok||!j?.ok){cloud.pending=item;boNet(false,"Speichern fehlgeschlagen");cloud.retryTimer=setTimeout(boRunWriteQueue,1800);return}cloud.rev=Number(j.rev||cloud.rev+1);cloud.lastPushedJSON=payload;cloud.lastRemoteJSON=payload;boNet(true,"Online")}}finally{cloud.inFlight=false;if(!cloud.pending)cloud.dirty=false;if(cloud.pending&&!cloud.retryTimer)setTimeout(boRunWriteQueue,0)}}
-async function boPoll(){if(!cloud.room||cloud.pollBusy||cloud.dirty||cloud.inFlight)return;const now=Date.now(),gap=document.hidden?6000:(cloud.gameApplied?1100:1500);if(now-cloud.lastPollAt<gap)return;cloud.lastPollAt=now;cloud.pollBusy=true;try{const j=await boGet(true);boNet(true,"Online");boRenderPlayers(j.players||[],j.hostName||"");if(j.phase==="game"&&j.game&&!j.unchanged){const sig=JSON.stringify(j.game);if(sig!==cloud.lastPushedJSON&&sig!==cloud.lastRemoteJSON)boApplyGame(j.game)}else if(j.phase==="finished"&&j.game&&!j.unchanged){boApplyGame(j.game)}else if(!cloud.gameApplied)$bo("businessOnlineShell").classList.remove("hidden")}catch(e){boNet(false,"Render schläft / offline")}finally{cloud.pollBusy=false}}
+async function boSpectateRoll(ev){
+ if(!ev?.id||cloud.spectating)return;cloud.spectating=true;window.businessSpectatingRoll=true;boUpdateTurnUI();
+ showSpectatorDiceArena(ev,()=>{
+   setTimeout(async()=>{
+     cloud.spectating=false;window.businessSpectatingRoll=false;hideDiceArena(true);boUpdateTurnUI();
+     try{const fresh=await boGet(false);if(fresh?.game)boApplyGame(fresh.game)}catch(_e){}
+   },850)
+ });
+}
+async function boPoll(){if(!cloud.room||cloud.pollBusy||cloud.dirty||cloud.inFlight||cloud.spectating)return;const now=Date.now(),gap=document.hidden?6000:(cloud.gameApplied?650:1500);if(now-cloud.lastPollAt<gap)return;cloud.lastPollAt=now;cloud.pollBusy=true;try{const j=await boGet(true);boNet(true,"Online");boRenderPlayers(j.players||[],j.hostName||"");if(j.phase==="game"&&j.game&&!j.unchanged){const sig=JSON.stringify(j.game);if(sig!==cloud.lastPushedJSON&&sig!==cloud.lastRemoteJSON)boApplyGame(j.game)}else if(j.phase==="finished"&&j.game&&!j.unchanged){boApplyGame(j.game)}else if(!cloud.gameApplied)$bo("businessOnlineShell").classList.remove("hidden")}catch(e){boNet(false,"Render schläft / offline")}finally{cloud.pollBusy=false}}
 function boMarkDirty(){if(cloud.gameApplied&&boCanAct())cloud.dirty=true}
 function boWrapMutation(name,delay=30){const orig=window[name];if(typeof orig!=="function")return;window[name]=function(...args){if(cloud.gameApplied&&!boCanAct())return;const actor=boActiveName();cloud.dirty=true;const ret=orig.apply(this,args);setTimeout(()=>boQueueSnapshot(actor),delay);return ret}}
-function boPatchGame(){showLocalHandoff=function(){hideLocalHandoff()};hideLocalHandoff();const localSave=saveGame;saveGame=function(show=false){if(BO_ONLINE)return;return localSave(show)};const origRoll=rollDice;rollDice=function(...args){if(!boCanAct())return;if(state.phase!=="roll"||state.rolls>=3||state.locked)return;cloud.dirty=true;return origRoll.apply(this,args)};boWrapMutation("finishRoll",40);boWrapMutation("settleDice",30);boWrapMutation("buyCard",40);boWrapMutation("nextTurn",40);const origEnd=endGame;endGame=function(...args){if(cloud.gameApplied&&!boCanAct()&&!state.gameEnded)return;const actor=boActiveName();cloud.dirty=true;const ret=origEnd.apply(this,args);cloud.lastGameEnded=true;if(q("modalOk")){q("modalOk").textContent="Zur Spielauswahl";q("modalOk").onclick=boLeaveToLobby}setTimeout(()=>boQueueSnapshot(actor),35);return ret};const release=q("releaseBtn");release?.addEventListener("click",()=>{if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("dice")?.addEventListener("click",e=>{if(boCanAct()&&e.target.closest(".die:not(.branch-die)"))setTimeout(()=>boQueueSnapshot(boActiveName()),20)});document.addEventListener("business-state-mutated",()=>{
+function boPatchGame(){showLocalHandoff=function(){hideLocalHandoff()};hideLocalHandoff();window.onDiceArenaRollPrepared=ev=>{if(boCanAct()){cloud.dirty=true;boQueueSnapshot(boActiveName())}};const localSave=saveGame;saveGame=function(show=false){if(BO_ONLINE)return;return localSave(show)};const origRoll=rollDice;rollDice=function(...args){if(!boCanAct())return;if(state.phase!=="roll"||state.rolls>=3||state.locked)return;cloud.dirty=true;return origRoll.apply(this,args)};boWrapMutation("finishRoll",40);boWrapMutation("settleDice",30);boWrapMutation("buyCard",40);boWrapMutation("nextTurn",40);const origEnd=endGame;endGame=function(...args){if(cloud.gameApplied&&!boCanAct()&&!state.gameEnded)return;const actor=boActiveName();cloud.dirty=true;const ret=origEnd.apply(this,args);cloud.lastGameEnded=true;if(q("modalOk")){q("modalOk").textContent="Zur Spielauswahl";q("modalOk").onclick=boLeaveToLobby}setTimeout(()=>boQueueSnapshot(actor),35);return ret};const release=q("releaseBtn");release?.addEventListener("click",()=>{if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("dice")?.addEventListener("click",e=>{if(boCanAct()&&e.target.closest(".die:not(.branch-die)"))setTimeout(()=>boQueueSnapshot(boActiveName()),20)});document.addEventListener("business-state-mutated",()=>{
  if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)
 });
  q("newGameBtn").onclick=boLeaveToLobby}
