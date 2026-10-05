@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V3.8 · Online Kartenklarheit</title>
+<title>Das große Business – V4.0 · Online Kartentypen & Doppeltipp</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -4930,6 +4930,144 @@ body[data-market-stage="hot"] #roundDisplay::after{
   .real-card-type{font-size:6.2px;padding:3px 7px}
 }
 
+
+/* =================================================================
+   V4.0 · KARTENTYPEN SOFORT ERKENNBAR + DOPPELTIPP-KAUF
+   ================================================================= */
+
+/* Markt: Kartentyp ist schon am äußeren Rahmen sofort sichtbar. */
+.market-slot .invest-card.market-share-card{
+  border:5px solid #32b9ff!important;
+  box-shadow:
+    0 0 0 2px rgba(3,57,92,.95),
+    0 0 20px rgba(50,185,255,.48),
+    0 10px 22px rgba(0,0,0,.42)!important;
+}
+.market-slot .invest-card.market-business-card{
+  border:5px solid #ff7b35!important;
+  box-shadow:
+    0 0 0 2px rgba(102,37,9,.95),
+    0 0 20px rgba(255,123,53,.48),
+    0 10px 22px rgba(0,0,0,.42)!important;
+}
+.market-slot .invest-card.market-certificate-card{
+  border:5px solid #f2c94c!important;
+  box-shadow:
+    0 0 0 2px rgba(93,67,8,.95),
+    0 0 20px rgba(242,201,76,.48),
+    0 10px 22px rgba(0,0,0,.42)!important;
+}
+.market-slot .invest-card.market-share-card::after,
+.market-slot .invest-card.market-business-card::after,
+.market-slot .invest-card.market-certificate-card::after{
+  content:""!important;
+  position:absolute!important;inset:4px!important;
+  border-radius:10px!important;pointer-events:none!important;
+  border:2px solid rgba(255,255,255,.32)!important;
+  z-index:8!important;
+}
+.market-slot .invest-card.market-selected{
+  transform:translateY(-4px) scale(1.018)!important;
+  filter:brightness(1.08)!important;
+}
+.market-slot .invest-card.market-selected::before{
+  content:"DOPPELTIPP = KAUFEN"!important;
+  position:absolute!important;left:50%!important;bottom:4px!important;transform:translateX(-50%)!important;
+  z-index:15!important;padding:4px 9px!important;border-radius:999px!important;
+  background:#071827!important;color:#fff2b4!important;border:1px solid rgba(255,224,121,.8)!important;
+  font:900 6.7px Arial,sans-serif!important;letter-spacing:.45px!important;white-space:nowrap!important;
+}
+
+/* Die Typ-Badges sind deutlich größer und passen farblich zum Außenrahmen. */
+.market-slot .real-card-type{
+  font-size:8.5px!important;
+  padding:5px 10px!important;
+  border-width:2px!important;
+  letter-spacing:1px!important;
+}
+.market-slot .type-share{box-shadow:0 0 10px rgba(46,183,255,.55)!important}
+.market-slot .type-business{box-shadow:0 0 10px rgba(255,123,53,.55)!important}
+.market-slot .type-certificate{box-shadow:0 0 10px rgba(242,201,76,.55)!important}
+
+/* Portfolio unten: Bilder sind wieder klar sichtbar. Große Branchensymbole bleiben aus den Karten selbst raus. */
+.depot-fan-card .card-shell{
+  display:grid!important;
+  grid-template-rows:44% 56%!important;
+}
+.depot-fan-card .real-card-photo{
+  display:block!important;
+  position:relative!important;
+  min-height:0!important;
+  background-size:cover!important;
+  background-position:center!important;
+  border-bottom:1px solid rgba(31,48,66,.22)!important;
+}
+.depot-fan-card .real-card-photo::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.20));
+}
+.depot-fan-card .real-card-bigicon,
+.depot-fan-card .real-card-branch,
+.depot-fan-card .real-card-price{
+  display:none!important;
+}
+.depot-fan-card .real-card-body{
+  padding:5px 5px 5px!important;
+}
+.depot-fan-card .real-card-type{
+  top:4px!important;right:4px!important;
+  font-size:5.4px!important;padding:3px 5px!important;
+}
+.depot-fan-card.portfolio-card{
+  height:126px!important;
+}
+
+/* Portfolio-Branchenüberschrift: großes Logo + klare Bezeichnung. */
+.portfolio-branch-head{
+  min-height:62px!important;
+  padding:5px 7px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:2px!important;
+}
+.portfolio-branch-title{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-width:0!important;
+}
+.portfolio-branch-icon{
+  width:36px;height:36px;flex:0 0 36px;
+  display:grid;place-items:center;
+  border-radius:12px;
+  font-size:24px;line-height:1;
+  background:radial-gradient(circle at 30% 25%,#fff7ce,#e4b748 65%,#805211);
+  border:2px solid rgba(255,235,165,.78);
+  box-shadow:0 5px 11px rgba(0,0,0,.24);
+}
+.portfolio-branch-name{
+  color:#ffe49c!important;
+  font:900 12px/1.05 Georgia,serif!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.portfolio-branch-payout{
+  display:block!important;
+  margin-left:44px!important;
+  color:#a9bbc7!important;
+  font:800 6.6px/1.15 Arial,sans-serif!important;
+}
+
+@media(max-width:1100px){
+  .market-slot .invest-card.market-share-card,
+  .market-slot .invest-card.market-business-card,
+  .market-slot .invest-card.market-certificate-card{border-width:4px!important}
+  .portfolio-branch-icon{width:30px;height:30px;flex-basis:30px;font-size:20px}
+  .portfolio-branch-name{font-size:10.5px!important}
+  .portfolio-branch-payout{margin-left:38px!important}
+  .depot-fan-card.portfolio-card{height:116px!important}
+}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -4991,7 +5129,7 @@ body[data-market-stage="hot"] #roundDisplay::after{
   <section class="market-board-strip">
     <div class="market-board-header">
       <div class="market-board-brand">
-        <div id="businessModeChip" class="market-mode-chip">ONLINE · V3.8</div>
+        <div id="businessModeChip" class="market-mode-chip">ONLINE · V4.0</div>
         <div>
           <div class="market-board-kicker">DAS GROSSE BUSINESS · AKTIENMARKT</div>
           <div class="market-board-title">Vier Chancen. Ein Investment pro Zug.</div>
@@ -6012,14 +6150,33 @@ function renderDepot(){
 
    wrapper.innerHTML=`
      <div class="depot-group-head portfolio-branch-head">
-       <span>${b.icon} ${b.name}</span>
-       <span>${payoutText}</span>
+       <span class="portfolio-branch-title"><span class="portfolio-branch-icon">${b.icon}</span><span class="portfolio-branch-name">${b.name}</span></span>
+       <span class="portfolio-branch-payout">${payoutText}</span>
      </div>
      <div class="depot-fan-wrap portfolio-card-wrap">
        <div class="depot-fan portfolio-card-grid">${cardHTML}</div>
      </div>`;
    box.appendChild(wrapper);
  });
+}
+
+let lastMarketTapId=null;
+let lastMarketTapAt=0;
+function handleMarketCardTap(id,idx,el){
+ if(state.phase!=="invest"||state.bought||state.locked||state.gameEnded)return;
+ const card=state.market[idx],p=state.players[state.current];
+ if(!card||card.id!==id||p.cash<card.cost)return;
+ const now=performance.now();
+ const isDouble=lastMarketTapId===id && (now-lastMarketTapAt)<=480;
+ lastMarketTapId=id;lastMarketTapAt=now;
+ if(isDouble){
+   lastMarketTapId=null;lastMarketTapAt=0;
+   state.selectedMarket=id;
+   tone(740,.07,"sine",.025);
+   buyCard(idx,el);
+   return;
+ }
+ selectMarketCard(id);
 }
 
 function selectMarketCard(id){
@@ -6052,9 +6209,13 @@ function renderMarket(){
    const selected=state.selectedMarket===card.id;
    const cert=card.type==="Aktienurkunde";
    const d=document.createElement("div");
-   d.className="invest-card "+(cert?"certificate ":"")+(can?"buyable":"disabled")+(selected?" market-selected":"")+(state.phase!=="invest"?" lock-look":"");
+   const marketTypeClass=card.type==="Aktie"?" market-share-card":card.type==="Start-up"?" market-business-card":" market-certificate-card";
+   d.className="invest-card "+(cert?"certificate ":"")+(can?"buyable":"disabled")+(selected?" market-selected":"")+(state.phase!=="invest"?" lock-look":"")+marketTypeClass;
    d.innerHTML=buildPrettyCard(card,false);
-   if(can)d.onclick=()=>selectMarketCard(card.id);
+   if(can){
+     d.onclick=()=>handleMarketCardTap(card.id,idx,d);
+     d.ondblclick=e=>{e.preventDefault();e.stopPropagation();if(state.phase==="invest"&&!state.bought&&!state.locked){state.selectedMarket=card.id;buyCard(idx,d)}};
+   }
 
    const tag=document.createElement("div");
    tag.className="market-status"+(selected?" select-status":"");
@@ -6899,7 +7060,7 @@ function buyCard(idx,sourceEl){
  if(!card||p.cash<card.cost)return;
  animatePurchase(card,sourceEl); soundBuy();
  p.cash-=card.cost; state.bank+=card.cost; p.cards.push(card); p.stats.spent+=card.cost; p.stats.purchases++;
- state.market.splice(idx,1); state.bought=true; state.selectedMarket=null; drawMarket();
+ state.market.splice(idx,1); state.bought=true; state.selectedMarket=null; lastMarketTapId=null; lastMarketTapAt=0; drawMarket();
  const b=branchObj(card.branch);
  log(`🛒 ${p.name} kauft <b>${card.corp}</b> (${card.type}, ${b.name}) für ${card.cost} Z.`);
  toast(`-${card.cost} Z`,false);
@@ -7058,7 +7219,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V3.6";
+if(_boChip)_boChip.textContent="ONLINE · V4.0";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
