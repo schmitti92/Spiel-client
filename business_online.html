@@ -2110,7 +2110,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
     <div class="top-actions">
       <button id="soundBtn" class="top-icon-btn" title="Sound an/aus">🔊</button>
       <button id="fullBtn" class="top-icon-btn" title="Vollbild">⛶</button>
-      <button id="rulesBtn" class="top-icon-btn" title="Kurzregeln">📖</button><button id="newGameBtn" class="top-icon-btn" title="Neues Spiel">↻</button>
+      <button id="rulesBtn" class="top-icon-btn" title="Kurzregeln">📖</button><button id="reloadPageBtn" class="top-icon-btn reload-page-btn" title="Seite aktualisieren" aria-label="Seite aktualisieren">⟳</button><button id="newGameBtn" class="top-icon-btn" title="Neues Spiel">↻</button>
       <div id="deckDisplay" class="bank">🃏 30</div>
       <div id="newsDisplay" class="bank">📰 12</div>
       <div id="marketMood" class="market-mood calm"><span class="mood-dot"></span><span id="marketMoodText">Ruhiger Markt</span></div>
@@ -2123,6 +2123,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
 
   <section class="players-panel">
     <div class="panel-title">Imperien</div>
+    <div class="players-scroll-hint">↕ Spieler scrollen</div>
     <div id="players"></div>
   </section>
 
@@ -2138,7 +2139,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
   <section class="market-board-strip">
     <div class="market-board-header">
       <div class="market-board-brand">
-        <div id="businessModeChip" class="market-mode-chip">ONLINE · V5.2</div>
+        <div id="businessModeChip" class="market-mode-chip">ONLINE · V5.3</div>
         <div>
           <div class="market-board-kicker">DAS GROSSE BUSINESS · AKTIENMARKT</div>
           <div class="market-board-title">Vier Chancen. Ein Investment pro Zug.</div>
@@ -4119,7 +4120,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V5.2";
+if(_boChip)_boChip.textContent="ONLINE · V5.3";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
@@ -4904,6 +4905,178 @@ $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart")
 
   const hint = document.getElementById("diceArenaSwipeHint");
   if(hint) hint.textContent = "Überall auf der Würfelfläche wischen";
+})();
+</script>
+
+
+<style id="v53-startup-refresh-player-patch">
+/* V5.3 – Start-up Bild, deutlichere Branchensymbole, Reload-Button, Spieler-Scroll */
+.reload-page-btn{
+  color:#fff3bd !important;
+  font-size:20px !important;
+  background:linear-gradient(180deg,rgba(242,201,91,.18),rgba(255,255,255,.05)) !important;
+  border-color:rgba(242,201,91,.34) !important;
+}
+.reload-page-btn:active{transform:rotate(18deg) scale(.96) !important;}
+
+/* Linke Spielerleiste: Titel bleibt stehen, Spieler selbst scrollen */
+.players-panel{
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  min-height:0 !important;
+}
+.players-panel .panel-title{flex:0 0 auto !important;}
+.players-scroll-hint{
+  flex:0 0 auto;
+  margin:2px 2px 7px;
+  padding:4px 8px;
+  border-radius:999px;
+  text-align:center;
+  color:#9fb7c8;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.055);
+  font:800 8px/1 Arial,sans-serif;
+  letter-spacing:.04em;
+}
+#players{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  padding-right:4px !important;
+  scrollbar-width:thin;
+  scrollbar-color:#c99b3b rgba(255,255,255,.04);
+}
+#players::-webkit-scrollbar{width:7px;}
+#players::-webkit-scrollbar-track{background:rgba(255,255,255,.03);border-radius:999px;}
+#players::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#efd074,#9f7424);border-radius:999px;}
+#players .player-card{margin-bottom:8px !important;}
+
+/* Start-up: das branchenspezifische Firmenbild hat Vorrang vor alten Gradienten */
+.startup-card .startup-photo,
+.market-slot .startup-card .startup-photo,
+.depot-fan-card .startup-card .startup-photo{
+  background-color:#0d263c !important;
+  background-size:cover !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+}
+
+/* Branchensymbole auf jeder Karte deutlich größer und kontrastreicher */
+.market-slot .real-card-bigicon,
+.depot-fan-card .real-card-bigicon{
+  display:grid !important;
+  place-items:center !important;
+  z-index:10 !important;
+  background:radial-gradient(circle at 32% 25%,rgba(255,255,255,.96),rgba(255,230,154,.92) 42%,rgba(189,135,39,.96) 100%) !important;
+  color:#102238 !important;
+  border:3px solid rgba(255,249,222,.94) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.38),0 0 0 2px rgba(6,18,30,.28),inset 0 1px 2px rgba(255,255,255,.8) !important;
+  backdrop-filter:none !important;
+}
+.market-slot .real-card-bigicon{
+  width:58px !important;
+  height:58px !important;
+  right:12px !important;
+  top:54px !important;
+  border-radius:18px !important;
+}
+.market-slot .real-card-bigicon span{
+  font-size:31px !important;
+  line-height:1 !important;
+  filter:drop-shadow(0 2px 1px rgba(255,255,255,.6)) drop-shadow(0 3px 5px rgba(0,0,0,.22)) !important;
+}
+.market-slot .real-card-branch{
+  min-height:28px !important;
+  gap:7px !important;
+  font-size:10px !important;
+  background:rgba(5,18,31,.84) !important;
+  border:1px solid rgba(255,232,159,.40) !important;
+  box-shadow:0 6px 14px rgba(0,0,0,.28) !important;
+}
+.market-slot .real-card-branch .branch-mark{
+  display:inline-grid !important;
+  place-items:center !important;
+  width:23px !important;
+  height:23px !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.15) !important;
+  font-size:17px !important;
+  line-height:1 !important;
+}
+
+/* Im Depot etwas kleiner, aber ebenfalls klar sichtbar */
+.depot-fan-card .real-card-bigicon{
+  width:40px !important;
+  height:40px !important;
+  right:8px !important;
+  top:48px !important;
+  border-width:2px !important;
+  border-radius:14px !important;
+}
+.depot-fan-card .real-card-bigicon span{font-size:22px !important;}
+.depot-fan-card .real-card-branch .branch-mark{font-size:12px !important;}
+
+@media(max-width:1100px){
+  .players-scroll-hint{font-size:7px;}
+  .market-slot .real-card-bigicon{width:50px !important;height:50px !important;top:50px !important;}
+  .market-slot .real-card-bigicon span{font-size:27px !important;}
+}
+</style>
+<script id="v53-startup-refresh-player-script">
+(function(){
+  /* Eigener Reload-Button oben */
+  const reloadBtn=document.getElementById('reloadPageBtn');
+  if(reloadBtn && !reloadBtn.dataset.wired){
+    reloadBtn.dataset.wired='1';
+    reloadBtn.addEventListener('click',function(){
+      reloadBtn.textContent='↻';
+      reloadBtn.disabled=true;
+      setTimeout(()=>window.location.reload(),80);
+    });
+  }
+
+  /* Die vorhandene Kartenfunktion wird nur so ergänzt, dass bei Start-ups
+     das Bild trotz alter !important-Gradienten garantiert gesetzt wird. */
+  const previousBuild=window.buildPrettyCard;
+  if(typeof previousBuild==='function'){
+    window.buildPrettyCard=function(card,mini=false){
+      let html=previousBuild(card,mini);
+      if(card && card.type==='Start-up'){
+        const startupCorp={reisen:'Urlaubsflieger',tech:'KI Solutions',food:'Frische Welt',sport:'StadionPlus',ent:'MediaStar'};
+        const art=(typeof cardArtByCorp!=='undefined' && cardArtByCorp[startupCorp[card.branch]]) || '';
+        if(art){
+          html=html.replace(/style="background-image:url\('([^']*)'\)"/,
+            `style="background-image:url('${art}') !important"`);
+        }
+      }
+      return html;
+    };
+  }
+
+  /* Falls die Spielerleiste mehr Inhalt hat, Hinweis anzeigen; sonst dezent lassen. */
+  function updatePlayerScrollHint(){
+    const box=document.getElementById('players');
+    const hint=document.querySelector('.players-scroll-hint');
+    if(!box||!hint)return;
+    const count=box.children.length;
+    hint.textContent=count>2?`↕ ${count} Spieler · scrollen`:`${count} Spieler`;
+    hint.style.opacity=count>2?'1':'.55';
+  }
+  const players=document.getElementById('players');
+  if(players){
+    new MutationObserver(updatePlayerScrollHint).observe(players,{childList:true});
+    setTimeout(updatePlayerScrollHint,100);
+  }
+
+  /* Aktuelle Karten einmal neu zeichnen, damit Start-up-Bilder sofort sichtbar werden. */
+  setTimeout(()=>{
+    try{ if(typeof render==='function') render(); }catch(_e){}
+    updatePlayerScrollHint();
+  },120);
 })();
 </script>
 
