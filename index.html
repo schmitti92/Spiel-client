@@ -18,6 +18,8 @@
       --blueLine:#244786;
       --skyjo:#3b234f;
       --skyjoLine:#684083;
+      --business:#4a3512;
+      --businessLine:#9a742c;
     }
     *{box-sizing:border-box}
     html,body{min-height:100%}
@@ -117,6 +119,21 @@
         var(--card);
       border-color:#3e3155;
     }
+    .business-card{
+      background:
+        radial-gradient(circle at 88% 12%,rgba(229,185,79,.18),transparent 36%),
+        linear-gradient(160deg,#17140d,#0b1220 72%);
+      border-color:#5c4822;
+    }
+    .business-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .business-badge{
+      font-size:12px;font-weight:800;color:#ffe3a0;border:1px solid #7e6026;
+      background:#33260f;border-radius:999px;padding:4px 8px;
+    }
+    .btn.business{
+      background:linear-gradient(135deg,#77521a,#b8892e);
+      border-color:var(--businessLine);color:#fff4d2;
+    }
     .skyjo-title{
       display:flex;
       align-items:center;
@@ -188,9 +205,19 @@
         <a class="btn skyjo" href="skyjo_action.html">SKYJO Action öffnen</a>
         <div class="small">Jokerkarten-Anzahl und Joker-Funktion können vor dem Spiel eingestellt werden.</div>
       </article>
+
+      <article class="game business-card">
+        <div class="business-title">
+          <h2 style="margin:0">💼 Das große Business</h2>
+          <span class="business-badge">Online</span>
+        </div>
+        <p style="margin-top:8px">Wirtschaftsspiel mit Aktienmarkt, Branchenwürfel, Börsennews, Investments und gemeinsamer Online-Partie für 2–5 Spieler.</p>
+        <a class="btn business" href="barikade_lobby.html?game=business">Das große Business öffnen</a>
+        <div class="small">Startet über die gemeinsame Online-Lobby und verbindet alle Spieler über Render.</div>
+      </article>
     </section>
 
-    <footer>Tipp: Wenn du direkt zu Barikade willst, nutze <code>barikade.html</code>.</footer>
+    <footer>Direktlinks: Barikade <code>barikade.html</code> · Business <code>business.html</code>.</footer>
   </main>
 </body>
 </html>
