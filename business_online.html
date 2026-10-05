@@ -8,7 +8,7 @@
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V3.0 · Online</title>
+<title>Das große Business – V3.1 · Online Würfelarena</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -3652,6 +3652,302 @@ body.business-online .business-turn-lock{
   text-overflow:ellipsis;
 }
 
+
+/* =================================================================
+   V3.1 · WÜRFELARENA – Phase 1/2/3
+   Würfel existieren sichtbar nur noch im großen Overlay.
+   ================================================================= */
+
+/* Unten rechts: nur noch Zugsteuerung – keine sichtbaren Würfel mehr. */
+.control-panel .compact-tray,
+.control-panel #branchLegend,
+.control-panel .release-btn,
+.control-panel .mini-cup-wrap{
+  display:none!important;
+}
+.control-panel{
+  justify-content:flex-start!important;
+  overflow:hidden!important;
+}
+.control-panel .dice-header{
+  min-height:38px!important;
+}
+.control-panel .dice-toolbar{
+  margin:5px 0 7px!important;
+}
+.control-panel .compact-result{
+  min-height:42px!important;
+  max-height:54px!important;
+}
+.control-panel .compact-controls{
+  margin-top:auto!important;
+}
+#rollBtn{
+  min-height:44px!important;
+  font-size:10px!important;
+}
+#endBtn{
+  min-height:44px!important;
+}
+
+/* -------- Overlay -------- */
+.dice-arena-overlay{
+  position:fixed;inset:0;z-index:135;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(10px,2vw,22px);
+  background:
+    radial-gradient(circle at 50% 25%,rgba(219,178,71,.10),transparent 35%),
+    rgba(2,8,14,.88);
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+  opacity:1;transition:opacity .18s ease;
+}
+.dice-arena-overlay.hidden{
+  display:none!important;
+}
+.dice-arena-card{
+  width:min(96vw,940px);
+  height:min(91vh,700px);
+  display:grid;
+  grid-template-rows:auto auto minmax(0,1fr) auto;
+  gap:8px;
+  padding:12px;
+  border-radius:24px;
+  background:
+    linear-gradient(180deg,rgba(20,54,82,.98),rgba(6,22,35,.99));
+  border:2px solid rgba(224,184,77,.72);
+  box-shadow:
+    0 28px 80px rgba(0,0,0,.56),
+    inset 0 1px 0 rgba(255,255,255,.10);
+  overflow:hidden;
+}
+.dice-arena-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:2px 5px;
+}
+.dice-arena-kicker{
+  color:#8fa5b5;font:900 8px Arial,sans-serif;
+  letter-spacing:.16em;
+}
+.dice-arena-title{
+  color:#ffe08c;
+  font:900 clamp(22px,3vw,34px) Georgia,serif;
+  line-height:1.05;
+  text-shadow:0 3px 12px rgba(0,0,0,.28);
+}
+.dice-arena-player{
+  margin-top:3px;color:#d8e5ec;font:800 11px Arial,sans-serif;
+}
+.dice-arena-close{
+  width:42px;height:42px;border-radius:13px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);color:#e8eff4;
+  font:900 22px Arial,sans-serif;cursor:pointer;
+}
+.dice-arena-phasebar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:32px;padding:6px 10px;border-radius:12px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.075);
+  color:#cfdae2;font:800 10px Arial,sans-serif;
+}
+.dice-arena-branch-info{
+  padding:4px 8px;border-radius:999px;
+  color:#ffe09a;background:rgba(224,181,68,.10);
+  border:1px solid rgba(224,181,68,.18);
+  white-space:nowrap;
+}
+
+/* -------- echtes Wurfbrett -------- */
+.dice-arena-board{
+  position:relative;min-height:0;overflow:hidden;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+  border-radius:21px;
+  background:
+    radial-gradient(circle at 48% 44%,rgba(255,255,255,.045),transparent 34%),
+    repeating-linear-gradient(8deg,rgba(255,255,255,.012) 0 1px,transparent 1px 6px),
+    linear-gradient(145deg,#18482f,#0d3522 52%,#092919);
+  border:9px solid #4d2d14;
+  box-shadow:
+    inset 0 0 0 3px #a66e2f,
+    inset 0 0 0 6px rgba(28,12,4,.54),
+    inset 0 0 45px rgba(0,0,0,.36),
+    0 12px 28px rgba(0,0,0,.28);
+}
+.dice-arena-board::after{
+  content:"";position:absolute;inset:12px;border-radius:12px;
+  border:1px solid rgba(246,219,147,.13);pointer-events:none;
+}
+.dice-arena-rail{
+  position:absolute;left:6%;right:6%;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,220,135,.18),transparent);
+  pointer-events:none;
+}
+.rail-top{top:13%}.rail-bottom{bottom:16%}
+.dice-arena-logo{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:84px;height:84px;border-radius:50%;
+  display:grid;place-items:center;
+  color:rgba(255,225,142,.075);
+  border:2px solid rgba(255,225,142,.055);
+  font:900 36px Georgia,serif;
+  pointer-events:none;
+}
+.dice-arena-layer{position:absolute;inset:0;pointer-events:none}
+
+/* -------- Würfel -------- */
+.arena-die{
+  position:absolute;
+  width:clamp(48px,6.2vw,68px);
+  height:clamp(48px,6.2vw,68px);
+  border-radius:16%;
+  background:linear-gradient(145deg,#fffef9,#f2efe4 67%,#dcd7c7);
+  border:2px solid rgba(96,102,111,.72);
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.95),
+    inset -5px -7px 0 rgba(0,0,0,.08),
+    0 10px 15px rgba(0,0,0,.26);
+  transform-origin:50% 50%;
+  pointer-events:auto;
+  cursor:pointer;
+  will-change:transform,left,top;
+}
+.arena-die .play-die-face{
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+}
+.arena-die .play-pip{
+  width:14%!important;height:14%!important;
+  min-width:5px!important;min-height:5px!important;
+  background:#111820!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.arena-die.held{
+  border-color:#f2c84f;
+  box-shadow:
+    0 0 0 4px rgba(242,200,79,.25),
+    0 0 22px rgba(242,200,79,.30),
+    inset 0 2px 1px rgba(255,255,255,.95),
+    inset -5px -7px 0 rgba(0,0,0,.08);
+}
+.arena-die.held::after{
+  content:"GEHALTEN";
+  position:absolute;left:50%;bottom:-21px;transform:translateX(-50%);
+  padding:3px 6px;border-radius:999px;
+  background:#d6a72f;color:#172333;
+  font:900 7px Arial,sans-serif;white-space:nowrap;
+}
+.arena-die.branch{
+  background:linear-gradient(145deg,#fff4c9,#efd886 68%,#c6a94a);
+  border-color:#d7b348;
+  display:grid;place-items:center;
+  color:#132236;font-size:clamp(24px,3.2vw,36px);
+}
+.arena-die.branch::before{
+  content:"BRANCHE";
+  position:absolute;left:50%;top:-20px;transform:translateX(-50%);
+  color:#ffe197;font:900 7px Arial,sans-serif;letter-spacing:.06em;
+}
+.arena-die.rolling{
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.95),
+    0 12px 22px rgba(0,0,0,.34);
+}
+
+/* -------- großer Wisch-Würfel -------- */
+.dice-throw-handle{
+  position:absolute;left:50%;bottom:5%;
+  transform:translateX(-50%);
+  width:min(78%,360px);min-height:88px;
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:10px 16px;border-radius:22px;
+  background:
+    linear-gradient(180deg,rgba(8,25,39,.92),rgba(4,15,24,.94));
+  border:2px solid rgba(241,203,103,.44);
+  box-shadow:0 16px 32px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.07);
+  touch-action:none;cursor:grab;z-index:5;
+  transition:opacity .16s ease,filter .16s ease;
+}
+.dice-throw-handle:active{cursor:grabbing}
+.dice-throw-handle.disabled{
+  opacity:.35;pointer-events:none;filter:grayscale(.6);
+}
+.throw-big-die{
+  width:62px;height:62px;flex:0 0 62px;
+  display:grid;place-items:center;border-radius:16px;
+  background:linear-gradient(145deg,#fffdf6,#e9e5d8);
+  border:2px solid #b9b2a0;
+  box-shadow:inset -5px -6px 0 rgba(0,0,0,.08),0 7px 12px rgba(0,0,0,.25);
+  font-size:36px;
+}
+.throw-caption{
+  color:#cfdce4;font:800 10px/1.25 Arial,sans-serif;
+  letter-spacing:.03em;
+}
+.throw-caption b{color:#ffe09a;font-size:12px}
+.throw-arrow{
+  color:#f1c954;font:900 34px Arial,sans-serif;
+  animation:arenaArrow 1s ease-in-out infinite;
+}
+@keyframes arenaArrow{
+  0%,100%{transform:translateY(4px);opacity:.55}
+  50%{transform:translateY(-5px);opacity:1}
+}
+.dice-arena-swipe-hint{
+  position:absolute;left:50%;bottom:1.2%;transform:translateX(-50%);
+  color:rgba(225,236,242,.46);font:800 8px Arial,sans-serif;
+  pointer-events:none;
+}
+
+/* -------- Footer -------- */
+.dice-arena-footer{
+  display:grid;grid-template-columns:130px minmax(0,1fr) 160px;
+  gap:8px;align-items:center;
+}
+.dice-arena-footer button{
+  min-height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.09);
+  font:900 10px Arial,sans-serif;cursor:pointer;
+}
+.dice-arena-footer button:disabled{opacity:.35;cursor:not-allowed}
+.arena-secondary{background:#19364e;color:#dce7ee}
+.arena-primary{background:linear-gradient(#f1d36e,#c28a20);color:#172235}
+.dice-arena-result{
+  min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:6px 9px;border-radius:12px;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);
+  color:#e5edf2;font:800 10px/1.25 Arial,sans-serif;
+}
+
+/* Kleines Wisch-Fehlfeedback */
+.dice-throw-handle.bad-swipe{animation:badSwipe .28s ease}
+@keyframes badSwipe{
+  0%,100%{transform:translateX(-50%)}
+  25%{transform:translateX(calc(-50% - 8px))}
+  75%{transform:translateX(calc(-50% + 8px))}
+}
+
+@media(max-width:760px){
+  .dice-arena-card{height:min(94vh,650px);padding:9px;border-radius:18px}
+  .dice-arena-footer{grid-template-columns:105px 1fr 130px}
+  .dice-arena-footer button{font-size:8px;padding:4px}
+  .dice-throw-handle{width:min(88%,330px)}
+}
+@media(max-height:720px) and (orientation:landscape){
+  .dice-arena-card{height:96vh;grid-template-rows:auto auto minmax(0,1fr) auto}
+  .dice-arena-title{font-size:23px}
+  .dice-arena-head{padding:0 3px}
+  .dice-arena-phasebar{min-height:27px;padding:4px 8px;font-size:8px}
+  .dice-arena-footer button,.dice-arena-result{min-height:36px}
+  .dice-throw-handle{min-height:70px;bottom:4%}
+  .throw-big-die{width:50px;height:50px;flex-basis:50px;font-size:29px}
+}
+
+
+/* V3.1 FINAL: Spielereignisse liegen über der Würfelarena. */
+.branch-banner{z-index:172!important}
+.modal{z-index:190!important}
+.market-stage-toast,.final-round-toast{z-index:176!important}
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -3672,7 +3968,7 @@ body.business-online .business-turn-lock{
     <button class="continue-btn hidden" id="continueBtn">▶ Gespeichertes Spiel fortsetzen</button>
     <div class="local-mode-explain">2–5 Personen spielen gemeinsam an diesem Gerät. Der Spielstand wird automatisch nur in diesem Browser gespeichert.</div>
     <div class="rule-mini">
-      V3.0 Lokal: vollständig geprüfte Spiellogik, sichere Börsennews, tabletgerechter Würfeltisch, Doppel-Autosave,
+      V3.1 Lokal: vollständig geprüfte Spiellogik, sichere Börsennews, tabletgerechter Würfeltisch, Doppel-Autosave,
       korrekte Brettwürfel, Pass-&-Play, faire Schlussrunde und 30 individuelle Kaufkarten.
     </div>
   </div>
@@ -3713,7 +4009,7 @@ body.business-online .business-turn-lock{
   <main class="board-wrap">
     <div class="focus-hint">▣ Fokusmodus oben rechts</div>
     <div class="board">
-      <div id="businessModeChip" class="board-chip">ONLINE · V3.0</div>
+      <div id="businessModeChip" class="board-chip">ONLINE · V3.1</div>
       <div id="payoutOverlay" class="payout-overlay legacy-payout board-payout-corrected" aria-hidden="true"></div>
       <div id="boardDiceFix" class="board-dice-fix" aria-label="Korrigierte Beispielwürfel"></div>
       <div id="boardMarket" class="board-market-overlay"></div>
@@ -3729,7 +4025,7 @@ body.business-online .business-turn-lock{
   <section class="control-panel">
     <div class="dice-header">
       <div>
-        <div class="panel-title dice-title">Würfeltisch</div>
+        <div class="panel-title dice-title">Zugsteuerung</div>
         <div id="phaseLabel">Phase: Würfeln</div>
       </div>
       <div class="mini-cup-wrap">
@@ -3744,7 +4040,7 @@ body.business-online .business-turn-lock{
     </div>
 
     <div class="dice-toolbar">
-      <div id="diceMeta" class="dice-meta">5 Zahlenwürfel · 1 Branchenwürfel</div>
+      <div id="diceMeta" class="dice-meta">Würfel erscheinen ausschließlich in der Würfelarena</div>
       <button id="releaseBtn" class="release-btn" disabled>↺ lösen</button>
     </div>
     <div id="branchLegend" class="branch-legend" aria-label="Branchenwürfel"></div>
@@ -3760,6 +4056,48 @@ body.business-online .business-turn-lock{
       <button id="endBtn" class="end-btn" disabled>➡ Zug beenden</button>
     </div>
   </section>
+</div>
+
+
+<div id="diceArena" class="dice-arena-overlay hidden" aria-hidden="true">
+  <div class="dice-arena-card">
+    <div class="dice-arena-head">
+      <div>
+        <div class="dice-arena-kicker">DAS GROSSE BUSINESS</div>
+        <div class="dice-arena-title">🎲 Würfelarena</div>
+        <div id="diceArenaPlayer" class="dice-arena-player">Spieler</div>
+      </div>
+      <button id="diceArenaClose" class="dice-arena-close" type="button" aria-label="Würfelarena minimieren">−</button>
+    </div>
+
+    <div class="dice-arena-phasebar">
+      <div id="diceArenaRollInfo">1. Wurf · Branchenwürfel wird mitgeworfen</div>
+      <div id="diceArenaBranchInfo" class="dice-arena-branch-info">Branche noch offen</div>
+    </div>
+
+    <div id="diceArenaBoard" class="dice-arena-board">
+      <div class="dice-arena-rail rail-top"></div>
+      <div class="dice-arena-rail rail-bottom"></div>
+      <div class="dice-arena-logo">DB</div>
+      <div id="diceArenaLayer" class="dice-arena-layer"></div>
+
+      <div id="diceThrowHandle" class="dice-throw-handle" role="button" tabindex="0" aria-label="Zum Würfeln nach oben wischen">
+        <div class="throw-big-die"><span>🎲</span></div>
+        <div class="throw-caption">MIT DEM FINGER<br><b>NACH OBEN WISCHEN</b></div>
+        <div class="throw-arrow">↑</div>
+      </div>
+
+      <div id="diceArenaSwipeHint" class="dice-arena-swipe-hint">
+        Würfel auf das Brett schieben
+      </div>
+    </div>
+
+    <div class="dice-arena-footer">
+      <button id="diceArenaRelease" class="arena-secondary" type="button">↺ Alle lösen</button>
+      <div id="diceArenaResult" class="dice-arena-result">Bereit zum ersten Wurf.</div>
+      <button id="diceArenaTake" class="arena-primary" type="button" disabled>💰 Ergebnis nehmen</button>
+    </div>
+  </div>
 </div>
 
 <div id="branchBanner" class="branch-banner hidden">
@@ -4350,6 +4688,7 @@ function render(){
  q("phaseLabel").textContent="Phase: "+(state.phase==="roll"?"Würfeln":state.phase==="invest"?"Investieren":"–");
  renderPayoutOverlay(); renderPlayers(); renderMarket(); renderDepot(); renderDice(); renderBranchLegend(); renderControls();
  saveGame(false);
+ if(q("diceArena")&&!q("diceArena").classList.contains("hidden"))renderDiceArena();
 }
 
 function renderPlayers(){
@@ -4671,7 +5010,7 @@ function renderControls(){
    meta.textContent=state.rolls===0?"1. Wurf: Branche wird sofort gewertet":`Wurf ${state.rolls}/3 · ${heldCount} Würfel gehalten`;
    release.disabled=state.rolls===0||state.rolls>=3||state.locked||heldCount===0;
    roll.disabled=state.rolls>=3||state.locked;
-   roll.textContent=state.rolls===0?"🎲 Würfeln":state.rolls<3?`🎲 Nochmal (${3-state.rolls})`:"Fertig";
+   roll.textContent=state.rolls===0?"🎲 Würfelarena öffnen":state.rolls<3?`🎲 Würfelarena (${3-state.rolls} übrig)`:"🎲 Würfelarena";
    end.disabled=state.rolls===0||state.locked;
    end.textContent=state.rolls===0?"➡ Weiter":"💰 Ergebnis";
  }else{
@@ -4725,8 +5064,8 @@ q("rulesBtn").onclick=()=>{
  const body=`
   <div class="rules-box">
    <h3>Dein Zug</h3>
-   <div>1. Zahlenwürfel + Branchenwürfel werfen. Die Branche wird sofort ausgewertet.</div>
-   <div>2. Mit den 5 Zahlenwürfeln darfst du insgesamt bis zu 3-mal würfeln.</div>
+   <div>1. Die <b>Würfelarena</b> öffnet sich zu Beginn deines Zuges. Den großen Würfel unten mit dem Finger nach oben auf das Brett wischen.</div>
+   <div>2. Beim ersten Wurf rollen 5 Zahlenwürfel + Branchenwürfel. Danach kannst du Zahlenwürfel antippen und halten. Insgesamt sind bis zu 3 Würfe möglich.</div>
    <div>3. Würfelergebnis auszahlen lassen.</div>
    <div>4. Höchstens eine Marktkarte kaufen: <b>Karte antippen → Kauf bestätigen</b>.</div>
 
@@ -4757,12 +5096,315 @@ q("rulesBtn").onclick=()=>{
 };
 
 
-q("releaseBtn").onclick=()=>{
- if(state.phase!=="roll"||state.locked||state.rolls===0||state.rolls>=3)return;
+
+/* =================================================================
+   V3.1 · WÜRFELARENA
+   Phase 1: großes Overlay + Wischgeste
+   Phase 2: Rotation, Reibung, Randabpraller
+   Phase 3: leichte Würfel-Würfel-Kollisionen + Halten/Neuwerfen
+   ================================================================= */
+let diceArenaPositions=[];
+let diceArenaRolling=false;
+let diceArenaPointer=null;
+let diceArenaLastAutoTurn=-1;
+let diceArenaRaf=0;
+
+function diceArenaCanAct(){
+ try{
+   if(typeof window.businessCanUseDiceArena==="function")return !!window.businessCanUseDiceArena();
+ }catch(_e){}
+ return true;
+}
+function arenaBranchText(){
+ if(!state.branchRoll)return "Branche noch offen";
+ if(state.branchRoll==="news")return "🐷 Börsennews";
+ const b=branchObj(state.branchRoll);
+ return b?`${b.icon} ${b.name}`:"Branche";
+}
+function arenaDefaultPositions(){
+ const board=q("diceArenaBoard");
+ if(!board)return [];
+ const w=Math.max(500,board.clientWidth||700),h=Math.max(260,board.clientHeight||400);
+ const size=Math.min(68,Math.max(48,w*.071));
+ const gap=(w-size*5)/6;
+ const y=Math.max(42,h*.42);
+ const arr=[];
+ for(let i=0;i<5;i++)arr.push({x:gap+(gap+size)*i,y,angle:(i-2)*3});
+ arr.push({x:Math.max(20,w-size-42),y:Math.max(28,h*.15),angle:0});
+ return arr;
+}
+function ensureArenaPositions(){
+ if(!Array.isArray(diceArenaPositions)||diceArenaPositions.length!==6)diceArenaPositions=arenaDefaultPositions();
+}
+function arenaFaceContent(face){
+ return playDieHTML(Math.max(1,Math.min(6,Number(face)||1)));
+}
+function renderDiceArena(){
+ const arena=q("diceArena");
+ if(!arena||arena.classList.contains("hidden"))return;
+ const player=state.players?.[state.current];
+ if(q("diceArenaPlayer"))q("diceArenaPlayer").textContent=player?`${player.name} · ${money(player.cash)}`:"Spieler";
+ if(q("diceArenaRollInfo")){
+   q("diceArenaRollInfo").textContent=state.rolls===0
+     ?"1. Wurf · Branchenwürfel wird mitgeworfen"
+     :state.rolls<3?`Wurf ${state.rolls+1} von 3 · gehaltene Würfel bleiben liegen`
+     :"3 Würfe abgeschlossen";
+ }
+ if(q("diceArenaBranchInfo"))q("diceArenaBranchInfo").textContent=arenaBranchText();
+
+ const layer=q("diceArenaLayer");if(!layer)return;
+ ensureArenaPositions();
+ layer.innerHTML="";
+ for(let i=0;i<5;i++){
+   const d=document.createElement("div");
+   d.className=`arena-die${state.held[i]?" held":""}${diceArenaRolling?" rolling":""}`;
+   d.dataset.index=String(i);
+   d.innerHTML=arenaFaceContent(state.dice[i]);
+   const p=diceArenaPositions[i]||{x:30+i*75,y:120,angle:0};
+   d.style.left=p.x+"px";d.style.top=p.y+"px";d.style.transform=`rotate(${p.angle||0}deg)`;
+   d.title=state.held[i]?"Gehalten – antippen zum Lösen":"Antippen zum Halten";
+   d.onclick=e=>{
+     e.stopPropagation();
+     if(diceArenaRolling||state.locked||state.rolls===0||state.rolls>=3||state.phase!=="roll"||!diceArenaCanAct())return;
+     state.held[i]=!state.held[i];
+     tone(state.held[i]?620:340,.05,"sine",.018);
+     renderDiceArena();renderDice();renderPayoutOverlay();renderControls();saveGame(false);
+     document.dispatchEvent(new CustomEvent("business-state-mutated",{detail:{reason:"held"}}));
+   };
+   layer.appendChild(d);
+ }
+
+ const bd=document.createElement("div");
+ bd.className=`arena-die branch${diceArenaRolling&&state.rolls===0?" rolling":""}`;
+ bd.dataset.index="5";
+ bd.innerHTML=state.branchRoll
+   ? (state.branchRoll==="news"?"🐷":branchObj(state.branchRoll)?.icon||"◆")
+   :"◆";
+ const bp=diceArenaPositions[5]||{x:520,y:45,angle:0};
+ bd.style.left=bp.x+"px";bd.style.top=bp.y+"px";bd.style.transform=`rotate(${bp.angle||0}deg)`;
+ layer.appendChild(bd);
+
+ const best=state.rolls>0?evaluate(state.dice):null;
+ const result=q("diceArenaResult");
+ if(result)result.innerHTML=best
+   ? `Wurf ${state.rolls}/3 · <b>${best.name}</b>${best.value?` · ${best.value} Z`:""}`
+   :"Wische den großen Würfel nach oben auf das Brett.";
+ const release=q("diceArenaRelease");
+ if(release)release.disabled=state.rolls===0||state.rolls>=3||state.locked||!state.held.some(Boolean);
+ const take=q("diceArenaTake");
+ if(take)take.disabled=state.rolls===0||state.locked||state.phase!=="roll";
+
+ const handle=q("diceThrowHandle");
+ if(handle){
+   const canThrow=state.phase==="roll"&&state.rolls<3&&!state.locked&&!diceArenaRolling&&diceArenaCanAct();
+   handle.classList.toggle("disabled",!canThrow);
+   handle.style.opacity=canThrow?"1":".34";
+   handle.style.transform="translateX(-50%)";
+ }
+}
+function showDiceArena(auto=false){
+ if(state.gameEnded||state.phase!=="roll"||!diceArenaCanAct())return;
+ const arena=q("diceArena");if(!arena)return;
+ if(auto&&diceArenaLastAutoTurn===state.turnNumber)return;
+ if(auto)diceArenaLastAutoTurn=state.turnNumber;
+ arena.classList.remove("hidden");arena.setAttribute("aria-hidden","false");
+ diceArenaPositions=arenaDefaultPositions();
+ renderDiceArena();
+}
+function hideDiceArena(){
+ if(diceArenaRolling)return;
+ const arena=q("diceArena");if(!arena)return;
+ arena.classList.add("hidden");arena.setAttribute("aria-hidden","true");
+}
+function autoOpenDiceArena(){
+ if(state.phase!=="roll"||state.gameEnded||!diceArenaCanAct())return;
+ showDiceArena(true);
+}
+function arenaRandomFace(){return 1+Math.floor(Math.random()*6)}
+function setArenaVisualFace(el,face,isBranch=false){
+ if(!el)return;
+ if(isBranch){
+   const items=[...branches.map(b=>b.icon),"🐷"];
+   el.textContent=items[Math.floor(Math.random()*items.length)];
+ }else el.innerHTML=arenaFaceContent(face);
+}
+function startDiceArenaPhysics(finalDice,finalBranch,gesture,done){
+ const board=q("diceArenaBoard"),layer=q("diceArenaLayer");
+ if(!board||!layer){done();return}
+ ensureArenaPositions();
+ diceArenaRolling=true;
+ renderDiceArena();
+
+ const w=board.clientWidth,h=board.clientHeight;
+ const dieEl=[...layer.querySelectorAll(".arena-die")];
+ const size=dieEl[0]?.offsetWidth||58;
+ const firstThrow=state.rolls===0;
+ const moving=[];
+ const now=performance.now();
+ const dur=Math.max(120,Math.min(700,gesture?.duration||260));
+ const gx=Number(gesture?.dx||0),gy=Number(gesture?.dy||-180);
+ const swipeVX=Math.max(-520,Math.min(520,gx/dur*1000));
+ const swipeVY=Math.max(-1050,Math.min(-390,gy/dur*1000));
+ const power=Math.max(.75,Math.min(1.55,Number(gesture?.power)||1));
+
+ for(let i=0;i<6;i++){
+   const branch=i===5;
+   if((i<5&&state.held[i])||(branch&&!firstThrow))continue;
+   const spread=(i-2.5)*17+(Math.random()-.5)*50;
+   diceArenaPositions[i]={
+     x:Math.max(14,Math.min(w-size-14,w*.48+spread)),
+     y:Math.max(14,h-size-82+Math.random()*18),
+     angle:(Math.random()-.5)*35
+   };
+   moving.push({
+     i,
+     x:diceArenaPositions[i].x,
+     y:diceArenaPositions[i].y,
+     vx:(swipeVX*.42+spread*3+(Math.random()-.5)*220)*power,
+     vy:(swipeVY+(Math.random()-.5)*220)*power,
+     angle:diceArenaPositions[i].angle,
+     av:(Math.random()>.5?1:-1)*(260+Math.random()*520)*power,
+     branch,
+     lastFaceBucket:-1
+   });
+ }
+ const start=performance.now();
+ let last=start,lastClick=0;
+
+ function frame(t){
+   const dt=Math.min(.032,(t-last)/1000||.016);last=t;
+   const elapsed=(t-start)/1000;
+
+   // Bewegung + Reibung + Randabpraller
+   for(const b of moving){
+     b.x+=b.vx*dt;b.y+=b.vy*dt;b.angle+=b.av*dt;
+     const friction=Math.pow(.095,dt);
+     b.vx*=friction;b.vy*=friction;b.av*=Math.pow(.16,dt);
+
+     let bounced=false;
+     if(b.x<10){b.x=10;b.vx=Math.abs(b.vx)*.68;bounced=true}
+     if(b.x>w-size-10){b.x=w-size-10;b.vx=-Math.abs(b.vx)*.68;bounced=true}
+     if(b.y<10){b.y=10;b.vy=Math.abs(b.vy)*.68;bounced=true}
+     if(b.y>h-size-10){b.y=h-size-10;b.vy=-Math.abs(b.vy)*.68;bounced=true}
+     if(bounced&&t-lastClick>75){tone(115+Math.random()*75,.018,"square",.006);lastClick=t}
+   }
+
+   // leichte Würfel-Würfel-Kollisionen
+   const minD=size*.88;
+   for(let a=0;a<moving.length;a++)for(let c=a+1;c<moving.length;c++){
+     const A=moving[a],B=moving[c];
+     const ax=A.x+size/2,ay=A.y+size/2,bx=B.x+size/2,by=B.y+size/2;
+     let dx=bx-ax,dy=by-ay,dist=Math.hypot(dx,dy);
+     if(dist>0&&dist<minD){
+       const nx=dx/dist,ny=dy/dist,over=minD-dist;
+       A.x-=nx*over*.5;A.y-=ny*over*.5;B.x+=nx*over*.5;B.y+=ny*over*.5;
+       const rel=(B.vx-A.vx)*nx+(B.vy-A.vy)*ny;
+       if(rel<0){
+         const impulse=-rel*.72;
+         A.vx-=impulse*nx;A.vy-=impulse*ny;B.vx+=impulse*nx;B.vy+=impulse*ny;
+       }
+     }
+   }
+
+   let maxSpeed=0;
+   for(const b of moving){
+     maxSpeed=Math.max(maxSpeed,Math.hypot(b.vx,b.vy));
+     const el=layer.querySelector(`.arena-die[data-index="${b.i}"]`);
+     if(el){
+       el.style.left=b.x+"px";el.style.top=b.y+"px";
+       el.style.transform=`rotate(${b.angle}deg)`;
+       const bucket=Math.floor(elapsed*11);
+       if(bucket!==b.lastFaceBucket){
+         b.lastFaceBucket=bucket;
+         setArenaVisualFace(el,arenaRandomFace(),b.branch);
+       }
+     }
+   }
+
+   if(elapsed<1.15 || (elapsed<2.05&&maxSpeed>38)){
+     diceArenaRaf=requestAnimationFrame(frame);return;
+   }
+
+   // sauber ausrollen und Endwerte setzen
+   for(const b of moving){
+     diceArenaPositions[b.i]={x:b.x,y:b.y,angle:Math.round(b.angle/90)*90};
+     const el=layer.querySelector(`.arena-die[data-index="${b.i}"]`);
+     if(el){
+       el.style.left=b.x+"px";el.style.top=b.y+"px";
+       el.style.transform=`rotate(${diceArenaPositions[b.i].angle}deg)`;
+       if(b.branch){
+         el.textContent=finalBranch==="news"?"🐷":branchObj(finalBranch)?.icon||"◆";
+       }else{
+         el.innerHTML=arenaFaceContent(finalDice[b.i]);
+       }
+       el.classList.remove("rolling");
+     }
+   }
+   diceArenaRolling=false;
+   done();
+ }
+ cancelAnimationFrame(diceArenaRaf);
+ diceArenaRaf=requestAnimationFrame(frame);
+}
+function arenaReleaseAll(){
+ if(state.phase!=="roll"||state.locked||state.rolls===0||state.rolls>=3||!diceArenaCanAct())return;
  state.held=[false,false,false,false,false];
  tone(330,.05,"sine",.018);
- renderDice();renderControls();renderPayoutOverlay();saveGame(false);
+ renderDiceArena();renderDice();renderControls();renderPayoutOverlay();saveGame(false);
+ document.dispatchEvent(new CustomEvent("business-state-mutated",{detail:{reason:"release"}}));
+}
+function arenaPointerDown(e){
+ if(state.phase!=="roll"||state.rolls>=3||state.locked||diceArenaRolling||!diceArenaCanAct())return;
+ const handle=q("diceThrowHandle");if(!handle)return;
+ diceArenaPointer={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now()};
+ try{handle.setPointerCapture(e.pointerId)}catch(_e){}
+ e.preventDefault();
+}
+function arenaPointerMove(e){
+ if(!diceArenaPointer||e.pointerId!==diceArenaPointer.id)return;
+ const handle=q("diceThrowHandle");if(!handle)return;
+ const dx=e.clientX-diceArenaPointer.x,dy=e.clientY-diceArenaPointer.y;
+ handle.style.transform=`translate(calc(-50% + ${dx*.22}px),${Math.max(-42,Math.min(14,dy*.18))}px) rotate(${dx*.025}deg)`;
+ e.preventDefault();
+}
+function arenaPointerUp(e){
+ if(!diceArenaPointer||e.pointerId!==diceArenaPointer.id)return;
+ const p=diceArenaPointer;diceArenaPointer=null;
+ const handle=q("diceThrowHandle");if(!handle)return;
+ const dx=e.clientX-p.x,dy=e.clientY-p.y,duration=Math.max(80,performance.now()-p.t);
+ const dist=Math.hypot(dx,dy);
+ handle.style.transform="translateX(-50%)";
+ const valid=(dy<-35&&dist>52)||(dy<-20&&dist>85);
+ if(!valid){
+   handle.classList.remove("bad-swipe");void handle.offsetWidth;handle.classList.add("bad-swipe");
+   const hint=q("diceArenaSwipeHint");if(hint){hint.textContent="Kräftiger nach oben wischen ↑";setTimeout(()=>hint.textContent="Würfel auf das Brett schieben",1000)}
+   return;
+ }
+ const power=Math.max(.78,Math.min(1.55,dist/180));
+ rollDice({dx,dy,duration,power});
+ e.preventDefault();
+}
+
+q("diceArenaClose").onclick=hideDiceArena;
+q("diceArenaRelease").onclick=arenaReleaseAll;
+q("diceArenaTake").onclick=()=>{
+ if(state.phase==="roll"&&state.rolls>0&&!state.locked){
+   settleDice();hideDiceArena();
+ }
 };
+const arenaHandle=q("diceThrowHandle");
+arenaHandle.addEventListener("pointerdown",arenaPointerDown);
+arenaHandle.addEventListener("pointermove",arenaPointerMove);
+arenaHandle.addEventListener("pointerup",arenaPointerUp);
+arenaHandle.addEventListener("pointercancel",arenaPointerUp);
+arenaHandle.addEventListener("keydown",e=>{
+ if((e.key==="Enter"||e.key===" ")&&state.phase==="roll"&&state.rolls<3&&!state.locked){
+   e.preventDefault();
+   rollDice({dx:0,dy:-190,duration:280,power:1});
+ }
+});
+
+q("releaseBtn").onclick=arenaReleaseAll;
 function updatePhaseStepper(){
  const steps=[...document.querySelectorAll(".phase-step")];
  steps.forEach(s=>s.classList.remove("active","done"));
@@ -4791,35 +5433,43 @@ q("fullBtn").onclick=async()=>{
 
 q("rollBtn").onclick=()=>{
  if(state.phase==="invest")buySelectedMarketCard();
- else rollDice();
+ else showDiceArena(false);
 };
 q("endBtn").onclick=()=>{if(state.locked)return; if(state.phase==="roll"&&state.rolls>0) settleDice(); else if(state.phase==="invest") nextTurn();};
 
-function rollDice(){
- if(state.phase!=="roll"||state.rolls>=3||state.locked)return;
+function rollDice(gesture={dx:0,dy:-190,duration:280,power:1}){
+ if(state.phase!=="roll"||state.rolls>=3||state.locked||diceArenaRolling||!diceArenaCanAct())return;
  state.locked=true;
- const cup=q("diceCup"); if(cup)cup.classList.add("shaking");
+ const firstThrow=state.rolls===0;
+ const finalDice=state.dice.map((v,i)=>state.held[i]?v:1+Math.floor(Math.random()*6));
+ let finalBranch=state.branchRoll;
+ if(firstThrow){
+   const k=Math.floor(Math.random()*6);
+   finalBranch=k===5?"news":branches[k].id;
+ }
  soundDice();
- renderControls(); renderDice();
- let ticks=0;
- const timer=setInterval(()=>{
-   state.dice=state.dice.map((v,i)=>state.held[i]?v:1+Math.floor(Math.random()*6));
-   if(state.rolls===0){const k=Math.floor(Math.random()*6); state.branchRoll=k===5?"news":branches[k].id;}
-   renderDice();
-   if(++ticks>=7){clearInterval(timer); finishRoll();}
- },65);
-}
-function finishRoll(){
- if(state.rolls===0){const k=Math.floor(Math.random()*6); state.branchRoll=k===5?"news":branches[k].id;}
- state.dice=state.dice.map((v,i)=>state.held[i]?v:1+Math.floor(Math.random()*6));
- state.rolls++; state.locked=false;
- const cup=q("diceCup"); if(cup)cup.classList.remove("shaking");
+ renderControls();
  renderDice();
- if(state.rolls===1) resolveBranch();
+ renderDiceArena();
+ startDiceArenaPhysics(finalDice,finalBranch,gesture,()=>finishRoll(finalDice,finalBranch));
+}
+function finishRoll(finalDice=null,finalBranch=null){
+ const firstThrow=state.rolls===0;
+ if(!Array.isArray(finalDice))finalDice=state.dice.map((v,i)=>state.held[i]?v:1+Math.floor(Math.random()*6));
+ if(firstThrow&&!finalBranch){
+   const k=Math.floor(Math.random()*6);
+   finalBranch=k===5?"news":branches[k].id;
+ }
+ state.dice=finalDice.slice(0,5);
+ if(firstThrow)state.branchRoll=finalBranch;
+ state.rolls++;
+ state.locked=false;
+ renderDice();
+ if(firstThrow)resolveBranch();
  const best=evaluate(state.dice);
  q("result").innerHTML=`Wurf ${state.rolls}/3 · <b>${best.name}</b>${best.value?` = ${best.value} Z`:""}`;
- if(state.rolls>=3&&!state.gameEnded)setTimeout(()=>settleDice(),350);
  render();
+ renderDiceArena();
 }
 
 function branchBonus(normalShareCount){return normalShareCount<2?0:Math.min(12,(normalShareCount-1)*4)}
@@ -4984,6 +5634,7 @@ function evaluate(dice){
 }
 function settleDice(){
  if(state.phase!=="roll"||state.rolls===0||state.locked||state.gameEnded)return;
+ hideDiceArena();
  const r=evaluate(state.dice), p=state.players[state.current];
  if(r.value){
    payFromBank(p,r.value,`für ${r.name}`,"dice");
@@ -5068,6 +5719,7 @@ function showLocalHandoff(previous=null,delta=null,isFirst=false){
 q("turnTransitionReady").onclick=()=>{
  hideLocalHandoff();
  tone(620,.06,"sine",.018);
+ setTimeout(()=>autoOpenDiceArena(),180);
 };
 document.addEventListener("keydown",e=>{
  if((e.key==="Enter"||e.key===" ")&&q("turnTransition")?.classList.contains("show")){
@@ -5077,6 +5729,7 @@ document.addEventListener("keydown",e=>{
 
 function nextTurn(){
  if(state.gameEnded)return;
+ hideDiceArena();
 
  const previous=state.players[state.current];
  const previousName=previous.name;
@@ -5104,6 +5757,7 @@ function nextTurn(){
 }
 function endGame(){
  if(state.gameEnded)return;
+ hideDiceArena();
  state.gameEnded=true;
  clearSavedGame();
  soundCash(); setTimeout(()=>soundCash(),90); setTimeout(()=>tone(840,.18,"triangle",.03),180);
@@ -5178,7 +5832,7 @@ const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V3.0";
+if(_boChip)_boChip.textContent="ONLINE · V3.1";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
@@ -5195,7 +5849,8 @@ function boStatus(msg){$bo("boStatus").textContent=msg}
 function boLeaveToLobby(){localStorage.removeItem("business_room");localStorage.removeItem("business_mode");localStorage.removeItem("business_online");location.href="index.html"}
 function boActiveName(){return state?.players?.[state.current]?.name||""}
 function boCanAct(){return cloud.gameApplied&&!state.gameEnded&&boActiveName()===cloud.name}
-function boUpdateTurnUI(){const mine=boCanAct();document.body.classList.toggle("business-my-turn",mine);const e=$bo("businessTurnLock");e.classList.toggle("hidden",!cloud.gameApplied||mine||state.gameEnded);if(cloud.gameApplied&&!mine&&!state.gameEnded)e.textContent=`Warte auf ${boActiveName()||"den aktiven Spieler"} …`}
+window.businessCanUseDiceArena=()=>boCanAct();
+function boUpdateTurnUI(){const mine=boCanAct();document.body.classList.toggle("business-my-turn",mine);const e=$bo("businessTurnLock");e.classList.toggle("hidden",!cloud.gameApplied||mine||state.gameEnded);if(cloud.gameApplied&&!mine&&!state.gameEnded){e.textContent=`Warte auf ${boActiveName()||"den aktiven Spieler"} …`;hideDiceArena()}}
 function boWireGame(){const s={...state,viewedPlayer:state.current,selectedMarket:null,newsDeck:newsIdentityList(state.newsDeck),newsDiscard:newsIdentityList(state.newsDiscard)};return JSON.parse(JSON.stringify(s))}
 function boHydrateGame(g){
  const raw=JSON.parse(JSON.stringify(g||{})),ended=!!raw.gameEnded;
@@ -5275,6 +5930,11 @@ function boApplyGame(game){
    }
  }
  boUpdateTurnUI();boShowRemoteEnd();
+ if(boCanAct()&&state.phase==="roll"&&!state.gameEnded){
+   setTimeout(()=>autoOpenDiceArena(),160);
+ }else{
+   hideDiceArena();
+ }
  setTimeout(()=>cloud.applying=false,40)
 }
 function boQueueSnapshot(actor){if(!cloud.gameApplied||cloud.applying)return;cloud.pending={game:boWireGame(),actor:boNormName(actor||"")};cloud.dirty=true;boRunWriteQueue()}
@@ -5282,7 +5942,10 @@ async function boRunWriteQueue(){if(cloud.inFlight||!cloud.pending)return;cloud.
 async function boPoll(){if(!cloud.room||cloud.pollBusy||cloud.dirty||cloud.inFlight)return;const now=Date.now(),gap=document.hidden?6000:(cloud.gameApplied?1100:1500);if(now-cloud.lastPollAt<gap)return;cloud.lastPollAt=now;cloud.pollBusy=true;try{const j=await boGet(true);boNet(true,"Online");boRenderPlayers(j.players||[],j.hostName||"");if(j.phase==="game"&&j.game&&!j.unchanged){const sig=JSON.stringify(j.game);if(sig!==cloud.lastPushedJSON&&sig!==cloud.lastRemoteJSON)boApplyGame(j.game)}else if(j.phase==="finished"&&j.game&&!j.unchanged){boApplyGame(j.game)}else if(!cloud.gameApplied)$bo("businessOnlineShell").classList.remove("hidden")}catch(e){boNet(false,"Render schläft / offline")}finally{cloud.pollBusy=false}}
 function boMarkDirty(){if(cloud.gameApplied&&boCanAct())cloud.dirty=true}
 function boWrapMutation(name,delay=30){const orig=window[name];if(typeof orig!=="function")return;window[name]=function(...args){if(cloud.gameApplied&&!boCanAct())return;const actor=boActiveName();cloud.dirty=true;const ret=orig.apply(this,args);setTimeout(()=>boQueueSnapshot(actor),delay);return ret}}
-function boPatchGame(){showLocalHandoff=function(){hideLocalHandoff()};hideLocalHandoff();const localSave=saveGame;saveGame=function(show=false){if(BO_ONLINE)return;return localSave(show)};const origRoll=rollDice;rollDice=function(...args){if(!boCanAct())return;if(state.phase!=="roll"||state.rolls>=3||state.locked)return;cloud.dirty=true;return origRoll.apply(this,args)};boWrapMutation("finishRoll",40);boWrapMutation("settleDice",30);boWrapMutation("buyCard",40);boWrapMutation("nextTurn",40);const origEnd=endGame;endGame=function(...args){if(cloud.gameApplied&&!boCanAct()&&!state.gameEnded)return;const actor=boActiveName();cloud.dirty=true;const ret=origEnd.apply(this,args);cloud.lastGameEnded=true;if(q("modalOk")){q("modalOk").textContent="Zur Spielauswahl";q("modalOk").onclick=boLeaveToLobby}setTimeout(()=>boQueueSnapshot(actor),35);return ret};const release=q("releaseBtn");release?.addEventListener("click",()=>{if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("dice")?.addEventListener("click",e=>{if(boCanAct()&&e.target.closest(".die:not(.branch-die)"))setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("newGameBtn").onclick=boLeaveToLobby}
+function boPatchGame(){showLocalHandoff=function(){hideLocalHandoff()};hideLocalHandoff();const localSave=saveGame;saveGame=function(show=false){if(BO_ONLINE)return;return localSave(show)};const origRoll=rollDice;rollDice=function(...args){if(!boCanAct())return;if(state.phase!=="roll"||state.rolls>=3||state.locked)return;cloud.dirty=true;return origRoll.apply(this,args)};boWrapMutation("finishRoll",40);boWrapMutation("settleDice",30);boWrapMutation("buyCard",40);boWrapMutation("nextTurn",40);const origEnd=endGame;endGame=function(...args){if(cloud.gameApplied&&!boCanAct()&&!state.gameEnded)return;const actor=boActiveName();cloud.dirty=true;const ret=origEnd.apply(this,args);cloud.lastGameEnded=true;if(q("modalOk")){q("modalOk").textContent="Zur Spielauswahl";q("modalOk").onclick=boLeaveToLobby}setTimeout(()=>boQueueSnapshot(actor),35);return ret};const release=q("releaseBtn");release?.addEventListener("click",()=>{if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("dice")?.addEventListener("click",e=>{if(boCanAct()&&e.target.closest(".die:not(.branch-die)"))setTimeout(()=>boQueueSnapshot(boActiveName()),20)});document.addEventListener("business-state-mutated",()=>{
+ if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)
+});
+ q("newGameBtn").onclick=boLeaveToLobby}
 async function boResume(){cloud.room=boNormRoom(localStorage.getItem("business_room")||"");cloud.name=boNormName(localStorage.getItem("business_name")||"");cloud.mode=localStorage.getItem("business_mode")||"";$bo("boRoom").value=cloud.room;if(!cloud.room){$bo("businessOnlineShell").classList.remove("hidden");return}if(!await boWake()){$bo("businessOnlineShell").classList.remove("hidden");return}try{const j=await boGet(false);if(!j.found){cloud.room="";$bo("businessOnlineShell").classList.remove("hidden");return}if(cloud.name){const {r,j:joined}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/join`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,name:cloud.name})});if(r.ok&&joined?.ok){cloud.joined=true;cloud.rev=Number(joined.rev||cloud.rev);boRenderPlayers(joined.players||[],joined.hostName||"");if((joined.phase==="game"||joined.phase==="finished")&&joined.game){boApplyGame(joined.game);return}}}boRenderPlayers(j.players||[],j.hostName||"");$bo("businessOnlineShell").classList.remove("hidden");boStatus(`Raum ${cloud.room} geladen.`)}catch(e){$bo("businessOnlineShell").classList.remove("hidden");boNet(false,"Render nicht erreichbar")}}
 $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart").onclick=boStart;$bo("boBack").onclick=boLeaveToLobby;document.querySelectorAll("[data-bo-name]").forEach(b=>b.onclick=()=>boClaimName(b.dataset.boName));$bo("boCustomUse").onclick=()=>boClaimName($bo("boCustomName").value);$bo("boCustomName").addEventListener("keydown",e=>{if(e.key==="Enter")boClaimName(e.target.value)});$bo("businessOnlineShell").classList.remove("hidden");q("lobby").classList.add("hidden");q("game").classList.add("hidden");boPatchGame();boResume();setInterval(()=>{boPoll();if(cloud.joined&&Date.now()-cloud.lastHeartbeatAt>10000)boHeartbeat()},500);document.addEventListener("visibilitychange",()=>{if(!document.hidden)boPoll()});
 })();
