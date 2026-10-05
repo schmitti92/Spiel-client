@@ -2,13 +2,13 @@
 <html lang="de">
 <head>
   <!--
-    V2.3 COPYABLE:
+    V3.0 LOCAL COPYABLE:
     Bilder wurden aus der HTML ausgelagert.
     Den Ordner "business-assets" zusammen mit business.html hochladen.
   -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Das große Business – V2.8 · Lokal</title>
+<title>Das große Business – V3.0 · Lokal</title>
 <style>
 :root{
   --navy:#07192c; --navy2:#0e2d4d; --gold:#e5b84b; --gold2:#ffdc7a;
@@ -3053,23 +3053,6 @@ body[data-market-stage="final"] .board-wrap{
 }
 
 
-/* ==================================================================
-   V2.3 · lokales Pass-&-Play + gemeinsamer Render-Spielstand
-   ================================================================== */
-.business-online-shell{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at 20% 5%,rgba(229,183,68,.16),transparent 30%),radial-gradient(circle at 88% 15%,rgba(43,136,187,.12),transparent 32%),rgba(3,11,18,.95);font-family:Arial,sans-serif}
-.business-online-shell.hidden{display:none!important}.business-online-card{width:min(760px,96vw);max-height:94vh;overflow:auto;border-radius:24px;padding:20px;background:linear-gradient(180deg,#123754,#071826);border:2px solid #d9ae43;box-shadow:0 28px 75px rgba(0,0,0,.55)}
-.business-online-head{text-align:center}.business-online-head h1{margin:0;color:#ffe08a;font:900 28px Georgia,serif}.business-online-head p{margin:6px 0 0;color:#b9c8d3;font-size:12px}
-.bo-section{margin-top:14px;padding:13px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}.bo-k{font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#8ea4b5;margin-bottom:6px}.bo-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.bo-input{flex:1;min-width:160px;height:42px;border:1px solid rgba(255,255,255,.14);border-radius:11px;background:#071522;color:white;padding:0 11px;font:900 15px Arial,sans-serif;text-transform:uppercase;outline:none}.bo-btn{height:42px;border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:0 12px;background:#18354d;color:white;font:900 12px Arial,sans-serif;cursor:pointer}.bo-btn.gold{background:linear-gradient(#efd473,#ad771d);color:#162238;border-color:#f5df97}.bo-btn:disabled{opacity:.4;cursor:not-allowed}.bo-btn.back{background:#27394a}.bo-status{margin-top:9px;min-height:32px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.20);color:#cbd8e2;font-size:11px}
-.bo-names{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.bo-name{height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.055);color:white;font-weight:900;cursor:pointer}.bo-name.selected{border-color:#e8be56;background:rgba(232,190,86,.13)}.bo-custom{display:flex;gap:6px;margin-top:7px}.bo-custom input{text-transform:none}
-.bo-players{display:grid;gap:6px}.bo-player{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.045);font-size:12px}.bo-player b{font-size:13px}.bo-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#526274;margin-right:7px}.bo-dot.on{background:#51d88d;box-shadow:0 0 8px rgba(81,216,141,.48)}
-.bo-start-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.bo-note{text-align:center;margin-top:8px;color:#8fa4b4;font-size:10px}
-.business-net-pill{position:fixed;z-index:100;right:10px;bottom:10px;padding:5px 9px;border-radius:999px;background:rgba(6,19,31,.88);border:1px solid rgba(255,255,255,.12);color:#d9e6ef;font:900 9px Arial,sans-serif;pointer-events:none}.business-net-pill.bad{color:#ffb5b5;border-color:rgba(255,94,94,.32)}
-.business-turn-lock{position:fixed;z-index:90;left:50%;bottom:9px;transform:translateX(-50%);padding:6px 11px;border-radius:999px;background:rgba(5,18,30,.9);border:1px solid rgba(255,218,118,.18);color:#ffe09a;font:900 10px Arial,sans-serif;pointer-events:none}.business-turn-lock.hidden,.business-net-pill.hidden{display:none!important}
-body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.business-my-turn) #endBtn,body.business-online:not(.business-my-turn) #releaseBtn{pointer-events:none!important;opacity:.38!important}
-@media(max-width:620px){.bo-names{grid-template-columns:repeat(2,1fr)}.bo-start-row{grid-template-columns:1fr}.business-online-card{padding:14px;border-radius:19px}.business-online-head h1{font-size:23px}}
-
-
 /* ===== V2.3 · eindeutige Spielmodi ===== */
 .local-mode-nav{
   display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 auto 12px;
@@ -3523,146 +3506,6 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
 
 
 /* =================================================================
-   V2.7 · KORREKTE WÜRFELTABELLE AUF DEM BRETT
-   Das Bild darunter hat falsche Beispielwürfel. Diese HTML-Tabelle
-   überdeckt die gedruckte Tabelle pixelgenau mit echten Würfelaugen.
-   ================================================================= */
-#payoutOverlay.board-payout-corrected{
-  display:block!important;
-  position:absolute!important;
-  left:28.63%!important;
-  top:31.18%!important;
-  width:41.79%!important;
-  height:25.84%!important;
-  z-index:18!important;
-  pointer-events:none!important;
-  overflow:hidden!important;
-  border-radius:1.5%!important;
-  background:#f5e8c7!important;
-  border:1px solid rgba(116,76,15,.82)!important;
-  box-shadow:
-    0 2px 5px rgba(0,0,0,.18),
-    inset 0 0 0 1px rgba(255,255,255,.28)!important;
-  backdrop-filter:none!important;
-}
-#payoutOverlay .payout-head{
-  height:11.8%!important;
-  display:grid!important;
-  grid-template-columns:1.58fr .78fr!important;
-  align-items:center!important;
-  background:linear-gradient(180deg,#123653,#071d31)!important;
-  color:#ffe29a!important;
-  border-bottom:1px solid rgba(173,123,29,.76)!important;
-  font:900 clamp(7px,.72vw,12px)/1 Georgia,serif!important;
-  letter-spacing:0!important;
-  text-align:center!important;
-}
-#payoutOverlay .payout-head div{
-  padding:0!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  height:100%!important;
-}
-#payoutOverlay .payout-head div+div{
-  border-left:1px solid rgba(211,171,87,.32)!important;
-}
-#payoutOverlay .payout-row{
-  display:grid!important;
-  grid-template-columns:1.58fr .78fr!important;
-  height:11.025%!important;
-  min-height:0!important;
-  background:linear-gradient(90deg,#f7ecd1,#f2dfb5)!important;
-  border-top:1px solid rgba(129,92,31,.29)!important;
-}
-#payoutOverlay .payout-row:nth-child(odd){
-  background:linear-gradient(90deg,#fbf2dc,#f5e5c2)!important;
-}
-#payoutOverlay .payout-left{
-  min-width:0!important;
-  display:grid!important;
-  grid-template-columns:minmax(54px,.82fr) 1.18fr!important;
-  align-items:center!important;
-  gap:3px!important;
-  padding:0 5px!important;
-}
-#payoutOverlay .dice-strip{
-  display:flex!important;
-  justify-content:flex-start!important;
-  align-items:center!important;
-  gap:2px!important;
-  min-width:0!important;
-}
-#payoutOverlay .payout-name{
-  color:#211907!important;
-  font:800 clamp(6px,.63vw,10px)/1 Georgia,serif!important;
-  white-space:nowrap!important;
-  text-align:left!important;
-}
-#payoutOverlay .payout-value{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  height:100%!important;
-  padding:0 2px!important;
-  border-left:1px solid rgba(128,89,25,.24)!important;
-  color:#231906!important;
-  font:900 clamp(6px,.67vw,11px)/1 Georgia,serif!important;
-  white-space:nowrap!important;
-}
-#payoutOverlay .rule-die{
-  position:relative!important;
-  flex:0 0 auto!important;
-  width:clamp(10px,1.05vw,17px)!important;
-  height:clamp(10px,1.05vw,17px)!important;
-  border-radius:3px!important;
-  border:1px solid #7c8696!important;
-  background:linear-gradient(145deg,#fff,#edf0f4)!important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.95),
-    0 1px 1px rgba(0,0,0,.10)!important;
-}
-#payoutOverlay .pip{
-  width:19%!important;
-  height:19%!important;
-  min-width:2px!important;
-  min-height:2px!important;
-  background:#151515!important;
-  border-radius:50%!important;
-}
-#payoutOverlay .rule-die .p1{left:17%!important;top:17%!important}
-#payoutOverlay .rule-die .p3{right:17%!important;top:17%!important}
-#payoutOverlay .rule-die .p4{left:17%!important;top:50%!important;transform:translateY(-50%)!important}
-#payoutOverlay .rule-die .p5{left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important}
-#payoutOverlay .rule-die .p6{right:17%!important;top:50%!important;transform:translateY(-50%)!important}
-#payoutOverlay .rule-die .p7{left:17%!important;bottom:17%!important}
-#payoutOverlay .rule-die .p9{right:17%!important;bottom:17%!important}
-
-/* Das aktuelle Würfelergebnis darf auch auf dem Brett dezent leuchten. */
-#payoutOverlay .score-current{
-  background:linear-gradient(90deg,#ffe9a3,#f7d478)!important;
-  box-shadow:inset 0 0 0 1px rgba(197,132,18,.30)!important;
-}
-#payoutOverlay .score-current .payout-name,
-#payoutOverlay .score-current .payout-value{
-  color:#171104!important;
-}
-
-/* Auf kleinen Tablets bleiben alle fünf Würfel einer Reihe sichtbar. */
-@media(max-width:1100px){
-  #payoutOverlay .payout-left{
-    grid-template-columns:minmax(47px,.82fr) 1.18fr!important;
-    padding:0 4px!important;
-  }
-  #payoutOverlay .dice-strip{gap:1px!important}
-  #payoutOverlay .rule-die{
-    width:clamp(9px,1vw,14px)!important;
-    height:clamp(9px,1vw,14px)!important;
-  }
-}
-
-
-/* =================================================================
    V2.8 · Brett-Tabelle final
    Nur die fehlerhaften Würfel des Hintergrundbilds werden überdeckt.
    Die originale Tabelle samt Text und Goldrahmen bleibt unverändert.
@@ -3741,6 +3584,44 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
   .board-dice-fix .rule-die{flex-basis:16.8%!important}
 }
 
+
+/* =================================================================
+   V2.9 · Portfolio-Klarheit + sichere Wiederaufnahme
+   ================================================================= */
+.depot-group-head{gap:6px!important}
+.depot-group-head span:last-child{
+  color:#b9cad5!important;
+  font-size:8px!important;
+  white-space:nowrap!important
+}
+.depot-group-head span:last-child b{
+  color:#ffe083!important;
+  font-weight:900!important
+}
+.result.compact-result b{color:#ffe08a!important}
+.turn-transition.show{z-index:140!important}
+
+
+/* =================================================================
+   V3.0 · FINALER TABLET-FIT + AUDIT-FIXES
+   ================================================================= */
+/* Der Würfeltisch bekommt genug echte Höhe. Brettgröße bleibt gleich,
+   weil das Brett die beiden unteren Grid-Zeilen gemeinsam belegt. */
+#game{grid-template-rows:56px minmax(0,1fr) 320px!important}
+.control-panel{overflow:hidden!important}
+@media(orientation:landscape) and (max-height:900px){
+  #game{grid-template-rows:48px minmax(0,1fr) 300px!important}
+}
+@media(orientation:landscape) and (max-height:760px){
+  #game{grid-template-rows:44px minmax(0,1fr) 290px!important}
+}
+@media(max-width:1100px) and (orientation:landscape){
+  #game{grid-template-rows:48px minmax(0,1fr) 300px!important}
+}
+/* Kleine Transparenzkorrektur: Übergabebildschirm soll im sichtbaren Zustand
+   das Depot/Brett wirklich verdecken. */
+.turn-transition.show{background:rgba(3,11,19,.96)!important}
+
 </style>
 </head>
 <body data-business-mode="local">
@@ -3761,8 +3642,8 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
     <button class="continue-btn hidden" id="continueBtn">▶ Gespeichertes Spiel fortsetzen</button>
     <div class="local-mode-explain">2–5 Personen spielen gemeinsam an diesem Gerät. Der Spielstand wird automatisch nur in diesem Browser gespeichert.</div>
     <div class="rule-mini">
-      V2.8 Lokal: korrekt integrierte Beispielwürfel im Originalbrett, schönerer Würfeltisch, Pass-&-Play, ausbalancierte Bank je Spielerzahl,
-      zufälliger Startspieler, faire Schlussrunde, Autosave und 30 individuelle Kaufkarten.
+      V3.0 Lokal: vollständig geprüfte Spiellogik, sichere Börsennews, tabletgerechter Würfeltisch, Doppel-Autosave,
+      korrekte Brettwürfel, Pass-&-Play, faire Schlussrunde und 30 individuelle Kaufkarten.
     </div>
   </div>
 </div>
@@ -3802,7 +3683,7 @@ body.business-online:not(.business-my-turn) #rollBtn,body.business-online:not(.b
   <main class="board-wrap">
     <div class="focus-hint">▣ Fokusmodus oben rechts</div>
     <div class="board">
-      <div id="businessModeChip" class="board-chip">LOKAL · V2.8</div>
+      <div id="businessModeChip" class="board-chip">LOKAL · V3.0</div>
       <div id="payoutOverlay" class="payout-overlay legacy-payout board-payout-corrected" aria-hidden="true"></div>
       <div id="boardDiceFix" class="board-dice-fix" aria-label="Korrigierte Beispielwürfel"></div>
       <div id="boardMarket" class="board-market-overlay"></div>
@@ -3947,37 +3828,73 @@ function soundNews(){tone(150,.11,"sawtooth",.022);setTimeout(()=>tone(120,.16,"
 function soundTurn(){tone(420,.06,"sine",.02);setTimeout(()=>tone(620,.09,"sine",.018),60)}
 
 const SAVE_KEY="dasGrosseBusiness_v17";
+const SAVE_BACKUP_KEY=SAVE_KEY+"_backup";
+const SAVE_SCHEMA_VERSION=22;
+let saveWarningShown=false;
 function saveToast(){
  const old=document.querySelector(".save-toast");if(old)old.remove();
  const el=document.createElement("div");el.className="save-toast";el.textContent="✓ Spiel gespeichert";
  document.body.appendChild(el);setTimeout(()=>el.remove(),1200);
 }
-function newsIdentityList(list){return (list||[]).map(e=>e?.headline).filter(Boolean)}
-function buildNewsFromHeadlines(headlines){
+function newsIdentityList(list){return (list||[]).map(e=>e?.id||e?.headline).filter(Boolean)}
+function buildNewsFromHeadlines(keys){
  const full=createNewsDeck();
- const byHeadline=new Map(full.map(e=>[e.headline,e]));
+ const byKey=new Map();
+ full.forEach(e=>{if(e.id)byKey.set(e.id,e);byKey.set(e.headline,e)});
  const aliases={
-  "Eine Branche stürzt ab!":"Börsenbeben!",
-  "Zwangsabgabe für Anleger!":"Teure Marktaufsicht greift durch!"
+  "Eine Branche stürzt ab!":"market_shock",
+  "Zwangsabgabe für Anleger!":"regulator_fees"
  };
- return (headlines||[]).map(h=>byHeadline.get(h)||byHeadline.get(aliases[h])).filter(Boolean);
+ return (keys||[]).map(k=>byKey.get(k)||byKey.get(aliases[k])).filter(Boolean);
+}
+function repairNewsCollections(deck,discard){
+ const full=createNewsDeck();
+ const byId=new Map(full.map(e=>[e.id,e]));
+ const seen=new Set();
+ const clean=list=>(Array.isArray(list)?list:[]).filter(e=>{
+   const id=e?.id;if(!id||!byId.has(id)||seen.has(id))return false;
+   seen.add(id);return true;
+ }).map(e=>byId.get(e.id));
+ const cleanDeck=clean(deck),cleanDiscard=clean(discard);
+ for(const e of full){if(!seen.has(e.id)){cleanDeck.push(e);seen.add(e.id)}}
+ return {deck:cleanDeck,discard:cleanDiscard};
+}
+function validSnapshotObject(snap){
+ return !!(snap && typeof snap==="object" && snap.state && Array.isArray(snap.state.players) && snap.state.players.length>=2 && snap.state.players.length<=5);
+}
+function safeParseSnapshot(raw){
+ if(!raw)return null;
+ try{
+  const snap=JSON.parse(raw);
+  return validSnapshotObject(snap)?snap:null;
+ }catch(_e){return null}
 }
 function saveGame(show=false){
  if(!state.players?.length||state.gameEnded)return;
  try{
   const snapshot={
-   version:20,
+   version:SAVE_SCHEMA_VERSION,
    savedAt:Date.now(),
    state:{...state,newsDeck:newsIdentityList(state.newsDeck),newsDiscard:newsIdentityList(state.newsDiscard)}
   };
+  const previous=localStorage.getItem(SAVE_KEY);
+  if(safeParseSnapshot(previous))localStorage.setItem(SAVE_BACKUP_KEY,previous);
   localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot));
   if(show)saveToast();
- }catch(e){}
+  saveWarningShown=false;
+ }catch(e){
+  if(!saveWarningShown){saveWarningShown=true;toast("⚠️ Spielstand konnte nicht gespeichert werden",false)}
+ }
 }
 function hasSavedGame(){
- try{return !!localStorage.getItem(SAVE_KEY)}catch(e){return false}
+ try{return !!(safeParseSnapshot(localStorage.getItem(SAVE_KEY))||safeParseSnapshot(localStorage.getItem(SAVE_BACKUP_KEY)))}catch(e){return false}
 }
-function clearSavedGame(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
+function clearSavedGame(){
+ try{
+  localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(SAVE_BACKUP_KEY);
+ }catch(e){}
+}
 
 function bankForPlayers(n){
  return ({2:520,3:900,4:1300,5:1950})[n]||900;
@@ -4009,62 +3926,128 @@ function normalTierForCard(card){
  return null;
 }
 function normalizeCard(card){
- if(!card)return card;
+ if(!card||typeof card!=="object")return null;
  if(card.type==="Start-up"){
-   card.cost=0;card.value=5;card.tier="Start-up";card.risk="Basis";
+   if(!branchOrder.includes(card.branch))return null;
+   card.id=card.id||uid();card.cost=0;card.value=5;card.tier="Start-up";card.risk="Basis";card.corp="Start-up";
    return card;
  }
  const t=normalTierForCard(card);
- if(t)Object.assign(card,t);
+ if(!t)return null;
+ card.id=card.id||uid();Object.assign(card,t);
  return card;
 }
+function cleanPlayerName(raw,fallback="Spieler"){
+ const cleaned=String(raw??"").replace(/<[^>]*>/g,"").replace(/[<>]/g,"").replace(/\s+/g," ").trim().slice(0,16);
+ return cleaned||fallback;
+}
+function uniquePlayerNames(names){
+ const used=new Set();
+ return names.map((raw,i)=>{
+   const base=cleanPlayerName(raw,`Spieler ${i+1}`);
+   let candidate=base,n=2;
+   while(used.has(candidate.toLocaleLowerCase("de-DE"))){
+     const suffix=` ${n++}`;
+     candidate=base.slice(0,Math.max(1,16-suffix.length))+suffix;
+   }
+   used.add(candidate.toLocaleLowerCase("de-DE"));
+   return candidate;
+ });
+}
 function migrateSavedState(s,version){
- const n=s.players?.length||2;
+ if(!s||!Array.isArray(s.players)||s.players.length<2||s.players.length>5)throw new Error("INVALID_PLAYERS");
+ const n=s.players.length;
  const newStart=bankForPlayers(n);
 
  if(!s.bankStart || version<20){
    const oldStart=s.bankStart||780;
-   const ratio=Math.max(0,Math.min(1,s.bank/Math.max(1,oldStart)));
+   const ratio=Math.max(0,Math.min(1,Number(s.bank||0)/Math.max(1,oldStart)));
    s.bankStart=newStart;
    s.bank=Math.round(newStart*ratio);
  }else{
    s.bankStart=newStart;
+   s.bank=Math.max(0,Number(s.bank)||0);
  }
 
- const normalizeList=list=>(list||[]).map(normalizeCard);
+ const normalizeList=list=>(Array.isArray(list)?list:[]).map(normalizeCard).filter(Boolean);
  s.deck=normalizeList(s.deck);
  s.market=normalizeList(s.market);
  s.discard=normalizeList(s.discard);
- (s.players||[]).forEach(p=>{
+
+ const statsDefault={diceIncome:0,branchIncome:0,spent:0,newsLoss:0,purchases:0,bestResult:"–",bestValue:0,turns:0};
+ const repairedNames=uniquePlayerNames(s.players.map((p,i)=>p?.name||`Spieler ${i+1}`));
+ s.players.forEach((p,i)=>{
+   p.name=repairedNames[i];
+   p.cash=Math.max(0,Number(p.cash)||0);
    p.cards=normalizeList(p.cards);
-   if(!p.stats)p.stats={diceIncome:0,branchIncome:0,spent:0,newsLoss:0,purchases:0,bestResult:"–",bestValue:0,turns:0};
+   let startupSeen=false;
+   p.cards=p.cards.filter(c=>c.type!=="Start-up" || (!startupSeen && (startupSeen=true)));
+   if(!startupSeen)p.cards.unshift(startupFor(i));
+   p.stats={...statsDefault,...(p.stats||{})};
  });
+ s.playerCount=n;
+
+ s.current=Number.isInteger(s.current)?Math.max(0,Math.min(n-1,s.current)):0;
+ s.viewedPlayer=Number.isInteger(s.viewedPlayer)?Math.max(0,Math.min(n-1,s.viewedPlayer)):s.current;
+ s.turnNumber=Math.max(1,Math.floor(Number(s.turnNumber)||1));
 
  if(!Number.isInteger(s.roundAnchor)){
-   const offset=((s.turnNumber||1)-1)%n;
-   s.roundAnchor=((s.current||0)-offset+n)%n;
- }
+   const offset=(s.turnNumber-1)%n;
+   s.roundAnchor=(s.current-offset+n)%n;
+ }else s.roundAnchor=((s.roundAnchor%n)+n)%n;
+
  if(typeof s.finalRound!=="boolean")s.finalRound=false;
  if(!s.lastBankStage)s.lastBankStage="calm";
- if(s.selectedMarket===undefined)s.selectedMarket=null;
+ if(!["roll","invest"].includes(s.phase))s.phase="roll";
+
+ s.rolls=Math.max(0,Math.min(3,Math.floor(Number(s.rolls)||0)));
+ s.dice=Array.isArray(s.dice)&&s.dice.length===5?s.dice.map(v=>Math.max(1,Math.min(6,Math.floor(Number(v)||1)))):[1,1,1,1,1];
+ s.held=Array.isArray(s.held)&&s.held.length===5?s.held.map(Boolean):[false,false,false,false,false];
+
+ const allowedBranches=new Set([...branches.map(b=>b.id),"news",null]);
+ if(!allowedBranches.has(s.branchRoll))s.branchRoll=null;
+
+ s.bought=!!s.bought;
+ s.branchResolved=!!s.branchResolved;
  s.locked=false;
+ s.gameEnded=false;
+
+ while(s.market.length<4 && s.deck.length)s.market.push(s.deck.pop());
+ if(s.selectedMarket===undefined||!s.market.some(c=>c.id===s.selectedMarket))s.selectedMarket=null;
+ if(!Number.isFinite(s.turnStartCash))s.turnStartCash=s.players[s.current].cash;
+
  return s;
 }
 function restoreSavedGame(){
+ let candidates=[];
  try{
-  const raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;
-  const snap=JSON.parse(raw);if(!snap?.state?.players?.length)return false;
-  const s=migrateSavedState(snap.state,snap.version||0);
-  s.newsDeck=buildNewsFromHeadlines(s.newsDeck);
-  s.newsDiscard=buildNewsFromHeadlines(s.newsDiscard);
-  state=s;
-  if(!state.players[state.current]?.stats)return false;
-  q("lobby").classList.add("hidden");q("game").classList.remove("hidden");
-  q("log").innerHTML="";
-  log(`💾 Gespeichertes Spiel auf V2.0 migriert · Runde ${Math.floor((state.turnNumber-1)/state.players.length)+1}.`);
-  if(state.finalRound)log(`🏁 <b>Schlussrunde läuft.</b> Nach Abschluss dieser Runde endet das Spiel.`);
-  setLeftTab("score");render();return true;
- }catch(e){return false}
+  candidates=[
+    {kind:"Hauptspeicher",snap:safeParseSnapshot(localStorage.getItem(SAVE_KEY))},
+    {kind:"Sicherung",snap:safeParseSnapshot(localStorage.getItem(SAVE_BACKUP_KEY))}
+  ];
+ }catch(_e){}
+ for(const candidate of candidates){
+  if(!candidate.snap)continue;
+  try{
+   const s=migrateSavedState(candidate.snap.state,candidate.snap.version||0);
+   s.newsDeck=buildNewsFromHeadlines(s.newsDeck);
+   s.newsDiscard=buildNewsFromHeadlines(s.newsDiscard);
+   const repairedNews=repairNewsCollections(s.newsDeck,s.newsDiscard);
+   s.newsDeck=repairedNews.deck;s.newsDiscard=repairedNews.discard;
+   state=s;
+   q("lobby").classList.add("hidden");q("game").classList.remove("hidden");
+   q("log").innerHTML="";
+   log(`💾 Spiel fortgesetzt (${candidate.kind}) · Runde ${Math.floor((state.turnNumber-1)/state.players.length)+1}.`);
+   if(candidate.kind==="Sicherung")log(`🛟 Der letzte gültige Sicherungsstand wurde automatisch wiederhergestellt.`);
+   if(state.finalRound)log(`🏁 <b>Schlussrunde läuft.</b> Nach Abschluss dieser Runde endet das Spiel.`);
+   setLeftTab("score");
+   render();
+   showLocalHandoff(null,null,false);
+   if(q("turnTransitionLabel"))q("turnTransitionLabel").textContent="SPIEL FORTSETZEN";
+   return true;
+  }catch(_e){}
+ }
+ return false;
 }
 function updateContinueButton(){
  const b=q("continueBtn");if(!b)return;b.classList.toggle("hidden",!hasSavedGame());
@@ -4176,6 +4159,7 @@ function startupFor(i){
 }
 function createNewsDeck(){
  const sectorNews=branches.map(b=>({
+   id:`crisis_${b.id}`,
    title:`Krise bei ${b.name}`,
    headline:`Schlechter Tag für ${b.name}!`,
    icon:b.icon,tone:"bad",severity:"BRANCHENKRISE",
@@ -4188,51 +4172,24 @@ function createNewsDeck(){
    }
  }));
  const extra=[
-  {
-   title:"Börsennews",headline:"Teure Marktaufsicht greift durch!",icon:"🏛️",tone:"warn",severity:"GEBÜHREN",
+  {id:"regulator_fees",title:"Börsennews",headline:"Teure Marktaufsicht greift durch!",icon:"🏛️",tone:"warn",severity:"GEBÜHREN",
    effect:"Jeder zahlt 5 Z je gekauftem Wertpapier, maximal 25 Z. Start-ups bleiben kostenlos.",
-   run(){state.players.forEach(p=>charge(p,Math.min(25,p.cards.filter(c=>c.type!=="Start-up").length*5),"Marktaufsicht"))}
-  },
-  {
-   title:"Börsennews",headline:"Zertifikate unter Beschuss!",icon:"📜",tone:"bad",severity:"URKUNDENRISIKO",
+   run(){state.players.forEach(p=>charge(p,Math.min(25,p.cards.filter(c=>c.type!=="Start-up").length*5),"Marktaufsicht"))}},
+  {id:"certificate_audit",title:"Börsennews",headline:"Zertifikate unter Beschuss!",icon:"📜",tone:"bad",severity:"URKUNDENRISIKO",
    effect:"Für jede gehaltene Aktienurkunde werden 10 Z fällig, maximal 20 Z.",
-   run(){state.players.forEach(p=>charge(p,Math.min(20,p.cards.filter(c=>c.type==="Aktienurkunde").length*10),"Urkundenprüfung"))}
-  },
-  {
-   title:"Börsennews",headline:"Fehlinvestition!",icon:"📉",tone:"bad",severity:"PANIKVERKAUF",
+   run(){state.players.forEach(p=>charge(p,Math.min(20,p.cards.filter(c=>c.type==="Aktienurkunde").length*10),"Urkundenprüfung"))}},
+  {id:"bad_investment",title:"Börsennews",headline:"Fehlinvestition!",icon:"📉",tone:"bad",severity:"PANIKVERKAUF",
    effect:"Jeder Spieler verliert seine günstigste normale Aktie. Start-ups und Aktienurkunden sind geschützt.",
-   run(){
-     state.players.forEach(p=>{
-       const normal=p.cards.filter(c=>c.type==="Aktie").sort((a,b)=>a.cost-b.cost);
-       if(normal.length){const doomed=normal[0];discardOne(p,c=>c.id===doomed.id,"Fehlinvestition")}
-     });
-   }
-  },
-  {
-   title:"Börsennews",headline:"Börsenbeben!",icon:"🌪️",tone:"bad",severity:"MARKTSCHOCK",
-   effect:"Alle Spieler zahlen 10 Z an die Bank.",
-   run(){state.players.forEach(p=>charge(p,10,"Börsenbeben"))}
-  },
-  {
-   title:"Börsennews",headline:"Depotgebühren explodieren!",icon:"🧾",tone:"warn",severity:"DEPOTKOSTEN",
-   effect:"Jeder zahlt 3 Z je gekauftem Wertpapier, maximal 18 Z.",
-   run(){state.players.forEach(p=>charge(p,Math.min(18,p.cards.filter(c=>c.type!=="Start-up").length*3),"Depotgebühren"))}
-  },
-  {
-   title:"Börsennews",headline:"Konjunkturpaket!",icon:"📈",tone:"good",severity:"AUFSCHWUNG",
-   effect:"Die Bank schüttet an jeden Spieler 5 Z aus.",
-   run(){state.players.forEach(p=>{if(state.bank>0)payFromBank(p,5,"aus dem Konjunkturpaket","other")})}
-  },
-  {
-   title:"Börsennews",headline:"Rettungspaket für kleine Vermögen!",icon:"🛟",tone:"good",severity:"RETTUNGSPAKET",
+   run(){state.players.forEach(p=>{const normal=p.cards.filter(c=>c.type==="Aktie").sort((a,b)=>a.cost-b.cost);if(normal.length){const doomed=normal[0];discardOne(p,c=>c.id===doomed.id,"Fehlinvestition")}})}},
+  {id:"market_shock",title:"Börsennews",headline:"Börsenbeben!",icon:"🌪️",tone:"bad",severity:"MARKTSCHOCK",
+   effect:"Alle Spieler zahlen 10 Z an die Bank.",run(){state.players.forEach(p=>charge(p,10,"Börsenbeben"))}},
+  {id:"depot_fees",title:"Börsennews",headline:"Depotgebühren explodieren!",icon:"🧾",tone:"warn",severity:"DEPOTKOSTEN",
+   effect:"Jeder zahlt 3 Z je gekauftem Wertpapier, maximal 18 Z.",run(){state.players.forEach(p=>charge(p,Math.min(18,p.cards.filter(c=>c.type!=="Start-up").length*3),"Depotgebühren"))}},
+  {id:"stimulus",title:"Börsennews",headline:"Konjunkturpaket!",icon:"📈",tone:"good",severity:"AUFSCHWUNG",
+   effect:"Die Bank schüttet an jeden Spieler 5 Z aus.",run(){state.players.forEach(p=>{if(state.bank>0||state.finalRound)payFromBank(p,5,"aus dem Konjunkturpaket","other")})}},
+  {id:"rescue",title:"Börsennews",headline:"Rettungspaket für kleine Vermögen!",icon:"🛟",tone:"good",severity:"RETTUNGSPAKET",
    effect:"Der aktuell bargeldärmste Spieler erhält 15 Z aus der Bank. Bei Gleichstand erhalten alle Betroffenen je 10 Z.",
-   run(){
-     const low=Math.min(...state.players.map(p=>p.cash));
-     const poor=state.players.filter(p=>p.cash===low);
-     const amount=poor.length>1?10:15;
-     poor.forEach(p=>{if(state.bank>0)payFromBank(p,amount,"aus dem Rettungspaket","other")});
-   }
-  }
+   run(){const low=Math.min(...state.players.map(p=>p.cash));const poor=state.players.filter(p=>p.cash===low);const amount=poor.length>1?10:15;poor.forEach(p=>{if(state.bank>0||state.finalRound)payFromBank(p,amount,"aus dem Rettungspaket","other")})}}
  ];
  return shuffle([...sectorNews,...extra]);
 }
@@ -4244,13 +4201,20 @@ function discardOne(p,predicate,label){
  log(`🗑️ ${p.name} verliert ${label}: <b>${card.corp}</b>.`);
 }
 function drawMarket(){while(state.market.length<4 && state.deck.length) state.market.push(state.deck.pop())}
-function drawNews(){if(!state.newsDeck.length){state.newsDeck=shuffle([...state.newsDiscard]);state.newsDiscard=[];log("📰 Der Börsennews-Stapel wurde neu gemischt.")}return state.newsDeck.pop()}
+function drawNews(){
+ if(!state.newsDeck.length){
+   if(state.newsDiscard.length){state.newsDeck=shuffle([...state.newsDiscard]);state.newsDiscard=[];log("📰 Der Börsennews-Stapel wurde neu gemischt.")}
+   else{state.newsDeck=createNewsDeck();log("🛟 Der Börsennews-Stapel wurde automatisch neu aufgebaut.")}
+ }
+ return state.newsDeck.pop();
+}
 
 q("startBtn").onclick=()=>{
  clearSavedGame();
  state.players=[];
+ const startNames=uniquePlayerNames(Array.from({length:state.playerCount},(_,i)=>q("name"+i).value));
  for(let i=0;i<state.playerCount;i++){
-   const name=q("name"+i).value.trim()||`Spieler ${i+1}`;
+   const name=startNames[i];
    state.players.push({
      name,cash:0,cards:[startupFor(i)],color:playerColors[i],
      stats:{diceIncome:0,branchIncome:0,spent:0,newsLoss:0,purchases:0,bestResult:"–",bestValue:0,turns:0}
@@ -4285,7 +4249,7 @@ q("startBtn").onclick=()=>{
 
  q("lobby").classList.add("hidden");q("game").classList.remove("hidden");q("log").innerHTML="";
  log(`🎲 Startspieler ausgelost: <b>${state.players[starter].name}</b>.`);
- log(`🏦 Bank für ${state.players.length} Spieler: <b>${state.bankStart} Z</b>.`);
+ log(`🏦 Gesamtkapital für ${state.players.length} Spieler: <b>${state.bankStart} Z</b> · Bank nach Startausgleich: <b>${state.bank} Z</b>.`);
  if(compensation.length)log(`⚖️ Startausgleich: ${compensation.join(" · ")}.`);
  log(`🃏 Marktdeck: 20 Aktien + 10 Aktienurkunden · 📰 12 Börsennews.`);
  setLeftTab("score");
@@ -4504,6 +4468,18 @@ function findCardById(id){
  for(const c of state.discard)if(c.id===id)return c;
  return null;
 }
+function branchPayoutPreview(player,branchId,extraCard=null){
+ const cards=(player?.cards||[]).filter(c=>c.branch===branchId);
+ if(extraCard)cards.push(extraCard);
+ const regular=cards.filter(c=>c.type!=="Aktienurkunde");
+ const normal=cards.filter(c=>c.type==="Aktie");
+ const certs=cards.filter(c=>c.type==="Aktienurkunde");
+ const base=regular.reduce((sum,c)=>sum+(Number(c.value)||0),0);
+ const certPay=certs.reduce((sum,c)=>sum+(Number(c.value)||0),0);
+ const bonus=branchBonus(normal.length);
+ const recurring=base+bonus;
+ return {base,certPay,bonus,recurring,total:recurring+certPay,normalCount:normal.length,cardCount:cards.length};
+}
 function investmentProfile(card){
  if(card.type==="Start-up")return {label:"Start-up",text:"kostenloser Grundwert"};
  if(card.type==="Aktienurkunde")return {label:"Einmal-Chance",text:`${card.cost} Z Einsatz → ${card.value} Z einmalig`};
@@ -4526,7 +4502,7 @@ function showCardInfoById(id){
     <p><b>Kaufpreis:</b> ${card.cost||0} Zillionen</p>
     <p><b>Profil:</b> ${investmentProfile(card).text}</p>
     <p><b>Ausschüttung:</b> ${income}</p>
-    <p><b>Branchenbonus:</b> Die Karte zählt für die Anzahl deiner Karten dieser Branche.</p>
+    <p><b>Branchenbonus:</b> Nur normale Aktien zählen für den Branchenbonus. Start-ups und Aktienurkunden erhöhen den Bonus nicht.</p>
     ${cert?`<p>📜 Die Aktienurkunde wird nach ihrer Ausschüttung aus deinem Depot entfernt.</p>`:""}
    </div>
   </div>`;
@@ -4558,7 +4534,11 @@ function renderDepot(){
    }).join("");
    const wrapper=document.createElement("div");
    wrapper.className="depot-group";
-   wrapper.innerHTML=`<div class="depot-group-head"><span>${b.icon} ${b.name}</span><span>${cards.length} Karte${cards.length>1?'n':''}</span></div>
+   const payout=branchPayoutPreview(p,id);
+   const payoutText=payout.certPay
+     ? `${cards.length} Karte${cards.length>1?'n':''} · <b>${payout.recurring} Z</b>/Treffer + 📜 ${payout.certPay} Z einmalig`
+     : `${cards.length} Karte${cards.length>1?'n':''} · <b>${payout.recurring} Z</b>/Treffer`;
+   wrapper.innerHTML=`<div class="depot-group-head"><span>${b.icon} ${b.name}</span><span>${payoutText}</span></div>
    <div class="depot-fan-wrap"><div class="depot-fan" style="width:${minWidth}px">${fanCards}</div></div>`;
    box.appendChild(wrapper);
  });
@@ -4573,14 +4553,15 @@ function selectMarketCard(id){
  renderMarket();renderControls();
  if(state.selectedMarket){
    const b=branchObj(card.branch);
-   const ownedNormal=p.cards.filter(c=>c.branch===card.branch&&c.type==="Aktie").length;
-   const afterNormal=ownedNormal+(card.type==="Aktie"?1:0);
-   const bonusAfter=branchBonus(afterNormal);
+   const before=branchPayoutPreview(p,card.branch);
+   const after=branchPayoutPreview(p,card.branch,card);
+   const recurringGain=after.recurring-before.recurring;
    const extra=card.type==="Aktienurkunde"
-     ? `Einmalzahlung bei ${b.name}.`
-     : `${b.name}: danach ${afterNormal} normale Aktie${afterNormal===1?"":"n"}${bonusAfter?` · Bonus +${bonusAfter} Z`:""}.`;
-   q("result").innerHTML=`<b>${card.corp}</b> · ${card.cost} Z → ${card.value} Z. ${extra}`;
+     ? `${b.icon} ${b.name}: +${card.value} Z beim nächsten Treffer · danach abgelegt`
+     : `${b.icon} ${b.name}: ${before.recurring} → ${after.recurring} Z/Treffer (+${recurringGain})`;
+   q("result").innerHTML=`<b>${card.corp}</b> · ${card.cost} Z · ${extra}`;
  }else q("result").textContent="Keine Karte ausgewählt. Du kannst den Zug auch ohne Kauf beenden.";
+ saveGame(false);
 }
 function renderMarket(){
  const box=q("boardMarket");
@@ -4634,7 +4615,7 @@ function renderDice(){
    d.className="die"+(state.held[i]?" held":"")+(state.locked?" rolling":"");
    d.innerHTML=playDieHTML(v);
    d.title=state.held[i]?"Gehalten":"Zum Halten antippen";
-   d.onclick=()=>{if(state.rolls>0&&state.rolls<3&&state.phase==="roll"&&!state.locked){state.held[i]=!state.held[i];tone(state.held[i]?620:340,.05,"sine",.018);renderDice();renderPayoutOverlay()}};
+   d.onclick=()=>{if(state.rolls>0&&state.rolls<3&&state.phase==="roll"&&!state.locked){state.held[i]=!state.held[i];tone(state.held[i]?620:340,.05,"sine",.018);renderDice();renderPayoutOverlay();renderControls();saveGame(false)}};
    main.appendChild(d);
  });
  const lower=document.createElement("div");
@@ -4721,10 +4702,10 @@ q("rulesBtn").onclick=()=>{
 
    <h3>Faire Startregel</h3>
    <div>Der Startspieler wird zufällig ausgelost. Danach erhalten spätere Sitzpositionen einen kleinen Startausgleich von <b>6 Z je Position</b>.</div>
-   <div class="start-balance-note">Bankgröße: 2 Spieler 520 Z · 3 Spieler 900 Z · 4 Spieler 1300 Z · 5 Spieler 1950 Z.</div>
+   <div class="start-balance-note">Gesamtkapital: 2 Spieler 520 Z · 3 Spieler 900 Z · 4 Spieler 1300 Z · 5 Spieler 1950 Z. Der Startausgleich wird direkt aus diesem Bankkapital ausgezahlt.</div>
 
    <h3>Branchenbonus</h3>
-   <div>Für den Bonus zählen nur <b>gekaufte normale Aktien</b>. Start-ups und Aktienurkunden zählen nicht mit.</div>
+   <div>Für den Bonus zählen nur <b>gekaufte normale Aktien</b>. Start-ups und Aktienurkunden zählen nicht mit. Im Depot siehst du den aktuellen Ertrag je Branchentreffer.</div>
    <div class="bonus-table" style="grid-template-columns:repeat(3,1fr)">
     <div class="bonus-cell">2 Aktien<b>+4 Z</b></div>
     <div class="bonus-cell">3 Aktien<b>+8 Z</b></div>
@@ -4750,7 +4731,7 @@ q("releaseBtn").onclick=()=>{
  if(state.phase!=="roll"||state.locked||state.rolls===0||state.rolls>=3)return;
  state.held=[false,false,false,false,false];
  tone(330,.05,"sine",.018);
- renderDice();renderControls();renderPayoutOverlay();
+ renderDice();renderControls();renderPayoutOverlay();saveGame(false);
 };
 function updatePhaseStepper(){
  const steps=[...document.querySelectorAll(".phase-step")];
@@ -5097,17 +5078,20 @@ function endGame(){
  clearSavedGame();
  soundCash(); setTimeout(()=>soundCash(),90); setTimeout(()=>tone(840,.18,"triangle",.03),180);
  const sorted=[...state.players].sort((a,b)=>b.cash-a.cash);
- const best=sorted[0].cash, winners=sorted.filter(p=>p.cash===best).map(p=>p.name).join(" & ");
- const medals=["🥇","🥈","🥉","4.","5."];
- const rows=sorted.map((p,i)=>`
+ const best=sorted[0].cash, winnerList=sorted.filter(p=>p.cash===best).map(p=>p.name), winners=winnerList.join(" & ");
+ const rows=sorted.map((p,i)=>{
+   const rank=1+sorted.filter((other,j)=>j<i&&other.cash>p.cash).length;
+   const rankLabel=rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":`${rank}.`;
+   return `
    <div class="victory-row">
-     <div class="victory-rank">${medals[i]||i+1}</div>
+     <div class="victory-rank">${rankLabel}</div>
      <div>
        <div class="victory-player">${p.name}</div>
        <div class="victory-stats">🎲 ${p.stats.diceIncome} Z · 🏢 ${p.stats.branchIncome} Z · 🛒 ${p.stats.purchases} Käufe · Best: ${p.stats.bestResult}</div>
      </div>
      <div class="victory-money">${p.cash} Z</div>
-   </div>`).join("");
+   </div>`;
+ }).join("");
  const body = `
    <div class="victory-burst"></div>
    <div class="trophy-wrap"><div class="trophy">🏆</div></div>
@@ -5115,7 +5099,7 @@ function endGame(){
    <div class="victory-sub">Die Schlussrunde ist beendet · Gewertet wird nur Bargeld</div>
    <div class="victory-winner">
      <div class="name">${winners}</div>
-     <div class="cash">gewinnt mit ${best} Zillionen</div>
+     <div class="cash">${winnerList.length>1?"gewinnen":"gewinnt"} mit ${best} Zillionen</div>
    </div>
    <div class="victory-ranking">${rows}</div>`;
  modal("🏆 Spielende", body, "victory-mode");
