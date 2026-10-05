@@ -4261,5 +4261,323 @@ async function boResume(){cloud.room=boNormRoom(localStorage.getItem("business_r
 $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart").onclick=boStart;$bo("boBack").onclick=boLeaveToLobby;document.querySelectorAll("[data-bo-rounds]").forEach(b=>b.onclick=()=>boSetRounds(b.dataset.boRounds));document.querySelectorAll("[data-bo-name]").forEach(b=>b.onclick=()=>boClaimName(b.dataset.boName));$bo("boCustomUse").onclick=()=>boClaimName($bo("boCustomName").value);$bo("boCustomName").addEventListener("keydown",e=>{if(e.key==="Enter")boClaimName(e.target.value)});$bo("businessOnlineShell").classList.remove("hidden");q("game").classList.add("hidden");boRenderRoundSelector();boPatchGame();boResume();setInterval(()=>{boPoll();if(cloud.joined&&Date.now()-cloud.lastHeartbeatAt>10000)boHeartbeat()},500);document.addEventListener("visibilitychange",()=>{if(!document.hidden)boPoll()});
 })();
 </script>
+<style id="v50-card-dice-patch">
+/* V5.0 – Würfel-Haltefeld ohne gelbe Balken + bildstarke Karten */
+.die.held::after,
+.arena-die.held::after{display:none !important;content:none !important;}
+.dice-hold-zone{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-start !important;
+  padding:10px 12px 12px !important;
+  gap:4px !important;
+  background:linear-gradient(180deg,rgba(7,27,18,.90),rgba(5,18,12,.96)) !important;
+  border-color:rgba(241,201,91,.38) !important;
+}
+.dice-hold-title{font:900 12px/1 Arial,sans-serif !important;letter-spacing:.14em !important;color:#ffe3a1 !important;}
+.dice-hold-sub{font:700 10px/1.2 Arial,sans-serif !important;color:#c7d9e5 !important;opacity:.92 !important;}
+.dice-hold-slots{
+  margin-top:auto !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.dice-hold-slots span{
+  height:36px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:12px !important;
+  border:1px dashed rgba(255,228,145,.28) !important;
+  background:rgba(255,255,255,.045) !important;
+  color:rgba(255,237,182,.72) !important;
+  font:800 11px/1 Arial,sans-serif !important;
+}
+.arena-die.held{
+  z-index:6 !important;
+  box-shadow:0 0 0 4px rgba(240,198,72,.26),0 16px 28px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.95),inset 10px 10px 14px rgba(255,255,255,.54),inset -12px -12px 16px rgba(106,97,76,.18) !important;
+}
+
+/* Karten komplett mit Bild + große Kosten/Ertragsanzeige */
+.realistic-market-card,
+.startup-card{
+  position:absolute !important;
+  inset:0 !important;
+  display:block !important;
+  background:#081321 !important;
+}
+.market-slot .invest-card .card-shell,
+.depot-fan-card .card-shell{display:block !important;position:absolute !important;inset:0 !important;}
+.real-card-photo,
+.startup-card .startup-photo{
+  position:absolute !important;
+  inset:0 !important;
+  height:100% !important;
+  min-height:100% !important;
+  background-size:cover !important;
+  background-position:center !important;
+  border-bottom:0 !important;
+}
+.real-card-photo::before,
+.startup-card .startup-photo::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(180deg,rgba(4,12,23,.10) 0%,rgba(4,12,23,.04) 28%,rgba(4,12,23,.16) 48%,rgba(4,12,23,.78) 76%,rgba(4,12,23,.94) 100%),
+    radial-gradient(circle at 20% 18%,rgba(255,255,255,.34),transparent 22%),
+    linear-gradient(120deg,rgba(255,255,255,.06),transparent 32%,transparent 60%,rgba(255,255,255,.05));
+  pointer-events:none;
+}
+.real-card-photo::after,
+.startup-card .startup-photo::after{
+  content:"";
+  position:absolute;
+  inset:auto 10px 10px auto;
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.12) 0%,rgba(255,255,255,0) 72%);
+  pointer-events:none;
+}
+.real-card-type{
+  left:auto !important;
+  right:12px !important;
+  top:12px !important;
+  z-index:7 !important;
+  font-size:10px !important;
+  padding:6px 11px !important;
+  letter-spacing:.12em !important;
+}
+.real-card-branch{
+  position:absolute !important;
+  left:12px !important;
+  top:12px !important;
+  bottom:auto !important;
+  right:auto !important;
+  max-width:calc(100% - 155px) !important;
+  padding:7px 11px !important;
+  border-radius:999px !important;
+  background:rgba(8,23,36,.72) !important;
+  color:#fff7da !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  font:800 10px/1 Arial,sans-serif !important;
+}
+.branch-mark{font-size:14px !important;}
+.card-art-badge{
+  top:50px !important;
+  right:12px !important;
+  left:auto !important;
+  bottom:auto !important;
+  min-width:64px !important;
+  height:28px !important;
+  border-radius:10px !important;
+  padding:0 10px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font:900 9px/1 Arial,sans-serif !important;
+  letter-spacing:.08em !important;
+}
+.real-card-bigicon{
+  position:absolute !important;
+  right:14px !important;
+  top:90px !important;
+  bottom:auto !important;
+  width:64px !important;
+  height:64px !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:20px !important;
+  background:rgba(255,255,255,.18) !important;
+  border:1px solid rgba(255,255,255,.22) !important;
+  backdrop-filter:blur(10px) !important;
+  box-shadow:0 10px 22px rgba(0,0,0,.22) !important;
+}
+.real-card-bigicon span{font-size:30px !important;filter:drop-shadow(0 2px 3px rgba(0,0,0,.24));}
+.real-card-price,
+.real-card-yield{
+  position:absolute !important;
+  z-index:6 !important;
+  min-width:88px !important;
+  height:48px !important;
+  padding:0 12px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:16px !important;
+  box-shadow:0 10px 18px rgba(0,0,0,.24) !important;
+}
+.real-card-price{
+  left:12px !important;
+  bottom:14px !important;
+  background:linear-gradient(180deg,#fff2b0,#e1b748) !important;
+  color:#503300 !important;
+  border:1px solid rgba(94,61,1,.28) !important;
+  font:900 20px/1 Arial,sans-serif !important;
+}
+.real-card-yield{
+  right:12px !important;
+  bottom:14px !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:1px !important;
+  background:linear-gradient(180deg,#d8fff0,#7ae2ac) !important;
+  color:#06341d !important;
+  border:1px solid rgba(7,88,54,.22) !important;
+}
+.real-card-yield small{
+  display:block !important;
+  font:900 8px/1 Arial,sans-serif !important;
+  letter-spacing:.12em !important;
+  opacity:.82 !important;
+}
+.real-card-yield b{
+  display:block !important;
+  font:900 19px/1 Arial,sans-serif !important;
+}
+.real-card-body{
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  z-index:5 !important;
+  min-height:40% !important;
+  padding:58px 12px 10px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-end !important;
+  gap:7px !important;
+  background:linear-gradient(180deg,rgba(8,15,25,0) 0%,rgba(8,15,25,.18) 14%,rgba(8,15,25,.84) 42%,rgba(8,15,25,.96) 100%) !important;
+  color:#ffffff !important;
+}
+.real-card-company{
+  color:#fff4c8 !important;
+  font:900 17px/1.04 Georgia,serif !important;
+  letter-spacing:-.01em !important;
+  text-shadow:0 2px 10px rgba(0,0,0,.45) !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  min-height:0 !important;
+}
+.card-meta-row,
+.real-card-stats,
+.card-footer-note{display:none !important;}
+.real-card-desc{
+  min-height:0 !important;
+  max-height:2.5em !important;
+  overflow:hidden !important;
+  color:rgba(239,247,255,.88) !important;
+  font:700 11px/1.25 Arial,sans-serif !important;
+  text-shadow:0 1px 6px rgba(0,0,0,.38) !important;
+}
+.market-slot .card-info{
+  left:auto !important;
+  right:16px !important;
+  top:164px !important;
+  bottom:auto !important;
+  z-index:7 !important;
+}
+.market-slot .invest-card.market-share-card{border-width:6px !important;}
+.market-slot .invest-card.market-business-card{border-width:6px !important;}
+.market-slot .invest-card.market-certificate-card{border-width:6px !important;}
+.market-slot .invest-card.market-share-card::after,
+.market-slot .invest-card.market-business-card::after,
+.market-slot .invest-card.market-certificate-card::after{inset:5px !important;border-width:2px !important;}
+
+/* Depotkarten kleiner skalieren, Bild aber sichtbar lassen */
+.depot-fan-card .real-card-type{right:8px !important;top:8px !important;left:auto !important;padding:4px 7px !important;font-size:7px !important;}
+.depot-fan-card .real-card-photo{display:block !important;inset:0 !important;height:100% !important;min-height:100% !important;}
+.depot-fan-card .real-card-branch{left:8px !important;top:8px !important;max-width:calc(100% - 98px) !important;padding:4px 7px !important;font-size:7px !important;}
+.depot-fan-card .real-card-bigicon{right:8px !important;top:58px !important;width:46px !important;height:46px !important;}
+.depot-fan-card .real-card-bigicon span{font-size:22px !important;}
+.depot-fan-card .card-art-badge{display:flex !important;top:36px !important;right:8px !important;height:22px !important;min-width:52px !important;font-size:7px !important;padding:0 6px !important;}
+.depot-fan-card .real-card-price,
+.depot-fan-card .real-card-yield{min-width:54px !important;height:28px !important;padding:0 6px !important;bottom:8px !important;border-radius:12px !important;}
+.depot-fan-card .real-card-price{left:8px !important;font-size:12px !important;}
+.depot-fan-card .real-card-yield{right:8px !important;}
+.depot-fan-card .real-card-yield small{font-size:6px !important;}
+.depot-fan-card .real-card-yield b{font-size:11px !important;}
+.depot-fan-card .real-card-body{padding:40px 8px 8px !important;min-height:52% !important;}
+.depot-fan-card .real-card-company{font-size:10.5px !important;line-height:1.02 !important;}
+.depot-fan-card .real-card-desc{display:none !important;}
+.depot-fan-card .card-info{display:none !important;}
+
+/* Modal-Detailkarte ebenfalls bildstark */
+.card-detail-preview .real-card-price{font-size:18px !important;min-width:82px !important;height:42px !important;}
+.card-detail-preview .real-card-yield{min-width:94px !important;height:42px !important;}
+.card-detail-preview .real-card-company{font-size:18px !important;}
+.card-detail-preview .real-card-desc{font-size:12px !important;max-height:none !important;}
+
+@media (max-width:1100px){
+  .real-card-company{font-size:15px !important;}
+  .real-card-price,.real-card-yield{min-width:78px !important;height:42px !important;}
+  .real-card-price{font-size:18px !important;}
+  .real-card-yield b{font-size:17px !important;}
+  .market-slot .card-info{top:150px !important;}
+}
+@media (max-height:760px) and (orientation:landscape){
+  .real-card-type{font-size:8px !important;padding:5px 9px !important;}
+  .real-card-branch{font-size:8px !important;padding:5px 9px !important;}
+  .card-art-badge{top:44px !important;height:24px !important;min-width:56px !important;font-size:8px !important;}
+  .real-card-bigicon{top:78px !important;width:56px !important;height:56px !important;}
+  .real-card-price,.real-card-yield{height:40px !important;min-width:74px !important;}
+  .real-card-price{font-size:17px !important;}
+  .real-card-yield b{font-size:16px !important;}
+  .real-card-body{padding-top:50px !important;}
+  .real-card-company{font-size:14px !important;}
+  .real-card-desc{font-size:10px !important;}
+  .market-slot .card-info{top:138px !important;}
+}
+</style>
+<script id="v50-card-dice-script">
+(function(){
+  window.buildPrettyCard = function(card, mini=false){
+    const b = branchObj(card.branch);
+    const cert = card.type === "Aktienurkunde";
+    const startup = card.type === "Start-up";
+    const share = !startup && !cert;
+    const startupCorp = {reisen:"Urlaubsflieger", tech:"KI Solutions", food:"Frische Welt", sport:"StadionPlus", ent:"MediaStar"};
+    const art = startup ? (cardArtByCorp[startupCorp[card.branch]] || "") : (cardArtByCorp[card.corp] || "");
+    const desc = startup
+      ? `Dein kostenloses Start-up in ${b.name}. Grundwert ${card.value} Z bei jedem passenden Treffer.`
+      : (companyDescriptions[card.corp] || "");
+    const payoutLabel = cert ? "EINMAL" : "ERTRAG";
+    const tierLabel = startup ? "START-UP" : (card.tier || (cert ? "PREMIUM" : "INVESTMENT"));
+    const typeLabel = startup ? "BUSINESS" : (cert ? "AKTIENURKUNDE" : "AKTIE");
+    const typeClass = startup ? "type-business" : (cert ? "type-certificate" : "type-share");
+    const shellClass = startup
+      ? "card-shell startup-card business-card premium-card premium-startup"
+      : `card-shell realistic-market-card premium-card ${share ? "share-card" : ""} ${cert ? "certificate certificate-card" : ""}`;
+
+    return `
+      <div class="${shellClass}" style="--c1:${b.c1};--c2:${b.c2}">
+        <div class="real-card-type ${typeClass}">${typeLabel}</div>
+        ${cert ? `<div class="certificate-seal">PREMIUM</div>` : ""}
+        <button class="card-info" onclick="event.stopPropagation();showCardInfoById('${card.id}')">i</button>
+        <div class="real-card-photo ${startup ? "startup-photo" : ""}" style="background-image:url('${art}')">
+          <div class="real-card-branch"><span class="branch-mark">${b.icon}</span><span>${b.name}</span></div>
+          <div class="card-art-badge">${tierLabel}</div>
+          <div class="real-card-bigicon"><span>${b.icon}</span></div>
+          <div class="real-card-price">${startup ? "0 Z" : `${card.cost} Z`}</div>
+          <div class="real-card-yield"><small>${payoutLabel}</small><b>${card.value} Z</b></div>
+        </div>
+        <div class="real-card-body">
+          <div class="real-card-company">${card.corp}</div>
+          <div class="real-card-desc">${desc}</div>
+        </div>
+      </div>`;
+  };
+
+  if(typeof render === 'function'){
+    setTimeout(function(){
+      try{ render(); }catch(_e){}
+      try{ if(typeof renderDiceArena === 'function') renderDiceArena(); }catch(_e){}
+    }, 80);
+  }
+})();
+</script>
+
 </body>
 </html>
