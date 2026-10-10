@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – Royal Atelier V108</title>
+<title>SKYJO Action – Royal Atelier V109</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -4768,6 +4768,86 @@ body.is-playing .real-hand-zone .real-hand-card{border-color:#c9a15b66!important
  body.is-playing .luxe-tool-dock .bible-side-label{font-size:8px!important}
 }
 
+
+/* ===========================================================
+   V109 – Spielkartenstapel ×2 (Nachziehen und Ablage)
+   Echte Kartengrößen statt transform:scale: Hitboxen und
+   Kartenflug-Animationen verwenden weiterhin korrekte Bounds.
+   =========================================================== */
+body.is-playing .play-pilebox .premium-piles{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  align-content:start!important;
+  column-gap:clamp(7px,1vw,13px)!important;
+  row-gap:13px!important;
+}
+body.is-playing .play-pilebox .premium-piles .pile-unit{
+  flex:0 0 auto!important;
+  min-width:0;
+  max-width:100%;
+}
+body.is-playing .play-pilebox .premium-piles .pile-card-hit{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:0;
+  max-width:100%;
+}
+body.is-playing .play-pilebox .premium-piles .pile-card-hit > .card{
+  width:calc(var(--card-w) * 2)!important;
+  height:calc(var(--card-h) * 2)!important;
+  max-width:none!important;
+  flex:0 0 auto!important;
+}
+/* Bei vier Spielern im Querformat wurden die Karten bislang
+   bewusst flacher angezeigt. Diese Proportion bleibt erhalten. */
+@media (min-width:1100px) and (orientation:landscape){
+  body.is-playing[data-players="4"] .play-pilebox .premium-piles .pile-card-hit > .card{
+    height:calc(var(--card-w) * 2 * 1.22)!important;
+  }
+}
+@media (min-width:651px) and (max-width:1099px){
+  body.is-playing[data-players="4"] .play-pilebox .premium-piles .pile-card-hit > .card{
+    height:calc(var(--card-w) * 2 * 1.2)!important;
+  }
+}
+/* Die 4-Spieler-Mitte hat sonst eine fest auf kleine Stapel
+   abgestimmte Zeilenhöhe. Große Karten benötigen echte Höhe. */
+body.is-playing[data-players="4"] .four-player-layout .center-table{
+  grid-template-rows:none!important;
+  grid-auto-rows:auto!important;
+}
+body.is-playing[data-players="4"] .four-player-layout .center-table > .pilebox{
+  height:auto!important;
+  min-height:min-content!important;
+}
+/* Größere Ziffern und klickbare Beschriftungen auf den Stapeln. */
+body.is-playing .play-pilebox .pile-count-chip{
+  min-width:28px;height:28px;padding:0 7px;font-size:10px!important;
+}
+body.is-playing .play-pilebox .pile-overline{
+  font-size:10px!important;letter-spacing:.8px!important;
+}
+body.is-playing .play-pilebox .pile-tip{
+  min-width:72px!important;font-size:9px!important;
+  padding:4px 9px!important;
+}
+/* Kartenziffern wachsen optisch passend mit der größeren Karte. */
+body.is-playing .play-pilebox .premium-piles .card .center-value{
+  font-size:1.7em!important;
+}
+body.is-playing .play-pilebox .premium-piles .card .corner{
+  font-size:clamp(14px,1.5vw,19px)!important;
+}
+body.is-playing .play-pilebox .premium-piles .card .corner.tl{top:10px;left:10px}
+body.is-playing .play-pilebox .premium-piles .card .corner.br{bottom:10px;right:10px}
+/* Sehr schmale Handys: nie über den Spielfeldrand hinausragen. */
+@media(max-width:360px){
+  body.is-playing .play-pilebox .premium-piles{column-gap:6px!important;row-gap:9px!important}
+}
 </style>
 </head>
 <body>
