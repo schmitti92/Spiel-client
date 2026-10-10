@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#06142a" />
-<title>KreuzKunter V16 – Abschlusskandidat</title>
+<title>KreuzKunter V20 – Mitspieler live</title>
 <style>
 :root{color-scheme:dark;--bg:#041126;--panel:#081d38;--panel2:#092344;--border:#164477;--text:#f5f9ff;--muted:#9eb5d5;--sky:#3fc8ff;--glow:#0beac5;--g:#76d92b;--y:#ffd429;--b:#469aff;--r:#f74c4e;--o:#ff9834;--cell:clamp(33px,3.65vw,56px)}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 42% -10%,#124075 0,#071d37 38%,#030e22 100%);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}button,input{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:not-allowed;opacity:.45}button:focus-visible,input:focus-visible{outline:3px solid #ffe36c;outline-offset:3px}#app{width:min(1720px,100%);margin:auto;padding:14px 18px 24px}.top{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.logo{font-size:clamp(25px,3.2vw,46px);font-weight:1000;letter-spacing:-1.8px;line-height:1.15;color:#f5fbff;text-shadow:0 3px 0 #2146af,0 0 16px #3676fa}.logo span{background:linear-gradient(98deg,#fc4a71,#ffc537 45%,#3df0a3 70%,#4db3ff);background-clip:text;color:transparent;-webkit-background-clip:text}.subtitle{font-size:clamp(13px,1.6vw,20px);color:#77d7ff;font-weight:800}.topright{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.badge{border:1px solid var(--border);border-radius:12px;background:#071b36;padding:7px 12px;min-height:49px;text-align:center;min-width:110px}.badge small{display:block;color:var(--muted)}.badge b{font-size:18px}.iconbtn{border:1px solid #23538a;border-radius:12px;background:#092344;min-width:46px;min-height:46px;font-size:24px}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,340px);gap:14px;align-items:start}.panel{border:1px solid #1d4979;background:linear-gradient(140deg,#071a34,#061831 70%,#061428);border-radius:19px;box-shadow:inset 0 0 0 1px #081d3c;padding:16px}.boardpane{min-width:0}.board-scroll{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;padding:5px 2px 9px;scrollbar-color:#245c97 transparent}.board-layout{display:grid;grid-template-columns:minmax(525px,1fr) minmax(117px,147px);gap:14px;min-width:670px;align-items:start}.board-core{min-width:0}.matrix{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:3px;width:100%}.headcell{height:clamp(29px,3.1vw,45px);min-width:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#0d3056,#05172a);border:1px solid #2d5682;border-radius:7px;color:#fff;font-size:clamp(14px,1.6vw,22px);font-weight:950}.headcell.start{border-color:#47f5ef;color:#68f9ed;box-shadow:0 0 12px #0ac9e288}.gridarea{margin-top:5px}.tile{position:relative;aspect-ratio:1;border:1px solid #0d1930;border-radius:7px;min-width:0;padding:0;display:grid;place-items:center;isolation:isolate;box-shadow:inset 0 3px 6px #ffffff23,inset 0 -4px 5px #0003;touch-action:manipulation}.tile[data-color=g],.bonuscell.g,.die.g,.choose.g{background:linear-gradient(150deg,#a6eb35,#5bc322)}.tile[data-color=y],.bonuscell.y,.die.y,.choose.y{background:linear-gradient(150deg,#ffef62,#f9bc16)}.tile[data-color=b],.bonuscell.b,.die.b,.choose.b{background:linear-gradient(145deg,#77caff,#2878e9)}.tile[data-color=r],.bonuscell.r,.die.r,.choose.r{background:linear-gradient(145deg,#ff8581,#e93246)}.tile[data-color=o],.bonuscell.o,.die.o,.choose.o{background:linear-gradient(145deg,#ffbe55,#f87b1d)}.tile .star{color:#fffdf2;text-shadow:0 1px 2px #535353,0 0 3px white;font-size:clamp(18px,2.25vw,30px);line-height:1}.tile .cross{color:#08192d;font-weight:1000;font-size:clamp(24px,2.6vw,40px);line-height:1;text-shadow:0 1px 2px #fff9}.tile.marked{filter:saturate(.72)}.tile.pending{outline:3px solid #f7fbff;outline-offset:-4px;box-shadow:0 0 15px #fafaffaa,inset 0 0 18px #fff7;z-index:2}.tile.pending .cross{color:#fff;text-shadow:0 1px 3px #061328}.tile.start{border-inline:2px solid #a8ffff}.tile.started{box-shadow:0 0 12px #14e1ff91,inset 0 0 9px #99ebff75}.tile:disabled{opacity:1;cursor:default}.tile.selectable:hover:not(:disabled){filter:brightness(1.12)}.scoregrid{margin-top:8px}.scorecell{background:#fff4d7;color:#1b1b26;min-width:0;display:grid;place-items:center;border-radius:6px;font-size:clamp(14px,1.8vw,23px);font-weight:950;height:clamp(29px,3vw,39px)}.scorecell.h{color:#e04729}.jokerstrip{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:3px;padding:7px 10px;border-radius:9px;background:#f1f0e8;color:#111922}.jokerlabel{font-size:20px;font-weight:900;margin-right:8px}.jokerico{border:2px solid #1f3444;border-radius:100%;width:clamp(21px,2.9vw,34px);height:clamp(21px,2.9vw,34px);display:grid;place-items:center;font-size:clamp(13px,1.7vw,21px);font-weight:900}.jokerico.used{color:#adabaf;border-color:#b7b7b7;text-decoration:line-through;background:#ddd}.scorings{display:grid;gap:9px}.bonuses{border:1px solid #24456c;border-radius:13px;padding:9px;background:#051329;display:grid;gap:5px}.bonusrow{display:grid;grid-template-columns:1fr 1fr;gap:5px}.bonuscell{min-height:34px;border-radius:7px;display:grid;place-items:center;color:#081426;font-size:19px;font-weight:950}.bonuscell.taken{opacity:.5;text-decoration:line-through}.ledger{display:grid;gap:7px}.ledgerline{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:14px;font-weight:850}.ledgervalue{min-width:44px;min-height:36px;border-radius:8px;background:#fff1d8;color:#1c2940;display:grid;place-items:center;font-size:18px;font-weight:900}.ledgerline.final{margin-top:8px;border-top:1px dashed #5286b4;padding-top:12px;font-size:17px}.ledgerline.final .ledgervalue{background:#d9f9ff;color:#005267}.hint{color:#9fb7d8;font-size:12px;margin:12px 2px 0}.side{display:grid;gap:13px}.panel h2{font-size:19px;margin:0 0 12px}.rollset{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:14px}.die{display:grid;place-items:center;height:50px;border-radius:10px;border:2px solid #3f6992;box-shadow:inset 0 3px 5px #fff7,0 3px 9px #0009;font-size:27px;font-weight:1000;color:#10213b}.die.num{background:linear-gradient(140deg,#fff,#bdccdf);color:#0a1830}.die.joker{background:linear-gradient(140deg,#222e46,#06101e);color:white}.die.selected{outline:3px solid #ffffff;outline-offset:2px;box-shadow:0 0 18px #27d8ff}.die.removed{filter:grayscale(.8);opacity:.24}.die:disabled{opacity:.4}.die.removed:disabled{opacity:.2}.die:not(:disabled):hover{transform:translateY(-2px)}.selectlabel{font-size:13px;color:#b9d6f9;margin-bottom:10px;min-height:36px}.action{min-height:49px;display:flex;justify-content:center;align-items:center;gap:9px;font-size:16px;font-weight:900;border-radius:11px;border:2px solid #266ea8;padding:8px 13px;background:#12385e;width:100%;transition:filter .14s}.action:hover:not(:disabled){filter:brightness(1.14)}.action.go{background:linear-gradient(135deg,#06b963,#07db92);border-color:#4dfed5;color:#032c29;box-shadow:0 0 12px #0de4ac66;font-size:20px;min-height:60px}.action.ok{background:linear-gradient(135deg,#198bef,#1451e8);border-color:#31cdff}.action.pass{background:linear-gradient(#283e64,#142744);border-color:#4a6995}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.choices{margin:13px 0;padding:11px;border:1px solid #1d477b;background:#06172c;border-radius:11px}.choices label{display:block;font-weight:800;font-size:13px;margin-bottom:8px}.chips{display:flex;flex-wrap:wrap;gap:7px}.choose{border-radius:8px;border:2px solid #ffffff77;min-width:42px;min-height:42px;color:#061827;font-size:19px;font-weight:950}.choose.num{background:#f9f4e9}.choose.on{outline:3px solid var(--sky);outline-offset:1px}.message{background:#102b4b;border-left:3px solid #3acaff;border-radius:7px;padding:10px 11px;margin-top:13px;font-size:13px;min-height:45px}.message.bad{background:#482335;border-color:#ff6875}.playerlist{display:grid;gap:7px}.player{width:100%;min-height:51px;display:flex;align-items:center;gap:9px;border-radius:10px;background:#071b35;border:1px solid #1a477a;padding:5px 8px;text-align:left}.player.current{border:2px solid #ffd04c;background:#102944}.bubble{width:34px;height:34px;flex:none;border-radius:50%;border:2px solid #ffffff95;background:linear-gradient(140deg,#f34e57,#9916aa);box-shadow:0 0 10px #ca77ff30}.player:nth-child(5n+2) .bubble{background:linear-gradient(140deg,#47d8f2,#1750ee)}.player:nth-child(5n+3) .bubble{background:linear-gradient(140deg,#59ea9f,#0c9c78)}.player:nth-child(5n+4) .bubble{background:linear-gradient(140deg,#ffe066,#f09c20)}.player:nth-child(5n+5) .bubble{background:linear-gradient(140deg,#fc9798,#ee3e6e)}.pname{font-weight:850;flex:1;min-width:0;overflow-wrap:anywhere}.pinfo{font-size:11px;color:var(--muted)}.points{background:#0d2b4b;border:1px solid #355985;border-radius:9px;min-width:48px;text-align:center;padding:5px;font-size:18px;font-weight:950}.footpanel{border-radius:12px;background:linear-gradient(110deg,#3e1528,#271f39);padding:14px;border:1px solid #66334a}.tiny{font-size:12px;color:#a6bbd5}.footnote{margin-top:12px;color:#6b91b7;font-size:12px;text-align:center}.mask{position:fixed;inset:0;z-index:10;background:#010710d9;display:grid;place-items:center;padding:18px;overflow-y:auto}.modal{width:min(570px,100%);max-height:calc(100vh - 35px);overflow:auto;border:1px solid #4084bd;border-radius:19px;background:linear-gradient(140deg,#0d2c50,#06162d);padding:22px;box-shadow:0 20px 70px #000b}.modal h2{font-size:26px;margin:0 0 8px}.modal p,.modal li{color:#c9d9ef}.modal .minihead{font-size:14px;color:#88d5f7;font-weight:900;text-transform:uppercase;letter-spacing:1px}.field{margin:12px 0}.field label{font-size:13px;font-weight:800;color:#bddef6;display:block;margin-bottom:4px}input[type=text]{border:1px solid #4379a3;background:#05162c;border-radius:10px;padding:11px;color:#fff;width:100%;font-size:16px}input[type=radio]{accent-color:#29d4f5}.modechoice{display:grid;grid-template-columns:1fr 1fr;gap:8px}.modechoice label{background:#0b3153;border:1px solid #356990;border-radius:11px;padding:11px}.names{max-height:220px;overflow:auto}.row{display:flex;align-items:center;gap:10px;justify-content:space-between}.flat{border:1px solid #49739b;border-radius:9px;background:#113558;padding:6px 12px}.hidden{display:none!important}.rightsmall{color:#8db5d8;font-size:12px;text-align:right}.notice{background:#0b3358;border-radius:10px;padding:12px;color:#cae4fb}.modal ul{padding-left:20px}.modal li{margin-bottom:7px}.statuspill{background:#092f4c;border:1px solid #236d9c;border-radius:999px;padding:4px 10px;color:#9feafa;font-size:13px}.summary{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px;border-radius:10px;background:#102f52;margin:8px 0}.summary strong{font-size:23px;color:#5af6df}.divider{border-top:1px solid #25587b;margin:14px 0}.activepick{color:#fdde7c}.boardcaption{display:flex;justify-content:space-between;gap:12px;margin:0 2px 10px;color:#aac7e8;font-size:13px;flex-wrap:wrap}.spin{animation:pop .26s ease-out}@keyframes pop{from{transform:scale(.94);filter:brightness(1.7)}to{transform:scale(1)}}
@@ -306,6 +306,40 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 .kk-wait-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:530px){#dialog .modal.kk-waiting-modal{max-height:94dvh} .kk-waiting-head{padding:18px 15px 13px}.kk-waiting-body{padding:13px 15px 17px;gap:11px}.kk-room-code{padding:12px;gap:7px}.kk-room-code button{font-size:12px;min-width:90px}.kk-wait-player{padding:8px 9px;min-height:54px}.kk-wait-actions{grid-template-columns:1fr}}
 
+
+/* V20: always-visible online boards below the own playing board */
+.kk-live-area{margin-top:18px;padding:17px;border:1px solid #2f6a99;border-radius:20px;background:linear-gradient(160deg,#0b2846,#061b34 70%);box-shadow:0 12px 38px #0005}
+.kk-live-area[hidden]{display:none!important}
+.kk-live-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:13px}
+.kk-live-head h2{margin:0;font-size:clamp(19px,2vw,27px);color:#eaf8ff}
+.kk-live-head p{margin:3px 0 0;color:#abc5e4;font-size:13px}
+.kk-live-counter{border:1px solid #387ca9;color:#bfe8ff;background:#103451;border-radius:99px;padding:7px 12px;font-size:12px;font-weight:850}
+.kk-live-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.kk-live-list:has(> :only-child){grid-template-columns:minmax(0,1fr)}
+.kk-live-list:has(> :only-child) .kk-live-person{max-width:720px}
+.kk-live-person{min-width:0;padding:13px;border-radius:16px;border:1px solid #255786;background:linear-gradient(180deg,#092745,#06172d);box-shadow:inset 0 1px #ffffff0f}
+.kk-live-person.playing{border-color:#ffe16e;box-shadow:0 0 0 2px #f9d85326,inset 0 1px #ffffff20}
+.kk-live-person.offline{opacity:.75}
+.kk-live-person-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.kk-live-name{font-size:17px;font-weight:900;overflow-wrap:anywhere}
+.kk-live-score{background:#123a60;color:#fff;border:1px solid #3b769e;border-radius:10px;padding:5px 10px;font-size:17px;font-weight:950;white-space:nowrap}
+.kk-live-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.kk-live-chip{border:1px solid #315c80;border-radius:7px;padding:3px 7px;color:#c7dff7;background:#09223d;font-size:11px;font-weight:750}
+.kk-live-chip.now{background:#473614;color:#ffdf7e;border-color:#bd963d}
+.kk-live-chip.editing{background:#0c443a;color:#8bfce0;border-color:#1daa94}
+.kk-live-chip.offline{background:#392b39;color:#dcb9cb;border-color:#855576}
+.kk-live-sheet{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:2px;width:100%;padding:5px;background:#020f20;border:1px solid #24496a;border-radius:9px}
+.kk-live-tile{aspect-ratio:1;min-width:0;display:grid;place-items:center;position:relative;border-radius:3px;background:var(--shade);border:1px solid #0004;line-height:1}
+.kk-live-tile.star:before{content:'★';color:#fff;opacity:.9;font-size:clamp(6px,1vw,12px);text-shadow:0 1px 2px #0006}
+.kk-live-tile.marked:after{content:'×';position:absolute;inset:0;display:grid;place-items:center;font-weight:1000;color:#09172a;font-size:clamp(10px,1.7vw,21px);text-shadow:0 1px #ffffff80}
+.kk-live-tile.recent{outline:2px solid #fff;outline-offset:-2px}
+.kk-live-tile.preview{outline:2px dashed #fff;outline-offset:-2px;box-shadow:inset 0 0 7px #fff9}
+.kk-live-tile.preview:after{content:'×';position:absolute;inset:0;display:grid;place-items:center;color:white;font-weight:1000;font-size:clamp(10px,1.7vw,21px);text-shadow:0 1px 3px #000}
+.kk-live-caption{margin:8px 0 1px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;font-size:11px;color:#9ebbd7}
+.kk-live-caption b{color:#c8ffe2}
+@media(max-width:850px){.kk-live-list{grid-template-columns:1fr}}
+@media(max-width:480px){.kk-live-area{padding:9px;margin:10px 0}.kk-live-person{padding:9px}.kk-live-sheet{gap:1px;padding:3px}.kk-live-tile{border-radius:2px}.kk-live-name{font-size:15px}.kk-live-score{font-size:14px}.kk-live-tile.marked:after,.kk-live-tile.preview:after{font-size:clamp(9px,3vw,14px)}}
+
 </style>
 </head>
 <body>
@@ -322,7 +356,11 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 <span><small>Offene Sterne</small><strong id="score-stars">−30</strong></span>
 <span class="score-ribbon-total"><small>Zwischenstand</small><strong id="score-live">−22</strong></span>
 </button><div class="board-navigator" id="board-navigator" role="group" aria-label="Über das vergrößerte Spielbrett navigieren"><button class="nav-btn" type="button" data-action="navleft" aria-label="Zum linken Spielfeldrand">◀ A–G</button><button class="nav-btn mid" type="button" data-action="navcenter" aria-label="Startspalte H zentrieren">⌖ Mitte H</button><button class="nav-btn" type="button" data-action="navright" aria-label="Zum rechten Spielfeldrand">I–O ▶</button><span class="nav-label" id="board-window" aria-live="off">Spalte H</span><div class="quick-score" id="quick-score" aria-live="off">Punkte: <b>−22</b></div></div><div class="editbar" id="editbar" aria-label="Auswahl bearbeiten"><div class="editcount" id="edit-count" aria-live="polite">Noch keine Kreuze gewählt</div><div class="edit-actions"><button type="button" class="flat edit-btn" data-action="undo" id="undo-button" disabled title="Letztes noch nicht eingetragenes Kreuz zurücknehmen">↶ Letztes Kreuz</button><button type="button" class="flat edit-btn" data-action="clear" id="clear-button" disabled title="Nur die aktuelle Auswahl löschen">✕ Auswahl löschen</button></div></div><div class="board-scroll" aria-label="Spielbrett horizontal scrollbar"><div class="board-layout"><div class="board-core"><div class="matrix" id="headers"></div><div class="matrix gridarea" id="tiles"></div><div class="matrix scoregrid" id="score-top"></div><div class="matrix" style="margin-top:3px" id="score-bottom"></div><div class="jokerstrip" id="jokerstrip"></div></div><aside class="scorings"><div class="bonuses" id="colorbonuses"></div><div class="ledger" id="ledger"></div></aside></div></div><div class="rule-context"><span id="rule-context-text" aria-live="polite">Regelhinweis: Beim ersten Zug muss mindestens ein Feld in H liegen.</span><span class="rule-tools"><button type="button" class="rule-link v7-help" data-action="why">💡 Zug-Hilfe</button><button type="button" class="rule-link" data-action="symbols" id="symbols-toggle">◈ Farbsymbole</button><button type="button" class="rule-link" data-action="inspect">✅ Zug prüfen</button><button type="button" class="rule-link" data-action="balance">📊 Brettcheck</button><button type="button" class="rule-link" data-action="diagnostics">🧪 Technikcheck</button><button type="button" class="rule-link" data-action="help">📖 Alle Regeln</button></span></div><section class="progress-widget" id="score-zone" aria-label="Fortschritt nach Farben"><div class="progress-heading"><span>🎨 Dein Farbfortschritt</span><span id="completion-overview" class="tiny">0 / 105 Felder</span></div><div id="color-progress-bars"></div><div class="score-explainer" id="score-explainer">Zwischenstand enthält die noch offenen Sterne und ungenutzten Joker.</div></section><p class="hint" id="board-hint">Tipp: Auf dem Handy helfen die Tasten A–G, H und I–O beim Verschieben der großen Ansicht. Pro Farbe gibt es drei Sterne. Nicht angekreuzte Sterne kosten je 2 Punkte.</p></section>
-<aside class="side"><section class="panel"><h2>🎲 Würfel <span class="dice-summary" id="dice-summary">4 Würfel</span></h2><div class="rollset" id="dices"></div><div class="dice-instructions" id="dice-instructions">Solo: 2 Farbwürfel + 2 Zahlenwürfel</div><div class="selectlabel" id="select-label">Neue Partie starten</div><div id="extra-choices" aria-live="polite"></div><button class="action go" id="roll-button" data-action="roll">🎲 Würfeln</button><div class="actions"><button class="action ok" id="commit-button" data-action="commit">✓ Eintragen</button><button class="action pass" id="pass-button" data-action="pass">✕ Passen</button></div><div class="message" id="game-message" role="status" aria-live="polite">Eine neue Partie starten.</div></section><section class="panel" id="players-zone"><div class="row player-head"><h2>👥 Spieler</h2><span id="playercount" class="tiny"></span><button type="button" class="flat compare-trigger" data-action="compare">▦ Alle Bretter</button></div><div class="playerlist" id="players"></div><div id="online-controls" style="margin-top:10px"></div><section class="online-feed" id="online-feed" aria-label="Letzte Spielaktionen" hidden></section></section><div class="footpanel"><div class="tiny">Aktueller Spieler</div><strong id="active-player" style="font-size:20px">–</strong><div id="turn-info" class="tiny">Deine Partie wartet.</div></div></aside></div><div class="footnote">KreuzKunter V19 · Online-Wartelobby · Lokal &amp; Online · Lokale Spielstände auf diesem Gerät · Online-Speicherung: Firestore oder temporär im Render-Arbeitsspeicher</div></div>
+<aside class="side"><section class="panel"><h2>🎲 Würfel <span class="dice-summary" id="dice-summary">4 Würfel</span></h2><div class="rollset" id="dices"></div><div class="dice-instructions" id="dice-instructions">Solo: 2 Farbwürfel + 2 Zahlenwürfel</div><div class="selectlabel" id="select-label">Neue Partie starten</div><div id="extra-choices" aria-live="polite"></div><button class="action go" id="roll-button" data-action="roll">🎲 Würfeln</button><div class="actions"><button class="action ok" id="commit-button" data-action="commit">✓ Eintragen</button><button class="action pass" id="pass-button" data-action="pass">✕ Passen</button></div><div class="message" id="game-message" role="status" aria-live="polite">Eine neue Partie starten.</div></section><section class="panel" id="players-zone"><div class="row player-head"><h2>👥 Spieler</h2><span id="playercount" class="tiny"></span><button type="button" class="flat compare-trigger" data-action="compare">▦ Alle Bretter</button></div><div class="playerlist" id="players"></div><div id="online-controls" style="margin-top:10px"></div><section class="online-feed" id="online-feed" aria-label="Letzte Spielaktionen" hidden></section></section><div class="footpanel"><div class="tiny">Aktueller Spieler</div><strong id="active-player" style="font-size:20px">–</strong><div id="turn-info" class="tiny">Deine Partie wartet.</div></div></aside></div>
+<section class="kk-live-area" id="kk-live-opponents" aria-label="Mitspieler live" hidden>
+  <div class="kk-live-head"><div><h2>👥 Mitspieler live</h2><p>Scrolle nach unten und verfolge ihre Kreuze direkt auf den Spielzetteln.</p></div><span class="kk-live-counter" id="kk-live-count">0 Mitspieler</span></div>
+  <div class="kk-live-list" id="kk-live-list" aria-live="off"></div>
+</section><div class="footnote">KreuzKunter V20 · Mitspieler live · Online-Wartelobby · Lokal &amp; Online · Lokale Spielstände auf diesem Gerät · Online-Speicherung: Firestore oder temporär im Render-Arbeitsspeicher</div></div>
 <div class="mask hidden" id="dialog"><div class="modal" id="dialog-body" role="dialog" aria-modal="true" aria-labelledby="dialog-heading"></div></div>
 <script>
 
@@ -347,6 +385,7 @@ let boardView=(()=>{try{return localStorage.getItem(BOARD_VIEW_KEY)||(matchMedia
 const $=(id)=>document.getElementById(id);
 const ESC=(s)=>String(s).replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 let state=null;let modalReturn=null;let flash='';let flashBad=false;let NET=null;
+const liveSheetCells=ROWS.join('').split('');const liveStarSet=new Set(STARS);let remotePreviews={};
 const SYMBOLS_KEY='kreuzkunter-show-symbols-v9';let showSymbols=false;
 try{showSymbols=localStorage.getItem(SYMBOLS_KEY)==='1';}catch(e){}
 function toggleSymbols(){showSymbols=!showSymbols;try{localStorage.setItem(SYMBOLS_KEY,showSymbols?'1':'0');}catch(e){}render();}
@@ -371,6 +410,36 @@ function jumpToSection(id){
  const target=$(id);if(!target)return;
  const reduced=window.matchMedia?.('(prefers-reduced-motion:reduce)').matches;
  target.scrollIntoView({block:'start',behavior:reduced?'instant':'smooth'});
+}
+function renderOpponentsLive(){
+ const section=$('kk-live-opponents'),target=$('kk-live-list'),counter=$('kk-live-count');
+ if(!section||!target||!counter)return;
+ const active=!!(NET&&state&&state.mode==='online'&&state.phase!=='lobby'&&Number.isInteger(NET.index));
+ section.hidden=!active;if(!active){target.replaceChildren();return;}
+ const others=state.players.map((p,i)=>({p,i})).filter(({i})=>i!==NET.index);
+ counter.textContent=others.length+' Mitspieler';
+ target.innerHTML=others.map(({p,i})=>{
+  const confirmed=new Set(p.cells||[]),recent=new Set(p.lastMove||[]);
+  const draft=state.phase==='select'&&i===state.picker&&Array.isArray(remotePreviews[i])?remotePreviews[i]:[];
+  const preview=new Set(draft.filter(n=>Number.isInteger(n)&&n>=0&&n<105&&!confirmed.has(n)));
+  const scoreNow=score(p).total,online=NET.presence?.[i]!==false;
+  const turnNow=!state.finished&&i===state.picker&&state.phase==='select';
+  const isRolling=!state.finished&&i===state.active&&state.phase==='ready';
+  const chips=[`<span class="kk-live-chip ${online?'':'offline'}">${online?'🟢 Online':'⚪ Offline'}</span>`,
+    turnNow?'<span class="kk-live-chip now">🎯 Am Zug</span>':'',
+    isRolling?'<span class="kk-live-chip now">🎲 Würfelt gleich</span>':'',
+    preview.size?`<span class="kk-live-chip editing">✍️ ${preview.size} vorläufig ${preview.size===1?'markiertes Feld':'markierte Felder'}</span>`:''].join('');
+  return `<article class="kk-live-person ${turnNow?'playing':''} ${online?'':'offline'}" aria-label="Spielfeld von ${ESC(p.name)}">
+    <div class="kk-live-person-head"><div class="kk-live-name">${ESC(p.name)}</div><div class="kk-live-score">${scoreNow>=0?'+':''}${scoreNow} Punkte</div></div>
+    <div class="kk-live-chips">${chips}<span class="kk-live-chip">${confirmed.size}/105 Felder</span><span class="kk-live-chip">${8-p.jokerUsed} Joker</span></div>
+    <div class="kk-live-sheet" role="img" aria-label="${ESC(p.name)}: ${confirmed.size} endgültige Kreuze${preview.size?', '+preview.size+' vorläufige Kreuze':''}">${liveSheetCells.map((c,n)=>`<span class="kk-live-tile ${liveStarSet.has(n)?'star':''} ${confirmed.has(n)?'marked':''} ${recent.has(n)?'recent':''} ${preview.has(n)?'preview':''}" style="--shade:var(--${c})" title="${COLS[n%15]}${Math.floor(n/15)+1}${preview.has(n)?' · vorläufig':confirmed.has(n)?' · bestätigt':''}"></span>`).join('')}</div>
+    <div class="kk-live-caption"><span>× bestätigt · <b>weiß umrandet = wird gerade gewählt</b></span><button type="button" class="flat" data-opponent="${i}" aria-label="${ESC(p.name)} groß ansehen">Groß ansehen</button></div>
+  </article>`;
+ }).join('');
+}
+function sendLivePreview(){
+ if(!NET?.connected||NET.awaiting||NET.index!==state?.picker||state.phase!=='select'||NET.ws?.readyState!==WebSocket.OPEN)return;
+ try{NET.ws.send(JSON.stringify({action:'preview',turn:state.turn,pending:[...state.pending]}));}catch(_e){}
 }
 function showCompare(){
  if(!state)return;
@@ -417,7 +486,7 @@ function leaveOnline(){
  if(!NET)return;
  const old=NET;old.stopped=true;clearTimeout(old.timer);clearTimeout(old.syncTimer);
  try{old.ws?.close();}catch(e){}
- NET=null;
+ NET=null;remotePreviews={};
  try{const info=getNetInfo();info.active=false;localStorage.setItem(NET_INFO_KEY,JSON.stringify(info));sessionStorage.removeItem(NET_DRAFT_KEY);}catch(e){}
  state=restore()||initial(['Spieler 1'],'solo');flash='Online-Raum verlassen. Offline-Spiel ist wieder verfügbar.';flashBad=false;hideDialog();render();
 }
@@ -691,6 +760,7 @@ function render(){if(!state)return;const p=player();const sc=score(p);$('mode-ti
  $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?NET.presence[state.picker]===false:state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>`<div class="player ${i===state.picker?'current':''}"><span class="bubble"></span><span class="pname">${ESC(q.name)} ${i===state.active?'🎲':''}<span class="pinfo" style="display:block">${q.cells.length}/105 Felder · ${Object.keys(q.colorAwards).length} Farbboni${NET&&NET.presence&&!NET.presence[i]?' · <span class="offline-indicator">offline</span>':''}${NET&&NET.host&&state.phase==='lobby'&&NET.presence&&!NET.presence[i]?` <button class="flat" data-kick="${i}" type="button">Entfernen</button>`:''}</span><span class="player-meter" role="progressbar" aria-label="Spielfeldfortschritt ${ESC(q.name)}" aria-valuemin="0" aria-valuemax="105" aria-valuenow="${q.cells.length}"><span style="width:${Math.min(100,Math.max(0,100*q.cells.length/105))}%"></span></span></span><button type="button" class="mini-open" data-opponent="${i}" aria-label="Spielfeld von ${ESC(q.name)} ansehen">Brett</button><span class="points">${score(q).total}</span></div>`).join('');$('active-player').textContent=state.players[state.active].name;$('turn-info').textContent=state.phase==='select'?`Jetzt kann ${state.players[state.picker].name} direkt Kreuze setzen.`:state.phase==='lobby'?'Host startet, sobald alle verbunden sind.':state.finished?'Gewinnerwertung abgeschlossen.':state.turn?'Bereit für den nächsten Wurf.':'Du kannst starten.';
  setMsg(flash||'Nach dem Würfeln kannst du direkt auf passende Felder tippen. Die Würfel sind ebenfalls anklickbar.',flashBad);
  persistOnlineDraft();
+ renderOpponentsLive();
  if(window.innerWidth<=680)requestAnimationFrame(updateBoardWindow);
  }
  function randomFace(arr){return arr[Math.floor(Math.random()*arr.length)];}
@@ -832,7 +902,7 @@ function cellClick(index){
     if(!state.manualColor){state.colorDie=null;state.chosenColor=null;}
     if(!state.manualNumber){state.numDie=null;state.chosenNumber=null;}
    }
-   flash='Kreuz entfernt. Die übrigen Kreuze bleiben erhalten.';flashBad=false;save();render();return;
+   flash='Kreuz entfernt. Die übrigen Kreuze bleiben erhalten.';flashBad=false;save();render();sendLivePreview();return;
   }
   if(!possibleCells().has(index)){
    setMsg(explainUnavailable(index),true);return;
@@ -841,7 +911,7 @@ function cellClick(index){
   const exact=moveChoices().length>0;
   const sizes=[...new Set(matchingOptions().map(o=>o.cells.length))].sort((a,b)=>a-b);
   flash=exact?'✅ Du kannst jetzt Eintragen oder weiter Kreuze setzen.':`${state.pending.length} Kreuze · noch mögliche Würfelwerte: ${sizes.join(', ')}`;
-  flashBad=false;save();render();
+  flashBad=false;save();render();sendLivePreview();
  }
  function undoSelection(all=false){
   if(state.phase!=='select'||!state.pending.length||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
@@ -853,7 +923,7 @@ function cellClick(index){
     if(!state.manualNumber)state.numDie=null;
   }
   flash=all?'Die nicht eingetragenen Kreuze wurden gelöscht. Dein Spielstand bleibt unverändert.':'Letztes Kreuz zurückgenommen.';
-  flashBad=false;save();render();
+  flashBad=false;save();render();sendLivePreview();
  }
  function commit(){
   if(state.phase!=='select'||(NET&&NET.index!==state.picker))return;
@@ -1103,7 +1173,7 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
   my.ws=ws;
   ws.onopen=()=>{
    if(NET!==my||my.stopped){ws.close();return;}
-   my.connected=false;my.attempt=0;my.waitingError='';clearOnlineWait(my);updateOnlineWaiting();
+   my.connected=false;my.attempt=0;my.waitingError='';clearOnlineWait(my);updateOnlineWaiting();remotePreviews={};
    ws.send(JSON.stringify({action:op,name:my.name,code:my.code,token:op==='join'?my.token:null,boardId:BOARD_ID}));
   };
   ws.onmessage=e=>{
@@ -1120,6 +1190,8 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
     my.code=msg.code;my.token=msg.token;my.host=msg.host;my.connected=true;my.attempt=0;my.waitingError='';
     updateOnlineWaiting();
     try{localStorage.setItem(NET_INFO_KEY,JSON.stringify({url:my.url,code:msg.code,token:msg.token,name:my.name,active:true}));}catch(e){}
+   }else if(msg.type==='preview'){
+    if(state?.mode==='online'&&msg.turn===state.turn&&msg.index!==my.index&&Array.isArray(msg.pending)){remotePreviews[msg.index]=msg.pending;renderOpponentsLive();}
    }else if(msg.type==='state'){
     clearOnlineWait(my);
     if(typeof msg.revision==='number'&&msg.revision<my.revision)return;
@@ -1132,6 +1204,7 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
     const draft=canKeepDraft?{
       colorDie:old.colorDie,numDie:old.numDie,chosenColor:old.chosenColor,
       chosenNumber:old.chosenNumber,manualColor:old.manualColor,manualNumber:old.manualNumber,pending:[...old.pending]}:restoreOnlineDraft(my,msg);
+    remotePreviews=msg.game?.phase==='select'?(msg.previews||{}):{};
     my.index=msg.index;my.host=msg.host;my.code=msg.code;my.presence=msg.connected;my.revision=msg.revision||0;my.storage=msg.storage||'memory';my.hasState=true;
     state=msg.game;
     if(draft)Object.assign(state,draft);
