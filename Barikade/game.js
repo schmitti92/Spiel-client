@@ -1,0 +1,8827 @@
+// Barikade V13.10 – Holzbrett Premium-Pass: Mauersegmente, Spielsteine, statische Spezialfelder · serverautoritaer
+(function barikadeGameV105Bootstrap(){
+  if (window.__BARIKADE_GAME_V105_LOADED__) {
+    console.warn('[Barikade V13.10] game.js wurde erneut geladen – zweite Ausführung blockiert.');
+    return;
+  }
+  window.__BARIKADE_GAME_V105_LOADED__ = true;
+
+// --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
+(() => {
+  if (typeof window.init !== 'function') window.init = () => {};
+  if (typeof window.showOverlay !== 'function') window.showOverlay = () => {};
+  if (typeof window.hideOverlay !== 'function') window.hideOverlay = () => {};
+  if (typeof window.canUseAllColorsNow !== 'function') window.canUseAllColorsNow = () => true;
+})();
+
+let isAnimatingMove = false; // FIX: verhindert Klick-Crash nach Refactor
+
+// FIX (Stabilität): Wird in WS-Flow genutzt, muss aber existieren, sonst bricht ws.onmessage ab
+let pendingSaveExport = false;
+
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+
+  // ===== C1: UX stability fixes (NO functional changes) =====
+  // 1) Prevent viewport jump on mobile while keeping right panel scrollable.
+  // 2) Prevent dice clipping by ensuring the dice container allows overflow & adapts size.
+  function applyUxStabilityFixes(){
+    try{
+      const topbar = document.querySelector('.topbar');
+      const playerStripShell = document.querySelector('.playerStripShell');
+      const appShell = document.querySelector('.app');
+      const sidePanel = document.querySelector('.app > .panel');
+      if(!sidePanel || !appShell) return;
+
+      // Desktop/tablet: board + sidebar stay inside the viewport.
+      // Mobile/portrait: the document may scroll naturally (the old hard lock fought the responsive CSS).
+      try{
+        document.documentElement.style.height = '100%';
+        document.body.style.height = '100%';
+        document.body.style.overscrollBehavior = 'none';
+        document.documentElement.style.overscrollBehavior = 'none';
+        if(window.innerWidth <= 900){
+          document.body.style.overflow = 'auto';
+          document.documentElement.style.overflow = 'auto';
+        }else{
+          document.body.style.overflow = 'hidden';
+          document.documentElement.style.overflow = 'hidden';
+        }
+      }catch(_e){}
+
+      // V10.3 player strip also consumes vertical space.
+      const topH = topbar ? topbar.getBoundingClientRect().height : 0;
+      const stripH = (playerStripShell && topbar && topbar.contains(playerStripShell)) ? 0 : (playerStripShell ? playerStripShell.getBoundingClientRect().height : 0);
+      // V10.8: use the REAL visible browser viewport. On Android tablets 100vh can
+      // include browser/system UI and made the bottom of the board disappear.
+      const vv = window.visualViewport || null;
+      const visibleH = Math.max(320, Math.floor(vv?.height || window.innerHeight || document.documentElement.clientHeight || 700));
+      const visibleW = Math.max(320, Math.floor(vv?.width || window.innerWidth || document.documentElement.clientWidth || 1000));
+      const pad = visibleW <= 900 ? 10 : 8;
+      const maxH = Math.max(320, Math.floor(visibleH - topH - stripH - pad));
+      document.documentElement.style.setProperty('--game-content-h', maxH + 'px');
+      document.documentElement.style.setProperty('--game-visible-h', visibleH + 'px');
+      document.documentElement.style.setProperty('--game-visible-w', visibleW + 'px');
+
+      // Normal Android browser mode has much less vertical room than native fullscreen.
+      // Reuse a compact layout automatically so the board/sidebar remain fully reachable.
+      const nativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      const fallbackFs = document.body.classList.contains('isFullscreenFallback');
+      const compactNormal = !nativeFs && !fallbackFs && visibleW > 900 && visibleH < 900;
+      document.body.classList.toggle('isCompactViewport', compactNormal);
+      if(window.innerWidth <= 900){
+        appShell.style.height = '';
+        appShell.style.minHeight = '';
+        sidePanel.style.maxHeight = 'none';
+        sidePanel.style.overflowY = 'visible';
+      }else{
+        appShell.style.height = maxH + 'px';
+        appShell.style.minHeight = maxH + 'px';
+        sidePanel.style.maxHeight = maxH + 'px';
+        sidePanel.style.overflowY = 'auto';
+      }
+      sidePanel.style.webkitOverflowScrolling = 'touch';
+
+      // Dice sizing is controlled centrally by styles.css.
+      // Keep only the overflow safety here so JS no longer fights the responsive layout.
+      const dicePill = sidePanel.querySelector('.dicePill');
+      if(dicePill){
+        dicePill.style.overflow = 'visible';
+      }
+    }catch(_e){}
+  }
+
+  // Apply now + on resize/orientation changes
+  window.addEventListener('resize', () => { try{ applyUxStabilityFixes(); }catch(_e){} }, { passive:true });
+  window.addEventListener('orientationchange', () => { try{ setTimeout(applyUxStabilityFixes, 50); }catch(_e){} });
+  try{
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', () => { try{ applyUxStabilityFixes(); }catch(_e){} }, { passive:true });
+      window.visualViewport.addEventListener('scroll', () => { try{ applyUxStabilityFixes(); }catch(_e){} }, { passive:true });
+    }
+  }catch(_e){}
+
+  function debugLog(...args){
+    try{ console.log(...args); }catch(_e){}
+    const el = document.getElementById('debugLog');
+    if(el){
+      try{
+        el.textContent += args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' ') + "\n";
+        el.scrollTop = el.scrollHeight;
+      }catch(_e){}
+    }
+  }
+
+
+  // ===== UI refs =====
+  let canvas = $("c");
+  if(!canvas){
+    console.warn("[ui] Canvas #c not found – creating fallback canvas (cache/HTML mismatch?)");
+    canvas = document.createElement("canvas");
+    canvas.id = "c";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    document.body.appendChild(canvas);
+  }
+
+  const ctx = canvas.getContext("2d");
+  const toastEl = $("toast");
+  const netBannerEl = $("netBanner");
+  const debugToggle = $("debugToggle");
+  const debugLogEl = $("debugLog");
+
+
+  // Run UX stability fixes once after we have DOM.
+  applyUxStabilityFixes();
+
+  const rollBtn = $("rollBtn");
+  const startBtn = $("startBtn");
+  const endBtn  = $("endBtn");
+  const skipBtn = $("skipBtn");
+  const forfeitBtn = $("forfeitBtn");
+  const resetBtn= $("resetBtn");
+  const resumeBtn = $("resumeBtn");
+  // Host tools (Save/Load) - host only
+  const hostTools = $("hostTools");
+  const saveBtn = $("saveBtn");
+  const loadBtn = $("loadBtn");
+  const restoreBtn = $("restoreBtn");
+  const loadFile = $("loadFile");
+  const autoSaveInfo = $("autoSaveInfo");
+
+  // Ensure we always have a container for host-only controls (mobile/older index.html may miss #hostTools)
+  let hostToolsBox = hostTools;
+  try {
+    if (!hostToolsBox) {
+      // If Save/Load buttons exist, use their parent as host tools area
+      if (saveBtn && saveBtn.parentElement) hostToolsBox = saveBtn.parentElement;
+      else if (loadBtn && loadBtn.parentElement) hostToolsBox = loadBtn.parentElement;
+      else if (restoreBtn && restoreBtn.parentElement) hostToolsBox = restoreBtn.parentElement;
+    }
+    if (!hostToolsBox) {
+      // Create a host tools box inside the side panel (fallback)
+      const panel = document.querySelector(".panel");
+      if (panel) {
+        hostToolsBox = document.createElement("div");
+        hostToolsBox.id = "hostTools";
+        hostToolsBox.className = "row";
+        hostToolsBox.style.gap = "8px";
+        hostToolsBox.style.flexWrap = "wrap";
+        // Insert near the bottom of the panel (before the last big buttons if possible)
+        const resume = $("resumeBtn");
+        if (resume && resume.parentElement === panel) panel.insertBefore(hostToolsBox, resume);
+        else panel.appendChild(hostToolsBox);
+      }
+    }
+  } catch(_e) {}
+
+
+  // V12.0: Der alte Notfall-Button „Rot ↔ Blau“ wurde entfernt.
+  // Der Server unterstützt inzwischen vier Farben und hatte für diesen Legacy-Button
+  // bewusst keinen Handler mehr. So gibt es kein sichtbares Bedienelement ohne Wirkung.
+  try{ $("swapColorsBtn")?.remove(); }catch(_e){}
+
+  // Joker award mode toggle (Host only): who receives a Joker on kick-out?
+  try{
+    if(hostToolsBox && !$("jokerAwardModeTools")){
+      const jokerModeWrap = document.createElement("div");
+      jokerModeWrap.id = "jokerAwardModeTools";
+      jokerModeWrap.style.marginTop = "10px";
+      jokerModeWrap.style.display = "flex";
+      jokerModeWrap.style.gap = "8px";
+      jokerModeWrap.style.flexWrap = "wrap";
+
+      const jokerModeLabel = document.createElement("div");
+      jokerModeLabel.textContent = "Joker bei Rausschmeißen:";
+      jokerModeLabel.style.width = "100%";
+      jokerModeLabel.style.opacity = ".85";
+      jokerModeLabel.style.fontWeight = "800";
+      jokerModeWrap.appendChild(jokerModeLabel);
+
+      const btnThrower = document.createElement("button");
+      btnThrower.className = "btn";
+      btnThrower.textContent = "Werfer bekommt Joker";
+      btnThrower.onclick = () => {
+        netJokerAwardMode = "thrower";
+        wsSend({ type: "set_award_mode", mode: "thrower" });
+        updateJokerModeButtons();
+      };
+
+      const btnVictim = document.createElement("button");
+      btnVictim.className = "btn";
+      btnVictim.textContent = "Opfer bekommt Joker";
+      btnVictim.onclick = () => {
+        netJokerAwardMode = "victim";
+        wsSend({ type: "set_award_mode", mode: "victim" });
+        updateJokerModeButtons();
+      };
+
+      function updateJokerModeButtons(){
+        btnThrower.className = (netJokerAwardMode === "thrower") ? "btn primary" : "btn";
+        btnVictim.className  = (netJokerAwardMode === "victim")  ? "btn primary" : "btn";
+      }
+      updateJokerModeButtons();
+      jokerModeWrap.appendChild(btnThrower);
+      jokerModeWrap.appendChild(btnVictim);
+      hostToolsBox.appendChild(jokerModeWrap);
+    }
+  }catch(_e){}
+  const diceEl  = $("diceCube");
+  // ===== Dice pips (render directly on the cube face) =====
+  // Additiv: erzeugt die 9 Pip-Zellen im #diceCube, damit die Augen sichtbar sind.
+  // Entfernt keine Funktion und ändert keine Spielregeln.
+  function ensureDicePips(){
+    try{
+      if(!diceEl) return;
+      // Already built?
+      if(diceEl.querySelector && diceEl.querySelector(".dip")) return;
+
+      // Build pips grid inside diceCube (needed for styles.css selectors)
+      diceEl.innerHTML = "";
+      const frag = document.createDocumentFragment();
+      for(let i=1;i<=9;i++){
+        const cell = document.createElement("div");
+        cell.className = "dip p"+i;
+        const pip = document.createElement("span");
+        pip.className = "pip";
+        cell.appendChild(pip);
+        frag.appendChild(cell);
+      }
+      diceEl.appendChild(frag);
+
+      // Safety: if some environments miss the CSS grid styles, apply minimal inline fallbacks
+      // (keeps sizes from CSS; only sets layout if missing)
+      const cs = getComputedStyle(diceEl);
+      if(cs.display === "inline" || cs.display === "block"){
+        diceEl.style.display = "grid";
+        diceEl.style.gridTemplateColumns = "repeat(3, 1fr)";
+        diceEl.style.gridTemplateRows = "repeat(3, 1fr)";
+        diceEl.style.gap = "3px";
+      }
+    }catch(_e){}
+  }
+  
+  // Additiv: macht die Augen größer und kontrastreicher (reine Anzeige, keine Logik).
+  function applyDicePipSizing(){
+    try{
+      if(!diceEl) return;
+      const rect = diceEl.getBoundingClientRect();
+      if(!rect || !rect.width) return;
+
+      // Größe proportional zur Würfelfläche (Tablet: gut sichtbar)
+      const pipSize = Math.max(10, Math.min(12, Math.round(rect.width * 0.165))); // sichtbar, aber sauber innerhalb der 3x3-Fläche
+      const pipColor = "#111"; // dunkler für mehr Kontrast
+
+      // Zellen zentrieren (Fallback, falls CSS fehlt)
+      const cells = diceEl.querySelectorAll ? diceEl.querySelectorAll(".dip") : [];
+      cells.forEach(c => {
+        c.style.display = "flex";
+        c.style.alignItems = "center";
+        c.style.justifyContent = "center";
+      });
+
+      const pips = diceEl.querySelectorAll ? diceEl.querySelectorAll(".pip") : [];
+      pips.forEach(p => {
+        p.style.width = pipSize + "px";
+        p.style.height = pipSize + "px";
+        p.style.borderRadius = "999px";
+        p.style.background = pipColor;
+        // wirkt optisch größer, ohne zu übertreiben
+        p.style.boxShadow = "inset 0 2px 3px rgba(255,255,255,0.22), 0 2px 4px rgba(0,0,0,0.45)";
+      });
+    }catch(_e){}
+  }
+
+  // Resize-sicher: wenn sich Layout ändert (Rotation/Tablet), Pips neu skalieren
+  (function(){
+    let raf = 0;
+    function onResize(){
+      if(raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => { raf = 0; try{ applyDicePipSizing(); }catch(_e){} });
+    }
+    try{ window.addEventListener("resize", onResize, {passive:true}); }catch(_e){}
+    try{ window.addEventListener("orientationchange", onResize, {passive:true}); }catch(_e){}
+  })();
+// Build pips once at startup (safe even if dice is later replaced)
+  try{ ensureDicePips(); }catch(_e){}
+
+  
+  try{ applyDicePipSizing(); }catch(_e){}
+// UI-only: ensure dice is visible even before the first roll.
+  try{ if(diceEl && String(diceEl.getAttribute("data-face")||"0")==="0") diceEl.setAttribute("data-face","1"); }catch(_e){}
+  // ===== Dice value label overlay (for sums > 6, e.g. Doppelwurf 7–12) =====
+  // Additiv: nur Anzeige, beeinflusst Gameplay nicht.
+  let diceValueLabel = null;
+  function ensureDiceValueLabel(){
+    try{
+      if(diceValueLabel && diceValueLabel.isConnected) return diceValueLabel;
+      if(!diceEl) return null;
+      // Put label inside the dice container so it moves with the cube
+      const host = diceEl.parentElement || diceEl;
+      // Ensure host can position children
+      try{
+        const cs = getComputedStyle(host);
+        if(cs.position === "static") host.style.position = "relative";
+      }catch(_e){}
+      const el = document.createElement("div");
+      el.id = "diceValueLabel";
+      el.textContent = "";
+      el.style.position = "absolute";
+      el.style.inset = "0";
+      el.style.display = "none";
+      el.style.alignItems = "center";
+      el.style.justifyContent = "center";
+      el.style.fontFamily = "system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      el.style.fontWeight = "900";
+      el.style.fontSize = "28px";
+      el.style.letterSpacing = "0.5px";
+      el.style.color = "rgba(255,255,255,0.95)";
+      el.style.textShadow = "0 6px 14px rgba(0,0,0,0.75)";
+      el.style.pointerEvents = "none";
+      el.style.zIndex = "5";
+      el.style.userSelect = "none";
+      el.style.display = "flex";
+      el.style.display = "none";
+      host.appendChild(el);
+      diceValueLabel = el;
+      return diceValueLabel;
+    }catch(_e){ return null; }
+  }
+
+
+  // ===== V21: zwei sichtbare Würfel + transparente Modifikatoranzeige =====
+  let diceSecondEl = null;
+  let diceMathEl = null;
+
+  function fillDicePips(el){
+    if(!el || el.querySelector('.dip')) return;
+    const frag=document.createDocumentFragment();
+    for(let i=1;i<=9;i++){
+      const d=document.createElement('span'); d.className=`dip p${i}`;
+      const p=document.createElement('span'); p.className='pip';
+      d.appendChild(p); frag.appendChild(d);
+    }
+    el.appendChild(frag);
+  }
+
+  function ensureEnhancedDiceUI(){
+    try{
+      if(!diceEl) return null;
+      const pill=diceEl.closest?.('.dicePill') || diceEl.parentElement;
+      if(!pill) return null;
+      pill.classList.add('dicePillEnhanced');
+
+      let wrap=pill.querySelector('#diceDockWrap');
+      if(!wrap){
+        wrap=document.createElement('div');
+        wrap.id='diceDockWrap';
+        pill.appendChild(wrap);
+      }
+      if(!wrap.contains(diceEl)) wrap.appendChild(diceEl);
+
+      if(!diceSecondEl || !diceSecondEl.isConnected){
+        diceSecondEl=document.createElement('div');
+        diceSecondEl.id='diceSecondCube';
+        diceSecondEl.className='diceVisualCube';
+        diceSecondEl.dataset.face='1';
+        diceSecondEl.hidden=true;
+        fillDicePips(diceSecondEl);
+        wrap.appendChild(diceSecondEl);
+      }
+
+      if(!diceMathEl || !diceMathEl.isConnected){
+        diceMathEl=document.createElement('div');
+        diceMathEl.id='diceMathStrip';
+        diceMathEl.className='diceMathStrip';
+        diceMathEl.hidden=true;
+        pill.appendChild(diceMathEl);
+      }
+      return {pill,wrap,second:diceSecondEl,math:diceMathEl};
+    }catch(_e){ return null; }
+  }
+
+  function setAuxDiceFace(el,face){
+    if(!el) return;
+    const n=Math.max(1,Math.min(6,Number(face)||1));
+    el.dataset.face=String(n);
+  }
+
+  function formatRollModifier(mod){
+    if(!mod || typeof mod!=='object') return '';
+    if(mod.kind==='minimum') return String(mod.label||'MIN');
+    const v=Number(mod.value||0);
+    if(!v) return String(mod.label||'');
+    return `${v>0?'+':''}${v}`;
+  }
+
+  function renderRollVisual(visual,fallbackValue){
+    try{
+      const ui=ensureEnhancedDiceUI();
+      if(!ui){ setDiceFaceAnimated(fallbackValue==null?0:Number(fallbackValue)); return; }
+      const validFallback=(fallbackValue==null?null:Number(fallbackValue));
+      if(validFallback==null || !Number.isFinite(validFallback)){
+        ui.pill.classList.remove('is-double-roll','has-roll-math');
+        if(diceSecondEl) diceSecondEl.hidden=true;
+        if(diceMathEl){diceMathEl.hidden=true;diceMathEl.innerHTML='';}
+        setDiceFaceAnimated(0);
+        return;
+      }
+
+      const rv=(visual && typeof visual==='object')?visual:null;
+      let dice=Array.isArray(rv?.dice)?rv.dice.map(Number).filter(n=>n>=1&&n<=6):[];
+      if(!dice.length){
+        if(validFallback>=1 && validFallback<=6) dice=[validFallback];
+        else dice=[Math.max(1,Math.min(6,validFallback))];
+      }
+      const isDouble=dice.length>=2;
+      const result=Number.isFinite(Number(rv?.result))?Number(rv.result):validFallback;
+      const base=Number.isFinite(Number(rv?.base))?Number(rv.base):(isDouble?dice[0]+dice[1]:dice[0]);
+      const mods=Array.isArray(rv?.mods)?rv.mods.filter(Boolean):[];
+
+      // Der erste Würfel zeigt IMMER den tatsächlich gewürfelten Rohwert, nicht den modifizierten Endwert.
+      setDiceFaceAnimated(dice[0]);
+      ui.pill.classList.toggle('is-double-roll',isDouble);
+      const row=ui.pill.closest('.diceActionRow');
+      if(row) row.classList.toggle('has-double-dice',isDouble);
+
+      if(diceSecondEl){
+        diceSecondEl.hidden=!isDouble;
+        if(isDouble) setAuxDiceFace(diceSecondEl,dice[1]);
+      }
+
+      const style=activeDiceStyle();
+      if(diceSecondEl) diceSecondEl.setAttribute('data-dice-style',style);
+
+      const hasNegativeMod = mods.some(mod => Number(mod?.value||0) < 0);
+      const rollOverridden = mods.length>0 && base!==result;
+      const needsMath = isDouble || mods.length>0 || base!==result;
+      ui.pill.classList.toggle('has-roll-math', needsMath);
+      ui.pill.classList.toggle('is-roll-overridden', rollOverridden);
+      ui.pill.classList.toggle('is-roll-negative', hasNegativeMod);
+      try{
+        diceEl.classList.toggle('is-struck-roll', rollOverridden);
+        if(diceSecondEl) diceSecondEl.classList.toggle('is-struck-roll', rollOverridden && isDouble);
+      }catch(_e){}
+      if(diceMathEl){
+        diceMathEl.hidden=!needsMath;
+        if(needsMath){
+          const pieces=[];
+          if(isDouble){
+            pieces.push(`<span class="diceMathBase ${rollOverridden?'is-crossed':''}">${dice[0]} + ${dice[1]}</span>`);
+          }else{
+            pieces.push(`<span class="diceMathBase ${rollOverridden?'is-crossed':''}">Wurf ${dice[0]}</span>`);
+          }
+          for(const mod of mods){
+            const txt=formatRollModifier(mod);
+            if(!txt) continue;
+            const val=Number(mod?.value||0);
+            const cls=mod?.kind==='minimum'?'is-minimum':(val<0?'is-negative':'is-positive');
+            const title=String(mod?.source||'Effekt').replace(/"/g,'&quot;');
+            pieces.push(`<span class="diceModifierChip ${cls}" title="${title}">${txt}</span>`);
+          }
+          pieces.push(`<span class="diceMathEquals">=</span><strong class="diceMathResult">${result}</strong>`);
+          diceMathEl.innerHTML=pieces.join('');
+        }else diceMathEl.innerHTML='';
+      }
+    }catch(_e){
+      try{setDiceFaceAnimated(fallbackValue==null?0:Number(fallbackValue));}catch(_e2){}
+    }
+  }
+
+  const turnText= $("turnText");
+  const turnDot = $("turnDot");
+  const boardInfo = $("boardInfo");
+  const barrInfo  = $("barrInfo");
+  const emojiBar = $("emojiBar");
+  const emojiLaughBtn = $("emojiLaughBtn");
+  const emojiAngryBtn = $("emojiAngryBtn");
+  const emojiCoolBtn = $("emojiCoolBtn");
+  const emojiPoopBtn = $("emojiPoopBtn");
+  const emojiClockBtn = $("emojiClockBtn");
+  const emojiOverlay = $("emojiOverlay");
+  const emojiOverlayIcon = $("emojiOverlayIcon");
+  const emojiOverlayName = $("emojiOverlayName");
+  let emojiOverlayTimer = null;
+  let lastEmojiSentAt = 0;
+
+  // ===== V10.4: Sounds + direktes Spiel-Feedback (rein visuell/akustisch) =====
+  const soundToggleBtn = $("soundToggleBtn");
+  const fullscreenBtn = $("fullscreenBtn");
+  const fitBoardBtn = $("fitBoardBtn");
+  const gameFeedback = $("gameFeedback");
+  const gameFeedbackIcon = $("gameFeedbackIcon");
+  const gameFeedbackTitle = $("gameFeedbackTitle");
+  const gameFeedbackSub = $("gameFeedbackSub");
+  const gamePulse = $("gamePulse");
+  const V104_SOUND_KEY = "barikade_sound_enabled_v104";
+
+  let v104SoundEnabled = true;
+  let v104AudioCtx = null;
+  let v104FeedbackTimer = null;
+  let v104PulseTimer = null;
+  let v104LastTurnColor = null;
+
+  try{
+    const raw = localStorage.getItem(V104_SOUND_KEY);
+    if(raw === "0") v104SoundEnabled = false;
+  }catch(_e){}
+
+  function v104UpdateSoundButton(){
+    if(!soundToggleBtn) return;
+    soundToggleBtn.textContent = v104SoundEnabled ? "🔊" : "🔇";
+    soundToggleBtn.title = v104SoundEnabled ? "Sound ausschalten" : "Sound einschalten";
+    soundToggleBtn.setAttribute("aria-label", soundToggleBtn.title);
+    soundToggleBtn.setAttribute("aria-pressed", v104SoundEnabled ? "true" : "false");
+    soundToggleBtn.classList.toggle("is-muted", !v104SoundEnabled);
+  }
+
+  function v104EnsureAudio(){
+    if(!v104SoundEnabled) return null;
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      if(!v104AudioCtx) v104AudioCtx = new AC();
+      if(v104AudioCtx.state === "suspended") v104AudioCtx.resume().catch(()=>{});
+      return v104AudioCtx;
+    }catch(_e){ return null; }
+  }
+
+  function v104Tone(freq=440, dur=.09, vol=.035, type="sine", delay=0){
+    if(!v104SoundEnabled) return;
+    const ac = v104EnsureAudio();
+    if(!ac) return;
+    try{
+      const t0 = ac.currentTime + Math.max(0, Number(delay)||0);
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(Math.max(40, Number(freq)||440), t0);
+      gain.gain.setValueAtTime(.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.001, Number(vol)||.035), t0 + .012);
+      gain.gain.exponentialRampToValueAtTime(.0001, t0 + Math.max(.04, Number(dur)||.09));
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start(t0);
+      osc.stop(t0 + Math.max(.05, Number(dur)||.09) + .025);
+    }catch(_e){}
+  }
+
+  function v104Sound(kind){
+    if(!v104SoundEnabled) return;
+    switch(String(kind||"")){
+      case "ui":
+        v104Tone(620,.07,.025,"sine",0); v104Tone(820,.08,.018,"sine",.055); break;
+      case "turn":
+        v104Tone(610,.10,.030,"sine",0); v104Tone(820,.13,.027,"sine",.09); break;
+      case "roll":
+        v104Tone(170,.055,.022,"square",0); v104Tone(240,.055,.019,"square",.055); v104Tone(330,.07,.016,"triangle",.11); break;
+      case "move":
+        v104Tone(330,.055,.016,"triangle",0); v104Tone(430,.055,.014,"triangle",.055); break;
+      case "six":
+        v104Tone(660,.10,.030,"sine",0); v104Tone(880,.12,.028,"sine",.09); v104Tone(1100,.16,.025,"sine",.18); break;
+      case "kick":
+        v104Tone(150,.10,.035,"sawtooth",0); v104Tone(92,.18,.030,"square",.055); break;
+      case "joker":
+        v104Tone(520,.09,.028,"triangle",0); v104Tone(740,.11,.026,"sine",.08); v104Tone(980,.14,.021,"sine",.16); break;
+      case "barricade":
+        v104Tone(220,.08,.026,"square",0); v104Tone(180,.11,.020,"triangle",.075); break;
+      case "win":
+        v104Tone(523,.16,.031,"sine",0); v104Tone(659,.16,.029,"sine",.14); v104Tone(784,.18,.028,"sine",.28); v104Tone(1047,.34,.026,"sine",.43); break;
+    }
+  }
+
+  function v104CanHaptic(){
+    try{
+      if(typeof navigator.vibrate !== "function") return false;
+      if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+      return true;
+    }catch(_e){ return false; }
+  }
+  function v104Haptic(pattern){
+    try{ if(v104CanHaptic()) navigator.vibrate(pattern); }catch(_e){}
+  }
+
+  function v104ShowFeedback(kind, icon, title, sub, duration=1150){
+    if(!gameFeedback) return;
+    try{
+      if(v104FeedbackTimer){ clearTimeout(v104FeedbackTimer); v104FeedbackTimer=null; }
+      gameFeedback.className = `gameFeedback is-${String(kind||"turn")}`;
+      if(gameFeedbackIcon) gameFeedbackIcon.textContent = icon || "🎲";
+      if(gameFeedbackTitle) gameFeedbackTitle.textContent = title || "";
+      if(gameFeedbackSub) gameFeedbackSub.textContent = sub || "";
+      gameFeedback.setAttribute("aria-hidden","false");
+      void gameFeedback.offsetWidth;
+      gameFeedback.classList.add("show");
+      v104FeedbackTimer = setTimeout(()=>{
+        try{ gameFeedback.classList.remove("show"); gameFeedback.setAttribute("aria-hidden","true"); }catch(_e){}
+      }, Math.max(500, Number(duration)||1150));
+    }catch(_e){}
+  }
+
+  function v104Flash(kind){
+    if(!gamePulse) return;
+    try{
+      if(v104PulseTimer){ clearTimeout(v104PulseTimer); v104PulseTimer=null; }
+      gamePulse.className = "gamePulse";
+      void gamePulse.offsetWidth;
+      gamePulse.classList.add(`flash-${String(kind||"turn")}`);
+      v104PulseTimer = setTimeout(()=>{ try{ gamePulse.className="gamePulse"; }catch(_e){} }, 850);
+    }catch(_e){}
+  }
+
+  function v104IsMine(color){
+    const c = String(color||"").toLowerCase();
+    if(!c) return false;
+    return netMode === "offline" ? true : !!(myColor && String(myColor).toLowerCase() === c);
+  }
+
+  function v104SyncTurnFeedback(){
+    try{
+      const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : "";
+      const running = !!(state && state.started && !state.winner && phase !== "game_over");
+      const mine = running && v104IsMine(c);
+      document.body.classList.toggle("v104-my-turn", !!mine);
+
+      if(!c){ v104LastTurnColor = null; return; }
+      const changed = c !== v104LastTurnColor;
+      if(changed && mine){
+        v104ShowFeedback("turn","👉","DEIN ZUG",`${labelForColor(c)} · du bist dran.`,1350);
+        v104Flash("turn");
+        v104Sound("turn");
+        v104Haptic(35);
+      }
+      v104LastTurnColor = c;
+    }catch(_e){}
+  }
+
+  function v104OnRoll(value, doubleRoll, rollerColor){
+    const v = Number(value);
+    v104Sound("roll");
+    if(Array.isArray(doubleRoll) && doubleRoll.length >= 2){
+      const a=Number(doubleRoll[0]), b=Number(doubleRoll[1]);
+      setTimeout(()=>v104Sound("joker"),120);
+      v104ShowFeedback("joker","🎲🎲","DOPPELWURF",`${a} + ${b} = ${v}`,1250);
+      v104Flash("joker");
+      if(v104IsMine(rollerColor)) v104Haptic([25,40,25]);
+      return;
+    }
+    if(v === 6){
+      setTimeout(()=>v104Sound("six"),145);
+      v104ShowFeedback("six","🎉","SECHS!",`${labelForColor(rollerColor)} darf nach dem Zug noch einmal würfeln.`,1450);
+      v104Flash("six");
+      try{
+        if(diceEl){ diceEl.classList.remove("v104-six-hit"); void diceEl.offsetWidth; diceEl.classList.add("v104-six-hit"); setTimeout(()=>diceEl.classList.remove("v104-six-hit"),650); }
+      }catch(_e){}
+      if(v104IsMine(rollerColor)) v104Haptic([35,45,55]);
+    }
+  }
+
+  function v104OnMove(action){
+    if(!action) return;
+    const attackerColor = parseColorFromPieceId(action.pieceId);
+    const kicked = Array.isArray(action.kickedPieces) ? action.kickedPieces : [];
+    if(kicked.length){
+      const victimColor = parseColorFromPieceId(kicked[0]);
+      const a = labelForColor(attackerColor);
+      const v = labelForColor(victimColor);
+      v104ShowFeedback("kick","💥","RAUSGEWORFEN!",`${a} schickt ${v} zurück ins Haus.`,1350);
+      v104Flash("kick");
+      v104Sound("kick");
+      if(v104IsMine(attackerColor) || v104IsMine(victimColor)) v104Haptic([55,35,75]);
+      return;
+    }
+    if(action.pickedBarricade){
+      v104ShowFeedback("barricade","🧱","BARIKADE",`${labelForColor(attackerColor)} nimmt eine Barikade auf.`,1050);
+      v104Sound("barricade");
+      if(v104IsMine(attackerColor)) v104Haptic(30);
+      return;
+    }
+    v104Sound("move");
+  }
+
+  function v104JokerLabel(kind){
+    const k=String(kind||"").toLowerCase();
+    if(k==="allcolors" || k==="allcolorsby") return "Alle Farben";
+    if(k==="barricade") return "Barikade";
+    if(k==="reroll") return "Neu-Wurf";
+    if(k==="double") return "Doppelwurf";
+    if(k==="bossspawn") return "Boss spawnen";
+    if(k==="bossremove") return "Boss entfernen";
+    return "Joker";
+  }
+  function v104OnJoker(kind){
+    const actor = state && state.currentPlayer ? state.currentPlayer : "";
+    const label = v104JokerLabel(kind);
+    v104ShowFeedback("joker","🃏","JOKER AKTIV",`${labelForColor(actor)} aktiviert „${label}“.`,1200);
+    v104Flash("joker");
+    v104Sound("joker");
+    if(v104IsMine(actor)) v104Haptic([25,35,25]);
+  }
+  function v104OnJokerCanceled(kind){
+    const label = v104JokerLabel(kind);
+    v104ShowFeedback("joker","↩️","JOKER ZURÜCK",`${label} wurde abgebrochen.`,850);
+    v104Sound("ui");
+  }
+  function v104OnWin(winnerColor){
+    v104Sound("win");
+    v104Flash("six");
+    if(v104IsMine(winnerColor)) v104Haptic([60,45,60,45,110]);
+  }
+
+  v104UpdateSoundButton();
+  try{
+    document.addEventListener("pointerdown",()=>{ if(v104SoundEnabled) v104EnsureAudio(); },{once:true,capture:true,passive:true});
+  }catch(_e){}
+  if(soundToggleBtn){
+    soundToggleBtn.addEventListener("click",()=>{
+      v104SoundEnabled = !v104SoundEnabled;
+      try{ localStorage.setItem(V104_SOUND_KEY, v104SoundEnabled ? "1" : "0"); }catch(_e){}
+      v104UpdateSoundButton();
+      if(v104SoundEnabled){ v104EnsureAudio(); v104Sound("ui"); }
+    });
+  }
+
+  // ===== V10.8: Vollbild + Brett einpassen =====
+  function v108FullscreenElement(){
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+
+  function v108UpdateFullscreenButton(){
+    const nativeActive = !!v108FullscreenElement();
+    const fallbackActive = document.body.classList.contains("isFullscreenFallback");
+    const active = nativeActive || fallbackActive;
+    document.body.classList.toggle("isFullscreenGame", nativeActive);
+    if(fullscreenBtn){
+      fullscreenBtn.textContent = active ? "⤢" : "⛶";
+      fullscreenBtn.title = active ? "Vollbild verlassen" : "Vollbild einschalten";
+      fullscreenBtn.setAttribute("aria-label", fullscreenBtn.title);
+      fullscreenBtn.setAttribute("aria-pressed", active ? "true" : "false");
+      fullscreenBtn.classList.toggle("is-active", active);
+    }
+  }
+
+  function v108RefitBoard(delay=80){
+    setTimeout(()=>{
+      try{
+        applyUxStabilityFixes();
+        resize();
+        view._fittedOnce = false;
+        fitBoardToView();
+        view._fittedOnce = true;
+        draw();
+      }catch(_e){}
+    }, delay);
+  }
+
+  async function v108ToggleFullscreen(){
+    try{
+      const active = v108FullscreenElement();
+      if(active){
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if(exit) await exit.call(document);
+      }else{
+        const target = document.documentElement;
+        const req = target.requestFullscreen || target.webkitRequestFullscreen;
+        if(req){
+          await req.call(target);
+        }else{
+          // Fallback: compact focus layout when the browser exposes no Fullscreen API.
+          document.body.classList.toggle("isFullscreenFallback");
+          if(fullscreenBtn){
+            const on = document.body.classList.contains("isFullscreenFallback");
+            fullscreenBtn.classList.toggle("is-active", on);
+            fullscreenBtn.textContent = on ? "⤢" : "⛶";
+            fullscreenBtn.title = on ? "Fokusmodus verlassen" : "Vollbild/Fokusmodus";
+          }
+        }
+      }
+    }catch(err){
+      try{ toast("Vollbild konnte vom Browser nicht gestartet werden."); }catch(_e){}
+    }finally{
+      v108UpdateFullscreenButton();
+      v108RefitBoard(120);
+    }
+  }
+
+  if(fullscreenBtn) fullscreenBtn.addEventListener("click", v108ToggleFullscreen);
+  if(fitBoardBtn){
+    fitBoardBtn.addEventListener("click",()=>{
+      try{ v104Sound("ui"); }catch(_e){}
+      v108RefitBoard(20);
+      try{ toast("Brett eingepasst."); }catch(_e){}
+    });
+  }
+  document.addEventListener("fullscreenchange",()=>{ v108UpdateFullscreenButton(); v108RefitBoard(120); });
+  document.addEventListener("webkitfullscreenchange",()=>{ v108UpdateFullscreenButton(); v108RefitBoard(120); });
+  v108UpdateFullscreenButton();
+
+  // ===== Legendary Dice (visual only, isolated) =====
+  // Additive: inject styles from JS so du musst NICHT die index.html anfassen.
+  // Entfernt keine Funktion – nur Optik für den Würfel.
+  function ensureLegendaryDiceStyles(){
+    try{
+      if(document.getElementById("legendaryDiceStyles")) return;
+      const style = document.createElement("style");
+      style.id = "legendaryDiceStyles";
+      style.textContent = `
+        /* Legendary Dice – additive, should not affect gameplay */
+        #diceCube{
+          position: relative;
+          transform-style: preserve-3d;
+          will-change: transform, filter;
+          filter: drop-shadow(0 10px 22px rgba(0,0,0,.55));
+        }
+        #diceCube.legend-roll{
+          animation: legendRoll 650ms cubic-bezier(.2,.9,.2,1) both;
+        }
+        #diceCube.legend-ping{
+          animation: legendPing 420ms cubic-bezier(.2,.9,.2,1) both;
+        }
+        #diceCube.legend-crit6::after{
+          content:"";
+          position:absolute; inset:-14px;
+          border-radius: 18px;
+          background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%);
+          filter: blur(0px);
+          animation: critGlow 950ms ease-out both;
+          pointer-events:none;
+          mix-blend-mode: screen;
+        }
+        #diceCube.legend-crit1::after{
+          content:"";
+          position:absolute; inset:-16px;
+          border-radius: 18px;
+          background: radial-gradient(circle at 50% 60%, rgba(255,80,80,.28), rgba(255,80,80,0) 62%);
+          animation: critRed 950ms ease-out both;
+          pointer-events:none;
+          mix-blend-mode: screen;
+        }
+        /* If older CSS misses .shake, provide a safe fallback */
+        #diceCube.shake{
+          animation: diceShake 280ms ease-in-out both;
+        }
+        @keyframes diceShake{
+          0%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+          20%{ transform: translate3d(-2px,1px,0) rotate(-4deg) scale(1.02); }
+          40%{ transform: translate3d(2px,-1px,0) rotate(4deg) scale(1.03); }
+          60%{ transform: translate3d(-1px,-2px,0) rotate(-3deg) scale(1.02); }
+          80%{ transform: translate3d(1px,2px,0) rotate(3deg) scale(1.01); }
+          100%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+        }
+        @keyframes legendRoll{
+          0%{ transform: translate3d(0,0,0) rotateX(0deg) rotateY(0deg) scale(1); filter: drop-shadow(0 10px 22px rgba(0,0,0,.55)); }
+          45%{ transform: translate3d(0,-6px,0) rotateX(520deg) rotateY(620deg) scale(1.10); filter: drop-shadow(0 16px 30px rgba(0,0,0,.55)); }
+          70%{ transform: translate3d(0,-2px,0) rotateX(760deg) rotateY(840deg) scale(1.06); }
+          100%{ transform: translate3d(0,0,0) rotateX(720deg) rotateY(720deg) scale(1); }
+        }
+        @keyframes legendPing{
+          0%{ transform: translate3d(0,0,0) scale(1); }
+          40%{ transform: translate3d(0,-2px,0) scale(1.08); }
+          100%{ transform: translate3d(0,0,0) scale(1); }
+        }
+        @keyframes critGlow{
+          0%{ opacity:0; transform: scale(.92); }
+          25%{ opacity:1; transform: scale(1); }
+          100%{ opacity:0; transform: scale(1.14); }
+        }
+        @keyframes critRed{
+          0%{ opacity:0; transform: scale(.92); }
+          25%{ opacity:1; transform: scale(1); }
+          100%{ opacity:0; transform: scale(1.18); }
+        }
+      `;
+      document.head.appendChild(style);
+    }catch(_e){}
+  }
+
+  // call once (safe)
+  ensureLegendaryDiceStyles();
+
+  // Online
+  const serverLabel = $("serverLabel");
+  const roomCodeInp = $("roomCode");
+  const hostBtn = $("hostBtn");
+  const joinBtn = $("joinBtn");
+  const leaveBtn= $("leaveBtn");
+  const netStatus = $("netStatus");
+  const netPlayersEl = $("netPlayers");
+  const myColorEl = $("myColor");
+
+  // ===== Action-Mode: vier serverautorisierte Joker =====
+  const actionModeToggle = $("actionModeToggle");
+  const actionCard = $("actionCard");
+  const actionHint = $("actionHint");
+  const jokerAllColorsState = $("jokerAllColorsState");
+  const jokerBarricadeState = $("jokerBarricadeState");
+  const jokerRerollState = $("jokerRerollState");
+  let jokerDoubleState = $("jokerDoubleState");
+  const jokerBossSpawnState = $("jokerBossSpawnState");
+  const jokerBossRemoveState = $("jokerBossRemoveState");
+  const actionEffectsState = $("actionEffectsState");
+
+  // ===== V10.9 Action-Bossmodus =====
+  const bossSection = $("bossSection");
+  const bossSlotsEl = $("bossSlots");
+  const bossLastEventEl = $("bossLastEvent");
+  const bossRoundInfoEl = $("bossRoundInfo");
+  const bossOverviewEl = $("bossOverview");
+
+  const BOSS_CARD_META = {
+    hunter:{
+      key:"hunter", icon:"🐺", name:"Der Jäger", tag:"JÄGER", cadence:"nach jeder Spielerbewegung", steps:"1 Feld",
+      summary:"Jagt erst nachdem der aktive Spieler seine normale Bewegung abgeschlossen hat.",
+      effect:"Trifft er einen Spieler, wird dessen Figur wie beim normalen Schmeißen zurück ins Haus gesetzt.",
+      rule:"Barikadenregel: Trifft er eine Barikade, wird sie direkt hinter ihn versetzt.",
+      portrait:"boss_hunter.svg", artClass:"bossCardArt--hunter", reward:"1 Joker"
+    },
+    curse:{
+      key:"curse", icon:"🧙", name:"Der Fluchmeister", tag:"FLUCHMEISTER", cadence:"nach jeder vollständigen Runde", steps:"5 Felder",
+      summary:"Schwebt über das gesamte Brett und ignoriert Barikaden.",
+      effect:"Jeder Spieler, den er auf seinem Weg überquert, wird sofort verflucht.",
+      rule:"Fluch: Der nächste Würfelwurf dieses Spielers erhält −2. Barikaden bleiben liegen.",
+      portrait:"boss_curse.svg", artClass:"bossCardArt--curse", reward:"1 Joker"
+    },
+    shadow:{
+      key:"shadow", icon:"👻", name:"Der Schatten", tag:"SCHATTEN", cadence:"nach jeder vollständigen Runde", steps:"3 Felder",
+      summary:"Jagt bevorzugt den Spieler mit den meisten Jokern.",
+      effect:"Jeder Spieler, den er auf seinem Weg erwischt oder überspringt, verliert 1 zufälligen Joker.",
+      rule:"Hat ein Spieler keinen Joker, bekommt er stattdessen 2 zufällige Joker über das Joker-Rad.",
+      portrait:"boss_shadow.svg", artClass:"bossCardArt--shadow", reward:"1 Joker"
+    },
+    doppel:{
+      key:"doppel", icon:"👥", name:"Der Doppelgänger", tag:"DOPPELGÄNGER", cadence:"nach jeder Spielerbewegung", steps:"wie Spieler",
+      summary:"Kopiert exakt die Schrittzahl des aktiven Spielers und jagt den Spieler mit den meisten Figuren auf dem Brett.",
+      effect:"Nur wenn er exakt auf einer Figur landet, wird sie zurück ins Haus geschickt.",
+      rule:"Barikaden dürfen nicht übersprungen werden. Exakte Landung auf einer beweglichen Barikade versetzt sie direkt vor einen Spieler. Doppelwurf und Neu-Wurf werden über die tatsächliche Spielerbewegung mitkopiert; der Barikaden-Joker wird als Gegenbarikade gespiegelt.",
+      portrait:"boss_doppel.svg", artClass:"bossCardArt--doppel", reward:"2 Joker"
+    },
+    devourer:{
+      key:"devourer", icon:"🌌", name:"Der Weltenfresser", tag:"WELTENFRESSER", cadence:"alle 5 Spielzüge", steps:"Teleport",
+      summary:"Zählt abgeschlossene Spielerzüge. Nach jeweils 5 Spielzügen teleportiert er sich auf ein neues freies Feld.",
+      effect:"Bei jeder 5-Züge-Aktivierung verschwindet das alte schwarze Loch und ein neues freies Feld wird bis zur nächsten Aktivierung komplett unpassierbar.",
+      rule:"Das schwarze Loch darf nie auf Figuren, Bosse, Barikaden, Ereignisfelder, Fallen, Miniportale, Ziel oder die geschützten Startreihen gesetzt werden und keinen einzigen Grundweg zum Ziel vollständig kappen.",
+      portrait:"boss_devourer.svg", artClass:"bossCardArt--devourer", reward:"3 Joker"
+    }
+  };
+
+  function bossCardStatusText(slot,boss){
+    if(!slot || !boss) return 'Noch nicht im Spiel';
+    if(boss.nodeId) return `Aktiv im Spielfeld · Position ${boss.nodeId}`;
+    return `Bereit am Portal · ${slot?.name||'Bossportal'}`;
+  }
+
+  function getBossActionType(act){
+    const direct=String(act?.type||act?.bossType||act?.boss||act?.key||'').toLowerCase();
+    if(direct.includes('hunter') || direct.includes('jäger') || direct.includes('jaeger')) return 'hunter';
+    if(direct.includes('curse') || direct.includes('fluch')) return 'curse';
+    if(direct.includes('shadow') || direct.includes('schatten')) return 'shadow';
+    if(direct.includes('doppel')) return 'doppel';
+    if(direct.includes('devourer') || direct.includes('weltenfresser')) return 'devourer';
+    const blob=`${String(act?.title||'')} ${String(act?.text||'')}`.toLowerCase();
+    if(blob.includes('jäger') || blob.includes('jaeger')) return 'hunter';
+    if(blob.includes('fluchmeister')) return 'curse';
+    if(blob.includes('schatten')) return 'shadow';
+    if(blob.includes('doppelgänger') || blob.includes('doppelgaenger') || blob.includes('doppel')) return 'doppel';
+    if(blob.includes('weltenfresser')) return 'devourer';
+    return '';
+  }
+
+  function showBossActionFeedback(act){
+    try{
+      const type=getBossActionType(act) || 'generic';
+      let el=document.getElementById('bossActionFlash');
+      if(!el){
+        el=document.createElement('div');
+        el.id='bossActionFlash';
+        el.innerHTML='<div class="bossActionFlashIcon">👹</div><div class="bossActionFlashCopy"><strong>Bossaktion</strong><span></span></div>';
+        document.body.appendChild(el);
+      }
+      el.className=`theme-${type}`;
+      const icon=el.querySelector('.bossActionFlashIcon');
+      const title=el.querySelector('strong');
+      const text=el.querySelector('span');
+      if(icon) icon.textContent=String(act?.icon||BOSS_CARD_META[type]?.icon||'👹');
+      if(title) title.textContent=String(act?.title||BOSS_CARD_META[type]?.name||'Bossaktion');
+      if(text) text.textContent=String(act?.text||'Der Boss führt seine Aktion aus.');
+      requestAnimationFrame(()=>el.classList.add('show'));
+      clearTimeout(showBossActionFeedback._t);
+      showBossActionFeedback._t=setTimeout(()=>el.classList.remove('show'),2850);
+
+      const blob=`${String(act?.title||'')} ${String(act?.text||'')}`.toLowerCase();
+      const colorWords={red:['rot','red'],blue:['blau','blue'],green:['grün','gruen','green'],yellow:['gelb','yellow']};
+      for(const [color,words] of Object.entries(colorWords)){
+        if(!words.some(w=>blob.includes(w))) continue;
+        document.querySelectorAll(`.playerStripCard[data-color="${color}"]`).forEach(card=>{
+          card.classList.remove('bossHit'); void card.offsetWidth; card.classList.add('bossHit');
+          setTimeout(()=>card.classList.remove('bossHit'),2100);
+        });
+        if(state?.currentPlayer===color){
+          const turn=document.querySelector('.sideTurnCard');
+          if(turn){turn.classList.remove('bossHit');void turn.offsetWidth;turn.classList.add('bossHit');setTimeout(()=>turn.classList.remove('bossHit'),2100);}
+        }
+      }
+    }catch(_e){}
+  }
+
+  function ensureBossArrivalOverlay(){
+    let el=document.getElementById('bossArrivalOverlay');
+    if(el) return el;
+    el=document.createElement('div');
+    el.id='bossArrivalOverlay';
+    el.setAttribute('aria-hidden','true');
+    el.innerHTML=`<div class="bossArrivalRift" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="bossArrivalCard" role="status" aria-live="polite">
+        <div class="bossArrivalKicker">⚠ BOSS-ALARM</div>
+        <div class="bossArrivalArt"><img class="bossArrivalPortrait" alt=""/><div class="bossArrivalGlyph">👹</div><div class="bossArrivalScan"></div></div>
+        <div class="bossArrivalCopy">
+          <div class="bossArrivalName">Boss erscheint</div>
+          <div class="bossArrivalRule"></div>
+          <div class="bossArrivalBadges"><span class="bossArrivalSide">BOSSFELD</span><span class="bossArrivalReward">🏆 1 Joker</span></div>
+          <button class="bossArrivalSkip" type="button">WEITER ›</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    const skip=el.querySelector('.bossArrivalSkip');
+    const closeNow=()=>{
+      clearTimeout(_bossArrivalTimer);
+      el.classList.remove('show');
+      el.setAttribute('aria-hidden','true');
+      _bossArrivalShowing=false;
+      setTimeout(showNextBossArrival,120);
+    };
+    if(skip) skip.addEventListener('click',(ev)=>{ev.stopPropagation();closeNow();});
+    el.addEventListener('click',(ev)=>{if(ev.target===el) closeNow();});
+    return el;
+  }
+
+  function showBossArrival(spawn){
+    try{
+      if(!spawn) return;
+      const type=String(spawn.bossType||'');
+      const meta=BOSS_CARD_META[type]||{};
+      const el=ensureBossArrivalOverlay();
+      const portrait=el.querySelector('.bossArrivalPortrait');
+      const glyph=el.querySelector('.bossArrivalGlyph');
+      const name=el.querySelector('.bossArrivalName');
+      const rule=el.querySelector('.bossArrivalRule');
+      const side=el.querySelector('.bossArrivalSide');
+      const reward=el.querySelector('.bossArrivalReward');
+      const kicker=el.querySelector('.bossArrivalKicker');
+      el.className=`theme-${type}`;
+      const source=String(spawn.source||'');
+      if(kicker){
+        kicker.textContent=source.startsWith('event_single')?'🃏 EREIGNIS-BOSS':source==='event_multi'?'☠️ DOPPEL-BOSS':source.startsWith('countdown')?'⏳ ZUSATZBOSS':source==='joker'?'🃏 JOKER-BOSS':source==='boss_test'?'🧪 TEST-BOSS':'⚠ BOSS-ALARM';
+      }
+      if(portrait){
+        if(meta.portrait){portrait.src=meta.portrait;portrait.alt=meta.name||'Boss';portrait.hidden=false;}
+        else{portrait.removeAttribute('src');portrait.hidden=true;}
+      }
+      if(glyph) glyph.textContent=meta.icon||spawn.icon||'👹';
+      if(name) name.textContent=meta.name||spawn.bossName||'Boss erscheint';
+      if(rule) rule.textContent=meta.summary||'Ein neuer Boss betritt das Spiel.';
+      if(side) side.textContent=`🚪 ${String(spawn.side||spawn.slotName||'Bossfeld')}`;
+      if(reward) reward.textContent=`🏆 ${meta.reward||'1 Joker'}`;
+      clearTimeout(_bossArrivalTimer);
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+      el.setAttribute('aria-hidden','false');
+      try{ playBossSpawnSound?.(); }catch(_e){}
+      _bossArrivalShowing=true;
+      _bossArrivalTimer=setTimeout(()=>{
+        el.classList.remove('show');
+        el.setAttribute('aria-hidden','true');
+        _bossArrivalShowing=false;
+        setTimeout(showNextBossArrival,180);
+      },2500);
+    }catch(_e){
+      _bossArrivalShowing=false;
+      setTimeout(showNextBossArrival,0);
+    }
+  }
+
+  function showNextBossArrival(){
+    if(_bossArrivalShowing||!_bossArrivalQueue.length) return;
+    const next=_bossArrivalQueue.shift();
+    showBossArrival(next);
+  }
+
+  function queueBossArrivals(items){
+    const arr=(Array.isArray(items)?items:[items]).filter(Boolean).sort((a,b)=>Number(a?.seq||0)-Number(b?.seq||0));
+    for(const item of arr){
+      const seq=Number(item?.seq||0);
+      if(!seq||seq<=_lastBossSpawnSeq) continue;
+      _lastBossSpawnSeq=seq;
+      _bossArrivalQueue.push(item);
+    }
+    showNextBossArrival();
+  }
+
+  let bossMoveFx = new Map();
+  let bossLifeFx = [];
+  const _bossRemovedByJokerIds = new Set();
+
+  function bossTheme(type){
+    const t=String(type||'');
+    if(t==='hunter') return {glow:'rgba(255,134,74,.72)', stroke:'rgba(255,190,116,.98)', fill:'rgba(59,18,12,.96)', trail:'rgba(255,161,84,.78)', soft:'rgba(255,161,84,.16)', label:'rgba(255,224,192,.96)'};
+    if(t==='curse') return {glow:'rgba(176,118,255,.78)', stroke:'rgba(222,189,255,.98)', fill:'rgba(30,10,58,.96)', trail:'rgba(190,130,255,.78)', soft:'rgba(190,130,255,.18)', label:'rgba(239,225,255,.96)'};
+    if(t==='doppel') return {glow:'rgba(255,215,117,.72)', stroke:'rgba(255,234,174,.98)', fill:'rgba(55,40,12,.96)', trail:'rgba(255,218,119,.78)', soft:'rgba(255,218,119,.16)', label:'rgba(255,245,213,.96)'};
+    if(t==='devourer') return {glow:'rgba(162,93,255,.82)', stroke:'rgba(221,190,255,.98)', fill:'rgba(9,4,20,.98)', trail:'rgba(141,87,255,.82)', soft:'rgba(119,72,190,.22)', label:'rgba(244,231,255,.98)'};
+    return {glow:'rgba(119,241,255,.74)', stroke:'rgba(208,252,255,.98)', fill:'rgba(12,32,46,.96)', trail:'rgba(118,235,244,.78)', soft:'rgba(118,235,244,.16)', label:'rgba(225,250,255,.96)'};
+  }
+
+  const bossPortraitCanvasCache=new Map();
+  function getBossPortraitCanvasImage(type){
+    try{
+      const key=String(type||'');
+      if(!key || typeof Image==='undefined') return null;
+      if(bossPortraitCanvasCache.has(key)) return bossPortraitCanvasCache.get(key);
+      const meta=BOSS_CARD_META[key];
+      if(!meta?.portrait) return null;
+      const img=new Image();
+      img.decoding='async';
+      img.onload=()=>{ try{ requestInteractionFxTick(); draw(); }catch(_e){} };
+      img.onerror=()=>{};
+      img.src=meta.portrait;
+      bossPortraitCanvasCache.set(key,img);
+      return img;
+    }catch(_e){ return null; }
+  }
+
+  function drawBossTokenCanvas(sx,sy,r,boss,theme,opt={}){
+    const moving=!!opt.moving;
+    const pulse=Number(opt.pulse||0);
+    const rr=r*.92;
+    const type=String(boss?.type||'');
+    const meta=BOSS_CARD_META[type]||{};
+    const name=String(boss?.name||meta.name||'Boss').replace(/^Der\s+/i,'');
+    const img=getBossPortraitCanvasImage(type);
+    ctx.save();
+
+    // Aura and outer threat ring
+    ctx.shadowColor=theme.glow;
+    ctx.shadowBlur=24+14*pulse;
+    ctx.strokeStyle=theme.stroke;
+    ctx.lineWidth=3.8;
+    ctx.beginPath();ctx.arc(sx,sy,r*1.18+4*pulse,0,Math.PI*2);ctx.stroke();
+    ctx.shadowColor='transparent';
+    ctx.fillStyle=theme.soft;
+    ctx.beginPath();ctx.arc(sx,sy,r*1.10+2*pulse,0,Math.PI*2);ctx.fill();
+
+    // Token frame
+    ctx.fillStyle=theme.fill;
+    ctx.strokeStyle=theme.stroke;
+    ctx.lineWidth=3.1;
+    ctx.beginPath();ctx.arc(sx,sy,rr,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+    // Portrait clipped into the token, emoji remains the fallback.
+    ctx.save();
+    ctx.beginPath();ctx.arc(sx,sy,rr-3,0,Math.PI*2);ctx.clip();
+    if(img && img.complete && img.naturalWidth>0 && img.naturalHeight>0){
+      const side=(rr-3)*2;
+      const scale=Math.max(side/img.naturalWidth,side/img.naturalHeight);
+      const dw=img.naturalWidth*scale, dh=img.naturalHeight*scale;
+      ctx.drawImage(img,sx-dw/2,sy-dh/2,dw,dh);
+      const shade=ctx.createLinearGradient(sx,sy-rr,sx,sy+rr);
+      shade.addColorStop(0,'rgba(255,255,255,.05)');
+      shade.addColorStop(.58,'rgba(0,0,0,0)');
+      shade.addColorStop(1,'rgba(0,0,0,.34)');
+      ctx.fillStyle=shade;ctx.fillRect(sx-rr,sy-rr,rr*2,rr*2);
+    }else{
+      ctx.fillStyle='rgba(255,255,255,.99)';
+      ctx.font=`1000 ${Math.max(20,Math.round(r*1.02))}px system-ui`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(boss?.icon||meta.icon||'👹',sx,sy-1);
+    }
+    ctx.restore();
+
+    // Inner glass rim
+    ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.arc(sx,sy,rr-5,Math.PI*1.05,Math.PI*1.86);ctx.stroke();
+
+    // Motion arcs
+    if(moving){
+      ctx.strokeStyle=theme.stroke;ctx.lineWidth=2.2;
+      ctx.beginPath();ctx.arc(sx,sy,r*1.24,Math.PI*.18,Math.PI*1.02);ctx.stroke();
+      ctx.beginPath();ctx.arc(sx,sy,r*1.38,Math.PI*1.25,Math.PI*1.90);ctx.stroke();
+    }
+
+    // Life badge
+    const badgeW=Math.max(26,r*.90), badgeH=Math.max(13,r*.46);
+    const bx=sx+r*.50, by=sy+r*.48;
+    ctx.fillStyle='rgba(14,12,20,.94)';ctx.strokeStyle=theme.stroke;ctx.lineWidth=1.4;
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(bx-badgeW/2,by-badgeH/2,badgeW,badgeH,badgeH/2); else ctx.rect(bx-badgeW/2,by-badgeH/2,badgeW,badgeH);
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle=theme.label;ctx.font=`1000 ${Math.max(7,Math.round(r*.26))}px system-ui`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('1 ♥',bx,by+.3);
+
+    // Name plate
+    const labelW=Math.max(46,r*2.10), labelH=Math.max(15,r*.66);
+    const lx=sx-labelW/2, ly=sy-r*1.86;
+    ctx.fillStyle='rgba(13,12,20,.94)';ctx.strokeStyle=theme.stroke;ctx.lineWidth=1.6;
+    ctx.beginPath();if(ctx.roundRect) ctx.roundRect(lx,ly,labelW,labelH,8); else ctx.rect(lx,ly,labelW,labelH);ctx.fill();ctx.stroke();
+    ctx.fillStyle=theme.label;ctx.font=`900 ${Math.max(7,Math.round(r*.27))}px system-ui`;
+    ctx.fillText(name,sx,ly+labelH/2+.4);
+    ctx.restore();
+  }
+
+  function snapshotBossLookup(b){
+    const map=new Map();
+    const slots=Array.isArray(b?.slots) ? b.slots : [];
+    for(const slot of slots){
+      const boss=slot?.boss;
+      if(!boss?.id) continue;
+      map.set(String(boss.id), {
+        id:String(boss.id),
+        nodeId: boss.nodeId ? String(boss.nodeId) : null,
+        lastMovedAt: Number(boss.lastMovedAt || 0),
+        lastPath: Array.isArray(boss.lastPath) ? boss.lastPath.map(String) : [],
+        icon: String(boss.icon||'👹'),
+        type: String(boss.type||'')
+      });
+    }
+    return map;
+  }
+
+
+  function bossSlotWorldPoint(bossState, bossId){
+    try{
+      const slots=Array.isArray(bossState?.slots) ? bossState.slots : [];
+      const idx=slots.findIndex(s=>String(s?.boss?.id||'')===String(bossId||''));
+      const slot=idx>=0 ? slots[idx] : null;
+      const boss=slot?.boss || null;
+      if(boss?.nodeId){
+        const n=nodeById.get(String(boss.nodeId));
+        if(n) return {x:n.x,y:n.y,slotIndex:idx,slotId:String(slot?.id||'')};
+      }
+      const fields=Array.isArray(board?.meta?.bossFields) ? board.meta.bossFields : [];
+      const field=(slot?.id ? fields.find(f=>String(f?.id||'')===String(slot.id)) : null) || fields[idx] || null;
+      if(field && Number.isFinite(Number(field.x)) && Number.isFinite(Number(field.y))){
+        return {x:Number(field.x),y:Number(field.y),slotIndex:idx,slotId:String(slot?.id||field?.id||'')};
+      }
+    }catch(_e){}
+    return null;
+  }
+
+  function addBossLifeFx(kind,bossState,bossInfo){
+    try{
+      const pt=bossSlotWorldPoint(bossState,bossInfo?.id);
+      if(!pt) return;
+      const now=performance.now();
+      bossLifeFx.push({
+        kind:String(kind||'spawn'),
+        x:pt.x,y:pt.y,
+        start:now,
+        duration: (kind==='defeat'||kind==='remove') ? 1650 : 1900,
+        icon:String(bossInfo?.icon||'👹'),
+        type:String(bossInfo?.type||''),
+        label:kind==='defeat'?'BOSS BESIEGT':kind==='remove'?'BOSS ENTFERNT':'BOSS ERSCHEINT'
+      });
+      if(bossLifeFx.length>10) bossLifeFx=bossLifeFx.slice(-10);
+      requestInteractionFxTick();
+    }catch(_e){}
+  }
+
+  function drawBossLifeFx(r){
+    if(!bossLifeFx.length) return;
+    const now=performance.now();
+    const alive=[];
+    for(const fx of bossLifeFx){
+      const dur=Math.max(1,Number(fx.duration||1));
+      const p=Math.max(0,Math.min(1,(now-Number(fx.start||0))/dur));
+      if(p>=1) continue;
+      alive.push(fx);
+      const s=worldToScreen({x:fx.x,y:fx.y});
+      const theme=bossTheme(fx.type);
+      ctx.save();
+      if(fx.kind==='spawn'){
+        const e=1-Math.pow(1-p,3);
+        const flash=Math.max(0,1-p*1.25);
+        ctx.globalAlpha=Math.max(.15,1-p*.55);
+        ctx.shadowColor=theme.glow; ctx.shadowBlur=28+30*(1-p);
+        for(let k=0;k<3;k++){
+          const rr=r*(1.1+k*.48)+e*r*(1.8+k*.38);
+          ctx.strokeStyle=k===0?theme.stroke:theme.trail;
+          ctx.lineWidth=Math.max(1.4,4-k*.9)*(1-p*.35);
+          ctx.beginPath();ctx.arc(s.x,s.y,rr,0,Math.PI*2);ctx.stroke();
+        }
+        ctx.shadowColor='transparent';
+        ctx.globalAlpha=.92;
+        ctx.fillStyle=theme.soft;
+        ctx.beginPath();ctx.arc(s.x,s.y,r*(1.45+e*.55),0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=Math.min(1,p*2.8);
+        ctx.font=`1000 ${Math.max(24,Math.round(r*1.5))}px system-ui`;
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='rgba(255,255,255,.98)';
+        ctx.fillText(fx.icon||'👹',s.x,s.y-2);
+        if(flash>0){ctx.globalAlpha=flash*.75;ctx.fillStyle='white';ctx.beginPath();ctx.arc(s.x,s.y,r*(.55+flash*.8),0,Math.PI*2);ctx.fill();}
+      }else{
+        const e=1-Math.pow(1-p,2);
+        ctx.globalAlpha=Math.max(.18,1-p);
+        for(let k=0;k<12;k++){
+          const a=(Math.PI*2/12)*k + .25;
+          const dist=r*(.8+e*2.7);
+          const px=s.x+Math.cos(a)*dist, py=s.y+Math.sin(a)*dist;
+          ctx.fillStyle=k%2?theme.stroke:'rgba(255,235,160,.96)';
+          ctx.shadowColor=theme.glow;ctx.shadowBlur=10;
+          ctx.beginPath();ctx.arc(px,py,Math.max(2,r*.12)*(1-p*.45),0,Math.PI*2);ctx.fill();
+        }
+        ctx.shadowColor='transparent';
+        ctx.strokeStyle=theme.stroke;ctx.lineWidth=4*(1-p*.55);
+        ctx.beginPath();ctx.arc(s.x,s.y,r*(1+e*2.3),0,Math.PI*2);ctx.stroke();
+        ctx.globalAlpha=Math.max(0,1-p*1.05);
+        ctx.font=`1000 ${Math.max(24,Math.round(r*1.45))}px system-ui`;
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='rgba(255,255,255,.98)';
+        ctx.fillText(fx.kind==='remove'?'🌀':'💥',s.x,s.y-2-e*r*.28);
+      }
+      ctx.globalAlpha=Math.max(0,Math.min(1,(p<.18?p/.18:(1-p)/.35)));
+      ctx.font=`1000 ${Math.max(9,Math.round(r*.42))}px system-ui`;
+      ctx.fillStyle=fx.kind==='defeat'?'rgba(255,232,164,.98)':fx.kind==='remove'?'rgba(213,199,255,.98)':theme.label;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(fx.label,s.x,s.y-r*(2.15+p*.35));
+      ctx.restore();
+    }
+    bossLifeFx=alive;
+    if(alive.length) requestInteractionFxTick();
+  }
+
+  function syncBossMoveFx(prevBoss,nextBoss){
+    try{
+      const prev=snapshotBossLookup(prevBoss);
+      const next=snapshotBossLookup(nextBoss);
+      const now=performance.now();
+      // Nur echte Zustandswechsel animieren. Beim ersten Snapshot/Reconnect keine Fake-Spawns.
+      if(prevBoss && nextBoss){
+        for(const [id,boss] of next.entries()){
+          if(!prev.has(id)) addBossLifeFx('spawn',nextBoss,boss);
+        }
+        for(const [id,boss] of prev.entries()){
+          if(!next.has(id)){
+            const removedByJoker=_bossRemovedByJokerIds.has(String(id));
+            addBossLifeFx(removedByJoker?'remove':'defeat',prevBoss,boss);
+            _bossRemovedByJokerIds.delete(String(id));
+          }
+        }
+      }
+      for(const [id,boss] of next.entries()){
+        const old=prev.get(id) || null;
+        const oldNode=old?.nodeId || null;
+        const moved=!!boss.nodeId && (String(boss.nodeId)!==String(oldNode||'') || Number(boss.lastMovedAt||0)!==Number(old?.lastMovedAt||0));
+        if(!moved) continue;
+        const seq=[];
+        if(oldNode) seq.push(String(oldNode));
+        const path=Array.isArray(boss.lastPath) ? boss.lastPath.map(String).filter(Boolean) : [];
+        for(const pid of path){ if(!seq.length || seq[seq.length-1]!==pid) seq.push(pid); }
+        if(boss.nodeId && (!seq.length || seq[seq.length-1]!==String(boss.nodeId))) seq.push(String(boss.nodeId));
+        const clean=seq.filter(pid=>!!nodeById.get(String(pid)));
+        if(!clean.length && boss.nodeId && nodeById.get(String(boss.nodeId))) clean.push(String(boss.nodeId));
+        if(!clean.length) continue;
+        bossMoveFx.set(id, {
+          id,
+          nodes: clean,
+          start: now,
+          duration: Math.max(480, Math.max(1, clean.length-1) * 280),
+          pulseUntil: now + 1800,
+          icon: boss.icon || '👹',
+          type: boss.type || ''
+        });
+      }
+      for(const [id,fx] of bossMoveFx.entries()){
+        if(next.has(id)) continue;
+        if(now > Number(fx?.pulseUntil||0)) bossMoveFx.delete(id);
+      }
+    }catch(_e){}
+  }
+
+  function getBossFxState(boss){
+    const id=String(boss?.id||''); if(!id) return null;
+    const fx=bossMoveFx.get(id); if(!fx) return null;
+    const nodes=Array.isArray(fx.nodes) ? fx.nodes.map(nid=>nodeById.get(String(nid))).filter(Boolean) : [];
+    if(!nodes.length) return null;
+    const now=performance.now();
+    const pulse = now < Number(fx.pulseUntil || 0);
+    if(nodes.length < 2 || now >= Number(fx.start||0) + Number(fx.duration||0)){
+      if(!pulse && now > Number(fx.start||0) + Number(fx.duration||0) + 260){ bossMoveFx.delete(id); }
+      const last=nodes[nodes.length-1];
+      return {x:last.x,y:last.y,moving:false,pulse,trail:nodes,type:fx.type||boss?.type||''};
+    }
+    const total=Math.max(1,Number(fx.duration||1));
+    const p=Math.max(0,Math.min(1,(now-Number(fx.start||0))/total));
+    const steps=nodes.length-1;
+    const segF=p*steps;
+    const seg=Math.min(steps-1,Math.floor(segF));
+    const u=segF-seg;
+    const a=nodes[seg], b=nodes[seg+1];
+    return {x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u,moving:true,pulse:true,trail:nodes,type:fx.type||boss?.type||''};
+  }
+
+
+  
+  const jokerAllColorsBtn = $("jokerAllColorsBtn");
+  const jokerBarricadeBtn = $("jokerBarricadeBtn");
+  let jokerRerollBtn = $("jokerRerollBtn");
+  let jokerBossSpawnBtn = $("jokerBossSpawnBtn");
+  let jokerBossRemoveBtn = $("jokerBossRemoveBtn");
+
+  
+
+  // ===== Joker #3: Neu-Wurf (UI inject, additive) =====
+  function ensureActionJoker3UI(){
+    try{
+      if(!actionCard) return;
+      // (fixed) no self-recursion
+
+      // Add status row if missing
+      if(!document.getElementById("jokerRerollState")){
+        const row = document.createElement("div");
+        row.className = "kv";
+        const left = document.createElement("span");
+        left.textContent = "🔁 Neu‑Wurf";
+        const right = document.createElement("span");
+        right.id = "jokerRerollState";
+        right.textContent = "–";
+        row.appendChild(left);
+        row.appendChild(right);
+
+        const afterSpan = document.getElementById("jokerBarricadeState");
+        const afterKv = afterSpan ? afterSpan.closest(".kv") : null;
+        if(afterKv && afterKv.parentElement){
+          afterKv.parentElement.insertBefore(row, afterKv.nextSibling);
+        } else {
+          actionCard.appendChild(row);
+        }
+      }
+
+      // Add button if missing
+      if(!document.getElementById("jokerRerollBtn")){
+        const grid = actionCard.querySelector(".joker-grid");
+        if(grid){
+          const btn = document.createElement("button");
+          btn.id = "jokerRerollBtn";
+          btn.className = "joker-btn";
+          btn.type = "button";
+          btn.textContent = "🔁 Neu‑Wurf nutzen";
+          grid.appendChild(btn);
+        }
+      }
+
+      // refresh local ref
+      jokerRerollBtn = document.getElementById("jokerRerollBtn");
+    }catch(_e){}
+  }
+  ensureActionJoker3UI();
+
+  // ===== Epic Joker UI (visual only, NO gameplay changes) =====
+  // Ziel: 4 klare Buttons (Name + Anzahl), weniger Text, nicht verwirrend.
+  // WICHTIG: Wir bewegen nur DOM-Elemente & stylen sie. IDs/Clicks bleiben gleich.
+  function ensureEpicJokerUI(){
+    try{
+      if(!actionCard) return;
+
+      // 1) Inject styles once
+      if(!document.getElementById("epicJokerStyles")){
+        const st = document.createElement("style");
+        st.id = "epicJokerStyles";
+        st.textContent = `
+          /* Epic Joker Grid */
+          #actionCard .epicJokerGrid{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:10px;
+            margin-top:10px;
+          }
+          #actionCard .epicJokerBtn{
+            position:relative;
+            display:flex;
+            align-items:center;
+            justify-content:flex-start;
+            gap:10px;
+            padding:12px 12px;
+            border-radius:14px;
+            border:1px solid rgba(255,255,255,.10);
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+            box-shadow: 0 10px 22px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+            cursor:pointer;
+            user-select:none;
+            transform: translateZ(0);
+            transition: transform .12s ease, filter .12s ease, border-color .12s ease;
+            min-height:54px;
+            text-align:left;
+            width:100%;
+          }
+          #actionCard .epicJokerBtn:hover{
+            transform: translateY(-1px) scale(1.01);
+            border-color: rgba(255,255,255,.18);
+            filter: brightness(1.05);
+          }
+          #actionCard .epicJokerBtn:active{
+            transform: translateY(0px) scale(.995);
+            filter: brightness(.98);
+          }
+          #actionCard .epicJokerBtn .ejIcon{
+            width:36px; height:36px;
+            display:grid; place-items:center;
+            border-radius:12px;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.18), rgba(255,255,255,.05) 60%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+            font-size:18px;
+          }
+          #actionCard .epicJokerBtn .ejName{
+            font-weight:900;
+            letter-spacing:.2px;
+            font-size:14px;
+            line-height:1.05;
+          }
+          #actionCard .epicJokerBtn .ejSub{
+            display:block;
+            opacity:.75;
+            font-weight:700;
+            font-size:11px;
+            margin-top:2px;
+          }
+          #actionCard .epicJokerBtn .ejCount{
+            margin-left:auto;
+            font-weight:1000;
+            padding:6px 10px;
+            border-radius:999px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+            min-width:44px;
+            text-align:center;
+          }
+          #actionCard .epicJokerBtn.ejEmpty{
+            opacity:.45;
+            filter: grayscale(.35);
+          }
+
+          /* Hide verbose legacy rows */
+          #actionCard .kv.ejHideRow{ display:none !important; }
+          /* If old .joker-grid exists, hide it (we re-home buttons) */
+          #actionCard .joker-grid.ejOldGridHidden{ display:none !important; }
+        `;
+        document.head.appendChild(st);
+      }
+
+      // 2) Hide verbose state rows (we show counts on buttons instead)
+      const hideIds = ["jokerAllColorsState","jokerBarricadeState","jokerRerollState","jokerDoubleState","jokerBossSpawnState","jokerBossRemoveState"];
+      hideIds.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        const row = el.closest(".kv") || el.closest("div") || el.parentElement;
+        if(row) row.classList.add("ejHideRow");
+      });
+
+      // 3) Create epic grid container once
+      let grid = document.getElementById("epicJokerGrid");
+      if(!grid){
+        grid = document.createElement("div");
+        grid.id = "epicJokerGrid";
+        grid.className = "epicJokerGrid";
+        // Insert near the bottom but above effects / below hint
+        // Prefer: after actionHint
+        if(actionHint && actionHint.parentElement){
+          const parent = actionHint.parentElement;
+          // try to place after hint text node
+          parent.insertBefore(grid, actionHint.nextSibling);
+        }else{
+          actionCard.appendChild(grid);
+        }
+      }
+
+      // 4) Ensure we have references to all 4 buttons
+      const bAll = document.getElementById("jokerAllColorsBtn");
+      const bBar = document.getElementById("jokerBarricadeBtn");
+      const bRe  = document.getElementById("jokerRerollBtn");
+      const bDo  = document.getElementById("jokerDoubleBtn");
+      const bBs  = document.getElementById("jokerBossSpawnBtn");
+      const bBr  = document.getElementById("jokerBossRemoveBtn");
+
+      // If old grid exists, hide it to reduce clutter
+      const oldGrid = actionCard.querySelector(".joker-grid");
+      if(oldGrid) oldGrid.classList.add("ejOldGridHidden");
+
+      function makeEpic(btn, key, icon, name, sub){
+        if(!btn) return;
+        btn.classList.add("epicJokerBtn");
+        btn.dataset.jokerKey = key;
+
+        // Build layout once
+        if(!btn.querySelector(".ejIcon")){
+          btn.innerHTML = `
+            <span class="ejIcon">${icon}</span>
+            <span class="ejText">
+              <span class="ejName">${name}</span>
+              <span class="ejSub">${sub||""}</span>
+            </span>
+            <span class="ejCount" id="ejCount_${key}">x0</span>
+          `;
+        }else{
+          // ensure count id exists
+          const c = btn.querySelector(".ejCount");
+          if(c && !c.id) c.id = `ejCount_${key}`;
+        }
+
+        // Move into epic grid (keeps click listeners)
+        if(btn.parentElement !== grid){
+          grid.appendChild(btn);
+        }
+      }
+
+      makeEpic(bAll, "allColors", "🌈", "Alle Farben", "alle Farben nutzbar");
+      makeEpic(bBar, "barricade", "🧱", "Barikade", "Barikade versetzen");
+      makeEpic(bRe,  "reroll",   "🔁", "Neu‑Wurf", "würfle nochmal");
+      makeEpic(bDo,  "double",   "🎲", "Doppelwurf", "2 Würfel zählen");
+      makeEpic(bBs,  "bossSpawn", "👹", "Boss spawnen", "zufälligen Boss rufen");
+      makeEpic(bBr,  "bossRemove", "🌀", "Boss entfernen", "aktiven Boss auswählen");
+
+    }catch(_e){}
+  }
+  // run once on load (safe if elements appear later)
+  try{ ensureEpicJokerUI(); }catch(_e){}
+
+
+// Color picker (A1.1)
+  // NOTE: Manche index.html Versionen enthalten die Elemente nicht.
+  // Damit du NUR game.js tauschen musst, erzeugen wir sie sicher per JS.
+  let colorPickWrap = $("colorPick");
+  let btnPickRed = $("pickRed");
+  let btnPickBlue = $("pickBlue");
+  let btnPickGreen = $("pickGreen");
+  let btnPickYellow = $("pickYellow");
+
+  // Server can tell which colors are currently supported online.
+  // (Additiv: if missing, fallback to red/blue)
+  let allowedColorsOnline = new Set(["red","blue","green","yellow"]);
+
+  let _colorPickBound = false;
+
+  function bindColorPickHandlers(){
+    if(_colorPickBound) return;
+    if(!btnPickRed || !btnPickBlue) return;
+    _colorPickBound = true;
+    btnPickRed.addEventListener("click", ()=> requestColor("red"));
+    btnPickBlue.addEventListener("click", ()=> requestColor("blue"));
+    if(btnPickGreen) btnPickGreen.addEventListener("click", ()=> requestColor("green"));
+    if(btnPickYellow) btnPickYellow.addEventListener("click", ()=> requestColor("yellow"));
+  }
+
+  function ensureColorPickerUI(){
+    try{
+      if(colorPickWrap && btnPickRed && btnPickBlue) return;
+
+      // Wir haengen den Farbwähler unter die Online-Buttons (Host/Beitreten/Trennen),
+      // wenn moeglich.
+      const anchor = leaveBtn?.parentElement || hostBtn?.parentElement || document.body;
+      if(!anchor) return;
+
+      // Wrapper
+      colorPickWrap = document.createElement('div');
+      colorPickWrap.id = 'colorPick';
+      colorPickWrap.style.marginTop = '10px';
+      colorPickWrap.style.display = 'block';
+
+      const title = document.createElement('div');
+      title.textContent = 'Farbe wählen (vor Spielstart)';
+      title.style.fontWeight = '700';
+      title.style.opacity = '0.9';
+      title.style.marginBottom = '6px';
+
+      const row = document.createElement('div');
+      row.style.display = 'flex';
+      row.style.gap = '8px';
+      row.style.flexWrap = 'wrap';
+
+      const mkBtn = (id, label) => {
+        const b = document.createElement('button');
+        b.id = id;
+        b.className = 'btn';
+        b.type = 'button';
+        b.textContent = label;
+        b.style.minWidth = '110px';
+        return b;
+      };
+
+      btnPickRed = mkBtn('pickRed', '🔴 Rot');
+      btnPickBlue = mkBtn('pickBlue', '🔵 Blau');
+      // Falls du spaeter 3/4 Spieler aktivierst, sind die Buttons schon vorbereitet.
+      btnPickGreen = mkBtn('pickGreen', '🟢 Grün');
+      btnPickYellow = mkBtn('pickYellow', '🟡 Gelb');
+      // Sichtbar lassen – online ggf. automatisch gesperrt ("bald").
+
+      row.appendChild(btnPickRed);
+      row.appendChild(btnPickBlue);
+      row.appendChild(btnPickGreen);
+      row.appendChild(btnPickYellow);
+
+      const hint = document.createElement('div');
+      hint.id = 'colorPickHint';
+      hint.style.marginTop = '6px';
+      hint.style.opacity = '0.75';
+      hint.style.fontSize = '12px';
+      hint.textContent = 'Du kannst die Wunschfarbe auch offline auswählen – sie wird beim Join gesendet.';
+
+      colorPickWrap.appendChild(title);
+      colorPickWrap.appendChild(row);
+      colorPickWrap.appendChild(hint);
+
+      // Einfügen: nach der Button-Reihe (Host/Beitreten/Trennen)
+      // Einfügen: nach der Button-Reihe (Host/Beitreten/Trennen)
+      // WICHTIG: anchor ist oft die Button-Reihe selbst (Flex). Dann würde der Picker unsichtbar "weggequetscht".
+      // Deshalb: wenn anchor eine Zeile ist -> nach der Zeile einfügen.
+      if(anchor && anchor.insertAdjacentElement){
+        anchor.insertAdjacentElement('afterend', colorPickWrap);
+      }else{
+        anchor.appendChild(colorPickWrap);
+      }
+
+      // Handler erst NACH dem Erzeugen binden.
+      // (Wenn Elemente im HTML vorhanden sind, bindet das spaeter auch.)
+      bindColorPickHandlers();
+    }catch(_e){}
+  }
+
+  // sofort versuchen, UI zu erzeugen (rein additiv)
+  ensureColorPickerUI();
+  // Wichtig: Manche HTML-Versionen haben #colorPick initial auf display:none.
+  // Wenn man noch OFFLINE ist, kam frueher kein room_update -> UI blieb unsichtbar.
+  // Daher initial einmal aktualisieren.
+  try{ updateColorPickUI(); }catch(_e){}
+
+  // Overlay
+  const overlay = $("overlay");
+  const overlayTitle = $("overlayTitle");
+  const overlaySub = $("overlaySub");
+  const overlayHint = $("overlayHint");
+  const overlayOk = $("overlayOk");
+  const overlayRematch = $("overlayRematch");
+  const rematchBtn = $("rematchBtn");
+
+  const CSS = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const COLORS = {
+    node: CSS("--node"), stroke: CSS("--stroke"),
+    edge: CSS("--edge"),
+    goal: CSS("--goal"), run: CSS("--run"),
+    red: CSS("--red"), blue: CSS("--blue"), green: CSS("--green"), yellow: CSS("--yellow"),
+  };
+
+  const DEFAULT_PLAYERS = ["red","blue","green","yellow"];
+  const PLAYER_NAME = {red:"Rot", blue:"Blau", green:"Grün", yellow:"Gelb"};
+
+  // Additiv: Namen pro Farbe aus der Lobby/Room-Roster (Server) – nur Anzeige, keine Regeln.
+  let nameByColor = { red:null, blue:null, green:null, yellow:null };
+  let diceStyleByColor = { red:'classic', blue:'classic', green:'classic', yellow:'classic' };
+  const DICE_STYLE_LABEL = { classic:'Klassisch', neon:'Neon', royal:'Royal' };
+  function normalizeDiceStyle(value){
+    const v = String(value || '').toLowerCase().trim();
+    return (v === 'neon' || v === 'royal' || v === 'classic') ? v : 'classic';
+  }
+  function labelForColor(c){
+    const k = String(c||"").toLowerCase();
+    const n = nameByColor && nameByColor[k];
+    return (n && String(n).trim()) ? String(n).trim() : (PLAYER_NAME[k] || k || "–");
+  }
+
+  // Prevent showing the win overlay multiple times (snapshot + event)
+  let winShown = false;
+let awardsShown = false;
+
+  let PLAYERS = ["red","blue"];
+  function setPlayers(arg){
+    if(Array.isArray(arg)){
+      const order = {red:0, blue:1, green:2, yellow:3};
+      const uniq=[], seen=new Set();
+      for(const c of arg){
+        if(!order.hasOwnProperty(c)) continue;
+        if(seen.has(c)) continue;
+        seen.add(c); uniq.push(c);
+      }
+      uniq.sort((a,b)=>order[a]-order[b]);
+      PLAYERS = uniq.length ? uniq : ["red","blue"];
+      return;
+    }
+    const n = Math.max(2, Math.min(4, Number(arg)||2));
+    PLAYERS = DEFAULT_PLAYERS.slice(0, n);
+  }
+
+  // ===== Board =====
+  let board=null, nodeById=new Map(), adj=new Map(), runNodes=new Set();
+  let goalNodeId=null, startNodeId={red:null,blue:null,green:null,yellow:null};
+
+  // Camera
+  let dpr=1, view={x:40,y:40,s:1,_fittedOnce:false};
+
+  const AUTO_CENTER_ALWAYS = true; // immer beim Start zentrieren (überschreibt gespeicherte Ansicht)
+  let pointerMap=new Map(), isPanning=false, panStart=null;
+
+  // ===== View persistence (Tablet-safe) =====
+  const VIEW_KEY = "barikade_view_v2";
+  let lastTapTs = 0;
+  let lastTapPos = null;
+
+  function saveView(){
+    try{
+      const data = { x:view.x, y:view.y, s:view.s, ts:Date.now() };
+      localStorage.setItem(VIEW_KEY, JSON.stringify(data));
+    }catch(_e){}
+  }
+  function loadView(){
+    try{
+      const raw = localStorage.getItem(VIEW_KEY);
+      if(!raw) return false;
+      const v = JSON.parse(raw);
+      if(!v || typeof v!=="object") return false;
+      if(typeof v.x!=="number" || typeof v.y!=="number" || typeof v.s!=="number") return false;
+      // sanity
+      if(!(v.s>0.05 && v.s<20)) return false;
+      view.x = v.x; view.y = v.y; view.s = v.s;
+      view._fittedOnce = true; // we have an explicit view
+      return true;
+    }catch(_e){ return false; }
+  }
+  function clearView(){
+    try{ localStorage.removeItem(VIEW_KEY); }catch(_e){}
+    view._fittedOnce = false;
+  }
+
+  // ===== Game state =====
+  let phase = "need_roll";            // need_roll | need_move | placing_barricade | event_wait | game_over
+  let legalTargets = [];
+  let placingChoices = [];
+
+  function setPhase(p){ phase=p; if(state) state.phase=p; }
+  function setPlacingChoices(arr){
+    placingChoices = Array.isArray(arr) ? arr : [];
+    if(state) state.placingChoices = [...placingChoices];
+  }
+
+  let selected=null;
+  let actionBarricadeFrom = null; // Action-Modus B2: von welcher Barikade wird verschoben
+  let actionBarricadeActive = false;
+  let pendingBarricadePick = false;
+  let legalMovesAll=[];
+  let legalMovesByPiece=new Map();
+  let state=null;
+
+  // Helper: some older patches referenced a missing variable "isActionMode".
+  // Keep it as a function so all callers can safely use it.
+  function isActionMode(){
+    try{ return !!(state?.action && (String(state?.mode || "classic") === "action" || state?.bossMode)); }catch(_e){}
+    return false;
+  }
+
+  function clearLocalState(){
+    state = null;
+    legalMovesByPiece = new Map();
+    // UI reset
+    if(turnText) turnText.textContent = '–';
+    if(turnDot) turnDot.className = 'dot';
+    lastDiceFace = 0;
+    if(diceEl) diceEl.setAttribute('data-face','0');
+    updateStartButton();
+    draw();
+  }
+
+  // ===== FX (safe, visual only) =====
+  let lastDiceFace = 0;
+  let _diceFlickerTimer = null;
+  let _diceFlickerStop = null;
+
+  let lastMoveFx = null;
+  let moveGhostFx = null;
+
+  // ===== Animation loop for move FX =====
+  // Ohne requestAnimationFrame wird nur 1 Frame gezeichnet → wirkt wie Teleport.
+  // Das Loop läuft nur solange FX aktiv sind (CPU-schonend) und sorgt auch dafür,
+  // dass die Figur am Endfeld sofort sichtbar bleibt.
+  let _raf = null;
+  function _fxActive(now=performance.now()){
+    try{
+      if(lastMoveFx && lastMoveFx.pts && (now - lastMoveFx.t0) < 900) return true;
+      if(moveGhostFx && moveGhostFx.pts && (now - moveGhostFx.t0) < (moveGhostFx.dur||0)) return true;
+    }catch(_e){}
+    return false;
+  }
+  function requestDrawLoop(){
+    if(_raf!=null) return;
+    _raf = requestAnimationFrame(function step(){
+      _raf = null;
+      if(!board || !state) return;
+      draw();
+      if(_fxActive()) requestDrawLoop();
+    });
+  }
+
+  // Step-by-step move animation (visual override so it doesn't look like teleport)
+  let moveAnim = null;   // { pieceId, color, nodes:[{x,y,id}], t0, stepMs, hop, totalMs }
+  let animPieceId = null;
+  let rafDrawId = 0;
+  let interactionFxTimer = 0; // low-frequency canvas pulse while player is choosing a target
+
+  // ===== Online =====
+  const SERVER_URL = "wss://serverfinal-ynbe.onrender.com";
+  if(serverLabel) serverLabel.textContent = SERVER_URL;
+
+  let ws=null;
+  // Start-Joker Setup: Host setzt beim Spielstart automatisch 2x pro Joker-Art (nur Barikade Action-Modus)
+  let _pendingStartJokerInit = false;
+
+  let _pendingStartMode = "classic";
+  let _pendingStartBossMode = false;
+
+  function getLobbyBossMode(){
+    try{ return (localStorage.getItem("barikade_boss_mode") || "off") === "boss"; }catch(_e){ return false; }
+  }
+
+  function getLobbyEventFieldCount(){
+    try{
+      const urlCount=Number(new URLSearchParams(location.search).get("eventFields"));
+      if(Number.isInteger(urlCount) && urlCount>=5 && urlCount<=20) return urlCount;
+      const rc=normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+      const raw=localStorage.getItem("barikade_event_field_count_" + rc) ?? localStorage.getItem("barikade_event_field_count");
+      const n=Number(raw);
+      return Number.isInteger(n) && n>=5 && n<=20 ? n : 8;
+    }catch(_e){ return 8; }
+  }
+
+  function getLobbyBossEventTrigger(){
+    try{
+      const urlCount=Number(new URLSearchParams(location.search).get("bossTrigger"));
+      if(Number.isInteger(urlCount) && urlCount>=0 && urlCount<=10) return urlCount;
+      const rc=normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+      const raw=localStorage.getItem("barikade_boss_event_trigger_" + rc) ?? localStorage.getItem("barikade_boss_event_trigger");
+      const n=Number(raw);
+      return Number.isInteger(n) && n>=0 && n<=10 ? n : 3;
+    }catch(_e){ return 3; }
+  }
+  
+  function getLobbyJokerCount(){
+    try{
+      const urlCount = Number(new URLSearchParams(location.search).get("jokerCount"));
+      if(Number.isInteger(urlCount) && urlCount >= 1 && urlCount <= 5) return urlCount;
+      const keyRoom = "barikade_joker_count_" + normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+      const raw = localStorage.getItem(keyRoom) ?? localStorage.getItem("barikade_joker_count");
+      const n = Number(raw);
+      return Number.isInteger(n) && n >= 1 && n <= 5 ? n : null;
+    }catch(_e){ return null; }
+  }
+  function getStartJokerCounts(){
+    const n = getLobbyJokerCount();
+    if(!n) return null;
+    return { allColors:n, barricade:n, reroll:n, double:n };
+  }
+
+
+  // Net watchdog: detects "silent" sockets that look connected but receive no messages
+  let _lastNetMsgAt = Date.now();
+  let _netWatchdogIv = null;
+  let _netPingIv = null;
+  let _netWatchdogArmed = false;
+  let netMode="offline";
+  let netCanStart=false;    // offline | host | client
+  let roomCode="";
+  let clientId="";
+  let lastNetPlayers=[];
+  let rosterById=new Map();
+  let myColor=null;
+
+  let reconnectTimer=null;
+  let reconnectAttempt=0;
+  let pendingIntents=[];
+
+  // ===== Host Auto-Save (Browser) =====
+  // Robust against Render sleep/restart: host stores last server snapshot in localStorage.
+  function autosaveKey(){
+    const rc = roomCode || (roomCodeInp ? normalizeRoomCode(roomCodeInp.value) : "");
+    return `barikade_host_autosave_${rc || "room"}`;
+  }
+  function setAutoSaveInfo(text){
+    if(!autoSaveInfo) return;
+    autoSaveInfo.style.display = text ? "block" : "none";
+    autoSaveInfo.textContent = text ? `Auto‑Save: ${text}` : "";
+  }
+  function writeHostAutosave(serverState){
+    // only host writes autosave
+    if(netMode === "offline" || !isMeHost()) return;
+    if(!serverState || typeof serverState !== "object") return;
+    try{
+      const payload = { room: roomCode || "", ts: Date.now(), state: serverState };
+      localStorage.setItem(autosaveKey(), JSON.stringify(payload));
+      const t = new Date(payload.ts);
+      const hh = String(t.getHours()).padStart(2,'0');
+      const mm = String(t.getMinutes()).padStart(2,'0');
+      const ss = String(t.getSeconds()).padStart(2,'0');
+      setAutoSaveInfo(`${hh}:${mm}:${ss}`);
+    }catch(_e){ /* ignore */ }
+  }
+  function readHostAutosave(){
+    try{
+      const raw = localStorage.getItem(autosaveKey());
+      if(!raw) return null;
+      const v = JSON.parse(raw);
+      if(!v || typeof v !== "object") return null;
+      if(!v.state || typeof v.state !== "object") return null;
+      return v;
+    }catch(_e){ return null; }
+  }
+
+  function randId(len=10){
+    const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let s=""; for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+    return s;
+  }
+  function normalizeRoomCode(s){
+    return (s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,10);
+  }
+  function safeJsonParse(s){ try{ return JSON.parse(s); }catch(_e){ return null; } }
+
+  // ===== Wunschfarbe (Lobby) =====
+  // Additiv: beeinflusst Reconnect/Save NICHT. Nur ein Wunsch vor Spielstart.
+  function reqColorKey(){
+    const rc = roomCode || (roomCodeInp ? normalizeRoomCode(roomCodeInp.value) : "");
+    return "barikade_requested_color_" + (rc || "room");
+  }
+  function getRequestedColor(){
+    try{
+      const v = localStorage.getItem(reqColorKey()) || localStorage.getItem("barikade_requested_color") || "";
+      const c = String(v).toLowerCase().trim();
+      return (c==="red"||c==="blue"||c==="green"||c==="yellow") ? c : null;
+    }catch(_e){ return null; }
+  }
+  function setRequestedColor(c){
+    const v = (c==="red"||c==="blue"||c==="green"||c==="yellow") ? c : "";
+    try{
+      if(v) localStorage.setItem(reqColorKey(), v); else localStorage.removeItem(reqColorKey());
+      // global fallback for old sessions
+      if(v) localStorage.setItem("barikade_requested_color", v);
+    }catch(_e){}
+  }
+
+  function diceStyleStorageKey(){
+    const rc = roomCode || (roomCodeInp ? normalizeRoomCode(roomCodeInp.value) : '') || (()=>{ try{return normalizeRoomCode(localStorage.getItem('barikade_room')||'');}catch(_e){return '';} })();
+    const nk = (()=>{ try{return String(localStorage.getItem('barikade_nameKey')||localStorage.getItem('barikade_playerName')||'').trim();}catch(_e){return '';} })();
+    return nk ? `barikade_dice_style_${rc || 'room'}_${nk}` : `barikade_dice_style_${rc || 'room'}`;
+  }
+  function getRequestedDiceStyle(){
+    try{
+      const rc = roomCode || (roomCodeInp ? normalizeRoomCode(roomCodeInp.value) : '') || normalizeRoomCode(localStorage.getItem('barikade_room')||'');
+      const nk = String(localStorage.getItem('barikade_nameKey')||localStorage.getItem('barikade_playerName')||'').trim();
+      const named = nk ? localStorage.getItem(`barikade_dice_style_${rc || 'room'}_${nk}`) : null;
+      const roomScoped = localStorage.getItem(`barikade_dice_style_${rc || 'room'}`);
+      return normalizeDiceStyle(named || roomScoped || localStorage.getItem('barikade_dice_style') || 'classic');
+    }catch(_e){ return 'classic'; }
+  }
+  function activeDiceStyle(){
+    const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : '';
+    return normalizeDiceStyle((c && diceStyleByColor[c]) || getRequestedDiceStyle());
+  }
+  function applyActiveDiceStyle(){
+    try{
+      if(!diceEl) return;
+      const style = activeDiceStyle();
+      diceEl.setAttribute('data-dice-style', style);
+      const pill = diceEl.closest ? diceEl.closest('.dicePill') : diceEl.parentElement;
+      if(pill) pill.setAttribute('data-dice-style', style);
+      try{ const ui=ensureEnhancedDiceUI(); if(ui?.second) ui.second.setAttribute('data-dice-style',style); }catch(_e){}
+      const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : '';
+      const who = c ? labelForColor(c) : '';
+      diceEl.title = `${DICE_STYLE_LABEL[style] || 'Klassisch'}${who ? ' · ' + who : ''}`;
+    }catch(_e){}
+  }
+
+  function isLobbyPhase(){
+    // Server-Game nutzt state.started
+    return !(state && state.started);
+  }
+
+  function usedColorsSet(){
+    const used = new Set();
+    for(const pl of (lastNetPlayers||[])){
+      if(pl && pl.color) used.add(String(pl.color).toLowerCase());
+    }
+    return used;
+  }
+
+  function updateColorPickUI(){
+    // Falls UI fehlt (alte index.html), nacherzeugen.
+    if(!colorPickWrap || !btnPickRed || !btnPickBlue){
+      ensureColorPickerUI();
+    }
+    if(!colorPickWrap) return;
+
+    // Farbauswahl nur vor Spielstart (Lobby). Auch offline anzeigen,
+    // damit man die Wunschfarbe schon VOR dem Verbinden festlegen kann.
+    const show = isLobbyPhase();
+    colorPickWrap.style.display = show ? "block" : "none";
+    if(!show) return;
+
+    const used = usedColorsSet();
+    const want = getRequestedColor();
+
+    // Online-Server unterstuetzt aktuell nur Rot/Blau (server.js: ALLOWED_COLORS).
+    // Gruen/Gelb bleiben sichtbar (falls du spaeter 3/4 Spieler aktivierst),
+    // sind aber online gesperrt, damit man keinen Server-Fehler provoziert.
+    const onlineLimited = (netMode !== "offline");
+    const onlineAllowed = allowedColorsOnline || new Set(["red","blue"]);
+
+    function configBtn(btn, color){
+      if(!btn) return;
+      const c = String(color).toLowerCase();
+      const mine = (myColor === c);
+      const takenByOther = used.has(c) && !mine;
+
+      const supportedOnline = !onlineLimited || onlineAllowed.has(c);
+
+      btn.disabled = takenByOther || !supportedOnline;
+      btn.style.opacity = (takenByOther || !supportedOnline) ? "0.4" : "1";
+
+      // active mark: current wish or my assigned color
+      const active = (want === c) || mine;
+      btn.classList.toggle("active", !!active);
+
+      // label add: show lock
+      const base = (c==="red") ? "🔴 Rot" : (c==="blue") ? "🔵 Blau" : (c==="green") ? "🟢 Grün" : "🟡 Gelb";
+      if(!supportedOnline){
+        btn.textContent = base + " (bald)";
+      } else {
+        btn.textContent = takenByOther ? (base + " 🔒") : base;
+      }
+    }
+
+    configBtn(btnPickRed, "red");
+    configBtn(btnPickBlue, "blue");
+    configBtn(btnPickGreen, "green");
+    configBtn(btnPickYellow, "yellow");
+  }
+
+
+  // ===== Action-Mode UI =====
+  function updateActionUI_J1(){
+    try{
+      if(!actionCard) return;
+      const mode = (state && state.mode) ? String(state.mode) : "classic";
+      const show = (mode === "action") || !!(state && state.bossMode && state.action) || (!!(actionModeToggle && actionModeToggle.checked));
+      actionCard.style.display = show ? "block" : "none";
+      if(!show) return;
+
+      const ac = (state && state.action) ? state.action : null;
+      const my = myColor || (state ? state.currentPlayer : null);
+
+      // Hint text
+      if(actionHint){
+        actionHint.textContent = ac ? ((state && state.bossMode && mode !== "action") ? "Boss-Joker (Startbestand 0)" : "Deine Joker") : "Joker werden vorbereitet …";
+      }
+
+      const js = ac && ac.jokersByColor ? ac.jokersByColor : null;
+      const eff = ac && ac.effects ? ac.effects : null;
+
+      function jokerCountVal(v){
+        if(v===true) return 1;
+        if(v===false || v==null) return 0;
+        // allow numeric counts
+        if(typeof v==="number" && isFinite(v)) return Math.max(0, Math.floor(v));
+        // allow object form: {count:3} or {n:3}
+        if(typeof v==="object"){
+          const c = (v.count!=null) ? v.count : (v.n!=null ? v.n : null);
+          if(typeof c==="number" && isFinite(c)) return Math.max(0, Math.floor(c));
+        }
+        return 0;
+      }
+
+      function colorLabel(c){
+        if(!c) return "";
+        const key = String(c);
+        return (typeof PLAYER_NAME==="object" && PLAYER_NAME && PLAYER_NAME[key]) ? PLAYER_NAME[key] : key;
+      }
+
+      // Prefer server v2 structure: ac.jokersOwned[ownerColor] = [{type,color(origin),...}, ...]
+      function ownedSummary(typeKey){
+        try{
+          if(!ac || !ac.jokersOwned || !my) return null;
+          const arr = ac.jokersOwned[my];
+          if(!Array.isArray(arr)) return null;
+          const by = {};
+          let total = 0;
+          for(const j of arr){
+            if(String(j?.type) !== String(typeKey)) continue;
+            total++;
+            const oc = String(j?.color || "");
+            if(oc) by[oc] = (by[oc]||0)+1;
+          }
+          return { total, by };
+        }catch(_e){ return null; }
+      }
+
+      function fmtCount(total){
+        if(total<=0) return "verbraucht";
+        return `bereit (x${total})`;
+      }
+
+      function fmtWithOrigin(typeKey, legacyVal){
+        const sum = ownedSummary(typeKey);
+        if(sum){
+          const base = fmtCount(sum.total);
+          if(sum.total<=0) return base;
+          const keys = Object.keys(sum.by||{}).filter(k => sum.by[k]>0);
+          if(!keys.length) return base;
+          // show origins sorted
+          keys.sort();
+          const originStr = keys.map(k => `${colorLabel(k)}×${sum.by[k]}`).join(", ");
+          return `${base} (${originStr})`;
+        }
+        // fallback to legacy counts: show owner color label
+        const c = jokerCountVal(legacyVal);
+        const base = fmtCount(c);
+        if(c<=0) return base;
+        return my ? `${base} (${colorLabel(my)})` : base;
+      }
+
+      
+      // Epic Joker Buttons: counts directly on buttons (visual only)
+      try{ ensureEpicJokerUI(); }catch(_e){}
+      function jokerButtonIdForKey(key){
+        return ({
+          allColors:"jokerAllColorsBtn", barricade:"jokerBarricadeBtn", reroll:"jokerRerollBtn", double:"jokerDoubleBtn",
+          bossSpawn:"jokerBossSpawnBtn", bossRemove:"jokerBossRemoveBtn"
+        })[key] || "";
+      }
+      function setEpicBadge(key, cnt){
+        try{
+          const el = document.getElementById(`ejCount_${key}`);
+          const id = jokerButtonIdForKey(key);
+          const b = id ? document.getElementById(id) : null;
+          if(el) el.textContent = `x${Math.max(0, cnt|0)}`;
+          if(b){
+            b.classList.toggle("ejEmpty", !(cnt>0));
+            try{
+              const legacyVal = js && my ? js[my]?.[key] : null;
+              b.title = fmtWithOrigin(key, legacyVal);
+            }catch(_e){}
+          }
+        }catch(_e){}
+      }
+
+      function countFor(typeKey){
+        const sum = ownedSummary(typeKey);
+        if(sum) return sum.total||0;
+        // fallback to legacy counts in jokersByColor
+        const legacyVal = js && my ? js[my]?.[typeKey] : null;
+        return jokerCountVal(legacyVal);
+      }
+
+      setEpicBadge("allColors", countFor("allColors"));
+      setEpicBadge("barricade", countFor("barricade"));
+      setEpicBadge("reroll", countFor("reroll"));
+      setEpicBadge("double", countFor("double"));
+      setEpicBadge("bossSpawn", countFor("bossSpawn"));
+      setEpicBadge("bossRemove", countFor("bossRemove"));
+
+      const bossJokersVisible=!!(state && state.bossMode);
+      const bsBtn=document.getElementById("jokerBossSpawnBtn");
+      const brBtn=document.getElementById("jokerBossRemoveBtn");
+      if(bsBtn) bsBtn.hidden=!bossJokersVisible;
+      if(brBtn) brBtn.hidden=!bossJokersVisible;
+      document.querySelectorAll(".bossOnlyJoker").forEach(el=>{ if(el.id!=="jokerBossSpawnBtn"&&el.id!=="jokerBossRemoveBtn") el.hidden=!bossJokersVisible; });
+
+if(jokerAllColorsState) jokerAllColorsState.textContent = fmtWithOrigin("allColors", js && my ? js[my]?.allColors : null);
+      if(jokerBarricadeState) jokerBarricadeState.textContent = fmtWithOrigin("barricade", js && my ? js[my]?.barricade : null);
+      if(jokerRerollState) jokerRerollState.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
+      if(jokerDoubleState) jokerDoubleState.textContent = fmtWithOrigin("double", js && my ? js[my]?.double : null);
+      if(jokerBossSpawnState) jokerBossSpawnState.textContent = fmtWithOrigin("bossSpawn", js && my ? js[my]?.bossSpawn : null);
+      if(jokerBossRemoveState) jokerBossRemoveState.textContent = fmtWithOrigin("bossRemove", js && my ? js[my]?.bossRemove : null);
+      const rrEl = document.getElementById("jokerRerollState");
+      if(rrEl) rrEl.textContent = fmtWithOrigin("reroll", js && my ? js[my]?.reroll : null);
+
+      // --- Epic Joker tiles (visual, no logic change) ---
+      function setEpic(typeKey, legacyVal, badgeId, originId, tileKey){
+        try{
+          const badge = document.getElementById(badgeId);
+          const origin = document.getElementById(originId);
+          const tile = actionCard ? actionCard.querySelector('.joker-tile[data-jkey="'+tileKey+'"]') : null;
+
+          const sum = ownedSummary(typeKey);
+          let total = 0;
+          let originStr = "–";
+          if(sum){
+            total = sum.total || 0;
+            const keys = Object.keys(sum.by||{}).filter(k => (sum.by||{})[k]>0).sort();
+            originStr = keys.length ? keys.map(k => `${colorLabel(k)}×${sum.by[k]}`).join(", ") : "–";
+          }else{
+            total = jokerCountVal(legacyVal);
+            originStr = (total>0 && my) ? colorLabel(my) : "–";
+          }
+
+          if(badge) badge.textContent = String(total);
+          if(origin) origin.textContent = originStr;
+
+          if(tile){
+            tile.classList.toggle("off", !(total>0));
+          }
+        }catch(_e){}
+      }
+
+      setEpic("allColors", js && my ? js[my]?.allColors : null, "jokerAllColorsBadge", "jokerAllColorsOrigin", "allColors");
+      setEpic("barricade", js && my ? js[my]?.barricade : null, "jokerBarricadeBadge", "jokerBarricadeOrigin", "barricade");
+      setEpic("reroll",   js && my ? js[my]?.reroll   : null, "jokerRerollBadge",   "jokerRerollOrigin",   "reroll");
+      setEpic("double",   js && my ? js[my]?.double   : null, "jokerDoubleBadge",   "jokerDoubleOrigin",   "double");
+      setEpic("bossSpawn", js && my ? js[my]?.bossSpawn : null, "jokerBossSpawnBadge", "jokerBossSpawnOrigin", "bossSpawn");
+      setEpic("bossRemove", js && my ? js[my]?.bossRemove : null, "jokerBossRemoveBadge", "jokerBossRemoveOrigin", "bossRemove");
+
+
+if(actionEffectsState){
+        if(!eff){ actionEffectsState.textContent = "–"; }
+        else{
+          const parts = [];
+          if(eff.allColorsBy) parts.push("Alle Farben aktiv");
+          if(eff.doubleRoll && eff.doubleRoll.kind) parts.push("Doppelwurf: " + eff.doubleRoll.kind);
+          if(eff.barricadeBy) parts.push("Barikade-Joker aktiv");
+          actionEffectsState.textContent = parts.length ? parts.join(" • ") : "keine Effekte";
+        }
+      }
+    }catch(_e){}
+  }
+
+
+  let _lastBossEventSeq = 0;
+  let _lastBossActionSeq = 0;
+  let _recentBossActionType = "";
+  let _recentBossActionPulseUntil = 0;
+  // Nach Reconnect/Seiten-Reload die letzte bereits vergangene Boss-/Eventmeldung
+  // nur als Ausgangsstand uebernehmen, statt sie erneut als frische Karte einzublenden.
+  let _bossBaselineNextSnapshot = true;
+  let _bossOverlayTimer = 0;
+  let _bossOverlayRevealTimer = 0;
+  let _bossEventAckPendingSeq = 0;
+  let _bossEventAckTimer = 0;
+  let _lastBossSpawnSeq = 0;
+  let _bossArrivalTimer = 0;
+  let _bossArrivalQueue = [];
+  let _bossArrivalShowing = false;
+
+  // V13.6: Ein einziger Client-Zustandsautomat für serverautoritär ausgelöste Räder.
+  // Der Server entscheidet IMMER, welches Rad existiert. Der Client darf nur anzeigen
+  // und anschließend "vollständig beendet" bestätigen.
+  // Zustände je visualId: queued -> running -> finished.
+  const _serverWheelState = new Map();
+  const _serverWheelFinishedLocal = new Set();
+  let _serverWheelStorageScope = "";
+
+  function serverWheelStorageScope(){
+    const rc=String(roomCode||"").trim().toUpperCase()||"ROOM";
+    const color=String(myColor||"spectator").trim().toLowerCase()||"spectator";
+    return rc+":"+color;
+  }
+  function serverWheelStorageKey(){
+    return "barikade_wheel_finished_v136_"+serverWheelStorageScope().replace(/[^A-Za-z0-9:_-]/g,"_");
+  }
+
+  function loadServerWheelFinishedLocal(){
+    const scope=serverWheelStorageScope();
+    if(_serverWheelStorageScope===scope) return;
+    _serverWheelStorageScope=scope;
+    _serverWheelFinishedLocal.clear();
+    try{
+      const raw=JSON.parse(localStorage.getItem(serverWheelStorageKey())||"[]");
+      if(Array.isArray(raw)) for(const id of raw.slice(-500)) if(id) _serverWheelFinishedLocal.add(String(id));
+    }catch(_e){}
+  }
+
+  function rememberServerWheelFinished(visualId){
+    const id=String(visualId||"").trim();
+    if(!id) return;
+    loadServerWheelFinishedLocal();
+    _serverWheelFinishedLocal.add(id);
+    // Begrenzen, damit localStorage nicht unbegrenzt wächst.
+    while(_serverWheelFinishedLocal.size>500){
+      const first=_serverWheelFinishedLocal.values().next().value;
+      _serverWheelFinishedLocal.delete(first);
+    }
+    try{ localStorage.setItem(serverWheelStorageKey(),JSON.stringify([..._serverWheelFinishedLocal])); }catch(_e){}
+  }
+
+  function serverWheelWasFinished(visualId){
+    loadServerWheelFinishedLocal();
+    return _serverWheelFinishedLocal.has(String(visualId||""));
+  }
+
+  function reportServerWheelFinished(jobId,visualId){
+    const j=String(jobId||"").trim();
+    const v=String(visualId||"").trim();
+    if(!j||!v) return false;
+    return wsSend({type:"wheel_visual_finished",jobId:j,visualId:v});
+  }
+
+  function acceptServerWheelJob(msg){
+    if(!msg || msg.serverCommand!==true || Number(msg.protocol||0)!==1) return false;
+    const jobId=String(msg.jobId||"").trim();
+    const list=Array.isArray(msg.wheel)?msg.wheel.filter(Boolean):[];
+    if(!jobId || !list.length) return false;
+    const fresh=[];
+    for(const raw of list){
+      const visualId=String(raw?.visualId||"").trim();
+      if(!visualId) continue;
+
+      // Nach vollständigem Lauf lokal gemerkt: Bei verlorenem Finished-ACK wird nur
+      // noch einmal bestätigt, niemals ein zweites Rad abgespielt.
+      if(serverWheelWasFinished(visualId)){
+        _serverWheelState.set(visualId,"finished");
+        reportServerWheelFinished(jobId,visualId);
+        continue;
+      }
+
+      const status=_serverWheelState.get(visualId)||"";
+      if(status==="queued" || status==="running") continue;
+      if(status==="finished"){
+        reportServerWheelFinished(jobId,visualId);
+        continue;
+      }
+
+      _serverWheelState.set(visualId,"queued");
+      fresh.push({...raw,__serverVisualId:visualId,__serverWheelJobId:jobId});
+    }
+    if(fresh.length) enqueueWheel(fresh);
+    return true;
+  }
+
+  function bossModeVisualActive(){
+    try{
+      // Sobald ein Spielzustand existiert, ist nur noch der Serverzustand massgeblich.
+      // So kann die lokale Lobby-Einstellung eines Gastes den Host-Modus nicht optisch ueberschreiben.
+      if(state && state.started) return !!state.bossMode;
+      return !!getLobbyBossMode();
+    }catch(_e){ return false; }
+  }
+  function eventOverlayIsOpen(){
+    return !!document.getElementById("bossEventOverlay")?.classList.contains("show");
+  }
+  function closeBossEventOverlaySynced(seq=0){
+    const el=document.getElementById("bossEventOverlay");
+    if(!el) return;
+    const openSeq=Number(el.dataset.eventSeq||0);
+    const ackSeq=Number(seq||0);
+    // Ein verspätetes ACK einer älteren Karte darf eine neuere Karte nicht schließen.
+    if(ackSeq && openSeq && ackSeq!==openSeq) return;
+    el.classList.remove("show","revealed");
+    clearTimeout(_bossOverlayTimer);
+    clearTimeout(_bossOverlayRevealTimer);
+    _bossEventAckPendingSeq=0;
+    clearTimeout(_bossEventAckTimer);
+    _bossEventAckTimer=0;
+    const ok=el.querySelector('.bossEventOk');
+    if(ok){ ok.disabled=true; ok.textContent="BESTÄTIGT · WEITER"; }
+  }
+  function ensureBossEventOverlay(){
+    let el=document.getElementById("bossEventOverlay");
+    if(el) return el;
+    el=document.createElement("div");
+    el.id="bossEventOverlay";
+    el.setAttribute("aria-live","polite");
+    el.setAttribute("role","dialog");
+    el.setAttribute("aria-modal","true");
+    el.innerHTML=`<div class="bossEventFlip" role="document">
+      <div class="bossEventFlipInner">
+        <div class="bossEventBack" aria-hidden="true">
+          <div class="bossEventBackMark">?</div>
+          <div class="bossEventBackTitle">BARIKADE</div>
+          <div class="bossEventBackSub">EREIGNIS</div>
+        </div>
+        <div class="bossEventCard bossEventFront">
+          <div class="bossEventGlow" aria-hidden="true"></div>
+          <div class="bossEventTop">
+            <div class="bossEventIcon">🃏</div>
+            <div class="bossEventHeadCopy">
+              <div class="bossEventKicker">EREIGNISKARTE</div>
+              <div class="bossEventTitle">Ereignis</div>
+            </div>
+          </div>
+          <div class="bossEventText"></div>
+          <div class="bossEventEffect"></div>
+          <div class="bossEventMeta">
+            <span class="bossEventPlayer">🎯 Spieler</span>
+            <span class="bossEventDeck">🃏 Karten –/106</span>
+          </div>
+          <button type="button" class="bossEventOk" disabled>KARTE WIRD AUFGEDECKT …</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(el);
+    const requestClose=()=>{
+      if(!el.classList.contains("revealed")) return;
+      const seq=Number(el.dataset.eventSeq||0);
+      const eventColor=String(el.dataset.eventColor||"").toLowerCase();
+      const mine=String(myColor||"").toLowerCase();
+      const ok=el.querySelector('.bossEventOk');
+      if(!seq || !eventColor || mine!==eventColor) return;
+      if(_bossEventAckPendingSeq===seq) return;
+      _bossEventAckPendingSeq=seq;
+      if(ok){ ok.disabled=true; ok.textContent="WIRD FÜR ALLE BESTÄTIGT …"; }
+      const sent=wsSend({type:"boss_event_ack",seq});
+      clearTimeout(_bossEventAckTimer);
+      if(!sent){
+        _bossEventAckPendingSeq=0;
+        if(ok){ ok.disabled=false; ok.textContent="OK · EREIGNIS AUSLÖSEN"; }
+        try{ toast("Verbindung unterbrochen – bitte erneut bestätigen"); }catch(_e){}
+      }else{
+        // Falls die Verbindung genau zwischen Senden und Server-ACK abreißt,
+        // bleibt der Button nicht dauerhaft gesperrt.
+        _bossEventAckTimer=window.setTimeout(()=>{
+          if(_bossEventAckPendingSeq!==seq || !el.classList.contains("show")) return;
+          _bossEventAckPendingSeq=0;
+          if(ok){ ok.disabled=false; ok.textContent="OK · EREIGNIS AUSLÖSEN"; }
+          try{ toast("Bestätigung nicht angekommen – bitte erneut drücken"); }catch(_e){}
+        },4000);
+      }
+    };
+    // Nur der auslösende Spieler bestätigt. Der Server schließt die Karte anschließend bei allen.
+    el.querySelector('.bossEventOk')?.addEventListener('click',(ev)=>{ev.stopPropagation();requestClose();});
+    return el;
+  }
+  function showBossEventCard(evt){
+    if(!evt) return;
+    const el=ensureBossEventOverlay();
+    const icon=el.querySelector('.bossEventIcon');
+    const title=el.querySelector('.bossEventTitle');
+    const txt=el.querySelector('.bossEventText');
+    const effect=el.querySelector('.bossEventEffect');
+    const player=el.querySelector('.bossEventPlayer');
+    const deck=el.querySelector('.bossEventDeck');
+    const ok=el.querySelector('.bossEventOk');
+    const color=String(evt.color||'').toLowerCase();
+    const seq=Number(evt.seq||0);
+    const mine=String(myColor||'').toLowerCase();
+    const mayConfirm=!!color && mine===color;
+    el.dataset.eventSeq=String(seq||0);
+    el.dataset.eventColor=color;
+    _bossEventAckPendingSeq=0;
+    if(icon) icon.textContent=evt.icon||"🃏";
+    if(title) title.textContent=evt.title||"Ereignis";
+    if(txt) txt.textContent=evt.text||"";
+    if(effect) effect.textContent=evt.effectText||"";
+    if(player){
+      player.textContent=color ? `🎯 ${(nameByColor && nameByColor[color]) || labelForColor(color)}` : '🎯 Ereignis';
+      player.style.setProperty('--event-player-color',COLORS[color]||'#8a7cff');
+    }
+    if(deck){
+      const remaining=Number.isFinite(Number(evt.deckRemaining))?Number(evt.deckRemaining):null;
+      const size=Number.isFinite(Number(evt.deckSize))?Number(evt.deckSize):106;
+      deck.textContent=`🃏 ${remaining==null?'–':remaining}/${size} im Stapel`;
+    }
+    clearTimeout(_bossOverlayTimer);
+    clearTimeout(_bossOverlayRevealTimer);
+    el.classList.remove("show","revealed");
+    if(ok){ ok.disabled=true; ok.textContent="KARTE WIRD AUFGEDECKT …"; }
+    void el.offsetWidth;
+    el.classList.add("show");
+    // Erst Kartenrückseite zeigen, danach sichtbar aufdecken.
+    _bossOverlayRevealTimer=setTimeout(()=>{
+      el.classList.add("revealed");
+      if(ok){
+        ok.disabled=!mayConfirm;
+        const waitName=(nameByColor && nameByColor[color]) || labelForColor(color);
+        ok.textContent=mayConfirm ? "OK · EREIGNIS AUSLÖSEN" : `WARTET AUF ${waitName} …`;
+      }
+      if(mayConfirm){ try{ ok?.focus({preventScroll:true}); }catch(_e){} }
+    },650);
+  }
+
+  function myPendingEventChoice(){
+    const ch=state?.boss?.pendingChoice;
+    if(!ch||String(ch.color||'')!==String(myColor||'')) return null;
+    return ch;
+  }
+
+  function ensureEventChoicePanel(){
+    let el=document.getElementById('eventChoicePanel');
+    if(el) return el;
+    el=document.createElement('div');
+    el.id='eventChoicePanel';
+    el.className='eventChoicePanel';
+    el.innerHTML=`<div class="eventChoiceCard">
+      <div class="eventChoiceTop"><span class="eventChoiceIcon">🃏</span><div><small>EREIGNIS-AUSWAHL</small><strong class="eventChoiceTitle">Auswahl erforderlich</strong></div></div>
+      <div class="eventChoiceText"></div>
+      <div class="eventChoiceButtons"></div>
+      <div class="eventChoiceHint">Die anderen Spieler warten, bis diese Auswahl abgeschlossen ist.</div>
+    </div>`;
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function eventChoiceSend(payload){
+    wsSend({type:'event_choice',...payload,ts:Date.now()});
+  }
+
+  function renderEventChoicePanel(){
+    const ch=myPendingEventChoice();
+    const el=ensureEventChoicePanel();
+    if(!ch){ el.classList.remove('show'); return; }
+    const textEl=el.querySelector('.eventChoiceText');
+    const btns=el.querySelector('.eventChoiceButtons');
+    const title=el.querySelector('.eventChoiceTitle');
+    if(title) title.textContent='Ereignis-Auswahl';
+    if(textEl) textEl.textContent=ch.message||'Treffe deine Auswahl auf dem Spielbrett.';
+    if(btns) btns.innerHTML='';
+    const addBtn=(label,fn,cls='')=>{
+      const b=document.createElement('button'); b.type='button'; b.className=cls; b.textContent=label; b.addEventListener('click',fn); btns?.appendChild(b); return b;
+    };
+    const type=String(ch.type||'');
+    if(type==='boss_spawn_slot'){
+      const meta=BOSS_CARD_META[String(ch.bossType||'')]||{};
+      if(title) title.textContent=`${meta.icon||'👹'} ${meta.name||'Boss'} erscheint!`;
+      if(textEl) textEl.textContent=ch.message||'Wähle das Bossfeld.';
+      const preview=document.createElement('div');
+      preview.className=`bossSpawnChoicePreview bossSpawnChoicePreview--${String(ch.bossType||'generic')}`;
+      preview.innerHTML=`${meta.portrait?`<img src="${meta.portrait}" alt="${meta.name||'Boss'}">`:`<div class="bossSpawnChoiceGlyph">${meta.icon||'👹'}</div>`}<div><small>BOSS ENTHÜLLT</small><strong>${meta.name||'Boss'}</strong><span>${meta.summary||''}</span><em>🏆 ${meta.reward||'1 Joker'}</em></div>`;
+      btns?.appendChild(preview);
+      const slots=Array.isArray(state?.boss?.slots)?state.boss.slots:[];
+      slots.forEach((slot,index)=>{
+        if(slot?.boss) return;
+        const sid=String(slot?.id||'');
+        const left=sid.toLowerCase().includes('left')||index===0;
+        const right=sid.toLowerCase().includes('right')||index===1;
+        const label=left?'⬅ LINKS':right?'RECHTS ➡':`🚪 ${slot?.name||'Bossfeld'}`;
+        addBtn(label,()=>eventChoiceSend({slotId:sid}),left?'portalLeft':'portalRight');
+      });
+    }else if(type==='predict_parity'){
+      addBtn('⚪ Gerade',()=>eventChoiceSend({choice:'even'}));
+      addBtn('⚫ Ungerade',()=>eventChoiceSend({choice:'odd'}));
+    }else if(type==='adjust_roll'){
+      addBtn('−1',()=>eventChoiceSend({delta:-1}));
+      addBtn('Unverändert',()=>eventChoiceSend({delta:0}));
+      addBtn('+1',()=>eventChoiceSend({delta:1}));
+    }else if(type==='joker_lock'){
+      const cols=(state?.activeColors||['red','blue','green','yellow']).filter(c=>c!==myColor);
+      for(const c of cols) addBtn(`🔒 ${labelForColor(c)}`,()=>eventChoiceSend({targetColor:c}));
+    }else if(type==='joker_bet'){
+      const owned=Array.isArray(state?.action?.jokersOwned?.[myColor])?state.action.jokersOwned[myColor]:[];
+      const counts={}; for(const j of owned){const k=String(j?.type||''); if(k) counts[k]=(counts[k]||0)+1;}
+      const names={allColors:'🌈 Alle Farben',barricade:'🧱 Barikade',reroll:'🎲 Neu-Wurf',double:'🎲 Doppelwurf',bossSpawn:'👹 Boss spawnen',bossRemove:'⚔️ Boss entfernen'};
+      for(const [k,n] of Object.entries(counts)) addBtn(`${names[k]||k} ×${n}`,()=>eventChoiceSend({jokerType:k}));
+      addBtn('Wette ablehnen',()=>eventChoiceSend({jokerType:'skip'}),'secondary');
+    }else if(['boss_rage','boss_shield','boss_change'].includes(type)){
+      const slots=Array.isArray(state?.boss?.slots)?state.boss.slots:[];
+      for(const slot of slots){if(!slot?.boss) continue; addBtn(`${slot.boss.icon||'👹'} ${slot.boss.name||'Boss'}`,()=>eventChoiceSend({slotId:slot.id}));}
+    }else{
+      // Brettauswahl: kein Button nötig. Das Panel bleibt als klare Arbeitsanweisung stehen.
+      const stage=String(ch.stage||'');
+      if(stage==='to'||stage==='second'||stage==='opponent'){
+        const hint=document.createElement('div'); hint.className='eventChoiceBoardHint'; hint.textContent='👆 Jetzt das gewünschte Ziel direkt auf dem Spielbrett anklicken.'; btns?.appendChild(hint);
+      }else{
+        const hint=document.createElement('div'); hint.className='eventChoiceBoardHint'; hint.textContent='👆 Auswahl direkt auf dem Spielbrett anklicken.'; btns?.appendChild(hint);
+      }
+    }
+    el.classList.add('show');
+  }
+
+  function eventChoicePieceAtNode(nodeId){
+    const id=String(nodeId||'');
+    for(const c of ['red','blue','green','yellow']){
+      const arr=state?.pieces?.[c]||[];
+      for(let i=0;i<arr.length;i++) if(String(arr[i]?.pos||'')===id) return {color:c,index:i,pieceId:arr[i]?.pieceId||null};
+    }
+    return null;
+  }
+
+  function handleEventChoiceBoardClick(hit){
+    const ch=myPendingEventChoice();
+    if(!ch||!hit||hit.kind!=='board') return false;
+    const type=String(ch.type||'');
+    const nodeId=String(hit.id||'');
+    const pc=eventChoicePieceAtNode(nodeId);
+    if(type==='own_board_piece_home'){
+      if(!pc||pc.color!==myColor){toast('Eigene Brettfigur wählen');return true;} eventChoiceSend({pieceId:pc.pieceId});return true;
+    }
+    if(type==='swap_piece'){
+      if(ch.stage==='own'&&(!pc||pc.color!==myColor)){toast('Zuerst eigene Figur wählen');return true;}
+      if(ch.stage==='opponent'&&(!pc||pc.color===myColor)){toast('Jetzt gegnerische Figur wählen');return true;}
+      eventChoiceSend({pieceId:pc?.pieceId||''});return true;
+    }
+    if(type==='opponent_piece_back3'){
+      if(!pc||pc.color===myColor){toast('Gegnerische Figur wählen');return true;} eventChoiceSend({pieceId:pc.pieceId});return true;
+    }
+    if(type==='barrier_magnet'){
+      if(!pc||pc.color!==myColor){toast('Eigene Brettfigur wählen');return true;} eventChoiceSend({pieceId:pc.pieceId});return true;
+    }
+    if(['move_barrier','barrier_swap','barrier_lock','barrier_blast'].includes(type)){
+      eventChoiceSend({nodeId}); return true;
+    }
+    if(['roadblock','trap','miniportal'].includes(type)){
+      const n=nodeById.get(nodeId);
+      if(n?.flags?.noBarricade || n?.flags?.startColor){
+        toast('🛡️ Start-Schutzbereich: Hier dürfen keine Spezialfelder entstehen.');
+        return true;
+      }
+      eventChoiceSend({nodeId}); return true;
+    }
+    return false;
+  }
+
+  function ensureBossTestTools(){
+    if(!bossSection) return null;
+    let box=document.getElementById("bossTestTools");
+    if(box) return box;
+    box=document.createElement("div");
+    box.id="bossTestTools";
+    box.className="bossTestTools";
+    box.innerHTML=`
+      <div class="bossTestHead"><strong>🧪 Boss-/Ereignis-Test</strong><small>nur Host</small></div>
+      <div class="bossTestGrid">
+        <button type="button" data-boss-spawn="hunter">🐺 Jäger</button>
+        <button type="button" data-boss-spawn="curse">🧙 Fluchmeister</button>
+        <button type="button" data-boss-spawn="shadow">👻 Schatten</button>
+        <button type="button" data-boss-spawn="doppel">👥 Doppelgänger</button>
+        <button type="button" data-boss-spawn="devourer">🌌 Weltenfresser</button>
+        <button type="button" data-boss-action="act">▶ Bossaktion</button>
+        <button type="button" data-boss-action="events">🎲 Ereignisfelder neu</button>
+        <button type="button" data-boss-action="clear">🧹 Alle löschen</button>
+      </div>
+      <div class="bossEventTestRow" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px">
+        <select id="bossEventTestSelect" aria-label="Ereigniskarte zum Testen">
+          <option value="spawn_one">👹 Ein Boss erscheint</option>
+          <option value="spawn_two">☠️ Zwei Bosse erscheinen</option>
+          <option value="extra_roll">🎲 Nochmal würfeln</option>
+          <option value="roll_minus2">🥾 −2 nächster Wurf</option>
+          <option value="barrier_shuffle_all">🧱 Alle Barikaden neu</option>
+          <option value="boss_action_now">⚡ Bossaktion sofort</option>
+          <option value="joker_one">🎁 1 Joker</option>
+          <option value="player_positions_shuffle">🔀 Positionen tauschen</option>
+          <option value="boss_sleep">😴 Bosse setzen aus</option>
+          <option value="defeat_all_bosses">⚔️ Alle Bosse besiegt</option>
+          <option value="walk10">🚀 10 Felder laufen</option>
+          <option value="boss_teleport">🌀 Boss-Teleport</option>
+          <option value="bounty">🎯 Kopfgeld</option>
+          <option value="barrier_wander3">🧱 3 Barikaden wandern</option>
+          <option value="curse_wave">🧙 Fluchwelle</option>
+          <option value="skip_next_turn">⏸️ Nächste Runde aussetzen</option>
+          <option value="joker_two">🎁 2 Joker</option>
+          <option value="lose_all_jokers">💀 Alle Joker verlieren</option>
+          <option value="all_pieces_forward">⏩ Alle vorwärts</option>
+          <option value="piece_home">🏠 Figur ins Haus</option>
+          <option value="walk20">🚀 20 Felder laufen</option>
+          <option value="boss_global_shield_3">🛡️ Boss-Schutz 3 Runden</option>
+          <option value="all_double_roll_round">🎲 Doppelwurf-Runde</option>
+          <option value="swap_piece_opponent">🔁 Figurentausch</option>
+          <option value="barrier_steal">🧱 Barikade klauen</option>
+          <option value="piece_event_shield">🛡️ Figuren-Schutzschild</option>
+          <option value="walk3">👣 Kleine Abkürzung</option>
+          <option value="opponent_back3">🔙 Rückwärtsgang</option>
+          <option value="exact_roll">🎯 Exakter Zug</option>
+          <option value="predict_parity">🔮 Vorhersage</option>
+          <option value="barrier_swap">🧱 Barikaden-Tausch</option>
+          <option value="barrier_lock">🔐 Feste Barikade</option>
+          <option value="barrier_magnet">🧲 Barikaden-Magnet</option>
+          <option value="roadblock_2rounds">🚧 Straßensperre</option>
+          <option value="barrier_blast">🧨 Sprengmeister</option>
+          <option value="barrier_ban">❌ Barikadenverbot</option>
+          <option value="six_hunt">6️⃣ Sechser-Jagd</option>
+          <option value="three_rule">3️⃣ Dreier-Regel</option>
+          <option value="minimum3">🎲 Minimum 3</option>
+          <option value="joker_bet">🃏 Joker-Wette</option>
+          <option value="joker_lock">🔒 Joker-Sperre</option>
+          <option value="boss_rage">👹 Boss wird wütend</option>
+          <option value="boss_shield_activation">🛡️ Boss-Schutz bis Aktivierung</option>
+          <option value="boss_change">🔀 Boss-Wechsel</option>
+          <option value="laggard4">👥 Nachzüglerhilfe</option>
+          <option value="trap">🕳️ Falle stellen</option>
+          <option value="miniportal">🚪 Miniportal</option>
+          <option value="all_leave_house">🏃 Alle raus</option>
+          <option value="barriers_gone_forever">💨 Keine Barikaden mehr</option>
+        </select>
+        <button type="button" id="bossEventTestBtn">🃏 Testen</button>
+      </div>`;
+    const debugMount=document.querySelector('#gameToolsDetails .gameToolsBody') || bossSection;
+    debugMount.appendChild(box);
+    box.querySelectorAll('[data-boss-spawn]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(!isMeHost()){ toast('Nur der Host kann Bosse testen'); return; }
+      wsSend({type:'boss_test',action:'spawn',bossType:String(btn.dataset.bossSpawn||'')});
+    }));
+    box.querySelectorAll('[data-boss-action]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(!isMeHost()){ toast('Nur der Host kann Bosse testen'); return; }
+      wsSend({type:'boss_test',action:String(btn.dataset.bossAction||'')});
+    }));
+    const eventBtn=box.querySelector('#bossEventTestBtn');
+    const eventSel=box.querySelector('#bossEventTestSelect');
+    if(eventBtn) eventBtn.addEventListener('click',()=>{
+      if(!isMeHost()){ toast('Nur der Host kann Ereignisse testen'); return; }
+      const eventEffect=String(eventSel?.value||'');
+      wsSend({type:'boss_test',action:'event_card',eventEffect});
+    });
+    return box;
+  }
+
+  function updateBossUI(){
+    try{
+      const enabled=bossModeVisualActive();
+      if(bossSection) bossSection.hidden=!enabled;
+      if(!enabled) return;
+      const bs=state?.boss || null;
+      const slots=Array.isArray(bs?.slots) ? bs.slots : [];
+      const spawnHistory=Array.isArray(bs?.spawnHistory)?bs.spawnHistory:[];
+      const freshSpawns=spawnHistory.filter(x=>Number(x?.seq||0)>_lastBossSpawnSeq);
+      if(freshSpawns.length) queueBossArrivals(freshSpawns);
+      else if(bs?.lastSpawn && Number(bs.lastSpawn.seq||0)>_lastBossSpawnSeq) queueBossArrivals([bs.lastSpawn]);
+      if(bossSlotsEl){
+        const typeOrder=["hunter","curse","shadow","doppel","devourer"];
+        const byType={};
+        for(const slot of slots){ if(slot?.boss?.type) byType[String(slot.boss.type)] = slot; }
+        bossSlotsEl.innerHTML=typeOrder.map((type)=>{
+          const meta=BOSS_CARD_META[type];
+          if(!meta) return "";
+          const slot=byType[type] || null;
+          const boss=slot?.boss || null;
+          const isActive=!!boss;
+          const status=bossCardStatusText(slot,boss);
+          const slotName=slot?.name || 'freies Portal';
+          const isJustActed=_recentBossActionType===type && performance.now()<_recentBossActionPulseUntil;
+          return `<article class="bossCard ${isActive?'isActive':'isIdle'} ${isJustActed?'justActed':''} bossCard--${type}">
+            <div class="bossCardArt ${meta.artClass}" aria-hidden="true">
+              ${meta.portrait?`<img class="bossPortrait" src="${meta.portrait}" alt="${meta.name||'Boss'}" loading="lazy" />`:''}
+              <div class="bossCardGlow"></div>
+              <div class="bossCardGlyph">${meta.icon||'👹'}</div>
+              <div class="bossCardTagline">${meta.tag||meta.name}</div>
+            </div>
+            <div class="bossCardBody">
+              <div class="bossCardTop">
+                <div class="bossCardHeading">
+                  <div class="bossCardLabel">Wandernder Boss</div>
+                  <div class="bossCardNameRow"><span class="bossCardIcon">${meta.icon||'👹'}</span><strong>${meta.name||'Boss'}</strong></div>
+                </div>
+                <span class="bossCardState ${isActive?'isActive':'isIdle'}">${isActive?'Aktiv im Spiel':'Bereit'}</span>
+              </div>
+              <div class="bossCardMeta bossCardMeta--stats">
+                <span>❤️ 1 Leben</span>
+                <span>👣 ${meta.steps||'-'}</span>
+                <span>⏱ ${type==='devourer'?`${Math.max(0,Math.min(4,Number(boss?.turnsSinceAction||0)))}/5 Züge`:meta.cadence||'-'}</span>
+                <span>🎯 ${type==='hunter'?'Jagd':type==='curse'?'Fluch':type==='shadow'?'Jokerdruck':type==='doppel'?'Spiegel':'Schwarzes Loch'}</span>
+                <span>🏆 ${meta.reward||'1 Joker'}</span>
+              </div>
+              <div class="bossCardSection bossCardSection--lore">
+                <div class="bossCardSectionTitle">Verhalten</div>
+                <div class="bossCardDesc">${meta.summary||''}</div>
+              </div>
+              <div class="bossCardSection bossCardSection--effect">
+                <div class="bossCardSectionTitle">Treffer-Effekt</div>
+                <div class="bossCardEffect">${meta.effect||''}</div>
+              </div>
+              <div class="bossCardSection bossCardSection--rule">
+                <div class="bossCardSectionTitle">Sonderregel</div>
+                <div class="bossCardRule">${meta.rule||''}</div>
+              </div>
+              <div class="bossCardFooter">
+                <div class="bossCardStatus"><span>📍 ${status}</span><span>🚪 ${slotName}</span></div>
+              </div>
+            </div>
+          </article>`;
+        }).join('');
+      }
+      if(bossLastEventEl){
+        const e=bs?.lastEvent;
+        const a=bs?.lastAction;
+        bossLastEventEl.textContent=a ? `${a.icon||'👹'} ${a.title||'Boss'} · ${a.text||''}` : (e ? `${e.icon||'🃏'} ${e.title||'Ereignis'} · ${e.effectText||''}` : 'Noch keine Bossaktion');
+      }
+      if(bossRoundInfoEl){
+        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : Math.max(5,Math.min(20,Number(bs?.eventFieldCount||8)));
+        const activeCount=slots.filter(s=>!!s?.boss).length;
+        const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:106;
+        const trigger=Math.max(0,Math.min(10,Math.floor(Number(bs?.bossEventTrigger ?? state?.bossEventTrigger ?? 3))));
+        const countdown=trigger<=0?0:Math.max(0,Math.min(trigger,Number(bs?.bossEventCountdown ?? trigger)));
+        const pending=trigger>0 && !!bs?.bossCountdownPending;
+        const countdownText=trigger<=0?'Zusatzboss aus':(pending?'Boss wartet auf freies Portal':`Boss in ${countdown} Ereigniskarte${countdown===1?'':'n'}`);
+        bossRoundInfoEl.textContent=`${activeCount}/2 Portale · ${evCount} Ereignisfelder · 👹 ${countdownText} · Karten ${deckRemaining}/106 · Runde ${Math.max(1,Number(bs?.round||1))}`;
+      }
+      if(bossOverviewEl){
+        const evCount=Array.isArray(bs?.eventFields) ? bs.eventFields.length : Math.max(5,Math.min(20,Number(bs?.eventFieldCount||8)));
+        const activeCount=slots.filter(s=>!!s?.boss).length;
+        const deckRemaining=Array.isArray(bs?.deck)?bs.deck.length:106;
+        const roundNow=Math.max(1,Number(bs?.round||1));
+        const trigger=Math.max(0,Math.min(10,Math.floor(Number(bs?.bossEventTrigger ?? state?.bossEventTrigger ?? 3))));
+        const countdown=trigger<=0?0:Math.max(0,Math.min(trigger,Number(bs?.bossEventCountdown ?? trigger)));
+        const pending=trigger>0 && !!bs?.bossCountdownPending;
+        const countdownText=trigger<=0?'👹 Automatischer Zusatzboss aus':(pending?'👹 Boss wartet auf ein freies Portal':`👹 Nächster Zusatzboss nach ${countdown} bestätigte${countdown===1?'r':'n'} Ereigniskarte${countdown===1?'':'n'}`);
+        bossOverviewEl.innerHTML=`
+          <div class="bossOverviewCard bossOverviewCard--portal"><span>🚪 Portale</span><strong>${activeCount}/2 belegt</strong><small>${activeCount===0?'Noch kein Boss aktiv':activeCount===1?'Ein Boss bedroht das Brett':'Maximale Gefahr: beide Portale belegt'}</small></div>
+          <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>${evCount} Felder</strong><small>${countdownText} · ${deckRemaining}/106 Karten</small></div>
+          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde ${roundNow}</strong><small>Jäger & Doppelgänger nach Spielerbewegung · Fluchmeister & Schatten pro Runde · Weltenfresser alle 5 Spielzüge</small></div>`;
+      }
+      const tools=ensureBossTestTools();
+      if(tools) tools.style.display=isMeHost()?'block':'none';
+
+      const evt=bs?.lastEvent;
+      const evtSeq=Number(evt?.seq||0);
+      // Selbstheilung: Falls ein ACK-Paket beim Reconnect nicht sichtbar wurde,
+      // schließt ein späterer Snapshot eine serverseitig bereits bestätigte Karte ebenfalls.
+      if(evt?.confirmedAt && eventOverlayIsOpen()) {
+        const openSeq=Number(document.getElementById("bossEventOverlay")?.dataset?.eventSeq||0);
+        if(!openSeq || openSeq===evtSeq) closeBossEventOverlaySynced(evtSeq);
+      }
+      // V13.6: Ereignis-Räder werden nicht aus Snapshots rekonstruiert.
+      // Nur persistente server_wheel_job-Befehle dürfen eine Rad-Animation auslösen.
+      if(evt && evtSeq>_lastBossEventSeq){
+        _lastBossEventSeq=evtSeq;
+        if(!evt.confirmedAt) showBossEventCard(evt);
+      }
+      const act=bs?.lastAction;
+      const actSeq=Number(act?.seq||0);
+      if(act && actSeq>_lastBossActionSeq){
+        _lastBossActionSeq=actSeq;
+        _recentBossActionType=getBossActionType(act);
+        _recentBossActionPulseUntil=performance.now()+2800;
+        showBossActionFeedback(act);
+        if(act.text) toast(`${act.icon||'👹'} ${act.title||'Boss'}: ${act.text}`);
+      }
+    }catch(_e){}
+  }
+
+
+  function setNetStatus(text, good){
+    if(!netStatus) return;
+    netStatus.textContent = text;
+    netStatus.style.color = good ? "var(--green)" : "var(--muted)";
+  }
+
+  function wsSend(obj){
+    if(!ws || ws.readyState!==1) return false;
+    try{ ws.send(JSON.stringify(obj)); return true; }catch(_e){ return false; }
+  }
+
+  // Host-only: ensure each player starts with 2 jokers of the 4 Barikade types (Action-Modus).
+  // Additiv und sicher: wird nur 1x direkt nach Start ausgeführt, danach nie wieder.
+  function maybeInitStartJokers(remoteState){
+    // V9.5: Start-Joker sind vollständig serverautoritär.
+    // Sobald ein Action-Snapshot mit Joker-State ankommt, ist die Initialisierung bestätigt.
+    try{
+      if(!_pendingStartJokerInit) return;
+      if(remoteState && remoteState.mode === "action" && remoteState.action){
+        _pendingStartJokerInit = false;
+      }
+    }catch(_e){}
+  }
+
+
+  // ===== V10.3: Live player strip + simplified sidebar state =====
+  function playerProgressForColor(color){
+    try{
+      const arr = state && state.pieces && Array.isArray(state.pieces[color]) ? state.pieces[color] : [];
+      const goal = arr.filter(pc => pc && pc.pos === "goal").length;
+      return { goal, total: arr.length || 5 };
+    }catch(_e){ return { goal:0, total:5 }; }
+  }
+
+  function playerForColor(color){
+    try{
+      return (lastNetPlayers || []).find(p => p && String(p.color || "").toLowerCase() === color) || null;
+    }catch(_e){ return null; }
+  }
+
+  function renderPlayerStrip(){
+    try{
+      const root = document.getElementById("playerStrip");
+      if(!root) return;
+
+      const order = ["red","blue","green","yellow"];
+      const rosterColors = [];
+      for(const p of (lastNetPlayers || [])){
+        const c = String(p && p.color || "").toLowerCase();
+        if(order.includes(c) && !rosterColors.includes(c)) rosterColors.push(c);
+      }
+      const stateColors = state && Array.isArray(state.activeColors) ? state.activeColors.map(c=>String(c||"").toLowerCase()) : [];
+      const localColors = state && Array.isArray(state.players) ? state.players.map(c=>String(c||"").toLowerCase()) : PLAYERS.slice();
+      let colors = rosterColors.length ? rosterColors : (stateColors.length ? stateColors : localColors);
+      colors = [...new Set(colors.filter(c=>order.includes(c)))].sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+
+      root.textContent = "";
+      if(!colors.length){
+        const empty = document.createElement("div");
+        empty.className = "playerStripEmpty";
+        empty.textContent = "Spieler werden geladen …";
+        root.appendChild(empty);
+        return;
+      }
+
+      for(const c of colors){
+        const p = playerForColor(c);
+        const name = (p && p.name) ? String(p.name) : labelForColor(c);
+        const isActive = !!(state && state.currentPlayer === c && !state.winner);
+        const isMe = !!((p && p.id && p.id === clientId) || (myColor && myColor === c));
+        const isHost = !!(p && (p.isHost || String(p.role||"").toLowerCase()==="host"));
+        const isOffline = !!(p && p.connected === false);
+        const diceStyle = normalizeDiceStyle((p && p.diceStyle) || diceStyleByColor[c]);
+        const progress = playerProgressForColor(c);
+
+        const card = document.createElement("article");
+        card.className = "playerStripCard" + (isActive ? " isActive" : "") + (isMe ? " isMe" : "") + (isOffline ? " isOffline" : "");
+        card.dataset.color = c;
+        card.style.setProperty("--player-color", COLORS[c] || "#8a7cff");
+
+        const avatar = document.createElement("div");
+        avatar.className = "playerStripAvatar";
+        avatar.textContent = (name.trim().charAt(0) || PLAYER_NAME[c].charAt(0)).toUpperCase();
+
+        const body = document.createElement("div");
+        body.className = "playerStripBody";
+        const nameRow = document.createElement("div");
+        nameRow.className = "playerStripNameRow";
+        const nm = document.createElement("strong");
+        nm.textContent = name;
+        nameRow.appendChild(nm);
+        if(isMe){ const b=document.createElement("span"); b.className="stripBadge meBadge"; b.textContent="DU"; nameRow.appendChild(b); }
+        if(isHost){ const b=document.createElement("span"); b.className="stripBadge hostBadge"; b.textContent="HOST"; nameRow.appendChild(b); }
+        if(isActive){ const b=document.createElement("span"); b.className="stripBadge activeBadge"; b.textContent="DRAN"; nameRow.appendChild(b); }
+
+        const meta = document.createElement("div");
+        meta.className = "playerStripMeta";
+        const colorDot = document.createElement("span");
+        colorDot.className = "stripColorDot";
+        colorDot.style.background = COLORS[c] || "#fff";
+        const colorTxt = document.createElement("span");
+        colorTxt.textContent = PLAYER_NAME[c] || c;
+        const diceTxt = document.createElement("span");
+        diceTxt.textContent = `🎲 ${DICE_STYLE_LABEL[diceStyle] || "Klassisch"}`;
+        const goalTxt = document.createElement("span");
+        goalTxt.textContent = `${progress.goal}/${progress.total} Ziel`;
+        meta.append(colorDot,colorTxt,diceTxt,goalTxt);
+        if(isOffline){
+          const off=document.createElement("span"); off.className="stripOffline"; off.textContent="offline"; meta.appendChild(off);
+        }
+
+        const goalTrack=document.createElement("div");
+        goalTrack.className="playerStripGoalTrack";
+        const goalFill=document.createElement("span");
+        goalFill.style.width=`${Math.max(0,Math.min(100,progress.total?progress.goal/progress.total*100:0))}%`;
+        goalTrack.appendChild(goalFill);
+
+        body.append(nameRow,meta);
+        card.append(avatar,body,goalTrack);
+        root.appendChild(card);
+      }
+      try{ applyUxStabilityFixes(); }catch(_e){}
+    }catch(_e){}
+  }
+
+  function syncV103Sidebar(){
+    try{
+      const sidebar = document.querySelector('.gameSidebar');
+      const label = document.getElementById("sideTurnLabel");
+      const meta = document.getElementById("sideTurnMeta");
+      const dot = document.getElementById("sideTurnDot");
+      const avatar = document.getElementById("sideTurnAvatar");
+      const phaseBadge = document.getElementById("sidePhaseBadge");
+      const waiting = document.getElementById("sidebarWaiting");
+      const waitingTitle = document.getElementById("sidebarWaitingTitle");
+      const waitingText = document.getElementById("sidebarWaitingText");
+      const waitingPlayers = document.getElementById("sidebarWaitingPlayers");
+      const waitingRoom = document.getElementById("sidebarWaitingRoom");
+      const pregameReady = document.getElementById("pregameReady");
+      const pregameReadyText = document.getElementById("pregameReadyText");
+      const pregameReadyFill = document.getElementById("pregameReadyFill");
+      const pregameReadyDots = document.getElementById("pregameReadyDots");
+      const activeControls = document.getElementById("activeTurnControls");
+      const jokerSection = document.getElementById("jokerSection");
+      const badge = document.getElementById("actionModeBadge");
+      const classicNotice = document.getElementById("classicModeNotice");
+
+      const started = !!(state && state.started);
+      const paused = !!(state && state.paused);
+      const c = state && state.currentPlayer ? String(state.currentPlayer).toLowerCase() : "";
+      const winner = state && state.winner ? String(state.winner).toLowerCase() : "";
+      const isMyTurn = netMode === "offline" ? true : !!(myColor && c && myColor === c);
+      const connectedPlayers = (lastNetPlayers || []).filter(p => p && p.connected !== false && p.color).length;
+      const me = rosterById && clientId ? rosterById.get(clientId) : null;
+      const amHost = !!(me && me.isHost);
+      if(pregameReady){
+        const readyCount=Math.max(0,Math.min(4,connectedPlayers));
+        const readyPct=Math.max(8,readyCount/4*100);
+        pregameReady.classList.toggle('canStart',readyCount>=2);
+        if(pregameReadyText) pregameReadyText.textContent=`${readyCount}/4`;
+        if(pregameReadyFill) pregameReadyFill.style.width=`${readyPct}%`;
+        if(pregameReadyDots){
+          [...pregameReadyDots.children].forEach((dot,i)=>dot.classList.toggle('on',i<readyCount));
+        }
+      }
+      const fallbackAction = !!(actionModeToggle && actionModeToggle.checked);
+      const isAction = String(state && state.mode || (fallbackAction ? "action" : "classic")) === "action";
+      const isBossJokerMode = !!(state && state.bossMode);
+      const jokerUiActive = isAction || isBossJokerMode;
+
+      if(sidebar){
+        sidebar.classList.toggle('isPregame', !started && !winner);
+        sidebar.classList.toggle('isPlaying', started && !winner);
+        sidebar.classList.toggle('isGameOver', !!winner);
+        sidebar.classList.toggle('isMyTurn', !!(started && isMyTurn && !winner && !paused));
+        sidebar.classList.toggle('isActionMode', !!isAction);
+        sidebar.classList.toggle('isPaused', !!paused);
+      }
+
+      if(label){
+        if(winner) label.textContent = `${labelForColor(winner)} gewinnt!`;
+        else if(started && paused) label.textContent = 'Spiel pausiert';
+        else if(started && c) label.textContent = isMyTurn ? 'Dein Zug' : labelForColor(c);
+        else label.textContent = connectedPlayers >= 2 ? 'Bereit zum Start' : 'Warte auf Mitspieler';
+      }
+
+      if(dot){
+        dot.style.background = (winner ? COLORS[winner] : (c ? COLORS[c] : "#667085")) || "#667085";
+        dot.classList.toggle("pulse", !!started && !!c && !winner && !paused);
+      }
+
+      if(avatar){
+        const avatarColor = winner || c || myColor || '';
+        const avatarName = avatarColor ? labelForColor(avatarColor) : '';
+        avatar.textContent = avatarName ? avatarName.trim().charAt(0).toUpperCase() : 'B';
+        avatar.style.setProperty('--turn-color', (avatarColor && COLORS[avatarColor]) ? COLORS[avatarColor] : '#7d73ff');
+      }
+
+      if(meta){
+        if(winner) meta.textContent = "Partie beendet · Revanche möglich.";
+        else if(!started){
+          if(connectedPlayers < 2) meta.textContent = "Mindestens zwei Spieler werden benötigt.";
+          else if(amHost) meta.textContent = "Alle bereit? Dann kannst du die Partie starten.";
+          else meta.textContent = "Warte darauf, dass der Host die Partie startet.";
+        }
+        else if(paused) meta.textContent = amHost ? "Reconnect-Schutz aktiv. Wenn alle wieder da sind: Fortsetzen drücken." : "Reconnect-Schutz aktiv. Der Host setzt die Partie fort.";
+        else if(!isMyTurn) meta.textContent = `Warte auf ${labelForColor(c)}.`;
+        else if(phase === "need_roll") meta.textContent = "Würfeln und deinen Zug starten.";
+        else if(phase === "need_move") meta.textContent = "Figur auswählen und ziehen.";
+        else if(phase === "event_wait") meta.textContent = "Ereigniskarte bestätigen – danach wird der Effekt ausgelöst.";
+        else if(phase === "placing_barricade") meta.textContent = "Eine neue Position für die Barikade wählen.";
+        else if(phase === "game_over") meta.textContent = "Partie beendet.";
+        else meta.textContent = "Dein Zug läuft.";
+      }
+
+      if(phaseBadge){
+        let txt = 'WARTEN';
+        if(winner) txt = 'ENDE';
+        else if(!started) txt = connectedPlayers >= 2 ? 'BEREIT' : 'WARTEN';
+        else if(paused) txt = 'PAUSE';
+        else if(!isMyTurn) txt = 'WARTEN';
+        else if(phase === 'need_roll') txt = 'WÜRFELN';
+        else if(phase === 'need_move') txt = 'ZIEHEN';
+        else if(phase === 'event_wait') txt = 'EREIGNIS';
+        else if(phase === 'placing_barricade') txt = 'BARRIKADE';
+        phaseBadge.textContent = txt;
+        phaseBadge.dataset.phase = txt.toLowerCase();
+      }
+
+      if(waiting){
+        waiting.style.display = (!started && !winner) ? 'grid' : 'none';
+      }
+      if(activeControls){
+        activeControls.style.display = (started && !winner && !paused) ? 'block' : 'none';
+      }
+      if(waitingPlayers) waitingPlayers.textContent = String(connectedPlayers || 1);
+      if(waitingRoom) waitingRoom.textContent = roomCode || (roomCodeInp && roomCodeInp.value) || '–';
+      if(waitingTitle){
+        waitingTitle.textContent = connectedPlayers >= 2 ? (amHost ? 'Bereit zum Start' : 'Warte auf den Host') : 'Warte auf Mitspieler';
+      }
+      if(waitingText){
+        if(connectedPlayers < 2) waitingText.textContent = 'Öffne die Lobby auf einem zweiten Gerät oder lade einen Mitspieler in den Raum ein.';
+        else if(amHost) waitingText.textContent = `${connectedPlayers} Spieler sind verbunden. Du kannst die Partie jetzt starten.`;
+        else waitingText.textContent = `${connectedPlayers} Spieler sind verbunden. Der Host startet die Partie.`;
+      }
+      if(startBtn){
+        startBtn.style.display = (!started && !winner && amHost) ? '' : 'none';
+      }
+
+      if(badge){
+        badge.textContent = isAction && isBossJokerMode ? "⚡ Action + Boss" : isAction ? "⚡ Action" : isBossJokerMode ? "👹 Boss-Joker" : "Classic";
+        badge.classList.toggle("isAction", jokerUiActive);
+      }
+      if(classicNotice) classicNotice.style.display = "none";
+      if(jokerSection){
+        jokerSection.style.display = (started && !winner && jokerUiActive) ? '' : 'none';
+      }
+
+      renderPlayerStrip();
+    }catch(_e){}
+  }
+
+  function setNetPlayers(list){
+    lastNetPlayers = Array.isArray(list) ? list : [];
+    rosterById = new Map();
+    for(const p of lastNetPlayers){ if(p && p.id) rosterById.set(p.id, p); }
+
+    // Build display names by color (server roster includes p.name + p.color)
+    nameByColor = { red:null, blue:null, green:null, yellow:null };
+    diceStyleByColor = { red:'classic', blue:'classic', green:'classic', yellow:'classic' };
+    for(const p of lastNetPlayers){
+      const col = (p && p.color) ? String(p.color).toLowerCase() : "";
+      const nm  = (p && p.name) ? String(p.name).trim() : "";
+      if(col && nm && nameByColor[col] == null) nameByColor[col] = nm;
+      if(col && diceStyleByColor.hasOwnProperty(col)) diceStyleByColor[col] = normalizeDiceStyle(p?.diceStyle);
+    }
+
+    const me = rosterById.get(clientId);
+    myColor = (me && me.color) ? me.color : null;
+
+    if(myColorEl){
+      // Meine Farbe bleibt farbbasiert, damit es klar ist (Name steht oben im Turn-Label).
+      myColorEl.textContent = myColor ? PLAYER_NAME[myColor] : "–";
+      myColorEl.style.color = myColor ? COLORS[myColor] : "var(--muted)";
+    updateStartButton();
+    }
+    updateColorPickUI();
+    applyActiveDiceStyle();
+    updateActionUI_J1();
+
+    // Host: keep state players in sync with chosen colors
+    if(netMode==="host" && state){
+      const active = getActiveColors();
+      const prev = Array.isArray(state.players) ? state.players : [];
+      const same = prev.length===active.length && prev.every((c,i)=>c===active[i]);
+      if(!same){
+        setPlayers(active);
+        state.players = [...PLAYERS];
+        state.pieces = state.pieces || {};
+        for(const c of PLAYERS){
+          if(!state.pieces[c]) state.pieces[c] = Array.from({length:5},()=>({pos:"house"}));
+        }
+        if(!state.players.includes(state.currentPlayer)){
+          state.currentPlayer = state.players[0];
+          setPhase("need_roll");
+          state.dice=null;
+        }
+        broadcastState("snapshot");
+      }
+    }
+
+    if(netPlayersEl){
+      if(!lastNetPlayers.length){ netPlayersEl.textContent="–"; return; }
+      const parts = lastNetPlayers.map(p=>{
+        const name = p.name || p.id || "Spieler";
+        const role = p.role ? `(${p.role})` : "";
+        const col  = p.color ? `· ${PLAYER_NAME[p.color]}` : "";
+        const con  = (p.connected===false) ? " ✖" : " ✔";
+        return `${name} ${role} ${col}${con}`;
+      });
+      netPlayersEl.textContent = parts.join(" · ");
+    }
+
+    // V10.3 player strip/sidebar refresh
+    syncV103Sidebar();
+
+    // host-only controls visibility
+    updateHostToolsUI();
+    updateRematchUI();
+  }
+
+  function updateStartButton(){
+    if(!startBtn) return;
+    const me = rosterById.get(clientId);
+    const amHost = !!(me && me.isHost);
+    const hasState = !!(state && state.started);
+    const connectedPlayers=(lastNetPlayers||[]).filter(p=>p && p.connected!==false && p.color).length;
+    startBtn.disabled = !(amHost && netCanStart && !hasState);
+    if(hasState) startBtn.textContent='✓ Spiel läuft';
+    else if(amHost && netCanStart) startBtn.textContent=`▶ Spiel starten · ${connectedPlayers} Spieler`;
+    else startBtn.textContent='▶ Spiel starten';
+  }
+
+  function isMeHost(){
+    const me = rosterById.get(clientId);
+    return !!(me && me.isHost);
+  }
+
+  function isGameOverNow(){
+    return !!(state && (state.winner || state.phase === "game_over" || phase === "game_over"));
+  }
+
+  function updateRematchUI(){
+    const over = isGameOverNow();
+    const allowed = over && (netMode === "offline" || isMeHost());
+    if(rematchBtn){
+      rematchBtn.hidden = !allowed;
+      rematchBtn.disabled = !allowed;
+    }
+    // Der Overlay-Button ist nur sichtbar, solange auch der Siegesdialog offen ist.
+    if(overlayRematch){
+      const overlayOpen = !!(overlay && overlay.classList.contains("show") && overlay.classList.contains("win-overlay"));
+      overlayRematch.hidden = !(allowed && overlayOpen);
+      overlayRematch.disabled = !(allowed && overlayOpen);
+    }
+    const uvRematch=document.getElementById('uvRematch');
+    if(uvRematch){ uvRematch.hidden=!allowed; uvRematch.disabled=!allowed; }
+  }
+
+  function requestRematch(){
+    if(!isGameOverNow()){ toast("Die Partie ist noch nicht beendet"); return; }
+
+    if(netMode === "offline"){
+      try{ cancelTitleCeremony(); }catch(_e){}
+      try{ closeVictoryFinale(); }catch(_e){}
+      hideOverlay();
+      winShown = false; awardsShown = false;
+      v104LastTurnColor = null;
+      newGame();
+      try{ v104ShowFeedback("turn","🔁","NEUE RUNDE","Das Brett wurde neu aufgebaut.",1300); v104Sound("ui"); }catch(_e){}
+      updateRematchUI();
+      return;
+    }
+
+    if(!isMeHost()){ toast("Nur der Host kann eine Revanche starten"); return; }
+    if(!ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
+
+    if(rematchBtn) rematchBtn.disabled = true;
+    if(overlayRematch) overlayRematch.disabled = true;
+    const uvRematch=document.getElementById('uvRematch'); if(uvRematch) uvRematch.disabled=true;
+    toast("Revanche wird vorbereitet …");
+    try{ closeVictoryFinale(); }catch(_e){}
+    wsSend({ type:"rematch", ts:Date.now() });
+  }
+
+  // Host-only UI block (Save/Load)
+  function updateHostToolsUI(){
+    const show = (netMode !== "offline") && isMeHost();
+    if(hostTools) hostTools.style.display = show ? "flex" : "none";
+    if(autoSaveInfo) autoSaveInfo.style.display = show ? "block" : "none";
+    if(restoreBtn){
+      const has = !!readHostAutosave();
+      restoreBtn.disabled = !(show && has);
+      restoreBtn.style.opacity = (show && has) ? "1" : "0.6";
+    }
+  }
+
+  function scheduleReconnect(){
+    if(reconnectTimer) return;
+    reconnectAttempt++;
+    const delay = Math.min(12000, 600 * Math.pow(1.6, reconnectAttempt));
+    setNetStatus(`Reconnect in ${Math.round(delay/1000)}s…`, false);
+    reconnectTimer = setTimeout(()=>{ reconnectTimer=null; connectWS(); }, delay);
+  }
+  function stopReconnect(){
+    if(reconnectTimer){ clearTimeout(reconnectTimer); reconnectTimer=null; }
+    reconnectAttempt = 0;
+  }
+
+  function connectWS(){
+    if(!roomCode) return;
+    if(ws && (ws.readyState===0 || ws.readyState===1)) return;
+
+    setNetStatus("Verbinden…", false);
+    
+    view._fittedOnce = false;
+try{ ws = new WebSocket(SERVER_URL); }
+    catch(_e){ setNetStatus("WebSocket nicht möglich", false); scheduleReconnect(); return; }
+
+    ws.onopen = () => {
+      _bossBaselineNextSnapshot = true;
+      stopReconnect();
+      _lastNetMsgAt = Date.now();
+      // Start watchdog only once per connection lifecycle
+      try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
+      try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
+      _netWatchdogIv = setInterval(()=>{
+        if(netMode === "offline") return;
+        if(!ws || ws.readyState!==1) return;
+        const age = Date.now() - (_lastNetMsgAt||0);
+        if(age > 12000){
+          // Force reconnect: socket is "silent" (common on some WLANs)
+          try{ ws.close(); }catch(_e){}
+        }
+      }, 2000);
+      // Lightweight ping to keep some routers/proxies happy (server may ignore)
+      _netPingIv = setInterval(()=>{
+        if(!ws || ws.readyState!==1) return;
+        try{ ws.send(JSON.stringify({type:"ping", ts:Date.now()})); }catch(_e){}
+      }, 5000);
+      hideNetBanner();
+      setNetStatus("Verbunden – join…", true);
+
+      const sessionToken = getSessionToken();
+      const savedName = (()=>{ try{ return (localStorage.getItem('barikade_playerName')||'').trim(); }catch(_e){ return ''; } })();
+      wsSend({
+        type: "join",
+        room: roomCode,
+        name: savedName || (netMode === "host" ? "Host" : "Client"),
+        asHost: (netMode === "host"),
+        sessionToken,
+        requestedColor: getRequestedColor(),
+        requestedDiceStyle: getRequestedDiceStyle(),
+        ts: Date.now()
+      });
+    };
+
+    ws.onmessage = (ev) => {
+      _lastNetMsgAt = Date.now();
+      const msg = (typeof ev.data==="string") ? safeJsonParse(ev.data) : null;
+      if(!msg) return;
+      const type = msg.type;
+
+      if(type==="hello"){
+        if(msg.clientId) clientId = msg.clientId;
+        updateEmojiUI();
+        return;
+      }
+
+      if(type==="emoji_show"){
+        console.log('[emoji-v9.2] CLIENT_RECEIVED emoji_show', {room:msg.room,eventId:msg.eventId,sender:msg.senderName,emoji:msg.icon||msg.emoji,serverCommand:msg.serverCommand});
+        // SERVER IST CHEF: Nur dieser Server-Befehl darf den Smiley anzeigen.
+        if(msg.serverCommand !== true){
+          console.warn('[emoji-v9.2] CLIENT_REJECTED: serverCommand fehlt');
+          return;
+        }
+        const incomingRoom = String(msg.room || "").trim().toUpperCase();
+        const myRoom = String(roomCode || "").trim().toUpperCase();
+        if(incomingRoom && myRoom && incomingRoom !== myRoom) return;
+
+        const eventId = String(msg.eventId || "").trim();
+        if(eventId && hasSeenEmojiEvent(eventId)) return;
+        if(eventId) rememberSeenEmojiEvent(eventId);
+
+        try{
+          showEmojiOverlay(
+            msg.senderName || msg.name || "Spieler",
+            msg.icon || msg.emoji || "😀"
+          );
+          console.log('[emoji-v9.2] POPUP_SHOWN', msg.eventId || 'no-event-id');
+        }catch(_e){
+          console.error('[emoji-v9.2] POPUP_ERROR', _e);
+        }
+        return;
+      }
+
+      if(type==="emoji_debug"){
+        console.log('[emoji-v9.2] SERVER_DEBUG', msg);
+        try{ toast(`Smiley-Server: ${Number(msg.delivered||0)} Empfänger`); }catch(_e){}
+        return;
+      }
+
+if(type==="start_spin"){
+  try{
+    const cols = Array.isArray(msg.activeColors) && msg.activeColors.length ? msg.activeColors.map(c=>String(c||"").toLowerCase().trim()).filter(Boolean) : getActiveColors();
+    const dur = Number(msg.durationMs || 4200) || 4200;
+    const winner = String(msg.starterColor || "").toLowerCase().trim();
+    if(msg.boardTheme) rememberBoardThemeVisual(msg.boardTheme);
+    // Run the same wheel animation on ALL clients, but with the server-chosen winner.
+    startWheelSpin(cols, dur, winner).then(()=>{}).catch(()=>{});
+
+// IMPORTANT: In the current server protocol, 'start_request' only triggers the spin.
+// The actual game state is created ONLY after the host sends a follow-up {type:'start'}.
+// To make this reliable (mobile timers, focus changes, etc.), auto-send 'start'
+// from the host once the spin duration has elapsed.
+try{
+  if(netMode === "host"){
+    // Guard against double-starts / repeated spins.
+    window.__pendingHostStartAfterSpin = {
+      at: Date.now(),
+      dur,
+      starterColor: winner,
+      mode: String(msg.mode || _pendingStartMode || (actionModeToggle && actionModeToggle.checked ? "action" : "classic") || "classic"),
+      bossMode: !!(msg.bossMode ?? _pendingStartBossMode ?? getLobbyBossMode()),
+      eventFieldCount: Number(msg.eventFieldCount || getLobbyEventFieldCount()),
+      bossEventTrigger: Number.isFinite(Number(msg.bossEventTrigger)) ? Math.max(0,Math.min(10,Math.floor(Number(msg.bossEventTrigger)))) : getLobbyBossEventTrigger()
+    };
+    window.setTimeout(()=>{
+      try{
+        // If we already started meanwhile, do nothing.
+        if(state && state.started) return;
+        if(!ws || ws.readyState!==1) return;
+        const p = window.__pendingHostStartAfterSpin;
+        if(!p) return;
+        // Send the definitive start to the server (server is truth, will validate again).
+        const jc = (p.mode === "action") ? getLobbyJokerCount() : null;
+        wsSend({ type:"start", mode: p.mode, bossMode: !!p.bossMode, eventFieldCount:(p.eventFieldCount || undefined), bossEventTrigger:(Number.isInteger(p.bossEventTrigger)?p.bossEventTrigger:undefined), ts: Date.now(), starterColor: p.starterColor, jokerStartCount:(jc || undefined) });
+      }catch(_e){}
+    }, dur + 60);
+  }
+}catch(_e){}
+    // While spinning, disable start button to avoid double actions.
+    try{ if(startBtn) startBtn.disabled = true; }catch(_e){}
+    window.setTimeout(()=>{ try{ updateStartButton(); }catch(_e){} }, dur + 1200);
+  }catch(_e){}
+  return;
+}
+
+      if(type==="rematch_started"){
+        try{ cancelTitleCeremony(); }catch(_e){}
+        try{ hideOverlay(); }catch(_e){}
+        winShown = false;
+        awardsShown = false;
+        v104LastTurnColor = null;
+        if(rematchBtn) rematchBtn.disabled = false;
+        if(overlayRematch) overlayRematch.disabled = false;
+        if(msg.state){
+          applyRemoteState(msg.state);
+          maybeInitStartJokers(msg.state);
+          writeHostAutosave(msg.state);
+        }
+        const starter = String(msg.starterColor || (msg.state && msg.state.turnColor) || "").toLowerCase();
+        try{
+          v104ShowFeedback("turn","🔁","NEUE RUNDE",starter ? `${labelForColor(starter)} beginnt.` : "Das Brett wurde neu aufgebaut.",1450);
+          v104Sound("ui");
+          if(v104IsMine(starter)) v104Haptic([30,35,30]);
+        }catch(_e){}
+        updateRematchUI();
+        updateEmojiUI();
+        return;
+      }
+
+      if(type==="room_update"){
+        if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        try{
+          const jc = Number(msg.jokerStartCount);
+          if(Number.isInteger(jc) && jc >= 1 && jc <= 5){
+            const rc = normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+            if(rc) localStorage.setItem("barikade_joker_count_" + rc, String(jc));
+            localStorage.setItem("barikade_joker_count", String(jc));
+          }
+          const efc=Number(msg.eventFieldCount);
+          if(Number.isInteger(efc) && efc>=5 && efc<=20){
+            const rc=normalizeRoomCode(roomCode || (roomCodeInp ? roomCodeInp.value : "") || localStorage.getItem("barikade_room") || "");
+            if(rc) localStorage.setItem("barikade_event_field_count_" + rc,String(efc));
+            localStorage.setItem("barikade_event_field_count",String(efc));
+          }
+        }catch(_e){}
+        if(Array.isArray(msg.allowedColors)){
+          const s = new Set();
+          for(const c of msg.allowedColors){
+            const cc = String(c||"").toLowerCase().trim();
+            if(cc) s.add(cc);
+          }
+          if(s.size) allowedColorsOnline = s;
+        }
+        netCanStart = !!msg.canStart;
+      if (msg.jokerAwardMode) netJokerAwardMode = msg.jokerAwardMode;
+        if(msg.boardTheme) rememberBoardThemeVisual(msg.boardTheme);
+        updateStartButton();
+        updateEmojiUI();
+        return;
+      }
+
+      if(type==="boss_event_ack"){
+        try{
+          const seq=Number(msg.seq||0);
+          const lastEvt=state?.boss?.lastEvent || state?.bossState?.lastEvent || null;
+          if(lastEvt && Number(lastEvt.seq||0)===seq){
+            lastEvt.confirmedAt = Number(msg.confirmedAt||Date.now());
+            lastEvt.confirmedByColor = String(msg.byColor||lastEvt.confirmedByColor||"");
+          }
+          closeBossEventOverlaySynced(seq);
+        }catch(_e){}
+        return;
+      }
+      if(type==="server_wheel_job"){
+        try{ acceptServerWheelJob(msg); }catch(_e){}
+        return;
+      }
+      if(type==="wheel_visual_finished_ack") return;
+      // Alte Rad-Kanäle werden absichtlich ignoriert. Ab V13.6 existiert nur noch
+      // server_wheel_job -> Animation -> wheel_visual_finished.
+      if(type==="server_wheel_show" || type==="boss_event_wheel") return;
+      if(type==="boss_event_ack_result"){
+        const seq=Number(msg.seq||0);
+        if(_bossEventAckPendingSeq===seq) _bossEventAckPendingSeq=0;
+        clearTimeout(_bossEventAckTimer);
+        _bossEventAckTimer=0;
+        const el=document.getElementById("bossEventOverlay");
+        const ok=el?.querySelector('.bossEventOk');
+        const eventColor=String(el?.dataset?.eventColor||"").toLowerCase();
+        const mine=String(myColor||"").toLowerCase();
+        if(ok && eventColor && mine===eventColor){ ok.disabled=false; ok.textContent="OK · EREIGNIS AUSLÖSEN"; }
+        if(msg.message) try{ toast(String(msg.message)); }catch(_e){}
+        return;
+      }
+
+      if(type==="boss_test_result"){
+        if(msg.text) toast((msg.ok===false?'⚠️ ':'🧪 ')+String(msg.text));
+        return;
+      }
+
+      if(type==="forfeit"){
+        try{
+          if(msg.state) applyRemoteState(msg.state);
+          const by = String(msg.by||"").toUpperCase();
+          const w = String(msg.winnerColor || msg.winner || (msg.state && msg.state.winnerColor) || "").toUpperCase();
+          toast(`${by} hat aufgegeben! Gewinner: ${w}`);
+        }catch(_e){}
+        return;
+      }
+      if(type==="snapshot" || type==="started" || type==="place_barricade"){
+        if(msg.removedBossId) _bossRemovedByJokerIds.add(String(msg.removedBossId));
+        if(msg.state){
+          applyRemoteState(msg.state);
+          maybeInitStartJokers(msg.state);
+          writeHostAutosave(msg.state);
+        }
+        if(msg.joker) v104OnJoker(msg.joker);
+        if(msg.jokerCanceled) v104OnJokerCanceled(msg.jokerCanceled);
+        updateEmojiUI();
+        if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        return;
+      }
+      if(type==="roll"){
+        // V21: erst Rohwürfel/Modifikatoren anzeigen, nicht nur den Endwert.
+        if(!msg.state && typeof msg.value==="number") renderRollVisual(msg.rollVisual,msg.value);
+        try{ v104OnRoll(msg.value, msg.double, msg.state && msg.state.turnColor); }catch(_e){}
+        if(msg.state){
+          applyRemoteState(msg.state);
+          maybeInitStartJokers(msg.state);
+          writeHostAutosave(msg.state);
+        }
+        updateEmojiUI();
+        if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        return;
+      }
+      if(type==="move"){
+        // (7/8/109) animate path + destination glow
+        if(msg.action) queueMoveFx(msg.action);
+        try{ if(msg.action) v104OnMove(msg.action); }catch(_e){}
+        if(msg.state){
+          applyRemoteState(msg.state);
+          maybeInitStartJokers(msg.state);
+          writeHostAutosave(msg.state);
+        }
+        updateEmojiUI();
+        if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        return;
+      }
+
+      if(type==="game_over"){
+        const wc = (msg.winnerColor ? String(msg.winnerColor) : null);
+        if(state){
+          state.phase = 'game_over';
+          state.winner = wc;
+          if(msg.summary&&typeof msg.summary==='object') state.matchSummary=msg.summary;
+          if(Array.isArray(msg.awards)) state.matchAwards=msg.awards;
+        }
+        if(wc && !winShown){
+          winShown = true; awardsShown = true;
+          showEpicWin(wc,msg.summary||state?.matchSummary,msg.awards||state?.matchAwards||[]);
+        }
+        updateTurnUI();
+        updateRematchUI();
+        updateEmojiUI();
+        return;
+      }
+
+      // Host Save/Load: server sends back a JSON snapshot for download
+      if(type==="export_state"){
+        pendingSaveExport = false;
+        const ok = downloadJSON(msg.state ?? null, `barikade_save_${roomCode || "room"}.json`);
+        toast(ok ? "Save heruntergeladen" : "Save fehlgeschlagen");
+        return;
+      }
+
+      if(type==="error"){
+        const code = msg.code || "";
+        const message = msg.message || "Server-Fehler";
+        if(rematchBtn) rematchBtn.disabled = !isGameOverNow();
+        if(overlayRematch) overlayRematch.disabled = !isGameOverNow();
+        // If server has no running game state (e.g. after restart), unlock manual start.
+        if(code==="NO_STATE" || /Spiel nicht gestartet/i.test(message)){
+          debugLog("[server:NO_STATE]", code, message);
+          // WICHTIG: lokalen Snapshot NICHT löschen – sonst kann man nach Reconnect nichts mehr sichern.
+          // Falls gerade ein Save angefordert wurde, mache stattdessen einen Offline-Save aus dem letzten Snapshot.
+          if(pendingSaveExport && state){
+            pendingSaveExport = false;
+            const st = serializeState();
+            const ok = downloadJSON(st, `barikade_save_offline_${roomCode || "room"}.json`);
+            toast(ok ? "Server ohne Spielstand – Offline-Save heruntergeladen" : "Offline-Save fehlgeschlagen");
+            return;
+          }
+          pendingSaveExport = false;
+          // UI-Hinweis statt Reset:
+          const hasAuto = !!readHostAutosave();
+          if(isMeHost() && hasAuto){
+            showNetBanner("Server war offline/sleep (kein Spielstand). Klicke als Host auf \"Restore\" (Auto‑Save) oder \"Load\" (JSON).");
+          }else{
+            showNetBanner("Kein Spielstand am Server. Nutze Load (JSON) oder starte neu.");
+          }
+          updateHostToolsUI();
+          return;
+        }
+        toast(message);
+        return;
+      }
+      if(type==="pong") return;
+    };
+
+    ws.onerror = () => { setNetStatus("Fehler – Reconnect…", false); showNetBanner("Verbindungsfehler – Reconnect läuft…"); };
+    ws.onclose = () => {
+      updateEmojiUI();
+      try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
+      try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
+      _netWatchdogIv=null; _netPingIv=null;
+      setNetStatus("Getrennt – Reconnect…", false);
+      showNetBanner("Verbindung getrennt – Reconnect läuft…");
+      try{ syncV103Sidebar(); }catch(_e){}
+      if(netMode!=="offline") scheduleReconnect();
+    };
+  }
+
+  function disconnectWS(){
+    stopReconnect();
+    try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
+    try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
+    _netWatchdogIv=null; _netPingIv=null;
+    if(ws){
+      try{ ws.onopen=ws.onmessage=ws.onerror=ws.onclose=null; ws.close(); }catch(_e){}
+      ws=null;
+    }
+    setNetStatus("Offline", false);
+    hideNetBanner();
+    updateHostToolsUI();
+  }
+
+  function saveSession(){
+    try{
+      localStorage.setItem("barikade_room", roomCode||"");
+      localStorage.setItem("barikade_mode", netMode||"offline");
+      localStorage.setItem("barikade_clientId", clientId||"");
+    }catch(_e){}
+  }
+  function loadSession(){
+    try{
+      return {
+        r: localStorage.getItem("barikade_room")||"",
+        m: localStorage.getItem("barikade_mode")||"offline",
+        id: localStorage.getItem("barikade_clientId")||""
+      };
+    }catch(_e){ return {r:"", m:"offline", id:""}; }
+  }
+
+  // Server uses sessionToken to reconnect a "slot" (same color) after refresh.
+  function getSessionToken(){
+    try{
+      let t = localStorage.getItem("barikade_sessionToken") || "";
+      if(!t){
+        t = "S-" + randId(16);
+        localStorage.setItem("barikade_sessionToken", t);
+      }
+      return t;
+    }catch(_e){
+      return "S-" + randId(16);
+    }
+  }
+
+  function chooseColor(color){
+    // Store requested color for this room (used on join + reconnect)
+    try{
+      if(currentRoom){
+        localStorage.setItem("barikade_reqColor_"+currentRoom, String(color));
+      }
+    }catch(_e){}
+
+    // If online & already connected, ask server immediately
+    if(netMode==="online" && ws && ws.readyState===1){
+      wsSend({type:"request_color", room: currentRoom, sessionToken: sessionToken, color: String(color)});
+    } else {
+      // If not connected yet, we reconnect so the next join includes requestedColor
+      toast("Farbe gespeichert. Beim Beitreten/Reconnect wird sie angefragt.");
+    }
+  }
+
+  function getActiveColors(){
+    if(netMode==="offline") return [...PLAYERS];
+    const order=["red","blue","green","yellow"];
+    const colors=[], seen=new Set();
+    for(const p of lastNetPlayers){
+      if(!p || !p.color) continue;
+      if(seen.has(p.color)) continue;
+      seen.add(p.color);
+      colors.push(p.color);
+    }
+    colors.sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+    return colors.length>=2 ? colors : ["red","blue"];
+  }
+
+  // ===== State sync =====
+  function applyRemoteState(remote){
+    const st = (typeof remote==="string") ? safeJsonParse(remote) : remote;
+    if(!st || typeof st!=="object") return;
+
+    // --- Server-state adapter (serverfinal protocol) ---
+    // server state: {turnColor, phase, rolled, pieces:[{id,color,posKind,houseId,nodeId}], barricades:[...], goal}
+    if(st.turnColor && Array.isArray(st.pieces) && Array.isArray(st.barricades)){
+      const server = st;
+      const wasBossMode = !!(state && state.bossMode);
+      const prevBossState = state?.boss || null;
+      // In Online-Mode we ALWAYS render all 4 Farben (auch wenn nicht gewählt),
+      // damit Gelb/Grün im Haus sichtbar bleiben.
+      const players = ["red","blue","green","yellow"];
+      setPlayers(players);
+      const piecesByColor = {red:[], blue:[], green:[], yellow:[]};
+      // ensure 5 slots per color
+      for(const c of players) piecesByColor[c] = Array.from({length:5}, ()=>({pos:"house"}));
+
+      for(const pc of server.pieces){
+        if(!pc || !pc.color || !piecesByColor[pc.color]) continue;
+        // pc.label is 1..5
+        const idx = Math.max(0, Math.min(4, Number(pc.label||1)-1));
+        let pos = "house";
+        if(pc.posKind==="board" && pc.nodeId) pos = String(pc.nodeId);
+        else if(pc.posKind==="goal") pos = "goal";
+        else pos = "house";
+        piecesByColor[pc.color][idx] = {pos, pieceId: pc.id};
+      }
+
+      state = {
+        started: true,
+        players,
+        currentPlayer: server.turnColor,
+        dice: (server.rolled==null ? null : Number(server.rolled)),
+        rollVisual: (server.rollVisual && typeof server.rollVisual === "object") ? JSON.parse(JSON.stringify(server.rollVisual)) : null,
+        phase: server.phase,
+        placingChoices: [],
+        pieces: Object.fromEntries(players.map(c => [c, piecesByColor[c] || []])),
+        barricades: new Set(server.barricades.map(String)),
+        winner: (server.winnerColor ? String(server.winnerColor) : null),
+        goalNodeId: server.goal ? String(server.goal) : goalNodeId,
+        // optional info from server (used by some UIs)
+        activeColors: Array.isArray(server.activeColors) ? server.activeColors.slice() : null
+              ,
+        mode: String(server.mode || "classic"),
+        action: (server.action && typeof server.action === "object") ? server.action : null,
+        bossMode: !!server.bossMode,
+        boardTheme: rememberBoardThemeVisual(server.boardTheme || getBoardThemeVisual()),
+        boss: (server.boss && typeof server.boss === "object") ? server.boss : null,
+        // Reconnect-/Persistenzstatus vom Server nicht mehr beim Adapter verwerfen.
+        paused: !!server.paused,
+        extraRollPending: !!server.extraRollPending,
+        eventMoveActive: (server.eventMoveActive && typeof server.eventMoveActive === "object") ? {...server.eventMoveActive} : null,
+        carryingByColor: (server.carryingByColor && typeof server.carryingByColor === "object") ? {...server.carryingByColor} : null,
+        rev: Number(server.rev||0),
+        finished: !!server.finished,
+        startedAt: Number(server.startedAt||0)||0,
+        finishedAt: Number(server.finishedAt||0)||0,
+        gameOverReason: String(server.gameOverReason||''),
+        matchSummary: (server.matchSummary&&typeof server.matchSummary==='object') ? server.matchSummary : null,
+        matchAwards: Array.isArray(server.matchAwards) ? server.matchAwards : []
+      
+      };
+
+      try{ syncBossMoveFx(prevBossState, state.boss); }catch(_e){}
+
+      // map phases
+      const ph = server.phase;
+      if(ph==="need_roll") phase="need_roll";
+      else if(ph==="need_move") phase="need_move";
+      else if(ph==="place_barricade") phase="placing_barricade";
+      else if(ph==="event_wait") phase="event_wait";
+      else phase="need_roll";
+
+      // show current player's selected dice design before the face animation
+      applyActiveDiceStyle();
+      renderRollVisual(state.rollVisual, state.dice);
+      if(barrInfo) barrInfo.textContent = String(state.barricades.size);
+
+      // in online mode we let the server validate moves, so don't compute legalTargets
+      legalTargets = [];
+      legalMovesAll = [];
+      legalMovesByPiece = new Map();
+      placingChoices = [];
+      // auto-enter Barrikade-Pick nach Server-Aktivierung
+      try{
+        const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+        if(pendingBarricadePick && eff && eff.barricadeBy===myColor){
+          pendingBarricadePick=false;
+          actionBarricadeActive=true;
+          actionBarricadeFrom=null;
+          toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+        }
+      }catch(e){}
+
+      if(!(server.finished || server.phase === 'game_over')){
+        winShown = false; awardsShown = false;
+        try{ closeVictoryFinale(); }catch(_e){}
+      }
+
+      if ((server.finished || server.phase === 'game_over') && state.winner && !winShown) {
+        winShown = true; awardsShown = true;
+        showEpicWin(state.winner,state.matchSummary,state.matchAwards);
+      }
+
+      if(state.bossMode && !wasBossMode){
+        // Re-fit once when the authoritative server snapshot enables the side boss fields.
+        // Otherwise a guest that loaded the board before game start could keep the classic crop.
+        view._fittedOnce = false;
+      }
+      updateTurnUI(); updateStartButton(); draw();
+      updateRematchUI();
+      updateActionUI_J1();
+      if(_bossBaselineNextSnapshot){
+        const bb=state?.boss || null;
+        const baselineEvent=bb?.lastEvent || null;
+        // Vergangene/bestaetigte Karten nach Reconnect nicht erneut zeigen.
+        // Eine NOCH OFFENE Karte dagegen muss wieder erscheinen, sonst koennte
+        // der ausloesende Spieler sie nach einem Reload niemals fuer alle bestaetigen.
+        if(!baselineEvent || baselineEvent.confirmedAt){
+          _lastBossEventSeq=Math.max(_lastBossEventSeq,Number(baselineEvent?.seq||0));
+        }
+        _lastBossActionSeq=Math.max(_lastBossActionSeq,Number(bb?.lastAction?.seq||0));
+        const baselineSpawns=Array.isArray(bb?.spawnHistory)?bb.spawnHistory:[];
+        const baselineSpawnSeq=Math.max(Number(bb?.lastSpawn?.seq||0),...baselineSpawns.map(x=>Number(x?.seq||0)),0);
+        _lastBossSpawnSeq=Math.max(_lastBossSpawnSeq,baselineSpawnSeq);
+        _bossBaselineNextSnapshot=false;
+      }
+      updateBossUI();
+      renderEventChoicePanel();
+      ensureFittedOnce();
+      return;
+    }
+
+    if(st.barricades && Array.isArray(st.barricades)) st.barricades = new Set(st.barricades);
+    state = st;
+
+    if(st.players && Array.isArray(st.players) && st.players.length>=2) setPlayers(st.players);
+
+    if(typeof st.phase === "string") phase = st.phase;
+    else phase = st.winner ? "game_over" : (st.dice==null ? "need_roll" : "need_move");
+
+    placingChoices = Array.isArray(st.placingChoices) ? st.placingChoices : [];
+
+    if(phase==="need_move" && st.dice!=null && !st.winner){
+      legalMovesAll = computeLegalMoves(st.currentPlayer, st.dice);
+      legalMovesByPiece = new Map();
+      for(const m of legalMovesAll){
+        const idx = m.piece.index;
+        if(!legalMovesByPiece.has(idx)) legalMovesByPiece.set(idx, []);
+        legalMovesByPiece.get(idx).push(m);
+      }
+      legalTargets = legalMovesAll;
+    }else{
+      legalTargets = [];
+      legalMovesAll = [];
+      legalMovesByPiece = new Map();
+      if(phase!=="placing_barricade") selected=null;
+    }
+
+    if(barrInfo) barrInfo.textContent = String(state.barricades?.size ?? 0);
+    applyActiveDiceStyle();
+    renderRollVisual(state.rollVisual, state.dice);
+    // auto-enter Barrikade-Pick nach Server-Aktivierung
+      try{
+        const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+        if(pendingBarricadePick && eff && eff.barricadeBy===myColor){
+          pendingBarricadePick=false;
+          actionBarricadeActive=true;
+          actionBarricadeFrom=null;
+          toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+        }
+      }catch(e){}
+
+      updateTurnUI(); updateStartButton(); draw();
+    updateActionUI_J1();
+      ensureFittedOnce();
+  }
+
+  function serializeState(){
+    const st = JSON.parse(JSON.stringify(state));
+    if(state.barricades instanceof Set) st.barricades = Array.from(state.barricades);
+    st.players = state?.players ? [...state.players] : [...PLAYERS];
+    st.phase = phase;
+    st.placingChoices = Array.isArray(placingChoices) ? [...placingChoices] : [];
+    return st;
+  }
+
+  function broadcastState(kind="state"){
+    if(netMode!=="host") return;
+    wsSend({type:kind, room:roomCode, state:serializeState(), ts:Date.now()});
+  }
+
+  function sendIntent(intent){
+    const msg = {type:"intent", room:roomCode, clientId, intent, ts:Date.now()};
+    if(!wsSend(msg)) pendingIntents.push(msg);
+  }
+
+  // ===== Game =====
+  
+  function downloadJSON(obj, filename){
+    try{
+      const payload = JSON.stringify(obj ?? null, null, 2);
+      const blob = new Blob([payload], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename || "barikade_save.json";
+      a.click();
+      setTimeout(()=>{ try{ URL.revokeObjectURL(a.href); }catch(_e){} }, 1200);
+      return true;
+    }catch(_e){
+      return false;
+    }
+  }
+
+function toast(msg){
+    if(!toastEl) return;
+    toastEl.textContent=msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastEl._t);
+    toastEl._t=setTimeout(()=>toastEl.classList.remove("show"), 1200);
+  }
+
+
+  // ===== Visual helpers (safe) =====
+  function showNetBanner(text){
+    if(!netBannerEl) return;
+    netBannerEl.textContent = text || "";
+    netBannerEl.classList.add("show");
+  }
+  function hideNetBanner(){
+    if(!netBannerEl) return;
+    netBannerEl.classList.remove("show");
+  }
+
+  function spawnDiceParticles(){
+    if(!diceEl) return;
+    const host = diceEl.parentElement;
+    if(!host) return;
+    const rect = diceEl.getBoundingClientRect();
+    const hostRect = host.getBoundingClientRect();
+    const cx = (rect.left - hostRect.left) + rect.width/2;
+    const cy = (rect.top - hostRect.top) + rect.height/2;
+
+    const count = 12;
+    for(let i=0;i<count;i++){
+      const el = document.createElement("div");
+      el.className = "diceParticle";
+      el.style.left = (cx-3) + "px";
+      el.style.top  = (cy-3) + "px";
+      const ang = Math.random()*Math.PI*2;
+      const dist = 14 + Math.random()*20;
+      const dx = Math.cos(ang)*dist;
+      const dy = Math.sin(ang)*dist;
+      el.style.setProperty("--dx", dx.toFixed(1) + "px");
+      el.style.setProperty("--dy", dy.toFixed(1) + "px");
+      host.appendChild(el);
+      setTimeout(()=>{ try{ el.remove(); }catch(_e){} }, 650);
+    }
+  }
+
+  function setDiceFaceAnimated(v){
+    if(!diceEl) return;
+    try{ ensureDiceValueLabel(); }catch(_e){}
+    // Werte >6 als Zahl anzeigen (z.B. Doppelwurf 7-12)
+    if (typeof v === "number" && v > 6) {
+      if (diceValueLabel) { diceValueLabel.textContent = String(v); diceValueLabel.style.display = "block"; }
+      v = 0;
+    } else {
+      if (diceValueLabel) diceValueLabel.style.display = "none";
+    }
+    const face = (v>=1 && v<=6) ? v : 0;
+
+    // clear any previous roll timers (visual only)
+    try{
+      if(_diceFlickerTimer){ clearInterval(_diceFlickerTimer); _diceFlickerTimer=null; }
+      if(_diceFlickerStop){ clearTimeout(_diceFlickerStop); _diceFlickerStop=null; }
+    }catch(_e){}
+
+    // reset helper classes
+    try{
+      diceEl.classList.remove("legend-roll","legend-ping","legend-crit6","legend-crit1");
+    }catch(_e){}
+
+    if(face===0){
+      diceEl.dataset.face = "0";
+      lastDiceFace = 0;
+      return;
+    }
+
+    const sameAsBefore = (face === lastDiceFace);
+    lastDiceFace = face;
+
+    // start legendary roll animation
+    // - flicker faces quickly for suspense
+    // - then settle on final face and keep it until next roll
+    try{
+      // restart animation class reliably
+      diceEl.classList.remove("legend-roll");
+      void diceEl.offsetWidth;
+      if(!sameAsBefore){
+        diceEl.classList.add("legend-roll");
+      }
+
+      // also keep old shake (if CSS exists)
+      diceEl.classList.remove("shake");
+      void diceEl.offsetWidth;
+      diceEl.classList.add("shake");
+    }catch(_e){}
+
+    // Flicker: 10–14 quick random faces (visual only)
+    // But ONLY when the face actually changes; otherwise snapshots would cause jitter.
+    const t0 = performance.now();
+    if(!sameAsBefore){
+      _diceFlickerTimer = setInterval(()=>{
+      try{
+        const r = 1 + Math.floor(Math.random()*6);
+        diceEl.dataset.face = String(r);
+      }catch(_e){}
+      // hard stop safety
+      if(performance.now() - t0 > 520){
+        try{ clearInterval(_diceFlickerTimer); }catch(_e){}
+        _diceFlickerTimer=null;
+      }
+      }, 45);
+    }
+
+    // particles (existing)
+    try{ spawnDiceParticles(); }catch(_e){}
+
+    // settle on real result
+    _diceFlickerStop = setTimeout(()=>{
+      try{
+        if(_diceFlickerTimer){ clearInterval(_diceFlickerTimer); _diceFlickerTimer=null; }
+      }catch(_e){}
+      try{
+        diceEl.dataset.face = String(face);
+        diceEl.classList.remove("shake");
+        // if same face, give a small ping so it still feels alive
+        if(sameAsBefore){
+          diceEl.classList.remove("legend-ping");
+          void diceEl.offsetWidth;
+          diceEl.classList.add("legend-ping");
+        }
+        // crit effects
+        if(face===6) diceEl.classList.add("legend-crit6");
+        if(face===1) diceEl.classList.add("legend-crit1");
+        // remove crit classes after a moment (visual only)
+        setTimeout(()=>{
+          try{ diceEl.classList.remove("legend-crit6","legend-crit1","legend-ping"); }catch(_e){}
+        }, 1000);
+      }catch(_e){}
+    }, 560);
+  }
+
+  function parseColorFromPieceId(pieceId){
+    const s = String(pieceId||"");
+    // expected: p_red_1, p_blue_3 ...
+    if(s.includes("red")) return "red";
+    if(s.includes("blue")) return "blue";
+    if(s.includes("green")) return "green";
+    if(s.includes("yellow")) return "yellow";
+    return null;
+  }
+
+  function queueMoveFx(action){
+    if(!action || !board) return;
+    const path = Array.isArray(action.path) ? action.path.map(String) : [];
+    if(path.length < 2) return;
+
+    const color = parseColorFromPieceId(action.pieceId) || "white";
+
+    // Build WORLD nodes for the path (screen coords are calculated during draw so zoom/pan stays correct)
+    const nodes=[];
+    for(const id of path){
+      const n = nodeById.get(String(id));
+      if(!n) continue;
+      nodes.push({ x:n.x, y:n.y, id:String(id) });
+    }
+    if(nodes.length < 2) return;
+
+    const steps = nodes.length - 1;
+
+    // Per-step duration (tweak feel here). Total scales with steps so it never looks like teleport.
+    const stepMs = 220; // 180..260 feels good
+    const totalMs = Math.min(2400, Math.max(420, steps * stepMs));
+
+    const now = performance.now();
+
+    // Trail/highlight (optional)
+    const pts = nodes.map(n => worldToScreen(n));
+    lastMoveFx = { color: color || "white", pts, t0: now, dur: totalMs };
+
+    // Disable old sliding-ghost (we render the real piece as a visual override)
+    moveGhostFx = null;
+
+    // Real piece animation override
+    moveAnim = {
+      pieceId: String(action.pieceId),
+      color: color || "white",
+      nodes,
+      t0: now,
+      stepMs,
+      hop: 16,       // hop height in px-ish (scaled with zoom below)
+      totalMs
+    };
+    animPieceId = moveAnim.pieceId;
+    isAnimatingMove = true;
+
+    requestDraw();
+  }
+
+  function showOverlay(title, sub, hint){
+    overlay.classList.remove("win-overlay");
+    overlay.style.removeProperty("--winner-color");
+    overlayTitle.textContent=title;
+    overlaySub.textContent=sub||"";
+    overlayHint.textContent=hint||"";
+    if(overlayOk) overlayOk.textContent = "OK";
+    if(overlayRematch){ overlayRematch.hidden = true; overlayRematch.disabled = true; }
+    overlay.classList.add("show");
+  }
+
+  // Legendary win screen (works for offline + online)
+  let winFxRunning = false;
+  function ensureWinCanvas(){
+    const ov = document.getElementById('ultimateVictory') || $('overlay');
+    if(!ov) return null;
+    let c = document.getElementById('winFx');
+    if(!c){
+      c = document.createElement('canvas');
+      c.id = 'winFx';
+      c.style.position = 'absolute';
+      c.style.inset = '0';
+      c.style.width = '100%';
+      c.style.height = '100%';
+      c.style.pointerEvents = 'none';
+      c.style.opacity = '0.9';
+      ov.appendChild(c);
+      // ensure overlay is relative
+      if(getComputedStyle(ov).position === 'static') ov.style.position = 'relative';
+    }
+    return c;
+  }
+
+  function startWinFx(winnerColor){
+    if(winFxRunning) return;
+    const c = ensureWinCanvas();
+    if(!c) return;
+    const ov = document.getElementById('ultimateVictory') || $('overlay');
+    const g = c.getContext('2d');
+    winFxRunning = true;
+
+    const parts = [];
+    const rand = (a,b)=>Math.random()*(b-a)+a;
+    const winnerCol = (COLORS && COLORS[winnerColor]) ? COLORS[winnerColor] : '#8b7cff';
+    const palette = [winnerCol,'#ffd166','#ffffff','#73d9ff','#b5a7ff','#63e6be'];
+    const resize = ()=>{
+      const r = ov.getBoundingClientRect();
+      c.width = Math.max(1, Math.floor(r.width));
+      c.height = Math.max(1, Math.floor(r.height));
+    };
+    resize();
+    window.addEventListener('resize', resize, { passive:true, once:true });
+
+    // central burst
+    for(let i=0;i<92;i++){
+      const a=rand(-Math.PI*.92,-Math.PI*.08);
+      const sp=rand(4.5,10.5);
+      parts.push({
+        mode:'burst',x:c.width*.5+rand(-24,24),y:c.height*.47+rand(-12,12),
+        vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,s:rand(3,7),rot:rand(0,Math.PI*2),vr:rand(-.28,.28),
+        life:rand(1050,1750),color:palette[Math.floor(Math.random()*palette.length)],shape:Math.random()<.26?'dot':'bar'
+      });
+    }
+    // celebratory fall from the top
+    for(let i=0;i<108;i++){
+      parts.push({
+        mode:'fall',x:rand(0,c.width),y:rand(-c.height*.24,-8),vx:rand(-1.8,1.8),vy:rand(1.4,4.0),
+        s:rand(2.5,6),rot:rand(0,Math.PI*2),vr:rand(-.22,.22),life:rand(1500,2350),
+        color:palette[Math.floor(Math.random()*palette.length)],shape:Math.random()<.20?'dot':'bar'
+      });
+    }
+
+    const t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    function frame(t){
+      const age = t - t0;
+      g.clearRect(0,0,c.width,c.height);
+      for(const p of parts){
+        if(age > p.life) continue;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.mode==='burst' ? 0.085 : 0.032;
+        p.vx *= p.mode==='burst' ? .992 : .998;
+        p.rot += p.vr;
+        const fade=Math.max(0,1-age/p.life);
+        g.save();
+        g.translate(p.x,p.y);g.rotate(p.rot);g.globalAlpha=Math.min(1,fade*1.35);g.fillStyle=p.color;
+        g.shadowColor=p.color;g.shadowBlur=p.mode==='burst'?5:2;
+        if(p.shape==='dot'){
+          g.beginPath();g.arc(0,0,p.s*.72,0,Math.PI*2);g.fill();
+        }else{
+          g.fillRect(-p.s,-p.s*.48,p.s*2,p.s*.96);
+        }
+        g.restore();
+      }
+      if(age < 2400 && ov.classList.contains('show')) requestAnimationFrame(frame);
+      else { g.clearRect(0,0,c.width,c.height); winFxRunning = false; }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  
+// ---------- End-of-game Title Ceremony (per match) ----------
+function ensureAwardsStyles(){
+  if(document.getElementById("baAwardsStyles")) return;
+  const st = document.createElement("style");
+  st.id = "baAwardsStyles";
+  st.textContent = `
+    #baAwardsOverlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:99999;
+      background: radial-gradient(900px 600px at 50% 40%, rgba(255,255,255,.10), rgba(0,0,0,.82) 70%);
+      backdrop-filter: blur(4px);
+    }
+    #baAwardsCard{ width:min(920px,92vw); border-radius:24px; padding:22px 18px; border:1px solid rgba(255,255,255,.12);
+      background: rgba(5,10,22,.55);
+      box-shadow: 0 12px 50px rgba(0,0,0,.55);
+      text-align:center;
+      transform: translateY(10px) scale(.98);
+      opacity:0;
+      transition: .22s ease;
+    }
+    #baAwardsOverlay.show #baAwardsCard{ transform: translateY(0) scale(1); opacity:1; }
+    #baAwardsTitle{ font-weight:1000; letter-spacing:.2px; font-size:clamp(22px,4.2vw,44px); }
+    #baAwardsValue{ margin-top:12px; font-weight:950; font-size:clamp(20px,3.6vw,38px); opacity:0; transform: translateY(6px); transition:.22s ease; }
+    #baAwardsName{ margin-top:10px; font-weight:900; font-size:clamp(18px,3vw,30px); color: rgba(255,255,255,.86);
+      opacity:0; transform: translateY(6px); transition:.22s ease;
+    }
+    #baAwardsValue.show, #baAwardsName.show{ opacity:1; transform: translateY(0); }
+    #baAwardsSub{ margin-top:12px; font-size:13px; color: rgba(255,255,255,.62); }
+  `;
+  document.head.appendChild(st);
+}
+
+  const EMOJI_MAP = { laugh:"😂", angry:"😡", cool:"😎", poop:"💩", clock:"⏳" };
+  function normalizeEmojiKey(value){
+    const v = String(value || "").trim();
+    const low = v.toLowerCase();
+    if(v === "😂" || low === "laugh") return "laugh";
+    if(v === "😡" || low === "angry") return "angry";
+    if(v === "😎" || low === "cool") return "cool";
+    if(v === "💩" || low === "poop" || low === "shit") return "poop";
+    if(v === "⏳" || v === "⌛" || low === "clock" || low === "hourglass" || low === "timer" || low === "zeituhr") return "clock";
+    return "";
+  }
+  function updateEmojiUI(){
+    const running = !!(state && state.started && !state.winner);
+    const onlineReady = !!(typeof ws !== "undefined" && ws && ws.readyState === 1);
+    const canUse = running && onlineReady;
+
+    const emojiBarEl = document.getElementById("emojiBar");
+    const btns = [
+      document.getElementById("emojiLaughBtn"),
+      document.getElementById("emojiAngryBtn"),
+      document.getElementById("emojiCoolBtn"),
+      document.getElementById("emojiPoopBtn"),
+      document.getElementById("emojiClockBtn")
+    ];
+
+    if(emojiBarEl) emojiBarEl.style.display = running ? "flex" : "none";
+    for(const btn of btns){
+      if(btn) btn.disabled = !canUse;
+    }
+  }
+  function showEmojiOverlay(name, emoji){
+    const key = normalizeEmojiKey(emoji);
+    const icon = EMOJI_MAP[key] || String(emoji || "").trim() || "😀";
+
+    let overlayEl = document.getElementById("emojiOverlay");
+    let iconEl = document.getElementById("emojiOverlayIcon");
+    let nameEl = document.getElementById("emojiOverlayName");
+    let subEl = document.getElementById("emojiOverlaySub");
+    let countEl = document.getElementById("emojiOverlayCountdown");
+
+    if(!overlayEl){
+      overlayEl = document.createElement("div");
+      overlayEl.id = "emojiOverlay";
+      overlayEl.setAttribute("aria-hidden", "true");
+      overlayEl.style.position = "fixed";
+      overlayEl.style.inset = "0";
+      overlayEl.style.display = "none";
+      overlayEl.style.alignItems = "center";
+      overlayEl.style.justifyContent = "center";
+      overlayEl.style.zIndex = "10020";
+      overlayEl.style.pointerEvents = "none";
+
+      const card = document.createElement("div");
+      card.className = "emojiOverlayCard";
+      card.style.display = "flex";
+      card.style.flexDirection = "column";
+      card.style.alignItems = "center";
+      card.style.justifyContent = "center";
+      card.style.gap = "10px";
+      card.style.minWidth = "min(84vw,460px)";
+      card.style.padding = "18px 22px";
+      card.style.borderRadius = "28px";
+      card.style.background = "rgba(8,12,20,.26)";
+      card.style.backdropFilter = "blur(2px)";
+
+      iconEl = document.createElement("div");
+      iconEl.id = "emojiOverlayIcon";
+      iconEl.style.fontSize = "132px";
+      iconEl.style.lineHeight = "1";
+      iconEl.style.filter = "drop-shadow(0 12px 30px rgba(0,0,0,.55))";
+
+      nameEl = document.createElement("div");
+      nameEl.id = "emojiOverlayName";
+      nameEl.style.fontSize = "28px";
+      nameEl.style.fontWeight = "900";
+      nameEl.style.color = "#fff";
+      nameEl.style.textShadow = "0 6px 18px rgba(0,0,0,.55)";
+      nameEl.style.letterSpacing = ".2px";
+
+      subEl = document.createElement("div");
+      subEl.id = "emojiOverlaySub";
+      subEl.style.fontSize = "22px";
+      subEl.style.fontWeight = "800";
+      subEl.style.color = "rgba(255,245,220,.96)";
+      subEl.style.textAlign = "center";
+      subEl.style.textShadow = "0 4px 14px rgba(0,0,0,.50)";
+      subEl.style.display = "none";
+
+      countEl = document.createElement("div");
+      countEl.id = "emojiOverlayCountdown";
+      countEl.style.fontSize = "42px";
+      countEl.style.fontWeight = "1000";
+      countEl.style.lineHeight = "1";
+      countEl.style.color = "#fff";
+      countEl.style.textShadow = "0 8px 18px rgba(0,0,0,.55)";
+      countEl.style.display = "none";
+
+      card.appendChild(iconEl);
+      card.appendChild(nameEl);
+      card.appendChild(subEl);
+      card.appendChild(countEl);
+      overlayEl.appendChild(card);
+      document.body.appendChild(overlayEl);
+    }
+
+    if(iconEl) iconEl.textContent = icon;
+    if(nameEl) nameEl.textContent = String(name || "Spieler");
+    if(!overlayEl) return;
+
+    if(emojiOverlayTimer) clearTimeout(emojiOverlayTimer);
+    try{ if(window.__emojiCountdownInterval) clearInterval(window.__emojiCountdownInterval); }catch(_e){}
+    try{ window.__emojiCountdownInterval = null; }catch(_e){}
+
+    if(subEl){
+      subEl.style.display = "none";
+      subEl.textContent = "";
+    }
+    if(countEl){
+      countEl.style.display = "none";
+      countEl.textContent = "";
+    }
+
+    // Immer erzwingen – auch wenn #emojiOverlay bereits aus HTML existiert.
+    Object.assign(overlayEl.style, {
+      position:"fixed", inset:"0", display:"flex", alignItems:"center",
+      justifyContent:"center", zIndex:"2147483647", pointerEvents:"none"
+    });
+    overlayEl.setAttribute("aria-hidden", "false");
+
+    overlayEl.style.display = "flex";
+    overlayEl.classList.remove("show");
+    void overlayEl.offsetWidth;
+    overlayEl.classList.add("show");
+
+    if(key === "clock") {
+      if(subEl){
+        subEl.textContent = "Ey wo hängts den";
+        subEl.style.display = "block";
+      }
+      if(countEl){
+        countEl.textContent = "3";
+        countEl.style.display = "block";
+      }
+      let remaining = 3;
+      try{
+        window.__emojiCountdownInterval = setInterval(()=>{
+          remaining -= 1;
+          if(!countEl) return;
+          if(remaining > 0){
+            countEl.textContent = String(remaining);
+          }else{
+            countEl.textContent = "";
+            clearInterval(window.__emojiCountdownInterval);
+            window.__emojiCountdownInterval = null;
+          }
+        }, 1000);
+      }catch(_e){}
+
+      emojiOverlayTimer = setTimeout(()=>{
+        try{
+          if(window.__emojiCountdownInterval) clearInterval(window.__emojiCountdownInterval);
+          window.__emojiCountdownInterval = null;
+          overlayEl.classList.remove("show");
+          overlayEl.style.display = "none";
+          overlayEl.setAttribute("aria-hidden", "true");
+        }catch(_e){}
+      }, 3200);
+      return;
+    }
+
+    emojiOverlayTimer = setTimeout(()=>{
+      try{
+        overlayEl.classList.remove("show");
+        overlayEl.style.display = "none";
+        overlayEl.setAttribute("aria-hidden", "true");
+      }catch(_e){}
+    }, 2200);
+  }
+
+  const seenEmojiEventIds = new Map();
+  function pruneSeenEmojiEvents(){
+    const now = Date.now();
+    for(const [id, ts] of seenEmojiEventIds){
+      if(now - ts > 30000) seenEmojiEventIds.delete(id);
+    }
+  }
+  function hasSeenEmojiEvent(id){
+    if(!id) return false;
+    pruneSeenEmojiEvents();
+    return seenEmojiEventIds.has(String(id));
+  }
+  function rememberSeenEmojiEvent(id){
+    if(!id) return;
+    pruneSeenEmojiEvents();
+    seenEmojiEventIds.set(String(id), Date.now());
+  }
+
+  const localEmojiReactionIds = new Map();
+  function rememberLocalEmojiReaction(id){
+    if(!id) return;
+    const now = Date.now();
+    localEmojiReactionIds.set(String(id), now);
+    for(const [rid, ts] of localEmojiReactionIds){
+      if(now - ts > 15000) localEmojiReactionIds.delete(rid);
+    }
+  }
+  function consumeLocalEmojiReaction(id){
+    const rid = String(id || "");
+    if(!rid || !localEmojiReactionIds.has(rid)) return false;
+    localEmojiReactionIds.delete(rid);
+    return true;
+  }
+  function getLocalEmojiName(){
+    try{
+      const mine = Array.isArray(players) ? players.find(p => p && p.id === clientId) : null;
+      if(mine && mine.name) return String(mine.name);
+    }catch(_e){}
+    try{
+      const saved = String(localStorage.getItem("barikade_playerName") || "").trim();
+      if(saved) return saved;
+    }catch(_e){}
+    return netMode === "host" ? "Host" : "Spieler";
+  }
+  function sendEmojiReaction(kind){
+    const key = normalizeEmojiKey(kind);
+    if(!key) return;
+    if(!(state && state.started) || state.winner){ toast("Spiel läuft nicht"); return; }
+    if(netMode === "offline" || !ws || ws.readyState !== 1){ toast("Nicht verbunden"); return; }
+
+    const now = Date.now();
+    if(now - lastEmojiSentAt < 1800){ toast("Kurz warten…"); return; }
+    lastEmojiSentAt = now;
+
+    // SERVER IST CHEF: Der Client fordert nur an und zeigt hier NICHTS an.
+    // Erst ein spaeteres {type:"emoji_show", serverCommand:true} vom Server
+    // darf showEmojiOverlay() ausloesen.
+    console.log('[emoji-v9.2] CLICK', {emoji:key, room:roomCode, wsState:ws?.readyState, clientId});
+    const ok = wsSend({ type:"emoji_request", emoji:key, ts:now });
+    console.log('[emoji-v9.2] REQUEST_SENT', {ok, emoji:key, room:roomCode, wsState:ws?.readyState});
+    if(!ok){
+      lastEmojiSentAt = 0;
+      toast("Smiley konnte nicht an den Server gesendet werden");
+    }
+  }
+  function bindEmojiButtons(){
+    const pairs = [
+      [document.getElementById("emojiLaughBtn"), "laugh"],
+      [document.getElementById("emojiAngryBtn"), "angry"],
+      [document.getElementById("emojiCoolBtn"), "cool"],
+      [document.getElementById("emojiPoopBtn"), "poop"],
+      [document.getElementById("emojiClockBtn"), "clock"]
+    ];
+    for(const pair of pairs){
+      const btn = pair[0]; const key = pair[1];
+      if(!btn || btn.__emojiBound) continue;
+      btn.__emojiBound = true;
+      btn.addEventListener("click", ()=> sendEmojiReaction(key));
+    }
+    updateEmojiUI();
+  }
+
+  function initEmojiOverlaySystem(){
+    try{ bindEmojiButtons(); }catch(_e){}
+    try{ updateEmojiUI(); }catch(_e){}
+  }
+
+  // robust init: some devices/pages restore DOM late, so bind more than once safely
+  try{ initEmojiOverlaySystem(); }catch(_e){}
+  try{ document.addEventListener("DOMContentLoaded", initEmojiOverlaySystem, { once:true }); }catch(_e){}
+  try{ window.addEventListener("load", initEmojiOverlaySystem, { once:true }); }catch(_e){}
+  try{ document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) initEmojiOverlaySystem(); }); }catch(_e){}
+
+function escHtml(v){
+  return String(v==null?'':v).replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));
+}
+function fmtFinalDuration(ms){
+  const sec=Math.max(0,Math.round((Number(ms)||0)/1000));
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+  if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function fmtFinalTurn(ms){
+  if(ms==null || !isFinite(Number(ms))) return '–';
+  const sec=Math.max(0,Number(ms)/1000);
+  return sec<10 ? `${sec.toFixed(1)}s` : `${Math.round(sec)}s`;
+}
+function fmtFinalRoll(v){
+  if(v==null || !isFinite(Number(v))) return '–';
+  return Number(v).toFixed(2).replace('.',',');
+}
+function ensureUltimateVictoryUI(){
+  let ov=document.getElementById('ultimateVictory');
+  if(ov) return ov;
+  ov=document.createElement('div');
+  ov.id='ultimateVictory';
+  ov.setAttribute('aria-live','polite');
+  ov.innerHTML=`
+    <canvas id="winFx" aria-hidden="true"></canvas>
+    <div class="uvGlow uvGlowA"></div><div class="uvGlow uvGlowB"></div>
+    <section class="uvHero" id="uvHero">
+      <div class="uvCrown" aria-hidden="true">♛</div>
+      <div class="uvTrophy" aria-hidden="true">🏆</div>
+      <div class="uvKicker">PARTIE ENTSCHIEDEN</div>
+      <div class="uvWinner" id="uvWinner">SIEGER</div>
+      <div class="uvWinWord">GEWINNT!</div>
+      <div class="uvHeroSub" id="uvHeroSub">Erste Figur im Ziel</div>
+      <button class="uvSkip" id="uvSkip" type="button">Ergebnis sofort anzeigen</button>
+    </section>
+    <section class="uvSummary" id="uvSummary" aria-label="Spielergebnis">
+      <header class="uvSummaryHead">
+        <div class="uvSummaryTrophy">🏆</div>
+        <div><div class="uvSummaryKicker">SIEGEREHRUNG</div><h2 id="uvSummaryTitle">–</h2><p id="uvSummarySub">Partie abgeschlossen</p></div>
+      </header>
+      <div class="uvMetrics" id="uvMetrics"></div>
+      <div class="uvSectionTitle"><span>Spielerleistung</span><small>Diese Partie</small></div>
+      <div class="uvPlayers" id="uvPlayers"></div>
+      <div class="uvSectionTitle uvHighlightsHead"><span>Highlights</span><small>auf einen Blick</small></div>
+      <div class="uvHighlights" id="uvHighlights"></div>
+      <div class="uvCareer" id="uvCareer" hidden></div>
+      <div class="uvActions">
+        <button id="uvRematch" class="btn uvRematch" type="button">🔁 Revanche</button>
+        <button id="uvClose" class="btn uvClose" type="button">Ergebnis schließen</button>
+      </div>
+    </section>`;
+  document.body.appendChild(ov);
+  const skip=ov.querySelector('#uvSkip');
+  if(skip) skip.addEventListener('click',()=>revealUltimateVictorySummary(true));
+  const close=ov.querySelector('#uvClose');
+  if(close) close.addEventListener('click',closeVictoryFinale);
+  const rem=ov.querySelector('#uvRematch');
+  if(rem) rem.addEventListener('click',requestRematch);
+  ov.addEventListener('click',(ev)=>{
+    if(ov.classList.contains('heroOnly') && ev.target===ov) revealUltimateVictorySummary(true);
+  });
+  return ov;
+}
+let _uvRevealTimer=0;
+let _uvCurrentSummary=null;
+function closeVictoryFinale(){
+  clearTimeout(_uvRevealTimer); _uvRevealTimer=0;
+  const ov=document.getElementById('ultimateVictory');
+  if(ov) ov.classList.remove('show','heroOnly','summaryMode');
+  winFxRunning=false;
+}
+function cancelTitleCeremony(){ closeVictoryFinale(); }
+function renderUltimateVictorySummary(summary,winnerColor,awards){
+  const ov=ensureUltimateVictoryUI();
+  const safeSummary=(summary&&typeof summary==='object')?summary:{};
+  const rows=Array.isArray(safeSummary.players)?safeSummary.players:[];
+  const winner=String(winnerColor||safeSummary.winnerColor||'').toLowerCase();
+  const winnerName=safeSummary.winnerName||labelForColor(winner);
+  const reason=safeSummary.reason==='forfeit'?'Sieg nach Aufgabe':'Erste Figur im Ziel';
+  const title=ov.querySelector('#uvSummaryTitle'); if(title) title.textContent=`${winnerName} gewinnt!`;
+  const sub=ov.querySelector('#uvSummarySub'); if(sub) sub.textContent=reason;
+  const metrics=ov.querySelector('#uvMetrics');
+  if(metrics){
+    const vals=[
+      ['⏱','Partiedauer',fmtFinalDuration(safeSummary.durationMs)],
+      ['🔄','Züge',String(Number(safeSummary.totalTurns)||0)],
+      ['🎲','Würfe',String(Number(safeSummary.totalRolls)||0)],
+      ['👊','Rauswürfe',String(Number(safeSummary.totalKicks)||0)]
+    ];
+    metrics.innerHTML=vals.map(v=>`<div class="uvMetric"><span>${v[0]}</span><small>${v[1]}</small><strong>${escHtml(v[2])}</strong></div>`).join('');
+  }
+  const playersEl=ov.querySelector('#uvPlayers');
+  if(playersEl){
+    if(rows.length){
+      playersEl.innerHTML=rows.map(r=>{
+        const c=String(r.color||'').toLowerCase();
+        const isWinner=c===winner;
+        return `<article class="uvPlayer ${isWinner?'isWinner':''}" style="--player-color:${escHtml(COLORS[c]||'#8b7cff')}">
+          <div class="uvPlayerIdentity"><span class="uvPlayerDot"></span><div><strong>${escHtml(r.name||labelForColor(c))}${isWinner?' <b>🏆</b>':''}</strong><small>${isWinner?'Sieger':'Mitspieler'}</small></div></div>
+          <div class="uvPlayerStats">
+            <span><small>Ø Zug</small><b>${escHtml(fmtFinalTurn(r.avgTurnMs))}</b></span>
+            <span><small>Ø Wurf</small><b>${escHtml(fmtFinalRoll(r.avgRoll))}</b></span>
+            <span><small>Raus</small><b>${Number(r.kills)||0}</b></span>
+            <span><small>Joker</small><b>${Number(r.jokersUsed)||0}</b></span>
+            <span><small>Sechsen</small><b>${Number(r.six)||0}</b></span>
+          </div>
+        </article>`;
+      }).join('');
+    }else{
+      playersEl.innerHTML='<div class="uvEmpty">Spielerwerte für diese Partie sind noch nicht verfügbar.</div>';
+    }
+  }
+  const hi=Array.isArray(safeSummary.highlights)&&safeSummary.highlights.length?safeSummary.highlights:(Array.isArray(awards)?awards.slice(0,3):[]);
+  const hiEl=ov.querySelector('#uvHighlights');
+  if(hiEl){
+    hiEl.innerHTML=hi.length?hi.slice(0,3).map(a=>{
+      const winners=(Array.isArray(a.winners)?a.winners:[]).join(' & ')||'–';
+      const value=a.value==null?'–':a.value;
+      return `<div class="uvHighlight"><strong>${escHtml(a.title||'Highlight')}</strong><span>${escHtml(winners)}</span><small>${escHtml(String(value))}${a.unit?' · '+escHtml(a.unit):''}</small></div>`;
+    }).join(''):'<div class="uvEmpty">Keine besonderen Match-Highlights.</div>';
+  }
+  const rem=ov.querySelector('#uvRematch');
+  if(rem){
+    const allowed=(netMode==='offline'||isMeHost());
+    rem.hidden=!allowed; rem.disabled=!allowed;
+  }
+  const career=ov.querySelector('#uvCareer'); if(career){career.hidden=true;career.textContent='';}
+  loadVictoryLifetimeStats(winnerName).catch(()=>{});
+}
+async function loadVictoryLifetimeStats(winnerName){
+  const ov=document.getElementById('ultimateVictory'); if(!ov||!winnerName) return;
+  const career=ov.querySelector('#uvCareer'); if(!career) return;
+  try{
+    const base=String(SERVER_URL||'').replace(/^wss:/i,'https:').replace(/^ws:/i,'http:').replace(/\/$/,'');
+    const res=await fetch(base+'/stats',{cache:'no-store'}); if(!res.ok) return;
+    const data=await res.json(); const rows=Array.isArray(data?.rows)?data.rows:[];
+    const row=rows.find(r=>String(r?.name||'').trim().toLowerCase()===String(winnerName).trim().toLowerCase());
+    if(!row) return;
+    const games=Number(row.games)||0,wins=Number(row.wins)||0;
+    const avgMs=Number(row.avgGameMs)|| (games?((Number(row.playMs)||0)/games):0);
+    career.innerHTML=`<span>📊 Langzeitstatistik des Siegers</span><strong>${wins} Siege / ${games} Spiele</strong><small>Ø Partiedauer ${fmtFinalDuration(avgMs)}</small>`;
+    career.hidden=false;
+  }catch(_e){}
+}
+function revealUltimateVictorySummary(skip=false){
+  clearTimeout(_uvRevealTimer); _uvRevealTimer=0;
+  const ov=document.getElementById('ultimateVictory'); if(!ov) return;
+  ov.classList.remove('heroOnly'); ov.classList.add('summaryMode');
+}
+function showUltimateVictory(winnerColor,summary=null,awards=[]){
+  try{ v104OnWin(winnerColor); }catch(_e){}
+  const ov=ensureUltimateVictoryUI();
+  const name=(summary&&summary.winnerName)||labelForColor(winnerColor);
+  _uvCurrentSummary=summary||null;
+  ov.style.setProperty('--winner-color',(COLORS&&COLORS[winnerColor])?COLORS[winnerColor]:'#8b7cff');
+  const w=ov.querySelector('#uvWinner'); if(w) w.textContent=name;
+  const hs=ov.querySelector('#uvHeroSub'); if(hs) hs.textContent=(summary?.reason==='forfeit'?'Sieg nach Aufgabe':'Erste Figur erreicht das Ziel');
+  renderUltimateVictorySummary(summary,winnerColor,awards);
+  ov.classList.remove('summaryMode'); ov.classList.add('show','heroOnly');
+  startWinFx(winnerColor);
+  clearTimeout(_uvRevealTimer);
+  _uvRevealTimer=setTimeout(()=>revealUltimateVictorySummary(false),2200);
+  updateRematchUI();
+}
+function showEpicWin(winnerColor,summary=null,awards=[]){
+  showUltimateVictory(winnerColor,summary,awards);
+}
+  function hideOverlay(){
+    overlay.classList.remove("show","win-overlay");
+    overlay.style.removeProperty("--winner-color");
+    if(overlayRematch){ overlayRematch.hidden = true; overlayRematch.disabled = true; }
+  }
+  overlayOk.addEventListener("click", hideOverlay);
+  if(overlayRematch) overlayRematch.addEventListener("click", requestRematch);
+  if(rematchBtn) rematchBtn.addEventListener("click", requestRematch);
+
+  async function loadBoard(){
+    const res = await fetch("board.json?v=barikade_bossboard_v3_20260920_1548", { cache:"no-store" });
+    if(!res.ok) throw new Error("board.json nicht gefunden");
+    return await res.json();
+  }
+
+  function buildGraph(){
+    nodeById.clear(); adj.clear(); runNodes.clear();
+    goalNodeId=null;
+    startNodeId={red:null,blue:null,green:null,yellow:null};
+
+    for(const n of board.nodes){
+      nodeById.set(n.id, n);
+      if(n.kind==="board"){
+        adj.set(n.id, []);
+        if(n.flags?.run) runNodes.add(n.id);
+        if(n.flags?.goal) goalNodeId=n.id;
+        if(n.flags?.startColor) startNodeId[n.flags.startColor]=n.id;
+      }
+    }
+    for(const e of board.edges||[]){
+      const a=String(e[0]), b=String(e[1]);
+      if(!adj.has(a)||!adj.has(b)) continue;
+      adj.get(a).push(b); adj.get(b).push(a);
+    }
+    if(board.meta?.goal) goalNodeId=board.meta.goal;
+    if(board.meta?.starts){
+      for(const c of DEFAULT_PLAYERS) if(board.meta.starts[c]) startNodeId[c]=board.meta.starts[c];
+    }
+    if(boardInfo) boardInfo.textContent = `${[...adj.keys()].length} Felder`;
+  }
+
+  // ===== View / Fit-to-screen (Tablet / Zoom-Fix) =====
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+  function computeBounds(){
+    if(!board || !Array.isArray(board.nodes) || board.nodes.length===0) return null;
+    let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+    for(const n of board.nodes){
+      if(typeof n.x!=="number" || typeof n.y!=="number") continue;
+      if(n.x<minX) minX=n.x; if(n.x>maxX) maxX=n.x;
+      if(n.y<minY) minY=n.y; if(n.y>maxY) maxY=n.y;
+    }
+    if(bossModeVisualActive() && Array.isArray(board?.meta?.bossFields)){
+      for(const f of board.meta.bossFields){
+        if(typeof f?.x!=="number" || typeof f?.y!=="number") continue;
+        if(f.x<minX) minX=f.x; if(f.x>maxX) maxX=f.x;
+        if(f.y<minY) minY=f.y; if(f.y>maxY) maxY=f.y;
+      }
+    }
+    if(!isFinite(minX)) return null;
+    return {minX,maxX,minY,maxY};
+  }
+
+  function fitBoardToView(){
+    const b = computeBounds();
+    if(!b) return;
+    const rect = canvas.getBoundingClientRect();
+    const vw = rect.width, vh = rect.height;
+    if(vw < 20 || vh < 20) return;
+
+    const pad = (vw >= 760 ? 72 : 84); // V20: Desktop nutzt die verfügbare Fläche besser, mobil bleibt mehr Sicherheitsrand
+    const minX = b.minX - pad, maxX = b.maxX + pad;
+    const minY = b.minY - pad, maxY = b.maxY + pad;
+    const bw = (maxX - minX);
+    const bh = (maxY - minY);
+
+    const s = Math.min(vw / bw, vh / bh);
+    view.s = clamp(s, 0.28, 3.2);
+
+    const leftPx = (vw - bw * view.s) / 2;
+    const topPx  = (vh - bh * view.s) / 2;
+    view.x = (leftPx / view.s) - minX;
+    view.y = (topPx  / view.s) - minY;
+    saveView();
+  }
+
+  function ensureFittedOnce(){
+    if(view._fittedOnce) return;
+    fitBoardToView();
+    view._fittedOnce = true;
+    draw();
+  }
+
+
+  function newGame(){
+    const active = getActiveColors();
+    setPlayers(active);
+
+    state={
+      players:[...PLAYERS],
+      currentPlayer:PLAYERS[0],
+      dice:null,
+      phase:"need_roll",
+      placingChoices:[],
+      pieces:Object.fromEntries(PLAYERS.map(c=>[c, Array.from({length:5},()=>({pos:"house"}))])),
+      barricades:new Set(),
+      winner:null
+    };
+
+
+
+    // Start-Joker (offline Action-Modus): 2x pro Joker-Art (Anzeige + kompatibel zu Online-Structure)
+    try{
+      const _m = (actionModeToggle && actionModeToggle.checked) ? "action" : "classic";
+      state.mode = _m;
+      if(_m === "action"){
+        state.action = state.action && typeof state.action==="object" ? state.action : {};
+        state.action.jokersByColor = state.action.jokersByColor && typeof state.action.jokersByColor==="object" ? state.action.jokersByColor : {};
+        state.action.jokersOwned = state.action.jokersOwned && typeof state.action.jokersOwned==="object" ? state.action.jokersOwned : {};
+        const cols = Array.isArray(PLAYERS) ? PLAYERS.slice() : ["red","blue"];
+        const _bossModeAtStart = getLobbyBossMode();
+        for(const c of cols){
+          const startCounts = getStartJokerCounts() || { allColors:2, barricade:2, reroll:2, double:2 };
+          const bossStartCount = _bossModeAtStart ? Number(startCounts.allColors||2) : 0;
+          state.action.jokersByColor[c] = {
+            allColors:startCounts.allColors,
+            barricade:startCounts.barricade,
+            reroll:startCounts.reroll,
+            double:startCounts.double,
+            bossSpawn:bossStartCount,
+            bossRemove:bossStartCount
+          };
+          const arr = [];
+          const types = _bossModeAtStart
+            ? ["allColors","barricade","reroll","double","bossSpawn","bossRemove"]
+            : ["allColors","barricade","reroll","double"];
+          for(const t of types){
+            const count = (t==="bossSpawn"||t==="bossRemove") ? bossStartCount : Number(startCounts[t] || 0);
+            for(let i=0;i<count;i++) arr.push({type:t, color:c});
+          }
+          state.action.jokersOwned[c] = arr;
+        }
+      }
+    }catch(_e){}
+    try{
+      state.bossMode = getLobbyBossMode();
+      state.boss = state.bossMode ? {slots:[],eventFields:[],eventFieldCount:getLobbyEventFieldCount(),bossEventTrigger:getLobbyBossEventTrigger(),bossEventCountdown:getLobbyBossEventTrigger(),bossCountdownPending:false,round:1,lastEvent:null,lastAction:null} : null;
+    }catch(_e){}
+    // 🔥 BRUTAL: Barikaden starten auf ALLEN RUN-Feldern (außer Ziel)
+    for(const id of runNodes){
+      if(id===goalNodeId) continue;
+      state.barricades.add(id);
+    }
+
+    if(barrInfo) barrInfo.textContent=String(state.barricades.size);
+    setPhase("need_roll");
+    /* dice handled via data-face */
+    legalTargets=[]; setPlacingChoices([]);
+    selected=null; legalMovesAll=[]; legalMovesByPiece=new Map();
+    // auto-enter Barrikade-Pick nach Server-Aktivierung
+      try{
+        const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+        if(pendingBarricadePick && eff && eff.barricadeBy===myColor){
+          pendingBarricadePick=false;
+          actionBarricadeActive=true;
+          actionBarricadeFrom=null;
+          toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+        }
+      }catch(e){}
+
+      updateTurnUI(); updateStartButton(); draw();
+    try{ ensureFittedOnce(); }catch(_e){}
+
+      // draw board immediately even before server state arrives
+      requestDraw();
+  }
+
+  function updateTurnUI(){
+    // Guard: can be called before we have a snapshot/state
+    // (e.g. right after reconnect/assign or after a NO_STATE error)
+    if(!state){
+      applyActiveDiceStyle();
+      if(turnText) turnText.textContent = "Spiel nicht gestartet";
+      if(turnDot) turnDot.style.background = "#555";
+      if(rollBtn) rollBtn.disabled = true;
+      if(endBtn)  endBtn.disabled  = true;
+      if(skipBtn) skipBtn.disabled = true;
+      updateColorPickUI();
+      updateEmojiUI();
+      syncV103Sidebar();
+      v104SyncTurnFeedback();
+      return;
+    }
+
+    applyActiveDiceStyle();
+    const c=state.currentPlayer;
+    turnText.textContent = state.winner ? `${labelForColor(state.winner)} gewinnt!` : `${labelForColor(c)} ist dran`;
+    turnDot.style.background = COLORS[c];
+
+    const isMyTurn = (netMode==="offline") ? true : (myColor && myColor===state.currentPlayer);
+    rollBtn.disabled = (phase!=="need_roll") || !isMyTurn;
+    endBtn.disabled  = (phase==="need_roll"||phase==="placing_barricade"||phase==="event_wait"||phase==="game_over") || !isMyTurn;
+    if(skipBtn) skipBtn.disabled = (phase==="placing_barricade"||phase==="event_wait"||phase==="game_over") || !isMyTurn;
+
+    // While a move animation is running, lock the controls so the next action can't happen mid-hop
+    if(isAnimatingMove){
+      rollBtn.disabled = true;
+      endBtn.disabled  = true;
+      if(skipBtn) skipBtn.disabled = true;
+    }
+
+    updateColorPickUI();
+    updateEmojiUI();
+    syncV103Sidebar();
+    v104SyncTurnFeedback();
+  }
+
+  function endTurn(){
+    if(state && state.dice === 6 && !state.winner){
+      state.dice = null;
+      setDiceFaceAnimated(0);
+
+      legalTargets=[]; setPlacingChoices([]);
+      selected=null; legalMovesAll=[]; legalMovesByPiece=new Map();
+      setPhase("need_roll");
+      // auto-enter Barrikade-Pick nach Server-Aktivierung
+      try{
+        const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+        if(pendingBarricadePick && eff && eff.barricadeBy===myColor){
+          pendingBarricadePick=false;
+          actionBarricadeActive=true;
+          actionBarricadeFrom=null;
+          toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+        }
+      }catch(e){}
+
+      updateTurnUI(); updateStartButton(); draw();
+      toast("6! Nochmal würfeln");
+      return;
+    }
+    nextPlayer();
+  }
+
+  function nextPlayer(){
+    const order = state.players?.length ? state.players : PLAYERS;
+    const idx = order.indexOf(state.currentPlayer);
+    state.currentPlayer = order[(idx+1)%order.length];
+    state.dice=null;
+    setDiceFaceAnimated(0);
+    legalTargets=[]; setPlacingChoices([]);
+    selected=null; legalMovesAll=[]; legalMovesByPiece=new Map();
+    setPhase("need_roll");
+    // auto-enter Barrikade-Pick nach Server-Aktivierung
+      try{
+        const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+        if(pendingBarricadePick && eff && eff.barricadeBy===myColor){
+          pendingBarricadePick=false;
+          actionBarricadeActive=true;
+          actionBarricadeFrom=null;
+          toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+        }
+      }catch(e){}
+
+      updateTurnUI(); updateStartButton(); draw();
+  }
+
+  function rollDice(){
+    if(phase!=="need_roll") return;
+    state.dice = 1 + Math.floor(Math.random()*6);
+    setDiceFaceAnimated(state.dice);
+
+    toast(`Wurf: ${state.dice}`);
+
+    legalMovesAll = computeLegalMoves(state.currentPlayer, state.dice);
+    legalMovesByPiece = new Map();
+    for(const m of legalMovesAll){
+      const idx = m.piece.index;
+      if(!legalMovesByPiece.has(idx)) legalMovesByPiece.set(idx, []);
+      legalMovesByPiece.get(idx).push(m);
+    }
+    legalTargets = legalMovesAll;
+
+    if(legalMovesAll.length===0){
+      toast("Kein Zug möglich – Zug verfällt");
+      endTurn();
+      return;
+    }
+    setPhase("need_move");
+    // auto-enter Barrikade-Pick nach Server-Aktivierung
+      try{
+        const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+        if(pendingBarricadePick && eff && eff.barricadeBy===myColor){
+          pendingBarricadePick=false;
+          actionBarricadeActive=true;
+          actionBarricadeFrom=null;
+          toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+        }
+      }catch(e){}
+
+      updateTurnUI(); updateStartButton(); draw();
+  }
+
+  function pieceAtBoardNode(nodeId, color){
+    const arr = state.pieces[color];
+    for(let i=0;i<arr.length;i++){
+      if(arr[i].pos === nodeId) return {color, index:i};
+    }
+    return null;
+  }
+  function selectPiece(sel){
+    selected = sel;
+    toast(`${PLAYER_NAME[sel.color]} Figur ${sel.index+1} gewählt`);
+  }
+  function trySelectAtNode(node){
+      if (!state || !state.currentPlayer) { return false; }
+      if(!node) return false;
+
+      const turn = state.currentPlayer;
+      const isMyTurnOnline = (netMode!=="offline") ? (myColor && myColor===turn) : true;
+      const allowAll = !!(isMyTurnOnline && state && isActionMode() && state.action && state.action.effects && state.action.effects.allColorsBy===turn);
+
+      // Action-Modus B2: Barikade-Joker (vor dem Wurf) – Barikade anklicken, dann Zielfeld
+      const allowBarricadeJoker = !!(
+        isMyTurnOnline &&
+        state &&
+        isActionMode() &&
+        state.action &&
+        state.action.effects &&
+        state.action.effects.barricadeBy === turn &&
+        state.phase === "need_roll"
+      );
+      if (allowBarricadeJoker && node.kind === "board") {
+        const bset = (() => {
+          const b = state.barricades;
+          if (!b) return new Set();
+          if (Array.isArray(b)) return new Set(b.map(String));
+          if (typeof b.has === "function") return b; // already a Set
+          if (typeof b === "object") {
+            // object map {id:true}
+            return new Set(Object.keys(b).filter(k => b[k]).map(String));
+          }
+          return new Set();
+        })();
+        if (actionBarricadeFrom == null) {
+          if (!bset.has(String(node.id))) { toast("Erst eine Barikade wählen"); return true; }
+          actionBarricadeFrom = node.id;
+          toast("Ziel-Feld wählen");
+          draw();
+          return true;
+        } else {
+          const from = actionBarricadeFrom;
+          actionBarricadeFrom = null;
+          wsSend({ type: "action_barricade_move", from, to: node.id });
+          draw();
+          return true;
+        }
+      }
+
+      if(node.kind === "board"){
+        let p = pieceAtBoardNode(node.id, turn);
+        if(!p && allowAll){
+          for(const col of ["red","blue","green","yellow"]){
+            p = pieceAtBoardNode(node.id, col);
+            if(p) break;
+          }
+        }
+        if(p){ selectPiece(p); return true; }
+        return false;
+      }
+
+      if(node.kind === "house" && node.flags?.houseColor && node.flags?.houseSlot){
+        const hc = String(node.flags.houseColor).toLowerCase();
+        const idx = Number(node.flags.houseSlot) - 1;
+        if(idx>=0 && idx<5){
+          const can = (hc === turn) || allowAll;
+          if(!can) return false;
+          if(state.pieces[hc] && state.pieces[hc][idx] && state.pieces[hc][idx].pos === "house"){
+            selectPiece({color:hc, index:idx});
+            return true;
+          }else{
+            toast("Diese Figur ist nicht im Haus");
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+  function anyPiecesAtNode(nodeId){
+    const res=[];
+    for(const c of getActiveColors()){
+      const arr=state.pieces[c];
+      for(let i=0;i<arr.length;i++) if(arr[i].pos===nodeId) res.push({color:c,index:i});
+    }
+    return res;
+  }
+
+  function enumeratePaths(startId, steps){
+    const results=[];
+    const visited=new Set([startId]);
+    function dfs(curr, remaining, path){
+      if(remaining===0){ results.push([...path]); return; }
+      for(const nb of (adj.get(curr)||[])){
+        if(visited.has(nb)) continue;
+        if(state.barricades.has(nb) && remaining>1) continue; // cannot pass barricade
+        visited.add(nb); path.push(nb);
+        dfs(nb, remaining-1, path);
+        path.pop(); visited.delete(nb);
+      }
+    }
+    dfs(startId, steps, [startId]);
+    return results;
+  }
+
+  function computeLegalMoves(color, dice){
+    const moves=[];
+    for(let i=0;i<5;i++){
+      const pc=state.pieces[color][i];
+      if(typeof pc.pos==="string" && adj.has(pc.pos)){
+        for(const p of enumeratePaths(pc.pos, dice)){
+          moves.push({piece:{color,index:i}, path:p, toId:p[p.length-1], fromHouse:false});
+        }
+      }
+    }
+    const start=startNodeId[color];
+    const hasHouse = state.pieces[color].some(p=>p.pos==="house");
+    if(hasHouse && start && !state.barricades.has(start)){
+      const remaining=dice-1;
+      if(remaining===0){
+        for(let i=0;i<5;i++) if(state.pieces[color][i].pos==="house"){
+          moves.push({piece:{color,index:i}, path:[start], toId:start, fromHouse:true});
+        }
+      }else{
+        const paths=enumeratePaths(start, remaining);
+        for(let i=0;i<5;i++) if(state.pieces[color][i].pos==="house"){
+          for(const p of paths) moves.push({piece:{color,index:i}, path:p, toId:p[p.length-1], fromHouse:true});
+        }
+      }
+    }
+    const seen=new Set(), uniq=[];
+    for(const m of moves){
+      const k=`${m.piece.color}:${m.piece.index}->${m.toId}:${m.fromHouse?'H':'B'}`;
+      if(seen.has(k)) continue;
+      seen.add(k); uniq.push(m);
+    }
+    return uniq;
+  }
+
+  function checkWin(){
+    // Gewinner: wer als erstes mit EINER Figur im Ziel ist.
+    for(const c of getActiveColors()){
+      if(state.pieces[c].some(p=>p.pos==="goal")){
+        state.winner=c;
+        return;
+      }
+    }
+  }
+
+  // 🔥 BRUTAL placements: any node (except goal, no duplicates)
+  function computeBarricadePlacements(){
+    const choices=[];
+    for(const id of adj.keys()){
+      if(id===goalNodeId) continue;
+      if(state.barricades.has(id)) continue;
+      choices.push(id);
+    }
+    setPlacingChoices(choices);
+  }
+
+  function movePiece(move){
+    const {color,index}=move.piece;
+    const toId=move.toId;
+
+    // hit enemies
+    const enemies = anyPiecesAtNode(toId).filter(p=>p.color!==color);
+    for(const e of enemies) state.pieces[e.color][e.index].pos="house";
+
+    const landsOnBarr = state.barricades.has(toId);
+    state.pieces[color][index].pos=toId;
+
+    if(toId===goalNodeId){
+      state.pieces[color][index].pos="goal";
+      toast("Ziel erreicht!");
+      checkWin();
+      if(state.winner){
+        setPhase("game_over"); // auto-enter Barrikade-Pick nach Server-Aktivierung
+      try{
+        const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+        if(pendingBarricadePick && eff && eff.barricadeBy===myColor){
+          pendingBarricadePick=false;
+          actionBarricadeActive=true;
+          actionBarricadeFrom=null;
+          toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+        }
+      }catch(e){}
+
+      updateTurnUI(); updateStartButton(); draw();
+        showEpicWin(state.winner);
+        awardsShown = true;
+        return;
+      }
+      endTurn();
+      return;
+    }
+
+    if(landsOnBarr){
+      state.barricades.delete(toId);
+      if(barrInfo) barrInfo.textContent=String(state.barricades.size);
+      setPhase("placing_barricade");
+      computeBarricadePlacements();
+      // auto-enter Barrikade-Pick nach Server-Aktivierung
+      try{
+        const eff = (state.action && state.action.effects) ? state.action.effects : {};
+    const effAllActive = !!eff.allColors;
+    const effBarrActive = !!eff.barricadeBy;
+        if(pendingBarricadePick && eff && eff.barricadeBy===myColor){
+          pendingBarricadePick=false;
+          actionBarricadeActive=true;
+          actionBarricadeFrom=null;
+          toast("Barikade: Quelle wählen (auf eine Barikade klicken)");
+        }
+      }catch(e){}
+
+      updateTurnUI(); updateStartButton(); draw();
+      toast("Barikade eingesammelt – jetzt neu platzieren");
+      return;
+    }
+
+    endTurn();
+  }
+
+  function placeBarricade(nodeId){
+    if(phase!=="placing_barricade") return;
+    if(nodeId===goalNodeId){ toast("Ziel ist gesperrt"); return; }
+    if(!placingChoices.includes(nodeId)){ toast("Hier darf keine Barikade hin"); return; }
+    state.barricades.add(nodeId);
+    if(barrInfo) barrInfo.textContent=String(state.barricades.size);
+    setPlacingChoices([]);
+    toast("Barikade platziert");
+    endTurn();
+  }
+
+  // ===== Rendering =====
+  function resize(){
+    dpr=Math.max(1, Math.min(2.5, window.devicePixelRatio||1));
+    const r=canvas.getBoundingClientRect();
+    canvas.width=Math.floor(r.width*dpr);
+    canvas.height=Math.floor(r.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    draw();
+    // Mobile browsers report unstable canvas size during load/orientation.
+    setTimeout(()=>{ if(!view._fittedOnce) { try{ ensureFittedOnce(); }catch(_e){} } }, 80);
+
+  }
+  let v108ResizeTimer = null;
+  let v108LastCanvasSize = { w:0, h:0 };
+  window.addEventListener("resize", ()=>{
+    resize();
+    clearTimeout(v108ResizeTimer);
+    v108ResizeTimer = setTimeout(()=>{
+      try{
+        applyUxStabilityFixes();
+        const rr = canvas.getBoundingClientRect();
+        const changedMeaningfully =
+          Math.abs(rr.width - v108LastCanvasSize.w) > 32 ||
+          Math.abs(rr.height - v108LastCanvasSize.h) > 32;
+        const forceFit =
+          !!v108FullscreenElement() ||
+          document.body.classList.contains("isFullscreenFallback") ||
+          changedMeaningfully;
+        if(forceFit){
+          view._fittedOnce = false;
+          fitBoardToView();
+          view._fittedOnce = true;
+          draw();
+        }
+        v108LastCanvasSize = { w:rr.width, h:rr.height };
+      }catch(_e){}
+    }, 110);
+  });
+  window.addEventListener("orientationchange", ()=>{
+    // force re-fit after rotation/addressbar changes
+    view._fittedOnce = false;
+    setTimeout(()=>{ try{ resize(); ensureFittedOnce(); }catch(_e){} }, 200);
+  });
+
+  function worldToScreen(p){ return {x:(p.x+view.x)*view.s, y:(p.y+view.y)*view.s}; }
+  function screenToWorld(p){ return {x:p.x/view.s-view.x, y:p.y/view.s-view.y}; }
+
+  // ---- Canvas visual primitives (UI only) ----
+  function drawPieceDisc(x, y, rr, color, opts={}){
+    const col = COLORS[color] || color || "#ffffff";
+    const pieceTheme = getBoardThemeVisual();
+    const premiumBoardStyle = pieceTheme !== "classic";
+    const stonePieceStyle = pieceTheme === "stone";
+
+    if(premiumBoardStyle){
+      ctx.save();
+
+      // Premium-Bretter: lackierter, physischer Spielstein mit ruhiger Tiefe.
+      // Keine laufende Animation – nur Licht, Schatten und Materialwirkung.
+      if(opts.grounded !== false){
+        ctx.fillStyle="rgba(45,25,12,.30)";
+        ctx.beginPath();
+        ctx.ellipse(x, y+rr*.66, rr*.86, rr*.27, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      // Unterer Sockel / Seitenkante wie bei einem echten Kunststoff-Spielstein.
+      const base=ctx.createLinearGradient(x,y-rr,x,y+rr);
+      base.addColorStop(0,"rgba(255,255,255,.18)");
+      base.addColorStop(.30,col);
+      base.addColorStop(.76,col);
+      base.addColorStop(1,"rgba(18,12,10,.58)");
+      ctx.shadowColor=stonePieceStyle?"rgba(0,0,0,.44)":"rgba(42,23,10,.35)";
+      ctx.shadowBlur=Math.max(5,rr*.42);
+      ctx.shadowOffsetY=Math.max(2,rr*.16);
+      ctx.fillStyle=base;
+      ctx.strokeStyle=stonePieceStyle?"rgba(18,22,25,.94)":"rgba(35,25,22,.92)";
+      ctx.lineWidth=Math.max(2,rr*.12);
+      ctx.beginPath();ctx.arc(x,y,rr,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+      ctx.shadowColor="transparent";
+      // eingelassener Zierring – gibt dem Stein einen echten Brettspiel-Token-Look.
+      ctx.strokeStyle="rgba(25,22,20,.56)";
+      ctx.lineWidth=Math.max(1.5,rr*.095);
+      ctx.beginPath();ctx.arc(x,y,rr*.64,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="rgba(255,255,255,.30)";
+      ctx.lineWidth=Math.max(1,rr*.045);
+      ctx.beginPath();ctx.arc(x,y,rr*.58,Math.PI*1.06,Math.PI*1.88);ctx.stroke();
+
+      // Lackglanz oben links.
+      const gloss=ctx.createRadialGradient(x-rr*.34,y-rr*.39,rr*.02,x-rr*.24,y-rr*.27,rr*.58);
+      gloss.addColorStop(0,"rgba(255,255,255,.72)");
+      gloss.addColorStop(.42,"rgba(255,255,255,.18)");
+      gloss.addColorStop(1,"rgba(255,255,255,0)");
+      ctx.fillStyle=gloss;
+      ctx.beginPath();ctx.arc(x,y,rr*.91,0,Math.PI*2);ctx.fill();
+
+      // Kleine Lichtkante unten rechts für Materialtiefe.
+      ctx.strokeStyle="rgba(255,255,255,.16)";
+      ctx.lineWidth=Math.max(1,rr*.055);
+      ctx.beginPath();ctx.arc(x,y,rr*.86,Math.PI*.10,Math.PI*.78);ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    // Klassisches Brett: bisheriger Look unverändert.
+    ctx.save();
+
+    // contact shadow / small pedestal: omitted for airborne animated pawns
+    if(opts.grounded !== false){
+      ctx.fillStyle = "rgba(0,0,0,0.34)";
+      ctx.beginPath();
+      ctx.ellipse(x, y + rr*0.62, rr*0.82, rr*0.28, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    ctx.shadowColor = "rgba(0,0,0,0.42)";
+    ctx.shadowBlur = Math.max(6, rr*0.55);
+    ctx.shadowOffsetY = Math.max(3, rr*0.18);
+
+    const g = ctx.createRadialGradient(x-rr*0.32, y-rr*0.40, rr*0.08, x, y, rr*1.08);
+    g.addColorStop(0, "rgba(255,255,255,0.76)");
+    g.addColorStop(0.18, col);
+    g.addColorStop(0.72, col);
+    g.addColorStop(1, "rgba(0,0,0,0.46)");
+    ctx.fillStyle = g;
+    ctx.strokeStyle = "rgba(2,5,10,0.88)";
+    ctx.lineWidth = Math.max(2, rr*0.14);
+    ctx.beginPath();
+    ctx.arc(x, y, rr, 0, Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.shadowColor = "transparent";
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
+    ctx.lineWidth = Math.max(1, rr*0.07);
+    ctx.beginPath();
+    ctx.arc(x, y, rr*0.82, Math.PI*1.06, Math.PI*1.86);
+    ctx.stroke();
+
+    // compact specular highlight
+    ctx.fillStyle = "rgba(255,255,255,0.34)";
+    ctx.beginPath();
+    ctx.ellipse(x-rr*0.30, y-rr*0.35, rr*0.27, rr*0.15, -0.55, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBarricadeIcon(x,y,r){
+    if(getBoardThemeVisual()==="wood"){
+      ctx.save();
+
+      // Holzbrett V13.13: physisches Mauer-Spielteil mit Sockel, Ziegelreihen,
+      // Oberseite und rechter Seitenfläche. Keine Animation – nur Materialtiefe.
+      const w=r*1.68;
+      const h=r*1.18;
+      const depth=Math.max(3,r*.16);
+      const left=x-w/2;
+      const top=y-h/2;
+      const rowH=h/3;
+      const mortar=Math.max(1,r*.050);
+      const rr=Math.max(2.2,r*.11);
+      const roundRect=(rx,ry,rw,rh,rad)=>{
+        ctx.beginPath();
+        const q=Math.max(0,Math.min(rad,Math.abs(rw)/2,Math.abs(rh)/2));
+        if(typeof ctx.roundRect==="function") ctx.roundRect(rx,ry,rw,rh,q);
+        else{
+          ctx.moveTo(rx+q,ry);ctx.lineTo(rx+rw-q,ry);ctx.quadraticCurveTo(rx+rw,ry,rx+rw,ry+q);
+          ctx.lineTo(rx+rw,ry+rh-q);ctx.quadraticCurveTo(rx+rw,ry+rh,rx+rw-q,ry+rh);
+          ctx.lineTo(rx+q,ry+rh);ctx.quadraticCurveTo(rx,ry+rh,rx,ry+rh-q);
+          ctx.lineTo(rx,ry+q);ctx.quadraticCurveTo(rx,ry,rx+q,ry);ctx.closePath();
+        }
+      };
+
+      // Kontakt-/Bodenschatten lässt das Teil wirklich auf dem Brett stehen.
+      ctx.fillStyle="rgba(57,30,15,.32)";
+      ctx.beginPath();ctx.ellipse(x+depth*.25,y+h*.54,w*.56,h*.18,0,0,Math.PI*2);ctx.fill();
+
+      // Kleiner steinerner Sockel unter der Mauer.
+      const baseY=top+h-r*.03;
+      const base=ctx.createLinearGradient(left,baseY,left,baseY+r*.24);
+      base.addColorStop(0,"#7e5945");
+      base.addColorStop(.55,"#5e3c2d");
+      base.addColorStop(1,"#3b271e");
+      ctx.fillStyle=base;
+      ctx.shadowColor="rgba(48,25,13,.25)";
+      ctx.shadowBlur=Math.max(3,r*.22);
+      ctx.shadowOffsetY=Math.max(1,r*.08);
+      roundRect(left-r*.08,baseY,w+r*.22,Math.max(4,r*.23),rr*.65);ctx.fill();
+      ctx.shadowColor="transparent";
+      ctx.strokeStyle="rgba(255,225,199,.22)";
+      ctx.lineWidth=Math.max(.8,r*.025);
+      roundRect(left-r*.08,baseY,w+r*.22,Math.max(4,r*.23),rr*.65);ctx.stroke();
+
+      // Dunkle Rückwand / Fuge um die gesamte Mauer.
+      ctx.fillStyle="#4a2822";
+      roundRect(left-r*.07,top-r*.05,w+r*.15,h+r*.08,rr+r*.03);ctx.fill();
+
+      // Rechte Seitenfläche: kleine 3D-Tiefe statt flacher Stickeroptik.
+      const side=ctx.createLinearGradient(left+w,top,left+w+depth,top+h);
+      side.addColorStop(0,"#98604e");
+      side.addColorStop(.55,"#6c4035");
+      side.addColorStop(1,"#462b26");
+      ctx.fillStyle=side;
+      ctx.beginPath();
+      ctx.moveTo(left+w,top+r*.05);
+      ctx.lineTo(left+w+depth,top+depth*.72);
+      ctx.lineTo(left+w+depth,top+h-depth*.18);
+      ctx.lineTo(left+w,top+h);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(65,19,20,.44)";
+      ctx.lineWidth=Math.max(.8,r*.025);ctx.stroke();
+
+      // Drei versetzte Ziegelreihen.
+      const rows=[
+        [0.50,0.50],
+        [0.34,0.33,0.33],
+        [0.46,0.54]
+      ];
+      for(let row=0;row<3;row++){
+        const widths=rows[row];
+        let cursor=left;
+        const bh=rowH-mortar;
+        for(let j=0;j<widths.length;j++){
+          const bw=w*widths[j]-mortar;
+          const bx=cursor+mortar*.5;
+          const by=top+row*rowH+mortar*.5;
+          const brick=ctx.createLinearGradient(bx,by,bx,by+bh);
+          brick.addColorStop(0,"#e5a18a");
+          brick.addColorStop(.20,"#cb765f");
+          brick.addColorStop(.66,"#9f5144");
+          brick.addColorStop(1,"#6d3933");
+          ctx.fillStyle=brick;
+          roundRect(bx,by,bw,bh,Math.min(rr,bh*.22));ctx.fill();
+
+          // Fuge + abgeschrägte Lichtkante pro Stein.
+          ctx.strokeStyle="rgba(75,45,38,.64)";
+          ctx.lineWidth=Math.max(.8,r*.027);
+          roundRect(bx,by,bw,bh,Math.min(rr,bh*.22));ctx.stroke();
+          ctx.strokeStyle="rgba(255,232,211,.25)";
+          ctx.lineWidth=Math.max(.7,r*.022);
+          ctx.beginPath();ctx.moveTo(bx+bw*.09,by+bh*.20);ctx.lineTo(bx+bw*.88,by+bh*.20);ctx.stroke();
+          ctx.strokeStyle="rgba(243,210,190,.12)";
+          ctx.beginPath();ctx.moveTo(bx+bw*.10,by+bh*.78);ctx.lineTo(bx+bw*.82,by+bh*.78);ctx.stroke();
+          cursor += w*widths[j];
+        }
+      }
+
+      // Sichtbare Oberseite der Mauer – wie bei einem kleinen Modellbauteil.
+      const topFace=ctx.createLinearGradient(left,top-depth,left,top+r*.10);
+      topFace.addColorStop(0,"#edb6a0");
+      topFace.addColorStop(.52,"#c87963");
+      topFace.addColorStop(1,"#915044");
+      ctx.fillStyle=topFace;
+      ctx.beginPath();
+      ctx.moveTo(left+r*.05,top);
+      ctx.lineTo(left+w-r*.04,top);
+      ctx.lineTo(left+w+depth,top+depth*.72);
+      ctx.lineTo(left+depth*.75,top+depth*.72);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(255,237,222,.28)";
+      ctx.lineWidth=Math.max(.8,r*.025);ctx.stroke();
+
+      // Zwei feine Fugen auf der Oberseite für echte Steinwirkung.
+      ctx.strokeStyle="rgba(94,35,31,.32)";
+      ctx.lineWidth=Math.max(.7,r*.022);
+      for(const f of [.34,.67]){
+        const tx=left+w*f;
+        ctx.beginPath();ctx.moveTo(tx,top+.5);ctx.lineTo(tx+depth*.25,top+depth*.55);ctx.stroke();
+      }
+
+      // Äußere ruhige Lichtkante.
+      ctx.strokeStyle="rgba(255,238,219,.22)";
+      ctx.lineWidth=Math.max(1,r*.035);
+      roundRect(left-r*.015,top-r*.01,w+r*.02,h+r*.02,rr);ctx.stroke();
+
+      // Zwei kleine Messingbolzen verknüpfen die Mauer optisch mit den übrigen Premium-Spielteilen.
+      for(const bx of [left+w*.20,left+w*.80]){
+        const by=baseY+r*.115;
+        const pr=Math.max(1.8,r*.065);
+        const stud=ctx.createRadialGradient(bx-pr*.35,by-pr*.38,pr*.10,bx,by,pr);
+        stud.addColorStop(0,"#fff0b7");stud.addColorStop(.32,"#d4aa59");stud.addColorStop(.72,"#946329");stud.addColorStop(1,"#5a351b");
+        ctx.fillStyle=stud;ctx.beginPath();ctx.arc(bx,by,pr,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="rgba(70,39,20,.48)";ctx.lineWidth=Math.max(.6,r*.018);
+        ctx.beginPath();ctx.arc(bx,by,pr,0,Math.PI*2);ctx.stroke();
+      }
+      ctx.restore();
+      return;
+    }
+
+    if(getBoardThemeVisual()==="stone"){
+      ctx.save();
+      // Burgstein: kleine echte Steinmauer als Spielteil.
+      const w=r*1.70, h=r*1.18, d=Math.max(3,r*.15);
+      const left=x-w/2, top=y-h/2, rowH=h/3;
+      const roundRect=(rx,ry,rw,rh,rad)=>{
+        ctx.beginPath();
+        const q=Math.max(0,Math.min(rad,Math.abs(rw)/2,Math.abs(rh)/2));
+        if(typeof ctx.roundRect==="function") ctx.roundRect(rx,ry,rw,rh,q);
+        else{ctx.moveTo(rx+q,ry);ctx.lineTo(rx+rw-q,ry);ctx.quadraticCurveTo(rx+rw,ry,rx+rw,ry+q);ctx.lineTo(rx+rw,ry+rh-q);ctx.quadraticCurveTo(rx+rw,ry+rh,rx+rw-q,ry+rh);ctx.lineTo(rx+q,ry+rh);ctx.quadraticCurveTo(rx,ry+rh,rx,ry+rh-q);ctx.lineTo(rx,ry+q);ctx.quadraticCurveTo(rx,ry,rx+q,ry);ctx.closePath();}
+      };
+      ctx.fillStyle="rgba(0,0,0,.38)";ctx.beginPath();ctx.ellipse(x+d*.20,y+h*.55,w*.57,h*.18,0,0,Math.PI*2);ctx.fill();
+      const base=ctx.createLinearGradient(left,top+h,left,top+h+r*.24);
+      base.addColorStop(0,"#626a70");base.addColorStop(.55,"#42494f");base.addColorStop(1,"#272d31");
+      ctx.fillStyle=base;roundRect(left-r*.08,top+h-r*.03,w+r*.24,Math.max(4,r*.23),Math.max(2,r*.08));ctx.fill();
+      ctx.fillStyle="#22272b";roundRect(left-r*.06,top-r*.04,w+r*.14,h+r*.07,Math.max(2,r*.08));ctx.fill();
+      // Seitenfläche
+      const side=ctx.createLinearGradient(left+w,top,left+w+d,top+h);side.addColorStop(0,"#656d73");side.addColorStop(1,"#30363b");
+      ctx.fillStyle=side;ctx.beginPath();ctx.moveTo(left+w,top);ctx.lineTo(left+w+d,top+d*.7);ctx.lineTo(left+w+d,top+h);ctx.lineTo(left+w,top+h);ctx.closePath();ctx.fill();
+      const rows=[[.50,.50],[.34,.33,.33],[.46,.54]];
+      for(let row=0;row<3;row++){
+        let cursor=left;
+        for(const frac of rows[row]){
+          const gap=Math.max(1,r*.045);
+          const bw=w*frac-gap;
+          const bx=cursor+gap*.5, by=top+row*rowH+gap*.5, bh=rowH-gap;
+          const g=ctx.createLinearGradient(bx,by,bx,by+bh);
+          g.addColorStop(0,row===0?"#8a9298":"#7a8288");g.addColorStop(.52,"#5b6369");g.addColorStop(1,"#3b4247");
+          ctx.fillStyle=g;roundRect(bx,by,bw,bh,Math.max(1.5,r*.055));ctx.fill();
+          ctx.strokeStyle="rgba(20,24,27,.66)";ctx.lineWidth=Math.max(.7,r*.023);roundRect(bx,by,bw,bh,Math.max(1.5,r*.055));ctx.stroke();
+          ctx.strokeStyle="rgba(236,239,240,.18)";ctx.beginPath();ctx.moveTo(bx+bw*.09,by+bh*.19);ctx.lineTo(bx+bw*.84,by+bh*.19);ctx.stroke();
+          cursor += w*frac;
+        }
+      }
+      // Bronze-Bolzen verbinden die Mauer optisch mit dem Burgbrett.
+      for(const bx of [x-w*.34,x+w*.34]){
+        ctx.fillStyle="#b78c45";ctx.beginPath();ctx.arc(bx,top+rowH*.52,Math.max(1.6,r*.07),0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="rgba(35,27,15,.60)";ctx.lineWidth=.7;ctx.stroke();
+      }
+      ctx.restore();
+      return;
+    }
+
+    // Klassisches Brett: bisheriger runder Mauer-Marker unverändert.
+
+    ctx.save();
+
+    // V13.2: Kreis komplett mit Mauerwerk füllen – optisch näher am Joker-Symbol.
+    // So bleibt die Barikade auf dem Brett sofort als „Mauer / Barikade“ lesbar.
+    const outerR = r * 0.98;
+    const innerR = r * 0.84;
+    const mortar = Math.max(1.2, r * 0.05);
+    const brickH = Math.max(5, r * 0.23);
+    const brickW = Math.max(10, r * 0.45);
+
+    // Schatten / Auflage
+    ctx.fillStyle = "rgba(0,0,0,.38)";
+    ctx.beginPath();
+    ctx.ellipse(x, y + r*0.68, r*0.88, r*0.19, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Äußerer Ring
+    const ringGrad = ctx.createRadialGradient(x-r*0.18, y-r*0.20, r*0.12, x, y, outerR);
+    ringGrad.addColorStop(0, "#f2f6ff");
+    ringGrad.addColorStop(0.18, "#8fa2c3");
+    ringGrad.addColorStop(0.62, "#4a5d82");
+    ringGrad.addColorStop(1, "#1c2436");
+    ctx.fillStyle = ringGrad;
+    ctx.beginPath();
+    ctx.arc(x, y, outerR, 0, Math.PI*2);
+    ctx.fill();
+
+    // Innenfläche + Brick-Clip
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, innerR, 0, Math.PI*2);
+    ctx.clip();
+
+    const wallGrad = ctx.createLinearGradient(x, y-innerR, x, y+innerR);
+    wallGrad.addColorStop(0, "#ffb0a3");
+    wallGrad.addColorStop(0.18, "#ff7d69");
+    wallGrad.addColorStop(0.55, "#dc463f");
+    wallGrad.addColorStop(0.82, "#9e1f23");
+    wallGrad.addColorStop(1, "#5f1217");
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(x-innerR-2, y-innerR-2, innerR*2+4, innerR*2+4);
+
+    const roundedRectPath = (rx, ry, rw, rh, radius) => {
+      const rr = Math.max(0, Math.min(radius, Math.abs(rw)/2, Math.abs(rh)/2));
+      ctx.beginPath();
+      if(typeof ctx.roundRect === "function"){
+        ctx.roundRect(rx, ry, rw, rh, rr);
+      }else{
+        ctx.moveTo(rx+rr, ry);
+        ctx.lineTo(rx+rw-rr, ry); ctx.quadraticCurveTo(rx+rw, ry, rx+rw, ry+rr);
+        ctx.lineTo(rx+rw, ry+rh-rr); ctx.quadraticCurveTo(rx+rw, ry+rh, rx+rw-rr, ry+rh);
+        ctx.lineTo(rx+rr, ry+rh); ctx.quadraticCurveTo(rx, ry+rh, rx, ry+rh-rr);
+        ctx.lineTo(rx, ry+rr); ctx.quadraticCurveTo(rx, ry, rx+rr, ry);
+        ctx.closePath();
+      }
+    };
+
+    // Ziegelreihen
+    const top = y - innerR + mortar*0.8;
+    const bottom = y + innerR - mortar*0.8;
+    let row = 0;
+    for(let yy = top; yy < bottom; yy += brickH + mortar){
+      const offset = (row % 2) ? -(brickW * 0.52) : 0;
+      for(let xx = x - innerR - brickW; xx < x + innerR + brickW; xx += brickW + mortar){
+        const bx = xx + offset;
+        const by = yy;
+        const bw = brickW;
+        const bh = brickH;
+
+        const brickGrad = ctx.createLinearGradient(bx, by, bx, by + bh);
+        brickGrad.addColorStop(0, "rgba(255,196,175,.92)");
+        brickGrad.addColorStop(0.28, "rgba(255,123,96,.96)");
+        brickGrad.addColorStop(0.72, "rgba(196,46,52,.98)");
+        brickGrad.addColorStop(1, "rgba(110,20,24,.98)");
+        ctx.fillStyle = brickGrad;
+        roundedRectPath(bx, by, bw, bh, Math.max(1.8, bh*0.18));
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(50,8,12,.34)";
+        ctx.lineWidth = Math.max(0.8, r*0.018);
+        roundedRectPath(bx, by, bw, bh, Math.max(1.8, bh*0.18));
+        ctx.stroke();
+
+        // leichter Lichtsaum oben links je Stein
+        ctx.strokeStyle = "rgba(255,235,220,.26)";
+        ctx.lineWidth = Math.max(0.7, r*0.016);
+        ctx.beginPath();
+        ctx.moveTo(bx + bw*0.10, by + bh*0.20);
+        ctx.lineTo(bx + bw*0.84, by + bh*0.20);
+        ctx.stroke();
+      }
+      row++;
+    }
+
+    // dezente Highlights / Tiefe
+    ctx.fillStyle = "rgba(255,255,255,.12)";
+    ctx.beginPath();
+    ctx.arc(x - r*0.22, y - r*0.26, r*0.30, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,.18)";
+    ctx.beginPath();
+    ctx.arc(x + r*0.32, y + r*0.34, r*0.34, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.restore();
+
+    // innerer Ring / Glanz
+    ctx.strokeStyle = "rgba(255,250,243,.36)";
+    ctx.lineWidth = Math.max(1.1, r * 0.055);
+    ctx.beginPath();
+    ctx.arc(x, y, innerR, Math.PI*1.02, Math.PI*1.82);
+    ctx.stroke();
+
+    // äußerer dunkler Rand für Lesbarkeit
+    ctx.strokeStyle = "rgba(13,17,26,.92)";
+    ctx.lineWidth = Math.max(1.5, r * 0.09);
+    ctx.beginPath();
+    ctx.arc(x, y, outerR, 0, Math.PI*2);
+    ctx.stroke();
+
+    ctx.restore();
+    }
+
+  function drawSelectionRing(x,y,r){
+    ctx.save();
+    ctx.shadowColor = "rgba(139,124,255,0.72)";
+    ctx.shadowBlur = 18;
+    ctx.strokeStyle = "rgba(255,255,255,0.96)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(x,y,r*1.08,0,Math.PI*2);
+    ctx.stroke();
+    ctx.shadowColor = "transparent";
+    ctx.strokeStyle = "rgba(139,124,255,0.62)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x,y,r*1.24,0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawHousePieces(node, x, y, r){
+    const color = node.flags && node.flags.houseColor;
+    const slot = Number(node.flags && node.flags.houseSlot);
+    if(!color || !slot) return;
+    const idx = slot - 1;
+    if(!state?.pieces?.[color]) return;
+    if(state.pieces[color][idx].pos !== "house") return;
+    drawPieceDisc(x, y, r*0.57, color);
+  }
+
+  function drawStack(arr, x, y, r){
+    const p = arr[0];
+    drawPieceDisc(x, y, r*0.96, p.color);
+
+    if(arr.length > 1){
+      ctx.save();
+      ctx.shadowColor="rgba(0,0,0,0.48)";
+      ctx.shadowBlur=5;
+      ctx.fillStyle="rgba(5,9,17,0.86)";
+      ctx.strokeStyle="rgba(255,255,255,0.20)";
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.arc(x+r*0.58, y-r*0.58, r*0.39, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      ctx.shadowColor="transparent";
+      ctx.fillStyle="rgba(245,248,255,0.98)";
+      ctx.font=`900 ${Math.max(11,Math.round(r*0.58))}px system-ui`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(String(arr.length), x+r*0.58, y-r*0.58+0.5);
+      ctx.restore();
+    }
+
+    // Ereignis-Schutzschild direkt an der geschützten Figur sichtbar machen.
+    const shieldMap=state?.boss?.pieceEventShields||{};
+    if(arr.some(it=>it?.pieceId && shieldMap[String(it.pieceId)])){
+      ctx.save();
+      ctx.font=`900 ${Math.max(13,Math.round(r*0.72))}px system-ui`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("🛡️", x-r*0.68, y-r*0.68);
+      ctx.restore();
+    }
+  }
+
+  // Request a redraw on the next animation frame (prevents spamming draw() calls)
+  function requestDraw(){
+    if(rafDrawId) return;
+    rafDrawId = requestAnimationFrame(() => {
+      rafDrawId = 0;
+      draw();
+    });
+  }
+
+  // Canvas-only interaction animation at ~12 fps instead of a permanent 60-fps loop.
+  function requestInteractionFxTick(){
+    if(interactionFxTimer) return;
+    interactionFxTimer = setTimeout(() => {
+      interactionFxTimer = 0;
+      requestDraw();
+    }, 84);
+  }
+
+
+
+  // ===== Brettdesign – serverseitig gewählt, Client zeichnet nur =====
+  function normalizeBoardThemeVisual(theme){
+    const v=String(theme||"").toLowerCase().trim();
+    return (v==="classic" || v==="wood" || v==="stone") ? v : "wood";
+  }
+  function getBoardThemeVisual(){
+    try{
+      if(state && state.boardTheme) return normalizeBoardThemeVisual(state.boardTheme);
+      const rc=String(roomCode || localStorage.getItem("barikade_room") || "").trim().toUpperCase();
+      const scoped=rc ? localStorage.getItem("barikade_board_theme_"+rc) : null;
+      return normalizeBoardThemeVisual(scoped || localStorage.getItem("barikade_board_theme") || "wood");
+    }catch(_e){ return "wood"; }
+  }
+  function rememberBoardThemeVisual(theme){
+    const v=normalizeBoardThemeVisual(theme);
+    try{
+      const rc=String(roomCode || localStorage.getItem("barikade_room") || "").trim().toUpperCase();
+      if(rc) localStorage.setItem("barikade_board_theme_"+rc,v);
+      localStorage.setItem("barikade_board_theme",v);
+    }catch(_e){}
+    return v;
+  }
+
+  function drawClassicBoardGrid(rect){
+    const grid=Math.max(10,(board.ui?.gridSize||20))*view.s;
+    ctx.save();
+    ctx.strokeStyle="rgba(109,139,183,0.16)";
+    ctx.lineWidth=1;
+    const ox=(view.x*view.s)%grid, oy=(view.y*view.s)%grid;
+    for(let x=-ox;x<rect.width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rect.height);ctx.stroke();}
+    for(let y=-oy;y<rect.height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rect.width,y);ctx.stroke();}
+    ctx.restore();
+  }
+
+  function drawStartFieldAccent(x,y,r,color,useWoodBoard,useStoneBoard=false){
+    const col = COLORS[color] || color || "#ffffff";
+    ctx.save();
+    if(useWoodBoard){
+      // Ruhige farbige Start-Markierung: lackierter Ring + kleine 1-Plakette.
+      ctx.strokeStyle = "rgba(88,52,25,.64)";
+      ctx.lineWidth = Math.max(2.6, r*.14);
+      ctx.beginPath(); ctx.arc(x,y,r+4,0,Math.PI*2); ctx.stroke();
+
+      ctx.strokeStyle = col;
+      ctx.lineWidth = Math.max(2.1, r*.11);
+      ctx.beginPath(); ctx.arc(x,y,r+1.6,0,Math.PI*2); ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255,245,224,.48)";
+      ctx.lineWidth = Math.max(.9, r*.04);
+      ctx.beginPath(); ctx.arc(x,y,r-.9,Math.PI*1.06,Math.PI*1.78); ctx.stroke();
+
+      // Kleines emailliertes Start-Abzeichen mit „1“.
+      const bx = x + r*.68;
+      const by = y - r*.64;
+      const br = Math.max(7, r*.34);
+      ctx.fillStyle = "rgba(88,52,25,.58)";
+      ctx.beginPath(); ctx.arc(bx,by,br+2.2,0,Math.PI*2); ctx.fill();
+      const badge=ctx.createRadialGradient(bx-br*.28,by-br*.32,br*.10,bx,by,br*1.05);
+      badge.addColorStop(0,"rgba(255,255,255,.92)");
+      badge.addColorStop(.24,col);
+      badge.addColorStop(.78,col);
+      badge.addColorStop(1,"rgba(42,24,16,.82)");
+      ctx.fillStyle = badge;
+      ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,244,218,.62)";
+      ctx.lineWidth = Math.max(.8, br*.14);
+      ctx.beginPath(); ctx.arc(bx,by,br*.78,Math.PI*1.06,Math.PI*1.84); ctx.stroke();
+      ctx.fillStyle = "rgba(255,251,247,.98)";
+      ctx.font = `900 ${Math.max(8,Math.round(br*.95))}px system-ui`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("1", bx, by+0.4);
+    }else if(useStoneBoard){
+      // Burgstein: farbiges Emaille-Inlay mit Bronzeplakette „1“.
+      ctx.strokeStyle="rgba(25,29,32,.82)";
+      ctx.lineWidth=Math.max(3,r*.15);
+      ctx.beginPath();ctx.arc(x,y,r+4,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="rgba(188,148,72,.82)";
+      ctx.lineWidth=Math.max(1.5,r*.07);
+      ctx.beginPath();ctx.arc(x,y,r+2.2,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle=col;
+      ctx.lineWidth=Math.max(2,r*.105);
+      ctx.beginPath();ctx.arc(x,y,r-.2,0,Math.PI*2);ctx.stroke();
+      const bx=x+r*.69, by=y-r*.65, br=Math.max(7,r*.34);
+      ctx.fillStyle="rgba(24,28,31,.92)";ctx.beginPath();ctx.arc(bx,by,br+2.2,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(193,151,72,.86)";ctx.lineWidth=Math.max(1,br*.13);ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(bx,by,br*.72,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fff";ctx.font=`900 ${Math.max(8,Math.round(br*.90))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("1",bx,by+.4);
+    }else{
+      // Klassisch: klarer farbiger Start-Ring + kleines Startbadge.
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = Math.max(2.4, r*.12);
+      ctx.beginPath(); ctx.arc(x,y,r+4,0,Math.PI*2); ctx.stroke();
+      ctx.shadowColor = "transparent";
+      ctx.strokeStyle = "rgba(255,255,255,.30)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(x,y,r+7,0,Math.PI*2); ctx.stroke();
+
+      const bx = x + r*.72;
+      const by = y - r*.68;
+      const br = Math.max(7, r*.34);
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "rgba(8,12,20,.56)"; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.98)";
+      ctx.font = `900 ${Math.max(8,Math.round(br*.95))}px system-ui`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("1", bx, by+0.4);
+    }
+    ctx.restore();
+  }
+
+  function drawClassicFieldTile(x,y,r,fill){
+    ctx.save();
+    ctx.shadowColor="rgba(0,0,0,0.34)";
+    ctx.shadowBlur=7;
+    ctx.shadowOffsetY=3;
+    ctx.beginPath();ctx.fillStyle=fill;ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.shadowColor="transparent";
+    const ng=ctx.createRadialGradient(x-r*0.34,y-r*0.40,r*0.08,x,y,r*1.08);
+    ng.addColorStop(0,"rgba(255,255,255,0.34)");
+    ng.addColorStop(0.42,"rgba(255,255,255,0.07)");
+    ng.addColorStop(1,"rgba(0,0,0,0.30)");
+    ctx.fillStyle=ng;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.lineWidth=2.6;ctx.strokeStyle=COLORS.stroke;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+    ctx.lineWidth=1;ctx.strokeStyle="rgba(255,255,255,0.15)";
+    ctx.beginPath();ctx.arc(x,y,r-2.2,Math.PI*1.04,Math.PI*1.88);ctx.stroke();
+    ctx.restore();
+  }
+
+  // ===== Premium Holzbrett – rein visuell, keine Spiellogik =====
+  function boardRoundRectPath(x,y,w,h,radius){
+    const rr=Math.max(0,Math.min(radius,Math.abs(w)/2,Math.abs(h)/2));
+    ctx.beginPath();
+    if(typeof ctx.roundRect==="function"){
+      ctx.roundRect(x,y,w,h,rr);
+    }else{
+      ctx.moveTo(x+rr,y);
+      ctx.lineTo(x+w-rr,y); ctx.quadraticCurveTo(x+w,y,x+w,y+rr);
+      ctx.lineTo(x+w,y+h-rr); ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);
+      ctx.lineTo(x+rr,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-rr);
+      ctx.lineTo(x,y+rr); ctx.quadraticCurveTo(x,y,x+rr,y);
+      ctx.closePath();
+    }
+  }
+
+  function getBoardPlateScreenRect(){
+    const b=computeBounds();
+    if(!b) return null;
+    // Genug Rand für Häuser, Figuren, Barikaden und die Boss-Portale.
+    const pad=72;
+    const a=worldToScreen({x:b.minX-pad,y:b.minY-pad});
+    const z=worldToScreen({x:b.maxX+pad,y:b.maxY+pad});
+    return {
+      x:Math.min(a.x,z.x), y:Math.min(a.y,z.y),
+      w:Math.abs(z.x-a.x), h:Math.abs(z.y-a.y)
+    };
+  }
+
+  function drawPremiumWoodBoard(){
+    const br=getBoardPlateScreenRect();
+    if(!br || br.w<20 || br.h<20) return;
+    const radius=Math.max(18,Math.min(38,22*view.s));
+
+    ctx.save();
+    // Brettschatten: echte, massive Brettplatte über dunklem Untergrund.
+    ctx.shadowColor="rgba(0,0,0,.48)";
+    ctx.shadowBlur=Math.max(18,30*view.s);
+    ctx.shadowOffsetY=Math.max(7,12*view.s);
+    const outer=ctx.createLinearGradient(br.x,br.y,br.x,br.y+br.h);
+    outer.addColorStop(0,"#855434");
+    outer.addColorStop(.26,"#684126");
+    outer.addColorStop(.72,"#4b2d1a");
+    outer.addColorStop(1,"#352012");
+    ctx.fillStyle=outer;
+    boardRoundRectPath(br.x,br.y,br.w,br.h,radius);
+    ctx.fill();
+    ctx.shadowColor="transparent";
+
+    // Rahmen mit leichter Fase und warmer Lichtkante.
+    ctx.lineWidth=Math.max(8,14*view.s);
+    ctx.strokeStyle="rgba(69,38,20,.98)";
+    boardRoundRectPath(br.x+4,br.y+4,br.w-8,br.h-8,Math.max(14,radius-3));
+    ctx.stroke();
+    ctx.lineWidth=Math.max(2,3.4*view.s);
+    ctx.strokeStyle="rgba(226,170,104,.56)";
+    boardRoundRectPath(br.x+9,br.y+9,br.w-18,br.h-18,Math.max(12,radius-7));
+    ctx.stroke();
+    ctx.lineWidth=Math.max(1.1,1.6*view.s);
+    ctx.strokeStyle="rgba(255,235,198,.30)";
+    boardRoundRectPath(br.x+13,br.y+12,br.w-26,br.h-24,Math.max(10,radius-10));
+    ctx.stroke();
+
+    // Helle Ahorn-/Buchenfläche.
+    const inset=Math.max(12,17*view.s);
+    const ix=br.x+inset, iy=br.y+inset, iw=br.w-inset*2, ih=br.h-inset*2;
+    const innerRadius=Math.max(12,radius-inset*.42);
+    const wood=ctx.createLinearGradient(ix,iy,ix+iw,iy+ih*.22);
+    wood.addColorStop(0,"#ead0a0");
+    wood.addColorStop(.22,"#f3ddb1");
+    wood.addColorStop(.48,"#dfbb82");
+    wood.addColorStop(.72,"#efd4a4");
+    wood.addColorStop(1,"#d6ac72");
+    ctx.fillStyle=wood;
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);
+    ctx.fill();
+
+    // Maserung innerhalb der Holzfläche. Bewusst ohne Math.random(), damit nichts flimmert.
+    ctx.save();
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);
+    ctx.clip();
+    const lineCount=Math.max(12,Math.min(28,Math.round(ih/34)));
+    for(let i=0;i<lineCount;i++){
+      const baseY=iy+(i+.55)*(ih/lineCount);
+      const amp=2.2+((i*7)%5)*.55;
+      ctx.beginPath();
+      for(let px=ix-12,step=0;px<=ix+iw+12;px+=18,step++){
+        const yy=baseY+Math.sin((px-ix)*.021+i*.91)*amp+Math.sin((px-ix)*.006+i*1.7)*1.8;
+        if(step===0) ctx.moveTo(px,yy); else ctx.lineTo(px,yy);
+      }
+      ctx.strokeStyle=i%3===0?"rgba(119,73,35,.125)":"rgba(132,82,39,.075)";
+      ctx.lineWidth=i%4===0?1.45:.85;
+      ctx.stroke();
+    }
+    // Wenige ruhige Ast-/Maserungsbögen für natürliches Holzgefühl.
+    const knots=[
+      [ix+iw*.19,iy+ih*.27,iw*.075,ih*.034],
+      [ix+iw*.73,iy+ih*.61,iw*.060,ih*.029],
+      [ix+iw*.48,iy+ih*.84,iw*.045,ih*.023]
+    ];
+    ctx.strokeStyle="rgba(111,65,28,.10)";
+    ctx.lineWidth=1.1;
+    for(const [kx,ky,rx,ry] of knots){
+      ctx.beginPath();ctx.ellipse(kx,ky,Math.max(12,rx),Math.max(5,ry),-.08,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.ellipse(kx+3,ky,Math.max(7,rx*.62),Math.max(3,ry*.58),-.08,0,Math.PI*2);ctx.stroke();
+    }
+
+    // Sehr dezente Planken-/Segment-Andeutung, damit das Brett noch mehr wie ein echtes Spielbrett wirkt.
+    ctx.strokeStyle="rgba(132,82,39,.060)";
+    ctx.lineWidth=Math.max(1,1.15*view.s);
+    for(const f of [.25,.50,.75]){
+      const yy=iy+ih*f;
+      ctx.beginPath();ctx.moveTo(ix+16,yy);ctx.lineTo(ix+iw-16,yy);ctx.stroke();
+    }
+
+    // Sanfte Lichtlasur von oben links.
+    const sheen=ctx.createLinearGradient(ix,iy,ix,iy+ih);
+    sheen.addColorStop(0,"rgba(255,249,225,.22)");
+    sheen.addColorStop(.45,"rgba(255,255,255,.035)");
+    sheen.addColorStop(1,"rgba(83,47,22,.10)");
+    ctx.fillStyle=sheen;
+    ctx.fillRect(ix,iy,iw,ih);
+    // Ruhige Gegenlicht-Lasur von unten für Tiefe.
+    const lower=ctx.createLinearGradient(ix,iy,ix,iy+ih);
+    lower.addColorStop(0,"rgba(255,255,255,0)");
+    lower.addColorStop(.72,"rgba(121,71,34,.03)");
+    lower.addColorStop(1,"rgba(82,48,25,.10)");
+    ctx.fillStyle=lower;
+    ctx.fillRect(ix,iy,iw,ih);
+    ctx.restore();
+
+    // Kleine feste Messing-Pins in den Brett-Ecken – ruhig, hochwertig, nicht verspielt.
+    const pins=[
+      [ix+iw*.055, iy+ih*.065], [ix+iw*.945, iy+ih*.065],
+      [ix+iw*.055, iy+ih*.935], [ix+iw*.945, iy+ih*.935]
+    ];
+    for(const [px,py] of pins){
+      const pr=Math.max(3,3.7*view.s);
+      const pin=ctx.createRadialGradient(px-pr*.35,py-pr*.45,pr*.12,px,py,pr*1.08);
+      pin.addColorStop(0,"#fff6cc");
+      pin.addColorStop(.35,"#e9c670");
+      pin.addColorStop(.78,"#a96f2f");
+      pin.addColorStop(1,"#724018");
+      ctx.fillStyle=pin;
+      ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(90,50,23,.42)";
+      ctx.lineWidth=Math.max(.8,pr*.20);
+      ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="rgba(255,243,200,.46)";
+      ctx.lineWidth=Math.max(.7,pr*.11);
+      ctx.beginPath();ctx.arc(px,py,pr*.58,Math.PI*1.04,Math.PI*1.82);ctx.stroke();
+    }
+
+    // Innenkante erzeugt den Eindruck einer echten gerahmten Brettplatte.
+    ctx.lineWidth=Math.max(1.5,2.4*view.s);
+    ctx.strokeStyle="rgba(96,55,26,.40)";
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);
+    ctx.stroke();
+    ctx.lineWidth=Math.max(1,1.3*view.s);
+    ctx.strokeStyle="rgba(255,240,207,.52)";
+    boardRoundRectPath(ix+2,iy+2,iw-4,ih-4,Math.max(8,innerRadius-2));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPremiumStoneBoard(){
+    const br=getBoardPlateScreenRect();
+    if(!br || br.w<20 || br.h<20) return;
+    const radius=Math.max(16,Math.min(34,20*view.s));
+
+    ctx.save();
+    // Massive Burgsteinplatte mit tiefer Schattenkante.
+    ctx.shadowColor="rgba(0,0,0,.58)";
+    ctx.shadowBlur=Math.max(18,32*view.s);
+    ctx.shadowOffsetY=Math.max(7,12*view.s);
+    const outer=ctx.createLinearGradient(br.x,br.y,br.x,br.y+br.h);
+    outer.addColorStop(0,"#343a40");
+    outer.addColorStop(.36,"#23292f");
+    outer.addColorStop(1,"#151a1f");
+    ctx.fillStyle=outer;
+    boardRoundRectPath(br.x,br.y,br.w,br.h,radius);ctx.fill();
+    ctx.shadowColor="transparent";
+
+    // Dunkle Randsteine mit Bronze-Inlay.
+    ctx.lineWidth=Math.max(9,15*view.s);
+    ctx.strokeStyle="rgba(25,29,33,.98)";
+    boardRoundRectPath(br.x+4,br.y+4,br.w-8,br.h-8,Math.max(12,radius-3));ctx.stroke();
+    ctx.lineWidth=Math.max(2,3.2*view.s);
+    ctx.strokeStyle="rgba(174,139,72,.70)";
+    boardRoundRectPath(br.x+10,br.y+10,br.w-20,br.h-20,Math.max(10,radius-7));ctx.stroke();
+    ctx.lineWidth=Math.max(1,1.25*view.s);
+    ctx.strokeStyle="rgba(236,210,144,.30)";
+    boardRoundRectPath(br.x+13,br.y+13,br.w-26,br.h-26,Math.max(9,radius-9));ctx.stroke();
+
+    const inset=Math.max(13,18*view.s);
+    const ix=br.x+inset, iy=br.y+inset, iw=br.w-inset*2, ih=br.h-inset*2;
+    const innerRadius=Math.max(10,radius-inset*.40);
+    const slab=ctx.createLinearGradient(ix,iy,ix+iw*.25,iy+ih);
+    slab.addColorStop(0,"#666d74");
+    slab.addColorStop(.28,"#555c63");
+    slab.addColorStop(.64,"#454c53");
+    slab.addColorStop(1,"#383f46");
+    ctx.fillStyle=slab;
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);ctx.fill();
+
+    ctx.save();
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);ctx.clip();
+
+    // Große ruhige Steinplatten-Fugen – deterministisch, kein Flimmern.
+    const rows=5;
+    ctx.lineWidth=Math.max(1,1.25*view.s);
+    for(let row=1;row<rows;row++){
+      const yy=iy+(ih/rows)*row;
+      ctx.strokeStyle="rgba(24,29,33,.28)";
+      ctx.beginPath();ctx.moveTo(ix,yy);ctx.lineTo(ix+iw,yy);ctx.stroke();
+      ctx.strokeStyle="rgba(255,255,255,.055)";
+      ctx.beginPath();ctx.moveTo(ix,yy+1.2);ctx.lineTo(ix+iw,yy+1.2);ctx.stroke();
+    }
+    for(let row=0;row<rows;row++){
+      const y0=iy+(ih/rows)*row;
+      const y1=iy+(ih/rows)*(row+1);
+      const offset=(row%2)*.12;
+      for(const frac of [.27+offset,.57+offset,.84+offset]){
+        if(frac>=.97) continue;
+        const xx=ix+iw*frac;
+        ctx.strokeStyle="rgba(26,30,34,.22)";
+        ctx.beginPath();ctx.moveTo(xx,y0+2);ctx.lineTo(xx,y1-2);ctx.stroke();
+        ctx.strokeStyle="rgba(255,255,255,.04)";
+        ctx.beginPath();ctx.moveTo(xx+1,y0+2);ctx.lineTo(xx+1,y1-2);ctx.stroke();
+      }
+    }
+
+    // Feine natürliche Schieferadern.
+    const veins=[
+      [.08,.20,.34,.16,.51,.22],
+      [.58,.10,.67,.18,.90,.15],
+      [.18,.67,.35,.61,.49,.69],
+      [.62,.78,.77,.73,.94,.80],
+      [.08,.88,.20,.82,.35,.86]
+    ];
+    ctx.lineWidth=Math.max(.75,.9*view.s);
+    for(let i=0;i<veins.length;i++){
+      const v=veins[i];
+      ctx.strokeStyle=i%2?"rgba(222,228,231,.070)":"rgba(22,27,31,.15)";
+      ctx.beginPath();
+      ctx.moveTo(ix+iw*v[0],iy+ih*v[1]);
+      ctx.bezierCurveTo(ix+iw*v[2],iy+ih*v[3],ix+iw*v[4],iy+ih*v[5],ix+iw*Math.min(.98,v[4]+.11),iy+ih*(v[5]+.015));
+      ctx.stroke();
+    }
+
+    // Licht von oben, Tiefe nach unten.
+    const sheen=ctx.createLinearGradient(ix,iy,ix,iy+ih);
+    sheen.addColorStop(0,"rgba(255,255,255,.105)");
+    sheen.addColorStop(.42,"rgba(255,255,255,.018)");
+    sheen.addColorStop(1,"rgba(0,0,0,.16)");
+    ctx.fillStyle=sheen;ctx.fillRect(ix,iy,iw,ih);
+    ctx.restore();
+
+    // Bronzenieten in den Ecken.
+    const pins=[[ix+iw*.055,iy+ih*.065],[ix+iw*.945,iy+ih*.065],[ix+iw*.055,iy+ih*.935],[ix+iw*.945,iy+ih*.935]];
+    for(const [px,py] of pins){
+      const pr=Math.max(3,3.8*view.s);
+      const g=ctx.createRadialGradient(px-pr*.35,py-pr*.4,pr*.1,px,py,pr);
+      g.addColorStop(0,"#f5dfa3");g.addColorStop(.34,"#c29a50");g.addColorStop(.76,"#80612e");g.addColorStop(1,"#4a3519");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(22,25,27,.56)";ctx.lineWidth=Math.max(.8,pr*.17);ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.stroke();
+    }
+
+    ctx.strokeStyle="rgba(17,21,24,.46)";ctx.lineWidth=Math.max(1.4,2.2*view.s);
+    boardRoundRectPath(ix,iy,iw,ih,innerRadius);ctx.stroke();
+    ctx.strokeStyle="rgba(226,214,181,.16)";ctx.lineWidth=Math.max(1,1.1*view.s);
+    boardRoundRectPath(ix+2,iy+2,iw-4,ih-4,Math.max(8,innerRadius-2));ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawStoneHouseSocket(x,y,r,color,slot){
+    ctx.save();
+    const col=color||"#fff";
+    ctx.fillStyle="rgba(18,22,25,.72)";ctx.beginPath();ctx.arc(x,y,r*1.05,0,Math.PI*2);ctx.fill();
+    const rim=ctx.createRadialGradient(x-r*.28,y-r*.32,r*.05,x,y,r);
+    rim.addColorStop(0,"rgba(255,255,255,.64)");rim.addColorStop(.19,col);rim.addColorStop(.68,col);rim.addColorStop(1,"rgba(20,24,27,.88)");
+    ctx.fillStyle=rim;ctx.beginPath();ctx.arc(x,y,r*.94,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(191,151,74,.76)";ctx.lineWidth=Math.max(1.2,r*.06);ctx.beginPath();ctx.arc(x,y,r*.80,0,Math.PI*2);ctx.stroke();
+    const inner=r*.59;
+    const well=ctx.createRadialGradient(x-r*.18,y-r*.22,r*.03,x,y,inner);
+    well.addColorStop(0,"#676f76");well.addColorStop(.48,"#4b5258");well.addColorStop(1,"#262c31");
+    ctx.fillStyle=well;ctx.beginPath();ctx.arc(x,y,inner,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(12,15,17,.60)";ctx.lineWidth=Math.max(1.2,r*.065);ctx.beginPath();ctx.arc(x,y,inner*.96,Math.PI*1.02,Math.PI*1.84);ctx.stroke();
+    ctx.strokeStyle="rgba(235,239,240,.18)";ctx.lineWidth=Math.max(.9,r*.04);ctx.beginPath();ctx.arc(x,y,inner*.93,Math.PI*.05,Math.PI*.82);ctx.stroke();
+    if(slot){
+      ctx.fillStyle="rgba(218,223,225,.38)";ctx.font=`800 ${Math.max(9,Math.round(r*.48))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(String(slot),x,y+.5);
+    }
+    ctx.restore();
+  }
+
+  function drawStoneFieldWell(x,y,r){
+    ctx.save();
+    const rim=ctx.createRadialGradient(x-r*.22,y-r*.27,r*.05,x,y,r*1.04);
+    rim.addColorStop(0,"#727a81");rim.addColorStop(.42,"#50585e");rim.addColorStop(1,"#23292e");
+    ctx.fillStyle=rim;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(11,14,16,.54)";ctx.lineWidth=Math.max(1.3,r*.075);ctx.beginPath();ctx.arc(x,y,r*.93,Math.PI*1.02,Math.PI*1.85);ctx.stroke();
+    const ir=r*.79;
+    const well=ctx.createRadialGradient(x-r*.22,y-r*.24,r*.04,x,y,ir*1.06);
+    well.addColorStop(0,"#666e75");well.addColorStop(.35,"#4e565d");well.addColorStop(.72,"#394047");well.addColorStop(1,"#252b30");
+    ctx.fillStyle=well;ctx.beginPath();ctx.arc(x,y,ir,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(235,239,240,.18)";ctx.lineWidth=Math.max(1,r*.052);ctx.beginPath();ctx.arc(x,y,ir*.92,Math.PI*.08,Math.PI*.82);ctx.stroke();
+    // Drei feine Meißel-/Steinadern, statisch.
+    ctx.strokeStyle="rgba(196,203,207,.075)";ctx.lineWidth=Math.max(.7,r*.025);
+    ctx.beginPath();ctx.moveTo(x-ir*.56,y-ir*.16);ctx.lineTo(x+ir*.52,y-ir*.24);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-ir*.46,y+ir*.17);ctx.lineTo(x+ir*.42,y+ir*.12);ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawWoodHouseSocket(x,y,r,color,slot){
+    ctx.save();
+    const col=color || "#ffffff";
+
+    // Farbige eingelassene Aufnahme statt aufgesetzter Scheibe.
+    ctx.fillStyle="rgba(73,42,22,.48)";
+    ctx.beginPath();ctx.arc(x,y,r*1.04,0,Math.PI*2);ctx.fill();
+
+    // Äußerer lackierter Farbring.
+    const rim=ctx.createRadialGradient(x-r*.30,y-r*.34,r*.06,x,y,r*1.02);
+    rim.addColorStop(0,"rgba(255,255,255,.72)");
+    rim.addColorStop(.20,col);
+    rim.addColorStop(.68,col);
+    rim.addColorStop(1,"rgba(38,25,20,.72)");
+    ctx.fillStyle=rim;
+    ctx.beginPath();ctx.arc(x,y,r*.94,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(64,39,25,.86)";
+    ctx.lineWidth=Math.max(2,r*.10);
+    ctx.beginPath();ctx.arc(x,y,r*.96,0,Math.PI*2);ctx.stroke();
+
+    // Messingfarbene schmale Einfassung verbindet Farbe und Holzbrett.
+    ctx.strokeStyle="rgba(231,192,111,.70)";
+    ctx.lineWidth=Math.max(1,r*.045);
+    ctx.beginPath();ctx.arc(x,y,r*.79,0,Math.PI*2);ctx.stroke();
+
+    // Holzboden in der Aufnahme – die Figur sitzt später genau darüber.
+    const inner=r*.60;
+    const well=ctx.createRadialGradient(x-r*.18,y-r*.22,r*.04,x,y,inner*1.08);
+    well.addColorStop(0,"#e9ca98");
+    well.addColorStop(.46,"#c99457");
+    well.addColorStop(1,"#784a29");
+    ctx.fillStyle=well;
+    ctx.beginPath();ctx.arc(x,y,inner,0,Math.PI*2);ctx.fill();
+
+    // Eingelassener Schatten oben/links und Lichtkante unten/rechts.
+    ctx.strokeStyle="rgba(61,35,20,.54)";
+    ctx.lineWidth=Math.max(1.2,r*.065);
+    ctx.beginPath();ctx.arc(x,y,inner*.96,Math.PI*1.03,Math.PI*1.84);ctx.stroke();
+    ctx.strokeStyle="rgba(255,234,195,.48)";
+    ctx.lineWidth=Math.max(.9,r*.042);
+    ctx.beginPath();ctx.arc(x,y,inner*.94,Math.PI*.06,Math.PI*.82);ctx.stroke();
+
+    // Slotnummer dezent wie eine Gravur; wird durch eine vorhandene Figur verdeckt.
+    if(slot){
+      ctx.fillStyle="rgba(83,47,25,.60)";
+      ctx.font=`800 ${Math.max(9,Math.round(r*.48))}px system-ui`;
+      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(String(slot),x,y+0.5);
+      ctx.strokeStyle="rgba(255,234,195,.22)";
+      ctx.lineWidth=.8;
+      ctx.strokeText(String(slot),x,y+0.5);
+    }
+
+    // Ruhiger Lackreflex oben links, statisch.
+    ctx.strokeStyle="rgba(255,255,255,.28)";
+    ctx.lineWidth=Math.max(1,r*.04);
+    ctx.beginPath();ctx.arc(x,y,r*.83,Math.PI*1.08,Math.PI*1.72);ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawWoodFieldWell(x,y,r){
+    ctx.save();
+
+    // Äußere Fräsung / Fase – das Feld wirkt wie sauber ins Brett eingearbeitet.
+    const outer=r;
+    ctx.shadowColor="rgba(58,31,13,.18)";
+    ctx.shadowBlur=Math.max(2.5,r*.16);
+    ctx.shadowOffsetY=Math.max(1,r*.07);
+    const rim=ctx.createRadialGradient(x-r*.22,y-r*.28,r*.06,x,y,outer*1.02);
+    rim.addColorStop(0,"rgba(173,120,67,.72)");
+    rim.addColorStop(.45,"rgba(126,76,40,.72)");
+    rim.addColorStop(1,"rgba(88,49,24,.82)");
+    ctx.fillStyle=rim;
+    ctx.beginPath();ctx.arc(x,y,outer,0,Math.PI*2);ctx.fill();
+    ctx.shadowColor="transparent";
+
+    // Schmale innere Lichtkante auf der oberen Brettkante.
+    ctx.strokeStyle="rgba(255,231,188,.28)";
+    ctx.lineWidth=Math.max(1,r*.05);
+    ctx.beginPath();ctx.arc(x,y,outer*.95,Math.PI*1.08,Math.PI*1.82);ctx.stroke();
+
+    // Innere Holzmulde.
+    const ir=r*.80;
+    const well=ctx.createRadialGradient(x-r*.25,y-r*.30,r*.05,x,y,ir*1.08);
+    well.addColorStop(0,"#edcd98");
+    well.addColorStop(.30,"#d7ac74");
+    well.addColorStop(.68,"#b77f43");
+    well.addColorStop(1,"#804f29");
+    ctx.fillStyle=well;
+    ctx.beginPath();ctx.arc(x,y,ir,0,Math.PI*2);ctx.fill();
+
+    // Dezenter Einsink-Schatten links/oben.
+    ctx.strokeStyle="rgba(70,37,16,.52)";
+    ctx.lineWidth=Math.max(1.5,r*.105);
+    ctx.beginPath();ctx.arc(x,y,ir*.95,Math.PI*1.03,Math.PI*1.86);ctx.stroke();
+
+    // Lichtkante unten/rechts vermittelt Tiefe wie bei einer echten Mulde.
+    ctx.strokeStyle="rgba(255,236,202,.56)";
+    ctx.lineWidth=Math.max(1,r*.065);
+    ctx.beginPath();ctx.arc(x,y,ir*.93,Math.PI*.07,Math.PI*.84);ctx.stroke();
+
+    // Zentraler „Boden“ etwas glatter und minimal heller – schöner als reine Kugeloptik.
+    const baseR=ir*.52;
+    const base=ctx.createRadialGradient(x-r*.12,y-r*.16,r*.02,x,y,baseR);
+    base.addColorStop(0,"rgba(251,221,171,.66)");
+    base.addColorStop(.55,"rgba(222,181,122,.26)");
+    base.addColorStop(1,"rgba(179,122,67,0)");
+    ctx.fillStyle=base;
+    ctx.beginPath();ctx.arc(x,y,baseR,0,Math.PI*2);ctx.fill();
+
+    // Sehr dezente Holzmaserung in der Mulde.
+    ctx.save();
+    ctx.beginPath();ctx.arc(x,y,ir*.84,0,Math.PI*2);ctx.clip();
+    ctx.strokeStyle="rgba(107,61,27,.13)";
+    ctx.lineWidth=.8;
+    for(let k=-1;k<=1;k++){
+      const yy=y+k*ir*.34;
+      ctx.beginPath();
+      ctx.moveTo(x-ir,yy+Math.sin(k*1.7)*1.2);
+      ctx.bezierCurveTo(x-ir*.35,yy-1.8,x+ir*.25,yy+2.2,x+ir,yy-.8);
+      ctx.stroke();
+    }
+    // feiner Ring am Muldenboden – wirkt wie ein sauber gefräster Abschluss.
+    ctx.strokeStyle="rgba(118,72,35,.12)";
+    ctx.lineWidth=Math.max(.7,r*.022);
+    ctx.beginPath();ctx.arc(x,y,ir*.40,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function draw(){
+    if(!board) return;
+    const hasState = !!state;
+    const rect=canvas.getBoundingClientRect();
+    ctx.clearRect(0,0,rect.width,rect.height);
+
+    const boardTheme = getBoardThemeVisual();
+    const useWoodBoard = boardTheme === "wood";
+    const useStoneBoard = boardTheme === "stone";
+    const usePremiumBoard = useWoodBoard || useStoneBoard;
+    if(useWoodBoard) drawPremiumWoodBoard();
+    else if(useStoneBoard) drawPremiumStoneBoard();
+    else drawClassicBoardGrid(rect);
+
+    // Action-Bossmodus: zwei Spezialfelder sind sichtbar mit dem Brett verbunden,
+    // gehören aber bewusst NICHT zur normalen Laufroute.
+    if(bossModeVisualActive() && Array.isArray(board?.meta?.bossFields)){
+      ctx.save();
+      ctx.lineCap="round";
+      for(const f of board.meta.bossFields){
+        if(typeof f?.x!=="number" || typeof f?.y!=="number") continue;
+        const anchors = Array.isArray(f?.anchors) ? f.anchors.map(v=>nodeById.get(String(v))).filter(Boolean) : (f?.anchor ? [nodeById.get(String(f.anchor))].filter(Boolean) : []);
+        const center=worldToScreen(f);
+        for(const anchor of anchors){
+          const a=worldToScreen(anchor);
+          if(useWoodBoard){
+            // Holzbrett: eingefräste, statische Portalverbindung statt Neon-Dash.
+            ctx.strokeStyle="rgba(70,39,22,.48)";ctx.lineWidth=Math.max(7,9*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(111,65,137,.70)";ctx.lineWidth=Math.max(2,2.7*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(235,203,255,.34)";ctx.lineWidth=Math.max(1,1.1*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y-1);ctx.lineTo(center.x,center.y-1);ctx.stroke();
+          }else if(useStoneBoard){
+            // Burgstein: in den Stein eingelassene violette Portalrinne.
+            ctx.strokeStyle="rgba(16,19,22,.72)";ctx.lineWidth=Math.max(7,9*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(87,65,101,.88)";ctx.lineWidth=Math.max(3,3.6*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(205,181,216,.25)";ctx.lineWidth=Math.max(1,1.0*view.s);
+            ctx.beginPath();ctx.moveTo(a.x,a.y-1);ctx.lineTo(center.x,center.y-1);ctx.stroke();
+          }else{
+            ctx.strokeStyle="rgba(97,57,148,.34)"; ctx.lineWidth=10;
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.strokeStyle="rgba(218,181,255,.86)"; ctx.lineWidth=2.6;
+            ctx.setLineDash([7,6]);
+            ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(center.x,center.y);ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        }
+      }
+      ctx.restore();
+    }
+
+    // Verbindungswege passen sich dem gewählten Brett an.
+    ctx.save();
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+    for(const e of board.edges||[]){
+      const a=nodeById.get(String(e[0])), b=nodeById.get(String(e[1]));
+      if(!a||!b||a.kind!=="board"||b.kind!=="board") continue;
+      const sa=worldToScreen(a), sb=worldToScreen(b);
+
+      if(useWoodBoard){
+        // Holzbrett V13.13: gefräste Verbindung statt einfacher Linie.
+        // Drei ruhige Schichten ergeben Tiefe: Schattenkante, Nutboden, Lichtkante.
+        const dx=sb.x-sa.x, dy=sb.y-sa.y;
+        const len=Math.max(1,Math.hypot(dx,dy));
+        const nx=-dy/len, ny=dx/len;
+
+        // Äußerer Fräs-Schatten.
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(72,40,20,.42)";
+        ctx.lineWidth=Math.max(5.4,7.0*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+
+        // Boden der gefrästen Nut mit leichter Holzvariation entlang der Strecke.
+        const groove=ctx.createLinearGradient(sa.x,sa.y,sb.x,sb.y);
+        groove.addColorStop(0,"rgba(151,101,55,.62)");
+        groove.addColorStop(.48,"rgba(126,78,40,.66)");
+        groove.addColorStop(1,"rgba(154,103,57,.60)");
+        ctx.strokeStyle=groove;
+        ctx.lineWidth=Math.max(3.0,4.0*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+
+        // Lichtkante auf einer festen Seite der Nut – kein Animations-/Blinkeffekt.
+        const off=Math.max(.65,1.0*view.s);
+        ctx.strokeStyle="rgba(248,220,177,.38)";
+        ctx.lineWidth=Math.max(.9,1.25*view.s);
+        ctx.beginPath();
+        ctx.moveTo(sa.x+nx*off,sa.y+ny*off);
+        ctx.lineTo(sb.x+nx*off,sb.y+ny*off);
+        ctx.stroke();
+
+        // Gegenkante macht die Fräsung auch auf sehr hellem Holz lesbar.
+        ctx.strokeStyle="rgba(74,41,20,.20)";
+        ctx.lineWidth=Math.max(.7,.95*view.s);
+        ctx.beginPath();
+        ctx.moveTo(sa.x-nx*off,sa.y-ny*off);
+        ctx.lineTo(sb.x-nx*off,sb.y-ny*off);
+        ctx.stroke();
+      }else if(useStoneBoard){
+        // Burgstein: eingemeißelte Rinne mit dunklem Grund und heller Stein-Fase.
+        const dx=sb.x-sa.x, dy=sb.y-sa.y;
+        const len=Math.max(1,Math.hypot(dx,dy));
+        const nx=-dy/len, ny=dx/len;
+        const off=Math.max(.65,.95*view.s);
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(15,19,22,.62)";
+        ctx.lineWidth=Math.max(5.5,7.1*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        const groove=ctx.createLinearGradient(sa.x,sa.y,sb.x,sb.y);
+        groove.addColorStop(0,"rgba(55,62,68,.94)");groove.addColorStop(.50,"rgba(43,50,56,.97)");groove.addColorStop(1,"rgba(58,65,71,.94)");
+        ctx.strokeStyle=groove;ctx.lineWidth=Math.max(3.2,4.1*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        ctx.strokeStyle="rgba(226,232,234,.17)";ctx.lineWidth=Math.max(.9,1.15*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x+nx*off,sa.y+ny*off);ctx.lineTo(sb.x+nx*off,sb.y+ny*off);ctx.stroke();
+        ctx.strokeStyle="rgba(8,11,13,.32)";ctx.lineWidth=Math.max(.7,.9*view.s);
+        ctx.beginPath();ctx.moveTo(sa.x-nx*off,sa.y-ny*off);ctx.lineTo(sb.x-nx*off,sb.y-ny*off);ctx.stroke();
+      }else{
+        // Originaler dunkler Brettstil.
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(2,6,13,0.62)";
+        ctx.lineWidth=7;
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        ctx.shadowColor="rgba(82,139,219,0.16)";
+        ctx.shadowBlur=8;
+        ctx.strokeStyle=COLORS.edge;
+        ctx.lineWidth=3.2;
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(213,229,255,0.10)";
+        ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(sa.x,sa.y-0.7);ctx.lineTo(sb.x,sb.y-0.7);ctx.stroke();
+      }
+    }
+    ctx.restore();
+
+    // (109) last move trail + (8) destination glow
+    const nowFx = performance.now();
+    if(lastMoveFx && lastMoveFx.pts && nowFx - lastMoveFx.t0 < 900){
+      const age = (nowFx - lastMoveFx.t0);
+      const a = Math.max(0, 1 - age/900);
+      const col = COLORS[lastMoveFx.color] || lastMoveFx.color || 'rgba(255,255,255,0.9)';
+      ctx.save();
+      ctx.globalAlpha = 0.55 * a;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(lastMoveFx.pts[0].x, lastMoveFx.pts[0].y);
+      for(let i=1;i<lastMoveFx.pts.length;i++) ctx.lineTo(lastMoveFx.pts[i].x, lastMoveFx.pts[i].y);
+      ctx.stroke();
+      // destination glow
+      const end = lastMoveFx.pts[lastMoveFx.pts.length-1];
+      ctx.globalAlpha = 0.35 * a;
+      ctx.beginPath();
+      ctx.arc(end.x, end.y, 22, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // (7) step-by-step hop animation (visual override so it doesn't look like teleport)
+    
+
+const r=Math.max(16, board.ui?.nodeRadius || 20);
+
+    // nodes
+    for(const n of board.nodes){
+      const s=worldToScreen(n);
+      let fill=COLORS.node;
+      if(n.kind==="board"){
+        if(n.id===goalNodeId) fill=COLORS.goal;
+        else if(n.flags?.startColor) fill=COLORS.node; // Startfelder bleiben neutral
+        // Die alten hellblauen Markierungspunkte (run-Felder / ehemalige Barikadenfelder)
+        // werden bewusst nicht mehr separat hervorgehoben.
+        else fill=COLORS.node;
+      }else if(n.kind==="house"){
+        fill=COLORS[n.flags?.houseColor]||COLORS.node;
+      }
+
+      // Jedes Brett besitzt seine eigene Materialdarstellung der Felder.
+      if(useWoodBoard && n.kind==="board" && n.id!==goalNodeId) drawWoodFieldWell(s.x,s.y,r);
+      else if(useWoodBoard && n.kind==="house") drawWoodHouseSocket(s.x,s.y,r,fill,n.flags?.houseSlot);
+      else if(useStoneBoard && n.kind==="board") drawStoneFieldWell(s.x,s.y,r);
+      else if(useStoneBoard && n.kind==="house") drawStoneHouseSocket(s.x,s.y,r,fill,n.flags?.houseSlot);
+      else drawClassicFieldTile(s.x,s.y,r,fill);
+
+      // Erstes Feld nach dem Haus ist in allen Designs klar als Feld 1 markiert.
+      if(n.kind==="board" && n.flags?.startColor){
+        drawStartFieldAccent(s.x,s.y,r,String(n.flags.startColor).toLowerCase(),useWoodBoard,useStoneBoard);
+      }
+
+      const bossEventFieldIds = Array.isArray(state?.boss?.eventFields)
+        ? state.boss.eventFields.map(String)
+        : [];
+      if(n.kind==="board" && bossModeVisualActive() && bossEventFieldIds.includes(String(n.id))){
+        // Ereignisfelder bleiben gut sichtbar, aber komplett statisch:
+        // kein Pulsieren, kein Blinken und keine dauerhaft laufende Animation.
+        ctx.save();
+        if(useWoodBoard){
+          // Holzbrett V13.14: einheitliches Premium-Medaillon – dunkle Holzfräsung,
+          // gealtertes Messing und violettes Emaille. Komplett statisch.
+          ctx.fillStyle="rgba(67,39,23,.48)";
+          ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.fill();
+
+          ctx.strokeStyle="rgba(74,43,24,.82)";ctx.lineWidth=Math.max(4,r*.19);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle="rgba(244,214,166,.20)";ctx.lineWidth=Math.max(1,r*.045);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+6,Math.PI*1.04,Math.PI*1.80);ctx.stroke();
+
+          const brass=ctx.createRadialGradient(s.x-r*.28,s.y-r*.32,r*.05,s.x,s.y,r+3);
+          brass.addColorStop(0,"#fff0b7");
+          brass.addColorStop(.28,"#d4aa59");
+          brass.addColorStop(.68,"#946329");
+          brass.addColorStop(1,"#5a351b");
+          ctx.strokeStyle=brass;ctx.lineWidth=Math.max(2.2,r*.105);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
+
+          const eg=ctx.createRadialGradient(s.x-r*.24,s.y-r*.29,r*.05,s.x,s.y,r*.91);
+          eg.addColorStop(0,"#b68bc7");
+          eg.addColorStop(.30,"#805b91");
+          eg.addColorStop(.72,"#51375d");
+          eg.addColorStop(1,"#2a1f30");
+          ctx.fillStyle=eg;
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.84,0,Math.PI*2);ctx.fill();
+
+          ctx.strokeStyle="rgba(216,179,100,.58)";ctx.lineWidth=Math.max(1,r*.042);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.70,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle="rgba(234,199,126,.88)";
+          for(let k=0;k<4;k++){
+            const a=-Math.PI/2+k*Math.PI/2;
+            const px=s.x+Math.cos(a)*r*.66, py=s.y+Math.sin(a)*r*.66;
+            ctx.save();ctx.translate(px,py);ctx.rotate(a+Math.PI/4);
+            ctx.fillRect(-Math.max(1.4,r*.050),-Math.max(1.4,r*.050),Math.max(2.8,r*.10),Math.max(2.8,r*.10));
+            ctx.restore();
+          }
+          ctx.strokeStyle="rgba(242,226,247,.42)";ctx.lineWidth=Math.max(1,r*.042);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.61,Math.PI*1.05,Math.PI*1.78);ctx.stroke();
+          ctx.fillStyle="rgba(255,247,255,.98)";
+        }else if(useStoneBoard){
+          // Burgstein: Bronze-Fassung mit violettem Emaille im gemeißelten Sockel.
+          ctx.fillStyle="rgba(17,20,23,.76)";ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(26,31,35,.98)";ctx.lineWidth=Math.max(4,r*.19);ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+          const brass=ctx.createRadialGradient(s.x-r*.28,s.y-r*.32,r*.05,s.x,s.y,r+3);
+          brass.addColorStop(0,"#ead69c");brass.addColorStop(.30,"#b98e48");brass.addColorStop(.70,"#76572a");brass.addColorStop(1,"#453218");
+          ctx.strokeStyle=brass;ctx.lineWidth=Math.max(2.2,r*.105);ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
+          const eg=ctx.createRadialGradient(s.x-r*.22,s.y-r*.27,r*.04,s.x,s.y,r*.90);
+          eg.addColorStop(0,"#9a75ab");eg.addColorStop(.32,"#684d77");eg.addColorStop(.74,"#3f3049");eg.addColorStop(1,"#201923");
+          ctx.fillStyle=eg;ctx.beginPath();ctx.arc(s.x,s.y,r*.84,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(192,150,72,.60)";ctx.lineWidth=Math.max(1,r*.045);ctx.beginPath();ctx.arc(s.x,s.y,r*.69,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle="rgba(206,169,94,.88)";
+          for(let k=0;k<4;k++){const a=-Math.PI/2+k*Math.PI/2;const px=s.x+Math.cos(a)*r*.66,py=s.y+Math.sin(a)*r*.66;ctx.beginPath();ctx.arc(px,py,Math.max(1.6,r*.06),0,Math.PI*2);ctx.fill();}
+          ctx.fillStyle="rgba(250,244,255,.98)";
+        }else{
+          ctx.shadowColor="rgba(180,110,255,.46)";
+          ctx.shadowBlur=12;
+          ctx.strokeStyle="rgba(225,188,255,.94)";
+          ctx.lineWidth=3.2;
+          ctx.beginPath();ctx.arc(s.x,s.y,r+5,0,Math.PI*2);ctx.stroke();
+
+          ctx.shadowColor="transparent";
+          ctx.strokeStyle="rgba(170,235,255,.62)";
+          ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.arc(s.x,s.y,r+9,0,Math.PI*2);ctx.stroke();
+
+          ctx.fillStyle="rgba(123,71,202,.30)";
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.90,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle="rgba(246,230,255,.98)";
+        }
+
+        ctx.font=`1000 ${Math.max(12,Math.round(r*.80))}px system-ui`;
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText("?",s.x,s.y+0.5);
+        ctx.restore();
+      }
+
+      // V14 Spezialfelder aus Ereigniskarten: Fallen und dauerhaftes Miniportal.
+      if(n.kind==="board" && state?.boss){
+        const trap=(state.boss.traps||[]).find(t=>String(t?.nodeId||"")===String(n.id));
+        const portalA=String(state.boss?.miniPortal?.a||"")===String(n.id);
+        const portalB=String(state.boss?.miniPortal?.b||"")===String(n.id);
+        const pendingPortalFirst=(String(state.boss?.pendingChoice?.type||"")==="miniportal" && String(state.boss?.pendingChoice?.stage||"")==="second" && String(state.boss?.pendingChoice?.first||"")===String(n.id));
+        if(trap){
+          ctx.save();
+          ctx.fillStyle="rgba(18,12,10,.72)";ctx.strokeStyle="rgba(240,171,82,.92)";ctx.lineWidth=Math.max(2,r*.09);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.88,0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.font=`900 ${Math.max(12,Math.round(r*.72))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff3df";ctx.fillText("🕳️",s.x,s.y+.5);
+          ctx.restore();
+        }
+        if(pendingPortalFirst && !portalA && !portalB){
+          ctx.save();
+          ctx.strokeStyle="rgba(126,231,255,.98)";ctx.lineWidth=Math.max(3,r*.13);
+          ctx.setLineDash([Math.max(4,r*.18),Math.max(3,r*.12)]);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*1.04,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle="rgba(18,53,77,.84)";ctx.beginPath();ctx.arc(s.x,s.y,r*.72,0,Math.PI*2);ctx.fill();
+          ctx.font=`1000 ${Math.max(11,Math.round(r*.50))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#eaffff";ctx.fillText("A",s.x,s.y+.5);
+          ctx.restore();
+        }
+        if(portalA||portalB){
+          ctx.save();
+          const pg=ctx.createRadialGradient(s.x,s.y,r*.1,s.x,s.y,r*.95);pg.addColorStop(0,"rgba(137,225,255,.40)");pg.addColorStop(.55,"rgba(113,93,226,.45)");pg.addColorStop(1,"rgba(38,25,91,.85)");
+          ctx.fillStyle=pg;ctx.strokeStyle="rgba(201,231,255,.95)";ctx.lineWidth=Math.max(2.5,r*.11);ctx.beginPath();ctx.arc(s.x,s.y,r*.90,0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.font=`1000 ${Math.max(11,Math.round(r*.56))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText(portalA?"A":"B",s.x,s.y+.5);
+          ctx.restore();
+        }
+      }
+
+      // Weltenfresser: genau ein statisches schwarzes Loch. Keine Animation –
+      // es soll gefährlich und klar lesbar sein, ohne dauerhaft zu pulsieren.
+      if(n.kind==="board" && state?.boss?.blackHole && String(state.boss.blackHole.nodeId||"")===String(n.id)){
+        ctx.save();
+        ctx.shadowColor="rgba(80,24,132,.82)";ctx.shadowBlur=Math.max(10,r*.55);
+        const hg=ctx.createRadialGradient(s.x-r*.18,s.y-r*.18,r*.06,s.x,s.y,r*1.02);
+        hg.addColorStop(0,"rgba(0,0,0,1)");
+        hg.addColorStop(.46,"rgba(3,2,8,.99)");
+        hg.addColorStop(.72,"rgba(37,14,57,.96)");
+        hg.addColorStop(.90,"rgba(91,42,135,.92)");
+        hg.addColorStop(1,"rgba(12,7,18,.98)");
+        ctx.fillStyle=hg;ctx.beginPath();ctx.arc(s.x,s.y,r*1.02,0,Math.PI*2);ctx.fill();
+        ctx.shadowColor="transparent";
+        ctx.strokeStyle="rgba(214,177,255,.78)";ctx.lineWidth=Math.max(1.8,r*.075);
+        ctx.beginPath();ctx.arc(s.x,s.y,r*.90,0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle="rgba(139,77,202,.70)";ctx.lineWidth=Math.max(1.2,r*.05);
+        ctx.beginPath();ctx.arc(s.x,s.y,r*.64,0,Math.PI*2);ctx.stroke();
+        ctx.fillStyle="rgba(0,0,0,.99)";ctx.beginPath();ctx.arc(s.x,s.y,r*.43,0,Math.PI*2);ctx.fill();
+        ctx.font=`1000 ${Math.max(10,Math.round(r*.40))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="rgba(244,229,255,.96)";ctx.fillText("◉",s.x,s.y+.5);
+        ctx.restore();
+      }
+
+      // Visual-only goal treatment: stronger hierarchy without changing hitboxes or rules.
+      if(n.kind==="board" && n.id===goalNodeId){
+        ctx.save();
+        if(useWoodBoard){
+          // Holzbrett V13.14: Zielmedaillon aus derselben Messingfassung,
+          // aber mit hellem Elfenbein-Emaille für eine klare Zielhierarchie.
+          ctx.fillStyle="rgba(67,39,23,.46)";
+          ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(74,43,24,.82)";ctx.lineWidth=Math.max(4,r*.19);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+
+          const goalBrass=ctx.createRadialGradient(s.x-r*.28,s.y-r*.32,r*.05,s.x,s.y,r+3);
+          goalBrass.addColorStop(0,"#fff0b7");
+          goalBrass.addColorStop(.28,"#d4aa59");
+          goalBrass.addColorStop(.68,"#946329");
+          goalBrass.addColorStop(1,"#5a351b");
+          ctx.strokeStyle=goalBrass;ctx.lineWidth=Math.max(2.2,r*.105);
+          ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
+
+          const gg=ctx.createRadialGradient(s.x-r*.24,s.y-r*.28,r*.05,s.x,s.y,r*.91);
+          gg.addColorStop(0,"#fff8dd");
+          gg.addColorStop(.34,"#f1ddb0");
+          gg.addColorStop(.72,"#d4b16a");
+          gg.addColorStop(1,"#9b6e31");
+          ctx.fillStyle=gg;
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.84,0,Math.PI*2);ctx.fill();
+
+          ctx.strokeStyle="rgba(167,111,42,.44)";ctx.lineWidth=Math.max(.9,r*.038);
+          for(let k=0;k<8;k++){
+            const a=(Math.PI*2/8)*k;
+            ctx.beginPath();
+            ctx.moveTo(s.x+Math.cos(a)*(r*.62),s.y+Math.sin(a)*(r*.62));
+            ctx.lineTo(s.x+Math.cos(a)*(r*.73),s.y+Math.sin(a)*(r*.73));
+            ctx.stroke();
+          }
+          ctx.strokeStyle="rgba(223,185,103,.58)";ctx.lineWidth=Math.max(1,r*.042);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.62,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle="rgba(255,249,227,.48)";ctx.lineWidth=Math.max(1,r*.040);
+          ctx.beginPath();ctx.arc(s.x,s.y,r*.69,Math.PI*1.04,Math.PI*1.80);ctx.stroke();
+          ctx.fillStyle="rgba(117,74,24,.98)";
+        }else if(useStoneBoard){
+          // Burgstein: bronzenes Ziel-Siegel mit hellem Elfenbein-Kern.
+          ctx.fillStyle="rgba(17,20,23,.78)";ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(26,31,35,.98)";ctx.lineWidth=Math.max(4,r*.19);ctx.beginPath();ctx.arc(s.x,s.y,r+4,0,Math.PI*2);ctx.stroke();
+          const gb=ctx.createRadialGradient(s.x-r*.28,s.y-r*.32,r*.05,s.x,s.y,r+3);
+          gb.addColorStop(0,"#f4dfa6");gb.addColorStop(.30,"#bd934b");gb.addColorStop(.70,"#76582b");gb.addColorStop(1,"#453219");
+          ctx.strokeStyle=gb;ctx.lineWidth=Math.max(2.2,r*.105);ctx.beginPath();ctx.arc(s.x,s.y,r+1,0,Math.PI*2);ctx.stroke();
+          const gg=ctx.createRadialGradient(s.x-r*.22,s.y-r*.25,r*.04,s.x,s.y,r*.90);
+          gg.addColorStop(0,"#fff9e9");gg.addColorStop(.36,"#ded2b4");gg.addColorStop(.74,"#a99772");gg.addColorStop(1,"#63533a");
+          ctx.fillStyle=gg;ctx.beginPath();ctx.arc(s.x,s.y,r*.84,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(190,149,72,.62)";ctx.lineWidth=Math.max(1,r*.045);ctx.beginPath();ctx.arc(s.x,s.y,r*.66,0,Math.PI*2);ctx.stroke();
+          ctx.fillStyle="rgba(86,62,31,.98)";
+        }else{
+          ctx.shadowColor="rgba(255,190,76,0.48)";
+          ctx.shadowBlur=20;
+          ctx.strokeStyle="rgba(255,211,118,0.86)";
+          ctx.lineWidth=3;
+          ctx.beginPath(); ctx.arc(s.x,s.y,r+6,0,Math.PI*2); ctx.stroke();
+          ctx.shadowColor="transparent";
+          ctx.strokeStyle="rgba(255,240,196,0.42)";
+          ctx.lineWidth=1.5;
+          ctx.beginPath(); ctx.arc(s.x,s.y,r+10,0,Math.PI*2); ctx.stroke();
+          ctx.fillStyle="rgba(255,213,120,0.88)";
+        }
+        ctx.font=`900 ${Math.max(13,Math.round(r*0.72))}px system-ui`;
+        ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText("★",s.x,s.y+0.5);
+        ctx.restore();
+      }
+
+      if(n.kind==="house" && n.flags?.houseSlot){
+        if(!usePremiumBoard){
+          // Klassisches Brett: bisherige dunkle Slotnummer unverändert.
+          ctx.fillStyle="rgba(0,0,0,0.55)";
+          ctx.beginPath(); ctx.arc(s.x,s.y,r*0.55,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle="rgba(230,237,243,0.95)";
+          ctx.font="bold 13px system-ui";
+          ctx.textAlign="center"; ctx.textBaseline="middle";
+          ctx.fillText(String(n.flags.houseSlot), s.x, s.y);
+        }
+        if(hasState) drawHousePieces(n, s.x, s.y, r);
+
+        if(hasState && selected && n.flags && n.flags.houseColor===selected.color && Number(n.flags.houseSlot)===selected.index+1){
+          drawSelectionRing(s.x, s.y, r*0.85);
+        }
+      }
+
+      if(n.kind==="board" && hasState && state.barricades && state.barricades.has(n.id)){
+        drawBarricadeIcon(s.x,s.y,r);
+        const road=state?.boss?.roadblocks?.[String(n.id)];
+        const locked=state?.boss?.lockedBarricades?.[String(n.id)];
+        if(road||locked){
+          ctx.save();
+          ctx.fillStyle=road?"rgba(177,86,28,.96)":"rgba(34,47,73,.96)";
+          ctx.strokeStyle="rgba(255,255,255,.82)";ctx.lineWidth=Math.max(1.4,r*.055);
+          ctx.beginPath();ctx.arc(s.x+r*.57,s.y-r*.55,Math.max(8,r*.31),0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.font=`900 ${Math.max(10,Math.round(r*.42))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText(road?"🚧":"🔒",s.x+r*.57,s.y-r*.55+.5);
+          ctx.restore();
+        }
+        if(actionBarricadeFrom === n.id) drawSelectionRing(s.x, s.y, r*0.85);
+      }
+    }
+
+
+    if(bossModeVisualActive() && Array.isArray(board?.meta?.bossFields)){
+      const serverSlots=Array.isArray(state?.boss?.slots) ? state.boss.slots : [];
+      const tBoss = performance.now() / 1000;
+      for(let i=0;i<board.meta.bossFields.length;i++){
+        const f=board.meta.bossFields[i];
+        if(typeof f?.x!=="number" || typeof f?.y!=="number") continue;
+        const ss=worldToScreen(f);
+        const slot=serverSlots.find(x=>String(x?.id||"")===String(f?.id||"")) || serverSlots[i] || null;
+        const boss=slot?.boss || null;
+        const bossAtPortal=!!(boss && !boss.nodeId);
+        const br=r*1.36;
+
+        if(useWoodBoard){
+          // Holzbrett: statisches, eingelassenes Boss-Medaillon – bewusst ohne Pulsieren/Rotation.
+          ctx.save();
+          ctx.fillStyle="rgba(48,26,17,.42)";
+          ctx.beginPath();ctx.ellipse(ss.x,ss.y+br*.48,br*.88,br*.22,0,0,Math.PI*2);ctx.fill();
+
+          // Messing-/Holzfassung.
+          const rim=ctx.createRadialGradient(ss.x-br*.28,ss.y-br*.30,br*.08,ss.x,ss.y,br*1.12);
+          rim.addColorStop(0,"#fff0b7");rim.addColorStop(.28,"#d4aa59");rim.addColorStop(.68,"#946329");rim.addColorStop(1,"#5a351b");
+          ctx.fillStyle=rim;
+          ctx.beginPath();ctx.arc(ss.x,ss.y,br+7,0,Math.PI*2);ctx.fill();
+
+          // Acht feste Runen-Zacken – keine Bewegung.
+          ctx.fillStyle=boss?"rgba(123,52,61,.94)":"rgba(83,59,101,.92)";
+          for(let k=0;k<8;k++){
+            const a=(Math.PI*2/8)*k-Math.PI/2;
+            const a2=a+.17, a3=a-.17;
+            const r1=br+2, r2=br+13;
+            ctx.beginPath();
+            ctx.moveTo(ss.x+Math.cos(a)*r2,ss.y+Math.sin(a)*r2);
+            ctx.lineTo(ss.x+Math.cos(a2)*r1,ss.y+Math.sin(a2)*r1);
+            ctx.lineTo(ss.x+Math.cos(a3)*r1,ss.y+Math.sin(a3)*r1);
+            ctx.closePath();ctx.fill();
+          }
+
+          const pg=ctx.createRadialGradient(ss.x-br*.28,ss.y-br*.33,br*.07,ss.x,ss.y,br*1.02);
+          pg.addColorStop(0,boss?"#8a4851":"#846791");
+          pg.addColorStop(.42,boss?"#5c3038":"#55405f");
+          pg.addColorStop(1,"#241c25");
+          ctx.fillStyle=pg;
+          ctx.strokeStyle=boss?"rgba(214,137,143,.88)":"rgba(196,169,207,.86)";
+          ctx.lineWidth=Math.max(2.4,r*.13);
+          ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+          ctx.strokeStyle="rgba(245,221,174,.38)";ctx.lineWidth=Math.max(1,r*.05);
+          ctx.beginPath();ctx.arc(ss.x,ss.y,br*.84,Math.PI*1.04,Math.PI*1.84);ctx.stroke();
+          ctx.strokeStyle="rgba(216,179,100,.46)";ctx.lineWidth=Math.max(1,r*.038);
+          ctx.beginPath();ctx.arc(ss.x,ss.y,br*.78,0,Math.PI*2);ctx.stroke();
+
+          // Feste Gravurstriche im Portalring. Keine Rotation, kein Pulsieren.
+          ctx.strokeStyle="rgba(216,179,100,.58)";
+          ctx.lineWidth=Math.max(1,r*.038);
+          for(let k=0;k<8;k++){
+            const a=(Math.PI*2/8)*k-Math.PI/2;
+            const r1=br*.91, r2=br*1.02;
+            ctx.beginPath();
+            ctx.moveTo(ss.x+Math.cos(a)*r1,ss.y+Math.sin(a)*r1);
+            ctx.lineTo(ss.x+Math.cos(a)*r2,ss.y+Math.sin(a)*r2);
+            ctx.stroke();
+          }
+
+          // Kleine feste Hörner machen das Bossfeld sofort erkennbar.
+          ctx.fillStyle=boss?"#a95d65":"#8f719b";
+          ctx.beginPath();ctx.moveTo(ss.x-br*.45,ss.y-br*.60);ctx.lineTo(ss.x-br*.17,ss.y-br*.94);ctx.lineTo(ss.x-br*.03,ss.y-br*.54);ctx.closePath();ctx.fill();
+          ctx.beginPath();ctx.moveTo(ss.x+br*.45,ss.y-br*.60);ctx.lineTo(ss.x+br*.17,ss.y-br*.94);ctx.lineTo(ss.x+br*.03,ss.y-br*.54);ctx.closePath();ctx.fill();
+
+          ctx.textAlign="center";ctx.textBaseline="middle";
+          ctx.fillStyle="rgba(255,247,238,.99)";
+          ctx.font=`1000 ${Math.max(18,Math.round(br*.70))}px system-ui`;
+          ctx.fillText(bossAtPortal ? (boss?.icon||"👹") : (boss?"↗":"👹"),ss.x,ss.y-5);
+          ctx.font=`900 ${Math.max(8,Math.round(br*.21))}px system-ui`;
+          ctx.fillStyle=boss?"rgba(255,215,215,.96)":"rgba(242,226,246,.94)";
+          ctx.fillText(bossAtPortal?"1/1 LEBEN":(boss?"IM SPIEL":`BOSSFELD ${i+1}`),ss.x,ss.y+br*.58);
+          ctx.font=`900 ${Math.max(9,Math.round(br*.22))}px system-ui`;
+          ctx.fillStyle=boss?"#8e4c55":"#70547b";
+          ctx.fillText(bossAtPortal?"BOSS START":(boss?"PORTAL":"BOSS"),ss.x,ss.y-br-13);
+          ctx.restore();
+          continue;
+        }
+
+        if(useStoneBoard){
+          // Burgstein: schweres eingelassenes Boss-Siegel aus Eisen, Bronze und dunklem Emaille.
+          ctx.save();
+          ctx.fillStyle="rgba(0,0,0,.34)";
+          ctx.beginPath();ctx.ellipse(ss.x,ss.y+br*.50,br*.90,br*.22,0,0,Math.PI*2);ctx.fill();
+
+          const outer=ctx.createRadialGradient(ss.x-br*.30,ss.y-br*.30,br*.06,ss.x,ss.y,br*1.12);
+          outer.addColorStop(0,"#7c858c");outer.addColorStop(.28,"#555d63");outer.addColorStop(.68,"#30363b");outer.addColorStop(1,"#171b1f");
+          ctx.fillStyle=outer;ctx.beginPath();ctx.arc(ss.x,ss.y,br+8,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle="rgba(191,151,74,.78)";ctx.lineWidth=Math.max(2,r*.09);ctx.beginPath();ctx.arc(ss.x,ss.y,br+3,0,Math.PI*2);ctx.stroke();
+
+          // Acht feste Metallzacken / Runen.
+          ctx.fillStyle=boss?"rgba(111,49,57,.96)":"rgba(71,55,83,.96)";
+          for(let k=0;k<8;k++){
+            const a=(Math.PI*2/8)*k-Math.PI/2;
+            const a2=a+.16,a3=a-.16,r1=br+1,r2=br+12;
+            ctx.beginPath();ctx.moveTo(ss.x+Math.cos(a)*r2,ss.y+Math.sin(a)*r2);ctx.lineTo(ss.x+Math.cos(a2)*r1,ss.y+Math.sin(a2)*r1);ctx.lineTo(ss.x+Math.cos(a3)*r1,ss.y+Math.sin(a3)*r1);ctx.closePath();ctx.fill();
+          }
+
+          const core=ctx.createRadialGradient(ss.x-br*.26,ss.y-br*.30,br*.05,ss.x,ss.y,br);
+          core.addColorStop(0,boss?"#74434a":"#6f5b79");core.addColorStop(.42,boss?"#482a30":"#44374b");core.addColorStop(1,"#1d1b20");
+          ctx.fillStyle=core;ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();
+          ctx.strokeStyle=boss?"rgba(189,118,127,.78)":"rgba(166,142,178,.76)";ctx.lineWidth=Math.max(2.2,r*.12);ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle="rgba(194,152,74,.55)";ctx.lineWidth=Math.max(1,r*.04);ctx.beginPath();ctx.arc(ss.x,ss.y,br*.79,0,Math.PI*2);ctx.stroke();
+          for(let k=0;k<8;k++){const a=(Math.PI*2/8)*k-Math.PI/2;const r1=br*.90,r2=br*1.01;ctx.beginPath();ctx.moveTo(ss.x+Math.cos(a)*r1,ss.y+Math.sin(a)*r1);ctx.lineTo(ss.x+Math.cos(a)*r2,ss.y+Math.sin(a)*r2);ctx.stroke();}
+
+          ctx.textAlign="center";ctx.textBaseline="middle";
+          ctx.fillStyle="rgba(250,246,240,.99)";ctx.font=`1000 ${Math.max(18,Math.round(br*.70))}px system-ui`;
+          ctx.fillText(bossAtPortal?(boss?.icon||"👹"):(boss?"↗":"👹"),ss.x,ss.y-5);
+          ctx.font=`900 ${Math.max(8,Math.round(br*.21))}px system-ui`;ctx.fillStyle=boss?"rgba(238,202,206,.95)":"rgba(226,215,232,.94)";
+          ctx.fillText(bossAtPortal?"1/1 LEBEN":(boss?"IM SPIEL":`BOSSFELD ${i+1}`),ss.x,ss.y+br*.58);
+          ctx.font=`900 ${Math.max(9,Math.round(br*.22))}px system-ui`;ctx.fillStyle=boss?"#9e656d":"#8a7393";
+          ctx.fillText(bossAtPortal?"BOSS START":(boss?"PORTAL":"BOSS"),ss.x,ss.y-br-13);
+          ctx.restore();
+          continue;
+        }
+
+        const pulse = 0.5 + 0.5 * Math.sin(tBoss * 3.1 + i * 0.9);
+        const aura = boss ? 24 + 12*pulse : 16 + 8*pulse;
+        ctx.save();
+
+        // ominous outer aura
+        ctx.shadowColor=boss?"rgba(255,44,96,.60)":"rgba(170,82,255,.42)";
+        ctx.shadowBlur=aura;
+        ctx.strokeStyle=boss?`rgba(255,98,140,${(0.72+0.20*pulse).toFixed(3)})`:`rgba(203,150,255,${(0.60+0.18*pulse).toFixed(3)})`;
+        ctx.lineWidth=3.4;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br+8+2*pulse,0,Math.PI*2);ctx.stroke();
+        ctx.lineWidth=1.8;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br+15+3*pulse,0,Math.PI*2);ctx.stroke();
+
+        // dark spiky rune ring for a more evil look
+        ctx.shadowColor="transparent";
+        for(let k=0;k<8;k++){
+          const a=(Math.PI*2/8)*k + tBoss*0.22;
+          const a2=a + 0.18;
+          const a3=a - 0.18;
+          const r1=br+3;
+          const r2=br+14+4*pulse;
+          ctx.fillStyle=boss?"rgba(110,16,36,.92)":"rgba(82,34,118,.86)";
+          ctx.beginPath();
+          ctx.moveTo(ss.x + Math.cos(a)*r2, ss.y + Math.sin(a)*r2);
+          ctx.lineTo(ss.x + Math.cos(a2)*r1, ss.y + Math.sin(a2)*r1);
+          ctx.lineTo(ss.x + Math.cos(a3)*r1, ss.y + Math.sin(a3)*r1);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        const g=ctx.createRadialGradient(ss.x-br*.30,ss.y-br*.38,br*.08,ss.x,ss.y,br*1.04);
+        g.addColorStop(0,boss?"rgba(132,28,53,.99)":"rgba(84,42,120,.99)");
+        g.addColorStop(.45,boss?"rgba(58,10,22,.99)":"rgba(44,22,72,.99)");
+        g.addColorStop(1,"rgba(10,8,18,.995)");
+        ctx.fillStyle=g;
+        ctx.strokeStyle=boss?"rgba(255,120,150,.98)":"rgba(214,168,255,.96)";
+        ctx.lineWidth=3.2;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+        // inner ring and top sheen
+        ctx.strokeStyle=boss?"rgba(255,210,220,.18)":"rgba(255,255,255,.14)";
+        ctx.lineWidth=1.25;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br-4,0,Math.PI*2);ctx.stroke();
+        const glow=ctx.createRadialGradient(ss.x-br*.35, ss.y-br*.42, br*.05, ss.x-br*.22, ss.y-br*.28, br*.92);
+        glow.addColorStop(0, boss?"rgba(255,154,182,.26)":"rgba(232,206,255,.22)");
+        glow.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle=glow;
+        ctx.beginPath();ctx.arc(ss.x,ss.y,br-1,0,Math.PI*2);ctx.fill();
+
+        // small horns / crown silhouette
+        ctx.fillStyle=boss?"rgba(255,98,140,.88)":"rgba(205,154,255,.84)";
+        ctx.beginPath();
+        ctx.moveTo(ss.x-br*.42, ss.y-br*.62);
+        ctx.lineTo(ss.x-br*.14, ss.y-br*.98);
+        ctx.lineTo(ss.x-br*.02, ss.y-br*.54);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(ss.x+br*.42, ss.y-br*.62);
+        ctx.lineTo(ss.x+br*.14, ss.y-br*.98);
+        ctx.lineTo(ss.x+br*.02, ss.y-br*.54);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillStyle="rgba(250,242,255,.99)";
+        ctx.font=`1000 ${Math.max(18,Math.round(br*.70))}px system-ui`;
+        ctx.fillText(bossAtPortal ? (boss?.icon || "👹") : (boss ? "↗" : "👹"),ss.x,ss.y-5);
+
+        ctx.font=`900 ${Math.max(8,Math.round(br*.21))}px system-ui`;
+        ctx.fillStyle=boss?"rgba(255,213,225,.96)":"rgba(240,224,255,.94)";
+        ctx.fillText(bossAtPortal?`1/1 LEBEN`:(boss?`IM SPIEL`:`BOSSFELD ${i+1}`),ss.x,ss.y+br*.58);
+
+        // label above the field
+        ctx.font=`900 ${Math.max(9,Math.round(br*.22))}px system-ui`;
+        ctx.fillStyle=boss?"rgba(255,125,160,.98)":"rgba(213,164,255,.94)";
+        ctx.fillText(bossAtPortal?"BOSS START":(boss?"PORTAL":"BOSS"), ss.x, ss.y-br-13);
+        ctx.restore();
+      }
+    }
+
+    // Wandernde Bosse werden weiter unten nach den Spielfiguren gezeichnet,
+    // damit Boss-Token, Portrait und Name immer sauber im Vordergrund bleiben.
+
+    // Spawn-/Besiegt-Effekte werden über dem Brett, aber vor Zughinweisen gezeichnet.
+    if(bossModeVisualActive()) drawBossLifeFx(r);
+
+    // Selected-piece destinations: visual guidance only; legalMovesByPiece is unchanged.
+    let hasInteractivePulse = false;
+    if(hasState && phase==="need_move" && selected){
+      const selectedMoves = (legalMovesByPiece.get(selected.index) || [])
+        .filter(m => !m?.piece?.color || m.piece.color === selected.color);
+      const targetIds = [...new Set(selectedMoves.map(m => String(m.toId)).filter(Boolean))];
+      if(targetIds.length){
+        const pulse = usePremiumBoard ? 0 : (0.5 + 0.5*Math.sin(performance.now()/260));
+        if(!usePremiumBoard) hasInteractivePulse = true;
+        for(const id of targetIds){
+          const n=nodeById.get(id); if(!n) continue;
+          const s=worldToScreen(n);
+          ctx.save();
+          if(usePremiumBoard){
+            ctx.shadowColor="transparent";
+            ctx.strokeStyle=useStoneBoard?"rgba(123,181,147,.90)":"rgba(49,129,88,.88)";
+            ctx.lineWidth=3;
+            ctx.beginPath();ctx.arc(s.x,s.y,r+5,0,Math.PI*2);ctx.stroke();
+            ctx.strokeStyle="rgba(220,244,220,.70)";
+            ctx.lineWidth=1.2;
+            ctx.beginPath();ctx.arc(s.x,s.y,r+8,0,Math.PI*2);ctx.stroke();
+            ctx.fillStyle="rgba(62,154,101,.09)";
+            ctx.beginPath();ctx.arc(s.x,s.y,r+2,0,Math.PI*2);ctx.fill();
+          }else{
+            ctx.shadowColor="rgba(91,221,168,0.55)";
+            ctx.shadowBlur=12+8*pulse;
+            ctx.strokeStyle=`rgba(119,240,190,${(0.56+0.24*pulse).toFixed(3)})`;
+            ctx.lineWidth=3;
+            ctx.beginPath();ctx.arc(s.x,s.y,r+5+2*pulse,0,Math.PI*2);ctx.stroke();
+            ctx.shadowColor="transparent";
+            ctx.fillStyle=`rgba(80,215,157,${(0.055+0.045*pulse).toFixed(3)})`;
+            ctx.beginPath();ctx.arc(s.x,s.y,r+2,0,Math.PI*2);ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+    }
+
+    if(phase==="placing_barricade"){
+      const pulse = usePremiumBoard ? 0 : (0.5 + 0.5*Math.sin(performance.now()/240));
+      if(!usePremiumBoard) hasInteractivePulse = placingChoices.length > 0 || hasInteractivePulse;
+      ctx.save();
+      if(usePremiumBoard){
+        ctx.lineWidth=3.6;
+        ctx.strokeStyle=useStoneBoard?"rgba(193,151,72,.94)":"rgba(166,111,43,.94)";
+        ctx.shadowColor="transparent";
+        ctx.setLineDash([7,5]);
+        ctx.lineDashOffset=0;
+      }else{
+        ctx.lineWidth=4.5+1.5*pulse;
+        ctx.strokeStyle=`rgba(255,209,102,${(0.72+0.22*pulse).toFixed(3)})`;
+        ctx.shadowColor="rgba(255,183,71,0.42)";
+        ctx.shadowBlur=9+7*pulse;
+        ctx.setLineDash([10,7]);
+        ctx.lineDashOffset=-(performance.now()/38)%17;
+      }
+      for(const id of placingChoices){
+        const n=nodeById.get(id); if(!n) continue;
+        const s=worldToScreen(n);
+        ctx.beginPath(); ctx.arc(s.x,s.y,r+7+(usePremiumBoard?0:1.5*pulse),0,Math.PI*2); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    if(hasInteractivePulse) requestInteractionFxTick();
+
+    
+    // Wenn noch kein Server-State da ist: Board trotzdem anzeigen (leer)
+    if(!hasState){
+      try{
+        ctx.save();
+        ctx.fillStyle = "rgba(230,237,243,0.85)";
+        ctx.font = "600 14px system-ui";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText("Warte auf Spielstart…", 12, 12);
+        ctx.restore();
+      }catch(_e){}
+      return;
+    }
+
+// pieces stacked
+    const stacks=new Map();
+    // Show ALL colors always (also unchosen)
+    for(const c of PLAYERS){
+      const pcs=state.pieces[c];
+      for(let i=0;i<pcs.length;i++){
+        const pc = pcs[i];
+        const pos = pc.pos;
+        const pid = pc.pieceId;
+        if(animPieceId && pid === animPieceId){
+          continue; // draw as animated override, not as a stack at the target
+        }
+        if(typeof pos==="string" && adj.has(pos)){
+          if(!stacks.has(pos)) stacks.set(pos, []);
+          stacks.get(pos).push({color:c,index:i,pieceId:pid});
+        }
+      }
+    }
+    for(const [nodeId, arr] of stacks.entries()){
+      const n=nodeById.get(nodeId); if(!n) continue;
+      const s=worldToScreen(n);
+      drawStack(arr, s.x, s.y, r);
+    }
+
+    // Wandernde Bosse auf dem normalen Spielfeld.
+    if(bossModeVisualActive() && Array.isArray(state?.boss?.slots)){
+      const activeBoardBosses=state.boss.slots.map((slot,i)=>({slot,boss:slot?.boss,i})).filter(x=>x.boss?.nodeId);
+      let hasBossFxActive=false;
+      for(const x of activeBoardBosses){
+        const baseNode=nodeById.get(String(x.boss.nodeId)); if(!baseNode) continue;
+        const fx=getBossFxState(x.boss);
+        const posNode=fx ? {x:fx.x,y:fx.y} : baseNode;
+        const s=worldToScreen(posNode);
+        const theme=bossTheme(x.boss.type);
+        const tNow=performance.now()/1000;
+        const pulse=0.5 + 0.5*Math.sin(tNow*6.2 + x.i*0.9);
+        const boardHasPlayer=stacks.has(String(x.boss.nodeId)) && !fx?.moving;
+        const ox=boardHasPlayer ? r*.56 : 0;
+        const oy=boardHasPlayer ? -r*.56 : 0;
+        if(fx?.moving || fx?.pulse) hasBossFxActive=true;
+
+        ctx.save();
+        if(Array.isArray(fx?.trail) && fx.trail.length>1){
+          ctx.lineCap='round'; ctx.lineJoin='round';
+          ctx.strokeStyle=theme.trail;
+          ctx.lineWidth=Math.max(4,r*.42);
+          ctx.shadowColor=theme.glow; ctx.shadowBlur=18;
+          ctx.beginPath();
+          fx.trail.forEach((pn,idx)=>{
+            const ps=worldToScreen(pn);
+            if(idx===0) ctx.moveTo(ps.x,ps.y); else ctx.lineTo(ps.x,ps.y);
+          });
+          ctx.stroke();
+          ctx.shadowColor='transparent';
+          for(let idx=1;idx<fx.trail.length;idx++){
+            const ps=worldToScreen(fx.trail[idx]);
+            ctx.fillStyle=theme.trail;
+            ctx.beginPath();
+            ctx.arc(ps.x,ps.y,Math.max(3,r*.18),0,Math.PI*2);
+            ctx.fill();
+          }
+        }
+
+        drawBossTokenCanvas(s.x+ox,s.y+oy,r,x.boss,theme,{moving:!!fx?.moving,pulse});
+        if(Number(x.boss?.eventShieldActivations||0)>0 || Number(state?.boss?.globalBossShieldRounds||0)>0){
+          ctx.save();ctx.fillStyle="rgba(36,65,112,.96)";ctx.strokeStyle="rgba(219,239,255,.95)";ctx.lineWidth=Math.max(1.3,r*.055);
+          ctx.beginPath();ctx.arc(s.x+ox+r*.62,s.y+oy-r*.58,Math.max(8,r*.31),0,Math.PI*2);ctx.fill();ctx.stroke();
+          ctx.font=`900 ${Math.max(10,Math.round(r*.42))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.fillText("🛡️",s.x+ox+r*.62,s.y+oy-r*.58+.5);ctx.restore();
+        }
+        if(x.boss?.rageDoubleNext){
+          ctx.save();ctx.font=`900 ${Math.max(12,Math.round(r*.46))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("🔥",s.x+ox-r*.62,s.y+oy-r*.58);ctx.restore();
+        }
+        ctx.restore();
+      }
+      if(hasBossFxActive) requestInteractionFxTick();
+    }
+
+    // ===== animated moving piece (drawn ON TOP of nodes & pieces) =====
+    if(moveAnim){
+      const now = performance.now();
+      const t = now - moveAnim.t0;
+
+      if(t >= moveAnim.totalMs){
+        // Animation finished: clear override BEFORE next render, otherwise the piece may stay hidden
+        // because stacks skipped animPieceId in the current frame.
+        moveAnim = null;
+        animPieceId = null;
+        isAnimatingMove = false;
+        // UI re-evaluate (buttons etc.)
+        updateTurnUI();
+        // Force one extra frame so the final stack is drawn immediately.
+        requestDraw();
+      } else {
+        const nodes = moveAnim.nodes;
+        const steps = nodes.length - 1;
+        const f = Math.max(0, Math.min(1, t / moveAnim.totalMs)); // 0..1
+        const segF = f * steps;
+        const seg = Math.min(steps - 1, Math.floor(segF));
+        const u = segF - seg; // 0..1 within current segment
+
+        const a = nodes[seg];
+        const b = nodes[seg+1];
+
+        // linear world interpolation
+        const wx = a.x + (b.x - a.x) * u;
+        const wy = a.y + (b.y - a.y) * u;
+
+        // convert to screen
+        const sp = worldToScreen({x:wx, y:wy});
+
+        // hop curve: 0..1..0 each step
+        const hop = Math.sin(Math.PI * u);
+        const hopPx = (moveAnim.hop || 16) * (0.85 + 0.15*view.s);
+        const yHop = sp.y - hop * hopPx;
+
+        // force top-layer drawing (client sometimes had composite state left over)
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+
+        // same physical piece style as stationary pawns; with a grounded shadow while airborne
+        const rr = Math.max(17, r*0.96);
+        ctx.restore();
+
+        ctx.save();
+        const shadowFade = 0.32 - hop*0.16;
+        ctx.fillStyle = `rgba(0,0,0,${shadowFade.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.ellipse(sp.x, sp.y + rr*0.64, rr*(0.82-hop*0.14), rr*(0.24-hop*0.05), 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+
+        drawPieceDisc(sp.x, yHop, rr*(1+hop*0.035), moveAnim.color, {grounded:false});
+
+        // landing impulse near the next node; stronger on the final step
+        if(u > 0.80){
+          const land=(u-0.80)/0.20;
+          const alpha=(1-land)*(seg===steps-1?0.46:0.24);
+          const ep=worldToScreen(b);
+          ctx.save();
+          ctx.strokeStyle=`rgba(207,228,255,${Math.max(0,alpha).toFixed(3)})`;
+          ctx.lineWidth=2.2;
+          ctx.beginPath();
+          ctx.arc(ep.x,ep.y,rr*(0.75+0.55*land),0,Math.PI*2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // keep animating
+        requestDraw();
+      }
+    }
+    // V14: aktive globale Ereignis-Boni am Spielfeldrand sichtbar halten.
+    if(hasState && state?.boss){
+      const bs=state.boss; const badges=[];
+      if(Number(bs.globalBossShieldRounds||0)>0) badges.push(`🛡️ Boss-Schutz ${Number(bs.globalBossShieldRounds)} R.`);
+      const dd=bs.doubleDiceByColor && Object.values(bs.doubleDiceByColor).some(Boolean); if(dd) badges.push('🎲 Doppelwurf-Runde');
+      if(bs.miniPortal?.a&&bs.miniPortal?.b) badges.push('🚪 Miniportal aktiv');
+      if(bs.blackHole?.nodeId) badges.push(`🌌 Schwarzes Loch · ${String(bs.blackHole.nodeId)}`);
+      if(bs.barricadesDisabled) badges.push('💨 Barikaden dauerhaft aus');
+      const trapN=Array.isArray(bs.traps)?bs.traps.length:0; if(trapN) badges.push(`🕳️ ${trapN} Falle${trapN===1?'':'n'}`);
+      if(badges.length){
+        ctx.save();
+        const x=14,y=14,padX=10,h=28,gap=6;
+        ctx.font='800 12px system-ui';ctx.textBaseline='middle';
+        let yy=y;
+        for(const label of badges){
+          const w=Math.ceil(ctx.measureText(label).width)+padX*2;
+          ctx.fillStyle='rgba(8,12,22,.86)';ctx.strokeStyle='rgba(255,255,255,.17)';ctx.lineWidth=1;
+          ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x,yy,w,h,10); else ctx.rect(x,yy,w,h); ctx.fill();ctx.stroke();
+          ctx.fillStyle='rgba(245,248,255,.96)';ctx.fillText(label,x+padX,yy+h/2+.5);yy+=h+gap;
+        }
+        ctx.restore();
+      }
+    }
+
+if(selected){
+      const pc = state.pieces[selected.color]?.[selected.index];
+      if(pc && typeof pc.pos==="string" && adj.has(pc.pos)){
+        const n = nodeById.get(pc.pos);
+        if(n){
+          const s = worldToScreen(n);
+          drawSelectionRing(s.x, s.y, r);
+        }
+      }
+    }
+  }
+
+  // ===== Interaction =====
+  function pointerPos(ev){
+    const r=canvas.getBoundingClientRect();
+    return {x:ev.clientX-r.left, y:ev.clientY-r.top};
+  }
+  function hitNode(wp){
+    const r=Math.max(16, board.ui?.nodeRadius || 20);
+    const hitR=(r+10)/view.s;
+    let best=null, bd=Infinity;
+    for(const n of board.nodes){
+      const d=Math.hypot(n.x-wp.x, n.y-wp.y);
+      if(d<hitR && d<bd){best=n; bd=d;}
+    }
+    return best;
+  }
+
+  function onPointerDown(ev){
+      if (!state) { return; }
+canvas.setPointerCapture(ev.pointerId);
+    const sp=pointerPos(ev);
+    // double-tap (or double-click) to auto-fit board (tablet safe)
+    const nowTs = Date.now();
+    if(pointerMap.size===0){
+      if(lastTapPos && (nowTs - lastTapTs) < 350){
+        const dx = sp.x - lastTapPos.x, dy = sp.y - lastTapPos.y;
+        if((dx*dx + dy*dy) < (28*28)){
+          // fit + persist
+          clearView();
+          try{ ensureFittedOnce(); }catch(_e){}
+          saveView();
+          lastTapTs = 0; lastTapPos = null;
+          return;
+        }
+      }
+      lastTapTs = nowTs;
+      lastTapPos = {x:sp.x,y:sp.y};
+    }
+    pointerMap.set(ev.pointerId, {x:sp.x,y:sp.y});
+    if(pointerMap.size===2){ isPanning=false; panStart=null; return; }
+
+    const wp=screenToWorld(sp);
+    const hit=hitNode(wp);
+    // Ereigniskarten-Auswahl hat Vorrang vor normalem Zug/Panning – auch wenn der Zug inzwischen weitergeschaltet wurde.
+    if(handleEventChoiceBoardClick(hit)){ draw(); return; }
+      const isMyTurn = (netMode!=="client") || (myColor && myColor===state.currentPlayer);
+      // IMPORTANT: Board-Panning soll immer gehen (auch wenn man nicht dran ist).
+      // Wir blocken daher NICHT mehr den gesamten PointerDown, sondern nur Gameplay-Interaktion.
+      const allowGameInput = (netMode!=="client") || (myColor && isMyTurn);
+
+if(allowGameInput && phase==="placing_barricade" && hit && hit.kind==="board"){
+  // ONLINE: Server entscheidet immer (Host + Client senden)
+  if(netMode!=="offline"){
+    wsSend({type:"place_barricade", nodeId: hit.id, ts:Date.now()});
+    return;
+  }
+
+  // OFFLINE: lokal platzieren
+  placeBarricade(hit.id);
+  return;
+}
+
+    // IMPORTANT: In 'need_roll' (vor dem Würfeln) müssen Klicks ebenfalls
+    // ausgewertet werden, sonst funktionieren Action-Mode Joker (z.B. Barikade)
+    // nicht, weil der Click-Handler bisher nur in 'need_move' aktiv war.
+    if(allowGameInput && phase==="need_roll"){
+      if(trySelectAtNode(hit)) { draw(); return; }
+    }
+
+    if(allowGameInput && phase==="need_move"){
+      if(trySelectAtNode(hit)) { draw(); return; }
+      if(selected && hit && hit.kind==="board"){
+        if(netMode!=="offline"){
+          const pid = state?.pieces?.[selected.color]?.[selected.index]?.pieceId;
+          if(!pid){ toast("PieceId fehlt"); return; }
+          wsSend({type:"move_request", pieceId: pid, targetId: hit.id, ts:Date.now()});
+          return;
+        }
+        const list = legalMovesByPiece.get(selected.index) || [];
+        const m = list.find(x => x.toId===hit.id);
+        if(m){
+          if(netMode==="client"){ wsSend({type:"move_request", pieceId: (state.pieces[selected.color][selected.index].pieceId), targetId: hit.id, ts:Date.now()}); return; }
+          movePiece(m);
+          if(netMode==="host") broadcastState("state");
+          draw();
+          return;
+        }
+        toast("Ungültiges Zielfeld (bitte neu zählen)");
+        return;
+      }
+    }
+
+    isPanning=true;
+    panStart={sx:sp.x,sy:sp.y,vx:view.x,vy:view.y};
+  }
+
+  function onPointerMove(ev){
+    if(!pointerMap.has(ev.pointerId)) return;
+    const sp=pointerPos(ev);
+    pointerMap.set(ev.pointerId, {x:sp.x,y:sp.y});
+
+    if(pointerMap.size===2){
+      const pts=[...pointerMap.values()];
+      const a=pts[0], b=pts[1];
+      if(!onPointerMove._pinch){
+        onPointerMove._pinch={d0:Math.hypot(a.x-b.x,a.y-b.y), s0:view.s};
+      }
+      const pz=onPointerMove._pinch;
+      const d1=Math.hypot(a.x-b.x,a.y-b.y);
+      const factor=d1/Math.max(10,pz.d0);
+      view.s=Math.max(0.25, Math.min(3.2, pz.s0*factor));
+      draw(); return;
+    } else { onPointerMove._pinch=null; }
+
+    if(isPanning && panStart){
+      const dx=(sp.x-panStart.sx)/view.s;
+      const dy=(sp.y-panStart.sy)/view.s;
+      view.x=panStart.vx+dx;
+      view.y=panStart.vy+dy;
+      draw();
+    }
+  }
+  function onPointerUp(ev){
+    if(pointerMap.has(ev.pointerId)) pointerMap.delete(ev.pointerId);
+    if(pointerMap.size===0){ isPanning=false; panStart=null; onPointerMove._pinch=null; saveView(); }
+  }
+
+  canvas.addEventListener("pointerdown", onPointerDown);
+  canvas.addEventListener("pointermove", onPointerMove);
+  canvas.addEventListener("pointerup", onPointerUp);
+  canvas.addEventListener("pointercancel", onPointerUp);
+
+  // ===== Start-Glücksrad (entscheidet Startspieler) =====
+  // Alle Clients zeigen das Glücksrad; der Gewinner kommt ausschließlich vom Server.
+  function _ensureStartWheelUI(){
+    try{
+      if(document.getElementById("startWheelOverlay")) return;
+      const style = document.createElement("style");
+      style.id = "startWheelStyle";
+      style.textContent = `
+#startWheelOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 42%,rgba(71,82,142,.20),rgba(2,5,12,.82) 58%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:9999;opacity:0;pointer-events:none;transition:opacity .22s ease;}
+#startWheelOverlay.show{opacity:1;pointer-events:auto;}
+#startWheelCard{--winner-color:rgba(139,124,255,.45);position:relative;width:min(570px,94vw);border-radius:28px;background:linear-gradient(155deg,rgba(27,37,64,.97),rgba(8,13,25,.97));box-shadow:0 34px 100px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);padding:22px 22px 20px;border:1px solid rgba(255,255,255,.11);overflow:hidden;}
+#startWheelCard::before{content:"";position:absolute;left:12%;right:12%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(190,199,255,.72),rgba(106,224,255,.45),transparent);}
+#startWheelCard.winner{animation:startWheelWinnerCard .62s cubic-bezier(.2,.9,.22,1);box-shadow:0 34px 100px rgba(0,0,0,.55),0 0 46px var(--winner-color),inset 0 1px 0 rgba(255,255,255,.08);}
+#startWheelTitle{font-weight:950;font-size:21px;letter-spacing:-.2px;margin:0;background:linear-gradient(100deg,#fff,#dfe7ff 72%,#a8edff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+#startWheelSub{color:rgba(229,236,252,.68);margin:6px 0 0;line-height:1.35;font-size:13px;}
+#startWheelWrap{position:relative;display:flex;align-items:center;justify-content:center;padding:4px 0 2px;filter:drop-shadow(0 24px 32px rgba(0,0,0,.30));}
+#startWheelCanvas{width:min(390px,80vw);height:auto;max-width:390px;aspect-ratio:1/1;}
+#startWheelPointer{position:relative;z-index:3;width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:25px solid #f8fbff;filter:drop-shadow(0 5px 10px rgba(0,0,0,.55));margin:7px auto -18px;transform-origin:50% 0;}
+#startWheelPointer::after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:#9fe7ff;left:-3.5px;top:-23px;box-shadow:0 0 12px rgba(82,211,255,.8);}
+#startWheelPointer.tick{animation:startWheelPointerTick .10s ease-out;}
+#startWheelResult{margin-top:10px;font-weight:950;font-size:19px;min-height:28px;text-align:center;letter-spacing:.1px;color:#fff;}
+#startWheelResult.winner{animation:startWheelResultPop .58s cubic-bezier(.18,.9,.22,1);text-shadow:0 0 22px var(--winner-color);}
+#startWheelHint{text-align:center;color:rgba(222,231,248,.52);font-size:12px;margin-top:5px;}
+@keyframes startWheelPointerTick{0%{transform:rotate(0)}50%{transform:rotate(-10deg)}100%{transform:rotate(0)}}
+@keyframes startWheelResultPop{0%{opacity:0;transform:translateY(8px) scale(.88)}72%{opacity:1;transform:translateY(-2px) scale(1.07)}100%{transform:none}}
+@keyframes startWheelWinnerCard{0%{transform:scale(1)}50%{transform:scale(1.015)}100%{transform:scale(1)}}
+@media(max-width:560px){#startWheelCard{padding:18px 14px 16px;border-radius:22px}#startWheelTitle{font-size:18px}#startWheelCanvas{width:min(350px,84vw)}}
+@media(prefers-reduced-motion:reduce){#startWheelPointer.tick,#startWheelResult.winner,#startWheelCard.winner{animation:none!important}}
+      `;
+      document.head.appendChild(style);
+
+      const overlay = document.createElement("div");
+      overlay.id = "startWheelOverlay";
+      overlay.innerHTML = `
+        <div id="startWheelCard">
+          <div>
+            <div id="startWheelTitle">Startspieler wird ausgelost…</div>
+            <p id="startWheelSub">Das Glücksrad dreht…</p>
+          </div>
+          <div id="startWheelPointer"></div>
+          <div id="startWheelWrap">
+            <canvas id="startWheelCanvas" width="720" height="720"></canvas>
+          </div>
+          <div id="startWheelResult"></div>
+          <div id="startWheelHint">Der Gewinner beginnt die Partie.</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }catch(_e){}
+  }
+
+  function _startWheelDraw(angleRad, colors){
+    const cvs = document.getElementById("startWheelCanvas");
+    if(!cvs) return;
+    const ctx = cvs.getContext("2d");
+    const w=cvs.width,h=cvs.height,cx=w/2,cy=h/2;
+    const r = Math.min(w,h)*0.405;
+
+    ctx.clearRect(0,0,w,h);
+
+    // outer board-game rim
+    ctx.save();
+    ctx.shadowColor="rgba(0,0,0,.42)";
+    ctx.shadowBlur=28;
+    ctx.shadowOffsetY=12;
+    const rim=ctx.createRadialGradient(cx-r*0.38,cy-r*0.44,r*0.10,cx,cy,r+36);
+    rim.addColorStop(0,"rgba(112,130,173,.98)");
+    rim.addColorStop(0.24,"rgba(35,45,68,.98)");
+    rim.addColorStop(0.72,"rgba(13,19,31,.99)");
+    rim.addColorStop(1,"rgba(2,5,10,.99)");
+    ctx.fillStyle=rim;
+    ctx.beginPath();ctx.arc(cx,cy,r+34,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+
+    // small metallic ticks around the rim
+    ctx.save();
+    ctx.translate(cx,cy);
+    for(let i=0;i<48;i++){
+      ctx.rotate((Math.PI*2)/48);
+      ctx.strokeStyle=i%4===0?"rgba(221,233,255,.60)":"rgba(196,212,238,.23)";
+      ctx.lineWidth=i%4===0?3:1.5;
+      ctx.beginPath();ctx.moveTo(0,-r-27);ctx.lineTo(0,-r-(i%4===0?17:20));ctx.stroke();
+    }
+    ctx.restore();
+
+    const segN = Math.max(2, colors.length||0);
+    const seg = (Math.PI*2)/segN;
+
+    for(let i=0;i<segN;i++){
+      const col = colors[i%colors.length] || "red";
+      const a0 = angleRad + i*seg - Math.PI/2;
+      const a1 = a0 + seg;
+      const fill = (COLORS && COLORS[col]) ? COLORS[col] : col;
+
+      ctx.save();
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a0,a1);ctx.closePath();
+      ctx.fillStyle=fill;ctx.globalAlpha=.92;ctx.fill();ctx.globalAlpha=1;
+      ctx.clip();
+
+      // segment light glaze = more depth without changing game colors
+      const glaze=ctx.createRadialGradient(cx-r*.28,cy-r*.35,r*.04,cx,cy,r*1.08);
+      glaze.addColorStop(0,"rgba(255,255,255,.36)");
+      glaze.addColorStop(.42,"rgba(255,255,255,.06)");
+      glaze.addColorStop(1,"rgba(0,0,0,.38)");
+      ctx.fillStyle=glaze;ctx.fillRect(cx-r-4,cy-r-4,(r+4)*2,(r+4)*2);
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle="rgba(3,7,14,.62)";ctx.lineWidth=7;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a0,a1);ctx.closePath();ctx.stroke();
+      ctx.strokeStyle="rgba(255,255,255,.13)";ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a0)*r,cy+Math.sin(a0)*r);ctx.stroke();
+      ctx.restore();
+
+      // label, always oriented radially and kept inside the rim
+      const mid=(a0+a1)/2;
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(mid);
+      ctx.textAlign="right";ctx.textBaseline="middle";
+      ctx.shadowColor="rgba(0,0,0,.48)";ctx.shadowBlur=8;
+      ctx.fillStyle="rgba(255,255,255,.98)";
+      ctx.font="950 36px system-ui,-apple-system,Segoe UI,Roboto,Arial";
+      const lbl = (PLAYER_NAME && PLAYER_NAME[col]) ? PLAYER_NAME[col] : String(col);
+      ctx.fillText(lbl, r-25, 0);
+      ctx.restore();
+    }
+
+    // inner separator + glossy outer highlight
+    ctx.save();
+    ctx.strokeStyle="rgba(255,255,255,.22)";ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(cx,cy,r+2,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=5;
+    ctx.beginPath();ctx.arc(cx,cy,r+24,Math.PI*1.08,Math.PI*1.82);ctx.stroke();
+    ctx.restore();
+
+    // premium center hub
+    ctx.save();
+    ctx.shadowColor="rgba(0,0,0,.46)";ctx.shadowBlur=14;ctx.shadowOffsetY=5;
+    const hub=ctx.createRadialGradient(cx-r*.05,cy-r*.07,4,cx,cy,r*.21);
+    hub.addColorStop(0,"rgba(96,116,155,.98)");hub.addColorStop(.35,"rgba(26,35,54,.99)");hub.addColorStop(1,"rgba(4,8,15,.99)");
+    ctx.fillStyle=hub;ctx.beginPath();ctx.arc(cx,cy,r*.19,0,Math.PI*2);ctx.fill();
+    ctx.shadowColor="transparent";ctx.strokeStyle="rgba(255,255,255,.26)";ctx.lineWidth=5;ctx.stroke();
+    ctx.strokeStyle="rgba(132,211,255,.20)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,r*.145,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle="rgba(248,251,255,.96)";ctx.font="950 31px system-ui,-apple-system,Segoe UI,Roboto,Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("START",cx,cy+1);
+    ctx.restore();
+  }
+
+  let _startWheelAngle = 0;
+  let _startWheelTickStep = null;
+
+  function startWheelSpin(colors, durationMs=2800, forcedWinner=null){
+    return new Promise((resolve)=>{
+      try{
+        _ensureStartWheelUI();
+        const overlay = document.getElementById("startWheelOverlay");
+        const res = document.getElementById("startWheelResult");
+        const sub = document.getElementById("startWheelSub");
+        const card = document.getElementById("startWheelCard");
+        const pointer = document.getElementById("startWheelPointer");
+        if(res){ res.textContent = ""; res.classList.remove("winner"); }
+        if(card) card.classList.remove("winner");
+        if(sub) sub.textContent = "Das Glücksrad dreht…";
+        _startWheelTickStep = null;
+
+        const cols = Array.isArray(colors) && colors.length ? colors.slice() : ["red","blue"];
+        // pick winner (server-chef can force a winner)
+        let idx = -1;
+        const fw = forcedWinner ? String(forcedWinner).toLowerCase().trim() : null;
+        if(fw) idx = cols.findIndex(c => String(c).toLowerCase() === fw);
+        if(idx < 0) idx = Math.floor(Math.random()*cols.length);
+        const winner = cols[idx];
+
+        // compute final angle so that idx segment center is at pointer (top)
+        const seg = (Math.PI*2)/cols.length;
+        const center = (idx + 0.5)*seg;
+        const base = -center;
+        const spins = 6 + Math.floor(Math.random()*3);
+        const finalAngle = base + spins*Math.PI*2;
+
+        const startAngle = _startWheelAngle;
+        const delta = finalAngle - startAngle;
+
+        const t0 = performance.now();
+        const easeOutCubic = (t)=> 1 - Math.pow(1-t,3);
+
+        if(overlay) overlay.classList.add("show");
+
+        const tick = (now)=>{
+          const t = Math.min(1, (now - t0)/durationMs);
+          const eased = easeOutCubic(t);
+          _startWheelAngle = startAngle + delta*eased;
+          const tickStep = Math.floor(_startWheelAngle / seg);
+          if(_startWheelTickStep !== tickStep){
+            _startWheelTickStep = tickStep;
+            if(pointer){
+              pointer.classList.remove("tick");
+              void pointer.offsetWidth;
+              pointer.classList.add("tick");
+            }
+          }
+          _startWheelDraw(_startWheelAngle, cols);
+          if(t<1) requestAnimationFrame(tick);
+          else{
+            if(res){
+              res.textContent = "🏆 Startspieler: " + labelForColor(winner);
+              res.classList.add("winner");
+            }
+            if(card){
+              card.style.setProperty("--winner-color", (COLORS && COLORS[winner]) ? COLORS[winner] : "rgba(139,124,255,.55)");
+              card.classList.add("winner");
+            }
+            if(sub) sub.textContent = "Das Los ist entschieden.";
+            window.setTimeout(()=>{
+              try{ if(overlay) overlay.classList.remove("show"); }catch(_e){}
+              resolve(winner);
+            }, 950);
+          }
+        };
+
+        _startWheelDraw(_startWheelAngle, cols);
+        requestAnimationFrame(tick);
+      }catch(_e){
+        // fallback: no UI
+        const cols = Array.isArray(colors) && colors.length ? colors : ["red","blue"];
+        resolve(cols[Math.floor(Math.random()*cols.length)]);
+      }
+    });
+  }
+
+  // V10.6: Startspieler wird ausschließlich vom Server bestimmt.
+  // ===== Visual Joker feedback (no rule/state changes) =====
+  let jokerFxHideTimer = 0;
+  function ensureJokerFxUI(){
+    let el=document.getElementById("jokerFxOverlay");
+    if(el) return el;
+    el=document.createElement("div");
+    el.id="jokerFxOverlay";
+    el.setAttribute("aria-hidden","true");
+    el.innerHTML='<div class="jokerFxBurst"><div class="jokerFxCore"><div class="jokerFxIcon">✨</div><div class="jokerFxTitle">Joker</div></div></div>';
+    document.body.appendChild(el);
+    return el;
+  }
+  function playJokerFx(type){
+    try{
+      const data={
+        allcolors:{icon:"🌈",title:"Alle Farben"},
+        barricade:{icon:"🧱",title:"Barikade"},
+        reroll:{icon:"🔁",title:"Neu-Wurf"},
+        double:{icon:"🎲🎲",title:"Doppelwurf"},
+        bossspawn:{icon:"👹",title:"Boss spawnen"},
+        bossremove:{icon:"🌀",title:"Boss entfernen"}
+      }[type];
+      if(!data) return;
+      const el=ensureJokerFxUI();
+      const icon=el.querySelector(".jokerFxIcon"), title=el.querySelector(".jokerFxTitle");
+      if(icon) icon.textContent=data.icon;
+      if(title) title.textContent=data.title;
+      el.className=`fx-${type}`;
+      // restart the animation even when the same joker is used twice in succession
+      void el.offsetWidth;
+      el.classList.add("show");
+      clearTimeout(jokerFxHideTimer);
+      jokerFxHideTimer=setTimeout(()=>{ try{el.classList.remove("show");}catch(_e){} },940);
+    }catch(_e){}
+  }
+
+  try{ syncV103Sidebar(); }catch(_e){}
+
+  // ===== Buttons =====
+  debugToggle && debugToggle.addEventListener("click", () => {
+    if(!debugLogEl) return;
+    const show = debugLogEl.style.display !== "block";
+    debugLogEl.style.display = show ? "block" : "none";
+  });
+
+  startBtn && startBtn.addEventListener("click", () => {
+    if(netMode!=="host"){ toast("Nur Host kann starten"); return; }
+    if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+    if(state && state.started){ toast("Spiel läuft bereits"); return; }
+    if(!netCanStart){ toast("Mindestens 2 Spieler nötig"); return; }
+    const _m = (actionModeToggle && actionModeToggle.checked ? "action" : "classic");
+    const _jokerCount = (_m === "action") ? getLobbyJokerCount() : null;
+    if(_m === "action" && !_jokerCount){ toast("Host muss in der Lobby 1 bis 5 Joker wählen"); return; }
+    _pendingStartMode = _m;
+    const _bossMode = getLobbyBossMode();
+    _pendingStartBossMode = _bossMode;
+    // Server ist Chef: Joker werden serverseitig erzeugt; kein nachträglicher Client-Import mehr nötig.
+    _pendingStartJokerInit = false;
+    if(_m === "action"){
+      // Bestehender Server-Befehl + atomare Übergabe im start_request. WebSocket erhält Reihenfolge.
+      wsSend({ type:"set_joker_start_count", count:_jokerCount, ts:Date.now() });
+    }
+    // Neu: Startspieler per Glücksrad bestimmen (server-chef, für alle sichtbar)
+    const _eventFieldCount = _bossMode ? getLobbyEventFieldCount() : undefined;
+    const _bossEventTrigger = _bossMode ? getLobbyBossEventTrigger() : undefined;
+    wsSend({ type:"start_request", mode:_m, bossMode:_bossMode, jokerStartCount:(_jokerCount || undefined), eventFieldCount:_eventFieldCount, bossEventTrigger:_bossEventTrigger, ts:Date.now() });
+  });
+
+  // Host-only: unpause / continue after reconnect (server-side paused flag)
+  resumeBtn && resumeBtn.addEventListener("click", () => {
+    if(netMode!=="host"){ toast("Nur Host kann fortsetzen"); return; }
+    if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+    wsSend({type:"resume", ts:Date.now()});
+  });
+
+  
+  
+
+  // ===== Joker #4: Doppelwurf (2x würfeln, Summe) (UI inject, additive) =====
+  function ensureActionJoker4UI(){
+    try{
+      if(!actionCard) return;
+
+      // Add status row if missing
+      if(!document.getElementById("jokerDoubleState")){
+        const row = document.createElement("div");
+        row.className = "kv";
+        const left = document.createElement("span");
+        left.textContent = "🎲🎲 Doppelwurf";
+        const right = document.createElement("span");
+        right.id = "jokerDoubleState";
+        right.textContent = "–";
+        row.appendChild(left);
+        row.appendChild(right);
+
+        const afterSpan = document.getElementById("jokerRerollState") || document.getElementById("jokerBarricadeState");
+        const afterKv = afterSpan ? afterSpan.closest(".kv") : null;
+        if(afterKv && afterKv.parentElement){
+          afterKv.parentElement.insertBefore(row, afterKv.nextSibling);
+        } else {
+          actionCard.appendChild(row);
+        }
+      }
+
+      // Add button if missing
+      if(!document.getElementById("jokerDoubleBtn")){
+        const grid = actionCard.querySelector(".joker-grid");
+        if(grid){
+          const btn = document.createElement("button");
+          btn.id = "jokerDoubleBtn";
+          btn.className = "joker-btn";
+          btn.textContent = "🎲🎲 Doppelwurf nutzen";
+          grid.appendChild(btn);
+        }
+      }
+    }catch(_e){}
+  }
+  try{ ensureActionJoker4UI(); }catch(_e){}
+
+  jokerDoubleState = $("jokerDoubleState");
+  let jokerDoubleBtn = $("jokerDoubleBtn");
+// ===== Action-Modus B1: Joker "Alle Farben" (nach dem Wurf) =====
+  if(jokerAllColorsBtn){
+  jokerAllColorsBtn.addEventListener("click", () => {
+      if (!isActionMode()) return;
+      const eff = state?.action?.effects || {};
+      // Toggle: if already active for me -> cancel
+      if (eff.allColorsBy && myColor && String(eff.allColorsBy).toLowerCase() === String(myColor).toLowerCase()) {
+        wsSend({ type: "cancel_joker", joker: "allcolors" });
+        toast("Alle-Farben Joker abgewählt");
+        return;
+      }
+      playJokerFx("allcolors");
+      wsSend({ type: "use_joker", joker: "allcolors" });
+    });
+  }
+
+  // Barrikade-Joker: VOR dem Wurf aktivieren, danach Quelle+Ziel klicken
+  jokerBarricadeBtn.addEventListener("click", () => {
+      if (!isActionMode()) return;
+
+      const eff = state?.action?.effects || {};
+      const effByMe = (eff.barricadeBy && myColor && String(eff.barricadeBy).toLowerCase() === String(myColor).toLowerCase());
+
+      // Toggle OFF: cancel local selection / effect
+      if (actionBarricadeActive || actionBarricadeFrom || pendingBarricadePick) {
+        actionBarricadeActive = false;
+        actionBarricadeFrom = null;
+        pendingBarricadePick = false;
+        if (effByMe) wsSend({ type: "cancel_joker", joker: "barricade" });
+        toast("Barikade-Joker abgewählt");
+        draw();
+        return;
+      }
+
+      // If effect already active (server-side), we enter selection mode
+      if (effByMe) {
+        actionBarricadeActive = true;
+        actionBarricadeFrom = null;
+        pendingBarricadePick = true;
+        toast("Barikade-Joker aktiv: Quelle wählen (oder Joker erneut klicken zum Abbrechen)");
+        draw();
+        return;
+      }
+
+      // Otherwise: activate on server
+      playJokerFx("barricade");
+      wsSend({ type: "use_joker", joker: "barricade" });
+    });
+
+
+  function closeBossRemovePicker(){
+    const el=document.getElementById("bossRemoveJokerOverlay");
+    if(el) el.classList.remove("show");
+  }
+  function openBossRemovePicker(){
+    try{
+      const active=(state?.boss?.slots||[]).filter(s=>s?.boss);
+      if(!active.length){ toast("Kein Boss aktiv"); return; }
+      let el=document.getElementById("bossRemoveJokerOverlay");
+      if(!el){
+        el=document.createElement("div");
+        el.id="bossRemoveJokerOverlay";
+        el.innerHTML=`<div class="bossRemoveJokerCard" role="dialog" aria-modal="true" aria-label="Boss entfernen">
+          <div class="bossRemoveJokerKicker">🌀 BOSS-JOKER</div>
+          <h3>Welchen Boss entfernen?</h3>
+          <p>Wähle einen aktuell aktiven Boss. Er verschwindet sofort und gibt keine Boss-Belohnung.</p>
+          <div class="bossRemoveJokerChoices"></div>
+          <button type="button" class="bossRemoveJokerCancel">Abbrechen</button>
+        </div>`;
+        document.body.appendChild(el);
+        el.querySelector(".bossRemoveJokerCancel")?.addEventListener("click",closeBossRemovePicker);
+        el.addEventListener("click",e=>{ if(e.target===el) closeBossRemovePicker(); });
+      }
+      const choices=el.querySelector(".bossRemoveJokerChoices");
+      if(choices){
+        choices.innerHTML=active.map(slot=>{
+          const b=slot.boss||{};
+          const meta=BOSS_CARD_META[String(b.type||"")]||{};
+          return `<button type="button" class="bossRemoveChoice" data-boss-id="${String(b.id||"")}" data-slot-id="${String(slot.id||"")}">
+            <span class="bossRemoveChoiceIcon">${meta.icon||b.icon||"👹"}</span>
+            <span><strong>${meta.name||b.name||"Boss"}</strong><small>${slot.name||"Bossportal"} · 1 Leben</small></span>
+            <span class="bossRemoveChoiceAction">ENTFERNEN</span>
+          </button>`;
+        }).join("");
+        choices.querySelectorAll(".bossRemoveChoice").forEach(btn=>btn.addEventListener("click",()=>{
+          const bossId=btn.dataset.bossId||"";
+          const slotId=btn.dataset.slotId||"";
+          closeBossRemovePicker();
+          playJokerFx("bossremove");
+          wsSend({type:"use_joker",joker:"bossremove",bossId,slotId,ts:Date.now()});
+        }));
+      }
+      el.classList.add("show");
+    }catch(_e){}
+  }
+
+  const bindBossJokers=()=>{
+    jokerBossSpawnBtn=document.getElementById("jokerBossSpawnBtn");
+    jokerBossRemoveBtn=document.getElementById("jokerBossRemoveBtn");
+    if(jokerBossSpawnBtn && !jokerBossSpawnBtn.__bound){
+      jokerBossSpawnBtn.__bound=true;
+      jokerBossSpawnBtn.addEventListener("click",()=>{
+        if(!state?.bossMode){ toast("Nur im Bossmodus verfügbar"); return; }
+        if(state?.currentPlayer!==myColor){ toast("Nicht dein Zug"); return; }
+        const set=getMyJokerSet();
+        if(!hasJoker(set,"bossSpawn")){ toast("Boss-spawnen-Joker nicht verfügbar"); return; }
+        const free=(state?.boss?.slots||[]).some(s=>!s?.boss);
+        if(!free){ toast("Beide Bossportale sind belegt – Joker bleibt erhalten"); return; }
+        playJokerFx("bossspawn");
+        wsSend({type:"use_joker",joker:"bossspawn",ts:Date.now()});
+      });
+    }
+    if(jokerBossRemoveBtn && !jokerBossRemoveBtn.__bound){
+      jokerBossRemoveBtn.__bound=true;
+      jokerBossRemoveBtn.addEventListener("click",()=>{
+        if(!state?.bossMode){ toast("Nur im Bossmodus verfügbar"); return; }
+        if(state?.currentPlayer!==myColor){ toast("Nicht dein Zug"); return; }
+        const set=getMyJokerSet();
+        if(!hasJoker(set,"bossRemove")){ toast("Boss-entfernen-Joker nicht verfügbar"); return; }
+        openBossRemovePicker();
+      });
+    }
+  };
+
+  // Helper: robust access to action joker set for current player (server snapshot is source of truth)
+function getMyJokerSet(){
+  try{
+    const c = (myColor || (state && state.currentPlayer)) || null;
+    if(!c) return null;
+    // preferred path (server v14+)
+    if(state && state.action && state.action.jokersByColor && state.action.jokersByColor[c]) return state.action.jokersByColor[c];
+    // backward-compat fallbacks (older builds)
+    if(state && state.actionJokers && state.actionJokers[c]) return state.actionJokers[c];
+    if(state && state.jokers && state.jokers[c]) return state.jokers[c];
+  }catch(_e){}
+  return null;
+}
+
+function jokerCount(obj, key){
+  try{
+    if(!obj) return 0;
+    const v = obj[key];
+    if(v===true) return 1;
+    if(v===false || v==null) return 0;
+    if(typeof v==="number" && isFinite(v)) return Math.max(0, Math.floor(v));
+  }catch(_e){}
+  return 0;
+}
+function hasJoker(obj, key){ return jokerCount(obj, key) > 0; }
+
+// Neu-Wurf-Joker: NACH dem Wurf -> erster Wurf verfällt, dann neu würfeln
+  const bindReroll = () => {
+    jokerRerollBtn = document.getElementById("jokerRerollBtn");
+    if(!jokerRerollBtn || jokerRerollBtn.__bound) return;
+    jokerRerollBtn.__bound = true;
+    jokerRerollBtn.addEventListener("click", () => {
+      if(netMode==="offline" || !ws || ws.readyState!==1) { toast("Nicht verbunden"); return; }
+      if(!state || !state.started) { toast("Spiel läuft nicht"); return; }
+      if(!isActionMode()) { toast("Joker sind in diesem Modus nicht aktiv"); return; }
+      if(state.currentPlayer!==myColor) { toast("Nicht dein Zug"); return; }
+      if(state.phase!=="need_move" || state.dice==null) { toast("Erst würfeln – dann Neu-Wurf"); return; }
+      const set = getMyJokerSet();
+      if(!hasJoker(set,"reroll")) { toast("Neu-Wurf nicht verfügbar"); return; }
+      playJokerFx("reroll");
+      wsSend({ type: "use_joker", joker: "reroll" });
+    });
+  };
+
+  // Joker #4: Doppelwurf (vor dem Würfeln)
+  const bindDouble = () => {
+    jokerDoubleBtn = document.getElementById("jokerDoubleBtn");
+    if(!jokerDoubleBtn || jokerDoubleBtn.__bound) return;
+    jokerDoubleBtn.__bound = true;
+    jokerDoubleBtn.addEventListener("click", () => {
+      if (!isActionMode()) return;
+
+      const eff = state?.action?.effects || {};
+      const pendingByMe = !!(eff.doubleRoll && myColor
+        && String(eff.doubleRoll.by).toLowerCase() === String(myColor).toLowerCase()
+        && eff.doubleRoll.pending === true);
+
+      // Toggle: cancel pending double-roll (before rolling)
+      if (pendingByMe) {
+        wsSend({ type: "cancel_joker", joker: "double" });
+        toast("Doppelwurf abgewählt");
+        return;
+      }
+
+      playJokerFx("double");
+      wsSend({ type: "use_joker", joker: "double" });
+    });
+  };
+
+  // bind now + also after UI injection
+  // ESC cancels active joker selection (no risk, client-side convenience)
+  if (!window.__barikadeEscJokerBound) {
+    window.__barikadeEscJokerBound = true;
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      try {
+        const eff = state?.action?.effects || {};
+        const effByMe = (eff.barricadeBy && myColor && String(eff.barricadeBy).toLowerCase() === String(myColor).toLowerCase());
+        if (actionBarricadeActive || actionBarricadeFrom || pendingBarricadePick) {
+          actionBarricadeActive = false;
+          actionBarricadeFrom = null;
+          pendingBarricadePick = false;
+          if (effByMe) wsSend({ type: 'cancel_joker', joker: 'barricade' });
+          toast('Joker abgewählt');
+          draw();
+          return;
+        }
+        const allByMe = (eff.allColorsBy && myColor && String(eff.allColorsBy).toLowerCase() === String(myColor).toLowerCase());
+        if (allByMe) {
+          wsSend({ type: 'cancel_joker', joker: 'allcolors' });
+          toast('Joker abgewählt');
+          return;
+        }
+        const dblByMe = !!(eff.doubleRoll && myColor && String(eff.doubleRoll.by).toLowerCase() === String(myColor).toLowerCase() && eff.doubleRoll.pending === true);
+        if (dblByMe) {
+          wsSend({ type: 'cancel_joker', joker: 'double' });
+          toast('Joker abgewählt');
+          return;
+        }
+      } catch (_e) {}
+    });
+  }
+  bindReroll();
+  bindDouble();
+  bindBossJokers();
+
+
+
+rollBtn.addEventListener("click", () => {
+    if(netMode!=="offline"){
+      if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+      // server checks turn
+      wsSend({type:"roll_request", ts:Date.now()});
+      return;
+    }
+    rollDice();
+    if(netMode==="host") broadcastState("state");
+  });
+
+  endBtn.addEventListener("click", () => {
+    if(netMode!=="offline"){
+      if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+      wsSend({type:"end_turn", ts:Date.now()});
+      return;
+    }
+    if(phase!=="placing_barricade" && phase!=="game_over") nextPlayer();
+    if(netMode==="host") broadcastState("state");
+  });
+
+  if(skipBtn) skipBtn.addEventListener("click", () => {
+    if(netMode!=="offline"){
+      if(!myColor){ toast("Bitte Farbe wählen"); return; }
+      if(myColor!==state.currentPlayer){ toast("Du bist nicht dran"); return; }
+      if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+      wsSend({type:"skip_turn", ts:Date.now()});
+      return;
+    }
+    if(phase!=="placing_barricade" && phase!=="game_over"){ toast("Runde ausgesetzt"); nextPlayer(); }
+    if(netMode==="host") broadcastState("state");
+  });
+
+  resetBtn.addEventListener("click", () => {
+    if(netMode==="offline"){
+      newGame();
+      return;
+    }
+    if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+    wsSend({type:"reset", ts:Date.now()});
+  });
+
+  // Online actions
+  hostBtn.addEventListener("click", () => {
+    netMode = "host";
+    clientId = clientId || ("H-" + randId(8));
+    roomCode = normalizeRoomCode(roomCodeInp.value) || randId(6);
+    roomCodeInp.value = roomCode;
+    saveSession();
+    connectWS();
+    toast("Host gestartet – teile den Raumcode");
+  });
+
+  joinBtn.addEventListener("click", () => {
+    netMode = "client";
+    clientId = clientId || ("C-" + randId(8));
+    roomCode = normalizeRoomCode(roomCodeInp.value);
+    if(!roomCode){ toast("Bitte Raumcode eingeben"); return; }
+    saveSession();
+    connectWS();
+    toast("Beitreten…");
+  });
+
+  
+
+  // Farbauswahl (nur Lobby): Wunsch speichern + an Server schicken
+  function requestColor(color){
+    const c = String(color||"").toLowerCase();
+    if(!(c==="red"||c==="blue"||c==="green"||c==="yellow")) return;
+    setRequestedColor(c);
+    updateColorPickUI();
+    if(ws && ws.readyState===1){
+      wsSend({ type:"request_color", color: c, ts: Date.now() });
+    } else {
+      toast("Wunschfarbe gespeichert (wird beim Join gesendet)");
+    }
+  }
+
+  // Handlers werden zentral ueber bindColorPickHandlers() gebunden,
+  // damit es auch funktioniert, wenn die Buttons erst per JS erzeugt wurden.
+  bindColorPickHandlers();
+leaveBtn.addEventListener("click", () => {
+    netMode = "offline";
+    saveSession();
+    disconnectWS();
+    setNetPlayers([]);
+    updateHostToolsUI();
+    toast("Offline");
+  });
+
+  // Host tools (Save/Load) – only host can use
+  if(saveBtn) saveBtn.addEventListener("click", () => {
+    if(!isMeHost()) { toast("Nur Host"); return; }
+
+    // Allow Save even during reconnect / offline WS, using the last known snapshot in memory.
+    if(!ws || ws.readyState!==1){
+      if(!state){
+        toast("Kein Spielstand im Speicher");
+        return;
+      }
+      const st = serializeState();
+      const ok = downloadJSON(st, `barikade_save_offline_${roomCode || "room"}.json`);
+      toast(ok ? "Offline-Save heruntergeladen" : "Save fehlgeschlagen");
+      return;
+    }
+
+    pendingSaveExport = true;
+    wsSend({ type:"export_state", ts: Date.now() });
+    toast("Save angefordert…");
+  });
+
+  if(loadBtn) loadBtn.addEventListener("click", () => {
+    if(!isMeHost()) { toast("Nur Host"); return; }
+    if(!loadFile) return;
+    loadFile.value = "";
+    loadFile.click();
+  });
+
+  if(loadFile) loadFile.addEventListener("change", async () => {
+    if(!isMeHost()) { toast("Nur Host"); return; }
+    const f = loadFile.files && loadFile.files[0];
+    if(!f) return;
+    const text = await f.text();
+    let st = null;
+    try { st = JSON.parse(text); } catch(_e) { toast("Ungültige JSON"); return; }
+    if(!ws || ws.readyState!==1){ toast("Nicht verbunden"); return; }
+    wsSend({ type:"import_state", state: st, ts: Date.now() });
+    toast("Load gesendet…");
+  });
+
+  // Host tool: Restore last Auto-Save from browser (useful after server sleep/restart on Render)
+  if(restoreBtn) restoreBtn.addEventListener("click", () => {
+    if(!isMeHost()) { toast("Nur Host"); return; }
+    const v = readHostAutosave();
+    if(!v || !v.state){ toast("Kein Auto‑Save gefunden"); return; }
+    if(!ws || ws.readyState!==1){
+      // even if offline, allow downloading the autosave so nothing is lost
+      const ok = downloadJSON(v.state, `barikade_restore_offline_${roomCode || "room"}.json`);
+      toast(ok ? "Nicht verbunden – Restore als Datei gespeichert" : "Restore fehlgeschlagen");
+      return;
+    }
+    wsSend({ type:"import_state", state: v.state, ts: Date.now(), reason:"host_autosave_restore" });
+    toast("Auto‑Save wiederherstellen…");
+  });
+
+  // (Legacy) In aelteren Offline-Versionen gab es chooseColor().
+  // Wir binden hier NICHT doppelt, um keine Doppel-Sends zu erzeugen.
+
+  // ===== Host: intent processing =====
+  function colorOf(id){
+    const p = rosterById.get(id) || null;
+    return p && p.color ? p.color : null;
+  }
+  function roleOf(id){
+    const p = rosterById.get(id) || null;
+    return p && p.role ? p.role : null;
+  }
+  function handleRemoteIntent(intent, senderId=""){
+    const senderColor = colorOf(senderId);
+    const mustBeTurnPlayer = () => senderColor && senderColor===state.currentPlayer;
+
+    const t = intent.type;
+    if(t==="roll"){
+      if(!mustBeTurnPlayer()) return;
+      rollDice(); broadcastState("state"); return;
+    }
+    if(t==="end"){
+      if(!mustBeTurnPlayer()) return;
+      if(phase!=="placing_barricade" && phase!=="game_over") nextPlayer();
+      broadcastState("state"); return;
+    }
+    if(t==="skip"){
+      if(!mustBeTurnPlayer()) return;
+      if(phase!=="placing_barricade" && phase!=="game_over"){ toast("Runde ausgesetzt"); nextPlayer(); }
+      broadcastState("state"); return;
+    }
+    if(t==="reset"){
+      if(roleOf(senderId)!=="host") return;
+      newGame(); broadcastState("snapshot"); return;
+    }
+    if(t==="move"){
+      if(!mustBeTurnPlayer()) return;
+      if(phase!=="need_move") return;
+
+      const toId = intent.toId;
+      const pieceIndex = Number(intent.pieceIndex);
+      if(!toId || !(pieceIndex>=0 && pieceIndex<5)) return;
+
+      const list = legalMovesByPiece.get(pieceIndex) || [];
+      const m = list.find(x=>x.toId===toId && x.piece.color===senderColor);
+      if(m){ movePiece(m); broadcastState("state"); return; }
+      return;
+    }
+    if(t==="placeBarricade"){
+      if(!mustBeTurnPlayer()) return;
+      if(phase!=="placing_barricade") return;
+      placeBarricade(intent.nodeId);
+      broadcastState("state");
+      return;
+    }
+  }
+
+  // ===== Init =====
+  (async function init(){
+    try{
+      board = await loadBoard();
+      buildGraph();
+      resize();
+
+      // restore previous view if available (optional)
+      let hadSavedView = false;
+      if(AUTO_CENTER_ALWAYS){
+        clearView();
+        hadSavedView = false;
+      }else{
+        hadSavedView = loadView();
+      }
+
+      // auto center
+      if(AUTO_CENTER_ALWAYS || !hadSavedView){
+      const xs = board.nodes.map(n=>n.x), ys=board.nodes.map(n=>n.y);
+      const minX=Math.min(...xs), maxX=Math.max(...xs);
+      const minY=Math.min(...ys), maxY=Math.max(...ys);
+      const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
+      const rect = canvas.getBoundingClientRect();
+      const bw=(maxX-minX)+200, bh=(maxY-minY)+200;
+      const sx=rect.width/Math.max(200,bw), sy=rect.height/Math.max(200,bh);
+      view.s = Math.max(0.35, Math.min(1.4, Math.min(sx,sy)));
+      view.x = (rect.width/2)/view.s - cx;
+      view.y = (rect.height/2)/view.s - cy;
+
+      }
+
+      // ensure board is on-screen immediately
+      view._fittedOnce = false;
+      try{ ensureFittedOnce(); }catch(_e){}
+
+      const sess = loadSession();
+      clientId = sess.id || "";
+      if(sess.r){ roomCode = normalizeRoomCode(sess.r); roomCodeInp.value = roomCode; }
+      if(sess.m==="host" || sess.m==="client"){
+        netMode = sess.m;
+        setNetStatus("Reconnect…", false);
+        connectWS();
+      }
+      if(netMode==="offline"){
+        newGame();
+      }
+      toast("Bereit. Online: Host/Beitreten.");
+    }catch(err){
+      showOverlay("Fehler","Board konnte nicht geladen werden", String(err.message||err));
+      console.error(err);
+    }
+  })();
+
+  // Expose a tiny safe runtime bridge for helpers that were appended outside the main scope.
+  // This does not remove any function; it only prevents ReferenceErrors in late-bound UI handlers.
+  try{
+    window.__barikadeRuntime = {
+      getNetMode: () => netMode,
+      getMyColor: () => myColor,
+      hasState: () => !!state,
+      isStarted: () => !!(state && state.started && !state.winner),
+      isConnected: () => !!(ws && ws.readyState === 1),
+      send: (obj) => wsSend(obj),
+      toast: (msg) => toast(msg),
+      closeSocket: () => { try{ if(ws && (ws.readyState===0 || ws.readyState===1)) ws.close(); }catch(_e){} }
+    };
+
+    // V13.6.1: Die Rad-UI liegt historisch außerhalb dieses inneren Game-Scopes.
+    // Deshalb darf sie NICHT direkt auf `state` oder die privaten Wheel-Maps zugreifen.
+    // Diese schmale Bridge ist der einzige erlaubte Zugriff der UI auf den Spiel-Scope.
+    window.__barikadeWheelRuntime = {
+      isBossMode: () => !!(state && state.bossMode),
+      markRunning: (visualId) => {
+        const id=String(visualId||"");
+        if(id) _serverWheelState.set(id,"running");
+      },
+      releaseForRetry: (visualId) => {
+        const id=String(visualId||"");
+        if(id) _serverWheelState.delete(id);
+      },
+      markFinished: (jobId, visualId) => {
+        const jid=String(jobId||"");
+        const id=String(visualId||"");
+        if(!jid || !id) return false;
+        _serverWheelState.set(id,"finished");
+        rememberServerWheelFinished(id);
+        return reportServerWheelFinished(jid,id);
+      }
+    };
+  }catch(_e){}
+})();
+
+
+// ===== Dice Dock (safe) =====
+// The dice should stay inside the "Würfel" card next to the Roll button.
+// Some older patches forced CSS transforms to "none" which can make the 3D dice invisible.
+// This helper ONLY ensures the element is inside the dicePill (if present) and does not override transforms.
+(function ensureDiceInDiceCard(){
+  function dock(){
+    const dice = document.getElementById("diceCube");
+    const rollBtn = document.getElementById("rollBtn");
+    if(!dice || !rollBtn) return false;
+
+    const diceCard =
+      rollBtn.closest(".card") ||
+      rollBtn.closest(".panel") ||
+      rollBtn.closest("section") ||
+      rollBtn.parentElement;
+
+    if(!diceCard) return false;
+
+    const pill = diceCard.querySelector(".dicePill");
+
+// Create a wrapper inside the pill so we can scale/center the 3D cube without touching its own transform.
+let wrap = pill ? pill.querySelector("#diceDockWrap") : null;
+if(pill && !wrap){
+  wrap = document.createElement("div");
+  wrap.id = "diceDockWrap";
+  wrap.style.position = "absolute";
+  wrap.style.inset = "0";
+  wrap.style.display = "flex";
+  wrap.style.alignItems = "center";
+  wrap.style.justifyContent = "center";
+  // Scale the whole cube to fit the small pill (change 0.62 if you want a bit bigger/smaller)
+  wrap.style.transform = "scale(1.0)";
+  wrap.style.transformOrigin = "50% 50%";
+  pill.style.position = pill.style.position || "relative";
+  pill.style.overflow = "hidden";
+  pill.appendChild(wrap);
+}
+
+if(pill){
+  // Ensure the cube is inside the wrapper (keeps cube transform intact)
+  if(wrap && !wrap.contains(dice)) wrap.appendChild(dice);
+  else if(!pill.contains(dice)) pill.appendChild(dice);
+} else if(!diceCard.contains(dice)){
+  diceCard.appendChild(dice);
+}
+
+// IMPORTANT: do NOT touch `transform` here (3D dice uses it).
+dice.style.position = "relative";
+dice.style.left = "";
+dice.style.top = "";
+dice.style.right = "";
+dice.style.bottom = "";
+
+    return true;
+  }
+
+  let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    if(dock() || tries > 40) clearInterval(iv);
+  }, 120);
+
+  
+
+// =========================
+// Back to Lobby (safe leave)
+// =========================
+(function wireBackToLobby(){
+  const btn = document.getElementById("backLobbyBtn");
+  if(!btn) return;
+  btn.addEventListener("click", () => {
+    try{
+      const rt = window.__barikadeRuntime;
+      if(rt && typeof rt.closeSocket === "function") rt.closeSocket();
+    }catch(_e){}
+    try{ localStorage.removeItem("barikade_sessionToken"); }catch(_e){}
+    window.location.href = "barikade_lobby.html";
+  });
+})();
+
+window.addEventListener("load", () => { try{ dock(); }catch(_e){} });
+})();
+
+
+// ---------- Wheel UI (client only, does not block gameplay) ----------
+let _wheelQueue = [];
+let _wheelBusy = false;
+let _wheelRunSerial = 0;
+let _wheelWatchdog = 0;
+
+function enqueueWheel(list) {
+  try {
+    for (const it of list) _wheelQueue.push(it);
+    if (!_wheelBusy) _wheelNext();
+  } catch (_e) {}
+}
+
+// ----- Wheel UI (visual spinning wheel) -----
+// Note: Pure UI. Server already decides the result. No game-state changes here.
+const _WHEEL_BASE_SEGMENTS = [
+  { key: "allColors", label: "Alle Farben", short:"FARBEN", icon:"🌈", c1:"#7049d8", c2:"#3b245f" },
+  { key: "barricade", label: "Barikade", short:"BARRIKADE", icon:"🧱", c1:"#d28a43", c2:"#674025" },
+  { key: "reroll",    label: "Neu-Wurf", short:"NEU-WURF", icon:"🎲", c1:"#2d9fa5", c2:"#174b56" },
+  { key: "double",    label: "Doppelwurf", short:"DOPPELWURF", icon:"⚡", c1:"#cc5f86", c2:"#692d52" },
+];
+const _WHEEL_BOSS_SEGMENTS = [
+  { key:"bossSpawn", label:"Boss spawnen", short:"BOSS +", icon:"👹", c1:"#d85a4d", c2:"#70251f" },
+  { key:"bossRemove", label:"Boss entfernen", short:"BOSS −", icon:"🌀", c1:"#8b70e8", c2:"#3f2b86" },
+];
+let _wheelActiveSegments = _WHEEL_BASE_SEGMENTS;
+function _wheelRuntime(){
+  try{ return window.__barikadeWheelRuntime || null; }catch(_e){ return null; }
+}
+function _wheelSegmentsForItem(item){
+  const result=String(item?.result||"");
+  const bossResult=result==="bossSpawn"||result==="bossRemove";
+  const bossMode=!!(_wheelRuntime()?.isBossMode?.());
+  return (bossResult || bossMode) ? _WHEEL_BASE_SEGMENTS.concat(_WHEEL_BOSS_SEGMENTS) : _WHEEL_BASE_SEGMENTS;
+}
+
+let _wheelAngle = 0; // radians (0 = segment 0 centered at top after calibration)
+
+function _wheelEnsureUI() {
+  if (document.getElementById("wheelOverlay")) return;
+
+  const style = document.createElement("style");
+  style.id = "wheelStyle";
+  style.textContent = `
+#wheelOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;box-sizing:border-box!important;align-items:center;justify-content:center;padding:16px!important;border:0!important;background:radial-gradient(circle at 50% 16%,rgba(128,91,255,.22),transparent 28%),rgba(4,6,13,.92)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:2147483647!important;opacity:0;pointer-events:none;transition:opacity .22s ease;}
+#wheelOverlay[open],#wheelOverlay.show{display:flex!important;}
+#wheelOverlay:not([open]):not(.show){display:none!important;}
+#wheelOverlay.show{opacity:1;pointer-events:auto;}
+#wheelOverlay::backdrop{background:rgba(2,4,10,.58);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+#wheelCard{position:relative;overflow:hidden;width:min(570px,95vw);border-radius:30px;background:linear-gradient(180deg,rgba(28,24,46,.985),rgba(9,12,22,.99));box-shadow:0 28px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);padding:20px 20px 18px;border:1px solid rgba(203,190,255,.20);}
+#wheelCard::before{content:"";position:absolute;inset:-80px auto auto -70px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(137,99,255,.34),transparent 68%);pointer-events:none;}
+#wheelHeader{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;text-align:center;}
+#wheelHeader>div{width:100%;}
+#wheelBadge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.10);font:900 9px/1 system-ui;letter-spacing:.17em;color:#c9baff;margin-bottom:8px;}
+#wheelTitle{font-weight:950;font-size:23px;margin:0;color:#fff;letter-spacing:-.02em;}
+#wheelSub{opacity:.84;margin:5px 0 0;line-height:1.35;font-size:12px;color:#d2d9ee;}
+#wheelBig{margin-top:11px;font-weight:950;font-size:clamp(19px,4vw,27px);letter-spacing:-.015em;line-height:1.12;text-align:center;color:#fff;}
+#wheelQuote{margin:7px auto 0;max-width:440px;font-size:13px;line-height:1.35;color:#d9d0ff;text-align:center;opacity:.94;}
+#wheelStage{position:relative;margin:12px auto 4px;padding:10px 0 2px;}
+#wheelStage::before{content:"";position:absolute;left:50%;top:50%;width:min(390px,82vw);height:min(390px,82vw);transform:translate(-50%,-49%);border-radius:50%;background:radial-gradient(circle,rgba(126,101,255,.12),rgba(126,101,255,.025) 58%,transparent 72%);filter:blur(2px);pointer-events:none;}
+#wheelWrap{position:relative;display:flex;align-items:center;justify-content:center;padding:0 0 4px;min-height:min(370px,79vw);}
+#wheelVisual{position:relative;width:min(370px,79vw);height:min(370px,79vw);max-width:370px;max-height:370px;aspect-ratio:1/1;flex:0 0 auto;}
+#wheelSvg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible;transform-origin:50% 50%;}
+#wheelSvg .wheelSeg{stroke:rgba(255,255,255,.20);stroke-width:5;}
+#wheelSvg .wheelOuter{fill:#101421;stroke:rgba(225,216,255,.34);stroke-width:10;}
+#wheelSvg .wheelHub{fill:#171a29;stroke:rgba(255,255,255,.24);stroke-width:8;}
+#wheelSvg .wheelHubStar{fill:#ffefb4;font:1000 52px system-ui;text-anchor:middle;dominant-baseline:middle;}
+#wheelSvg .wheelIcon{font:1000 50px system-ui;text-anchor:middle;dominant-baseline:middle;}
+#wheelSvg .wheelLabel{fill:#fff;font:1000 23px system-ui;text-anchor:middle;dominant-baseline:middle;paint-order:stroke;stroke:rgba(0,0,0,.52);stroke-width:5;stroke-linejoin:round;}
+#wheelSvg .wheelBulbA{fill:#ffefbb;}
+#wheelSvg .wheelBulbB{fill:#cbbcff;}
+#wheelPointer{position:relative;z-index:3;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid #fff4c7;filter:drop-shadow(0 4px 8px rgba(0,0,0,.58));margin:0 auto -20px;}
+#wheelResult{position:relative;z-index:1;margin:10px auto 0;min-height:25px;width:fit-content;max-width:100%;padding:0;font-weight:900;font-size:15px;line-height:1.35;text-align:center;color:#f4f0ff;transition:.2s ease;}
+#wheelResult.win{padding:9px 13px;border-radius:14px;background:linear-gradient(180deg,rgba(255,213,112,.15),rgba(255,213,112,.07));border:1px solid rgba(255,225,147,.24);color:#ffeab2;box-shadow:0 8px 18px rgba(0,0,0,.18);}
+#wheelHint{position:relative;z-index:1;opacity:.62;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-top:9px;text-align:center;color:#c4cbe2;}
+@media (max-width:420px){#wheelCard{padding:17px 14px 15px;border-radius:25px;}#wheelTitle{font-size:21px;}#wheelBig{font-size:19px;}#wheelVisual{width:min(340px,82vw);height:min(340px,82vw);}}
+@media(prefers-reduced-motion:reduce){#wheelOverlay{transition:none;}}
+  `;
+  document.head.appendChild(style);
+
+  // Absichtlich kein <dialog>: ein normales Fixed-Overlay ist auf Android/Samsung
+  // bei vielen aufeinanderfolgenden Öffnungen zuverlässiger als der Browser-Top-Layer.
+  const overlay = document.createElement("div");
+  overlay.id = "wheelOverlay";
+  overlay.dataset.topLayer = "fixed-overlay";
+  overlay.setAttribute("role","dialog");
+  overlay.setAttribute("aria-modal","true");
+  overlay.innerHTML = `
+    <div id="wheelCard">
+      <div id="wheelHeader"><div>
+        <div id="wheelBadge">✨ JOKER-BELOHNUNG</div>
+        <div id="wheelTitle">Glücksrad</div>
+        <p id="wheelSub">Das Rad entscheidet deinen Joker …</p>
+        <div id="wheelBig"></div>
+        <div id="wheelQuote"></div>
+      </div></div>
+      <div id="wheelStage">
+        <div id="wheelPointer"></div>
+        <div id="wheelWrap">
+          <div id="wheelVisual">
+            <svg id="wheelSvg" viewBox="0 0 720 720" role="img" aria-label="Joker-Glücksrad"></svg>
+          </div>
+        </div>
+      </div>
+      <div id="wheelResult"></div>
+      <div id="wheelHint">Joker · keine Niete</div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function _wheelSvgEl(tag,attrs={}){
+  const el=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(v!=null) el.setAttribute(k,String(v));
+  }
+  return el;
+}
+
+function _wheelPolar(cx,cy,r,a){
+  return {x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r};
+}
+
+function _wheelWedgePath(cx,cy,r,a0,a1){
+  const p0=_wheelPolar(cx,cy,r,a0);
+  const p1=_wheelPolar(cx,cy,r,a1);
+  const large=(a1-a0)>Math.PI?1:0;
+  return `M ${cx} ${cy} L ${p0.x.toFixed(2)} ${p0.y.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} Z`;
+}
+
+function _wheelBuildSvg(){
+  const svg=document.getElementById("wheelSvg");
+  if(!svg) return;
+
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+
+  const segs=Array.isArray(_wheelActiveSegments)&&_wheelActiveSegments.length
+    ? _wheelActiveSegments
+    : _WHEEL_BASE_SEGMENTS;
+
+  const cx=360,cy=360,r=288;
+  svg.appendChild(_wheelSvgEl("circle",{cx,cy,r:r+31,class:"wheelOuter"}));
+
+  const seg=(Math.PI*2)/segs.length;
+  for(let i=0;i<segs.length;i++){
+    const info=segs[i];
+    const a0=-Math.PI/2+i*seg;
+    const a1=a0+seg;
+    const path=_wheelSvgEl("path",{
+      d:_wheelWedgePath(cx,cy,r,a0,a1),
+      fill:info.c1||"#7657d8",
+      class:"wheelSeg"
+    });
+    svg.appendChild(path);
+
+    const mid=(a0+a1)/2;
+    const pos=_wheelPolar(cx,cy,r*.64,mid);
+
+    const icon=_wheelSvgEl("text",{x:pos.x,y:pos.y-24,class:"wheelIcon"});
+    icon.textContent=info.icon||"🎁";
+    svg.appendChild(icon);
+
+    const label=_wheelSvgEl("text",{x:pos.x,y:pos.y+27,class:"wheelLabel"});
+    label.textContent=info.short||info.label||"JOKER";
+    svg.appendChild(label);
+  }
+
+  // Außenlichter
+  for(let i=0;i<20;i++){
+    const a=(Math.PI*2/20)*i;
+    const p=_wheelPolar(cx,cy,r+22,a);
+    svg.appendChild(_wheelSvgEl("circle",{
+      cx:p.x,cy:p.y,r:5.2,
+      class:i%2?"wheelBulbA":"wheelBulbB"
+    }));
+  }
+
+  svg.appendChild(_wheelSvgEl("circle",{cx,cy,r:r*.31,class:"wheelHub"}));
+  const star=_wheelSvgEl("text",{x:cx,y:cy+2,class:"wheelHubStar"});
+  star.textContent="★";
+  svg.appendChild(star);
+}
+
+function _wheelDraw(angleRad) {
+  const svg=document.getElementById("wheelSvg");
+  if(!svg) return;
+  svg.style.transform=`rotate(${Number(angleRad||0)}rad)`;
+}
+
+function _wheelResolveIndex(resultKey) {
+  const key = String(resultKey || "").trim();
+  if (!key) {
+    // Fallback: random segment (keine Nieten mehr)
+    return Math.floor(Math.random() * _wheelActiveSegments.length);
+  }
+  const k = key.toLowerCase();
+  for (let i = 0; i < _wheelActiveSegments.length; i++) {
+    if (_wheelActiveSegments[i].key.toLowerCase() === k) return i;
+  }
+  // if server sends "allColors" etc. with odd formatting
+  const norm = k.replace(/[^a-z]/g, "");
+  for (let i = 0; i < _wheelActiveSegments.length; i++) {
+    if (_wheelActiveSegments[i].key.toLowerCase() === norm) return i;
+  }
+  return 0;
+}
+
+function _wheelOpenOverlay(overlay){
+  if(!overlay) return;
+  // Direkt sichtbar schalten. Ein einzelnes verzögertes requestAnimationFrame konnte auf
+  // mobilen Browsern dazu führen, dass das Rad zwar lief, aber erst verspätet sichtbar wurde.
+  overlay.classList.add("show");
+}
+
+function _wheelCloseOverlay(overlay,done){
+  if(!overlay){ if(typeof done==="function") done(); return; }
+  overlay.classList.remove("show");
+  window.setTimeout(()=>{ if(typeof done==="function") done(); },220);
+}
+
+function _wheelNext() {
+  const item = _wheelQueue.shift();
+  if (!item) {
+    _wheelBusy = false;
+    clearTimeout(_wheelWatchdog);
+    _wheelWatchdog = 0;
+    return;
+  }
+  _wheelBusy = true;
+  const runId = ++_wheelRunSerial;
+  let completed = false;
+
+  const failSafeContinue = ()=>{
+    if(completed || runId!==_wheelRunSerial) return;
+    completed = true;
+    clearTimeout(_wheelWatchdog);
+    _wheelWatchdog = 0;
+    try{
+      const overlay=document.getElementById("wheelOverlay");
+      if(overlay) overlay.classList.remove("show");
+    }catch(_e){}
+    // Bei echtem Darstellungsfehler NICHT als fertig bestätigen. Den lokalen Zustand
+    // freigeben, damit der nächste Server-Retry exakt dasselbe visualId erneut anbieten kann.
+    if(item?.__serverVisualId) _wheelRuntime()?.releaseForRetry?.(String(item.__serverVisualId));
+    window.setTimeout(()=>_wheelNext(),80);
+  };
+
+  try{
+    _wheelEnsureUI();
+    const overlay = document.getElementById("wheelOverlay");
+    const title = document.getElementById("wheelTitle");
+    const sub = document.getElementById("wheelSub");
+    const res = document.getElementById("wheelResult");
+    const big = document.getElementById("wheelBig");
+    const quote = document.getElementById("wheelQuote");
+
+    const _colorName = (c)=>({RED:"Rot",BLUE:"Blau",GREEN:"Gruen",YELLOW:"Gelb"}[String(c||"").toUpperCase()] || String(c||""));
+    const attackerName = String(item.attackerName || "").trim();
+    const victimName = String(item.victimName || "").trim();
+    const attackerLabel = attackerName || (_colorName(item.targetColor) || "Jemand");
+    const victimLabel = victimName || (_colorName(item.jokerColor) || "jemanden");
+    const headline = String(item.headline || "").trim() || (attackerLabel + " schmeisst " + victimLabel + " raus!");
+    if (big) big.textContent = headline;
+    if (quote) quote.textContent = String(item.quote || "");
+
+    const targetColor = String(item.targetColor || "").toUpperCase();
+    const durationMs = Math.max(1200, Number(item.durationMs || 5000) || 5000);
+
+    if(title) title.textContent = "Glücksrad";
+    if(sub) sub.textContent = targetColor ? `Joker-Belohnung für ${_colorName(targetColor)}` : "Das Rad entscheidet deinen Joker …";
+    if(res){ res.textContent = ""; res.classList.remove("win"); }
+
+    _wheelActiveSegments=_wheelSegmentsForItem(item);
+    _wheelBuildSvg();
+    try{ _wheelDraw(_wheelAngle); }catch(_e){}
+
+    const hint=document.getElementById("wheelHint");
+    if(hint) hint.textContent=`${_wheelActiveSegments.length} Joker · keine Niete${_wheelActiveSegments.length>4?" · Boss-Joker aktiv":""}`;
+    try{ document.getElementById("wheelVisual")?.getBoundingClientRect(); }catch(_e){}
+    _wheelOpenOverlay(overlay);
+
+    // Ab hier ist der Radlauf tatsächlich sichtbar. Wiederholte Server-Pakete mit derselben
+    // visualId werden während "running" ignoriert, aber noch NICHT als erledigt bestätigt.
+    if(item.__serverVisualId) _wheelRuntime()?.markRunning?.(String(item.__serverVisualId));
+
+    const idx = _wheelResolveIndex(item.result);
+    const TAU = Math.PI * 2;
+    const seg = TAU / _wheelActiveSegments.length;
+    const center = (idx + 0.5) * seg;
+    const targetModulo = ((-center % TAU) + TAU) % TAU;
+    const startAngle = Number.isFinite(_wheelAngle) ? _wheelAngle : 0;
+    const startModulo = ((startAngle % TAU) + TAU) % TAU;
+    const landingDelta = ((targetModulo - startModulo) + TAU) % TAU;
+    const spins = Math.max(6,Math.min(8,Number(item.spinTurns)||6));
+    // Immer 6–8 VOLLE Vorwärtsumdrehungen PLUS den Weg zum Zielsegment.
+    // Die Anzahl der vollen Umdrehungen kommt ab V13.6 vom Server.
+    // Vorher war finalAngle absolut; nach mehreren Läufen konnte delta fast 0 oder negativ sein.
+    const delta = spins * TAU + landingDelta;
+    const finalAngle = startAngle + delta;
+    const t0 = performance.now();
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+    const finish=(forced=false)=>{
+      if(completed || runId!==_wheelRunSerial) return;
+      completed=true;
+      clearTimeout(_wheelWatchdog);
+      _wheelWatchdog=0;
+      _wheelAngle=finalAngle;
+      try{ _wheelDraw(_wheelAngle); }catch(_e){}
+      const r=item.result;
+      if(res){
+        if(r){
+          const pretty=(_wheelActiveSegments[idx] && _wheelActiveSegments[idx].key!=="none") ? _wheelActiveSegments[idx].label : String(r);
+          res.textContent="✨ Joker gewonnen: "+pretty;
+          res.classList.add("win");
+        }else{
+          res.textContent="Kein Joker erhalten.";
+          res.classList.remove("win");
+        }
+      }
+      // Erst nach vollständig beendetem Drehvorgang wird der persistente Serverauftrag
+      // für DIESES visualId bestätigt. Das lokale Finished-Merkmal wird zuerst geschrieben:
+      // Geht unmittelbar danach die WebSocket-Nachricht verloren oder lädt die Seite neu,
+      // beantwortet der Client den nächsten Server-Retry nur mit Finished statt erneut zu drehen.
+      if(item.__serverWheelJobId && item.__serverVisualId){
+        const visualId=String(item.__serverVisualId);
+        const jobId=String(item.__serverWheelJobId);
+        _wheelRuntime()?.markFinished?.(jobId,visualId);
+      }
+      // Selbst wenn requestAnimationFrame auf einem Mobilgerät kurz aussetzt,
+      // beendet der Watchdog den Lauf und die Queue kann nicht dauerhaft hängen.
+      window.setTimeout(()=>{
+        _wheelCloseOverlay(overlay,()=>window.setTimeout(()=>_wheelNext(),100));
+      }, forced ? 300 : 1200);
+    };
+
+    const tick=(now)=>{
+      if(completed || runId!==_wheelRunSerial) return;
+      const t=Math.min(1,(now-t0)/durationMs);
+      const eased=easeOutCubic(t);
+      _wheelAngle=startAngle+delta*eased;
+      try{ _wheelDraw(_wheelAngle); }catch(_e){}
+      if(t<1) requestAnimationFrame(tick);
+      else finish(false);
+    };
+
+    // Harte Sicherung gegen einen dauerhaft blockierten Rad-Status.
+    clearTimeout(_wheelWatchdog);
+    _wheelWatchdog=window.setTimeout(()=>finish(true), durationMs+2200);
+    try{ _wheelDraw(_wheelAngle); }catch(_e){}
+    requestAnimationFrame(tick);
+  }catch(err){
+    try{ console.error("[joker-wheel] animation error",err); }catch(_e){}
+    failSafeContinue();
+  }
+}
+
+
+  // ---------- Aufgeben (Forfeit) ----------
+  (function wireForfeitButton(){
+    const btn = document.getElementById("forfeitBtn");
+    if(!btn) return;
+    btn.addEventListener("click", () => {
+      const rt = window.__barikadeRuntime;
+      const toast = (msg) => { try{ if(rt && typeof rt.toast === "function") rt.toast(msg); }catch(_e){} };
+      if(!rt){ toast("Runtime nicht bereit"); return; }
+      if(rt.getNetMode && rt.getNetMode() === "offline"){
+        toast("Aufgeben ist nur im Online-Spiel (Server) aktiv.");
+        return;
+      }
+      if(rt.getMyColor && !rt.getMyColor()){ toast("Bitte Farbe wählen"); return; }
+      if(rt.isConnected && !rt.isConnected()){ toast("Keine Verbindung"); return; }
+      if(rt.isStarted && !rt.isStarted()){ toast("Es läuft kein Spiel"); return; }
+      const ok = confirm("Wirklich aufgeben? Gewinner ist dann der Spieler, der am nächsten am Ziel ist.");
+      if(!ok) return;
+      try{ rt.send({ type:"forfeit", ts:Date.now() }); }catch(_e){ toast("Aufgeben konnte nicht gesendet werden"); return; }
+      toast("Du hast aufgegeben…");
+    });
+  })();
+
+
+})();

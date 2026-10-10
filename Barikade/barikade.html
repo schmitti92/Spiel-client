@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Barikade</title>
+  <link rel="stylesheet" href="styles.css?v=barikade_v24_boss_reveal_portals_turns_20260929" />
+</head>
+
+<body class="game-page">
+  <div class="topbar">
+    <div class="brand">
+      <div class="t">Barikade</div>
+      <div class="s">Online · Server steuert Würfel + Züge · 2–4 Spieler</div>
+    </div>
+
+    <section class="playerStripShell" aria-label="Spielerübersicht">
+    <div class="turnStateBridge" aria-hidden="true"><span id="turnDot" class="dot"></span><span id="turnText">–</span></div>
+    <div id="playerStrip" class="playerStrip">
+      <div class="playerStripEmpty">Spieler werden geladen …</div>
+    </div>
+  </section>
+
+    <div class="rightActions">
+      <div id="emojiBar" class="emojiBar" aria-label="Emojis im Spiel">
+        <button id="emojiLaughBtn" class="emojiBtn" type="button" title="Lachen">😂</button>
+        <button id="emojiAngryBtn" class="emojiBtn" type="button" title="Wütend">😡</button>
+        <button id="emojiCoolBtn" class="emojiBtn" type="button" title="Cool">😎</button>
+        <button id="emojiPoopBtn" class="emojiBtn" type="button" title="Scheißhaufen">💩</button>
+        <button id="emojiClockBtn" class="emojiBtn" type="button" title="Zeituhr">⏳</button>
+      </div>
+      <button id="fitBoardBtn" class="displayToggleBtn" type="button" title="Brett vollständig einpassen" aria-label="Brett vollständig einpassen">↙↗</button>
+      <button id="fullscreenBtn" class="displayToggleBtn" type="button" title="Vollbild einschalten" aria-label="Vollbild einschalten" aria-pressed="false">⛶</button>
+      <button id="soundToggleBtn" class="soundToggleBtn" type="button" title="Sound an/aus" aria-label="Sound an/aus" aria-pressed="true">🔊</button>
+      <button id="backLobbyBtn" class="btn">⬅ Lobby</button>
+    </div>
+  </div>
+
+
+  <div class="app">
+    <div class="boardWrap">
+      <canvas id="c"></canvas>
+    </div>
+
+    <aside class="panel gameSidebar" aria-label="Spielsteuerung">
+      <!-- Hauptzug: nur die Dinge, die man während eines normalen Zuges braucht -->
+      <section class="sideSection sideTurnCard">
+        <div class="sideSectionHead turnSectionHead">
+          <div class="sideTurnIdentity">
+            <div id="sideTurnAvatar" class="sideTurnAvatar" aria-hidden="true">?</div>
+            <div class="sideTurnCopy">
+              <div class="sideKicker">SPIELZUG</div>
+              <div id="sideTurnLabel" class="sideTurnLabel">Spiel wird geladen …</div>
+              <div id="sideTurnMeta" class="sideTurnMeta">Verbindung zum Raum wird hergestellt.</div>
+            </div>
+          </div>
+          <div class="sideTurnIndicators">
+            <span id="sidePhaseBadge" class="sidePhaseBadge">WARTEN</span>
+            <span id="sideTurnDot" class="sideTurnDot" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div id="sidebarWaiting" class="sidebarWaiting" aria-live="polite">
+          <div class="sidebarWaitingIcon">👥</div>
+          <div class="sidebarWaitingCopy">
+            <strong id="sidebarWaitingTitle">Warte auf Mitspieler</strong>
+            <span id="sidebarWaitingText">Für den Spielstart werden mindestens zwei Spieler benötigt.</span>
+          </div>
+          <div class="sidebarWaitingStats">
+            <span><b id="sidebarWaitingPlayers">1</b> Spieler</span>
+            <span>Raum <b id="sidebarWaitingRoom">–</b></span>
+          </div>
+          <div id="pregameReady" class="pregameReady" aria-label="Spieler bereit">
+            <div class="pregameReadyHead"><span>STARTBEREITSCHAFT</span><strong id="pregameReadyText">1/4</strong></div>
+            <div class="pregameReadyTrack"><span id="pregameReadyFill"></span></div>
+            <div id="pregameReadyDots" class="pregameReadyDots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          </div>
+          <button id="startBtn" class="btn sidebarStartBtn" type="button">▶ Spiel starten</button>
+        </div>
+
+        <div id="activeTurnControls" class="activeTurnControls">
+          <div class="diceActionRow">
+            <button id="rollBtn" class="btn primaryRoll">🎲 Würfeln</button>
+            <div class="dicePill" aria-label="Aktueller Würfel">
+              <div id="diceCube" data-face="1"></div>
+            </div>
+          </div>
+
+          <div class="turnActions">
+            <button id="endBtn" class="btn turnActionBtn endTurnBtn">✓ Zug beenden</button>
+            <button id="skipBtn" class="btn turnActionBtn skipTurnBtn">⏭ Aussetzen</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Joker bleiben groß und direkt erreichbar, technische Details wandern nach unten -->
+      <section id="jokerSection" class="sideSection jokerSection">
+        <div class="sideSectionHead">
+          <div>
+            <div class="sideKicker">POWER-UPS & TAKTIK</div>
+            <h3>Joker</h3>
+          </div>
+          <span id="actionModeBadge" class="modeBadge">Classic</span>
+        </div>
+
+        <div id="classicModeNotice" class="classicModeNotice">Classic-Modus · keine Joker aktiv</div>
+
+        <div id="actionCard" style="display:none;">
+          <div id="actionHint">Action-Modus aktiv</div>
+
+          <div class="jokerLegacyStatus" aria-label="Joker-Status">
+            <div class="kv"><span>🌈 Alle Farben</span><span id="jokerAllColorsState">–</span></div>
+            <div class="kv"><span>🧱 Barikade</span><span id="jokerBarricadeState">–</span></div>
+            <div class="kv"><span>🔁 Neu-Wurf</span><span id="jokerRerollState">–</span></div>
+            <div class="kv"><span>🎲🎲 Doppelwurf</span><span id="jokerDoubleState">–</span></div>
+            <div class="kv bossOnlyJoker" hidden><span>👹 Boss spawnen</span><span id="jokerBossSpawnState">–</span></div>
+            <div class="kv bossOnlyJoker" hidden><span>🌀 Boss entfernen</span><span id="jokerBossRemoveState">–</span></div>
+            <div class="kv"><span>✨ Effekte</span><span id="actionEffectsState">–</span></div>
+          </div>
+
+          <div class="joker-grid joker-grid-4">
+            <button id="jokerAllColorsBtn" class="joker-btn joker-power" type="button">
+              <span class="j-ico">🌈</span><span class="j-name">Alle Farben</span><span class="j-count" data-jcount="allColors">0</span>
+            </button>
+            <button id="jokerBarricadeBtn" class="joker-btn joker-power" type="button">
+              <span class="j-ico">🧱</span><span class="j-name">Barikade</span><span class="j-count" data-jcount="barricade">0</span>
+            </button>
+            <button id="jokerRerollBtn" class="joker-btn joker-power" type="button">
+              <span class="j-ico">🔁</span><span class="j-name">Neu-Wurf</span><span class="j-count" data-jcount="reroll">0</span>
+            </button>
+            <button id="jokerDoubleBtn" class="joker-btn joker-power" type="button">
+              <span class="j-ico">🎲🎲</span><span class="j-name">Doppelwurf</span><span class="j-count" data-jcount="double">0</span>
+            </button>
+            <button id="jokerBossSpawnBtn" class="joker-btn joker-power bossOnlyJoker" type="button" hidden>
+              <span class="j-ico">👹</span><span class="j-name">Boss spawnen</span><span class="j-count" data-jcount="bossSpawn">0</span>
+            </button>
+            <button id="jokerBossRemoveBtn" class="joker-btn joker-power bossOnlyJoker" type="button" hidden>
+              <span class="j-ico">🌀</span><span class="j-name">Boss entfernen</span><span class="j-count" data-jcount="bossRemove">0</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="bossSection" class="sideSection bossSection" aria-label="Action-Bossmodus" hidden>
+        <div class="sideSectionHead">
+          <div>
+            <div class="sideKicker">WANDERNDE BOSSE · GEFAHR</div>
+            <h3>Bosskarten</h3>
+          </div>
+          <span id="bossModeBadge" class="modeBadge bossModeBadge">👹 Aktiv</span>
+        </div>
+        <div class="bossOverview" id="bossOverview" aria-label="Bossmodus Übersicht">
+          <div class="bossOverviewCard bossOverviewCard--portal"><span>🚪 Portale</span><strong>0/2 belegt</strong><small>Bossportale warten auf neue Gegner</small></div>
+          <div class="bossOverviewCard bossOverviewCard--event"><span>❓ Ereignisse</span><strong>8 Felder</strong><small>106 Karten im gemischten Deck</small></div>
+          <div class="bossOverviewCard bossOverviewCard--round"><span>🌀 Bedrohung</span><strong>Runde 1</strong><small>Jäger nach Spielerbewegung · Weltenfresser alle 5 Züge</small></div>
+        </div>
+        <div class="bossCards" id="bossSlots"></div>
+        <div class="bossEventMini bossInfoBar">
+          <span id="bossMiniLabel">👹 Letzte Bossaktion</span>
+          <strong id="bossLastEvent">Noch keine Bossaktion</strong>
+          <small id="bossRoundInfo">0/2 Portale · 8 Ereignisfelder · 106 Karten</small>
+        </div>
+      </section>
+
+      <section class="sideSection statusSection" aria-label="Spielstatus">
+        <div class="statusCompact">
+          <div class="statusMini"><span class="statusMiniIcon">▦</span><span>Board</span><strong id="boardInfo">–</strong></div>
+          <div class="statusMini"><span class="statusMiniIcon">🧱</span><span>Barikaden</span><strong id="barrInfo">–</strong></div>
+          <div class="statusMini statusNet"><span class="statusMiniIcon">●</span><span>Server</span><strong id="netStatus">Offline</strong></div>
+        </div>
+      </section>
+
+      <!-- Alles selten Benötigte liegt jetzt bewusst in einem einzigen Werkzeug-Fach. -->
+      <details id="gameToolsDetails" class="gameToolsDetails">
+        <summary>
+          <span>⚙ Mehr</span>
+          <small>Aufgeben · Verbindung · Host</small>
+        </summary>
+        <div class="gameToolsBody">
+          <div id="actionToggleRow" class="toolRow">
+            <label class="toolToggleLabel">
+              <span>
+                <strong>Action-Modus</strong>
+                <small>Joker-Extra · normalerweise bereits in der Lobby festgelegt</small>
+              </span>
+              <input id="actionModeToggle" type="checkbox" />
+            </label>
+          </div>
+
+          <div class="toolButtonGrid">
+            <button id="rematchBtn" class="btn rematchBtn" type="button" hidden>🔁 Nochmal spielen</button>
+            <button id="debugToggle" class="btn">🧪 Debug</button>
+            <button id="forfeitBtn" class="btn dangerBtn">🏳 Aufgeben</button>
+            <button id="resetBtn" class="btn subtleDangerBtn">↺ Reset</button>
+          </div>
+
+          <pre id="debugLog"></pre>
+
+          <details id="connectionDetails" class="connectionDetails innerConnectionDetails">
+            <summary>
+              <span>🌐 Verbindung & Raum</span>
+              <small>Server · Raum · Spieler</small>
+            </summary>
+            <div class="connectionDetailsBody">
+              <div id="onlineBox">
+                <div class="connectionIntro">Server ist fest hinterlegt. Raum- und Host-Werkzeuge findest du hier.</div>
+                <div class="kv"><span>Server</span><span id="serverLabel">–</span></div>
+
+                <div class="row" style="margin-top:10px;">
+                  <input id="roomCode" placeholder="Raumcode" style="flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:#e6edf3;" />
+                </div>
+
+                <div class="row" style="margin-top:10px;">
+                  <button id="hostBtn" class="btn">Host</button>
+                  <button id="joinBtn" class="btn">Beitreten</button>
+                  <button id="leaveBtn" class="btn">Trennen</button>
+                </div>
+
+                <div class="kv" style="margin-top:10px;"><span>Spieler</span><span id="netPlayers">–</span></div>
+                <div class="kv"><span>Meine Farbe</span><span id="myColor">–</span></div>
+
+                <div id="hostTools" class="row" style="display:none; margin-top:12px;">
+                  <button id="saveBtn" class="btn">Save</button>
+                  <button id="loadBtn" class="btn">Load</button>
+                  <button id="restoreBtn" class="btn">Restore</button>
+                  <input id="loadFile" type="file" accept="application/json" style="display:none;" />
+                </div>
+                <div id="autoSaveInfo" style="display:none; margin-top:8px; opacity:.75; font-size:12px;">Auto-Save: –</div>
+              </div>
+
+              <div class="row gameStartRow" style="margin-top:10px;">
+                <button id="resumeBtn" class="btn">Spiel fortsetzen</button>
+              </div>
+            </div>
+          </details>
+        </div>
+      </details>
+    </aside>
+  </div>
+
+  <div id="toast"></div>
+  <div id="netBanner"></div>
+
+  <div id="emojiOverlay" aria-hidden="true">
+    <div class="emojiOverlayCard">
+      <div id="emojiOverlayIcon">😂</div>
+      <div id="emojiOverlayName">Spieler</div>
+    </div>
+  </div>
+
+  <!-- V12.0: Boss-/Ereignis-Release-Kandidat -->
+  <div id="gamePulse" class="gamePulse" aria-hidden="true"></div>
+  <div id="gameFeedback" class="gameFeedback" aria-live="polite" aria-hidden="true">
+    <div class="gameFeedbackCard">
+      <div id="gameFeedbackIcon" class="gameFeedbackIcon">🎲</div>
+      <div class="gameFeedbackText">
+        <strong id="gameFeedbackTitle">DEIN ZUG</strong>
+        <span id="gameFeedbackSub">Du bist dran.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <div class="overlayCard">
+      <h2 id="overlayTitle">–</h2>
+      <p id="overlaySub">–</p>
+      <p id="overlayHint">–</p>
+      <div class="row overlayActions" style="justify-content:flex-end; margin-top:12px;">
+        <button id="overlayRematch" class="btn rematchPrimary" type="button" hidden>🔁 Nochmal spielen</button>
+        <button id="overlayOk" class="btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const qs = new URLSearchParams(location.search);
+      if(qs.get('compact') === '1') document.body.classList.add('compact');
+      const am = (localStorage.getItem('barikade_action_mode') || 'classic');
+      document.addEventListener('DOMContentLoaded', ()=>{
+        const t = document.getElementById('actionModeToggle');
+        if(t) t.checked = (am === 'action');
+      });
+    })();
+  </script>
+
+  <script src="game.js?v=barikade_v24_boss_reveal_portals_turns_20260929"></script>
+</body>
+</html>
