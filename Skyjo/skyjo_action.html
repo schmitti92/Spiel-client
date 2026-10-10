@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – Royal Atelier V110</title>
+<title>SKYJO Action – Royal Atelier V113</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -15,8 +15,8 @@
   --accent:#7c3aed; --accent2:#f59e0b; --good:#138a5b; --bad:#c2414d; --shadow:0 12px 32px rgba(31,41,51,.13);
   --card-w:clamp(54px,15vw,88px); --card-h:calc(var(--card-w)*1.34);
 }
-*{box-sizing:border-box} html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#faf8f3,#f0ede4);color:var(--ink)}
-button,input,select{font:inherit} button{cursor:pointer}
+*{box-sizing:border-box} html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#faf8f3,#f0ede4);color:var(--ink);overflow-anchor:none} body{position:relative} body.view-lock-active *{scroll-margin-top:0!important} body.view-lock-active .topbar{scroll-margin-top:0!important}
+button,input,select{font:inherit} button{cursor:pointer;touch-action:manipulation}
 .app{max-width:1180px;margin:auto;padding:12px 12px calc(110px + env(safe-area-inset-bottom))}
 .topbar{position:sticky;top:0;z-index:20;margin:-12px -12px 12px;padding:10px 12px;background:rgba(250,248,243,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;justify-content:space-between}
 .brand{display:flex;align-items:center;gap:9px;min-width:0}.brandmark{width:34px;height:34px;border-radius:10px;background:conic-gradient(#fbbf24,#ef4444,#8b5cf6,#3b82f6,#10b981,#fbbf24);box-shadow:inset 0 0 0 4px #fff}.brand h1{font-size:17px;margin:0;white-space:nowrap}.brand small{display:block;color:var(--muted);font-size:11px}
@@ -4848,6 +4848,143 @@ body.is-playing .play-pilebox .premium-piles .card .corner.br{bottom:10px;right:
 @media(max-width:360px){
   body.is-playing .play-pilebox .premium-piles{column-gap:6px!important;row-gap:9px!important}
 }
+
+/* ============================================================
+   V111 – stabile Handzone, keine springenden Spielkarten
+   Die maximale Handkarten-Entscheidung (Hinweis + Ablageknopf)
+   erhält schon vor dem Ziehen genug Platz. Damit verändert das
+   Ein-/Ausblenden der Aktionen die Position der Stapel nicht.
+   ============================================================ */
+body.is-playing .center-table .real-hand-zone{
+  box-sizing:border-box!important;
+  min-height:265px!important;
+}
+/* 3 Spieler haben auf breiten Geräten eine kompakte Mittelspalte. */
+@media (min-width:1100px){
+  body.is-playing[data-players="3"] .center-seat .real-hand-zone{
+    min-height:170px!important;
+  }
+}
+/* Tablet / schmales Desktopfenster: Text läuft öfter um. */
+@media (min-width:651px) and (max-width:1099px){
+  body.is-playing .center-table .real-hand-zone,
+  body.is-playing[data-players="3"] .center-seat .real-hand-zone{
+    min-height:220px!important;
+  }
+}
+/* Breite Tablets mit schmalen Mehrspieler-Spalten brauchen extra Raum. */
+@media (min-width:981px) and (max-width:1099px){
+  body.is-playing .center-table .real-hand-zone{min-height:280px!important;}
+  body.is-playing[data-players="3"] .center-seat .real-hand-zone{min-height:200px!important;}
+}
+/* Mobil: die langen Zusatztexte sind bereits ausgeblendet. */
+@media (max-width:650px){
+  body.is-playing .center-table .real-hand-zone,
+  body.is-playing[data-players="3"] .center-seat .real-hand-zone{
+    min-height:185px!important;
+  }
+}
+
+/* === V112: klar erkennbare Reaktionsleiste + Bürochef-Sticker === */
+body.is-playing .emoji-reaction-bar{
+  min-height:73px!important;gap:13px!important;
+  padding:9px 11px 7px!important;
+  background:linear-gradient(180deg,rgba(255,218,128,.075),rgba(255,255,255,.02));
+  border-top:1px solid rgba(255,216,141,.32)!important;
+  border-radius:13px 13px 0 0;
+}
+body.is-playing .emoji-bar-label{
+  font-family:Inter,system-ui,sans-serif!important;
+  font-size:10px!important;letter-spacing:1.3px!important;
+  color:#fff1cc!important;font-weight:1000!important;
+  text-shadow:0 1px 5px #000;
+}
+body.is-playing .emoji-reaction-list{gap:9px!important;align-items:center!important}
+body.is-playing .emoji-reaction-btn{
+  flex:0 0 55px!important;width:55px!important;height:55px!important;
+  border-radius:17px!important;padding:2px!important;
+  font-size:33px!important;line-height:1!important;
+  border:2px solid #f5ce87!important;
+  color:#fff!important;
+  background:linear-gradient(155deg,#476779 0%,#294354 50%,#172a39 100%)!important;
+  box-shadow:inset 0 2px 0 #ffffff42,0 0 0 1px #000b,0 5px 13px #0009,0 0 12px #f2c57230!important;
+  text-shadow:0 2px 2px #0009;
+  filter:none!important;
+  transition:transform .14s ease,box-shadow .14s ease,filter .14s ease!important;
+}
+body.is-playing .emoji-reaction-btn:focus-visible{outline:3px solid #fff8bd!important;outline-offset:3px!important}
+body.is-playing .emoji-reaction-btn:active{transform:scale(.92)!important;filter:brightness(1.2)!important}
+@media(hover:hover) and (pointer:fine){
+ body.is-playing .emoji-reaction-btn:hover{transform:translateY(-3px) scale(1.06)!important;filter:brightness(1.16)!important;box-shadow:0 6px 17px #000a,0 0 19px #ffcf7290!important}
+}
+body.is-playing .emoji-reaction-btn.haha-reaction-btn{
+  color:#432500!important;background:linear-gradient(135deg,#ffe76b,#ff983f)!important;
+  border-color:#fff2c2!important;transform:rotate(-3deg)
+}
+body.is-playing .emoji-reaction-btn.heinz-reaction-btn{
+  color:#133e3c!important;background:linear-gradient(135deg,#dcfff6,#80d3bd)!important;
+  border-color:#e9fff7!important;transform:rotate(2deg)
+}
+body.is-playing .emoji-reaction-btn.stromberg-reaction-btn{
+  color:#fff8e5!important;background:linear-gradient(135deg,#a84b3d,#6d2b2b 55%,#391f29)!important;
+  border-color:#ffc77a!important;
+  box-shadow:inset 0 1px 0 #ffffff50,0 6px 15px #000b,0 0 14px #fd9b4e6b!important;
+}
+body.is-playing .emoji-reaction-btn .haha-mini,
+body.is-playing .emoji-reaction-btn .heinz-mini,
+body.is-playing .emoji-reaction-btn .stromberg-mini{
+  font-family:Inter,system-ui,sans-serif!important;
+  font-size:11px!important;font-weight:1000!important;
+  line-height:.93!important;letter-spacing:.2px!important;
+  text-align:center!important;text-shadow:0 1px 1px #0005!important;
+}
+body.is-playing .emoji-reaction-btn .stromberg-mini{font-size:10px!important}
+body.is-playing .emoji-reaction-btn .stromberg-mini span,
+body.is-playing .emoji-reaction-btn .heinz-mini span{display:block;font-size:21px;line-height:1.0;margin-bottom:1px}
+body.is-playing .emoji-reaction-btn .haha-mini{font-size:17px!important;letter-spacing:-.3px!important}
+body.is-playing .app{padding-bottom:max(176px,calc(176px + env(safe-area-inset-bottom)))!important}
+@media(max-width:650px){
+ body.is-playing .emoji-reaction-bar{
+   min-height:75px!important;justify-content:flex-start!important;overflow-x:auto!important;
+   gap:8px!important;padding:9px 10px!important;
+   scroll-snap-type:x proximity;scrollbar-width:thin;
+   scrollbar-color:#eec580 #192838;-webkit-overflow-scrolling:touch;
+ }
+ body.is-playing .emoji-reaction-list{justify-content:flex-start!important;flex:0 0 max-content;gap:8px!important}
+ body.is-playing .emoji-reaction-btn{flex-basis:52px!important;width:52px!important;height:52px!important;font-size:32px!important;scroll-snap-align:start}
+ body.is-playing .emoji-bar-label{display:none!important}
+}
+@media(min-width:651px) and (max-width:1000px){
+ body.is-playing .emoji-reaction-bar{justify-content:flex-start!important;overflow-x:auto!important;scrollbar-width:thin;scrollbar-color:#eec580 #182632}
+ body.is-playing .emoji-reaction-list{justify-content:flex-start!important;flex:0 0 max-content}
+}
+/* Online synced via short SBxx reaction codes without changes to Render. */
+.emoji-reaction-fx.stromberg-sticker-fx{
+ width:min(88vw,620px)!important;min-width:0!important;
+ padding:21px 23px 23px!important;
+ background:linear-gradient(145deg,#f9ead4,#e4c3a5)!important;
+ color:#332b2c!important;
+ border:5px solid #fff3db!important;border-radius:20px!important;
+ box-shadow:0 10px 0 #6d4440,0 22px 42px #000a!important;
+ filter:none!important;display:flex;flex-direction:column;align-items:center;
+ gap:9px;text-align:center;
+}
+.emoji-reaction-fx.stromberg-sticker-fx.show{transform:translate(-50%,-50%) scale(1) rotate(-2deg)!important}
+.emoji-reaction-fx.stromberg-sticker-fx.leave{transform:translate(-50%,-78%) scale(1.07) rotate(4deg)!important}
+.stromberg-sticker-face{font-size:58px;line-height:1}
+.stromberg-sticker-name{font-family:Georgia,serif;font-size:clamp(15px,2.8vw,22px);font-weight:900;letter-spacing:.04em;color:#723a34}
+.stromberg-sticker-text{font-family:Georgia,serif;font-size:clamp(23px,3.35vw,37px);font-weight:900;line-height:1.12;color:#312928;text-wrap:balance}
+.stromberg-sticker-note{font-family:Inter,system-ui,sans-serif;font-size:11px;font-weight:700;color:#80584d}
+@media(max-width:650px){.emoji-reaction-fx.stromberg-sticker-fx{padding:17px 15px!important;gap:7px}.stromberg-sticker-face{font-size:42px}.stromberg-sticker-text{font-size:clamp(19px,5vw,27px)}}
+
+.stromberg-avatar-mini{display:block;width:26px;height:26px;margin:0 auto 1px;border-radius:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 84 84'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffe8ae'/%3E%3Cstop offset='1' stop-color='%23f1b06a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='84' height='84' rx='18' fill='url(%23bg)'/%3E%3Cellipse cx='42' cy='78' rx='25' ry='17' fill='%233f485d'/%3E%3Cpath d='M18 68c5-14 16-21 24-21s19 7 24 21' fill='%23d6e0ef'/%3E%3Cpath d='M42 50l-8 13h16z' fill='%23a73f35'/%3E%3Cpath d='M37 49h10v10H37z' fill='%23ffffff'/%3E%3Ccircle cx='42' cy='31' r='16' fill='%23f3c8a7'/%3E%3Cpath d='M25 29c1-14 12-23 24-20 8 2 13 8 14 17-5-4-12-7-21-7-8 0-13 3-17 10z' fill='%23554038'/%3E%3Ccircle cx='36' cy='31' r='2.3' fill='%233a2f2c'/%3E%3Ccircle cx='48' cy='31' r='2.3' fill='%233a2f2c'/%3E%3Cpath d='M36 40c4 2 8 2 12 0' stroke='%23854f40' stroke-width='2.3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M33 13l10-5 11 4 8 13c-4-6-13-10-20-10-8 0-16 2-21 9l12-11z' fill='%2360453d' opacity='.95'/%3E%3C/svg%3E");background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 2px 6px rgba(0,0,0,.28)}
+.stromberg-mini{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.stromberg-mini strong{display:block;font-size:9px;line-height:.95;letter-spacing:.35px}
+.stromberg-mini em{display:block;font-style:normal;font-size:7px;line-height:1;letter-spacing:.6px;opacity:.93}
+.stromberg-sticker-face{display:flex;align-items:center;justify-content:center}
+.stromberg-boss-art{display:block;width:104px;height:104px;border-radius:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f9e6b6'/%3E%3Cstop offset='1' stop-color='%23dea26d'/%3E%3C/linearGradient%3E%3ClinearGradient id='shirt' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ecf2ff'/%3E%3Cstop offset='1' stop-color='%23cfd9eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='36' fill='url(%23bg)'/%3E%3Cellipse cx='90' cy='155' rx='53' ry='24' fill='%23384053'/%3E%3Cpath d='M47 146c11-28 29-42 43-42s32 14 43 42' fill='url(%23shirt)'/%3E%3Cpath d='M90 109l-18 31h36z' fill='%23a63f36'/%3E%3Cpath d='M78 103h24v19H78z' fill='%23ffffff'/%3E%3Ccircle cx='90' cy='67' r='34' fill='%23f1c5a2'/%3E%3Cpath d='M54 60c3-28 23-43 49-38 16 3 28 17 28 38-8-8-22-15-40-15-14 0-27 5-37 15z' fill='%23553d36'/%3E%3Ccircle cx='77' cy='66' r='4.2' fill='%23382d2a'/%3E%3Ccircle cx='103' cy='66' r='4.2' fill='%23382d2a'/%3E%3Cpath d='M78 84c8 5 16 5 24 0' stroke='%23805245' stroke-width='4.2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M63 34c8-16 26-24 41-22 17 2 31 13 37 31-11-12-29-19-47-18-13 1-24 3-31 9z' fill='%2364473f' opacity='.97'/%3E%3C/svg%3E");background-size:cover;background-position:center;box-shadow:inset 0 0 0 3px rgba(255,255,255,.42),0 12px 22px rgba(0,0,0,.22)}
+@media(max-width:650px){.stromberg-boss-art{width:82px;height:82px;border-radius:23px}}
+
 </style>
 </head>
 <body>
@@ -4857,7 +4994,8 @@ body.is-playing .play-pilebox .premium-piles .card .corner.br{bottom:10px;right:
 <script>
 (() => {
 'use strict';
-const SKYJO_BUILD='15.32';
+try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
+const SKYJO_BUILD='15.34';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -5164,6 +5302,8 @@ function toggleCinematic(){uiPrefs.cinematic=!uiPrefs.cinematic;saveUIPrefs();sy
 function toggleAutoFocus(){uiPrefs.autoFocus=!uiPrefs.autoFocus;saveUIPrefs();showDisplaySettings()}
 function togglePerformance(){uiPrefs.performance=uiPrefs.performance===false?true:false;saveUIPrefs();syncBodyMode();showDisplaySettings();toast(uiPrefs.performance!==false?'⚡ Flüssig-Modus an':'✨ Volle Grafikeffekte an')}
 function focusMyBoard(){if(!state)return;let idx=cloud.enabled?myPlayerIndex():state.currentPlayer;if(idx<0)idx=state.currentPlayer;const el=document.getElementById(`player-${idx}`);if(el){el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});el.classList.remove('focus-flash');void el.offsetWidth;el.classList.add('focus-flash');setTimeout(()=>el.classList.remove('focus-flash'),900);haptic(7)}}
+function captureViewportLock(){const active=document.activeElement;const lock={x:window.scrollX||0,y:window.scrollY||window.pageYOffset||0,enabled:!!state};document.body.classList.add('view-lock-active');if(active&&active!==document.body&&!['INPUT','TEXTAREA','SELECT'].includes(active.tagName)&&typeof active.blur==='function'){try{active.blur()}catch(_e){}}return lock}
+function restoreViewportLock(lock){if(!lock?.enabled){document.body.classList.remove('view-lock-active');return}const apply=()=>{const maxY=Math.max(0,(document.documentElement.scrollHeight||document.body.scrollHeight||0)-window.innerHeight);const maxX=Math.max(0,(document.documentElement.scrollWidth||document.body.scrollWidth||0)-window.innerWidth);const x=Math.min(Math.max(0,Number(lock.x)||0),maxX);const y=Math.min(Math.max(0,Number(lock.y)||0),maxY);window.scrollTo(x,y)};requestAnimationFrame(()=>{apply();setTimeout(apply,34);setTimeout(()=>document.body.classList.remove('view-lock-active'),80)})}
 
 function canManageJokerCount(){
  if(!state)return false;
@@ -7085,7 +7225,7 @@ function bottomButtons(){
  }
 if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Kombination bleibt liegen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
 const emojiReactionSeen=new Set();
-const EMOJI_REACTIONS=['👍','😂','🤣','HAHA','HEINZ','😮','😭','😡','👏','🔥','❤️','🤔'];
+const EMOJI_REACTIONS=['👍','😂','🤣','HAHA','HEINZ','STROM','😮','😭','😡','👏','🔥','❤️','🤔'];
 
 
 const GAME_JOKES=[
@@ -7438,6 +7578,72 @@ const HEINZ_QUOTES=[
  'Am End muss es einer machen – und meistens weiß ich schon, wer.'
 ];
 
+const STROMBERG_QUOTES=[
+ "Die Zahlen sind super. Wenn man die schlechten einfach mal weglässt.",
+ "Bei uns ist jeder wichtig. Manche halt vor allem fürs Gruppenfoto.",
+ "Motivation ist schön. Aber ein funktionierender Drucker wäre mir lieber.",
+ "Ein guter Chef delegiert nicht Probleme, sondern Erfolgschancen.",
+ "Wenn alle mitdenken, wird es hier erstaunlich still.",
+ "Wir sind wie eine Familie. Nur ohne Erbe und mit mehr Meetings.",
+ "Das nennt sich Teamgeist: Einer macht’s und alle waren dabei.",
+ "Eine offene Tür ist gut. Besonders wenn man schnell rausmuss.",
+ "Ich bin nicht ungeduldig. Die anderen sind nur unfassbar langsam.",
+ "Wer hier Karriere machen will, braucht vor allem einen guten Kalender.",
+ "Wir sparen nicht am Personal. Wir verteilen nur die Arbeit großzügiger.",
+ "Meine Stärke ist Zuhören. Solange keiner zu lange redet.",
+ "Konflikte löse ich diplomatisch: Ich setze ein Meeting an.",
+ "Hier ist niemand ersetzbar. Außer natürlich laut Stellenplan.",
+ "Ein Problem ist erst ein Problem, wenn es schriftlich bei mir liegt.",
+ "Ich habe immer ein offenes Ohr. Das andere ist für den Feierabend reserviert.",
+ "Mein Führungsstil ist flexibel: Ich habe immer die passende Ausrede.",
+ "Wenn das Projekt scheitert, hatten wir immerhin einen schönen Projektnamen.",
+ "Wir sollten nicht nach Schuldigen suchen. Die kennen sich schon selbst.",
+ "Was mich auszeichnet? Ich kann Verantwortung sehr überzeugend verteilen.",
+ "In der Krise zeigt sich, wer mitarbeitet. Und wer PowerPoint kann.",
+ "Neue Ideen sind willkommen, sobald sie meine alten bestätigen.",
+ "Manche Mitarbeiter sind echte Rohdiamanten. Leider ohne Schleifpapier.",
+ "Ich halte mich nicht für unfehlbar. Ich werde nur selten korrigiert.",
+ "Ein guter Plan besteht aus drei Punkten: Kaffee, Hoffnung, Vertagen.",
+ "Wer pünktlich Feierabend macht, hat offenbar seine Mails nicht gelesen.",
+ "Ich nenne das keine Kontrolle. Ich nenne es betreutes Selbstmanagement.",
+ "Das Budget ist knapp. Aber an Ausreden haben wir keinen Mangel.",
+ "Mit einem freundlichen Lächeln lässt sich fast jede Deadline verschieben.",
+ "Wir sind eine moderne Firma. Sogar die Probleme kommen digital.",
+ "Ein bisschen Druck schadet nicht. Sagt meistens der, der keinen hat.",
+ "Unsere Fehlerkultur ist hervorragend: Jeder kennt die Fehler der anderen.",
+ "Ich hätte das sofort entschieden, wenn ich gewusst hätte, worum es geht.",
+ "Man muss Prioritäten setzen. Meine stehen meistens ganz oben.",
+ "Hier wird keiner klein gehalten. Die Bürostühle sind nur zu niedrig.",
+ "Wer Veränderung will, soll erst mal das Passwort aktualisieren.",
+ "Bei so viel Kompetenz im Raum würde ich lieber noch jemanden einladen.",
+ "Ich arbeite lösungsorientiert: Hauptsache, das Problem liegt woanders.",
+ "Ein Mitarbeitergespräch ist wie ein Wetterbericht: viel Gerede, wenig Einfluss.",
+ "Wenn alle an einem Strang ziehen, fragt keiner, wo der Strang befestigt ist.",
+ "Unterschätzen Sie nie die Macht eines falsch gesetzten Häkchens.",
+ "Wir haben keine Hierarchieprobleme. Nur unterschiedliche Höhenlagen.",
+ "Nicht jeder muss glänzen. Es reicht, wenn mein Büro gut beleuchtet ist.",
+ "Ich kann mit Kritik umgehen. Am besten im ungelesenen Ordner.",
+ "Unser Betriebsklima ist prima. Zumindest wenn die Heizung funktioniert.",
+ "Ich fördere Eigeninitiative. Vor allem, wenn sie mir Arbeit abnimmt.",
+ "Ein voller Terminkalender sieht auch dann nach Erfolg aus, wenn nichts passiert.",
+ "Wer immer Ja sagt, hat die letzte Besprechung wohl nicht verstanden.",
+ "Ich bin für flache Hierarchien. Solange mein Stuhl höher bleibt.",
+ "Man kann alles erklären. Nur nicht, warum der Kopierer schon wieder streikt."
+];
+let strombergQuoteBag=[];
+let strombergLastIndex=-1;
+function nextStrombergQuoteIndex(){
+ if(!strombergQuoteBag.length){
+  strombergQuoteBag=STROMBERG_QUOTES.map((_,i)=>i);
+  for(let i=strombergQuoteBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[strombergQuoteBag[i],strombergQuoteBag[j]]=[strombergQuoteBag[j],strombergQuoteBag[i]]}
+  if(strombergQuoteBag.length>1&&strombergQuoteBag[strombergQuoteBag.length-1]===strombergLastIndex){
+   [strombergQuoteBag[0],strombergQuoteBag[strombergQuoteBag.length-1]]=[strombergQuoteBag[strombergQuoteBag.length-1],strombergQuoteBag[0]];
+  }
+ }
+ const index=strombergQuoteBag.pop();strombergLastIndex=index;return index;
+}
+function isStrombergReaction(emoji){return /^SB(?:0[0-9]|[1-4][0-9])$/.test(String(emoji||''))}
+
 function randomHeinzQuote(exclude=''){
  let pool=HEINZ_QUOTES;
  if(pool.length>1&&exclude)pool=pool.filter(q=>q!==exclude);
@@ -7572,14 +7778,16 @@ function reactionActorIndex(){
 }
 function emojiReactionBarHTML(){
  if(!state)return '';
- return `<div class="emoji-reaction-bar"><span class="emoji-bar-label">REAKTION</span><div class="emoji-reaction-list">${EMOJI_REACTIONS.map(e=>`<button type="button" class="emoji-reaction-btn ${e==='HAHA'?'haha-reaction-btn':''} ${e==='HEINZ'?'heinz-reaction-btn':''}" onclick="Game.sendEmojiReaction('${e}')" aria-label="${e} senden">${e==='HAHA'?'<span class="haha-mini">HA<br>HA</span>':(e==='HEINZ'?'<span class="heinz-mini">👴<br>SPRUCH</span>':e)}</button>`).join('')}</div></div>`
+ return `<div class="emoji-reaction-bar"><span class="emoji-bar-label">REAKTIONEN ›</span><div class="emoji-reaction-list">${EMOJI_REACTIONS.map(e=>`<button type="button" class="emoji-reaction-btn ${e==='HAHA'?'haha-reaction-btn':''} ${e==='HEINZ'?'heinz-reaction-btn':''} ${e==='STROM'?'stromberg-reaction-btn':''}" onclick="Game.sendEmojiReaction('${e}')" title="${e==='STROM'?'Stromberg-inspirierter Bürospruch':e==='HEINZ'?'Heinz-Spruch':e==='HAHA'?'Haha-Sticker':e+' senden'}" aria-label="${e==='STROM'?'Stromberg-Bürospruch senden':e+' senden'}">${e==='HAHA'?'<span class="haha-mini">HA<br>HA</span>':(e==='HEINZ'?'<span class="heinz-mini"><span>👴</span>HEINZ</span>':e==='STROM'?'<span class="stromberg-mini"><span class="stromberg-avatar-mini" aria-hidden="true"></span><strong>CHEF</strong><em>STROM</em></span>':e)}</button>`).join('')}</div></div>`
 }
 function sendEmojiReaction(emoji){
  if(!state||!EMOJI_REACTIONS.includes(emoji))return;
  const actor=reactionActorIndex();
  if(actor<0||actor>=state.players.length)return;
  const prevHeinz=(state?.reactionFeed||[]).slice().reverse().find(x=>x?.emoji==='HEINZ')?.text||'';
- const r={id:uid(),actor,emoji,ts:Date.now(),text:emoji==='HEINZ'?randomHeinzQuote(prevHeinz):''};
+ const quoteIndex=emoji==='STROM'?nextStrombergQuoteIndex():-1;
+ const wireEmoji=quoteIndex>=0?`SB${String(quoteIndex).padStart(2,'0')}`:emoji;
+ const r={id:uid(),actor,emoji:wireEmoji,ts:Date.now(),text:emoji==='HEINZ'?randomHeinzQuote(prevHeinz):quoteIndex>=0?STROMBERG_QUOTES[quoteIndex]:''};
  showEmojiReaction(r);
  if(cloud.enabled&&cloud.room){
    fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reaction`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(r),timeoutMs:8000}).then(({r:resp,j})=>{if(resp?.ok&&j?.reactionSeq)cloud.reactionSeq=Math.max(Number(cloud.reactionSeq||0),Number(j.reactionSeq||0))}).catch(e=>console.warn('[skyjo reaction]',e));
@@ -7597,18 +7805,23 @@ function showEmojiReaction(r){
  const fx=document.createElement('div');
  const isHaha=r.emoji==='HAHA';
  const isHeinz=r.emoji==='HEINZ';
- fx.className=`emoji-reaction-fx global ${isHaha?'haha-sticker-fx':''} ${isHeinz?'heinz-sticker-fx':''}`;
+ const isStromberg=isStrombergReaction(r.emoji);
+ fx.className=`emoji-reaction-fx global ${isHaha?'haha-sticker-fx':''} ${isHeinz?'heinz-sticker-fx':''} ${isStromberg?'stromberg-sticker-fx':''}`;
  if(isHaha)fx.textContent='HAHA!';
  else if(isHeinz){
    const quote=escapeHTML(r.text||randomHeinzQuote());
    fx.innerHTML=`<div class="heinz-sticker-face">👴</div><div class="heinz-sticker-name">HEINZ · ZUFALLSSPRUCH</div><div class="heinz-sticker-text">${quote}</div>`;
+ }else if(isStromberg){
+   const index=Number(r.emoji.slice(2));
+   const quote=escapeHTML(STROMBERG_QUOTES[index]||'');
+   fx.innerHTML=`<div class="stromberg-sticker-face"><span class="stromberg-boss-art" aria-hidden="true"></span></div><div class="stromberg-sticker-name">STROMBERG · BÜROSPRÜCHE</div><div class="stromberg-sticker-text">„${quote}“</div><div class="stromberg-sticker-note">Frei formuliert · Chef-Karikatur · keine Serien-Zitate</div>`;
  }else fx.textContent=r.emoji;
  document.body.appendChild(fx);
  haptic(7);
  setTimeout(()=>fx.classList.add('show'),20);
  const perf=uiPrefs.performance!==false;
- const leaveMs=isHeinz?3650:(perf?850:1250);
- const removeMs=isHeinz?4000:(perf?1250:1850);
+ const leaveMs=isStromberg?5750:isHeinz?3650:(perf?850:1250);
+ const removeMs=isStromberg?6400:isHeinz?4000:(perf?1250:1850);
  setTimeout(()=>fx.classList.add('leave'),leaveMs);
  setTimeout(()=>fx.remove(),removeMs)
 }
@@ -7653,7 +7866,8 @@ function resumeTransientFlow(){
  if(ui.mode==='starChoice'){setTimeout(showStarChoice,40);return}
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.31 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+const viewportLock=captureViewportLock();
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.34 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
