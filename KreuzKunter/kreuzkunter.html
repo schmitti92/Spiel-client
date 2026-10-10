@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#06142a" />
-<title>KreuzKunter V20 – Mitspieler live</title>
+<title>KreuzKunter V21 – Computergegner</title>
 <style>
 :root{color-scheme:dark;--bg:#041126;--panel:#081d38;--panel2:#092344;--border:#164477;--text:#f5f9ff;--muted:#9eb5d5;--sky:#3fc8ff;--glow:#0beac5;--g:#76d92b;--y:#ffd429;--b:#469aff;--r:#f74c4e;--o:#ff9834;--cell:clamp(33px,3.65vw,56px)}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 42% -10%,#124075 0,#071d37 38%,#030e22 100%);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}button,input{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:not-allowed;opacity:.45}button:focus-visible,input:focus-visible{outline:3px solid #ffe36c;outline-offset:3px}#app{width:min(1720px,100%);margin:auto;padding:14px 18px 24px}.top{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.logo{font-size:clamp(25px,3.2vw,46px);font-weight:1000;letter-spacing:-1.8px;line-height:1.15;color:#f5fbff;text-shadow:0 3px 0 #2146af,0 0 16px #3676fa}.logo span{background:linear-gradient(98deg,#fc4a71,#ffc537 45%,#3df0a3 70%,#4db3ff);background-clip:text;color:transparent;-webkit-background-clip:text}.subtitle{font-size:clamp(13px,1.6vw,20px);color:#77d7ff;font-weight:800}.topright{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.badge{border:1px solid var(--border);border-radius:12px;background:#071b36;padding:7px 12px;min-height:49px;text-align:center;min-width:110px}.badge small{display:block;color:var(--muted)}.badge b{font-size:18px}.iconbtn{border:1px solid #23538a;border-radius:12px;background:#092344;min-width:46px;min-height:46px;font-size:24px}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,340px);gap:14px;align-items:start}.panel{border:1px solid #1d4979;background:linear-gradient(140deg,#071a34,#061831 70%,#061428);border-radius:19px;box-shadow:inset 0 0 0 1px #081d3c;padding:16px}.boardpane{min-width:0}.board-scroll{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;padding:5px 2px 9px;scrollbar-color:#245c97 transparent}.board-layout{display:grid;grid-template-columns:minmax(525px,1fr) minmax(117px,147px);gap:14px;min-width:670px;align-items:start}.board-core{min-width:0}.matrix{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:3px;width:100%}.headcell{height:clamp(29px,3.1vw,45px);min-width:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#0d3056,#05172a);border:1px solid #2d5682;border-radius:7px;color:#fff;font-size:clamp(14px,1.6vw,22px);font-weight:950}.headcell.start{border-color:#47f5ef;color:#68f9ed;box-shadow:0 0 12px #0ac9e288}.gridarea{margin-top:5px}.tile{position:relative;aspect-ratio:1;border:1px solid #0d1930;border-radius:7px;min-width:0;padding:0;display:grid;place-items:center;isolation:isolate;box-shadow:inset 0 3px 6px #ffffff23,inset 0 -4px 5px #0003;touch-action:manipulation}.tile[data-color=g],.bonuscell.g,.die.g,.choose.g{background:linear-gradient(150deg,#a6eb35,#5bc322)}.tile[data-color=y],.bonuscell.y,.die.y,.choose.y{background:linear-gradient(150deg,#ffef62,#f9bc16)}.tile[data-color=b],.bonuscell.b,.die.b,.choose.b{background:linear-gradient(145deg,#77caff,#2878e9)}.tile[data-color=r],.bonuscell.r,.die.r,.choose.r{background:linear-gradient(145deg,#ff8581,#e93246)}.tile[data-color=o],.bonuscell.o,.die.o,.choose.o{background:linear-gradient(145deg,#ffbe55,#f87b1d)}.tile .star{color:#fffdf2;text-shadow:0 1px 2px #535353,0 0 3px white;font-size:clamp(18px,2.25vw,30px);line-height:1}.tile .cross{color:#08192d;font-weight:1000;font-size:clamp(24px,2.6vw,40px);line-height:1;text-shadow:0 1px 2px #fff9}.tile.marked{filter:saturate(.72)}.tile.pending{outline:3px solid #f7fbff;outline-offset:-4px;box-shadow:0 0 15px #fafaffaa,inset 0 0 18px #fff7;z-index:2}.tile.pending .cross{color:#fff;text-shadow:0 1px 3px #061328}.tile.start{border-inline:2px solid #a8ffff}.tile.started{box-shadow:0 0 12px #14e1ff91,inset 0 0 9px #99ebff75}.tile:disabled{opacity:1;cursor:default}.tile.selectable:hover:not(:disabled){filter:brightness(1.12)}.scoregrid{margin-top:8px}.scorecell{background:#fff4d7;color:#1b1b26;min-width:0;display:grid;place-items:center;border-radius:6px;font-size:clamp(14px,1.8vw,23px);font-weight:950;height:clamp(29px,3vw,39px)}.scorecell.h{color:#e04729}.jokerstrip{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:3px;padding:7px 10px;border-radius:9px;background:#f1f0e8;color:#111922}.jokerlabel{font-size:20px;font-weight:900;margin-right:8px}.jokerico{border:2px solid #1f3444;border-radius:100%;width:clamp(21px,2.9vw,34px);height:clamp(21px,2.9vw,34px);display:grid;place-items:center;font-size:clamp(13px,1.7vw,21px);font-weight:900}.jokerico.used{color:#adabaf;border-color:#b7b7b7;text-decoration:line-through;background:#ddd}.scorings{display:grid;gap:9px}.bonuses{border:1px solid #24456c;border-radius:13px;padding:9px;background:#051329;display:grid;gap:5px}.bonusrow{display:grid;grid-template-columns:1fr 1fr;gap:5px}.bonuscell{min-height:34px;border-radius:7px;display:grid;place-items:center;color:#081426;font-size:19px;font-weight:950}.bonuscell.taken{opacity:.5;text-decoration:line-through}.ledger{display:grid;gap:7px}.ledgerline{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:14px;font-weight:850}.ledgervalue{min-width:44px;min-height:36px;border-radius:8px;background:#fff1d8;color:#1c2940;display:grid;place-items:center;font-size:18px;font-weight:900}.ledgerline.final{margin-top:8px;border-top:1px dashed #5286b4;padding-top:12px;font-size:17px}.ledgerline.final .ledgervalue{background:#d9f9ff;color:#005267}.hint{color:#9fb7d8;font-size:12px;margin:12px 2px 0}.side{display:grid;gap:13px}.panel h2{font-size:19px;margin:0 0 12px}.rollset{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:14px}.die{display:grid;place-items:center;height:50px;border-radius:10px;border:2px solid #3f6992;box-shadow:inset 0 3px 5px #fff7,0 3px 9px #0009;font-size:27px;font-weight:1000;color:#10213b}.die.num{background:linear-gradient(140deg,#fff,#bdccdf);color:#0a1830}.die.joker{background:linear-gradient(140deg,#222e46,#06101e);color:white}.die.selected{outline:3px solid #ffffff;outline-offset:2px;box-shadow:0 0 18px #27d8ff}.die.removed{filter:grayscale(.8);opacity:.24}.die:disabled{opacity:.4}.die.removed:disabled{opacity:.2}.die:not(:disabled):hover{transform:translateY(-2px)}.selectlabel{font-size:13px;color:#b9d6f9;margin-bottom:10px;min-height:36px}.action{min-height:49px;display:flex;justify-content:center;align-items:center;gap:9px;font-size:16px;font-weight:900;border-radius:11px;border:2px solid #266ea8;padding:8px 13px;background:#12385e;width:100%;transition:filter .14s}.action:hover:not(:disabled){filter:brightness(1.14)}.action.go{background:linear-gradient(135deg,#06b963,#07db92);border-color:#4dfed5;color:#032c29;box-shadow:0 0 12px #0de4ac66;font-size:20px;min-height:60px}.action.ok{background:linear-gradient(135deg,#198bef,#1451e8);border-color:#31cdff}.action.pass{background:linear-gradient(#283e64,#142744);border-color:#4a6995}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.choices{margin:13px 0;padding:11px;border:1px solid #1d477b;background:#06172c;border-radius:11px}.choices label{display:block;font-weight:800;font-size:13px;margin-bottom:8px}.chips{display:flex;flex-wrap:wrap;gap:7px}.choose{border-radius:8px;border:2px solid #ffffff77;min-width:42px;min-height:42px;color:#061827;font-size:19px;font-weight:950}.choose.num{background:#f9f4e9}.choose.on{outline:3px solid var(--sky);outline-offset:1px}.message{background:#102b4b;border-left:3px solid #3acaff;border-radius:7px;padding:10px 11px;margin-top:13px;font-size:13px;min-height:45px}.message.bad{background:#482335;border-color:#ff6875}.playerlist{display:grid;gap:7px}.player{width:100%;min-height:51px;display:flex;align-items:center;gap:9px;border-radius:10px;background:#071b35;border:1px solid #1a477a;padding:5px 8px;text-align:left}.player.current{border:2px solid #ffd04c;background:#102944}.bubble{width:34px;height:34px;flex:none;border-radius:50%;border:2px solid #ffffff95;background:linear-gradient(140deg,#f34e57,#9916aa);box-shadow:0 0 10px #ca77ff30}.player:nth-child(5n+2) .bubble{background:linear-gradient(140deg,#47d8f2,#1750ee)}.player:nth-child(5n+3) .bubble{background:linear-gradient(140deg,#59ea9f,#0c9c78)}.player:nth-child(5n+4) .bubble{background:linear-gradient(140deg,#ffe066,#f09c20)}.player:nth-child(5n+5) .bubble{background:linear-gradient(140deg,#fc9798,#ee3e6e)}.pname{font-weight:850;flex:1;min-width:0;overflow-wrap:anywhere}.pinfo{font-size:11px;color:var(--muted)}.points{background:#0d2b4b;border:1px solid #355985;border-radius:9px;min-width:48px;text-align:center;padding:5px;font-size:18px;font-weight:950}.footpanel{border-radius:12px;background:linear-gradient(110deg,#3e1528,#271f39);padding:14px;border:1px solid #66334a}.tiny{font-size:12px;color:#a6bbd5}.footnote{margin-top:12px;color:#6b91b7;font-size:12px;text-align:center}.mask{position:fixed;inset:0;z-index:10;background:#010710d9;display:grid;place-items:center;padding:18px;overflow-y:auto}.modal{width:min(570px,100%);max-height:calc(100vh - 35px);overflow:auto;border:1px solid #4084bd;border-radius:19px;background:linear-gradient(140deg,#0d2c50,#06162d);padding:22px;box-shadow:0 20px 70px #000b}.modal h2{font-size:26px;margin:0 0 8px}.modal p,.modal li{color:#c9d9ef}.modal .minihead{font-size:14px;color:#88d5f7;font-weight:900;text-transform:uppercase;letter-spacing:1px}.field{margin:12px 0}.field label{font-size:13px;font-weight:800;color:#bddef6;display:block;margin-bottom:4px}input[type=text]{border:1px solid #4379a3;background:#05162c;border-radius:10px;padding:11px;color:#fff;width:100%;font-size:16px}input[type=radio]{accent-color:#29d4f5}.modechoice{display:grid;grid-template-columns:1fr 1fr;gap:8px}.modechoice label{background:#0b3153;border:1px solid #356990;border-radius:11px;padding:11px}.names{max-height:220px;overflow:auto}.row{display:flex;align-items:center;gap:10px;justify-content:space-between}.flat{border:1px solid #49739b;border-radius:9px;background:#113558;padding:6px 12px}.hidden{display:none!important}.rightsmall{color:#8db5d8;font-size:12px;text-align:right}.notice{background:#0b3358;border-radius:10px;padding:12px;color:#cae4fb}.modal ul{padding-left:20px}.modal li{margin-bottom:7px}.statuspill{background:#092f4c;border:1px solid #236d9c;border-radius:999px;padding:4px 10px;color:#9feafa;font-size:13px}.summary{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px;border-radius:10px;background:#102f52;margin:8px 0}.summary strong{font-size:23px;color:#5af6df}.divider{border-top:1px solid #25587b;margin:14px 0}.activepick{color:#fdde7c}.boardcaption{display:flex;justify-content:space-between;gap:12px;margin:0 2px 10px;color:#aac7e8;font-size:13px;flex-wrap:wrap}.spin{animation:pop .26s ease-out}@keyframes pop{from{transform:scale(.94);filter:brightness(1.7)}to{transform:scale(1)}}
@@ -340,10 +340,28 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 @media(max-width:850px){.kk-live-list{grid-template-columns:1fr}}
 @media(max-width:480px){.kk-live-area{padding:9px;margin:10px 0}.kk-live-person{padding:9px}.kk-live-sheet{gap:1px;padding:3px}.kk-live-tile{border-radius:2px}.kk-live-name{font-size:15px}.kk-live-score{font-size:14px}.kk-live-tile.marked:after,.kk-live-tile.preview:after{font-size:clamp(9px,3vw,14px)}}
 
+
+/* V21 computer challenge – visual separation and active-AI lock */
+.modechoice.ai-modechoice{grid-template-columns:repeat(3,minmax(0,1fr));}
+.modechoice.ai-modechoice label{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:center;font-weight:800;font-size:13px;cursor:pointer}
+.modechoice.ai-modechoice label:has(input:checked){border-color:#48dcfb;background:linear-gradient(135deg,#123e67,#082445);box-shadow:0 0 0 2px #47ddf52a inset}
+.ai-config{border:1px solid #38baf080;border-radius:13px;background:linear-gradient(140deg,#102e51,#071a33);padding:14px;margin:12px 0}
+.ai-config h3{font-size:17px;margin:0 0 8px;color:#c9f4ff}
+.ai-config .field select{width:100%;padding:10px 11px;border-radius:10px;border:1px solid #4b86b6;background:#061d38;color:#fff;min-height:42px}
+.ai-difficulty{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.ai-difficulty label{border:1px solid #346694;background:#092744;border-radius:11px;padding:8px 5px;text-align:center;font-size:12px;cursor:pointer}
+.ai-difficulty label:has(input:checked){border-color:#ffe279;background:#604519;color:#fff4c6}
+.ai-difficulty input{accent-color:#ffd34f}
+.ai-difficulty small{display:block;font-size:10px;opacity:.85}
+.ai-thinking-note{padding:10px 12px;border:1px solid #b6dd536b;border-radius:10px;background:#43511d77;color:#f8f6d1;font-weight:800;margin-bottom:10px}
+.player.ai-player .bubble{display:grid;place-items:center;background:linear-gradient(135deg,#2a5fbd,#4324aa)!important}
+.player.ai-player .bubble:before{content:'🤖';font-size:18px}
+.player.ai-player .pname:after{content:' · KI';font-size:11px;color:#93ddff}
+@media(max-width:620px){.modechoice.ai-modechoice{grid-template-columns:1fr 1fr}.modechoice.ai-modechoice label{padding:9px 5px}.ai-difficulty{gap:4px}.ai-difficulty label{font-size:11px;padding:7px 4px}}
 </style>
 </head>
 <body>
-<div id="app"><header class="top"><div class="brand"><div class="logo">Kreuz<span>Kunter</span></div><div class="subtitle">– Online Edition <span class="statuspill" id="mode-title">Offline-Testversion</span></div></div><div class="topright"><a class="kk-hub-return" href="../index.html" onclick="return kkReturnToHub()" title="Zur Spielauswahl">🏠 Spielauswahl</a><div class="badge"><small>Wurf</small><b id="round-badge">–</b></div><div class="badge"><small>Joker übrig</small><b id="jokers-badge">8 / 8</b></div><button class="iconbtn" data-action="online" title="Online-Raum erstellen oder beitreten" aria-label="Online spielen">🌐</button><button class="iconbtn rule-top" data-action="help" title="Vollständige Spielanleitung" aria-label="Spielanleitung öffnen">📖 <span>Regeln</span></button><button class="iconbtn" data-action="new" title="Neue Partie" aria-label="Neue Partie">⚙</button></div></header>
+<div id="app"><header class="top"><div class="brand"><div class="logo">Kreuz<span>Kunter</span></div><div class="subtitle">– Lokal · KI · Online <span class="statuspill" id="mode-title">Offline-Testversion</span></div></div><div class="topright"><a class="kk-hub-return" href="../index.html" onclick="return kkReturnToHub()" title="Zur Spielauswahl">🏠 Spielauswahl</a><div class="badge"><small>Wurf</small><b id="round-badge">–</b></div><div class="badge"><small>Joker übrig</small><b id="jokers-badge">8 / 8</b></div><button class="iconbtn" data-action="online" title="Online-Raum erstellen oder beitreten" aria-label="Online spielen">🌐</button><button class="iconbtn rule-top" data-action="help" title="Vollständige Spielanleitung" aria-label="Spielanleitung öffnen">📖 <span>Regeln</span></button><button class="iconbtn" data-action="new" title="Neue Partie" aria-label="Neue Partie">⚙</button></div></header>
 <div class="mobile-actions" aria-label="Schnellaktionen für das Spiel"><div class="mobile-turnline"><strong id="mobile-turn-name">Spieler 1</strong><span class="turn-status" id="mobile-turn-state">Partie bereit</span></div><div id="mobile-dices" class="mobile-dice-track" aria-label="Würfel im Schnellmenü"></div><button class="action go" type="button" id="mobile-roll" data-mobile-action="roll">🎲 Würfeln</button><button class="action ok" type="button" id="mobile-commit" data-mobile-action="commit">✓ Eintragen</button><button class="action pass" type="button" id="mobile-pass" data-mobile-action="pass">✕ Passen</button></div>
 <nav class="mobile-jump" aria-label="Schnellnavigation">
 <button type="button" data-action="jumpboard">🎨 Brett</button>
@@ -360,7 +378,7 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 <section class="kk-live-area" id="kk-live-opponents" aria-label="Mitspieler live" hidden>
   <div class="kk-live-head"><div><h2>👥 Mitspieler live</h2><p>Scrolle nach unten und verfolge ihre Kreuze direkt auf den Spielzetteln.</p></div><span class="kk-live-counter" id="kk-live-count">0 Mitspieler</span></div>
   <div class="kk-live-list" id="kk-live-list" aria-live="off"></div>
-</section><div class="footnote">KreuzKunter V20 · Mitspieler live · Online-Wartelobby · Lokal &amp; Online · Lokale Spielstände auf diesem Gerät · Online-Speicherung: Firestore oder temporär im Render-Arbeitsspeicher</div></div>
+</section><div class="footnote">KreuzKunter V21 · Computer-KI · Mitspieler live · Online-Wartelobby · Lokal &amp; Online · Lokale Spielstände auf diesem Gerät · Online-Speicherung: Firestore oder temporär im Render-Arbeitsspeicher</div></div>
 <div class="mask hidden" id="dialog"><div class="modal" id="dialog-body" role="dialog" aria-modal="true" aria-labelledby="dialog-heading"></div></div>
 <script>
 
@@ -414,15 +432,15 @@ function jumpToSection(id){
 function renderOpponentsLive(){
  const section=$('kk-live-opponents'),target=$('kk-live-list'),counter=$('kk-live-count');
  if(!section||!target||!counter)return;
- const active=!!(NET&&state&&state.mode==='online'&&state.phase!=='lobby'&&Number.isInteger(NET.index));
+ const active=!!(state&&(NET&&state.mode==='online'&&state.phase!=='lobby'&&Number.isInteger(NET.index)||!NET&&state.aiConfig&&state.phase!=='lobby'));
  section.hidden=!active;if(!active){target.replaceChildren();return;}
- const others=state.players.map((p,i)=>({p,i})).filter(({i})=>i!==NET.index);
- counter.textContent=others.length+' Mitspieler';
+ const others=state.players.map((p,i)=>({p,i})).filter(({i})=>i!==(NET?NET.index:0));
+ counter.textContent=others.length+(state.aiConfig?' Computergegner':' Mitspieler');
  target.innerHTML=others.map(({p,i})=>{
   const confirmed=new Set(p.cells||[]),recent=new Set(p.lastMove||[]);
-  const draft=state.phase==='select'&&i===state.picker&&Array.isArray(remotePreviews[i])?remotePreviews[i]:[];
+  const draft=state.phase==='select'&&i===state.picker?(NET?(Array.isArray(remotePreviews[i])?remotePreviews[i]:[]):state.pending):[];
   const preview=new Set(draft.filter(n=>Number.isInteger(n)&&n>=0&&n<105&&!confirmed.has(n)));
-  const scoreNow=score(p).total,online=NET.presence?.[i]!==false;
+  const scoreNow=score(p).total,online=!NET||NET.presence?.[i]!==false;
   const turnNow=!state.finished&&i===state.picker&&state.phase==='select';
   const isRolling=!state.finished&&i===state.active&&state.phase==='ready';
   const chips=[`<span class="kk-live-chip ${online?'':'offline'}">${online?'🟢 Online':'⚪ Offline'}</span>`,
@@ -520,6 +538,7 @@ function validSavedGame(o){
   !o.globalColor||COLOR.some(c=>typeof o.globalColor[c]!=='boolean')||
   !Array.isArray(o.pending)||o.pending.length>5||o.pending.some(i=>!Number.isInteger(i)||i<0||i>=105)||
   new Set(o.pending).size!==o.pending.length)return false;
+ if(o.aiConfig&&(!(o.mode==='local')||!Number.isInteger(o.aiConfig.count)||o.aiConfig.count<1||o.aiConfig.count>3||o.players.length!==o.aiConfig.count+1||!['easy','normal','hard'].includes(o.aiConfig.difficulty)))return false;
  if(o.phase==='select'&&o.dice.length!==(o.mode==='solo'?4:6))return false;
  if(o.mode==='solo'&&o.turn>30)return false;
  return true;
@@ -664,7 +683,7 @@ function updateBoardWindow(){
 }
 function changeBoardView(){boardView=boardView==='fit'?'zoom':'fit';try{localStorage.setItem(BOARD_VIEW_KEY,boardView);}catch(e){}render();if(boardView==='zoom')requestAnimationFrame(centerBoardOnStart);}
 function setMsg(s,bad=false){flash=s;flashBad=bad;$('game-message').textContent=s;$('game-message').className='message'+(bad?' bad':'');}
-function render(){if(!state)return;const p=player();const sc=score(p);$('mode-title').textContent=NET?'Online · '+NET.code:state.mode==='solo'?'Solo (Offline)':'Lokal · '+state.players.length+' Spieler';$('round-badge').textContent=state.turn+(state.mode==='solo'?' / 30':'');$('jokers-badge').textContent=(8-p.jokerUsed)+' / 8';$('board-owner').textContent=`Spielfeld: ${p.name}`;$('board-status').textContent=state.finished?'Partie beendet':state.phase==='ready'?'Nächster Wurf bereit':state.turn<=3&&state.mode!=='solo'?'Freie Würfelwahl (erste 3 Würfe)':state.picker===state.active?'Aktiver Würfler':'Mitspieler wählt aus den Restwürfeln';
+function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]:player();const sc=score(p);$('mode-title').textContent=NET?'Online · '+NET.code:state.aiConfig?'🤖 Computer · '+({easy:'Leicht',normal:'Mittel',hard:'Experte'}[state.aiConfig.difficulty]):state.mode==='solo'?'Solo (Offline)':'Lokal · '+state.players.length+' Spieler';$('round-badge').textContent=state.turn+(state.mode==='solo'?' / 30':'');$('jokers-badge').textContent=(8-p.jokerUsed)+' / 8';$('board-owner').textContent=`Spielfeld: ${p.name}`;$('board-status').textContent=state.finished?'Partie beendet':state.phase==='ready'?'Nächster Wurf bereit':state.turn<=3&&state.mode!=='solo'?'Freie Würfelwahl (erste 3 Würfe)':state.picker===state.active?'Aktiver Würfler':'Mitspieler wählt aus den Restwürfeln';
  let contextual='';
  if(state.finished)contextual='Spielende: Die höchste Gesamtpunktzahl gewinnt; bei Gleichstand entscheiden die übrigen Joker.';
  else if(state.phase==='lobby')contextual='Online-Lobby: Erst nach dem Start wird gewürfelt.';
@@ -684,7 +703,7 @@ function render(){if(!state)return;const p=player();const sc=score(p);$('mode-ti
  $('score-ribbon').querySelector('.score-ribbon-total small').textContent=state.finished?'Endstand':'Zwischenstand';
  $('mobile-turn-name').textContent=state.players[state.picker]?.name||'Spieler';
  $('mobile-turn-state').textContent=state.finished?'🏆 Spiel beendet':state.phase==='ready'?'🎲 Würfeln':state.phase==='lobby'?'⏳ Lobby':NET&&NET.index!==state.picker?'⏳ Bitte warten':state.phase==='select'?'✖ Kreuze wählen':'Bereit';
- const candidateSet=possibleCells();$('tiles').innerHTML=ROWS.join('').split('').map((col,i)=>{const marked=filled(p,i),pending=state.pending.includes(i),can=state.phase==='select'&&(!NET||(NET.connected&&NET.index===state.picker))&&!marked&&candidateSet.has(i);const a=marked||pending?'<span class="cross" aria-hidden="true">×</span>':STARSET.has(i)?'<span class="star" aria-hidden="true">★</span>':'';return `<button type="button" class="tile ${marked?'marked':''} ${pending?'pending':''} ${i%15===7?'start':''} ${can?'selectable candidate':''}" data-color="${col}" data-glyph="${COLOR_SYMBOLS[col]}" data-cell="${i}" ${(!can&&!pending)?'disabled':''} aria-label="${COLS[i%15]}${Math.floor(i/15)+1}, ${COLNAMES[col]}${STARSET.has(i)?', Stern':''}${marked?', bereits markiert':''}${pending?', ausgewählt':''}" aria-pressed="${pending}">${a}</button>`;}).join('');
+ const candidateSet=aiPendingAction()?new Set():possibleCells();$('tiles').innerHTML=ROWS.join('').split('').map((col,i)=>{const marked=filled(p,i),pending=(!aiPendingAction()&&state.pending.includes(i)),can=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&NET.index===state.picker))&&!marked&&candidateSet.has(i);const a=marked||pending?'<span class="cross" aria-hidden="true">×</span>':STARSET.has(i)?'<span class="star" aria-hidden="true">★</span>':'';return `<button type="button" class="tile ${marked?'marked':''} ${pending?'pending':''} ${i%15===7?'start':''} ${can?'selectable candidate':''}" data-color="${col}" data-glyph="${COLOR_SYMBOLS[col]}" data-cell="${i}" ${(!can&&!pending)?'disabled':''} aria-label="${COLS[i%15]}${Math.floor(i/15)+1}, ${COLNAMES[col]}${STARSET.has(i)?', Stern':''}${marked?', bereits markiert':''}${pending?', ausgewählt':''}" aria-pressed="${pending}">${a}</button>`;}).join('');
  $('score-top').innerHTML=TOP.map((n,i)=>`<span class="scorecell ${i===7?'h':''} ${p.columnAwards[i]===n?'earned':state.globalColumn[i]?'other-earned':''}" title="Erste vollständige Spalte ${COLS[i]}">${n}</span>`).join('');$('score-bottom').innerHTML=LOW.map((n,i)=>`<span class="scorecell ${i===7?'h':''} ${p.columnAwards[i]===n&&state.globalColumn[i]?'earned':''}" title="Spätere vollständige Spalte ${COLS[i]}">${n}</span>`).join('');
  $('completion-overview').textContent=`${p.cells.length} / 105 Felder · ${Object.keys(p.colorAwards).length}/5 Farben`;
  $('color-progress-bars').innerHTML=COLOR.map(c=>{const total=21,have=p.cells.filter(i=>colorAt(i)===c).length;return `<div class="color-progress"><span>${COLNAMES[c]} ${p.colorAwards[c]!=null?'✓':''}</span><div class="meter" role="progressbar" aria-label="${COLNAMES[c]}" aria-valuemin="0" aria-valuemax="21" aria-valuenow="${have}"><span style="--bar-color:var(--${c});width:${100*have/total}%"></span></div><span class="count">${have}/21</span></div>`;}).join('');
@@ -695,7 +714,7 @@ function render(){if(!state)return;const p=player();const sc=score(p);$('mode-ti
  // Sichtbare Würfelzahlen entsprechend der Original-Spielmodi:
  // Solo: 2 Farb- + 2 Zahlenwürfel; Mehrspieler: 3 + 3.
  // Nach Auswahl des aktiven Spielers stehen ab Wurf 4 die restlichen 4 zur Verfügung.
- const isSelect=state.phase==='select'&&(!NET||(NET.connected&&NET.index===state.picker));
+ const isSelect=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&NET.index===state.picker));
  const dicePerType=state.mode==='solo'&&!NET?2:3;
  const hintMove=bestMove();
  const shownDice=state.dice.length?state.dice:[...Array.from({length:dicePerType},()=>({type:'color',val:null})),...Array.from({length:dicePerType},()=>({type:'num',val:null}))];
@@ -716,7 +735,7 @@ function render(){if(!state)return;const p=player();const sc=score(p);$('mode-ti
   }).join('')}</div></div>`;
  }).join('');
  $('extra-choices').innerHTML=previewText();
- const editable=state.phase==='select'&&(!NET||(NET.connected&&NET.index===state.picker))&&!!state.pending.length&&!(NET&&NET.awaiting);
+ const editable=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&NET.index===state.picker))&&!!state.pending.length&&!(NET&&NET.awaiting);
  $('undo-button').disabled=!editable;
  $('clear-button').disabled=!editable;
  $('edit-count').innerHTML=editable?`<strong>${state.pending.length}</strong> ${state.pending.length===1?'Kreuz':'Kreuze'} vorgemerkt`:'Noch keine Kreuze vorgemerkt';
@@ -752,22 +771,23 @@ function render(){if(!state)return;const p=player();const sc=score(p);$('mode-ti
  $('dice-instructions').innerHTML=isSelect?'<div class="direct-tip">👆 <strong>Sofort Kreuze setzen:</strong> Tippe direkt auf ein hell markiertes Feld. Die endgültige Kombination wird erst beim Eintragen automatisch festgelegt. Farb- und Zahlenwürfel kannst du vorher optional antippen.</div>':hasRestrictedDice?'Du wählst aus den übrigen 4 Würfeln.':dicePerType===2?'Solo: 2 Farbwürfel + 2 Zahlenwürfel.':'Mehrspieler: 3 Farbwürfel + 3 Zahlenwürfel.';
  $('commit-button').classList.toggle('ready-commit',isSelect&&state.pending.length>0&&!validateMove(true));
  $('commit-button').disabled=!isSelect||(NET&&NET.awaiting)||!!validateMove(true);
- $('roll-button').disabled=state.phase!=='ready'||(NET&&(!NET.connected||NET.awaiting||NET.index!==state.active));$('roll-button').textContent=state.phase==='select'?'🎲 Wurf läuft':state.turn?'🎲 Nächster Wurf':'🎲 Würfeln';$('pass-button').disabled=!isSelect||(NET&&NET.awaiting);
+ $('roll-button').disabled=state.phase!=='ready'||aiPendingAction()||(NET&&(!NET.connected||NET.awaiting||NET.index!==state.active));$('roll-button').textContent=state.phase==='select'?'🎲 Wurf läuft':state.turn?'🎲 Nächster Wurf':'🎲 Würfeln';$('pass-button').disabled=!isSelect||(NET&&NET.awaiting);
  $('mobile-roll').disabled=$('roll-button').disabled; $('mobile-commit').disabled=$('commit-button').disabled; $('mobile-pass').disabled=$('pass-button').disabled;
  $('mobile-roll').textContent=$('roll-button').textContent; $('mobile-commit').textContent=state.pending.length?'✓ '+state.pending.length+' eintragen':'✓ Eintragen';
  $('online-feed').hidden=!(Array.isArray(state.history)&&state.history.length);
  {const events=Array.isArray(state.history)?state.history.slice(-5).reverse():[];$('online-feed').innerHTML=`<h3>🕘 Letzte Aktionen</h3>${events.length?`<ol>${events.map(x=>`<li>${ESC(x)}</li>`).join('')}</ol>`:'<div class="tiny">Noch keine Spielaktionen</div>'}`;}
- $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?NET.presence[state.picker]===false:state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>`<div class="player ${i===state.picker?'current':''}"><span class="bubble"></span><span class="pname">${ESC(q.name)} ${i===state.active?'🎲':''}<span class="pinfo" style="display:block">${q.cells.length}/105 Felder · ${Object.keys(q.colorAwards).length} Farbboni${NET&&NET.presence&&!NET.presence[i]?' · <span class="offline-indicator">offline</span>':''}${NET&&NET.host&&state.phase==='lobby'&&NET.presence&&!NET.presence[i]?` <button class="flat" data-kick="${i}" type="button">Entfernen</button>`:''}</span><span class="player-meter" role="progressbar" aria-label="Spielfeldfortschritt ${ESC(q.name)}" aria-valuemin="0" aria-valuemax="105" aria-valuenow="${q.cells.length}"><span style="width:${Math.min(100,Math.max(0,100*q.cells.length/105))}%"></span></span></span><button type="button" class="mini-open" data-opponent="${i}" aria-label="Spielfeld von ${ESC(q.name)} ansehen">Brett</button><span class="points">${score(q).total}</span></div>`).join('');$('active-player').textContent=state.players[state.active].name;$('turn-info').textContent=state.phase==='select'?`Jetzt kann ${state.players[state.picker].name} direkt Kreuze setzen.`:state.phase==='lobby'?'Host startet, sobald alle verbunden sind.':state.finished?'Gewinnerwertung abgeschlossen.':state.turn?'Bereit für den nächsten Wurf.':'Du kannst starten.';
+ $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?NET.presence[state.picker]===false:state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>`<div class="player ${i===state.picker?'current':''} ${isComputer(i)?'ai-player':''}"><span class="bubble"></span><span class="pname">${ESC(q.name)} ${i===state.active?'🎲':''}<span class="pinfo" style="display:block">${q.cells.length}/105 Felder · ${Object.keys(q.colorAwards).length} Farbboni${NET&&NET.presence&&!NET.presence[i]?' · <span class="offline-indicator">offline</span>':''}${NET&&NET.host&&state.phase==='lobby'&&NET.presence&&!NET.presence[i]?` <button class="flat" data-kick="${i}" type="button">Entfernen</button>`:''}</span><span class="player-meter" role="progressbar" aria-label="Spielfeldfortschritt ${ESC(q.name)}" aria-valuemin="0" aria-valuemax="105" aria-valuenow="${q.cells.length}"><span style="width:${Math.min(100,Math.max(0,100*q.cells.length/105))}%"></span></span></span><button type="button" class="mini-open" data-opponent="${i}" aria-label="Spielfeld von ${ESC(q.name)} ansehen">Brett</button><span class="points">${score(q).total}</span></div>`).join('');$('active-player').textContent=state.players[state.active].name;$('turn-info').textContent=state.phase==='select'?`Jetzt kann ${state.players[state.picker].name} direkt Kreuze setzen.`:state.phase==='lobby'?'Host startet, sobald alle verbunden sind.':state.finished?'Gewinnerwertung abgeschlossen.':state.turn?'Bereit für den nächsten Wurf.':'Du kannst starten.';
  setMsg(flash||'Nach dem Würfeln kannst du direkt auf passende Felder tippen. Die Würfel sind ebenfalls anklickbar.',flashBad);
  persistOnlineDraft();
  renderOpponentsLive();
+ scheduleComputerTurn();
  if(window.innerWidth<=680)requestAnimationFrame(updateBoardWindow);
  }
  function randomFace(arr){return arr[Math.floor(Math.random()*arr.length)];}
  function logLocalAction(text){if(!NET){if(!Array.isArray(state.history))state.history=[];state.history.push(text);state.history=state.history.slice(-15);}}
- function roll(){if(NET){sendOnline({action:'roll'});return;}if(state.phase!=='ready')return;state.turn++;state.picker=state.active;state.accepted=null;state.colorDie=null;state.numDie=null;state.chosenColor=null;state.chosenNumber=null;state.manualColor=false;state.manualNumber=false;state.pending=[];const n=state.mode==='solo'?2:3;state.dice=[...Array.from({length:n},()=>({type:'color',val:randomFace(DICE_COLOR)})),...Array.from({length:n},()=>({type:'num',val:randomFace(DICE_NUM)}))];state.phase='select';flash='Setze direkt Kreuze! Die Würfelkombination wird erst beim Eintragen verbindlich gewählt.';flashBad=false;state.lastRoll=state.dice.map(d=>d.val);logLocalAction('Wurf '+state.turn+': '+state.players[state.active].name+' würfelt');save();render();}
+ function roll(){if(NET){sendOnline({action:'roll'});return;}if(state.phase!=='ready'||(isComputer(state.active)&&!aiBusy))return;state.turn++;state.picker=state.active;state.accepted=null;state.colorDie=null;state.numDie=null;state.chosenColor=null;state.chosenNumber=null;state.manualColor=false;state.manualNumber=false;state.pending=[];const n=state.mode==='solo'?2:3;state.dice=[...Array.from({length:n},()=>({type:'color',val:randomFace(DICE_COLOR)})),...Array.from({length:n},()=>({type:'num',val:randomFace(DICE_NUM)}))];state.phase='select';flash='Setze direkt Kreuze! Die Würfelkombination wird erst beim Eintragen verbindlich gewählt.';flashBad=false;state.lastRoll=state.dice.map(d=>d.val);logLocalAction('Wurf '+state.turn+': '+state.players[state.active].name+' würfelt');save();render();}
  function dieClick(index){
-  if(state.phase!=='select'||!available(index))return;
+  if((isComputer(state.picker)&&!aiBusy)||state.phase!=='select'||!available(index))return;
   const d=state.dice[index];if(!d)return;
   const old={colorDie:state.colorDie,numDie:state.numDie,manualColor:state.manualColor,manualNumber:state.manualNumber,chosenColor:state.chosenColor,chosenNumber:state.chosenNumber};
   if(d.type==='color'){
@@ -892,7 +912,7 @@ function render(){if(!state)return;const p=player();const sc=score(p);$('mode-ti
  showDialog(html);$('rulecheck-close').addEventListener('click',hideDialog);
 }
 function cellClick(index){
-  if(state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker)))return;
+  if(isComputer(state.picker)||state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker)))return;
   const at=state.pending.indexOf(index);
   if(at>=0){
    state.pending.splice(at,1);
@@ -914,7 +934,7 @@ function cellClick(index){
   flashBad=false;save();render();sendLivePreview();
  }
  function undoSelection(all=false){
-  if(state.phase!=='select'||!state.pending.length||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
+  if(isComputer(state.picker)||state.phase!=='select'||!state.pending.length||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
   if(all)state.pending=[];
   else state.pending.pop();
   if(!state.pending.length){
@@ -926,7 +946,7 @@ function cellClick(index){
   flashBad=false;save();render();sendLivePreview();
  }
  function commit(){
-  if(state.phase!=='select'||(NET&&NET.index!==state.picker))return;
+  if((isComputer(state.picker)&&!aiBusy)||state.phase!=='select'||(NET&&NET.index!==state.picker))return;
   const option=bestMove();
   if(!option){setMsg(validateMove()||'Die Würfelkombination passt nicht.',true);return;}
   const cd=state.dice[option.ci],nd=state.dice[option.ni];
@@ -938,7 +958,7 @@ function cellClick(index){
   stepPicker();
  }
  function pass(){
-  if(state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
+  if((isComputer(state.picker)&&!aiBusy)||state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
   if(state.pending.length&&!window.confirm(`${state.pending.length} nicht eingetragene Kreuze verwerfen und passen?`))return;
   if(NET){sendOnline({action:'pass'});return;}
   const p=player();p.lastMove=[];p.took=false;logLocalAction('Wurf '+state.turn+': '+p.name+' passt');if(state.picker===state.active)state.accepted=null;stepPicker();
@@ -966,9 +986,46 @@ function cellClick(index){
  function escUser(str){return ESC((str||'').trim().slice(0,24));}
  function showDialog(html){$('dialog-body').classList.remove('rule-modal','kk-waiting-modal');$('dialog-body').innerHTML=html;$('dialog').classList.remove('hidden');}
  function hideDialog(){$('dialog').classList.add('hidden');$('dialog-body').innerHTML='';}
- function showStart(){const ongoing=state&&state.turn>0&&!state.finished;showDialog(`<div class="minihead">Willkommen beim Würfelduell</div><h2 id="dialog-heading">🎲 KreuzKunter</h2><p>105 Felder, fünf Farben, sechs Blockgrößen und jetzt drei Sterne je Farbe. Kreuze die richtigen Farbfelder an und sammle Bonuspunkte!</p><div class="modechoice"><label><input type="radio" name="mode" value="solo" checked> Solo · 1 Spieler</label><label><input type="radio" name="mode" value="local"> Lokal · 2–6 Spieler</label></div><div class="field" id="amount-area" style="display:none"><label>Spielerzahl</label><div class="row"><button class="flat" id="minus-players" type="button">−</button><strong id="amount-show">2 Spieler</strong><button class="flat" id="plus-players" type="button">+</button></div></div><div class="names" id="name-fields"></div><div class="notice tiny">Du kannst hier offline spielen. Für getrennte Geräte nutze den Globus 🌐 oben: Dort kannst du deinen KreuzKunter-Onlineraum öffnen.</div><div class="divider"></div><button class="rule-start" type="button" id="start-help">📘 Vollständige Spielanleitung lesen</button><div class="actions"><button class="action ok" id="start-game" type="button">Neue Partie starten</button><button class="action pass" id="resume-game" type="button" ${!ongoing?'disabled':''}>Fortsetzen</button></div><p class="tiny">Hinweis: Eine neue Partie überschreibt deinen vorherigen lokalen Spielstand.</p>`);
-  let mode='solo',amount=2;const nameFields=$('name-fields');function writeNames(){nameFields.innerHTML=Array.from({length:mode==='solo'?1:amount},(_,i)=>`<div class="field"><label for="name${i}">Spieler ${i+1}</label><input id="name${i}" type="text" maxlength="24" placeholder="${i===0?'Spieler 1':'Spieler '+(i+1)}" value="${i===0?'':'Spieler '+(i+1)}"></div>`).join('');}
-  writeNames();$('start-help').addEventListener('click',()=>showHelp(true));$('dialog-body').querySelectorAll('input[name=mode]').forEach(el=>el.addEventListener('change',()=>{mode=el.value;$('amount-area').style.display=mode==='solo'?'none':'';writeNames();}));$('minus-players').addEventListener('click',()=>{amount=Math.max(2,amount-1);$('amount-show').textContent=amount+' Spieler';writeNames();});$('plus-players').addEventListener('click',()=>{amount=Math.min(6,amount+1);$('amount-show').textContent=amount+' Spieler';writeNames();});$('start-game').addEventListener('click',()=>{if(ongoing&&!window.confirm('Die laufende Partie wird überschrieben. Wirklich eine neue Partie starten?'))return;const names=Array.from(nameFields.querySelectorAll('input')).map((el,i)=>el.value.trim().slice(0,24)||'Spieler '+(i+1));if(NET){NET.stopped=true;clearTimeout(NET.timer);clearTimeout(NET.syncTimer);try{NET.ws.close();}catch(e){}NET=null;}try{const n=getNetInfo();n.active=false;localStorage.setItem(NET_INFO_KEY,JSON.stringify(n));sessionStorage.removeItem(NET_DRAFT_KEY);}catch(e){}state=initial(names,mode);hideDialog();flash='Das Spielfeld ist bereit. Viel Spaß beim Würfeln!';flashBad=false;save();render();});$('resume-game').addEventListener('click',()=>{hideDialog();render();});}
+ function showStart(){
+  const ongoing=state&&state.turn>0&&!state.finished;
+  showDialog(`<div class="minihead">Willkommen beim Würfelduell</div><h2 id="dialog-heading">🎲 KreuzKunter</h2>
+   <p>105 Felder, fünf Farben, sechs Blockgrößen und drei Sterne je Farbe. Wähle deinen Spielmodus:</p>
+   <div class="modechoice ai-modechoice"><label><input type="radio" name="mode" value="solo" checked> 🧍 Solo<small>Alleine üben</small></label><label><input type="radio" name="mode" value="local"> 👥 Lokal<small>2–6 Personen</small></label><label><input type="radio" name="mode" value="ai"> 🤖 Computer<small>3 KI-Stufen</small></label></div>
+   <div class="field" id="amount-area" style="display:none"><label>Spielerzahl</label><div class="row"><button class="flat" id="minus-players" type="button">−</button><strong id="amount-show">2 Spieler</strong><button class="flat" id="plus-players" type="button">+</button></div></div>
+   <div id="ai-setup" class="ai-config" hidden><h3>🤖 Computergegner einstellen</h3>
+     <div class="field"><label for="ai-count">Wie viele Computergegner?</label><select id="ai-count"><option value="1">1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div>
+     <div class="field"><label>Schwierigkeitsgrad</label><div class="ai-difficulty"><label><input type="radio" name="ai-difficulty" value="easy"> Leicht<small>Spontane Züge</small></label><label><input type="radio" name="ai-difficulty" value="normal"> Mittel<small>Taktische Züge</small></label><label><input type="radio" name="ai-difficulty" value="hard" checked> ⭐ Experte<small>Vorausschau</small></label></div></div>
+     <p class="tiny">Experte bewertet Sterne, Spalten, Farben, Jokerverbrauch und simulierte Folgewürfe. Die KI kennt keine zukünftigen Würfel.</p>
+   </div>
+   <div class="names" id="name-fields"></div>
+   <div class="notice tiny">🤖 Computerpartien laufen lokal und offline. Für echte Mitspieler auf anderen Geräten nutze den Globus 🌐 oben.</div>
+   <div class="divider"></div><button class="rule-start" type="button" id="start-help">📘 Vollständige Spielanleitung lesen</button>
+   <div class="actions"><button class="action ok" id="start-game" type="button">Neue Partie starten</button><button class="action pass" id="resume-game" type="button" ${!ongoing?'disabled':''}>Fortsetzen</button></div>
+   <p class="tiny">Hinweis: Eine neue Partie ersetzt den vorherigen lokalen Spielstand.</p>`);
+  let mode='solo',amount=2;
+  const nameFields=$('name-fields');
+  function writeNames(){nameFields.innerHTML=Array.from({length:mode==='local'?amount:1},(_,i)=>`<div class="field"><label for="name${i}">${mode==='ai'?'Dein Spielername':'Spieler '+(i+1)}</label><input id="name${i}" type="text" maxlength="24" placeholder="${i===0?'Spieler 1':'Spieler '+(i+1)}" value="${i===0?'':'Spieler '+(i+1)}"></div>`).join('');}
+  function updateMode(){const ai=mode==='ai';$('amount-area').style.display=mode==='local'?'':'none';$('ai-setup').hidden=!ai;writeNames();}
+  updateMode();
+  $('start-help').addEventListener('click',()=>showHelp(true));
+  $('dialog-body').querySelectorAll('input[name=mode]').forEach(el=>el.addEventListener('change',()=>{mode=el.value;updateMode();}));
+  $('minus-players').addEventListener('click',()=>{amount=Math.max(2,amount-1);$('amount-show').textContent=amount+' Spieler';writeNames();});
+  $('plus-players').addEventListener('click',()=>{amount=Math.min(6,amount+1);$('amount-show').textContent=amount+' Spieler';writeNames();});
+  $('start-game').addEventListener('click',()=>{
+   if(ongoing&&!window.confirm('Die laufende Partie wird überschrieben. Wirklich eine neue Partie starten?'))return;
+   const names=Array.from(nameFields.querySelectorAll('input')).map((el,i)=>el.value.trim().slice(0,24)||'Spieler '+(i+1));
+   aiCancel();
+   if(NET){NET.stopped=true;clearTimeout(NET.timer);clearTimeout(NET.syncTimer);try{NET.ws.close();}catch(e){}NET=null;}
+   try{const n=getNetInfo();n.active=false;localStorage.setItem(NET_INFO_KEY,JSON.stringify(n));sessionStorage.removeItem(NET_DRAFT_KEY);}catch(e){}
+   if(mode==='ai'){
+    const count=Number($('ai-count').value),difficulty=$('dialog-body').querySelector('input[name=ai-difficulty]:checked')?.value||'hard';
+    aiStartGame(names[0],count,difficulty);
+   }else{
+    state=initial(names,mode);hideDialog();flash='Das Spielfeld ist bereit. Viel Spaß beim Würfeln!';flashBad=false;save();render();
+   }
+  });
+  $('resume-game').addEventListener('click',()=>{hideDialog();render();});
+ }
  function showHelp(returnToStart=false){
  const sections=[
  {id:'ziel',title:'🎯 Ziel und Spielvorbereitung',content:`
@@ -1268,10 +1325,244 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
  ok('Prüfung beschädigter Spielstände',!validSavedGame({...initial(['A'],'solo'),turn:-1}) && !validSavedGame({...initial(['A'],'solo'),players:[{...emptyPlayer('A'),cells:[7,7]}]}));
  ok('Spielstand des neuen Solospiels gültig',validSavedGame(initial(['A'],'solo')));
  ok('Spielstand einer frischen Mehrspielerpartie gültig',validSavedGame(initial(['A','B'],'local')));window.KreuzKunterTests=results;return results;}
+/* KreuzKunter V21 – local computer opponents. Same legal placements and scoring as humans. */
+let aiTimer=null,aiCommitTimer=null,aiBusy=false,aiMoveCache=null;
+const aiStaticPatterns=(()=>{
+ const patterns=[],seen=new Set();
+ for(let i=0;i<105;i++){
+  const block=[...region(i)].sort((a,b)=>a-b),key=block[0];
+  if(seen.has(key))continue;seen.add(key);
+  for(let bits=1;bits<(1<<block.length);bits++){
+   const cells=block.filter((_,k)=>(bits>>k)&1);
+   if(cells.length>5)continue;
+   const selected=new Set(cells),q=[cells[0]],walk=new Set(q);
+   for(let k=0;k<q.length;k++)for(const j of neighbors(q[k]))if(selected.has(j)&&!walk.has(j)){walk.add(j);q.push(j);}
+   if(walk.size!==cells.length)continue;
+   patterns.push({cells,color:colorAt(i),size:cells.length,stars:cells.filter(x=>STARSET.has(x)).length,start:cells.some(x=>x%15===7),columns:[...new Set(cells.map(x=>x%15))]});
+  }
+ }
+ return patterns;
+})();
+function isComputer(i){return !NET&&!!(state?.aiConfig&&Number.isInteger(i)&&i>0&&i<state.players.length&&i<=state.aiConfig.count);}
+function aiPendingAction(){return !!(!NET&&state?.aiConfig&&(state.phase==='ready'&&isComputer(state.active)||state.phase==='select'&&isComputer(state.picker)));}
+function aiCancel(){clearTimeout(aiTimer);clearTimeout(aiCommitTimer);aiTimer=null;aiCommitTimer=null;aiMoveCache=null;}
+function aiBoardStats(p){
+ const used=new Uint8Array(105),col=new Uint8Array(15),color={g:0,y:0,b:0,r:0,o:0};
+ for(const i of p.cells){used[i]=1;col[i%15]++;color[colorAt(i)]++;}
+ const frontier=new Uint8Array(105);
+ for(let i=0;i<105;i++)if(!used[i])frontier[i]=(i%15===7||neighbors(i).some(n=>used[n]))?1:0;
+ return {used,col,color,frontier,total:p.cells.length,jokers:8-p.jokerUsed};
+}
+function aiDiceOptions(dice,blocked=[]){
+ const banned=new Set(blocked),c=[],n=[];
+ dice.forEach((d,i)=>{if(banned.has(i))return;if(d.type==='color')c.push({i,val:d.val});if(d.type==='num')n.push({i,val:d.val});});
+ return {c,n};
+}
+function aiGenerateMoves(board,dice,blocked=[],limit=Infinity){
+ const {c,n}=aiDiceOptions(dice,blocked),moves=[];
+ if(!c.length||!n.length)return moves;
+ const combinations=[];
+ for(const cd of c)for(const nd of n){const cost=(cd.val==='*'?1:0)+(nd.val==='?'?1:0);if(cost>board.jokers)continue;combinations.push({ci:cd.i,ni:nd.i,cc:cd.val,nv:nd.val,cost});}
+ for(const pattern of aiStaticPatterns){
+  if(pattern.cells.some(i=>board.used[i]))continue;
+  if(!board.total&&!pattern.start)continue;
+  if(board.total&&!pattern.start&&!pattern.cells.some(i=>board.frontier[i]))continue;
+  let option=null;
+  for(const combo of combinations){
+   if(combo.cc!=='*'&&combo.cc!==pattern.color)continue;
+   if(combo.nv!=='?'&&combo.nv!==pattern.size)continue;
+   if(!option||combo.cost<option.cost||(combo.cost===option.cost&&combo.ci<option.ci))option=combo;
+  }
+  if(option)moves.push({...option,...pattern});
+  if(moves.length>=limit)return moves;
+ }
+ return moves;
+}
+function aiPositionValue(board,p){
+ // Long-term board potential, measured only from public, permanent crosses.
+ let val=0;
+ for(let c=0;c<15;c++){
+  const v=board.col[c];
+  if(p.columnAwards[c]==null)val+=(state.globalColumn[c]?LOW[c]:TOP[c])*.92*Math.pow(v/7,3.1);
+ }
+ for(const color of COLOR)if(p.colorAwards[color]==null){
+  val+=(state.globalColor[color]?3:5)*1.35*Math.pow(board.color[color]/21,2.5);
+ }
+ return val;
+}
+function aiMoveValue(m,board,p,opponentMax,difficulty){
+ const u=board.used,cols=board.col,counts=board.color;
+ let val=m.stars*2.55+m.size*.34-m.cost*(difficulty==='easy'?0.52:difficulty==='normal'?1.28:1.7);
+ const hitCols={};for(const i of m.cells){const c=i%15;hitCols[c]=(hitCols[c]||0)+1;}
+ for(const [x,count] of Object.entries(hitCols)){
+  const col=Number(x),was=cols[col],after=was+count;
+  if(p.columnAwards[col]!=null)continue;
+  const prize=state.globalColumn[col]?LOW[col]:TOP[col];
+  val+=prize*.92*(Math.pow(after/7,2.8)-Math.pow(was/7,2.8));
+  if(after===7)val+=prize*.6;
+ }
+ const before=counts[m.color],after=before+m.size;
+ if(p.colorAwards[m.color]==null){
+  const prize=state.globalColor[m.color]?3:5;
+  val+=prize*1.65*(Math.pow(after/21,2.15)-Math.pow(before/21,2.15));
+  if(after===21)val+=prize*1.4;
+ }
+ let opened=0,newFrontier=0;
+ for(const i of m.cells){for(const j of neighbors(i))if(!u[j]&&!m.cells.includes(j)&&!board.frontier[j])newFrontier++;if(i%15===7)opened++;}
+ val+=Math.min(7,newFrontier)*.27+opened*.04;
+ // Prefer placing stones that connect to other usable blocks, not isolated corners.
+ const alreadyBefore=new Set(m.cells);
+ let starReach=0;
+ for(const i of m.cells)for(const n of neighbors(i))if(!u[n]&&!alreadyBefore.has(n)&&STARSET.has(n)&&!board.frontier[n])starReach++;
+ val+=Math.min(starReach,3)*.22;
+ // In expert, avoid prematurely triggering the ending when still behind.
+ if(difficulty==='hard'&&p.colorAwards[m.color]==null&&after===21&&Object.keys(p.colorAwards).length>=1){
+  const forecast=score(p).total+m.stars*2+5-m.cost;
+  if(forecast+2<opponentMax)val-=Math.min(15,(opponentMax-forecast)*1.3);
+  else if(forecast>opponentMax)val+=2;
+ }
+ return val;
+}
+function aiAfterMove(board,m){
+ const used=board.used.slice(),col=board.col.slice(),color={...board.color};
+ for(const i of m.cells){used[i]=1;col[i%15]++;color[colorAt(i)]++;}
+ const frontier=new Uint8Array(105);
+ for(let i=0;i<105;i++)if(!used[i])frontier[i]=(i%15===7||neighbors(i).some(n=>used[n]))?1:0;
+ return {used,col,color,frontier,total:board.total+m.size,jokers:board.jokers-m.cost};
+}
+function aiSeededRolls(seed,count){
+ let x=(seed>>>0)||2654435761;
+ const next=()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return x>>>0;};
+ const out=[];
+ for(let k=0;k<count;k++){
+  const dice=[];
+  for(let j=0;j<3;j++)dice.push({type:'color',val:DICE_COLOR[next()%6]});
+  for(let j=0;j<3;j++)dice.push({type:'num',val:DICE_NUM[next()%6]});
+  out.push(dice);
+ }
+ return out;
+}
+function aiExpectedFuture(board,p,rolls,oppMax){
+ let sum=0;
+ for(const dice of rolls){
+  const possibilities=aiGenerateMoves(board,dice);
+  let best=0;
+  for(const m of possibilities){
+   const worth=aiMoveValue(m,board,p,oppMax,'hard');
+   if(worth>best)best=worth;
+  }
+  sum+=best;
+ }
+ return sum/rolls.length;
+}
+function aiFindBlockingPair(m){
+ // From roll 4, the active player removes exactly two dice. The other
+ // players may reuse the remaining four; reduce their strongest options.
+ if(state.turn<=3||state.picker!==state.active||state.players.length<2)return {ci:m.ci,ni:m.ni,threat:0};
+ const availableDice=aiDiceOptions(state.dice);
+ const choices=[];
+ for(const c of availableDice.c)for(const n of availableDice.n){
+  if(c.val!=='*'&&c.val!==m.color)continue;
+  if(n.val!=='?'&&n.val!==m.size)continue;
+  const cost=(c.val==='*'?1:0)+(n.val==='?'?1:0);
+  if(cost!==m.cost)continue;
+  choices.push({ci:c.i,ni:n.i});
+ }
+ if(choices.length<2)return {ci:m.ci,ni:m.ni,threat:0};
+ const opponents=state.players.map((p,i)=>({p,i})).filter(x=>x.i!==state.picker);
+ let best=null;
+ for(const pair of choices){
+  let threat=0;
+  for(const {p} of opponents){
+   const board=aiBoardStats(p),actions=aiGenerateMoves(board,state.dice,[pair.ci,pair.ni]);
+   let strongest=0;
+   for(const otherMove of actions){
+    const val=aiMoveValue(otherMove,board,p,score(state.players[state.picker]).total,'normal');
+    if(val>strongest)strongest=val;
+   }
+   threat+=strongest;
+  }
+  if(!best||threat<best.threat)best={ci:pair.ci,ni:pair.ni,threat};
+ }
+ return best;
+}
+function aiChooseMove(){
+ const p=state.players[state.picker];if(!p)return null;
+ const difficulty=state.aiConfig?.difficulty||'normal';
+ const board=aiBoardStats(p);
+ const forbidden=state.turn>3&&state.picker!==state.active&&Array.isArray(state.accepted)?state.accepted:[];
+ const candidates=aiGenerateMoves(board,state.dice,forbidden);
+ if(!candidates.length)return null;
+ const opponentMax=Math.max(...state.players.filter((_,i)=>i!==state.picker).map(q=>score(q).total));
+ for(const m of candidates)m.heuristic=aiMoveValue(m,board,p,opponentMax,difficulty);
+ candidates.sort((a,b)=>b.heuristic-a.heuristic||a.cost-b.cost||b.size-a.size);
+ if(difficulty==='easy'){
+  const pool=candidates.slice(0,Math.max(5,Math.floor(candidates.length*.68)));
+  return pool[Math.floor(Math.random()*pool.length)];
+ }
+ if(difficulty==='normal')return candidates[0];
+ // Expert: one-step expectimax with 18 equally likely future sets of 3+3 dice;
+ // compare strong candidate placements and avoid moves with low future mobility.
+ const seed=(state.turn*66307+state.picker*81023+board.total*3083+board.col.reduce((a,b,i)=>a+(i+1)*b,0))>>>0;
+ const rolls=aiSeededRolls(seed,18);
+ let best=null,bestVal=-Infinity;
+ const top=candidates.slice(0,Math.min(13,candidates.length));
+ for(const m of top){
+  const future=aiExpectedFuture(aiAfterMove(board,m),p,rolls,opponentMax);
+  // Short-term gain matters, future is uncertain and discounted.
+  const denied=aiFindBlockingPair(m);
+  const value=m.heuristic+.56*future-.24*denied.threat;
+  if(value>bestVal){best={...m,ci:denied.ci,ni:denied.ni};bestVal=value;}
+ }
+ return best||candidates[0];
+}
+function scheduleComputerTurn(){
+ if(!aiPendingAction()||aiBusy){if(!aiPendingAction())aiCancel();return;}
+ if(aiTimer||aiCommitTimer)return;
+ const snapshot=state,phase=state.phase,turn=state.turn,picker=state.picker;
+ aiTimer=setTimeout(()=>{
+  aiTimer=null;
+  if(!aiPendingAction()||state!==snapshot||state.turn!==turn||state.picker!==picker||state.phase!==phase||aiBusy)return;
+  aiBusy=true;
+  try{
+   if(phase==='ready'){
+    roll();
+   }else if(phase==='select'){
+    const choice=aiChooseMove();
+    if(!choice){pass();}
+    else{
+     state.pending=[...choice.cells];
+     state.colorDie=choice.ci;state.numDie=choice.ni;
+     state.chosenColor=state.dice[choice.ci].val==='*'?choice.color:null;
+     state.chosenNumber=state.dice[choice.ni].val==='?'?choice.size:null;
+     state.manualColor=true;state.manualNumber=true;
+     flash=`🤖 ${state.players[picker].name} setzt ${choice.size} Kreuz${choice.size===1?'':'e'} und plant den nächsten Zug.`;
+     save();render();
+     const expectedState=state,expectedTurn=state.turn,expectedPicker=state.picker;
+     aiCommitTimer=setTimeout(()=>{
+      aiCommitTimer=null;
+      if(NET||state!==expectedState||state.phase!=='select'||state.turn!==expectedTurn||state.picker!==expectedPicker||!isComputer(expectedPicker))return;
+      aiBusy=true;
+      try{commit();}finally{aiBusy=false;scheduleComputerTurn();}
+     },340);
+    }
+   }
+  }catch(err){console.error('[KreuzKunter AI]',err);flash='Computerzug konnte nicht ausgeführt werden. Bitte neu starten.';flashBad=true;}
+  finally{aiBusy=false;if(!aiCommitTimer)scheduleComputerTurn();}
+ },phase==='ready'?520:420);
+}
+function aiStartGame(humanName,count,difficulty){
+ aiCancel();
+ const names=[humanName,...Array.from({length:count},(_,i)=>'Computer '+(i+1))];
+ state=initial(names,'local');state.aiConfig={count,difficulty};
+ flash='🤖 Computergegner bereit! Du würfelst zuerst.';flashBad=false;
+ hideDialog();save();render();
+}
+
  window.KreuzKunterQA={validSavedGame,validSavedPlayer,selftest,collectBoardBalance,showBalance,showScoreDetail,showCompare,score,validateMove,finishThrow,stepPicker,pass,initial,region,neighbors,colorAt,explainUnavailable,getState:()=>JSON.parse(JSON.stringify(state)),start:(names,mode='local')=>{state=initial(names,mode);flash='Testpartie';render();},setState:s=>{state=s;flash='Test';render();},getBoard:()=>ROWS.map(r=>r.slice()),roll,dieClick,cellClick,commit,undoSelection,projectPoints,possibleCells,matchingOptions,moveChoices,bestMove};
  state=restore();if(state&&state.phase==='select'){if(!state.manualColor){state.colorDie=null;state.chosenColor=null;}if(!state.manualNumber){state.numDie=null;state.chosenNumber=null;}}if(!state){state=initial(['Spieler 1'],'solo');flash='Willkommen bei KreuzKunter!';}else{flash='Dein letzter Spielstand wurde geladen.';}render();if(location.search.includes('selftest=1')){console.table(selftest());}const remembered=getNetInfo();const requestedMode=new URLSearchParams(location.search).get('mode');
  if(requestedMode==='online')showOnline();
- else if(requestedMode==='local')showStart();
+ else if(requestedMode==='local'||requestedMode==='computer')showStart();
  else if(remembered.active&&remembered.url&&remembered.code&&remembered.token)resumeLastOnline();
  else if(!restore())showStart();
  if(boardView==='zoom')requestAnimationFrame(centerBoardOnStart);
