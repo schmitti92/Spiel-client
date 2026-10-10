@@ -2099,6 +2099,13 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
 .bo-round-info{margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);color:#bfd0da;font:800 10px/1.3 Arial,sans-serif;text-align:center}
 @media(max-width:560px){.bo-rounds{grid-template-columns:1fr}.bo-round-btn{min-height:62px;grid-template-columns:auto auto auto;gap:8px}.bo-round-btn strong{font-size:22px}}
 
+/* Haupt-Spielauswahl von jeder Spielphase erreichen */
+.business-hub-return{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+ min-height:39px;padding:8px 12px;border-radius:12px;border:1px solid #72cbab;
+ background:linear-gradient(135deg,#105c45,#148a65);color:#fff;font:bold 13px Arial,sans-serif;
+ cursor:pointer;box-shadow:0 3px 12px #001b1480}
+.business-hub-return:focus-visible{outline:3px solid #ffe38a;outline-offset:2px}
+@media(max-width:650px){.business-hub-return{min-height:36px;padding:7px 10px;font-size:12px}}
 </style>
 </head>
 <body data-business-mode="online">
@@ -2108,6 +2115,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
     <div class="title-mini">👑 DAS GROSSE BUSINESS</div>
     <div class="turn-center"><div id="turnPill" class="turn-pill">Am Zug: –</div><div id="roundDisplay" class="round-display">Runde 1 · Zug 1</div></div>
     <div class="top-actions">
+      <button class="business-hub-return" type="button" onclick="if(confirm('Zur Spielauswahl zurückkehren? Du verlässt deinen Online-Raum auf diesem Gerät.')) boLeaveToLobby()" title="Zurück zu allen Spielen">🏠 Spielauswahl</button>
       <button id="soundBtn" class="top-icon-btn" title="Sound an/aus">🔊</button>
       <button id="fullBtn" class="top-icon-btn" title="Vollbild">⛶</button>
       <button id="rulesBtn" class="top-icon-btn" title="Kurzregeln">📖</button><button id="reloadPageBtn" class="top-icon-btn reload-page-btn" title="Seite aktualisieren" aria-label="Seite aktualisieren">⟳</button><button id="newGameBtn" class="top-icon-btn" title="Neues Spiel">↻</button>
