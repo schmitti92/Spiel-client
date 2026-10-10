@@ -5278,6 +5278,50 @@ body.is-playing .app{padding-bottom:max(176px,calc(176px + env(safe-area-inset-b
  #modal.royal-host .royal-modal,#modal.royal-host .royal-scroll-wrap,#modal.royal-host .royal-used-panel,#modal.royal-host .royal-side-scoreboard,#modal.royal-host .royal-detail-row,#modal.royal-host .royal-total-wrap,#modal.royal-host .royal-podium-slot,#modal.royal-host .royal-extra-board,#modal.royal-host .royal-finale-actions{animation:none!important;transform:none!important;opacity:1!important}
 }
 
+
+/* V116: Nur die neue Pergament-Abrechnung zählt animiert – nicht mehr die alte Zählbühne. */
+#modal.royal-host .royal-counting .royal-detail-row{
+ animation:none!important;transition:none;
+}
+#modal.royal-host .royal-counting .royal-detail-row.royal-count-item-pending > *,
+#modal.royal-host .royal-counting .royal-used-item.royal-count-item-pending > *{visibility:hidden!important}
+#modal.royal-host .royal-counting .royal-detail-row.royal-count-item-pending{background:rgba(123,89,39,.055)}
+#modal.royal-host .royal-counting .royal-detail-row.royal-count-item-revealed{
+ animation:royalCountReveal .43s cubic-bezier(.16,.76,.34,1) both!important;
+ background:rgba(244,192,74,.13);
+ border-radius:9px;
+}
+#modal.royal-host .royal-counting .royal-used-item.royal-count-item-revealed{animation:royalCountReveal .43s ease both}
+#modal.royal-host .royal-counting .royal-player-pill:disabled{cursor:default;opacity:.8}
+#modal.royal-host .royal-counting .royal-player-pill.active:disabled{opacity:1}
+#modal.royal-host .royal-count-headline{font-size:clamp(12px,1.2vw,16px);margin:7px 0 0;font-weight:800;color:#f3d78c}
+#modal.royal-host .royal-count-progress{font-weight:850;letter-spacing:.06em;color:#f2dfb9}
+#modal.royal-host .royal-current-equation{font-size:16px;font-weight:750;color:#d7ebf4;min-height:24px;font-variant-numeric:tabular-nums}
+#modal.royal-host .royal-doubling-line{display:none;font-size:14px;color:#f8c172;margin-top:6px;font-weight:850}
+#modal.royal-host .royal-doubling-line.show{display:block;animation:royalCountReveal .5s ease-out both}
+#modal.royal-host .royal-count-status{grid-column:1/-1;min-height:43px;display:flex;align-items:center;justify-content:center;text-align:center;color:#f3dfa8;font-weight:800;font-size:clamp(12px,1.3vw,15px);padding:8px 12px;border:1px solid rgba(236,203,114,.20);border-radius:14px}
+#modal.royal-host .royal-counting .royal-total-wrap{animation:none!important;opacity:1!important;transform:none!important}
+#modal.royal-host .royal-counting .royal-total-value{font-variant-numeric:tabular-nums}
+#modal.royal-host .royal-counting .royal-total-value.royal-count-pulse{animation:royalCountPulse .25s ease-in-out both}
+@keyframes royalCountReveal{from{opacity:.12;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes royalCountPulse{from{filter:brightness(1.65);transform:scale(1.1)}to{filter:brightness(1);transform:scale(1)}}
+@media(max-width:680px){
+ #modal.royal-host .royal-counting .royal-current-equation{font-size:13px;min-height:19px}
+ #modal.royal-host .royal-counting .royal-count-headline{font-size:11px}
+ #modal.royal-host .royal-counting .royal-count-status{min-height:34px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ #modal.royal-host .royal-counting .royal-detail-row.royal-count-item-revealed,
+ #modal.royal-host .royal-counting .royal-used-item.royal-count-item-revealed,
+ #modal.royal-host .royal-counting .royal-total-value.royal-count-pulse{animation:none!important;transform:none!important;filter:none!important}
+}
+
+
+#modal.royal-host .royal-counting .royal-scroll-head{position:sticky;top:0;z-index:3;border-radius:15px;background:linear-gradient(180deg,#0c2335 0%,#0b1e2d 100%);padding:9px 9px 11px;border:1px solid rgba(237,201,121,.18)}
+#modal.royal-host .royal-counting .royal-head-score{margin:8px auto 0;font-size:clamp(12px,1.3vw,16px);color:#efddb0;font-weight:800}
+#modal.royal-host .royal-counting .royal-head-score b{display:inline-block;margin-left:7px;min-width:36px;font-size:clamp(20px,2.3vw,30px);color:#f5ce70;line-height:1;font-variant-numeric:tabular-nums}
+html:has(#modalBack.royal-active),body:has(#modalBack.royal-active){overflow-x:clip}
+
 </style>
 </head>
 <body>
@@ -5288,7 +5332,7 @@ body.is-playing .app{padding-bottom:max(176px,calc(176px + env(safe-area-inset-b
 (() => {
 'use strict';
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
-const SKYJO_BUILD='15.36';
+const SKYJO_BUILD='15.37';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -6677,7 +6721,7 @@ function bestRoundEndRemovalPlan(pi){
  }
  return solve(clone(source))
 }
-let scoreSequenceSeen='',roundSummarySeen='',roundSummaryFocus=null;
+let scoreSequenceSeen='',roundSummarySeen='',roundSummaryFocus=null,scoreSequencePlayback=null;
 function scoreItemsForPlayer(p){const items=[];for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(!c)continue;const v=endRoundCardValue(p,c,'grid',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?jokerEndLabel(p,i):String(c.value),jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(!c)continue;const v=endRoundCardValue(p,c,'extra',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?'Zusatz-Joker · 0':`Zusatz ${c.value}`,jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}if(jokerSpecialsEnabled())for(const a of p.actions)items.push({kind:'action',actionType:a.type,value:10,label:ACTIONS[a.type]?.name||'Aktionskarte'});const bonus=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);if(bonus)items.push({kind:'bonus',value:bonus,label:'Sternbonus'});return items}
 function scoreFmt(v){v=Number(v)||0;return `${v>0?'+':''}${v}`}
 function scoreTone(v){v=Number(v)||0;return v<0?'good':v>0?'bad':'neutral'}
@@ -6704,181 +6748,122 @@ function scoreTokenHTML(item,i){
 function finishScoring(){const scores=state.players.map(rawRoundScore);const e=state.roundEnder;let final=scores.slice();if(e!==null&&scores[e]>0){const min=Math.min(...scores.filter((_,i)=>i!==e));if(min<=scores[e])final[e]=scores[e]*2}const seq={id:uid(),round:state.round,roundEnder:e,ownerDevice:cloud.enabled?cloud.deviceId:'local',createdAt:Date.now(),players:state.players.map((p,i)=>({index:i,name:p.name,beforeTotal:p.total,raw:scores[i],final:final[i],items:scoreItemsForPlayer(p)}))};state.phase='scoringSequence';state.scoreSequence=seq;ui={mode:'scoreSequence',data:{},selected:[]};save();render();maybeStartScoreSequence()}
 function maybeStartScoreSequence(){const seq=state?.scoreSequence;if(!seq||seq.id===scoreSequenceSeen)return;scoreSequenceSeen=seq.id;runScoreSequenceVisual(seq)}
 function sleepMs(ms){return new Promise(r=>setTimeout(r,ms))}
+function scoreSequenceAsRoyalSummary(seq){
+ const players=seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:sp.beforeTotal+sp.final,items:sp.items||[]}));
+ return {id:seq.id,round:seq.round,ended:players.some(p=>p.total>=Number(state?.target||100)),nextStarterIndex:seq.roundEnder,players};
+}
+function isRoyalCountingCurrent(seq){
+ if(!scoreSequencePlayback||scoreSequencePlayback.id!==seq.id||!state||Number(state.round)!==Number(seq.round))return false;
+ if(state.phase==='scoringSequence')return state.scoreSequence?.id===seq.id;
+ return (state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary?.id===seq.id;
+}
+function scrollRoyalCountToRow(row){
+ const scrollRoot=document.getElementById('modal');
+ if(!scrollRoot||!row||!scrollRoot.contains(row))return;
+ const outer=scrollRoot.getBoundingClientRect(),rect=row.getBoundingClientRect();
+ const below=rect.bottom-(outer.bottom-115);
+ if(below>0)scrollRoot.scrollBy({top:below,behavior:'smooth'});
+}
 async function runScoreSequenceVisual(seq){
- document.querySelector('.score-sequence-overlay')?.remove();
- const ov=document.createElement('div');
- ov.className='score-sequence-overlay score-show-v15';
- const playerDots=seq.players.map((sp,i)=>`<span class="score-player-dot" data-p="${i}">${i+1}</span>`).join('');
- ov.innerHTML=`<div class="score-sequence-stage">
-   <div class="score-seq-head">
-     <div class="score-head-title">
-       <small>SKYJO ACTION · SCORE SHOW</small>
-       <h2>Rundenabrechnung</h2>
-       <div class="score-head-progress"><div id="score-player-dots">${playerDots}</div><span id="score-overall-label">Spieler 1 von ${seq.players.length}</span></div>
-     </div>
-     <div class="score-seq-round"><small>RUNDE</small><b>${seq.round}</b></div>
-   </div>
-
-   <div class="score-seq-body score-show-body">
-     <aside id="score-focus" class="score-player-focus score-focus-premium">
-       <div class="score-player-kicker" id="score-player-kicker">SPIELER 1 / ${seq.players.length}</div>
-       <div id="score-avatar" class="avatar-big">1</div>
-       <h3 id="score-name"></h3>
-       <div id="score-ender-badge" class="score-ender-badge">🔔 RUNDENBEENDER</div>
-
-       <div class="score-before-after">
-         <div><small>VORHER GESAMT</small><b id="score-before-total">0</b></div>
-         <span>→</span>
-         <div class="projected"><small>GESAMT DANACH</small><b id="score-projected-total">0</b></div>
-       </div>
-
-       <div class="score-running-total premium-running">
-         <small>AKTUELLER RUNDENWERT</small>
-         <b id="score-running">0</b>
-         <span id="score-running-caption">Noch keine Karte gezählt</span>
-       </div>
-
-       <div id="score-player-result" class="score-player-result">
-         <small>ERGEBNIS DIESER RUNDE</small>
-         <b id="score-player-final">0</b>
-       </div>
-     </aside>
-
-     <section class="score-count-zone">
-       <div class="score-zone-head">
-         <div><small>KARTE FÜR KARTE</small><b id="score-zone-title">Jetzt wird gezählt</b></div>
-         <div class="score-card-progress"><span id="score-card-current">0</span>/<span id="score-card-total">0</span></div>
-       </div>
-       <div id="score-count-cards" class="score-count-cards score-card-board"></div>
-       <div id="score-step-line" class="score-step-line score-equation">
-         <span>Bereit …</span>
-       </div>
-       <div id="score-double-banner" class="score-double-banner">
-         <span class="double-warning">⚠</span>
-         <div><small>RUNDENBEENDER-REGEL</small><b id="score-double-equation"></b><p>Der positive Rundenwert wird verdoppelt.</p></div>
-       </div>
-     </section>
-   </div>
-
-   <div id="score-seq-final" class="score-sequence-final premium-final-board"></div>
- </div>`;
- document.body.append(ov);
-
- const delay=Math.max(340,Math.min(560,610-seq.players.length*28));
-
- for(let pi=0;pi<seq.players.length;pi++){
-   const sp=seq.players[pi];
-   const focus=ov.querySelector('#score-focus');
-   const run=ov.querySelector('#score-running');
-   const before=ov.querySelector('#score-before-total');
-   const projected=ov.querySelector('#score-projected-total');
-   const finalBox=ov.querySelector('#score-player-result');
-   const finalValue=ov.querySelector('#score-player-final');
-   const caption=ov.querySelector('#score-running-caption');
-   const zone=ov.querySelector('#score-count-cards');
-   const line=ov.querySelector('#score-step-line');
-   const doubleBanner=ov.querySelector('#score-double-banner');
-   const doubleEq=ov.querySelector('#score-double-equation');
-   const cardCurrent=ov.querySelector('#score-card-current');
-   const cardTotal=ov.querySelector('#score-card-total');
-
-   ov.querySelectorAll('.score-player-dot').forEach((d,i)=>{
-     d.classList.toggle('active',i===pi);
-     d.classList.toggle('done',i<pi);
-   });
-   ov.querySelector('#score-overall-label').textContent=`Spieler ${pi+1} von ${seq.players.length}`;
-   ov.querySelector('#score-player-kicker').textContent=`SPIELER ${pi+1} / ${seq.players.length}`;
-   ov.querySelector('#score-avatar').textContent=pi+1;
-   ov.querySelector('#score-name').textContent=sp.name;
-   ov.querySelector('#score-ender-badge').classList.toggle('show',Number(seq.roundEnder)===Number(sp.index));
-   ov.querySelector('#score-zone-title').textContent=`${sp.name}: alle Punkte sichtbar addieren`;
-
-   focus.classList.remove('score-player-done','score-total-good','score-total-bad','score-total-neutral');
-   finalBox.classList.remove('show');
-   doubleBanner.classList.remove('show');
-   before.textContent=String(sp.beforeTotal);
-   projected.textContent=String(sp.beforeTotal);
-   run.textContent='0';
-   run.className='';
-   caption.textContent='Noch keine Karte gezählt';
-   zone.innerHTML=sp.items.map(scoreTokenHTML).join('');
-   cardCurrent.textContent='0';
-   cardTotal.textContent=String(sp.items.length);
-   line.innerHTML=`<span>Start</span><strong>0</strong>`;
-   let total=0;
-
-   await sleepMs(650);
-
-   for(let i=0;i<sp.items.length;i++){
-     const it=sp.items[i],v=Number(it.value)||0,el=zone.querySelector(`#score-token-${i}`);
-     const beforeStep=total;
-     el?.classList.add('active');
-     cardCurrent.textContent=String(i+1);
-     line.innerHTML=`<span>${escapeHTML(it.label)}</span><div class="score-math"><b>${scoreFmt(beforeStep)}</b><i>${v>=0?'+':'−'}</i><b>${Math.abs(v)}</b><em>=</em><strong>${scoreFmt(beforeStep+v)}</strong></div>`;
-     await sleepMs(delay);
-     total+=v;
-     run.textContent=scoreFmt(total);
-     run.className=`score-number-${scoreTone(total)}`;
-     projected.textContent=String(sp.beforeTotal+total);
-     projected.className=`score-projected-${scoreTone(total)}`;
-     caption.textContent=total<0?'Sehr guter Rundenwert':total===0?'Perfekt ausgeglichen':total<=10?'Starker Rundenwert':total<=25?'Noch im Rahmen':'Hoher Rundenwert';
-     el?.classList.remove('active');
-     el?.classList.add('done');
-     playFxSound(v<0?'star':v>0?'draw':'turn');
-     if(v<0)haptic(5);
-     await sleepMs(Math.max(110,delay*.34))
+ // Die frühere, zusätzliche Zählbühne existiert nicht mehr. Nur das Pergamentfenster animiert.
+ document.querySelectorAll('.score-sequence-overlay').forEach(el=>el.remove());
+ const playback={id:seq.id};
+ scoreSequencePlayback=playback;
+ const summary=scoreSequenceAsRoyalSummary(seq);
+ let reachedEnd=false;
+ try{
+   for(let pi=0;pi<seq.players.length;pi++){
+     if(!isRoyalCountingCurrent(seq))return;
+     const sp=seq.players[pi];
+     roundSummaryFocus=sp.index;
+     modal(buildRoyalRoundSummaryModal(summary,{counting:true,playerIndex:pi}),false);
+     const root=document.querySelector('#modal .royal-counting');
+     if(!root)return;
+     const counter=root.querySelector('.royal-total-value');
+     const progress=root.querySelector('.royal-count-progress');
+     const equation=root.querySelector('.royal-current-equation');
+     const headline=root.querySelector('.royal-count-headline');
+     const activeTotal=root.querySelector('.royal-player-pill.active .royal-player-total');
+     const topCounter=root.querySelector('.royal-current-header-total');
+     let running=0;
+     if(counter)counter.textContent='0';
+     if(topCounter)topCounter.textContent='0';
+     await sleepMs(660);
+     for(let idx=0;idx<sp.items.length;idx++){
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       const item=sp.items[idx],v=Number(item.value)||0;
+       const row=root.querySelector(`.royal-detail-row[data-count-index="${idx}"]`);
+       const used=root.querySelector(`.royal-used-item[data-count-index="${idx}"]`);
+       row?.classList.remove('royal-count-item-pending');
+       row?.classList.add('royal-count-item-revealed');
+       used?.classList.remove('royal-count-item-pending');
+       used?.classList.add('royal-count-item-revealed');
+       if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · Karte ${idx+1} von ${sp.items.length}`;
+       if(headline)headline.textContent=`${summaryItemTitle(item,idx)} wird gezählt`;
+       scrollRoyalCountToRow(row);
+       await sleepMs(470);
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       const previous=running;
+       running+=v;
+       if(equation)equation.textContent=`${scoreFmt(previous)} ${v<0?'−':'+'} ${Math.abs(v)} = ${scoreFmt(running)}`;
+       if(counter){counter.textContent=scoreFmt(running);counter.classList.remove('royal-count-pulse');void counter.offsetWidth;counter.classList.add('royal-count-pulse')}
+       if(activeTotal)activeTotal.textContent=String(sp.beforeTotal+running);
+       if(topCounter)topCounter.textContent=scoreFmt(running);
+       playFxSound(v<0?'star':v>0?'draw':'turn');
+       if(v<0)haptic(5);
+       await sleepMs(170)
+     }
+     if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+     // Die Werte sind bereits durch die Original-Regeln vorab berechnet.
+     // Hier wird lediglich die bestehende Verdopplungsregel sichtbar erklärt.
+     if(sp.final!==sp.raw){
+       const line=root.querySelector('.royal-doubling-line');
+       if(line){line.classList.add('show');line.textContent=`Rundenbeender: ${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`}
+       if(headline)headline.textContent='Rundenbeender-Regel: Punkte werden verdoppelt';
+       await sleepMs(950);
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       running=sp.final;
+       if(counter)counter.textContent=scoreFmt(running);
+       if(activeTotal)activeTotal.textContent=String(sp.beforeTotal+running);
+       if(topCounter)topCounter.textContent=scoreFmt(running);
+       if(equation)equation.textContent=`${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`;
+       playFxSound('action');
+     }else if(running!==Number(sp.raw)){
+       // Eine alte/abweichende Spielspeicherung darf keinen falschen Schlusswert zeigen.
+       running=Number(sp.raw)||0;
+       if(counter)counter.textContent=scoreFmt(running);
+       if(activeTotal)activeTotal.textContent=String(sp.beforeTotal+running);
+       if(topCounter)topCounter.textContent=scoreFmt(running);
+       if(equation)equation.textContent=`Rundenwert: ${scoreFmt(running)}`;
+     }
+     if(headline)headline.textContent=`${sp.name}: ${scoreFmt(sp.final)} Rundenpunkte`;
+     if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · vollständig gezählt`;
+     await sleepMs(1050)
    }
-
-   if(sp.final!==sp.raw){
-     doubleEq.textContent=`${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`;
-     doubleBanner.classList.add('show');
-     line.innerHTML=`<span>Verdopplungsregel</span><div class="score-math danger"><b>${scoreFmt(sp.raw)}</b><i>×</i><b>2</b><em>=</em><strong>${scoreFmt(sp.final)}</strong></div>`;
-     haptic([16,35,16,35,20]);
-     playFxSound('action');
-     await sleepMs(1150);
-     run.textContent=scoreFmt(sp.final);
-     run.className=`score-number-${scoreTone(sp.final)}`;
-     projected.textContent=String(sp.beforeTotal+sp.final);
-     projected.className=`score-projected-${scoreTone(sp.final)}`;
-     await sleepMs(450)
-   }else{
-     line.innerHTML=`<span>Rundenwert</span><strong class="score-result-big ${scoreTone(sp.final)}">${scoreFmt(sp.final)}</strong>`;
-     await sleepMs(720)
+   reachedEnd=true;
+   if(!isRoyalCountingCurrent(seq))return;
+   // Nur ein berechtigtes Gerät darf die Rundenpunkte tatsächlich verbuchen.
+   const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;
+   if(canCommit&&state?.scoreSequence?.id===seq.id){commitScoreSequence(seq)}
+ }catch(e){
+   console.error('[skyjo royal scoring]',e);
+ }finally{
+   if(scoreSequencePlayback===playback)scoreSequencePlayback=null;
+   if(!reachedEnd||!state||Number(state.round)!==Number(seq.round))return;
+   const actual=state.lastRoundSummary?.id===seq.id?state.lastRoundSummary:null;
+   if(actual){
+     roundSummarySeen=actual.id;
+     roundSummaryFocus=null;
+     if(actual.ended)openRoyalFinaleSummary();
+     else openRoyalRoundSummary();
+   }else if(state.phase==='scoringSequence'){
+     // Ein mitspielendes Gerät wartet auf den von Host/Rundenbesitzer übertragenen Abschluss.
+     const text=document.querySelector('#modal .royal-count-headline');
+     if(text)text.textContent='Alle Spieler gezählt – warte auf die Synchronisierung …';
+     const progress=document.querySelector('#modal .royal-count-progress');
+     if(progress)progress.textContent='Auszählung abgeschlossen';
    }
-
-   finalValue.textContent=scoreFmt(sp.final);
-   finalValue.className=scoreTone(sp.final);
-   finalBox.classList.add('show');
-   focus.classList.add('score-player-done',`score-total-${scoreTone(sp.final)}`);
-   await sleepMs(900)
  }
-
- const ranked=seq.players.map(sp=>({...sp,newTotal:sp.beforeTotal+sp.final})).sort((a,b)=>a.newTotal-b.newTotal||a.final-b.final);
- const bestTotal=Math.min(...ranked.map(x=>x.newTotal));
- const finalRows=ranked.map((sp,rank)=>{
-   const leader=sp.newTotal===bestTotal;
-   return `<div class="score-final-row premium-rank-row ${leader?'leader':''}">
-     <div class="final-rank">${leader?'👑':`#${rank+1}`}</div>
-     <div class="final-player"><b>${escapeHTML(sp.name)}</b><small>${Number(seq.roundEnder)===Number(sp.index)?'🔔 Rundenbeender':''}</small></div>
-     <div class="final-before"><small>VORHER</small><span>${sp.beforeTotal}</span></div>
-     <div class="final-round ${scoreTone(sp.final)}"><small>RUNDE</small><b>${scoreFmt(sp.final)}</b></div>
-     <div class="final-total"><small>GESAMT</small><b>${sp.newTotal}</b></div>
-   </div>`
- }).join('');
- const nextStarter=seq.roundEnder!==null&&seq.roundEnder!==undefined?seq.players.find(x=>Number(x.index)===Number(seq.roundEnder)):null;
- const fin=ov.querySelector('#score-seq-final');
- fin.innerHTML=`<div class="score-final-heading">
-   <div><small>RUNDE ${seq.round} KOMPLETT</small><h3>Zwischenstand</h3></div>
-   ${nextStarter?`<div class="next-starter-chip">▶ Nächste Runde beginnt <b>${escapeHTML(nextStarter.name)}</b></div>`:''}
- </div>${finalRows}`;
- fin.classList.add('show');
- await sleepMs(2200);
-
- const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;
- if(canCommit&&state?.scoreSequence?.id===seq.id)commitScoreSequence(seq);
- await sleepMs(450);
- ov.style.opacity='0';
- setTimeout(()=>{ov.remove();maybeShowRoundSummary()},400)
 }
 function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,roundEnderIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total,items:clone(sp.items||[])}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
 
@@ -6911,34 +6896,37 @@ function roundSummaryFocusPlayer(summary){
  const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
  return ranked[0]||summary.players?.[0]||null
 }
-function buildRoyalRoundSummaryModal(summary){
- const focus=roundSummaryFocusPlayer(summary);
+function buildRoyalRoundSummaryModal(summary,options={}){
+ const counting=!!options.counting, countIndex=Number(options.playerIndex)||0;
+ const focus=counting?summary.players[countIndex]:roundSummaryFocusPlayer(summary);
  if(!focus)return `<div class="final-score-modal"><h3>Keine Rundenabrechnung verfügbar.</h3></div>`;
- const leftRail=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round).map((p,i)=>{
+ const ordered=counting?[...(summary.players||[])]:[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
+ const leftRail=ordered.map((p,i)=>{
    const active=Number(p.index)===Number(focus.index);
-   const leader=(p.total===Math.min(...summary.players.map(x=>x.total)));
-   return `<button class="royal-player-pill ${active?'active':''} ${leader?'leader':''}" onclick="Game.setRoundSummaryFocus(${Number(p.index)})"><span class="royal-player-rank">${i+1}</span><span class="royal-player-name">${escapeHTML(p.name)}</span><b class="royal-player-total">${p.total}</b></button>`
+   const leader=!counting&&(p.total===Math.min(...summary.players.map(x=>x.total)));
+   const shownTotal=counting?(i<countIndex?p.total:p.beforeTotal):p.total;
+   return `<button class="royal-player-pill ${active?'active':''} ${leader?'leader':''}" ${counting?'disabled':`onclick="Game.setRoundSummaryFocus(${Number(p.index)})"`}><span class="royal-player-rank">${i+1}</span><span class="royal-player-name">${escapeHTML(p.name)}</span><b class="royal-player-total">${shownTotal}</b></button>`
  }).join('');
  const items=(focus.items||[]);
- const detailRows=items.map((item,idx)=>`<div class="royal-detail-row" style="--item-index:${Math.min(idx,14)}"><div class="royal-detail-no">${idx+1}</div><div class="royal-detail-text"><b>${escapeHTML(summaryItemTitle(item,idx))}</b>${item.kind==='action'?`<small>${escapeHTML(item.label||'Verwendete Aktionskarte')}</small>`:item.kind==='bonus'?`<small>Zusätzlicher Bonus oder Malus</small>`:''}</div><div class="royal-detail-points ${scoreTone(item.value)}">${scoreFmt(item.value)}</div><div class="royal-detail-visual">${summaryItemVisual(item)}</div></div>`).join('');
- const usedCards=items.filter(item=>item.kind!=='bonus').map(item=>`<div class="royal-used-item">${summaryItemVisual(item,true)}</div>`).join('');
+ const detailRows=items.map((item,idx)=>`<div class="royal-detail-row ${counting?'royal-count-item-pending':''}" data-count-index="${idx}" style="--item-index:${Math.min(idx,14)}"><div class="royal-detail-no">${idx+1}</div><div class="royal-detail-text"><b>${escapeHTML(summaryItemTitle(item,idx))}</b>${item.kind==='action'?`<small>${escapeHTML(item.label||'Verwendete Aktionskarte')}</small>`:item.kind==='bonus'?`<small>Zusätzlicher Bonus oder Malus</small>`:''}</div><div class="royal-detail-points ${scoreTone(item.value)}">${scoreFmt(item.value)}</div><div class="royal-detail-visual">${summaryItemVisual(item)}</div></div>`).join('');
+ const usedCards=items.map((item,idx)=>item.kind==='bonus'?'':`<div class="royal-used-item ${counting?'royal-count-item-pending':''}" data-count-index="${idx}">${summaryItemVisual(item,true)}</div>`).join('');
  const before=Number.isFinite(Number(focus.beforeTotal))?Number(focus.beforeTotal):focus.total-focus.round;
  const doubled=focus.round!==focus.raw;
- const nextBtn=summary.ended?`<button class="primary royal-cta" onclick="Game.openRoyalFinaleSummary()">ZURÜCK ZUM FINALE</button>`:(cloud.enabled&&!isHostDevice())?`<div class="waiting-note">⏳ Der Host startet die nächste Runde.</div>`:`<button class="primary royal-cta" onclick="Game.nextRound()">WEITER</button>`;
- return `<div class="royal-modal royal-round-modal">
+ const nextBtn=counting?`<div class="royal-count-status">⏳ Die Karten werden nacheinander gezählt …</div>`:summary.ended?`<button class="primary royal-cta" onclick="Game.openRoyalFinaleSummary()">ZURÜCK ZUM FINALE</button>`:(cloud.enabled&&!isHostDevice())?`<div class="waiting-note">⏳ Der Host startet die nächste Runde.</div>`:`<button class="primary royal-cta" onclick="Game.nextRound()">WEITER</button>`;
+ return `<div class="royal-modal royal-round-modal ${counting?'royal-counting':''}">
    <div class="royal-round-title">SKYJO <span>ACTION</span></div>
    <div class="royal-round-subtitle">PUNKTEABRECHNUNG</div>
    <div class="royal-round-round">RUNDE ${summary.round}</div>
    <div class="royal-round-shell">
      <aside class="royal-side-scoreboard">${leftRail}</aside>
      <section class="royal-scroll-wrap">
-       <div class="royal-scroll-head"><small>${doubled?`Verdoppelt: ${scoreFmt(focus.raw)} → ${scoreFmt(focus.round)}`:`Zwischensumme vorher: ${before}`}</small><h3>${escapeHTML(focus.name)}</h3></div>
+       <div class="royal-scroll-head"><small>${counting?`<span class="royal-count-progress">Spieler ${countIndex+1} von ${summary.players.length} · Karte 0 von ${items.length}</span>`:doubled?`Verdoppelt: ${scoreFmt(focus.raw)} → ${scoreFmt(focus.round)}`:`Zwischensumme vorher: ${before}`}</small><h3>${escapeHTML(focus.name)}</h3>${counting?'<div class="royal-count-headline">Karten werden jetzt einzeln gezählt</div><div class="royal-head-score">Rundenwert: <b class="royal-current-header-total">0</b></div>':''}</div>
        <div class="royal-scroll-surface">${detailRows||'<div class="royal-detail-row"><div class="royal-detail-text"><b>Keine Einzelpunkte verfügbar.</b></div></div>'}</div>
      </section>
      <aside class="royal-used-panel"><div class="royal-used-head">VERWENDETE KARTEN</div><div class="royal-used-grid">${usedCards||'<div class="royal-used-note">Keine Karten gespeichert</div>'}</div></aside>
    </div>
-   <div class="royal-total-wrap"><div class="royal-total-kicker">GESAMT</div><div class="royal-total-value" data-royal-counter="${Number(focus.round)}" aria-label="${Number(focus.round)} Punkte">${focus.round}</div></div>
-   <div class="modal-actions royal-bottom-actions"><button onclick="Game.closeModal()">Schließen</button>${nextBtn}</div>
+   <div class="royal-total-wrap"><div class="royal-total-kicker">${counting?'AKTUELLER RUNDENWERT':'GESAMT'}</div><div class="royal-total-value" ${counting?'':`data-royal-counter="${Number(focus.round)}"`} aria-live="off">${counting?'0':focus.round}</div>${counting?'<div class="royal-current-equation">0</div><div class="royal-doubling-line"></div>':''}</div>
+   <div class="modal-actions royal-bottom-actions">${counting?'':`<button onclick="Game.closeModal()">Schließen</button>`}${nextBtn}</div>
  </div>`
 }
 function buildRoyalFinaleModal(summary){
@@ -6994,7 +6982,7 @@ function maybeShowRoundSummary(force=false){
  const s=state?.lastRoundSummary;
  if(force)roundSummarySeen='';
  if(!s||s.id===roundSummarySeen)return;
- if(document.querySelector('.score-sequence-overlay')){setTimeout(()=>maybeShowRoundSummary(force),400);return}
+ if(scoreSequencePlayback?.id===s.id)return;
  roundSummarySeen=s.id;
  if(s.ended)openRoyalFinaleSummary();
  else openRoyalRoundSummary()
@@ -7069,7 +7057,7 @@ function modal(html,closable=true){
  back.classList.toggle('royal-active',royal);m.classList.toggle('royal-host',royal);
  m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');
  m.scrollTop=0;back.classList.add('show');
- if(royal)requestAnimationFrame(()=>animateRoyalScoring(m));
+ if(royal&&!html.includes('royal-counting'))requestAnimationFrame(()=>animateRoyalScoring(m));
 }
 function closeModal(){const b=$('#modalBack');if(b){b.classList.remove('show','royal-active');$('#modal')?.classList.remove('royal-host')}}
 function animateRoyalScoring(root){
@@ -8244,7 +8232,7 @@ function resumeTransientFlow(){
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
 const viewportLock=captureViewportLock();
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.36 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.37 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
