@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – Royal Atelier V119</title>
+<title>SKYJO Action – Royal Atelier V123</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -5413,6 +5413,310 @@ body.is-playing #tableMessageZone.tight-message .table-message-kicker{font-size:
 body.is-playing #tableMessageZone.tight-message .table-message-by,
 body.is-playing #tableMessageZone.tight-message .table-message-note{display:none!important}
 body.is-playing #tableMessageZone.tight-message .table-message-progress{height:2px!important}
+
+/* V121 – Helle Leseoberfläche für alle Sprüche, Witze und Bibelverse.
+   Nur Farben ändern; die kompakte V120-Platzierung bleibt unverändert. */
+body.is-playing #tableMessageZone .table-message-card{
+  background:#ffffff!important;
+  color:#17212f!important;
+  border:1px solid #d5dce4!important;
+  box-shadow:0 9px 24px rgba(0,0,0,.18),0 1px 3px rgba(16,24,40,.10)!important;
+}
+body.is-playing #tableMessageZone .table-message-icon,
+body.is-playing #tableMessageZone .table-message-card.kind-heinz .table-message-icon,
+body.is-playing #tableMessageZone .table-message-card.kind-stromberg .table-message-icon,
+body.is-playing #tableMessageZone .table-message-card.kind-bible .table-message-icon,
+body.is-playing #tableMessageZone .table-message-card.kind-joke .table-message-icon,
+body.is-playing #tableMessageZone .table-message-card.kind-surprise .table-message-icon{
+  background:#ffffff!important;
+  color:#1f2937!important;
+  border:1px solid #e1e6eb!important;
+  box-shadow:0 2px 6px rgba(15,23,42,.08)!important;
+}
+body.is-playing #tableMessageZone .table-message-text{color:#101820!important;}
+body.is-playing #tableMessageZone .table-message-kicker{color:#3b3426!important;}
+body.is-playing #tableMessageZone .table-message-by{color:#475569!important;}
+body.is-playing #tableMessageZone .table-message-ref{color:#344f78!important;}
+body.is-playing #tableMessageZone .table-message-note{color:#526170!important;}
+body.is-playing #tableMessageZone .table-message-progress{background:#e8edf2!important;}
+body.is-playing #tableMessageZone .table-message-progress i{
+  background:linear-gradient(90deg,#b98224,#e8b75b)!important;
+}
+
+/* ======================================================================
+   SKYJO V122 — SINGLE ROYAL BOARD COUNTING (replaces previous round UI)
+   Image reference faithfully followed: 2 small boards left, main 12-card
+   grid center, parchment tally, 1 board right, laureled combined total.
+   ====================================================================== */
+#modal.royal-host:has(.sky-score-scene){
+ width:min(1550px,100%)!important;max-width:min(1550px,100%)!important;
+ max-height:calc(100dvh - 7px)!important;overflow:auto!important;
+ border-radius:12px!important;background:#081827!important
+}
+#modal.royal-host .sky-score-scene{
+ position:relative;isolation:isolate;min-height:min(860px,calc(100dvh - 18px));
+ padding:clamp(12px,1.4vw,25px)!important;overflow:hidden;
+ color:#fff5ce!important;background:radial-gradient(ellipse at 49% 68%,rgba(163,100,23,.25),transparent 60%),
+ linear-gradient(180deg,#061828 0%,#081728 44%,#07101d 100%)!important;
+ font-family:Georgia,'Times New Roman',serif;
+}
+#modal.royal-host .sky-score-scene:before{
+ content:"";position:absolute;inset:-25px;z-index:-2;pointer-events:none;
+ background:url('data:image/webp;base64,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') center center/cover no-repeat;
+ opacity:.82;
+}
+#modal.royal-host .sky-score-scene:after{
+ content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 43%,rgba(5,16,29,.83) 15%,rgba(5,18,29,.34) 73%),linear-gradient(0deg,rgba(2,14,25,.48),transparent 33%,rgba(3,11,25,.10));
+}
+#modal .sky-score-header{text-align:center;position:relative;z-index:2;margin:0 0 clamp(8px,1vw,16px);display:flex;align-items:center;flex-direction:column}
+#modal .sky-score-logo{position:relative;display:flex;align-items:center;flex-direction:column;line-height:.78;filter:drop-shadow(0 4px 3px #000);margin:0 auto 9px}
+#modal .sky-score-logo>span{font-size:clamp(26px,3.3vw,58px);font-weight:900;letter-spacing:.1em;color:#ffe7a0;text-shadow:1px 2px 0 #785020,0 3px 15px #db984d}
+#modal .sky-score-logo>strong{font-size:clamp(20px,2.8vw,45px);font-weight:900;letter-spacing:.1em;margin-top:5px;color:#a5e5ff;text-shadow:1px 2px 0 #376189,0 4px 15px #55a7da}
+#modal .sky-logo-card{position:absolute;width:25px;height:38px;z-index:-1;top:-4px;border-radius:4px;border:2px solid #e3c377;box-shadow:0 0 10px #c68a2d;background:linear-gradient(145deg,#195aa2,#12305a)}
+#modal .sky-logo-card.lc1{left:-27px;transform:rotate(-22deg)}
+#modal .sky-logo-card.lc2{left:-8px;transform:rotate(20deg);background:linear-gradient(145deg,#cb4544,#771b30)}
+#modal .sky-logo-card.lc3{right:-31px;transform:rotate(21deg);background:linear-gradient(145deg,#439b4c,#124932)}
+#modal .sky-score-header h2{width:min(74%,890px);font-size:clamp(20px,2.7vw,43px);line-height:1.06;margin:0!important;padding:5px 10px!important;color:#f8d481!important;text-shadow:0 3px 10px #000;letter-spacing:.025em;border:3px ridge #d9a84e;background:linear-gradient(180deg,#0c253a,#03101d 55%,#071f37);box-shadow:0 0 0 3px #132839,0 0 16px rgba(255,211,99,.35)}
+#modal .sky-score-round-label{z-index:1;margin-top:0;border:1px solid #c5a04d;padding:2px 24px;background:#071726;letter-spacing:2px;font-weight:900;font-size:clamp(11px,1.2vw,17px);color:#ecd297}
+#modal .sky-score-body{display:grid;grid-template-columns:minmax(160px,22%) minmax(0,56%) minmax(155px,22%);align-items:center;gap:clamp(8px,1.1vw,17px);min-height:0;position:relative}
+#modal .sky-score-side{display:flex;flex-direction:column;gap:clamp(10px,1.3vw,18px);min-width:0;justify-content:center}
+#modal .sky-score-mini{
+ width:100%;min-width:0;display:block;text-align:left;appearance:none;color:#fcf0c8;
+ padding:clamp(8px,.8vw,12px);background:linear-gradient(135deg,#06182a,#0a1d29 53%,#050c17);
+ border:3px double #d3a052;border-radius:13px;box-shadow:0 0 0 2px #07101c,0 0 20px rgba(246,175,62,.14),inset 0 0 19px rgba(202,151,60,.08);font-family:Georgia,'Times New Roman',serif
+}
+#modal .sky-score-mini:not(:disabled){cursor:pointer}
+#modal .sky-score-mini:not(:disabled):hover{border-color:#ffe3a4;box-shadow:0 0 28px rgba(238,185,69,.38)}
+#modal .sky-score-mini.selected{border-color:#ffdc88;box-shadow:0 0 24px rgba(246,195,80,.35),inset 0 0 12px rgba(255,219,116,.12)}
+#modal .sky-score-mini-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;white-space:nowrap;min-width:0}
+#modal .sky-score-mini-head b{font-size:clamp(12px,1.45vw,22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1}
+#modal .sky-score-rank,#modal .sky-score-big-rank{flex:none;display:grid;place-items:center;width:clamp(30px,3vw,47px);height:clamp(30px,3vw,47px);border-radius:50%;border:2px solid #ffd984;box-shadow:0 0 0 2px #604515,0 3px 13px #000;background:linear-gradient(135deg,#e9c66b,#dca445);color:#20150b;font-weight:900;font-size:clamp(15px,1.6vw,23px)}
+#modal .sky-score-avatar{font-family:Arial,sans-serif;color:#fad25b;text-shadow:0 0 7px currentColor;font-size:22px}.sky-score-avatar.a1{color:#0ab8ef!important}.sky-score-avatar.a2{color:#33dd5a!important}.sky-score-avatar.a3{color:#ff5760!important}
+#modal .sky-score-mini-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(3px,.45vw,7px);width:100%;}
+#modal .sky-score-mini-foot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(239,197,109,.52);margin-top:9px;padding-top:7px;gap:5px;font-size:clamp(11px,1.1vw,16px);color:#f1dca8}
+#modal .sky-score-mini-points{font-size:clamp(16px,2vw,27px);min-width:48px;text-align:center;border:1px solid #be9452;border-radius:5px;background:#061528;color:#f3ecd9;line-height:1.1}
+#modal .sky-score-center{min-width:0;position:relative;border:4px ridge #d3a05a;padding:clamp(9px,1.1vw,19px);border-radius:20px;box-shadow:inset 0 0 0 2px #563d14,0 0 0 2px #05101b,0 15px 40px #030c14,0 0 22px rgba(255,203,73,.19);background:radial-gradient(ellipse at 50% 55%,#142a3a 0,#061522 75%)}
+#modal .sky-score-center:before,#modal .sky-score-center:after{content:'✦';position:absolute;bottom:-13px;left:-14px;font-size:50px;color:#ffcf6f;text-shadow:0 0 14px #ffb13f;pointer-events:none}
+#modal .sky-score-center:after{left:auto;right:-14px}
+#modal .sky-score-center-head{display:flex;gap:15px;align-items:center;justify-content:center;margin:-5px auto 12px;min-height:48px}
+#modal .sky-score-big-rank{width:clamp(40px,4.3vw,66px);height:clamp(40px,4.3vw,66px);font-size:clamp(24px,3vw,38px)}
+#modal .sky-score-center-head h3{font-size:clamp(19px,2.1vw,34px);line-height:1;margin:0!important;color:#fff0c3!important;font-weight:900;text-shadow:0 3px 10px #000;text-transform:uppercase}
+#modal .sky-score-center-content{display:grid;grid-template-columns:minmax(0,64%) minmax(0,36%);align-items:stretch;gap:clamp(7px,.9vw,13px)}
+#modal .sky-score-board-wrap{min-width:0;display:flex;flex-direction:column;justify-content:center}
+#modal .sky-score-board{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(5px,.7vw,12px);padding:clamp(2px,.5vw,8px);border-radius:10px;background:linear-gradient(145deg,#062133,#04131e);border:1px solid rgba(235,197,102,.3)}
+#modal .sky-score-tile{
+ aspect-ratio:.78;min-width:0;min-height:0;position:relative;display:grid;place-items:center;border-radius:9px;
+ border:2px solid rgba(255,247,200,.87);box-shadow:0 0 0 2px rgba(59,37,15,.8),inset 0 2px 8px rgba(255,255,255,.34),0 3px 9px #000;
+ color:#fff;font-weight:900;transition:opacity .25s ease,filter .3s ease,transform .26s ease;
+ background:linear-gradient(145deg,#2384db,#0954af);font-family:Georgia,serif;text-shadow:0 2px 2px #132134
+}
+#modal .sky-score-tile.yellow{background:linear-gradient(135deg,#ffe779,#e9a807 75%);color:#20140a;text-shadow:none}
+#modal .sky-score-tile.blue{background:linear-gradient(135deg,#65b9ff,#0564c3 75%);color:#fff}
+#modal .sky-score-tile.red{background:linear-gradient(135deg,#ff7774,#c5211f 75%);color:#fff}
+#modal .sky-score-tile.green,#modal .sky-score-tile.zero{background:linear-gradient(135deg,#83f5a0,#129247 75%);color:#092711;text-shadow:none}
+#modal .sky-score-tile.negative{background:linear-gradient(135deg,#b0eeff,#5fbee9 75%);color:#083451;text-shadow:none}
+#modal .sky-score-tile.joker{background:conic-gradient(#f5d54c,#f34a8f,#7f52fe,#16bfe4,#18bc83,#f7d75a);color:#fff;font-family:Arial,sans-serif}
+#modal .sky-score-tile.vacant{background:rgba(55,72,84,.26);border:1px dashed rgba(255,206,96,.30);box-shadow:none;color:rgba(235,220,172,.22)}
+#modal .sky-score-card-face{font-size:clamp(17px,3vw,54px);line-height:1}
+#modal .sky-score-mini .sky-score-card-face{font-size:clamp(10px,1.65vw,27px)}
+#modal .sky-score-card-corner{position:absolute;left:3px;top:0;font-size:11px;color:rgba(255,255,255,.88);text-shadow:0 0 3px #111}
+#modal .sky-score-mini .sky-score-card-corner{font-size:7px;left:2px}
+#modal .sky-score-joker-value{position:absolute;bottom:0;right:1px;background:#021520e8;color:#ffe49a;font-style:normal;font-family:Arial,sans-serif;font-size:clamp(8px,.9vw,13px);border-radius:4px;padding:1px}
+#modal .sky-score-glow-caption{min-height:19px;margin-top:8px;text-align:center;font-size:clamp(10px,1vw,14px);color:#ffe7a6;line-height:1.2}
+#modal .sky-score-parchment{
+ display:flex;flex-direction:column;min-width:0;max-height:100%;height:100%;position:relative;border:5px ridge #a97327;border-radius:16px;
+ padding:clamp(5px,.75vw,12px);background:linear-gradient(90deg,#b57b35,#ecd4a2 6%,#f9ebc7 53%,#e8cc90 94%,#ad712d);
+ box-shadow:inset 0 0 0 1px #ffecbd,0 8px 24px rgba(0,0,0,.4);color:#3a2310!important;
+}
+#modal .sky-score-parchment h4{font-size:clamp(12px,1.1vw,18px);line-height:1.15;text-align:center;color:#3b270f!important;margin:0 0 5px;font-weight:900}
+#modal .sky-score-progress{font-size:clamp(8px,.75vw,12px);text-align:center;color:#755022;min-height:18px;margin-bottom:3px}
+#modal .sky-score-entries{display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;min-height:0;max-height:clamp(185px,27vw,385px);scrollbar-width:thin;scrollbar-color:#c79e5c transparent}
+#modal .sky-score-entry{display:grid;grid-template-columns:18px 24px minmax(0,1fr) 35px;align-items:center;gap:clamp(2px,.35vw,5px);flex:0 0 auto;padding:2px 0;border-bottom:1px solid rgba(129,81,24,.20);transition:opacity .25s ease,background .25s ease;min-height:26px}
+#modal .sky-score-entry-index{font-family:Arial,sans-serif;font-size:11px;color:#8a612c;text-align:center}
+#modal .sky-score-entry-caption{font-size:clamp(9px,.82vw,12px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#5d401c;font-family:Arial,sans-serif}
+#modal .sky-score-entry-points{font-family:Georgia,serif;font-size:clamp(11px,1.1vw,17px);text-align:right;color:#6b361a}.sky-score-entry-points.good{color:#116341!important}.sky-score-entry-points.bad{color:#a34125!important}
+#modal .sky-score-entry-card .sky-score-tile{width:20px;height:23px;min-width:20px;aspect-ratio:auto;border-width:1px;border-radius:3px}
+#modal .sky-score-entry-card .sky-score-card-face{font-size:12px}.sky-score-entry-card .sky-score-card-corner{display:none}
+#modal .sky-score-entry-special{font-size:17px}
+#modal .sky-score-parchment-total{display:flex;justify-content:space-between;align-items:center;gap:6px;border-top:2px solid #af834d;padding-top:4px;margin-top:auto;font-weight:900;font-size:clamp(11px,1.1vw,17px);color:#43290b}
+#modal .sky-score-main-running{border:2px solid #be8230;border-radius:6px;padding:2px 8px;background:linear-gradient(135deg,#fbe8b9,#e6b85d);box-shadow:0 0 7px #d39a41;font-size:clamp(17px,2.1vw,33px);font-variant-numeric:tabular-nums}
+#modal .sky-score-parchment .royal-doubling-line{font-size:clamp(10px,.9vw,13px);text-align:center;color:#a43d23;margin-top:3px;display:none}
+#modal .sky-score-parchment .royal-doubling-line.show{display:block}
+#modal .sky-score-footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);align-items:end;gap:12px;margin-top:clamp(8px,1vw,16px);min-height:120px;position:relative}
+#modal .sky-score-review,#modal .sky-score-next,#modal .sky-score-counting-hint{justify-self:start;align-self:end;min-height:50px;border:3px ridge #d7a855;background:linear-gradient(#071b2f,#06101d);color:#ffe6a6;padding:11px 15px;border-radius:7px;font-family:Georgia,serif;font-size:clamp(12px,1.3vw,19px);font-weight:900;text-shadow:0 2px 2px #000;white-space:normal;line-height:1.15}
+#modal .sky-score-next{justify-self:end;background:linear-gradient(180deg,#fff1b3 0%,#f5d473 45%,#b8781e 100%);color:#241706;text-shadow:0 1px #ffe9ab;border-radius:12px;box-shadow:0 0 0 2px #1b120b,0 7px 13px #000;border-color:#ffd27a;min-width:clamp(140px,16vw,270px);font-size:clamp(15px,1.7vw,23px)}
+#modal .sky-score-next span{margin-left:10px}
+#modal .sky-score-counting-hint{justify-self:end;min-width:0;max-width:260px;font-size:12px;background:#092339}
+#modal .sky-score-grand-total{text-align:center;align-self:center;justify-self:center;min-width:0;width:100%;color:#ffe39a;position:relative;text-shadow:0 2px 4px #000,0 0 16px #f5ae42;filter:drop-shadow(0 0 9px rgba(255,182,46,.28));}
+#modal .sky-score-grand-total:before,#modal .sky-score-grand-total:after{content:'❧';position:absolute;left:0;top:5px;font-size:clamp(33px,5vw,80px);color:#e8c46a;transform:rotate(-30deg)}
+#modal .sky-score-grand-total:after{left:auto;right:0;transform:scaleX(-1) rotate(-30deg)}
+#modal .sky-score-grand-total small{display:block;font-size:clamp(16px,1.7vw,28px);font-weight:900;letter-spacing:2px}
+#modal .sky-score-total-clarity{font-size:10px;letter-spacing:0;opacity:.55}
+#modal .sky-score-aggregate{font-size:clamp(51px,6.5vw,109px);line-height:1.02;font-weight:900;font-variant-numeric:tabular-nums;color:#fff1a9}
+#modal .sky-score-current-equation{font-size:clamp(9px,.9vw,13px);min-height:14px;color:#e3bd74;letter-spacing:.04em}
+#modal .sky-score-entry.pending{opacity:.13;filter:grayscale(1)}
+#modal .sky-score-board .sky-score-tile.pending{opacity:.30;filter:saturate(.4) brightness(.65)}
+#modal .sky-score-entry.revealed,#modal .sky-score-board .sky-score-tile.revealed{opacity:1;filter:none}
+#modal .sky-score-entry.counting-now{background:rgba(255,225,116,.46);box-shadow:inset 0 0 8px #de9c34}
+#modal .sky-score-board .sky-score-tile.counting-now{z-index:2;transform:scale(1.075);box-shadow:0 0 0 3px #fff1bd,0 0 22px 9px #f9c55a!important}
+#modal .sky-score-pulse{animation:skyScorePulse .37s ease-out}
+@keyframes skyScorePulse{0%{transform:scale(.94)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+#modal .sky-score-mini-grid .sky-score-tile{border-width:1px;border-radius:5px;box-shadow:0 1px 4px #000}
+#modal .sky-score-overflow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px}
+#modal .sky-overview{padding:25px!important;min-height:360px}
+#modal .sky-overview h2{text-align:center;color:#ffe1a0!important}
+#modal .sky-overview-row{display:grid;grid-template-columns:30px 1fr auto auto;gap:15px;align-items:center;padding:13px;border-bottom:1px solid #e0b96044}
+#modal .sky-overview-row em{font-style:normal;color:#ddb96d}
+#modal .sky-overview-actions{margin-top:25px}
+@media (max-width:1100px){
+ #modal .sky-score-body{grid-template-columns:minmax(105px,20%) minmax(0,60%) minmax(105px,20%);gap:8px}
+ #modal .sky-score-center{padding:8px}
+ #modal .sky-score-mini-head{gap:4px;margin-bottom:5px}
+ #modal .sky-score-mini{padding:6px}
+ #modal .sky-score-mini-head b{font-size:12px}
+ #modal .sky-score-mini-grid{gap:3px}
+ #modal .sky-score-mini .sky-score-card-face{font-size:clamp(9px,1.5vw,19px)}
+ #modal .sky-score-center-content{gap:6px;grid-template-columns:minmax(0,62%) minmax(0,38%)}
+ #modal .sky-score-entry{grid-template-columns:15px 22px minmax(0,1fr) 30px}
+}
+@media (max-width:750px){
+ #modal.royal-host .sky-score-scene{min-height:100%;overflow:visible!important;padding:12px!important}
+ #modal .sky-score-header h2{width:100%;font-size:clamp(17px,4.3vw,26px)}
+ #modal .sky-score-body{display:flex;flex-direction:column;gap:11px}
+ #modal .sky-score-center{order:0;width:100%;padding:9px}
+ #modal .sky-score-center-content{grid-template-columns:minmax(0,57%) minmax(0,43%);gap:6px}
+ #modal .sky-score-card-face{font-size:clamp(15px,5vw,37px)}
+ #modal .sky-score-mini .sky-score-card-face{font-size:clamp(11px,2.5vw,24px)}
+ #modal .sky-score-side{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;width:100%}
+ #modal .sky-score-side.left{order:1}
+ #modal .sky-score-side.right{order:2}
+ #modal .sky-score-parchment{padding:5px}
+ #modal .sky-score-entries{max-height:230px}
+ #modal .sky-score-entry{grid-template-columns:12px 20px minmax(0,1fr) 25px;gap:2px;min-height:24px}
+ #modal .sky-score-entry-index{font-size:9px}
+ #modal .sky-score-entry-caption{font-size:9px}
+ #modal .sky-score-entry-points{font-size:12px}
+ #modal .sky-score-footer{grid-template-columns:1fr 1fr;gap:8px;min-height:0}
+ #modal .sky-score-grand-total{grid-column:1/-1;grid-row:1}
+ #modal .sky-score-grand-total:before,#modal .sky-score-grand-total:after{left:20%}
+ #modal .sky-score-grand-total:after{left:auto;right:20%}
+ #modal .sky-score-review{grid-column:1;grid-row:2}
+ #modal .sky-score-next,#modal .sky-score-counting-hint{grid-column:2;grid-row:2;min-width:0;width:100%}
+ #modal .sky-score-review{width:100%;font-size:12px;padding:8px}
+ #modal .sky-score-total-clarity{display:none}
+ #modal .sky-score-grand-total small{font-size:15px}
+ #modal .sky-score-aggregate{font-size:56px}
+}
+@media (max-width:400px){
+ #modal .sky-score-center-content{grid-template-columns:minmax(0,55%) minmax(0,45%)}
+ #modal .sky-score-board{gap:3px;padding:3px}
+ #modal .sky-score-entry-caption{font-size:8px}
+ #modal .sky-score-mini-grid{gap:4px}
+ #modal .sky-score-mini .sky-score-card-face{font-size:13px}
+ #modal .sky-score-mini{padding:7px}
+ #modal .sky-score-header h2{font-size:17px}
+}
+@media(prefers-reduced-motion:reduce){#modal .sky-score-pulse{animation:none!important}}
+
+
+/* V122 layout polish: all score elements fit one desktop screen. */
+#modal .sky-score-mobile-peers{display:none}
+#modal .sky-score-board .sky-score-tile{aspect-ratio:.95}
+#modal .sky-score-mini-grid .sky-score-tile{aspect-ratio:1.22}
+#modal .sky-score-board-wrap{justify-content:flex-start}
+#modal .sky-score-scene .sky-score-center-content{align-items:start}
+@media(min-width:751px){
+ #modal .sky-score-side{gap:10px}
+ #modal .sky-score-mini-head{margin-bottom:7px}
+ #modal .sky-score-mini-foot{margin-top:6px;padding-top:5px}
+ #modal .sky-score-header{margin-bottom:9px}
+ #modal .sky-score-footer{min-height:96px;margin-top:6px}
+ #modal .sky-score-logo{margin-bottom:5px}
+ #modal .sky-score-header h2{padding:3px 10px!important}
+ #modal.royal-host .sky-score-scene{min-height:0!important}
+}
+@media(max-width:750px){
+ #modal .sky-score-scene .sky-score-side{display:none!important}
+ #modal .sky-score-mobile-peers{display:flex;gap:9px;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:7px 3px;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:#d8ac5a #061526}
+ #modal .sky-score-mobile-peers .sky-score-mini{flex:0 0 clamp(155px,47%,215px);scroll-snap-align:start;min-width:0}
+ #modal .sky-score-mobile-peers .sky-score-mini-grid .sky-score-tile{aspect-ratio:1.18}
+ #modal .sky-score-mini-head b{font-size:12px}
+ #modal .sky-score-mini-grid{gap:3px}
+ #modal .sky-score-mobile-peers .sky-score-card-face{font-size:15px}
+ #modal .sky-score-scene .sky-score-center-content{align-items:start}
+ #modal .sky-score-board-wrap{justify-content:flex-start}
+ #modal .sky-score-center{padding:7px}
+ #modal .sky-score-center-head{min-height:35px;margin-bottom:7px}
+ #modal .sky-score-board{gap:4px}
+ #modal .sky-score-footer{margin-top:5px}
+}
+
+
+@media(min-width:751px){
+ #modal .sky-score-entry{min-height:20px!important;padding:0!important}
+ #modal .sky-score-entry-card .sky-score-tile{height:19px!important;min-height:19px!important}
+ #modal .sky-score-entry-card .sky-score-card-face{font-size:10px!important}
+ #modal .sky-score-entries{max-height:315px!important}
+ #modal .sky-score-parchment{padding:6px!important}
+ #modal .sky-score-parchment h4{margin-bottom:3px}
+ #modal .sky-score-side{gap:7px}
+ #modal .sky-score-mini-grid .sky-score-tile{aspect-ratio:1.4!important}
+ #modal .sky-score-center-head{margin-bottom:6px}
+ #modal .sky-score-footer{min-height:100px}
+}
+
+
+/* Large landscape monitors have more width than height: proportional fit. */
+@media (min-width:1280px) and (max-height:950px){
+ #modal.royal-host .sky-score-scene{zoom:.88;width:100%!important;max-width:100%!important;margin:0 auto!important;}
+}
+
+
+@media(min-width:1280px) and (max-height:950px){
+ #modal .sky-score-aggregate{font-size:clamp(51px,5vw,76px)!important}
+ #modal .sky-score-grand-total small{font-size:19px!important}
+ #modal .sky-score-footer{min-height:77px!important;margin-top:1px!important}
+ #modal .sky-score-review,#modal .sky-score-next{min-height:42px!important;padding:8px 12px!important}
+}
+
+
+/* V123: prevent any early revelation during private scoring preparation. */
+.sky-score-privacy-curtain{position:fixed;inset:0;z-index:77;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 45%,#172f42 0%,#04101b 75%);color:#ffdf8c;text-align:center;pointer-events:all}
+.sky-score-privacy-core{border:2px ridge #d5a75c;background:linear-gradient(160deg,#0e2a3b,#03101c);padding:35px;border-radius:22px;box-shadow:0 0 50px #e5ac4024}
+.sky-score-privacy-core span{display:block;font-size:48px;animation:skyScorePulse 1.8s infinite alternate}
+.sky-score-privacy-core strong{display:block;font-family:Georgia,serif;font-size:clamp(23px,3vw,42px);letter-spacing:.08em}
+.sky-score-privacy-core small{display:block;margin-top:13px;color:#f4e5be;font-size:14px}
+/* The tile is a two-sided card. Its back is the ONLY visible surface until flip. */
+#modal .sky-score-tile{perspective:700px;transform-style:preserve-3d;isolation:isolate}
+#modal .sky-score-tile-inner{display:block;position:absolute;inset:0;transform-style:preserve-3d;transition:transform 1.55s cubic-bezier(.35,.05,.18,1)}
+#modal .sky-score-tile.sky-score-closed .sky-score-tile-inner{transform:rotateY(180deg)}
+#modal .sky-score-tile-front,#modal .sky-score-tile-back{position:absolute;inset:0;display:grid;place-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform-style:preserve-3d;border-radius:inherit}
+#modal .sky-score-tile-front{transform:rotateY(0)}
+#modal .sky-score-tile-back{transform:rotateY(180deg);background:repeating-linear-gradient(45deg,#20476c 0 7px,#173455 7px 14px);color:#d3bc88;border:2px solid #c89a45;box-shadow:inset 0 0 0 3px #052039,inset 0 0 0 5px #bf9653;text-shadow:0 0 8px #ffca54}
+#modal .sky-score-tile-back span{font-size:clamp(17px,2.6vw,39px);align-self:end;line-height:1}
+#modal .sky-score-tile-back small{font-size:clamp(5px,.65vw,11px);align-self:start;letter-spacing:1px}
+#modal .sky-score-mini .sky-score-tile-back span{font-size:clamp(11px,1.4vw,19px)}
+#modal .sky-score-mini .sky-score-tile-back small{display:none}
+#modal .sky-score-tile.sky-score-closed{opacity:1!important;filter:none!important}
+#modal .sky-score-tile.sky-score-flipping{opacity:1!important;filter:none!important;z-index:4!important;box-shadow:0 0 0 2px #ffe5a4,0 0 18px 7px #f9c55a75!important}
+#modal .sky-score-board .sky-score-tile.sky-score-closed.pending{opacity:1!important;filter:none!important}
+#modal .sky-score-entry.pending{opacity:1!important;filter:none!important}
+#modal .sky-score-entry.pending>*{visibility:hidden!important}
+#modal .sky-score-entry.pending{border-bottom-color:#a275373b;min-height:26px}
+#modal .sky-score-tile.sky-score-cleared{filter:saturate(.4) brightness(.70)}
+#modal .sky-score-tile.sky-score-cleared:after{content:'ABGERÄUMT';position:absolute;bottom:3px;left:2px;right:2px;text-align:center;z-index:10;font:700 clamp(5px,.65vw,10px)/1 Arial,sans-serif;letter-spacing:.1em;background:#021a28da;color:#ffe0a6}
+#modal .sky-score-parchment{box-shadow:inset 0 0 25px #b5873d34,0 0 17px #c29c4770!important;border-color:#efbe78!important}
+#modal .sky-score-center{box-shadow:inset 0 0 0 2px #66471b,0 0 0 2px #07101b,0 15px 40px #030c14,0 0 32px #e4a53377!important}
+#modal .sky-score-grand-total{filter:drop-shadow(0 0 18px #ffca6470)!important}
+@media(prefers-reduced-motion:reduce){#modal .sky-score-tile-inner{transition-duration:1.55s!important} }
+
+/* V123 finishing: face-up cards remain fully visible even before counting. */
+#modal .sky-score-board .sky-score-tile.pending:not(.sky-score-closed){opacity:1!important;filter:none!important}
+@media(max-width:750px){
+ #modal .sky-score-scene .sky-score-parchment{height:auto!important;min-height:185px!important;max-height:255px!important}
+ #modal .sky-score-scene .sky-score-entries{max-height:193px!important}
+}
 </style>
 </head>
 <body>
@@ -5423,7 +5727,7 @@ body.is-playing #tableMessageZone.tight-message .table-message-progress{height:2
 (() => {
 'use strict';
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
-const SKYJO_BUILD='15.39';
+const SKYJO_BUILD='15.44';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -6669,6 +6973,9 @@ function roundCloseRevealOrder(){
 }
 function startScoring(){
  const revealOrder=roundCloseRevealOrder();
+ // Only for the theatrical score display: original visible/hidden face states.
+ // Scores still use the authoritative post-removal state.
+ state.roundScoreOpeningBoards=state.players.map(p=>({grid:clone(p.grid),extras:clone(p.extras)}));
  state.roundJokerValues={};
  state.pendingMatch=null;
  state.turnFlow=null;
@@ -6706,14 +7013,13 @@ async function runRoundClose(seqId){
      const ref=list[seq.revealIndex],c=roundCloseCard(ref);
      seq.revealIndex++;
      if(!c||c.faceUp){save();continue}
-     state.currentPlayer=ref.pi;
-     const card=clone(c);
+     // The old pre-score card-flip animation was removed on purpose.
+     // The private scoring preparation flips the underlying card data only;
+     // players will see the physical flip for the first time on the score stage.
      c.faceUp=true;
-     queueMotionEvent('reveal',{actor:ref.pi,card,srcId:`cell-${ref.pi}-${ref.zone}-${ref.idx}`,dstId:`cell-${ref.pi}-${ref.zone}-${ref.idx}`,title:'Rundenende · Karte wird aufgedeckt',typeLabel:'AUFDECKEN',text:cardShortText(card)});
      ui={mode:'roundReveal',data:{stage:'reveal',pi:ref.pi,index:seq.revealIndex,total:list.length},selected:[]};
-     save();render();
-     await waitForMotionIdle(5000);
-     await sleepMs(130);
+     save();
+     await sleepMs(12);
      continue
    }
    if(seq.stage==='remove'){
@@ -6741,19 +7047,19 @@ async function runRoundClose(seqId){
 
      const cards=m.idx.map(idx=>state.players[pi].grid[idx]).filter(Boolean).map(clone),srcIds=m.idx.map(idx=>`cell-${pi}-grid-${idx}`);
      state.currentPlayer=pi;
-     queueMotionEvent('bury-row',{actor:pi,cards,srcIds,dstId:'play-discard-pile',title:`Rundenende · ${m.name} wird automatisch entfernt`,typeLabel:'AUTO-ABRÄUMEN',text:`${m.label} · punktetechnisch gleich gut oder besser`});
+     // No visual card removal here: this part is intentionally concealed.
+     // The scored 12-card view will mark cleared groups without counting twice.
      removeMatch(pi,m);
      seq.removedGroups++;
      seq.removedCards+=cards.length;
      ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:seq.keptBetterGroups||0},selected:[]};
      save();render();
-     await waitForMotionIdle(7000);
-     await sleepMs(150);
+     await sleepMs(65);
      continue
    }
    if(seq.stage==='ready'){
      const removedGroups=seq.removedGroups||0,removedCards=seq.removedCards||0,keptBetterGroups=seq.keptBetterGroups||0;
-     log(`Rundenabschluss: alle Karten aufgedeckt; ${removedGroups} fertige Kombination(en) mit ${removedCards} Karten automatisch entfernt.${keptBetterGroups?` ${keptBetterGroups} Kombination(en) blieben liegen, weil ihre Joker-Endwertung günstiger war.`:''}`);
+     log(`Rundenabschluss: alle Karten für die spätere Auszählung vorbereitet; ${removedGroups} fertige Kombination(en) mit ${removedCards} Karten automatisch entfernt.${keptBetterGroups?` ${keptBetterGroups} Kombination(en) blieben liegen, weil ihre Joker-Endwertung günstiger war.`:''}`);
      state.roundClose=null;
      state.phase='scoring';
      ui={mode:'scoreSequence',data:{},selected:[]};
@@ -6862,7 +7168,7 @@ function bestRoundEndRemovalPlan(pi){
  return solve(clone(source))
 }
 let scoreSequenceSeen='',roundSummarySeen='',roundSummaryFocus=null,scoreSequencePlayback=null;
-function scoreItemsForPlayer(p){const items=[];for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(!c)continue;const v=endRoundCardValue(p,c,'grid',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?jokerEndLabel(p,i):String(c.value),jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(!c)continue;const v=endRoundCardValue(p,c,'extra',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?'Zusatz-Joker · 0':`Zusatz ${c.value}`,jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}if(jokerSpecialsEnabled())for(const a of p.actions)items.push({kind:'action',actionType:a.type,value:10,label:ACTIONS[a.type]?.name||'Aktionskarte'});const bonus=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);if(bonus)items.push({kind:'bonus',value:bonus,label:'Sternbonus'});return items}
+function scoreItemsForPlayer(p){const items=[];for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(!c)continue;const v=endRoundCardValue(p,c,'grid',i);items.push({kind:'card',card:clone(c),gridIndex:i,value:v,label:c.type==='star'?jokerEndLabel(p,i):String(c.value),jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(!c)continue;const v=endRoundCardValue(p,c,'extra',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?'Zusatz-Joker · 0':`Zusatz ${c.value}`,jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}if(jokerSpecialsEnabled())for(const a of p.actions)items.push({kind:'action',actionType:a.type,value:10,label:ACTIONS[a.type]?.name||'Aktionskarte'});const bonus=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);if(bonus)items.push({kind:'bonus',value:bonus,label:'Sternbonus'});return items}
 function scoreFmt(v){v=Number(v)||0;return `${v>0?'+':''}${v}`}
 function scoreTone(v){v=Number(v)||0;return v<0?'good':v>0?'bad':'neutral'}
 function scoreTokenHTML(item,i){
@@ -6885,11 +7191,11 @@ function scoreTokenHTML(item,i){
    <div class="tok-points ${scoreTone(v)}">${scoreFmt(v)}</div>
  </div>`
 }
-function finishScoring(){const scores=state.players.map(rawRoundScore);const e=state.roundEnder;let final=scores.slice();if(e!==null&&scores[e]>0){const min=Math.min(...scores.filter((_,i)=>i!==e));if(min<=scores[e])final[e]=scores[e]*2}const seq={id:uid(),round:state.round,roundEnder:e,ownerDevice:cloud.enabled?cloud.deviceId:'local',createdAt:Date.now(),players:state.players.map((p,i)=>({index:i,name:p.name,beforeTotal:p.total,raw:scores[i],final:final[i],items:scoreItemsForPlayer(p)}))};state.phase='scoringSequence';state.scoreSequence=seq;ui={mode:'scoreSequence',data:{},selected:[]};save();render();maybeStartScoreSequence()}
+function finishScoring(){const scores=state.players.map(rawRoundScore);const e=state.roundEnder;let final=scores.slice();if(e!==null&&scores[e]>0){const min=Math.min(...scores.filter((_,i)=>i!==e));if(min<=scores[e])final[e]=scores[e]*2}const seq={id:uid(),round:state.round,roundEnder:e,ownerDevice:cloud.enabled?cloud.deviceId:'local',createdAt:Date.now(),players:state.players.map((p,i)=>({index:i,name:p.name,beforeTotal:p.total,raw:scores[i],final:final[i],items:scoreItemsForPlayer(p),gridSnapshot:clone(p.grid),openingGrid:clone(state.roundScoreOpeningBoards?.[i]?.grid||p.grid),openingExtras:clone(state.roundScoreOpeningBoards?.[i]?.extras||p.extras)}))};state.phase='scoringSequence';state.scoreSequence=seq;ui={mode:'scoreSequence',data:{},selected:[]};save();render();maybeStartScoreSequence()}
 function maybeStartScoreSequence(){const seq=state?.scoreSequence;if(!seq||seq.id===scoreSequenceSeen)return;scoreSequenceSeen=seq.id;runScoreSequenceVisual(seq)}
 function sleepMs(ms){return new Promise(r=>setTimeout(r,ms))}
 function scoreSequenceAsRoyalSummary(seq){
- const players=seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:sp.beforeTotal+sp.final,items:sp.items||[]}));
+ const players=seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:sp.beforeTotal+sp.final,items:sp.items||[],gridSnapshot:sp.gridSnapshot||[],openingGrid:sp.openingGrid||sp.gridSnapshot||[],openingExtras:sp.openingExtras||[]}));
  return {id:seq.id,round:seq.round,ended:players.some(p=>p.total>=Number(state?.target||100)),nextStarterIndex:seq.roundEnder,players};
 }
 function isRoyalCountingCurrent(seq){
@@ -6898,114 +7204,129 @@ function isRoyalCountingCurrent(seq){
  return (state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary?.id===seq.id;
 }
 function scrollRoyalCountToRow(row){
- const scrollRoot=document.getElementById('modal');
- if(!scrollRoot||!row||!scrollRoot.contains(row))return;
- const outer=scrollRoot.getBoundingClientRect(),rect=row.getBoundingClientRect();
- const below=rect.bottom-(outer.bottom-115);
- if(below>0)scrollRoot.scrollBy({top:below,behavior:'smooth'});
+ const scroller=row?.closest('.sky-score-entries');
+ if(!scroller||!row)return;
+ const visibleBottom=scroller.scrollTop+scroller.clientHeight;
+ const neededBottom=row.getBoundingClientRect().bottom-scroller.getBoundingClientRect().top+scroller.scrollTop;
+ if(neededBottom>visibleBottom)scroller.scrollTo({top:neededBottom-scroller.clientHeight+8,behavior:'smooth'});
+}
+function orderedRoyalCountSteps(sp){
+ const opening=[...(sp.openingGrid||[]),...(sp.openingExtras||[])].filter(Boolean);
+ const wasHidden=new Map(opening.filter(c=>c?.id).map(c=>[c.id,c.faceUp===false]));
+ const open=[],hidden=[],post=[];
+ for(let idx=0;idx<(sp.items||[]).length;idx++){
+   const item=sp.items[idx];const step={item,idx,kind:'scored'};
+   if(item.kind!=='card')post.push(step);
+   else if(wasHidden.get(item.card?.id))hidden.push(step);
+   else open.push(step)
+ }
+ // Revealing a removed card does not count it again. It is marked cleared.
+ const scoredIds=new Set((sp.items||[]).filter(x=>x.kind==='card').map(x=>x.card?.id));
+ for(const c of (sp.openingGrid||[]))if(c&&!scoredIds.has(c.id)&&c.faceUp===false)hidden.push({kind:'removed',item:{card:c,value:0,kind:'card',label:'Abgeräumt – keine zusätzlichen Kartenpunkte'},idx:-1});
+ for(const c of (sp.openingExtras||[]))if(c&&!scoredIds.has(c.id)&&c.faceUp===false)hidden.push({kind:'removed',item:{card:c,value:0,kind:'card',label:'Abgeräumt – keine zusätzlichen Kartenpunkte'},idx:-1});
+ return {open,hidden,post}
 }
 async function runScoreSequenceVisual(seq){
- // Die frühere, zusätzliche Zählbühne existiert nicht mehr. Nur das Pergamentfenster animiert.
  document.querySelectorAll('.score-sequence-overlay').forEach(el=>el.remove());
- const playback={id:seq.id};
- scoreSequencePlayback=playback;
- const summary=scoreSequenceAsRoyalSummary(seq);
- let reachedEnd=false;
+ const playback={id:seq.id};scoreSequencePlayback=playback;
+ const summary=scoreSequenceAsRoyalSummary(seq);let reachedEnd=false;
  try{
    for(let pi=0;pi<seq.players.length;pi++){
      if(!isRoyalCountingCurrent(seq))return;
-     const sp=seq.players[pi];
-     roundSummaryFocus=sp.index;
+     const sp=seq.players[pi];roundSummaryFocus=sp.index;
      modal(buildRoyalRoundSummaryModal(summary,{counting:true,playerIndex:pi}),false);
-     const root=document.querySelector('#modal .royal-counting');
-     if(!root)return;
-     const counter=root.querySelector('.royal-total-value');
+     const root=document.querySelector('#modal .sky-score-counting');if(!root)return;
+     const counter=root.querySelector('.sky-score-main-running');
+     const big=root.querySelector('.sky-score-aggregate');
      const progress=root.querySelector('.royal-count-progress');
      const equation=root.querySelector('.royal-current-equation');
      const headline=root.querySelector('.royal-count-headline');
-     const activeTotal=root.querySelector('.royal-player-pill.active .royal-player-total');
-     const topCounter=root.querySelector('.royal-current-header-total');
-     let running=0;
-     if(counter)counter.textContent='0';
-     if(topCounter)topCounter.textContent='0';
-     await sleepMs(660);
-     for(let idx=0;idx<sp.items.length;idx++){
+     let running=0,finishedCards=0;
+     const ordered=orderedRoyalCountSteps(sp);
+     const allSteps=[...ordered.open,...ordered.hidden,...ordered.post];
+     const otherSum=seq.players.slice(0,pi).reduce((a,p)=>a+Number(p.final||0),0);
+     const openingCount=ordered.open.length;
+     if(headline)headline.textContent=`${sp.name}: zuerst die ${openingCount} offenen Karten zählen`;
+     await sleepMs(1150);
+     for(let si=0;si<allSteps.length;si++){
        if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
-       const item=sp.items[idx],v=Number(item.value)||0;
-       const row=root.querySelector(`.royal-detail-row[data-count-index="${idx}"]`);
-       const used=root.querySelector(`.royal-used-item[data-count-index="${idx}"]`);
-       row?.classList.remove('royal-count-item-pending');
-       row?.classList.add('royal-count-item-revealed');
-       used?.classList.remove('royal-count-item-pending');
-       used?.classList.add('royal-count-item-revealed');
-       if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · Karte ${idx+1} von ${sp.items.length}`;
-       if(headline)headline.textContent=`${summaryItemTitle(item,idx)} wird gezählt`;
+       const step=allSteps[si],item=step.item,v=Number(item.value)||0;
+       const stage=si<ordered.open.length?'open':si<ordered.open.length+ordered.hidden.length?'hidden':'effects';
+       const row=step.idx>=0?root.querySelector(`.sky-score-entry[data-count-index="${step.idx}"]`):null;
+       const card=step.item.card?.id?[...root.querySelectorAll('.sky-score-board .sky-score-tile[data-grid-index]')].find(el=>{
+          const i=Number(el.dataset.gridIndex);
+          return sp.openingGrid?.[i]?.id===step.item.card.id
+       }):null;
+       if(stage==='hidden'){
+         if(headline)headline.textContent=step.kind==='removed'?'Abgeräumte Jokerreihe – ohne doppelte Kartenpunkte':'Verdeckte Karte wird langsam umgedreht …';
+         if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · verdeckte Karten aufdecken`;
+         await sleepMs(650);
+         if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+         if(card){card.classList.add('sky-score-flipping');card.classList.remove('sky-score-closed');card.setAttribute('aria-label',`Aufgedeckte Karte: ${step.item.card.type==='star'?'Joker':step.item.card.value}`)}
+         // This is deliberately much slower than the usual point counting.
+         await sleepMs(1900);
+         if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       }else if(stage==='open'){
+         if(headline)headline.textContent=`Offene Karte: ${summaryItemTitle(item,step.idx)} wird addiert`;
+         await sleepMs(410)
+       }else{
+         if(headline)headline.textContent=`${summaryItemTitle(item,step.idx)} wird berücksichtigt`;
+         await sleepMs(620)
+       }
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       row?.classList.remove('pending');row?.classList.add('revealed','counting-now');
+       card?.classList.remove('pending');card?.classList.add('revealed','counting-now');
+       if(step.kind==='removed'){card?.classList.add('sky-score-cleared');if(headline)headline.textContent='Abgeräumt – diese Karte zählt nicht noch einmal'}
+       if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · ${si+1} von ${allSteps.length} Schritten`;
        scrollRoyalCountToRow(row);
-       await sleepMs(470);
-       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
-       const previous=running;
-       running+=v;
-       if(equation)equation.textContent=`${scoreFmt(previous)} ${v<0?'−':'+'} ${Math.abs(v)} = ${scoreFmt(running)}`;
-       if(counter){counter.textContent=scoreFmt(running);counter.classList.remove('royal-count-pulse');void counter.offsetWidth;counter.classList.add('royal-count-pulse')}
-       if(activeTotal)activeTotal.textContent=String(sp.beforeTotal+running);
-       if(topCounter)topCounter.textContent=scoreFmt(running);
+       const previous=running;running+=v;
+       if(counter)counter.textContent=scoreFmt(running);
+       if(big){big.textContent=scoreFmt(otherSum+running);big.classList.remove('sky-score-pulse');void big.offsetWidth;big.classList.add('sky-score-pulse')}
+       if(equation)equation.textContent=step.kind==='removed'?'Abgeräumte Karten: 0 zusätzliche Punkte':`${scoreFmt(previous)} ${v<0?'−':'+'} ${Math.abs(v)} = ${scoreFmt(running)}`;
        playFxSound(v<0?'star':v>0?'draw':'turn');
        if(v<0)haptic(5);
-       await sleepMs(170)
+       await sleepMs(stage==='hidden'?440:510);
+       row?.classList.remove('counting-now');card?.classList.remove('counting-now','sky-score-flipping');
      }
      if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
-     // Die Werte sind bereits durch die Original-Regeln vorab berechnet.
-     // Hier wird lediglich die bestehende Verdopplungsregel sichtbar erklärt.
      if(sp.final!==sp.raw){
        const line=root.querySelector('.royal-doubling-line');
        if(line){line.classList.add('show');line.textContent=`Rundenbeender: ${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`}
        if(headline)headline.textContent='Rundenbeender-Regel: Punkte werden verdoppelt';
-       await sleepMs(950);
+       await sleepMs(1100);
        if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
-       running=sp.final;
+       running=Number(sp.final);
        if(counter)counter.textContent=scoreFmt(running);
-       if(activeTotal)activeTotal.textContent=String(sp.beforeTotal+running);
-       if(topCounter)topCounter.textContent=scoreFmt(running);
+       if(big)big.textContent=scoreFmt(otherSum+running);
        if(equation)equation.textContent=`${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`;
        playFxSound('action');
      }else if(running!==Number(sp.raw)){
-       // Eine alte/abweichende Spielspeicherung darf keinen falschen Schlusswert zeigen.
        running=Number(sp.raw)||0;
        if(counter)counter.textContent=scoreFmt(running);
-       if(activeTotal)activeTotal.textContent=String(sp.beforeTotal+running);
-       if(topCounter)topCounter.textContent=scoreFmt(running);
+       if(big)big.textContent=scoreFmt(otherSum+running);
        if(equation)equation.textContent=`Rundenwert: ${scoreFmt(running)}`;
      }
      if(headline)headline.textContent=`${sp.name}: ${scoreFmt(sp.final)} Rundenpunkte`;
      if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · vollständig gezählt`;
+     root.querySelectorAll(`.sky-score-mini-points[data-score-player-index="${sp.index}"]`).forEach(el=>el.textContent=scoreFmt(sp.final));
      await sleepMs(1050)
    }
    reachedEnd=true;
    if(!isRoyalCountingCurrent(seq))return;
-   // Nur ein berechtigtes Gerät darf die Rundenpunkte tatsächlich verbuchen.
    const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;
-   if(canCommit&&state?.scoreSequence?.id===seq.id){commitScoreSequence(seq)}
- }catch(e){
-   console.error('[skyjo royal scoring]',e);
- }finally{
+   if(canCommit&&state?.scoreSequence?.id===seq.id)commitScoreSequence(seq)
+ }catch(e){console.error('[skyjo v123 score reveal]',e)}finally{
    if(scoreSequencePlayback===playback)scoreSequencePlayback=null;
    if(!reachedEnd||!state||Number(state.round)!==Number(seq.round))return;
    const actual=state.lastRoundSummary?.id===seq.id?state.lastRoundSummary:null;
-   if(actual){
-     roundSummarySeen=actual.id;
-     roundSummaryFocus=null;
-     if(actual.ended)openRoyalFinaleSummary();
-     else openRoyalRoundSummary();
-   }else if(state.phase==='scoringSequence'){
-     // Ein mitspielendes Gerät wartet auf den von Host/Rundenbesitzer übertragenen Abschluss.
-     const text=document.querySelector('#modal .royal-count-headline');
-     if(text)text.textContent='Alle Spieler gezählt – warte auf die Synchronisierung …';
-     const progress=document.querySelector('#modal .royal-count-progress');
-     if(progress)progress.textContent='Auszählung abgeschlossen';
+   if(actual){roundSummarySeen=actual.id;roundSummaryFocus=null;if(actual.ended)openRoyalFinaleSummary();else openRoyalRoundSummary()}
+   else if(state.phase==='scoringSequence'){
+     const text=document.querySelector('#modal .royal-count-headline');if(text)text.textContent='Alle Spieler gezählt – warte auf Synchronisierung …';
+     const progress=document.querySelector('#modal .royal-count-progress');if(progress)progress.textContent='Auszählung abgeschlossen';
    }
  }
 }
-function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,roundEnderIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total,items:clone(sp.items||[])}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
+function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,roundEnderIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total,items:clone(sp.items||[]),gridSnapshot:clone(sp.gridSnapshot||[]),openingGrid:clone(sp.openingGrid||sp.gridSnapshot||[]),openingExtras:clone(sp.openingExtras||[])}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
 
 function summaryItemVisual(item,compact=false){
  if(item.kind==='card'&&item.card)return `<div class="royal-mini-card ${item.jokerResolved?'joker':''}">${cardHTML({...item.card,faceUp:true},true,false)}${item.jokerResolved?`<span class="royal-joker-badge">→ ${scoreFmt(item.jokerValue)}</span>`:''}</div>`;
@@ -7036,38 +7357,98 @@ function roundSummaryFocusPlayer(summary){
  const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
  return ranked[0]||summary.players?.[0]||null
 }
+
+/* V122: only one round-scoring view — the four genuine card grids are
+   projected as the image-inspired gold/blue scoreboard. */
+function royalCardGridData(p,{counting=false,finished=true}={}){
+ // During the score show this is the exact board at the moment the round ended.
+ // In finished view, present remaining cards, as after automatic clearing.
+ const original=Array.isArray(p?.openingGrid)&&counting?p.openingGrid:(Array.isArray(p?.gridSnapshot)?p.gridSnapshot:[]);
+ if(original.length>=12)return original.slice(0,12);
+ const result=Array(12).fill(null),cards=(p?.items||[]).filter(x=>x.kind==='card'&&!String(x.label||'').startsWith('Zusatz'));
+ let cursor=0;
+ for(const item of cards){
+   let idx=Number.isInteger(item.gridIndex)?item.gridIndex:cursor++;
+   if(idx>=0&&idx<12)result[idx]=item.card||null
+ }
+ return result
+}
+function royalCardTile(card,{counting=false,countIndex=-1,value=null,mini=false,hidden=false,gridIndex=-1,removed=false}={}){
+ if(!card)return `<div class="sky-score-tile vacant" aria-label="Abgeräumte Karte"><span>✦</span></div>`;
+ const v=Number(card.value)||0;
+ const typ=card.type==='star'?'joker':v<0?'negative':v===0?'zero':v===3?'red':v>=9?'green':v>=5?'yellow':'blue';
+ const face=card.type==='star'?'🃏':escapeHTML(String(card.value));
+ const counted=counting&&countIndex>=0?'pending':'';
+ const jokerValue=value!==null&&card.type==='star'?`<em class="sky-score-joker-value">${scoreFmt(value)}</em>`:'';
+ const attr=(countIndex>=0?` data-count-index="${countIndex}"`:'')+(gridIndex>=0?` data-grid-index="${gridIndex}"`:'');
+ return `<div class="sky-score-tile ${typ} ${counted} ${hidden?'sky-score-closed':''} ${removed?'sky-score-cleared':''}" ${attr} title="${hidden?'Noch verdeckt':removed?'Abgeräumte Karte':card.type==='star'?'Joker':`Kartenwert ${v}`}" aria-label="${hidden?'Verdeckte Karte':removed?'Abgeräumte Karte':`Kartenwert ${v}`}"><div class="sky-score-tile-inner"><div class="sky-score-tile-front"><span class="sky-score-card-corner">✧</span><span class="sky-score-card-face">${face}</span>${jokerValue}</div><div class="sky-score-tile-back"><span>✦</span><small>SKYJO</small></div></div></div>`
+}
+function royalGridMarkup(p,{counting=false,isActive=false,finished=false}={}){
+ const cards=royalCardGridData(p,{counting});
+ const itemById=new Map((p.items||[]).filter(x=>x.kind==='card'&&x.card?.id).map((x,i)=>[x.card.id,x]));
+ return cards.map((card,idx)=>{
+   if(!card)return royalCardTile(null);
+   const i=(p.items||[]).findIndex(x=>x.kind==='card'&&(x.gridIndex===idx||(x.gridIndex===undefined&&x.card?.id===card.id)));
+   const oldHidden=counting&&card.faceUp===false;
+   return royalCardTile(card,{counting:counting&&isActive,countIndex:isActive?i:-1,gridIndex:idx,hidden:oldHidden,value:i>=0?p.items[i]?.value:null,removed:counting&&i<0});
+ }).join('')
+}
+function royalMiniBoard(p,{counting=false,countIndex=0,pi=0,focus=null}={}){
+ if(!p)return '';
+ const current=p.index===focus?.index;
+ const finished=!counting||pi<countIndex;
+ const points=finished?p.round:(current?0:null);
+ const i=Number(p.index);
+ // Do not reveal hidden cards of a player who has not been counted yet.
+ const revealStage=counting&&!finished;
+ return `<button class="sky-score-mini ${current?'selected':''} ${counting?'readonly':''}" ${counting?'disabled':`onclick="Game.setRoundSummaryFocus(${i})"`} aria-label="${escapeHTML(p.name)} · ${points===null?'noch nicht gezählt':`${points} Rundenpunkte`}">
+ <div class="sky-score-mini-head"><span class="sky-score-rank">${i+1}</span><span class="sky-score-avatar a${i%4}">●</span><b>${escapeHTML(p.name)}</b></div>
+ <div class="sky-score-mini-grid">${royalGridMarkup(p,{counting:revealStage,isActive:false})}</div>
+ <div class="sky-score-mini-foot"><span>RUNDE ${Number(state?.round||0)||''}</span><strong class="sky-score-mini-points" data-score-player-index="${i}">${points===null?'…':points}</strong></div>
+ </button>`
+}
 function buildRoyalRoundSummaryModal(summary,options={}){
- const counting=!!options.counting, countIndex=Number(options.playerIndex)||0;
- const focus=counting?summary.players[countIndex]:roundSummaryFocusPlayer(summary);
- if(!focus)return `<div class="final-score-modal"><h3>Keine Rundenabrechnung verfügbar.</h3></div>`;
- const ordered=counting?[...(summary.players||[])]:[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
- const leftRail=ordered.map((p,i)=>{
-   const active=Number(p.index)===Number(focus.index);
-   const leader=!counting&&(p.total===Math.min(...summary.players.map(x=>x.total)));
-   const shownTotal=counting?(i<countIndex?p.total:p.beforeTotal):p.total;
-   return `<button class="royal-player-pill ${active?'active':''} ${leader?'leader':''}" ${counting?'disabled':`onclick="Game.setRoundSummaryFocus(${Number(p.index)})"`}><span class="royal-player-rank">${i+1}</span><span class="royal-player-name">${escapeHTML(p.name)}</span><b class="royal-player-total">${shownTotal}</b></button>`
+ const counting=!!options.counting, countIndex=Math.max(0,Number(options.playerIndex)||0);
+ const players=(summary.players||[]);
+ const focus=counting?players[countIndex]:roundSummaryFocusPlayer(summary);
+ if(!focus)return `<div class="royal-modal royal-round-modal"><h3>Keine Rundenpunkte vorhanden.</h3></div>`;
+ const centralIndex=players.findIndex(p=>p.index===focus.index);
+ const others=players.filter(p=>p.index!==focus.index);
+ const left=others.slice(0,2),right=others.slice(2,3),overflow=others.slice(3);
+ const renderSide=p=>royalMiniBoard(p,{counting,countIndex,pi:players.findIndex(x=>x.index===p.index),focus});
+ const entries=(focus.items||[]).map((item,idx)=>{
+   const name=summaryItemTitle(item,idx);
+   const miniature=item.kind==='card'?royalCardTile(item.card):item.kind==='action'?`<span class="sky-score-entry-special">${ACTIONS[item.actionType]?.icon||'⚡'}</span>`:'<span class="sky-score-entry-special">⭐</span>';
+   return `<div class="sky-score-entry ${counting?'pending':''}" data-count-index="${idx}"><span class="sky-score-entry-index">${idx+1}</span><span class="sky-score-entry-card">${miniature}</span><span class="sky-score-entry-caption" title="${escapeHTML(name)}">${escapeHTML(name)}</span><b class="sky-score-entry-points ${scoreTone(item.value)}">${scoreFmt(item.value)}</b></div>`
  }).join('');
- const items=(focus.items||[]);
- const detailRows=items.map((item,idx)=>`<div class="royal-detail-row ${counting?'royal-count-item-pending':''}" data-count-index="${idx}" style="--item-index:${Math.min(idx,14)}"><div class="royal-detail-no">${idx+1}</div><div class="royal-detail-text"><b>${escapeHTML(summaryItemTitle(item,idx))}</b>${item.kind==='action'?`<small>${escapeHTML(item.label||'Verwendete Aktionskarte')}</small>`:item.kind==='bonus'?`<small>Zusätzlicher Bonus oder Malus</small>`:''}</div><div class="royal-detail-points ${scoreTone(item.value)}">${scoreFmt(item.value)}</div><div class="royal-detail-visual">${summaryItemVisual(item)}</div></div>`).join('');
- const usedCards=items.map((item,idx)=>item.kind==='bonus'?'':`<div class="royal-used-item ${counting?'royal-count-item-pending':''}" data-count-index="${idx}">${summaryItemVisual(item,true)}</div>`).join('');
- const before=Number.isFinite(Number(focus.beforeTotal))?Number(focus.beforeTotal):focus.total-focus.round;
- const doubled=focus.round!==focus.raw;
- const nextBtn=counting?`<div class="royal-count-status">⏳ Die Karten werden nacheinander gezählt …</div>`:summary.ended?`<button class="primary royal-cta" onclick="Game.openRoyalFinaleSummary()">ZURÜCK ZUM FINALE</button>`:(cloud.enabled&&!isHostDevice())?`<div class="waiting-note">⏳ Der Host startet die nächste Runde.</div>`:`<button class="primary royal-cta" onclick="Game.nextRound()">WEITER</button>`;
- return `<div class="royal-modal royal-round-modal ${counting?'royal-counting':''}">
-   <div class="royal-round-title">SKYJO <span>ACTION</span></div>
-   <div class="royal-round-subtitle">PUNKTEABRECHNUNG</div>
-   <div class="royal-round-round">RUNDE ${summary.round}</div>
-   <div class="royal-round-shell">
-     <aside class="royal-side-scoreboard">${leftRail}</aside>
-     <section class="royal-scroll-wrap">
-       <div class="royal-scroll-head"><small>${counting?`<span class="royal-count-progress">Spieler ${countIndex+1} von ${summary.players.length} · Karte 0 von ${items.length}</span>`:doubled?`Verdoppelt: ${scoreFmt(focus.raw)} → ${scoreFmt(focus.round)}`:`Zwischensumme vorher: ${before}`}</small><h3>${escapeHTML(focus.name)}</h3>${counting?'<div class="royal-count-headline">Karten werden jetzt einzeln gezählt</div><div class="royal-head-score">Rundenwert: <b class="royal-current-header-total">0</b></div>':''}</div>
-       <div class="royal-scroll-surface">${detailRows||'<div class="royal-detail-row"><div class="royal-detail-text"><b>Keine Einzelpunkte verfügbar.</b></div></div>'}</div>
-     </section>
-     <aside class="royal-used-panel"><div class="royal-used-head">VERWENDETE KARTEN</div><div class="royal-used-grid">${usedCards||'<div class="royal-used-note">Keine Karten gespeichert</div>'}</div></aside>
+ const allRound=players.reduce((acc,p)=>acc+Number(p.round||0),0);
+ const currentRound=counting?0:Number(focus.round||0);
+ const overall=counting?players.slice(0,countIndex).reduce((a,p)=>a+Number(p.round||0),0):allRound;
+ const extraButtons=summary.ended?`<button class="sky-score-next" onclick="Game.openRoyalFinaleSummary()">ZUM FINALE <span>❯❯</span></button>`:
+   cloud.enabled&&!isHostDevice()?'<div class="sky-score-wait">⏳ Der Host startet die nächste Runde</div>':'<button class="sky-score-next" onclick="Game.nextRound()">WEITER <span>❯❯</span></button>';
+ const centerItems=royalGridMarkup(focus,{counting,isActive:true});
+ return `<div class="royal-modal royal-round-modal sky-score-scene ${counting?'royal-counting sky-score-counting':''}" role="region" aria-label="Punkteabrechnung nach Runde ${Number(summary.round)}">
+   <div class="sky-score-header"><div class="sky-score-logo"><span>SKYJO</span><strong>ACTION</strong><i class="sky-logo-card lc1"></i><i class="sky-logo-card lc2"></i><i class="sky-logo-card lc3"></i></div><h2>✧ &nbsp; PUNKTEABRECHNUNG &nbsp; ✧</h2><div class="sky-score-round-label">RUNDE ${Number(summary.round)}</div></div>
+   <div class="sky-score-body">
+     <div class="sky-score-side left">${left.map(renderSide).join('')}</div>
+     <div class="sky-score-center">
+        <div class="sky-score-center-head"><span class="sky-score-big-rank">${Number(focus.index)+1}</span><h3>${escapeHTML(focus.name)}</h3></div>
+        <div class="sky-score-center-content">
+          <section class="sky-score-board-wrap" aria-label="12-Karten-Feld von ${escapeHTML(focus.name)}"><div class="sky-score-board">${centerItems}</div><div class="sky-score-glow-caption">${counting?'<span class="royal-count-headline">Die Karten werden einzeln ausgezählt …</span>':'Alle Karten ausgezählt'}</div></section>
+          <section class="sky-score-parchment" aria-label="Karten-Zwischensumme"><h4>ZWISCHENSUMME</h4><div class="sky-score-progress royal-count-progress">${counting?`Spieler ${countIndex+1} von ${players.length} · Karte 0 von ${(focus.items||[]).length}`:'Alle Karten gezählt'}</div><div class="sky-score-entries">${entries}</div><div class="sky-score-parchment-total"><span>GESAMT</span><strong class="sky-score-main-running royal-current-header-total">${currentRound}</strong></div><div class="royal-doubling-line"></div></section>
+        </div>
+     </div>
+     <div class="sky-score-side right">${right.map(renderSide).join('')}</div>
    </div>
-   <div class="royal-total-wrap"><div class="royal-total-kicker">${counting?'AKTUELLER RUNDENWERT':'GESAMT'}</div><div class="royal-total-value" ${counting?'':`data-royal-counter="${Number(focus.round)}"`} aria-live="off">${counting?'0':focus.round}</div>${counting?'<div class="royal-current-equation">0</div><div class="royal-doubling-line"></div>':''}</div>
-   <div class="modal-actions royal-bottom-actions">${counting?'':`<button onclick="Game.closeModal()">Schließen</button>`}${nextBtn}</div>
+   <div class="sky-score-mobile-peers">${others.map(renderSide).join('')}</div>
+   ${overflow.length?`<div class="sky-score-overflow">${overflow.map(renderSide).join('')}</div>`:''}
+   <div class="sky-score-footer"><button class="sky-score-review" ${counting?'disabled':'onclick="Game.showRoundOverview()"'}>▥ &nbsp; RUNDENÜBERSICHT</button><div class="sky-score-grand-total"><small>GESAMT <span class="sky-score-total-clarity">· Alle Spieler</span></small><div class="sky-score-aggregate" ${counting?'':`data-royal-counter="${allRound}"`}>${overall}</div><div class="sky-score-current-equation royal-current-equation">${counting?'0':'Rundenpunkte zusammengezählt'}</div></div>${counting?'<div class="sky-score-counting-hint">⏳ Spielerweise Kartenzählung läuft …</div>':extraButtons}</div>
  </div>`
+}
+function showRoundOverview(){
+ const s=state?.lastRoundSummary;if(!s)return;
+ const content=[...(s.players||[])].sort((a,b)=>a.round-b.round).map((p,i)=>`<div class="sky-overview-row"><span>${i+1}.</span><b>${escapeHTML(p.name)}</b><strong>${scoreFmt(p.round)} Rundenpunkte</strong><em>${p.total} Gesamtpunkte</em></div>`).join('');
+ modal(`<div class="royal-modal royal-round-modal sky-overview"><h2>RUNDENÜBERSICHT · RUNDE ${Number(s.round)}</h2>${content}<div class="sky-overview-actions"><button class="primary" onclick="Game.openRoyalRoundSummary()">← Zurück zur Abrechnung</button></div></div>`,false)
 }
 function buildRoyalFinaleModal(summary){
  const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
@@ -8576,7 +8957,8 @@ function gameView(){
  const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}if(state.players.length===4)return `<div class="table-area four-player-layout"><div class="quad-side quad-left">${playersHTML[0]}${playersHTML[2]}</div>${centerTable}<div class="quad-side quad-right">${playersHTML[1]}${playersHTML[3]}</div></div>`;return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
  const boardsWithMessage=boards.replace(/<\/div>\s*$/,tableMessageZoneHTML()+'</div>');
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
- return `${mp}${closing}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen oder verringern"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Ändern</span></div></div>${boardsWithMessage}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
+ const scoreCurtain=['roundReveal','scoring','scoringSequence'].includes(state.phase)?`<div class="sky-score-privacy-curtain" aria-live="polite"><div class="sky-score-privacy-core"><span>✦</span><strong>PUNKTEABRECHNUNG</strong><small>Die Karten werden für die Auszählung vorbereitet …</small></div></div>`:'';
+ return `${mp}${closing}${scoreCurtain}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen oder verringern"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Ändern</span></div></div>${boardsWithMessage}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
 
 function resumeTransientFlow(){
  if(!state||isModalOpen()||toiletPauseActive())return;
@@ -8593,14 +8975,14 @@ function resumeTransientFlow(){
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
 const viewportLock=captureViewportLock();
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.41 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.44 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
 // Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
 window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
-window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toGameHub,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,adjustJokersInGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,openRoyalRoundSummary,openRoyalFinaleSummary,setRoundSummaryFocus,showFinaleDetails,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse};
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toGameHub,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,adjustJokersInGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,openRoyalRoundSummary,openRoyalFinaleSummary,showRoundOverview,setRoundSummaryFocus,showFinaleDetails,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse};
 
 window.addEventListener('pageshow',e=>{
  if(!e.persisted)return;
