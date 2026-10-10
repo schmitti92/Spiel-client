@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – Royal Atelier V115</title>
+<title>SKYJO Action – Royal Atelier V119</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -5322,6 +5322,40 @@ body.is-playing .app{padding-bottom:max(176px,calc(176px + env(safe-area-inset-b
 #modal.royal-host .royal-counting .royal-head-score b{display:inline-block;margin-left:7px;min-width:36px;font-size:clamp(20px,2.3vw,30px);color:#f5ce70;line-height:1;font-variant-numeric:tabular-nums}
 html:has(#modalBack.royal-active),body:has(#modalBack.royal-active){overflow-x:clip}
 
+
+/* V117 table message zone */
+.table-message-zone{max-width:1500px;margin:10px auto 6px;min-height:0;transition:min-height .22s ease,margin .22s ease;position:relative;z-index:3}
+.table-message-zone.empty{min-height:0;margin:4px auto 0}
+.table-message-zone:not(.empty){min-height:118px}
+.table-message-card{display:grid;grid-template-columns:74px minmax(0,1fr);gap:14px;align-items:center;padding:14px 16px;border-radius:22px;border:1px solid rgba(235,198,120,.22);background:radial-gradient(circle at 12% 0,rgba(255,213,103,.08),transparent 34%),linear-gradient(180deg,rgba(18,44,47,.92),rgba(10,29,31,.96));box-shadow:0 18px 34px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05);opacity:0;transform:translateY(10px) scale(.985);transition:opacity .22s ease,transform .28s ease}
+.table-message-card.show{opacity:1;transform:translateY(0) scale(1)}
+.table-message-icon{width:74px;height:74px;border-radius:21px;display:grid;place-items:center;font-size:38px;color:#fff8e1;background:linear-gradient(180deg,rgba(255,222,127,.20),rgba(255,255,255,.05));border:1px solid rgba(255,228,147,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 12px 26px rgba(0,0,0,.18)}
+.table-message-copy{min-width:0;display:flex;flex-direction:column;gap:7px}
+.table-message-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.table-message-kicker{font-size:12px;font-weight:1000;letter-spacing:1.25px;color:#f0d289;text-transform:uppercase}
+.table-message-by{font-size:11px;font-weight:800;color:#b8cecf}
+.table-message-text{font-size:clamp(17px,1.45vw,24px);line-height:1.3;font-weight:800;color:#f7f6ef;text-wrap:balance}
+.table-message-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.table-message-ref{font-size:12px;color:#ffe7a4;font-weight:900;letter-spacing:.4px}
+.table-message-note{font-size:11px;color:#98afaf}
+.table-message-progress{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:2px}
+.table-message-progress i{display:block;height:100%;width:100%;transform-origin:left center;background:linear-gradient(90deg,#f8da7f,#78e0db 55%,#7aaeff);transition:transform linear}
+.table-message-progress i.run{transform:scaleX(0)}
+.table-message-card.kind-heinz .table-message-icon{background:linear-gradient(180deg,rgba(255,206,121,.30),rgba(159,97,45,.18));}
+.table-message-card.kind-stromberg .table-message-icon{background:linear-gradient(180deg,rgba(125,172,255,.25),rgba(120,69,45,.18));}
+.table-message-card.kind-bible .table-message-icon{background:linear-gradient(180deg,rgba(255,218,132,.28),rgba(74,52,16,.16));}
+.table-message-card.kind-joke .table-message-icon{background:linear-gradient(180deg,rgba(255,214,108,.28),rgba(105,72,11,.16));}
+.table-message-card.kind-surprise .table-message-icon{background:linear-gradient(180deg,rgba(183,132,255,.28),rgba(58,34,97,.20));}
+@media(max-width:900px){.table-message-zone:not(.empty){min-height:110px}.table-message-card{grid-template-columns:60px minmax(0,1fr);gap:12px;padding:12px 13px}.table-message-icon{width:60px;height:60px;font-size:31px;border-radius:18px}.table-message-text{font-size:16px}.table-message-kicker{font-size:11px}}
+@media(max-width:650px){.table-message-zone{margin:8px auto 4px}.table-message-zone:not(.empty){min-height:102px}.table-message-card{grid-template-columns:1fr;gap:9px;padding:11px 11px 12px;border-radius:18px}.table-message-icon{width:48px;height:48px;font-size:28px;border-radius:14px}.table-message-copy{gap:6px}.table-message-head,.table-message-foot{gap:6px}.table-message-kicker{font-size:10px;letter-spacing:1px}.table-message-by,.table-message-ref,.table-message-note{font-size:10px}.table-message-text{font-size:14px;line-height:1.34}}
+.surprise-mini{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px}.surprise-mini span{display:block;font-size:21px;line-height:1}.surprise-mini em{display:block;font-style:normal;font-size:8px;letter-spacing:.55px;line-height:1}
+
+/* V119: Plus/Minus für Jokeranzahl */
+.joker-live-decrease{margin-top:12px}
+.joker-live-increase{margin-top:7px}
+.joker-live-decrease button{background:linear-gradient(180deg,rgba(225,115,125,.13),rgba(100,32,44,.17));border:1px solid rgba(247,161,165,.25);color:#ffe1dc;font-weight:900}
+.joker-live-decrease button:not(:disabled):hover{background:linear-gradient(180deg,rgba(237,141,154,.22),rgba(114,47,56,.20));border-color:rgba(255,182,184,.42)}
+.joker-live-decrease button:disabled,.joker-live-increase button:disabled{opacity:.35;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -5332,7 +5366,7 @@ html:has(#modalBack.royal-active),body:has(#modalBack.royal-active){overflow-x:c
 (() => {
 'use strict';
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
-const SKYJO_BUILD='15.37';
+const SKYJO_BUILD='15.39';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -5647,6 +5681,12 @@ function canManageJokerCount(){
  if(cloud.enabled&&!isHostDevice())return false;
  return true;
 }
+function jokerRoundInventory(){
+ // Mit dem Bestand dieser Runde verhindern wir, dass ein späteres Plus
+ // bereits ausgeteilte Joker nach einem vorherigen Minus doppelt ersetzt.
+ if(Number.isInteger(state?.jokerRoundInventory))return Math.max(0,state.jokerRoundInventory);
+ return Math.max(0,Math.min(30,Math.floor(Number(state?.jokerCount)||0)));
+}
 function showJokerCountManager(){
  if(!state){toast('Kein laufendes Spiel');return}
  const hostOnly=cloud.enabled&&!isHostDevice();
@@ -5654,52 +5694,79 @@ function showJokerCountManager(){
  const remaining=Math.max(0,30-currentCount);
  const inRound=state.phase==='play'||state.phase==='initialReveal';
  const deckStars=Array.isArray(state.playDeck)?state.playDeck.filter(c=>c?.type==='star').length:0;
+ const stillOut=Math.max(0,jokerRoundInventory()-currentCount);
  const note=hostOnly
    ?'Nur der Host darf die Jokeranzahl eines Online-Spiels verändern.'
    :(inRound
-      ?'Neue Joker werden sofort verdeckt in den Nachziehstapel gemischt und gelten auch in den nächsten Runden.'
-      :'Die neue Anzahl gilt ab der nächsten Runde. Während der laufenden Auswertung wird der aktuelle Stapel nicht mehr verändert.');
+      ?'Plus und Minus gelten sofort für Joker im verdeckten Nachziehstapel. Joker auf dem Spielfeld, in der Ablage oder in einer Handkarte bleiben unverändert. Die Zielzahl gilt vollständig ab der nächsten Runde.'
+      :'Die neue Anzahl gilt ab der nächsten Runde. Die laufende Punktewertung bleibt unberührt.');
  modal(`<div class="joker-live-settings">
    <div class="settings-hero">
      <div class="settings-orb">★</div>
      <div><h3>Jokeranzahl im Spiel</h3><p>${note}</p></div>
    </div>
    <div class="joker-live-count">
-     <span>Aktuell eingestellt</span>
+     <span>Joker für die nächste Runde</span>
      <strong>${currentCount}</strong>
-     <small>${inRound?`${deckStars} Joker liegen aktuell noch verdeckt im Nachziehstapel`:'Änderung gilt für die nächste Runde'}</small>
+     <small>${inRound?`${deckStars} Joker aktuell verdeckt im Nachziehstapel`:'Einstellung gilt für die nächste Runde'}</small>
    </div>
-   <div class="joker-live-actions">
-     <button class="primary" ${hostOnly||remaining<1?'disabled':''} onclick="Game.addJokersToGame(1)">★ +1 Joker</button>
-     <button class="primary" ${hostOnly||remaining<2?'disabled':''} onclick="Game.addJokersToGame(2)">★★ +2 Joker</button>
-     <button class="primary" ${hostOnly||remaining<5?'disabled':''} onclick="Game.addJokersToGame(5)">★★★★★ +5 Joker</button>
+   <div class="joker-live-actions joker-live-decrease">
+     <button ${hostOnly||currentCount<5?'disabled':''} onclick="Game.adjustJokersInGame(-5)">★★★★★ −5 Joker</button>
+     <button ${hostOnly||currentCount<2?'disabled':''} onclick="Game.adjustJokersInGame(-2)">★★ −2 Joker</button>
+     <button ${hostOnly||currentCount<1?'disabled':''} onclick="Game.adjustJokersInGame(-1)">★ −1 Joker</button>
    </div>
-   <div class="joker-live-limit">${remaining?`Noch maximal ${remaining} Joker zusätzlich möglich.`:'Maximum von 30 Jokern erreicht.'}</div>
+   <div class="joker-live-actions joker-live-increase">
+     <button class="primary" ${hostOnly||remaining<1?'disabled':''} onclick="Game.adjustJokersInGame(1)">★ +1 Joker</button>
+     <button class="primary" ${hostOnly||remaining<2?'disabled':''} onclick="Game.adjustJokersInGame(2)">★★ +2 Joker</button>
+     <button class="primary" ${hostOnly||remaining<5?'disabled':''} onclick="Game.adjustJokersInGame(5)">★★★★★ +5 Joker</button>
+   </div>
+   <div class="joker-live-limit">Einstellbar: 0–30 Joker.${stillOut&&inRound?` Noch ${stillOut} Joker dieser Runde können schon verteilt sein und werden nicht aus fremden Kartenfeldern entfernt.`:''}</div>
    <div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>
  </div>`,false)
 }
-function addJokersToGame(amount){
+function adjustJokersInGame(delta){
  if(!state)return;
  if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann die Jokeranzahl ändern');return}
- let add=Math.max(1,Math.floor(Number(amount)||1));
+ delta=Math.trunc(Number(delta));
+ if(!Number.isFinite(delta)||delta===0)return;
  const before=Math.max(0,Math.min(30,Math.floor(Number(state.jokerCount)||0)));
- add=Math.min(add,30-before);
- if(add<=0){toast('Maximal 30 Joker möglich');showJokerCountManager();return}
- state.jokerCount=before+add;
+ const target=Math.max(0,Math.min(30,before+delta));
+ if(target===before){toast(target===0?'Minimum: 0 Joker':'Maximum: 30 Joker');showJokerCountManager();return}
  const immediate=state.phase==='play'||state.phase==='initialReveal';
+ let roundPool=jokerRoundInventory(),added=0,removed=0;
+ state.jokerCount=target;
  if(immediate){
    if(!Array.isArray(state.playDeck))state.playDeck=[];
-   for(let i=0;i<add;i++)state.playDeck.push(newCard('star'));
-   state.playDeck=shuffle(state.playDeck);
+   if(target>roundPool){
+     added=target-roundPool;
+     for(let i=0;i<added;i++)state.playDeck.push(newCard('star'));
+     state.playDeck=shuffle(state.playDeck);
+     roundPool+=added;
+   }else if(target<roundPool){
+     for(let i=state.playDeck.length-1;i>=0&&roundPool>target;i--){
+       if(state.playDeck[i]?.type==='star'){
+         state.playDeck.splice(i,1);
+         roundPool--;
+         removed++;
+       }
+     }
+   }
+   state.jokerRoundInventory=roundPool;
  }
- log(`${add} Joker${add===1?'':' '} zusätzlich eingestellt · jetzt ${state.jokerCount}.${immediate?' Sofort in den Nachziehstapel gemischt.':' Gilt ab der nächsten Runde.'}`);
+ const difference=target-before;
+ const label=difference>0?`+${difference}`:String(difference);
+ const currentText=immediate
+   ?(difference<0?` ${removed} Joker sofort aus dem Nachziehstapel entfernt.${roundPool>target?' Übrige Joker liegen bereits anderswo und bleiben bis zur nächsten Runde bestehen.':''}`:` ${added} Joker in den Nachziehstapel gemischt.`)
+   :' Gilt ab der nächsten Runde.';
+ log(`Jokeranzahl um ${label} geändert: ${before} → ${target}.${currentText}`);
  save();
  render();
- toast(`★ ${add} Joker hinzugefügt · jetzt ${state.jokerCount}`);
+ toast(`★ Jokerziel ${target} (${label})${immediate&&difference<0?` · ${removed} aus dem Stapel entfernt`:''}`);
  setTimeout(showJokerCountManager,40)
 }
+function addJokersToGame(amount){adjustJokersInGame(Math.abs(Math.trunc(Number(amount)||1)))}
 
-function showDisplaySettings(){const ml=uiPrefs.motion||'table';modal(`<div class="display-settings"><div class="settings-hero"><div class="settings-orb">✦</div><div><h3>Darstellung & Spielgefühl</h3><p>High-End-Effekte lassen sich einzeln anpassen, ohne die Spiellogik zu verändern.</p></div></div><div class="settings-grid"><button class="setting-toggle ${uiPrefs.sound?'on':''}" onclick="Game.toggleSound();Game.showDisplaySettings()"><span>🔊</span><b>Sound</b><small>${uiPrefs.sound?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.haptic?'on':''}" onclick="Game.toggleHaptic()"><span>📳</span><b>Haptik</b><small>${uiPrefs.haptic?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.cinematic!==false?'on':''}" onclick="Game.toggleCinematic()"><span>✨</span><b>Cinematic FX</b><small>${uiPrefs.cinematic!==false?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.autoFocus?'on':''}" onclick="Game.toggleAutoFocus()"><span>🎯</span><b>Auto-Fokus</b><small>${uiPrefs.autoFocus?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.performance!==false?'on':''}" onclick="Game.togglePerformance()"><span>⚡</span><b>Flüssig-Modus</b><small>${uiPrefs.performance!==false?'AN':'AUS'}</small></button><div class="motion-settings"><div><div><b>🎴 Kartenbewegung</b><small>Wie schnell Karten wie am echten Tisch bewegt werden.</small></div><small>${ml==='normal'?'SCHNELL':ml==='slow'?'NORMAL':'TISCH · FLÜSSIG'}</small></div><div class="motion-levels"><button class="motion-level ${ml==='normal'?'on':''}" onclick="Game.setMotionLevel('normal')">⚡ Schnell</button><button class="motion-level ${ml==='slow'?'on':''}" onclick="Game.setMotionLevel('slow')">🎴 Normal</button><button class="motion-level ${ml==='table'?'on':''}" onclick="Game.setMotionLevel('table')">🃏 Tisch · flüssig</button></div></div></div>${state?'<div class="modal-actions"><button class="primary" onclick="Game.closeModal();Game.focusMyBoard()">🎯 Zu meinem Feld</button><button onclick="Game.showJokerCountManager()">★ Joker erhöhen</button><button onclick="Game.closeModal()">Fertig</button></div>':'<div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>'}</div>`,false)}
+function showDisplaySettings(){const ml=uiPrefs.motion||'table';modal(`<div class="display-settings"><div class="settings-hero"><div class="settings-orb">✦</div><div><h3>Darstellung & Spielgefühl</h3><p>High-End-Effekte lassen sich einzeln anpassen, ohne die Spiellogik zu verändern.</p></div></div><div class="settings-grid"><button class="setting-toggle ${uiPrefs.sound?'on':''}" onclick="Game.toggleSound();Game.showDisplaySettings()"><span>🔊</span><b>Sound</b><small>${uiPrefs.sound?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.haptic?'on':''}" onclick="Game.toggleHaptic()"><span>📳</span><b>Haptik</b><small>${uiPrefs.haptic?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.cinematic!==false?'on':''}" onclick="Game.toggleCinematic()"><span>✨</span><b>Cinematic FX</b><small>${uiPrefs.cinematic!==false?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.autoFocus?'on':''}" onclick="Game.toggleAutoFocus()"><span>🎯</span><b>Auto-Fokus</b><small>${uiPrefs.autoFocus?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.performance!==false?'on':''}" onclick="Game.togglePerformance()"><span>⚡</span><b>Flüssig-Modus</b><small>${uiPrefs.performance!==false?'AN':'AUS'}</small></button><div class="motion-settings"><div><div><b>🎴 Kartenbewegung</b><small>Wie schnell Karten wie am echten Tisch bewegt werden.</small></div><small>${ml==='normal'?'SCHNELL':ml==='slow'?'NORMAL':'TISCH · FLÜSSIG'}</small></div><div class="motion-levels"><button class="motion-level ${ml==='normal'?'on':''}" onclick="Game.setMotionLevel('normal')">⚡ Schnell</button><button class="motion-level ${ml==='slow'?'on':''}" onclick="Game.setMotionLevel('slow')">🎴 Normal</button><button class="motion-level ${ml==='table'?'on':''}" onclick="Game.setMotionLevel('table')">🃏 Tisch · flüssig</button></div></div></div>${state?'<div class="modal-actions"><button class="primary" onclick="Game.closeModal();Game.focusMyBoard()">🎯 Zu meinem Feld</button><button onclick="Game.showJokerCountManager()">★ Jokeranzahl ändern</button><button onclick="Game.closeModal()">Fertig</button></div>':'<div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>'}</div>`,false)}
 function finaleBurst(){if(uiPrefs.cinematic===false)return;try{const layer=document.createElement('div');layer.className='finale-confetti';document.body.append(layer);const glyphs=['◆','●','✦','■'];const total=uiPrefs.performance!==false?22:46;for(let i=0;i<total;i++){const p=document.createElement('i');p.textContent=glyphs[i%glyphs.length];p.style.left=`${5+Math.random()*90}%`;p.style.setProperty('--drift',`${-70+Math.random()*140}px`);p.style.setProperty('--spin',`${180+Math.random()*720}deg`);p.style.setProperty('--delay',`${Math.random()*.45}s`);p.style.setProperty('--dur',`${1.4+Math.random()*1.3}s`);p.style.setProperty('--hue',`${Math.floor(Math.random()*360)}`);layer.append(p)}setTimeout(()=>layer.remove(),3100)}catch(_e){}}
 
 function toggleSound(){uiPrefs.sound=!uiPrefs.sound;saveUIPrefs();if(uiPrefs.sound)playFxSound('turn');syncChromeButtons();toast(uiPrefs.sound?'🔊 Sound an':'🔇 Sound aus')}
@@ -5979,6 +6046,7 @@ async function flushCloudPush(){
 
 function stopCloudRoomRuntime(){
  clearGameAnnouncement();
+ clearTableAnnouncement();
  clearJokePopup();
  clearBiblePopup();
  if(cloud.pollTimer)clearTimeout(cloud.pollTimer);
@@ -6242,12 +6310,12 @@ function cardPoints(card){return card.type==='star'?0:Number(card.value||0)}
 function totalHidden(p){return p.grid.filter(c=>c&&!c.faceUp).length+p.extras.filter(c=>c&&!c.faceUp).length}
 function hasDefense(pi){return state.players[pi].actions.find(a=>a.type==='defense')}
 function consumeDefense(pi){const p=state?.players?.[Number(pi)];if(!p||!Array.isArray(p.actions))return false;const idx=p.actions.findIndex(a=>a?.type==='defense');if(idx<0)return false;const [a]=p.actions.splice(idx,1);if(a)state.actionDiscard.push(a);log(`${p.name}s Verteidigung blockt den Angriff.`);toast(`${p.name}: 🛡️ Angriff abgewehrt`);return true}
-function setupState(names,target,beginner,jokerCount=8,jokerEnabled=false,aiConfig=null){const playDeck=makePlayDeck(jokerCount),specials=jokerEnabled!==false,actionDeck=specials?makeActionDeck(beginner):[];const flags=aiConfig?.flags||[],diffs=aiConfig?.difficulties||[];const players=names.map((n,i)=>({name:n,total:0,grid:[],extras:[],actions:[],ownTurn:0,lastRound:0,bankedStarBonus:0,isAI:!!flags[i],aiDifficulty:diffs[i]||'normal',aiKnowledge:{}}));for(const p of players){for(let i=0;i<12;i++)p.grid.push(takeFrom(playDeck))}const playDiscard=[takeFrom(playDeck)];playDiscard[0].faceUp=true;const market=[];let actionDiscard=[];if(specials){for(let i=0;i<4;i++)market.push(takeFrom(actionDeck));const first=takeFrom(actionDeck);if(first)actionDiscard=[first]}return {version:1,phase:'initialReveal',round:1,target,beginner,jokerCount:Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0))),jokerEnabled:!!jokerEnabled,players,playDeck,playDiscard,removedCards:[],dismissedMatches:{},actionDeck,market,actionDiscard,currentPlayer:0,startPlayer:null,setupPlayer:0,setupRevealed:0,setupOrder:[],setupOrderPos:0,roundEnder:null,finalTurnQueue:[],extraTurns:0,log:[`Neues Spiel gestartet · ${jokerCount} Jokerkarten · Spezialeffekte ${jokerEnabled?'AN':'AUS'}.`],turnNo:0,turnFlow:null,reactionFeed:[],roundJokerValues:{},gameOver:false}}
+function setupState(names,target,beginner,jokerCount=8,jokerEnabled=false,aiConfig=null){const playDeck=makePlayDeck(jokerCount),specials=jokerEnabled!==false,actionDeck=specials?makeActionDeck(beginner):[];const flags=aiConfig?.flags||[],diffs=aiConfig?.difficulties||[];const players=names.map((n,i)=>({name:n,total:0,grid:[],extras:[],actions:[],ownTurn:0,lastRound:0,bankedStarBonus:0,isAI:!!flags[i],aiDifficulty:diffs[i]||'normal',aiKnowledge:{}}));for(const p of players){for(let i=0;i<12;i++)p.grid.push(takeFrom(playDeck))}const playDiscard=[takeFrom(playDeck)];playDiscard[0].faceUp=true;const market=[];let actionDiscard=[];if(specials){for(let i=0;i<4;i++)market.push(takeFrom(actionDeck));const first=takeFrom(actionDeck);if(first)actionDiscard=[first]}return {version:1,phase:'initialReveal',round:1,target,beginner,jokerCount:Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0))),jokerEnabled:!!jokerEnabled,players,playDeck,playDiscard,removedCards:[],dismissedMatches:{},actionDeck,market,actionDiscard,currentPlayer:0,startPlayer:null,setupPlayer:0,setupRevealed:0,setupOrder:[],setupOrderPos:0,roundEnder:null,finalTurnQueue:[],extraTurns:0,log:[`Neues Spiel gestartet · ${jokerCount} Jokerkarten · Spezialeffekte ${jokerEnabled?'AN':'AUS'}.`],turnNo:0,turnFlow:null,reactionFeed:[],roundJokerValues:{},jokerRoundInventory:Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0))),gameOver:false}}
 function takeFrom(a){return a.pop()}
 function startGame(names,target,beginner,jokerCount=8,jokerEnabled=false,aiConfig=null){state=setupState(names,target,beginner,jokerCount,jokerEnabled,aiConfig);ui={mode:'setupReveal',data:{},selected:[]};save();render();toast(`${state.players[0].name}: Decke 2 Karten auf`);scheduleAIIfNeeded()}
 function beginRound(){
  state.pendingMatch=null;state.turnFlow=null;state.phase='initialReveal';state.roundEnder=null;state.finalTurnQueue=[];state.extraTurns=0;state.roundJokerValues={};state.lastRoundSummary=null;state.scoreSequence=null;state.roundClose=null;
- state.playDeck=makePlayDeck(state.jokerCount??8);state.playDiscard=[takePlayDirect()];state.playDiscard[0].faceUp=true;state.removedCards=[];state.dismissedMatches={};
+ state.playDeck=makePlayDeck(state.jokerCount??8);state.jokerRoundInventory=Math.max(0,Math.min(30,Math.floor(Number(state.jokerCount)||0)));state.playDiscard=[takePlayDirect()];state.playDiscard[0].faceUp=true;state.removedCards=[];state.dismissedMatches={};
  if(jokerSpecialsEnabled()){state.actionDeck=makeActionDeck(state.beginner);state.market=[];for(let i=0;i<4;i++)state.market.push(takeActionDirect());state.actionDiscard=[takeActionDirect()]}else{state.actionDeck=[];state.market=[];state.actionDiscard=[]}
  for(const p of state.players){p.grid=[];p.extras=[];p.actions=[];p.ownTurn=0;p.aiKnowledge={};p.bankedStarBonus=0;for(let i=0;i<12;i++)p.grid.push(takePlayDirect())}
  const starter=state.round===1?0:(Number.isInteger(state.startPlayer)?state.startPlayer:0);
@@ -6386,10 +6454,22 @@ function dismissedMatchList(pi){if(!state.dismissedMatches||typeof state.dismiss
 function isMatchDismissed(pi,m){return dismissedMatchList(pi).includes(m.key)}
 function dismissMatches(pi,matches){const list=dismissedMatchList(pi);for(const m of matches||[])if(m?.key&&!list.includes(m.key))list.push(m.key);}
 function resolveMatches(pi,cont){
+ /* V118: Reine Jokergruppen sind FESTE Einmal-Boni. Sie werden sofort
+    abgeräumt, damit ihre Joker nicht noch die Werte benachbarter
+    Zahlenkarten übernehmen und zusätzlich Minuspunkte erzeugen.
+    Andere fertige Zahlen-/Mischkombinationen bleiben manuell entfernbar. */
+ if(state?.phase==='play'){
+   let safeguard=0;
+   while(safeguard++<12){
+     const group=findMatches(pi).find(m=>m.pureStars);
+     if(!group)break;
+     removeMatch(pi,group);
+     const bonus=group.idx.length===4&&group.name.startsWith('Reihe')?-15:-10;
+     visualFx('star',`Jokergruppe abgeräumt: ${bonus} Punkte`,'⭐',9);
+   }
+ }
  const matches=findMatches(pi);
- /* V15.16: Eine fertige Reihe/Spalte wird NICHT automatisch aufgelöst
-    und es erscheint keine Ja/Nein-Frage. Sie bleibt liegen, bis der
-    Spieler sie über den sichtbaren Entfernen-Button selbst auflöst. */
+ /* Zahlen- und gemischte Gruppen bleiben wie bisher freiwillig. */
  if(matches.length)dismissMatches(pi,matches);
  state.pendingMatch=null;
  save();
@@ -6584,9 +6664,8 @@ async function runRoundClose(seqId){
      const pi=seq.removePi,matches=findMatches(pi);
      if(!matches.length){seq.removePi++;save();continue}
 
-     /* V15.8: Am Rundenende wird nicht mehr blind jede Joker-Kombination entfernt.
-        Wir vergleichen alle sinnvoll möglichen Abräumfolgen und behalten die Variante
-        mit den niedrigsten echten Endpunkten. Bei Gleichstand wird weiter abgeräumt. */
+     /* Reine Jokergruppen werden auf jeden Fall abgeräumt und nur einmal
+        mit −10/−15 bewertet. Andere Kombinationen bleiben punktoptimiert. */
      const plan=bestRoundEndRemovalPlan(pi);
      const nextKey=plan.steps?.[0]?.key;
      const m=nextKey?matches.find(x=>x.key===nextKey):null;
@@ -6594,7 +6673,7 @@ async function runRoundClose(seqId){
        const p=state.players[pi],before=rawRoundScore(p),singleScores=matches.map(x=>scoreAfterSimulatedRemoval(p,x));
        const bestAfter=singleScores.length?Math.min(...singleScores):before;
        seq.keptBetterGroups=(seq.keptBetterGroups||0)+matches.length;
-       log(`${p.name}: ${matches.length} fertige Kombination(en) bleiben bei der Endwertung liegen, weil ${scoreFmt(before)} Punkte besser sind als Abräumen${Number.isFinite(bestAfter)?` (${scoreFmt(bestAfter)})`:''}. Joker werden zuerst optimal aufgelöst.`);
+       log(`${p.name}: ${matches.length} fertige Kombination(en) bleiben bei der Endwertung liegen, weil ${scoreFmt(before)} Punkte besser sind als Abräumen${Number.isFinite(bestAfter)?` (${scoreFmt(bestAfter)})`:''}. Reine Jokergruppen werden immer entfernt.`);
        toast(`⭐ ${p.name}: Kombination bleibt · ${scoreFmt(before)} ist günstiger als Abräumen`);
        seq.removePi++;
        ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:seq.keptBetterGroups,smartKeep:true},selected:[]};
@@ -6676,10 +6755,9 @@ function jokerEndLabel(p,idx){
 }
 function rawRoundScore(p){let s=0;for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(c)s+=endRoundCardValue(p,c,'grid',i)}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(c)s+=endRoundCardValue(p,c,'extra',i)}if(jokerSpecialsEnabled())s+=p.actions.length*10;s+=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);return s}
 
-/* V15.8 SMART JOKER SCORING
-   Nach dem Aufdecken werden die Joker-Endwerte zuerst festgeschrieben. Eine fertige
-   Reihe/Spalte wird danach nur dann abgeräumt, wenn das Endergebnis dadurch nicht
-   schlechter wird (z. B. 0 + Joker(-2) + Joker(-1) = -3 bleibt liegen). */
+/* V118 END SCORING
+   Reine Jokergruppen werden zwingend abgeräumt: −10 (3) oder −15 (4).
+   Andere Gruppen dürfen nur liegen bleiben, wenn das für sie besser ist. */
 function simulateMatchRemovalForScore(p,m){
  if(!p||!m)return p;
  if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0;
@@ -6705,17 +6783,22 @@ function bestRoundEndRemovalPlan(pi){
  function solve(p){
    const key=roundEndPlanKey(p);
    if(memo.has(key))return memo.get(key);
-   let best={score:rawRoundScore(p),steps:[],removedCards:0};
    const matches=findMatchesInPlayer(p);
-   for(const m of matches){
+   const required=matches.filter(m=>m.pureStars);
+   /* Reine 3er-/4er-Jokergruppen müssen genau einmal als Gruppe verschwinden.
+      Beim Score-Vergleich darf "Joker behalten + Bonus + negative Nachbarwerte"
+      keine Alternative sein. Überschneidende Gruppen werden ohne Doppelnutzung
+      derselben Karten in der punktegünstigeren Reihenfolge abgeräumt. */
+   let best=required.length?null:{score:rawRoundScore(p),steps:[],removedCards:0};
+   for(const m of (required.length?required:matches)){
      const q=clone(p);
      simulateMatchRemovalForScore(q,m);
      const tail=solve(q);
      const candidate={score:tail.score,steps:[{key:m.key,name:m.name,label:m.label},...tail.steps],removedCards:m.idx.length+tail.removedCards};
-     /* Niedrigere Punkte gewinnen. Bei exakt gleichem Ergebnis räumen wir mehr Karten ab,
-        damit normale 0er-/positive Reihen weiterhin automatisch verschwinden. */
-     if(candidate.score<best.score||(candidate.score===best.score&&candidate.removedCards>best.removedCards))best=candidate
+     /* Bei Gleichstand werden nur bei normalen Kombinationen weitere Karten entfernt. */
+     if(!best||candidate.score<best.score||(candidate.score===best.score&&candidate.removedCards>best.removedCards))best=candidate
    }
+   if(!best)best={score:rawRoundScore(p),steps:[],removedCards:0};
    memo.set(key,best);
    return best
  }
@@ -7074,7 +7157,7 @@ function animateRoyalScoring(root){
  }
  requestAnimationFrame(step)
 } 
-function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne/Joker haben während des Spiels den Grundwert 0. Bei der Rundenabrechnung übernimmt jeder verbliebene Joker automatisch die niedrigste Zahl, die in seiner waagerechten Reihe oder senkrechten Spalte noch liegt. Beispiel: −2 und 3 in derselben Linie → der Joker zählt −2. Gibt es dort keine Zahl, bleibt er 0.</li><li>Reine Stern-Gruppen dürfen entfernt werden, müssen aber nicht. Eine vollständige 3er-Sterngruppe bringt −10, eine waagerechte 4er-Sterngruppe −15. Wird sie vorher freiwillig abgeräumt, bleibt dieser Bonus gespeichert; jeder Stern zählt nur einmal für einen Bonus.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Eine neu vollständige Kombination bleibt immer auf dem Brett liegen – es erscheint keine Nachfrage und sie wird während des normalen Spiels nicht automatisch entfernt. In deinem eigenen Zug kannst du sie über „Reihe entfernen“ bzw. „Spalte entfernen“ freiwillig selbst auflösen; das verbraucht nicht deine normale Hauptaktion. Auch Minuszahlen dürfen entfernt werden. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, erhalten <b>alle anderen Spieler in normaler Zugreihenfolge jeweils noch genau einen letzten Zug</b>. Bei 3 Spielern heißt das: Beendet Spieler A die Runde, spielen danach noch B und C jeweils einmal. Erst dann beginnt die Abrechnung. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle noch verdeckten Karten langsam nacheinander aufgedeckt. Anschließend werden vollständige gleiche Reihen und Spalten automatisch geprüft: Sie werden nur abgeräumt, wenn das Entfernen punktetechnisch gleich gut oder besser ist. Eine Joker-Kombination mit günstigeren Minuspunkten darf deshalb bewusst liegen bleiben. Erst danach beginnt die Punktewertung. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards funktionieren; während des Spiels ist ihr Grundwert 0, bei der Endabrechnung gilt weiterhin die beste Zahl aus Reihe/Spalte. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
+function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne/Joker haben während des Spiels den Grundwert 0. Bei der Rundenabrechnung übernimmt jeder verbliebene Joker automatisch die niedrigste Zahl, die in seiner waagerechten Reihe oder senkrechten Spalte noch liegt. Beispiel: −2 und 3 in derselben Linie → der Joker zählt −2. Gibt es dort keine Zahl, bleibt er 0.</li><li>Reine Jokergruppen werden automatisch entfernt: drei Joker in einer vollständigen Spalte bzw. vier Joker in einer waagerechten Reihe geben genau einmal −10 bzw. −15 Punkte. Die abgeräumten Joker zählen danach nicht mehr einzeln, auch nicht mit einem übernommenen negativen Nachbarwert. Jede Jokerkarte darf nur zu einer abgeräumten Gruppe gehören.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Eine neu vollständige Kombination bleibt immer auf dem Brett liegen – es erscheint keine Nachfrage und sie wird während des normalen Spiels nicht automatisch entfernt. In deinem eigenen Zug kannst du sie über „Reihe entfernen“ bzw. „Spalte entfernen“ freiwillig selbst auflösen; das verbraucht nicht deine normale Hauptaktion. Auch Minuszahlen dürfen entfernt werden. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, erhalten <b>alle anderen Spieler in normaler Zugreihenfolge jeweils noch genau einen letzten Zug</b>. Bei 3 Spielern heißt das: Beendet Spieler A die Runde, spielen danach noch B und C jeweils einmal. Erst dann beginnt die Abrechnung. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle noch verdeckten Karten langsam nacheinander aufgedeckt. Anschließend werden vollständige gleiche Reihen und Spalten automatisch geprüft: Reine Jokergruppen werden immer abgeräumt und ausschließlich mit ihrem festen Gruppenbonus bewertet. Andere Kombinationen werden nur abgeräumt, wenn das Entfernen punktetechnisch gleich gut oder besser ist. Eine Joker-Kombination mit günstigeren Minuspunkten darf deshalb bewusst liegen bleiben. Erst danach beginnt die Punktewertung. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards funktionieren; während des Spiels ist ihr Grundwert 0, bei der Endabrechnung gilt weiterhin die beste Zahl aus Reihe/Spalte. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
 function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
 
 async function returnFinishedGameToRoomLobby(){
@@ -7590,7 +7673,50 @@ function bottomButtons(){
  }
 if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Kombination bleibt liegen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
 const emojiReactionSeen=new Set();
-const EMOJI_REACTIONS=['👍','😂','🤣','HAHA','HEINZ','STROM','😮','😭','😡','👏','🔥','❤️','🤔'];
+const EMOJI_REACTIONS=['👍','😂','🤣','HAHA','HEINZ','STROM','🎁','😮','😭','😡','👏','🔥','❤️','🤔'];
+
+const TABLE_MESSAGE_MS=10000;
+let tableAnnouncementTimer=null;
+let currentTableAnnouncement=null;
+function activeTableAnnouncement(){
+ if(!currentTableAnnouncement)return null;
+ const remaining=Number(currentTableAnnouncement.expiresAt||0)-Date.now();
+ if(remaining<=0){currentTableAnnouncement=null;return null}
+ return {...currentTableAnnouncement,remainingMs:remaining}
+}
+function clearTableAnnouncement(){
+ if(tableAnnouncementTimer){clearTimeout(tableAnnouncementTimer);tableAnnouncementTimer=null}
+ currentTableAnnouncement=null;
+ syncTableAnnouncementMount()
+}
+function tableAnnouncementHTML(a){
+ return `<div class="table-message-card kind-${escapeHTML(a.kind||'fun')}"><div class="table-message-icon">${escapeHTML(a.icon||'💬')}</div><div class="table-message-copy"><div class="table-message-head"><div class="table-message-kicker">${escapeHTML(a.title||'INFO')}</div>${a.by?`<div class="table-message-by">von ${escapeHTML(a.by)}</div>`:''}</div><div class="table-message-text">${escapeHTML(a.text||'')}</div><div class="table-message-foot">${a.ref?`<div class="table-message-ref">${escapeHTML(a.ref)}</div>`:'<div></div>'}<div class="table-message-note">sichtbar für 10 Sekunden</div></div><div class="table-message-progress"><i></i></div></div></div>`
+}
+function syncTableAnnouncementMount(){
+ const zone=document.getElementById('tableMessageZone');
+ const mount=document.getElementById('tableMessageMount');
+ if(!zone||!mount)return;
+ const a=activeTableAnnouncement();
+ mount.innerHTML='';
+ zone.classList.toggle('empty',!a);
+ if(!a)return;
+ mount.innerHTML=tableAnnouncementHTML(a);
+ const card=mount.firstElementChild;
+ const bar=card?.querySelector('.table-message-progress i');
+ requestAnimationFrame(()=>{
+   if(card)card.classList.add('show');
+   if(bar){bar.style.transitionDuration=`${Math.max(250,a.remainingMs)}ms`;requestAnimationFrame(()=>bar.classList.add('run'))}
+ })
+}
+function showTableAnnouncement(entry,remainingMs=TABLE_MESSAGE_MS){
+ if(!entry?.text)return;
+ if(tableAnnouncementTimer){clearTimeout(tableAnnouncementTimer);tableAnnouncementTimer=null}
+ currentTableAnnouncement={id:entry.id||uid(),kind:entry.kind||'fun',icon:entry.icon||'💬',title:entry.title||'INFO',text:String(entry.text||''),ref:entry.ref||'',by:entry.by||'',expiresAt:Date.now()+Math.max(500,remainingMs)};
+ syncTableAnnouncementMount();
+ tableAnnouncementTimer=setTimeout(()=>{currentTableAnnouncement=null;tableAnnouncementTimer=null;syncTableAnnouncementMount()},Math.max(500,remainingMs)+40)
+}
+function tableMessageZoneHTML(){return `<div id="tableMessageZone" class="table-message-zone empty"><div id="tableMessageMount"></div></div>`}
+function isSurpriseReaction(emoji){return String(emoji||'')==='SURP'||String(emoji||'')==='🎁'}
 
 
 const GAME_JOKES=[
@@ -7645,6 +7771,38 @@ const GAME_JOKES=[
  'Wie nennt man einen sehr höflichen Ritter? Sir Viette.',
  'Was sagt der Toast zum Brot? Du bist heute aber scheibchenweise gut drauf.'
 ];
+GAME_JOKES.push(
+ 'Warum ging der Bleistift zum Therapeuten? Weil er sich ausgestrichen fühlte.',
+ 'Was macht eine Tomate auf dem Computer? Sie drückt Ketchup.',
+ 'Warum lieben Vögel WLAN? Wegen der guten Verbindungen.',
+ 'Wie nennt man ein müdes Auto? Einen Schlafwagen.',
+ 'Was macht ein Brot im Krankenhaus? Es wird belegt.',
+ 'Warum können Kühe nicht flüstern? Weil sie nur muh-tiviert sprechen.',
+ 'Wie heißt ein intelligenter Berg? Cleverest.',
+ 'Warum tragen Lampen keine Mützen? Weil sie schon Schirme haben.',
+ 'Was sagt der Kugelschreiber zum Blatt? Ich fühl mich zu dir hingezogen.',
+ 'Warum sind Treppen schlechte Geheimnisträger? Weil immer etwas durchsickert.',
+ 'Wie nennt man eine entspannte Gurke? Chillrike.',
+ 'Was macht ein Handy im Fitnessstudio? Es trainiert Empfang.',
+ 'Warum ging die Banane ins Büro? Weil sie krumm Karriere machen wollte.',
+ 'Was macht eine Ente mit Akten? Sie abheften. Quak.',
+ 'Wie heißt ein Kaugummi, der nachdenkt? Grübelmint.',
+ 'Warum reden Pflanzen so ungern? Weil sie lieber wachsen lassen.',
+ 'Was macht ein Sofa beim Arzt? Es sitzt die Sache aus.',
+ 'Warum lachen Uhren nie zu spät? Weil sie den richtigen Zeitpunkt haben.',
+ 'Wie nennt man einen höflichen Käse? Bittebert.',
+ 'Was macht ein Gabelstapler im Urlaub? Er hebt ab.',
+ 'Warum war das Feuerzeug beleidigt? Weil es übergangen wurde.',
+ 'Was ist grau und kann nicht schwimmen? Ein Parkplatz.',
+ 'Wie nennt man einen Bäcker mit Sonnenbrand? Toasty.',
+ 'Warum mögen Waschmaschinen keine Witze? Weil sie Schleudertrauma bekommen.',
+ 'Was macht ein Löffel beim Fußball? Er spielt in der Schale.',
+ 'Warum wurde der Staubsauger Künstler? Er hatte Saugkraft.',
+ 'Wie nennt man eine nervöse Zitrone? Eine Zittrone.',
+ 'Warum kann der Mond nicht lügen? Weil alles ans Licht kommt.',
+ 'Was macht ein Taschenrechner am Wochenende? Er schaltet ab.',
+ 'Wie heißt ein sehr glücklicher Föhn? Heiter bis luftig.'
+);
 
 let jokePopupEl=null;
 let jokePopupTimer=null;
@@ -7655,58 +7813,19 @@ function clearJokePopup(){
  if(jokePopupEl){try{jokePopupEl.remove()}catch(_e){}jokePopupEl=null}
 }
 
-function showJokePopup(joke,remainingMs=8000){
+function showJokePopup(joke,remainingMs=TABLE_MESSAGE_MS){
  if(!joke)return;
  clearJokePopup();
-
- const wrap=document.createElement('div');
- wrap.className='joke-popup';
- wrap.setAttribute('role','status');
- wrap.setAttribute('aria-live','polite');
-
- const card=document.createElement('div');
- card.className='joke-popup-card';
-
- const top=document.createElement('div');
- top.className='joke-popup-top';
- top.textContent='😂 WITZ FÜR ZWISCHENDURCH';
-
- const quote=document.createElement('div');
- quote.className='joke-popup-text';
- quote.textContent=joke;
-
- const timer=document.createElement('div');
- timer.className='joke-popup-progress';
- const bar=document.createElement('i');
- timer.append(bar);
-
- card.append(top,quote,timer);
- wrap.append(card);
- document.body.append(wrap);
- jokePopupEl=wrap;
-
- requestAnimationFrame(()=>{
-   wrap.classList.add('show');
-   bar.style.transitionDuration=`${Math.max(250,remainingMs)}ms`;
-   requestAnimationFrame(()=>bar.classList.add('run'))
- });
-
- jokePopupTimer=setTimeout(()=>{
-   wrap.classList.add('leave');
-   jokePopupTimer=setTimeout(()=>{
-     if(jokePopupEl===wrap)jokePopupEl=null;
-     try{wrap.remove()}catch(_e){}
-   },260)
- },Math.max(250,remainingMs))
+ showTableAnnouncement({kind:'joke',icon:'😂',title:'WITZ FÜR ZWISCHENDURCH',text:joke},remainingMs)
 }
 
 function syncGameJoke(){
  const j=state?.funJoke;
  if(!j?.id||j.id===lastJokeSeen)return;
  const age=Date.now()-Number(j.ts||0);
- if(age<0||age>8000){lastJokeSeen=j.id;return}
+ if(age<0||age>TABLE_MESSAGE_MS){lastJokeSeen=j.id;return}
  lastJokeSeen=j.id;
- showJokePopup(j.text,8000-age)
+ showJokePopup(j.text,TABLE_MESSAGE_MS-age)
 }
 
 function tellRandomJoke(){
@@ -7804,6 +7923,38 @@ const GAME_BIBLE_VERSES=[
  {ref:'1. Johannes 4,7',text:'Ihr Lieben, lasset uns untereinander liebhaben; denn die Liebe ist von Gott.'},
  {ref:'1. Johannes 4,19',text:'Lasset uns ihn lieben; denn er hat uns zuerst geliebt.'}
 ];
+GAME_BIBLE_VERSES.push(
+ {ref:'Psalm 16,11',text:'Du tust mir kund den Weg zum Leben.'},
+ {ref:'Psalm 18,2',text:'Herzlich lieb habe ich dich, HERR, meine Stärke.'},
+ {ref:'Psalm 19,15',text:'Lass dir wohlgefallen die Rede meines Mundes und das Gespräch meines Herzens vor dir, HERR.'},
+ {ref:'Psalm 28,7',text:'Der HERR ist meine Stärke und mein Schild.'},
+ {ref:'Psalm 31,25',text:'Seid getrost und unverzagt alle, die ihr des HERRN harret.'},
+ {ref:'Psalm 32,8',text:'Ich will dich unterweisen und dir den Weg zeigen, den du gehen sollst.'},
+ {ref:'Psalm 34,9',text:'Schmecket und sehet, wie freundlich der HERR ist.'},
+ {ref:'Psalm 37,4',text:'Habe deine Lust am HERRN; der wird dir geben, was dein Herz wünschet.'},
+ {ref:'Psalm 61,3',text:'Führe mich auf einen hohen Felsen.'},
+ {ref:'Psalm 62,2',text:'Meine Seele ist stille zu Gott, der mir hilft.'},
+ {ref:'Psalm 63,4',text:'Deine Gnade ist besser als Leben.'},
+ {ref:'Psalm 73,28',text:'Aber das ist meine Freude, daß ich mich zu Gott halte.'},
+ {ref:'Psalm 86,11',text:'Weise mir, HERR, deinen Weg, daß ich wandle in deiner Wahrheit.'},
+ {ref:'Psalm 91,11',text:'Denn er hat seinen Engeln befohlen über dir, daß sie dich behüten auf allen deinen Wegen.'},
+ {ref:'Psalm 103,2',text:'Lobe den HERRN, meine Seele, und vergiß nicht, was er dir Gutes getan hat.'},
+ {ref:'Psalm 121,2',text:'Meine Hilfe kommt vom HERRN, der Himmel und Erde gemacht hat.'},
+ {ref:'Sprüche 17,17',text:'Ein Freund liebt allezeit.'},
+ {ref:'Sprüche 18,10',text:'Der Name des HERRN ist ein festes Schloß.'},
+ {ref:'Jesaja 26,3',text:'Du erhältst stets Frieden nach gewisser Zusage; denn man verläßt sich auf dich.'},
+ {ref:'Jesaja 30,15',text:'Durch Stillesein und Hoffen würdet ihr stark sein.'},
+ {ref:'Klagelieder 3,22-23',text:'Die Güte des HERRN ist\'s, daß wir nicht gar aus sind; seine Barmherzigkeit hat noch kein Ende, sondern sie ist alle Morgen neu.'},
+ {ref:'Micha 6,8',text:'Es ist dir gesagt, Mensch, was gut ist: Gottes Wort halten und Liebe üben und demütig sein vor deinem Gott.'},
+ {ref:'Matthäus 28,20',text:'Siehe, ich bin bei euch alle Tage bis an der Welt Ende.'},
+ {ref:'Lukas 1,37',text:'Bei Gott ist kein Ding unmöglich.'},
+ {ref:'Johannes 10,10',text:'Ich bin gekommen, daß sie das Leben und volle Genüge haben sollen.'},
+ {ref:'Johannes 14,27',text:'Den Frieden lasse ich euch, meinen Frieden gebe ich euch.'},
+ {ref:'Römer 15,13',text:'Der Gott der Hoffnung erfülle euch mit aller Freude und Frieden im Glauben.'},
+ {ref:'2. Timotheus 1,7',text:'Gott hat uns nicht gegeben den Geist der Furcht, sondern der Kraft und der Liebe und der Zucht.'},
+ {ref:'Hebräer 13,8',text:'Jesus Christus gestern und heute und derselbe auch in Ewigkeit.'},
+ {ref:'Offenbarung 3,20',text:'Siehe, ich stehe vor der Tür und klopfe an.'}
+);
 
 let biblePopupEl=null;
 let biblePopupTimer=null;
@@ -7814,62 +7965,19 @@ function clearBiblePopup(){
  if(biblePopupEl){try{biblePopupEl.remove()}catch(_e){}biblePopupEl=null}
 }
 
-function showBibleVersePopup(entry,remainingMs=8000){
+function showBibleVersePopup(entry,remainingMs=TABLE_MESSAGE_MS){
  if(!entry?.text)return;
  clearBiblePopup();
-
- const wrap=document.createElement('div');
- wrap.className='bible-popup';
- wrap.setAttribute('role','status');
- wrap.setAttribute('aria-live','polite');
-
- const card=document.createElement('div');
- card.className='bible-popup-card';
-
- const top=document.createElement('div');
- top.className='bible-popup-top';
- top.textContent='📖 BIBELVERS';
-
- const verse=document.createElement('div');
- verse.className='bible-popup-text';
- verse.textContent='„'+entry.text+'“';
-
- const ref=document.createElement('div');
- ref.className='bible-popup-ref';
- ref.textContent=entry.ref;
-
- const timer=document.createElement('div');
- timer.className='bible-popup-progress';
- const bar=document.createElement('i');
- timer.append(bar);
-
- card.append(top,verse,ref,timer);
- wrap.append(card);
- document.body.append(wrap);
- biblePopupEl=wrap;
-
- requestAnimationFrame(()=>{
-   wrap.classList.add('show');
-   bar.style.transitionDuration=`${Math.max(250,remainingMs)}ms`;
-   requestAnimationFrame(()=>bar.classList.add('run'))
- });
-
- biblePopupTimer=setTimeout(()=>{
-   wrap.classList.add('leave');
-   biblePopupTimer=setTimeout(()=>{
-     if(biblePopupEl===wrap)biblePopupEl=null;
-     try{wrap.remove()}catch(_e){}
-   },260)
- },Math.max(250,remainingMs))
+ showTableAnnouncement({kind:'bible',icon:'📖',title:'BIBELVERS',text:'„'+entry.text+'“',ref:entry.ref||'',by:entry.by||''},remainingMs)
 }
 
 function syncBibleVerse(){
  const v=state?.bibleVerse;
  if(!v?.id||v.id===lastBibleVerseSeen)return;
  const age=Date.now()-Number(v.ts||0);
- if(age<0||age>8000){lastBibleVerseSeen=v.id;return}
+ if(age<0||age>TABLE_MESSAGE_MS){lastBibleVerseSeen=v.id;return}
  lastBibleVerseSeen=v.id;
- showBibleVersePopup(v,8000-age)
+ showBibleVersePopup(v,TABLE_MESSAGE_MS-age)
 }
 
 function showRandomBibleVerse(){
@@ -7942,6 +8050,38 @@ const HEINZ_QUOTES=[
  'Ei, des wär mir ja schon wieder zu modern.',
  'Am End muss es einer machen – und meistens weiß ich schon, wer.'
 ];
+HEINZ_QUOTES.push(
+ 'Do is wieder mehr Theater als Inhalt dabei.',
+ 'Ei jo, wenn’s schee macht, warum net.',
+ 'Jetzt gugge mer erst mal, bevor wieder jeder losschimpft.',
+ 'Des sieht wichtig aus, muss aber noch lang net sinnvoll sein.',
+ 'Mit Ruhe kommt mer oft weiter als mit Rumgehampel.',
+ 'Do draußen wird’s net besser, wenn mer hier drin verrückt spielt.',
+ 'Jetzt wird wieder alles drei Nummern größer erzählt.',
+ 'Ei, des is so eine Idee mit Anlauf ins Fettnäpfche.',
+ 'Man muss net alles kommentiere, was einem gerade einfällt.',
+ 'Also da hat einer gedacht – aber leider der Falsche.',
+ 'Do merkste gleich, wer vorbereitet war und wer nur geschniegelt.',
+ 'Wenn mer’s sauber anfängt, muss mer hinten net flicken.',
+ 'Ei jo, ich kenn des: erst lachen se, später machen se’s genauso.',
+ 'Jetzt bleib emol uffm Teppich, der Tag hat noch genug Baustellen.',
+ 'Des Problem is net groß – nur die Aufregung drumrum.',
+ 'Wenn jeder nur halb so viel redet, wird doppelt so viel geschafft.',
+ 'Ei, ich hätt’s dir ja gesagt, aber hören muss mer halt auch.',
+ 'Do is mehr Scheinwerfer als Substanz dran.',
+ 'Jetzt machen mer net aus jedem Mückestich ein Wildschwein.',
+ 'Ordnung spart Wege – und Nerve gleich mit.',
+ 'Ei jo, des klingt erst mal schön, bis mer’s benutzen muss.',
+ 'Ich bin ja entspannt, aber net grenzenlos.',
+ 'Do brauchste keinen Ausschuss, nur gesunden Menschenverstand.',
+ 'Erst wenn’s rappelt, merken manche, dass überhaupt was lief.',
+ 'Ei, Hauptsach am Schluss weiß einer noch, wo vorne is.',
+ 'Des kann mer so machen – wenn mer mutig genug is.',
+ 'Jetzt red net drumrum, mach lieber grad raus, was Sache is.',
+ 'Ei jo, ein bisschen Stil darf trotz Chaos schon sein.',
+ 'Wenn’s passt, passt’s. Und wenn net, dann war’s wenigstens lehrreich.',
+ 'Do guck: Kaum bleibt mer ruhig, klappt’s auf einmal doch.'
+);
 
 const STROMBERG_QUOTES=[
  "Die Zahlen sind super. Wenn man die schlechten einfach mal weglässt.",
@@ -7995,6 +8135,95 @@ const STROMBERG_QUOTES=[
  "Ich bin für flache Hierarchien. Solange mein Stuhl höher bleibt.",
  "Man kann alles erklären. Nur nicht, warum der Kopierer schon wieder streikt."
 ];
+STROMBERG_QUOTES.push(
+ "Erfolg ist, wenn hinterher alle nicken und keiner weiß, warum.",
+ "Ich mag kurze Wege. Vor allem zur Kaffeemaschine.",
+ "Transparenz ist wichtig. Deshalb sieht man auch jeden Fehler so schön.",
+ "Ein gutes Team erkennt man daran, dass am Ende jemand anderes schuld ist.",
+ "Führung heißt, auch im Chaos noch geschniegelt zu wirken.",
+ "Manchmal braucht es Visionen. Manchmal reicht auch ein funktionierender Drucker.",
+ "Wer Zahlen liebt, sollte nicht so genau hinschauen.",
+ "Meine Tür steht offen. Außer wenn ich drin meine Ruhe will.",
+ "Im Büro gewinnt nicht der Beste, sondern der mit dem freien Meetingraum.",
+ "Vertrauen ist gut, Rückmeldung im CC ist besser.",
+ "Ich bin kein Kontrollfreak. Ich mag nur Überraschungen ungern, wenn sie mich betreffen.",
+ "Produktivität ist auch eine Frage der Perspektive. Von außen sieht fast alles nach Arbeit aus.",
+ "Man muss Leute mitnehmen. Notfalls auch gegen ihre Laufrichtung.",
+ "Krisen sind Chancen. Vor allem für neue Präsentationen.",
+ "Ein Chef muss nahbar sein. Aber bitte nicht zu nah vor Feierabend.",
+ "Wenn die Lösung teuer ist, nennen wir es Strategie.",
+ "Verantwortung ist wie ein Staffelstab: Man muss sie im richtigen Moment weiterreichen.",
+ "Aus Fehlern lernt man. Manche lernen bei uns Vollzeit.",
+ "Ich bin sehr teamorientiert. Mein Team soll schließlich wissen, was ich denke.",
+ "Gute Ideen erkenne ich daran, dass sie hinterher mir zugeschrieben werden können.",
+ "Wer die E-Mail schreibt, besitzt kurz die Wahrheit.",
+ "Meetings sind wie Zimmerpflanzen: Wenn man sie zu oft gießt, wird alles matschig.",
+ "Ich fördere Talente. Besonders die, die meine Sätze beenden können.",
+ "Am Ende zählt das Ergebnis. Zwischendrin zählt der Kalender.",
+ "Ein Leitbild ersetzt zwar nichts, sieht aber neben dem Empfang sehr gut aus.",
+ "Ich bin offen für Neues, sofern es den alten Plan bestätigt.",
+ "Druck erzeugt Diamanten. Oder krankheitsbedingte Ausfälle.",
+ "Wer freundlich lächelt, kann auch schlechte Nachrichten fast wie Motivation verkaufen.",
+ "Hier wird keiner allein gelassen. Es gucken immer mindestens drei Leute zu.",
+ "Wenn man lange genug professionell schaut, halten es manche schon für Führung."
+);
+const SURPRISE_QUOTES=[
+ 'Heute ist ein guter Tag, um unnötig dramatisch gelassen zu bleiben.',
+ 'Manchmal ist der beste Plan, so zu tun, als hätte man einen.',
+ 'Wenn schon Chaos, dann bitte mit Stil und Snacks.',
+ 'Nicht alles braucht Sinn – manches reicht schon als gute Geschichte.',
+ 'Du musst nicht perfekt sein. Nur interessant genug für den nächsten Zug.',
+ 'Ein bisschen Unsinn hält die Strategie geschmeidig.',
+ 'Wenn es komisch wird, bist du wahrscheinlich auf dem richtigen Feld.',
+ 'Es gibt Tage, da gewinnt nicht der Beste, sondern der Hartnäckigste mit Glück.',
+ 'Ruhe bewahren: Wahrscheinlich sieht es nur von außen nach Problem aus.',
+ 'Man kann auch elegant stolpern.',
+ 'Manche Siege erkennt man erst, wenn die Aufregung vorbei ist.',
+ 'Wer lacht, hat kurz die Oberhand über das Durcheinander.',
+ 'Heute bitte freundlich zu dir selbst sein – der Rest ist Bonus.',
+ 'Wenn ein Plan knirscht, ist er wenigstens in Bewegung.',
+ 'Zwischen Zufall und Genie liegt oft nur gutes Timing.',
+ 'Große Momente fangen manchmal mit einem kleinen Quatsch an.',
+ 'Ein brillanter Einfall trägt nicht immer Krawatte.',
+ 'Auch ein Umweg kann stilvoll zum Ziel führen.',
+ 'Nicht erschrecken: Vielleicht läuft es gerade besser als gedacht.',
+ 'Das Leben ist zu kurz für langweilige Reaktionen.',
+ 'Mut klingt selten ordentlich, funktioniert aber trotzdem.',
+ 'Manchmal ist Durchwurschteln nur verkleidete Kreativität.',
+ 'Wer schmunzelt, denkt oft schon einen Zug weiter.',
+ 'Ein frecher Gedanke spart manchmal drei ernste Gesichter.',
+ 'Wenn nichts klappt, klapp wenigstens die Haltung nicht zusammen.',
+ 'Es darf ruhig ein bisschen funkeln, auch mitten im Kartenchaos.',
+ 'Heute ist ein guter Zeitpunkt, um das Beste aus dem Ungeplanten zu machen.',
+ 'Witz schlägt Panik. Fast immer.',
+ 'Die besten Überraschungen kommen selten mit Bedienungsanleitung.',
+ 'Du musst nicht alles kontrollieren, um souverän auszusehen.',
+ 'Gelassenheit ist auch nur Mut im Schlafanzug.',
+ 'Manchmal ist die klügste Antwort ein breites Grinsen.',
+ 'Große Energie entsteht oft aus kleinen Albernheiten.',
+ 'Selbst der verrückteste Spielzug zählt, wenn er funktioniert.',
+ 'Es ist nie zu spät für einen unerwartet guten Gedanken.',
+ 'Aus Versehen genial ist auch genial.',
+ 'Nicht jedes Risiko ist mutig – aber jedes Lachen hilft.',
+ 'Zwischen Ernst und Spaß liegt oft die beste Idee.',
+ 'Das war vielleicht kein Meisterplan, aber definitiv ein Moment.',
+ 'Auch ohne Krone darf man königlich reagieren.',
+ 'Wer improvisiert, hat zumindest schon angefangen.',
+ 'Ein bisschen Glanz schadet keiner Runde.',
+ 'Wenn du keine Antwort hast, hab wenigstens Charme.',
+ 'Abenteuer beginnt manchmal genau da, wo Routine genervt aufgibt.',
+ 'Heute ruhig mal so tun, als wäre alles extra so geplant.',
+ 'Kleine Eskalation, großer Unterhaltungswert.',
+ 'Ein Lächeln ist die eleganteste Form von Gegenwehr.',
+ 'Humor ist ein Bonuszug für die Seele.',
+ 'Unterschätze nie den Effekt eines gut platzierten Aha-Moments.',
+ 'Wenn schon Überraschung, dann bitte mit goldener Kante.'
+];
+function randomSurpriseQuote(exclude=''){
+ let pool=SURPRISE_QUOTES;
+ if(pool.length>1&&exclude)pool=pool.filter(q=>q!==exclude);
+ return pool[Math.floor(Math.random()*pool.length)]||SURPRISE_QUOTES[0]
+}
 let strombergQuoteBag=[];
 let strombergLastIndex=-1;
 function nextStrombergQuoteIndex(){
@@ -8143,16 +8372,18 @@ function reactionActorIndex(){
 }
 function emojiReactionBarHTML(){
  if(!state)return '';
- return `<div class="emoji-reaction-bar"><span class="emoji-bar-label">REAKTIONEN ›</span><div class="emoji-reaction-list">${EMOJI_REACTIONS.map(e=>`<button type="button" class="emoji-reaction-btn ${e==='HAHA'?'haha-reaction-btn':''} ${e==='HEINZ'?'heinz-reaction-btn':''} ${e==='STROM'?'stromberg-reaction-btn':''}" onclick="Game.sendEmojiReaction('${e}')" title="${e==='STROM'?'Stromberg-inspirierter Bürospruch':e==='HEINZ'?'Heinz-Spruch':e==='HAHA'?'Haha-Sticker':e+' senden'}" aria-label="${e==='STROM'?'Stromberg-Bürospruch senden':e+' senden'}">${e==='HAHA'?'<span class="haha-mini">HA<br>HA</span>':(e==='HEINZ'?'<span class="heinz-mini"><span>👴</span>HEINZ</span>':e==='STROM'?'<span class="stromberg-mini"><span class="stromberg-avatar-mini" aria-hidden="true"></span><strong>CHEF</strong><em>STROM</em></span>':e)}</button>`).join('')}</div></div>`
+ return `<div class="emoji-reaction-bar"><span class="emoji-bar-label">REAKTIONEN ›</span><div class="emoji-reaction-list">${EMOJI_REACTIONS.map(e=>`<button type="button" class="emoji-reaction-btn ${e==='HAHA'?'haha-reaction-btn':''} ${e==='HEINZ'?'heinz-reaction-btn':''} ${e==='STROM'?'stromberg-reaction-btn':''}" onclick="Game.sendEmojiReaction('${e}')" title="${e==='STROM'?'Stromberg-inspirierter Bürospruch':e==='HEINZ'?'Heinz-Spruch':e==='HAHA'?'Haha-Sticker':e==='🎁'?'Überraschungsspruch':e+' senden'}" aria-label="${e==='STROM'?'Stromberg-Bürospruch senden':e==='🎁'?'Überraschungsspruch senden':e+' senden'}">${e==='HAHA'?'<span class="haha-mini">HA<br>HA</span>':(e==='HEINZ'?'<span class="heinz-mini"><span>👴</span>HEINZ</span>':e==='STROM'?'<span class="stromberg-mini"><span class="stromberg-avatar-mini" aria-hidden="true"></span><strong>CHEF</strong><em>STROM</em></span>':e==='🎁'?'<span class="surprise-mini"><span>🎁</span><em>WOW</em></span>':e)}</button>`).join('')}</div></div>`
 }
 function sendEmojiReaction(emoji){
  if(!state||!EMOJI_REACTIONS.includes(emoji))return;
  const actor=reactionActorIndex();
  if(actor<0||actor>=state.players.length)return;
  const prevHeinz=(state?.reactionFeed||[]).slice().reverse().find(x=>x?.emoji==='HEINZ')?.text||'';
+ const prevSurprise=(state?.reactionFeed||[]).slice().reverse().find(x=>isSurpriseReaction(x?.emoji))?.text||'';
  const quoteIndex=emoji==='STROM'?nextStrombergQuoteIndex():-1;
- const wireEmoji=quoteIndex>=0?`SB${String(quoteIndex).padStart(2,'0')}`:emoji;
- const r={id:uid(),actor,emoji:wireEmoji,ts:Date.now(),text:emoji==='HEINZ'?randomHeinzQuote(prevHeinz):quoteIndex>=0?STROMBERG_QUOTES[quoteIndex]:''};
+ const surpriseText=emoji==='🎁'?randomSurpriseQuote(prevSurprise):'';
+ const wireEmoji=quoteIndex>=0?`SB${String(quoteIndex).padStart(2,'0')}`:(emoji==='🎁'?'SURP':emoji);
+ const r={id:uid(),actor,emoji:wireEmoji,ts:Date.now(),text:emoji==='HEINZ'?randomHeinzQuote(prevHeinz):quoteIndex>=0?STROMBERG_QUOTES[quoteIndex]:surpriseText};
  showEmojiReaction(r);
  if(cloud.enabled&&cloud.room){
    fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reaction`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(r),timeoutMs:8000}).then(({r:resp,j})=>{if(resp?.ok&&j?.reactionSeq)cloud.reactionSeq=Math.max(Number(cloud.reactionSeq||0),Number(j.reactionSeq||0))}).catch(e=>console.warn('[skyjo reaction]',e));
@@ -8167,26 +8398,37 @@ function showEmojiReaction(r){
  if(!r?.id||emojiReactionSeen.has(r.id))return;
  emojiReactionSeen.add(r.id);
  if(emojiReactionSeen.size>120){const first=emojiReactionSeen.values().next().value;emojiReactionSeen.delete(first)}
- const fx=document.createElement('div');
  const isHaha=r.emoji==='HAHA';
  const isHeinz=r.emoji==='HEINZ';
  const isStromberg=isStrombergReaction(r.emoji);
- fx.className=`emoji-reaction-fx global ${isHaha?'haha-sticker-fx':''} ${isHeinz?'heinz-sticker-fx':''} ${isStromberg?'stromberg-sticker-fx':''}`;
+ const isSurprise=isSurpriseReaction(r.emoji);
+ if(isHeinz){
+   showTableAnnouncement({kind:'heinz',icon:'👴',title:'HEINZ · ZUFALLSSPRUCH',text:r.text||randomHeinzQuote(),by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ if(isStromberg){
+   const index=Number(String(r.emoji).slice(2));
+   const quote=r.text||STROMBERG_QUOTES[index]||STROMBERG_QUOTES[0];
+   showTableAnnouncement({kind:'stromberg',icon:'👔',title:'STROMBERG · BÜROSPRÜCHE',text:'„'+quote+'“',by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ if(isSurprise){
+   showTableAnnouncement({kind:'surprise',icon:'🎁',title:'ÜBERRASCHUNG',text:r.text||randomSurpriseQuote(),by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ const fx=document.createElement('div');
+ fx.className=`emoji-reaction-fx global ${isHaha?'haha-sticker-fx':''}`;
  if(isHaha)fx.textContent='HAHA!';
- else if(isHeinz){
-   const quote=escapeHTML(r.text||randomHeinzQuote());
-   fx.innerHTML=`<div class="heinz-sticker-face">👴</div><div class="heinz-sticker-name">HEINZ · ZUFALLSSPRUCH</div><div class="heinz-sticker-text">${quote}</div>`;
- }else if(isStromberg){
-   const index=Number(r.emoji.slice(2));
-   const quote=escapeHTML(STROMBERG_QUOTES[index]||'');
-   fx.innerHTML=`<div class="stromberg-sticker-face"><span class="stromberg-boss-art" aria-hidden="true"></span></div><div class="stromberg-sticker-name">STROMBERG · BÜROSPRÜCHE</div><div class="stromberg-sticker-text">„${quote}“</div><div class="stromberg-sticker-note">Frei formuliert · Chef-Karikatur · keine Serien-Zitate</div>`;
- }else fx.textContent=r.emoji;
+ else fx.textContent=r.emoji;
  document.body.appendChild(fx);
  haptic(7);
  setTimeout(()=>fx.classList.add('show'),20);
  const perf=uiPrefs.performance!==false;
- const leaveMs=isStromberg?5750:isHeinz?3650:(perf?850:1250);
- const removeMs=isStromberg?6400:isHeinz?4000:(perf?1250:1850);
+ const leaveMs=perf?850:1250;
+ const removeMs=perf?1250:1850;
  setTimeout(()=>fx.classList.add('leave'),leaveMs);
  setTimeout(()=>fx.remove(),removeMs)
 }
@@ -8215,7 +8457,7 @@ function gameView(){
  const playersHTML=state.players.map(playerHTML);
  const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}if(state.players.length===4)return `<div class="table-area four-player-layout"><div class="quad-side quad-left">${playersHTML[0]}${playersHTML[2]}</div>${centerTable}<div class="quad-side quad-right">${playersHTML[1]}${playersHTML[3]}</div></div>`;return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
- return `${mp}${closing}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Erhöhen</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
+ return `${mp}${closing}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen oder verringern"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Ändern</span></div></div>${boards}${tableMessageZoneHTML()}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
 
 function resumeTransientFlow(){
  if(!state||isModalOpen()||toiletPauseActive())return;
@@ -8232,14 +8474,14 @@ function resumeTransientFlow(){
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
 const viewportLock=captureViewportLock();
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.37 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.39 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
 // Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
 window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
-window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toGameHub,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,openRoyalRoundSummary,openRoyalFinaleSummary,setRoundSummaryFocus,showFinaleDetails,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse};
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toGameHub,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,adjustJokersInGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,openRoyalRoundSummary,openRoyalFinaleSummary,setRoundSummaryFocus,showFinaleDetails,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse};
 
 window.addEventListener('pageshow',e=>{
  if(!e.persisted)return;
