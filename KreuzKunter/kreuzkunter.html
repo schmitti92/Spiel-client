@@ -271,6 +271,41 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
  text-decoration:none;font-size:14px;font-weight:850;box-shadow:0 5px 15px #00172880;white-space:nowrap}
 .kk-hub-return:focus-visible{outline:3px solid #ffe36c;outline-offset:3px}
 @media(max-width:670px){.kk-hub-return{min-height:42px;padding:6px 9px;font-size:12px}}
+
+/* V19: Eigenständige Online-Wartelobby – ohne zusätzliche Serverdatei */
+#dialog .modal.kk-waiting-modal{width:min(710px,100%);max-height:min(92dvh,880px);padding:0;overflow-y:auto;border:1px solid #3b81af;box-shadow:0 32px 95px #000d,0 0 42px #1c82cf28;background:linear-gradient(155deg,#0d3057,#06182d 72%)}
+.kk-waiting-head{padding:23px 23px 16px;background:radial-gradient(ellipse at 100% 0%,#1d7ba044,transparent 65%),linear-gradient(#123f6c,#0b2a4c);border-bottom:1px solid #306f9f}
+.kk-waiting-head h2{margin:6px 0 6px;font-size:clamp(23px,4.2vw,31px)}
+.kk-waiting-head p{margin:0;color:#c1e1fb;font-size:13px}
+.kk-waiting-body{padding:18px 23px 23px;display:grid;gap:14px}
+.kk-wait-connection{display:flex;align-items:center;gap:9px;padding:11px 14px;border:1px solid #356d9d;border-radius:12px;background:#071c34;color:#d6e9ff;font-size:13px;font-weight:750}
+.kk-wait-connection.ok{border-color:#1f9273;background:#06352f;color:#b6ffdb}
+.kk-wait-connection.lost{border-color:#b8714b;background:#422821;color:#ffe0c9}
+.kk-wait-light{width:10px;height:10px;border-radius:50%;background:#ffb64d;box-shadow:0 0 13px #ffbf5b;flex:none}
+.kk-wait-connection.ok .kk-wait-light{background:#38eda9;box-shadow:0 0 13px #38eda9}
+.kk-wait-connection.lost .kk-wait-light{background:#fb9c76;box-shadow:0 0 13px #fb9c76}
+.kk-room-code{display:flex;gap:12px;align-items:center;justify-content:space-between;border-radius:17px;padding:15px;background:linear-gradient(120deg,#102f56,#163960);border:1px solid #4582ab}
+.kk-room-code .kk-room-label{display:block;font-size:12px;font-weight:750;color:#b5d7ed;letter-spacing:.5px}
+.kk-room-code strong{display:block;font-size:clamp(28px,6vw,42px);letter-spacing:5px;color:#ffe070;line-height:1.2;font-variant-numeric:tabular-nums}
+.kk-room-code button{width:auto;min-width:116px;min-height:42px;padding:8px 10px}
+.kk-waiting-players{display:grid;gap:8px}
+.kk-wait-players-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:15px;font-weight:850}
+.kk-wait-players-head span{color:#a9d2f3;font-size:12px}
+.kk-wait-player{display:flex;align-items:center;gap:10px;padding:10px 12px;background:linear-gradient(100deg,#092847,#092139);border:1px solid #285879;border-radius:13px;min-height:60px}
+.kk-wait-player.me{border-color:#e4bb5b;background:linear-gradient(100deg,#283a46,#102b42)}
+.kk-wait-player-avatar{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;color:#fff;background:linear-gradient(135deg,#2674bd,#105174);font-size:20px;flex:none}
+.kk-wait-player.me .kk-wait-player-avatar{background:linear-gradient(135deg,#e9b951,#aa7323);color:#17202c}
+.kk-wait-player-info{min-width:0;flex:1}
+.kk-wait-player-info b{display:block;overflow-wrap:anywhere;color:#eef8ff}
+.kk-wait-player-info small{color:#b6cde4}
+.kk-wait-status-pill{font-size:11px;font-weight:850;color:#56edaf;white-space:nowrap}
+.kk-wait-status-pill.absent{color:#ffb586}
+.kk-wait-empty{border:1px dashed #396790;padding:20px 14px;text-align:center;border-radius:13px;color:#b1d4f2}
+.kk-wait-start{min-height:56px!important;font-size:19px!important}
+.kk-wait-note{color:#b7cce6;font-size:12px;line-height:1.5;text-align:center;margin:0}
+.kk-wait-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:530px){#dialog .modal.kk-waiting-modal{max-height:94dvh} .kk-waiting-head{padding:18px 15px 13px}.kk-waiting-body{padding:13px 15px 17px;gap:11px}.kk-room-code{padding:12px;gap:7px}.kk-room-code button{font-size:12px;min-width:90px}.kk-wait-player{padding:8px 9px;min-height:54px}.kk-wait-actions{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -287,7 +322,7 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 <span><small>Offene Sterne</small><strong id="score-stars">−30</strong></span>
 <span class="score-ribbon-total"><small>Zwischenstand</small><strong id="score-live">−22</strong></span>
 </button><div class="board-navigator" id="board-navigator" role="group" aria-label="Über das vergrößerte Spielbrett navigieren"><button class="nav-btn" type="button" data-action="navleft" aria-label="Zum linken Spielfeldrand">◀ A–G</button><button class="nav-btn mid" type="button" data-action="navcenter" aria-label="Startspalte H zentrieren">⌖ Mitte H</button><button class="nav-btn" type="button" data-action="navright" aria-label="Zum rechten Spielfeldrand">I–O ▶</button><span class="nav-label" id="board-window" aria-live="off">Spalte H</span><div class="quick-score" id="quick-score" aria-live="off">Punkte: <b>−22</b></div></div><div class="editbar" id="editbar" aria-label="Auswahl bearbeiten"><div class="editcount" id="edit-count" aria-live="polite">Noch keine Kreuze gewählt</div><div class="edit-actions"><button type="button" class="flat edit-btn" data-action="undo" id="undo-button" disabled title="Letztes noch nicht eingetragenes Kreuz zurücknehmen">↶ Letztes Kreuz</button><button type="button" class="flat edit-btn" data-action="clear" id="clear-button" disabled title="Nur die aktuelle Auswahl löschen">✕ Auswahl löschen</button></div></div><div class="board-scroll" aria-label="Spielbrett horizontal scrollbar"><div class="board-layout"><div class="board-core"><div class="matrix" id="headers"></div><div class="matrix gridarea" id="tiles"></div><div class="matrix scoregrid" id="score-top"></div><div class="matrix" style="margin-top:3px" id="score-bottom"></div><div class="jokerstrip" id="jokerstrip"></div></div><aside class="scorings"><div class="bonuses" id="colorbonuses"></div><div class="ledger" id="ledger"></div></aside></div></div><div class="rule-context"><span id="rule-context-text" aria-live="polite">Regelhinweis: Beim ersten Zug muss mindestens ein Feld in H liegen.</span><span class="rule-tools"><button type="button" class="rule-link v7-help" data-action="why">💡 Zug-Hilfe</button><button type="button" class="rule-link" data-action="symbols" id="symbols-toggle">◈ Farbsymbole</button><button type="button" class="rule-link" data-action="inspect">✅ Zug prüfen</button><button type="button" class="rule-link" data-action="balance">📊 Brettcheck</button><button type="button" class="rule-link" data-action="diagnostics">🧪 Technikcheck</button><button type="button" class="rule-link" data-action="help">📖 Alle Regeln</button></span></div><section class="progress-widget" id="score-zone" aria-label="Fortschritt nach Farben"><div class="progress-heading"><span>🎨 Dein Farbfortschritt</span><span id="completion-overview" class="tiny">0 / 105 Felder</span></div><div id="color-progress-bars"></div><div class="score-explainer" id="score-explainer">Zwischenstand enthält die noch offenen Sterne und ungenutzten Joker.</div></section><p class="hint" id="board-hint">Tipp: Auf dem Handy helfen die Tasten A–G, H und I–O beim Verschieben der großen Ansicht. Pro Farbe gibt es drei Sterne. Nicht angekreuzte Sterne kosten je 2 Punkte.</p></section>
-<aside class="side"><section class="panel"><h2>🎲 Würfel <span class="dice-summary" id="dice-summary">4 Würfel</span></h2><div class="rollset" id="dices"></div><div class="dice-instructions" id="dice-instructions">Solo: 2 Farbwürfel + 2 Zahlenwürfel</div><div class="selectlabel" id="select-label">Neue Partie starten</div><div id="extra-choices" aria-live="polite"></div><button class="action go" id="roll-button" data-action="roll">🎲 Würfeln</button><div class="actions"><button class="action ok" id="commit-button" data-action="commit">✓ Eintragen</button><button class="action pass" id="pass-button" data-action="pass">✕ Passen</button></div><div class="message" id="game-message" role="status" aria-live="polite">Eine neue Partie starten.</div></section><section class="panel" id="players-zone"><div class="row player-head"><h2>👥 Spieler</h2><span id="playercount" class="tiny"></span><button type="button" class="flat compare-trigger" data-action="compare">▦ Alle Bretter</button></div><div class="playerlist" id="players"></div><div id="online-controls" style="margin-top:10px"></div><section class="online-feed" id="online-feed" aria-label="Letzte Spielaktionen" hidden></section></section><div class="footpanel"><div class="tiny">Aktueller Spieler</div><strong id="active-player" style="font-size:20px">–</strong><div id="turn-info" class="tiny">Deine Partie wartet.</div></div></aside></div><div class="footnote">KreuzKunter V17 · Lokal &amp; Online · Lokale Spielstände auf diesem Gerät · Online-Speicherung: Firestore oder temporär im Render-Arbeitsspeicher</div></div>
+<aside class="side"><section class="panel"><h2>🎲 Würfel <span class="dice-summary" id="dice-summary">4 Würfel</span></h2><div class="rollset" id="dices"></div><div class="dice-instructions" id="dice-instructions">Solo: 2 Farbwürfel + 2 Zahlenwürfel</div><div class="selectlabel" id="select-label">Neue Partie starten</div><div id="extra-choices" aria-live="polite"></div><button class="action go" id="roll-button" data-action="roll">🎲 Würfeln</button><div class="actions"><button class="action ok" id="commit-button" data-action="commit">✓ Eintragen</button><button class="action pass" id="pass-button" data-action="pass">✕ Passen</button></div><div class="message" id="game-message" role="status" aria-live="polite">Eine neue Partie starten.</div></section><section class="panel" id="players-zone"><div class="row player-head"><h2>👥 Spieler</h2><span id="playercount" class="tiny"></span><button type="button" class="flat compare-trigger" data-action="compare">▦ Alle Bretter</button></div><div class="playerlist" id="players"></div><div id="online-controls" style="margin-top:10px"></div><section class="online-feed" id="online-feed" aria-label="Letzte Spielaktionen" hidden></section></section><div class="footpanel"><div class="tiny">Aktueller Spieler</div><strong id="active-player" style="font-size:20px">–</strong><div id="turn-info" class="tiny">Deine Partie wartet.</div></div></aside></div><div class="footnote">KreuzKunter V19 · Online-Wartelobby · Lokal &amp; Online · Lokale Spielstände auf diesem Gerät · Online-Speicherung: Firestore oder temporär im Render-Arbeitsspeicher</div></div>
 <div class="mask hidden" id="dialog"><div class="modal" id="dialog-body" role="dialog" aria-modal="true" aria-labelledby="dialog-heading"></div></div>
 <script>
 
@@ -859,7 +894,7 @@ function cellClick(index){
   flash=(description.length?description.join(' · ')+'! ':'')+'Wurf beendet. Der nächste Würfler ist '+state.players[state.active].name+'.';flashBad=false;
  }
  function escUser(str){return ESC((str||'').trim().slice(0,24));}
- function showDialog(html){$('dialog-body').classList.remove('rule-modal');$('dialog-body').innerHTML=html;$('dialog').classList.remove('hidden');}
+ function showDialog(html){$('dialog-body').classList.remove('rule-modal','kk-waiting-modal');$('dialog-body').innerHTML=html;$('dialog').classList.remove('hidden');}
  function hideDialog(){$('dialog').classList.add('hidden');$('dialog-body').innerHTML='';}
  function showStart(){const ongoing=state&&state.turn>0&&!state.finished;showDialog(`<div class="minihead">Willkommen beim Würfelduell</div><h2 id="dialog-heading">🎲 KreuzKunter</h2><p>105 Felder, fünf Farben, sechs Blockgrößen und jetzt drei Sterne je Farbe. Kreuze die richtigen Farbfelder an und sammle Bonuspunkte!</p><div class="modechoice"><label><input type="radio" name="mode" value="solo" checked> Solo · 1 Spieler</label><label><input type="radio" name="mode" value="local"> Lokal · 2–6 Spieler</label></div><div class="field" id="amount-area" style="display:none"><label>Spielerzahl</label><div class="row"><button class="flat" id="minus-players" type="button">−</button><strong id="amount-show">2 Spieler</strong><button class="flat" id="plus-players" type="button">+</button></div></div><div class="names" id="name-fields"></div><div class="notice tiny">Du kannst hier offline spielen. Für getrennte Geräte nutze den Globus 🌐 oben: Dort kannst du deinen KreuzKunter-Onlineraum öffnen.</div><div class="divider"></div><button class="rule-start" type="button" id="start-help">📘 Vollständige Spielanleitung lesen</button><div class="actions"><button class="action ok" id="start-game" type="button">Neue Partie starten</button><button class="action pass" id="resume-game" type="button" ${!ongoing?'disabled':''}>Fortsetzen</button></div><p class="tiny">Hinweis: Eine neue Partie überschreibt deinen vorherigen lokalen Spielstand.</p>`);
   let mode='solo',amount=2;const nameFields=$('name-fields');function writeNames(){nameFields.innerHTML=Array.from({length:mode==='solo'?1:amount},(_,i)=>`<div class="field"><label for="name${i}">Spieler ${i+1}</label><input id="name${i}" type="text" maxlength="24" placeholder="${i===0?'Spieler 1':'Spieler '+(i+1)}" value="${i===0?'':'Spieler '+(i+1)}"></div>`).join('');}
@@ -980,6 +1015,7 @@ function cellClick(index){
    if(tracked){
     obj.actionId='v5_'+Date.now().toString(36)+'_'+Math.floor(Math.random()*1e9).toString(36);
     NET.pendingActionId=obj.actionId;NET.awaiting=true;
+    if(obj.action==='start')updateOnlineWaiting();
    }
    NET.ws.send(JSON.stringify(obj));
    if(tracked){
@@ -998,7 +1034,43 @@ function cellClick(index){
    }
   }catch(e){clearOnlineWait(NET);setMsg('Senden fehlgeschlagen: '+e.message,true);}
  }
- function showOnline(){const saved=getNetInfo();
+ function showOnlineWaiting(my){
+ if(NET!==my)return;
+ showDialog(`<div class="kk-waiting-head"><div class="minihead">🎲 KreuzKunter · Online</div><h2 id="dialog-heading">🌐 Online-Wartelobby</h2><p>Teile den Raumcode mit deinen Freunden. Sobald alle da sind, kann der Gastgeber die Runde starten.</p></div><div class="kk-waiting-body"><div id="kk-wait-connection" class="kk-wait-connection" role="status" aria-live="polite"><span class="kk-wait-light"></span><span id="kk-wait-message">Verbindung zu Render wird aufgebaut …</span></div><div class="kk-room-code"><div><span class="kk-room-label">DEIN RAUMCODE</span><strong id="kk-wait-code">${ESC(my.code||'·····')}</strong></div><button type="button" id="kk-copy-room" class="flat">📋 Kopieren</button></div><div><div class="kk-wait-players-head">👥 Beigetretene Spieler <span id="kk-wait-count">0 / 6</span></div><div id="kk-wait-players" class="kk-waiting-players" style="margin-top:10px"><div class="kk-wait-empty">Verbindung wird aufgebaut …</div></div></div><button type="button" id="kk-start-room" class="action go kk-wait-start" disabled>⏳ Warten auf Mitspieler …</button><p class="kk-wait-note" id="kk-wait-hint">Mindestens zwei Spieler müssen verbunden sein. Nur der Gastgeber kann das Spiel starten.</p><div class="kk-wait-actions"><button type="button" id="kk-wait-refresh" class="action pass">↻ Spielerliste aktualisieren</button><button type="button" id="kk-wait-leave" class="action pass">🚪 Raum verlassen</button></div></div>`);
+ $('dialog-body').classList.add('kk-waiting-modal');
+ $('kk-start-room').addEventListener('click',()=>{if(NET===my&&my.connected&&my.host&&state?.mode==='online'&&state.phase==='lobby'){const n=(my.presence||[]).filter(Boolean).length;if(n>=2){sendOnline({action:'start'});updateOnlineWaiting();}}});
+ $('kk-wait-leave').addEventListener('click',()=>{leaveOnline();showOnline();});
+ $('kk-wait-refresh').addEventListener('click',()=>{if(NET===my&&my.connected&&my.ws?.readyState===WebSocket.OPEN){my.ws.send(JSON.stringify({action:'sync'}));my.waitingStatus='Spielerliste wird abgeglichen …';}updateOnlineWaiting();});
+ $('kk-copy-room').addEventListener('click',async()=>{
+  if(NET!==my||!my.code)return;
+  try{await navigator.clipboard.writeText(my.code);$('kk-copy-room').textContent='✅ Kopiert';}
+  catch(e){$('kk-copy-room').textContent='Code: '+my.code;}
+ });
+ updateOnlineWaiting();
+}
+function updateOnlineWaiting(){
+ const my=NET;if(!my||!$('kk-wait-connection'))return;
+ const onlineRoom=state?.mode==='online'&&my.code;
+ const inLobby=onlineRoom&&my.hasState===true&&state.phase==='lobby';
+ const currentPlayers=inLobby?state.players:[];
+ const connectedCount=inLobby?currentPlayers.filter((p,i)=>my.presence?.[i]===true).length:0;
+ const connected=!!(my.connected&&my.ws?.readyState===WebSocket.OPEN);
+ const status=$('kk-wait-connection');
+ status.className='kk-wait-connection'+(connected?' ok':my.waitingError?' lost':'');
+ $('kk-wait-message').textContent=my.waitingError||(!connected?'⏳ Verbindung zu Render wird aufgebaut oder wiederhergestellt …':!inLobby?'🟢 Mit Render verbunden · Raumdaten werden geladen …':'🟢 Mit Render verbunden · Spieler werden live synchronisiert');
+ $('kk-wait-code').textContent=my.code||'·····';
+ $('kk-wait-count').textContent=`${currentPlayers.length} / 6 · ${connectedCount} online`;
+ $('kk-wait-players').innerHTML=currentPlayers.length?currentPlayers.map((p,i)=>{
+  const isMe=i===my.index,isOnline=my.presence?.[i]===true;
+  return `<div class="kk-wait-player ${isMe?'me':''}"><span class="kk-wait-player-avatar">${isMe?'👤':'🎲'}</span><span class="kk-wait-player-info"><b>${ESC(p.name)} ${isMe?'(Du)':''}${i===0?' · Spieler 1':''}</b><small>${isMe&&my.host?'👑 Gastgeber':isMe?'Teilnehmer':i===0?'Spieler 1':'Mitspieler'}${!isOnline?' · nicht verbunden':''}</small></span><span class="kk-wait-status-pill ${isOnline?'':'absent'}">${isOnline?'● Online':'○ Offline'}</span></div>`;
+ }).join(''):'<div class="kk-wait-empty">Noch keine Spielerliste verfügbar. Bitte Verbindung abwarten.</div>';
+ const canStart=connected&&inLobby&&my.host&&connectedCount>=2&&!my.awaiting;
+ const start=$('kk-start-room');start.disabled=!canStart;
+ start.style.display=my.host?'flex':'none';
+ start.textContent=my.awaiting?'⏳ Spiel startet …':canStart?'🎲 Spiel starten':connectedCount>=2?'⏳ Bitte warten …':'⏳ Mindestens 2 Spieler erforderlich';
+ $('kk-wait-hint').textContent=!my.host?'Du bist beigetreten. Warte, bis der Gastgeber die Partie startet.':connectedCount<2?'Sobald ein zweiter Spieler beigetreten und verbunden ist, wird „Spiel starten“ freigeschaltet.':my.awaiting?'Die Partie wird gestartet …':'Alle bereit? Du kannst die Partie jetzt starten.';
+}
+function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')return showOnlineWaiting(NET);const saved=getNetInfo();
    showDialog(`<div class="minihead">KreuzKunter – Online auf Render</div><h2 id="dialog-heading">🌐 Online spielen</h2><p>Du kannst einen Raum mit Code erstellen oder beitreten. Alle verwenden dieselbe WebSocket-Serveradresse.</p><div class="field"><label>WebSocket-Serveradresse</label><input id="net-url" type="text" value="${ESC(saved.url||'wss://serverfinal-ynbe.onrender.com/kreuzkunter')}" placeholder="wss://dein-server.onrender.com"></div><div class="field"><label>Dein Spielername</label><input id="net-name" type="text" maxlength="24" value="${ESC(saved.name||'Spieler 1')}"></div><div class="field"><label>Raumcode zum Beitreten</label><input id="net-code" type="text" maxlength="6" value="${ESC(saved.code||'')}" placeholder="z. B. AB12C"></div><div id="net-status" class="message">Es wurde noch keine Verbindung aufgebaut.</div>${saved.token&&saved.code&&saved.url?'<button type="button" class="action" id="net-resume" style="margin:9px 0">↻ Letzten Online-Raum fortsetzen</button>':''}<div class="actions"><button id="net-create" class="action ok">Raum erstellen</button><button id="net-join" class="action pass">Beitreten</button></div><button id="net-cancel" class="action" style="margin-top:10px">Zurück</button><p class="tiny">Hinweis: Verbinde dich über den vorhandenen Render-Server. Bei eingerichtetem Firebase bleiben Räume dauerhaft gespeichert. Ohne Firebase sind Online-Räume nur bis zum nächsten Server-Neustart verfügbar.</p>`);
    $('net-create').addEventListener('click',()=>connectOnline('create'));$('net-join').addEventListener('click',()=>connectOnline('join'));
    $('net-cancel').addEventListener('click',hideDialog);if($('net-resume'))$('net-resume').addEventListener('click',resumeLastOnline);
@@ -1013,7 +1085,7 @@ function cellClick(index){
   let saved={};try{saved=JSON.parse(localStorage.getItem(NET_INFO_KEY)||'{}');}catch(e){}
   const my={ws:null,index:0,host:false,code,token:(op==='join'&&saved.url===url&&saved.code===code)?saved.token:null,connected:false,url,name,attempt:0,stopped:false,awaiting:false,presence:null,timer:null,syncTimer:null,revision:0};
   NET=my;
-  $('net-status').textContent='Verbindung wird aufgebaut …';
+  showOnlineWaiting(my);
   openOnlineSocket(my,op);
  }
  function resumeLastOnline(){
@@ -1023,7 +1095,7 @@ function cellClick(index){
   const my={ws:null,index:0,host:false,code:saved.code,token:saved.token,connected:false,url:saved.url,
     name:saved.name||'Spieler',attempt:0,stopped:false,awaiting:false,presence:null,timer:null,syncTimer:null,revision:0};
   NET=my;flash='↻ Letzte Online-Partie wird wiederhergestellt …';flashBad=false;
-  openOnlineSocket(my,'join');hideDialog();render();
+  showOnlineWaiting(my);openOnlineSocket(my,'join');render();
  }
  function openOnlineSocket(my,op='join'){
   if(NET!==my||my.stopped)return;
@@ -1031,7 +1103,7 @@ function cellClick(index){
   my.ws=ws;
   ws.onopen=()=>{
    if(NET!==my||my.stopped){ws.close();return;}
-   my.connected=false;my.attempt=0;clearOnlineWait(my);
+   my.connected=false;my.attempt=0;my.waitingError='';clearOnlineWait(my);updateOnlineWaiting();
    ws.send(JSON.stringify({action:op,name:my.name,code:my.code,token:op==='join'?my.token:null,boardId:BOARD_ID}));
   };
   ws.onmessage=e=>{
@@ -1040,10 +1112,13 @@ function cellClick(index){
    if(msg.type==='error'){
     clearOnlineWait(my);
     if(['Raumcode nicht gefunden.','Spielertoken nicht mehr gültig. Bitte mit einem neuen Raum beginnen.'].includes(msg.message)){my.stopped=true;try{const d=getNetInfo();d.active=false;localStorage.setItem(NET_INFO_KEY,JSON.stringify(d));}catch(e){}}
-    if(!$('dialog').classList.contains('hidden')&&$('net-status'))$('net-status').textContent='❌ '+msg.message;
+    my.waitingError='❌ '+msg.message;
+    if($('kk-wait-connection'))updateOnlineWaiting();
+    else if(!$('dialog').classList.contains('hidden')&&$('net-status'))$('net-status').textContent=my.waitingError;
     else{setMsg(msg.message,true);render();}
    }else if(msg.type==='welcome'){
-    my.code=msg.code;my.token=msg.token;my.host=msg.host;my.connected=true;my.attempt=0;
+    my.code=msg.code;my.token=msg.token;my.host=msg.host;my.connected=true;my.attempt=0;my.waitingError='';
+    updateOnlineWaiting();
     try{localStorage.setItem(NET_INFO_KEY,JSON.stringify({url:my.url,code:msg.code,token:msg.token,name:my.name,active:true}));}catch(e){}
    }else if(msg.type==='state'){
     clearOnlineWait(my);
@@ -1057,22 +1132,27 @@ function cellClick(index){
     const draft=canKeepDraft?{
       colorDie:old.colorDie,numDie:old.numDie,chosenColor:old.chosenColor,
       chosenNumber:old.chosenNumber,manualColor:old.manualColor,manualNumber:old.manualNumber,pending:[...old.pending]}:restoreOnlineDraft(my,msg);
-    my.index=msg.index;my.host=msg.host;my.code=msg.code;my.presence=msg.connected;my.revision=msg.revision||0;my.storage=msg.storage||'memory';
+    my.index=msg.index;my.host=msg.host;my.code=msg.code;my.presence=msg.connected;my.revision=msg.revision||0;my.storage=msg.storage||'memory';my.hasState=true;
     state=msg.game;
     if(draft)Object.assign(state,draft);
     if(state.phase==='select'&&state.picker!==my.index){state.colorDie=null;state.numDie=null;state.manualColor=false;state.manualNumber=false;state.pending=[];}
     flash=state.phase==='lobby'?`Warte auf ${Math.max(0,2-state.players.length)} weitere Spieler (mindestens 2).`:
       state.phase==='select'?(state.picker===my.index?'Du bist dran! Tippe direkt auf passende Felder.':state.players[state.picker].name+' ist am Zug.'):'Gemeinsamer Spielstand aktualisiert.';
-    flashBad=false;hideDialog();render();if(state.finished&&!wasOver)showEnd();
+    flashBad=false;render();
+    if(state.phase==='lobby'){
+      if(!$('kk-wait-connection'))showOnlineWaiting(my);
+      else updateOnlineWaiting();
+    }else if($('kk-wait-connection'))hideDialog();
+    if(state.finished&&!wasOver)showEnd();
    }
   };
-  ws.onerror=()=>{if($('net-status'))$('net-status').textContent='⚠️ Render antwortet noch nicht. Bitte Serverstart abwarten und erneut versuchen.';};
+  ws.onerror=()=>{if($('net-status'))$('net-status').textContent='⚠️ Render antwortet noch nicht. Bitte Serverstart abwarten und erneut versuchen.';if($('kk-wait-connection')){my.waitingError='⚠️ Verbindung unterbrochen oder Render noch nicht bereit.';updateOnlineWaiting();}};
   ws.onclose=e=>{
    if(NET!==my||my.ws!==ws)return;
    my.connected=false;clearOnlineWait(my);
    if(e.code===4000){my.stopped=true;flash='Dieser Spieler wurde in einem anderen Browserfenster verbunden.';}
    else{flash='Verbindung unterbrochen. Der erneute Verbindungsaufbau läuft automatisch …';scheduleReconnect(my);}
-   flashBad=true;render();
+   flashBad=true;render();updateOnlineWaiting();
   };
  }
  function scheduleReconnect(my){
@@ -1083,7 +1163,7 @@ function cellClick(index){
  }
 
  document.addEventListener('keydown',e=>{
-   if(e.key==='Escape'&&!$('dialog').classList.contains('hidden')){e.preventDefault();hideDialog();}
+   if(e.key==='Escape'&&!$('dialog').classList.contains('hidden')){e.preventDefault();if($('kk-wait-connection'))return;hideDialog();}
  });
  $('app').addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.dataset.opponent!==undefined)showOpponent(Number(btn.dataset.opponent));else if(btn.dataset.kick!==undefined)sendOnline({action:'remove',index:Number(btn.dataset.kick)});else if(btn.dataset.cell!==undefined)cellClick(Number(btn.dataset.cell));else if(btn.dataset.die!==undefined)dieClick(Number(btn.dataset.die));else if(btn.dataset.pickcolor)setColor(btn.dataset.pickcolor);else if(btn.dataset.picknum)setNumber(Number(btn.dataset.picknum));else if(btn.dataset.mobileDie!==undefined)dieClick(Number(btn.dataset.mobileDie));else switch(btn.dataset.action||btn.dataset.mobileAction){case 'roll':roll();break;case 'commit':commit();break;case 'pass':pass();break;case 'undo':undoSelection();break;case 'clear':undoSelection(true);break;case 'help':showHelp();break;case 'inspect':showRuleCheck();break;case 'why':showWhy();break;case 'symbols':toggleSymbols();break;case 'balance':showBalance();break;case 'diagnostics':showDiagnostics();break;case 'scorehelp':showScoreDetail();break;case 'compare':showCompare();break;case 'jumpboard':jumpToSection('boardpane');break;case 'jumpplayers':jumpToSection('players-zone');break;case 'jumpscore':jumpToSection('score-ribbon');break;case 'new':showStart();break;case 'online':showOnline();break;case 'startonline':sendOnline({action:'start'});break;case 'view':changeBoardView();break;case 'navleft':navigateBoard(0);break;case 'navcenter':navigateBoard(7);break;case 'navright':navigateBoard(14);break;case 'skip':sendOnline({action:'skip'});break;case 'sync':requestOnlineSync();break;case 'leaveonline':leaveOnline();break;}});
  // Arrow keys move through the cells even for keyboard-only players.
