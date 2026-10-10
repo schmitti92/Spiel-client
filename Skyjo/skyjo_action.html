@@ -3673,6 +3673,270 @@ body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-inde
  background:linear-gradient(130deg,#064e44,#087963);border:1px solid #23a185;border-radius:10px;
  color:#fff;font-size:13px;font-weight:800;box-shadow:0 4px 12px #022e2440;cursor:pointer}
 .skyjo-hub-link:focus-visible{outline:3px solid #ebd974;outline-offset:2px}
+
+/* ===========================================================
+   SKYJO ACTION - WALNUT & GOLD EDITION (layout-only skin)
+   Two- and four-seat luxury board. Original 4x3 card rules,
+   card interactions, emoji / toilet / jokes / Bible kept intact.
+   =========================================================== */
+body.is-playing{
+ background-image:
+   radial-gradient(ellipse at 50% 0%,rgba(202,127,50,.13),transparent 45%),
+   linear-gradient(90deg,rgba(9,5,3,.22),rgba(31,16,8,.08) 25%,rgba(4,2,1,.22)),
+   url('data:image/jpeg;base64,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')!important;
+ background-color:#241409!important;
+ background-size:auto,auto,544px 420px!important;
+ background-attachment:fixed!important;
+ color:#f3e6cf;
+}
+body.is-playing:before{opacity:.04!important;}
+body.is-playing .app{max-width:1740px!important;padding-left:12px!important;padding-right:12px!important;}
+body.is-playing .topbar{
+ border:1px solid rgba(202,155,75,.35)!important;
+ border-radius:14px!important;
+ background:linear-gradient(180deg,#19140fF5,#0b1015F7)!important;
+ box-shadow:0 3px 0 rgba(234,180,89,.13),0 10px 28px rgba(0,0,0,.5)!important;
+}
+body.is-playing .brand h1{font-family:Georgia,serif;letter-spacing:1.15px!important;color:#fff0ca}
+body.is-playing .brand h1 span{color:#f1cd74!important}
+body.is-playing .edition-chip{color:#ecc17f;border-color:rgba(231,172,76,.32);background:rgba(173,113,34,.11)}
+body.is-playing .iconbtn,body.is-playing .cloud-pill{
+ background:linear-gradient(180deg,#231d18,#101215)!important;
+ border:1px solid rgba(222,170,87,.32)!important;
+ color:#f8ead2;
+}
+body.is-playing .iconbtn:hover{background:#3c2c1d!important}
+body.is-playing .skyjo-hub-link{
+ background:linear-gradient(145deg,#3b2d18,#181b1c)!important;
+ border:1px solid #a9844b!important;
+ color:#fff0d3!important;
+}
+body.is-playing .premium-status .stat{
+ background:linear-gradient(175deg,#202023,#0b1117)!important;
+ border:1px solid #735735!important;
+ box-shadow:inset 0 1px 0 #e0ad5329,0 3px 8px #06060677;
+}
+body.is-playing .premium-status .stat:after{
+ color:#dfb76e;background:rgba(160,117,51,.13);border-color:rgba(197,148,69,.19)
+}
+body.is-playing .premium-status .stat b{color:#f8e8c3!important}
+body.is-playing .premium-status .stat span{color:#bbac98!important}
+body.is-playing .premium-status .turn-stat{
+ border-color:#dfad53!important;
+ background:linear-gradient(175deg,#483118,#121317)!important;
+ box-shadow:0 0 0 2px #e6b96620,inset 0 1px 0 #ffd99966!important
+}
+body.is-playing .premium-status .turn-stat b{color:#ffe09b!important}
+body.is-playing .player{
+ overflow:hidden;
+ border-radius:20px!important;
+ border:2px solid #7c5c32!important;
+ background:linear-gradient(180deg,#17252acF,#091219F7)!important;
+ box-shadow:inset 0 0 0 2px rgba(233,171,69,.08),0 6px 3px #050403a1,0 14px 25px #050403a8!important;
+}
+body.is-playing .player:before{width:0!important}
+body.is-playing .player.active{
+ border-color:#f1c46d!important;
+ background:linear-gradient(180deg,#493118F5 0%,#211b15F5 25%,#080e15F7 48%)!important;
+ box-shadow:inset 0 0 0 2px #edc7793d,0 0 0 2px #ebbd644d,0 13px 30px #0d0705c7!important;
+}
+body.is-playing .player.active:after{background:rgba(241,191,99,.13);color:#f7d792;border-color:#f1c16c66}
+body.is-playing .player-head{
+ background:linear-gradient(90deg,#b58a3a38,#14192217);
+ border-bottom:1px solid #e5ae6633!important;
+ border-radius:11px;
+ padding:7px 6px 9px!important;
+}
+body.is-playing .player.active .player-head{background:linear-gradient(90deg,#f1bc61a8,#71471b33)!important}
+body.is-playing .player-name{font-family:Georgia,serif;font-weight:800!important;color:#fff1d5!important;font-size:clamp(12px,1.2vw,17px)!important}
+body.is-playing .avatar{border:1px solid #c99d5d!important;border-radius:50%!important;background:linear-gradient(150deg,#6b4c25,#292017)!important;color:#f6d393!important}
+body.is-playing .scorechip{background:#13181c!important;border:1px solid #96704755!important;color:#eaca91!important}
+body.is-playing .progress-chip{border-color:#94704377!important;color:#e6c68c!important}
+body.is-playing .player-meta-chips .meta-chip{background:#10171bbf!important;border-color:#a7844833!important;color:#dec6a2!important}
+body.is-playing .grid{
+ display:grid!important;
+ grid-template-columns:repeat(4,var(--card-w));
+ gap:5px!important;
+ justify-content:center!important;
+ background:linear-gradient(145deg,#06121cb5,#090d15c9)!important;
+ border:1px solid #ce9b5633;
+ padding:7px!important;
+ border-radius:14px;
+}
+body.is-playing .card-slot{padding:2px!important;border-radius:10px!important;background:#04091270!important}
+body.is-playing .card{
+ border-radius:9px!important;
+ border:1px solid rgba(231,184,104,.76)!important;
+ box-shadow:0 3px 0 #080a10d0,0 6px 9px #0304089c,inset 0 0 0 2px #ebbb6530!important;
+}
+body.is-playing .card.back{
+ background:
+   repeating-linear-gradient(45deg,rgba(238,197,112,.056) 0 1px,transparent 1px 8px),
+   repeating-linear-gradient(135deg,rgba(252,216,158,.044) 0 1px,transparent 1px 8px),
+   radial-gradient(ellipse at 50% 35%,#244769,#12273f 64%,#061829)!important;
+}
+body.is-playing .card.back:after{content:"◇"!important;color:#e3b368!important;font-family:Georgia,serif;font-weight:normal!important;font-size:clamp(25px,3.6vw,43px)!important;text-shadow:0 0 6px #cc9f5888!important}
+body.is-playing .card.back:before{background:linear-gradient(130deg,#fff2d619,transparent 48%),linear-gradient(#ebbc6120,#ebbc6120)!important;inset:3px;border:1px solid #cf9e4855;border-radius:6px}
+body.is-playing .card.selected{outline:3px solid #f7d783!important}
+body.is-playing .center-table{
+ background:linear-gradient(165deg,#0c1820fa,#10171bfA 62%,#0a1118fA)!important;
+ border:2px solid #a87942!important;
+ border-radius:19px!important;
+ box-shadow:inset 0 0 0 2px #f1ba6340,0 8px 25px #050302cc!important;
+}
+body.is-playing .center-table:before{display:none!important}
+body.is-playing .center-table:after{display:none!important}
+body.is-playing .real-hand-zone,
+body.is-playing .watch-panel,
+body.is-playing .pilebox{
+ background:linear-gradient(165deg,#0b1720,#0c1219)!important;
+ border:1px solid #ae834d90!important;
+ box-shadow:inset 0 1px 0 #f6d69b1b,0 5px 12px #0005!important;
+ border-radius:15px!important;
+}
+body.is-playing .section-heading h4,
+body.is-playing .pilebox h4{color:#ebc98a!important;font-family:Georgia,serif}
+body.is-playing .pile-card-hit{background:linear-gradient(#24231c36,#03090c50)!important;border-color:#9b77485c!important}
+body.is-playing .pile-tip{color:#e9cc8a!important;background:#5b402a6b;border-color:#b88748a0}
+body.is-playing .pile-count-chip{background:#27231e;border-color:#8c673c;color:#fff0ca}
+body.is-playing .bottom-actions{
+ background:linear-gradient(180deg,#171819f7,#0b0e12fa)!important;
+ border-top:1px solid #ae834bc2!important;
+}
+body.is-playing .emoji-reaction-btn{border-color:#b2884b61!important;background:linear-gradient(#261f19,#12171c)!important;border-radius:50%!important}
+/* Three always-accessible features: compact controls at the lower-right. */
+body.is-playing .luxe-tool-dock{
+ position:fixed;z-index:59;right:8px;
+ bottom:calc(102px + env(safe-area-inset-bottom));
+ display:flex;flex-direction:column;align-items:flex-end;gap:5px;
+}
+body.is-playing .luxe-tool-dock .toilet-side-btn,
+body.is-playing .luxe-tool-dock .joke-side-btn,
+body.is-playing .luxe-tool-dock .bible-side-btn{
+ position:relative!important;right:auto!important;top:auto!important;
+ transform:none!important;width:51px!important;min-height:48px!important;
+ height:48px!important;border-radius:13px!important;padding:3px!important;
+ border:1px solid #b99050aa!important;
+ background:linear-gradient(145deg,#2d231aF7,#0c141bFB)!important;
+ box-shadow:0 5px 12px #0009,inset 0 1px 0 #f2cc7833!important;
+ gap:0!important;
+}
+body.is-playing .luxe-tool-dock button:active{transform:scale(.95)!important}
+body.is-playing .luxe-tool-dock .toilet-side-icon,
+body.is-playing .luxe-tool-dock .joke-side-icon,
+body.is-playing .luxe-tool-dock .bible-side-icon{font-size:21px!important;line-height:1.1!important}
+body.is-playing .luxe-tool-dock .toilet-side-label,
+body.is-playing .luxe-tool-dock .joke-side-label,
+body.is-playing .luxe-tool-dock .bible-side-label{font-size:7px!important;letter-spacing:0!important;color:#f1cf98!important}
+/* Two-player: symmetrical boards and central action zone. */
+@media (min-width:1051px){
+ body.is-playing[data-players="2"] .table-area.two-player-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(285px,.74fr) minmax(0,1fr)!important;
+  align-items:start!important;gap:10px!important;
+ }
+ body.is-playing[data-players="2"] .table-area.two-player-layout .center-table{
+  position:relative!important;top:0!important;grid-column:2!important;
+ }
+}
+/* Four players: two complete 4-column x 3-row card fields on EACH side. */
+body.is-playing[data-players="4"] .table-area.four-player-layout{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(245px,.58fr) minmax(0,1fr)!important;
+ align-items:start!important;gap:10px!important;
+}
+body.is-playing[data-players="4"] .quad-side{
+ display:grid!important;grid-template-rows:auto auto;gap:8px;min-width:0!important;
+}
+body.is-playing[data-players="4"] .quad-side .player{
+ width:100%;min-width:0!important;padding:8px!important;margin:0!important;
+}
+body.is-playing[data-players="4"] .quad-side .player-head{padding:4px 6px!important;margin-bottom:5px!important}
+body.is-playing[data-players="4"] .quad-side .player.active .player-head{padding-top:18px!important}
+body.is-playing[data-players="4"] .quad-side .active-turn-banner{min-height:18px!important;font-size:8px!important}
+body.is-playing[data-players="4"] .quad-side .player-name{font-size:12px!important}
+body.is-playing[data-players="4"] .quad-side .player .gridwrap{justify-content:center!important;flex-wrap:wrap}
+body.is-playing[data-players="4"] .quad-side .grid{
+ --card-w:clamp(42px,6.0vw,85px);
+ grid-template-columns:repeat(4,var(--card-w))!important;
+ gap:4px!important;padding:5px!important;
+ max-width:100%;
+}
+body.is-playing[data-players="4"] .quad-side .card{
+ width:var(--card-w)!important;
+ height:calc(var(--card-w)*.84)!important;
+ aspect-ratio:auto!important;
+ border-radius:7px!important;
+}
+body.is-playing[data-players="4"] .quad-side .card.back:after{font-size:25px!important}
+body.is-playing[data-players="4"] .quad-side .card-slot{border-radius:7px!important;padding:1px!important}
+body.is-playing[data-players="4"] .quad-side .player .avatar{width:25px!important;height:25px!important}
+body.is-playing[data-players="4"] .quad-side .scorechip{padding:4px!important}
+body.is-playing[data-players="4"] .quad-side .player-meta-chips .meta-chip{min-height:14px;font-size:6px!important}
+body.is-playing[data-players="4"] .quad-side .player.active:after{display:none!important}
+body.is-playing[data-players="4"] .four-player-layout .center-table{grid-template-columns:1fr!important;align-self:stretch!important}
+body.is-playing[data-players="4"] .four-player-layout .watchbox{display:block!important}
+/* Avoid shrinking 4x3 below a comfortable touch target: on narrow screens stack panels. */
+@media(max-width:1120px){
+ body.is-playing[data-players="4"] .table-area.four-player-layout{
+  grid-template-columns:1fr 1fr!important;gap:8px!important;
+ }
+ body.is-playing[data-players="4"] .four-player-layout .quad-left{grid-column:1!important}
+ body.is-playing[data-players="4"] .four-player-layout .quad-right{grid-column:2!important;grid-row:1!important}
+ body.is-playing[data-players="4"] .four-player-layout .center-table{grid-column:1/-1!important;grid-row:2!important}
+ body.is-playing[data-players="4"] .four-player-layout .quad-side .grid{--card-w:clamp(39px,8vw,71px)}
+}
+@media(max-width:650px){
+ body.is-playing[data-players="4"] .table-area.four-player-layout{grid-template-columns:1fr!important}
+ body.is-playing[data-players="4"] .four-player-layout .quad-left,
+ body.is-playing[data-players="4"] .four-player-layout .quad-right,
+ body.is-playing[data-players="4"] .four-player-layout .center-table{grid-column:1!important;grid-row:auto!important}
+ body.is-playing[data-players="4"] .four-player-layout .quad-side .grid{--card-w:clamp(52px,17.7vw,86px)}
+ body.is-playing .luxe-tool-dock{bottom:calc(103px + env(safe-area-inset-bottom))!important;right:5px}
+ body.is-playing .luxe-tool-dock button{width:43px!important;height:44px!important;min-height:44px!important}
+ body.is-playing .luxe-tool-dock .toilet-side-icon,
+ body.is-playing .luxe-tool-dock .joke-side-icon,
+ body.is-playing .luxe-tool-dock .bible-side-icon{font-size:19px!important}
+}
+
+body.is-playing .card.back:after{position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;transform:none!important;font-size:clamp(24px,3.2vw,39px)!important}
+body.is-playing[data-players="4"] .quad-side .card.back:after{font-size:26px!important}
+body.is-playing[data-players="4"] .quad-side .active-turn-banner{display:none!important}
+body.is-playing[data-players="4"] .quad-side .player.active .player-head{padding-top:6px!important}
+body.is-playing[data-players="4"] .quad-side .player.active .active-tag{background:#e3b65a!important;color:#23170a!important;border-color:#fff4ba!important;font-size:8px!important}
+body.is-playing[data-players="2"] .player-name{font-size:17px!important}
+@media (min-width:871px) and (max-width:1120px){
+ body.is-playing[data-players="4"] .table-area.four-player-layout{
+  grid-template-columns:minmax(0,1fr) minmax(210px,.7fr) minmax(0,1fr)!important;
+ }
+ body.is-playing[data-players="4"] .four-player-layout .quad-left,
+ body.is-playing[data-players="4"] .four-player-layout .quad-right,
+ body.is-playing[data-players="4"] .four-player-layout .center-table{grid-column:auto!important;grid-row:auto!important}
+ body.is-playing[data-players="4"] .quad-side .grid{--card-w:clamp(43px,5.5vw,63px)}
+ body.is-playing[data-players="4"] .quad-side .player{padding:6px!important}
+}
+@media (max-width:870px) and (min-width:651px){
+ body.is-playing[data-players="4"] .four-player-layout .quad-side .grid{--card-w:clamp(42px,7.0vw,60px)}
+}
+
+body.is-playing[data-players="4"] .real-hand-zone:before{display:none!important}
+body.is-playing[data-players="4"] .real-hand-copy .eyebrow{font-size:7px!important;letter-spacing:.4px!important}
+body.is-playing[data-players="4"] .real-hand-copy b{font-size:11px!important;line-height:1.15!important}
+body.is-playing[data-players="4"] .real-hand-copy small{font-size:8px!important;line-height:1.23!important}
+@media(max-width:650px){
+ body.is-playing .topbar{max-width:calc(100vw - 10px)!important;min-width:0!important;overflow:hidden!important}
+ body.is-playing .topbar .brand{flex:0 0 140px!important;min-width:0!important}
+ body.is-playing .topbar .brand h1{font-size:13px!important;letter-spacing:0!important}
+ body.is-playing .topbar .brandmark{width:26px!important;height:26px!important;flex:0 0 26px}
+ body.is-playing .topbar .top-actions{
+  flex:1 1 0!important;min-width:0!important;max-width:calc(100vw - 165px)!important;
+  overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;
+ }
+ body.is-playing .topbar .top-actions::-webkit-scrollbar{display:none}
+ body.is-playing .skyjo-hub-strip{max-width:100%;margin-top:0!important}
+ body.is-playing .premium-status{max-width:100%;}
+}
+
 </style>
 </head>
 <body>
@@ -6460,9 +6724,9 @@ function gameView(){
  const actionArea=specials?`<div class="pilebox action-pilebox action-only-ui"><div class="section-heading"><span class="section-icon">⚡</span><div><h4>Aktionskarten</h4><small>Offen oder verdeckt antippen</small></div></div><div class="market">${actionBlindStackHTML(canDirect)}${state.market.map((a,i)=>a?`<div id="market-${i}" class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div>`:'';
  const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="watchbox">${watchPanelHTML()}</div><div class="pilebox play-pilebox"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
  const playersHTML=state.players.map(playerHTML);
- const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
+ const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}if(state.players.length===4)return `<div class="table-area four-player-layout"><div class="quad-side quad-left">${playersHTML[0]}${playersHTML[2]}</div>${centerTable}<div class="quad-side quad-right">${playersHTML[1]}${playersHTML[3]}</div></div>`;return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
- return `${mp}${closing}${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}<div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Erhöhen</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
+ return `${mp}${closing}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Erhöhen</span></div></div>${boards}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
 
 function resumeTransientFlow(){
  if(!state||isModalOpen()||toiletPauseActive())return;
