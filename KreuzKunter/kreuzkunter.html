@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#06142a" />
-<title>KreuzKunter V21 – Computergegner</title>
+<title>KreuzKunter V22 – Spaltenrennen</title>
 <style>
 :root{color-scheme:dark;--bg:#041126;--panel:#081d38;--panel2:#092344;--border:#164477;--text:#f5f9ff;--muted:#9eb5d5;--sky:#3fc8ff;--glow:#0beac5;--g:#76d92b;--y:#ffd429;--b:#469aff;--r:#f74c4e;--o:#ff9834;--cell:clamp(33px,3.65vw,56px)}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 42% -10%,#124075 0,#071d37 38%,#030e22 100%);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}button,input{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:not-allowed;opacity:.45}button:focus-visible,input:focus-visible{outline:3px solid #ffe36c;outline-offset:3px}#app{width:min(1720px,100%);margin:auto;padding:14px 18px 24px}.top{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.logo{font-size:clamp(25px,3.2vw,46px);font-weight:1000;letter-spacing:-1.8px;line-height:1.15;color:#f5fbff;text-shadow:0 3px 0 #2146af,0 0 16px #3676fa}.logo span{background:linear-gradient(98deg,#fc4a71,#ffc537 45%,#3df0a3 70%,#4db3ff);background-clip:text;color:transparent;-webkit-background-clip:text}.subtitle{font-size:clamp(13px,1.6vw,20px);color:#77d7ff;font-weight:800}.topright{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.badge{border:1px solid var(--border);border-radius:12px;background:#071b36;padding:7px 12px;min-height:49px;text-align:center;min-width:110px}.badge small{display:block;color:var(--muted)}.badge b{font-size:18px}.iconbtn{border:1px solid #23538a;border-radius:12px;background:#092344;min-width:46px;min-height:46px;font-size:24px}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,340px);gap:14px;align-items:start}.panel{border:1px solid #1d4979;background:linear-gradient(140deg,#071a34,#061831 70%,#061428);border-radius:19px;box-shadow:inset 0 0 0 1px #081d3c;padding:16px}.boardpane{min-width:0}.board-scroll{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;padding:5px 2px 9px;scrollbar-color:#245c97 transparent}.board-layout{display:grid;grid-template-columns:minmax(525px,1fr) minmax(117px,147px);gap:14px;min-width:670px;align-items:start}.board-core{min-width:0}.matrix{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:3px;width:100%}.headcell{height:clamp(29px,3.1vw,45px);min-width:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#0d3056,#05172a);border:1px solid #2d5682;border-radius:7px;color:#fff;font-size:clamp(14px,1.6vw,22px);font-weight:950}.headcell.start{border-color:#47f5ef;color:#68f9ed;box-shadow:0 0 12px #0ac9e288}.gridarea{margin-top:5px}.tile{position:relative;aspect-ratio:1;border:1px solid #0d1930;border-radius:7px;min-width:0;padding:0;display:grid;place-items:center;isolation:isolate;box-shadow:inset 0 3px 6px #ffffff23,inset 0 -4px 5px #0003;touch-action:manipulation}.tile[data-color=g],.bonuscell.g,.die.g,.choose.g{background:linear-gradient(150deg,#a6eb35,#5bc322)}.tile[data-color=y],.bonuscell.y,.die.y,.choose.y{background:linear-gradient(150deg,#ffef62,#f9bc16)}.tile[data-color=b],.bonuscell.b,.die.b,.choose.b{background:linear-gradient(145deg,#77caff,#2878e9)}.tile[data-color=r],.bonuscell.r,.die.r,.choose.r{background:linear-gradient(145deg,#ff8581,#e93246)}.tile[data-color=o],.bonuscell.o,.die.o,.choose.o{background:linear-gradient(145deg,#ffbe55,#f87b1d)}.tile .star{color:#fffdf2;text-shadow:0 1px 2px #535353,0 0 3px white;font-size:clamp(18px,2.25vw,30px);line-height:1}.tile .cross{color:#08192d;font-weight:1000;font-size:clamp(24px,2.6vw,40px);line-height:1;text-shadow:0 1px 2px #fff9}.tile.marked{filter:saturate(.72)}.tile.pending{outline:3px solid #f7fbff;outline-offset:-4px;box-shadow:0 0 15px #fafaffaa,inset 0 0 18px #fff7;z-index:2}.tile.pending .cross{color:#fff;text-shadow:0 1px 3px #061328}.tile.start{border-inline:2px solid #a8ffff}.tile.started{box-shadow:0 0 12px #14e1ff91,inset 0 0 9px #99ebff75}.tile:disabled{opacity:1;cursor:default}.tile.selectable:hover:not(:disabled){filter:brightness(1.12)}.scoregrid{margin-top:8px}.scorecell{background:#fff4d7;color:#1b1b26;min-width:0;display:grid;place-items:center;border-radius:6px;font-size:clamp(14px,1.8vw,23px);font-weight:950;height:clamp(29px,3vw,39px)}.scorecell.h{color:#e04729}.jokerstrip{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:3px;padding:7px 10px;border-radius:9px;background:#f1f0e8;color:#111922}.jokerlabel{font-size:20px;font-weight:900;margin-right:8px}.jokerico{border:2px solid #1f3444;border-radius:100%;width:clamp(21px,2.9vw,34px);height:clamp(21px,2.9vw,34px);display:grid;place-items:center;font-size:clamp(13px,1.7vw,21px);font-weight:900}.jokerico.used{color:#adabaf;border-color:#b7b7b7;text-decoration:line-through;background:#ddd}.scorings{display:grid;gap:9px}.bonuses{border:1px solid #24456c;border-radius:13px;padding:9px;background:#051329;display:grid;gap:5px}.bonusrow{display:grid;grid-template-columns:1fr 1fr;gap:5px}.bonuscell{min-height:34px;border-radius:7px;display:grid;place-items:center;color:#081426;font-size:19px;font-weight:950}.bonuscell.taken{opacity:.5;text-decoration:line-through}.ledger{display:grid;gap:7px}.ledgerline{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:14px;font-weight:850}.ledgervalue{min-width:44px;min-height:36px;border-radius:8px;background:#fff1d8;color:#1c2940;display:grid;place-items:center;font-size:18px;font-weight:900}.ledgerline.final{margin-top:8px;border-top:1px dashed #5286b4;padding-top:12px;font-size:17px}.ledgerline.final .ledgervalue{background:#d9f9ff;color:#005267}.hint{color:#9fb7d8;font-size:12px;margin:12px 2px 0}.side{display:grid;gap:13px}.panel h2{font-size:19px;margin:0 0 12px}.rollset{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:14px}.die{display:grid;place-items:center;height:50px;border-radius:10px;border:2px solid #3f6992;box-shadow:inset 0 3px 5px #fff7,0 3px 9px #0009;font-size:27px;font-weight:1000;color:#10213b}.die.num{background:linear-gradient(140deg,#fff,#bdccdf);color:#0a1830}.die.joker{background:linear-gradient(140deg,#222e46,#06101e);color:white}.die.selected{outline:3px solid #ffffff;outline-offset:2px;box-shadow:0 0 18px #27d8ff}.die.removed{filter:grayscale(.8);opacity:.24}.die:disabled{opacity:.4}.die.removed:disabled{opacity:.2}.die:not(:disabled):hover{transform:translateY(-2px)}.selectlabel{font-size:13px;color:#b9d6f9;margin-bottom:10px;min-height:36px}.action{min-height:49px;display:flex;justify-content:center;align-items:center;gap:9px;font-size:16px;font-weight:900;border-radius:11px;border:2px solid #266ea8;padding:8px 13px;background:#12385e;width:100%;transition:filter .14s}.action:hover:not(:disabled){filter:brightness(1.14)}.action.go{background:linear-gradient(135deg,#06b963,#07db92);border-color:#4dfed5;color:#032c29;box-shadow:0 0 12px #0de4ac66;font-size:20px;min-height:60px}.action.ok{background:linear-gradient(135deg,#198bef,#1451e8);border-color:#31cdff}.action.pass{background:linear-gradient(#283e64,#142744);border-color:#4a6995}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.choices{margin:13px 0;padding:11px;border:1px solid #1d477b;background:#06172c;border-radius:11px}.choices label{display:block;font-weight:800;font-size:13px;margin-bottom:8px}.chips{display:flex;flex-wrap:wrap;gap:7px}.choose{border-radius:8px;border:2px solid #ffffff77;min-width:42px;min-height:42px;color:#061827;font-size:19px;font-weight:950}.choose.num{background:#f9f4e9}.choose.on{outline:3px solid var(--sky);outline-offset:1px}.message{background:#102b4b;border-left:3px solid #3acaff;border-radius:7px;padding:10px 11px;margin-top:13px;font-size:13px;min-height:45px}.message.bad{background:#482335;border-color:#ff6875}.playerlist{display:grid;gap:7px}.player{width:100%;min-height:51px;display:flex;align-items:center;gap:9px;border-radius:10px;background:#071b35;border:1px solid #1a477a;padding:5px 8px;text-align:left}.player.current{border:2px solid #ffd04c;background:#102944}.bubble{width:34px;height:34px;flex:none;border-radius:50%;border:2px solid #ffffff95;background:linear-gradient(140deg,#f34e57,#9916aa);box-shadow:0 0 10px #ca77ff30}.player:nth-child(5n+2) .bubble{background:linear-gradient(140deg,#47d8f2,#1750ee)}.player:nth-child(5n+3) .bubble{background:linear-gradient(140deg,#59ea9f,#0c9c78)}.player:nth-child(5n+4) .bubble{background:linear-gradient(140deg,#ffe066,#f09c20)}.player:nth-child(5n+5) .bubble{background:linear-gradient(140deg,#fc9798,#ee3e6e)}.pname{font-weight:850;flex:1;min-width:0;overflow-wrap:anywhere}.pinfo{font-size:11px;color:var(--muted)}.points{background:#0d2b4b;border:1px solid #355985;border-radius:9px;min-width:48px;text-align:center;padding:5px;font-size:18px;font-weight:950}.footpanel{border-radius:12px;background:linear-gradient(110deg,#3e1528,#271f39);padding:14px;border:1px solid #66334a}.tiny{font-size:12px;color:#a6bbd5}.footnote{margin-top:12px;color:#6b91b7;font-size:12px;text-align:center}.mask{position:fixed;inset:0;z-index:10;background:#010710d9;display:grid;place-items:center;padding:18px;overflow-y:auto}.modal{width:min(570px,100%);max-height:calc(100vh - 35px);overflow:auto;border:1px solid #4084bd;border-radius:19px;background:linear-gradient(140deg,#0d2c50,#06162d);padding:22px;box-shadow:0 20px 70px #000b}.modal h2{font-size:26px;margin:0 0 8px}.modal p,.modal li{color:#c9d9ef}.modal .minihead{font-size:14px;color:#88d5f7;font-weight:900;text-transform:uppercase;letter-spacing:1px}.field{margin:12px 0}.field label{font-size:13px;font-weight:800;color:#bddef6;display:block;margin-bottom:4px}input[type=text]{border:1px solid #4379a3;background:#05162c;border-radius:10px;padding:11px;color:#fff;width:100%;font-size:16px}input[type=radio]{accent-color:#29d4f5}.modechoice{display:grid;grid-template-columns:1fr 1fr;gap:8px}.modechoice label{background:#0b3153;border:1px solid #356990;border-radius:11px;padding:11px}.names{max-height:220px;overflow:auto}.row{display:flex;align-items:center;gap:10px;justify-content:space-between}.flat{border:1px solid #49739b;border-radius:9px;background:#113558;padding:6px 12px}.hidden{display:none!important}.rightsmall{color:#8db5d8;font-size:12px;text-align:right}.notice{background:#0b3358;border-radius:10px;padding:12px;color:#cae4fb}.modal ul{padding-left:20px}.modal li{margin-bottom:7px}.statuspill{background:#092f4c;border:1px solid #236d9c;border-radius:999px;padding:4px 10px;color:#9feafa;font-size:13px}.summary{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px;border-radius:10px;background:#102f52;margin:8px 0}.summary strong{font-size:23px;color:#5af6df}.divider{border-top:1px solid #25587b;margin:14px 0}.activepick{color:#fdde7c}.boardcaption{display:flex;justify-content:space-between;gap:12px;margin:0 2px 10px;color:#aac7e8;font-size:13px;flex-wrap:wrap}.spin{animation:pop .26s ease-out}@keyframes pop{from{transform:scale(.94);filter:brightness(1.7)}to{transform:scale(1)}}
@@ -358,6 +358,35 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 .player.ai-player .bubble:before{content:'🤖';font-size:18px}
 .player.ai-player .pname:after{content:' · KI';font-size:11px;color:#93ddff}
 @media(max-width:620px){.modechoice.ai-modechoice{grid-template-columns:1fr 1fr}.modechoice.ai-modechoice label{padding:9px 5px}.ai-difficulty{gap:4px}.ai-difficulty label{font-size:11px;padding:7px 4px}}
+
+/* V22 – Wettbewerbs-Spalten: grün gewonnen, rot verloren, hell noch frei. */
+.scorecell.race-open{color:#172d40!important;background:linear-gradient(145deg,#fff9e7,#f1e3c1)!important;border:1px solid #efcd7e;box-shadow:inset 0 1px #fff8}
+.scorecell.race-won{color:#063d24!important;background:linear-gradient(155deg,#bcffbd,#37d77b)!important;border:2px solid #12a855;box-shadow:0 0 12px #1ce67e8c,inset 0 1px #fff8;text-shadow:0 1px #fff8}
+.scorecell.race-closed{color:transparent!important;background:linear-gradient(145deg,#ff8790,#d5233e)!important;border:2px solid #ffb6bd;box-shadow:inset 0 1px #fffd,0 3px 8px #790c2066}
+.scorecell.race-closed::before{content:"";width:53%;height:2px;background:#ffedf0b8;transform:rotate(-38deg);border-radius:4px}
+.scorecell.race-progress{background:#112c48!important;color:#b8dafa!important;border:1px solid #295981;box-shadow:inset 0 1px #ffffff18;font-size:clamp(10px,1.3vw,15px)!important;font-weight:800}
+.scorecell.race-progress.race-done{background:#144938!important;color:#8fffe0!important;border-color:#3ade95}
+.scorecell.race-progress.race-missed{background:#471b2a!important;color:transparent!important;border-color:#9b3c54}
+.scorecell.race-progress.race-missed::before{content:"";width:38%;height:2px;background:#fc8596;transform:rotate(-38deg)}
+.column-race-summary{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:7px;padding:7px 9px;background:#0c2942;border:1px solid #2e6385;border-radius:9px;color:#daefff;font-size:11px;font-weight:750}
+.column-race-summary strong{color:#fbe79c}
+.race-dot{width:11px;height:11px;display:inline-block;border-radius:3px;vertical-align:middle;margin-right:4px;border:1px solid #fff6}
+.race-dot.open{background:#f8ebc9}.race-dot.won{background:#39d87d}.race-dot.closed{background:#e43b54}
+.kk-column-race{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:2px;margin:6px 0 2px;width:100%}
+.kk-column-race span{min-width:0;height:11px;border:1px solid #526680;background:#e6e2c9;border-radius:2px}
+.kk-column-race .won{background:#36d878;border-color:#90ffd0}
+.kk-column-race .lost{background:#d32949;border-color:#f19baa}
+.kk-column-race .open{background:#ebe5d2;border-color:#d5c1a0}
+.kk-live-person .kk-column-race{margin-top:7px}
+@media(max-width:680px){.column-race-summary{font-size:10px;gap:6px}.scorecell.race-closed::before{height:2px}}
+
+
+/* V23: online live dice and new-turn notification */
+.die.observer-picked{filter:grayscale(1) brightness(.67)!important;opacity:.65;box-shadow:inset 0 0 0 2px #9ba2ad77!important;}
+.die.observer-picked.selected{outline:2px solid #ffd56f!important;opacity:.95;}
+#kk-turn-alert{position:fixed;top:max(74px,env(safe-area-inset-top));left:50%;transform:translate(-50%,-20px) scale(.94);opacity:0;pointer-events:none;z-index:9999;min-width:min(440px,88vw);max-width:92vw;text-align:center;padding:19px 24px;border-radius:20px;background:linear-gradient(135deg,#04684e,#009d78);color:#fff;border:2px solid #95f9bb;box-shadow:0 18px 60px #032b28ac,0 0 0 4px #1dce7a30;font-size:clamp(17px,3vw,24px);font-weight:1000;transition:transform .3s ease,opacity .3s ease;}
+#kk-turn-alert.show{transform:translate(-50%,0) scale(1);opacity:1;}
+@media(prefers-reduced-motion:reduce){#kk-turn-alert{transition:none}}
 </style>
 </head>
 <body>
@@ -373,12 +402,12 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 <span><small>Joker übrig</small><strong id="score-joker">+8</strong></span>
 <span><small>Offene Sterne</small><strong id="score-stars">−30</strong></span>
 <span class="score-ribbon-total"><small>Zwischenstand</small><strong id="score-live">−22</strong></span>
-</button><div class="board-navigator" id="board-navigator" role="group" aria-label="Über das vergrößerte Spielbrett navigieren"><button class="nav-btn" type="button" data-action="navleft" aria-label="Zum linken Spielfeldrand">◀ A–G</button><button class="nav-btn mid" type="button" data-action="navcenter" aria-label="Startspalte H zentrieren">⌖ Mitte H</button><button class="nav-btn" type="button" data-action="navright" aria-label="Zum rechten Spielfeldrand">I–O ▶</button><span class="nav-label" id="board-window" aria-live="off">Spalte H</span><div class="quick-score" id="quick-score" aria-live="off">Punkte: <b>−22</b></div></div><div class="editbar" id="editbar" aria-label="Auswahl bearbeiten"><div class="editcount" id="edit-count" aria-live="polite">Noch keine Kreuze gewählt</div><div class="edit-actions"><button type="button" class="flat edit-btn" data-action="undo" id="undo-button" disabled title="Letztes noch nicht eingetragenes Kreuz zurücknehmen">↶ Letztes Kreuz</button><button type="button" class="flat edit-btn" data-action="clear" id="clear-button" disabled title="Nur die aktuelle Auswahl löschen">✕ Auswahl löschen</button></div></div><div class="board-scroll" aria-label="Spielbrett horizontal scrollbar"><div class="board-layout"><div class="board-core"><div class="matrix" id="headers"></div><div class="matrix gridarea" id="tiles"></div><div class="matrix scoregrid" id="score-top"></div><div class="matrix" style="margin-top:3px" id="score-bottom"></div><div class="jokerstrip" id="jokerstrip"></div></div><aside class="scorings"><div class="bonuses" id="colorbonuses"></div><div class="ledger" id="ledger"></div></aside></div></div><div class="rule-context"><span id="rule-context-text" aria-live="polite">Regelhinweis: Beim ersten Zug muss mindestens ein Feld in H liegen.</span><span class="rule-tools"><button type="button" class="rule-link v7-help" data-action="why">💡 Zug-Hilfe</button><button type="button" class="rule-link" data-action="symbols" id="symbols-toggle">◈ Farbsymbole</button><button type="button" class="rule-link" data-action="inspect">✅ Zug prüfen</button><button type="button" class="rule-link" data-action="balance">📊 Brettcheck</button><button type="button" class="rule-link" data-action="diagnostics">🧪 Technikcheck</button><button type="button" class="rule-link" data-action="help">📖 Alle Regeln</button></span></div><section class="progress-widget" id="score-zone" aria-label="Fortschritt nach Farben"><div class="progress-heading"><span>🎨 Dein Farbfortschritt</span><span id="completion-overview" class="tiny">0 / 105 Felder</span></div><div id="color-progress-bars"></div><div class="score-explainer" id="score-explainer">Zwischenstand enthält die noch offenen Sterne und ungenutzten Joker.</div></section><p class="hint" id="board-hint">Tipp: Auf dem Handy helfen die Tasten A–G, H und I–O beim Verschieben der großen Ansicht. Pro Farbe gibt es drei Sterne. Nicht angekreuzte Sterne kosten je 2 Punkte.</p></section>
+</button><div class="board-navigator" id="board-navigator" role="group" aria-label="Über das vergrößerte Spielbrett navigieren"><button class="nav-btn" type="button" data-action="navleft" aria-label="Zum linken Spielfeldrand">◀ A–G</button><button class="nav-btn mid" type="button" data-action="navcenter" aria-label="Startspalte H zentrieren">⌖ Mitte H</button><button class="nav-btn" type="button" data-action="navright" aria-label="Zum rechten Spielfeldrand">I–O ▶</button><span class="nav-label" id="board-window" aria-live="off">Spalte H</span><div class="quick-score" id="quick-score" aria-live="off">Punkte: <b>−22</b></div></div><div class="editbar" id="editbar" aria-label="Auswahl bearbeiten"><div class="editcount" id="edit-count" aria-live="polite">Noch keine Kreuze gewählt</div><div class="edit-actions"><button type="button" class="flat edit-btn" data-action="undo" id="undo-button" disabled title="Letztes noch nicht eingetragenes Kreuz zurücknehmen">↶ Letztes Kreuz</button><button type="button" class="flat edit-btn" data-action="clear" id="clear-button" disabled title="Nur die aktuelle Auswahl löschen">✕ Auswahl löschen</button></div></div><div class="board-scroll" aria-label="Spielbrett horizontal scrollbar"><div class="board-layout"><div class="board-core"><div class="matrix" id="headers"></div><div class="matrix gridarea" id="tiles"></div><div class="matrix scoregrid" id="score-top"></div><div class="matrix" style="margin-top:3px" id="score-bottom"></div><div id="column-race-summary" class="column-race-summary" aria-live="polite"></div><div class="jokerstrip" id="jokerstrip"></div></div><aside class="scorings"><div class="bonuses" id="colorbonuses"></div><div class="ledger" id="ledger"></div></aside></div></div><div class="rule-context"><span id="rule-context-text" aria-live="polite">Regelhinweis: Beim ersten Zug muss mindestens ein Feld in H liegen.</span><span class="rule-tools"><button type="button" class="rule-link v7-help" data-action="why">💡 Zug-Hilfe</button><button type="button" class="rule-link" data-action="symbols" id="symbols-toggle">◈ Farbsymbole</button><button type="button" class="rule-link" data-action="inspect">✅ Zug prüfen</button><button type="button" class="rule-link" data-action="balance">📊 Brettcheck</button><button type="button" class="rule-link" data-action="diagnostics">🧪 Technikcheck</button><button type="button" class="rule-link" data-action="help">📖 Alle Regeln</button></span></div><section class="progress-widget" id="score-zone" aria-label="Fortschritt nach Farben"><div class="progress-heading"><span>🎨 Dein Farbfortschritt</span><span id="completion-overview" class="tiny">0 / 105 Felder</span></div><div id="color-progress-bars"></div><div class="score-explainer" id="score-explainer">Zwischenstand enthält die noch offenen Sterne und ungenutzten Joker.</div></section><p class="hint" id="board-hint">Tipp: Auf dem Handy helfen die Tasten A–G, H und I–O beim Verschieben der großen Ansicht. Pro Farbe gibt es drei Sterne. Nicht angekreuzte Sterne kosten je 2 Punkte.</p></section>
 <aside class="side"><section class="panel"><h2>🎲 Würfel <span class="dice-summary" id="dice-summary">4 Würfel</span></h2><div class="rollset" id="dices"></div><div class="dice-instructions" id="dice-instructions">Solo: 2 Farbwürfel + 2 Zahlenwürfel</div><div class="selectlabel" id="select-label">Neue Partie starten</div><div id="extra-choices" aria-live="polite"></div><button class="action go" id="roll-button" data-action="roll">🎲 Würfeln</button><div class="actions"><button class="action ok" id="commit-button" data-action="commit">✓ Eintragen</button><button class="action pass" id="pass-button" data-action="pass">✕ Passen</button></div><div class="message" id="game-message" role="status" aria-live="polite">Eine neue Partie starten.</div></section><section class="panel" id="players-zone"><div class="row player-head"><h2>👥 Spieler</h2><span id="playercount" class="tiny"></span><button type="button" class="flat compare-trigger" data-action="compare">▦ Alle Bretter</button></div><div class="playerlist" id="players"></div><div id="online-controls" style="margin-top:10px"></div><section class="online-feed" id="online-feed" aria-label="Letzte Spielaktionen" hidden></section></section><div class="footpanel"><div class="tiny">Aktueller Spieler</div><strong id="active-player" style="font-size:20px">–</strong><div id="turn-info" class="tiny">Deine Partie wartet.</div></div></aside></div>
 <section class="kk-live-area" id="kk-live-opponents" aria-label="Mitspieler live" hidden>
   <div class="kk-live-head"><div><h2>👥 Mitspieler live</h2><p>Scrolle nach unten und verfolge ihre Kreuze direkt auf den Spielzetteln.</p></div><span class="kk-live-counter" id="kk-live-count">0 Mitspieler</span></div>
   <div class="kk-live-list" id="kk-live-list" aria-live="off"></div>
-</section><div class="footnote">KreuzKunter V21 · Computer-KI · Mitspieler live · Online-Wartelobby · Lokal &amp; Online · Lokale Spielstände auf diesem Gerät · Online-Speicherung: Firestore oder temporär im Render-Arbeitsspeicher</div></div>
+</section><div class="footnote">KreuzKunter V22 · Spaltenrennen · Computer-KI · Mitspieler live · Online-Wartelobby · Lokal &amp; Online · Lokale Spielstände auf diesem Gerät · Online-Speicherung: Firestore oder temporär im Render-Arbeitsspeicher</div></div>
 <div class="mask hidden" id="dialog"><div class="modal" id="dialog-body" role="dialog" aria-modal="true" aria-labelledby="dialog-heading"></div></div>
 <script>
 
@@ -392,6 +421,16 @@ const STARSET=new Set(STARS);
 const COLS='ABCDEFGHIJKLMNO';
 const TOP=[5,3,3,3,2,2,2,1,2,2,2,3,3,3,5];
 const LOW=[3,2,2,2,1,1,1,0,1,1,1,2,2,2,3];
+// Einmaliger Spaltenpreis für neue Partien. Alte Spielstände ohne Kennung
+// werden weiterhin nach dem bisherigen Zwei-Stufen-System gewertet.
+const COLUMN_RULE_NEW='first-only';
+function columnPrize(s,c){return s.globalColumn[c]?(s.columnRule===COLUMN_RULE_NEW?0:LOW[c]):TOP[c];}
+function columnRaceStatus(s,p,c){
+ const prize=p.columnAwards[c];
+ if(prize!==null && prize!==undefined)return prize===0?'closed':'won';
+ return s.globalColumn[c]?'closed':'open';
+}
+
 const COLOR=['g','y','b','r','o'];
 const COLNAMES={g:'Grün',y:'Gelb',b:'Blau',r:'Rot',o:'Orange','*':'Farbjoker'};
 const DICE_COLOR=['g','y','b','r','o','*'];
@@ -403,7 +442,12 @@ let boardView=(()=>{try{return localStorage.getItem(BOARD_VIEW_KEY)||(matchMedia
 const $=(id)=>document.getElementById(id);
 const ESC=(s)=>String(s).replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 let state=null;let modalReturn=null;let flash='';let flashBad=false;let NET=null;
-const liveSheetCells=ROWS.join('').split('');const liveStarSet=new Set(STARS);let remotePreviews={};
+const liveSheetCells=ROWS.join('').split('');const liveStarSet=new Set(STARS);let remotePreviews={};let remoteSelectedDice={};let lastTurnAlertKey='';let alertTimer=null;
+function onlineParallel(){return !!(NET&&state?.parallelRule==='simultaneous-responses');}
+function onlineCanPick(){if(!NET||!state||state.phase!=='select'||!NET.connected||NET.awaiting)return false;if(!onlineParallel())return NET.index===state.picker;if(state.responded?.[NET.index])return false;return state.parallel?NET.index!==state.active:NET.index===state.active;}
+function ownTurn(){return !NET||onlineCanPick();}
+function turnNotice(){const key=NET?.code+':'+state?.turn+':'+state?.active; if(!NET||state?.phase!=='ready'||NET.index!==state.active||lastTurnAlertKey===key)return;lastTurnAlertKey=key;let el=document.getElementById('kk-turn-alert');if(!el){el=document.createElement('div');el.id='kk-turn-alert';el.setAttribute('role','status');document.body.appendChild(el);}el.textContent='🎲 Du bist jetzt an der Reihe!';el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(alertTimer);alertTimer=setTimeout(()=>el.classList.remove('show'),4200);}
+
 const SYMBOLS_KEY='kreuzkunter-show-symbols-v9';let showSymbols=false;
 try{showSymbols=localStorage.getItem(SYMBOLS_KEY)==='1';}catch(e){}
 function toggleSymbols(){showSymbols=!showSymbols;try{localStorage.setItem(SYMBOLS_KEY,showSymbols?'1':'0');}catch(e){}render();}
@@ -438,10 +482,10 @@ function renderOpponentsLive(){
  counter.textContent=others.length+(state.aiConfig?' Computergegner':' Mitspieler');
  target.innerHTML=others.map(({p,i})=>{
   const confirmed=new Set(p.cells||[]),recent=new Set(p.lastMove||[]);
-  const draft=state.phase==='select'&&i===state.picker?(NET?(Array.isArray(remotePreviews[i])?remotePreviews[i]:[]):state.pending):[];
+  const draft=state.phase==='select'&&(NET?(onlineParallel()?(!state.responded?.[i]&&(state.parallel?i!==state.active:i===state.active)):i===state.picker):i===state.picker)?(NET?(Array.isArray(remotePreviews[i])?remotePreviews[i]:[]):state.pending):[];
   const preview=new Set(draft.filter(n=>Number.isInteger(n)&&n>=0&&n<105&&!confirmed.has(n)));
   const scoreNow=score(p).total,online=!NET||NET.presence?.[i]!==false;
-  const turnNow=!state.finished&&i===state.picker&&state.phase==='select';
+  const turnNow=!state.finished&&state.phase==='select'&&(NET&&onlineParallel()?(state.parallel?i!==state.active&&!state.responded?.[i]:i===state.active):i===state.picker);
   const isRolling=!state.finished&&i===state.active&&state.phase==='ready';
   const chips=[`<span class="kk-live-chip ${online?'':'offline'}">${online?'🟢 Online':'⚪ Offline'}</span>`,
     turnNow?'<span class="kk-live-chip now">🎯 Am Zug</span>':'',
@@ -451,13 +495,14 @@ function renderOpponentsLive(){
     <div class="kk-live-person-head"><div class="kk-live-name">${ESC(p.name)}</div><div class="kk-live-score">${scoreNow>=0?'+':''}${scoreNow} Punkte</div></div>
     <div class="kk-live-chips">${chips}<span class="kk-live-chip">${confirmed.size}/105 Felder</span><span class="kk-live-chip">${8-p.jokerUsed} Joker</span></div>
     <div class="kk-live-sheet" role="img" aria-label="${ESC(p.name)}: ${confirmed.size} endgültige Kreuze${preview.size?', '+preview.size+' vorläufige Kreuze':''}">${liveSheetCells.map((c,n)=>`<span class="kk-live-tile ${liveStarSet.has(n)?'star':''} ${confirmed.has(n)?'marked':''} ${recent.has(n)?'recent':''} ${preview.has(n)?'preview':''}" style="--shade:var(--${c})" title="${COLS[n%15]}${Math.floor(n/15)+1}${preview.has(n)?' · vorläufig':confirmed.has(n)?' · bestätigt':''}"></span>`).join('')}</div>
+    <div class="kk-column-race" aria-label="Spaltenboni ${ESC(p.name)}">${TOP.map((_,c)=>{const status=columnRaceStatus(state,p,c);return `<span class="${status==='won'?'won':status==='closed'?'lost':'open'}" title="Spalte ${COLS[c]}: ${status==='won'?'Bonus gewonnen':status==='closed'?'Bonus vergeben':'Bonus frei'}"></span>`;}).join('')}</div>
     <div class="kk-live-caption"><span>× bestätigt · <b>weiß umrandet = wird gerade gewählt</b></span><button type="button" class="flat" data-opponent="${i}" aria-label="${ESC(p.name)} groß ansehen">Groß ansehen</button></div>
   </article>`;
  }).join('');
 }
 function sendLivePreview(){
- if(!NET?.connected||NET.awaiting||NET.index!==state?.picker||state.phase!=='select'||NET.ws?.readyState!==WebSocket.OPEN)return;
- try{NET.ws.send(JSON.stringify({action:'preview',turn:state.turn,pending:[...state.pending]}));}catch(_e){}
+ if(!NET?.connected||NET.awaiting||!onlineCanPick()||state.phase!=='select'||NET.ws?.readyState!==WebSocket.OPEN)return;
+ try{NET.ws.send(JSON.stringify({action:'preview',turn:state.turn,pending:[...state.pending],selectedDice:[state.colorDie,state.numDie].filter(Number.isInteger)}));}catch(_e){}
 }
 function showCompare(){
  if(!state)return;
@@ -511,14 +556,14 @@ function leaveOnline(){
 
 let moveMemoKey=null, moveMemoValue=null;
 function emptyPlayer(name){return{name,cells:[],jokerUsed:0,columnAwards:Array(15).fill(null),colorAwards:{},lastMove:[],took:false};}
-function initial(names,mode){return{v:1,mode,players:names.map(emptyPlayer),active:0,picker:0,turn:0,phase:'ready',dice:[],accepted:null,colorDie:null,numDie:null,chosenColor:null,chosenNumber:null,manualColor:false,manualNumber:false,pending:[],globalColumn:Array(15).fill(false),globalColor:{g:false,y:false,b:false,r:false,o:false},finished:false,history:[],winnerMessage:'',lastRoll:null};}
+function initial(names,mode){return{v:1,mode,columnRule:COLUMN_RULE_NEW,players:names.map(emptyPlayer),active:0,picker:0,turn:0,phase:'ready',dice:[],accepted:null,colorDie:null,numDie:null,chosenColor:null,chosenNumber:null,manualColor:false,manualNumber:false,pending:[],globalColumn:Array(15).fill(false),globalColor:{g:false,y:false,b:false,r:false,o:false},finished:false,history:[],winnerMessage:'',lastRoll:null};}
 function save(){if(NET)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){/* file privacy modes */}}
 function validSavedPlayer(p){
  if(!p||typeof p.name!=='string'||!Array.isArray(p.cells)||p.cells.length>105||
     p.cells.some(i=>!Number.isInteger(i)||i<0||i>=105)||new Set(p.cells).size!==p.cells.length||
     !Number.isInteger(p.jokerUsed)||p.jokerUsed<0||p.jokerUsed>8||
     !Array.isArray(p.columnAwards)||p.columnAwards.length!==15||
-    p.columnAwards.some((x,i)=>x!==null&&x!==TOP[i]&&x!==LOW[i])||
+    p.columnAwards.some((x,i)=>x!==null&&x!==0&&x!==TOP[i]&&x!==LOW[i])||
     !p.colorAwards||typeof p.colorAwards!=='object'||Array.isArray(p.colorAwards)||
     Object.entries(p.colorAwards).some(([c,v])=>!COLOR.includes(c)||![3,5].includes(v))||
     !Array.isArray(p.lastMove)||p.lastMove.some(i=>!Number.isInteger(i)||!p.cells.includes(i)))return false;
@@ -545,7 +590,7 @@ function validSavedGame(o){
 }
 function restore(){try{const raw=localStorage.getItem(KEY);if(!raw)return null;const o=JSON.parse(raw);if(!validSavedGame(o)){
  console.warn('KreuzKunter: unvollständiger Spielstand ignoriert.');return null;
- }return o;}catch(e){return null;}}
+ }if(!o.columnRule)o.columnRule='classic';return o;}catch(e){return null;}}
 function player(){return state.players[NET ? NET.index : state.picker]||state.players[0];}
 function filled(p,i){return p.cells.includes(i);}
 function neighbors(i){const r=Math.floor(i/15),c=i%15,a=[];if(r>0)a.push(i-15);if(r<6)a.push(i+15);if(c>0)a.push(i-1);if(c<14)a.push(i+1);return a;}
@@ -553,7 +598,7 @@ function colorAt(i){return ROWS[Math.floor(i/15)][i%15];}
 function region(i){const seen=new Set([i]),q=[i],col=colorAt(i);for(let j=0;j<q.length;j++)for(const n of neighbors(q[j]))if(!seen.has(n)&&colorAt(n)===col){seen.add(n);q.push(n);}return seen;}
 function score(p){const bonus=Object.values(p.colorAwards).reduce((a,b)=>a+(b||0),0);const columns=p.columnAwards.reduce((a,b)=>a+(b||0),0);const joker=8-p.jokerUsed;const missed=STARS.filter(i=>!filled(p,i)).length;return{bonus,columns,joker,missed,total:bonus+columns+joker-2*missed};}
 function dicesOf(type){return state.dice.map((d,i)=>({...d,index:i})).filter(d=>d.type===type);}
-function available(i){if(state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker)))return false;if(state.mode==='solo'||state.turn<=3||state.picker===state.active||!state.accepted)return true;return !state.accepted.includes(i);}
+function available(i){if(state.phase!=='select'||(NET&&!onlineCanPick()))return false;if(state.mode==='solo'||state.turn<=3||(NET?NET.index===state.active:state.picker===state.active)||!state.accepted)return true;return !state.accepted.includes(i);}
 function currentColor(){const d=state.dice[state.colorDie];if(!d)return null;return d.val==='*'?state.chosenColor:d.val;}
 function currentNumber(){const d=state.dice[state.numDie];if(!d)return null;return d.val==='?'?state.chosenNumber:d.val;}
 function jokerCost(){if(state.colorDie==null||state.numDie==null)return 0;return +(state.dice[state.colorDie].val==='*')+ +(state.dice[state.numDie].val==='?');}
@@ -605,7 +650,7 @@ function validateMove(quiet=false){
  function popcount(n){let count=0;while(n){n&=n-1;count++;}return count;}
  function legalPlacements(){return legalPlacementsFor(currentColor(),currentNumber());}
  function matchingOptions(){
-  if(state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker)))return [];
+  if(state.phase!=='select'||(NET&&(!NET.connected||!onlineCanPick())))return [];
   // A selection can redraw the entire board several times on phones.
   // Cache the expensive combinations, invalidating for all relevant inputs.
   const who=player();
@@ -646,7 +691,7 @@ function validateMove(quiet=false){
   const p=player(),put=new Set([...p.cells,...state.pending]);
   const savedStars=state.pending.filter(i=>STARSET.has(i)).length;
   let colPoints=0,colorPoints=0,newCols=0,newColors=0;
-  for(let c=0;c<15;c++)if(p.columnAwards[c]==null && Array.from({length:7},(_,r)=>r*15+c).every(i=>put.has(i))){newCols++;colPoints+=state.globalColumn[c]?LOW[c]:TOP[c];}
+  for(let c=0;c<15;c++)if(p.columnAwards[c]==null && Array.from({length:7},(_,r)=>r*15+c).every(i=>put.has(i))){newCols++;colPoints+=columnPrize(state,c);}
   for(const color of COLOR)if(p.colorAwards[color]==null && [...ROWS.join('')].every((v,i)=>v!==color||put.has(i))){newColors++;colorPoints+=state.globalColor[color]?3:5;}
   return {savedStars,colPoints,colorPoints,newCols,newColors,cost:option.cost,delta:2*savedStars+colPoints+colorPoints-option.cost};
  }
@@ -683,13 +728,13 @@ function updateBoardWindow(){
 }
 function changeBoardView(){boardView=boardView==='fit'?'zoom':'fit';try{localStorage.setItem(BOARD_VIEW_KEY,boardView);}catch(e){}render();if(boardView==='zoom')requestAnimationFrame(centerBoardOnStart);}
 function setMsg(s,bad=false){flash=s;flashBad=bad;$('game-message').textContent=s;$('game-message').className='message'+(bad?' bad':'');}
-function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]:player();const sc=score(p);$('mode-title').textContent=NET?'Online · '+NET.code:state.aiConfig?'🤖 Computer · '+({easy:'Leicht',normal:'Mittel',hard:'Experte'}[state.aiConfig.difficulty]):state.mode==='solo'?'Solo (Offline)':'Lokal · '+state.players.length+' Spieler';$('round-badge').textContent=state.turn+(state.mode==='solo'?' / 30':'');$('jokers-badge').textContent=(8-p.jokerUsed)+' / 8';$('board-owner').textContent=`Spielfeld: ${p.name}`;$('board-status').textContent=state.finished?'Partie beendet':state.phase==='ready'?'Nächster Wurf bereit':state.turn<=3&&state.mode!=='solo'?'Freie Würfelwahl (erste 3 Würfe)':state.picker===state.active?'Aktiver Würfler':'Mitspieler wählt aus den Restwürfeln';
+function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]:player();const sc=score(p);$('mode-title').textContent=NET?'Online · '+NET.code:state.aiConfig?'🤖 Computer · '+({easy:'Leicht',normal:'Mittel',hard:'Experte'}[state.aiConfig.difficulty]):state.mode==='solo'?'Solo (Offline)':'Lokal · '+state.players.length+' Spieler';$('round-badge').textContent=state.turn+(state.mode==='solo'?' / 30':'');$('jokers-badge').textContent=(8-p.jokerUsed)+' / 8';$('board-owner').textContent=`Spielfeld: ${p.name}`;$('board-status').textContent=state.finished?'Partie beendet':state.phase==='ready'?(NET&&NET.index===state.active?'🎲 Du bist jetzt an der Reihe':'Nächster Wurf bereit'):onlineParallel()&&state.parallel?(state.responded?.[NET.index]?'✅ Du hast eingetragen':'👥 Mitspieler tragen gleichzeitig ein'):state.turn<=3&&state.mode!=='solo'?'Freie Würfelwahl (erste 3 Würfe)':state.picker===state.active?'Aktiver Würfler':'Mitspieler wählt aus den Restwürfeln';
  let contextual='';
  if(state.finished)contextual='Spielende: Die höchste Gesamtpunktzahl gewinnt; bei Gleichstand entscheiden die übrigen Joker.';
  else if(state.phase==='lobby')contextual='Online-Lobby: Erst nach dem Start wird gewürfelt.';
  else if(state.phase==='ready')contextual=state.turn===0?'Erster Eintrag: Mindestens ein Feld muss in Spalte H liegen.':'Ein Würfelwurf pro Runde. Jede Person wählt höchstens eine Farb-Zahlen-Kombination.';
  else if(state.phase==='select'){
-  if(!state.pending.length)contextual=state.turn<=3&&state.mode!=='solo'?'Würfe 1–3: Alle dürfen aus allen sechs Würfeln wählen.':state.mode==='solo'?'Solo: Zwei Farb- und zwei Zahlenwürfel, maximal fünf neue Kreuze pro Wurf.':state.picker===state.active?'Du wählst ein Farb- und ein Zahlenwürfelpaar; ab Wurf 4 bleiben vier für die anderen übrig.':state.accepted?'Benutze nur die vier nicht genommenen Würfel; dieselbe Kombination dürfen mehrere verwenden.':'Der aktive Spieler hat gepasst: Alle sechs Würfel stehen zur Wahl.';
+  if(!state.pending.length)contextual=onlineParallel()&&state.parallel?'👥 Der aktive Spieler ist fertig. Jetzt wählen alle übrigen Mitspieler gleichzeitig aus den Restwürfeln.':state.turn<=3&&state.mode!=='solo'?'Würfe 1–3: Alle dürfen aus allen sechs Würfeln wählen.':state.mode==='solo'?'Solo: Zwei Farb- und zwei Zahlenwürfel, maximal fünf neue Kreuze pro Wurf.':state.picker===state.active?'Du wählst ein Farb- und ein Zahlenwürfelpaar; ab Wurf 4 bleiben vier für die anderen übrig.':state.accepted?'Benutze nur die vier nicht genommenen Würfel; dieselbe Kombination dürfen mehrere verwenden.':'Der aktive Spieler hat gepasst: Alle sechs Würfel stehen zur Wahl.';
   else contextual=moveChoices().length?'Deine Kreuze passen zu einer Würfelkombination. Jetzt eintragen oder noch einen anderen möglichen Zug wählen.':'Die Kreuze sind noch unvollständig: Ergänze die zusammenhängende Gruppe bis zu einer passenden Würfelzahl.';
  }
  $('rule-context-text').textContent='💡 '+contextual;
@@ -701,10 +746,16 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
  $('score-stars').textContent='−'+(sc.missed*2);
  $('score-live').textContent=(sc.total>=0?'+':'')+sc.total;
  $('score-ribbon').querySelector('.score-ribbon-total small').textContent=state.finished?'Endstand':'Zwischenstand';
- $('mobile-turn-name').textContent=state.players[state.picker]?.name||'Spieler';
- $('mobile-turn-state').textContent=state.finished?'🏆 Spiel beendet':state.phase==='ready'?'🎲 Würfeln':state.phase==='lobby'?'⏳ Lobby':NET&&NET.index!==state.picker?'⏳ Bitte warten':state.phase==='select'?'✖ Kreuze wählen':'Bereit';
- const candidateSet=aiPendingAction()?new Set():possibleCells();$('tiles').innerHTML=ROWS.join('').split('').map((col,i)=>{const marked=filled(p,i),pending=(!aiPendingAction()&&state.pending.includes(i)),can=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&NET.index===state.picker))&&!marked&&candidateSet.has(i);const a=marked||pending?'<span class="cross" aria-hidden="true">×</span>':STARSET.has(i)?'<span class="star" aria-hidden="true">★</span>':'';return `<button type="button" class="tile ${marked?'marked':''} ${pending?'pending':''} ${i%15===7?'start':''} ${can?'selectable candidate':''}" data-color="${col}" data-glyph="${COLOR_SYMBOLS[col]}" data-cell="${i}" ${(!can&&!pending)?'disabled':''} aria-label="${COLS[i%15]}${Math.floor(i/15)+1}, ${COLNAMES[col]}${STARSET.has(i)?', Stern':''}${marked?', bereits markiert':''}${pending?', ausgewählt':''}" aria-pressed="${pending}">${a}</button>`;}).join('');
- $('score-top').innerHTML=TOP.map((n,i)=>`<span class="scorecell ${i===7?'h':''} ${p.columnAwards[i]===n?'earned':state.globalColumn[i]?'other-earned':''}" title="Erste vollständige Spalte ${COLS[i]}">${n}</span>`).join('');$('score-bottom').innerHTML=LOW.map((n,i)=>`<span class="scorecell ${i===7?'h':''} ${p.columnAwards[i]===n&&state.globalColumn[i]?'earned':''}" title="Spätere vollständige Spalte ${COLS[i]}">${n}</span>`).join('');
+ $('mobile-turn-name').textContent=state.players[NET?NET.index:state.picker]?.name||'Spieler';
+ $('mobile-turn-state').textContent=state.finished?'🏆 Spiel beendet':state.phase==='ready'?(NET&&NET.index!==state.active?'⏳ Warten':'🎲 Du bist dran!'):state.phase==='lobby'?'⏳ Lobby':NET&&!onlineCanPick()?(state.responded?.[NET.index]?'✅ Fertig':'⏳ Bitte warten'):state.phase==='select'?'✖ Kreuze wählen':'Bereit';
+ const candidateSet=aiPendingAction()?new Set():possibleCells();$('tiles').innerHTML=ROWS.join('').split('').map((col,i)=>{const marked=filled(p,i),pending=(!aiPendingAction()&&state.pending.includes(i)),can=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&onlineCanPick()))&&!marked&&candidateSet.has(i);const a=marked||pending?'<span class="cross" aria-hidden="true">×</span>':STARSET.has(i)?'<span class="star" aria-hidden="true">★</span>':'';return `<button type="button" class="tile ${marked?'marked':''} ${pending?'pending':''} ${i%15===7?'start':''} ${can?'selectable candidate':''}" data-color="${col}" data-glyph="${COLOR_SYMBOLS[col]}" data-cell="${i}" ${(!can&&!pending)?'disabled':''} aria-label="${COLS[i%15]}${Math.floor(i/15)+1}, ${COLNAMES[col]}${STARSET.has(i)?', Stern':''}${marked?', bereits markiert':''}${pending?', ausgewählt':''}" aria-pressed="${pending}">${a}</button>`;}).join('');
+ $('score-top').innerHTML=TOP.map((n,i)=>{const s=columnRaceStatus(state,p,i),value=s==='closed'?'':n;return `<span class="scorecell ${i===7?'h':''} race-${s}" title="Spalte ${COLS[i]}: ${s==='won'?'Bonus gewonnen':s==='closed'?'Bonus von anderem Spieler vergeben':'Bonus noch frei'}" aria-label="Spalte ${COLS[i]}, ${s==='won'?'Bonus gewonnen '+p.columnAwards[i]+' Punkte':s==='closed'?'Bonus nicht mehr verfügbar':'noch '+n+' Punkte zu gewinnen'}">${value}</span>`;}).join('');
+ const raceMode=state.columnRule===COLUMN_RULE_NEW;
+ $('score-bottom').innerHTML=TOP.map((_,i)=>{const s=columnRaceStatus(state,p,i);if(!raceMode){const n=LOW[i];return `<span class="scorecell ${p.columnAwards[i]===n?'earned':''}" title="Klassische Zweitwertung ${COLS[i]}: ${n}">${n}</span>`;}
+ const have=Array.from({length:7},(_,r)=>r*15+i).filter(k=>filled(p,k)).length;
+ return `<span class="scorecell race-progress ${s==='won'?'race-done':s==='closed'?'race-missed':''}" title="Spalte ${COLS[i]}: ${have}/7 Felder · ${s==='closed'?'Bonus vergeben':s==='won'?'abgeschlossen':'im Rennen'}" aria-label="Spalte ${COLS[i]}, ${have} von 7 Feldern">${s==='closed'?'':s==='won'?'✓':`${have}/7`}</span>`;}).join('');
+ if($('column-race-summary')){const won=TOP.filter((_,i)=>columnRaceStatus(state,p,i)==='won').length,closed=TOP.filter((_,i)=>columnRaceStatus(state,p,i)==='closed').length,open=15-won-closed;
+ $('column-race-summary').innerHTML=raceMode?`<span><span class="race-dot won"></span>Gewonnen: <strong>${won}</strong></span><span><span class="race-dot closed"></span>Vergeben: <strong>${closed}</strong></span><span><span class="race-dot open"></span>Frei: <strong>${open}</strong></span>`:'Klassische Spaltenwertung dieser älteren Partie';}
  $('completion-overview').textContent=`${p.cells.length} / 105 Felder · ${Object.keys(p.colorAwards).length}/5 Farben`;
  $('color-progress-bars').innerHTML=COLOR.map(c=>{const total=21,have=p.cells.filter(i=>colorAt(i)===c).length;return `<div class="color-progress"><span>${COLNAMES[c]} ${p.colorAwards[c]!=null?'✓':''}</span><div class="meter" role="progressbar" aria-label="${COLNAMES[c]}" aria-valuemin="0" aria-valuemax="21" aria-valuenow="${have}"><span style="--bar-color:var(--${c});width:${100*have/total}%"></span></div><span class="count">${have}/21</span></div>`;}).join('');
  $('score-explainer').textContent=state.finished?'Endwertung: Farb- und Spaltenboni + Joker – 2 Punkte je offenem Stern.':`Zwischenstand: ${sc.bonus} Farbbonus + ${sc.columns} Spalten + ${sc.joker} freie Joker − ${2*sc.missed} für noch offene Sterne. Das ist noch kein Endergebnis.`;
@@ -714,11 +765,12 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
  // Sichtbare Würfelzahlen entsprechend der Original-Spielmodi:
  // Solo: 2 Farb- + 2 Zahlenwürfel; Mehrspieler: 3 + 3.
  // Nach Auswahl des aktiven Spielers stehen ab Wurf 4 die restlichen 4 zur Verfügung.
- const isSelect=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&NET.index===state.picker));
+ const isSelect=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&onlineCanPick()));
  const dicePerType=state.mode==='solo'&&!NET?2:3;
- const hintMove=bestMove();
+ const hintMove=isSelect?bestMove():null;
+ const activeSelected=NET&&state.phase==='select'?(state.accepted||remoteSelectedDice[state.active]||[]):[];
  const shownDice=state.dice.length?state.dice:[...Array.from({length:dicePerType},()=>({type:'color',val:null})),...Array.from({length:dicePerType},()=>({type:'num',val:null}))];
- const hasRestrictedDice=isSelect&&state.mode!=='solo'&&state.turn>3&&state.picker!==state.active&&Array.isArray(state.accepted);
+ const hasRestrictedDice=isSelect&&state.mode!=='solo'&&state.turn>3&&(NET?NET.index!==state.active:state.picker!==state.active)&&Array.isArray(state.accepted);
  const availableDice=hasRestrictedDice?shownDice.filter((d,i)=>available(i)).length:shownDice.length;
  $('dice-summary').textContent=hasRestrictedDice?`${availableDice} von ${shownDice.length} wählbar`:`${shownDice.length} Würfel`;
  $('dice-instructions').textContent=hasRestrictedDice?'Der aktive Spieler hat 2 Würfel genommen. Du wählst aus den übrigen 4.':dicePerType===2?'Solo: 2 Farbwürfel + 2 Zahlenwürfel (insgesamt 4).':'Mehrspieler: 3 Farbwürfel + 3 Zahlenwürfel (insgesamt 6).';
@@ -731,11 +783,11 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
    const isAvailable=isSelect&&available(d.index);
    const label=d.val===null?'Noch nicht gewürfelt':d.type==='color'?COLNAMES[d.val]:d.val==='?'?'Zahlenjoker':String(d.val);
    const face=d.val===null?'·':d.type==='color'?(d.val==='*'?'✖':'✦'):d.val==='?'?'?':d.val;
-   return `<button class="die ${style} ${selected?'selected':''} ${suggested?'suggested':''} ${state.phase==='select'&&!available(d.index)?'removed':''}" type="button" data-die="${d.index}" ${!isAvailable?'disabled':''} aria-pressed="${selected}" aria-label="${group.type==='color'?'Farb':'Zahlen'}würfel ${items.findIndex(x=>x.index===d.index)+1}: ${label}" title="${label}">${face}</button>`;
+   return `<button class="die ${style} ${selected?'selected':''} ${suggested?'suggested':''} ${isSelect&&!available(d.index)?'removed':''} ${activeSelected.includes(d.index)?'observer-picked':''}" type="button" data-die="${d.index}" ${!isAvailable?'disabled':''} aria-pressed="${selected}" aria-label="${group.type==='color'?'Farb':'Zahlen'}würfel ${items.findIndex(x=>x.index===d.index)+1}: ${label}" title="${label}">${face}</button>`;
   }).join('')}</div></div>`;
  }).join('');
  $('extra-choices').innerHTML=previewText();
- const editable=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&NET.index===state.picker))&&!!state.pending.length&&!(NET&&NET.awaiting);
+ const editable=state.phase==='select'&&!aiPendingAction()&&(!NET||(NET.connected&&onlineCanPick()))&&!!state.pending.length&&!(NET&&NET.awaiting);
  $('undo-button').disabled=!editable;
  $('clear-button').disabled=!editable;
  $('edit-count').innerHTML=editable?`<strong>${state.pending.length}</strong> ${state.pending.length===1?'Kreuz':'Kreuze'} vorgemerkt`:'Noch keine Kreuze vorgemerkt';
@@ -745,7 +797,7 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
  if(state.phase==='lobby')detail='Warte auf den Start der Online-Partie.';
  else if(state.phase==='ready')detail=NET&&NET.index!==state.active?'Warte, bis der aktive Spieler würfelt.':'Du kannst den nächsten Wurf starten.';
  else if(state.phase==='over')detail='Die Partie ist abgeschlossen.';
- else if(!isSelect)detail='Der andere Spieler ist gerade an der Reihe.';
+ else if(!isSelect)detail=onlineParallel()&&state.parallel?(state.responded?.[NET.index]?'✅ Du hast eingetragen. Die übrigen Spieler sind noch am Zug.':'Die übrigen Spieler wählen jetzt gleichzeitig.'):'Die anderen Spieler wählen gerade ihren Zug oder du wartest auf den aktiven Spieler.';
  else if(!state.pending.length&&isSelect&&candidateSet.size===0){
   detail='<strong>Kein gültiger Spielzug möglich.</strong> Mit diesen Würfeln kannst du aktuell keine Felder setzen. Tippe auf Passen.';
  }else if(!state.pending.length){
@@ -766,9 +818,9 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
   const label=d.val===null?'Noch nicht gewürfelt':d.type==='num'?(d.val==='?'?'Zahlenjoker':String(d.val)):COLNAMES[d.val];
   const face=d.val===null?'·':d.type==='color'?(d.val==='*'?'✖':'✦'):d.val;
   const usable=isSelect&&available(i);
-  return `<button class="die mobile-die ${style} ${selected?'selected':''} ${suggested?'suggested':''} ${!usable&&state.phase==='select'?'removed':''}" data-mobile-die="${i}" type="button" ${!usable?'disabled':''} aria-label="${d.type==='color'?'Farbwürfel':'Zahlenwürfel'} ${label}" aria-pressed="${selected}">${face}</button>`;
+  return `<button class="die mobile-die ${style} ${selected?'selected':''} ${suggested?'suggested':''} ${isSelect&&!usable?'removed':''} ${activeSelected.includes(i)?'observer-picked':''}" data-mobile-die="${i}" type="button" ${!usable?'disabled':''} aria-label="${d.type==='color'?'Farbwürfel':'Zahlenwürfel'} ${label}" aria-pressed="${selected}">${face}</button>`;
  }).join('');
- $('dice-instructions').innerHTML=isSelect?'<div class="direct-tip">👆 <strong>Sofort Kreuze setzen:</strong> Tippe direkt auf ein hell markiertes Feld. Die endgültige Kombination wird erst beim Eintragen automatisch festgelegt. Farb- und Zahlenwürfel kannst du vorher optional antippen.</div>':hasRestrictedDice?'Du wählst aus den übrigen 4 Würfeln.':dicePerType===2?'Solo: 2 Farbwürfel + 2 Zahlenwürfel.':'Mehrspieler: 3 Farbwürfel + 3 Zahlenwürfel.';
+ $('dice-instructions').innerHTML=isSelect?'<div class="direct-tip">👆 <strong>Sofort Kreuze setzen:</strong> Tippe direkt auf ein hell markiertes Feld. Die endgültige Kombination wird erst beim Eintragen automatisch festgelegt. Farb- und Zahlenwürfel kannst du vorher optional antippen.</div>':onlineParallel()&&state.phase==='select'&&state.parallel?'👥 Die Mitspieler dürfen gleichzeitig aus den Restwürfeln eintragen. Grau markiert = vom aktiven Spieler gewählt.':onlineParallel()&&state.phase==='select'?'👀 Live-Wurf: Alle sechs Würfel werden angezeigt. Vom aktiven Spieler gewählte Würfel werden grau.':hasRestrictedDice?'Du wählst aus den übrigen 4 Würfeln.':dicePerType===2?'Solo: 2 Farbwürfel + 2 Zahlenwürfel.':'Mehrspieler: 3 Farbwürfel + 3 Zahlenwürfel.';
  $('commit-button').classList.toggle('ready-commit',isSelect&&state.pending.length>0&&!validateMove(true));
  $('commit-button').disabled=!isSelect||(NET&&NET.awaiting)||!!validateMove(true);
  $('roll-button').disabled=state.phase!=='ready'||aiPendingAction()||(NET&&(!NET.connected||NET.awaiting||NET.index!==state.active));$('roll-button').textContent=state.phase==='select'?'🎲 Wurf läuft':state.turn?'🎲 Nächster Wurf':'🎲 Würfeln';$('pass-button').disabled=!isSelect||(NET&&NET.awaiting);
@@ -776,7 +828,7 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
  $('mobile-roll').textContent=$('roll-button').textContent; $('mobile-commit').textContent=state.pending.length?'✓ '+state.pending.length+' eintragen':'✓ Eintragen';
  $('online-feed').hidden=!(Array.isArray(state.history)&&state.history.length);
  {const events=Array.isArray(state.history)?state.history.slice(-5).reverse():[];$('online-feed').innerHTML=`<h3>🕘 Letzte Aktionen</h3>${events.length?`<ol>${events.map(x=>`<li>${ESC(x)}</li>`).join('')}</ol>`:'<div class="tiny">Noch keine Spielaktionen</div>'}`;}
- $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?NET.presence[state.picker]===false:state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>`<div class="player ${i===state.picker?'current':''} ${isComputer(i)?'ai-player':''}"><span class="bubble"></span><span class="pname">${ESC(q.name)} ${i===state.active?'🎲':''}<span class="pinfo" style="display:block">${q.cells.length}/105 Felder · ${Object.keys(q.colorAwards).length} Farbboni${NET&&NET.presence&&!NET.presence[i]?' · <span class="offline-indicator">offline</span>':''}${NET&&NET.host&&state.phase==='lobby'&&NET.presence&&!NET.presence[i]?` <button class="flat" data-kick="${i}" type="button">Entfernen</button>`:''}</span><span class="player-meter" role="progressbar" aria-label="Spielfeldfortschritt ${ESC(q.name)}" aria-valuemin="0" aria-valuemax="105" aria-valuenow="${q.cells.length}"><span style="width:${Math.min(100,Math.max(0,100*q.cells.length/105))}%"></span></span></span><button type="button" class="mini-open" data-opponent="${i}" aria-label="Spielfeld von ${ESC(q.name)} ansehen">Brett</button><span class="points">${score(q).total}</span></div>`).join('');$('active-player').textContent=state.players[state.active].name;$('turn-info').textContent=state.phase==='select'?`Jetzt kann ${state.players[state.picker].name} direkt Kreuze setzen.`:state.phase==='lobby'?'Host startet, sobald alle verbunden sind.':state.finished?'Gewinnerwertung abgeschlossen.':state.turn?'Bereit für den nächsten Wurf.':'Du kannst starten.';
+ $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?(onlineParallel()?(state.parallel?state.players.some((q,i)=>i!==state.active&&!state.responded?.[i]&&NET.presence[i]===false):NET.presence[state.active]===false):NET.presence[state.picker]===false):state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>`<div class="player ${i===state.picker?'current':''} ${isComputer(i)?'ai-player':''}"><span class="bubble"></span><span class="pname">${ESC(q.name)} ${i===state.active?'🎲':''}<span class="pinfo" style="display:block">${q.cells.length}/105 Felder · ${Object.keys(q.colorAwards).length} Farbboni${NET&&NET.presence&&!NET.presence[i]?' · <span class="offline-indicator">offline</span>':''}${NET&&NET.host&&state.phase==='lobby'&&NET.presence&&!NET.presence[i]?` <button class="flat" data-kick="${i}" type="button">Entfernen</button>`:''}</span><span class="player-meter" role="progressbar" aria-label="Spielfeldfortschritt ${ESC(q.name)}" aria-valuemin="0" aria-valuemax="105" aria-valuenow="${q.cells.length}"><span style="width:${Math.min(100,Math.max(0,100*q.cells.length/105))}%"></span></span></span><button type="button" class="mini-open" data-opponent="${i}" aria-label="Spielfeld von ${ESC(q.name)} ansehen">Brett</button><span class="points">${score(q).total}</span></div>`).join('');$('active-player').textContent=state.players[state.active].name;$('turn-info').textContent=onlineParallel()&&state.phase==='select'&&state.parallel?`Jetzt können alle übrigen Spieler gleichzeitig eintragen. ${(state.responded||[]).filter(Boolean).length} / ${state.players.length} fertig.`:state.phase==='select'?`Jetzt kann ${state.players[state.picker].name} direkt Kreuze setzen.`:state.phase==='lobby'?'Host startet, sobald alle verbunden sind.':state.finished?'Gewinnerwertung abgeschlossen.':state.turn?'Bereit für den nächsten Wurf.':'Du kannst starten.';
  setMsg(flash||'Nach dem Würfeln kannst du direkt auf passende Felder tippen. Die Würfel sind ebenfalls anklickbar.',flashBad);
  persistOnlineDraft();
  renderOpponentsLive();
@@ -807,7 +859,7 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
    return;
   }
   flash='Würfelwahl angepasst. Bereits gesetzte Kreuze bleiben erhalten.';flashBad=false;
-  save();render();
+  save();render();sendLivePreview();
  }
  function explainUnavailable(index){
   const p=player();
@@ -882,7 +934,7 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
   if(state.phase==='ready')reasons.push('Zuerst würfeln, dann Kreuze antippen.');
   else if(state.phase==='lobby')reasons.push('Der Host muss die Partie starten.');
   else if(state.finished)reasons.push('Die Partie ist bereits beendet.');
-  else if(NET&&NET.index!==state.picker)reasons.push(`Jetzt ist ${state.players[state.picker].name} am Zug.`);
+  else if(NET&&!onlineCanPick())reasons.push(onlineParallel()&&state.responded?.[NET.index]?'Du hast für diesen Wurf bereits eingetragen.':onlineParallel()&&state.parallel?'Der aktive Spieler hat seine Würfel genommen; jetzt dürfen die übrigen Spieler gleichzeitig eintragen.':`Jetzt ist ${state.players[state.picker].name} am Zug.`);
   else if(!p.cells.length)reasons.push('Dein erster Eintrag muss mindestens ein Feld in Spalte H berühren.');
   else reasons.push('Neue Kreuzgruppen müssen in Spalte H beginnen oder seitlich an alte Kreuze angrenzen.');
   if(state.phase==='select'){
@@ -912,7 +964,7 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
  showDialog(html);$('rulecheck-close').addEventListener('click',hideDialog);
 }
 function cellClick(index){
-  if(isComputer(state.picker)||state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker)))return;
+  if(isComputer(state.picker)||state.phase!=='select'||(NET&&(!NET.connected||!onlineCanPick())))return;
   const at=state.pending.indexOf(index);
   if(at>=0){
    state.pending.splice(at,1);
@@ -934,7 +986,7 @@ function cellClick(index){
   flashBad=false;save();render();sendLivePreview();
  }
  function undoSelection(all=false){
-  if(isComputer(state.picker)||state.phase!=='select'||!state.pending.length||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
+  if(isComputer(state.picker)||state.phase!=='select'||!state.pending.length||(NET&&(!NET.connected||!onlineCanPick()||NET.awaiting)))return;
   if(all)state.pending=[];
   else state.pending.pop();
   if(!state.pending.length){
@@ -946,7 +998,7 @@ function cellClick(index){
   flashBad=false;save();render();sendLivePreview();
  }
  function commit(){
-  if((isComputer(state.picker)&&!aiBusy)||state.phase!=='select'||(NET&&NET.index!==state.picker))return;
+  if((isComputer(state.picker)&&!aiBusy)||state.phase!=='select'||(NET&&!onlineCanPick()))return;
   const option=bestMove();
   if(!option){setMsg(validateMove()||'Die Würfelkombination passt nicht.',true);return;}
   const cd=state.dice[option.ci],nd=state.dice[option.ni];
@@ -958,7 +1010,7 @@ function cellClick(index){
   stepPicker();
  }
  function pass(){
-  if((isComputer(state.picker)&&!aiBusy)||state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
+  if((isComputer(state.picker)&&!aiBusy)||state.phase!=='select'||(NET&&(!NET.connected||!onlineCanPick()||NET.awaiting)))return;
   if(state.pending.length&&!window.confirm(`${state.pending.length} nicht eingetragene Kreuze verwerfen und passen?`))return;
   if(NET){sendOnline({action:'pass'});return;}
   const p=player();p.lastMove=[];p.took=false;logLocalAction('Wurf '+state.turn+': '+p.name+' passt');if(state.picker===state.active)state.accepted=null;stepPicker();
@@ -971,7 +1023,7 @@ function cellClick(index){
    for(let c=0;c<15;c++)if(p.columnAwards[c]==null&&Array.from({length:7},(_,r)=>r*15+c).every(i=>filled(p,i)))NEWCOL.push({p,c});
   }
   for(const {p,col} of NEWCOLOR){p.colorAwards[col]=state.globalColor[col]?3:5;}
-  for(const {p,c} of NEWCOL){p.columnAwards[c]=state.globalColumn[c]?LOW[c]:TOP[c];}
+  for(const {p,c} of NEWCOL){p.columnAwards[c]=columnPrize(state,c);}
   for(const {col} of NEWCOLOR)state.globalColor[col]=true;
   for(const {c} of NEWCOL)state.globalColumn[c]=true;
   const twoColors=state.players.some(p=>Object.keys(p.colorAwards).length>=2);
@@ -1065,14 +1117,14 @@ function cellClick(index){
   <li><strong>Beide Joker zusammen</strong> sind möglich, kosten aber <strong>zwei</strong> Ausrufezeichen.</li>
   <li>Sind deine Ausrufezeichen aufgebraucht, darfst du keine Joker mehr nutzen.</li></ul>
   <p><strong>Praktisch:</strong> Tippe nach dem Wurf direkt auf passende Felder; die Anwendung nimmt eine erlaubte Würfelkombination mit möglichst geringem Jokerverbrauch. Du kannst Farb- und Zahlenwürfel auch gezielt antippen.</p>`},
- {id:'spalten',title:'🔠 Spaltenpunkte – erster und spätere Abschlüsse',content:`
-  <p>Eine Spalte ist vollständig, sobald ihre <strong>sieben Felder</strong> angekreuzt sind. Unter A–O stehen dafür zwei Werte.</p>
-  <ul><li>Wer eine bestimmte Spalte <strong>als Erste bzw. Erster</strong> schließt, bekommt den <strong>oberen</strong> Wert.</li>
-  <li>Jede später abschließende Person bekommt den <strong>unteren</strong> Wert; die untere Wertung wird nicht gesperrt.</li>
-  <li>Schließen mehrere Personen dieselbe Spalte <strong>im selben Wurf zum ersten Mal</strong>, erhalten <strong>alle</strong> den oberen Wert.</li>
-  <li>Es können in einem einzigen Wurf auch <strong>mehrere Spalten</strong> gleichzeitig abgeschlossen werden.</li>
-  <li>Die erste erfolgreiche Person sperrt für andere nur den oberen Wert – <strong>nicht</strong> die ganze Spalte.</li></ul>
-  <p>Die digitalen Spaltenpunkte werden nach der Entscheidung aller Spieler dieses Wurfs automatisch zugewiesen.</p>`},
+ {id:'spalten',title:'🔠 Spaltenrennen – wer zuerst schließt, gewinnt',content:`
+  <p>Jede Spalte A–O enthält sieben Felder. Die neue KreuzKunter-Regel vergibt den Spaltenbonus <strong>nur an die Ersten</strong>. Die Farbe der Punktfelder zeigt den Wettkampfstatus:</p>
+  <ul><li><strong>Grün mit Zahl:</strong> Du hast den Bonus gewonnen.</li>
+  <li><strong>Rot ohne Zahl:</strong> Ein anderer Spieler hat den Bonus bereits gewonnen. Du kannst die Spalte weiter ausfüllen, bekommst dafür aber keine Spaltenpunkte mehr.</li>
+  <li><strong>Hell mit Zahl:</strong> Der Bonus ist noch frei.</li>
+  <li>Schließen mehrere Spieler dieselbe Spalte im <strong>gleichen Wurf zum ersten Mal</strong>, erhalten alle den vollen Bonus.</li>
+  <li>Die kleinere Reihe darunter zeigt den Fortschritt (0–7 Felder).</li></ul>
+  <p>Die Punkte werden erst nach den Entscheidungen aller Spieler eines Wurfs zugeteilt. Bereits gespeicherte ältere Partien behalten ihre frühere Zwei-Stufen-Wertung.</p>`},
  {id:'farben',title:'🌈 Vollständige Farben und Farbboni',content:`
   <p>Wer <strong>alle Felder einer Farbe</strong> auf dem eigenen Blatt markiert hat (hier 21 pro Farbe), erhält einen Farbbonus:</p>
   <ul><li><strong>5 Punkte</strong>, wenn noch niemand zuvor diese Farbe vollständig hatte.</li>
@@ -1248,7 +1300,7 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
     updateOnlineWaiting();
     try{localStorage.setItem(NET_INFO_KEY,JSON.stringify({url:my.url,code:msg.code,token:msg.token,name:my.name,active:true}));}catch(e){}
    }else if(msg.type==='preview'){
-    if(state?.mode==='online'&&msg.turn===state.turn&&msg.index!==my.index&&Array.isArray(msg.pending)){remotePreviews[msg.index]=msg.pending;renderOpponentsLive();}
+    if(state?.mode==='online'&&msg.turn===state.turn&&msg.index!==my.index&&Array.isArray(msg.pending)){remotePreviews[msg.index]=msg.pending;remoteSelectedDice[msg.index]=Array.isArray(msg.selectedDice)?msg.selectedDice:[];renderOpponentsLive();if(msg.index===state.active)render();}
    }else if(msg.type==='state'){
     clearOnlineWait(my);
     if(typeof msg.revision==='number'&&msg.revision<my.revision)return;
@@ -1256,19 +1308,19 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
     const old=state;
     const canKeepDraft=old&&old.phase==='select'&&msg.game.phase==='select'&&
       old.turn===msg.game.turn&&old.picker===msg.game.picker&&
-      old.picker===msg.index&&JSON.stringify(old.dice)===JSON.stringify(msg.game.dice)&&
+      (msg.game.parallelRule==='simultaneous-responses'?(!msg.game.responded?.[msg.index]&&(msg.game.parallel?msg.index!==msg.game.active:msg.index===msg.game.active)):old.picker===msg.index)&&JSON.stringify(old.dice)===JSON.stringify(msg.game.dice)&&
       JSON.stringify(old.players[msg.index]?.cells)===JSON.stringify(msg.game.players[msg.index]?.cells);
     const draft=canKeepDraft?{
       colorDie:old.colorDie,numDie:old.numDie,chosenColor:old.chosenColor,
       chosenNumber:old.chosenNumber,manualColor:old.manualColor,manualNumber:old.manualNumber,pending:[...old.pending]}:restoreOnlineDraft(my,msg);
-    remotePreviews=msg.game?.phase==='select'?(msg.previews||{}):{};
+    remotePreviews=msg.game?.phase==='select'?(msg.previews||{}):{};remoteSelectedDice=msg.game?.phase==='select'?(msg.selections||{}):{};
     my.index=msg.index;my.host=msg.host;my.code=msg.code;my.presence=msg.connected;my.revision=msg.revision||0;my.storage=msg.storage||'memory';my.hasState=true;
-    state=msg.game;
+    state=msg.game;state.columnRule=state.columnRule||'classic';
     if(draft)Object.assign(state,draft);
-    if(state.phase==='select'&&state.picker!==my.index){state.colorDie=null;state.numDie=null;state.manualColor=false;state.manualNumber=false;state.pending=[];}
+    if(state.phase==='select'&&!(state.parallelRule==='simultaneous-responses'?(state.parallel?my.index!==state.active&&!state.responded?.[my.index]:my.index===state.active&&!state.responded?.[my.index]):state.picker===my.index)){state.colorDie=null;state.numDie=null;state.manualColor=false;state.manualNumber=false;state.pending=[];}
     flash=state.phase==='lobby'?`Warte auf ${Math.max(0,2-state.players.length)} weitere Spieler (mindestens 2).`:
-      state.phase==='select'?(state.picker===my.index?'Du bist dran! Tippe direkt auf passende Felder.':state.players[state.picker].name+' ist am Zug.'):'Gemeinsamer Spielstand aktualisiert.';
-    flashBad=false;render();
+      state.phase==='select'?(state.parallelRule==='simultaneous-responses'?(state.parallel?(state.responded?.[my.index]?'✅ Du hast eingetragen. Warte auf die anderen.':'👥 Jetzt dürfen alle übrigen Spieler gleichzeitig eintragen.'):(my.index===state.active?'🎯 Du wählst zuerst deine Würfel.':'👀 Der aktive Spieler würfelt – du siehst alle Würfel live.')):(state.picker===my.index?'Du bist dran! Tippe direkt auf passende Felder.':state.players[state.picker].name+' ist am Zug.')):'Gemeinsamer Spielstand aktualisiert.';
+    flashBad=false;render();turnNotice();
     if(state.phase==='lobby'){
       if(!$('kk-wait-connection'))showOnlineWaiting(my);
       else updateOnlineWaiting();
@@ -1383,7 +1435,7 @@ function aiPositionValue(board,p){
  let val=0;
  for(let c=0;c<15;c++){
   const v=board.col[c];
-  if(p.columnAwards[c]==null)val+=(state.globalColumn[c]?LOW[c]:TOP[c])*.92*Math.pow(v/7,3.1);
+  if(p.columnAwards[c]==null)val+=(columnPrize(state,c))*.92*Math.pow(v/7,3.1);
  }
  for(const color of COLOR)if(p.colorAwards[color]==null){
   val+=(state.globalColor[color]?3:5)*1.35*Math.pow(board.color[color]/21,2.5);
@@ -1397,7 +1449,7 @@ function aiMoveValue(m,board,p,opponentMax,difficulty){
  for(const [x,count] of Object.entries(hitCols)){
   const col=Number(x),was=cols[col],after=was+count;
   if(p.columnAwards[col]!=null)continue;
-  const prize=state.globalColumn[col]?LOW[col]:TOP[col];
+  const prize=columnPrize(state,col);
   val+=prize*.92*(Math.pow(after/7,2.8)-Math.pow(was/7,2.8));
   if(after===7)val+=prize*.6;
  }
