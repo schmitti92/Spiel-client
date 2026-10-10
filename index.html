@@ -170,7 +170,19 @@
       .business-actions .btn svg, .skyjo-actions .btn svg { width:18px;height:18px; }
     }
     @media (prefers-reduced-motion:reduce) { .game,.game::before,.btn { transition:none; } }
-  </style>
+  
+/* Spielerportal – Profil in der rechten oberen Ecke */
+.sp-index-wrap{position:absolute;right:0;top:0;z-index:20;min-width:192px}
+.sp-profile-button{display:flex;align-items:center;gap:9px;background:linear-gradient(145deg,#182a49,#17223b);color:#fff;border:1px solid #435776;border-radius:999px;padding:7px 12px 7px 7px;font-weight:850;box-shadow:0 9px 26px #040c2499;max-width:260px;width:100%;cursor:pointer}
+.sp-profile-button .sp-person-name{flex:1;overflow:hidden;text-overflow:ellipsis;text-align:left;white-space:nowrap;font-size:13px}
+.sp-avatar{width:39px;height:39px;flex:none;border-radius:50%;background-color:#d2edff;border:2px solid #84ceff;box-shadow:0 0 0 2px #fff2}
+.sp-index-menu{position:absolute;top:calc(100% + 12px);right:0;width:min(340px,85vw);padding:13px;background:linear-gradient(175deg,#0d1932,#142c49);border-radius:20px;border:1px solid #3d6290;box-shadow:0 22px 55px #0009;color:white}
+.sp-index-menu[hidden]{display:none}.sp-menu-head{font-size:13px;font-weight:900;letter-spacing:.4px;margin:2px 2px 9px}
+.sp-options{max-height:245px;overflow-y:auto;display:grid;gap:6px}.sp-profile-choice{width:100%;padding:7px;display:flex;gap:11px;align-items:center;border:1px solid #294665;background:#112441;color:white;border-radius:12px;cursor:pointer;text-align:left}.sp-profile-choice:hover{background:#214169}.sp-profile-choice span:nth-child(2){flex:1;font-weight:800}.sp-profile-choice span:last-child{color:#4cf0b4}
+.sp-menu-actions{margin-top:10px;border-top:1px solid #365270;padding-top:10px;display:grid;gap:8px}.sp-menu-actions a,.sp-menu-actions button{background:#243b62;border:0;color:white;padding:12px;border-radius:12px;font-weight:800;font-size:13px;text-align:center;cursor:pointer}.sp-menu-actions button{background:linear-gradient(110deg,#1f85eb,#6557ed)}
+@media(max-width:700px){.page-head{padding-right:0!important;padding-top:72px}.sp-index-wrap{right:0;top:-3px}.sp-profile-button{max-width:220px}.sp-index-menu{width:min(330px,90vw)}}
+
+</style>
 </head>
 <body>
   <main class="container">
@@ -229,11 +241,12 @@
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="8" r="2"/><path d="M3 20v-2a6 6 0 0 1 12 0v2m1-8a5 5 0 0 1 5 5v3"/></svg>2–5 Spieler</li>
         </ul>
         <div class="actions business-actions">
-          <a class="btn green" href="Business/business.html?local=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-7H9v7H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Lokal spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
-          <a class="btn gold" href="Business/business.html?online=1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c-5 4-5 14 0 18m0-18c5 4 5 14 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Online spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
+          <a class="btn green" href="Business/business_local.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-7H9v7H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Lokal spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
+          <a class="btn gold" href="Business/business_online.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c-5 4-5 14 0 18m0-18c5 4 5 14 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Online spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
         </div>
       </article>
     </section>
   </main>
+<script src="profile-core.js" defer></script>
 </body>
 </html>
