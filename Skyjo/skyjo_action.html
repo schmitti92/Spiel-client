@@ -5356,6 +5356,63 @@ html:has(#modalBack.royal-active),body:has(#modalBack.royal-active){overflow-x:c
 .joker-live-decrease button{background:linear-gradient(180deg,rgba(225,115,125,.13),rgba(100,32,44,.17));border:1px solid rgba(247,161,165,.25);color:#ffe1dc;font-weight:900}
 .joker-live-decrease button:not(:disabled):hover{background:linear-gradient(180deg,rgba(237,141,154,.22),rgba(114,47,56,.20));border-color:rgba(255,182,184,.42)}
 .joker-live-decrease button:disabled,.joker-live-increase button:disabled{opacity:.35;cursor:not-allowed}
+
+/* V120: Textmeldungen gehören in die freie Tischfläche UNTER der mittleren
+   Hand- und Karten-Spalte. Keine neue Zeile und kein zusätzlicher Seitenplatz. */
+body.is-playing .table-area{position:relative!important}
+body.is-playing #tableMessageZone{
+  position:absolute;display:none;z-index:22;min-height:0!important;
+  height:auto!important;max-width:none!important;width:auto;margin:0!important;
+  padding:0!important;transition:none!important;pointer-events:none;
+  box-sizing:border-box;
+}
+body.is-playing #tableMessageZone:not(.empty){min-height:0!important;margin:0!important}
+body.is-playing #tableMessageZone.empty{display:none!important}
+body.is-playing #tableMessageZone .table-message-card{
+  width:100%;min-width:0;box-sizing:border-box;pointer-events:auto;
+  grid-template-columns:44px minmax(0,1fr)!important;
+  align-items:start;gap:9px;padding:10px 11px;border-radius:15px;
+  overflow-wrap:anywhere;
+}
+body.is-playing #tableMessageZone .table-message-icon{
+  width:44px;height:44px;font-size:25px;border-radius:12px
+}
+body.is-playing #tableMessageZone .table-message-copy{gap:5px;min-width:0}
+body.is-playing #tableMessageZone .table-message-text{
+  font-size:clamp(12px,1.05vw,16px);line-height:1.31;
+  font-weight:750;text-wrap:pretty;overflow-wrap:anywhere;
+}
+body.is-playing #tableMessageZone .table-message-kicker{font-size:10px;letter-spacing:.5px}
+body.is-playing #tableMessageZone .table-message-by{font-size:10px}
+body.is-playing #tableMessageZone .table-message-note{font-size:9px}
+body.is-playing #tableMessageZone .table-message-progress{height:4px;margin-top:0}
+body.is-playing #tableMessageZone.compact-overlay{z-index:26}
+@media(max-width:650px){
+  body.is-playing #tableMessageZone .table-message-card{
+    grid-template-columns:40px minmax(0,1fr)!important;
+    gap:7px;padding:9px 9px 10px;border-radius:14px
+  }
+  body.is-playing #tableMessageZone .table-message-icon{
+    width:40px;height:40px;font-size:23px;border-radius:11px
+  }
+  body.is-playing #tableMessageZone .table-message-text{font-size:13px;line-height:1.3}
+  body.is-playing #tableMessageZone .table-message-kicker{font-size:10px}
+  body.is-playing #tableMessageZone .table-message-by{font-size:9px}
+  body.is-playing #tableMessageZone .table-message-note{font-size:9px}
+}
+
+/* Narrow fallback: one clear reading strip, without covering other hands. */
+body.is-playing #tableMessageZone.tight-message .table-message-card{
+ grid-template-columns:minmax(0,1fr)!important;gap:3px!important;
+ padding:5px 8px 5px!important;border-radius:10px!important
+}
+body.is-playing #tableMessageZone.tight-message .table-message-icon{display:none!important}
+body.is-playing #tableMessageZone.tight-message .table-message-copy{gap:2px!important}
+body.is-playing #tableMessageZone.tight-message .table-message-text{font-size:11px!important;line-height:1.24!important}
+body.is-playing #tableMessageZone.tight-message .table-message-kicker{font-size:9px!important}
+body.is-playing #tableMessageZone.tight-message .table-message-by,
+body.is-playing #tableMessageZone.tight-message .table-message-note{display:none!important}
+body.is-playing #tableMessageZone.tight-message .table-message-progress{height:2px!important}
 </style>
 </head>
 <body>
@@ -7692,6 +7749,65 @@ function clearTableAnnouncement(){
 function tableAnnouncementHTML(a){
  return `<div class="table-message-card kind-${escapeHTML(a.kind||'fun')}"><div class="table-message-icon">${escapeHTML(a.icon||'💬')}</div><div class="table-message-copy"><div class="table-message-head"><div class="table-message-kicker">${escapeHTML(a.title||'INFO')}</div>${a.by?`<div class="table-message-by">von ${escapeHTML(a.by)}</div>`:''}</div><div class="table-message-text">${escapeHTML(a.text||'')}</div><div class="table-message-foot">${a.ref?`<div class="table-message-ref">${escapeHTML(a.ref)}</div>`:'<div></div>'}<div class="table-message-note">sichtbar für 10 Sekunden</div></div><div class="table-message-progress"><i></i></div></div></div>`
 }
+function positionTableAnnouncementZone(){
+ const zone=document.getElementById('tableMessageZone');
+ const board=zone?.closest('.table-area');
+ const center=board?.querySelector('.center-table');
+ const anchor=center?.querySelector('.handbox')||center;
+ if(!zone||!board||!center||!anchor||zone.classList.contains('empty'))return;
+ const boardRect=board.getBoundingClientRect();
+ const centerRect=center.getBoundingClientRect();
+ const anchorRect=anchor.getBoundingClientRect();
+ const card=zone.querySelector('.table-message-card');
+ const width=Math.max(0,Math.min(anchorRect.width,window.innerWidth-12));
+ const overlapsHorizontally=r=>r.right>anchorRect.left+10&&r.left<anchorRect.left+width-10;
+ // On mobile, players can sit *under* the middle pile. Their card grids
+ // must never be covered by a text notification.
+ let cardsEnd=centerRect.bottom;
+ for(const el of board.querySelectorAll('.player')){
+   const r=el.getBoundingClientRect();
+   if(overlapsHorizontally(r))cardsEnd=Math.max(cardsEnd,r.bottom)
+ }
+ const availableInside=Math.max(0,boardRect.bottom-cardsEnd-16);
+ const measured=card?.getBoundingClientRect()?.height||0;
+ const required=Math.max(100,measured);
+ zone.style.width=`${width}px`;
+ if(availableInside>=required+3){
+   zone.classList.remove('compact-overlay','tight-message');
+   zone.style.position='absolute';
+   zone.style.top=`${Math.max(0,cardsEnd-boardRect.top+12)}px`;
+   zone.style.bottom='auto';
+   zone.style.left=`${Math.max(0,anchorRect.left-boardRect.left)}px`;
+   zone.style.maxHeight=`${Math.floor(availableInside)}px`;
+   if(card){card.style.maxHeight=`${Math.floor(availableInside)}px`;card.style.overflowY='auto'}
+ }else{
+   // Use only the already vacant viewport above the reaction strip.
+   // The notice is slim when the free space is slim; it adds no page height.
+   const dockTop=document.querySelector('.bottom-actions')?.getBoundingClientRect()?.top??window.innerHeight;
+   const emptyViewport=Math.max(0,Math.floor(dockTop-Math.max(0,cardsEnd)-7));
+   const maxHeight=Math.min(168,Math.max(0,emptyViewport));
+   zone.classList.add('compact-overlay');
+   zone.classList.toggle('tight-message',maxHeight<110);
+   zone.style.position='fixed';
+   zone.style.top='auto';
+   zone.style.bottom=`${Math.max(8,Math.round(window.innerHeight-dockTop+5))}px`;
+   zone.style.left=`${Math.max(6,Math.min(anchorRect.left,window.innerWidth-width-6))}px`;
+   zone.style.maxHeight=`${Math.max(0,maxHeight)}px`;
+   if(card){card.style.maxHeight=`${Math.max(0,maxHeight)}px`;card.style.overflowY='auto'}
+   // When there is no unobstructed viewport space, park the notice in the
+   // free table padding instead of hiding or painting over somebody's cards.
+   if(maxHeight<38){
+     zone.style.position='absolute';
+     zone.style.left=`${Math.max(0,anchorRect.left-boardRect.left)}px`;
+     zone.style.top=`${Math.max(0,cardsEnd-boardRect.top+7)}px`;
+     zone.style.bottom='auto';
+     const padding=document.querySelector('.app')?.getBoundingClientRect().bottom-boardRect.bottom;
+     const padRoom=Math.max(32,Math.min(118,Math.floor(padding||0)-12));
+     zone.style.maxHeight=`${padRoom}px`;
+     if(card){card.style.maxHeight=`${padRoom}px`;card.style.overflowY='auto'}
+   }
+ }
+}
 function syncTableAnnouncementMount(){
  const zone=document.getElementById('tableMessageZone');
  const mount=document.getElementById('tableMessageMount');
@@ -7699,8 +7815,10 @@ function syncTableAnnouncementMount(){
  const a=activeTableAnnouncement();
  mount.innerHTML='';
  zone.classList.toggle('empty',!a);
- if(!a)return;
+ if(!a){zone.style.display='none';return}
+ zone.style.display='block';
  mount.innerHTML=tableAnnouncementHTML(a);
+ positionTableAnnouncementZone();
  const card=mount.firstElementChild;
  const bar=card?.querySelector('.table-message-progress i');
  requestAnimationFrame(()=>{
@@ -8236,7 +8354,7 @@ function nextStrombergQuoteIndex(){
  }
  const index=strombergQuoteBag.pop();strombergLastIndex=index;return index;
 }
-function isStrombergReaction(emoji){return /^SB(?:0[0-9]|[1-4][0-9])$/.test(String(emoji||''))}
+function isStrombergReaction(emoji){return /^SB[0-9]{2}$/.test(String(emoji||''))}
 
 function randomHeinzQuote(exclude=''){
  let pool=HEINZ_QUOTES;
@@ -8456,8 +8574,9 @@ function gameView(){
  const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="pilebox play-pilebox"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
  const playersHTML=state.players.map(playerHTML);
  const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}if(state.players.length===4)return `<div class="table-area four-player-layout"><div class="quad-side quad-left">${playersHTML[0]}${playersHTML[2]}</div>${centerTable}<div class="quad-side quad-right">${playersHTML[1]}${playersHTML[3]}</div></div>`;return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
+ const boardsWithMessage=boards.replace(/<\/div>\s*$/,tableMessageZoneHTML()+'</div>');
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
- return `${mp}${closing}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen oder verringern"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Ändern</span></div></div>${boards}${tableMessageZoneHTML()}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
+ return `${mp}${closing}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>Runde</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen oder verringern"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Ändern</span></div></div>${boardsWithMessage}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
 
 function resumeTransientFlow(){
  if(!state||isModalOpen()||toiletPauseActive())return;
@@ -8474,7 +8593,7 @@ function resumeTransientFlow(){
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
 const viewportLock=captureViewportLock();
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.39 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.41 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
@@ -8500,7 +8619,12 @@ window.addEventListener('beforeunload',()=>{try{if(state)save();flushLocalSaveNo
 document.addEventListener('fullscreenchange',syncFullscreenState);
 document.addEventListener('webkitfullscreenchange',syncFullscreenState);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(isFullscreen()||pseudoFullscreen))requestWakeLock()});
-window.addEventListener('resize',()=>{syncChromeButtons()},{passive:true});
+window.addEventListener('resize',()=>{syncChromeButtons();positionTableAnnouncementZone()},{passive:true});
+let tableMessageScrollFrame=0;
+window.addEventListener('scroll',()=>{
+ if(!currentTableAnnouncement||tableMessageScrollFrame)return;
+ tableMessageScrollFrame=requestAnimationFrame(()=>{tableMessageScrollFrame=0;positionTableAnnouncementZone()})
+},{passive:true});
 document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;const k=String(e.key||'').toLowerCase();if(k==='f'){e.preventDefault();toggleFullscreen();return}if(k==='s'){e.preventDefault();showDisplaySettings();return}if(k==='m'&&state){e.preventDefault();focusMyBoard();return}if(k==='l'&&state){e.preventDefault();showLog();return}if(!state||!isMyActorDevice())return;if(k==='d'&&ui.mode==='turnChoice'){e.preventDefault();drawFromDeck()}else if(k==='a'&&ui.mode==='turnChoice'){e.preventDefault();drawFromDiscard()}});
 
 cloudConfigLoad();
