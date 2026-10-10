@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – V15.31 Bibelverse</title>
+<title>SKYJO Action – V15.32 Bibelverse</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -3676,7 +3676,7 @@ body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-inde
 <script>
 (() => {
 'use strict';
-const SKYJO_BUILD='15.31';
+const SKYJO_BUILD='15.32';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -5458,7 +5458,7 @@ function setupView(){
    <div class="mode-toggle"><button type="button" class="mode-btn ${selectedMode==='local'?'active':''}" data-mode="local" onclick="Game.selectSetupMode('local')"><span class="mode-emoji">👥</span><span><b>Mit Freunden</b><small>Alle auf einem Gerät</small></span></button><button type="button" class="mode-btn ${selectedMode==='ai'?'active':''}" data-mode="ai" onclick="Game.selectSetupMode('ai')"><span class="mode-emoji">🤖</span><span><b>Gegen Computer</b><small>1–3 KI-Gegner</small></span></button></div>
  </section>`;
  const localNames=`<section id="localBox" class="skyjo-section" style="display:${selectedMode==='local'?'block':'none'}"><div class="skyjo-section-title"><span class="skyjo-step">👥</span><div><h3>Lokale Mitspieler</h3><small>Alle spielen abwechselnd am selben Bildschirm</small></div></div><div class="field"><label for="playerCount">Spielerzahl</label><select id="playerCount" onchange="Game.updateNames()">${[2,3,4,5,6,7,8].map(n=>`<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div><div id="names" class="names"></div>${hasLocalSave()?'<button class="secondary wide resume-local-btn" onclick="Game.resumeLocalGame()">▶ Gespeichertes Spiel fortsetzen</button>':''}<button class="primary wide skyjo-launch" onclick="Game.startFromSetup()">▶ Lokales Spiel starten</button></section>`;
- const aiSection=`<section id="aiBox" class="skyjo-section" style="display:${selectedMode==='ai'?'block':'none'}"><div class="skyjo-section-title"><span class="skyjo-step">🤖</span><div><h3>Computergegner</h3><small>Leicht, normal oder mit strategischem Expert-Verhalten</small></div></div><div class="ai-setup-card"><div class="ai-grid"><div class="field"><label for="aiHumanName">Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label for="aiCount">Computergegner</label><select id="aiCount"><option value="1">1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label for="aiDifficulty">Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal" selected>Normal</option><option value="hard">Expert</option></select></div></div><p class="skyjo-note">Die KI kennt keine verdeckten Karten. Expert berechnet Chancen ausschließlich aus öffentlich bekannten Karten.</p><button class="primary wide skyjo-launch" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></section>`;
+ const aiSection=`<section id="aiBox" class="skyjo-section" style="display:${selectedMode==='ai'?'block':'none'}"><div class="skyjo-section-title"><span class="skyjo-step">🤖</span><div><h3>Computergegner</h3><small>Leicht, normal oder mit strategischem Expert-Verhalten</small></div></div><div class="ai-setup-card"><div class="ai-grid"><div class="field"><label for="aiHumanName">Dein Name</label><input id="aiHumanName" maxlength="24" value="Spieler 1"></div><div class="field"><label for="aiCount">Computergegner</label><select id="aiCount"><option value="1">1 Computer</option><option value="2">2 Computer</option><option value="3">3 Computer</option></select></div><div class="field"><label for="aiDifficulty">Schwierigkeit</label><select id="aiDifficulty"><option value="easy">Leicht</option><option value="normal">Normal</option><option value="hard" selected>Experte · plant voraus (empfohlen)</option></select></div></div><p class="skyjo-note">Die Experten-KI plant zwei Züge voraus, berücksichtigt Spaltenabbau, Joker und Gegnerchancen. Verdeckte Karten bleiben geheim.</p><button class="primary wide skyjo-launch" style="margin-top:12px" onclick="Game.startAIFromSetup()">🤖 Gegen Computer starten</button></div></section>`;
  return `<div class="panel hero skyjo-entry ${online?'skyjo-online':'skyjo-local'}"><header class="skyjo-banner">${nav}<span class="skyjo-eyebrow">🎴 SKYJO ACTION · PREMIUM LOBBY</span><h2>SKYJO <span class="skyjo-gradient">${title}</span></h2><p>${desc}</p><div class="skyjo-facts"><span>✨ Joker &amp; Spezialaktionen</span><span>🎴 Flüssige Kartenbewegung</span><span>${online?'☁ Echter Mehrspieler':'🤖 Computergegner möglich'}</span></div></header>
  <div class="skyjo-content">${online?`<input id="cloudMode" type="hidden" value="cloud">${cloudSection}${shared}`:`${localSection}${shared}${localNames}${aiSection}`}</div></div>`;
 }
@@ -5495,12 +5495,160 @@ function aiSameCardValue(a,b){if(!a||!b)return false;if(a.type!==b.type)return f
 function aiLineDelta(pi,idx,old,candidate){const after=aiLinePotential(pi,idx,candidate);if(!old?.faceUp)return after;const before=aiLinePotential(pi,idx,old);return after-before}
 function aiExpectedBoardScore(pi,observerPi=pi){const p=state.players[pi];let s=0;for(const c of [...p.grid,...p.extras])if(c)s+=aiSlotExpectedValue(observerPi,c);if(jokerSpecialsEnabled())s+=(p.actions?.length||0)*10;return s}
 function aiEndgameProfile(pi){const own=state.players[pi],ownHidden=totalHidden(own),ownScore=aiExpectedBoardScore(pi,pi);let bestOpp=Infinity,minOppHidden=99;for(let i=0;i<state.players.length;i++){if(i===pi)continue;bestOpp=Math.min(bestOpp,aiExpectedBoardScore(i,pi));minOppHidden=Math.min(minOppHidden,totalHidden(state.players[i]))}const ahead=ownScore<=bestOpp-2;const behind=ownScore>=bestOpp+5;return {ownHidden,ownScore,bestOpp,minOppHidden,ahead,behind,pressure:minOppHidden<=2}}
-function aiTargets(pi,candidate){const p=state.players[pi],diff=aiDifficulty(pi),candVal=aiCandidateValue(candidate),out=[],end=aiEndgameProfile(pi);for(let i=0;i<p.grid.length;i++){const old=p.grid[i];if(!old)continue;const hidden=!old.faceUp,oldVal=aiSlotExpectedValue(pi,old,[candidate]),lineDelta=aiLineDelta(pi,i,old,candidate);let score=(oldVal-candVal)+lineDelta+aiNoise(diff);if(hidden){const known=!!aiHiddenKnowledgeCard(pi,old);score+=candVal<=0?1.4:candVal<=3?.8:candVal<=5?.25:0;if(known)score+=.35;if(diff==='hard'){if(end.ahead&&(end.ownHidden<=3||end.pressure))score+=1.0;if(end.behind&&end.ownHidden<=2)score-=1.1}}else{const same=aiSameCardValue(old,candidate),numericGain=cardPoints(old)-candVal;if(same)score-=9;if(cardPoints(old)<0)score-=6;else if(cardPoints(old)===0&&candVal>=0&&lineDelta<3.5)score-=4.8;else if(numericGain<=0&&lineDelta<1.3)score-=3.2;if(lineDelta>=5)score+=2.3}if(candidate?.type==='star')score+=hidden?2.7:1.6;out.push({zone:'grid',idx:i,score,old,lineDelta,hidden})}for(let i=0;i<p.extras.length;i++){const old=p.extras[i];if(!old)continue;const hidden=!old.faceUp,oldVal=aiSlotExpectedValue(pi,old,[candidate]);let score=oldVal-candVal+aiNoise(diff);if(hidden)score+=candVal<=1?1.0:.25;else{if(aiSameCardValue(old,candidate))score-=9;if(cardPoints(old)<0)score-=6;if(cardPoints(old)-candVal<=0)score-=3}out.push({zone:'extra',idx:i,score,old,lineDelta:0,hidden})}return out.sort((a,b)=>b.score-a.score)}
+
+/* === V103: faire zweizügige KI-Vorausschau ===
+   Verdeckte Karten werden nur als Wahrscheinlichkeitsverteilung modelliert.
+   Nur Karten aus der regulären Erleuchtungs-Kenntnis dürfen gesondert einfließen.
+   Die Zukunftsrechnung verändert weder Spielstand noch Kartendeck. */
+const AI103_LINES=[...Array.from({length:3},(_,r)=>[r*4,r*4+1,r*4+2,r*4+3]),...Array.from({length:4},(_,c)=>[c,c+4,c+8])];
+function ai103Context(pi){
+ const d=aiUnseenDistribution(pi),n=d.reduce((a,x)=>a+x.count,0)||1;
+ const mean=d.reduce((a,x)=>a+x.count*aiCandidateValue(x.card),0)/n;
+ const probabilities={};for(const x of d)probabilities[aiCardKey(x.card)]=x.count/n;
+ const end=aiEndgameProfile(pi);
+ const p=state.players[pi],known=p.aiKnowledge||{};
+ function wrap(c){if(!c)return null;if(c.faceUp)return {type:c.type,value:c.value,faceUp:true};
+   const k=known[c.id];return {type:'hidden',faceUp:false,known:k&&typeof k==='object'?{type:k.type,value:k.value}:null};}
+ return {pi,distribution:d,probabilities,mean,end,
+   grid:p.grid.map(wrap),extras:p.extras.map(wrap),
+   futureWeight:aiDifficulty(pi)==='hard'?.58:.34};
+}
+function ai103Number(c,ctx){
+ if(!c)return 0;if(c.faceUp)return c.type==='star'?0:Number(c.value||0);
+ if(c.known)return aiCandidateValue(c.known);
+ return ctx.mean;
+}
+function ai103StarValue(grid,idx,ctx){
+ const nums=[];
+ for(const ids of aiLineIndexesFor(idx))for(const k of ids){if(k===idx)continue;const c=grid[k];if(!c)continue;
+   if(c.faceUp&&c.type==='number')nums.push(Number(c.value)||0);
+   else if(!c.faceUp&&c.known?.type==='number')nums.push(Number(c.known.value)||0);
+ }
+ /* Unbekannte Nachbarn können den Endwert noch senken; keine tatsächlichen
+    verdeckten Kartenwerte lesen. */
+ const unknownNeighbors=aiLineIndexesFor(idx).flat().some(k=>k!==idx&&grid[k]&&!grid[k].faceUp&&!grid[k].known);
+ if(unknownNeighbors)nums.push(Math.min(2,ctx.mean));
+ return nums.length?Math.min(...nums):0;
+}
+function ai103LineBonus(grid,ctx){
+ let total=0;
+ for(const ids of AI103_LINES){const cards=ids.map(i=>grid[i]).filter(Boolean);if(cards.length<3)continue;
+   const visibles=cards.filter(c=>c.faceUp),hidden=cards.length-visibles.length;
+   const nums=visibles.filter(c=>c.type==='number');
+   const stars=visibles.filter(c=>c.type==='star').length;
+   const distinct=[...new Set(nums.map(c=>Number(c.value)))];
+   if(!distinct.length){if(stars===cards.length)total+=cards.length===4?14:10;else if(stars>=2)total+=stars*1.1;continue;}
+   let best=0;
+   for(const value of distinct){
+     const matches=nums.filter(c=>Number(c.value)===value).length;
+     const miss=hidden+(nums.length-matches);
+     if(miss>2||matches+stars<2)continue;
+     const p=Math.min(.96,(ctx.probabilities['n:'+value]||0)+(ctx.probabilities.star||0));
+     const chance=miss===0?1:miss===1?1-Math.pow(1-p,3):Math.min(.55,3*p*p);
+     /* Entfernen spart insbesondere hohe positive Zahlen. Niedrige und negative
+        Paare behalten gegebenenfalls einen strategischen Joker-/Punktewert. */
+     const save=Math.max(0,value)*(matches+miss)+stars*.7;
+     const reward=(save*.7+(matches+stars)*1.1)*chance*(miss===0?1:miss===1?.95:.55);
+     if(reward>best)best=reward;
+   }
+   total+=best;
+ }
+ return Math.min(43,total);
+}
+function ai103BoardFitness(grid,extras,ctx){
+ let points=0,hidden=0,stars=0;
+ for(let i=0;i<grid.length;i++){const c=grid[i];if(!c)continue;
+   if(!c.faceUp)hidden++;
+   if(c.faceUp&&c.type==='star'){stars++;points+=ai103StarValue(grid,i,ctx)}
+   else points+=ai103Number(c,ctx);
+ }
+ for(const c of extras){if(!c)continue;if(!c.faceUp)hidden++;points+=ai103Number(c,ctx)}
+ /* Bonus für vollständig reine Jokerlinien ist Teil der Endwertung. */
+ let pure=0;
+ for(const ids of AI103_LINES){
+   const line=ids.map(i=>grid[i]).filter(Boolean);
+   if(line.length>=3&&line.every(c=>c.faceUp&&c.type==='star'))pure=Math.max(pure,line.length===4?15:10);
+ }
+ const e=ctx.end,closingRisk=e.ownHidden<=3&&!e.ahead&&e.bestOpp<e.ownScore-2;
+ const pressure=e.pressure&&e.ahead?1.20:e.pressure?.65:.28;
+ const hurry=closingRisk?-.60:pressure;
+ return -points+ai103LineBonus(grid,ctx)*.79+pure*.78-hidden*hurry;
+}
+function ai103NextDrawGain(grid,extras,ctx){
+ const base=ai103BoardFitness(grid,extras,ctx),dist=ctx.distribution;
+ let expectation=0,weight=0;
+ for(const item of dist){
+   const next={type:item.card.type,value:item.card.value,faceUp:true};
+   let best=0;
+   for(let i=0;i<grid.length;i++){
+     if(!grid[i])continue;
+     const modified=grid.slice();modified[i]=next;
+     const delta=ai103BoardFitness(modified,extras,ctx)-base;
+     if(delta>best)best=delta;
+   }
+   for(let i=0;i<extras.length;i++){
+     if(!extras[i])continue;
+     const modified=extras.slice();modified[i]=next;
+     const delta=ai103BoardFitness(grid,modified,ctx)-base;
+     if(delta>best)best=delta;
+   }
+   /* Statt willkürlich gezogener Zukunftskarten die exakte öffentliche
+      Kartentypverteilung verwenden. */
+   expectation+=item.count*best;weight+=item.count;
+ }
+ return weight?expectation/weight:0;
+}
+function ai103TargetPlan(ctx,zone,idx,candidate){
+ const card={type:candidate.type,value:candidate.value,faceUp:true};
+ const grid=zone==='grid'?ctx.grid.slice():ctx.grid;
+ const extras=zone==='extra'?ctx.extras.slice():ctx.extras;
+ if(zone==='grid')grid[idx]=card;else extras[idx]=card;
+ return {grid,extras};
+}
+function ai103EndPenalty(ctx,candidate,target){
+ const end=ctx.end;
+ if(end.ownHidden!==1||!target?.hidden)return 0;
+ const old=target.zone==='grid'?ctx.grid[target.idx]:ctx.extras[target.idx];
+ const outgoing=ai103Number(old,ctx);
+ const projected=end.ownScore-outgoing+aiCandidateValue(candidate);
+ const gap=projected-end.bestOpp;
+ /* Der Rundenauslöser erhält bei nicht alleiniger Bestwertung doppelte
+    positive Rundenpunkte. Bei Rückstand nicht blind die letzte Karte aufdecken. */
+ if(gap>=-.1&&projected>0)return Math.min(30,10+Math.max(0,gap)*1.5);
+ return gap<-3?-2:1.5;
+}
+function ai103RankTargets(pi,candidate,targets){
+ if(!targets.length||aiDifficulty(pi)==='easy')return targets;
+ const ctx=ai103Context(pi);
+ const current=ai103BoardFitness(ctx.grid,ctx.extras,ctx);
+ const ranked=[];
+ /* Jeder mögliche Tauschplatz wird betrachtet: selbst ein heute schwacher
+    Tausch kann eine wertvolle Spalte für den nächsten Zug vorbereiten. */
+ for(const t of targets){
+   const after=ai103TargetPlan(ctx,t.zone,t.idx,candidate);
+   const immediate=ai103BoardFitness(after.grid,after.extras,ctx)-current;
+   const future=ai103NextDrawGain(after.grid,after.extras,ctx);
+   const defence=aiDifficulty(pi)==='hard'&&t.old?.faceUp?aiOpponentDiscardThreat(pi,t.old).score*.16:0;
+   const urgency=ctx.end.ahead&&ctx.end.pressure&&t.hidden?1.1:ctx.end.behind&&ctx.end.ownHidden<=2&&t.hidden?-.75:0;
+   const score=immediate+ctx.futureWeight*future+t.score*.16-defence+urgency-ai103EndPenalty(ctx,candidate,t);
+   ranked.push({...t,score,planImmediate:immediate,planFuture:future});
+ }
+ return ranked.sort((a,b)=>b.score-a.score);
+}
+function ai103DeckValue(pi){
+ const ctx=ai103Context(pi);
+ const expect=ai103NextDrawGain(ctx.grid,ctx.extras,ctx);
+ /* Zieht man schlecht, ist Ablegen + Aufdecken eine echte Alternative. */
+ const reveal=aiDiscardRevealUtility(pi);
+ return Math.max(reveal,expect*.92)+ctx.futureWeight*expect*.22;
+}
+
+function aiTargets(pi,candidate){const p=state.players[pi],diff=aiDifficulty(pi),candVal=aiCandidateValue(candidate),out=[],end=aiEndgameProfile(pi);for(let i=0;i<p.grid.length;i++){const old=p.grid[i];if(!old)continue;const hidden=!old.faceUp,oldVal=aiSlotExpectedValue(pi,old,[candidate]),lineDelta=aiLineDelta(pi,i,old,candidate);let score=(oldVal-candVal)+lineDelta+aiNoise(diff);if(hidden){const known=!!aiHiddenKnowledgeCard(pi,old);score+=candVal<=0?1.4:candVal<=3?.8:candVal<=5?.25:0;if(known)score+=.35;if(diff==='hard'){if(end.ahead&&(end.ownHidden<=3||end.pressure))score+=1.0;if(end.behind&&end.ownHidden<=2)score-=1.1}}else{const same=aiSameCardValue(old,candidate),numericGain=cardPoints(old)-candVal;if(same)score-=9;if(cardPoints(old)<0)score-=6;else if(cardPoints(old)===0&&candVal>=0&&lineDelta<3.5)score-=4.8;else if(numericGain<=0&&lineDelta<1.3)score-=3.2;if(lineDelta>=5)score+=2.3}if(candidate?.type==='star')score+=hidden?2.7:1.6;out.push({zone:'grid',idx:i,score,old,lineDelta,hidden})}for(let i=0;i<p.extras.length;i++){const old=p.extras[i];if(!old)continue;const hidden=!old.faceUp,oldVal=aiSlotExpectedValue(pi,old,[candidate]);let score=oldVal-candVal+aiNoise(diff);if(hidden)score+=candVal<=1?1.0:.25;else{if(aiSameCardValue(old,candidate))score-=9;if(cardPoints(old)<0)score-=6;if(cardPoints(old)-candVal<=0)score-=3}out.push({zone:'extra',idx:i,score,old,lineDelta:0,hidden})}return aiDifficulty(pi)==="easy"?out.sort((a,b)=>b.score-a.score):ai103RankTargets(pi,candidate,out)}
 function aiBestTarget(pi,candidate){const a=aiTargets(pi,candidate);if(!a.length)return null;const diff=aiDifficulty(pi);if(diff==='easy'&&a.length>1&&Math.random()<.32)return a[Math.min(a.length-1,Math.floor(Math.random()*Math.min(3,a.length)))];return a[0]}
 function aiRevealPositionScore(pi,zone,idx){const p=state.players[pi],arr=zone==='grid'?p.grid:p.extras,c=arr[idx];if(!c||c.faceUp)return-999;let score=.4;if(zone==='extra')return score;const known=aiHiddenKnowledgeCard(pi,c);if(known){const v=aiCandidateValue(known);score+=v>=8?2.4:v>=5?1.4:v<=0?-.8:.3}for(const ids of aiLineIndexesFor(idx)){const others=ids.filter(i=>i!==idx).map(i=>p.grid[i]).filter(Boolean);const vis=others.filter(x=>x.faceUp),stars=vis.filter(x=>x.type==='star').length,freq={};for(const x of vis)if(x.type==='number')freq[x.value]=(freq[x.value]||0)+1;const best=Math.max(0,...Object.values(freq));if(best+stars>=2)score+=2.2;else if(best+stars===1)score+=.5}const end=aiEndgameProfile(pi);if(end.ahead&&end.pressure)score+=.6;if(end.behind&&end.ownHidden<=2)score-=.7;return score}
 function aiChooseReveal(pi){const p=state.players[pi],hidden=[];p.grid.forEach((c,i)=>{if(c&&!c.faceUp)hidden.push({zone:'grid',idx:i,score:aiRevealPositionScore(pi,'grid',i)})});p.extras.forEach((c,i)=>{if(c&&!c.faceUp)hidden.push({zone:'extra',idx:i,score:aiRevealPositionScore(pi,'extra',i)})});if(!hidden.length)return null;hidden.sort((a,b)=>b.score-a.score);const diff=aiDifficulty(pi);if(diff==='easy'&&hidden.length>1)return hidden[Math.floor(Math.random()*hidden.length)];if(diff==='normal'&&hidden.length>1&&Math.random()<.2)return hidden[Math.floor(Math.random()*Math.min(3,hidden.length))];return hidden[0]}
 function aiDiscardRevealUtility(pi){const r=aiChooseReveal(pi),end=aiEndgameProfile(pi);let u=r?.score||0;if(end.ahead&&end.pressure)u+=.8;if(end.behind&&end.ownHidden<=2)u-=.7;return u}
-function aiExpectedDeckUtility(pi){const d=aiUnseenDistribution(pi),total=d.reduce((s,x)=>s+x.count,0);if(!total)return 0;let sum=0;for(const x of d){const target=aiBestTarget(pi,x.card),keep=target?target.score:-99,drop=aiDiscardRevealUtility(pi);sum+=x.count*Math.max(keep,drop)}return sum/total}
+function aiExpectedDeckUtility(pi){if(aiDifficulty(pi)!=="easy")return ai103DeckValue(pi);const d=aiUnseenDistribution(pi),total=d.reduce((s,x)=>s+x.count,0);if(!total)return 0;let sum=0;for(const x of d){const target=aiBestTarget(pi,x.card),keep=target?target.score:-99,drop=aiDiscardRevealUtility(pi);sum+=x.count*Math.max(keep,drop)}return sum/total}
 function aiKeepThreshold(pi,fromDiscard=false){const diff=aiDifficulty(pi);if(diff==='easy')return fromDiscard?1.9:1.15;if(diff==='normal')return fromDiscard?.9:.45;const e=aiEndgameProfile(pi);let t=fromDiscard?.15:-.1;if(e.ahead&&(e.pressure||e.ownHidden<=2))t-=.55;if(e.behind&&e.ownHidden<=2)t+=.65;return t}
 
 /* === V15.1 DEFENSIVE AI: Gegnerische Ablage-Chancen mitrechnen === */
@@ -5633,7 +5781,11 @@ function aiDrawnCardDecision(pi,candidate,target){
     Behalten = eigener Nutzen minus Gefahr der herausgetauschten Karte.
     Abwerfen = Nutzen des Aufdeckens minus Nutzen, den die Ablage dem Gegner schenkt. */
  const keepUtility=baseKeep-outgoing*.58;
- const dropUtility=reveal-threat.score*.82;
+ const plan=ai103Context(pi);
+ let dropUtility=reveal+ai103NextDrawGain(plan.grid,plan.extras,plan)*.37-threat.score*.76;
+ if(plan.end.ownHidden===1&&!plan.end.ahead&&plan.end.ownScore>0){
+   dropUtility-=Math.min(28,9+Math.max(0,plan.end.ownScore-plan.end.bestOpp)*1.2);
+ }
  const strategicallyNecessary=threat.direct>=7.5&&baseKeep>=-4.0;
  const keep=!!target&&(
    (baseKeep>=threshold&&keepUtility>=dropUtility-.35) ||
@@ -5662,7 +5814,7 @@ function aiShouldTakeDiscard(pi,top,target){
  const effective=target.score+denial*.62;
  return effective>=Math.max(threshold,deckU-.10)
 }
-function aiShouldResolveOptionalMatch(pi,m){const p=state.players[pi];if(m.pureStars)return true;const sum=m.idx.reduce((s,i)=>s+(p.grid[i]?cardPoints(p.grid[i]):0),0),diff=aiDifficulty(pi),end=aiEndgameProfile(pi);if(sum>0)return true;if(sum<0)return false;return diff==='hard'&&(end.ahead||end.pressure||end.ownHidden<=2)}
+function aiShouldResolveOptionalMatch(pi,m){const p=state.players[pi];if(m.pureStars)return false;const sum=m.idx.reduce((s,i)=>s+(p.grid[i]?cardPoints(p.grid[i]):0),0),end=aiEndgameProfile(pi);if(sum>0)return true;if(sum<0)return false;return end.ahead&&end.pressure&&end.ownHidden>0}
 function aiActionBaseValue(type){return ({double:9.5,draw3:7.8,defense:6.4,meteor:6.2,thief:6.0,swapother:5.1,enlight:3.8,ownswap:3.2,react:4.2})[type]||1}
 function aiBestOwnSwap(pi){const p=state.players[pi],ids=p.grid.map((c,i)=>c?.faceUp?i:-1).filter(i=>i>=0);let best=null;const before=ids.reduce((s,i)=>s+aiLinePotential(pi,i,p.grid[i]),0);for(let a=0;a<ids.length;a++)for(let b=a+1;b<ids.length;b++){const ia=ids[a],ib=ids[b],ca=p.grid[ia],cb=p.grid[ib];if(aiSameCardValue(ca,cb))continue;p.grid[ia]=cb;p.grid[ib]=ca;const after=ids.reduce((s,i)=>s+aiLinePotential(pi,i,p.grid[i]),0);p.grid[ia]=ca;p.grid[ib]=cb;const gain=after-before;if(!best||gain>best.gain)best={ia,ib,gain}}return best}
 function aiBestOtherSwap(pi){const me=state.players[pi];let own=null;me.grid.forEach((c,i)=>{if(c?.faceUp){const v=cardPoints(c);if(!own||v>own.v)own={pi,idx:i,v,c}}});if(!own)return null;let opp=null;for(let oi=0;oi<state.players.length;oi++){if(oi===pi)continue;state.players[oi].grid.forEach((c,i)=>{if(c?.faceUp){const v=cardPoints(c);const gain=own.v-v;if(!opp||gain>opp.gain)opp={pi:oi,idx:i,v,c,gain}}})}return opp&&opp.gain>1?{own,opp,gain:opp.gain}:null}
@@ -5718,7 +5870,7 @@ async function aiTakeTurn(pi){
    if(r){await sleepMs(260);await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion()}
  }
 }
-async function runAIActor(pi){if(aiBusy||cloud.enabled||!state||!isAIPlayer(pi)||toiletPauseActive())return;aiBusy=true;try{for(let guard=0;guard<24;guard++){await aiWaitMotion();if(!state||cloud.enabled||actorIndex()!==pi||!isAIPlayer(pi)||toiletPauseActive())break;if(state.phase==='initialReveal'){if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}await aiInitialReveal(pi);if(state.phase==='initialReveal'&&state.setupPlayer===pi&&state.setupRevealed>=2)setupContinue();continue}if(state.phase!=='play')break;if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}if(ui.mode==='matchReady'||state.pendingMatch){await aiHandleMatchReady(pi);continue}if(ui.mode==='draw3Choose'){await aiHandleDraw3(pi);continue}if(ui.mode==='draw3Target'){const t=aiBestTarget(pi,ui.data.card);if(t){await aiDo(()=>selectCard(pi,t.zone,t.idx));await aiWaitMotion();continue}else{break}}if(ui.mode==='meteorSelect'){await aiHandleMeteor(pi);continue}if(ui.mode==='turnChoice'){await aiTakeTurn(pi);continue}if(ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion();continue}}break}}catch(e){console.warn('[AI V12]',e);toast('🤖 Computerzug wurde sicher beendet');if(state?.phase==='play'&&state.currentPlayer===pi&&ui.mode==='turnChoice')finishTurn()}finally{aiBusy=false;aiActing=false;scheduleAIIfNeeded(420)}}
+async function runAIActor(pi){if(aiBusy||cloud.enabled||!state||!isAIPlayer(pi)||toiletPauseActive())return;aiBusy=true;try{for(let guard=0;guard<24;guard++){await aiWaitMotion();if(!state||cloud.enabled||actorIndex()!==pi||!isAIPlayer(pi)||toiletPauseActive())break;if(state.phase==='initialReveal'){if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}await aiInitialReveal(pi);if(state.phase==='initialReveal'&&state.setupPlayer===pi&&state.setupRevealed>=2)setupContinue();continue}if(state.phase!=='play')break;if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}if(ui.mode==='matchReady'||state.pendingMatch){await aiHandleMatchReady(pi);continue}if(ui.mode==='draw3Choose'){await aiHandleDraw3(pi);continue}if(ui.mode==='draw3Target'){const t=aiBestTarget(pi,ui.data.card);if(t){await aiDo(()=>selectCard(pi,t.zone,t.idx));await aiWaitMotion();continue}else{break}}if(ui.mode==='meteorSelect'){await aiHandleMeteor(pi);continue}if(ui.mode==='turnChoice'){await aiTakeTurn(pi);continue}if(ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion();continue}}break}}catch(e){console.warn('[AI V103]',e);toast('🤖 Computerzug wurde sicher beendet');if(state?.phase==='play'&&state.currentPlayer===pi&&ui.mode==='turnChoice')finishTurn()}finally{aiBusy=false;aiActing=false;scheduleAIIfNeeded(420)}}
 
 
 function cardClass(c){if(!c)return'empty';if(!c.faceUp)return'back';if(c.type==='star')return'star';if(c.value<0)return'neg';if(c.value===0)return'zero';if(c.value<=4)return'low';if(c.value<=8)return'mid';return'high'}
