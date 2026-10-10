@@ -1,0 +1,29 @@
+SPIELEPORTAL – PROFIL V1 (Oktober 2026)
+
+WICHTIG: Die Dateien werden einzeln geliefert. TXT-Code in GitHub in die jeweilige HTML- bzw. JS-Datei kopieren.
+
+GitHub-Client-Repository (Spiel-client):
+  index_profil_v1.txt              -> index.html
+  spielerprofil_v1.txt             -> profile.html  (NEU im Hauptordner)
+  profile_core_v1.txt              -> profile-core.js (NEU im Hauptordner)
+  profile-hero.webp                -> profile-hero.webp (NEU im Hauptordner)
+  profile-avatars.webp             -> profile-avatars.webp (NEU im Hauptordner)
+  barikade_lobby_profil_v1.txt     -> Barikade/barikade_lobby.html
+  skyjo_action_profil_v1.txt       -> Skyjo/skyjo_action.html
+  kreuzkunter_profil_v1.txt        -> KreuzKunter/kreuzkunter.html
+  business_local_profil_v1.txt     -> Business/business_local.html
+  business_online_profil_v1.txt    -> Business/business_online.html
+
+Alle übrigen Dateien unverändert lassen. Den Render-Server NICHT ändern.
+
+Ablauf:
+1. Zuerst die neuen Dateien profile.html, profile-core.js und die beiden .webp-Bilder im HAUPTORDNER ergänzen.
+2. Anschließend index.html und die fünf angegebenen Spieldateien ersetzen.
+3. Bei GitHub Pages nach Aktualisierung ggf. Browserdaten/Caching prüfen.
+4. Auf index.html oben rechts Spielerprofil anklicken, Profil erstellen/auswählen oder Profilseite öffnen.
+5. Die Namensfelder der Spiele werden aus dem aktiven Profil vorausgefüllt; sie bleiben manuell bearbeitbar.
+6. Besonders Barikade-Onlinepartien mit einem selbst gewählten neuen Namen auf zwei Geräten testen.
+
+Das Profil ist LOCALSTORAGE-basiert: Daten liegen nur auf diesem Browser/Endgerät. Es gibt KEIN Login, KEINEN Zugriffsschutz und KEINE geräteübergreifende Synchronisierung.
+Die Statistik zeigt bislang nur aus der Startseite gestartete Spielaufrufe, KEINE bestätigten Partien oder Siege.
+Die Daten können verloren gehen, wenn der Browser-Speicher gelöscht wird.
