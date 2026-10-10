@@ -265,10 +265,16 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 @media(max-width:680px){.mobile-jump button,.edit-btn,.nav-btn,.compare-trigger,.rule-link{min-height:44px}
  .boardcaption{align-items:center;row-gap:8px}.turn-status{line-height:1.35}}
 @media(prefers-reduced-motion:reduce){html:focus-within{scroll-behavior:auto!important}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* Zurück zur gemeinsamen Spielauswahl */
+.kk-hub-return{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:45px;padding:7px 12px;
+ border:1px solid #3ca5c7;border-radius:12px;background:linear-gradient(135deg,#075a76,#0b8a8a);color:#fff;
+ text-decoration:none;font-size:14px;font-weight:850;box-shadow:0 5px 15px #00172880;white-space:nowrap}
+.kk-hub-return:focus-visible{outline:3px solid #ffe36c;outline-offset:3px}
+@media(max-width:670px){.kk-hub-return{min-height:42px;padding:6px 9px;font-size:12px}}
 </style>
 </head>
 <body>
-<div id="app"><header class="top"><div class="brand"><div class="logo">Kreuz<span>Kunter</span></div><div class="subtitle">– Online Edition <span class="statuspill" id="mode-title">Offline-Testversion</span></div></div><div class="topright"><div class="badge"><small>Wurf</small><b id="round-badge">–</b></div><div class="badge"><small>Joker übrig</small><b id="jokers-badge">8 / 8</b></div><button class="iconbtn" data-action="online" title="Online-Raum erstellen oder beitreten" aria-label="Online spielen">🌐</button><button class="iconbtn rule-top" data-action="help" title="Vollständige Spielanleitung" aria-label="Spielanleitung öffnen">📖 <span>Regeln</span></button><button class="iconbtn" data-action="new" title="Neue Partie" aria-label="Neue Partie">⚙</button></div></header>
+<div id="app"><header class="top"><div class="brand"><div class="logo">Kreuz<span>Kunter</span></div><div class="subtitle">– Online Edition <span class="statuspill" id="mode-title">Offline-Testversion</span></div></div><div class="topright"><a class="kk-hub-return" href="../index.html" onclick="return kkReturnToHub()" title="Zur Spielauswahl">🏠 Spielauswahl</a><div class="badge"><small>Wurf</small><b id="round-badge">–</b></div><div class="badge"><small>Joker übrig</small><b id="jokers-badge">8 / 8</b></div><button class="iconbtn" data-action="online" title="Online-Raum erstellen oder beitreten" aria-label="Online spielen">🌐</button><button class="iconbtn rule-top" data-action="help" title="Vollständige Spielanleitung" aria-label="Spielanleitung öffnen">📖 <span>Regeln</span></button><button class="iconbtn" data-action="new" title="Neue Partie" aria-label="Neue Partie">⚙</button></div></header>
 <div class="mobile-actions" aria-label="Schnellaktionen für das Spiel"><div class="mobile-turnline"><strong id="mobile-turn-name">Spieler 1</strong><span class="turn-status" id="mobile-turn-state">Partie bereit</span></div><div id="mobile-dices" class="mobile-dice-track" aria-label="Würfel im Schnellmenü"></div><button class="action go" type="button" id="mobile-roll" data-mobile-action="roll">🎲 Würfeln</button><button class="action ok" type="button" id="mobile-commit" data-mobile-action="commit">✓ Eintragen</button><button class="action pass" type="button" id="mobile-pass" data-mobile-action="pass">✕ Passen</button></div>
 <nav class="mobile-jump" aria-label="Schnellnavigation">
 <button type="button" data-action="jumpboard">🎨 Brett</button>
@@ -1113,6 +1119,17 @@ function cellClick(index){
  state=restore();if(state&&state.phase==='select'){if(!state.manualColor){state.colorDie=null;state.chosenColor=null;}if(!state.manualNumber){state.numDie=null;state.chosenNumber=null;}}if(!state){state=initial(['Spieler 1'],'solo');flash='Willkommen bei KreuzKunter!';}else{flash='Dein letzter Spielstand wurde geladen.';}render();if(location.search.includes('selftest=1')){console.table(selftest());}const remembered=getNetInfo();if(remembered.active&&remembered.url&&remembered.code&&remembered.token){resumeLastOnline();}else if(!restore())showStart();if(boardView==='zoom')requestAnimationFrame(centerBoardOnStart);
 })();
 
+</script>
+<script>
+function kkReturnToHub(){
+  try{
+    if(typeof state!=='undefined'&&state&&!state.finished){
+      if(!confirm('Zur Spielauswahl zurückkehren? Der letzte abgeschlossene Spielzug bleibt gespeichert.'))return false;
+      if(typeof save==='function')save();
+    }
+  }catch(e){console.warn('KreuzKunter: Speichern vor Verlassen nicht möglich',e)}
+  return true;
+}
 </script>
 </body>
 </html>
