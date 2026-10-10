@@ -3622,6 +3622,13 @@ body[data-market-stage="final"] .board-wrap{
    das Depot/Brett wirklich verdecken. */
 .turn-transition.show{background:rgba(3,11,19,.96)!important}
 
+/* Navigationsknopf zur gemeinsamen Spielauswahl */
+.business-hub-return{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+ min-height:39px;padding:8px 12px;border-radius:12px;border:1px solid #72cbab;
+ background:linear-gradient(135deg,#105c45,#148a65);color:#fff;font:bold 13px Arial,sans-serif;
+ cursor:pointer;box-shadow:0 3px 12px #001b1480}
+.business-hub-return:focus-visible{outline:3px solid #ffe38a;outline-offset:2px}
+@media(max-width:650px){.business-hub-return{min-height:36px;padding:7px 10px;font-size:12px}}
 </style>
 </head>
 <body data-business-mode="local">
@@ -3653,6 +3660,7 @@ body[data-market-stage="final"] .board-wrap{
     <div class="title-mini">👑 DAS GROSSE BUSINESS</div>
     <div class="turn-center"><div id="turnPill" class="turn-pill">Am Zug: –</div><div id="roundDisplay" class="round-display">Runde 1 · Zug 1</div></div>
     <div class="top-actions">
+      <button class="business-hub-return" type="button" onclick="businessLocalToHub()" title="Zurück zu allen Spielen">🏠 Spielauswahl</button>
       <button id="soundBtn" class="top-icon-btn" title="Sound an/aus">🔊</button>
       <button id="fullBtn" class="top-icon-btn" title="Vollbild">⛶</button>
       <button id="rulesBtn" class="top-icon-btn" title="Kurzregeln">📖</button><button id="focusBtn" class="top-icon-btn" title="Brett-Fokus">▣</button><button id="newGameBtn" class="top-icon-btn" title="Neues Spiel">↻</button>
@@ -5120,5 +5128,12 @@ document.addEventListener("dblclick",e=>e.preventDefault(),{passive:false});
 <!-- Online-Code in der Lokal-Datei absichtlich entfernt. -->
 
 
+<script>
+function businessLocalToHub(){
+  if(!confirm('Zur Spielauswahl zurückkehren? Dein lokaler Spielstand wird gespeichert.'))return;
+  try{if(typeof saveGame==='function')saveGame();}catch(e){console.warn('Business: Spielstand konnte nicht gesichert werden',e)}
+  location.assign('../index.html');
+}
+</script>
 </body>
 </html>
