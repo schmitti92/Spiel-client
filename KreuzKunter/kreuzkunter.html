@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#06142a" />
+<title>KreuzKunter V16 – Abschlusskandidat</title>
+<style>
+:root{color-scheme:dark;--bg:#041126;--panel:#081d38;--panel2:#092344;--border:#164477;--text:#f5f9ff;--muted:#9eb5d5;--sky:#3fc8ff;--glow:#0beac5;--g:#76d92b;--y:#ffd429;--b:#469aff;--r:#f74c4e;--o:#ff9834;--cell:clamp(33px,3.65vw,56px)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 42% -10%,#124075 0,#071d37 38%,#030e22 100%);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}button,input{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:not-allowed;opacity:.45}button:focus-visible,input:focus-visible{outline:3px solid #ffe36c;outline-offset:3px}#app{width:min(1720px,100%);margin:auto;padding:14px 18px 24px}.top{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.logo{font-size:clamp(25px,3.2vw,46px);font-weight:1000;letter-spacing:-1.8px;line-height:1.15;color:#f5fbff;text-shadow:0 3px 0 #2146af,0 0 16px #3676fa}.logo span{background:linear-gradient(98deg,#fc4a71,#ffc537 45%,#3df0a3 70%,#4db3ff);background-clip:text;color:transparent;-webkit-background-clip:text}.subtitle{font-size:clamp(13px,1.6vw,20px);color:#77d7ff;font-weight:800}.topright{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.badge{border:1px solid var(--border);border-radius:12px;background:#071b36;padding:7px 12px;min-height:49px;text-align:center;min-width:110px}.badge small{display:block;color:var(--muted)}.badge b{font-size:18px}.iconbtn{border:1px solid #23538a;border-radius:12px;background:#092344;min-width:46px;min-height:46px;font-size:24px}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,340px);gap:14px;align-items:start}.panel{border:1px solid #1d4979;background:linear-gradient(140deg,#071a34,#061831 70%,#061428);border-radius:19px;box-shadow:inset 0 0 0 1px #081d3c;padding:16px}.boardpane{min-width:0}.board-scroll{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;padding:5px 2px 9px;scrollbar-color:#245c97 transparent}.board-layout{display:grid;grid-template-columns:minmax(525px,1fr) minmax(117px,147px);gap:14px;min-width:670px;align-items:start}.board-core{min-width:0}.matrix{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:3px;width:100%}.headcell{height:clamp(29px,3.1vw,45px);min-width:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#0d3056,#05172a);border:1px solid #2d5682;border-radius:7px;color:#fff;font-size:clamp(14px,1.6vw,22px);font-weight:950}.headcell.start{border-color:#47f5ef;color:#68f9ed;box-shadow:0 0 12px #0ac9e288}.gridarea{margin-top:5px}.tile{position:relative;aspect-ratio:1;border:1px solid #0d1930;border-radius:7px;min-width:0;padding:0;display:grid;place-items:center;isolation:isolate;box-shadow:inset 0 3px 6px #ffffff23,inset 0 -4px 5px #0003;touch-action:manipulation}.tile[data-color=g],.bonuscell.g,.die.g,.choose.g{background:linear-gradient(150deg,#a6eb35,#5bc322)}.tile[data-color=y],.bonuscell.y,.die.y,.choose.y{background:linear-gradient(150deg,#ffef62,#f9bc16)}.tile[data-color=b],.bonuscell.b,.die.b,.choose.b{background:linear-gradient(145deg,#77caff,#2878e9)}.tile[data-color=r],.bonuscell.r,.die.r,.choose.r{background:linear-gradient(145deg,#ff8581,#e93246)}.tile[data-color=o],.bonuscell.o,.die.o,.choose.o{background:linear-gradient(145deg,#ffbe55,#f87b1d)}.tile .star{color:#fffdf2;text-shadow:0 1px 2px #535353,0 0 3px white;font-size:clamp(18px,2.25vw,30px);line-height:1}.tile .cross{color:#08192d;font-weight:1000;font-size:clamp(24px,2.6vw,40px);line-height:1;text-shadow:0 1px 2px #fff9}.tile.marked{filter:saturate(.72)}.tile.pending{outline:3px solid #f7fbff;outline-offset:-4px;box-shadow:0 0 15px #fafaffaa,inset 0 0 18px #fff7;z-index:2}.tile.pending .cross{color:#fff;text-shadow:0 1px 3px #061328}.tile.start{border-inline:2px solid #a8ffff}.tile.started{box-shadow:0 0 12px #14e1ff91,inset 0 0 9px #99ebff75}.tile:disabled{opacity:1;cursor:default}.tile.selectable:hover:not(:disabled){filter:brightness(1.12)}.scoregrid{margin-top:8px}.scorecell{background:#fff4d7;color:#1b1b26;min-width:0;display:grid;place-items:center;border-radius:6px;font-size:clamp(14px,1.8vw,23px);font-weight:950;height:clamp(29px,3vw,39px)}.scorecell.h{color:#e04729}.jokerstrip{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:3px;padding:7px 10px;border-radius:9px;background:#f1f0e8;color:#111922}.jokerlabel{font-size:20px;font-weight:900;margin-right:8px}.jokerico{border:2px solid #1f3444;border-radius:100%;width:clamp(21px,2.9vw,34px);height:clamp(21px,2.9vw,34px);display:grid;place-items:center;font-size:clamp(13px,1.7vw,21px);font-weight:900}.jokerico.used{color:#adabaf;border-color:#b7b7b7;text-decoration:line-through;background:#ddd}.scorings{display:grid;gap:9px}.bonuses{border:1px solid #24456c;border-radius:13px;padding:9px;background:#051329;display:grid;gap:5px}.bonusrow{display:grid;grid-template-columns:1fr 1fr;gap:5px}.bonuscell{min-height:34px;border-radius:7px;display:grid;place-items:center;color:#081426;font-size:19px;font-weight:950}.bonuscell.taken{opacity:.5;text-decoration:line-through}.ledger{display:grid;gap:7px}.ledgerline{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:14px;font-weight:850}.ledgervalue{min-width:44px;min-height:36px;border-radius:8px;background:#fff1d8;color:#1c2940;display:grid;place-items:center;font-size:18px;font-weight:900}.ledgerline.final{margin-top:8px;border-top:1px dashed #5286b4;padding-top:12px;font-size:17px}.ledgerline.final .ledgervalue{background:#d9f9ff;color:#005267}.hint{color:#9fb7d8;font-size:12px;margin:12px 2px 0}.side{display:grid;gap:13px}.panel h2{font-size:19px;margin:0 0 12px}.rollset{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:14px}.die{display:grid;place-items:center;height:50px;border-radius:10px;border:2px solid #3f6992;box-shadow:inset 0 3px 5px #fff7,0 3px 9px #0009;font-size:27px;font-weight:1000;color:#10213b}.die.num{background:linear-gradient(140deg,#fff,#bdccdf);color:#0a1830}.die.joker{background:linear-gradient(140deg,#222e46,#06101e);color:white}.die.selected{outline:3px solid #ffffff;outline-offset:2px;box-shadow:0 0 18px #27d8ff}.die.removed{filter:grayscale(.8);opacity:.24}.die:disabled{opacity:.4}.die.removed:disabled{opacity:.2}.die:not(:disabled):hover{transform:translateY(-2px)}.selectlabel{font-size:13px;color:#b9d6f9;margin-bottom:10px;min-height:36px}.action{min-height:49px;display:flex;justify-content:center;align-items:center;gap:9px;font-size:16px;font-weight:900;border-radius:11px;border:2px solid #266ea8;padding:8px 13px;background:#12385e;width:100%;transition:filter .14s}.action:hover:not(:disabled){filter:brightness(1.14)}.action.go{background:linear-gradient(135deg,#06b963,#07db92);border-color:#4dfed5;color:#032c29;box-shadow:0 0 12px #0de4ac66;font-size:20px;min-height:60px}.action.ok{background:linear-gradient(135deg,#198bef,#1451e8);border-color:#31cdff}.action.pass{background:linear-gradient(#283e64,#142744);border-color:#4a6995}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.choices{margin:13px 0;padding:11px;border:1px solid #1d477b;background:#06172c;border-radius:11px}.choices label{display:block;font-weight:800;font-size:13px;margin-bottom:8px}.chips{display:flex;flex-wrap:wrap;gap:7px}.choose{border-radius:8px;border:2px solid #ffffff77;min-width:42px;min-height:42px;color:#061827;font-size:19px;font-weight:950}.choose.num{background:#f9f4e9}.choose.on{outline:3px solid var(--sky);outline-offset:1px}.message{background:#102b4b;border-left:3px solid #3acaff;border-radius:7px;padding:10px 11px;margin-top:13px;font-size:13px;min-height:45px}.message.bad{background:#482335;border-color:#ff6875}.playerlist{display:grid;gap:7px}.player{width:100%;min-height:51px;display:flex;align-items:center;gap:9px;border-radius:10px;background:#071b35;border:1px solid #1a477a;padding:5px 8px;text-align:left}.player.current{border:2px solid #ffd04c;background:#102944}.bubble{width:34px;height:34px;flex:none;border-radius:50%;border:2px solid #ffffff95;background:linear-gradient(140deg,#f34e57,#9916aa);box-shadow:0 0 10px #ca77ff30}.player:nth-child(5n+2) .bubble{background:linear-gradient(140deg,#47d8f2,#1750ee)}.player:nth-child(5n+3) .bubble{background:linear-gradient(140deg,#59ea9f,#0c9c78)}.player:nth-child(5n+4) .bubble{background:linear-gradient(140deg,#ffe066,#f09c20)}.player:nth-child(5n+5) .bubble{background:linear-gradient(140deg,#fc9798,#ee3e6e)}.pname{font-weight:850;flex:1;min-width:0;overflow-wrap:anywhere}.pinfo{font-size:11px;color:var(--muted)}.points{background:#0d2b4b;border:1px solid #355985;border-radius:9px;min-width:48px;text-align:center;padding:5px;font-size:18px;font-weight:950}.footpanel{border-radius:12px;background:linear-gradient(110deg,#3e1528,#271f39);padding:14px;border:1px solid #66334a}.tiny{font-size:12px;color:#a6bbd5}.footnote{margin-top:12px;color:#6b91b7;font-size:12px;text-align:center}.mask{position:fixed;inset:0;z-index:10;background:#010710d9;display:grid;place-items:center;padding:18px;overflow-y:auto}.modal{width:min(570px,100%);max-height:calc(100vh - 35px);overflow:auto;border:1px solid #4084bd;border-radius:19px;background:linear-gradient(140deg,#0d2c50,#06162d);padding:22px;box-shadow:0 20px 70px #000b}.modal h2{font-size:26px;margin:0 0 8px}.modal p,.modal li{color:#c9d9ef}.modal .minihead{font-size:14px;color:#88d5f7;font-weight:900;text-transform:uppercase;letter-spacing:1px}.field{margin:12px 0}.field label{font-size:13px;font-weight:800;color:#bddef6;display:block;margin-bottom:4px}input[type=text]{border:1px solid #4379a3;background:#05162c;border-radius:10px;padding:11px;color:#fff;width:100%;font-size:16px}input[type=radio]{accent-color:#29d4f5}.modechoice{display:grid;grid-template-columns:1fr 1fr;gap:8px}.modechoice label{background:#0b3153;border:1px solid #356990;border-radius:11px;padding:11px}.names{max-height:220px;overflow:auto}.row{display:flex;align-items:center;gap:10px;justify-content:space-between}.flat{border:1px solid #49739b;border-radius:9px;background:#113558;padding:6px 12px}.hidden{display:none!important}.rightsmall{color:#8db5d8;font-size:12px;text-align:right}.notice{background:#0b3358;border-radius:10px;padding:12px;color:#cae4fb}.modal ul{padding-left:20px}.modal li{margin-bottom:7px}.statuspill{background:#092f4c;border:1px solid #236d9c;border-radius:999px;padding:4px 10px;color:#9feafa;font-size:13px}.summary{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px;border-radius:10px;background:#102f52;margin:8px 0}.summary strong{font-size:23px;color:#5af6df}.divider{border-top:1px solid #25587b;margin:14px 0}.activepick{color:#fdde7c}.boardcaption{display:flex;justify-content:space-between;gap:12px;margin:0 2px 10px;color:#aac7e8;font-size:13px;flex-wrap:wrap}.spin{animation:pop .26s ease-out}@keyframes pop{from{transform:scale(.94);filter:brightness(1.7)}to{transform:scale(1)}}
+@media(max-width:1120px){.layout{grid-template-columns:1fr}.side{grid-template-columns:repeat(2,minmax(0,1fr))}.side .footpanel{grid-column:1/-1}.panel{padding:13px}.board-layout{grid-template-columns:minmax(525px,1fr) 140px}.scorecell{height:33px}}@media(max-width:680px){#app{padding:11px 8px 25px}.top{gap:10px}.topright{width:100%;justify-content:space-between}.topright .badge{min-width:93px;padding:5px 7px}.panel{padding:10px;border-radius:13px}.layout{gap:10px}.side{grid-template-columns:1fr}.board-layout{grid-template-columns:525px 128px;gap:9px;min-width:665px}.boardcaption{font-size:12px}.rollset{gap:4px}.die{height:50px}.mask{padding:9px}.modal{padding:17px}.logo{font-size:29px}.subtitle{font-size:13px}.headcell{height:30px}.tile .star{font-size:21px}.tile .cross{font-size:26px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* V3: Ganzes Brett auf kleinen Bildschirmen oder zoombare Detailansicht */
+.view-toggle{margin-left:auto;padding:5px 11px;font-size:12px;min-height:36px;white-space:nowrap}
+@media(min-width:681px){.view-toggle{display:none}}
+.tile.candidate:not(.pending):not(.marked){box-shadow:inset 0 0 0 2px #e4fff0a8, 0 0 6px #4cff9c48}
+.tile.candidate:not(:disabled):focus-visible{outline:3px solid #fff;outline-offset:1px;z-index:4}
+.tile.pending{outline:3px solid #fff;outline-offset:-3px}
+.scorecell.earned{background:#a6f7dd!important;color:#063b39!important;box-shadow:0 0 10px #19d7ac99}
+.scorecell.other-earned{background:#b9d1e8;color:#31516a}
+.bonuscell.mine{outline:2px solid #e8ffff;outline-offset:-2px;box-shadow:0 0 7px #68d4fc9c}
+.pinfo .offline-indicator{color:#f7ae80}
+@media(max-width:680px){
+ .boardpane:not(.zoomed) .board-scroll{overflow-x:hidden}
+ .boardpane:not(.zoomed) .board-layout{min-width:0;grid-template-columns:minmax(0,1fr) 67px;gap:5px}
+ .boardpane:not(.zoomed) .matrix{gap:1px}
+ .boardpane:not(.zoomed) .headcell{height:23px;border-radius:3px;font-size:10px}
+ .boardpane:not(.zoomed) .tile{border-radius:2px;border-width:0;box-shadow:inset 0 0 0 1px #10284194}
+ .boardpane:not(.zoomed) .tile .star{font-size:12px}
+ .boardpane:not(.zoomed) .tile .cross{font-size:17px}
+ .boardpane:not(.zoomed) .scoregrid{margin-top:4px}
+ .boardpane:not(.zoomed) .scorecell{height:20px;border-radius:2px;font-size:11px}
+ .boardpane:not(.zoomed) .bonuses{padding:3px;gap:2px;border-radius:5px}
+ .boardpane:not(.zoomed) .bonusrow{gap:2px}
+ .boardpane:not(.zoomed) .bonuscell{min-height:19px;border-radius:3px;font-size:12px}
+ .boardpane:not(.zoomed) .ledger{gap:2px}
+ .boardpane:not(.zoomed) .ledgerline{font-size:9px;gap:1px}
+ .boardpane:not(.zoomed) .ledgervalue{min-width:20px;min-height:20px;font-size:10px;border-radius:2px}
+ .boardpane:not(.zoomed) .ledgerline.final{padding-top:4px;margin-top:3px;font-size:9px}
+ .boardpane:not(.zoomed) .jokerstrip{padding:5px 3px;gap:1px;margin-top:5px}
+ .boardpane:not(.zoomed) .jokerlabel{font-size:11px;margin-right:2px}
+ .boardpane:not(.zoomed) .jokerico{width:19px;height:19px;font-size:13px;border-width:1px}
+ .boardpane.zoomed .board-layout{grid-template-columns:525px 128px;min-width:665px}
+ .boardpane.zoomed .board-scroll{overflow-x:auto}
+ .boardcaption{gap:6px;align-items:center}
+ .boardcaption #board-status{display:none}
+ .boardcaption .view-toggle{min-height:34px}
+}
+/* V3.2 – Spielmodusgerechte Würfelgruppen mit Direkteingabe */
+.rollset{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:7px}
+.dice-summary{float:right;margin-top:4px;padding:4px 8px;border-radius:8px;border:1px solid #38658f;background:#092949;color:#b3defb;font-size:11px;font-weight:700}
+.dice-group{min-width:0;background:#06152d;border:1px solid #244874;border-radius:11px;padding:8px 7px 9px}
+.dice-group-title{display:flex;align-items:center;justify-content:space-between;gap:3px;color:#bedafa;font-size:12px;font-weight:800;margin-bottom:8px;white-space:nowrap}
+.dice-group-title strong{color:#fff;background:#163859;border-radius:7px;min-width:22px;text-align:center;padding:1px 4px}
+.dice-track{display:grid;grid-template-columns:repeat(var(--dice-per-type),minmax(0,1fr));gap:5px}
+.dice-track .die{width:100%;height:46px;min-width:0;padding:0;font-size:25px;border-radius:9px}
+.dice-track .die.waiting{background:linear-gradient(145deg,#355279,#162b4a);border-color:#325576;color:#adbfda;opacity:.75}
+.dice-instructions{color:#a9c9e9;font-size:12px;min-height:34px;margin:0 2px 11px;line-height:1.45}
+@media(max-width:360px){.dice-group{padding:7px 5px}.dice-group-title{font-size:11px}.dice-track{gap:3px}.dice-track .die{height:42px;font-size:23px}}
+/* V3.2: Direktes Ankreuzen, Würfel bleiben optional anwählbar */
+.die.selected{outline:3px solid #fffcc3!important;outline-offset:2px;box-shadow:0 0 0 3px #16cbffa0,0 0 18px #27d8ff!important;transform:translateY(-1px)}
+.dice-instructions{min-height:0}
+.direct-tip{border:1px solid #2c668b;border-radius:10px;background:#0a2a45;color:#caf1ff;padding:10px 12px;font-size:13px;line-height:1.45;margin-bottom:10px}
+.direct-tip strong{color:#9dffe7}
+.tile.candidate:not(.pending):not(.marked){cursor:pointer}
+#commit-button.ready-commit{border-color:#bfffe2;box-shadow:0 0 14px #2af9b975}
+@media(max-width:680px){.direct-tip{font-size:12px;padding:8px 10px}}
+
+/* V3.4: Small touch-friendly sticky dice dock for mobile play */
+.mobile-dice-track{display:none}
+@media(max-width:680px){
+ .mobile-dice-track{grid-column:1/-1;display:grid;grid-template-columns:repeat(var(--mobile-n),minmax(0,1fr));gap:5px}
+ .mobile-die{min-width:0;width:100%;height:39px;border-radius:8px;padding:0;font-size:21px}
+ .mobile-die.suggested:not(.selected)::after{font-size:10px;right:1px;bottom:1px}
+ .mobile-actions{gap:6px}
+}
+/* V3.3: Auswahl bleibt offen, bis sie endgültig eingetragen wird. */
+.die.suggested:not(.selected){box-shadow:inset 0 0 0 2px #c9ffed,0 0 11px #32d6e077;border-color:#a5eddb}
+.die.suggested:not(.selected)::after{content:'✓';position:absolute;font-size:13px;font-weight:900;line-height:1;right:1px;bottom:1px;color:#073f33;background:#b7ffe7;border-radius:50%;padding:2px}
+.die{position:relative}
+.die.suggested:not(.selected){transform:none}
+.combo-feedback{padding:9px 11px;background:#0b3454;border:1px solid #32688c;border-radius:9px;margin-bottom:9px;color:#daefff;font-size:13px}
+.combo-feedback strong{color:#9ef9cb}
+.combo-feedback em{font-style:normal;color:#ffe69f}
+.mobile-actions{display:none}
+@media(max-width:680px){
+ .boardpane.zoomed .board-layout{grid-template-columns:660px 128px;min-width:797px}
+ .boardpane.zoomed .tile{border-radius:6px}
+ .boardpane.zoomed .headcell{height:39px;font-size:19px}
+ .boardpane.zoomed .tile .star{font-size:25px}
+ .boardpane.zoomed .tile .cross{font-size:31px}
+ .boardpane.zoomed .scorecell{height:38px;font-size:19px}
+ .mobile-actions{position:sticky;top:0;z-index:8;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:7px 5px;margin-bottom:8px;background:#05162ef2;border:1px solid #24577f;border-radius:12px;box-shadow:0 4px 13px #000a;backdrop-filter:blur(10px)}
+ .mobile-actions .action{min-height:45px;padding:5px 2px;font-size:13px;border-radius:9px}
+ .mobile-actions .action.go{min-height:45px;font-size:13px}
+ .side .panel:first-child{margin-top:0}
+ .boardpane .boardcaption{position:relative}
+}
+
+/* V3.5 – vollständige, während jeder Partie verfügbare Spielanleitung */
+.iconbtn.rule-top{font-size:15px;min-width:103px;padding:8px 10px;white-space:nowrap;font-weight:800}
+.rule-context{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 12px;margin-top:9px;border-radius:10px;background:#0a2c48;border:1px solid #2b5b82;font-size:13px;color:#d0eaff}
+.rule-context span{flex:1;min-width:0}.rule-link,.rule-start{font:inherit;border:1px solid #438ec1;background:linear-gradient(130deg,#164978,#0b335a);color:#d7eeff;border-radius:9px;cursor:pointer;padding:9px 12px;font-weight:800;white-space:nowrap}
+.rule-link:hover,.rule-start:hover{background:#1d5f92}.rule-start{width:100%;white-space:normal;margin:8px 0 12px;min-height:45px}
+.rule-modal{width:min(800px,100%)}.rule-toolbar{position:sticky;top:-22px;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#082643f7;border-bottom:1px solid #3173a1;padding:8px 6px;margin:-12px -3px 14px;color:#ace9ff;font-size:13px;font-weight:850;backdrop-filter:blur(8px)}.rule-close-top{background:#164c77;border:1px solid #56a7d5;border-radius:8px;min-height:40px;padding:7px 13px;font-weight:800}.rule-intro{margin:6px 0 16px}
+.rule-jump{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #335273}
+.rule-jump-btn{font-size:12px;padding:7px 9px;border:1px solid #3470a2;border-radius:999px;background:#0a2c4b;color:#d7ecff}
+.rule-jump-btn:hover{background:#1b537c}
+.rule-section{border:1px solid #2b5379;border-radius:12px;margin:9px 0;background:#0a2541;scroll-margin-top:15px;overflow:hidden}
+.rule-section summary{font-size:15px;font-weight:800;cursor:pointer;padding:14px 12px;min-height:49px;list-style-position:inside;color:#e9f5ff}
+.rule-section[open] summary{background:#113b60;color:#a5e9ff;border-bottom:1px solid #346a95}
+.rule-section-body{padding:3px 16px 14px;color:#d2e1f3;line-height:1.6;font-size:14px}
+.rule-section-body p,.rule-section-body li{color:#d2e1f3}.rule-section-body strong{color:#fff7cc}.rule-section-body li{margin-bottom:7px}
+.rule-section-body ol,.rule-section-body ul{padding-left:23px;margin:12px 0}
+.rule-footer{margin-top:15px;display:grid;gap:12px}.rule-footer a{color:#9ee4ff;overflow-wrap:anywhere;text-decoration:underline;font-size:12px}
+.example-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}
+.example-card{border:1px solid #356287;border-radius:11px;padding:12px;background:#0b3154}
+.example-card strong{display:block}.example-card p{margin:8px 0 0;font-size:13px}
+.correct{color:#88f9b2}.incorrect{color:#ff9e9e}
+.mini-cells{display:flex;gap:3px;margin-top:10px}.mini-cells span{display:grid;place-items:center;width:27px;height:27px;border-radius:5px;background:#70db55;color:#143f1d;font-size:20px;font-weight:900}.mini-cells .gap{background:#102b47;color:#8196ae}.mini-cells .future{background:#70db55;color:#376a28;opacity:.5}.mini-cells.diagram{display:grid;grid-template-columns:27px 27px;grid-template-rows:27px 27px;justify-content:start}
+.score-example{display:grid;grid-template-columns:1fr auto;gap:6px;background:#153b58;padding:12px;border-radius:10px;margin:8px 0}.score-example strong,.score-example b{grid-column:1/-1;color:#dff6ff}
+.score-example span{grid-column:1/-1}.score-example span::before{content:'➕ ';color:#9beaa8}.score-example span:nth-of-type(4)::before{content:'➖ ';color:#ff9c9c}
+.level-table{display:grid;grid-template-columns:78px 1fr;gap:2px;padding:8px;background:#092039;border-radius:9px;font-size:12px}.level-table>b{grid-column:1/-1;margin:5px 3px}.level-table span{padding:5px 8px;background:#143b5b}.level-table span:nth-of-type(odd){font-weight:900;color:#e2f6ff}
+.headcell{position:relative}.headcell .solo-strokes{position:absolute;right:1px;top:-1px;color:#ffdc74;text-shadow:0 1px 3px #0a1b2b;font-size:15px}.headcell.solo-counted{box-shadow:inset 0 -2px 0 #ffc866}
+@media(max-width:680px){.iconbtn.rule-top{min-width:53px;font-size:20px}.iconbtn.rule-top span{display:none}.rule-context{align-items:flex-start;flex-direction:column;gap:7px}.rule-link{width:100%;min-height:41px}.example-grid{grid-template-columns:1fr}.rule-section-body{padding:3px 12px 12px}.rule-modal{padding:15px}.rule-jump-btn{min-height:35px}.headcell .solo-strokes{font-size:12px}}
+
+/* V3.6 – Auswahlwerkzeuge, gute Touch-Ziele und voraussichtliche Punktänderung */
+.editbar{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap;margin:0 0 9px;padding:8px 10px;border:1px solid #29527e;border-radius:11px;background:#0a2947}
+.editcount{font-weight:850;color:#e4f6ff;font-size:13px;min-width:145px}
+.editcount strong{color:#7bf2cc}
+.edit-actions{display:flex;gap:7px;flex-wrap:wrap}
+.edit-btn{padding:7px 10px;min-height:41px;font-size:13px;font-weight:800}
+.edit-btn:disabled{opacity:.35}
+.combo-preview{display:grid;gap:5px;background:#092e40;border:1px solid #267e74;border-radius:10px;padding:10px 12px;margin:6px 0 10px;font-size:13px;color:#ddfff4}
+.combo-preview .green{color:#86f6b4;font-weight:900}
+.combo-preview .secondary{font-size:12px;color:#b3e0ee}
+#commit-button.ready-commit,#mobile-commit:not(:disabled){box-shadow:0 0 0 2px #3cefaa66,0 0 16px #19caa257}
+@media(max-width:680px){.editbar{gap:7px;padding:8px}.editcount{flex-basis:100%;min-width:0}.edit-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}.edit-btn{width:100%;min-height:44px;white-space:normal;padding:6px;font-size:12px}.combo-preview{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.tile,.die,.action{transition:none!important;animation:none!important}}
+
+/* V3.7 – Navigation, Quick-Score und barrierearme Bedienung */
+.mobile-turnline{display:none}
+.board-navigator{display:none}
+.board-navigator .nav-btn{border:1px solid #3272a1;border-radius:9px;background:#103555;color:#e8f7ff;min-height:44px;padding:5px 10px;font-size:13px;font-weight:850}
+.board-navigator .nav-btn:disabled{opacity:.35}
+.board-navigator .nav-btn.mid{border-color:#27d9d9;background:#144761}
+.board-navigator .nav-label{font-size:13px;font-weight:850;color:#cff4ff;text-align:center;min-width:0;flex:1}
+.board-navigator .quick-score{font-size:13px;color:#daeeff;font-weight:750;text-align:center;white-space:normal}
+.board-navigator .quick-score b{color:#abfcd6;font-size:17px}
+.tile.keyboard-selected{outline:3px solid #ffe68f!important;outline-offset:-2px;z-index:5}
+@media(max-width:680px){
+ .mobile-turnline{grid-column:1/-1;display:flex;gap:8px;justify-content:space-between;align-items:center;min-width:0;font-size:12px;font-weight:800;color:#d0f2ff;padding:1px 4px}
+ .mobile-turnline strong{max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .mobile-turnline .turn-status{font-size:11px;color:#b7d8fa;white-space:nowrap}
+ .mobile-actions{row-gap:5px}
+ .mobile-actions .mobile-dice-track{grid-row:2}
+ .board-navigator{display:flex;align-items:center;gap:6px;margin:0 0 9px;padding:7px 8px;flex-wrap:wrap;border:1px solid #24527f;border-radius:12px;background:#08243f}
+ .board-navigator .nav-btn{flex:0 0 auto;padding:6px 9px;min-width:54px;font-size:12px}
+ .board-navigator .nav-btn.mid{min-width:80px}
+ .board-navigator .nav-label{min-width:66px}
+ .board-navigator .quick-score{flex:0 0 100%;padding:2px 0 0;border-top:1px solid #24527f}
+ .boardpane:not(.zoomed) .board-navigator{display:none}
+}
+@media (max-width:350px){
+ .board-navigator{gap:3px;padding:6px 4px}
+ .board-navigator .nav-btn{padding:5px 4px;min-width:48px}
+ .board-navigator .nav-btn.mid{min-width:69px}
+ .board-navigator .nav-label{font-size:11px;min-width:48px}
+}
+@media (min-width:681px) and (max-width:1024px) and (orientation:landscape){
+ .layout{grid-template-columns:minmax(0,1fr) 260px;gap:9px}
+ .boardpane{padding:10px}
+ .board-layout{grid-template-columns:minmax(475px,1fr) 117px;min-width:600px;gap:9px}
+ .side{display:grid;grid-template-columns:1fr}
+ .rollset{gap:4px}
+ .dice-group{padding:6px 4px}
+}
+.rule-tools{display:flex;flex-wrap:wrap;gap:8px}.rule-checklist{display:grid;gap:10px;margin:16px 0;padding:14px;border:1px solid #276592;border-radius:12px;background:#071e3a}.check-line{display:flex;align-items:flex-start;gap:10px}.check-line span:first-child{min-width:24px}
+
+/* V6: kompakte, auch auf kleinen Displays lesbare Brettstatistik */
+.balance-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 14px}
+.balance-kpis>div{background:#0b3357;border:1px solid #28678d;border-radius:10px;min-width:0;padding:11px 7px;text-align:center}
+.balance-kpis strong{display:block;color:#68f4e0;font-size:23px;line-height:1.2}
+.balance-kpis small{display:block;color:#bedaf0;font-size:12px;margin-top:3px}
+.balance-table-wrap{overflow-x:auto;max-width:100%}
+.balance-table{border-collapse:collapse;width:100%;font-size:13px;color:#f1f9ff;text-align:center}
+.balance-table th,.balance-table td{padding:9px 6px;border-bottom:1px solid #254f76;white-space:nowrap}
+.balance-table th:first-child{text-align:left}.balance-table thead th{font-size:11px;color:#b9daf2}
+.balance-dot{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;margin-right:2px}
+.balance-dot.g{background:#76d92b}.balance-dot.y{background:#ffd429}.balance-dot.b{background:#469aff}.balance-dot.r{background:#f74c4e}.balance-dot.o{background:#ff9834}
+.balance-verdict{background:#0a3549;color:#a4ffe6!important;border-left:3px solid #50e2ba;padding:11px 12px;border-radius:7px}
+@media(max-width:420px){.balance-table{font-size:12px}.balance-table th,.balance-table td{padding:8px 4px}.balance-kpis strong{font-size:20px}}
+/* V7: progress, contextual help and understandable score */
+.scorings,.bonuses,.ledger{min-width:0;width:100%}
+.ledgerline{min-width:0;font-size:12px}.ledgerline.final{font-size:13px}
+.progress-widget{background:#082846;border:1px solid #285b83;border-radius:12px;padding:10px 12px;margin:10px 0 5px}
+.progress-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;font-weight:800;color:#e0f6ff;margin-bottom:9px}
+.color-progress{display:grid;grid-template-columns:80px 1fr 55px;align-items:center;gap:7px;margin:6px 0;font-size:12px}
+.color-progress .meter{height:10px;border-radius:99px;background:#0b182b;overflow:hidden;border:1px solid #315779}
+.color-progress .meter>span{display:block;height:100%;border-radius:99px;background:var(--bar-color);transition:width .24s ease}
+.color-progress .count{text-align:right;color:#b8e6ff;font-variant-numeric:tabular-nums}
+.rule-link.v7-help{background:#123f58;border-color:#50a0bb}
+.score-explainer{display:block;font-size:11px;color:#9cceef;line-height:1.35;margin:7px 0 0}
+.ledgerline.final .ledgervalue{min-width:52px}
+@media(max-width:680px){.color-progress{grid-template-columns:70px 1fr 50px}.progress-widget{padding:10px 8px}}
+@media(prefers-reduced-motion:reduce){.color-progress .meter>span{transition:none}}
+/* V8: simple, informative real-time event feed */
+.online-feed{background:#082743;border:1px solid #285477;padding:10px 12px;border-radius:11px;margin-top:10px}
+.online-feed h3{font-size:13px;margin:0 0 7px;color:#d7f4ff}.online-feed ol{margin:0;padding-left:18px;color:#b7d3ed;font-size:12px}.online-feed li{margin:3px 0}
+/* V9: subtle completion experience, opponents and color accessibility */
+.tile[data-glyph]{overflow:hidden}.boardpane.show-symbols .tile[data-glyph]:before{content:attr(data-glyph);position:absolute;top:0;left:2px;font-weight:1000;font-size:clamp(9px,1vw,13px);color:#00172ad0;line-height:1;z-index:1}
+.mini-open{min-height:36px;min-width:44px;padding:3px 6px;border:1px solid #41769b;border-radius:8px;background:#153a5b;color:#cdeeff;font-size:12px}
+.mini-board{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:2px;width:100%;margin:12px auto;max-width:500px}
+.mini-tile{aspect-ratio:1;border-radius:3px;background:var(--shade);border:1px solid #1b324c;position:relative}
+.mini-tile.filled:after{content:'×';position:absolute;inset:0;display:grid;place-items:center;color:#03172b;font-size:clamp(7px,2vw,16px);font-weight:1000}
+.mini-tile.recent{outline:2px solid white;outline-offset:-2px}
+.mini-legend{display:flex;flex-wrap:wrap;gap:8px;color:#d0e3f5;font-size:12px}
+.celebrate{padding:15px;border:1px solid #a7c8fa;border-radius:14px;background:linear-gradient(135deg,#163452,#112850);text-align:center;margin:12px 0}
+.celebrate .winner{font-weight:1000;font-size:clamp(24px,4vw,37px);color:#ffe2a0}
+.finish-breakdown{width:100%;border-collapse:collapse;font-size:12px}.finish-breakdown th,.finish-breakdown td{border-bottom:1px solid #31506d;padding:7px 5px;text-align:right}.finish-breakdown th:first-child,.finish-breakdown td:first-child{text-align:left}.finish-breakdown td:last-child{font-weight:950;color:#a8ffe8}
+@media(prefers-reduced-motion:no-preference){.celebrate{animation:finish-arrive .6s ease-out}@keyframes finish-arrive{from{opacity:.6;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}}
+/* V10: portable diagnostics panel */
+.qa-list{display:grid;gap:8px;margin:14px 0}.qa-entry{display:flex;gap:9px;align-items:start;border:1px solid #285475;padding:9px 10px;background:#102c4b;border-radius:8px}.qa-entry .status{font-weight:1000;min-width:25px}.qa-passed{color:#a6ffd7}.qa-warning{color:#ffddb0}
+
+/* V12 – klare Punkte, schneller Weg zu Gegnern und mobil gut erreichbare Abschnitte */
+.score-ribbon{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:5px;align-items:stretch;border:1px solid #2e729c;border-radius:12px;background:#082541;color:#e6f4ff;text-align:left;padding:6px;margin:0 0 10px;cursor:pointer}
+.score-ribbon>span{display:flex;flex-direction:column;justify-content:center;min-width:0;border-radius:8px;background:#123655;padding:7px 9px}
+.score-ribbon small{font-size:11px;color:#bcdaef;font-weight:700}
+.score-ribbon strong{font-size:19px;font-variant-numeric:tabular-nums;line-height:1.25;white-space:nowrap}
+.score-ribbon .score-ribbon-total{background:#07516b;border:1px solid #4de0dc}
+.score-ribbon .score-ribbon-total strong{color:#dcfff6}
+.score-ribbon:focus-visible{outline:3px solid #ffee9c;outline-offset:2px}
+.mobile-jump{display:none}
+.player-head{flex-wrap:wrap;gap:7px;margin-bottom:8px}.player-head h2{margin:0!important}
+.compare-trigger{font-size:12px;min-height:39px;margin-left:auto;white-space:nowrap}
+.player-meter{display:block;overflow:hidden;height:5px;border-radius:99px;background:#203855;border:1px solid #42658a;margin-top:5px}
+.player-meter>span{display:block;height:100%;background:#35cdb7;border-radius:99px}
+.compare-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.compare-card{background:#0b2b49;border:1px solid #38648b;border-radius:11px;padding:10px;min-width:0}
+.compare-card h3{margin:0 0 5px;font-size:15px;color:#edfbff;overflow-wrap:anywhere}
+.compare-card .mini-board{gap:1px;margin:9px 0}
+.compare-card .mini-tile{border:0;border-radius:1px}
+.compare-card .mini-tile.filled:after{font-size:clamp(6px,1vw,10px)}
+.compare-card .flat{width:100%;margin-top:8px;min-height:42px}
+.compare-stats{font-size:12px;color:#badcf2;line-height:1.5}
+.score-detail{display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:#0a2c4b;border:1px solid #32658c;padding:13px;border-radius:11px;margin:12px 0}
+.score-detail strong{text-align:right;font-variant-numeric:tabular-nums}.score-detail .total{border-top:1px solid #4b769a;padding-top:10px;margin-top:5px;color:#9ff6d6;font-size:18px}
+#boardpane,#players-zone,#score-ribbon{scroll-margin-top:155px}
+@media(max-width:680px){
+ .mobile-jump{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 9px}
+ .mobile-jump button{border:1px solid #34739d;border-radius:10px;background:#123552;color:#ddf5ff;min-height:44px;font-weight:800;padding:6px 4px;font-size:13px}
+ .mobile-jump button:focus-visible{outline:3px solid #ffe59b}
+ .score-ribbon{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:8px;padding:5px;gap:5px}
+ .score-ribbon>span{padding:5px 8px}.score-ribbon small{font-size:10px}.score-ribbon strong{font-size:17px}
+ .compare-list{grid-template-columns:1fr}
+ #boardpane,#players-zone,#score-ribbon{scroll-margin-top:148px}
+}
+@media(prefers-reduced-motion:reduce){.mobile-jump button,.score-ribbon{transition:none!important}}
+
+/* V15 – ruhige, barriereärmere Bedienung */
+button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
+#board-status{font-weight:750;color:#c4eaff}
+.player.current{box-shadow:inset 3px 0 #ffd04c,0 0 0 1px #ffd04c55}
+#mobile-turn-state{font-weight:700}
+@media(max-width:680px){.mobile-jump button,.edit-btn,.nav-btn,.compare-trigger,.rule-link{min-height:44px}
+ .boardcaption{align-items:center;row-gap:8px}.turn-status{line-height:1.35}}
+@media(prefers-reduced-motion:reduce){html:focus-within{scroll-behavior:auto!important}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app"><header class="top"><div class="brand"><div class="logo">Kreuz<span>Kunter</span></div><div class="subtitle">– Online Edition <span class="statuspill" id="mode-title">Offline-Testversion</span></div></div><div class="topright"><div class="badge"><small>Wurf</small><b id="round-badge">–</b></div><div class="badge"><small>Joker übrig</small><b id="jokers-badge">8 / 8</b></div><button class="iconbtn" data-action="online" title="Online-Raum erstellen oder beitreten" aria-label="Online spielen">🌐</button><button class="iconbtn rule-top" data-action="help" title="Vollständige Spielanleitung" aria-label="Spielanleitung öffnen">📖 <span>Regeln</span></button><button class="iconbtn" data-action="new" title="Neue Partie" aria-label="Neue Partie">⚙</button></div></header>
+<div class="mobile-actions" aria-label="Schnellaktionen für das Spiel"><div class="mobile-turnline"><strong id="mobile-turn-name">Spieler 1</strong><span class="turn-status" id="mobile-turn-state">Partie bereit</span></div><div id="mobile-dices" class="mobile-dice-track" aria-label="Würfel im Schnellmenü"></div><button class="action go" type="button" id="mobile-roll" data-mobile-action="roll">🎲 Würfeln</button><button class="action ok" type="button" id="mobile-commit" data-mobile-action="commit">✓ Eintragen</button><button class="action pass" type="button" id="mobile-pass" data-mobile-action="pass">✕ Passen</button></div>
+<nav class="mobile-jump" aria-label="Schnellnavigation">
+<button type="button" data-action="jumpboard">🎨 Brett</button>
+<button type="button" data-action="jumpplayers">👥 Spieler</button>
+<button type="button" data-action="jumpscore">🏆 Punkte</button>
+</nav>
+<div class="layout"><section class="panel boardpane" id="boardpane"><div class="boardcaption"><span id="board-owner">Dein Spielfeld</span><span id="board-status">Würfel auswählen und Kästchen markieren</span><button class="flat view-toggle" type="button" id="view-toggle" data-action="view" aria-label="Ansicht des Spielbretts wechseln">🔎 Vergrößern</button></div><button type="button" class="score-ribbon" id="score-ribbon" data-action="scorehelp" aria-label="Punkteübersicht und Erklärung öffnen">
+<span><small>Erspielte Punkte</small><strong id="score-earned">+0</strong></span>
+<span><small>Joker übrig</small><strong id="score-joker">+8</strong></span>
+<span><small>Offene Sterne</small><strong id="score-stars">−30</strong></span>
+<span class="score-ribbon-total"><small>Zwischenstand</small><strong id="score-live">−22</strong></span>
+</button><div class="board-navigator" id="board-navigator" role="group" aria-label="Über das vergrößerte Spielbrett navigieren"><button class="nav-btn" type="button" data-action="navleft" aria-label="Zum linken Spielfeldrand">◀ A–G</button><button class="nav-btn mid" type="button" data-action="navcenter" aria-label="Startspalte H zentrieren">⌖ Mitte H</button><button class="nav-btn" type="button" data-action="navright" aria-label="Zum rechten Spielfeldrand">I–O ▶</button><span class="nav-label" id="board-window" aria-live="off">Spalte H</span><div class="quick-score" id="quick-score" aria-live="off">Punkte: <b>−22</b></div></div><div class="editbar" id="editbar" aria-label="Auswahl bearbeiten"><div class="editcount" id="edit-count" aria-live="polite">Noch keine Kreuze gewählt</div><div class="edit-actions"><button type="button" class="flat edit-btn" data-action="undo" id="undo-button" disabled title="Letztes noch nicht eingetragenes Kreuz zurücknehmen">↶ Letztes Kreuz</button><button type="button" class="flat edit-btn" data-action="clear" id="clear-button" disabled title="Nur die aktuelle Auswahl löschen">✕ Auswahl löschen</button></div></div><div class="board-scroll" aria-label="Spielbrett horizontal scrollbar"><div class="board-layout"><div class="board-core"><div class="matrix" id="headers"></div><div class="matrix gridarea" id="tiles"></div><div class="matrix scoregrid" id="score-top"></div><div class="matrix" style="margin-top:3px" id="score-bottom"></div><div class="jokerstrip" id="jokerstrip"></div></div><aside class="scorings"><div class="bonuses" id="colorbonuses"></div><div class="ledger" id="ledger"></div></aside></div></div><div class="rule-context"><span id="rule-context-text" aria-live="polite">Regelhinweis: Beim ersten Zug muss mindestens ein Feld in H liegen.</span><span class="rule-tools"><button type="button" class="rule-link v7-help" data-action="why">💡 Zug-Hilfe</button><button type="button" class="rule-link" data-action="symbols" id="symbols-toggle">◈ Farbsymbole</button><button type="button" class="rule-link" data-action="inspect">✅ Zug prüfen</button><button type="button" class="rule-link" data-action="balance">📊 Brettcheck</button><button type="button" class="rule-link" data-action="diagnostics">🧪 Technikcheck</button><button type="button" class="rule-link" data-action="help">📖 Alle Regeln</button></span></div><section class="progress-widget" id="score-zone" aria-label="Fortschritt nach Farben"><div class="progress-heading"><span>🎨 Dein Farbfortschritt</span><span id="completion-overview" class="tiny">0 / 105 Felder</span></div><div id="color-progress-bars"></div><div class="score-explainer" id="score-explainer">Zwischenstand enthält die noch offenen Sterne und ungenutzten Joker.</div></section><p class="hint" id="board-hint">Tipp: Auf dem Handy helfen die Tasten A–G, H und I–O beim Verschieben der großen Ansicht. Pro Farbe gibt es drei Sterne. Nicht angekreuzte Sterne kosten je 2 Punkte.</p></section>
+<aside class="side"><section class="panel"><h2>🎲 Würfel <span class="dice-summary" id="dice-summary">4 Würfel</span></h2><div class="rollset" id="dices"></div><div class="dice-instructions" id="dice-instructions">Solo: 2 Farbwürfel + 2 Zahlenwürfel</div><div class="selectlabel" id="select-label">Neue Partie starten</div><div id="extra-choices" aria-live="polite"></div><button class="action go" id="roll-button" data-action="roll">🎲 Würfeln</button><div class="actions"><button class="action ok" id="commit-button" data-action="commit">✓ Eintragen</button><button class="action pass" id="pass-button" data-action="pass">✕ Passen</button></div><div class="message" id="game-message" role="status" aria-live="polite">Eine neue Partie starten.</div></section><section class="panel" id="players-zone"><div class="row player-head"><h2>👥 Spieler</h2><span id="playercount" class="tiny"></span><button type="button" class="flat compare-trigger" data-action="compare">▦ Alle Bretter</button></div><div class="playerlist" id="players"></div><div id="online-controls" style="margin-top:10px"></div><section class="online-feed" id="online-feed" aria-label="Letzte Spielaktionen" hidden></section></section><div class="footpanel"><div class="tiny">Aktueller Spieler</div><strong id="active-player" style="font-size:20px">–</strong><div id="turn-info" class="tiny">Deine Partie wartet.</div></div></aside></div><div class="footnote">KreuzKunter V16 · Abschlusskandidat, noch nicht veröffentlicht · Lokale Spielstände bleiben auf diesem Gerät; Online-Partien liegen auf dem Entwicklungsserver</div></div>
+<div class="mask hidden" id="dialog"><div class="modal" id="dialog-body" role="dialog" aria-modal="true" aria-labelledby="dialog-heading"></div></div>
+<script>
+
+(()=>{
+'use strict';
+const ROWS=["rrryrrbbogggyyy", "ggoyyyoooyyoyyy", "gggbbyoggoooboo", "bbgbrorggoogrro", "bbbooorrrgggrrr", "roobbbyrrgybygg", "rrrbbbyygbbbyyy"];
+// Eigenständige Farbverteilung: jede der 5 Farben besitzt genau einen
+// orthogonal zusammenhängenden Farbblock der Größen 1, 2, 3, 4, 5 und 6.
+const STARS=[68, 99, 59, 37, 72, 3, 16, 75, 62, 55, 11, 34, 28, 96, 65];
+const STARSET=new Set(STARS);
+const COLS='ABCDEFGHIJKLMNO';
+const TOP=[5,3,3,3,2,2,2,1,2,2,2,3,3,3,5];
+const LOW=[3,2,2,2,1,1,1,0,1,1,1,2,2,2,3];
+const COLOR=['g','y','b','r','o'];
+const COLNAMES={g:'Grün',y:'Gelb',b:'Blau',r:'Rot',o:'Orange','*':'Farbjoker'};
+const DICE_COLOR=['g','y','b','r','o','*'];
+const DICE_NUM=[1,2,3,4,5,'?'];
+const KEY='kreuzkunter-local-v6';
+const BOARD_ID='KK-2026-V6-STAR-EQUAL';
+const BOARD_VIEW_KEY='kreuzkunter-board-view-v3';
+let boardView=(()=>{try{return localStorage.getItem(BOARD_VIEW_KEY)||(matchMedia('(max-width:680px)').matches?'zoom':'fit');}catch(e){return matchMedia('(max-width:680px)').matches?'zoom':'fit';}})();
+const $=(id)=>document.getElementById(id);
+const ESC=(s)=>String(s).replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
+let state=null;let modalReturn=null;let flash='';let flashBad=false;let NET=null;
+const SYMBOLS_KEY='kreuzkunter-show-symbols-v9';let showSymbols=false;
+try{showSymbols=localStorage.getItem(SYMBOLS_KEY)==='1';}catch(e){}
+function toggleSymbols(){showSymbols=!showSymbols;try{localStorage.setItem(SYMBOLS_KEY,showSymbols?'1':'0');}catch(e){}render();}
+const COLOR_SYMBOLS={g:'●',y:'◆',b:'▲',r:'■',o:'✚'};
+function saveBestResult(){
+ if(state.mode!=='solo'||!state.finished||state.statsRecorded)return;
+ const result=score(state.players[0]).total;
+ try{const old=JSON.parse(localStorage.getItem('kreuzkunter-solo-record-v9')||'null');if(!old||result>old.best)localStorage.setItem('kreuzkunter-solo-record-v9',JSON.stringify({best:result,at:new Date().toISOString().slice(0,10)}));}catch(e){}
+ state.statsRecorded=true;save();
+}
+function showScoreDetail(){
+ if(!state)return;
+ const s=score(player()),positive=s.bonus+s.columns;
+ showDialog(`<div class="minihead">Punkte verständlich</div><h2 id="dialog-heading">🏆 Deine Punktübersicht</h2>
+ <p>Der Zwischenstand ist die <strong>aktuelle Hochrechnung</strong>. Noch offene Sternfelder zählen bereits als Minuspunkte. Deshalb kann er zu Beginn negativ sein – das ist kein Fehler.</p>
+ <div class="score-detail"><span>🌈 Abgeschlossene Farben</span><strong>+${s.bonus}</strong><span>🔠 Abgeschlossene Spalten</span><strong>+${s.columns}</strong><span>❕ Ungenutzte Joker</span><strong>+${s.joker}</strong><span>★ Noch offene Sterne (${s.missed} × −2)</span><strong>−${s.missed*2}</strong><span class="total">${state.finished?'Endergebnis':'Aktueller Zwischenstand'}</span><strong class="total">${s.total>=0?'+':''}${s.total}</strong></div>
+ <p class="tiny">Bereits erspielte Boni und Spaltenpunkte: <strong>+${positive}</strong>. Bei jeder ausgefüllten Sternzelle entfallen 2 Minuspunkte. Endgültig gewertet wird am Spielende.</p>
+ <button class="action ok" id="score-close" type="button">Zum Spiel zurück</button>`);
+ $('score-close').addEventListener('click',hideDialog);
+}
+function jumpToSection(id){
+ const target=$(id);if(!target)return;
+ const reduced=window.matchMedia?.('(prefers-reduced-motion:reduce)').matches;
+ target.scrollIntoView({block:'start',behavior:reduced?'instant':'smooth'});
+}
+function showCompare(){
+ if(!state)return;
+ const mini=ROWS.join('').split('');
+ const cards=state.players.map((p,i)=>{
+  const s=score(p),used=new Set(p.cells||[]),recent=new Set(p.lastMove||[]);
+  return `<article class="compare-card"><h3>${ESC(p.name)} ${i===state.picker?'· am Zug':''}</h3><div class="compare-stats"><strong>${s.total} Punkte</strong> · ${used.size}/105 Felder · ${Object.keys(p.colorAwards).length}/5 Farben</div>
+  <div class="mini-board" role="img" aria-label="Spielbrett von ${ESC(p.name)}: ${used.size} Kreuze">${mini.map((c,j)=>`<span class="mini-tile ${used.has(j)?'filled':''} ${recent.has(j)?'recent':''}" style="--shade:var(--${c})"></span>`).join('')}</div>
+  <button type="button" class="flat compare-open" data-compare-index="${i}">Groß anzeigen</button></article>`;
+ }).join('');
+ showDialog(`<div class="minihead">Spielstand im Vergleich</div><h2 id="dialog-heading">👥 Alle Spielerbretter</h2><p>Die Kreuze und Punkte werden aus dem aktuellen gemeinsamen Spielstand angezeigt. Bei einer Online-Partie siehst du die zuletzt vom Server bestätigten Werte.</p>
+ <div class="compare-list">${cards}</div><div class="mini-legend">× = belegtes Feld · Weißer Rand = letzte Kreuze</div><button class="action ok" id="compare-close" type="button" style="margin-top:15px">Zurück zum Spiel</button>`);
+ $('dialog-body').querySelectorAll('[data-compare-index]').forEach(btn=>btn.addEventListener('click',()=>showOpponent(Number(btn.dataset.compareIndex))));
+ $('compare-close').addEventListener('click',hideDialog);
+}
+function showOpponent(i){
+ const p=state.players[i];if(!p)return;
+ const used=new Set(p.cells||[]),last=new Set(p.lastMove||[]);
+ showDialog(`<div class="minihead">Spielerübersicht</div><h2 id="dialog-heading">👤 ${ESC(p.name)} – ${score(p).total} Punkte</h2><p>${used.size}/105 Felder · ${Object.keys(p.colorAwards).length} Farbboni · ${8-p.jokerUsed} Joker</p><div class="mini-board" role="img" aria-label="Mini-Spielbrett von ${ESC(p.name)}, ${used.size} ausgefüllte Felder">${ROWS.join('').split('').map((c,j)=>`<span class="mini-tile ${used.has(j)?'filled':''} ${last.has(j)?'recent':''}" style="--shade:var(--${c})" title="${COLS[j%15]}${Math.floor(j/15)+1}"></span>`).join('')}</div><div class="mini-legend"><span>× = ausgefüllt</span><span>Weißer Rand = letzte Kreuze</span></div><div class="actions" style="margin-top:15px"><button class="action ok" type="button" id="opponent-close">Zurück</button><button class="action pass" type="button" id="opponent-compare">Alle Bretter</button></div>`);
+ $('opponent-close').addEventListener('click',hideDialog);$('opponent-compare').addEventListener('click',showCompare);
+}
+
+const NET_INFO_KEY='kreuzkunter-net-info-render-v1',NET_DRAFT_KEY='kreuzkunter-online-pending-render-v1';
+function getNetInfo(){try{return JSON.parse(localStorage.getItem(NET_INFO_KEY)||'{}');}catch(e){return {};}}
+function persistOnlineDraft(){
+ if(!NET||!NET.token||!state||state.mode!=='online'||state.phase!=='select'||state.picker!==NET.index)return;
+ try{sessionStorage.setItem(NET_DRAFT_KEY,JSON.stringify({code:NET.code,token:NET.token,turn:state.turn,picker:state.picker,
+   dice:state.dice,cells:state.players[NET.index].cells,pending:state.pending,
+   colorDie:state.colorDie,numDie:state.numDie,chosenColor:state.chosenColor,chosenNumber:state.chosenNumber,
+   manualColor:state.manualColor,manualNumber:state.manualNumber}));}catch(e){}
+}
+function restoreOnlineDraft(my,msg){
+ try{
+  const saved=JSON.parse(sessionStorage.getItem(NET_DRAFT_KEY)||'null');
+  const game=msg.game,idx=msg.index;
+  if(!saved||saved.code!==my.code||saved.token!==my.token||game.phase!=='select'||game.turn!==saved.turn||game.picker!==saved.picker||idx!==saved.picker||
+   JSON.stringify(game.dice)!==JSON.stringify(saved.dice)||JSON.stringify(game.players[idx]?.cells)!==JSON.stringify(saved.cells))return null;
+  if(!Array.isArray(saved.pending)||saved.pending.length>5||saved.pending.some(i=>!Number.isInteger(i)||i<0||i>=105))return null;
+  return {pending:saved.pending,colorDie:saved.colorDie,numDie:saved.numDie,chosenColor:saved.chosenColor,chosenNumber:saved.chosenNumber,
+     manualColor:saved.manualColor,manualNumber:saved.manualNumber};
+ }catch(e){return null;}
+}
+function leaveOnline(){
+ if(!NET)return;
+ const old=NET;old.stopped=true;clearTimeout(old.timer);clearTimeout(old.syncTimer);
+ try{old.ws?.close();}catch(e){}
+ NET=null;
+ try{const info=getNetInfo();info.active=false;localStorage.setItem(NET_INFO_KEY,JSON.stringify(info));sessionStorage.removeItem(NET_DRAFT_KEY);}catch(e){}
+ state=restore()||initial(['Spieler 1'],'solo');flash='Online-Raum verlassen. Offline-Spiel ist wieder verfügbar.';flashBad=false;hideDialog();render();
+}
+
+let moveMemoKey=null, moveMemoValue=null;
+function emptyPlayer(name){return{name,cells:[],jokerUsed:0,columnAwards:Array(15).fill(null),colorAwards:{},lastMove:[],took:false};}
+function initial(names,mode){return{v:1,mode,players:names.map(emptyPlayer),active:0,picker:0,turn:0,phase:'ready',dice:[],accepted:null,colorDie:null,numDie:null,chosenColor:null,chosenNumber:null,manualColor:false,manualNumber:false,pending:[],globalColumn:Array(15).fill(false),globalColor:{g:false,y:false,b:false,r:false,o:false},finished:false,history:[],winnerMessage:'',lastRoll:null};}
+function save(){if(NET)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){/* file privacy modes */}}
+function validSavedPlayer(p){
+ if(!p||typeof p.name!=='string'||!Array.isArray(p.cells)||p.cells.length>105||
+    p.cells.some(i=>!Number.isInteger(i)||i<0||i>=105)||new Set(p.cells).size!==p.cells.length||
+    !Number.isInteger(p.jokerUsed)||p.jokerUsed<0||p.jokerUsed>8||
+    !Array.isArray(p.columnAwards)||p.columnAwards.length!==15||
+    p.columnAwards.some((x,i)=>x!==null&&x!==TOP[i]&&x!==LOW[i])||
+    !p.colorAwards||typeof p.colorAwards!=='object'||Array.isArray(p.colorAwards)||
+    Object.entries(p.colorAwards).some(([c,v])=>!COLOR.includes(c)||![3,5].includes(v))||
+    !Array.isArray(p.lastMove)||p.lastMove.some(i=>!Number.isInteger(i)||!p.cells.includes(i)))return false;
+ return true;
+}
+function validSavedGame(o){
+ if(!o||o.v!==1||!['solo','local'].includes(o.mode)||!Array.isArray(o.players)||
+  o.players.length<1||o.players.length>6||(o.mode==='solo'&&o.players.length!==1)||
+  o.players.some(p=>!validSavedPlayer(p))||
+  !Number.isInteger(o.active)||o.active<0||o.active>=o.players.length||
+  !Number.isInteger(o.picker)||o.picker<0||o.picker>=o.players.length||
+  !Number.isInteger(o.turn)||o.turn<0||o.turn>500||
+  !['ready','select','over'].includes(o.phase)||!Array.isArray(o.dice)||o.dice.length>6||
+  o.dice.some(d=>!d||!(['color','num'].includes(d.type))||
+   (d.type==='color'&&!DICE_COLOR.includes(d.val))||(d.type==='num'&&!DICE_NUM.includes(d.val)))||
+  !Array.isArray(o.globalColumn)||o.globalColumn.length!==15||o.globalColumn.some(x=>typeof x!=='boolean')||
+  !o.globalColor||COLOR.some(c=>typeof o.globalColor[c]!=='boolean')||
+  !Array.isArray(o.pending)||o.pending.length>5||o.pending.some(i=>!Number.isInteger(i)||i<0||i>=105)||
+  new Set(o.pending).size!==o.pending.length)return false;
+ if(o.phase==='select'&&o.dice.length!==(o.mode==='solo'?4:6))return false;
+ if(o.mode==='solo'&&o.turn>30)return false;
+ return true;
+}
+function restore(){try{const raw=localStorage.getItem(KEY);if(!raw)return null;const o=JSON.parse(raw);if(!validSavedGame(o)){
+ console.warn('KreuzKunter: unvollständiger Spielstand ignoriert.');return null;
+ }return o;}catch(e){return null;}}
+function player(){return state.players[NET ? NET.index : state.picker]||state.players[0];}
+function filled(p,i){return p.cells.includes(i);}
+function neighbors(i){const r=Math.floor(i/15),c=i%15,a=[];if(r>0)a.push(i-15);if(r<6)a.push(i+15);if(c>0)a.push(i-1);if(c<14)a.push(i+1);return a;}
+function colorAt(i){return ROWS[Math.floor(i/15)][i%15];}
+function region(i){const seen=new Set([i]),q=[i],col=colorAt(i);for(let j=0;j<q.length;j++)for(const n of neighbors(q[j]))if(!seen.has(n)&&colorAt(n)===col){seen.add(n);q.push(n);}return seen;}
+function score(p){const bonus=Object.values(p.colorAwards).reduce((a,b)=>a+(b||0),0);const columns=p.columnAwards.reduce((a,b)=>a+(b||0),0);const joker=8-p.jokerUsed;const missed=STARS.filter(i=>!filled(p,i)).length;return{bonus,columns,joker,missed,total:bonus+columns+joker-2*missed};}
+function dicesOf(type){return state.dice.map((d,i)=>({...d,index:i})).filter(d=>d.type===type);}
+function available(i){if(state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker)))return false;if(state.mode==='solo'||state.turn<=3||state.picker===state.active||!state.accepted)return true;return !state.accepted.includes(i);}
+function currentColor(){const d=state.dice[state.colorDie];if(!d)return null;return d.val==='*'?state.chosenColor:d.val;}
+function currentNumber(){const d=state.dice[state.numDie];if(!d)return null;return d.val==='?'?state.chosenNumber:d.val;}
+function jokerCost(){if(state.colorDie==null||state.numDie==null)return 0;return +(state.dice[state.colorDie].val==='*')+ +(state.dice[state.numDie].val==='?');}
+function validateMove(quiet=false){
+ if(state.phase!=='select')return 'Es ist gerade kein Spielzug offen.';
+ if(state.colorDie==null||state.numDie==null){
+  if(!state.pending.length)return 'Markiere zuerst ein passendes Feld.';
+  const possible=matchingOptions();
+  if(!possible.length)return 'Keine erlaubte Kombination für diese Kreuze vorhanden.';
+  if(!possible.some(opt=>opt.cells.length===state.pending.length))return 'Du kannst noch passende Felder hinzufügen. Zum Eintragen muss eine gewürfelte Zahl erreicht sein.';
+  return null;
+ }
+
+ const pending=state.pending,p=player();const col=currentColor()||(state.dice[state.colorDie]?.val==='*'&&pending.length?colorAt(pending[0]):null),num=(state.dice[state.numDie]?.val==='?'&&!state.chosenNumber)?pending.length:currentNumber();if(!COLOR.includes(col))return 'Wähle die Farbe für deinen Joker.';if(!Number.isInteger(num)||num<1||num>5)return 'Wähle die Zahl für deinen Joker (1–5).';
+ if(jokerCost()>8-p.jokerUsed)return 'Nicht genügend Joker (!) verfügbar.';
+ if(pending.length!==num)return `Du musst genau ${num} ${num===1?'Feld':'Felder'} markieren (aktuell ${pending.length}).`;
+ if(new Set(pending).size!==pending.length)return 'Ein Feld wurde doppelt ausgewählt.';
+ if(pending.some(i=>!Number.isInteger(i)||i<0||i>=105||filled(p,i)||colorAt(i)!==col))return 'Falsche Farbe oder bereits belegtes Feld.';
+ const sameRegion=region(pending[0]);if(pending.some(i=>!sameRegion.has(i)))return 'Alle Felder müssen zum selben Farbblock gehören.';
+ const set=new Set(pending),flood=new Set([pending[0]]),q=[pending[0]];for(let j=0;j<q.length;j++)for(const n of neighbors(q[j]))if(set.has(n)&&!flood.has(n)){flood.add(n);q.push(n);}if(flood.size!==pending.length)return 'Die neu angekreuzten Felder müssen zusammenhängen (nicht diagonal).';
+ if(p.cells.length===0&&!pending.some(i=>i%15===7))return 'Dein allererster Eintrag muss Spalte H berühren.';
+ if(p.cells.length>0&&!pending.some(i=>i%15===7||neighbors(i).some(n=>filled(p,n))))return 'Setze an bestehende Kreuze an oder beginne in Startspalte H.';
+ return null;
+}
+ // Every valid placement, including flexible joker dice. Color and number do not
+ // have to be selected before touching the board. Each new cross narrows the options.
+ function legalPlacementsFor(color,count,p=player()){
+  if(!p)return [];
+  const colors=COLOR.includes(color)?[color]:COLOR;
+  const numbers=Number.isInteger(count)&&count>=1&&count<=5?[count]:[1,2,3,4,5];
+  const already=new Set(p.cells),visited=new Set(),out=[];
+  for(let i=0;i<105;i++){
+   const c=colorAt(i);
+   if(!colors.includes(c)||visited.has(i))continue;
+   const block=region(i);for(const n of block)visited.add(n);
+   const free=[...block].filter(j=>!already.has(j));if(!free.length)continue;
+   for(let bits=1;bits<(1<<free.length);bits++){
+    const countBits=popcount(bits);if(!numbers.includes(countBits))continue;
+    const pick=free.filter((_,j)=>(bits>>j)&1),set=new Set(pick),flood=new Set([pick[0]]),queue=[pick[0]];
+    for(let k=0;k<queue.length;k++)for(const n of neighbors(queue[k]))if(set.has(n)&&!flood.has(n)){flood.add(n);queue.push(n);}
+    if(flood.size!==countBits)continue;
+    if(!p.cells.length&&!pick.some(j=>j%15===7))continue;
+    if(p.cells.length&&!pick.some(j=>j%15===7||neighbors(j).some(k=>already.has(k))))continue;
+    out.push(pick);
+   }
+  }
+  return out;
+ }
+ function popcount(n){let count=0;while(n){n&=n-1;count++;}return count;}
+ function legalPlacements(){return legalPlacementsFor(currentColor(),currentNumber());}
+ function matchingOptions(){
+  if(state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker)))return [];
+  // A selection can redraw the entire board several times on phones.
+  // Cache the expensive combinations, invalidating for all relevant inputs.
+  const who=player();
+  const key=JSON.stringify([state.phase,state.turn,state.picker,state.active,state.accepted,state.dice,state.colorDie,state.numDie,state.chosenColor,state.chosenNumber,state.pending,who.cells,who.jokerUsed,NET?NET.index:null,NET?NET.connected:null]);
+  if(moveMemoKey===key&&moveMemoValue)return moveMemoValue;
+  const p=player(),partial=state.pending||[];
+  // A die is fixed ONLY after the user deliberately taps it. Otherwise every
+  // affordable color/number pair remains an option until confirmation.
+  const colorIds=state.colorDie!==null?[state.colorDie]:state.dice.map((d,i)=>d.type==='color'&&available(i)?i:null).filter(i=>i!==null);
+  const numberIds=state.numDie!==null?[state.numDie]:state.dice.map((d,i)=>d.type==='num'&&available(i)?i:null).filter(i=>i!==null);
+  const choices=[];
+  const partialColor=partial.length?colorAt(partial[0]):null;
+  if(partial.some(i=>colorAt(i)!==partialColor))return [];
+  for(const ci of colorIds){
+   if(!available(ci))continue;
+   const cd=state.dice[ci];if(!cd||cd.type!=='color')continue;
+   for(const ni of numberIds){
+    if(!available(ni))continue;
+    const nd=state.dice[ni];if(!nd||nd.type!=='num')continue;
+    const cost=+(cd.val==='*')+ +(nd.val==='?');
+    if(cost>8-p.jokerUsed)continue;
+    const c=cd.val==='*'?(partialColor||state.chosenColor):cd.val;
+    if(partialColor&&c!==partialColor)continue;
+    const count=nd.val==='?'?(state.chosenNumber||null):nd.val;
+    for(const cells of legalPlacementsFor(c,count,p)){
+     if(partial.every(i=>cells.includes(i)))choices.push({ci,ni,cells,cost});
+    }
+   }
+  }
+  moveMemoKey=key;moveMemoValue=choices;
+  return choices;
+ }
+ function moveChoices(){return matchingOptions().filter(o=>o.cells.length===state.pending.length);}
+ function bestMove(){return moveChoices().sort((a,b)=>a.cost-b.cost||a.ci-b.ci||a.ni-b.ni)[0]||null;}
+ function possibleCells(){return new Set(matchingOptions().flatMap(opt=>opt.cells));}
+ function projectPoints(option){
+  if(!option||!state.pending.length)return null;
+  const p=player(),put=new Set([...p.cells,...state.pending]);
+  const savedStars=state.pending.filter(i=>STARSET.has(i)).length;
+  let colPoints=0,colorPoints=0,newCols=0,newColors=0;
+  for(let c=0;c<15;c++)if(p.columnAwards[c]==null && Array.from({length:7},(_,r)=>r*15+c).every(i=>put.has(i))){newCols++;colPoints+=state.globalColumn[c]?LOW[c]:TOP[c];}
+  for(const color of COLOR)if(p.colorAwards[color]==null && [...ROWS.join('')].every((v,i)=>v!==color||put.has(i))){newColors++;colorPoints+=state.globalColor[color]?3:5;}
+  return {savedStars,colPoints,colorPoints,newCols,newColors,cost:option.cost,delta:2*savedStars+colPoints+colorPoints-option.cost};
+ }
+ function previewText(){
+  if(!state.pending.length)return '';
+  const opts=matchingOptions(),finished=moveChoices(),costs=[...new Set(opts.map(o=>o.cost))].sort();
+  const future=[...new Set(opts.map(o=>o.cells.length))].sort((a,b)=>a-b);
+  const completeNumbers=[...new Set(finished.map(o=>o.cells.length))];
+  const price=finished.length?` · ${bestMove().cost} Joker nötig`:' ';
+  const proj=finished.length?projectPoints(bestMove()):null;
+  const projection=proj?`<div class="combo-preview"><span class="green">Punktevorschau: ${proj.delta>=0?'+':''}${proj.delta}</span><span class="secondary">${proj.savedStars?'★ '+proj.savedStars+' Stern(e) gerettet: +'+(proj.savedStars*2)+' · ':''}${proj.newCols?'Spalten: +'+proj.colPoints+' · ':''}${proj.newColors?'Farben: +'+proj.colorPoints+' · ':''}Joker: −${proj.cost}</span><span class="secondary">Unverbindlich – Boni werden erst am Ende des Wurfs endgültig vergeben.</span></div>`:'';
+  return `<div class="combo-feedback"><strong>${state.pending.length} ${state.pending.length===1?'Kreuz':'Kreuze'}</strong> · ${opts.length?`mögliche Würfelwerte: ${future.join(', ')}`:'keine mögliche Kombination'}${finished.length?`<br>✅ <strong>Jetzt eintragbar!</strong>${price}`:'<br><em>Noch nicht vollständig – weitere leuchtende Felder wählen.</em>'}</div>${projection}`;
+ }
+ function centerBoardOnStart(){
+  navigateBoard(7,false);
+ }
+function navigateBoard(col,smooth=true){
+  const el=document.querySelector('#boardpane .board-scroll');
+  if(!el||boardView!=='zoom'||window.innerWidth>680)return;
+  const header=$('headers').children[col];if(!header)return;
+  const left=Math.max(0,Math.min(el.scrollWidth-el.clientWidth,header.offsetLeft+header.offsetWidth/2-el.clientWidth/2));
+  el.scrollTo({left,behavior:smooth&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'smooth':'auto'});
+  requestAnimationFrame(updateBoardWindow);
+}
+function updateBoardWindow(){
+ const el=document.querySelector('#boardpane .board-scroll');
+ if(!el||!$('board-window'))return;
+ const headers=[...$('headers').children];
+ if(!headers.length)return;
+ const start=el.scrollLeft,end=start+el.clientWidth;
+ const visible=headers.map((n,i)=>n.offsetLeft+n.offsetWidth>start&&n.offsetLeft<end?i:-1).filter(i=>i>=0);
+ const a=visible.length?visible[0]:0,b=visible.length?visible[visible.length-1]:14;
+ $('board-window').textContent=COLS[a]+'–'+COLS[b];
+}
+function changeBoardView(){boardView=boardView==='fit'?'zoom':'fit';try{localStorage.setItem(BOARD_VIEW_KEY,boardView);}catch(e){}render();if(boardView==='zoom')requestAnimationFrame(centerBoardOnStart);}
+function setMsg(s,bad=false){flash=s;flashBad=bad;$('game-message').textContent=s;$('game-message').className='message'+(bad?' bad':'');}
+function render(){if(!state)return;const p=player();const sc=score(p);$('mode-title').textContent=NET?'Online · '+NET.code:state.mode==='solo'?'Solo (Offline)':'Lokal · '+state.players.length+' Spieler';$('round-badge').textContent=state.turn+(state.mode==='solo'?' / 30':'');$('jokers-badge').textContent=(8-p.jokerUsed)+' / 8';$('board-owner').textContent=`Spielfeld: ${p.name}`;$('board-status').textContent=state.finished?'Partie beendet':state.phase==='ready'?'Nächster Wurf bereit':state.turn<=3&&state.mode!=='solo'?'Freie Würfelwahl (erste 3 Würfe)':state.picker===state.active?'Aktiver Würfler':'Mitspieler wählt aus den Restwürfeln';
+ let contextual='';
+ if(state.finished)contextual='Spielende: Die höchste Gesamtpunktzahl gewinnt; bei Gleichstand entscheiden die übrigen Joker.';
+ else if(state.phase==='lobby')contextual='Online-Lobby: Erst nach dem Start wird gewürfelt.';
+ else if(state.phase==='ready')contextual=state.turn===0?'Erster Eintrag: Mindestens ein Feld muss in Spalte H liegen.':'Ein Würfelwurf pro Runde. Jede Person wählt höchstens eine Farb-Zahlen-Kombination.';
+ else if(state.phase==='select'){
+  if(!state.pending.length)contextual=state.turn<=3&&state.mode!=='solo'?'Würfe 1–3: Alle dürfen aus allen sechs Würfeln wählen.':state.mode==='solo'?'Solo: Zwei Farb- und zwei Zahlenwürfel, maximal fünf neue Kreuze pro Wurf.':state.picker===state.active?'Du wählst ein Farb- und ein Zahlenwürfelpaar; ab Wurf 4 bleiben vier für die anderen übrig.':state.accepted?'Benutze nur die vier nicht genommenen Würfel; dieselbe Kombination dürfen mehrere verwenden.':'Der aktive Spieler hat gepasst: Alle sechs Würfel stehen zur Wahl.';
+  else contextual=moveChoices().length?'Deine Kreuze passen zu einer Würfelkombination. Jetzt eintragen oder noch einen anderen möglichen Zug wählen.':'Die Kreuze sind noch unvollständig: Ergänze die zusammenhängende Gruppe bis zu einer passenden Würfelzahl.';
+ }
+ $('rule-context-text').textContent='💡 '+contextual;
+ $('boardpane').classList.toggle('zoomed',boardView==='zoom');$('boardpane').classList.toggle('show-symbols',showSymbols);$('symbols-toggle').setAttribute('aria-pressed',showSymbols?'true':'false');$('view-toggle').textContent=boardView==='fit'?'🔎 Vergrößern':'⤢ Ganzes Brett';
+ $('headers').innerHTML=COLS.split('').map((x,i)=>{const count=state.mode==='solo'?+(state.turn>i)+ +(state.turn>15+i):0;const tally=count===2?'✕':count===1?'╱':'';return `<span class="headcell ${i===7?'start':''} ${count?'solo-counted':''}" title="${state.mode==='solo'?'Solo: '+count+' von 2 Würfen in Spalte '+x:'Spalte '+x}">${x}${state.mode==='solo'?`<span class="solo-strokes" aria-label="${count} von 2 Solowürfen">${tally}</span>`:''}</span>`;}).join('');
+ $('quick-score').innerHTML=`Zwischenstand <b>${sc.total>=0?'+':''}${sc.total}</b> · Bonus ${sc.bonus} · Spalten ${sc.columns} · Joker ${sc.joker} · Sterne −${sc.missed*2}`;
+ $('score-earned').textContent='+'+(sc.bonus+sc.columns);
+ $('score-joker').textContent='+'+sc.joker;
+ $('score-stars').textContent='−'+(sc.missed*2);
+ $('score-live').textContent=(sc.total>=0?'+':'')+sc.total;
+ $('score-ribbon').querySelector('.score-ribbon-total small').textContent=state.finished?'Endstand':'Zwischenstand';
+ $('mobile-turn-name').textContent=state.players[state.picker]?.name||'Spieler';
+ $('mobile-turn-state').textContent=state.finished?'🏆 Spiel beendet':state.phase==='ready'?'🎲 Würfeln':state.phase==='lobby'?'⏳ Lobby':NET&&NET.index!==state.picker?'⏳ Bitte warten':state.phase==='select'?'✖ Kreuze wählen':'Bereit';
+ const candidateSet=possibleCells();$('tiles').innerHTML=ROWS.join('').split('').map((col,i)=>{const marked=filled(p,i),pending=state.pending.includes(i),can=state.phase==='select'&&(!NET||(NET.connected&&NET.index===state.picker))&&!marked&&candidateSet.has(i);const a=marked||pending?'<span class="cross" aria-hidden="true">×</span>':STARSET.has(i)?'<span class="star" aria-hidden="true">★</span>':'';return `<button type="button" class="tile ${marked?'marked':''} ${pending?'pending':''} ${i%15===7?'start':''} ${can?'selectable candidate':''}" data-color="${col}" data-glyph="${COLOR_SYMBOLS[col]}" data-cell="${i}" ${(!can&&!pending)?'disabled':''} aria-label="${COLS[i%15]}${Math.floor(i/15)+1}, ${COLNAMES[col]}${STARSET.has(i)?', Stern':''}${marked?', bereits markiert':''}${pending?', ausgewählt':''}" aria-pressed="${pending}">${a}</button>`;}).join('');
+ $('score-top').innerHTML=TOP.map((n,i)=>`<span class="scorecell ${i===7?'h':''} ${p.columnAwards[i]===n?'earned':state.globalColumn[i]?'other-earned':''}" title="Erste vollständige Spalte ${COLS[i]}">${n}</span>`).join('');$('score-bottom').innerHTML=LOW.map((n,i)=>`<span class="scorecell ${i===7?'h':''} ${p.columnAwards[i]===n&&state.globalColumn[i]?'earned':''}" title="Spätere vollständige Spalte ${COLS[i]}">${n}</span>`).join('');
+ $('completion-overview').textContent=`${p.cells.length} / 105 Felder · ${Object.keys(p.colorAwards).length}/5 Farben`;
+ $('color-progress-bars').innerHTML=COLOR.map(c=>{const total=21,have=p.cells.filter(i=>colorAt(i)===c).length;return `<div class="color-progress"><span>${COLNAMES[c]} ${p.colorAwards[c]!=null?'✓':''}</span><div class="meter" role="progressbar" aria-label="${COLNAMES[c]}" aria-valuemin="0" aria-valuemax="21" aria-valuenow="${have}"><span style="--bar-color:var(--${c});width:${100*have/total}%"></span></div><span class="count">${have}/21</span></div>`;}).join('');
+ $('score-explainer').textContent=state.finished?'Endwertung: Farb- und Spaltenboni + Joker – 2 Punkte je offenem Stern.':`Zwischenstand: ${sc.bonus} Farbbonus + ${sc.columns} Spalten + ${sc.joker} freie Joker − ${2*sc.missed} für noch offene Sterne. Das ist noch kein Endergebnis.`;
+ $('jokerstrip').innerHTML=`<span class="jokerlabel">? / ✖ = </span>${Array.from({length:8},(_,i)=>`<span title="${i<p.jokerUsed?'Verbrauchter Joker':'Verfügbarer Joker'}" class="jokerico ${i<p.jokerUsed?'used':''}">!</span>`).join('')}`;
+ $('colorbonuses').innerHTML=COLOR.map(col=>`<div class="bonusrow"><div class="bonuscell ${col} ${state.globalColor[col]?'taken':''} ${p.colorAwards[col]===5?'mine':''}" title="Erster Farbabschluss: ${state.globalColor[col]?'bereits vergeben':'+5'}">5</div><div class="bonuscell ${col} ${p.colorAwards[col]===3?'mine':''}" title="Späterer Farbabschluss">3</div></div>`).join('');
+ $('ledger').innerHTML=`<div class="ledgerline"><span>🌈 Bonus</span><span class="ledgervalue">${sc.bonus}</span></div><div class="ledgerline"><span>🔠 A–O</span><span class="ledgervalue">${sc.columns}</span></div><div class="ledgerline"><span>❕ (+1)</span><span class="ledgervalue">${sc.joker}</span></div><div class="ledgerline"><span>★ (−2)</span><span class="ledgervalue">−${sc.missed*2}</span></div><div class="ledgerline final"><span>${state.finished?"ENDPUNKTE":"STAND"}</span><span class="ledgervalue">${sc.total}</span></div>`;
+ // Sichtbare Würfelzahlen entsprechend der Original-Spielmodi:
+ // Solo: 2 Farb- + 2 Zahlenwürfel; Mehrspieler: 3 + 3.
+ // Nach Auswahl des aktiven Spielers stehen ab Wurf 4 die restlichen 4 zur Verfügung.
+ const isSelect=state.phase==='select'&&(!NET||(NET.connected&&NET.index===state.picker));
+ const dicePerType=state.mode==='solo'&&!NET?2:3;
+ const hintMove=bestMove();
+ const shownDice=state.dice.length?state.dice:[...Array.from({length:dicePerType},()=>({type:'color',val:null})),...Array.from({length:dicePerType},()=>({type:'num',val:null}))];
+ const hasRestrictedDice=isSelect&&state.mode!=='solo'&&state.turn>3&&state.picker!==state.active&&Array.isArray(state.accepted);
+ const availableDice=hasRestrictedDice?shownDice.filter((d,i)=>available(i)).length:shownDice.length;
+ $('dice-summary').textContent=hasRestrictedDice?`${availableDice} von ${shownDice.length} wählbar`:`${shownDice.length} Würfel`;
+ $('dice-instructions').textContent=hasRestrictedDice?'Der aktive Spieler hat 2 Würfel genommen. Du wählst aus den übrigen 4.':dicePerType===2?'Solo: 2 Farbwürfel + 2 Zahlenwürfel (insgesamt 4).':'Mehrspieler: 3 Farbwürfel + 3 Zahlenwürfel (insgesamt 6).';
+ $('dices').innerHTML=[{type:'color',label:'🎨 Farbwürfel'},{type:'num',label:'⚄ Zahlenwürfel'}].map(group=>{
+  const items=shownDice.map((d,i)=>({...d,index:i})).filter(d=>d.type===group.type);
+  return `<div class="dice-group"><div class="dice-group-title"><span>${group.label}</span><strong>${items.length}</strong></div><div class="dice-track" style="--dice-per-type:${items.length}">${items.map(d=>{
+   const style=d.val===null?'waiting':d.type==='num'?'num':d.val==='*'?'joker':d.val;
+   const selected=d.type==='color'?state.colorDie===d.index:state.numDie===d.index;
+   const suggested=hintMove&&(d.index===hintMove.ci||d.index===hintMove.ni)&&!selected;
+   const isAvailable=isSelect&&available(d.index);
+   const label=d.val===null?'Noch nicht gewürfelt':d.type==='color'?COLNAMES[d.val]:d.val==='?'?'Zahlenjoker':String(d.val);
+   const face=d.val===null?'·':d.type==='color'?(d.val==='*'?'✖':'✦'):d.val==='?'?'?':d.val;
+   return `<button class="die ${style} ${selected?'selected':''} ${suggested?'suggested':''} ${state.phase==='select'&&!available(d.index)?'removed':''}" type="button" data-die="${d.index}" ${!isAvailable?'disabled':''} aria-pressed="${selected}" aria-label="${group.type==='color'?'Farb':'Zahlen'}würfel ${items.findIndex(x=>x.index===d.index)+1}: ${label}" title="${label}">${face}</button>`;
+  }).join('')}</div></div>`;
+ }).join('');
+ $('extra-choices').innerHTML=previewText();
+ const editable=state.phase==='select'&&(!NET||(NET.connected&&NET.index===state.picker))&&!!state.pending.length&&!(NET&&NET.awaiting);
+ $('undo-button').disabled=!editable;
+ $('clear-button').disabled=!editable;
+ $('edit-count').innerHTML=editable?`<strong>${state.pending.length}</strong> ${state.pending.length===1?'Kreuz':'Kreuze'} vorgemerkt`:'Noch keine Kreuze vorgemerkt';
+ const selectedColor=state.colorDie!==null?state.dice[state.colorDie]:null;
+ const selectedNumber=state.numDie!==null?state.dice[state.numDie]:null;
+ let detail='';
+ if(state.phase==='lobby')detail='Warte auf den Start der Online-Partie.';
+ else if(state.phase==='ready')detail=NET&&NET.index!==state.active?'Warte, bis der aktive Spieler würfelt.':'Du kannst den nächsten Wurf starten.';
+ else if(state.phase==='over')detail='Die Partie ist abgeschlossen.';
+ else if(!isSelect)detail='Der andere Spieler ist gerade an der Reihe.';
+ else if(!state.pending.length&&isSelect&&candidateSet.size===0){
+  detail='<strong>Kein gültiger Spielzug möglich.</strong> Mit diesen Würfeln kannst du aktuell keine Felder setzen. Tippe auf Passen.';
+ }else if(!state.pending.length){
+  const cDesc=selectedColor?(selectedColor.val==='*'?'frei wählbare Farbe':COLNAMES[selectedColor.val]):'gewürfelte Farben';
+  const nDesc=selectedNumber?(selectedNumber.val==='?'?'Jokerzahl 1–5':selectedNumber.val+' Felder'):'gewürfelte Zahlen';
+  detail=`<strong>Direkt Felder antippen!</strong> ${cDesc} · ${nDesc}. Die Würfel bleiben optional anwählbar.`;
+ }else{
+  const exact=moveChoices().length>0;
+  const sizes=[...new Set(matchingOptions().map(o=>o.cells.length))].sort((a,b)=>a-b);
+  detail=`<strong>${state.pending.length} ${state.pending.length===1?'Kreuz':'Kreuze'} gesetzt</strong> · ${COLNAMES[colorAt(state.pending[0])]} · ${exact?'✅ eintragbar':'Weitere Kreuze möglich'}${sizes.length?' · Würfelwerte: '+sizes.join(', '):''}`;
+ }
+ $('select-label').innerHTML=detail;
+ $('mobile-dices').style.setProperty('--mobile-n',shownDice.length);
+ $('mobile-dices').innerHTML=shownDice.map((d,i)=>{
+  const style=d.val===null?'waiting':d.type==='num'?'num':d.val==='*'?'joker':d.val;
+  const selected=d.type==='color'?state.colorDie===i:state.numDie===i;
+  const suggested=hintMove&&(i===hintMove.ci||i===hintMove.ni)&&!selected;
+  const label=d.val===null?'Noch nicht gewürfelt':d.type==='num'?(d.val==='?'?'Zahlenjoker':String(d.val)):COLNAMES[d.val];
+  const face=d.val===null?'·':d.type==='color'?(d.val==='*'?'✖':'✦'):d.val;
+  const usable=isSelect&&available(i);
+  return `<button class="die mobile-die ${style} ${selected?'selected':''} ${suggested?'suggested':''} ${!usable&&state.phase==='select'?'removed':''}" data-mobile-die="${i}" type="button" ${!usable?'disabled':''} aria-label="${d.type==='color'?'Farbwürfel':'Zahlenwürfel'} ${label}" aria-pressed="${selected}">${face}</button>`;
+ }).join('');
+ $('dice-instructions').innerHTML=isSelect?'<div class="direct-tip">👆 <strong>Sofort Kreuze setzen:</strong> Tippe direkt auf ein hell markiertes Feld. Die endgültige Kombination wird erst beim Eintragen automatisch festgelegt. Farb- und Zahlenwürfel kannst du vorher optional antippen.</div>':hasRestrictedDice?'Du wählst aus den übrigen 4 Würfeln.':dicePerType===2?'Solo: 2 Farbwürfel + 2 Zahlenwürfel.':'Mehrspieler: 3 Farbwürfel + 3 Zahlenwürfel.';
+ $('commit-button').classList.toggle('ready-commit',isSelect&&state.pending.length>0&&!validateMove(true));
+ $('commit-button').disabled=!isSelect||(NET&&NET.awaiting)||!!validateMove(true);
+ $('roll-button').disabled=state.phase!=='ready'||(NET&&(!NET.connected||NET.awaiting||NET.index!==state.active));$('roll-button').textContent=state.phase==='select'?'🎲 Wurf läuft':state.turn?'🎲 Nächster Wurf':'🎲 Würfeln';$('pass-button').disabled=!isSelect||(NET&&NET.awaiting);
+ $('mobile-roll').disabled=$('roll-button').disabled; $('mobile-commit').disabled=$('commit-button').disabled; $('mobile-pass').disabled=$('pass-button').disabled;
+ $('mobile-roll').textContent=$('roll-button').textContent; $('mobile-commit').textContent=state.pending.length?'✓ '+state.pending.length+' eintragen':'✓ Eintragen';
+ $('online-feed').hidden=!(Array.isArray(state.history)&&state.history.length);
+ {const events=Array.isArray(state.history)?state.history.slice(-5).reverse():[];$('online-feed').innerHTML=`<h3>🕘 Letzte Aktionen</h3>${events.length?`<ol>${events.map(x=>`<li>${ESC(x)}</li>`).join('')}</ol>`:'<div class="tiny">Noch keine Spielaktionen</div>'}`;}
+ $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?NET.presence[state.picker]===false:state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>`<div class="player ${i===state.picker?'current':''}"><span class="bubble"></span><span class="pname">${ESC(q.name)} ${i===state.active?'🎲':''}<span class="pinfo" style="display:block">${q.cells.length}/105 Felder · ${Object.keys(q.colorAwards).length} Farbboni${NET&&NET.presence&&!NET.presence[i]?' · <span class="offline-indicator">offline</span>':''}${NET&&NET.host&&state.phase==='lobby'&&NET.presence&&!NET.presence[i]?` <button class="flat" data-kick="${i}" type="button">Entfernen</button>`:''}</span><span class="player-meter" role="progressbar" aria-label="Spielfeldfortschritt ${ESC(q.name)}" aria-valuemin="0" aria-valuemax="105" aria-valuenow="${q.cells.length}"><span style="width:${Math.min(100,Math.max(0,100*q.cells.length/105))}%"></span></span></span><button type="button" class="mini-open" data-opponent="${i}" aria-label="Spielfeld von ${ESC(q.name)} ansehen">Brett</button><span class="points">${score(q).total}</span></div>`).join('');$('active-player').textContent=state.players[state.active].name;$('turn-info').textContent=state.phase==='select'?`Jetzt kann ${state.players[state.picker].name} direkt Kreuze setzen.`:state.phase==='lobby'?'Host startet, sobald alle verbunden sind.':state.finished?'Gewinnerwertung abgeschlossen.':state.turn?'Bereit für den nächsten Wurf.':'Du kannst starten.';
+ setMsg(flash||'Nach dem Würfeln kannst du direkt auf passende Felder tippen. Die Würfel sind ebenfalls anklickbar.',flashBad);
+ persistOnlineDraft();
+ if(window.innerWidth<=680)requestAnimationFrame(updateBoardWindow);
+ }
+ function randomFace(arr){return arr[Math.floor(Math.random()*arr.length)];}
+ function logLocalAction(text){if(!NET){if(!Array.isArray(state.history))state.history=[];state.history.push(text);state.history=state.history.slice(-15);}}
+ function roll(){if(NET){sendOnline({action:'roll'});return;}if(state.phase!=='ready')return;state.turn++;state.picker=state.active;state.accepted=null;state.colorDie=null;state.numDie=null;state.chosenColor=null;state.chosenNumber=null;state.manualColor=false;state.manualNumber=false;state.pending=[];const n=state.mode==='solo'?2:3;state.dice=[...Array.from({length:n},()=>({type:'color',val:randomFace(DICE_COLOR)})),...Array.from({length:n},()=>({type:'num',val:randomFace(DICE_NUM)}))];state.phase='select';flash='Setze direkt Kreuze! Die Würfelkombination wird erst beim Eintragen verbindlich gewählt.';flashBad=false;state.lastRoll=state.dice.map(d=>d.val);logLocalAction('Wurf '+state.turn+': '+state.players[state.active].name+' würfelt');save();render();}
+ function dieClick(index){
+  if(state.phase!=='select'||!available(index))return;
+  const d=state.dice[index];if(!d)return;
+  const old={colorDie:state.colorDie,numDie:state.numDie,manualColor:state.manualColor,manualNumber:state.manualNumber,chosenColor:state.chosenColor,chosenNumber:state.chosenNumber};
+  if(d.type==='color'){
+   const deselect=state.colorDie===index;
+   state.colorDie=deselect?null:index;
+   state.manualColor=!deselect;
+   state.chosenColor=!deselect&&d.val==='*'&&state.pending.length?colorAt(state.pending[0]):null;
+  }else{
+   const deselect=state.numDie===index;
+   state.numDie=deselect?null:index;
+   state.manualNumber=!deselect;
+   state.chosenNumber=null;
+  }
+  if(state.pending.length&&!matchingOptions().length){
+   Object.assign(state,old);
+   setMsg('Mit diesem Würfel lassen sich deine markierten Kreuze nicht mehr vervollständigen. Entferne erst ein Kreuz oder wähle einen anderen Würfel.',true);
+   return;
+  }
+  flash='Würfelwahl angepasst. Bereits gesetzte Kreuze bleiben erhalten.';flashBad=false;
+  save();render();
+ }
+ function explainUnavailable(index){
+  const p=player();
+  if(filled(p,index))return 'Dieses Feld wurde bereits angekreuzt.';
+  const pending=state.pending||[];
+  if(pending.includes(index))return 'Tippe erneut auf das Kreuz, um es zu entfernen.';
+  if(pending.length>=5)return 'Pro Wurf sind höchstens fünf neue Kreuze möglich – auch mit Zahlenjoker.';
+  if(pending.length&&colorAt(index)!==colorAt(pending[0]))return 'Alle neuen Kreuze eines Wurfs müssen dieselbe Farbe haben.';
+  if(!p.cells.length&&!pending.length&&index%15!==7){
+    const c=colorAt(index);const same=region(index);
+    if(![...same].some(i=>i%15===7))return 'Dein allererster Spielzug muss in der Startspalte H beginnen.';
+  }
+  if(pending.length&&!pending.some(j=>neighbors(j).includes(index)))return 'Die neu gewählten Kreuze müssen zusammenhängen. Diagonal angrenzende Felder genügen nicht.';
+  const diceColors=state.dice.filter((d,i)=>available(i)&&d.type==='color').map(d=>d.val);
+  if(!diceColors.includes(colorAt(index))&&!diceColors.includes('*'))return 'Diese Farbe wurde nicht gewürfelt und es steht kein Farbjoker zur Verfügung.';
+  if(diceColors.includes('*')&&8-p.jokerUsed===0&&!diceColors.includes(colorAt(index)))return 'Deine Ausrufezeichen-Joker sind verbraucht.';
+  if(state.colorDie!==null||state.numDie!==null)return 'Deine fest ausgewählten Würfel passen nicht zu diesem Feld. Tippe erneut auf einen gewählten Würfel, um die Auswahl freizugeben.';
+  return 'Für dieses Feld gibt es mit den gewürfelten Farben, Zahlen und geltenden Anschlussregeln keinen gültigen Spielzug.';
+}
+
+ // V6 balance report: computed from the actual board rather than hard-coded figures.
+ function collectBoardBalance(){
+  const visited=new Set(),groups=[];
+  for(let i=0;i<105;i++){
+   if(visited.has(i))continue;
+   const q=[i];visited.add(i);
+   for(let t=0;t<q.length;t++)for(const n of neighbors(q[t]))
+    if(!visited.has(n)&&colorAt(n)===colorAt(i)){visited.add(n);q.push(n);}
+   groups.push({color:colorAt(i),size:q.length,cells:q});
+  }
+  return COLOR.map(c=>({color:c,name:COLNAMES[c],fields:ROWS.join('').split('').filter(x=>x===c).length,
+   sizes:groups.filter(g=>g.color===c).map(g=>g.size).sort((a,b)=>a-b),
+   stars:STARS.filter(i=>colorAt(i)===c).length,
+   startCells:ROWS.filter(r=>r[7]===c).length}));
+ }
+ function showBalance(){
+  const rows=collectBoardBalance();
+  const total=rows.reduce((a,r)=>a+r.fields,0),starCols=COLS.split('').every((_,c)=>STARS.filter(i=>i%15===c).length===1);
+  const equal=rows.every(r=>r.fields===21&&r.stars===3&&r.sizes.join(',')==='1,2,3,4,5,6');
+  showDialog(`<div class="minihead">Spielfeldstatistik</div><h2 id="dialog-heading">📊 Balancecheck</h2>
+  <p>Diese Übersicht wird direkt aus dem aktuellen Spielfeld berechnet. Sie kontrolliert die <strong>strukturelle Gleichverteilung</strong>; sie beweist keine perfekte Chancengleichheit.</p>
+  <div class="balance-kpis"><div><strong>${total}</strong><small>Felder</small></div><div><strong>30</strong><small>Farbgruppen</small></div><div><strong>${STARS.length}</strong><small>Sternfelder</small></div></div>
+  <div class="balance-table-wrap"><table class="balance-table"><thead><tr><th>Farbe</th><th>Felder</th><th>Gruppen</th><th>Sterne</th><th>Start H</th></tr></thead>
+  <tbody>${rows.map(r=>`<tr><th><span class="balance-dot ${r.color}"></span> ${r.name}</th><td>${r.fields}</td><td>${r.sizes.join('·')}</td><td>${r.stars}</td><td>${r.startCells}</td></tr>`).join('')}</tbody></table></div>
+  <p class="balance-verdict">${equal&&starCols?'✓ Strukturprüfung bestanden: Jede Farbe hat 21 Felder, die Größen 1–6 einmal und 3 Sterne. Pro Spalte liegt genau ein Stern.':'⚠ Abweichung bei Farb- oder Sternverteilung gefunden.'}</p>
+  <p class="tiny">Die Sterne in zwei Spalten wurden für V6 neu platziert. Die Feldfarben und Würfelregeln sind unverändert. Bestehende V5-Partien lassen sich weiterhin mit der V5-Datei fortsetzen, werden aber nicht in V6 umgewertet.</p>
+  <div class="actions"><button class="action ok" type="button" id="balance-close">Zurück zum Spiel</button><button class="action pass" type="button" id="balance-help">📖 Regeln</button></div>`);
+  $('balance-close').addEventListener('click',hideDialog);
+  $('balance-help').addEventListener('click',()=>showHelp(false));
+ }
+
+ function showDiagnostics(){
+  const checks=selftest();const pass=checks.filter(x=>x.pass).length;
+  const network=NET?(NET.connected?'verbunden':'getrennt / versucht Wiederverbindung'):'Offline';
+  const extra=[
+   {name:'Lokale Speicherfunktion verfügbar',pass:(()=>{try{const x='kk-diagnostic';localStorage.setItem(x,'1');const ok=localStorage.getItem(x)==='1';localStorage.removeItem(x);return ok;}catch(e){return false;}})()},
+   {name:'Spielfeldversion mit Serverkennung versehen',pass:BOARD_ID==='KK-2026-V6-STAR-EQUAL'},
+   {name:'Spielerzahl innerhalb 1–6',pass:state.players.length>=1&&state.players.length<=6},
+   {name:'Aktuelle Spielerindizes korrekt',pass:state.players[state.active]!=null&&state.players[state.picker]!=null},
+   {name:'Jokermengen im gültigen Bereich',pass:state.players.every(p=>Number.isInteger(p.jokerUsed)&&p.jokerUsed>=0&&p.jokerUsed<=8)},
+   {name:'Angekreuzte Felder im gültigen Bereich',pass:state.players.every(p=>p.cells.every(i=>Number.isInteger(i)&&i>=0&&i<105)&&new Set(p.cells).size===p.cells.length)}
+  ];
+  extra.push({name:'Punkteformel des leeren Spielblatts = −22',pass:score(emptyPlayer('Probe')).total===-22});
+ extra.push({name:'Wertungsformel Sterne + Joker unabhängig geprüft',pass:(()=>{const p=emptyPlayer('Test');p.cells=[...STARS.slice(0,4)];p.jokerUsed=2;p.columnAwards[0]=TOP[0];p.colorAwards.g=5;const s=score(p);return s.total===5+TOP[0]+6-2*(15-4);})()});
+ const all=[...checks,...extra];const good=all.filter(x=>x.pass).length;
+  showDialog(`<div class="minihead">V16 · Lokale Diagnose</div><h2 id="dialog-heading">🧪 Technikcheck</h2><p><strong>${good} / ${all.length}</strong> interne Prüfungen bestanden. Netzwerkstatus: ${ESC(network)}.</p><div class="qa-list">${all.map(x=>`<div class="qa-entry"><span class="status ${x.pass?'qa-passed':'qa-warning'}">${x.pass?'✓':'!'}</span><span>${ESC(x.name)}</span></div>`).join('')}</div><p class="tiny">Dies ist ein lokaler Selbsttest. Er ersetzt keine Geräte-, Last-, Sicherheits- oder Lizenzprüfung. Eine öffentliche Veröffentlichung ist noch nicht erfolgt.</p><button class="action ok" id="diag-close" type="button">Schließen</button>`);
+  $('diag-close').addEventListener('click',hideDialog);
+ }
+ function showWhy(){
+  const p=player(),remaining=(8-p.jokerUsed),n=state.pending.length,possible=state.phase==='select'?matchingOptions():[],exact=state.phase==='select'?moveChoices():[];
+  const reasons=[];
+  if(state.phase==='ready')reasons.push('Zuerst würfeln, dann Kreuze antippen.');
+  else if(state.phase==='lobby')reasons.push('Der Host muss die Partie starten.');
+  else if(state.finished)reasons.push('Die Partie ist bereits beendet.');
+  else if(NET&&NET.index!==state.picker)reasons.push(`Jetzt ist ${state.players[state.picker].name} am Zug.`);
+  else if(!p.cells.length)reasons.push('Dein erster Eintrag muss mindestens ein Feld in Spalte H berühren.');
+  else reasons.push('Neue Kreuzgruppen müssen in Spalte H beginnen oder seitlich an alte Kreuze angrenzen.');
+  if(state.phase==='select'){
+    reasons.push(`Es sind ${remaining} Joker verfügbar. Jeder eingesetzte Farb- oder Zahlenjoker kostet ein ❕.`);
+    reasons.push(n?`${n} Feld(er) vorgemerkt; ${exact.length?'ein vollständiger Zug ist möglich.':possible.length?'du kannst noch passende Felder ergänzen.':'so gibt es keine passende Würfelkombination.'}`:`${possibleCells().size} Felder sind derzeit für mindestens eine gültige Kombination auswählbar.`);
+    reasons.push('Alle neuen Kreuze müssen im selben zusammenhängenden Farbblock liegen. Eine Diagonale reicht nicht.');
+  }
+  showDialog(`<div class="minihead">Spielhilfe</div><h2 id="dialog-heading">💡 Was kann ich gerade tun?</h2><ul>${reasons.map(x=>`<li>${ESC(x)}</li>`).join('')}</ul><p class="tiny">Die hell hervorgehobenen Felder sind mögliche nächste Kreuze. Die passenden Würfel erkennt das Spiel beim Eintragen automatisch. Bei mehreren Möglichkeiten kannst du die Würfel auch selbst antippen.</p><button class="action ok" type="button" id="why-close">Zurück zum Spiel</button>`);
+  $('why-close').addEventListener('click',hideDialog);
+ }
+ function showRuleCheck(){
+ const p=player(), pending=state.pending||[], opts=state.phase==='select'?matchingOptions():[];
+ const exact=state.phase==='select'?moveChoices():[], possible=state.phase==='select'?possibleCells():new Set();
+ const color=pending.length?COLNAMES[colorAt(pending[0])]:'Noch keine Auswahl';
+ const startOk=p.cells.length>0||pending.some(i=>i%15===7);
+ const grouped=pending.length===0||(()=>{const seen=new Set([pending[0]]),q=[pending[0]],pick=new Set(pending);for(const i of q)for(const j of neighbors(i))if(pick.has(j)&&!seen.has(j)){seen.add(j);q.push(j);}return seen.size===pending.length;})();
+ const chosen=bestMove(),status=state.phase!=='select'?'Starte zuerst einen Wurf.':!pending.length?'Tippe direkt auf eines der hervorgehobenen Felder.':exact.length?'Deine Kreuze sind eintragbar.':'Du kannst noch Kreuze ergänzen oder die Auswahl ändern.';
+ const bullet=(ok,s)=>`<div class="check-line"><span aria-hidden="true">${ok?'✅':'○'}</span><span>${s}</span></div>`;
+ const html=`<div class="minihead">Live-Regelprüfung</div><h2 id="dialog-heading">✅ Aktuellen Spielzug prüfen</h2><p>${ESC(status)}</p><div class="rule-checklist">
+ ${bullet(state.phase==='select','Ein Wurf ist aktiv')}
+ ${bullet(pending.length>0,`Kreuze vorgemerkt: ${pending.length} / 5 · ${ESC(color)}`)}
+ ${bullet(startOk,'Startregel: erster Eintrag berührt Spalte H')}
+ ${bullet(grouped,'Neue Kreuze hängen waagerecht/senkrecht zusammen')}
+ ${bullet(opts.length>0,`Mindestens eine Würfelkombination noch möglich (${opts.length} Platzierungsoptionen)`)}
+ ${bullet(exact.length>0,`Gewürfelte Anzahl exakt getroffen (${exact.length} passende Möglichkeiten)`)}
+ </div><div class="notice">${chosen?`Passendes Würfelpaar: Farbwürfel ${state.dice.slice(0,chosen.ci).filter(d=>d.type==='color').length+1}, Zahlenwürfel ${state.dice.slice(0,chosen.ni).filter(d=>d.type==='num').length+1} · Jokerverbrauch ${chosen.cost}`:`${possible.size} aktuell mögliche Felder werden auf dem Brett hervorgehoben.`}</div><p class="tiny">Vor dem Eintragen werden die Regeln erneut geprüft. Online kontrolliert zusätzlich der Server den verbindlichen Spielzug.</p><button type="button" class="action ok" id="rulecheck-close">Zurück zum Spiel</button>`;
+ showDialog(html);$('rulecheck-close').addEventListener('click',hideDialog);
+}
+function cellClick(index){
+  if(state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker)))return;
+  const at=state.pending.indexOf(index);
+  if(at>=0){
+   state.pending.splice(at,1);
+   if(!state.pending.length){
+    state.chosenColor=null;state.chosenNumber=null;
+    // An unselected joker value must not linger after undoing all crosses.
+    if(!state.manualColor){state.colorDie=null;state.chosenColor=null;}
+    if(!state.manualNumber){state.numDie=null;state.chosenNumber=null;}
+   }
+   flash='Kreuz entfernt. Die übrigen Kreuze bleiben erhalten.';flashBad=false;save();render();return;
+  }
+  if(!possibleCells().has(index)){
+   setMsg(explainUnavailable(index),true);return;
+  }
+  state.pending.push(index);
+  const exact=moveChoices().length>0;
+  const sizes=[...new Set(matchingOptions().map(o=>o.cells.length))].sort((a,b)=>a-b);
+  flash=exact?'✅ Du kannst jetzt Eintragen oder weiter Kreuze setzen.':`${state.pending.length} Kreuze · noch mögliche Würfelwerte: ${sizes.join(', ')}`;
+  flashBad=false;save();render();
+ }
+ function undoSelection(all=false){
+  if(state.phase!=='select'||!state.pending.length||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
+  if(all)state.pending=[];
+  else state.pending.pop();
+  if(!state.pending.length){
+    state.chosenColor=null;state.chosenNumber=null;
+    if(!state.manualColor)state.colorDie=null;
+    if(!state.manualNumber)state.numDie=null;
+  }
+  flash=all?'Die nicht eingetragenen Kreuze wurden gelöscht. Dein Spielstand bleibt unverändert.':'Letztes Kreuz zurückgenommen.';
+  flashBad=false;save();render();
+ }
+ function commit(){
+  if(state.phase!=='select'||(NET&&NET.index!==state.picker))return;
+  const option=bestMove();
+  if(!option){setMsg(validateMove()||'Die Würfelkombination passt nicht.',true);return;}
+  const cd=state.dice[option.ci],nd=state.dice[option.ni];
+  const chosenColor=cd.val==='*'?colorAt(state.pending[0]):null;
+  const chosenNumber=nd.val==='?'?state.pending.length:null;
+  if(NET){sendOnline({action:'move',colorDie:option.ci,numDie:option.ni,chosenColor,chosenNumber,pending:[...state.pending]});return;}
+  const p=player();p.cells.push(...state.pending);p.jokerUsed+=option.cost;p.lastMove=[...state.pending];p.took=true;logLocalAction('Wurf '+state.turn+': '+p.name+' trägt '+state.pending.length+' Kreuze ein');
+  if(state.picker===state.active)state.accepted=[option.ci,option.ni];
+  stepPicker();
+ }
+ function pass(){
+  if(state.phase!=='select'||(NET&&(!NET.connected||NET.index!==state.picker||NET.awaiting)))return;
+  if(state.pending.length&&!window.confirm(`${state.pending.length} nicht eingetragene Kreuze verwerfen und passen?`))return;
+  if(NET){sendOnline({action:'pass'});return;}
+  const p=player();p.lastMove=[];p.took=false;logLocalAction('Wurf '+state.turn+': '+p.name+' passt');if(state.picker===state.active)state.accepted=null;stepPicker();
+ }
+ function stepPicker(){state.pending=[];state.colorDie=null;state.numDie=null;state.chosenColor=null;state.chosenNumber=null;state.manualColor=false;state.manualNumber=false;const count=state.players.length;const k=(state.picker-state.active+count)%count;if(k<count-1){state.picker=(state.picker+1)%count;flash=`${state.players[state.picker].name} ist jetzt dran. ${state.turn<=3?'Alle 6 Würfel sind frei.':state.accepted?'Nur die verbleibenden 4 Würfel sind frei.':'Alle Würfel frei, da der aktive Spieler gepasst hat.'}`;flashBad=false;}else{finishThrow();}save();render();}
+ function finishThrow(){const NEWCOL=[];const NEWCOLOR=[];
+  // Alle Abschlüsse desselben Wurfs werden gleichzeitig gewertet.
+  for(const p of state.players){let completedColors=0;
+   for(const col of COLOR){if(p.colorAwards[col]!=null){completedColors++;continue;}if([...ROWS.join('')].every((x,i)=>x!==col||filled(p,i)))NEWCOLOR.push({p,col});}
+   for(let c=0;c<15;c++)if(p.columnAwards[c]==null&&Array.from({length:7},(_,r)=>r*15+c).every(i=>filled(p,i)))NEWCOL.push({p,c});
+  }
+  for(const {p,col} of NEWCOLOR){p.colorAwards[col]=state.globalColor[col]?3:5;}
+  for(const {p,c} of NEWCOL){p.columnAwards[c]=state.globalColumn[c]?LOW[c]:TOP[c];}
+  for(const {col} of NEWCOLOR)state.globalColor[col]=true;
+  for(const {c} of NEWCOL)state.globalColumn[c]=true;
+  const twoColors=state.players.some(p=>Object.keys(p.colorAwards).length>=2);
+  if((state.mode==='solo'&&state.turn>=30)||(state.mode!=='solo'&&twoColors)){
+   state.phase='over';state.finished=true;const final=state.players.map(p=>({name:p.name,s:score(p).total,left:8-p.jokerUsed})).sort((a,b)=>b.s-a.s||b.left-a.left);const winners=final.filter(v=>v.s===final[0].s&&v.left===final[0].left);state.winnerMessage=state.mode==='solo'?`Solo-Wertung: ${final[0].s} Punkte`:winners.length>1?`Unentschieden: ${winners.map(v=>v.name).join(' & ')} (${final[0].s} Punkte)`: `${final[0].name} gewinnt mit ${final[0].s} Punkten!`;
+   flash='Partie abgeschlossen. Endwertung anzeigen.';flashBad=false;state.picker=state.active;save();render();showEnd();return;
+  }
+  state.phase='ready';state.active=(state.active+1)%state.players.length;state.picker=state.active;
+  let description=[];if(NEWCOL.length)description.push(`${NEWCOL.length} Spaltenabschluss${NEWCOL.length>1?'e':''}`);if(NEWCOLOR.length)description.push(`${NEWCOLOR.length} Farbbonus${NEWCOLOR.length>1?'se':''}`);
+  flash=(description.length?description.join(' · ')+'! ':'')+'Wurf beendet. Der nächste Würfler ist '+state.players[state.active].name+'.';flashBad=false;
+ }
+ function escUser(str){return ESC((str||'').trim().slice(0,24));}
+ function showDialog(html){$('dialog-body').classList.remove('rule-modal');$('dialog-body').innerHTML=html;$('dialog').classList.remove('hidden');}
+ function hideDialog(){$('dialog').classList.add('hidden');$('dialog-body').innerHTML='';}
+ function showStart(){const ongoing=state&&state.turn>0&&!state.finished;showDialog(`<div class="minihead">Willkommen beim Würfelduell</div><h2 id="dialog-heading">🎲 KreuzKunter</h2><p>105 Felder, fünf Farben, sechs Blockgrößen und jetzt drei Sterne je Farbe. Kreuze die richtigen Farbfelder an und sammle Bonuspunkte!</p><div class="modechoice"><label><input type="radio" name="mode" value="solo" checked> Solo · 1 Spieler</label><label><input type="radio" name="mode" value="local"> Lokal · 2–6 Spieler</label></div><div class="field" id="amount-area" style="display:none"><label>Spielerzahl</label><div class="row"><button class="flat" id="minus-players" type="button">−</button><strong id="amount-show">2 Spieler</strong><button class="flat" id="plus-players" type="button">+</button></div></div><div class="names" id="name-fields"></div><div class="notice tiny">Du kannst hier offline spielen. Für getrennte Geräte nutze den Globus 🌐 oben: Dort kannst du deinen KreuzKunter-Onlineraum öffnen.</div><div class="divider"></div><button class="rule-start" type="button" id="start-help">📘 Vollständige Spielanleitung lesen</button><div class="actions"><button class="action ok" id="start-game" type="button">Neue Partie starten</button><button class="action pass" id="resume-game" type="button" ${!ongoing?'disabled':''}>Fortsetzen</button></div><p class="tiny">Hinweis: Eine neue Partie überschreibt deinen vorherigen lokalen Spielstand.</p>`);
+  let mode='solo',amount=2;const nameFields=$('name-fields');function writeNames(){nameFields.innerHTML=Array.from({length:mode==='solo'?1:amount},(_,i)=>`<div class="field"><label for="name${i}">Spieler ${i+1}</label><input id="name${i}" type="text" maxlength="24" placeholder="${i===0?'Spieler 1':'Spieler '+(i+1)}" value="${i===0?'':'Spieler '+(i+1)}"></div>`).join('');}
+  writeNames();$('start-help').addEventListener('click',()=>showHelp(true));$('dialog-body').querySelectorAll('input[name=mode]').forEach(el=>el.addEventListener('change',()=>{mode=el.value;$('amount-area').style.display=mode==='solo'?'none':'';writeNames();}));$('minus-players').addEventListener('click',()=>{amount=Math.max(2,amount-1);$('amount-show').textContent=amount+' Spieler';writeNames();});$('plus-players').addEventListener('click',()=>{amount=Math.min(6,amount+1);$('amount-show').textContent=amount+' Spieler';writeNames();});$('start-game').addEventListener('click',()=>{if(ongoing&&!window.confirm('Die laufende Partie wird überschrieben. Wirklich eine neue Partie starten?'))return;const names=Array.from(nameFields.querySelectorAll('input')).map((el,i)=>el.value.trim().slice(0,24)||'Spieler '+(i+1));if(NET){NET.stopped=true;clearTimeout(NET.timer);clearTimeout(NET.syncTimer);try{NET.ws.close();}catch(e){}NET=null;}try{const n=getNetInfo();n.active=false;localStorage.setItem(NET_INFO_KEY,JSON.stringify(n));sessionStorage.removeItem(NET_DRAFT_KEY);}catch(e){}state=initial(names,mode);hideDialog();flash='Das Spielfeld ist bereit. Viel Spaß beim Würfeln!';flashBad=false;save();render();});$('resume-game').addEventListener('click',()=>{hideDialog();render();});}
+ function showHelp(returnToStart=false){
+ const sections=[
+ {id:'ziel',title:'🎯 Ziel und Spielvorbereitung',content:`
+  <p>KreuzKunter ist ein Würfelspiel für <strong>1 bis 6 Personen</strong>. Alle versuchen, ihr persönliches Farbraster möglichst günstig auszufüllen. Besonders viele Punkte gibt es für vollständige Spalten und vollständig ausgefüllte Farben.</p>
+  <p>Jede Person hat ein eigenes Raster aus <strong>15 Spalten (A–O) und 7 Reihen</strong>, also 105 Feldern. Die hervorgehobene Spalte <strong>H</strong> ist die Startspalte. Die fünf Farben sind in unterschiedliche zusammenhängende Gruppen aufgeteilt, darunter auch Gruppen aus <strong>sechs</strong> Feldern.</p>
+  <p>Im Mehrspielermodus wird eine Startperson bestimmt; die Würfel wandern danach von Wurf zu Wurf im Uhrzeigersinn weiter. Beim lokalen Spielen wird dafür das Gerät an die nächste Person weitergegeben.</p>`},
+ {id:'wuerfel',title:'🎲 Würfeln, Würfelwahl und Reihenfolge',content:`
+  <p>Die aktive Person würfelt <strong>genau einmal</strong>. Im Mehrspielermodus sind es <strong>drei Farbwürfel und drei Zahlenwürfel</strong>. Wer etwas eintragen möchte, verwendet <strong>genau einen Farb- und einen Zahlenwürfel</strong>.</p>
+  <ul><li><strong>Würfe 1–3:</strong> Alle dürfen unabhängig voneinander aus sämtlichen sechs Würfeln wählen, sogar dieselbe Kombination.</li>
+  <li><strong>Ab Wurf 4:</strong> Die aktive Person wählt zuerst zwei Würfel aus. Für alle anderen stehen die <strong>vier verbliebenen</strong> zur Verfügung. Untereinander dürfen mehrere Mitspieler dieselbe Kombination dieser vier verwenden.</li>
+  <li><strong>Aktive Person passt:</strong> Dann wurden keine Würfel weggenommen; alle anderen dürfen aus allen <strong>sechs</strong> wählen.</li>
+  <li><strong>Passen:</strong> Jede Person kann ihren eigenen Zug freiwillig ungenutzt lassen, auch wenn sie einen legalen Zug hätte.</li>
+  <li><strong>Wurfende:</strong> Erst wenn alle entschieden haben, werden mögliche Abschlüsse gewertet und die nächste Person ist mit dem Würfeln dran.</li></ul>
+  <p>Es werden <strong>keine Würfel neu geworfen</strong>, nachdem jemand seine zwei Würfel ausgewählt hat.</p>`},
+ {id:'kreuze',title:'✖ Felder setzen – alle Platzierungsregeln',content:`
+  <p>Farbe und Zahl geben genau vor, <strong>in welcher Farbe</strong> und <strong>wie viele</strong> Felder neu angekreuzt werden. Beispiel: Rot + 3 bedeutet drei rote Felder in einem Zug.</p>
+  <ol><li><strong>Erster Eintrag:</strong> Mindestens eines der neu angekreuzten Felder muss in <strong>Spalte H</strong> liegen. Ohne einen gültigen Anfangszug darf man passen.</li>
+  <li><strong>Spätere Einträge:</strong> Mindestens eines der neuen Felder muss mit einem alten Kreuz eine gemeinsame Kante haben <em>oder</em> die neu gesetzte Gruppe muss die Startspalte H berühren.</li>
+  <li><strong>Nur Kantenkontakt:</strong> Links, rechts, oben oder unten zählt; nur diagonale Berührung genügt <strong>nicht</strong>.</li>
+  <li><strong>Ein Farbblock:</strong> Sämtliche Felder eines Zuges müssen dieselbe Farbe haben, im <strong>gleichen zusammenhängenden Farbblock</strong> liegen und sich untereinander durch Kantenkontakt verbinden.</li>
+  <li><strong>Exakte Anzahl:</strong> Es müssen genauso viele <em>neue</em> Kreuze sein, wie der Zahlenwürfel vorgibt. Alte Kreuze werden nicht mitgezählt.</li>
+  <li><strong>Block nur teilweise füllen:</strong> Du musst einen größeren Farbblock nicht auf einmal komplett ausfüllen. Nachträgliche Teilstücke sind erlaubt, sofern sie die übrigen Regeln erfüllen.</li>
+  <li><strong>Keine Aufteilung:</strong> Ein Würfelwert darf nicht auf zwei voneinander getrennte Farbblöcke verteilt werden, auch wenn beide dieselbe Farbe besitzen.</li>
+  <li><strong>Maximal fünf:</strong> Auch wenn ein Farbblock sechs Felder hat, sind höchstens fünf neue Kreuze in einem Wurf möglich.</li></ol>`},
+ {id:'beispiele',title:'🧩 Gute und ungültige Züge – Beispiele',content:`
+  <div class="example-grid">
+   <div class="example-card"><strong class="correct">✓ Richtig: grüne 3</strong><div class="mini-cells"><span>✖</span><span>✖</span><span>✖</span></div><p>Drei neue grüne Felder liegen direkt nebeneinander. Beginnt die Gruppe in H oder liegt sie an alten Kreuzen, ist das erlaubt.</p></div>
+   <div class="example-card"><strong class="incorrect">✕ Falsch: getrennte Gruppen</strong><div class="mini-cells"><span>✖</span><span class="gap">·</span><span>✖</span></div><p>Ein Würfelwert von 2 darf nicht auf zwei getrennte Farbinseln aufgeteilt werden.</p></div>
+   <div class="example-card"><strong class="incorrect">✕ Falsch: nur diagonal</strong><div class="mini-cells diagram"><span>✖</span><span class="gap">·</span><span class="gap">·</span><span>✖</span></div><p>Berühren sich Felder ausschließlich an einer Ecke, gilt das nicht als Verbindung.</p></div>
+   <div class="example-card"><strong class="correct">✓ Richtig: Teilblock</strong><div class="mini-cells"><span>✖</span><span>✖</span><span class="future">○</span><span class="future">○</span></div><p>Zwei Felder aus einem Viererblock dürfen jetzt markiert werden. Die restlichen zwei können später folgen.</p></div>
+  </div><p class="tiny">Die Skizzen zeigen nur das Prinzip. Das echte Raster und die alten Kreuze entscheiden über die Gültigkeit.</p>`},
+ {id:'joker',title:'❔ Joker und Ausrufezeichen',content:`
+  <p>Es gibt zwei mögliche Jokerseiten, die unabhängig voneinander verwendet werden können:</p>
+  <ul><li><strong>✖ auf einem Farbwürfel:</strong> Du darfst eine beliebige der fünf Spielfeldfarben bestimmen.</li>
+  <li><strong>? auf einem Zahlenwürfel:</strong> Du darfst selbst eine Zahl von <strong>1 bis 5</strong> wählen – <strong>niemals 6</strong>.</li>
+  <li><strong>Jeder verwendete Joker kostet ein ❕</strong> von deinen anfänglich acht Ausrufezeichen.</li>
+  <li><strong>Beide Joker zusammen</strong> sind möglich, kosten aber <strong>zwei</strong> Ausrufezeichen.</li>
+  <li>Sind deine Ausrufezeichen aufgebraucht, darfst du keine Joker mehr nutzen.</li></ul>
+  <p><strong>Praktisch:</strong> Tippe nach dem Wurf direkt auf passende Felder; die Anwendung nimmt eine erlaubte Würfelkombination mit möglichst geringem Jokerverbrauch. Du kannst Farb- und Zahlenwürfel auch gezielt antippen.</p>`},
+ {id:'spalten',title:'🔠 Spaltenpunkte – erster und spätere Abschlüsse',content:`
+  <p>Eine Spalte ist vollständig, sobald ihre <strong>sieben Felder</strong> angekreuzt sind. Unter A–O stehen dafür zwei Werte.</p>
+  <ul><li>Wer eine bestimmte Spalte <strong>als Erste bzw. Erster</strong> schließt, bekommt den <strong>oberen</strong> Wert.</li>
+  <li>Jede später abschließende Person bekommt den <strong>unteren</strong> Wert; die untere Wertung wird nicht gesperrt.</li>
+  <li>Schließen mehrere Personen dieselbe Spalte <strong>im selben Wurf zum ersten Mal</strong>, erhalten <strong>alle</strong> den oberen Wert.</li>
+  <li>Es können in einem einzigen Wurf auch <strong>mehrere Spalten</strong> gleichzeitig abgeschlossen werden.</li>
+  <li>Die erste erfolgreiche Person sperrt für andere nur den oberen Wert – <strong>nicht</strong> die ganze Spalte.</li></ul>
+  <p>Die digitalen Spaltenpunkte werden nach der Entscheidung aller Spieler dieses Wurfs automatisch zugewiesen.</p>`},
+ {id:'farben',title:'🌈 Vollständige Farben und Farbboni',content:`
+  <p>Wer <strong>alle Felder einer Farbe</strong> auf dem eigenen Blatt markiert hat (hier 21 pro Farbe), erhält einen Farbbonus:</p>
+  <ul><li><strong>5 Punkte</strong>, wenn noch niemand zuvor diese Farbe vollständig hatte.</li>
+  <li><strong>3 Punkte</strong> für alle späteren Personen, die diese Farbe ebenfalls vollenden.</li>
+  <li>Wenn zwei oder mehr Personen eine Farbe erstmals <strong>im gleichen Wurf</strong> vollenden, bekommen sie jeweils <strong>5 Punkte</strong>.</li>
+  <li>Jede Farbe bringt jeder Person höchstens <strong>einmal</strong> ihren Bonus.</li></ul>
+  <p>Ein vollständig ausgefüllter Farbblock ist <strong>noch kein Farbbonus</strong>: Für den Bonus müssen sämtliche Felder dieser Farbe im ganzen Raster gekreuzt sein.</p>`},
+ {id:'sterne',title:'⭐ Sterne und Endwertung',content:`
+  <p>Jeder Stern ist ein gewöhnliches Farbfeld mit einer Zusatzbedeutung: <strong>Bei Spielende kostet jeder nicht angekreuzte Stern 2 Minuspunkte.</strong> Angekreuzte Sterne bringen keinen Extrabonus, verhindern aber den Abzug.</p>
+  <div class="score-example"><strong>Beispiel für eine Endwertung:</strong><span>Farbboni: +8</span><span>Spaltenpunkte: +5</span><span>4 übrige ❕: +4</span><span>3 freie Sterne: −6</span><b>Gesamt: 11 Punkte</b></div>
+  <p>Die digitale Punkteanzeige zählt fortlaufend: <strong>Farbboni + Spaltenpunkte + unbenutzte Ausrufezeichen − 2 × offene Sterne</strong>.</p>`},
+ {id:'spielende',title:'🏆 Spielende, Sieger und Gleichstand',content:`
+  <p>Eine Mehrspielerpartie endet nach dem Wurf, in dem <strong>mindestens eine Person ihre zweite vollständige Farbe</strong> erreicht. Ob diese Farbboni 5 oder 3 Punkte wert sind, ist dafür egal.</p>
+  <ul><li>Der Wurf wird <strong>vollständig zu Ende gespielt</strong>. Erreicht die aktive Person ihre zweite Farbe, dürfen die anderen aus den zulässigen Restwürfeln noch ihre Züge machen.</li>
+  <li>Danach werden alle Punkte zusammengezählt.</li>
+  <li>Die höchste Gesamtpunktzahl gewinnt.</li>
+  <li>Bei Punktgleichheit gewinnt unter den Gleichstehenden, wer <strong>mehr unbenutzte Ausrufezeichen</strong> besitzt.</li>
+  <li>Sind auch diese gleich, gibt es <strong>mehrere Gewinner</strong>.</li></ul>`},
+ {id:'solo',title:'🧍 Solo-Spiel – vier Würfel und 30 Würfe',content:`
+  <p>Alleine spielst du nur mit <strong>zwei Farbwürfeln und zwei Zahlenwürfeln</strong>. Die Regeln für Felder, Joker, Sterne und Wertung bleiben unverändert.</p>
+  <p>Du hast <strong>30 Würfe</strong>. Im analogen Spielblatt wird nach jedem Wurf oben bei einem Buchstaben ein diagonaler Strich gemacht; jedes der 15 Buchstabenfelder erhält insgesamt zwei Striche. KreuzKunter erledigt diese Zählung automatisch und zeigt den Fortschritt im Spaltenkopf und beim Wurfzähler an.</p>
+  <p>Auch nach dem Fertigstellen von zwei Farben darfst du im Solo-Modus bis zum <strong>30. Wurf</strong> weiterspielen; dann erfolgt die Auswertung. Es gibt im Solo-Modus keine zusätzlichen Bonuspunkte für nicht benötigte Würfe.</p>
+  <div class="level-table"><b>Orientierung zur Solo-Punktzahl</b>${[
+    ['> 40','Meisterklasse'],['37–40','Herausragend'],['33–36','Sehr stark'],['29–32','Klasse'],['25–28','Sehr gut'],['21–24','Gut'],['17–20','Ordentlich'],['13–16','Solide'],['9–12','Steigerbar'],['5–8','Noch Luft nach oben'],['1–4','Zum Üben'],['0','Neustart lohnt sich'],['< 0','Beim nächsten Mal klappt es besser']
+  ].map(x=>`<span>${x[0]}</span><span>${x[1]}</span>`).join('')}</div>`},
+ {id:'bedienung',title:'📱 So bedienst du die digitale Version',content:`
+  <ol><li>Solo oder lokal mit mehreren Personen starten (oder 🌐 einen Online-Raum öffnen).</li>
+  <li>Auf <strong>Würfeln</strong> tippen. Im Multiplayer würfelt nur die aktive Person.</li>
+  <li>Direkt auf die hervorgehobenen, zur Würfelkombination passenden Felder tippen. Du darfst erst ein Kreuz markieren und es anschließend zu einer größeren möglichen Gruppe erweitern.</li>
+  <li>Für eine bewusst ausgewählte Kombination optional Farb- und Zahlenwürfel antippen; durch erneutes Tippen wird der Würfel wieder abgewählt.</li>
+  <li>Ein markiertes Kreuz erneut antippen oder die Schaltflächen <strong>Letztes Kreuz</strong> und <strong>Auswahl löschen</strong> benutzen. Bereits eingetragene Kreuze bleiben bestehen.</li>
+  <li><strong>Eintragen</strong> schließt einen erlaubten Zug ab; <strong>Passen</strong> lässt deinen Zug ungenutzt.</li>
+  <li>Auf Handys über <strong>Vergrößern / Ganzes Brett</strong> zwischen genauer und voller Brettansicht wechseln.</li></ol>
+  <p>Im lokalen Mehrspielermodus wechseln die Spieler an einem Gerät. Im Online-Modus behält jede Person ihr eigenes Spielfeld, und der Server prüft die eingetragenen Züge.</p>`}
+ ];
+ const contents=sections.map((s,i)=>`<details class="rule-section" id="rule-${s.id}" ${i===0?'open':''}><summary>${s.title}</summary><div class="rule-section-body">${s.content}</div></details>`).join('');
+ showDialog(`<div class="minihead">Regelbuch · komplett offline lesbar</div><h2 id="dialog-heading">📘 Spielanleitung KreuzKunter</h2><p class="rule-intro">Das gesamte Regelwerk in eigener Formulierung – inklusive Beispiele, Wertung und Solo-Spiel. Grundlage sind die Spielmechaniken der von dir gezeigten Spielanleitung; Spielfeld und Aufmachung von KreuzKunter sind eigenständig.</p><div class="rule-jump" aria-label="Thema auswählen">${sections.map(s=>`<button class="rule-jump-btn" type="button" data-help-jump="${s.id}">${s.title}</button>`).join('')}</div><div id="rule-sections">${contents}</div><div class="rule-footer"><a href="https://www.schmidtspiele.de/files/Produkte/4/49327%20-%20Noch%20mal!/49327_Noch_Mal_DE.pdf" target="_blank" rel="noopener noreferrer">Quelle: Offizielle Original-Spielanleitung ↗</a><button class="action ok" type="button" id="close-help">${returnToStart?'↩ Zurück zum Start':'✓ Zurück zum Spiel'}</button></div>`);
+ $('dialog-body').classList.add('rule-modal');
+ $('dialog-body').querySelectorAll('[data-help-jump]').forEach(b=>b.addEventListener('click',()=>{const t=$('rule-'+b.dataset.helpJump);if(t){t.open=true;t.scrollIntoView({behavior:'smooth',block:'start'});}}));
+ $('close-help').addEventListener('click',()=>{hideDialog();if(returnToStart)showStart();});
+}
+  function showEnd(){
+  saveBestResult();
+  const ranking=state.players.map((p,i)=>({p,i,...score(p)})).sort((a,b)=>b.total-a.total||b.joker-a.joker);
+  const solo=state.mode==='solo';const grade=(n)=>n>40?'★★★★':n>=37?'★★★½':n>=33?'★★★':n>=29?'★★½':n>=25?'★★':n>=21?'★½':n>=17?'★':n>=13?'☆':n>=9?'Trainieren':n>=5?'Ein Anfang':'Noch Luft nach oben';
+  let best='';try{const record=JSON.parse(localStorage.getItem('kreuzkunter-solo-record-v9')||'null');if(solo&&record)best=`<p class="tiny">🏅 Dein Solo-Rekord auf diesem Gerät: ${record.best} Punkte (${record.at})</p>`;}catch(e){}
+  const leaders=ranking.filter(v=>v.total===ranking[0].total&&v.joker===ranking[0].joker);
+  const winner=solo?`Solo: ${ranking[0].total} Punkte`:(leaders.length>1?`Unentschieden: ${leaders.map(v=>v.p.name).join(' & ')}`:`${leaders[0].p.name} gewinnt!`);
+  showDialog(`<div class="minihead">Partie abgeschlossen · KreuzKunter</div><div class="celebrate"><div class="tiny">🏆 ENDWERTUNG</div><div class="winner">${ESC(winner)}</div><div>${solo?'Deine Wertung: '+grade(ranking[0].total):'Herzlichen Glückwunsch!'}</div></div>${best}
+  <div class="balance-table-wrap"><table class="finish-breakdown"><thead><tr><th>Platz / Spieler</th><th>Farben</th><th>Spalten</th><th>Joker</th><th>Sterne</th><th>Total</th></tr></thead><tbody>${ranking.map((v,i)=>`<tr><td>${i+1}. ${ESC(v.p.name)}</td><td>${v.bonus}</td><td>${v.columns}</td><td>+${v.joker}</td><td>−${v.missed*2}</td><td>${v.total}</td></tr>`).join('')}</tbody></table></div>
+  <div class="actions" style="margin-top:16px"><button class="action ok" type="button" id="end-new">Neue Partie</button><button class="action pass" type="button" id="end-close">Spielfeld ansehen</button></div><button class="rule-start" type="button" id="end-help">📖 Regeln / Punkte nachlesen</button>`);
+  $('end-new').addEventListener('click',showStart);$('end-help').addEventListener('click',()=>showHelp(false));$('end-close').addEventListener('click',hideDialog);
+ }
+
+ function clearOnlineWait(my){clearTimeout(my?.syncTimer);if(my){my.awaiting=false;my.pendingActionId=null;}}
+ function requestOnlineSync(){
+  if(!NET||!NET.ws||NET.ws.readyState!==WebSocket.OPEN){setMsg('Server momentan nicht erreichbar.',true);return;}
+  try{NET.ws.send(JSON.stringify({action:'sync'}));flash='↻ Aktuellen Spielstand vom Server angefordert …';flashBad=false;render();}
+  catch(e){setMsg('Synchronisierung fehlgeschlagen: '+e.message,true);}
+ }
+ function sendOnline(obj){
+  if(!NET||!NET.connected||NET.ws.readyState!==WebSocket.OPEN){setMsg('Keine Verbindung zum Online-Server.',true);return;}
+  if(NET.awaiting)return;
+  try{
+   const tracked=['roll','move','pass','start','skip','remove'].includes(obj.action);
+   if(['roll','move','pass','skip'].includes(obj.action))obj={...obj,expectedTurn:state.turn,expectedPicker:state.picker};
+   if(tracked){
+    obj.actionId='v5_'+Date.now().toString(36)+'_'+Math.floor(Math.random()*1e9).toString(36);
+    NET.pendingActionId=obj.actionId;NET.awaiting=true;
+   }
+   NET.ws.send(JSON.stringify(obj));
+   if(tracked){
+    const my=NET;
+    clearTimeout(my.syncTimer);
+    my.syncTimer=setTimeout(()=>{
+      if(NET!==my||!my.awaiting||!my.connected)return;
+      requestOnlineSync();
+      my.syncTimer=setTimeout(()=>{
+       if(NET===my&&my.awaiting&&my.ws?.readyState===WebSocket.OPEN){
+        flash='Keine Antwort vom Server. Neue Verbindung wird aufgebaut …';flashBad=true;
+        my.ws.close(4001,'Resync erforderlich');render();
+       }
+      },10000);
+    },6500);
+   }
+  }catch(e){clearOnlineWait(NET);setMsg('Senden fehlgeschlagen: '+e.message,true);}
+ }
+ function showOnline(){const saved=getNetInfo();
+   showDialog(`<div class="minihead">KreuzKunter – Online auf Render</div><h2 id="dialog-heading">🌐 Online spielen</h2><p>Du kannst einen Raum mit Code erstellen oder beitreten. Alle verwenden dieselbe WebSocket-Serveradresse.</p><div class="field"><label>WebSocket-Serveradresse</label><input id="net-url" type="text" value="${ESC(saved.url||'wss://serverfinal-ynbe.onrender.com/kreuzkunter')}" placeholder="wss://dein-server.onrender.com"></div><div class="field"><label>Dein Spielername</label><input id="net-name" type="text" maxlength="24" value="${ESC(saved.name||'Spieler 1')}"></div><div class="field"><label>Raumcode zum Beitreten</label><input id="net-code" type="text" maxlength="6" value="${ESC(saved.code||'')}" placeholder="z. B. AB12C"></div><div id="net-status" class="message">Es wurde noch keine Verbindung aufgebaut.</div>${saved.token&&saved.code&&saved.url?'<button type="button" class="action" id="net-resume" style="margin:9px 0">↻ Letzten Online-Raum fortsetzen</button>':''}<div class="actions"><button id="net-create" class="action ok">Raum erstellen</button><button id="net-join" class="action pass">Beitreten</button></div><button id="net-cancel" class="action" style="margin-top:10px">Zurück</button><p class="tiny">Hinweis: Verbinde dich über den vorhandenen Render-Server. Deine Online-Partien werden separat in Firebase gespeichert.</p>`);
+   $('net-create').addEventListener('click',()=>connectOnline('create'));$('net-join').addEventListener('click',()=>connectOnline('join'));
+   $('net-cancel').addEventListener('click',hideDialog);if($('net-resume'))$('net-resume').addEventListener('click',resumeLastOnline);
+ }
+ function connectOnline(op){
+  if(typeof WebSocket==='undefined'){setMsg('WebSocket wird von diesem Browser nicht unterstützt.',true);return;}
+  const url=$('net-url').value.trim(),name=$('net-name').value.trim().slice(0,24)||'Spieler',code=$('net-code').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!/^wss?:\/\/[^\s]+$/i.test(url)){$('net-status').textContent='Bitte eine gültige ws:// oder wss:// Adresse eingeben.';return;}
+  if(op==='join'&&!code){$('net-status').textContent='Bitte einen Raumcode eingeben.';return;}
+  if(location.protocol==='https:'&&url.startsWith('ws://')){$('net-status').textContent='HTTPS benötigt eine verschlüsselte wss:// Verbindung.';return;}
+  if(NET){NET.stopped=true;clearTimeout(NET.timer);clearTimeout(NET.syncTimer);try{NET.ws.close();}catch(e){}NET=null;}
+  let saved={};try{saved=JSON.parse(localStorage.getItem(NET_INFO_KEY)||'{}');}catch(e){}
+  const my={ws:null,index:0,host:false,code,token:(op==='join'&&saved.url===url&&saved.code===code)?saved.token:null,connected:false,url,name,attempt:0,stopped:false,awaiting:false,presence:null,timer:null,syncTimer:null,revision:0};
+  NET=my;
+  $('net-status').textContent='Verbindung wird aufgebaut …';
+  openOnlineSocket(my,op);
+ }
+ function resumeLastOnline(){
+  const saved=getNetInfo();
+  if(!saved.url||!saved.code||!saved.token){setMsg('Es gibt keine gespeicherte Onlinesitzung.',true);return;}
+  if(NET){NET.stopped=true;clearTimeout(NET.timer);clearTimeout(NET.syncTimer);try{NET.ws?.close();}catch(e){}}
+  const my={ws:null,index:0,host:false,code:saved.code,token:saved.token,connected:false,url:saved.url,
+    name:saved.name||'Spieler',attempt:0,stopped:false,awaiting:false,presence:null,timer:null,syncTimer:null,revision:0};
+  NET=my;flash='↻ Letzte Online-Partie wird wiederhergestellt …';flashBad=false;
+  openOnlineSocket(my,'join');hideDialog();render();
+ }
+ function openOnlineSocket(my,op='join'){
+  if(NET!==my||my.stopped)return;
+  let ws;try{ws=new WebSocket(my.url);}catch(e){setMsg('Server nicht erreichbar: '+e.message,true);scheduleReconnect(my);return;}
+  my.ws=ws;
+  ws.onopen=()=>{
+   if(NET!==my||my.stopped){ws.close();return;}
+   my.connected=false;my.attempt=0;clearOnlineWait(my);
+   ws.send(JSON.stringify({action:op,name:my.name,code:my.code,token:op==='join'?my.token:null,boardId:BOARD_ID}));
+  };
+  ws.onmessage=e=>{
+   if(NET!==my||my.stopped||my.ws!==ws)return;
+   let msg;try{msg=JSON.parse(e.data);}catch(err){return;}
+   if(msg.type==='error'){
+    clearOnlineWait(my);
+    if(['Raumcode nicht gefunden.','Spielertoken nicht mehr gültig. Bitte mit einem neuen Raum beginnen.'].includes(msg.message)){my.stopped=true;try{const d=getNetInfo();d.active=false;localStorage.setItem(NET_INFO_KEY,JSON.stringify(d));}catch(e){}}
+    if(!$('dialog').classList.contains('hidden')&&$('net-status'))$('net-status').textContent='❌ '+msg.message;
+    else{setMsg(msg.message,true);render();}
+   }else if(msg.type==='welcome'){
+    my.code=msg.code;my.token=msg.token;my.host=msg.host;my.connected=true;my.attempt=0;
+    try{localStorage.setItem(NET_INFO_KEY,JSON.stringify({url:my.url,code:msg.code,token:msg.token,name:my.name,active:true}));}catch(e){}
+   }else if(msg.type==='state'){
+    clearOnlineWait(my);
+    if(typeof msg.revision==='number'&&msg.revision<my.revision)return;
+    const wasOver=state?.finished;
+    const old=state;
+    const canKeepDraft=old&&old.phase==='select'&&msg.game.phase==='select'&&
+      old.turn===msg.game.turn&&old.picker===msg.game.picker&&
+      old.picker===msg.index&&JSON.stringify(old.dice)===JSON.stringify(msg.game.dice)&&
+      JSON.stringify(old.players[msg.index]?.cells)===JSON.stringify(msg.game.players[msg.index]?.cells);
+    const draft=canKeepDraft?{
+      colorDie:old.colorDie,numDie:old.numDie,chosenColor:old.chosenColor,
+      chosenNumber:old.chosenNumber,manualColor:old.manualColor,manualNumber:old.manualNumber,pending:[...old.pending]}:restoreOnlineDraft(my,msg);
+    my.index=msg.index;my.host=msg.host;my.code=msg.code;my.presence=msg.connected;my.revision=msg.revision||0;
+    state=msg.game;
+    if(draft)Object.assign(state,draft);
+    if(state.phase==='select'&&state.picker!==my.index){state.colorDie=null;state.numDie=null;state.manualColor=false;state.manualNumber=false;state.pending=[];}
+    flash=state.phase==='lobby'?`Warte auf ${Math.max(0,2-state.players.length)} weitere Spieler (mindestens 2).`:
+      state.phase==='select'?(state.picker===my.index?'Du bist dran! Tippe direkt auf passende Felder.':state.players[state.picker].name+' ist am Zug.'):'Gemeinsamer Spielstand aktualisiert.';
+    flashBad=false;hideDialog();render();if(state.finished&&!wasOver)showEnd();
+   }
+  };
+  ws.onerror=()=>{if($('net-status'))$('net-status').textContent='Keine Verbindung. Prüfe die Serveradresse.';};
+  ws.onclose=e=>{
+   if(NET!==my||my.ws!==ws)return;
+   my.connected=false;clearOnlineWait(my);
+   if(e.code===4000){my.stopped=true;flash='Dieser Spieler wurde in einem anderen Browserfenster verbunden.';}
+   else{flash='Verbindung unterbrochen. Der erneute Verbindungsaufbau läuft automatisch …';scheduleReconnect(my);}
+   flashBad=true;render();
+  };
+ }
+ function scheduleReconnect(my){
+  if(my.stopped||NET!==my||!my.token)return;
+  clearTimeout(my.timer);
+  const wait=Math.min(15000,1200*Math.pow(1.7,Math.min(my.attempt++,6)));
+  my.timer=setTimeout(()=>{if(NET===my&&!my.connected&&!my.stopped)openOnlineSocket(my,'join');},wait);
+ }
+
+ document.addEventListener('keydown',e=>{
+   if(e.key==='Escape'&&!$('dialog').classList.contains('hidden')){e.preventDefault();hideDialog();}
+ });
+ $('app').addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.dataset.opponent!==undefined)showOpponent(Number(btn.dataset.opponent));else if(btn.dataset.kick!==undefined)sendOnline({action:'remove',index:Number(btn.dataset.kick)});else if(btn.dataset.cell!==undefined)cellClick(Number(btn.dataset.cell));else if(btn.dataset.die!==undefined)dieClick(Number(btn.dataset.die));else if(btn.dataset.pickcolor)setColor(btn.dataset.pickcolor);else if(btn.dataset.picknum)setNumber(Number(btn.dataset.picknum));else if(btn.dataset.mobileDie!==undefined)dieClick(Number(btn.dataset.mobileDie));else switch(btn.dataset.action||btn.dataset.mobileAction){case 'roll':roll();break;case 'commit':commit();break;case 'pass':pass();break;case 'undo':undoSelection();break;case 'clear':undoSelection(true);break;case 'help':showHelp();break;case 'inspect':showRuleCheck();break;case 'why':showWhy();break;case 'symbols':toggleSymbols();break;case 'balance':showBalance();break;case 'diagnostics':showDiagnostics();break;case 'scorehelp':showScoreDetail();break;case 'compare':showCompare();break;case 'jumpboard':jumpToSection('boardpane');break;case 'jumpplayers':jumpToSection('players-zone');break;case 'jumpscore':jumpToSection('score-ribbon');break;case 'new':showStart();break;case 'online':showOnline();break;case 'startonline':sendOnline({action:'start'});break;case 'view':changeBoardView();break;case 'navleft':navigateBoard(0);break;case 'navcenter':navigateBoard(7);break;case 'navright':navigateBoard(14);break;case 'skip':sendOnline({action:'skip'});break;case 'sync':requestOnlineSync();break;case 'leaveonline':leaveOnline();break;}});
+ // Arrow keys move through the cells even for keyboard-only players.
+ $('tiles').addEventListener('keydown',e=>{
+  if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
+  const current=e.target.closest('button[data-cell]');if(!current)return;
+  e.preventDefault();const at=Number(current.dataset.cell);
+  const delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-15,ArrowDown:15}[e.key];
+  let target=at+delta;
+  while(target>=0&&target<105){
+   if((delta===-1&&target%15===14)||(delta===1&&target%15===0))break;
+   const node=$('tiles').querySelector(`[data-cell="${target}"]`);
+   if(node&&!node.disabled){node.focus();return;}
+   target+=delta;
+  }
+ });
+ $('tiles').addEventListener('click',e=>{
+  if(e.detail!==0)return;
+  const at=e.target.closest('button[data-cell]')?.dataset.cell;
+  if(at===undefined)return;
+  // The game's render rebuilds the grid; retain keyboard focus afterwards.
+  requestAnimationFrame(()=>{const btn=$('tiles').querySelector(`[data-cell="${at}"]`);if(btn&&!btn.disabled)btn.focus();});
+ });
+ $('boardpane').querySelector('.board-scroll').addEventListener('scroll',()=>requestAnimationFrame(updateBoardWindow),{passive:true});
+ window.addEventListener('resize',()=>requestAnimationFrame(updateBoardWindow));
+ // Developer checks; opens with ?selftest=1 for QA without modifying a game.
+ function selftest(){const results=[];function ok(n,cond){results.push({name:n,pass:!!cond});}ok('Raster 15x7',ROWS.length===7&&ROWS.every(r=>r.length===15));ok('Genau 105 Felder',ROWS.join('').length===105);ok('15 Sterne einzigartig',STARS.length===15&&STARSET.size===15);ok('Jede Spalte hat einen Stern',COLS.split('').every((_,col)=>STARS.filter(i=>i%15===col).length===1));ok('Alle fünf Farben genau 3 Sterne',COLOR.every(c=>STARS.filter(i=>colorAt(i)===c).length===3));const counts={};for(const ch of ROWS.join(''))counts[ch]=(counts[ch]||0)+1;ok('Alle fünf Farben mit je 21 Feldern',COLOR.every(c=>counts[c]===21));for(const col of COLOR){const visited=new Set(),sizes=[];for(let i=0;i<105;i++)if(colorAt(i)===col&&!visited.has(i)){const q=[i];visited.add(i);for(let k=0;k<q.length;k++)for(const j of neighbors(q[k]))if(!visited.has(j)&&colorAt(j)===col){q.push(j);visited.add(j);}sizes.push(q.length);}ok(COLNAMES[col]+' 1–6 genau einmal',JSON.stringify(sizes.sort((a,b)=>a-b))==='[1,2,3,4,5,6]');}ok('Startspalte H enthält alle Farben',new Set(ROWS.map(r=>r[7])).size===5);ok('Solo: zwei Farb- und zwei Zahlenwürfel',initial(['Solo'],'solo').mode==='solo'&&DICE_COLOR.length===6&&DICE_NUM.length===6);ok('Mehrspieler: drei Farb- und drei Zahlenwürfel',initial(['A','B'],'local').mode==='local');ok('Spaltenwertung',TOP.length===15&&LOW.length===15);
+ ok('Korrekte Punkte des leeren Spielblatts',score(emptyPlayer('P')).total===-22);
+ ok('Prüfung beschädigter Spielstände',!validSavedGame({...initial(['A'],'solo'),turn:-1}) && !validSavedGame({...initial(['A'],'solo'),players:[{...emptyPlayer('A'),cells:[7,7]}]}));
+ ok('Spielstand des neuen Solospiels gültig',validSavedGame(initial(['A'],'solo')));
+ ok('Spielstand einer frischen Mehrspielerpartie gültig',validSavedGame(initial(['A','B'],'local')));window.KreuzKunterTests=results;return results;}
+ window.KreuzKunterQA={validSavedGame,validSavedPlayer,selftest,collectBoardBalance,showBalance,showScoreDetail,showCompare,score,validateMove,finishThrow,stepPicker,pass,initial,region,neighbors,colorAt,explainUnavailable,getState:()=>JSON.parse(JSON.stringify(state)),start:(names,mode='local')=>{state=initial(names,mode);flash='Testpartie';render();},setState:s=>{state=s;flash='Test';render();},getBoard:()=>ROWS.map(r=>r.slice()),roll,dieClick,cellClick,commit,undoSelection,projectPoints,possibleCells,matchingOptions,moveChoices,bestMove};
+ state=restore();if(state&&state.phase==='select'){if(!state.manualColor){state.colorDie=null;state.chosenColor=null;}if(!state.manualNumber){state.numDie=null;state.chosenNumber=null;}}if(!state){state=initial(['Spieler 1'],'solo');flash='Willkommen bei KreuzKunter!';}else{flash='Dein letzter Spielstand wurde geladen.';}render();if(location.search.includes('selftest=1')){console.table(selftest());}const remembered=getNetInfo();if(remembered.active&&remembered.url&&remembered.code&&remembered.token){resumeLastOnline();}else if(!restore())showStart();if(boardView==='zoom')requestAnimationFrame(centerBoardOnStart);
+})();
+
+</script>
+</body>
+</html>
