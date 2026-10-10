@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – Royal Atelier V113</title>
+<title>SKYJO Action – Royal Atelier V115</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -1968,6 +1968,65 @@ body[data-mode="flipOwn"] .player.active .card-slot:has(.card.clickable){
 .premium-winner{background:radial-gradient(circle at 50% 20%,rgba(246,209,95,.12),transparent 58%)}
 .premium-winner p b{font-size:18px;color:#ffe177}
 
+
+.royal-modal{min-width:min(1180px,96vw);max-width:min(1180px,96vw);color:#f7f3dc}
+.royal-round-modal,.royal-finale-modal{
+  background:radial-gradient(circle at 50% 0,rgba(255,215,122,.14),transparent 38%),linear-gradient(180deg,#071a2b 0%,#071625 100%);
+  border:1px solid rgba(248,214,122,.28);border-radius:28px;padding:18px 18px 20px;
+  box-shadow:0 24px 80px rgba(0,0,0,.55),inset 0 0 0 2px rgba(255,227,145,.05)
+}
+.royal-round-title,.royal-finale-title{text-align:center;font-size:34px;font-weight:1000;letter-spacing:1.4px;color:#f4d78f}
+.royal-round-title span,.royal-finale-title span{color:#b9d9ff}
+.royal-round-subtitle,.royal-finale-subtitle{text-align:center;font-size:42px;font-weight:1000;letter-spacing:1.2px;color:#f4d78f;margin-top:2px}
+.royal-round-round,.royal-finale-round{text-align:center;font-size:17px;font-weight:850;letter-spacing:2.4px;color:#e6d6a6;margin-bottom:16px}
+.royal-round-shell{display:grid;grid-template-columns:240px 1fr 260px;gap:16px;align-items:stretch}
+.royal-side-scoreboard,.royal-used-panel,.royal-scroll-wrap{
+  background:linear-gradient(180deg,rgba(5,14,24,.84),rgba(5,16,28,.70));border:1px solid rgba(255,220,138,.22);
+  border-radius:22px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)
+}
+.royal-side-scoreboard{padding:14px;display:flex;flex-direction:column;gap:10px;justify-content:flex-start}
+.royal-player-pill{all:unset;cursor:pointer;display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:12px;padding:10px 12px;border-radius:18px;border:1px solid rgba(255,220,138,.12);background:rgba(255,255,255,.03)}
+.royal-player-pill.active{box-shadow:0 0 0 2px rgba(255,221,113,.38),0 14px 32px rgba(0,0,0,.25);background:linear-gradient(90deg,rgba(255,220,116,.12),rgba(255,255,255,.04))}
+.royal-player-pill.leader .royal-player-rank{background:linear-gradient(180deg,#f3d57b,#b98d22);color:#111}
+.royal-player-rank{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:16px;font-weight:1000;color:#fff;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12)}
+.royal-player-name{font-size:17px;font-weight:850;color:#f8f6e9}
+.royal-player-total{font-size:28px;line-height:1;color:#f4d78f}
+.royal-scroll-wrap{padding:14px 16px 16px;position:relative;overflow:hidden}
+.royal-scroll-head{text-align:center;margin-bottom:12px}
+.royal-scroll-head small{display:block;font-size:12px;letter-spacing:1.3px;color:#d0c59e;margin-bottom:4px}
+.royal-scroll-head h3{margin:0;font-size:38px;color:#7f5217;background:linear-gradient(180deg,#f8eed1,#e8d3a3);padding:12px 18px;border-radius:18px;border:1px solid rgba(160,115,36,.26)}
+.royal-scroll-surface{background:linear-gradient(180deg,#f2e3be,#ead4a2);border-radius:22px;padding:14px 14px 8px;color:#5a3714;border:1px solid rgba(168,120,42,.28);box-shadow:inset 0 0 0 2px rgba(255,255,255,.22)}
+.royal-detail-row{display:grid;grid-template-columns:48px 1fr 90px 74px;gap:12px;align-items:center;padding:8px 8px;border-bottom:1px solid rgba(110,74,26,.16)}
+.royal-detail-row:last-child{border-bottom:none}
+.royal-detail-no{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#f1d57d,#cca03d);font-weight:1000;color:#2b1a05;font-size:18px}
+.royal-detail-text b{display:block;font-size:18px;color:#54310f}.royal-detail-text small{display:block;font-size:12px;color:#6d4c2d;margin-top:2px}
+.royal-detail-points{text-align:right;font-size:33px;font-weight:1000}.royal-detail-points.good{color:#0a8a5c}.royal-detail-points.bad{color:#9d331d}.royal-detail-points.neutral{color:#7c643f}
+.royal-detail-visual{display:flex;justify-content:flex-end}
+.royal-mini-card .card{width:50px!important;height:68px!important;min-width:50px!important;border-radius:11px!important;box-shadow:0 8px 18px rgba(0,0,0,.22)!important}
+.royal-mini-card .card .center-value{font-size:29px!important}.royal-mini-card .card .corner{font-size:8px!important}
+.royal-mini-card{position:relative}.royal-joker-badge{position:absolute;left:50%;transform:translateX(-50%);bottom:-10px;padding:2px 6px;border-radius:999px;background:#10273c;color:#ffe59a;font-size:10px;font-weight:800;border:1px solid rgba(255,224,140,.26)}
+.royal-mini-action,.royal-mini-bonus{width:56px;height:68px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#17355a,#0f223a);border:1px solid rgba(255,220,138,.22);box-shadow:0 8px 18px rgba(0,0,0,.18)}
+.royal-mini-action span,.royal-mini-bonus{font-size:28px}.royal-mini-action small{margin-top:4px;font-size:8px;color:#d8d6cb;text-transform:uppercase;text-align:center;padding:0 3px}
+.royal-used-panel{padding:14px}.royal-used-head{text-align:center;font-size:22px;font-weight:1000;color:#f2d488;margin-bottom:12px}
+.royal-used-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.royal-used-item{display:flex;justify-content:center}.royal-used-note{padding:20px;color:#c8bea1;text-align:center}
+.royal-total-wrap{width:min(340px,100%);margin:18px auto 8px;background:radial-gradient(circle at 50% 0,rgba(255,232,143,.23),transparent 55%),linear-gradient(180deg,#091929,#09111b);border:1px solid rgba(255,223,132,.28);border-radius:26px;padding:12px 18px;text-align:center;box-shadow:0 16px 36px rgba(0,0,0,.30)}
+.royal-total-kicker{font-size:20px;font-weight:900;letter-spacing:1.3px;color:#f0d58d}.royal-total-value{font-size:86px;line-height:1;color:#f8e096;font-weight:1000;text-shadow:0 0 18px rgba(255,210,95,.18)}
+.royal-bottom-actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}.royal-bottom-actions button{min-width:220px}.royal-bottom-actions .primary{background:linear-gradient(180deg,#f3d57c,#c59023)!important;color:#1f1200!important}
+.royal-finale-modal{position:relative;overflow:hidden}.royal-stage-wrap{position:relative;padding:8px 8px 2px;min-height:500px;background:radial-gradient(circle at 50% 8%,rgba(255,223,139,.12),transparent 36%),linear-gradient(180deg,rgba(120,18,18,.10),rgba(7,18,34,0));border-radius:24px}
+.royal-curtain{position:absolute;top:-6px;bottom:0;width:150px;background:linear-gradient(180deg,#781416,#510d12 75%,transparent);filter:drop-shadow(0 18px 28px rgba(0,0,0,.25));opacity:.96}
+.royal-curtain.left{left:-22px;border-radius:0 0 40px 0}.royal-curtain.right{right:-22px;border-radius:0 0 0 40px}
+.royal-podium-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1.1fr 1fr;align-items:end;gap:20px;padding:32px 60px 18px}
+.royal-podium-slot{display:flex;justify-content:center}.royal-podium-slot.first{padding-bottom:40px}.royal-podium-slot.second,.royal-podium-slot.third{padding-bottom:6px}
+.royal-winner-ribbon{position:absolute;top:30px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:999px;background:linear-gradient(180deg,#f5d986,#c5962c);color:#2d1804;font-weight:1000;font-size:24px;box-shadow:0 10px 25px rgba(0,0,0,.18)}
+.royal-podium-card{width:min(290px,100%);text-align:center;padding:18px 16px 20px;border-radius:24px;border:1px solid rgba(255,225,140,.23);background:linear-gradient(180deg,#08182a,#0d2642);box-shadow:0 18px 40px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.04)}
+.royal-podium-card.first{min-height:320px;padding-top:52px;box-shadow:0 22px 52px rgba(0,0,0,.30),0 0 0 2px rgba(255,221,118,.20) inset}.royal-podium-card.second,.royal-podium-card.third{min-height:250px}
+.royal-podium-medal{margin:0 auto 12px;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:28px;font-weight:1000;color:#0f1118;background:linear-gradient(180deg,#f2d67e,#bd8f26)}
+.royal-podium-card.second .royal-podium-medal{background:linear-gradient(180deg,#d7dfeb,#8d99ad)}.royal-podium-card.third .royal-podium-medal{background:linear-gradient(180deg,#dba66b,#97633a)}
+.royal-podium-name{font-size:30px;font-weight:1000;color:#f7f2e0;margin-bottom:16px}.royal-podium-card.first .royal-podium-name{font-size:36px}
+.royal-podium-score small{display:block;font-size:15px;letter-spacing:1.2px;color:#dbc98f;margin-bottom:4px}.royal-podium-score b{font-size:70px;line-height:1;color:#f4d57f}.royal-podium-card.second .royal-podium-score b,.royal-podium-card.third .royal-podium-score b{font-size:56px}
+.royal-extra-board{position:relative;z-index:1;display:grid;gap:10px;margin:0 74px 10px;background:rgba(6,16,28,.58);border:1px solid rgba(255,224,139,.14);border-radius:18px;padding:12px 16px}
+.royal-extra-rank{display:grid;grid-template-columns:60px 1fr auto;gap:12px;align-items:center;color:#e6dcc0}.royal-extra-rank span{font-weight:1000;color:#f3d685}.royal-extra-rank em{font-style:normal;color:#fff2c8}
+.royal-finale-actions{justify-content:space-between}
 @media(max-width:900px){
   .score-show-body{grid-template-columns:1fr!important}
   .score-focus-premium{min-height:0!important;display:grid!important;grid-template-columns:auto 1fr auto!important;column-gap:12px!important}
@@ -1978,6 +2037,32 @@ body[data-mode="flipOwn"] .player.active .card-slot:has(.card.clickable){
   .premium-running{grid-column:1/3;min-height:100px!important}
   .score-player-result{grid-column:3;margin-top:0!important}
   .score-card-board{grid-template-columns:repeat(6,minmax(58px,1fr))!important}
+}
+
+@media(max-width:1100px){
+  .royal-round-shell{grid-template-columns:1fr;}
+  .royal-used-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:820px){
+  .royal-modal{min-width:min(98vw,98vw);max-width:min(98vw,98vw)}
+  .royal-round-subtitle,.royal-finale-subtitle{font-size:30px}
+  .royal-round-title,.royal-finale-title{font-size:26px}
+  .royal-player-total{font-size:22px}
+  .royal-scroll-head h3{font-size:28px}
+  .royal-detail-row{grid-template-columns:34px 1fr 70px 58px;gap:8px;padding:7px 4px}
+  .royal-detail-no{width:28px;height:28px;font-size:14px}
+  .royal-detail-text b{font-size:14px}.royal-detail-text small{font-size:10px}
+  .royal-detail-points{font-size:22px}
+  .royal-mini-card .card{width:40px!important;height:54px!important;min-width:40px!important}
+  .royal-mini-card .card .center-value{font-size:22px!important}
+  .royal-used-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .royal-total-value{font-size:60px}
+  .royal-stage-wrap{min-height:0}
+  .royal-podium-grid{grid-template-columns:1fr;gap:14px;padding:44px 14px 10px}
+  .royal-podium-slot.first,.royal-podium-slot.second,.royal-podium-slot.third{padding-bottom:0}
+  .royal-winner-ribbon{top:14px;font-size:18px;padding:8px 16px}
+  .royal-extra-board{margin:8px 12px}
+  .royal-curtain{display:none}
 }
 @media(max-width:650px){
   .score-show-v15 .score-sequence-stage{padding:12px!important}
@@ -4985,6 +5070,214 @@ body.is-playing .app{padding-bottom:max(176px,calc(176px + env(safe-area-inset-b
 .stromberg-boss-art{display:block;width:104px;height:104px;border-radius:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f9e6b6'/%3E%3Cstop offset='1' stop-color='%23dea26d'/%3E%3C/linearGradient%3E%3ClinearGradient id='shirt' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ecf2ff'/%3E%3Cstop offset='1' stop-color='%23cfd9eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='36' fill='url(%23bg)'/%3E%3Cellipse cx='90' cy='155' rx='53' ry='24' fill='%23384053'/%3E%3Cpath d='M47 146c11-28 29-42 43-42s32 14 43 42' fill='url(%23shirt)'/%3E%3Cpath d='M90 109l-18 31h36z' fill='%23a63f36'/%3E%3Cpath d='M78 103h24v19H78z' fill='%23ffffff'/%3E%3Ccircle cx='90' cy='67' r='34' fill='%23f1c5a2'/%3E%3Cpath d='M54 60c3-28 23-43 49-38 16 3 28 17 28 38-8-8-22-15-40-15-14 0-27 5-37 15z' fill='%23553d36'/%3E%3Ccircle cx='77' cy='66' r='4.2' fill='%23382d2a'/%3E%3Ccircle cx='103' cy='66' r='4.2' fill='%23382d2a'/%3E%3Cpath d='M78 84c8 5 16 5 24 0' stroke='%23805245' stroke-width='4.2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M63 34c8-16 26-24 41-22 17 2 31 13 37 31-11-12-29-19-47-18-13 1-24 3-31 9z' fill='%2364473f' opacity='.97'/%3E%3C/svg%3E");background-size:cover;background-position:center;box-shadow:inset 0 0 0 3px rgba(255,255,255,.42),0 12px 22px rgba(0,0,0,.22)}
 @media(max-width:650px){.stromberg-boss-art{width:82px;height:82px;border-radius:23px}}
 
+
+/* V115: Responsive scoring dialogs and entrance choreography. */
+#modalBack.royal-active{
+  z-index:4200;align-items:center!important;justify-content:center!important;
+  padding:clamp(4px,1.2vw,18px)!important;
+  padding-top:max(4px,env(safe-area-inset-top))!important;
+  padding-bottom:max(4px,env(safe-area-inset-bottom))!important;
+  overflow:hidden;overscroll-behavior:contain;
+}
+#modal.royal-host{
+  box-sizing:border-box;width:min(1220px,100%)!important;max-width:min(1220px,100%)!important;
+  min-width:0!important;max-height:calc(100dvh - 14px)!important;
+  border-radius:24px!important;padding:0!important;
+  background:#071624!important;border:1px solid rgba(235,196,105,.45)!important;
+  overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:#aa864b #0a1b2a;
+  -webkit-overflow-scrolling:touch;
+  box-shadow:0 26px 85px rgba(0,0,0,.65),0 0 0 1px rgba(255,220,150,.08) inset!important;
+}
+#modal.royal-host .royal-modal{
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  margin:0!important;border:0!important;border-radius:23px!important;
+  padding:clamp(12px,1.8vw,23px)!important;overflow:visible;
+  animation:royalSceneEntrance .46s cubic-bezier(.19,.7,.2,1) both;
+}
+#modal.royal-host .royal-round-title,#modal.royal-host .royal-finale-title{
+  font-family:Georgia,'Times New Roman',serif;font-size:clamp(22px,3vw,37px);line-height:1.12;
+  letter-spacing:.065em;text-shadow:0 3px 12px rgba(0,0,0,.38)
+}
+#modal.royal-host .royal-round-subtitle,#modal.royal-host .royal-finale-subtitle{
+  font-family:Georgia,'Times New Roman',serif;font-size:clamp(23px,3.7vw,43px);
+  line-height:1.14;letter-spacing:.035em;margin:6px 0 4px;
+  text-shadow:0 0 18px rgba(236,194,89,.12)
+}
+#modal.royal-host .royal-round-round,#modal.royal-host .royal-finale-round{
+  margin-bottom:clamp(10px,1.5vw,18px);font-size:clamp(12px,1.4vw,17px)
+}
+#modal.royal-host .royal-round-shell{
+  grid-template-columns:minmax(170px,215px) minmax(0,1fr) minmax(170px,228px);
+  align-items:start;gap:clamp(10px,1.3vw,16px)
+}
+#modal.royal-host .royal-side-scoreboard,#modal.royal-host .royal-used-panel,#modal.royal-host .royal-scroll-wrap{min-width:0}
+#modal.royal-host .royal-side-scoreboard{padding:12px;gap:8px}
+#modal.royal-host .royal-player-pill{box-sizing:border-box;min-width:0;grid-template-columns:32px minmax(0,1fr) auto;gap:7px;padding:9px 8px}
+#modal.royal-host .royal-player-rank{height:32px;width:32px;flex:none}
+#modal.royal-host .royal-player-name{font-size:clamp(12px,1.2vw,16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#modal.royal-host .royal-player-total{font-size:clamp(18px,2vw,25px)}
+#modal.royal-host .royal-scroll-wrap{padding:10px}
+#modal.royal-host .royal-scroll-head h3{font-size:clamp(20px,2.8vw,32px);color:#7f5217!important;overflow-wrap:anywhere}
+#modal.royal-host .royal-scroll-head small{color:#d0c59e!important;font-size:11px}
+#modal.royal-host .royal-scroll-surface{padding:10px 12px 8px}
+#modal.royal-host .royal-detail-row{
+  grid-template-columns:34px minmax(0,1fr) 68px 52px;
+  gap:clamp(6px,.8vw,10px);min-width:0;padding:6px 2px;
+}
+#modal.royal-host .royal-detail-no{width:31px;height:31px;font-size:15px}
+#modal.royal-host .royal-detail-text b{color:#573417!important;font-size:clamp(12px,1.16vw,16px);line-height:1.22;overflow-wrap:anywhere}
+#modal.royal-host .royal-detail-text small{color:#765331!important;font-size:11px}
+#modal.royal-host .royal-detail-points{font-size:clamp(18px,2vw,27px)}
+#modal.royal-host .royal-mini-card .card{width:42px!important;min-width:42px!important;height:57px!important}
+#modal.royal-host .royal-mini-card .card .center-value{font-size:22px!important}
+#modal.royal-host .royal-mini-action,#modal.royal-host .royal-mini-bonus{width:47px;height:57px}
+#modal.royal-host .royal-mini-action small{font-size:8px!important;line-height:1.1}
+#modal.royal-host .royal-used-panel{padding:12px}
+#modal.royal-host .royal-used-head{font-size:clamp(14px,1.6vw,19px);margin-bottom:12px}
+#modal.royal-host .royal-used-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px 5px}
+#modal.royal-host .royal-total-wrap{margin:12px auto 8px;padding:9px 14px}
+#modal.royal-host .royal-total-kicker{font-size:16px}
+#modal.royal-host .royal-total-value{font-size:clamp(46px,6vw,74px);font-variant-numeric:tabular-nums}
+#modal.royal-host .royal-bottom-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:10px;margin-top:14px}
+#modal.royal-host .royal-round-modal .royal-bottom-actions{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+#modal.royal-host .royal-bottom-actions button{min-width:0!important;min-height:46px;padding:10px 11px;font-size:clamp(12px,1.25vw,15px);font-weight:800;line-height:1.25}
+#modal.royal-host .royal-bottom-actions .primary{background:linear-gradient(180deg,#f9e4a0,#c58d28)!important;color:#201300!important;border-color:#e5bd6c!important}
+#modal.royal-host .royal-bottom-actions .waiting-note{grid-column:span 2;text-align:center;color:#eedcb4;font-size:13px}
+#modal.royal-host .royal-stage-wrap{min-height:0;padding:0 5px 6px;overflow:hidden}
+#modal.royal-host .royal-podium-grid{gap:clamp(8px,2vw,24px);padding:75px clamp(15px,5vw,63px) 10px}
+#modal.royal-host .royal-podium-slot{min-width:0;position:relative}
+#modal.royal-host .royal-podium-card{min-width:0;width:100%;padding:18px 10px}
+#modal.royal-host .royal-podium-card.first{min-height:300px;padding-top:55px}
+#modal.royal-host .royal-podium-card.second,#modal.royal-host .royal-podium-card.third{min-height:238px}
+#modal.royal-host .royal-podium-name{font-size:clamp(17px,2vw,28px);overflow-wrap:anywhere}
+#modal.royal-host .royal-podium-card.first .royal-podium-name{font-size:clamp(20px,2.5vw,34px)}
+#modal.royal-host .royal-podium-score b{color:#f4d57f!important;font-variant-numeric:tabular-nums}
+#modal.royal-host .royal-podium-card.second .royal-podium-score b{color:#dce7f7!important}
+#modal.royal-host .royal-podium-card.third .royal-podium-score b{color:#eab381!important}
+#modal.royal-host .royal-podium-score small{color:#dbc98f!important}
+#modal.royal-host .royal-winner-ribbon{top:17px;z-index:2;font-size:22px}
+#modal.royal-host .royal-curtain{width:clamp(58px,10vw,132px);pointer-events:none}
+#modal.royal-host .royal-extra-board{margin:6px clamp(12px,5vw,60px) 10px}
+#modal.royal-host .royal-extra-rank b{color:#f7ecca!important}
+#modal.royal-host .royal-extra-rank em{font-size:14px}
+/* Small-screen cards and totals stay readable, while the wider host scrolls vertically only. */
+@media(max-width:980px){
+ #modal.royal-host .royal-round-shell{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);gap:11px}
+ #modal.royal-host .royal-side-scoreboard{grid-column:1/-1;display:flex;flex-direction:row;overflow-x:auto;max-width:100%;gap:8px;padding:9px;scrollbar-width:thin}
+ #modal.royal-host .royal-player-pill{min-width:160px;flex:1 0 0}
+ #modal.royal-host .royal-scroll-wrap{grid-column:1;grid-row:2}
+ #modal.royal-host .royal-used-panel{grid-column:2;grid-row:2}
+ #modal.royal-host .royal-used-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:680px){
+ #modalBack.royal-active{padding:4px!important;padding-top:max(4px,env(safe-area-inset-top))!important;padding-bottom:max(4px,env(safe-area-inset-bottom))!important}
+ #modal.royal-host{max-height:calc(100dvh - 8px)!important;border-radius:17px!important}
+ #modal.royal-host .royal-modal{padding:11px!important;border-radius:16px!important}
+ #modal.royal-host .royal-round-title,#modal.royal-host .royal-finale-title{font-size:25px}
+ #modal.royal-host .royal-round-subtitle,#modal.royal-host .royal-finale-subtitle{font-size:clamp(20px,6vw,28px);letter-spacing:0;overflow-wrap:anywhere}
+ #modal.royal-host .royal-round-round,#modal.royal-host .royal-finale-round{font-size:12px;margin-bottom:10px}
+ #modal.royal-host .royal-round-shell{display:flex;flex-direction:column;gap:10px}
+ #modal.royal-host .royal-side-scoreboard{display:flex;width:100%;min-height:0;gap:6px;flex-direction:row;overflow-x:auto;padding:8px;border-radius:14px;flex:none}
+ #modal.royal-host .royal-player-pill{flex:0 0 132px;min-width:132px;grid-template-columns:24px minmax(0,1fr);grid-template-rows:auto auto;gap:0 6px;padding:7px 8px;border-radius:11px}
+ #modal.royal-host .royal-player-rank{width:24px;height:24px;font-size:12px;grid-row:1/3}
+ #modal.royal-host .royal-player-name{font-size:12px;line-height:1.1}
+ #modal.royal-host .royal-player-total{font-size:19px;grid-column:2;font-weight:900}
+ #modal.royal-host .royal-scroll-wrap{width:100%;padding:8px;border-radius:16px}
+ #modal.royal-host .royal-scroll-head{margin-bottom:7px}
+ #modal.royal-host .royal-scroll-head h3{font-size:22px;padding:7px 10px;border-radius:11px}
+ #modal.royal-host .royal-scroll-head small{font-size:10px}
+ #modal.royal-host .royal-scroll-surface{padding:7px 8px 5px;border-radius:14px}
+ #modal.royal-host .royal-detail-row{grid-template-columns:24px minmax(0,1fr) 46px 38px;gap:5px;padding:5px 1px}
+ #modal.royal-host .royal-detail-no{height:22px;width:22px;font-size:11px}
+ #modal.royal-host .royal-detail-text b{font-size:12px;line-height:1.15}
+ #modal.royal-host .royal-detail-text small{font-size:9px}
+ #modal.royal-host .royal-detail-points{font-size:16px}
+ #modal.royal-host .royal-mini-card .card{width:33px!important;min-width:33px!important;height:44px!important;border-radius:7px!important}
+ #modal.royal-host .royal-mini-card .card .center-value{font-size:18px!important}
+ #modal.royal-host .royal-mini-action,#modal.royal-host .royal-mini-bonus{width:36px;height:44px;font-size:17px}
+ #modal.royal-host .royal-mini-action small{font-size:6px!important}
+ #modal.royal-host .royal-used-panel{width:100%;padding:10px;border-radius:16px}
+ #modal.royal-host .royal-used-head{font-size:15px;margin-bottom:10px}
+ #modal.royal-host .royal-used-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+ #modal.royal-host .royal-total-wrap{margin:10px auto 4px;width:min(210px,100%);padding:7px 10px}
+ #modal.royal-host .royal-total-kicker{font-size:13px}
+ #modal.royal-host .royal-total-value{font-size:54px}
+ #modal.royal-host .royal-bottom-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+ #modal.royal-host .royal-bottom-actions button{flex:0 0 auto!important;width:100%;height:auto!important;min-height:44px;font-size:13px;padding:10px 12px}
+ #modal.royal-host .royal-round-modal .royal-bottom-actions{display:flex}
+ #modal.royal-host .royal-stage-wrap{padding:0;min-height:0}
+ #modal.royal-host .royal-podium-grid{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:35px 4px 6px}
+ #modal.royal-host .royal-podium-slot.first{order:1}
+ #modal.royal-host .royal-podium-slot.second{order:2}
+ #modal.royal-host .royal-podium-slot.third{order:3}
+ #modal.royal-host .royal-podium-slot{padding:0;display:block;width:100%}
+ #modal.royal-host .royal-winner-ribbon{position:absolute;left:50%;top:-29px;transform:translateX(-50%);white-space:nowrap;padding:5px 17px;font-size:15px}
+ #modal.royal-host .royal-podium-card,#modal.royal-host .royal-podium-card.first,#modal.royal-host .royal-podium-card.second,#modal.royal-host .royal-podium-card.third{min-height:0;padding:10px 12px;width:100%;border-radius:13px;display:grid;grid-template-columns:45px minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left}
+ #modal.royal-host .royal-podium-card.first{padding:15px 12px}
+ #modal.royal-host .royal-podium-medal{width:42px;height:42px;margin:0;font-size:21px}
+ #modal.royal-host .royal-podium-name,#modal.royal-host .royal-podium-card.first .royal-podium-name{font-size:clamp(16px,4.7vw,22px);margin:0;min-width:0}
+ #modal.royal-host .royal-podium-score{text-align:right}
+ #modal.royal-host .royal-podium-score small{font-size:10px;margin:0}
+ #modal.royal-host .royal-podium-score b,#modal.royal-host .royal-podium-card.second .royal-podium-score b,#modal.royal-host .royal-podium-card.third .royal-podium-score b{font-size:clamp(24px,7vw,39px)}
+ #modal.royal-host .royal-curtain{display:none}
+ #modal.royal-host .royal-extra-board{margin:7px 4px;padding:9px 10px}
+ #modal.royal-host .royal-extra-rank{grid-template-columns:30px minmax(0,1fr) auto;gap:6px;font-size:12px}
+ #modal.royal-host .royal-extra-rank em{font-size:12px;white-space:nowrap}
+}
+@media(max-width:355px){
+ #modal.royal-host .royal-used-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #modal.royal-host .royal-detail-row{grid-template-columns:22px minmax(0,1fr) 42px 34px;gap:3px}
+ #modal.royal-host .royal-podium-card{gap:6px}
+}
+#modal.royal-host .royal-finale-modal .royal-stage-wrap{
+ background:radial-gradient(ellipse at 50% 3%,rgba(255,226,142,.20),transparent 42%),
+   radial-gradient(ellipse at 18% 10%,rgba(131,192,237,.10),transparent 35%),
+   radial-gradient(ellipse at 80% 7%,rgba(131,192,237,.11),transparent 35%),
+   linear-gradient(180deg,#061629 0%,#05101c 78%,#142135 100%);
+ border-top:1px solid rgba(240,210,121,.12);
+ box-shadow:inset 0 -8px 32px rgba(0,0,0,.3)
+}
+#modal.royal-host .royal-finale-modal .royal-stage-wrap::before{
+ content:"";position:absolute;z-index:0;inset:0;pointer-events:none;
+ background:linear-gradient(107deg,transparent 14%,rgba(255,229,152,.10) 31%,transparent 42%),
+ linear-gradient(73deg,transparent 57%,rgba(255,229,152,.10) 69%,transparent 85%),
+ radial-gradient(circle at 50% 30%,rgba(255,208,105,.09) 0 2px,transparent 3px);
+ background-size:100% 100%,100% 100%,25px 29px;
+ opacity:.65
+}
+#modal.royal-host .royal-curtain{
+ background:repeating-linear-gradient(91deg,rgba(255,193,128,.10) 0 6px,transparent 7px 17px,rgba(0,0,0,.27) 22px 35px),
+ linear-gradient(90deg,#4b0811 0%,#9b2021 38%,#5c0e18 100%);
+ box-shadow:inset -3px 0 0 rgba(230,187,102,.5),0 12px 36px rgba(0,0,0,.26)
+}
+#modal.royal-host .royal-curtain.right{transform:scaleX(-1)}
+#modal.royal-host .royal-podium-card.first{
+ border-color:rgba(253,210,104,.68)!important;
+ box-shadow:0 18px 44px rgba(0,0,0,.38),0 0 35px rgba(233,187,62,.14),inset 0 0 0 1px rgba(253,216,135,.24)!important
+}
+#modal.royal-host .royal-finale-subtitle{text-shadow:0 0 20px rgba(248,214,125,.15),0 2px 9px rgba(0,0,0,.65)}
+@media(max-width:680px){
+ #modal.royal-host .royal-finale-modal .royal-stage-wrap{background:linear-gradient(180deg,rgba(255,228,140,.06),rgba(7,17,32,.62))}
+}
+@keyframes royalSceneEntrance{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes royalScrollEntrance{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes royalRowEntrance{from{opacity:0;transform:translateX(-15px)}to{opacity:1;transform:translateX(0)}}
+@keyframes royalBadgePop{from{opacity:0;transform:scale(.76)}to{opacity:1;transform:scale(1)}}
+@keyframes royalGoldGleam{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+#modal.royal-host .royal-scroll-wrap{animation:royalScrollEntrance .6s .12s both}
+#modal.royal-host .royal-used-panel,#modal.royal-host .royal-side-scoreboard{animation:royalScrollEntrance .55s .2s both}
+#modal.royal-host .royal-detail-row{animation:royalRowEntrance .36s ease-out both;animation-delay:calc(.20s + var(--item-index,0)*.045s)}
+#modal.royal-host .royal-total-wrap{animation:royalBadgePop .58s .47s cubic-bezier(.2,1.3,.24,1) both}
+#modal.royal-host .royal-podium-slot.first{animation:royalGoldGleam .8s .25s both}
+#modal.royal-host .royal-podium-slot.second{animation:royalGoldGleam .65s .53s both}
+#modal.royal-host .royal-podium-slot.third{animation:royalGoldGleam .65s .68s both}
+#modal.royal-host .royal-extra-board{animation:royalScrollEntrance .5s .84s both}
+#modal.royal-host .royal-finale-actions{animation:royalScrollEntrance .45s .82s both}
+@media(prefers-reduced-motion:reduce){
+ #modal.royal-host .royal-modal,#modal.royal-host .royal-scroll-wrap,#modal.royal-host .royal-used-panel,#modal.royal-host .royal-side-scoreboard,#modal.royal-host .royal-detail-row,#modal.royal-host .royal-total-wrap,#modal.royal-host .royal-podium-slot,#modal.royal-host .royal-extra-board,#modal.royal-host .royal-finale-actions{animation:none!important;transform:none!important;opacity:1!important}
+}
+
 </style>
 </head>
 <body>
@@ -4995,7 +5288,7 @@ body.is-playing .app{padding-bottom:max(176px,calc(176px + env(safe-area-inset-b
 (() => {
 'use strict';
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
-const SKYJO_BUILD='15.34';
+const SKYJO_BUILD='15.36';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -6384,7 +6677,7 @@ function bestRoundEndRemovalPlan(pi){
  }
  return solve(clone(source))
 }
-let scoreSequenceSeen='',roundSummarySeen='';
+let scoreSequenceSeen='',roundSummarySeen='',roundSummaryFocus=null;
 function scoreItemsForPlayer(p){const items=[];for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(!c)continue;const v=endRoundCardValue(p,c,'grid',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?jokerEndLabel(p,i):String(c.value),jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(!c)continue;const v=endRoundCardValue(p,c,'extra',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?'Zusatz-Joker · 0':`Zusatz ${c.value}`,jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}if(jokerSpecialsEnabled())for(const a of p.actions)items.push({kind:'action',actionType:a.type,value:10,label:ACTIONS[a.type]?.name||'Aktionskarte'});const bonus=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);if(bonus)items.push({kind:'bonus',value:bonus,label:'Sternbonus'});return items}
 function scoreFmt(v){v=Number(v)||0;return `${v>0?'+':''}${v}`}
 function scoreTone(v){v=Number(v)||0;return v<0?'good':v>0?'bad':'neutral'}
@@ -6587,60 +6880,124 @@ async function runScoreSequenceVisual(seq){
  ov.style.opacity='0';
  setTimeout(()=>{ov.remove();maybeShowRoundSummary()},400)
 }
-function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
+function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,roundEnderIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total,items:clone(sp.items||[])}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
+
+function summaryItemVisual(item,compact=false){
+ if(item.kind==='card'&&item.card)return `<div class="royal-mini-card ${item.jokerResolved?'joker':''}">${cardHTML({...item.card,faceUp:true},true,false)}${item.jokerResolved?`<span class="royal-joker-badge">→ ${scoreFmt(item.jokerValue)}</span>`:''}</div>`;
+ if(item.kind==='action'){
+   const a=ACTIONS[item.actionType]||{icon:'⚡',name:item.label||'Aktion'};
+   return `<div class="royal-mini-action"><span>${a.icon}</span><small>${escapeHTML(compact?'':a.name)}</small></div>`
+ }
+ return `<div class="royal-mini-bonus">⭐</div>`
+}
+function summaryItemTitle(item,idx){
+ if(item.kind==='card'){
+   if(item.card?.type==='star')return `Joker – ${scoreFmt(item.value)} Punkte`;
+   if((item.label||'').startsWith('Zusatz'))return item.label;
+   return `Karte ${idx+1} – Wert ${item.card?.value}`
+ }
+ if(item.kind==='action')return `Aktionskarte: ${ACTIONS[item.actionType]?.name||item.label||'Aktion'}`;
+ return item.label||'Bonus'
+}
+function roundSummaryFocusPlayer(summary){
+ if(Number.isInteger(roundSummaryFocus)){
+   const match=(summary.players||[]).find(p=>Number(p.index)===Number(roundSummaryFocus));
+   if(match)return match
+ }
+ if(cloud.enabled&&cloud.myName){
+   const mine=(summary.players||[]).find(p=>p.name===cloud.myName);
+   if(mine)return mine
+ }
+ const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
+ return ranked[0]||summary.players?.[0]||null
+}
+function buildRoyalRoundSummaryModal(summary){
+ const focus=roundSummaryFocusPlayer(summary);
+ if(!focus)return `<div class="final-score-modal"><h3>Keine Rundenabrechnung verfügbar.</h3></div>`;
+ const leftRail=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round).map((p,i)=>{
+   const active=Number(p.index)===Number(focus.index);
+   const leader=(p.total===Math.min(...summary.players.map(x=>x.total)));
+   return `<button class="royal-player-pill ${active?'active':''} ${leader?'leader':''}" onclick="Game.setRoundSummaryFocus(${Number(p.index)})"><span class="royal-player-rank">${i+1}</span><span class="royal-player-name">${escapeHTML(p.name)}</span><b class="royal-player-total">${p.total}</b></button>`
+ }).join('');
+ const items=(focus.items||[]);
+ const detailRows=items.map((item,idx)=>`<div class="royal-detail-row" style="--item-index:${Math.min(idx,14)}"><div class="royal-detail-no">${idx+1}</div><div class="royal-detail-text"><b>${escapeHTML(summaryItemTitle(item,idx))}</b>${item.kind==='action'?`<small>${escapeHTML(item.label||'Verwendete Aktionskarte')}</small>`:item.kind==='bonus'?`<small>Zusätzlicher Bonus oder Malus</small>`:''}</div><div class="royal-detail-points ${scoreTone(item.value)}">${scoreFmt(item.value)}</div><div class="royal-detail-visual">${summaryItemVisual(item)}</div></div>`).join('');
+ const usedCards=items.filter(item=>item.kind!=='bonus').map(item=>`<div class="royal-used-item">${summaryItemVisual(item,true)}</div>`).join('');
+ const before=Number.isFinite(Number(focus.beforeTotal))?Number(focus.beforeTotal):focus.total-focus.round;
+ const doubled=focus.round!==focus.raw;
+ const nextBtn=summary.ended?`<button class="primary royal-cta" onclick="Game.openRoyalFinaleSummary()">ZURÜCK ZUM FINALE</button>`:(cloud.enabled&&!isHostDevice())?`<div class="waiting-note">⏳ Der Host startet die nächste Runde.</div>`:`<button class="primary royal-cta" onclick="Game.nextRound()">WEITER</button>`;
+ return `<div class="royal-modal royal-round-modal">
+   <div class="royal-round-title">SKYJO <span>ACTION</span></div>
+   <div class="royal-round-subtitle">PUNKTEABRECHNUNG</div>
+   <div class="royal-round-round">RUNDE ${summary.round}</div>
+   <div class="royal-round-shell">
+     <aside class="royal-side-scoreboard">${leftRail}</aside>
+     <section class="royal-scroll-wrap">
+       <div class="royal-scroll-head"><small>${doubled?`Verdoppelt: ${scoreFmt(focus.raw)} → ${scoreFmt(focus.round)}`:`Zwischensumme vorher: ${before}`}</small><h3>${escapeHTML(focus.name)}</h3></div>
+       <div class="royal-scroll-surface">${detailRows||'<div class="royal-detail-row"><div class="royal-detail-text"><b>Keine Einzelpunkte verfügbar.</b></div></div>'}</div>
+     </section>
+     <aside class="royal-used-panel"><div class="royal-used-head">VERWENDETE KARTEN</div><div class="royal-used-grid">${usedCards||'<div class="royal-used-note">Keine Karten gespeichert</div>'}</div></aside>
+   </div>
+   <div class="royal-total-wrap"><div class="royal-total-kicker">GESAMT</div><div class="royal-total-value" data-royal-counter="${Number(focus.round)}" aria-label="${Number(focus.round)} Punkte">${focus.round}</div></div>
+   <div class="modal-actions royal-bottom-actions"><button onclick="Game.closeModal()">Schließen</button>${nextBtn}</div>
+ </div>`
+}
+function buildRoyalFinaleModal(summary){
+ const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
+ const first=ranked[0]||null, second=ranked[1]||null, third=ranked[2]||null;
+ const makePodium=(p,pos,cls)=>p?`<div class="royal-podium-card ${cls}"><div class="royal-podium-medal">${pos}</div><div class="royal-podium-name">${escapeHTML(p.name)}</div><div class="royal-podium-score"><small>PUNKTE</small><b data-royal-counter="${Number(p.total)}" aria-label="${Number(p.total)} Punkte">${p.total}</b></div></div>`:'';
+ const extras=ranked.slice(3).map((p,i)=>`<div class="royal-extra-rank"><span>#${i+4}</span><b>${escapeHTML(p.name)}</b><em>${p.total} Punkte</em></div>`).join('');
+ const leftBtn=`<button onclick="Game.showFinaleDetails()">DETAILS ANZEIGEN</button>`;
+ let midBtn='';
+ let rightBtn='';
+ if(cloud.enabled){
+   if(isHostDevice()){
+     midBtn=`<button class="primary royal-cta" onclick="Game.returnFinishedGameToRoomLobby()">NEUE RUNDE</button>`;
+     rightBtn=`<button onclick="Game.backToLobby()">ZURÜCK ZUM HAUPTMENÜ</button>`
+   }else{
+     midBtn=`<button class="primary royal-cta" onclick="Game.backToLobby()">NEUE RUNDE</button>`;
+     rightBtn=`<button onclick="Game.closeModal()">SCHLIESSEN</button>`
+   }
+ }else{
+   midBtn=`<button class="primary royal-cta" onclick="Game.restart()">NEUE RUNDE</button>`;
+   rightBtn=`<button onclick="Game.backToLobby()">ZURÜCK ZUM HAUPTMENÜ</button>`
+ }
+ return `<div class="royal-modal royal-finale-modal">
+   <div class="royal-finale-title">SKYJO <span>ACTION</span></div>
+   <div class="royal-finale-subtitle">GROSSES FINALE</div>
+   <div class="royal-finale-round">ENDSTAND</div>
+   <div class="royal-stage-wrap">
+     <div class="royal-curtain left"></div>
+     <div class="royal-curtain right"></div>
+     <div class="royal-podium-grid">
+       <div class="royal-podium-slot second">${makePodium(second,2,'second')}</div>
+       <div class="royal-podium-slot first"><div class="royal-winner-ribbon">SIEGER</div>${makePodium(first,1,'first')}</div>
+       <div class="royal-podium-slot third">${makePodium(third,3,'third')}</div>
+     </div>
+     ${extras?`<div class="royal-extra-board">${extras}</div>`:''}
+   </div>
+   <div class="modal-actions royal-bottom-actions royal-finale-actions">${leftBtn}${midBtn}${rightBtn}</div>
+ </div>`
+}
+function openRoyalRoundSummary(){
+ const s=state?.lastRoundSummary;
+ if(!s)return;
+ modal(buildRoyalRoundSummaryModal(s),false)
+}
+function openRoyalFinaleSummary(){
+ const s=state?.lastRoundSummary;
+ if(!s)return;
+ modal(buildRoyalFinaleModal(s),false)
+}
+function setRoundSummaryFocus(index){roundSummaryFocus=Number(index);openRoyalRoundSummary()}
+function showFinaleDetails(){openRoyalRoundSummary()}
 function maybeShowRoundSummary(force=false){
  const s=state?.lastRoundSummary;
  if(force)roundSummarySeen='';
  if(!s||s.id===roundSummarySeen)return;
- if(document.querySelector('.score-sequence-overlay')){setTimeout(maybeShowRoundSummary,400);return}
+ if(document.querySelector('.score-sequence-overlay')){setTimeout(()=>maybeShowRoundSummary(force),400);return}
  roundSummarySeen=s.id;
-
- const sorted=[...s.players].sort((a,b)=>a.total-b.total||a.round-b.round);
- const minTotal=Math.min(...sorted.map(x=>x.total));
- const leaders=sorted.filter(x=>x.total===minTotal);
- const roundBest=Math.min(...s.players.map(x=>x.round));
- const roundWinners=s.players.filter(x=>x.round===roundBest);
- const nextStarter=s.nextStarterIndex!==null&&s.nextStarterIndex!==undefined?s.players.find(x=>Number(x.index)===Number(s.nextStarterIndex)):null;
-
- const rows=sorted.map((x,rank)=>{
-   const leader=x.total===minTotal,doubled=x.round!==x.raw;
-   const before=Number.isFinite(Number(x.beforeTotal))?Number(x.beforeTotal):x.total-x.round;
-   return `<div class="score-result score-result-premium ${leader?'winner-row':''}">
-     <div class="score-rank">${leader?'👑':`#${rank+1}`}</div>
-     <div class="score-who"><b>${escapeHTML(x.name)}</b><small>${doubled?`⚠ Verdoppelt: ${scoreFmt(x.raw)} → ${scoreFmt(x.round)}`:(x.round===roundBest?'⭐ Bester Rundenwert':'Rundenwert')}</small></div>
-     <div class="summary-before"><small>VORHER</small><span>${before}</span></div>
-     <div class="score-round ${scoreTone(x.round)}"><small>RUNDE</small><b>${scoreFmt(x.round)}</b></div>
-     <div class="score-total"><small>GESAMT</small><b>${x.total}</b></div>
-   </div>`
- }).join('');
-
- let hero='';
- if(s.ended){
-   hero=leaders.length===1
-     ?`<div class="winner-hero premium-winner"><div class="winner-crown">🏆</div><small>SPIELSIEG</small><h3>${escapeHTML(leaders[0].name)}</h3><p><b>${leaders[0].total}</b> Punkte · niedrigster Gesamtstand</p></div>`
-     :`<div class="winner-hero premium-winner"><div class="winner-crown">🏆</div><small>UNENTSCHIEDEN</small><h3>${leaders.map(x=>escapeHTML(x.name)).join(' & ')}</h3><p><b>${minTotal}</b> Punkte</p></div>`
- }else{
-   hero=`<div class="round-score-head premium-round-head">
-     <span>📊</span>
-     <div><small>SCORE SHOW ABGESCHLOSSEN</small><h3>Runde ${s.round} beendet</h3><p>${roundWinners.length===1?`${escapeHTML(roundWinners[0].name)} hat mit ${scoreFmt(roundBest)} den besten Rundenwert.`:`Bester Rundenwert: ${scoreFmt(roundBest)}.`}</p></div>
-   </div>
-   <div class="round-summary-chips">
-     <span>👑 Führung: <b>${leaders.map(x=>escapeHTML(x.name)).join(' & ')}</b> · ${minTotal}</span>
-     ${nextStarter?`<span>▶ Nächster Starter: <b>${escapeHTML(nextStarter.name)}</b></span>`:''}
-   </div>`
- }
-
- const nextBtn=s.ended
-   ?(cloud.enabled
-      ?(isHostDevice()
-         ?`<button class="primary" onclick="Game.returnFinishedGameToRoomLobby()">🏠 Alle zurück in Raum-Lobby</button><button onclick="Game.closeModal()">🏆 Ergebnis schließen</button>`
-         :`<div class="waiting-note">🏁 Spiel beendet · der Host kann alle gemeinsam in die Raum-Lobby zurückholen.</div><button class="primary" onclick="Game.backToLobby()">🏠 Raum verlassen & zum Hauptmenü</button><button onclick="Game.closeModal()">Ergebnis schließen</button>`)
-      :`<button class="primary" onclick="Game.backToLobby()">🏠 Zum Menü</button><button onclick="Game.closeModal()">Ergebnis schließen</button>`)
-   :(cloud.enabled&&!isHostDevice()
-      ?`<div class="waiting-note">⏳ Host startet die nächste Runde · automatische Synchronisierung läuft.</div>`
-      :`<button class="primary" onclick="Game.nextRound()">▶ Runde ${s.round+1} starten</button>`);
-
- modal(`<div class="final-score-modal premium-score-summary">${hero}<div class="score-results premium-score-results">${rows}</div><div class="modal-actions">${nextBtn}</div></div>`,false)
+ if(s.ended)openRoyalFinaleSummary();
+ else openRoyalRoundSummary()
 }
 async function nextRound(){
  if(cloud.enabled&&!isHostDevice()){toast('Nur der Host startet die nächste Runde.');return}
@@ -6707,8 +7064,28 @@ async function nextRound(){
  render();
  toast('⚠ Neue Runde konnte nicht an alle Geräte bestätigt werden')
 }
-function modal(html,closable=true){const back=$('#modalBack'),m=$('#modal');m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');back.classList.add('show')}
-function closeModal(){const b=$('#modalBack');if(b)b.classList.remove('show')}
+function modal(html,closable=true){
+ const back=$('#modalBack'),m=$('#modal'),royal=html.includes('royal-round-modal')||html.includes('royal-finale-modal');
+ back.classList.toggle('royal-active',royal);m.classList.toggle('royal-host',royal);
+ m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');
+ m.scrollTop=0;back.classList.add('show');
+ if(royal)requestAnimationFrame(()=>animateRoyalScoring(m));
+}
+function closeModal(){const b=$('#modalBack');if(b){b.classList.remove('show','royal-active');$('#modal')?.classList.remove('royal-host')}}
+function animateRoyalScoring(root){
+ const targets=[...root.querySelectorAll('[data-royal-counter]')];
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ if(!targets.length||reduced)return;
+ const starts=targets.map(el=>({el,target:Number(el.dataset.royalCounter),label:el.textContent})).filter(x=>Number.isFinite(x.target));
+ starts.forEach(({el})=>{el.textContent='0'});
+ const duration=950,start=performance.now();
+ function step(now){
+  const progress=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-progress,3);
+  for(const {el,target,label} of starts){if(!el.isConnected)return;el.textContent=progress===1?label:String(Math.round(target*ease))}
+  if(progress<1)requestAnimationFrame(step)
+ }
+ requestAnimationFrame(step)
+} 
 function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne/Joker haben während des Spiels den Grundwert 0. Bei der Rundenabrechnung übernimmt jeder verbliebene Joker automatisch die niedrigste Zahl, die in seiner waagerechten Reihe oder senkrechten Spalte noch liegt. Beispiel: −2 und 3 in derselben Linie → der Joker zählt −2. Gibt es dort keine Zahl, bleibt er 0.</li><li>Reine Stern-Gruppen dürfen entfernt werden, müssen aber nicht. Eine vollständige 3er-Sterngruppe bringt −10, eine waagerechte 4er-Sterngruppe −15. Wird sie vorher freiwillig abgeräumt, bleibt dieser Bonus gespeichert; jeder Stern zählt nur einmal für einen Bonus.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Eine neu vollständige Kombination bleibt immer auf dem Brett liegen – es erscheint keine Nachfrage und sie wird während des normalen Spiels nicht automatisch entfernt. In deinem eigenen Zug kannst du sie über „Reihe entfernen“ bzw. „Spalte entfernen“ freiwillig selbst auflösen; das verbraucht nicht deine normale Hauptaktion. Auch Minuszahlen dürfen entfernt werden. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, erhalten <b>alle anderen Spieler in normaler Zugreihenfolge jeweils noch genau einen letzten Zug</b>. Bei 3 Spielern heißt das: Beendet Spieler A die Runde, spielen danach noch B und C jeweils einmal. Erst dann beginnt die Abrechnung. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle noch verdeckten Karten langsam nacheinander aufgedeckt. Anschließend werden vollständige gleiche Reihen und Spalten automatisch geprüft: Sie werden nur abgeräumt, wenn das Entfernen punktetechnisch gleich gut oder besser ist. Eine Joker-Kombination mit günstigeren Minuspunkten darf deshalb bewusst liegen bleiben. Erst danach beginnt die Punktewertung. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards funktionieren; während des Spiels ist ihr Grundwert 0, bei der Endabrechnung gilt weiterhin die beste Zahl aus Reihe/Spalte. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
 function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
 
@@ -7867,14 +8244,14 @@ function resumeTransientFlow(){
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
 const viewportLock=captureViewportLock();
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.34 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.36 · Bibelverse</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
 // Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
 window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
-window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toGameHub,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse};
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toGameHub,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,openRoyalRoundSummary,openRoyalFinaleSummary,setRoundSummaryFocus,showFinaleDetails,toggleJokerSpecialUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse};
 
 window.addEventListener('pageshow',e=>{
  if(!e.persisted)return;
