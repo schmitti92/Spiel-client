@@ -1618,7 +1618,8 @@ function renderPresence(p){
   applyColorWheelUI();
   renderColorWheelResult(p.colorWheel);
   if(previousColorMode !== roomColorMode) refreshProfileSummary();
-  const order = ["David","Vanessa","Christoph","Gast"];
+  const spName = String(window.SpielProfile?.active()?.name||"Gast").trim();
+  const order = ["David","Vanessa","Christoph", (!["David","Vanessa","Christoph","Gast"].includes(spName) ? spName : "Gast")];
   let occupied = 0;
   const slots = [];
 
@@ -1734,7 +1735,7 @@ function startPresencePoll(){
       function pendingNameKey(rc){ return 'barikade_pending_name_' + (normRoom(rc) || 'room'); }
       function setSelectedName(nameKey){
         const nk = String(nameKey || '').trim();
-        selectedNameKey = ['David','Vanessa','Christoph','Gast'].includes(nk) ? nk : '';
+        selectedNameKey = (['David','Vanessa','Christoph','Gast'].includes(nk) || nk === String(window.SpielProfile?.active()?.name||'')) ? nk : '';
         try{ localStorage.setItem(pendingNameKey(roomInp.value || localStorage.getItem('barikade_room') || ''), selectedNameKey); }catch(_e){}
         document.querySelectorAll('.names [data-name]').forEach(btn=>{
           const isSelected = String(btn.getAttribute('data-name')||'') === selectedNameKey;
@@ -2637,5 +2638,6 @@ function startPresencePoll(){
 
 })();
   </script>
+<script src="../profile-core.js" defer></script>
 </body>
 </html>
