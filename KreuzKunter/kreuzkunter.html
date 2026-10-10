@@ -386,6 +386,8 @@ button:focus-visible{outline:3px solid #ffe57a!important;outline-offset:3px}
 .die.observer-picked.selected{outline:2px solid #ffd56f!important;opacity:.95;}
 #kk-turn-alert{position:fixed;top:max(74px,env(safe-area-inset-top));left:50%;transform:translate(-50%,-20px) scale(.94);opacity:0;pointer-events:none;z-index:9999;min-width:min(440px,88vw);max-width:92vw;text-align:center;padding:19px 24px;border-radius:20px;background:linear-gradient(135deg,#04684e,#009d78);color:#fff;border:2px solid #95f9bb;box-shadow:0 18px 60px #032b28ac,0 0 0 4px #1dce7a30;font-size:clamp(17px,3vw,24px);font-weight:1000;transition:transform .3s ease,opacity .3s ease;}
 #kk-turn-alert.show{transform:translate(-50%,0) scale(1);opacity:1;}
+.player.responded{border-color:#2d665b;background:#092b2b;}
+.player.responded .pinfo{color:#88ddc3;}
 @media(prefers-reduced-motion:reduce){#kk-turn-alert{transition:none}}
 </style>
 </head>
@@ -446,7 +448,22 @@ const liveSheetCells=ROWS.join('').split('');const liveStarSet=new Set(STARS);le
 function onlineParallel(){return !!(NET&&state?.parallelRule==='simultaneous-responses');}
 function onlineCanPick(){if(!NET||!state||state.phase!=='select'||!NET.connected||NET.awaiting)return false;if(!onlineParallel())return NET.index===state.picker;if(state.responded?.[NET.index])return false;return state.parallel?NET.index!==state.active:NET.index===state.active;}
 function ownTurn(){return !NET||onlineCanPick();}
-function turnNotice(){const key=NET?.code+':'+state?.turn+':'+state?.active; if(!NET||state?.phase!=='ready'||NET.index!==state.active||lastTurnAlertKey===key)return;lastTurnAlertKey=key;let el=document.getElementById('kk-turn-alert');if(!el){el=document.createElement('div');el.id='kk-turn-alert';el.setAttribute('role','status');document.body.appendChild(el);}el.textContent='🎲 Du bist jetzt an der Reihe!';el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(alertTimer);alertTimer=setTimeout(()=>el.classList.remove('show'),4200);}
+function turnNotice(){
+ // Inform only the person whose action has just become possible. A state sync
+ // must not display duplicate alerts, and parallel responders get one alert each.
+ if(!NET||!state)return;
+ const nextRoll=state.phase==='ready'&&NET.index===state.active;
+ const simultaneous=onlineParallel()&&state.phase==='select'&&state.parallel&&NET.index!==state.active&&!state.responded?.[NET.index];
+ if(!nextRoll&&!simultaneous)return;
+ const key=[NET.code,state.turn,state.active,nextRoll?'roll':'respond'].join(':');
+ if(lastTurnAlertKey===key)return;
+ lastTurnAlertKey=key;
+ let el=document.getElementById('kk-turn-alert');
+ if(!el){el=document.createElement('div');el.id='kk-turn-alert';el.setAttribute('role','status');document.body.appendChild(el);}
+ el.textContent=nextRoll?'🎲 Du bist jetzt an der Reihe!':'✏️ Du darfst jetzt gleichzeitig eintragen!';
+ el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
+ clearTimeout(alertTimer);alertTimer=setTimeout(()=>el.classList.remove('show'),4200);
+}
 
 const SYMBOLS_KEY='kreuzkunter-show-symbols-v9';let showSymbols=false;
 try{showSymbols=localStorage.getItem(SYMBOLS_KEY)==='1';}catch(e){}
@@ -509,7 +526,7 @@ function showCompare(){
  const mini=ROWS.join('').split('');
  const cards=state.players.map((p,i)=>{
   const s=score(p),used=new Set(p.cells||[]),recent=new Set(p.lastMove||[]);
-  return `<article class="compare-card"><h3>${ESC(p.name)} ${i===state.picker?'· am Zug':''}</h3><div class="compare-stats"><strong>${s.total} Punkte</strong> · ${used.size}/105 Felder · ${Object.keys(p.colorAwards).length}/5 Farben</div>
+  return `<article class="compare-card"><h3>${ESC(p.name)} ${(NET&&onlineParallel()?state.phase==='select'?(state.parallel?i!==state.active&&!state.responded?.[i]:i===state.active):state.phase==='ready'&&i===state.active:i===state.picker)?'· am Zug':''}</h3><div class="compare-stats"><strong>${s.total} Punkte</strong> · ${used.size}/105 Felder · ${Object.keys(p.colorAwards).length}/5 Farben</div>
   <div class="mini-board" role="img" aria-label="Spielbrett von ${ESC(p.name)}: ${used.size} Kreuze">${mini.map((c,j)=>`<span class="mini-tile ${used.has(j)?'filled':''} ${recent.has(j)?'recent':''}" style="--shade:var(--${c})"></span>`).join('')}</div>
   <button type="button" class="flat compare-open" data-compare-index="${i}">Groß anzeigen</button></article>`;
  }).join('');
@@ -528,9 +545,12 @@ function showOpponent(i){
 const NET_INFO_KEY='kreuzkunter-net-info-render-v1',NET_DRAFT_KEY='kreuzkunter-online-pending-render-v1';
 function getNetInfo(){try{return JSON.parse(localStorage.getItem(NET_INFO_KEY)||'{}');}catch(e){return {};}}
 function persistOnlineDraft(){
- if(!NET||!NET.token||!state||state.mode!=='online'||state.phase!=='select'||state.picker!==NET.index)return;
- try{sessionStorage.setItem(NET_DRAFT_KEY,JSON.stringify({code:NET.code,token:NET.token,turn:state.turn,picker:state.picker,
-   dice:state.dice,cells:state.players[NET.index].cells,pending:state.pending,
+ if(!NET||!NET.token||!state||state.mode!=='online'||state.phase!=='select')return;
+ const idx=NET.index;
+ const eligible=onlineParallel()?!state.responded?.[idx]&&(state.parallel?idx!==state.active:idx===state.active):state.picker===idx;
+ if(!eligible)return;
+ try{sessionStorage.setItem(NET_DRAFT_KEY,JSON.stringify({code:NET.code,token:NET.token,turn:state.turn,picker:idx,active:state.active,
+   dice:state.dice,cells:state.players[idx].cells,pending:state.pending,
    colorDie:state.colorDie,numDie:state.numDie,chosenColor:state.chosenColor,chosenNumber:state.chosenNumber,
    manualColor:state.manualColor,manualNumber:state.manualNumber}));}catch(e){}
 }
@@ -538,8 +558,9 @@ function restoreOnlineDraft(my,msg){
  try{
   const saved=JSON.parse(sessionStorage.getItem(NET_DRAFT_KEY)||'null');
   const game=msg.game,idx=msg.index;
-  if(!saved||saved.code!==my.code||saved.token!==my.token||game.phase!=='select'||game.turn!==saved.turn||game.picker!==saved.picker||idx!==saved.picker||
-   JSON.stringify(game.dice)!==JSON.stringify(saved.dice)||JSON.stringify(game.players[idx]?.cells)!==JSON.stringify(saved.cells))return null;
+  const eligible=game.parallelRule==='simultaneous-responses'?!game.responded?.[idx]&&(game.parallel?idx!==game.active:idx===game.active):game.picker===idx;
+  if(!saved||saved.code!==my.code||saved.token!==my.token||game.phase!=='select'||!eligible||game.turn!==saved.turn||idx!==saved.picker||
+   (saved.active!==undefined&&saved.active!==game.active)||JSON.stringify(game.dice)!==JSON.stringify(saved.dice)||JSON.stringify(game.players[idx]?.cells)!==JSON.stringify(saved.cells))return null;
   if(!Array.isArray(saved.pending)||saved.pending.length>5||saved.pending.some(i=>!Number.isInteger(i)||i<0||i>=105))return null;
   return {pending:saved.pending,colorDie:saved.colorDie,numDie:saved.numDie,chosenColor:saved.chosenColor,chosenNumber:saved.chosenNumber,
      manualColor:saved.manualColor,manualNumber:saved.manualNumber};
@@ -828,7 +849,12 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
  $('mobile-roll').textContent=$('roll-button').textContent; $('mobile-commit').textContent=state.pending.length?'✓ '+state.pending.length+' eintragen':'✓ Eintragen';
  $('online-feed').hidden=!(Array.isArray(state.history)&&state.history.length);
  {const events=Array.isArray(state.history)?state.history.slice(-5).reverse():[];$('online-feed').innerHTML=`<h3>🕘 Letzte Aktionen</h3>${events.length?`<ol>${events.map(x=>`<li>${ESC(x)}</li>`).join('')}</ol>`:'<div class="tiny">Noch keine Spielaktionen</div>'}`;}
- $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?(onlineParallel()?(state.parallel?state.players.some((q,i)=>i!==state.active&&!state.responded?.[i]&&NET.presence[i]===false):NET.presence[state.active]===false):NET.presence[state.picker]===false):state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>`<div class="player ${i===state.picker?'current':''} ${isComputer(i)?'ai-player':''}"><span class="bubble"></span><span class="pname">${ESC(q.name)} ${i===state.active?'🎲':''}<span class="pinfo" style="display:block">${q.cells.length}/105 Felder · ${Object.keys(q.colorAwards).length} Farbboni${NET&&NET.presence&&!NET.presence[i]?' · <span class="offline-indicator">offline</span>':''}${NET&&NET.host&&state.phase==='lobby'&&NET.presence&&!NET.presence[i]?` <button class="flat" data-kick="${i}" type="button">Entfernen</button>`:''}</span><span class="player-meter" role="progressbar" aria-label="Spielfeldfortschritt ${ESC(q.name)}" aria-valuemin="0" aria-valuemax="105" aria-valuenow="${q.cells.length}"><span style="width:${Math.min(100,Math.max(0,100*q.cells.length/105))}%"></span></span></span><button type="button" class="mini-open" data-opponent="${i}" aria-label="Spielfeld von ${ESC(q.name)} ansehen">Brett</button><span class="points">${score(q).total}</span></div>`).join('');$('active-player').textContent=state.players[state.active].name;$('turn-info').textContent=onlineParallel()&&state.phase==='select'&&state.parallel?`Jetzt können alle übrigen Spieler gleichzeitig eintragen. ${(state.responded||[]).filter(Boolean).length} / ${state.players.length} fertig.`:state.phase==='select'?`Jetzt kann ${state.players[state.picker].name} direkt Kreuze setzen.`:state.phase==='lobby'?'Host startet, sobald alle verbunden sind.':state.finished?'Gewinnerwertung abgeschlossen.':state.turn?'Bereit für den nächsten Wurf.':'Du kannst starten.';
+ $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?(onlineParallel()?(state.parallel?state.players.some((q,i)=>i!==state.active&&!state.responded?.[i]&&NET.presence[i]===false):NET.presence[state.active]===false):NET.presence[state.picker]===false):state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>{
+  const playing=onlineParallel()?(state.phase==='ready'?i===state.active:state.phase==='select'&&(state.parallel?i!==state.active&&!state.responded?.[i]:i===state.active)):i===state.picker;
+  const done=onlineParallel()&&state.phase==='select'&&!!state.responded?.[i];
+  const turnLabel=done?' · ✅ Fertig':playing&&state.phase==='select'?' · ✏️ Am Zug':'';
+  return `<div class="player ${playing?'current':''} ${done?'responded':''} ${isComputer(i)?'ai-player':''}"><span class="bubble"></span><span class="pname">${ESC(q.name)} ${i===state.active?'🎲':''}<span class="pinfo" style="display:block">${q.cells.length}/105 Felder · ${Object.keys(q.colorAwards).length} Farbboni${turnLabel}${NET&&NET.presence&&!NET.presence[i]?' · <span class="offline-indicator">offline</span>':''}${NET&&NET.host&&state.phase==='lobby'&&NET.presence&&!NET.presence[i]?` <button class="flat" data-kick="${i}" type="button">Entfernen</button>`:''}</span><span class="player-meter" role="progressbar" aria-label="Spielfeldfortschritt ${ESC(q.name)}" aria-valuemin="0" aria-valuemax="105" aria-valuenow="${q.cells.length}"><span style="width:${Math.min(100,Math.max(0,100*q.cells.length/105))}%"></span></span></span><button type="button" class="mini-open" data-opponent="${i}" aria-label="Spielfeld von ${ESC(q.name)} ansehen">Brett</button><span class="points">${score(q).total}</span></div>`;
+ }).join('');$('active-player').textContent=state.players[state.active].name;$('turn-info').textContent=onlineParallel()&&state.phase==='select'&&state.parallel?`Jetzt können alle übrigen Spieler gleichzeitig eintragen. ${(state.responded||[]).filter(Boolean).length} / ${state.players.length} fertig.`:state.phase==='select'?`Jetzt kann ${state.players[state.picker].name} direkt Kreuze setzen.`:state.phase==='lobby'?'Host startet, sobald alle verbunden sind.':state.finished?'Gewinnerwertung abgeschlossen.':state.turn?(NET&&NET.index===state.active?'🎲 Du bist jetzt an der Reihe und darfst würfeln.':'Warten auf den nächsten Wurf von '+state.players[state.active].name+'.'):'Du kannst starten.';
  setMsg(flash||'Nach dem Würfeln kannst du direkt auf passende Felder tippen. Die Würfel sind ebenfalls anklickbar.',flashBad);
  persistOnlineDraft();
  renderOpponentsLive();
