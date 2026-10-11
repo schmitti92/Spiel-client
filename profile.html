@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#edf5ff">
 <meta name="description" content="Dein persönliches Online-Spielerprofil im SPIELEPORTAL.">
-<title>Mein Spielerprofil · SPIELEPORTAL 2.0 – V7</title>
+<title>Mein Spielerprofil · SPIELEPORTAL 2.0 – V10</title>
 <style>
  
 :root{font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#142d50;background:#edf5ff;font-synthesis:none;--navy:#102a51;--accent-blue:#2579dc;--line:#e2eaf6;--muted:#7890a9}
@@ -77,11 +77,140 @@ body:not(.sp-account-ready) #profile-root{visibility:hidden}
 .v8-stats-refresh{background:#e9f3ff;color:#245d95;border:1px solid #cfe4f9;border-radius:12px;padding:10px 14px;font:inherit;font-size:11px;font-weight:700;cursor:pointer;margin:0 0 15px}.v8-stats-refresh:disabled{opacity:.55;cursor:wait}.v8-stats-refresh:focus-visible{outline:3px solid #3989d9;outline-offset:2px}
 .v8-verified-results h3{margin:0 0 6px;font-size:16px;color:#153d6d}.v8-verified-results p{margin:0 0 14px;font-size:11px;color:#6887a6}
 .v8-game-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.v8-result-tile{display:grid;gap:9px;padding:14px 12px;background:#eff6ff;border:1px solid #dceafa;border-radius:15px;min-height:77px}.v8-result-tile strong{color:#245e9c;font-size:12px}.v8-result-tile span{font-size:11px;color:#6a88a6}.v8-history{display:grid;gap:8px}.v8-match-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;border:1px solid #e4ebf7;border-radius:12px;background:#f7fbff;font-size:12px;color:#456f94}.v8-match-row strong{white-space:nowrap;color:#2869a3}.v8-empty{color:#758ba5;font-size:12px;line-height:1.6}@media(max-width:720px){.v8-game-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v8-verified-results{padding:14px}.v8-match-row{flex-wrap:wrap}} 
+
+/* ══════ V9 · PREMIUM PROFIL – REINE PROFIL-CSS, KEINE SPIELREGELN ══════ */
+:root{--v9-navy:#102b51;--v9-royal:#245fa7;--v9-muted:#718ba5;--v9-border:#deebf8}
+html{scroll-behavior:smooth}
+.hero-profile{box-shadow:0 17px 48px rgba(18,64,118,.11);border:1px solid #ffffffb5}
+.hero-main h2{letter-spacing:-1.15px}
+.hero-profile .premium-label{letter-spacing:1.3px}
+.hero-profile .chips .chip{border:1px solid #ffffff96}
+.profile-stage:after{content:'✦';position:absolute;right:31%;top:12%;font-size:100px;color:#ffffff2f;pointer-events:none}
+.section-heading{margin-top:5px;margin-bottom:13px}
+.section-heading h2{font-size:clamp(22px,2.1vw,30px)}
+.surface{transition:box-shadow .2s ease,border-color .2s ease}
+.surface:hover{box-shadow:0 14px 38px rgba(26,71,128,.09)}
+.stat-box{padding:20px 9px 17px;border:1px solid #dfebf9;box-shadow:0 5px 18px #18578c08}
+.stat-box b{font-size:clamp(23px,2.1vw,31px)}
+.v9-insights-wrap{padding:17px 18px 8px;border:1px solid #e7eef8;background:#fbfdff;border-radius:17px;margin-top:17px}
+.v9-insights-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--v9-navy);margin-bottom:13px}
+.v9-insights-title span{font-size:10px;color:#7891aa}
+.v9-insights{display:grid;gap:11px;margin-bottom:12px}
+.v9-insight-row>div:first-child{display:flex;justify-content:space-between;color:#54718c;font-size:11px;margin-bottom:5px}
+.v9-insight-row b{font-weight:850;color:#24486f}
+.v9-insight-track{height:7px;background:#e7eff7;border-radius:99px;overflow:hidden}
+.v9-insight-track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#1c84dd,#52b6ef);transition:width .45s ease}
+.v9-insight-row:nth-child(2) .v9-insight-track i{background:linear-gradient(90deg,#e2a45a,#e2c08c)}
+.v9-insight-row:nth-child(3) .v9-insight-track i{background:linear-gradient(90deg,#a384e5,#c1a6fb)}
+.v9-xp-card{min-height:335px;background:radial-gradient(circle at 96% 2%,#466a9b 0,#1e406f 43%,#112849 100%);border-color:#5a7aab66}
+.v9-xp-card:after{font-size:200px;right:-14px;top:2px;opacity:.42}
+.v9-level-intro{display:flex;align-items:center;gap:20px;z-index:1}
+.v9-level-ring{flex:0 0 109px;height:109px;border-radius:50%;display:grid;align-content:center;justify-items:center;background:linear-gradient(155deg,#284d80,#172f52);border:3px solid #e5c16d;box-shadow:0 0 0 7px #ffffff10,0 15px 30px #0002}
+.v9-level-ring span{font-size:10px;color:#d4e5fb;font-weight:900;letter-spacing:1.5px}
+.v9-level-ring strong{font-size:39px;line-height:1.18;color:#ffe0a1}
+.v9-level-copy h3{font-size:24px;margin-bottom:9px}
+.v9-level-copy p{font-size:11px;max-width:230px}
+.v9-xp-bottom{z-index:1}
+.v9-xp-label,.v9-xp-help{display:flex;justify-content:space-between;gap:9px;align-items:center;font-size:11px;color:#c9dbf4}
+.v9-xp-label strong{font-size:21px;color:white}
+.v9-xp-track{height:13px;padding:2px;margin:12px 0 10px;background:#ffffff18;border:1px solid #ffffff32;border-radius:99px;overflow:hidden}
+.v9-xp-track div{width:0;height:100%;border-radius:99px;background:linear-gradient(90deg,#83d5ff,#f8d687);transition:width .5s ease}
+.v9-xp-help span:last-child{font-size:9px;color:#a2bad9;text-align:right}
+.v9-game-statistics{padding:25px 25px 24px}
+.v9-section-top{display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.v9-section-top h3{font-size:22px;letter-spacing:-.5px}
+.v9-section-top p{margin-bottom:0}
+.v9-eyebrow{font-size:10px;font-weight:900;letter-spacing:1.4px;color:#4b86bd;display:block;margin-bottom:5px}
+.v9-section-top .v8-stats-refresh{margin:5px 0 0;white-space:nowrap}
+.v8-game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.v9-result-tile{padding:17px;background:linear-gradient(155deg,#f9fcff,#eaf4fe);border:1px solid #dfeaf7;border-radius:18px;min-width:0}
+.v9-result-tile.pending{background:#f7f8fc;opacity:.77}
+.v9-result-head{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.v9-result-head strong{font-size:15px;color:#1b4777}
+.v9-game-flag{font-size:9px;font-weight:900;color:#217b70;background:#dff7ef;padding:5px 9px;border-radius:50px}
+.pending .v9-game-flag{color:#73849b;background:#e7ebf3}
+.v9-result-tile p{font-size:10px;color:#7791a8;margin:9px 0 12px;line-height:1.4}
+.v9-game-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.v9-game-numbers div{padding:8px 6px;border:1px solid #e5ecf6;border-radius:10px;text-align:center;background:#fff}
+.v9-game-numbers b{display:block;color:#204d80;font-size:20px;line-height:1.3}
+.v9-game-numbers small{display:block;color:#7b93a8;font-size:9px}
+.v9-trophies .milestones{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.v9-trophies .achievement{padding:16px 10px;position:relative;background:linear-gradient(150deg,#f6faff,#eff6ff);min-height:135px}
+.v9-trophies .achievement:not(.locked){background:linear-gradient(145deg,#fff6e3,#ffffff);border-color:#f0d7a5}
+.v9-trophies .achievement span{font-size:27px}
+.v9-trophies .achievement em{font-size:9px;font-style:normal;font-weight:900;color:#298068;border-radius:20px;padding:4px 8px;background:#ddf7e9}
+.v9-trophies .achievement.locked em{color:#7289a4;background:#e7edf6}
+.v9-history-panel .v8-history{margin-top:9px}
+.v9-history-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+.v9-history-filters label{display:grid;gap:5px;font-size:10px;font-weight:900;color:#7191aa}
+.v9-history-filters select{appearance:auto;width:100%;font:inherit;font-size:12px;font-weight:700;padding:10px 9px;border:1px solid #dce9f7;border-radius:10px;color:#244b74;background:#f7fbff;min-width:0}
+.v9-history-filters select:focus-visible{outline:2px solid #3b8ed8;outline-offset:1px}
+.v9-history-count{font-size:10px;color:#8399ab;margin:12px 0 8px}
+.v9-match-row{display:flex;align-items:center;gap:10px;padding:11px 10px;border:1px solid #e7edf7;border-radius:12px;background:#fafdff;margin-top:8px}
+.v9-match-icon{width:32px;height:32px;flex:0 0 32px;border-radius:10px;background:#e8f3ff;display:grid;place-items:center}
+.v9-match-desc{display:grid;gap:4px;min-width:0;flex:1}
+.v9-match-desc b{font-size:11px;color:#204b7e}
+.v9-match-desc small{font-size:9px;color:#8aa0b4}
+.v9-match-result{font-size:10px;font-weight:850;padding:6px 8px;border-radius:20px;background:#eef2f8;color:#526b86}
+.v9-match-result.won{background:#e1f7e8;color:#227945}
+.v9-match-result.drawn{background:#f1ebff;color:#6c56a3}
+.management-buttons #profile-export{background:#e8f4fc;color:#27618f;border:1px solid #d0e7f6}
+@media(max-width:1000px){.v9-level-intro{gap:12px}.v9-level-ring{flex-basis:91px;height:91px}.v9-level-copy h3{font-size:21px}}
+@media(max-width:650px){.profile-stage:after{display:none}.v9-xp-card{min-height:300px}.v9-game-statistics{padding:17px}.v8-game-grid{grid-template-columns:1fr}.v9-trophies .milestones{grid-template-columns:repeat(2,minmax(0,1fr))}.v9-level-ring{flex:0 0 85px;height:85px}.v9-level-ring strong{font-size:32px}.v9-level-copy h3{font-size:18px}.v9-xp-help{display:grid}.v9-xp-help span:last-child{text-align:left}}
+@media(max-width:380px){.v9-history-filters{grid-template-columns:1fr}.v9-trophies .milestones{grid-template-columns:1fr}.v9-level-intro{align-items:start}.v9-level-ring{flex:0 0 69px;height:69px}.v9-level-ring strong{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.v9-insight-track i,.v9-xp-track div,.surface{transition:none}html{scroll-behavior:auto}}
+
+/* V9 image crop – touch-friendly on Android and tablet */
+.v9-crop-dialog{border:0;border-radius:23px;padding:0;width:min(94vw,730px);max-width:730px;max-height:94dvh;overflow:auto;color:#21476f;background:#fff;box-shadow:0 34px 100px #061b3d75;z-index:99999}
+.v9-crop-dialog::backdrop{background:#091b36bb;backdrop-filter:blur(4px)}
+.v9-crop-inner{padding:24px;display:grid;gap:14px}
+.v9-crop-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.v9-crop-head span{font-weight:950;font-size:20px;color:#133665}
+.v9-crop-head button{border:0;border-radius:12px;font-size:19px;padding:7px 13px;background:#edf3fc;color:#244d78;cursor:pointer}
+.v9-crop-inner p{font-size:12px;line-height:1.6;color:#728ba5}
+.v9-crop-stage{display:grid;place-items:center;min-height:180px;padding:15px;border-radius:17px;background:radial-gradient(circle at center,#c7ddf8,#769fc9)}
+.v9-crop-stage canvas{display:block;max-width:100%;height:auto;border:3px solid #fff;box-shadow:0 10px 30px #09275245;object-fit:contain}
+.v9-crop-stage.avatar canvas{max-width:min(255px,100%);border-radius:50%}
+.v9-crop-stage.banner canvas{border-radius:14px}
+.v9-crop-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.v9-crop-controls label{display:grid;gap:9px;font-size:11px;font-weight:850;color:#41648b}
+.v9-crop-controls input{accent-color:#2e85d5;width:100%;min-width:0;touch-action:pan-x}
+.v9-crop-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:5px}
+.v9-crop-actions button{border:1px solid #d5e5f6;border-radius:12px;padding:11px 16px;background:#f2f7ff;color:#214b78;font:inherit;font-size:12px;font-weight:850;cursor:pointer}
+.v9-crop-actions [data-crop-confirm]{background:linear-gradient(110deg,#3286e4,#1c5fb7);color:white;border-color:#3286e4}
+@media(max-width:580px){.v9-crop-inner{padding:15px;gap:10px}.v9-crop-head span{font-size:16px}.v9-crop-controls{grid-template-columns:1fr}.v9-crop-controls label{gap:2px}.v9-crop-actions button{flex:1}}
+
+/* V10 – freundlich, ruhig und hochwertig. Keine aggressive Gamer-Ästhetik. */
+.stage-image[data-banner="aurora"],.v7-banner-tile.aurora{background:#163652 url('profile-banner-aurora.webp') center/cover no-repeat}
+.stage-image[data-banner="golden"],.v7-banner-tile.golden{background:#db9b7b url('profile-banner-golden.webp') center/cover no-repeat}
+.stage-image[data-banner="royal"],.v7-banner-tile.royal{background:#31436d url('profile-banner-royal.webp') center/cover no-repeat}
+.v7-banner-tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.v7-banner-tile{min-height:105px;transition:transform .16s ease,box-shadow .16s ease;border:2px solid #fff;box-shadow:0 5px 15px #1e4d7910}
+.v7-banner-tile.selected{outline:2px solid var(--profile-accent,#328cff);box-shadow:0 0 0 3px #ffffff,0 8px 23px #1e548226}
+.v7-banner-tile span{color:#173f68;font-weight:850;font-size:11px;background:#fffffff0}
+.v10-extras-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.v10-progress-card,.v10-share-card{padding:22px 24px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.v10-extras-grid h3{font-size:19px;color:#173e68;letter-spacing:-.4px}
+.v10-extras-grid p{font-size:12px;line-height:1.6;color:#7088a1;max-width:500px}
+.v10-kicker{font-size:10px;font-weight:900;letter-spacing:1.4px;color:#5486b4}
+.v10-progress-row{display:flex;justify-content:space-between;gap:15px;align-items:baseline;width:100%;font-size:11px;color:#8296a9}
+.v10-progress-row strong{color:#2c719e;font-size:14px}
+.v10-track{width:100%;height:9px;border-radius:50px;background:#e7f0f7;overflow:hidden}
+.v10-track span{display:block;height:100%;width:0;background:linear-gradient(90deg,#51a7d5,#67bba1);border-radius:inherit;transition:width .25s}
+.v10-extras-grid small{color:#8da2b3;font-size:11px;line-height:1.5}
+.v10-share-card .btn{margin-top:auto;font-size:12px}
+.v10-share-card{background:linear-gradient(125deg,#ffffff,#f3f9ff)}
+.xp-preview:after{content:'';width:215px;height:215px;border-radius:50%;background:#ffffff0a;right:-40px;top:-95px}
+.premium-label{letter-spacing:.2px;font-weight:800}
+.hero-avatar-ring{box-shadow:0 0 0 5px #ffffffbf,0 12px 30px #255f9f1a}
+.surface{box-shadow:0 11px 28px rgba(35,80,141,.065)}
+@media(max-width:880px){.v7-banner-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.v10-extras-grid{grid-template-columns:1fr}.v10-progress-card,.v10-share-card{padding:18px}.v7-banner-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <script src="profile-config.js" defer></script>
 <script src="profile-auth.js?v=profile-v7" defer></script>
-<script src="profile-core.js?v=profile-v7" defer></script>
-<script src="profile-stats.js?v=profile-v8b-20261011" defer></script>
+<script src="profile-core.js?v=profile-v10-gentle-20261011" defer></script>
+<script src="profile-stats.js?v=profile-v9-20261011" defer></script>
 </head>
 <body>
 <div class="profile-gate" aria-live="polite"><div class="gate-card"><span class="gate-mark">👑</span><h2>Dein Spielerprofil wird vorbereitet</h2><p>Dein Online-Konto wird sicher geprüft. Falls du noch nicht angemeldet bist, erscheint gleich die Anmeldung.</p><a href="index.html">← Zur Spielauswahl</a></div></div>
@@ -125,27 +254,27 @@ body:not(.sp-account-ready) #profile-root{visibility:hidden}
    <a href="#settings"><span class="navico">⚙️</span> Einstellungen</a>
   </nav>
   <section id="stats" aria-labelledby="stats-title">
-   <div class="section-heading"><div><span class="heading-kicker">Dein Fortschritt</span><h2 id="stats-title">Spielerübersicht</h2></div><span class="aside-note">Nur überprüfte Ergebnisse werden gezählt</span></div>
+   <div class="section-heading"><div><span class="heading-kicker">Dein Fortschritt</span><h2 id="stats-title">Spielerübersicht</h2></div><span class="aside-note">🔒 Offizielle Zahlen aus Firebase</span></div>
    <div class="grid-two">
     <div class="surface panel">
-     <h3>📊 Deine Spielstatistiken</h3><p class="muted" id="profile-stat-caption">Deine bestätigten Ergebnisse erscheinen hier, sobald die Spiele sicher angebunden sind.</p>
+     <h3>📊 Deine Spielstatistiken</h3><p class="muted" id="profile-stat-caption">Deine offiziell bestätigten Partien werden geladen.</p>
      <div class="stats-summary">
       <div class="stat-box"><span class="stat-ico">🎮</span><b id="stat-launches">–</b><small>Bestätigte Partien</small></div>
       <div class="stat-box"><span class="stat-ico">🏆</span><b id="stat-games">–</b><small>Gewonnene Spiele</small></div>
-      <div class="stat-box"><span class="stat-ico">☁️</span><b id="stat-profiles">1</b><small>Online-Konto</small></div>
+      <div class="stat-box"><span class="stat-ico">📈</span><b id="stat-win-rate">–</b><small>Siegquote</small></div>
       <div class="stat-box"><span class="stat-ico">🏅</span><b id="stat-achievements">–</b><small>Spiel-Erfolge</small></div>
      </div>
-     <div class="honest-note"><span>🔒</span><span>Deine Siege und Partien werden erst nach einer zuverlässigen, serverseitigen Spielauswertung angezeigt. Spielaufrufe zählen nicht als Gewinne.</span></div>
+     <div class="v9-insights-wrap"><div class="v9-insights-title"><b>Deine Ergebnisverteilung</b><span>Bestätigte Partien</span></div><div id="v9-insights" class="v9-insights" aria-live="polite"></div></div><div class="honest-note"><span>🛡️</span><span>Nur vom Server bestätigte Online-Ergebnisse aus Barikade und KreuzKunter zählen. SKYJO Action und Business sind noch nicht für offizielle Siege freigeschaltet.</span></div>
     </div>
-    <div class="xp-preview" aria-label="Levelsystem in Vorbereitung">
-     <span class="xp-top">✦ DEINE SPIELERKARRIERE</span>
-     <div><span class="future-pill">🔜 In Vorbereitung</span><h3 style="margin-top:13px">Level & Erfahrungspunkte</h3><p>Später sammelst du XP für bestätigte Partien und freigeschaltete Erfolge. Noch ist kein Level vergeben.</p></div>
-     <div><div class="xp-track" aria-hidden="true"></div><div class="xp-bottom"><span>Fortschritt wird nach Spielanbindung aktiviert</span><span>XP: –</span></div></div>
+    <div class="xp-preview v9-xp-card" aria-label="Offizielle Erfahrungspunkte">
+     <span class="xp-top">✦ DEINE SPIELERKARRIERE · VERIFIZIERT</span>
+     <div class="v9-level-intro"><div class="v9-level-ring"><span>LEVEL</span><strong id="v9-level">–</strong></div><div class="v9-level-copy"><h3>Dein nächster Meilenstein</h3><p>XP stammen ausschließlich aus offiziell abgeschlossenen Partien. Kein lokaler Spielstand kann XP gutschreiben.</p></div></div>
+     <div class="v9-xp-bottom"><div class="v9-xp-label"><strong><span id="v9-total-xp">–</span> XP</strong><span id="v9-xp-fraction">–</span></div><div class="v9-xp-track" role="progressbar" aria-label="Fortschritt zum nächsten Level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="v9-xp-progress"></div></div><div class="v9-xp-help"><span id="v9-xp-next">Wertung wird geladen</span><span>40 XP/Partie · +60/Sieg · +20/Remis</span></div></div>
     </div>
    </div>
   </section>
   <section id="games" aria-labelledby="games-title">
-   <div class="section-heading"><div><span class="heading-kicker">Vier Spiele · Eine Spielwelt</span><h2 id="games-title">Deine Spiele</h2></div><span class="aside-note">Deine Einzelstatistiken folgen später</span></div>
+   <div class="section-heading"><div><span class="heading-kicker">Vier Spiele · Eine Spielwelt</span><h2 id="games-title">Deine Spiele</h2></div><span class="aside-note">Vier Spiele · Zwei mit offizieller Wertung</span></div>
    <div class="games-gallery">
     <a class="game-feature" style="--game-bg:url('Assets/game-backgrounds/barikade.webp')" href="Barikade/barikade_lobby.html"><div class="game-info"><span class="game-tag">🧱 STRATEGIE</span><h3>Barikade</h3><p>Spannende Duelle, Barikaden und besondere Spielmodi.</p><span class="game-action">Spiel öffnen <span>↗</span></span></div></a>
     <a class="game-feature" style="--game-bg:url('Assets/game-backgrounds/skyjo.webp')" href="Skyjo/skyjo_action.html"><div class="game-info"><span class="game-tag">🃏 KARTENSPIEL</span><h3>SKYJO Action</h3><p>Karten clever tauschen und Punktestände minimieren.</p><span class="game-action">Spiel öffnen <span>↗</span></span></div></a>
@@ -153,31 +282,55 @@ body:not(.sp-account-ready) #profile-root{visibility:hidden}
     <a class="game-feature" style="--game-bg:url('Assets/game-backgrounds/business.webp')" href="Business/business_online.html"><div class="game-info"><span class="game-tag">💼 WIRTSCHAFT</span><h3>Das große Business</h3><p>Unternehmen und Branchen im Wettbewerb.</p><span class="game-action">Online spielen <span>↗</span></span></div></a>
    </div>
   </section>
-  <div class="v8-verified-results surface" aria-live="polite"><h3>🎮 Offizielle Ergebnisse nach Spiel</h3><p id="v8-stats-status" role="status">☁️ Statistik wird geladen …</p><button id="v8-stats-refresh" type="button" class="v8-stats-refresh">↻ Statistik neu laden</button><div id="v8-game-totals" class="v8-game-grid"></div></div>
+  <section class="v8-verified-results surface v9-game-statistics" aria-labelledby="v9-game-stats-heading"><div class="v9-section-top"><div><span class="v9-eyebrow">📊 SPIEL FÜR SPIEL</span><h3 id="v9-game-stats-heading">Offizielle Spielstatistiken</h3><p id="v8-stats-status" role="status" aria-live="polite">☁️ Statistik wird geladen …</p></div><button id="v8-stats-refresh" type="button" class="v8-stats-refresh">↻ Aktualisieren</button></div><div id="v8-game-totals" class="v8-game-grid"></div></section>
   <section id="achievements" aria-labelledby="achievement-title">
    <div class="section-heading"><div><span class="heading-kicker">Sammlung und Rückblick</span><h2 id="achievement-title">Deine Erfolge & Spielhistorie</h2></div><span class="aside-note">Persönliche Erfolge werden hier sichtbar</span></div>
    <div class="achievement-layout">
-    <div class="surface panel"><h3>🏆 Trophäensammlung</h3><p class="muted">Dein bestätigter Profil-Meilenstein und kommende Spielerfolge.</p><div id="achievement-list" class="milestones"><div class="achievement"><span>👑</span><b>Online-Profil</b><small>Konto eingerichtet</small></div><div class="achievement locked" data-achievement="first-win"><span>🏆</span><b>Erster Sieg</b><small>Eine bestätigte Online-Partie gewinnen</small></div></div></div>
-    <div class="surface panel"><h3>🕘 Letzte Partien</h3><p class="muted">Hier findest du später deine abgeschlossenen Spiele.</p><div id="v8-match-history" class="v8-history"><p>Bestätigte Spielergebnisse werden geladen …</p></div></div>
+    <div class="surface panel v9-trophies"><h3>🏆 Deine Trophäensammlung</h3><p class="muted">Erfolge werden aus deinem Online-Profil und bestätigten Partien freigeschaltet.</p><div id="achievement-list" class="milestones">
+     <div class="achievement" data-achievement="profile"><span>👑</span><b>Mein Online-Profil</b><small>Profil erfolgreich eingerichtet</small><em data-achievement-state>✓ Freigeschaltet</em></div>
+     <div class="achievement locked" data-achievement="firstwin"><span>🏆</span><b>Erster Sieg</b><small>Erstes offiziell gewertetes Spiel gewinnen</small><em data-achievement-state>Noch nicht erreicht</em></div>
+     <div class="achievement locked" data-achievement="fivewins"><span>🥇</span><b>Siegesserie</b><small>Insgesamt fünf bestätigte Siege sammeln</small><em data-achievement-state>Noch nicht erreicht</em></div>
+     <div class="achievement locked" data-achievement="tenmatches"><span>🎲</span><b>Spieleprofi</b><small>Zehn bestätigte Online-Partien spielen</small><em data-achievement-state>Noch nicht erreicht</em></div>
+     <div class="achievement locked" data-achievement="versatile"><span>🌟</span><b>Vielspieler</b><small>Barikade und KreuzKunter offiziell spielen</small><em data-achievement-state>Noch nicht erreicht</em></div>
+    </div></div>
+    <div class="surface panel v9-history-panel"><h3>🕘 Deine letzten Partien</h3><p class="muted">Deine letzten zwölf bestätigten Ergebnisse, direkt vom Server.</p><div class="v9-history-filters"><label>Spiel<select id="v9-filter-game"><option value="all">Alle Spiele</option><option value="barikade">Barikade</option><option value="kreuz">KreuzKunter</option></select></label><label>Ergebnis<select id="v9-filter-result"><option value="all">Alle Ergebnisse</option><option value="win">Siege</option><option value="loss">Niederlagen</option><option value="draw">Unentschieden</option></select></label></div><p id="v9-history-count" class="v9-history-count"></p><div id="v8-match-history" class="v8-history"><p>Bestätigte Spielergebnisse werden geladen …</p></div></div>
    </div>
   </section>
   <section id="settings" aria-labelledby="settings-title">
    <div class="section-heading"><div><span class="heading-kicker">Ganz nach deinem Geschmack</span><h2 id="settings-title">Mein Profil gestalten</h2></div><span class="aside-note">Auswahl wird online gespeichert</span></div>
    <div class="surface v7-personal-card" id="profile-personal-card">
      <div class="v7-personal-symbol">✦</div>
-     <div class="v7-personal-text"><span class="v7-overline">DEINE SPIELERIDENTITÄT</span><h3>So sieht dein Spielerprofil aus</h3>
+     <div class="v7-personal-text"><span class="v7-overline">DEIN PERSÖNLICHES PROFIL</span><h3>So sieht dein Spielerprofil aus</h3>
       <p id="profile-bio-summary">Gestalte deine Profilbeschreibung und dein persönliches Banner.</p>
       <div class="v7-personal-meta"><span>🖼️ <span id="profile-banner-summary">Standardbanner</span></span><span>🔐 <span id="profile-privacy-summary">Private Profilangaben</span></span></div></div>
      <button type="button" class="btn primary" id="profile-edit-design">✎ Profil komplett gestalten</button>
    </div>
+   <div class="v10-extras-grid">
+    <section class="surface v10-progress-card" aria-label="Profilgestaltung">
+      <div class="v10-kicker">MEIN PROFIL</div><h3>Schon ganz persönlich</h3>
+      <p>Gestalte dein Profil in deinem Tempo – mit Foto, Beschreibung und Lieblingsmotiv.</p>
+      <div class="v10-progress-row"><strong id="v10-progress-count">–</strong><span>Deine Gestaltung</span></div>
+      <div class="v10-track" aria-hidden="true"><span id="v10-progress-track"></span></div>
+      <small id="v10-progress-tip">Deine Angaben werden geladen.</small>
+    </section>
+    <section class="surface v10-share-card">
+      <div class="v10-kicker">GEMEINSAM SPIELEN</div><h3>Dein Spieler-Steckbrief</h3>
+      <p>Teile deinen Spielernamen, dein Lieblingsspiel und deine Beschreibung mit Freunden – ohne öffentliche Profilseite.</p>
+      <button type="button" class="btn pale" id="v10-copy-card">📋 Steckbrief kopieren</button>
+      <small>Es werden keine E-Mail-Adresse, Passwörter oder Spielstatistiken mitkopiert.</small>
+    </section>
+   </div>
    <div class="surface v7-banner-chooser" aria-label="Profilbanner auswählen">
-     <div class="v7-banner-title"><div><span class="v7-overline">DEIN LOOK</span><h3>Mein Profilbanner</h3><p>Wähle ein Hintergrundmotiv. Ein eigenes Foto kannst du im Profil-Editor hinzufügen.</p></div></div>
+     <div class="v7-banner-title"><div><span class="v7-overline">DEIN LOOK</span><h3>Mein Profilbanner</h3><p>Wähle eine Stimmung, die zu dir passt – oder lade ein eigenes Foto hoch.</p></div></div>
      <div class="v7-banner-tiles" role="group" aria-label="Bannerdesign auswählen">
       <button type="button" data-banner-choice="classic" class="v7-banner-tile classic"><span>👑 Klassisch</span></button>
       <button type="button" data-banner-choice="ocean" class="v7-banner-tile ocean"><span>🌊 Ozean</span></button>
       <button type="button" data-banner-choice="sunset" class="v7-banner-tile sunset"><span>🌅 Sonnenuntergang</span></button>
       <button type="button" data-banner-choice="forest" class="v7-banner-tile forest"><span>🌿 Natur</span></button>
-      <button type="button" data-banner-choice="cosmos" class="v7-banner-tile cosmos"><span>✨ Kosmos</span></button>
+      <button type="button" data-banner-choice="cosmos" class="v7-banner-tile cosmos"><span>🌙 Abendlicht</span></button>
+      <button type="button" data-banner-choice="aurora" class="v7-banner-tile aurora"><span>🌌 Nordlicht</span></button>
+      <button type="button" data-banner-choice="golden" class="v7-banner-tile golden"><span>🌅 Goldene Stunde</span></button>
+      <button type="button" data-banner-choice="royal" class="v7-banner-tile royal"><span>🌄 Abendhimmel</span></button>
      </div>
    </div>
    <div class="preference-grid">
@@ -189,11 +342,12 @@ body:not(.sp-account-ready) #profile-root{visibility:hidden}
     </div></section>
     <section class="surface panel"><h3><span class="ico">🖼️</span> Profilbild</h3><p class="muted">Dein Avatar oder ein eigenes Galeriebild.</p><div class="avatars">
      <button class="avatar-tile" type="button" data-choice-avatar="0"></button><button class="avatar-tile" type="button" data-choice-avatar="1"></button><button class="avatar-tile" type="button" data-choice-avatar="2"></button><button class="avatar-tile" type="button" data-choice-avatar="3"></button><button class="avatar-tile" type="button" data-choice-avatar="4"></button><button class="avatar-tile" type="button" data-choice-avatar="5"></button><button class="avatar-tile" type="button" data-choice-avatar="6"></button><button class="avatar-tile" type="button" data-choice-avatar="7"></button>
+     <button class="avatar-tile" type="button" data-choice-avatar="8" aria-label="Zusätzlicher Avatar 9"></button><button class="avatar-tile" type="button" data-choice-avatar="9" aria-label="Zusätzlicher Avatar 10"></button><button class="avatar-tile" type="button" data-choice-avatar="10" aria-label="Zusätzlicher Avatar 11"></button><button class="avatar-tile" type="button" data-choice-avatar="11" aria-label="Zusätzlicher Avatar 12"></button><button class="avatar-tile" type="button" data-choice-avatar="15" aria-label="Zusätzlicher Avatar 16"></button>
     </div><label class="custom-avatar-upload">📸 Eigenes Bild aus Galerie wählen<input id="profile-gallery-upload" type="file" accept="image/jpeg,image/png,image/webp"></label><p id="profile-upload-status" class="bottomnote" aria-live="polite">JPG, PNG oder WebP · Wird automatisch verkleinert.</p></section>
    </div>
   </section>
   <section class="profile-manage" aria-label="Kontoeinstellungen">
-   <div class="surface panel"><h3>⚙️ Profil verwalten</h3><p class="muted">Bearbeite Banner, Profilbeschreibung, Spielernamen und Datenschutzeinstellungen an einem Ort.</p><div class="management-buttons"><button type="button" id="profile-edit">✎ Profil bearbeiten</button><button type="button" id="profile-edit-top">⇄ Konto wechseln</button></div><p class="bottomnote" id="profile-manage-note">🔐 Dein Profil wird online gespeichert.</p></div>
+   <div class="surface panel"><h3>⚙️ Profil verwalten</h3><p class="muted">Bearbeite Banner, Profilbeschreibung, Spielernamen und Datenschutzeinstellungen an einem Ort.</p><div class="management-buttons"><button type="button" id="profile-edit">✎ Profil bearbeiten</button><button type="button" id="profile-export">↓ Meine Daten exportieren</button><button type="button" id="profile-edit-top">⇄ Konto wechseln</button></div><p class="bottomnote" id="profile-manage-note">🔐 Dein Profil wird online gespeichert.</p></div>
    <div id="online-account-panel" class="online-account" aria-label="Online-Spielerkonto">
     <div class="online-head"><h3>☁️ Dein Online-Spielerkonto</h3><span class="online-status" data-online-status>⏳ Lade Verbindungsstatus</span></div>
     <p class="online-description" data-online-detail aria-live="polite">Die Anmeldung wird geprüft.</p>
