@@ -2106,6 +2106,47 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
  cursor:pointer;box-shadow:0 3px 12px #001b1480}
 .business-hub-return:focus-visible{outline:3px solid #ffe38a;outline-offset:2px}
 @media(max-width:650px){.business-hub-return{min-height:36px;padding:7px 10px;font-size:12px}}
+
+/* === V11 UI Feinschliff: Haltefeld + größere Markt-Karten === */
+.dice-hold-zone{left:2.2%!important;bottom:2.8%!important;width:51%!important;min-width:220px!important;height:126px!important;padding-top:4px!important;}
+.dice-hold-sub{max-width:92%!important;font-size:11px!important;line-height:1.2!important;}
+.dice-hold-slots{left:10px!important;right:10px!important;top:46px!important;bottom:10px!important;gap:8px!important;}
+.dice-hold-slots span{border-radius:12px!important;border:1px dashed rgba(255,224,133,.28)!important;background:rgba(255,255,255,.04)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;}
+.arena-die.held::after{bottom:-18px!important;}
+@media (max-width:1100px){.dice-hold-zone{width:48%!important;min-width:190px!important;height:122px!important;}.dice-hold-slots{top:44px!important;gap:6px!important;}}
+@media (max-width:800px){.dice-hold-zone{width:49%!important;min-width:170px!important;height:116px!important;}.dice-hold-sub{font-size:10px!important;}.dice-hold-slots{top:42px!important;gap:5px!important;}}
+
+.market-board-strip{padding:12px 270px 18px 12px!important;}
+.market-board-header{min-height:44px!important;align-items:flex-start!important;padding:4px 8px 2px!important;}
+.market-board-title{line-height:1.1!important;}
+.market-board-help{align-self:center!important;}
+.market-board-felt{min-height:364px!important;padding:26px 14px 14px!important;border-radius:16px!important;}
+.market-board-felt .market-board-label{margin-bottom:10px!important;}
+.market-board-felt #boardMarket.board-market-overlay{width:100%!important;height:auto!important;min-height:308px!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;align-items:end!important;pointer-events:auto!important;}
+.market-board-felt .market-slot{height:100%!important;display:flex!important;align-items:end!important;justify-content:stretch!important;overflow:visible!important;}
+.market-board-felt .market-slot .invest-card{width:100%!important;height:308px!important;min-height:308px!important;border-radius:16px!important;box-shadow:0 14px 26px rgba(0,0,0,.34)!important;}
+.market-board-felt .market-slot .invest-card:hover{transform:translateY(-5px)!important;}
+.market-board-felt .market-slot .invest-card.market-selected{transform:translateY(-8px) scale(1.015)!important;}
+.market-board-felt .market-slot .card-shell{display:grid!important;grid-template-rows:58% 42%!important;}
+.market-board-felt .real-card-photo{height:auto!important;min-height:0!important;}
+.market-board-felt .real-card-body{padding:12px 12px 13px!important;gap:7px!important;}
+.market-board-felt .real-card-company{font-size:15.5px!important;line-height:1.04!important;min-height:32px!important;}
+.market-board-felt .real-card-desc{font-size:10px!important;line-height:1.22!important;min-height:38px!important;-webkit-line-clamp:3!important;}
+.market-board-felt .real-card-stats{gap:8px!important;}
+.market-board-felt .real-card-price{height:28px!important;min-width:42px!important;font-size:11px!important;padding:0 8px!important;}
+.market-board-felt .real-card-type{font-size:10px!important;padding:6px 12px!important;}
+.market-board-felt .real-card-branch{font-size:10px!important;max-width:calc(100% - 92px)!important;}
+.market-board-felt .card-art-badge{right:10px!important;bottom:10px!important;width:auto!important;min-width:56px!important;height:28px!important;padding:0 10px!important;border-radius:999px!important;font-size:11px!important;}
+.market-board-felt .card-tier-pill,.market-board-felt .card-risk-pill{font-size:9px!important;padding:4px 8px!important;}
+.market-board-felt .real-card-stat small{font-size:9px!important;}
+.market-board-felt .real-card-stat b{font-size:15px!important;}
+.market-board-felt .card-footer-note{font-size:8.6px!important;line-height:1.18!important;}
+.market-board-felt .market-status{font-size:8px!important;line-height:1.15!important;padding:4px 8px!important;max-width:78%!important;right:8px!important;top:8px!important;}
+@media (max-width:1400px){.market-board-felt{min-height:336px!important;}.market-board-felt #boardMarket.board-market-overlay{min-height:284px!important;gap:11px!important;}.market-board-felt .market-slot .invest-card{height:284px!important;min-height:284px!important;}.market-board-felt .real-card-company{font-size:14px!important;}.market-board-felt .real-card-desc{font-size:8.8px!important;}}
+@media (max-width:1100px){.market-board-strip{padding-right:220px!important;}.market-board-felt{min-height:314px!important;padding:22px 12px 12px!important;}.market-board-felt #boardMarket.board-market-overlay{min-height:264px!important;gap:9px!important;}.market-board-felt .market-slot .invest-card{height:264px!important;min-height:264px!important;}.market-board-felt .real-card-company{font-size:13px!important;min-height:28px!important;}.market-board-felt .real-card-desc{font-size:8px!important;min-height:30px!important;}.market-board-felt .real-card-price{height:24px!important;font-size:9px!important;}}
+@media (max-width:800px){.market-board-strip{padding-right:12px!important;}.market-board-header{flex-direction:column!important;align-items:flex-start!important;gap:6px!important;}.market-board-felt{min-height:unset!important;}.market-board-felt #boardMarket.board-market-overlay{grid-template-columns:repeat(2,minmax(0,1fr))!important;min-height:unset!important;}.market-board-felt .market-slot .invest-card{height:250px!important;min-height:250px!important;}.market-board-felt .real-card-company{font-size:12px!important;}.market-board-felt .real-card-desc{font-size:7.8px!important;}}
+/* === Ende V11 UI Feinschliff === */
+
 </style>
 </head>
 <body data-business-mode="online">
@@ -3326,23 +3367,27 @@ function arenaHeldLayout(heldState=null){
 function arenaHeldPosition(i,heldState=null){
  const board=q("diceArenaBoard"),zone=q("diceHoldZone");
  const w=board?.clientWidth||700;
- const size=Math.min(65,Math.max(48,(window.innerWidth||w)*.045));
- const visual=size*.92;
+ const baseSize=Math.min(65,Math.max(48,(window.innerWidth||w)*.045));
  const layout=arenaHeldLayout(heldState);
  const slot=(layout.map[i]??0);
  if(zone){
-   const innerLeft=9,innerRight=9;
+   const innerLeft=10,innerRight=10;
    const availW=Math.max(180,zone.clientWidth-innerLeft-innerRight);
    const cellW=availW/5;
-   const topReserve=zone.clientHeight<=92?27:34;
-   const y=zone.offsetTop+Math.max(topReserve,zone.clientHeight-visual-8);
+   const topReserve=zone.clientHeight<=92?27:36;
+   const slotInset=Math.max(4,Math.min(10,cellW*.08));
+   const maxVisualW=Math.max(32,cellW-(slotInset*2));
+   const maxVisualH=Math.max(34,zone.clientHeight-topReserve-12);
+   const visual=Math.min(baseSize*.88,maxVisualW,maxVisualH);
+   const scale=arenaClamp(visual/baseSize,.64,.92);
+   const y=zone.offsetTop+Math.max(topReserve+2,zone.clientHeight-visual-10);
    return {
      x:zone.offsetLeft+innerLeft+slot*cellW+(cellW-visual)/2,
      y,
-     angle:0,z:0
+     angle:0,z:0,scale
    };
  }
- return {x:20+slot*(size+8),y:(board?.clientHeight||400)-visual-18,angle:0,z:0};
+ return {x:20+slot*(baseSize+8),y:(board?.clientHeight||400)-baseSize-18,angle:0,z:0,scale:.82};
 }
 function arenaSafeSlots(seed=1,count=5){
  const board=q("diceArenaBoard");
@@ -3509,7 +3554,7 @@ function arenaAnimateHold(i,el,hold,onDone){
  const p=hold?arenaHeldPosition(i,previewHeld):(diceArenaPositions[i]||arenaSafeSlots(991+i,5)[i]||{x:80+i*60,y:120,angle:0});
  el.classList.add("moving-to-hold");
  el.style.left=p.x+"px";el.style.top=p.y+"px";
- el.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${p.angle||0}deg) scale(${hold?.92:1})`;
+ el.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${p.angle||0}deg) scale(${hold?(p.scale||.82):1})`;
  setTimeout(()=>{el.classList.remove("moving-to-hold");onDone?.()},300);
 }
 
@@ -3532,7 +3577,7 @@ function renderArenaDiceLayer(dice,held,branchValue,rollNumber=1,spectator=false
    const p=isHeld?arenaHeldPosition(i,held):(diceArenaPositions[i]||{x:30+i*75,y:120,angle:0,z:0});
    diceArenaPositions[i]={...p};
    d.style.left=p.x+"px";d.style.top=p.y+"px";
-   d.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${p.angle||0}deg) scale(${isHeld?.92:1})`;
+   d.style.transform=`perspective(520px) rotateX(0deg) rotateY(0deg) rotateZ(${p.angle||0}deg) scale(${isHeld?(p.scale||.82):1})`;
 
    if(!spectator){
      d.title=isHeld?"Gehalten – antippen zum Lösen":"Antippen zum Halten";
