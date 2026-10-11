@@ -25,6 +25,44 @@
 .online-guest-controls[hidden],.online-signed-controls[hidden],[data-online-import][hidden]{display:none!important}
 .online-reset-link{border:0!important;background:transparent!important;color:#2861b8!important;font-size:12px!important;font-weight:800!important;padding:8px 1px!important;text-align:left;text-decoration:underline;text-underline-offset:3px}.online-account button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:900px){.online-guest-controls{grid-template-columns:1fr}.online-email{align-items:stretch}.online-email input{min-width:0}}
+
+/* Keine lokalen Profile oder unvollständigen Online-Profile anzeigen. */
+body:not(.sp-account-ready) #profile-root{visibility:hidden}
+.custom-avatar-upload{display:block;border:1px dashed #88b9e9;background:#eaf5ff;padding:12px 9px;text-align:center;color:#2166ab;font-weight:800;font-size:12px;border-radius:12px;cursor:pointer;margin:12px 0 5px}
+.custom-avatar-upload input{display:none}
+.custom-avatar-upload:hover{background:#dcebfc}
+#profile-upload-status{min-height:2.5em}
+.online-account .online-guest-controls[hidden],.online-account .online-signed-controls[hidden]{display:none!important}
+.sp-index-menu [hidden]{display:none!important}
+
+/* V3: Konto-Bereich und kleinere Profil-Dialoge im gleichen freundlichen Profil-Design */
+.online-account{border-radius:21px!important;border-color:#e2ebf8!important;box-shadow:0 8px 24px #22598d12!important}
+.online-account .online-head h3{color:#173d70}
+.online-account .online-status{border:1px solid #dcecf7;background:#f0f8ff;color:#2674b0}
+.sp-modal{width:min(94vw,510px);min-width:0!important;max-height:92dvh;overflow:auto;border-radius:23px!important;border:1px solid #e4edf8;background:#fff;box-shadow:0 30px 85px #0b285064!important}
+.sp-modal::backdrop{background:#061b3dab!important;backdrop-filter:blur(8px)!important}
+.sp-modal .dialog-inner{padding:26px;background:linear-gradient(180deg,#f6faff,#fff 35%)}
+.sp-modal h2{font-size:25px;font-weight:950;color:#11376c;letter-spacing:-.65px}
+.sp-modal label{color:#2d5278}.sp-modal input{width:100%;min-height:49px;background:#f8fbff!important;border:1.5px solid #dbe8f8!important;color:#173b62;border-radius:12px!important}
+.sp-modal input:focus{border-color:#3999ed!important;box-shadow:0 0 0 4px #278fff17}
+.sp-modal .dialog-actions button{min-height:44px;border-radius:12px!important;padding:11px 17px;font-weight:900;background:#eaf3ff;color:#2b639e}
+.sp-modal .dialog-actions button.primary{color:#fff;background:linear-gradient(105deg,#168ce8,#366cea)!important;box-shadow:0 6px 17px #2879eb30}
+@media(max-width:610px){.sp-modal .dialog-inner{padding:20px}.sp-modal h2{font-size:22px}}
+
+
+/* Spielerprofil V4 — online account and editor premium styling */
+.online-account{position:relative;overflow:hidden;border-radius:24px!important;padding:20px 24px!important;background:radial-gradient(circle at 100% 0%,#e5f4ff 0%,transparent 35%),linear-gradient(145deg,#fff,#fafdff)!important;border:1px solid #dfeaf8!important;box-shadow:0 12px 32px #235d9719!important}
+.online-account:before{content:'';position:absolute;left:0;top:15px;bottom:15px;width:4px;border-radius:0 5px 5px 0;background:linear-gradient(#23b3e5,#2c6ee9)}
+.online-account .online-head h3{font-size:17px;letter-spacing:-.4px;color:#153e70!important}
+.online-account .online-status{border-radius:999px!important;background:linear-gradient(120deg,#e8f9f6,#eaf6ff)!important;border-color:#d1eadf!important;color:#1d8869!important;padding:7px 12px!important}
+.online-account .online-guest-controls button,.online-account .online-signed-controls button{min-height:44px;border-radius:13px!important;font-weight:900!important;transition:filter .15s ease,transform .15s ease}
+.online-account button:hover{filter:brightness(1.03);transform:translateY(-1px)}
+.sp-modal{border-radius:26px!important;border:1px solid #d7e8f8!important;box-shadow:0 35px 90px #06234a75!important}
+.sp-modal .dialog-inner{padding:30px!important;background:radial-gradient(circle at 95% -5%,#e5f4ff,transparent 45%),linear-gradient(180deg,#f8fcff,#fff 40%)!important}
+.sp-modal h2{font-size:26px!important;font-weight:1000!important;letter-spacing:-.8px!important;color:#12386c!important}
+.sp-modal input{border-radius:13px!important;background:#f7fbff!important}
+.sp-modal .dialog-actions button{border-radius:13px!important}
+@media(max-width:610px){.online-account{padding:16px!important}.sp-modal .dialog-inner{padding:20px!important}.sp-modal h2{font-size:22px!important}}
 </style>
 <script src="profile-config.js" defer></script>
 <script src="profile-auth.js" defer></script>
@@ -34,31 +72,22 @@
 <div class="layout" id="profile-root">
 <aside class="sidebar"><div class="logo">👑<br>SPIELE<span>PORTAL</span><small>GEMEINSAM SPIELEN</small></div><nav><a href="index.html">⌂ &nbsp; Startseite</a><a href="index.html">🎲 &nbsp; Spiele</a><a href="profile.html" class="selected">👤 &nbsp; Spielerprofile</a><a href="#stats">🏆 &nbsp; Erfolge</a><a href="#stats">📊 &nbsp; Statistiken</a></nav><div class="side-illustration">🎲<br><strong>Mehr spielen.<br>Mehr lachen.</strong></div></aside>
 <main class="content"><div class="profile-stage"><div class="stage-image"></div><a href="index.html" class="backlink">← Zur Spielauswahl</a><div class="top-profile"><span class="side-avatar" id="profile-side-avatar"></span><span id="profile-short-name"></span></div><div class="stage-title"><h1>Spielerprofil</h1><p>Dein Profil, deine Spiele, deine Erfolge.</p></div></div>
-<div class="stage-body"><section class="hero-profile surface"><div class="hero-avatar" id="profile-header-avatar"></div><div class="hero-title"><h2 id="profile-title-name">Spieler 1</h2><small>👑 Profil seit <span id="profile-created"></span></small><p>„Spielen macht das Leben bunter!“</p><div class="chips"><span class="chip">🎲 Brettspiel-Fan</span><span class="chip green">🌿 Gemeinsam spielen</span><span class="chip orange">⭐ Lieblingsspiel: <span id="favorite-game-name"></span></span></div></div><div class="hero-actions"><button class="bigbtn light" id="profile-switch">⇄ &nbsp; Profil wechseln</button><button class="bigbtn" id="profile-add">＋ &nbsp; Neues Profil erstellen</button></div></section>
+<div class="stage-body"><section class="hero-profile surface"><div class="hero-avatar" id="profile-header-avatar"></div><div class="hero-title"><h2 id="profile-title-name">Online-Spieler</h2><small>👑 Profil seit <span id="profile-created"></span></small><p>„Spielen macht das Leben bunter!“</p><div class="chips"><span class="chip">🎲 Brettspiel-Fan</span><span class="chip green">🌿 Gemeinsam spielen</span><span class="chip orange">⭐ Lieblingsspiel: <span id="favorite-game-name"></span></span></div></div><div class="hero-actions"><button class="bigbtn light" id="profile-switch">⇄ &nbsp; Abmelden / Konto wechseln</button></div></section>
 <section class="surface online-account" id="online-account-panel" aria-label="Online-Spielerkonto">
  <div class="online-head"><h3>☁️ Dein Online-Spielerkonto</h3><span class="online-status" data-online-status>⏳ Einrichtung prüfen</span></div>
  <p class="online-description" data-online-detail aria-live="polite">Die Anmeldung wird geladen.</p>
- <div class="online-guest-controls" data-online-guest>
-  <form class="online-email" data-online-email-form>
-   <input type="email" name="email" aria-label="E-Mail" autocomplete="email" placeholder="E-Mail-Adresse" required>
-   <input type="password" name="password" aria-label="Passwort" autocomplete="current-password" placeholder="Passwort (mind. 6 Zeichen)" minlength="6" required>
-   <button data-online-action="login" type="submit">Anmelden</button>
-   <button data-online-action="register" type="submit">Konto erstellen</button>
-  </form>
-  <button class="online-reset-link" type="button" data-online-action="reset">🔑 Passwort vergessen?</button>
- </div>
+ <div data-online-guest hidden><button type="button" data-online-action="login" class="bigbtn">Anmelden</button><button type="button" class="bigbtn" data-online-action="register">Neues Profil anlegen</button></div>
  <div class="online-signed-controls" data-online-signed hidden>
-  <button type="button" data-online-action="import" data-online-import hidden>📥 Lokales Profil einmalig übernehmen</button>
   <button type="button" data-online-action="retry">↻ Profil aktualisieren</button>
-  <button type="button" data-online-action="logout">Abmelden / Konto wechseln</button>
+  <button type="button" data-online-action="logout">⇄ Abmelden / Konto wechseln</button>
  </div>
 </section>
 <div class="row-top"><section class="surface panel"><h3><span class="ico">🎨</span> Lieblingsfarbe</h3><div class="muted">Wähle deine Lieblingsfarbe.</div><div class="color-options"><button class="color-dot" style="--c:#328cff" data-choice-color="#328cff" aria-label="Blau"></button><button class="color-dot" style="--c:#ff5268" data-choice-color="#ff5268" aria-label="Rot"></button><button class="color-dot" style="--c:#20b986" data-choice-color="#20b986" aria-label="Grün"></button><button class="color-dot" style="--c:#ffc741" data-choice-color="#ffc741" aria-label="Gelb"></button><button class="color-dot" style="--c:#9261ec" data-choice-color="#9261ec" aria-label="Lila"></button><button class="color-dot" style="--c:#f281af" data-choice-color="#f281af" aria-label="Rosa"></button></div></section>
 <section class="surface panel"><h3><span class="ico">🎮</span> Lieblingsspiel</h3><div class="muted">Welches Spiel spielst du am liebsten?</div><div class="games-choice"><button class="fav-tile" data-choice-game="skyjo"><span class="fav-art" style="background-image:url('Assets/game-backgrounds/skyjo.webp')"></span><b>SKYJO Action</b></button><button class="fav-tile" data-choice-game="kreuz"><span class="fav-art" style="background-image:url('Assets/game-backgrounds/kreuzkunter.webp')"></span><b>KreuzKunter</b></button><button class="fav-tile" data-choice-game="barikade"><span class="fav-art" style="background-image:url('Assets/game-backgrounds/barikade.webp')"></span><b>Barikade</b></button><button class="fav-tile" data-choice-game="business"><span class="fav-art" style="background-image:url('Assets/game-backgrounds/business.webp')"></span><b>Business</b></button></div></section>
-<section class="surface panel"><h3><span class="ico">🖼️</span> Profilbild</h3><div class="muted">Wähle dein Profilbild.</div><div class="avatars"><button data-choice-avatar="0" class="avatar-tile"></button><button data-choice-avatar="1" class="avatar-tile"></button><button data-choice-avatar="2" class="avatar-tile"></button><button data-choice-avatar="3" class="avatar-tile"></button><button data-choice-avatar="4" class="avatar-tile"></button><button data-choice-avatar="5" class="avatar-tile"></button><button data-choice-avatar="6" class="avatar-tile"></button><button data-choice-avatar="7" class="avatar-tile"></button></div></section></div>
-<div class="row-bottom" id="stats"><section class="surface panel"><h3><span class="ico">📊</span> Spielerstatistik</h3><div class="muted" id="profile-stat-caption">Deine Aktivität auf diesem Gerät</div><div class="stats"><div class="stat"><span class="emoji">🎮</span><b id="stat-launches">0</b><small>Spielaufrufe</small></div><div class="stat"><span class="emoji">🎲</span><b id="stat-games">0</b><small>Geöffnete Spiele</small></div><div class="stat"><span class="emoji">👥</span><b id="stat-profiles">0</b><small>Lokale Profile</small></div><div class="stat"><span class="emoji">🏅</span><b id="stat-achievements">0</b><small>Profil-Erfolge</small></div></div><div class="bottomnote">Siege und abgeschlossene Partien werden erst nach einer späteren sicheren Spielauswertung gezählt.</div></section>
+<section class="surface panel"><h3><span class="ico">🖼️</span> Profilbild</h3><div class="muted">Wähle dein Profilbild.</div><div class="avatars"><button data-choice-avatar="0" class="avatar-tile"></button><button data-choice-avatar="1" class="avatar-tile"></button><button data-choice-avatar="2" class="avatar-tile"></button><button data-choice-avatar="3" class="avatar-tile"></button><button data-choice-avatar="4" class="avatar-tile"></button><button data-choice-avatar="5" class="avatar-tile"></button><button data-choice-avatar="6" class="avatar-tile"></button><button data-choice-avatar="7" class="avatar-tile"></button></div><label class="custom-avatar-upload">📸 Eigenes Profilbild aus Galerie wählen<input type="file" id="profile-gallery-upload" accept="image/jpeg,image/png,image/webp"></label><p class="muted" id="profile-upload-status" aria-live="polite">JPG, PNG oder WebP · Bild wird automatisch verkleinert.</p></section></div>
+<div class="row-bottom" id="stats"><section class="surface panel"><h3><span class="ico">📊</span> Spielerstatistik</h3><div class="muted" id="profile-stat-caption">Verifizierte Statistiken folgen nach der Spielanbindung.</div><div class="stats"><div class="stat"><span class="emoji">🎮</span><b id="stat-launches">–</b><small>Bestätigte Partien</small></div><div class="stat"><span class="emoji">🎲</span><b id="stat-games">–</b><small>Gewonnene Spiele</small></div><div class="stat"><span class="emoji">👥</span><b id="stat-profiles">1</b><small>Online-Konto</small></div><div class="stat"><span class="emoji">🏅</span><b id="stat-achievements">–</b><small>Spiel-Erfolge</small></div></div><div class="bottomnote">Siege und abgeschlossene Partien werden erst nach einer späteren sicheren Spielauswertung gezählt.</div></section>
 <section class="surface panel"><h3><span class="ico">🏆</span> Erfolge</h3><div class="muted">Erreichte Profil-Meilensteine</div><div class="achievements" id="achievement-list"></div></section>
-<section class="surface panel"><h3><span class="ico">⚙️</span> Profil verwalten</h3><div class="muted">Bearbeite oder lösche dein lokales Profil.</div><div class="manage-list"><button id="profile-edit">✎ &nbsp; Profil bearbeiten</button><button id="profile-edit-top" onclick="document.getElementById('profile-switch').click()">⇄ &nbsp; Profile ansehen</button><button class="delete" id="profile-delete">🗑️ &nbsp; Profil löschen</button></div><p class="notice" id="profile-manage-note">🔒 Deine lokalen Profile bleiben auf diesem Gerät.</p></section></div></div></main></div>
+<section class="surface panel"><h3><span class="ico">⚙️</span> Profil verwalten</h3><div class="muted">Bearbeite dein persönliches Online-Profil.</div><div class="manage-list"><button id="profile-edit">✎ &nbsp; Profil bearbeiten</button><button id="profile-edit-top">⇄ &nbsp; Konto wechseln</button></div><p class="notice" id="profile-manage-note">🔐 Dein Profil wird online in Firebase gespeichert.</p></section></div></div></main></div>
 <dialog id="profile-dialog" class="sp-modal"><div class="dialog-inner"><h2 id="dialog-title"></h2><form id="dialog-form"><div id="dialog-content"></div><p class="error" id="dialog-error"></p><div class="dialog-actions"><button type="button" id="dialog-cancel">Abbrechen</button><button class="primary" type="submit">Speichern</button></div></form></div></dialog>
-<dialog id="switch-dialog" class="sp-modal"><div class="dialog-inner"><h2>👥 Profil auswählen</h2><p class="muted">Tippe auf ein Profil, um es zu aktivieren.</p><div id="profile-switch-list" class="switch-list"></div><div class="dialog-actions"><button id="switch-close" type="button">Schließen</button></div></div></dialog>
+
 </body></html>
