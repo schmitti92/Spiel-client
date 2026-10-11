@@ -1306,10 +1306,12 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
   if(NET!==my||my.stopped)return;
   let ws;try{ws=new WebSocket(my.url);}catch(e){setMsg('Server nicht erreichbar: '+e.message,true);scheduleReconnect(my);return;}
   my.ws=ws;
-  ws.onopen=()=>{
+  ws.onopen=async()=>{
    if(NET!==my||my.stopped){ws.close();return;}
    my.connected=false;my.attempt=0;my.waitingError='';clearOnlineWait(my);updateOnlineWaiting();remotePreviews={};
-   ws.send(JSON.stringify({action:op,name:my.name,code:my.code,token:op==='join'?my.token:null,boardId:BOARD_ID}));
+   const profileIdToken=await (window.SpielMatchIdentity?.getToken?.()||Promise.resolve(null));
+   if(ws.readyState!==WebSocket.OPEN||NET!==my||my.stopped)return;
+   ws.send(JSON.stringify({action:op,name:my.name,code:my.code,token:op==='join'?my.token:null,boardId:BOARD_ID,profileIdToken}));
   };
   ws.onmessage=e=>{
    if(NET!==my||my.stopped||my.ws!==ws)return;
@@ -1658,6 +1660,9 @@ function kkReturnToHub(){
   return true;
 }
 </script>
+<script src="../profile-config.js" defer></script>
+<script src="../profile-auth.js?v=profile-v7" defer></script>
+<script src="../profile-match.js?v=profile-v8" defer></script>
 <script src="../profile-core.js" defer></script>
 </body>
 </html>
