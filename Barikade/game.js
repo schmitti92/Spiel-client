@@ -3362,7 +3362,8 @@ if(actionEffectsState){
 try{ ws = new WebSocket(SERVER_URL); }
     catch(_e){ setNetStatus("WebSocket nicht möglich", false); scheduleReconnect(); return; }
 
-    ws.onopen = () => {
+    ws.onopen = async () => {
+      const joinSocket=ws;
       _bossBaselineNextSnapshot = true;
       stopReconnect();
       _lastNetMsgAt = Date.now();
@@ -3388,8 +3389,11 @@ try{ ws = new WebSocket(SERVER_URL); }
 
       const sessionToken = getSessionToken();
       const savedName = (()=>{ try{ return (localStorage.getItem('barikade_playerName')||'').trim(); }catch(_e){ return ''; } })();
+      const profileIdToken = await (window.SpielMatchIdentity?.getToken?.() || Promise.resolve(null));
+      if(ws!==joinSocket||joinSocket.readyState!==WebSocket.OPEN)return;
       wsSend({
         type: "join",
+        profileIdToken,
         room: roomCode,
         name: savedName || (netMode === "host" ? "Host" : "Client"),
         asHost: (netMode === "host"),
