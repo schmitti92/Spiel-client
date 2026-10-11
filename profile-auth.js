@@ -1,4 +1,4 @@
-/* Spielerportal 2.0: E-Mail/Passwort, geführtes Online-Onboarding und sichere Cloud-Profile.
+/* Spielerportal 2.0 V7: E-Mail/Passwort, geführtes Online-Onboarding und sichere Cloud-Profile.
  * Keine lokalen Pseudo-Konten und keine clientseitig buchbaren Siege/XP.
  */
 (function(){
@@ -41,7 +41,11 @@ async function refresh(){
   return p;
  }catch(e){if(g!==generation)return null;setStatus('error',humanError(e));throw e;}
 }
-function prefs(p){return {name:p.name,color:p.color,favorite:p.favorite||'skyjo',avatar:p.avatar,avatarImage:p.avatarImage??null,edited:!!p.edited};}
+function prefs(p){
+ const result={name:p.name,color:p.color,favorite:p.favorite||'skyjo',avatar:p.avatar,avatarImage:p.avatarImage??null,edited:!!p.edited};
+ for(const key of ['bio','banner','bannerImage','publicStats'])if(Object.prototype.hasOwnProperty.call(p,key))result[key]=p[key];
+ return result;
+}
 function saveProfile(updated){
  if(current.status!=='online'||!current.user||!current.profile)return Promise.reject(Error('Online-Profil nicht bereit'));
  const uid=current.user.uid, payload=prefs(updated);
