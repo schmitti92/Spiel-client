@@ -2148,6 +2148,395 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
 /* === Ende V11 UI Feinschliff === */
 
 </style>
+<style id="business-v12-reference-css">
+/* V12 / Layout nach der Referenz 1536 × 864 – bewusst nur Design, keine Spielregeländerung. */
+#game:not(.hidden){
+  grid-template-columns:clamp(245px,19vw,295px) minmax(0,1fr) clamp(230px,17.5vw,270px)!important;
+  grid-template-rows:54px minmax(250px,32.1vh) minmax(170px,1fr) 194px!important;
+  gap:8px!important;padding:8px!important;
+  background:radial-gradient(ellipse at 78% 78%,rgba(166,100,38,.18),transparent 34%),linear-gradient(180deg,#061423,#092039 44%,#101c26 100%)!important;
+}
+#game>.topbar{grid-area:1/1/2/4!important;z-index:5!important;min-width:0!important;display:flex!important;gap:12px!important;border-radius:16px!important;background:linear-gradient(180deg,#132a42,#071725)!important;border:1px solid #aa7628!important;box-shadow:0 0 0 1px rgba(243,192,85,.22),0 8px 24px #0008!important;}
+#game .title-mini{font-size:clamp(17px,1.65vw,24px)!important;color:#ffe4a0!important;white-space:nowrap!important;}
+#game .turn-pill{color:#172033!important;background:linear-gradient(#ffe7a0,#d6a348)!important;border:1px solid #fff0bb!important;padding:7px 15px!important;}
+#game .players-panel{grid-area:2/1/3/2!important;min-height:0!important;overflow:auto!important;z-index:2!important;}
+#game .score-log-panel{grid-area:3/1/5/2!important;min-height:0!important;overflow:auto!important;z-index:2!important;}
+#game .market-board-strip{grid-area:2/2/3/3!important;min-width:0!important;min-height:0!important;z-index:3!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;gap:4px!important;margin:0!important;padding:8px 12px 10px!important;border:1.5px solid #d5a449!important;border-radius:18px!important;overflow:hidden!important;background:linear-gradient(150deg,#10263b 5%,#163d45 60%,#0d2436 100%)!important;}
+#game .market-board-strip::before{inset:4px!important;border:1px solid rgba(241,202,106,.16)!important;}
+#game .market-board-header{z-index:4!important;min-height:38px!important;display:flex!important;align-items:center!important;padding:0 4px!important;gap:8px!important;}
+#game .market-board-brand{display:flex!important;align-items:center!important;gap:11px!important;}
+#game .market-mode-chip{display:none!important;}
+#game .market-board-kicker{font:900 18px Georgia,serif!important;color:#ffe4a0!important;letter-spacing:0!important;text-transform:uppercase!important;}
+#game .market-board-title{font:800 12px Georgia,serif!important;color:#e9eef2!important;white-space:normal!important;margin-top:3px!important;}
+#game .market-board-help{font:800 9px Arial,sans-serif!important;padding:7px 10px!important;border-radius:999px!important;background:rgba(10,26,40,.67)!important;border:1px solid rgba(238,203,113,.2)!important;color:#e9d9b9!important;}
+#game .market-board-felt{position:relative!important;min-height:0!important;height:100%!important;padding:6px!important;border:0!important;border-radius:13px!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;}
+#game .market-board-label{display:none!important;}
+#game .market-board-felt #boardMarket.board-market-overlay{position:relative!important;inset:auto!important;width:100%!important;height:100%!important;min-height:0!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important;align-items:stretch!important;padding:0!important;margin:0!important;overflow:visible!important;pointer-events:auto!important;}
+#game .market-board-felt .market-slot{position:relative!important;inset:auto!important;min-width:0!important;min-height:0!important;height:100%!important;padding:0!important;display:flex!important;align-items:stretch!important;justify-content:stretch!important;}
+#game .market-board-felt .market-slot .invest-card{position:relative!important;display:block!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;overflow:hidden!important;border:4px solid #f1ca66!important;border-radius:17px!important;background:linear-gradient(#cfaa51,#ffe7a1)!important;box-shadow:0 3px 0 #85571f,0 0 0 2px rgba(250,226,155,.33),0 12px 18px #0008!important;cursor:pointer!important;transform:none!important;}
+#game .market-board-felt .market-slot .invest-card:hover{transform:translateY(-3px)!important;}
+#game .market-board-felt .market-slot .invest-card.market-selected{transform:translateY(-4px)!important;filter:grayscale(.22)!important;}
+#game .market-board-felt .market-slot .invest-card .card-shell{position:absolute!important;inset:0!important;display:block!important;grid-template-rows:none!important;overflow:hidden!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-photo{position:absolute!important;inset:0 0 30% 0!important;width:100%!important;height:70%!important;min-height:0!important;background-size:cover!important;background-position:center!important;filter:saturate(1.08)!important;z-index:1!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-photo::after{content:""!important;position:absolute!important;inset:35% 0 0 0!important;background:linear-gradient(transparent,rgba(3,12,20,.63))!important;z-index:1!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-body{position:absolute!important;inset:auto 0 30% 0!important;width:100%!important;height:auto!important;min-height:0!important;z-index:3!important;padding:9px 8px 4px!important;background:linear-gradient(transparent,rgba(4,14,23,.65))!important;gap:0!important;border:0!important;pointer-events:none!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-company{color:white!important;font:900 clamp(13px,1.3vw,18px) Georgia,serif!important;text-shadow:0 2px 4px #001e!important;min-height:0!important;white-space:normal!important;overflow:visible!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-desc{display:none!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-type{position:absolute!important;z-index:6!important;top:7px!important;left:6px!important;font:900 8px Arial,sans-serif!important;padding:5px 7px!important;border-radius:999px!important;color:#fff!important;background:rgba(7,56,69,.85)!important;border:1px solid rgba(255,255,255,.32)!important;box-shadow:none!important;}
+#game .market-board-felt .market-slot .invest-card .certificate-seal{display:none!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-branch,#game .market-board-felt .market-slot .invest-card .real-card-bigicon,#game .market-board-felt .market-slot .invest-card .card-art-badge{display:none!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-price,#game .market-board-felt .market-slot .invest-card .real-card-yield{position:absolute!important;top:auto!important;bottom:-37%!important;height:31%!important;z-index:8!important;border-radius:6px!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;font:900 clamp(13px,1.2vw,18px) Arial,sans-serif!important;min-width:0!important;max-width:none!important;padding:1px!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-price{left:2%!important;right:auto!important;width:50%!important;color:#50300e!important;background:linear-gradient(#fff8dc,#f1d398)!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-yield{left:52%!important;right:2%!important;width:46%!important;color:#145e3a!important;background:linear-gradient(#defce5,#80d5a5)!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-yield small{font:900 8px Arial,sans-serif!important;color:#276448!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-yield b{font-size:clamp(13px,1.3vw,19px)!important;}
+#game .market-board-felt .market-slot .market-status{z-index:11!important;font:900 8px Arial,sans-serif!important;}
+#game .market-board-felt .market-slot .card-info{z-index:12!important;}
+#game .control-panel{grid-area:2/3/3/4!important;z-index:4!important;min-height:0!important;margin:0!important;padding:10px 13px!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border-radius:17px!important;border:1.5px solid #d5a34e!important;background:linear-gradient(180deg,#153d54,#071c2c)!important;box-shadow:inset 0 1px 0 #fff1,0 7px 17px #0007!important;}
+#game .control-panel .dice-title{font:900 17px Georgia,serif!important;color:#ffe5a5!important;text-align:left!important;}
+#game .control-panel .phase-stepper{margin:12px 0!important;}
+#game .control-panel .phase-step{font:800 9px Arial,sans-serif!important;padding:7px 3px!important;}
+#game .control-panel .dice-toolbar{margin:3px 0!important;}
+#game .control-panel .compact-controls{margin-top:auto!important;display:grid!important;grid-template-columns:1fr!important;gap:8px!important;}
+#game .control-panel .compact-controls button{font:900 11px Arial,sans-serif!important;padding:12px 7px!important;}
+#game .control-panel .compact-controls .roll-btn{background:linear-gradient(#60b872,#16834f)!important;color:white!important;text-shadow:0 1px 2px #064!important;}
+#game .control-panel .compact-controls .end-btn{background:linear-gradient(#28536a,#102a40)!important;color:#e9f1f7!important;}
+#game .control-panel .compact-result{font-size:9px!important;line-height:1.3!important;}
+#game .business-reference-stage{grid-area:3/2/4/4!important;position:relative!important;display:grid!important;grid-template-columns:minmax(0,74%) minmax(0,26%)!important;min-height:0!important;min-width:0!important;border-radius:20px!important;overflow:hidden!important;z-index:1!important;background:repeating-linear-gradient(8deg,#5d3921 0 11px,#623c22 11px 16px,#55331e 16px 22px)!important;box-shadow:0 15px 25px #0009!important;}
+#game .business-reference-table{position:relative!important;z-index:2!important;display:grid!important;grid-template-rows:24px minmax(0,1fr)!important;margin:8px -1px 3px 15px!important;padding:8px!important;min-height:0!important;overflow:hidden!important;border:11px solid #6b3c20!important;border-radius:26px!important;background:linear-gradient(130deg,#bf8850,#57321b)!important;box-shadow:0 0 0 2px #dbad68,0 0 0 5px #523019,0 12px 25px #0008,inset 0 2px 0 #e5bd7a!important;}
+#game .business-reference-table-head{position:relative!important;z-index:3!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#ffe5a0!important;font:900 12px Georgia,serif!important;letter-spacing:.04em!important;text-shadow:0 2px 2px #000!important;}
+#game .business-reference-roll{position:absolute!important;right:2px!important;top:0!important;border:1px solid #ba8d35!important;background:#092a24!important;color:#ffebb7!important;font:800 9px Arial,sans-serif!important;padding:3px 7px!important;border-radius:8px!important;cursor:pointer!important;}
+#game .business-reference-roll:disabled{opacity:.45!important;cursor:default!important;}
+#game .business-reference-table-felt{position:relative!important;min-width:0!important;min-height:0!important;border-radius:12px!important;overflow:hidden!important;background:radial-gradient(ellipse at 45% 40%,rgba(255,255,255,.10),transparent 52%),linear-gradient(130deg,#2a8056,#125138 68%,#0b3425)!important;box-shadow:inset 0 0 25px #001c14a6,inset 0 0 0 1px rgba(244,223,147,.28)!important;}
+#game .business-reference-dice{position:absolute!important;inset:0 0 28% 0!important;display:flex!important;align-items:center!important;justify-content:space-evenly!important;gap:5px!important;padding:9px 24px!important;pointer-events:none!important;}
+#game .business-reference-dice .business-board-die{position:relative!important;flex:0 0 auto!important;width:clamp(36px,4.1vw,60px)!important;height:clamp(36px,4.1vw,60px)!important;border-radius:13px!important;background:linear-gradient(145deg,#fffefa,#eeebdf)!important;border:1px solid #ded6c2!important;box-shadow:inset 2px 2px 2px #fff, inset -5px -7px 5px #b9b3a5,5px 8px 8px #0006!important;transform:rotate(var(--die-angle,0deg))!important;}
+#game .business-reference-dice .business-board-die .play-pip,#game .business-reference-hold .business-board-die .play-pip{background:#111c24!important;width:15%!important;height:15%!important;}
+#game .business-reference-hold{position:absolute!important;z-index:3!important;inset:auto 4% 3% 4%!important;height:28%!important;padding:7px 9px!important;background:rgba(3,26,17,.85)!important;border:1.5px solid #c8a14a!important;border-radius:12px!important;}
+#game .business-reference-hold-label{color:#ffe2a0!important;font:900 10px Georgia,serif!important;letter-spacing:.045em!important;}
+#game .business-reference-hold-cells{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:7px!important;height:calc(100% - 14px)!important;margin-top:4px!important;}
+#game .business-reference-held-cell{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;min-width:0!important;border:1px dashed rgba(237,203,119,.3)!important;border-radius:10px!important;background:rgba(0,0,0,.14)!important;}
+#game .business-reference-held-cell .business-board-die{position:relative!important;width:min(41px,70%)!important;aspect-ratio:1!important;background:#f7f4e9!important;border-radius:9px!important;box-shadow:inset -4px -5px 5px #9997,2px 3px 5px #0006!important;}
+#game .business-reference-desk{min-width:0!important;background:linear-gradient(90deg,#6f431e1a,transparent 25%),url('business-assets/business-desk-detail.webp') center/cover no-repeat!important;filter:saturate(.95)!important;}
+#game .depot-panel.portfolio-panel{grid-area:4/2/5/4!important;z-index:4!important;min-width:0!important;min-height:0!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;padding:9px 11px!important;margin:0!important;border-radius:17px!important;border:1.5px solid #c69a49!important;background:linear-gradient(180deg,#16455f,#0b2a41 32%,#071c2d)!important;box-shadow:0 10px 20px #0007,inset 0 1px 0 #fff2!important;}
+#game .portfolio-head{min-height:37px!important;padding:0 8px 6px!important;}
+#game .portfolio-head .depot-title{font:900 17px Georgia,serif!important;color:#ffe6a9!important;}
+#game .depot-list.portfolio-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:9px!important;min-height:0!important;overflow:auto!important;}
+#game .portfolio-branch{background:linear-gradient(#19435c,#0a2941)!important;border:1px solid rgba(209,180,114,.23)!important;border-radius:12px!important;}
+#game .portfolio-branch-head{min-height:29px!important;padding:4px 6px!important;}
+#game .portfolio-branch-title{font-size:10px!important;color:#f6de9d!important;}
+#game .portfolio-card-wrap{min-height:0!important;overflow:auto!important;padding:4px!important;}
+#game .depot-fan.portfolio-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;}
+#game .depot-fan-card.portfolio-card{height:106px!important;min-height:106px!important;}
+#game .portfolio-empty-slot{min-height:75px!important;}
+#game .players-panel,#game .score-log-panel{border:1.5px solid #b78a40!important;border-radius:17px!important;background:linear-gradient(#153b53,#09233a)!important;}
+#game .players-panel .panel-title{font:900 18px Georgia,serif!important;text-align:left!important;color:#ffe5a0!important;margin:0 0 10px!important;}
+#game .player-card{position:relative!important;min-height:88px!important;display:grid!important;grid-template-columns:42px 1fr!important;grid-template-rows:auto auto auto auto!important;gap:0 8px!important;padding:10px!important;border:1px solid #496c7b!important;border-radius:14px!important;background:linear-gradient(180deg,#14374f,#0a293d)!important;}
+#game .player-card.active{border:2px solid #f6ca60!important;box-shadow:0 0 0 2px #e5ad3a55,0 0 16px #f3bb4677!important;}
+#game .player-avatar{grid-row:1/5!important;grid-column:1!important;width:40px!important;height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important;border:2px solid #f5d47b!important;border-radius:100%!important;background:radial-gradient(#2e7297,#0b263e)!important;color:#ffe8aa!important;font:900 21px Georgia,serif!important;}
+#game .player-card .pname,#game .player-card .money,#game .player-card .holdings,#game .player-card .player-statline{grid-column:2!important;}
+#game .player-card .pname{font:900 15px Georgia,serif!important;}
+#game .player-card .money{font:900 18px Georgia,serif!important;}
+#game .score-dock{height:100%!important;}
+@media(max-width:1180px){
+ #game:not(.hidden){grid-template-columns:220px minmax(0,1fr) 224px!important;grid-template-rows:48px minmax(240px,34vh) minmax(180px,1fr) 170px!important;gap:6px!important;padding:6px!important;}
+ #game .market-board-header{min-height:30px!important;}
+ #game .market-board-kicker{font-size:14px!important;}
+ #game .market-board-title{font-size:9px!important;}
+ #game .market-board-help{display:none!important;}
+ #game .market-board-felt #boardMarket.board-market-overlay{gap:5px!important;}
+ #game .market-board-felt .market-slot .invest-card{border-width:2px!important;border-radius:10px!important;}
+ #game .market-board-felt .real-card-company{font-size:11px!important;}
+ #game .business-reference-desk{background-position:40% center!important;}
+ #game .business-reference-table{margin-left:7px!important;border-width:8px!important;}
+ #game .depot-fan-card.portfolio-card{height:89px!important;min-height:89px!important;}
+}
+@media(max-width:850px) and (orientation:landscape){
+ html,body{overflow:auto!important;}
+ #game:not(.hidden){position:relative!important;inset:auto!important;min-width:730px!important;min-height:710px!important;height:auto!important;grid-template-columns:150px minmax(0,1fr) 160px!important;grid-template-rows:46px 250px 245px 145px!important;overflow:hidden!important;}
+ #game .top-actions{gap:3px!important;}
+ #game .title-mini{font-size:13px!important;}
+ #game .turn-pill{padding:4px 6px!important;font-size:9px!important;}
+ #game .market-board-kicker{font-size:11px!important;}
+ #game .market-board-title{display:none!important;}
+ #game .market-board-strip{padding:6px!important;}
+ #game .market-board-felt #boardMarket.board-market-overlay{gap:3px!important;}
+ #game .market-board-felt .market-slot .invest-card .real-card-type{font-size:5px!important;}
+ #game .market-board-felt .real-card-company{font-size:8.5px!important;}
+ #game .control-panel{padding:6px!important;}
+ #game .control-panel .dice-title{font-size:11px!important;}
+ #game .business-reference-desk{display:none!important;}
+ #game .business-reference-stage{grid-template-columns:1fr!important;}
+ #game .depot-list.portfolio-grid{gap:3px!important;}
+ #game .depot-fan-card.portfolio-card{height:76px!important;min-height:76px!important;}
+}
+
+/* V12.1 – Ergebnisse der visuellen Zwischenprüfung: Preise frei legen und Depot höher ziehen. */
+#game .market-board-felt .market-slot .invest-card .real-card-photo{overflow:visible!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-photo::after{pointer-events:none!important;}
+#game .portfolio-head{height:43px!important;min-height:43px!important;max-height:43px!important;overflow:hidden!important;align-items:center!important;}
+#game .depot-list.portfolio-grid{min-height:0!important;height:100%!important;align-items:stretch!important;}
+#game .portfolio-branch{min-height:0!important;height:100%!important;grid-template-rows:34px minmax(0,1fr)!important;}
+#game .portfolio-branch-head{min-height:34px!important;max-height:34px!important;padding:3px 6px!important;}
+#game .portfolio-card-wrap{min-height:0!important;height:100%!important;overflow:auto!important;}
+#game .depot-fan.portfolio-card-grid{min-height:0!important;margin:0!important;padding:0!important;align-content:start!important;}
+#game .depot-fan-card.portfolio-card{height:92px!important;min-height:92px!important;}
+#game .business-reference-hold{height:34%!important;}
+#game .business-reference-hold-cells{height:calc(100% - 12px)!important;}
+#game .business-reference-held-cell .business-board-die{width:min(44px,78%)!important;}
+#game .score-log-panel .payout-row{min-height:45px!important;padding:7px 7px!important;}
+#game .score-log-panel .payout-name{font-size:11px!important;}
+#game .score-log-panel .payout-value{font-size:13px!important;}
+#game .score-log-panel .dice-strip{gap:3px!important;}
+#game .score-log-panel .rule-die{width:19px!important;height:19px!important;}
+#game .score-log-panel .panel-tab{min-height:28px!important;font-size:10px!important;}
+@media(max-width:1180px){#game .depot-fan-card.portfolio-card{height:83px!important;min-height:83px!important;}#game .score-log-panel .payout-row{min-height:37px!important;}#game .score-log-panel .rule-die{width:16px!important;height:16px!important;}}
+
+
+/* V12.2 – finale Karten-/Portfolio-Ausrichtung nach 2. Browservergleich. */
+#game .depot-panel.portfolio-panel{grid-template-rows:42px minmax(0,1fr)!important;}
+#game .portfolio-head{min-height:42px!important;max-height:42px!important;height:42px!important;padding:0 8px!important;}
+#game .portfolio-branch{padding:2px!important;grid-template-rows:29px minmax(0,1fr)!important;}
+#game .portfolio-branch-head{min-height:29px!important;max-height:29px!important;height:29px!important;padding:3px 4px!important;display:flex!important;align-items:center!important;gap:3px!important;}
+#game .portfolio-branch-head .portfolio-branch-title{font-size:9px!important;flex:1!important;min-width:0!important;}
+#game .portfolio-branch-head .portfolio-branch-payout{font-size:8px!important;flex:none!important;}
+#game .portfolio-card-wrap{padding:3px!important;overflow:auto!important;}
+#game .depot-fan.portfolio-card-grid:has(> :only-child){grid-template-columns:1fr!important;}
+#game .depot-fan-card.portfolio-card{height:97px!important;min-height:97px!important;}
+#game .market-board-brand>div:last-child{display:flex!important;align-items:baseline!important;flex-wrap:wrap!important;gap:7px 13px!important;}
+#game .market-board-felt .card-info{top:7px!important;right:5px!important;left:auto!important;bottom:auto!important;width:17px!important;height:17px!important;font-size:9px!important;z-index:12!important;}
+@media(max-width:1180px){#game .depot-fan-card.portfolio-card{height:88px!important;min-height:88px!important;}#game .market-board-felt .card-info{top:5px!important;right:3px!important;}}
+
+
+/* V12.3 – lesbare Portfoliokarten wie im Referenzbild. */
+#game .depot-fan-card.portfolio-card .card-shell{display:block!important;position:absolute!important;inset:0!important;overflow:hidden!important;}
+#game .depot-fan-card.portfolio-card .real-card-photo{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;background-size:cover!important;background-position:center!important;overflow:hidden!important;}
+#game .depot-fan-card.portfolio-card .real-card-photo::after{content:""!important;position:absolute!important;inset:43% 0 0!important;background:linear-gradient(transparent,#041423cb)!important;pointer-events:none!important;}
+#game .depot-fan-card.portfolio-card .real-card-body{display:flex!important;position:absolute!important;inset:auto 0 0 0!important;width:100%!important;height:34px!important;min-height:0!important;padding:6px 7px!important;gap:0!important;z-index:4!important;align-items:flex-end!important;justify-content:flex-start!important;background:linear-gradient(transparent,#041423d9)!important;}
+#game .depot-fan-card.portfolio-card .real-card-company{font:900 12px Georgia,serif!important;color:white!important;text-shadow:0 1px 3px #000!important;min-height:0!important;max-width:63%!important;white-space:nowrap!important;}
+#game .depot-fan-card.portfolio-card .real-card-desc{display:none!important;}
+#game .depot-fan-card.portfolio-card .real-card-yield{position:absolute!important;left:auto!important;right:5px!important;bottom:5px!important;top:auto!important;z-index:7!important;width:auto!important;height:25px!important;padding:2px 6px!important;border-radius:10px!important;background:linear-gradient(#e2fff2,#86dcb1)!important;color:#205c42!important;font:900 11px Arial,sans-serif!important;}
+#game .depot-fan-card.portfolio-card .real-card-yield small{display:none!important;}
+#game .depot-fan-card.portfolio-card .real-card-price{display:none!important;}
+#game .depot-fan-card.portfolio-card .real-card-branch,#game .depot-fan-card.portfolio-card .real-card-bigicon,#game .depot-fan-card.portfolio-card .card-art-badge{display:none!important;}
+#game .depot-fan-card.portfolio-card .real-card-type{font-size:8px!important;padding:3px 6px!important;top:4px!important;right:5px!important;left:auto!important;z-index:9!important;}
+#game .depot-fan-card.portfolio-card .card-info{display:none!important;}
+
+
+/* Kurze Querformat-Displays dürfen vertikal scrollen statt Inhalte abzuschneiden. */
+@media(max-width:850px) and (orientation:landscape){
+ html,body{height:auto!important;min-height:780px!important;overflow-x:hidden!important;overflow-y:auto!important;}
+ #game:not(.hidden){position:relative!important;inset:auto!important;width:100%!important;min-width:730px!important;height:780px!important;min-height:780px!important;overflow:visible!important;grid-template-rows:46px 250px 260px 198px!important;}
+ #game .score-log-panel,#game .depot-panel{overflow:auto!important;}
+}
+
+/* End of V12 design layer */
+</style>
+
+<style id="business-v13-precision-css">
+/* V13 / Bildvorlage: Ergänzung nach Sichtprüfung. Keine Änderungen an Würfel-, Kauf- oder Netzwerkregeln. */
+:root{--v13-gold:#e0b457;--v13-blue:#0c2b42;--v13-gold-light:#ffe0a0;}
+#game:not(.hidden){
+  grid-template-rows:54px minmax(252px,32.35vh) minmax(166px,1fr) 205px!important;
+  background:radial-gradient(ellipse at 70% 71%,#9963351c,transparent 49%),linear-gradient(180deg,#091a2b,#092032 47%,#101c28 100%)!important;
+}
+#game .topbar{background:linear-gradient(180deg,#203c50 0%,#0a1b2c 65%,#0a1a29)!important;border-color:#e0b35a!important;box-shadow:0 2px 0 #6e4221,0 8px 18px #0009!important;}
+#game .title-mini{color:#ffe3a1!important;text-shadow:0 1px 2px #0008!important;letter-spacing:.008em!important;}
+#game .market-board-strip{background:linear-gradient(145deg,#102b3d,#10384a 60%,#092337)!important;border-color:#c99b42!important;box-shadow:0 0 0 3px rgba(4,19,30,.65),0 12px 25px #0009,inset 0 1px 0 #f3d39338!important;}
+#game .market-board-header{min-height:39px!important;}
+#game .market-board-kicker{font-size:19px!important;text-shadow:0 1px 2px #000!important;}
+#game .market-board-title{font-size:12px!important;}
+#game .market-board-felt #boardMarket.board-market-overlay{gap:8px!important;}
+#game .market-board-felt .market-slot .invest-card{border:4px solid #f0ca6e!important;border-radius:16px!important;box-shadow:0 0 0 2px #81561f,0 7px 0 #8f5d25,0 13px 22px #0008!important;}
+#game .market-board-felt .market-slot .invest-card.market-selected{border-color:#f7e3a5!important;filter:brightness(1.08) saturate(.9)!important;box-shadow:0 0 0 3px #fff0b770,0 6px 0 #875c28,0 12px 24px #0009!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-photo{inset:0 0 27% 0!important;height:73%!important;background-position:center center!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-photo::after{inset:30% 0 0!important;background:linear-gradient(transparent 12%,rgba(4,14,19,.12) 38%,rgba(2,12,18,.72) 100%)!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-body{inset:auto 0 27% 0!important;padding:8px 8px 4px!important;background:linear-gradient(transparent,rgba(0,10,17,.45))!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-company{font-size:clamp(14px,1.23vw,19px)!important;line-height:1.02!important;min-height:0!important;text-wrap:balance!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-type{z-index:9!important;top:7px!important;left:6px!important;padding:5px 7px!important;border-radius:10px!important;font-size:8px!important;background:rgba(13,76,87,.86)!important;}
+#game .market-board-felt .market-slot .invest-card .card-info{z-index:15!important;}
+/* Preise / Ertrag / Einkaufsymbol wie bei der Bildvorlage getrennt. */
+#game .market-board-felt .market-slot .invest-card .real-card-price{
+  left:2%!important;right:auto!important;bottom:-33.6%!important;width:43.5%!important;height:31.8%!important;
+  border-radius:9px!important;padding:0 2px!important;color:#492e12!important;
+  background:linear-gradient(#fff9e9,#f3dba7)!important;font-size:clamp(14px,1.25vw,19px)!important;
+}
+#game .market-board-felt .market-slot .invest-card .real-card-yield{
+  left:46.5%!important;right:auto!important;bottom:-33.6%!important;width:30%!important;height:31.8%!important;
+  border-radius:8px!important;padding:1px!important;color:#145e3a!important;
+  background:linear-gradient(#e1fff0,#9de1b7)!important;font-size:clamp(12px,1.02vw,15px)!important;
+}
+#game .market-board-felt .market-slot .invest-card .real-card-yield small{font-size:clamp(6px,.53vw,8px)!important;line-height:1!important;}
+#game .market-board-felt .market-slot .invest-card .real-card-yield b{font-size:clamp(12px,1.06vw,16px)!important;}
+#game .v13-cart-badge{position:absolute;right:2.4%;bottom:4%;height:22%;width:19%;z-index:10;pointer-events:none;display:grid;place-items:center;border:1px solid #a77730;border-radius:10px;background:linear-gradient(145deg,#fff2b9,#d9a543);color:#382506;box-shadow:0 2px 0 #906321,0 4px 9px #0007;font:900 clamp(16px,1.55vw,25px) Arial,sans-serif;}
+#game .market-slot .invest-card.disabled .v13-cart-badge{filter:grayscale(.7);opacity:.65;}
+#game .market-slot .market-status.select-status{z-index:20!important;}
+/* Punktetafel im selben dunklen Blau wie in der Vorlage. */
+#game .score-log-panel{background:linear-gradient(180deg,#163d55,#09243b)!important;border:1.5px solid #c9a054!important;box-shadow:inset 0 1px 0 #ffe3b724,0 7px 18px #0007!important;}
+#game .score-log-panel .score-dock,#game .score-log-panel #scoreDock{background:transparent!important;}
+#game .score-log-panel .payout-row,#game .score-log-panel .score-row,#game .score-log-panel .payout-table-row{background:linear-gradient(180deg,#1a425a,#0e3048)!important;border-color:#6d8d9b36!important;color:#f2e8d3!important;}
+#game .score-log-panel .payout-row:nth-child(even),#game .score-log-panel .score-row:nth-child(even){background:linear-gradient(180deg,#17394f,#0e2a40)!important;}
+#game .score-log-panel .payout-name,#game .score-log-panel .payout-value,#game .score-log-panel .score-label{color:#f3e6ce!important;}
+#game .score-log-panel .payout-value{color:#ffe29e!important;font-weight:900!important;}
+#game .score-log-panel .panel-tab.active{background:linear-gradient(#fbe3a2,#cb983f)!important;color:#182a37!important;}
+#game .players-panel{background:linear-gradient(180deg,#16415b,#0a273e)!important;}
+#game .player-card{padding:9px 10px!important;min-height:100px!important;box-shadow:inset 0 1px 0 #ffffff12!important;}
+#game .player-card .money{color:#ffe19a!important;font-size:19px!important;}
+#game .player-card .pname{color:#fff0d2!important;}
+/* Neutrale Standard-Avatare als Gestaltung. Keine Behauptung über Firebase-Profilbilder. */
+#game .player-avatar{font-size:0!important;background-image:url('../profile-avatars.webp')!important;background-size:400% 200%!important;background-position:100% 0!important;background-color:#cde6f1!important;overflow:hidden!important;width:47px!important;height:47px!important;border-color:#f1cb79!important;box-shadow:0 3px 9px #0008!important;}
+#game .player-card:nth-child(2) .player-avatar{background-position:33.333% 0!important;}
+#game .player-card:nth-child(3) .player-avatar{background-position:66.666% 0!important;}
+#game .player-card:nth-child(4) .player-avatar{background-position:0 100%!important;}
+#game .player-card:nth-child(5) .player-avatar{background-position:66.666% 100%!important;}
+/* Würfelfeld / Haltezone: Holz, Grünton, echter ruhiger Kontrast. */
+#game .business-reference-stage{background:linear-gradient(90deg,#55301d99,#583a2877),url('business-assets/business-desk-detail.webp') center/cover no-repeat!important;box-shadow:0 8px 23px #000a!important;}
+#game .business-reference-table{border:12px ridge #9c6533!important;margin:7px -3px 3px 12px!important;background:linear-gradient(135deg,#aa6a34,#422711)!important;box-shadow:0 0 0 2px #dcaa61,0 4px 0 #523013,0 10px 22px #000a,inset 0 2px 0 #e3c07d!important;}
+#game .business-reference-table-head{font-size:13px!important;}
+#game .business-reference-table-felt{background:radial-gradient(ellipse at 47% 37%,rgba(84,177,109,.2),transparent 59%),linear-gradient(160deg,#20643f,#0a482d 73%,#062d1c)!important;box-shadow:inset 0 0 30px #00150ea6,inset 0 0 0 2px rgba(204,177,105,.3)!important;}
+#game .business-reference-dice{inset:0 3% 34% 3%!important;pointer-events:auto!important;align-items:center!important;justify-content:space-evenly!important;padding:5px 10px!important;}
+#game .business-reference-dice .business-board-die{width:clamp(42px,4.25vw,64px)!important;height:clamp(42px,4.25vw,64px)!important;cursor:pointer!important;transition:filter .14s ease,translate .14s ease!important;}
+#game .business-reference-dice .business-board-die:hover{filter:brightness(1.13)!important;translate:0 -4px;}
+#game .business-reference-hold{height:35%!important;inset:auto 3.5% 3% 3.5%!important;background:rgba(2,26,15,.85)!important;border:1.5px solid #caac5f!important;padding:6px 8px!important;}
+#game .business-reference-hold-label{font-size:11px!important;}
+#game .business-reference-hold-cells{gap:9px!important;height:calc(100% - 12px)!important;}
+#game .business-reference-held-cell{border-radius:12px!important;border:1px dashed #aaae914d!important;}
+#game .business-reference-held-cell.is-held{background:rgba(170,132,49,.16)!important;border:1px solid #d6ac49!important;box-shadow:inset 0 0 0 1px #ffd67735,0 0 11px #e3b85a25!important;}
+#game .business-reference-held-cell[data-die-index]{cursor:pointer!important;}
+#game .business-reference-held-cell .business-board-die{width:clamp(33px,3.2vw,47px)!important;max-height:100%!important;}
+#game .business-reference-roll{border-radius:8px!important;background:linear-gradient(#14452d,#092b1c)!important;}
+/* Das Depot muss auf der Unterkante sichtbar bleiben. */
+#game .depot-panel.portfolio-panel{padding:7px 10px!important;grid-template-rows:39px minmax(0,1fr)!important;border-color:#d1a355!important;}
+#game .portfolio-head{height:39px!important;max-height:39px!important;min-height:39px!important;padding:0 6px 4px!important;}
+#game .portfolio-head .depot-title{font-size:17px!important;}
+#game .depot-list.portfolio-grid{height:100%!important;min-height:0!important;overflow:hidden!important;gap:7px!important;}
+#game .portfolio-branch{height:100%!important;min-height:0!important;padding:2px!important;grid-template-rows:26px minmax(0,1fr)!important;overflow:hidden!important;border-color:#6c97ad4b!important;}
+#game .portfolio-branch-head{height:26px!important;min-height:26px!important;max-height:26px!important;padding:2px 5px!important;}
+#game .portfolio-card-wrap{height:100%!important;overflow:hidden!important;padding:1px!important;}
+#game .depot-fan.portfolio-card-grid{height:100%!important;min-height:0!important;grid-auto-rows:100%!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:3px!important;}
+#game .depot-fan-card.portfolio-card{height:100%!important;min-height:0!important;width:100%!important;max-height:none!important;overflow:hidden!important;border-radius:11px!important;}
+#game .depot-fan-card.portfolio-card .real-card-company{font-size:11px!important;}
+#game .portfolio-empty-slot{height:100%!important;min-height:0!important;display:flex!important;align-items:center!important;justify-content:center!important;}
+#game .portfolio-branch-head .portfolio-branch-title{color:#e4ebee!important;font-size:10px!important;}
+#game .portfolio-branch-head .portfolio-branch-payout{font-size:8px!important;}
+@media(max-width:1180px){
+ #game:not(.hidden){grid-template-rows:48px minmax(235px,34vh) minmax(150px,1fr) 181px!important;}
+ #game .market-board-felt .market-slot .invest-card .real-card-company{font-size:11px!important;}
+ #game .market-board-felt .market-slot .invest-card .real-card-price{font-size:12px!important;}
+ #game .market-board-felt .market-slot .invest-card .real-card-yield b{font-size:12px!important;}
+ #game .v13-cart-badge{font-size:18px!important;}
+ #game .business-reference-table{margin-left:6px!important;border-width:9px!important;}
+ #game .player-avatar{width:38px!important;height:38px!important;}
+ #game .depot-panel.portfolio-panel{grid-template-rows:37px minmax(0,1fr)!important;}
+ #game .portfolio-head{height:37px!important;min-height:37px!important;max-height:37px!important;}
+}
+@media(max-width:850px) and (orientation:landscape){
+ #game:not(.hidden){min-height:815px!important;height:815px!important;grid-template-rows:46px 250px 295px 195px!important;}
+ #game .depot-fan-card.portfolio-card{height:100%!important;min-height:0!important;}
+ #game .business-reference-held-cell .business-board-die{width:34px!important;}
+ #game .v13-cart-badge{width:16%!important;}
+}
+@media (prefers-reduced-motion:reduce){#game .business-board-die,#game .market-slot .invest-card{transition:none!important;}}
+</style>
+
+
+<style id="business-v13-portfolio-refinement">
+/* Branchenüberschriften: alte CSS-Stile hatten 48px-Icons in 26px-Zeilen abgeschnitten. */
+#game .portfolio-branch-head{
+  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+  min-height:29px!important;max-height:29px!important;height:29px!important;padding:2px 4px!important;gap:3px!important;overflow:hidden!important;
+}
+#game .portfolio-branch-head>.portfolio-branch-title{
+  display:flex!important;flex-direction:row!important;align-items:center!important;gap:4px!important;min-width:0!important;
+  font:900 10px Arial,sans-serif!important;white-space:nowrap!important;overflow:hidden!important;
+}
+#game .portfolio-branch-icon{
+  flex:0 0 21px!important;width:21px!important;height:21px!important;min-width:21px!important;
+  border-radius:6px!important;border:1px solid #e9d19b55!important;box-shadow:none!important;
+  background:#d4eced22!important;display:grid!important;place-items:center!important;font-size:14px!important;line-height:1!important;
+}
+#game .portfolio-branch-name{
+  display:block!important;font:900 clamp(8px,.75vw,11px) Arial,sans-serif!important;color:#e9eef1!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;
+}
+#game .portfolio-branch-payout{
+  margin:0!important;padding:2px 4px!important;flex:0 0 auto!important;white-space:nowrap!important;
+  border-radius:999px!important;background:#263e4f!important;border:1px solid #e1ce8736!important;
+  color:#ffe2a3!important;font:800 8px Arial,sans-serif!important;
+}
+#game .depot-fan-card.portfolio-card .real-card-body{height:45px!important;padding:8px 6px!important;align-items:center!important;}
+#game .depot-fan-card.portfolio-card .real-card-company{font-size:12px!important;max-width:69%!important;}
+#game .depot-fan-card.portfolio-card .real-card-yield{bottom:7px!important;right:6px!important;height:27px!important;min-width:42px!important;}
+#game .portfolio-empty-slot{font-size:10px!important;}
+#game .portfolio-empty-slot span{font-size:19px!important;}
+#game .portfolio-empty-slot small{font-size:9px!important;}
+@media(max-width:1180px){
+ #game .portfolio-branch-name{font-size:8px!important;}
+ #game .portfolio-branch-payout{font-size:7px!important;padding:2px 3px!important;}
+ #game .portfolio-branch-icon{width:18px!important;height:18px!important;flex-basis:18px!important;font-size:12px!important;}
+}
+</style>
+
+
+<style id="business-v13-tablet-header-fix">
+@media (min-width:851px) and (max-width:1180px){
+ #game .topbar{padding:4px 7px!important;gap:5px!important;justify-content:space-between!important;}
+ #game .title-mini{font-size:15px!important;letter-spacing:0!important;}
+ #game .turn-pill{font-size:11px!important;white-space:nowrap!important;padding:5px 7px!important;}
+ #game .round-display{font-size:8px!important;}
+ #game .top-actions{gap:3px!important;min-width:0!important;}
+ #game .business-hub-return{font-size:0!important;min-width:34px!important;width:35px!important;height:32px!important;padding:0!important;}
+ #game .business-hub-return::before{content:"🏠"!important;font-size:16px!important;line-height:1!important;}
+ #game .top-icon-btn{flex:0 0 29px!important;width:29px!important;height:29px!important;font-size:15px!important;}
+ #game .bank{font-size:9px!important;padding:3px!important;white-space:nowrap!important;}
+ #game .bank-wrap{min-width:122px!important;width:130px!important;flex:0 1 130px!important;}
+ #game .market-mood{font-size:8px!important;padding:5px!important;}
+}
+</style>
+
+
+<style id="business-v13-reference-geometry">
+/* Geometrie nach 1536x864 Vorlage: breitere Punkttafel, schmalerer Filztisch, größeres Schreibtischmotiv. */
+@media(min-width:1281px){
+ #game:not(.hidden){grid-template-rows:54px minmax(252px,32.35vh) minmax(166px,1fr) 196px!important;}
+ #game .score-log-panel{width:calc(100% + 32px)!important;z-index:3!important;}
+ #game .business-reference-stage{grid-template-columns:minmax(0,65%) minmax(0,35%)!important;}
+ #game .business-reference-table{margin:7px 0 3px 32px!important;}
+}
+/* Die Zweitspalte rückt auf schmaleren Tablets wieder ein: Bedienbarkeit vor dekorativem Hintergrund. */
+@media(max-width:1280px){
+ #game .score-log-panel{width:auto!important;}
+ #game .business-reference-stage{grid-template-columns:minmax(0,74%) minmax(0,26%)!important;}
+ #game .business-reference-table{margin-left:7px!important;}
+}
+/* Portfolio-Fotos reichen unter die dezenten Branchenüberschriften, statt nach unten abgeschnitten zu werden. */
+#game .portfolio-branch{position:relative!important;display:block!important;}
+#game .portfolio-branch-head{
+ position:absolute!important;inset:0 0 auto 0!important;z-index:7!important;
+ background:linear-gradient(#102d42f0,#102d42cc)!important;
+ border-radius:9px 9px 0 0!important;
+ backdrop-filter:blur(2px)!important;
+}
+#game .portfolio-card-wrap{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;padding:1px!important;overflow:hidden!important;}
+#game .depot-fan.portfolio-card-grid{height:100%!important;grid-auto-rows:100%!important;}
+#game .depot-fan-card.portfolio-card{height:100%!important;max-height:100%!important;}
+#game .depot-fan-card.portfolio-card .real-card-type{top:30px!important;}
+#game .depot-fan-card.portfolio-card .real-card-body{height:49px!important;}
+@media(max-width:850px) and (orientation:landscape){
+ #game .business-reference-stage{grid-template-columns:minmax(0,1fr)!important;}
+ #game .business-reference-table{margin-left:7px!important;}
+}
+</style>
+
+
+<style id="business-v13-score-depot-clearance">
+/* Wie in der Vorlage grenzt das Portfolio rechts an die breite Punktetafel, ohne unter ihr zu liegen. */
+@media(min-width:1281px){
+ #game .depot-panel.portfolio-panel{margin-left:44px!important;}
+}
+#game .portfolio-head .depot-title::before{content:"💼 ";font-size:14px;}
+@media(max-width:1280px){#game .depot-panel.portfolio-panel{margin-left:0!important;}}
+</style>
+
 </head>
 <body data-business-mode="online">
 
@@ -2171,7 +2560,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
   </div>
 
   <section class="players-panel">
-    <div class="panel-title">Imperien</div>
+    <div class="panel-title">Spieler</div>
     <div class="players-scroll-hint">↕ Spieler scrollen</div>
     <div id="players"></div>
   </section>
@@ -2188,9 +2577,9 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
   <section class="market-board-strip">
     <div class="market-board-header">
       <div class="market-board-brand">
-        <div id="businessModeChip" class="market-mode-chip">ONLINE · V5.5</div>
+        <div id="businessModeChip" class="market-mode-chip">ONLINE · V13</div>
         <div>
-          <div class="market-board-kicker">DAS GROSSE BUSINESS · AKTIENMARKT</div>
+          <div class="market-board-kicker">AKTIENMARKT</div>
           <div class="market-board-title">Vier Chancen. Ein Investment pro Zug.</div>
         </div>
       </div>
@@ -2200,6 +2589,19 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
       <div class="market-board-label">OFFENE INVESTMENTS</div>
       <div id="boardMarket" class="board-market-overlay market-board-cards"></div>
     </div>
+  </section>
+
+
+  <!-- V12: dauerhafte, synchronisierte Wurfansicht. Der eigentliche Live-Wurf bleibt in der vorhandenen Würfelarena. -->
+  <section class="business-reference-stage" id="businessReferenceStage" aria-label="Aktuelle Würfelfläche">
+    <div class="business-reference-table">
+      <div class="business-reference-table-head"><span>WÜRFELFLÄCHE</span><button type="button" id="businessReferenceRoll" class="business-reference-roll">🎲 Würfelarena öffnen</button></div>
+      <div class="business-reference-table-felt" id="businessReferenceFelt">
+        <div id="businessReferenceDice" class="business-reference-dice" aria-live="polite"></div>
+        <div class="business-reference-hold"><div class="business-reference-hold-label">GEHALTENE WÜRFEL</div><div class="business-reference-hold-cells" id="businessReferenceHeld"></div></div>
+      </div>
+    </div>
+    <div class="business-reference-desk" aria-hidden="true"></div>
   </section>
 
   <section class="depot-panel portfolio-panel">
@@ -2829,6 +3231,7 @@ function render(){
  q("newsDisplay").textContent=`📰 ${state.newsDeck.length}`;
  q("phaseLabel").textContent="Phase: "+(state.phase==="roll"?"Würfeln":state.phase==="invest"?"Investieren":"–");
  renderPayoutOverlay(); renderPlayers(); renderMarket(); renderDepot(); renderDice(); renderBranchLegend(); renderControls();
+ if(typeof window.renderBusinessReferenceStage==="function")window.renderBusinessReferenceStage();
  saveGame(false);
  if(q("diceArena")&&!q("diceArena").classList.contains("hidden"))renderDiceArena();
 }
@@ -2842,7 +3245,7 @@ function renderPlayers(){
    const d=document.createElement("div");
    d.className="player-card"+(i===state.current?" active":"")+(i===state.viewedPlayer?" viewed":"");
    d.style.setProperty("--pc",p.color);
-   d.innerHTML=`<div class="pname">${i===state.current?"▶ ":""}${p.name}</div>
+   d.innerHTML=`<div class="player-avatar" aria-hidden="true">${String(p.name||"🎲").trim().slice(0,1).toUpperCase()}</div><div class="pname">${i===state.current?"▶ ":""}${p.name}</div>
                 <div class="money">💰 ${money(p.cash)}</div>
                 <div class="holdings">${holdings||"Keine Beteiligungen"}${certs?`<br>📜 ${certs} Aktienurkunde${certs>1?"n":""}`:""}</div>
                 <div class="player-statline">🎲 ${p.stats.diceIncome} Z · 🏢 ${p.stats.branchIncome} Z · 🛒 ${p.stats.purchases}</div>`;
@@ -3062,7 +3465,7 @@ function renderDepot(){
  const recurringTotal=branches.reduce((sum,b)=>sum+branchPayoutPreview(p,b.id).recurring,0);
  const normalCount=p.cards.filter(c=>c.type==="Aktie").length;
 
- q("depotTitle").textContent=`${p.name}`;
+ q("depotTitle").textContent=`${p.name}${/[szx]$/i.test(p.name)?"’":"s"} Portfolio`;
  const summary=q("depotSummary");
  if(summary)summary.innerHTML=`
    <span>🃏 <b>${p.cards.length}</b> Karten</span>
@@ -3155,6 +3558,11 @@ function renderMarket(){
    const marketTypeClass=card.type==="Aktie"?" market-share-card":card.type==="Start-up"?" market-business-card":" market-certificate-card";
    d.className="invest-card "+(cert?"certificate ":"")+(can?"buyable":"disabled")+(selected?" market-selected":"")+(state.phase!=="invest"?" lock-look":"")+marketTypeClass;
    d.innerHTML=buildPrettyCard(card,false);
+   const cartBadge=document.createElement("span");
+   cartBadge.className="v13-cart-badge";
+   cartBadge.setAttribute("aria-hidden","true");
+   cartBadge.textContent="🛒";
+   d.appendChild(cartBadge);
    if(can){
      d.onclick=()=>handleMarketCardTap(card.id,idx,d);
      d.ondblclick=e=>{e.preventDefault();e.stopPropagation();};
@@ -3212,6 +3620,7 @@ function renderDice(){
  lower.appendChild(bd);
  box.appendChild(main);
  box.appendChild(lower);
+ if(typeof window.renderBusinessReferenceStage==="function")window.renderBusinessReferenceStage();
 }
 
 function renderControls(){
@@ -6228,5 +6637,75 @@ $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart")
 <script src="../profile-auth.js" defer></script>
 <script src="../profile-match.js" defer></script>
 <script src="../profile-core.js" defer></script>
+
+<script id="business-v13-reference-mirror">
+(function(){
+  // Ein gemeinsamer Spielzustand: Das Hauptbrett ist eine Oberfläche derselben fünf Würfel.
+  // Kaufen und Würfeln geschehen weiterhin in der vorhandenen Spielmechanik.
+  const btn=document.getElementById('businessReferenceRoll');
+  if(btn)btn.addEventListener('click',function(){if(typeof showDiceArena==='function')showDiceArena(false);});
+  const angles=['-8deg','11deg','-6deg','8deg','-5deg'];
+  const faces={1:['p5'],2:['p1','p9'],3:['p1','p5','p9'],4:['p1','p3','p7','p9'],5:['p1','p3','p5','p7','p9'],6:['p1','p3','p4','p6','p7','p9']};
+  function face(v){
+    const n=Math.max(1,Math.min(6,Number(v)||1));
+    return '<div class="play-die-face">'+faces[n].map(p=>'<span class="play-pip '+p+'"></span>').join('')+'</div>';
+  }
+  function canEdit(){
+    if(typeof state==='undefined'||!state||state.phase!=='roll'||state.locked||state.gameEnded||state.rolls===0||state.rolls>=3)return false;
+    if(typeof diceArenaRolling!=='undefined'&&diceArenaRolling)return false;
+    // businessCanUseDiceArena ist die vom Online-Modul veröffentlichte Zugberechtigung.
+    // boCanAct selbst liegt in einer Closure und ist hier nicht global sichtbar.
+    if(typeof window.businessCanUseDiceArena==='function'&&!window.businessCanUseDiceArena())return false;
+    if(window.businessSpectatingRoll===true)return false;
+    return true;
+  }
+  function toggleHold(i){
+    if(!canEdit()||!Number.isInteger(i)||i<0||i>=5||!Array.isArray(state.held))return;
+    state.held[i]=!state.held[i];
+    if(typeof tone==='function')tone(state.held[i]?620:340,.05,'sine',.018);
+    if(typeof renderDice==='function')renderDice();
+    if(typeof renderPayoutOverlay==='function')renderPayoutOverlay();
+    if(typeof renderControls==='function')renderControls();
+    if(typeof renderDiceArena==='function'&&!document.getElementById('diceArena')?.classList.contains('hidden'))renderDiceArena();
+    if(typeof saveGame==='function')saveGame(false);
+    // Die vorhandene Multiplayer-Anbindung hört bereits auf dieses Ereignis.
+    document.dispatchEvent(new CustomEvent('business-state-mutated',{detail:{reason:'held'}}));
+  }
+  function handlePick(ev){
+    const root=ev.currentTarget;
+    const die=ev.target.closest('[data-die-index]');
+    if(!die||!root.contains(die))return;
+    if(ev.type==='keydown'&&ev.key!=='Enter'&&ev.key!==' ')return;
+    if(ev.type==='keydown')ev.preventDefault();
+    toggleHold(Number(die.dataset.dieIndex));
+  }
+  const free=document.getElementById('businessReferenceDice');
+  const held=document.getElementById('businessReferenceHeld');
+  [free,held].forEach(el=>{if(!el)return;el.addEventListener('click',handlePick);el.addEventListener('keydown',handlePick);});
+  window.renderBusinessReferenceStage=function(){
+    if(typeof state==='undefined'||!state||!Array.isArray(state.players)||!state.players.length)return;
+    if(!free||!held)return;
+    const dice=Array.isArray(state.dice)?state.dice:[];
+    const isHeld=Array.isArray(state.held)?state.held:[];
+    const hasRolled=Number(state.rolls)>0;
+    const editable=canEdit();
+    const clickHint=editable?'Antippen: Würfel halten oder lösen':'Aktueller Würfelstand';
+    free.innerHTML=hasRolled?dice.map((n,i)=>isHeld[i]?'':'<div class="business-board-die" data-die-index="'+i+'" role="button" tabindex="'+(editable?'0':'-1')+'" aria-label="Würfel '+(i+1)+' mit '+n+' Augen halten" aria-disabled="'+(!editable)+'" title="'+clickHint+'" style="--die-angle:'+angles[i]+'">'+face(n)+'</div>').join(''):'';
+    const keeping=[];
+    dice.forEach((n,i)=>{if(isHeld[i])keeping.push({n,i});});
+    held.innerHTML=Array.from({length:5},(_,slot)=>{
+      const item=keeping[slot];
+      return '<div class="business-reference-held-cell'+(item?' is-held':'')+'"'+(item?' data-die-index="'+item.i+'" role="button" tabindex="'+(editable?'0':'-1')+'" aria-label="Gehaltenen Würfel '+(item.i+1)+' lösen" aria-disabled="'+(!editable)+'" title="'+clickHint+'"':'')+'>'+(item?'<div class="business-board-die">'+face(item.n)+'</div>':'')+'</div>';
+    }).join('');
+    const canRoll=state.phase==='roll'&&!state.locked&&!state.gameEnded&&Number(state.rolls)<3&&
+      (typeof window.businessCanUseDiceArena!=='function'||window.businessCanUseDiceArena())&&window.businessSpectatingRoll!==true;
+    if(btn){btn.disabled=!canRoll;btn.textContent=canRoll?'🎲 Würfelarena öffnen':'🎲 Wurf beendet';}
+  };
+  document.addEventListener('business-state-mutated',window.renderBusinessReferenceStage);
+  window.addEventListener('resize',window.renderBusinessReferenceStage);
+  window.renderBusinessReferenceStage();
+})();
+</script>
+
 </body>
 </html>
