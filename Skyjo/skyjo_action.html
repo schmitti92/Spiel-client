@@ -5804,7 +5804,7 @@ body.is-playing #tableMessageZone .table-message-progress i{
 (() => {
 'use strict';
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
-const SKYJO_BUILD='15.49';
+const SKYJO_BUILD='15.51';
 const SAVE_KEY='skyjo_action_fan_v1';
 const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
 const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
@@ -6900,26 +6900,39 @@ function resolveNumberStreet(cards){
  return null;
 }
 function isNumberStreet(cards){return !!resolveNumberStreet(cards)}
-function findMatchesInPlayer(p){
+function completeBoardLines(p){
+ const grid=p?.grid||[];
+ const liveRows=[];
+ const liveCols=[];
+ for(let r=0;r<3;r++)if([0,1,2,3].some(c=>grid[r*4+c]))liveRows.push(r);
+ for(let c=0;c<4;c++)if([0,1,2].some(r=>grid[r*4+c]))liveCols.push(c);
  const groups=[];
- /* Ein Abräumen betrifft immer eine VOLLSTÄNDIGE Linie im 4x3-Feld:
-    waagerecht exakt 4 Karten, senkrecht exakt 3 Karten.
-    Leere Felder, Lücken oder Teilreihen sind bei allen Kombinationen ausgeschlossen. */
- for(let r=0;r<3;r++){
-   const idx=[r*4,r*4+1,r*4+2,r*4+3];
-   if(idx.every(i=>p.grid[i]))groups.push({name:`Reihe ${r+1}`,idx})
+ // After removing an ENTIRE column, three occupied positions make a
+ // complete remaining horizontal row. A single gap in a still-live column
+ // does NOT turn a partial four-card row into a match.
+ if(liveCols.length>=3){
+   for(const r of liveRows){
+     const idx=liveCols.map(c=>r*4+c);
+     if(idx.every(i=>grid[i]))groups.push({name:`Reihe ${r+1}`,idx});
+   }
  }
- for(let c=0;c<4;c++){
-   const idx=[c,c+4,c+8];
-   if(idx.every(i=>p.grid[i]))groups.push({name:`Spalte ${c+1}`,idx})
+ if(liveRows.length>=3){
+   for(const c of liveCols){
+     const idx=liveRows.map(r=>r*4+c);
+     if(idx.every(i=>grid[i]))groups.push({name:`Spalte ${c+1}`,idx});
+   }
  }
+ return groups;
+}
+function findMatchesInPlayer(p){
+ const groups=completeBoardLines(p);
  const out=[];
  for(const g of groups){
    const cards=g.idx.map(i=>p.grid[i]);
    if(cards.some(c=>!c.faceUp))continue;
    const nums=[...new Set(cards.filter(c=>c.type==='number').map(c=>c.value))],stars=cards.filter(c=>c.type==='star').length;
    const signature=`${g.name}:${cards.map(c=>c?.id||`${c?.type}:${c?.value}`).join('|')}`;
-   if(nums.length===1&&!(stars&&streetModeActive()&&isNumberStreet(cards)))out.push({...g,key:signature,optional:true,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`});
+   if(nums.length===1)out.push({...g,key:signature,optional:true,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`});
    else if(nums.length===0&&stars===cards.length)out.push({...g,key:signature,optional:true,pureStars:true,label:`${g.name}: nur Joker`})
  }
  if(streetModeActive()){
@@ -7153,36 +7166,38 @@ async function runRoundClose(seqId){
      continue
    }
    if(seq.stage==='remove'){
-     if(seq.removePi>=state.players.length){seq.stage='ready';ui={mode:'roundReveal',data:{stage:'ready'},selected:[]};save();render();await sleepMs(900);continue}
-     const pi=seq.removePi,matches=findMatches(pi);
-     if(!matches.length){seq.removePi++;save();continue}
-
-     /* Reine Jokergruppen werden auf jeden Fall abgeräumt und nur einmal
-        mit −10/−15 bewertet. Andere Kombinationen bleiben punktoptimiert. */
-     const plan=bestRoundEndRemovalPlan(pi);
-     const nextKey=plan.steps?.[0]?.key;
-     const m=nextKey?matches.find(x=>x.key===nextKey):null;
-     if(!m){
-       const p=state.players[pi],before=rawRoundScore(p),singleScores=matches.map(x=>scoreAfterSimulatedRemoval(p,x));
-       const bestAfter=singleScores.length?Math.min(...singleScores):before;
-       seq.keptBetterGroups=(seq.keptBetterGroups||0)+matches.length;
-       log(`${p.name}: ${matches.length} fertige Kombination(en) bleiben bei der Endwertung liegen, weil ${scoreFmt(before)} Punkte besser sind als Abräumen${Number.isFinite(bestAfter)?` (${scoreFmt(bestAfter)})`:''}. Reine Jokergruppen werden immer entfernt.`);
-       toast(`⭐ ${p.name}: Kombination bleibt · ${scoreFmt(before)} ist günstiger als Abräumen`);
-       seq.removePi++;
-       ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:seq.keptBetterGroups,smartKeep:true},selected:[]};
-       save();render();
-       await sleepMs(720);
-       continue
+     if(seq.removePi>=state.players.length){seq.stage='ready';seq.activePlan=null;ui={mode:'roundReveal',data:{stage:'ready'},selected:[]};save();render();await sleepMs(900);continue}
+     const pi=seq.removePi;
+     if(!seq.activePlan||seq.activePlan.pi!==pi){
+       // One joint calculation per player: mandatory same-number groups,
+       // optional streets and the chosen final value of every joker.
+       const plan=bestRoundEndRemovalPlan(pi);
+       seq.activePlan={pi,steps:plan.steps||[],score:plan.score};
+       Object.assign(state.roundJokerValues,plan.jokerValues||{});
+       log(`${state.players[pi].name}: optimierte Schlusswertung ${scoreFmt(plan.score)} Punkte (${seq.activePlan.steps.length} Abräumvorgänge).`);
+       save();
      }
-
-     const cards=m.idx.map(idx=>state.players[pi].grid[idx]).filter(Boolean).map(clone),srcIds=m.idx.map(idx=>`cell-${pi}-grid-${idx}`);
+     const nextStep=seq.activePlan.steps.shift();
+     if(!nextStep){
+       seq.removePi++;
+       seq.activePlan=null;
+       save();
+       continue;
+     }
+     const m=findMatches(pi).find(x=>x.key===nextStep.key);
+     if(!m){
+       // Defensive fallback for an interrupted/stale session: retry planning,
+       // never silently count a completed equal-number line.
+       seq.activePlan=null;
+       save();
+       continue;
+     }
+     const cards=m.idx.map(idx=>state.players[pi].grid[idx]).filter(Boolean).map(clone);
      state.currentPlayer=pi;
-     // No visual card removal here: this part is intentionally concealed.
-     // The scored 12-card view will mark cleared groups without counting twice.
      removeMatch(pi,m);
      seq.removedGroups++;
      seq.removedCards+=cards.length;
-     ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:seq.keptBetterGroups||0},selected:[]};
+     ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:0},selected:[]};
      save();render();
      await sleepMs(65);
      continue
@@ -7248,54 +7263,121 @@ function jokerEndLabel(p,idx){
 }
 function rawRoundScore(p){let s=0;for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(c)s+=endRoundCardValue(p,c,'grid',i)}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(c)s+=endRoundCardValue(p,c,'extra',i)}if(jokerSpecialsEnabled())s+=p.actions.length*10;s+=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);return s}
 
-/* V118 END SCORING
-   Reine Jokergruppen werden zwingend abgeräumt: −10 (3) oder −15 (4).
-   Andere Gruppen dürfen nur liegen bleiben, wenn das für sie besser ist. */
-function simulateMatchRemovalForScore(p,m){
- if(!p||!m)return p;
- if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0;
- if(m.pureStars){
-   const bonus=(m.idx.length===4&&m.name.startsWith('Reihe'))?-15:-10;
-   p.bankedStarBonus+=bonus
- }
- for(const idx of m.idx)if(p.grid[idx])p.grid[idx]=null;
- return p
-}
+/* V15.51: Jokerwerte und kaskadierende automatische Abräumvorgänge werden gemeinsam
+   optimiert. Gleiche vollständige Linien MÜSSEN am Ende entfernt werden,
+   sobald die gewählten Jokerwerte die Linie vervollständigen. Reine
+   Jokergruppen haben weiterhin ihren einmaligen -10/-15 Bonus.
+   Die Regel für übrige Jokerwerte: 0 oder eine echte Zahl aus ihrer
+   waagerechten Reihe / senkrechten Spalte (vor der Abräumphase).
+   So kann z.B. [★,★,-1] zu [0,-1,-1] mit -2 Punkten werden, aber eine
+   unverändert gleichwertige [-1,-1,-1]-Spalte muss zu 0 abgeräumt werden.
+*/
 function scoreAfterSimulatedRemoval(p,m){
  const q=clone(p);
  simulateMatchRemovalForScore(q,m);
  return rawRoundScore(q)
 }
-function roundEndPlanKey(p){
- return `${p.grid.map(c=>c?c.id:'-').join(',')}|${Number(p.bankedStarBonus)||0}`
+function simulateMatchRemovalForScore(p,m){
+ if(!p||!m)return p;
+ if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0;
+ if(m.pureStars)p.bankedStarBonus+=(m.idx.length===4&&m.name.startsWith('Reihe'))?-15:-10;
+ for(const idx of m.idx)if(p.grid[idx])p.grid[idx]=null;
+ return p
+}
+function roundEndJokerOptions(p,idx){
+ const candidates=new Set([0]);
+ const row=Math.floor(idx/4),col=idx%4;
+ for(let j=0;j<4;j++){
+   const c=p.grid[row*4+j];
+   if(c?.type==='number'&&Number.isInteger(Number(c.value)))candidates.add(Number(c.value))
+ }
+ for(let j=0;j<3;j++){
+   const c=p.grid[j*4+col];
+   if(c?.type==='number'&&Number.isInteger(Number(c.value)))candidates.add(Number(c.value))
+ }
+ return [...candidates].sort((a,b)=>a-b)
+}
+function scoreRemainingWithJokers(p,removedMask,jokerOptions){
+ let fixed=(Number(p.bankedStarBonus)||0)+(jokerSpecialsEnabled()?p.actions.length*10:0);
+ for(const c of p.extras||[])if(c)fixed+=c.type==='star'?0:cardPoints(c);
+ const jokers=[];
+ for(let i=0;i<p.grid.length;i++){
+   const c=p.grid[i];
+   if(!c||(removedMask&(1<<i)))continue;
+   if(c.type==='star')jokers.push({idx:i,id:c.id,values:jokerOptions[i]||[0]});
+   else fixed+=cardPoints(c)
+ }
+ // A complete equal-number row/column is compulsory to clear. For a
+ // mixed line at least one joker must adopt a DIFFERENT allowed value.
+ const constraints=[];
+ const remainingGrid=p.grid.map((c,i)=>(removedMask&(1<<i))?null:c);
+ const lines=completeBoardLines({grid:remainingGrid}).map(g=>g.idx);
+ for(const idx of lines){
+   if(idx.some(i=>!p.grid[i]||(removedMask&(1<<i))))continue;
+   const cards=idx.map(i=>p.grid[i]);
+   const nums=[...new Set(cards.filter(c=>c.type==='number').map(c=>Number(c.value)))];
+   if(nums.length>1)continue;
+   if(nums.length===0)return null; // mandatory pure-joker group
+   const wildIdx=idx.filter(i=>p.grid[i].type==='star');
+   if(!wildIdx.length)return null; // complete fixed equal-number group
+   constraints.push({target:nums[0],wildIdx});
+ }
+ // Small exact DP: mask means which compulsory-equality lines have been
+ // broken by selecting a joker value different from the line's number.
+ // At most seven lines exist (3 horizontal, 4 vertical).
+ const allMask=(1<<constraints.length)-1;
+ let dp=new Map([[0,{sum:0,values:{}}]]);
+ for(const joker of jokers){
+   const next=new Map();
+   for(const [mask,sol] of dp){
+     for(const value of joker.values){
+       let breakMask=mask;
+       for(let k=0;k<constraints.length;k++){
+         const co=constraints[k];
+         if(value!==co.target&&co.wildIdx.includes(joker.idx))breakMask|=1<<k
+       }
+       const sum=sol.sum+value,old=next.get(breakMask);
+       if(!old||sum<old.sum)next.set(breakMask,{sum,values:{...sol.values,[joker.id]:value}})
+     }
+   }
+   dp=next;
+ }
+ const best=dp.get(allMask);
+ return best?{score:fixed+best.sum,jokerValues:best.values}:null
 }
 function bestRoundEndRemovalPlan(pi){
- const source=state?.players?.[pi];
- if(!source)return {score:0,steps:[],removedCards:0};
+ const p=state?.players?.[pi];
+ if(!p)return {score:0,steps:[],removedCards:0,jokerValues:{}};
+ const jokerOptions={};
+ for(let i=0;i<p.grid.length;i++)if(p.grid[i]?.type==='star')jokerOptions[i]=roundEndJokerOptions(p,i);
  const memo=new Map();
- function solve(p){
-   const key=roundEndPlanKey(p);
+ function solve(used,bonus){
+   const key=`${used}|${bonus}`;
    if(memo.has(key))return memo.get(key);
-   const matches=findMatchesInPlayer(p);
-   const required=matches.filter(m=>m.pureStars);
-   /* Reine 3er-/4er-Jokergruppen müssen genau einmal als Gruppe verschwinden.
-      Beim Score-Vergleich darf "Joker behalten + Bonus + negative Nachbarwerte"
-      keine Alternative sein. Überschneidende Gruppen werden ohne Doppelnutzung
-      derselben Karten in der punktegünstigeren Reihenfolge abgeräumt. */
-   let best=required.length?null:{score:rawRoundScore(p),steps:[],removedCards:0};
-   for(const m of (required.length?required:matches)){
-     const q=clone(p);
-     simulateMatchRemovalForScore(q,m);
-     const tail=solve(q);
-     const candidate={score:tail.score,steps:[{key:m.key,name:m.name,label:m.label},...tail.steps],removedCards:m.idx.length+tail.removedCards};
-     /* Bei Gleichstand werden nur bei normalen Kombinationen weitere Karten entfernt. */
+   // Rebuild combinations from the ACTUAL remaining board at every step.
+   // This discovers new full 3-card rows after an entire column disappears.
+   const currentGrid=p.grid.map((c,i)=>(used&(1<<i))?null:c);
+   const available=findMatchesInPlayer({...p,grid:currentGrid}).map(m=>({...m,mask:m.idx.reduce((b,i)=>b|(1<<i),0)}));
+   const forced=available.filter(m=>m.pureStars);
+   const availableMoves=forced.length?forced:available;
+   const retained=forced.length?null:scoreRemainingWithJokers(p,used,jokerOptions);
+   let best=retained?{score:retained.score+bonus,steps:[],removedCards:0,jokerValues:retained.jokerValues}:null;
+   for(const m of availableMoves){
+     const groupBonus=m.pureStars?(m.idx.length===4&&m.name.startsWith('Reihe')?-15:-10):0;
+     const tail=solve(used|m.mask,bonus+groupBonus);
+     if(!tail)continue;
+     const candidate={score:tail.score,steps:[{key:m.key,name:m.name,label:m.label},...tail.steps],removedCards:m.idx.length+tail.removedCards,jokerValues:tail.jokerValues};
      if(!best||candidate.score<best.score||(candidate.score===best.score&&candidate.removedCards>best.removedCards))best=candidate
    }
-   if(!best)best={score:rawRoundScore(p),steps:[],removedCards:0};
    memo.set(key,best);
    return best
  }
- return solve(clone(source))
+ const plan=solve(0,0);
+ if(!plan){
+   console.warn('[SKYJO] Kein gültiger Joker-Abräumplan gefunden, fallback.');
+   return {score:rawRoundScore(p),steps:[],removedCards:0,jokerValues:{}}
+ }
+ return plan
 }
 let scoreSequenceSeen='',roundSummarySeen='',roundSummaryFocus=null,scoreSequencePlayback=null;
 function scoreItemsForPlayer(p){const items=[];for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(!c)continue;const v=endRoundCardValue(p,c,'grid',i);items.push({kind:'card',card:clone(c),gridIndex:i,value:v,label:c.type==='star'?jokerEndLabel(p,i):String(c.value),jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(!c)continue;const v=endRoundCardValue(p,c,'extra',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?'Zusatz-Joker · 0':`Zusatz ${c.value}`,jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}if(jokerSpecialsEnabled())for(const a of p.actions)items.push({kind:'action',actionType:a.type,value:10,label:ACTIONS[a.type]?.name||'Aktionskarte'});const bonus=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);if(bonus)items.push({kind:'bonus',value:bonus,label:'Sternbonus'});return items}
@@ -7754,7 +7836,7 @@ function animateRoyalScoring(root){
  }
  requestAnimationFrame(step)
 } 
-function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne/Joker haben während des Spiels den Grundwert 0. Bei der Rundenabrechnung übernimmt jeder verbliebene Joker automatisch die niedrigste Zahl, die in seiner waagerechten Reihe oder senkrechten Spalte noch liegt. Beispiel: −2 und 3 in derselben Linie → der Joker zählt −2. Gibt es dort keine Zahl, bleibt er 0.</li><li>Reine Jokergruppen werden automatisch entfernt: drei Joker in einer vollständigen Spalte bzw. vier Joker in einer waagerechten Reihe geben genau einmal −10 bzw. −15 Punkte. Die abgeräumten Joker zählen danach nicht mehr einzeln, auch nicht mit einem übernommenen negativen Nachbarwert. Jede Jokerkarte darf nur zu einer abgeräumten Gruppe gehören.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Eine neu vollständige Kombination bleibt immer auf dem Brett liegen – es erscheint keine Nachfrage und sie wird während des normalen Spiels nicht automatisch entfernt. In deinem eigenen Zug kannst du sie über „Reihe entfernen“ bzw. „Spalte entfernen“ freiwillig selbst auflösen; das verbraucht nicht deine normale Hauptaktion. Auch Minuszahlen dürfen entfernt werden. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>🔢 Straßen &amp; gleiche Zahlen (optional)</h4><p>Gleiche Zahlen dürfen in vollständigen 3er-Spalten und 4er-Reihen immer wie bisher entfernt werden. Bei eingeschaltetem Zusatzmodus sind <b>gleiche Zahlen UND Straßen</b> erlaubt. Nur wenn der Host diese Hausregel vor dem Raumstart einschaltet, dürfen <b>vollständige Linien</b> mit unmittelbar auf- oder absteigenden <b>offenen Zahlenkarten und Joker-Platzhaltern</b> freiwillig abgeräumt werden: <b>senkrechte Spalte mit genau 3 Karten</b> (z. B. 5–6–7) oder <b>waagerechte Reihe mit genau 4 Karten</b> (z. B. 4–5–6–7). <b>Teilreihen mit nur 3 von 4 waagerechten Karten sind nicht erlaubt.</b> Es darf keine Lücke geben. Ein oder mehrere Joker dürfen fehlende Zahlen ersetzen, auch rückwärts (z. B. 5–★–3 = 5–4–3). Reine Jokergruppen behalten ihre eigenen −10/−15 Bonuspunkte. Abgeräumte Joker und Zahlen werden nicht erneut gewertet. Auch bei gleichen Zahlen und Jokergruppen dürfen nur vollständige Reihen oder Spalten abgeräumt werden. Ohne diese Option bleibt die zusätzliche Straßenregel abgeschaltet; gleiche Zahlen bleiben weiterhin erlaubt.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, erhalten <b>alle anderen Spieler in normaler Zugreihenfolge jeweils noch genau einen letzten Zug</b>. Bei 3 Spielern heißt das: Beendet Spieler A die Runde, spielen danach noch B und C jeweils einmal. Erst dann beginnt die Abrechnung. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle noch verdeckten Karten langsam nacheinander aufgedeckt. Anschließend werden vollständige gleiche Reihen und Spalten automatisch geprüft: Reine Jokergruppen werden immer abgeräumt und ausschließlich mit ihrem festen Gruppenbonus bewertet. Andere Kombinationen werden nur abgeräumt, wenn das Entfernen punktetechnisch gleich gut oder besser ist. Eine Joker-Kombination mit günstigeren Minuspunkten darf deshalb bewusst liegen bleiben. Erst danach beginnt die Punktewertung. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards funktionieren; während des Spiels ist ihr Grundwert 0, bei der Endabrechnung gilt weiterhin die beste Zahl aus Reihe/Spalte. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
+function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne/Joker haben während des Spiels den Grundwert 0. Bei der Rundenabrechnung darf jeder verbliebene Joker 0 oder eine vorhandene Zahl aus seiner waagerechten Reihe bzw. senkrechten Spalte annehmen. Das Spiel prüft die möglichen Werte gemeinsam mit den Abräumkombinationen und wählt die beste gültige Punktzahl. Beispiel: ★–★–−1 darf als 0–−1–−1 liegen bleiben (−2 Punkte); −1–−1–−1 muss abgeräumt werden (0 Punkte).</li><li>Reine Jokergruppen werden automatisch entfernt: drei Joker in einer vollständigen Spalte bzw. vier Joker in einer waagerechten Reihe geben genau einmal −10 bzw. −15 Punkte. Die abgeräumten Joker zählen danach nicht mehr einzeln, auch nicht mit einem übernommenen negativen Nachbarwert. Jede Jokerkarte darf nur zu einer abgeräumten Gruppe gehören.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Eine neu vollständige Kombination bleibt immer auf dem Brett liegen – es erscheint keine Nachfrage und sie wird während des normalen Spiels nicht automatisch entfernt. In deinem eigenen Zug kannst du sie über „Reihe entfernen“ bzw. „Spalte entfernen“ freiwillig selbst auflösen; das verbraucht nicht deine normale Hauptaktion. Auch Minuszahlen dürfen entfernt werden. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>🔢 Straßen &amp; gleiche Zahlen (optional)</h4><p>Gleiche Zahlen dürfen in vollständigen Spalten und Reihen mit mindestens 3 Karten entfernt werden. Wenn eine ganze Spalte entfernt wurde, gelten die drei übrigen Karten einer waagerechten Reihe als vollständig; einzelne Lücken zählen nicht als verkleinertes Spielfeld. Bei eingeschaltetem Zusatzmodus sind <b>gleiche Zahlen UND Straßen</b> erlaubt. Nur wenn der Host diese Hausregel vor dem Raumstart einschaltet, dürfen <b>vollständige Linien mit mindestens drei Karten</b> mit unmittelbar auf- oder absteigenden <b>offenen Zahlenkarten und Joker-Platzhaltern</b> freiwillig abgeräumt werden: <b>senkrechte Spalte mit 3 Karten</b> (z. B. 5–6–7) oder <b>waagerechte Reihe mit 4 Karten</b> (z. B. 4–5–6–7); nach dem Abräumen einer ganzen Spalte auch eine vollständig verbliebene <b>3er-Reihe</b>. <b>Eine 3er-Teilreihe mit Lücke in einer noch vorhandenen Spalte ist nicht erlaubt.</b> Es darf keine Lücke geben. Ein oder mehrere Joker dürfen fehlende Zahlen ersetzen, auch rückwärts (z. B. 5–★–3 = 5–4–3). Reine Jokergruppen behalten ihre eigenen −10/−15 Bonuspunkte. Abgeräumte Joker und Zahlen werden nicht erneut gewertet. Auch bei gleichen Zahlen und Jokergruppen dürfen nur vollständige Reihen oder Spalten abgeräumt werden. Ohne diese Option bleibt die zusätzliche Straßenregel abgeschaltet; gleiche Zahlen bleiben weiterhin erlaubt.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, erhalten <b>alle anderen Spieler in normaler Zugreihenfolge jeweils noch genau einen letzten Zug</b>. Bei 3 Spielern heißt das: Beendet Spieler A die Runde, spielen danach noch B und C jeweils einmal. Erst dann beginnt die Abrechnung. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle noch verdeckten Karten langsam nacheinander aufgedeckt. Anschließend werden vollständige gleiche Reihen und Spalten automatisch geprüft. Nach jedem Abräumvorgang wird das verbleibende Brett erneut untersucht, bis alle verpflichtenden Kombinationen abgeräumt sind und die günstigste gültige Schlusswertung gefunden ist: Reine Jokergruppen werden immer abgeräumt und ausschließlich mit ihrem festen Gruppenbonus bewertet. Jokerwerte und Abräumfolgen werden gemeinsam optimiert. Jede vollständige gleiche Reihe oder Spalte MUSS entfernt werden, wenn ihre Jokerwerte sie tatsächlich vervollständigen. Eine andere erlaubte Jokerzuweisung kann die Gleichheit verhindern und bessere Minuspunkte behalten. Straßen werden nach Punktevergleich optional entfernt. Erst danach beginnt die Punktewertung. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards funktionieren; während des Spiels ist ihr Grundwert 0, bei der Endabrechnung werden 0 und vorhandene Zahlen aus Reihe/Spalte gemeinsam optimiert. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
 function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
 
 async function returnFinishedGameToRoomLobby(){
@@ -9117,7 +9199,7 @@ function gameView(){
  const playersHTML=state.players.map(playerHTML);
  const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}if(state.players.length===4)return `<div class="table-area four-player-layout"><div class="quad-side quad-left">${playersHTML[0]}${playersHTML[2]}</div>${centerTable}<div class="quad-side quad-right">${playersHTML[1]}${playersHTML[3]}</div></div>`;return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
  const boardsWithMessage=boards.replace(/<\/div>\s*$/,tableMessageZoneHTML()+'</div>');
- const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
+ const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · Jokerwerte optimiert`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
  const scoreCurtain=['roundReveal','scoring','scoringSequence'].includes(state.phase)?`<div class="sky-score-privacy-curtain" aria-live="polite"><div class="sky-score-privacy-core"><span>✦</span><strong>PUNKTEABRECHNUNG</strong><small>Die Karten werden für die Auszählung vorbereitet …</small></div></div>`:'';
  return `${mp}${closing}${scoreCurtain}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>${state.streetModeEnabled===true?'🔢 Straßen + Gleiche · Runde':'Runde'}</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen oder verringern"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Ändern</span></div></div>${boardsWithMessage}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
 
@@ -9136,7 +9218,7 @@ function resumeTransientFlow(){
 }
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
 const viewportLock=captureViewportLock();
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.49 · Joker-Straßen</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V15.51 · Mehrfach-Abräumen korrigiert</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
