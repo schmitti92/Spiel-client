@@ -2596,8 +2596,9 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
   <section class="business-reference-stage" id="businessReferenceStage" aria-label="Aktuelle Würfelfläche">
     <div class="business-reference-table">
       <div class="business-reference-table-head"><span>WÜRFELFLÄCHE</span><button type="button" id="businessReferenceRoll" class="business-reference-roll">🎲 Würfelarena öffnen</button></div>
-      <div class="business-reference-table-felt" id="businessReferenceFelt">
+      <div class="business-reference-table-felt" id="businessReferenceFelt" tabindex="0" role="button" aria-label="Zum Würfeln auf dem Spielbrett nach oben wischen oder Eingabetaste drücken">
         <div id="businessReferenceDice" class="business-reference-dice" aria-live="polite"></div>
+        <div id="businessInlineSwipeMessage" class="business-inline-swipe-message">↑ Auf dem Spielfeld nach oben wischen, um zu würfeln</div>
         <div class="business-reference-hold"><div class="business-reference-hold-label">GEHALTENE WÜRFEL</div><div class="business-reference-hold-cells" id="businessReferenceHeld"></div></div>
       </div>
     </div>
@@ -2632,8 +2633,16 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
       <div class="phase-step" data-phase="invest"><span>3</span>Kaufen</div>
     </div>
 
+    <section id="businessInlineBranchPanel" class="business-inline-branch" aria-label="Branchenwürfel und Geldeffekte" aria-live="polite">
+      <div class="business-inline-branch-title">BRANCHENWÜRFEL <span id="businessInlineBranchStatus" class="business-inline-branch-status">1. Wurf</span></div>
+      <div class="business-inline-branch-head">
+        <div id="businessInlineBranchIcon" class="business-inline-branch-icon" aria-hidden="true">🎲</div>
+        <div class="business-inline-branch-heading"><strong id="businessInlineBranchName">Branche wird gewürfelt</strong><small id="businessInlineBranchDescription">Die Branche wird beim ersten Wurf festgelegt.</small></div>
+      </div>
+      <div class="business-inline-branch-effects"><div class="business-inline-branch-effects-caption">AUSWIRKUNG PRO SPIELER</div><div id="businessInlineBranchRows" class="business-inline-branch-rows"><div class="business-inline-branch-wait">Nach dem ersten Wurf erscheinen Gewinn oder Strafe.</div></div></div>
+    </section>
     <div class="dice-toolbar">
-      <div id="diceMeta" class="dice-meta">Würfel erscheinen ausschließlich in der Würfelarena</div>
+      <div id="diceMeta" class="dice-meta">Zum Würfeln auf dem grünen Spielbrett nach oben wischen</div>
       <button id="releaseBtn" class="release-btn" disabled>↺ lösen</button>
     </div>
     <div id="branchLegend" class="branch-legend" aria-label="Branchenwürfel"></div>
@@ -3669,8 +3678,8 @@ q("rulesBtn").onclick=()=>{
  const body=`
   <div class="rules-box">
    <h3>Dein Zug</h3>
-   <div>1. Die <b>Würfelarena</b> öffnet sich zu Beginn deines Zuges. Den großen Würfel unten mit dem Finger nach oben auf das Brett wischen.</div>
-   <div>2. Beim ersten Wurf rollen 5 Zahlenwürfel + Branchenwürfel. Danach kannst du Zahlenwürfel antippen und halten. Insgesamt sind bis zu 3 Würfe möglich.</div>
+   <div>1. Würfle durch eine Wischbewegung nach oben direkt auf dem <b>grünen Spielbrett</b> oder benutze den Würfelknopf. Ein separates Würfelfenster gibt es nicht mehr.</div>
+   <div>2. Beim ersten Wurf rollen fünf Zahlenwürfel und der Branchenwürfel. Rechts werden die tatsächlichen Gewinne oder Strafen der Spieler angezeigt. Danach kannst du Zahlenwürfel antippen und halten. Insgesamt sind bis zu drei Würfe möglich.</div>
    <div>3. Würfelergebnis auszahlen lassen.</div>
    <div>4. Höchstens eine Marktkarte kaufen: <b>1× Karte antippen = markieren · dieselbe Karte noch einmal antippen = kaufen</b>.</div>
 
@@ -4375,7 +4384,21 @@ function resolveNews(){
  log(`${e.icon||"🐷"} <b>${e.headline}</b>`);
  soundNews();
  setLeftTab("log");
+ // Exact cash deltas for the already applied news effect, including penalties.
+ const businessNewsCashBefore=new Map(state.players.map(p=>[p.name,Number(p.cash)||0]));
+ const businessNewsCardsBefore=new Map(state.players.map(p=>[p.name,new Map((p.cards||[]).map(c=>[c.id,String(c.corp||'Karte')]))]));
  e.run();
+ if(state.lastBranchPayout?.branchId==="news"&&Number(state.lastBranchPayout.turnNumber)===Number(state.turnNumber)){
+   state.lastBranchPayout.newsTitle=String(e.headline||"Börsennews");
+   state.lastBranchPayout.newsEffect=String(e.effect||"");
+   state.lastBranchPayout.rows=state.players.map(p=>{
+     const before=businessNewsCardsBefore.get(p.name)||new Map();
+     const after=new Map((p.cards||[]).map(c=>[c.id,String(c.corp||'Karte')]));
+     return {name:p.name,total:(Number(p.cash)||0)-(businessNewsCashBefore.get(p.name)||0),base:0,bonus:0,certPay:0,
+       lostCards:[...before].filter(([id])=>!after.has(id)).map(([,name])=>name),
+       gainedCards:[...after].filter(([id])=>!before.has(id)).map(([,name])=>name)};
+   });
+ }
  const toneClass=e.tone==="good"?"good-news":e.tone==="warn"?"warn-news":"";
  const body = `
    <div class="news-stage">
@@ -4395,7 +4418,7 @@ function resolveNews(){
        <div class="news-ticker">Die Auswirkung wurde sofort verbucht</div>
      </div>
    </div>`;
- modal("🐷 Börsenschwein!", body, "news-mode");
+ if(!window.businessInlineDiceEnabled)modal("🐷 Börsenschwein!", body, "news-mode");
  render();
 }
 
@@ -4707,7 +4730,7 @@ function boApplyGame(game){
  cloud.applying=true;state=boHydrateGame(game);cloud.lastRemoteJSON=JSON.stringify(boWireGame());cloud.lastPushedJSON=cloud.lastRemoteJSON;cloud.gameApplied=true;
  $bo("businessOnlineShell").classList.add("hidden");q("game").classList.remove("hidden");setLeftTab("score");render();
  if(beforeCurrent!=null&&beforeCurrent!==state.current&&state.players[state.current]?.name===cloud.name){toast("🎯 Du bist am Zug");soundTurn()}
- if(hadGame&&state.newsDiscard.length>beforeNews.length&&!shouldSpectate){const last=state.newsDiscard[state.newsDiscard.length-1],ev=createNewsDeck().find(x=>x.id===last?.id||x.headline===last?.headline);if(ev){const toneClass=ev.tone==="good"?"good-news":ev.tone==="warn"?"warn-news":"";modal("🐷 Börsenschwein!",`<div class="news-stage"><div class="news-card-visual ${toneClass}"><div class="mast">Börsennews</div><div class="news-icon-big">${ev.icon||"📰"}</div><div class="news-meta"><span class="news-badge ${ev.tone||"bad"}">${ev.severity||"EILMELDUNG"}</span></div><div class="headline">${ev.headline}</div><div class="effect">${ev.effect}</div></div></div>`,"news-mode")}}
+ if(hadGame&&state.newsDiscard.length>beforeNews.length&&!shouldSpectate&&!window.businessInlineDiceEnabled){const last=state.newsDiscard[state.newsDiscard.length-1],ev=createNewsDeck().find(x=>x.id===last?.id||x.headline===last?.headline);if(ev){const toneClass=ev.tone==="good"?"good-news":ev.tone==="warn"?"warn-news":"";modal("🐷 Börsenschwein!",`<div class="news-stage"><div class="news-card-visual ${toneClass}"><div class="mast">Börsennews</div><div class="news-icon-big">${ev.icon||"📰"}</div><div class="news-meta"><span class="news-badge ${ev.tone||"bad"}">${ev.severity||"EILMELDUNG"}</span></div><div class="headline">${ev.headline}</div><div class="effect">${ev.effect}</div></div></div>`,"news-mode")}}
  const remoteRolling=!boCanAct()&&!state.gameEnded&&state.phase==="roll"&&!!incomingEvent?.id;
  if(remoteRolling){cloud.watchingDice=true;cloud.watchDiceTurn=state.turnNumber}
  else if(!cloud.spectating){cloud.watchingDice=false;cloud.watchDiceTurn=null}
@@ -6704,6 +6727,231 @@ $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart")
   document.addEventListener('business-state-mutated',window.renderBusinessReferenceStage);
   window.addEventListener('resize',window.renderBusinessReferenceStage);
   window.renderBusinessReferenceStage();
+})();
+</script>
+
+
+<style id="business-v14-integrated-dice-css">
+/* V14: one playing surface, no separate full-screen dice dialog. */
+#diceArena{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+#game .business-reference-table-felt{touch-action:none!important;cursor:grab!important;user-select:none!important;-webkit-user-select:none!important;outline-offset:-4px;}
+#game .business-reference-table-felt:focus-visible{outline:2px solid #f3d47e!important;}
+#game .business-reference-table-felt.business-inline-grabbing{cursor:grabbing!important;}
+#game .business-inline-swipe-message{position:absolute!important;z-index:3;left:50%;top:12%;transform:translateX(-50%);width:max-content;max-width:80%;padding:7px 13px;border-radius:999px;background:rgba(4,29,19,.72);border:1px solid rgba(255,225,138,.45);color:#fff0c3;font:800 clamp(9px,1vw,12px) Arial,sans-serif;text-align:center;pointer-events:none;transition:opacity .24s ease;}
+#game .business-reference-table-felt.business-has-rolled .business-inline-swipe-message{top:7%;font-size:10px;opacity:.85;}
+#game .business-reference-table-felt.business-dice-animating .business-inline-swipe-message{opacity:0;}
+#game .business-reference-table-felt.business-dice-animating .business-board-die{pointer-events:none!important;}
+#game .business-inline-animated-die{position:absolute!important;z-index:11!important;width:clamp(38px,4.6vw,62px)!important;height:clamp(38px,4.6vw,62px)!important;display:grid;place-items:center;border:2px solid #e8dfc7;border-radius:13px;background:linear-gradient(135deg,#fffef7,#e6e1d5);box-shadow:inset -5px -6px 0 #0002,0 12px 18px #0007;pointer-events:none;animation:business-v14-toss 1.45s cubic-bezier(.22,.7,.24,1) both;animation-delay:var(--roll-delay,0ms);}
+#game .business-inline-animated-die .play-die-face{position:relative;width:100%;height:100%;}
+@keyframes business-v14-toss{0%{opacity:.2;transform:translate(var(--throw-x,0px),100px) rotate(-420deg) scale(.5)}30%{opacity:1;transform:translate(calc(var(--throw-x,0px) * .15),-40px) rotate(210deg) scale(1.15)}65%{transform:translate(10px,13px) rotate(368deg) scale(.95)}82%{transform:translate(-4px,-9px) rotate(350deg) scale(1.03)}100%{opacity:1;transform:translate(0,0) rotate(var(--final-angle,0deg)) scale(1)}}
+#game .business-reference-table-felt.business-dice-animating #businessReferenceDice .business-board-die:not(.business-inline-animated-die){opacity:.22;}
+/* The existing control card stays in place; the real branch result fills the upper area. */
+#game .control-panel .business-inline-branch{display:flex!important;flex-direction:column!important;gap:4px;min-height:0;flex:1 1 138px;padding:8px;border:1px solid rgba(239,201,100,.28);border-radius:11px;background:linear-gradient(165deg,rgba(21,63,82,.88),rgba(5,25,41,.92));overflow:hidden;}
+#game .business-inline-branch-title{display:flex;align-items:center;justify-content:space-between;gap:6px;font:900 9px Arial,sans-serif;letter-spacing:.06em;color:#ffe4a4;}
+#game .business-inline-branch-status{display:inline-block;flex:none;padding:3px 6px;border-radius:12px;background:rgba(13,95,71,.58);color:#bdf6d5;border:1px solid #70b39b66;font:800 8px Arial,sans-serif;letter-spacing:0;}
+#game .business-inline-branch-head{display:flex;align-items:center;gap:9px;min-width:0;}
+#game .business-inline-branch-icon{width:40px;height:40px;flex:none;border:2px solid #eed68a;border-radius:13px;background:linear-gradient(#ffefa8,#c99736);display:grid;place-items:center;font-size:24px;color:#152b3f;box-shadow:inset 0 1px 0 #fff9,0 5px 10px #0007;}
+#game .business-inline-branch-icon.is-rolling{animation:business-v14-branch-spin .28s ease-in-out infinite alternate;}
+@keyframes business-v14-branch-spin{from{transform:rotate(-11deg) scale(.94)}to{transform:rotate(10deg) scale(1.06)}}
+#game .business-inline-branch-heading{display:grid;gap:3px;min-width:0;}
+#game .business-inline-branch-heading strong{font:900 13px Georgia,serif;color:#fff1c8;line-height:1.05;white-space:normal;overflow-wrap:anywhere;}
+#game .business-inline-branch-heading small:empty{display:none!important;}
+#game .business-inline-branch-heading small{color:#b9cad4;font:700 9px Arial,sans-serif;line-height:1.2;max-height:34px;overflow:auto;}
+#game .business-inline-branch-effects{min-height:0;display:flex;flex-direction:column;flex:1 1 auto;padding-top:5px;border-top:1px solid #ffffff22;}
+#game .business-inline-branch-effects-caption{color:#b4c5cf;font:900 8px Arial,sans-serif;letter-spacing:.08em;margin-bottom:4px;}
+#game .business-inline-branch-rows{min-height:0;flex:1 1 auto;overflow-y:auto;display:grid;align-content:start;gap:4px;scrollbar-width:thin;}
+#game .business-inline-branch-row{display:flex;align-items:center;gap:5px;justify-content:space-between;min-width:0;padding:3px 5px;border:1px solid #ffffff16;border-radius:8px;background:#ffffff0b;}
+#game .business-inline-branch-row.current{border-color:#f0cf8d6b;background:#f0c87713;}
+#game .business-inline-branch-player{display:grid;gap:2px;min-width:0;}
+#game .business-inline-branch-player strong{font:900 10px Arial,sans-serif;max-width:115px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;color:#eef6f7;}
+#game .business-inline-branch-player small{font:700 8px Arial,sans-serif;color:#a9bbc8;line-height:1.1;}
+#game .business-inline-branch-amount{display:block;min-width:48px;padding:4px 5px;text-align:center;border-radius:7px;border:1px solid #e9e1d0;color:#22364b;background:linear-gradient(#fff,#c5d7e5);font:900 12px Arial,sans-serif;white-space:nowrap;}
+#game .business-inline-branch-amount.gain{border-color:#9ae8ba;background:linear-gradient(#dcffdc,#60cf9c);color:#0c5133;}
+#game .business-inline-branch-amount.loss{border-color:#ffb3a7;background:linear-gradient(#ffe2d8,#d86460);color:#5f1717;}
+#game .business-inline-branch-wait{font:700 9px Arial,sans-serif;color:#b5c7d0;padding:6px 4px;line-height:1.35;}
+#game .control-panel .phase-stepper{margin:5px 0!important;}
+#game .control-panel .phase-step{padding:4px 2px!important;}
+#game .control-panel .dice-toolbar{display:none!important;}
+#game .control-panel .compact-result{flex:0 0 auto!important;margin:5px 0!important;min-height:24px!important;max-height:39px!important;overflow:hidden!important;font-size:9px!important;}
+#game .control-panel .compact-controls{flex:0 0 auto!important;gap:5px!important;margin-top:5px!important;}
+#game .control-panel .compact-controls button{padding:8px 6px!important;}
+/* The dice phase uses the whole right-hand card for an actual readable branch payout. */
+#game .control-panel[data-business-inline-phase="roll"] .phase-stepper,
+#game .control-panel[data-business-inline-phase="roll"] .compact-result{display:none!important;}
+#game .control-panel[data-business-inline-phase="roll"] .dice-header{min-height:18px!important;}
+#game .control-panel[data-business-inline-phase="roll"] #phaseLabel{display:none!important;}
+#game .control-panel[data-business-inline-phase="roll"] .business-inline-branch{flex:1 1 auto!important;min-height:150px!important;}
+#game .control-panel[data-business-inline-phase="roll"] .compact-controls{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-top:3px!important;gap:4px!important;}
+#game .control-panel[data-business-inline-phase="roll"] .compact-controls button{padding:9px 3px!important;font-size:9px!important;white-space:nowrap!important;}
+#branchBanner{display:none!important;}
+@media(max-width:1200px){#game .business-inline-branch-icon{width:38px;height:38px;font-size:19px;}.business-inline-branch-title{font-size:8px;}}
+@media(max-width:900px){#game .control-panel .business-inline-branch{padding:5px!important;gap:4px!important;}.business-inline-branch-player strong{font-size:9px!important;}#game .business-inline-branch-heading strong{font-size:11px!important;}#game .business-inline-branch-icon{width:32px;height:32px;font-size:17px;}}
+</style>
+
+
+<script id="business-v14-integrated-dice">
+(function(){
+  'use strict';
+  // The existing rollDice, finishRoll, resolveBranch and Business multiplayer snapshot
+  // mechanism remain authoritative. This layer changes presentation and input only.
+  window.businessInlineDiceEnabled=true;
+  const $=id=>document.getElementById(id);
+  const felt=$('businessReferenceFelt'),diceLayer=$('businessReferenceDice'),panel=$('businessInlineBranchPanel');
+  const rollButton=$('businessReferenceRoll');
+  if(!felt||!diceLayer||!panel||!rollButton)return;
+  let isAnimating=false,swipe=null,branchTimer=0;
+  const branchIcons=()=>[...branches.map(x=>({id:x.id,icon:x.icon,name:x.name})),{id:'news',icon:'🐷',name:'Börsennews'}];
+  const safe=t=>String(t==null?'':t).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  function turnAllowed(){
+    return typeof state!=='undefined'&&state&&state.phase==='roll'&&!state.gameEnded&&!state.locked&&state.rolls<3&&!isAnimating&&
+      (typeof window.businessCanUseDiceArena!=='function'||window.businessCanUseDiceArena())&&window.businessSpectatingRoll!==true;
+  }
+  function showBranch(temporary=null){
+    if(typeof state==='undefined'||!state)return;
+    const face=$('businessInlineBranchIcon'),name=$('businessInlineBranchName'),desc=$('businessInlineBranchDescription'),status=$('businessInlineBranchStatus'),rows=$('businessInlineBranchRows');
+    if(!face||!name||!desc||!status||!rows)return;
+    const rollNum=Number(state.rolls||0),result=state.lastBranchPayout;
+    const info=temporary||branchIcons().find(b=>b.id===state.branchRoll)||null;
+    const isCurrent=!!result&&Number(result.turnNumber)===Number(state.turnNumber);
+    face.textContent=info?.icon||'🎲';face.classList.toggle('is-rolling',!!temporary);
+    name.textContent=info?.name||(isAnimating?'Branche wird gewürfelt':'Noch keine Branche');
+    status.textContent=isAnimating?(window.businessSpectatingRoll===true?'● LIVE':'WÜRFEL ROLLEN'):state.phase==='invest'?'Kaufphase':rollNum===0?'1. Wurf':`${rollNum} / 3 Würfe`;
+    desc.textContent=isCurrent&&result.branchId==='news'&&result.newsTitle?result.newsTitle:info?'':'Die Branche wird beim ersten Wurf festgelegt.';
+    if(!isCurrent){rows.innerHTML='<div class="business-inline-branch-wait">Nach dem ersten Wurf siehst du hier die tatsächlichen Gewinne und Strafen aller Spieler.</div>';return}
+    const data=Array.isArray(result.rows)?result.rows:[];
+    rows.innerHTML=data.map(r=>{
+      const n=Number(r.total)||0,posit=n>0,neg=n<0,details=[];
+      const lostCards=Array.isArray(r.lostCards)?r.lostCards:[],gainedCards=Array.isArray(r.gainedCards)?r.gainedCards:[];
+      if(result.branchId==='news'){
+        if(lostCards.length)details.push('Kartenverlust: '+lostCards.join(', '));
+        if(gainedCards.length)details.push('Neue Karten: '+gainedCards.join(', '));
+        if(neg)details.unshift('Börsennews · Strafe');
+        else if(posit)details.unshift('Börsennews · Gewinn');
+        if(!details.length)details.push('Keine direkte Geldänderung');
+      }else{
+        if(Number(r.base))details.push(`Aktien / Start-up: ${r.base} Z`);
+        if(Number(r.bonus))details.push(`Bonus: +${r.bonus} Z`);
+        if(Number(r.certPay))details.push(`Urkunde: +${r.certPay} Z`);
+        if(!details.length)details.push('Keine Beteiligung');
+      }
+      const cardLoss=lostCards.length>0,cardGain=gainedCards.length>0;
+      const badgeText=n!==0?`${posit?'+':''}${n} Z`:cardLoss?`−${lostCards.length} Karte${lostCards.length===1?'':'n'}`:cardGain?`+${gainedCards.length} Karte${gainedCards.length===1?'':'n'}`:'0 Z';
+      const badgeClass=neg||cardLoss?'loss':posit||cardGain?'gain':'';
+      return `<div class="business-inline-branch-row${state.players?.[state.current]?.name===r.name?' current':''}"><div class="business-inline-branch-player"><strong>${safe(r.name)}</strong><small>${safe(details.join(' · '))}</small></div><span class="business-inline-branch-amount ${badgeClass}">${badgeText}</span></div>`;
+    }).join('')||'<div class="business-inline-branch-wait">Keine Auszahlung erfasst.</div>';
+    if(result.branchId==='news'&&result.newsEffect){desc.textContent=result.newsEffect}
+  }
+  window.renderBusinessInlineBranch=showBranch;
+  const originalReferenceRenderer=window.renderBusinessReferenceStage;
+  function refreshStage(){
+    if(typeof originalReferenceRenderer==='function'&&!isAnimating)originalReferenceRenderer();
+    if(typeof state==='undefined'||!state)return;
+    const ctl=document.querySelector('#game .control-panel');
+    if(ctl)ctl.dataset.businessInlinePhase=state.phase||'';
+    const ready=turnAllowed();
+    rollButton.disabled=!ready;
+    rollButton.textContent=ready?`🎲 Würfeln · ${3-state.rolls} übrig`:
+      isAnimating?'🎲 Würfel rollen …':state.phase==='invest'?'✓ Wurf abgeschlossen':state.phase==='roll'&&state.rolls>=3?'✓ 3 Würfe beendet':'🎲 Warten';
+    felt.classList.toggle('business-has-rolled',Number(state.rolls)>0);
+    const hint=$('businessInlineSwipeMessage');
+    if(hint)hint.textContent=isAnimating?'🎲 Die Würfel rollen …':ready?'↑ Hier nach oben wischen – oder Würfeln anklicken':state.rolls===0?'Warte auf den aktiven Spieler':'Würfel antippen, um sie zu halten';
+    showBranch();
+  }
+  window.renderBusinessReferenceStage=refreshStage;
+  // Existing renderer will no longer open a second window.
+  window.showDiceArena=function(){refreshStage();};
+  window.autoOpenDiceArena=function(){};
+  window.hideDiceArena=function(){const old=$('diceArena');if(old){old.classList.add('hidden');old.setAttribute('aria-hidden','true')}};
+  window.hideDiceArena(true);
+
+  const pipMap={1:['p5'],2:['p1','p9'],3:['p1','p5','p9'],4:['p1','p3','p7','p9'],5:['p1','p3','p5','p7','p9'],6:['p1','p3','p4','p6','p7','p9']};
+  function dieFace(num){const n=Math.max(1,Math.min(6,Number(num)||1));return `<div class="play-die-face">${pipMap[n].map(p=>`<span class="play-pip ${p}"></span>`).join('')}</div>`}
+  function inlinePhysics(finalDice,finalBranch,gesture,done,eventMeta=null,spectator=false){
+    const ev=eventMeta||{},kept=Array.isArray(ev.held)?ev.held:(state.held||[]);
+    const rolled=Array.isArray(finalDice)?finalDice:[1,1,1,1,1];
+    isAnimating=true;diceArenaRolling=true;
+    felt.classList.add('business-dice-animating');
+    window.businessInlineSpectator=!!spectator;
+    window.renderBusinessReferenceStage=refreshStage;
+    refreshStage();
+    const available=[0,1,2,3,4].filter(i=>!kept[i]);
+    const positions=[[19,24],[44,19],[71,24],[31,52],[65,53]];
+    const flying=[];
+    for(const i of available){
+      const el=document.createElement('div');el.className='business-inline-animated-die';
+      el.setAttribute('aria-hidden','true');el.innerHTML=dieFace(rolled[i]);
+      el.style.left=`${positions[i][0]}%`;el.style.top=`${positions[i][1]}%`;
+      el.style.setProperty('--roll-delay',`${i*45}ms`);
+      el.style.setProperty('--throw-x',`${(i-2)*19}px`);
+      el.style.setProperty('--final-angle',`${(i%2?1:-1)*(4+i*2)}deg`);
+      diceLayer.appendChild(el);flying.push(el);
+    }
+    const first=Number(ev.rollNumber||state.rolls+1)===1;
+    if(first){
+      let k=0;branchTimer=setInterval(()=>{const opts=branchIcons(),item=opts[(k++)%opts.length];showBranch(item)},130);
+    }
+    let finished=false;
+    function finish(){
+      if(finished)return;finished=true;
+      clearInterval(branchTimer);branchTimer=0;
+      for(const el of flying)el.remove();
+      felt.classList.remove('business-dice-animating');
+      isAnimating=false;diceArenaRolling=false;window.businessInlineSpectator=false;
+      try{done?.()}finally{refreshStage()}
+    }
+    setTimeout(finish,1590);
+  }
+  // Real game rollDice and the multiplayer spectator feed both use this original entrypoint.
+  window.startDiceArenaPhysics=inlinePhysics;
+  window.showSpectatorDiceArena=function(ev,done){
+    if(!ev?.id){done?.();return}
+    window.businessSpectatingRoll=true;
+    inlinePhysics(ev.finalDice,ev.finalBranch,ev.gesture||{},()=>{window.businessSpectatingRoll=false;done?.()},ev,true);
+  };
+  function invokeRoll(gesture){if(!turnAllowed())return;rollDice(gesture||{dx:0,dy:-155,duration:300,power:1})}
+  rollButton.onclick=e=>{e?.stopPropagation?.();invokeRoll();};
+  const mainRoll=$('rollBtn');
+  if(mainRoll)mainRoll.onclick=()=>{
+    if(state.phase==='invest')buySelectedMarketCard();
+    else invokeRoll();
+  };
+  const originalControls=window.renderControls;
+  window.renderControls=function(...args){
+    const ret=originalControls?.apply(this,args);
+    if(mainRoll&&state.phase==='roll'){
+      mainRoll.disabled=!turnAllowed();
+      mainRoll.textContent=isAnimating?'🎲 Würfel rollen …':`🎲 Würfeln (${Math.max(0,3-state.rolls)} übrig)`;
+    }
+    refreshStage();return ret;
+  };
+  felt.addEventListener('pointerdown',e=>{
+    if(!turnAllowed()||e.target.closest('[data-die-index]')||e.target.closest('.business-reference-hold'))return;
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    swipe={id:e.pointerId,x:e.clientX,y:e.clientY,start:performance.now()};
+    felt.classList.add('business-inline-grabbing');
+    try{felt.setPointerCapture(e.pointerId)}catch(_e){}
+    e.preventDefault();
+  });
+  felt.addEventListener('pointerup',e=>{
+    if(!swipe||swipe.id!==e.pointerId)return;
+    const start=swipe;swipe=null;felt.classList.remove('business-inline-grabbing');
+    const dx=e.clientX-start.x,dy=e.clientY-start.y,duration=Math.max(60,performance.now()-start.start);
+    if(dy<=-42&&Math.hypot(dx,dy)>=54){
+      invokeRoll({dx,dy,duration,power:Math.min(1.65,Math.max(.75,Math.hypot(dx,dy)/160))});
+      e.preventDefault();
+    }
+  });
+  felt.addEventListener('pointercancel',()=>{swipe=null;felt.classList.remove('business-inline-grabbing')});
+  felt.addEventListener('keydown',e=>{
+    if(e.target!==felt||!['Enter',' '].includes(e.key))return;
+    e.preventDefault();invokeRoll();
+  });
+  // Triggered for online snapshots, release/hold changes and the real game's render() calls.
+  document.addEventListener('business-state-mutated',()=>{if(!isAnimating)refreshStage()});
+  window.addEventListener('resize',()=>{if(!isAnimating)refreshStage()});
+  const origRender=window.render;
+  window.render=function(...args){const ret=origRender?.apply(this,args);if(!isAnimating)refreshStage();return ret;};
+  refreshStage();
 })();
 </script>
 
