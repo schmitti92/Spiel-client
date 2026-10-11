@@ -1,84 +1,122 @@
-/* Spieleportal – lokale Spielerprofile. Keine Anmeldung, kein Serverzugangsschutz. */
+/* SPIELEPORTAL V2: ausschliesslich authentifizierte Online-Profile.
+ * Alte lokale Daten werden nicht verwendet, nicht dargestellt und nicht geloescht.
+ * Spielregeln und bisherige Raum-Logik bleiben unberuehrt.
+ */
 (function(){
 'use strict';
-const KEY='spielportal.profiles.v1';
 const COLORS=['#328cff','#ff5268','#20b986','#ffc741','#9261ec','#f281af'];
 const GAME_NAMES={skyjo:'SKYJO Action',kreuz:'KreuzKunter',barikade:'Barikade',business:'Das große Business'};
 const STAMP='profileAutoSet';
-let cached=null;
-function fresh(){const id='p-'+Date.now().toString(36);return {profiles:[{id,name:'Spieler 1',color:COLORS[0],favorite:'skyjo',avatar:0,created:Date.now(),visits:{},edited:false}],activeId:id};}
-function load(){if(cached)return cached;try{let v=JSON.parse(localStorage.getItem(KEY));if(v&&Array.isArray(v.profiles)&&v.profiles.length&&v.profiles.some(p=>p.id===v.activeId)){cached=v;return cached;}}catch(e){}cached=fresh();save();return cached;}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(cached));}catch(e){console.warn('Profil-Speicherplatz nicht verfügbar',e);}window.dispatchEvent(new CustomEvent('spielprofil-change'));}
-function localActive(){const s=load();return s.profiles.find(p=>p.id===s.activeId)||s.profiles[0];}
-function cloudState(){return window.SpielOnline?.state?.()||null;}
-function signedIn(){return !!cloudState()?.user;}
-function onlineReady(){return cloudState()?.status==='online'&&!!cloudState()?.profile;}
-function active(){return onlineReady()?cloudState().profile:localActive();}
-function cleanName(v){return String(v||'').replace(/[<>\r\n]/g,'').replace(/\s+/g,' ').trim().slice(0,24);}
-function update(obj){
- if(signedIn()&&!onlineReady())throw Error('Online-Konto synchronisiert noch. Bitte erneut versuchen.');
- const p=active();Object.assign(p,obj);
- if(onlineReady()){
-   window.dispatchEvent(new CustomEvent('spielprofil-change'));
-   window.SpielOnline.saveProfile(p).catch(e=>console.warn('[profile] Online-Speichern fehlgeschlagen:',e));
- }else save();
- return p;
+const SESS='spielportal.online-display-name';
+function state(){return window.SpielOnline?.state?.()||null;}
+function active(){const s=state();return s?.status==='online'&&s?.profile?.setupComplete!==false?s.profile:null;}
+function saveName(){try{const p=active();if(p)sessionStorage.setItem(SESS,p.name);else if(state()?.status==='guest')sessionStorage.removeItem(SESS);}catch{}}
+window.addEventListener('spielonline-change',saveName);
+function cleanName(v){return String(v||'').replace(/[<>\u0000-\u001f\u007f]/g,'').replace(/\s+/g,' ').trim().slice(0,24);}
+function update(values){const p=active();if(!p)throw Error('Bitte zuerst online anmelden.');
+ const next={...p,...values};Object.assign(p,next);
+ window.dispatchEvent(new CustomEvent('spielprofil-change'));
+ return window.SpielOnline.saveProfile(next);
 }
-function use(id){if(signedIn())throw Error('Bitte zuerst vom Online-Konto abmelden.');const s=load();if(!s.profiles.some(p=>p.id===id))return; s.activeId=id;save();}
-function add(name){if(signedIn())throw Error('Bitte zuerst vom Online-Konto abmelden.');name=cleanName(name);if(!name)throw Error('Bitte einen Namen eingeben.');const s=load();if(s.profiles.length>=12)throw Error('Maximal 12 Profile pro Gerät.');if(s.profiles.some(p=>p.name.toLowerCase()===name.toLowerCase()))throw Error('Dieser Profilname existiert bereits.');let id='p-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,5);s.profiles.push({id,name,color:COLORS[(s.profiles.length)%COLORS.length],favorite:'skyjo',avatar:s.profiles.length%8,created:Date.now(),visits:{},edited:false});s.activeId=id;save();}
-function rename(name){if(signedIn()&&!onlineReady())throw Error('Online-Konto nicht synchronisiert.');name=cleanName(name);if(!name)throw Error('Bitte einen Spielernamen eingeben.');if(!signedIn()&&load().profiles.some(p=>p.id!==active().id&&p.name.toLowerCase()===name.toLowerCase()))throw Error('Dieser Name ist bereits vergeben.');update({name,edited:true});}
-function remove(){if(signedIn())throw Error('Ein Online-Konto kann nicht über die lokale Profilverwaltung gelöscht werden.');const s=load();s.profiles=s.profiles.filter(p=>p.id!==s.activeId);if(!s.profiles.length){cached=fresh();}else{s.activeId=s.profiles[0].id;}save();}
-function escapeHTML(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function avatarCSS(idx){idx=Math.max(0,Math.min(7,Number(idx)||0));return `background-image:url('${location.pathname.includes('/Barikade/')||location.pathname.includes('/Skyjo/')||location.pathname.includes('/KreuzKunter/')||location.pathname.includes('/Business/')?'../':''}profile-avatars.webp');background-size:400% 200%;background-position:${(idx%4)*100/3}% ${Math.floor(idx/4)*100}%`}
-function registerLaunch(url){const key=String(url||'').toLowerCase();let game=key.includes('skyjo')?'skyjo':key.includes('kreuzkunter')?'kreuz':key.includes('barikade')?'barikade':key.includes('business')?'business':null;if(!game)return;const p=localActive();if(!p.visits)p.visits={};p.visits[game]=(Number(p.visits[game])||0)+1;save();}
-window.SpielProfile={load,active,localActive,use,add,rename,update,remove,COLORS,escapeHTML,avatarCSS,registerLaunch};
-
-function setupIndex(){const head=document.querySelector('.page-head');if(!head)return;const p=active();head.style.position='relative';head.style.paddingRight='min(290px,31vw)';const wrapper=document.createElement('div');wrapper.className='sp-index-wrap';wrapper.innerHTML=`<button type="button" class="sp-profile-button" aria-expanded="false" aria-label="Spielerprofil auswählen"><span class="sp-avatar" style="${avatarCSS(p.avatar)}"></span><span class="sp-person-name"></span><span aria-hidden="true">⌄</span></button><div class="sp-index-menu" hidden><div class="sp-menu-head">👤 Spielerprofil wählen</div><div class="sp-options"></div><div class="sp-menu-actions"><a href="profile.html">⚙️ Profil bearbeiten</a><button type="button" class="sp-new">＋ Neues Profil</button></div></div>`;
-head.appendChild(wrapper);const b=wrapper.querySelector('.sp-profile-button'),menu=wrapper.querySelector('.sp-index-menu');
-function render(){const prof=active();wrapper.querySelector('.sp-avatar').style.cssText=avatarCSS(prof.avatar);wrapper.querySelector('.sp-person-name').textContent=prof.name;wrapper.querySelector('.sp-options').innerHTML='';wrapper.querySelector('.sp-new').hidden=signedIn();wrapper.querySelector('.sp-menu-head').textContent=signedIn()?'☁ Online-Spielerprofil':'👤 Spielerprofil wählen';if(signedIn()){const notice=document.createElement('div');notice.className='sp-menu-head';notice.textContent='Profil wechseln: Erst das Online-Konto abmelden.';wrapper.querySelector('.sp-options').append(notice);return;}load().profiles.forEach(other=>{let choice=document.createElement('button');choice.type='button';choice.className='sp-profile-choice';choice.innerHTML=`<span class="sp-avatar" style="${avatarCSS(other.avatar)}"></span><span></span><span>${other.id===prof.id?'✓':''}</span>`;choice.children[1].textContent=other.name;choice.onclick=()=>{use(other.id);render();menu.hidden=true;b.setAttribute('aria-expanded','false');};wrapper.querySelector('.sp-options').appendChild(choice);});}
-render();b.onclick=()=>{menu.hidden=!menu.hidden;b.setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden)render()};wrapper.querySelector('.sp-new').onclick=()=>{const s=prompt('Name für das neue Spielerprofil:');if(s!==null){try{add(s);render();menu.hidden=true}catch(e){alert(e.message)}}};
-document.addEventListener('pointerdown',e=>{if(!wrapper.contains(e.target)){menu.hidden=true;b.setAttribute('aria-expanded','false')}});
-// Startaufrufe sind keine abgeschlossenen Partien.
-document.querySelectorAll('.game-grid a[href]').forEach(a=>a.addEventListener('click',()=>registerLaunch(a.getAttribute('href'))));
-window.addEventListener('spielprofil-change',render);window.addEventListener('spielonline-change',render);
+function rename(name){name=cleanName(name);if(name.length<2)throw Error('Mindestens zwei Zeichen eingeben.');return update({name,edited:true});}
+function escapeHTML(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));}
+function avatarCSS(avatarOrProfile){
+ const p=(avatarOrProfile&&typeof avatarOrProfile==='object')?avatarOrProfile:{avatar:avatarOrProfile};
+ if(p.avatarImage&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.avatarImage))return `background-image:url("${p.avatarImage}");background-size:cover;background-position:center`;
+ const idx=Math.max(0,Math.min(7,Number(p.avatar)||0));
+ const sub=['Barikade','Skyjo','KreuzKunter','Business'].some(folder=>location.pathname.includes('/'+folder+'/'))?'../':'';
+ return `background-image:url('${sub}profile-avatars.webp');background-size:400% 200%;background-position:${(idx%4)*100/3}% ${Math.floor(idx/4)*100}%`;
 }
-
-function initProfilePage(){const shell=document.getElementById('profile-root');if(!shell)return;
-let modal=null;const $=id=>document.getElementById(id);
-function initials(p){return p.name?Array.from(p.name)[0].toUpperCase():'?';}
-function modalOpen(title,form,action){modal=$('profile-dialog');$('dialog-title').textContent=title;$('dialog-content').innerHTML=form;modal.showModal();$('dialog-form').onsubmit=e=>{e.preventDefault();try{action(new FormData($('dialog-form')));modal.close();render();}catch(ex){$('dialog-error').textContent=ex.message||String(ex)}};$('dialog-error').textContent='';}
-function render(){const p=active();const inCloud=signedIn();const ready=onlineReady();$('profile-add').disabled=inCloud;$('profile-switch').disabled=inCloud;$('profile-edit-top').disabled=inCloud;$('profile-delete').disabled=inCloud;$('profile-edit').disabled=inCloud&&!ready;document.querySelectorAll('[data-choice-color],[data-choice-game],[data-choice-avatar]').forEach(el=>el.disabled=inCloud&&!ready);$('profile-add').title=inCloud?'Pro Online-Konto gibt es ein geschütztes Profil':'';$('profile-switch').title=inCloud?'Zum Kontowechsel bitte abmelden':'';$('profile-stat-caption').textContent=inCloud?'Spielaufrufe gehören zum lokalen Browserprofil, keine bestätigten Online-Partien. Echte Siege folgen mit der Spielanbindung.':'Deine Aktivität auf diesem Gerät';$('profile-manage-note').textContent=inCloud?'☁ Dein Online-Profil wird in Firebase gespeichert. Kontolöschung wird erst in einer späteren, gesicherten Version angeboten. Lokale Profile bleiben erhalten.':'🔒 Die lokalen Profile bleiben nur in diesem Browser. Du kannst sie später gezielt in ein Online-Konto übernehmen.';$('profile-title-name').textContent=p.name;$('profile-short-name').textContent=p.name;$('profile-header-avatar').style.cssText=avatarCSS(p.avatar);$('profile-side-avatar').style.cssText=avatarCSS(p.avatar);$('profile-created').textContent=new Date(p.created||Date.now()).toLocaleDateString('de-DE',{month:'long',year:'numeric'});$('favorite-game-name').textContent=GAME_NAMES[p.favorite]||GAME_NAMES.skyjo;
-for(const c of document.querySelectorAll('[data-choice-color]')){const on=c.dataset.choiceColor===p.color;c.classList.toggle('selected',on);c.setAttribute('aria-pressed',String(on));}
-for(const el of document.querySelectorAll('[data-choice-game]')){const on=el.dataset.choiceGame===p.favorite;el.classList.toggle('selected',on);el.setAttribute('aria-pressed',String(on));}
-for(const av of document.querySelectorAll('[data-choice-avatar]')){let n=+av.dataset.choiceAvatar;av.style.cssText=avatarCSS(n);av.classList.toggle('selected',n===p.avatar);av.setAttribute('aria-label','Avatar '+(n+1));av.setAttribute('aria-pressed',String(n===p.avatar));}
-const v=p.visits||{};const total=Object.values(v).reduce((acc,n)=>acc+(Number(n)||0),0),unique=Object.values(v).filter(n=>n>0).length;
-$('stat-launches').textContent=String(total);$('stat-games').textContent=String(unique);$('stat-profiles').textContent=String(load().profiles.length);$('stat-achievements').textContent=String(1+(p.edited?1:0)+(p.favorite!=='skyjo'?1:0)+(p.avatar!==0?1:0)+(unique>=2?1:0));
-const badges=[['👑','Profilstarter','Profil angelegt',true],['🎨','Eigener Stil','Spielername bearbeitet',!!p.edited],['⭐','Spielefan','Lieblingsspiel geändert',p.favorite!=='skyjo'],['🖼️','Avatar-Fan','Profilbild angepasst',p.avatar!==0],['🎮','Spieleentdecker','Mindestens 2 Spiele geöffnet',unique>=2]];
-$('achievement-list').innerHTML=badges.map(([ico,name,description,unlocked])=>`<div class="achievement ${unlocked?'':'locked'}"><span>${ico}</span><b>${escapeHTML(name)}</b><small>${escapeHTML(description)}</small></div>`).join('');
-$('profile-switch-list').innerHTML='';(inCloud?[p]:load().profiles).forEach(other=>{const o=document.createElement('button');o.type='button';o.className='switch-choice'+(p.id===other.id?' selected':'');o.innerHTML=`<span class="avatar-tile" style="${avatarCSS(other.avatar)}"></span><span></span><strong>${p.id===other.id?'✓':''}</strong>`;o.children[1].textContent=other.name;o.onclick=()=>{if(!inCloud)use(other.id);$('switch-dialog').close();render()};$('profile-switch-list').append(o)});
+function registerLaunch(){/* Spielaufrufe werden nicht als verifizierte Spielergebnisse gespeichert. */}
+// Keep names for compatibility with existing game code, but NEVER invent a local player.
+window.SpielProfile={active,update,rename,COLORS,escapeHTML,avatarCSS,registerLaunch};
+function setupIndex(){
+ const head=document.querySelector('.page-head');if(!head)return;
+ head.style.position='relative';head.style.paddingRight='min(290px,31vw)';
+ const wrapper=document.createElement('div');wrapper.className='sp-index-wrap';
+ wrapper.innerHTML=`<button type="button" class="sp-profile-button" aria-expanded="false" aria-label="Online-Spielerkonto"><span class="sp-avatar" aria-hidden="true"></span><span class="sp-person-name">Anmelden</span><span aria-hidden="true">⌄</span></button>
+ <div class="sp-index-menu" hidden><div class="sp-menu-head">☁ Online-Spielerkonto</div><div class="sp-options"></div><div class="sp-menu-actions"><a href="profile.html" class="sp-view">👤 Mein Spielerprofil</a><button type="button" class="sp-login">🔐 Anmelden</button><button type="button" class="sp-new">＋ Neues Profil anlegen</button><button type="button" class="sp-resume" hidden>✍️ Profil fertigstellen</button><button type="button" class="sp-logout">⇄ Abmelden / Konto wechseln</button></div></div>`;
+ head.append(wrapper);
+ const button=wrapper.querySelector('.sp-profile-button'),menu=wrapper.querySelector('.sp-index-menu');
+ function render(){
+  const p=active(),s=state(),isOnline=!!p;
+  wrapper.querySelector('.sp-avatar').style.cssText=p?avatarCSS(p):'background:#dbe8ff;';
+  wrapper.querySelector('.sp-person-name').textContent=p?p.name:(s?.status==='initializing'||s?.status==='loading'?'Bitte warten …':s?.status==='onboarding'?'Profil fertigstellen':'Anmelden');
+  wrapper.querySelector('.sp-view').hidden=!isOnline;
+  wrapper.querySelector('.sp-login').hidden=!!s?.user;
+  wrapper.querySelector('.sp-new').hidden=!!s?.user;
+  wrapper.querySelector('.sp-logout').hidden=!s?.user;
+  wrapper.querySelector('.sp-resume').hidden=s?.status!=='onboarding';
+  const option=wrapper.querySelector('.sp-options');option.innerHTML='';
+  if(!isOnline){const hint=document.createElement('div');hint.className='sp-menu-head';hint.style.fontWeight='500';hint.style.lineHeight='1.5';hint.textContent=s?.status==='onboarding'?'Dein neues Online-Profil ist noch nicht fertig.':s?.error||'Noch kein Konto? Registriere dich kostenlos Schritt für Schritt.';option.append(hint);}
+ }
+ button.onclick=()=>{menu.hidden=!menu.hidden;button.setAttribute('aria-expanded',String(!menu.hidden));render();};
+ wrapper.querySelector('.sp-login').onclick=()=>{menu.hidden=true;window.SpielOnline?.openLogin?.();};
+ wrapper.querySelector('.sp-new').onclick=()=>{menu.hidden=true;window.SpielOnline?.openRegistration?.();};
+ wrapper.querySelector('.sp-resume').onclick=()=>{menu.hidden=true;window.SpielOnline?.openRegistration?.(true);};
+ wrapper.querySelector('.sp-logout').onclick=async()=>{menu.hidden=true;try{await window.SpielOnline?.logout?.();}catch(e){alert(e.message);}};
+ document.addEventListener('pointerdown',e=>{if(!wrapper.contains(e.target)){menu.hidden=true;button.setAttribute('aria-expanded','false');}});
+ window.addEventListener('spielonline-change',render);window.addEventListener('spielprofil-change',render);render();
 }
-$('profile-edit').onclick=()=>modalOpen('Spielerprofil bearbeiten',`<label>Spielername<input name="name" maxlength="24" required value="${escapeHTML(active().name)}" autocomplete="off"></label>`,f=>rename(f.get('name')));
-$('profile-add').onclick=()=>modalOpen('Neues Profil erstellen',`<label>Spielername<input name="name" maxlength="24" required autofocus placeholder="z. B. Spieler 2"></label>`,f=>add(f.get('name')));
-$('profile-edit-top').onclick=$('profile-switch').onclick=()=>{$('switch-dialog').showModal()};
-$('profile-delete').onclick=()=>{if(signedIn())return;const p=active();if(confirm(`Das lokale Profil „${p.name}“ wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)){remove();render()}};
-$('dialog-cancel').onclick=()=>{$('profile-dialog').close()};$('switch-close').onclick=()=>{$('switch-dialog').close()};
-document.querySelectorAll('[data-choice-color]').forEach(b=>b.onclick=()=>{update({color:b.dataset.choiceColor});render()});
-document.querySelectorAll('[data-choice-game]').forEach(b=>b.onclick=()=>{update({favorite:b.dataset.choiceGame});render()});
-document.querySelectorAll('[data-choice-avatar]').forEach(b=>b.onclick=()=>{update({avatar:Number(b.dataset.choiceAvatar)});render()});
-render();window.addEventListener('spielonline-change',render);
+function initProfilePage(){
+ const root=document.getElementById('profile-root');if(!root)return;
+ const $=id=>document.getElementById(id);
+ const dialog=$('profile-dialog'),form=$('dialog-form');
+ function render(){
+  const p=active();if(!p)return;
+  $('profile-title-name').textContent=p.name;$('profile-short-name').textContent=p.name;
+  $('profile-header-avatar').style.cssText=avatarCSS(p);$('profile-side-avatar').style.cssText=avatarCSS(p);
+  $('profile-created').textContent=new Date(p.created||Date.now()).toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+  $('favorite-game-name').textContent=GAME_NAMES[p.favorite]||GAME_NAMES.skyjo;
+  document.querySelectorAll('[data-choice-color]').forEach(b=>{const selected=b.dataset.choiceColor===p.color;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));});
+  document.querySelectorAll('[data-choice-game]').forEach(b=>{const selected=b.dataset.choiceGame===p.favorite;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));});
+  document.querySelectorAll('[data-choice-avatar]').forEach(b=>{const n=+b.dataset.choiceAvatar;b.style.cssText=avatarCSS(n);const selected=!p.avatarImage&&n===p.avatar;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));});
+  $('stat-launches').textContent='–';$('stat-games').textContent='–';$('stat-profiles').textContent='1';$('stat-achievements').textContent='–';
+  $('achievement-list').innerHTML='<div class="achievement"><span>👑</span><b>Online-Profil</b><small>Konto eingerichtet</small></div><div class="achievement locked"><span>🏆</span><b>Spielerfolge</b><small>Folgen mit der sicheren Spielanbindung</small></div>';
+  $('profile-manage-note').textContent='🔐 Dein Profil wird online in Firebase gespeichert. Die sichere Kontolöschung ist noch nicht freigeschaltet.';
+ }
+ function showRename(){if(!active())return;
+  $('dialog-title').textContent='Spielernamen ändern';$('dialog-content').innerHTML=`<label>Spielername<input name="name" maxlength="24" minlength="2" required autocomplete="nickname" value="${escapeHTML(active().name)}"></label>`;
+  $('dialog-error').textContent='';dialog.showModal();
+  form.onsubmit=async ev=>{ev.preventDefault();const save=form.querySelector('button[type="submit"]');save.disabled=true;try{await rename(new FormData(form).get('name'));dialog.close();render();}catch(e){$('dialog-error').textContent=e.message;}finally{save.disabled=false;}};
+ }
+ $('profile-edit').onclick=showRename;
+ $('profile-switch').onclick=$('profile-edit-top').onclick=async()=>{try{await window.SpielOnline.logout();}catch(e){alert(e.message);}};
+ $('dialog-cancel').onclick=()=>dialog.close();
+ document.querySelectorAll('[data-choice-color]').forEach(b=>b.addEventListener('click',async()=>{try{await update({color:b.dataset.choiceColor});render();}catch(e){alert(e.message);}}));
+ document.querySelectorAll('[data-choice-game]').forEach(b=>b.addEventListener('click',async()=>{try{await update({favorite:b.dataset.choiceGame});render();}catch(e){alert(e.message);}}));
+ document.querySelectorAll('[data-choice-avatar]').forEach(b=>b.addEventListener('click',async()=>{try{await update({avatar:Number(b.dataset.choiceAvatar),avatarImage:null});render();}catch(e){alert(e.message);}}));
+ const upload=$('profile-gallery-upload');
+ if(upload)upload.addEventListener('change',async()=>{
+  const f=upload.files?.[0];if(!f)return;
+  const status=$('profile-upload-status');status.textContent='Bild wird verkleinert und gespeichert …';
+  try{const data=await window.SpielOnline.processImage(f);await update({avatarImage:data});status.textContent='✓ Eigenes Profilbild online gespeichert.';render();}
+  catch(e){status.textContent='⚠️ '+e.message;}
+  finally{upload.value='';}
+ });
+ window.addEventListener('spielonline-change',render);window.addEventListener('spielprofil-change',render);render();
 }
-
-function initGame(){const name=active().name;
-// Preset native name inputs only if their field contains a default/empty value. Players can always edit later.
-const path=location.pathname.toLowerCase();
-function updateInput(input){if(!input||input.dataset[STAMP])return;const v=(input.value||'').trim();input.value=name.slice(0,parseInt(input.maxLength,10)>0?parseInt(input.maxLength,10):24);input.dataset[STAMP]='1';input.dispatchEvent(new Event('input',{bubbles:true}));}
-function sync(){if(path.includes('skyjo')){updateInput(document.getElementById('onlineName'));updateInput(document.getElementById('aiHumanName'));updateInput(document.querySelector('#names input.pname'));}
-else if(path.includes('kreuzkunter')){updateInput(document.getElementById('name0'));updateInput(document.getElementById('net-name'));}
-else if(path.includes('business')){updateInput(document.getElementById('name0'));updateInput(document.getElementById('boCustomName'));}
-else if(path.includes('barikade')){const b=document.querySelector('.names button[data-name="Gast"]');if(b&&!['David','Vanessa','Christoph','Gast'].includes(name)){b.dataset.name=name;b.querySelector('.player-choice-name').textContent=name;b.querySelector('.player-choice-avatar').textContent=name[0].toUpperCase();b.setAttribute('title','Aktives Spielerprofil');}const choice=Array.from(document.querySelectorAll('.names button[data-name]')).find(b=>b.dataset.name===name);if(choice&&!choice.dataset[STAMP]){choice.dataset[STAMP]='1';if(!choice.disabled)choice.click();}}
+function initGame(){
+ let name=active()?.name||'';if(!name)try{name=sessionStorage.getItem(SESS)||'';}catch{}
+ if(!name)return;const path=location.pathname.toLowerCase();
+ function updateInput(input){if(!input||input.dataset[STAMP])return;const max=Number(input.maxLength)>0?input.maxLength:24;input.value=name.slice(0,max);input.dataset[STAMP]='1';input.dispatchEvent(new Event('input',{bubbles:true}));}
+ function sync(){
+  if(path.includes('skyjo')){updateInput(document.getElementById('onlineName'));updateInput(document.getElementById('aiHumanName'));updateInput(document.querySelector('#names input.pname'));}
+  else if(path.includes('kreuzkunter')){updateInput(document.getElementById('name0'));updateInput(document.getElementById('net-name'));}
+  else if(path.includes('business')){updateInput(document.getElementById('name0'));updateInput(document.getElementById('boCustomName'));}
+  else if(path.includes('barikade')){
+   const b=document.querySelector('.names button[data-name="Gast"]');
+   if(b&&!['David','Vanessa','Christoph','Gast'].includes(name)){
+    b.dataset.name=name;
+    const label=b.querySelector('.player-choice-name'),avatar=b.querySelector('.player-choice-avatar');
+    if(label)label.textContent=name;if(avatar)avatar.textContent=name[0].toUpperCase();b.setAttribute('title','Angemeldeter Spielername');
+   }
+   const choice=Array.from(document.querySelectorAll('.names button[data-name]')).find(b=>b.dataset.name===name);
+   if(choice&&!choice.dataset[STAMP]){choice.dataset[STAMP]='1';if(!choice.disabled)choice.click();}
+  }
+ }
+ sync();let count=0;const observer=new MutationObserver(()=>{sync();if(++count>1500)observer.disconnect();});observer.observe(document.body,{childList:true,subtree:true});setTimeout(()=>observer.disconnect(),45000);
 }
-sync();let c=0;const obs=new MutationObserver(()=>{sync();if(++c>1500)obs.disconnect()});obs.observe(document.body,{childList:true,subtree:true});setTimeout(()=>obs.disconnect(),45000);
-}
-function start(){const path=location.pathname.toLowerCase();if(document.getElementById('profile-root'))initProfilePage();else if(document.querySelector('.page-head')&&document.querySelector('.game-grid'))setupIndex();else if(path.includes('/barikade/')||path.includes('/skyjo/')||path.includes('/kreuzkunter/')||path.includes('/business/'))initGame();}
+function start(){const path=location.pathname.toLowerCase();if(document.getElementById('profile-root'))initProfilePage();else if(document.querySelector('.page-head')&&document.querySelector('.game-grid'))setupIndex();else if(['/barikade/','/skyjo/','/kreuzkunter/','/business/'].some(v=>path.includes(v)))initGame();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
