@@ -7,7 +7,42 @@ const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replac
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 const stayInLobby=new URL(location.href).searchParams.get('stay')==='1';
-let launchedMatchId=null;
+let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null;
+function stopWatch(){
+ streamReady=false;
+ if(hubHeartbeat){clearInterval(hubHeartbeat);hubHeartbeat=null;}
+ if(retrySocket){clearTimeout(retrySocket);retrySocket=null;}
+ if(hubSocket){const old=hubSocket;hubSocket=null;try{old.onclose=null;old.close();}catch(_e){}}
+}
+function startWatch(){
+ if(!code||!room||!activeProfile()||hubSocket)return;
+ const socket=new WebSocket(API.replace(/^http/i,'ws')+'/hub');hubSocket=socket;
+ let lastPong=Date.now();
+ socket.onopen=async()=>{
+  try{const token=await logged().user.getIdToken();
+    if(hubSocket===socket&&socket.readyState===1){
+      socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));
+      hubHeartbeat=setInterval(()=>{
+        if(hubSocket!==socket||socket.readyState!==1)return;
+        if(Date.now()-lastPong>95000){socket.close();return;}
+        socket.send(JSON.stringify({type:'ping'}));
+      },30000);
+    }
+  }catch(_e){try{socket.close();}catch(_x){}}
+ };
+ socket.onmessage=event=>{
+  let data;try{data=JSON.parse(event.data);}catch(_e){return;}
+  if(data?.type==='pong')lastPong=Date.now();
+  if(data?.type==='room'&&data.room?.code===code){lastPong=Date.now();streamReady=true;streamLast=Date.now();room=data.room;render();}
+ };
+ socket.onclose=()=>{
+  if(hubSocket!==socket)return;
+  hubSocket=null;streamReady=false;
+  if(hubHeartbeat){clearInterval(hubHeartbeat);hubHeartbeat=null;}
+  if(code&&room&&activeProfile())retrySocket=setTimeout(()=>{retrySocket=null;startWatch();},4500);
+ };
+ socket.onerror=()=>{}; // close event triggers HTTP fallback and retry
+}
 function enterBarikade(){
  if(room?.phase!=='playing'||room.match?.game!=='barikade'||!room.match.participating)return;
  const match=room.match,profile=logged();
@@ -41,10 +76,11 @@ async function request(path,method='GET',data){
 }
 function setRoomCode(next){code=next;const u=new URL(location.href);if(code)u.searchParams.set('room',code);else u.searchParams.delete('room');history.replaceState(null,'',u);}
 function activateRoom(result){room=result;setRoomCode(result.code);render();}
-function pollStop(){if(poll){clearInterval(poll);poll=null;}}
-function pollStart(){pollStop();poll=setInterval(async()=>{if(!code||operation||!activeProfile()||document.hidden)return;
+function pollStop(){if(poll){clearInterval(poll);poll=null;}stopWatch();}
+function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code||operation||!activeProfile()||document.hidden)return;
+ if(streamReady && hubSocket?.readyState===1)return;
  try{const result=await request('/rooms/'+code);pollErrors=0;room=result.room;render();}catch(e){if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}
- },1600);}
+ },4500);}
 function leaveView(){pollStop();room=null;setRoomCode(null);render();}
 function render(){
  const account=activeProfile();
