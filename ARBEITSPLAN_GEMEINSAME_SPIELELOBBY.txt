@@ -1,65 +1,60 @@
-ARBEITSPLAN – GEMEINSAME SPIELE-LOBBY · V2 BETA
-Stand: 12. Oktober 2026 · GitHub-Testzweig feature/gemeinsame-lobby-v1
+ARBEITSPLAN – GEMEINSAME SPIELE-LOBBY · V2.1 BETA
+Stand: 12. Oktober 2026 · Testzweig feature/gemeinsame-lobby-v1
 
 ZIEL
-Jeder Online-Spieler meldet sich mit Firebase E-Mail/Passwort an und betritt EINEN
-zentralen Raum (sechsstelliger Code). Innerhalb dieses Raums können nacheinander
-Barikade, KreuzKunter, SKYJO Action und Das große Business gespielt werden, ohne
-Raumcode oder Mitspieler neu einzugeben. Der Host kontrolliert die Spielauswahl;
-Ergebnisse werden beim autoritativen Spielserver verbucht. Offline bleibt getrennt.
+Einmal mit Firebase-E-Mail/Passwort anmelden, EINEM übergreifenden Raum beitreten
+und darin nacheinander Barikade, KreuzKunter, SKYJO Action und Das große
+Business spielen. Derselbe Raumcode, dieselben Mitglieder und derselbe Host
+bleiben beim Wechsel erhalten. Jede Partie hat einen eigenen Spielstand.
 
-ERLEDIGT – PHASE 1
-[x] Zentraler Firestore-Raum, max. 6 Mitgliedskonten.
-[x] Firebase-Identitätsprüfung aller Hub-REST-Aufrufe.
-[x] Sicherer Raumbeitritt, Host-Rolle, Host-Wechsel vor Partiebeginn.
-[x] Spielauswahl und Bereitmeldung, Mitspieler/Zuschauer.
-[x] Responsive Lobby, eigene HTML-/JS-Dateien.
+ERLEDIGT – ZENTRALER ONLINE-RAUM
+[x] Firestore-Raumverwaltung, sechsstelliger Code, bis zu sechs Teilnehmer.
+[x] Mitspieler und Zuschauer im selben Raum; Barikade maximal vier Aktive.
+[x] Firebase-Identität, Hostrechte und Bereitmeldung serverseitig geprüft.
+[x] Spielauswahl nur durch den Host.
+[x] Raumänderungen via authentifiziertem WebSocket /hub mit Firestore-Snapshot.
+[x] HTTP-Polling als Fallback, Reconnect und WebSocket-Ping/Pong.
 
-ERLEDIGT – PHASE 2 BETA
-[x] Authentifizierter WebSocket-Endpunkt /hub.
-[x] Firestore onSnapshot versendet autorisierte Raumänderungen sofort an Mitglieder.
-[x] WebSocket-Ping/Pong, Token-Erneuerung und HTTP-Polling als Ausfallreserve.
-[x] Automatischer Start, sobald alle ausgewählten Barikade-Spieler bereit sind.
-[x] Genau ein Match pro Start dank Firestore-Transaktion.
-[x] Erneuter Zugriff eines angemeldeten Mitglieds auf einen laufenden Raum.
+ERLEDIGT – BARIKADE INTEGRATION BETA
+[x] Jeder Barikade-Durchlauf bekommt eine eigene interne 10-stellige Kennung.
+[x] Server prüft Barikade-WebSocket-Beitritte gegen aktiven Hub-Raum und Account.
+[x] Server bestimmt Host, Farbe, aktive Mitspieler und Startbedingungen.
+[x] Letzte Bereitmeldung startet transaktional nur eine Partie.
+[x] Bestehendes Barikade-Spielbrett mit automatischem Übergang verbunden.
+[x] Der Spieler kehrt über den Lobby-Button in denselben Raum zurück.
+[x] Schutz vor einer automatischen Rücknavigation in dieselbe beendete Partie.
+[x] Eine neue Partie kann mit dem unveränderten sechsstelligen Raumcode beginnen.
+[x] Host-Vorraum für Klassisch/Action, Bossmodus, Brettdesign, Jokerzahl,
+    Ereignisfelder, Boss-Auslöser und Farbwahl/Zufallsvergabe implementiert.
+[x] Host-Einstellungen serverseitig gespeichert und vor Spielstart kontrolliert.
+[x] Jeder Teilnehmer darf seine eigene Farbe reservieren, nicht die der anderen.
+[x] Änderungen an Einstellungen oder Spielerplätzen setzen Bereitmeldungen zurück.
+[x] 14/14 automatisierte Tests der Raumverwaltung und Berechtigungen bestanden.
+[x] JavaScript-Syntaxprüfung der neuen/geänderten Dateien bestanden.
 
-ERLEDIGT – PHASE 3 / BARIKADE BETA
-[x] Hub-Raum erlaubt 6 Mitglieder, Barikade erlaubt maximal 4 aktive Spieler.
-[x] Eindeutige interne 10-stellige Barikade-Partiekennung je Runde.
-[x] Zentrale Firebase-Kontoprüfung bei jedem Barikade-WebSocket-Beitritt.
-[x] Host-Rolle und Spielerfarbe kommen vom Server, nicht vom Browser.
-[x] Server verhindert vorzeitigen Barikade-Start bei fehlenden Teilnehmern.
-[x] Automatische Weiterleitung aus der Lobby auf das bestehende Barikade-Brett.
-[x] Bestehende Barikade-Regeln und Spielbrett bleiben weitgehend unverändert.
-[x] Rückkehr zur selben Hub-Lobby über den Lobby-Button.
-[x] Hub gibt Raum für nächste Partie erst frei, wenn Server Spielende bestätigt.
-[x] Schon benutzter Barikade-Raumcode wird bei neuer Partie nicht wiederverwendet.
-[x] 9 von 9 automatisierten Tests für Hub und Firestore-Push bestehen.
+NICHT ALS FERTIG ANSEHEN
+[ ] Authentifizierter Zwei-/Drei-/Vier-Geräte-End-to-End-Test auf Render/Firebase.
+[ ] Vollständige Barikade-Partie in Klassisch/Action/Boss inkl. Sieg/Statistik.
+[ ] Render-Staging für beiden Testzweige bereitstellen und Logauswertung.
+[ ] UI-/WebSocket-Reconnect nach Neustart, getrennte Sitzungen, Firestore-Ausfall.
+[ ] Automatische Rückkehr ALLER Spieler nach bestätigtem Spielende; derzeit
+    Rücknavigation individuell, und der Host schließt die Partie in der Lobby ab.
+[ ] Alle bestehenden Barikade-Spezialeinstellungen und animierte Farbverlosung
+    mit Original verifizieren. Zufällige Farbzuweisung findet serverseitig statt.
+[ ] KreuzKunter, SKYJO Action und Business mit Hub verbinden.
+[ ] Alle Spielzüge der Spiele mit Client-Autorität vollständig serverseitig prüfen.
+[ ] Ergebnis-/XP-Statistiken aller vier Spiele zentral und einmalig verbuchen.
 
-WICHTIGE EINSCHRÄNKUNGEN DIESER BETA
-[ ] Im Hub sind aktuell nur klassische Barikade-Partien verbunden.
-[ ] Action-, Boss-, Brettvarianten- und Farbwahl-Einstellungen müssen in den
-    eigenen Barikade-Vorraum übernommen und serverseitig validiert werden.
-[ ] Siegeranzeige und Rückkehr in die Lobby haben noch keinen automatisierten
-    End-to-End-Mehrspielertest mit echter Firebase-/Render-Verbindung.
-[ ] Beendete Partie wird aktuell durch den Host in der zentralen Lobby
-    bestätigt. Der Server lässt das nur nach tatsächlichem Spielende zu.
-[ ] Websocket-Unterbrechungen, Server-Neustart und Firestore-Sicherheit noch
-    gegen echtes Staging-Deployment testen.
+WEITERE SCHRITTE
+1. Staging für Server und Client einrichten (keine Live-Main-Freigabe).
+2. Zwei echte Geräte mit eigenen Firebase-Konten: Raum, Bereitschaft, Start,
+   Würfeln, Ende, Rückkehr, zweites Spiel unter demselben Raumcode.
+3. Tests zu Host-Abbruch, Reconnect, Action/Boss, Farbwahl mit bis zu vier Aktiven.
+4. Erst nach stabiler Barikade-Anbindung KreuzKunter verbinden.
+5. Anschließend SKYJO und Business auf verifizierte Server-Spielaktionen umbauen
+   und in die gemeinsame Lobby aufnehmen.
+6. Ergebnisstatistiken korrigieren, abschließender ganzer Spieleabend als Test.
 
-NÄCHSTE SCHRITTE IN DIESER REIHENFOLGE
-1. Render-Staging-Dienst und GitHub-Pages-Testdeployment oder Test-Domain.
-2. Zwei-Geräte-Test Barikade (Start, Zug, Sieg, Rückkehr, Folgematch).
-3. Barikade-Vorraum: Host-Regeln, Boss-/Action-Modus, Brettwahl, Wunschfarbe,
-   Farb-Slots und andere bestehende Einstellungen kontrolliert übernehmen.
-4. Drei-/Vier-Spieler, Zuschauer, Wechsel, Reconnect und Neustart testen.
-5. KreuzKunter an denselben Hub anbinden und mit simultanen Zügen testen.
-6. SKYJO serverseitig sicher umbauen, verdeckte Karten schützen, Hub anbinden.
-7. Business-Spielzüge serverseitig prüfen und Hub anbinden.
-8. Spielerstatistiken/XP, Ergebnis-Einmaligkeit und Test eines ganzen Spielabends.
-
-SICHERHEITS- UND FREIGABEREGELN
-- Beide Original-ZIP-Dateien und GitHub-main bleiben unverändert.
-- Alle V2-Dateien liegen auf den separaten feature/gemeinsame-lobby-v1-Zweigen.
-- Keine Änderungen an Live-Render oder Firebase-Datenbank vorgenommen.
-- Vor produktiver Veröffentlichung: technische und fachliche Live-Mehrspielertests.
+WICHTIG
+Die GitHub-main-Zweige und Original-ZIP-Dateien wurden NICHT verändert.
+Diese Version ist noch nicht live und wurde nicht auf Render ausgerollt.
