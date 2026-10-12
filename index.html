@@ -177,11 +177,35 @@
 .sp-profile-button .sp-person-name{flex:1;overflow:hidden;text-overflow:ellipsis;text-align:left;white-space:nowrap;font-size:13px}
 .sp-avatar{width:39px;height:39px;flex:none;border-radius:50%;background-color:#d2edff;border:2px solid #84ceff;box-shadow:0 0 0 2px #fff2}
 .sp-index-menu{position:absolute;top:calc(100% + 12px);right:0;width:min(340px,85vw);padding:13px;background:linear-gradient(175deg,#0d1932,#142c49);border-radius:20px;border:1px solid #3d6290;box-shadow:0 22px 55px #0009;color:white}
-.sp-index-menu[hidden]{display:none}.sp-menu-head{font-size:13px;font-weight:900;letter-spacing:.4px;margin:2px 2px 9px}
+.sp-index-menu [hidden]{display:none!important}.sp-index-menu[hidden]{display:none}.sp-menu-head{font-size:13px;font-weight:900;letter-spacing:.4px;margin:2px 2px 9px}
 .sp-options{max-height:245px;overflow-y:auto;display:grid;gap:6px}.sp-profile-choice{width:100%;padding:7px;display:flex;gap:11px;align-items:center;border:1px solid #294665;background:#112441;color:white;border-radius:12px;cursor:pointer;text-align:left}.sp-profile-choice:hover{background:#214169}.sp-profile-choice span:nth-child(2){flex:1;font-weight:800}.sp-profile-choice span:last-child{color:#4cf0b4}
 .sp-menu-actions{margin-top:10px;border-top:1px solid #365270;padding-top:10px;display:grid;gap:8px}.sp-menu-actions a,.sp-menu-actions button{background:#243b62;border:0;color:white;padding:12px;border-radius:12px;font-weight:800;font-size:13px;text-align:center;cursor:pointer}.sp-menu-actions button{background:linear-gradient(110deg,#1f85eb,#6557ed)}
 @media(max-width:700px){.page-head{padding-right:0!important;padding-top:72px}.sp-index-wrap{right:0;top:-3px}.sp-profile-button{max-width:220px}.sp-index-menu{width:min(330px,90vw)}}
 
+
+/* V3: Dropdown oberhalb der dunklen Spielauswahl im Profilseiten-Look */
+.sp-profile-button{border:1px solid rgba(189,222,255,.32)!important;box-shadow:0 10px 30px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.1)!important}
+.sp-index-menu{background:linear-gradient(165deg,#ffffff,#f4f9ff)!important;color:#143760!important;border:1px solid #dfeafb!important;border-radius:21px!important;box-shadow:0 20px 58px #0008!important;padding:15px!important}
+.sp-index-menu .sp-menu-head{color:#244d7d!important}
+.sp-index-menu .sp-options .sp-menu-head{color:#718aa5!important}
+.sp-index-menu .sp-menu-actions{border-top:1px solid #e5edf8!important}
+.sp-index-menu .sp-menu-actions a,.sp-index-menu .sp-menu-actions button{color:#255b99!important;background:#e7f2ff!important;border:1px solid #d9e8f8!important;min-height:44px}
+.sp-index-menu .sp-menu-actions button.sp-new,.sp-index-menu .sp-menu-actions button.sp-login,.sp-index-menu .sp-menu-actions button.sp-resume{background:linear-gradient(110deg,#168be8,#366bea)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 5px 15px #2879eb28}
+.sp-index-menu .sp-menu-actions a[hidden],.sp-index-menu .sp-menu-actions button[hidden]{display:none!important}
+.sp-index-menu .sp-menu-actions button:hover,.sp-index-menu .sp-menu-actions a:hover{filter:brightness(.98)}
+
+
+/* Spielauswahl V4 – cloud-profile dropdown, consistent with premium registration */
+.sp-index-wrap{z-index:10050!important}
+.sp-profile-button{border:1px solid rgba(186,216,247,.28)!important;box-shadow:0 13px 31px #0008,0 1px 0 #fff2 inset!important;min-height:49px;transition:transform .18s ease,box-shadow .18s ease}
+.sp-profile-button:hover{transform:translateY(-2px);box-shadow:0 17px 37px #0009!important}
+.sp-index-menu{width:min(365px,92vw)!important;background:radial-gradient(circle at 98% 0%,#e0efff 0%,transparent 35%),linear-gradient(145deg,#ffffff,#f6faff)!important;border:1px solid #dceafa!important;box-shadow:0 30px 70px #010f28a8!important;border-radius:23px!important;padding:18px!important}
+.sp-index-menu:before{content:'☁  ONLINE-SPIELERPROFIL';display:block;color:#6791b6;letter-spacing:1.1px;font-size:9px;font-weight:950;margin-bottom:11px}
+.sp-index-menu .sp-menu-head{font-size:13px!important;font-weight:950!important;color:#173c6b!important}
+.sp-index-menu .sp-menu-actions{gap:9px;padding-top:13px!important;margin-top:13px!important}
+.sp-index-menu .sp-menu-actions button,.sp-index-menu .sp-menu-actions a{border-radius:13px!important;font-weight:900!important;transition:transform .16s ease,box-shadow .16s ease}
+.sp-index-menu .sp-menu-actions button:hover,.sp-index-menu .sp-menu-actions a:hover{transform:translateY(-1px)}
+.sp-index-menu .sp-menu-actions button.sp-new,.sp-index-menu .sp-menu-actions button.sp-login,.sp-index-menu .sp-menu-actions button.sp-resume{background:linear-gradient(110deg,#129ceb,#316be9)!important;box-shadow:0 8px 20px #277ee735!important}
 </style>
 </head>
 <body>
@@ -189,7 +213,7 @@
     <header class="page-head">
       <h1>Spielauswahl</h1>
       <p class="subtitle">Wähle, welches Spiel du starten möchtest.</p>
-      <p class="hint"><span class="hint-icon" aria-hidden="true">i</span><span>Hinweis: Barikade bleibt unverändert – nur die Startseite hat ein neues Design erhalten.</span></p>
+      <p class="hint"><span class="hint-icon" aria-hidden="true">i</span><span>🎮 Online-Spielerprofile mit Anmeldung – oben rechts anmelden oder ein neues Profil anlegen.</span></p>
     </header>
     <section class="game-grid" aria-label="Verfügbare Spiele">
       <article class="game barikade-card">
@@ -247,7 +271,8 @@
       </article>
     </section>
   </main>
-<script src="firebase-config.js" defer></script>
-<script src="profile-core.js" defer></script>
+<script src="profile-config.js" defer></script>
+<script src="profile-auth.js?v=profile-v7" defer></script>
+<script src="profile-core.js?v=profile-v10-gentle-20261011" defer></script>
 </body>
 </html>

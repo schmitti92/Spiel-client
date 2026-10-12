@@ -1,37 +1,365 @@
-<!DOCTYPE html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Spielerportal – Mein Online-Profil V130</title>
-<meta name="theme-color" content="#0b2039"><style>
-:root{color-scheme:dark;--bg:#08172a;--card:#122b46;--line:#38536d;--gold:#f9c84c;--muted:#b0c7d8;--light:#ecf5ff}*{box-sizing:border-box}html,body{margin:0;min-height:100%;font:15px/1.48 system-ui,-apple-system,Segoe UI,Arial;color:#fff;background:radial-gradient(ellipse at 70% 0%,#204c83 0%,transparent 50%),linear-gradient(130deg,#071526,#0c2846 65%,#0a1b31)}button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:wait}a{color:inherit}h1,h2,h3,p{margin:0 0 10px}h1{font-size:clamp(28px,4vw,43px);letter-spacing:-.8px}h2{font-size:23px}.shell{max-width:1180px;margin:0 auto;padding:28px 17px 68px}.nav{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:26px}.back{background:#0c2645;border:1px solid #5a83a2;padding:9px 15px;border-radius:10px;text-decoration:none;font-weight:750}.pill{background:#ffffff12;border:1px solid #ffffff2b;border-radius:999px;padding:7px 12px;font-size:12px;color:#d2e6fa}.hero{padding:30px;border-radius:23px;border:1px solid #cda3447f;background:linear-gradient(120deg,#123966e8,#0b2441f0),url('Assets/game-backgrounds/skyjo.webp') center/cover;box-shadow:0 20px 60px #0006;margin-bottom:21px}.hero p{color:#cae0fa;max-width:630px}.card{background:linear-gradient(140deg,#15324ff5,#0b2039f5);border:1px solid #4f6e8a;border-radius:19px;padding:23px;box-shadow:0 15px 40px #0003}.card+.card{margin-top:14px}.wide{width:100%}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.muted{color:var(--muted);font-size:13px}.field{display:grid;gap:6px;margin-bottom:14px}.field b{font-size:12px}.field input{width:100%;border:1px solid #7294b0;background:#081b32;color:#fff;padding:12px;border-radius:10px;outline-offset:3px}.field input:focus{outline:2px solid #f5c953}.primary,.secondary{border-radius:11px;border:1px solid transparent;font-weight:850;padding:12px 17px}.primary{background:linear-gradient(120deg,#ffe993,#efad32);color:#2d200b;box-shadow:0 6px 13px #d8a6384a}.secondary{background:#122d4b;border-color:#6487a5;color:#fff}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}.actions button{flex:1 1 125px}.seg{display:flex;gap:6px;padding:5px;background:#071a30;border-radius:12px;margin-bottom:19px}.seg button{flex:1;border:0;padding:11px 8px;border-radius:9px;background:transparent;color:#d4e6f4;font-weight:750}.seg button.active{background:linear-gradient(130deg,#236ba9,#12548d);color:white;box-shadow:0 3px 8px #0005}.error{min-height:0;margin-top:10px;color:#ffbbb4;font-weight:750}.success{color:#bcf4c8}.auth-card{max-width:600px;margin:auto}.stepper{display:flex;align-items:center;gap:6px;margin-bottom:18px}.step{display:flex;align-items:center;gap:5px;flex:1;border-bottom:3px solid #3e5e80;padding-bottom:8px;font-size:11px;color:#bdd2e7}.step.on{border-bottom-color:var(--gold);color:#ffe4a0}.step .num{border:1px solid #768bab;border-radius:50%;width:25px;height:25px;display:grid;place-items:center}.avatar-list,.color-list{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.avatar-option{width:62px;height:62px;border:3px solid #56728b;border-radius:50%;background-color:#36536c}.avatar-option.selected,.color-option.selected{border-color:#ffda6f;box-shadow:0 0 0 3px #ffda6f55}.color-option{width:44px;height:44px;border:3px solid #f9fafb55;border-radius:50%}.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}.theme{border-radius:13px;overflow:hidden;padding:0;border:2px solid #55718d;background:#081e36;color:#fff;text-align:left}.theme img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}.theme b{padding:10px;display:block;font-size:13px}.theme.selected{border-color:#ffe38a;box-shadow:0 0 0 3px #ffda6459}.theme.disabled{opacity:.65}.profile-intro{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:21px}.big-avatar{width:88px;height:88px;border-radius:50%;border:4px solid #ffe085;background-color:#295273}.profile-intro p{color:#bdd2e8}.choice-game{display:flex;gap:9px;flex-wrap:wrap}.choice-game button{color:white;border:1px solid #6b8dac;background:#173a5d;border-radius:10px;padding:10px}.choice-game button.selected{background:#655024;border-color:#ffcf5c}.note{border:1px solid #588cc3;background:#0b345d;padding:14px;border-radius:12px;color:#d6eaff;font-size:13px;margin-top:13px}.spinner{padding:42px;text-align:center;font-size:16px;color:#cedbeb}.footer{color:#9bb9d2;text-align:center;font-size:12px;margin-top:23px}.hidden{display:none!important}@media(max-width:730px){.grid{grid-template-columns:1fr}.shell{padding:15px 10px 40px}.hero{padding:19px}.card{padding:16px}.themes{gap:7px}.theme b{font-size:11px;padding:6px}.step{font-size:9px}.avatar-option{width:54px;height:54px}}
-</style></head><body><div class="shell"><nav class="nav"><a class="back" href="index.html">← Zur Spielauswahl</a><span id="connect-pill" class="pill">● Profilverbindung wird geprüft</span></nav><header class="hero"><h1>👑 Dein Spielerprofil</h1><p>Dein eigenes Online-Profil für SKYJO Action, Barikade, KreuzKunter und Das große Business. Dein Lieblingsspielfeld ist mit deinem Firebase-Konto verknüpft.</p></header><main id="screen"><div class="spinner">⏳ Spielerprofil wird geladen …</div></main><p class="footer">Anmeldung per E-Mail und Passwort · Spielerprofile werden ausschließlich über Render verwaltet · Keine lokalen Profile</p></div>
-<script src="firebase-config.js" defer></script><script src="profile-core.js?v=render-authoritative-20261012" defer></script>
-<script>
-(function(){
-'use strict';
-const screen=document.getElementById('screen'),pill=document.getElementById('connect-pill');
-const themes={standard:['Standard','Assets/game-backgrounds/skyjo.webp'],comic:['Comic','Assets/skyjo-themes/skyjo_comic.jpg'],christlich:['Christlich','Assets/skyjo-themes/skyjo_christlich.jpg']};
-const icons=['📧 E-Mail','🖼️ Avatar','🎨 Farbe','👤 Spielername'];
-const draft={email:'',password:'',repeat:'',avatar:0,color:'#328cff',name:'',skyjoBoardFavorite:'standard'};
-let authMode='login',step=0,busy=false,message='',onboardingInitialized=false;
-const p=()=>window.SpielProfile;
-const escape=s=>p()?.escapeHTML(s)||String(s||'').replaceAll('<','&lt;');
-function error(msg){message=msg;const el=document.getElementById('form-message');if(el){el.textContent=msg;el.className='error'}}
-function renderAuth(){const st=p().current();if(st.phase==='unconfigured'||st.phase==='error'){screen.innerHTML=`<div class="card auth-card"><h2>⚠️ Profilserver nicht erreichbar</h2><p class="muted">${escape(st.error)}</p><div class="note">Deine Profildaten werden ausschließlich durch den Render-Server verarbeitet. Die Firestore-Regeln dürfen für Browserzugriffe geschlossen bleiben.</div><div class="actions"><button type="button" id="retry-profile" class="primary">Erneut verbinden</button>${st.user?'<button type="button" id="leave-profile" class="secondary">Abmelden</button>':''}</div></div>`;document.getElementById('retry-profile').onclick=()=>p().retry();if(st.user)document.getElementById('leave-profile').onclick=()=>p().signOut();return}
- const needsSetup=st.phase==='needs_setup';if(needsSetup){authMode='register';if(!onboardingInitialized){onboardingInitialized=true;step=1;draft.name=st.profile?.name||'';draft.avatar=st.profile?.avatar||0;draft.color=st.profile?.color||draft.color;draft.skyjoBoardFavorite=st.profile?.skyjoBoardFavorite||'standard';}}else{onboardingInitialized=false;}
- if(authMode==='login'){screen.innerHTML=`<section class="card auth-card"><div class="seg"><button class="active" type="button">Anmelden</button><button type="button" id="switch-register">Neu registrieren</button></div><h2>Willkommen zurück! 🎮</h2><p class="muted">Melde dich mit deinem eigenen E-Mail-Konto an.</p><form id="login-form"><label class="field"><b>E-Mail-Adresse</b><input name="email" type="email" autocomplete="email" required></label><label class="field"><b>Passwort</b><input name="password" type="password" autocomplete="current-password" required></label><button type="submit" class="primary wide">Anmelden</button><div class="actions"><button type="button" class="secondary" id="reset-pass">Passwort vergessen?</button></div><div class="error" id="form-message"></div></form></section>`;
- document.getElementById('switch-register').onclick=()=>{authMode='register';step=0;message='';renderAuth()};document.getElementById('login-form').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);await execute(()=>p().signIn(f.get('email'),f.get('password')))};document.getElementById('reset-pass').onclick=async()=>{const mail=document.querySelector('[name="email"]')?.value?.trim();if(!mail){error('Bitte zuerst deine E-Mail-Adresse eintragen.');return}await execute(()=>p().resetPassword(mail),'Eine E-Mail zum Zurücksetzen wurde angefordert.');};return}
- const content=[`<h2>Schritt 1: Dein Zugang</h2><label class="field"><b>E-Mail-Adresse</b><input id="reg-email" type="email" autocomplete="email" required value="${escape(draft.email)}"></label><label class="field"><b>Passwort (mindestens 6 Zeichen)</b><input id="reg-password" type="password" autocomplete="new-password" required value="${escape(draft.password)}"></label><label class="field"><b>Passwort wiederholen</b><input id="reg-repeat" type="password" autocomplete="new-password" required value="${escape(draft.repeat)}"></label>`,
- `<h2>Schritt 2: Dein Profilbild</h2><p class="muted">Wähle einen Avatar – er wird deinem Online-Konto zugeordnet.</p><div class="avatar-list">${Array.from({length:8},(_,i)=>`<button type="button" class="avatar-option ${draft.avatar===i?'selected':''}" style="${p().avatarCSS(i)}" data-avatar="${i}" aria-label="Avatar ${i+1}"></button>`).join('')}</div>`,
- `<h2>Schritt 3: Deine Lieblingsfarbe</h2><p class="muted">Deine Farbe ist jederzeit im Profil änderbar.</p><div class="color-list">${p().COLORS.map(c=>`<button type="button" class="color-option ${draft.color===c?'selected':''}" style="background:${c}" data-color="${c}" aria-label="Farbe ${c}"></button>`).join('')}</div>`,
- `<h2>Schritt 4: Dein Spielername</h2><label class="field"><b>Spielername</b><input id="reg-name" maxlength="24" required placeholder="Dein Spielername" value="${escape(draft.name)}"></label><p class="muted">Danach wird dein persönliches Profil sicher auf dem Render-Server eingerichtet. Dein Skyjo-Lieblingsspielfeld kannst du gleich anschließend auswählen.</p>`][step];
- screen.innerHTML=`<section class="card auth-card"><div class="seg">${needsSetup?'<span style="padding:11px;color:#ffe4a0">✨ Einrichtung abschließen</span>':'<button id="switch-login">Anmelden</button><button class="active">Neu registrieren</button>'}</div><div class="stepper">${icons.map((txt,i)=>`<span class="step ${i<=step?'on':''}"><b class="num">${i+1}</b> ${txt}</span>`).join('')}</div><div id="register-content">${content}</div><div class="actions"><button type="button" class="secondary" id="reg-back">${step===0?'Zur Anmeldung':needsSetup&&step===1?'Abmelden':'Zurück'}</button><button type="button" class="primary" id="reg-next">${step===3?(needsSetup?'Profil abschließen':'Konto erstellen'):'Weiter →'}</button></div><div id="form-message" class="error">${escape(message)}</div></section>`;
- if(!needsSetup)document.getElementById('switch-login').onclick=()=>{authMode='login';message='';renderAuth()};document.getElementById('reg-back').onclick=()=>{if(needsSetup&&step===1){p().signOut();return;}if(step===0){authMode='login'}else{collect(false);step--}message='';renderAuth()};document.getElementById('reg-next').onclick=async()=>{if(!collect(true))return;if(step<3){step++;message='';renderAuth();return}await execute(()=>needsSetup?p().completeRegistration(draft):p().register(draft),'Dein Profil wird auf Render eingerichtet …')};
- screen.querySelectorAll('[data-avatar]').forEach(el=>el.onclick=()=>{draft.avatar=Number(el.dataset.avatar);renderAuth()});screen.querySelectorAll('[data-color]').forEach(el=>el.onclick=()=>{draft.color=el.dataset.color;renderAuth()})}
-function collect(validate){if(step===0){draft.email=document.getElementById('reg-email').value.trim();draft.password=document.getElementById('reg-password').value;draft.repeat=document.getElementById('reg-repeat').value;if(validate){if(!/^\S+@\S+\.\S+$/.test(draft.email)){error('Bitte eine gültige E-Mail-Adresse eingeben.');return false}if(draft.password.length<6){error('Das Passwort muss mindestens 6 Zeichen haben.');return false}if(draft.password!==draft.repeat){error('Die Passwörter stimmen nicht überein.');return false}}}if(step===3){draft.name=document.getElementById('reg-name').value.trim();if(validate&&draft.name.length<2){error('Bitte einen Spielernamen mit mindestens 2 Zeichen eintragen.');return false}}return true}
-async function execute(fn,success=''){if(busy)return;busy=true;const actions=[...screen.querySelectorAll('button')];actions.forEach(el=>el.disabled=true);error('');try{await fn();if(success){const el=document.getElementById('form-message');if(el){el.className='success';el.textContent=success}}}catch(e){error(p().errorText(e))}finally{busy=false;actions.forEach(el=>el.disabled=false)}}
-async function edit(changes){await execute(()=>p().update(changes),'✓ Auf dem Render-Server gespeichert.');}
-function renderProfile(){const prof=p().active(),status=p().current();if(!prof){screen.innerHTML='<div class="spinner">⏳ Profil wird geladen …</div>';return}screen.innerHTML=`<div class="card"><div class="profile-intro"><div class="big-avatar" style="${p().avatarCSS(prof.avatar)}"></div><div><h2>${escape(prof.name)} 👑</h2><p>${escape(status.user?.email)} · Online-Profil</p><span class="pill">☁️ Render-Profil synchronisiert · Benutzer-ID geschützt</span></div><div style="margin-left:auto"><button class="secondary" id="sign-out">Abmelden</button></div></div><h3>🎴 Dein Lieblings-Spielfeld für SKYJO</h3><p class="muted">Dieses Design wird auf jedem angemeldeten Gerät bei einer neuen Partie vorgeschlagen. Während der Partie kannst du wechseln, falls der Host keinen Stil vorgibt.</p><div class="themes">${Object.entries(themes).map(([id,[name,img]])=>`<button type="button" class="theme ${prof.skyjoBoardFavorite===id?'selected':''}" data-board="${id}"><img src="${img}" alt="${name}-Spielfeld"><b>${prof.skyjoBoardFavorite===id?'✓ ':''}${name}</b></button>`).join('')}</div><div class="note">👑 Legt der Host ein Design verbindlich fest, gilt dieses nur im jeweiligen Online-Raum. Dein Profil-Favorit bleibt gespeichert.</div></div><div class="grid" style="margin-top:18px"><section class="card"><h3>👤 Spielername</h3><label class="field"><b>Dein Anzeigename</b><input maxlength="24" id="edit-name" value="${escape(prof.name)}"></label><button id="save-name" class="primary">Namen speichern</button><div class="error" id="form-message"></div><h3 style="margin-top:24px">🎮 Lieblingsspiel</h3><div class="choice-game">${Object.entries({skyjo:'Skyjo',kreuz:'KreuzKunter',barikade:'Barikade',business:'Business'}).map(([k,v])=>`<button type="button" data-game="${k}" class="${prof.favorite===k?'selected':''}">${v}</button>`).join('')}</div></section><section class="card"><h3>🖼️ Profilbild</h3><div class="avatar-list">${Array.from({length:8},(_,i)=>`<button type="button" class="avatar-option ${prof.avatar===i?'selected':''}" data-change-avatar="${i}" style="${p().avatarCSS(i)}" aria-label="Avatar ${i+1}"></button>`).join('')}</div><h3>🎨 Lieblingsfarbe</h3><div class="color-list">${p().COLORS.map(c=>`<button type="button" class="color-option ${prof.color===c?'selected':''}" data-change-color="${c}" style="background:${c}" aria-label="Farbe ${c}"></button>`).join('')}</div></section></div>`;
- document.getElementById('sign-out').onclick=()=>execute(()=>p().signOut());document.getElementById('save-name').onclick=()=>edit({name:document.getElementById('edit-name').value});screen.querySelectorAll('[data-board]').forEach(el=>el.onclick=()=>edit({skyjoBoardFavorite:el.dataset.board}));screen.querySelectorAll('[data-game]').forEach(el=>el.onclick=()=>edit({favorite:el.dataset.game}));screen.querySelectorAll('[data-change-avatar]').forEach(el=>el.onclick=()=>edit({avatar:Number(el.dataset.changeAvatar)}));screen.querySelectorAll('[data-change-color]').forEach(el=>el.onclick=()=>edit({color:el.dataset.changeColor}))}
-function refresh(){if(!p())return;const s=p().current();pill.textContent=s.phase==='ready'?'🟢 Render verbunden':s.phase==='signed_out'?'🔒 Nicht angemeldet':s.phase==='needs_setup'?'📝 Profil einrichten':s.phase==='error'?'⚠️ Server-Verbindungsfehler':s.phase==='unconfigured'?'⚠️ Firebase einrichten':'⏳ Verbindungsstatus';if(s.phase==='ready'){renderProfile();return}if(s.phase==='signed_out'||s.phase==='unconfigured'||s.phase==='error'||s.phase==='needs_setup')renderAuth()}
-let tries=0,connected=false;function connect(){if(connected)return;if(!p()){if(++tries<160)setTimeout(connect,125);else screen.innerHTML='<div class="card auth-card"><h2>Verbindung fehlgeschlagen</h2><p>Profilskript konnte nicht geladen werden. Bitte Seite erneut laden.</p></div>';return}connected=true;p().onChange(refresh);refresh()}document.addEventListener('DOMContentLoaded',connect);connect();
-})();
-</script></body></html>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#edf5ff">
+<meta name="description" content="Dein persönliches Online-Spielerprofil im SPIELEPORTAL.">
+<title>Mein Spielerprofil · SPIELEPORTAL 2.0 – V10</title>
+<style>
+ 
+:root{font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#142d50;background:#edf5ff;font-synthesis:none;--navy:#102a51;--accent-blue:#2579dc;--line:#e2eaf6;--muted:#7890a9}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(850px 580px at 96% 1%,#fff1db 0%,transparent 61%),linear-gradient(140deg,#e6f2ff 0%,#f7faff 46%,#f5f8fe 100%)}button,input{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #357fed;outline-offset:3px}a{color:inherit;text-decoration:none}h1,h2,h3,p{margin:0}button:disabled{cursor:wait;opacity:.6}[hidden]{display:none!important}
+.layout{display:grid;grid-template-columns:194px minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;background:linear-gradient(175deg,#112747 0%,#142f56 68%,#19365b 100%);color:#c8defb;padding:22px 13px;display:flex;flex-direction:column;z-index:15}.logo{text-align:center;font-weight:1000;color:white;letter-spacing:-1.2px;line-height:1.05;font-size:22px;margin-bottom:38px}.logo .mark{font-size:26px;display:block;margin-bottom:8px}.logo .gold{color:#ffd34f}.logo small{display:block;margin-top:9px;font-size:9px;letter-spacing:2px;font-weight:850;color:#a9c5ea}.sidebar nav{display:grid;gap:6px}.sidebar nav a{display:flex;align-items:center;gap:10px;padding:13px 12px;font-weight:700;border-radius:13px;font-size:13px;transition:background .14s}.sidebar nav a:hover,.sidebar nav a.selected{background:rgba(135,191,255,.20);color:white}.sidebar nav a span{font-size:17px}.sidebar-footer{margin-top:auto;text-align:center;color:#b7cee9;font-size:11px;line-height:1.6;padding:22px 8px 8px}.sidebar-footer i{display:block;font-size:25px;font-style:normal;margin-bottom:6px}
+.content{min-width:0;overflow:hidden}.profile-stage{height:312px;position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(95deg,#e6f3ff,#fff1e1)}.stage-image{position:absolute;inset:0;background:url('profile-hero.webp') no-repeat right center/auto 100%;z-index:-2}.profile-stage:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(90deg,#edf7ff 0%,#f5f9fffa 22%,#f4f8ffae 46%,#f7faff00 71%)}.stage-copy{position:absolute;left:clamp(20px,5vw,84px);top:75px;max-width:480px}.eyebrow{font-size:10px;font-weight:1000;letter-spacing:2.1px;color:#477dae;text-transform:uppercase}.stage-copy h1{font-size:clamp(38px,5vw,66px);letter-spacing:-2.7px;line-height:1.06;color:#113669;font-weight:1000;margin:9px 0 11px}.stage-copy p{font-size:clamp(16px,1.9vw,23px);color:#3b608a;font-weight:710}.backlink{position:absolute;left:clamp(20px,5vw,84px);top:23px;border:1px solid #fff;background:#ffffffd9;border-radius:99px;padding:8px 14px;box-shadow:0 5px 21px #305b8718;color:#41658c;font-size:12px;font-weight:700}.stage-top{position:absolute;right:23px;top:20px;display:flex;align-items:center;gap:9px;padding:7px 12px 7px 7px;border:1px solid #e7eef9;border-radius:99px;background:#ffffffeb;box-shadow:0 10px 28px #24436f24;font-weight:900;color:#234973;font-size:12px;max-width:250px}.stage-top strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.side-avatar{width:29px;height:29px;flex:0 0 29px;border-radius:50%;background:#d6e7fa;border:2px solid white}
+.main-inner{position:relative;z-index:2;margin:-52px clamp(13px,2.1vw,34px) 35px;display:grid;gap:17px}.surface{background:#fffffff7;border:1px solid #e4edf8;box-shadow:0 11px 33px rgba(35,80,141,.09);border-radius:24px;min-width:0}.hero-profile{padding:28px 28px 26px 190px;position:relative;min-height:186px;display:flex;align-items:center;gap:22px;overflow:visible}.hero-avatar-ring{position:absolute;left:27px;top:-38px;width:137px;height:137px;border-radius:50%;padding:6px;background:white;box-shadow:0 0 0 5px #ffffffbf,0 12px 30px #255f9f29}.hero-avatar{width:100%;height:100%;border:4px solid var(--profile-accent,#328cff);background:#e7f1fa;border-radius:50%}.hero-main{min-width:0;flex:1}.hero-topline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.premium-label{padding:5px 10px;border-radius:99px;background:#edf6ff;color:#3172b7;font-size:9px;letter-spacing:.8px;font-weight:1000}.profile-live{padding:6px 10px;display:inline-flex;gap:6px;align-items:center;border-radius:99px;border:1px solid #d1eee4;background:#eafaf4;color:#16765a;font-size:10px;font-weight:900}.profile-live i{background:#18b67b;width:7px;height:7px;border-radius:50%;box-shadow:0 0 0 3px #18b67b1c}.hero-main h2{font-size:clamp(25px,3vw,40px);font-weight:1000;letter-spacing:-1.25px;color:#14386d;line-height:1.15;margin:8px 0 5px;overflow-wrap:anywhere}.hero-main .subline{font-size:12px;color:#6e88a2}.hero-main .quote{font-size:12px;color:#91a3b7;font-style:italic;margin:5px 0}.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.chip{border-radius:99px;background:#edf5ff;color:#3574b8;padding:7px 10px;font-weight:850;font-size:10px}.chip.green{background:#eafbf1;color:#308266}.chip.gold{background:#fff4e4;color:#a4772d}.hero-actions{display:flex;flex-direction:column;align-items:stretch;gap:9px;width:206px;flex:0 0 206px}.btn{min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;font-size:12px;font-weight:900;border:1px solid transparent;border-radius:13px;transition:transform .13s,filter .13s}.btn:hover{filter:brightness(1.035);transform:translateY(-1px)}.btn.primary{color:white;background:linear-gradient(115deg,#1899e8,#3768e8);box-shadow:0 7px 18px #306cdb2b}.btn.pale{background:#eaf3ff;color:#3065a1;border-color:#e0edfc}.btn.neutral{background:white;border-color:#dceaf7;color:#4a6b8f}.profile-accent-bar{position:absolute;left:0;right:0;bottom:0;height:4px;border-radius:0 0 22px 22px;background:linear-gradient(90deg,var(--profile-accent,#328cff),#71dacc 70%,#ffd37c)}
+.profile-access-status:empty,.profile-access-status[hidden],.profile-save-status[hidden]{display:none!important}.profile-access-status{border-radius:13px;background:#eaf4ff;border:1px solid #cde4fa;color:#285f99;padding:12px 17px;font-weight:800;font-size:12px}.profile-access-status[data-state="error"]{background:#fff0f2;border-color:#ffd8df;color:#af3449}.profile-save-status{margin-top:14px;font-weight:800;font-size:12px;color:#4c7197}.profile-save-status[data-state="success"]{color:#18765b}.profile-save-status[data-state="busy"]{color:#916b1b}.profile-save-status[data-state="error"]{color:#ba4150}
+.short-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.short-nav a{min-width:0;border-radius:16px;border:1px solid #e1eaf5;background:#ffffffc9;box-shadow:0 7px 22px #35598d0b;padding:13px 15px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:900;color:#34628f;transition:.15s}.short-nav a:hover{border-color:#bcd9f5;transform:translateY(-2px);background:white}.short-nav .navico{background:#e8f3ff;display:grid;place-items:center;width:35px;height:35px;flex:0 0 35px;border-radius:11px;font-size:17px}
+.section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 2px 11px;flex-wrap:wrap}.section-heading .heading-kicker{font-size:10px;font-weight:1000;color:#6192be;letter-spacing:1.5px;text-transform:uppercase}.section-heading h2{font-size:clamp(20px,2.2vw,27px);line-height:1.25;letter-spacing:-.65px;font-weight:950;color:#143863;margin:3px 0 0}.section-heading .aside-note{font-size:11px;color:#6e89a6}.panel{padding:21px 22px}.panel h3{font-size:16px;font-weight:930;color:#183f6a;display:flex;align-items:center;gap:10px;margin-bottom:5px}.panel h3 .ico{font-size:23px}.muted{font-size:12px;line-height:1.5;color:#8598ad}.grid-two{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(290px,.85fr);gap:13px}.stats-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:15px}.stat-box{padding:15px 9px;text-align:center;border-radius:16px;min-width:0;background:linear-gradient(155deg,#f0f7ff,#e9f4ff);border:1px solid #e5f0fb}.stat-box:nth-child(2){background:linear-gradient(150deg,#fff7eb,#fffaf3);border-color:#fff0d7}.stat-box:nth-child(3){background:linear-gradient(155deg,#eaf9f6,#f2fcfa);border-color:#dcf5eb}.stat-box:nth-child(4){background:linear-gradient(155deg,#f9f0ff,#fff8ff);border-color:#f1e8fa}.stat-box .stat-ico{font-size:23px}.stat-box b{display:block;font-size:23px;font-weight:950;color:#173f78;line-height:1.25;margin:6px 0}.stat-box small{font-size:10px;line-height:1.3;color:#70869e;display:block}.honest-note{margin-top:13px;border-radius:12px;background:#f5f9ff;border:1px dashed #d6e7fa;color:#7087a0;font-size:11px;line-height:1.5;padding:11px 13px;display:flex;align-items:flex-start;gap:9px}.xp-preview{position:relative;overflow:hidden;background:linear-gradient(132deg,#12315a,#203e74 62%,#315393);color:white;border-radius:24px;border:1px solid #2b4778;box-shadow:0 10px 30px #143e7620;padding:22px;display:flex;flex-direction:column;gap:14px;justify-content:space-between}.xp-preview:after{content:'♛';position:absolute;right:-7px;top:-34px;font-size:165px;color:#ffffff0d;pointer-events:none}.xp-preview .xp-top{font-size:11px;color:#a8ccfc;letter-spacing:1px;font-weight:1000}.xp-preview h3{font-size:24px;line-height:1.16;letter-spacing:-.7px}.xp-preview p{font-size:12px;line-height:1.55;color:#c5d9f2;max-width:350px}.xp-track{height:10px;border-radius:99px;background:#ffffff21;border:1px solid #ffffff35;overflow:hidden;margin-top:8px}.xp-track:before{content:'';display:block;width:0;height:100%;background:linear-gradient(90deg,#70cafa,#ffd678)}.xp-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a7c7f0;font-size:11px;font-weight:750}.future-pill{border-radius:99px;color:#fff2c4;background:#e2b7482b;padding:7px 10px;border:1px solid #ffe5aa38;font-size:10px;font-weight:850;display:inline-block;width:max-content}
+.games-gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.game-feature{position:relative;min-height:236px;overflow:hidden;border:1px solid #dce8f4;border-radius:20px;background:#1e3457;box-shadow:0 11px 24px #264a801c;isolation:isolate;display:flex;align-items:flex-end}.game-feature:before{content:"";position:absolute;inset:0;background:var(--game-bg) center/cover no-repeat;z-index:-2;transition:transform .3s}.game-feature:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(5,20,42,.96) 0%,rgba(10,25,50,.72) 47%,rgba(11,31,56,.05) 100%);z-index:-1}.game-feature:hover:before{transform:scale(1.045)}.game-info{padding:18px;display:grid;gap:6px;width:100%;color:white}.game-tag{justify-self:start;border-radius:99px;padding:5px 9px;font-size:9px;font-weight:950;background:#ffffff2d;border:1px solid #ffffff33}.game-info h3{font-size:18px;letter-spacing:-.4px}.game-info p{font-size:11px;color:#d9e6f7;line-height:1.4}.game-action{display:flex;align-items:center;justify-content:space-between;font-weight:850;font-size:11px;color:#ffe1a3;margin-top:9px}
+.achievement-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:13px}.milestones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:16px}.achievement{min-width:0;text-align:center;border:1px solid #e5ebf6;background:#f4f9ff;border-radius:16px;padding:19px 8px;display:grid;gap:6px;justify-items:center}.achievement span{font-size:32px}.achievement b{font-size:11px;color:#275281}.achievement small{font-size:10px;line-height:1.45;color:#8498aa}.achievement.locked{opacity:.58;filter:grayscale(.65)}.history-empty{display:grid;place-items:center;text-align:center;align-content:center;gap:8px;min-height:195px;border:1px dashed #d5e4f5;border-radius:16px;background:#f7faff;margin-top:16px;padding:16px}.history-empty span{font-size:35px}.history-empty strong{font-size:13px;color:#285080}.history-empty p{font-size:11px;max-width:315px;color:#7990a5;line-height:1.55}
+.preference-grid{display:grid;grid-template-columns:.85fr 1.3fr .92fr;gap:13px}.color-options{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;align-items:center}.color-dot{width:44px;height:44px;border-radius:50%;border:3px solid white;background:var(--c);box-shadow:0 4px 12px #214d8125;position:relative;transition:transform .14s}.color-dot:hover{transform:translateY(-2px)}.color-dot.selected{outline:3px solid #2e83ed;outline-offset:2px}.color-dot.selected:after{content:'✓';color:white;position:absolute;inset:1px;display:grid;place-items:center;font-size:22px;text-shadow:0 1px 3px #0006}.games-choice{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:15px}.fav-tile{border:2px solid #e6edf7;border-radius:13px;background:linear-gradient(180deg,#fff,#f6f9ff);padding:5px;min-width:0;min-height:142px;color:#3b5979;display:flex;flex-direction:column;justify-content:space-between;align-items:center;gap:6px}.fav-tile.selected{border-color:#268ded;box-shadow:0 0 0 2px #c3e8ff inset}.fav-art{display:block;width:100%;height:88px;border-radius:9px;background:center/cover no-repeat}.fav-tile b{font-size:10px;line-height:1.2;text-align:center}.avatars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:15px}.avatar-tile{width:100%;aspect-ratio:1/1;border-radius:14px;border:3px solid white;background-color:#e8f2fd;box-shadow:0 3px 10px #355a8d20;background-image:url('profile-avatars.webp');background-repeat:no-repeat;background-size:400% 200%;background-position:0 0}.avatar-tile.selected{outline:3px solid #2c91e9;outline-offset:1px}.custom-avatar-upload{position:relative;display:block;text-align:center;border-radius:12px;background:#edf6ff;color:#2d6faa;border:1px dashed #9bc4eb;padding:12px 9px;margin-top:13px;font-size:11px;font-weight:900;cursor:pointer;line-height:1.4}.custom-avatar-upload:hover{background:#e4f2ff}.custom-avatar-upload:focus-within{outline:3px solid #3f90ea}.custom-avatar-upload input{position:absolute;width:1px;height:1px;opacity:0;top:0;left:0}.profile-manage{display:grid;grid-template-columns:1fr 1fr;gap:13px;align-items:stretch}.management-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}.management-buttons button{padding:13px 10px;background:#eaf3ff;border:1px solid #e0edfa;border-radius:13px;color:#2c65a3;font-weight:900;font-size:12px}.management-buttons button:hover{background:#dceeff}.online-account{position:relative;overflow:hidden;border-radius:24px;padding:20px 23px;background:linear-gradient(140deg,#fff,#f1f9ff);border:1px solid #e2edf8;box-shadow:0 11px 33px rgba(35,80,141,.09)}.online-account:before{content:'';position:absolute;left:0;top:15px;bottom:15px;width:4px;border-radius:4px;background:linear-gradient(#24bed4,#3676e7)}.online-head{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}.online-head h3{font-size:16px;font-weight:950;color:#1a4873}.online-status{border-radius:99px;padding:7px 10px;border:1px solid #ceeadd;background:#e9f9f3;font-size:10px;font-weight:900;color:#188367}.online-description{margin:12px 0;color:#6784a0;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.online-signed-controls,[data-online-guest]{display:flex;flex-wrap:wrap;gap:8px}.online-signed-controls button,[data-online-guest] button{background:#e7f1ff;border:1px solid #d9eafa;border-radius:11px;color:#30669d;padding:10px 12px;font-weight:900;font-size:11px}.fine-print{margin-top:11px;color:#8196aa;font-size:10px;line-height:1.5}
+.sp-modal{border:1px solid #d5e8fa;border-radius:25px;padding:0;color:#183e67;box-shadow:0 30px 95px #193c6e72;width:min(92vw,470px);max-width:92vw}.sp-modal::backdrop{background:#0a234b88;backdrop-filter:blur(5px)}.dialog-inner{padding:28px;background:radial-gradient(circle at 100% 0%,#e9f5ff,transparent 46%),white}.dialog-inner h2{font-size:24px;color:#173d73;letter-spacing:-.6px;margin-bottom:20px}.dialog-inner label{font-size:12px;color:#3b6289;font-weight:850;display:grid;gap:8px}.dialog-inner input{width:100%;min-height:46px;border-radius:12px;border:1px solid #cce0f5;background:#f8fbff;padding:11px;color:#123d66}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:19px}.dialog-actions button{padding:12px 16px;border:0;border-radius:12px;background:#e8f2fd;color:#305d8a;font-size:12px;font-weight:850}.dialog-actions button.primary{background:linear-gradient(110deg,#1991e8,#3466e6);color:white}.error{font-size:12px;color:#b6374e;margin-top:12px}.bottomnote{font-size:11px;color:#7c91a9;margin-top:11px;line-height:1.6}
+#stats,#games,#achievements,#settings{scroll-margin-top:22px}
+@media(max-width:1350px){.preference-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}.preference-grid .panel:last-child{grid-column:1/-1}.avatars{grid-template-columns:repeat(8,minmax(0,1fr))}.games-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.game-feature{min-height:215px}}
+@media(max-width:1080px){.layout{grid-template-columns:78px minmax(0,1fr)}.sidebar{padding:18px 8px}.logo{font-size:9px;letter-spacing:-.1px}.logo .mark{font-size:27px}.logo small,.sidebar nav a .nav-text,.sidebar-footer strong{display:none}.sidebar nav a{justify-content:center;padding:13px 6px}.sidebar nav a span{font-size:22px}.sidebar-footer{font-size:8px}.hero-profile{padding:30px 20px 22px 158px}.hero-avatar-ring{width:119px;height:119px;left:20px;top:-25px}.hero-actions{width:175px;flex-basis:175px}.short-nav{grid-template-columns:repeat(2,1fr)}.grid-two{grid-template-columns:1fr}.xp-preview{min-height:215px}.profile-manage{grid-template-columns:1fr}}
+@media(max-width:720px){.layout{display:block;padding-bottom:0}.sidebar{height:auto;position:relative;flex-direction:row;align-items:center;gap:10px;padding:10px 12px}.logo{margin:0;font-size:12px;text-align:left}.logo .mark{display:inline;font-size:16px;margin:0}.logo small,.sidebar-footer{display:none}.sidebar nav{margin-left:auto;display:flex;gap:3px}.sidebar nav a{padding:8px;min-width:36px}.sidebar nav a span{font-size:18px}.profile-stage{height:260px}.stage-top{right:13px;top:12px}.backlink{left:17px;top:15px}.stage-copy{left:22px;top:82px}.stage-copy h1{font-size:40px;letter-spacing:-1.5px}.stage-copy p{font-size:14px;max-width:290px}.main-inner{margin:-28px 10px 22px;gap:13px}.hero-profile{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:16px;min-height:0}.hero-avatar-ring{position:relative;top:auto;left:auto;width:90px;height:90px;grid-column:1;grid-row:1;box-shadow:0 0 0 3px white,0 9px 22px #255f9f26}.hero-main{grid-column:2;grid-row:1}.hero-main h2{font-size:23px}.hero-main .subline{font-size:10px}.hero-actions{grid-column:1/-1;display:flex;flex-direction:row;width:auto;gap:8px}.hero-actions>*{flex:1}.hero-topline{gap:5px}.premium-label{font-size:8px}.chips{grid-column:1/-1}.short-nav{gap:7px}.short-nav a{font-size:10px;padding:9px}.short-nav .navico{width:30px;height:30px;flex-basis:30px}.stats-summary{grid-template-columns:repeat(2,1fr)}.section-heading h2{font-size:22px}.games-gallery{grid-template-columns:repeat(2,1fr);gap:9px}.game-feature{min-height:203px}.game-info{padding:12px}.game-info h3{font-size:15px}.achievement-layout{grid-template-columns:1fr}.preference-grid{grid-template-columns:1fr}.preference-grid .panel:last-child{grid-column:auto}.avatars{grid-template-columns:repeat(4,minmax(0,1fr))}.profile-manage{grid-template-columns:1fr}}
+@media(max-width:410px){.stage-top{max-width:142px}.stage-top strong{font-size:10px}.stage-copy h1{font-size:35px}.hero-profile{grid-template-columns:76px 1fr;padding:14px 13px}.hero-avatar-ring{width:76px;height:76px}.hero-main h2{font-size:19px}.hero-actions{flex-direction:column}.chips .chip{font-size:9px}.game-feature{min-height:196px}.game-info h3{font-size:14px}.game-info p{font-size:10px}.panel{padding:17px}.management-buttons{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
+
+/* Persönliche Informationen erst nach bestätigter Firebase-Anmeldung zeigen. */
+body:not(.sp-account-ready) #profile-root{visibility:hidden}
+.profile-gate{min-height:100vh;display:grid;place-items:center;text-align:center;padding:32px;background:linear-gradient(135deg,#e8f5ff,#fffaf5);color:#235280}.profile-gate .gate-card{width:min(400px,95vw);padding:32px;border:1px solid #d9eafa;border-radius:24px;background:#fff;box-shadow:0 20px 55px #164a7b19}.profile-gate .gate-mark{display:block;font-size:36px;margin-bottom:14px}.profile-gate h2{font-size:20px;margin:0 0 10px}.profile-gate p{font-size:12px;line-height:1.55;color:#6482a2}.profile-gate a{display:inline-block;margin-top:15px;font-size:12px;font-weight:800;color:#286bb3}body.sp-account-ready .profile-gate{display:none}
+
+
+/* SPIELEPORTAL V7 · persönliche Profilgestaltung */
+.stage-image{transition:background .3s ease,filter .3s ease}
+.stage-image[data-banner="classic"]{background:url('profile-hero.webp') right center/auto 100% no-repeat}
+.stage-image[data-banner="ocean"],.v7-banner-tile.ocean{background:radial-gradient(circle at 78% 20%,#b1fff3 0 8%,transparent 32%),radial-gradient(ellipse at 78% 75%,#6ee2ed99,transparent 50%),linear-gradient(125deg,#bce9ff 4%,#3d8cca 52%,#154874 100%)}
+.stage-image[data-banner="sunset"],.v7-banner-tile.sunset{background:radial-gradient(circle at 78% 35%,#fff5b3 0 12%,transparent 20%),linear-gradient(140deg,#ffe3a7,#ff9d85 50%,#9b5c9f 100%)}
+.stage-image[data-banner="forest"],.v7-banner-tile.forest{background:radial-gradient(circle at 75% 20%,#e4ffd1 0 9%,transparent 33%),linear-gradient(125deg,#d1f7c8,#60b999 55%,#277363 100%)}
+.stage-image[data-banner="cosmos"],.v7-banner-tile.cosmos{background:radial-gradient(circle at 82% 20%,#ffffff99 0 2%,transparent 4%),radial-gradient(circle at 67% 36%,#f5f4ff 0 1%,transparent 2%),radial-gradient(ellipse at 80% 65%,#bb9aff85,transparent 50%),linear-gradient(140deg,#b4cffd 0%,#687ec9 50%,#4f4b8c 100%)}
+.stage-image[data-banner="custom"]{background-size:cover!important;background-position:center!important}
+.banner-label{position:absolute;bottom:15px;right:24px;background:#ffffffd7;color:#365d86;border:1px solid #ffffffc9;border-radius:99px;font-size:10px;font-weight:900;padding:7px 12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero-main .quote{font-style:normal;color:#55718f;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere;max-width:670px}
+.v7-personal-card{display:flex;gap:17px;align-items:center;padding:19px 22px;background:linear-gradient(105deg,#fff,#ecf6ff 78%);border-color:#d9e9fc}
+.v7-personal-symbol{width:58px;height:58px;border-radius:18px;flex:0 0 58px;display:grid;place-items:center;font-size:29px;color:#2a78d3;background:linear-gradient(140deg,#e0f1ff,#fff);box-shadow:inset 0 0 0 1px #c9e0fa}
+.v7-personal-text{min-width:0;flex:1}.v7-overline{font-size:9px;letter-spacing:1.4px;color:#6791be;font-weight:950}.v7-personal-text h3,.v7-banner-title h3{color:#173d6e;font-size:17px;margin:4px 0}
+.v7-personal-text p,.v7-banner-title p{font-size:12px;line-height:1.55;color:#708aa6;overflow-wrap:anywhere}
+.v7-personal-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.v7-personal-meta>span{border:1px solid #deebf8;background:#fff9;padding:6px 9px;border-radius:99px;font-size:10px;color:#48739c;font-weight:820}
+.v7-banner-chooser{padding:19px 22px}.v7-banner-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
+.v7-banner-tile{min-height:87px;padding:10px;border:3px solid white;border-radius:15px;display:flex;align-items:flex-end;justify-content:flex-start;box-shadow:0 5px 16px #1a477d1b;background:linear-gradient(120deg,#e8f6ff,#fff0de);color:#12375a;transition:transform .15s,box-shadow .15s}
+.v7-banner-tile.classic{background:url('profile-hero.webp') right center/cover no-repeat}
+.v7-banner-tile span{font-size:11px;font-weight:950;padding:5px 8px;border-radius:9px;background:#ffffffde;box-shadow:0 2px 7px #12345d1a}
+.v7-banner-tile:hover{transform:translateY(-2px)}.v7-banner-tile.selected{outline:3px solid #3a85ef;outline-offset:2px}.v7-banner-tile[disabled]{opacity:.55}
+.sp-modal.v7-modal{width:min(94vw,890px);max-width:94vw;max-height:min(92vh,880px);overflow:auto}.v7-modal .dialog-inner{padding:0}.v7-modal #dialog-title{padding:22px 25px 5px;margin:0;font-size:26px}.v7-modal #dialog-form{padding:0 25px 25px}
+.v7-modal .dialog-actions{position:sticky;bottom:0;padding:14px 0 0;background:#fff;z-index:3;border-top:1px solid #e7eff9}.v7-modal .dialog-actions button{min-height:43px}
+.v7-modal .v7-dialog-description{font-size:12px;color:#7991aa;padding:0 25px 14px;line-height:1.5}.v7-edit-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:19px;padding:6px;background:#f0f6ff;border-radius:13px}
+.v7-edit-tabs button{flex:1 1 120px;border:1px solid transparent;border-radius:10px;background:transparent;color:#567a9f;padding:11px 13px;font-weight:900;font-size:11px}
+.v7-edit-tabs button.current{background:#fff;border-color:#cee1f9;color:#2267ae;box-shadow:0 3px 12px #3167a51c}
+.v7-edit-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(215px,.72fr);gap:18px}.v7-edit-fields{min-width:0;display:grid;align-content:start;gap:12px}
+.v7-modal textarea,.v7-modal select{width:100%;border:1px solid #cce0f5;border-radius:12px;background:#f8fbff;padding:12px;font:inherit;font-size:13px;color:#163b65}.v7-modal textarea{resize:vertical;min-height:110px;line-height:1.5}
+.v7-modal label{font-weight:850;font-size:12px;color:#42668b;display:grid;gap:7px}.v7-modal label small{font-weight:600;color:#8299b1}.v7-edit-preview{background:linear-gradient(160deg,#ecf7ff,#e5f2fc);border:1px solid #d7e8f9;border-radius:18px;overflow:hidden;align-self:start}
+.v7-preview-banner{height:92px;background:linear-gradient(120deg,#cde7ff,#f8e6c8);background-position:center;background-size:cover}.v7-preview-content{padding:0 14px 17px;text-align:center}.v7-preview-avatar{width:78px;height:78px;border-radius:50%;margin:-34px auto 8px;border:4px solid var(--v7-preview-accent,#328cff);box-shadow:0 0 0 4px white;background:#e6f3ff}
+.v7-preview-content strong{font-size:15px;color:#123c6d;overflow-wrap:anywhere;display:block}.v7-preview-content p{font-size:11px;line-height:1.45;color:#7591ad;overflow-wrap:anywhere;white-space:pre-line;margin:8px 0}
+.v7-banner-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.v7-banner-options button{padding:8px;min-height:59px;background:#f3f8ff;border:2px solid #d8e8fa;border-radius:11px;color:#2a6098;font-size:11px;font-weight:900;text-align:left}.v7-banner-options button.on{border-color:#2d84df;background:#e4f2ff}
+.v7-upload{display:block;position:relative;border:1px dashed #9fc7ed;background:#f0f7ff;color:#296ba7;border-radius:12px;padding:11px;cursor:pointer;text-align:center;font-size:12px;font-weight:900}
+.v7-upload input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.v7-palette{display:flex;gap:8px;flex-wrap:wrap}.v7-palette button{width:34px;height:34px;border:3px solid #fff;border-radius:50%;background:var(--swatch);box-shadow:0 3px 8px #0002}.v7-palette button.on{outline:3px solid #2c81db}
+.v7-avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.v7-avatar-grid button{aspect-ratio:1;border:3px solid #fff;border-radius:12px;background-color:#eaf3ff;background-repeat:no-repeat;background-size:400% 200%;box-shadow:0 2px 8px #0001}.v7-avatar-grid button.on{outline:3px solid #328cff}
+.v7-privacy-note{border:1px solid #d6e5f7;background:#f1f8ff;padding:13px;border-radius:12px;font-size:11px;line-height:1.6;color:#557694}.v7-privacy-check{display:flex!important;align-items:start;gap:10px;font-size:12px!important;line-height:1.5}.v7-privacy-check input{width:20px;height:20px;flex:0 0 20px;margin:0;accent-color:#317ce4}.v7-stat-description{background:#fff5e8;color:#966b29;padding:10px;border-radius:11px;font-size:11px}
+@media(max-width:880px){.v7-personal-card{flex-wrap:wrap}.v7-personal-card .btn{width:100%}.v7-banner-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:610px){.banner-label{display:none}.v7-banner-chooser{padding:15px}.v7-banner-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.v7-modal .dialog-inner{padding:0}.v7-modal #dialog-title{font-size:20px;padding:17px 15px 4px}.v7-modal .v7-dialog-description{padding:0 15px 9px}.v7-modal #dialog-form{padding:0 15px 15px}.v7-edit-main{grid-template-columns:1fr}.v7-edit-preview{max-width:100%}.v7-preview-banner{height:72px}.v7-edit-tabs button{flex:1 1 85px;padding:9px 5px}.v7-personal-symbol{display:none}}
+@media(prefers-reduced-motion:reduce){.stage-image,.v7-banner-tile{transition:none}}
+
+
+.v8-verified-results{padding:20px 24px;border-radius:20px;background:#fff;border:1px solid #e1ebf7;box-shadow:0 10px 28px #31587910}
+.v8-stats-refresh{background:#e9f3ff;color:#245d95;border:1px solid #cfe4f9;border-radius:12px;padding:10px 14px;font:inherit;font-size:11px;font-weight:700;cursor:pointer;margin:0 0 15px}.v8-stats-refresh:disabled{opacity:.55;cursor:wait}.v8-stats-refresh:focus-visible{outline:3px solid #3989d9;outline-offset:2px}
+.v8-verified-results h3{margin:0 0 6px;font-size:16px;color:#153d6d}.v8-verified-results p{margin:0 0 14px;font-size:11px;color:#6887a6}
+.v8-game-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.v8-result-tile{display:grid;gap:9px;padding:14px 12px;background:#eff6ff;border:1px solid #dceafa;border-radius:15px;min-height:77px}.v8-result-tile strong{color:#245e9c;font-size:12px}.v8-result-tile span{font-size:11px;color:#6a88a6}.v8-history{display:grid;gap:8px}.v8-match-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;border:1px solid #e4ebf7;border-radius:12px;background:#f7fbff;font-size:12px;color:#456f94}.v8-match-row strong{white-space:nowrap;color:#2869a3}.v8-empty{color:#758ba5;font-size:12px;line-height:1.6}@media(max-width:720px){.v8-game-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v8-verified-results{padding:14px}.v8-match-row{flex-wrap:wrap}} 
+
+/* ══════ V9 · PREMIUM PROFIL – REINE PROFIL-CSS, KEINE SPIELREGELN ══════ */
+:root{--v9-navy:#102b51;--v9-royal:#245fa7;--v9-muted:#718ba5;--v9-border:#deebf8}
+html{scroll-behavior:smooth}
+.hero-profile{box-shadow:0 17px 48px rgba(18,64,118,.11);border:1px solid #ffffffb5}
+.hero-main h2{letter-spacing:-1.15px}
+.hero-profile .premium-label{letter-spacing:1.3px}
+.hero-profile .chips .chip{border:1px solid #ffffff96}
+.profile-stage:after{content:'✦';position:absolute;right:31%;top:12%;font-size:100px;color:#ffffff2f;pointer-events:none}
+.section-heading{margin-top:5px;margin-bottom:13px}
+.section-heading h2{font-size:clamp(22px,2.1vw,30px)}
+.surface{transition:box-shadow .2s ease,border-color .2s ease}
+.surface:hover{box-shadow:0 14px 38px rgba(26,71,128,.09)}
+.stat-box{padding:20px 9px 17px;border:1px solid #dfebf9;box-shadow:0 5px 18px #18578c08}
+.stat-box b{font-size:clamp(23px,2.1vw,31px)}
+.v9-insights-wrap{padding:17px 18px 8px;border:1px solid #e7eef8;background:#fbfdff;border-radius:17px;margin-top:17px}
+.v9-insights-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--v9-navy);margin-bottom:13px}
+.v9-insights-title span{font-size:10px;color:#7891aa}
+.v9-insights{display:grid;gap:11px;margin-bottom:12px}
+.v9-insight-row>div:first-child{display:flex;justify-content:space-between;color:#54718c;font-size:11px;margin-bottom:5px}
+.v9-insight-row b{font-weight:850;color:#24486f}
+.v9-insight-track{height:7px;background:#e7eff7;border-radius:99px;overflow:hidden}
+.v9-insight-track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#1c84dd,#52b6ef);transition:width .45s ease}
+.v9-insight-row:nth-child(2) .v9-insight-track i{background:linear-gradient(90deg,#e2a45a,#e2c08c)}
+.v9-insight-row:nth-child(3) .v9-insight-track i{background:linear-gradient(90deg,#a384e5,#c1a6fb)}
+.v9-xp-card{min-height:335px;background:radial-gradient(circle at 96% 2%,#466a9b 0,#1e406f 43%,#112849 100%);border-color:#5a7aab66}
+.v9-xp-card:after{font-size:200px;right:-14px;top:2px;opacity:.42}
+.v9-level-intro{display:flex;align-items:center;gap:20px;z-index:1}
+.v9-level-ring{flex:0 0 109px;height:109px;border-radius:50%;display:grid;align-content:center;justify-items:center;background:linear-gradient(155deg,#284d80,#172f52);border:3px solid #e5c16d;box-shadow:0 0 0 7px #ffffff10,0 15px 30px #0002}
+.v9-level-ring span{font-size:10px;color:#d4e5fb;font-weight:900;letter-spacing:1.5px}
+.v9-level-ring strong{font-size:39px;line-height:1.18;color:#ffe0a1}
+.v9-level-copy h3{font-size:24px;margin-bottom:9px}
+.v9-level-copy p{font-size:11px;max-width:230px}
+.v9-xp-bottom{z-index:1}
+.v9-xp-label,.v9-xp-help{display:flex;justify-content:space-between;gap:9px;align-items:center;font-size:11px;color:#c9dbf4}
+.v9-xp-label strong{font-size:21px;color:white}
+.v9-xp-track{height:13px;padding:2px;margin:12px 0 10px;background:#ffffff18;border:1px solid #ffffff32;border-radius:99px;overflow:hidden}
+.v9-xp-track div{width:0;height:100%;border-radius:99px;background:linear-gradient(90deg,#83d5ff,#f8d687);transition:width .5s ease}
+.v9-xp-help span:last-child{font-size:9px;color:#a2bad9;text-align:right}
+.v9-game-statistics{padding:25px 25px 24px}
+.v9-section-top{display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.v9-section-top h3{font-size:22px;letter-spacing:-.5px}
+.v9-section-top p{margin-bottom:0}
+.v9-eyebrow{font-size:10px;font-weight:900;letter-spacing:1.4px;color:#4b86bd;display:block;margin-bottom:5px}
+.v9-section-top .v8-stats-refresh{margin:5px 0 0;white-space:nowrap}
+.v8-game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.v9-result-tile{padding:17px;background:linear-gradient(155deg,#f9fcff,#eaf4fe);border:1px solid #dfeaf7;border-radius:18px;min-width:0}
+.v9-result-tile.pending{background:#f7f8fc;opacity:.77}
+.v9-result-head{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.v9-result-head strong{font-size:15px;color:#1b4777}
+.v9-game-flag{font-size:9px;font-weight:900;color:#217b70;background:#dff7ef;padding:5px 9px;border-radius:50px}
+.pending .v9-game-flag{color:#73849b;background:#e7ebf3}
+.v9-result-tile p{font-size:10px;color:#7791a8;margin:9px 0 12px;line-height:1.4}
+.v9-game-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.v9-game-numbers div{padding:8px 6px;border:1px solid #e5ecf6;border-radius:10px;text-align:center;background:#fff}
+.v9-game-numbers b{display:block;color:#204d80;font-size:20px;line-height:1.3}
+.v9-game-numbers small{display:block;color:#7b93a8;font-size:9px}
+.v9-trophies .milestones{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.v9-trophies .achievement{padding:16px 10px;position:relative;background:linear-gradient(150deg,#f6faff,#eff6ff);min-height:135px}
+.v9-trophies .achievement:not(.locked){background:linear-gradient(145deg,#fff6e3,#ffffff);border-color:#f0d7a5}
+.v9-trophies .achievement span{font-size:27px}
+.v9-trophies .achievement em{font-size:9px;font-style:normal;font-weight:900;color:#298068;border-radius:20px;padding:4px 8px;background:#ddf7e9}
+.v9-trophies .achievement.locked em{color:#7289a4;background:#e7edf6}
+.v9-history-panel .v8-history{margin-top:9px}
+.v9-history-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+.v9-history-filters label{display:grid;gap:5px;font-size:10px;font-weight:900;color:#7191aa}
+.v9-history-filters select{appearance:auto;width:100%;font:inherit;font-size:12px;font-weight:700;padding:10px 9px;border:1px solid #dce9f7;border-radius:10px;color:#244b74;background:#f7fbff;min-width:0}
+.v9-history-filters select:focus-visible{outline:2px solid #3b8ed8;outline-offset:1px}
+.v9-history-count{font-size:10px;color:#8399ab;margin:12px 0 8px}
+.v9-match-row{display:flex;align-items:center;gap:10px;padding:11px 10px;border:1px solid #e7edf7;border-radius:12px;background:#fafdff;margin-top:8px}
+.v9-match-icon{width:32px;height:32px;flex:0 0 32px;border-radius:10px;background:#e8f3ff;display:grid;place-items:center}
+.v9-match-desc{display:grid;gap:4px;min-width:0;flex:1}
+.v9-match-desc b{font-size:11px;color:#204b7e}
+.v9-match-desc small{font-size:9px;color:#8aa0b4}
+.v9-match-result{font-size:10px;font-weight:850;padding:6px 8px;border-radius:20px;background:#eef2f8;color:#526b86}
+.v9-match-result.won{background:#e1f7e8;color:#227945}
+.v9-match-result.drawn{background:#f1ebff;color:#6c56a3}
+.management-buttons #profile-export{background:#e8f4fc;color:#27618f;border:1px solid #d0e7f6}
+@media(max-width:1000px){.v9-level-intro{gap:12px}.v9-level-ring{flex-basis:91px;height:91px}.v9-level-copy h3{font-size:21px}}
+@media(max-width:650px){.profile-stage:after{display:none}.v9-xp-card{min-height:300px}.v9-game-statistics{padding:17px}.v8-game-grid{grid-template-columns:1fr}.v9-trophies .milestones{grid-template-columns:repeat(2,minmax(0,1fr))}.v9-level-ring{flex:0 0 85px;height:85px}.v9-level-ring strong{font-size:32px}.v9-level-copy h3{font-size:18px}.v9-xp-help{display:grid}.v9-xp-help span:last-child{text-align:left}}
+@media(max-width:380px){.v9-history-filters{grid-template-columns:1fr}.v9-trophies .milestones{grid-template-columns:1fr}.v9-level-intro{align-items:start}.v9-level-ring{flex:0 0 69px;height:69px}.v9-level-ring strong{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.v9-insight-track i,.v9-xp-track div,.surface{transition:none}html{scroll-behavior:auto}}
+
+/* V9 image crop – touch-friendly on Android and tablet */
+.v9-crop-dialog{border:0;border-radius:23px;padding:0;width:min(94vw,730px);max-width:730px;max-height:94dvh;overflow:auto;color:#21476f;background:#fff;box-shadow:0 34px 100px #061b3d75;z-index:99999}
+.v9-crop-dialog::backdrop{background:#091b36bb;backdrop-filter:blur(4px)}
+.v9-crop-inner{padding:24px;display:grid;gap:14px}
+.v9-crop-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.v9-crop-head span{font-weight:950;font-size:20px;color:#133665}
+.v9-crop-head button{border:0;border-radius:12px;font-size:19px;padding:7px 13px;background:#edf3fc;color:#244d78;cursor:pointer}
+.v9-crop-inner p{font-size:12px;line-height:1.6;color:#728ba5}
+.v9-crop-stage{display:grid;place-items:center;min-height:180px;padding:15px;border-radius:17px;background:radial-gradient(circle at center,#c7ddf8,#769fc9)}
+.v9-crop-stage canvas{display:block;max-width:100%;height:auto;border:3px solid #fff;box-shadow:0 10px 30px #09275245;object-fit:contain}
+.v9-crop-stage.avatar canvas{max-width:min(255px,100%);border-radius:50%}
+.v9-crop-stage.banner canvas{border-radius:14px}
+.v9-crop-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.v9-crop-controls label{display:grid;gap:9px;font-size:11px;font-weight:850;color:#41648b}
+.v9-crop-controls input{accent-color:#2e85d5;width:100%;min-width:0;touch-action:pan-x}
+.v9-crop-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:5px}
+.v9-crop-actions button{border:1px solid #d5e5f6;border-radius:12px;padding:11px 16px;background:#f2f7ff;color:#214b78;font:inherit;font-size:12px;font-weight:850;cursor:pointer}
+.v9-crop-actions [data-crop-confirm]{background:linear-gradient(110deg,#3286e4,#1c5fb7);color:white;border-color:#3286e4}
+@media(max-width:580px){.v9-crop-inner{padding:15px;gap:10px}.v9-crop-head span{font-size:16px}.v9-crop-controls{grid-template-columns:1fr}.v9-crop-controls label{gap:2px}.v9-crop-actions button{flex:1}}
+
+/* V10 – freundlich, ruhig und hochwertig. Keine aggressive Gamer-Ästhetik. */
+.stage-image[data-banner="aurora"],.v7-banner-tile.aurora{background:#163652 url('profile-banner-aurora.webp') center/cover no-repeat}
+.stage-image[data-banner="golden"],.v7-banner-tile.golden{background:#db9b7b url('profile-banner-golden.webp') center/cover no-repeat}
+.stage-image[data-banner="royal"],.v7-banner-tile.royal{background:#31436d url('profile-banner-royal.webp') center/cover no-repeat}
+.v7-banner-tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.v7-banner-tile{min-height:105px;transition:transform .16s ease,box-shadow .16s ease;border:2px solid #fff;box-shadow:0 5px 15px #1e4d7910}
+.v7-banner-tile.selected{outline:2px solid var(--profile-accent,#328cff);box-shadow:0 0 0 3px #ffffff,0 8px 23px #1e548226}
+.v7-banner-tile span{color:#173f68;font-weight:850;font-size:11px;background:#fffffff0}
+.v10-extras-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.v10-progress-card,.v10-share-card{padding:22px 24px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.v10-extras-grid h3{font-size:19px;color:#173e68;letter-spacing:-.4px}
+.v10-extras-grid p{font-size:12px;line-height:1.6;color:#7088a1;max-width:500px}
+.v10-kicker{font-size:10px;font-weight:900;letter-spacing:1.4px;color:#5486b4}
+.v10-progress-row{display:flex;justify-content:space-between;gap:15px;align-items:baseline;width:100%;font-size:11px;color:#8296a9}
+.v10-progress-row strong{color:#2c719e;font-size:14px}
+.v10-track{width:100%;height:9px;border-radius:50px;background:#e7f0f7;overflow:hidden}
+.v10-track span{display:block;height:100%;width:0;background:linear-gradient(90deg,#51a7d5,#67bba1);border-radius:inherit;transition:width .25s}
+.v10-extras-grid small{color:#8da2b3;font-size:11px;line-height:1.5}
+.v10-share-card .btn{margin-top:auto;font-size:12px}
+.v10-share-card{background:linear-gradient(125deg,#ffffff,#f3f9ff)}
+.xp-preview:after{content:'';width:215px;height:215px;border-radius:50%;background:#ffffff0a;right:-40px;top:-95px}
+.premium-label{letter-spacing:.2px;font-weight:800}
+.hero-avatar-ring{box-shadow:0 0 0 5px #ffffffbf,0 12px 30px #255f9f1a}
+.surface{box-shadow:0 11px 28px rgba(35,80,141,.065)}
+@media(max-width:880px){.v7-banner-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.v10-extras-grid{grid-template-columns:1fr}.v10-progress-card,.v10-share-card{padding:18px}.v7-banner-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<script src="profile-config.js" defer></script>
+<script src="profile-auth.js?v=profile-v7" defer></script>
+<script src="profile-core.js?v=profile-v10-gentle-20261011" defer></script>
+<script src="profile-stats.js?v=profile-v9-20261011" defer></script>
+</head>
+<body>
+<div class="profile-gate" aria-live="polite"><div class="gate-card"><span class="gate-mark">👑</span><h2>Dein Spielerprofil wird vorbereitet</h2><p>Dein Online-Konto wird sicher geprüft. Falls du noch nicht angemeldet bist, erscheint gleich die Anmeldung.</p><a href="index.html">← Zur Spielauswahl</a></div></div>
+<div id="profile-root" class="layout">
+<aside class="sidebar" aria-label="Hauptnavigation">
+ <div class="logo"><span class="mark">👑</span> SPIELE<span class="gold">PORTAL</span><small>GEMEINSAM SPIELEN</small></div>
+ <nav>
+  <a href="index.html"><span aria-hidden="true">⌂</span><span class="nav-text">Startseite</span></a>
+  <a href="index.html"><span aria-hidden="true">🎲</span><span class="nav-text">Spiele</span></a>
+  <a href="profile.html" class="selected" aria-current="page"><span aria-hidden="true">👤</span><span class="nav-text">Spielerprofil</span></a>
+  <a href="#achievements"><span aria-hidden="true">🏆</span><span class="nav-text">Erfolge</span></a>
+  <a href="#stats"><span aria-hidden="true">📊</span><span class="nav-text">Statistiken</span></a>
+ </nav>
+ <div class="sidebar-footer"><i>🎲</i><strong>Mehr spielen.<br>Mehr lachen.</strong></div>
+</aside>
+<main class="content">
+ <header class="profile-stage">
+  <div class="stage-image" id="profile-stage-image" data-banner="classic" aria-hidden="true"></div><div class="banner-label" id="profile-banner-label">🎨 Standardbanner</div>
+  <a href="index.html" class="backlink">← Zur Spielauswahl</a>
+  <div class="stage-copy"><span class="eyebrow">👑 Dein persönlicher Gaming-Bereich</span><h1>Spielerprofil</h1><p>Dein Profil. Deine Spiele. Deine Erfolge.</p></div>
+  <div class="stage-top"><span id="profile-side-avatar" class="side-avatar" aria-hidden="true"></span><strong id="profile-short-name">Profil wird geladen …</strong></div>
+ </header>
+ <div class="main-inner">
+  <section class="hero-profile surface" aria-label="Persönliche Spielerkarte">
+   <div class="hero-avatar-ring"><div id="profile-header-avatar" class="hero-avatar" role="img" aria-label="Dein gewähltes Profilbild"></div></div>
+   <div class="hero-main">
+    <div class="hero-topline"><span class="premium-label">SPIELERKARTE · ONLINE</span><span class="profile-live"><i aria-hidden="true"></i> Sicher verbunden</span></div>
+    <h2 id="profile-title-name">Profil wird geladen …</h2>
+    <p class="subline">👑 Spielerprofil seit <span id="profile-created">–</span></p>
+    <p class="quote" id="profile-bio">Dein persönliches Spielerprofil.</p>
+    <div class="chips"><span class="chip">🎲 Brettspiel-Fan</span><span class="chip green">🌿 Gemeinsam spielen</span><span class="chip gold">⭐ Lieblingsspiel: <span id="favorite-game-name">–</span></span></div>
+   </div>
+   <div class="hero-actions"><button id="profile-edit-hero" class="btn primary" type="button">✎ Profil bearbeiten</button><button class="btn pale" id="profile-switch" type="button">⇄ Konto wechseln</button></div>
+   <div class="profile-accent-bar" aria-hidden="true"></div>
+  </section>
+  <p id="profile-access-status" class="profile-access-status" role="status" aria-live="polite" hidden></p>
+  <nav class="short-nav" aria-label="Profilbereiche">
+   <a href="#stats"><span class="navico">📊</span> Meine Statistik</a>
+   <a href="#games"><span class="navico">🎮</span> Meine Spiele</a>
+   <a href="#achievements"><span class="navico">🏆</span> Erfolge</a>
+   <a href="#settings"><span class="navico">⚙️</span> Einstellungen</a>
+  </nav>
+  <section id="stats" aria-labelledby="stats-title">
+   <div class="section-heading"><div><span class="heading-kicker">Dein Fortschritt</span><h2 id="stats-title">Spielerübersicht</h2></div><span class="aside-note">🔒 Offizielle Zahlen aus Firebase</span></div>
+   <div class="grid-two">
+    <div class="surface panel">
+     <h3>📊 Deine Spielstatistiken</h3><p class="muted" id="profile-stat-caption">Deine offiziell bestätigten Partien werden geladen.</p>
+     <div class="stats-summary">
+      <div class="stat-box"><span class="stat-ico">🎮</span><b id="stat-launches">–</b><small>Bestätigte Partien</small></div>
+      <div class="stat-box"><span class="stat-ico">🏆</span><b id="stat-games">–</b><small>Gewonnene Spiele</small></div>
+      <div class="stat-box"><span class="stat-ico">📈</span><b id="stat-win-rate">–</b><small>Siegquote</small></div>
+      <div class="stat-box"><span class="stat-ico">🏅</span><b id="stat-achievements">–</b><small>Spiel-Erfolge</small></div>
+     </div>
+     <div class="v9-insights-wrap"><div class="v9-insights-title"><b>Deine Ergebnisverteilung</b><span>Bestätigte Partien</span></div><div id="v9-insights" class="v9-insights" aria-live="polite"></div></div><div class="honest-note"><span>🛡️</span><span>Nur vom Server bestätigte Online-Ergebnisse aus Barikade und KreuzKunter zählen. SKYJO Action und Business sind noch nicht für offizielle Siege freigeschaltet.</span></div>
+    </div>
+    <div class="xp-preview v9-xp-card" aria-label="Offizielle Erfahrungspunkte">
+     <span class="xp-top">✦ DEINE SPIELERKARRIERE · VERIFIZIERT</span>
+     <div class="v9-level-intro"><div class="v9-level-ring"><span>LEVEL</span><strong id="v9-level">–</strong></div><div class="v9-level-copy"><h3>Dein nächster Meilenstein</h3><p>XP stammen ausschließlich aus offiziell abgeschlossenen Partien. Kein lokaler Spielstand kann XP gutschreiben.</p></div></div>
+     <div class="v9-xp-bottom"><div class="v9-xp-label"><strong><span id="v9-total-xp">–</span> XP</strong><span id="v9-xp-fraction">–</span></div><div class="v9-xp-track" role="progressbar" aria-label="Fortschritt zum nächsten Level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="v9-xp-progress"></div></div><div class="v9-xp-help"><span id="v9-xp-next">Wertung wird geladen</span><span>40 XP/Partie · +60/Sieg · +20/Remis</span></div></div>
+    </div>
+   </div>
+  </section>
+  <section id="games" aria-labelledby="games-title">
+   <div class="section-heading"><div><span class="heading-kicker">Vier Spiele · Eine Spielwelt</span><h2 id="games-title">Deine Spiele</h2></div><span class="aside-note">Vier Spiele · Zwei mit offizieller Wertung</span></div>
+   <div class="games-gallery">
+    <a class="game-feature" style="--game-bg:url('Assets/game-backgrounds/barikade.webp')" href="Barikade/barikade_lobby.html"><div class="game-info"><span class="game-tag">🧱 STRATEGIE</span><h3>Barikade</h3><p>Spannende Duelle, Barikaden und besondere Spielmodi.</p><span class="game-action">Spiel öffnen <span>↗</span></span></div></a>
+    <a class="game-feature" style="--game-bg:url('Assets/game-backgrounds/skyjo.webp')" href="Skyjo/skyjo_action.html"><div class="game-info"><span class="game-tag">🃏 KARTENSPIEL</span><h3>SKYJO Action</h3><p>Karten clever tauschen und Punktestände minimieren.</p><span class="game-action">Spiel öffnen <span>↗</span></span></div></a>
+    <a class="game-feature" style="--game-bg:url('Assets/game-backgrounds/kreuzkunter.webp')" href="KreuzKunter/kreuzkunter.html"><div class="game-info"><span class="game-tag">🎲 WÜRFELSPIEL</span><h3>KreuzKunter</h3><p>Würfel geschickt nutzen und Felder ausfüllen.</p><span class="game-action">Spiel öffnen <span>↗</span></span></div></a>
+    <a class="game-feature" style="--game-bg:url('Assets/game-backgrounds/business.webp')" href="Business/business_online.html"><div class="game-info"><span class="game-tag">💼 WIRTSCHAFT</span><h3>Das große Business</h3><p>Unternehmen und Branchen im Wettbewerb.</p><span class="game-action">Online spielen <span>↗</span></span></div></a>
+   </div>
+  </section>
+  <section class="v8-verified-results surface v9-game-statistics" aria-labelledby="v9-game-stats-heading"><div class="v9-section-top"><div><span class="v9-eyebrow">📊 SPIEL FÜR SPIEL</span><h3 id="v9-game-stats-heading">Offizielle Spielstatistiken</h3><p id="v8-stats-status" role="status" aria-live="polite">☁️ Statistik wird geladen …</p></div><button id="v8-stats-refresh" type="button" class="v8-stats-refresh">↻ Aktualisieren</button></div><div id="v8-game-totals" class="v8-game-grid"></div></section>
+  <section id="achievements" aria-labelledby="achievement-title">
+   <div class="section-heading"><div><span class="heading-kicker">Sammlung und Rückblick</span><h2 id="achievement-title">Deine Erfolge & Spielhistorie</h2></div><span class="aside-note">Persönliche Erfolge werden hier sichtbar</span></div>
+   <div class="achievement-layout">
+    <div class="surface panel v9-trophies"><h3>🏆 Deine Trophäensammlung</h3><p class="muted">Erfolge werden aus deinem Online-Profil und bestätigten Partien freigeschaltet.</p><div id="achievement-list" class="milestones">
+     <div class="achievement" data-achievement="profile"><span>👑</span><b>Mein Online-Profil</b><small>Profil erfolgreich eingerichtet</small><em data-achievement-state>✓ Freigeschaltet</em></div>
+     <div class="achievement locked" data-achievement="firstwin"><span>🏆</span><b>Erster Sieg</b><small>Erstes offiziell gewertetes Spiel gewinnen</small><em data-achievement-state>Noch nicht erreicht</em></div>
+     <div class="achievement locked" data-achievement="fivewins"><span>🥇</span><b>Siegesserie</b><small>Insgesamt fünf bestätigte Siege sammeln</small><em data-achievement-state>Noch nicht erreicht</em></div>
+     <div class="achievement locked" data-achievement="tenmatches"><span>🎲</span><b>Spieleprofi</b><small>Zehn bestätigte Online-Partien spielen</small><em data-achievement-state>Noch nicht erreicht</em></div>
+     <div class="achievement locked" data-achievement="versatile"><span>🌟</span><b>Vielspieler</b><small>Barikade und KreuzKunter offiziell spielen</small><em data-achievement-state>Noch nicht erreicht</em></div>
+    </div></div>
+    <div class="surface panel v9-history-panel"><h3>🕘 Deine letzten Partien</h3><p class="muted">Deine letzten zwölf bestätigten Ergebnisse, direkt vom Server.</p><div class="v9-history-filters"><label>Spiel<select id="v9-filter-game"><option value="all">Alle Spiele</option><option value="barikade">Barikade</option><option value="kreuz">KreuzKunter</option></select></label><label>Ergebnis<select id="v9-filter-result"><option value="all">Alle Ergebnisse</option><option value="win">Siege</option><option value="loss">Niederlagen</option><option value="draw">Unentschieden</option></select></label></div><p id="v9-history-count" class="v9-history-count"></p><div id="v8-match-history" class="v8-history"><p>Bestätigte Spielergebnisse werden geladen …</p></div></div>
+   </div>
+  </section>
+  <section id="settings" aria-labelledby="settings-title">
+   <div class="section-heading"><div><span class="heading-kicker">Ganz nach deinem Geschmack</span><h2 id="settings-title">Mein Profil gestalten</h2></div><span class="aside-note">Auswahl wird online gespeichert</span></div>
+   <div class="surface v7-personal-card" id="profile-personal-card">
+     <div class="v7-personal-symbol">✦</div>
+     <div class="v7-personal-text"><span class="v7-overline">DEIN PERSÖNLICHES PROFIL</span><h3>So sieht dein Spielerprofil aus</h3>
+      <p id="profile-bio-summary">Gestalte deine Profilbeschreibung und dein persönliches Banner.</p>
+      <div class="v7-personal-meta"><span>🖼️ <span id="profile-banner-summary">Standardbanner</span></span><span>🔐 <span id="profile-privacy-summary">Private Profilangaben</span></span></div></div>
+     <button type="button" class="btn primary" id="profile-edit-design">✎ Profil komplett gestalten</button>
+   </div>
+   <div class="v10-extras-grid">
+    <section class="surface v10-progress-card" aria-label="Profilgestaltung">
+      <div class="v10-kicker">MEIN PROFIL</div><h3>Schon ganz persönlich</h3>
+      <p>Gestalte dein Profil in deinem Tempo – mit Foto, Beschreibung und Lieblingsmotiv.</p>
+      <div class="v10-progress-row"><strong id="v10-progress-count">–</strong><span>Deine Gestaltung</span></div>
+      <div class="v10-track" aria-hidden="true"><span id="v10-progress-track"></span></div>
+      <small id="v10-progress-tip">Deine Angaben werden geladen.</small>
+    </section>
+    <section class="surface v10-share-card">
+      <div class="v10-kicker">GEMEINSAM SPIELEN</div><h3>Dein Spieler-Steckbrief</h3>
+      <p>Teile deinen Spielernamen, dein Lieblingsspiel und deine Beschreibung mit Freunden – ohne öffentliche Profilseite.</p>
+      <button type="button" class="btn pale" id="v10-copy-card">📋 Steckbrief kopieren</button>
+      <small>Es werden keine E-Mail-Adresse, Passwörter oder Spielstatistiken mitkopiert.</small>
+    </section>
+   </div>
+   <div class="surface v7-banner-chooser" aria-label="Profilbanner auswählen">
+     <div class="v7-banner-title"><div><span class="v7-overline">DEIN LOOK</span><h3>Mein Profilbanner</h3><p>Wähle eine Stimmung, die zu dir passt – oder lade ein eigenes Foto hoch.</p></div></div>
+     <div class="v7-banner-tiles" role="group" aria-label="Bannerdesign auswählen">
+      <button type="button" data-banner-choice="classic" class="v7-banner-tile classic"><span>👑 Klassisch</span></button>
+      <button type="button" data-banner-choice="ocean" class="v7-banner-tile ocean"><span>🌊 Ozean</span></button>
+      <button type="button" data-banner-choice="sunset" class="v7-banner-tile sunset"><span>🌅 Sonnenuntergang</span></button>
+      <button type="button" data-banner-choice="forest" class="v7-banner-tile forest"><span>🌿 Natur</span></button>
+      <button type="button" data-banner-choice="cosmos" class="v7-banner-tile cosmos"><span>🌙 Abendlicht</span></button>
+      <button type="button" data-banner-choice="aurora" class="v7-banner-tile aurora"><span>🌌 Nordlicht</span></button>
+      <button type="button" data-banner-choice="golden" class="v7-banner-tile golden"><span>🌅 Goldene Stunde</span></button>
+      <button type="button" data-banner-choice="royal" class="v7-banner-tile royal"><span>🌄 Abendhimmel</span></button>
+     </div>
+   </div>
+   <div class="preference-grid">
+    <section class="surface panel"><h3><span class="ico">🎨</span> Lieblingsfarbe</h3><p class="muted">Deine Farbe prägt deine Spielerkarte.</p><div class="color-options">
+     <button class="color-dot" data-choice-color="#328cff" style="--c:#328cff" type="button" aria-label="Blau"></button><button class="color-dot" data-choice-color="#ff5268" style="--c:#ff5268" type="button" aria-label="Rot"></button><button class="color-dot" data-choice-color="#20b986" style="--c:#20b986" type="button" aria-label="Grün"></button><button class="color-dot" data-choice-color="#ffc741" style="--c:#ffc741" type="button" aria-label="Gelb"></button><button class="color-dot" data-choice-color="#9261ec" style="--c:#9261ec" type="button" aria-label="Lila"></button><button class="color-dot" data-choice-color="#f281af" style="--c:#f281af" type="button" aria-label="Rosa"></button>
+    </div></section>
+    <section class="surface panel"><h3><span class="ico">🎮</span> Lieblingsspiel</h3><p class="muted">Welches Spiel spielst du am liebsten?</p><div class="games-choice">
+     <button type="button" class="fav-tile" data-choice-game="skyjo"><span class="fav-art" style="background-image:url('Assets/game-backgrounds/skyjo.webp')"></span><b>SKYJO Action</b></button><button type="button" class="fav-tile" data-choice-game="kreuz"><span class="fav-art" style="background-image:url('Assets/game-backgrounds/kreuzkunter.webp')"></span><b>KreuzKunter</b></button><button type="button" class="fav-tile" data-choice-game="barikade"><span class="fav-art" style="background-image:url('Assets/game-backgrounds/barikade.webp')"></span><b>Barikade</b></button><button type="button" class="fav-tile" data-choice-game="business"><span class="fav-art" style="background-image:url('Assets/game-backgrounds/business.webp')"></span><b>Business</b></button>
+    </div></section>
+    <section class="surface panel"><h3><span class="ico">🖼️</span> Profilbild</h3><p class="muted">Dein Avatar oder ein eigenes Galeriebild.</p><div class="avatars">
+     <button class="avatar-tile" type="button" data-choice-avatar="0"></button><button class="avatar-tile" type="button" data-choice-avatar="1"></button><button class="avatar-tile" type="button" data-choice-avatar="2"></button><button class="avatar-tile" type="button" data-choice-avatar="3"></button><button class="avatar-tile" type="button" data-choice-avatar="4"></button><button class="avatar-tile" type="button" data-choice-avatar="5"></button><button class="avatar-tile" type="button" data-choice-avatar="6"></button><button class="avatar-tile" type="button" data-choice-avatar="7"></button>
+     <button class="avatar-tile" type="button" data-choice-avatar="8" aria-label="Zusätzlicher Avatar 9"></button><button class="avatar-tile" type="button" data-choice-avatar="9" aria-label="Zusätzlicher Avatar 10"></button><button class="avatar-tile" type="button" data-choice-avatar="10" aria-label="Zusätzlicher Avatar 11"></button><button class="avatar-tile" type="button" data-choice-avatar="11" aria-label="Zusätzlicher Avatar 12"></button><button class="avatar-tile" type="button" data-choice-avatar="15" aria-label="Zusätzlicher Avatar 16"></button>
+    </div><label class="custom-avatar-upload">📸 Eigenes Bild aus Galerie wählen<input id="profile-gallery-upload" type="file" accept="image/jpeg,image/png,image/webp"></label><p id="profile-upload-status" class="bottomnote" aria-live="polite">JPG, PNG oder WebP · Wird automatisch verkleinert.</p></section>
+   </div>
+  </section>
+  <section class="profile-manage" aria-label="Kontoeinstellungen">
+   <div class="surface panel"><h3>⚙️ Profil verwalten</h3><p class="muted">Bearbeite Banner, Profilbeschreibung, Spielernamen und Datenschutzeinstellungen an einem Ort.</p><div class="management-buttons"><button type="button" id="profile-edit">✎ Profil bearbeiten</button><button type="button" id="profile-export">↓ Meine Daten exportieren</button><button type="button" id="profile-edit-top">⇄ Konto wechseln</button></div><p class="bottomnote" id="profile-manage-note">🔐 Dein Profil wird online gespeichert.</p></div>
+   <div id="online-account-panel" class="online-account" aria-label="Online-Spielerkonto">
+    <div class="online-head"><h3>☁️ Dein Online-Spielerkonto</h3><span class="online-status" data-online-status>⏳ Lade Verbindungsstatus</span></div>
+    <p class="online-description" data-online-detail aria-live="polite">Die Anmeldung wird geprüft.</p>
+    <div data-online-guest hidden><button type="button" data-online-action="login">Anmelden</button><button type="button" data-online-action="register">Neues Profil anlegen</button></div>
+    <div class="online-signed-controls" data-online-signed hidden><button type="button" data-online-action="retry">↻ Profil aktualisieren</button><button type="button" data-online-action="logout">⇄ Abmelden</button></div>
+    <p id="profile-save-status" class="profile-save-status" role="status" aria-live="polite" hidden></p>
+    <p class="fine-print">🔒 Deine persönlichen Angaben bleiben an dein Firebase-Konto gebunden. Öffentliche Bestenlisten gibt es noch nicht.</p>
+   </div>
+  </section>
+ </div>
+</main>
+</div>
+<dialog id="profile-dialog" class="sp-modal v7-modal"><div class="dialog-inner"><h2 id="dialog-title"></h2><form id="dialog-form"><div id="dialog-content"></div><p class="error" id="dialog-error" role="alert"></p><div class="dialog-actions"><button type="button" id="dialog-cancel">Abbrechen</button><button type="submit" class="primary">Speichern</button></div></form></div></dialog>
+</body>
+</html>
