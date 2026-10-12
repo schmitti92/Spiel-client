@@ -8,6 +8,7 @@
   const hubGameCode=new URLSearchParams(location.search).get('hub');
   const hubGameMode=/^[A-HJ-NP-Z2-9]{6}$/.test(hubGameCode||'');
   const hubGameExpected=hubGameMode?Math.min(4,Math.max(2,Number(new URLSearchParams(location.search).get('players'))||2)):0;
+  const hubMatchId=hubGameMode?String(new URLSearchParams(location.search).get('match')||''):'';
   let hubAutoStartDone=false;
 
 // --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
@@ -8450,7 +8451,7 @@ dice.style.bottom = "";
     }catch(_e){}
     try{ localStorage.removeItem("barikade_sessionToken"); }catch(_e){}
     window.location.href = hubGameMode
-      ? "../hub-lobby.html?room="+encodeURIComponent(hubGameCode)+"&stay=1"
+      ? "../hub-lobby.html?room="+encodeURIComponent(hubGameCode)+"&stayMatch="+encodeURIComponent(hubMatchId)
       : "barikade_lobby.html";
   });
 })();
