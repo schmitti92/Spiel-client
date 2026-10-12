@@ -1,46 +1,52 @@
-SPIELESAMMLUNG – GEMEINSAME LOBBY V4 (SKYJO Action Beta)
-12. Oktober 2026 · Entwicklungsbranch: feature/gemeinsame-lobby-v1
+SPIELESAMMLUNG — GEMEINSAME ONLINE-LOBBY V5 (BUSINESS BETA)
+12. Oktober 2026 · Entwicklungszweig: feature/gemeinsame-lobby-v1
 
 ZIEL
-Ein Raumcode (6 Zeichen) für bis zu sechs Freunde. Der Host wählt aus vier Spielen.
-Für jede Partie vergibt der Server intern eine separate Spielkennung. Niemand muss
-im einzelnen Spiel einen neuen Code eingeben. Zuschauer bleiben in der Hauptlobby.
+Alle Freunde treten genau einem gemeinsamen Raum (sechsstelliger Code) bei.
+Der Host wählt ein Spiel; die Mitspieler melden sich bereit. Die Partien
+verwenden interne Kennungen, sodass niemand einem zweiten Raum beitreten muss.
+Nach dem Spiel bleiben alle im gemeinsamen Raum für das nächste Spiel.
 
-BISHERIGE PHASEN
-[x] Zentraler Raum, Firebase-Kontoprüfung, Host-Rechte, Ready, Zuschauer.
-[x] WebSocket-Aktualisierung und Firestore-Persistenz des zentralen Raums.
-[x] Barikade integriert inkl. Host-Regeln, Spielfarben, Rückkehr.
-[x] KreuzKunter integriert inkl. Identitäts- und Wiederbeitrittsprüfung.
+BISHER
+[x] Zentrale Firestore-Räume, Firebase-Spieleridentitäten, Host-Rechte.
+[x] Zuschauer, Bereitmeldungen, Echtzeit-WebSocket und Wiederbeitritt.
+[x] Barikade, KreuzKunter und SKYJO Action als Beta angeschlossen.
 
-NEU IN V4
-[x] SKYJO als drittes Spiel automatisch nach allen Bereitschaften starten.
-[x] SKYJO-Spiel-Vorraum mit Host-Einstellungen: Ziel, Einsteiger, Jokeranzahl,
-    Joker-Effekte und Straßen. Änderung setzt alle Ready-Meldungen zurück.
-[x] SKYJO-Partien haben eigenständige interne Codes S+HubCode+Seriennummer.
-[x] SKYJO-Client wird direkt mit zugewiesener Firebase-Identität gestartet,
-    ohne zweite SKYJO-Raumerstellung oder Raumcode-Eingabe.
-[x] Idempotente serverseitige SKYJO-Rauminitialisierung (mit Revisionen).
-[x] Geschützte SKYJO-GET/POST-Endpunkte für diese Hub-Partien: keine
-    fremden Spieler/Zuschauer; kein freier Reset/Host- oder Sitzwechsel.
-[x] Nach Spielende Rückkehr in die ursprüngliche Lobby; Server prüft
-    SKYJO game.phase='gameOver', bevor der Host die Partie schließt.
-[x] Lokales SKYJO und eigenständige bisherige SKYJO-Räume bleiben unberührt.
-[x] Automatisierte Tests (Raumrechte, SKYJO-Start, Zuschauer, Zustands-Policy)
-    und JS-Syntaxchecks.
+NEU IN V5
+[x] Das große Business als viertes Spiel für 2–5 aktive Teilnehmer angebunden.
+[x] Business-Vorraum: 10/20/30 Runden, nur Host kann ändern.
+[x] Änderungen setzen alle Bereitmeldungen zurück; automatische Startfreigabe.
+[x] Eigene interne Partie-ID (D + Hubcode + Partie-Seriennummer), gemeinsame
+    Hub-ID bleibt für Folgepartien unverändert.
+[x] Eindeutige Spielernamen auch bei gleichen Profilanzeigenamen.
+[x] Geschäfts-Spielseite überspringt im Hub-Modus die frühere Raumerstellung,
+    Raumcode-Eingabe und Profilnamensauswahl.
+[x] Spielerzuordnung über Firebase UID, nicht über frei erfundene
+    Client-Sitzungstokens. Zuschauer und Fremde erhalten keinen Zugriff.
+[x] Host initialisiert exakt einmal einen Client-Spielzustand.
+[x] Der Hub-Business-Spielstand wird dauerhaft in Firestore verwaltet.
+[x] Speichern mit Firestore-Transaktion, Revisionskontrolle, Spielerreihenfolge
+    und unveränderbarer Teilnehmerliste/Rundenzahl.
+[x] Nach Spielende Host-Abschluss mit Nachweis eines gespeicherten gameEnded-
+    Zustands; nächstes Spiel im ursprünglichen Raum möglich.
+[x] Die bisherigen lokalen und unabhängigen Business-Partien bleiben unverändert.
+[x] 27 automatisierte Tests: 27 bestanden; Syntaxprüfungen bestanden.
 
-WICHTIGE GRENZEN DER BETA
-[ ] Die SKYJO-Spielregeln und verdeckte Deckinformationen liegen weiterhin
-    im vollständigen Spielzustand der vorhandenen Client-Engine. Der Server
-    prüft Zugberechtigung und Aktionen noch nicht vollständig. Online-Siege
-    sind daher noch NICHT als offizielle Ranglisten-Ergebnisse zu verbuchen.
-[ ] Ein kompletter SKYJO-Durchlauf mit zwei/drei echten Geräten über ein
-    eigenes Render-/Firebase-STAGING ist noch nicht geprüft.
-[ ] Zug- und Action-Validierung und geheime Karten müssen für vollen Schutz
-    später in eine SKYJO-Server-Engine umgestellt werden.
-[ ] Business anbinden, XP/Statistiken vervollständigen, Abschluss aller Partien
-    automatisieren, Tests mit Serverneustart und Unterbrechungen durchführen.
+VERBLEIBENDE GRENZEN
+[ ] Ein echter Browser-Mehrspielertest unter Staging-Render und Firebase steht aus.
+    Lokale Browseraufrufe wurden durch die Umgebung blockiert.
+[ ] Business-Spielregeln (Würfel, Käufe, Auszahlungen und Geld) werden aktuell
+    noch im Browser errechnet und als Gesamtsnapshot geschickt. Dies ist eine
+    abgesicherte Hub-Beta, aber KEINE vollständig serverautoritative Engine.
+[ ] Auch SKYJO-Kartenreihenfolge / versteckte Karten sind nicht servergeheim.
+[ ] Offizielle Ergebnisse/XP für Business und SKYJO erst nach vollständiger
+    serverseitiger Regelprüfung und einmaliger Abschlussbuchung aktivieren.
+[ ] Abschluss aller Partien nach verifiziertem Spielende automatisch in die
+    Hub-Lobby übertragen (aktuell Host-Abschluss nötig).
+[ ] Reconnect / Serverneustart / mehrere echte Geräte in Staging prüfen.
+[ ] Schnittstellen-/End-to-End-Tests und Performanceoptimierung vor Live-Release.
 
-SICHERHEIT BEIM WEITERBAU
-Die originalen main-Zweige und die zurückgesetzten ZIP-Snapshots bleiben
-unverändert. Das V4-Update kommt nur auf die bestehenden Testzweige.
-Kein automatisches Produktivdeployment ohne Live-Tests.
+SICHERHEIT
+Die bisherigen main-Zweige bleiben unverändert, genauso die Ausgangs-ZIPs.
+Die Beta-V5-Dateien werden auf feature/gemeinsame-lobby-v1 gespeichert;
+kein Live-Deployment ohne Staging-/Multiplayertest.
