@@ -1,47 +1,46 @@
-ARBEITSPLAN – GEMEINSAME SPIELE-LOBBY · V3 BETA
-Stand: 12. Oktober 2026
-Testzweige: feature/gemeinsame-lobby-v1 in schmitti92/Spiel-client und schmitti92/serverfinal
+SPIELESAMMLUNG – GEMEINSAME LOBBY V4 (SKYJO Action Beta)
+12. Oktober 2026 · Entwicklungsbranch: feature/gemeinsame-lobby-v1
 
 ZIEL
-Ein gemeinsamer Online-Raum mit EINEM sechsstelligen Raumcode, maximal 6 Mitgliedern,
-Host-Rechten, Ready-System, separaten Spiel-Vorräumen, wechselnden Mitspielern und
-Zuschauern. Die Gruppe spielt nacheinander Barikade, KreuzKunter, SKYJO Action und
-Das große Business. Die Spielstände und Ergebnisse werden pro Partie getrennt.
+Ein Raumcode (6 Zeichen) für bis zu sechs Freunde. Der Host wählt aus vier Spielen.
+Für jede Partie vergibt der Server intern eine separate Spielkennung. Niemand muss
+im einzelnen Spiel einen neuen Code eingeben. Zuschauer bleiben in der Hauptlobby.
 
-UMGESETZT
-[x] Zentraler Firestore-Raum, Firebase-Identität, Host-Steuerung, bis zu 6 Mitglieder.
-[x] Echtzeit-Raumbenachrichtigung via /hub-WebSocket plus HTTP-Fallback.
-[x] Bereitmeldungen, Host-Spielauswahl und Teilnehmer-/Zuschauerplätze.
-[x] Barikade-Anbindung mit eigenen internen Matchcodes; Farbwahl, Host-Regeln,
-    Klassisch/Action/Boss, Rücknavigation zum gleichen Hubcode.
-[x] KreuzKunter: automatisch eine neue eigene Partie nach letzter Bereitmeldung.
-[x] KreuzKunter: Plätze anhand der Firebase-UID statt frei gewählter Spielertokens.
-[x] KreuzKunter: gleichzeitig eintretende Teilnehmer bilden genau eine Partie.
-[x] KreuzKunter: nach Verbindungsverlust Rückkehr zum eigenen Spielerplatz.
-[x] KreuzKunter: Legacy-Start/Entfernen ist bei Hub-Partien gesperrt.
-[x] KreuzKunter: Spielregeln/Würfel/Punktwertung bleiben serverseitig.
-[x] KreuzKunter: Rücklink verwendet wieder den zentralen Raumcode.
-[x] KreuzKunter: Endkontrolle zur Prüfung einer beendeten Partie durch den Hub.
-[x] Automatisiertes Testkommando 'npm test' im Serverrepository.
-[x] 18/18 automatisierte Servertests (darunter 3 Kreuz-Engine-Integrationstests).
-[x] JavaScript-Syntaxprüfungen ohne Fehler.
-[x] Alle geänderten Dateien auf separaten GitHub-Testzweigen gesichert, SHA-geprüft.
-[x] Die ursprünglichen GitHub-main-Zweige und Original-ZIP-Dateien sind unverändert.
+BISHERIGE PHASEN
+[x] Zentraler Raum, Firebase-Kontoprüfung, Host-Rechte, Ready, Zuschauer.
+[x] WebSocket-Aktualisierung und Firestore-Persistenz des zentralen Raums.
+[x] Barikade integriert inkl. Host-Regeln, Spielfarben, Rückkehr.
+[x] KreuzKunter integriert inkl. Identitäts- und Wiederbeitrittsprüfung.
 
-WICHTIG: DIESE PUNKTE STEHEN NOCH AUS
-[ ] Render/Firebase-Staging ohne Einfluss auf die Liveserver-Daten einrichten.
-[ ] Echte Browser- und Mehrgerätetests für Barikade und KreuzKunter.
-[ ] Eine vollständige KreuzKunter-Partie bis Ergebnis/XP und Rückkehr testen.
-[ ] Vollständige Barikade-Partien einschließlich Action/Boss und Reconnect testen.
-[ ] Automatisches Beenden eines abgeschlossenen Matches für alle Raummitglieder;
-    aktuell beendet der Host die Partie durch die Hub-Schaltfläche nach Bestätigung.
-[ ] Zuschaueransicht innerhalb der laufenden Spiele (aktuell Hub-Zuschauer).
-[ ] SKYJO Action im gemeinsamen Raum mit serverseitiger Kartenhoheit entwickeln.
-[ ] Business im gemeinsamen Raum mit serverseitiger Prüfung aller Käufe/Würfe.
-[ ] Vollständige Profil-Statistiken/XP aller vier Spiele sicher abrechnen.
-[ ] Ganze Spielabende auf verschiedenen Geräten incl. Reset/Serverneustart testen.
+NEU IN V4
+[x] SKYJO als drittes Spiel automatisch nach allen Bereitschaften starten.
+[x] SKYJO-Spiel-Vorraum mit Host-Einstellungen: Ziel, Einsteiger, Jokeranzahl,
+    Joker-Effekte und Straßen. Änderung setzt alle Ready-Meldungen zurück.
+[x] SKYJO-Partien haben eigenständige interne Codes S+HubCode+Seriennummer.
+[x] SKYJO-Client wird direkt mit zugewiesener Firebase-Identität gestartet,
+    ohne zweite SKYJO-Raumerstellung oder Raumcode-Eingabe.
+[x] Idempotente serverseitige SKYJO-Rauminitialisierung (mit Revisionen).
+[x] Geschützte SKYJO-GET/POST-Endpunkte für diese Hub-Partien: keine
+    fremden Spieler/Zuschauer; kein freier Reset/Host- oder Sitzwechsel.
+[x] Nach Spielende Rückkehr in die ursprüngliche Lobby; Server prüft
+    SKYJO game.phase='gameOver', bevor der Host die Partie schließt.
+[x] Lokales SKYJO und eigenständige bisherige SKYJO-Räume bleiben unberührt.
+[x] Automatisierte Tests (Raumrechte, SKYJO-Start, Zuschauer, Zustands-Policy)
+    und JS-Syntaxchecks.
 
-STATUS V3
-Zwei von vier Spielen sind technisch für den Hub angeschlossen (Beta).
-Browser-End-to-End-Prüfung in der aktuellen Testumgebung war blockiert. Dies ist
-kein Nachweis der fehlerfreien Live-Funktion. GitHub-main/Render-Live bleibt unberührt.
+WICHTIGE GRENZEN DER BETA
+[ ] Die SKYJO-Spielregeln und verdeckte Deckinformationen liegen weiterhin
+    im vollständigen Spielzustand der vorhandenen Client-Engine. Der Server
+    prüft Zugberechtigung und Aktionen noch nicht vollständig. Online-Siege
+    sind daher noch NICHT als offizielle Ranglisten-Ergebnisse zu verbuchen.
+[ ] Ein kompletter SKYJO-Durchlauf mit zwei/drei echten Geräten über ein
+    eigenes Render-/Firebase-STAGING ist noch nicht geprüft.
+[ ] Zug- und Action-Validierung und geheime Karten müssen für vollen Schutz
+    später in eine SKYJO-Server-Engine umgestellt werden.
+[ ] Business anbinden, XP/Statistiken vervollständigen, Abschluss aller Partien
+    automatisieren, Tests mit Serverneustart und Unterbrechungen durchführen.
+
+SICHERHEIT BEIM WEITERBAU
+Die originalen main-Zweige und die zurückgesetzten ZIP-Snapshots bleiben
+unverändert. Das V4-Update kommt nur auf die bestehenden Testzweige.
+Kein automatisches Produktivdeployment ohne Live-Tests.
