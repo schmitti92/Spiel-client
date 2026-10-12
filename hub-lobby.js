@@ -6,7 +6,7 @@ const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
-const stayInLobby=new URL(location.href).searchParams.get('stay')==='1';
+const stayInMatchId=new URL(location.href).searchParams.get('stayMatch');
 let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null;
 function stopWatch(){
  streamReady=false;
@@ -53,14 +53,19 @@ function enterBarikade(){
  localStorage.setItem('barikade_playerName',profile.profile?.name||'Spieler');
  localStorage.setItem('barikade_nameKey',profile.profile?.name||'Spieler');
  localStorage.setItem('barikade_requested_color_'+match.gameCode,match.myColor);
- localStorage.setItem('barikade_action_mode','classic');
- localStorage.setItem('barikade_boss_mode','off');
+ const settings=match.settings||{};
+ localStorage.setItem('barikade_action_mode',settings.mode==='action'?'action':'classic');
+ localStorage.setItem('barikade_boss_mode',settings.bossMode?'boss':'off');
+ localStorage.setItem('barikade_joker_count_'+match.gameCode,String(settings.jokerStartCount||3));
+ localStorage.setItem('barikade_event_field_count_'+match.gameCode,String(settings.eventFieldCount||8));
+ localStorage.setItem('barikade_boss_event_trigger_'+match.gameCode,String(settings.bossEventTrigger??2));
+ localStorage.setItem('barikade_board_theme_'+match.gameCode,settings.boardTheme||'wood');
  localStorage.removeItem('barikade_sessionToken');
- location.assign('Barikade/barikade.html?compact=1&hub='+encodeURIComponent(room.code)+'&players='+match.playerCount);
+ location.assign('Barikade/barikade.html?compact=1&hub='+encodeURIComponent(room.code)+'&players='+match.playerCount+'&match='+encodeURIComponent(match.id));
 }
 
 const activeProfile=()=>{const p=window.SpielOnline?.state?.();return p?.status==='online'&&p?.profile?.setupComplete!==false&&p?.user?p:null;};
-const messages={DATABASE_UNAVAILABLE:'Der Spielserver hat derzeit keine Firestore-Verbindung.',LOGIN_REQUIRED:'Bitte melde dich mit deinem Online-Profil an.',PROFILE_REQUIRED:'Bitte vervollständige dein Spielerprofil.',ROOM_NOT_FOUND:'Der Raum wurde nicht gefunden oder ist abgelaufen.',NOT_A_MEMBER:'Du bist diesem Raum noch nicht beigetreten.',ROOM_FULL:'Der Raum ist bereits voll.',GAME_FULL:'Für dieses Spiel sind schon zu viele Personen im Raum.',TOO_MANY_PLAYERS_FOR_GAME:'Für dieses Spiel sind zu viele Personen im Raum.',HOST_ONLY:'Nur der Host darf das ändern.',GAME_NOT_CONNECTED:'Dieses Spiel ist noch nicht mit der zentralen Lobby verbunden.',PLAYERS_NOT_READY:'Noch sind nicht alle Mitspieler bereit.',GAME_SEATS_FULL:'Für dieses Spiel sind alle Mitspielerplätze belegt. Der Host kann zunächst jemanden auf Zuschauer setzen.',SPECTATOR_CANNOT_READY:'Als Zuschauer musst du dich nicht bereit melden.',ROOM_ALREADY_PLAYING:'Diese Partie hat bereits begonnen.',MATCH_IN_PROGRESS:'Während einer laufenden Partie kannst du den Raum nicht verlassen.',MATCH_NOT_FINISHED:'Die Partie ist noch nicht beendet. Der Server hat noch keinen Sieger festgestellt.',HOST_MUST_PLAY:'Der Host muss bei der Partie mitspielen.',NO_ACTIVE_MATCH:'Es läuft keine Partie.'};
+const messages={DATABASE_UNAVAILABLE:'Der Spielserver hat derzeit keine Firestore-Verbindung.',LOGIN_REQUIRED:'Bitte melde dich mit deinem Online-Profil an.',PROFILE_REQUIRED:'Bitte vervollständige dein Spielerprofil.',ROOM_NOT_FOUND:'Der Raum wurde nicht gefunden oder ist abgelaufen.',NOT_A_MEMBER:'Du bist diesem Raum noch nicht beigetreten.',ROOM_FULL:'Der Raum ist bereits voll.',GAME_FULL:'Für dieses Spiel sind schon zu viele Personen im Raum.',TOO_MANY_PLAYERS_FOR_GAME:'Für dieses Spiel sind zu viele Personen im Raum.',HOST_ONLY:'Nur der Host darf das ändern.',GAME_NOT_CONNECTED:'Dieses Spiel ist noch nicht mit der zentralen Lobby verbunden.',PLAYERS_NOT_READY:'Noch sind nicht alle Mitspieler bereit.',GAME_SEATS_FULL:'Für dieses Spiel sind alle Mitspielerplätze belegt. Der Host kann zunächst jemanden auf Zuschauer setzen.',SPECTATOR_CANNOT_READY:'Als Zuschauer musst du dich nicht bereit melden.',ROOM_ALREADY_PLAYING:'Diese Partie hat bereits begonnen.',MATCH_IN_PROGRESS:'Während einer laufenden Partie kannst du den Raum nicht verlassen.',MATCH_NOT_FINISHED:'Die Partie ist noch nicht beendet. Der Server hat noch keinen Sieger festgestellt.',HOST_MUST_PLAY:'Der Host muss bei der Partie mitspielen.',NO_ACTIVE_MATCH:'Es läuft keine Partie.',INVALID_SETTINGS:'Diese Einstellungen sind ungültig.',NO_BARIKADE_SETUP:'Bitte zuerst Barikade auswählen.',COLOR_TAKEN:'Diese Spielfarbe ist bereits vergeben.',COLORS_BY_WHEEL:'Die Spielerfarben werden ausgelost.',SPECTATOR_CANNOT_SELECT_COLOR:'Zuschauer können keine Spielfarbe wählen.'};
 function notice(message='',isError=false){el('main-status').textContent=message;el('main-status').classList.toggle('error',!!isError);}
 function showError(error){const message=messages[error?.message]||error?.message||'Unbekannter Fehler';notice(message,true);}
 function logged(){const p=activeProfile();if(!p)throw Error('LOGIN_REQUIRED');return p;}
@@ -92,13 +97,29 @@ function render(){
  el('room-view').classList.toggle('hidden',!inside);
  el('create-btn').disabled=!account||operation;el('join-btn').disabled=!account||operation;
  if(!inside)return;
- if(room.phase==='playing'&&room.match?.participating&&!stayInLobby&&room.match.id!==launchedMatchId){
+ if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId){
    launchedMatchId=room.match.id;
    try{enterBarikade();}catch(e){showError(e);}
  }
  el('room-code').textContent=room.code;
  el('select-help').textContent=room.phase==='playing'?'Die Partie läuft. Alle bleiben im gemeinsamen Raum.':room.host?'Du bist Host: Wähle ein Spiel für deine Gruppe.':'Der Host wählt das nächste Spiel. Du kannst dich anschließend bereit melden.';
  const player=room.players.find(p=>p.me);
+ const barikade=room.game==='barikade'&&!!room.settings;
+ const settings=room.settings||{};
+ el('barikade-settings-panel').classList.toggle('hidden',!barikade);
+ el('barikade-host-settings').classList.toggle('hidden',!barikade||!room.host||room.phase!=='preparing');
+ if(barikade){
+   el('barikade-settings-summary').textContent=[settings.mode==='action'?'⚡ Action':'🎲 Klassisch',settings.bossMode?'👹 Bossmodus':'Ohne Bosse',`Brett: ${settings.boardTheme==='stone'?'Stein':settings.boardTheme==='classic'?'Klassisch':'Holz'}`,settings.colorMode==='wheel'?'🎰 Farben auslosen':'🎨 Farbwahl'].join(' · ');
+   document.querySelectorAll('[data-barikade-setting]').forEach(field=>{field.value=String(settings[field.dataset.barikadeSetting]);field.disabled=operation;});
+   document.querySelectorAll('.hub-action-setting').forEach(field=>field.classList.toggle('hidden',settings.mode!=='action'));
+   document.querySelectorAll('.hub-boss-setting').forEach(field=>field.classList.toggle('hidden',!settings.bossMode));
+ }
+ const canPick=barikade&&room.phase==='preparing'&&player?.participating&&settings.colorMode==='manual';
+ el('barikade-color-select-panel').classList.toggle('hidden',!canPick);
+ if(canPick){
+   const picker=el('barikade-color-select');picker.value=player.colorPref||'';picker.disabled=operation;
+   [...picker.options].forEach(opt=>opt.disabled=!!opt.value&&room.players.some(p=>!p.me&&p.participating&&p.colorPref===opt.value));
+ }
  el('players').replaceChildren(...room.players.map(p=>{
   const div=document.createElement('div');div.className='player';
   const avatar=document.createElement('span');avatar.className='avatar';avatar.textContent='🙂';
@@ -149,6 +170,16 @@ el('join-btn').addEventListener('click',()=>command(async()=>{
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
  if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game});activateRoom(r);
 }))); 
+document.querySelectorAll('[data-barikade-setting]').forEach(field=>field.addEventListener('change',()=>command(async()=>{
+ if(!room?.host||room.phase!=='preparing'||room.game!=='barikade')return;
+ const key=field.dataset.barikadeSetting;
+ const value=field.value;
+ const settings={...room.settings,[key]:key==='bossMode'?value==='true':['jokerStartCount','eventFieldCount','bossEventTrigger'].includes(key)?Number(value):value};
+ const {room:r}=await request('/rooms/'+code+'/settings','POST',{settings});activateRoom(r);
+})));
+el('barikade-color-select').addEventListener('change',event=>command(async()=>{
+ const {room:r}=await request('/rooms/'+code+'/color','POST',{color:event.target.value||null});activateRoom(r);
+}));
 el('ready-btn').addEventListener('click',()=>command(async()=>{
  if(room?.phase==='playing'){enterBarikade();return;}
  const me=room?.players.find(p=>p.me);if(!me)return;
