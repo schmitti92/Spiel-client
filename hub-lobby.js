@@ -56,10 +56,18 @@ function enterSkyjo(){
  const q=new URLSearchParams({mode:'online',hub:room.code,match:m.id,room:m.gameCode});
  location.assign('Skyjo/skyjo_action.html?'+q.toString());
 }
+function enterBusiness(){
+ if(room?.phase!=='playing'||room.match?.game!=='business'||!room.match.participating)return;
+ const m=room.match;
+ if(!/^D[A-HJ-NP-Z2-9]{9}$/.test(m.gameCode))throw Error('MATCH_CODE_INVALID');
+ const q=new URLSearchParams({hub:room.code,match:m.id,gameCode:m.gameCode});
+ location.assign('Business/business_online.html?'+q.toString());
+}
 function enterCurrentMatch(){
  if(room?.match?.game==='barikade')return enterBarikade();
  if(room?.match?.game==='kreuz')return enterKreuz();
  if(room?.match?.game==='skyjo')return enterSkyjo();
+ if(room?.match?.game==='business')return enterBusiness();
  throw Error('GAME_NOT_CONNECTED');
 }
 function enterBarikade(){
@@ -84,7 +92,7 @@ function enterBarikade(){
 }
 
 const activeProfile=()=>{const p=window.SpielOnline?.state?.();return p?.status==='online'&&p?.profile?.setupComplete!==false&&p?.user?p:null;};
-const messages={DATABASE_UNAVAILABLE:'Der Spielserver hat derzeit keine Firestore-Verbindung.',LOGIN_REQUIRED:'Bitte melde dich mit deinem Online-Profil an.',PROFILE_REQUIRED:'Bitte vervollständige dein Spielerprofil.',ROOM_NOT_FOUND:'Der Raum wurde nicht gefunden oder ist abgelaufen.',NOT_A_MEMBER:'Du bist diesem Raum noch nicht beigetreten.',ROOM_FULL:'Der Raum ist bereits voll.',GAME_FULL:'Für dieses Spiel sind schon zu viele Personen im Raum.',TOO_MANY_PLAYERS_FOR_GAME:'Für dieses Spiel sind zu viele Personen im Raum.',HOST_ONLY:'Nur der Host darf das ändern.',GAME_NOT_CONNECTED:'Dieses Spiel ist noch nicht mit der zentralen Lobby verbunden.',PLAYERS_NOT_READY:'Noch sind nicht alle Mitspieler bereit.',GAME_SEATS_FULL:'Für dieses Spiel sind alle Mitspielerplätze belegt. Der Host kann zunächst jemanden auf Zuschauer setzen.',SPECTATOR_CANNOT_READY:'Als Zuschauer musst du dich nicht bereit melden.',ROOM_ALREADY_PLAYING:'Diese Partie hat bereits begonnen.',MATCH_IN_PROGRESS:'Während einer laufenden Partie kannst du den Raum nicht verlassen.',MATCH_NOT_FINISHED:'Die Partie ist noch nicht beendet. Der Server hat noch keinen Sieger festgestellt.',HOST_MUST_PLAY:'Der Host muss bei der Partie mitspielen.',NO_ACTIVE_MATCH:'Es läuft keine Partie.',INVALID_SETTINGS:'Diese Einstellungen sind ungültig.',NO_BARIKADE_SETUP:'Bitte zuerst Barikade auswählen.',NO_SKYJO_SETUP:'Bitte zuerst SKYJO auswählen.',COLOR_TAKEN:'Diese Spielfarbe ist bereits vergeben.',COLORS_BY_WHEEL:'Die Spielerfarben werden ausgelost.',SPECTATOR_CANNOT_SELECT_COLOR:'Zuschauer können keine Spielfarbe wählen.'};
+const messages={DATABASE_UNAVAILABLE:'Der Spielserver hat derzeit keine Firestore-Verbindung.',LOGIN_REQUIRED:'Bitte melde dich mit deinem Online-Profil an.',PROFILE_REQUIRED:'Bitte vervollständige dein Spielerprofil.',ROOM_NOT_FOUND:'Der Raum wurde nicht gefunden oder ist abgelaufen.',NOT_A_MEMBER:'Du bist diesem Raum noch nicht beigetreten.',ROOM_FULL:'Der Raum ist bereits voll.',GAME_FULL:'Für dieses Spiel sind schon zu viele Personen im Raum.',TOO_MANY_PLAYERS_FOR_GAME:'Für dieses Spiel sind zu viele Personen im Raum.',HOST_ONLY:'Nur der Host darf das ändern.',GAME_NOT_CONNECTED:'Dieses Spiel ist noch nicht mit der zentralen Lobby verbunden.',PLAYERS_NOT_READY:'Noch sind nicht alle Mitspieler bereit.',GAME_SEATS_FULL:'Für dieses Spiel sind alle Mitspielerplätze belegt. Der Host kann zunächst jemanden auf Zuschauer setzen.',SPECTATOR_CANNOT_READY:'Als Zuschauer musst du dich nicht bereit melden.',ROOM_ALREADY_PLAYING:'Diese Partie hat bereits begonnen.',MATCH_IN_PROGRESS:'Während einer laufenden Partie kannst du den Raum nicht verlassen.',MATCH_NOT_FINISHED:'Die Partie ist noch nicht beendet. Der Server hat noch keinen Sieger festgestellt.',HOST_MUST_PLAY:'Der Host muss bei der Partie mitspielen.',NO_ACTIVE_MATCH:'Es läuft keine Partie.',INVALID_SETTINGS:'Diese Einstellungen sind ungültig.',NO_BARIKADE_SETUP:'Bitte zuerst Barikade auswählen.',NO_SKYJO_SETUP:'Bitte zuerst SKYJO auswählen.',NO_BUSINESS_SETUP:'Bitte zuerst Business auswählen.',COLOR_TAKEN:'Diese Spielfarbe ist bereits vergeben.',COLORS_BY_WHEEL:'Die Spielerfarben werden ausgelost.',SPECTATOR_CANNOT_SELECT_COLOR:'Zuschauer können keine Spielfarbe wählen.'};
 function notice(message='',isError=false){el('main-status').textContent=message;el('main-status').classList.toggle('error',!!isError);}
 function showError(error){const message=messages[error?.message]||error?.message||'Unbekannter Fehler';notice(message,true);}
 function logged(){const p=activeProfile();if(!p)throw Error('LOGIN_REQUIRED');return p;}
@@ -125,7 +133,15 @@ function render(){
  const player=room.players.find(p=>p.me);
  const barikade=room.game==='barikade'&&!!room.settings;
  const skyjo=room.game==='skyjo'&&!!room.settings;
+ const business=room.game==='business'&&!!room.settings;
  const settings=room.settings||{};
+ el('business-settings-panel').classList.toggle('hidden',!business);
+ el('business-host-settings').classList.toggle('hidden',!business||!room.host||room.phase!=='preparing');
+ if(business){
+  el('business-settings-summary').textContent=room.settings.rounds+' Runden · '+(room.settings.rounds===10?'Schnell':room.settings.rounds===30?'Marathon':'Standard');
+  el('business-rounds').value=String(room.settings.rounds);
+  el('business-rounds').disabled=operation;
+ }
  el('skyjo-settings-panel').classList.toggle('hidden',!skyjo);
  el('skyjo-host-settings').classList.toggle('hidden',!skyjo||!room.host||room.phase!=='preparing');
  if(skyjo){
@@ -179,7 +195,7 @@ function render(){
  el('start-btn').textContent=room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
  el('start-btn').title=room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.canLaunch?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
  el('leave-btn').disabled=room.phase==='playing'||operation;
- el('integration-note').textContent=room.phase==='playing'?'Die Partie läuft unter diesem zentralen Raum. Nach dem Sieg schließt der Host die Partie ab und alle bleiben hier.':room.canLaunch?'Dieses Spiel ist mit dem gemeinsamen Raum verbunden. Alle ausgewählten Mitspieler melden sich bereit, danach startet die Partie automatisch.':'Barikade, KreuzKunter und SKYJO sind verbunden. Business folgt.';
+ el('integration-note').textContent=room.phase==='playing'?'Die Partie läuft unter diesem zentralen Raum. Nach dem Sieg schließt der Host die Partie ab und alle bleiben hier.':room.canLaunch?'Dieses Spiel ist mit dem gemeinsamen Raum verbunden. Alle ausgewählten Mitspieler melden sich bereit, danach startet die Partie automatisch.':'Alle vier Spiele sind mit dem gemeinsamen Raum verbunden – Beta.';
 }
 async function command(run){if(operation)return;operation=true;render();notice('');
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
@@ -211,6 +227,10 @@ document.querySelectorAll('[data-skyjo-setting]').forEach(field=>field.addEventL
  const next={...room.settings,[key]:['beginner','jokerEnabled','streetModeEnabled'].includes(key)?raw==='true':Number(raw)};
  const {room:r}=await request('/rooms/'+code+'/skyjo-settings','POST',{settings:next});activateRoom(r);
 })));
+el('business-rounds').addEventListener('change',event=>command(async()=>{
+ if(!room?.host||room.phase!=='preparing'||room.game!=='business')return;
+ const {room:r}=await request('/rooms/'+code+'/business-settings','POST',{settings:{rounds:Number(event.target.value)}});activateRoom(r);
+}));
 el('barikade-color-select').addEventListener('change',event=>command(async()=>{
  const {room:r}=await request('/rooms/'+code+'/color','POST',{color:event.target.value||null});activateRoom(r);
 }));
