@@ -7,7 +7,7 @@ const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replac
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 const activeProfile=()=>{const p=window.SpielOnline?.state?.();return p?.status==='online'&&p?.profile?.setupComplete!==false&&p?.user?p:null;};
-const messages={DATABASE_UNAVAILABLE:'Der Spielserver hat derzeit keine Firestore-Verbindung.',LOGIN_REQUIRED:'Bitte melde dich mit deinem Online-Profil an.',PROFILE_REQUIRED:'Bitte vervollständige dein Spielerprofil.',ROOM_NOT_FOUND:'Der Raum wurde nicht gefunden oder ist abgelaufen.',NOT_A_MEMBER:'Du bist diesem Raum noch nicht beigetreten.',ROOM_FULL:'Der Raum ist bereits voll.',GAME_FULL:'Für dieses Spiel sind schon zu viele Personen im Raum.',TOO_MANY_PLAYERS_FOR_GAME:'Für dieses Spiel sind zu viele Personen im Raum.',HOST_ONLY:'Nur der Host darf das ändern.',GAME_NOT_CONNECTED:'Dieses Spiel ist noch nicht mit der zentralen Lobby verbunden.',PLAYERS_NOT_READY:'Noch sind nicht alle Spieler bereit.',ROOM_ALREADY_PLAYING:'Diese Partie hat bereits begonnen.'};
+const messages={DATABASE_UNAVAILABLE:'Der Spielserver hat derzeit keine Firestore-Verbindung.',LOGIN_REQUIRED:'Bitte melde dich mit deinem Online-Profil an.',PROFILE_REQUIRED:'Bitte vervollständige dein Spielerprofil.',ROOM_NOT_FOUND:'Der Raum wurde nicht gefunden oder ist abgelaufen.',NOT_A_MEMBER:'Du bist diesem Raum noch nicht beigetreten.',ROOM_FULL:'Der Raum ist bereits voll.',GAME_FULL:'Für dieses Spiel sind schon zu viele Personen im Raum.',TOO_MANY_PLAYERS_FOR_GAME:'Für dieses Spiel sind zu viele Personen im Raum.',HOST_ONLY:'Nur der Host darf das ändern.',GAME_NOT_CONNECTED:'Dieses Spiel ist noch nicht mit der zentralen Lobby verbunden.',PLAYERS_NOT_READY:'Noch sind nicht alle Mitspieler bereit.',GAME_SEATS_FULL:'Für dieses Spiel sind alle Mitspielerplätze belegt. Der Host kann zunächst jemanden auf Zuschauer setzen.',SPECTATOR_CANNOT_READY:'Als Zuschauer musst du dich nicht bereit melden.',ROOM_ALREADY_PLAYING:'Diese Partie hat bereits begonnen.'};
 function notice(message='',isError=false){el('main-status').textContent=message;el('main-status').classList.toggle('error',!!isError);}
 function showError(error){const message=messages[error?.message]||error?.message||'Unbekannter Fehler';notice(message,true);}
 function logged(){const p=activeProfile();if(!p)throw Error('LOGIN_REQUIRED');return p;}
@@ -46,18 +46,29 @@ function render(){
   const avatar=document.createElement('span');avatar.className='avatar';avatar.textContent='🙂';
   const name=document.createElement('span');name.className='name';name.textContent=p.name;
   const tag=document.createElement('span');tag.className='tag';tag.textContent=(p.host?'👑 Host ':'')+(p.me?'(Du)':'');name.append(tag);
-  const ready=document.createElement('span');ready.className='ready'+(p.ready?' yes':'');ready.textContent=p.ready?'✓ Bereit':'Wartet';
-  div.append(avatar,name,ready);return div;
+  const ready=document.createElement('span');ready.className='ready'+(!p.participating?' spectator':p.ready?' yes':'');ready.textContent=!p.participating?'Zuschauer':p.ready?'✓ Bereit':'Wartet';
+  div.append(avatar,name,ready);
+  if(room.host&&room.game){
+    const btn=document.createElement('button');btn.className='seat-button';btn.type='button';
+    btn.textContent=p.participating?'Zuschauen':'Mitspielen';
+    btn.disabled=operation;btn.setAttribute('aria-label',`${p.name}: ${btn.textContent}`);
+    btn.addEventListener('click',()=>command(async()=>{
+      const {room:r}=await request('/rooms/'+code+'/seats','POST',{seat:p.seat,participating:!p.participating});activateRoom(r);
+    }));
+    div.append(btn);
+  }
+  return div;
  }));
  document.querySelectorAll('[data-game]').forEach(btn=>{
   btn.classList.toggle('active',btn.dataset.game===room.game);
   btn.disabled=!room.host||operation;
   btn.setAttribute('aria-pressed',String(btn.dataset.game===room.game));
  });
- el('ready-help').textContent=room.game?`${GAME[room.game]||room.game} ist ausgewählt. Alle Personen müssen sich bereit melden.`:'Der Host wählt zuerst ein Spiel.';
+ el('ready-help').textContent=room.game?`${GAME[room.game]||room.game} ist ausgewählt. Nur die ausgewählten Mitspieler melden sich bereit; Zuschauer bleiben im Raum.`:'Der Host wählt zuerst ein Spiel.';
  el('ready-btn').textContent=player?.ready?'Bereitmeldung zurücknehmen':'Ich bin bereit';
- el('ready-btn').disabled=!room.game||operation;
- el('ready-status').textContent=`${room.players.filter(p=>p.ready).length} von ${room.players.length} bereit${room.allReady?' · Alle bereit!':''}`;
+ el('ready-btn').disabled=!room.game||!player?.participating||operation;
+ const playing=room.players.filter(p=>p.participating);
+ el('ready-status').textContent=`${playing.filter(p=>p.ready).length} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
  el('start-btn').disabled=true;
  el('start-btn').textContent=room.allReady?'Spielanbindung folgt':'Partie starten';
  el('start-btn').title='Noch nicht freigeschaltet: Die einzelnen Spiele werden im nächsten Arbeitsschritt angeschlossen.';
