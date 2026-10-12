@@ -43,6 +43,17 @@ function startWatch(){
  };
  socket.onerror=()=>{}; // close event triggers HTTP fallback and retry
 }
+function enterKreuz(){
+ if(room?.phase!=='playing'||room.match?.game!=='kreuz'||!room.match.participating)return;
+ const match=room.match;
+ if(!/^K[A-HJ-NP-Z2-9]{9}$/.test(match.gameCode))throw Error('MATCH_CODE_INVALID');
+ location.assign('KreuzKunter/kreuzkunter.html?hub='+encodeURIComponent(room.code)+'&match='+encodeURIComponent(match.id)+'&gameCode='+encodeURIComponent(match.gameCode));
+}
+function enterCurrentMatch(){
+ if(room?.match?.game==='barikade')return enterBarikade();
+ if(room?.match?.game==='kreuz')return enterKreuz();
+ throw Error('GAME_NOT_CONNECTED');
+}
 function enterBarikade(){
  if(room?.phase!=='playing'||room.match?.game!=='barikade'||!room.match.participating)return;
  const match=room.match,profile=logged();
@@ -99,7 +110,7 @@ function render(){
  if(!inside)return;
  if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId){
    launchedMatchId=room.match.id;
-   try{enterBarikade();}catch(e){showError(e);}
+   try{enterCurrentMatch();}catch(e){showError(e);}
  }
  el('room-code').textContent=room.code;
  el('select-help').textContent=room.phase==='playing'?'Die Partie läuft. Alle bleiben im gemeinsamen Raum.':room.host?'Du bist Host: Wähle ein Spiel für deine Gruppe.':'Der Host wählt das nächste Spiel. Du kannst dich anschließend bereit melden.';
@@ -149,10 +160,10 @@ function render(){
  const playing=room.players.filter(p=>p.participating);
  el('ready-status').textContent=`${playing.filter(p=>p.ready).length} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
  el('start-btn').disabled=!(room.phase==='playing'&&room.host)||operation;
- el('start-btn').textContent=room.phase==='playing'?'Beendete Partie abschließen':room.game==='barikade'?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
- el('start-btn').title=room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.game==='barikade'?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
+ el('start-btn').textContent=room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
+ el('start-btn').title=room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.canLaunch?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
  el('leave-btn').disabled=room.phase==='playing'||operation;
- el('integration-note').textContent=room.phase==='playing'?'Die Partie läuft unter diesem zentralen Raum. Nach dem Sieg schließt der Host die Partie ab und alle bleiben hier.':room.game==='barikade'?'Barikade ist für die gemeinsame Raumverwaltung verbunden. Alle Mitspieler müssen sich bereit melden; danach startet die Partie automatisch im eigenen Spielbildschirm.':'Barikade ist der erste verbundene Spielmodus. Die übrigen Spiele werden nacheinander angeschlossen.';
+ el('integration-note').textContent=room.phase==='playing'?'Die Partie läuft unter diesem zentralen Raum. Nach dem Sieg schließt der Host die Partie ab und alle bleiben hier.':room.canLaunch?'Dieses Spiel ist mit dem gemeinsamen Raum verbunden. Alle ausgewählten Mitspieler melden sich bereit, danach startet die Partie automatisch.':'Barikade und KreuzKunter sind verbunden. Die übrigen Spiele folgen.';
 }
 async function command(run){if(operation)return;operation=true;render();notice('');
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
@@ -181,7 +192,7 @@ el('barikade-color-select').addEventListener('change',event=>command(async()=>{
  const {room:r}=await request('/rooms/'+code+'/color','POST',{color:event.target.value||null});activateRoom(r);
 }));
 el('ready-btn').addEventListener('click',()=>command(async()=>{
- if(room?.phase==='playing'){enterBarikade();return;}
+ if(room?.phase==='playing'){enterCurrentMatch();return;}
  const me=room?.players.find(p=>p.me);if(!me)return;
  const {room:r}=await request('/rooms/'+code+'/ready','POST',{ready:!me.ready});activateRoom(r);
 }));
