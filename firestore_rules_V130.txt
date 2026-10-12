@@ -1,0 +1,59 @@
+// SPIELERPORTAL V130 – EINZUFÜGENDER REGELBLOCK
+// WICHTIG: Diesen Block INNERHALB des vorhandenen
+// match /databases/{database}/documents { ... } einfügen.
+// Bestehende Regeln für Barikade, SKYJO, Business, KreuzKunter NICHT löschen.
+// Dieser Block allein ist keine vollständige Firestore-Regeldatei.
+
+match /playerProfiles/{userId} {
+  function isOwner() {
+    return request.auth != null && request.auth.uid == userId;
+  }
+
+  function allowedProfileFields() {
+    return ['id', 'name', 'color', 'favorite', 'skyjoBoardFavorite',
+            'avatar', 'created', 'visits', 'edited', 'updatedAt'];
+  }
+
+  function validProfile() {
+    return request.resource.data.id == userId
+      && request.resource.data.name is string
+      && request.resource.data.name.size() > 0
+      && request.resource.data.name.size() <= 24
+      && request.resource.data.color in [
+        '#328cff', '#ff5268', '#20b986', '#ffc741', '#9261ec', '#f281af'
+      ]
+      && request.resource.data.avatar is int
+      && request.resource.data.avatar >= 0
+      && request.resource.data.avatar <= 7
+      && request.resource.data.favorite in ['skyjo', 'kreuz', 'barikade', 'business']
+      && request.resource.data.skyjoBoardFavorite in ['standard', 'comic', 'christlich']
+      && request.resource.data.visits is map
+      && request.resource.data.visits.keys().hasOnly(['skyjo', 'kreuz', 'barikade', 'business'])
+      && request.resource.data.edited is bool
+      && request.resource.data.created is int
+      && request.resource.data.updatedAt is int;
+  }
+
+  // Nur das eigene Profil lesen, keine Auflistung aller Profile.
+  allow get: if isOwner();
+  allow list: if false;
+
+  // Beim ersten Login darf ausschließlich das eigene Profildokument entstehen.
+  allow create: if isOwner()
+    && request.resource.data.keys().hasOnly(allowedProfileFields())
+    && request.resource.data.keys().hasAll(allowedProfileFields())
+    && validProfile();
+
+  // Nur harmlose Profilangaben ändern, keine IDs/Erstellungszeit
+  // und keine zusätzlichen Statistik- oder Rollenfelder schreiben.
+  allow update: if isOwner()
+    && request.resource.data.keys().hasOnly(allowedProfileFields())
+    && request.resource.data.keys().hasAll(allowedProfileFields())
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+      'name', 'color', 'favorite', 'skyjoBoardFavorite', 'avatar',
+      'visits', 'edited', 'updatedAt'
+    ])
+    && validProfile();
+
+  allow delete: if false;
+}
