@@ -1,3 +1,37 @@
+SPIELESAMMLUNG – V8: GETRENNTE SPIELE-STARTSEITEN
+13. Oktober 2026
+
+NUTZERFÜHRUNG
+1. Einstiegsseite: hub-lobby.html – wähle lokal oder online.
+2. Lokal: sofort zur bildstarken spielauswahl-lokal.html; keine Firebase-
+   Anmeldung, keine Online-Raumsteuerung, nur direkte lokale Spielstarts.
+3. Online: neues Zimmer erstellen / sechsstelligen Code eingeben.
+   Erst nach Serverbestätigung kommt man zu spielauswahl-online.html?room=CODE.
+4. Online-Spielauswahl: vier vertraute Spielkarten mit Bild. Server prüft
+   Firebase-Mitgliedschaft; ausschließlich Host kann Spiel wählen.
+5. Spielwahl: vorhandener zentraler Raum wird per /api/hub/rooms/:code/select
+   aktualisiert; danach hub-lobby.html?room=CODE&stage=1.
+6. Vorraum: bestehende spielspezifische Einstellungen, Plätze und
+   Bereitmeldungen; automatischer Start bei vollständiger Gruppe.
+7. Nach serverbestätigtem Ende: Rückkehr zur Online-Spielauswahl im selben Raum.
+8. Host kann aus Vorraum via &choose=1 ein anderes Spiel wählen, ohne
+   sofortige Rückleitung in die vorherige Spielvorbereitung.
+
+SICHERUNGEN & TESTS
+[x] Backup: backup/vor-spielauswahl-navigation-v8-2026-10-13.
+[x] Bestehende Spiele und Servercode unverändert.
+[x] Online-Spielerprofil- und Hostprüfung basiert auf Server-API.
+[x] Alle 11 Client-Tests erfolgreich in GitHub Actions, inklusive
+    Hostwahl, Gastberechtigung, Verlassen des Vorraums, Offline-Trennung.
+[x] Syntaxprüfung beide JS-Einstiegspunkte bestanden.
+
+FOLGENDE FUNKTIONSTESTS MIT ECHTEN GERÄTEN NOCH OFFEN
+[ ] Lokaler Start und Spielempfehlungen auf einem Android-Handy.
+[ ] Zwei angemeldete Spieler: Raum erstellen, Code eintippen, Startseite.
+[ ] Host eröffnet jedes der vier Spiele und setzt Einstellungen.
+[ ] Bereitmelden/Start/Spielende auf zwei bis sechs Geräten.
+[ ] Reconnect und längere Spielrunden, speziell SKYJO und Business.
+
 SPIELESAMMLUNG — ONLINE-VORRÄUME & LOKALER MODUS (V7)
 13. Oktober 2026 · Client-Release
 

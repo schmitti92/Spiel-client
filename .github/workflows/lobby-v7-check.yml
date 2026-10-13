@@ -2,7 +2,7 @@ name: Lobby V7 client checks
 on:
   push:
     branches:
-      - feature/online-vorraeume-offline-v7
+      - feature/spielauswahl-navigation-v8
       - main
   workflow_dispatch:
 permissions:
@@ -17,4 +17,5 @@ jobs:
         with:
           node-version: '20'
       - run: node --check hub-lobby.js
-      - run: node --test tests/lobby-v7.test.mjs
+      - run: node --check spielauswahl-online.js
+      - run: node --test tests/lobby-v7.test.mjs tests/spielauswahl-v8.test.mjs

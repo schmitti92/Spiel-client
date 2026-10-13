@@ -140,6 +140,10 @@ function render(){
  el('account-info').textContent=account?'Dein verifiziertes Online-Spielerprofil ist verbunden.':'Bitte anmelden oder ein Profil erstellen, um einen Raum zu betreten.';
  el('login-btn').textContent=account?'Profil ansehen':'Anmelden';
  const inside=!!room;
+ if(inside&&room.phase==='lobby'&&!room.game&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('spielauswahl-online.html?room='+encodeURIComponent(room.code));
+  return;
+ }
  el('entry-view').classList.toggle('hidden',inside);
  el('room-view').classList.toggle('hidden',!inside);
  el('create-btn').disabled=!account||operation;el('join-btn').disabled=!account||operation;
@@ -255,18 +259,18 @@ async function command(run){if(operation)return;operation=true;render();notice('
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
 }
 el('login-btn').addEventListener('click',()=>{if(activeProfile())location.assign('profile.html');else window.SpielOnline?.openLogin?.();});
-el('mode-local').addEventListener('click',()=>setPlayMode('local'));
+el('mode-local').addEventListener('click',()=>location.assign('spielauswahl-lokal.html'));
 el('mode-online').addEventListener('click',()=>setPlayMode('online'));
-el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing'){choosingGame=true;render();}});
+el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing')location.assign('spielauswahl-online.html?room='+encodeURIComponent(room.code)+'&choose=1');});
 
 el('create-btn').addEventListener('click',()=>command(async()=>{
- const {room:r}=await request('/rooms','POST');activateRoom(r);pollStart();notice('Raum erstellt – teile den Code mit deinen Freunden.');
+ const {room:r}=await request('/rooms','POST');location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,'').slice(0,6);notice('');});
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
  const c=el('join-code').value.trim().toUpperCase();if(!/^[A-HJ-NP-Z2-9]{6}$/.test(c))throw Error('Bitte einen gültigen Raumcode mit 6 Zeichen eingeben.');
- const {room:r}=await request('/rooms/'+c+'/join','POST');activateRoom(r);pollStart();notice('Du bist dem Raum beigetreten.');
+ const {room:r}=await request('/rooms/'+c+'/join','POST');location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
  if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game});choosingGame=false;activateRoom(r);
@@ -314,6 +318,10 @@ window.addEventListener('spielonline-change',()=>{
 });
 async function boot(){render();const fromUrl=new URL(location.href).searchParams.get('room');
  if(!fromUrl||!/^[A-HJ-NP-Z2-9]{6}$/i.test(fromUrl))return;
+ if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
+   location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));
+   return;
+ }
  let elapsed=0;const timer=setInterval(async()=>{
   elapsed+=250;
   if(!activeProfile()&&elapsed<12000)return;
