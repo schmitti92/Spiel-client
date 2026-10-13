@@ -116,7 +116,8 @@ jobs:
             const measurements=await page.evaluate(()=>{
               const rect=(el)=>{if(!el)return null;const r=el.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height),bottom:Math.round(r.bottom)}};
               const layout=document.querySelector('.sky-reference-layout[data-sky-seats="2"]');
-              return {boardTheme:document.body.dataset.skyBoard,layoutPresent:!!layout,
+              return {boardTheme:document.body.dataset.skyBoard,bodyClasses:document.body.className,layoutPresent:!!layout,
+                computed:layout?{display:getComputedStyle(layout).display,columns:getComputedStyle(layout).gridTemplateColumns,areas:getComputedStyle(layout).gridTemplateAreas,cardWidth:getComputedStyle(layout.querySelector('.sky-reference-own .card')).width,cardVar:getComputedStyle(layout.querySelector('.sky-reference-own .player')).getPropertyValue('--card-w'),cssWidth:document.documentElement.clientWidth}:null,
                 viewport:{width:innerWidth,height:innerHeight},
                 opponent:rect(layout?.querySelector('.sky-reference-tl .player')),
                 own:rect(layout?.querySelector('.sky-reference-own .player')),
