@@ -240,3 +240,80 @@
   max-height:68px!important;overflow:auto!important;
  }
 }
+
+/* v16.2: central controls as three independent, usable columns. */
+@media (min-width:900px) and (orientation:landscape){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{
+  overflow:visible!important;z-index:4!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(140px,1.1fr) minmax(0,1fr)!important;
+  grid-template-rows:82px!important;
+  gap:6px!important;
+  padding:3px!important;
+  overflow:visible!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table.specials-off{
+  grid-template-columns:minmax(0,1fr) minmax(150px,1fr)!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .handbox,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .play-pilebox,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .action-pilebox{
+  display:flex!important;flex-direction:column!important;
+  align-items:stretch!important;justify-content:center!important;
+  height:82px!important;min-height:0!important;max-height:82px!important;
+  width:100%!important;min-width:0!important;
+  padding:3px 5px!important;margin:0!important;
+  border-radius:12px!important;overflow:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .handbox .real-hand-zone{
+  box-sizing:border-box!important;
+  display:flex!important;flex-direction:row!important;
+  align-items:center!important;gap:6px!important;
+  height:74px!important;min-height:0!important;
+  overflow:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .real-hand-card{
+  flex:0 0 43px!important;width:43px!important;height:56px!important;
+  min-height:0!important;max-height:56px!important;overflow:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .real-hand-card>.card{
+  width:43px!important;height:56px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .real-hand-copy{
+  flex:1 1 0!important;min-width:0!important;min-height:0!important;
+  max-height:75px!important;overflow:auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .real-hand-copy .eyebrow,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .real-hand-copy small{
+  display:none!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .real-hand-copy b{
+  font-size:11px!important;line-height:13px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-row{
+  height:66px!important;gap:8px!important;align-items:center!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-unit{
+  width:46px!important;height:64px!important;flex:0 0 46px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-card-hit,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-card-hit>.card{
+  box-sizing:border-box!important;width:44px!important;height:58px!important;
+  min-width:0!important;min-height:0!important;max-width:44px!important;max-height:58px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .action-pilebox .market{
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  gap:3px!important;height:56px!important;max-height:56px!important;
+  width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .action-pilebox .market>*{
+  flex:0 0 40px!important;min-width:0!important;width:40px!important;
+  height:49px!important;max-height:49px!important;overflow:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .action-pilebox .market .card{
+  width:38px!important;height:47px!important;max-width:38px!important;max-height:47px!important;
+ }
+}
