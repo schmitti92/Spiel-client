@@ -12,19 +12,20 @@ function visibleCard(raw) {
   const value = raw.type === 'star' ? '★' : (raw.value ?? raw.number ?? raw.label);
   return value === undefined || value === null ? null : String(value);
 }
-function cardHTML(raw) {
+function cardHTML(raw, playerIndex, cardIndex, interactive) {
   if (raw === null || raw === undefined) return '<div class="card empty" aria-label="Entfernte Karte"></div>';
   const value = visibleCard(raw);
   const cls = value === null ? 'hidden' : value === '★' || value.toLowerCase() === 'joker'
     ? 'joker' : Number(value) < 0 ? 'green' : Number(value) === 0 ? 'blue'
     : Number(value) < 4 ? 'yellow' : 'red';
-  return '<div class="card '+cls+'" aria-label="'+(value === null ? 'Verdeckte Karte' : 'Karte '+escapeHTML(value))+'">'+(value === null ? '' : escapeHTML(value))+'</div>';
+  const attrs = interactive ? ' data-comic-action="selectGridCard" data-player-index="'+playerIndex+'" data-card-index="'+cardIndex+'" role="button" tabindex="0"' : '';
+  return '<div class="card '+cls+'" aria-label="'+(value === null ? 'Verdeckte Karte' : 'Karte '+escapeHTML(value))+'"'+attrs+'>'+(value === null ? '' : escapeHTML(value))+'</div>';
 }
-function boardHTML(player, gamePlayer, classes) {
+function boardHTML(player, gamePlayer, classes, playerIndex, interactive = false) {
   const cards = gamePlayer?.grid ?? gamePlayer?.cards ?? gamePlayer?.board;
   if (!Array.isArray(cards) || cards.length !== 12) throw new TypeError('Expected 12 cards for every player');
   return '<div class="board '+classes+'"><h3><span class="player-name">'+escapeHTML(player.name)+
-    '</span></h3><div class="cards">'+cards.map(cardHTML).join('')+'</div></div>';
+    '</span></h3><div class="cards">'+cards.map((card, index) => cardHTML(card, playerIndex, index, interactive)).join('')+'</div></div>';
 }
 /**
  * Render an explicitly supplied, validated snapshot into the existing comic preview DOM.
@@ -42,8 +43,8 @@ export function renderComicSnapshot(room, selfSeatId, root = document) {
   if (!enemies || !self) throw new TypeError('Comic board elements missing');
   // Build all HTML before updating the DOM, to avoid partial render on invalid data.
   const enemyHTML = opponents.map(({ index, position }) =>
-    boardHTML(snapshot.players[index], snapshot.game.players[index], 'enemy '+position)).join('');
-  const selfHTML = boardHTML(snapshot.players[selfIndex], snapshot.game.players[selfIndex], 'self');
+    boardHTML(snapshot.players[index], snapshot.game.players[index], 'enemy '+position, index)).join('');
+  const selfHTML = boardHTML(snapshot.players[selfIndex], snapshot.game.players[selfIndex], 'self', selfIndex, false);
   enemies.innerHTML = enemyHTML;
   self.innerHTML = selfHTML;
   const note = root.querySelector('.note');
