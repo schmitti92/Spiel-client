@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – V142 · Gemeinsamer Online-Raum</title>
+<title>SKYJO Action – V143 · Gemeinsamer Online-Raum</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -7287,7 +7287,7 @@ function applyCloudDoc(remote,rev){
    state=cloud.doc.game?migrateState(clone(cloud.doc.game)):null;
    if(state){
      const raw=JSON.stringify(state);
-     scheduleLocalSnapshot(raw);
+     if(!SKYJO_IS_HUB)scheduleLocalSnapshot(raw);
      ui=restorePlayUIFromState()
    }else ui={mode:'none',data:{},selected:[]};
    const roundAdvanced=!!state&&Number(state.round||0)>prevRound;
@@ -10066,7 +10066,7 @@ function resumeTransientFlow(){
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
 const viewportLock=captureViewportLock();
 syncBoardTheme();
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V133 · Comic / Christlich – Illustrationen</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showBoardMenu()" title="Spielfeld auswählen">🎨</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI();renderHostBoardSelection();syncBoardTheme()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V140 · Gemeinsamer Spielraum</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showBoardMenu()" title="Spielfeld auswählen">🎨</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI();renderHostBoardSelection();syncBoardTheme()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
@@ -10132,7 +10132,23 @@ if(SKYJO_IS_HUB){
   const profile=window.SpielOnline?.state?.();
   if(!profile?.user?.uid){cloud.lastError='Bitte melde dich mit deinem Online-Profil an.';render();return}
   loading=true;
-  try{cloud.deviceId='hub_'+profile.user.uid;cloud.myName=profile.profile?.name||profile.profile?.spielername||'Spieler';cloud.enabled=true;switchCloudRoomContext(SKYJO_HUB_ROOM);cloudConfigSave();await restoreOnlineRoom();}
+  try{
+   const token=await skyjoHubToken();
+   const response=await fetch(CLOUD_BASE+'/api/hub/rooms/'+encodeURIComponent(SKYJO_HUB_CODE)+'/skyjo-bootstrap',{
+    method:'POST',cache:'no-store',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify({matchId:SKYJO_HUB_MATCH})
+   });
+   const result=await response.json();
+   if(!response.ok||!result?.ok||result.matchId!==SKYJO_HUB_MATCH||result.gameCode!==SKYJO_HUB_ROOM||result.seatId!=='hub_'+profile.user.uid){
+    throw Error(result?.error||'Die SKYJO-Raumzuordnung konnte nicht bestätigt werden.');
+   }
+   cloud.deviceId=result.seatId;
+   cloud.myName=profile.profile?.name||profile.profile?.spielername||'Spieler';
+   cloud.enabled=true;
+   if(cloud.room!==SKYJO_HUB_ROOM)switchCloudRoomContext(SKYJO_HUB_ROOM);
+   cloudConfigSave();
+   await restoreOnlineRoom();
+  }catch(error){cloud.lastError=error?.message||'Raumverbindung fehlgeschlagen';render();}
   finally{loading=false}
  };
  window.addEventListener('spielonline-change',connect);setTimeout(connect,0);
