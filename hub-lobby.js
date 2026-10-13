@@ -6,6 +6,26 @@ const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
+let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
+let choosingGame=false,displayGame=null;
+const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼'};
+const GAME_DESCRIPTIONS={
+ barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
+ skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
+ kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
+ business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.'
+};
+function setPlayMode(next){
+ playMode=next==='local'?'local':'online';
+ el('mode-online').classList.toggle('active',playMode==='online');
+ el('mode-local').classList.toggle('active',playMode==='local');
+ el('mode-online').setAttribute('aria-pressed',String(playMode==='online'));
+ el('mode-local').setAttribute('aria-pressed',String(playMode==='local'));
+ el('online-area').classList.toggle('hidden',playMode!=='online');
+ el('local-view').classList.toggle('hidden',playMode!=='local');
+ if(playMode==='local')notice('');
+ render();
+}
 const stayInMatchId=new URL(location.href).searchParams.get('stayMatch');
 let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null;
 function stopWatch(){
@@ -113,7 +133,7 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  if(streamReady && hubSocket?.readyState===1)return;
  try{const result=await request('/rooms/'+code);pollErrors=0;room=result.room;render();}catch(e){if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}
  },4500);}
-function leaveView(){pollStop();room=null;setRoomCode(null);render();}
+function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 function render(){
  const account=activeProfile();
  el('account-name').textContent=account?.profile?.name||account?.user?.email||'Noch nicht angemeldet';
@@ -123,7 +143,26 @@ function render(){
  el('entry-view').classList.toggle('hidden',inside);
  el('room-view').classList.toggle('hidden',!inside);
  el('create-btn').disabled=!account||operation;el('join-btn').disabled=!account||operation;
- if(!inside)return;
+ if(!inside||playMode!=='online')return;
+ if(displayGame!==room.game){choosingGame=false;displayGame=room.game;}
+ if(room.phase==='playing')choosingGame=false;
+ const showStage=!!room.game&&!choosingGame;
+ el('game-chooser').classList.toggle('hidden',showStage);
+ el('game-stage-hero').classList.toggle('hidden',!showStage);
+ el('ready-panel').classList.toggle('hidden',!showStage);
+ el('kreuz-settings-panel').classList.toggle('hidden',!showStage||room.game!=='kreuz');
+ el('change-game-btn').classList.toggle('hidden',!room.host||room.phase==='playing');
+ if(showStage){
+  el('game-stage-hero').dataset.game=room.game;
+  el('selected-game-icon').textContent=GAME_ICON[room.game]||'🎲';
+  el('selected-game-title').textContent=GAME[room.game]||room.game;
+  el('selected-game-description').textContent=GAME_DESCRIPTIONS[room.game]||'Online-Partie vorbereiten.';
+  const selected=room.players.filter(p=>p.participating).length;
+  el('selected-game-badge').textContent='👥 '+selected+' von '+room.maxPlayers+' Spielplätzen';
+  el('selected-game-host-note').textContent=room.host
+    ?'👑 Du bist Host. Nur du kannst Spiel, Regeln und Teilnehmerplätze ändern. Jede Änderung setzt die Bereitmeldungen zurück.'
+    :'🔒 Der Host legt Regeln und Teilnehmer fest. Du kannst dich selbst bereit melden, sobald du einen Spielplatz hast.';
+ }
  if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId){
    launchedMatchId=room.match.id;
    try{enterCurrentMatch();}catch(e){showError(e);}
@@ -135,21 +174,21 @@ function render(){
  const skyjo=room.game==='skyjo'&&!!room.settings;
  const business=room.game==='business'&&!!room.settings;
  const settings=room.settings||{};
- el('business-settings-panel').classList.toggle('hidden',!business);
+ el('business-settings-panel').classList.toggle('hidden',!business||!showStage);
  el('business-host-settings').classList.toggle('hidden',!business||!room.host||room.phase!=='preparing');
  if(business){
   el('business-settings-summary').textContent=room.settings.rounds+' Runden · '+(room.settings.rounds===10?'Schnell':room.settings.rounds===30?'Marathon':'Standard');
   el('business-rounds').value=String(room.settings.rounds);
   el('business-rounds').disabled=operation;
  }
- el('skyjo-settings-panel').classList.toggle('hidden',!skyjo);
+ el('skyjo-settings-panel').classList.toggle('hidden',!skyjo||!showStage);
  el('skyjo-host-settings').classList.toggle('hidden',!skyjo||!room.host||room.phase!=='preparing');
  if(skyjo){
   const settings=room.settings||{};
   el('skyjo-settings-summary').textContent=`${settings.target} Zielpunkte · ${settings.jokerCount} Joker · Spezial ${settings.jokerEnabled?'an':'aus'} · Straßen ${settings.streetModeEnabled?'an':'aus'}`;
   document.querySelectorAll('[data-skyjo-setting]').forEach(field=>{field.value=String(settings[field.dataset.skyjoSetting]);field.disabled=operation;});
  }
- el('barikade-settings-panel').classList.toggle('hidden',!barikade);
+ el('barikade-settings-panel').classList.toggle('hidden',!barikade||!showStage);
  el('barikade-host-settings').classList.toggle('hidden',!barikade||!room.host||room.phase!=='preparing');
  if(barikade){
    el('barikade-settings-summary').textContent=[settings.mode==='action'?'⚡ Action':'🎲 Klassisch',settings.bossMode?'👹 Bossmodus':'Ohne Bosse',`Brett: ${settings.boardTheme==='stone'?'Stein':settings.boardTheme==='classic'?'Klassisch':'Holz'}`,settings.colorMode==='wheel'?'🎰 Farben auslosen':'🎨 Farbwahl'].join(' · ');
@@ -158,7 +197,7 @@ function render(){
    document.querySelectorAll('.hub-boss-setting').forEach(field=>field.classList.toggle('hidden',!settings.bossMode));
  }
  const canPick=barikade&&room.phase==='preparing'&&player?.participating&&settings.colorMode==='manual';
- el('barikade-color-select-panel').classList.toggle('hidden',!canPick);
+ el('barikade-color-select-panel').classList.toggle('hidden',!canPick||!showStage);
  if(canPick){
    const picker=el('barikade-color-select');picker.value=player.colorPref||'';picker.disabled=operation;
    [...picker.options].forEach(opt=>opt.disabled=!!opt.value&&room.players.some(p=>!p.me&&p.participating&&p.colorPref===opt.value));
@@ -189,8 +228,16 @@ function render(){
  el('ready-help').textContent=room.game?`${GAME[room.game]||room.game} ist ausgewählt. Nur die ausgewählten Mitspieler melden sich bereit; Zuschauer bleiben im Raum.`:'Der Host wählt zuerst ein Spiel.';
  el('ready-btn').textContent=room.phase==='playing'?'Zur laufenden Partie':player?.ready?'Bereitmeldung zurücknehmen':'Ich bin bereit';
  el('ready-btn').disabled=!room.game||!player?.participating||operation;
+ el('ready-btn').classList.toggle('is-ready',!!player?.ready);
  const playing=room.players.filter(p=>p.participating);
- el('ready-status').textContent=`${playing.filter(p=>p.ready).length} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
+ const readyCount=playing.filter(p=>p.ready).length;
+ const percent=playing.length?Math.round(readyCount/playing.length*100):0;
+ el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':playing.length<2?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
+ el('ready-fraction').textContent=readyCount+' / '+playing.length;
+ el('ready-progress-fill').style.width=percent+'%';
+ el('ready-progressbar').setAttribute('aria-valuenow',String(percent));
+ el('ready-title').textContent=room.phase==='playing'?'🎮 Eure Partie läuft':'Bereit für '+(GAME[room.game]||'die Partie')+'?';
+ el('ready-status').textContent=`${readyCount} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
  el('start-btn').classList.toggle('hidden',!room.host||room.phase!=='playing');
  el('start-btn').disabled=!(room.phase==='playing'&&room.host)||operation;
  el('start-btn').textContent=room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
@@ -208,17 +255,21 @@ async function command(run){if(operation)return;operation=true;render();notice('
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
 }
 el('login-btn').addEventListener('click',()=>{if(activeProfile())location.assign('profile.html');else window.SpielOnline?.openLogin?.();});
+el('mode-local').addEventListener('click',()=>setPlayMode('local'));
+el('mode-online').addEventListener('click',()=>setPlayMode('online'));
+el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase==='preparing'){choosingGame=true;render();}});
+
 el('create-btn').addEventListener('click',()=>command(async()=>{
  const {room:r}=await request('/rooms','POST');activateRoom(r);pollStart();notice('Raum erstellt – teile den Code mit deinen Freunden.');
 }));
-el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,'').slice(0,6);});
+el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,'').slice(0,6);notice('');});
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
  const c=el('join-code').value.trim().toUpperCase();if(!/^[A-HJ-NP-Z2-9]{6}$/.test(c))throw Error('Bitte einen gültigen Raumcode mit 6 Zeichen eingeben.');
  const {room:r}=await request('/rooms/'+c+'/join','POST');activateRoom(r);pollStart();notice('Du bist dem Raum beigetreten.');
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
- if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game});activateRoom(r);
+ if(!room?.host)return;const {room:r}=await request('/rooms/'+code+'/select','POST',{game:btn.dataset.game});choosingGame=false;activateRoom(r);
 }))); 
 document.querySelectorAll('[data-barikade-setting]').forEach(field=>field.addEventListener('change',()=>command(async()=>{
  if(!room?.host||room.phase!=='preparing'||room.game!=='barikade')return;
@@ -273,5 +324,6 @@ async function boot(){render();const fromUrl=new URL(location.href).searchParams
   catch(e){setRoomCode(null);el('join-code').value=fromUrl.toUpperCase();notice('Gib den Raumcode ein und klicke auf „Beitreten“.');}
  },250);
 }
+setPlayMode(playMode);
 boot();
 })();
