@@ -10181,10 +10181,11 @@ function receive(detail){
  if(!detail?.room||!detail.seatId)return;
  const room=detail.room;
  const count=room.lobby?.players?.length||0;
- open.hidden=!(count>=3&&count<=5);
- if(count<3||count>5){overlay.classList.remove('show');return}
+ open.hidden=!(count>=3&&count<=5&&room.game&&room.lobby.players.some(p=>p.id===detail.seatId));
+ if(count<3||count>5){last=null;ownIndex=-1;overlay.classList.remove('show');return}
  last=room;seatId=detail.seatId;ownIndex=room.lobby.players.findIndex(p=>p.id===seatId);
  revision=detail.revision;
+ if(ownIndex<0){overlay.classList.remove('show');return}
  if(mount&&ready){mount.update(last,revision);refreshComicPanels()}
 }
 window.addEventListener('skyjo-comic-snapshot',e=>receive(e.detail));
@@ -10211,15 +10212,17 @@ function setup(){
  const game=window.Game;
  mount=mountComicGame({root:doc,getSeatId:()=>seatId,game,canAct:allow,interactive:true,onError:e=>console.warn('[comic]',e)});
  doc.querySelector('.drawbtn')?.addEventListener('click',()=>mount.action('drawDeck'));
- doc.querySelector('.discardbtn')?.addEventListener('click',()=>mount.action('discardDrawn'));
+ doc.querySelector('.discardbtn')?.addEventListener('click',()=>mount.action('drawDiscard'));
  doc.querySelector('.deck.draw')?.addEventListener('click',()=>mount.action('drawDeck'));
  doc.querySelector('.deck.discard')?.addEventListener('click',()=>mount.action('drawDiscard'));
  doc.querySelector('.specialbtn')?.addEventListener('click',()=>{overlay.classList.remove('show')});
+ doc.querySelectorAll('.bottom button,.bottom input,.menu').forEach(el=>{el.setAttribute('aria-disabled','true');el.setAttribute('title','Diese Funktion ist in der Beta nur auf dem klassischen Brett verfügbar');el.style.pointerEvents='none';el.style.opacity='.4'});
  if(last){mount.update(last,revision);refreshComicPanels()}
 }
 frame.addEventListener('load',setup);
 open.addEventListener('click',()=>{overlay.classList.add('show');setup();window.Game.render()});
 close.addEventListener('click',()=>overlay.classList.remove('show'));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('show'))overlay.classList.remove('show')});
 window.addEventListener('beforeunload',()=>mount?.dispose());
 </script>
 </body>
