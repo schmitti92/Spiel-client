@@ -64,3 +64,10 @@ test('Existing local Business mode and its gameplay file are unmodified',()=>{
  assert.match(read('spielauswahl-lokal.html'),/Business\/business_local\.html/);
  assert.match(html,/business_start\.js/);
 });
+
+test('Business online rejects invalid hub snapshots without an endless retry loop',()=>{
+ const online=read('Business/business_online.html');
+ assert.match(online,/BO_IS_HUB&&r\.status===400/);
+ assert.match(online,/Ungültiger Spielzug/);
+ assert.match(online,/cloud\.pending=null;cloud\.dirty=false;if\(fresh\?\.game\)boApplyGame\(fresh\.game\)/);
+});
