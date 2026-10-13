@@ -45,3 +45,11 @@ test('Game selection does not create an independent game room',()=>{
  assert.match(js,/\/rooms\/'.*?\+code\+'\/ready'/s);
  assert.match(js,/match\.gameCode/);
 });
+
+test('Reconnect cannot overwrite newer hub revisions or create overlapping HTTP polls',()=>{
+ assert.match(js,/Number\(next\.revision\)<Number\(room\.revision\)/);
+ assert.match(js,/pollInFlight/);
+ assert.match(js,/if\(code!==requestedCode\)return/);
+ assert.match(js,/hubSocket===socket&&data\?\.type==='room'/);
+ assert.match(js,/acceptRoom\(data\.room\)/);
+});
