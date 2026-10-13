@@ -127,6 +127,7 @@ jobs:
                 ownCards:[...(layout?.querySelectorAll('.sky-reference-own .grid .card')||[])].map(rect)};
             });
             console.log('Illustrated duo layout diagnostics:',JSON.stringify({started,...measurements}));
+            await page.screenshot({path:'skyjo-duo-tablet.png',fullPage:true});
             if(measurements.boardTheme!=='illustrated'||errors.length)throw Error('Illustrated mode failed to initialize: '+errors.join('; '));
             if(measurements.layoutPresent){
               const {opponent,own}=measurements;
@@ -145,6 +146,11 @@ jobs:
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skyjo-duo-tablet
+          path: skyjo-duo-tablet.png
       - uses: actions/upload-artifact@v4
         if: always()
         with:
