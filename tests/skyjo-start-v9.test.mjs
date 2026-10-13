@@ -30,7 +30,7 @@ test('UI includes all the illustrated reference settings and four future board p
  assert.equal((html.match(/class="sj-board(?: active)?"/g)||[]).length,4);
 });
 test('Unsupported settings remain preview-only and do not change game rules',()=>{
- assert.match(html,/weitere Spielbretter sind als Designvorschau vorbereitet/i);
+ assert.match(html,/weiteren Spielbretter sind als Designvorschau vorbereitet/i);
  assert.match(html,/Weitere Wertungen sind noch nicht im Spiel verfügbar/);
  assert.match(js,/const supported=\['target','jokerCount','streetModeEnabled','jokerEnabled','beginner'\]/);
  assert.doesNotMatch(js,/mutate\('\/skyjo-settings'.*?(?:streetScoring|specialCards)/);
@@ -43,7 +43,7 @@ test('All settings changes use authenticated server endpoints with server-host r
  assert.match(js,/mutate\('\/seats'/);
  assert.match(js,/mutate\('\/ready'/);
  assert.match(js,/mutate\('\/start'/);
- assert.match(js,/snapshot\.match\.id/);
+ assert.match(js,/match:m\.id/);
 });
 test('Skyjo selected from online home opens the dedicated mask, other games remain unchanged',()=>{
  assert.match(home,/Skyjo\/skyjo_start\.html\?room=/);
