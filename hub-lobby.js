@@ -53,7 +53,7 @@ function startWatch(){
  socket.onmessage=event=>{
   let data;try{data=JSON.parse(event.data);}catch(_e){return;}
   if(data?.type==='pong')lastPong=Date.now();
-  if(data?.type==='room'&&data.room?.code===code){lastPong=Date.now();streamReady=true;streamLast=Date.now();acceptRoom(data.room);}
+  if(hubSocket===socket&&data?.type==='room'&&data.room?.code===code){lastPong=Date.now();streamReady=true;streamLast=Date.now();acceptRoom(data.room);}
  };
  socket.onclose=()=>{
   if(hubSocket!==socket)return;
