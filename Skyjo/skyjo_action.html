@@ -5953,6 +5953,11 @@ body.is-playing .sky-reference-layout .player.active .player-head{
   50%{filter:drop-shadow(0 0 14px #ffe26b)}
  }
 }
+
+/* Reference seating: side boards remain compact, local cards stay readable. */
+@media(min-width:1000px){body.is-playing .sky-reference-layout{grid-template-columns:minmax(220px,1fr) minmax(370px,1.5fr) minmax(220px,1fr)!important;gap:clamp(10px,1.3vw,22px)!important}body.is-playing .sky-reference-seat .player{--card-w:clamp(35px,3.2vw,62px)!important}body.is-playing .sky-reference-own .player{--card-w:clamp(58px,5vw,88px)!important}body.is-playing .sky-reference-seat .grid,body.is-playing .sky-reference-own .grid{justify-content:center!important}}
+body.is-playing .sky-reference-own:before{content:'DEIN SPIELBRETT';display:block;text-align:center;font-weight:950;letter-spacing:2px;color:#fff3bc;text-shadow:0 3px 4px #150b24;margin-bottom:8px}
+body.is-playing .sky-reference-empty span{display:inline-block;padding:10px 15px;border:1px solid #ffe4ac55;border-radius:12px;background:#091e33a6;letter-spacing:1px}
 </style>
 </head>
 <body>
