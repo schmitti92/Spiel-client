@@ -17,7 +17,7 @@ const descriptions={
  specialCards:'Zusätzliche Spezialkarten-Regelpakete sind für eine spätere Version vorgesehen. Bestehende Joker-Effekte lassen sich separat einstellen.',
  jokerEnabled:'Damit werden die vorhandenen Joker-Spezialeffekte ein- oder ausgeschaltet.',
  beginner:'Verwendet die vorhandenen vereinfachten Einsteigerregeln.',
- maxPlayers:'Aktuell unterstützt die serverseitig angebundene SKYJO-Version 2 bis 3 aktive Spieler. Weitere Mitglieder bleiben als Zuschauer im gemeinsamen Raum.'
+ maxPlayers:'SKYJO Action unterstützt online 2 bis 5 aktive Spieler. Weitere Mitglieder bleiben Zuschauer.'
 };
 function onlineHome(extra=''){
  return '../spielauswahl-online.html?room='+encodeURIComponent(code)+extra;
@@ -61,7 +61,7 @@ const cleanError=e=>({
  NO_SKYJO_SETUP:'Die SKYJO-Vorbereitung ist nicht mehr aktiv.',
  PLAYERS_NOT_READY:'Bitte warten, bis alle aktiven Spieler bereit sind.',
  MATCH_IN_PROGRESS:'Die Partie läuft bereits.',
- GAME_SEATS_FULL:'Alle drei Spielplätze sind bereits belegt.',
+ GAME_SEATS_FULL:'Alle fünf Spielplätze sind bereits belegt.',
  SPECTATOR_CANNOT_READY:'Zuschauer können sich nicht bereit melden.'
 })[e?.message]||e?.message||'Verbindungsfehler';
 function updating(){return busy||!room||room.phase!=='preparing';}
@@ -122,12 +122,13 @@ function render(){
    btn.disabled=!hostReady||(limitsFor&&(Number(settings[key])+(Number(btn.dataset.dir)*limitsFor.step)>limitsFor.max||Number(settings[key])+(Number(btn.dataset.dir)*limitsFor.step)<limitsFor.min));
   });
  }
- $('value-maxPlayers').textContent=String(room.maxPlayers||3)+' Spieler';
+ $('value-maxPlayers').textContent=String(room.maxPlayers||5)+' Spieler';
+ document.querySelectorAll('[data-board]').forEach(btn=>{const selected=btn.dataset.board===(settings.boardTheme||'classic');btn.classList.toggle('active',selected);btn.setAttribute('aria-pressed',String(selected));btn.disabled=!hostReady;});
  const list=$('players-list');
  list.replaceChildren();
  (room.players||[]).forEach((p,i)=>list.append(playerRow(p,i)));
  const count=room.players.filter(p=>p.participating).length;
- for(let i=count;i<(room.maxPlayers||3);i++){
+ for(let i=count;i<(room.maxPlayers||5);i++){
   const empty=elem('div','sj-empty');
   empty.append(elem('span','plus','＋'),elem('span','','Warte auf weiteren Spieler …'));
   list.append(empty);
@@ -234,9 +235,10 @@ document.querySelectorAll('[data-step]').forEach(button=>button.addEventListener
 }));
 document.querySelectorAll('[data-info]').forEach(button=>button.addEventListener('click',()=>note(descriptions[button.dataset.info]||'')));
 document.querySelectorAll('[data-board]').forEach(btn=>btn.addEventListener('click',()=>{
+ if(updating()||!room.host)return;
  const theme=btn.dataset.board;
- if(theme==='classic')note('Klassisch ist das derzeit unterstützte Spielbrett.');
- else note('🎨 '+btn.querySelector('strong')?.textContent+' ist bereits als Vorschau vorbereitet. Das neue Design wird erst in einer kommenden Version im Spiel aktiviert.');
+ if(!['classic','illustrated'].includes(theme))return;
+ void mutate('/skyjo-settings',{settings:{...room.settings,boardTheme:theme}});
 }));
 $('ready-button').addEventListener('click',()=>{
  const me=room?.players.find(p=>p.me);
