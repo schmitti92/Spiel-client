@@ -2,7 +2,7 @@ name: Spielesammlung client checks
 on:
   push:
     branches:
-      - feature/business-startmaske-v11
+      - feature/kreuzkunter-startmaske-v12
       - main
   workflow_dispatch:
 permissions:
@@ -21,4 +21,5 @@ jobs:
       - run: node --check Skyjo/skyjo_start.js
       - run: node --check Barikade/barikade_start.js
       - run: node --check Business/business_start.js
-      - run: node --test tests/lobby-v7.test.mjs tests/spielauswahl-v8.test.mjs tests/skyjo-start-v9.test.mjs tests/barikade-start-v10.test.mjs tests/business-start-v11.test.mjs
+      - run: node --check KreuzKunter/kreuzkunter_start.js
+      - run: node --test tests/lobby-v7.test.mjs tests/spielauswahl-v8.test.mjs tests/skyjo-start-v9.test.mjs tests/barikade-start-v10.test.mjs tests/business-start-v11.test.mjs tests/kreuzkunter-start-v12.test.mjs
