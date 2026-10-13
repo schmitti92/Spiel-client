@@ -201,3 +201,36 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control span{font-size:20px!important}
 }
 @media(max-width:999px){body.is-playing .sky-duo-controls{display:none!important}}
+
+/* Phase 6: tablet landscape, two-player comic board viewport fit.
+   Keep all game controls interactive; apply only to the illustrated duo layout. */
+@media (min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+    grid-template-columns:minmax(0,1fr) minmax(170px,.68fr) minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr) auto!important;
+    gap:6px 10px!important;
+    padding:8px 12px!important;
+    margin-top:2px!important;
+  }
+  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+    --card-w:clamp(34px,3.25vw,51px)!important;
+    --card-h:calc(var(--card-w)*1.12)!important;
+    padding:5px!important;
+    min-height:0!important;
+  }
+  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .grid{
+    gap:4px!important;
+  }
+  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .player-head{
+    padding:3px 6px!important;
+    margin-bottom:2px!important;
+  }
+  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table{
+    gap:4px!important;
+    padding:4px!important;
+  }
+  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{
+    gap:5px!important;
+  }
+}
