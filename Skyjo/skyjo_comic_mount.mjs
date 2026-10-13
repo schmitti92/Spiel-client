@@ -19,7 +19,7 @@ export function mountComicGame({
   const bridge = createComicActionBridge({ game, canAct: allowed, onError });
   const view = createComicLiveView({ root, getSeatId, onError, interactive });
   const unbind = bindComicCardInteractions({
-    root, bridge, isEnabled: allowed
+    root, bridge, isEnabled: allowed, isOwnPlayer: index => index === currentSeatIndex
   });
   return Object.freeze({
     update(room, revision) {
