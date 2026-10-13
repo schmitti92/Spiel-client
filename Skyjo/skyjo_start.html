@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#083d60">
+<title>SKYJO Action · Online-Spiel-Lobby</title>
+<link rel="stylesheet" href="skyjo_start.css?v=9.0.1">
+</head>
+<body>
+<main class="sj-wrap">
+  <header class="sj-mast">
+    <a id="back-link" class="sj-back" href="../spielauswahl-online.html">❮ &nbsp; Zurück</a>
+    <div class="sj-fan left" aria-hidden="true">
+      <span class="sj-card">−2</span><span class="sj-card">7</span><span class="sj-card">★</span>
+    </div>
+    <div class="sj-logo">
+      <div class="skyjo">SKYJO</div><div class="action">ACTION</div>
+      <div class="sj-label">Spiel-Lobby</div><small>Gemeinsam. Taktisch. Anders.</small>
+    </div>
+    <div class="sj-fan right" aria-hidden="true">
+      <span class="sj-card green">+2</span><span class="sj-card gold">🃏</span><span class="sj-card dark">✕</span>
+    </div>
+    <div class="sj-mast-action">
+      <button id="help-btn" type="button" class="sj-iconbtn" title="Kurzhilfe" aria-label="Kurzhilfe">?</button>
+      <button id="refresh-btn" type="button" class="sj-iconbtn" title="Raum aktualisieren" aria-label="Raum aktualisieren">⚙</button>
+    </div>
+  </header>
+  <div id="loading-view" class="sj-loading" role="status">🔄 SKYJO-Spielraum wird verbunden …</div>
+  <div id="lobby-view" class="sj-grid sj-hidden">
+    <section class="sj-box" aria-labelledby="settings-title">
+      <h1 class="sj-panel-title" id="settings-title"><span class="ico">⚙️</span> Spieleinstellungen</h1>
+      <div class="sj-settings">
+        <div id="host-banner" class="sj-host-banner">👑 Nur der Spielleiter kann die Einstellungen ändern.</div>
+        <div class="sj-options">
+          <div class="sj-option" data-key="target">
+            <span class="symbol">🏆</span><div class="setting-copy"><strong>Zielpunkte</strong><small>Ab welchem Punktestand endet das Spiel?</small></div>
+            <div class="sj-stepper"><button type="button" data-step="target" data-dir="-1" aria-label="Zielpunkte verringern">‹</button><output id="value-target">100</output><button type="button" data-step="target" data-dir="1" aria-label="Zielpunkte erhöhen">›</button></div>
+            <button class="sj-info" type="button" data-info="target" aria-label="Info Zielpunkte">i</button>
+          </div>
+          <div class="sj-option" data-key="jokerCount">
+            <span class="symbol">🃏</span><div class="setting-copy"><strong>Anzahl Joker</strong><small>Jokerkarten im Kartenstapel</small></div>
+            <div class="sj-stepper"><button type="button" data-step="jokerCount" data-dir="-1" aria-label="Weniger Joker">‹</button><output id="value-jokerCount">8</output><button type="button" data-step="jokerCount" data-dir="1" aria-label="Mehr Joker">›</button></div>
+            <button class="sj-info" type="button" data-info="jokerCount" aria-label="Info Jokeranzahl">i</button>
+          </div>
+          <div class="sj-option" data-key="streetModeEnabled">
+            <span class="symbol">🛣️</span><div class="setting-copy"><strong>Straßen-Erweiterung</strong><small>Straßen und gleiche Karten aktivieren</small></div>
+            <div class="sj-stepper"><button type="button" data-step="streetModeEnabled" data-dir="-1" aria-label="Straßen umschalten">‹</button><output id="value-streetModeEnabled">An</output><button type="button" data-step="streetModeEnabled" data-dir="1" aria-label="Straßen umschalten">›</button></div>
+            <button class="sj-info" type="button" data-info="streetModeEnabled" aria-label="Info Straßen">i</button>
+          </div>
+          <div class="sj-option" data-key="streetScoring">
+            <span class="symbol">🪙</span><div class="setting-copy"><strong>Straßen-Wertung</strong><small>Weitere Wertungen in Vorbereitung</small></div>
+            <div class="sj-static-value" title="Weitere Wertungen sind noch nicht im Spiel verfügbar">Standard · bald mehr</div>
+            <button class="sj-info" type="button" data-info="streetScoring" aria-label="Info Straßen-Wertung">i</button>
+          </div>
+          <div class="sj-option" data-key="specialCards">
+            <span class="symbol">⭐</span><div class="setting-copy"><strong>Spezialkarten</strong><small>Weitere Regelvarianten folgen</small></div>
+            <div class="sj-static-value" title="Noch nicht separat einstellbar">Originalregeln</div>
+            <button class="sj-info" type="button" data-info="specialCards" aria-label="Info Spezialkarten">i</button>
+          </div>
+          <div class="sj-option" data-key="jokerEnabled">
+            <span class="symbol">🃏</span><div class="setting-copy"><strong>Joker aktiv</strong><small>Joker-Spezialeffekte ein- und ausschalten</small></div>
+            <div class="sj-stepper"><button type="button" data-step="jokerEnabled" data-dir="-1" aria-label="Joker-Effekte umschalten">‹</button><output id="value-jokerEnabled">An</output><button type="button" data-step="jokerEnabled" data-dir="1" aria-label="Joker-Effekte umschalten">›</button></div>
+            <button class="sj-info" type="button" data-info="jokerEnabled" aria-label="Info Joker-Effekte">i</button>
+          </div>
+          <div class="sj-option" data-key="beginner">
+            <span class="symbol">🎓</span><div class="setting-copy"><strong>Anfänger-Regeln</strong><small>Vereinfachter Einstieg</small></div>
+            <div class="sj-stepper"><button type="button" data-step="beginner" data-dir="-1" aria-label="Anfänger-Modus umschalten">‹</button><output id="value-beginner">Aus</output><button type="button" data-step="beginner" data-dir="1" aria-label="Anfänger-Modus umschalten">›</button></div>
+            <button class="sj-info" type="button" data-info="beginner" aria-label="Info Anfänger-Modus">i</button>
+          </div>
+          <div class="sj-option" data-key="maxPlayers">
+            <span class="symbol">👥</span><div class="setting-copy"><strong>Max. Spieler</strong><small>Spielplätze der aktuellen SKYJO-Version</small></div>
+            <div class="sj-static-value" id="value-maxPlayers">3 Spieler</div>
+            <button class="sj-info" type="button" data-info="maxPlayers" aria-label="Info Spielerzahl">i</button>
+          </div>
+        </div>
+        <h2 class="sj-board-title"><span class="symbol">🎨</span> Spielbrett auswählen</h2>
+        <div class="sj-boards" aria-label="Brettdesign-Vorschau">
+          <button type="button" class="sj-board active" data-board="classic" aria-pressed="true"><span class="preview"></span><strong>Klassisch</strong></button>
+          <button type="button" class="sj-board" data-board="strand" aria-pressed="false"><span class="preview"></span><span class="future">Vorschau</span><strong>Strand</strong></button>
+          <button type="button" class="sj-board" data-board="berge" aria-pressed="false"><span class="preview"></span><span class="future">Vorschau</span><strong>Berge</strong></button>
+          <button type="button" class="sj-board" data-board="neon" aria-pressed="false"><span class="preview"></span><span class="future">Vorschau</span><strong>Neon</strong></button>
+        </div>
+        <p class="sj-board-hint">ℹ️ Die weiteren Spielbretter sind als Designvorschau vorbereitet. Im eigentlichen Spiel wird derzeit noch das klassische Brett verwendet.</p>
+      </div>
+    </section>
+    <section class="sj-box" aria-label="Spieler-Warteraum">
+      <div class="sj-right-top">
+        <h2 class="sj-wait-title"><span aria-hidden="true">👥</span> Warte auf Spieler …</h2>
+        <div class="sj-room-code"><small>Raum-Code: 📋</small><button id="copy-code-btn" type="button" title="Raumcode kopieren">––––––</button></div>
+      </div>
+      <div id="players-list" class="sj-persons" aria-live="polite"></div>
+      <div class="sj-progress"><span id="ready-counter">0 von 0 Spielern bereit</span><div id="ready-segments" class="sj-segments" aria-hidden="true"></div></div>
+      <div class="sj-buttons">
+        <button type="button" id="start-button" class="sj-primary" disabled>▶ Spiel starten</button>
+        <button type="button" id="invite-button" class="sj-invite">🔗 Einladen</button>
+      </div>
+      <div class="sj-bottom">
+        <button type="button" id="ready-button" class="sj-readybtn" disabled>✓ Ich bin bereit</button>
+        <p class="sj-footer-note" id="host-note">👑 Der Host legt die Regeln fest. Sobald alle aktiven Spieler bereit sind, startet die Partie automatisch.</p>
+      </div>
+      <p id="status" class="sj-message" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+</main>
+<script src="../profile-config.js"></script>
+<script src="../profile-auth.js"></script>
+<script src="skyjo_start.js?v=9.0.1" defer></script>
+</body>
+</html>
