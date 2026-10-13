@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>SKYJO Action – V143 · Gemeinsamer Online-Raum</title>
+<title>SKYJO Action – V144 · Hub Navigation und Sitzplatzschutz</title>
 <meta name="theme-color" content="#061b1d" />
 <meta name="color-scheme" content="dark" />
 <style>
@@ -6669,7 +6669,7 @@ const SKYJO_HUB_MATCH=SKYJO_HUB_QUERY.get('match')||'';
 const SKYJO_HUB_ROOM=SKYJO_HUB_QUERY.get('room')||'';
 const SKYJO_IS_HUB=/^[A-HJ-NP-Z2-9]{6}$/.test(SKYJO_HUB_CODE)&&/^[0-9a-f-]{36}$/i.test(SKYJO_HUB_MATCH)&&/^S[A-HJ-NP-Z2-9]{9}$/.test(SKYJO_HUB_ROOM);
 async function skyjoHubToken(){const user=window.SpielOnline?.state?.()?.user;if(!user?.uid||typeof user.getIdToken!=='function')throw Error('Bitte mit deinem Online-Spielerprofil anmelden.');return user.getIdToken();}
-function skyjoHubReturn(){location.assign('../hub-lobby.html?stayMatch='+encodeURIComponent(SKYJO_HUB_MATCH));}
+function skyjoHubReturn(){location.assign('../hub-lobby.html?room='+encodeURIComponent(SKYJO_HUB_CODE)+'&stayMatch='+encodeURIComponent(SKYJO_HUB_MATCH));}
 const SKYJO_ENTRY_MODE=(new URLSearchParams(location.search).get('mode')||'').toLowerCase();
 const SKYJO_REQUESTED_MODE=['online','local'].includes(SKYJO_ENTRY_MODE)?SKYJO_ENTRY_MODE:'';
 const SKYJO_NAV_TYPE=performance.getEntriesByType?.('navigation')?.[0]?.type||'navigate';
@@ -8704,7 +8704,7 @@ async function returnFinishedGameToRoomLobby(){
 }
 
 async function restart(){resetBoardChoiceForNewGame();if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann das Online-Spiel neu starten.');return}if(!confirm(cloud.enabled?'Online-Spiel beenden und mit allen Spielern in die Raum-Lobby zurückkehren?':'Aktuelles Spiel wirklich löschen und neu starten?'))return;clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';try{localStorage.removeItem(SAVE_KEY)}catch(_e){}if(cloud.enabled&&cloud.room&&isRoomDoc(cloud.doc)){await waitForCloudIdle(2500);const next=clone(cloud.doc);next.game=null;next.lobby.status='lobby';delete next.lobby.startedAt;const out=await postCloudDoc(next,cloud.rev);if(out?.conflict){if(out.remote)applyCloudDoc(out.remote,out.rev);toast('Raum wurde inzwischen geändert – bitte erneut versuchen.');return}if(!out?.ok){toast(cloud.lastError||'Online-Spiel konnte nicht zurückgesetzt werden.');return}cloud.doc=next;cloud.lastPushedJSON=JSON.stringify(next);state=null;ui={mode:'none',data:{},selected:[]};render();toast('↩ Alle Spieler sind wieder in der Online-Lobby');return}state=null;ui={mode:'none',data:{},selected:[]};render()}
-function setupView(){if(SKYJO_IS_HUB){return `<div class="panel lobby-card" style="margin:40px auto;max-width:620px;padding:28px;text-align:center"><h2>🃏 SKYJO Action · Gemeinsamer Spielraum</h2><p>Raum ${escapeHTML(SKYJO_HUB_CODE)} · Die Mitspieler und Einstellungen werden aus der zentralen Lobby übernommen.</p><p>${escapeHTML(cloud.lastError||'Verbindung zum gemeinsamen Spielraum wird aufgebaut …')}</p><p><a class="secondary" href="../hub-lobby.html?stayMatch=${encodeURIComponent(SKYJO_HUB_MATCH)}">← Zum gemeinsamen Raum</a></p></div>`}
+function setupView(){if(SKYJO_IS_HUB){return `<div class="panel lobby-card" style="margin:40px auto;max-width:620px;padding:28px;text-align:center"><h2>🃏 SKYJO Action · Gemeinsamer Spielraum</h2><p>Raum ${escapeHTML(SKYJO_HUB_CODE)} · Die Mitspieler und Einstellungen werden aus der zentralen Lobby übernommen.</p><p>${escapeHTML(cloud.lastError||'Verbindung zum gemeinsamen Spielraum wird aufgebaut …')}</p><p><a class="secondary" href="../hub-lobby.html?room=${encodeURIComponent(SKYJO_HUB_CODE)}&stayMatch=${encodeURIComponent(SKYJO_HUB_MATCH)}">← Zum gemeinsamen Raum</a></p></div>`}
  const selectedMode=cloud.enabled?'cloud':skyjoLocalVariant;
  const online=selectedMode==='cloud';
  const nm=escapeHTML(cloud.myName||'');
@@ -10066,7 +10066,7 @@ function resumeTransientFlow(){
 function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
 const viewportLock=captureViewportLock();
 syncBoardTheme();
-if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V140 · Gemeinsamer Spielraum</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showBoardMenu()" title="Spielfeld auswählen">🎨</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI();renderHostBoardSelection();syncBoardTheme()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V133 · Comic / Christlich – Illustrationen</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showBoardMenu()" title="Spielfeld auswählen">🎨</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI();renderHostBoardSelection();syncBoardTheme()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
 function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
 function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
 
@@ -10126,11 +10126,13 @@ try{
 
 render();
 if(SKYJO_IS_HUB){
- let loading=false;
+ let loading=false,connectedUid=null;
  const connect=async()=>{
   if(loading)return;
   const profile=window.SpielOnline?.state?.();
-  if(!profile?.user?.uid){cloud.lastError='Bitte melde dich mit deinem Online-Profil an.';render();return}
+  const uid=profile?.user?.uid;
+  if(!uid){connectedUid=null;stopCloudRoomRuntime();cloud.enabled=false;cloud.doc=null;state=null;cloud.lastError='Bitte melde dich mit deinem Online-Profil an.';render();return}
+  if(connectedUid===uid&&cloud.enabled&&cloud.room===SKYJO_HUB_ROOM&&cloud.doc)return;
   loading=true;
   try{
    const token=await skyjoHubToken();
@@ -10139,16 +10141,19 @@ if(SKYJO_IS_HUB){
     body:JSON.stringify({matchId:SKYJO_HUB_MATCH})
    });
    const result=await response.json();
-   if(!response.ok||!result?.ok||result.matchId!==SKYJO_HUB_MATCH||result.gameCode!==SKYJO_HUB_ROOM||result.seatId!=='hub_'+profile.user.uid){
+   if(!response.ok||!result?.ok||result.matchId!==SKYJO_HUB_MATCH||result.gameCode!==SKYJO_HUB_ROOM||result.seatId!=='hub_'+uid){
     throw Error(result?.error||'Die SKYJO-Raumzuordnung konnte nicht bestätigt werden.');
    }
+   if(window.SpielOnline?.state?.()?.user?.uid!==uid)return;
    cloud.deviceId=result.seatId;
    cloud.myName=profile.profile?.name||profile.profile?.spielername||'Spieler';
    cloud.enabled=true;
    if(cloud.room!==SKYJO_HUB_ROOM)switchCloudRoomContext(SKYJO_HUB_ROOM);
    cloudConfigSave();
    await restoreOnlineRoom();
-  }catch(error){cloud.lastError=error?.message||'Raumverbindung fehlgeschlagen';render();}
+   if(cloud.doc&&myPlayerIndex()>=0){connectedUid=uid;cloud.lastError='';}
+   else{connectedUid=null;cloud.lastError='Spielerplatz konnte nicht geladen werden. Bitte erneut verbinden.';render();}
+  }catch(error){connectedUid=null;cloud.lastError=error?.message||'Raumverbindung fehlgeschlagen';render();}
   finally{loading=false}
  };
  window.addEventListener('spielonline-change',connect);setTimeout(connect,0);
