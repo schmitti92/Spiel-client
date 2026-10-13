@@ -13,11 +13,12 @@ function visibleCard(raw) {
   return value === undefined || value === null ? null : String(value);
 }
 function cardHTML(raw) {
+  if (raw === null || raw === undefined) return '<div class="card empty" aria-label="Entfernte Karte"></div>';
   const value = visibleCard(raw);
   const cls = value === null ? 'hidden' : value === '★' || value.toLowerCase() === 'joker'
     ? 'joker' : Number(value) < 0 ? 'green' : Number(value) === 0 ? 'blue'
     : Number(value) < 4 ? 'yellow' : 'red';
-  return '<div class="card '+cls+'">'+(value === null ? '' : escapeHTML(value))+'</div>';
+  return '<div class="card '+cls+'" aria-label="'+(value === null ? 'Verdeckte Karte' : 'Karte '+escapeHTML(value))+'">'+(value === null ? '' : escapeHTML(value))+'</div>';
 }
 function boardHTML(player, gamePlayer, classes) {
   const cards = gamePlayer?.grid ?? gamePlayer?.cards ?? gamePlayer?.board;
