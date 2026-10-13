@@ -24,7 +24,7 @@ function onlineHome(extra=''){
 }
 function gameUrl(snapshot){
  const m=snapshot.match;
- const params=new URLSearchParams({mode:'online',hub:snapshot.code,match:m.id,room:m.gameCode});
+ const params=new URLSearchParams({mode:'online',hub:snapshot.code,match:m.id,room:m.gameCode,board:m.settings?.boardTheme==='illustrated'?'illustrated':'classic'});
  return 'skyjo_action.html?'+params.toString();
 }
 function note(message='',bad=false){
