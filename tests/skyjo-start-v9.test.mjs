@@ -23,14 +23,14 @@ test('No duplicate or missing UI elements referenced in new controller',()=>{
  const missing=[...js.matchAll(/\$\('([^']+)'\)/g)].map(m=>m[1]).filter(x=>!ids.includes(x));
  assert.deepEqual([...new Set(missing)],[]);
 });
-test('UI includes all the illustrated reference settings and four future board previews',()=>{
+test('UI includes supported settings and exactly two selectable boards',()=>{
  for(const key of ['target','jokerCount','streetModeEnabled','jokerEnabled','beginner'])assert.ok(html.includes('data-key="'+key+'"'),key);
  for(const key of ['streetScoring','specialCards','maxPlayers'])assert.ok(html.includes('data-key="'+key+'"'),key);
- for(const board of ['classic','strand','berge','neon'])assert.ok(html.includes('data-board="'+board+'"'),board);
- assert.equal((html.match(/class="sj-board(?: active)?"/g)||[]).length,4);
+ for(const board of ['classic','illustrated'])assert.ok(html.includes('data-board="'+board+'"'),board);
+ assert.equal((html.match(/class="sj-board(?: active)?"/g)||[]).length,2);
 });
 test('Unsupported settings remain preview-only and do not change game rules',()=>{
- assert.match(html,/weiteren Spielbretter sind als Designvorschau vorbereitet/i);
+ assert.match(html,/Die Auswahl gilt für alle Spieler im Online-Raum/i);
  assert.match(html,/Weitere Wertungen sind noch nicht im Spiel verfügbar/);
  assert.match(js,/const supported=\['target','jokerCount','streetModeEnabled','jokerEnabled','beginner'\]/);
  assert.doesNotMatch(js,/mutate\('\/skyjo-settings'.*?(?:streetScoring|specialCards)/);
@@ -66,8 +66,8 @@ test('Player list, room sharing, and WebSocket lobby reconnect are supported',()
  assert.match(js,/type:'subscribe'/);
  assert.match(js,/setInterval\(refresh,4000\)/);
 });
-test('SKYJO room supports validated 2-3 participants, not fictitious four-person launch',()=>{
- assert.match(js,/room\.maxPlayers\|\|3/);
+test('SKYJO room supports validated two to five online participants',()=>{
+ assert.match(js,/room\.maxPlayers\|\|5/);
  assert.match(js,/mindestens zwei Spieler/);
- assert.match(html,/3 Spieler/);
+ assert.match(html,/5 Spieler/);
 });
