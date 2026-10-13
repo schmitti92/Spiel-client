@@ -195,6 +195,54 @@ jobs:
             // Geometry is diagnostic at additional sizes until responsive fixes are verified.
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
+      - name: Smoke test local games for three to five players
+        run: |
+          node <<'JS'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const results=[];
+            for(const count of [3,4,5]){
+              for(const board of ['classic','illustrated']){
+                const page=await browser.newPage({viewport:{width:1536,height:960}});
+                const errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                await page.goto('http://127.0.0.1:8765/Skyjo/skyjo_action.html?mode=local&board='+board,{waitUntil:'domcontentloaded'});
+                await page.waitForTimeout(200);
+                const started=await page.evaluate(n=>{
+                  const select=document.querySelector('#playerCount');
+                  if(!select||typeof window.Game?.updateNames!=='function')return false;
+                  select.value=String(n);window.Game.updateNames();
+                  const inputs=[...document.querySelectorAll('.pname')];
+                  if(inputs.length!==n)return false;
+                  inputs.forEach((el,i)=>el.value='Test '+(i+1));
+                  window.Game.startFromSetup();
+                  return true;
+                },count);
+                await page.waitForTimeout(100);
+                const info=await page.evaluate(()=>{
+                  const layout=document.querySelector('.sky-reference-layout');
+                  const cards=[...document.querySelectorAll('.sky-reference-layout .player .grid .card')];
+                  const visible=cards.filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight}).length;
+                  return {theme:document.body.dataset.skyBoard,seats:layout?.dataset.skySeats,cards:cards.length,visible,
+                    viewport:{width:innerWidth,height:innerHeight},scrollHeight:document.documentElement.scrollHeight};
+                });
+                results.push({count,board,started,errors,...info});
+                if(count===3)await page.screenshot({path:'skyjo-'+board+'-three-player.png',fullPage:true});
+                await page.close();
+              }
+            }
+            await browser.close();
+            console.log('Three-to-five-player diagnostics:',JSON.stringify(results));
+            if(results.some(r=>!r.started||r.errors.length||r.theme!==r.board||Number(r.seats)!==r.count||r.cards!==r.count*12))
+              throw Error('A local 3-5 player game failed to initialize correctly');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skyjo-three-player
+          path: skyjo-*-three-player.png
       - uses: actions/upload-artifact@v4
         if: always()
         with:
