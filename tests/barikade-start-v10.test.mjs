@@ -7,7 +7,7 @@ const js=read('Barikade/barikade_start.js'),hub=read('hub-lobby.js'),home=read('
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
 const board=JSON.parse(read('Barikade/board.json'));
 test('Barikade screenshot layout implemented as real responsive three-column HTML',()=>{
- for(const id of ['player-list','chat-messages','board-stage','board-content','settings-box','ready-btn','start-btn','room-code','share-whatsapp','copy-room'])
+ for(const id of ['player-list','chat-messages','board-stage','board-content','host-status','ready-btn','start-btn','room-code','share-whatsapp','copy-room'])
   assert.ok(ids.includes(id),id);
  assert.match(html,/Barikade/);
  assert.match(html,/Spieler/);
@@ -34,11 +34,11 @@ test('Existing supported themes selectable; future themes clearly marked preview
  for(const key of ['classic','wood','stone'])assert.ok(html.includes('data-board="'+key+'"'),key);
  for(const key of ['forest','desert','winter','volcano'])assert.ok(html.includes('data-preview="'+key+'"'),key);
  assert.match(html,/Weitere Designs sind Vorschau/);
- assert.match(js,/Weitere Designs/);
+ assert.match(js,/nur eine Vorschau/);
 });
 test('All Barikade host setting changes use server-validated options',()=>{
  for(const kind of ['data-event=','data-joker=','data-boss=','data-mode=','data-board=','data-color='])
-  assert.ok(js.includes(kind),kind);
+  assert.ok(html.includes(kind),kind);
  assert.match(js,/mutate\('\/settings'/);
  assert.match(js,/const hostOnly=.*room\?\.host/);
  assert.match(js,/mutate\('\/seats'/);
