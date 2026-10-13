@@ -27,8 +27,10 @@ const active=mountComicGame({root:b.root,getSeatId:()=> 'seat-0',game,canAct:()=
 assert(active.update(fixture(),1).selfIndex===0,'Interactive render');checks++;
 assert(b.self.innerHTML.includes('data-comic-action="selectGridCard"'),'Interactive card markers');checks++;
 assert(active.action('drawDeck')===true&&calls===1,'Engine dispatch');checks++;
+assert(active.action('selectGridCard',{playerIndex:1,cardIndex:0})===false&&calls===1,'Opponent card denied');checks++;
+assert(active.action('selectGridCard',{playerIndex:0,cardIndex:0})===true&&calls===2,'Own card allowed');checks++;
 authorized=false;
-assert(active.action('drawDeck')===false&&calls===1,'Permission revoked');checks++;
+assert(active.action('drawDeck')===false&&calls===2,'Permission revoked');checks++;
 active.dispose();
 assert(active.action('drawDeck')===false&&active.update(fixture(),2)===false,'Dispose blocks updates and actions');checks++;
 console.log('PASS: '+checks+' SKYJO Comic mounted integration checks');
