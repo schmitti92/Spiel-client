@@ -6034,6 +6034,45 @@ body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-c
  body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{order:2!important}
  body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{order:3!important}
 }
+
+/* Tablet landscape two-player fix: both card grids above the fold. */
+@media(min-width:1000px){
+ body.is-playing .sky-reference-layout[data-sky-seats="2"]{
+  grid-template-columns:minmax(0,1fr) minmax(260px,.8fr) minmax(0,1fr)!important;
+  grid-template-rows:auto!important;
+  grid-template-areas:"tl center own" "sidebar sidebar sidebar"!important;
+  max-width:1600px!important;
+  padding:14px!important;
+  gap:14px!important;
+  align-items:start!important;
+ }
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl{grid-area:tl!important}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{grid-area:center!important}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{grid-area:own!important}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{
+  grid-area:sidebar!important;display:grid!important;
+  grid-template-columns:1fr 1fr!important;gap:12px!important;
+ }
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-seat .player,
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  width:100%!important;max-width:none!important;min-width:0!important;
+ }
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  --card-w:clamp(48px,4.3vw,72px)!important;
+ }
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player{
+  --card-w:clamp(45px,4vw,68px)!important;
+ }
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own:before{margin-bottom:5px!important}
+}
+@media(min-width:1000px) and (max-width:1250px){
+ body.is-playing .sky-reference-layout[data-sky-seats="2"]{
+  grid-template-columns:minmax(0,1fr) minmax(210px,.75fr) minmax(0,1fr)!important;
+  gap:8px!important;padding:9px!important;
+ }
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player,
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player{--card-w:clamp(35px,3.8vw,52px)!important}
+}
 </style>
 </head>
 <body>
