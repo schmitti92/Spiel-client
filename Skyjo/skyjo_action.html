@@ -5981,6 +5981,35 @@ body.is-playing .sky-reference-info p{margin:8px 0;font-size:12px;line-height:1.
 @media(max-width:999px){
  body.is-playing .sky-reference-sidebar{order:3;display:grid;grid-template-columns:1fr 1fr}
 }
+
+/* Classic and illustrated themes are deliberately distinct, both fully playable. */
+body.is-playing[data-sky-board="classic"]{
+ background:linear-gradient(155deg,#eef3f7,#dce8ef)!important;
+}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout{
+ background:linear-gradient(160deg,#e4c69f,#ba956d)!important;
+ border:2px solid #91775c!important;outline:none!important;
+ box-shadow:0 8px 26px #26354735!important;
+}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout:before,
+body.is-playing[data-sky-board="classic"] .sky-reference-layout:after{display:none!important}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .player{
+ background:#f9fbff!important;border:2px solid #b5c7d8!important;
+ box-shadow:0 4px 15px #12263d33!important;
+}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .player-head{
+ background:#dcebf7!important;border-bottom:1px solid #b7c8d8!important;
+}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .player-name{color:#1e3249!important;text-shadow:none!important}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-own:before{color:#203c5d;text-shadow:none}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-info{
+ background:#f5f9ff;color:#203c5d;border-color:#a9c7dc;box-shadow:0 4px 12px #1e30401f;
+}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-info h3,
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-score-row strong{color:#1e3249;text-shadow:none}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-score-head{color:#536f8d}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-center .center-table{background:#f3f8fc!important;border-color:#9db9cc!important;box-shadow:0 5px 15px #11263829!important}
+body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-center .play-pilebox{background:#e6f0fa!important;border-color:#afc6d7!important}
 </style>
 </head>
 <body>
@@ -5990,6 +6019,8 @@ body.is-playing .sky-reference-info p{margin:8px 0;font-size:12px;line-height:1.
 <script>
 (() => {
 'use strict';
+const selectedSkyBoard=new URLSearchParams(location.search).get('board')==='illustrated'?'illustrated':'classic';
+document.body.dataset.skyBoard=selectedSkyBoard;
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
 const SKYJO_BUILD='15.49';
 const SKYJO_HUB_QUERY=new URLSearchParams(location.search);
