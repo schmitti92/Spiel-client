@@ -56,7 +56,7 @@
 <div class="box panel round"><h3>Runde 3 von 12</h3>🟡 ⚪ ❸ ⚪ ⚪ ⚪</div>
 <div class="box panel current"><h3>Aktueller Zug</h3><p>🎲 Spieler ist am Zug</p><p>🃏 Nachziehstapel: 32</p><p>⭐ SKYJO ACTION</p></div>
 <div class="box panel score"><h3>🏆 Zwischenstände</h3><div id="scores"></div></div>
-<div class="note">Designvorschau · Spielzüge noch nicht verbunden</div>
+<div class="note">DEMO – keine Verbindung zur laufenden Partie</div>
 <div class="bottom"><button>💬</button><button>👍</button><button>😂</button><button>❤️</button><button>😮</button><button>😎</button><button>👏</button><button>HEINZ</button><input placeholder="Nachricht an alle …" aria-label="Chatnachricht"><button>➤</button></div>
 </main></div><script>
 const stage=document.getElementById('stage');
@@ -64,8 +64,42 @@ function scale(){const w=innerWidth,h=innerHeight;const factor=Math.min(w/1536,h
 addEventListener('resize',scale);scale();
 const sets=[['5','-1','10',null,null,null,null,'★','3','0',null,null],[null,'5',null,'-2',null,'3','0','8','-1',null,'12',null],[null,'4',null,null,null,'0','6',null,null,'★',null,'9'],[null,'-2',null,'8',null,null,null,null,'5',null,null,'3'],['7',null,null,'-1',null,'3',null,null,null,'0','9',null]];
 const names=['FuchsTom','SunnyBee','BlueWave','KartenKeks','Du'];
+const layoutModes={3:['enemy-left-top','enemy-right-top'],4:['enemy-left-top','enemy-right-top','enemy-right-bottom'],5:['enemy-left-top','enemy-right-top','enemy-left-bottom','enemy-right-bottom']};
+let demoTurn=0,demoRound=3,demoDiscard='★',demoDeck=32;
+const exampleBoards=sets.map(a=>a.slice());
+const examplePoints=[28,41,18,25,12];
+const escapeText=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function demoNotice(message){const el=document.querySelector('.note');if(el)el.textContent=message;}
+function updatePanels(n){
+ const turn=names[demoTurn % n];
+ document.querySelector('.round').innerHTML='<h3>Runde '+demoRound+' von 12</h3>🟡 ⚪ ❸ ⚪ ⚪ ⚪';
+ document.querySelector('.current').innerHTML='<h3>Aktueller Zug</h3><p>🎲 '+escapeText(turn)+' ist am Zug</p><p>🃏 Nachziehstapel: '+demoDeck+'</p><p>⭐ SKYJO ACTION</p>';
+ document.querySelector('.decklabel').textContent='Nachziehstapel · '+demoDeck;
+ document.querySelector('.deck.discard span').textContent=demoDiscard;
+ document.querySelector('.room small').textContent='Bergsee #4827 · '+n+'/5 · DEMO';
+}
+function demoAction(kind){
+ if(kind==='draw'){if(demoDeck>0){demoDeck--;demoNotice('DEMO: Eine Karte wurde gezogen. Keine Online-Aktion.');}}
+ if(kind==='discard'){demoDiscard=['3','-1','★','8'][Math.floor(Math.random()*4)];demoNotice('DEMO: Ablagestapel geändert. Kein echter Spielzug.');}
+ if(kind==='special')demoNotice('DEMO: Spezialkarten benötigen später die echte SKYJO-Spiellogik.');
+ updatePanels(Number(document.getElementById('playerCount').value));
+}
+
 function card(value){let cls='hidden';if(value!==null){cls=value==='★'?'joker':Number(value)<0?'green':Number(value)===0?'blue':Number(value)<4?'yellow':'red'}return '<div class="card '+cls+'">'+(value===null?'':value)+'</div>'}
 function board(name,values,classes){return '<div class="board '+classes+'"><h3><span class="avatar">'+({FuchsTom:'🦊',SunnyBee:'😎',BlueWave:'🐬',KartenKeks:'🍪'}[name]||'👑')+'</span><span class="player-name">'+name+'</span><span class="points">'+(name==='DEIN BRETT · Du'?'12':'28')+' <small>Punkte</small></span></h3><div class="cards">'+values.map(card).join('')+'</div></div>'}
-function render(){const n=Number(document.getElementById('playerCount').value),positions=n===3?['enemy-left-top','enemy-right-top']:n===4?['enemy-left-top','enemy-right-top','enemy-right-bottom']:['enemy-left-top','enemy-right-top','enemy-left-bottom','enemy-right-bottom'];document.getElementById('enemies').innerHTML=positions.map((pos,i)=>board(names[i],sets[i], 'enemy '+pos)).join('');document.getElementById('self').innerHTML=board('DEIN BRETT · Du',sets[1],'self');document.getElementById('scores').innerHTML=[...positions.map((_,i)=>names[i]),'Du'].map((name,i)=>'<p>'+(i+1)+'. '+name+' <b style="float:right">'+(28-i*4)+'</b></p>').join('')}
+function render(){
+ const n=Number(document.getElementById('playerCount').value);
+ const positions=layoutModes[n];
+ document.getElementById('enemies').innerHTML=positions.map((pos,i)=>board(names[i],exampleBoards[i], 'enemy '+pos)).join('');
+ document.getElementById('self').innerHTML=board('DEIN BRETT · Du',exampleBoards[4],'self');
+ const scoreboard=positions.map((_,i)=>({name:names[i],points:examplePoints[i]})).concat([{name:'Du',points:examplePoints[4]}]).sort((a,b)=>a.points-b.points);
+ document.getElementById('scores').innerHTML=scoreboard.map((p,i)=>'<p>'+(i+1)+'. '+escapeText(p.name)+' <b style="float:right">'+p.points+'</b></p>').join('');
+ updatePanels(n);
+}
+document.querySelector('.drawbtn').addEventListener('click',()=>demoAction('draw'));
+document.querySelector('.discardbtn').addEventListener('click',()=>demoAction('discard'));
+document.querySelector('.specialbtn').addEventListener('click',()=>demoAction('special'));
+document.querySelector('.menu').addEventListener('click',()=>demoNotice('DEMO: Menü wird erst nach Spielintegration freigeschaltet.'));
+document.querySelector('.bottom button:last-child').addEventListener('click',()=>{const input=document.querySelector('.bottom input');demoNotice('DEMO-Chat: '+(input.value.trim()||'Keine Nachricht eingegeben'));input.value='';});
 document.getElementById('playerCount').addEventListener('change',render);render();
 </script></body></html>
