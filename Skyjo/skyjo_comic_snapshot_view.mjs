@@ -32,7 +32,7 @@ function boardHTML(player, gamePlayer, classes, playerIndex, interactive = false
  * Callers must provide an authenticated snapshot from the real server and their own seat ID.
  * This module intentionally does not invent WebSocket endpoints, issue moves or save state.
  */
-export function renderComicSnapshot(room, selfSeatId, root = document) {
+export function renderComicSnapshot(room, selfSeatId, root = document, options = {}) {
   const snapshot = normalizeComicSnapshot(room);
   if (!snapshot.game) throw new TypeError('Game not started');
   const selfIndex = snapshot.players.findIndex(p => p.seatId === String(selfSeatId));
@@ -44,7 +44,7 @@ export function renderComicSnapshot(room, selfSeatId, root = document) {
   // Build all HTML before updating the DOM, to avoid partial render on invalid data.
   const enemyHTML = opponents.map(({ index, position }) =>
     boardHTML(snapshot.players[index], snapshot.game.players[index], 'enemy '+position, index)).join('');
-  const selfHTML = boardHTML(snapshot.players[selfIndex], snapshot.game.players[selfIndex], 'self', selfIndex, false);
+  const selfHTML = boardHTML(snapshot.players[selfIndex], snapshot.game.players[selfIndex], 'self', selfIndex, options.interactive === true);
   enemies.innerHTML = enemyHTML;
   self.innerHTML = selfHTML;
   const note = root.querySelector('.note');
