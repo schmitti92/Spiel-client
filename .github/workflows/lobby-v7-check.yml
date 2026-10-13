@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: '20'
       - run: node --check hub-lobby.js
+      - run: node --check hub-game-bridge.js
       - run: node --check spielauswahl-online.js
       - run: node --check Skyjo/skyjo_start.js
       - run: node --check Barikade/barikade_start.js
