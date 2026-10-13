@@ -6175,6 +6175,64 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-guide strong{font-size:15px}
 }
 @media(max-width:899px){body.is-playing .sky-duo-guide{display:none!important}}
+
+/* Reference-image refinement v3 — lake, alpine silhouettes, comic panels and compact tablet composition. */
+body.is-playing[data-sky-board="illustrated"]{
+ background:
+ radial-gradient(circle at 78% 13%,#fff9c7 0 2.8%,#ffe57d 3% 4.5%,transparent 4.8%),
+ radial-gradient(ellipse at 17% 12%,#fffef4 0 6%,transparent 6.3%),
+ radial-gradient(ellipse at 86% 8%,#ffffffeb 0 4%,transparent 4.3%),
+ linear-gradient(145deg,transparent 46%,#203d71 46.5% 52%,transparent 52.5%) 0 18%/29% 31% repeat-x,
+ linear-gradient(215deg,transparent 45%,#4c7fb2 45.5% 52%,transparent 52.5%) 0 24%/38% 32% repeat-x,
+ repeating-linear-gradient(178deg,#ffffff12 0 2px,transparent 3px 13px),
+ linear-gradient(180deg,#0485da 0%,#66cdf5 30%,#c6eff3 40%,#2369a0 41%,#154979 59%,#12375d 100%) fixed!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+ border:5px solid #1b2546!important;
+ outline:4px solid #ffca5d!important;
+ outline-offset:-12px!important;
+ border-radius:28px!important;
+ box-shadow:0 15px 0 #13203e,0 26px 48px #07172fc9,inset 0 0 0 4px #7e4d32!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]:after{
+ content:"👑 SKYJO ACTION";
+ top:-2px!important;transform:translate(-50%,-55%) rotate(-2deg)!important;
+ font-size:clamp(18px,2.2vw,36px)!important;
+ color:#fff9e3!important;letter-spacing:1px!important;
+ -webkit-text-stroke:1px #12244b;
+ background:linear-gradient(170deg,#2cb4fc,#0952a0 58%,#072b5c)!important;
+ border:4px solid #fcd05c!important;
+ text-shadow:3px 4px #101b42,0 0 9px #fae069!important;
+ box-shadow:0 5px 0 #1a2349,0 10px 22px #070e2a!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+ border-radius:19px!important;
+ box-shadow:0 0 0 3px #15233e,0 7px 0 #142039,0 13px 18px #06122baf!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player-head{
+ background:linear-gradient(105deg,#4b2543,#9a3652 62%,#d78954)!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player-head{
+ background:linear-gradient(105deg,#092e5c,#146ca2 62%,#3dc8d8)!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar .sky-reference-info{
+ border:3px solid #67d6ff!important;
+ background:linear-gradient(160deg,#071e3c,#0c3b6b 70%,#06182f)!important;
+ border-radius:17px!important;
+ box-shadow:0 5px 0 #07162f,0 10px 22px #05152e9c!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-score-row{
+ border-bottom:1px solid #b0e7ff4d!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-score-me{
+ border:2px solid #ffd367!important;background:#ffd36722!important;
+}
+@media(min-width:900px) and (max-height:850px){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table{padding:5px!important;gap:5px!important}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{gap:6px!important}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-info{padding:7px!important}
+}
 </style>
 </head>
 <body>
@@ -6187,7 +6245,7 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 const selectedSkyBoard=new URLSearchParams(location.search).get('board')==='illustrated'?'illustrated':'classic';
 document.body.dataset.skyBoard=selectedSkyBoard;
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
-const SKYJO_BUILD='15.49';
+const SKYJO_BUILD='15.50';
 const SKYJO_HUB_QUERY=new URLSearchParams(location.search);
 const SKYJO_HUB_CODE=/^[A-HJ-NP-Z2-9]{6}$/.test(SKYJO_HUB_QUERY.get('hub')||'')?SKYJO_HUB_QUERY.get('hub'):'';
 const SKYJO_HUB_MATCH=/^[0-9a-f-]{36}$/i.test(SKYJO_HUB_QUERY.get('match')||'')?SKYJO_HUB_QUERY.get('match'):'';
