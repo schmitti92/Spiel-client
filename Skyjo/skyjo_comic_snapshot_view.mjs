@@ -9,7 +9,7 @@ function visibleCard(raw) {
   if (typeof raw === 'number' || typeof raw === 'string') return String(raw);
   if (typeof raw !== 'object') return null;
   if (raw.faceUp === false || raw.revealed === false || raw.hidden === true) return null;
-  const value = raw.value ?? raw.number ?? raw.label;
+  const value = raw.type === 'star' ? '★' : (raw.value ?? raw.number ?? raw.label);
   return value === undefined || value === null ? null : String(value);
 }
 function cardHTML(raw) {
@@ -20,7 +20,7 @@ function cardHTML(raw) {
   return '<div class="card '+cls+'">'+(value === null ? '' : escapeHTML(value))+'</div>';
 }
 function boardHTML(player, gamePlayer, classes) {
-  const cards = gamePlayer?.cards ?? gamePlayer?.board;
+  const cards = gamePlayer?.grid ?? gamePlayer?.cards ?? gamePlayer?.board;
   if (!Array.isArray(cards) || cards.length !== 12) throw new TypeError('Expected 12 cards for every player');
   return '<div class="board '+classes+'"><h3><span class="player-name">'+escapeHTML(player.name)+
     '</span></h3><div class="cards">'+cards.map(cardHTML).join('')+'</div></div>';
