@@ -396,3 +396,49 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
   justify-content:center!important;
  }
 }
+
+/* v15.65: use compact three-row reference table, never a fixed-height canvas. */
+@media (min-width:900px) and (orientation:landscape){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+  grid-template-columns:minmax(155px,20%) minmax(0,1fr) minmax(160px,20%)!important;
+  grid-template-rows:auto auto auto!important;
+  grid-template-areas:"left tl sidebar" "left center sidebar" "left own sidebar"!important;
+  align-items:center!important;
+  row-gap:5px!important;
+  padding:3px 9px!important;
+  min-height:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{
+  height:auto!important;min-height:0!important;
+  width:100%!important;max-width:100%!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  width:fit-content!important;max-width:100%!important;
+  min-height:0!important;height:auto!important;
+  padding:3px 6px!important;margin:0 auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{
+  height:auto!important;min-height:0!important;max-height:110px!important;
+  overflow:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table{
+  height:110px!important;max-height:110px!important;min-height:0!important;
+  display:flex!important;flex-direction:row!important;align-items:stretch!important;
+  padding:4px!important;gap:5px!important;overflow:auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .handbox{
+  flex:0 1 30%!important;width:30%!important;min-width:0!important;
+  max-height:100%!important;overflow:auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .play-pilebox{
+  flex:1 1 45%!important;width:auto!important;min-width:0!important;
+  max-height:100%!important;overflow:auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .action-pilebox{
+  flex:0 1 25%!important;width:25%!important;min-width:0!important;
+  max-height:100%!important;overflow:auto!important;
+ }
+}
