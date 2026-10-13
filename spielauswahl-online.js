@@ -10,7 +10,7 @@ const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',busines
 const byId=id=>document.getElementById(id);
 const buttons=[...document.querySelectorAll('[data-select-game]')];
 let loading=false,choosing=false,room=null,notifiedUid=null;
-const roomLocation=game=>game==='skyjo'?'Skyjo/skyjo_start.html?room='+encodeURIComponent(code):'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1';
+const roomLocation=game=>game==='skyjo'?'Skyjo/skyjo_start.html?room='+encodeURIComponent(code):game==='barikade'?'Barikade/barikade_start.html?room='+encodeURIComponent(code):'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1';
 function status(message,error=false){
  const box=byId('online-notice');
  if(box){box.textContent=message;box.classList.toggle('error',!!error);}
