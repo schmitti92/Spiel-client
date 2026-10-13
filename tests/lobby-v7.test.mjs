@@ -62,3 +62,12 @@ test('SKYJO reference board preserves manual score counting and three-to-five pl
  assert.doesNotMatch(html,/meta-chip open-chip/);
  assert.doesNotMatch(html,/Σ \$\{openSum/);
 });
+
+test('SKYJO reference sidebar shows standings without exposing current card sums',()=>{
+ const html=readFileSync(new URL('../Skyjo/skyjo_action.html',import.meta.url),'utf8');
+ assert.match(html,/sky-reference-sidebar/);
+ assert.match(html,/sky-reference-score-row/);
+ assert.match(html,/sky-reference-info/);
+ assert.match(html,/Nachziehstapel:/);
+ assert.doesNotMatch(html,/meta-chip open-chip/);
+});
