@@ -297,3 +297,24 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
   align-self:center!important;
  }
 }
+
+/* Phase 6C: cards are nested inside .card-slot, not direct .grid children. */
+@media (min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid > .card-slot,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid > .card-slot{
+  box-sizing:border-box!important;
+  display:block!important;
+  width:54px!important;height:62px!important;
+  min-width:0!important;min-height:0!important;
+  max-width:54px!important;max-height:62px!important;
+  padding:0!important;margin:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid > .card-slot > .card,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid > .card-slot > .card{
+  box-sizing:border-box!important;
+  width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;
+  max-width:100%!important;max-height:100%!important;
+  margin:0!important;
+ }
+}
