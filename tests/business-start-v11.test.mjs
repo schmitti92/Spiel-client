@@ -51,7 +51,7 @@ test('All connected players can ready, only host can assign seats and manually s
 test('The existing match URL and central lobby code remain intact',()=>{
  assert.match(js,/new URLSearchParams\(\{hub:r\.code,match:m\.id,gameCode:m\.gameCode\}\)/);
  assert.match(js,/business_online\.html\?/);
- assert.match(js,/^const roomLocation=.*Business\/business_start\.html/m);
+ assert.match(home,/^const roomLocation=.*Business\/business_start\.html/m);
  assert.match(hub,/Business\/business_start\.html\?room=/);
 });
 test('Authenticated WebSocket and HTTP room updates remain available',()=>{
