@@ -1,0 +1,35 @@
+name: SKYJO module integrity
+on:
+  pull_request:
+    paths:
+      - 'Skyjo/skyjo_action.html'
+      - 'Skyjo/skyjo.css'
+      - 'Skyjo/skyjo-main.js'
+      - '.github/workflows/skyjo-modules-check.yml'
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check Skyjo/skyjo-main.js
+      - name: Check HTML references and extracted resources
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('Skyjo/skyjo_action.html').read_text()
+          css = Path('Skyjo/skyjo.css').read_text()
+          js = Path('Skyjo/skyjo-main.js').read_text()
+          assert '<link rel="stylesheet" href="skyjo.css?v=15.53">' in html
+          assert '<script src="skyjo-main.js?v=15.53"></script>' in html
+          assert 'document.body.dataset.skyBoard=selectedSkyBoard;' in js
+          assert 'window.Game=' in js
+          assert 'sky-reference-layout' in css
+          for name in ('profile-config.js','profile-auth.js','profile-match.js','profile-core.js','hub-game-bridge.js'):
+              assert Path(name).is_file(), name
+          print('SKYJO module integrity OK')
+          PY
