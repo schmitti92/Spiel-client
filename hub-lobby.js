@@ -135,6 +135,10 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  },4500);}
 function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 function render(){
+ if(room?.game==='barikade'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('Barikade/barikade_start.html?room='+encodeURIComponent(room.code));
+  return;
+ }
  if(room?.game==='skyjo'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
   location.replace('Skyjo/skyjo_start.html?room='+encodeURIComponent(room.code));
   return;
