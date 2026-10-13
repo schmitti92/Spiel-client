@@ -191,11 +191,18 @@ function render(){
  el('ready-btn').disabled=!room.game||!player?.participating||operation;
  const playing=room.players.filter(p=>p.participating);
  el('ready-status').textContent=`${playing.filter(p=>p.ready).length} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
+ el('start-btn').classList.toggle('hidden',!room.host||room.phase!=='playing');
  el('start-btn').disabled=!(room.phase==='playing'&&room.host)||operation;
  el('start-btn').textContent=room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
  el('start-btn').title=room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.canLaunch?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
  el('leave-btn').disabled=room.phase==='playing'||operation;
- el('integration-note').textContent=room.phase==='playing'?'Die Partie läuft unter diesem zentralen Raum. Nach dem Sieg schließt der Host die Partie ab und alle bleiben hier.':room.canLaunch?'Dieses Spiel ist mit dem gemeinsamen Raum verbunden. Alle ausgewählten Mitspieler melden sich bereit, danach startet die Partie automatisch.':'Alle vier Spiele sind mit dem gemeinsamen Raum verbunden – Beta.';
+ el('integration-note').textContent=room.phase==='playing'
+  ?'Die Partie läuft. Nach dem bestätigten Spielende kehren alle automatisch in diesen Raum zurück.'
+  :room.phase==='lobby'&&room.lastCompleted?.id
+   ?'🎉 Letzte Partie abgeschlossen: '+(GAME[room.lastCompleted.game]||room.lastCompleted.game)+'. Ihr seid weiterhin im selben Raum – der Host kann das nächste Spiel auswählen.'
+   :room.canLaunch
+    ?'Alle ausgewählten Mitspieler melden sich bereit. Das Spiel startet automatisch.'
+    :'Alle vier Spiele sind mit dem gemeinsamen Raum verbunden – Beta.';
 }
 async function command(run){if(operation)return;operation=true;render();notice('');
  try{await run();pollErrors=0;}catch(e){showError(e);}finally{operation=false;render();}
