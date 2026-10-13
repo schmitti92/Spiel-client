@@ -190,3 +190,53 @@
   height:75px!important;max-height:75px!important;
  }
 }
+
+/* Phase 2: keep central stacks playable within the compact center row. */
+@media (min-width:900px) and (orientation:landscape){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]:after{
+  content:none!important;display:none!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .section-heading{
+  margin:0!important;padding:0!important;min-height:0!important;
+  font-size:10px!important;line-height:12px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .section-heading small,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .count,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-overline,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-tip{
+  display:none!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-row{
+  box-sizing:border-box!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  justify-content:center!important;gap:10px!important;
+  width:100%!important;height:70px!important;min-height:0!important;margin:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-unit{
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  width:60px!important;min-width:0!important;height:70px!important;min-height:0!important;
+  padding:0!important;margin:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-card-hit{
+  box-sizing:border-box!important;position:relative!important;
+  display:block!important;width:52px!important;height:65px!important;
+  min-width:0!important;min-height:0!important;max-width:52px!important;max-height:65px!important;
+  padding:0!important;margin:0!important;transform:none!important;overflow:visible!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-card-hit>.card{
+  box-sizing:border-box!important;width:52px!important;height:65px!important;
+  max-width:52px!important;max-height:65px!important;min-width:0!important;min-height:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-count-chip{
+  z-index:3!important;font-size:10px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .handbox{
+  font-size:10px!important;line-height:12px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .handbox p{
+  font-size:10px!important;line-height:12px!important;margin:2px 0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .market{
+  max-height:68px!important;overflow:auto!important;
+ }
+}
