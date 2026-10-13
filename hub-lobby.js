@@ -259,6 +259,8 @@ function render(){
  el('ready-title').textContent=room.phase==='playing'?'🎮 Eure Partie läuft':'Bereit für '+(GAME[room.game]||'die Partie')+'?';
  el('ready-status').textContent=`${readyCount} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
  el('start-btn').classList.toggle('hidden',!room.host||room.phase!=='playing');
+ el('cancel-match-btn').classList.toggle('hidden',!room.host||room.phase!=='playing');
+ el('cancel-match-btn').disabled=operation||!room.host||room.phase!=='playing';
  el('start-btn').disabled=!(room.phase==='playing'&&room.host)||operation;
  el('start-btn').textContent=room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
  el('start-btn').title=room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.canLaunch?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
@@ -266,7 +268,7 @@ function render(){
  el('integration-note').textContent=room.phase==='playing'
   ?'Die Partie läuft. Nach dem bestätigten Spielende kehren alle automatisch in diesen Raum zurück.'
   :room.phase==='lobby'&&room.lastCompleted?.id
-   ?'🎉 Letzte Partie abgeschlossen: '+(GAME[room.lastCompleted.game]||room.lastCompleted.game)+'. Ihr seid weiterhin im selben Raum – der Host kann das nächste Spiel auswählen.'
+   ?(room.lastCompleted.status==='aborted'?'⏹ Partie ohne Wertung beendet: ':'🎉 Letzte Partie abgeschlossen: ')+(GAME[room.lastCompleted.game]||room.lastCompleted.game)+'. Ihr seid weiterhin im selben Raum – der Host kann das nächste Spiel auswählen.'
    :room.canLaunch
     ?'Alle ausgewählten Mitspieler melden sich bereit. Das Spiel startet automatisch.'
     :'Alle vier Spiele sind mit dem gemeinsamen Raum verbunden – Beta.';
@@ -322,6 +324,16 @@ el('start-btn').addEventListener('click',()=>command(async()=>{
  const {room:r}=await request('/rooms/'+code+'/finish','POST');
  activateRoom(r);notice('Partie abgeschlossen. Ihr könnt das nächste Spiel auswählen.');
 }));
+el('cancel-match-btn').addEventListener('click',()=>{
+ if(!room?.host||room.phase!=='playing'||operation)return;
+ if(!window.confirm('Die laufende Partie für alle beenden? Es wird kein Sieger und keine Statistik gespeichert.'))return;
+ void command(async()=>{
+  const {room:r}=await request('/rooms/'+code+'/cancel','POST');
+  stayInMatchId=null;launchedMatchId=null;
+  activateRoom(r);
+  location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
+ });
+});
 el('refresh-btn').addEventListener('click',()=>command(async()=>{const {room:r}=await request('/rooms/'+code);activateRoom(r);notice('Raum aktualisiert.');}));
 el('copy-btn').addEventListener('click',async()=>{
  try{await navigator.clipboard.writeText(room?.code||'');notice('Raumcode kopiert.');}catch{notice('Raumcode: '+room?.code);}
