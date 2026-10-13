@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>SKYJO Action – Bergsee Live (3–5 Spieler)</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:system-ui,Arial,sans-serif;background:#09182d;color:#fff}button{font:inherit;cursor:pointer}#turn{display:none;position:fixed;inset:0;background:#07162b;z-index:99;align-items:center;justify-content:center;flex-direction:column;text-align:center;font-size:clamp(22px,5vw,42px);padding:25px}@media(orientation:portrait){#turn{display:flex}}#frame{position:absolute;inset:0;overflow:hidden}#stage{position:absolute;left:50%;top:50%;width:1536px;height:864px;transform-origin:center center;background:radial-gradient(ellipse at 50% 8%,#63cfff 0%,#139bd4 22%,#145d9d 46%,#0d365a 70%,#08243b 100%);overflow:hidden;isolation:isolate}#stage:before{content:"";position:absolute;left:-10%;top:37%;width:120%;height:63%;background:repeating-linear-gradient(0deg,transparent 0 54px,#2b180d88 56px 61px),repeating-linear-gradient(90deg,#985c2c 0 155px,#543117 159px 164px);clip-path:polygon(32% 0,68% 0,100% 100%,0 100%);opacity:.94}#stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 48%,#07172b88 100%)}.box{position:absolute;z-index:2;border:5px solid #061526;border-radius:23px;box-shadow:0 5px 0 #030b14,0 0 0 2px #5cc5ff; background:linear-gradient(145deg,#0b2e51,#061528);}.brand{position:absolute;z-index:3;left:480px;top:0;width:576px;text-align:center;font-size:70px;font-weight:1000;font-style:italic;letter-spacing:-5px;transform:rotate(-3deg);text-shadow:5px 6px #051127,-3px -3px #051127,0 0 15px #fff}.brand em{color:#ffcf21;font-style:normal}.room{left:22px;top:20px;width:354px;height:72px;padding:11px 16px;font-size:22px}.room small{font-size:16px;display:block}.toolbar{position:absolute;z-index:5;right:140px;top:22px;display:flex;gap:10px}.toolbar button,.control{background:linear-gradient(#194b78,#07172a);border:3px solid #84d9ff;border-radius:16px;color:white;padding:9px 18px;font-size:28px}.menu{background:linear-gradient(#ffe55a,#ffad1c)!important;color:#111!important;font-weight:900}.board{position:absolute;z-index:3;border:6px solid #081727;border-radius:24px;background:linear-gradient(145deg,#102e52,#07182b);padding:12px;box-shadow:0 0 0 3px #cdefff,0 8px 18px #0008}.board h3{margin:0 0 9px;font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.board .cards{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:7px;height:calc(100% - 37px)}.card{min-width:0;min-height:0;border:3px solid #e6f8ff;border-radius:10px;background:linear-gradient(135deg,#0753a4,#1278d2 42%,#05377e);display:flex;align-items:center;justify-content:center;font-size:39px;font-weight:1000;color:#fff;text-shadow:1px 2px #12263b;box-shadow:inset 0 0 0 3px #053c7c,0 2px 2px #0008}.card.empty{background:transparent;border:2px dashed #ffffff55;box-shadow:none;color:transparent}.card.hidden{background:repeating-linear-gradient(45deg,#08488b,#08488b 7px,#1169b2 8px,#1169b2 13px)}.card.yellow{background:linear-gradient(145deg,#fff7a2,#ffc11a);color:#111}.card.red{background:linear-gradient(145deg,#ffb6a2,#e93e43)}.card.green{background:linear-gradient(145deg,#b5ffa7,#36c45b);color:#152d15}.card.blue{background:linear-gradient(145deg,#d0f8ff,#16b7ec);color:#111}.card.joker{background:linear-gradient(145deg,#fff,#fff2c6);color:#ef3e7c}.enemy{width:320px;height:232px}.enemy .card{font-size:29px}.enemy .cards{gap:5px}.enemy .board h3{font-size:19px}.self{left:478px;top:542px;width:580px;height:252px;background:linear-gradient(145deg,#163d63,#09172a)}.self .card{font-size:48px}.self .cards{height:calc(100% - 35px)}.deck{position:absolute;z-index:3;top:360px;width:140px;height:175px;border-radius:18px;border:7px solid #e4f5ff;box-shadow:7px 8px #051525;display:grid;place-items:center;font-size:27px;text-align:center;font-weight:900}.draw{left:609px;background:repeating-linear-gradient(45deg,#0a4d9b,#0a4d9b 11px,#1168bc 12px,#1168bc 22px)}.discard{left:790px;background:#fff9dc;color:#f34372;font-size:83px}.decklabel{position:absolute;z-index:3;top:539px;font-size:22px;text-shadow:2px 3px #000}.actionbar{position:absolute;z-index:4;left:23px;top:363px;display:flex;flex-direction:column;gap:12px;width:340px}.actionbar button{height:82px;border:5px solid #06233e;border-radius:19px;box-shadow:0 5px 0 #0009;color:white;font-size:26px;font-weight:900;text-align:left;padding-left:25px}.actionbar small{display:block;font-size:15px;font-weight:500}.drawbtn{background:linear-gradient(#24c5ff,#0476d8)}.discardbtn{background:linear-gradient(#9aaab9,#384657)}.specialbtn{background:linear-gradient(#fff066,#ffad13);color:#111!important}.panel{position:absolute;z-index:3;right:22px;width:290px;padding:18px;font-size:18px}.panel h3{font-size:24px;margin:0 0 12px;color:#ffe170}.panel p{margin:10px 0}.round{top:111px;height:125px}.current{top:248px;height:224px}.score{top:487px;height:225px}.bottom{position:absolute;z-index:5;left:16px;right:16px;bottom:8px;height:65px;border:5px solid #4bb7ec;border-radius:20px;background:#061a31;display:flex;gap:8px;padding:4px}.bottom button{border:2px solid #8ce0ff;border-radius:14px;background:#154e82;color:white;font-size:28px;min-width:63px}.bottom input{flex:1;min-width:100px;border:2px solid #4684aa;border-radius:15px;background:#0b2a48;color:white;padding:0 20px;font-size:19px}.demo{position:absolute;z-index:7;left:395px;top:95px;background:#05182bd9;padding:9px 12px;border:2px solid #fff5;border-radius:12px}.demo select{font-size:17px;border-radius:8px;padding:5px}.note{position:absolute;z-index:6;left:385px;top:500px;font-size:14px;background:#061526bb;padding:5px 10px;border-radius:10px}.enemy-left-top{left:23px;top:114px}.enemy-left-bottom{left:23px;top:610px}.enemy-right-top{right:337px;top:114px}.enemy-right-bottom{right:337px;top:610px}.board.enemy{height:222px;width:285px}.enemy-left-bottom,.enemy-right-bottom{top:605px}.self{top:587px;height:214px}.self .card{font-size:40px}.deck{top:330px}.decklabel{top:510px}.actionbar{top:360px}.score{top:489px}.bottom{height:61px}
+
+/* Bergsee-Comic: nur die isolierte Vorschau, keine Änderungen an SKYJO V140/V144. */
+#stage{background:linear-gradient(#18b9ef 0%,#81d9f7 27%,#3187bd 40%,#0a588b 56%,#6b3c21 56%,#4c2917 100%)}
+.scenery{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.sun{position:absolute;left:77%;top:7%;width:155px;height:155px;border-radius:50%;background:#fff1a2;box-shadow:0 0 0 25px #ffef9955,0 0 90px #ffeb92}
+.mountain{position:absolute;top:16%;width:550px;height:300px;background:linear-gradient(145deg,#fff 0 10%,#7fb4d5 12%,#346d98 55%,#1c4a74 100%);clip-path:polygon(50% 0,100% 100%,0 100%);filter:drop-shadow(0 4px 1px #11375b)}
+.mountain.one{left:-9%;top:10%}.mountain.two{left:30%;top:13%;transform:scale(.85)}.mountain.three{right:-8%;top:11%;transform:scale(1.1)}
+.forest{position:absolute;top:30%;left:0;right:0;height:18%;background:repeating-linear-gradient(100deg,#184e37 0 18px,#26754b 19px 25px,#104331 27px 41px);clip-path:polygon(0 72%,3% 19%,6% 76%,9% 8%,12% 78%,15% 18%,18% 79%,22% 11%,26% 79%,30% 22%,33% 80%,36% 10%,40% 78%,45% 12%,50% 82%,55% 10%,59% 80%,63% 14%,67% 81%,71% 11%,75% 78%,79% 19%,84% 81%,88% 10%,93% 78%,96% 17%,100% 78%,100% 100%,0 100%)}
+.lake{position:absolute;top:45%;left:0;right:0;height:25%;background:repeating-linear-gradient(176deg,#1275ad 0 8px,#48b9d4 9px 12px,#1472ac 14px 22px);opacity:.9}
+#stage:before{z-index:1;top:40%;height:60%;background:repeating-linear-gradient(0deg,transparent 0 54px,#24130888 56px 61px),repeating-linear-gradient(90deg,#bc783e 0 155px,#55301b 159px 164px);clip-path:polygon(34% 0,66% 0,100% 100%,0 100%)}
+.brand{top:-7px;left:440px;width:650px;font-size:83px;letter-spacing:-6px;color:white;-webkit-text-stroke:3px #07162b;text-shadow:6px 8px #0a1b31,-4px -4px #0b1b2c,0 0 18px #fff;transform:rotate(-4deg)}
+.brand em{color:#ffd52a;text-shadow:5px 7px #111f37,-2px -2px #051327}
+.board{background:linear-gradient(135deg,#13253d,#09162b);box-shadow:0 0 0 4px #d1eaff,0 8px 15px #000a,0 0 28px #f9e47d55}
+.enemy-left-top{border-color:#f14d5c;background:linear-gradient(135deg,#b83147,#431c31)}
+.enemy-right-top{border-color:#f6d845;background:linear-gradient(135deg,#d3a329,#694014)}
+.enemy-left-bottom{border-color:#2bc5f7;background:linear-gradient(135deg,#157ea7,#0b3b66)}
+.enemy-right-bottom{border-color:#ffae59;background:linear-gradient(135deg,#c4793a,#68371b)}
+.board h3{display:flex;align-items:center;gap:7px;height:39px;margin:0 0 7px;font-size:19px}
+.avatar{font-size:29px;display:inline-grid;place-items:center;background:#08213a;border:3px solid #ffe5aa;border-radius:50%;width:45px;height:45px;flex:none}
+.player-name{overflow:hidden;text-overflow:ellipsis}
+.points{margin-left:auto;border:2px solid #ffdc60;border-radius:9px;background:#061b2d;padding:3px 7px;font-size:23px;color:#ffdf6d;white-space:nowrap}
+.points small{font-size:10px;color:#fff}
+.board .cards{height:calc(100% - 47px);gap:6px}
+.card{border:3px solid white;border-radius:9px;box-shadow:inset 0 0 0 2px #ffffff50,0 3px 0 #081c32}
+.card.hidden{background:repeating-linear-gradient(45deg,#084b94,#084b94 6px,#136fc3 7px,#136fc3 12px);position:relative}
+.card.hidden:after{content:'✦';position:absolute;color:#55b9fa88;font-size:22px}
+.enemy{width:310px;height:225px}
+.enemy-left-top{left:28px;top:124px}.enemy-right-top{left:auto;right:328px;top:124px}
+.enemy-left-bottom{left:28px;top:582px}.enemy-right-bottom{left:auto;right:328px;top:582px}
+.self{left:464px;top:576px;width:605px;height:222px;border-color:#b6793c;background:linear-gradient(145deg,#774524,#362016);box-shadow:0 0 0 5px #e2a54b,0 7px 20px #000a}
+.self h3{justify-content:center;color:#fff3cc;font-size:24px}.self .avatar,.self .points{display:none}
+.self .cards{height:calc(100% - 45px)}.self .card{font-size:43px}
+.deck{top:158px;height:188px;width:134px;transform:rotate(-2deg)}
+.deck.draw{left:621px;background:linear-gradient(135deg,#0052aa,#1686df,#03265a);color:#fff;font-size:28px;line-height:1.05;text-shadow:3px 4px #05192d}
+.deck.draw i{font-size:21px;color:#ffe12b}.deck.discard{left:790px;font-size:76px;transform:rotate(3deg)}
+.decklabel{top:355px!important;font-size:20px!important}
+.actionbar{left:447px;top:399px;width:600px;flex-direction:row;gap:7px}
+.actionbar button{height:76px;width:33.33%;font-size:23px;padding:7px 11px;text-align:center}
+.actionbar small{font-size:13px}
+.room{width:360px;height:72px;background:linear-gradient(#103c61,#06172a);border-color:#0d1526}
+.panel{right:18px;width:285px}.round{top:124px;height:125px}.current{top:259px;height:220px}.score{top:491px;height:222px}
+.demo{left:600px;top:99px;background:#041b36ee;border-color:#fff7;z-index:7}
+.note{left:628px;top:494px;background:#081a2ac9}
+.bottom{bottom:8px;height:61px;background:linear-gradient(#0e3356,#06192e)}
+
+/* Isolated landscape comic polish */
+.board.enemy{transition:transform .2s ease,opacity .2s ease}.enemy-left-top{transform:rotate(-1deg)}.enemy-right-top{transform:rotate(1deg)}.enemy-left-bottom{transform:rotate(1deg)}.enemy-right-bottom{transform:rotate(-1deg)}
+.actionbar button{transition:filter .15s ease,transform .15s ease}.actionbar button:hover{filter:brightness(1.1);transform:translateY(-2px)}.actionbar button:active{transform:translateY(2px)}
+.deck.draw{box-shadow:8px 8px #051a31,0 0 0 3px #051a31}.deck.discard{box-shadow:8px 8px #051a31,0 0 0 3px #051a31}
+.box.panel{box-shadow:0 0 0 2px #66c4fa,0 6px 0 #02101f}.box.panel h3{border-bottom:1px solid #6bbbe744;padding-bottom:8px}
+</style></head><body><div id="turn">📱 Bitte ins Querformat drehen<small style="font-size:16px;margin-top:18px">SKYJO Comic ist nur im Querformat vorgesehen.</small></div><div id="frame"><main id="stage"><div class="scenery"><div class="sun"></div><div class="mountain one"></div><div class="mountain two"></div><div class="mountain three"></div><div class="forest"></div><div class="lake"></div></div>
+<div class="brand"><span>SKYJO</span> <em>ACTION</em></div><div class="box room">🟢 Online-Raum <small id="room">Bergsee #4827</small></div>
+<div class="toolbar"><button title="Ton">🔊</button><button onclick="document.documentElement.requestFullscreen?.()" title="Vollbild">⛶</button><button title="Einstellungen">⚙</button><button class="menu" title="Menü">♛ Menü</button></div>
+<div class="demo">Spieler: <select id="playerCount"><option value="3">3 Spieler</option><option value="4">4 Spieler</option><option value="5">5 Spieler</option></select></div>
+<section id="enemies"></section><div class="actionbar"><button class="drawbtn">🃏 Karte ziehen<small>Karte vom Stapel</small></button><button class="discardbtn">▣ Karte ablegen<small>Karte auf Ablagestapel</small></button><button class="specialbtn">⚡ Aktion<small>Spezialkarte nutzen</small></button></div>
+<div class="deck draw"><span>♛<br>SKYJO<br><i>ACTION</i></span></div><div class="deck discard"><span>🌟</span></div><div class="decklabel" style="left:610px">Nachziehstapel · 32</div><div class="decklabel" style="left:796px">Ablagestapel</div>
+<section id="self"></section>
+<div class="box panel round"><h3>Runde 3 von 12</h3>🟡 ⚪ ❸ ⚪ ⚪ ⚪</div>
+<div class="box panel current"><h3>Aktueller Zug</h3><p>🎲 Spieler ist am Zug</p><p>🃏 Nachziehstapel: 32</p><p>⭐ SKYJO ACTION</p></div>
+<div class="box panel score"><h3>🏆 Zwischenstände</h3><div id="scores"></div></div>
+<div class="note" role="status" aria-live="polite">DEMO – keine Verbindung zur laufenden Partie</div>
+<div class="bottom"><button>💬</button><button>👍</button><button>😂</button><button>❤️</button><button>😮</button><button>😎</button><button>👏</button><button>HEINZ</button><input placeholder="Nachricht an alle …" aria-label="Chatnachricht"><button>➤</button></div>
+</main></div><script>
+const stage=document.getElementById('stage');
+function scale(){const factor=Math.min(innerWidth/1536,innerHeight/864);stage.style.transform='translate(-50%,-50%) scale('+factor+')'}
+addEventListener('resize',scale);scale();
+document.querySelector('.demo')?.remove();
+document.querySelector('.note').textContent='LIVE-BETA – Spielstand aus bestehender SKYJO-Engine';
+</script></body></html>
