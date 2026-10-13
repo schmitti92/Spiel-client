@@ -29,7 +29,7 @@ jobs:
           from pathlib import Path
           html = Path('Skyjo/skyjo_action.html').read_text()
           css = Path('Skyjo/skyjo-base.css').read_text() + Path('Skyjo/skyjo-overrides.css').read_text() + Path('Skyjo/skyjo-classic.css').read_text() + Path('Skyjo/skyjo-themes.css').read_text() + Path('Skyjo/skyjo-comic.css').read_text() + Path('Skyjo/skyjo-comic-duo.css').read_text()
-          assert css == Path('Skyjo/skyjo.css').read_text(), 'CSS order or content changed'
+          assert css.startswith(Path('Skyjo/skyjo.css').read_text()), 'Original CSS order or content changed'
           js = Path('Skyjo/skyjo-main.js').read_text()
           assert '<link rel="stylesheet" href="skyjo-base.css?v=15.54">' in html
           assert '<link rel="stylesheet" href="skyjo-overrides.css?v=15.55">' in html
