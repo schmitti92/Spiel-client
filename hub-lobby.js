@@ -329,7 +329,7 @@ el('cancel-match-btn').addEventListener('click',()=>{
  if(!window.confirm('Die laufende Partie für alle beenden? Es wird kein Sieger und keine Statistik gespeichert.'))return;
  void command(async()=>{
   const {room:r}=await request('/rooms/'+code+'/cancel','POST');
-  stayInMatchId=null;launchedMatchId=null;
+  launchedMatchId=null;
   activateRoom(r);
   location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
  });
