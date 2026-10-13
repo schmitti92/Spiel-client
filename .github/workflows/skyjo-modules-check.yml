@@ -146,6 +146,55 @@ jobs:
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
+      - name: Compare illustrated and classic boards at multiple tablet sizes
+        run: |
+          node <<'JS'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const results=[];
+            for(const [width,height] of [[1280,800],[1536,960],[1920,1080],[1024,768]]){
+              for(const board of ['illustrated','classic']){
+                const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
+                const errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                await page.goto('http://127.0.0.1:8765/Skyjo/skyjo_action.html?board='+board+'&mode=local',{waitUntil:'domcontentloaded'});
+                await page.waitForTimeout(250);
+                const started=await page.evaluate(()=>{
+                  const inputs=[...document.querySelectorAll('.pname')];
+                  if(inputs.length!==2||typeof window.Game?.startFromSetup!=='function')return false;
+                  inputs[0].value='Test A';inputs[1].value='Test B';
+                  window.Game.startFromSetup();return true;
+                });
+                await page.waitForTimeout(120);
+                const info=await page.evaluate(()=>{
+                  const layout=document.querySelector('.sky-reference-layout[data-sky-seats="2"]');
+                  const rect=el=>{if(!el)return null;const r=el.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),width:Math.round(r.width),height:Math.round(r.height),right:Math.round(r.right),bottom:Math.round(r.bottom)}};
+                  const cards=[...(layout?.querySelectorAll('.sky-reference-tl .grid .card,.sky-reference-own .grid .card')||[])];
+                  return {theme:document.body.dataset.skyBoard,layout:!!layout,cards:cards.length,
+                    outside:cards.filter(el=>{const r=el.getBoundingClientRect();return r.left<0||r.top<0||r.right>innerWidth||r.bottom>innerHeight}).length,
+                    own:rect(layout?.querySelector('.sky-reference-own .player')),
+                    opponent:rect(layout?.querySelector('.sky-reference-tl .player')),
+                    center:rect(layout?.querySelector('.sky-reference-center')),
+                    documentHeight:document.documentElement.scrollHeight};
+                });
+                results.push({width,height,board,started,errors,...info});
+                if(width===1280&&height===800)await page.screenshot({path:'skyjo-'+board+'-1280x800.png',fullPage:true});
+                await page.close();
+              }
+            }
+            await browser.close();
+            console.log('Multi-viewport comparison:',JSON.stringify(results));
+            if(results.some(r=>!r.started||!r.layout||r.cards!==24||r.theme!==r.board||r.errors.length))
+              throw Error('One or more local classic/illustrated two-player games failed to initialize');
+            // Geometry is diagnostic at additional sizes until responsive fixes are verified.
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skyjo-multi-viewport
+          path: skyjo-*-1280x800.png
       - uses: actions/upload-artifact@v4
         if: always()
         with:
