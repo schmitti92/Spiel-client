@@ -276,6 +276,16 @@
     (function(){
       const qs = new URLSearchParams(location.search);
       if(qs.get('compact') === '1') document.body.classList.add('compact');
+      // A deliberately local game must not reconnect to an old online room.
+      // Only ephemeral Barikade room preferences are cleared; player profiles
+      // remain controlled by Firebase Auth and the server.
+      if(qs.get('offline') === '1'){
+        try{
+          localStorage.setItem('barikade_mode','offline');
+          localStorage.removeItem('barikade_room');
+          localStorage.removeItem('barikade_sessionToken');
+        }catch(_e){}
+      }
       const am = (localStorage.getItem('barikade_action_mode') || 'classic');
       document.addEventListener('DOMContentLoaded', ()=>{
         const t = document.getElementById('actionModeToggle');
