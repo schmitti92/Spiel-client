@@ -288,7 +288,7 @@ async function showOriginalBoard(){
     const radius=node.kind==='house'?12:13;
     svg.append(tag('circle',{cx:node.x,cy:node.y+3,r:radius+2,fill:'#1f2723',opacity:'.55'}));
     svg.append(tag('circle',{cx:node.x,cy:node.y,r:radius,fill:paint,stroke:color?'#ffffff':'#53463c','stroke-width':color?2.5:1.5}));
-    if(node.flags?.goal)svg.append(tag('text',{x:node.x,y:node.y+6,'text-anchor':'middle','font-size':20,fill:'#724a08'},)).textContent='♛';
+    if(node.flags?.goal){const crown=tag('text',{x:node.x,y:node.y+6,'text-anchor':'middle','font-size':20,fill:'#724a08'});crown.textContent='♛';svg.append(crown);}
   }
   target.replaceChildren(svg);
  }catch(_e){target.replaceChildren(make('p','', 'Brettvorschau ist momentan nicht verfügbar.'));}
