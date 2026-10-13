@@ -1,8 +1,8 @@
-name: Lobby V7 client checks
+name: Spielesammlung client checks
 on:
   push:
     branches:
-      - feature/spielauswahl-navigation-v8
+      - feature/skyjo-startmaske-v9
       - main
   workflow_dispatch:
 permissions:
@@ -18,4 +18,5 @@ jobs:
           node-version: '20'
       - run: node --check hub-lobby.js
       - run: node --check spielauswahl-online.js
-      - run: node --test tests/lobby-v7.test.mjs tests/spielauswahl-v8.test.mjs
+      - run: node --check Skyjo/skyjo_start.js
+      - run: node --test tests/lobby-v7.test.mjs tests/spielauswahl-v8.test.mjs tests/skyjo-start-v9.test.mjs
