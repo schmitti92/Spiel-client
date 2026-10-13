@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SKYJO Comic – Aktionen sicher testen</title>
+<style>
+body{font:16px system-ui;background:#101c2d;color:#fff;padding:22px;max-width:760px;margin:auto}
+button{padding:12px 16px;margin:5px;border:0;border-radius:8px;background:#a5d9f4;color:#102238;font-weight:700}
+button:disabled{opacity:.4}pre{background:#1b334b;border-radius:10px;padding:15px;white-space:pre-wrap}
+</style></head><body>
+<h1>🎮 SKYJO Comic – Aktions-Testlabor</h1>
+<p>Diese Seite testet ausschließlich die neue Aktionsschnittstelle. Keine Online-Verbindung und keine echten Spielzüge.</p>
+<label><input id="allow" type="checkbox"> Testspieler ist am Zug</label>
+<div><button data-action="drawDeck">Karte ziehen</button><button data-action="drawDiscard">Ablage nehmen</button><button data-action="discardDrawn">Gezogene Karte ablegen</button></div>
+<div><button data-action="selectGridCard">Karte 0 auswählen</button><button data-action="selectExtraCard">Zusatzkarte auswählen</button><button data-action="resolveMatch">Kombination entfernen</button></div>
+<pre id="log" role="status">Bereit. Aktiviere „Testspieler ist am Zug“.</pre>
+<script type="module">
+import {createComicActionBridge} from './skyjo_comic_action_bridge.mjs';
+const log=document.getElementById('log'),allow=document.getElementById('allow');
+const events=[];
+const record=(name,...args)=>{events.push(name+'('+args.join(', ')+')');log.textContent=events.join('\n')};
+const game={
+ drawFromDeck:()=>record('drawFromDeck'),
+ drawFromDiscard:()=>record('drawFromDiscard'),
+ discardDrawn:()=>record('discardDrawn'),
+ selectCard:(...args)=>record('selectCard',...args),
+ resolveBoardMatch:(...args)=>record('resolveBoardMatch',...args)
+};
+const bridge=createComicActionBridge({game,canAct:()=>allow.checked,onError:e=>record('Fehler',e.message)});
+document.querySelectorAll('[data-action]').forEach(button=>button.addEventListener('click',()=>{
+ const action=button.dataset.action;
+ const ok=bridge.dispatch(action,{playerIndex:0,cardIndex:0,matchIndex:0});
+ if(!ok)record('BLOCKIERT',action);
+}));
+</script></body></html>
