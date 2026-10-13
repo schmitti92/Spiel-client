@@ -96,3 +96,35 @@ button:focus-visible,a:focus-visible{outline:3px solid #ffe16d;outline-offset:3p
 @media(max-width:1080px){.sj-grid{grid-template-columns:1fr}.sj-persons{min-height:unset}.sj-fan{opacity:.8;transform:scale(.7)}.sj-fan.left{transform-origin:left top}.sj-fan.right{transform-origin:right top}}
 @media(max-width:650px){.sj-wrap{width:calc(100% - 16px);padding:7px 0 30px}.sj-mast{height:148px}.sj-fan{display:none}.sj-back{padding:7px 10px;font-size:12px}.sj-mast-action .sj-iconbtn{width:34px;height:34px;font-size:19px}.sj-logo .skyjo{letter-spacing:-3px;font-size:56px}.sj-logo .action{font-size:44px}.sj-label{font-size:17px;padding:3px 13px}.sj-label+small{font-size:9px}.sj-box{padding:8px;border-radius:13px}.sj-panel-title{font-size:18px;padding:6px 5px}.sj-settings{padding:8px}.sj-host-banner{font-size:11px;padding:8px}.sj-option{grid-template-columns:27px minmax(86px,1fr) minmax(90px,116px) 18px;gap:4px;min-height:49px}.sj-option .symbol{font-size:19px}.sj-option .setting-copy strong{font-size:11px}.sj-option .setting-copy small{font-size:9px}.sj-stepper{height:30px}.sj-stepper button{height:30px;min-width:28px;font-size:22px}.sj-stepper output{font-size:12px}.sj-info{width:17px;height:17px;font-size:11px}.sj-boards{gap:5px}.sj-board .preview{height:69px}.sj-board strong{font-size:10px}.sj-board-title{font-size:14px}.sj-right-top{padding:4px}.sj-wait-title{font-size:18px}.sj-room-code{min-width:105px;padding:4px 7px}.sj-room-code button{font-size:21px}.sj-person{min-height:61px;padding:8px;gap:6px}.sj-person .portrait{height:42px;width:42px;font-size:19px}.sj-person .crown{width:16px;font-size:16px}.sj-person .person-name{font-size:12px}.sj-state{font-size:10px}.sj-state .check{font-size:19px}.sj-primary,.sj-invite{min-height:59px;font-size:16px}.sj-invite{font-size:14px}.sj-segments{min-width:70px}.sj-progress{font-size:11px;gap:5px}.sj-footer-note{font-size:10px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+
+/* V10 tablet/desktop: two actual board choices, distinct previews and clear click targets. */
+.sj-boards{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;max-width:650px}
+.sj-board{padding:8px 8px 13px;min-height:175px;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease}
+.sj-board:not(:disabled):hover{transform:translateY(-3px);box-shadow:0 7px 17px #102e5470}
+.sj-board strong{display:block;font-size:clamp(13px,1.2vw,17px);margin-top:6px}
+.sj-board .preview{height:125px}
+.sj-board[data-board="illustrated"] .preview{
+ background:radial-gradient(circle at 78% 17%,#fff3a6 0 7%,transparent 8%),
+ linear-gradient(155deg,transparent 0 45%,#376ca0 46% 51%,transparent 52%) 0 0/45% 80% repeat-x,
+ linear-gradient(180deg,#31a9ef 0%,#9ae4f6 43%,#316c9d 44%,#154a79 58%,#9a5937 59%,#b97c48 100%);
+ border:3px solid #ffd16d;
+}
+.sj-board[data-board="illustrated"] .preview:before{
+ content:"SKYJO ACTION";position:absolute;z-index:1;left:50%;top:12%;
+ transform:translateX(-50%) rotate(-3deg);white-space:nowrap;
+ color:#fff1a2;font-weight:1000;font-size:clamp(13px,1.5vw,21px);
+ text-shadow:2px 3px #14315b,-1px -1px #193455;
+}
+.sj-board[data-board="illustrated"] .preview:after{
+ inset:48% 13% 9%;border:3px solid #fbd681;border-radius:10px;
+ background:repeating-linear-gradient(90deg,transparent 0 17%,#ffe9bd77 18% 19%,transparent 20% 25%),
+ linear-gradient(155deg,#b97e46,#653c2e);
+ box-shadow:0 5px 0 #42253d,0 9px 13px #08183188;
+}
+.sj-board:disabled{cursor:not-allowed;opacity:.83}
+.sj-board.active:disabled{opacity:1}
+.sj-board-hint{line-height:1.5}
+@media(min-width:1081px){.sj-mast{height:210px}.sj-grid{position:relative;z-index:1}}
+@media(min-width:651px) and (max-width:1080px){.sj-wrap{width:calc(100% - 30px)}.sj-mast{height:185px}.sj-grid{grid-template-columns:1fr}.sj-boards{max-width:100%}}
+@media(max-width:650px){.sj-boards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.sj-board{min-height:118px;padding:5px}.sj-board .preview{height:80px}.sj-board strong{font-size:11px}.sj-board[data-board="illustrated"] .preview:before{font-size:11px}}
