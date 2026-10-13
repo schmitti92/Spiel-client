@@ -1,4 +1,4 @@
-SPIELESAMMLUNG — GEMEINSAME ONLINE-LOBBY V6 (AUTOMATISCHE RÜCKKEHR)
+SPIELESAMMLUNG — GEMEINSAME ONLINE-LOBBY V6 (AUTOMATISCHE RÜCKKEHR UND STABILITÄT)
 13. Oktober 2026 · Entwicklungszweig: feature/gemeinsame-lobby-v1
 
 ZIEL
@@ -29,19 +29,21 @@ NEU IN V6
     unabhängige / lokale Partien werden nicht verändert.
 [x] Nach bestätigtem Ende erscheint 'Zur Spiele-Lobby', automatischer Wechsel
     nach 30 Sekunden. Kein Wechsel bei Netzwerk- oder Authentifizierungsfehler.
-[x] 2 neue Regressionstests; 19/19 Tests der gemeinsamen Lobby bestanden in
+[x] 3 neue Regressionstests; 20/20 Tests der gemeinsamen Lobby bestanden in
     einer isolierten V8-Umgebung mit emulierten Node-Schnittstellen.
 [x] JavaScript-Syntaxprüfung des Browser-Bridges erfolgreich.
 
 OFFENE ARBEIT
-[ ] 29/29 Tests in einem echten Node-Prozess auf dem Feature-Branch ausführen
-    (V5 hatte 27 vollständige Tests; in V6 +2 Tests).
+[ ] 30/30 Tests in einem echten Node-Prozess auf dem Feature-Branch ausführen
+    (V5 hatte 27 vollständige Tests; in V6 +3 Tests).
 [ ] Echte Mehrspieler-/Gerätetests mit Firebase und Staging-Render durchführen.
 [ ] Kompletten Reconnect (vor/während/nach Spiel, Browser-Reload) überprüfen.
 [ ] UIs der Spielvorräume vereinheitlichen, Skyjo-Farben/Brettauswahl fertigstellen.
 [ ] Business und SKYJO: vollständige serverseitige Regelvalidierung vor
     offiziellen Ergebnissen, XP oder Statistik.
-[ ] Bei bestätigtem Spielende optional ein Ergebnisbanner in der Lobby anzeigen.
+[x] Statusanzeige für die letzte abgeschlossene Partie in der gemeinsamen Lobby.
+[x] Host-exklusiven Partie-Abschluss-Button für Mitspieler ausblenden.
+[x] Ungültige Firebase-Tokens lösen keine unbehandelte Ablehnung in Express 4 aus.
 [ ] Testen: Zuschauer während laufender Partie; Server-Neustart; Verbindungsabbruch;
     paralleles Spielende, später Beitritt und Zurückwechseln.
 [ ] Erst nach Staging-Abnahme die Änderung nach main und live übernehmen.
