@@ -135,6 +135,10 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  },4500);}
 function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 function render(){
+ if(room?.game==='skyjo'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
+  location.replace('Skyjo/skyjo_start.html?room='+encodeURIComponent(room.code));
+  return;
+ }
  const account=activeProfile();
  el('account-name').textContent=account?.profile?.name||account?.user?.email||'Noch nicht angemeldet';
  el('account-info').textContent=account?'Dein verifiziertes Online-Spielerprofil ist verbunden.':'Bitte anmelden oder ein Profil erstellen, um einen Raum zu betreten.';
@@ -316,7 +320,15 @@ window.addEventListener('spielonline-change',()=>{
  if(uid!==accountUid){accountUid=uid;if(room){leaveView();notice('Das Spielerprofil hat gewechselt. Bitte dem Raum erneut beitreten.');}}
  render();
 });
-async function boot(){render();const fromUrl=new URL(location.href).searchParams.get('room');
+async function boot(){
+ render();
+ const params=new URL(location.href).searchParams;
+ const invite=params.get('invite');
+ if(invite&&/^[A-HJ-NP-Z2-9]{6}$/i.test(invite)){
+  el('join-code').value=invite.toUpperCase();
+  notice('Einladung erhalten: Bitte dem Raum '+invite.toUpperCase()+' beitreten.');
+ }
+ const fromUrl=params.get('room');
  if(!fromUrl||!/^[A-HJ-NP-Z2-9]{6}$/i.test(fromUrl))return;
  if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
    location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));

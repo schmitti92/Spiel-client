@@ -1,3 +1,27 @@
+SKYJO ACTION – STARTMASKE V9 (13.10.2026)
+[x] Separate SKYJO/skyjo_start.html, CSS und JavaScript.
+[x] Optische Vorlage: großer Action-Titel, blaue Panels, Einstellungszeilen,
+    Spielbrett-Miniaturen, Spieler-Wartebereich, Raumcode und große Spielknöpfe.
+[x] Responsive Darstellung für Desktop und Smartphones.
+[x] Bestehende SKYJO-Server-Einstellungen verbunden: Zielpunkte, Jokeranzahl,
+    Straßen/Gleiche, Joker-Spezialeffekte und Anfänger-Modus.
+[x] Nur der Host kann serverseitig Einstellungen und Teilnehmerplätze ändern.
+[x] Echte serverseitige Bereitmeldungen, automatischer Partiestart und
+    hostgeschützter manueller Start-Fallback.
+[x] Authentifizierter WebSocket-Abgleich und HTTP-Fallback.
+[x] Einladungslink mit Raumcode, Kopierfunktion, Profil-/Zuschauerliste.
+[x] Spielbrett-Designs Klassisch, Strand, Berge und Neon visuell vorbereitet;
+    Alternativdesigns bewusst nur Vorschau, nicht als funktionierend bezeichnet.
+[x] Erweiterte Straßen-Wertung und Spezialkarten-Regeln als zukünftige
+    Funktionen kenntlich; bestehende Regeln bleiben unverändert.
+[x] Rückkehr zur zentralen Online-Spielauswahl möglich.
+[x] 21/21 Client-Regressionstests in GitHub Actions erfolgreich.
+[x] Backup vor Release: backup/vor-skyjo-startmaske-v9-2026-10-13.
+[ ] Echte 2–3-Spieler-Partie auf mehreren Geräten durchführen.
+[ ] Echte Brett-Designumschaltung und zusätzliche Straßen-/Spezialregeln
+    erst nach Umsetzung im SKYJO-Spielkern freischalten.
+
+--- BISHERIGER ARBEITSPLAN ---
 SPIELESAMMLUNG – V8: GETRENNTE SPIELE-STARTSEITEN
 13. Oktober 2026
 
