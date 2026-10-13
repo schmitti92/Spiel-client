@@ -9,7 +9,7 @@
   if(!/^[A-HJ-NP-Z2-9]{6}$/.test(hub)||!/^[0-9a-f-]{36}$/i.test(matchId))return;
   const config=window.SPIELPORTAL_CONFIG||{};
   const api=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-  const hubUrl='../hub-lobby.html?room='+encodeURIComponent(hub);
+  const hubUrl='../spielauswahl-online.html?room='+encodeURIComponent(hub);
   let busy=false,finished=false,pollTimer=null,autoTimer=null;
   const gotoHub=()=>location.assign(hubUrl);
   const readyProfile=()=>{
