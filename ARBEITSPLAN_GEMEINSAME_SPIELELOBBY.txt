@@ -1,3 +1,31 @@
+SPIELESAMMLUNG — ONLINE-VORRÄUME & LOKALER MODUS (V7)
+13. Oktober 2026 · Client-Release
+
+NEU IN V7
+[x] Umschalter "Online mit Freunden" / "Lokal spielen" in der gemeinsamen Lobby.
+[x] Lokaler Modus benötigt weder Online-Spielerprofil noch einen Raumcode.
+[x] Direkte Startmöglichkeiten für Barikade, SKYJO Action, KreuzKunter und Business.
+[x] Barikade im expliziten Offline-Modus startet ohne altes Online-Raum-Reconnect.
+[x] Für jedes Online-Spiel eigene optisch unterscheidbare Startansicht (Cover + Titel).
+[x] Bestehende spielspezifische Optionen auf dem jeweiligen Online-Vorraum.
+[x] Host bestimmt Spiele, Einstellungen, Plätze (Serverprüfungen bereits in V6).
+[x] Mitspieler sehen die Einstellungen und melden sich selbst bereit.
+[x] Fortschrittsbalken zeigt Bereitschaft der teilnehmenden Spieler.
+[x] Der Server startet automatisch nach mindestens zwei und allen Bereitmeldungen.
+[x] Auf kleinen Displays wurden Moduswechsel und Raumeingabe überarbeitet.
+[x] Statusanzeige / neues Spiel wechseln sind integriert.
+[x] Neue Client-Syntax- und Strukturtests auf GitHub Actions: 5/5 erfolgreich.
+[x] Vollständige Sicherung vor Release: backup/vor-online-vorraeume-v7-2026-10-13.
+
+WEITERHIN ZU PRÜFEN
+[ ] Multi-Geräte-Tests in echten Browsern auf unterschiedlichen Mobiltelefonen.
+[ ] Komplette Spielerunde mit Barikade, SKYJO, KreuzKunter, Business und Rückkehr.
+[ ] Responsive Darstellung aller Startansichten auf Handys und Tablets final abnehmen.
+[ ] Weitere spielspezifische Spielvorraum-Optionen nur nach Serverintegration.
+[ ] Vollständige serverautorisierte Spielregeln für SKYJO und Business (separates Vorhaben).
+
+---
+HISTORIE / V6
 SPIELESAMMLUNG — GEMEINSAME ONLINE-LOBBY V6 (AUTOMATISCHE RÜCKKEHR UND STABILITÄT)
 13. Oktober 2026 · Entwicklungszweig: feature/gemeinsame-lobby-v1
 
