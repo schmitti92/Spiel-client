@@ -17,7 +17,7 @@ const target={
  }[name])
 };
 const bridge={dispatch:(...args)=>calls.push(args)};
-const stop=bindComicCardInteractions({root,bridge,isEnabled:()=>enabled});
+const stop=bindComicCardInteractions({root,bridge,isEnabled:()=>enabled,isOwnPlayer:index=>index===2});
 let checks=0;
 const click=()=>handlers.click({type:'click',target});
 click();assert(calls.length===0,'Disabled must not dispatch');checks++;
