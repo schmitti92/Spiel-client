@@ -5794,6 +5794,37 @@ body.is-playing #tableMessageZone .table-message-progress i{
 .street-live-label{color:#ffe4a1;font-size:11px;font-weight:900;text-align:center;background:rgba(255,216,100,.075);border:1px solid rgba(255,216,100,.22);border-radius:10px;padding:7px 10px;margin:4px 0 9px}
 .match-resolve-btn.street-match-btn{background:linear-gradient(180deg,#f8e5a9,#efbc57);color:#302109;border-color:#ffe19a}
 @media(max-width:640px){.street-mode-example span{width:34px;height:42px;font-size:20px}.street-mode-example small{font-size:9px}.street-live-label{font-size:9px}}
+
+/* Five-position SKYJO Action reference layout, 3–5 players.
+   Existing game controls and player components remain intact. */
+@media (min-width: 1000px) {
+ body.is-playing .sky-reference-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(420px,1.7fr) minmax(0,1fr)!important;
+  grid-template-rows:auto auto auto!important;
+  grid-template-areas:"tl center tr" "bl center br" ". own ."!important;
+  align-items:start!important;gap:12px!important;max-width:1720px;margin-inline:auto;
+ }
+ body.is-playing .sky-reference-tl{grid-area:tl}
+ body.is-playing .sky-reference-tr{grid-area:tr}
+ body.is-playing .sky-reference-bl{grid-area:bl}
+ body.is-playing .sky-reference-br{grid-area:br}
+ body.is-playing .sky-reference-center{grid-area:center;min-width:0}
+ body.is-playing .sky-reference-own{grid-area:own;min-width:0}
+ body.is-playing .sky-reference-seat{min-width:0}
+ body.is-playing .sky-reference-seat .player{width:100%!important;min-width:0!important}
+ body.is-playing .sky-reference-own .player{width:100%!important}
+ body.is-playing .sky-reference-empty{display:flex;align-items:center;justify-content:center;
+  min-height:130px;border:2px dashed rgba(185,204,226,.23);border-radius:18px;
+  background:rgba(25,38,55,.18);color:rgba(210,222,236,.4);font-size:13px}
+}
+@media (max-width:999px){
+ body.is-playing .sky-reference-layout{display:flex!important;flex-direction:column!important;gap:12px!important}
+ body.is-playing .sky-reference-own{order:0}
+ body.is-playing .sky-reference-center{order:1}
+ body.is-playing .sky-reference-seat:not(.sky-reference-empty){order:2;width:100%}
+ body.is-playing .sky-reference-empty{display:none}
+}
 </style>
 </head>
 <body>
@@ -9132,7 +9163,16 @@ function gameView(){
  const actionArea=specials?`<div class="pilebox action-pilebox action-only-ui"><div class="section-heading"><span class="section-icon">⚡</span><div><h4>Aktionskarten</h4><small>Offen oder verdeckt antippen</small></div></div><div class="market">${actionBlindStackHTML(canDirect)}${state.market.map((a,i)=>a?`<div id="market-${i}" class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div>`:'';
  const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="pilebox play-pilebox"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
  const playersHTML=state.players.map(playerHTML);
- const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}if(state.players.length===4)return `<div class="table-area four-player-layout"><div class="quad-side quad-left">${playersHTML[0]}${playersHTML[2]}</div>${centerTable}<div class="quad-side quad-right">${playersHTML[1]}${playersHTML[3]}</div></div>`;return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
+ const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;
+ // Reference layout: the local player's board always occupies the large bottom seat.
+ // Other players are placed clockwise in the four corners; unused seats remain dim.
+ const own=preferredViewPlayerIndex();
+ const others=state.players.map((_,i)=>i).filter(i=>i!==own);
+ const seat=(index,label)=>index<others.length
+  ?`<div class="sky-reference-seat sky-reference-${label}">${playersHTML[others[index]]}</div>`
+  :`<div class="sky-reference-seat sky-reference-${label} sky-reference-empty" aria-label="Freier Spielerplatz"><span>Freier Platz</span></div>`;
+ return `<div class="table-area sky-reference-layout" data-sky-seats="${state.players.length}"><div class="sky-reference-center">${centerTable}</div>${seat(0,'tl')}${seat(1,'tr')}${seat(2,'bl')}${seat(3,'br')}<div class="sky-reference-own">${playersHTML[own]||''}</div></div>`;
+})();
  const boardsWithMessage=boards.replace(/<\/div>\s*$/,tableMessageZoneHTML()+'</div>');
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
  const scoreCurtain=['roundReveal','scoring','scoringSequence'].includes(state.phase)?`<div class="sky-score-privacy-curtain" aria-live="polite"><div class="sky-score-privacy-core"><span>✦</span><strong>PUNKTEABRECHNUNG</strong><small>Die Karten werden für die Auszählung vorbereitet …</small></div></div>`:'';
