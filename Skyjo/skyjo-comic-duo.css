@@ -355,3 +355,44 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
   max-height:145px!important;
  }
 }
+
+/* Reference composition: two compact 4x3 boards above/below the shared piles.
+   Applies to local AND online matches; only the illustrated two-player table. */
+@media (min-width:1000px) and (orientation:landscape){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+  grid-template-areas:"left tl sidebar" "left center sidebar" "left own sidebar"!important;
+  grid-template-rows:minmax(0,1fr) minmax(110px,.8fr) minmax(0,1fr)!important;
+  align-items:center!important;
+  justify-items:stretch!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  min-height:0!important;
+  overflow:visible!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  box-sizing:border-box!important;
+  width:max-content!important;
+  max-width:min(100%,360px)!important;
+  min-height:0!important;
+  height:auto!important;
+  margin-inline:auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid{
+  justify-content:center!important;
+  align-content:center!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{
+  align-self:center!important;
+  min-height:0!important;
+  width:100%!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-controls{
+  justify-content:center!important;
+ }
+}
