@@ -1,3 +1,40 @@
+KREUZKUNTER – ONLINE-STARTMASKE V12 · 13.10.2026
+
+UMGESETZT
+[x] Eigenständige KreuzKunter/kreuzkunter_start.html + CSS + JS.
+[x] Nach der bunten Bildvorlage: Logo, Raumcode, QR-Einladung,
+    Spielerliste, Farbbogen-Vorschau, sechs Würfel, Einstellungen, Spielstart.
+[x] Farbfeld-Raster aus den echten 105 KreuzKunter-Feldern (7×15) abgeleitet.
+[x] Teilnahme im selben Firebase-/Firestore-Spielraum wie bei allen Spielen.
+[x] Nur der Host kann aktive Mitspielerplätze vergeben oder freigeben.
+[x] Eigene Bereitmeldungen, serverseitig automatischer Start, Host-Fallback.
+[x] Spielwechsel/Matchstart nutzen unveränderte KreuzKunter-Spielengine.
+[x] QR-Code wird mit lokal hinterlegter MIT-lizenzierter QRCode.js generiert
+    und benötigt keinen externen QR-Service.
+[x] Einladung über Web Share, Clipboard, Raumcode und Link.
+[x] WebSocket-Abgleich mit HTTP-Fallback und Reconnect.
+[x] Responsive auf Smartphone und Desktop.
+[x] Bestehende SKYJO-, Barikade-, Business- und Lokal-Spielpfade behalten.
+[x] Backup: backup/vor-kreuzkunter-startmaske-v12-2026-10-13.
+[x] Client-CI: 48/48 Tests erfolgreich:
+    https://github.com/schmitti92/Spiel-client/actions/runs/38413548054
+
+BEWUSST NOCH NICHT FUNKTIONAL – NUR OPTISCHE VORSCHAU
+[ ] 12/18/24 Rundenauswahl (Originalspiel kennt keine feste Rundenzahl).
+[ ] 30-/60-Sekunden-Zeitlimit pro Zug.
+[ ] Zusätzlicher Glückswürfel (bestehender Farbjoker bleibt unverändert).
+[ ] Optionale Hilfetexte und Reihen-Mischung als Spielregeln.
+Alle nicht verfügbaren Einstellungen sind in der Startmaske deaktiviert
+und ausdrücklich als Vorschau/geplant gekennzeichnet.
+
+NÄCHSTE PRAXISTESTS
+[ ] Mit echten Firebase-Profilen 2–6 Geräte verbinden.
+[ ] Host legt Plätze fest, jeder bestätigt Bereitschaft, Start und Rückkehr.
+[ ] Einladungs-QR auf zweitem Gerät testen.
+[ ] Handy-Layout mit Bildvorlage vergleichen und Feinabstände verbessern.
+[ ] Neue Regeloptionen nur nach vollständiger Server- und Engine-Unterstützung aktivieren.
+
+--- VORHERIGER ARBEITSPLAN ---
 DAS GROSSE BUSINESS – STARTMASKE V11 (13.10.2026)
 
 UMSETZUNG
