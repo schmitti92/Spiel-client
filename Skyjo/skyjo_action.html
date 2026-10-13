@@ -6010,6 +6010,30 @@ body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-s
 body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-score-head{color:#536f8d}
 body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-center .center-table{background:#f3f8fc!important;border-color:#9db9cc!important;box-shadow:0 5px 15px #11263829!important}
 body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-center .play-pilebox{background:#e6f0fa!important;border-color:#afc6d7!important}
+
+/* Two-player game: use the selected modern board, not the legacy side-by-side view. */
+@media(min-width:1000px){
+ body.is-playing .sky-reference-layout[data-sky-seats="2"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(400px,1.3fr) minmax(0,1fr)!important;
+  grid-template-rows:auto auto auto!important;
+  grid-template-areas:". tl sidebar" ". center sidebar" ". own sidebar"!important;
+  justify-items:stretch!important;align-items:start!important;
+  max-width:1250px!important;
+ }
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl{grid-area:tl}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{grid-area:center}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{grid-area:own}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{grid-area:sidebar;display:flex;flex-direction:column}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-empty{display:none!important}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player{--card-w:clamp(48px,4.5vw,75px)!important}
+}
+@media(max-width:999px){
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl{order:0!important}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{order:1!important}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{order:2!important}
+ body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{order:3!important}
+}
 </style>
 </head>
 <body>
@@ -9350,7 +9374,7 @@ function gameView(){
  const actionArea=specials?`<div class="pilebox action-pilebox action-only-ui"><div class="section-heading"><span class="section-icon">⚡</span><div><h4>Aktionskarten</h4><small>Offen oder verdeckt antippen</small></div></div><div class="market">${actionBlindStackHTML(canDirect)}${state.market.map((a,i)=>a?`<div id="market-${i}" class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div>`:'';
  const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="pilebox play-pilebox"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
  const playersHTML=state.players.map(playerHTML);
- const boards=(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;
+ const boards=(()=>{
  // Reference layout: the local player's board always occupies the large bottom seat.
  // Other players are placed clockwise in the four corners; unused seats remain dim.
  const own=preferredViewPlayerIndex();
