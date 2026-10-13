@@ -46,6 +46,12 @@
 .demo{left:600px;top:99px;background:#041b36ee;border-color:#fff7;z-index:7}
 .note{left:628px;top:494px;background:#081a2ac9}
 .bottom{bottom:8px;height:61px;background:linear-gradient(#0e3356,#06192e)}
+
+/* Isolated landscape comic polish */
+.board.enemy{transition:transform .2s ease,opacity .2s ease}.enemy-left-top{transform:rotate(-1deg)}.enemy-right-top{transform:rotate(1deg)}.enemy-left-bottom{transform:rotate(1deg)}.enemy-right-bottom{transform:rotate(-1deg)}
+.actionbar button{transition:filter .15s ease,transform .15s ease}.actionbar button:hover{filter:brightness(1.1);transform:translateY(-2px)}.actionbar button:active{transform:translateY(2px)}
+.deck.draw{box-shadow:8px 8px #051a31,0 0 0 3px #051a31}.deck.discard{box-shadow:8px 8px #051a31,0 0 0 3px #051a31}
+.box.panel{box-shadow:0 0 0 2px #66c4fa,0 6px 0 #02101f}.box.panel h3{border-bottom:1px solid #6bbbe744;padding-bottom:8px}
 </style></head><body><div id="turn">📱 Bitte ins Querformat drehen<small style="font-size:16px;margin-top:18px">SKYJO Comic ist nur im Querformat vorgesehen.</small></div><div id="frame"><main id="stage"><div class="scenery"><div class="sun"></div><div class="mountain one"></div><div class="mountain two"></div><div class="mountain three"></div><div class="forest"></div><div class="lake"></div></div>
 <div class="brand"><span>SKYJO</span> <em>ACTION</em></div><div class="box room">🟢 Online-Raum <small id="room">Bergsee #4827</small></div>
 <div class="toolbar"><button title="Ton">🔊</button><button onclick="document.documentElement.requestFullscreen?.()" title="Vollbild">⛶</button><button title="Einstellungen">⚙</button><button class="menu" title="Menü">♛ Menü</button></div>
@@ -56,7 +62,7 @@
 <div class="box panel round"><h3>Runde 3 von 12</h3>🟡 ⚪ ❸ ⚪ ⚪ ⚪</div>
 <div class="box panel current"><h3>Aktueller Zug</h3><p>🎲 Spieler ist am Zug</p><p>🃏 Nachziehstapel: 32</p><p>⭐ SKYJO ACTION</p></div>
 <div class="box panel score"><h3>🏆 Zwischenstände</h3><div id="scores"></div></div>
-<div class="note">DEMO – keine Verbindung zur laufenden Partie</div>
+<div class="note" role="status" aria-live="polite">DEMO – keine Verbindung zur laufenden Partie</div>
 <div class="bottom"><button>💬</button><button>👍</button><button>😂</button><button>❤️</button><button>😮</button><button>😎</button><button>👏</button><button>HEINZ</button><input placeholder="Nachricht an alle …" aria-label="Chatnachricht"><button>➤</button></div>
 </main></div><script>
 const stage=document.getElementById('stage');
