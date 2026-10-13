@@ -318,3 +318,40 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
   margin:0!important;
  }
 }
+
+/* Compact landscape tablets: keep the illustrated duo cards proportional to the
+   available width rather than forcing the 1536px reference card size. */
+@media (min-width:1000px) and (max-width:1350px) and (orientation:landscape) and (max-height:1000px){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+  grid-template-columns:minmax(110px,17%) minmax(0,1fr) minmax(125px,18%)!important;
+  column-gap:6px!important;
+  padding-inline:6px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  --card-w:42px!important;
+  --card-h:49px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid{
+  grid-template-columns:repeat(4,42px)!important;
+  grid-auto-rows:49px!important;
+  gap:3px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid > .card-slot,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid > .card-slot{
+  width:42px!important;height:49px!important;
+  max-width:42px!important;max-height:49px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid > .card-slot > .card,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid > .card-slot > .card{
+  width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{
+  max-height:150px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table{
+  max-height:145px!important;
+ }
+}
