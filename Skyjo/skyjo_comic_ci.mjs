@@ -22,7 +22,9 @@ for(const n of [3,4,5]) {
   assert((self.innerHTML.match(/class="card /g)||[]).length===12,'Wrong card count');
   assert(!enemy.innerHTML.includes('<script>')&&!self.innerHTML.includes('<script>'),'Unescaped player name');
   assert(self.innerHTML.includes('★'),'Star card not rendered');
-  checks+=5;
+  assert(self.innerHTML.includes('card empty'),'Removed card must not look face-down');
+  assert(self.innerHTML.includes('card hidden'),'Face-down card must be visible as a back');
+  checks+=7;
  }
 }
 const before=enemy.innerHTML;
