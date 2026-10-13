@@ -6,7 +6,7 @@ const code=String(q.get('room')||'').toUpperCase();
 const GOOD=/^[A-HJ-NP-Z2-9]{6}$/;
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const COLOR={red:'#f34850',blue:'#298cff',yellow:'#f7c442',green:'#39be6b'};
-let room=null,busy=false,loading=false,ws=null,poll=null,retry=null,currentUser=null;
+let room=null,busy=false,loading=false,ws=null,pollTimer=null,retry=null,currentUser=null;
 const hostOnly=s=>room?.host&&room.phase==='preparing'&&!busy&&s!==false;
 function note(msg='',error=false){el('status').textContent=msg;el('status').classList.toggle('error',error);}
 function home(extra=''){return '../spielauswahl-online.html?room='+encodeURIComponent(code)+extra;}
@@ -189,7 +189,7 @@ async function boot(){
  const check=setInterval(async()=>{
   if(!profile())return;
   clearInterval(check);
-  try{receive(await request());connect();poll=setInterval(polling,4500);}
+  try{receive(await request());connect();pollTimer=setInterval(polling,4500);}
   catch(e){el('loading').textContent='Raum konnte nicht geöffnet werden: '+err(e);}
  },300);
  function polling(){void poll();}
@@ -235,7 +235,7 @@ el('start-btn').addEventListener('click',()=>{
 el('leave-btn').addEventListener('click',async()=>{
  if(!room||room.phase==='playing')return;
  await mutate('/leave',{});
- location.assign('../spielauswahl-online.html?room='+encodeURIComponent(code));
+ location.assign('../hub-lobby.html');
 });
 async function invite(source){
  const inviteURL=new URL('../hub-lobby.html?invite='+encodeURIComponent(code),location.href).href;
@@ -264,7 +264,7 @@ window.addEventListener('spielonline-change',()=>{const p=profile();
  else if(room){void poll();connect();}
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void poll();});
-window.addEventListener('pagehide',()=>{disconnect();if(poll)clearInterval(poll);});
+window.addEventListener('pagehide',()=>{disconnect();if(pollTimer)clearInterval(pollTimer);});
 async function showOriginalBoard(){
  const target=el('board-content');
  try{
