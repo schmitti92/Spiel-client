@@ -59,7 +59,7 @@
       if(!response.ok)return;
       const result=await response.json(),room=result?.room;
       if(!result?.ok||!room||room.code!==hub)return;
-      if(room.lastCompleted?.id===matchId || (room.phase!=='playing'||room.match?.id!==matchId)){
+      if(room.lastCompleted?.id===matchId || (room.phase==='lobby'&&!room.match) || (room.phase==='playing'&&room.match?.id!==matchId)){
         completionStatus=room.lastCompleted?.id===matchId&&room.lastCompleted?.status==='aborted'?'aborted':'finished';
         showReturn();
       }
