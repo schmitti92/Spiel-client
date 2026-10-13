@@ -14,8 +14,11 @@ export function bindComicCardInteractions({ root, bridge, isEnabled = () => fals
     if (!target || !root.contains(target)) return;
     const action = target.getAttribute('data-comic-action');
     if (action !== 'selectGridCard') return;
-    const playerIndex = Number(target.getAttribute('data-player-index'));
-    const cardIndex = Number(target.getAttribute('data-card-index'));
+    const rawPlayer = target.getAttribute('data-player-index');
+    const rawCard = target.getAttribute('data-card-index');
+    if (rawPlayer === null || rawCard === null || !/^\\d+$/.test(rawPlayer) || !/^\\d+$/.test(rawCard)) return;
+    const playerIndex = Number(rawPlayer);
+    const cardIndex = Number(rawCard);
     if (!Number.isInteger(playerIndex) || !Number.isInteger(cardIndex) ||
         playerIndex < 0 || cardIndex < 0 || cardIndex > 11 || !isOwnPlayer(playerIndex)) return;
     if (event.type === 'keydown') event.preventDefault();
