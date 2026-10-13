@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#128bdf"><title>KreuzKunter · Online-Spiel-Lobby</title>
+<link rel="stylesheet" href="kreuzkunter_start.css?v=12.0.1"></head>
+<body><main class="kk-shell">
+ <header class="kk-header">
+   <a id="back-link" class="back" href="../spielauswahl-online.html">← Zurück</a>
+   <div class="kk-logo" aria-label="KreuzKunter"><span class="letter c1">K</span><span class="letter c2">r</span><span class="letter c3">e</span><span class="letter c4">u</span><span class="letter c5">z</span><span class="letter c6">K</span><span class="letter c1">u</span><span class="letter c2">n</span><span class="letter c3">t</span><span class="letter c4">e</span><span class="letter c5">r</span><span class="logo-die">🎲</span>
+    <div class="logo-subtitle">ONLINE-SPIELEABEND</div>
+   </div>
+   <section class="room-share" aria-label="Einladungen">
+    <div class="room-code-box"><span>Raumcode</span><div><strong id="room-code">······</strong><button id="copy-code" title="Raumcode kopieren" type="button" aria-label="Raumcode kopieren">▢</button></div></div>
+    <div class="share-options"><span>Freunde einladen</span><div class="share-buttons"><button id="invite-link" type="button">🔗 Link teilen</button><button id="invite-qr" type="button">▦ QR-Code</button></div></div>
+   </section>
+ </header>
+ <div id="loading" class="loading" role="status">🌈 Raum wird geladen …</div>
+ <div id="lobby" class="main-grid hidden">
+  <section class="panel players-panel">
+   <h2>👥 Spieler <span id="player-count">(0/6)</span></h2>
+   <div id="player-list" class="player-list" aria-live="polite"></div>
+   <div class="players-footer"><button type="button" id="invite-player">＋ Freunde einladen</button><span id="players-hint">Mindestens 2 aktive Spieler</span></div>
+  </section>
+  <section class="board-center" aria-label="Spielbrettvorschau">
+   <div class="paper-shadow">
+    <div class="paper" id="preview-board">
+     <div class="paper-title"><span>✦</span><strong>Kunter<span>Kreuz</span></strong><span>🎲</span></div>
+     <p class="paper-subtitle">KreuzKunter · Originales Farbfeld-Schema</p>
+     <div id="board-grid" class="board-grid" aria-label="Vorschau des originalen KreuzKunter-Farbenrasters"></div>
+     <div class="board-score"><strong>7 Reihen · 15 Spalten</strong><span>105 Spielfelder · Beispielkreuze</span></div>
+    </div>
+   </div>
+   <div class="dice-preview" aria-label="Sechs Beispiel-Farbwürfel">
+     <span class="visual-die red" aria-hidden="true">⚀</span><span class="visual-die blue" aria-hidden="true">⚂</span>
+     <span class="visual-die green" aria-hidden="true">⚁</span><span class="visual-die yellow" aria-hidden="true">⚄</span>
+     <span class="visual-die orange" aria-hidden="true">⚅</span><span class="visual-die rainbow" aria-hidden="true">★</span>
+   </div>
+   <p class="preview-note">🎨 Das echte Spielbrett, die Regeln und Würfe bleiben unverändert. Die Kreuze sind nur eine Vorschau.</p>
+  </section>
+  <section class="panel settings-panel">
+   <h2>⚙️ Spieleinstellungen</h2><p id="host-note" class="host-note">👑 Nur der Host kann die aktiven Spieler bestimmen.</p>
+   <div class="setting"><div class="setting-head">🏆 <strong>Rundenanzahl</strong></div><div class="segmented future"><button type="button" disabled>12</button><button type="button" disabled>18</button><button type="button" disabled>24</button></div><small>Vorschau · KreuzKunter endet nach den bestehenden Spielregeln.</small></div>
+   <div class="setting"><div class="setting-head">🕒 <strong>Zeitlimit pro Zug</strong></div><div class="segmented future"><button type="button" disabled>Kein Limit</button><button type="button" disabled>30 Sek.</button><button type="button" disabled>60 Sek.</button></div><small>Vorschau · Zeitlimits sind noch nicht im Spielkern enthalten.</small></div>
+   <div class="setting"><div class="setting-head">🌟 <strong>Glückswürfel</strong></div><div class="future-row"><span>Sechste Würfelfarbe als Extra-Regel</span><span class="future-pill">Geplant</span></div><small>Der aktuelle Farbjoker funktioniert weiterhin nach den bestehenden Regeln.</small></div>
+   <div class="setting"><div class="setting-head">💡 <strong>Hilfen anzeigen</strong></div><div class="future-row"><span>Erklärungen während der Partie</span><span class="future-pill">Geplant</span></div></div>
+   <div class="setting"><div class="setting-head">🔀 <strong>Reihenfolge mischen</strong></div><div class="future-row"><span>Zusätzliche Brettvarianten</span><span class="future-pill">Geplant</span></div></div>
+   <div class="setting settings-live"><div class="setting-head">👥 <strong>Spielerplätze</strong></div><div id="seats-info" class="live-info">0 von 6 besetzt</div><small>Nur der Host darf Spieler zu Mitspielern oder Zuschauern machen.</small></div>
+   <div class="ready-meter"><span id="ready-count">0 von 0 bereit</span><div id="meter-segments" class="meter-segments" aria-hidden="true"></div></div>
+   <button id="ready-btn" type="button" class="ready-btn" disabled>✓ Ich bin bereit</button>
+  </section>
+ </div>
+ <div id="launch-area" class="launch-area hidden"><button id="start-btn" class="start-btn" type="button" disabled>▶ Spiel starten</button><p id="start-hint">Alle aktiven Spieler müssen bereit sein.</p></div>
+ <p id="status" class="status" role="status" aria-live="polite"></p>
+</main>
+<div id="qr-modal" class="qr-modal hidden" role="dialog" aria-modal="true" aria-labelledby="qr-title">
+ <div class="qr-card"><button id="close-qr" class="close-qr" type="button" aria-label="QR-Code schließen">✕</button><h2 id="qr-title">🌈 KreuzKunter – Einladung</h2><p>Freunde scannen den Code und können dem Raum beitreten.</p><div id="qr-target" class="qr-target"></div><strong id="qr-code"></strong><button id="copy-invite" type="button" class="copy-invite">🔗 Einladungslink kopieren</button></div>
+</div>
+<script src="../profile-config.js"></script><script src="../profile-auth.js"></script>
+<script src="qrcode.min.js"></script><script src="kreuzkunter_start.js?v=12.0.1" defer></script>
+</body></html>
