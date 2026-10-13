@@ -4,6 +4,7 @@
 const input=new URL(location.href).searchParams;
 const code=String(input.get('room')||'').toUpperCase();
 const codeValid=/^[A-HJ-NP-Z2-9]{6}$/.test(code);
+const chooseAnother=input.get('choose')==='1';
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business'};
 const byId=id=>document.getElementById(id);
@@ -43,7 +44,7 @@ function update(snapshot){
  byId('online-room-status').textContent=snapshot.host?'👑 Du bist Host – wähle euer nächstes Spiel.':'Du bist verbunden. Der Host wählt das nächste Spiel.';
  const permitted=!!snapshot.host&&snapshot.phase!=='playing'&&!choosing;
  for(const btn of buttons)btn.disabled=!permitted;
- if(snapshot.game&&['preparing','playing'].includes(snapshot.phase)){
+ if(snapshot.game&&['preparing','playing'].includes(snapshot.phase)&&!(chooseAnother&&snapshot.host&&snapshot.phase==='preparing')){
   location.replace(roomLocation());
   return;
  }
