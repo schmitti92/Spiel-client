@@ -5,6 +5,11 @@
     return;
   }
   window.__BARIKADE_GAME_V105_LOADED__ = true;
+  const hubGameCode=new URLSearchParams(location.search).get('hub');
+  const hubGameMode=/^[A-HJ-NP-Z2-9]{6}$/.test(hubGameCode||'');
+  const hubGameExpected=hubGameMode?Math.min(4,Math.max(2,Number(new URLSearchParams(location.search).get('players'))||2)):0;
+  const hubMatchId=hubGameMode?String(new URLSearchParams(location.search).get('match')||''):'';
+  let hubAutoStartDone=false;
 
 // --- C1 minimal guards (avoid crashes if optional helpers are missing) ---
 (() => {
@@ -2003,7 +2008,7 @@ let awardsShown = false;
   }
   function writeHostAutosave(serverState){
     // only host writes autosave
-    if(netMode === "offline" || !isMeHost()) return;
+    if(netMode === "offline" || !isMeHost() || hubGameMode) return;
     if(!serverState || typeof serverState !== "object") return;
     try{
       const payload = { room: roomCode || "", ts: Date.now(), state: serverState };
@@ -3274,6 +3279,12 @@ if(actionEffectsState){
     if(hasState) startBtn.textContent='✓ Spiel läuft';
     else if(amHost && netCanStart) startBtn.textContent=`▶ Spiel starten · ${connectedPlayers} Spieler`;
     else startBtn.textContent='▶ Spiel starten';
+    // The hub has collected everyone's ready vote already. Begin once every
+    // server-verified Barikade player is actually connected to the same match.
+    if(hubGameMode&&!hubAutoStartDone&&amHost&&netCanStart&&!hasState&&connectedPlayers>=hubGameExpected){
+      hubAutoStartDone=true;
+      setTimeout(()=>{if(startBtn&&!startBtn.disabled)startBtn.click();},180);
+    }
   }
 
   function isMeHost(){
@@ -8439,7 +8450,9 @@ dice.style.bottom = "";
       if(rt && typeof rt.closeSocket === "function") rt.closeSocket();
     }catch(_e){}
     try{ localStorage.removeItem("barikade_sessionToken"); }catch(_e){}
-    window.location.href = "barikade_lobby.html";
+    window.location.href = hubGameMode
+      ? "../hub-lobby.html?room="+encodeURIComponent(hubGameCode)+"&stayMatch="+encodeURIComponent(hubMatchId)
+      : "barikade_lobby.html";
   });
 })();
 

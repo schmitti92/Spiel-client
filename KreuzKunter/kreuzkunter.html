@@ -542,6 +542,8 @@ function showOpponent(i){
  $('opponent-close').addEventListener('click',hideDialog);$('opponent-compare').addEventListener('click',showCompare);
 }
 
+const HUB_PARAMS=new URL(location.href).searchParams;
+const HUB_CONTEXT=/^[A-HJ-NP-Z2-9]{6}$/.test(HUB_PARAMS.get('hub')||'')&&/^K[A-HJ-NP-Z2-9]{9}$/.test(HUB_PARAMS.get('gameCode')||'')&&/^[0-9a-f-]{36}$/.test(HUB_PARAMS.get('match')||'')?{hub:HUB_PARAMS.get('hub'),gameCode:HUB_PARAMS.get('gameCode'),matchId:HUB_PARAMS.get('match')}:null;
 const NET_INFO_KEY='kreuzkunter-net-info-render-v1',NET_DRAFT_KEY='kreuzkunter-online-pending-render-v1';
 function getNetInfo(){try{return JSON.parse(localStorage.getItem(NET_INFO_KEY)||'{}');}catch(e){return {};}}
 function persistOnlineDraft(){
@@ -567,6 +569,7 @@ function restoreOnlineDraft(my,msg){
  }catch(e){return null;}
 }
 function leaveOnline(){
+ if(HUB_CONTEXT){returnHubKreuz();return;}
  if(!NET)return;
  const old=NET;old.stopped=true;clearTimeout(old.timer);clearTimeout(old.syncTimer);
  try{old.ws?.close();}catch(e){}
@@ -849,7 +852,7 @@ function render(){if(!state)return;const p=state.aiConfig&&!NET?state.players[0]
  $('mobile-roll').textContent=$('roll-button').textContent; $('mobile-commit').textContent=state.pending.length?'✓ '+state.pending.length+' eintragen':'✓ Eintragen';
  $('online-feed').hidden=!(Array.isArray(state.history)&&state.history.length);
  {const events=Array.isArray(state.history)?state.history.slice(-5).reverse():[];$('online-feed').innerHTML=`<h3>🕘 Letzte Aktionen</h3>${events.length?`<ol>${events.map(x=>`<li>${ESC(x)}</li>`).join('')}</ol>`:'<div class="tiny">Noch keine Spielaktionen</div>'}`;}
- $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?(onlineParallel()?(state.parallel?state.players.some((q,i)=>i!==state.active&&!state.responded?.[i]&&NET.presence[i]===false):NET.presence[state.active]===false):NET.presence[state.picker]===false):state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>{
+ $('playercount').textContent=state.players.length+' / 6';$('online-controls').innerHTML=NET?`<div class="notice"><div>Raumcode: <strong>${ESC(HUB_CONTEXT?.hub||NET.code)}</strong> ${NET.host?'· Du bist Host':''}</div><div class="tiny">${NET.connected?'🟢 Verbunden':'🟡 Wiederverbindung / Synchronisierung läuft'} · Stand ${NET.revision||0}${NET.storage==='memory'?' · ⚠️ Nur temporär (Server-Neustart löscht Raum)':NET.storage==='firestore'?' · ☁ In Firestore gesichert':''}</div><div class="actions" style="margin-top:8px"><button class="flat" data-action="sync" type="button">↻ Abgleichen</button><button class="flat" data-action="leaveonline" type="button">Online verlassen</button></div>${state.phase==='lobby'&&NET.host?'<button class="action ok" data-action="startonline" '+(state.players.length<2||(NET.presence&&NET.presence.filter(Boolean).length<2)?'disabled':'')+'>Partie starten ('+state.players.length+'/6)</button>':''}${NET.host&&NET.presence&&(state.phase==='select'?(onlineParallel()?(state.parallel?state.players.some((q,i)=>i!==state.active&&!state.responded?.[i]&&NET.presence[i]===false):NET.presence[state.active]===false):NET.presence[state.picker]===false):state.phase==='ready'&&NET.presence[state.active]===false)?'<button class="action pass" data-action="skip" style="margin-top:8px">⏭ Abwesenden Spieler überspringen</button>':''}</div>`:'';$('players').innerHTML=state.players.map((q,i)=>{
   const playing=onlineParallel()?(state.phase==='ready'?i===state.active:state.phase==='select'&&(state.parallel?i!==state.active&&!state.responded?.[i]:i===state.active)):i===state.picker;
   const done=onlineParallel()&&state.phase==='select'&&!!state.responded?.[i];
   const turnLabel=done?' · ✅ Fertig':playing&&state.phase==='select'?' · ✏️ Am Zug':'';
@@ -1065,6 +1068,7 @@ function cellClick(index){
  function showDialog(html){$('dialog-body').classList.remove('rule-modal','kk-waiting-modal');$('dialog-body').innerHTML=html;$('dialog').classList.remove('hidden');}
  function hideDialog(){$('dialog').classList.add('hidden');$('dialog-body').innerHTML='';}
  function showStart(){
+  if(HUB_CONTEXT){returnHubKreuz();return;}
   const ongoing=state&&state.turn>0&&!state.finished;
   showDialog(`<div class="minihead">Willkommen beim Würfelduell</div><h2 id="dialog-heading">🎲 KreuzKunter</h2>
    <p>105 Felder, fünf Farben, sechs Blockgrößen und drei Sterne je Farbe. Wähle deinen Spielmodus:</p>
@@ -1202,7 +1206,8 @@ function cellClick(index){
   showDialog(`<div class="minihead">Partie abgeschlossen · KreuzKunter</div><div class="celebrate"><div class="tiny">🏆 ENDWERTUNG</div><div class="winner">${ESC(winner)}</div><div>${solo?'Deine Wertung: '+grade(ranking[0].total):'Herzlichen Glückwunsch!'}</div></div>${best}
   <div class="balance-table-wrap"><table class="finish-breakdown"><thead><tr><th>Platz / Spieler</th><th>Farben</th><th>Spalten</th><th>Joker</th><th>Sterne</th><th>Total</th></tr></thead><tbody>${ranking.map((v,i)=>`<tr><td>${i+1}. ${ESC(v.p.name)}</td><td>${v.bonus}</td><td>${v.columns}</td><td>+${v.joker}</td><td>−${v.missed*2}</td><td>${v.total}</td></tr>`).join('')}</tbody></table></div>
   <div class="actions" style="margin-top:16px"><button class="action ok" type="button" id="end-new">Neue Partie</button><button class="action pass" type="button" id="end-close">Spielfeld ansehen</button></div><button class="rule-start" type="button" id="end-help">📖 Regeln / Punkte nachlesen</button>`);
-  $('end-new').addEventListener('click',showStart);$('end-help').addEventListener('click',()=>showHelp(false));$('end-close').addEventListener('click',hideDialog);
+  if(HUB_CONTEXT){$('end-new').textContent='← Zur gemeinsamen Lobby';$('end-new').addEventListener('click',returnHubKreuz);}
+  else $('end-new').addEventListener('click',showStart);$('end-help').addEventListener('click',()=>showHelp(false));$('end-close').addEventListener('click',hideDialog);
  }
 
  function clearOnlineWait(my){clearTimeout(my?.syncTimer);if(my){my.awaiting=false;my.pendingActionId=null;}}
@@ -1241,15 +1246,15 @@ function cellClick(index){
  }
  function showOnlineWaiting(my){
  if(NET!==my)return;
- showDialog(`<div class="kk-waiting-head"><div class="minihead">🎲 KreuzKunter · Online</div><h2 id="dialog-heading">🌐 Online-Wartelobby</h2><p>Teile den Raumcode mit deinen Freunden. Sobald alle da sind, kann der Gastgeber die Runde starten.</p></div><div class="kk-waiting-body"><div id="kk-wait-connection" class="kk-wait-connection" role="status" aria-live="polite"><span class="kk-wait-light"></span><span id="kk-wait-message">Verbindung zu Render wird aufgebaut …</span></div><div class="kk-room-code"><div><span class="kk-room-label">DEIN RAUMCODE</span><strong id="kk-wait-code">${ESC(my.code||'·····')}</strong></div><button type="button" id="kk-copy-room" class="flat">📋 Kopieren</button></div><div><div class="kk-wait-players-head">👥 Beigetretene Spieler <span id="kk-wait-count">0 / 6</span></div><div id="kk-wait-players" class="kk-waiting-players" style="margin-top:10px"><div class="kk-wait-empty">Verbindung wird aufgebaut …</div></div></div><button type="button" id="kk-start-room" class="action go kk-wait-start" disabled>⏳ Warten auf Mitspieler …</button><p class="kk-wait-note" id="kk-wait-hint">Mindestens zwei Spieler müssen verbunden sein. Nur der Gastgeber kann das Spiel starten.</p><div class="kk-wait-actions"><button type="button" id="kk-wait-refresh" class="action pass">↻ Spielerliste aktualisieren</button><button type="button" id="kk-wait-leave" class="action pass">🚪 Raum verlassen</button></div></div>`);
+ showDialog(`<div class="kk-waiting-head"><div class="minihead">🎲 KreuzKunter · Online</div><h2 id="dialog-heading">🌐 Online-Wartelobby</h2><p>Teile den Raumcode mit deinen Freunden. Sobald alle da sind, kann der Gastgeber die Runde starten.</p></div><div class="kk-waiting-body"><div id="kk-wait-connection" class="kk-wait-connection" role="status" aria-live="polite"><span class="kk-wait-light"></span><span id="kk-wait-message">Verbindung zu Render wird aufgebaut …</span></div><div class="kk-room-code"><div><span class="kk-room-label">DEIN RAUMCODE</span><strong id="kk-wait-code">${ESC(HUB_CONTEXT?.hub||my.code||'·····')}</strong></div><button type="button" id="kk-copy-room" class="flat">📋 Kopieren</button></div><div><div class="kk-wait-players-head">👥 Beigetretene Spieler <span id="kk-wait-count">0 / 6</span></div><div id="kk-wait-players" class="kk-waiting-players" style="margin-top:10px"><div class="kk-wait-empty">Verbindung wird aufgebaut …</div></div></div><button type="button" id="kk-start-room" class="action go kk-wait-start" disabled>⏳ Warten auf Mitspieler …</button><p class="kk-wait-note" id="kk-wait-hint">Mindestens zwei Spieler müssen verbunden sein. Nur der Gastgeber kann das Spiel starten.</p><div class="kk-wait-actions"><button type="button" id="kk-wait-refresh" class="action pass">↻ Spielerliste aktualisieren</button><button type="button" id="kk-wait-leave" class="action pass">🚪 Raum verlassen</button></div></div>`);
  $('dialog-body').classList.add('kk-waiting-modal');
  $('kk-start-room').addEventListener('click',()=>{if(NET===my&&my.connected&&my.host&&state?.mode==='online'&&state.phase==='lobby'){const n=(my.presence||[]).filter(Boolean).length;if(n>=2){sendOnline({action:'start'});updateOnlineWaiting();}}});
  $('kk-wait-leave').addEventListener('click',()=>{leaveOnline();showOnline();});
  $('kk-wait-refresh').addEventListener('click',()=>{if(NET===my&&my.connected&&my.ws?.readyState===WebSocket.OPEN){my.ws.send(JSON.stringify({action:'sync'}));my.waitingStatus='Spielerliste wird abgeglichen …';}updateOnlineWaiting();});
  $('kk-copy-room').addEventListener('click',async()=>{
   if(NET!==my||!my.code)return;
-  try{await navigator.clipboard.writeText(my.code);$('kk-copy-room').textContent='✅ Kopiert';}
-  catch(e){$('kk-copy-room').textContent='Code: '+my.code;}
+  try{await navigator.clipboard.writeText(HUB_CONTEXT?.hub||my.code);$('kk-copy-room').textContent='✅ Kopiert';}
+  catch(e){$('kk-copy-room').textContent='Code: '+(HUB_CONTEXT?.hub||my.code);}
  });
  updateOnlineWaiting();
 }
@@ -1275,7 +1280,7 @@ function updateOnlineWaiting(){
  start.textContent=my.awaiting?'⏳ Spiel startet …':canStart?'🎲 Spiel starten':connectedCount>=2?'⏳ Bitte warten …':'⏳ Mindestens 2 Spieler erforderlich';
  $('kk-wait-hint').textContent=!my.host?'Du bist beigetreten. Warte, bis der Gastgeber die Partie startet.':connectedCount<2?'Sobald ein zweiter Spieler beigetreten und verbunden ist, wird „Spiel starten“ freigeschaltet.':my.awaiting?'Die Partie wird gestartet …':'Alle bereit? Du kannst die Partie jetzt starten.';
 }
-function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')return showOnlineWaiting(NET);const saved=getNetInfo();
+function showOnline(){if(HUB_CONTEXT){returnHubKreuz();return;}if(NET&&state?.phase==='lobby'&&state.mode==='online')return showOnlineWaiting(NET);const saved=getNetInfo();
    showDialog(`<div class="minihead">KreuzKunter – Online auf Render</div><h2 id="dialog-heading">🌐 Online spielen</h2><p>Du kannst einen Raum mit Code erstellen oder beitreten. Alle verwenden dieselbe WebSocket-Serveradresse.</p><div class="field"><label>WebSocket-Serveradresse</label><input id="net-url" type="text" value="${ESC(saved.url||'wss://serverfinal-ynbe.onrender.com/kreuzkunter')}" placeholder="wss://dein-server.onrender.com"></div><div class="field"><label>Dein Spielername</label><input id="net-name" type="text" maxlength="24" value="${ESC(saved.name||'Spieler 1')}"></div><div class="field"><label>Raumcode zum Beitreten</label><input id="net-code" type="text" maxlength="6" value="${ESC(saved.code||'')}" placeholder="z. B. AB12C"></div><div id="net-status" class="message">Es wurde noch keine Verbindung aufgebaut.</div>${saved.token&&saved.code&&saved.url?'<button type="button" class="action" id="net-resume" style="margin:9px 0">↻ Letzten Online-Raum fortsetzen</button>':''}<div class="actions"><button id="net-create" class="action ok">Raum erstellen</button><button id="net-join" class="action pass">Beitreten</button></div><button id="net-cancel" class="action" style="margin-top:10px">Zurück</button><p class="tiny">Hinweis: Verbinde dich über den vorhandenen Render-Server. Bei eingerichtetem Firebase bleiben Räume dauerhaft gespeichert. Ohne Firebase sind Online-Räume nur bis zum nächsten Server-Neustart verfügbar.</p>`);
    $('net-create').addEventListener('click',()=>connectOnline('create'));$('net-join').addEventListener('click',()=>connectOnline('join'));
    $('net-cancel').addEventListener('click',hideDialog);if($('net-resume'))$('net-resume').addEventListener('click',resumeLastOnline);
@@ -1311,7 +1316,7 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
    my.connected=false;my.attempt=0;my.waitingError='';clearOnlineWait(my);updateOnlineWaiting();remotePreviews={};
    const profileIdToken=await (window.SpielMatchIdentity?.getToken?.()||Promise.resolve(null));
    if(ws.readyState!==WebSocket.OPEN||NET!==my||my.stopped)return;
-   ws.send(JSON.stringify({action:op,name:my.name,code:my.code,token:op==='join'?my.token:null,boardId:BOARD_ID,profileIdToken}));
+   ws.send(JSON.stringify(my.hub?{action:'hubJoin',gameCode:my.code,matchId:HUB_CONTEXT.matchId,profileIdToken}:{action:op,name:my.name,code:my.code,token:op==='join'?my.token:null,boardId:BOARD_ID,profileIdToken}));
   };
   ws.onmessage=e=>{
    if(NET!==my||my.stopped||my.ws!==ws)return;
@@ -1326,7 +1331,7 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
    }else if(msg.type==='welcome'){
     my.code=msg.code;my.token=msg.token;my.host=msg.host;my.connected=true;my.attempt=0;my.waitingError='';
     updateOnlineWaiting();
-    try{localStorage.setItem(NET_INFO_KEY,JSON.stringify({url:my.url,code:msg.code,token:msg.token,name:my.name,active:true}));}catch(e){}
+    if(!my.hub)try{localStorage.setItem(NET_INFO_KEY,JSON.stringify({url:my.url,code:msg.code,token:msg.token,name:my.name,active:true}));}catch(e){}
    }else if(msg.type==='preview'){
     if(state?.mode==='online'&&msg.turn===state.turn&&msg.index!==my.index&&Array.isArray(msg.pending)){remotePreviews[msg.index]=msg.pending;remoteSelectedDice[msg.index]=Array.isArray(msg.selectedDice)?msg.selectedDice:[];renderOpponentsLive();if(msg.index===state.active)render();}
    }else if(msg.type==='state'){
@@ -1369,13 +1374,13 @@ function showOnline(){if(NET&&state?.phase==='lobby'&&state.mode==='online')retu
   if(my.stopped||NET!==my||!my.token)return;
   clearTimeout(my.timer);
   const wait=Math.min(15000,1200*Math.pow(1.7,Math.min(my.attempt++,6)));
-  my.timer=setTimeout(()=>{if(NET===my&&!my.connected&&!my.stopped)openOnlineSocket(my,'join');},wait);
+  my.timer=setTimeout(()=>{if(NET===my&&!my.connected&&!my.stopped)openOnlineSocket(my,my.hub?'hubJoin':'join');},wait);
  }
 
  document.addEventListener('keydown',e=>{
    if(e.key==='Escape'&&!$('dialog').classList.contains('hidden')){e.preventDefault();if($('kk-wait-connection'))return;hideDialog();}
  });
- $('app').addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.dataset.opponent!==undefined)showOpponent(Number(btn.dataset.opponent));else if(btn.dataset.kick!==undefined)sendOnline({action:'remove',index:Number(btn.dataset.kick)});else if(btn.dataset.cell!==undefined)cellClick(Number(btn.dataset.cell));else if(btn.dataset.die!==undefined)dieClick(Number(btn.dataset.die));else if(btn.dataset.pickcolor)setColor(btn.dataset.pickcolor);else if(btn.dataset.picknum)setNumber(Number(btn.dataset.picknum));else if(btn.dataset.mobileDie!==undefined)dieClick(Number(btn.dataset.mobileDie));else switch(btn.dataset.action||btn.dataset.mobileAction){case 'roll':roll();break;case 'commit':commit();break;case 'pass':pass();break;case 'undo':undoSelection();break;case 'clear':undoSelection(true);break;case 'help':showHelp();break;case 'inspect':showRuleCheck();break;case 'why':showWhy();break;case 'symbols':toggleSymbols();break;case 'balance':showBalance();break;case 'diagnostics':showDiagnostics();break;case 'scorehelp':showScoreDetail();break;case 'compare':showCompare();break;case 'jumpboard':jumpToSection('boardpane');break;case 'jumpplayers':jumpToSection('players-zone');break;case 'jumpscore':jumpToSection('score-ribbon');break;case 'new':showStart();break;case 'online':showOnline();break;case 'startonline':sendOnline({action:'start'});break;case 'view':changeBoardView();break;case 'navleft':navigateBoard(0);break;case 'navcenter':navigateBoard(7);break;case 'navright':navigateBoard(14);break;case 'skip':sendOnline({action:'skip'});break;case 'sync':requestOnlineSync();break;case 'leaveonline':leaveOnline();break;}});
+ $('app').addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.dataset.opponent!==undefined)showOpponent(Number(btn.dataset.opponent));else if(btn.dataset.kick!==undefined)sendOnline({action:'remove',index:Number(btn.dataset.kick)});else if(btn.dataset.cell!==undefined)cellClick(Number(btn.dataset.cell));else if(btn.dataset.die!==undefined)dieClick(Number(btn.dataset.die));else if(btn.dataset.pickcolor)setColor(btn.dataset.pickcolor);else if(btn.dataset.picknum)setNumber(Number(btn.dataset.picknum));else if(btn.dataset.mobileDie!==undefined)dieClick(Number(btn.dataset.mobileDie));else switch(btn.dataset.action||btn.dataset.mobileAction){case 'roll':roll();break;case 'commit':commit();break;case 'pass':pass();break;case 'undo':undoSelection();break;case 'clear':undoSelection(true);break;case 'help':showHelp();break;case 'inspect':showRuleCheck();break;case 'why':showWhy();break;case 'symbols':toggleSymbols();break;case 'balance':showBalance();break;case 'diagnostics':showDiagnostics();break;case 'scorehelp':showScoreDetail();break;case 'compare':showCompare();break;case 'jumpboard':jumpToSection('boardpane');break;case 'jumpplayers':jumpToSection('players-zone');break;case 'jumpscore':jumpToSection('score-ribbon');break;case 'new':showStart();break;case 'online':showOnline();break;case 'startonline':if(!HUB_CONTEXT)sendOnline({action:'start'});break;case 'view':changeBoardView();break;case 'navleft':navigateBoard(0);break;case 'navcenter':navigateBoard(7);break;case 'navright':navigateBoard(14);break;case 'skip':sendOnline({action:'skip'});break;case 'sync':requestOnlineSync();break;case 'leaveonline':leaveOnline();break;}});
  // Arrow keys move through the cells even for keyboard-only players.
  $('tiles').addEventListener('keydown',e=>{
   if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
@@ -1639,9 +1644,30 @@ function aiStartGame(humanName,count,difficulty){
  hideDialog();save();render();
 }
 
+ function returnHubKreuz(){
+   if(!HUB_CONTEXT)return;
+   location.assign('../hub-lobby.html?room='+encodeURIComponent(HUB_CONTEXT.hub)+'&stayMatch='+encodeURIComponent(HUB_CONTEXT.matchId));
+ }
+ function startHubKreuz(){
+   if(!HUB_CONTEXT)return;
+   const origin=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+   const url=origin.replace(/^http/i,'ws')+'/kreuzkunter';
+   const my={ws:null,index:0,host:false,hub:true,code:HUB_CONTEXT.gameCode,token:null,connected:false,url,
+      name:'Spieler',attempt:0,stopped:false,awaiting:false,presence:null,timer:null,syncTimer:null,revision:0};
+   if(NET){NET.stopped=true;try{NET.ws?.close();}catch(_e){}}
+   NET=my;state=initial(['Verbinden …'],'online');
+   flash='Mit dem gemeinsamen Spielraum verbunden. Warte auf die Spielerdaten …';flashBad=false;
+   render();showOnlineWaiting(my);openOnlineSocket(my,'hubJoin');
+ }
  window.KreuzKunterQA={validSavedGame,validSavedPlayer,selftest,collectBoardBalance,showBalance,showScoreDetail,showCompare,score,validateMove,finishThrow,stepPicker,pass,initial,region,neighbors,colorAt,explainUnavailable,getState:()=>JSON.parse(JSON.stringify(state)),start:(names,mode='local')=>{state=initial(names,mode);flash='Testpartie';render();},setState:s=>{state=s;flash='Test';render();},getBoard:()=>ROWS.map(r=>r.slice()),roll,dieClick,cellClick,commit,undoSelection,projectPoints,possibleCells,matchingOptions,moveChoices,bestMove};
  state=restore();if(state&&state.phase==='select'){if(!state.manualColor){state.colorDie=null;state.chosenColor=null;}if(!state.manualNumber){state.numDie=null;state.chosenNumber=null;}}if(!state){state=initial(['Spieler 1'],'solo');flash='Willkommen bei KreuzKunter!';}else{flash='Dein letzter Spielstand wurde geladen.';}render();if(location.search.includes('selftest=1')){console.table(selftest());}const remembered=getNetInfo();const requestedMode=new URLSearchParams(location.search).get('mode');
- if(requestedMode==='online')showOnline();
+ if(HUB_CONTEXT){
+  const topReturn=document.querySelector('.kk-hub-return');
+  if(topReturn){topReturn.href='../hub-lobby.html?room='+encodeURIComponent(HUB_CONTEXT.hub)+'&stayMatch='+encodeURIComponent(HUB_CONTEXT.matchId);topReturn.textContent='← Gemeinsame Lobby';}
+  document.querySelectorAll('button[data-action="new"],button[data-action="online"]').forEach(b=>b.hidden=true);
+  startHubKreuz();
+ }
+ else if(requestedMode==='online')showOnline();
  else if(requestedMode==='local'||requestedMode==='computer')showStart();
  else if(remembered.active&&remembered.url&&remembered.code&&remembered.token)resumeLastOnline();
  else if(!restore())showStart();
@@ -1651,6 +1677,7 @@ function aiStartGame(humanName,count,difficulty){
 </script>
 <script>
 function kkReturnToHub(){
+  if(new URLSearchParams(location.search).has('hub'))return true;
   try{
     if(typeof state!=='undefined'&&state&&!state.finished){
       if(!confirm('Zur Spielauswahl zurückkehren? Der letzte abgeschlossene Spielzug bleibt gespeichert.'))return false;
@@ -1664,5 +1691,6 @@ function kkReturnToHub(){
 <script src="../profile-auth.js?v=profile-v7" defer></script>
 <script src="../profile-match.js?v=profile-v8" defer></script>
 <script src="../profile-core.js" defer></script>
+<script src="../hub-game-bridge.js?v=hub-v6" defer></script>
 </body>
 </html>

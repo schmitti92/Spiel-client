@@ -4603,9 +4603,19 @@ function endGame(){
 (()=>{
 const BO_BASE="https://serverfinal-ynbe.onrender.com";
 const BO_ONLINE=true;
+const BO_HUB=new URL(location.href).searchParams;
+const BO_HUB_ROOM=BO_HUB.get('hub')||'';
+const BO_HUB_MATCH=BO_HUB.get('match')||'';
+const BO_HUB_CODE=BO_HUB.get('gameCode')||'';
+const BO_IS_HUB=/^[A-HJ-NP-Z2-9]{6}$/.test(BO_HUB_ROOM)&&/^D[A-HJ-NP-Z2-9]{9}$/.test(BO_HUB_CODE)&&BO_HUB_CODE.slice(1,7)===BO_HUB_ROOM&&!!BO_HUB_MATCH;
+async function boHubHeaders(){
+ const user=window.SpielOnline?.state?.()?.user;
+ if(!user)throw Error('LOGIN_REQUIRED');
+ return {Authorization:'Bearer '+await user.getIdToken()};
+}
 try{ localStorage.setItem("business_online","1"); }catch(_e){}
 const _boChip=document.getElementById("businessModeChip");
-if(_boChip)_boChip.textContent="ONLINE · V5.5";
+if(_boChip)_boChip.textContent=BO_IS_HUB?"ONLINE · GEMEINSAMER RAUM":"ONLINE · V5.5";
 localStorage.setItem("business_online","1");
 document.body.classList.add("business-online");
 const $bo=id=>document.getElementById(id);
@@ -4642,7 +4652,7 @@ async function boFetch(url,opt={},timeoutMs=30000){const c=new AbortController()
 async function boWake(){boStatus("Render-Server wird geweckt …");try{const {r,j}=await boFetch(`${BO_BASE}/business-health`,{},65000);if(r.ok&&j?.ok){boNet(true,"Render bereit");return true}}catch(e){}boNet(false,"Render nicht erreichbar");boStatus("Render-Server antwortet nicht.");return false}
 function boNet(ok,msg){const e=$bo("businessNetPill");e.classList.remove("hidden");e.classList.toggle("bad",!ok);e.textContent=(ok?"● ":"⚠ ")+(msg|| (ok?"Online":"Verbindung"))}
 function boStatus(msg){$bo("boStatus").textContent=msg}
-function boLeaveToLobby(){localStorage.removeItem("business_room");localStorage.removeItem("business_mode");localStorage.removeItem("business_online");location.href="../index.html"}
+function boLeaveToLobby(){if(BO_IS_HUB){location.href='../hub-lobby.html?room='+encodeURIComponent(BO_HUB_ROOM)+'&stayMatch='+encodeURIComponent(BO_HUB_MATCH);return}localStorage.removeItem("business_room");localStorage.removeItem("business_mode");localStorage.removeItem("business_online");location.href="../index.html"}
 function boActiveName(){return state?.players?.[state.current]?.name||""}
 function boCanAct(){return cloud.gameApplied&&!state.gameEnded&&boActiveName()===cloud.name}
 window.businessCanUseDiceArena=()=>boCanAct();
@@ -4667,12 +4677,12 @@ function boHydrateGame(g){
  return s
 }
 function boRenderPlayers(players=[],hostName=""){const box=$bo("boPlayers");box.innerHTML=players.length?players.map(p=>`<div class="bo-player"><span><span class="bo-dot ${p.online?"on":""}"></span><b>${p.name}</b></span><span>${p.name===hostName?"👑 Host":(p.online?"online":"offline")}</span></div>`).join(""):'<div class="bo-player"><span>Noch niemand im Raum</span></div>';const start=$bo("boStart");const onlineCount=players.filter(p=>p.online).length;start.style.display=cloud.mode==="host"?"block":"none";start.disabled=!(cloud.mode==="host"&&cloud.joined&&onlineCount>=2&&onlineCount<=5);boRenderRoundSelector()}
-async function boGet(delta=true){if(!cloud.room)return null;const qs=delta&&cloud.rev?`?rev=${cloud.rev}`:"";const {r,j}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}${qs}`);if(!r.ok||!j?.ok)throw new Error(j?.error||`HTTP ${r.status}`);if(j.rev!=null)cloud.rev=Number(j.rev||0);return j}
+async function boGet(delta=true){if(BO_IS_HUB){const rev=delta&&cloud.rev?'?rev='+cloud.rev:'';const {r,j}=await boFetch(BO_BASE+'/api/hub/business/'+encodeURIComponent(BO_HUB_CODE)+rev,{headers:await boHubHeaders()});if(!r.ok||!j?.ok)throw Error(j?.error||'HUB_UNAVAILABLE');cloud.rev=Number(j.rev||0);return j;}if(!cloud.room)return null;const qs=delta&&cloud.rev?`?rev=${cloud.rev}`:"";const {r,j}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}${qs}`);if(!r.ok||!j?.ok)throw new Error(j?.error||`HTTP ${r.status}`);if(j.rev!=null)cloud.rev=Number(j.rev||0);return j}
 async function boCreate(){if(!await boWake())return;let typed=boNormRoom($bo("boRoom").value),auto=!typed;for(let i=0;i<6;i++){const rc=typed||boRand();try{const {r,j}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(rc)}/create`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION})});if(r.status===409&&j?.error==="ROOM_EXISTS"&&auto){typed="";continue}if(!r.ok||!j?.ok){boStatus(j?.error==="ROOM_EXISTS"?"Raum existiert bereits – Beitreten wählen.":"Raum konnte nicht erstellt werden.");return}cloud.room=rc;cloud.mode="host";cloud.rev=Number(j.rev||0);cloud.joined=false;$bo("boRoom").value=rc;localStorage.setItem("business_room",rc);localStorage.setItem("business_mode","host");boStatus(`Host-Raum ${rc} erstellt. Jetzt deinen Namen wählen.`);boRenderPlayers(j.players||[],j.hostName||"");boNet(true,"Online");return}catch(e){boNet(false,"Render nicht erreichbar");boStatus("Render-Server antwortet nicht.");return}}}
 async function boJoinRoom(){if(!await boWake())return;const rc=boNormRoom($bo("boRoom").value);if(!rc)return boStatus("Bitte Raumcode eingeben.");try{cloud.room=rc;const j=await boGet(false);if(!j?.found){cloud.room="";return boStatus("Raum nicht gefunden.")}cloud.room=rc;cloud.mode="client";localStorage.setItem("business_room",rc);localStorage.setItem("business_mode","client");boStatus(`Raum ${rc} gefunden. Jetzt deinen Namen wählen.`);boRenderPlayers(j.players||[],j.hostName||"");boNet(true,"Online")}catch(e){boNet(false,"Verbindung");boStatus("Raum konnte nicht geladen werden.")}}
 // V8C: identity proof is isolated from game results. Guests still play unranked.
 let boClaimedProfileKey='';
-async function boClaimOnlineProfile(){
+async function boClaimOnlineProfile(){if(BO_IS_HUB)return;
   const current=window.SpielOnline?.state?.();
   if(current?.status!=='online'||!current.user||!cloud.joined||!cloud.room)return;
   const room=cloud.room,seat=SESSION,uid=current.user.uid,claimKey=`${uid}:${room}:${seat}`;
@@ -4687,7 +4697,7 @@ async function boClaimOnlineProfile(){
 }
 window.addEventListener('spielonline-change',()=>{if(window.SpielOnline?.state?.()?.status==='online'&&cloud.joined)void boClaimOnlineProfile();});
 async function boClaimName(name){name=boNormName(name);if(!cloud.room)return boStatus("Zuerst Raum erstellen oder beitreten.");if(!name)return boStatus("Name fehlt.");try{const {r,j}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/join`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,name})});if(!r.ok||!j?.ok){const map={NAME_TAKEN:"Name ist bereits belegt.",FULL:"Raum ist voll.",STARTED:"Spiel läuft bereits.",FINISHED:"Partie ist bereits beendet.",NO_ROOM:"Raum existiert nicht."};return boStatus(map[j?.error]||"Beitritt fehlgeschlagen.")}cloud.name=name;cloud.joined=true;cloud.rev=Number(j.rev||cloud.rev);localStorage.setItem("business_name",name);document.querySelectorAll("[data-bo-name]").forEach(b=>b.classList.toggle("selected",b.dataset.boName===name));boStatus(`${name} ist bereit.`);boRenderPlayers(j.players||[],j.hostName||"");boHeartbeat();boNet(true,"Online");void boClaimOnlineProfile();if((j.phase==="game"||j.phase==="finished")&&j.game)boApplyGame(j.game)}catch(e){boNet(false,"Verbindung");boStatus("Beitritt fehlgeschlagen.")}}
-async function boHeartbeat(){if(!cloud.joined||!cloud.room)return;try{await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/heartbeat`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION})});cloud.lastHeartbeatAt=Date.now()}catch(e){}}
+async function boHeartbeat(){if(BO_IS_HUB)return;if(!cloud.joined||!cloud.room)return;try{await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/heartbeat`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION})});cloud.lastHeartbeatAt=Date.now()}catch(e){}}
 function boInitGame(names,rounds=DEFAULT_GAME_ROUNDS){
  names=uniquePlayerNames((names||[]).map((n,i)=>cleanPlayerName(n,`Spieler ${i+1}`)));
  state.players=names.map((name,i)=>({
@@ -4742,7 +4752,7 @@ function boApplyGame(game){
  setTimeout(()=>cloud.applying=false,40)
 }
 function boQueueSnapshot(actor){if(!cloud.gameApplied||cloud.applying)return;cloud.pending={game:boWireGame(),actor:boNormName(actor||"")};cloud.dirty=true;boRunWriteQueue()}
-async function boRunWriteQueue(){if(cloud.inFlight||!cloud.pending)return;cloud.inFlight=true;clearTimeout(cloud.retryTimer);try{while(cloud.pending){const item=cloud.pending;cloud.pending=null;const payload=JSON.stringify(item.game);if(payload===cloud.lastPushedJSON){continue}let response;try{response=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/state`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,actorName:item.actor,baseRev:cloud.rev,game:item.game})})}catch(e){cloud.pending=item;boNet(false,"Verbindung unterbrochen");cloud.retryTimer=setTimeout(boRunWriteQueue,1800);return}const {r,j}=response;if(r.status===409||r.status===403){boNet(false,j?.error==="NOT_YOUR_TURN"?"Nicht am Zug":"Sync-Konflikt");const fresh=await boGet(false).catch(()=>null);cloud.pending=null;cloud.dirty=false;if(fresh?.game)boApplyGame(fresh.game);return}if(!r.ok||!j?.ok){cloud.pending=item;boNet(false,"Speichern fehlgeschlagen");cloud.retryTimer=setTimeout(boRunWriteQueue,1800);return}cloud.rev=Number(j.rev||cloud.rev+1);cloud.lastPushedJSON=payload;cloud.lastRemoteJSON=payload;boNet(true,"Online")}}finally{cloud.inFlight=false;if(!cloud.pending)cloud.dirty=false;if(cloud.pending&&!cloud.retryTimer)setTimeout(boRunWriteQueue,0)}}
+async function boRunWriteQueue(){if(cloud.inFlight||!cloud.pending)return;cloud.inFlight=true;clearTimeout(cloud.retryTimer);try{while(cloud.pending){const item=cloud.pending;cloud.pending=null;const payload=JSON.stringify(item.game);if(payload===cloud.lastPushedJSON){continue}let response;try{response=BO_IS_HUB?await boFetch(BO_BASE+'/api/hub/business/'+encodeURIComponent(BO_HUB_CODE)+'/state',{method:'POST',headers:{'Content-Type':'application/json',...await boHubHeaders()},body:JSON.stringify({baseRev:cloud.rev,game:item.game})}):await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/state`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,actorName:item.actor,baseRev:cloud.rev,game:item.game})})}catch(e){cloud.pending=item;boNet(false,"Verbindung unterbrochen");cloud.retryTimer=setTimeout(boRunWriteQueue,1800);return}const {r,j}=response;if(r.status===409||r.status===403){boNet(false,j?.error==="NOT_YOUR_TURN"?"Nicht am Zug":"Sync-Konflikt");const fresh=await boGet(false).catch(()=>null);cloud.pending=null;cloud.dirty=false;if(fresh?.game)boApplyGame(fresh.game);return}if(!r.ok||!j?.ok){cloud.pending=item;boNet(false,"Speichern fehlgeschlagen");cloud.retryTimer=setTimeout(boRunWriteQueue,1800);return}cloud.rev=Number(j.rev||cloud.rev+1);cloud.lastPushedJSON=payload;cloud.lastRemoteJSON=payload;boNet(true,"Online")}}finally{cloud.inFlight=false;if(!cloud.pending)cloud.dirty=false;if(cloud.pending&&!cloud.retryTimer)setTimeout(boRunWriteQueue,0)}}
 async function boSpectateRoll(ev){
  if(!ev?.id||cloud.spectating)return;
  cloud.spectating=true;cloud.watchingDice=true;cloud.watchDiceTurn=Number(ev.turnNumber||state.turnNumber);window.businessSpectatingRoll=true;boUpdateTurnUI();
@@ -4759,7 +4769,51 @@ function boPatchGame(){window.onDiceArenaRollPrepared=ev=>{if(boCanAct()){cloud.
  if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)
 });
  q("newGameBtn").onclick=boLeaveToLobby}
-async function boResume(){cloud.room=boNormRoom(localStorage.getItem("business_room")||"");cloud.name=boNormName(localStorage.getItem("business_name")||"");cloud.mode=localStorage.getItem("business_mode")||"";$bo("boRoom").value=cloud.room;if(!cloud.room){$bo("businessOnlineShell").classList.remove("hidden");return}if(!await boWake()){$bo("businessOnlineShell").classList.remove("hidden");return}try{const j=await boGet(false);if(!j.found){cloud.room="";$bo("businessOnlineShell").classList.remove("hidden");return}if(cloud.name){const {r,j:joined}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/join`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,name:cloud.name})});if(r.ok&&joined?.ok){cloud.joined=true;cloud.rev=Number(joined.rev||cloud.rev);void boClaimOnlineProfile();boRenderPlayers(joined.players||[],joined.hostName||"");if((joined.phase==="game"||joined.phase==="finished")&&joined.game){boApplyGame(joined.game);return}}}boRenderPlayers(j.players||[],j.hostName||"");$bo("businessOnlineShell").classList.remove("hidden");boStatus(`Raum ${cloud.room} geladen.`)}catch(e){$bo("businessOnlineShell").classList.remove("hidden");boNet(false,"Render nicht erreichbar")}}
+async function boHubResume(){
+ cloud.room=BO_HUB_CODE;
+ // The hub owns room creation, the username and round settings. Never expose
+ // the legacy create/join/name controls for a hub-hosted match.
+ document.querySelector('.business-online-card > .bo-section')?.classList.add('hidden');
+ for(const id of ['boCreate','boJoin','boStart','boRoom','boCustomUse'])if($bo(id))$bo(id).disabled=true;
+ for(const id of ['boRoundSection','boProfileSection'])$bo(id)?.classList.add('hidden');
+ $bo('boBack').textContent='← Gemeinsame Lobby';
+ $bo('businessOnlineShell').classList.add('hidden');
+ const user=()=>window.SpielOnline?.state?.()?.user;
+ let tries=0;
+ while(!user()&&tries++<40)await new Promise(r=>setTimeout(r,350));
+ if(!user()){$bo('businessOnlineShell').classList.remove('hidden');boStatus('Bitte im Spielerportal anmelden und die Lobby neu öffnen.');return;}
+ for(let attempts=0;attempts<12;attempts++){
+  try{
+   let info=await boGet(false);
+   if(info.matchId!==BO_HUB_MATCH)throw Error('WRONG_MATCH');
+   cloud.mode=info.host?'host':'client';cloud.name=boNormName(info.myName);cloud.joined=true;
+   boSelectedRounds=info.settings.rounds;
+   boRenderPlayers(info.players||[],info.hostName||'');
+   if(!info.found&&info.host){
+     const game=boInitGame(info.players.map(p=>p.name),info.settings.rounds);
+     const {r,j}=await boFetch(BO_BASE+'/api/hub/business/'+encodeURIComponent(BO_HUB_CODE)+'/bootstrap',{
+       method:'POST',headers:{'Content-Type':'application/json',...await boHubHeaders()},
+       body:JSON.stringify({matchId:BO_HUB_MATCH,game})
+     });
+     if(!r.ok||!j?.ok)throw Error(j?.error||'BOOTSTRAP_FAILED');
+     info=j;cloud.rev=Number(j.rev||0);
+   }
+   if(info.game){boApplyGame(info.game);return;}
+   boStatus('Business-Partie wird vorbereitet …');
+   $bo('businessOnlineShell').classList.remove('hidden');
+   for(const id of ['boCreate','boJoin','boStart','boRoom','boCustomUse'])if($bo(id))$bo(id).disabled=true;
+   for(const id of ['boRoundSection','boProfileSection'])$bo(id)?.classList.add('hidden');
+   return; // Regular polling loads the host-created game
+  }catch(e){
+   if(['NOT_A_PARTICIPANT','MATCH_NOT_FOUND','WRONG_MATCH','LOGIN_REQUIRED','HOST_ONLY'].includes(e.message)){
+      $bo('businessOnlineShell').classList.remove('hidden');boStatus('Keine Berechtigung für diese Partie: '+e.message);return;
+   }
+   await new Promise(r=>setTimeout(r,1200));
+  }
+ }
+ $bo('businessOnlineShell').classList.remove('hidden');boStatus('Render nicht erreichbar. Zur Lobby zurückgehen und erneut versuchen.');
+}
+async function boResume(){if(BO_IS_HUB)return boHubResume();cloud.room='' +boNormRoom(localStorage.getItem("business_room")||"");cloud.name=boNormName(localStorage.getItem("business_name")||"");cloud.mode=localStorage.getItem("business_mode")||"";$bo("boRoom").value=cloud.room;if(!cloud.room){$bo("businessOnlineShell").classList.remove("hidden");return}if(!await boWake()){$bo("businessOnlineShell").classList.remove("hidden");return}try{const j=await boGet(false);if(!j.found){cloud.room="";$bo("businessOnlineShell").classList.remove("hidden");return}if(cloud.name){const {r,j:joined}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/join`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,name:cloud.name})});if(r.ok&&joined?.ok){cloud.joined=true;cloud.rev=Number(joined.rev||cloud.rev);void boClaimOnlineProfile();boRenderPlayers(joined.players||[],joined.hostName||"");if((joined.phase==="game"||joined.phase==="finished")&&joined.game){boApplyGame(joined.game);return}}}boRenderPlayers(j.players||[],j.hostName||"");$bo("businessOnlineShell").classList.remove("hidden");boStatus(`Raum ${cloud.room} geladen.`)}catch(e){$bo("businessOnlineShell").classList.remove("hidden");boNet(false,"Render nicht erreichbar")}}
 $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart").onclick=boStart;$bo("boBack").onclick=boLeaveToLobby;document.querySelectorAll("[data-bo-rounds]").forEach(b=>b.onclick=()=>boSetRounds(b.dataset.boRounds));document.querySelectorAll("[data-bo-name]").forEach(b=>b.onclick=()=>boClaimName(b.dataset.boName));$bo("boCustomUse").onclick=()=>boClaimName($bo("boCustomName").value);$bo("boCustomName").addEventListener("keydown",e=>{if(e.key==="Enter")boClaimName(e.target.value)});$bo("businessOnlineShell").classList.remove("hidden");q("game").classList.add("hidden");boRenderRoundSelector();boPatchGame();boResume();setInterval(()=>{boPoll();if(cloud.joined&&Date.now()-cloud.lastHeartbeatAt>10000)boHeartbeat()},500);document.addEventListener("visibilitychange",()=>{if(!document.hidden)boPoll()});
 })();
 </script>
@@ -6955,5 +7009,6 @@ $bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart")
 })();
 </script>
 
+<script src="../hub-game-bridge.js?v=hub-v6" defer></script>
 </body>
 </html>

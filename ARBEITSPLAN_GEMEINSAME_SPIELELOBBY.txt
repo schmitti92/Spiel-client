@@ -1,0 +1,56 @@
+SPIELESAMMLUNG — GEMEINSAME ONLINE-LOBBY V6 (AUTOMATISCHE RÜCKKEHR UND STABILITÄT)
+13. Oktober 2026 · Entwicklungszweig: feature/gemeinsame-lobby-v1
+
+ZIEL
+Alle 2–6 Mitglieder nutzen denselben zentralen Raumcode für Barikade,
+SKYJO Action, KreuzKunter und Das große Business. Der Host wählt das
+Spiel und die Einstellungen. Teilnehmer melden sich bereit, die Partie
+startet automatisch. Nach dem Ende bleiben alle Mitglieder in demselben
+Raum und können direkt das nächste Spiel auswählen.
+
+GRUNDLAGE AUS V5
+[x] Firebase-identifizierte zentrale Spielräume in Firestore, Host-Rechte.
+[x] Vier Spiele mit eigenen internen Partie-Codes angeschlossen.
+[x] Spielfunktionen behalten ihre individuellen Einstellungen / Regeln.
+[x] Zuschauer, Spielerplätze, Bereitmeldung, atomarer Start.
+[x] WebSocket-Lobby und HTTP-Fallback.
+
+NEU IN V6
+[x] Server-Route POST /api/hub/rooms/:code/sync.
+[x] Abschlussabgleich nur mit gültiger Mitgliedschaft und passender Partie-ID.
+[x] Kein Vertrauen in Client-Meldung 'Spiel beendet' oder Client-Punktestand.
+[x] Serverseitige Spielende-Erkennung anhand bestehender Spieladapter.
+[x] Atomare Abschlussbuchung im Firestore-Raum – nur einmal bei Mehrfachaufruf.
+[x] Gemeinsame Lobby, Raumcode und Mitgliedschaften bleiben erhalten.
+[x] Vorherige Partie wird als lastCompleted mit ID, Spiel, Zeit gespeichert.
+[x] Beim Abschluss werden Bereitschaft, Sitzplätze und Farben zurückgesetzt.
+[x] Veraltete Browser-Tabs können laufende Nachfolgepartien nicht abschließen.
+[x] Eine kleine neue Datei hub-game-bridge.js wird in allen vier Spielen geladen;
+    unabhängige / lokale Partien werden nicht verändert.
+[x] Nach bestätigtem Ende erscheint 'Zur Spiele-Lobby', automatischer Wechsel
+    nach 30 Sekunden. Kein Wechsel bei Netzwerk- oder Authentifizierungsfehler.
+[x] 3 neue Regressionstests; 20/20 Tests der gemeinsamen Lobby bestanden in
+    einer isolierten V8-Umgebung mit emulierten Node-Schnittstellen.
+[x] JavaScript-Syntaxprüfung des Browser-Bridges erfolgreich.
+[x] GitHub Actions Workflow nur für feature/gemeinsame-lobby-v1 eingerichtet.
+
+OFFENE ARBEIT
+[x] 30/30 Tests in echtem Node.js 20-Prozess über GitHub Actions bestanden.
+    GitHub-Lauf: https://github.com/schmitti92/serverfinal/actions/runs/38354985473
+    (V5 hatte 27 vollständige Tests; in V6 +3 Tests).
+[ ] Echte Mehrspieler-/Gerätetests mit Firebase und Staging-Render durchführen.
+[ ] Kompletten Reconnect (vor/während/nach Spiel, Browser-Reload) überprüfen.
+[ ] UIs der Spielvorräume vereinheitlichen, Skyjo-Farben/Brettauswahl fertigstellen.
+[ ] Business und SKYJO: vollständige serverseitige Regelvalidierung vor
+    offiziellen Ergebnissen, XP oder Statistik.
+[x] Statusanzeige für die letzte abgeschlossene Partie in der gemeinsamen Lobby.
+[x] Host-exklusiven Partie-Abschluss-Button für Mitspieler ausblenden.
+[x] Ungültige Firebase-Tokens lösen keine unbehandelte Ablehnung in Express 4 aus.
+[ ] Testen: Zuschauer während laufender Partie; Server-Neustart; Verbindungsabbruch;
+    paralleles Spielende, später Beitritt und Zurückwechseln.
+[ ] Erst nach Staging-Abnahme die Änderung nach main und live übernehmen.
+
+SCHUTZ DER BESTEHENDEN VERSION
+Beide main-Branches und die Original-ZIP-Ausgangsversionen wurden nicht geändert.
+Die Entwicklung liegt ausschließlich auf feature/gemeinsame-lobby-v1.
+Kein Live-Render-Deployment durchgeführt.
