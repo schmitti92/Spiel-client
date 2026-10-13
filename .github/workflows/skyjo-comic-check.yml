@@ -17,4 +17,6 @@ jobs:
         with:
           node-version: '22'
       - name: Run isolated adapter and snapshot tests
-        run: node Skyjo/skyjo_comic_ci.mjs
+        run: |
+          node Skyjo/skyjo_comic_ci.mjs
+          node Skyjo/skyjo_comic_projection.test.mjs
