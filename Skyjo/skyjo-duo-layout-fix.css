@@ -3,7 +3,7 @@
    Gameplay, online sync, card actions and scoring remain in skyjo-main.js. */
 @media (min-width:900px) and (orientation:landscape) {
  body.is-playing[data-sky-board="illustrated"]{
-  --sky-card-width:clamp(37px,3.25vw,51px);
+  --sky-card-width:clamp(40px,3.75vw,58px);
   --sky-card-height:calc(var(--sky-card-width)*1.14);
  }
  body.is-playing[data-sky-board="illustrated"] #app{min-height:100dvh!important;box-sizing:border-box!important}
@@ -140,6 +140,24 @@
  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox .pile-row{
   display:flex!important;align-items:center!important;justify-content:center!important;
   gap:16px!important;width:100%!important;height:102px!important;overflow:visible!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox .pile-unit{
+  flex:0 0 72px!important;box-sizing:border-box!important;width:72px!important;height:104px!important;
+  min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox .pile-card-hit{
+  display:block!important;position:relative!important;box-sizing:border-box!important;
+  width:66px!important;height:82px!important;min-width:0!important;min-height:0!important;
+  max-width:66px!important;max-height:82px!important;margin:0 auto!important;padding:0!important;
+  overflow:visible!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox .pile-card-hit>.card{
+  box-sizing:border-box!important;width:66px!important;height:82px!important;
+  min-width:0!important;min-height:0!important;max-width:66px!important;max-height:82px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox .pile-overline{
+  display:block!important;text-align:center!important;font-size:9px!important;line-height:11px!important;
+  height:12px!important;max-height:12px!important;margin:0!important;
  }
  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.action-pilebox{
   grid-area:action!important;grid-column:3!important;grid-row:1!important;
