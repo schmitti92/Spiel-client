@@ -33,3 +33,41 @@ jobs:
               assert Path(name).is_file(), name
           print('SKYJO module integrity OK')
           PY
+
+      - name: Install Chromium browser test tools
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start isolated static test server
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/skyjo-http.log 2>&1 &
+          sleep 2
+      - name: Browser smoke test for extracted SKYJO
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({headless:true});
+            const page = await browser.newPage({viewport:{width:1280,height:800}});
+            const errors = [];
+            page.on('pageerror', e => errors.push(e.message));
+            const response = await page.goto('http://127.0.0.1:8765/Skyjo/skyjo_action.html?mode=local', {waitUntil:'domcontentloaded'});
+            await page.waitForTimeout(1500);
+            const result = await page.evaluate(() => ({
+              app: !!document.querySelector('#app'),
+              game: typeof window.Game?.render === 'function',
+              css: [...document.styleSheets].some(x=>x.href?.includes('skyjo.css')),
+              script: [...document.scripts].some(x=>x.src?.includes('skyjo-main.js')),
+              body: document.querySelector('#app')?.textContent?.length || 0
+            }));
+            await page.screenshot({path:'skyjo-smoke.png',fullPage:true});
+            await browser.close();
+            console.log({httpStatus:response.status(),...result,errors});
+            if(response.status()!==200||!result.app||!result.game||!result.css||!result.script||result.body<30||errors.length)process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skyjo-browser-smoke
+          path: skyjo-smoke.png
