@@ -6073,6 +6073,72 @@ body.is-playing[data-sky-board="classic"] .sky-reference-layout .sky-reference-c
  body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player,
  body.is-playing .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player{--card-w:clamp(35px,3.8vw,52px)!important}
 }
+
+/* SKYJO two-player illustrated composition: reference 4x3 boards, stacked vertically.
+   Landscape tablet/desktop; no rasterized fake cards or duplicated controls. */
+@media (min-width:900px){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+  display:grid!important;
+  grid-template-columns:minmax(175px,23%) minmax(390px,1fr) minmax(175px,23%)!important;
+  grid-template-rows:auto auto auto!important;
+  grid-template-areas:". tl sidebar" "actions center sidebar" ". own sidebar"!important;
+  gap:10px 15px!important;
+  align-items:center!important;
+  max-width:1600px!important;
+  padding:18px 20px!important;
+  background:
+   radial-gradient(ellipse at 50% 10%,#ffe7a74d,transparent 32%),
+   repeating-linear-gradient(90deg,#0000 0 78px,#42282040 79px 83px,#0000 84px 160px),
+   repeating-linear-gradient(0deg,#0000 0 88px,#38201d70 89px 93px,#0000 94px 182px),
+   linear-gradient(165deg,#dba45d,#ad7044 58%,#6c4033)!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl{grid-area:tl!important;justify-self:center;width:min(100%,540px)}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{grid-area:center!important;align-self:center;justify-self:center;width:100%}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{grid-area:own!important;justify-self:center;width:min(100%,540px)}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{
+  grid-area:sidebar!important;align-self:stretch!important;
+  display:flex!important;flex-direction:column!important;
+  justify-content:space-evenly!important;min-width:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-empty{display:none!important}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  width:100%!important;max-width:none!important;
+  --card-w:clamp(47px,4.2vw,76px)!important;
+  --card-h:calc(var(--card-w)*1.2)!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player{
+  border-color:#8de6ff!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  border-color:#ffe078!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table{
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  justify-content:center!important;gap:12px!important;
+  padding:10px!important;
+  background:linear-gradient(145deg,#112c50e8,#0c1b35ed)!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .handbox{
+  flex:0 1 28%!important;min-width:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .play-pilebox{
+  flex:1 1 42%!important;min-width:0!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .section-heading{margin-bottom:3px!important}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-info{padding:10px!important}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own:before{font-size:12px!important;margin-bottom:4px!important}
+}
+@media(min-width:900px) and (max-height:850px){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{gap:5px 12px!important;padding:11px 15px!important}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  --card-w:clamp(36px,3.2vw,51px)!important;
+  --card-h:calc(var(--card-w)*1.1)!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .player-head{padding:5px 8px!important}
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-info p{margin:4px 0!important}
+}
 </style>
 </head>
 <body>
