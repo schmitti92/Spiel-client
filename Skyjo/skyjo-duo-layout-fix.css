@@ -191,3 +191,51 @@
   max-height:49px!important;overflow-x:auto!important;overflow-y:hidden!important;
  }
 }
+
+/* v18.2 — viewport-safe layout: two complete 4×3 grids, no clipped rows. */
+@media (min-width:900px) and (orientation:landscape){
+ body.is-playing[data-sky-board="illustrated"]{
+  --sky-card-width:clamp(38px,3.05vw,47px)!important;
+  --sky-card-height:calc(var(--sky-card-width)*1.13)!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+  grid-template-rows:minmax(0,1fr) 104px minmax(0,1fr)!important;
+  height:clamp(420px,calc(100dvh - 194px),690px)!important;
+  align-items:stretch!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{
+  align-self:stretch!important;overflow:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  box-sizing:border-box!important;
+  width:calc(4 * var(--sky-card-width) + 36px)!important;
+  height:calc(3 * var(--sky-card-height) + 45px)!important;
+  max-height:100%!important;overflow:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{
+  height:104px!important;max-height:104px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center>.sky-duo-table-v17{
+  height:104px!important;max-height:104px!important;grid-template-rows:104px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.handbox{
+  height:76px!important;min-height:0!important;overflow:hidden!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17 .real-hand-copy{
+  font-size:10px!important;line-height:12px!important;max-height:62px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox{
+  height:104px!important;max-height:104px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox .pile-row{
+  height:100px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox .pile-card-hit{
+  height:76px!important;max-height:76px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-table-v17>.play-pilebox .pile-card-hit>.card{
+  height:76px!important;max-height:76px!important;
+ }
+}
