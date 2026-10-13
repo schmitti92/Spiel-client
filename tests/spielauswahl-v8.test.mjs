@@ -62,7 +62,7 @@ test('The authenticated host can select Barikade using only existing room code',
  assert.deepEqual(JSON.parse(view.requests.find(r=>r.opts.method==='POST').opts.body),{game:'barikade'});
  assert.equal(view.requests.filter(r=>r.opts.method==='POST').length,1);
  assert.ok(view.requests.every(r=>r.opts.headers.Authorization==='Bearer signed-token'));
- assert.deepEqual(view.navigated,[{type:'assign',url:'hub-lobby.html?room=ABC23D&stage=1'}]);
+ assert.deepEqual(view.navigated,[{type:'assign',url:'Barikade/barikade_start.html?room=ABC23D'}]);
 });
 test('Members cannot select a game; host selection updates every member',async()=>{
  const guest=simulate({host:false});

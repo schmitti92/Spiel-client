@@ -1,3 +1,38 @@
+SPIELESAMMLUNG – BARIKADE V10 (13. OKTOBER 2026)
+
+UMGESETZT
+[x] Barikade/Barikade_start.html als eigene Online-Startmaske analog Bildvorlage:
+    Header mit Raumcode und Einladen, links Spieler/Chat, Mitte originale
+    Brettvorschau und Designleiste, rechts Einstellungen und große Spielknöpfe.
+[x] Original-Barikade-Spielfeld aus Barikade/board.json mit 132 Knoten und
+    122 Verbindungen als echte skalierbare SVG-Vorschau eingebunden.
+[x] Mobile Ansicht / Tablet / Desktop im responsiven Layout.
+[x] Existierende Host-Einstellungen serverautorisiert: Modus klassisch/Action,
+    Bossmodus, Anzahl Ereignisfelder, Joker je Sorte, Brett Classic/Holz/Stein,
+    Farbvergabe, und persönliche Farbe bei manueller Vergabe.
+[x] Anzahl teilnehmender Spieler wird aus den serverseitigen Sitzplätzen
+    angezeigt; Host kann Spieler/Zuschauerplätze wechseln.
+[x] Wartebereich, bereiter Status, automatischer Partiestart und Host-Fallback.
+[x] WhatsApp-Einladung, Teilen/Kopieren des Codes und Vollbild der Brettvorschau.
+[x] Im gemeinsamen Serverraum gespeicherter Chat für eingeloggte Mitglieder,
+    WebSocket-Live-Updates, 40 Nachrichten Verlauf, Rate-Limit.
+[x] Vier künftige Designs Wald, Wüste, Winter, Vulkan erkennbar als Vorschau.
+[x] Neue Startmaske wird automatisch nach Barikade-Auswahl oder Wiederbeitritt
+    mit gleichem zentralen Raum geöffnet.
+[x] Die eigentliche Barikade-Spielengine wurde unverändert gelassen.
+[x] Client-Regression: 30/30 Tests grün.
+[x] Server-Regression: 32/32 Tests grün.
+[x] Backupzweige beider Repositories vor V10 angelegt.
+
+NOCH NICHT UMGESETZT
+[ ] Die Screenshot-Grafik als echte 3D-Spielbrett-Kulisse; aktuell
+    originalgetreue Spielfeld-Knoten und Verbindungen als SVG in den Panels.
+[ ] Alternative Regelvarianten für 5 Brettdesigns bzw. frei wählbare
+    Barikadenzahl (bestehende Spiellogik hat 12 feste Barikaden).
+[ ] Echte Mehrspieler-Tests und Layoutabnahme auf mehreren Smartphones.
+[ ] Render-Live-Deployment des neuen Chat-Backends vor Ort prüfen.
+
+BISHERIGER VERLAUF
 SKYJO ACTION – STARTMASKE V9 (13.10.2026)
 [x] Separate SKYJO/skyjo_start.html, CSS und JavaScript.
 [x] Optische Vorlage: großer Action-Titel, blaue Panels, Einstellungszeilen,

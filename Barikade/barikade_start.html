@@ -1,0 +1,65 @@
+<!doctype html><html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#112d40">
+<title>Barikade · Online-Spiel-Lobby</title>
+<link rel="stylesheet" href="barikade_start.css?v=10.0.1"></head><body>
+<main class="wrap">
+<header class="mast">
+  <a id="back-link" class="back" href="../spielauswahl-online.html">← Zurück</a>
+  <div class="branding"><div class="brand-title"><span>♛</span>Barikade<span class="flag">⚑</span></div><div class="slogan">Taktik. Blocken. Siegen!</div></div>
+  <div class="join-info"><div class="room-code"><small>Raumcode</small><div><strong id="room-code">······</strong><button id="copy-room" type="button" aria-label="Raumcode kopieren">▢</button></div><small>Teile diesen Code mit deinen Freunden.</small></div>
+  <div class="share-area"><strong>♧ Freunde einladen</strong><div class="share-buttons"><button id="share-whatsapp" type="button">🟢<small>WhatsApp</small></button><button id="share-link" type="button">🔗<small>Link teilen</small></button><button id="share-copy" type="button">📋<small>Kopieren</small></button></div></div></div>
+</header>
+<div id="loading" class="loading" role="status">🎲 Barikade-Raum wird verbunden …</div>
+<div id="lobby" class="columns hidden">
+  <div class="left">
+    <section class="panel player-box"><h2>♟ Spieler <span id="player-amount">(0/4)</span></h2>
+      <div id="player-list" class="player-list" aria-live="polite"></div>
+      <div class="player-legend"><span>🟢 Bereit</span><span>◯ Wartet</span><span>👁 Zuschauer</span></div>
+      <button id="invite-seat" class="invite-seat" type="button">＋ Freien Platz einladen</button>
+    </section>
+    <section class="panel chat-box"><h2>💬 Chat</h2>
+      <div id="chat-messages" class="chat-messages" aria-live="polite"><p class="no-chat">Der gemeinsame Raumchat wird vorbereitet.</p></div>
+      <form id="chat-form" class="chat-form"><input id="chat-input" type="text" maxlength="300" placeholder="Nachricht schreiben …" autocomplete="off" aria-label="Chat-Nachricht" disabled><button id="chat-send" type="submit" disabled aria-label="Nachricht senden">➤</button></form>
+      <p id="chat-hint" class="chat-hint">Chat wird freigeschaltet, sobald die Server-Anbindung aktiv ist.</p>
+    </section>
+  </div>
+  <section class="panel board-box">
+    <div class="panel-head"><h2>◉ Brettvorschau</h2><button id="preview-full" type="button">⛶ Vollbild</button></div>
+    <div id="board-stage" class="board-stage" data-theme="classic"><div class="board-texture"></div><div id="board-content" class="board-content"><span>🎲 Brett wird geladen …</span></div><span class="board-caption">Originales Barikade-Spielbrett · Vorschau</span></div>
+    <div class="theme-strip"><button id="theme-prev" type="button" class="theme-arr" aria-label="Vorheriges Brettdesign">‹</button>
+      <div class="themes">
+       <button data-board="classic" class="theme selected" type="button"><span class="theme-art theme-classic">♟</span><strong>Klassisch</strong></button>
+       <button data-board="wood" class="theme" type="button"><span class="theme-art theme-wood">♟</span><strong>Holz</strong></button>
+       <button data-board="stone" class="theme" type="button"><span class="theme-art theme-stone">♟</span><strong>Stein</strong></button>
+       <button data-preview="forest" class="theme future" type="button"><span class="theme-art theme-forest">🌲</span><strong>Wald</strong><small>Bald</small></button>
+       <button data-preview="desert" class="theme future" type="button"><span class="theme-art theme-desert">🏜️</span><strong>Wüste</strong><small>Bald</small></button>
+       <button data-preview="winter" class="theme future" type="button"><span class="theme-art theme-winter">❄️</span><strong>Winter</strong><small>Bald</small></button>
+       <button data-preview="volcano" class="theme future" type="button"><span class="theme-art theme-volcano">🌋</span><strong>Vulkan</strong><small>Bald</small></button>
+      </div>
+      <button id="theme-next" class="theme-arr" type="button" aria-label="Nächstes Brettdesign">›</button>
+    </div>
+    <p class="theme-explain" id="theme-status">Nur Klassisch, Holz und Stein können derzeit im Spiel verwendet werden. Weitere Designs sind Vorschau.</p>
+  </section>
+  <div class="right">
+    <section class="panel settings-box"><h2>⚙ Spieleinstellungen</h2><div id="host-status" class="host-status">👑 Nur der Host ändert die Regeln.</div>
+      <div class="setting"><span class="setting-name">👥 Spielerzahl<small>Aktive Plätze (maximal 4)</small></span><div class="setting-values" id="player-setting"><span id="active-count">0 / 4</span><small>Über Spielerliste einstellen</small></div></div>
+      <div class="setting"><span class="setting-name">🪵 Barikaden<small>Originalregeln: 12 Barikaden</small></span><div class="setting-values locked">12 · Standard</div></div>
+      <div class="setting"><span class="setting-name">🎲 Ereignisfelder<small>Im Bossmodus / Action-Modus</small></span><div class="select-row" id="events-options"><button data-event="5" type="button">Wenig</button><button data-event="8" type="button">Normal</button><button data-event="15" type="button">Häufig</button></div></div>
+      <div class="setting"><span class="setting-name">🃏 Joker<small>Joker je Sorte</small></span><div class="select-row" id="joker-options"><button data-joker="0" type="button">Aus</button><button data-joker="3" type="button">3</button><button data-joker="5" type="button">5</button></div></div>
+      <div class="setting"><span class="setting-name">💀 Boss-Modus<small>Zusatzbosse und Portale</small></span><div class="select-row" id="boss-options"><button data-boss="false" type="button">Aus</button><button data-boss="true" type="button">Ein</button></div></div>
+      <div class="setting"><span class="setting-name">⚡ Spielmodus<small>Action / Klassisch</small></span><div class="select-row" id="mode-options"><button data-mode="classic" type="button">Klassisch</button><button data-mode="action" type="button">Action</button></div></div>
+      <div class="setting"><span class="setting-name">🎨 Brettdesign<small>Für alle Mitspieler</small></span><div class="setting-values"><strong id="board-choice">Klassisch</strong></div></div>
+      <div class="setting"><span class="setting-name">🎰 Farbvergabe<small>Wahl oder Zufall</small></span><div class="select-row" id="color-options"><button data-color="manual" type="button">Wahl</button><button data-color="wheel" type="button">Rad</button></div></div>
+      <div id="color-pick-wrap" class="color-pick"><label for="color-pick">Deine Spielfarbe</label><select id="color-pick"><option value="">Automatisch</option><option value="red">🔴 Rot</option><option value="blue">🔵 Blau</option><option value="green">🟢 Grün</option><option value="yellow">🟡 Gelb</option></select></div>
+      <p class="settings-foot">Einstellungsänderungen setzen alle Bereitmeldungen zurück.</p>
+    </section>
+    <button type="button" id="ready-btn" class="ready-btn" disabled>✓ Ich bin bereit</button>
+    <button type="button" id="start-btn" class="start-btn" disabled>▶ Spiel starten</button>
+    <button type="button" id="leave-btn" class="leave-btn">↪ Raum verlassen</button>
+  </div>
+</div>
+<p id="status" class="status" role="status" aria-live="polite"></p>
+</main>
+<script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="barikade_start.js?v=10.0.1" defer></script>
+</body></html>
