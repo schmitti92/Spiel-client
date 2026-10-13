@@ -57,12 +57,12 @@
 <div class="toolbar"><button title="Ton">🔊</button><button onclick="document.documentElement.requestFullscreen?.()" title="Vollbild">⛶</button><button title="Einstellungen">⚙</button><button class="menu" title="Menü">♛ Menü</button></div>
 <div class="demo">Spieler: <select id="playerCount"><option value="3">3 Spieler</option><option value="4">4 Spieler</option><option value="5">5 Spieler</option></select></div>
 <section id="enemies"></section><div class="actionbar"><button class="drawbtn">🃏 Karte ziehen<small>Karte vom Stapel</small></button><button class="discardbtn">▣ Karte ablegen<small>Karte auf Ablagestapel</small></button><button class="specialbtn">⚡ Aktion<small>Spezialkarte nutzen</small></button></div>
-<div class="deck draw"><span>♛<br>SKYJO<br><i>ACTION</i></span></div><div class="deck discard"><span>🌟</span></div><div class="decklabel" style="left:610px">Nachziehstapel · 32</div><div class="decklabel" style="left:796px">Ablagestapel</div>
+<div class="deck draw"><span>♛<br>SKYJO<br><i>ACTION</i></span></div><div class="deck discard"><span>🌟</span></div><div class="decklabel" style="left:610px">Nachziehstapel · –</div><div class="decklabel" style="left:796px">Ablagestapel</div>
 <section id="self"></section>
-<div class="box panel round"><h3>Runde 3 von 12</h3>🟡 ⚪ ❸ ⚪ ⚪ ⚪</div>
-<div class="box panel current"><h3>Aktueller Zug</h3><p>🎲 Spieler ist am Zug</p><p>🃏 Nachziehstapel: 32</p><p>⭐ SKYJO ACTION</p></div>
+<div class="box panel round"><h3>Runde –</h3></div>
+<div class="box panel current"><h3>Aktueller Zug</h3><p>🎲 Warte auf Spielstand</p><p>🃏 Nachziehstapel: –</p><p>⭐ SKYJO ACTION</p></div>
 <div class="box panel score"><h3>🏆 Zwischenstände</h3><div id="scores"></div></div>
-<div class="note" role="status" aria-live="polite">DEMO – keine Verbindung zur laufenden Partie</div>
+<div class="note" role="status" aria-live="polite">LIVE-BETA – warte auf Online-Spielstand</div>
 <div class="bottom"><button>💬</button><button>👍</button><button>😂</button><button>❤️</button><button>😮</button><button>😎</button><button>👏</button><button>HEINZ</button><input placeholder="Nachricht an alle …" aria-label="Chatnachricht"><button>➤</button></div>
 </main></div><script>
 const stage=document.getElementById('stage');
