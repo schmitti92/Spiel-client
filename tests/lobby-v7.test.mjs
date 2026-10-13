@@ -53,3 +53,12 @@ test('Reconnect cannot overwrite newer hub revisions or create overlapping HTTP 
  assert.match(js,/hubSocket===socket&&data\?\.type==='room'/);
  assert.match(js,/acceptRoom\(data\.room\)/);
 });
+
+test('SKYJO reference board preserves manual score counting and three-to-five player seats',()=>{
+ const html=readFileSync(new URL('../Skyjo/skyjo_action.html',import.meta.url),'utf8');
+ assert.match(html,/sky-reference-layout/);
+ assert.match(html,/sky-reference-empty/);
+ assert.match(html,/preferredViewPlayerIndex\(\)/);
+ assert.doesNotMatch(html,/meta-chip open-chip/);
+ assert.doesNotMatch(html,/Σ \$\{openSum/);
+});
