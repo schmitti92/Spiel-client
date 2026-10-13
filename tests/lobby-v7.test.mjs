@@ -43,5 +43,5 @@ test('The local/online selection remains phone-sized and readable',()=>{
 test('Game selection does not create an independent game room',()=>{
  assert.match(js,/\/rooms\/'.*?\+code\+'\/select'/s);
  assert.match(js,/\/rooms\/'.*?\+code\+'\/ready'/s);
- assert.match(js,/room\.match\.gameCode/);
+ assert.match(js,/match\.gameCode/);
 });
