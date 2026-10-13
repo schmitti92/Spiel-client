@@ -195,6 +195,39 @@ jobs:
             // Geometry is diagnostic at additional sizes until responsive fixes are verified.
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
+      - name: Verify local opening card interactions
+        run: |
+          node <<'JS'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            for(const board of ['classic','illustrated']){
+              const page=await browser.newPage({viewport:{width:1536,height:960}});
+              const errors=[];
+              page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:8765/Skyjo/skyjo_action.html?mode=local&board='+board,{waitUntil:'domcontentloaded'});
+              await page.waitForTimeout(250);
+              const result=await page.evaluate(()=>{
+                const names=[...document.querySelectorAll('.pname')];
+                if(names.length!==2)return {error:'missing setup names'};
+                names[0].value='Opening A';names[1].value='Opening B';
+                document.querySelector('#jokerEnabled').checked=false;
+                window.Game.startFromSetup();
+                const before=[...document.querySelectorAll('.sky-reference-layout .player .grid .card:not(.back)')].length;
+                for(const pi of [0,1])for(const index of [0,1])window.Game.selectCard(pi,'grid',index);
+                const after=[...document.querySelectorAll('.sky-reference-layout .player .grid .card:not(.back)')].length;
+                return {before,after,board:document.body.dataset.skyBoard,
+                  cards:document.querySelectorAll('.sky-reference-layout .player .grid .card').length,
+                  instruction:document.querySelector('#app')?.textContent?.slice(0,200)};
+              });
+              console.log('Opening reveal test:',board,JSON.stringify(result),errors);
+              if(result.error||result.before!==0||result.after!==4||result.cards!==24||result.board!==board||errors.length)
+                throw Error('Opening reveal interaction failed in '+board);
+              await page.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
       - name: Smoke test local games for three to five players
         run: |
           node <<'JS'
