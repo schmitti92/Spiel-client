@@ -1,10 +1,10 @@
 
 (() => {
 'use strict';
-const selectedSkyBoard=new URLSearchParams(location.search).get('board')==='illustrated'?'illustrated':'classic';
+const selectedSkyBoard=new URLSearchParams(location.search).get('board')==='classic'?'classic':'illustrated';
 document.body.dataset.skyBoard=selectedSkyBoard;
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
-const SKYJO_BUILD='15.53';
+const SKYJO_BUILD='15.63';
 const SKYJO_HUB_QUERY=new URLSearchParams(location.search);
 const SKYJO_HUB_CODE=/^[A-HJ-NP-Z2-9]{6}$/.test(SKYJO_HUB_QUERY.get('hub')||'')?SKYJO_HUB_QUERY.get('hub'):'';
 const SKYJO_HUB_MATCH=/^[0-9a-f-]{36}$/i.test(SKYJO_HUB_QUERY.get('match')||'')?SKYJO_HUB_QUERY.get('match'):'';
