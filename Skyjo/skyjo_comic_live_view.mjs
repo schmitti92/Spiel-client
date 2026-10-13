@@ -6,7 +6,7 @@
 import { projectSkyjoGame } from './skyjo_comic_projection.mjs';
 import { renderComicSnapshot } from './skyjo_comic_snapshot_view.mjs';
 
-export function createComicLiveView({ root, getSeatId, onError = () => {} }) {
+export function createComicLiveView({ root, getSeatId, onError = () => {}, interactive = false }) {
   if (!root || typeof getSeatId !== 'function' || typeof onError !== 'function')
     throw new TypeError('Invalid Comic view configuration');
   let lastRevision = -1;
@@ -20,7 +20,7 @@ export function createComicLiveView({ root, getSeatId, onError = () => {} }) {
     try {
       const seatId = getSeatId();
       const projection = projectSkyjoGame(room, seatId);
-      renderComicSnapshot(room, seatId, root);
+      renderComicSnapshot(room, seatId, root, { interactive });
       lastRevision = revision;
       return projection;
     } catch (error) {
