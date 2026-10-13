@@ -24,9 +24,11 @@ for(const n of [3,4,5]) {
   assert(self.innerHTML.includes('★'),'Star card not rendered');
   assert(self.innerHTML.includes('card empty'),'Removed card must not look face-down');
   assert(self.innerHTML.includes('card hidden'),'Face-down card must be visible as a back');
-  checks+=7;
+  assert(self.innerHTML.includes('Punkte'),'Board point label missing');
+  checks+=8;
  }
 }
+renderComicSnapshot(makeRoom(3),'seat-0',root);
 const before=enemy.innerHTML;
 const invalid=makeRoom(3);
 invalid.game.players[1].grid=[];
