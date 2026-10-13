@@ -1,0 +1,158 @@
+name: SKYJO module integrity
+on:
+  pull_request:
+    paths:
+      - 'Skyjo/skyjo_action.html'
+      - 'Skyjo/skyjo.css'
+      - 'Skyjo/skyjo-base.css'
+      - 'Skyjo/skyjo-overrides.css'
+      - 'Skyjo/skyjo-themes.css'
+      - 'Skyjo/skyjo-classic.css'
+      - 'Skyjo/skyjo-comic.css'
+      - 'Skyjo/skyjo-comic-duo.css'
+      - 'Skyjo/skyjo-main.js'
+      - '.github/workflows/skyjo-modules-check.yml'
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check Skyjo/skyjo-main.js
+      - name: Check HTML references and extracted resources
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('Skyjo/skyjo_action.html').read_text()
+          css = Path('Skyjo/skyjo-base.css').read_text() + Path('Skyjo/skyjo-overrides.css').read_text() + Path('Skyjo/skyjo-classic.css').read_text() + Path('Skyjo/skyjo-themes.css').read_text() + Path('Skyjo/skyjo-comic.css').read_text() + Path('Skyjo/skyjo-comic-duo.css').read_text()
+          assert css.startswith(Path('Skyjo/skyjo.css').read_text()), 'Original CSS order or content changed'
+          js = Path('Skyjo/skyjo-main.js').read_text()
+          assert '<link rel="stylesheet" href="skyjo-base.css?v=15.54">' in html
+          assert '<link rel="stylesheet" href="skyjo-overrides.css?v=15.55">' in html
+          assert '<link rel="stylesheet" href="skyjo-classic.css?v=15.56">' in html
+          assert '<link rel="stylesheet" href="skyjo-themes.css?v=15.57">' in html
+          assert '<link rel="stylesheet" href="skyjo-comic.css?v=15.58">' in html
+          assert '<link rel="stylesheet" href="skyjo-comic-duo.css?v=15.58">' in html
+          assert '<script src="skyjo-main.js?v=15.53"></script>' in html
+          assert 'document.body.dataset.skyBoard=selectedSkyBoard;' in js
+          assert 'window.Game=' in js
+          assert 'sky-reference-layout' in css
+          for name in ('profile-config.js','profile-auth.js','profile-match.js','profile-core.js','hub-game-bridge.js'):
+              assert Path(name).is_file(), name
+          print('SKYJO module integrity OK')
+          PY
+
+      - name: Verify comic duo layout rules remain scoped
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          css=Path('Skyjo/skyjo-comic-duo.css').read_text()
+          section=css.split('/* Phase 6: tablet landscape, two-player comic board viewport fit.',1)
+          assert len(section)==2, 'Missing Phase 6 tablet layout'
+          rules=section[1]
+          assert '@media (min-width:1000px) and (orientation:landscape) and (max-height:1000px)' in rules
+          assert 'data-sky-board="illustrated"' in rules
+          assert 'data-sky-seats="2"' in rules
+          assert 'data-sky-board="classic"' not in rules
+          assert '--card-w:clamp(34px,3.25vw,51px)' in rules
+          print('Scoped illustrated duo layout override verified')
+          PY
+      - name: Install Chromium browser test tools
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start isolated static test server
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/skyjo-http.log 2>&1 &
+          sleep 2
+      - name: Browser smoke test for extracted SKYJO
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({headless:true});
+            const page = await browser.newPage({viewport:{width:1280,height:800}});
+            const errors = [];
+            page.on('pageerror', e => errors.push(e.message));
+            const response = await page.goto('http://127.0.0.1:8765/Skyjo/skyjo_action.html?mode=local', {waitUntil:'domcontentloaded'});
+            await page.waitForTimeout(1500);
+            const result = await page.evaluate(() => ({
+              app: !!document.querySelector('#app'),
+              game: typeof window.Game?.render === 'function',
+              css: ['skyjo-base.css','skyjo-overrides.css','skyjo-classic.css','skyjo-themes.css','skyjo-comic.css','skyjo-comic-duo.css'].every(name=>[...document.styleSheets].some(x=>x.href?.includes(name))),
+              script: [...document.scripts].some(x=>x.src?.includes('skyjo-main.js')),
+              body: document.querySelector('#app')?.textContent?.length || 0
+            }));
+            await page.screenshot({path:'skyjo-smoke.png',fullPage:true});
+            await browser.close();
+            console.log({httpStatus:response.status(),...result,errors});
+            if(response.status()!==200||!result.app||!result.game||!result.css||!result.script||result.body<30||errors.length)process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - name: Measure illustrated duo board in Chromium
+        run: |
+          node <<'JS'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1536,height:960},deviceScaleFactor:1});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            await page.goto('http://127.0.0.1:8765/Skyjo/skyjo_action.html?board=illustrated&mode=local',{waitUntil:'domcontentloaded'});
+            await page.waitForTimeout(700);
+            const started=await page.evaluate(()=>{
+              const inputs=[...document.querySelectorAll('.pname')];
+              const start=window.Game?.startFromSetup;
+              if(typeof start!=='function'||inputs.length!==2)return false;
+              inputs[0].value='Test A';inputs[1].value='Test B';
+              start();
+              return true;
+            });
+            await page.waitForTimeout(500);
+            const measurements=await page.evaluate(()=>{
+              const rect=(el)=>{if(!el)return null;const r=el.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height),bottom:Math.round(r.bottom)}};
+              const layout=document.querySelector('.sky-reference-layout[data-sky-seats="2"]');
+              return {boardTheme:document.body.dataset.skyBoard,bodyClasses:document.body.className,layoutPresent:!!layout,
+                computed:layout?{display:getComputedStyle(layout).display,columns:getComputedStyle(layout).gridTemplateColumns,areas:getComputedStyle(layout).gridTemplateAreas,cardWidth:getComputedStyle(layout.querySelector('.sky-reference-own .card')).width,cardVar:getComputedStyle(layout.querySelector('.sky-reference-own .player')).getPropertyValue('--card-w'),cssWidth:document.documentElement.clientWidth}:null,
+                viewport:{width:innerWidth,height:innerHeight},
+                opponent:rect(layout?.querySelector('.sky-reference-tl .player')),
+                own:rect(layout?.querySelector('.sky-reference-own .player')),
+                center:rect(layout?.querySelector('.sky-reference-center')),
+                reaction:rect(document.querySelector('.reaction-bar')),
+                opponentCards:[...(layout?.querySelectorAll('.sky-reference-tl .grid .card')||[])].map(rect),
+                ownCards:[...(layout?.querySelectorAll('.sky-reference-own .grid .card')||[])].map(rect)};
+            });
+            console.log('Illustrated duo layout diagnostics:',JSON.stringify({started,...measurements}));
+            await page.screenshot({path:'skyjo-duo-tablet.png',fullPage:true});
+            if(measurements.boardTheme!=='illustrated'||errors.length)throw Error('Illustrated mode failed to initialize: '+errors.join('; '));
+            if(measurements.layoutPresent){
+              const {opponent,own}=measurements;
+              if(!opponent||!own)throw Error('Missing player panels in active duo layout');
+              if(opponent.w<100||own.w<100)throw Error('Player panel too narrow');
+              const groups=[measurements.opponentCards,measurements.ownCards];
+              for(const cards of groups){
+                if(cards.length!==12)throw Error('Expected 12 cards per player, got '+cards.length);
+                if(cards.some(c=>!c||c.w<10||c.h<10||c.x<0||c.x+c.w>1536||c.y<0||c.bottom>960))
+                  throw Error('A player card is outside the tablet viewport');
+              }
+              const reaction=measurements.reaction;
+              if(reaction&&groups.flat().some(c=>c.bottom>reaction.y&&c.y<reaction.bottom))
+                throw Error('Reaction bar overlaps player cards');
+            }else console.log('No active game in CI: panel geometry requires a started two-player game; not asserted.');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skyjo-duo-tablet
+          path: skyjo-duo-tablet.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skyjo-browser-smoke
+          path: skyjo-smoke.png
