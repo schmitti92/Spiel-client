@@ -28,3 +28,4 @@ jobs:
           node Skyjo/skyjo_comic_mount.test.mjs
           node Skyjo/skyjo_comic_mirror.test.mjs
           node Skyjo/skyjo_comic_publisher.test.mjs
+          node Skyjo/skyjo_comic_html.test.mjs
