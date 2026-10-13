@@ -59,7 +59,7 @@
       if(!response.ok)return;
       const result=await response.json(),room=result?.room;
       if(!result?.ok||!room||room.code!==hub)return;
-      if(room.lastCompleted?.id===matchId || (room.phase==='playing'&&room.match?.id!==matchId)){
+      if(room.lastCompleted?.id===matchId || (room.phase!=='playing'||room.match?.id!==matchId)){
         completionStatus=room.lastCompleted?.id===matchId&&room.lastCompleted?.status==='aborted'?'aborted':'finished';
         showReturn();
       }
@@ -100,7 +100,8 @@
         btn.hidden=!(room?.host&&room.phase==='playing'&&room.match?.id===matchId);
       }catch(_e){}
     }
-    setInterval(updateHost,6000);setTimeout(updateHost,1000);
+    const hostTimer=setInterval(updateHost,6000);setTimeout(updateHost,1000);
+    window.addEventListener('pagehide',()=>clearInterval(hostTimer),{once:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installAbortButton,{once:true});
   else installAbortButton();
