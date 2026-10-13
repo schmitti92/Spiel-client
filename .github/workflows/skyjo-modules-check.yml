@@ -273,6 +273,33 @@ jobs:
               throw Error('A local 3-5 player game failed to initialize correctly');
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
+      - name: Publish readable viewport and player-count report
+        if: always()
+        run: |
+          node <<'JS'
+          const fs=require('fs');
+          const rows=[];
+          rows.push('## SKYJO Layout- und Spielerzahltests');
+          rows.push('');
+          const viewport='skyjo-viewport-results.json';
+          if(fs.existsSync(viewport)){
+            rows.push('### Zwei Spieler – Bildschirmgrößen');
+            rows.push('| Größe | Brett | Start | Karten | Außerhalb | JS-Fehler |');
+            rows.push('|---|---|---|---:|---:|---:|');
+            for(const x of JSON.parse(fs.readFileSync(viewport,'utf8')))
+              rows.push('| '+x.width+' × '+x.height+' | '+x.board+' | '+(x.started?'✓':'✗')+' | '+x.cards+' | '+x.outside+' | '+x.errors.length+' |');
+          }else rows.push('Zwei-Spieler-Messungen nicht verfügbar (vorherigen Testschritt prüfen).');
+          const multiplayer='skyjo-multiplayer-layout-results.json';
+          if(fs.existsSync(multiplayer)){
+            rows.push('');
+            rows.push('### Drei bis fünf Spieler');
+            rows.push('| Spieler | Brett | Start | Karten | Im Sichtfeld | JS-Fehler |');
+            rows.push('|---:|---|---|---:|---:|---:|');
+            for(const x of JSON.parse(fs.readFileSync(multiplayer,'utf8')))
+              rows.push('| '+x.count+' | '+x.board+' | '+(x.started?'✓':'✗')+' | '+x.cards+' | '+x.visible+' | '+x.errors.length+' |');
+          }else rows.push('Mehrspieler-Messungen nicht verfügbar (vorherigen Testschritt prüfen).');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,rows.join('\n')+'\n');
+          JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
