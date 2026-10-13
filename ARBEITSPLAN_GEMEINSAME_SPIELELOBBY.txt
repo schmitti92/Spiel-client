@@ -1,3 +1,35 @@
+DAS GROSSE BUSINESS – STARTMASKE V11 (13.10.2026)
+
+UMSETZUNG
+[x] Eigener Online-Vorraum: Business/business_start.html, CSS, JS.
+[x] Bildinspirierte Gold-/Holzgestaltung mit Stadtmotiv und Titel.
+[x] Linke Spalte: reale Firestore-Spielerliste, Host, Zuschauer, Einladen.
+[x] Chat-Panel gestaltet; echter Raumchat ist noch nicht serverseitig verfügbar,
+    deshalb Eingabe deaktiviert und klar beschriftet.
+[x] Mitte: Beispielkaufkarten, Aktienstapel, fünf Zahlenwürfel, Branchenwürfel.
+[x] Unterer Bereich: Branchen-Übersicht mit vorhandenen Kartenbildern.
+[x] Rechte Spalte: serverseitige Auswahl von 10/20/30 Runden durch Host.
+[x] Platzverwaltung und Bereitmeldungen über die geschützte Raum-API.
+[x] Automatischer Spielstart durch den letzten Bereit-Klick, Host-Fallback.
+[x] Raumcode kopieren, Einladung teilen, zurück zur gemeinsamen Lobby.
+[x] Brettdesign-Karussell und zusätzliche Regeln als Vorschau gekennzeichnet.
+[x] Eigentliche Business-Spielengine und Originalregeln unangetastet.
+[x] Online-Spielauswahl navigiert zu Business-Startmaske, nicht mehr generisch.
+[x] Mobil-/Tablet-Layout und dynamische Spielerliste.
+[x] Vorheriger main-Zweig als Backup gesichert:
+    backup/vor-business-startmaske-v11-2026-10-13.
+[x] Automatische Client-Tests: 40/40 erfolgreich:
+    https://github.com/schmitti92/Spiel-client/actions/runs/38411107444
+
+WEITERE AUSBAUSCHRITTE
+[ ] Echten Firestore-/Render-gesteuerten Raumchat inklusive Moderation,
+    Längen- und Häufigkeitslimits und Sicherheitsprüfungen ergänzen.
+[ ] Mehrere spielbare Brettdesigns in die Game-Engine übernehmen.
+[ ] Aktien-/Joker-/Ereigniskarten-Toggles erst mit echten Spielregeln aktivieren.
+[ ] Echtes Spiel über 2–5 Handys vollständig testen.
+[ ] Abschließender Layoutvergleich mit der Bildvorlage auf Desktop und Handy.
+
+--- BESTEHENDER ARBEITSPLAN ---
 SPIELESAMMLUNG – BARIKADE V10 (13. OKTOBER 2026)
 
 UMGESETZT

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#14253d"><title>Das große Business · Online-Spielvorraum</title>
+<link rel="stylesheet" href="business_start.css?v=11.0.1"></head><body>
+<main class="biz-wrap">
+ <header class="biz-header">
+   <a id="back-link" href="../spielauswahl-online.html" class="biz-back">← Zurück</a>
+   <div class="biz-logo" aria-label="Das große Business"><span class="logo-kicker">♛ DAS GROSSE</span><strong>BUSINESS</strong><span class="logo-motto">KAUFEN <i>•</i> INVESTIEREN <i>•</i> KASSIEREN</span></div>
+   <div class="biz-head-buttons"><button id="help-btn" type="button" title="Spielhilfe" aria-label="Hilfe">?</button><button id="refresh-btn" type="button" title="Raum aktualisieren" aria-label="Aktualisieren">⚙</button></div>
+ </header>
+ <div class="biz-layout" id="layout">
+  <aside class="biz-left">
+   <section class="biz-panel room-panel"><div class="room-title">Raum: <b id="room-code">······</b><button id="copy-btn" type="button" title="Raumcode kopieren">▢</button></div><div class="room-detail"><span class="online-dot"></span><span id="room-count">Verbinde …</span></div></section>
+   <section class="biz-panel members-panel">
+      <h2 class="sr-only">Mitspieler</h2><div id="players-list" class="biz-players" aria-live="polite"><p>Spieler werden geladen …</p></div>
+      <button id="invite-btn" type="button" class="biz-invite">＋ Freunde einladen</button>
+   </section>
+   <section class="biz-panel chat-panel"><div class="chat-tabs"><strong>💬 Chat</strong><span>System</span></div>
+    <div id="chat-content" class="chat-content"><div class="system-line">Willkommen im Business-Spielraum! 👋</div><div class="system-line">Die Chat-Funktion wird serverseitig vorbereitet. Derzeit kannst du den Raumcode teilen.</div></div>
+    <div class="chat-input-row"><input id="chat-input" type="text" placeholder="Chat folgt in einem Update …" disabled aria-label="Chatnachricht"><button type="button" disabled aria-label="Senden">➤</button></div>
+   </section>
+  </aside>
+  <section class="biz-center" aria-labelledby="preview-heading">
+   <h1 id="preview-heading" class="sr-only">Business Spielvorschau</h1>
+   <div class="showcase">
+     <div class="wood-header">🎲 KAUFEN · INVESTIEREN · KASSIEREN</div>
+     <div class="deal-area">
+        <div class="deck"><div class="deck-card">🏙️<strong>BUSINESS</strong></div><small>Kaufstapel</small></div>
+        <div class="sample-card car"><strong>AUTO</strong><span class="card-symbol car-symbol" aria-label="Sportwagen">🏎️</span><b>240.000</b><small>Miete 40.000</small></div>
+        <div class="sample-card energy"><strong>ENERGIE</strong><span class="card-symbol">⚡</span><b>320.000</b><small>Miete 60.000</small></div>
+        <div class="sample-card media"><strong>MEDIEN</strong><img src="business-assets/img_26_cf0887394466.jpg" alt="Beispielkarte Medien"><b>280.000</b><small>Miete 50.000</small></div>
+        <div class="sample-card food"><strong>LEBENSMITTEL</strong><img src="business-assets/img_14_f99a5ca0c1a3.jpg" alt="Beispielkarte Lebensmittel"><b>180.000</b><small>Miete 30.000</small></div>
+        <div class="deck stock"><div class="deck-card">📈<strong>AKTIEN</strong></div><small>Aktienstapel</small></div>
+     </div>
+     <div class="dice-board" aria-label="Würfelvorschau mit fünf Zahlenwürfeln und einem Branchenwürfel">
+       <div class="five-dice" id="preview-dice">
+         <span class="die"><i class="pip"></i><i class="pip"></i><i class="pip"></i></span>
+         <span class="die"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></span>
+         <span class="die"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></span>
+         <span class="die"><i class="pip"></i><i class="pip"></i></span>
+         <span class="die"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></span>
+       </div><span class="branch-die">💹</span>
+       <div class="dice-captions"><span>5 Zahlenwürfel</span><span>Branchenwürfel</span></div>
+     </div>
+     <p class="sample-note">Beispielvorschau – die tatsächlichen Karten und Würfel entstehen erst im Spiel.</p>
+   </div>
+  </section>
+  <aside class="biz-panel settings-panel">
+    <div class="settings-heading">👑 SPIELEINSTELLUNGEN <small id="host-notice">Nur vom Host änderbar</small></div>
+    <div class="option-group"><h3>Rundenanzahl</h3><div id="round-buttons" class="round-buttons">
+      <button type="button" data-rounds="10">10 Runden</button><button type="button" data-rounds="20">20 Runden</button><button type="button" data-rounds="30">30 Runden</button>
+    </div></div>
+    <div class="option-group"><h3>Spielbrett-Design</h3><div class="theme-picker"><button id="theme-prev" type="button" aria-label="Vorheriges Design">‹</button><div class="theme-preview" id="theme-preview"><span id="theme-label">Klassisch</span></div><button id="theme-next" type="button" aria-label="Nächstes Design">›</button></div><p id="theme-hint" class="feature-note">Weitere Spielbretter sind Vorschau und noch nicht im Spiel wählbar.</p></div>
+    <div class="option-group"><h3>Sonderregeln <span class="coming-soon">Vorschau</span></h3>
+       <div class="future-rule"><span>📈 Aktien verwenden</span><span class="coming-switch">Vorbereitung</span></div>
+       <div class="future-rule"><span>🃏 Ereigniskarten</span><span class="coming-switch">Vorbereitung</span></div>
+       <div class="future-rule"><span>🎭 Joker erlaubt</span><span class="coming-switch">Vorbereitung</span></div>
+       <div class="future-rule"><span>⚡ Schnelles Spiel</span><span class="coming-switch">Vorbereitung</span></div>
+       <p class="feature-note">Diese Sonderregeln sind noch nicht separat konfigurierbar. Es gelten die bestehenden Business-Spielregeln.</p>
+    </div>
+    <button id="ready-btn" class="ready-btn" type="button" disabled>✓ Ich bin bereit</button>
+    <button id="start-btn" class="start-btn" type="button" disabled>▶ SPIEL STARTEN</button>
+    <p id="start-help" class="start-help">Alle ausgewählten Spieler müssen bereit sein.</p>
+    <button id="leave-btn" type="button" class="leave-btn">Raum verlassen</button>
+  </aside>
+ </div>
+ <section class="biz-panel branches-panel"><h2>ÜBERSICHT DER BRANCHEN</h2><div class="branch-grid">
+  <div class="branch-tile auto"><strong>AUTO</strong><span class="branch-emoji car-symbol" aria-hidden="true">🏎️</span><span>🚗 Fahrzeuge</span></div>
+  <div class="branch-tile energy"><strong>ENERGIE</strong><span class="branch-emoji">⚡</span><span>Wind & Strom</span></div>
+  <div class="branch-tile media"><strong>MEDIEN</strong><img src="business-assets/img_26_cf0887394466.jpg" alt=""><span>📷 Medien</span></div>
+  <div class="branch-tile food"><strong>LEBENSMITTEL</strong><img src="business-assets/img_14_f99a5ca0c1a3.jpg" alt=""><span>🥬 Handel</span></div>
+  <div class="branch-tile leisure"><strong>FREIZEIT</strong><img src="business-assets/img_20_23bb81569ff.jpg" alt=""><span>🎡 Freizeit</span></div>
+  <div class="branch-tile property"><strong>IMMOBILIEN</strong><span class="branch-emoji">🏙️</span><span>🏠 Immobilien</span></div>
+  <div class="branch-tile tech"><strong>TECHNOLOGIE</strong><img src="business-assets/img_08_da4c5c7e5fc4.jpg" alt=""><span>💻 Technik</span></div>
+  <div class="branch-tile raw"><strong>ROHSTOFFE</strong><span class="branch-emoji">🪵</span><span>⛏️ Rohstoffe</span></div>
+ </div><p class="sample-note">Branchenbilder dienen der Vorschau und verändern keine Spielregeln.</p></section>
+ <p id="status" class="status" aria-live="polite" role="status"></p>
+</main>
+<script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="business_start.js?v=11.0.1" defer></script>
+</body></html>

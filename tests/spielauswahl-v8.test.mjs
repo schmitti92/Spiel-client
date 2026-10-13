@@ -82,7 +82,7 @@ test('Host can choose a different game without being redirected back to old pre-
  assert.equal(view.buttons.every(b=>!b.disabled),true);
  await view.buttons[3].listeners.click();
  assert.equal(view.requests.find(r=>r.opts.method==='POST').opts.body,'{"game":"business"}');
- assert.deepEqual(view.navigated,[{type:'assign',url:'hub-lobby.html?room=ABC23D&stage=1'}]);
+ assert.deepEqual(view.navigated,[{type:'assign',url:'Business/business_start.html?room=ABC23D'}]);
 });
 
 test('Skyjo opens its own illustrated pre-room, not the generic pre-room',async()=>{
@@ -91,4 +91,15 @@ test('Skyjo opens its own illustrated pre-room, not the generic pre-room',async(
  await view.buttons[1].listeners.click();
  assert.deepEqual(JSON.parse(view.requests.find(r=>r.opts.method==='POST').opts.body),{game:'skyjo'});
  assert.deepEqual(view.navigated,[{type:'assign',url:'Skyjo/skyjo_start.html?room=ABC23D'}]);
+});
+
+test('Business selection and preselected guest enter its dedicated online start room',async()=>{
+ const host=simulate({host:true});
+ await flush();
+ await host.buttons[3].listeners.click();
+ assert.deepEqual(JSON.parse(host.requests.find(r=>r.opts.method==='POST').opts.body),{game:'business'});
+ assert.deepEqual(host.navigated,[{type:'assign',url:'Business/business_start.html?room=ABC23D'}]);
+ const guest=simulate({host:false,game:'business',phase:'preparing'});
+ await flush();
+ assert.deepEqual(guest.navigated,[{type:'replace',url:'Business/business_start.html?room=ABC23D'}]);
 });
