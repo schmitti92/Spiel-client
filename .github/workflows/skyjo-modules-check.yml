@@ -1,5 +1,10 @@
 name: SKYJO module integrity
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'Skyjo/**'
+      - '.github/workflows/skyjo-modules-check.yml'
   pull_request:
     paths:
       - 'Skyjo/skyjo_action.html'
