@@ -16,7 +16,7 @@ test('No duplicate or missing HTML elements referenced by room controller',()=>{
 });
 test('Local games available without a user account',()=>{
  assert.match(html,/id="local-view"/);
- assert.match(js,/setPlayMode\('local'\)/);
+ assert.match(js,/location\.assign\('spielauswahl-lokal\.html'\)/);
  for(const path of [
  'Barikade/barikade.html?offline=1',
  'Skyjo/skyjo_action.html?mode=local',
