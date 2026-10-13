@@ -7,10 +7,11 @@ const root={
  removeEventListener:(type,fn)=>{if(handlers[type]===fn)delete handlers[type]},
  contains:target=>!target.outside
 };
+let overrides={};
 const target={
  outside:false,
  closest:()=>target,
- getAttribute:name=>({
+ getAttribute:name=>Object.hasOwn(overrides,name)?overrides[name]:({
  'data-comic-action':'selectGridCard',
  'data-player-index':'2',
  'data-card-index':'11'
@@ -30,5 +31,9 @@ handlers.keydown({type:'keydown',target,key:'Escape',preventDefault:()=>{}});
 assert(calls.length===2,'Ignore other keys');checks++;
 target.outside=true;click();assert(calls.length===2,'Ignore outside root');checks++;
 target.outside=false;
+overrides={'data-player-index':null};click();assert(calls.length===2,'Missing seat index rejected');checks++;
+overrides={'data-card-index':'2x'};click();assert(calls.length===2,'Malformed card index rejected');checks++;
+overrides={'data-player-index':'1'};click();assert(calls.length===2,'Opponent seat rejected');checks++;
+overrides={};
 stop();assert(!handlers.click&&!handlers.keydown,'Cleanup listeners');checks++;
 console.log('PASS: '+checks+' SKYJO Comic DOM interaction checks');
