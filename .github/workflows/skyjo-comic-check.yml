@@ -23,3 +23,4 @@ jobs:
           node Skyjo/skyjo_comic_live_view.test.mjs
           node Skyjo/skyjo_comic_action_bridge.test.mjs
           node Skyjo/skyjo_comic_card_events.test.mjs
+          node Skyjo/skyjo_comic_mount.test.mjs
