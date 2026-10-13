@@ -27,7 +27,7 @@ function setPlayMode(next){
  render();
 }
 const stayInMatchId=new URL(location.href).searchParams.get('stayMatch');
-let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null;
+let launchedMatchId=null,hubSocket=null,retrySocket=null,streamReady=false,streamLast=0,hubHeartbeat=null,pollInFlight=false;
 function stopWatch(){
  streamReady=false;
  if(hubHeartbeat){clearInterval(hubHeartbeat);hubHeartbeat=null;}
@@ -53,7 +53,7 @@ function startWatch(){
  socket.onmessage=event=>{
   let data;try{data=JSON.parse(event.data);}catch(_e){return;}
   if(data?.type==='pong')lastPong=Date.now();
-  if(data?.type==='room'&&data.room?.code===code){lastPong=Date.now();streamReady=true;streamLast=Date.now();room=data.room;render();}
+  if(data?.type==='room'&&data.room?.code===code){lastPong=Date.now();streamReady=true;streamLast=Date.now();acceptRoom(data.room);}
  };
  socket.onclose=()=>{
   if(hubSocket!==socket)return;
@@ -127,11 +127,18 @@ async function request(path,method='GET',data){
  }finally{clearTimeout(timeout);}
 }
 function setRoomCode(next){code=next;const u=new URL(location.href);if(code)u.searchParams.set('room',code);else u.searchParams.delete('room');history.replaceState(null,'',u);}
-function activateRoom(result){room=result;setRoomCode(result.code);render();}
+function acceptRoom(next){
+ if(!next||next.code!==code)return false;
+ if(room?.code===next.code&&Number(next.revision)<Number(room.revision))return false;
+ room=next;render();return true;
+}
+function activateRoom(result){if(!result?.code)return;setRoomCode(result.code);acceptRoom(result);}
+
 function pollStop(){if(poll){clearInterval(poll);poll=null;}stopWatch();}
-function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code||operation||!activeProfile()||document.hidden)return;
+function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code||operation||pollInFlight||!activeProfile()||document.hidden)return;
  if(streamReady && hubSocket?.readyState===1)return;
- try{const result=await request('/rooms/'+code);pollErrors=0;room=result.room;render();}catch(e){if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}
+ const requestedCode=code;pollInFlight=true;
+ try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
  },4500);}
 function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 function render(){
