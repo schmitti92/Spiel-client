@@ -1,0 +1,20 @@
+name: SKYJO Comic isolated checks
+on:
+  push:
+    paths:
+      - 'Skyjo/skyjo_comic_*.mjs'
+      - '.github/workflows/skyjo-comic-check.yml'
+  pull_request:
+    paths:
+      - 'Skyjo/skyjo_comic_*.mjs'
+      - '.github/workflows/skyjo-comic-check.yml'
+jobs:
+  isolated-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run isolated adapter and snapshot tests
+        run: node Skyjo/skyjo_comic_ci.mjs
