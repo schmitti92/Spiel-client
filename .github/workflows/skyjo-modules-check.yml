@@ -60,7 +60,7 @@ jobs:
           assert 'skyjo-duo-layout-fix.css?v=' in html
           assert 'data-sky-board="illustrated"' in css
           assert 'data-sky-seats="2"' in css
-          assert 'grid-template-areas:"left tl sidebar" "left center sidebar" "left own sidebar"' in css
+          assert 'grid-template-areas:"controls opponent sidebar" "controls center sidebar" "controls own sidebar"' in css
           assert 'grid-template-columns:repeat(4,var(--sky-card-width))' in css
           assert 'grid-template-rows:repeat(3,var(--sky-card-height))' in css
           assert 'data-sky-board="classic"' not in css
