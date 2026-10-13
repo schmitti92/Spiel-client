@@ -121,7 +121,9 @@ jobs:
                 opponent:rect(layout?.querySelector('.sky-reference-tl .player')),
                 own:rect(layout?.querySelector('.sky-reference-own .player')),
                 center:rect(layout?.querySelector('.sky-reference-center')),
-                reaction:rect(document.querySelector('.reaction-bar'))};
+                reaction:rect(document.querySelector('.reaction-bar')),
+                opponentCards:[...(layout?.querySelectorAll('.sky-reference-tl .grid .card')||[])].map(rect),
+                ownCards:[...(layout?.querySelectorAll('.sky-reference-own .grid .card')||[])].map(rect)};
             });
             console.log('Illustrated duo layout diagnostics:',JSON.stringify({started,...measurements}));
             if(measurements.boardTheme!=='illustrated'||errors.length)throw Error('Illustrated mode failed to initialize: '+errors.join('; '));
@@ -129,6 +131,15 @@ jobs:
               const {opponent,own}=measurements;
               if(!opponent||!own)throw Error('Missing player panels in active duo layout');
               if(opponent.w<100||own.w<100)throw Error('Player panel too narrow');
+              const groups=[measurements.opponentCards,measurements.ownCards];
+              for(const cards of groups){
+                if(cards.length!==12)throw Error('Expected 12 cards per player, got '+cards.length);
+                if(cards.some(c=>!c||c.w<10||c.h<10||c.x<0||c.x+c.w>1536||c.y<0||c.bottom>960))
+                  throw Error('A player card is outside the tablet viewport');
+              }
+              const reaction=measurements.reaction;
+              if(reaction&&groups.flat().some(c=>c.bottom>reaction.y&&c.y<reaction.bottom))
+                throw Error('Reaction bar overlaps player cards');
             }else console.log('No active game in CI: panel geometry requires a started two-player game; not asserted.');
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
