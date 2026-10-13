@@ -234,3 +234,66 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
     gap:5px!important;
   }
 }
+
+/* Phase 6B: explicit tablet layout and card dimensions; avoids inherited large cards. */
+@media (min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+  display:grid!important;
+  width:100%!important;
+  max-width:1500px!important;
+  grid-template-columns:minmax(140px,19%) minmax(0,1fr) minmax(150px,19%)!important;
+  grid-template-rows:auto auto auto!important;
+  grid-template-areas:"left tl sidebar" "left center sidebar" "left own sidebar"!important;
+  align-items:center!important;
+  gap:4px 10px!important;
+  padding:4px 10px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+  --card-w:54px!important;
+  --card-h:62px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:0!important;
+  padding:4px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,54px)!important;
+  grid-auto-rows:62px!important;
+  gap:3px!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin-inline:auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid > .card,
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid > .card{
+  box-sizing:border-box!important;
+  width:54px!important;
+  height:62px!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:54px!important;
+  max-height:62px!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{
+  min-height:0!important;
+  max-height:180px!important;
+  overflow:auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table{
+  max-height:175px!important;
+  overflow:auto!important;
+ }
+ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{
+  grid-area:sidebar!important;
+  align-self:center!important;
+ }
+}
