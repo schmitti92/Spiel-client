@@ -1,52 +1,52 @@
-SPIELESAMMLUNG — GEMEINSAME ONLINE-LOBBY V5 (BUSINESS BETA)
-12. Oktober 2026 · Entwicklungszweig: feature/gemeinsame-lobby-v1
+SPIELESAMMLUNG — GEMEINSAME ONLINE-LOBBY V6 (AUTOMATISCHE RÜCKKEHR)
+13. Oktober 2026 · Entwicklungszweig: feature/gemeinsame-lobby-v1
 
 ZIEL
-Alle Freunde treten genau einem gemeinsamen Raum (sechsstelliger Code) bei.
-Der Host wählt ein Spiel; die Mitspieler melden sich bereit. Die Partien
-verwenden interne Kennungen, sodass niemand einem zweiten Raum beitreten muss.
-Nach dem Spiel bleiben alle im gemeinsamen Raum für das nächste Spiel.
+Alle 2–6 Mitglieder nutzen denselben zentralen Raumcode für Barikade,
+SKYJO Action, KreuzKunter und Das große Business. Der Host wählt das
+Spiel und die Einstellungen. Teilnehmer melden sich bereit, die Partie
+startet automatisch. Nach dem Ende bleiben alle Mitglieder in demselben
+Raum und können direkt das nächste Spiel auswählen.
 
-BISHER
-[x] Zentrale Firestore-Räume, Firebase-Spieleridentitäten, Host-Rechte.
-[x] Zuschauer, Bereitmeldungen, Echtzeit-WebSocket und Wiederbeitritt.
-[x] Barikade, KreuzKunter und SKYJO Action als Beta angeschlossen.
+GRUNDLAGE AUS V5
+[x] Firebase-identifizierte zentrale Spielräume in Firestore, Host-Rechte.
+[x] Vier Spiele mit eigenen internen Partie-Codes angeschlossen.
+[x] Spielfunktionen behalten ihre individuellen Einstellungen / Regeln.
+[x] Zuschauer, Spielerplätze, Bereitmeldung, atomarer Start.
+[x] WebSocket-Lobby und HTTP-Fallback.
 
-NEU IN V5
-[x] Das große Business als viertes Spiel für 2–5 aktive Teilnehmer angebunden.
-[x] Business-Vorraum: 10/20/30 Runden, nur Host kann ändern.
-[x] Änderungen setzen alle Bereitmeldungen zurück; automatische Startfreigabe.
-[x] Eigene interne Partie-ID (D + Hubcode + Partie-Seriennummer), gemeinsame
-    Hub-ID bleibt für Folgepartien unverändert.
-[x] Eindeutige Spielernamen auch bei gleichen Profilanzeigenamen.
-[x] Geschäfts-Spielseite überspringt im Hub-Modus die frühere Raumerstellung,
-    Raumcode-Eingabe und Profilnamensauswahl.
-[x] Spielerzuordnung über Firebase UID, nicht über frei erfundene
-    Client-Sitzungstokens. Zuschauer und Fremde erhalten keinen Zugriff.
-[x] Host initialisiert exakt einmal einen Client-Spielzustand.
-[x] Der Hub-Business-Spielstand wird dauerhaft in Firestore verwaltet.
-[x] Speichern mit Firestore-Transaktion, Revisionskontrolle, Spielerreihenfolge
-    und unveränderbarer Teilnehmerliste/Rundenzahl.
-[x] Nach Spielende Host-Abschluss mit Nachweis eines gespeicherten gameEnded-
-    Zustands; nächstes Spiel im ursprünglichen Raum möglich.
-[x] Die bisherigen lokalen und unabhängigen Business-Partien bleiben unverändert.
-[x] 27 automatisierte Tests: 27 bestanden; Syntaxprüfungen bestanden.
+NEU IN V6
+[x] Server-Route POST /api/hub/rooms/:code/sync.
+[x] Abschlussabgleich nur mit gültiger Mitgliedschaft und passender Partie-ID.
+[x] Kein Vertrauen in Client-Meldung 'Spiel beendet' oder Client-Punktestand.
+[x] Serverseitige Spielende-Erkennung anhand bestehender Spieladapter.
+[x] Atomare Abschlussbuchung im Firestore-Raum – nur einmal bei Mehrfachaufruf.
+[x] Gemeinsame Lobby, Raumcode und Mitgliedschaften bleiben erhalten.
+[x] Vorherige Partie wird als lastCompleted mit ID, Spiel, Zeit gespeichert.
+[x] Beim Abschluss werden Bereitschaft, Sitzplätze und Farben zurückgesetzt.
+[x] Veraltete Browser-Tabs können laufende Nachfolgepartien nicht abschließen.
+[x] Eine kleine neue Datei hub-game-bridge.js wird in allen vier Spielen geladen;
+    unabhängige / lokale Partien werden nicht verändert.
+[x] Nach bestätigtem Ende erscheint 'Zur Spiele-Lobby', automatischer Wechsel
+    nach 30 Sekunden. Kein Wechsel bei Netzwerk- oder Authentifizierungsfehler.
+[x] 2 neue Regressionstests; 19/19 Tests der gemeinsamen Lobby bestanden in
+    einer isolierten V8-Umgebung mit emulierten Node-Schnittstellen.
+[x] JavaScript-Syntaxprüfung des Browser-Bridges erfolgreich.
 
-VERBLEIBENDE GRENZEN
-[ ] Ein echter Browser-Mehrspielertest unter Staging-Render und Firebase steht aus.
-    Lokale Browseraufrufe wurden durch die Umgebung blockiert.
-[ ] Business-Spielregeln (Würfel, Käufe, Auszahlungen und Geld) werden aktuell
-    noch im Browser errechnet und als Gesamtsnapshot geschickt. Dies ist eine
-    abgesicherte Hub-Beta, aber KEINE vollständig serverautoritative Engine.
-[ ] Auch SKYJO-Kartenreihenfolge / versteckte Karten sind nicht servergeheim.
-[ ] Offizielle Ergebnisse/XP für Business und SKYJO erst nach vollständiger
-    serverseitiger Regelprüfung und einmaliger Abschlussbuchung aktivieren.
-[ ] Abschluss aller Partien nach verifiziertem Spielende automatisch in die
-    Hub-Lobby übertragen (aktuell Host-Abschluss nötig).
-[ ] Reconnect / Serverneustart / mehrere echte Geräte in Staging prüfen.
-[ ] Schnittstellen-/End-to-End-Tests und Performanceoptimierung vor Live-Release.
+OFFENE ARBEIT
+[ ] 29/29 Tests in einem echten Node-Prozess auf dem Feature-Branch ausführen
+    (V5 hatte 27 vollständige Tests; in V6 +2 Tests).
+[ ] Echte Mehrspieler-/Gerätetests mit Firebase und Staging-Render durchführen.
+[ ] Kompletten Reconnect (vor/während/nach Spiel, Browser-Reload) überprüfen.
+[ ] UIs der Spielvorräume vereinheitlichen, Skyjo-Farben/Brettauswahl fertigstellen.
+[ ] Business und SKYJO: vollständige serverseitige Regelvalidierung vor
+    offiziellen Ergebnissen, XP oder Statistik.
+[ ] Bei bestätigtem Spielende optional ein Ergebnisbanner in der Lobby anzeigen.
+[ ] Testen: Zuschauer während laufender Partie; Server-Neustart; Verbindungsabbruch;
+    paralleles Spielende, später Beitritt und Zurückwechseln.
+[ ] Erst nach Staging-Abnahme die Änderung nach main und live übernehmen.
 
-SICHERHEIT
-Die bisherigen main-Zweige bleiben unverändert, genauso die Ausgangs-ZIPs.
-Die Beta-V5-Dateien werden auf feature/gemeinsame-lobby-v1 gespeichert;
-kein Live-Deployment ohne Staging-/Multiplayertest.
+SCHUTZ DER BESTEHENDEN VERSION
+Beide main-Branches und die Original-ZIP-Ausgangsversionen wurden nicht geändert.
+Die Entwicklung liegt ausschließlich auf feature/gemeinsame-lobby-v1.
+Kein Live-Render-Deployment durchgeführt.
