@@ -32,9 +32,11 @@ NEU IN V6
 [x] 3 neue Regressionstests; 20/20 Tests der gemeinsamen Lobby bestanden in
     einer isolierten V8-Umgebung mit emulierten Node-Schnittstellen.
 [x] JavaScript-Syntaxprüfung des Browser-Bridges erfolgreich.
+[x] GitHub Actions Workflow nur für feature/gemeinsame-lobby-v1 eingerichtet.
 
 OFFENE ARBEIT
-[ ] 30/30 Tests in einem echten Node-Prozess auf dem Feature-Branch ausführen
+[x] 30/30 Tests in echtem Node.js 20-Prozess über GitHub Actions bestanden.
+    GitHub-Lauf: https://github.com/schmitti92/serverfinal/actions/runs/38354985473
     (V5 hatte 27 vollständige Tests; in V6 +3 Tests).
 [ ] Echte Mehrspieler-/Gerätetests mit Firebase und Staging-Render durchführen.
 [ ] Kompletten Reconnect (vor/während/nach Spiel, Browser-Reload) überprüfen.
