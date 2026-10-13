@@ -25,7 +25,7 @@ function boardHTML(player, gamePlayer, classes, playerIndex, interactive = false
   const cards = gamePlayer?.grid ?? gamePlayer?.cards ?? gamePlayer?.board;
   if (!Array.isArray(cards) || cards.length !== 12) throw new TypeError('Expected 12 cards for every player');
   return '<div class="board '+classes+'"><h3><span class="player-name">'+escapeHTML(player.name)+
-    '</span></h3><div class="cards">'+cards.map((card, index) => cardHTML(card, playerIndex, index, interactive)).join('')+'</div></div>';
+    '</span><span class="points">'+(Number.isFinite(gamePlayer?.total) ? escapeHTML(gamePlayer.total)+' <small>Punkte</small>' : '– <small>Punkte</small>')+'</span></h3><div class="cards">'+cards.map((card, index) => cardHTML(card, playerIndex, index, interactive)).join('')+'</div></div>';
 }
 /**
  * Render an explicitly supplied, validated snapshot into the existing comic preview DOM.
@@ -48,6 +48,6 @@ export function renderComicSnapshot(room, selfSeatId, root = document, options =
   enemies.innerHTML = enemyHTML;
   self.innerHTML = selfHTML;
   const note = root.querySelector('.note');
-  if (note) note.textContent = 'SPIEGELANSICHT – nur Anzeige; Spielzüge erfolgen weiterhin im Originalspiel.';
+  if (note) note.textContent = options.interactive === true ? 'LIVE-BETA – Spielzüge über die bestehende SKYJO-Engine.' : 'SPIEGELANSICHT – nur Anzeige; Spielzüge erfolgen weiterhin im Originalspiel.';
   return { players: snapshot.players.length, selfIndex, opponents: opponents.length };
 }
