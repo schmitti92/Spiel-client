@@ -9,6 +9,7 @@ on:
       - 'Skyjo/skyjo-themes.css'
       - 'Skyjo/skyjo-classic.css'
       - 'Skyjo/skyjo-comic.css'
+      - 'Skyjo/skyjo-comic-duo.css'
       - 'Skyjo/skyjo-main.js'
       - '.github/workflows/skyjo-modules-check.yml'
   workflow_dispatch:
@@ -27,14 +28,15 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           html = Path('Skyjo/skyjo_action.html').read_text()
-          css = Path('Skyjo/skyjo-base.css').read_text() + Path('Skyjo/skyjo-overrides.css').read_text() + Path('Skyjo/skyjo-classic.css').read_text() + Path('Skyjo/skyjo-themes.css').read_text() + Path('Skyjo/skyjo-comic.css').read_text()
+          css = Path('Skyjo/skyjo-base.css').read_text() + Path('Skyjo/skyjo-overrides.css').read_text() + Path('Skyjo/skyjo-classic.css').read_text() + Path('Skyjo/skyjo-themes.css').read_text() + Path('Skyjo/skyjo-comic.css').read_text() + Path('Skyjo/skyjo-comic-duo.css').read_text()
           assert css == Path('Skyjo/skyjo.css').read_text(), 'CSS order or content changed'
           js = Path('Skyjo/skyjo-main.js').read_text()
           assert '<link rel="stylesheet" href="skyjo-base.css?v=15.54">' in html
           assert '<link rel="stylesheet" href="skyjo-overrides.css?v=15.55">' in html
           assert '<link rel="stylesheet" href="skyjo-classic.css?v=15.56">' in html
           assert '<link rel="stylesheet" href="skyjo-themes.css?v=15.57">' in html
-          assert '<link rel="stylesheet" href="skyjo-comic.css?v=15.57">' in html
+          assert '<link rel="stylesheet" href="skyjo-comic.css?v=15.58">' in html
+          assert '<link rel="stylesheet" href="skyjo-comic-duo.css?v=15.58">' in html
           assert '<script src="skyjo-main.js?v=15.53"></script>' in html
           assert 'document.body.dataset.skyBoard=selectedSkyBoard;' in js
           assert 'window.Game=' in js
@@ -66,7 +68,7 @@ jobs:
             const result = await page.evaluate(() => ({
               app: !!document.querySelector('#app'),
               game: typeof window.Game?.render === 'function',
-              css: ['skyjo-base.css','skyjo-overrides.css','skyjo-classic.css','skyjo-themes.css','skyjo-comic.css'].every(name=>[...document.styleSheets].some(x=>x.href?.includes(name))),
+              css: ['skyjo-base.css','skyjo-overrides.css','skyjo-classic.css','skyjo-themes.css','skyjo-comic.css','skyjo-comic-duo.css'].every(name=>[...document.styleSheets].some(x=>x.href?.includes(name))),
               script: [...document.scripts].some(x=>x.src?.includes('skyjo-main.js')),
               body: document.querySelector('#app')?.textContent?.length || 0
             }));
