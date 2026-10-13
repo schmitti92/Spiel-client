@@ -10,7 +10,7 @@ const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',busines
 const byId=id=>document.getElementById(id);
 const buttons=[...document.querySelectorAll('[data-select-game]')];
 let loading=false,choosing=false,room=null,notifiedUid=null;
-const roomLocation=()=> 'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1';
+const roomLocation=game=>game==='skyjo'?'Skyjo/skyjo_start.html?room='+encodeURIComponent(code):'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1';
 function status(message,error=false){
  const box=byId('online-notice');
  if(box){box.textContent=message;box.classList.toggle('error',!!error);}
@@ -45,7 +45,7 @@ function update(snapshot){
  const permitted=!!snapshot.host&&snapshot.phase!=='playing'&&!choosing;
  for(const btn of buttons)btn.disabled=!permitted;
  if(snapshot.game&&['preparing','playing'].includes(snapshot.phase)&&!(chooseAnother&&snapshot.host&&snapshot.phase==='preparing')){
-  location.replace(roomLocation());
+  location.replace(roomLocation(snapshot.game));
   return;
  }
  status(snapshot.host?'Wähle unten ein Spiel, um den Online-Vorraum für alle zu öffnen.':'Warte, bis der Host ein Spiel ausgewählt hat. Alle bleiben im selben Raum.');
@@ -85,7 +85,7 @@ for(const button of buttons){
   try{
    const result=await request('/rooms/'+code+'/select','POST',{game});
    if(result?.room?.game!==game)throw Error('GAME_SELECT_FAILED');
-   location.assign(roomLocation());
+   location.assign(roomLocation(game));
   }catch(e){
    choosing=false;
    status(e?.message==='HOST_ONLY'?'Nur der Host kann das Spiel auswählen.':'Die Spielauswahl ist fehlgeschlagen: '+(e.message||'Netzwerkfehler'),true);
