@@ -13,24 +13,31 @@ export function mountComicGame({
   if (!root || typeof getSeatId !== 'function' || !game ||
       typeof canAct !== 'function' || typeof onError !== 'function')
     throw new TypeError('Comic game requires an engine and an authenticated seat');
-  const bridge = createComicActionBridge({ game, canAct, onError });
+  let currentSeatIndex = -1;
+  let disposed = false;
+  const allowed = () => !disposed && interactive === true && currentSeatIndex >= 0 && canAct();
+  const bridge = createComicActionBridge({ game, canAct: allowed, onError });
   const view = createComicLiveView({ root, getSeatId, onError, interactive });
   const unbind = bindComicCardInteractions({
-    root, bridge, isEnabled: () => interactive === true && canAct()
+    root, bridge, isEnabled: allowed
   });
-  let disposed = false;
   return Object.freeze({
     update(room, revision) {
       if (disposed) return false;
-      return view.receive(room, revision);
+      const result = view.receive(room, revision);
+      if (result && Number.isInteger(result.selfIndex)) currentSeatIndex = result.selfIndex;
+      return result;
     },
     action(action, payload) {
-      if (disposed || interactive !== true) return false;
+      if (!allowed()) return false;
+      if ((action === 'selectGridCard' || action === 'selectExtraCard' || action === 'resolveMatch') &&
+          payload?.playerIndex !== currentSeatIndex) return false;
       return bridge.dispatch(action, payload);
     },
     dispose() {
       if (disposed) return;
       disposed = true;
+      currentSeatIndex = -1;
       unbind();
       view.stop();
     }
