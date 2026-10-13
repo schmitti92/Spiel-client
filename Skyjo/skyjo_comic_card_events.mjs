@@ -2,9 +2,9 @@
  * Explicitly opt-in DOM event delegation for the Comic board.
  * No state changes occur unless the host supplies an authorized action bridge.
  */
-export function bindComicCardInteractions({ root, bridge, isEnabled = () => false }) {
+export function bindComicCardInteractions({ root, bridge, isEnabled = () => false, isOwnPlayer = () => false }) {
   if (!root || typeof root.addEventListener !== 'function' ||
-      !bridge || typeof bridge.dispatch !== 'function' || typeof isEnabled !== 'function')
+      !bridge || typeof bridge.dispatch !== 'function' || typeof isEnabled !== 'function' || typeof isOwnPlayer !== 'function')
     throw new TypeError('Invalid Comic interaction configuration');
   const findTarget = element => element?.closest?.('[data-comic-action]');
   function activate(event) {
@@ -17,7 +17,7 @@ export function bindComicCardInteractions({ root, bridge, isEnabled = () => fals
     const playerIndex = Number(target.getAttribute('data-player-index'));
     const cardIndex = Number(target.getAttribute('data-card-index'));
     if (!Number.isInteger(playerIndex) || !Number.isInteger(cardIndex) ||
-        playerIndex < 0 || cardIndex < 0 || cardIndex > 11) return;
+        playerIndex < 0 || cardIndex < 0 || cardIndex > 11 || !isOwnPlayer(playerIndex)) return;
     if (event.type === 'keydown') event.preventDefault();
     bridge.dispatch(action, { playerIndex, cardIndex });
   }
