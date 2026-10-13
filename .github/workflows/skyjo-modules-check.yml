@@ -34,7 +34,16 @@ jobs:
           from pathlib import Path
           html = Path('Skyjo/skyjo_action.html').read_text()
           css = Path('Skyjo/skyjo-base.css').read_text() + Path('Skyjo/skyjo-overrides.css').read_text() + Path('Skyjo/skyjo-classic.css').read_text() + Path('Skyjo/skyjo-themes.css').read_text() + Path('Skyjo/skyjo-comic.css').read_text() + Path('Skyjo/skyjo-comic-duo.css').read_text()
-          assert css.startswith(Path('Skyjo/skyjo.css').read_text()), 'Original CSS order or content changed'
+          # The v19 board intentionally replaces parts of the historical CSS.
+          # Validate actual module order and non-empty sources instead of requiring
+          # byte-for-byte equality with the obsolete monolithic backup.
+          css_modules = ('skyjo-base.css', 'skyjo-overrides.css', 'skyjo-classic.css', 'skyjo-themes.css', 'skyjo-comic.css', 'skyjo-comic-duo.css')
+          for module in css_modules:
+              assert Path('Skyjo', module).read_text().strip(), f'Empty stylesheet: {module}'
+              assert f'href="{module}?v=' in html, f'Missing stylesheet link: {module}'
+          link_positions = [html.index(f'href="{module}?v=') for module in css_modules]
+          assert link_positions == sorted(link_positions), 'Stylesheet loading order changed'
+          assert 'skyjo-duo-layout-fix.css?v=' in html, 'Missing rebuilt board stylesheet'
           js = Path('Skyjo/skyjo-main.js').read_text()
           assert '<link rel="stylesheet" href="skyjo-base.css?v=15.54">' in html
           assert '<link rel="stylesheet" href="skyjo-overrides.css?v=15.55">' in html
