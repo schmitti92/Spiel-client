@@ -76,7 +76,7 @@
 
 /* Reference-accurate two-player composition: opponent above, self below,
    real actionable controls left, scores right and interactive piles center. */
-@media(min-width:1000px) and (orientation:landscape){
+@media(min-width:900px) and (orientation:landscape){
 body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
  display:grid!important;
  grid-template-columns:minmax(180px,23%) minmax(380px,1fr) minmax(185px,23%)!important;
@@ -185,7 +185,7 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
  margin:0 0 5px!important;font-size:clamp(12px,1vw,17px)!important;
 }
 }
-@media(min-width:1000px) and (orientation:landscape) and (max-height:850px){
+@media(min-width:900px) and (orientation:landscape) and (max-height:850px){
 body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
  gap:3px 10px!important;padding:8px!important;
 }
@@ -200,11 +200,11 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 }
 body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control span{font-size:20px!important}
 }
-@media(max-width:999px){body.is-playing .sky-duo-controls{display:none!important}}
+@media(max-width:899px){body.is-playing .sky-duo-controls{display:none!important}}
 
 /* Phase 6: tablet landscape, two-player comic board viewport fit.
    Keep all game controls interactive; apply only to the illustrated duo layout. */
-@media (min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+@media (min-width:900px) and (orientation:landscape) and (max-height:1000px){
   body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
     grid-template-columns:minmax(0,1fr) minmax(170px,.68fr) minmax(0,1fr)!important;
     grid-template-rows:minmax(0,1fr) auto!important;
@@ -236,7 +236,7 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 }
 
 /* Phase 6B: explicit tablet layout and card dimensions; avoids inherited large cards. */
-@media (min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+@media (min-width:900px) and (orientation:landscape) and (max-height:1000px){
  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
   display:grid!important;
   width:100%!important;
@@ -299,7 +299,7 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 }
 
 /* Phase 6C: cards are nested inside .card-slot, not direct .grid children. */
-@media (min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+@media (min-width:900px) and (orientation:landscape) and (max-height:1000px){
  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .grid > .card-slot,
  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .grid > .card-slot{
   box-sizing:border-box!important;
@@ -321,7 +321,7 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 
 /* Compact landscape tablets: keep the illustrated duo cards proportional to the
    available width rather than forcing the 1536px reference card size. */
-@media (min-width:1000px) and (max-width:1350px) and (orientation:landscape) and (max-height:1000px){
+@media (min-width:900px) and (max-width:1350px) and (orientation:landscape) and (max-height:1000px){
  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
   grid-template-columns:minmax(110px,17%) minmax(0,1fr) minmax(125px,18%)!important;
   column-gap:6px!important;
@@ -358,7 +358,7 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 
 /* Reference composition: two compact 4x3 boards above/below the shared piles.
    Applies to local AND online matches; only the illustrated two-player table. */
-@media (min-width:1000px) and (orientation:landscape){
+@media (min-width:900px) and (orientation:landscape){
  body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
   grid-template-areas:"left tl sidebar" "left center sidebar" "left own sidebar"!important;
   grid-template-rows:minmax(0,1fr) minmax(110px,.8fr) minmax(0,1fr)!important;
