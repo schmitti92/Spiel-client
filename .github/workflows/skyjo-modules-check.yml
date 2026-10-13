@@ -93,6 +93,37 @@ jobs:
             if(response.status()!==200||!result.app||!result.game||!result.css||!result.script||result.body<30||errors.length)process.exit(1);
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
+      - name: Measure illustrated duo board in Chromium
+        run: |
+          node <<'JS'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1536,height:960},deviceScaleFactor:1});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            await page.goto('http://127.0.0.1:8765/Skyjo/skyjo_action.html?board=illustrated&mode=local',{waitUntil:'domcontentloaded'});
+            await page.waitForTimeout(700);
+            const measurements=await page.evaluate(()=>{
+              const rect=(el)=>{if(!el)return null;const r=el.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height),bottom:Math.round(r.bottom)}};
+              const layout=document.querySelector('.sky-reference-layout[data-sky-seats="2"]');
+              return {boardTheme:document.body.dataset.skyBoard,layoutPresent:!!layout,
+                viewport:{width:innerWidth,height:innerHeight},
+                opponent:rect(layout?.querySelector('.sky-reference-tl .player')),
+                own:rect(layout?.querySelector('.sky-reference-own .player')),
+                center:rect(layout?.querySelector('.sky-reference-center')),
+                reaction:rect(document.querySelector('.reaction-bar'))};
+            });
+            console.log('Illustrated duo layout diagnostics:',JSON.stringify(measurements));
+            if(measurements.boardTheme!=='illustrated'||errors.length)throw Error('Illustrated mode failed to initialize: '+errors.join('; '));
+            if(measurements.layoutPresent){
+              const {opponent,own}=measurements;
+              if(!opponent||!own)throw Error('Missing player panels in active duo layout');
+              if(opponent.w<100||own.w<100)throw Error('Player panel too narrow');
+            }else console.log('No active game in CI: panel geometry requires a started two-player game; not asserted.');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
