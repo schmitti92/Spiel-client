@@ -10201,6 +10201,7 @@ function refreshComicPanels(){
  const count=Array.isArray(game.playDeck)?game.playDeck.length:'–';
  const deck=doc.querySelector('.decklabel');if(deck)deck.textContent='Nachziehstapel · '+count;
  const room=doc.querySelector('.room small');if(room)room.textContent=seats.length+' Spieler · LIVE-BETA';
+ const note=doc.querySelector('.note');if(note)note.textContent=Number(game.currentPlayer)===ownIndex?'Du bist am Zug · Comic-Beta':'Am Zug: '+turn+' · Comic-Beta';
 }
 function setup(){
  if(ready||!frame.contentDocument)return;
