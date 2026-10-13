@@ -1,0 +1,75 @@
+/* Spielesammlung V7 – responsive play-mode choice and online game-specific pre-rooms */
+.mode-chooser{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.mode-option{display:flex;gap:13px;align-items:center;justify-content:flex-start;text-align:left;background:#fff;border:1.5px solid #dbe7f6;border-radius:19px;padding:15px 18px;box-shadow:0 5px 20px #1637580a;color:#24466a;min-height:83px;cursor:pointer;transition:border-color .15s,background .15s}
+.mode-option .mode-symbol{display:grid;place-items:center;width:49px;height:49px;background:#eaf3fd;border-radius:15px;font-size:25px;flex:none}
+.mode-option strong{font-size:17px;display:block;line-height:1.2}
+.mode-option small{font-size:12px;display:block;margin-top:4px;color:#6e85a0;line-height:1.3}
+.mode-option.active{border-color:#3483e0;background:#f0f7ff;box-shadow:0 0 0 3px #317cdb16}
+.mode-option.active .mode-symbol{background:#d8eaff}
+.mode-option:focus-visible{outline:3px solid #357ee1;outline-offset:3px}
+#online-area>.account{margin-bottom:16px}
+#online-area>.panel + .panel{margin-top:16px}
+.local-intro{font-size:14px;color:#607e9c;margin-top:4px;line-height:1.6}
+.local-game-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
+.local-game{display:flex;gap:12px;align-items:center;min-height:108px;border:1px solid #dfebf6;border-radius:16px;padding:15px;background:#f8fbff;color:#153d6a;text-decoration:none}
+.local-game:hover,.local-game:focus-visible{background:#eaf5ff;border-color:#95c4ee}
+.local-game .local-icon{display:grid;place-items:center;font-size:25px;width:47px;height:47px;flex:none;border-radius:14px;background:#e3f0ff}
+.local-game strong{display:block;font-size:15px}
+.local-game small{display:block;color:#6684a0;margin-top:4px;font-size:12px}
+.local-footer{margin-top:15px;font-size:12px;color:#758da6}
+.entry-action{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.entry-action #create-btn{flex:0 1 auto}
+.entry-action .join-separator{color:#6f86a0;flex:none}
+.entry-action #join-code{flex:1 1 152px;min-width:152px;width:100%}
+.entry-action #join-btn{flex:0 0 auto}
+#game-stage-hero{padding:0;overflow:hidden;border-color:#d8e6f5}
+.game-stage-cover{--cover:url("Assets/game-backgrounds/barikade.webp");background:linear-gradient(95deg,#081c35ee,#081c3585 70%,#081c3533),var(--cover) center/cover;min-height:175px;color:white;padding:25px 25px;display:flex;align-items:center;gap:18px}
+#game-stage-hero[data-game="barikade"] .game-stage-cover{--cover:url("Assets/game-backgrounds/barikade.webp")}
+#game-stage-hero[data-game="skyjo"] .game-stage-cover{--cover:url("Assets/game-backgrounds/skyjo.webp")}
+#game-stage-hero[data-game="kreuz"] .game-stage-cover{--cover:url("Assets/game-backgrounds/kreuzkunter.webp")}
+#game-stage-hero[data-game="business"] .game-stage-cover{--cover:url("Assets/game-backgrounds/business.webp")}
+.game-stage-icon{width:66px;height:66px;border-radius:20px;background:#ffffff30;border:1px solid #ffffff46;display:grid;place-items:center;font-size:34px;flex:none;backdrop-filter:blur(6px)}
+.game-stage-cover .eyebrow{color:#c6dfff;margin:0 0 6px}
+.game-stage-cover h2{font-size:clamp(24px,3.5vw,34px);color:white;line-height:1.1;margin:0}
+.game-stage-description{margin-top:8px;color:#e6effb;font-size:13px;line-height:1.5}
+.game-stage-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 20px}
+.game-stage-badge{font-size:12px;font-weight:850;background:#eaf2ff;border-radius:999px;color:#225d9b;padding:7px 11px}
+.game-stage-actions .btn{min-height:40px;padding:8px 12px;font-size:12px}
+.stage-note{margin:0 20px 19px;color:#6d86a2;font-size:13px;line-height:1.5}
+#game-chooser .chooser-note{margin-top:13px;color:#6b83a1;font-size:13px}
+#game-chooser .game{min-height:102px;position:relative;overflow:hidden;background:#f6fbff}
+#game-chooser .game .emoji{font-size:30px}
+#game-chooser .game:enabled:after{content:"›";font-size:26px;margin-left:auto;color:#558aba}
+#game-chooser .game.active{border-color:#76b0eb}
+#ready-panel{border:1px solid #cce0f7;background:linear-gradient(145deg,#ffffff,#f2f8ff)}
+#ready-panel .ready-progress{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 10px;color:#3b648b;font-size:12px;font-weight:850}
+#ready-panel .ready-bar{height:9px;background:#dfeafa;border-radius:99px;overflow:hidden}
+#ready-panel .ready-bar>span{display:block;height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#2686dd,#1fb98e);transition:width .22s}
+#ready-panel .btn.blue{min-width:210px}
+#ready-panel .btn.blue.is-ready{background:#128f72}
+#ready-panel .ready-hint{margin-top:12px;color:#60809d;font-size:12px}
+#players .player{gap:8px;flex-wrap:wrap}
+#players .player .name{flex:1 1 65px}
+#players .seat-button{margin-left:auto}
+footer{padding-bottom:12px}
+@media(max-width:700px){
+.mode-chooser{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.mode-option{padding:12px 10px;min-height:90px;align-items:flex-start;gap:8px;flex-direction:column}
+.mode-option .mode-symbol{height:37px;width:37px;font-size:20px;border-radius:11px}
+.mode-option strong{font-size:14px}.mode-option small{font-size:11px}
+.local-game-grid{grid-template-columns:1fr}
+.local-game{min-height:86px}
+.entry-action{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.entry-action #create-btn{grid-column:1/-1;width:100%;min-height:53px}
+.entry-action .join-separator{grid-column:1/-1;text-align:center}
+.entry-action #join-code{grid-column:1;min-width:0;width:100%;font-size:17px;letter-spacing:2px}
+.entry-action #join-btn{grid-column:2;min-width:0}
+.game-stage-cover{min-height:150px;padding:20px 16px;gap:11px}
+.game-stage-icon{width:51px;height:51px;font-size:27px;border-radius:15px}
+.game-stage-cover h2{font-size:26px}
+.game-stage-actions{padding:14px 16px}
+.stage-note{margin:0 16px 17px}
+#game-chooser .game{min-height:88px}
+#ready-panel .btn.blue{min-width:0}
+}
+@media(max-width:370px){.game-stage-cover h2{font-size:23px}.mode-option strong{font-size:13px}.game-stage-description{font-size:12px}}
