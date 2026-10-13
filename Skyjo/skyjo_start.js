@@ -96,9 +96,9 @@ function playerRow(p,i){
  const state=elem('span','sj-state '+(p.ready?'yes':'no'),p.participating?(p.ready?'✔ Bereit':'○ Nicht bereit'):'Zuschauer');
  row.append(state);
  if(room.host&&room.phase==='preparing'&&!p.host){
-  const control=elem('button','sj-seat-action',p.participating?'Zuschauen':'Mitspielen');
+  const control=elem('button','sj-seat-action',p.participating?'Zu Zuschauer machen':'Mitspielen lassen');
   control.type='button';
-  control.title=p.participating?'Spielplatz als Zuschauer freigeben':'Spielplatz zuweisen';
+  control.title=p.participating?'Diesen aktiven Spieler zum Zuschauer machen':'Diesem Zuschauer einen aktiven Spielplatz geben';
   control.disabled=busy;
   control.addEventListener('click',()=>mutate('/seats',{seat:p.seat,participating:!p.participating}));
   row.append(control);
