@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'Skyjo/skyjo_comic_*.mjs'
+      - 'Skyjo/skyjo_comic_*.html'
+      - 'Skyjo/skyjo_action_comic_beta.html'
       - '.github/workflows/skyjo-comic-check.yml'
   pull_request:
     paths:
