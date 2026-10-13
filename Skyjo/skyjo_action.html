@@ -5958,6 +5958,29 @@ body.is-playing .sky-reference-layout .player.active .player-head{
 @media(min-width:1000px){body.is-playing .sky-reference-layout{grid-template-columns:minmax(220px,1fr) minmax(370px,1.5fr) minmax(220px,1fr)!important;gap:clamp(10px,1.3vw,22px)!important}body.is-playing .sky-reference-seat .player{--card-w:clamp(35px,3.2vw,62px)!important}body.is-playing .sky-reference-own .player{--card-w:clamp(58px,5vw,88px)!important}body.is-playing .sky-reference-seat .grid,body.is-playing .sky-reference-own .grid{justify-content:center!important}}
 body.is-playing .sky-reference-own:before{content:'DEIN SPIELBRETT';display:block;text-align:center;font-weight:950;letter-spacing:2px;color:#fff3bc;text-shadow:0 3px 4px #150b24;margin-bottom:8px}
 body.is-playing .sky-reference-empty span{display:inline-block;padding:10px 15px;border:1px solid #ffe4ac55;border-radius:12px;background:#091e33a6;letter-spacing:1px}
+
+/* Illustrated scoreboard: only completed-round totals, never live open-card sums. */
+body.is-playing .sky-reference-sidebar{display:flex;flex-direction:column;gap:12px;min-width:0}
+body.is-playing .sky-reference-info{padding:12px;border:3px solid #7dd3fc;border-radius:17px;background:linear-gradient(150deg,#081b35,#153c65 70%,#0b2240);color:#f4f8ff;box-shadow:0 5px 0 #0c1830,0 9px 15px #0008}
+body.is-playing .sky-reference-info h3{font-size:clamp(13px,1.2vw,19px);margin:0 0 12px;color:#ffe3a0;text-shadow:0 2px 2px #000}
+body.is-playing .sky-reference-score-head,body.is-playing .sky-reference-score-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+body.is-playing .sky-reference-score-head{font-size:10px;color:#9dd6f4;padding:3px 7px}
+body.is-playing .sky-reference-score-row{font-size:12px;border-bottom:1px solid #ffffff2a;padding:8px 7px}
+body.is-playing .sky-reference-score-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.is-playing .sky-reference-score-row strong{font-size:15px;color:#fff0b0}
+body.is-playing .sky-reference-score-me{background:#d3a94b35;outline:1px solid #ffd774;border-radius:7px}
+body.is-playing .sky-reference-info p{margin:8px 0;font-size:12px;line-height:1.4}
+@media(min-width:1350px){
+ body.is-playing .sky-reference-layout{grid-template-columns:minmax(180px,1fr) minmax(340px,1.45fr) minmax(180px,1fr) minmax(180px,.75fr)!important;
+ grid-template-areas:"tl center tr sidebar" "bl center br sidebar" ". own . sidebar"!important}
+ body.is-playing .sky-reference-sidebar{grid-area:sidebar}
+}
+@media(min-width:1000px) and (max-width:1349px){
+ body.is-playing .sky-reference-sidebar{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}
+}
+@media(max-width:999px){
+ body.is-playing .sky-reference-sidebar{order:3;display:grid;grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
@@ -9304,7 +9327,16 @@ function gameView(){
  const seat=(index,label)=>index<others.length
   ?`<div class="sky-reference-seat sky-reference-${label}">${playersHTML[others[index]]}</div>`
   :`<div class="sky-reference-seat sky-reference-${label} sky-reference-empty" aria-label="Freier Spielerplatz"><span>Freier Platz</span></div>`;
- return `<div class="table-area sky-reference-layout" data-sky-seats="${state.players.length}"><div class="sky-reference-center">${centerTable}</div>${seat(0,'tl')}${seat(1,'tr')}${seat(2,'bl')}${seat(3,'br')}<div class="sky-reference-own">${playersHTML[own]||''}</div></div>`;
+ const standings=state.players.map((p,i)=>({name:p.name,total:Number(p.total)||0,index:i})).sort((a,b)=>a.total-b.total);
+ const scoreboard=`<aside class="sky-reference-sidebar" aria-label="Zwischenstände und Spielinformationen">
+ <section class="sky-reference-info"><h3>🏆 Zwischenstände</h3><div class="sky-reference-score-head"><span>Spieler</span><span>Gesamt</span></div>
+ ${standings.map((p,i)=>`<div class="sky-reference-score-row ${p.index===own?'sky-reference-score-me':''}"><span>${i+1}. ${escapeHTML(p.name)}</span><strong>${p.total}</strong></div>`).join('')}</section>
+ <section class="sky-reference-info"><h3>📋 Aktuelle Runde</h3>
+ <p>🎯 ${escapeHTML(state.players[actorIndex()]?.name||'Spieler')} ist am Zug</p>
+ <p>🃏 Nachziehstapel: ${state.playDeck.length} Karten</p>
+ <p>🔄 Runde ${state.round} · Ziel ${state.target}</p>
+ <p>⭐ SKYJO Action</p></section></aside>`;
+ return `<div class="table-area sky-reference-layout" data-sky-seats="${state.players.length}"><div class="sky-reference-center">${centerTable}</div>${seat(0,'tl')}${seat(1,'tr')}${seat(2,'bl')}${seat(3,'br')}<div class="sky-reference-own">${playersHTML[own]||''}</div>${scoreboard}</div>`;
 })();
  const boardsWithMessage=boards.replace(/<\/div>\s*$/,tableMessageZoneHTML()+'</div>');
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
