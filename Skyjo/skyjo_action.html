@@ -5887,6 +5887,72 @@ body.is-playing .sky-reference-layout .sky-reference-own .player{
 @media(max-width:999px){
  body.is-playing .sky-reference-layout{padding:12px!important}
 }
+
+/* SKYJO illustrated comic landscape – scalable CSS artwork, no extra downloads. */
+body.is-playing{
+ background:
+  radial-gradient(circle at 76% 8%,#fff8c8 0 2.7%,#ffe17c 2.9% 4.4%,transparent 4.6%),
+  radial-gradient(ellipse at 14% 14%,#ffffffd8 0 6%,transparent 6.4%),
+  radial-gradient(ellipse at 88% 21%,#fffef1c9 0 7%,transparent 7.4%),
+  linear-gradient(155deg,transparent 0 44%,#244b77 44.2% 47%,transparent 47.3%) 0 80px/35% 43% repeat-x,
+  linear-gradient(205deg,transparent 0 44%,#366899 44.2% 47%,transparent 47.3%) 0 95px/42% 40% repeat-x,
+  linear-gradient(180deg,#0597e5 0%,#64c8f2 26%,#b8e7f1 39%,#3377a0 40%,#102f59 53%,#13294b 100%) fixed!important;
+}
+body.is-playing .sky-reference-layout{
+ background:
+  radial-gradient(circle at 50% 4%,#fff3ae44,transparent 28%),
+  repeating-linear-gradient(92deg,transparent 0 72px,#1e0c082e 73px 76px,transparent 79px 146px),
+  repeating-linear-gradient(0deg,transparent 0 87px,#331c1b55 88px 92px,transparent 94px 176px),
+  linear-gradient(165deg,#d28c4b,#965433 49%,#61342d)!important;
+ border:5px solid #201b37!important;
+ outline:4px solid #f7bf57;
+ outline-offset:-12px;
+}
+body.is-playing .sky-reference-layout:after{
+ content:"✦  ★  ✦  SKYJO ACTION  ✦  ★  ✦";
+ position:absolute;left:50%;top:0;transform:translate(-50%,-55%);
+ z-index:2;pointer-events:none;white-space:nowrap;
+ padding:5px 20px;border-radius:50px;
+ border:3px solid #16233d;
+ background:linear-gradient(160deg,#fff6bc,#ffbb3f 62%,#e67d24);
+ color:#10213d;font-weight:1000;letter-spacing:2px;
+ font-size:clamp(12px,1.5vw,23px);
+ text-shadow:1px 2px #fff9;
+ box-shadow:0 5px 0 #253655,0 10px 18px #0c1527b0;
+}
+body.is-playing .sky-reference-layout .sky-reference-center .play-pilebox{
+ border:2px solid #5cc5f3!important;
+ border-radius:20px!important;
+ background:linear-gradient(145deg,#102b56,#173c76)!important;
+ box-shadow:inset 0 0 24px #0b193c,0 8px 0 #071e3f!important;
+}
+body.is-playing .sky-reference-layout .sky-reference-center button{
+ border-radius:13px!important;
+ border:2px solid #d8f0ff!important;
+ box-shadow:0 5px 0 #0d2849,0 8px 14px #030c1e8c!important;
+ font-weight:900!important;
+}
+body.is-playing .sky-reference-layout .player .avatar{
+ border:3px solid #fff3ae!important;
+ border-radius:50%!important;
+ background:radial-gradient(circle at 30% 20%,#fff2a5,#ffaf45 65%,#bf4c36)!important;
+ color:#172544!important;
+ box-shadow:0 3px 0 #182342,0 0 0 3px #583d35!important;
+}
+body.is-playing .sky-reference-layout .player .card{
+ box-shadow:0 2px 0 #0b1e3c,0 3px 7px #07122680!important;
+ border-radius:9px!important;
+}
+body.is-playing .sky-reference-layout .player.active .player-head{
+ background:linear-gradient(110deg,#ac3b41,#e46b40 55%,#ffe174)!important;
+}
+@media (prefers-reduced-motion:no-preference){
+ body.is-playing .sky-reference-layout .player.active{animation:skyReferenceGlow 2.6s ease-in-out infinite}
+ @keyframes skyReferenceGlow{
+  0%,100%{filter:drop-shadow(0 0 3px #ffda6c)}
+  50%{filter:drop-shadow(0 0 14px #ffe26b)}
+ }
+}
 </style>
 </head>
 <body>
