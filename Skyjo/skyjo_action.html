@@ -6349,6 +6349,133 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
   padding:8px 10px!important;gap:5px!important;
  }
 }
+
+/* Reference-accurate two-player composition: opponent above, self below,
+   real actionable controls left, scores right and interactive piles center. */
+@media(min-width:1000px) and (orientation:landscape){
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+ display:grid!important;
+ grid-template-columns:minmax(180px,23%) minmax(380px,1fr) minmax(185px,23%)!important;
+ grid-template-rows:auto auto auto!important;
+ grid-template-areas:"left tl sidebar" "left center sidebar" "left own sidebar"!important;
+ align-items:center!important;justify-items:stretch!important;
+ gap:7px 15px!important;padding:12px 14px!important;
+ max-width:1600px!important;margin:5px auto!important;
+ background:linear-gradient(180deg,#03172b18,#03172b05)!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-controls{
+ grid-area:left!important;display:flex!important;flex-direction:column!important;
+ align-self:center!important;gap:12px!important;min-width:0!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control{
+ position:relative;display:grid;grid-template-columns:44px 1fr;
+ grid-template-rows:auto auto;align-items:center;column-gap:7px;
+ border:3px solid #c6f2ff;border-radius:16px;padding:11px 7px;
+ color:#fff;text-align:left;font:inherit;cursor:pointer;
+ background:linear-gradient(170deg,#27bfff,#0573d5 70%,#034a91);
+ box-shadow:0 5px 0 #08243e,0 9px 14px #07152b88;
+ text-shadow:0 2px 2px #06234c;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control span{
+ grid-row:1/3;font-size:30px;text-align:center;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control b{
+ font-size:clamp(13px,1.25vw,21px);line-height:1.1;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control small{
+ font-size:clamp(10px,.85vw,13px);line-height:1.2;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control.discard{
+ background:linear-gradient(170deg,#8a9aa9,#4d5d72 70%,#283e55);
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control.special{
+ background:linear-gradient(170deg,#ffe45a,#ffbb21 70%,#f28b0b);
+ color:#1b2539;text-shadow:none;border-color:#fff2b1;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control:disabled{
+ opacity:.64;cursor:default;filter:saturate(.7);
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl{
+ grid-area:tl!important;width:100%!important;max-width:510px!important;justify-self:center!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own{
+ grid-area:own!important;width:100%!important;max-width:510px!important;justify-self:center!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center{
+ grid-area:center!important;width:100%!important;align-self:center!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-sidebar{
+ grid-area:sidebar!important;display:flex!important;flex-direction:column!important;
+ justify-content:space-evenly!important;align-self:stretch!important;gap:7px!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-guide,
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-empty{
+ display:none!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+ --card-w:clamp(39px,3.8vw,64px)!important;
+ --card-h:calc(var(--card-w)*1.13)!important;
+ min-height:0!important;max-width:100%!important;
+ padding:5px!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .gridwrap{
+ padding:3px!important;margin:0!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .grid{
+ grid-template-columns:repeat(4,var(--card-w))!important;
+ gap:4px!important;width:max-content!important;max-width:100%!important;
+ margin-inline:auto!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .player-head{
+ padding:4px 7px!important;margin-bottom:3px!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .center-table{
+ display:flex!important;flex-direction:column!important;
+ align-items:center!important;gap:5px!important;padding:5px!important;
+ background:transparent!important;border:0!important;box-shadow:none!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .handbox{
+ display:none!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .play-pilebox{
+ width:100%!important;min-width:0!important;flex:none!important;
+ padding:4px!important;background:#09233a77!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-row{
+ display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:center!important;gap:15px!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .pile-card-hit{
+ transform:scale(.8)!important;transform-origin:center!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-center .action-pilebox{
+ width:100%!important;min-width:0!important;flex:none!important;max-height:95px!important;
+ overflow:auto!important;padding:3px!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-info{
+ padding:7px!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-info h3{
+ margin:0 0 5px!important;font-size:clamp(12px,1vw,17px)!important;
+}
+}
+@media(min-width:1000px) and (orientation:landscape) and (max-height:850px){
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"]{
+ gap:3px 10px!important;padding:8px!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-tl .player,
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-reference-own .player{
+ --card-w:clamp(29px,3vw,45px)!important;
+ --card-h:calc(var(--card-w)*1.1)!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-controls{gap:6px!important}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control{
+ padding:6px 4px!important;grid-template-columns:30px 1fr!important;border-width:2px!important;
+}
+body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-seats="2"] .sky-duo-control span{font-size:20px!important}
+}
+@media(max-width:999px){body.is-playing .sky-duo-controls{display:none!important}}
 </style>
 </head>
 <body>
@@ -6361,7 +6488,7 @@ body.is-playing[data-sky-board="illustrated"] .sky-reference-layout[data-sky-sea
 const selectedSkyBoard=new URLSearchParams(location.search).get('board')==='illustrated'?'illustrated':'classic';
 document.body.dataset.skyBoard=selectedSkyBoard;
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
-const SKYJO_BUILD='15.52';
+const SKYJO_BUILD='15.53';
 const SKYJO_HUB_QUERY=new URLSearchParams(location.search);
 const SKYJO_HUB_CODE=/^[A-HJ-NP-Z2-9]{6}$/.test(SKYJO_HUB_QUERY.get('hub')||'')?SKYJO_HUB_QUERY.get('hub'):'';
 const SKYJO_HUB_MATCH=/^[0-9a-f-]{36}$/i.test(SKYJO_HUB_QUERY.get('match')||'')?SKYJO_HUB_QUERY.get('match'):'';
@@ -9698,6 +9825,12 @@ function gameView(){
   ?`<div class="sky-reference-seat sky-reference-${label}">${playersHTML[others[index]]}</div>`
   :`<div class="sky-reference-seat sky-reference-${label} sky-reference-empty" aria-label="Freier Spielerplatz"><span>Freier Platz</span></div>`;
  const standings=state.players.map((p,i)=>({name:p.name,total:Number(p.total)||0,index:i})).sort((a,b)=>a.total-b.total);
+ const duoReference=state.players.length===2&&selectedSkyBoard==='illustrated';
+ const duoControls=duoReference?`<nav class="sky-duo-controls" aria-label="Kartenaktionen">
+ <button type="button" class="sky-duo-control draw" ${canDirect?'onclick="Game.drawFromDeck()"':''} ${canDirect?'':'disabled'}><span>🃏</span><b>Karte ziehen</b><small>Vom Nachziehstapel</small></button>
+ <button type="button" class="sky-duo-control discard" ${discardClick||''} ${discardClick?'':'disabled'}><span>🎴</span><b>Karte ablegen</b><small>${canDropHeld?'Gezogene Karte ablegen':'Ablagestapel verwenden'}</small></button>
+ <button type="button" class="sky-duo-control special" onclick="document.querySelector('.sky-reference-layout .action-pilebox')?.scrollIntoView({behavior:'smooth',block:'center'})" ${specials?'':'disabled'}><span>⚡</span><b>Aktion</b><small>Spezialkarten nutzen</small></button>
+ </nav>`:'';
  const scoreboard=`<aside class="sky-reference-sidebar" aria-label="Zwischenstände und Spielinformationen">
  <section class="sky-reference-info"><h3>🏆 Zwischenstände</h3><div class="sky-reference-score-head"><span>Spieler</span><span>Gesamt</span></div>
  ${standings.map((p,i)=>`<div class="sky-reference-score-row ${p.index===own?'sky-reference-score-me':''}"><span>${i+1}. ${escapeHTML(p.name)}</span><strong>${p.total}</strong></div>`).join('')}</section>
@@ -9706,7 +9839,7 @@ function gameView(){
  <p>🃏 Nachziehstapel: ${state.playDeck.length} Karten</p>
  <p>🔄 Runde ${state.round} · Ziel ${state.target}</p>
  <p>⭐ SKYJO Action</p></section></aside>`;
- return `<div class="table-area sky-reference-layout" data-sky-seats="${state.players.length}"><div class="sky-reference-center">${centerTable}</div>${seat(0,'tl')}${seat(1,'tr')}${seat(2,'bl')}${seat(3,'br')}<div class="sky-reference-own">${playersHTML[own]||''}</div>${scoreboard}${state.players.length===2&&selectedSkyBoard==='illustrated'?'<aside class="sky-duo-guide" aria-label="Spielhinweise"><h3>🎴 Kartenaktionen</h3><p><strong>1</strong> Karte vom Nachziehstapel nehmen</p><p><strong>2</strong> Karte ablegen oder tauschen</p><p><strong>⚡</strong> Spezialkarten im mittleren Bereich</p></aside>':''}</div>`;
+ return `<div class="table-area sky-reference-layout" data-sky-seats="${state.players.length}"><div class="sky-reference-center">${centerTable}</div>${seat(0,'tl')}${seat(1,'tr')}${seat(2,'bl')}${seat(3,'br')}<div class="sky-reference-own">${playersHTML[own]||''}</div>${scoreboard}${duoControls}</div>`;
 })();
  const boardsWithMessage=boards.replace(/<\/div>\s*$/,tableMessageZoneHTML()+'</div>');
  const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
