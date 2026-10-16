@@ -52,6 +52,35 @@
 .actionbar button{transition:filter .15s ease,transform .15s ease}.actionbar button:hover{filter:brightness(1.1);transform:translateY(-2px)}.actionbar button:active{transform:translateY(2px)}
 .deck.draw{box-shadow:8px 8px #051a31,0 0 0 3px #051a31}.deck.discard{box-shadow:8px 8px #051a31,0 0 0 3px #051a31}
 .box.panel{box-shadow:0 0 0 2px #66c4fa,0 6px 0 #02101f}.box.panel h3{border-bottom:1px solid #6bbbe744;padding-bottom:8px}
+
+/* Visual refresh v1 – isolated demo, no game-engine changes */
+:root{color-scheme:dark}
+#stage{background:radial-gradient(ellipse at 50% 4%,#a7e7fb 0%,#5ebcde 20%,#266f9e 48%,#103755 80%,#09243b 100%)}
+.board{border-width:3px;border-color:#b5e4f7;border-radius:19px;box-shadow:0 12px 30px #021020a8,0 0 0 2px #071b32;background:linear-gradient(155deg,#143956f5,#071e35f5)}
+.board h3{display:flex;align-items:center;gap:9px;letter-spacing:.15px}
+.board .points{margin-left:auto;white-space:nowrap;border-radius:999px;background:#ffffff1c;padding:3px 10px;font-variant-numeric:tabular-nums}
+.board .cards{gap:6px}
+.card{position:relative;overflow:hidden;transition:transform .2s ease,filter .2s ease,box-shadow .2s ease;box-shadow:0 3px 6px #0005,inset 0 1px #fff8;border-radius:12px}
+.card:not(.hidden):not(.empty)::before{content:"";position:absolute;inset:0 0 55%;background:linear-gradient(#ffffff60,transparent);pointer-events:none}
+.card:not(.empty):hover{transform:translateY(-3px);filter:brightness(1.08);box-shadow:0 8px 12px #0006}
+.card.hidden{background:repeating-linear-gradient(45deg,#134477,#134477 9px,#1b6196 10px,#1b6196 17px);border-color:#9fd6f5}
+.card.empty{border-style:dashed;border-color:#aac8df77}
+.deck{transition:filter .2s ease,box-shadow .2s ease}
+.deck:hover{filter:brightness(1.08)}
+.box.panel{background:linear-gradient(155deg,#123b5af5,#082039f5);border:2px solid #7ac5e8;border-radius:17px;box-shadow:0 10px 25px #03162988}
+.panel h3{font-size:22px;letter-spacing:.1px}
+.panel p{line-height:1.25}
+.actionbar button,.bottom button,.toolbar button{transition:transform .17s ease,filter .17s ease,box-shadow .17s ease}
+.actionbar button:focus-visible,.bottom button:focus-visible,.toolbar button:focus-visible,.demo select:focus-visible{outline:4px solid #ffdf70;outline-offset:3px}
+.actionbar button:hover,.bottom button:hover,.toolbar button:hover{filter:brightness(1.12)}
+.actionbar button:active,.bottom button:active,.toolbar button:active{transform:translateY(2px) scale(.98)}
+.room{border:2px solid #7ccce9;box-shadow:0 8px 20px #04172c99}
+.note{border:1px solid #b6e4f277;max-width:360px;line-height:1.3}
+#stage.visual-motion .card{animation:skyjo-card-enter .3s cubic-bezier(.2,.8,.2,1) both}
+#stage.visual-motion .board{animation:skyjo-board-enter .3s ease-out both}
+@keyframes skyjo-card-enter{from{opacity:.4;transform:translateY(7px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes skyjo-board-enter{from{opacity:.65;filter:brightness(1.2)}to{opacity:1;filter:brightness(1)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style></head><body><div id="turn">📱 Bitte ins Querformat drehen<small style="font-size:16px;margin-top:18px">SKYJO Comic ist nur im Querformat vorgesehen.</small></div><div id="frame"><main id="stage"><div class="scenery"><div class="sun"></div><div class="mountain one"></div><div class="mountain two"></div><div class="mountain three"></div><div class="forest"></div><div class="lake"></div></div>
 <div class="brand"><span>SKYJO</span> <em>ACTION</em></div><div class="box room">🟢 Online-Raum <small id="room">Bergsee #4827</small></div>
 <div class="toolbar"><button title="Ton">🔊</button><button onclick="document.documentElement.requestFullscreen?.()" title="Vollbild">⛶</button><button title="Einstellungen">⚙</button><button class="menu" title="Menü">♛ Menü</button></div>
@@ -108,4 +137,7 @@ document.querySelector('.specialbtn').addEventListener('click',()=>demoAction('s
 document.querySelector('.menu').addEventListener('click',()=>demoNotice('DEMO: Menü wird erst nach Spielintegration freigeschaltet.'));
 document.querySelector('.bottom button:last-child').addEventListener('click',()=>{const input=document.querySelector('.bottom input');demoNotice('DEMO-Chat: '+(input.value.trim()||'Keine Nachricht eingegeben'));input.value='';});
 document.getElementById('playerCount').addEventListener('change',render);render();
+// Presentation-only entrance effect; respects reduced-motion preference.
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){stage.classList.add('visual-motion');}
+
 </script></body></html>
