@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'../../..');
-const html=fs.readFileSync(path.join(root,'skyjo_action.html'),'utf8');
+const html=fs.readFileSync(path.join(root,'Skyjo','skyjo_action.html'),'utf8');
 const sandbox={Math:Object.create(Math)};
 sandbox.window=sandbox;
 sandbox.Math.random=()=>0;
