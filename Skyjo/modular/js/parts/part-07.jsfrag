@@ -1,0 +1,562 @@
+ 'Man muss auch mal wissen, wann genug gebabbelt is.',
+ 'Jetzt isses passiert, und plötzlich will’s wieder keiner gewesen sein.',
+ 'Do siehste mal, Planung ersetzt manchmal doch den Zufall.',
+ 'Ei, des wär mir ja schon wieder zu modern.',
+ 'Am End muss es einer machen – und meistens weiß ich schon, wer.'
+];
+HEINZ_QUOTES.push(
+ 'Do is wieder mehr Theater als Inhalt dabei.',
+ 'Ei jo, wenn’s schee macht, warum net.',
+ 'Jetzt gugge mer erst mal, bevor wieder jeder losschimpft.',
+ 'Des sieht wichtig aus, muss aber noch lang net sinnvoll sein.',
+ 'Mit Ruhe kommt mer oft weiter als mit Rumgehampel.',
+ 'Do draußen wird’s net besser, wenn mer hier drin verrückt spielt.',
+ 'Jetzt wird wieder alles drei Nummern größer erzählt.',
+ 'Ei, des is so eine Idee mit Anlauf ins Fettnäpfche.',
+ 'Man muss net alles kommentiere, was einem gerade einfällt.',
+ 'Also da hat einer gedacht – aber leider der Falsche.',
+ 'Do merkste gleich, wer vorbereitet war und wer nur geschniegelt.',
+ 'Wenn mer’s sauber anfängt, muss mer hinten net flicken.',
+ 'Ei jo, ich kenn des: erst lachen se, später machen se’s genauso.',
+ 'Jetzt bleib emol uffm Teppich, der Tag hat noch genug Baustellen.',
+ 'Des Problem is net groß – nur die Aufregung drumrum.',
+ 'Wenn jeder nur halb so viel redet, wird doppelt so viel geschafft.',
+ 'Ei, ich hätt’s dir ja gesagt, aber hören muss mer halt auch.',
+ 'Do is mehr Scheinwerfer als Substanz dran.',
+ 'Jetzt machen mer net aus jedem Mückestich ein Wildschwein.',
+ 'Ordnung spart Wege – und Nerve gleich mit.',
+ 'Ei jo, des klingt erst mal schön, bis mer’s benutzen muss.',
+ 'Ich bin ja entspannt, aber net grenzenlos.',
+ 'Do brauchste keinen Ausschuss, nur gesunden Menschenverstand.',
+ 'Erst wenn’s rappelt, merken manche, dass überhaupt was lief.',
+ 'Ei, Hauptsach am Schluss weiß einer noch, wo vorne is.',
+ 'Des kann mer so machen – wenn mer mutig genug is.',
+ 'Jetzt red net drumrum, mach lieber grad raus, was Sache is.',
+ 'Ei jo, ein bisschen Stil darf trotz Chaos schon sein.',
+ 'Wenn’s passt, passt’s. Und wenn net, dann war’s wenigstens lehrreich.',
+ 'Do guck: Kaum bleibt mer ruhig, klappt’s auf einmal doch.'
+);
+
+const STROMBERG_QUOTES=[
+ "Die Zahlen sind super. Wenn man die schlechten einfach mal weglässt.",
+ "Bei uns ist jeder wichtig. Manche halt vor allem fürs Gruppenfoto.",
+ "Motivation ist schön. Aber ein funktionierender Drucker wäre mir lieber.",
+ "Ein guter Chef delegiert nicht Probleme, sondern Erfolgschancen.",
+ "Wenn alle mitdenken, wird es hier erstaunlich still.",
+ "Wir sind wie eine Familie. Nur ohne Erbe und mit mehr Meetings.",
+ "Das nennt sich Teamgeist: Einer macht’s und alle waren dabei.",
+ "Eine offene Tür ist gut. Besonders wenn man schnell rausmuss.",
+ "Ich bin nicht ungeduldig. Die anderen sind nur unfassbar langsam.",
+ "Wer hier Karriere machen will, braucht vor allem einen guten Kalender.",
+ "Wir sparen nicht am Personal. Wir verteilen nur die Arbeit großzügiger.",
+ "Meine Stärke ist Zuhören. Solange keiner zu lange redet.",
+ "Konflikte löse ich diplomatisch: Ich setze ein Meeting an.",
+ "Hier ist niemand ersetzbar. Außer natürlich laut Stellenplan.",
+ "Ein Problem ist erst ein Problem, wenn es schriftlich bei mir liegt.",
+ "Ich habe immer ein offenes Ohr. Das andere ist für den Feierabend reserviert.",
+ "Mein Führungsstil ist flexibel: Ich habe immer die passende Ausrede.",
+ "Wenn das Projekt scheitert, hatten wir immerhin einen schönen Projektnamen.",
+ "Wir sollten nicht nach Schuldigen suchen. Die kennen sich schon selbst.",
+ "Was mich auszeichnet? Ich kann Verantwortung sehr überzeugend verteilen.",
+ "In der Krise zeigt sich, wer mitarbeitet. Und wer PowerPoint kann.",
+ "Neue Ideen sind willkommen, sobald sie meine alten bestätigen.",
+ "Manche Mitarbeiter sind echte Rohdiamanten. Leider ohne Schleifpapier.",
+ "Ich halte mich nicht für unfehlbar. Ich werde nur selten korrigiert.",
+ "Ein guter Plan besteht aus drei Punkten: Kaffee, Hoffnung, Vertagen.",
+ "Wer pünktlich Feierabend macht, hat offenbar seine Mails nicht gelesen.",
+ "Ich nenne das keine Kontrolle. Ich nenne es betreutes Selbstmanagement.",
+ "Das Budget ist knapp. Aber an Ausreden haben wir keinen Mangel.",
+ "Mit einem freundlichen Lächeln lässt sich fast jede Deadline verschieben.",
+ "Wir sind eine moderne Firma. Sogar die Probleme kommen digital.",
+ "Ein bisschen Druck schadet nicht. Sagt meistens der, der keinen hat.",
+ "Unsere Fehlerkultur ist hervorragend: Jeder kennt die Fehler der anderen.",
+ "Ich hätte das sofort entschieden, wenn ich gewusst hätte, worum es geht.",
+ "Man muss Prioritäten setzen. Meine stehen meistens ganz oben.",
+ "Hier wird keiner klein gehalten. Die Bürostühle sind nur zu niedrig.",
+ "Wer Veränderung will, soll erst mal das Passwort aktualisieren.",
+ "Bei so viel Kompetenz im Raum würde ich lieber noch jemanden einladen.",
+ "Ich arbeite lösungsorientiert: Hauptsache, das Problem liegt woanders.",
+ "Ein Mitarbeitergespräch ist wie ein Wetterbericht: viel Gerede, wenig Einfluss.",
+ "Wenn alle an einem Strang ziehen, fragt keiner, wo der Strang befestigt ist.",
+ "Unterschätzen Sie nie die Macht eines falsch gesetzten Häkchens.",
+ "Wir haben keine Hierarchieprobleme. Nur unterschiedliche Höhenlagen.",
+ "Nicht jeder muss glänzen. Es reicht, wenn mein Büro gut beleuchtet ist.",
+ "Ich kann mit Kritik umgehen. Am besten im ungelesenen Ordner.",
+ "Unser Betriebsklima ist prima. Zumindest wenn die Heizung funktioniert.",
+ "Ich fördere Eigeninitiative. Vor allem, wenn sie mir Arbeit abnimmt.",
+ "Ein voller Terminkalender sieht auch dann nach Erfolg aus, wenn nichts passiert.",
+ "Wer immer Ja sagt, hat die letzte Besprechung wohl nicht verstanden.",
+ "Ich bin für flache Hierarchien. Solange mein Stuhl höher bleibt.",
+ "Man kann alles erklären. Nur nicht, warum der Kopierer schon wieder streikt."
+];
+STROMBERG_QUOTES.push(
+ "Erfolg ist, wenn hinterher alle nicken und keiner weiß, warum.",
+ "Ich mag kurze Wege. Vor allem zur Kaffeemaschine.",
+ "Transparenz ist wichtig. Deshalb sieht man auch jeden Fehler so schön.",
+ "Ein gutes Team erkennt man daran, dass am Ende jemand anderes schuld ist.",
+ "Führung heißt, auch im Chaos noch geschniegelt zu wirken.",
+ "Manchmal braucht es Visionen. Manchmal reicht auch ein funktionierender Drucker.",
+ "Wer Zahlen liebt, sollte nicht so genau hinschauen.",
+ "Meine Tür steht offen. Außer wenn ich drin meine Ruhe will.",
+ "Im Büro gewinnt nicht der Beste, sondern der mit dem freien Meetingraum.",
+ "Vertrauen ist gut, Rückmeldung im CC ist besser.",
+ "Ich bin kein Kontrollfreak. Ich mag nur Überraschungen ungern, wenn sie mich betreffen.",
+ "Produktivität ist auch eine Frage der Perspektive. Von außen sieht fast alles nach Arbeit aus.",
+ "Man muss Leute mitnehmen. Notfalls auch gegen ihre Laufrichtung.",
+ "Krisen sind Chancen. Vor allem für neue Präsentationen.",
+ "Ein Chef muss nahbar sein. Aber bitte nicht zu nah vor Feierabend.",
+ "Wenn die Lösung teuer ist, nennen wir es Strategie.",
+ "Verantwortung ist wie ein Staffelstab: Man muss sie im richtigen Moment weiterreichen.",
+ "Aus Fehlern lernt man. Manche lernen bei uns Vollzeit.",
+ "Ich bin sehr teamorientiert. Mein Team soll schließlich wissen, was ich denke.",
+ "Gute Ideen erkenne ich daran, dass sie hinterher mir zugeschrieben werden können.",
+ "Wer die E-Mail schreibt, besitzt kurz die Wahrheit.",
+ "Meetings sind wie Zimmerpflanzen: Wenn man sie zu oft gießt, wird alles matschig.",
+ "Ich fördere Talente. Besonders die, die meine Sätze beenden können.",
+ "Am Ende zählt das Ergebnis. Zwischendrin zählt der Kalender.",
+ "Ein Leitbild ersetzt zwar nichts, sieht aber neben dem Empfang sehr gut aus.",
+ "Ich bin offen für Neues, sofern es den alten Plan bestätigt.",
+ "Druck erzeugt Diamanten. Oder krankheitsbedingte Ausfälle.",
+ "Wer freundlich lächelt, kann auch schlechte Nachrichten fast wie Motivation verkaufen.",
+ "Hier wird keiner allein gelassen. Es gucken immer mindestens drei Leute zu.",
+ "Wenn man lange genug professionell schaut, halten es manche schon für Führung."
+);
+const SURPRISE_QUOTES=[
+ 'Heute ist ein guter Tag, um unnötig dramatisch gelassen zu bleiben.',
+ 'Manchmal ist der beste Plan, so zu tun, als hätte man einen.',
+ 'Wenn schon Chaos, dann bitte mit Stil und Snacks.',
+ 'Nicht alles braucht Sinn – manches reicht schon als gute Geschichte.',
+ 'Du musst nicht perfekt sein. Nur interessant genug für den nächsten Zug.',
+ 'Ein bisschen Unsinn hält die Strategie geschmeidig.',
+ 'Wenn es komisch wird, bist du wahrscheinlich auf dem richtigen Feld.',
+ 'Es gibt Tage, da gewinnt nicht der Beste, sondern der Hartnäckigste mit Glück.',
+ 'Ruhe bewahren: Wahrscheinlich sieht es nur von außen nach Problem aus.',
+ 'Man kann auch elegant stolpern.',
+ 'Manche Siege erkennt man erst, wenn die Aufregung vorbei ist.',
+ 'Wer lacht, hat kurz die Oberhand über das Durcheinander.',
+ 'Heute bitte freundlich zu dir selbst sein – der Rest ist Bonus.',
+ 'Wenn ein Plan knirscht, ist er wenigstens in Bewegung.',
+ 'Zwischen Zufall und Genie liegt oft nur gutes Timing.',
+ 'Große Momente fangen manchmal mit einem kleinen Quatsch an.',
+ 'Ein brillanter Einfall trägt nicht immer Krawatte.',
+ 'Auch ein Umweg kann stilvoll zum Ziel führen.',
+ 'Nicht erschrecken: Vielleicht läuft es gerade besser als gedacht.',
+ 'Das Leben ist zu kurz für langweilige Reaktionen.',
+ 'Mut klingt selten ordentlich, funktioniert aber trotzdem.',
+ 'Manchmal ist Durchwurschteln nur verkleidete Kreativität.',
+ 'Wer schmunzelt, denkt oft schon einen Zug weiter.',
+ 'Ein frecher Gedanke spart manchmal drei ernste Gesichter.',
+ 'Wenn nichts klappt, klapp wenigstens die Haltung nicht zusammen.',
+ 'Es darf ruhig ein bisschen funkeln, auch mitten im Kartenchaos.',
+ 'Heute ist ein guter Zeitpunkt, um das Beste aus dem Ungeplanten zu machen.',
+ 'Witz schlägt Panik. Fast immer.',
+ 'Die besten Überraschungen kommen selten mit Bedienungsanleitung.',
+ 'Du musst nicht alles kontrollieren, um souverän auszusehen.',
+ 'Gelassenheit ist auch nur Mut im Schlafanzug.',
+ 'Manchmal ist die klügste Antwort ein breites Grinsen.',
+ 'Große Energie entsteht oft aus kleinen Albernheiten.',
+ 'Selbst der verrückteste Spielzug zählt, wenn er funktioniert.',
+ 'Es ist nie zu spät für einen unerwartet guten Gedanken.',
+ 'Aus Versehen genial ist auch genial.',
+ 'Nicht jedes Risiko ist mutig – aber jedes Lachen hilft.',
+ 'Zwischen Ernst und Spaß liegt oft die beste Idee.',
+ 'Das war vielleicht kein Meisterplan, aber definitiv ein Moment.',
+ 'Auch ohne Krone darf man königlich reagieren.',
+ 'Wer improvisiert, hat zumindest schon angefangen.',
+ 'Ein bisschen Glanz schadet keiner Runde.',
+ 'Wenn du keine Antwort hast, hab wenigstens Charme.',
+ 'Abenteuer beginnt manchmal genau da, wo Routine genervt aufgibt.',
+ 'Heute ruhig mal so tun, als wäre alles extra so geplant.',
+ 'Kleine Eskalation, großer Unterhaltungswert.',
+ 'Ein Lächeln ist die eleganteste Form von Gegenwehr.',
+ 'Humor ist ein Bonuszug für die Seele.',
+ 'Unterschätze nie den Effekt eines gut platzierten Aha-Moments.',
+ 'Wenn schon Überraschung, dann bitte mit goldener Kante.'
+];
+function randomSurpriseQuote(exclude=''){
+ let pool=SURPRISE_QUOTES;
+ if(pool.length>1&&exclude)pool=pool.filter(q=>q!==exclude);
+ return pool[Math.floor(Math.random()*pool.length)]||SURPRISE_QUOTES[0]
+}
+let strombergQuoteBag=[];
+let strombergLastIndex=-1;
+function nextStrombergQuoteIndex(){
+ if(!strombergQuoteBag.length){
+  strombergQuoteBag=STROMBERG_QUOTES.map((_,i)=>i);
+  for(let i=strombergQuoteBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[strombergQuoteBag[i],strombergQuoteBag[j]]=[strombergQuoteBag[j],strombergQuoteBag[i]]}
+  if(strombergQuoteBag.length>1&&strombergQuoteBag[strombergQuoteBag.length-1]===strombergLastIndex){
+   [strombergQuoteBag[0],strombergQuoteBag[strombergQuoteBag.length-1]]=[strombergQuoteBag[strombergQuoteBag.length-1],strombergQuoteBag[0]];
+  }
+ }
+ const index=strombergQuoteBag.pop();strombergLastIndex=index;return index;
+}
+function isStrombergReaction(emoji){return /^SB[0-9]{2}$/.test(String(emoji||''))}
+
+function randomHeinzQuote(exclude=''){
+ let pool=HEINZ_QUOTES;
+ if(pool.length>1&&exclude)pool=pool.filter(q=>q!==exclude);
+ return pool[Math.floor(Math.random()*pool.length)]||HEINZ_QUOTES[0]
+}
+
+const TOILET_QUOTES=[
+ 'Die Karten warten. Der Darm nicht.',
+ 'Kurze Sitzung – diesmal ohne Punktewertung.',
+ 'Der Thron ruft. SKYJO muss kurz warten.',
+ 'Bitte nicht drängeln – hier läuft ein wichtiges Geschäft.',
+ 'Wer aufs Klo muss, darf keinen Zug überspringen – nur kurz pausieren.',
+ 'Eine Runde für die Verdauung, danach wieder für die Karten.',
+ 'Der nächste Zug kommt direkt nach der Spülung.',
+ 'Auch Champions müssen mal auf den Porzellanthron.',
+ 'Pause! Einer spielt gerade die braune Sonderkarte.',
+ 'Keine Sorge: Das Spiel ist nicht abgestürzt – nur jemand sitzt fest.',
+ 'Die Mission läuft – bitte kurz keine Störung im Kontrollzentrum.',
+ 'Kurzer Boxenstopp auf Keramik, gleich geht das Rennen weiter.',
+ 'Erst drücken, dann wieder Karten drücken.',
+ 'Auch große Taktiker brauchen manchmal eine stille Denkpause.',
+ 'Das Spiel macht kurz Pipi-Pause.',
+ 'Zwischen Spülung und Sieg liegt manchmal nur ein Knopfdruck.',
+ 'Bitte Geduld – hier wird gerade Ballast abgeworfen.',
+ 'Porzellanthron belegt – Wiederaufnahme nach ordnungsgemäßer Landung.',
+ 'Ein kleiner Schritt fürs Bad, ein großer fürs Bauchgefühl.',
+ 'Kurz weg vom Tisch, voll im Geschäft.'
+];
+
+function toiletPauseActive(){
+ return !!state?.toiletPause?.active
+}
+
+function toiletPauseActor(){
+ if(!state?.players?.length)return {index:0,name:'Spieler'};
+ let index=0;
+ if(cloud.enabled){
+   const me=myPlayerIndex();
+   index=me>=0?me:state.currentPlayer
+ }else if(state.players.some(p=>p.isAI)){
+   const human=state.players.findIndex(p=>!p.isAI);
+   index=human>=0?human:state.currentPlayer
+ }else index=state.currentPlayer;
+ return {index,name:state.players[index]?.name||'Spieler'}
+}
+
+function pauseForToilet(){
+ if(!state)return;
+ if(!['initialReveal','play'].includes(state.phase)){
+   toast('🚽 Toilettenpause ist gerade nicht nötig – die Runde läuft nicht.');
+   return
+ }
+ if(toiletPauseActive()){
+   toast('🚽 Das Spiel ist bereits pausiert.');
+   return
+ }
+
+ const who=toiletPauseActor();
+ const quote=TOILET_QUOTES[Math.floor(Math.random()*TOILET_QUOTES.length)];
+ state.toiletPause={
+   active:true,
+   id:uid(),
+   byIndex:who.index,
+   byName:who.name,
+   byDevice:cloud.enabled?cloud.deviceId:'local',
+   quote,
+   ts:Date.now()
+ };
+
+ try{closeModal()}catch(_e){}
+ clearGameAnnouncement();
+ clearJokePopup();
+ clearBiblePopup();
+ save();
+ render();
+ toast(`🚽 ${who.name} macht Toilettenpause`);
+ haptic([25,50,25])
+}
+
+function canResumeToiletPause(){
+ if(!toiletPauseActive())return false;
+ if(!cloud.enabled)return true;
+ return state.toiletPause.byDevice===cloud.deviceId
+}
+
+function resumeToiletPause(){
+ if(!toiletPauseActive())return;
+ if(!canResumeToiletPause()){
+   toast(`⏳ ${state.toiletPause?.byName||'Der Toilettengänger'} muss die Pause beenden.`);
+   return
+ }
+
+ const who=state.toiletPause?.byName||'Spieler';
+ state.toiletPause=null;
+ save();
+ render();
+ toast(`✅ ${who} ist zurück – weiter geht's!`);
+ haptic([18,30,18]);
+ setTimeout(()=>{resumeTransientFlow();scheduleAIIfNeeded(380)},70)
+}
+
+function toiletPauseButtonHTML(){
+ if(!state||!['initialReveal','play'].includes(state.phase))return '';
+ if(toiletPauseActive())return '';
+ return `<button type="button" class="toilet-side-btn" onclick="Game.pauseForToilet()" title="Scheißhaus-Pause" aria-label="Spiel für Toilettenpause anhalten"><span class="toilet-side-icon">🚽</span><span class="toilet-side-label">PAUSE</span></button>`
+}
+
+function toiletPauseOverlayHTML(){
+ if(!toiletPauseActive())return '';
+ const p=state.toiletPause||{};
+ const mine=canResumeToiletPause();
+ return `<div class="toilet-pause-overlay" role="dialog" aria-modal="true" aria-live="assertive">
+   <div class="toilet-pause-card">
+     <div class="toilet-roll">🧻</div>
+     <div class="toilet-big-icon">🚽</div>
+     <div class="toilet-kicker">SCHEISSHÄUSCHEN-PAUSE</div>
+     <div class="toilet-pause-title">SPIEL PAUSIERT</div>
+     <div class="toilet-pauser">${escapeHTML(p.byName||'Ein Spieler')} sitzt gerade auf dem Thron.</div>
+     <blockquote class="toilet-quote">„${escapeHTML(p.quote||TOILET_QUOTES[0])}“</blockquote>
+     ${mine
+       ?`<button class="toilet-resume-btn" onclick="Game.resumeToiletPause()">✅ FORTSETZEN</button><div class="toilet-wait-note">Drück erst, wenn das Geschäft erledigt ist. 😄</div>`
+       :`<div class="toilet-waiting"><span>⏳</span><b>Warten auf ${escapeHTML(p.byName||'den Toilettengänger')}</b><small>Das Spiel läuft automatisch weiter, sobald dort „Fortsetzen“ gedrückt wird.</small></div>`}
+   </div>
+ </div>`
+}
+
+function reactionActorIndex(){
+ if(!state?.players?.length)return 0;
+ if(cloud.enabled){const me=myPlayerIndex();return me>=0?me:state.currentPlayer}
+ if(state.players.some(p=>p.isAI)){const human=state.players.findIndex(p=>!p.isAI);return human>=0?human:state.currentPlayer}
+ return state.currentPlayer
+}
+function emojiReactionBarHTML(){
+ if(!state)return '';
+ return `<div class="emoji-reaction-bar"><span class="emoji-bar-label">REAKTIONEN ›</span><div class="emoji-reaction-list">${EMOJI_REACTIONS.map(e=>`<button type="button" class="emoji-reaction-btn ${e==='HAHA'?'haha-reaction-btn':''} ${e==='HEINZ'?'heinz-reaction-btn':''} ${e==='STROM'?'stromberg-reaction-btn':''}" onclick="Game.sendEmojiReaction('${e}')" title="${e==='STROM'?'Stromberg-inspirierter Bürospruch':e==='HEINZ'?'Heinz-Spruch':e==='HAHA'?'Haha-Sticker':e==='🎁'?'Überraschungsspruch':e+' senden'}" aria-label="${e==='STROM'?'Stromberg-Bürospruch senden':e==='🎁'?'Überraschungsspruch senden':e+' senden'}">${e==='HAHA'?'<span class="haha-mini">HA<br>HA</span>':(e==='HEINZ'?'<span class="heinz-mini"><span>👴</span>HEINZ</span>':e==='STROM'?'<span class="stromberg-mini"><span class="stromberg-avatar-mini" aria-hidden="true"></span><strong>CHEF</strong><em>STROM</em></span>':e==='🎁'?'<span class="surprise-mini"><span>🎁</span><em>WOW</em></span>':e)}</button>`).join('')}</div></div>`
+}
+function sendEmojiReaction(emoji){
+ if(!state||!EMOJI_REACTIONS.includes(emoji))return;
+ const actor=reactionActorIndex();
+ if(actor<0||actor>=state.players.length)return;
+ const prevHeinz=(state?.reactionFeed||[]).slice().reverse().find(x=>x?.emoji==='HEINZ')?.text||'';
+ const prevSurprise=(state?.reactionFeed||[]).slice().reverse().find(x=>isSurpriseReaction(x?.emoji))?.text||'';
+ const quoteIndex=emoji==='STROM'?nextStrombergQuoteIndex():-1;
+ const surpriseText=emoji==='🎁'?randomSurpriseQuote(prevSurprise):'';
+ const wireEmoji=quoteIndex>=0?`SB${String(quoteIndex).padStart(2,'0')}`:(emoji==='🎁'?'SURP':emoji);
+ const r={id:uid(),actor,emoji:wireEmoji,ts:Date.now(),text:emoji==='HEINZ'?randomHeinzQuote(prevHeinz):quoteIndex>=0?STROMBERG_QUOTES[quoteIndex]:surpriseText};
+ showEmojiReaction(r);
+ if(cloud.enabled&&cloud.room){
+   fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reaction`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(r),timeoutMs:8000}).then(({r:resp,j})=>{if(resp?.ok&&j?.reactionSeq)cloud.reactionSeq=Math.max(Number(cloud.reactionSeq||0),Number(j.reactionSeq||0))}).catch(e=>console.warn('[skyjo reaction]',e));
+   return;
+ }
+ if(!Array.isArray(state.reactionFeed))state.reactionFeed=[];
+ state.reactionFeed.push(r);
+ if(state.reactionFeed.length>24)state.reactionFeed=state.reactionFeed.slice(-24);
+ save()
+}
+function showEmojiReaction(r){
+ if(!r?.id||emojiReactionSeen.has(r.id))return;
+ emojiReactionSeen.add(r.id);
+ if(emojiReactionSeen.size>120){const first=emojiReactionSeen.values().next().value;emojiReactionSeen.delete(first)}
+ const isHaha=r.emoji==='HAHA';
+ const isHeinz=r.emoji==='HEINZ';
+ const isStromberg=isStrombergReaction(r.emoji);
+ const isSurprise=isSurpriseReaction(r.emoji);
+ if(isHeinz){
+   showTableAnnouncement({kind:'heinz',icon:'👴',title:'HEINZ · ZUFALLSSPRUCH',text:r.text||randomHeinzQuote(),by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ if(isStromberg){
+   const index=Number(String(r.emoji).slice(2));
+   const quote=r.text||STROMBERG_QUOTES[index]||STROMBERG_QUOTES[0];
+   showTableAnnouncement({kind:'stromberg',icon:'👔',title:'STROMBERG · BÜROSPRÜCHE',text:'„'+quote+'“',by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ if(isSurprise){
+   showTableAnnouncement({kind:'surprise',icon:'🎁',title:'ÜBERRASCHUNG',text:r.text||randomSurpriseQuote(),by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ const fx=document.createElement('div');
+ fx.className=`emoji-reaction-fx global ${isHaha?'haha-sticker-fx':''}`;
+ if(isHaha)fx.textContent='HAHA!';
+ else fx.textContent=r.emoji;
+ document.body.appendChild(fx);
+ haptic(7);
+ setTimeout(()=>fx.classList.add('show'),20);
+ const perf=uiPrefs.performance!==false;
+ const leaveMs=perf?850:1250;
+ const removeMs=perf?1250:1850;
+ setTimeout(()=>fx.classList.add('leave'),leaveMs);
+ setTimeout(()=>fx.remove(),removeMs)
+}
+function runEmojiReactions(){
+ const list=state?.reactionFeed||[],now=Date.now();
+ for(const r of list){
+   if(!r?.id||emojiReactionSeen.has(r.id))continue;
+   if(now-Number(r.ts||0)>9000){emojiReactionSeen.add(r.id);continue}
+   showEmojiReaction(r)
+ }
+}
+/* V132: Dedicated accessible market modal, because the legacy chooseActionTurn
+   mode has no clickable market items.  Original action handlers still decide
+   legality, scoring and multiplayer synchronisation. */
+function showSceneActionChooser(){
+ if(!state||ui.mode!=='turnChoice'||!jokerSpecialsEnabled()||toiletPauseActive())return; if(cloud.enabled&&!isMyActorDevice())return;
+ if(isAIActor()&&!aiActing||motionLocked()||pendingMatchGuard())return;
+ const choices=(state.market||[]).map((a,i)=>a?`<button type="button" class="scene-action-pick" onclick="Game.closeModal();Game.takeActionMarket(${i},false)">${actionHTML(a,false)}</button>`:'').join('');
+ modal(`<h3>⚡ Spezialkarte auswählen</h3><p>Wähle eine offene Karte oder ziehe eine verdeckte Aktionskarte.</p><div class="scene-action-market">${choices}</div><div class="modal-actions"><button class="primary" onclick="Game.closeModal();Game.takeActionBlind(false)">🃏 Verdeckt ziehen</button><button class="secondary" onclick="Game.closeModal()">Abbrechen</button></div>`,false);
+}
+/* V131: Szenische Bühne für die zwei optionalen Brett-Themes. */
+function scenicBoardLayoutHTML(playerViews, middleView){
+ const me=preferredViewPlayerIndex();
+ const other=state.players.map((_,i)=>i).filter(i=>i!==me);
+ const left=other.filter((_,i)=>i%2===0).map(i=>playerViews[i]).join('');
+ const right=other.filter((_,i)=>i%2===1).map(i=>playerViews[i]).join('');
+ const scoreboard=state.players.map((p,i)=>({p,i})).sort((a,b)=>(Number(a.p.total)||0)-(Number(b.p.total)||0)).map(({p,i},rank)=>`<div class="scene-rank-row ${i===me?'scene-rank-me':''}"><span>${rank+1}</span><b>${escapeHTML(p.name)}</b><span class="scene-round-score">${state.round>1||state.phase==='betweenRounds'||state.phase==='gameOver'?Number(p.lastRound)||0:'–'}</span><strong>${Number(p.total)||0}</strong></div>`).join('');
+ const canSceneAct=state.phase==='play'&&ui.mode==='turnChoice'&&!motionBusy&&!toiletPauseActive()&&(!cloud.enabled||isMyActorDevice())&&!isAIActor();
+ const canSceneDiscard=canSceneAct&&!!visualDiscardState().top&&!visualDiscardState().pending;
+ const held=ui.mode==='drawnDecision'&&!!ui.data?.card&&!motionBusy&&(!cloud.enabled||isMyActorDevice());
+ const canSceneAction=canSceneAct&&jokerSpecialsEnabled();
+ const sceneButtons=`<nav class="scene-action-buttons" aria-label="Karten-Aktionen"><button type="button" class="scene-action-draw" ${canSceneAct?'onclick="Game.drawFromDeck()"':'disabled'}><span>▣</span><b>Nachziehen</b><small>Karte ziehen</small></button><button type="button" class="scene-action-discard" ${held?'onclick="Game.discardDrawn()"':canSceneDiscard?'onclick="Game.drawFromDiscard()"':'disabled'}><span>▢</span><b>${held?'Ablegen':'Ablage'}</b><small>${held?'Karte weglegen':'Karte nehmen'}</small></button><button type="button" class="scene-action-special" ${canSceneAction?'onclick="Game.showSceneActionChooser()"':'disabled'}><span>ϟ</span><b>Aktion</b><small>Spezialkarte nutzen</small></button></nav>`;
+ return `<div class="table-area skyjo-scenic-stage scenic-count-${state.players.length}">
+   <div class="scene-side scene-left"><div class="scene-room-pill"><strong>🟢 ${cloud.enabled?'Online-Raum':'Lokale Partie'}</strong>${cloud.enabled?escapeHTML(cloud.room):'Gemeinsam am Spieltisch'}</div>${left}</div>
+   <main class="scene-core">
+     <div class="scene-titleplate" aria-label="Runde ${state.round}"><span class="scene-logo">SKYJO <em>ACTION</em></span><span class="scene-round">Runde ${state.round} <small>· Ziel ${state.target} Punkte</small></span></div>
+     <div class="scene-pile-stage">${middleView}</div>
+     ${sceneButtons}
+     <div class="scene-self"><div class="scene-personal-medallion" aria-label="Dein Punktestand"><div class="scene-personal-medallion-art" aria-hidden="true"></div><b class="scene-personal-name">${escapeHTML(state.players[me].name)}</b><div class="scene-personal-round"><strong>${state.round>1?Number(state.players[me].lastRound)||0:'–'}</strong><span>Rundenpunkte</span></div><div class="scene-personal-total"><span>Gesamtpunkte</span><strong>${Number(state.players[me].total)||0}</strong></div></div>${playerViews[me]}</div>
+   </main>
+   <div class="scene-side scene-right">${right}</div>
+   <aside class="scene-aside"><section class="scene-rank-panel"><h3>🏆 Zwischenstände</h3><div class="scene-rank-label"><span>#</span><span>Spieler</span><span>Runde</span><span>Gesamt</span></div>${scoreboard}</section>
+   <section class="scene-round-panel"><h3>▤ Aktuelle Runde</h3><p><i>●</i> ${escapeHTML(current().name)} ist am Zug</p><p><i>■</i> Nachziehstapel: ${state.playDeck.length}</p><p><i>●</i> Runde ${state.round}</p><p><i>✦</i> ${state.streetModeEnabled===true?'Straßen & Gleiche':'Gleiche Zahlen'}</p><p><i>◎</i> Spielende ab ${state.target} Punkten</p><button type="button" class="scene-joker-action" onclick="Game.showJokerCountManager()">★ Joker: ${state.jokerCount??8} · ${jokerSpecialsEnabled()?'AN':'AUS'} · ändern</button></section>
+   </aside><div class="scene-daily-quote"><b>💡 Spruch des Tages</b>„Ein fröhliches Herz macht das Leben heller – in jedem Spiel und an jedem Tag.“</div>
+ </div>`
+}
+
+function gameView(){
+ const discardView=visualDiscardState(),topDiscard=discardView.top,discardCount=discardView.count,discardPending=discardView.pending,specials=jokerSpecialsEnabled(),buriedCount=state.removedCards?.length||0;
+ const canDirect=!toiletPauseActive()&&ui.mode==='turnChoice'&&(!cloud.enabled||isMyActorDevice())&&!motionBusy;
+ const canDropHeld=!toiletPauseActive()&&ui.mode==='drawnDecision'&&ui.data?.card&&(!cloud.enabled||isMyActorDevice())&&!motionBusy&&!discardPending&&!isAIActor();
+ const actorPhase=state.phase==='play'||state.phase==='initialReveal';const turnLabel=!actorPhase?(state.phase==='roundReveal'?'🔄 Rundenabschluss':state.phase==='betweenRounds'?'📊 Runde beendet':state.phase==='gameOver'?'🏆 Spiel beendet':'☁ Synchronisiert'):(isMyActorDevice()?'🟢 Dein Zug':'⏳ Warten');const mp=cloud.enabled?`<div class="multiplayer-bar"><b>☁ Raum ${escapeHTML(cloud.room)} · ${escapeHTML(cloud.myName||'Spieler')}</b><span class="turn-state-pill ${actorPhase&&isMyActorDevice()?'mine':''}">${turnLabel}</span></div>`:'';
+ const deckClick=canDirect?'onclick="Game.drawFromDeck()" role="button" tabindex="0"':'';
+ const discardTakeClick=canDirect&&topDiscard&&!discardPending?'onclick="Game.drawFromDiscard()" role="button" tabindex="0"':'';
+ const discardDropClick=canDropHeld?'onclick="Game.discardDrawn()" role="button" tabindex="0" title="Gezogene Karte hier ablegen"':'';
+ const discardClick=discardDropClick||discardTakeClick;
+ const discardClass=canDropHeld?'discard-drop-target enabled':(discardTakeClick?'enabled':'');
+ const discardTip=discardPending?'landet …':(canDropHeld?'🗑 HIER ABLEGEN':(discardTakeClick?'Nehmen':'Ablage'));
+ const playArea=`<div class="pile-row premium-piles"><div class="pile-unit"><span class="pile-overline">NACHZIEHEN</span><div id="play-deck-pile" class="pile-card-hit ${canDirect?'enabled':''}" ${deckClick}><span class="pile-count-chip">${state.playDeck.length}</span>${cardHTML({type:'number',value:0,faceUp:false},false,canDirect)}<span class="pile-tip">${canDirect?'Ziehen':'Nachziehstapel'}</span></div></div><div class="pile-unit"><span class="pile-overline">ABLAGE</span><div id="play-discard-pile" class="pile-card-hit ${discardClass} ${buriedCount?'has-buried':''}" ${discardClick} data-buried="${buriedCount}"><span class="pile-count-chip discard-count">${discardCount}</span>${cardHTML(topDiscard,true,!!discardClick)}${buriedCount?`<span class="buried-mini">${buriedCount} gesperrt darunter</span>`:''}<span class="pile-tip">${discardTip}</span></div></div></div>`;
+ const actionArea=specials?`<div class="pilebox action-pilebox action-only-ui"><div class="section-heading"><span class="section-icon">⚡</span><div><h4>Aktionskarten</h4><small>Offen oder verdeckt antippen</small></div></div><div class="market">${actionBlindStackHTML(canDirect)}${state.market.map((a,i)=>a?`<div id="market-${i}" class="market-hit ${canDirect?'enabled':''}" ${canDirect?`onclick="Game.takeActionMarket(${i},false)" role="button" tabindex="0"`:''}>${actionHTML(a,canDirect)}</div>`:'').join('')}</div><div class="count">Aktionsstapel ${state.actionDeck.length} · Ablage ${state.actionDiscard.length}</div></div>`:'';
+ const centerTable=`<section class="panel center-table ${specials?'':'specials-off'}"><div class="handbox">${handZoneHTML()}</div><div class="pilebox play-pilebox"><div class="section-heading"><span class="section-icon">🎴</span><div><h4>Spielkarten</h4><small>Direkt antippen</small></div></div>${playArea}<div class="count">${state.playDeck.length} im Stapel · ${discardCount} ziehbare Ablagekarte${discardCount===1?'':'n'}${buriedCount?` · ${buriedCount} gesperrt darunter`:''}${discardPending?' · Karte unterwegs':''}</div></div>${actionArea}</section>`;
+ const playersHTML=state.players.map(playerHTML);
+ const boards=(effectiveBoardTheme()!=='standard'&&state.players.length>=2)?scenicBoardLayoutHTML(playersHTML,centerTable):(()=>{if(state.players.length===2)return `<div class="table-area two-player-layout"><div class="board-col left">${playersHTML[0]||''}</div>${centerTable}<div class="board-col right">${playersHTML[1]||''}</div></div>`;if(state.players.length===3){const own=preferredViewPlayerIndex();const others=state.players.map((_,i)=>i).filter(i=>i!==own);return `<div class="table-area three-player-layout"><div class="board-col own-seat">${playersHTML[own]||''}</div><div class="board-col center-seat">${centerTable}</div><div class="board-col mini-seat"><div class="mini-players-stack"><div class="mini-player-wrap top">${playersHTML[others[0]]||''}</div><div class="mini-player-wrap bottom">${playersHTML[others[1]]||''}</div></div></div></div>`;}if(state.players.length===4)return `<div class="table-area four-player-layout"><div class="quad-side quad-left">${playersHTML[0]}${playersHTML[2]}</div>${centerTable}<div class="quad-side quad-right">${playersHTML[1]}${playersHTML[3]}</div></div>`;return `<div class="table-area"><div class="players players-${state.players.length}">${playersHTML.join('')}</div>${centerTable}</div>`;})();
+ const boardsWithMessage=boards.replace(/<\/div>\s*$/,tableMessageZoneHTML()+'</div>');
+ const closing=state.phase==='roundReveal'?`<div class="round-close-banner ${escapeHTML(state.roundClose?.stage||'reveal')}"><span>${state.roundClose?.stage==='remove'?'✨':state.roundClose?.stage==='ready'?'📊':'🔄'}</span><div><b>${state.roundClose?.stage==='remove'?'Kombinationen werden punkteschonend geprüft':state.roundClose?.stage==='ready'?'Aufdecken abgeschlossen':'Rundenende · alle Karten werden aufgedeckt'}</b><small>${state.roundClose?.stage==='remove'?`${state.roundClose?.removedGroups||0} entfernt · ${state.roundClose?.keptBetterGroups||0} bewusst behalten`:state.roundClose?.stage==='ready'?'Punktewertung startet gleich':`${state.roundClose?.revealIndex||0}/${state.roundClose?.revealOrder?.length||0} verdeckte Karten`}</small></div></div>`:'';
+ const scoreCurtain=['roundReveal','scoring','scoringSequence'].includes(state.phase)?`<div class="sky-score-privacy-curtain" aria-live="polite"><div class="sky-score-privacy-core"><span>✦</span><strong>PUNKTEABRECHNUNG</strong><small>Die Karten werden für die Auszählung vorbereitet …</small></div></div>`:'';
+ return `${mp}${closing}${scoreCurtain}<div class="luxe-tool-dock" aria-label="Spiel-Extras">${toiletPauseButtonHTML()}${jokeSideButtonHTML()}${bibleSideButtonHTML()}</div><div class="status premium-status"><div class="stat round-stat" data-icon="◷"><b>${state.round}</b><span>${state.streetModeEnabled===true?'🔢 Straßen + Gleiche · Runde':'Runde'}</span></div><div class="stat turn-stat" data-icon="●"><b>${escapeHTML(current().name)}</b><span>${['roundReveal','scoring','scoringSequence'].includes(state.phase)?'Rundenende':'am Zug'}</span></div><div class="stat deck-stat" data-icon="▤"><b>${state.playDeck.length}</b><span>Nachziehstapel</span></div><div class="stat target-stat" data-icon="◎"><b>${state.target}</b><span>Spielende ab</span></div><div class="stat joker-stat joker-stat-manage" data-icon="★" onclick="Game.showJokerCountManager()" role="button" tabindex="0" title="Jokeranzahl im laufenden Spiel erhöhen oder verringern"><b>${state.jokerCount??8} · ${specials?'AN':'AUS'}</b><span>Joker · antippen zum Ändern</span></div></div>${boardsWithMessage}<div class="bottom-actions"><div class="bottom-inner"><div class="instruction">${instructionText()}</div><div class="action-buttons">${bottomButtons()}</div>${emojiReactionBarHTML()}</div></div><div class="motion-status-pill"><i></i><span id="motionStatusText">Kartenbewegung läuft …</span></div>${toiletPauseOverlayHTML()}` }
+
+function resumeTransientFlow(){
+ if(!state||isModalOpen()||toiletPauseActive())return;
+ if(ui.mode==='matchReady'){state.pendingMatch=null;ui={mode:'turnChoice',data:{},selected:[]};save();render();return}
+ if(!canControlFlow())return;
+ if(ui.mode==='draw3Choose'){setTimeout(showDraw3Modal,40);return}
+ if(ui.mode==='enlightSelect'){if(ui.data?.viewed){const pi=Number(ui.data.pi),code=ui.data.code,p=state.players[pi],cards=lineIndexes(code).map(i=>p.grid[i]).filter(Boolean);modal(`<h3>Nur ${escapeHTML(current().name)} schauen</h3><p>${escapeHTML(p.name)} · ${code[0]==='r'?'Reihe':'Spalte'} ${Number(code.slice(1))+1}</p><div class="pile-row">${cards.map(c=>cardHTML(c,true,false)).join('')}</div><div class="modal-actions"><button class="primary" onclick="Game.finishEnlightenment()">Fertig</button></div>`,false)}else setTimeout(showEnlightenmentSetupModal,40);return}
+ if(ui.mode==='reactivate'){setTimeout(showReactivationModal,40);return}
+ if(ui.mode==='otherSwapSetup'){setTimeout(showOtherSwapSetupModal,40);return}
+ if(ui.mode==='thiefSelect'){setTimeout(showThiefModal,40);return}
+ if(ui.mode==='ownSwapSelect'&&ui.selected?.length===2){setTimeout(ownSwapOrientation,40);return}
+ if(ui.mode==='otherSwapSelect'&&ui.selected?.length===2){setTimeout(otherSwapOrientation,40);return}
+ if(ui.mode==='starChoice'){setTimeout(showStarChoice,40);return}
+}
+function render(){if(state?.pendingMatch)state.pendingMatch=null;if(ui.mode==='matchReady')ui={mode:'turnChoice',data:{},selected:[]};
+const viewportLock=captureViewportLock();
+syncBoardTheme();
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>V133 · Comic / Christlich – Illustrationen</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showBoardMenu()" title="Spielfeld auswählen">🎨</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI();renderHostBoardSelection();syncBoardTheme()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
+function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
+
+// Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
+window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toGameHub,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,adjustJokersInGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,openRoyalRoundSummary,openRoyalFinaleSummary,showRoundOverview,setRoundSummaryFocus,showFinaleDetails,toggleJokerSpecialUI,toggleStreetModeUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse,showBoardMenu,choosePersonalBoardTheme,pickHostBoardTheme,setHostBoardPolicy,showSceneActionChooser};
+
+window.addEventListener('spielprofil-change',()=>{syncBoardTheme();if(state)render();else renderHostBoardSelection()});
+/* Firebase-Favoriten kommen über spielprofil-change aus dem aktuellen Konto. */
+window.addEventListener('load',syncBoardTheme);
+window.addEventListener('pageshow',e=>{
+ if(!e.persisted)return;
+ try{
+   closeModal();
+   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())
+ }catch(_e){}
+ roundSummarySeen='';scoreSequenceSeen='';
+ if(cloud.enabled&&cloud.room){
+   state=null;ui={mode:'none',data:{},selected:[]};render();restoreOnlineRoom()
+ }else if(state?.phase==='gameOver'){
+   state=null;ui={mode:'none',data:{},selected:[]};render()
+ }
+});
+window.addEventListener('beforeunload',()=>{try{if(state)save();flushLocalSaveNow()}catch(_e){}});
+document.addEventListener('fullscreenchange',syncFullscreenState);
+document.addEventListener('webkitfullscreenchange',syncFullscreenState);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(isFullscreen()||pseudoFullscreen))requestWakeLock()});
+window.addEventListener('resize',()=>{syncChromeButtons();positionTableAnnouncementZone()},{passive:true});
+let tableMessageScrollFrame=0;
+window.addEventListener('scroll',()=>{
+ if(!currentTableAnnouncement||tableMessageScrollFrame)return;
+ tableMessageScrollFrame=requestAnimationFrame(()=>{tableMessageScrollFrame=0;positionTableAnnouncementZone()})
+},{passive:true});
+document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;const k=String(e.key||'').toLowerCase();if(k==='f'){e.preventDefault();toggleFullscreen();return}if(k==='s'){e.preventDefault();showDisplaySettings();return}if(k==='m'&&state){e.preventDefault();focusMyBoard();return}if(k==='l'&&state){e.preventDefault();showLog();return}if(!state||!isMyActorDevice())return;if(k==='d'&&ui.mode==='turnChoice'){e.preventDefault();drawFromDeck()}else if(k==='a'&&ui.mode==='turnChoice'){e.preventDefault();drawFromDiscard()}});
+
+cloudConfigLoad();
+let skipResume=false;try{skipResume=sessionStorage.getItem(SKIP_RESUME_KEY)==='1'}catch(_e){}
+
+let saved=!cloud.enabled&&!skipResume&&!SKYJO_NEW_ENTRY?load():null;
+/* Abgeschlossene lokale Partien sind Historie, kein fortsetzbarer Spielstand.
+   Sonst kann die Siegerliste beim nächsten Öffnen sofort wieder erscheinen. */
+if(saved?.phase==='gameOver'){
+  try{localStorage.removeItem(SAVE_KEY)}catch(_e){}
+  saved=null;
+  state=null;
+  ui={mode:'none',data:{},selected:[]};
+  roundSummarySeen='';
+  scoreSequenceSeen=''
+}
+if(saved){state=saved;ui=restorePlayUIFromState();}
+
+try{
+  closeModal();
+  document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())
+}catch(_e){}
+
+render();
+if(SKYJO_IS_HUB){
+ let loading=false,connectedUid=null;
+ const connect=async()=>{
+  if(loading)return;
+  const profile=window.SpielOnline?.state?.();
+  const uid=profile?.user?.uid;
+  if(!uid){connectedUid=null;stopCloudRoomRuntime();cloud.enabled=false;cloud.doc=null;state=null;cloud.lastError='Bitte melde dich mit deinem Online-Profil an.';render();return}
+  if(connectedUid===uid&&cloud.enabled&&cloud.room===SKYJO_HUB_ROOM&&cloud.doc)return;
+  loading=true;
+  try{
+   const token=await skyjoHubToken();
+   const response=await fetch(CLOUD_BASE+'/api/hub/rooms/'+encodeURIComponent(SKYJO_HUB_CODE)+'/skyjo-bootstrap',{
+    method:'POST',cache:'no-store',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify({matchId:SKYJO_HUB_MATCH})
+   });
+   const result=await response.json();
+   if(!response.ok||!result?.ok||result.matchId!==SKYJO_HUB_MATCH||result.gameCode!==SKYJO_HUB_ROOM||result.seatId!=='hub_'+uid){
+    throw Error(result?.error||'Die SKYJO-Raumzuordnung konnte nicht bestätigt werden.');
+   }
+   if(window.SpielOnline?.state?.()?.user?.uid!==uid)return;
+   cloud.deviceId=result.seatId;
+   cloud.myName=profile.profile?.name||profile.profile?.spielername||'Spieler';
+   cloud.enabled=true;
+   if(cloud.room!==SKYJO_HUB_ROOM)switchCloudRoomContext(SKYJO_HUB_ROOM);
+   cloudConfigSave();
+   await restoreOnlineRoom();
+   if(cloud.doc&&myPlayerIndex()>=0){connectedUid=uid;cloud.lastError='';}
+   else{connectedUid=null;cloud.lastError='Spielerplatz konnte nicht geladen werden. Bitte erneut verbinden.';render();}
+  }catch(error){connectedUid=null;cloud.lastError=error?.message||'Raumverbindung fehlgeschlagen';render();}
+  finally{loading=false}
+ };
+ window.addEventListener('spielonline-change',connect);setTimeout(connect,0);
+}else if(cloud.enabled&&cloud.room&&!SKYJO_NEW_ENTRY){restoreOnlineRoom()}
+})();
