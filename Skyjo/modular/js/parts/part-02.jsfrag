@@ -499,9 +499,9 @@ document.addEventListener('visibilitychange',()=>{if(cloud.enabled&&cloud.room)s
 async function resetCloudRoom(){if(!cloud.enabled||!cloud.room)return;try{await fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reset`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',timeoutMs:30000});cloud.rev=0;cloud.lastPushedJSON='';cloud.reactionSeq=0}catch(_e){}}
 
 function newCard(type,value=null){return SKYJO_CARD_FACTORY.newCard(uid(),type,value)}
-function makePlayDeck(jokerCount=8){let d=[];for(let i=0;i<3;i++)d.push(newCard('number',-2));for(let i=0;i<11;i++)d.push(newCard('number',0));for(const v of [-1,1,2,3,4,5,6,7,8,9,10,11,12])for(let i=0;i<7;i++)d.push(newCard('number',v));const jc=Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0)));for(let i=0;i<jc;i++)d.push(newCard('star'));return shuffle(d)}
+function makePlayDeck(jokerCount=8){return SKYJO_DECK_RULES.makePlayDeck(jokerCount,newCard,shuffle)}
 function newAction(type){return SKYJO_CARD_FACTORY.newAction(uid(),type)}
-function makeActionDeck(beginner){let d=[];for(const t of Object.keys(ACTIONS)){if(beginner&&(t==='thief'||t==='meteor'))continue;for(let i=0;i<3;i++)d.push(newAction(t))}return shuffle(d)}
+function makeActionDeck(beginner){return SKYJO_DECK_RULES.makeActionDeck(beginner,ACTIONS,newAction,shuffle)}
 function takePlay(){if(!state.playDeck.length){if(state.playDiscard.length<=1)return null;const top=state.playDiscard.pop();/* Gesperrte Reihen-Karten (removedCards) werden niemals wieder eingemischt. */state.playDeck=shuffle(state.playDiscard.splice(0));state.playDiscard=[top];log('Der normale Ablagestapel wurde neu gemischt. Gesperrte Reihen-Karten bleiben draußen.')}return state.playDeck.pop()||null}
 function takeActionDeck(){if(!state.actionDeck.length){if(state.actionDiscard.length<=1)return null;const top=state.actionDiscard.pop();state.actionDeck=shuffle(state.actionDiscard.splice(0));state.actionDiscard=[top];log('Der Aktionskarten-Ablagestapel wurde neu gemischt.')}return state.actionDeck.pop()||null}
 function refillMarket(){for(let i=0;i<4;i++)if(!state.market[i])state.market[i]=takeActionDeck();}
