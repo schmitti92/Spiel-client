@@ -499,8 +499,8 @@ function actionBlindStackHTML(canDirect){const click=canDirect?'onclick="Game.ta
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function log(msg){if(!state)return; state.log.unshift(msg);state.log=state.log.slice(0,50);save();}
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');}
-function normalizeCloudRoom(v){return String(v||'').trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,20)}
-function randomCloudRoom(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<5;i++)out+=a[Math.floor(Math.random()*a.length)];return out}
+function normalizeCloudRoom(v){return SKYJO_ROOM_RULES.normalizeCloudRoom(v)}
+function randomCloudRoom(){return SKYJO_ROOM_RULES.randomCloudRoom()}
 const DEVICE_KEY='skyjo_action_device_v2';
 function getDeviceId(){let x='';try{x=localStorage.getItem(DEVICE_KEY)||''}catch(_e){}if(!x){x='d_'+uid();try{localStorage.setItem(DEVICE_KEY,x)}catch(_e){}}return x}
 cloud.deviceId=SKYJO_IS_HUB?'':getDeviceId();cloud.doc=null;cloud.role='';cloud.myName='';cloud.lastError='';cloud.serverOK=null;
