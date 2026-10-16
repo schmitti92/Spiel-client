@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070e1c">
-  <meta name="description" content="Wähle eines unserer vier Spiele: Barikade, SKYJO Action, KreuzKunter oder Das große Business.">
+  <meta name="description" content="Wähle aus fünf Spielen: Barikade, SKYJO Action, KreuzKunter, Das große Business oder DOG.">
   <title>Spielauswahl | Unsere Spiele</title>
   <style>
     :root {
@@ -84,7 +84,7 @@
     .barikade-card { --scene: url('Assets/game-backgrounds/barikade.webp'); border-color: rgba(180,130,79,.4); }
     .skyjo-card { --scene: url('Assets/game-backgrounds/skyjo.webp'); border-color: rgba(146,115,238,.42); }
     .kreuzkunter-card { --scene: url('Assets/game-backgrounds/kreuzkunter.webp'); border-color: rgba(28,164,228,.55); }
-    .business-card { --scene: url('Assets/game-backgrounds/business.webp'); border-color: rgba(199,149,54,.44); }
+    .dog-card { --scene: linear-gradient(135deg,#46675b,#92754c); border-color:rgba(156,205,158,.52); }\n    .business-card { --scene: url('Assets/game-backgrounds/business.webp'); border-color: rgba(199,149,54,.44); }
     .game-title { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 11px; margin-bottom: 12px; }
     .game-title h2 { font-size: clamp(23px,2vw,30px); font-weight: 820; line-height: 1.13; letter-spacing: -.034em; margin:0; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
     .game p { max-width: 390px; margin: 0; color:#f0f2fa; line-height: 1.42; font-size: clamp(15px,1.18vw,18px); text-shadow: 0 1px 8px rgba(0,0,0,.4); }
@@ -271,6 +271,18 @@
         <div class="actions business-actions">
           <a class="btn green" href="Business/business_local.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-7H9v7H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Lokal spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
           <a class="btn gold" href="spielauswahl-online.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c-5 4-5 14 0 18m0-18c5 4 5 14 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Online spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
+        </div>
+      </article>
+      <article class="game dog-card">
+        <div class="game-title"><h2>🐕 DOG</h2><span class="badge green">Lokale Vorversion</span></div>
+        <p>Taktisches Laufspiel mit Karten, Figuren und einem großen Rundkurs. Eigene neue Spieloberfläche.</p>
+        <ul class="features">
+          <li>♟️ Bis zu 6 Spielfarben</li>
+          <li>🃏 Karten statt Würfeln</li>
+          <li>🛠️ Vereinfachte lokale Testregeln – Online-Modus folgt</li>
+        </ul>
+        <div class="actions">
+          <a class="btn green" href="Dog/dog.html"><span>Lokale Testversion öffnen →</span></a>
         </div>
       </article>
     </section>
