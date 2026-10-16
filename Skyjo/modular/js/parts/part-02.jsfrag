@@ -507,7 +507,7 @@ function takeActionDeck(){if(!state.actionDeck.length){if(state.actionDiscard.le
 function refillMarket(){for(let i=0;i<4;i++)if(!state.market[i])state.market[i]=takeActionDeck();}
 function current(){return state.players[state.currentPlayer]}
 function visibleValue(card){return card.type==='star'?'★':card.value}
-function cardPoints(card){return card.type==='star'?0:Number(card.value||0)}
+function cardPoints(card){return SKYJO_CARD_RULES.cardPoints(card)}
 function totalHidden(p){return p.grid.filter(c=>c&&!c.faceUp).length+p.extras.filter(c=>c&&!c.faceUp).length}
 function hasDefense(pi){return state.players[pi].actions.find(a=>a.type==='defense')}
 function consumeDefense(pi){const p=state?.players?.[Number(pi)];if(!p||!Array.isArray(p.actions))return false;const idx=p.actions.findIndex(a=>a?.type==='defense');if(idx<0)return false;const [a]=p.actions.splice(idx,1);if(a)state.actionDiscard.push(a);log(`${p.name}s Verteidigung blockt den Angriff.`);toast(`${p.name}: 🛡️ Angriff abgewehrt`);return true}
