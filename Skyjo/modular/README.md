@@ -1,23 +1,24 @@
-# SKYJO modular migration (isolated development branch)
+# SKYJO modular migration — development only
 
-Production main remains unchanged. Backup: backup/skyjo-before-modular-20261016.
+**Production main is unchanged.** Immutable starting snapshot: `backup/skyjo-before-modular-20261016`.
 
-## Verified entry points
-- index.html local link -> Skyjo/skyjo_action.html?mode=local
-- Skyjo/skyjo_start.js builds relative skyjo_action.html URL for online play
-- root skyjo_action.html redirects to Skyjo/skyjo_action.html
+## Implemented
+- Extracted the single inline stylesheet into `css/legacy.css`.
+- Extracted the large inline game script into `js/legacy.js`.
+- Replaced embedded blocks in `../skyjo_action.html` with linked assets, preserving their relative execution position.
+- Rebased CSS references from `../Assets/` to `../../../Assets/`.
 
-## Migration rules
-1. Preserve the current game entrypoint and script execution order.
-2. First extract CSS, then isolate JavaScript in order, then refactor into domain modules.
-3. Preserve Firebase, profile scripts, URL parameters, and online room handling.
-4. Keep existing game behavior and selectors identical during extraction.
-5. Run static checks and multiplayer/browser regression tests before any main merge.
-6. Never deploy or modify the production branch from this experiment.
+## Verified statically
+- New HTML references both extracted files.
+- Existing profile/Firebase script tags remain in their original order.
+- Existing local/online entry points still target `Skyjo/skyjo_action.html`.
+- Production `main` was not changed.
 
-## Proposed modules
-- css/base.css, css/board.css, css/cards.css, css/responsive.css, css/animations.css
-- js/bootstrap.js, js/state.js, js/cards.js, js/actions.js, js/online.js, js/ui.js
+## Known issues and required follow-up
+- Four optional theme images under `Assets/skyjo-themes/` are referenced by CSS but not present on main. Check whether fallback behavior is acceptable.
+- Browser gameplay, online rooms, multiple players, and special actions have NOT been regression-tested.
+- The large legacy CSS and JS are now separated, but not yet decomposed into small functional modules.
+- Do not merge this branch into main until browser and multiplayer tests pass.
 
-## Current stage
-Backup and feature branch created; migration checklist committed. Source splitting and runtime verification are still pending.
+## Testing
+Run `python3 Skyjo/modular/check_extraction.py` from the repository root. Follow with browser and multiplayer regression tests.
