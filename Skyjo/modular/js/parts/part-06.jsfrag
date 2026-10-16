@@ -1,0 +1,497 @@
+function aiDirectOwnSwap(pi,plan){const p=state.players[pi],a=p.grid[plan.ia],b=p.grid[plan.ib];p.grid[plan.ia]=b;p.grid[plan.ib]=a;setWatch('action-play',{actor:pi,title:'ordnet eigene Karten strategisch neu',typeLabel:'EXPERT-KI',text:'Reihenpotenzial verbessert'});log(`${p.name} tauscht zwei eigene offene Karten.`);afterMutation('finishTurn')}
+function aiDirectOtherSwap(pi,plan){if(!plan){finishTurn();return}if(consumeDefense(plan.opp.pi)){finishTurn();return}const a=state.players[pi].grid[plan.own.idx],b=state.players[plan.opp.pi].grid[plan.opp.idx];state.players[pi].grid[plan.own.idx]=b;state.players[plan.opp.pi].grid[plan.opp.idx]=a;setWatch('action-play',{actor:pi,title:'tauscht gezielt mit einem Mitspieler',typeLabel:'EXPERT-KI',text:`${state.players[plan.opp.pi].name}: ${plan.opp.v} ↔ ${plan.own.v}`});log(`${state.players[pi].name} tauscht eine offene Karte mit ${state.players[plan.opp.pi].name}.`);afterMutation('finishTurn')}
+async function aiExecuteActionCard(pi,a,reactivated=false){const type=a.type,p=state.players[pi];if(type==='react'){state.heldReacts=state.heldReacts||[];state.heldReacts.push(a);let best=null;for(let i=0;i<state.actionDiscard.length;i++){const x=state.actionDiscard[i];if(x.type==='react')continue;const v=aiActionValue(pi,x).value;if(!best||v>best.v)best={i,a:x,v}}if(!best){finishTurn();return true}const [picked]=state.actionDiscard.splice(best.i,1);setWatch('action-play',{actor:pi,actionType:picked.type,srcId:`player-${pi}`,dstId:`player-${pi}`,title:`reaktiviert ${ACTIONS[picked.type].name}`,typeLabel:'EXPERT-KI',text:'beste verfügbare Aktion aus der Ablage'});return aiExecuteActionCard(pi,picked,true)}state.actionDiscard.push(a);setWatch('action-play',{actor:pi,actionType:a.type,srcId:`player-${pi}`,dstId:`player-${pi}`,title:`spielt ${ACTIONS[a.type].name}`,typeLabel:'COMPUTER-AKTION',text:reactivated?'durch Reaktivierung':ACTIONS[a.type].desc});log(`${p.name} spielt „${ACTIONS[a.type].name}“.`);if(type==='double'){state.extraTurns+=2;finishTurn();return true}if(type==='defense'){state.extraTurns+=1;finishTurn();return true}if(type==='draw3'){startDraw3();return true}if(type==='meteor'){startMeteor();return true}if(type==='enlight'){const line=aiBestEnlightLine(pi);if(line){aiRememberLine(pi,line.code);log(`${p.name} merkt sich eine Reihe/Spalte durch Erleuchtung.`)}finishTurn();return true}if(type==='ownswap'){const plan=aiBestOwnSwap(pi);if(plan&&plan.gain>.5)aiDirectOwnSwap(pi,plan);else finishTurn();return true}if(type==='swapother'){aiDirectOtherSwap(pi,aiBestOtherSwap(pi));return true}if(type==='thief'){const t=aiBestThiefTarget(pi);if(!t){state.extraTurns+=1;finishTurn();return true}if(consumeDefense(t.pi)){state.extraTurns+=1;finishTurn();return true}const target=state.players[t.pi],[stolen]=target.actions.splice(t.ai,1);stolen.availableOwnTurn=p.ownTurn+2;stolen.stolen=true;p.actions.push(stolen);state.extraTurns+=1;log(`${p.name} stiehlt ${target.name} „${ACTIONS[stolen.type].name}“.`);finishTurn();return true}finishTurn();return true}
+async function aiExecuteAction(pi,d){const p=state.players[pi];if(!d||!p.actions[d.i])return false;const [a]=p.actions.splice(d.i,1);if(d.kind==='discard'){state.actionDiscard.push(a);setWatch('action-play',{actor:pi,actionType:a.type,srcId:`player-${pi}`,dstId:`player-${pi}`,title:`legt ${ACTIONS[a.type].name} ab`,typeLabel:'COMPUTER-AKTION',text:'vermeidet die +10-Punkte-Strafe'});log(`${p.name} legt „${ACTIONS[a.type].name}“ ab.`);finishTurn();return true}return aiExecuteActionCard(pi,a,false)}
+async function aiHandleDraw3(pi){if(ui.mode!=='draw3Choose')return;const cards=ui.data.cards||[];if(!cards.length){await aiDo(()=>draw3None());return}const choices=cards.map((card,i)=>{const target=aiBestTarget(pi,card);return {i,card,target,score:target?.score??-99}}).sort((a,b)=>b.score-a.score);const best=choices[0],drop=aiDiscardRevealUtility(pi),threshold=aiKeepThreshold(pi,false);await sleepMs(260);if(best?.target&&best.score>=Math.max(threshold,drop-.15)){await aiDo(()=>draw3Pick(best.i));await aiWaitMotion()}else{await aiDo(()=>draw3None());await aiWaitMotion();if(ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await sleepMs(180);await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion()}}}}
+async function aiHandleMeteor(pi){if(ui.mode!=='meteorSelect')return;const targetPi=Number(ui.data.target),pick=aiMeteorChoice(pi,targetPi);await sleepMs(240);if(pick){await aiDo(()=>meteorChoose(pick.zone,pick.idx));await aiWaitMotion()}else{await aiDo(()=>meteorNext());await aiWaitMotion()}}
+async function aiHandleMatchReady(pi){const matches=findMatches(pi);if(!matches.length){if(state.pendingMatch)continueMatchReady();return}const chosen=matches.find(m=>aiShouldResolveOptionalMatch(pi,m));if(chosen){await aiDo(()=>resolveBoardMatch(pi,matches.indexOf(chosen)));await aiWaitMotion()}else{await aiDo(()=>continueMatchReady());await aiWaitMotion()}}
+async function aiTakeTurn(pi){
+ if(!state||state.currentPlayer!==pi||ui.mode!=='turnChoice')return;
+ const completed=findMatches(pi);
+ const removable=completed.find(m=>aiShouldResolveOptionalMatch(pi,m));
+ if(removable){
+   await sleepMs(180);
+   await aiDo(()=>resolveBoardMatch(pi,completed.indexOf(removable)));
+   await aiWaitMotion();
+   return;
+ }
+ const action=aiActionDecision(pi);
+ if(action){await sleepMs(430);await aiExecuteAction(pi,action);await aiWaitMotion();return}
+ const top=state.playDiscard[state.playDiscard.length-1],dt=top?aiBestTarget(pi,top):null;
+ if(top&&dt&&aiShouldTakeDiscard(pi,top,dt)&&!discardArrivalPending()){
+   const deny=aiOpponentDiscardThreat(pi,top);
+   if(aiDifficulty(pi)==='hard'&&deny.direct>=7.5)log(`${state.players[pi].name} nimmt ${cardShortText(top)} auch defensiv, um ${state.players[deny.opponent]?.name||'dem Gegner'} keine starke Kombination zu geben.`);
+   await sleepMs(420);await aiDo(()=>drawFromDiscard());await aiWaitMotion();
+   if(state.currentPlayer===pi&&ui.mode==='discardSwap'){await sleepMs(250);await aiDo(()=>selectCard(pi,dt.zone,dt.idx));await aiWaitMotion()}
+   return
+ }
+ await sleepMs(440);await aiDo(()=>drawFromDeck());await aiWaitMotion();
+ if(state.currentPlayer!==pi||ui.mode!=='drawnDecision')return;
+ const c=ui.data.card,target=aiBestTarget(pi,c),decision=aiDrawnCardDecision(pi,c,target);
+ if(decision.keep&&target){
+   if(decision.reason&&decision.threat?.score>=5){
+     const opp=state.players[decision.threat.opponent]?.name||'Gegner';
+     log(`${state.players[pi].name} behält ${cardShortText(c)} strategisch: ${decision.reason} bei ${opp}.`)
+   }
+   await sleepMs(280);await aiDo(()=>selectCard(pi,target.zone,target.idx));await aiWaitMotion();return
+ }
+ await sleepMs(270);await aiDo(()=>discardDrawn());await aiWaitMotion();
+ if(state.currentPlayer===pi&&ui.mode==='flipOwn'){
+   const r=aiChooseReveal(pi);
+   if(r){await sleepMs(260);await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion()}
+ }
+}
+async function runAIActor(pi){if(aiBusy||cloud.enabled||!state||!isAIPlayer(pi)||toiletPauseActive())return;aiBusy=true;try{for(let guard=0;guard<24;guard++){await aiWaitMotion();if(!state||cloud.enabled||actorIndex()!==pi||!isAIPlayer(pi)||toiletPauseActive())break;if(state.phase==='initialReveal'){if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}await aiInitialReveal(pi);if(state.phase==='initialReveal'&&state.setupPlayer===pi&&state.setupRevealed>=2)setupContinue();continue}if(state.phase!=='play')break;if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}if(ui.mode==='matchReady'||state.pendingMatch){await aiHandleMatchReady(pi);continue}if(ui.mode==='draw3Choose'){await aiHandleDraw3(pi);continue}if(ui.mode==='draw3Target'){const t=aiBestTarget(pi,ui.data.card);if(t){await aiDo(()=>selectCard(pi,t.zone,t.idx));await aiWaitMotion();continue}else{break}}if(ui.mode==='meteorSelect'){await aiHandleMeteor(pi);continue}if(ui.mode==='turnChoice'){await aiTakeTurn(pi);continue}if(ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion();continue}}break}}catch(e){console.warn('[AI V103]',e);toast('🤖 Computerzug wurde sicher beendet');if(state?.phase==='play'&&state.currentPlayer===pi&&ui.mode==='turnChoice')finishTurn()}finally{aiBusy=false;aiActing=false;scheduleAIIfNeeded(420)}}
+
+
+function cardClass(c){if(!c)return'empty';if(!c.faceUp)return'back';if(c.type==='star')return'star';if(c.value<0)return'neg';if(c.value===0)return'zero';if(c.value<=4)return'low';if(c.value<=8)return'mid';return'high'}
+function cardHTML(c,forceFace=false,clickable=false,selected=false){if(!c)return`<div class="card empty"></div>`;const face=forceFace||c.faceUp,cls=face?(c.type==='star'?'star':c.value<0?'neg':c.value===0?'zero':c.value<=4?'low':c.value<=8?'mid':'high'):'back';const v=face?(c.type==='star'?'★':c.value):'';const off='';return `<div class="card ${cls} ${off} ${clickable?'clickable':''} ${selected?'selected':''}" data-sky-value="${face&&c.type==='number'?c.value:''}" data-sky-kind="${face?c.type:'back'}">${face?`<span class="corner tl">${v}</span><span class="center-value">${v}</span><span class="corner br">${v}</span>`:''}</div>`}
+function actionHTML(a,clickable=false,selected=false){if(!a)return'';const m=ACTIONS[a.type],locked=state&&state.players[state.currentPlayer]&&state.players[state.currentPlayer].actions.includes(a)&&!actionAvailable(a,state.players[state.currentPlayer]);const kindLabel=m.kind==='attack'?'ANGRIFF':m.kind==='defense'?'SCHUTZ':'AKTION';return `<div class="action-card action-${escapeHTML(a.type)} ${m.kind==='attack'?'attack':m.kind==='defense'?'defense':''} ${clickable?'clickable':''} ${selected?'selected':''} ${locked?'disabled':''}" data-action-type="${escapeHTML(a.type)}"><span class="action-type">${kindLabel}</span><div class="emoji">${m.icon}</div><b>${m.name}</b><small>${m.desc}</small>${locked?'<span class="lock">🔒</span>':''}</div>`}
+function boardCardClickable(pi,zone,idx){if(!state||toiletPauseActive())return false;if(isAIActor()&&!aiActing)return false;if(cloud.enabled&&!isMyActorDevice())return false;const mode=ui.mode;if(mode==='setupReveal')return pi===state.setupPlayer&&zone==='grid';if(['drawnDecision','discardSwap','drawnSwap','flipOwn','ownSwapSelect','draw3Target'].includes(mode))return pi===state.currentPlayer;if(mode==='otherSwapSelect')return pi===ui.data.a||pi===ui.data.b;if(mode==='meteorSelect')return pi===ui.data.target;return false}
+function isSelected(pi,zone,idx){return ui.selected.some(s=>s.pi===pi&&s.zone===zone&&s.idx===idx)}
+function playerHTML(p,pi){const activePhase=state.phase==='play'||state.phase==='initialReveal',active=activePhase&&pi===actorIndex();const mine=cloud.enabled&&pi===myPlayerIndex();const matches=(state.phase==='play')?findMatches(pi):[];const matchSet=new Set(matches.flatMap(m=>m.idx));const canResolve=state.phase==='play'&&pi===state.currentPlayer&&!p.isAI&&ui.mode==='turnChoice'&&(!cloud.enabled||isMyActorDevice())&&!motionBusy;const cards=p.grid.map((c,i)=>`<div id="cell-${pi}-grid-${i}" class="card-slot ${matchSet.has(i)?'match-ready-slot':''}" onclick="Game.selectCard(${pi},'grid',${i})">${cardHTML(c,false,boardCardClickable(pi,'grid',i),isSelected(pi,'grid',i))}</div>`).join('');const extras=p.extras.map((c,i)=>`<div id="cell-${pi}-extra-${i}" class="card-slot" onclick="Game.selectCard(${pi},'extra',${i})">${cardHTML(c,false,boardCardClickable(pi,'extra',i),isSelected(pi,'extra',i))}</div>`).join('');const acts=p.actions.map((a,i)=>`<div onclick="Game.selectActionCard(${pi},${i})">${actionHTML(a,(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer)||(ui.mode==='meteorSelect'&&pi===ui.data.target),false)}</div>`).join('');const total=Math.max(1,12+p.extras.length),hidden=totalHidden(p),pct=Math.max(0,Math.min(100,Math.round(((total-hidden)/total)*100)));const openCards=[...(p.grid||[]),...(p.extras||[])].filter(c=>c&&c.faceUp);const openSum=openCards.reduce((s,c)=>s+cardPoints(c),0);const hue=[43,188,145,282,18,215,325,92][pi%8];const matchActions=matches.length?`<div class="match-actions"><div class="match-actions-title">✨ ${state.streetModeEnabled===true?'Straßen &amp; gleiche Zahlen':'Gleiche Zahlen'} · vollständige Linie selbst entfernen</div>${matches.map((m,i)=>`<button class="match-resolve-btn optional ${m.street?'street-match-btn':''} ${canResolve?'':'disabled'}" ${canResolve?`onclick="Game.resolveBoardMatch(${pi},${i})"`:'disabled'}>${m.street?'🔢 Straße entfernen':m.pureStars?'⭐ Jokergruppe entfernen':m.name.startsWith('Reihe')?'🟰 Gleiche Reihe entfernen':'🟰 Gleiche Spalte entfernen'} · ${escapeHTML(m.label.replace(/^.*?:\s*/,''))}</button>`).join('')}</div>`:'';return `<section id="player-${pi}" data-player="${pi}" class="player ${active?'active':''} ${mine?'mine':''} ${p.isAI?'ai-player':''}" style="--player-hue:${hue}">${active?`<div class="active-turn-banner"><span>${p.isAI?'🤖':'🎯'}</span><b>${mine?'DEIN ZUG':p.isAI?'COMPUTER AM ZUG':'JETZT AM ZUG'}</b></div>`:''}<div class="player-head"><div class="player-title"><div class="avatar">${pi+1}</div><div class="player-meta"><div class="player-name">${escapeHTML(p.name)} ${p.isAI?'<span class="ai-tag">🤖 COMPUTER</span>':''} ${mine?'<span class="you-tag">DU</span>':''} ${active?'<span class="active-tag">🎯 AM ZUG</span>':''}</div><div class="hint player-meta-chips"><span class="meta-chip hidden-chip">▦ ${hidden} verdeckt</span>${jokerSpecialsEnabled()?`<span class="meta-chip action-chip">⚡ ${p.actions.length} Aktionen</span>`:''}<span class="meta-chip open-chip">Σ ${openSum>=0?'+':''}${openSum} offen</span></div><div class="reveal-meter"><i style="width:${pct}%"></i></div></div></div><div class="score-stack"><div class="scorechip"><small>GESAMT</small><b>${p.total}</b></div><div class="progress-chip">${pct}%</div></div></div><div class="gridwrap"><div class="grid">${cards}</div>${p.extras.length?`<div class="extras"><h5>Zusatzkarten</h5><div class="extra-row">${extras}</div></div>`:''}</div>${matchActions}${jokerSpecialsEnabled()&&p.actions.length?`<div class="actions-owned action-only-ui"><div class="owned-title">⚡ Eigene Aktionskarten</div>${acts}</div>`:''}</section>`}
+function instructionText(){if(!state)return'';const p=current(),actorPhase=state.phase==='play'||state.phase==='initialReveal';if(actorPhase&&isAIActor()&&!aiActing){const ap=state.players[actorIndex()]||p;return `🤖 ${escapeHTML(ap.name)} überlegt …`;}if(actorPhase&&cloud.enabled&&!isMyActorDevice()){const ai=actorIndex(),n=state.players[ai]?.name||'Mitspieler';return `Warte auf ${escapeHTML(n)} …`}switch(ui.mode){case'setupReveal':return `${state.players[state.setupPlayer].name}: ${2-state.setupRevealed} Startkarte(n) aufdecken`;case'turnChoice':{if(state.roundEnder!==null){const later=(state.finalTurnQueue||[]).map(i=>state.players[i]?.name).filter(Boolean);return `🔔 Schlussrunde · ${p.name} hat seinen letzten Zug${later.length?` · danach ${later.join(' → ')}`:''}`;}return jokerSpecialsEnabled()?`${p.name}: Stapel, Ablage oder Aktionskarte direkt antippen`:`${p.name}: Nachziehstapel oder Ablage antippen`;}case'drawnDecision':return `Gezogene Karte: Zielfeld antippen → alte Karte aufdecken → offen auf Ablage → danach Handkarte ins Feld`;case'matchReady':return `✨ Fertige Kombination bleibt liegen – du kannst sie selbst entfernen`;case'roundReveal':{const st=ui.data?.stage||state.roundClose?.stage;if(st==='remove')return `✨ Rundenende: Kombinationen werden mit Joker-Endwerten geprüft …`;if(st==='ready')return `📊 Alle Karten offen – Punktewertung startet gleich …`;const i=ui.data?.index||state.roundClose?.revealIndex||0,t=ui.data?.total||state.roundClose?.revealOrder?.length||0;return `🔄 Rundenende: verdeckte Karten werden nacheinander aufgedeckt${t?` · ${i}/${t}`:''}`;}case'scoreSequence':return `📊 Score Show: Punkte werden langsam Karte für Karte addiert …`;case'discardSwap':return `${p.name}: Zielfeld wählen – Ablagekarte wird sichtbar eingetauscht`;case'drawnSwap':return `${p.name}: Zielfeld wählen – Karte fliegt dorthin, alte Karte zur Ablage`;case'flipOwn':return `${p.name}: Eine verdeckte eigene Karte aufdecken`;case'chooseActionTurn':return `${p.name}: Aktionskarte wählen`;case'ownSwapSelect':return `${p.name}: Zwei eigene Karten wählen`;case'otherSwapSelect':return `Je eine Karte bei den zwei gewählten Spielern wählen`;case'meteorSelect':return `☄️ Karte bei ${state.players[ui.data.target].name} wählen`;case'draw3Target':return `${p.name}: Zielkarte für die gewählte Karte bestimmen`;case'scoringResolve':return `Rundenwertung wird aufgelöst`;default:return `${p.name}`}}
+function bottomButtons(){
+ if(!state)return'';
+ if(state.phase==='gameOver'){
+   if(cloud.enabled){
+     return isHostDevice()
+       ?`<button class="primary" onclick="Game.returnFinishedGameToRoomLobby()">🏠 Alle zurück in Raum-Lobby</button><button onclick="Game.maybeShowRoundSummary(true)">🏆 Ergebnis</button>`
+       :`<div class="waiting-note">🏁 Spiel beendet · warte auf den Host oder gehe selbst zum Menü.</div><button class="primary" onclick="Game.backToLobby()">🏠 Zum Menü</button><button onclick="Game.maybeShowRoundSummary(true)">🏆 Ergebnis</button>`
+   }
+   return `<button class="primary" onclick="Game.backToLobby()">🏠 Zum Menü</button><button onclick="Game.maybeShowRoundSummary(true)">🏆 Ergebnis</button>`
+ }
+if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Kombination bleibt liegen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
+const emojiReactionSeen=new Set();
+const EMOJI_REACTIONS=['👍','😂','🤣','HAHA','HEINZ','STROM','🎁','😮','😭','😡','👏','🔥','❤️','🤔'];
+
+const TABLE_MESSAGE_MS=10000;
+let tableAnnouncementTimer=null;
+let currentTableAnnouncement=null;
+function activeTableAnnouncement(){
+ if(!currentTableAnnouncement)return null;
+ const remaining=Number(currentTableAnnouncement.expiresAt||0)-Date.now();
+ if(remaining<=0){currentTableAnnouncement=null;return null}
+ return {...currentTableAnnouncement,remainingMs:remaining}
+}
+function clearTableAnnouncement(){
+ if(tableAnnouncementTimer){clearTimeout(tableAnnouncementTimer);tableAnnouncementTimer=null}
+ currentTableAnnouncement=null;
+ syncTableAnnouncementMount()
+}
+function tableAnnouncementHTML(a){
+ return `<div class="table-message-card kind-${escapeHTML(a.kind||'fun')}"><div class="table-message-icon">${escapeHTML(a.icon||'💬')}</div><div class="table-message-copy"><div class="table-message-head"><div class="table-message-kicker">${escapeHTML(a.title||'INFO')}</div>${a.by?`<div class="table-message-by">von ${escapeHTML(a.by)}</div>`:''}</div><div class="table-message-text">${escapeHTML(a.text||'')}</div><div class="table-message-foot">${a.ref?`<div class="table-message-ref">${escapeHTML(a.ref)}</div>`:'<div></div>'}<div class="table-message-note">sichtbar für 10 Sekunden</div></div><div class="table-message-progress"><i></i></div></div></div>`
+}
+function positionTableAnnouncementZone(){
+ const zone=document.getElementById('tableMessageZone');
+ const board=zone?.closest('.table-area');
+ const center=board?.querySelector('.center-table');
+ const anchor=center?.querySelector('.handbox')||center;
+ if(!zone||!board||!center||!anchor||zone.classList.contains('empty'))return;
+ const boardRect=board.getBoundingClientRect();
+ const centerRect=center.getBoundingClientRect();
+ const anchorRect=anchor.getBoundingClientRect();
+ const card=zone.querySelector('.table-message-card');
+ const width=Math.max(0,Math.min(anchorRect.width,window.innerWidth-12));
+ const overlapsHorizontally=r=>r.right>anchorRect.left+10&&r.left<anchorRect.left+width-10;
+ // On mobile, players can sit *under* the middle pile. Their card grids
+ // must never be covered by a text notification.
+ let cardsEnd=centerRect.bottom;
+ for(const el of board.querySelectorAll('.player')){
+   const r=el.getBoundingClientRect();
+   if(overlapsHorizontally(r))cardsEnd=Math.max(cardsEnd,r.bottom)
+ }
+ const availableInside=Math.max(0,boardRect.bottom-cardsEnd-16);
+ const measured=card?.getBoundingClientRect()?.height||0;
+ const required=Math.max(100,measured);
+ zone.style.width=`${width}px`;
+ if(availableInside>=required+3){
+   zone.classList.remove('compact-overlay','tight-message');
+   zone.style.position='absolute';
+   zone.style.top=`${Math.max(0,cardsEnd-boardRect.top+12)}px`;
+   zone.style.bottom='auto';
+   zone.style.left=`${Math.max(0,anchorRect.left-boardRect.left)}px`;
+   zone.style.maxHeight=`${Math.floor(availableInside)}px`;
+   if(card){card.style.maxHeight=`${Math.floor(availableInside)}px`;card.style.overflowY='auto'}
+ }else{
+   // Use only the already vacant viewport above the reaction strip.
+   // The notice is slim when the free space is slim; it adds no page height.
+   const dockTop=document.querySelector('.bottom-actions')?.getBoundingClientRect()?.top??window.innerHeight;
+   const emptyViewport=Math.max(0,Math.floor(dockTop-Math.max(0,cardsEnd)-7));
+   const maxHeight=Math.min(168,Math.max(0,emptyViewport));
+   zone.classList.add('compact-overlay');
+   zone.classList.toggle('tight-message',maxHeight<110);
+   zone.style.position='fixed';
+   zone.style.top='auto';
+   zone.style.bottom=`${Math.max(8,Math.round(window.innerHeight-dockTop+5))}px`;
+   zone.style.left=`${Math.max(6,Math.min(anchorRect.left,window.innerWidth-width-6))}px`;
+   zone.style.maxHeight=`${Math.max(0,maxHeight)}px`;
+   if(card){card.style.maxHeight=`${Math.max(0,maxHeight)}px`;card.style.overflowY='auto'}
+   // When there is no unobstructed viewport space, park the notice in the
+   // free table padding instead of hiding or painting over somebody's cards.
+   if(maxHeight<38){
+     zone.style.position='absolute';
+     zone.style.left=`${Math.max(0,anchorRect.left-boardRect.left)}px`;
+     zone.style.top=`${Math.max(0,cardsEnd-boardRect.top+7)}px`;
+     zone.style.bottom='auto';
+     const padding=document.querySelector('.app')?.getBoundingClientRect().bottom-boardRect.bottom;
+     const padRoom=Math.max(32,Math.min(118,Math.floor(padding||0)-12));
+     zone.style.maxHeight=`${padRoom}px`;
+     if(card){card.style.maxHeight=`${padRoom}px`;card.style.overflowY='auto'}
+   }
+ }
+}
+function syncTableAnnouncementMount(){
+ const zone=document.getElementById('tableMessageZone');
+ const mount=document.getElementById('tableMessageMount');
+ if(!zone||!mount)return;
+ const a=activeTableAnnouncement();
+ mount.innerHTML='';
+ zone.classList.toggle('empty',!a);
+ if(!a){zone.style.display='none';return}
+ zone.style.display='block';
+ mount.innerHTML=tableAnnouncementHTML(a);
+ positionTableAnnouncementZone();
+ const card=mount.firstElementChild;
+ const bar=card?.querySelector('.table-message-progress i');
+ requestAnimationFrame(()=>{
+   if(card)card.classList.add('show');
+   if(bar){bar.style.transitionDuration=`${Math.max(250,a.remainingMs)}ms`;requestAnimationFrame(()=>bar.classList.add('run'))}
+ })
+}
+function showTableAnnouncement(entry,remainingMs=TABLE_MESSAGE_MS){
+ if(!entry?.text)return;
+ if(tableAnnouncementTimer){clearTimeout(tableAnnouncementTimer);tableAnnouncementTimer=null}
+ currentTableAnnouncement={id:entry.id||uid(),kind:entry.kind||'fun',icon:entry.icon||'💬',title:entry.title||'INFO',text:String(entry.text||''),ref:entry.ref||'',by:entry.by||'',expiresAt:Date.now()+Math.max(500,remainingMs)};
+ syncTableAnnouncementMount();
+ tableAnnouncementTimer=setTimeout(()=>{currentTableAnnouncement=null;tableAnnouncementTimer=null;syncTableAnnouncementMount()},Math.max(500,remainingMs)+40)
+}
+function tableMessageZoneHTML(){return `<div id="tableMessageZone" class="table-message-zone empty"><div id="tableMessageMount"></div></div>`}
+function isSurpriseReaction(emoji){return String(emoji||'')==='SURP'||String(emoji||'')==='🎁'}
+
+
+const GAME_JOKES=[
+ 'Warum können Geister so schlecht lügen? Weil man durch sie hindurchsieht.',
+ 'Was macht ein Keks unter einem Baum? Krümel.',
+ 'Warum nehmen Skelette nie an Streit teil? Sie haben nicht den Mumm dazu.',
+ 'Was ist orange und läuft durch den Wald? Eine Wanderine.',
+ 'Was macht ein Mathematiker im Garten? Er zieht Wurzeln.',
+ 'Warum können Seeräuber keinen Kreisumfang berechnen? Weil sie Pi raten.',
+ 'Was ist grün und klopft an die Tür? Ein Klopfsalat.',
+ 'Was liegt am Strand und spricht undeutlich? Eine Nuschel.',
+ 'Warum ging der Pilz auf die Party? Weil er ein Champignon war.',
+ 'Was sagt der große Stift zum kleinen Stift? Wachs-mal-Stift!',
+ 'Warum sind Fische so schlau? Weil sie immer in Schulen schwimmen.',
+ 'Was ist braun und schwimmt unter Wasser? Ein U-Brot.',
+ 'Was macht ein Clown im Büro? Faxen.',
+ 'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.',
+ 'Was sagt die Null zur Acht? Schicker Gürtel!',
+ 'Warum können Bienen so gut rechnen? Weil sie den Summen kennen.',
+ 'Was macht ein Elektriker morgens? Er steht unter Spannung.',
+ 'Was ist weiß und stört beim Essen? Eine Lawine.',
+ 'Was ist rot und schlecht für die Zähne? Ein Backstein.',
+ 'Warum ging der Computer zum Arzt? Er hatte einen Virus.',
+ 'Was sagt ein Hai, nachdem er einen Clown gefressen hat? Schmeckt irgendwie komisch.',
+ 'Was macht eine Wolke, wenn sie juckt? Sie fliegt zum Wolkenkratzer.',
+ 'Was ist gelb und schießt? Eine Banone.',
+ 'Warum trinkt der Vampir keinen Kaffee? Weil er schon genug Blutdruck hat.',
+ 'Was ist unsichtbar und riecht nach Karotten? Ein Kaninchenpups.',
+ 'Wie heißt ein Spanier ohne Auto? Carlos.',
+ 'Was macht ein Frosch im Fitnessstudio? Quak-Squats.',
+ 'Warum haben Kalender so viele Freunde? Weil sie viele Dates haben.',
+ 'Wie heißt ein helles Mammut? Hellmut.',
+ 'Was sagt der eine Aufzug zum anderen? Ich glaube, ich komme runter.',
+ 'Warum hat der Besen schlechte Laune? Weil er immer ausgekehrt wird.',
+ 'Was macht ein Pirat am Computer? Er drückt die Enterbeute.',
+ 'Warum ging die Uhr in die Schule? Weil sie tickende Argumente hatte.',
+ 'Wie nennt man einen schlauen Bäcker? Brotfessor.',
+ 'Was sagt der Stuhl zum Tisch? Du hast echt gute Beine.',
+ 'Warum essen Informatiker keine Schokolade? Wegen der Cookies.',
+ 'Was ist klein, grün und dreieckig? Das kleine grüne Dreieck.',
+ 'Warum ist der Ballon pleite? Weil er ständig abgehoben hat.',
+ 'Was macht ein Schneemann im Sommer? Eine Pfütze.',
+ 'Wie heißt ein Hund ohne Beine? Ist egal, er kommt sowieso nicht.',
+ 'Warum war der Kühlschrank beleidigt? Weil man ihn dauernd kaltgestellt hat.',
+ 'Was sagt ein Baum zum anderen? Lass uns mal abhängen.',
+ 'Wie nennt man einen nervösen Igel? Einen Stachelkopf.',
+ 'Warum tragen Kühe Glocken? Weil ihre Hörner nicht funktionieren.',
+ 'Was ist schwarz-weiß und sitzt auf der Schaukel? Ein Schwinguin.',
+ 'Warum können Bleistifte nicht heiraten? Weil sie keinen richtigen Punkt setzen können.',
+ 'Was macht ein Apfel im Fitnessstudio? Er stemmt Birnen.',
+ 'Warum sind Geheimagenten schlechte DJs? Weil sie ständig undercover sind.',
+ 'Wie nennt man einen sehr höflichen Ritter? Sir Viette.',
+ 'Was sagt der Toast zum Brot? Du bist heute aber scheibchenweise gut drauf.'
+];
+GAME_JOKES.push(
+ 'Warum ging der Bleistift zum Therapeuten? Weil er sich ausgestrichen fühlte.',
+ 'Was macht eine Tomate auf dem Computer? Sie drückt Ketchup.',
+ 'Warum lieben Vögel WLAN? Wegen der guten Verbindungen.',
+ 'Wie nennt man ein müdes Auto? Einen Schlafwagen.',
+ 'Was macht ein Brot im Krankenhaus? Es wird belegt.',
+ 'Warum können Kühe nicht flüstern? Weil sie nur muh-tiviert sprechen.',
+ 'Wie heißt ein intelligenter Berg? Cleverest.',
+ 'Warum tragen Lampen keine Mützen? Weil sie schon Schirme haben.',
+ 'Was sagt der Kugelschreiber zum Blatt? Ich fühl mich zu dir hingezogen.',
+ 'Warum sind Treppen schlechte Geheimnisträger? Weil immer etwas durchsickert.',
+ 'Wie nennt man eine entspannte Gurke? Chillrike.',
+ 'Was macht ein Handy im Fitnessstudio? Es trainiert Empfang.',
+ 'Warum ging die Banane ins Büro? Weil sie krumm Karriere machen wollte.',
+ 'Was macht eine Ente mit Akten? Sie abheften. Quak.',
+ 'Wie heißt ein Kaugummi, der nachdenkt? Grübelmint.',
+ 'Warum reden Pflanzen so ungern? Weil sie lieber wachsen lassen.',
+ 'Was macht ein Sofa beim Arzt? Es sitzt die Sache aus.',
+ 'Warum lachen Uhren nie zu spät? Weil sie den richtigen Zeitpunkt haben.',
+ 'Wie nennt man einen höflichen Käse? Bittebert.',
+ 'Was macht ein Gabelstapler im Urlaub? Er hebt ab.',
+ 'Warum war das Feuerzeug beleidigt? Weil es übergangen wurde.',
+ 'Was ist grau und kann nicht schwimmen? Ein Parkplatz.',
+ 'Wie nennt man einen Bäcker mit Sonnenbrand? Toasty.',
+ 'Warum mögen Waschmaschinen keine Witze? Weil sie Schleudertrauma bekommen.',
+ 'Was macht ein Löffel beim Fußball? Er spielt in der Schale.',
+ 'Warum wurde der Staubsauger Künstler? Er hatte Saugkraft.',
+ 'Wie nennt man eine nervöse Zitrone? Eine Zittrone.',
+ 'Warum kann der Mond nicht lügen? Weil alles ans Licht kommt.',
+ 'Was macht ein Taschenrechner am Wochenende? Er schaltet ab.',
+ 'Wie heißt ein sehr glücklicher Föhn? Heiter bis luftig.'
+);
+
+let jokePopupEl=null;
+let jokePopupTimer=null;
+let lastJokeSeen='';
+
+function clearJokePopup(){
+ if(jokePopupTimer){clearTimeout(jokePopupTimer);jokePopupTimer=null}
+ if(jokePopupEl){try{jokePopupEl.remove()}catch(_e){}jokePopupEl=null}
+}
+
+function showJokePopup(joke,remainingMs=TABLE_MESSAGE_MS){
+ if(!joke)return;
+ clearJokePopup();
+ showTableAnnouncement({kind:'joke',icon:'😂',title:'WITZ FÜR ZWISCHENDURCH',text:joke},remainingMs)
+}
+
+function syncGameJoke(){
+ const j=state?.funJoke;
+ if(!j?.id||j.id===lastJokeSeen)return;
+ const age=Date.now()-Number(j.ts||0);
+ if(age<0||age>TABLE_MESSAGE_MS){lastJokeSeen=j.id;return}
+ lastJokeSeen=j.id;
+ showJokePopup(j.text,TABLE_MESSAGE_MS-age)
+}
+
+function tellRandomJoke(){
+ if(!state)return;
+ if(toiletPauseActive()){toast('🚽 Erst die Toilettenpause beenden – dann gibt’s wieder Witze.');return}
+ let pool=GAME_JOKES;
+ const previous=state.funJoke?.text||'';
+ if(pool.length>1)pool=pool.filter(j=>j!==previous);
+ const joke=pool[Math.floor(Math.random()*pool.length)]||GAME_JOKES[0];
+ state.funJoke={id:uid(),text:joke,ts:Date.now(),by:toiletPauseActor().name};
+ save();
+ syncGameJoke();
+ toast('😂 Witz kommt!')
+}
+
+function jokeSideButtonHTML(){
+ if(!state||!['initialReveal','play'].includes(state.phase)||toiletPauseActive())return '';
+ return `<button type="button" class="joke-side-btn" onclick="Game.tellRandomJoke()" title="Zufälligen Witz anzeigen" aria-label="Zufälligen Witz anzeigen"><span class="joke-side-icon">😂</span><span class="joke-side-label">WITZ</span></button>`
+}
+
+
+
+const GAME_BIBLE_VERSES=[
+ {ref:'Philipper 4,13',text:'Ich vermag alles durch den, der mich mächtig macht, Christus.'},
+ {ref:'Sprüche 16,3',text:'Befiehl dem HERRN deine Werke, so werden deine Anschläge fortgehen.'},
+ {ref:'Sprüche 3,5',text:'Verlaß dich auf den HERRN von ganzem Herzen und verlaß dich nicht auf deinen Verstand.'},
+ {ref:'Sprüche 3,6',text:'Sondern gedenke an ihn in allen deinen Wegen, so wird er dich recht führen.'},
+ {ref:'Psalm 37,5',text:'Befiehl dem HERRN deine Wege und hoffe auf ihn; er wird\'s wohl machen.'},
+ {ref:'Psalm 118,24',text:'Dies ist der Tag, den der HERR macht; lasset uns freuen und fröhlich darinnen sein.'},
+ {ref:'Psalm 23,1',text:'Der HERR ist mein Hirte; mir wird nichts mangeln.'},
+ {ref:'Psalm 27,1',text:'Der HERR ist mein Licht und mein Heil; vor wem sollte ich mich fürchten?'},
+ {ref:'Psalm 46,2',text:'Gott ist unsre Zuversicht und Stärke, eine Hilfe in den großen Nöten.'},
+ {ref:'Psalm 55,23',text:'Wirf dein Anliegen auf den HERRN; der wird dich versorgen.'},
+ {ref:'Psalm 56,4',text:'Wenn ich mich fürchte, so hoffe ich auf dich.'},
+ {ref:'Psalm 84,13',text:'HERR Zebaoth, wohl dem Menschen, der sich auf dich verläßt!'},
+ {ref:'Psalm 90,12',text:'Lehre uns bedenken, daß wir sterben müssen, auf daß wir klug werden.'},
+ {ref:'Psalm 119,105',text:'Dein Wort ist meines Fußes Leuchte und ein Licht auf meinem Wege.'},
+ {ref:'Psalm 133,1',text:'Siehe, wie fein und lieblich ist\'s, daß Brüder einträchtig beieinander wohnen!'},
+ {ref:'Jesaja 40,31',text:'Die auf den HERRN harren, kriegen neue Kraft.'},
+ {ref:'Jesaja 41,10',text:'Fürchte dich nicht, ich bin mit dir; weiche nicht, denn ich bin dein Gott.'},
+ {ref:'Jesaja 43,2',text:'So du durchs Wasser gehst, will ich bei dir sein.'},
+ {ref:'Jeremia 17,7',text:'Gesegnet aber ist der Mann, der sich auf den HERRN verläßt.'},
+ {ref:'Jeremia 29,11',text:'Denn ich weiß wohl, was ich für Gedanken über euch habe, spricht der HERR: Gedanken des Friedens.'},
+ {ref:'Matthäus 5,9',text:'Selig sind die Friedfertigen; denn sie werden Gottes Kinder heißen.'},
+ {ref:'Matthäus 5,16',text:'Also lasset euer Licht leuchten vor den Leuten.'},
+ {ref:'Matthäus 6,34',text:'Darum sorget nicht für den andern Morgen; denn der morgende Tag wird für das Seine sorgen.'},
+ {ref:'Matthäus 7,12',text:'Alles nun, was ihr wollt, daß euch die Leute tun sollen, das tut ihr ihnen auch.'},
+ {ref:'Matthäus 11,28',text:'Kommet her zu mir alle, die ihr mühselig und beladen seid; ich will euch erquicken.'},
+ {ref:'Matthäus 18,20',text:'Wo zwei oder drei versammelt sind in meinem Namen, da bin ich mitten unter ihnen.'},
+ {ref:'Matthäus 19,26',text:'Bei den Menschen ist\'s unmöglich; aber bei Gott sind alle Dinge möglich.'},
+ {ref:'Matthäus 22,39',text:'Du sollst deinen Nächsten lieben wie dich selbst.'},
+ {ref:'Markus 9,23',text:'Alle Dinge sind möglich dem, der da glaubt.'},
+ {ref:'Markus 10,27',text:'Bei den Menschen ist\'s unmöglich, aber nicht bei Gott; denn alle Dinge sind möglich bei Gott.'},
+ {ref:'Lukas 6,31',text:'Wie ihr wollt, daß euch die Leute tun sollen, also tut ihnen gleich auch ihr.'},
+ {ref:'Lukas 12,25',text:'Welcher ist unter euch, ob er schon darum sorget, der da könnte eine Elle seiner Länge zusetzen?'},
+ {ref:'Johannes 8,12',text:'Ich bin das Licht der Welt; wer mir nachfolgt, der wird nicht wandeln in der Finsternis.'},
+ {ref:'Johannes 13,34',text:'Ein neu Gebot gebe ich euch, daß ihr euch untereinander liebet.'},
+ {ref:'Johannes 14,1',text:'Euer Herz erschrecke nicht! Glaubet an Gott und glaubet an mich!'},
+ {ref:'Johannes 14,6',text:'Ich bin der Weg und die Wahrheit und das Leben.'},
+ {ref:'Johannes 15,12',text:'Das ist mein Gebot, daß ihr euch untereinander liebet, gleichwie ich euch liebe.'},
+ {ref:'Johannes 16,33',text:'In der Welt habt ihr Angst; aber seid getrost, ich habe die Welt überwunden.'},
+ {ref:'Römer 5,3-4',text:'Trübsal bringt Geduld; Geduld aber bringt Erfahrung; Erfahrung aber bringt Hoffnung.'},
+ {ref:'Römer 8,28',text:'Wir wissen aber, daß denen, die Gott lieben, alle Dinge zum Besten dienen.'},
+ {ref:'Römer 12,10',text:'Die brüderliche Liebe untereinander sei herzlich.'},
+ {ref:'Römer 12,12',text:'Seid fröhlich in Hoffnung, geduldig in Trübsal, haltet an am Gebet.'},
+ {ref:'Römer 12,18',text:'Ist es möglich, soviel an euch ist, so habt mit allen Menschen Frieden.'},
+ {ref:'Römer 14,19',text:'Darum lasset uns dem nachstreben, was zum Frieden dient und was zur Besserung untereinander dient.'},
+ {ref:'1. Korinther 10,31',text:'Ihr esset nun oder trinket oder was ihr tut, so tut es alles zu Gottes Ehre.'},
+ {ref:'1. Korinther 13,4',text:'Die Liebe ist langmütig und freundlich.'},
+ {ref:'1. Korinther 13,7',text:'Sie verträgt alles, sie glaubt alles, sie hofft alles, sie duldet alles.'},
+ {ref:'1. Korinther 16,14',text:'Alle eure Dinge lasset in der Liebe geschehen!'},
+ {ref:'2. Korinther 5,7',text:'Denn wir wandeln im Glauben, und nicht im Schauen.'},
+ {ref:'2. Korinther 12,9',text:'Laß dir an meiner Gnade genügen; denn meine Kraft ist in den Schwachen mächtig.'},
+ {ref:'Galater 5,22',text:'Die Frucht aber des Geistes ist Liebe, Freude, Friede, Geduld, Freundlichkeit.'},
+ {ref:'Galater 6,9',text:'Lasset uns aber Gutes tun und nicht müde werden.'},
+ {ref:'Epheser 4,2',text:'Mit aller Demut und Sanftmut, mit Geduld, und vertraget einer den andern in der Liebe.'},
+ {ref:'Epheser 4,32',text:'Seid aber untereinander freundlich, herzlich und vergebet einer dem andern.'},
+ {ref:'Epheser 6,10',text:'Zuletzt, meine Brüder, seid stark in dem HERRN und in der Macht seiner Stärke.'},
+ {ref:'Philipper 2,3',text:'Nichts tut durch Zank oder eitle Ehre; sondern durch Demut achte einer den andern höher denn sich selbst.'},
+ {ref:'Philipper 4,4',text:'Freuet euch in dem HERRN allewege! Und abermals sage ich: Freuet euch!'},
+ {ref:'Philipper 4,6',text:'Sorget nichts! sondern in allen Dingen lasset eure Bitten im Gebet und Flehen mit Danksagung vor Gott kund werden.'},
+ {ref:'Kolosser 3,13',text:'Vertraget einer den andern und vergebet euch untereinander.'},
+ {ref:'Kolosser 3,15',text:'Der Friede Gottes regiere in euren Herzen.'},
+ {ref:'1. Thessalonicher 5,16',text:'Seid allezeit fröhlich.'},
+ {ref:'1. Thessalonicher 5,17',text:'Betet ohne Unterlaß.'},
+ {ref:'1. Thessalonicher 5,18',text:'Seid dankbar in allen Dingen.'},
+ {ref:'Hebräer 10,24',text:'Lasset uns untereinander unser selbst wahrnehmen mit Reizen zur Liebe und guten Werken.'},
+ {ref:'Hebräer 11,1',text:'Es ist aber der Glaube eine gewisse Zuversicht des, das man hofft.'},
+ {ref:'Hebräer 12,1',text:'Lasset uns laufen durch Geduld in dem Kampf, der uns verordnet ist.'},
+ {ref:'Jakobus 1,19',text:'Ein jeglicher Mensch sei schnell, zu hören, langsam aber, zu reden, und langsam zum Zorn.'},
+ {ref:'Jakobus 1,22',text:'Seid aber Täter des Worts und nicht Hörer allein.'},
+ {ref:'Jakobus 4,10',text:'Demütiget euch vor Gott, so wird er euch erhöhen.'},
+ {ref:'1. Petrus 4,8',text:'Vor allen Dingen aber habt untereinander eine inbrünstige Liebe.'},
+ {ref:'1. Petrus 5,7',text:'Alle eure Sorge werfet auf ihn; denn er sorgt für euch.'},
+ {ref:'1. Johannes 4,7',text:'Ihr Lieben, lasset uns untereinander liebhaben; denn die Liebe ist von Gott.'},
+ {ref:'1. Johannes 4,19',text:'Lasset uns ihn lieben; denn er hat uns zuerst geliebt.'}
+];
+GAME_BIBLE_VERSES.push(
+ {ref:'Psalm 16,11',text:'Du tust mir kund den Weg zum Leben.'},
+ {ref:'Psalm 18,2',text:'Herzlich lieb habe ich dich, HERR, meine Stärke.'},
+ {ref:'Psalm 19,15',text:'Lass dir wohlgefallen die Rede meines Mundes und das Gespräch meines Herzens vor dir, HERR.'},
+ {ref:'Psalm 28,7',text:'Der HERR ist meine Stärke und mein Schild.'},
+ {ref:'Psalm 31,25',text:'Seid getrost und unverzagt alle, die ihr des HERRN harret.'},
+ {ref:'Psalm 32,8',text:'Ich will dich unterweisen und dir den Weg zeigen, den du gehen sollst.'},
+ {ref:'Psalm 34,9',text:'Schmecket und sehet, wie freundlich der HERR ist.'},
+ {ref:'Psalm 37,4',text:'Habe deine Lust am HERRN; der wird dir geben, was dein Herz wünschet.'},
+ {ref:'Psalm 61,3',text:'Führe mich auf einen hohen Felsen.'},
+ {ref:'Psalm 62,2',text:'Meine Seele ist stille zu Gott, der mir hilft.'},
+ {ref:'Psalm 63,4',text:'Deine Gnade ist besser als Leben.'},
+ {ref:'Psalm 73,28',text:'Aber das ist meine Freude, daß ich mich zu Gott halte.'},
+ {ref:'Psalm 86,11',text:'Weise mir, HERR, deinen Weg, daß ich wandle in deiner Wahrheit.'},
+ {ref:'Psalm 91,11',text:'Denn er hat seinen Engeln befohlen über dir, daß sie dich behüten auf allen deinen Wegen.'},
+ {ref:'Psalm 103,2',text:'Lobe den HERRN, meine Seele, und vergiß nicht, was er dir Gutes getan hat.'},
+ {ref:'Psalm 121,2',text:'Meine Hilfe kommt vom HERRN, der Himmel und Erde gemacht hat.'},
+ {ref:'Sprüche 17,17',text:'Ein Freund liebt allezeit.'},
+ {ref:'Sprüche 18,10',text:'Der Name des HERRN ist ein festes Schloß.'},
+ {ref:'Jesaja 26,3',text:'Du erhältst stets Frieden nach gewisser Zusage; denn man verläßt sich auf dich.'},
+ {ref:'Jesaja 30,15',text:'Durch Stillesein und Hoffen würdet ihr stark sein.'},
+ {ref:'Klagelieder 3,22-23',text:'Die Güte des HERRN ist\'s, daß wir nicht gar aus sind; seine Barmherzigkeit hat noch kein Ende, sondern sie ist alle Morgen neu.'},
+ {ref:'Micha 6,8',text:'Es ist dir gesagt, Mensch, was gut ist: Gottes Wort halten und Liebe üben und demütig sein vor deinem Gott.'},
+ {ref:'Matthäus 28,20',text:'Siehe, ich bin bei euch alle Tage bis an der Welt Ende.'},
+ {ref:'Lukas 1,37',text:'Bei Gott ist kein Ding unmöglich.'},
+ {ref:'Johannes 10,10',text:'Ich bin gekommen, daß sie das Leben und volle Genüge haben sollen.'},
+ {ref:'Johannes 14,27',text:'Den Frieden lasse ich euch, meinen Frieden gebe ich euch.'},
+ {ref:'Römer 15,13',text:'Der Gott der Hoffnung erfülle euch mit aller Freude und Frieden im Glauben.'},
+ {ref:'2. Timotheus 1,7',text:'Gott hat uns nicht gegeben den Geist der Furcht, sondern der Kraft und der Liebe und der Zucht.'},
+ {ref:'Hebräer 13,8',text:'Jesus Christus gestern und heute und derselbe auch in Ewigkeit.'},
+ {ref:'Offenbarung 3,20',text:'Siehe, ich stehe vor der Tür und klopfe an.'}
+);
+
+let biblePopupEl=null;
+let biblePopupTimer=null;
+let lastBibleVerseSeen='';
+
+function clearBiblePopup(){
+ if(biblePopupTimer){clearTimeout(biblePopupTimer);biblePopupTimer=null}
+ if(biblePopupEl){try{biblePopupEl.remove()}catch(_e){}biblePopupEl=null}
+}
+
+function showBibleVersePopup(entry,remainingMs=TABLE_MESSAGE_MS){
+ if(!entry?.text)return;
+ clearBiblePopup();
+ showTableAnnouncement({kind:'bible',icon:'📖',title:'BIBELVERS',text:'„'+entry.text+'“',ref:entry.ref||'',by:entry.by||''},remainingMs)
+}
+
+function syncBibleVerse(){
+ const v=state?.bibleVerse;
+ if(!v?.id||v.id===lastBibleVerseSeen)return;
+ const age=Date.now()-Number(v.ts||0);
+ if(age<0||age>TABLE_MESSAGE_MS){lastBibleVerseSeen=v.id;return}
+ lastBibleVerseSeen=v.id;
+ showBibleVersePopup(v,TABLE_MESSAGE_MS-age)
+}
+
+function showRandomBibleVerse(){
+ if(!state)return;
+ if(toiletPauseActive()){toast('🚽 Erst die Toilettenpause beenden.');return}
+ let pool=GAME_BIBLE_VERSES;
+ const previous=state.bibleVerse?.ref||'';
+ if(pool.length>1)pool=pool.filter(v=>v.ref!==previous);
+ const entry=pool[Math.floor(Math.random()*pool.length)]||GAME_BIBLE_VERSES[0];
+ state.bibleVerse={id:uid(),ref:entry.ref,text:entry.text,ts:Date.now(),by:toiletPauseActor().name};
+ save();
+ syncBibleVerse();
+ toast('📖 Bibelvers')
+}
+
+function bibleSideButtonHTML(){
+ if(!state||!['initialReveal','play'].includes(state.phase)||toiletPauseActive())return '';
+ return `<button type="button" class="bible-side-btn" onclick="Game.showRandomBibleVerse()" title="Passenden Bibelvers anzeigen" aria-label="Passenden Bibelvers anzeigen"><span class="bible-side-icon">📖</span><span class="bible-side-label">BIBEL</span></button>`
+}
+
+const HEINZ_QUOTES=[
+ 'Ei, jetzt mal ganz langsam – die Welt läuft net fort.',
+ 'Also ehrlich, so ebbes muss man sich erst mal leisten können.',
+ 'Do guckschte, gell? Genau so isses nämlich.',
+ 'Ich sach dir eins: normal is des heut alles nimmer.',
+ 'Mach nur, aber nachher net wundern, wenn’s kracht.',
+ 'Also des hätt ich dir gleich sagen können.',
+ 'Wenn man’s gscheit macht, spart man sich den Ärger hintendran.',
+ 'Manche Leit brauche für alles zwei Anläufe und drei Erklärungen.',
+ 'Jetzt hör doch emol uff so rumzudibbele.',
+ 'Das is wieder typisch – groß anfangen und dann nix dahinter.',
+ 'Ei jo, irgendwer muss hier ja noch den Überblick behalten.',
+ 'So kann das doch kein Mensch vernünftig planen.',
+ 'Erst macht jeder, was er will, und hinterher fragt man mich.',
+ 'Man muss net alles gut finden, nur weil’s neu aussieht.',
+ 'Ganz ruhig – am End stellt sich raus, es war halb so wild.',
+ 'Wenn ich des net selbst gesehen hätt, ich würd’s net glauben.',
+ 'Man kann’s kompliziert machen – oder man hört direkt auf mich.',
+ 'Jetzt sei doch net so hibbelig, eins nach dem annern.',
+ 'Da brauchste dich wirklich net drüber zu freuen.',
+ 'Also ich will ja nix sagen – aber recht hab ich trotzdem.',
+ 'Ei, warum einfach, wenn’s auch umständlich geht?',
+ 'So, jetzt machen mer das erst mal ordentlich und dann gugge mer weiter.',
+ 'Do fehlt doch vorne und hinten die Vernunft.',
+ 'Wenn jeder ein bissje nachdenkt, wär schon viel geholfen.',
+ 'Ich hab ja nix dagegen – aber so geht’s halt net.',
+ 'Des hab ich kommen sehen, noch bevor’s angefangen hat.',
+ 'Jetzt net nervös werden, davon wird’s auch net besser.',
+ 'Manche Sache erledige sich von selbst, wenn mer net dauernd dran rumfummelt.',
+ 'Ei jo, des is genau die Sorte Idee, die hinterher keiner gehabt haben will.',
+ 'Am End war’s wieder ganz einfach – nur vorher wollt’s keiner glauben.',
+ 'Jetzt mach emol halblang, wir sinn doch net auf der Flucht.',
+ 'Do wird wieder diskutiert, bis keiner mehr weiß, um was es eigentlich ging.',
+ 'Ei jo, Hauptsach jeder hat was gesagt.',
+ 'Früher hat mer sowas einfach gemacht und net erst drei Sitzunge gebraucht.',
+ 'Wenn das so weitergeht, brauch ich erst mal einen Kaffee.',
+ 'Man kann auch mit Anlauf am Ziel vorbeischießen.',
+ 'Jetzt stell dich net so an, des is doch kein Hexewerk.',
+ 'Do muss mer net studiert haben, um zu sehen, dass des nix wird.',
+ 'Ich sag nix mehr – ich merk mir’s nur.',
+ 'Ei, genau deswegen wollt ich des von Anfang an anders machen.',
+ 'Manche Leit schaffe Probleme, wo vorher gar keine waren.',
+ 'Jetzt machen mer eins nach dem annern, sonst wird gar nix fertig.',
+ 'Do kannste hundertmal erklären, wenn keiner zuhört.',
+ 'Ich hab Zeit, aber net für jeden Quatsch.',
+ 'Ei jo, wenn’s wenigstens funktionieren tät.',

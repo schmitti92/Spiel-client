@@ -1,0 +1,583 @@
+   for(let i=0;i<(p.grid||[]).length;i++){
+     const c=p.grid[i];
+     if(c?.type==='star')values[c.id]=liveJokerEndValueForGrid(p,i)
+   }
+ }
+ return values
+}
+function endRoundCardValue(p,c,zone,idx){
+ if(!c)return 0;
+ if(c.type!=='star')return cardPoints(c);
+ /* Zusatzkarten liegen außerhalb des 4×3-Feldes und besitzen keine Reihe/Spalte. */
+ if(zone!=='grid')return 0;
+ return jokerEndValueForGrid(p,idx)
+}
+function jokerEndLabel(p,idx){
+ const v=jokerEndValueForGrid(p,idx);
+ return `Joker → ${v>0?'+':''}${v}`
+}
+function rawRoundScore(p){let s=0;for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(c)s+=endRoundCardValue(p,c,'grid',i)}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(c)s+=endRoundCardValue(p,c,'extra',i)}if(jokerSpecialsEnabled())s+=p.actions.length*10;s+=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);return s}
+
+/* V118 END SCORING
+   Reine Jokergruppen werden zwingend abgeräumt: −10 (3) oder −15 (4).
+   Andere Gruppen dürfen nur liegen bleiben, wenn das für sie besser ist. */
+function simulateMatchRemovalForScore(p,m){
+ if(!p||!m)return p;
+ if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0;
+ if(m.pureStars){
+   const bonus=(m.idx.length===4&&m.name.startsWith('Reihe'))?-15:-10;
+   p.bankedStarBonus+=bonus
+ }
+ for(const idx of m.idx)if(p.grid[idx])p.grid[idx]=null;
+ return p
+}
+function scoreAfterSimulatedRemoval(p,m){
+ const q=clone(p);
+ simulateMatchRemovalForScore(q,m);
+ return rawRoundScore(q)
+}
+function roundEndPlanKey(p){
+ return `${p.grid.map(c=>c?c.id:'-').join(',')}|${Number(p.bankedStarBonus)||0}`
+}
+function bestRoundEndRemovalPlan(pi){
+ const source=state?.players?.[pi];
+ if(!source)return {score:0,steps:[],removedCards:0};
+ const memo=new Map();
+ function solve(p){
+   const key=roundEndPlanKey(p);
+   if(memo.has(key))return memo.get(key);
+   const matches=findMatchesInPlayer(p);
+   const required=matches.filter(m=>m.pureStars);
+   /* Reine 3er-/4er-Jokergruppen müssen genau einmal als Gruppe verschwinden.
+      Beim Score-Vergleich darf "Joker behalten + Bonus + negative Nachbarwerte"
+      keine Alternative sein. Überschneidende Gruppen werden ohne Doppelnutzung
+      derselben Karten in der punktegünstigeren Reihenfolge abgeräumt. */
+   let best=required.length?null:{score:rawRoundScore(p),steps:[],removedCards:0};
+   for(const m of (required.length?required:matches)){
+     const q=clone(p);
+     simulateMatchRemovalForScore(q,m);
+     const tail=solve(q);
+     const candidate={score:tail.score,steps:[{key:m.key,name:m.name,label:m.label},...tail.steps],removedCards:m.idx.length+tail.removedCards};
+     /* Bei Gleichstand werden nur bei normalen Kombinationen weitere Karten entfernt. */
+     if(!best||candidate.score<best.score||(candidate.score===best.score&&candidate.removedCards>best.removedCards))best=candidate
+   }
+   if(!best)best={score:rawRoundScore(p),steps:[],removedCards:0};
+   memo.set(key,best);
+   return best
+ }
+ return solve(clone(source))
+}
+let scoreSequenceSeen='',roundSummarySeen='',roundSummaryFocus=null,scoreSequencePlayback=null;
+function scoreItemsForPlayer(p){const items=[];for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(!c)continue;const v=endRoundCardValue(p,c,'grid',i);items.push({kind:'card',card:clone(c),gridIndex:i,value:v,label:c.type==='star'?jokerEndLabel(p,i):String(c.value),jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(!c)continue;const v=endRoundCardValue(p,c,'extra',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?'Zusatz-Joker · 0':`Zusatz ${c.value}`,jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}if(jokerSpecialsEnabled())for(const a of p.actions)items.push({kind:'action',actionType:a.type,value:10,label:ACTIONS[a.type]?.name||'Aktionskarte'});const bonus=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);if(bonus)items.push({kind:'bonus',value:bonus,label:'Sternbonus'});return items}
+function scoreFmt(v){v=Number(v)||0;return `${v>0?'+':''}${v}`}
+function scoreTone(v){v=Number(v)||0;return v<0?'good':v>0?'bad':'neutral'}
+function scoreTokenHTML(item,i){
+ const v=Number(item.value)||0;
+ const cls=v<0?'negative':v>0?(item.kind==='action'?'penalty':'positive'):'bonus';
+ let visual='';
+ if(item.kind==='card'&&item.card){
+   visual=`<div class="score-mini-card ${item.jokerResolved?'joker-resolved':''}">${cardHTML({...item.card,faceUp:true},true,false)}${item.jokerResolved?`<span class="joker-score-badge">→ ${scoreFmt(item.jokerValue)}</span>`:''}</div>`
+ }else if(item.kind==='action'){
+   const a=ACTIONS[item.actionType];
+   visual=`<div class="score-special-icon action-score-icon">${a?.icon||'⚡'}</div>`
+ }else{
+   visual=`<div class="score-special-icon bonus-score-icon">⭐</div>`
+ }
+ const type=item.kind==='action'?'AKTION':item.kind==='bonus'?'BONUS':'KARTE';
+ return `<div id="score-token-${i}" class="score-token ${cls}" data-score="${v}">
+   <span class="score-token-type">${type}</span>
+   ${visual}
+   <div class="tok-label">${escapeHTML(item.label||'Karte')}</div>
+   <div class="tok-points ${scoreTone(v)}">${scoreFmt(v)}</div>
+ </div>`
+}
+function finishScoring(){const scores=state.players.map(rawRoundScore);const e=state.roundEnder;let final=scores.slice();if(e!==null&&scores[e]>0){const min=Math.min(...scores.filter((_,i)=>i!==e));if(min<=scores[e])final[e]=scores[e]*2}const seq={id:uid(),round:state.round,roundEnder:e,ownerDevice:cloud.enabled?cloud.deviceId:'local',createdAt:Date.now(),players:state.players.map((p,i)=>({index:i,name:p.name,beforeTotal:p.total,raw:scores[i],final:final[i],items:scoreItemsForPlayer(p),gridSnapshot:clone(p.grid),openingGrid:clone(state.roundScoreOpeningBoards?.[i]?.grid||p.grid),openingExtras:clone(state.roundScoreOpeningBoards?.[i]?.extras||p.extras)}))};state.phase='scoringSequence';state.scoreSequence=seq;ui={mode:'scoreSequence',data:{},selected:[]};save();render();maybeStartScoreSequence()}
+function maybeStartScoreSequence(){const seq=state?.scoreSequence;if(!seq||seq.id===scoreSequenceSeen)return;scoreSequenceSeen=seq.id;runScoreSequenceVisual(seq)}
+function sleepMs(ms){return new Promise(r=>setTimeout(r,ms))}
+function scoreSequenceAsRoyalSummary(seq){
+ const players=seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:sp.beforeTotal+sp.final,items:sp.items||[],gridSnapshot:sp.gridSnapshot||[],openingGrid:sp.openingGrid||sp.gridSnapshot||[],openingExtras:sp.openingExtras||[]}));
+ return {id:seq.id,round:seq.round,ended:players.some(p=>p.total>=Number(state?.target||100)),nextStarterIndex:seq.roundEnder,players};
+}
+function isRoyalCountingCurrent(seq){
+ if(!scoreSequencePlayback||scoreSequencePlayback.id!==seq.id||!state||Number(state.round)!==Number(seq.round))return false;
+ if(state.phase==='scoringSequence')return state.scoreSequence?.id===seq.id;
+ return (state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary?.id===seq.id;
+}
+function scrollRoyalCountToRow(row){
+ const scroller=row?.closest('.sky-score-entries');
+ if(!scroller||!row)return;
+ const visibleBottom=scroller.scrollTop+scroller.clientHeight;
+ const neededBottom=row.getBoundingClientRect().bottom-scroller.getBoundingClientRect().top+scroller.scrollTop;
+ if(neededBottom>visibleBottom)scroller.scrollTo({top:neededBottom-scroller.clientHeight+8,behavior:'smooth'});
+}
+function orderedRoyalCountSteps(sp){
+ const opening=[...(sp.openingGrid||[]),...(sp.openingExtras||[])].filter(Boolean);
+ const wasHidden=new Map(opening.filter(c=>c?.id).map(c=>[c.id,c.faceUp===false]));
+ const open=[],hidden=[],post=[];
+ for(let idx=0;idx<(sp.items||[]).length;idx++){
+   const item=sp.items[idx];const step={item,idx,kind:'scored'};
+   if(item.kind!=='card')post.push(step);
+   else if(wasHidden.get(item.card?.id))hidden.push(step);
+   else open.push(step)
+ }
+ // Revealing a removed card does not count it again. It is marked cleared.
+ const scoredIds=new Set((sp.items||[]).filter(x=>x.kind==='card').map(x=>x.card?.id));
+ for(const c of (sp.openingGrid||[]))if(c&&!scoredIds.has(c.id)&&c.faceUp===false)hidden.push({kind:'removed',item:{card:c,value:0,kind:'card',label:'Abgeräumt – keine zusätzlichen Kartenpunkte'},idx:-1});
+ for(const c of (sp.openingExtras||[]))if(c&&!scoredIds.has(c.id)&&c.faceUp===false)hidden.push({kind:'removed',item:{card:c,value:0,kind:'card',label:'Abgeräumt – keine zusätzlichen Kartenpunkte'},idx:-1});
+ return {open,hidden,post}
+}
+async function runScoreSequenceVisual(seq){
+ document.querySelectorAll('.score-sequence-overlay').forEach(el=>el.remove());
+ const playback={id:seq.id};scoreSequencePlayback=playback;
+ const summary=scoreSequenceAsRoyalSummary(seq);let reachedEnd=false;
+ try{
+   for(let pi=0;pi<seq.players.length;pi++){
+     if(!isRoyalCountingCurrent(seq))return;
+     const sp=seq.players[pi];roundSummaryFocus=sp.index;
+     modal(buildRoyalRoundSummaryModal(summary,{counting:true,playerIndex:pi}),false);
+     const root=document.querySelector('#modal .sky-score-counting');if(!root)return;
+     const counter=root.querySelector('.sky-score-main-running');
+     const progress=root.querySelector('.royal-count-progress');
+     const equation=root.querySelector('.royal-current-equation');
+     const headline=root.querySelector('.royal-count-headline');
+     let running=0,finishedCards=0;
+     const ordered=orderedRoyalCountSteps(sp);
+     const allSteps=[...ordered.open,...ordered.hidden,...ordered.post];
+     const openingCount=ordered.open.length;
+     if(headline)headline.textContent=`${sp.name}: zuerst die ${openingCount} offenen Karten zählen`;
+     await sleepMs(1150);
+     for(let si=0;si<allSteps.length;si++){
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       const step=allSteps[si],item=step.item,v=Number(item.value)||0;
+       const stage=si<ordered.open.length?'open':si<ordered.open.length+ordered.hidden.length?'hidden':'effects';
+       const row=step.idx>=0?root.querySelector(`.sky-score-entry[data-count-index="${step.idx}"]`):null;
+       const card=step.item.card?.id?[...root.querySelectorAll('.sky-score-board .sky-score-tile[data-grid-index]')].find(el=>{
+          const i=Number(el.dataset.gridIndex);
+          return sp.openingGrid?.[i]?.id===step.item.card.id
+       }):null;
+       if(stage==='hidden'){
+         if(headline)headline.textContent=step.kind==='removed'?'Abgeräumte Jokerreihe – ohne doppelte Kartenpunkte':'Verdeckte Karte wird langsam umgedreht …';
+         if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · verdeckte Karten aufdecken`;
+         await sleepMs(650);
+         if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+         if(card){card.classList.add('sky-score-flipping');card.classList.remove('sky-score-closed');card.setAttribute('aria-label',`Aufgedeckte Karte: ${step.item.card.type==='star'?'Joker':step.item.card.value}`)}
+         // This is deliberately much slower than the usual point counting.
+         await sleepMs(1900);
+         if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       }else if(stage==='open'){
+         if(headline)headline.textContent=`Offene Karte: ${summaryItemTitle(item,step.idx)} wird addiert`;
+         await sleepMs(410)
+       }else{
+         if(headline)headline.textContent=`${summaryItemTitle(item,step.idx)} wird berücksichtigt`;
+         await sleepMs(620)
+       }
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       row?.classList.remove('pending');row?.classList.add('revealed','counting-now');
+       card?.classList.remove('pending');card?.classList.add('revealed','counting-now');
+       if(step.kind==='removed'){card?.classList.add('sky-score-cleared');if(headline)headline.textContent='Abgeräumt – diese Karte zählt nicht noch einmal'}
+       if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · ${si+1} von ${allSteps.length} Schritten`;
+       scrollRoyalCountToRow(row);
+       const previous=running;running+=v;
+       if(counter)counter.textContent=scoreFmt(running);
+       updateRoyalScoreTable(root,sp.index,running,(Number(sp.beforeTotal)||0)+running);
+       if(equation)equation.textContent=step.kind==='removed'?'Abgeräumte Karten: 0 zusätzliche Punkte':`${scoreFmt(previous)} ${v<0?'−':'+'} ${Math.abs(v)} = ${scoreFmt(running)}`;
+       playFxSound(v<0?'star':v>0?'draw':'turn');
+       if(v<0)haptic(5);
+       await sleepMs(stage==='hidden'?440:510);
+       row?.classList.remove('counting-now');card?.classList.remove('counting-now','sky-score-flipping');
+     }
+     if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+     if(sp.final!==sp.raw){
+       const line=root.querySelector('.royal-doubling-line');
+       if(line){line.classList.add('show');line.textContent=`Rundenbeender: ${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`}
+       if(headline)headline.textContent='Rundenbeender-Regel: Punkte werden verdoppelt';
+       await sleepMs(1100);
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       running=Number(sp.final);
+       if(counter)counter.textContent=scoreFmt(running);
+       updateRoyalScoreTable(root,sp.index,running,(Number(sp.beforeTotal)||0)+running);
+       if(equation)equation.textContent=`${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`;
+       playFxSound('action');
+     }else if(running!==Number(sp.raw)){
+       running=Number(sp.raw)||0;
+       if(counter)counter.textContent=scoreFmt(running);
+       updateRoyalScoreTable(root,sp.index,running,(Number(sp.beforeTotal)||0)+running);
+       if(equation)equation.textContent=`Rundenwert: ${scoreFmt(running)}`;
+     }
+     updateRoyalScoreTable(root,sp.index,sp.final,(Number(sp.beforeTotal)||0)+Number(sp.final),{complete:true});
+     if(headline)headline.textContent=`${sp.name}: ${scoreFmt(sp.final)} Rundenpunkte`;
+     if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · vollständig gezählt`;
+     root.querySelectorAll(`.sky-score-mini-points[data-score-player-index="${sp.index}"]`).forEach(el=>el.textContent=scoreFmt(sp.final));
+     await sleepMs(1050)
+   }
+   reachedEnd=true;
+   if(!isRoyalCountingCurrent(seq))return;
+   const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;
+   if(canCommit&&state?.scoreSequence?.id===seq.id)commitScoreSequence(seq)
+ }catch(e){console.error('[skyjo v123 score reveal]',e)}finally{
+   if(scoreSequencePlayback===playback)scoreSequencePlayback=null;
+   if(!reachedEnd||!state||Number(state.round)!==Number(seq.round))return;
+   const actual=state.lastRoundSummary?.id===seq.id?state.lastRoundSummary:null;
+   if(actual){roundSummarySeen=actual.id;roundSummaryFocus=null;if(actual.ended)openRoyalFinaleSummary();else openRoyalRoundSummary()}
+   else if(state.phase==='scoringSequence'){
+     const text=document.querySelector('#modal .royal-count-headline');if(text)text.textContent='Alle Spieler gezählt – warte auf Synchronisierung …';
+     const progress=document.querySelector('#modal .royal-count-progress');if(progress)progress.textContent='Auszählung abgeschlossen';
+   }
+ }
+}
+function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,roundEnderIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total,items:clone(sp.items||[]),gridSnapshot:clone(sp.gridSnapshot||[]),openingGrid:clone(sp.openingGrid||sp.gridSnapshot||[]),openingExtras:clone(sp.openingExtras||[])}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
+
+function summaryItemVisual(item,compact=false){
+ if(item.kind==='card'&&item.card)return `<div class="royal-mini-card ${item.jokerResolved?'joker':''}">${cardHTML({...item.card,faceUp:true},true,false)}${item.jokerResolved?`<span class="royal-joker-badge">→ ${scoreFmt(item.jokerValue)}</span>`:''}</div>`;
+ if(item.kind==='action'){
+   const a=ACTIONS[item.actionType]||{icon:'⚡',name:item.label||'Aktion'};
+   return `<div class="royal-mini-action"><span>${a.icon}</span><small>${escapeHTML(compact?'':a.name)}</small></div>`
+ }
+ return `<div class="royal-mini-bonus">⭐</div>`
+}
+function summaryItemTitle(item,idx){
+ if(item.kind==='card'){
+   if(item.card?.type==='star')return `Joker – ${scoreFmt(item.value)} Punkte`;
+   if((item.label||'').startsWith('Zusatz'))return item.label;
+   return `Karte ${idx+1} – Wert ${item.card?.value}`
+ }
+ if(item.kind==='action')return `Aktionskarte: ${ACTIONS[item.actionType]?.name||item.label||'Aktion'}`;
+ return item.label||'Bonus'
+}
+function roundSummaryFocusPlayer(summary){
+ if(Number.isInteger(roundSummaryFocus)){
+   const match=(summary.players||[]).find(p=>Number(p.index)===Number(roundSummaryFocus));
+   if(match)return match
+ }
+ if(cloud.enabled&&cloud.myName){
+   const mine=(summary.players||[]).find(p=>p.name===cloud.myName);
+   if(mine)return mine
+ }
+ const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
+ return ranked[0]||summary.players?.[0]||null
+}
+
+/* V122: only one round-scoring view — the four genuine card grids are
+   projected as the image-inspired gold/blue scoreboard. */
+function royalCardGridData(p,{counting=false,finished=true}={}){
+ // During the score show this is the exact board at the moment the round ended.
+ // In finished view, present remaining cards, as after automatic clearing.
+ const original=Array.isArray(p?.openingGrid)&&counting?p.openingGrid:(Array.isArray(p?.gridSnapshot)?p.gridSnapshot:[]);
+ if(original.length>=12)return original.slice(0,12);
+ const result=Array(12).fill(null),cards=(p?.items||[]).filter(x=>x.kind==='card'&&!String(x.label||'').startsWith('Zusatz'));
+ let cursor=0;
+ for(const item of cards){
+   let idx=Number.isInteger(item.gridIndex)?item.gridIndex:cursor++;
+   if(idx>=0&&idx<12)result[idx]=item.card||null
+ }
+ return result
+}
+function royalCardTile(card,{counting=false,countIndex=-1,value=null,mini=false,hidden=false,gridIndex=-1,removed=false}={}){
+ if(!card)return `<div class="sky-score-tile vacant" aria-label="Abgeräumte Karte"><span>✦</span></div>`;
+ const v=Number(card.value)||0;
+ const typ=card.type==='star'?'joker':v<0?'negative':v===0?'zero':v===3?'red':v>=9?'green':v>=5?'yellow':'blue';
+ const face=card.type==='star'?'🃏':escapeHTML(String(card.value));
+ const counted=counting&&countIndex>=0?'pending':'';
+ const jokerValue=value!==null&&card.type==='star'?`<em class="sky-score-joker-value">${scoreFmt(value)}</em>`:'';
+ const attr=(countIndex>=0?` data-count-index="${countIndex}"`:'')+(gridIndex>=0?` data-grid-index="${gridIndex}"`:'');
+ return `<div class="sky-score-tile ${typ} ${counted} ${hidden?'sky-score-closed':''} ${removed?'sky-score-cleared':''}" ${attr} title="${hidden?'Noch verdeckt':removed?'Abgeräumte Karte':card.type==='star'?'Joker':`Kartenwert ${v}`}" aria-label="${hidden?'Verdeckte Karte':removed?'Abgeräumte Karte':`Kartenwert ${v}`}"><div class="sky-score-tile-inner"><div class="sky-score-tile-front"><span class="sky-score-card-corner">✧</span><span class="sky-score-card-face">${face}</span>${jokerValue}</div><div class="sky-score-tile-back"><span>✦</span><small>SKYJO</small></div></div></div>`
+}
+function royalGridMarkup(p,{counting=false,isActive=false,finished=false}={}){
+ const cards=royalCardGridData(p,{counting});
+ const itemById=new Map((p.items||[]).filter(x=>x.kind==='card'&&x.card?.id).map((x,i)=>[x.card.id,x]));
+ return cards.map((card,idx)=>{
+   if(!card)return royalCardTile(null);
+   const i=(p.items||[]).findIndex(x=>x.kind==='card'&&(x.gridIndex===idx||(x.gridIndex===undefined&&x.card?.id===card.id)));
+   const oldHidden=counting&&card.faceUp===false;
+   return royalCardTile(card,{counting:counting&&isActive,countIndex:isActive?i:-1,gridIndex:idx,hidden:oldHidden,value:i>=0?p.items[i]?.value:null,removed:counting&&i<0});
+ }).join('')
+}
+function royalMiniBoard(p,{counting=false,countIndex=0,pi=0,focus=null}={}){
+ if(!p)return '';
+ const current=p.index===focus?.index;
+ const finished=!counting||pi<countIndex;
+ const points=finished?p.round:(current?0:null);
+ const i=Number(p.index);
+ // Do not reveal hidden cards of a player who has not been counted yet.
+ const revealStage=counting&&!finished;
+ return `<button class="sky-score-mini ${current?'selected':''} ${counting?'readonly':''}" ${counting?'disabled':`onclick="Game.setRoundSummaryFocus(${i})"`} aria-label="${escapeHTML(p.name)} · ${points===null?'noch nicht gezählt':`${points} Rundenpunkte`}">
+ <div class="sky-score-mini-head"><span class="sky-score-rank">${i+1}</span><span class="sky-score-avatar a${i%4}">●</span><b>${escapeHTML(p.name)}</b></div>
+ <div class="sky-score-mini-grid">${royalGridMarkup(p,{counting:revealStage,isActive:false})}</div>
+ <div class="sky-score-mini-foot"><span>RUNDE ${Number(state?.round||0)||''}</span><strong class="sky-score-mini-points" data-score-player-index="${i}">${points===null?'…':points}</strong></div>
+ </button>`
+}
+/* V124: Rundenpunkte gehören je Spieler, nie als eine Zahl aller Spieler zusammengefasst. */
+function royalScoreTableMarkup(summary,{counting=false,countIndex=0,mobile=false}={}){
+ const players=summary.players||[];
+ const rows=players.map((p,i)=>{
+   const isCurrent=counting&&i===countIndex;
+   const waiting=counting&&i>countIndex;
+   const round=waiting?'–':isCurrent?'0':scoreFmt(p.round);
+   const total=waiting?'–':isCurrent?String(Number(p.beforeTotal)||0):String(Number(p.total)||0);
+   return `<div class="sky-score-table-row ${isCurrent?'active':''} ${waiting?'waiting':''}" data-score-table-player="${Number(p.index)}" aria-label="${escapeHTML(p.name)}">
+     <span class="sky-score-table-person"><i class="sky-score-table-avatar a${Number(p.index)%4}">${Number(p.index)+1}</i><b title="${escapeHTML(p.name)}">${escapeHTML(p.name)}</b></span>
+     <strong class="sky-score-table-round" data-score-table-round="${Number(p.index)}">${round}</strong>
+     <strong class="sky-score-table-total" data-score-table-total="${Number(p.index)}">${total}</strong>
+   </div>`;
+ }).join('');
+ return `<section class="sky-score-table ${mobile?'mobile':''}" aria-label="Punktetabelle dieser Runde">
+   <div class="sky-score-table-heading"><span>✦</span> PUNKTETABELLE <span>✦</span></div>
+   <div class="sky-score-table-note">RUNDE ${Number(summary.round)}</div>
+   <div class="sky-score-table-cols"><span>SPIELER</span><span>RUNDE</span><span>GESAMT</span></div>
+   <div class="sky-score-table-rows">${rows}</div>
+   <div class="sky-score-table-legend">${counting?'– = noch offen · Gesamt inkl. Runde':'Gesamt = bisher + diese Runde'}</div>
+ </section>`
+}
+function updateRoyalScoreTable(root,playerIndex,round,total,{complete=false}={}){
+ if(!root)return;
+ for(const row of root.querySelectorAll(`.sky-score-table-row[data-score-table-player="${Number(playerIndex)}"]`)){
+   row.querySelector('.sky-score-table-round').textContent=scoreFmt(round);
+   row.querySelector('.sky-score-table-total').textContent=String(Number(total)||0);
+   row.classList.remove('waiting');
+   if(complete){row.classList.remove('active');row.classList.add('finished')}
+ }
+}
+function buildRoyalRoundSummaryModal(summary,options={}){
+ const counting=!!options.counting, countIndex=Math.max(0,Number(options.playerIndex)||0);
+ const players=(summary.players||[]);
+ const focus=counting?players[countIndex]:roundSummaryFocusPlayer(summary);
+ if(!focus)return `<div class="royal-modal royal-round-modal"><h3>Keine Rundenpunkte vorhanden.</h3></div>`;
+ const centralIndex=players.findIndex(p=>p.index===focus.index);
+ const others=players.filter(p=>p.index!==focus.index);
+ const left=others.slice(0,2),right=others.slice(2,3),overflow=others.slice(3);
+ const renderSide=p=>royalMiniBoard(p,{counting,countIndex,pi:players.findIndex(x=>x.index===p.index),focus});
+ const entries=(focus.items||[]).map((item,idx)=>{
+   const name=summaryItemTitle(item,idx);
+   const miniature=item.kind==='card'?royalCardTile(item.card):item.kind==='action'?`<span class="sky-score-entry-special">${ACTIONS[item.actionType]?.icon||'⚡'}</span>`:'<span class="sky-score-entry-special">⭐</span>';
+   return `<div class="sky-score-entry ${counting?'pending':''}" data-count-index="${idx}"><span class="sky-score-entry-index">${idx+1}</span><span class="sky-score-entry-card">${miniature}</span><span class="sky-score-entry-caption" title="${escapeHTML(name)}">${escapeHTML(name)}</span><b class="sky-score-entry-points ${scoreTone(item.value)}">${scoreFmt(item.value)}</b></div>`
+ }).join('');
+ const currentRound=counting?0:Number(focus.round||0);
+ const extraButtons=summary.ended?`<button class="sky-score-next" onclick="Game.openRoyalFinaleSummary()">ZUM FINALE <span>❯❯</span></button>`:
+   cloud.enabled&&!isHostDevice()?'<div class="sky-score-wait">⏳ Der Host startet die nächste Runde</div>':'<button class="sky-score-next" onclick="Game.nextRound()">WEITER <span>❯❯</span></button>';
+ const centerItems=royalGridMarkup(focus,{counting,isActive:true});
+ return `<div class="royal-modal royal-round-modal sky-score-scene ${counting?'royal-counting sky-score-counting':''}" role="region" aria-label="Punkteabrechnung nach Runde ${Number(summary.round)}">
+   <div class="sky-score-header"><div class="sky-score-logo"><span>SKYJO</span><strong>ACTION</strong><i class="sky-logo-card lc1"></i><i class="sky-logo-card lc2"></i><i class="sky-logo-card lc3"></i></div><h2>✧ &nbsp; PUNKTEABRECHNUNG &nbsp; ✧</h2><div class="sky-score-round-label">RUNDE ${Number(summary.round)}</div></div>
+   <div class="sky-score-body">
+     <div class="sky-score-side left">${left.map(renderSide).join('')}</div>
+     <div class="sky-score-center">
+        <div class="sky-score-center-head"><span class="sky-score-big-rank">${Number(focus.index)+1}</span><h3>${escapeHTML(focus.name)}</h3></div>
+        <div class="sky-score-center-content">
+          <section class="sky-score-board-wrap" aria-label="12-Karten-Feld von ${escapeHTML(focus.name)}"><div class="sky-score-board">${centerItems}</div><div class="sky-score-glow-caption">${counting?'<span class="royal-count-headline">Die Karten werden einzeln ausgezählt …</span>':'Alle Karten ausgezählt'}</div></section>
+          <section class="sky-score-parchment" aria-label="Karten-Zwischensumme"><h4>ZWISCHENSUMME</h4><div class="sky-score-progress royal-count-progress">${counting?`Spieler ${countIndex+1} von ${players.length} · Karte 0 von ${(focus.items||[]).length}`:'Alle Karten gezählt'}</div><div class="sky-score-entries">${entries}</div><div class="sky-score-parchment-total"><span>RUNDE</span><strong class="sky-score-main-running royal-current-header-total">${currentRound}</strong></div><div class="royal-doubling-line"></div></section>
+        </div>
+     </div>
+     <div class="sky-score-side right">${right.map(renderSide).join('')}${royalScoreTableMarkup(summary,{counting,countIndex})}</div>
+   </div>
+   <div class="sky-score-mobile-table">${royalScoreTableMarkup(summary,{counting,countIndex,mobile:true})}</div>
+   <div class="sky-score-mobile-peers">${others.map(renderSide).join('')}</div>
+   ${overflow.length?`<div class="sky-score-overflow">${overflow.map(renderSide).join('')}</div>`:''}
+   <div class="sky-score-footer"><button class="sky-score-review" ${counting?'disabled':'onclick="Game.showRoundOverview()"'}>▥ &nbsp; RUNDENÜBERSICHT</button><span class="sky-score-footer-explainer royal-current-equation">${counting?'Die Rundenpunkte werden Spieler für Spieler ermittelt.':'Alle Spieler wurden einzeln abgerechnet.'}</span>${counting?'<div class="sky-score-counting-hint">⏳ Spielerweise Kartenzählung läuft …</div>':extraButtons}</div>
+ </div>`
+}
+function showRoundOverview(){
+ const s=state?.lastRoundSummary;if(!s)return;
+ const content=[...(s.players||[])].sort((a,b)=>a.round-b.round).map((p,i)=>`<div class="sky-overview-row"><span>${i+1}.</span><b>${escapeHTML(p.name)}</b><strong>${scoreFmt(p.round)} Rundenpunkte</strong><em>${p.total} Gesamtpunkte</em></div>`).join('');
+ modal(`<div class="royal-modal royal-round-modal sky-overview"><h2>RUNDENÜBERSICHT · RUNDE ${Number(s.round)}</h2>${content}<div class="sky-overview-actions"><button class="primary" onclick="Game.openRoyalRoundSummary()">← Zurück zur Abrechnung</button></div></div>`,false)
+}
+function buildRoyalFinaleModal(summary){
+ const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
+ const first=ranked[0]||null, second=ranked[1]||null, third=ranked[2]||null;
+ const makePodium=(p,pos,cls)=>p?`<div class="royal-podium-card ${cls}"><div class="royal-podium-medal">${pos}</div><div class="royal-podium-name">${escapeHTML(p.name)}</div><div class="royal-podium-score"><small>PUNKTE</small><b data-royal-counter="${Number(p.total)}" aria-label="${Number(p.total)} Punkte">${p.total}</b></div></div>`:'';
+ const extras=ranked.slice(3).map((p,i)=>`<div class="royal-extra-rank"><span>#${i+4}</span><b>${escapeHTML(p.name)}</b><em>${p.total} Punkte</em></div>`).join('');
+ const leftBtn=`<button onclick="Game.showFinaleDetails()">DETAILS ANZEIGEN</button>`;
+ let midBtn='';
+ let rightBtn='';
+ if(cloud.enabled){
+   if(isHostDevice()){
+     midBtn=`<button class="primary royal-cta" onclick="Game.returnFinishedGameToRoomLobby()">NEUE RUNDE</button>`;
+     rightBtn=`<button onclick="Game.backToLobby()">ZURÜCK ZUM HAUPTMENÜ</button>`
+   }else{
+     midBtn=`<button class="primary royal-cta" onclick="Game.backToLobby()">NEUE RUNDE</button>`;
+     rightBtn=`<button onclick="Game.closeModal()">SCHLIESSEN</button>`
+   }
+ }else{
+   midBtn=`<button class="primary royal-cta" onclick="Game.restart()">NEUE RUNDE</button>`;
+   rightBtn=`<button onclick="Game.backToLobby()">ZURÜCK ZUM HAUPTMENÜ</button>`
+ }
+ return `<div class="royal-modal royal-finale-modal">
+   <div class="royal-finale-title">SKYJO <span>ACTION</span></div>
+   <div class="royal-finale-subtitle">GROSSES FINALE</div>
+   <div class="royal-finale-round">ENDSTAND</div>
+   <div class="royal-stage-wrap">
+     <div class="royal-curtain left"></div>
+     <div class="royal-curtain right"></div>
+     <div class="royal-podium-grid">
+       <div class="royal-podium-slot second">${makePodium(second,2,'second')}</div>
+       <div class="royal-podium-slot first"><div class="royal-winner-ribbon">SIEGER</div>${makePodium(first,1,'first')}</div>
+       <div class="royal-podium-slot third">${makePodium(third,3,'third')}</div>
+     </div>
+     ${extras?`<div class="royal-extra-board">${extras}</div>`:''}
+   </div>
+   <div class="modal-actions royal-bottom-actions royal-finale-actions">${leftBtn}${midBtn}${rightBtn}</div>
+ </div>`
+}
+function openRoyalRoundSummary(){
+ const s=state?.lastRoundSummary;
+ if(!s)return;
+ modal(buildRoyalRoundSummaryModal(s),false)
+}
+function openRoyalFinaleSummary(){
+ const s=state?.lastRoundSummary;
+ if(!s)return;
+ modal(buildRoyalFinaleModal(s),false)
+}
+function setRoundSummaryFocus(index){roundSummaryFocus=Number(index);openRoyalRoundSummary()}
+function showFinaleDetails(){openRoyalRoundSummary()}
+function maybeShowRoundSummary(force=false){
+ const s=state?.lastRoundSummary;
+ if(force)roundSummarySeen='';
+ if(!s||s.id===roundSummarySeen)return;
+ if(scoreSequencePlayback?.id===s.id)return;
+ roundSummarySeen=s.id;
+ if(s.ended)openRoyalFinaleSummary();
+ else openRoyalRoundSummary()
+}
+async function nextRound(){
+ if(cloud.enabled&&!isHostDevice()){toast('Nur der Host startet die nächste Runde.');return}
+ if(!state||state.phase!=='betweenRounds'){toast('Die nächste Runde kann gerade nicht gestartet werden.');return}
+ closeModal();
+ const starter=Number.isInteger(state.roundEnder)?state.roundEnder:0;
+ state.startPlayer=starter;
+ state.round++;
+ log(`${state.players[starter].name} hat die vorige Runde beendet und beginnt Runde ${state.round}.`);
+ beginRound();
+
+ if(!cloud.enabled)return;
+
+ const desiredGame=clone(state);
+ const desiredRound=Number(desiredGame.round||0);
+ toast(`☁ Runde ${desiredRound} wird für alle Spieler gestartet …`);
+
+ // Erst den normalen, bereits geplanten Save fertig werden lassen.
+ await waitForCloudIdle(5000);
+
+ // Danach serverseitig prüfen, ob exakt die neue Runde angekommen ist.
+ let remote=await fetchCloudRoom(cloud.room,false);
+ const remoteRound=Number(remote?.state?.game?.round||0);
+ const remotePhase=remote?.state?.game?.phase||'';
+ if(remote?.found&&isRoomDoc(remote.state)&&remoteRound===desiredRound&&remotePhase==='initialReveal'){
+   if(Number(remote.rev||0)>Number(cloud.rev||0))applyCloudDoc(remote.state,remote.rev||0);
+   toast(`☁ Runde ${desiredRound} läuft jetzt auf allen Geräten`);
+   return
+ }
+
+ // Falls der normale Save wegen einer Revision/Race Condition verlorenging:
+ // neuesten Raum holen und NUR den game-Teil durch die vom Host erzeugte neue Runde ersetzen.
+ if(remote?.found&&isRoomDoc(remote.state)){
+   const forced=clone(remote.state);
+   forced.game=clone(desiredGame);
+   forced.lobby.status='playing';
+   const baseRev=Number(remote.rev||0);
+   const out=await postCloudDoc(forced,baseRev);
+   if(out?.ok){
+     cloud.doc=forced;
+     cloud.rev=Number(out.rev)||baseRev;
+     cloud.lastPushedJSON=JSON.stringify(forced);
+     cloud.lastStatus='online';
+     cloud.serverOK=true;
+     state=clone(desiredGame);
+     ui=restorePlayUIFromState();
+     try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(_e){}
+     render();
+     toast(`☁ Runde ${desiredRound} wurde synchronisiert`);
+     return
+   }
+   if(out?.conflict){
+     const fresh=await fetchCloudRoom(cloud.room,false);
+     if(fresh?.found&&isRoomDoc(fresh.state)&&Number(fresh.state?.game?.round||0)===desiredRound){
+       applyCloudDoc(fresh.state,fresh.rev||0);
+       toast(`☁ Runde ${desiredRound} wurde synchronisiert`);
+       return
+     }
+   }
+ }
+
+ cloud.lastStatus='error';
+ cloud.lastError=`Runde ${desiredRound} konnte nicht bestätigt werden. Bitte kurz Aktualisieren drücken.`;
+ render();
+ toast('⚠ Neue Runde konnte nicht an alle Geräte bestätigt werden')
+}
+function modal(html,closable=true){
+ const back=$('#modalBack'),m=$('#modal'),royal=html.includes('royal-round-modal')||html.includes('royal-finale-modal');
+ back.classList.toggle('royal-active',royal);m.classList.toggle('royal-host',royal);
+ m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');
+ m.scrollTop=0;back.classList.add('show');
+ if(royal&&!html.includes('royal-counting'))requestAnimationFrame(()=>animateRoyalScoring(m));
+}
+function closeModal(){const b=$('#modalBack');if(b){b.classList.remove('show','royal-active');$('#modal')?.classList.remove('royal-host')}}
+function animateRoyalScoring(root){
+ const targets=[...root.querySelectorAll('[data-royal-counter]')];
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ if(!targets.length||reduced)return;
+ const starts=targets.map(el=>({el,target:Number(el.dataset.royalCounter),label:el.textContent})).filter(x=>Number.isFinite(x.target));
+ starts.forEach(({el})=>{el.textContent='0'});
+ const duration=950,start=performance.now();
+ function step(now){
+  const progress=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-progress,3);
+  for(const {el,target,label} of starts){if(!el.isConnected)return;el.textContent=progress===1?label:String(Math.round(target*ease))}
+  if(progress<1)requestAnimationFrame(step)
+ }
+ requestAnimationFrame(step)
+} 
+function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne/Joker haben während des Spiels den Grundwert 0. Bei der Rundenabrechnung übernimmt jeder verbliebene Joker automatisch die niedrigste Zahl, die in seiner waagerechten Reihe oder senkrechten Spalte noch liegt. Beispiel: −2 und 3 in derselben Linie → der Joker zählt −2. Gibt es dort keine Zahl, bleibt er 0.</li><li>Reine Jokergruppen werden automatisch entfernt: drei Joker in einer vollständigen Spalte bzw. vier Joker in einer waagerechten Reihe geben genau einmal −10 bzw. −15 Punkte. Die abgeräumten Joker zählen danach nicht mehr einzeln, auch nicht mit einem übernommenen negativen Nachbarwert. Jede Jokerkarte darf nur zu einer abgeräumten Gruppe gehören.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Eine neu vollständige Kombination bleibt immer auf dem Brett liegen – es erscheint keine Nachfrage und sie wird während des normalen Spiels nicht automatisch entfernt. In deinem eigenen Zug kannst du sie über „Reihe entfernen“ bzw. „Spalte entfernen“ freiwillig selbst auflösen; das verbraucht nicht deine normale Hauptaktion. Auch Minuszahlen dürfen entfernt werden. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>🔢 Straßen &amp; gleiche Zahlen (optional)</h4><p>Gleiche Zahlen dürfen in vollständigen 3er-Spalten und 4er-Reihen immer wie bisher entfernt werden. Bei eingeschaltetem Zusatzmodus sind <b>gleiche Zahlen UND Straßen</b> erlaubt. Nur wenn der Host diese Hausregel vor dem Raumstart einschaltet, dürfen <b>Linien</b> mit unmittelbar auf- oder absteigenden <b>offenen Zahlenkarten und Joker-Platzhaltern</b> freiwillig abgeräumt werden: <b>senkrechte Spalte mit genau 3 Karten</b> (z. B. 5–6–7) oder <b>waagerechte Reihe mit genau 4 Karten</b> (z. B. 4–5–6–7). <b>Nach dem Abräumen einer Spalte dürfen auch 3 verbleibende waagerechte Karten entfernt werden.</b> Bei einer waagerechten Dreiergruppe darf das vierte Feld leer sein. Ein oder mehrere Joker dürfen fehlende Zahlen ersetzen, auch rückwärts (z. B. 5–★–3 = 5–4–3). Reine Jokergruppen behalten ihre eigenen −10/−15 Bonuspunkte. Abgeräumte Joker und Zahlen werden nicht erneut gewertet. Bei gleichen Zahlen dürfen außerdem drei verbleibende waagerechte Karten abgeräumt werden, wenn das vierte Feld bereits leer ist. Ohne diese Option bleibt die zusätzliche Straßenregel abgeschaltet; gleiche Zahlen bleiben weiterhin erlaubt.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, erhalten <b>alle anderen Spieler in normaler Zugreihenfolge jeweils noch genau einen letzten Zug</b>. Bei 3 Spielern heißt das: Beendet Spieler A die Runde, spielen danach noch B und C jeweils einmal. Erst dann beginnt die Abrechnung. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle noch verdeckten Karten langsam nacheinander aufgedeckt. Anschließend werden vollständige gleiche Reihen und Spalten automatisch geprüft: Reine Jokergruppen werden immer abgeräumt und ausschließlich mit ihrem festen Gruppenbonus bewertet. Andere Kombinationen werden nur abgeräumt, wenn das Entfernen punktetechnisch gleich gut oder besser ist. Eine Joker-Kombination mit günstigeren Minuspunkten darf deshalb bewusst liegen bleiben. Erst danach beginnt die Punktewertung. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards funktionieren; während des Spiels ist ihr Grundwert 0, bei der Endabrechnung gilt weiterhin die beste Zahl aus Reihe/Spalte. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
+function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
+
+async function returnFinishedGameToRoomLobby(){
+ if(!cloud.enabled||!cloud.room||!isRoomDoc(cloud.doc)){await backToLobby();return}
+ if(!isHostDevice()){toast('Nur der Host kann alle Spieler gemeinsam in die Raum-Lobby zurückholen.');return}
+ if(!state||state.phase!=='gameOver'){toast('Das Spiel ist noch nicht beendet.');return}
+
+ closeModal();
+ toast('🏠 Alle Spieler werden in die Raum-Lobby zurückgeholt …');
+ await waitForCloudIdle(3000);
+
+ for(let attempt=0;attempt<3;attempt++){
+   let baseDoc=isRoomDoc(cloud.doc)?clone(cloud.doc):null;
+   let baseRev=Number(cloud.rev)||0;
+
+   if(attempt>0||!baseDoc){
+     const fresh=await fetchCloudRoom(cloud.room,false);
+     if(!fresh?.found||!isRoomDoc(fresh.state)){
+       toast('Online-Raum konnte nicht geladen werden.');
+       return
+     }
+     baseDoc=clone(fresh.state);
+     baseRev=Number(fresh.rev)||0
+   }
+
+   baseDoc.game=null;
+   baseDoc.lobby.status='lobby';
+   delete baseDoc.lobby.startedAt;
+   baseDoc.lobby.finishedAt=Date.now();
+
+   const out=await postCloudDoc(baseDoc,baseRev);
+   if(out?.ok){
+     cloud.doc=baseDoc;
+     cloud.rev=Number(out.rev)||baseRev;
+     cloud.lastPushedJSON=JSON.stringify(baseDoc);
+     cloud.lastStatus='online';
+     cloud.pending=false;
+     cloud.pendingJSON='';
+     state=null;
+     ui={mode:'none',data:{},selected:[]};
+     roundSummarySeen='';
+     scoreSequenceSeen='';
+     try{localStorage.removeItem(SAVE_KEY)}catch(_e){}
+     render();
+     toast('🏠 Alle Spieler sind wieder in der Raum-Lobby');
+     return
+   }
+
+   if(!out?.conflict)break;
+   await sleep(140+attempt*120)
+ }
+
+ toast('⚠ Rückkehr in die Raum-Lobby fehlgeschlagen. Bitte erneut drücken.')
+}
+
+async function restart(){resetBoardChoiceForNewGame();if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann das Online-Spiel neu starten.');return}if(!confirm(cloud.enabled?'Online-Spiel beenden und mit allen Spielern in die Raum-Lobby zurückkehren?':'Aktuelles Spiel wirklich löschen und neu starten?'))return;clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';try{localStorage.removeItem(SAVE_KEY)}catch(_e){}if(cloud.enabled&&cloud.room&&isRoomDoc(cloud.doc)){await waitForCloudIdle(2500);const next=clone(cloud.doc);next.game=null;next.lobby.status='lobby';delete next.lobby.startedAt;const out=await postCloudDoc(next,cloud.rev);if(out?.conflict){if(out.remote)applyCloudDoc(out.remote,out.rev);toast('Raum wurde inzwischen geändert – bitte erneut versuchen.');return}if(!out?.ok){toast(cloud.lastError||'Online-Spiel konnte nicht zurückgesetzt werden.');return}cloud.doc=next;cloud.lastPushedJSON=JSON.stringify(next);state=null;ui={mode:'none',data:{},selected:[]};render();toast('↩ Alle Spieler sind wieder in der Online-Lobby');return}state=null;ui={mode:'none',data:{},selected:[]};render()}
