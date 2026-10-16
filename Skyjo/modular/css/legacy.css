@@ -3483,7 +3483,7 @@ body[data-mode="none"][data-players]:has(.premium-winner) .bottom-actions{z-inde
 
 /* V102: getrennte SKYJO-Einstiegsseiten, Spiellogik unverändert */
 .skyjo-entry{position:relative;isolation:isolate;border:1px solid rgba(144,157,200,.26)!important;border-radius:26px!important;background:linear-gradient(140deg,rgba(11,22,45,.95),rgba(11,19,33,.96))!important;overflow:hidden;text-align:left!important;padding:0!important;color:#f8fbff!important;box-shadow:0 22px 58px rgba(0,0,0,.32)!important;}
-.skyjo-entry::before{content:"";position:absolute;inset:0 0 auto;z-index:-1;height:245px;pointer-events:none;background:linear-gradient(90deg,rgba(9,15,28,.96),rgba(9,16,33,.48)),url("../Assets/game-backgrounds/skyjo.webp") center 47% /cover no-repeat;opacity:.78;}
+.skyjo-entry::before{content:"";position:absolute;inset:0 0 auto;z-index:-1;height:245px;pointer-events:none;background:linear-gradient(90deg,rgba(9,15,28,.96),rgba(9,16,33,.48)),url("../../../Assets/game-backgrounds/skyjo.webp") center 47% /cover no-repeat;opacity:.78;}
 .skyjo-entry::after{display:none!important;}
 .skyjo-entry .skyjo-banner{padding:27px clamp(18px,3vw,42px) 26px;border-bottom:1px solid rgba(255,255,255,.12);min-height:193px;position:relative;}
 .skyjo-entry .skyjo-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border:1px solid rgba(192,198,253,.29);border-radius:40px;background:rgba(40,31,85,.63);color:#e6d9ff;font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;}
@@ -5566,7 +5566,7 @@ body[data-skyjo-theme="comic"]{
   --accent:#ffce24;--gold:#ffe145;--gold2:#ffae21;--cyan:#46dfff;
   
   font-family:"Trebuchet MS",Inter,system-ui,sans-serif!important;}
-body[data-skyjo-theme="comic"]::before{content:""!important;display:block!important;position:fixed;inset:-35px;z-index:0!important;filter:blur(17px) saturate(1.7);background:url("../Assets/skyjo-themes/skyjo_comic.jpg") center/cover no-repeat!important;pointer-events:none;}
+body[data-skyjo-theme="comic"]::before{content:""!important;display:block!important;position:fixed;inset:-35px;z-index:0!important;filter:blur(17px) saturate(1.7);background:url("../../../Assets/skyjo-themes/skyjo_comic.jpg") center/cover no-repeat!important;pointer-events:none;}
 body[data-skyjo-theme="comic"] .app{position:relative;z-index:1;}
 body[data-skyjo-theme="comic"] .topbar,body[data-skyjo-theme="comic"] .bottom-actions{border:3px solid #011e3c!important;background:linear-gradient(120deg,#03224f,#073f82)!important;box-shadow:0 4px 0 #ffb61e,0 9px 0 #05182c,0 17px 26px #0006!important;}
 body[data-skyjo-theme="comic"] .player,body[data-skyjo-theme="comic"] .center-table,body[data-skyjo-theme="comic"] .stat,body[data-skyjo-theme="comic"] .pilebox{border:3px solid #011936!important;border-radius:13px!important;background:linear-gradient(140deg,#08326f,#041c46 82%)!important;box-shadow:4px 5px 0 #ffbb25,8px 9px 0 #06172f,0 13px 20px #0005!important;}
@@ -5578,7 +5578,7 @@ body[data-skyjo-theme="comic"] .action-buttons button,body[data-skyjo-theme="com
 body[data-skyjo-theme="comic"] .bottom-actions .primary{background:linear-gradient(120deg,#ffe245,#ff9727)!important;color:#111f35!important;}
 body[data-skyjo-theme="comic"] .modal{border:3px solid #ffca2a!important;box-shadow:9px 9px 0 #061839,0 16px 40px #0008!important;}
 body[data-skyjo-theme="christlich"]{--accent:#dfb35b;--gold:#d5a851;--gold2:#efca77;--cyan:#c4ab6b;color:#392c20!important;font-family:Georgia,"Times New Roman",serif!important;}
-body[data-skyjo-theme="christlich"]::before{content:""!important;display:block!important;position:fixed;inset:-35px;z-index:0!important;filter:blur(15px) saturate(.85);background:url("../Assets/skyjo-themes/skyjo_christlich.jpg") center/cover no-repeat!important;pointer-events:none;}
+body[data-skyjo-theme="christlich"]::before{content:""!important;display:block!important;position:fixed;inset:-35px;z-index:0!important;filter:blur(15px) saturate(.85);background:url("../../../Assets/skyjo-themes/skyjo_christlich.jpg") center/cover no-repeat!important;pointer-events:none;}
 body[data-skyjo-theme="christlich"] .app{position:relative;z-index:1;}
 body[data-skyjo-theme="christlich"] .topbar,body[data-skyjo-theme="christlich"] .bottom-actions,body[data-skyjo-theme="christlich"] .player,body[data-skyjo-theme="christlich"] .center-table,body[data-skyjo-theme="christlich"] .pilebox,body[data-skyjo-theme="christlich"] .stat{background:linear-gradient(145deg,#fffaf0,#f6e2b6 90%)!important;border:2px solid #c69f59!important;border-radius:17px!important;color:#4f361d!important;box-shadow:0 4px 0 #d6b675,0 12px 28px #79552a38!important;}
 body[data-skyjo-theme="christlich"] .topbar *,body[data-skyjo-theme="christlich"] .bottom-actions .instruction,body[data-skyjo-theme="christlich"] .player-head *,body[data-skyjo-theme="christlich"] .stat *,body[data-skyjo-theme="christlich"] .pilebox h4{color:#44321d!important;text-shadow:none!important;}
@@ -5865,10 +5865,10 @@ body.is-playing[data-skyjo-theme="comic"] .scene-round-panel .scene-joker-action
 }
 
 /* Separate Landschaftsgrafiken: keine doppelten Spieloberflächen mehr im Hintergrund. */
-body.is-playing[data-skyjo-theme="comic"]{background:linear-gradient(90deg,#07519045,#03549c55),url("../Assets/skyjo-themes/skyjo_comic_scene.jpg") center/cover fixed!important;}
-body.is-playing[data-skyjo-theme="christlich"]{background:linear-gradient(90deg,#ffefc752,#fff0ce66),url("../Assets/skyjo-themes/skyjo_christlich_scene.jpg") center/cover fixed!important;}
-body.is-playing[data-skyjo-theme="comic"]::before{background:url("../Assets/skyjo-themes/skyjo_comic_scene.jpg") center/cover no-repeat fixed!important;filter:blur(1px) saturate(1.24)!important;opacity:.92!important;}
-body.is-playing[data-skyjo-theme="christlich"]::before{background:url("../Assets/skyjo-themes/skyjo_christlich_scene.jpg") center/cover no-repeat fixed!important;filter:blur(1px) saturate(1.05)!important;opacity:.94!important;}
+body.is-playing[data-skyjo-theme="comic"]{background:linear-gradient(90deg,#07519045,#03549c55),url("../../../Assets/skyjo-themes/skyjo_comic_scene.jpg") center/cover fixed!important;}
+body.is-playing[data-skyjo-theme="christlich"]{background:linear-gradient(90deg,#ffefc752,#fff0ce66),url("../../../Assets/skyjo-themes/skyjo_christlich_scene.jpg") center/cover fixed!important;}
+body.is-playing[data-skyjo-theme="comic"]::before{background:url("../../../Assets/skyjo-themes/skyjo_comic_scene.jpg") center/cover no-repeat fixed!important;filter:blur(1px) saturate(1.24)!important;opacity:.92!important;}
+body.is-playing[data-skyjo-theme="christlich"]::before{background:url("../../../Assets/skyjo-themes/skyjo_christlich_scene.jpg") center/cover no-repeat fixed!important;filter:blur(1px) saturate(1.05)!important;opacity:.94!important;}
 @media(min-width:1121px){}
 @media(max-width:600px){
  body.is-playing:is([data-skyjo-theme="comic"],[data-skyjo-theme="christlich"]) .luxe-tool-dock{
@@ -6422,7 +6422,7 @@ body.is-playing .skyjo-scenic-stage .scene-self{position:relative;isolation:isol
  .skyjo-scenic-stage .scene-self .player .card{height:calc(var(--card-w)*1.03)!important;}
  .skyjo-scenic-stage .scene-self .player .gridwrap{gap:1px!important;}
  .skyjo-scenic-stage .scene-self .scene-personal-medallion{position:absolute;z-index:3;left:10px;top:18px;bottom:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;width:105px;pointer-events:none;text-align:center;gap:3px;}
- .scene-self .scene-personal-medallion-art{width:82px;height:82px;border-radius:50%;box-shadow:0 0 0 4px #ffdc49,0 0 0 8px #0a2039,0 4px 14px #09172f9a;background:center/cover no-repeat url("../Assets/skyjo-themes/skyjo_comic_scene.jpg");}
+ .scene-self .scene-personal-medallion-art{width:82px;height:82px;border-radius:50%;box-shadow:0 0 0 4px #ffdc49,0 0 0 8px #0a2039,0 4px 14px #09172f9a;background:center/cover no-repeat url("../../../Assets/skyjo-themes/skyjo_comic_scene.jpg");}
  .scene-self .scene-personal-name{max-width:106px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;font-size:11px!important;}
  .scene-self .scene-personal-round{background:#061e3c;min-width:96px;color:white;border:2px solid #f5bd38;display:flex;flex-direction:column;align-items:center;border-radius:10px;box-shadow:0 3px 0 #05131a;padding:2px;}
  .scene-self .scene-personal-round strong{font-size:26px;line-height:1;font-weight:900;color:#ffe37a;}
@@ -6452,8 +6452,8 @@ body.is-playing[data-skyjo-theme="comic"] .scene-right .player:nth-child(2){back
 body.is-playing[data-skyjo-theme="comic"] .scene-side .player .gridwrap{background:rgba(3,20,40,.38)!important;}
 body.is-playing[data-skyjo-theme="comic"] .scene-side .player .player-head{background:#061d3c!important;border:2px solid #f5be28!important;box-shadow:0 2px 0 #0006!important;}
 body.is-playing[data-skyjo-theme="comic"] .scene-self:before{inset:-8px -5px!important;z-index:-1!important;}
-body.is-playing[data-skyjo-theme="comic"] .scene-self .scene-personal-medallion-art{background-image:url("../Assets/skyjo-themes/skyjo_comic.jpg");}
-body.is-playing[data-skyjo-theme="christlich"] .scene-self .scene-personal-medallion-art{background-image:url("../Assets/skyjo-themes/skyjo_christlich.jpg");box-shadow:0 0 0 3px #d9b45a,0 0 0 7px #fff5d4,0 5px 15px #62431b70;}
+body.is-playing[data-skyjo-theme="comic"] .scene-self .scene-personal-medallion-art{background-image:url("../../../Assets/skyjo-themes/skyjo_comic.jpg");}
+body.is-playing[data-skyjo-theme="christlich"] .scene-self .scene-personal-medallion-art{background-image:url("../../../Assets/skyjo-themes/skyjo_christlich.jpg");box-shadow:0 0 0 3px #d9b45a,0 0 0 7px #fff5d4,0 5px 15px #62431b70;}
 body.is-playing[data-skyjo-theme="christlich"] .scene-self .scene-personal-round,body.is-playing[data-skyjo-theme="christlich"] .scene-self .scene-personal-total{background:linear-gradient(125deg,#fffef2,#f7e6bd)!important;color:#452b0d!important;border:1px solid #c89746!important;box-shadow:0 2px 4px #734f2555!important;}
 body.is-playing[data-skyjo-theme="christlich"] .scene-self .scene-personal-round strong,body.is-playing[data-skyjo-theme="christlich"] .scene-self .scene-personal-total strong{color:#482d14!important;}
 body.is-playing[data-skyjo-theme="christlich"] .scene-self .scene-personal-name{color:#5b411f!important;}
