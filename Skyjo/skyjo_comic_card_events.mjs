@@ -16,7 +16,7 @@ export function bindComicCardInteractions({ root, bridge, isEnabled = () => fals
     if (action !== 'selectGridCard') return;
     const rawPlayer = target.getAttribute('data-player-index');
     const rawCard = target.getAttribute('data-card-index');
-    if (rawPlayer === null || rawCard === null || !/^\\d+$/.test(rawPlayer) || !/^\\d+$/.test(rawCard)) return;
+    if (rawPlayer === null || rawCard === null || !/^\d+$/.test(rawPlayer) || !/^\d+$/.test(rawCard)) return;
     const playerIndex = Number(rawPlayer);
     const cardIndex = Number(rawCard);
     if (!Number.isInteger(playerIndex) || !Number.isInteger(cardIndex) ||
