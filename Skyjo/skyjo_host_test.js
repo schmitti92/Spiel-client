@@ -44,7 +44,7 @@ $('draw-deck').onclick=()=>hostPick('deck');$('draw-discard').onclick=()=>hostPi
 $('swap-card').onclick=()=>{choice='swap';render()};$('discard-reveal').onclick=()=>{choice='discard-reveal';render()};
 $('step').onclick=()=>{stop();step()};$('reset').onclick=reset;
 const autoBtn=document.createElement('button');autoBtn.id='auto-test';autoBtn.type='button';autoBtn.textContent='🤖 Auto-Test starten';$('scene').querySelector('footer').append(autoBtn);
-autoBtn.onclick=()=>{if(auto){stop();return}if(!verified||!s||s.pending)return;if(s.finished)reset();auto=true;autoBtn.textContent='⏸ Auto-Test stoppen';schedule()};
+autoBtn.onclick=()=>{if(auto){stop();render();return}if(!verified||!s||s.pending)return;if(s.finished)reset();auto=true;autoBtn.textContent='⏸ Auto-Test stoppen';schedule()};
 async function boot(){try{
  if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code))throw Error('Kein gültiger Raumcode.');
  let user=null;for(let i=0;i<30;i++){const state=window.SpielOnline?.state?.();if(state?.status==='online'&&state.user?.getIdToken){user=state.user;break}await new Promise(r=>setTimeout(r,300))}
@@ -53,5 +53,5 @@ async function boot(){try{
  const data=await res.json();if(data?.room?.host!==true||data.room.game!=='skyjo')throw Error('Nur der Host einer SKYJO-Lobby darf diese Vorschau öffnen.');
  verified=true;$('guard').textContent='✔ Host bestätigt – isolierter Kartentest bereit';$('game').hidden=false;reset()
  }catch(e){$('guard').textContent='⛔ '+e.message}}
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});window.addEventListener('pagehide',stop);boot();
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();render()}});window.addEventListener('pagehide',stop);boot();
 })();
