@@ -24,6 +24,11 @@
     if(manifest.version!==19||!manifest.parts)throw Error('Ungültige SKYJO-Modulliste');
     const names=Object.keys(manifest.parts);
     if(names.length!==35)throw Error('Erwartet: 35 Logikteile, gefunden: '+names.length);
+    for(let i=0;i<names.length;i++){
+      const expected='skyjo_action-logic-part-'+String(i+1).padStart(2,'0')+'.txt';
+      if(names[i]!==expected)throw Error('Ungültige Reihenfolge oder Dateiname: '+names[i]);
+      if(!/^[a-f0-9]{64}$/.test(manifest.parts[names[i]]))throw Error('Ungültige SHA-256-Prüfsumme: '+names[i]);
+    }
     const texts=await Promise.all(names.map(n=>fetchWithRetry(n)));
     for(let i=0;i<names.length;i++){
       if(await sha256(texts[i])!==manifest.parts[names[i]])throw Error('Prüfsumme stimmt nicht: '+names[i]);
