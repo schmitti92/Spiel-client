@@ -1,0 +1,28 @@
+name: Cleanup obsolete SKYJO comic beta
+on:
+  push:
+    branches: [cleanup-skyjo-comic-beta]
+    paths: ['.github/workflows/skyjo-comic-cleanup-once.yml']
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Remove isolated comic beta and verify V19
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -f --ignore-unmatch .github/workflows/skyjo-comic-check.yml Skyjo/SKYJO_COMIC_BETA_README.md Skyjo/SKYJO_COMIC_INTEGRATION_AUDIT.md Skyjo/skyjo_action_comic_beta.html Skyjo/skyjo_comic_* tests/skyjo-comic-*.test.mjs
+          test -f Skyjo/skyjo_action.html
+          test -f Skyjo/skyjo_action-manifest.json
+          test -f Skyjo/skyjo_action-loader.js
+          for t in tests/skyjo-v*.test.cjs; do node "$t"; done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(skyjo): remove obsolete comic beta and isolated tests"
+          git push origin HEAD:cleanup-skyjo-comic-beta
