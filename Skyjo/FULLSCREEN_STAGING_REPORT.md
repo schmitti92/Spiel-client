@@ -31,3 +31,14 @@ Schrittweise Annäherung an das vom Nutzer ausgewählte Referenzbild: hochwertig
 3. Kartenstapel, Avatare und Sprüche-Bereich optisch näher ans Referenzbild bringen, dabei Spielbarkeit priorisieren.
 4. Spielregeln und echte Online-Synchronisierung unabhängig vom visuellen Host-Test validieren.
 5. Erst nach ausdrücklicher Freigabe den Branch nach `main` übernehmen.
+
+## Entwicklungsphase 2: Tablet-Dichte und Bedienelemente
+- Neue Datei `Skyjo/skyjo_tablet_density.css` als letzte optionale CSS-Schicht eingebunden.
+- Reaktionsleiste und Sprüche-Kategorien als feste 4er-/3er-Raster im Querformat gestaltet.
+- Seitliche Buttons, Kartenabstände und Statusbereiche für geringe Bildschirmhöhen verdichtet.
+- Im Vollbild-Hochformat bewusst vertikales Scrollen zugelassen, statt Spielbereiche abzuschneiden.
+- `tests/skyjo-fullscreen.test.cjs` erweitert: Einbindung und responsive Regeln geprüft.
+- GitHub Actions Lauf **39308580984**: erfolgreich (Syntax-, Host-, Layout- und SKYJO-Modulprüfungen).
+
+### Testgrenzen
+Die Tests sind statisch und automatisiert; sie belegen nicht, dass auf einem realen Samsung-Tablet sämtliche Elemente pixelgenau oder ohne Browser-Besonderheiten sichtbar sind. Ein manueller Querformat-/Vollbild-Screenshot bleibt nötig.
