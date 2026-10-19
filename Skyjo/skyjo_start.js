@@ -112,7 +112,7 @@ function render(){
  $('lobby-view').classList.remove('sj-hidden');
  $('copy-code-btn').textContent=code+' ⧉';
  const hostReady=room.host&&room.phase==='preparing'&&!busy;
- const testBtn=$('host-test-button');if(testBtn)testBtn.hidden=!room.host||room.phase!=='preparing';
+ const testBtn=$('host-test-button');if(testBtn){testBtn.hidden=!room.host||room.phase!=='preparing';testBtn.style.display=testBtn.hidden?'none':'inline-flex';testBtn.href='skyjo_host_test.html?room='+encodeURIComponent(code);}
  $('host-banner').textContent=room.host?'👑 Du bist der Host – nur du änderst die Einstellungen.':'🔒 Nur der Spielleiter kann die Einstellungen ändern.';
  $('host-note').textContent=room.host?'👑 Du kannst die Regeln ändern und Teilnehmerplätze verteilen. Alle Bereitmeldungen werden nach Änderungen zurückgesetzt.':'👑 Der Host bestimmt die Regeln. Du kannst dich bereit melden; der letzte Bereit-Klick startet die Partie automatisch.';
  const settings=room.settings||{};
@@ -244,7 +244,7 @@ document.querySelectorAll('[data-board]').forEach(btn=>btn.addEventListener('cli
  void mutate('/skyjo-settings',{settings:{...room.settings,boardTheme:theme}});
 }));
 $('skyjo-wood-choice')?.addEventListener('click',()=>{const selected=localStorage.getItem('skyjo-visual-skin')==='wood';localStorage.setItem('skyjo-visual-skin',selected?'classic':'wood');render();});
-$('host-test-button')?.addEventListener('click',()=>{if(!room?.host||room.phase!=='preparing')return;location.href='skyjo_host_test.html?room='+encodeURIComponent(code);});
+
 $('ready-button').addEventListener('click',()=>{
  const me=room?.players.find(p=>p.me);
  if(!me?.participating||updating())return;
