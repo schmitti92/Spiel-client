@@ -69,3 +69,45 @@ header h1{font-weight:850;letter-spacing:.025em}
  .board:nth-child(1){max-width:100%!important}
  #scene footer{flex-wrap:wrap}
 }
+
+/* Layout regression fixes: maintain separate non-overlapping zones at tablet sizes. */
+#game{min-height:0!important}
+#scene{isolation:isolate}
+#scene>.boards{display:contents!important}
+#scene .board:nth-child(2),#scene .board:nth-child(3){width:calc(50% - 5px)!important;max-width:calc(50% - 5px)!important}
+#scene .board:nth-child(2){justify-self:start}
+#scene .board:nth-child(3){justify-self:end}
+#scene .board:nth-child(1){justify-self:center;max-width:min(550px,85%)!important}
+#scene .board{display:flex;flex-direction:column;min-height:0;min-width:0;position:relative}
+#scene .board .grid{height:auto!important;min-height:0;align-self:center;flex:1 1 auto}
+#scene .piles,#scene .move-choice,#scene .status,#scene footer{position:relative;z-index:1;min-height:0;min-width:0;margin:0!important}
+#scene .piles{align-self:stretch;overflow:visible;display:flex;align-items:center}
+#scene .pill{min-height:0!important;height:100%;padding:3px 8px!important;line-height:1.1;overflow:hidden}
+#scene .move-choice{align-self:stretch;align-items:stretch}
+#scene .move-choice button{font-size:clamp(10px,.95vw,14px);line-height:1.15;padding:3px 8px!important}
+#scene .status{display:flex;align-items:center;justify-content:center;white-space:normal;text-align:center;overflow:hidden}
+#scene footer{max-width:100%;min-width:0;overflow:hidden}
+#scene footer button{flex:0 1 auto;white-space:nowrap;min-width:0}
+#preview-notice{font-size:clamp(10px,.78vw,12px)!important;max-width:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#preview-notice:focus-within{white-space:normal}
+#guard{margin:2px 0!important;line-height:1.1}
+@media(max-height:720px) and (orientation:landscape){
+ header{padding:3px 10px!important}
+ #game{height:calc(100dvh - 83px)!important}
+ #scene{grid-template-rows:minmax(0,1fr) 42px 29px minmax(0,1.18fr) 27px 29px!important}
+ #scene .board{padding:4px!important}
+ #scene .board h2{font-size:clamp(11px,1.1vw,16px)!important}
+ #scene .card{border-width:1px!important}
+ .reaction-panel{padding:4px!important}
+ .reaction-panel strong{font-size:11px!important}
+ .quote-row button{min-height:30px!important}
+}
+@media(max-width:800px) and (orientation:landscape){
+ #game{grid-template-columns:80px minmax(0,1fr) 80px!important}
+ #scene .board:nth-child(1){max-width:98%!important}
+ #scene .pill{min-width:80px}
+ #scene footer button{font-size:9px!important;padding:2px 4px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .scene-side button,.card{transition:none!important;animation:none!important}
+}
