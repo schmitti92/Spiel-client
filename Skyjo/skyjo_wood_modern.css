@@ -1,0 +1,15 @@
+/* SKYJO Wood Modern – separate, optional visual layer. No game rules. */
+body.skyjo-wood-modern{background:#382115!important;color:#f9f2e5}
+body.skyjo-wood-modern.is-playing{background:repeating-linear-gradient(0deg,#633b23 0 95px,#70462b 97px 101px,#59351f 104px 190px)!important}
+body.skyjo-wood-modern .skyjo-scenic-stage{background:linear-gradient(115deg,#3c2419e0,#7c4a2bc9 48%,#3c2419e0),repeating-linear-gradient(0deg,#6e4228 0 94px,#402819 97px 100px)!important}
+body.skyjo-wood-modern .skyjo-scenic-stage .player,
+body.skyjo-wood-modern .skyjo-scenic-stage .gridwrap{border-radius:20px!important;box-shadow:0 12px 28px #150b08a8, inset 0 1px 0 #ffffff35!important}
+body.skyjo-wood-modern .skyjo-scenic-stage .player{background:linear-gradient(155deg,#132c43f2,#091724f5)!important;border:2px solid #b28b5b!important}
+body.skyjo-wood-modern .skyjo-scenic-stage .card{border-radius:9px!important;box-shadow:0 3px 7px #0008!important}
+body.skyjo-wood-modern .skyjo-scenic-stage .scene-side .player .grid{gap:4px!important}
+body.skyjo-wood-modern .skyjo-scenic-stage .scene-self .player .grid{gap:5px!important}
+body.skyjo-wood-modern .skyjo-scenic-stage .scene-self .player{border-color:#45d7b3!important;box-shadow:0 0 0 2px #45d7b345,0 12px 30px #0009!important}
+body.skyjo-wood-modern button{touch-action:manipulation}
+@media(min-width:900px) and (orientation:landscape){
+ body.skyjo-wood-modern .skyjo-scenic-stage{max-width:100vw!important}
+}
