@@ -42,3 +42,20 @@ Die isolierte Host-Vorschau benutzt die vorhandenen Dateien `skyjo_host_test.htm
 
 ## Release-Grenze
 Auch der Folgebranch `skyjo-reference-fixes-20261019` bleibt unveröffentlicht. **Keine Aktualisierung von `main` ohne explizite Freigabe.**
+
+## Entwicklungsphase 3: Host-Controller und Stapeldarstellung
+Branch: `skyjo-host-security-layout-20261019` (abgeleitet vom geprüften Staging-Branch).
+
+### Codeänderungen
+- Der Nachziehstapel wird im UI nicht mehr als leer gesperrt, wenn ein Neu-Mischen aus dem Ablagestapel möglich ist. Vorher konnte die Engine neu mischen, aber der Button war deaktiviert.
+- Die automatische Simulation beendet sich nach vollständigem Durchlauf und setzt den Start-/Stop-Button zurück.
+- Die Host-Prüfung nutzt weiterhin die vom Backend persönlich berechnete `room.host`-Berechtigung; zusätzlich wird explizit `true` gefordert. Ein zeitlich begrenzter Abruf verhindert unbegrenztes Warten.
+- Zusätzliche visuelle Kartenstapel-Gestaltung und sichtbare Tastatur-Fokusrahmen.
+- Cache-Versionen erhöht, damit neue CSS- und JS-Dateien beim Testen nicht durch alte Browserkopien verdeckt werden.
+- Der Layout-Test wurde um diese Verhaltensregressionen erweitert.
+
+### Sicherheitsgrenze
+Die Host-Vorschau führt weiterhin keine Server-Spielzüge aus. Backend, Online-Statistik, Firebase-Regeln und produktive SKYJO-Dateien wurden nicht verändert. Die Host-Berechtigung wird beim Öffnen geprüft; für dauerhafte Berechtigungsüberwachung oder serverseitige Host-Testaktionen wäre zusätzliche Architektur nötig.
+
+### Ungetestet
+Die visuelle Pixelgenauigkeit auf Android-Tablets, reale Netzwerkausfälle, vollständige Regelkonformität und Live-Multiplayer-Synchronisierung sind durch die Node-/Python-Tests nicht abgedeckt.
