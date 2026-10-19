@@ -1,0 +1,51 @@
+/* SKYJO Royal Table v2 – clean visual refinement of the EXISTING game board.
+   No alternate boards, game logic, room protocol, or card assets are changed. */
+@media (min-width:1050px) {
+ body.is-playing .topbar{
+   background:linear-gradient(115deg,rgba(7,25,34,.98),rgba(8,31,45,.97))!important;
+   border:1px solid rgba(221,181,102,.65)!important;
+   border-radius:16px!important;
+   box-shadow:0 7px 26px #0008!important;
+   padding:10px 16px!important;
+ }
+ body.is-playing .topbar .top-actions{display:flex!important;gap:7px!important;flex-wrap:wrap!important}
+ body.is-playing .topbar .iconbtn{border-radius:12px!important;min-height:38px!important}
+ body.is-playing .status.premium-status{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:9px!important}
+ body.is-playing .status.premium-status .stat{
+   min-width:0!important;border-radius:15px!important;
+   background:linear-gradient(140deg,#0c2943,#071522)!important;
+   border:1px solid rgba(226,183,98,.7)!important;
+   box-shadow:0 4px 16px #0007!important;
+   padding:10px 12px!important;
+ }
+ body.is-playing .status.premium-status .stat.turn-stat{border-color:#4bc5ff!important;box-shadow:0 0 0 1px #4bc5ff55,0 4px 18px #0089d133!important}
+ body.is-playing .status.premium-status .stat b{font-size:clamp(17px,1.65vw,26px)!important}
+ body.is-playing .status.premium-status .stat span{font-size:clamp(10px,.9vw,14px)!important}
+ body.is-playing[data-players="3"] .table-area.three-player-layout{
+   display:grid!important;grid-template-columns:minmax(0,1.18fr) minmax(0,.78fr) minmax(0,1fr)!important;
+   gap:12px!important;align-items:start!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .board-col{min-width:0!important}
+ body.is-playing[data-players="3"] .three-player-layout .mini-players-stack{display:grid!important;grid-template-columns:1fr!important;gap:12px!important}
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap{min-width:0!important}
+ body.is-playing .center-table{border-radius:18px!important;overflow:visible!important}
+ body.is-playing .center-table .handbox,body.is-playing .center-table .play-pilebox{
+   border-radius:16px!important;border:1px solid #bd9458!important;
+   background:linear-gradient(150deg,rgba(10,30,44,.98),rgba(5,16,26,.98))!important;
+   box-shadow:0 5px 18px #0008!important;
+ }
+ body.is-playing .center-table .pile-row{gap:12px!important}
+ body.is-playing .center-table .pile-unit{min-width:0!important}
+ body.is-playing .center-table .pile-card-hit{border-radius:12px!important}
+ body.is-playing .center-table .pile-tip{font-weight:700!important}
+ body.is-playing .bottom-actions{background:rgba(5,20,29,.97)!important;border-top:1px solid #a17c46!important}
+ body.is-playing .bottom-actions .instruction{font-size:clamp(12px,1vw,16px)!important}
+ body.is-playing .bottom-actions .action-buttons button{border-radius:10px!important}
+}
+@media (max-width:1049px){
+ body.is-playing .status.premium-status .stat{min-width:0!important}
+ body.is-playing .topbar .top-actions{gap:5px!important}
+}
+@media (prefers-reduced-motion:reduce){
+ body.is-playing .topbar .iconbtn,body.is-playing .status.premium-status .stat{transition:none!important}
+}
