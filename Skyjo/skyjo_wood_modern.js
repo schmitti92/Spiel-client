@@ -18,6 +18,9 @@
   add(reactions,'☰ Menü',()=>show('☰ Anzeige & Bedienung',root=>{
    add(root,'Regeln',()=>{const match=[...document.querySelectorAll('button')].find(b=>/regeln|anleitung/i.test(b.textContent)&&!dock.contains(b));if(match){panel.hidden=true;match.click()}else{const p=document.createElement('p');p.textContent='Regeln über das bestehende Spielmenü öffnen.';root.append(p)}});
    add(root,'Animationen reduzieren',()=>document.body.classList.toggle('wood-reduced-motion'));
+   add(root,'Design: Klassisch',()=>{const url=new URL(location.href);url.searchParams.delete('skin');location.assign(url.href)});
+   add(root,'Design: Holz',()=>{const url=new URL(location.href);url.searchParams.set('skin','wood');location.assign(url.href)});
+   add(root,'Design: Premium-Holztisch',()=>{const url=new URL(location.href);url.searchParams.set('skin','premium');location.assign(url.href)});
    add(root,'Menü schließen',()=>panel.hidden=true);
   }));
   dock.append(reactions);document.body.append(dock,panel);
