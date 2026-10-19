@@ -141,6 +141,7 @@ function render(){
  readyButton.disabled=busy||room.phase!=='preparing'||!me?.participating;
  readyButton.textContent=me?.ready?'✔ Bereit – zurücknehmen':'✓ Ich bin bereit';
  readyButton.classList.toggle('is-ready',!!me?.ready);
+ const aiLink=$('ai-test-link');if(aiLink){const show=!!room.host&&room.phase==='preparing';aiLink.hidden=!show;aiLink.style.display=show?'inline-flex':'none';}
  const start=$('start-button');
  start.textContent=room.phase==='playing'?'▶ Zum Spiel':'▶ Spiel starten';
  start.disabled=busy||(!room.host&&room.phase!=='playing')||room.phase==='playing'&&!room.match?.participating;
