@@ -17,3 +17,5 @@ jobs:
           node tests/skyjo-host-preview.test.cjs
           python3 tests/check_skyjo_modular.py
           for t in tests/skyjo-v*.test.cjs; do node "$t"; done
+
+# Re-run after API URL syntax fix
