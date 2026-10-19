@@ -55,3 +55,11 @@ header{background:#0b1b2d77;border-radius:12px;padding:6px 12px}
 #scene footer button{min-height:32px;white-space:nowrap}
 @media(max-height:700px) and (orientation:landscape){#scene{grid-template-rows:minmax(0,1fr) 43px minmax(0,1.1fr) 30px 31px!important}#scene footer button{min-height:28px}}
 @media(orientation:portrait){#scene{grid-template-rows:minmax(0,1fr) 48px minmax(0,1.1fr) 38px 72px!important}#scene footer{flex-wrap:wrap;justify-content:center}}
+
+/* Interactive host cards in isolated preview. */
+.board.self .card{appearance:none;font-family:inherit;color:inherit;padding:0}
+.board.self .card:disabled{opacity:1;cursor:default}
+.board.self .card.face-down:not(:disabled){cursor:pointer;outline-offset:2px;transition:transform .12s ease,box-shadow .12s ease}
+.board.self .card.face-down:not(:disabled):hover,.board.self .card.face-down:not(:disabled):focus-visible{transform:translateY(-2px);box-shadow:0 0 0 3px #ffe39a,0 4px 12px #000b!important}
+.board.self .card.face-down:not(:disabled):active{transform:scale(.96)}
+@media(prefers-reduced-motion:reduce){.board.self .card.face-down:not(:disabled){transition:none}}
