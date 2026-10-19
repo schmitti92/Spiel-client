@@ -18,7 +18,7 @@ const SKYJO_ENTRY_MODE=(new URLSearchParams(location.search).get('mode')||'').to
 const SKYJO_REQUESTED_MODE=['online','local'].includes(SKYJO_ENTRY_MODE)?SKYJO_ENTRY_MODE:'';
 const SKYJO_NAV_TYPE=performance.getEntriesByType?.('navigation')?.[0]?.type||'navigate';
 const SKYJO_NEW_ENTRY=!!SKYJO_REQUESTED_MODE&&SKYJO_NAV_TYPE!=='reload'&&!new URLSearchParams(location.search).has('room');
-let skyjoLocalVariant=SKYJO_ENTRY_MODE==='local'&&SKYJO_HUB_QUERY.get('testPlayers')==='2'?'ai':'local';
+let skyjoLocalVariant='local';
 let cloud={enabled:false,room:'',rev:0,inFlight:false,pending:false,pendingJSON:'',lastPushedJSON:'',applying:false,pollTimer:null,pollBusy:false,pollErrors:0,reactionSeq:0,roomActionBusy:false,startBusy:false,lastStatus:'local',pushTimer:null,deferredRemote:null,applyScheduled:false,roomEpoch:0};
 const ACTIONS=window.SKYJO_ACTION_DEFINITIONS;
 if(!ACTIONS||Object.keys(ACTIONS).length!==9)throw Error('SKYJO-Aktionskartenkatalog fehlt');
