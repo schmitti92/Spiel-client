@@ -2,7 +2,7 @@
    Scoped to the isolated host preview; production multiplayer untouched. */
 @media (orientation:landscape){
  #game{align-items:stretch!important}
- #game .scene-side{display:flex;flex-direction:column;min-height:0;overflow:hidden!important;gap:clamp(3px,.65vh,8px)!important}
+ #game .scene-side{display:flex;flex-direction:column;min-height:0;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;scrollbar-width:thin;gap:clamp(3px,.65vh,8px)!important}
  #game .scene-side>button{flex:0 0 auto;min-height:clamp(30px,5.2vh,55px)!important;padding:3px 5px!important}
  #game .scene-left .reaction-panel{flex:0 0 auto;margin-top:auto!important;padding:5px!important;overflow:visible}
  #game .reaction-row{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px!important}
