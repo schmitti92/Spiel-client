@@ -55,3 +55,13 @@ Die Tests sind statisch und automatisiert; sie belegen nicht, dass auf einem rea
 - Bildgetreue Darstellung des gewünschten fotorealistischen Referenzdesigns.
 - Vollständige Spielregeln, Joker und Spezialeffekte im isolierten Host-Test (bisher vereinfachte Engine).
 - Online-Multiplayer-Last- und Wiederverbindungstests; diese wurden in dieser Phase nicht ausgeführt.
+
+## Entwicklungsphase 4: Bedienbarkeit und Zugänglichkeit
+- `Skyjo/skyjo_host_test_visual.js`: Dialoge stellen beim Schließen den Tastaturfokus wieder her; Escape und Klick auf den Hintergrund verwenden denselben Schließpfad.
+- `Skyjo/skyjo_host_test.html`: Dialogsemantik `role=dialog`, `aria-modal`, beschrifteter Titel und Beschreibung; Versionen der Fullscreen- und Dialogskripte angehoben, damit Browser aktuelle Assets laden.
+- `tests/skyjo-host-accessibility.test.cjs`: neue statische Prüfungen für Dialogattribute, Fokuswiederherstellung und Vollbild-Unterstützung.
+- Der erste Lauf **39309311003** schlug wegen eines veralteten Asset-Versionsasserts fehl. Dieser wurde korrigiert.
+- GitHub Actions Lauf **39309432762**: **success**; bestehende und neue Tests bestanden.
+
+### Grenzen dieser Phase
+Die Tests prüfen Code und Markup, ersetzen jedoch weder echte Screenreader-Tests noch Tablet-Browser-Interaktion. Es wurden keine Änderungen an produktivem Multiplayer oder Server vorgenommen.
