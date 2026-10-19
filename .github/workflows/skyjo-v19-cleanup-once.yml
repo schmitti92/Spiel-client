@@ -1,0 +1,48 @@
+name: SKYJO V19 one-time cleanup
+on:
+  push:
+    branches: [skyjo-v19-cleanup-20261019]
+    paths: ['.github/workflows/skyjo-v19-cleanup-once.yml']
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Remove redundant copies and fix outdated verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -f --ignore-unmatch Spiel-client-skyjo-modular-v19.zip Skyjo/skyjo-module-audit-v7-archived.json SKYJO_V19_UPLOAD_STATUS.md
+          git rm -f --ignore-unmatch Skyjo/Skyjo/skyjo_action-style-*.css
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('tests/check_skyjo_modular.py')
+          s=p.read_text()
+          s=s.replace("manifest['version']==13","manifest['version']==19")
+          s=s.replace("'manifest.version!==13'","'manifest.version!==19'")
+          s=s.replace("SKYJO V13 integrity OK:","SKYJO V19 integrity OK:")
+          p.write_text(s)
+          Path('Skyjo/verify_skyjo_modules.py').write_text('''#!/usr/bin/env python3
+          """Verify SKYJO V19 using the maintained manifest-based integrity test."""
+          from pathlib import Path
+          import subprocess
+          import sys
+          test = Path(__file__).resolve().parents[1] / "tests" / "check_skyjo_modular.py"
+          sys.exit(subprocess.call([sys.executable, str(test)]))
+          ''')
+          PY
+          python3 tests/check_skyjo_modular.py
+          python3 Skyjo/verify_skyjo_modules.py
+          node --test tests/skyjo-start-v9.test.mjs
+          for t in tests/skyjo-v*.test.cjs; do node "$t"; done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --name-only
+          git commit -m "chore(skyjo): remove redundant assets and refresh V19 verification"
+          git push origin HEAD:skyjo-v19-cleanup-20261019
