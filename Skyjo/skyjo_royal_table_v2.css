@@ -62,3 +62,25 @@ body.is-playing .emoji-reaction-bar .emoji-reaction-list > .emoji-reaction-btn:n
 body.is-playing .emoji-reaction-bar .emoji-reaction-list > .emoji-reaction-btn:nth-child(3),
 body.is-playing .emoji-reaction-bar .emoji-reaction-list > .emoji-reaction-btn:nth-child(12),
 body.is-playing .emoji-reaction-bar .emoji-reaction-list > .emoji-reaction-btn:nth-child(13){display:none!important}
+
+/* Landscape tablet: show both piles together instead of a very tall center stack. */
+@media (min-width:1100px) and (orientation:landscape){
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles{
+   display:grid!important;
+   grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+   gap:8px!important;
+   align-items:start!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles .pile-unit{
+   min-width:0!important;
+   width:100%!important;
+   max-width:100%!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles .pile-card-hit{
+   max-width:100%!important;
+   min-width:0!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles .card{
+   max-width:100%!important;
+ }
+}
