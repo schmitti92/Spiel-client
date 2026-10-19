@@ -17,4 +17,4 @@ jobs:
           python3 tests/check_skyjo_modular.py
           for t in tests/skyjo-v*.test.cjs; do node "$t"; done
           grep -q 'host-test-button' Skyjo/skyjo_start.html
-          grep -q 'room.host' Skyjo/skyjo_host_test.js
+          grep -q 'data.room.host' Skyjo/skyjo_host_test.js
