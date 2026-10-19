@@ -51,3 +51,13 @@
  #scene footer{right:50%;transform:translateX(50%)}
 }
 @media (prefers-reduced-motion:reduce){.reaction-burst{animation:none!important}}
+
+/* v4: keep test controls in normal flow and allow tablet scrolling. */
+#game{height:auto!important;min-height:calc(100dvh - 110px)!important;overflow:visible!important;align-items:start}
+#scene{grid-template-rows:auto auto auto auto!important;overflow:visible!important;min-height:0!important}
+#scene footer{position:static!important;transform:none!important;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0!important}
+#scene .status{padding:8px!important;min-height:38px!important}
+.board{min-height:0;overflow:visible!important}
+.board .grid{width:100%!important;height:auto!important;min-height:0!important}
+.card{min-height:48px}
+@media (min-width:900px) and (orientation:landscape){#scene{grid-template-rows:auto auto auto auto!important}.board:nth-child(2),.board:nth-child(3){min-height:200px}.board:nth-child(1){min-height:240px}}
