@@ -1,0 +1,21 @@
+name: SKYJO reference design staging checks
+on:
+  push:
+    branches: [skyjo-reference-redesign-staging-20261019]
+    paths: ['.github/workflows/skyjo-reference-staging.yml']
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          node --check Skyjo/skyjo_host_preview_engine.js
+          node --check Skyjo/skyjo_host_test.js
+          node --check Skyjo/skyjo_host_test_visual.js
+          node tests/skyjo-host-preview.test.cjs
+          python3 tests/check_skyjo_modular.py
+          for t in tests/skyjo-v*.test.cjs; do node "$t"; done
+          grep -Fq 'skyjo_host_reference_layout.css?v=1' Skyjo/skyjo_host_test.html
+          grep -Fq 'grid-template-rows' Skyjo/skyjo_host_reference_layout.css
