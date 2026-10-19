@@ -1,0 +1,144 @@
+ 'Was sagt der eine Aufzug zum anderen? Ich glaube, ich komme runter.',
+ 'Warum hat der Besen schlechte Laune? Weil er immer ausgekehrt wird.',
+ 'Was macht ein Pirat am Computer? Er drückt die Enterbeute.',
+ 'Warum ging die Uhr in die Schule? Weil sie tickende Argumente hatte.',
+ 'Wie nennt man einen schlauen Bäcker? Brotfessor.',
+ 'Was sagt der Stuhl zum Tisch? Du hast echt gute Beine.',
+ 'Warum essen Informatiker keine Schokolade? Wegen der Cookies.',
+ 'Was ist klein, grün und dreieckig? Das kleine grüne Dreieck.',
+ 'Warum ist der Ballon pleite? Weil er ständig abgehoben hat.',
+ 'Was macht ein Schneemann im Sommer? Eine Pfütze.',
+ 'Wie heißt ein Hund ohne Beine? Ist egal, er kommt sowieso nicht.',
+ 'Warum war der Kühlschrank beleidigt? Weil man ihn dauernd kaltgestellt hat.',
+ 'Was sagt ein Baum zum anderen? Lass uns mal abhängen.',
+ 'Wie nennt man einen nervösen Igel? Einen Stachelkopf.',
+ 'Warum tragen Kühe Glocken? Weil ihre Hörner nicht funktionieren.',
+ 'Was ist schwarz-weiß und sitzt auf der Schaukel? Ein Schwinguin.',
+ 'Warum können Bleistifte nicht heiraten? Weil sie keinen richtigen Punkt setzen können.',
+ 'Was macht ein Apfel im Fitnessstudio? Er stemmt Birnen.',
+ 'Warum sind Geheimagenten schlechte DJs? Weil sie ständig undercover sind.',
+ 'Wie nennt man einen sehr höflichen Ritter? Sir Viette.',
+ 'Was sagt der Toast zum Brot? Du bist heute aber scheibchenweise gut drauf.'
+];
+GAME_JOKES.push(
+ 'Warum ging der Bleistift zum Therapeuten? Weil er sich ausgestrichen fühlte.',
+ 'Was macht eine Tomate auf dem Computer? Sie drückt Ketchup.',
+ 'Warum lieben Vögel WLAN? Wegen der guten Verbindungen.',
+ 'Wie nennt man ein müdes Auto? Einen Schlafwagen.',
+ 'Was macht ein Brot im Krankenhaus? Es wird belegt.',
+ 'Warum können Kühe nicht flüstern? Weil sie nur muh-tiviert sprechen.',
+ 'Wie heißt ein intelligenter Berg? Cleverest.',
+ 'Warum tragen Lampen keine Mützen? Weil sie schon Schirme haben.',
+ 'Was sagt der Kugelschreiber zum Blatt? Ich fühl mich zu dir hingezogen.',
+ 'Warum sind Treppen schlechte Geheimnisträger? Weil immer etwas durchsickert.',
+ 'Wie nennt man eine entspannte Gurke? Chillrike.',
+ 'Was macht ein Handy im Fitnessstudio? Es trainiert Empfang.',
+ 'Warum ging die Banane ins Büro? Weil sie krumm Karriere machen wollte.',
+ 'Was macht eine Ente mit Akten? Sie abheften. Quak.',
+ 'Wie heißt ein Kaugummi, der nachdenkt? Grübelmint.',
+ 'Warum reden Pflanzen so ungern? Weil sie lieber wachsen lassen.',
+ 'Was macht ein Sofa beim Arzt? Es sitzt die Sache aus.',
+ 'Warum lachen Uhren nie zu spät? Weil sie den richtigen Zeitpunkt haben.',
+ 'Wie nennt man einen höflichen Käse? Bittebert.',
+ 'Was macht ein Gabelstapler im Urlaub? Er hebt ab.',
+ 'Warum war das Feuerzeug beleidigt? Weil es übergangen wurde.',
+ 'Was ist grau und kann nicht schwimmen? Ein Parkplatz.',
+ 'Wie nennt man einen Bäcker mit Sonnenbrand? Toasty.',
+ 'Warum mögen Waschmaschinen keine Witze? Weil sie Schleudertrauma bekommen.',
+ 'Was macht ein Löffel beim Fußball? Er spielt in der Schale.',
+ 'Warum wurde der Staubsauger Künstler? Er hatte Saugkraft.',
+ 'Wie nennt man eine nervöse Zitrone? Eine Zittrone.',
+ 'Warum kann der Mond nicht lügen? Weil alles ans Licht kommt.',
+ 'Was macht ein Taschenrechner am Wochenende? Er schaltet ab.',
+ 'Wie heißt ein sehr glücklicher Föhn? Heiter bis luftig.'
+);
+
+let jokePopupEl=null;
+let jokePopupTimer=null;
+let lastJokeSeen='';
+
+function clearJokePopup(){
+ if(jokePopupTimer){clearTimeout(jokePopupTimer);jokePopupTimer=null}
+ if(jokePopupEl){try{jokePopupEl.remove()}catch(_e){}jokePopupEl=null}
+}
+
+function showJokePopup(joke,remainingMs=TABLE_MESSAGE_MS){
+ if(!joke)return;
+ clearJokePopup();
+ showTableAnnouncement({kind:'joke',icon:'😂',title:'WITZ FÜR ZWISCHENDURCH',text:joke},remainingMs)
+}
+
+function syncGameJoke(){
+ const j=state?.funJoke;
+ if(!j?.id||j.id===lastJokeSeen)return;
+ const age=Date.now()-Number(j.ts||0);
+ if(age<0||age>TABLE_MESSAGE_MS){lastJokeSeen=j.id;return}
+ lastJokeSeen=j.id;
+ showJokePopup(j.text,TABLE_MESSAGE_MS-age)
+}
+
+function tellRandomJoke(){
+ if(!state)return;
+ if(toiletPauseActive()){toast('🚽 Erst die Toilettenpause beenden – dann gibt’s wieder Witze.');return}
+ let pool=GAME_JOKES;
+ const previous=state.funJoke?.text||'';
+ if(pool.length>1)pool=pool.filter(j=>j!==previous);
+ const joke=pool[Math.floor(Math.random()*pool.length)]||GAME_JOKES[0];
+ state.funJoke={id:uid(),text:joke,ts:Date.now(),by:toiletPauseActor().name};
+ save();
+ syncGameJoke();
+ toast('😂 Witz kommt!')
+}
+
+function jokeSideButtonHTML(){
+ if(!state||!['initialReveal','play'].includes(state.phase)||toiletPauseActive())return '';
+ return `<button type="button" class="joke-side-btn" onclick="Game.tellRandomJoke()" title="Zufälligen Witz anzeigen" aria-label="Zufälligen Witz anzeigen"><span class="joke-side-icon">😂</span><span class="joke-side-label">WITZ</span></button>`
+}
+
+
+
+const GAME_BIBLE_VERSES=[
+ {ref:'Philipper 4,13',text:'Ich vermag alles durch den, der mich mächtig macht, Christus.'},
+ {ref:'Sprüche 16,3',text:'Befiehl dem HERRN deine Werke, so werden deine Anschläge fortgehen.'},
+ {ref:'Sprüche 3,5',text:'Verlaß dich auf den HERRN von ganzem Herzen und verlaß dich nicht auf deinen Verstand.'},
+ {ref:'Sprüche 3,6',text:'Sondern gedenke an ihn in allen deinen Wegen, so wird er dich recht führen.'},
+ {ref:'Psalm 37,5',text:'Befiehl dem HERRN deine Wege und hoffe auf ihn; er wird\'s wohl machen.'},
+ {ref:'Psalm 118,24',text:'Dies ist der Tag, den der HERR macht; lasset uns freuen und fröhlich darinnen sein.'},
+ {ref:'Psalm 23,1',text:'Der HERR ist mein Hirte; mir wird nichts mangeln.'},
+ {ref:'Psalm 27,1',text:'Der HERR ist mein Licht und mein Heil; vor wem sollte ich mich fürchten?'},
+ {ref:'Psalm 46,2',text:'Gott ist unsre Zuversicht und Stärke, eine Hilfe in den großen Nöten.'},
+ {ref:'Psalm 55,23',text:'Wirf dein Anliegen auf den HERRN; der wird dich versorgen.'},
+ {ref:'Psalm 56,4',text:'Wenn ich mich fürchte, so hoffe ich auf dich.'},
+ {ref:'Psalm 84,13',text:'HERR Zebaoth, wohl dem Menschen, der sich auf dich verläßt!'},
+ {ref:'Psalm 90,12',text:'Lehre uns bedenken, daß wir sterben müssen, auf daß wir klug werden.'},
+ {ref:'Psalm 119,105',text:'Dein Wort ist meines Fußes Leuchte und ein Licht auf meinem Wege.'},
+ {ref:'Psalm 133,1',text:'Siehe, wie fein und lieblich ist\'s, daß Brüder einträchtig beieinander wohnen!'},
+ {ref:'Jesaja 40,31',text:'Die auf den HERRN harren, kriegen neue Kraft.'},
+ {ref:'Jesaja 41,10',text:'Fürchte dich nicht, ich bin mit dir; weiche nicht, denn ich bin dein Gott.'},
+ {ref:'Jesaja 43,2',text:'So du durchs Wasser gehst, will ich bei dir sein.'},
+ {ref:'Jeremia 17,7',text:'Gesegnet aber ist der Mann, der sich auf den HERRN verläßt.'},
+ {ref:'Jeremia 29,11',text:'Denn ich weiß wohl, was ich für Gedanken über euch habe, spricht der HERR: Gedanken des Friedens.'},
+ {ref:'Matthäus 5,9',text:'Selig sind die Friedfertigen; denn sie werden Gottes Kinder heißen.'},
+ {ref:'Matthäus 5,16',text:'Also lasset euer Licht leuchten vor den Leuten.'},
+ {ref:'Matthäus 6,34',text:'Darum sorget nicht für den andern Morgen; denn der morgende Tag wird für das Seine sorgen.'},
+ {ref:'Matthäus 7,12',text:'Alles nun, was ihr wollt, daß euch die Leute tun sollen, das tut ihr ihnen auch.'},
+ {ref:'Matthäus 11,28',text:'Kommet her zu mir alle, die ihr mühselig und beladen seid; ich will euch erquicken.'},
+ {ref:'Matthäus 18,20',text:'Wo zwei oder drei versammelt sind in meinem Namen, da bin ich mitten unter ihnen.'},
+ {ref:'Matthäus 19,26',text:'Bei den Menschen ist\'s unmöglich; aber bei Gott sind alle Dinge möglich.'},
+ {ref:'Matthäus 22,39',text:'Du sollst deinen Nächsten lieben wie dich selbst.'},
+ {ref:'Markus 9,23',text:'Alle Dinge sind möglich dem, der da glaubt.'},
+ {ref:'Markus 10,27',text:'Bei den Menschen ist\'s unmöglich, aber nicht bei Gott; denn alle Dinge sind möglich bei Gott.'},
+ {ref:'Lukas 6,31',text:'Wie ihr wollt, daß euch die Leute tun sollen, also tut ihnen gleich auch ihr.'},
+ {ref:'Lukas 12,25',text:'Welcher ist unter euch, ob er schon darum sorget, der da könnte eine Elle seiner Länge zusetzen?'},
+ {ref:'Johannes 8,12',text:'Ich bin das Licht der Welt; wer mir nachfolgt, der wird nicht wandeln in der Finsternis.'},
+ {ref:'Johannes 13,34',text:'Ein neu Gebot gebe ich euch, daß ihr euch untereinander liebet.'},
+ {ref:'Johannes 14,1',text:'Euer Herz erschrecke nicht! Glaubet an Gott und glaubet an mich!'},
+ {ref:'Johannes 14,6',text:'Ich bin der Weg und die Wahrheit und das Leben.'},
+ {ref:'Johannes 15,12',text:'Das ist mein Gebot, daß ihr euch untereinander liebet, gleichwie ich euch liebe.'},
+ {ref:'Johannes 16,33',text:'In der Welt habt ihr Angst; aber seid getrost, ich habe die Welt überwunden.'},
+ {ref:'Römer 5,3-4',text:'Trübsal bringt Geduld; Geduld aber bringt Erfahrung; Erfahrung aber bringt Hoffnung.'},
+ {ref:'Römer 8,28',text:'Wir wissen aber, daß denen, die Gott lieben, alle Dinge zum Besten dienen.'},
+ {ref:'Römer 12,10',text:'Die brüderliche Liebe untereinander sei herzlich.'},
+ {ref:'Römer 12,12',text:'Seid fröhlich in Hoffnung, geduldig in Trübsal, haltet an am Gebet.'},
+ {ref:'Römer 12,18',text:'Ist es möglich, soviel an euch ist, so habt mit allen Menschen Frieden.'},
+ {ref:'Römer 14,19',text:'Darum lasset uns dem nachstreben, was zum Frieden dient und was zur Besserung untereinander dient.'},

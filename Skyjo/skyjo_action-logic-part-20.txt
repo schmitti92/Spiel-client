@@ -1,0 +1,56 @@
+function showRules(){modal(`<div class="rules"><h3>Regeln dieser Fan-Umsetzung</h3><p class="note">Eigenständige, nicht offizielle Browser-Umsetzung ohne Originalgrafiken. Die Regeln sind in eigenen Worten zusammengefasst.</p><h4>Ziel</h4><p>Über mehrere Runden möglichst wenige Punkte sammeln. Sobald nach einer Runde mindestens ein Spieler ${state?state.target:100} oder mehr Gesamtpunkte hat, endet das Spiel; der niedrigste Gesamtstand gewinnt.</p><h4>Aufbau</h4><ul><li>Jeder Spieler erhält 12 Spielkarten im 4×3-Raster und deckt 2 beliebige Karten auf.</li><li>Es gibt einen Spielkarten-Nachzieh- und Ablagestapel sowie vier offen ausliegende Aktionskarten, einen Aktions-Nachziehstapel und eine Aktions-Ablage.</li><li>In Runde 1 beginnt, wer mit den zwei Startkarten die höchste Summe hat; bei Gleichstand entscheidet diese digitale Fassung zufällig. Ab Runde 2 beginnt der Spieler, der die vorherige Runde beendet hat.</li></ul><h4>Ein Zug – genau eine Hauptaktion</h4><ul><li><b>Spielkarte ziehen:</b> Ablagekarte muss sofort getauscht werden. Vom verdeckten Stapel darfst du die Karte ansehen, tauschen oder ablegen; beim Ablegen musst du eine eigene verdeckte Karte aufdecken.</li><li><b>Aktionskarte ziehen:</b> offen aus der Vierer-Auslage oder verdeckt vom Stapel. Sie darf frühestens im nächsten eigenen Zug gespielt werden.</li><li><b>Aktionskarte spielen/ablegen:</b> ihr Effekt ersetzt den normalen Zug. Unbenutzte Aktionskarten zählen am Rundenende je +10.</li></ul><h4>Sterne</h4><ul><li>Ein neu aufgedeckter bzw. passend platzierter Stern gibt einmalig sofort eine Aktionskarte. Auch ein offen vom Ablagestapel genommener Stern löst dies aus.</li><li>Sterne/Joker haben während des Spiels den Grundwert 0. Bei der Rundenabrechnung übernimmt jeder verbliebene Joker automatisch die niedrigste Zahl, die in seiner waagerechten Reihe oder senkrechten Spalte noch liegt. Beispiel: −2 und 3 in derselben Linie → der Joker zählt −2. Gibt es dort keine Zahl, bleibt er 0.</li><li>Reine Jokergruppen werden automatisch entfernt: drei Joker in einer vollständigen Spalte bzw. vier Joker in einer waagerechten Reihe geben genau einmal −10 bzw. −15 Punkte. Die abgeräumten Joker zählen danach nicht mehr einzeln, auch nicht mit einem übernommenen negativen Nachbarwert. Jede Jokerkarte darf nur zu einer abgeräumten Gruppe gehören.</li></ul><h4>Gleiche Reihen</h4><p>Komplette senkrechte oder waagerechte Reihen mit mindestens 3 noch vorhandenen Karten aus derselben Zahl werden direkt am Spielfeld markiert. Eine neu vollständige Kombination bleibt immer auf dem Brett liegen – es erscheint keine Nachfrage und sie wird während des normalen Spiels nicht automatisch entfernt. In deinem eigenen Zug kannst du sie über „Reihe entfernen“ bzw. „Spalte entfernen“ freiwillig selbst auflösen; das verbraucht nicht deine normale Hauptaktion. Auch Minuszahlen dürfen entfernt werden. Die abgeräumten Karten liegen gesperrt unter der Ablage und können nicht gezogen oder später neu eingemischt werden. Die normale oberste Ablagekarte bleibt ziehbar.</p><h4>🔢 Straßen &amp; gleiche Zahlen (optional)</h4><p>Gleiche Zahlen dürfen in vollständigen 3er-Spalten und 4er-Reihen immer wie bisher entfernt werden. Bei eingeschaltetem Zusatzmodus sind <b>gleiche Zahlen UND Straßen</b> erlaubt. Nur wenn der Host diese Hausregel vor dem Raumstart einschaltet, dürfen <b>Linien</b> mit unmittelbar auf- oder absteigenden <b>offenen Zahlenkarten und Joker-Platzhaltern</b> freiwillig abgeräumt werden: <b>senkrechte Spalte mit genau 3 Karten</b> (z. B. 5–6–7) oder <b>waagerechte Reihe mit genau 4 Karten</b> (z. B. 4–5–6–7). <b>Nach dem Abräumen einer Spalte dürfen auch 3 verbleibende waagerechte Karten entfernt werden.</b> Bei einer waagerechten Dreiergruppe darf das vierte Feld leer sein. Ein oder mehrere Joker dürfen fehlende Zahlen ersetzen, auch rückwärts (z. B. 5–★–3 = 5–4–3). Reine Jokergruppen behalten ihre eigenen −10/−15 Bonuspunkte. Abgeräumte Joker und Zahlen werden nicht erneut gewertet. Bei gleichen Zahlen dürfen außerdem drei verbleibende waagerechte Karten abgeräumt werden, wenn das vierte Feld bereits leer ist. Ohne diese Option bleibt die zusätzliche Straßenregel abgeschaltet; gleiche Zahlen bleiben weiterhin erlaubt.</p><h4>Rundenende</h4><p>Sobald ein Spieler die letzte verdeckte Karte bei sich oder einem Mitspieler aufdeckt, erhalten <b>alle anderen Spieler in normaler Zugreihenfolge jeweils noch genau einen letzten Zug</b>. Bei 3 Spielern heißt das: Beendet Spieler A die Runde, spielen danach noch B und C jeweils einmal. Erst dann beginnt die Abrechnung. Ab dann dürfen Aktionskarten nicht mehr gespielt oder freiwillig abgelegt werden. Danach werden alle noch verdeckten Karten langsam nacheinander aufgedeckt. Anschließend werden vollständige gleiche Reihen und Spalten automatisch geprüft: Reine Jokergruppen werden immer abgeräumt und ausschließlich mit ihrem festen Gruppenbonus bewertet. Andere Kombinationen werden nur abgeräumt, wenn das Entfernen punktetechnisch gleich gut oder besser ist. Eine Joker-Kombination mit günstigeren Minuspunkten darf deshalb bewusst liegen bleiben. Erst danach beginnt die Punktewertung. Der Spieler, der die Runde beendet hat, beginnt die nächste Runde und deckt dort auch zuerst seine Startkarten auf.</p><p>Hat der Rundenbeender nicht allein den niedrigsten Rundenwert, wird sein positiver Rundenwert verdoppelt. Bei 0 oder negativen Rundenpunkten gibt es keine Verdopplung.</p><h4>Aktionskarten</h4><ul>${Object.values(ACTIONS).map(a=>`<li><b>${a.icon} ${a.name}:</b> ${a.desc}</li>`).join('')}</ul><h4>Varianten aus der Anleitung</h4><p class="note">Diese vier Varianten sind hier als Regelreferenz enthalten; die automatische Spiellogik der Datei nutzt den vollständigen Standardmodus für 2–8 Spieler.</p><ul><li><b>Ein Kartendeck:</b> 5–10 Aktionskarten werden ins Spielkartendeck gemischt; beim Ziehen/Aufdecken darf man sie behalten oder ablegen und zieht danach noch eine Spielkarte (2–6 Spieler).</li><li><b>Zahlen + Sterne:</b> ohne Aktionskarten (2–6 Spieler).</li><li><b>Nur Zahlen:</b> ohne Sterne und Aktionskarten (2–4 Spieler).</li><li><b>Große Runde:</b> bis zu 10 Spieler mit 9 Karten im 3×3-Raster; zu Beginn wird nur 1 Karte aufgedeckt.</li></ul><p class="note"><b>Meteoritenschauer:</b> Die gedruckte Regel nennt als entfernbares Ziel Zahlen-, Stern- oder Aktionskarten. Wird hier eine Aktionskarte getroffen, legt die digitale Fassung die gezogene Ersatz-Spielkarte als offene Zusatzkarte neben das Raster; sie zählt bei der Wertung und kann später wie eine Spielkarte getauscht werden.</p><p class="note"><b>Diese digitale Version:</b> Die Anzahl der Joker-/Sternkarten ist im Startmenü von 0–30 einstellbar. „Joker-Spezialeffekte AUS“ lässt Sterne weiterhin als echte Joker/Wildcards funktionieren; während des Spiels ist ihr Grundwert 0, bei der Endabrechnung gilt weiterhin die beste Zahl aus Reihe/Spalte. Auch der Jokerbonus bleibt aktiv: 3 Sterne = −10 Punkte, 4 waagerechte Sterne = −15 Punkte. Deaktiviert werden nur die Aktionskarten und die Gratis-Aktionskarte beim Aufdecken eines Sterns.</p><p class="note"><b>Blanko-Ideenkarten:</b> Die Packung enthält Karten für eigene Hausregeln. Da sie keinen festen Effekt besitzen, sind sie nicht Teil des automatisierten Regelsets.</p></div>`)}
+function showLog(){modal(`<h3>Spielverlauf</h3><div class="log">${(state?.log||[]).map(x=>`<div>${escapeHTML(x)}</div>`).join('')}</div>`)}
+
+async function returnFinishedGameToRoomLobby(){
+ if(!cloud.enabled||!cloud.room||!isRoomDoc(cloud.doc)){await backToLobby();return}
+ if(!isHostDevice()){toast('Nur der Host kann alle Spieler gemeinsam in die Raum-Lobby zurückholen.');return}
+ if(!state||state.phase!=='gameOver'){toast('Das Spiel ist noch nicht beendet.');return}
+
+ closeModal();
+ toast('🏠 Alle Spieler werden in die Raum-Lobby zurückgeholt …');
+ await waitForCloudIdle(3000);
+
+ for(let attempt=0;attempt<3;attempt++){
+   let baseDoc=isRoomDoc(cloud.doc)?clone(cloud.doc):null;
+   let baseRev=Number(cloud.rev)||0;
+
+   if(attempt>0||!baseDoc){
+     const fresh=await fetchCloudRoom(cloud.room,false);
+     if(!fresh?.found||!isRoomDoc(fresh.state)){
+       toast('Online-Raum konnte nicht geladen werden.');
+       return
+     }
+     baseDoc=clone(fresh.state);
+     baseRev=Number(fresh.rev)||0
+   }
+
+   baseDoc.game=null;
+   baseDoc.lobby.status='lobby';
+   delete baseDoc.lobby.startedAt;
+   baseDoc.lobby.finishedAt=Date.now();
+
+   const out=await postCloudDoc(baseDoc,baseRev);
+   if(out?.ok){
+     cloud.doc=baseDoc;
+     cloud.rev=Number(out.rev)||baseRev;
+     cloud.lastPushedJSON=JSON.stringify(baseDoc);
+     cloud.lastStatus='online';
+     cloud.pending=false;
+     cloud.pendingJSON='';
+     state=null;
+     ui={mode:'none',data:{},selected:[]};
+     roundSummarySeen='';
+     scoreSequenceSeen='';
+     try{localStorage.removeItem(SAVE_KEY)}catch(_e){}
+     render();
+     toast('🏠 Alle Spieler sind wieder in der Raum-Lobby');
+     return
+   }
+
+   if(!out?.conflict)break;
+   await sleep(140+attempt*120)
+ }
+
+ toast('⚠ Rückkehr in die Raum-Lobby fehlgeschlagen. Bitte erneut drücken.')
+}
+

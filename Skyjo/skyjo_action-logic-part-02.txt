@@ -1,0 +1,108 @@
+   const turnKey=`${state.round}:${state.turnNo}:${state.currentPlayer}`;
+   if(turnKey!==lastOwnTurnAnnouncement){
+     lastOwnTurnAnnouncement=turnKey;
+     const extra=state.roundEnder!==null?'LETZTER ZUG':'Dein Zug beginnt jetzt';
+     showGameAnnouncement(
+       'your-turn',
+       'DU BIST DRAN',
+       extra,
+       finalJustShown?2050:90
+     );
+     if(!finalJustShown)haptic([16,35,16])
+   }
+ }
+}
+
+function visualFx(kind,label,emoji='✨',sparks=0){
+  try{
+    fxFeedback(kind);
+    if(uiPrefs.cinematic===false)return;
+    const perf=uiPrefs.performance!==false;
+    /* Ein Vollbild-Effekt bei JEDEM Spielerwechsel kostet auf Tablets unnötig Frames.
+       Im Flüssig-Modus bleibt der Zugwechsel deshalb bewusst ruhig. */
+    if(perf&&kind==='turn')return;
+    const wrap=document.createElement('div');wrap.className=`game-fx ${kind||''}`;
+    const core=document.createElement('div');core.className='fx-core';
+    const ic=document.createElement('div');ic.className='fx-icon';ic.textContent=emoji;
+    const tx=document.createElement('div');tx.className='fx-label';tx.textContent=label||'';
+    core.append(ic,tx);wrap.append(core);document.body.append(wrap);
+    setTimeout(()=>wrap.remove(),perf?650:980);
+    const cap=perf?4:18;
+    const n=Math.max(0,Math.min(cap,Number(sparks)||0));
+    for(let i=0;i<n;i++){
+      const s=document.createElement('i');s.className='fx-spark';
+      const a=(Math.PI*2*i/Math.max(1,n))+(Math.random()-.5)*.25;
+      const d=perf?(52+Math.random()*58):(70+Math.random()*120);
+      s.style.left=`${50+(Math.random()-.5)*3}%`;s.style.top=`${46+(Math.random()-.5)*3}%`;
+      s.style.setProperty('--sx',`${Math.cos(a)*d}px`);s.style.setProperty('--sy',`${Math.sin(a)*d}px`);
+      document.body.append(s);setTimeout(()=>s.remove(),perf?600:900);
+    }
+  }catch(_e){}
+}
+
+
+const UI_PREF_KEY='skyjo_action_ui_v9';
+let uiPrefs={sound:false,haptic:true,cinematic:true,autoFocus:false,motion:'table',performance:true};
+try{const p=JSON.parse(localStorage.getItem(UI_PREF_KEY)||'null');if(p&&typeof p==='object')uiPrefs={...uiPrefs,...p}}catch(_e){}
+let audioCtx=null,wakeLock=null,pseudoFullscreen=false;
+function saveUIPrefs(){try{localStorage.setItem(UI_PREF_KEY,JSON.stringify(uiPrefs))}catch(_e){}}
+let motionBusy=false,motionQueueBusy=false,motionUnlockTimer=null,motionSessionStart=Date.now(),motionBusyUntil=0,motionRenderPending=false,motionActiveEvent=null;
+const motionSeen=new Set();
+const motionDiscardCommitted=new Set();
+function discardArrivalEvent(){
+ if(motionActiveEvent&&(motionActiveEvent.type==='swap'||motionActiveEvent.type==='drawn-discard')&&!motionDiscardCommitted.has(motionActiveEvent.id))return motionActiveEvent;
+ const list=state?.motionFeed||[];
+ for(let i=list.length-1;i>=0;i--){
+   const e=list[i];
+   if(!e?.id||motionSeen.has(e.id)||motionDiscardCommitted.has(e.id))continue;
+   if(!(Number(e.ts||0)>=motionSessionStart-8000||e.id===state?.watch?.id))continue;
+   if(e.type==='swap'||e.type==='drawn-discard')return e
+ }
+ return null
+}
+function discardArrivalPending(){return !!discardArrivalEvent()}
+function visualDiscardState(){const arr=state?.playDiscard||[];const pending=discardArrivalPending();if(pending&&arr.length){return {top:arr.length>1?arr[arr.length-2]:null,count:Math.max(0,arr.length-1),pending:true}}return {top:arr[arr.length-1]||null,count:arr.length,pending:false}}
+function commitDiscardArrival(e,card){
+ if(e?.id)motionDiscardCommitted.add(e.id);
+ showDiscardCardImmediately(card);
+ const pile=document.getElementById('play-discard-pile');
+ if(pile){
+   const tip=pile.querySelector('.pile-tip');
+   if(tip)tip.textContent='Ablage';
+   pile.setAttribute('data-arrival-committed','1');
+ }
+}
+function showDiscardCardImmediately(card){
+ if(!card)return;
+ const pile=document.getElementById('play-discard-pile');
+ if(!pile)return;
+ const current=pile.querySelector('.card');
+ const wrap=document.createElement('div');
+ wrap.innerHTML=cardHTML({...card,faceUp:true},true,false);
+ const fresh=wrap.firstElementChild;
+ if(current&&fresh)current.replaceWith(fresh);
+ const tip=pile.querySelector('.pile-tip');
+ if(tip)tip.textContent='Ablage';
+ pile.classList.remove('discard-commit-pop');
+ void pile.offsetWidth;
+ pile.classList.add('discard-commit-pop');
+ setTimeout(()=>pile?.classList.remove('discard-commit-pop'),260);
+ const box=pile.closest('.play-pilebox');
+ const count=box?.querySelector('.count');
+ if(count&&state){
+   const n=state.playDiscard?.length||0,buried=state.removedCards?.length||0;
+   count.textContent=`${state.playDeck.length} im Stapel · ${n} Ablagekarte${n===1?'':'n'}${buried?` · ${buried} gesperrt darunter`:''}`;
+ }
+}
+function motionSpec(){const level=uiPrefs.motion||'table';if(level==='normal')return {level,flight:125,arc:12,settle:16,swapGap:16,pause:8,flip:96,revealPause:18};if(level==='slow')return {level,flight:180,arc:17,settle:20,swapGap:22,pause:12,flip:122,revealPause:22};return {level:'table',flight:220,arc:22,settle:22,swapGap:26,pause:14,flip:145,revealPause:24}}
+function setMotionLevel(level){if(!['normal','slow','table'].includes(level))level='table';uiPrefs.motion=level;saveUIPrefs();showDisplaySettings();toast(level==='normal'?'⚡ Bewegung: schnell':level==='slow'?'🎴 Bewegung: normal':'🃏 Tischmodus · flüssig')}
+function rerenderAfterMotion(){if(motionRenderPending||!state)return;motionRenderPending=true;setTimeout(()=>{motionRenderPending=false;if(state)render()},0)}
+function unlockMotion(rerender=false){clearTimeout(motionUnlockTimer);motionUnlockTimer=null;const was=motionBusy;motionBusy=false;motionBusyUntil=0;document.body.classList.remove('motion-busy');if(!motionQueueBusy&&cloud?.deferredRemote){flushDeferredCloudApply();return}if(rerender&&was&&!motionQueueBusy)rerenderAfterMotion()}
+function lockMotion(ms,label='Kartenbewegung läuft …'){motionBusy=true;const guard=Math.min(6500,Math.max(1800,(Number(ms)||300)+1400));motionBusyUntil=Date.now()+guard;document.body.classList.add('motion-busy');const pill=document.getElementById('motionStatusText');if(pill)pill.textContent=label;clearTimeout(motionUnlockTimer);/* Harte Notentriegelung: niemals wegen einer Browser-Animation dauerhaft sperren. */motionUnlockTimer=setTimeout(()=>unlockMotion(true),guard)}
+function motionLocked(show=true){if(motionBusy&&motionBusyUntil&&Date.now()>motionBusyUntil){unlockMotion(true);return false}if(!motionBusy)return false;if(show)toast('🎴 Kartenbewegung läuft noch …');return true}
+function motionShouldBlock(e){if(!state||!e)return false;/* Alte Bewegungen dürfen den nächsten Zug nie blockieren. */if(state.phase==='play'&&ui.mode==='turnChoice'&&Number(e.actor)!==Number(state.currentPlayer))return false;return true}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function recentMotionCard(){const list=state?.motionFeed||[],now=Date.now();for(let i=list.length-1;i>=0;i--){const e=list[i];if(!e)continue;if(now-Number(e.ts||0)>7000)break;if(e.type==='swap'||e.type==='drawn-discard'||e.type==='turn'||e.type==='reveal'||e.type==='action-play'||e.type==='action-take'||e.type==='meteor')return null;if((e.type==='draw-deck'||e.type==='take-discard'||e.type==='decision-keep')&&e.card)return e}return null}
+function heldCardInfo(){if(!state)return null;const localHeld=(ui.mode==='drawnDecision'||ui.mode==='drawnSwap'||ui.mode==='discardSwap'||ui.mode==='draw3Target')&&ui.data?.card?{card:ui.data.card,actor:state.currentPlayer,type:ui.mode==='discardSwap'?'Ablagekarte':'Gezogene Karte',local:!isAIPlayer(state.currentPlayer),title:isAIPlayer(state.currentPlayer)?`${state.players[state.currentPlayer].name} spielt diese Karte`:''}:null;if(localHeld)return localHeld;const evt=recentMotionCard();if(evt?.card)return {card:evt.card,actor:evt.actor??state.currentPlayer,type:evt.typeLabel||'Live-Karte',local:false,title:evt.title||'',text:evt.text||''};return null}
+function handZoneHTML(){const h=heldCardInfo();const actor=h?state.players?.[h.actor]?.name:'';const decision=!!(h?.local&&ui.mode==='drawnDecision');return `<div id="table-hand-zone-anchor" class="real-hand-zone"><div id="table-hand-zone-card" class="real-hand-card ${h?'':'empty'}">${h?cardHTML({...h.card,faceUp:true},true,false):'✦'}</div><div class="real-hand-copy"><span class="eyebrow">${h?escapeHTML(h.type):'Hand-/Entscheidungszone'}</span><b>${h?(h.local?'Karte in deiner Hand':`${escapeHTML(actor)} hat diese Karte`):'Hier landet eine gezogene Karte zuerst'}</b><small>${h?(h.local?(decision?'Eigene Karte antippen: Sie wird zuerst aufgedeckt, dann sauber ausgetauscht. Oder auf die Ablage tippen.':'Diese Karte wird jetzt gespielt.'):escapeHTML(h.text||h.title||'Live vom anderen Spieler.')):'Stapel → Handzone → alte Feldkarte offen zur Ablage → erst danach Handkarte ins Spielfeld.'}</small>${decision?`<div class="direct-swap-hint">☝ Eigene Karte antippen = sofort tauschen</div><div class="real-hand-actions direct-only"><button class="drop big-discard-btn" onclick="Game.discardDrawn()"><span class="big-discard-main">🗑️ KARTE AUF ABLAGE</span><small class="big-discard-sub">wegwerfen & eigene Karte aufdecken</small></button></div>`:''}</div></div>`}
+function motionFlightMarkup(e,cardOverride=null){if(e?.actionType&&!cardOverride){const a=ACTIONS[e.actionType];return `<div class="motion-fly action">${a?a.icon:'⚡'}</div>`}const c=cardOverride||e?.card||{type:'number',value:0,faceUp:false};return `<div class="motion-fly">${cardHTML({...c,faceUp:true},true,false)}</div>`}

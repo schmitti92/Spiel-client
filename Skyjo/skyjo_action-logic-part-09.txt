@@ -1,0 +1,146 @@
+           const fresh=await fetchCloudRoom(room,false);
+           if(fresh?.found&&isRoomDoc(fresh.state)){
+             const next=removeMe(clone(fresh.state));
+             if(next.lobby.players.length)await postCloudDoc(next,Number(fresh.rev)||0)
+           }
+         }
+       }
+     }else if(doc.lobby?.status==='playing'&&doc.lobby.hostId===cloud.deviceId&&doc.lobby.players.length>1){
+       /* Laufendes Spiel: Reconnect bleibt weiterhin möglich. */
+       const successor=doc.lobby.players.find(p=>p.id!==cloud.deviceId);
+       if(successor){doc.lobby.hostId=successor.id;await postCloudDoc(doc,cloud.rev)}
+     }
+   }catch(e){console.warn('[skyjo leave room]',e)}
+ }
+
+ try{closeModal()}catch(_e){}
+ roundSummarySeen='';scoreSequenceSeen='';
+ stopCloudRoomRuntime();
+ cloud.roomEpoch=Number(cloud.roomEpoch||0)+1;
+ cloud.enabled=SKYJO_REQUESTED_MODE==='online';cloud.room='';cloud.doc=null;cloud.rev=0;cloud.role='';cloud.lastError='';cloud.serverOK=null;cloud.reactionSeq=0;cloud.roomActionBusy=false;cloud.startBusy=false;cloud.inFlight=false;cloud.lastStatus='local';state=null;
+ // Raum verlassen darf lokale Spielstaende nicht loeschen.
+ cloudConfigSave();
+ render()
+}
+async function waitForCloudIdle(maxMs=3200){
+ if(!cloud.enabled)return true;
+ const end=Date.now()+Math.max(500,Number(maxMs)||3200);
+ if(cloud.pending&&!cloud.inFlight)await flushCloudPush();
+ while((cloud.inFlight||cloud.pending)&&Date.now()<end){await sleep(60);if(cloud.pending&&!cloud.inFlight)await flushCloudPush()}
+ return !cloud.inFlight&&!cloud.pending
+}
+async function refreshPage(){
+ try{if(state)save();flushLocalSaveNow();cloudConfigSave();if(cloud.enabled){toast('☁ Spielstand wird kurz gesichert …');await waitForCloudIdle(3500)}}catch(_e){}
+ try{
+   const u=new URL(location.href);
+   u.searchParams.set('v',SKYJO_BUILD);
+   u.searchParams.set('_r',String(Date.now()));
+   location.replace(u.toString())
+ }catch(_e){location.reload()}
+}
+async function toGameHub(){
+ const active=!!state||!!(cloud.enabled&&cloud.room);
+ if(active&&!confirm(cloud.enabled
+   ?'Zur Spielauswahl zurückkehren? Du verlässt diesen Online-Raum auf deinem Gerät. Andere Spieler können weiterspielen.'
+   :'Zur Spielauswahl zurückkehren? Dein lokaler Spielstand wird vorher gespeichert.'))return;
+ try{
+   if(state){save();flushLocalSaveNow()}
+   cloudConfigSave();
+   if(cloud.enabled&&cloud.room)await waitForCloudIdle(2500);
+ }catch(e){console.warn('Spielauswahl: Speicherung vor Navigation fehlgeschlagen',e)}
+ location.assign('../index.html');
+}
+async function backToLobby(){
+ const online=!!cloud.enabled;
+ const finished=online&&state?.phase==='gameOver';
+ const msg=finished
+   ?(isHostDevice()?'Zum Hauptmenü? Das abgeschlossene Online-Spiel wird sauber beendet und die übrigen Spieler kommen in die Raum-Lobby.':'Zum Hauptmenü? Du wirst aus dem abgeschlossenen Online-Raum entfernt.')
+   :(online?'Zur Start-Lobby zurück? Das laufende Online-Spiel bleibt für einen möglichen Reconnect auf dem Server bestehen.':'Zur Start-Lobby zurück? Der aktuelle lokale Spielstand bleibt gespeichert und kann fortgesetzt werden.');
+ if(!confirm(msg))return;
+ try{closeModal()}catch(_e){}
+ clearTimeout(aiTimer);aiBusy=false;aiActing=false;aiScheduledKey='';
+ if(online){try{await waitForCloudIdle(3000)}catch(_e){}await leaveOnlineRoom();return}
+ try{flushLocalSaveNow();sessionStorage.setItem(SKIP_RESUME_KEY,'1')}catch(_e){}
+ state=null;ui={mode:'none',data:{},selected:[]};render()
+}
+function hasLocalSave(){try{return !!migrateState(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(_e){return false}}
+function resumeLocalGame(){const saved=load();if(!saved){toast('Kein gespeichertes lokales Spiel gefunden.');return}try{sessionStorage.removeItem(SKIP_RESUME_KEY)}catch(_e){}cloud.enabled=false;cloud.room='';cloud.doc=null;cloud.rev=0;cloudConfigSave();state=saved;ui=restorePlayUIFromState();render();toast('▶ Gespeichertes Spiel fortgesetzt')}
+async function loadCloudRoom(){return joinOnlineRoom()}
+
+function resetOnlineClient(){
+ stopCloudRoomRuntime();
+ cloud.roomEpoch=Number(cloud.roomEpoch||0)+1;
+ cloud.inFlight=false;
+ cloud.pending=false;
+ cloud.pendingJSON='';
+ cloud.doc=null;
+ cloud.rev=0;
+ cloud.lastPushedJSON='';
+ cloud.lastError='';
+ cloud.serverOK=null;
+ cloud.lastStatus='local';
+ cloud.reactionSeq=0;
+ cloud.roomActionBusy=false;
+ cloud.startBusy=false;
+ state=null;
+ ui={mode:'none',data:{},selected:[]};
+ // Nur die Online-Verbindung zurücksetzen, lokale Speicherstände unangetastet lassen.
+ cloudConfigSave();
+ render();
+ setTimeout(()=>{const mode=$('#cloudMode');if(mode){mode.value='cloud';toggleCloudFields()}},0);
+ toast('↻ Lokale Online-Verbindung wurde zurückgesetzt')
+}
+
+function generateCloudRoom(){const input=$('#cloudRoom'),rc=randomCloudRoom();if(input)input.value=rc;toast(`Raumcode ${rc} gewählt`)}
+function toggleCloudFields(){const sel=$('#cloudMode'),box=$('#cloudBox'),local=$('#localBox'),ai=$('#aiBox');if(!sel)return;const mode=sel.value||'local',on=mode==='cloud';skyjoLocalVariant=mode==='ai'?'ai':'local';if(box)box.style.display=on?'block':'none';if(local)local.style.display=mode==='local'?'block':'none';if(ai)ai.style.display=mode==='ai'?'block':'none';cloud.enabled=on;if(on){const inp=$('#cloudRoom');if(inp&&!inp.value)inp.value=cloud.room||randomCloudRoom()}else{cloud.doc=null;cloud.room=''}document.querySelectorAll('.mode-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===mode));cloudConfigSave();if(mode==='local')setTimeout(updateNames,0)}
+function selectSetupMode(mode){const sel=$('#cloudMode');if(!sel||!['local','ai','cloud'].includes(mode))return;sel.value=mode;toggleCloudFields()}
+function cloudPollDelay(){
+ if(document.hidden)return 6000;
+ const errors=Math.min(3,Number(cloud.pollErrors||0));
+ let base=1100;
+ if(state?.phase==='gameOver')base=1800;
+ else if(state&&(state.phase==='betweenRounds'||state.phase==='initialReveal'))base=700;
+ else if(state&&cloud.enabled&&!isMyActorDevice())base=820;
+ return Math.min(10000,base*Math.pow(2,errors))
+}
+function startCloudPolling(){
+ if(cloud.pollTimer)clearTimeout(cloud.pollTimer);cloud.pollTimer=null;
+ if(!cloud.enabled||!cloud.room)return;
+ const tick=async()=>{
+   if(!cloud.enabled||!cloud.room)return;
+   /* Während einer sichtbaren Kartenbewegung keinen neuen DOM-Zustand hineinrendern. */
+   if(!cloud.inFlight&&!cloud.pending&&!cloud.pollBusy&&!motionBusy&&!motionQueueBusy){
+     const pollRoom=cloud.room,pollEpoch=Number(cloud.roomEpoch||0);
+     cloud.pollBusy=true;
+     try{
+       const j=await fetchCloudRoom(pollRoom,true);
+       if(cloud.room!==pollRoom||Number(cloud.roomEpoch||0)!==pollEpoch)return;
+       if(j){
+         cloud.pollErrors=0;
+         if(j.found===false&&cloud.doc){
+           cloud.doc=null;cloud.rev=0;state=null;ui={mode:'none',data:{},selected:[]};
+           cloud.lastError='Dieser Online-Raum existiert nicht mehr.';render()
+         }else if(j.found&&!j.unchanged&&isRoomDoc(j.state)&&Number(j.rev||0)>Number(cloud.rev||0)){
+           scheduleCloudApply(j.state,j.rev||0)
+         }
+       }else cloud.pollErrors=Math.min(4,Number(cloud.pollErrors||0)+1)
+     }catch(e){
+       cloud.pollErrors=Math.min(4,Number(cloud.pollErrors||0)+1);
+       console.warn('[skyjo poll]',e)
+     }finally{cloud.pollBusy=false}
+   }
+   if(cloud.enabled&&cloud.room)cloud.pollTimer=setTimeout(tick,cloudPollDelay())
+ };
+ cloud.pollTimer=setTimeout(tick,250)
+}
+document.addEventListener('visibilitychange',()=>{if(cloud.enabled&&cloud.room)startCloudPolling()})
+async function resetCloudRoom(){if(!cloud.enabled||!cloud.room)return;try{await fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reset`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',timeoutMs:30000});cloud.rev=0;cloud.lastPushedJSON='';cloud.reactionSeq=0}catch(_e){}}
+
+function newCard(type,value=null){return {id:uid(),type,value,faceUp:false}}
+function makePlayDeck(jokerCount=8){let d=[];for(let i=0;i<3;i++)d.push(newCard('number',-2));for(let i=0;i<11;i++)d.push(newCard('number',0));for(const v of [-1,1,2,3,4,5,6,7,8,9,10,11,12])for(let i=0;i<7;i++)d.push(newCard('number',v));const jc=Math.max(0,Math.min(30,Math.floor(Number(jokerCount)||0)));for(let i=0;i<jc;i++)d.push(newCard('star'));return shuffle(d)}
+function newAction(type){return {id:uid(),type,availableOwnTurn:0,stolen:false}}
+function makeActionDeck(beginner){let d=[];for(const t of Object.keys(ACTIONS)){if(beginner&&(t==='thief'||t==='meteor'))continue;for(let i=0;i<3;i++)d.push(newAction(t))}return shuffle(d)}
+function takePlay(){if(!state.playDeck.length){if(state.playDiscard.length<=1)return null;const top=state.playDiscard.pop();/* Gesperrte Reihen-Karten (removedCards) werden niemals wieder eingemischt. */state.playDeck=shuffle(state.playDiscard.splice(0));state.playDiscard=[top];log('Der normale Ablagestapel wurde neu gemischt. Gesperrte Reihen-Karten bleiben draußen.')}return state.playDeck.pop()||null}
+function takeActionDeck(){if(!state.actionDeck.length){if(state.actionDiscard.length<=1)return null;const top=state.actionDiscard.pop();state.actionDeck=shuffle(state.actionDiscard.splice(0));state.actionDiscard=[top];log('Der Aktionskarten-Ablagestapel wurde neu gemischt.')}return state.actionDeck.pop()||null}
+function refillMarket(){for(let i=0;i<4;i++)if(!state.market[i])state.market[i]=takeActionDeck();}
+function current(){return state.players[state.currentPlayer]}

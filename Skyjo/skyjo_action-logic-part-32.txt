@@ -1,0 +1,196 @@
+ 'Ruhe bewahren: Wahrscheinlich sieht es nur von außen nach Problem aus.',
+ 'Man kann auch elegant stolpern.',
+ 'Manche Siege erkennt man erst, wenn die Aufregung vorbei ist.',
+ 'Wer lacht, hat kurz die Oberhand über das Durcheinander.',
+ 'Heute bitte freundlich zu dir selbst sein – der Rest ist Bonus.',
+ 'Wenn ein Plan knirscht, ist er wenigstens in Bewegung.',
+ 'Zwischen Zufall und Genie liegt oft nur gutes Timing.',
+ 'Große Momente fangen manchmal mit einem kleinen Quatsch an.',
+ 'Ein brillanter Einfall trägt nicht immer Krawatte.',
+ 'Auch ein Umweg kann stilvoll zum Ziel führen.',
+ 'Nicht erschrecken: Vielleicht läuft es gerade besser als gedacht.',
+ 'Das Leben ist zu kurz für langweilige Reaktionen.',
+ 'Mut klingt selten ordentlich, funktioniert aber trotzdem.',
+ 'Manchmal ist Durchwurschteln nur verkleidete Kreativität.',
+ 'Wer schmunzelt, denkt oft schon einen Zug weiter.',
+ 'Ein frecher Gedanke spart manchmal drei ernste Gesichter.',
+ 'Wenn nichts klappt, klapp wenigstens die Haltung nicht zusammen.',
+ 'Es darf ruhig ein bisschen funkeln, auch mitten im Kartenchaos.',
+ 'Heute ist ein guter Zeitpunkt, um das Beste aus dem Ungeplanten zu machen.',
+ 'Witz schlägt Panik. Fast immer.',
+ 'Die besten Überraschungen kommen selten mit Bedienungsanleitung.',
+ 'Du musst nicht alles kontrollieren, um souverän auszusehen.',
+ 'Gelassenheit ist auch nur Mut im Schlafanzug.',
+ 'Manchmal ist die klügste Antwort ein breites Grinsen.',
+ 'Große Energie entsteht oft aus kleinen Albernheiten.',
+ 'Selbst der verrückteste Spielzug zählt, wenn er funktioniert.',
+ 'Es ist nie zu spät für einen unerwartet guten Gedanken.',
+ 'Aus Versehen genial ist auch genial.',
+ 'Nicht jedes Risiko ist mutig – aber jedes Lachen hilft.',
+ 'Zwischen Ernst und Spaß liegt oft die beste Idee.',
+ 'Das war vielleicht kein Meisterplan, aber definitiv ein Moment.',
+ 'Auch ohne Krone darf man königlich reagieren.',
+ 'Wer improvisiert, hat zumindest schon angefangen.',
+ 'Ein bisschen Glanz schadet keiner Runde.',
+ 'Wenn du keine Antwort hast, hab wenigstens Charme.',
+ 'Abenteuer beginnt manchmal genau da, wo Routine genervt aufgibt.',
+ 'Heute ruhig mal so tun, als wäre alles extra so geplant.',
+ 'Kleine Eskalation, großer Unterhaltungswert.',
+ 'Ein Lächeln ist die eleganteste Form von Gegenwehr.',
+ 'Humor ist ein Bonuszug für die Seele.',
+ 'Unterschätze nie den Effekt eines gut platzierten Aha-Moments.',
+ 'Wenn schon Überraschung, dann bitte mit goldener Kante.'
+];
+function randomSurpriseQuote(exclude=''){
+ let pool=SURPRISE_QUOTES;
+ if(pool.length>1&&exclude)pool=pool.filter(q=>q!==exclude);
+ return pool[Math.floor(Math.random()*pool.length)]||SURPRISE_QUOTES[0]
+}
+let strombergQuoteBag=[];
+let strombergLastIndex=-1;
+function nextStrombergQuoteIndex(){
+ if(!strombergQuoteBag.length){
+  strombergQuoteBag=STROMBERG_QUOTES.map((_,i)=>i);
+  for(let i=strombergQuoteBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[strombergQuoteBag[i],strombergQuoteBag[j]]=[strombergQuoteBag[j],strombergQuoteBag[i]]}
+  if(strombergQuoteBag.length>1&&strombergQuoteBag[strombergQuoteBag.length-1]===strombergLastIndex){
+   [strombergQuoteBag[0],strombergQuoteBag[strombergQuoteBag.length-1]]=[strombergQuoteBag[strombergQuoteBag.length-1],strombergQuoteBag[0]];
+  }
+ }
+ const index=strombergQuoteBag.pop();strombergLastIndex=index;return index;
+}
+function isStrombergReaction(emoji){return /^SB[0-9]{2}$/.test(String(emoji||''))}
+
+function randomHeinzQuote(exclude=''){
+ let pool=HEINZ_QUOTES;
+ if(pool.length>1&&exclude)pool=pool.filter(q=>q!==exclude);
+ return pool[Math.floor(Math.random()*pool.length)]||HEINZ_QUOTES[0]
+}
+
+const TOILET_QUOTES=[
+ 'Die Karten warten. Der Darm nicht.',
+ 'Kurze Sitzung – diesmal ohne Punktewertung.',
+ 'Der Thron ruft. SKYJO muss kurz warten.',
+ 'Bitte nicht drängeln – hier läuft ein wichtiges Geschäft.',
+ 'Wer aufs Klo muss, darf keinen Zug überspringen – nur kurz pausieren.',
+ 'Eine Runde für die Verdauung, danach wieder für die Karten.',
+ 'Der nächste Zug kommt direkt nach der Spülung.',
+ 'Auch Champions müssen mal auf den Porzellanthron.',
+ 'Pause! Einer spielt gerade die braune Sonderkarte.',
+ 'Keine Sorge: Das Spiel ist nicht abgestürzt – nur jemand sitzt fest.',
+ 'Die Mission läuft – bitte kurz keine Störung im Kontrollzentrum.',
+ 'Kurzer Boxenstopp auf Keramik, gleich geht das Rennen weiter.',
+ 'Erst drücken, dann wieder Karten drücken.',
+ 'Auch große Taktiker brauchen manchmal eine stille Denkpause.',
+ 'Das Spiel macht kurz Pipi-Pause.',
+ 'Zwischen Spülung und Sieg liegt manchmal nur ein Knopfdruck.',
+ 'Bitte Geduld – hier wird gerade Ballast abgeworfen.',
+ 'Porzellanthron belegt – Wiederaufnahme nach ordnungsgemäßer Landung.',
+ 'Ein kleiner Schritt fürs Bad, ein großer fürs Bauchgefühl.',
+ 'Kurz weg vom Tisch, voll im Geschäft.'
+];
+
+function toiletPauseActive(){
+ return !!state?.toiletPause?.active
+}
+
+function toiletPauseActor(){
+ if(!state?.players?.length)return {index:0,name:'Spieler'};
+ let index=0;
+ if(cloud.enabled){
+   const me=myPlayerIndex();
+   index=me>=0?me:state.currentPlayer
+ }else if(state.players.some(p=>p.isAI)){
+   const human=state.players.findIndex(p=>!p.isAI);
+   index=human>=0?human:state.currentPlayer
+ }else index=state.currentPlayer;
+ return {index,name:state.players[index]?.name||'Spieler'}
+}
+
+function pauseForToilet(){
+ if(!state)return;
+ if(!['initialReveal','play'].includes(state.phase)){
+   toast('🚽 Toilettenpause ist gerade nicht nötig – die Runde läuft nicht.');
+   return
+ }
+ if(toiletPauseActive()){
+   toast('🚽 Das Spiel ist bereits pausiert.');
+   return
+ }
+
+ const who=toiletPauseActor();
+ const quote=TOILET_QUOTES[Math.floor(Math.random()*TOILET_QUOTES.length)];
+ state.toiletPause={
+   active:true,
+   id:uid(),
+   byIndex:who.index,
+   byName:who.name,
+   byDevice:cloud.enabled?cloud.deviceId:'local',
+   quote,
+   ts:Date.now()
+ };
+
+ try{closeModal()}catch(_e){}
+ clearGameAnnouncement();
+ clearJokePopup();
+ clearBiblePopup();
+ save();
+ render();
+ toast(`🚽 ${who.name} macht Toilettenpause`);
+ haptic([25,50,25])
+}
+
+function canResumeToiletPause(){
+ if(!toiletPauseActive())return false;
+ if(!cloud.enabled)return true;
+ return state.toiletPause.byDevice===cloud.deviceId
+}
+
+function resumeToiletPause(){
+ if(!toiletPauseActive())return;
+ if(!canResumeToiletPause()){
+   toast(`⏳ ${state.toiletPause?.byName||'Der Toilettengänger'} muss die Pause beenden.`);
+   return
+ }
+
+ const who=state.toiletPause?.byName||'Spieler';
+ state.toiletPause=null;
+ save();
+ render();
+ toast(`✅ ${who} ist zurück – weiter geht's!`);
+ haptic([18,30,18]);
+ setTimeout(()=>{resumeTransientFlow();scheduleAIIfNeeded(380)},70)
+}
+
+function toiletPauseButtonHTML(){
+ if(!state||!['initialReveal','play'].includes(state.phase))return '';
+ if(toiletPauseActive())return '';
+ return `<button type="button" class="toilet-side-btn" onclick="Game.pauseForToilet()" title="Scheißhaus-Pause" aria-label="Spiel für Toilettenpause anhalten"><span class="toilet-side-icon">🚽</span><span class="toilet-side-label">PAUSE</span></button>`
+}
+
+function toiletPauseOverlayHTML(){
+ if(!toiletPauseActive())return '';
+ const p=state.toiletPause||{};
+ const mine=canResumeToiletPause();
+ return `<div class="toilet-pause-overlay" role="dialog" aria-modal="true" aria-live="assertive">
+   <div class="toilet-pause-card">
+     <div class="toilet-roll">🧻</div>
+     <div class="toilet-big-icon">🚽</div>
+     <div class="toilet-kicker">SCHEISSHÄUSCHEN-PAUSE</div>
+     <div class="toilet-pause-title">SPIEL PAUSIERT</div>
+     <div class="toilet-pauser">${escapeHTML(p.byName||'Ein Spieler')} sitzt gerade auf dem Thron.</div>
+     <blockquote class="toilet-quote">„${escapeHTML(p.quote||TOILET_QUOTES[0])}“</blockquote>
+     ${mine
+       ?`<button class="toilet-resume-btn" onclick="Game.resumeToiletPause()">✅ FORTSETZEN</button><div class="toilet-wait-note">Drück erst, wenn das Geschäft erledigt ist. 😄</div>`
+       :`<div class="toilet-waiting"><span>⏳</span><b>Warten auf ${escapeHTML(p.byName||'den Toilettengänger')}</b><small>Das Spiel läuft automatisch weiter, sobald dort „Fortsetzen“ gedrückt wird.</small></div>`}
+   </div>
+ </div>`
+}
+
+function reactionActorIndex(){
+ if(!state?.players?.length)return 0;
+ if(cloud.enabled){const me=myPlayerIndex();return me>=0?me:state.currentPlayer}
+ if(state.players.some(p=>p.isAI)){const human=state.players.findIndex(p=>!p.isAI);return human>=0?human:state.currentPlayer}
+ return state.currentPlayer
+}
+function emojiReactionBarHTML(){
+ if(!state)return '';

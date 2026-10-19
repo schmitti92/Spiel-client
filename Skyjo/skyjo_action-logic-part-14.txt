@@ -1,0 +1,183 @@
+ for(const g of groups){
+   const cards=g.idx.map(i=>p.grid[i]);
+   if(cards.some(c=>!c.faceUp))continue;
+   const nums=[...new Set(cards.filter(c=>c.type==='number').map(c=>c.value))],stars=cards.filter(c=>c.type==='star').length;
+   const signature=`${g.name}:${cards.map(c=>c?.id||`${c?.type}:${c?.value}`).join('|')}`;
+   if(nums.length===1&&!(stars&&streetModeActive()&&isNumberStreet(cards)))out.push({...g,key:signature,optional:true,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`});
+   else if(nums.length===0&&stars===cards.length)out.push({...g,key:signature,optional:true,pureStars:true,label:`${g.name}: nur Joker`})
+ }
+ if(streetModeActive()){
+   /* Nur volle, bereits aufgedeckte Linien. Joker können an beliebiger
+      Position eine fehlende Zahl vertreten; auch absteigend und mehrere Joker. */
+   for(const g of groups){
+     const cards=g.idx.map(i=>p.grid[i]);
+     const street=resolveNumberStreet(cards);
+     if(!street)continue;
+     const name=`Straße ${g.name}`;
+     const numbers=cards.map((c,i)=>c.type==='star'?`★(${street.values[i]})`:String(street.values[i]));
+     out.push({...g,name,street:true,optional:true,
+       key:`street:${g.idx.join(',')}:${cards.map(c=>c.id||c.value).join('|')}`,
+       label:`${name}: ${numbers.join('–')}`});
+   }
+ }
+ return out
+}
+function findMatches(pi){return findMatchesInPlayer(state.players[pi])}
+
+let activeMatchPromptKey='';
+function dismissedMatchList(pi){if(!state.dismissedMatches||typeof state.dismissedMatches!=='object')state.dismissedMatches={};const k=String(pi);if(!Array.isArray(state.dismissedMatches[k]))state.dismissedMatches[k]=[];return state.dismissedMatches[k]}
+function isMatchDismissed(pi,m){return dismissedMatchList(pi).includes(m.key)}
+function dismissMatches(pi,matches){const list=dismissedMatchList(pi);for(const m of matches||[])if(m?.key&&!list.includes(m.key))list.push(m.key);}
+function resolveMatches(pi,cont){
+ /* V118: Reine Jokergruppen sind FESTE Einmal-Boni. Sie werden sofort
+    abgeräumt, damit ihre Joker nicht noch die Werte benachbarter
+    Zahlenkarten übernehmen und zusätzlich Minuspunkte erzeugen.
+    Andere fertige Zahlen-/Mischkombinationen bleiben manuell entfernbar. */
+ if(state?.phase==='play'){
+   let safeguard=0;
+   while(safeguard++<12){
+     const group=findMatches(pi).find(m=>m.pureStars);
+     if(!group)break;
+     removeMatch(pi,group);
+     const bonus=group.idx.length===4&&group.name.startsWith('Reihe')?-15:-10;
+     visualFx('star',`Jokergruppe abgeräumt: ${bonus} Punkte`,'⭐',9);
+   }
+ }
+ const matches=findMatches(pi);
+ /* Zahlen- und gemischte Gruppen bleiben wie bisher freiwillig. */
+ if(matches.length)dismissMatches(pi,matches);
+ state.pendingMatch=null;
+ save();
+ continueAfter(cont);
+}
+function pendingFreshMatches(){
+ if(!state||ui.mode!=='matchReady')return[];
+ const d=state.pendingMatch||ui.data||{},pi=d.pi??state.currentPlayer,keys=Array.isArray(d.matchKeys)?d.matchKeys:[];
+ return findMatches(pi).filter(m=>!isMatchDismissed(pi,m)&&(!keys.length||keys.includes(m.key)));
+}
+function maybeShowMatchPrompt(){return}
+function showMatchChoice(){
+ if(!state||ui.mode!=='matchReady')return;
+ const d=state.pendingMatch||ui.data||{},pi=d.pi??state.currentPlayer;
+ const fresh=pendingFreshMatches();
+ const key=ui.data.activeMatchKey||activeMatchPromptKey||fresh[0]?.key;
+ const m=fresh.find(x=>x.key===key)||fresh[0];
+ if(!m){
+   activeMatchPromptKey='';
+   state.pendingMatch=null;
+   continueAfter(d.cont);
+   return;
+ }
+ activeMatchPromptKey=m.key;
+ ui.data.activeMatchKey=m.key;
+ const kind=m.name.startsWith('Reihe')?'Reihe':'Spalte';
+ modal(`<div class="match-question">
+   <div class="match-question-icon">✨</div>
+   <h3>Diese Kombination kann manuell entfernt werden</h3>
+   <p><b>${escapeHTML(m.label)}</b></p>
+   <p class="note">Du musst sie nicht entfernen. Wenn du „Nein“ wählst, bleibt sie liegen und du wirst wegen genau dieser Kombination nicht noch einmal gefragt. Der Entfernen-Button bleibt trotzdem jederzeit verfügbar.</p>
+   <div class="modal-actions match-yes-no">
+     <button class="primary" onclick="Game.chooseMatch()">✓ Jetzt entfernen</button>
+     <button class="secondary" onclick="Game.skipOptionalMatches()">Schließen</button>
+   </div>
+ </div>`,false);
+}
+function chooseMatch(){
+ if(!state||ui.mode!=='matchReady')return;
+ if(motionLocked())return;
+ const d=state.pendingMatch||ui.data||{},pi=d.pi??state.currentPlayer,cont=d.cont;
+ const key=ui.data.activeMatchKey||activeMatchPromptKey;
+ const matches=findMatches(pi),idx=matches.findIndex(m=>m.key===key);
+ closeModal();activeMatchPromptKey='';
+ if(idx<0){resolveMatches(pi,cont);return}
+ resolveBoardMatch(pi,idx);
+}
+function skipOptionalMatches(){
+ if(!state||ui.mode!=='matchReady')return;
+ const d=state.pendingMatch||ui.data||{},pi=d.pi??state.currentPlayer,cont=d.cont;
+ const key=ui.data.activeMatchKey||activeMatchPromptKey||pendingFreshMatches()[0]?.key;
+ const m=findMatches(pi).find(x=>x.key===key);
+ if(m)dismissMatches(pi,[m]);
+ closeModal();activeMatchPromptKey='';
+ state.pendingMatch=null;
+ resolveMatches(pi,cont);
+}
+function resolveBoardMatch(pi,i){
+ if(isAIActor()&&!aiActing){toast('🤖 Der Computer entscheidet selbst über seine Kombination');return}
+ if(motionLocked())return;
+ if(!state||state.phase!=='play')return;
+ if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}
+ if(pi!==state.currentPlayer){toast('Entfernen geht in deinem eigenen Zug');return}
+ if(!['turnChoice','matchReady'].includes(ui.mode)){toast('Beende zuerst deine aktuelle Kartenaktion');return}
+ const matches=findMatches(pi),m=matches[i];if(!m)return;
+ const wasPrompt=ui.mode==='matchReady'||!!state.pendingMatch,cont=wasPrompt?(state.pendingMatch?.cont||ui.data.cont||'finishTurn'):'stayTurn';
+ const cards=m.idx.map(idx=>state.players[pi].grid[idx]).filter(Boolean).map(clone),srcIds=m.idx.map(idx=>`cell-${pi}-grid-${idx}`);
+ setWatch('bury-row',{actor:pi,cards,srcIds,dstId:'play-discard-pile',title:`räumt ${m.name} ab`,typeLabel:'GESPERRT UNTER ABLAGE',text:`${m.label} · oberste normale Ablage bleibt ziehbar`});
+ removeMatch(pi,m);visualFx('action',`${m.name} gesperrt unter die Ablage`,'✨',8);activeMatchPromptKey='';state.pendingMatch=null;resolveMatches(pi,cont);
+}
+function continueMatchReady(){
+ if(ui.mode!=='matchReady'&&!state.pendingMatch)return;
+ skipOptionalMatches();
+}
+function removeMatch(pi,m){
+ const p=state.players[pi];
+ if(!Array.isArray(state.removedCards))state.removedCards=[];
+ if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0;
+ if(m.pureStars){const bonus=(m.idx.length===4&&m.name.startsWith('Reihe'))?-15:-10;p.bankedStarBonus+=bonus;log(`${p.name} sichert ${bonus} Punkte Sternbonus durch das Abräumen.`)}
+ const buried=[];
+ for(const idx of m.idx){
+   const c=p.grid[idx];
+   if(c){
+     c.faceUp=true;
+     buried.push(c);
+     state.removedCards.push(c); /* bewusst NICHT in playDiscard: diese Karten sind gesperrt */
+     p.grid[idx]=null;
+   }
+ }
+ const drawableTop=state.playDiscard[state.playDiscard.length-1]||null;
+ log(`${p.name} räumt ${m.label} ab. ${buried.length} Karten liegen gesperrt unter der Ablage${drawableTop?`; ${cardShortText(drawableTop)} bleibt oben ziehbar`:''}.`);
+}
+function continueAfter(cont){if(cont==='finishTurn')finishTurn();else if(cont==='stayTurn'){ui={mode:'turnChoice',data:{},selected:[]};save();render()}else if(cont==='scoreNext')scoreNextPlayer();else if(cont==='meteorNext')meteorNext();else if(cont==='setupContinue')setupContinue();else finishTurn()}
+
+function buildFinalTurnQueue(enderIndex,fromIndex=enderIndex){
+ const n=state?.players?.length||0,out=[];
+ if(n<=1)return out;
+ const ender=Number(enderIndex);
+ let cur=Number(fromIndex);
+ if(!Number.isInteger(ender)||ender<0||ender>=n)return out;
+ if(!Number.isInteger(cur)||cur<0||cur>=n)cur=ender;
+ for(let step=1;step<n;step++){
+   const i=(cur+step)%n;
+   if(i===ender)break;
+   out.push(i)
+ }
+ return out
+}
+
+function checkRoundTrigger(){
+ if(state.roundEnder!==null)return;
+ for(let i=0;i<state.players.length;i++){
+   if(totalHidden(state.players[i])===0){
+     state.roundEnder=state.currentPlayer;
+     state.extraTurns=0;
+     state.finalTurnQueue=buildFinalTurnQueue(state.roundEnder,state.roundEnder);
+     const names=state.finalTurnQueue.map(pi=>state.players[pi]?.name).filter(Boolean);
+     if(names.length){
+       log(`${current().name} beendet die Runde. Alle anderen Spieler haben noch genau einen letzten Zug: ${names.join(' → ')}.`);
+       toast(`🔔 Schlussrunde! Noch je 1 Zug: ${names.join(' → ')}`);
+     }else{
+       log(`${current().name} beendet die Runde.`);
+       toast('🔔 Runde beendet.');
+     }
+     return
+   }
+ }
+}
+function finishTurn(){closeModal();if(state.heldReacts&&state.heldReacts.length){state.actionDiscard.push(...state.heldReacts);state.heldReacts=[];}checkRoundTrigger();if(state.roundEnder!==null){state.extraTurns=0;if(state.finalTurnQueue.length){state.currentPlayer=state.finalTurnQueue.shift();startTurn();return}startScoring();return}if(state.extraTurns>0){state.extraTurns--;startTurn();return}state.currentPlayer=(state.currentPlayer+1)%state.players.length;startTurn()}
+
+let roundCloseRunningId='';
+function roundCloseRevealOrder(){
+ const out=[];
+ for(let pi=0;pi<state.players.length;pi++){
+   const p=state.players[pi];
+   p.grid.forEach((c,idx)=>{if(c&&!c.faceUp)out.push({pi,zone:'grid',idx,id:c.id})});

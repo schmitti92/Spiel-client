@@ -1,0 +1,110 @@
+ pulseTarget(e.dstId||`player-${e.actor}`);await sleep(Math.min(150,spec.pause))
+ }finally{
+   if(motionActiveEvent===e)motionActiveEvent=null;
+   if(masksDiscard)rerenderAfterMotion();
+   if(e?.id)setTimeout(()=>motionDiscardCommitted.delete(e.id),125)
+ }}
+async function runMotionQueue(){if(motionQueueBusy||!state)return;const feed=(state.motionFeed||[]).filter(e=>e?.id&&!motionSeen.has(e.id)&&(Number(e.ts||0)>=motionSessionStart-8000||e.id===state.watch?.id));if(!feed.length){if(motionBusy)unlockMotion(true);return}motionQueueBusy=true;try{for(const e of feed){motionSeen.add(e.id);await playMotionEvent(e);await sleep(motionSpec().pause)}}catch(err){console.warn('[motion queue]',err)}finally{motionQueueBusy=false;const more=(state?.motionFeed||[]).some(e=>e?.id&&!motionSeen.has(e.id)&&(Number(e.ts||0)>=motionSessionStart-8000||e.id===state.watch?.id));if(more)setTimeout(runMotionQueue,20);else unlockMotion(true)}}
+function haptic(pattern=8){try{if(uiPrefs.haptic&&navigator.vibrate)navigator.vibrate(pattern)}catch(_e){}}
+function ensureAudio(){try{if(!audioCtx){const A=window.AudioContext||window.webkitAudioContext;if(A)audioCtx=new A()}if(audioCtx?.state==='suspended')audioCtx.resume()}catch(_e){}return audioCtx}
+function playFxSound(kind){if(!uiPrefs.sound)return;try{const ctx=ensureAudio();if(!ctx)return;const now=ctx.currentTime;const cfg={turn:[520,.055],draw:[650,.045],action:[740,.06],star:[880,.075],win:[980,.11]}[kind]||[600,.04];const o=ctx.createOscillator(),g=ctx.createGain();o.type=kind==='win'?'triangle':'sine';o.frequency.setValueAtTime(cfg[0],now);if(kind==='star'||kind==='win')o.frequency.exponentialRampToValueAtTime(cfg[0]*1.35,now+cfg[1]);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(kind==='win'?.10:.055,now+.008);g.gain.exponentialRampToValueAtTime(.0001,now+cfg[1]);o.connect(g);g.connect(ctx.destination);o.start(now);o.stop(now+cfg[1]+.02)}catch(_e){}}
+function fxFeedback(kind){const p=kind==='win'?[18,45,28]:kind==='star'?[10,30,15]:kind==='action'?14:8;haptic(p);playFxSound(kind)}
+
+function toggleHaptic(){uiPrefs.haptic=!uiPrefs.haptic;saveUIPrefs();if(uiPrefs.haptic)haptic([8,22,8]);showDisplaySettings()}
+function toggleCinematic(){uiPrefs.cinematic=!uiPrefs.cinematic;saveUIPrefs();syncBodyMode();showDisplaySettings()}
+function toggleAutoFocus(){uiPrefs.autoFocus=!uiPrefs.autoFocus;saveUIPrefs();showDisplaySettings()}
+function togglePerformance(){uiPrefs.performance=uiPrefs.performance===false?true:false;saveUIPrefs();syncBodyMode();showDisplaySettings();toast(uiPrefs.performance!==false?'⚡ Flüssig-Modus an':'✨ Volle Grafikeffekte an')}
+function focusMyBoard(){if(!state)return;let idx=cloud.enabled?myPlayerIndex():state.currentPlayer;if(idx<0)idx=state.currentPlayer;const el=document.getElementById(`player-${idx}`);if(el){el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});el.classList.remove('focus-flash');void el.offsetWidth;el.classList.add('focus-flash');setTimeout(()=>el.classList.remove('focus-flash'),900);haptic(7)}}
+function captureViewportLock(){const active=document.activeElement;const lock={x:window.scrollX||0,y:window.scrollY||window.pageYOffset||0,enabled:!!state};document.body.classList.add('view-lock-active');if(active&&active!==document.body&&!['INPUT','TEXTAREA','SELECT'].includes(active.tagName)&&typeof active.blur==='function'){try{active.blur()}catch(_e){}}return lock}
+function restoreViewportLock(lock){if(!lock?.enabled){document.body.classList.remove('view-lock-active');return}const apply=()=>{const maxY=Math.max(0,(document.documentElement.scrollHeight||document.body.scrollHeight||0)-window.innerHeight);const maxX=Math.max(0,(document.documentElement.scrollWidth||document.body.scrollWidth||0)-window.innerWidth);const x=Math.min(Math.max(0,Number(lock.x)||0),maxX);const y=Math.min(Math.max(0,Number(lock.y)||0),maxY);window.scrollTo(x,y)};requestAnimationFrame(()=>{apply();setTimeout(apply,34);setTimeout(()=>document.body.classList.remove('view-lock-active'),80)})}
+
+function canManageJokerCount(){
+ if(!state)return false;
+ if(cloud.enabled&&!isHostDevice())return false;
+ return true;
+}
+function jokerRoundInventory(){
+ // Mit dem Bestand dieser Runde verhindern wir, dass ein späteres Plus
+ // bereits ausgeteilte Joker nach einem vorherigen Minus doppelt ersetzt.
+ if(Number.isInteger(state?.jokerRoundInventory))return Math.max(0,state.jokerRoundInventory);
+ return Math.max(0,Math.min(30,Math.floor(Number(state?.jokerCount)||0)));
+}
+function showJokerCountManager(){
+ if(!state){toast('Kein laufendes Spiel');return}
+ const hostOnly=cloud.enabled&&!isHostDevice();
+ const currentCount=Math.max(0,Math.min(30,Math.floor(Number(state.jokerCount)||0)));
+ const remaining=Math.max(0,30-currentCount);
+ const inRound=state.phase==='play'||state.phase==='initialReveal';
+ const deckStars=Array.isArray(state.playDeck)?state.playDeck.filter(c=>c?.type==='star').length:0;
+ const stillOut=Math.max(0,jokerRoundInventory()-currentCount);
+ const note=hostOnly
+   ?'Nur der Host darf die Jokeranzahl eines Online-Spiels verändern.'
+   :(inRound
+      ?'Plus und Minus gelten sofort für Joker im verdeckten Nachziehstapel. Joker auf dem Spielfeld, in der Ablage oder in einer Handkarte bleiben unverändert. Die Zielzahl gilt vollständig ab der nächsten Runde.'
+      :'Die neue Anzahl gilt ab der nächsten Runde. Die laufende Punktewertung bleibt unberührt.');
+ modal(`<div class="joker-live-settings">
+   <div class="settings-hero">
+     <div class="settings-orb">★</div>
+     <div><h3>Jokeranzahl im Spiel</h3><p>${note}</p></div>
+   </div>
+   <div class="joker-live-count">
+     <span>Joker für die nächste Runde</span>
+     <strong>${currentCount}</strong>
+     <small>${inRound?`${deckStars} Joker aktuell verdeckt im Nachziehstapel`:'Einstellung gilt für die nächste Runde'}</small>
+   </div>
+   <div class="joker-live-actions joker-live-decrease">
+     <button ${hostOnly||currentCount<5?'disabled':''} onclick="Game.adjustJokersInGame(-5)">★★★★★ −5 Joker</button>
+     <button ${hostOnly||currentCount<2?'disabled':''} onclick="Game.adjustJokersInGame(-2)">★★ −2 Joker</button>
+     <button ${hostOnly||currentCount<1?'disabled':''} onclick="Game.adjustJokersInGame(-1)">★ −1 Joker</button>
+   </div>
+   <div class="joker-live-actions joker-live-increase">
+     <button class="primary" ${hostOnly||remaining<1?'disabled':''} onclick="Game.adjustJokersInGame(1)">★ +1 Joker</button>
+     <button class="primary" ${hostOnly||remaining<2?'disabled':''} onclick="Game.adjustJokersInGame(2)">★★ +2 Joker</button>
+     <button class="primary" ${hostOnly||remaining<5?'disabled':''} onclick="Game.adjustJokersInGame(5)">★★★★★ +5 Joker</button>
+   </div>
+   <div class="joker-live-limit">Einstellbar: 0–30 Joker.${stillOut&&inRound?` Noch ${stillOut} Joker dieser Runde können schon verteilt sein und werden nicht aus fremden Kartenfeldern entfernt.`:''}</div>
+   <div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>
+ </div>`,false)
+}
+function adjustJokersInGame(delta){
+ if(!state)return;
+ if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann die Jokeranzahl ändern');return}
+ delta=Math.trunc(Number(delta));
+ if(!Number.isFinite(delta)||delta===0)return;
+ const before=Math.max(0,Math.min(30,Math.floor(Number(state.jokerCount)||0)));
+ const target=Math.max(0,Math.min(30,before+delta));
+ if(target===before){toast(target===0?'Minimum: 0 Joker':'Maximum: 30 Joker');showJokerCountManager();return}
+ const immediate=state.phase==='play'||state.phase==='initialReveal';
+ let roundPool=jokerRoundInventory(),added=0,removed=0;
+ state.jokerCount=target;
+ if(immediate){
+   if(!Array.isArray(state.playDeck))state.playDeck=[];
+   if(target>roundPool){
+     added=target-roundPool;
+     for(let i=0;i<added;i++)state.playDeck.push(newCard('star'));
+     state.playDeck=shuffle(state.playDeck);
+     roundPool+=added;
+   }else if(target<roundPool){
+     for(let i=state.playDeck.length-1;i>=0&&roundPool>target;i--){
+       if(state.playDeck[i]?.type==='star'){
+         state.playDeck.splice(i,1);
+         roundPool--;
+         removed++;
+       }
+     }
+   }
+   state.jokerRoundInventory=roundPool;
+ }
+ const difference=target-before;
+ const label=difference>0?`+${difference}`:String(difference);
+ const currentText=immediate
+   ?(difference<0?` ${removed} Joker sofort aus dem Nachziehstapel entfernt.${roundPool>target?' Übrige Joker liegen bereits anderswo und bleiben bis zur nächsten Runde bestehen.':''}`:` ${added} Joker in den Nachziehstapel gemischt.`)
+   :' Gilt ab der nächsten Runde.';
+ log(`Jokeranzahl um ${label} geändert: ${before} → ${target}.${currentText}`);
+ save();
+ render();
+ toast(`★ Jokerziel ${target} (${label})${immediate&&difference<0?` · ${removed} aus dem Stapel entfernt`:''}`);
+ setTimeout(showJokerCountManager,40)
+}
+function addJokersToGame(amount){adjustJokersInGame(Math.abs(Math.trunc(Number(amount)||1)))}
+

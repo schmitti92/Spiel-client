@@ -1,0 +1,119 @@
+     const tail=solve(q);
+     const candidate={score:tail.score,steps:[{key:m.key,name:m.name,label:m.label},...tail.steps],removedCards:m.idx.length+tail.removedCards};
+     /* Bei Gleichstand werden nur bei normalen Kombinationen weitere Karten entfernt. */
+     if(!best||candidate.score<best.score||(candidate.score===best.score&&candidate.removedCards>best.removedCards))best=candidate
+   }
+   if(!best)best={score:rawRoundScore(p),steps:[],removedCards:0};
+   memo.set(key,best);
+   return best
+ }
+ return solve(clone(source))
+}
+let scoreSequenceSeen='',roundSummarySeen='',roundSummaryFocus=null,scoreSequencePlayback=null;
+function scoreItemsForPlayer(p){const items=[];for(let i=0;i<p.grid.length;i++){const c=p.grid[i];if(!c)continue;const v=endRoundCardValue(p,c,'grid',i);items.push({kind:'card',card:clone(c),gridIndex:i,value:v,label:c.type==='star'?jokerEndLabel(p,i):String(c.value),jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}for(let i=0;i<p.extras.length;i++){const c=p.extras[i];if(!c)continue;const v=endRoundCardValue(p,c,'extra',i);items.push({kind:'card',card:clone(c),value:v,label:c.type==='star'?'Zusatz-Joker · 0':`Zusatz ${c.value}`,jokerResolved:c.type==='star',jokerValue:c.type==='star'?v:null})}if(jokerSpecialsEnabled())for(const a of p.actions)items.push({kind:'action',actionType:a.type,value:10,label:ACTIONS[a.type]?.name||'Aktionskarte'});const bonus=bestStarBonus(p)+(Number(p.bankedStarBonus)||0);if(bonus)items.push({kind:'bonus',value:bonus,label:'Sternbonus'});return items}
+function scoreFmt(v){v=Number(v)||0;return `${v>0?'+':''}${v}`}
+function scoreTone(v){v=Number(v)||0;return v<0?'good':v>0?'bad':'neutral'}
+function scoreTokenHTML(item,i){
+ const v=Number(item.value)||0;
+ const cls=v<0?'negative':v>0?(item.kind==='action'?'penalty':'positive'):'bonus';
+ let visual='';
+ if(item.kind==='card'&&item.card){
+   visual=`<div class="score-mini-card ${item.jokerResolved?'joker-resolved':''}">${cardHTML({...item.card,faceUp:true},true,false)}${item.jokerResolved?`<span class="joker-score-badge">→ ${scoreFmt(item.jokerValue)}</span>`:''}</div>`
+ }else if(item.kind==='action'){
+   const a=ACTIONS[item.actionType];
+   visual=`<div class="score-special-icon action-score-icon">${a?.icon||'⚡'}</div>`
+ }else{
+   visual=`<div class="score-special-icon bonus-score-icon">⭐</div>`
+ }
+ const type=item.kind==='action'?'AKTION':item.kind==='bonus'?'BONUS':'KARTE';
+ return `<div id="score-token-${i}" class="score-token ${cls}" data-score="${v}">
+   <span class="score-token-type">${type}</span>
+   ${visual}
+   <div class="tok-label">${escapeHTML(item.label||'Karte')}</div>
+   <div class="tok-points ${scoreTone(v)}">${scoreFmt(v)}</div>
+ </div>`
+}
+function finishScoring(){const scores=state.players.map(rawRoundScore);const e=state.roundEnder;let final=scores.slice();if(e!==null&&scores[e]>0){const min=Math.min(...scores.filter((_,i)=>i!==e));if(min<=scores[e])final[e]=scores[e]*2}const seq={id:uid(),round:state.round,roundEnder:e,ownerDevice:cloud.enabled?cloud.deviceId:'local',createdAt:Date.now(),players:state.players.map((p,i)=>({index:i,name:p.name,beforeTotal:p.total,raw:scores[i],final:final[i],items:scoreItemsForPlayer(p),gridSnapshot:clone(p.grid),openingGrid:clone(state.roundScoreOpeningBoards?.[i]?.grid||p.grid),openingExtras:clone(state.roundScoreOpeningBoards?.[i]?.extras||p.extras)}))};state.phase='scoringSequence';state.scoreSequence=seq;ui={mode:'scoreSequence',data:{},selected:[]};save();render();maybeStartScoreSequence()}
+function maybeStartScoreSequence(){const seq=state?.scoreSequence;if(!seq||seq.id===scoreSequenceSeen)return;scoreSequenceSeen=seq.id;runScoreSequenceVisual(seq)}
+function sleepMs(ms){return new Promise(r=>setTimeout(r,ms))}
+function scoreSequenceAsRoyalSummary(seq){
+ const players=seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:sp.beforeTotal+sp.final,items:sp.items||[],gridSnapshot:sp.gridSnapshot||[],openingGrid:sp.openingGrid||sp.gridSnapshot||[],openingExtras:sp.openingExtras||[]}));
+ return {id:seq.id,round:seq.round,ended:players.some(p=>p.total>=Number(state?.target||100)),nextStarterIndex:seq.roundEnder,players};
+}
+function isRoyalCountingCurrent(seq){
+ if(!scoreSequencePlayback||scoreSequencePlayback.id!==seq.id||!state||Number(state.round)!==Number(seq.round))return false;
+ if(state.phase==='scoringSequence')return state.scoreSequence?.id===seq.id;
+ return (state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary?.id===seq.id;
+}
+function scrollRoyalCountToRow(row){
+ const scroller=row?.closest('.sky-score-entries');
+ if(!scroller||!row)return;
+ const visibleBottom=scroller.scrollTop+scroller.clientHeight;
+ const neededBottom=row.getBoundingClientRect().bottom-scroller.getBoundingClientRect().top+scroller.scrollTop;
+ if(neededBottom>visibleBottom)scroller.scrollTo({top:neededBottom-scroller.clientHeight+8,behavior:'smooth'});
+}
+function orderedRoyalCountSteps(sp){
+ const opening=[...(sp.openingGrid||[]),...(sp.openingExtras||[])].filter(Boolean);
+ const wasHidden=new Map(opening.filter(c=>c?.id).map(c=>[c.id,c.faceUp===false]));
+ const open=[],hidden=[],post=[];
+ for(let idx=0;idx<(sp.items||[]).length;idx++){
+   const item=sp.items[idx];const step={item,idx,kind:'scored'};
+   if(item.kind!=='card')post.push(step);
+   else if(wasHidden.get(item.card?.id))hidden.push(step);
+   else open.push(step)
+ }
+ // Revealing a removed card does not count it again. It is marked cleared.
+ const scoredIds=new Set((sp.items||[]).filter(x=>x.kind==='card').map(x=>x.card?.id));
+ for(const c of (sp.openingGrid||[]))if(c&&!scoredIds.has(c.id)&&c.faceUp===false)hidden.push({kind:'removed',item:{card:c,value:0,kind:'card',label:'Abgeräumt – keine zusätzlichen Kartenpunkte'},idx:-1});
+ for(const c of (sp.openingExtras||[]))if(c&&!scoredIds.has(c.id)&&c.faceUp===false)hidden.push({kind:'removed',item:{card:c,value:0,kind:'card',label:'Abgeräumt – keine zusätzlichen Kartenpunkte'},idx:-1});
+ return {open,hidden,post}
+}
+async function runScoreSequenceVisual(seq){
+ document.querySelectorAll('.score-sequence-overlay').forEach(el=>el.remove());
+ const playback={id:seq.id};scoreSequencePlayback=playback;
+ const summary=scoreSequenceAsRoyalSummary(seq);let reachedEnd=false;
+ try{
+   for(let pi=0;pi<seq.players.length;pi++){
+     if(!isRoyalCountingCurrent(seq))return;
+     const sp=seq.players[pi];roundSummaryFocus=sp.index;
+     modal(buildRoyalRoundSummaryModal(summary,{counting:true,playerIndex:pi}),false);
+     const root=document.querySelector('#modal .sky-score-counting');if(!root)return;
+     const counter=root.querySelector('.sky-score-main-running');
+     const progress=root.querySelector('.royal-count-progress');
+     const equation=root.querySelector('.royal-current-equation');
+     const headline=root.querySelector('.royal-count-headline');
+     let running=0,finishedCards=0;
+     const ordered=orderedRoyalCountSteps(sp);
+     const allSteps=[...ordered.open,...ordered.hidden,...ordered.post];
+     const openingCount=ordered.open.length;
+     if(headline)headline.textContent=`${sp.name}: zuerst die ${openingCount} offenen Karten zählen`;
+     await sleepMs(1150);
+     for(let si=0;si<allSteps.length;si++){
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       const step=allSteps[si],item=step.item,v=Number(item.value)||0;
+       const stage=si<ordered.open.length?'open':si<ordered.open.length+ordered.hidden.length?'hidden':'effects';
+       const row=step.idx>=0?root.querySelector(`.sky-score-entry[data-count-index="${step.idx}"]`):null;
+       const card=step.item.card?.id?[...root.querySelectorAll('.sky-score-board .sky-score-tile[data-grid-index]')].find(el=>{
+          const i=Number(el.dataset.gridIndex);
+          return sp.openingGrid?.[i]?.id===step.item.card.id
+       }):null;
+       if(stage==='hidden'){
+         if(headline)headline.textContent=step.kind==='removed'?'Abgeräumte Jokerreihe – ohne doppelte Kartenpunkte':'Verdeckte Karte wird langsam umgedreht …';
+         if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · verdeckte Karten aufdecken`;
+         await sleepMs(650);
+         if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+         if(card){card.classList.add('sky-score-flipping');card.classList.remove('sky-score-closed');card.setAttribute('aria-label',`Aufgedeckte Karte: ${step.item.card.type==='star'?'Joker':step.item.card.value}`)}
+         // This is deliberately much slower than the usual point counting.
+         await sleepMs(1900);
+         if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       }else if(stage==='open'){
+         if(headline)headline.textContent=`Offene Karte: ${summaryItemTitle(item,step.idx)} wird addiert`;
+         await sleepMs(410)
+       }else{
+         if(headline)headline.textContent=`${summaryItemTitle(item,step.idx)} wird berücksichtigt`;
+         await sleepMs(620)
+       }
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       row?.classList.remove('pending');row?.classList.add('revealed','counting-now');
+       card?.classList.remove('pending');card?.classList.add('revealed','counting-now');
+       if(step.kind==='removed'){card?.classList.add('sky-score-cleared');if(headline)headline.textContent='Abgeräumt – diese Karte zählt nicht noch einmal'}

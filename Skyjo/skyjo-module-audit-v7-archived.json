@@ -1,0 +1,1438 @@
+{
+  "skyjo_action": {
+    "parts": [
+      {
+        "name": "skyjo_action-logic-part-01.txt",
+        "bytes": 9995,
+        "sha256": "316ba4ff58292db8434a948b7e933931c6a5d2aa10472f6b6c5e8e395f65a0dd"
+      },
+      {
+        "name": "skyjo_action-logic-part-02.txt",
+        "bytes": 9190,
+        "sha256": "7b81d9d810d6e1378e6e5890024629d11bf380985e6c50da798251de6efab4b3"
+      },
+      {
+        "name": "skyjo_action-logic-part-03.txt",
+        "bytes": 9995,
+        "sha256": "09d8213849be59bdb20447168636b2ccc2555451f9396e8182337de529a24dc2"
+      },
+      {
+        "name": "skyjo_action-logic-part-04.txt",
+        "bytes": 9952,
+        "sha256": "ea58970afaaf529b519728783e5b539dd2e7f2897a46353f20c994a9de3f58e0"
+      },
+      {
+        "name": "skyjo_action-logic-part-05.txt",
+        "bytes": 9615,
+        "sha256": "4f06c5e64590082aeb02644d9799f522ed3f85a06fb3940ffc6a44d75b137138"
+      },
+      {
+        "name": "skyjo_action-logic-part-06.txt",
+        "bytes": 9715,
+        "sha256": "730ce8cb83275025b9d3fc8d746879ad39e2be6e63caa84821a7bb3db4e2e2ac"
+      },
+      {
+        "name": "skyjo_action-logic-part-07.txt",
+        "bytes": 9987,
+        "sha256": "fc6046082eaf96c0e1c2559d9a42a72d02525c75409615322acee56024b7e6b7"
+      },
+      {
+        "name": "skyjo_action-logic-part-08.txt",
+        "bytes": 9956,
+        "sha256": "cad1af72216bd4f9920e8afb132b581d41bd7d87a17969616daaabfd08feec75"
+      },
+      {
+        "name": "skyjo_action-logic-part-09.txt",
+        "bytes": 8899,
+        "sha256": "f52f4d77789dfcdeb93516d14e1ea927840a467f85397b375f72c2e591bf1025"
+      },
+      {
+        "name": "skyjo_action-logic-part-10.txt",
+        "bytes": 9587,
+        "sha256": "4716876f70948542b854be31ee79638f4864874d1874318c750e43cd348afb6f"
+      },
+      {
+        "name": "skyjo_action-logic-part-11.txt",
+        "bytes": 9959,
+        "sha256": "672909f09f73854174066de55c8a1b4fbc256b1a1a12231ac7acf3395226ae05"
+      },
+      {
+        "name": "skyjo_action-logic-part-12.txt",
+        "bytes": 9747,
+        "sha256": "d7e5f8f0c6c8b67e0bc500d6ad9b3d4f68404721a75cbd61a863eb69d74bab14"
+      },
+      {
+        "name": "skyjo_action-logic-part-13.txt",
+        "bytes": 10000,
+        "sha256": "1c7dd40171ecad888af1d6c330892793e72ecf37b068401235d03994398b84b3"
+      },
+      {
+        "name": "skyjo_action-logic-part-14.txt",
+        "bytes": 9856,
+        "sha256": "dce8c83730d3c1026445e744c4f6e6fc1d4b4cf5c4d2018491686f377b1d4341"
+      },
+      {
+        "name": "skyjo_action-logic-part-15.txt",
+        "bytes": 9950,
+        "sha256": "5f3cde82b5fbd9c12c0b5df4ddc7b87ba4da16c763a9d58df1b1d736056d4761"
+      },
+      {
+        "name": "skyjo_action-logic-part-16.txt",
+        "bytes": 9970,
+        "sha256": "d734a125e45b9fdef1c79476bd1dd9751a5a1d5368803a12c6311576853629ae"
+      },
+      {
+        "name": "skyjo_action-logic-part-17.txt",
+        "bytes": 9764,
+        "sha256": "2713fddf6ec08b82c82c7f510e8b277f51b8f9045d96bb68ddbe7dcef7870f06"
+      },
+      {
+        "name": "skyjo_action-logic-part-18.txt",
+        "bytes": 9523,
+        "sha256": "f4f52300fa449e4ad8c966387fa63bb09fb6c7d0b4d45f8b760c27b00a1c8094"
+      },
+      {
+        "name": "skyjo_action-logic-part-19.txt",
+        "bytes": 9258,
+        "sha256": "143f81e613d1a3f93d2bc0af6a37915ecc053cde55fa0da324eb5bc45d370b66"
+      },
+      {
+        "name": "skyjo_action-logic-part-20.txt",
+        "bytes": 9814,
+        "sha256": "f1e628937286619cdc433232a8901a9195c18276774dd77f388d2e4ec547e28a"
+      },
+      {
+        "name": "skyjo_action-logic-part-21.txt",
+        "bytes": 9927,
+        "sha256": "d06e105432220d7e90d15df675d273bbf0c5224a963594fc15b25ea002d0d87e"
+      },
+      {
+        "name": "skyjo_action-logic-part-22.txt",
+        "bytes": 9477,
+        "sha256": "635a48dfbdaf613267d412acf22705aaf64d00ac630c46e5ea56de2201c0815b"
+      },
+      {
+        "name": "skyjo_action-logic-part-23.txt",
+        "bytes": 9983,
+        "sha256": "5afd746c23b7bd32b290dd393b143a535ea4fea2fbb62ed03eacbd7b687c6f57"
+      },
+      {
+        "name": "skyjo_action-logic-part-24.txt",
+        "bytes": 9120,
+        "sha256": "1503207a7a41bf30bb1cffe4eb948c1cc16953f8c595958304913c863c7782af"
+      },
+      {
+        "name": "skyjo_action-logic-part-25.txt",
+        "bytes": 9609,
+        "sha256": "c38e560ebabf91dbc2c749622396a57349ccd0066b2fd2a286bdb51a51f4eb99"
+      },
+      {
+        "name": "skyjo_action-logic-part-26.txt",
+        "bytes": 9929,
+        "sha256": "bbddc2d9469b9617fd6e2c8a15b1e52922932a112351d2c6020c4610e4b3e53b"
+      },
+      {
+        "name": "skyjo_action-logic-part-27.txt",
+        "bytes": 9992,
+        "sha256": "7cad683e5f5ab25020d4b2f6449bcfe539e1cb3b01b20166672b5cf44150d264"
+      },
+      {
+        "name": "skyjo_action-logic-part-28.txt",
+        "bytes": 9907,
+        "sha256": "c274000e1f80d08415cbbc669bfbfca78a2d641dc7eb9e5e5197c6ded9aaa104"
+      },
+      {
+        "name": "skyjo_action-logic-part-29.txt",
+        "bytes": 9954,
+        "sha256": "5facbbe1b80a51f11bd6c4ec96b5b5cb944d3aa49790e7036b9e57eb4f3f586a"
+      },
+      {
+        "name": "skyjo_action-logic-part-30.txt",
+        "bytes": 9971,
+        "sha256": "18e706f6610e44a2ff51b5d0260d0d77e8e2034c78ee965c6fdc2899456ca820"
+      },
+      {
+        "name": "skyjo_action-logic-part-31.txt",
+        "bytes": 10000,
+        "sha256": "4471a3afe4eea42db4d0bda54f947d6f4cc1376fd5673400fe583c3a205965a3"
+      },
+      {
+        "name": "skyjo_action-logic-part-32.txt",
+        "bytes": 9220,
+        "sha256": "a3a8d5b1bd3726a5cf9b6e0f2f4efe90f4472f131f6618704a3ca6e893988522"
+      },
+      {
+        "name": "skyjo_action-logic-part-33.txt",
+        "bytes": 9983,
+        "sha256": "5e4ac9475fdde22f90d4d17d3d6a2166b4c4813b6c0cc1b63fa1d2cb09701b78"
+      },
+      {
+        "name": "skyjo_action-logic-part-34.txt",
+        "bytes": 2299,
+        "sha256": "070812c6be8d1fcfff5ad8dc9a88446b341b29811d6905a55c1202b3956ab224"
+      }
+    ],
+    "combined_sha256": "b8fe392e189e5d4326de2f6d5d1bce18079f75a7f2ff34663480159ce416b4a8",
+    "combined_bytes": 324103,
+    "candidate_functions": [
+      {
+        "name": "skyjoHubReturn",
+        "offset": 926
+      },
+      {
+        "name": "ACTIONS",
+        "offset": 1813
+      },
+      {
+        "name": "lastOwnTurnAnnouncement",
+        "offset": 8280
+      },
+      {
+        "name": "turnKey",
+        "offset": 11228
+      },
+      {
+        "name": "motionDiscardCommitted",
+        "offset": 13662
+      },
+      {
+        "name": "discardArrivalEvent",
+        "offset": 13702
+      },
+      {
+        "name": "discardArrivalPending",
+        "offset": 14240
+      },
+      {
+        "name": "visualDiscardState",
+        "offset": 14305
+      },
+      {
+        "name": "commitDiscardArrival",
+        "offset": 14592
+      },
+      {
+        "name": "showDiscardCardImmediately",
+        "offset": 14918
+      },
+      {
+        "name": "recentMotionCard",
+        "offset": 17965
+      },
+      {
+        "name": "heldCardInfo",
+        "offset": 18407
+      },
+      {
+        "name": "cardEl",
+        "offset": 23162
+      },
+      {
+        "name": "animateCardReveal",
+        "offset": 25374
+      },
+      {
+        "name": "cardEl",
+        "offset": 25499
+      },
+      {
+        "name": "masksDiscard",
+        "offset": 27544
+      },
+      {
+        "name": "cards",
+        "offset": 29324
+      },
+      {
+        "name": "canManageJokerCount",
+        "offset": 34107
+      },
+      {
+        "name": "jokerRoundInventory",
+        "offset": 34230
+      },
+      {
+        "name": "showJokerCountManager",
+        "offset": 34581
+      },
+      {
+        "name": "adjustJokersInGame",
+        "offset": 37103
+      },
+      {
+        "name": "addJokersToGame",
+        "offset": 38926
+      },
+      {
+        "name": "cardShortText",
+        "offset": 45629
+      },
+      {
+        "name": "actionBlindStackHTML",
+        "offset": 48994
+      },
+      {
+        "name": "captureTurnFlow",
+        "offset": 53929
+      },
+      {
+        "name": "validTurnFlow",
+        "offset": 54437
+      },
+      {
+        "name": "jokerFunctionEnabled",
+        "offset": 58021
+      },
+      {
+        "name": "jokerSpecialsEnabled",
+        "offset": 58096
+      },
+      {
+        "name": "processCloudReactions",
+        "offset": 59949
+      },
+      {
+        "name": "returnedToRoomLobby",
+        "offset": 62241
+      },
+      {
+        "name": "abortRoomActionContext",
+        "offset": 67919
+      },
+      {
+        "name": "newCard",
+        "offset": 84610
+      },
+      {
+        "name": "newAction",
+        "offset": 85058
+      },
+      {
+        "name": "makeActionDeck",
+        "offset": 85139
+      },
+      {
+        "name": "takeActionDeck",
+        "offset": 85736
+      },
+      {
+        "name": "cardPoints",
+        "offset": 86280
+      },
+      {
+        "name": "playDiscard",
+        "offset": 87468
+      },
+      {
+        "name": "actionDiscard",
+        "offset": 87550
+      },
+      {
+        "name": "takeActionDirect",
+        "offset": 90409
+      },
+      {
+        "name": "selectCard",
+        "offset": 90468
+      },
+      {
+        "name": "startTurn",
+        "offset": 94140
+      },
+      {
+        "name": "actionAvailable",
+        "offset": 94869
+      },
+      {
+        "name": "drawFromDiscard",
+        "offset": 94937
+      },
+      {
+        "name": "discardDrawn",
+        "offset": 97005
+      },
+      {
+        "name": "takeActionMarket",
+        "offset": 98609
+      },
+      {
+        "name": "takeActionBlind",
+        "offset": 99745
+      },
+      {
+        "name": "giveAction",
+        "offset": 100907
+      },
+      {
+        "name": "chooseActionTurn",
+        "offset": 101016
+      },
+      {
+        "name": "playOrDiscardAction",
+        "offset": 101440
+      },
+      {
+        "name": "resolveActionConfirm",
+        "offset": 102195
+      },
+      {
+        "name": "confirmDiscardAction",
+        "offset": 102663
+      },
+      {
+        "name": "confirmPlayAction",
+        "offset": 103224
+      },
+      {
+        "name": "playAction",
+        "offset": 103449
+      },
+      {
+        "name": "cards",
+        "offset": 105980
+      },
+      {
+        "name": "cards",
+        "offset": 106406
+      },
+      {
+        "name": "cards",
+        "offset": 106728
+      },
+      {
+        "name": "cards",
+        "offset": 107062
+      },
+      {
+        "name": "cards",
+        "offset": 108575
+      },
+      {
+        "name": "cards",
+        "offset": 109164
+      },
+      {
+        "name": "cards",
+        "offset": 109710
+      },
+      {
+        "name": "selectActionCard",
+        "offset": 116512
+      },
+      {
+        "name": "meteorStarReturn",
+        "offset": 118222
+      },
+      {
+        "name": "hasActionChoiceAvailable",
+        "offset": 118687
+      },
+      {
+        "name": "cards",
+        "offset": 122597
+      },
+      {
+        "name": "cards",
+        "offset": 123422
+      },
+      {
+        "name": "cards",
+        "offset": 128333
+      },
+      {
+        "name": "buildFinalTurnQueue",
+        "offset": 130080
+      },
+      {
+        "name": "finishTurn",
+        "offset": 131233
+      },
+      {
+        "name": "roundCloseCard",
+        "offset": 133301
+      },
+      {
+        "name": "cards",
+        "offset": 136125
+      },
+      {
+        "name": "liveJokerEndValueForGrid",
+        "offset": 138207
+      },
+      {
+        "name": "jokerEndValueForGrid",
+        "offset": 138646
+      },
+      {
+        "name": "buildRoundEndJokerValueMap",
+        "offset": 138887
+      },
+      {
+        "name": "endRoundCardValue",
+        "offset": 139141
+      },
+      {
+        "name": "jokerEndLabel",
+        "offset": 139393
+      },
+      {
+        "name": "card",
+        "offset": 149040
+      },
+      {
+        "name": "royalCardGridData",
+        "offset": 156753
+      },
+      {
+        "name": "royalCardTile",
+        "offset": 157457
+      },
+      {
+        "name": "jokerValue",
+        "offset": 157955
+      },
+      {
+        "name": "cards",
+        "offset": 158858
+      },
+      {
+        "name": "returnFinishedGameToRoomLobby",
+        "offset": 182324
+      },
+      {
+        "name": "toggleJokerSpecialUI",
+        "offset": 195504
+      },
+      {
+        "name": "aiCardKey",
+        "offset": 201560
+      },
+      {
+        "name": "aiHiddenKnowledgeCard",
+        "offset": 201909
+      },
+      {
+        "name": "aiLineScoreCards",
+        "offset": 203647
+      },
+      {
+        "name": "cards",
+        "offset": 204524
+      },
+      {
+        "name": "aiSameCardValue",
+        "offset": 204654
+      },
+      {
+        "name": "cards",
+        "offset": 207701
+      },
+      {
+        "name": "card",
+        "offset": 210757
+      },
+      {
+        "name": "aiDiscardRevealUtility",
+        "offset": 216155
+      },
+      {
+        "name": "cards",
+        "offset": 217646
+      },
+      {
+        "name": "aiOpponentCardOpportunity",
+        "offset": 218951
+      },
+      {
+        "name": "aiOpponentDiscardThreat",
+        "offset": 221004
+      },
+      {
+        "name": "aiExpectedOutgoingDiscardThreat",
+        "offset": 221751
+      },
+      {
+        "name": "aiDrawnCardDecision",
+        "offset": 222353
+      },
+      {
+        "name": "aiShouldTakeDiscard",
+        "offset": 224183
+      },
+      {
+        "name": "aiActionBaseValue",
+        "offset": 225227
+      },
+      {
+        "name": "aiActionValue",
+        "offset": 227779
+      },
+      {
+        "name": "aiActionDecision",
+        "offset": 228678
+      },
+      {
+        "name": "aiExecuteActionCard",
+        "offset": 232041
+      },
+      {
+        "name": "aiExecuteAction",
+        "offset": 234127
+      },
+      {
+        "name": "cards",
+        "offset": 234697
+      },
+      {
+        "name": "aiTakeTurn",
+        "offset": 236008
+      },
+      {
+        "name": "action",
+        "offset": 236364
+      },
+      {
+        "name": "cardClass",
+        "offset": 239394
+      },
+      {
+        "name": "cardHTML",
+        "offset": 239615
+      },
+      {
+        "name": "actionHTML",
+        "offset": 240252
+      },
+      {
+        "name": "boardCardClickable",
+        "offset": 241000
+      },
+      {
+        "name": "cards",
+        "offset": 242062
+      },
+      {
+        "name": "openCards",
+        "offset": 242910
+      },
+      {
+        "name": "matchActions",
+        "offset": 243089
+      },
+      {
+        "name": "emojiReactionSeen",
+        "offset": 249709
+      },
+      {
+        "name": "EMOJI_REACTIONS",
+        "offset": 249744
+      },
+      {
+        "name": "card",
+        "offset": 251581
+      },
+      {
+        "name": "cardsEnd",
+        "offset": 251925
+      },
+      {
+        "name": "card",
+        "offset": 254749
+      },
+      {
+        "name": "isSurpriseReaction",
+        "offset": 255796
+      },
+      {
+        "name": "isStrombergReaction",
+        "offset": 288977
+      },
+      {
+        "name": "reactionActorIndex",
+        "offset": 293751
+      },
+      {
+        "name": "emojiReactionBarHTML",
+        "offset": 294058
+      },
+      {
+        "name": "sendEmojiReaction",
+        "offset": 295114
+      },
+      {
+        "name": "showEmojiReaction",
+        "offset": 296504
+      },
+      {
+        "name": "runEmojiReactions",
+        "offset": 298125
+      },
+      {
+        "name": "showSceneActionChooser",
+        "offset": 298596
+      },
+      {
+        "name": "canSceneDiscard",
+        "offset": 300380
+      },
+      {
+        "name": "canSceneAction",
+        "offset": 300581
+      },
+      {
+        "name": "discardView",
+        "offset": 303534
+      },
+      {
+        "name": "turnLabel",
+        "offset": 304088
+      },
+      {
+        "name": "discardTakeClick",
+        "offset": 304648
+      },
+      {
+        "name": "discardDropClick",
+        "offset": 304777
+      },
+      {
+        "name": "discardClick",
+        "offset": 304912
+      },
+      {
+        "name": "discardClass",
+        "offset": 304968
+      },
+      {
+        "name": "discardTip",
+        "offset": 305063
+      },
+      {
+        "name": "actionArea",
+        "offset": 306053
+      },
+      {
+        "name": "cancelActionChoice",
+        "offset": 315269
+      }
+    ]
+  },
+  "skyjo_action_comic_beta": {
+    "parts": [
+      {
+        "name": "skyjo_action_comic_beta-logic-part-01.txt",
+        "bytes": 9995,
+        "sha256": "316ba4ff58292db8434a948b7e933931c6a5d2aa10472f6b6c5e8e395f65a0dd"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-02.txt",
+        "bytes": 9190,
+        "sha256": "7b81d9d810d6e1378e6e5890024629d11bf380985e6c50da798251de6efab4b3"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-03.txt",
+        "bytes": 9995,
+        "sha256": "09d8213849be59bdb20447168636b2ccc2555451f9396e8182337de529a24dc2"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-04.txt",
+        "bytes": 9952,
+        "sha256": "ea58970afaaf529b519728783e5b539dd2e7f2897a46353f20c994a9de3f58e0"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-05.txt",
+        "bytes": 9615,
+        "sha256": "4f06c5e64590082aeb02644d9799f522ed3f85a06fb3940ffc6a44d75b137138"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-06.txt",
+        "bytes": 9715,
+        "sha256": "730ce8cb83275025b9d3fc8d746879ad39e2be6e63caa84821a7bb3db4e2e2ac"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-07.txt",
+        "bytes": 9987,
+        "sha256": "fc6046082eaf96c0e1c2559d9a42a72d02525c75409615322acee56024b7e6b7"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-08.txt",
+        "bytes": 9956,
+        "sha256": "cad1af72216bd4f9920e8afb132b581d41bd7d87a17969616daaabfd08feec75"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-09.txt",
+        "bytes": 8899,
+        "sha256": "f52f4d77789dfcdeb93516d14e1ea927840a467f85397b375f72c2e591bf1025"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-10.txt",
+        "bytes": 9587,
+        "sha256": "4716876f70948542b854be31ee79638f4864874d1874318c750e43cd348afb6f"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-11.txt",
+        "bytes": 9959,
+        "sha256": "672909f09f73854174066de55c8a1b4fbc256b1a1a12231ac7acf3395226ae05"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-12.txt",
+        "bytes": 9747,
+        "sha256": "d7e5f8f0c6c8b67e0bc500d6ad9b3d4f68404721a75cbd61a863eb69d74bab14"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-13.txt",
+        "bytes": 9995,
+        "sha256": "a4f39dd7a4fc88c329aec1e3d53a6205709ace143ca3dfae95514e5022ba5119"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-14.txt",
+        "bytes": 9853,
+        "sha256": "9674b7617d94750712e2f9450209cb30389ed86c943a339bb1ca3eff7f298127"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-15.txt",
+        "bytes": 9950,
+        "sha256": "5f3cde82b5fbd9c12c0b5df4ddc7b87ba4da16c763a9d58df1b1d736056d4761"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-16.txt",
+        "bytes": 9970,
+        "sha256": "d734a125e45b9fdef1c79476bd1dd9751a5a1d5368803a12c6311576853629ae"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-17.txt",
+        "bytes": 9764,
+        "sha256": "2713fddf6ec08b82c82c7f510e8b277f51b8f9045d96bb68ddbe7dcef7870f06"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-18.txt",
+        "bytes": 9523,
+        "sha256": "f4f52300fa449e4ad8c966387fa63bb09fb6c7d0b4d45f8b760c27b00a1c8094"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-19.txt",
+        "bytes": 9177,
+        "sha256": "b2990c1e8fafa541df9025cbcf9af4213c948482c04c9b0d20270f0bb7b01cf3"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-20.txt",
+        "bytes": 9802,
+        "sha256": "10427c886c27096fb49dc7dcb5142ed56cabb4c882447a31f15881799ae2e2c9"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-21.txt",
+        "bytes": 9927,
+        "sha256": "d06e105432220d7e90d15df675d273bbf0c5224a963594fc15b25ea002d0d87e"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-22.txt",
+        "bytes": 9477,
+        "sha256": "635a48dfbdaf613267d412acf22705aaf64d00ac630c46e5ea56de2201c0815b"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-23.txt",
+        "bytes": 9983,
+        "sha256": "5afd746c23b7bd32b290dd393b143a535ea4fea2fbb62ed03eacbd7b687c6f57"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-24.txt",
+        "bytes": 9120,
+        "sha256": "1503207a7a41bf30bb1cffe4eb948c1cc16953f8c595958304913c863c7782af"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-25.txt",
+        "bytes": 9609,
+        "sha256": "c38e560ebabf91dbc2c749622396a57349ccd0066b2fd2a286bdb51a51f4eb99"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-26.txt",
+        "bytes": 9929,
+        "sha256": "bbddc2d9469b9617fd6e2c8a15b1e52922932a112351d2c6020c4610e4b3e53b"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-27.txt",
+        "bytes": 9992,
+        "sha256": "7cad683e5f5ab25020d4b2f6449bcfe539e1cb3b01b20166672b5cf44150d264"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-28.txt",
+        "bytes": 9907,
+        "sha256": "c274000e1f80d08415cbbc669bfbfca78a2d641dc7eb9e5e5197c6ded9aaa104"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-29.txt",
+        "bytes": 9954,
+        "sha256": "5facbbe1b80a51f11bd6c4ec96b5b5cb944d3aa49790e7036b9e57eb4f3f586a"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-30.txt",
+        "bytes": 9971,
+        "sha256": "18e706f6610e44a2ff51b5d0260d0d77e8e2034c78ee965c6fdc2899456ca820"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-31.txt",
+        "bytes": 10000,
+        "sha256": "4471a3afe4eea42db4d0bda54f947d6f4cc1376fd5673400fe583c3a205965a3"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-32.txt",
+        "bytes": 9220,
+        "sha256": "a3a8d5b1bd3726a5cf9b6e0f2f4efe90f4472f131f6618704a3ca6e893988522"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-33.txt",
+        "bytes": 9932,
+        "sha256": "54d9234d2a711a695ec4b18bc7b4e00599aef1d0169269154d3e7c8d568c989a"
+      },
+      {
+        "name": "skyjo_action_comic_beta-logic-part-34.txt",
+        "bytes": 2655,
+        "sha256": "726939b302e9f85e83aee8478d40f8ebdae4992a02a1ed26c1109815f26f4d48"
+      }
+    ],
+    "combined_sha256": "8fca5a016f35d4f45c26785db1aa50a2dfa6700a593a82e53cd053e85932563c",
+    "combined_bytes": 324307,
+    "candidate_functions": [
+      {
+        "name": "skyjoHubReturn",
+        "offset": 926
+      },
+      {
+        "name": "ACTIONS",
+        "offset": 1813
+      },
+      {
+        "name": "lastOwnTurnAnnouncement",
+        "offset": 8280
+      },
+      {
+        "name": "turnKey",
+        "offset": 11228
+      },
+      {
+        "name": "motionDiscardCommitted",
+        "offset": 13662
+      },
+      {
+        "name": "discardArrivalEvent",
+        "offset": 13702
+      },
+      {
+        "name": "discardArrivalPending",
+        "offset": 14240
+      },
+      {
+        "name": "visualDiscardState",
+        "offset": 14305
+      },
+      {
+        "name": "commitDiscardArrival",
+        "offset": 14592
+      },
+      {
+        "name": "showDiscardCardImmediately",
+        "offset": 14918
+      },
+      {
+        "name": "recentMotionCard",
+        "offset": 17965
+      },
+      {
+        "name": "heldCardInfo",
+        "offset": 18407
+      },
+      {
+        "name": "cardEl",
+        "offset": 23162
+      },
+      {
+        "name": "animateCardReveal",
+        "offset": 25374
+      },
+      {
+        "name": "cardEl",
+        "offset": 25499
+      },
+      {
+        "name": "masksDiscard",
+        "offset": 27544
+      },
+      {
+        "name": "cards",
+        "offset": 29324
+      },
+      {
+        "name": "canManageJokerCount",
+        "offset": 34107
+      },
+      {
+        "name": "jokerRoundInventory",
+        "offset": 34230
+      },
+      {
+        "name": "showJokerCountManager",
+        "offset": 34581
+      },
+      {
+        "name": "adjustJokersInGame",
+        "offset": 37103
+      },
+      {
+        "name": "addJokersToGame",
+        "offset": 38926
+      },
+      {
+        "name": "cardShortText",
+        "offset": 45629
+      },
+      {
+        "name": "actionBlindStackHTML",
+        "offset": 48994
+      },
+      {
+        "name": "captureTurnFlow",
+        "offset": 53929
+      },
+      {
+        "name": "validTurnFlow",
+        "offset": 54437
+      },
+      {
+        "name": "jokerFunctionEnabled",
+        "offset": 58021
+      },
+      {
+        "name": "jokerSpecialsEnabled",
+        "offset": 58096
+      },
+      {
+        "name": "processCloudReactions",
+        "offset": 59949
+      },
+      {
+        "name": "returnedToRoomLobby",
+        "offset": 62241
+      },
+      {
+        "name": "abortRoomActionContext",
+        "offset": 67919
+      },
+      {
+        "name": "newCard",
+        "offset": 84610
+      },
+      {
+        "name": "newAction",
+        "offset": 85058
+      },
+      {
+        "name": "makeActionDeck",
+        "offset": 85139
+      },
+      {
+        "name": "takeActionDeck",
+        "offset": 85736
+      },
+      {
+        "name": "cardPoints",
+        "offset": 86280
+      },
+      {
+        "name": "playDiscard",
+        "offset": 87468
+      },
+      {
+        "name": "actionDiscard",
+        "offset": 87550
+      },
+      {
+        "name": "takeActionDirect",
+        "offset": 90409
+      },
+      {
+        "name": "selectCard",
+        "offset": 90468
+      },
+      {
+        "name": "startTurn",
+        "offset": 94140
+      },
+      {
+        "name": "actionAvailable",
+        "offset": 94869
+      },
+      {
+        "name": "drawFromDiscard",
+        "offset": 94937
+      },
+      {
+        "name": "discardDrawn",
+        "offset": 97005
+      },
+      {
+        "name": "takeActionMarket",
+        "offset": 98609
+      },
+      {
+        "name": "takeActionBlind",
+        "offset": 99745
+      },
+      {
+        "name": "giveAction",
+        "offset": 100907
+      },
+      {
+        "name": "chooseActionTurn",
+        "offset": 101016
+      },
+      {
+        "name": "playOrDiscardAction",
+        "offset": 101440
+      },
+      {
+        "name": "resolveActionConfirm",
+        "offset": 102195
+      },
+      {
+        "name": "confirmDiscardAction",
+        "offset": 102663
+      },
+      {
+        "name": "confirmPlayAction",
+        "offset": 103224
+      },
+      {
+        "name": "playAction",
+        "offset": 103449
+      },
+      {
+        "name": "cards",
+        "offset": 105980
+      },
+      {
+        "name": "cards",
+        "offset": 106406
+      },
+      {
+        "name": "cards",
+        "offset": 106728
+      },
+      {
+        "name": "cards",
+        "offset": 107062
+      },
+      {
+        "name": "cards",
+        "offset": 108575
+      },
+      {
+        "name": "cards",
+        "offset": 109164
+      },
+      {
+        "name": "cards",
+        "offset": 109710
+      },
+      {
+        "name": "selectActionCard",
+        "offset": 116512
+      },
+      {
+        "name": "meteorStarReturn",
+        "offset": 118222
+      },
+      {
+        "name": "hasActionChoiceAvailable",
+        "offset": 118687
+      },
+      {
+        "name": "cards",
+        "offset": 122586
+      },
+      {
+        "name": "cards",
+        "offset": 123411
+      },
+      {
+        "name": "cards",
+        "offset": 128322
+      },
+      {
+        "name": "buildFinalTurnQueue",
+        "offset": 130069
+      },
+      {
+        "name": "finishTurn",
+        "offset": 131222
+      },
+      {
+        "name": "roundCloseCard",
+        "offset": 133290
+      },
+      {
+        "name": "cards",
+        "offset": 136114
+      },
+      {
+        "name": "liveJokerEndValueForGrid",
+        "offset": 138196
+      },
+      {
+        "name": "jokerEndValueForGrid",
+        "offset": 138635
+      },
+      {
+        "name": "buildRoundEndJokerValueMap",
+        "offset": 138876
+      },
+      {
+        "name": "endRoundCardValue",
+        "offset": 139130
+      },
+      {
+        "name": "jokerEndLabel",
+        "offset": 139382
+      },
+      {
+        "name": "card",
+        "offset": 149029
+      },
+      {
+        "name": "royalCardGridData",
+        "offset": 156742
+      },
+      {
+        "name": "royalCardTile",
+        "offset": 157446
+      },
+      {
+        "name": "jokerValue",
+        "offset": 157944
+      },
+      {
+        "name": "cards",
+        "offset": 158847
+      },
+      {
+        "name": "returnFinishedGameToRoomLobby",
+        "offset": 182232
+      },
+      {
+        "name": "toggleJokerSpecialUI",
+        "offset": 195399
+      },
+      {
+        "name": "aiCardKey",
+        "offset": 201455
+      },
+      {
+        "name": "aiHiddenKnowledgeCard",
+        "offset": 201804
+      },
+      {
+        "name": "aiLineScoreCards",
+        "offset": 203542
+      },
+      {
+        "name": "cards",
+        "offset": 204419
+      },
+      {
+        "name": "aiSameCardValue",
+        "offset": 204549
+      },
+      {
+        "name": "cards",
+        "offset": 207596
+      },
+      {
+        "name": "card",
+        "offset": 210652
+      },
+      {
+        "name": "aiDiscardRevealUtility",
+        "offset": 216050
+      },
+      {
+        "name": "cards",
+        "offset": 217541
+      },
+      {
+        "name": "aiOpponentCardOpportunity",
+        "offset": 218846
+      },
+      {
+        "name": "aiOpponentDiscardThreat",
+        "offset": 220899
+      },
+      {
+        "name": "aiExpectedOutgoingDiscardThreat",
+        "offset": 221646
+      },
+      {
+        "name": "aiDrawnCardDecision",
+        "offset": 222248
+      },
+      {
+        "name": "aiShouldTakeDiscard",
+        "offset": 224078
+      },
+      {
+        "name": "aiActionBaseValue",
+        "offset": 225122
+      },
+      {
+        "name": "aiActionValue",
+        "offset": 227674
+      },
+      {
+        "name": "aiActionDecision",
+        "offset": 228573
+      },
+      {
+        "name": "aiExecuteActionCard",
+        "offset": 231936
+      },
+      {
+        "name": "aiExecuteAction",
+        "offset": 234022
+      },
+      {
+        "name": "cards",
+        "offset": 234592
+      },
+      {
+        "name": "aiTakeTurn",
+        "offset": 235903
+      },
+      {
+        "name": "action",
+        "offset": 236259
+      },
+      {
+        "name": "cardClass",
+        "offset": 239289
+      },
+      {
+        "name": "cardHTML",
+        "offset": 239510
+      },
+      {
+        "name": "actionHTML",
+        "offset": 240147
+      },
+      {
+        "name": "boardCardClickable",
+        "offset": 240895
+      },
+      {
+        "name": "cards",
+        "offset": 241957
+      },
+      {
+        "name": "openCards",
+        "offset": 242805
+      },
+      {
+        "name": "matchActions",
+        "offset": 242984
+      },
+      {
+        "name": "emojiReactionSeen",
+        "offset": 249604
+      },
+      {
+        "name": "EMOJI_REACTIONS",
+        "offset": 249639
+      },
+      {
+        "name": "card",
+        "offset": 251476
+      },
+      {
+        "name": "cardsEnd",
+        "offset": 251820
+      },
+      {
+        "name": "card",
+        "offset": 254644
+      },
+      {
+        "name": "isSurpriseReaction",
+        "offset": 255691
+      },
+      {
+        "name": "isStrombergReaction",
+        "offset": 288872
+      },
+      {
+        "name": "reactionActorIndex",
+        "offset": 293646
+      },
+      {
+        "name": "emojiReactionBarHTML",
+        "offset": 293953
+      },
+      {
+        "name": "sendEmojiReaction",
+        "offset": 295009
+      },
+      {
+        "name": "showEmojiReaction",
+        "offset": 296399
+      },
+      {
+        "name": "runEmojiReactions",
+        "offset": 298020
+      },
+      {
+        "name": "showSceneActionChooser",
+        "offset": 298491
+      },
+      {
+        "name": "canSceneDiscard",
+        "offset": 300275
+      },
+      {
+        "name": "canSceneAction",
+        "offset": 300476
+      },
+      {
+        "name": "discardView",
+        "offset": 303429
+      },
+      {
+        "name": "turnLabel",
+        "offset": 303983
+      },
+      {
+        "name": "discardTakeClick",
+        "offset": 304543
+      },
+      {
+        "name": "discardDropClick",
+        "offset": 304672
+      },
+      {
+        "name": "discardClick",
+        "offset": 304807
+      },
+      {
+        "name": "discardClass",
+        "offset": 304863
+      },
+      {
+        "name": "discardTip",
+        "offset": 304958
+      },
+      {
+        "name": "actionArea",
+        "offset": 305948
+      },
+      {
+        "name": "cancelActionChoice",
+        "offset": 315469
+      }
+    ]
+  }
+}

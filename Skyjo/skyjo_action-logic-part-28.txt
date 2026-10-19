@@ -1,0 +1,139 @@
+if(isAIActor()&&!aiActing)return '<span class="ai-thinking">Computer denkt <span class="ai-dots"><i></i><i></i><i></i></span></span>';if(motionBusy)return '<span class="turn-state-pill">🎴 Kartenbewegung …</span>';if(cloud.enabled&&!isMyActorDevice())return '<div class="waiting-note">Nicht dein Zug – Spiel wird automatisch synchronisiert.</div>';if(ui.mode==='turnChoice'){const dp=discardArrivalPending(),db=`<button ${dp?'disabled title="Karte landet noch"':'onclick="Game.drawFromDiscard()"'}>🂠 ${dp?'landet …':'Ablage'}</button>`;return jokerSpecialsEnabled()?`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}<button class="primary" onclick="Game.chooseActionTurn()">⚡ Eigene Aktion</button><button onclick="Game.takeActionBlind(false)">⚡ Verdeckt</button>`:`<button onclick="Game.drawFromDeck()">🎴 Ziehstapel</button>${db}`;}if(ui.mode==='drawnDecision')return `<span class="turn-state-pill mine">☝ Zielfeld antippen: erst aufdecken, dann tauschen · 🗑 Ablage = wegwerfen</span>`;if(ui.mode==='matchReady')return `<span class="turn-state-pill mine">✨ Kombination bleibt liegen</span>`;if(ui.mode==='roundReveal')return `<span class="turn-state-pill mine">🔄 Rundenabschluss läuft automatisch</span>`;if(ui.mode==='chooseActionTurn')return `<button onclick="Game.cancelActionChoice()">↩ Zurück</button>`;return''}
+const emojiReactionSeen=new Set();
+const EMOJI_REACTIONS=['👍','😂','🤣','HAHA','HEINZ','STROM','🎁','😮','😭','😡','👏','🔥','❤️','🤔'];
+
+const TABLE_MESSAGE_MS=10000;
+let tableAnnouncementTimer=null;
+let currentTableAnnouncement=null;
+function activeTableAnnouncement(){
+ if(!currentTableAnnouncement)return null;
+ const remaining=Number(currentTableAnnouncement.expiresAt||0)-Date.now();
+ if(remaining<=0){currentTableAnnouncement=null;return null}
+ return {...currentTableAnnouncement,remainingMs:remaining}
+}
+function clearTableAnnouncement(){
+ if(tableAnnouncementTimer){clearTimeout(tableAnnouncementTimer);tableAnnouncementTimer=null}
+ currentTableAnnouncement=null;
+ syncTableAnnouncementMount()
+}
+function tableAnnouncementHTML(a){
+ return `<div class="table-message-card kind-${escapeHTML(a.kind||'fun')}"><div class="table-message-icon">${escapeHTML(a.icon||'💬')}</div><div class="table-message-copy"><div class="table-message-head"><div class="table-message-kicker">${escapeHTML(a.title||'INFO')}</div>${a.by?`<div class="table-message-by">von ${escapeHTML(a.by)}</div>`:''}</div><div class="table-message-text">${escapeHTML(a.text||'')}</div><div class="table-message-foot">${a.ref?`<div class="table-message-ref">${escapeHTML(a.ref)}</div>`:'<div></div>'}<div class="table-message-note">sichtbar für 10 Sekunden</div></div><div class="table-message-progress"><i></i></div></div></div>`
+}
+function positionTableAnnouncementZone(){
+ const zone=document.getElementById('tableMessageZone');
+ const board=zone?.closest('.table-area');
+ const center=board?.querySelector('.center-table');
+ const anchor=center?.querySelector('.handbox')||center;
+ if(!zone||!board||!center||!anchor||zone.classList.contains('empty'))return;
+ const boardRect=board.getBoundingClientRect();
+ const centerRect=center.getBoundingClientRect();
+ const anchorRect=anchor.getBoundingClientRect();
+ const card=zone.querySelector('.table-message-card');
+ const width=Math.max(0,Math.min(anchorRect.width,window.innerWidth-12));
+ const overlapsHorizontally=r=>r.right>anchorRect.left+10&&r.left<anchorRect.left+width-10;
+ // On mobile, players can sit *under* the middle pile. Their card grids
+ // must never be covered by a text notification.
+ let cardsEnd=centerRect.bottom;
+ for(const el of board.querySelectorAll('.player')){
+   const r=el.getBoundingClientRect();
+   if(overlapsHorizontally(r))cardsEnd=Math.max(cardsEnd,r.bottom)
+ }
+ const availableInside=Math.max(0,boardRect.bottom-cardsEnd-16);
+ const measured=card?.getBoundingClientRect()?.height||0;
+ const required=Math.max(100,measured);
+ zone.style.width=`${width}px`;
+ if(availableInside>=required+3){
+   zone.classList.remove('compact-overlay','tight-message');
+   zone.style.position='absolute';
+   zone.style.top=`${Math.max(0,cardsEnd-boardRect.top+12)}px`;
+   zone.style.bottom='auto';
+   zone.style.left=`${Math.max(0,anchorRect.left-boardRect.left)}px`;
+   zone.style.maxHeight=`${Math.floor(availableInside)}px`;
+   if(card){card.style.maxHeight=`${Math.floor(availableInside)}px`;card.style.overflowY='auto'}
+ }else{
+   // Use only the already vacant viewport above the reaction strip.
+   // The notice is slim when the free space is slim; it adds no page height.
+   const dockTop=document.querySelector('.bottom-actions')?.getBoundingClientRect()?.top??window.innerHeight;
+   const emptyViewport=Math.max(0,Math.floor(dockTop-Math.max(0,cardsEnd)-7));
+   const maxHeight=Math.min(168,Math.max(0,emptyViewport));
+   zone.classList.add('compact-overlay');
+   zone.classList.toggle('tight-message',maxHeight<110);
+   zone.style.position='fixed';
+   zone.style.top='auto';
+   zone.style.bottom=`${Math.max(8,Math.round(window.innerHeight-dockTop+5))}px`;
+   zone.style.left=`${Math.max(6,Math.min(anchorRect.left,window.innerWidth-width-6))}px`;
+   zone.style.maxHeight=`${Math.max(0,maxHeight)}px`;
+   if(card){card.style.maxHeight=`${Math.max(0,maxHeight)}px`;card.style.overflowY='auto'}
+   // When there is no unobstructed viewport space, park the notice in the
+   // free table padding instead of hiding or painting over somebody's cards.
+   if(maxHeight<38){
+     zone.style.position='absolute';
+     zone.style.left=`${Math.max(0,anchorRect.left-boardRect.left)}px`;
+     zone.style.top=`${Math.max(0,cardsEnd-boardRect.top+7)}px`;
+     zone.style.bottom='auto';
+     const padding=document.querySelector('.app')?.getBoundingClientRect().bottom-boardRect.bottom;
+     const padRoom=Math.max(32,Math.min(118,Math.floor(padding||0)-12));
+     zone.style.maxHeight=`${padRoom}px`;
+     if(card){card.style.maxHeight=`${padRoom}px`;card.style.overflowY='auto'}
+   }
+ }
+}
+function syncTableAnnouncementMount(){
+ const zone=document.getElementById('tableMessageZone');
+ const mount=document.getElementById('tableMessageMount');
+ if(!zone||!mount)return;
+ const a=activeTableAnnouncement();
+ mount.innerHTML='';
+ zone.classList.toggle('empty',!a);
+ if(!a){zone.style.display='none';return}
+ zone.style.display='block';
+ mount.innerHTML=tableAnnouncementHTML(a);
+ positionTableAnnouncementZone();
+ const card=mount.firstElementChild;
+ const bar=card?.querySelector('.table-message-progress i');
+ requestAnimationFrame(()=>{
+   if(card)card.classList.add('show');
+   if(bar){bar.style.transitionDuration=`${Math.max(250,a.remainingMs)}ms`;requestAnimationFrame(()=>bar.classList.add('run'))}
+ })
+}
+function showTableAnnouncement(entry,remainingMs=TABLE_MESSAGE_MS){
+ if(!entry?.text)return;
+ if(tableAnnouncementTimer){clearTimeout(tableAnnouncementTimer);tableAnnouncementTimer=null}
+ currentTableAnnouncement={id:entry.id||uid(),kind:entry.kind||'fun',icon:entry.icon||'💬',title:entry.title||'INFO',text:String(entry.text||''),ref:entry.ref||'',by:entry.by||'',expiresAt:Date.now()+Math.max(500,remainingMs)};
+ syncTableAnnouncementMount();
+ tableAnnouncementTimer=setTimeout(()=>{currentTableAnnouncement=null;tableAnnouncementTimer=null;syncTableAnnouncementMount()},Math.max(500,remainingMs)+40)
+}
+function tableMessageZoneHTML(){return `<div id="tableMessageZone" class="table-message-zone empty"><div id="tableMessageMount"></div></div>`}
+function isSurpriseReaction(emoji){return String(emoji||'')==='SURP'||String(emoji||'')==='🎁'}
+
+
+const GAME_JOKES=[
+ 'Warum können Geister so schlecht lügen? Weil man durch sie hindurchsieht.',
+ 'Was macht ein Keks unter einem Baum? Krümel.',
+ 'Warum nehmen Skelette nie an Streit teil? Sie haben nicht den Mumm dazu.',
+ 'Was ist orange und läuft durch den Wald? Eine Wanderine.',
+ 'Was macht ein Mathematiker im Garten? Er zieht Wurzeln.',
+ 'Warum können Seeräuber keinen Kreisumfang berechnen? Weil sie Pi raten.',
+ 'Was ist grün und klopft an die Tür? Ein Klopfsalat.',
+ 'Was liegt am Strand und spricht undeutlich? Eine Nuschel.',
+ 'Warum ging der Pilz auf die Party? Weil er ein Champignon war.',
+ 'Was sagt der große Stift zum kleinen Stift? Wachs-mal-Stift!',
+ 'Warum sind Fische so schlau? Weil sie immer in Schulen schwimmen.',
+ 'Was ist braun und schwimmt unter Wasser? Ein U-Brot.',
+ 'Was macht ein Clown im Büro? Faxen.',
+ 'Wie nennt man einen Bumerang, der nicht zurückkommt? Stock.',
+ 'Was sagt die Null zur Acht? Schicker Gürtel!',
+ 'Warum können Bienen so gut rechnen? Weil sie den Summen kennen.',
+ 'Was macht ein Elektriker morgens? Er steht unter Spannung.',
+ 'Was ist weiß und stört beim Essen? Eine Lawine.',
+ 'Was ist rot und schlecht für die Zähne? Ein Backstein.',
+ 'Warum ging der Computer zum Arzt? Er hatte einen Virus.',
+ 'Was sagt ein Hai, nachdem er einen Clown gefressen hat? Schmeckt irgendwie komisch.',
+ 'Was macht eine Wolke, wenn sie juckt? Sie fliegt zum Wolkenkratzer.',
+ 'Was ist gelb und schießt? Eine Banone.',
+ 'Warum trinkt der Vampir keinen Kaffee? Weil er schon genug Blutdruck hat.',
+ 'Was ist unsichtbar und riecht nach Karotten? Ein Kaninchenpups.',
+ 'Wie heißt ein Spanier ohne Auto? Carlos.',
+ 'Was macht ein Frosch im Fitnessstudio? Quak-Squats.',
+ 'Warum haben Kalender so viele Freunde? Weil sie viele Dates haben.',
+ 'Wie heißt ein helles Mammut? Hellmut.',

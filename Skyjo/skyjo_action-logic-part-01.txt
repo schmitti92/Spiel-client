@@ -1,0 +1,167 @@
+
+(() => {
+'use strict';
+try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
+const SKYJO_BUILD='15.53';
+const SAVE_KEY='skyjo_action_fan_v1';
+const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
+const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
+const CLOUD_BASE='https://serverfinal-ynbe.onrender.com';
+const SKYJO_HUB_QUERY=new URLSearchParams(location.search);
+const SKYJO_HUB_CODE=SKYJO_HUB_QUERY.get('hub')||'';
+const SKYJO_HUB_MATCH=SKYJO_HUB_QUERY.get('match')||'';
+const SKYJO_HUB_ROOM=SKYJO_HUB_QUERY.get('room')||'';
+const SKYJO_IS_HUB=/^[A-HJ-NP-Z2-9]{6}$/.test(SKYJO_HUB_CODE)&&/^[0-9a-f-]{36}$/i.test(SKYJO_HUB_MATCH)&&/^S[A-HJ-NP-Z2-9]{9}$/.test(SKYJO_HUB_ROOM);
+async function skyjoHubToken(){const user=window.SpielOnline?.state?.()?.user;if(!user?.uid||typeof user.getIdToken!=='function')throw Error('Bitte mit deinem Online-Spielerprofil anmelden.');return user.getIdToken();}
+function skyjoHubReturn(){location.assign('../hub-lobby.html?room='+encodeURIComponent(SKYJO_HUB_CODE)+'&stayMatch='+encodeURIComponent(SKYJO_HUB_MATCH));}
+const SKYJO_ENTRY_MODE=(new URLSearchParams(location.search).get('mode')||'').toLowerCase();
+const SKYJO_REQUESTED_MODE=['online','local'].includes(SKYJO_ENTRY_MODE)?SKYJO_ENTRY_MODE:'';
+const SKYJO_NAV_TYPE=performance.getEntriesByType?.('navigation')?.[0]?.type||'navigate';
+const SKYJO_NEW_ENTRY=!!SKYJO_REQUESTED_MODE&&SKYJO_NAV_TYPE!=='reload'&&!new URLSearchParams(location.search).has('room');
+let skyjoLocalVariant='local';
+let cloud={enabled:false,room:'',rev:0,inFlight:false,pending:false,pendingJSON:'',lastPushedJSON:'',applying:false,pollTimer:null,pollBusy:false,pollErrors:0,reactionSeq:0,roomActionBusy:false,startBusy:false,lastStatus:'local',pushTimer:null,deferredRemote:null,applyScheduled:false,roomEpoch:0};
+const ACTIONS=window.SKYJO_ACTION_DEFINITIONS;
+if(!ACTIONS||Object.keys(ACTIONS).length!==9)throw Error('SKYJO-Aktionskartenkatalog fehlt');
+let state=null;
+let ui={mode:'none',data:{},selected:[]};
+const $=s=>document.querySelector(s);
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+/* V129: Spielfelder sind reine Ansichtseinstellungen. Die Raumregel ist synchron,
+   die persönliche Auswahl bleibt ausschließlich auf diesem Gerät/Tab. */
+const SKYJO_BOARD_THEMES=Object.freeze({standard:'Standard · Royal Table'});
+const SKYJO_BOARD_THEME_IMAGE=Object.freeze({standard:'../Assets/game-backgrounds/skyjo.webp'});
+let setupBoardPolicy='free';
+let setupHostBoardTheme='standard';
+let hostBoardThemeChosenManually=false;
+/* V130: Die Brettwahl während einer Partie bleibt im Speicher, nicht über neue Spiele hinweg. */
+let transientBoardChoice=null;
+function validBoardTheme(v){return Object.hasOwn(SKYJO_BOARD_THEMES,String(v||''))?String(v):'standard'}
+function profileBoardFavorite(){
+ try{const p=window.SpielProfile?.active?.();if(p)return validBoardTheme(p.skyjoBoardFavorite)}catch(_e){}
+ return 'standard';
+}
+function personalBoardIdentity(){
+ let id='standalone';try{id=String(window.SpielProfile?.active?.()?.id||cloud.deviceId||'standalone')}catch(_e){}
+ return `${id}:${cloud.enabled&&cloud.room?cloud.room:'local'}`;
+}
+function personalBoardStorageKey(){return personalBoardIdentity()}
+function personalBoardTheme(){const key=personalBoardStorageKey();return transientBoardChoice?.key===key?transientBoardChoice.value:profileBoardFavorite()}
+function resetBoardChoiceForNewGame(){transientBoardChoice=null}
+function hostBoardSettings(){return cloud.enabled&&isRoomDoc(cloud.doc)?cloud.doc.lobby?.settings||null:null}
+function isHostBoardLocked(){return hostBoardSettings()?.boardPolicy==='fixed'}
+function effectiveBoardTheme(){return isHostBoardLocked()?validBoardTheme(hostBoardSettings()?.boardTheme):personalBoardTheme()}
+function syncBoardTheme(){
+ if(!hostBoardThemeChosenManually&&window.SpielProfile?.active?.())setupHostBoardTheme=profileBoardFavorite();
+ const selected=effectiveBoardTheme();
+ if(document.body.dataset.skyjoTheme!==selected)document.body.dataset.skyjoTheme=selected;
+ document.documentElement.style.setProperty('--skyjo-theme-preview',`url("${SKYJO_BOARD_THEME_IMAGE[selected]}")`);
+}
+function choosePersonalBoardTheme(theme){
+ if(isHostBoardLocked()){toast('👑 Der Host hat das Spielfeld für diesen Raum festgelegt.');return}
+ theme=validBoardTheme(theme);
+ transientBoardChoice={key:personalBoardStorageKey(),value:theme};
+ syncBoardTheme();if(state)render();showBoardMenu();toast(`🎨 ${SKYJO_BOARD_THEMES[theme]} ausgewählt · nur für dich`)
+}
+function pickHostBoardTheme(theme){setupHostBoardTheme=validBoardTheme(theme);hostBoardThemeChosenManually=true;renderHostBoardSelection()}
+function setHostBoardPolicy(policy){setupBoardPolicy=policy==='fixed'?'fixed':'free';renderHostBoardSelection()}
+function renderHostBoardSelection(){
+ const lock=document.querySelector('#hostBoardThemeChoices');if(lock)lock.hidden=setupBoardPolicy!=='fixed';
+ document.querySelectorAll('input[name="hostBoardPolicy"]').forEach(e=>e.checked=e.value===setupBoardPolicy);
+ document.querySelectorAll('[data-host-board]').forEach(e=>{const selected=e.dataset.hostBoard===setupHostBoardTheme;e.classList.toggle('selected',selected);e.setAttribute('aria-pressed',String(selected));const help=e.querySelector('small');if(help)help.textContent=selected?'✓ Ausgewählt':'Vorschau auswählen'})
+}
+function boardChoiceHTML(current,onclickName,disabled=false){return Object.entries(SKYJO_BOARD_THEMES).map(([id,title])=>`<button type="button" class="skyjo-board-choice ${current===id?'selected':''}" aria-pressed="${current===id}" data-${onclickName==='pickHostBoardTheme'?'host-board':'player-board'}="${id}" ${disabled?'disabled':''} onclick="Game.${onclickName}('${id}')"><span class="skyjo-board-picture" style="background-image:url('${SKYJO_BOARD_THEME_IMAGE[id]}')"></span><span class="skyjo-board-choice-text"><b>${title}</b><small>${current===id?'✓ Ausgewählt':'Vorschau auswählen'}</small></span></button>`).join('')}
+function showBoardMenu(){
+ modal('<div class="skyjo-board-menu"><h3>🎴 Klassisches Spielfeld</h3><p>Derzeit ist ausschließlich das klassische SKYJO-Spielfeld verfügbar.</p><div class="modal-actions"><button class="primary" onclick="Game.closeModal()">Fertig</button></div></div>',false)
+}
+
+
+let gameAnnouncementEl=null;
+let gameAnnouncementTimer=null;
+let gameAnnouncementDelayTimer=null;
+let lastFinalRoundAnnouncement='';
+let lastOwnTurnAnnouncement='';
+
+function clearGameAnnouncement(){
+ if(gameAnnouncementTimer){clearTimeout(gameAnnouncementTimer);gameAnnouncementTimer=null}
+ if(gameAnnouncementDelayTimer){clearTimeout(gameAnnouncementDelayTimer);gameAnnouncementDelayTimer=null}
+ if(gameAnnouncementEl){try{gameAnnouncementEl.remove()}catch(_e){}gameAnnouncementEl=null}
+}
+
+function showGameAnnouncement(kind,title,subtitle='',delay=0){
+ const run=()=>{
+   clearGameAnnouncement();
+   const wrap=document.createElement('div');
+   wrap.className=`game-announcement ${kind||''}`;
+   wrap.setAttribute('aria-live','assertive');
+   wrap.setAttribute('role','status');
+
+   const inner=document.createElement('div');
+   inner.className='game-announcement-inner';
+
+   const eyebrow=document.createElement('div');
+   eyebrow.className='game-announcement-eyebrow';
+   eyebrow.textContent=kind==='final-round'?'🔔 SCHLUSSPHASE':'🎯 DEIN ZUG';
+
+   const main=document.createElement('div');
+   main.className='game-announcement-title';
+   main.textContent=title;
+
+   const sub=document.createElement('div');
+   sub.className='game-announcement-subtitle';
+   sub.textContent=subtitle||'';
+
+   inner.append(eyebrow,main);
+   if(subtitle)inner.append(sub);
+   wrap.append(inner);
+   document.body.append(wrap);
+   gameAnnouncementEl=wrap;
+
+   requestAnimationFrame(()=>wrap.classList.add('show'));
+
+   const stay=kind==='final-round'?1650:950;
+   gameAnnouncementTimer=setTimeout(()=>{
+     wrap.classList.add('leave');
+     gameAnnouncementTimer=setTimeout(()=>{
+       if(gameAnnouncementEl===wrap)gameAnnouncementEl=null;
+       try{wrap.remove()}catch(_e){}
+     },340)
+   },stay)
+ };
+
+ if(delay>0){
+   if(gameAnnouncementDelayTimer)clearTimeout(gameAnnouncementDelayTimer);
+   gameAnnouncementDelayTimer=setTimeout(()=>{gameAnnouncementDelayTimer=null;run()},delay)
+ }else run()
+}
+
+function syncGameAnnouncements(){
+ if(!state||state.phase!=='play'||toiletPauseActive())return;
+
+ let finalJustShown=false;
+
+ // LETZTE RUNDE: auf jedem Gerät genau einmal je Runde.
+ if(state.roundEnder!==null&&state.roundEnder!==undefined){
+   const finalKey=`${state.round}:${state.roundEnder}`;
+   if(finalKey!==lastFinalRoundAnnouncement){
+     lastFinalRoundAnnouncement=finalKey;
+     finalJustShown=true;
+     const enderName=state.players?.[state.roundEnder]?.name||'Ein Spieler';
+     const remaining=Math.max(0,(state.finalTurnQueue?.length||0)+(state.currentPlayer!==state.roundEnder?1:0));
+     showGameAnnouncement(
+       'final-round',
+       'LETZTE RUNDE',
+       remaining>0
+         ?`${enderName} ist fertig · alle anderen haben noch genau einen Zug`
+         :`${enderName} hat die Runde beendet`,
+       70
+     );
+     haptic([25,45,25])
+   }
+ }
+
+ // DU BIST DRAN: nur für den Menschen, dessen Gerät gerade am Zug ist.
+ // Bei lokalen Pass-and-Play-Partien bedeutet das: der aktuelle Mensch am Gerät.
+ if(ui.mode==='turnChoice'&&isMyActorDevice()&&!current()?.isAI){

@@ -1,0 +1,105 @@
+ <div class="sky-score-mini-grid">${royalGridMarkup(p,{counting:revealStage,isActive:false})}</div>
+ <div class="sky-score-mini-foot"><span>RUNDE ${Number(state?.round||0)||''}</span><strong class="sky-score-mini-points" data-score-player-index="${i}">${points===null?'…':points}</strong></div>
+ </button>`
+}
+/* V124: Rundenpunkte gehören je Spieler, nie als eine Zahl aller Spieler zusammengefasst. */
+function royalScoreTableMarkup(summary,{counting=false,countIndex=0,mobile=false}={}){
+ const players=summary.players||[];
+ const rows=players.map((p,i)=>{
+   const isCurrent=counting&&i===countIndex;
+   const waiting=counting&&i>countIndex;
+   const round=waiting?'–':isCurrent?'0':scoreFmt(p.round);
+   const total=waiting?'–':isCurrent?String(Number(p.beforeTotal)||0):String(Number(p.total)||0);
+   return `<div class="sky-score-table-row ${isCurrent?'active':''} ${waiting?'waiting':''}" data-score-table-player="${Number(p.index)}" aria-label="${escapeHTML(p.name)}">
+     <span class="sky-score-table-person"><i class="sky-score-table-avatar a${Number(p.index)%4}">${Number(p.index)+1}</i><b title="${escapeHTML(p.name)}">${escapeHTML(p.name)}</b></span>
+     <strong class="sky-score-table-round" data-score-table-round="${Number(p.index)}">${round}</strong>
+     <strong class="sky-score-table-total" data-score-table-total="${Number(p.index)}">${total}</strong>
+   </div>`;
+ }).join('');
+ return `<section class="sky-score-table ${mobile?'mobile':''}" aria-label="Punktetabelle dieser Runde">
+   <div class="sky-score-table-heading"><span>✦</span> PUNKTETABELLE <span>✦</span></div>
+   <div class="sky-score-table-note">RUNDE ${Number(summary.round)}</div>
+   <div class="sky-score-table-cols"><span>SPIELER</span><span>RUNDE</span><span>GESAMT</span></div>
+   <div class="sky-score-table-rows">${rows}</div>
+   <div class="sky-score-table-legend">${counting?'– = noch offen · Gesamt inkl. Runde':'Gesamt = bisher + diese Runde'}</div>
+ </section>`
+}
+function updateRoyalScoreTable(root,playerIndex,round,total,{complete=false}={}){
+ if(!root)return;
+ for(const row of root.querySelectorAll(`.sky-score-table-row[data-score-table-player="${Number(playerIndex)}"]`)){
+   row.querySelector('.sky-score-table-round').textContent=scoreFmt(round);
+   row.querySelector('.sky-score-table-total').textContent=String(Number(total)||0);
+   row.classList.remove('waiting');
+   if(complete){row.classList.remove('active');row.classList.add('finished')}
+ }
+}
+function buildRoyalRoundSummaryModal(summary,options={}){
+ const counting=!!options.counting, countIndex=Math.max(0,Number(options.playerIndex)||0);
+ const players=(summary.players||[]);
+ const focus=counting?players[countIndex]:roundSummaryFocusPlayer(summary);
+ if(!focus)return `<div class="royal-modal royal-round-modal"><h3>Keine Rundenpunkte vorhanden.</h3></div>`;
+ const centralIndex=players.findIndex(p=>p.index===focus.index);
+ const others=players.filter(p=>p.index!==focus.index);
+ const left=others.slice(0,2),right=others.slice(2,3),overflow=others.slice(3);
+ const renderSide=p=>royalMiniBoard(p,{counting,countIndex,pi:players.findIndex(x=>x.index===p.index),focus});
+ const entries=(focus.items||[]).map((item,idx)=>{
+   const name=summaryItemTitle(item,idx);
+   const miniature=item.kind==='card'?royalCardTile(item.card):item.kind==='action'?`<span class="sky-score-entry-special">${ACTIONS[item.actionType]?.icon||'⚡'}</span>`:'<span class="sky-score-entry-special">⭐</span>';
+   return `<div class="sky-score-entry ${counting?'pending':''}" data-count-index="${idx}"><span class="sky-score-entry-index">${idx+1}</span><span class="sky-score-entry-card">${miniature}</span><span class="sky-score-entry-caption" title="${escapeHTML(name)}">${escapeHTML(name)}</span><b class="sky-score-entry-points ${scoreTone(item.value)}">${scoreFmt(item.value)}</b></div>`
+ }).join('');
+ const currentRound=counting?0:Number(focus.round||0);
+ const extraButtons=summary.ended?`<button class="sky-score-next" onclick="Game.openRoyalFinaleSummary()">ZUM FINALE <span>❯❯</span></button>`:
+   cloud.enabled&&!isHostDevice()?'<div class="sky-score-wait">⏳ Der Host startet die nächste Runde</div>':'<button class="sky-score-next" onclick="Game.nextRound()">WEITER <span>❯❯</span></button>';
+ const centerItems=royalGridMarkup(focus,{counting,isActive:true});
+ return `<div class="royal-modal royal-round-modal sky-score-scene ${counting?'royal-counting sky-score-counting':''}" role="region" aria-label="Punkteabrechnung nach Runde ${Number(summary.round)}">
+   <div class="sky-score-header"><div class="sky-score-logo"><span>SKYJO</span><strong>ACTION</strong><i class="sky-logo-card lc1"></i><i class="sky-logo-card lc2"></i><i class="sky-logo-card lc3"></i></div><h2>✧ &nbsp; PUNKTEABRECHNUNG &nbsp; ✧</h2><div class="sky-score-round-label">RUNDE ${Number(summary.round)}</div></div>
+   <div class="sky-score-body">
+     <div class="sky-score-side left">${left.map(renderSide).join('')}</div>
+     <div class="sky-score-center">
+        <div class="sky-score-center-head"><span class="sky-score-big-rank">${Number(focus.index)+1}</span><h3>${escapeHTML(focus.name)}</h3></div>
+        <div class="sky-score-center-content">
+          <section class="sky-score-board-wrap" aria-label="12-Karten-Feld von ${escapeHTML(focus.name)}"><div class="sky-score-board">${centerItems}</div><div class="sky-score-glow-caption">${counting?'<span class="royal-count-headline">Die Karten werden einzeln ausgezählt …</span>':'Alle Karten ausgezählt'}</div></section>
+          <section class="sky-score-parchment" aria-label="Karten-Zwischensumme"><h4>ZWISCHENSUMME</h4><div class="sky-score-progress royal-count-progress">${counting?`Spieler ${countIndex+1} von ${players.length} · Karte 0 von ${(focus.items||[]).length}`:'Alle Karten gezählt'}</div><div class="sky-score-entries">${entries}</div><div class="sky-score-parchment-total"><span>RUNDE</span><strong class="sky-score-main-running royal-current-header-total">${currentRound}</strong></div><div class="royal-doubling-line"></div></section>
+        </div>
+     </div>
+     <div class="sky-score-side right">${right.map(renderSide).join('')}${royalScoreTableMarkup(summary,{counting,countIndex})}</div>
+   </div>
+   <div class="sky-score-mobile-table">${royalScoreTableMarkup(summary,{counting,countIndex,mobile:true})}</div>
+   <div class="sky-score-mobile-peers">${others.map(renderSide).join('')}</div>
+   ${overflow.length?`<div class="sky-score-overflow">${overflow.map(renderSide).join('')}</div>`:''}
+   <div class="sky-score-footer"><button class="sky-score-review" ${counting?'disabled':'onclick="Game.showRoundOverview()"'}>▥ &nbsp; RUNDENÜBERSICHT</button><span class="sky-score-footer-explainer royal-current-equation">${counting?'Die Rundenpunkte werden Spieler für Spieler ermittelt.':'Alle Spieler wurden einzeln abgerechnet.'}</span>${counting?'<div class="sky-score-counting-hint">⏳ Spielerweise Kartenzählung läuft …</div>':extraButtons}</div>
+ </div>`
+}
+function showRoundOverview(){
+ const s=state?.lastRoundSummary;if(!s)return;
+ const content=[...(s.players||[])].sort((a,b)=>a.round-b.round).map((p,i)=>`<div class="sky-overview-row"><span>${i+1}.</span><b>${escapeHTML(p.name)}</b><strong>${scoreFmt(p.round)} Rundenpunkte</strong><em>${p.total} Gesamtpunkte</em></div>`).join('');
+ modal(`<div class="royal-modal royal-round-modal sky-overview"><h2>RUNDENÜBERSICHT · RUNDE ${Number(s.round)}</h2>${content}<div class="sky-overview-actions"><button class="primary" onclick="Game.openRoyalRoundSummary()">← Zurück zur Abrechnung</button></div></div>`,false)
+}
+function buildRoyalFinaleModal(summary){
+ const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
+ const first=ranked[0]||null, second=ranked[1]||null, third=ranked[2]||null;
+ const makePodium=(p,pos,cls)=>p?`<div class="royal-podium-card ${cls}"><div class="royal-podium-medal">${pos}</div><div class="royal-podium-name">${escapeHTML(p.name)}</div><div class="royal-podium-score"><small>PUNKTE</small><b data-royal-counter="${Number(p.total)}" aria-label="${Number(p.total)} Punkte">${p.total}</b></div></div>`:'';
+ const extras=ranked.slice(3).map((p,i)=>`<div class="royal-extra-rank"><span>#${i+4}</span><b>${escapeHTML(p.name)}</b><em>${p.total} Punkte</em></div>`).join('');
+ const leftBtn=`<button onclick="Game.showFinaleDetails()">DETAILS ANZEIGEN</button>`;
+ let midBtn='';
+ let rightBtn='';
+ if(cloud.enabled){
+   if(isHostDevice()){
+     midBtn=`<button class="primary royal-cta" onclick="Game.returnFinishedGameToRoomLobby()">NEUE RUNDE</button>`;
+     rightBtn=`<button onclick="Game.backToLobby()">ZURÜCK ZUM HAUPTMENÜ</button>`
+   }else{
+     midBtn=`<button class="primary royal-cta" onclick="Game.backToLobby()">NEUE RUNDE</button>`;
+     rightBtn=`<button onclick="Game.closeModal()">SCHLIESSEN</button>`
+   }
+ }else{
+   midBtn=`<button class="primary royal-cta" onclick="Game.restart()">NEUE RUNDE</button>`;
+   rightBtn=`<button onclick="Game.backToLobby()">ZURÜCK ZUM HAUPTMENÜ</button>`
+ }
+ return `<div class="royal-modal royal-finale-modal">
+   <div class="royal-finale-title">SKYJO <span>ACTION</span></div>
+   <div class="royal-finale-subtitle">GROSSES FINALE</div>
+   <div class="royal-finale-round">ENDSTAND</div>
+   <div class="royal-stage-wrap">
+     <div class="royal-curtain left"></div>
+     <div class="royal-curtain right"></div>
+     <div class="royal-podium-grid">

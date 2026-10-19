@@ -1,0 +1,78 @@
+ if(old.faceUp)return aiOpponentDiscardThreat(pi,old).score;
+ const known=aiHiddenKnowledgeCard(pi,old);
+ if(known)return aiOpponentDiscardThreat(pi,{...known,faceUp:true}).score;
+ /* Bei einer unbekannten eigenen verdeckten Karte kennt auch die KI deren Wert nicht.
+    Deshalb wird der erwartete Gefahrenwert über die Restverteilung berechnet. */
+ const d=aiUnseenDistribution(pi);
+ let n=0,s=0;
+ for(const x of d){n+=x.count;s+=x.count*aiOpponentDiscardThreat(pi,x.card).score}
+ return n?s/n:0
+}
+function aiDrawnCardDecision(pi,candidate,target){
+ const diff=aiDifficulty(pi),threshold=aiKeepThreshold(pi,false);
+ const baseKeep=target?target.score:-99;
+ const threat=aiOpponentDiscardThreat(pi,candidate);
+ if(diff==='easy'){
+   return {keep:!!target&&baseKeep>=threshold,threat,keepUtility:baseKeep,dropUtility:aiDiscardRevealUtility(pi),reason:''}
+ }
+ const outgoing=target?aiExpectedOutgoingDiscardThreat(pi,target):99;
+ const reveal=aiDiscardRevealUtility(pi);
+ if(diff==='normal'){
+   /* Normal erkennt vor allem offensichtliche sofortige Dreier-/Viererreihen. */
+   const defensive=threat.direct>=8&&target&&baseKeep>=-2.4;
+   return {
+     keep:!!target&&(baseKeep>=threshold||defensive),
+     threat,keepUtility:baseKeep-outgoing*.28,dropUtility:reveal-threat.score*.42,
+     reason:defensive?'verhindert eine direkte Gegnerreihe':''
+   }
+ }
+ /* Expert: echte Folgenabwägung.
+    Behalten = eigener Nutzen minus Gefahr der herausgetauschten Karte.
+    Abwerfen = Nutzen des Aufdeckens minus Nutzen, den die Ablage dem Gegner schenkt. */
+ const keepUtility=baseKeep-outgoing*.58;
+ const plan=ai103Context(pi);
+ let dropUtility=reveal+ai103NextDrawGain(plan.grid,plan.extras,plan)*.37-threat.score*.76;
+ if(plan.end.ownHidden===1&&!plan.end.ahead&&plan.end.ownScore>0){
+   dropUtility-=Math.min(28,9+Math.max(0,plan.end.ownScore-plan.end.bestOpp)*1.2);
+ }
+ const strategicallyNecessary=threat.direct>=7.5&&baseKeep>=-4.0;
+ const keep=!!target&&(
+   (baseKeep>=threshold&&keepUtility>=dropUtility-.35) ||
+   strategicallyNecessary ||
+   keepUtility>=dropUtility+.20
+ );
+ return {
+   keep,threat,outgoing,keepUtility,dropUtility,
+   reason:strategicallyNecessary?(threat.label?`blockiert ${threat.label}`:'blockiert eine fertige Gegnerkombination'):(keepUtility>dropUtility?'vermeidet eine starke Ablagevorlage':'')
+ }
+}
+function aiShouldTakeDiscard(pi,top,target){
+ if(!top||!target)return false;
+ const diff=aiDifficulty(pi),threshold=aiKeepThreshold(pi,true);
+ const threat=aiOpponentDiscardThreat(pi,top);
+ if(diff==='easy')return target.score>=threshold;
+ const outgoing=aiExpectedOutgoingDiscardThreat(pi,target);
+ if(diff==='normal'){
+   /* Eine offen daliegende Karte, die dem nächsten Gegner sofort eine starke Reihe gäbe,
+      wird auch von Normal häufiger defensiv genommen. */
+   if(threat.direct>=9&&target.score>=-1.8)return true;
+   return target.score>=threshold
+ }
+ const deckU=aiExpectedDeckUtility(pi);
+ const denial=Math.max(-4,Math.min(12,threat.score-outgoing));
+ const effective=target.score+denial*.62;
+ return effective>=Math.max(threshold,deckU-.10)
+}
+function aiShouldResolveOptionalMatch(pi,m){const p=state.players[pi];if(m.pureStars)return false;const sum=m.idx.reduce((s,i)=>s+(p.grid[i]?cardPoints(p.grid[i]):0),0),end=aiEndgameProfile(pi);if(sum>0)return true;if(sum<0)return false;return end.ahead&&end.pressure&&end.ownHidden>0}
+function aiActionBaseValue(type){return ({double:9.5,draw3:7.8,defense:6.4,meteor:6.2,thief:6.0,swapother:5.1,enlight:3.8,ownswap:3.2,react:4.2})[type]||1}
+function aiBestOwnSwap(pi){const p=state.players[pi],ids=p.grid.map((c,i)=>c?.faceUp?i:-1).filter(i=>i>=0);let best=null;const before=ids.reduce((s,i)=>s+aiLinePotential(pi,i,p.grid[i]),0);for(let a=0;a<ids.length;a++)for(let b=a+1;b<ids.length;b++){const ia=ids[a],ib=ids[b],ca=p.grid[ia],cb=p.grid[ib];if(aiSameCardValue(ca,cb))continue;p.grid[ia]=cb;p.grid[ib]=ca;const after=ids.reduce((s,i)=>s+aiLinePotential(pi,i,p.grid[i]),0);p.grid[ia]=ca;p.grid[ib]=cb;const gain=after-before;if(!best||gain>best.gain)best={ia,ib,gain}}return best}
+function aiBestOtherSwap(pi){const me=state.players[pi];let own=null;me.grid.forEach((c,i)=>{if(c?.faceUp){const v=cardPoints(c);if(!own||v>own.v)own={pi,idx:i,v,c}}});if(!own)return null;let opp=null;for(let oi=0;oi<state.players.length;oi++){if(oi===pi)continue;state.players[oi].grid.forEach((c,i)=>{if(c?.faceUp){const v=cardPoints(c);const gain=own.v-v;if(!opp||gain>opp.gain)opp={pi:oi,idx:i,v,c,gain}}})}return opp&&opp.gain>1?{own,opp,gain:opp.gain}:null}
+function aiBestThiefTarget(pi){const pri={double:10,draw3:9,meteor:8,defense:7,thief:6,swapother:5,ownswap:4,enlight:3,react:2};let best=null;for(let oi=0;oi<state.players.length;oi++){if(oi===pi)continue;state.players[oi].actions.forEach((a,ai)=>{const score=pri[a.type]||1;if(!best||score>best.score)best={pi:oi,ai,a,score}})}return best}
+function aiMeteorChoice(pi,targetPi){const p=state.players[targetPi],expected=aiExpectedUnknown(pi),opts=[];p.grid.forEach((c,i)=>{if(!c)return;if(c.faceUp){const v=cardPoints(c),hurt=expected-v+(c.type==='star'?2:0);opts.push({zone:'grid',idx:i,score:hurt})}else opts.push({zone:'grid',idx:i,score:-.4})});p.extras.forEach((c,i)=>{if(c?.faceUp)opts.push({zone:'extra',idx:i,score:expected-cardPoints(c)})});opts.sort((a,b)=>b.score-a.score);return opts[0]||null}
+function aiBestEnlightLine(pi){const p=state.players[pi],codes=['r0','r1','r2','c0','c1','c2','c3'];let best=null;for(const code of codes){const ids=lineIndexes(code),hidden=ids.filter(i=>p.grid[i]&&!p.grid[i].faceUp),vis=ids.map(i=>p.grid[i]).filter(Boolean).filter(c=>c.faceUp);if(!hidden.length)continue;let score=hidden.length*1.2;const stars=vis.filter(c=>c.type==='star').length,freq={};for(const c of vis)if(c.type==='number')freq[c.value]=(freq[c.value]||0)+1;score+=Math.max(0,...Object.values(freq))*1.1+stars*.8;if(!best||score>best.score)best={code,ids,score}}return best}
+function aiActionValue(pi,a){const type=a.type,p=state.players[pi],end=aiEndgameProfile(pi),normal=aiExpectedDeckUtility(pi);let v=aiActionBaseValue(type);if(type==='ownswap')v=(aiBestOwnSwap(pi)?.gain||0)+1;if(type==='swapother')v=(aiBestOtherSwap(pi)?.gain||0)+1;if(type==='thief')v=(aiBestThiefTarget(pi)?.score||0)+2;if(type==='enlight')v=(aiBestEnlightLine(pi)?.score||0)+1;if(type==='meteor'){let sum=0;for(let oi=0;oi<state.players.length;oi++)if(oi!==pi)sum+=Math.max(0,aiMeteorChoice(pi,oi)?.score||0);v=2+sum}if(type==='react'){let best=0;for(const x of state.actionDiscard||[])if(x.type!=='react')best=Math.max(best,aiActionBaseValue(x.type));v=best?best-.5:0}if(type==='defense'&&state.players.some((q,i)=>i!==pi&&q.actions?.some(x=>ACTIONS[x.type]?.kind==='attack')))v+=1.5;if(end.pressure)v+=type==='double'||type==='draw3'?1.2:0;if(p.actions.length>=2)v+=1.0;return {value:v,normal}}
+function aiActionDecision(pi){if(!jokerSpecialsEnabled()||state.roundEnder!==null)return null;const p=state.players[pi],avail=p.actions.map((a,i)=>({a,i})).filter(x=>actionAvailable(x.a,p));if(!avail.length)return null;const diff=aiDifficulty(pi);if(diff!=='hard'){for(const type of ['double','defense']){const x=avail.find(x=>x.a.type===type);if(x&&(diff!=='easy'||Math.random()<.55))return {kind:'play',...x}}if(p.actions.length>=2||totalHidden(p)<=3)return {kind:'discard',...avail[0]};return null}const ranked=avail.map(x=>({...x,...aiActionValue(pi,x.a)})).sort((a,b)=>b.value-a.value);const best=ranked[0],end=aiEndgameProfile(pi);if(best&&best.value>=best.normal+.45)return {kind:'play',...best};if((p.actions.length>=2||end.pressure||end.ownHidden<=2)&&ranked.length){const worst=[...ranked].sort((a,b)=>a.value-b.value)[0];return {kind:'discard',...worst}}return null}
+function aiPickMarketIndex(owner=state.currentPlayer){let best=-1,score=-Infinity;state.market.forEach((a,i)=>{if(!a)return;const s=aiDifficulty(owner)==='hard'?aiActionValue(owner,a).value:aiActionBaseValue(a.type);if(s>score){score=s;best=i}});return best}
+async function aiResolveStarChoice(){const owner=ui.data?.owners?.[ui.data.ownerIndex];if(!isAIPlayer(owner))return false;await sleepMs(320);const i=aiPickMarketIndex(owner);if(i>=0&&state.market[i])await aiDo(()=>takeActionMarket(i,true));else await aiDo(()=>takeActionBlind(true));await aiWaitMotion();return true}
+async function aiInitialReveal(pi){const p=state.players[pi];while(state?.phase==='initialReveal'&&state.setupPlayer===pi&&state.setupRevealed<2){const hidden=p.grid.map((c,i)=>c&&!c.faceUp?i:-1).filter(i=>i>=0);if(!hidden.length)break;let idx;if(state.setupRevealed===0)idx=hidden[Math.floor(Math.random()*hidden.length)];else{const first=p.grid.findIndex(c=>c?.faceUp);const candidates=hidden.filter(i=>Math.floor(i/4)!==Math.floor(first/4)&&(i%4)!==(first%4));idx=(candidates.length?candidates:hidden)[Math.floor(Math.random()*(candidates.length?candidates:hidden).length)]}await sleepMs(360);await aiDo(()=>selectCard(pi,'grid',idx));await aiWaitMotion();if(ui.mode==='starChoice'){await aiResolveStarChoice();await aiWaitMotion()}}}
+function aiRememberLine(pi,code){const p=state.players[pi],ids=lineIndexes(code);p.aiKnowledge=p.aiKnowledge||{};for(const idx of ids){const c=p.grid[idx];if(c&&!c.faceUp)p.aiKnowledge[c.id]={type:c.type,value:c.value}}}

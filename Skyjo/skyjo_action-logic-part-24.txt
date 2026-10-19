@@ -1,0 +1,118 @@
+   const score=immediate+ctx.futureWeight*future+t.score*.16-defence+urgency-ai103EndPenalty(ctx,candidate,t);
+   ranked.push({...t,score,planImmediate:immediate,planFuture:future});
+ }
+ return ranked.sort((a,b)=>b.score-a.score);
+}
+function ai103DeckValue(pi){
+ const ctx=ai103Context(pi);
+ const expect=ai103NextDrawGain(ctx.grid,ctx.extras,ctx);
+ /* Zieht man schlecht, ist Ablegen + Aufdecken eine echte Alternative. */
+ const reveal=aiDiscardRevealUtility(pi);
+ return Math.max(reveal,expect*.92)+ctx.futureWeight*expect*.22;
+}
+
+function aiTargets(pi,candidate){const p=state.players[pi],diff=aiDifficulty(pi),candVal=aiCandidateValue(candidate),out=[],end=aiEndgameProfile(pi);for(let i=0;i<p.grid.length;i++){const old=p.grid[i];if(!old)continue;const hidden=!old.faceUp,oldVal=aiSlotExpectedValue(pi,old,[candidate]),lineDelta=aiLineDelta(pi,i,old,candidate);let score=(oldVal-candVal)+lineDelta+aiNoise(diff);if(hidden){const known=!!aiHiddenKnowledgeCard(pi,old);score+=candVal<=0?1.4:candVal<=3?.8:candVal<=5?.25:0;if(known)score+=.35;if(diff==='hard'){if(end.ahead&&(end.ownHidden<=3||end.pressure))score+=1.0;if(end.behind&&end.ownHidden<=2)score-=1.1}}else{const same=aiSameCardValue(old,candidate),numericGain=cardPoints(old)-candVal;if(same)score-=9;if(cardPoints(old)<0)score-=6;else if(cardPoints(old)===0&&candVal>=0&&lineDelta<3.5)score-=4.8;else if(numericGain<=0&&lineDelta<1.3)score-=3.2;if(lineDelta>=5)score+=2.3}if(candidate?.type==='star')score+=hidden?2.7:1.6;out.push({zone:'grid',idx:i,score,old,lineDelta,hidden})}for(let i=0;i<p.extras.length;i++){const old=p.extras[i];if(!old)continue;const hidden=!old.faceUp,oldVal=aiSlotExpectedValue(pi,old,[candidate]);let score=oldVal-candVal+aiNoise(diff);if(hidden)score+=candVal<=1?1.0:.25;else{if(aiSameCardValue(old,candidate))score-=9;if(cardPoints(old)<0)score-=6;if(cardPoints(old)-candVal<=0)score-=3}out.push({zone:'extra',idx:i,score,old,lineDelta:0,hidden})}return aiDifficulty(pi)==="easy"?out.sort((a,b)=>b.score-a.score):ai103RankTargets(pi,candidate,out)}
+function aiBestTarget(pi,candidate){const a=aiTargets(pi,candidate);if(!a.length)return null;const diff=aiDifficulty(pi);if(diff==='easy'&&a.length>1&&Math.random()<.32)return a[Math.min(a.length-1,Math.floor(Math.random()*Math.min(3,a.length)))];return a[0]}
+function aiRevealPositionScore(pi,zone,idx){const p=state.players[pi],arr=zone==='grid'?p.grid:p.extras,c=arr[idx];if(!c||c.faceUp)return-999;let score=.4;if(zone==='extra')return score;const known=aiHiddenKnowledgeCard(pi,c);if(known){const v=aiCandidateValue(known);score+=v>=8?2.4:v>=5?1.4:v<=0?-.8:.3}for(const ids of aiLineIndexesFor(idx)){const others=ids.filter(i=>i!==idx).map(i=>p.grid[i]).filter(Boolean);const vis=others.filter(x=>x.faceUp),stars=vis.filter(x=>x.type==='star').length,freq={};for(const x of vis)if(x.type==='number')freq[x.value]=(freq[x.value]||0)+1;const best=Math.max(0,...Object.values(freq));if(best+stars>=2)score+=2.2;else if(best+stars===1)score+=.5}const end=aiEndgameProfile(pi);if(end.ahead&&end.pressure)score+=.6;if(end.behind&&end.ownHidden<=2)score-=.7;return score}
+function aiChooseReveal(pi){const p=state.players[pi],hidden=[];p.grid.forEach((c,i)=>{if(c&&!c.faceUp)hidden.push({zone:'grid',idx:i,score:aiRevealPositionScore(pi,'grid',i)})});p.extras.forEach((c,i)=>{if(c&&!c.faceUp)hidden.push({zone:'extra',idx:i,score:aiRevealPositionScore(pi,'extra',i)})});if(!hidden.length)return null;hidden.sort((a,b)=>b.score-a.score);const diff=aiDifficulty(pi);if(diff==='easy'&&hidden.length>1)return hidden[Math.floor(Math.random()*hidden.length)];if(diff==='normal'&&hidden.length>1&&Math.random()<.2)return hidden[Math.floor(Math.random()*Math.min(3,hidden.length))];return hidden[0]}
+function aiDiscardRevealUtility(pi){const r=aiChooseReveal(pi),end=aiEndgameProfile(pi);let u=r?.score||0;if(end.ahead&&end.pressure)u+=.8;if(end.behind&&end.ownHidden<=2)u-=.7;return u}
+function aiExpectedDeckUtility(pi){if(aiDifficulty(pi)!=="easy")return ai103DeckValue(pi);const d=aiUnseenDistribution(pi),total=d.reduce((s,x)=>s+x.count,0);if(!total)return 0;let sum=0;for(const x of d){const target=aiBestTarget(pi,x.card),keep=target?target.score:-99,drop=aiDiscardRevealUtility(pi);sum+=x.count*Math.max(keep,drop)}return sum/total}
+function aiKeepThreshold(pi,fromDiscard=false){const diff=aiDifficulty(pi);if(diff==='easy')return fromDiscard?1.9:1.15;if(diff==='normal')return fromDiscard?.9:.45;const e=aiEndgameProfile(pi);let t=fromDiscard?.15:-.1;if(e.ahead&&(e.pressure||e.ownHidden<=2))t-=.55;if(e.behind&&e.ownHidden<=2)t+=.65;return t}
+
+/* === V15.1 DEFENSIVE AI: Gegnerische Ablage-Chancen mitrechnen === */
+function aiNextPlayerAfter(pi){
+ if(!state||!state.players?.length)return -1;
+ if(state.extraTurns>0)return pi;
+ if(state.roundEnder!==null&&Array.isArray(state.finalTurnQueue)&&state.finalTurnQueue.length)return state.finalTurnQueue[0];
+ return (pi+1)%state.players.length
+}
+function aiPublicLineCompletionThreat(observerPi,oppPi,idx,candidate){
+ const p=state.players[oppPi];
+ if(!p||idx<0||idx>11||!candidate)return {score:0,complete:false,label:''};
+ let best={score:0,complete:false,label:''};
+ const lines=aiLineIndexesFor(idx);
+ for(const ids of lines){
+   const cards=ids.map(i=>i===idx?{...candidate,faceUp:true}:p.grid[i]).filter(Boolean);
+   if(cards.length<3||cards.some(c=>!c.faceUp))continue;
+   const nums=cards.filter(c=>c.type==='number');
+   const stars=cards.filter(c=>c.type==='star').length;
+   const values=[...new Set(nums.map(c=>Number(c.value)))];
+   let complete=false,pureStars=false;
+   if(values.length===1&&nums.length+stars===cards.length)complete=true;
+   else if(values.length===0&&stars===cards.length){complete=true;pureStars=true}
+   if(!complete)continue;
+   const positiveRemoved=cards.reduce((s,c)=>s+Math.max(0,cardPoints(c)),0);
+   const negativeKept=Math.abs(cards.reduce((s,c)=>s+Math.min(0,cardPoints(c)),0));
+   /* Positive Zahlenreihen sind besonders gefährlich: Gegner kann viele Punkte sofort loswerden.
+      Reine Jokergruppen sind ebenfalls wertvoll, werden aber etwas niedriger gewichtet,
+      da sie je nach Spielsituation lieber für den Jokerbonus liegen bleiben können. */
+   let score=pureStars?(cards.length===4?11:8.5):(8+positiveRemoved*.72+cards.length*.55);
+   if(negativeKept>0&&!pureStars)score-=negativeKept*.55;
+   const kind=ids.length===4?'Reihe':'Spalte';
+   const value=pureStars?'Joker':(values[0]??'');
+   if(score>best.score)best={score,complete:true,label:`${kind} ${value}`};
+ }
+ return best
+}
+function aiOpponentCardOpportunity(observerPi,oppPi,candidate){
+ const p=state.players[oppPi];
+ if(!p||oppPi===observerPi||!candidate)return {score:0,direct:0,target:null,label:''};
+ const candVal=aiCandidateValue(candidate);
+ let best={score:0,direct:0,target:null,label:''};
+ for(let idx=0;idx<p.grid.length;idx++){
+   const old=p.grid[idx];
+   if(!old)continue;
+   const completion=aiPublicLineCompletionThreat(observerPi,oppPi,idx,candidate);
+   let numericGain=0;
+   if(old.faceUp)numericGain=Math.max(0,cardPoints(old)-candVal);
+   else{
+     /* Keine verdeckte Gegnerkarte ausspähen: nur statistischen Erwartungswert benutzen. */
+     const expected=aiExpectedUnknown(observerPi,[candidate]);
+     numericGain=Math.max(0,expected-candVal)*.55
+   }
+   /* Bereits sichtbares Reihenpotenzial ist öffentlich und darf strategisch berücksichtigt werden. */
+   let publicPotential=0;
+   for(const ids of aiLineIndexesFor(idx)){
+     const others=ids.filter(i=>i!==idx).map(i=>p.grid[i]).filter(Boolean).filter(c=>c.faceUp);
+     const stars=others.filter(c=>c.type==='star').length;
+     const freq={};
+     for(const c of others)if(c.type==='number')freq[c.value]=(freq[c.value]||0)+1;
+     const matching=Math.max(0,...Object.values(freq))+stars;
+     if(matching>=2)publicPotential+=candidate.type==='star'?2.6:1.0;
+     else if(matching===1)publicPotential+=.25
+   }
+   const score=completion.score+numericGain*.72+publicPotential;
+   if(score>best.score)best={
+     score,
+     direct:completion.complete?completion.score:0,
+     target:{zone:'grid',idx},
+     label:completion.label||''
+   }
+ }
+ /* Zusatzkarten können zwar günstig getauscht werden, erzeugen aber keine Rasterreihe. */
+ for(let idx=0;idx<(p.extras||[]).length;idx++){
+   const old=p.extras[idx];
+   if(!old)continue;   const numericGain=old.faceUp?Math.max(0,cardPoints(old)-candVal):Math.max(0,aiExpectedUnknown(observerPi,[candidate])-candVal)*.45;
+   const score=numericGain*.6;
+   if(score>best.score)best={score,direct:0,target:{zone:'extra',idx},label:''}
+ }
+ return best
+}
+function aiOpponentDiscardThreat(aiPi,candidate){
+ if(!state||!candidate)return {score:0,direct:0,opponent:-1,label:''};
+ const next=aiNextPlayerAfter(aiPi);
+ let best={score:0,direct:0,opponent:-1,label:''};
+ for(let oi=0;oi<state.players.length;oi++){
+   if(oi===aiPi)continue;
+   const chance=aiOpponentCardOpportunity(aiPi,oi,candidate);
+   /* Der direkt folgende Spieler hat das Erstzugriffsrecht auf die Ablage.
+      Weitere Gegner werden nur schwach berücksichtigt, falls die Karte liegen bleibt. */
+   const weight=oi===next?1:(state.players.length===2?0:.24);
+   const score=chance.score*weight,direct=chance.direct*weight;
+   if(score>best.score)best={score,direct,opponent:oi,label:chance.label,target:chance.target}
+ }
+ return best
+}
+function aiExpectedOutgoingDiscardThreat(pi,target){
+ if(!target?.old)return 0;
+ const old=target.old;

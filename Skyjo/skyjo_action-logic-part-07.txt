@@ -1,0 +1,147 @@
+function load(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return null;lastLocalStateJSON=raw;return migrateState(JSON.parse(raw))}catch(e){}return null}
+function jokerFunctionEnabled(){return !state||state.jokerEnabled!==false}
+function jokerSpecialsEnabled(){return !state||state.jokerEnabled!==false}
+function cloudBadgeHTML(){if(!cloud.enabled||!cloud.room){const bots=state?.players?.filter(p=>p.isAI).length||0;return bots?`<span class="cloud-pill local">🤖 ${bots} Computer</span>`:'<span class="cloud-pill local">Lokal</span>';}const me=myPlayerIndex(),nm=me>=0?cloud.doc?.lobby?.players?.[me]?.name:'';const cls=cloud.serverOK===false||cloud.lastStatus==='error'?'error':(cloud.serverOK===true?'online':'syncing');const ico=cls==='error'?'⚠':cls==='syncing'?'↻':'☁';return `<span class="cloud-pill ${cls}">${ico} ${escapeHTML(cloud.room)}${nm?' · '+escapeHTML(nm):''}</span>`}
+async function fetchJSON(url,opts={}){const {timeoutMs=25000,...fetchOpts}=opts||{};const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),Math.max(1000,Number(timeoutMs)||25000));try{const auth=SKYJO_IS_HUB&&url.startsWith(CLOUD_BASE+'/skyjo/')?{'Authorization':'Bearer '+await skyjoHubToken()}:{};const r=await fetch(url,{...fetchOpts,headers:{...(fetchOpts.headers||{}),...auth},signal:ctl.signal});const body=await r.text();let j=null;try{j=body?JSON.parse(body):null}catch(_e){}return {r,j,text:body}}finally{clearTimeout(tm)}}
+async function probeSkyjoServer(){const urls=[`${CLOUD_BASE}/skyjo-health`,`${CLOUD_BASE}/skyjo/PINGCHECK`];let last='keine Antwort';for(const url of urls){try{const {r,j}=await fetchJSON(url,{cache:'no-store',timeoutMs:65000});if(r.ok&&j?.ok){cloud.serverOK=true;cloud.lastStatus='online';cloud.lastError='';return true}last=`HTTP ${r.status}`}catch(e){last=e?.name==='AbortError'?'Zeitüberschreitung':(e?.message||String(e));console.warn('[skyjo probe]',url,e)}}cloud.serverOK=false;cloud.lastStatus='error';cloud.lastError=`Render-Server antwortet nicht zuverlässig (${last}). Bei Free-Render kann das Aufwachen bis zu 50 Sekunden dauern.`;return false}
+function processCloudReactions(items,seq){const serverSeq=Number(seq||0)||0;if(serverSeq<Number(cloud.reactionSeq||0))cloud.reactionSeq=0;for(const r of (Array.isArray(items)?items:[])){if(r?.emoji)showEmojiReaction(r)}cloud.reactionSeq=Math.max(Number(cloud.reactionSeq||0),serverSeq)}
+async function fetchCloudRoom(room=cloud.room,delta=false){const rc=normalizeCloudRoom(room);if(!rc)return null;try{let url=`${CLOUD_BASE}/skyjo/${encodeURIComponent(rc)}`;if(delta){const q=new URLSearchParams({rev:String(Number(cloud.rev||0)),reactionSeq:String(Number(cloud.reactionSeq||0))});url+=`?${q.toString()}`}const {r,j}=await fetchJSON(url,{cache:'no-store',timeoutMs:30000});if(!r.ok||!j?.ok){cloud.lastError=r.status===404?'SKYJO-Endpunkte fehlen auf Render. Neue server.js deployen.':(j?.error||`HTTP ${r.status}`);return null}if(delta)processCloudReactions(j?.reactions,j?.reactionSeq);else cloud.reactionSeq=Number(j?.reactionSeq||0)||0;cloud.serverOK=true;cloud.lastStatus='online';cloud.lastError='';return j}catch(e){cloud.serverOK=false;cloud.lastStatus='error';cloud.lastError=e?.name==='AbortError'?'Cloud-Raum antwortet zu langsam. Verbindung bleibt bestehen und wird erneut versucht.':'Cloud-Raum konnte nicht geladen werden.';console.warn('[skyjo cloud load]',e);return null}}
+function applyCloudDoc(remote,rev){
+ if(!isRoomDoc(remote))return false;
+ const nextRev=Number(rev)||0;
+ if(nextRev&&nextRev<Number(cloud.rev||0))return false;
+ const prevPhase=state?.phase||'',prevRound=Number(state?.round||0),hadGame=!!state;
+ cloud.applying=true;
+ try{
+   cloud.doc=clone(remote);
+   cloud.rev=nextRev;
+   cloud.lastPushedJSON=JSON.stringify(cloud.doc);
+   cloud.role=isHostDevice()?'host':'player';
+   const me=myPlayerIndex();
+   if(me>=0){cloud.myName=cloud.doc.lobby.players[me]?.name||cloud.myName;saveIdentity()}
+   state=cloud.doc.game?migrateState(clone(cloud.doc.game)):null;
+   if(state){
+     const raw=JSON.stringify(state);
+     if(!SKYJO_IS_HUB)scheduleLocalSnapshot(raw);
+     ui=restorePlayUIFromState()
+   }else ui={mode:'none',data:{},selected:[]};
+   const roundAdvanced=!!state&&Number(state.round||0)>prevRound;
+   const leftRoundSummary=(prevPhase==='betweenRounds'||prevPhase==='gameOver')&&!!state&&state.phase!=='betweenRounds'&&state.phase!=='gameOver';
+   const returnedToRoomLobby=hadGame&&!state&&cloud.doc?.lobby?.status==='lobby';
+   if(roundAdvanced||leftRoundSummary||returnedToRoomLobby){
+     try{closeModal()}catch(_e){}
+     roundSummarySeen='';
+     scoreSequenceSeen='';
+     try{document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())}catch(_e){}
+   }
+   cloudConfigSave();
+   /* Wichtig: render() läuft noch mit cloud.applying=true.
+      Dadurch wird ein empfangener Spielstand NICHT sofort wieder zurückgeschrieben. */
+   render();
+   return true
+ }finally{
+   cloud.applying=false
+ }
+}
+function scheduleCloudApply(remote,rev){
+ const nextRev=Number(rev)||0;
+ if(!isRoomDoc(remote)||nextRev<=Number(cloud.rev||0))return;
+ if(!cloud.deferredRemote||nextRev>Number(cloud.deferredRemote.rev||0))cloud.deferredRemote={remote:clone(remote),rev:nextRev};
+ if(cloud.applyScheduled||motionBusy||motionQueueBusy)return;
+ cloud.applyScheduled=true;
+ requestAnimationFrame(()=>{
+   cloud.applyScheduled=false;
+   if(motionBusy||motionQueueBusy)return;
+   const d=cloud.deferredRemote;cloud.deferredRemote=null;
+   if(d&&Number(d.rev||0)>Number(cloud.rev||0))applyCloudDoc(d.remote,d.rev)
+ })
+}
+function flushDeferredCloudApply(){
+ if(!cloud.deferredRemote||motionBusy||motionQueueBusy)return;
+ scheduleCloudApply(cloud.deferredRemote.remote,cloud.deferredRemote.rev)
+}
+async function postCloudDoc(doc,baseRev=cloud.rev){
+ const requestRoom=cloud.room,requestEpoch=Number(cloud.roomEpoch||0);
+ try{
+   const {r,j}=await fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(requestRoom)}/state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:doc,baseRev}),timeoutMs:30000});
+   const stillCurrent=cloud.room===requestRoom&&Number(cloud.roomEpoch||0)===requestEpoch;
+   if(r.status===409)return {ok:false,conflict:true,remote:j?.state||null,rev:Number(j?.rev)||0,room:requestRoom,epoch:requestEpoch,staleContext:!stillCurrent};
+   if(!r.ok||!j?.ok){
+     if(stillCurrent)cloud.lastError=j?.error||`HTTP ${r.status}`;
+     return {ok:false,room:requestRoom,epoch:requestEpoch,staleContext:!stillCurrent}
+   }
+   const newRev=Number(j.rev)||Number(baseRev)||0;
+   if(stillCurrent){
+     cloud.rev=newRev;
+     cloud.serverOK=true;
+     cloud.lastStatus='online';
+     cloud.lastError=''
+   }
+   return {ok:true,rev:newRev,room:requestRoom,epoch:requestEpoch,staleContext:!stillCurrent}
+ }catch(e){
+   const stillCurrent=cloud.room===requestRoom&&Number(cloud.roomEpoch||0)===requestEpoch;
+   if(stillCurrent){
+     cloud.serverOK=false;
+     cloud.lastStatus='error';
+     cloud.lastError=e?.name==='AbortError'?'Speichern dauert zu lange – Verbindung wird erneut versucht.':'Speichern auf Render fehlgeschlagen.'
+   }
+   console.warn('[skyjo cloud write]',e);
+   return {ok:false,room:requestRoom,epoch:requestEpoch,staleContext:!stillCurrent}
+ }
+}
+function scheduleCloudPush(raw){
+ if(!cloud.enabled||!cloud.room||!isRoomDoc(cloud.doc))return;
+ if(raw===cloud.lastPushedJSON)return;
+ cloud.pending=true;cloud.pendingJSON=raw;
+ if(cloud.inFlight)return;
+ if(cloud.pushTimer)clearTimeout(cloud.pushTimer);
+ cloud.pushTimer=setTimeout(()=>{cloud.pushTimer=null;flushCloudPush()},70)
+}
+async function flushCloudPush(){
+ if(cloud.pushTimer){clearTimeout(cloud.pushTimer);cloud.pushTimer=null}
+ if(cloud.inFlight||!cloud.pending||!cloud.enabled||!cloud.room)return;
+ const requestRoom=cloud.room,requestEpoch=Number(cloud.roomEpoch||0);
+ cloud.inFlight=true;cloud.pending=false;
+ const raw=cloud.pendingJSON||JSON.stringify(cloud.doc);
+ try{
+   const doc=JSON.parse(raw),out=await postCloudDoc(doc,cloud.rev);
+   if(cloud.room!==requestRoom||Number(cloud.roomEpoch||0)!==requestEpoch||out?.staleContext)return;
+   if(out.conflict){
+     if(out.remote)scheduleCloudApply(out.remote,out.rev);
+     else{
+       const fresh=await fetchCloudRoom(cloud.room,false);
+       if(fresh?.found&&isRoomDoc(fresh.state))scheduleCloudApply(fresh.state,fresh.rev||0)
+     }
+     toast('☁ Neuerer Spielstand wurde geladen')
+   }else if(!out.ok)throw new Error(cloud.lastError||'Cloudfehler');
+   else{cloud.lastPushedJSON=raw;cloud.lastStatus='online';cloud.pollErrors=0;cloudConfigSave()}
+ }catch(e){
+   cloud.lastStatus='error';
+   console.warn('[skyjo cloud push]',e)
+ }finally{
+   cloud.inFlight=false;
+   if(cloud.room===requestRoom&&Number(cloud.roomEpoch||0)===requestEpoch&&cloud.pending){
+     if(cloud.pushTimer)clearTimeout(cloud.pushTimer);
+     cloud.pushTimer=setTimeout(()=>{cloud.pushTimer=null;flushCloudPush()},100)
+   }
+ }
+}
+
+function stopCloudRoomRuntime(){
+ clearGameAnnouncement();
+ clearTableAnnouncement();
+ clearJokePopup();
+ clearBiblePopup();
+ if(cloud.pollTimer)clearTimeout(cloud.pollTimer);
+ if(cloud.pushTimer)clearTimeout(cloud.pushTimer);
+ cloud.pollTimer=null;
+ cloud.pushTimer=null;
+ cloud.pending=false;
+ cloud.pendingJSON='';
+ cloud.deferredRemote=null;
+ cloud.applyScheduled=false;
+ cloud.pollBusy=false;
+ cloud.pollErrors=0
+}
+function switchCloudRoomContext(room){
+ stopCloudRoomRuntime();

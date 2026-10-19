@@ -1,0 +1,48 @@
+function aiDirectOwnSwap(pi,plan){const p=state.players[pi],a=p.grid[plan.ia],b=p.grid[plan.ib];p.grid[plan.ia]=b;p.grid[plan.ib]=a;setWatch('action-play',{actor:pi,title:'ordnet eigene Karten strategisch neu',typeLabel:'EXPERT-KI',text:'Reihenpotenzial verbessert'});log(`${p.name} tauscht zwei eigene offene Karten.`);afterMutation('finishTurn')}
+function aiDirectOtherSwap(pi,plan){if(!plan){finishTurn();return}if(consumeDefense(plan.opp.pi)){finishTurn();return}const a=state.players[pi].grid[plan.own.idx],b=state.players[plan.opp.pi].grid[plan.opp.idx];state.players[pi].grid[plan.own.idx]=b;state.players[plan.opp.pi].grid[plan.opp.idx]=a;setWatch('action-play',{actor:pi,title:'tauscht gezielt mit einem Mitspieler',typeLabel:'EXPERT-KI',text:`${state.players[plan.opp.pi].name}: ${plan.opp.v} ↔ ${plan.own.v}`});log(`${state.players[pi].name} tauscht eine offene Karte mit ${state.players[plan.opp.pi].name}.`);afterMutation('finishTurn')}
+async function aiExecuteActionCard(pi,a,reactivated=false){const type=a.type,p=state.players[pi];if(type==='react'){state.heldReacts=state.heldReacts||[];state.heldReacts.push(a);let best=null;for(let i=0;i<state.actionDiscard.length;i++){const x=state.actionDiscard[i];if(x.type==='react')continue;const v=aiActionValue(pi,x).value;if(!best||v>best.v)best={i,a:x,v}}if(!best){finishTurn();return true}const [picked]=state.actionDiscard.splice(best.i,1);setWatch('action-play',{actor:pi,actionType:picked.type,srcId:`player-${pi}`,dstId:`player-${pi}`,title:`reaktiviert ${ACTIONS[picked.type].name}`,typeLabel:'EXPERT-KI',text:'beste verfügbare Aktion aus der Ablage'});return aiExecuteActionCard(pi,picked,true)}state.actionDiscard.push(a);setWatch('action-play',{actor:pi,actionType:a.type,srcId:`player-${pi}`,dstId:`player-${pi}`,title:`spielt ${ACTIONS[a.type].name}`,typeLabel:'COMPUTER-AKTION',text:reactivated?'durch Reaktivierung':ACTIONS[a.type].desc});log(`${p.name} spielt „${ACTIONS[a.type].name}“.`);if(type==='double'){state.extraTurns+=2;finishTurn();return true}if(type==='defense'){state.extraTurns+=1;finishTurn();return true}if(type==='draw3'){startDraw3();return true}if(type==='meteor'){startMeteor();return true}if(type==='enlight'){const line=aiBestEnlightLine(pi);if(line){aiRememberLine(pi,line.code);log(`${p.name} merkt sich eine Reihe/Spalte durch Erleuchtung.`)}finishTurn();return true}if(type==='ownswap'){const plan=aiBestOwnSwap(pi);if(plan&&plan.gain>.5)aiDirectOwnSwap(pi,plan);else finishTurn();return true}if(type==='swapother'){aiDirectOtherSwap(pi,aiBestOtherSwap(pi));return true}if(type==='thief'){const t=aiBestThiefTarget(pi);if(!t){state.extraTurns+=1;finishTurn();return true}if(consumeDefense(t.pi)){state.extraTurns+=1;finishTurn();return true}const target=state.players[t.pi],[stolen]=target.actions.splice(t.ai,1);stolen.availableOwnTurn=p.ownTurn+2;stolen.stolen=true;p.actions.push(stolen);state.extraTurns+=1;log(`${p.name} stiehlt ${target.name} „${ACTIONS[stolen.type].name}“.`);finishTurn();return true}finishTurn();return true}
+async function aiExecuteAction(pi,d){const p=state.players[pi];if(!d||!p.actions[d.i])return false;const [a]=p.actions.splice(d.i,1);if(d.kind==='discard'){state.actionDiscard.push(a);setWatch('action-play',{actor:pi,actionType:a.type,srcId:`player-${pi}`,dstId:`player-${pi}`,title:`legt ${ACTIONS[a.type].name} ab`,typeLabel:'COMPUTER-AKTION',text:'vermeidet die +10-Punkte-Strafe'});log(`${p.name} legt „${ACTIONS[a.type].name}“ ab.`);finishTurn();return true}return aiExecuteActionCard(pi,a,false)}
+async function aiHandleDraw3(pi){if(ui.mode!=='draw3Choose')return;const cards=ui.data.cards||[];if(!cards.length){await aiDo(()=>draw3None());return}const choices=cards.map((card,i)=>{const target=aiBestTarget(pi,card);return {i,card,target,score:target?.score??-99}}).sort((a,b)=>b.score-a.score);const best=choices[0],drop=aiDiscardRevealUtility(pi),threshold=aiKeepThreshold(pi,false);await sleepMs(260);if(best?.target&&best.score>=Math.max(threshold,drop-.15)){await aiDo(()=>draw3Pick(best.i));await aiWaitMotion()}else{await aiDo(()=>draw3None());await aiWaitMotion();if(ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await sleepMs(180);await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion()}}}}
+async function aiHandleMeteor(pi){if(ui.mode!=='meteorSelect')return;const targetPi=Number(ui.data.target),pick=aiMeteorChoice(pi,targetPi);await sleepMs(240);if(pick){await aiDo(()=>meteorChoose(pick.zone,pick.idx));await aiWaitMotion()}else{await aiDo(()=>meteorNext());await aiWaitMotion()}}
+async function aiHandleMatchReady(pi){const matches=findMatches(pi);if(!matches.length){if(state.pendingMatch)continueMatchReady();return}const chosen=matches.find(m=>aiShouldResolveOptionalMatch(pi,m));if(chosen){await aiDo(()=>resolveBoardMatch(pi,matches.indexOf(chosen)));await aiWaitMotion()}else{await aiDo(()=>continueMatchReady());await aiWaitMotion()}}
+async function aiTakeTurn(pi){
+ if(!state||state.currentPlayer!==pi||ui.mode!=='turnChoice')return;
+ const completed=findMatches(pi);
+ const removable=completed.find(m=>aiShouldResolveOptionalMatch(pi,m));
+ if(removable){
+   await sleepMs(180);
+   await aiDo(()=>resolveBoardMatch(pi,completed.indexOf(removable)));
+   await aiWaitMotion();
+   return;
+ }
+ const action=aiActionDecision(pi);
+ if(action){await sleepMs(430);await aiExecuteAction(pi,action);await aiWaitMotion();return}
+ const top=state.playDiscard[state.playDiscard.length-1],dt=top?aiBestTarget(pi,top):null;
+ if(top&&dt&&aiShouldTakeDiscard(pi,top,dt)&&!discardArrivalPending()){
+   const deny=aiOpponentDiscardThreat(pi,top);
+   if(aiDifficulty(pi)==='hard'&&deny.direct>=7.5)log(`${state.players[pi].name} nimmt ${cardShortText(top)} auch defensiv, um ${state.players[deny.opponent]?.name||'dem Gegner'} keine starke Kombination zu geben.`);
+   await sleepMs(420);await aiDo(()=>drawFromDiscard());await aiWaitMotion();
+   if(state.currentPlayer===pi&&ui.mode==='discardSwap'){await sleepMs(250);await aiDo(()=>selectCard(pi,dt.zone,dt.idx));await aiWaitMotion()}
+   return
+ }
+ await sleepMs(440);await aiDo(()=>drawFromDeck());await aiWaitMotion();
+ if(state.currentPlayer!==pi||ui.mode!=='drawnDecision')return;
+ const c=ui.data.card,target=aiBestTarget(pi,c),decision=aiDrawnCardDecision(pi,c,target);
+ if(decision.keep&&target){
+   if(decision.reason&&decision.threat?.score>=5){
+     const opp=state.players[decision.threat.opponent]?.name||'Gegner';
+     log(`${state.players[pi].name} behält ${cardShortText(c)} strategisch: ${decision.reason} bei ${opp}.`)
+   }
+   await sleepMs(280);await aiDo(()=>selectCard(pi,target.zone,target.idx));await aiWaitMotion();return
+ }
+ await sleepMs(270);await aiDo(()=>discardDrawn());await aiWaitMotion();
+ if(state.currentPlayer===pi&&ui.mode==='flipOwn'){
+   const r=aiChooseReveal(pi);
+   if(r){await sleepMs(260);await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion()}
+ }
+}
+async function runAIActor(pi){if(aiBusy||cloud.enabled||!state||!isAIPlayer(pi)||toiletPauseActive())return;aiBusy=true;try{for(let guard=0;guard<24;guard++){await aiWaitMotion();if(!state||cloud.enabled||actorIndex()!==pi||!isAIPlayer(pi)||toiletPauseActive())break;if(state.phase==='initialReveal'){if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}await aiInitialReveal(pi);if(state.phase==='initialReveal'&&state.setupPlayer===pi&&state.setupRevealed>=2)setupContinue();continue}if(state.phase!=='play')break;if(ui.mode==='starChoice'){await aiResolveStarChoice();continue}if(ui.mode==='matchReady'||state.pendingMatch){await aiHandleMatchReady(pi);continue}if(ui.mode==='draw3Choose'){await aiHandleDraw3(pi);continue}if(ui.mode==='draw3Target'){const t=aiBestTarget(pi,ui.data.card);if(t){await aiDo(()=>selectCard(pi,t.zone,t.idx));await aiWaitMotion();continue}else{break}}if(ui.mode==='meteorSelect'){await aiHandleMeteor(pi);continue}if(ui.mode==='turnChoice'){await aiTakeTurn(pi);continue}if(ui.mode==='flipOwn'){const r=aiChooseReveal(pi);if(r){await aiDo(()=>selectCard(pi,r.zone,r.idx));await aiWaitMotion();continue}}break}}catch(e){console.warn('[AI V103]',e);toast('🤖 Computerzug wurde sicher beendet');if(state?.phase==='play'&&state.currentPlayer===pi&&ui.mode==='turnChoice')finishTurn()}finally{aiBusy=false;aiActing=false;scheduleAIIfNeeded(420)}}
+
+
+function cardClass(c){if(!c)return'empty';if(!c.faceUp)return'back';if(c.type==='star')return'star';if(c.value<0)return'neg';if(c.value===0)return'zero';if(c.value<=4)return'low';if(c.value<=8)return'mid';return'high'}
+function cardHTML(c,forceFace=false,clickable=false,selected=false){if(!c)return`<div class="card empty"></div>`;const face=forceFace||c.faceUp,cls=face?(c.type==='star'?'star':c.value<0?'neg':c.value===0?'zero':c.value<=4?'low':c.value<=8?'mid':'high'):'back';const v=face?(c.type==='star'?'★':c.value):'';const off='';return `<div class="card ${cls} ${off} ${clickable?'clickable':''} ${selected?'selected':''}" data-sky-value="${face&&c.type==='number'?c.value:''}" data-sky-kind="${face?c.type:'back'}">${face?`<span class="corner tl">${v}</span><span class="center-value">${v}</span><span class="corner br">${v}</span>`:''}</div>`}

@@ -1,0 +1,22 @@
+ 'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
+const dir=path.resolve(__dirname,'../Skyjo');const manifest=JSON.parse(fs.readFileSync(path.join(dir,'skyjo_action-manifest.json')));
+assert.equal(manifest.version,19);let source='';for(const [name,hash] of Object.entries(manifest.parts)){const b=fs.readFileSync(path.join(dir,name));assert.equal(crypto.createHash('sha256').update(b).digest('hex'),hash);source+=b.toString('utf8')}new vm.Script(source);
+function extract(name){let start=source.indexOf('function '+name+'(');assert.ok(start>=0,name);let brace=source.indexOf('{',start),depth=0,quote=null,escape=false;for(let i=brace;i<source.length;i++){let c=source[i];if(quote){if(escape)escape=false;else if(c==='\\')escape=true;else if(c===quote)quote=null;continue}if(c==='"'||c==="'"||c==='`'){quote=c;continue}if(c==='{')depth++;if(c==='}'&&!--depth)return source.slice(start,i+1)}throw Error(name)}
+let turnStarts=0,scorings=0,closes=0,checks=0;
+const ctx={cloud:{enabled:true,deviceId:'p1',doc:{kind:'skyjo-room-v2',version:2,lobby:{hostId:'p1',players:[{id:'p1',name:'Alice'},{id:'p2',name:'Bob'},{id:'p3',name:'Carol'}]}}},state:{phase:'playing',currentPlayer:0,players:[{},{},{}],heldReacts:[],actionDiscard:[],roundEnder:null,finalTurnQueue:[],extraTurns:0},closeModal:()=>{closes++},checkRoundTrigger:()=>{checks++},startTurn:()=>{turnStarts++},startScoring:()=>{scorings++}};
+vm.createContext(ctx);vm.runInContext(['isRoomDoc','myPlayerIndex','actorIndex','isMyActorDevice','isHostDevice','finishTurn'].map(extract).join(';'),ctx);
+assert.equal(vm.runInContext('isRoomDoc(cloud.doc)',ctx),true);
+assert.equal(vm.runInContext('isRoomDoc({kind:"skyjo-room-v2",version:2,lobby:{players:null}})',ctx),false);
+assert.equal(vm.runInContext('myPlayerIndex()',ctx),0);
+assert.equal(vm.runInContext('isMyActorDevice()',ctx),true);
+assert.equal(vm.runInContext('isHostDevice()',ctx),true);
+ctx.cloud.deviceId='p2';assert.equal(vm.runInContext('isMyActorDevice()',ctx),false);assert.equal(vm.runInContext('isHostDevice()',ctx),false);
+ctx.cloud.deviceId='intruder';assert.equal(vm.runInContext('myPlayerIndex()',ctx),-1);assert.equal(vm.runInContext('isMyActorDevice()',ctx),false);
+ctx.cloud.deviceId='p1';vm.runInContext('finishTurn()',ctx);assert.equal(ctx.state.currentPlayer,1);assert.equal(turnStarts,1);assert.equal(vm.runInContext('isMyActorDevice()',ctx),false);
+ctx.cloud.deviceId='p2';assert.equal(vm.runInContext('isMyActorDevice()',ctx),true);
+ctx.state.extraTurns=1;vm.runInContext('finishTurn()',ctx);assert.equal(ctx.state.currentPlayer,1);assert.equal(ctx.state.extraTurns,0);
+ctx.state.heldReacts=['defense'];vm.runInContext('finishTurn()',ctx);assert.equal(ctx.state.currentPlayer,2);assert.deepEqual(ctx.state.actionDiscard,['defense']);assert.equal(ctx.state.heldReacts.length,0);
+ctx.state.roundEnder=0;ctx.state.finalTurnQueue=[0];vm.runInContext('finishTurn()',ctx);assert.equal(ctx.state.currentPlayer,0);assert.equal(scorings,0);
+vm.runInContext('finishTurn()',ctx);assert.equal(scorings,1);assert.equal(turnStarts,4);
+console.log('SKYJO V16: 3-player ownership, host rights, turn progression, extra turns, reaction cleanup and round-end flow passed.');

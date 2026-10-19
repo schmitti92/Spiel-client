@@ -1,0 +1,104 @@
+ return `<div class="emoji-reaction-bar"><span class="emoji-bar-label">REAKTIONEN ›</span><div class="emoji-reaction-list">${EMOJI_REACTIONS.map(e=>`<button type="button" class="emoji-reaction-btn ${e==='HAHA'?'haha-reaction-btn':''} ${e==='HEINZ'?'heinz-reaction-btn':''} ${e==='STROM'?'stromberg-reaction-btn':''}" onclick="Game.sendEmojiReaction('${e}')" title="${e==='STROM'?'Stromberg-inspirierter Bürospruch':e==='HEINZ'?'Heinz-Spruch':e==='HAHA'?'Haha-Sticker':e==='🎁'?'Überraschungsspruch':e+' senden'}" aria-label="${e==='STROM'?'Stromberg-Bürospruch senden':e==='🎁'?'Überraschungsspruch senden':e+' senden'}">${e==='HAHA'?'<span class="haha-mini">HA<br>HA</span>':(e==='HEINZ'?'<span class="heinz-mini"><span>👴</span>HEINZ</span>':e==='STROM'?'<span class="stromberg-mini"><span class="stromberg-avatar-mini" aria-hidden="true"></span><strong>CHEF</strong><em>STROM</em></span>':e==='🎁'?'<span class="surprise-mini"><span>🎁</span><em>WOW</em></span>':e)}</button>`).join('')}</div></div>`
+}
+function sendEmojiReaction(emoji){
+ if(!state||!EMOJI_REACTIONS.includes(emoji))return;
+ const actor=reactionActorIndex();
+ if(actor<0||actor>=state.players.length)return;
+ const prevHeinz=(state?.reactionFeed||[]).slice().reverse().find(x=>x?.emoji==='HEINZ')?.text||'';
+ const prevSurprise=(state?.reactionFeed||[]).slice().reverse().find(x=>isSurpriseReaction(x?.emoji))?.text||'';
+ const quoteIndex=emoji==='STROM'?nextStrombergQuoteIndex():-1;
+ const surpriseText=emoji==='🎁'?randomSurpriseQuote(prevSurprise):'';
+ const wireEmoji=quoteIndex>=0?`SB${String(quoteIndex).padStart(2,'0')}`:(emoji==='🎁'?'SURP':emoji);
+ const r={id:uid(),actor,emoji:wireEmoji,ts:Date.now(),text:emoji==='HEINZ'?randomHeinzQuote(prevHeinz):quoteIndex>=0?STROMBERG_QUOTES[quoteIndex]:surpriseText};
+ showEmojiReaction(r);
+ if(cloud.enabled&&cloud.room){
+   fetchJSON(`${CLOUD_BASE}/skyjo/${encodeURIComponent(cloud.room)}/reaction`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(r),timeoutMs:8000}).then(({r:resp,j})=>{if(resp?.ok&&j?.reactionSeq)cloud.reactionSeq=Math.max(Number(cloud.reactionSeq||0),Number(j.reactionSeq||0))}).catch(e=>console.warn('[skyjo reaction]',e));
+   return;
+ }
+ if(!Array.isArray(state.reactionFeed))state.reactionFeed=[];
+ state.reactionFeed.push(r);
+ if(state.reactionFeed.length>24)state.reactionFeed=state.reactionFeed.slice(-24);
+ save()
+}
+function showEmojiReaction(r){
+ if(!r?.id||emojiReactionSeen.has(r.id))return;
+ emojiReactionSeen.add(r.id);
+ if(emojiReactionSeen.size>120){const first=emojiReactionSeen.values().next().value;emojiReactionSeen.delete(first)}
+ const isHaha=r.emoji==='HAHA';
+ const isHeinz=r.emoji==='HEINZ';
+ const isStromberg=isStrombergReaction(r.emoji);
+ const isSurprise=isSurpriseReaction(r.emoji);
+ if(isHeinz){
+   showTableAnnouncement({kind:'heinz',icon:'👴',title:'HEINZ · ZUFALLSSPRUCH',text:r.text||randomHeinzQuote(),by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ if(isStromberg){
+   const index=Number(String(r.emoji).slice(2));
+   const quote=r.text||STROMBERG_QUOTES[index]||STROMBERG_QUOTES[0];
+   showTableAnnouncement({kind:'stromberg',icon:'👔',title:'STROMBERG · BÜROSPRÜCHE',text:'„'+quote+'“',by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ if(isSurprise){
+   showTableAnnouncement({kind:'surprise',icon:'🎁',title:'ÜBERRASCHUNG',text:r.text||randomSurpriseQuote(),by:state?.players?.[Number(r.actor)]?.name||''},TABLE_MESSAGE_MS);
+   haptic(7);
+   return
+ }
+ const fx=document.createElement('div');
+ fx.className=`emoji-reaction-fx global ${isHaha?'haha-sticker-fx':''}`;
+ if(isHaha)fx.textContent='HAHA!';
+ else fx.textContent=r.emoji;
+ document.body.appendChild(fx);
+ haptic(7);
+ setTimeout(()=>fx.classList.add('show'),20);
+ const perf=uiPrefs.performance!==false;
+ const leaveMs=perf?850:1250;
+ const removeMs=perf?1250:1850;
+ setTimeout(()=>fx.classList.add('leave'),leaveMs);
+ setTimeout(()=>fx.remove(),removeMs)
+}
+function runEmojiReactions(){
+ const list=state?.reactionFeed||[],now=Date.now();
+ for(const r of list){
+   if(!r?.id||emojiReactionSeen.has(r.id))continue;
+   if(now-Number(r.ts||0)>9000){emojiReactionSeen.add(r.id);continue}
+   showEmojiReaction(r)
+ }
+}
+/* V132: Dedicated accessible market modal, because the legacy chooseActionTurn
+   mode has no clickable market items.  Original action handlers still decide
+   legality, scoring and multiplayer synchronisation. */
+function showSceneActionChooser(){
+ if(!state||ui.mode!=='turnChoice'||!jokerSpecialsEnabled()||toiletPauseActive())return; if(cloud.enabled&&!isMyActorDevice())return;
+ if(isAIActor()&&!aiActing||motionLocked()||pendingMatchGuard())return;
+ const choices=(state.market||[]).map((a,i)=>a?`<button type="button" class="scene-action-pick" onclick="Game.closeModal();Game.takeActionMarket(${i},false)">${actionHTML(a,false)}</button>`:'').join('');
+ modal(`<h3>⚡ Spezialkarte auswählen</h3><p>Wähle eine offene Karte oder ziehe eine verdeckte Aktionskarte.</p><div class="scene-action-market">${choices}</div><div class="modal-actions"><button class="primary" onclick="Game.closeModal();Game.takeActionBlind(false)">🃏 Verdeckt ziehen</button><button class="secondary" onclick="Game.closeModal()">Abbrechen</button></div>`,false);
+}
+/* V131: Szenische Bühne für die zwei optionalen Brett-Themes. */
+function scenicBoardLayoutHTML(playerViews, middleView){
+ const me=preferredViewPlayerIndex();
+ const other=state.players.map((_,i)=>i).filter(i=>i!==me);
+ const left=other.filter((_,i)=>i%2===0).map(i=>playerViews[i]).join('');
+ const right=other.filter((_,i)=>i%2===1).map(i=>playerViews[i]).join('');
+ const scoreboard=state.players.map((p,i)=>({p,i})).sort((a,b)=>(Number(a.p.total)||0)-(Number(b.p.total)||0)).map(({p,i},rank)=>`<div class="scene-rank-row ${i===me?'scene-rank-me':''}"><span>${rank+1}</span><b>${escapeHTML(p.name)}</b><span class="scene-round-score">${state.round>1||state.phase==='betweenRounds'||state.phase==='gameOver'?Number(p.lastRound)||0:'–'}</span><strong>${Number(p.total)||0}</strong></div>`).join('');
+ const canSceneAct=state.phase==='play'&&ui.mode==='turnChoice'&&!motionBusy&&!toiletPauseActive()&&(!cloud.enabled||isMyActorDevice())&&!isAIActor();
+ const canSceneDiscard=canSceneAct&&!!visualDiscardState().top&&!visualDiscardState().pending;
+ const held=ui.mode==='drawnDecision'&&!!ui.data?.card&&!motionBusy&&(!cloud.enabled||isMyActorDevice());
+ const canSceneAction=canSceneAct&&jokerSpecialsEnabled();
+ const sceneButtons=`<nav class="scene-action-buttons" aria-label="Karten-Aktionen"><button type="button" class="scene-action-draw" ${canSceneAct?'onclick="Game.drawFromDeck()"':'disabled'}><span>▣</span><b>Nachziehen</b><small>Karte ziehen</small></button><button type="button" class="scene-action-discard" ${held?'onclick="Game.discardDrawn()"':canSceneDiscard?'onclick="Game.drawFromDiscard()"':'disabled'}><span>▢</span><b>${held?'Ablegen':'Ablage'}</b><small>${held?'Karte weglegen':'Karte nehmen'}</small></button><button type="button" class="scene-action-special" ${canSceneAction?'onclick="Game.showSceneActionChooser()"':'disabled'}><span>ϟ</span><b>Aktion</b><small>Spezialkarte nutzen</small></button></nav>`;
+ return `<div class="table-area skyjo-scenic-stage scenic-count-${state.players.length}">
+   <div class="scene-side scene-left"><div class="scene-room-pill"><strong>🟢 ${cloud.enabled?'Online-Raum':'Lokale Partie'}</strong>${cloud.enabled?escapeHTML(cloud.room):'Gemeinsam am Spieltisch'}</div>${left}</div>
+   <main class="scene-core">
+     <div class="scene-titleplate" aria-label="Runde ${state.round}"><span class="scene-logo">SKYJO <em>ACTION</em></span><span class="scene-round">Runde ${state.round} <small>· Ziel ${state.target} Punkte</small></span></div>
+     <div class="scene-pile-stage">${middleView}</div>
+     ${sceneButtons}
+     <div class="scene-self"><div class="scene-personal-medallion" aria-label="Dein Punktestand"><div class="scene-personal-medallion-art" aria-hidden="true"></div><b class="scene-personal-name">${escapeHTML(state.players[me].name)}</b><div class="scene-personal-round"><strong>${state.round>1?Number(state.players[me].lastRound)||0:'–'}</strong><span>Rundenpunkte</span></div><div class="scene-personal-total"><span>Gesamtpunkte</span><strong>${Number(state.players[me].total)||0}</strong></div></div>${playerViews[me]}</div>
+   </main>
+   <div class="scene-side scene-right">${right}</div>
+   <aside class="scene-aside"><section class="scene-rank-panel"><h3>🏆 Zwischenstände</h3><div class="scene-rank-label"><span>#</span><span>Spieler</span><span>Runde</span><span>Gesamt</span></div>${scoreboard}</section>
+   <section class="scene-round-panel"><h3>▤ Aktuelle Runde</h3><p><i>●</i> ${escapeHTML(current().name)} ist am Zug</p><p><i>■</i> Nachziehstapel: ${state.playDeck.length}</p><p><i>●</i> Runde ${state.round}</p><p><i>✦</i> ${state.streetModeEnabled===true?'Straßen & Gleiche':'Gleiche Zahlen'}</p><p><i>◎</i> Spielende ab ${state.target} Punkten</p><button type="button" class="scene-joker-action" onclick="Game.showJokerCountManager()">★ Joker: ${state.jokerCount??8} · ${jokerSpecialsEnabled()?'AN':'AUS'} · ändern</button></section>
+   </aside><div class="scene-daily-quote"><b>💡 Spruch des Tages</b>„Ein fröhliches Herz macht das Leben heller – in jedem Spiel und an jedem Tag.“</div>
+ </div>`
+}
+

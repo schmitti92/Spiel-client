@@ -1,0 +1,144 @@
+function aiExpectedUnknownVariance(aiPi,extraKnown=[]){const d=aiUnseenDistribution(aiPi,extraKnown),mean=aiExpectedUnknown(aiPi,extraKnown);let n=0,s=0;for(const x of d){n+=x.count;s+=x.count*Math.pow(aiCandidateValue(x.card)-mean,2)}return n?s/n:12}
+function aiSlotExpectedValue(aiPi,c,extraKnown=[]){if(!c)return 0;if(c.faceUp)return cardPoints(c);const k=aiHiddenKnowledgeCard(aiPi,c);if(k)return aiCandidateValue(k);return aiExpectedUnknown(aiPi,extraKnown)}
+function aiLineIndexesFor(idx){return [[Math.floor(idx/4)*4,Math.floor(idx/4)*4+1,Math.floor(idx/4)*4+2,Math.floor(idx/4)*4+3],[idx%4,idx%4+4,idx%4+8]]}
+function aiLineScoreCards(cards){if(cards.length<3)return 0;const visible=cards.filter(Boolean).filter(c=>c.faceUp);const nums=visible.filter(c=>c.type==='number');const stars=visible.filter(c=>c.type==='star').length;const freq={};for(const c of nums)freq[c.value]=(freq[c.value]||0)+1;const best=Math.max(0,...Object.values(freq));let score=0;if(visible.length===cards.length){const values=Object.keys(freq);if(values.length===0&&stars===cards.length)score+=cards.length===4?15:10;else if(values.length===1&&best+stars===cards.length){const sum=cards.reduce((a,c)=>a+Math.max(0,cardPoints(c)),0);score+=6+sum*.9+cards.length*.5}}else{if(best+stars>=2)score+=(best+stars-1)*1.8;if(stars&&best)score+=.8}return score}
+function aiLinePotential(pi,idx,candidate){const p=state.players[pi];if(!candidate||idx<0||idx>11)return 0;let score=0;for(const ids of aiLineIndexesFor(idx)){const cards=ids.map(i=>i===idx?{...candidate,faceUp:true}:p.grid[i]).filter(Boolean);score+=aiLineScoreCards(cards)}return score}
+function aiSameCardValue(a,b){if(!a||!b)return false;if(a.type!==b.type)return false;return a.type==='star'||Number(a.value)===Number(b.value)}
+function aiLineDelta(pi,idx,old,candidate){const after=aiLinePotential(pi,idx,candidate);if(!old?.faceUp)return after;const before=aiLinePotential(pi,idx,old);return after-before}
+function aiExpectedBoardScore(pi,observerPi=pi){const p=state.players[pi];let s=0;for(const c of [...p.grid,...p.extras])if(c)s+=aiSlotExpectedValue(observerPi,c);if(jokerSpecialsEnabled())s+=(p.actions?.length||0)*10;return s}
+function aiEndgameProfile(pi){const own=state.players[pi],ownHidden=totalHidden(own),ownScore=aiExpectedBoardScore(pi,pi);let bestOpp=Infinity,minOppHidden=99;for(let i=0;i<state.players.length;i++){if(i===pi)continue;bestOpp=Math.min(bestOpp,aiExpectedBoardScore(i,pi));minOppHidden=Math.min(minOppHidden,totalHidden(state.players[i]))}const ahead=ownScore<=bestOpp-2;const behind=ownScore>=bestOpp+5;return {ownHidden,ownScore,bestOpp,minOppHidden,ahead,behind,pressure:minOppHidden<=2}}
+
+/* === V103: faire zweizügige KI-Vorausschau ===
+   Verdeckte Karten werden nur als Wahrscheinlichkeitsverteilung modelliert.
+   Nur Karten aus der regulären Erleuchtungs-Kenntnis dürfen gesondert einfließen.
+   Die Zukunftsrechnung verändert weder Spielstand noch Kartendeck. */
+const AI103_LINES=[...Array.from({length:3},(_,r)=>[r*4,r*4+1,r*4+2,r*4+3]),...Array.from({length:4},(_,c)=>[c,c+4,c+8])];
+function ai103Context(pi){
+ const d=aiUnseenDistribution(pi),n=d.reduce((a,x)=>a+x.count,0)||1;
+ const mean=d.reduce((a,x)=>a+x.count*aiCandidateValue(x.card),0)/n;
+ const probabilities={};for(const x of d)probabilities[aiCardKey(x.card)]=x.count/n;
+ const end=aiEndgameProfile(pi);
+ const p=state.players[pi],known=p.aiKnowledge||{};
+ function wrap(c){if(!c)return null;if(c.faceUp)return {type:c.type,value:c.value,faceUp:true};
+   const k=known[c.id];return {type:'hidden',faceUp:false,known:k&&typeof k==='object'?{type:k.type,value:k.value}:null};}
+ return {pi,distribution:d,probabilities,mean,end,
+   grid:p.grid.map(wrap),extras:p.extras.map(wrap),
+   futureWeight:aiDifficulty(pi)==='hard'?.58:.34};
+}
+function ai103Number(c,ctx){
+ if(!c)return 0;if(c.faceUp)return c.type==='star'?0:Number(c.value||0);
+ if(c.known)return aiCandidateValue(c.known);
+ return ctx.mean;
+}
+function ai103StarValue(grid,idx,ctx){
+ const nums=[];
+ for(const ids of aiLineIndexesFor(idx))for(const k of ids){if(k===idx)continue;const c=grid[k];if(!c)continue;
+   if(c.faceUp&&c.type==='number')nums.push(Number(c.value)||0);
+   else if(!c.faceUp&&c.known?.type==='number')nums.push(Number(c.known.value)||0);
+ }
+ /* Unbekannte Nachbarn können den Endwert noch senken; keine tatsächlichen
+    verdeckten Kartenwerte lesen. */
+ const unknownNeighbors=aiLineIndexesFor(idx).flat().some(k=>k!==idx&&grid[k]&&!grid[k].faceUp&&!grid[k].known);
+ if(unknownNeighbors)nums.push(Math.min(2,ctx.mean));
+ return nums.length?Math.min(...nums):0;
+}
+function ai103LineBonus(grid,ctx){
+ let total=0;
+ for(const ids of AI103_LINES){const cards=ids.map(i=>grid[i]).filter(Boolean);if(cards.length<3)continue;
+   const visibles=cards.filter(c=>c.faceUp),hidden=cards.length-visibles.length;
+   const nums=visibles.filter(c=>c.type==='number');
+   const stars=visibles.filter(c=>c.type==='star').length;
+   const distinct=[...new Set(nums.map(c=>Number(c.value)))];
+   if(!distinct.length){if(stars===cards.length)total+=cards.length===4?14:10;else if(stars>=2)total+=stars*1.1;continue;}
+   let best=0;
+   for(const value of distinct){
+     const matches=nums.filter(c=>Number(c.value)===value).length;
+     const miss=hidden+(nums.length-matches);
+     if(miss>2||matches+stars<2)continue;
+     const p=Math.min(.96,(ctx.probabilities['n:'+value]||0)+(ctx.probabilities.star||0));
+     const chance=miss===0?1:miss===1?1-Math.pow(1-p,3):Math.min(.55,3*p*p);
+     /* Entfernen spart insbesondere hohe positive Zahlen. Niedrige und negative
+        Paare behalten gegebenenfalls einen strategischen Joker-/Punktewert. */
+     const save=Math.max(0,value)*(matches+miss)+stars*.7;
+     const reward=(save*.7+(matches+stars)*1.1)*chance*(miss===0?1:miss===1?.95:.55);
+     if(reward>best)best=reward;
+   }
+   total+=best;
+ }
+ return Math.min(43,total);
+}
+function ai103BoardFitness(grid,extras,ctx){
+ let points=0,hidden=0,stars=0;
+ for(let i=0;i<grid.length;i++){const c=grid[i];if(!c)continue;
+   if(!c.faceUp)hidden++;
+   if(c.faceUp&&c.type==='star'){stars++;points+=ai103StarValue(grid,i,ctx)}
+   else points+=ai103Number(c,ctx);
+ }
+ for(const c of extras){if(!c)continue;if(!c.faceUp)hidden++;points+=ai103Number(c,ctx)}
+ /* Bonus für vollständig reine Jokerlinien ist Teil der Endwertung. */
+ let pure=0;
+ for(const ids of AI103_LINES){
+   const line=ids.map(i=>grid[i]).filter(Boolean);
+   if(line.length>=3&&line.every(c=>c.faceUp&&c.type==='star'))pure=Math.max(pure,line.length===4?15:10);
+ }
+ const e=ctx.end,closingRisk=e.ownHidden<=3&&!e.ahead&&e.bestOpp<e.ownScore-2;
+ const pressure=e.pressure&&e.ahead?1.20:e.pressure?.65:.28;
+ const hurry=closingRisk?-.60:pressure;
+ return -points+ai103LineBonus(grid,ctx)*.79+pure*.78-hidden*hurry;
+}
+function ai103NextDrawGain(grid,extras,ctx){
+ const base=ai103BoardFitness(grid,extras,ctx),dist=ctx.distribution;
+ let expectation=0,weight=0;
+ for(const item of dist){
+   const next={type:item.card.type,value:item.card.value,faceUp:true};
+   let best=0;
+   for(let i=0;i<grid.length;i++){
+     if(!grid[i])continue;
+     const modified=grid.slice();modified[i]=next;
+     const delta=ai103BoardFitness(modified,extras,ctx)-base;
+     if(delta>best)best=delta;
+   }
+   for(let i=0;i<extras.length;i++){
+     if(!extras[i])continue;
+     const modified=extras.slice();modified[i]=next;
+     const delta=ai103BoardFitness(grid,modified,ctx)-base;
+     if(delta>best)best=delta;
+   }
+   /* Statt willkürlich gezogener Zukunftskarten die exakte öffentliche
+      Kartentypverteilung verwenden. */
+   expectation+=item.count*best;weight+=item.count;
+ }
+ return weight?expectation/weight:0;
+}
+function ai103TargetPlan(ctx,zone,idx,candidate){
+ const card={type:candidate.type,value:candidate.value,faceUp:true};
+ const grid=zone==='grid'?ctx.grid.slice():ctx.grid;
+ const extras=zone==='extra'?ctx.extras.slice():ctx.extras;
+ if(zone==='grid')grid[idx]=card;else extras[idx]=card;
+ return {grid,extras};
+}
+function ai103EndPenalty(ctx,candidate,target){
+ const end=ctx.end;
+ if(end.ownHidden!==1||!target?.hidden)return 0;
+ const old=target.zone==='grid'?ctx.grid[target.idx]:ctx.extras[target.idx];
+ const outgoing=ai103Number(old,ctx);
+ const projected=end.ownScore-outgoing+aiCandidateValue(candidate);
+ const gap=projected-end.bestOpp;
+ /* Der Rundenauslöser erhält bei nicht alleiniger Bestwertung doppelte
+    positive Rundenpunkte. Bei Rückstand nicht blind die letzte Karte aufdecken. */
+ if(gap>=-.1&&projected>0)return Math.min(30,10+Math.max(0,gap)*1.5);
+ return gap<-3?-2:1.5;
+}
+function ai103RankTargets(pi,candidate,targets){
+ if(!targets.length||aiDifficulty(pi)==='easy')return targets;
+ const ctx=ai103Context(pi);
+ const current=ai103BoardFitness(ctx.grid,ctx.extras,ctx);
+ const ranked=[];
+ /* Jeder mögliche Tauschplatz wird betrachtet: selbst ein heute schwacher
+    Tausch kann eine wertvolle Spalte für den nächsten Zug vorbereiten. */
+ for(const t of targets){
+   const after=ai103TargetPlan(ctx,t.zone,t.idx,candidate);
+   const immediate=ai103BoardFitness(after.grid,after.extras,ctx)-current;
+   const future=ai103NextDrawGain(after.grid,after.extras,ctx);
+   const defence=aiDifficulty(pi)==='hard'&&t.old?.faceUp?aiOpponentDiscardThreat(pi,t.old).score*.16:0;
+   const urgency=ctx.end.ahead&&ctx.end.pressure&&t.hidden?1.1:ctx.end.behind&&ctx.end.ownHidden<=2&&t.hidden?-.75:0;

@@ -1,0 +1,93 @@
+if(motionBusy&&state?.phase==='play'&&ui.mode==='turnChoice'){const latest=state?.motionFeed?.[state.motionFeed.length-1];if(!latest||Number(latest.actor)!==Number(state.currentPlayer))unlockMotion(false)}const app=$('#app');let content;if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.doc.game)content=lobbyView();else if(!state)content=setupView();else content=gameView();app.innerHTML=`<div class="topbar"><div class="brand"><div class="brandmark"></div><div class="brand-copy"><h1>SKYJO <span style="color:var(--accent)">ACTION</span></h1><div class="brand-subline"><small>Klassisches Spielfeld</small><span class="edition-chip">ROYAL TABLE</span></div></div></div><div class="top-actions">${cloudBadgeHTML()}${state?'<button class="iconbtn focus-btn" onclick="Game.focusMyBoard()" title="Zu meinem Feld">🎯</button>':''}<button class="iconbtn utility-btn" onclick="Game.refreshPage()" title="Seite komplett aktualisieren"><span class="utility-ico">🔄</span><b>Aktualisieren</b></button><button class="iconbtn utility-btn" onclick="Game.backToLobby()" title="Zurück zur Start-Lobby"><span class="utility-ico">🏠</span><b>Lobby</b></button><button id="soundBtn" class="iconbtn sound-btn" onclick="Game.toggleSound()" title="Sound">${uiPrefs.sound?'🔊':'🔇'}</button><button id="fullscreenBtn" class="iconbtn fs-btn" onclick="Game.toggleFullscreen()" title="Vollbild">⛶</button><button class="iconbtn" onclick="Game.showDisplaySettings()" title="Darstellung">⚙</button><button class="iconbtn" onclick="Game.showRules()" title="Regeln">📖</button>${state?'<button class="iconbtn" onclick="Game.showLog()" title="Spielverlauf">🧾</button><button class="iconbtn" onclick="Game.restart()" title="Neu starten">↻</button>':''}</div></div>${state?'<div class="skyjo-hub-strip"><button type="button" class="skyjo-hub-link" onclick="Game.toGameHub()" title="Zu allen vier Spielen">🏠 Zur Spielauswahl</button></div>':''}${content}`;restoreViewportLock(viewportLock);if(!state&&!isRoomDoc(cloud.doc))setTimeout(()=>{updateNames();toggleCloudFields();toggleJokerSpecialUI();renderHostBoardSelection();syncBoardTheme()},0);syncBodyMode();if(state){save();runWatchFx();runEmojiReactions();syncGameJoke();syncBibleVerse();syncTableAnnouncementMount();maybeStartRoundClose();maybeStartScoreSequence();if((state.phase==='betweenRounds'||state.phase==='gameOver')&&state.lastRoundSummary)setTimeout(maybeShowRoundSummary,80);setTimeout(resumeTransientFlow,70);setTimeout(syncGameAnnouncements,35);scheduleAIIfNeeded()}}
+function cancelActionChoice(){ui={mode:'turnChoice',data:{},selected:[]};render()}
+function escapeHTML(s){return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
+
+// Sicherheitsnetz: Browser-Tab-Wechsel oder unterbrochene Animationen dürfen das Spiel nie blockieren.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&motionBusy&&!motionQueueBusy&&motionBusyUntil&&Date.now()>motionBusyUntil)unlockMotion(true)});
+window.addEventListener('pageshow',()=>{if(motionBusy&&!motionQueueBusy)unlockMotion(true)});
+window.Game={render,updateNames,startFromSetup,startAIFromSetup,resumeLocalGame,selectCard,drawFromDeck,drawFromDiscard,keepDrawn,discardDrawn,takeActionMarket,takeActionBlind,chooseActionTurn,selectActionCard,confirmPlayAction,confirmDiscardAction,finishOwnSwap,draw3Pick,draw3None,showEnlightenment,finishEnlightenment,reactivate,beginOtherSwapSelection,finishOtherSwap,thiefPick,chooseMatch,skipOptionalMatches,closeModal,showRules,showLog,restart,nextRound,returnFinishedGameToRoomLobby,cancelActionChoice,loadCloudRoom,resetOnlineClient,generateCloudRoom,toggleCloudFields,createOnlineRoom,joinOnlineRoom,startOnlineGame,leaveOnlineRoom,refreshPage,backToLobby,toGameHub,toggleFullscreen,toggleSound,toggleHaptic,toggleCinematic,toggleAutoFocus,togglePerformance,focusMyBoard,showDisplaySettings,showJokerCountManager,addJokersToGame,adjustJokersInGame,setMotionLevel,resolveBoardMatch,continueMatchReady,maybeShowMatchPrompt,maybeShowRoundSummary,openRoyalRoundSummary,openRoyalFinaleSummary,showRoundOverview,setRoundSummaryFocus,showFinaleDetails,toggleJokerSpecialUI,toggleStreetModeUI,selectSetupMode,sendEmojiReaction,pauseForToilet,resumeToiletPause,tellRandomJoke,showRandomBibleVerse,showBoardMenu,choosePersonalBoardTheme,pickHostBoardTheme,setHostBoardPolicy,showSceneActionChooser};
+
+window.addEventListener('spielprofil-change',()=>{syncBoardTheme();if(state)render();else renderHostBoardSelection()});
+/* Firebase-Favoriten kommen über spielprofil-change aus dem aktuellen Konto. */
+window.addEventListener('load',syncBoardTheme);
+window.addEventListener('pageshow',e=>{
+ if(!e.persisted)return;
+ try{
+   closeModal();
+   document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())
+ }catch(_e){}
+ roundSummarySeen='';scoreSequenceSeen='';
+ if(cloud.enabled&&cloud.room){
+   state=null;ui={mode:'none',data:{},selected:[]};render();restoreOnlineRoom()
+ }else if(state?.phase==='gameOver'){
+   state=null;ui={mode:'none',data:{},selected:[]};render()
+ }
+});
+window.addEventListener('beforeunload',()=>{try{if(state)save();flushLocalSaveNow()}catch(_e){}});
+document.addEventListener('fullscreenchange',syncFullscreenState);
+document.addEventListener('webkitfullscreenchange',syncFullscreenState);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(isFullscreen()||pseudoFullscreen))requestWakeLock()});
+window.addEventListener('resize',()=>{syncChromeButtons();positionTableAnnouncementZone()},{passive:true});
+let tableMessageScrollFrame=0;
+window.addEventListener('scroll',()=>{
+ if(!currentTableAnnouncement||tableMessageScrollFrame)return;
+ tableMessageScrollFrame=requestAnimationFrame(()=>{tableMessageScrollFrame=0;positionTableAnnouncementZone()})
+},{passive:true});
+document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;const k=String(e.key||'').toLowerCase();if(k==='f'){e.preventDefault();toggleFullscreen();return}if(k==='s'){e.preventDefault();showDisplaySettings();return}if(k==='m'&&state){e.preventDefault();focusMyBoard();return}if(k==='l'&&state){e.preventDefault();showLog();return}if(!state||!isMyActorDevice())return;if(k==='d'&&ui.mode==='turnChoice'){e.preventDefault();drawFromDeck()}else if(k==='a'&&ui.mode==='turnChoice'){e.preventDefault();drawFromDiscard()}});
+
+cloudConfigLoad();
+let skipResume=false;try{skipResume=sessionStorage.getItem(SKIP_RESUME_KEY)==='1'}catch(_e){}
+
+let saved=!cloud.enabled&&!skipResume&&!SKYJO_NEW_ENTRY?load():null;
+/* Abgeschlossene lokale Partien sind Historie, kein fortsetzbarer Spielstand.
+   Sonst kann die Siegerliste beim nächsten Öffnen sofort wieder erscheinen. */
+if(saved?.phase==='gameOver'){
+  try{localStorage.removeItem(SAVE_KEY)}catch(_e){}
+  saved=null;
+  state=null;
+  ui={mode:'none',data:{},selected:[]};
+  roundSummarySeen='';
+  scoreSequenceSeen=''
+}
+if(saved){state=saved;ui=restorePlayUIFromState();}
+
+try{
+  closeModal();
+  document.querySelectorAll('.score-sequence-overlay,.finale-confetti,.game-fx,.fx-spark,.game-announcement,.joke-popup,.bible-popup').forEach(el=>el.remove())
+}catch(_e){}
+
+render();
+if(SKYJO_IS_HUB){
+ let loading=false,connectedUid=null;
+ const connect=async()=>{
+  if(loading)return;
+  const profile=window.SpielOnline?.state?.();
+  const uid=profile?.user?.uid;
+  if(!uid){connectedUid=null;stopCloudRoomRuntime();cloud.enabled=false;cloud.doc=null;state=null;cloud.lastError='Bitte melde dich mit deinem Online-Profil an.';render();return}
+  if(connectedUid===uid&&cloud.enabled&&cloud.room===SKYJO_HUB_ROOM&&cloud.doc)return;
+  loading=true;
+  try{
+   const token=await skyjoHubToken();
+   const response=await fetch(CLOUD_BASE+'/api/hub/rooms/'+encodeURIComponent(SKYJO_HUB_CODE)+'/skyjo-bootstrap',{
+    method:'POST',cache:'no-store',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify({matchId:SKYJO_HUB_MATCH})
+   });
+   const result=await response.json();
+   if(!response.ok||!result?.ok||result.matchId!==SKYJO_HUB_MATCH||result.gameCode!==SKYJO_HUB_ROOM||result.seatId!=='hub_'+uid){
+    throw Error(result?.error||'Die SKYJO-Raumzuordnung konnte nicht bestätigt werden.');
+   }
+   if(window.SpielOnline?.state?.()?.user?.uid!==uid)return;
+   cloud.deviceId=result.seatId;
+   cloud.myName=profile.profile?.name||profile.profile?.spielername||'Spieler';
+   cloud.enabled=true;
+   if(cloud.room!==SKYJO_HUB_ROOM)switchCloudRoomContext(SKYJO_HUB_ROOM);
+   cloudConfigSave();
+   await restoreOnlineRoom();
+   if(cloud.doc&&myPlayerIndex()>=0){connectedUid=uid;cloud.lastError='';}
+   else{connectedUid=null;cloud.lastError='Spielerplatz konnte nicht geladen werden. Bitte erneut verbinden.';render();}
+  }catch(error){connectedUid=null;cloud.lastError=error?.message||'Raumverbindung fehlgeschlagen';render();}
+  finally{loading=false}
+ };
+ window.addEventListener('spielonline-change',connect);setTimeout(connect,0);
+}else if(cloud.enabled&&cloud.room&&!SKYJO_NEW_ENTRY){restoreOnlineRoom()}
+})();

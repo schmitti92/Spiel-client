@@ -1,0 +1,127 @@
+       if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · ${si+1} von ${allSteps.length} Schritten`;
+       scrollRoyalCountToRow(row);
+       const previous=running;running+=v;
+       if(counter)counter.textContent=scoreFmt(running);
+       updateRoyalScoreTable(root,sp.index,running,(Number(sp.beforeTotal)||0)+running);
+       if(equation)equation.textContent=step.kind==='removed'?'Abgeräumte Karten: 0 zusätzliche Punkte':`${scoreFmt(previous)} ${v<0?'−':'+'} ${Math.abs(v)} = ${scoreFmt(running)}`;
+       playFxSound(v<0?'star':v>0?'draw':'turn');
+       if(v<0)haptic(5);
+       await sleepMs(stage==='hidden'?440:510);
+       row?.classList.remove('counting-now');card?.classList.remove('counting-now','sky-score-flipping');
+     }
+     if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+     if(sp.final!==sp.raw){
+       const line=root.querySelector('.royal-doubling-line');
+       if(line){line.classList.add('show');line.textContent=`Rundenbeender: ${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`}
+       if(headline)headline.textContent='Rundenbeender-Regel: Punkte werden verdoppelt';
+       await sleepMs(1100);
+       if(!isRoyalCountingCurrent(seq)||!root.isConnected)return;
+       running=Number(sp.final);
+       if(counter)counter.textContent=scoreFmt(running);
+       updateRoyalScoreTable(root,sp.index,running,(Number(sp.beforeTotal)||0)+running);
+       if(equation)equation.textContent=`${scoreFmt(sp.raw)} × 2 = ${scoreFmt(sp.final)}`;
+       playFxSound('action');
+     }else if(running!==Number(sp.raw)){
+       running=Number(sp.raw)||0;
+       if(counter)counter.textContent=scoreFmt(running);
+       updateRoyalScoreTable(root,sp.index,running,(Number(sp.beforeTotal)||0)+running);
+       if(equation)equation.textContent=`Rundenwert: ${scoreFmt(running)}`;
+     }
+     updateRoyalScoreTable(root,sp.index,sp.final,(Number(sp.beforeTotal)||0)+Number(sp.final),{complete:true});
+     if(headline)headline.textContent=`${sp.name}: ${scoreFmt(sp.final)} Rundenpunkte`;
+     if(progress)progress.textContent=`Spieler ${pi+1} von ${seq.players.length} · vollständig gezählt`;
+     root.querySelectorAll(`.sky-score-mini-points[data-score-player-index="${sp.index}"]`).forEach(el=>el.textContent=scoreFmt(sp.final));
+     await sleepMs(1050)
+   }
+   reachedEnd=true;
+   if(!isRoyalCountingCurrent(seq))return;
+   const canCommit=!cloud.enabled||isHostDevice()||seq.ownerDevice===cloud.deviceId;
+   if(canCommit&&state?.scoreSequence?.id===seq.id)commitScoreSequence(seq)
+ }catch(e){console.error('[skyjo v123 score reveal]',e)}finally{
+   if(scoreSequencePlayback===playback)scoreSequencePlayback=null;
+   if(!reachedEnd||!state||Number(state.round)!==Number(seq.round))return;
+   const actual=state.lastRoundSummary?.id===seq.id?state.lastRoundSummary:null;
+   if(actual){roundSummarySeen=actual.id;roundSummaryFocus=null;if(actual.ended)openRoyalFinaleSummary();else openRoyalRoundSummary()}
+   else if(state.phase==='scoringSequence'){
+     const text=document.querySelector('#modal .royal-count-headline');if(text)text.textContent='Alle Spieler gezählt – warte auf Synchronisierung …';
+     const progress=document.querySelector('#modal .royal-count-progress');if(progress)progress.textContent='Auszählung abgeschlossen';
+   }
+ }
+}
+function commitScoreSequence(seq){seq.players.forEach(sp=>{const p=state.players[sp.index];p.lastRound=sp.final;p.total+=sp.final});const ended=state.players.some(p=>p.total>=state.target);state.gameOver=ended;state.phase=ended?'gameOver':'betweenRounds';state.lastRoundSummary={id:seq.id,round:seq.round,ended,nextStarterIndex:state.roundEnder,roundEnderIndex:state.roundEnder,players:seq.players.map(sp=>({index:sp.index,name:sp.name,beforeTotal:sp.beforeTotal,raw:sp.raw,round:sp.final,total:state.players[sp.index].total,items:clone(sp.items||[]),gridSnapshot:clone(sp.gridSnapshot||[]),openingGrid:clone(sp.openingGrid||sp.gridSnapshot||[]),openingExtras:clone(sp.openingExtras||[])}))};state.scoreSequence=null;save();render();const minTotal=Math.min(...state.players.map(p=>p.total)),winners=state.players.filter(p=>p.total===minTotal);visualFx(ended?'win':'action',ended?(winners.length===1?`${winners[0].name} gewinnt!`:`Unentschieden: ${winners.map(p=>p.name).join(' & ')}`):'Runde beendet',ended?'🏆':'📊',ended?18:8);if(ended)finaleBurst();maybeShowRoundSummary()}
+
+function summaryItemVisual(item,compact=false){
+ if(item.kind==='card'&&item.card)return `<div class="royal-mini-card ${item.jokerResolved?'joker':''}">${cardHTML({...item.card,faceUp:true},true,false)}${item.jokerResolved?`<span class="royal-joker-badge">→ ${scoreFmt(item.jokerValue)}</span>`:''}</div>`;
+ if(item.kind==='action'){
+   const a=ACTIONS[item.actionType]||{icon:'⚡',name:item.label||'Aktion'};
+   return `<div class="royal-mini-action"><span>${a.icon}</span><small>${escapeHTML(compact?'':a.name)}</small></div>`
+ }
+ return `<div class="royal-mini-bonus">⭐</div>`
+}
+function summaryItemTitle(item,idx){
+ if(item.kind==='card'){
+   if(item.card?.type==='star')return `Joker – ${scoreFmt(item.value)} Punkte`;
+   if((item.label||'').startsWith('Zusatz'))return item.label;
+   return `Karte ${idx+1} – Wert ${item.card?.value}`
+ }
+ if(item.kind==='action')return `Aktionskarte: ${ACTIONS[item.actionType]?.name||item.label||'Aktion'}`;
+ return item.label||'Bonus'
+}
+function roundSummaryFocusPlayer(summary){
+ if(Number.isInteger(roundSummaryFocus)){
+   const match=(summary.players||[]).find(p=>Number(p.index)===Number(roundSummaryFocus));
+   if(match)return match
+ }
+ if(cloud.enabled&&cloud.myName){
+   const mine=(summary.players||[]).find(p=>p.name===cloud.myName);
+   if(mine)return mine
+ }
+ const ranked=[...(summary.players||[])].sort((a,b)=>a.total-b.total||a.round-b.round);
+ return ranked[0]||summary.players?.[0]||null
+}
+
+/* V122: only one round-scoring view — the four genuine card grids are
+   projected as the image-inspired gold/blue scoreboard. */
+function royalCardGridData(p,{counting=false,finished=true}={}){
+ // During the score show this is the exact board at the moment the round ended.
+ // In finished view, present remaining cards, as after automatic clearing.
+ const original=Array.isArray(p?.openingGrid)&&counting?p.openingGrid:(Array.isArray(p?.gridSnapshot)?p.gridSnapshot:[]);
+ if(original.length>=12)return original.slice(0,12);
+ const result=Array(12).fill(null),cards=(p?.items||[]).filter(x=>x.kind==='card'&&!String(x.label||'').startsWith('Zusatz'));
+ let cursor=0;
+ for(const item of cards){
+   let idx=Number.isInteger(item.gridIndex)?item.gridIndex:cursor++;
+   if(idx>=0&&idx<12)result[idx]=item.card||null
+ }
+ return result
+}
+function royalCardTile(card,{counting=false,countIndex=-1,value=null,mini=false,hidden=false,gridIndex=-1,removed=false}={}){
+ if(!card)return `<div class="sky-score-tile vacant" aria-label="Abgeräumte Karte"><span>✦</span></div>`;
+ const v=Number(card.value)||0;
+ const typ=card.type==='star'?'joker':v<0?'negative':v===0?'zero':v===3?'red':v>=9?'green':v>=5?'yellow':'blue';
+ const face=card.type==='star'?'🃏':escapeHTML(String(card.value));
+ const counted=counting&&countIndex>=0?'pending':'';
+ const jokerValue=value!==null&&card.type==='star'?`<em class="sky-score-joker-value">${scoreFmt(value)}</em>`:'';
+ const attr=(countIndex>=0?` data-count-index="${countIndex}"`:'')+(gridIndex>=0?` data-grid-index="${gridIndex}"`:'');
+ return `<div class="sky-score-tile ${typ} ${counted} ${hidden?'sky-score-closed':''} ${removed?'sky-score-cleared':''}" ${attr} title="${hidden?'Noch verdeckt':removed?'Abgeräumte Karte':card.type==='star'?'Joker':`Kartenwert ${v}`}" aria-label="${hidden?'Verdeckte Karte':removed?'Abgeräumte Karte':`Kartenwert ${v}`}"><div class="sky-score-tile-inner"><div class="sky-score-tile-front"><span class="sky-score-card-corner">✧</span><span class="sky-score-card-face">${face}</span>${jokerValue}</div><div class="sky-score-tile-back"><span>✦</span><small>SKYJO</small></div></div></div>`
+}
+function royalGridMarkup(p,{counting=false,isActive=false,finished=false}={}){
+ const cards=royalCardGridData(p,{counting});
+ const itemById=new Map((p.items||[]).filter(x=>x.kind==='card'&&x.card?.id).map((x,i)=>[x.card.id,x]));
+ return cards.map((card,idx)=>{
+   if(!card)return royalCardTile(null);
+   const i=(p.items||[]).findIndex(x=>x.kind==='card'&&(x.gridIndex===idx||(x.gridIndex===undefined&&x.card?.id===card.id)));
+   const oldHidden=counting&&card.faceUp===false;
+   return royalCardTile(card,{counting:counting&&isActive,countIndex:isActive?i:-1,gridIndex:idx,hidden:oldHidden,value:i>=0?p.items[i]?.value:null,removed:counting&&i<0});
+ }).join('')
+}
+function royalMiniBoard(p,{counting=false,countIndex=0,pi=0,focus=null}={}){
+ if(!p)return '';
+ const current=p.index===focus?.index;
+ const finished=!counting||pi<countIndex;
+ const points=finished?p.round:(current?0:null);
+ const i=Number(p.index);
+ // Do not reveal hidden cards of a player who has not been counted yet.
+ const revealStage=counting&&!finished;
+ return `<button class="sky-score-mini ${current?'selected':''} ${counting?'readonly':''}" ${counting?'disabled':`onclick="Game.setRoundSummaryFocus(${i})"`} aria-label="${escapeHTML(p.name)} · ${points===null?'noch nicht gezählt':`${points} Rundenpunkte`}">
+ <div class="sky-score-mini-head"><span class="sky-score-rank">${i+1}</span><span class="sky-score-avatar a${i%4}">●</span><b>${escapeHTML(p.name)}</b></div>

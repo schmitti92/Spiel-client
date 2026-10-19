@@ -1,0 +1,117 @@
+       <div class="royal-podium-slot second">${makePodium(second,2,'second')}</div>
+       <div class="royal-podium-slot first"><div class="royal-winner-ribbon">SIEGER</div>${makePodium(first,1,'first')}</div>
+       <div class="royal-podium-slot third">${makePodium(third,3,'third')}</div>
+     </div>
+     ${extras?`<div class="royal-extra-board">${extras}</div>`:''}
+   </div>
+   <div class="modal-actions royal-bottom-actions royal-finale-actions">${leftBtn}${midBtn}${rightBtn}</div>
+ </div>`
+}
+function openRoyalRoundSummary(){
+ const s=state?.lastRoundSummary;
+ if(!s)return;
+ modal(buildRoyalRoundSummaryModal(s),false)
+}
+function openRoyalFinaleSummary(){
+ const s=state?.lastRoundSummary;
+ if(!s)return;
+ modal(buildRoyalFinaleModal(s),false)
+}
+function setRoundSummaryFocus(index){roundSummaryFocus=Number(index);openRoyalRoundSummary()}
+function showFinaleDetails(){openRoyalRoundSummary()}
+function maybeShowRoundSummary(force=false){
+ const s=state?.lastRoundSummary;
+ if(force)roundSummarySeen='';
+ if(!s||s.id===roundSummarySeen)return;
+ if(scoreSequencePlayback?.id===s.id)return;
+ roundSummarySeen=s.id;
+ if(s.ended)openRoyalFinaleSummary();
+ else openRoyalRoundSummary()
+}
+async function nextRound(){
+ if(cloud.enabled&&!isHostDevice()){toast('Nur der Host startet die nächste Runde.');return}
+ if(!state||state.phase!=='betweenRounds'){toast('Die nächste Runde kann gerade nicht gestartet werden.');return}
+ closeModal();
+ const starter=Number.isInteger(state.roundEnder)?state.roundEnder:0;
+ state.startPlayer=starter;
+ state.round++;
+ log(`${state.players[starter].name} hat die vorige Runde beendet und beginnt Runde ${state.round}.`);
+ beginRound();
+
+ if(!cloud.enabled)return;
+
+ const desiredGame=clone(state);
+ const desiredRound=Number(desiredGame.round||0);
+ toast(`☁ Runde ${desiredRound} wird für alle Spieler gestartet …`);
+
+ // Erst den normalen, bereits geplanten Save fertig werden lassen.
+ await waitForCloudIdle(5000);
+
+ // Danach serverseitig prüfen, ob exakt die neue Runde angekommen ist.
+ let remote=await fetchCloudRoom(cloud.room,false);
+ const remoteRound=Number(remote?.state?.game?.round||0);
+ const remotePhase=remote?.state?.game?.phase||'';
+ if(remote?.found&&isRoomDoc(remote.state)&&remoteRound===desiredRound&&remotePhase==='initialReveal'){
+   if(Number(remote.rev||0)>Number(cloud.rev||0))applyCloudDoc(remote.state,remote.rev||0);
+   toast(`☁ Runde ${desiredRound} läuft jetzt auf allen Geräten`);
+   return
+ }
+
+ // Falls der normale Save wegen einer Revision/Race Condition verlorenging:
+ // neuesten Raum holen und NUR den game-Teil durch die vom Host erzeugte neue Runde ersetzen.
+ if(remote?.found&&isRoomDoc(remote.state)){
+   const forced=clone(remote.state);
+   forced.game=clone(desiredGame);
+   forced.lobby.status='playing';
+   const baseRev=Number(remote.rev||0);
+   const out=await postCloudDoc(forced,baseRev);
+   if(out?.ok){
+     cloud.doc=forced;
+     cloud.rev=Number(out.rev)||baseRev;
+     cloud.lastPushedJSON=JSON.stringify(forced);
+     cloud.lastStatus='online';
+     cloud.serverOK=true;
+     state=clone(desiredGame);
+     ui=restorePlayUIFromState();
+     try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(_e){}
+     render();
+     toast(`☁ Runde ${desiredRound} wurde synchronisiert`);
+     return
+   }
+   if(out?.conflict){
+     const fresh=await fetchCloudRoom(cloud.room,false);
+     if(fresh?.found&&isRoomDoc(fresh.state)&&Number(fresh.state?.game?.round||0)===desiredRound){
+       applyCloudDoc(fresh.state,fresh.rev||0);
+       toast(`☁ Runde ${desiredRound} wurde synchronisiert`);
+       return
+     }
+   }
+ }
+
+ cloud.lastStatus='error';
+ cloud.lastError=`Runde ${desiredRound} konnte nicht bestätigt werden. Bitte kurz Aktualisieren drücken.`;
+ render();
+ toast('⚠ Neue Runde konnte nicht an alle Geräte bestätigt werden')
+}
+function modal(html,closable=true){
+ const back=$('#modalBack'),m=$('#modal'),royal=html.includes('royal-round-modal')||html.includes('royal-finale-modal');
+ back.classList.toggle('royal-active',royal);m.classList.toggle('royal-host',royal);
+ m.innerHTML=html+(closable?'<div class="modal-actions"><button onclick="Game.closeModal()">Schließen</button></div>':'');
+ m.scrollTop=0;back.classList.add('show');
+ if(royal&&!html.includes('royal-counting'))requestAnimationFrame(()=>animateRoyalScoring(m));
+}
+function closeModal(){const b=$('#modalBack');if(b){b.classList.remove('show','royal-active');$('#modal')?.classList.remove('royal-host')}}
+function animateRoyalScoring(root){
+ const targets=[...root.querySelectorAll('[data-royal-counter]')];
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ if(!targets.length||reduced)return;
+ const starts=targets.map(el=>({el,target:Number(el.dataset.royalCounter),label:el.textContent})).filter(x=>Number.isFinite(x.target));
+ starts.forEach(({el})=>{el.textContent='0'});
+ const duration=950,start=performance.now();
+ function step(now){
+  const progress=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-progress,3);
+  for(const {el,target,label} of starts){if(!el.isConnected)return;el.textContent=progress===1?label:String(Math.round(target*ease))}
+  if(progress<1)requestAnimationFrame(step)
+ }
+ requestAnimationFrame(step)
+} 

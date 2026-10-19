@@ -1,0 +1,139 @@
+ {ref:'1. Korinther 10,31',text:'Ihr esset nun oder trinket oder was ihr tut, so tut es alles zu Gottes Ehre.'},
+ {ref:'1. Korinther 13,4',text:'Die Liebe ist langmütig und freundlich.'},
+ {ref:'1. Korinther 13,7',text:'Sie verträgt alles, sie glaubt alles, sie hofft alles, sie duldet alles.'},
+ {ref:'1. Korinther 16,14',text:'Alle eure Dinge lasset in der Liebe geschehen!'},
+ {ref:'2. Korinther 5,7',text:'Denn wir wandeln im Glauben, und nicht im Schauen.'},
+ {ref:'2. Korinther 12,9',text:'Laß dir an meiner Gnade genügen; denn meine Kraft ist in den Schwachen mächtig.'},
+ {ref:'Galater 5,22',text:'Die Frucht aber des Geistes ist Liebe, Freude, Friede, Geduld, Freundlichkeit.'},
+ {ref:'Galater 6,9',text:'Lasset uns aber Gutes tun und nicht müde werden.'},
+ {ref:'Epheser 4,2',text:'Mit aller Demut und Sanftmut, mit Geduld, und vertraget einer den andern in der Liebe.'},
+ {ref:'Epheser 4,32',text:'Seid aber untereinander freundlich, herzlich und vergebet einer dem andern.'},
+ {ref:'Epheser 6,10',text:'Zuletzt, meine Brüder, seid stark in dem HERRN und in der Macht seiner Stärke.'},
+ {ref:'Philipper 2,3',text:'Nichts tut durch Zank oder eitle Ehre; sondern durch Demut achte einer den andern höher denn sich selbst.'},
+ {ref:'Philipper 4,4',text:'Freuet euch in dem HERRN allewege! Und abermals sage ich: Freuet euch!'},
+ {ref:'Philipper 4,6',text:'Sorget nichts! sondern in allen Dingen lasset eure Bitten im Gebet und Flehen mit Danksagung vor Gott kund werden.'},
+ {ref:'Kolosser 3,13',text:'Vertraget einer den andern und vergebet euch untereinander.'},
+ {ref:'Kolosser 3,15',text:'Der Friede Gottes regiere in euren Herzen.'},
+ {ref:'1. Thessalonicher 5,16',text:'Seid allezeit fröhlich.'},
+ {ref:'1. Thessalonicher 5,17',text:'Betet ohne Unterlaß.'},
+ {ref:'1. Thessalonicher 5,18',text:'Seid dankbar in allen Dingen.'},
+ {ref:'Hebräer 10,24',text:'Lasset uns untereinander unser selbst wahrnehmen mit Reizen zur Liebe und guten Werken.'},
+ {ref:'Hebräer 11,1',text:'Es ist aber der Glaube eine gewisse Zuversicht des, das man hofft.'},
+ {ref:'Hebräer 12,1',text:'Lasset uns laufen durch Geduld in dem Kampf, der uns verordnet ist.'},
+ {ref:'Jakobus 1,19',text:'Ein jeglicher Mensch sei schnell, zu hören, langsam aber, zu reden, und langsam zum Zorn.'},
+ {ref:'Jakobus 1,22',text:'Seid aber Täter des Worts und nicht Hörer allein.'},
+ {ref:'Jakobus 4,10',text:'Demütiget euch vor Gott, so wird er euch erhöhen.'},
+ {ref:'1. Petrus 4,8',text:'Vor allen Dingen aber habt untereinander eine inbrünstige Liebe.'},
+ {ref:'1. Petrus 5,7',text:'Alle eure Sorge werfet auf ihn; denn er sorgt für euch.'},
+ {ref:'1. Johannes 4,7',text:'Ihr Lieben, lasset uns untereinander liebhaben; denn die Liebe ist von Gott.'},
+ {ref:'1. Johannes 4,19',text:'Lasset uns ihn lieben; denn er hat uns zuerst geliebt.'}
+];
+GAME_BIBLE_VERSES.push(
+ {ref:'Psalm 16,11',text:'Du tust mir kund den Weg zum Leben.'},
+ {ref:'Psalm 18,2',text:'Herzlich lieb habe ich dich, HERR, meine Stärke.'},
+ {ref:'Psalm 19,15',text:'Lass dir wohlgefallen die Rede meines Mundes und das Gespräch meines Herzens vor dir, HERR.'},
+ {ref:'Psalm 28,7',text:'Der HERR ist meine Stärke und mein Schild.'},
+ {ref:'Psalm 31,25',text:'Seid getrost und unverzagt alle, die ihr des HERRN harret.'},
+ {ref:'Psalm 32,8',text:'Ich will dich unterweisen und dir den Weg zeigen, den du gehen sollst.'},
+ {ref:'Psalm 34,9',text:'Schmecket und sehet, wie freundlich der HERR ist.'},
+ {ref:'Psalm 37,4',text:'Habe deine Lust am HERRN; der wird dir geben, was dein Herz wünschet.'},
+ {ref:'Psalm 61,3',text:'Führe mich auf einen hohen Felsen.'},
+ {ref:'Psalm 62,2',text:'Meine Seele ist stille zu Gott, der mir hilft.'},
+ {ref:'Psalm 63,4',text:'Deine Gnade ist besser als Leben.'},
+ {ref:'Psalm 73,28',text:'Aber das ist meine Freude, daß ich mich zu Gott halte.'},
+ {ref:'Psalm 86,11',text:'Weise mir, HERR, deinen Weg, daß ich wandle in deiner Wahrheit.'},
+ {ref:'Psalm 91,11',text:'Denn er hat seinen Engeln befohlen über dir, daß sie dich behüten auf allen deinen Wegen.'},
+ {ref:'Psalm 103,2',text:'Lobe den HERRN, meine Seele, und vergiß nicht, was er dir Gutes getan hat.'},
+ {ref:'Psalm 121,2',text:'Meine Hilfe kommt vom HERRN, der Himmel und Erde gemacht hat.'},
+ {ref:'Sprüche 17,17',text:'Ein Freund liebt allezeit.'},
+ {ref:'Sprüche 18,10',text:'Der Name des HERRN ist ein festes Schloß.'},
+ {ref:'Jesaja 26,3',text:'Du erhältst stets Frieden nach gewisser Zusage; denn man verläßt sich auf dich.'},
+ {ref:'Jesaja 30,15',text:'Durch Stillesein und Hoffen würdet ihr stark sein.'},
+ {ref:'Klagelieder 3,22-23',text:'Die Güte des HERRN ist\'s, daß wir nicht gar aus sind; seine Barmherzigkeit hat noch kein Ende, sondern sie ist alle Morgen neu.'},
+ {ref:'Micha 6,8',text:'Es ist dir gesagt, Mensch, was gut ist: Gottes Wort halten und Liebe üben und demütig sein vor deinem Gott.'},
+ {ref:'Matthäus 28,20',text:'Siehe, ich bin bei euch alle Tage bis an der Welt Ende.'},
+ {ref:'Lukas 1,37',text:'Bei Gott ist kein Ding unmöglich.'},
+ {ref:'Johannes 10,10',text:'Ich bin gekommen, daß sie das Leben und volle Genüge haben sollen.'},
+ {ref:'Johannes 14,27',text:'Den Frieden lasse ich euch, meinen Frieden gebe ich euch.'},
+ {ref:'Römer 15,13',text:'Der Gott der Hoffnung erfülle euch mit aller Freude und Frieden im Glauben.'},
+ {ref:'2. Timotheus 1,7',text:'Gott hat uns nicht gegeben den Geist der Furcht, sondern der Kraft und der Liebe und der Zucht.'},
+ {ref:'Hebräer 13,8',text:'Jesus Christus gestern und heute und derselbe auch in Ewigkeit.'},
+ {ref:'Offenbarung 3,20',text:'Siehe, ich stehe vor der Tür und klopfe an.'}
+);
+
+let biblePopupEl=null;
+let biblePopupTimer=null;
+let lastBibleVerseSeen='';
+
+function clearBiblePopup(){
+ if(biblePopupTimer){clearTimeout(biblePopupTimer);biblePopupTimer=null}
+ if(biblePopupEl){try{biblePopupEl.remove()}catch(_e){}biblePopupEl=null}
+}
+
+function showBibleVersePopup(entry,remainingMs=TABLE_MESSAGE_MS){
+ if(!entry?.text)return;
+ clearBiblePopup();
+ showTableAnnouncement({kind:'bible',icon:'📖',title:'BIBELVERS',text:'„'+entry.text+'“',ref:entry.ref||'',by:entry.by||''},remainingMs)
+}
+
+function syncBibleVerse(){
+ const v=state?.bibleVerse;
+ if(!v?.id||v.id===lastBibleVerseSeen)return;
+ const age=Date.now()-Number(v.ts||0);
+ if(age<0||age>TABLE_MESSAGE_MS){lastBibleVerseSeen=v.id;return}
+ lastBibleVerseSeen=v.id;
+ showBibleVersePopup(v,TABLE_MESSAGE_MS-age)
+}
+
+function showRandomBibleVerse(){
+ if(!state)return;
+ if(toiletPauseActive()){toast('🚽 Erst die Toilettenpause beenden.');return}
+ let pool=GAME_BIBLE_VERSES;
+ const previous=state.bibleVerse?.ref||'';
+ if(pool.length>1)pool=pool.filter(v=>v.ref!==previous);
+ const entry=pool[Math.floor(Math.random()*pool.length)]||GAME_BIBLE_VERSES[0];
+ state.bibleVerse={id:uid(),ref:entry.ref,text:entry.text,ts:Date.now(),by:toiletPauseActor().name};
+ save();
+ syncBibleVerse();
+ toast('📖 Bibelvers')
+}
+
+function bibleSideButtonHTML(){
+ if(!state||!['initialReveal','play'].includes(state.phase)||toiletPauseActive())return '';
+ return `<button type="button" class="bible-side-btn" onclick="Game.showRandomBibleVerse()" title="Passenden Bibelvers anzeigen" aria-label="Passenden Bibelvers anzeigen"><span class="bible-side-icon">📖</span><span class="bible-side-label">BIBEL</span></button>`
+}
+
+const HEINZ_QUOTES=[
+ 'Ei, jetzt mal ganz langsam – die Welt läuft net fort.',
+ 'Also ehrlich, so ebbes muss man sich erst mal leisten können.',
+ 'Do guckschte, gell? Genau so isses nämlich.',
+ 'Ich sach dir eins: normal is des heut alles nimmer.',
+ 'Mach nur, aber nachher net wundern, wenn’s kracht.',
+ 'Also des hätt ich dir gleich sagen können.',
+ 'Wenn man’s gscheit macht, spart man sich den Ärger hintendran.',
+ 'Manche Leit brauche für alles zwei Anläufe und drei Erklärungen.',
+ 'Jetzt hör doch emol uff so rumzudibbele.',
+ 'Das is wieder typisch – groß anfangen und dann nix dahinter.',
+ 'Ei jo, irgendwer muss hier ja noch den Überblick behalten.',
+ 'So kann das doch kein Mensch vernünftig planen.',
+ 'Erst macht jeder, was er will, und hinterher fragt man mich.',
+ 'Man muss net alles gut finden, nur weil’s neu aussieht.',
+ 'Ganz ruhig – am End stellt sich raus, es war halb so wild.',
+ 'Wenn ich des net selbst gesehen hätt, ich würd’s net glauben.',
+ 'Man kann’s kompliziert machen – oder man hört direkt auf mich.',
+ 'Jetzt sei doch net so hibbelig, eins nach dem annern.',
+ 'Da brauchste dich wirklich net drüber zu freuen.',
+ 'Also ich will ja nix sagen – aber recht hab ich trotzdem.',
+ 'Ei, warum einfach, wenn’s auch umständlich geht?',
+ 'So, jetzt machen mer das erst mal ordentlich und dann gugge mer weiter.',
+ 'Do fehlt doch vorne und hinten die Vernunft.',
+ 'Wenn jeder ein bissje nachdenkt, wär schon viel geholfen.',
+ 'Ich hab ja nix dagegen – aber so geht’s halt net.',
+ 'Des hab ich kommen sehen, noch bevor’s angefangen hat.',
+ 'Jetzt net nervös werden, davon wird’s auch net besser.',
+ 'Manche Sache erledige sich von selbst, wenn mer net dauernd dran rumfummelt.',
+ 'Ei jo, des is genau die Sorte Idee, die hinterher keiner gehabt haben will.',
+ 'Am End war’s wieder ganz einfach – nur vorher wollt’s keiner glauben.',
+ 'Jetzt mach emol halblang, wir sinn doch net auf der Flucht.',
+ 'Do wird wieder diskutiert, bis keiner mehr weiß, um was es eigentlich ging.',
+ 'Ei jo, Hauptsach jeder hat was gesagt.',

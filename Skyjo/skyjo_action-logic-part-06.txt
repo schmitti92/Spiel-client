@@ -1,0 +1,115 @@
+function playWatchAnimation(w){if(!w||uiPrefs.cinematic===false)return;const src=w.srcId,dst=w.dstId;if(w.type==='draw-deck'||w.type==='take-discard'||w.type==='drawn-discard'||w.type==='action-take'||w.type==='action-play'||w.type==='meteor'||w.type==='reveal')animateFlight(src,dst,w);else if(w.type==='swap'){animateFlight(src,dst,w);if(w.oldCard){setTimeout(()=>animateFlight(w.swapOutId||dst,w.discardId||'play-discard-pile',{card:w.oldCard}),60)}}pulseTarget(dst||`player-${w.actor}`)}
+function runWatchFx(){runMotionQueue()}
+function actionBlindStackHTML(canDirect){const click=canDirect?'onclick="Game.takeActionBlind(false)" role="button" tabindex="0"':'';const n=state?.actionDeck?.length??0;return `<div id="action-deck-pile" class="action-blind-hit ${canDirect?'enabled':''}" ${click}><div class="action-deck-back"><span class="deck-count-badge">${n}</span><span class="bolt">⚡</span><b>Verdeckt</b><small>${canDirect?'ziehen':'Aktionsstapel'}</small></div></div>`}
+
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function log(msg){if(!state)return; state.log.unshift(msg);state.log=state.log.slice(0,50);save();}
+function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');}
+function normalizeCloudRoom(v){return String(v||'').trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,20)}
+function randomCloudRoom(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<5;i++)out+=a[Math.floor(Math.random()*a.length)];return out}
+const DEVICE_KEY='skyjo_action_device_v2';
+function getDeviceId(){let x='';try{x=localStorage.getItem(DEVICE_KEY)||''}catch(_e){}if(!x){x='d_'+uid();try{localStorage.setItem(DEVICE_KEY,x)}catch(_e){}}return x}
+cloud.deviceId=SKYJO_IS_HUB?'':getDeviceId();cloud.doc=null;cloud.role='';cloud.myName='';cloud.lastError='';cloud.serverOK=null;
+function identityKey(room){return `skyjo_identity_${normalizeCloudRoom(room)}`}
+function saveIdentity(){if(!cloud.room)return;try{localStorage.setItem(identityKey(cloud.room),JSON.stringify({id:cloud.deviceId,name:cloud.myName||''}))}catch(_e){}}
+function loadIdentity(room){try{const x=JSON.parse(localStorage.getItem(identityKey(room))||'null');if(x?.id===cloud.deviceId)return x}catch(_e){}return null}
+function cloudConfigSave(){try{localStorage.setItem(CLOUD_CFG_KEY,JSON.stringify({enabled:!!cloud.enabled,room:cloud.room||'',name:cloud.myName||''}))}catch(_e){}}
+function cloudConfigLoad(){try{const x=JSON.parse(localStorage.getItem(CLOUD_CFG_KEY)||'null');if(x){cloud.enabled=!!x.enabled;cloud.room=normalizeCloudRoom(x.room);cloud.myName=String(x.name||'')}}catch(_e){}const q=new URLSearchParams(location.search);const qr=normalizeCloudRoom(q.get('room'));if(qr){cloud.enabled=true;cloud.room=qr}if(SKYJO_REQUESTED_MODE==='local'){cloud.enabled=false;cloud.room='';}else if(SKYJO_REQUESTED_MODE==='online'){cloud.enabled=true;}}
+function migrateState(x){if(!x||x.version!==1)return null;if(!Array.isArray(x.motionFeed))x.motionFeed=[];if(!Array.isArray(x.reactionFeed))x.reactionFeed=[];if(!Array.isArray(x.removedCards))x.removedCards=[];if(!x.dismissedMatches||typeof x.dismissedMatches!=='object'||Array.isArray(x.dismissedMatches))x.dismissedMatches={};if(!Array.isArray(x.setupOrder))x.setupOrder=[];if(!Number.isInteger(x.setupOrderPos))x.setupOrderPos=0;if(!Number.isInteger(x.jokerCount))x.jokerCount=8;if(typeof x.jokerEnabled!=='boolean')x.jokerEnabled=false;if(typeof x.streetModeEnabled!=='boolean')x.streetModeEnabled=false;if(!x.roundJokerValues||typeof x.roundJokerValues!=='object'||Array.isArray(x.roundJokerValues))x.roundJokerValues={};if(x.turnFlow&&typeof x.turnFlow!=='object')x.turnFlow=null;if(x.roundClose&&typeof x.roundClose!=='object')x.roundClose=null;if(x.toiletPause&&typeof x.toiletPause!=='object')x.toiletPause=null;if(x.toiletPause&&!x.toiletPause.active)x.toiletPause=null;if(x.funJoke&&typeof x.funJoke!=='object')x.funJoke=null;for(const p of (x.players||[])){if(typeof p.isAI!=='boolean')p.isAI=false;if(!['easy','normal','hard'].includes(p.aiDifficulty))p.aiDifficulty='normal';if(!p.aiKnowledge||typeof p.aiKnowledge!=='object')p.aiKnowledge={};if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0}/* V15.16: fertige Reihen bleiben grundsätzlich liegen; alte Ja/Nein-Entscheidungen werden verworfen. */if(x.pendingMatch)x.pendingMatch=null;
+/* V15.19: alte Spielstände hatten in der Schlussrunde nur den direkt nächsten Spieler.
+   Falls gerade noch eine Schlussrunde läuft, wird die restliche Reihenfolge anhand
+   von Rundenbeender + aktuellem Spieler automatisch repariert. */
+if(!Array.isArray(x.finalTurnQueue))x.finalTurnQueue=[];
+if(x.phase==='play'&&Number.isInteger(x.roundEnder)&&x.roundEnder>=0&&Array.isArray(x.players)&&x.players.length>1&&Number.isInteger(x.currentPlayer)&&x.currentPlayer!==x.roundEnder){
+ const repaired=[];
+ for(let step=1;step<x.players.length;step++){
+   const pi=(x.currentPlayer+step)%x.players.length;
+   if(pi===x.roundEnder)break;
+   repaired.push(pi)
+ }
+ x.finalTurnQueue=repaired
+}
+return x}
+function recoverInterruptedMatchDecision(){return false}
+const PERSIST_FLOW_MODES=new Set(['turnChoice','drawnDecision','drawnSwap','discardSwap','flipOwn','chooseActionTurn','ownSwapSelect','draw3Choose','draw3Target','enlightSelect','reactivate','otherSwapSetup','otherSwapSelect','thiefSelect','meteorSelect','starChoice']);
+function captureTurnFlow(){
+ if(!state)return;
+ if(state.phase==='play'){
+   const mode=PERSIST_FLOW_MODES.has(ui.mode)?ui.mode:'turnChoice';
+   state.turnFlow={turnNo:Number(state.turnNo)||0,currentPlayer:Number(state.currentPlayer)||0,mode,data:clone(ui.data||{}),selected:clone(ui.selected||[])};
+ }else if(state.phase==='initialReveal'){
+   state.turnFlow={turnNo:Number(state.turnNo)||0,currentPlayer:Number(state.currentPlayer)||0,mode:'setupReveal',data:{},selected:[]};
+ }else state.turnFlow=null;
+}
+function validTurnFlow(){
+ const f=state?.turnFlow;if(!f||typeof f!=='object'||!PERSIST_FLOW_MODES.has(f.mode))return null;
+ if(Number(f.turnNo)!==Number(state.turnNo)||Number(f.currentPlayer)!==Number(state.currentPlayer))return null;
+ return f;
+}
+function restorePlayUIFromState(){
+ if(!state)return {mode:'none',data:{},selected:[]};
+ if(state.pendingMatch)state.pendingMatch=null;
+ if(state.phase==='play'){
+   const f=validTurnFlow();
+   if(f)return {mode:f.mode,data:clone(f.data||{}),selected:clone(f.selected||[])};
+   return {mode:'turnChoice',data:{},selected:[]};
+ }
+ if(state.phase==='initialReveal')return {mode:'setupReveal',data:{},selected:[]};
+ if(state.phase==='roundReveal')return {mode:'roundReveal',data:{stage:state.roundClose?.stage||'reveal'},selected:[]};
+ if(state.phase==='scoring'||state.phase==='scoringSequence')return {mode:'scoreSequence',data:{},selected:[]};
+ if(state.phase==='betweenRounds'||state.phase==='gameOver')return {mode:'none',data:{},selected:[]};
+ return {mode:'turnChoice',data:{},selected:[]};
+}
+function pendingMatchGuard(){
+ if(state?.pendingMatch){state.pendingMatch=null;save()}
+ return false;
+}
+function isModalOpen(){return !!$('#modalBack')?.classList.contains('show')}
+function flowActorIndex(){
+ if(!state)return -1;
+ if(ui.mode==='starChoice')return Number(ui.data?.owners?.[ui.data?.ownerIndex]??state.currentPlayer);
+ return actorIndex();
+}
+function canControlFlow(){
+ if(!cloud.enabled)return true;
+ const me=myPlayerIndex();return me>=0&&me===flowActorIndex();
+}
+function isRoomDoc(x){return !!(x&&x.kind==='skyjo-room-v2'&&x.version===2&&x.lobby&&Array.isArray(x.lobby.players))}
+function myPlayerIndex(){if(!cloud.enabled||!isRoomDoc(cloud.doc))return -1;return cloud.doc.lobby.players.findIndex(p=>p.id===cloud.deviceId)}
+function preferredViewPlayerIndex(){
+ if(!state?.players?.length)return 0;
+ const me=cloud.enabled?myPlayerIndex():-1;
+ if(me>=0&&state.players[me])return me;
+ const firstHuman=state.players.findIndex(p=>!p.isAI);
+ return firstHuman>=0?firstHuman:0
+}
+function actorIndex(){if(!state)return -1;return state.phase==='initialReveal'?Number(state.setupPlayer):Number(state.currentPlayer)}
+function isMyActorDevice(){if(!cloud.enabled)return true;const me=myPlayerIndex();return me>=0&&me===actorIndex()}
+function isHostDevice(){return !!(cloud.enabled&&isRoomDoc(cloud.doc)&&cloud.doc.lobby.hostId===cloud.deviceId)}
+let localSaveTimer=null,pendingLocalStateJSON='',lastLocalStateJSON='';
+function flushLocalSaveNow(){
+ if(localSaveTimer){clearTimeout(localSaveTimer);localSaveTimer=null}
+ const raw=pendingLocalStateJSON;
+ if(!raw||raw===lastLocalStateJSON)return;
+ try{localStorage.setItem(SAVE_KEY,raw);lastLocalStateJSON=raw;pendingLocalStateJSON=''}catch(e){console.warn('[local save]',e)}
+}
+function scheduleLocalSnapshot(raw){
+ if(!raw||raw===lastLocalStateJSON)return;
+ pendingLocalStateJSON=raw;
+ if(localSaveTimer)return;
+ localSaveTimer=setTimeout(flushLocalSaveNow,80)
+}
+function save(){
+ try{
+   if(!state)return;
+   captureTurnFlow();
+   const raw=JSON.stringify(state);
+   scheduleLocalSnapshot(raw);
+   if(cloud.enabled&&isRoomDoc(cloud.doc)&&!cloud.applying){
+     /* Kein JSON-clone mehr vor jedem Render. Der bereits erzeugte Snapshot reicht. */
+     cloud.doc.game=JSON.parse(raw);
+     cloud.doc.lobby.status='playing';
+     scheduleCloudPush(JSON.stringify(cloud.doc))
+   }
+ }catch(e){console.warn('[save]',e)}
+}
