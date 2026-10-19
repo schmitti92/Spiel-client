@@ -111,3 +111,23 @@ header h1{font-weight:850;letter-spacing:.025em}
 @media(prefers-reduced-motion:reduce){
  .scene-side button,.card{transition:none!important;animation:none!important}
 }
+
+/* Reference-inspired playing cards for the two central piles. */
+#scene .piles{gap:clamp(12px,3.5vw,50px)!important;overflow:visible}
+#scene .piles .pill{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:visible!important;border-radius:10px!important;font-size:clamp(9px,1vw,13px);padding:4px 7px 3px!important;white-space:normal;text-align:center;text-shadow:0 1px 3px #000a}
+#scene .piles .pill::before{content:'';position:absolute;z-index:-1;inset:-3px;transform:translate(3px,3px);border:2px solid #d7e7f6;border-radius:9px;background:linear-gradient(135deg,#174a80,#061a35);box-shadow:0 4px 7px #0009}
+#scene #draw-deck{background:radial-gradient(circle at 50% 40%,#237bc4,#07396e 67%,#05274b)!important;border-color:#b9e5ff!important}
+#scene #draw-deck::after{content:'◆';font-size:clamp(15px,2.1vw,27px);color:#a7e7ff;line-height:1;order:-1}
+#scene #draw-discard{background:linear-gradient(145deg,#fce1e0,#ff7781)!important;color:#1c1420!important;text-shadow:none}
+#scene #draw-discard b{color:#1c1420!important;text-shadow:none;font-size:clamp(16px,2.3vw,30px)}
+#scene #draw-discard::before{background:linear-gradient(145deg,#ffdfdf,#b93b4d);border-color:#ffcbcb}
+#scene .pill:disabled{opacity:.65;filter:saturate(.6)}
+#scene .pill:focus-visible,#scene .card:focus-visible,.scene-side button:focus-visible{outline:3px solid #ffdb78!important;outline-offset:2px}
+#scene .move-choice button[aria-pressed="true"]{border-color:#f9d96b!important;background:linear-gradient(#2d5b85,#103456)!important}
+#scene .move-choice button:disabled{opacity:.45}
+#scene .board h2{flex:0 0 auto}
+#scene .board .card:disabled{cursor:default}
+@media(max-height:720px) and (orientation:landscape){
+ #scene .piles .pill::after{font-size:15px!important}
+ #scene .piles .pill{font-size:10px!important}
+}
