@@ -42,15 +42,4 @@ body:has(.three-player-layout) .table-area.three-player-layout .own-seat .player
   transform:none!important;
  }
 }
-/* Ensure the table decoration is visible even when the app fills the viewport. */
-body:has(.three-player-layout) #app::before{
- content:"";
- position:fixed;
- inset:0;
- z-index:0;
- pointer-events:none;
- background:url("assets/royal_table_decor.svg") center / cover no-repeat;
- opacity:.95;
-}
-body:has(.three-player-layout) #app > *{position:relative;z-index:1}
-@media (prefers-reduced-motion:reduce){body:has(.three-player-layout) #app::before{animation:none!important}}
+
