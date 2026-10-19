@@ -1,4 +1,4 @@
-name: SKYJO fullscreen staging verification v3
+name: SKYJO fullscreen staging verification v4
 on:
   push:
     branches: [skyjo-immersive-fullscreen-staging-20261019]
@@ -17,5 +17,6 @@ jobs:
           node tests/skyjo-fullscreen.test.cjs
           node tests/skyjo-host-layout.test.cjs
           node tests/skyjo-host-preview.test.cjs
+          node tests/skyjo-host-invariants.test.cjs
           python3 tests/check_skyjo_modular.py
           for t in tests/skyjo-v*.test.cjs; do node "$t"; done
