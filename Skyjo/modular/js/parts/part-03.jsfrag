@@ -1,0 +1,435 @@
+function setupContinue(){
+ if(state.setupRevealed<2){save();render();return}
+ if(!Array.isArray(state.setupOrder)||state.setupOrder.length!==state.players.length){
+   state.setupOrder=Array.from({length:state.players.length},(_,i)=>i);state.setupOrderPos=Math.max(0,state.setupOrder.indexOf(state.setupPlayer))
+ }
+ state.setupOrderPos++;state.setupRevealed=0;
+ if(state.setupOrderPos<state.setupOrder.length){
+   state.setupPlayer=state.setupOrder[state.setupOrderPos];
+   toast(`${state.players[state.setupPlayer].name}: Decke 2 Karten auf`);
+   save();render();scheduleAIIfNeeded();return
+ }
+ const sums=state.players.map(p=>p.grid.filter(c=>c&&c.faceUp).reduce((s,c)=>s+cardPoints(c),0));
+ const max=Math.max(...sums),ties=sums.map((v,i)=>v===max?i:-1).filter(i=>i>=0);
+ if(state.round===1){
+   state.startPlayer=ties[Math.floor(Math.random()*ties.length)];
+   state.currentPlayer=state.startPlayer;
+   log(`${current().name} beginnt mit ${max} Startpunkten.`)
+ }else{
+   state.currentPlayer=Number.isInteger(state.startPlayer)?state.startPlayer:0;
+   log(`${current().name} beginnt die neue Runde als Beender der vorherigen Runde.`)
+ }
+ state.phase='play';startTurn()
+}
+function startTurn(){state.pendingMatch=null;state.turnNo++;current().ownTurn++;if(motionBusy&&!motionQueueBusy)unlockMotion(false);setWatch('turn',{actor:state.currentPlayer,title:`${current().name} ist am Zug`,typeLabel:'ZUG',text:jokerSpecialsEnabled()?'zieht, nimmt die Ablage oder spielt eine Aktionskarte':'zieht eine Spielkarte oder nimmt die Ablage'});ui={mode:'turnChoice',data:{},selected:[]};state.turnFlow={turnNo:state.turnNo,currentPlayer:state.currentPlayer,mode:'turnChoice',data:{},selected:[]};save();render();toast(`${current().name} ist am Zug`);visualFx('turn',`${current().name} ist am Zug`,'🎯',6);if(uiPrefs.autoFocus&&(!cloud.enabled||isMyActorDevice()))setTimeout(focusMyBoard,180);scheduleAIIfNeeded()}
+function actionAvailable(a,p){return p.ownTurn>=a.availableOwnTurn}
+function drawFromDiscard(){if(pendingMatchGuard())return;if(isAIActor()&&!aiActing){toast('🤖 Der Computer ist gerade am Zug');return}if(discardArrivalPending()){toast('🂠 Die Karte landet gerade noch auf der Ablage …');return}if(motionLocked())return;if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}if(ui.mode!=='turnChoice')return;/* Nur playDiscard ist ziehbar. state.removedCards enthält gesperrte Reihen-Karten und wird absichtlich nie angerührt. */const c=state.playDiscard.pop();if(!c)return;setWatch('take-discard',{card:clone(c),srcId:'play-discard-pile',dstId:'table-hand-zone-card',title:'nimmt die oberste Ablagekarte',typeLabel:'ABLAGE',text:cardShortText(c)});ui={mode:'discardSwap',data:{card:c},selected:[]};save();render();toast('Wähle eine eigene Karte zum Tauschen')}
+function drawFromDeck(){if(pendingMatchGuard())return;if(isAIActor()&&!aiActing){toast('🤖 Der Computer ist gerade am Zug');return}if(motionLocked())return;if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}if(ui.mode!=='turnChoice')return;const c=takePlay();if(!c){toast('Keine Spielkarte verfügbar');return}setWatch('draw-deck',{card:clone(c),srcId:'play-deck-pile',dstId:'table-hand-zone-card',title:'zieht vom Nachziehstapel',typeLabel:'ZIEHEN',text:cardShortText(c)});ui={mode:'drawnDecision',data:{card:c},selected:[]};save();haptic(10);showDrawnDecision(c)}
+function showDrawnDecision(c){render();toast('🎴 Gezogene Karte liegt oben am Spieltisch – dein Feld bleibt sichtbar')}
+function keepDrawn(){if(motionLocked())return;if(ui.mode!=='drawnDecision'||!ui.data?.card)return;if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}setWatch('decision-keep',{card:clone(ui.data.card),srcId:'table-hand-zone-card',dstId:`player-${state.currentPlayer}`,title:'behält die gezogene Karte',typeLabel:'ENTSCHEIDUNG',text:'tauscht jetzt eine eigene Karte'});ui={mode:'drawnSwap',data:{card:ui.data.card},selected:[]};save();haptic(12);render();toast('Klicke eine eigene Karte zum Ersetzen an')}
+function discardDrawn(){if(isAIActor()&&!aiActing){toast('🤖 Der Computer ist gerade am Zug');return}if(motionLocked())return;if(ui.mode!=='drawnDecision'||!ui.data?.card)return;if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}const c=ui.data.card;setWatch('drawn-discard',{card:clone(c),srcId:'table-hand-zone-card',dstId:'play-discard-pile',title:'legt die gezogene Karte ab',typeLabel:'ABLEGEN',text:'deckt jetzt eine eigene Karte auf'});c.faceUp=true;state.playDiscard.push(c);ui={mode:'flipOwn',data:{cont:'finishTurn'},selected:[]};save();haptic([8,25,8]);render();toast('Decke jetzt eine verdeckte eigene Karte auf')}
+function swapInDrawn(pi,zone,idx,newCard,source,remaining){const p=state.players[pi],arr=zone==='grid'?p.grid:p.extras;const old=arr[idx],oldWasFaceUp=!!old.faceUp;arr[idx]=newCard;newCard.faceUp=true;old.faceUp=true;setWatch('swap',{actor:pi,card:clone(newCard),oldCard:clone(old),oldWasFaceUp,srcId:'table-hand-zone-card',dstId:`cell-${pi}-${zone}-${idx}`,swapOutId:`cell-${pi}-${zone}-${idx}`,discardId:'play-discard-pile',title:'tauscht eine Karte',typeLabel:'TAUSCH',text:`${oldWasFaceUp?'Tausch':'Aufdecken → Tausch'} · ${cardShortText(newCard)} ersetzt ${cardShortText(old)}`});state.playDiscard.push(old);log(`${p.name} tauscht eine Karte.`);let star=0;if(jokerSpecialsEnabled()&&newCard.type==='star'&&(source==='discard'||source==='deck'||source==='draw3'))star=1;if(remaining&&remaining.length){for(const x of remaining){x.faceUp=true;state.playDiscard.push(x)}}if(star){queueStar(star,'finishTurn');return}afterMutation('finishTurn')}
+function takeActionMarket(i,fromStar=false){if(!fromStar&&pendingMatchGuard())return;if(!fromStar&&cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}if(!fromStar&&ui.mode!=='turnChoice')return;if(fromStar&&cloud.enabled&&myPlayerIndex()!==Number(ui.data?.owners?.[ui.data?.ownerIndex]))return;if(isAIActor()&&!aiActing&&!fromStar){toast('🤖 Der Computer ist gerade am Zug');return}if(motionLocked())return;if(!jokerSpecialsEnabled()){toast('Joker-Spezialeffekte sind ausgeschaltet');return}const a=state.market[i];if(!a)return;state.market[i]=null;refillMarket();const owner=fromStar?ui.data.owners[ui.data.ownerIndex]:state.currentPlayer;setWatch('action-take',{actor:owner,actionType:a.type,srcId:`market-${i}`,dstId:`player-${owner}`,title:`nimmt ${ACTIONS[a.type].name}`,typeLabel:'AKTIONSKARTE',text:fromStar?'durch einen Stern ausgelöst':'offen aus der Auslage'});giveAction(owner,a);visualFx('action',ACTIONS[a.type].name,ACTIONS[a.type].icon,7);log(`${state.players[owner].name} nimmt „${ACTIONS[a.type].name}“${fromStar?' durch einen Stern':''}.`);if(fromStar){starChoiceDone();}else finishTurn();}
+function takeActionBlind(fromStar=false){if(!fromStar&&pendingMatchGuard())return;if(!fromStar&&cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}if(!fromStar&&ui.mode!=='turnChoice')return;if(fromStar&&cloud.enabled&&myPlayerIndex()!==Number(ui.data?.owners?.[ui.data?.ownerIndex]))return;if(isAIActor()&&!aiActing&&!fromStar){toast('🤖 Der Computer ist gerade am Zug');return}if(motionLocked())return;if(!jokerSpecialsEnabled()){toast('Joker-Spezialeffekte sind ausgeschaltet');return}const a=takeActionDeck();if(!a){toast('Keine Aktionskarte verfügbar');if(fromStar)starChoiceDone();return}const owner=fromStar?ui.data.owners[ui.data.ownerIndex]:state.currentPlayer;setWatch('action-take',{actor:owner,actionType:a.type,srcId:'action-deck-pile',dstId:`player-${owner}`,title:`zieht ${ACTIONS[a.type].name}`,typeLabel:'AKTIONSKARTE',text:fromStar?'verdeckt durch einen Stern':'verdeckt vom Aktionsstapel'});giveAction(owner,a);visualFx('action','Verdeckte Aktionskarte','⚡',6);log(`${state.players[owner].name} zieht eine verdeckte Aktionskarte${fromStar?' durch einen Stern':''}.`);if(fromStar){starChoiceDone()}else finishTurn()}
+function giveAction(pi,a){const p=state.players[pi];a.availableOwnTurn=p.ownTurn+1;p.actions.push(a);save()}
+function chooseActionTurn(){if(pendingMatchGuard())return;if(isAIActor()&&!aiActing){toast('🤖 Der Computer ist gerade am Zug');return}if(motionLocked())return;if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}if(ui.mode!=='turnChoice')return;if(!jokerSpecialsEnabled()){toast('Joker-Spezialeffekte sind ausgeschaltet');return}ui={mode:'chooseActionTurn',data:{},selected:[]};save();render()}
+function playOrDiscardAction(pi,idx){if(pi!==state.currentPlayer||ui.mode!=='chooseActionTurn')return;const p=current(),a=p.actions[idx];if(!a)return;if(!actionAvailable(a,p)){toast('Diese Aktionskarte ist noch gesperrt.');return}if(state.roundEnder!==null){toast('In der Schlussrunde dürfen Aktionskarten nicht gespielt oder abgelegt werden.');return}const aid=String(a.id||'');modal(`<h3>${ACTIONS[a.type].icon} ${ACTIONS[a.type].name}</h3><p>${ACTIONS[a.type].desc}</p><div class="modal-actions"><button class="primary" onclick="Game.confirmPlayAction(${idx},'${aid}')">Ausspielen</button><button class="secondary" onclick="Game.confirmDiscardAction(${idx},'${aid}')">Nur ablegen</button><button onclick="Game.closeModal()">Abbrechen</button></div>`)}
+function resolveActionConfirm(idx,expectedId){if(!state||ui.mode!=='chooseActionTurn'||(cloud.enabled&&!isMyActorDevice()))return null;const p=current();let pos=Number(idx);if(expectedId){const found=p.actions.findIndex(x=>String(x?.id||'')===String(expectedId));if(found>=0)pos=found;else return null}if(!Number.isInteger(pos)||pos<0||pos>=p.actions.length)return null;const a=p.actions[pos];if(!a||!actionAvailable(a,p))return null;p.actions.splice(pos,1);return a}
+function confirmDiscardAction(idx,expectedId=''){closeModal();const a=resolveActionConfirm(idx,expectedId);if(!a){toast('Aktionskarte ist nicht mehr verfügbar – Ansicht wurde aktualisiert.');render();return}setWatch('action-play',{actor:state.currentPlayer,actionType:a.type,srcId:`player-${state.currentPlayer}`,dstId:'action-deck-pile',title:`legt ${ACTIONS[a.type].name} ab`,typeLabel:'AKTION',text:'wird ungenutzt auf den Ablagestapel gelegt'});state.actionDiscard.push(a);log(`${current().name} legt „${ACTIONS[a.type].name}“ ungenutzt ab.`);finishTurn()}
+function confirmPlayAction(idx,expectedId=''){closeModal();const a=resolveActionConfirm(idx,expectedId);if(!a){toast('Aktionskarte ist nicht mehr verfügbar – Ansicht wurde aktualisiert.');render();return}playAction(a,false)}
+function playAction(a,reactivated){const t=a.type;if(t==='react'){state.heldReacts=state.heldReacts||[];state.heldReacts.push(a);}else{state.actionDiscard.push(a);}setWatch('action-play',{actor:state.currentPlayer,actionType:a.type,srcId:`player-${state.currentPlayer}`,dstId:`player-${state.currentPlayer}`,title:`spielt ${ACTIONS[a.type].name}`,typeLabel:'AKTION',text:reactivated?'durch Reaktivierung erneut ausgelöst':ACTIONS[a.type].desc});log(`${current().name} spielt „${ACTIONS[a.type].name}“.`);
+ if(t==='double'){state.extraTurns+=2;finishTurn();return}
+ if(t==='defense'){state.extraTurns+=1;finishTurn();return}
+ if(t==='ownswap'){ui={mode:'ownSwapSelect',data:{},selected:[]};render();toast('Wähle zwei eigene Karten');return}
+ if(t==='draw3'){startDraw3();return}
+ if(t==='enlight'){startEnlightenment();return}
+ if(t==='react'){startReactivation(a.id);return}
+ if(t==='swapother'){startOtherSwap();return}
+ if(t==='thief'){startThief();return}
+ if(t==='meteor'){startMeteor();return}
+ finishTurn();}
+function ownSwapOrientation(){const [a,b]=ui.selected;save();modal(`<h3>Ausrichtung nach dem Tausch</h3><p>Du darfst beide Karten nach dem Tausch offen oder verdeckt ablegen. Verdeckte Karten werden nicht vorher gezeigt.</p><div class="choice-grid"><label class="choice"><input id="oa" type="checkbox" ${getSlot(a).faceUp?'checked':''}> Karte 1 danach offen</label><label class="choice"><input id="ob" type="checkbox" ${getSlot(b).faceUp?'checked':''}> Karte 2 danach offen</label></div><div class="modal-actions"><button class="primary" onclick="Game.finishOwnSwap()">Tausch durchführen</button></div>`,false)}
+function getSlot(s){const p=state.players[s.pi];return (s.zone==='grid'?p.grid:p.extras)[s.idx]}
+function setSlot(s,c){const p=state.players[s.pi];(s.zone==='grid'?p.grid:p.extras)[s.idx]=c}
+function finishOwnSwap(){const [sa,sb]=ui.selected,ca=getSlot(sa),cb=getSlot(sb),oldA=ca.faceUp,oldB=cb.faceUp;const openA=$('#oa').checked,openB=$('#ob').checked;setWatch('action-play',{actor:state.currentPlayer,title:'tauscht zwei eigene Karten',typeLabel:'AKTION',text:'Ausrichtung wurde neu festgelegt'});setSlot(sa,cb);setSlot(sb,ca);cb.faceUp=openA;ca.faceUp=openB;closeModal();let stars=0;if(jokerSpecialsEnabled()&&cb.type==='star'&&!oldB&&openA)stars++;if(jokerSpecialsEnabled()&&ca.type==='star'&&!oldA&&openB)stars++;ui.selected=[];if(stars){queueStar(stars,'finishTurn');return}afterMutation('finishTurn')}
+function showDraw3Modal(){if(ui.mode!=='draw3Choose'||!canControlFlow()||isModalOpen())return;const cards=ui.data.cards||[];modal(`<h3>3 Karten ziehen</h3><p>Wähle höchstens eine Karte zum Behalten. Nicht gewählte Karten kommen auf den Ablagestapel.</p><div class="pile-row">${cards.map((c,i)=>`<div onclick="Game.draw3Pick(${i})">${cardHTML(c,true,true)}</div>`).join('')}</div><div class="modal-actions"><button class="secondary" onclick="Game.draw3None()">Keine behalten</button></div>`,false)}
+function startDraw3(){const cards=[takePlay(),takePlay(),takePlay()].filter(Boolean);if(!cards.length){toast('Keine Spielkarte verfügbar.');finishTurn();return}ui={mode:'draw3Choose',data:{cards},selected:[]};save();render();setTimeout(showDraw3Modal,60)}
+function draw3Pick(i){if(ui.mode!=='draw3Choose'||!Array.isArray(ui.data?.cards))return;const cards=ui.data.cards,c=cards[Number(i)];if(!c)return;const rem=cards.filter((_,j)=>j!==Number(i));closeModal();ui={mode:'draw3Target',data:{card:c,remaining:rem},selected:[]};save();render();toast('Wähle die eigene Karte, die ersetzt wird')}
+function draw3None(){if(ui.mode!=='draw3Choose'||!Array.isArray(ui.data?.cards))return;const cards=ui.data.cards;for(const c of cards){c.faceUp=true;state.playDiscard.push(c)}closeModal();ui={mode:'flipOwn',data:{cont:'finishTurn'},selected:[]};save();render();toast('Keine behalten: Decke eine eigene verdeckte Karte auf')}
+function showEnlightenmentSetupModal(){if(ui.mode!=='enlightSelect'||!canControlFlow()||isModalOpen())return;const opts=state.players.map((p,i)=>`<option value="${i}">${escapeHTML(p.name)}</option>`).join('');modal(`<h3>🔎 Erleuchtung</h3><p>Wähle einen Spieler und eine vollständige Reihe oder Spalte. Nur der aktuelle Spieler schaut.</p><div class="field"><label>Spieler</label><select id="ep">${opts}</select></div><div class="field" style="margin-top:8px"><label>Linie</label><select id="eline"><option value="r0">Reihe 1</option><option value="r1">Reihe 2</option><option value="r2">Reihe 3</option><option value="c0">Spalte 1</option><option value="c1">Spalte 2</option><option value="c2">Spalte 3</option><option value="c3">Spalte 4</option></select></div><div class="modal-actions"><button class="primary" onclick="Game.showEnlightenment()">Geheim ansehen</button></div>`,false)}
+function startEnlightenment(){ui={mode:'enlightSelect',data:{},selected:[]};save();render();setTimeout(showEnlightenmentSetupModal,60)}
+function lineIndexes(code){const n=Number(code.slice(1));if(code[0]==='r')return [n*4,n*4+1,n*4+2,n*4+3];return [n,n+4,n+8]}
+function showEnlightenment(){const pi=Number($('#ep').value),code=$('#eline').value,p=state.players[pi],idxs=lineIndexes(code);const cards=idxs.map(i=>p.grid[i]).filter(Boolean);ui.data={viewed:true,pi,code};save();modal(`<h3>Nur ${escapeHTML(current().name)} schauen</h3><p>${escapeHTML(p.name)} · ${code[0]==='r'?'Reihe':'Spalte'} ${Number(code.slice(1))+1}</p><div class="pile-row">${cards.map(c=>cardHTML(c,true,false)).join('')}</div><div class="modal-actions"><button class="primary" onclick="Game.finishEnlightenment()">Fertig</button></div>`,false)}
+function finishEnlightenment(){closeModal();finishTurn()}
+function showReactivationModal(){if(ui.mode!=='reactivate'||!canControlFlow()||isModalOpen())return;const cards=state.actionDiscard.filter(a=>a.id!==ui.data.excludeId);if(!cards.length){toast('Keine andere Aktionskarte in der Ablage.');finishTurn();return}modal(`<h3>♻️ Reaktivierung</h3><p>Wähle eine Aktionskarte aus der Ablage. Sie wird sofort gespielt.</p><div class="choice-grid">${cards.slice().reverse().map(a=>`<button class="choice" onclick="Game.reactivate('${a.id}')"><b>${ACTIONS[a.type].icon} ${ACTIONS[a.type].name}</b><small>${ACTIONS[a.type].desc}</small></button>`).join('')}</div>`,false)}
+function startReactivation(excludeId){const cards=state.actionDiscard.filter(a=>a.id!==excludeId);if(!cards.length){toast('Keine andere Aktionskarte in der Ablage.');finishTurn();return}ui={mode:'reactivate',data:{excludeId},selected:[]};save();render();setTimeout(showReactivationModal,60)}
+function reactivate(id){if(!state||ui.mode!=='reactivate'||(cloud.enabled&&!isMyActorDevice())){closeModal();render();return}const idx=state.actionDiscard.findIndex(a=>a?.id===id);if(idx<0){closeModal();toast('Diese Aktionskarte ist nicht mehr in der Ablage.');finishTurn();return}const [a]=state.actionDiscard.splice(idx,1);closeModal();if(!a){finishTurn();return}playAction(a,true)}
+function showOtherSwapSetupModal(){if(ui.mode!=='otherSwapSetup'||!canControlFlow()||isModalOpen())return;const other=(state.currentPlayer+1)%state.players.length;const optsA=state.players.map((p,i)=>`<option value="${i}" ${i===state.currentPlayer?'selected':''}>${escapeHTML(p.name)}</option>`).join('');const optsB=state.players.map((p,i)=>`<option value="${i}" ${i===other?'selected':''}>${escapeHTML(p.name)}</option>`).join('');modal(`<h3>🔁 Kartentausch Mitspieler</h3><p>Wähle zwei verschiedene Spieler. Danach jeweils eine Karte aus deren Auslage anklicken.</p><div class="choice-grid"><div class="field"><label>Spieler A</label><select id="spA">${optsA}</select></div><div class="field"><label>Spieler B</label><select id="spB">${optsB}</select></div></div><div class="modal-actions"><button class="primary" onclick="Game.beginOtherSwapSelection()">Weiter</button></div>`,false)}
+function startOtherSwap(){ui={mode:'otherSwapSetup',data:{},selected:[]};save();render();setTimeout(showOtherSwapSetupModal,60)}
+function beginOtherSwapSelection(){if(!state||ui.mode!=='otherSwapSetup'||(cloud.enabled&&!isMyActorDevice())){closeModal();render();return}const elA=$('#spA'),elB=$('#spB');if(!elA||!elB){closeModal();render();return}const a=Number(elA.value),b=Number(elB.value);if(!Number.isInteger(a)||!Number.isInteger(b)||!state.players[a]||!state.players[b]){toast('Spielerauswahl ist nicht mehr aktuell.');closeModal();render();return}if(a===b){toast('Bitte zwei verschiedene Spieler wählen.');return}if((a!==state.currentPlayer&&consumeDefense(a))||(b!==state.currentPlayer&&consumeDefense(b))){closeModal();finishTurn();return}closeModal();ui={mode:'otherSwapSelect',data:{a,b},selected:[]};save();render();toast(`Wähle je 1 Karte bei ${state.players[a].name} und ${state.players[b].name}`)}
+function handleOtherSwapSelection(pi,zone,idx){if(pi!==ui.data.a&&pi!==ui.data.b)return;const existing=ui.selected.find(s=>s.pi===pi);if(existing){ui.selected=ui.selected.filter(s=>s.pi!==pi)}ui.selected.push({pi,zone,idx});if(ui.selected.length===2&&ui.selected[0].pi!==ui.selected[1].pi){otherSwapOrientation();return}render()}
+function otherSwapOrientation(){const [a,b]=ui.selected;save();modal(`<h3>Ausrichtung nach dem Tausch</h3><p>Beide Karten dürfen am Ziel offen oder verdeckt abgelegt werden.</p><div class="choice-grid"><label class="choice"><input id="osa" type="checkbox" ${getSlot(a).faceUp?'checked':''}> Karte bei ${escapeHTML(state.players[a.pi].name)} danach offen</label><label class="choice"><input id="osb" type="checkbox" ${getSlot(b).faceUp?'checked':''}> Karte bei ${escapeHTML(state.players[b.pi].name)} danach offen</label></div><div class="modal-actions"><button class="primary" onclick="Game.finishOtherSwap()">Tauschen</button></div>`,false)}
+function finishOtherSwap(){if(!state||ui.mode!=='otherSwapSelect'||ui.selected.length!==2||(cloud.enabled&&!isMyActorDevice())){closeModal();render();return}const [sa,sb]=ui.selected,ca=getSlot(sa),cb=getSlot(sb);if(!ca||!cb){closeModal();toast('Kartenauswahl ist nicht mehr aktuell.');ui.selected=[];render();return}const oldA=!!ca.faceUp,oldB=!!cb.faceUp,openA=$('#osa')?.checked??oldA,openB=$('#osb')?.checked??oldB;setWatch('action-play',{actor:state.currentPlayer,title:'tauscht Karten zwischen Spielern',typeLabel:'AKTION',text:`${state.players[sa.pi].name} ↔ ${state.players[sb.pi].name}`});setSlot(sa,cb);setSlot(sb,ca);cb.faceUp=openA;ca.faceUp=openB;closeModal();const owners=[];if(jokerSpecialsEnabled()&&cb.type==='star'&&!oldB&&openA)owners.push(sa.pi);if(jokerSpecialsEnabled()&&ca.type==='star'&&!oldA&&openB)owners.push(sb.pi);ui.selected=[];if(owners.length){queueStarOwners(owners,'finishTurn');return}afterMutation('finishTurn')}
+function showThiefModal(){if(ui.mode!=='thiefSelect'||!canControlFlow()||isModalOpen())return;const options=[];state.players.forEach((p,pi)=>{if(pi===state.currentPlayer)return;p.actions.forEach((a,ai)=>options.push({pi,ai,a}))});if(!options.length){toast('Niemand hat eine Aktionskarte zum Stehlen.');state.extraTurns+=1;finishTurn();return}modal(`<h3>🥷 Aktionskarten-Dieb</h3><p>Wähle eine Aktionskarte eines Mitspielers. Eine Verteidigung blockt den Angriff.</p><div class="choice-grid">${options.map(o=>`<button class="choice" onclick="Game.thiefPick(${o.pi},${o.ai})"><b>${escapeHTML(state.players[o.pi].name)}</b><small>${ACTIONS[o.a.type].icon} ${ACTIONS[o.a.type].name}</small></button>`).join('')}</div>`,false)}
+function startThief(){const hasAny=state.players.some((p,pi)=>pi!==state.currentPlayer&&p.actions.length);if(!hasAny){toast('Niemand hat eine Aktionskarte zum Stehlen.');state.extraTurns+=1;finishTurn();return}ui={mode:'thiefSelect',data:{},selected:[]};save();render();setTimeout(showThiefModal,60)}
+function thiefPick(pi,ai){if(!state||ui.mode!=='thiefSelect'||(cloud.enabled&&!isMyActorDevice())){closeModal();render();return}pi=Number(pi);ai=Number(ai);const target=state.players?.[pi],a=target?.actions?.[ai];if(!target||!a||pi===state.currentPlayer){closeModal();toast('Diese Aktionskarte ist nicht mehr verfügbar.');finishTurn();return}closeModal();if(consumeDefense(pi)){state.extraTurns+=1;finishTurn();return}const fresh=target.actions?.[ai];if(!fresh||fresh.id!==a.id){toast('Die Auswahl wurde zwischenzeitlich geändert.');finishTurn();return}target.actions.splice(ai,1);setWatch('action-play',{actor:state.currentPlayer,actionType:a.type,srcId:`player-${pi}`,dstId:`player-${state.currentPlayer}`,title:`stiehlt ${ACTIONS[a.type].name}`,typeLabel:'DIEB',text:`von ${state.players[pi].name}`});a.availableOwnTurn=current().ownTurn+2;a.stolen=true;current().actions.push(a);state.extraTurns+=1;log(`${current().name} stiehlt ${state.players[pi].name} „${ACTIONS[a.type].name}“.`);finishTurn()}
+function startMeteor(){const targets=[];for(let k=1;k<state.players.length;k++){const pi=(state.currentPlayer+k)%state.players.length;if(consumeDefense(pi))continue;targets.push(pi)}if(!targets.length){finishTurn();return}ui={mode:'meteorSelect',data:{targets,target:targets[0],index:0,attacker:state.currentPlayer},selected:[]};save();render();toast(`☄️ Wähle eine Karte bei ${state.players[targets[0]].name}`)}
+function selectActionCard(pi,idx){if(motionLocked())return;if(ui.mode==='meteorSelect'&&pi===ui.data.target){meteorChoose('action',idx);return}if(ui.mode==='chooseActionTurn'&&pi===state.currentPlayer){playOrDiscardAction(pi,idx);return}}
+function meteorChoose(zone,idx){if(ui.mode!=='meteorSelect')return;const pi=Number(ui.data?.target),p=state.players?.[pi];if(!p)return;idx=Number(idx);let old=null,arr=null;if(zone==='action'){old=p.actions?.[idx]}else if(zone==='grid'||zone==='extra'){arr=zone==='grid'?p.grid:p.extras;old=arr?.[idx]}else return;if(!old){toast('Dieses Ziel ist nicht mehr verfügbar.');render();return}let replacement=takePlay();if(!replacement){toast('Keine Ersatzkarte verfügbar.');meteorNext();return}replacement.faceUp=true;if(zone==='action'){setWatch('meteor',{actor:state.currentPlayer,card:clone(replacement),srcId:'play-deck-pile',dstId:`player-${pi}`,title:`trifft ${p.name}`,typeLabel:'METEORIT',text:'entfernt eine Aktionskarte und legt eine offene Zusatzkarte aus'});p.actions.splice(idx,1);state.actionDiscard.push(old);p.extras.push(replacement);log(`☄️ Bei ${p.name} wird eine Aktionskarte entfernt; die Ersatz-Spielkarte liegt als Zusatzkarte aus.`)}else{setWatch('meteor',{actor:state.currentPlayer,card:clone(replacement),oldCard:clone(old),srcId:'play-deck-pile',dstId:`cell-${pi}-${zone}-${idx}`,title:`trifft ${p.name}`,typeLabel:'METEORIT',text:`ersetzt ${cardShortText(old)} durch ${cardShortText(replacement)}`});old.faceUp=true;state.playDiscard.push(old);arr[idx]=replacement;log(`☄️ Bei ${p.name} wird eine Spielkarte ersetzt.`)}let stars=jokerFunctionEnabled()&&replacement.type==='star'?1:0;if(stars){queueStar(1,'meteorStarReturn',pi);return}meteorNext()}
+function meteorStarReturn(){const attacker=ui.data.attacker!==undefined?ui.data.attacker:null;meteorNext(attacker)}
+function meteorNext(){const d=ui.data;d.index++;if(d.index>=d.targets.length){afterMutation('finishTurn');return}d.target=d.targets[d.index];render();toast(`☄️ Wähle eine Karte bei ${state.players[d.target].name}`)}
+function queueStar(count,continuation,owner=state.currentPlayer){queueStarOwners(Array.from({length:count},()=>owner),continuation)}
+function hasActionChoiceAvailable(){return !!(state.market?.some(Boolean)||state.actionDeck?.length||(state.actionDiscard?.length||0)>1)}
+function waitForMotionIdle(max=5000){return new Promise(resolve=>{const end=Date.now()+max;(function tick(){if((!motionBusy&&!motionQueueBusy)||Date.now()>=end){resolve();return}setTimeout(tick,70)})()})}
+function queueStarOwners(owners,continuation){const meteorData=ui.mode==='meteorSelect'?clone(ui.data):null;visualFx('star','Joker-Stern aktiviert!','⭐',14);ui={mode:'starChoice',data:{owners,ownerIndex:0,continuation,meteorData},selected:[]};save();render();setTimeout(async()=>{await waitForMotionIdle();if(ui.mode==='starChoice')showStarChoice()},80)}
+function showStarChoice(){if(ui.mode!=='starChoice')return;if(motionBusy||motionQueueBusy){setTimeout(showStarChoice,100);return}const owner=ui.data.owners[ui.data.ownerIndex];if(!hasActionChoiceAvailable()){toast('⭐ Keine Aktionskarte mehr verfügbar – Stern-Effekt verfällt.');setTimeout(starChoiceDone,220);return}if(!cloud.enabled&&isAIPlayer(owner)){closeModal();save();render();scheduleAIIfNeeded(420);return}if(cloud.enabled&&myPlayerIndex()!==owner)return;if(isModalOpen())return;modal(`<h3>⭐ Sternkarte!</h3><p>${escapeHTML(state.players[owner].name)} darf sofort eine Aktionskarte nehmen. Wähle eine offene Karte oder ziehe verdeckt.</p><div class="market">${state.market.map((a,i)=>a?`<div onclick="Game.takeActionMarket(${i},true)">${actionHTML(a,true)}</div>`:'').join('')}</div><div class="modal-actions"><button class="primary" onclick="Game.takeActionBlind(true)">🎴 Verdeckt ziehen</button></div>`,false)}
+function starChoiceDone(){if(ui.mode!=='starChoice')return;ui.data.ownerIndex++;if(ui.data.ownerIndex<ui.data.owners.length){save();render();setTimeout(showStarChoice,80);return}const cont=ui.data.continuation,meteorData=ui.data.meteorData;closeModal();if(cont==='setupContinue'){ui={mode:'setupReveal',data:{},selected:[]};save();setupContinue();return}if(cont==='meteorStarReturn'){const old=meteorData;if(old){ui={mode:'meteorSelect',data:old,selected:[]};state.currentPlayer=old.attacker;save()}meteorNext();return}afterMutation(cont||'finishTurn')}
+function afterMutation(cont){checkRoundTrigger();resolveMatches(state.currentPlayer,cont)}
+function streetModeActive(){return state?.streetModeEnabled===true}
+function resolveNumberStreet(cards){
+ /* Vollständige 3er-Spalten bzw. 4er-Reihen; Joker ersetzen je genau eine Zahl.
+    Mindestens eine echte Zahlenkarte ist nötig, damit reine Jokergruppen ihren
+    eigenen -10/-15-Bonus behalten und nicht doppelt als Straße zählen. */
+ if(!Array.isArray(cards)||![3,4].includes(cards.length))return null;
+ if(!cards.every(c=>c?.faceUp&&(c.type==='star'||(c.type==='number'&&Number.isInteger(Number(c.value))))))return null;
+ const firstNumber=cards.findIndex(c=>c.type==='number');
+ if(firstNumber<0)return null;
+ for(const step of [1,-1]){
+   const firstValue=Number(cards[firstNumber].value)-step*firstNumber;
+   const values=cards.map((_,i)=>firstValue+step*i);
+   if(!values.every(v=>Number.isInteger(v)&&v>=-2&&v<=12))continue;
+   if(cards.every((c,i)=>c.type==='star'||Number(c.value)===values[i])){
+     return {values,step,hasJoker:cards.some(c=>c.type==='star')};
+   }
+ }
+ return null;
+}
+function isNumberStreet(cards){return !!resolveNumberStreet(cards)}
+function findMatchesInPlayer(p){
+ const groups=[];
+ /* Waagerecht sind 4 Karten erlaubt oder genau 3 verbleibende Karten,
+    wenn das vierte Feld bereits durch einen vorherigen Abbau leer ist.
+    Senkrecht bleiben exakt 3 Karten erforderlich. */
+ for(let r=0;r<3;r++){
+   const row=[r*4,r*4+1,r*4+2,r*4+3];
+   const idx=row.filter(i=>p.grid[i]);
+   if(idx.length>=3)groups.push({name:`Reihe ${r+1}`,idx})
+ }
+ for(let c=0;c<4;c++){
+   const idx=[c,c+4,c+8];
+   if(idx.every(i=>p.grid[i]))groups.push({name:`Spalte ${c+1}`,idx})
+ }
+ const out=[];
+ for(const g of groups){
+   const cards=g.idx.map(i=>p.grid[i]);
+   if(cards.some(c=>!c.faceUp))continue;
+   const nums=[...new Set(cards.filter(c=>c.type==='number').map(c=>c.value))],stars=cards.filter(c=>c.type==='star').length;
+   const signature=`${g.name}:${cards.map(c=>c?.id||`${c?.type}:${c?.value}`).join('|')}`;
+   if(nums.length===1&&!(stars&&streetModeActive()&&isNumberStreet(cards)))out.push({...g,key:signature,optional:true,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`});
+   else if(nums.length===0&&stars===cards.length)out.push({...g,key:signature,optional:true,pureStars:true,label:`${g.name}: nur Joker`})
+ }
+ if(streetModeActive()){
+   /* Nur volle, bereits aufgedeckte Linien. Joker können an beliebiger
+      Position eine fehlende Zahl vertreten; auch absteigend und mehrere Joker. */
+   for(const g of groups){
+     const cards=g.idx.map(i=>p.grid[i]);
+     const street=resolveNumberStreet(cards);
+     if(!street)continue;
+     const name=`Straße ${g.name}`;
+     const numbers=cards.map((c,i)=>c.type==='star'?`★(${street.values[i]})`:String(street.values[i]));
+     out.push({...g,name,street:true,optional:true,
+       key:`street:${g.idx.join(',')}:${cards.map(c=>c.id||c.value).join('|')}`,
+       label:`${name}: ${numbers.join('–')}`});
+   }
+ }
+ return out
+}
+function findMatches(pi){return findMatchesInPlayer(state.players[pi])}
+
+let activeMatchPromptKey='';
+function dismissedMatchList(pi){if(!state.dismissedMatches||typeof state.dismissedMatches!=='object')state.dismissedMatches={};const k=String(pi);if(!Array.isArray(state.dismissedMatches[k]))state.dismissedMatches[k]=[];return state.dismissedMatches[k]}
+function isMatchDismissed(pi,m){return dismissedMatchList(pi).includes(m.key)}
+function dismissMatches(pi,matches){const list=dismissedMatchList(pi);for(const m of matches||[])if(m?.key&&!list.includes(m.key))list.push(m.key);}
+function resolveMatches(pi,cont){
+ /* V118: Reine Jokergruppen sind FESTE Einmal-Boni. Sie werden sofort
+    abgeräumt, damit ihre Joker nicht noch die Werte benachbarter
+    Zahlenkarten übernehmen und zusätzlich Minuspunkte erzeugen.
+    Andere fertige Zahlen-/Mischkombinationen bleiben manuell entfernbar. */
+ if(state?.phase==='play'){
+   let safeguard=0;
+   while(safeguard++<12){
+     const group=findMatches(pi).find(m=>m.pureStars);
+     if(!group)break;
+     removeMatch(pi,group);
+     const bonus=group.idx.length===4&&group.name.startsWith('Reihe')?-15:-10;
+     visualFx('star',`Jokergruppe abgeräumt: ${bonus} Punkte`,'⭐',9);
+   }
+ }
+ const matches=findMatches(pi);
+ /* Zahlen- und gemischte Gruppen bleiben wie bisher freiwillig. */
+ if(matches.length)dismissMatches(pi,matches);
+ state.pendingMatch=null;
+ save();
+ continueAfter(cont);
+}
+function pendingFreshMatches(){
+ if(!state||ui.mode!=='matchReady')return[];
+ const d=state.pendingMatch||ui.data||{},pi=d.pi??state.currentPlayer,keys=Array.isArray(d.matchKeys)?d.matchKeys:[];
+ return findMatches(pi).filter(m=>!isMatchDismissed(pi,m)&&(!keys.length||keys.includes(m.key)));
+}
+function maybeShowMatchPrompt(){return}
+function showMatchChoice(){
+ if(!state||ui.mode!=='matchReady')return;
+ const d=state.pendingMatch||ui.data||{},pi=d.pi??state.currentPlayer;
+ const fresh=pendingFreshMatches();
+ const key=ui.data.activeMatchKey||activeMatchPromptKey||fresh[0]?.key;
+ const m=fresh.find(x=>x.key===key)||fresh[0];
+ if(!m){
+   activeMatchPromptKey='';
+   state.pendingMatch=null;
+   continueAfter(d.cont);
+   return;
+ }
+ activeMatchPromptKey=m.key;
+ ui.data.activeMatchKey=m.key;
+ const kind=m.name.startsWith('Reihe')?'Reihe':'Spalte';
+ modal(`<div class="match-question">
+   <div class="match-question-icon">✨</div>
+   <h3>Diese Kombination kann manuell entfernt werden</h3>
+   <p><b>${escapeHTML(m.label)}</b></p>
+   <p class="note">Du musst sie nicht entfernen. Wenn du „Nein“ wählst, bleibt sie liegen und du wirst wegen genau dieser Kombination nicht noch einmal gefragt. Der Entfernen-Button bleibt trotzdem jederzeit verfügbar.</p>
+   <div class="modal-actions match-yes-no">
+     <button class="primary" onclick="Game.chooseMatch()">✓ Jetzt entfernen</button>
+     <button class="secondary" onclick="Game.skipOptionalMatches()">Schließen</button>
+   </div>
+ </div>`,false);
+}
+function chooseMatch(){
+ if(!state||ui.mode!=='matchReady')return;
+ if(motionLocked())return;
+ const d=state.pendingMatch||ui.data||{},pi=d.pi??state.currentPlayer,cont=d.cont;
+ const key=ui.data.activeMatchKey||activeMatchPromptKey;
+ const matches=findMatches(pi),idx=matches.findIndex(m=>m.key===key);
+ closeModal();activeMatchPromptKey='';
+ if(idx<0){resolveMatches(pi,cont);return}
+ resolveBoardMatch(pi,idx);
+}
+function skipOptionalMatches(){
+ if(!state||ui.mode!=='matchReady')return;
+ const d=state.pendingMatch||ui.data||{},pi=d.pi??state.currentPlayer,cont=d.cont;
+ const key=ui.data.activeMatchKey||activeMatchPromptKey||pendingFreshMatches()[0]?.key;
+ const m=findMatches(pi).find(x=>x.key===key);
+ if(m)dismissMatches(pi,[m]);
+ closeModal();activeMatchPromptKey='';
+ state.pendingMatch=null;
+ resolveMatches(pi,cont);
+}
+function resolveBoardMatch(pi,i){
+ if(isAIActor()&&!aiActing){toast('🤖 Der Computer entscheidet selbst über seine Kombination');return}
+ if(motionLocked())return;
+ if(!state||state.phase!=='play')return;
+ if(cloud.enabled&&!isMyActorDevice()){toast('Du bist gerade nicht am Zug');return}
+ if(pi!==state.currentPlayer){toast('Entfernen geht in deinem eigenen Zug');return}
+ if(!['turnChoice','matchReady'].includes(ui.mode)){toast('Beende zuerst deine aktuelle Kartenaktion');return}
+ const matches=findMatches(pi),m=matches[i];if(!m)return;
+ const wasPrompt=ui.mode==='matchReady'||!!state.pendingMatch,cont=wasPrompt?(state.pendingMatch?.cont||ui.data.cont||'finishTurn'):'stayTurn';
+ const cards=m.idx.map(idx=>state.players[pi].grid[idx]).filter(Boolean).map(clone),srcIds=m.idx.map(idx=>`cell-${pi}-grid-${idx}`);
+ setWatch('bury-row',{actor:pi,cards,srcIds,dstId:'play-discard-pile',title:`räumt ${m.name} ab`,typeLabel:'GESPERRT UNTER ABLAGE',text:`${m.label} · oberste normale Ablage bleibt ziehbar`});
+ removeMatch(pi,m);visualFx('action',`${m.name} gesperrt unter die Ablage`,'✨',8);activeMatchPromptKey='';state.pendingMatch=null;resolveMatches(pi,cont);
+}
+function continueMatchReady(){
+ if(ui.mode!=='matchReady'&&!state.pendingMatch)return;
+ skipOptionalMatches();
+}
+function removeMatch(pi,m){
+ const p=state.players[pi];
+ if(!Array.isArray(state.removedCards))state.removedCards=[];
+ if(!Number.isFinite(p.bankedStarBonus))p.bankedStarBonus=0;
+ if(m.pureStars){const bonus=(m.idx.length===4&&m.name.startsWith('Reihe'))?-15:-10;p.bankedStarBonus+=bonus;log(`${p.name} sichert ${bonus} Punkte Sternbonus durch das Abräumen.`)}
+ const buried=[];
+ for(const idx of m.idx){
+   const c=p.grid[idx];
+   if(c){
+     c.faceUp=true;
+     buried.push(c);
+     state.removedCards.push(c); /* bewusst NICHT in playDiscard: diese Karten sind gesperrt */
+     p.grid[idx]=null;
+   }
+ }
+ const drawableTop=state.playDiscard[state.playDiscard.length-1]||null;
+ log(`${p.name} räumt ${m.label} ab. ${buried.length} Karten liegen gesperrt unter der Ablage${drawableTop?`; ${cardShortText(drawableTop)} bleibt oben ziehbar`:''}.`);
+}
+function continueAfter(cont){if(cont==='finishTurn')finishTurn();else if(cont==='stayTurn'){ui={mode:'turnChoice',data:{},selected:[]};save();render()}else if(cont==='scoreNext')scoreNextPlayer();else if(cont==='meteorNext')meteorNext();else if(cont==='setupContinue')setupContinue();else finishTurn()}
+
+function buildFinalTurnQueue(enderIndex,fromIndex=enderIndex){
+ const n=state?.players?.length||0,out=[];
+ if(n<=1)return out;
+ const ender=Number(enderIndex);
+ let cur=Number(fromIndex);
+ if(!Number.isInteger(ender)||ender<0||ender>=n)return out;
+ if(!Number.isInteger(cur)||cur<0||cur>=n)cur=ender;
+ for(let step=1;step<n;step++){
+   const i=(cur+step)%n;
+   if(i===ender)break;
+   out.push(i)
+ }
+ return out
+}
+
+function checkRoundTrigger(){
+ if(state.roundEnder!==null)return;
+ for(let i=0;i<state.players.length;i++){
+   if(totalHidden(state.players[i])===0){
+     state.roundEnder=state.currentPlayer;
+     state.extraTurns=0;
+     state.finalTurnQueue=buildFinalTurnQueue(state.roundEnder,state.roundEnder);
+     const names=state.finalTurnQueue.map(pi=>state.players[pi]?.name).filter(Boolean);
+     if(names.length){
+       log(`${current().name} beendet die Runde. Alle anderen Spieler haben noch genau einen letzten Zug: ${names.join(' → ')}.`);
+       toast(`🔔 Schlussrunde! Noch je 1 Zug: ${names.join(' → ')}`);
+     }else{
+       log(`${current().name} beendet die Runde.`);
+       toast('🔔 Runde beendet.');
+     }
+     return
+   }
+ }
+}
+function finishTurn(){closeModal();if(state.heldReacts&&state.heldReacts.length){state.actionDiscard.push(...state.heldReacts);state.heldReacts=[];}checkRoundTrigger();if(state.roundEnder!==null){state.extraTurns=0;if(state.finalTurnQueue.length){state.currentPlayer=state.finalTurnQueue.shift();startTurn();return}startScoring();return}if(state.extraTurns>0){state.extraTurns--;startTurn();return}state.currentPlayer=(state.currentPlayer+1)%state.players.length;startTurn()}
+
+let roundCloseRunningId='';
+function roundCloseRevealOrder(){
+ const out=[];
+ for(let pi=0;pi<state.players.length;pi++){
+   const p=state.players[pi];
+   p.grid.forEach((c,idx)=>{if(c&&!c.faceUp)out.push({pi,zone:'grid',idx,id:c.id})});
+   p.extras.forEach((c,idx)=>{if(c&&!c.faceUp)out.push({pi,zone:'extra',idx,id:c.id})});
+ }
+ return out
+}
+function startScoring(){
+ const revealOrder=roundCloseRevealOrder();
+ // Only for the theatrical score display: original visible/hidden face states.
+ // Scores still use the authoritative post-removal state.
+ state.roundScoreOpeningBoards=state.players.map(p=>({grid:clone(p.grid),extras:clone(p.extras)})); state.roundJokerValues={};
+ state.pendingMatch=null;
+ state.turnFlow=null;
+ state.phase='roundReveal';
+ state.roundClose={id:uid(),ownerDevice:cloud.enabled?cloud.deviceId:'local',createdAt:Date.now(),updatedAt:Date.now(),stage:'reveal',revealOrder,revealIndex:0,removePi:0,removedGroups:0,removedCards:0,keptBetterGroups:0};
+ ui={mode:'roundReveal',data:{stage:'reveal'},selected:[]};
+ save();render();maybeStartRoundClose()
+}
+function canDriveRoundClose(seq){
+ if(!seq)return false;
+ if(!cloud.enabled)return true;
+ if(seq.ownerDevice===cloud.deviceId)return true;
+ return isHostDevice()&&Date.now()-Number(seq.updatedAt||seq.createdAt||0)>6500
+}
+function maybeStartRoundClose(){
+ const seq=state?.roundClose;
+ if(state?.phase!=='roundReveal'||!seq||roundCloseRunningId===seq.id||!canDriveRoundClose(seq))return;
+ roundCloseRunningId=seq.id;
+ runRoundClose(seq.id).finally(()=>{if(roundCloseRunningId===seq.id)roundCloseRunningId=''})
+}
+function roundCloseCard(ref){
+ const p=state?.players?.[ref?.pi],arr=ref?.zone==='extra'?p?.extras:p?.grid;
+ if(!arr)return null;
+ const byIndex=arr[ref.idx];
+ if(byIndex&&(!ref.id||byIndex.id===ref.id))return byIndex;
+ return arr.find(c=>c&&c.id===ref.id)||null
+}
+async function runRoundClose(seqId){
+ while(state?.phase==='roundReveal'&&state?.roundClose?.id===seqId){
+   const seq=state.roundClose;
+   seq.updatedAt=Date.now();
+   if(seq.stage==='reveal'){
+     const list=Array.isArray(seq.revealOrder)?seq.revealOrder:[];
+     if(seq.revealIndex>=list.length){state.roundJokerValues=buildRoundEndJokerValueMap();seq.stage='remove';seq.removePi=0;ui={mode:'roundReveal',data:{stage:'remove'},selected:[]};save();render();await sleepMs(650);continue}
+     const ref=list[seq.revealIndex],c=roundCloseCard(ref);
+     seq.revealIndex++;
+     if(!c||c.faceUp){save();continue}
+     // The old pre-score card-flip animation was removed on purpose.
+     // The private scoring preparation flips the underlying card data only;
+     // players will see the physical flip for the first time on the score stage.
+     c.faceUp=true;
+     ui={mode:'roundReveal',data:{stage:'reveal',pi:ref.pi,index:seq.revealIndex,total:list.length},selected:[]};
+     save();
+     await sleepMs(12);
+     continue
+   }
+   if(seq.stage==='remove'){
+     if(seq.removePi>=state.players.length){seq.stage='ready';ui={mode:'roundReveal',data:{stage:'ready'},selected:[]};save();render();await sleepMs(900);continue}
+     const pi=seq.removePi,matches=findMatches(pi);
+     if(!matches.length){seq.removePi++;save();continue}
+
+     /* Reine Jokergruppen werden auf jeden Fall abgeräumt und nur einmal
+        mit −10/−15 bewertet. Andere Kombinationen bleiben punktoptimiert. */
+     const plan=bestRoundEndRemovalPlan(pi);
+     const nextKey=plan.steps?.[0]?.key;
+     const m=nextKey?matches.find(x=>x.key===nextKey):null;
+     if(!m){
+       const p=state.players[pi],before=rawRoundScore(p),singleScores=matches.map(x=>scoreAfterSimulatedRemoval(p,x));
+       const bestAfter=singleScores.length?Math.min(...singleScores):before;
+       seq.keptBetterGroups=(seq.keptBetterGroups||0)+matches.length;
+       log(`${p.name}: ${matches.length} fertige Kombination(en) bleiben bei der Endwertung liegen, weil ${scoreFmt(before)} Punkte besser sind als Abräumen${Number.isFinite(bestAfter)?` (${scoreFmt(bestAfter)})`:''}. Reine Jokergruppen werden immer entfernt.`);
+       toast(`⭐ ${p.name}: Kombination bleibt · ${scoreFmt(before)} ist günstiger als Abräumen`);
+       seq.removePi++;
+       ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:seq.keptBetterGroups,smartKeep:true},selected:[]};
+       save();render();
+       await sleepMs(720);
+       continue
+     }
+
+     const cards=m.idx.map(idx=>state.players[pi].grid[idx]).filter(Boolean).map(clone),srcIds=m.idx.map(idx=>`cell-${pi}-grid-${idx}`);
+     state.currentPlayer=pi;
+     // No visual card removal here: this part is intentionally concealed.
+     // The scored 12-card view will mark cleared groups without counting twice.
+     removeMatch(pi,m);
+     seq.removedGroups++;
+     seq.removedCards+=cards.length;
+     ui={mode:'roundReveal',data:{stage:'remove',pi,removedGroups:seq.removedGroups,removedCards:seq.removedCards,keptBetterGroups:seq.keptBetterGroups||0},selected:[]};
+     save();render();
+     await sleepMs(65);
+     continue
+   }
+   if(seq.stage==='ready'){
+     const removedGroups=seq.removedGroups||0,removedCards=seq.removedCards||0,keptBetterGroups=seq.keptBetterGroups||0;
+     log(`Rundenabschluss: alle Karten für die spätere Auszählung vorbereitet; ${removedGroups} fertige Kombination(en) mit ${removedCards} Karten automatisch entfernt.${keptBetterGroups?` ${keptBetterGroups} Kombination(en) blieben liegen, weil ihre Joker-Endwertung günstiger war.`:''}`);
+     state.roundClose=null;
+     state.phase='scoring';
+     ui={mode:'scoreSequence',data:{},selected:[]};
+     save();render();
+     await sleepMs(500);
+     finishScoring();
+     return
+   }
+   seq.stage='reveal';save()
+ }
+}
+/* Kompatibilitätsfunktionen älterer Speicherstände. */
+function scorePrepare(pi){if(state.phase==='scoring')finishScoring()}
+function scoreNextPlayer(){if(state.phase==='scoring')finishScoring()}
+function bestStarBonus(p){const groups=[];for(let r=0;r<3;r++){const idx=[r*4,r*4+1,r*4+2,r*4+3];if(idx.every(i=>p.grid[i]?.type==='star'))groups.push({idx,bonus:-15})}for(let c=0;c<4;c++){const idx=[c,c+4,c+8].filter(i=>p.grid[i]);if(idx.length===3&&idx.every(i=>p.grid[i].type==='star'))groups.push({idx,bonus:-10})}let best=0;function dfs(i,used,sum){if(i===groups.length){if(sum<best)best=sum;return}dfs(i+1,used,sum);const g=groups[i];if(g.idx.every(x=>!used.has(x))){const n=new Set(used);g.idx.forEach(x=>n.add(x));dfs(i+1,n,sum+g.bonus)}}dfs(0,new Set(),0);return best}
+function liveJokerEndValueForGrid(p,idx){
+ const c=p?.grid?.[idx];
+ if(!c||c.type!=='star')return c?cardPoints(c):0;
+ const row=Math.floor(idx/4),col=idx%4,values=[];
+ for(let k=0;k<4;k++){
+   const x=p.grid[row*4+k];
+   if(x&&x.type==='number')values.push(Number(x.value)||0)
+ }
+ for(let k=0;k<3;k++){
+   const x=p.grid[k*4+col];
+   if(x&&x.type==='number')values.push(Number(x.value)||0)
+ }
+ return values.length?Math.min(...values):0
+}
+function jokerEndValueForGrid(p,idx){
+ const c=p?.grid?.[idx];
+ if(!c||c.type!=='star')return c?cardPoints(c):0;
+ const locked=state?.roundJokerValues?.[c.id];
+ return Number.isFinite(locked)?Number(locked):liveJokerEndValueForGrid(p,idx)
+}
+function buildRoundEndJokerValueMap(){
+ const values={};
+ for(const p of state?.players||[]){

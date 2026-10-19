@@ -1,0 +1,25 @@
+name: SKYJO modular smoke tests
+on:
+  push:
+    branches:
+      - feature/skyjo-modular-20261016
+  pull_request:
+    paths:
+      - 'Skyjo/**'
+  workflow_dispatch:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax checks
+        run: |
+          node --check Skyjo/modular/js/legacy.js
+          node --check Skyjo/modular/js/card-rules.js
+          node --check Skyjo/modular/js/room-rules.js
+          node --check Skyjo/modular/js/card-factory.js
+      - name: Module and source-integrity tests
+        run: node Skyjo/modular/js/test-modules.cjs

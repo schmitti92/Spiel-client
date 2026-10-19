@@ -1,0 +1,491 @@
+
+(() => {
+'use strict';
+try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(_e){}
+const SKYJO_BUILD='15.53';
+const SAVE_KEY='skyjo_action_fan_v1';
+const CLOUD_CFG_KEY='skyjo_action_cloud_v1';
+const SKIP_RESUME_KEY='skyjo_action_skip_autoresume_v1';
+const CLOUD_BASE='https://serverfinal-ynbe.onrender.com';
+const SKYJO_HUB_QUERY=new URLSearchParams(location.search);
+const SKYJO_HUB_CODE=SKYJO_HUB_QUERY.get('hub')||'';
+const SKYJO_HUB_MATCH=SKYJO_HUB_QUERY.get('match')||'';
+const SKYJO_HUB_ROOM=SKYJO_HUB_QUERY.get('room')||'';
+const SKYJO_IS_HUB=/^[A-HJ-NP-Z2-9]{6}$/.test(SKYJO_HUB_CODE)&&/^[0-9a-f-]{36}$/i.test(SKYJO_HUB_MATCH)&&/^S[A-HJ-NP-Z2-9]{9}$/.test(SKYJO_HUB_ROOM);
+async function skyjoHubToken(){const user=window.SpielOnline?.state?.()?.user;if(!user?.uid||typeof user.getIdToken!=='function')throw Error('Bitte mit deinem Online-Spielerprofil anmelden.');return user.getIdToken();}
+function skyjoHubReturn(){location.assign('../hub-lobby.html?room='+encodeURIComponent(SKYJO_HUB_CODE)+'&stayMatch='+encodeURIComponent(SKYJO_HUB_MATCH));}
+const SKYJO_ENTRY_MODE=(new URLSearchParams(location.search).get('mode')||'').toLowerCase();
+const SKYJO_REQUESTED_MODE=['online','local'].includes(SKYJO_ENTRY_MODE)?SKYJO_ENTRY_MODE:'';
+const SKYJO_NAV_TYPE=performance.getEntriesByType?.('navigation')?.[0]?.type||'navigate';
+const SKYJO_NEW_ENTRY=!!SKYJO_REQUESTED_MODE&&SKYJO_NAV_TYPE!=='reload'&&!new URLSearchParams(location.search).has('room');
+let skyjoLocalVariant='local';
+let cloud={enabled:false,room:'',rev:0,inFlight:false,pending:false,pendingJSON:'',lastPushedJSON:'',applying:false,pollTimer:null,pollBusy:false,pollErrors:0,reactionSeq:0,roomActionBusy:false,startBusy:false,lastStatus:'local',pushTimer:null,deferredRemote:null,applyScheduled:false,roomEpoch:0};
+const ACTIONS={
+ ownswap:{name:'Eigene Karten tauschen',icon:'🔀',kind:'normal',desc:'Zwei eigene Karten tauschen; Ausrichtung neu wählen.'},
+ double:{name:'Doppelter Spielzug',icon:'⏩',kind:'normal',desc:'Danach zwei vollständige Züge hintereinander.'},
+ draw3:{name:'Drei Karten ziehen',icon:'3️⃣',kind:'normal',desc:'Drei ziehen, höchstens eine behalten.'},
+ enlight:{name:'Erleuchtung',icon:'🔎',kind:'normal',desc:'Eine komplette Reihe oder Spalte geheim ansehen.'},
+ react:{name:'Reaktivierung',icon:'♻️',kind:'normal',desc:'Eine Aktionskarte aus der Ablage sofort erneut spielen.'},
+ defense:{name:'Verteidigung',icon:'🛡️',kind:'defense',desc:'Blockt einen Angriff; aktiv gespielt = Extrazug.'},
+ swapother:{name:'Kartentausch Mitspieler',icon:'🔁',kind:'attack',desc:'Eine Karte zwischen zwei Spielern tauschen.'},
+ thief:{name:'Aktionskarten-Dieb',icon:'🥷',kind:'attack',desc:'Aktionskarte stehlen + Extrazug.'},
+ meteor:{name:'Meteoritenschauer',icon:'☄️',kind:'attack',desc:'Bei jedem Mitspieler eine Karte ersetzen.'}
+};
+let state=null;
+let ui={mode:'none',data:{},selected:[]};
+const $=s=>document.querySelector(s);
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+/* V129: Spielfelder sind reine Ansichtseinstellungen. Die Raumregel ist synchron,
+   die persönliche Auswahl bleibt ausschließlich auf diesem Gerät/Tab. */
+const SKYJO_BOARD_THEMES=Object.freeze({standard:'Standard · Royal Table',comic:'Comic · Abenteuer',christlich:'Christlich · Licht & Hoffnung'});
+const SKYJO_BOARD_THEME_IMAGE=Object.freeze({standard:'../Assets/game-backgrounds/skyjo.webp',comic:'../Assets/skyjo-themes/skyjo_comic.jpg',christlich:'../Assets/skyjo-themes/skyjo_christlich.jpg'});
+let setupBoardPolicy='free';
+let setupHostBoardTheme='standard';
+let hostBoardThemeChosenManually=false;
+/* V130: Die Brettwahl während einer Partie bleibt im Speicher, nicht über neue Spiele hinweg. */
+let transientBoardChoice=null;
+function validBoardTheme(v){return Object.hasOwn(SKYJO_BOARD_THEMES,String(v||''))?String(v):'standard'}
+function profileBoardFavorite(){
+ try{const p=window.SpielProfile?.active?.();if(p)return validBoardTheme(p.skyjoBoardFavorite)}catch(_e){}
+ return 'standard';
+}
+function personalBoardIdentity(){
+ let id='standalone';try{id=String(window.SpielProfile?.active?.()?.id||cloud.deviceId||'standalone')}catch(_e){}
+ return `${id}:${cloud.enabled&&cloud.room?cloud.room:'local'}`;
+}
+function personalBoardStorageKey(){return personalBoardIdentity()}
+function personalBoardTheme(){const key=personalBoardStorageKey();return transientBoardChoice?.key===key?transientBoardChoice.value:profileBoardFavorite()}
+function resetBoardChoiceForNewGame(){transientBoardChoice=null}
+function hostBoardSettings(){return cloud.enabled&&isRoomDoc(cloud.doc)?cloud.doc.lobby?.settings||null:null}
+function isHostBoardLocked(){return hostBoardSettings()?.boardPolicy==='fixed'}
+function effectiveBoardTheme(){return isHostBoardLocked()?validBoardTheme(hostBoardSettings()?.boardTheme):personalBoardTheme()}
+function syncBoardTheme(){
+ if(!hostBoardThemeChosenManually&&window.SpielProfile?.active?.())setupHostBoardTheme=profileBoardFavorite();
+ const selected=effectiveBoardTheme();
+ if(document.body.dataset.skyjoTheme!==selected)document.body.dataset.skyjoTheme=selected;
+ document.documentElement.style.setProperty('--skyjo-theme-preview',`url("${SKYJO_BOARD_THEME_IMAGE[selected]}")`);
+}
+function choosePersonalBoardTheme(theme){
+ if(isHostBoardLocked()){toast('👑 Der Host hat das Spielfeld für diesen Raum festgelegt.');return}
+ theme=validBoardTheme(theme);
+ transientBoardChoice={key:personalBoardStorageKey(),value:theme};
+ syncBoardTheme();if(state)render();showBoardMenu();toast(`🎨 ${SKYJO_BOARD_THEMES[theme]} ausgewählt · nur für dich`)
+}
+function pickHostBoardTheme(theme){setupHostBoardTheme=validBoardTheme(theme);hostBoardThemeChosenManually=true;renderHostBoardSelection()}
+function setHostBoardPolicy(policy){setupBoardPolicy=policy==='fixed'?'fixed':'free';renderHostBoardSelection()}
+function renderHostBoardSelection(){
+ const lock=document.querySelector('#hostBoardThemeChoices');if(lock)lock.hidden=setupBoardPolicy!=='fixed';
+ document.querySelectorAll('input[name="hostBoardPolicy"]').forEach(e=>e.checked=e.value===setupBoardPolicy);
+ document.querySelectorAll('[data-host-board]').forEach(e=>{const selected=e.dataset.hostBoard===setupHostBoardTheme;e.classList.toggle('selected',selected);e.setAttribute('aria-pressed',String(selected));const help=e.querySelector('small');if(help)help.textContent=selected?'✓ Ausgewählt':'Vorschau auswählen'})
+}
+function boardChoiceHTML(current,onclickName,disabled=false){return Object.entries(SKYJO_BOARD_THEMES).map(([id,title])=>`<button type="button" class="skyjo-board-choice ${current===id?'selected':''}" aria-pressed="${current===id}" data-${onclickName==='pickHostBoardTheme'?'host-board':'player-board'}="${id}" ${disabled?'disabled':''} onclick="Game.${onclickName}('${id}')"><span class="skyjo-board-picture" style="background-image:url('${SKYJO_BOARD_THEME_IMAGE[id]}')"></span><span class="skyjo-board-choice-text"><b>${title}</b><small>${current===id?'✓ Ausgewählt':'Vorschau auswählen'}</small></span></button>`).join('')}
+function showBoardMenu(){
+ const locked=isHostBoardLocked(),setting=hostBoardSettings(),chosen=effectiveBoardTheme();
+ modal(`<div class="skyjo-board-menu"><h3>🎨 Spielfeld auswählen</h3><p>${locked?`👑 Der Host hat <b>${SKYJO_BOARD_THEMES[chosen]}</b> verbindlich festgelegt.`:'Jeder Spieler darf sein eigenes Design wählen. Die Änderung gilt nur für dich und beeinflusst keine Karten oder Regeln.'}</p><div class="skyjo-board-options">${boardChoiceHTML(chosen,'choosePersonalBoardTheme',locked)}</div><p class="skyjo-board-help">⭐ Dein Profil-Favorit: <b>${SKYJO_BOARD_THEMES[profileBoardFavorite()]}</b>. Er wird bei neuen Spielen automatisch vorausgewählt. Eine Auswahl hier ändert deinen Profil-Favoriten nicht.${!window.SpielProfile?.active?.()?' Melde dich an, um deinen Favoriten mit Firebase zu synchronisieren.':''}</p><div class="modal-actions">${!locked?'<a href="../profile.html" class="secondary skyjo-board-profile-link">👤 Favorit im Profil ändern</a>':''}<button class="primary" onclick="Game.closeModal()">Fertig</button></div></div>`,false)
+}
+
+
+let gameAnnouncementEl=null;
+let gameAnnouncementTimer=null;
+let gameAnnouncementDelayTimer=null;
+let lastFinalRoundAnnouncement='';
+let lastOwnTurnAnnouncement='';
+
+function clearGameAnnouncement(){
+ if(gameAnnouncementTimer){clearTimeout(gameAnnouncementTimer);gameAnnouncementTimer=null}
+ if(gameAnnouncementDelayTimer){clearTimeout(gameAnnouncementDelayTimer);gameAnnouncementDelayTimer=null}
+ if(gameAnnouncementEl){try{gameAnnouncementEl.remove()}catch(_e){}gameAnnouncementEl=null}
+}
+
+function showGameAnnouncement(kind,title,subtitle='',delay=0){
+ const run=()=>{
+   clearGameAnnouncement();
+   const wrap=document.createElement('div');
+   wrap.className=`game-announcement ${kind||''}`;
+   wrap.setAttribute('aria-live','assertive');
+   wrap.setAttribute('role','status');
+
+   const inner=document.createElement('div');
+   inner.className='game-announcement-inner';
+
+   const eyebrow=document.createElement('div');
+   eyebrow.className='game-announcement-eyebrow';
+   eyebrow.textContent=kind==='final-round'?'🔔 SCHLUSSPHASE':'🎯 DEIN ZUG';
+
+   const main=document.createElement('div');
+   main.className='game-announcement-title';
+   main.textContent=title;
+
+   const sub=document.createElement('div');
+   sub.className='game-announcement-subtitle';
+   sub.textContent=subtitle||'';
+
+   inner.append(eyebrow,main);
+   if(subtitle)inner.append(sub);
+   wrap.append(inner);
+   document.body.append(wrap);
+   gameAnnouncementEl=wrap;
+
+   requestAnimationFrame(()=>wrap.classList.add('show'));
+
+   const stay=kind==='final-round'?1650:950;
+   gameAnnouncementTimer=setTimeout(()=>{
+     wrap.classList.add('leave');
+     gameAnnouncementTimer=setTimeout(()=>{
+       if(gameAnnouncementEl===wrap)gameAnnouncementEl=null;
+       try{wrap.remove()}catch(_e){}
+     },340)
+   },stay)
+ };
+
+ if(delay>0){
+   if(gameAnnouncementDelayTimer)clearTimeout(gameAnnouncementDelayTimer);
+   gameAnnouncementDelayTimer=setTimeout(()=>{gameAnnouncementDelayTimer=null;run()},delay)
+ }else run()
+}
+
+function syncGameAnnouncements(){
+ if(!state||state.phase!=='play'||toiletPauseActive())return;
+
+ let finalJustShown=false;
+
+ // LETZTE RUNDE: auf jedem Gerät genau einmal je Runde.
+ if(state.roundEnder!==null&&state.roundEnder!==undefined){
+   const finalKey=`${state.round}:${state.roundEnder}`;
+   if(finalKey!==lastFinalRoundAnnouncement){
+     lastFinalRoundAnnouncement=finalKey;
+     finalJustShown=true;
+     const enderName=state.players?.[state.roundEnder]?.name||'Ein Spieler';
+     const remaining=Math.max(0,(state.finalTurnQueue?.length||0)+(state.currentPlayer!==state.roundEnder?1:0));
+     showGameAnnouncement(
+       'final-round',
+       'LETZTE RUNDE',
+       remaining>0
+         ?`${enderName} ist fertig · alle anderen haben noch genau einen Zug`
+         :`${enderName} hat die Runde beendet`,
+       70
+     );
+     haptic([25,45,25])
+   }
+ }
+
+ // DU BIST DRAN: nur für den Menschen, dessen Gerät gerade am Zug ist.
+ // Bei lokalen Pass-and-Play-Partien bedeutet das: der aktuelle Mensch am Gerät.
+ if(ui.mode==='turnChoice'&&isMyActorDevice()&&!current()?.isAI){
+   const turnKey=`${state.round}:${state.turnNo}:${state.currentPlayer}`;
+   if(turnKey!==lastOwnTurnAnnouncement){
+     lastOwnTurnAnnouncement=turnKey;
+     const extra=state.roundEnder!==null?'LETZTER ZUG':'Dein Zug beginnt jetzt';
+     showGameAnnouncement(
+       'your-turn',
+       'DU BIST DRAN',
+       extra,
+       finalJustShown?2050:90
+     );
+     if(!finalJustShown)haptic([16,35,16])
+   }
+ }
+}
+
+function visualFx(kind,label,emoji='✨',sparks=0){
+  try{
+    fxFeedback(kind);
+    if(uiPrefs.cinematic===false)return;
+    const perf=uiPrefs.performance!==false;
+    /* Ein Vollbild-Effekt bei JEDEM Spielerwechsel kostet auf Tablets unnötig Frames.
+       Im Flüssig-Modus bleibt der Zugwechsel deshalb bewusst ruhig. */
+    if(perf&&kind==='turn')return;
+    const wrap=document.createElement('div');wrap.className=`game-fx ${kind||''}`;
+    const core=document.createElement('div');core.className='fx-core';
+    const ic=document.createElement('div');ic.className='fx-icon';ic.textContent=emoji;
+    const tx=document.createElement('div');tx.className='fx-label';tx.textContent=label||'';
+    core.append(ic,tx);wrap.append(core);document.body.append(wrap);
+    setTimeout(()=>wrap.remove(),perf?650:980);
+    const cap=perf?4:18;
+    const n=Math.max(0,Math.min(cap,Number(sparks)||0));
+    for(let i=0;i<n;i++){
+      const s=document.createElement('i');s.className='fx-spark';
+      const a=(Math.PI*2*i/Math.max(1,n))+(Math.random()-.5)*.25;
+      const d=perf?(52+Math.random()*58):(70+Math.random()*120);
+      s.style.left=`${50+(Math.random()-.5)*3}%`;s.style.top=`${46+(Math.random()-.5)*3}%`;
+      s.style.setProperty('--sx',`${Math.cos(a)*d}px`);s.style.setProperty('--sy',`${Math.sin(a)*d}px`);
+      document.body.append(s);setTimeout(()=>s.remove(),perf?600:900);
+    }
+  }catch(_e){}
+}
+
+
+const UI_PREF_KEY='skyjo_action_ui_v9';
+let uiPrefs={sound:false,haptic:true,cinematic:true,autoFocus:false,motion:'table',performance:true};
+try{const p=JSON.parse(localStorage.getItem(UI_PREF_KEY)||'null');if(p&&typeof p==='object')uiPrefs={...uiPrefs,...p}}catch(_e){}
+let audioCtx=null,wakeLock=null,pseudoFullscreen=false;
+function saveUIPrefs(){try{localStorage.setItem(UI_PREF_KEY,JSON.stringify(uiPrefs))}catch(_e){}}
+let motionBusy=false,motionQueueBusy=false,motionUnlockTimer=null,motionSessionStart=Date.now(),motionBusyUntil=0,motionRenderPending=false,motionActiveEvent=null;
+const motionSeen=new Set();
+const motionDiscardCommitted=new Set();
+function discardArrivalEvent(){
+ if(motionActiveEvent&&(motionActiveEvent.type==='swap'||motionActiveEvent.type==='drawn-discard')&&!motionDiscardCommitted.has(motionActiveEvent.id))return motionActiveEvent;
+ const list=state?.motionFeed||[];
+ for(let i=list.length-1;i>=0;i--){
+   const e=list[i];
+   if(!e?.id||motionSeen.has(e.id)||motionDiscardCommitted.has(e.id))continue;
+   if(!(Number(e.ts||0)>=motionSessionStart-8000||e.id===state?.watch?.id))continue;
+   if(e.type==='swap'||e.type==='drawn-discard')return e
+ }
+ return null
+}
+function discardArrivalPending(){return !!discardArrivalEvent()}
+function visualDiscardState(){const arr=state?.playDiscard||[];const pending=discardArrivalPending();if(pending&&arr.length){return {top:arr.length>1?arr[arr.length-2]:null,count:Math.max(0,arr.length-1),pending:true}}return {top:arr[arr.length-1]||null,count:arr.length,pending:false}}
+function commitDiscardArrival(e,card){
+ if(e?.id)motionDiscardCommitted.add(e.id);
+ showDiscardCardImmediately(card);
+ const pile=document.getElementById('play-discard-pile');
+ if(pile){
+   const tip=pile.querySelector('.pile-tip');
+   if(tip)tip.textContent='Ablage';
+   pile.setAttribute('data-arrival-committed','1');
+ }
+}
+function showDiscardCardImmediately(card){
+ if(!card)return;
+ const pile=document.getElementById('play-discard-pile');
+ if(!pile)return;
+ const current=pile.querySelector('.card');
+ const wrap=document.createElement('div');
+ wrap.innerHTML=cardHTML({...card,faceUp:true},true,false);
+ const fresh=wrap.firstElementChild;
+ if(current&&fresh)current.replaceWith(fresh);
+ const tip=pile.querySelector('.pile-tip');
+ if(tip)tip.textContent='Ablage';
+ pile.classList.remove('discard-commit-pop');
+ void pile.offsetWidth;
+ pile.classList.add('discard-commit-pop');
+ setTimeout(()=>pile?.classList.remove('discard-commit-pop'),260);
+ const box=pile.closest('.play-pilebox');
+ const count=box?.querySelector('.count');
+ if(count&&state){
+   const n=state.playDiscard?.length||0,buried=state.removedCards?.length||0;
+   count.textContent=`${state.playDeck.length} im Stapel · ${n} Ablagekarte${n===1?'':'n'}${buried?` · ${buried} gesperrt darunter`:''}`;
+ }
+}
+function motionSpec(){const level=uiPrefs.motion||'table';if(level==='normal')return {level,flight:125,arc:12,settle:16,swapGap:16,pause:8,flip:96,revealPause:18};if(level==='slow')return {level,flight:180,arc:17,settle:20,swapGap:22,pause:12,flip:122,revealPause:22};return {level:'table',flight:220,arc:22,settle:22,swapGap:26,pause:14,flip:145,revealPause:24}}
+function setMotionLevel(level){if(!['normal','slow','table'].includes(level))level='table';uiPrefs.motion=level;saveUIPrefs();showDisplaySettings();toast(level==='normal'?'⚡ Bewegung: schnell':level==='slow'?'🎴 Bewegung: normal':'🃏 Tischmodus · flüssig')}
+function rerenderAfterMotion(){if(motionRenderPending||!state)return;motionRenderPending=true;setTimeout(()=>{motionRenderPending=false;if(state)render()},0)}
+function unlockMotion(rerender=false){clearTimeout(motionUnlockTimer);motionUnlockTimer=null;const was=motionBusy;motionBusy=false;motionBusyUntil=0;document.body.classList.remove('motion-busy');if(!motionQueueBusy&&cloud?.deferredRemote){flushDeferredCloudApply();return}if(rerender&&was&&!motionQueueBusy)rerenderAfterMotion()}
+function lockMotion(ms,label='Kartenbewegung läuft …'){motionBusy=true;const guard=Math.min(6500,Math.max(1800,(Number(ms)||300)+1400));motionBusyUntil=Date.now()+guard;document.body.classList.add('motion-busy');const pill=document.getElementById('motionStatusText');if(pill)pill.textContent=label;clearTimeout(motionUnlockTimer);/* Harte Notentriegelung: niemals wegen einer Browser-Animation dauerhaft sperren. */motionUnlockTimer=setTimeout(()=>unlockMotion(true),guard)}
+function motionLocked(show=true){if(motionBusy&&motionBusyUntil&&Date.now()>motionBusyUntil){unlockMotion(true);return false}if(!motionBusy)return false;if(show)toast('🎴 Kartenbewegung läuft noch …');return true}
+function motionShouldBlock(e){if(!state||!e)return false;/* Alte Bewegungen dürfen den nächsten Zug nie blockieren. */if(state.phase==='play'&&ui.mode==='turnChoice'&&Number(e.actor)!==Number(state.currentPlayer))return false;return true}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function recentMotionCard(){const list=state?.motionFeed||[],now=Date.now();for(let i=list.length-1;i>=0;i--){const e=list[i];if(!e)continue;if(now-Number(e.ts||0)>7000)break;if(e.type==='swap'||e.type==='drawn-discard'||e.type==='turn'||e.type==='reveal'||e.type==='action-play'||e.type==='action-take'||e.type==='meteor')return null;if((e.type==='draw-deck'||e.type==='take-discard'||e.type==='decision-keep')&&e.card)return e}return null}
+function heldCardInfo(){if(!state)return null;const localHeld=(ui.mode==='drawnDecision'||ui.mode==='drawnSwap'||ui.mode==='discardSwap'||ui.mode==='draw3Target')&&ui.data?.card?{card:ui.data.card,actor:state.currentPlayer,type:ui.mode==='discardSwap'?'Ablagekarte':'Gezogene Karte',local:!isAIPlayer(state.currentPlayer),title:isAIPlayer(state.currentPlayer)?`${state.players[state.currentPlayer].name} spielt diese Karte`:''}:null;if(localHeld)return localHeld;const evt=recentMotionCard();if(evt?.card)return {card:evt.card,actor:evt.actor??state.currentPlayer,type:evt.typeLabel||'Live-Karte',local:false,title:evt.title||'',text:evt.text||''};return null}
+function handZoneHTML(){const h=heldCardInfo();const actor=h?state.players?.[h.actor]?.name:'';const decision=!!(h?.local&&ui.mode==='drawnDecision');return `<div id="table-hand-zone-anchor" class="real-hand-zone"><div id="table-hand-zone-card" class="real-hand-card ${h?'':'empty'}">${h?cardHTML({...h.card,faceUp:true},true,false):'✦'}</div><div class="real-hand-copy"><span class="eyebrow">${h?escapeHTML(h.type):'Hand-/Entscheidungszone'}</span><b>${h?(h.local?'Karte in deiner Hand':`${escapeHTML(actor)} hat diese Karte`):'Hier landet eine gezogene Karte zuerst'}</b><small>${h?(h.local?(decision?'Eigene Karte antippen: Sie wird zuerst aufgedeckt, dann sauber ausgetauscht. Oder auf die Ablage tippen.':'Diese Karte wird jetzt gespielt.'):escapeHTML(h.text||h.title||'Live vom anderen Spieler.')):'Stapel → Handzone → alte Feldkarte offen zur Ablage → erst danach Handkarte ins Spielfeld.'}</small>${decision?`<div class="direct-swap-hint">☝ Eigene Karte antippen = sofort tauschen</div><div class="real-hand-actions direct-only"><button class="drop big-discard-btn" onclick="Game.discardDrawn()"><span class="big-discard-main">🗑️ KARTE AUF ABLAGE</span><small class="big-discard-sub">wegwerfen & eigene Karte aufdecken</small></button></div>`:''}</div></div>`}
+function motionFlightMarkup(e,cardOverride=null){if(e?.actionType&&!cardOverride){const a=ACTIONS[e.actionType];return `<div class="motion-fly action">${a?a.icon:'⚡'}</div>`}const c=cardOverride||e?.card||{type:'number',value:0,faceUp:false};return `<div class="motion-fly">${cardHTML({...c,faceUp:true},true,false)}</div>`}
+async function animateRealFlight(fromId,toId,e,cardOverride=null){const from=document.getElementById(fromId),to=document.getElementById(toId);if(!from||!to)return;const spec=motionSpec(),fr=from.getBoundingClientRect(),tr=to.getBoundingClientRect();const wrap=document.createElement('div');wrap.innerHTML=motionFlightMarkup(e,cardOverride);const fly=wrap.firstElementChild;if(!fly)return;document.body.append(fly);const sx=fr.left+fr.width/2,sy=fr.top+fr.height/2,tx=tr.left+tr.width/2,ty=tr.top+tr.height/2,dx=tx-sx,dy=ty-sy;fly.style.left=`${sx}px`;fly.style.top=`${sy}px`;const perf=uiPrefs.performance!==false;const arc=perf?Math.min(46,Math.max(8,spec.arc+Math.abs(dx)*.012)):Math.min(110,Math.max(26,spec.arc+Math.abs(dx)*.035));const scale=Math.max(.80,Math.min(1.06,(tr.width||74)/(fr.width||74)));let anim=null;try{const frames=perf?[{transform:'translate3d(-50%,-50%,0) scale(.96)',opacity:.98},{offset:.52,transform:`translate3d(calc(-50% + ${dx*.52}px),calc(-50% + ${dy*.52-arc}px),0) scale(1.015)`,opacity:1},{transform:`translate3d(calc(-50% + ${dx}px),calc(-50% + ${dy}px),0) scale(${scale})`,opacity:1}]:[{transform:'translate(-50%,-50%) scale(.88) rotate(-2deg)',opacity:.96},{offset:.48,transform:`translate(calc(-50% + ${dx*.48}px),calc(-50% + ${dy*.48-arc}px)) scale(1.06) rotate(${dx>=0?3:-3}deg)`,opacity:1},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(${scale}) rotate(0deg)`,opacity:1}];anim=fly.animate(frames,{duration:spec.flight,easing:perf?'cubic-bezier(.2,.72,.22,1)':'cubic-bezier(.22,.78,.2,1)',fill:'forwards'});const finished=anim?.finished&&typeof anim.finished.then==='function'?anim.finished.catch(()=>null):sleep(spec.flight);await Promise.race([finished,sleep(spec.flight+350)])}catch(_e){await sleep(Math.min(spec.flight,1400))}finally{try{anim?.cancel?.()}catch(_e){}fly.remove()}if(!document.body.contains(to))return;to.classList.remove('motion-landing');void to.offsetWidth;to.classList.add('motion-landing');setTimeout(()=>to.classList.remove('motion-landing'),250);await sleep(spec.settle)}
+function swapLayerMarkup(oldCard,wasFaceUp){const back=cardHTML({type:'number',value:0,faceUp:false},false,false),front=cardHTML({...oldCard,faceUp:true},true,false);return `<div class="swap-reveal-card"><div class="swap-reveal-face back-face">${back}</div><div class="swap-reveal-face front-face">${front}</div></div>`}
+async function prepareSwapReveal(e){const target=document.getElementById(e.dstId);if(!target||!e.oldCard)return null;const cardEl=target.querySelector('.card')||target;const r=cardEl.getBoundingClientRect();if(!r.width||!r.height)return null;target.classList.add('swap-target-ghost');const layer=document.createElement('div');layer.className='swap-reveal-layer';layer.style.left=`${r.left+r.width/2}px`;layer.style.top=`${r.top+r.height/2}px`;layer.style.width=`${r.width}px`;layer.style.height=`${r.height}px`;layer.innerHTML=swapLayerMarkup(e.oldCard,!!e.oldWasFaceUp);document.body.append(layer);const inner=layer.querySelector('.swap-reveal-card');if(inner&&e.oldWasFaceUp)inner.style.transform='rotateY(180deg)';const spec=motionSpec();const caption=document.createElement('div');caption.className='swap-reveal-caption';caption.style.left=`${r.left+r.width/2}px`;caption.style.top=`${Math.max(38,r.top-6)}px`;caption.textContent=e.oldWasFaceUp?'Karte wird ausgetauscht':'Karte wird zuerst aufgedeckt';document.body.append(caption);let a=null;try{if(e.oldWasFaceUp){a=inner.animate([{transform:'rotateY(180deg) translateY(0) rotateZ(0deg)'},{offset:.5,transform:'rotateY(180deg) translateY(-7px) rotateZ(-1.5deg)'},{transform:'rotateY(180deg) translateY(0) rotateZ(0deg)'}],{duration:Math.max(150,spec.flip*.72),easing:'ease-in-out',fill:'forwards'});await Promise.race([a.finished.catch(()=>null),sleep(spec.flip+90)])}else{a=inner.animate([{transform:'rotateY(0deg) scale(1)'},{offset:.45,transform:'rotateY(88deg) scale(1.035)'},{transform:'rotateY(180deg) scale(1)'}],{duration:spec.flip,easing:'cubic-bezier(.22,.72,.18,1)',fill:'forwards'});await Promise.race([a.finished.catch(()=>null),sleep(spec.flip+110)]);haptic(7)}await sleep(spec.revealPause)}catch(_e){await sleep(Math.min(spec.flip,700))}finally{try{a?.cancel?.()}catch(_e){}if(inner)inner.style.transform='rotateY(180deg)'}return {target,layer,caption}}
+function clearSwapReveal(ctx,arrive=false){if(!ctx)return;try{ctx.layer?.remove()}catch(_e){}try{ctx.caption?.remove()}catch(_e){}if(ctx.target){ctx.target.classList.remove('swap-target-ghost');if(arrive){ctx.target.classList.remove('swap-target-arrive');void ctx.target.offsetWidth;ctx.target.classList.add('swap-target-arrive');setTimeout(()=>ctx.target?.classList.remove('swap-target-arrive'),260)}}}
+
+async function animateCardReveal(targetId,card){
+ const target=document.getElementById(targetId);if(!target||!card)return;
+ const cardEl=target.querySelector('.card')||target,r=cardEl.getBoundingClientRect();if(!r.width||!r.height)return;
+ const spec=motionSpec();target.classList.add('swap-target-ghost');
+ const layer=document.createElement('div');layer.className='swap-reveal-layer quick-reveal';layer.style.left=`${r.left+r.width/2}px`;layer.style.top=`${r.top+r.height/2}px`;layer.style.width=`${r.width}px`;layer.style.height=`${r.height}px`;layer.innerHTML=swapLayerMarkup(card,false);document.body.append(layer);
+ const inner=layer.querySelector('.swap-reveal-card');let a=null;
+ try{
+   a=inner.animate([
+     {transform:'rotateY(0deg) scale(1)'},
+     {offset:.48,transform:'rotateY(86deg) scale(1.025)'},
+     {offset:.52,transform:'rotateY(94deg) scale(1.025)'},
+     {transform:'rotateY(180deg) scale(1)'}
+   ],{duration:spec.flip,easing:'cubic-bezier(.25,.72,.18,1)',fill:'forwards'});
+   /* Die Vorderseite ist durch backface-visibility ab ca. 50 % sichtbar. Keine zusätzliche Wartezeit bis zur Zahl. */
+   await Promise.race([a.finished.catch(()=>null),sleep(spec.flip+90)]);
+   if(inner)inner.style.transform='rotateY(180deg)';
+   await sleep(23);
+ }catch(_e){if(inner)inner.style.transform='rotateY(180deg)'}
+ finally{
+   try{a?.cancel?.()}catch(_e){}
+   target.classList.remove('swap-target-ghost');
+   try{layer.remove()}catch(_e){}
+   target.classList.remove('reveal-arrive');void target.offsetWidth;target.classList.add('reveal-arrive');
+   setTimeout(()=>target?.classList.remove('reveal-arrive'),210);
+ }
+}
+function queueMotionEvent(type,data={}){if(!state)return null;state.motionFeed=Array.isArray(state.motionFeed)?state.motionFeed:[];const evt={id:uid(),type,actor:(data.actor!==undefined?data.actor:state.currentPlayer)||0,ts:Date.now(),...data};state.motionFeed.push(evt);state.motionFeed=state.motionFeed.slice(-24);state.watch=evt;return evt}
+async function playMotionEvent(e){if(!e)return;const spec=motionSpec();let label=e.title||'Kartenbewegung';const block=motionShouldBlock(e);const maybeLock=(ms)=>{if(block)lockMotion(ms,label)};const masksDiscard=e.type==='swap'||e.type==='drawn-discard';motionActiveEvent=e;try{
+ if(e.type==='turn'){pulseTarget(`player-${e.actor}`);await sleep(Math.min(130,spec.pause));return}
+ if(e.type==='draw-deck'||e.type==='take-discard'){maybeLock(spec.flight+spec.settle+70);await animateRealFlight(e.srcId||'play-deck-pile','table-hand-zone-card',e);return}
+ if(e.type==='drawn-discard'){maybeLock(spec.flight+spec.settle+70);await animateRealFlight('table-hand-zone-card','play-discard-pile',e);commitDiscardArrival(e,e.card);return}
+ if(e.type==='decision-keep'){maybeLock(Math.min(215,spec.flight*.45));pulseTarget('table-hand-zone-card');await sleep(Math.min(215,spec.flight*.45));return}
+ if(e.type==='swap'){
+   maybeLock(spec.flip+spec.revealPause+spec.flight*2+spec.swapGap+spec.settle*2+490);
+   const revealCtx=await prepareSwapReveal(e);
+   try{
+     if(e.oldCard){
+       if(revealCtx?.layer){
+         revealCtx.layer.style.opacity='0';
+         revealCtx.layer.style.transition='opacity .06s ease';
+         await sleep(45)
+       }
+       /* PHASE 1: alte Feldkarte fliegt offen auf die Ablage. */
+       await animateRealFlight(e.dstId,e.discardId||'play-discard-pile',e,e.oldCard);
+       /* PHASE 2: die Ablage ist ab JETZT verbindlich sichtbar.
+          discardArrivalPending() darf sie nun auch bei Zwischen-Render/Sync nicht mehr verstecken. */
+       commitDiscardArrival(e,e.oldCard);
+       haptic(7);
+       await sleep(spec.level==='table'?260:spec.level==='slow'?200:150)
+     }
+     /* PHASE 3: erst jetzt verlässt die Handkarte die Handzone. */
+     await animateRealFlight('table-hand-zone-card',e.dstId,e,e.card);
+     clearSwapReveal(revealCtx,true);
+     return
+   }finally{
+     clearSwapReveal(revealCtx,false)
+   } }
+ if(e.type==='bury-row'){const cards=Array.isArray(e.cards)?e.cards:[],srcIds=Array.isArray(e.srcIds)?e.srcIds:[];maybeLock(Math.max(350,cards.length*(spec.flight+45)+spec.settle));for(let i=0;i<cards.length;i++){await animateRealFlight(srcIds[i]||`player-${e.actor}`,e.dstId||'play-discard-pile',e,cards[i]);if(i<cards.length-1)await sleep(35)}return}
+ if(e.type==='action-take'||e.type==='action-play'||e.type==='meteor'){maybeLock(spec.flight+spec.settle+60);if(e.card||e.actionType)await animateRealFlight(e.srcId||'action-deck-pile',e.dstId||`player-${e.actor}`,e);else{pulseTarget(e.dstId||`player-${e.actor}`);await sleep(Math.min(160,spec.pause+50))}return}
+ if(e.type==='reveal'){maybeLock(spec.flip+90);await animateCardReveal(e.dstId||`player-${e.actor}`,e.card);return}
+ pulseTarget(e.dstId||`player-${e.actor}`);await sleep(Math.min(150,spec.pause))
+ }finally{
+   if(motionActiveEvent===e)motionActiveEvent=null;
+   if(masksDiscard)rerenderAfterMotion();
+   if(e?.id)setTimeout(()=>motionDiscardCommitted.delete(e.id),125)
+ }}
+async function runMotionQueue(){if(motionQueueBusy||!state)return;const feed=(state.motionFeed||[]).filter(e=>e?.id&&!motionSeen.has(e.id)&&(Number(e.ts||0)>=motionSessionStart-8000||e.id===state.watch?.id));if(!feed.length){if(motionBusy)unlockMotion(true);return}motionQueueBusy=true;try{for(const e of feed){motionSeen.add(e.id);await playMotionEvent(e);await sleep(motionSpec().pause)}}catch(err){console.warn('[motion queue]',err)}finally{motionQueueBusy=false;const more=(state?.motionFeed||[]).some(e=>e?.id&&!motionSeen.has(e.id)&&(Number(e.ts||0)>=motionSessionStart-8000||e.id===state.watch?.id));if(more)setTimeout(runMotionQueue,20);else unlockMotion(true)}}
+function haptic(pattern=8){try{if(uiPrefs.haptic&&navigator.vibrate)navigator.vibrate(pattern)}catch(_e){}}
+function ensureAudio(){try{if(!audioCtx){const A=window.AudioContext||window.webkitAudioContext;if(A)audioCtx=new A()}if(audioCtx?.state==='suspended')audioCtx.resume()}catch(_e){}return audioCtx}
+function playFxSound(kind){if(!uiPrefs.sound)return;try{const ctx=ensureAudio();if(!ctx)return;const now=ctx.currentTime;const cfg={turn:[520,.055],draw:[650,.045],action:[740,.06],star:[880,.075],win:[980,.11]}[kind]||[600,.04];const o=ctx.createOscillator(),g=ctx.createGain();o.type=kind==='win'?'triangle':'sine';o.frequency.setValueAtTime(cfg[0],now);if(kind==='star'||kind==='win')o.frequency.exponentialRampToValueAtTime(cfg[0]*1.35,now+cfg[1]);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(kind==='win'?.10:.055,now+.008);g.gain.exponentialRampToValueAtTime(.0001,now+cfg[1]);o.connect(g);g.connect(ctx.destination);o.start(now);o.stop(now+cfg[1]+.02)}catch(_e){}}
+function fxFeedback(kind){const p=kind==='win'?[18,45,28]:kind==='star'?[10,30,15]:kind==='action'?14:8;haptic(p);playFxSound(kind)}
+
+function toggleHaptic(){uiPrefs.haptic=!uiPrefs.haptic;saveUIPrefs();if(uiPrefs.haptic)haptic([8,22,8]);showDisplaySettings()}
+function toggleCinematic(){uiPrefs.cinematic=!uiPrefs.cinematic;saveUIPrefs();syncBodyMode();showDisplaySettings()}
+function toggleAutoFocus(){uiPrefs.autoFocus=!uiPrefs.autoFocus;saveUIPrefs();showDisplaySettings()}
+function togglePerformance(){uiPrefs.performance=uiPrefs.performance===false?true:false;saveUIPrefs();syncBodyMode();showDisplaySettings();toast(uiPrefs.performance!==false?'⚡ Flüssig-Modus an':'✨ Volle Grafikeffekte an')}
+function focusMyBoard(){if(!state)return;let idx=cloud.enabled?myPlayerIndex():state.currentPlayer;if(idx<0)idx=state.currentPlayer;const el=document.getElementById(`player-${idx}`);if(el){el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});el.classList.remove('focus-flash');void el.offsetWidth;el.classList.add('focus-flash');setTimeout(()=>el.classList.remove('focus-flash'),900);haptic(7)}}
+function captureViewportLock(){const active=document.activeElement;const lock={x:window.scrollX||0,y:window.scrollY||window.pageYOffset||0,enabled:!!state};document.body.classList.add('view-lock-active');if(active&&active!==document.body&&!['INPUT','TEXTAREA','SELECT'].includes(active.tagName)&&typeof active.blur==='function'){try{active.blur()}catch(_e){}}return lock}
+function restoreViewportLock(lock){if(!lock?.enabled){document.body.classList.remove('view-lock-active');return}const apply=()=>{const maxY=Math.max(0,(document.documentElement.scrollHeight||document.body.scrollHeight||0)-window.innerHeight);const maxX=Math.max(0,(document.documentElement.scrollWidth||document.body.scrollWidth||0)-window.innerWidth);const x=Math.min(Math.max(0,Number(lock.x)||0),maxX);const y=Math.min(Math.max(0,Number(lock.y)||0),maxY);window.scrollTo(x,y)};requestAnimationFrame(()=>{apply();setTimeout(apply,34);setTimeout(()=>document.body.classList.remove('view-lock-active'),80)})}
+
+function canManageJokerCount(){
+ if(!state)return false;
+ if(cloud.enabled&&!isHostDevice())return false;
+ return true;
+}
+function jokerRoundInventory(){
+ // Mit dem Bestand dieser Runde verhindern wir, dass ein späteres Plus
+ // bereits ausgeteilte Joker nach einem vorherigen Minus doppelt ersetzt.
+ if(Number.isInteger(state?.jokerRoundInventory))return Math.max(0,state.jokerRoundInventory);
+ return Math.max(0,Math.min(30,Math.floor(Number(state?.jokerCount)||0)));
+}
+function showJokerCountManager(){
+ if(!state){toast('Kein laufendes Spiel');return}
+ const hostOnly=cloud.enabled&&!isHostDevice();
+ const currentCount=Math.max(0,Math.min(30,Math.floor(Number(state.jokerCount)||0)));
+ const remaining=Math.max(0,30-currentCount);
+ const inRound=state.phase==='play'||state.phase==='initialReveal';
+ const deckStars=Array.isArray(state.playDeck)?state.playDeck.filter(c=>c?.type==='star').length:0;
+ const stillOut=Math.max(0,jokerRoundInventory()-currentCount);
+ const note=hostOnly
+   ?'Nur der Host darf die Jokeranzahl eines Online-Spiels verändern.'
+   :(inRound
+      ?'Plus und Minus gelten sofort für Joker im verdeckten Nachziehstapel. Joker auf dem Spielfeld, in der Ablage oder in einer Handkarte bleiben unverändert. Die Zielzahl gilt vollständig ab der nächsten Runde.'
+      :'Die neue Anzahl gilt ab der nächsten Runde. Die laufende Punktewertung bleibt unberührt.');
+ modal(`<div class="joker-live-settings">
+   <div class="settings-hero">
+     <div class="settings-orb">★</div>
+     <div><h3>Jokeranzahl im Spiel</h3><p>${note}</p></div>
+   </div>
+   <div class="joker-live-count">
+     <span>Joker für die nächste Runde</span>
+     <strong>${currentCount}</strong>
+     <small>${inRound?`${deckStars} Joker aktuell verdeckt im Nachziehstapel`:'Einstellung gilt für die nächste Runde'}</small>
+   </div>
+   <div class="joker-live-actions joker-live-decrease">
+     <button ${hostOnly||currentCount<5?'disabled':''} onclick="Game.adjustJokersInGame(-5)">★★★★★ −5 Joker</button>
+     <button ${hostOnly||currentCount<2?'disabled':''} onclick="Game.adjustJokersInGame(-2)">★★ −2 Joker</button>
+     <button ${hostOnly||currentCount<1?'disabled':''} onclick="Game.adjustJokersInGame(-1)">★ −1 Joker</button>
+   </div>
+   <div class="joker-live-actions joker-live-increase">
+     <button class="primary" ${hostOnly||remaining<1?'disabled':''} onclick="Game.adjustJokersInGame(1)">★ +1 Joker</button>
+     <button class="primary" ${hostOnly||remaining<2?'disabled':''} onclick="Game.adjustJokersInGame(2)">★★ +2 Joker</button>
+     <button class="primary" ${hostOnly||remaining<5?'disabled':''} onclick="Game.adjustJokersInGame(5)">★★★★★ +5 Joker</button>
+   </div>
+   <div class="joker-live-limit">Einstellbar: 0–30 Joker.${stillOut&&inRound?` Noch ${stillOut} Joker dieser Runde können schon verteilt sein und werden nicht aus fremden Kartenfeldern entfernt.`:''}</div>
+   <div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>
+ </div>`,false)
+}
+function adjustJokersInGame(delta){
+ if(!state)return;
+ if(cloud.enabled&&!isHostDevice()){toast('Nur der Host kann die Jokeranzahl ändern');return}
+ delta=Math.trunc(Number(delta));
+ if(!Number.isFinite(delta)||delta===0)return;
+ const before=Math.max(0,Math.min(30,Math.floor(Number(state.jokerCount)||0)));
+ const target=Math.max(0,Math.min(30,before+delta));
+ if(target===before){toast(target===0?'Minimum: 0 Joker':'Maximum: 30 Joker');showJokerCountManager();return}
+ const immediate=state.phase==='play'||state.phase==='initialReveal';
+ let roundPool=jokerRoundInventory(),added=0,removed=0;
+ state.jokerCount=target;
+ if(immediate){
+   if(!Array.isArray(state.playDeck))state.playDeck=[];
+   if(target>roundPool){
+     added=target-roundPool;
+     for(let i=0;i<added;i++)state.playDeck.push(newCard('star'));
+     state.playDeck=shuffle(state.playDeck);
+     roundPool+=added;
+   }else if(target<roundPool){
+     for(let i=state.playDeck.length-1;i>=0&&roundPool>target;i--){
+       if(state.playDeck[i]?.type==='star'){
+         state.playDeck.splice(i,1);
+         roundPool--;
+         removed++;
+       }
+     }
+   }
+   state.jokerRoundInventory=roundPool;
+ }
+ const difference=target-before;
+ const label=difference>0?`+${difference}`:String(difference);
+ const currentText=immediate
+   ?(difference<0?` ${removed} Joker sofort aus dem Nachziehstapel entfernt.${roundPool>target?' Übrige Joker liegen bereits anderswo und bleiben bis zur nächsten Runde bestehen.':''}`:` ${added} Joker in den Nachziehstapel gemischt.`)
+   :' Gilt ab der nächsten Runde.';
+ log(`Jokeranzahl um ${label} geändert: ${before} → ${target}.${currentText}`);
+ save();
+ render();
+ toast(`★ Jokerziel ${target} (${label})${immediate&&difference<0?` · ${removed} aus dem Stapel entfernt`:''}`);
+ setTimeout(showJokerCountManager,40)
+}
+function addJokersToGame(amount){adjustJokersInGame(Math.abs(Math.trunc(Number(amount)||1)))}
+
+function showDisplaySettings(){const ml=uiPrefs.motion||'table';modal(`<div class="display-settings"><div class="settings-hero"><div class="settings-orb">✦</div><div><h3>Darstellung & Spielgefühl</h3><p>High-End-Effekte lassen sich einzeln anpassen, ohne die Spiellogik zu verändern.</p></div></div><div class="skyjo-board-quick"><button type="button" class="secondary wide" onclick="Game.showBoardMenu()">🎨 Spielfeld-Design: ${SKYJO_BOARD_THEMES[effectiveBoardTheme()]} ${isHostBoardLocked()?"· Host-Vorgabe":"· individuell ändern"}</button></div><div class="settings-grid"><button class="setting-toggle ${uiPrefs.sound?'on':''}" onclick="Game.toggleSound();Game.showDisplaySettings()"><span>🔊</span><b>Sound</b><small>${uiPrefs.sound?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.haptic?'on':''}" onclick="Game.toggleHaptic()"><span>📳</span><b>Haptik</b><small>${uiPrefs.haptic?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.cinematic!==false?'on':''}" onclick="Game.toggleCinematic()"><span>✨</span><b>Cinematic FX</b><small>${uiPrefs.cinematic!==false?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.autoFocus?'on':''}" onclick="Game.toggleAutoFocus()"><span>🎯</span><b>Auto-Fokus</b><small>${uiPrefs.autoFocus?'AN':'AUS'}</small></button><button class="setting-toggle ${uiPrefs.performance!==false?'on':''}" onclick="Game.togglePerformance()"><span>⚡</span><b>Flüssig-Modus</b><small>${uiPrefs.performance!==false?'AN':'AUS'}</small></button><div class="motion-settings"><div><div><b>🎴 Kartenbewegung</b><small>Wie schnell Karten wie am echten Tisch bewegt werden.</small></div><small>${ml==='normal'?'SCHNELL':ml==='slow'?'NORMAL':'TISCH · FLÜSSIG'}</small></div><div class="motion-levels"><button class="motion-level ${ml==='normal'?'on':''}" onclick="Game.setMotionLevel('normal')">⚡ Schnell</button><button class="motion-level ${ml==='slow'?'on':''}" onclick="Game.setMotionLevel('slow')">🎴 Normal</button><button class="motion-level ${ml==='table'?'on':''}" onclick="Game.setMotionLevel('table')">🃏 Tisch · flüssig</button></div></div></div>${state?'<div class="modal-actions"><button class="primary" onclick="Game.closeModal();Game.focusMyBoard()">🎯 Zu meinem Feld</button><button onclick="Game.showJokerCountManager()">★ Jokeranzahl ändern</button><button onclick="Game.closeModal()">Fertig</button></div>':'<div class="modal-actions"><button onclick="Game.closeModal()">Fertig</button></div>'}</div>`,false)}
+function finaleBurst(){if(uiPrefs.cinematic===false)return;try{const layer=document.createElement('div');layer.className='finale-confetti';document.body.append(layer);const glyphs=['◆','●','✦','■'];const total=uiPrefs.performance!==false?22:46;for(let i=0;i<total;i++){const p=document.createElement('i');p.textContent=glyphs[i%glyphs.length];p.style.left=`${5+Math.random()*90}%`;p.style.setProperty('--drift',`${-70+Math.random()*140}px`);p.style.setProperty('--spin',`${180+Math.random()*720}deg`);p.style.setProperty('--delay',`${Math.random()*.45}s`);p.style.setProperty('--dur',`${1.4+Math.random()*1.3}s`);p.style.setProperty('--hue',`${Math.floor(Math.random()*360)}`);layer.append(p)}setTimeout(()=>layer.remove(),3100)}catch(_e){}}
+
+function toggleSound(){uiPrefs.sound=!uiPrefs.sound;saveUIPrefs();if(uiPrefs.sound)playFxSound('turn');syncChromeButtons();toast(uiPrefs.sound?'🔊 Sound an':'🔇 Sound aus')}
+function isFullscreen(){return !!(document.fullscreenElement||document.webkitFullscreenElement||document.msFullscreenElement)}
+async function requestWakeLock(){try{if('wakeLock' in navigator&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener?.('release',()=>{wakeLock=null})}}catch(_e){}}
+async function releaseWakeLock(){try{if(wakeLock){await wakeLock.release();wakeLock=null}}catch(_e){wakeLock=null}}
+async function toggleFullscreen(){
+  try{
+    const active=isFullscreen()||pseudoFullscreen;
+    if(active){
+      if(isFullscreen()){if(document.exitFullscreen)await document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();}
+      pseudoFullscreen=false;document.body.classList.remove('pseudo-fullscreen');await releaseWakeLock();
+    }else{
+      const el=document.documentElement;let p=null;
+      if(el.requestFullscreen)p=el.requestFullscreen({navigationUI:'hide'});else if(el.webkitRequestFullscreen)p=el.webkitRequestFullscreen();
+      if(p&&typeof p.then==='function')await p;
+      if(!isFullscreen()){pseudoFullscreen=true;document.body.classList.add('pseudo-fullscreen')}
+      await requestWakeLock();haptic(12);
+    }
+  }catch(e){pseudoFullscreen=!pseudoFullscreen;document.body.classList.toggle('pseudo-fullscreen',pseudoFullscreen);toast(pseudoFullscreen?'Ansicht maximiert':'Vollbild nicht unterstützt')}
+  syncFullscreenState();
+}
+function syncFullscreenState(){const on=isFullscreen()||pseudoFullscreen;document.body.classList.toggle('is-fullscreen',on);syncChromeButtons();if(on)requestWakeLock();else releaseWakeLock()}
+function syncChromeButtons(){const f=$('#fullscreenBtn'),a=$('#soundBtn');if(f){f.textContent=(isFullscreen()||pseudoFullscreen)?'⤢':'⛶';f.title=(isFullscreen()||pseudoFullscreen)?'Vollbild verlassen':'Vollbild'}if(a){a.textContent=uiPrefs.sound?'🔊':'🔇';a.title=uiPrefs.sound?'Sound ausschalten':'Sound einschalten'}}
+function syncBodyMode(){document.body.dataset.players=state?.players?.length?String(state.players.length):'';document.body.dataset.mode=ui?.mode||'none';document.body.dataset.turn=state?String(state.currentPlayer??0):'';document.body.dataset.specials=state&&jokerSpecialsEnabled()?'on':'off';document.body.classList.toggle('is-playing',!!state);document.body.classList.toggle('draw-open',ui.mode==='drawnDecision');document.body.classList.toggle('no-cinematic',uiPrefs.cinematic===false);document.body.classList.toggle('performance-mode',uiPrefs.performance!==false);const hue=[43,188,145,282,18,215,325,92][Number(state?.currentPlayer||0)%8];document.documentElement.style.setProperty('--turn-hue',String(hue));syncFullscreenState()}
+function drawnDecisionHTML(c){return `<div class="drawn-decision-inline"><div id="drawn-card-stage" class="drawn-card-wrap">${cardHTML(c,true,false)}</div><div class="drawn-decision-copy"><b>Gezogene Karte</b><small>Dein Spielfeld bleibt komplett sichtbar. Entscheide hier oben am Tisch.</small><div class="drawn-decision-actions"><button class="keep" onclick="Game.keepDrawn()">✨ Behalten & tauschen</button><button class="drop" onclick="Game.discardDrawn()">🂠 Ablegen & aufdecken</button></div></div></div>`}
+let watchFxSeen='';
+function cardShortText(c){if(!c)return'';if(c.type==='star')return '⭐ Stern/Joker';return `${c.value}`.startsWith('-')?`Karte ${c.value}`:`Karte ${c.value}`;}
+function setWatch(type,data={}){return queueMotionEvent(type,data)}
+function watchPanelHTML(){const w=state?.watch;if(!w)return `<div class="watch-panel idle"><div class="watch-headline"><b>Live-Ansicht</b><span>Zieh- und Spielaktionen erscheinen hier</span></div><div class="watch-stage-wrap"><div id="watch-card-stage" class="watch-card-stage empty">LIVE</div><div class="watch-copy"><b>Noch keine Aktion</b><small>Wenn ein Spieler eine Karte zieht, tauscht oder eine Aktionskarte nutzt, wird das hier sichtbar.</small></div></div></div>`;const actorName=state.players?.[w.actor]?.name||'Spieler';const title=w.title||actorName;const text=w.text||'';return `<div class="watch-panel ${w.actor===state.currentPlayer?'current':''}"><div class="watch-headline"><b>Live: ${escapeHTML(actorName)}</b><span>${escapeHTML(w.typeLabel||'Aktion')}</span></div><div class="watch-stage-wrap"><div id="watch-card-stage" class="watch-card-stage ${w.card?'':'empty'}">${w.card?cardHTML({...w.card,faceUp:true},true,false):'LIVE'}</div><div class="watch-copy"><b>${escapeHTML(title)}</b><small>${escapeHTML(text)}</small></div></div></div>`}
