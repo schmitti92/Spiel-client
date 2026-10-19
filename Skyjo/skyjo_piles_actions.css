@@ -34,3 +34,18 @@
  #scene .move-choice button{border-radius:8px!important;padding:1px 5px!important}
 }
 @media(orientation:portrait){#scene .piles .pill{width:clamp(80px,19vw,135px)!important}#scene .pile-card{height:54px;width:56px}#scene .move-choice{width:100%}#scene .move-choice button small{display:none!important}}
+
+/* Reserve actual space for piles/actions: old 42px/29px tracks made both unreadable. */
+@media(orientation:landscape) and (min-height:730px){
+ #scene,body.skyjo-fullscreen #scene{grid-template-rows:minmax(0,1fr) 86px 53px minmax(0,1.16fr) 30px 32px!important}
+ #scene .pile-card{height:61px;max-height:calc(100% - 20px)}
+}
+@media(orientation:landscape) and (min-height:540px) and (max-height:729px){
+ #scene,body.skyjo-fullscreen #scene{grid-template-rows:minmax(0,1fr) 62px 40px minmax(0,1.13fr) 27px 30px!important}
+ #scene .pile-card{height:40px;max-height:calc(100% - 19px)}
+}
+@media(orientation:landscape) and (max-height:539px){
+ #scene,body.skyjo-fullscreen #scene{grid-template-rows:minmax(0,1fr) 44px 32px minmax(0,1.1fr) 24px 27px!important}
+ #scene .pile-card{height:27px;max-height:calc(100% - 15px)}
+ #scene .pile-label{font-size:9px}
+}
