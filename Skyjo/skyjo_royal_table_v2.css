@@ -49,3 +49,10 @@
 @media (prefers-reduced-motion:reduce){
  body.is-playing .topbar .iconbtn,body.is-playing .status.premium-status .stat{transition:none!important}
 }
+
+/* Requested cleanup: hide thumbs-up, rolling-laugh, fire and heart reactions. */
+body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="👍"],
+body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="🤣"],
+body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="🔥"],
+body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="❤️"],
+body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="❤"]{display:none!important}
