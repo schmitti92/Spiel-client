@@ -63,3 +63,19 @@ header{background:#0b1b2d77;border-radius:12px;padding:6px 12px}
 .board.self .card.face-down:not(:disabled):hover,.board.self .card.face-down:not(:disabled):focus-visible{transform:translateY(-2px);box-shadow:0 0 0 3px #ffe39a,0 4px 12px #000b!important}
 .board.self .card.face-down:not(:disabled):active{transform:scale(.96)}
 @media(prefers-reduced-motion:reduce){.board.self .card.face-down:not(:disabled){transition:none}}
+
+/* Real card-flow preview: separate action row and responsive buttons. */
+#scene{grid-template-rows:minmax(0,1fr) minmax(46px,.2fr) 35px minmax(0,1.1fr) 32px 35px!important}
+#scene .board:nth-child(1){grid-row:4!important}
+#scene .board:nth-child(2),#scene .board:nth-child(3){grid-row:1!important}
+#scene .piles{grid-row:2!important}
+#scene .move-choice{grid-column:1;grid-row:3;display:flex;justify-content:center;gap:8px;min-height:0}
+#scene .move-choice button{border:1px solid #bfa17b;border-radius:8px;background:#132e49;color:#fff;padding:4px 10px;font-weight:700;cursor:pointer}
+#scene .move-choice button[aria-pressed="true"]{background:#1469a3;outline:2px solid #f4d595}
+#scene .move-choice button:disabled,#scene .piles button:disabled{opacity:.5;cursor:default}
+#scene .piles button{cursor:pointer;color:#fff;font-family:inherit}
+#scene .piles button:focus-visible{outline:3px solid #ffe08c;outline-offset:2px}
+#scene .status{grid-row:5!important}
+#scene footer{grid-row:6!important}
+@media (max-height:700px) and (orientation:landscape){#scene{grid-template-rows:minmax(0,1fr) 42px 29px minmax(0,1.1fr) 27px 30px!important}.move-choice button{font-size:10px;padding:2px 5px!important}}
+@media(orientation:portrait){#scene{grid-template-rows:minmax(0,1fr) 52px 50px minmax(0,1.1fr) 45px 72px!important}.move-choice{flex-wrap:wrap}}
