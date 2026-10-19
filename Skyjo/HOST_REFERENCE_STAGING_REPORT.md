@@ -31,3 +31,14 @@ Die isolierte Host-Vorschau benutzt die vorhandenen Dateien `skyjo_host_test.htm
 2. Korrekte SKYJO-Action-Spielphasen und Spezialregeln anhand der bereits vorhandenen produktiven Regelimplementierung abgleichen.
 3. Separate Host-Test-Engine regelgetreu machen, mit deterministischen Testfällen für Spielende, Gleichstände, Reihen und Sonderkarten.
 4. Erst nach expliziter Freigabe und End-to-End-Tests die neue Ansicht in `main` integrieren.
+
+## Nachprüfung der Nutzer-Screenshots (20:50 Uhr)
+- Screenshot des produktiven Host-Tests zeigt: Kartenbretter und Seitenknöpfe vorhanden, aber mittlere Stapel-/Aktionszone ist schlecht lesbar und liegt optisch zu dicht an den Spielfeldern; Status und Testknöpfe sind sehr klein.
+- Das Zielbild enthält realistische Tischrequisiten, Avatare, Kartenstapel und größere Emoji-/Sprüche-Kacheln. Diese Grafikdetails sind **noch nicht** als Assets implementiert.
+- Im Staging-HTML wurde ein **konkreter Fehler** gefunden: das Stylesheet hatte ein überflüssiges doppeltes Anführungszeichen im `href`-Tag. Behoben und Cache-Version erhöht.
+- Zusätzliche CSS-Constraints verhindern bei typischen Tablet-Querformatgrößen, dass Gegnerkarten, Stapel, Aktionsleiste und Status in derselben Rasterzeile liegen. Die tatsächliche Pixel-Darstellung bleibt bis zum Browser-Test unbestätigt.
+- Statusbereiche erhielten `role=status` und `aria-live=polite` für Screenreader.
+- Neuer Regressionstest `tests/skyjo-host-layout.test.cjs` prüft die Stylesheet-Einbindung und erforderliche Bedienelemente.
+
+## Release-Grenze
+Auch der Folgebranch `skyjo-reference-fixes-20261019` bleibt unveröffentlicht. **Keine Aktualisierung von `main` ohne explizite Freigabe.**
