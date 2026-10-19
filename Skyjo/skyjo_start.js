@@ -119,6 +119,7 @@ function render(){
  const settings=room.settings||{};
  const selectedSkin=localStorage.getItem('skyjo-visual-skin')||'classic';
  for(const [id,skin] of [['skyjo-wood-choice','wood'],['skyjo-premium-choice','premium']]){const button=$(id);if(button){const selected=selectedSkin===skin;button.classList.toggle('active',selected);button.setAttribute('aria-pressed',String(selected));}}
+ const classicButton=document.querySelector('[data-board="classic"]');if(classicButton){const isClassic=selectedSkin==='classic';classicButton.classList.toggle('skin-classic-selected',isClassic);}
  for(const key of supported){
   const value=$('value-'+key);
   if(value)value.textContent=typeof settings[key]==='boolean'?(settings[key]?'An':'Aus'):String(settings[key]??'–');
@@ -246,6 +247,9 @@ document.querySelectorAll('[data-board]').forEach(btn=>btn.addEventListener('cli
  void mutate('/skyjo-settings',{settings:{...room.settings,boardTheme:theme}});
 }));
 for(const [id,skin] of [['skyjo-wood-choice','wood'],['skyjo-premium-choice','premium']]){$(id)?.addEventListener('click',()=>{const selected=localStorage.getItem('skyjo-visual-skin')===skin;localStorage.setItem('skyjo-visual-skin',selected?'classic':skin);render();});}
+// The board-theme control and the local visual skin are separate settings.
+// Provide a direct way back to the original appearance without changing room rules.
+document.querySelector('[data-board="classic"]')?.addEventListener('click',()=>{if(localStorage.getItem('skyjo-visual-skin')!=='classic'){localStorage.setItem('skyjo-visual-skin','classic');render();}});
 
 $('ready-button').addEventListener('click',()=>{
  const me=room?.players.find(p=>p.me);
