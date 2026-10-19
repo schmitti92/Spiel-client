@@ -65,3 +65,14 @@ Die Tests sind statisch und automatisiert; sie belegen nicht, dass auf einem rea
 
 ### Grenzen dieser Phase
 Die Tests prüfen Code und Markup, ersetzen jedoch weder echte Screenreader-Tests noch Tablet-Browser-Interaktion. Es wurden keine Änderungen an produktivem Multiplayer oder Server vorgenommen.
+
+## Entwicklungsphase 5: Dialog-Fokus und abgeschnittene Tablet-Menüs
+- `Skyjo/skyjo_host_test_visual.js`: Tab und Shift+Tab bleiben im geöffneten Dialog, Escape schließt ihn; beim Schließen wird der vorherige Fokus wiederhergestellt.
+- `Skyjo/skyjo_tablet_density.css`: Seitenspalten scrollen bei zu geringer Höhe vertikal statt Buttons und Reaktionen abzuschneiden.
+- `Skyjo/skyjo_host_test.html`: CSS-/JS-Cacheversionen aktualisiert.
+- `tests/skyjo-host-accessibility.test.cjs`: erweiterte statische Tests für Fokusbegrenzung und Tablet-Scrollverhalten.
+- GitHub Actions **39309765203**: zunächst fehlgeschlagen wegen einer fehlerhaften Regex im Test; Prüfung durch robuste explizite Zeichenkettenasserts ersetzt.
+- GitHub Actions **39309871112**: **success** (einschließlich aller bereits vorhandenen Regressionstests).
+
+### Noch offene Prüfung
+Eine reale Tablet-Ansicht mit Browser-Vollbild, Bildschirmtastatur und verschiedenen Höhen ist weiterhin erforderlich. Der Fokus-Test ist statisch und ersetzt keinen echten Tastatur- oder Screenreader-Test.
