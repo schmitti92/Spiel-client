@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');const fs=require('node:fs');
 const html=fs.readFileSync('Skyjo/skyjo_host_test.html','utf8');
 const css=fs.readFileSync('Skyjo/skyjo_host_reference_layout.css','utf8');
-assert.match(html, /href="skyjo_host_reference_layout\.css\?v=2"/);
+assert.match(html, /href="skyjo_host_reference_layout\.css\?v=3"/);
 assert.doesNotMatch(html, /href="[^"]+""/);
 for(const id of ['boards','draw-deck','draw-discard','swap-card','discard-reveal','status','step','reset','test-dialog'])assert.ok(html.includes('id="'+id+'"'),'missing control '+id);
 assert.match(css, /#scene \.board:nth-child\(2\)/);
