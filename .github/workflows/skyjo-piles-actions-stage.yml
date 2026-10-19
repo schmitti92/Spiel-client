@@ -1,0 +1,21 @@
+name: SKYJO pile and action staging checks
+on:
+  push:
+    branches: [skyjo-piles-actions-20261019]
+    paths: ['.github/workflows/skyjo-piles-actions-stage.yml']
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          node --check Skyjo/skyjo_host_test.js
+          node --check Skyjo/skyjo_host_preview_engine.js
+          node tests/skyjo-piles-actions.test.cjs
+          node tests/skyjo-host-preview.test.cjs
+          node tests/skyjo-host-invariants.test.cjs
+          node tests/skyjo-host-accessibility.test.cjs
+          node tests/skyjo-host-layout.test.cjs
+          node tests/skyjo-fullscreen.test.cjs
