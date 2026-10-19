@@ -1,0 +1,45 @@
+/* Visible-theme repair. Do not alter card, handzone, piles or game state. */
+html:has(.three-player-layout),body:has(.three-player-layout){
+ background-color:#332017!important;
+ background-image:url("assets/royal_table_decor.svg"),linear-gradient(90deg,rgba(13,7,4,.12),transparent 30%,transparent 75%,rgba(13,7,4,.18)),url("assets/royal_walnut_table.svg")!important;
+ background-size:cover!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ background-attachment:fixed!important;
+}
+body:has(.three-player-layout) #app{
+ background:transparent!important;
+}
+body:has(.three-player-layout) .table-area.three-player-layout .own-seat .player-head,
+body:has(.three-player-layout) .table-area.three-player-layout .own-seat .player .player-head{
+ background:#b78336!important;
+ background-image:linear-gradient(120deg,#e6b960,#c18a3c 55%,#a16b2e)!important;
+ border-color:#edc77c!important;
+ color:#211509!important;
+}
+body:has(.three-player-layout) .table-area.three-player-layout .own-seat .player-head :is(*){
+ text-shadow:none!important;
+}
+body:has(.three-player-layout) .table-area.three-player-layout .own-seat .player-head :is(h1,h2,h3,h4,strong,b,.name,.player-name){
+ color:#211509!important;
+}
+@media (min-width:1050px) and (orientation:landscape){
+ body:has(.three-player-layout) .skyjo-hub-strip{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+  width:auto!important;
+  max-width:100%!important;
+  margin:0 0 8px!important;
+  padding:0!important;
+  clear:both!important;
+ }
+ body:has(.three-player-layout) .skyjo-hub-link{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+ }
+}
+
