@@ -15,7 +15,7 @@ function render(){if(!s)return;
  $('remaining').textContent=String(s.deck.length);
  $('discard').textContent=s.discard.length?String(s.discard.at(-1)):'–';
  $('step').disabled=s.finished||!!s.pending;
- $('draw-deck').disabled=s.finished||auto||E.current(s)!==0||!!s.pending||!s.deck.length;
+ $('draw-deck').disabled=s.finished||auto||E.current(s)!==0||!!s.pending||(!s.deck.length&&s.discard.length<=1);
  $('draw-discard').disabled=s.finished||auto||E.current(s)!==0||!!s.pending||!s.discard.length;
  $('discard-reveal').disabled=!s.pending||s.pending.source!=='deck'||auto||E.current(s)!==0;
  $('swap-card').disabled=!s.pending||auto||E.current(s)!==0;
@@ -29,7 +29,7 @@ function render(){if(!s)return;
 function hostPlace(index){if(!verified||auto||!s||E.current(s)!==0)return;if(E.place(s,index,choice)){choice='swap';render()}}
 function hostPick(source){if(!verified||auto||!s||E.current(s)!==0)return;if(E.pick(s,source)){choice='swap';render()}}
 function step(){if(!verified||!s||s.finished||s.pending)return;const i=E.current(s);if(i===0){if(!E.pick(s,'deck'))E.pick(s,'discard');const hidden=s.boards[0].findIndex(c=>!c.up);const target=hidden>=0?hidden:0;E.place(s,target,'swap')}else E.bot(s);render()}
-function schedule(){if(!auto||!s||s.finished)return;timer=setTimeout(()=>{if(document.hidden){stop();return}step();schedule()},550)}
+function schedule(){if(!auto||!s)return;if(s.finished){stop();return}timer=setTimeout(()=>{timer=null;if(document.hidden){stop();return}step();schedule()},550)}
 $('draw-deck').onclick=()=>hostPick('deck');$('draw-discard').onclick=()=>hostPick('discard');
 $('swap-card').onclick=()=>{choice='swap';render()};$('discard-reveal').onclick=()=>{choice='discard-reveal';render()};
 $('step').onclick=()=>{stop();step()};$('reset').onclick=reset;
@@ -39,8 +39,8 @@ async function boot(){try{
  if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code))throw Error('Kein gültiger Raumcode.');
  let user=null;for(let i=0;i<30;i++){const state=window.SpielOnline?.state?.();if(state?.status==='online'&&state.user?.getIdToken){user=state.user;break}await new Promise(r=>setTimeout(r,300))}
  if(!user)throw Error('Bitte anmelden.');const token=await user.getIdToken();
- const res=await fetch(api+'/api/hub/rooms/'+code,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!res.ok)throw Error('Raum konnte nicht geprüft werden.');
- const data=await res.json();if(!data?.room?.host||data.room.game!=='skyjo')throw Error('Nur der Host einer SKYJO-Lobby darf diese Vorschau öffnen.');
+ const res=await fetch(api+'/api/hub/rooms/'+code,{headers:{Authorization:'Bearer '+token},cache:'no-store',signal:AbortSignal.timeout(12000)});if(!res.ok)throw Error('Raum konnte nicht geprüft werden.');
+ const data=await res.json();if(data?.room?.host!==true||data.room.game!=='skyjo')throw Error('Nur der Host einer SKYJO-Lobby darf diese Vorschau öffnen.');
  verified=true;$('guard').textContent='✔ Host bestätigt – isolierter Kartentest bereit';$('game').hidden=false;reset()
  }catch(e){$('guard').textContent='⛔ '+e.message}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});window.addEventListener('pagehide',stop);boot();
