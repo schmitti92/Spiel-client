@@ -1,4 +1,4 @@
-name: SKYJO fullscreen staging verification v8
+name: SKYJO fullscreen staging verification v9
 on:
   push:
     branches: [skyjo-immersive-fullscreen-staging-20261019]
