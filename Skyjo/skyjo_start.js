@@ -25,8 +25,6 @@ function onlineHome(extra=''){
 function gameUrl(snapshot){
  const m=snapshot.match;
  const params=new URLSearchParams({mode:'online',hub:snapshot.code,match:m.id,room:m.gameCode,board:m.settings?.boardTheme==='illustrated'?'illustrated':'classic'});
- const selectedSkin=localStorage.getItem('skyjo-visual-skin');
- params.set('skin',['wood','premium'].includes(selectedSkin)?selectedSkin:'classic');
  return 'skyjo_action.html?'+params.toString();
 }
 function note(message='',bad=false){
@@ -113,13 +111,9 @@ function render(){
  $('lobby-view').classList.remove('sj-hidden');
  $('copy-code-btn').textContent=code+' ⧉';
  const hostReady=room.host&&room.phase==='preparing'&&!busy;
- const testBtn=$('host-test-button');if(testBtn){testBtn.hidden=!room.host||room.phase!=='preparing';testBtn.style.display=testBtn.hidden?'none':'inline-flex';testBtn.href='skyjo_host_test.html?room='+encodeURIComponent(code);}
  $('host-banner').textContent=room.host?'👑 Du bist der Host – nur du änderst die Einstellungen.':'🔒 Nur der Spielleiter kann die Einstellungen ändern.';
  $('host-note').textContent=room.host?'👑 Du kannst die Regeln ändern und Teilnehmerplätze verteilen. Alle Bereitmeldungen werden nach Änderungen zurückgesetzt.':'👑 Der Host bestimmt die Regeln. Du kannst dich bereit melden; der letzte Bereit-Klick startet die Partie automatisch.';
  const settings=room.settings||{};
- const selectedSkin=localStorage.getItem('skyjo-visual-skin')||'classic';
- for(const [id,skin] of [['skyjo-wood-choice','wood'],['skyjo-premium-choice','premium']]){const button=$(id);if(button){const selected=selectedSkin===skin;button.classList.toggle('active',selected);button.setAttribute('aria-pressed',String(selected));}}
- const classicSkin=$('skyjo-classic-skin-choice');if(classicSkin){const selected=selectedSkin==='classic';classicSkin.classList.toggle('active',selected);classicSkin.setAttribute('aria-pressed',String(selected));}
  for(const key of supported){
   const value=$('value-'+key);
   if(value)value.textContent=typeof settings[key]==='boolean'?(settings[key]?'An':'Aus'):String(settings[key]??'–');
@@ -129,7 +123,7 @@ function render(){
   });
  }
  $('value-maxPlayers').textContent=String(room.maxPlayers||5)+' Spieler';
- document.querySelectorAll('[data-board]').forEach(btn=>{const selected=btn.dataset.board===(settings.boardTheme||'classic');btn.classList.toggle('active',selected && selectedSkin==='classic');btn.setAttribute('aria-pressed',String(selected));btn.disabled=!hostReady;});
+ document.querySelectorAll('[data-board]').forEach(btn=>{const selected=btn.dataset.board===(settings.boardTheme||'classic');btn.classList.toggle('active',selected);btn.setAttribute('aria-pressed',String(selected));btn.disabled=!hostReady;});
  const list=$('players-list');
  list.replaceChildren();
  (room.players||[]).forEach((p,i)=>list.append(playerRow(p,i)));
@@ -246,11 +240,6 @@ document.querySelectorAll('[data-board]').forEach(btn=>btn.addEventListener('cli
  if(!['classic','illustrated'].includes(theme))return;
  void mutate('/skyjo-settings',{settings:{...room.settings,boardTheme:theme}});
 }));
-for(const [id,skin] of [['skyjo-wood-choice','wood'],['skyjo-premium-choice','premium']]){$(id)?.addEventListener('click',()=>{try{localStorage.setItem('skyjo-visual-skin',skin);document.querySelectorAll('#skyjo-wood-choice,#skyjo-premium-choice,#skyjo-classic-skin-choice').forEach(b=>{const active=b.id===id;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});document.querySelectorAll('[data-board]').forEach(b=>b.classList.remove('active'));note('✓ Design gewählt: '+(skin==='premium'?'Premium-Holztisch':'Holz')+'. Es wird beim nächsten Spielstart verwendet.');}catch(e){note('Design konnte nicht gespeichert werden: '+e.message,true);}});}
-// The board-theme control and the local visual skin are separate settings.
-// Provide a direct way back to the original appearance without changing room rules.
-$('skyjo-classic-skin-choice')?.addEventListener('click',()=>{localStorage.setItem('skyjo-visual-skin','classic');render();});
-
 $('ready-button').addEventListener('click',()=>{
  const me=room?.players.find(p=>p.me);
  if(!me?.participating||updating())return;
