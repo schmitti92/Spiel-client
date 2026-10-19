@@ -246,7 +246,7 @@ document.querySelectorAll('[data-board]').forEach(btn=>btn.addEventListener('cli
  if(!['classic','illustrated'].includes(theme))return;
  void mutate('/skyjo-settings',{settings:{...room.settings,boardTheme:theme}});
 }));
-for(const [id,skin] of [['skyjo-wood-choice','wood'],['skyjo-premium-choice','premium']]){$(id)?.addEventListener('click',()=>{localStorage.setItem('skyjo-visual-skin',skin);render();});}
+for(const [id,skin] of [['skyjo-wood-choice','wood'],['skyjo-premium-choice','premium']]){$(id)?.addEventListener('click',()=>{try{localStorage.setItem('skyjo-visual-skin',skin);document.querySelectorAll('#skyjo-wood-choice,#skyjo-premium-choice,#skyjo-classic-skin-choice').forEach(b=>{const active=b.id===id;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});document.querySelectorAll('[data-board]').forEach(b=>b.classList.remove('active'));note('✓ Design gewählt: '+(skin==='premium'?'Premium-Holztisch':'Holz')+'. Es wird beim nächsten Spielstart verwendet.');}catch(e){note('Design konnte nicht gespeichert werden: '+e.message,true);}});}
 // The board-theme control and the local visual skin are separate settings.
 // Provide a direct way back to the original appearance without changing room rules.
 $('skyjo-classic-skin-choice')?.addEventListener('click',()=>{localStorage.setItem('skyjo-visual-skin','classic');render();});
