@@ -6,7 +6,7 @@ assert.match(html,/id="fullscreen-toggle"/);
 assert.match(html,/skyjo_fullscreen\.js\?v=1/);
 assert.match(html,/skyjo_immersive\.css\?v=1/);
 assert.match(js,/requestFullscreen/);assert.match(js,/exitFullscreen/);assert.match(js,/fullscreenchange/);
-assert.match(js,/aria-pressed/);assert.match(js,/catch\(e\)/);
+assert.match(js,/aria-pressed/);assert.match(js,/catch\(error\)/);
 assert.match(css,/body\.skyjo-fullscreen/);
 assert.match(css,/wood_table_ambient\.svg/);
 assert.match(svg,/<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
