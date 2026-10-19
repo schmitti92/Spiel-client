@@ -47,3 +47,11 @@ header{background:#0b1b2d77;border-radius:12px;padding:6px 12px}
  #scene footer button{font-size:9px;padding:3px}
 }
 @media(prefers-reduced-motion:reduce){.scene-side button{transition:none}}
+
+/* Separate turn status from three simulation actions: never overlap. */
+#scene{grid-template-rows:minmax(0,1fr) minmax(48px,.2fr) minmax(0,1.1fr) 34px 36px!important}
+#scene .status{grid-row:4;grid-column:1;padding:4px 10px!important;width:100%;min-width:0!important}
+#scene footer{grid-row:5;grid-column:1;position:static!important;right:auto!important;bottom:auto!important;transform:none!important;justify-self:center;align-self:stretch;display:flex;gap:6px!important}
+#scene footer button{min-height:32px;white-space:nowrap}
+@media(max-height:700px) and (orientation:landscape){#scene{grid-template-rows:minmax(0,1fr) 43px minmax(0,1.1fr) 30px 31px!important}#scene footer button{min-height:28px}}
+@media(orientation:portrait){#scene{grid-template-rows:minmax(0,1fr) 48px minmax(0,1.1fr) 38px 72px!important}#scene footer{flex-wrap:wrap;justify-content:center}}
