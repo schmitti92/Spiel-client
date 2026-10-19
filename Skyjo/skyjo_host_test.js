@@ -16,11 +16,15 @@ function render(){if(!s)return;
  $('discard').textContent=s.discard.length?String(s.discard.at(-1)):'–';
  const top=s.discard.at(-1),face=$('discard-face'),card=$('discard-card');face.textContent=top===undefined?'–':String(top);card.className='pile-card pile-face '+(top===undefined?'empty':top<0?'neg':top===0?'zero':top<=4?'low':top<=8?'mid':'high');
  $('draw-deck').classList.toggle('pile-empty',s.deck.length===0);
+ $('draw-deck').setAttribute('aria-label','Nachziehstapel: '+s.deck.length+' Karten. '+(s.pending?'Karte bereits gezogen':'Karte ziehen'));
+ $('draw-discard').setAttribute('aria-label','Ablagestapel: '+(top===undefined?'leer':'oberste Karte '+top)+'. '+(s.pending?'Karte bereits gezogen':'Karte nehmen'));
  $('step').disabled=s.finished||!!s.pending;
  $('draw-deck').disabled=s.finished||auto||E.current(s)!==0||!!s.pending||(!s.deck.length&&s.discard.length<=1);
  $('draw-discard').disabled=s.finished||auto||E.current(s)!==0||!!s.pending||!s.discard.length;
  $('discard-reveal').disabled=!s.pending||s.pending.source!=='deck'||auto||E.current(s)!==0;
+ $('discard-reveal').title=!s.pending?'Zuerst eine Karte vom Nachziehstapel ziehen':s.pending.source!=='deck'?'Nur mit einer Karte vom Nachziehstapel möglich':'Gezogene Karte ablegen und eine verdeckte Karte aufdecken';
  $('swap-card').disabled=!s.pending||auto||E.current(s)!==0;
+ $('swap-card').title=!s.pending?'Zuerst eine Karte von einem Stapel ziehen':'Gezogene Karte gegen eine eigene Karte tauschen';
  $('discard-reveal').classList.toggle('chosen',!!s.pending&&choice==='discard-reveal');
  $('swap-card').classList.toggle('chosen',!!s.pending&&choice==='swap');
  $('draw-deck').classList.toggle('pile-selected',!!s.pending&&s.pending.source==='deck');
@@ -29,7 +33,7 @@ function render(){if(!s)return;
  $('swap-card').setAttribute('aria-pressed',String(choice==='swap'));
  const pending=s.pending?' · gezogene Karte: '+s.pending.value:'';
  if(s.finished){const results=s.boards.map((b,i)=>({name:names[i],score:b.reduce((sum,c)=>sum+c.value,0)}));$('status').textContent='🏆 Test beendet · '+results.map(x=>x.name+': '+x.score+' P.').join(' · ')}
- else if(E.current(s)===0)$('status').textContent=s.pending?'👑 '+(choice==='swap'?'Karte zum Tauschen antippen':'Verdeckte Karte aufdecken')+pending:'👑 Du bist dran – Stapel wählen';
+ else if(E.current(s)===0)$('status').textContent=s.pending?'👑 '+(choice==='swap'?'Karte zum Tauschen antippen':'Verdeckte Karte aufdecken')+pending:'👑 Du bist dran – zuerst Nachziehstapel oder Ablagestapel antippen';
  else $('status').textContent=names[E.current(s)]+' ist dran';
 }
 function hostPlace(index){if(!verified||auto||!s||E.current(s)!==0)return;if(E.place(s,index,choice)){choice='swap';render()}}
