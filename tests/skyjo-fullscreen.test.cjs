@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const read=p=>fs.readFileSync(p,'utf8');
+const html=read('Skyjo/skyjo_host_test.html'),js=read('Skyjo/skyjo_fullscreen.js'),css=read('Skyjo/skyjo_immersive.css'),svg=read('Skyjo/assets/wood_table_ambient.svg');
+assert.match(html,/id="fullscreen-toggle"/);
+assert.match(html,/skyjo_fullscreen\.js\?v=1/);
+assert.match(html,/skyjo_immersive\.css\?v=1/);
+assert.match(js,/requestFullscreen/);assert.match(js,/exitFullscreen/);assert.match(js,/fullscreenchange/);
+assert.match(js,/aria-pressed/);assert.match(js,/catch\(e\)/);
+assert.match(css,/body\.skyjo-fullscreen/);
+assert.match(css,/wood_table_ambient\.svg/);
+assert.match(svg,/<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+assert.ok(svg.length<12000,'keep background SVG lightweight');
+console.log('Fullscreen controls and background asset checks passed');
