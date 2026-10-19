@@ -5,13 +5,13 @@ document.getElementById('dialog-close').onclick=()=>dialog.hidden=true;
 dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.hidden=true});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')dialog.hidden=true});
 const messages={
-'Regeln':'Diese isolierte Vorschau zeigt Karten und simulierte Züge. Ziehen, Tauschen, Joker und Spezialfähigkeiten werden erst mit der echten Spielengine angebunden.',
+'Regeln':'Du kannst den Nachzieh- oder Ablagestapel wählen, anschließend eine Karte tauschen. Nach dem Ziehen vom Nachziehstapel kannst du alternativ die gezogene Karte abwerfen und eine verdeckte Karte aufdecken. Joker und Spezialfähigkeiten gehören noch nicht zu dieser Vorschau.',
 'Statistik':'Testpartien verändern keine Online-Statistiken. Die Kartenwerte werden ausschließlich am Ende eines vollständigen Testdurchlaufs angezeigt.',
 'Chat':'Die simulierten Spieler sind keine echten Online-Teilnehmer. Nachrichten werden hier nicht versendet.',
 'Spezial':'Spezialfähigkeiten sind in dieser Vorschau noch nicht spielbar. Die produktive SKYJO-Logik bleibt unverändert.',
 'Joker':'Joker sind in dieser Vorschau noch nicht spielbar.',
 'Reihe lösen':'Reihen und Spalten können in dieser Vorschau noch nicht entfernt werden.',
-'Menü':'▶ Zug simulieren: eine Karte aufdecken. 🤖 Auto-Test starten: automatische Testzüge aller drei Plätze. ⏸ Stoppen: pausiert. ↻ Neu mischen: Vorschau zurücksetzen. Alle Daten bleiben lokal.'
+'Menü':'Nachziehstapel oder Ablagestapel antippen, dann Tauschen oder Abwerfen & Aufdecken wählen und eine eigene Karte antippen. ▶ Zug simulieren: vereinfachter Zug. 🤖 Auto-Test: alle drei Spieler automatisch. ↻ Neu mischen: zurücksetzen. Keine Online-Statistik.'
 };
 document.querySelectorAll('[data-dialog]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.dialog,messages[b.dataset.dialog])));
 const quotes={
