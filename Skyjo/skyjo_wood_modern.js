@@ -2,7 +2,7 @@
 (()=>{'use strict';
  const params=new URLSearchParams(location.search);if(!['wood','premium'].includes(params.get('skin')))return;
  document.documentElement.classList.add('skyjo-wood-modern');if(params.get('skin')==='premium')document.documentElement.classList.add('skyjo-premium-wood');
- const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href='skyjo_wood_modern.css?v=3';document.head.appendChild(sheet);
+ const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href='skyjo_wood_modern.css?v=3';document.head.appendChild(sheet);if(params.get('skin')==='premium'){const premium=document.createElement('link');premium.rel='stylesheet';premium.href='skyjo_premium_reference.css?v=1';document.head.appendChild(premium);}
  function init(){document.body.classList.add('skyjo-wood-modern');if(params.get('skin')==='premium')document.body.classList.add('skyjo-premium-wood');
   const dock=document.createElement('div');dock.id='skyjo-wood-dock';dock.hidden=true;
   const reactions=document.createElement('div');reactions.className='wood-reactions';
