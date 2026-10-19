@@ -1,0 +1,48 @@
+/* Royal Table 2026 – image-backed walnut table and bespoke compass card.
+   Only the standard SKYJO appearance. Comic/Christian theme artwork untouched.
+   Layout dimensions intentionally unchanged: stable handzone and fixed pile positions. */
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]){
+ background-color:#2c180f!important;
+ background-image:linear-gradient(90deg,rgba(11,6,4,.23),transparent 20%,transparent 80%,rgba(11,6,4,.25)),url("assets/royal_walnut_table.svg")!important;
+ background-position:center center!important;
+ background-size:cover!important;
+ background-attachment:fixed!important;
+}
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .card.back{
+ background-color:#0b2949!important;
+ background-image:url("assets/royal_compass_card.svg")!important;
+ background-position:center!important;
+ background-size:100% 100%!important;
+ background-repeat:no-repeat!important;
+ border-color:#dfb96e!important;
+ box-shadow:inset 0 0 0 1px rgba(255,226,157,.36),0 3px 8px rgba(0,0,0,.45)!important;
+}
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .card.back::before,
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .card.back::after{
+ content:none!important;
+ display:none!important;
+}
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .player{
+ background-image:linear-gradient(155deg,rgba(16,39,55,.98),rgba(3,15,27,.98))!important;
+ border-color:rgba(222,176,97,.87)!important;
+}
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .center-table{
+ background-image:linear-gradient(150deg,rgba(8,29,43,.98),rgba(3,16,27,.98))!important;
+ border-color:rgba(226,182,105,.85)!important;
+}
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .player .gridwrap{
+ background:linear-gradient(150deg,rgba(5,18,30,.97),rgba(5,23,37,.96))!important;
+}
+/* Reserve the original handzone footprint even when empty, to prevent pile jumping. */
+@media (min-width:1050px) and (orientation:landscape){
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox{
+   min-height:clamp(170px,22vh,220px)!important;
+   box-sizing:border-box!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles{
+   grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media (prefers-reduced-motion:reduce){
+ body.is-playing .card.back{transition:none!important}
+}
