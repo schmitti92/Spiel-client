@@ -1,4 +1,4 @@
-name: SKYJO audit staging
+name: SKYJO audit staging rerun
 on:
   push:
     branches: [skyjo-audit-hardening-20261019]
