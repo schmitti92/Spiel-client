@@ -18,3 +18,4 @@ jobs:
           for t in tests/skyjo-v*.test.cjs; do node "$t"; done
           grep -Fq 'skyjo_host_test_polish.css?v=1' Skyjo/skyjo_host_test.html
           grep -Fq 'Auto-Test starten' Skyjo/skyjo_host_test.js
+          grep -Fq 'const quotes=' Skyjo/skyjo_host_test_visual.js
