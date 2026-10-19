@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),code=params.get('room')||'',api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),code=params.get('room')||'',api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const E=window.SkyjoPreviewEngine,names=['Du (Host)','🤖 Testspieler 1','🤖 Testspieler 2'];let s=null,auto=false,timer=null,verified=false,choice='swap';
 function stop(){auto=false;if(timer!==null){clearTimeout(timer);timer=null}const b=$('auto-test');if(b)b.textContent='🤖 Auto-Test starten'}
 function reset(){stop();s=E.create();choice='swap';render()}
