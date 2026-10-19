@@ -129,7 +129,7 @@ function render(){
   });
  }
  $('value-maxPlayers').textContent=String(room.maxPlayers||5)+' Spieler';
- document.querySelectorAll('[data-board]').forEach(btn=>{const selected=btn.dataset.board===(settings.boardTheme||'classic');btn.classList.toggle('active',selected);btn.setAttribute('aria-pressed',String(selected));btn.disabled=!hostReady;});
+ document.querySelectorAll('[data-board]').forEach(btn=>{const selected=btn.dataset.board===(settings.boardTheme||'classic');btn.classList.toggle('active',selected && selectedSkin==='classic');btn.setAttribute('aria-pressed',String(selected));btn.disabled=!hostReady;});
  const list=$('players-list');
  list.replaceChildren();
  (room.players||[]).forEach((p,i)=>list.append(playerRow(p,i)));
@@ -246,7 +246,7 @@ document.querySelectorAll('[data-board]').forEach(btn=>btn.addEventListener('cli
  if(!['classic','illustrated'].includes(theme))return;
  void mutate('/skyjo-settings',{settings:{...room.settings,boardTheme:theme}});
 }));
-for(const [id,skin] of [['skyjo-wood-choice','wood'],['skyjo-premium-choice','premium']]){$(id)?.addEventListener('click',()=>{const selected=localStorage.getItem('skyjo-visual-skin')===skin;localStorage.setItem('skyjo-visual-skin',selected?'classic':skin);render();});}
+for(const [id,skin] of [['skyjo-wood-choice','wood'],['skyjo-premium-choice','premium']]){$(id)?.addEventListener('click',()=>{localStorage.setItem('skyjo-visual-skin',skin);render();});}
 // The board-theme control and the local visual skin are separate settings.
 // Provide a direct way back to the original appearance without changing room rules.
 $('skyjo-classic-skin-choice')?.addEventListener('click',()=>{localStorage.setItem('skyjo-visual-skin','classic');render();});
