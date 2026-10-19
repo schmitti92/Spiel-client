@@ -4,3 +4,50 @@
 @media(max-height:650px){header{padding:0 5px}.notice{display:none}#game{height:calc(100dvh - 58px)}.pill{padding:3px 8px!important}.scene-side button{min-height:36px!important}.board h2{margin-bottom:2px!important}}
 
 #scene{position:relative}#scene footer{position:absolute;right:0;bottom:0;z-index:2}#scene .status{padding-right:135px;padding-left:22px;min-width:min(410px,100%)}@media(max-width:850px){#scene .status{min-width:0;width:100%;padding:6px 145px 6px 7px;font-size:12px!important}#scene footer button{font-size:10px;padding:5px}}
+
+/* v3: reference composition, three 4x3 boards fully visible on landscape tablets. */
+#game{height:calc(100dvh - 105px);min-height:0;overflow:hidden}
+#scene{grid-template-rows:minmax(0,1fr) minmax(52px,.22fr) minmax(0,1.12fr) minmax(40px,.17fr);min-height:0}
+.board{display:flex;flex-direction:column;overflow:hidden}
+.board .grid{flex:1 1 auto;min-height:0;width:min(100%,calc((100dvh - 185px)*.65));height:auto!important;align-content:stretch}
+.board:nth-child(2) .grid,.board:nth-child(3) .grid{width:min(100%,calc((100dvh - 185px)*.55))}
+.card{position:relative;min-width:0;display:flex!important;align-items:center;justify-content:center;line-height:1;letter-spacing:-.025em}
+.card:not(.open){font-size:clamp(10px,1.3vw,17px)!important;color:#e3f2ff!important;text-shadow:0 1px 3px #0009}
+.board.self{background:linear-gradient(135deg,#0b3939ed,#071e2cf5)!important}
+.board:nth-child(2){background:linear-gradient(135deg,#2d183eea,#101b34f5)!important}
+.board:nth-child(3){background:linear-gradient(135deg,#122c4bea,#08182bf5)!important}
+#scene .piles{align-items:center}
+#scene .status{min-width:0!important;width:100%;padding:7px 190px 7px 8px!important;align-self:stretch;display:grid;place-items:center}
+#scene footer{right:6px;bottom:3px;align-items:center}
+#scene footer button{min-height:32px;white-space:nowrap}
+.scene-side{overflow-y:auto;scrollbar-width:thin}
+.scene-left .reaction-panel{margin-top:auto}
+#test-dialog article{max-height:80dvh;overflow-y:auto}
+@media (min-width:1000px) and (orientation:landscape){
+ #game{grid-template-columns:minmax(145px,14%) minmax(0,1fr) minmax(125px,12%)}
+ .board:nth-child(2),.board:nth-child(3){width:calc(50% - 9px)!important}
+ .board:nth-child(1){max-width:min(540px,70%)!important}
+ .scene-side button{min-height:clamp(37px,7vh,69px)}
+}
+@media (max-width:999px) and (orientation:landscape){
+ #game{grid-template-columns:clamp(82px,12vw,120px) minmax(0,1fr) clamp(80px,11vw,110px);gap:5px;height:calc(100dvh - 76px)}
+ #scene{grid-template-rows:minmax(0,1fr) 43px minmax(0,1.07fr) 38px}
+ .board:nth-child(1){max-width:min(440px,75%)!important}
+ .board .grid{width:100%}
+ .board:nth-child(2) .grid,.board:nth-child(3) .grid{width:100%}
+ .scene-side button{min-height:36px!important;font-size:11px!important}
+ .scene-left .reaction-panel{padding:4px}
+ .reaction-row button{font-size:18px!important;min-height:27px!important}
+ #scene .status{font-size:13px!important;padding-right:165px!important}
+ #scene footer button{font-size:10px;padding:5px 7px}
+}
+@media (orientation:portrait){
+ #game{overflow:visible;height:auto;min-height:620px;grid-template-columns:75px minmax(0,1fr) 75px}
+ #scene{min-height:650px}
+ .board:nth-child(1){max-width:100%!important}
+ .board .grid{width:100%}
+ .scene-side button{font-size:10px!important}
+ #scene .status{padding-right:8px!important;padding-bottom:42px!important}
+ #scene footer{right:50%;transform:translateX(50%)}
+}
+@media (prefers-reduced-motion:reduce){.reaction-burst{animation:none!important}}
