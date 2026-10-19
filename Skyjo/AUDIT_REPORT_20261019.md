@@ -35,3 +35,17 @@
 4. Nach Freigabe getestete Auditänderungen veröffentlichen.
 
 **Produktivstatus:** Änderungen ausschließlich auf Branch `skyjo-audit-hardening-20261019`. `main` wurde nicht verändert.
+
+## Entwicklungsphase 2: produktive V19-Loader-Integrität
+- Repository-Baum untersucht: 35 separate SKYJO-V19-Logikdateien, Manifest und dynamischer Loader; zwölf Style-Teile mit teils über 140 KB und mehrere CSS-Schichten im Host-Test.
+- `Skyjo/skyjo_action-loader.js`: Dateinamen und Reihenfolge der 35 erwarteten Teile sowie SHA-256-Format vor dem Laden ausdrücklich validiert.
+- `tests/skyjo-manifest-integrity.test.cjs`: SHA-256-Prüfsumme jeder der 35 tatsächlichen Dateien unabhängig vom Browser-Loader geprüft.
+- GitHub Actions **39311943489**: **success**, einschließlich Host-Regressionen und vollständigem Manifest-Integritätstest.
+
+### Weitere Befunde
+- Der V19-Loader ruft alle 35 Teile mit `Promise.all` parallel ab und prüft die Integrität; die Dateien werden in Manifest-Reihenfolge verkettet. Ein fehlendes Modul führt zu einer sichtbaren Fehlermeldung mit Retry.
+- Die produktive CSS-Dateigruppe ist umfangreich und sollte nur mit visuellen Regressionstests schrittweise refaktoriert werden.
+- Client/Server-Protokoll und Multiplayer-Wiederverbindung sind noch nicht Ende-zu-Ende getestet.
+
+### Veröffentlichung
+Die Änderungen sind ausschließlich im Audit-Branch; `main` bleibt unverändert. Keine produktive Freigabe im aktuellen Auftrag.
