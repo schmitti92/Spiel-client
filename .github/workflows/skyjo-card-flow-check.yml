@@ -19,3 +19,5 @@ jobs:
           for t in tests/skyjo-v*.test.cjs; do node "$t"; done
 
 # Re-run after API URL syntax fix
+
+# Final validation after menu text changes
