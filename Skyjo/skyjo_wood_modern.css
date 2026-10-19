@@ -1,15 +1,23 @@
-/* SKYJO Wood Modern – separate, optional visual layer. No game rules. */
-body.skyjo-wood-modern{background:#382115!important;color:#f9f2e5}
-body.skyjo-wood-modern.is-playing{background:repeating-linear-gradient(0deg,#633b23 0 95px,#70462b 97px 101px,#59351f 104px 190px)!important}
-body.skyjo-wood-modern .skyjo-scenic-stage{background:linear-gradient(115deg,#3c2419e0,#7c4a2bc9 48%,#3c2419e0),repeating-linear-gradient(0deg,#6e4228 0 94px,#402819 97px 100px)!important}
-body.skyjo-wood-modern .skyjo-scenic-stage .player,
-body.skyjo-wood-modern .skyjo-scenic-stage .gridwrap{border-radius:20px!important;box-shadow:0 12px 28px #150b08a8, inset 0 1px 0 #ffffff35!important}
+/* Wood Modern v2: presentation only, scoped to opt-in skin. */ 
+body.skyjo-wood-modern.is-playing{background:repeating-linear-gradient(0deg,#58331f 0 82px,#704327 84px 87px,#482a1a 90px 170px)!important}
+body.skyjo-wood-modern .skyjo-scenic-stage{background:linear-gradient(115deg,#2c180e99,#8c572a44,#2c180e99),repeating-linear-gradient(0deg,#6e4228 0 94px,#402819 97px 100px)!important}
+body.skyjo-wood-modern .skyjo-scenic-stage .player,body.skyjo-wood-modern .skyjo-scenic-stage .gridwrap{border-radius:18px!important;box-shadow:0 12px 28px #150b08a8,inset 0 1px 0 #ffffff35!important}
 body.skyjo-wood-modern .skyjo-scenic-stage .player{background:linear-gradient(155deg,#132c43f2,#091724f5)!important;border:2px solid #b28b5b!important}
+body.skyjo-wood-modern .skyjo-scenic-stage .scene-self .player{border-color:#45d7b3!important}
 body.skyjo-wood-modern .skyjo-scenic-stage .card{border-radius:9px!important;box-shadow:0 3px 7px #0008!important}
 body.skyjo-wood-modern .skyjo-scenic-stage .scene-side .player .grid{gap:4px!important}
 body.skyjo-wood-modern .skyjo-scenic-stage .scene-self .player .grid{gap:5px!important}
-body.skyjo-wood-modern .skyjo-scenic-stage .scene-self .player{border-color:#45d7b3!important;box-shadow:0 0 0 2px #45d7b345,0 12px 30px #0009!important}
 body.skyjo-wood-modern button{touch-action:manipulation}
-@media(min-width:900px) and (orientation:landscape){
- body.skyjo-wood-modern .skyjo-scenic-stage{max-width:100vw!important}
-}
+#skyjo-wood-dock{position:fixed;z-index:700;bottom:max(6px,env(safe-area-inset-bottom));left:8px;display:flex;align-items:flex-end;gap:6px;max-width:calc(100vw - 16px);pointer-events:none;font-family:system-ui,sans-serif}
+#skyjo-wood-dock>*{pointer-events:auto}
+#skyjo-wood-dock .wood-reactions{display:flex;align-items:center;gap:3px;background:#0a1928ed;border:1px solid #8c6948;border-radius:12px;padding:5px;box-shadow:0 3px 15px #0009}
+#skyjo-wood-dock button{background:#142c44;color:white;border:1px solid #8c6948;border-radius:9px;min-width:38px;min-height:40px;font-size:23px;cursor:pointer}
+#skyjo-wood-dock .wood-small{font-size:13px;font-weight:700;padding:6px}
+#skyjo-wood-panel{position:fixed;z-index:701;left:8px;bottom:66px;width:min(340px,calc(100vw - 16px));max-height:min(70vh,460px);overflow:auto;background:#0b2032f7;color:#fff;border:2px solid #a78352;border-radius:15px;padding:12px;box-shadow:0 12px 30px #000b;font:15px system-ui,sans-serif}
+#skyjo-wood-panel[hidden],#skyjo-wood-dock[hidden]{display:none!important}
+#skyjo-wood-panel h3{margin:0 0 10px}
+#skyjo-wood-panel button{background:#1a4e79;color:white;border:1px solid #a78352;border-radius:8px;padding:9px;margin:4px;cursor:pointer}
+#skyjo-wood-panel .wood-close{float:right}
+#skyjo-wood-reaction{position:fixed;z-index:702;top:16%;left:50%;transform:translateX(-50%);font-size:clamp(50px,9vw,100px);pointer-events:none;text-shadow:0 5px 15px #000}
+@media (max-width:800px){#skyjo-wood-dock{transform:scale(.8);transform-origin:bottom left}}
+@media (min-width:900px) and (orientation:landscape){body.skyjo-wood-modern .skyjo-scenic-stage{max-width:100vw!important}}
