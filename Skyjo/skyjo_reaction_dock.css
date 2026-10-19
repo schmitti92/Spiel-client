@@ -1,0 +1,66 @@
+/* SKYJO Action – phase 3: compact, scrollable reactions and unobstructed status.
+   Presentation-only: no changes to emoji actions, game state or network logic. */
+@media (min-width:1050px) and (orientation:landscape){
+ body.is-playing .status.premium-status{
+   display:grid!important;
+   grid-template-columns:repeat(5,minmax(0,1fr))!important;
+   padding-right:clamp(0px,11vw,170px)!important;
+   box-sizing:border-box!important;
+ }
+ body.is-playing .status.premium-status .stat{
+   min-width:0!important;
+   overflow:hidden!important;
+ }
+ body.is-playing .status.premium-status .stat b,
+ body.is-playing .status.premium-status .stat span{
+   overflow:hidden!important;
+   text-overflow:ellipsis!important;
+ }
+ body.is-playing .bottom-actions .emoji-reaction-bar{
+   display:flex!important;
+   align-items:center!important;
+   justify-content:center!important;
+   max-width:100%!important;
+   gap:9px!important;
+   padding:4px 10px!important;
+   box-sizing:border-box!important;
+ }
+ body.is-playing .bottom-actions .emoji-bar-label{
+   white-space:nowrap!important;
+   flex:0 0 auto!important;
+   font-size:11px!important;
+   letter-spacing:.08em!important;
+ }
+ body.is-playing .bottom-actions .emoji-reaction-list{
+   display:flex!important;
+   flex:0 1 auto!important;
+   min-width:0!important;
+   max-width:100%!important;
+   overflow-x:auto!important;
+   overflow-y:hidden!important;
+   overscroll-behavior-x:contain!important;
+   -webkit-overflow-scrolling:touch!important;
+   scrollbar-width:thin!important;
+   gap:5px!important;
+   padding:2px 3px!important;
+ }
+ body.is-playing .bottom-actions .emoji-reaction-btn{
+   flex:0 0 auto!important;
+   width:clamp(36px,3.4vw,47px)!important;
+   height:clamp(36px,3.4vw,47px)!important;
+   min-width:36px!important;
+   min-height:36px!important;
+   border-radius:12px!important;
+ }
+}
+@media (max-width:1049px){
+ body.is-playing .bottom-actions .emoji-reaction-list{
+   overflow-x:auto!important;
+   overflow-y:hidden!important;
+   -webkit-overflow-scrolling:touch!important;
+   max-width:100%!important;
+ }
+ body.is-playing .bottom-actions .emoji-reaction-btn{
+   flex-shrink:0!important;
+ }
+}
