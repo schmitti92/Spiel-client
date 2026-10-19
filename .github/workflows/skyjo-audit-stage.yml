@@ -1,0 +1,21 @@
+name: SKYJO audit staging
+on:
+  push:
+    branches: [skyjo-audit-hardening-20261019]
+    paths: ['.github/workflows/skyjo-audit-stage.yml']
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          node --check Skyjo/skyjo_host_test.js
+          node tests/skyjo-host-audit.test.cjs
+          node tests/skyjo-piles-actions.test.cjs
+          node tests/skyjo-host-invariants.test.cjs
+          node tests/skyjo-host-preview.test.cjs
+          node tests/skyjo-host-accessibility.test.cjs
+          node tests/skyjo-host-layout.test.cjs
+          node tests/skyjo-fullscreen.test.cjs
