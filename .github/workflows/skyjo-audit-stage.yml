@@ -1,4 +1,4 @@
-name: SKYJO audit staging rerun
+name: SKYJO audit staging manifest integrity
 on:
   push:
     branches: [skyjo-audit-hardening-20261019]
@@ -12,6 +12,8 @@ jobs:
         with: {node-version: '22'}
       - run: |
           node --check Skyjo/skyjo_host_test.js
+          node --check Skyjo/skyjo_action-loader.js
+          node tests/skyjo-manifest-integrity.test.cjs
           node tests/skyjo-host-audit.test.cjs
           node tests/skyjo-piles-actions.test.cjs
           node tests/skyjo-host-invariants.test.cjs
