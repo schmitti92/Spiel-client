@@ -5,7 +5,16 @@ const close=()=>{if(dialog.hidden)return;dialog.hidden=true;if(returnFocus?.isCo
 const open=(name,message)=>{returnFocus=document.activeElement;title.textContent=name;body.textContent=message;dialog.hidden=false;document.getElementById('dialog-close').focus()};
 document.getElementById('dialog-close').onclick=close;
 dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+document.addEventListener('keydown',e=>{
+ if(dialog.hidden)return;
+ if(e.key==='Escape'){e.preventDefault();close();return}
+ if(e.key!=='Tab')return;
+ const focusables=[...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.getClientRects().length);
+ if(!focusables.length){e.preventDefault();return}
+ const first=focusables[0],last=focusables.at(-1);
+ if(e.shiftKey&&(document.activeElement===first||!dialog.contains(document.activeElement))){e.preventDefault();last.focus()}
+ else if(!e.shiftKey&&(document.activeElement===last||!dialog.contains(document.activeElement))){e.preventDefault();first.focus()}
+});
 const messages={
 'Regeln':'Du kannst den Nachzieh- oder Ablagestapel wählen, anschließend eine Karte tauschen. Nach dem Ziehen vom Nachziehstapel kannst du alternativ die gezogene Karte abwerfen und eine verdeckte Karte aufdecken. Joker und Spezialfähigkeiten gehören noch nicht zu dieser Vorschau.',
 'Statistik':'Testpartien verändern keine Online-Statistiken. Die Kartenwerte werden ausschließlich am Ende eines vollständigen Testdurchlaufs angezeigt.',
