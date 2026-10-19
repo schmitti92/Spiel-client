@@ -25,6 +25,7 @@ function onlineHome(extra=''){
 function gameUrl(snapshot){
  const m=snapshot.match;
  const params=new URLSearchParams({mode:'online',hub:snapshot.code,match:m.id,room:m.gameCode,board:m.settings?.boardTheme==='illustrated'?'illustrated':'classic'});
+ params.set('skin',localStorage.getItem('skyjo-visual-skin')==='wood'?'wood':'classic');
  return 'skyjo_action.html?'+params.toString();
 }
 function note(message='',bad=false){
@@ -114,6 +115,7 @@ function render(){
  $('host-banner').textContent=room.host?'👑 Du bist der Host – nur du änderst die Einstellungen.':'🔒 Nur der Spielleiter kann die Einstellungen ändern.';
  $('host-note').textContent=room.host?'👑 Du kannst die Regeln ändern und Teilnehmerplätze verteilen. Alle Bereitmeldungen werden nach Änderungen zurückgesetzt.':'👑 Der Host bestimmt die Regeln. Du kannst dich bereit melden; der letzte Bereit-Klick startet die Partie automatisch.';
  const settings=room.settings||{};
+ const wood=$('skyjo-wood-choice');if(wood){const selected=localStorage.getItem('skyjo-visual-skin')==='wood';wood.classList.toggle('active',selected);wood.setAttribute('aria-pressed',String(selected));}
  for(const key of supported){
   const value=$('value-'+key);
   if(value)value.textContent=typeof settings[key]==='boolean'?(settings[key]?'An':'Aus'):String(settings[key]??'–');
@@ -240,6 +242,7 @@ document.querySelectorAll('[data-board]').forEach(btn=>btn.addEventListener('cli
  if(!['classic','illustrated'].includes(theme))return;
  void mutate('/skyjo-settings',{settings:{...room.settings,boardTheme:theme}});
 }));
+$('skyjo-wood-choice')?.addEventListener('click',()=>{const selected=localStorage.getItem('skyjo-visual-skin')==='wood';localStorage.setItem('skyjo-visual-skin',selected?'classic':'wood');render();});
 $('ready-button').addEventListener('click',()=>{
  const me=room?.players.find(p=>p.me);
  if(!me?.participating||updating())return;
