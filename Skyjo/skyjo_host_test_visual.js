@@ -1,9 +1,11 @@
 (()=>{'use strict';
 const dialog=document.getElementById('test-dialog'),title=document.getElementById('dialog-title'),body=document.getElementById('dialog-body');
-const open=(name,message)=>{title.textContent=name;body.textContent=message;dialog.hidden=false;document.getElementById('dialog-close').focus()};
-document.getElementById('dialog-close').onclick=()=>dialog.hidden=true;
-dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.hidden=true});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')dialog.hidden=true});
+let returnFocus=null;
+const close=()=>{if(dialog.hidden)return;dialog.hidden=true;if(returnFocus?.isConnected)returnFocus.focus()};
+const open=(name,message)=>{returnFocus=document.activeElement;title.textContent=name;body.textContent=message;dialog.hidden=false;document.getElementById('dialog-close').focus()};
+document.getElementById('dialog-close').onclick=close;
+dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 const messages={
 'Regeln':'Du kannst den Nachzieh- oder Ablagestapel wählen, anschließend eine Karte tauschen. Nach dem Ziehen vom Nachziehstapel kannst du alternativ die gezogene Karte abwerfen und eine verdeckte Karte aufdecken. Joker und Spezialfähigkeiten gehören noch nicht zu dieser Vorschau.',
 'Statistik':'Testpartien verändern keine Online-Statistiken. Die Kartenwerte werden ausschließlich am Ende eines vollständigen Testdurchlaufs angezeigt.',
