@@ -1,4 +1,4 @@
-name: SKYJO host staging integration checks
+name: SKYJO host staging integration checks v2
 on:
   push:
     branches: [skyjo-host-security-layout-20261019]
