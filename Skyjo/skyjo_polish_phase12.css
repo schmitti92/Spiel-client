@@ -1,0 +1,98 @@
+/* SKYJO Action – Phase 1+2: restrained royal-table refinement.
+ * Presentation only; existing board, cards, actions and game engine stay intact.
+ * Scoped to the regular three-player board on landscape tablet/desktop.
+ */
+@media (min-width:1050px) and (orientation:landscape) {
+ body.is-playing[data-players="3"] .table-area.three-player-layout {
+   grid-template-columns:minmax(0,1.13fr) minmax(0,.74fr) minmax(0,.99fr)!important;
+   gap:clamp(7px,.7vw,12px)!important;
+   align-items:start!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .board-col,
+ body.is-playing[data-players="3"] .three-player-layout .center-table {
+   min-width:0!important;
+ }
+ /* Keep the original ornate visual identity, but lighten the heavy frames. */
+ body.is-playing[data-players="3"] .three-player-layout .player,
+ body.is-playing[data-players="3"] .three-player-layout .center-table {
+   border-radius:17px!important;
+   box-shadow:0 5px 18px rgba(0,0,0,.30)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .player .gridwrap {
+   border-radius:12px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-players-stack {
+   gap:clamp(6px,.8vh,11px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player {
+   padding:5px 7px 6px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .grid {
+   gap:clamp(3px,.32vw,5px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox {
+   padding:8px 9px!important;
+   min-height:0!important;
+   margin-bottom:8px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox h4 {
+   margin-block:0 4px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .play-pilebox {
+   padding:8px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles {
+   display:grid!important;
+   grid-template-columns:repeat(2,minmax(0,1fr))!important;
+   gap:clamp(5px,.55vw,9px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles .pile-unit {
+   min-width:0!important;
+   width:100%!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles .pile-card-hit {
+   max-width:100%!important;
+ }
+ body.is-playing .status.premium-status .stat {
+   border-radius:12px!important;
+   box-shadow:0 3px 10px rgba(0,0,0,.24)!important;
+ }
+ body.is-playing .status.premium-status .stat span {
+   line-height:1.15!important;
+ }
+ body.is-playing .topbar .iconbtn {
+   border-radius:10px!important;
+ }
+ body.is-playing .bottom-actions .emoji-reaction-bar {
+   border-radius:12px!important;
+ }
+}
+/* Smaller-height tablet screens: prioritize visibility without hiding cards or controls. */
+@media (min-width:1050px) and (orientation:landscape) and (max-height:850px) {
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .card {
+   max-height:clamp(37px,6.7vh,56px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox {
+   padding:5px 8px!important;
+   margin-bottom:6px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles .card {
+   max-height:clamp(92px,19vh,170px)!important;
+ }
+ body.is-playing .status.premium-status .stat {
+   padding:4px 7px!important;
+ }
+}
+/* Accessible keyboard focus, including touch devices with a hardware keyboard. */
+body.is-playing .topbar button:focus-visible,
+body.is-playing .emoji-reaction-btn:focus-visible,
+body.is-playing .three-player-layout button:focus-visible {
+ outline:2px solid #9bd9ff!important;
+ outline-offset:3px!important;
+}
+@media (prefers-reduced-motion:reduce) {
+ body.is-playing .three-player-layout .player,
+ body.is-playing .three-player-layout .center-table {
+   transition:none!important;
+ }
+}
