@@ -42,3 +42,16 @@ Schrittweise Annäherung an das vom Nutzer ausgewählte Referenzbild: hochwertig
 
 ### Testgrenzen
 Die Tests sind statisch und automatisiert; sie belegen nicht, dass auf einem realen Samsung-Tablet sämtliche Elemente pixelgenau oder ohne Browser-Besonderheiten sichtbar sind. Ein manueller Querformat-/Vollbild-Screenshot bleibt nötig.
+
+## Entwicklungsphase 3: Robustheit und Simulationsprüfung
+- `Skyjo/skyjo_fullscreen.js`: Vollbild-Unterstützung wird geprüft; der Button wird bei fehlender Browser-API deaktiviert; Status und Fehlerbehandlung verbessert.
+- `tests/skyjo-host-invariants.test.cjs`: 35 randomisierte komplette Testpartien. Nach jedem Zug werden Kartenanzahl und Werteverteilung, Turn-Zähler, fehlende ausstehende Karten und Abschlusszustand überprüft.
+- GitHub Actions Lauf **39308917788**: fehlgeschlagen, weil ein bestehender Test weiterhin `catch(e)` statt `catch(error)` erwartete. Der Test wurde an die neue Implementierung angepasst.
+- GitHub Actions Lauf **39309013109**: **success**; die erweiterte Testserie einschließlich 35 Partien wurde ausgeführt.
+- Der Host-Test bleibt isoliert. Es gab keine Änderung am Render-Server oder an der produktiven SKYJO-Action-Engine.
+
+### Noch offen
+- Echter Browser-Test der Fullscreen API auf Android/Tablet.
+- Bildgetreue Darstellung des gewünschten fotorealistischen Referenzdesigns.
+- Vollständige Spielregeln, Joker und Spezialeffekte im isolierten Host-Test (bisher vereinfachte Engine).
+- Online-Multiplayer-Last- und Wiederverbindungstests; diese wurden in dieser Phase nicht ausgeführt.
