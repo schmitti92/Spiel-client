@@ -56,3 +56,9 @@ body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="🤣"],
 body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="🔥"],
 body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="❤️"],
 body.is-playing .emoji-reaction-list .emoji-reaction-btn[onclick*="❤"]{display:none!important}
+
+/* v3: target the actual reaction positions, independent of HTML onclick escaping. */
+body.is-playing .emoji-reaction-bar .emoji-reaction-list > .emoji-reaction-btn:nth-child(1),
+body.is-playing .emoji-reaction-bar .emoji-reaction-list > .emoji-reaction-btn:nth-child(3),
+body.is-playing .emoji-reaction-bar .emoji-reaction-list > .emoji-reaction-btn:nth-child(12),
+body.is-playing .emoji-reaction-bar .emoji-reaction-list > .emoji-reaction-btn:nth-child(13){display:none!important}
