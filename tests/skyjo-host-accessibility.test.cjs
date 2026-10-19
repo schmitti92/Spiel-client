@@ -1,1 +1,13 @@
-const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');const read=p=>fs.readFileSync(path.join(__dirname,'..','Skyjo',p),'utf8');const html=read('skyjo_host_test.html'),visual=read('skyjo_host_test_visual.js'),full=read('skyjo_fullscreen.js');assert.match(html,/id="test-dialog" role="dialog" aria-modal="true"/);assert.match(html,/aria-labelledby="dialog-title"/);assert.match(html,/aria-describedby="dialog-body"/);assert.match(visual,/returnFocus=document.activeElement/);assert.match(visual,/returnFocus\.focus\(\)/);assert.match(visual,/if\(e.key==='Escape'\)/);assert.match(visual,/if\(e.key!=='Tab'\)return/);assert.match(visual,/last\.focus\(\)/);assert.match(visual,/first\.focus\(\)/);assert.match(full,/button.disabled=!supported/);assert.match(full,/fullscreenchange/);const density=read('skyjo_tablet_density.css');assert.match(density,/overflow-y:auto!important/);assert.match(html,/skyjo_tablet_density\\.css\\?v=2/);console.log('host preview accessibility and scroll safety checks passed');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const read=p=>fs.readFileSync(path.join(__dirname,'..','Skyjo',p),'utf8');
+const html=read('skyjo_host_test.html');
+const visual=read('skyjo_host_test_visual.js');
+const full=read('skyjo_fullscreen.js');
+const density=read('skyjo_tablet_density.css');
+for(const snippet of ['role="dialog"','aria-modal="true"','aria-labelledby="dialog-title"','aria-describedby="dialog-body"','skyjo_tablet_density.css?v=2'])assert.ok(html.includes(snippet),snippet);
+for(const snippet of ['returnFocus=document.activeElement','returnFocus.focus()',"e.key==='Escape'","e.key!=='Tab'","last.focus()","first.focus()"])assert.ok(visual.includes(snippet),snippet);
+for(const snippet of ['button.disabled=!supported','fullscreenchange'])assert.ok(full.includes(snippet),snippet);
+assert.ok(density.includes('overflow-y:auto!important'));
+console.log('Host dialog focus and tablet scroll safety checks passed');
