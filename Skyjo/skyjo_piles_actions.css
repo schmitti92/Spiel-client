@@ -1,0 +1,51 @@
+/* Isolated host-preview tabletop piles and legible action controls. */
+#scene .piles{display:flex!important;align-items:center!important;justify-content:center!important;gap:clamp(16px,4vw,66px)!important;overflow:visible!important;z-index:3!important}
+#scene .piles .pill{appearance:none;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;min-width:0!important;width:clamp(96px,11vw,148px)!important;height:100%!important;padding:0!important;overflow:visible!important;border:0!important;background:none!important;box-shadow:none!important;cursor:pointer}
+#scene .pile-card{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(60px,5.8vw,86px);height:clamp(49px,7vh,84px);max-height:calc(100% - 18px);border-radius:8px;border:3px solid #eaf7ff;box-shadow:0 5px 0 #10243e,0 8px 14px #000a,inset 0 1px 6px #ffffff80;flex-shrink:1}
+#scene .pile-back{background:linear-gradient(150deg,#00428d,#1184e1 45%,#001d58);color:#e9faff}
+#scene .pile-back::before{content:'';position:absolute;inset:5px;border:1px solid #92dbff;border-radius:4px;pointer-events:none}
+#scene .pile-logo{font-size:clamp(18px,2vw,28px);font-weight:900;line-height:1;text-shadow:0 1px 5px #00122d}
+#scene .pile-logo small{display:block;font-size:clamp(9px,.85vw,13px);letter-spacing:.07em}
+#scene .pile-face{font-size:clamp(25px,3vw,43px);font-weight:900;color:#10151b;text-shadow:0 1px #fff9;background:linear-gradient(145deg,#ffb4b9,#f35d6c)}
+#scene .pile-face.neg{background:linear-gradient(145deg,#ffced2,#f85b6b)}
+#scene .pile-face.zero{background:linear-gradient(145deg,#c8f5ff,#5bbdf4)}
+#scene .pile-face.low{background:linear-gradient(145deg,#cbffe5,#4cdbad)}
+#scene .pile-face.mid{background:linear-gradient(145deg,#fff9c3,#f8c941)}
+#scene .pile-face.high{background:linear-gradient(145deg,#efd6ff,#b279f5)}
+#scene .pile-face.empty{background:linear-gradient(145deg,#c7cbd0,#818b98)}
+#scene .pile-label{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:clamp(10px,.9vw,13px);font-weight:800;text-shadow:0 2px 4px #000;line-height:1.1}
+#scene .pile-label b{display:inline-block;padding:2px 6px;border-radius:10px;background:#071a31;border:1px solid #93c7ed;font-size:inherit}
+#scene .pill:not(:disabled):hover .pile-card,#scene .pill:not(:disabled):focus-visible .pile-card{outline:3px solid #ffdc75;outline-offset:2px;filter:brightness(1.1)}
+#scene .pill.pile-selected .pile-card{outline:3px solid #ffd25c;outline-offset:3px}
+#scene .pill:disabled{opacity:.75;cursor:default}
+#scene .pill.pile-empty .pile-back{filter:grayscale(1);opacity:.65}
+#scene .move-choice{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.2vw,20px)!important;align-items:stretch;justify-self:center;width:min(100%,480px);z-index:4!important}
+#scene .move-choice button{display:flex!important;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:100%!important;border:2px solid #a8d8ff!important;border-radius:12px!important;background:linear-gradient(#1b4e77,#081e36)!important;color:#fff!important;box-shadow:0 4px 8px #0009,inset 0 1px #ffffff35;font-size:clamp(11px,1.05vw,15px)!important;padding:3px 9px!important;cursor:pointer}
+#scene .move-choice .action-icon{font-size:clamp(20px,1.7vw,28px);line-height:1;font-weight:900}
+#scene .move-choice button strong{display:block;font-size:inherit;line-height:1.05}
+#scene .move-choice button small{display:block!important;font-size:clamp(9px,.7vw,11px);line-height:1.1;opacity:.9}
+#scene .move-choice button.chosen:not(:disabled){background:linear-gradient(#128b9a,#09536a)!important;border-color:#f9df83!important;box-shadow:0 0 0 2px #ffdb5c55,0 5px 12px #000b}
+#scene .move-choice button:disabled{opacity:.54;cursor:not-allowed;filter:grayscale(.2)}
+#scene .move-choice button:focus-visible{outline:3px solid #ffdf85;outline-offset:2px}
+@media(orientation:landscape) and (max-height:750px){
+ #scene .pile-card{height:clamp(30px,6vh,49px);width:clamp(47px,4.7vw,70px);border-width:2px}
+ #scene .pile-label{font-size:10px}
+ #scene .move-choice button small{display:none!important}
+ #scene .move-choice button{border-radius:8px!important;padding:1px 5px!important}
+}
+@media(orientation:portrait){#scene .piles .pill{width:clamp(80px,19vw,135px)!important}#scene .pile-card{height:54px;width:56px}#scene .move-choice{width:100%}#scene .move-choice button small{display:none!important}}
+
+/* Reserve actual space for piles/actions: old 42px/29px tracks made both unreadable. */
+@media(orientation:landscape) and (min-height:730px){
+ #scene,body.skyjo-fullscreen #scene{grid-template-rows:minmax(0,1fr) 86px 53px minmax(0,1.16fr) 30px 32px!important}
+ #scene .pile-card{height:61px;max-height:calc(100% - 20px)}
+}
+@media(orientation:landscape) and (min-height:540px) and (max-height:729px){
+ #scene,body.skyjo-fullscreen #scene{grid-template-rows:minmax(0,1fr) 62px 40px minmax(0,1.13fr) 27px 30px!important}
+ #scene .pile-card{height:40px;max-height:calc(100% - 19px)}
+}
+@media(orientation:landscape) and (max-height:539px){
+ #scene,body.skyjo-fullscreen #scene{grid-template-rows:minmax(0,1fr) 44px 32px minmax(0,1.1fr) 24px 27px!important}
+ #scene .pile-card{height:27px;max-height:calc(100% - 15px)}
+ #scene .pile-label{font-size:9px}
+}

@@ -141,6 +141,7 @@ function render(){
  readyButton.disabled=busy||room.phase!=='preparing'||!me?.participating;
  readyButton.textContent=me?.ready?'✔ Bereit – zurücknehmen':'✓ Ich bin bereit';
  readyButton.classList.toggle('is-ready',!!me?.ready);
+ const testLink=$('host-test-button');if(testLink){testLink.hidden=!room.host||room.phase!=='preparing';testLink.href='skyjo_host_test.html?room='+encodeURIComponent(code);}
  const start=$('start-button');
  start.textContent=room.phase==='playing'?'▶ Zum Spiel':'▶ Spiel starten';
  start.disabled=busy||(!room.host&&room.phase!=='playing')||room.phase==='playing'&&!room.match?.participating;

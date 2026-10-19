@@ -1,0 +1,81 @@
+/* SKYJO Modern workplan stage: opt-in host preview only. */
+:root{--skyjo-gold:#c7a471;--skyjo-blue:#1c79bd}
+body{background:radial-gradient(ellipse at 50% 25%,#c48a48aa,transparent 70%),repeating-linear-gradient(0deg,#613519 0 3px,#7b4723 4px 72px,#422314 75px 78px,#754321 82px 155px)!important}
+header{background:#0b1b2d77;border-radius:12px;padding:6px 12px}
+#game{gap:clamp(6px,1vw,16px)}
+.board{position:relative;box-shadow:0 11px 22px #170a06bd,0 0 12px #46a6d533!important}
+.board.active-turn{box-shadow:0 0 0 2px #ffdb83,0 8px 23px #000a!important}
+.board h2{font-weight:750;letter-spacing:.01em;text-shadow:0 2px 4px #000b}
+.board .grid{gap:clamp(3px,.5vw,8px)!important}
+.card{font-weight:800!important;font-size:clamp(14px,2.5vw,38px)!important;border:2px solid #e0f6ff!important;border-radius:8px!important;box-shadow:inset 0 1px 2px #fff9,0 3px 7px #0009!important;text-shadow:0 1px 2px #fff8}
+.card.face-down{font-size:0!important;background:linear-gradient(135deg,#05326c,#0c70b8 48%,#04234c)!important;position:relative}
+.card.face-down::before{content:'◆';position:absolute;inset:9%;border:1px solid #79cbff8a;border-radius:6px;display:grid;place-items:center;font-size:clamp(13px,2.1vw,30px);color:#a8eaff;text-shadow:0 0 7px #2d8bf2}
+.card.face-down::after{content:'SKYJO';position:absolute;left:0;right:0;bottom:10%;font-size:clamp(8px,1vw,15px);color:#e5f7ff;text-align:center;text-shadow:0 1px 3px #000}
+.card.open.neg{background:linear-gradient(140deg,#fff0ee,#ff6677)!important}
+.card.open.zero,.card.open.low{background:linear-gradient(145deg,#baffdb,#30cba6)!important}
+.card.open.mid{background:linear-gradient(145deg,#e9fc92,#ffcd42)!important}
+.card.open.high{background:linear-gradient(145deg,#e6d4ff,#b06de3)!important}
+#scene .piles{gap:clamp(8px,2vw,28px)!important}
+#scene .pill{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:clamp(96px,12vw,150px);min-height:clamp(50px,8vh,78px);background:linear-gradient(145deg,#092b53,#06172b)!important;border:2px solid #78b9e7!important;border-radius:12px!important;box-shadow:0 4px 12px #000a,inset 0 1px 0 #fff4!important;text-align:center}
+#scene .pill b{font-size:clamp(17px,2.5vw,28px);color:#fff}
+.scene-side button{transition:filter .15s ease,transform .15s ease;font-weight:650}
+.scene-side button:active{transform:scale(.97);filter:brightness(1.25)}
+.reaction-panel{box-shadow:0 5px 15px #0009}
+.reaction-row button{border-radius:100%!important;min-width:0;flex:1;filter:drop-shadow(0 2px 3px #0008)}
+.quote-row button{overflow-wrap:anywhere;word-break:normal!important;hyphens:auto}
+#scene footer{gap:4px!important}
+#scene footer button{background:linear-gradient(#183b5d,#071b31);border:1px solid #bfa17b;color:white;border-radius:9px;cursor:pointer;font-weight:650}
+#scene footer button:disabled{opacity:.45}
+#scene .status{background:linear-gradient(180deg,#258ffb,#0954d6);box-shadow:0 3px 10px #000a}
+#test-dialog article{box-shadow:0 20px 60px #000c}
+#test-dialog button{background:#144d78;border:1px solid #d6b180;color:white;border-radius:8px;padding:9px 12px}
+@media (orientation:landscape) and (max-height:700px){
+ #game{height:calc(100dvh - 76px)}
+ #scene{grid-template-rows:minmax(0,1fr) minmax(46px,.22fr) minmax(0,1.12fr) minmax(36px,.16fr)}
+ #scene footer button{font-size:10px;padding:4px 6px}
+ .card.face-down::after{bottom:5%}
+}
+@media (max-width:1050px){
+ #scene footer{position:static!important;grid-column:1;grid-row:4;justify-self:end;align-self:end}
+ #scene .status{justify-self:stretch;padding-right:190px!important}
+ #scene footer button{font-size:10px}
+}
+@media (max-width:760px) and (orientation:landscape){
+ .scene-side{gap:3px}
+ .scene-side button{min-height:30px!important;font-size:10px!important}
+ .reaction-panel strong{font-size:10px}
+ #scene footer button{font-size:9px;padding:3px}
+}
+@media(prefers-reduced-motion:reduce){.scene-side button{transition:none}}
+
+/* Separate turn status from three simulation actions: never overlap. */
+#scene{grid-template-rows:minmax(0,1fr) minmax(48px,.2fr) minmax(0,1.1fr) 34px 36px!important}
+#scene .status{grid-row:4;grid-column:1;padding:4px 10px!important;width:100%;min-width:0!important}
+#scene footer{grid-row:5;grid-column:1;position:static!important;right:auto!important;bottom:auto!important;transform:none!important;justify-self:center;align-self:stretch;display:flex;gap:6px!important}
+#scene footer button{min-height:32px;white-space:nowrap}
+@media(max-height:700px) and (orientation:landscape){#scene{grid-template-rows:minmax(0,1fr) 43px minmax(0,1.1fr) 30px 31px!important}#scene footer button{min-height:28px}}
+@media(orientation:portrait){#scene{grid-template-rows:minmax(0,1fr) 48px minmax(0,1.1fr) 38px 72px!important}#scene footer{flex-wrap:wrap;justify-content:center}}
+
+/* Interactive host cards in isolated preview. */
+.board.self .card{appearance:none;font-family:inherit;color:inherit;padding:0}
+.board.self .card:disabled{opacity:1;cursor:default}
+.board.self .card.face-down:not(:disabled){cursor:pointer;outline-offset:2px;transition:transform .12s ease,box-shadow .12s ease}
+.board.self .card.face-down:not(:disabled):hover,.board.self .card.face-down:not(:disabled):focus-visible{transform:translateY(-2px);box-shadow:0 0 0 3px #ffe39a,0 4px 12px #000b!important}
+.board.self .card.face-down:not(:disabled):active{transform:scale(.96)}
+@media(prefers-reduced-motion:reduce){.board.self .card.face-down:not(:disabled){transition:none}}
+
+/* Real card-flow preview: separate action row and responsive buttons. */
+#scene{grid-template-rows:minmax(0,1fr) minmax(46px,.2fr) 35px minmax(0,1.1fr) 32px 35px!important}
+#scene .board:nth-child(1){grid-row:4!important}
+#scene .board:nth-child(2),#scene .board:nth-child(3){grid-row:1!important}
+#scene .piles{grid-row:2!important}
+#scene .move-choice{grid-column:1;grid-row:3;display:flex;justify-content:center;gap:8px;min-height:0}
+#scene .move-choice button{border:1px solid #bfa17b;border-radius:8px;background:#132e49;color:#fff;padding:4px 10px;font-weight:700;cursor:pointer}
+#scene .move-choice button[aria-pressed="true"]{background:#1469a3;outline:2px solid #f4d595}
+#scene .move-choice button:disabled,#scene .piles button:disabled{opacity:.5;cursor:default}
+#scene .piles button{cursor:pointer;color:#fff;font-family:inherit}
+#scene .piles button:focus-visible{outline:3px solid #ffe08c;outline-offset:2px}
+#scene .status{grid-row:5!important}
+#scene footer{grid-row:6!important}
+@media (max-height:700px) and (orientation:landscape){#scene{grid-template-rows:minmax(0,1fr) 42px 29px minmax(0,1.1fr) 27px 30px!important}.move-choice button{font-size:10px;padding:2px 5px!important}}
+@media(orientation:portrait){#scene{grid-template-rows:minmax(0,1fr) 52px 50px minmax(0,1.1fr) 45px 72px!important}.move-choice{flex-wrap:wrap}}
