@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const read=p=>fs.readFileSync(p,'utf8');
+const density=read('Skyjo/skyjo_tablet_density.css');
 const html=read('Skyjo/skyjo_host_test.html'),js=read('Skyjo/skyjo_fullscreen.js'),css=read('Skyjo/skyjo_immersive.css'),svg=read('Skyjo/assets/wood_table_ambient.svg');
 assert.match(html,/id="fullscreen-toggle"/);
 assert.match(html,/skyjo_fullscreen\.js\?v=1/);
