@@ -1,0 +1,20 @@
+name: SKYJO isolated host preview checks
+on:
+  push:
+    branches: [skyjo-host-testmode-staging-20261019]
+    paths: ['.github/workflows/skyjo-host-preview-test.yml']
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check Skyjo/skyjo_host_test.js
+          node --check Skyjo/skyjo_start.js
+          python3 tests/check_skyjo_modular.py
+          for t in tests/skyjo-v*.test.cjs; do node "$t"; done
+          grep -q 'host-test-button' Skyjo/skyjo_start.html
+          grep -q 'room.host' Skyjo/skyjo_host_test.js
