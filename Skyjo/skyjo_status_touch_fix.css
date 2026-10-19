@@ -1,0 +1,36 @@
+/* Status and touch refinements. Keep all five status controls accessible. */
+@media (min-width:1050px) and (orientation:landscape){
+ body.is-playing .status.premium-status{
+   padding-right:0!important;
+   gap:clamp(5px,.55vw,9px)!important;
+ }
+ body.is-playing .status.premium-status .stat{
+   padding:6px 8px!important;
+   min-width:0!important;
+ }
+ body.is-playing .status.premium-status .joker-stat{
+   position:relative!important;
+   z-index:2!important;
+ }
+ body.is-playing .status.premium-status .joker-stat b{
+   font-size:clamp(13px,1.3vw,19px)!important;
+ }
+ body.is-playing .status.premium-status .joker-stat span{
+   font-size:clamp(10px,.8vw,13px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox{
+   min-height:0!important;
+ }
+ body.is-playing .bottom-actions .emoji-reaction-btn{
+   touch-action:manipulation!important;
+ }
+}
+@media (max-width:700px){
+ body.is-playing .bottom-actions .emoji-reaction-list{
+   justify-content:flex-start!important;
+   scroll-snap-type:x proximity;
+ }
+ body.is-playing .bottom-actions .emoji-reaction-btn{
+   scroll-snap-align:start;
+ }
+}
