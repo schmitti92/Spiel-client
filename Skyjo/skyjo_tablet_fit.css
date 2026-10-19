@@ -1,0 +1,51 @@
+/* SKYJO tablet fit: retain the original board and all interactions.
+   Only the three-player landscape game layout is affected. */
+@media (min-width:1050px) and (orientation:landscape) and (max-height:1000px){
+ body.is-playing .topbar{padding:5px 10px!important;min-height:48px!important;margin-bottom:5px!important}
+ body.is-playing .topbar .top-actions{gap:4px!important}
+ body.is-playing .topbar .iconbtn{min-height:32px!important;padding:4px 7px!important}
+ body.is-playing .status.premium-status{gap:6px!important;margin:4px 0 7px!important}
+ body.is-playing .status.premium-status .stat{padding:5px 8px!important;min-height:48px!important}
+ body.is-playing .status.premium-status .stat b{font-size:clamp(15px,1.45vw,22px)!important}
+ body.is-playing[data-players="3"] .table-area.three-player-layout{
+   grid-template-columns:minmax(0,1.16fr) minmax(0,.76fr) minmax(0,1fr)!important;
+   gap:9px!important;
+   align-items:start!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-players-stack{gap:7px!important}
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player{
+   padding:6px!important;margin:0!important;min-height:0!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .grid{
+   gap:3px!important;padding:5px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .card{
+   max-height:clamp(42px,7vh,65px)!important;
+   min-height:0!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table{
+   padding:6px!important;min-width:0!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox{
+   min-height:70px!important;padding:7px!important;margin-bottom:7px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox:before{
+   font-size:12px!important;letter-spacing:.06em!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox .real-hand-card.empty{
+   min-height:36px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles{
+   grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles .card{
+   max-height:clamp(105px,21vh,200px)!important;
+ }
+ body.is-playing .bottom-actions .emoji-reaction-bar{padding:3px 8px!important;min-height:0!important}
+ body.is-playing .bottom-actions .emoji-reaction-list{gap:5px!important}
+ body.is-playing .bottom-actions .emoji-reaction-btn{
+   width:clamp(35px,4.1vh,48px)!important;height:clamp(35px,4.1vh,48px)!important;
+   min-width:35px!important;font-size:clamp(19px,2.8vh,29px)!important;
+ }
+ body.is-playing .bottom-actions{padding-top:3px!important;padding-bottom:3px!important}
+}
