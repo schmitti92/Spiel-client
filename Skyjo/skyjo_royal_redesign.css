@@ -42,3 +42,32 @@ body.is-playing .topbar{background:linear-gradient(110deg,#081e20,#07191c 55%,#0
 body.is-playing .bottom-actions{background:linear-gradient(180deg,#0b2326f7,#06171bf9)!important;border:1px solid #9d713e!important;border-radius:14px!important}
 body.is-playing .bottom-actions .emoji-reaction-btn{box-shadow:inset 0 1px #fff5,0 3px 7px #0008!important;border-radius:10px!important}
 }
+
+/* Royal Table refinement 2: tactile wood grain, velvet mats, depth and gilded edges.
+   Decorative pseudo-elements are pointer-transparent and never cover cards. */
+@media(min-width:1050px) and (orientation:landscape){
+ body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .player,
+ body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .center-table{
+  background-image:repeating-linear-gradient(4deg,transparent 0 8px,#2a130918 9px 10px,transparent 11px 24px),linear-gradient(105deg,#e2b16f 0%,#955c2e 3%,#482616 9%,#643c22 48%,#422315 92%,#d3a15c 98%,#6e3d20)!important;
+  box-shadow:inset 0 2px 1px #ffe2a68c,inset 0 -4px 8px #180904b8,0 4px 0 #3a1c0e,0 12px 20px #0c0606a8!important;
+ }
+ body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .player .gridwrap{
+  background-image:radial-gradient(ellipse at 35% 20%,#27545b55,transparent 65%),repeating-linear-gradient(100deg,#ffffff04 0 1px,transparent 1px 5px),linear-gradient(145deg,#12353c,#071c25)!important;
+  box-shadow:inset 0 6px 19px #000c,inset 0 0 0 3px #071a20,0 1px 1px #ffda9360!important;
+ }
+ body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .own-seat .player .gridwrap{
+  background-image:radial-gradient(ellipse at 35% 20%,#32547855,transparent 65%),repeating-linear-gradient(100deg,#ffffff04 0 1px,transparent 1px 5px),linear-gradient(145deg,#16354b,#071726)!important;
+ }
+ body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .center-table .handbox{
+  background-image:repeating-linear-gradient(6deg,transparent 0 13px,#cf99510b 14px 15px),linear-gradient(145deg,#59351e,#281a16 64%,#1c1515)!important;
+ }
+ body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .three-player-layout .center-table .premium-piles{
+  background-image:repeating-linear-gradient(7deg,transparent 0 12px,#c18b4a10 13px 14px),linear-gradient(145deg,#6c4326,#241714 75%)!important;
+ }
+ body.is-playing .three-player-layout .card{box-shadow:0 3px 0 #1a1411,0 5px 9px #0008,inset 0 1px 1px #fff7!important;transition:transform .14s ease,filter .14s ease!important}
+ body.is-playing .three-player-layout .card:focus-visible{outline:3px solid #71d9ff!important;outline-offset:3px!important}
+ @media(hover:hover){body.is-playing .three-player-layout .card:not(:disabled):hover{filter:brightness(1.08)!important}}
+ body.is-playing .status.premium-status .stat{background-image:radial-gradient(ellipse at 50% 0%,#24506680,transparent 80%),linear-gradient(150deg,#102b3a,#06141c)!important}
+ body.is-playing .bottom-actions .emoji-reaction-btn{background-image:linear-gradient(145deg,#244353,#0a2431)!important;border:1px solid #bc9054!important}
+}
+@media(prefers-reduced-motion:reduce){body.is-playing .three-player-layout .card{transition:none!important}}
