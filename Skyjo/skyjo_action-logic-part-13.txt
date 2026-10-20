@@ -39,7 +39,7 @@ function findMatchesInPlayer(p){
  /* Waagerecht sind 4 Karten erlaubt oder genau 3 verbleibende Karten,
     wenn das vierte Feld bereits durch einen vorherigen Abbau leer ist.
     Senkrecht bleiben exakt 3 Karten erforderlich. */
- const xl=state?.layoutMode==='xl',cols=xl?5:4,rows=xl?4:3;
+ const xl=state?.layoutMode==='xl',cols=xl?5:4,rows=3;
  for(let r=0;r<rows;r++){
    const row=Array.from({length:cols},(_,c)=>r*cols+c);
    const idx=row.filter(i=>p.grid[i]);
