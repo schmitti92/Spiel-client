@@ -18,3 +18,22 @@
  body.is-playing .table-area.three-player-layout .center-table{gap:7px!important}
  body.is-playing .table-area.three-player-layout .mini-players-stack{gap:7px!important}
 }
+
+/* Fullscreen landscape tablet: reclaim vertical space without hiding game controls. */
+@media (min-width:1050px) and (orientation:landscape) and (max-height:1050px){
+ body.is-playing .topbar{min-height:42px!important;padding:4px 10px!important;margin-bottom:3px!important;gap:8px!important}
+ body.is-playing .topbar .top-actions{gap:4px!important;align-items:center!important}
+ body.is-playing .topbar .iconbtn{min-height:30px!important;padding:3px 7px!important;font-size:12px!important}
+ body.is-playing .topbar h1,body.is-playing .topbar .brand-title{font-size:clamp(15px,1.5vw,21px)!important;line-height:1.05!important}
+ body.is-playing .skyjo-hub-strip{min-height:25px!important;margin:0 0 3px!important}
+ body.is-playing .skyjo-hub-link{min-height:25px!important;padding:3px 9px!important;font-size:12px!important}
+ body.is-playing .status.premium-status{gap:6px!important;margin:3px 0 6px!important}
+ body.is-playing .status.premium-status .stat{min-height:43px!important;padding:4px 7px!important}
+ body.is-playing .status.premium-status .stat b{font-size:clamp(15px,1.4vw,20px)!important}
+ body.is-playing .table-area.three-player-layout{gap:9px!important}
+ body.is-playing .table-area.three-player-layout .mini-players-stack{gap:8px!important}
+ body.is-playing .bottom-actions{padding:2px 7px!important}
+ body.is-playing .bottom-actions .emoji-reaction-bar{padding:3px 7px!important;min-height:0!important}
+ body.is-playing .bottom-actions .emoji-reaction-list{gap:4px!important}
+ body.is-playing .bottom-actions .emoji-reaction-btn{width:clamp(35px,4.7vh,47px)!important;height:clamp(35px,4.7vh,47px)!important;min-width:35px!important;font-size:clamp(19px,2.9vh,27px)!important}
+}
