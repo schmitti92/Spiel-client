@@ -35,7 +35,14 @@
      countAfter.dispatchEvent(new Event('change',{bubbles:true}));
      const difficulty=document.getElementById('aiDifficulty');
      if(difficulty)difficulty.value='normal';
+     if(q.get('layout')==='xl')sessionStorage.setItem('skyjoLocalLayout','xl');
      game.startAIFromSetup();
+     const board=document.querySelector('#player-0 .grid');
+     const countNow=board?.children?.length||0;
+     if(q.get('layout')==='xl'&&countNow!==20){
+       console.error('[SKYJO XL] Expected 20 cards but rendered',countNow);
+       report('XL wurde nicht übernommen ('+countNow+' statt 20 Karten). Bitte Browsercache aktualisieren.');
+     }
    }catch(err){
      console.error('[SKYJO test preview]',err);
      report('Automatischer Start fehlgeschlagen. Bitte den lokalen Computer-Modus manuell starten.');
