@@ -97,7 +97,7 @@ function scenicBoardLayoutHTML(playerViews, middleView){
    </main>
    <div class="scene-side scene-right">${right}</div>
    <aside class="scene-aside"><section class="scene-rank-panel"><h3>🏆 Zwischenstände</h3><div class="scene-rank-label"><span>#</span><span>Spieler</span><span>Runde</span><span>Gesamt</span></div>${scoreboard}</section>
-   <section class="scene-round-panel"><h3>▤ Aktuelle Runde</h3><p><i>●</i> ${escapeHTML(current().name)} ist am Zug</p><p><i>■</i> Nachziehstapel: ${state.playDeck.length}</p><p><i>●</i> Runde ${state.round}</p><p><i>✦</i> ${state.streetModeEnabled===true?'Straßen & Gleiche':'Gleiche Zahlen'}</p><p><i>◎</i> Spielende ab ${state.target} Punkten</p><button type="button" class="scene-joker-action" onclick="Game.showJokerCountManager()">★ Joker: ${state.jokerCount??8} · ${jokerSpecialsEnabled()?'AN':'AUS'} · ändern</button></section>
+   <section class="scene-round-panel"><h3>▤ Aktuelle Runde</h3><p><i>●</i> ${escapeHTML(current().name)} ist am Zug</p><p><i>■</i> Nachziehstapel: ${state.playDeck.length}</p><p><i>●</i> Runde ${state.round}</p><p><i>✦</i> ${state.streetModeEnabled===true?'Straßen & Gleiche':'Gleiche Zahlen'}</p><p><i>◎</i> Spielende ab ${state.target} Punkten</p><button type="button" class="scene-joker-action" onclick="Game.showJokerCountManager()">★ ${state.jokerCount??8} Joker · ${state.layoutMode==='xl'?'ohne Spezialeffekte':jokerSpecialsEnabled()?'mit Spezialeffekten':'ohne Spezialeffekte'} · ändern</button></section>
    </aside><div class="scene-daily-quote"><b>💡 Spruch des Tages</b>„Ein fröhliches Herz macht das Leben heller – in jedem Spiel und an jedem Tag.“</div>
  </div>`
 }
