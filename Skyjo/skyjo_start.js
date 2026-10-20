@@ -10,7 +10,7 @@ let room=null,busy=false,refreshBusy=false,socket=null,lastSocket=null,reconnect
 const limits={target:{min:50,max:500,step:10},jokerCount:{min:0,max:30,step:1}};
 const supported=['layoutMode','target','jokerCount','streetModeEnabled','jokerEnabled','beginner'];
 const descriptions={
- layoutMode:'Wählt zwischen 12 Karten (3 × 4) und 20 Karten (4 × 5) pro Spieler.',
+ layoutMode:'Wählt zwischen 12 Karten (3 × 4) und 15 Karten (5 × 3) pro Spieler.',
  target:'Der Zielwert kann zwischen 50 und 500 Punkten eingestellt werden.',
  jokerCount:'0 bis 30 Jokerkarten – Änderungen werden für alle Spieler gespeichert.',
  streetModeEnabled:'Aktiviert oder deaktiviert Straßen und die Regeln für gleiche Karten.',
@@ -117,10 +117,10 @@ function render(){
  const settings=room.settings||{};
  const chosenMode=settings.layoutMode==='xl'?'xl':'classic';
  document.querySelectorAll('[data-layout]').forEach(btn=>{const selected=btn.dataset.layout===chosenMode;btn.classList.toggle('selected',selected);btn.setAttribute('aria-pressed',String(selected));btn.disabled=!hostReady;});
- const modeNote=$('sj-mode-note');if(modeNote)modeNote.textContent=chosenMode==='xl'?'SKYJO XL · 4 × 5 · 20 Karten je Spieler · gleiche Regeln':'SKYJO Klassisch · 3 × 4 · 12 Karten je Spieler · gleiche Regeln';
+ const modeNote=$('sj-mode-note');if(modeNote)modeNote.textContent=chosenMode==='xl'?'SKYJO XL · 5 × 3 · 15 Karten je Spieler · gleiche Regeln':'SKYJO Klassisch · 3 × 4 · 12 Karten je Spieler · gleiche Regeln';
  for(const key of supported){
   const value=$('value-'+key);
-  if(value)value.textContent=key==='layoutMode'?(settings.layoutMode==='xl'?'4 × 5':'3 × 4'):typeof settings[key]==='boolean'?(settings[key]?'An':'Aus'):String(settings[key]??'–');
+  if(value)value.textContent=key==='layoutMode'?(settings.layoutMode==='xl'?'5 × 3':'3 × 4'):typeof settings[key]==='boolean'?(settings[key]?'An':'Aus'):String(settings[key]??'–');
   document.querySelectorAll('[data-step="'+key+'"]').forEach(btn=>{
    const limitsFor=limits[key];
    btn.disabled=!hostReady||(limitsFor&&(Number(settings[key])+(Number(btn.dataset.dir)*limitsFor.step)>limitsFor.max||Number(settings[key])+(Number(btn.dataset.dir)*limitsFor.step)<limitsFor.min));
@@ -145,7 +145,7 @@ function render(){
  readyButton.disabled=busy||room.phase!=='preparing'||!me?.participating;
  readyButton.textContent=me?.ready?'✔ Bereit – zurücknehmen':'✓ Ich bin bereit';
  readyButton.classList.toggle('is-ready',!!me?.ready);
- const aiLink=$('ai-test-link');if(aiLink){const show=!!room.host&&room.phase==='preparing';aiLink.hidden=!show;aiLink.style.display=show?'inline-flex':'none';aiLink.href='skyjo_action.html?mode=local&testPlayers=2&layout='+chosenMode+'&new=1';aiLink.textContent='🧪 '+(chosenMode==='xl'?'SKYJO XL (4 × 5)':'Klassisch (3 × 4)')+' mit 2 Testspielern starten';}
+ const aiLink=$('ai-test-link');if(aiLink){const show=!!room.host&&room.phase==='preparing';aiLink.hidden=!show;aiLink.style.display=show?'inline-flex':'none';aiLink.href='skyjo_action.html?mode=local&testPlayers=2&layout='+chosenMode+'&new=1';aiLink.textContent='🧪 '+(chosenMode==='xl'?'SKYJO XL (5 × 3)':'Klassisch (3 × 4)')+' mit 2 Testspielern starten';}
  const start=$('start-button');
  start.textContent=room.phase==='playing'?'▶ Zum Spiel':'▶ Spiel starten';
  start.disabled=busy||(!room.host&&room.phase!=='playing')||room.phase==='playing'&&!room.match?.participating;
