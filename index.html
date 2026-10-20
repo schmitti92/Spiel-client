@@ -217,6 +217,10 @@
 .index-room-quick .index-room-error{position:absolute;top:calc(100% + 5px);right:0;max-width:350px;min-width:260px;background:#542534;border:1px solid #e69aa4;color:#fff;padding:8px 10px;border-radius:9px;font-size:12px}
 @media(max-width:920px){.page-head{padding-right:0!important;padding-top:75px}.index-room-quick{top:0;right:230px}}
 @media(max-width:630px){.page-head{padding-top:132px!important}.index-room-quick{top:65px;right:0;left:0;justify-content:flex-end}.index-room-quick input{flex:1;max-width:160px}}
+
+.index-room-quick .index-room-last{background:#354c79;border:1px solid #6889c0}
+.index-room-quick .index-room-last[hidden]{display:none!important}
+@media(max-width:630px){.index-room-quick{flex-wrap:wrap}.index-room-quick .index-room-last{font-size:11px}}
 </style>
 </head>
 <body>
@@ -283,7 +287,7 @@
     </section>
   </main>
 <script src="profile-config.js" defer></script>
-<script src="index-room-quick.js?v=2" defer></script>
+<script src="index-room-quick.js?v=3" defer></script>
 <script src="profile-auth.js?v=profile-v7" defer></script>
 <script src="profile-core.js?v=profile-v10-direct-profile-20261020" defer></script>
 </body>
