@@ -29,3 +29,8 @@ Klassische SKYJO-Version nicht beschädigen. Keine irreführende Live-Freigabe o
 - [x] Eigenständiges Geometriemodul `Skyjo/skyjo_layouts.js` hinzugefügt: 3×4/4×5, vollständige Reihen- und Spaltenindizes, Erkennung von vier gleichen aufgedeckten Karten in XL-Spalten.
 - [x] Regressionstests in `tests/skyjo-xl-layout.test.cjs` erstellt (noch nicht in CI ausgeführt).
 - [ ] Bestehende SKYJO-Online-Engine verwendet das Modul noch nicht. Live-XL bleibt gesperrt, bis Austeilen, Darstellung, Auflösung und Rundenwertung auf dieselbe Layoutkonfiguration umgestellt sind.
+
+## Fortschritt – Bereinigung XL-Prototyp
+- [x] Nicht implementierten Spezialkarten-Schalter aus der lokalen XL-Oberfläche entfernt.
+- [x] Kartenstapel der lokalen XL-Version nach Zahlenwerten getrennt gewichtet (−2: 5, 0: 15, sonst 10 je Wert).
+- [ ] Vor Online-Freigabe: bestehende 35-teilige SKYJO-Engine vollständig layoutfähig machen; nicht durch lokalen Prototyp ersetzen.
