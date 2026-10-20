@@ -1,0 +1,20 @@
+/* SKYJO Action – tidy landscape table, layout-only enhancement */
+@media(min-width:1050px) and (orientation:landscape){
+ body.is-playing[data-players="3"] .table-area.three-player-layout{grid-template-columns:minmax(0,1.12fr) minmax(0,.72fr) minmax(0,.98fr)!important;gap:12px!important;align-items:start!important}
+ body.is-playing .table-area.three-player-layout :is(.own-seat,.center-table,.mini-players-stack){min-width:0!important}
+ body.is-playing .table-area.three-player-layout .mini-players-stack{display:grid!important;gap:10px!important}
+ body.is-playing .table-area.three-player-layout .center-table{display:flex!important;flex-direction:column!important;gap:10px!important}
+ body.is-playing .table-area.three-player-layout .center-table .handbox{margin:0!important}
+ body.is-playing .table-area.three-player-layout .center-table .premium-piles{margin:0!important}
+ body.is-playing .status.premium-status{gap:9px!important;margin-bottom:9px!important}
+ body.is-playing .status.premium-status .stat{min-width:0!important;border-radius:13px!important}
+ body.is-playing .table-area.three-player-layout .player{border-radius:17px!important;overflow:hidden}
+ body.is-playing .table-area.three-player-layout .player-head{border-radius:12px!important}
+ body.is-playing .table-area.three-player-layout .mini-player-wrap .player{margin:0!important}
+ body.is-playing .bottom-actions{z-index:5!important}
+}
+@media(min-width:1050px) and (orientation:landscape) and (max-height:850px){
+ body.is-playing .table-area.three-player-layout{gap:9px!important}
+ body.is-playing .table-area.three-player-layout .center-table{gap:7px!important}
+ body.is-playing .table-area.three-player-layout .mini-players-stack{gap:7px!important}
+}
