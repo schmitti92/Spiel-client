@@ -1,4 +1,4 @@
-/* SKYJO XL: five columns, four rows on all player boards. */
+/* SKYJO XL: five columns, three rows on all player boards. */
 .player.skyjo-xl-board .grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:clamp(3px,.4vw,8px)!important;width:100%!important;max-width:100%!important}
 .player.skyjo-xl-board .card-slot{min-width:0!important;min-height:0!important}
 .player.skyjo-xl-board .gridwrap{min-width:0!important}
