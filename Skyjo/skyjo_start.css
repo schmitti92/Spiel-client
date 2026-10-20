@@ -128,3 +128,15 @@ button:focus-visible,a:focus-visible{outline:3px solid #ffe16d;outline-offset:3p
 @media(min-width:1081px){.sj-mast{height:210px}.sj-grid{position:relative;z-index:1}}
 @media(min-width:651px) and (max-width:1080px){.sj-wrap{width:calc(100% - 30px)}.sj-mast{height:185px}.sj-grid{grid-template-columns:1fr}.sj-boards{max-width:100%}}
 @media(max-width:650px){.sj-boards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.sj-board{min-height:118px;padding:5px}.sj-board .preview{height:80px}.sj-board strong{font-size:11px}.sj-board[data-board="illustrated"] .preview:before{font-size:11px}}
+
+/* Lobby layout polish: clear action hierarchy and compact player area */
+.sj-player-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:10px 0 14px;padding:12px;background:#082e4a;border:1px solid #39779b;border-radius:15px}
+.sj-player-actions .sj-readybtn,.sj-player-actions .sj-primary{width:100%;min-height:56px;font-size:clamp(14px,1.35vw,18px);border-radius:11px;box-shadow:0 3px 0 #092c46,0 5px 12px #001a2b55;text-align:center;padding:9px 12px}
+.sj-persons{min-height:0;align-content:start}
+.sj-progress{margin:12px 0}
+.sj-buttons{display:grid;grid-template-columns:1fr;gap:9px}
+.sj-buttons .sj-invite{min-height:49px;font-size:clamp(13px,1.2vw,16px);border-radius:11px}
+.sj-buttons #ai-test-link{min-height:43px;font-size:13px}
+.sj-bottom{padding-top:10px}
+.sj-footer-note{max-width:100%;line-height:1.45}
+@media(max-width:650px){.sj-player-actions{gap:8px;padding:8px;margin:8px 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.sj-player-actions .sj-readybtn,.sj-player-actions .sj-primary{min-height:47px;font-size:12px;padding:7px 5px}.sj-buttons .sj-invite{min-height:45px}}
