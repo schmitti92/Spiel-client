@@ -71,3 +71,38 @@ body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlic
 @media(hover:hover){
  body.is-playing .premium-piles .pile-card-hit:hover .card{filter:brightness(1.07)!important}
 }
+
+/* v13 — One card face for all XL card backs, regardless of location.
+   The SVG already contains its own ornamental frame: do not draw a second one. */
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .player.skyjo-xl-board .card.back,
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .premium-piles .pile-card-hit .card.back{
+  background:#0b2948 url("assets/royal_compass_card.svg") center / 100% 100% no-repeat!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:7px!important;
+  box-shadow:0 2px 4px #0009!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .player.skyjo-xl-board .card.back::before,
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .player.skyjo-xl-board .card.back::after,
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .premium-piles .pile-card-hit .card.back::before,
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .premium-piles .pile-card-hit .card.back::after{
+  content:none!important;display:none!important;
+}
+/* Subtle deck edges only: the clickable pile frame should not look like a second card. */
+body.is-playing .premium-piles .pile-card-hit{
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  padding:0!important;
+}
+body.is-playing .premium-piles .pile-card-hit .card.back{
+  box-shadow:0 2px 0 #0a1d2e,0 4px 0 #bba16b,0 6px 0 #092036,0 8px 9px #0009!important;
+}
+body.is-playing .premium-piles .pile-card-hit .card:not(.back){
+  border:1px solid #f3dfaa!important;
+  outline:0!important;
+  box-shadow:0 2px 0 #8b6e41,0 5px 9px #0007!important;
+}
