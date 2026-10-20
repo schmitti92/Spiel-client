@@ -106,3 +106,50 @@ body.is-playing .premium-piles .pile-card-hit .card:not(.back){
   outline:0!important;
   box-shadow:0 2px 0 #8b6e41,0 5px 9px #0007!important;
 }
+
+/* v14: shared Royal Table back and a restrained two-edge draw stack.
+   Scope all pile/hand changes to the active 15-card XL board. */
+body.is-playing:has(.player.skyjo-xl-board):not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .premium-piles .pile-card-hit .card.back,
+body.is-playing:has(.player.skyjo-xl-board):not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .scene-side .player.skyjo-xl-board .card.back{
+  background-image:url("assets/royal_compass_card.svg")!important;
+  background-size:100% 100%!important;
+  background-position:center!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:7px!important;
+  box-shadow:0 2px 5px #0009!important;
+}
+/* Scale the exact same SVG on opponent cards, not a second painted compass. */
+body.is-playing:has(.player.skyjo-xl-board) .scene-side .player.skyjo-xl-board .card.back{
+  background-size:106% 106%!important;
+  background-position:center!important;
+}
+/* No bulky frame around the clickable top card. Two thin edges indicate the deck. */
+body.is-playing:has(.player.skyjo-xl-board) .premium-piles .pile-card-hit{
+  border:0!important;outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body.is-playing:has(.player.skyjo-xl-board) .premium-piles .pile-card-hit .card.back{
+  box-shadow:0 2px 0 #0a2a43,0 4px 0 #bca16a,0 7px 8px #0008!important;
+}
+body.is-playing:has(.player.skyjo-xl-board) .premium-piles .pile-card-hit .card:not(.back){
+  border:1px solid #dcb66a!important;
+  outline:0!important;
+  border-radius:8px!important;
+  box-shadow:0 3px 6px #0007!important;
+}
+/* Tablet legibility for the explanatory text, without changing the hand-zone height. */
+body.is-playing:has(.player.skyjo-xl-board) .real-hand-copy,
+body.is-playing:has(.player.skyjo-xl-board) .real-hand-zone p{
+  font-size:clamp(12px,.85vw,15px)!important;
+  line-height:1.35!important;
+}
+body.is-playing:has(.player.skyjo-xl-board) .real-hand-zone small{
+  font-size:clamp(10px,.72vw,12px)!important;
+  line-height:1.35!important;
+}
+body.is-playing:has(.player.skyjo-xl-board) .real-hand-zone b,
+body.is-playing:has(.player.skyjo-xl-board) .real-hand-zone strong{
+  font-size:clamp(12px,.9vw,16px)!important;
+}
