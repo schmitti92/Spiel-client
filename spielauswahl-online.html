@@ -252,6 +252,22 @@
 .online-room-meta #online-room-players{margin:0}
 @media(max-width:1000px){.page-head{padding-right:0}.online-head-actions{position:static;justify-content:flex-end;margin:12px 0}.online-quick-room{flex-wrap:wrap}}
 @media(max-width:520px){.online-quick-room{flex:1}.online-quick-room input{flex:1;min-width:90px}.online-quick-room button{padding:9px}.online-profile-avatar{width:48px;height:48px}}
+</style><style>
+/* Compact, collapsible room controls in the top-right header */
+.page-head{padding-right:min(320px,34vw);min-height:115px}
+.online-head-actions{top:2px;right:0;align-items:flex-start}
+.online-room-dropdown{position:relative;z-index:10}
+.online-room-dropdown>summary{list-style:none;cursor:pointer;border:1px solid #5b8bb5;background:linear-gradient(120deg,#193d65,#236da0);color:#fff;border-radius:12px;padding:13px 16px;font:800 14px system-ui;box-shadow:0 5px 15px #0004;white-space:nowrap}
+.online-room-dropdown>summary::-webkit-details-marker{display:none}
+.online-room-dropdown[open]>summary{border-radius:12px 12px 0 0}
+.online-room-dropdown-panel{position:absolute;right:0;top:100%;width:min(350px,calc(100vw - 28px));box-sizing:border-box;padding:12px;background:#0e2641;border:1px solid #5b8bb5;border-radius:12px 0 12px 12px;box-shadow:0 14px 30px #0009}
+.online-room-dropdown .online-room-meta{margin:0 0 10px;padding:8px;display:flex;gap:5px;flex-direction:column;background:#183b61}
+.online-room-dropdown .online-quick-room{display:flex;flex-wrap:wrap;gap:8px}
+.online-room-dropdown .online-quick-room input{flex:1;min-width:110px}
+.online-room-dropdown .online-quick-room button{flex:1;min-width:95px}
+.online-room-dropdown>summary:focus-visible{outline:3px solid #ffdc8b;outline-offset:3px}
+@media(max-width:1000px){.page-head{padding-right:0}.online-head-actions{position:absolute;top:0;right:0;margin:0}.page-head{padding-top:0;padding-right:225px;min-height:132px}}
+@media(max-width:650px){.page-head{padding-right:0;padding-top:85px;min-height:0}.online-head-actions{top:0;right:0}.online-profile-avatar{width:48px;height:48px}.online-room-dropdown-panel{right:-62px}}
 </style></head>
 <body>
   <main class="container">
@@ -260,11 +276,16 @@
       <p class="subtitle">Ein gemeinsamer Raum für alle vier Spiele.</p>
       <p class="hint" id="main-hint">👑 Nur der Host bestimmt das Spiel. Danach geht es in den gemeinsamen Spiel-Vorraum.</p>
       <nav class="online-head-actions" aria-label="Raum und Profil">
-        <form id="online-quick-room" class="online-quick-room" aria-label="Online-Raum verwalten"><input id="online-quick-code" aria-label="Raumcode eingeben" maxlength="6" placeholder="Raumcode" autocomplete="off" spellcheck="false" inputmode="text"><button type="submit" id="online-quick-join">Beitreten</button><button type="button" id="online-quick-create">＋ Erstellen</button></form>
+        <details class="online-room-dropdown">
+          <summary>🌐 Raum <span aria-hidden="true">▾</span></summary>
+          <div class="online-room-dropdown-panel">
+            <div class="online-room-meta" role="status"><span>Raum <strong id="online-room-code">······</strong></span><span id="online-room-status">Verbindung wird geprüft …</span><span id="online-room-players"></span></div>
+            <form id="online-quick-room" class="online-quick-room" aria-label="Online-Raum verwalten"><input id="online-quick-code" aria-label="Raumcode eingeben" maxlength="6" placeholder="Raumcode" autocomplete="off" spellcheck="false" inputmode="text"><button type="submit" id="online-quick-join">Beitreten</button><button type="button" id="online-quick-create">＋ Erstellen</button></form>
+          </div>
+        </details>
         <a class="online-profile-shortcut" href="profile.html" aria-label="Mein Spielerprofil öffnen" title="Mein Spielerprofil"><span class="online-profile-avatar" id="online-profile-avatar" aria-hidden="true">👤</span><span class="online-profile-label">Profil</span></a>
       </nav>
     </header>
-    <div class="online-room-meta" role="status"><span>🌐 Raum <strong id="online-room-code">······</strong></span><span id="online-room-status">Verbindung wird geprüft …</span><span id="online-room-players"></span></div>
  <p id="online-notice" class="online-room-notice" role="status">Bitte warten, bis dein Online-Profil verbunden ist.</p>
 <section class="game-grid" aria-label="Verfügbare Spiele">
       <article class="game barikade-card">
