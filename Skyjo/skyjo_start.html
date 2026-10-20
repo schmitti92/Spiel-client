@@ -84,15 +84,14 @@
         <h2 class="sj-wait-title"><span aria-hidden="true">👥</span> Warte auf Spieler …</h2>
         <div class="sj-room-code"><small>Raum-Code: 📋</small><button id="copy-code-btn" type="button" title="Raumcode kopieren">––––––</button></div>
       </div>
+      <div class="sj-player-actions"><button type="button" id="ready-button" class="sj-readybtn" disabled>✓ Ich bin bereit</button><button type="button" id="start-button" class="sj-primary" disabled>▶ Spiel starten</button></div>
       <div id="players-list" class="sj-persons" aria-live="polite"></div>
       <div class="sj-progress"><span id="ready-counter">0 von 0 Spielern bereit</span><div id="ready-segments" class="sj-segments" aria-hidden="true"></div></div>
       <div class="sj-buttons">
-        <button type="button" id="start-button" class="sj-primary" disabled>▶ Spiel starten</button>
         <button type="button" id="invite-button" class="sj-invite">🔗 Einladen</button>
         <a id="ai-test-link" class="sj-invite" href="skyjo_action.html?mode=local&testPlayers=2" hidden style="display:none;align-items:center;justify-content:center;text-decoration:none">🧪 Spielbrett mit 2 Testspielern ansehen</a>
       </div>
       <div class="sj-bottom">
-        <button type="button" id="ready-button" class="sj-readybtn" disabled>✓ Ich bin bereit</button>
         <p class="sj-footer-note" id="host-note">👑 Der Host legt die Regeln fest. Sobald alle aktiven Spieler bereit sind, startet die Partie automatisch.</p>
       </div>
       <p id="status" class="sj-message" role="status" aria-live="polite"></p>
