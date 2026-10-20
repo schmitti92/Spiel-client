@@ -206,6 +206,17 @@
 .sp-index-menu .sp-menu-actions button,.sp-index-menu .sp-menu-actions a{border-radius:13px!important;font-weight:900!important;transition:transform .16s ease,box-shadow .16s ease}
 .sp-index-menu .sp-menu-actions button:hover,.sp-index-menu .sp-menu-actions a:hover{transform:translateY(-1px)}
 .sp-index-menu .sp-menu-actions button.sp-new,.sp-index-menu .sp-menu-actions button.sp-login,.sp-index-menu .sp-menu-actions button.sp-resume{background:linear-gradient(110deg,#129ceb,#316be9)!important;box-shadow:0 8px 20px #277ee735!important}
+
+/* Kompakte Raumverwaltung direkt links neben dem Profil */
+.sp-index-wrap{right:0!important}
+.index-room-quick{position:absolute;right:278px;top:0;z-index:10040;display:flex;align-items:center;gap:5px;padding:5px;background:#132943;border:1px solid #4a749e;border-radius:14px;box-shadow:0 8px 24px #0006}
+.index-room-quick input{width:110px;min-width:0;padding:10px 8px;background:#09182d;color:#fff;border:1px solid #54769a;border-radius:9px;text-transform:uppercase;letter-spacing:1px;font-size:12px;font-weight:800}
+.index-room-quick button{border:0;border-radius:9px;padding:10px 9px;color:#fff;background:#2377b8;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.index-room-quick .index-room-create{background:#176e61}
+.index-room-quick button:disabled{opacity:.55;cursor:wait}
+.index-room-quick .index-room-error{position:absolute;top:calc(100% + 5px);right:0;max-width:350px;min-width:260px;background:#542534;border:1px solid #e69aa4;color:#fff;padding:8px 10px;border-radius:9px;font-size:12px}
+@media(max-width:920px){.page-head{padding-right:0!important;padding-top:75px}.index-room-quick{top:0;right:230px}}
+@media(max-width:630px){.page-head{padding-top:132px!important}.index-room-quick{top:65px;right:0;left:0;justify-content:flex-end}.index-room-quick input{flex:1;max-width:160px}}
 </style>
 </head>
 <body>
@@ -215,10 +226,6 @@
       <p class="subtitle">Wähle, welches Spiel du starten möchtest.</p>
       <p class="hint"><span class="hint-icon" aria-hidden="true">i</span><span>🎮 Online-Spielerprofile mit Anmeldung – oben rechts anmelden oder ein neues Profil anlegen.</span></p>
     </header>
-    <section aria-label="Zentraler Online-Raum" style="margin:0 0 20px;padding:18px 22px;border:1px solid #315d9d;border-radius:20px;background:linear-gradient(120deg,#183865,#235c96);display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 12px 28px #07183746">
-      <div><strong style="display:block;color:white;font-size:21px;margin-bottom:3px">🎲 Ein Raum für alle Spiele <small style="font-size:11px;color:#a5defc">BETA</small></strong><span style="color:#dceeff;font-size:13px">Einmal Raum erstellen, gemeinsam Barikade, SKYJO, KreuzKunter oder Business starten. Testversion.</span></div>
-      <a href="hub-lobby.html" style="background:white;color:#184778;text-decoration:none;padding:13px 18px;font-weight:850;border-radius:13px;white-space:nowrap">Gemeinsamen Raum öffnen →</a>
-    </section>
     <section class="game-grid" aria-label="Verfügbare Spiele">
       <article class="game barikade-card">
         <div class="game-title"><h2>Barikade (Original)</h2></div>
@@ -275,7 +282,7 @@
       </article>
     </section>
   </main>
-<script src="profile-config.js" defer></script>
+<script src="profile-config.js" defer></script>\n<script src="index-room-quick.js?v=1" defer></script>
 <script src="profile-auth.js?v=profile-v7" defer></script>
 <script src="profile-core.js?v=profile-v10-direct-profile-20261020" defer></script>
 </body>
