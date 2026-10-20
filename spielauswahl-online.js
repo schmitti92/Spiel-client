@@ -41,7 +41,7 @@ function renderProfileShortcut(){
  const el=byId('online-profile-avatar');if(!el)return;
  const p=window.SpielOnline?.state?.()?.profile;
  if(!p){el.textContent='👤';el.style.backgroundImage='';return;}
- const data=typeof p.avatarImage==='string'&&/^data:image\\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.avatarImage)?p.avatarImage:null;
+ const data=typeof p.avatarImage==='string'&&p.avatarImage.startsWith('data:image/')?p.avatarImage:null;
  if(data){el.style.backgroundImage='url('+JSON.stringify(data)+')';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.textContent='';return;}
  const n=Number(p.avatar),idx=Number.isInteger(n)?Math.max(0,Math.min(15,n)):0;
  const asset=idx<8?'profile-avatars.webp':'profile-avatars-extra.webp';const cell=idx<8?idx:idx-8;
@@ -50,6 +50,7 @@ function renderProfileShortcut(){
 function update(snapshot){
  if(snapshot.code!==code)return;
  room=snapshot;
+ try{const uid=user()?.uid;if(uid)localStorage.setItem('spielportal:last-room:'+uid,code);}catch(_){}
  byId('online-room-code').textContent=code;
  byId('online-room-players').textContent=snapshot.players?.map(p=>(p.host?'👑 ':'')+p.name).join(' · ')||'';
  byId('online-room-status').textContent=snapshot.host?'👑 Du bist Host – wähle euer nächstes Spiel.':'Du bist verbunden. Der Host wählt das nächste Spiel.';
@@ -65,6 +66,8 @@ async function refresh(){
  if(!codeValid){status('Der Raumcode fehlt oder ist ungültig. Bitte gehe zurück zur Raum-Lobby.',true);return;}
  if(loading||choosing||document.hidden)return;
  if(!user()){
+  const authState=window.SpielOnline?.state?.();
+  if(['initializing','loading'].includes(authState?.status)){status('Dein gespeichertes Spielerprofil wird verbunden …');return;}
   if(notifiedUid!==null)room=null;
   buttons.forEach(b=>b.disabled=true);
   status('Bitte melde dich mit deinem Online-Profil an, um auf diesen Raum zuzugreifen.');
@@ -116,6 +119,7 @@ async function quickRoom(action){
  try{
   const result=await request(action==='join'?'/rooms/'+nextCode+'/join':'/rooms','POST');
   if(!result?.room?.code)throw Error('ROOM_RESPONSE_INVALID');
+  try{const uid=user()?.uid;if(uid)localStorage.setItem('spielportal:last-room:'+uid,result.room.code);}catch(_){}
   location.assign('spielauswahl-online.html?room='+encodeURIComponent(result.room.code));
  }catch(e){status(e.message==='LOGIN_REQUIRED'?'Bitte zuerst mit deinem Online-Spielerprofil anmelden.':'Raumaktion fehlgeschlagen: '+(e.message||'Netzwerkfehler'),true);quickBusy=false;quickJoin.disabled=false;quickCreate.disabled=false;}
 }
