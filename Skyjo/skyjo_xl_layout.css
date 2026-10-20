@@ -47,3 +47,27 @@
  .skyjo-scenic-stage .scene-side .player.skyjo-xl-board .grid{--card-w:clamp(25px,3.5vw,37px)!important;gap:3px!important}
  .skyjo-scenic-stage .scene-side .player.skyjo-xl-board .gridwrap{padding:6px 3px!important}
 }
+
+/* Royal card finish: shared by opponents and the two central piles in XL. */
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .player.skyjo-xl-board .card.back,
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .premium-piles .pile-card-hit .card.back{
+ background-color:#092a4b!important;
+ background-image:url("assets/royal_compass_card.svg")!important;
+ background-size:100% 100%!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+ border:2px solid #d5b36b!important;
+ border-radius:8px!important;
+ box-shadow:inset 0 0 0 1px #fff1bd77,inset 0 0 9px #021425bb,0 3px 0 #04111d,0 5px 9px #0008!important;
+ filter:none!important;
+}
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .premium-piles .pile-card-hit .card:not(.back){
+ border:2px solid #ead18b!important;
+ border-radius:9px!important;
+ box-shadow:inset 0 1px 2px #fff9,0 3px 0 #1a1010,0 6px 12px #0008!important;
+}
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .scene-side .player.skyjo-xl-board .card.back::before,
+body.is-playing:not([data-skyjo-theme="comic"]):not([data-skyjo-theme="christlich"]) .scene-side .player.skyjo-xl-board .card.back::after{content:none!important;display:none!important}
+@media(hover:hover){
+ body.is-playing .premium-piles .pile-card-hit:hover .card{filter:brightness(1.07)!important}
+}
