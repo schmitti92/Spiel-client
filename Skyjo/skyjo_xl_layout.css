@@ -1,5 +1,16 @@
-/* SKYJO XL: five columns, three rows on all player boards. */
-.player.skyjo-xl-board .grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;gap:clamp(3px,.4vw,8px)!important;width:100%!important;max-width:100%!important}
-.player.skyjo-xl-board .card-slot{min-width:0!important;min-height:0!important}
-.player.skyjo-xl-board .gridwrap{min-width:0!important}
-@media (orientation:landscape){.player.skyjo-xl-board .grid{max-height:min(58vh,520px)!important}}
+/* SKYJO XL: fixed-size five-column, three-row boards; side cards must not collapse. */
+.player.skyjo-xl-board .grid{
+ display:grid!important;
+ grid-template-columns:repeat(5,var(--card-w))!important;
+ grid-template-rows:repeat(3,auto)!important;
+ width:max-content!important;
+ max-width:100%!important;
+ gap:clamp(3px,.4vw,8px)!important;
+ margin-inline:auto!important;
+}
+.player.skyjo-xl-board .card-slot{width:var(--card-w)!important;min-width:var(--card-w)!important;min-height:0!important}
+.player.skyjo-xl-board .gridwrap{min-width:0!important;justify-content:center!important}
+.skyjo-scenic-stage .scene-side .player.skyjo-xl-board .grid{--card-w:clamp(33px,3vw,49px)!important;gap:clamp(2px,.25vw,5px)!important}
+.skyjo-scenic-stage .scene-side .player.skyjo-xl-board .card{width:var(--card-w)!important;min-width:0!important}
+.skyjo-scenic-stage .scene-self .player.skyjo-xl-board .grid{--card-w:clamp(49px,5vw,80px)!important}
+@media(max-width:850px){.skyjo-scenic-stage .scene-side .player.skyjo-xl-board .grid{--card-w:clamp(23px,4vw,36px)!important}.skyjo-scenic-stage .scene-self .player.skyjo-xl-board .grid{--card-w:clamp(38px,8vw,65px)!important}}
