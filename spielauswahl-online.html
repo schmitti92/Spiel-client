@@ -225,6 +225,18 @@
  .game .actions .online-game-button .chevron{margin-left:auto}
  @media(max-width:710px){.start-mode-banner{flex-wrap:wrap;padding:15px;gap:9px}.start-mode-banner strong{font-size:16px}.start-mode-banner a{width:100%;text-align:center}.start-mode-banner .mode-icon{font-size:24px}}
  </style>
+
+<style>
+.page-head{position:relative;padding-right:min(380px,38vw);min-height:148px}
+.online-head-actions{position:absolute;top:0;right:0;display:flex;align-items:center;gap:14px;z-index:4}
+.online-head-actions a{box-sizing:border-box;text-decoration:none;display:flex;align-items:center;justify-content:center;font-weight:800;transition:filter .16s,transform .16s}
+.online-room-manage{min-height:54px;padding:12px 18px;border-radius:16px;background:linear-gradient(125deg,#254f82,#1972aa);border:1px solid #75b8ec;color:#fff!important;box-shadow:0 6px 18px #020d2440;font-size:15px;white-space:nowrap}
+.online-profile-shortcut{flex-direction:column;gap:5px;color:#e8f2ff!important;font-size:12px}
+.online-profile-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#234b75 center/cover no-repeat;border:3px solid #f0c36f;box-shadow:0 4px 17px #0006;font-size:32px}
+.online-head-actions a:hover{filter:brightness(1.14)}.online-head-actions a:focus-visible{outline:3px solid #ffdb88;outline-offset:3px}
+@media(max-width:900px){.page-head{padding-right:0;min-height:0}.online-head-actions{position:static;justify-content:flex-end;margin:14px 0 8px}.online-profile-avatar{width:56px;height:56px}.online-room-manage{white-space:normal;text-align:center}}
+@media(max-width:480px){.online-head-actions{justify-content:space-between}.online-room-manage{font-size:13px;padding:10px}.online-profile-label{font-size:11px}}
+</style>
 </head>
 <body>
   <main class="container">
@@ -232,6 +244,10 @@
       <h1>🌐 Online-Spielauswahl</h1>
       <p class="subtitle">Ein gemeinsamer Raum für alle vier Spiele.</p>
       <p class="hint" id="main-hint">👑 Nur der Host bestimmt das Spiel. Danach geht es in den gemeinsamen Spiel-Vorraum.</p>
+      <nav class="online-head-actions" aria-label="Raum und Profil">
+        <a class="online-room-manage" href="hub-lobby.html" title="Raum erstellen oder einem Raum beitreten">＋ Raum erstellen / beitreten</a>
+        <a class="online-profile-shortcut" href="profile.html" aria-label="Mein Spielerprofil öffnen" title="Mein Spielerprofil"><span class="online-profile-avatar" id="online-profile-avatar" aria-hidden="true">👤</span><span class="online-profile-label">Profil</span></a>
+      </nav>
     </header>
     <section class="start-mode-banner" id="online-room-banner" role="status"><span class="mode-icon">🌐</span><div class="mode-details"><strong>Gemeinsamer Online-Raum <span id="online-room-code">······</span></strong><p id="online-room-status">Verbindung zum Spielraum wird geprüft …</p><div id="online-room-players"></div></div><a href="hub-lobby.html">Raum wechseln</a></section>
  <p id="online-notice" class="online-room-notice" role="status">Bitte warten, bis dein Online-Profil verbunden ist.</p>
@@ -294,6 +310,6 @@
 
 <script src="profile-config.js"></script>
 <script src="profile-auth.js"></script>
-<script src="spielauswahl-online.js?v=8.0.0" defer></script>
+<script src="spielauswahl-online.js?v=8.0.1" defer></script>
 </body>
 </html>

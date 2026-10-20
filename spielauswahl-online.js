@@ -36,6 +36,17 @@ async function request(path,method='GET',payload){
   return data;
  }finally{clearTimeout(timeout);}
 }
+
+function renderProfileShortcut(){
+ const el=byId('online-profile-avatar');if(!el)return;
+ const p=window.SpielOnline?.state?.()?.profile;
+ if(!p){el.textContent='👤';el.style.backgroundImage='';return;}
+ const data=typeof p.avatarImage==='string'&&/^data:image\\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.avatarImage)?p.avatarImage:null;
+ if(data){el.style.backgroundImage='url('+JSON.stringify(data)+')';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.textContent='';return;}
+ const n=Number(p.avatar),idx=Number.isInteger(n)?Math.max(0,Math.min(15,n)):0;
+ const asset=idx<8?'profile-avatars.webp':'profile-avatars-extra.webp';const cell=idx<8?idx:idx-8;
+ el.style.backgroundImage='url('+JSON.stringify(asset)+')';el.style.backgroundSize='400% 200%';el.style.backgroundPosition=((cell%4)*100/3)+'% '+(Math.floor(cell/4)*100)+'%';el.textContent='';
+}
 function update(snapshot){
  if(snapshot.code!==code)return;
  room=snapshot;
@@ -95,8 +106,9 @@ for(const button of buttons){
 }
 if(!codeValid)status('Kein gültiger Online-Raum angegeben. Bitte zuerst einen Raum betreten.',true);
 else{byId('online-room-code').textContent=code;}
-window.addEventListener('spielonline-change',()=>{void refresh();});
+window.addEventListener('spielonline-change',()=>{renderProfileShortcut();void refresh();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh();});
 setInterval(refresh,3500);
+renderProfileShortcut();
 void refresh();
 })();
