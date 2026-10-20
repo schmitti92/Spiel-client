@@ -350,6 +350,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  try{
   const [appModule,authModule]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js')]);
   api=authModule;const app=appModule.initializeApp(fb,'spielportal-profile-v2');auth=authModule.getAuth(app);
+  // Anmeldung auf diesem Gerät dauerhaft behalten (bis zur bewussten Abmeldung).
+  // Erst nach dem Setzen der Persistenz den gespeicherten Benutzer auswerten.
+  await authModule.setPersistence(auth,authModule.browserLocalPersistence);
   authModule.onAuthStateChanged(auth,async user=>{
    if(submitting&&user){current.user=user;return;}
    if(user&&current.user?.uid===user.uid&&current.profile)return;
