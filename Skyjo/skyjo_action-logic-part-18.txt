@@ -58,7 +58,7 @@ function buildRoyalRoundSummaryModal(summary,options={}){
      <div class="sky-score-center">
         <div class="sky-score-center-head"><span class="sky-score-big-rank">${Number(focus.index)+1}</span><h3>${escapeHTML(focus.name)}</h3></div>
         <div class="sky-score-center-content">
-          <section class="sky-score-board-wrap" aria-label="12-Karten-Feld von ${escapeHTML(focus.name)}"><div class="sky-score-board">${centerItems}</div><div class="sky-score-glow-caption">${counting?'<span class="royal-count-headline">Die Karten werden einzeln ausgezählt …</span>':'Alle Karten ausgezählt'}</div></section>
+          <section class="sky-score-board-wrap" aria-label="${state?.layoutMode==='xl'?15:12}-Karten-Feld von ${escapeHTML(focus.name)}"><div class="sky-score-board">${centerItems}</div><div class="sky-score-glow-caption">${counting?'<span class="royal-count-headline">Die Karten werden einzeln ausgezählt …</span>':'Alle Karten ausgezählt'}</div></section>
           <section class="sky-score-parchment" aria-label="Karten-Zwischensumme"><h4>ZWISCHENSUMME</h4><div class="sky-score-progress royal-count-progress">${counting?`Spieler ${countIndex+1} von ${players.length} · Karte 0 von ${(focus.items||[]).length}`:'Alle Karten gezählt'}</div><div class="sky-score-entries">${entries}</div><div class="sky-score-parchment-total"><span>RUNDE</span><strong class="sky-score-main-running royal-current-header-total">${currentRound}</strong></div><div class="royal-doubling-line"></div></section>
         </div>
      </div>
