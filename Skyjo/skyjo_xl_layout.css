@@ -153,3 +153,29 @@ body.is-playing:has(.player.skyjo-xl-board) .real-hand-zone b,
 body.is-playing:has(.player.skyjo-xl-board) .real-hand-zone strong{
   font-size:clamp(12px,.9vw,16px)!important;
 }
+
+/* v15: compact central draw/discard cards; remove framing around the SVG card art. */
+body.is-playing:has(.player.skyjo-xl-board) .scene-pile-stage .premium-piles .pile-card-hit{
+ background:none!important;border:0!important;outline:0!important;
+ box-shadow:none!important;padding:0!important;
+ overflow:visible!important;
+}
+body.is-playing:has(.player.skyjo-xl-board) .scene-pile-stage .premium-piles .pile-card-hit::before,
+body.is-playing:has(.player.skyjo-xl-board) .scene-pile-stage .premium-piles .pile-card-hit::after{
+ box-shadow:none!important;border:0!important;outline:0!important;
+}
+body.is-playing:has(.player.skyjo-xl-board) .scene-pile-stage .premium-piles .pile-card-hit>.card.back{
+ border:0!important;outline:0!important;
+ background:#0b2948 url("assets/royal_compass_card.svg") center / 100% 100% no-repeat!important;
+ border-radius:7px!important;
+ box-shadow:0 2px 0 #173247,0 4px 0 #c3a66b,0 7px 8px #0009!important;
+}
+body.is-playing:has(.player.skyjo-xl-board) .scene-pile-stage .premium-piles .pile-card-hit>.card:not(.back){
+ border:1px solid #e2c383!important;outline:0!important;
+ border-radius:8px!important;
+ box-shadow:0 3px 7px #0008!important;
+}
+body.is-playing:has(.player.skyjo-xl-board) .scene-pile-stage .premium-piles .pile-card-hit>.card::before,
+body.is-playing:has(.player.skyjo-xl-board) .scene-pile-stage .premium-piles .pile-card-hit>.card::after{
+ border:0!important;box-shadow:none!important;
+}
