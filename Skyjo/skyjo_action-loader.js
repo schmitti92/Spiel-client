@@ -11,7 +11,7 @@
   async function fetchWithRetry(name,attempts=3){
     let last;
     for(let i=0;i<attempts;i++){
-      try{const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);try{const response=await fetch(new URL(name,baseUrl),{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error(name+': HTTP '+response.status);return await response.text();}finally{clearTimeout(timer);}}
+      try{const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);try{const assetUrl=new URL(name,baseUrl);assetUrl.searchParams.set('build',new URL(baseUrl).searchParams.get('v')||'4');const response=await fetch(assetUrl,{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error(name+': HTTP '+response.status);return await response.text();}finally{clearTimeout(timer);}}
       catch(e){last=e;}
     }
     throw Error('Datei nicht erreichbar: '+name+' ('+String(last)+')');
