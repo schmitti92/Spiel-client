@@ -1,0 +1,4 @@
+const assert=require('node:assert/strict');const {test}=require('node:test');const {layout,lines,completeEqualColumns}=require('../Skyjo/skyjo_layouts.js');
+test('classic remains 3x4',()=>{assert.deepEqual(layout('classic'),{rows:3,cols:4,count:12});assert.equal(lines('classic').length,7)});
+test('XL has 4 rows and 5 columns',()=>{assert.deepEqual(layout('xl'),{rows:4,cols:5,count:20});assert.equal(lines('xl').length,9);assert.deepEqual(lines('xl').filter(l=>l.axis==='column')[4].indices,[4,9,14,19])});
+test('only four open identical cards clear an XL column',()=>{const grid=Array.from({length:20},()=>({type:'number',value:1,faceUp:false}));[2,7,12,17].forEach(i=>grid[i].faceUp=true);assert.equal(completeEqualColumns(grid,'xl').length,1);grid[17].faceUp=false;assert.equal(completeEqualColumns(grid,'xl').length,0)});
