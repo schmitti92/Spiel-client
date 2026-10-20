@@ -86,12 +86,13 @@ function royalCardGridData(p,{counting=false,finished=true}={}){
  // During the score show this is the exact board at the moment the round ended.
  // In finished view, present remaining cards, as after automatic clearing.
  const original=Array.isArray(p?.openingGrid)&&counting?p.openingGrid:(Array.isArray(p?.gridSnapshot)?p.gridSnapshot:[]);
- if(original.length>=12)return original.slice(0,12);
- const result=Array(12).fill(null),cards=(p?.items||[]).filter(x=>x.kind==='card'&&!String(x.label||'').startsWith('Zusatz'));
+ const count=state?.layoutMode==='xl'?20:12;
+ if(original.length>=count)return original.slice(0,count);
+ const result=Array(count).fill(null),cards=(p?.items||[]).filter(x=>x.kind==='card'&&!String(x.label||'').startsWith('Zusatz'));
  let cursor=0;
  for(const item of cards){
    let idx=Number.isInteger(item.gridIndex)?item.gridIndex:cursor++;
-   if(idx>=0&&idx<12)result[idx]=item.card||null
+   if(idx>=0&&idx<count)result[idx]=item.card||null
  }
  return result
 }
