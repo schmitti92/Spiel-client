@@ -38,7 +38,8 @@
      if(q.get('layout')==='xl')sessionStorage.setItem('skyjoLocalLayout','xl');
      game.startAIFromSetup();
      const board=document.querySelector('#player-0 .grid');
-     const countNow=board?.children?.length||0;
+     const countNow=board?.querySelectorAll('.card')?.length||board?.children?.length||0;
+     console.info('[SKYJO XL diagnostic]',{requested:q.get('layout'),cardCount:countNow,boardClass:document.querySelector('#player-0')?.className});
      if(q.get('layout')==='xl'&&countNow!==20){
        console.error('[SKYJO XL] Expected 20 cards but rendered',countNow);
        report('XL wurde nicht übernommen ('+countNow+' statt 20 Karten). Bitte Browsercache aktualisieren.');
