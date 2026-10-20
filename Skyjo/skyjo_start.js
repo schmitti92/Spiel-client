@@ -25,7 +25,7 @@ function onlineHome(extra=''){
 }
 function gameUrl(snapshot){
  const m=snapshot.match;
- const params=new URLSearchParams({mode:'online',hub:snapshot.code,match:m.id,room:m.gameCode,board:m.settings?.boardTheme==='illustrated'?'illustrated':'classic'});
+ const params=new URLSearchParams({mode:'online',hub:snapshot.code,match:m.id,room:m.gameCode,board:m.settings?.boardTheme==='illustrated'?'illustrated':'classic',layout:m.settings?.layoutMode==='xl'?'xl':'classic'});
  return 'skyjo_action.html?'+params.toString();
 }
 function note(message='',bad=false){
@@ -115,6 +115,9 @@ function render(){
  $('host-banner').textContent=room.host?'👑 Du bist der Host – nur du änderst die Einstellungen.':'🔒 Nur der Spielleiter kann die Einstellungen ändern.';
  $('host-note').textContent=room.host?'👑 Du kannst die Regeln ändern und Teilnehmerplätze verteilen. Alle Bereitmeldungen werden nach Änderungen zurückgesetzt.':'👑 Der Host bestimmt die Regeln. Du kannst dich bereit melden; der letzte Bereit-Klick startet die Partie automatisch.';
  const settings=room.settings||{};
+ const chosenMode=settings.layoutMode==='xl'?'xl':'classic';
+ document.querySelectorAll('[data-layout]').forEach(btn=>{const selected=btn.dataset.layout===chosenMode;btn.classList.toggle('selected',selected);btn.setAttribute('aria-pressed',String(selected));btn.disabled=!hostReady;});
+ const modeNote=$('sj-mode-note');if(modeNote)modeNote.textContent=chosenMode==='xl'?'SKYJO XL · 4 × 5 · 20 Karten je Spieler · gleiche Regeln':'SKYJO Klassisch · 3 × 4 · 12 Karten je Spieler · gleiche Regeln';
  for(const key of supported){
   const value=$('value-'+key);
   if(value)value.textContent=key==='layoutMode'?(settings.layoutMode==='xl'?'4 × 5':'3 × 4'):typeof settings[key]==='boolean'?(settings[key]?'An':'Aus'):String(settings[key]??'–');
@@ -142,7 +145,7 @@ function render(){
  readyButton.disabled=busy||room.phase!=='preparing'||!me?.participating;
  readyButton.textContent=me?.ready?'✔ Bereit – zurücknehmen':'✓ Ich bin bereit';
  readyButton.classList.toggle('is-ready',!!me?.ready);
- const aiLink=$('ai-test-link');if(aiLink){const show=!!room.host&&room.phase==='preparing';aiLink.hidden=!show;aiLink.style.display=show?'inline-flex':'none';}
+ const aiLink=$('ai-test-link');if(aiLink){const show=!!room.host&&room.phase==='preparing';aiLink.hidden=!show;aiLink.style.display=show?'inline-flex':'none';aiLink.href='skyjo_action.html?mode=local&testPlayers=2&layout='+chosenMode+'&new=1';aiLink.textContent='🧪 '+(chosenMode==='xl'?'SKYJO XL (4 × 5)':'Klassisch (3 × 4)')+' mit 2 Testspielern starten';}
  const start=$('start-button');
  start.textContent=room.phase==='playing'?'▶ Zum Spiel':'▶ Spiel starten';
  start.disabled=busy||(!room.host&&room.phase!=='playing')||room.phase==='playing'&&!room.match?.participating;
@@ -222,6 +225,7 @@ async function boot(){
   }
  },250);
 }
+document.querySelectorAll('[data-layout]').forEach(button=>button.addEventListener('click',()=>{if(!room?.host||updating())return;const mode=button.dataset.layout;if(mode!=='classic'&&mode!=='xl')return;if((room.settings?.layoutMode||'classic')===mode)return;void mutate('/skyjo-settings',{settings:{...room.settings,layoutMode:mode}});}));
 document.querySelectorAll('[data-step]').forEach(button=>button.addEventListener('click',()=>{
  const key=button.dataset.step;
  if(!room?.host||updating()||!supported.includes(key))return;
