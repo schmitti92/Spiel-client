@@ -8,8 +8,9 @@ const CODE=/^[A-HJ-NP-Z2-9]{6}$/;
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let room=null,busy=false,refreshBusy=false,socket=null,lastSocket=null,reconnectTimer=null,pollTimer=null;
 const limits={target:{min:50,max:500,step:10},jokerCount:{min:0,max:30,step:1}};
-const supported=['target','jokerCount','streetModeEnabled','jokerEnabled','beginner'];
+const supported=['layoutMode','target','jokerCount','streetModeEnabled','jokerEnabled','beginner'];
 const descriptions={
+ layoutMode:'Wählt zwischen 12 Karten (3 × 4) und 20 Karten (4 × 5) pro Spieler.',
  target:'Der Zielwert kann zwischen 50 und 500 Punkten eingestellt werden.',
  jokerCount:'0 bis 30 Jokerkarten – Änderungen werden für alle Spieler gespeichert.',
  streetModeEnabled:'Aktiviert oder deaktiviert Straßen und die Regeln für gleiche Karten.',
@@ -116,7 +117,7 @@ function render(){
  const settings=room.settings||{};
  for(const key of supported){
   const value=$('value-'+key);
-  if(value)value.textContent=typeof settings[key]==='boolean'?(settings[key]?'An':'Aus'):String(settings[key]??'–');
+  if(value)value.textContent=key==='layoutMode'?(settings.layoutMode==='xl'?'4 × 5':'3 × 4'):typeof settings[key]==='boolean'?(settings[key]?'An':'Aus'):String(settings[key]??'–');
   document.querySelectorAll('[data-step="'+key+'"]').forEach(btn=>{
    const limitsFor=limits[key];
    btn.disabled=!hostReady||(limitsFor&&(Number(settings[key])+(Number(btn.dataset.dir)*limitsFor.step)>limitsFor.max||Number(settings[key])+(Number(btn.dataset.dir)*limitsFor.step)<limitsFor.min));
@@ -226,7 +227,8 @@ document.querySelectorAll('[data-step]').forEach(button=>button.addEventListener
  if(!room?.host||updating()||!supported.includes(key))return;
  const old=room.settings||{},change=Number(button.dataset.dir)||1;
  let next;
- if(typeof old[key]==='boolean')next=!old[key];
+ if(key==='layoutMode')next=old.layoutMode==='xl'?'classic':'xl';
+ else if(typeof old[key]==='boolean')next=!old[key];
  else{
   const rule=limits[key];if(!rule)return;
   next=Math.min(rule.max,Math.max(rule.min,Number(old[key])+rule.step*change));
