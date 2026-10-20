@@ -39,13 +39,14 @@ function findMatchesInPlayer(p){
  /* Waagerecht sind 4 Karten erlaubt oder genau 3 verbleibende Karten,
     wenn das vierte Feld bereits durch einen vorherigen Abbau leer ist.
     Senkrecht bleiben exakt 3 Karten erforderlich. */
- for(let r=0;r<3;r++){
-   const row=[r*4,r*4+1,r*4+2,r*4+3];
+ const xl=state?.layoutMode==='xl',cols=xl?5:4,rows=xl?4:3;
+ for(let r=0;r<rows;r++){
+   const row=Array.from({length:cols},(_,c)=>r*cols+c);
    const idx=row.filter(i=>p.grid[i]);
    if(idx.length>=3)groups.push({name:`Reihe ${r+1}`,idx})
  }
- for(let c=0;c<4;c++){
-   const idx=[c,c+4,c+8];
+ for(let c=0;c<cols;c++){
+   const idx=Array.from({length:rows},(_,r)=>c+r*cols);
    if(idx.every(i=>p.grid[i]))groups.push({name:`Spalte ${c+1}`,idx})
  }
  const out=[];
