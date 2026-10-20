@@ -24,3 +24,8 @@ Eigenständige 4×5-Variante mit genau 20 Karten pro Spieler, drei authentifizie
 
 ## Qualitätsregel
 Klassische SKYJO-Version nicht beschädigen. Keine irreführende Live-Freigabe ohne vollständige Online-Engine und Prüfung.
+
+## Fortschritt 20.10.2026 – weiterer Durchgang
+- [x] Eigenständiges Geometriemodul `Skyjo/skyjo_layouts.js` hinzugefügt: 3×4/4×5, vollständige Reihen- und Spaltenindizes, Erkennung von vier gleichen aufgedeckten Karten in XL-Spalten.
+- [x] Regressionstests in `tests/skyjo-xl-layout.test.cjs` erstellt (noch nicht in CI ausgeführt).
+- [ ] Bestehende SKYJO-Online-Engine verwendet das Modul noch nicht. Live-XL bleibt gesperrt, bis Austeilen, Darstellung, Auflösung und Rundenwertung auf dieselbe Layoutkonfiguration umgestellt sind.
