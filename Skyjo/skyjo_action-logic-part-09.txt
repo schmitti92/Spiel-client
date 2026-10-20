@@ -48,7 +48,13 @@ async function toGameHub(){
    cloudConfigSave();
    if(cloud.enabled&&cloud.room)await waitForCloudIdle(2500);
  }catch(e){console.warn('Spielauswahl: Speicherung vor Navigation fehlgeschlagen',e)}
- location.assign('../index.html');
+ const nav=new URLSearchParams(location.search);
+ const hub=String(nav.get('hub')||'').toUpperCase();
+ const validHub=/^[A-HJ-NP-Z2-9]{6}$/.test(hub);
+ // Keep the shared hub room: navigating must not call leaveOnlineRoom().
+ location.assign(validHub
+   ? '../spielauswahl-online.html?room='+encodeURIComponent(hub)
+   : '../index.html');
 }
 async function backToLobby(){
  const online=!!cloud.enabled;
