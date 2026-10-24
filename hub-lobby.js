@@ -211,12 +211,32 @@ function renderChallengeProgress(){
  const observedAt=Date.now();
  const draw=()=>{
   const remaining=Number(ch.startAt)-(estimatedServerNow+Date.now()-observedAt);
-  if(ch.phase==='countdown'&&remaining>0){el('challenge-clock').textContent=String(Math.max(1,Math.ceil(remaining/1000)));el('challenge-progress-status').textContent='Start wird vom Server gesteuert. Bitte bereithalten.';}
-  else{el('challenge-clock').textContent=!isTime?'⏳':remaining< -3000?'❓':String(Math.max(0,Math.floor(-remaining/1000)));el('challenge-progress-status').textContent=isTime?'⏱️ Zeitgefühl läuft – drücke STOPP, wenn du die Zielzeit erreicht hast.':'⚠️ '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index])+' ist noch nicht online spielbar. Bitte Challenge abbrechen und später erneut starten.';if(!isTime&&challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}}
-  if(isTime&&!stopped&&ch.phase==='countdown'&&remaining<=0)el('challenge-time-stop').disabled=challengeStopBusy;
-  if(isMath&&!answered&&remaining<=0)el('challenge-math-send').disabled=false;
+  const clockEl=el('challenge-clock'),statusEl=el('challenge-progress-status');
+  if(ch.phase==='results'||ch.phase==='finished'){
+   clockEl.textContent=ch.phase==='finished'?'🏆':'🎉';
+   statusEl.textContent=ch.phase==='finished'?'Die Challenge ist beendet.':'Auswertung abgeschlossen. Der Host startet das nächste Spiel.';
+   return;
+  }
+  if(remaining>0){
+   clockEl.textContent=String(Math.max(1,Math.ceil(remaining/1000)));
+   statusEl.textContent='Start wird vom Server gesteuert. Bitte bereithalten.';
+   return;
+  }
+  if(isTime){
+   clockEl.textContent=stopped?'✓':remaining<=-3000?'❓':String(Math.max(0,Math.floor(-remaining/1000)));
+   statusEl.textContent=stopped?'✓ Stopp gespeichert – warte auf die Mitspieler.':'⏱️ Zeitgefühl läuft – drücke STOPP bei deiner geschätzten Zielzeit.';
+   if(!stopped)el('challenge-time-stop').disabled=challengeStopBusy;
+  }else if(isMath){
+   clockEl.textContent='🏴‍☠️';
+   statusEl.textContent=answered?'Antwort gespeichert – warte auf die Mitspieler.':'Löse die Rechenaufgabe und sende deine Antwort ab.';
+   if(!answered)el('challenge-math-send').disabled=false;
+  }else{
+   clockEl.textContent='⏳';
+   statusEl.textContent='⚠️ Dieses Minispiel ist noch nicht online verfügbar.';
+  }
  };
- draw();if(ch.phase==='countdown'&&(Number(ch.startAt)>estimatedServerNow||isTime&&!stopped))challengeClockTimer=setInterval(draw,80);
+ draw();
+ if(ch.phase==='countdown'&&(Number(ch.startAt)>estimatedServerNow||isTime&&!stopped))challengeClockTimer=setInterval(draw,80);
 }
 function renderChallengeSetup(showStage){
  let box=el('challenge-settings-panel');
