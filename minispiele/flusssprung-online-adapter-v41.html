@@ -1,0 +1,416 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Flusssprung V41 – Ultimate Dschungel</title><style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:system-ui,Arial,sans-serif;color:#f8f6df;background:#062b30}button,select{font:inherit;cursor:pointer}button{border:1px solid #a7d7b5a0;background:#164a46;color:white;border-radius:12px;padding:9px 14px;font-weight:750}button:disabled{opacity:.4}button:focus-visible,.stone:focus-visible{outline:3px solid #ffdf75}#app{height:100dvh;display:flex;flex-direction:column}header{height:53px;flex:none;background:linear-gradient(90deg,#072b2b,#135d51);display:flex;align-items:center;justify-content:space-between;padding:5px 12px;gap:8px}h1{font-size:clamp(16px,2.3vw,26px);margin:0;color:#ffe3a0}header small{font-size:11px;color:#b3e9d4}header .hint{font-size:12px;color:#c6e6db}#scene{flex:1;min-height:0;position:relative;overflow:hidden;background:linear-gradient(100deg,#163d2b 0%,#34754a 19%,#0c5660 20%,#128f9e 50%,#075c70 80%,#326f45 81%,#123b2b 100%)}#scene:after{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 0%,#fff4ac20,transparent 54%)}#scene:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(173deg,transparent 0 24px,#b5f8ef13 25px 27px,transparent 29px 53px);animation:water 5s linear infinite}@keyframes water{to{background-position:0 100px}}.bank{position:absolute;top:0;bottom:0;width:19%;pointer-events:none;overflow:hidden;background:radial-gradient(circle at 30% 20%,#3e9359 0 4%,transparent 5%),radial-gradient(circle at 60% 68%,#47965a 0 6%,transparent 7%),linear-gradient(90deg,#194d32,#326a41)}.bank.left{left:0}.bank.right{right:0;transform:scaleX(-1)}.palm{position:absolute;font-size:clamp(35px,7vw,90px);filter:drop-shadow(0 5px 4px #032a1a8c)}.palm:nth-child(1){top:7%;left:8%}.palm:nth-child(2){top:40%;left:48%}.palm:nth-child(3){top:73%;left:4%}#river{position:absolute;inset:0 19%;pointer-events:none;box-shadow:inset 13px 0 24px #053b48a0,inset -13px 0 24px #053b48a0}.shore{position:absolute;left:18%;width:64%;height:7%;background:linear-gradient(#7da65b,#456e43);box-shadow:0 3px 10px #012e28;z-index:1;text-align:center;color:#fff0aa;font-weight:900;text-shadow:0 2px 5px #08241f;display:flex;align-items:center;justify-content:center;font-size:clamp(11px,1.6vw,19px)}#finishshore{top:0}#startshore{bottom:0}#board{position:absolute;z-index:3;left:21%;width:58%;top:10%;height:78%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));column-gap:1%;row-gap:0;direction:ltr} .stone{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;align-self:center;justify-self:center;width:min(92%,100px);height:83%;border:3px solid #f5f5df;border-radius:47% 53% 49% 51% / 59% 47% 53% 41%;background:radial-gradient(ellipse at 30% 23%,#fffef0,#cbd3c4 43%,#899e95 75%,#4a6262);box-shadow:2px 5px 0 #34525c,3px 9px 12px #022c3d9c,inset 2px 3px 5px #fff9;transform:rotate(var(--rot));touch-action:manipulation;color:#1d4c3c;font-size:clamp(10px,1.7vw,19px);font-weight:900;padding:0;transition:filter .15s,background .2s,opacity .25s;z-index:2}.stone:hover{filter:brightness(1.12)}.stone:active{filter:brightness(1.25)}.stone:before{content:'';position:absolute;inset:9% 15% 53% 13%;border-radius:50%;background:#ffffff58;transform:rotate(-12deg);pointer-events:none}.stone:after{content:'';position:absolute;inset:auto 18% 13% 25%;height:14%;border-radius:50%;background:#274d4850;pointer-events:none}.stone:focus-visible{outline:4px solid #ffe780;outline-offset:2px}.stone.safe{border-color:#ddff9a;background:radial-gradient(at 30% 25%,#e9ffc6,#a2cf8a 55%,#528660)}.stone.bad{background:#0b6879;border:2px dashed #b3e6e5;color:#d3faff;box-shadow:inset 0 0 12px #042e44;opacity:.65}.stone.target{outline:3px solid #ffe17a;outline-offset:2px;box-shadow:0 0 0 5px #ffe17a40,0 0 20px #ffe17a99,2px 5px 0 #34525c;animation:targetPulse 1.3s ease-in-out infinite}@keyframes targetPulse{50%{filter:brightness(1.3)}}.stone.unavailable{cursor:default;filter:saturate(.75)}.stone.nextrow{cursor:pointer;outline:2px solid #fff4b075;outline-offset:1px}.stone.nextrow:active{transform:scale(.9) rotate(var(--rot))}.stone.active{animation:stoneHit .45s ease-in forwards}@keyframes stoneHit{50%{transform:rotate(12deg) scale(.8)}100%{transform:scale(.4);opacity:.1}}#actors{position:absolute;inset:0;z-index:4;pointer-events:none}.actor{position:absolute;left:50%;top:90%;width:36px;height:43px;transform:translate(-50%,-90%);transition:left .42s cubic-bezier(.2,.8,.2,1),top .42s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 4px 3px #001e2d);text-align:center}.actor .head{position:absolute;top:2px;left:11px;width:15px;height:15px;border-radius:50%;background:#f6c9a1;border:2px solid #3d3330}.actor .body{position:absolute;top:16px;left:7px;width:23px;height:18px;background:var(--color);border:2px solid #153b3a;border-radius:10px 10px 7px 7px}.actor .body:after{content:attr(data-num);color:#153b3a;font-size:11px;font-weight:900}.actor .legs{position:absolute;top:31px;left:10px;width:17px;height:8px;border-left:5px solid #243a39;border-right:5px solid #243a39}.actor.jumping{animation:hop .43s ease-in-out}.actor.sinking{animation:sink .5s forwards}@keyframes hop{50%{translate:0 -24px;scale:1.12}}@keyframes sink{100%{translate:0 18px;opacity:0;scale:.5}}#effects{position:absolute;inset:0;z-index:5;pointer-events:none}.splash{position:absolute;width:70px;height:35px;border:4px solid #d2ffff;border-radius:50%;transform:translate(-50%,-50%);animation:splash .7s forwards}@keyframes splash{from{scale:.3;opacity:1}to{scale:2;opacity:0}}#toast{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:6;background:#063b43e8;padding:7px 14px;border-radius:30px;font-weight:800;font-size:clamp(11px,1.5vw,15px);text-align:center;pointer-events:none;max-width:80%}#hud{flex:none;background:#052a30;display:flex;justify-content:center;gap:7px;padding:6px;min-height:50px}.player{border:1px solid #ffffff40;border-left:5px solid var(--color);background:#194b50;color:white;border-radius:9px;padding:4px 10px;font-size:12px;min-width:105px;cursor:pointer}.player.chosen{outline:2px solid #ffe28e}.player b{color:var(--color)}#controls{flex:none;display:flex;align-items:center;justify-content:center;gap:8px;background:#073138;padding:5px;min-height:53px}#controls button{min-height:40px;min-width:88px}#go{background:linear-gradient(#ffdd87,#b98b3d);color:#15332d}#choice{font-size:13px;font-weight:800;color:#ffe5a2;min-width:260px;text-align:center}#modal,#winmodal{position:absolute;inset:0;z-index:10;background:#021e26a8;display:grid;place-items:center;padding:15px}#winmodal{display:none;z-index:11}.card{background:linear-gradient(140deg,#1b6759,#0b3740);border:2px solid #d4e8ad;border-radius:22px;padding:20px;max-width:470px;width:100%;box-shadow:0 20px 60px #0009}.card h2{margin:0 0 8px;color:#ffe3a2}.card p,.card small{color:#d4ede5;line-height:1.4}.configrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:9px 0}.configrow select{padding:8px;background:#13484c;color:white;border-radius:9px;border:1px solid #9ed0b0}.primary{width:100%;background:linear-gradient(#ffdf8a,#ba8b3b);color:#13312e;font-weight:900;margin-top:12px}#countdown{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:7;font-size:min(17vh,110px);font-weight:1000;color:#ffeaa5;text-shadow:0 7px 20px #00353a;pointer-events:none}@media(max-width:650px){header .hint{display:none}.player{min-width:0;flex:1;padding:4px;font-size:10px}#hud{gap:3px}#board{left:20%;width:60%}.stone{border-width:2px}#controls button{min-width:65px;padding:5px}#choice{min-width:70px}}@media(max-height:620px){header{height:39px}#hud{min-height:40px;padding:3px}#controls{min-height:43px;padding:2px}#controls button{min-height:36px}.card{padding:12px}.configrow{margin:5px 0}}
+@media(max-width:900px){#choice{min-width:170px;font-size:11px}#controls{min-height:40px}#controls button{min-height:32px;min-width:54px;padding:3px 8px}}@media(max-height:720px){#board{top:10%;height:78%}.stone{height:70%}#controls{min-height:37px}}@media(prefers-reduced-motion:reduce){.stone.target{animation:none}#scene:before{animation:none}}
+
+/* V16: visual clarity and responsive interaction */
+#scene{isolation:isolate}#river{background:repeating-linear-gradient(174deg,#ffffff05 0 3px,transparent 3px 27px)}
+#board{z-index:8;pointer-events:auto;contain:layout}#actors{z-index:9}#effects{z-index:10}#toast{z-index:11}#countdown{z-index:12}#winmodal{z-index:20}
+.stone{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;touch-action:manipulation;box-shadow:0 4px 0 #3a5d60,0 7px 13px #002b3db0,inset 0 2px 7px #fff9}
+.stone.chosenStone{filter:brightness(1.5);box-shadow:0 0 0 6px #ffe17a88,0 0 28px #fff3b9}
+.stone.bad{opacity:.75;transform:rotate(var(--rot)) scale(.78)}
+.actor{z-index:1}.actor .head{box-shadow:inset -3px -2px 2px #a66d5e}.actor .body{box-shadow:inset -4px -3px 3px #0004}
+#scene:after{background:radial-gradient(ellipse at 52% 0%,#fff4ac35,transparent 53%);z-index:0}
+@media (pointer:coarse){.stone{min-height:20px}#hud .player{min-height:36px}}
+@media (max-height:520px){header{height:34px}#hud{min-height:34px}#controls{min-height:36px}#board{top:10%;height:78%}#toast{padding:3px 10px}}
+
+/* V17: reliable tablet layout and visible touch targets */
+#board{display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;z-index:30!important;}
+#board>.stone{display:flex!important;visibility:visible!important;min-width:0;min-height:0;opacity:1;isolation:isolate;border-width:2px;box-shadow:0 5px 0 #3d5454,0 8px 12px #001b30b8,inset 0 3px 8px #fff9;}
+#board>.stone.bad{opacity:.62;}
+#board>.stone.active{animation:stoneHit .45s ease-in forwards;}
+#actors{z-index:32!important;visibility:visible!important;}
+#effects{z-index:33!important;}#toast{z-index:34!important;}#countdown{z-index:35!important;}
+#board>.stone.nextrow{border-color:#ffdf8b;box-shadow:0 0 0 2px #ffe89b66,0 6px 9px #002a32,inset 0 3px 8px #fff9;}
+#board>.stone.target{outline:3px solid #ffe376;}
+#scene .bank{z-index:0;}#scene #river{z-index:0;}#finishshore,#startshore{z-index:2;}
+@media (max-height:650px){#board{top:10%;height:78%}#board>.stone{height:70%;width:86%}}
+@media (max-width:650px){header .hint{display:none}#board{left:17%;width:66%}.bank{width:15%}#river{inset:0 15%}}
+
+/* V18: stable high-contrast stepping stones and characters */
+#board{grid-auto-flow:row;grid-template-rows:repeat(5,minmax(0,1fr));}
+#board>.stone{width:90%;height:68%;min-height:12px;border-color:#e7f5e9;background:radial-gradient(ellipse at 27% 20%,#fffef0 0%,#d6ded0 38%,#9aafa7 67%,#637f7e 100%);}
+#board>.stone.safe{background:radial-gradient(ellipse at 27% 20%,#eaffc6,#a2cf8a 58%,#528660);}
+#board>.stone.bad{background:#0b6879;}
+#actors .actor{width:38px;height:44px;filter:drop-shadow(0 3px 3px #001b27) drop-shadow(0 0 2px white);}
+#scene #toast{max-width:75%;font-size:clamp(11px,1.5vw,15px)}
+@media (max-height:480px){#board{top:10%;height:78%}#board>.stone{height:70%}#controls{min-height:30px}}
+
+/* V20: unmistakable visible targets, consistent layout, reliable hit zones */
+#board{isolation:isolate;pointer-events:auto;}
+#board>.stone{appearance:none;-webkit-appearance:none;pointer-events:auto;aspect-ratio:auto;overflow:visible;}
+#board>.stone.nextrow{border:3px solid #ffd15b;box-shadow:0 0 0 3px #fff0a45e,0 5px 0 #344c4d,0 9px 16px #002c36;}
+#board>.stone.safe{border-color:#a9f37a;}
+#board>.stone.bad{opacity:.7;}
+#actors .actor{z-index:2;}
+#scene{touch-action:manipulation;}
+#board>.stone:focus-visible{outline:4px solid #fff0a0;}
+@media(max-height:560px){#board{top:9%;height:80%}#board>.stone{height:72%}#hud{min-height:34px}#controls{min-height:34px}}
+
+/* V21: tablet-friendly feedback and accessible player switching */
+#hud .player{cursor:pointer;touch-action:manipulation;user-select:none}
+#hud .player.chosen{outline:2px solid #ffe69b;outline-offset:2px}
+#board>.stone{touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent}
+#board>.stone.chosenStone{filter:brightness(1.22);transform:scale(1.045) rotate(var(--rot,0deg))}
+#board>.stone.bad{border-color:#ff8c80;color:#fff;font-weight:900}
+#board>.stone.safe{color:#215c29;font-weight:900}
+
+#board>.stone{touch-action:manipulation;-webkit-tap-highlight-color:transparent}#board>.stone:active{filter:brightness(1.22)}
+#board>.stone.safe{box-shadow:0 0 0 2px rgba(98,255,157,.65),0 6px 12px #002b2c88}#board>.stone.bad{opacity:.58;filter:saturate(.65)}
+
+/* V23: shorter river, six wide stones per row */
+#board{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));top:10%;height:78%}
+#board>.stone{height:70%;width:88%;max-width:135px}
+@media(max-height:560px){#board{top:9%;height:80%}#board>.stone{height:74%}}
+
+/* V24: larger, readable adventurers without blocking stone touches */
+#actors{pointer-events:none!important}
+#actors .actor{width:50px;height:58px;transform:translate(-50%,-88%);filter:drop-shadow(0 5px 3px #001b27) drop-shadow(0 0 2px #fff8)}
+#actors .actor .head{top:2px;left:15px;width:20px;height:20px;border-width:2px}
+#actors .actor .body{top:22px;left:9px;width:32px;height:25px;border-radius:12px 12px 8px 8px}
+#actors .actor .body:after{font-size:14px}
+#actors .actor .legs{top:45px;left:13px;width:25px;height:12px}
+#board>.stone.nextrow{cursor:pointer}
+#board>.stone.nextrow:active{transform:scale(.94) rotate(var(--rot,0deg));filter:brightness(1.35)}
+@media(max-height:550px){#actors .actor{transform:translate(-50%,-88%) scale(.85)}}
+
+/* V26: accessible touch targets and responsive character rendering */
+#board .stone {touch-action:manipulation; -webkit-tap-highlight-color:transparent; cursor:pointer;}
+#board .stone.nextrow {outline-offset:2px;}
+#board .stone.chosenStone {filter:brightness(1.3) saturate(1.25);}
+.actor {pointer-events:none; will-change:left,top,transform;}
+@media (prefers-reduced-motion:reduce){.actor,.stone{animation-duration:.01ms!important;}}
+
+/* V26: clear feedback and responsive final-row selection */
+.stone.nextrow{box-shadow:0 0 0 2px #ffe9a18c,0 7px 14px #002f3ba8,inset 0 3px 8px #fff9;cursor:pointer}
+.stone.chosenStone{filter:brightness(1.45);outline:4px solid #fff2a3;outline-offset:1px}
+.actor.jumping{animation:hop26 .44s cubic-bezier(.25,.1,.2,1)}
+@keyframes hop26{0%{translate:0 0;scale:1}40%{translate:0 -34px;scale:1.18}75%{translate:0 -12px;scale:1.07}100%{translate:0 0;scale:1}}
+@media(max-height:540px){@keyframes hop26{40%{translate:0 -17px;scale:1.12}75%{translate:0 -7px;scale:1.04}}}
+
+/* V27 – offline cinematic jungle art direction; gameplay layers remain untouched */
+:root{--gold:#f9d788;--forest:#062d28}
+header{background:linear-gradient(180deg,#112e2b 0%,#0c292a 100%);border-bottom:1px solid #a4b66c70;box-shadow:0 5px 24px #001b20a6}
+header h1{letter-spacing:.065em;text-shadow:0 2px 10px #06120f}header small{color:#f9d788}
+#scene{background:radial-gradient(ellipse at 50% 0%,#e3e1a140,transparent 55%),linear-gradient(90deg,#143b2b 0%,#124e3b 17%,#105e67 27%,#125e6b 72%,#174a34 85%,#173c2a 100%)}
+#scene:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% -10%,#fff2a52e,transparent 55%),linear-gradient(155deg,transparent 35%,#fff4bd12 48%,transparent 62%)}
+#river{background:radial-gradient(ellipse at 50% 18%,#a0e5c245,transparent 65%),repeating-linear-gradient(172deg,#ffffff10 0 2px,transparent 2px 37px),linear-gradient(90deg,#13414b,#177d82 21%,#1d7c83 48%,#126575 79%,#103c48)!important;box-shadow:inset 15px 0 24px #061f2499,inset -15px 0 24px #061f2499}
+#river:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(168deg,transparent 0 24px,#d4ffed18 27px 30px,transparent 35px 63px);animation:current27 12s linear infinite}
+#river:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 30% 12%,#fff8d436,transparent 25%),radial-gradient(ellipse at 68% 75%,#fff6c51e,transparent 27%);mix-blend-mode:screen}
+@keyframes current27{from{background-position:0 0}to{background-position:0 200px}}
+.bank{overflow:hidden;background:linear-gradient(90deg,#143622,#28603a 55%,#213f29)!important;box-shadow:inset 0 0 35px #071d1c}
+.bank .foliage{position:absolute;width:100%;height:115%;top:-8%;left:0;filter:drop-shadow(5px 5px 6px #00180d77)}
+.bank.right .foliage{transform:scaleX(-1)}
+.bank:after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(25deg,transparent 0 19px,#b7ce7530 20px 22px,transparent 23px 49px);opacity:.25}
+#board>.stone{border-radius:42% 55% 46% 51% / 46% 40% 57% 50%;background:radial-gradient(ellipse at 30% 24%,#d7d6c1 0%,#9ca99a 27%,#667e7c 56%,#3a5757 85%)!important;border:2px solid #d3e0ce8c;box-shadow:0 4px 0 #294a4c,0 9px 13px #03212caa,inset 0 3px 7px #fff8,inset -5px -6px 9px #122e3980;position:relative;overflow:visible}
+#board>.stone:before{content:"";position:absolute;inset:14% 11%;border-radius:inherit;pointer-events:none;background:radial-gradient(ellipse at 25% 70%,#56855b80 0 12%,transparent 20%),linear-gradient(125deg,transparent 36%,#304b4d66 37% 39%,transparent 40% 62%,#293e4155 63% 64%,transparent 65%);opacity:.8}
+#board>.stone:after{content:"";position:absolute;inset:-8%;border:2px solid #d7fff026;border-radius:50%;pointer-events:none}
+#board>.stone.nextrow{box-shadow:0 0 0 3px #fce6a28c,0 0 17px #ffe4a55c,0 9px 13px #03212caa,inset 0 3px 7px #fff8}
+#board>.stone.good{border-color:#c4ff98!important;box-shadow:0 0 0 3px #75ff8b99,0 5px 16px #163d20}
+#board>.stone.bad{filter:grayscale(.65) brightness(.7)}
+#actors .actor{filter:drop-shadow(0 6px 3px #001b27c9) drop-shadow(0 0 3px #fff9)}
+#actors .actor .head{background:radial-gradient(circle at 35% 28%,#ffdec0,#c58c6a 85%);border:2px solid #724d3c}
+#actors .actor .body{background:linear-gradient(110deg,#fff7 0 10%,var(--color) 27%,#152d35 130%);border:2px solid #153a3b}
+#toast{background:#082a2ddc;backdrop-filter:blur(7px);border:1px solid #e7e1a25e;box-shadow:0 5px 20px #001e2480}
+#hud{background:linear-gradient(180deg,#0b3330,#082522);border-top:1px solid #c6bd7e50}
+#controls{background:linear-gradient(180deg,#102e2b,#071e20)}
+#winmodal .card,#modal .card{background:linear-gradient(160deg,#1b4840,#0b282d);border:1px solid #e4d58b70;box-shadow:0 25px 75px #00191ce0}
+@media(prefers-reduced-motion:reduce){#river:before{animation:none}}
+
+/* V28: hand-crafted, offline premium visual layer */
+#scene{background:linear-gradient(90deg,#092b22 0%,#285b36 17%,#195e5d 20%,#116f82 30%,#0b8390 48%,#146f83 68%,#135d60 80%,#2e6840 83%,#0b3126 100%)}
+#river{background:radial-gradient(ellipse at 46% 24%,#b0eddd23,transparent 38%),repeating-linear-gradient(163deg,transparent 0 30px,#b0f4ec13 33px 35px,transparent 38px 73px);animation:riverflow 9s linear infinite}
+@keyframes riverflow{to{background-position:0 0,0 160px}}
+.bank{background:radial-gradient(ellipse at 20% 28%,#86b75446,transparent 38%),radial-gradient(ellipse at 75% 72%,#17492d,transparent 58%),linear-gradient(90deg,#082b22,#285d39 58%,#477b49)}
+.bank:after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(112deg,transparent 0 27px,#071d1725 28px 32px,transparent 36px 80px);pointer-events:none}
+.bank .foliage{filter:drop-shadow(2px 7px 5px #041e1a99) saturate(1.2)}
+#scene:after{background:radial-gradient(ellipse at 48% 0%,#fff7b535,transparent 52%),linear-gradient(105deg,transparent 32%,#e5fbd608 45%,transparent 57%)}
+.stone{border:2px solid #e5e5d4;border-radius:42% 58% 55% 45% / 49% 42% 58% 51%;background:radial-gradient(ellipse at 31% 20%,#f1f1e3 0%,#b8c8bd 26%,#879c92 57%,#4b6c67 82%,#274b4e 100%);box-shadow:1px 3px 0 #49655f,2px 7px 0 #25474e,4px 10px 14px #022b3ba8,inset 2px 3px 3px #ffffff77,inset -4px -5px 8px #233e4a80;isolation:isolate}
+.stone:before{inset:13% 9% 23% 12%;border-radius:40% 60% 56% 44%;background:radial-gradient(ellipse at 30% 15%,#ffffff8c,transparent 42%),linear-gradient(136deg,transparent 43%,#425a5477 45% 46%,transparent 48%),radial-gradient(ellipse at 72% 72%,#65875370 0 14%,transparent 17%);transform:rotate(-8deg)}
+.stone:after{inset:auto 14% 11% 17%;height:10%;background:#203e405e;filter:blur(3px)}
+.stone.safe{border-color:#dcffb4;box-shadow:0 0 0 2px #85eb8eaa,0 0 20px #a7ff7b8a,3px 8px 12px #042e37,inset 1px 3px 5px #ffffff99}
+.stone.nextrow:not(.bad){outline:2px solid #ffeab37d;outline-offset:2px}
+.stone.target{filter:brightness(1.17);box-shadow:0 0 0 3px #ffd86d,0 0 22px #ffed92a8,2px 8px 10px #052b35}
+.actor{width:52px;height:65px;transform:translate(-50%,-86%);filter:drop-shadow(0 7px 3px #001d2688);z-index:4}
+.actor:before{content:'';position:absolute;bottom:1px;left:10px;width:33px;height:9px;background:#092a3580;border-radius:50%;filter:blur(3px)}
+.actor .head{z-index:3;top:10px;left:15px;width:24px;height:24px;border:2px solid #573e2b;background:radial-gradient(circle at 32% 30%,#ffe1b7,#d9a074 80%);box-shadow:inset -3px -2px 3px #ad704e88}
+.actor .head:before{content:'';position:absolute;left:-5px;right:-5px;top:-9px;height:13px;border-radius:50% 50% 30% 30%;background:linear-gradient(#d6c18a,#80683f);border:2px solid #4c4932;box-shadow:0 4px 0 -1px #b5a073}
+.actor .head:after{content:'••';position:absolute;top:4px;left:5px;font-size:10px;letter-spacing:4px;color:#342c27;line-height:1}
+.actor .body{z-index:2;top:33px;left:10px;width:34px;height:23px;border:2px solid #213c3b;border-radius:11px 11px 8px 8px;background:linear-gradient(120deg,#ffffff66,var(--color) 37%,var(--color) 68%,#0b313c99);box-shadow:inset 0 3px 2px #ffffff66,0 3px 3px #0a292b80}
+.actor .body:before{content:'';position:absolute;left:-8px;top:3px;width:8px;height:16px;border-radius:8px;background:linear-gradient(#e9b18d,#ab7254);box-shadow:40px 0 0 #c68e6a}
+.actor .body:after{font-size:12px;line-height:19px;color:#092b2c;text-shadow:0 1px #ffffff80}
+.actor .legs{top:54px;left:15px;width:24px;height:10px;border-left:8px solid #293c3b;border-right:8px solid #293c3b;border-radius:0 0 4px 4px}
+.actor.jumping{animation:premiumHop .48s cubic-bezier(.2,.65,.22,1)}
+@keyframes premiumHop{0%{translate:0 0;scale:1 1}18%{translate:0 5px;scale:1.1 .85}47%{translate:0 -34px;scale:1.14 1.13}75%{translate:0 -15px;scale:1.03 1.06}100%{translate:0 0;scale:1 1}}
+.actor.sinking{animation:premiumSink .54s forwards}
+@keyframes premiumSink{0%{opacity:1;translate:0 0}35%{opacity:1;translate:0 8px;rotate:12deg}100%{opacity:0;translate:0 36px;scale:.6;rotate:24deg}}
+.splash{width:56px;height:28px;border:3px solid #dcffff;box-shadow:0 0 0 6px #c3ffff30,0 0 14px #e4ffffa8}
+.splash:before,.splash:after{content:'';position:absolute;width:9px;height:15px;border-radius:50%;background:#c6ffff;top:-15px;left:10px;animation:droplet .65s ease-out forwards}
+.splash:after{left:auto;right:9px;animation-delay:.06s}
+@keyframes droplet{to{translate:8px -19px;opacity:0}}
+@media(max-height:570px){.actor{scale:.79;transform-origin:50% 85%}.stone{height:77%}}
+@media(prefers-reduced-motion:reduce){#river{animation:none}.actor.jumping{animation:none}}
+
+/* V29 – ambient water and readable gameplay feedback */
+#river:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.27;background:repeating-radial-gradient(ellipse at 25% 50%,transparent 0 32px,#a4f5e133 34px 36px,transparent 39px 68px);background-size:220px 130px;animation:current29 13s linear infinite;mix-blend-mode:screen}
+@keyframes current29{from{background-position:0 0}to{background-position:220px 130px}}
+.water-ring{position:absolute;z-index:8;pointer-events:none;width:22px;height:12px;border:3px solid #d4ffffdb;border-radius:50%;transform:translate(-50%,-50%) scale(.55);box-shadow:0 0 0 3px #5be9f244,0 0 15px #d1ffff9c;animation:ring29 .78s ease-out forwards}
+.water-ring.fall{border-width:5px;border-color:#fff;box-shadow:0 0 0 5px #9cfbff77,0 0 18px #fff}
+@keyframes ring29{to{opacity:0;transform:translate(-50%,-50%) scale(3.9)}}
+#board>.stone.nextrow{outline-offset:2px;cursor:pointer}
+#board>.stone:focus-visible{outline:4px solid #fff5a1;outline-offset:3px}
+#board>.stone.safe:after{filter:drop-shadow(0 1px 2px #073b21)}
+#actors .actor{pointer-events:none;will-change:left,top}
+#effects{pointer-events:none}
+@media(prefers-reduced-motion:reduce){#river:after,.water-ring{animation:none}}
+
+/* V30: scene polish, lightweight CSS-only details, never capture touches */
+#river{background:radial-gradient(ellipse at 47% 16%,#b7ffeb20,transparent 45%),repeating-linear-gradient(165deg,transparent 0 41px,#d9fff114 43px 45px,transparent 49px 88px);animation:riverDrift 9s linear infinite}
+@keyframes riverDrift{to{background-position:0 0,0 175px}}
+.bank{box-shadow:inset 0 0 35px #09291e99}
+.bank:after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 30px 15px at 18% 12%,#c4da7733,transparent),radial-gradient(ellipse 46px 24px at 74% 30%,#a3d15a35,transparent),radial-gradient(ellipse 42px 20px at 24% 83%,#b4df7c25,transparent);mix-blend-mode:screen}
+.stone{isolation:isolate;filter:drop-shadow(0 2px 1px #092c3190)}
+.stone:after{content:'';position:absolute;pointer-events:none;inset:11% 8% 16%;border-radius:inherit;background:radial-gradient(ellipse at 29% 18%,#ffffff35,transparent 46%),repeating-linear-gradient(155deg,transparent 0 14px,#173f3913 15px 16px,transparent 17px 30px);opacity:.65}
+.stone.safe{box-shadow:0 0 0 3px #5dff8d90,0 0 19px #45ff8790,3px 8px 12px #022c3d9c}
+.stone.bad{filter:saturate(.5) brightness(.75)}
+.actor{filter:drop-shadow(0 5px 4px #002529ad)}
+.actor .head{box-shadow:inset -5px -4px 7px #8a4d2a4d,0 1px 2px #112e27a8}
+.actor .body{box-shadow:inset -6px -4px 7px #0006, inset 3px 2px 5px #fff3}
+#effects,.water-ring,.splash{pointer-events:none!important}
+@media(prefers-reduced-motion:reduce){#scene:before,#river{animation:none!important}.stone{transition:none!important}}
+
+/* V33 — character silhouettes, layered accessories and landing polish */
+#actors{pointer-events:none!important}
+.actor{isolation:isolate;pointer-events:none!important;will-change:left,top}
+.actor .shadow{position:absolute;z-index:-1;bottom:-1px;left:5px;width:42px;height:13px;border-radius:50%;background:#032a30aa;filter:blur(4px);transform:scale(1.15,.75)}
+.actor .head{overflow:visible;background:linear-gradient(115deg,#ffe0ae 5%,#d98e66 100%);box-shadow:inset -3px -2px 2px #8a4d3577,0 2px 1px #172e35}
+.actor .head .eyes{position:absolute;top:9px;left:5px;width:3px;height:3px;border-radius:50%;background:#233638;box-shadow:8px 0 #233638,4px 5px 0 -1px #8a4d35}
+.actor .body{background:linear-gradient(105deg,#ffffff55,var(--color) 36%,#071b2877 145%);box-shadow:inset -4px -2px 3px #041b3a66,0 2px 0 #00262d}
+.actor .body .strap{position:absolute;left:45%;top:0;height:100%;width:5px;background:#63432e;border-left:1px solid #c79c61;transform:rotate(-28deg);opacity:.85}
+.actor .arms{position:absolute;left:1px;top:30px;width:50px;height:15px;z-index:-1;border-left:8px solid var(--color);border-right:8px solid var(--color);border-radius:35%;filter:drop-shadow(0 2px 1px #00242b)}
+.actor .legs{border-left-color:#394a46;border-right-color:#394a46;filter:drop-shadow(0 2px 1px #102d30)}
+.actor.adventurer-1 .head{background:linear-gradient(110deg,#e6b48a,#a86b49)}
+.actor.adventurer-2 .head{background:linear-gradient(110deg,#f9cda2,#bb7754)}
+.actor.adventurer-3 .head{background:linear-gradient(110deg,#a87451,#744329)}
+.actor.jumping .shadow{animation:jumpShadow .44s ease-in-out}
+.actor.jumping .arms{animation:jumpArms .44s ease-in-out}
+@keyframes jumpShadow{50%{transform:scale(.6,.42);opacity:.4}}
+@keyframes jumpArms{40%{transform:rotate(-9deg) translateY(-5px)}70%{transform:rotate(8deg)}}
+.actor.sinking .shadow{opacity:0}
+#winmodal.celebrate>div{animation:victoryAppear .65s cubic-bezier(.18,1.35,.3,1) both}
+@keyframes victoryAppear{0%{transform:translateY(26px) scale(.82);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.actor.jumping .shadow,.actor.jumping .arms,#winmodal.celebrate>div{animation:none!important}}
+
+
+/* V33: physically clearer jumps, responsive visual feedback, and celebratory finish */
+.actor{will-change:left,top,transform;filter:drop-shadow(0 4px 4px #001d25aa)}
+.actor.jumping{animation:hop32 .44s cubic-bezier(.24,.62,.3,1)!important;z-index:25!important}
+@keyframes hop32{0%{translate:0 0;scale:1 1}12%{translate:0 4px;scale:1.08 .91}28%{translate:0 -17px;scale:.98 1.12}54%{translate:0 -37px;scale:1.13 1.13}78%{translate:0 -18px;scale:1.06 1.05}92%{translate:0 3px;scale:1.11 .88}100%{translate:0 0;scale:1 1}}
+.actor.jumping .arms{animation:arms32 .44s ease-in-out!important}
+@keyframes arms32{30%,68%{rotate:-18deg;translate:0 -3px}100%{rotate:0deg}}
+.actor.landing{animation:land32 .22s ease-out}
+@keyframes land32{0%{scale:1.13 .82;translate:0 3px}65%{scale:.97 1.07;translate:0 -3px}100%{scale:1;translate:0 0}}
+.stone.chosenStone{filter:brightness(1.3) drop-shadow(0 0 9px #ffdf8a)!important}
+#effects .water-ring{mix-blend-mode:screen}
+.confetti32{position:absolute;z-index:60;top:0;left:50%;width:9px;height:16px;border-radius:2px;background:var(--c);pointer-events:none;animation:confetti32 1.8s ease-in forwards}
+@keyframes confetti32{0%{opacity:0;transform:translate(0,-25px) rotate(0)}12%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot))}}
+@media(prefers-reduced-motion:reduce){.actor.jumping,.actor.landing,.confetti32{animation:none!important}}
+
+/* V33: lightweight offline environment and responsive impact particles */
+#effects{pointer-events:none!important;overflow:visible}
+.impact33{position:absolute;z-index:31;width:var(--size,7px);height:var(--size,7px);border-radius:48% 52% 55% 45%;background:radial-gradient(circle at 30% 22%,#f5ffff 0%,#8ee8ed 35%,#20a5bd 85%);box-shadow:0 0 7px #b2f8ff88;pointer-events:none;animation:impact33 var(--dur,720ms) cubic-bezier(.18,.5,.25,1) forwards}
+.impact33.foam{background:#dcfffa;opacity:.9}
+@keyframes impact33{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}16%{opacity:1}75%{opacity:.8}100%{opacity:0;transform:translate(calc(-50% + var(--vx)),calc(-50% + var(--vy))) scale(.35)}}
+.stone.bad{filter:saturate(.62) brightness(.79)}
+.stone.safe{box-shadow:0 0 0 2px #a9ffc3,0 0 16px #36f49d66,inset 0 2px 12px #ffffff77!important}
+.actor.landing .body{animation:landbody33 260ms ease-out}
+@keyframes landbody33{0%{transform:translateY(-5px) scale(1.03,.94)}45%{transform:translateY(3px) scale(1.09,.9)}100%{transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.impact33,.actor.landing .body{animation:none!important}}
+
+/* V41 – detailed riverbank atmosphere, interactive layer stays untouched */
+.bank{isolation:isolate}
+.bank::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 10% 18%,#d9d96d27,transparent 35%),radial-gradient(ellipse at 92% 72%,#061c1680,transparent 45%),repeating-linear-gradient(115deg,transparent 0 22px,#081d1421 23px 26px,transparent 27px 58px);mix-blend-mode:soft-light}
+.river-life{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.river-life .glint{position:absolute;width:clamp(20px,4vw,65px);height:2px;border-radius:50%;background:#c4fff7aa;box-shadow:0 0 12px 2px #b6fffa66;opacity:.5;animation:glint34 5s ease-in-out infinite alternate}
+@keyframes glint34{0%{opacity:.15;transform:translateX(-8px) scaleX(.65)}100%{opacity:.8;transform:translateX(15px) scaleX(1.25)}}
+.jungle-deco{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.jungle-deco svg{position:absolute;width:clamp(80px,13vw,220px);height:auto;filter:drop-shadow(2px 7px 5px #051f1870);transform-origin:50% 90%;animation:foliage34 6s ease-in-out infinite alternate}
+.jungle-deco svg:nth-child(2n){animation-delay:-2s}
+@keyframes foliage34{to{transform:rotate(2.5deg)}}
+#winmodal .panel,#modal .panel{box-shadow:0 18px 60px #021d20cc,0 0 0 1px #f4e5a42b}
+#winmodal .panel{background:linear-gradient(145deg,#235d4e,#0c383d 65%,#072d33)}
+@media(prefers-reduced-motion:reduce){.jungle-deco svg,.river-life .glint{animation:none!important}}
+
+/* V41: riverbank depth, sunlight, textured terrain, and victory polish */
+#scene{isolation:isolate;background:radial-gradient(ellipse at 50% 25%,#3aabb0 0%,#0a5865 62%,#07363f 100%)}
+#river:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(168deg,transparent 0 24px,#a6f9ee13 25px 27px,transparent 31px 58px);animation:riverDrift 12s linear infinite;mix-blend-mode:screen}
+#river:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 18%,#f9ebaf31,transparent 52%);pointer-events:none}
+@keyframes riverDrift{to{background-position:0 220px}}
+.bank{background-image:radial-gradient(circle at 20% 20%,#c8dd7755 0 2px,transparent 3px),radial-gradient(circle at 72% 76%,#102e2180 0 3px,transparent 5px),linear-gradient(90deg,#153d2c,#39784a 48%,#143d2d);box-shadow:inset 0 0 26px #061f1d,0 0 20px #041f1b}
+.shore{border-top:2px solid #b4cc8b;box-shadow:0 4px 13px #001e1b8c,inset 0 2px 5px #d7f1a933}
+#startshore{border-top:0;border-bottom:2px solid #c4d48d}
+.stone{background-image:radial-gradient(ellipse at 24% 20%,#f2f1d6,#b1bcb1 46%,#647b77 80%,#324f53);box-shadow:inset 2px 4px 7px #f5ffeaa6,inset -5px -6px 9px #213d47a6,0 5px 0 #304f56,0 11px 13px #03212ca8}
+.stone:focus-visible{outline:4px solid #fff1a3!important;outline-offset:4px}
+#winmodal .panel{border:2px solid #e5ce79;box-shadow:0 0 0 5px #d2b75b25,0 24px 80px #001b1e, inset 0 1px 22px #e8f7be24}
+#scene .ambient-detail{position:absolute;z-index:2;pointer-events:none;filter:drop-shadow(0 5px 5px #001f1e9c)}
+#scene .ambient-detail.butterfly{animation:butterflyFloat 5.8s ease-in-out infinite alternate}
+@keyframes butterflyFloat{to{transform:translate(17px,-23px) rotate(13deg)}}
+@media(prefers-reduced-motion:reduce){#river:before,#scene .ambient-detail.butterfly{animation:none!important}}
+
+/* V41 – premium water, character motion, and clarity; decoration never intercepts touches */
+#scene:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 13% 23%,rgba(255,238,147,.12),transparent 36%),radial-gradient(ellipse at 84% 72%,rgba(5,37,28,.21),transparent 42%);mix-blend-mode:screen}
+.stone{isolation:isolate;transition:filter .18s ease,box-shadow .18s ease,transform .18s ease}
+.stone:not(.bad):active{filter:brightness(1.28);transform:scale(.97)}
+.stone.safe{filter:drop-shadow(0 0 6px rgba(114,255,162,.5))}
+.stone.bad{filter:saturate(.6) brightness(.68)}
+.actor{filter:drop-shadow(0 3px 3px rgba(0,0,0,.35));will-change:left,top}
+.actor.jumping .arms{animation:v36Arms .44s ease-in-out both}
+.actor.landing .legs{animation:v36Land .24s ease-out both}
+@keyframes v36Arms{0%,100%{transform:rotate(0)}35%{transform:rotate(-17deg) translateY(-3px)}65%{transform:rotate(10deg) translateY(-2px)}}
+@keyframes v36Land{0%{transform:scaleY(.78)}65%{transform:scaleY(1.12)}100%{transform:scaleY(1)}}
+.v36foam{position:absolute;width:74px;height:27px;pointer-events:none;z-index:2;opacity:.46;border-top:2px solid rgba(222,255,246,.52);border-radius:50%;filter:blur(1px);animation:v36Current 6s ease-in-out infinite alternate}
+@keyframes v36Current{from{transform:translate(-11px,0) scaleX(.8);opacity:.22}to{transform:translate(14px,8px) scaleX(1.2);opacity:.55}}
+.v36glint{position:absolute;width:5px;height:5px;pointer-events:none;z-index:2;border-radius:50%;background:#e8ffdf;box-shadow:0 0 13px 4px rgba(224,255,205,.42);animation:v36Glint 4s ease-in-out infinite}
+@keyframes v36Glint{0%,100%{opacity:.1;transform:scale(.5)}50%{opacity:.8;transform:scale(1.25)}}
+@media(prefers-reduced-motion:reduce){.v36foam,.v36glint,.actor.jumping .arms,.actor.landing .legs{animation:none!important}}
+
+/* V41: feine Bewegungsdetails ausschließlich auf Kind-Elementen. */
+.actor .arms,.actor .legs,.actor .shadow{will-change:transform}
+.actor.landing .body{animation:v38settle .24s cubic-bezier(.2,.75,.25,1) both}
+@keyframes v38settle{0%{transform:translateY(-4px) scale(1.035)}55%{transform:translateY(2px) scale(.98,1.025)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.actor.landing .body{animation:none}}
+
+/* V41: Animation ausschließlich auf separaten Körperteilen, Flugbahn auf äußerem Actor. */
+#actors .actor.inflight{animation:none!important;transition:none!important;}
+#actors .actor.inflight .arms{animation:v40Arms .40s ease-in-out both!important;transform-origin:50% 20%;}
+#actors .actor.inflight .legs{animation:v40Legs .40s ease-in-out both!important;transform-origin:50% 0;}
+#actors .actor.inflight .shadow{animation:v40Shadow .40s ease-in-out both!important;}
+@keyframes v40Arms{0%,100%{transform:rotate(0)}25%{transform:rotate(-18deg)}55%{transform:rotate(16deg)}80%{transform:rotate(-8deg)}}
+@keyframes v40Legs{0%,100%{transform:scaleY(1)}22%{transform:scaleY(.72)}53%{transform:scaleY(1.22)}85%{transform:scaleY(.85)}}
+@keyframes v40Shadow{0%,100%{opacity:.9;transform:scale(1.15,.75)}50%{opacity:.4;transform:scale(.65,.55)}}
+@media(prefers-reduced-motion:reduce){#actors .actor.inflight .arms,#actors .actor.inflight .legs,#actors .actor.inflight .shadow{animation:none!important}}
+
+/* V41: Animationen der Gliedmaßen laufen exakt synchron zur Sprungdauer. */
+#actors .actor.inflight .arms{animation-duration:var(--flight-time,450ms)!important;}
+#actors .actor.inflight .legs{animation-duration:var(--flight-time,450ms)!important;}
+#actors .actor.inflight .shadow{animation-duration:var(--flight-time,450ms)!important;}
+/* Statische Landschaftsteile erhalten keine Touch-Eingaben. */
+#effects,#actors{pointer-events:none!important;}
+@media (prefers-reduced-motion:reduce){#actors .actor.inflight .arms,#actors .actor.inflight .legs,#actors .actor.inflight .shadow{animation:none!important;} .waterfoam,.sunfleck,.butterfly,.leafparticle{animation:none!important;}}
+
+/* V41: Winner dialog above ALL gameplay layers, including transformed actors and stones. */
+#winmodal{position:fixed!important;inset:0!important;z-index:9999!important;display:none;align-items:center;justify-items:center;background:radial-gradient(ellipse at 50% 45%,#0d594da8,#00191aeb 75%);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);padding:clamp(12px,3vw,36px)}
+#winmodal .victory-card{position:relative;isolation:isolate;overflow:hidden;width:min(530px,94vw);max-height:90dvh;padding:clamp(22px,4vh,40px) clamp(20px,4vw,42px);text-align:center;border-radius:28px;border:2px solid #f7da80;background:linear-gradient(155deg,#225f4f 0%,#103e42 48%,#08272f 100%);box-shadow:0 0 0 7px #f5d87922,0 35px 100px #000c, inset 0 1px 0 #ffffff45;color:#fff7d9;animation:victoryCardIn .52s cubic-bezier(.2,1.3,.35,1) both}
+#winmodal .victory-rays{position:absolute;inset:-110%;z-index:-1;pointer-events:none;background:repeating-conic-gradient(from 0deg,#fff6b508 0deg 12deg,transparent 12deg 30deg);animation:victorySpin 38s linear infinite}
+#winmodal .victory-trophy{font-size:clamp(46px,8vh,80px);filter:drop-shadow(0 5px 15px #ffdc75aa);line-height:1.2;animation:trophyFloat 2.2s ease-in-out infinite alternate}
+#winmodal .victory-kicker{font-size:clamp(10px,1.4vw,13px);font-weight:900;letter-spacing:.19em;color:#e9ce82;margin-top:9px}
+#winmodal #victory{font-size:clamp(27px,4.4vw,43px);line-height:1.12;margin:12px 0 9px;color:#ffe08b;text-shadow:0 3px 16px #0009}
+#winmodal #result{font-size:clamp(13px,1.7vw,17px);margin:0 0 16px;color:#e1f6e8}
+#victory-score{display:inline-block;padding:9px 17px;border:1px solid #e9d48a80;border-radius:999px;background:#021c2380;font-weight:800;color:#ffeb9c;margin-bottom:21px}
+.victory-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+#winmodal .victory-actions button{min-width:170px;min-height:48px;border-radius:13px;font-weight:900;padding:10px 17px}
+#winmodal .victory-actions .primary{color:#25341d;background:linear-gradient(#ffe9a0,#e7a948);border:1px solid #fff0ad;box-shadow:0 5px 0 #9e6b28,0 8px 25px #0005}
+#victory-config{background:#164b4e;color:#e4f8e8;border:1px solid #72b2a0}
+@keyframes victoryCardIn{from{opacity:0;transform:translateY(30px) scale(.87)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes victorySpin{to{transform:rotate(360deg)}}@keyframes trophyFloat{to{transform:translateY(-7px)}}
+@media(max-height:540px){#winmodal .victory-card{padding:13px 24px}#winmodal .victory-trophy{font-size:39px}#winmodal #victory{margin:5px 0;font-size:27px}#victory-score{margin-bottom:10px;padding:5px 13px}#winmodal .victory-actions button{min-height:39px}}
+@media(prefers-reduced-motion:reduce){#winmodal .victory-card,#winmodal .victory-rays,#winmodal .victory-trophy{animation:none!important}}
+</style></head><body><div id="app"><header><h1>🌊 FLUSSSPRUNG <small>V41</small></h1><span class="hint">30 Steine · 5 Reihen · 1 sicherer Weg</span><button id="restart">↻ Neustart</button></header><main id="scene"><div class="river-life" aria-hidden="true"></div><div class="jungle-deco" aria-hidden="true"></div><div class="bank left"><svg class="foliage" viewBox="0 0 210 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="trunk" x2="1" y2="0"><stop stop-color="#322b18"/><stop offset=".55" stop-color="#896238"/><stop offset="1" stop-color="#332e1b"/></linearGradient><linearGradient id="leaf" x2="1" y2="1"><stop stop-color="#8fc44b"/><stop offset=".48" stop-color="#296f39"/><stop offset="1" stop-color="#103c2e"/></linearGradient></defs><path d="M92 660 Q100 460 77 250 Q65 152 102 57" stroke="url(#trunk)" stroke-width="20" fill="none"/><g fill="url(#leaf)" stroke="#0d432a" stroke-width="2"><path d="M103 66 Q20 -2 -50 60 Q34 41 100 85Z"/><path d="M103 66 Q12 78 -8 180 Q51 107 107 88Z"/><path d="M103 66 Q160 -10 242 20 Q161 36 109 88Z"/><path d="M103 66 Q180 65 218 155 Q160 104 106 87Z"/><path d="M103 66 Q88 -28 100 -65 Q120 10 108 85Z"/></g><g fill="#184e32"><path d="M-15 665Q25 490 48 580Q68 440 90 620Q145 480 168 660Z"/><path d="M95 660Q120 550 151 565Q177 493 218 615L218 670Z"/></g><g fill="#2d8550"><path d="M8 640Q10 510 58 550Q48 595 8 640Z"/><path d="M140 650Q152 510 200 525Q183 599 140 650Z"/></g><g fill="#d7b663"><circle cx="33" cy="568" r="4"/><circle cx="172" cy="585" r="3"/></g></svg></div><div class="bank right"><svg class="foliage" viewBox="0 0 210 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="trunk" x2="1" y2="0"><stop stop-color="#322b18"/><stop offset=".55" stop-color="#896238"/><stop offset="1" stop-color="#332e1b"/></linearGradient><linearGradient id="leaf" x2="1" y2="1"><stop stop-color="#8fc44b"/><stop offset=".48" stop-color="#296f39"/><stop offset="1" stop-color="#103c2e"/></linearGradient></defs><path d="M92 660 Q100 460 77 250 Q65 152 102 57" stroke="url(#trunk)" stroke-width="20" fill="none"/><g fill="url(#leaf)" stroke="#0d432a" stroke-width="2"><path d="M103 66 Q20 -2 -50 60 Q34 41 100 85Z"/><path d="M103 66 Q12 78 -8 180 Q51 107 107 88Z"/><path d="M103 66 Q160 -10 242 20 Q161 36 109 88Z"/><path d="M103 66 Q180 65 218 155 Q160 104 106 87Z"/><path d="M103 66 Q88 -28 100 -65 Q120 10 108 85Z"/></g><g fill="#184e32"><path d="M-15 665Q25 490 48 580Q68 440 90 620Q145 480 168 660Z"/><path d="M95 660Q120 550 151 565Q177 493 218 615L218 670Z"/></g><g fill="#2d8550"><path d="M8 640Q10 510 58 550Q48 595 8 640Z"/><path d="M140 650Q152 510 200 525Q183 599 140 650Z"/></g><g fill="#d7b663"><circle cx="33" cy="568" r="4"/><circle cx="172" cy="585" r="3"/></g></svg></div><div id="river"></div><div class="shore" id="finishshore">🏆 ZIELUFER</div><div class="shore" id="startshore">🌿 START</div><div id="board" aria-label="30 Trittsteine"></div><div id="actors"></div><div id="effects"></div><div id="toast">Tippe direkt auf einen Stein in der nächsten Reihe!</div><div id="countdown"></div><div id="winmodal" role="dialog" aria-modal="true" aria-labelledby="victory"><div class="victory-card"><div class="victory-rays" aria-hidden="true"></div><div class="victory-trophy" aria-hidden="true">🏆</div><div class="victory-kicker">FLUSSSPRUNG · ZIEL ERREICHT</div><h2 id="victory"></h2><p id="result"></p><div id="victory-score"></div><div class="victory-actions"><button class="primary" id="again">↻ Neues Rennen</button><button id="victory-config">⚙ Spieler ändern</button></div></div></div></main><div id="hud"></div><div id="controls"><span id="choice">👆 Tippe auf einen Stein der nächsten Reihe</span><button id="prev" aria-label="Stein links auswählen">◀</button><button id="go">Springen ↥</button><button id="next" aria-label="Stein rechts auswählen">▶</button></div></div><div id="modal"><div class="card"><h2>🌴 Flusssprung – Dschungelrennen</h2><p>Nur ein Stein je Reihe ist sicher. Springe über fünf Reihen zum Ziel! Falsche Steine versinken und du startest erneut. Alle spielen gleichzeitig.</p><div class="configrow"><label for="count">Spieler</label><select id="count"><option>2</option><option>3</option><option selected>4</option></select></div><div id="types"></div><small>Tippe direkt auf den gewünschten Stein der nächsten Reihe – deine Figur springt sofort. Bei mehreren Menschen zuerst unten die eigene Spielerkarte antippen. Tastatur: 1–6 für Steine, Q/W/E/R für Spielerwechsel, Pfeiltasten optional.</small><button class="primary" id="start">🏁 Rennen starten</button></div></div><script>
+(()=>{'use strict';const $=id=>document.getElementById(id),colors=['#ffda72','#ff8597','#77dfff','#c5a5ff'],names=['Gold','Koralle','Azur','Violett'];let players=[],path=[],known=[],selected=2,focus=0,playing=false,ended=false,elapsed=0,last=0,session=0,stones=[];const rand=n=>Math.floor(Math.random()*n);const timers=new Set();let countdownTimer=null;let frameId=0;function later(fn,ms){const id=setTimeout(()=>{timers.delete(id);fn()},ms);timers.add(id);return id}function clearTimers(){for(const p of players){if(p.actor?._flight){p.actor._flight.cancel();p.actor._flight=null}}for(const id of timers)clearTimeout(id);timers.clear();if(countdownTimer!==null){clearInterval(countdownTimer);countdownTimer=null}}function buildBoard(){const b=$('board');b.replaceChildren();stones=[];for(let r=4;r>=0;r--)for(let col=0;col<6;col++){const el=document.createElement('button');el.type='button';el.className='stone';el.style.setProperty('--rot',`${((r*13+col*7)%13)-6}deg`);el.setAttribute('aria-label',`Reihe ${r+1}, Stein ${col+1}`);el.dataset.row=r;el.dataset.col=col;el.addEventListener('click',()=>selectStone(r,col));b.append(el);stones[r*6+col]=el}}function configure(){const n=+$('count').value;$('types').replaceChildren();for(let i=0;i<n;i++){let row=document.createElement('div');row.className='configrow';row.innerHTML=`<label style="color:${colors[i]}">● Spieler ${i+1}</label><select id="type${i}"><option value="human">Mensch</option><option value="bot" ${i?'selected':''}>Computer</option></select>`;$('types').append(row)}}function toast(s){$('toast').textContent=s}function hud(){const h=$('hud');h.replaceChildren();players.forEach((p,i)=>{const el=document.createElement('div');el.className='player'+(focus===i&&!p.bot?' chosen':'');el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label',p.name+' auswählen');el.style.setProperty('--color',p.color);el.innerHTML=`<b>${p.bot?'🤖':'👤'} ${p.name}</b> · ${Math.max(0,p.row+1)}/5<br>💦 ${p.falls} Stürze`;el.onclick=()=>{if(!p.bot){focus=i;selected=(known[p.row+1]||[]).indexOf(1)>=0?known[p.row+1].indexOf(1):Math.max(0,Math.min(5,p.col));updateChoice();hud();toast('👤 '+p.name+' ist ausgewählt – tippe auf einen Stein!')}};el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}});h.append(el)});controls()}function controls(){let p=players[focus],enabled=playing&&!ended&&p&&!p.bot&&p.state==='ready';$('go').disabled=!enabled;$('prev').disabled=$('next').disabled=!enabled}function updateChoice(){$('choice').textContent=focus<0?'🤖 Computer-Rennen läuft':`👆 ${players[focus]?.name||'Spieler'}: Stein ${selected+1}/6 antippen`;stones.forEach(e=>{e.classList.remove('target','nextrow','unavailable');e.setAttribute('aria-disabled','true');e.tabIndex=-1});const p=players[focus];if(playing&&p&&!p.bot&&p.state==='ready'&&p.row<5){for(let c=0;c<6;c++){const cell=stones[(p.row+1)*6+c];cell.classList.add('nextrow');cell.removeAttribute('aria-disabled');cell.tabIndex=0;}stones[(p.row+1)*6+selected].classList.add('target')}else if(playing){stones.forEach(e=>e.classList.add('unavailable'))}}function pos(row,col,i){const b=$('board').getBoundingClientRect(),s=$('scene').getBoundingClientRect();if(row<0){const shore=$('startshore').getBoundingClientRect();return{x:b.left-s.left+b.width*(i+.5)/players.length,y:shore.top-s.top+Math.min(18,shore.height/2)}}const stone=stones[row*6+col].getBoundingClientRect();return{x:stone.left-s.left+stone.width/2+(i-(players.length-1)/2)*Math.min(10,stone.width/8),y:stone.top-s.top+stone.height/2}}function moveActor(p,i){let q=pos(p.row,p.col,i);p.actor.style.left=q.x+'px';p.actor.style.top=q.y+'px'}function layoutActors(){players.forEach((p,i)=>{if(p.actor&&p.state!=='jump'&&p.state!=='sink')moveActor(p,i)})}function newGame(){clearTimers();session++;const token=session;players=Array.from({length:+$('count').value},(_,i)=>({name:names[i],color:colors[i],bot:$('type'+i).value==='bot',row:-1,col:2,falls:0,state:'ready',next:0.8+i*.2,actor:null}));path=(window.FlusssprungOnlineConfig?.path?.length===5&&window.FlusssprungOnlineConfig.path.every(n=>Number.isInteger(n)&&n>=0&&n<6)?[...window.FlusssprungOnlineConfig.path]:Array.from({length:5},()=>rand(6)));known=Array.from({length:5},()=>Array(6).fill(0));stones.forEach(e=>{e.className='stone';e.textContent='';e.setAttribute('aria-label',`Reihe ${+e.dataset.row+1}, Stein ${+e.dataset.col+1}`)});$('actors').replaceChildren();players.forEach((p,i)=>{const el=document.createElement('div');el.className='actor adventurer-'+i;el.style.setProperty('--color',p.color);el.innerHTML=`<div class="shadow"></div><div class="head"><i class="eyes"></i></div><div class="body" data-num="${i+1}"><i class="strap"></i></div><div class="arms"></div><div class="legs"></div>`;$('actors').append(el);p.actor=el});focus=players.findIndex(p=>!p.bot);selected=2;playing=false;ended=false;elapsed=0;last=performance.now();$('modal').style.display='none';$('winmodal').style.display='none';document.body.classList.remove('race-finished');window.FlusssprungResult=null;window.FlusssprungState={version:41,rows:5,columns:6};$('effects').replaceChildren();$('winmodal').classList.remove('celebrate');requestAnimationFrame(()=>{layoutActors();hud();updateChoice()});let seconds=3;$('countdown').style.display='flex';$('countdown').textContent=seconds;toast('⏳ Bereitmachen!');const timer=countdownTimer=setInterval(()=>{if(token!==session){clearInterval(timer);countdownTimer=null;return}if(document.hidden)return;seconds--;if(seconds>0)$('countdown').textContent=seconds;else{clearInterval(timer);countdownTimer=null;$('countdown').style.display='none';playing=true;last=performance.now();toast('🏁 LOS! Tippe direkt auf einen der sechs leuchtenden Steine!');hud();updateChoice()}},1000)}function selectStone(r,col){if(window.FlusssprungOnlineConfig?.localSeat!=null)focus=window.FlusssprungOnlineConfig.localSeat;let p=players[focus];if(!playing||ended||!p||p.bot||p.state!=='ready'||r!==p.row+1)return;selected=col;updateChoice();toast(`🪨 ${p.name}: Reihe ${r+1}, Stein ${col+1}`);jump(p,col)}function ripple(r,col,kind="land"){const el=stones[r*6+col];if(!el)return;const sr=$("scene").getBoundingClientRect(),b=el.getBoundingClientRect(),e=document.createElement("div");e.className="water-ring "+kind;e.style.left=(b.left+b.width/2-sr.left)+"px";e.style.top=(b.top+b.height/2-sr.top)+"px";$("effects").append(e);later(()=>e.remove(),850)}function impactParticles(r,col,fall=false){const stone=stones[r*6+col];if(!stone)return;const scene=$('scene').getBoundingClientRect(),b=stone.getBoundingClientRect(),cx=b.left+b.width/2-scene.left,cy=b.top+b.height/2-scene.top;const layer=$('effects'),amount=fall?16:7;for(let k=0;k<amount;k++){const a=(Math.PI*2*k/amount)+(fall?.11:.25),speed=(fall?34:17)+(k%4)*7,part=document.createElement('i');part.className='impact33'+(k%3===0?' foam':'');part.style.left=cx+'px';part.style.top=cy+'px';part.style.setProperty('--vx',(Math.cos(a)*speed).toFixed(1)+'px');part.style.setProperty('--vy',(Math.sin(a)*speed*.57-(fall?18:9)).toFixed(1)+'px');part.style.setProperty('--size',(4+k%4*2)+'px');part.style.setProperty('--dur',(560+k%4*70)+'ms');layer.append(part);later(()=>part.remove(),850)}}function splash(r,col){ripple(r,col,"fall");impactParticles(r,col,true);const el=stones[r*6+col],s=$('scene').getBoundingClientRect(),b=el.getBoundingClientRect(),e=document.createElement('div');e.className='splash';e.style.left=(b.left+b.width/2-s.left)+'px';e.style.top=(b.top+b.height/2-s.top)+'px';$('effects').append(e);later(()=>e.remove(),750)}function jump(p,col){if(window.FlusssprungOnlineConfig?.localSeat!=null&&players.indexOf(p)!==window.FlusssprungOnlineConfig.localSeat&&!window.FlusssprungOnlineRemoteAction)return;if(!playing||ended||document.hidden||p.state!=='ready'||!Number.isInteger(col)||col<0||col>5)return;let r=p.row+1;if(r>=5)return;const token=session;if(window.FlusssprungOnlineConfig&&!window.FlusssprungOnlineRemoteAction)window.parent.postMessage({type:'flusssprung:jump',seat:players.indexOf(p),row:r,col},window.location.origin);p.state='jump';p.col=col;stones[r*6+col].classList.add('chosenStone');later(()=>{if(token===session)stones[r*6+col].classList.remove('chosenStone')},470);const i=players.indexOf(p);const q=pos(r,col,i);// V41: ein einziger compositor-freundlicher Sprung statt konkurrierender CSS-Animationen.
+const actor=p.actor,fromX=(Number.isFinite(parseFloat(actor.style.left))?parseFloat(actor.style.left):q.x),fromY=(Number.isFinite(parseFloat(actor.style.top))?parseFloat(actor.style.top):q.y);
+if(actor._flight){actor._flight.cancel();actor._flight=null}
+actor.style.transition='none';actor.style.setProperty('--flight-time','450ms');actor.classList.remove('jumping','sinking','landing');actor.classList.add('inflight');
+actor.style.left=q.x+'px';actor.style.top=q.y+'px';
+const dx=fromX-q.x,dy=fromY-q.y;
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// V41: zeitbasierte, durchgehende Flugbahn mit weich abgestimmten Bewegungsphasen.
+// Kein CSS-Transform-Konflikt: nur der äußere Actor wird per WAAPI bewegt.
+const flightMs=reduced?80:Math.max(390,Math.min(530,410+Math.hypot(dx,dy)*.12));actor.style.setProperty('--flight-time',flightMs+'ms');
+if(actor.animate){
+ const peak=reduced?0:Math.min(80,Math.max(39,Math.abs(dy)*.43));
+ const keyframes=[
+  {transform:`translate(calc(-50% + ${dx}px),calc(-90% + ${dy}px)) scale(1,.96)`,offset:0},
+  {transform:`translate(calc(-50% + ${dx*.91}px),calc(-90% + ${dy*.91+3}px)) scale(1.03,.92)`,offset:.10},
+  {transform:`translate(calc(-50% + ${dx*.72}px),calc(-90% + ${dy*.72-peak*.62}px)) scale(1.06,1.04)`,offset:.27},
+  {transform:`translate(calc(-50% + ${dx*.46}px),calc(-90% + ${dy*.46-peak}px)) scale(1.08,1.08)`,offset:.51},
+  {transform:`translate(calc(-50% + ${dx*.19}px),calc(-90% + ${dy*.19-peak*.55}px)) scale(1.045,1.035)`,offset:.77},
+  {transform:'translate(-50%,-90%) scale(1.04,.94)',offset:.94},
+  {transform:'translate(-50%,-90%) scale(1)',offset:1}
+ ];
+ actor._flight=actor.animate(keyframes,{duration:flightMs,easing:'linear',fill:'none'});
+}
+updateChoice();hud();controls();later(()=>{if(token!==session||ended)return;if(p.actor._flight){p.actor._flight.cancel();p.actor._flight=null}p.actor.classList.remove('inflight');p.actor.classList.add('landing');later(()=>{if(token===session)p.actor.classList.remove('landing')},220);if(path[r]===col){ripple(r,col);impactParticles(r,col,false);known[r][col]=1;stones[r*6+col].classList.add('safe');stones[r*6+col].textContent='✓';stones[r*6+col].setAttribute('aria-label',`Reihe ${r+1}, Stein ${col+1}: sicher`);p.row=r;p.state='ready';if(r===4){p.state='goal';const shore=$('finishshore').getBoundingClientRect(),sc=$('scene').getBoundingClientRect();p.actor.style.top=(shore.bottom-sc.top-6)+'px';win(p)}else{if(!p.bot&&players[focus]===p){const nextKnown=known[r+1].indexOf(1);selected=nextKnown>=0?nextKnown:col}updateChoice();hud()}}else{known[r][col]=-1;const st=stones[r*6+col];st.classList.add('active','bad');st.textContent='×';st.setAttribute('aria-label',`Reihe ${r+1}, Stein ${col+1}: gefährlich`);p.state='sink';p.falls++;p.actor.classList.add('sinking');splash(r,col);toast(`💦 ${p.name} fällt ins Wasser! Zurück zum Start.`);later(()=>{if(token!==session||ended)return;st.classList.remove('active');st.classList.add('bad');st.textContent='×';p.row=-1;p.col=2;p.state='respawn';p.actor.style.transition='none';p.actor.classList.remove('sinking','inflight','landing');moveActor(p,i);requestAnimationFrame(()=>requestAnimationFrame(()=>{if(token===session)p.actor.style.transition='none'}));later(()=>{if(token!==session||ended)return;p.state='ready';p.next=.65+Math.random()*.65;if(!p.bot&&focus===i){selected=known[0].indexOf(1)>=0?known[0].indexOf(1):2;updateChoice()}hud()},360)},450)}hud()},flightMs)}function win(p){if(ended)return;players.forEach(x=>x.actor?.classList.remove('inflight','landing','sinking'));ended=true;playing=false;clearTimers();session++;const result={gameId:'flusssprung',version:41,winner:players.indexOf(p),winnerName:p.name,elapsedSeconds:+elapsed.toFixed(2),players:players.map((x,i)=>({index:i,name:x.name,bot:x.bot,falls:x.falls,progress:x.row+1}))};window.FlusssprungResult=result;window.dispatchEvent(new CustomEvent('flusssprung:finished',{detail:result}));$('victory').textContent=`🏆 ${p.name} gewinnt!`;$('result').textContent=`Ziel erreicht nach ${elapsed.toFixed(1)} Sekunden · ${p.falls} Stürze`;$('winmodal').style.display='grid';document.body.classList.add('race-finished');$('victory-score').textContent='🥇 Platz 1 · '+p.name+' · '+(p.falls===0?'Fehlerfrei!':p.falls+' Stürze');$('winmodal').classList.remove('celebrate');void $('winmodal').offsetWidth;$('winmodal').classList.add('celebrate');toast('🏆 Ziel erreicht!');const fx=$('effects');for(let k=0;k<32;k++){const bit=document.createElement('i');bit.className='confetti32';bit.style.setProperty('--c',['#ffe084','#72f0b0','#ff8d92','#8de3ff'][k%4]);bit.style.left=(15+(k*37%70))+'%';bit.style.setProperty('--dx',((k*71%280)-140)+'px');bit.style.setProperty('--dy',(140+(k*31%230))+'px');bit.style.setProperty('--rot',(k*83%900)+'deg');bit.style.animationDelay=(k%8*.065)+'s';fx.append(bit);setTimeout(()=>bit.remove(),2300)}hud()}function frame(ts){let dt=Math.min(.05,Math.max(0,(ts-last)/1000));last=ts;if(playing&&!document.hidden){elapsed+=dt;for(const p of players){if(!p.bot||p.state!=='ready')continue;p.next-=dt;if(p.next>0)continue;const r=p.row+1;if(r>=5)continue;let good=known[r].indexOf(1),options=[0,1,2,3,4,5].filter(c=>known[r][c]!==-1);let col=good>=0?good:options.length?options[rand(options.length)]:null;if(col!==null)jump(p,col);p.next=.85+Math.random()*1.05+players.indexOf(p)*.12}}frameId=requestAnimationFrame(frame)}function reset(){clearTimers();session++;playing=false;ended=false;$('countdown').style.display='none';$('modal').style.display='grid';window.FlusssprungResult=null;$('winmodal').style.display='none';document.body.classList.remove('race-finished');$('hud').replaceChildren();$('effects').replaceChildren();toast('Wähle die Spieler und starte das Rennen.');players=Array.from({length:2},(_,i)=>({name:names[i],color:colors[i],bot:i>0,row:-1,col:2,falls:0,state:'ready',actor:null}));focus=-1;$('actors').replaceChildren();players.forEach((p,i)=>{const el=document.createElement('div');el.className='actor adventurer-'+i;el.style.setProperty('--color',p.color);el.innerHTML=`<div class="shadow"></div><div class="head"><i class="eyes"></i></div><div class="body" data-num="${i+1}"><i class="strap"></i></div><div class="arms"></div><div class="legs"></div>`;$('actors').append(el);p.actor=el});requestAnimationFrame(layoutActors);stones.forEach(e=>{e.className='stone';e.textContent='';e.setAttribute('aria-label',`Reihe ${+e.dataset.row+1}, Stein ${+e.dataset.col+1}`) });controls();updateChoice()}function controlJump(){const p=players[focus];if(p&&!p.bot)selectStone(p.row+1,selected)}$('prev').onclick=()=>{selected=Math.max(0,selected-1);updateChoice()};$('next').onclick=()=>{selected=Math.min(5,selected+1);updateChoice()};$('go').onclick=controlJump;$('count').onchange=configure;$('start').onclick=newGame;$('restart').onclick=()=>{if(ended){newGame()}else reset()};$('again').onclick=()=>{newGame()};$('victory-config').onclick=reset;window.addEventListener('resize',()=>requestAnimationFrame(layoutActors));window.addEventListener('keydown',e=>{if(e.repeat)return;if($('modal').style.display!=='none'||!playing||['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(['ArrowLeft','ArrowRight','ArrowUp','Enter',' '].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')$('prev').click();if(e.key==='ArrowRight')$('next').click();if(['ArrowUp','Enter',' '].includes(e.key))$('go').click();if(e.key>='1'&&e.key<='6'){selected=+e.key-1;updateChoice();controlJump()}if(e.key.length===1&&'qwer'.includes(e.key.toLowerCase())){let i='qwer'.indexOf(e.key.toLowerCase());if(players[i]&&!players[i].bot){focus=i;selected=players[i].col;hud();updateChoice()}}});document.addEventListener('visibilitychange',()=>{last=performance.now()});window.FlusssprungSelfTest=()=>{const cells=[...document.querySelectorAll('#board>.stone')];const rects=cells.map(e=>e.getBoundingClientRect());const scene=$('scene').getBoundingClientRect();const inside=rects.every(r=>r.width>8&&r.height>8&&r.left>=scene.left-2&&r.right<=scene.right+2&&r.top>=scene.top-2&&r.bottom<=scene.bottom+2);return {version:41,stoneCount:cells.length,visible:inside,actors:document.querySelectorAll('#actors>.actor').length,uniqueRows:new Set(cells.map(e=>e.dataset.row)).size,uniqueCols:new Set(cells.map(e=>e.dataset.col)).size,offline:!document.querySelector('[src^="http"],[href^="http"]')};};
+window.FlusssprungGetResult=()=>window.FlusssprungResult?structuredClone(window.FlusssprungResult):null;window.FlusssprungDebug=()=>({path:[...path],known:known.map(r=>[...r]),players:players.map(p=>({name:p.name,row:p.row,col:p.col,bot:p.bot,state:p.state,falls:p.falls})),visibleStones:document.querySelectorAll('.stone').length,stoneBounds:stones.slice(0,6).map(e=>{const r=e.getBoundingClientRect();return {w:Math.round(r.width),h:Math.round(r.height),x:Math.round(r.x),y:Math.round(r.y)}}),playing,ended});
+// V41 scenery: deterministic decorative elements, independent of gameplay and hit testing.
+(function scenery34(){
+ const river=document.querySelector('.river-life'),jungle=document.querySelector('.jungle-deco');
+ if(!river||!jungle)return;
+ for(let i=0;i<19;i++){
+  const glint=document.createElement('i');glint.className='glint';
+  glint.style.left=(20+(i*37%60))+'%';glint.style.top=(6+(i*23%87))+'%';
+  glint.style.animationDelay=(-i*.37)+'s';river.append(glint);
+ }
+ const fern='<svg viewBox="0 0 180 230" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fern34" x2="1" y2="1"><stop stop-color="#b4d75d"/><stop offset=".5" stop-color="#32834e"/><stop offset="1" stop-color="#124632"/></linearGradient></defs><path d="M90 226 Q88 110 80 5" fill="none" stroke="#b5bd71" stroke-width="5"/>'+
+ Array.from({length:9},(_,i)=>{const y=27+i*20,w=73-i*5;return '<path d="M85 '+y+' Q'+(85-w)+' '+(y-28)+' '+(85-w-12)+' '+(y+19)+' Q'+(85-w/2)+' '+(y+14)+' 87 '+(y+12)+'Z" fill="url(#fern34)"/><path d="M85 '+y+' Q'+(85+w)+' '+(y-30)+' '+(85+w+10)+' '+(y+18)+' Q'+(85+w/2)+' '+(y+12)+' 87 '+(y+12)+'Z" fill="url(#fern34)"/>'}).join('')+'</svg>';
+ for(let i=0;i<8;i++){
+  const wrap=document.createElement('div');wrap.innerHTML=fern;const plant=wrap.firstElementChild;
+  plant.style.left=(i%2===0?(-3+(i*7%11)):(85+(i*5%10)))+'%';
+  plant.style.top=(i*17%88)+'%';plant.style.opacity=(.62+(i%3)*.12).toString();
+  plant.style.width=(85+i%4*24)+'px';plant.style.animationDelay=(-i*.71)+'s';jungle.append(plant);
+ }
+})();
+
+// V41 decorative wildlife and ground cover. Elements are pointer-transparent.
+(function ultimateScenery35(){
+ const scene=document.getElementById('scene');if(!scene)return;
+ const leaves=`<svg viewBox="0 0 160 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="leaf35" x2="1" y2="1"><stop stop-color="#b2cf5a"/><stop offset=".5" stop-color="#387d45"/><stop offset="1" stop-color="#153e2c"/></linearGradient></defs><path d="M80 106Q67 61 14 20Q64 10 82 62Q96 10 147 13Q125 61 83 104" fill="url(#leaf35)" stroke="#173e2e" stroke-width="3"/><path d="M80 105Q78 52 14 20M82 99Q101 41 147 13" fill="none" stroke="#d7e6a0" stroke-opacity=".55" stroke-width="2"/></svg>`;
+ for(let i=0;i<12;i++){
+  const e=document.createElement('div');e.className='ambient-detail';e.innerHTML=leaves;
+  e.style.width=(42+i%4*13)+'px';e.style.left=(i%2===0?1+(i*3%11):88+(i*5%10))+'%';e.style.top=(i*19%90)+'%';e.style.transform=`rotate(${i*39%95-45}deg)`;e.style.opacity=(.68+i%3*.1).toString();scene.append(e);
+ }
+ for(let i=0;i<4;i++){
+  const e=document.createElement('div');e.className='ambient-detail butterfly';e.style.left=(i%2===0?13:82)+'%';e.style.top=(16+i*19)+'%';e.style.width='22px';e.style.animationDelay=(-i*1.3)+'s';
+  e.innerHTML='<svg viewBox="0 0 30 24" xmlns="http://www.w3.org/2000/svg"><path d="M15 13Q0 -5 1 9Q2 19 14 15Q1 23 11 23L15 16Q25 26 28 17L17 14Q30 7 26 1Q18 -1 15 13" fill="#ffcf72" stroke="#9a563b" stroke-width="1.2"/><path d="M15 9V20" stroke="#332d2b" stroke-width="2"/></svg>';scene.append(e);
+ }
+})();
+
+document.body.appendChild($('winmodal'));buildBoard();configure();if(stones.length!==30||stones.some(x=>!x)){toast('⚠️ Spielfeld konnte nicht vollständig aufgebaut werden.')} 
+// Preview characters before the first race so a blank river is never mistaken for a rendering error.
+players=Array.from({length:2},(_,i)=>({name:names[i],color:colors[i],bot:i>0,row:-1,col:2,falls:0,state:'ready',actor:null}));
+players.forEach((p,i)=>{const el=document.createElement('div');el.className='actor adventurer-'+i;el.style.setProperty('--color',p.color);el.innerHTML=`<div class="shadow"></div><div class="head"><i class="eyes"></i></div><div class="body" data-num="${i+1}"><i class="strap"></i></div><div class="arms"></div><div class="legs"></div>`;$('actors').append(el);p.actor=el});
+requestAnimationFrame(()=>{layoutActors();hud();const t=window.FlusssprungSelfTest();if(!t.visible||t.stoneCount!==30)toast('⚠️ Anzeige prüfen: '+t.stoneCount+' Steine, Sichtbarkeit '+t.visible);});requestAnimationFrame(frame)})();
+</script><script>
+(function v36RiverDetail(){
+ const scene=document.getElementById('scene');if(!scene)return;
+ const layer=document.createElement('div');layer.id='v36ambience';layer.setAttribute('aria-hidden','true');
+ layer.style.cssText='position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2';
+ for(let i=0;i<17;i++){const el=document.createElement('i');el.className='v36foam';el.style.left=(19+(i*29%61))+'%';el.style.top=(17+(i*43%67))+'%';el.style.animationDelay=(-i*.41)+'s';layer.append(el)}
+ for(let i=0;i<13;i++){const el=document.createElement('i');el.className='v36glint';el.style.left=(22+(i*37%58))+'%';el.style.top=(16+(i*23%71))+'%';el.style.animationDelay=(-i*.29)+'s';layer.append(el)}
+ scene.append(layer);
+})();
+</script><script>
+/* Online bridge hooks; server-authoritative transport is provided by the parent lobby. */
+window.FlusssprungOnlineConfig=null;
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.source!==window.parent)return;
+ const m=event.data;
+ if(!m||typeof m!=='object')return;
+ if(m.type==='flusssprung:configure'){
+  const seats=m.seats;
+  if(!Array.isArray(seats)||seats.length<2||seats.length>4||!seats.every(x=>typeof x.name==='string'&&x.name.length<=40))return;
+  if(!Array.isArray(m.path)||m.path.length!==5||!m.path.every(x=>Number.isInteger(x)&&x>=0&&x<6))return;
+  if(!Number.isInteger(m.localSeat)||m.localSeat<0||m.localSeat>=seats.length)return;
+  window.FlusssprungOnlineConfig={path:m.path.slice(),localSeat:m.localSeat};
+  const count=document.getElementById('count');count.value=String(seats.length);
+  count.dispatchEvent(new Event('change'));
+  seats.forEach((seat,i)=>{const type=document.getElementById('type'+i);if(type)type.value='human'});
+  window.parent.postMessage({type:'flusssprung:configured'},event.origin);
+ }
+ if(m.type==='flusssprung:remote-jump'&&window.FlusssprungOnlineConfig){
+  if(!Number.isInteger(m.seat)||m.seat<0||m.seat>=players.length||!Number.isInteger(m.col)||m.col<0||m.col>5)return;
+  window.FlusssprungOnlineRemoteAction=true;
+  try{jump(players[m.seat],m.col)}finally{window.FlusssprungOnlineRemoteAction=false}
+ }
+});
+</script></body></html>
+
+<!-- V41: Sprungpfad nutzt Web Animations API für flüssige Bewegung. -->
