@@ -576,13 +576,25 @@ function renderChallengeProgress(){
    statusEl.textContent=answered?'Antwort gespeichert – warte auf die Mitspieler.':'Löse die Rechenaufgabe und sende deine Antwort ab.';
    if(!answered){el('challenge-math-send').disabled=false;el('challenge-math-board').querySelectorAll('button').forEach(b=>b.disabled=false);}
    }
+  }else if(isPreisjaeger){
+   const elapsed=Math.max(0,-remaining),left=Math.max(0,Math.ceil((45000-elapsed)/1000));
+   clockEl.textContent=left+' s';
+   const mySeat=room.players.find(p=>p.me)?.seat,done=!!ch.preisjaeger?.answered?.includes(mySeat);
+   statusEl.textContent=done?'🔒 Schätzung gespeichert – warte auf die Mitspieler.':'🛒 Was kostet dieses Produkt? Gib deine geheime Schätzung ein!';
+   el('pj-guess').disabled=done||elapsed>=45000;
+   el('pj-submit').disabled=done||elapsed>=45000;
+   if(elapsed>=45000){
+    statusEl.textContent='⏳ Zeit abgelaufen – Preisfrage wird ausgewertet.';
+    const key=ch.id+':'+index+':'+(ch.preisjaeger?.round||1);
+    if(pjTimeoutKey!==key){pjTimeoutKey=key;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-preisjaeger-timeout','POST',{challengeId:ch.id,round:ch.preisjaeger.round}).then(response=>acceptRoom(response.room)).catch(()=>setTimeout(()=>{if(pjTimeoutKey===key)pjTimeoutKey='';},1800));}
+   }
   }else{
    clockEl.textContent='⏳';
-   statusEl.textContent='⚠️ Dieses Minispiel ist noch nicht online verfügbar.';
+   statusEl.textContent='🎮 Das Minispiel läuft.';
   }
  };
  draw();
- if(ch.phase==='countdown'&&(Number(ch.startAt)>estimatedServerNow||isTime&&!stopped||isMath))challengeClockTimer=setInterval(draw,80);
+ if(ch.phase==='countdown'&&(Number(ch.startAt)>estimatedServerNow||isTime&&!stopped||isMath||isPreisjaeger))challengeClockTimer=setInterval(draw,80);
 }
 function renderChallengeSetup(showStage){
  let box=el('challenge-settings-panel');
