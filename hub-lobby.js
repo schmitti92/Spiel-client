@@ -483,8 +483,7 @@ function renderChallengeSetup(showStage){
  const active=showStage&&room?.game==='partychallenge';box.classList.toggle('hidden',!active);
  if(!active)return;
  if(room.phase!=='preparing')el('challenge-feedback').textContent='';
- const count=Number(room.settings?.partychallenge?.count)||3;
- if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(count===3?3:3);
+ if(document.activeElement!==el('challenge-count'))el('challenge-count').value='3';
  el('challenge-count').disabled=!room.host||room.phase!=='preparing';
  el('challenge-save').hidden=!room.host||room.phase!=='preparing';
  el('challenge-bots').hidden=!room.host||room.phase!=='preparing';
