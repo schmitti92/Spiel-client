@@ -374,10 +374,10 @@ function renderChallengeProgress(){
   if(result?.game==='recheninsel'&&typeof result.answer==='number'){const solution=document.createElement('p');solution.textContent='🏴‍☠️ Lösung: '+result.question+' = '+result.answer;resultsBox.append(solution);}
   if(result?.standings){
    const list=document.createElement('div');list.style.cssText='display:grid;gap:9px;margin:14px auto;max-width:540px';
-   result.standings.slice().sort((a,b)=>(b.challengePoints||0)-(a.challengePoints||0)||(a.deltaMs??0)-(b.deltaMs??0)||a.name.localeCompare(b.name)).forEach((entry,i)=>{
+   result.standings.slice().sort((a,b)=>(b.challengePoints||0)-(a.challengePoints||0)||(a.deltaMs??0)-(b.deltaMs??0)||a.name.localeCompare(b.name)).forEach((entry,i,sorted)=>{
     const card=document.createElement('div');card.style.cssText='padding:12px;border-radius:12px;background:#ffffff1c;display:flex;justify-content:space-between;gap:12px';
-    const name=document.createElement('strong');name.textContent=(['🥇','🥈','🥉'][i]||'🎮')+' '+entry.name;
-    const points=document.createElement('span');points.textContent=(typeof entry.elapsedMs==='number'?(entry.elapsedMs/1000).toFixed(2)+' s · ':'')+(typeof entry.correct==='boolean'?(entry.correct?'✓ Richtig · ':'✗ Falsch · '):'')+'+'+entry.challengePoints+' Punkte';
+    const name=document.createElement('strong');const rank=result.game==='maulwurf-arena'?sorted.findIndex(p=>p.score===entry.score):i;name.textContent=(['🥇','🥈','🥉'][rank]||'🎮')+' '+entry.name;
+    const points=document.createElement('span');points.textContent=(typeof entry.elapsedMs==='number'?(entry.elapsedMs/1000).toFixed(2)+' s · ':'')+(typeof entry.correct==='boolean'?(entry.correct?'✓ Richtig · ':'✗ Falsch · '):'')+(result.game==='maulwurf-arena'?entry.score+' Trefferpunkte · ':'')+'+'+entry.challengePoints+' Punkte';
     card.append(name,points);list.append(card);
    });resultsBox.append(list);
   }
