@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.24-challenge.14",
+  "version": "2026.10.24-snake.15",
   "released": "2026-10-24",
-  "notes": "Sechstes Minispiel Hütchen-Challenge freigeschaltet; 60 simulierte Challenge-Durchläufe bestanden"
+  "notes": "Snake Arena: gemeinsame Spieler- und Ergebnisschnittstelle vorbereitet, Mehrmenschen-Steuerung offen"
 }
