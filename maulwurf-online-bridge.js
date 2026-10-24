@@ -10,6 +10,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
  container.replaceChildren(iframe);
  let active=true,lastKey='',timeoutPending=false,timeoutKey='',timeoutRetryAt=0,lastRevision=null,serverOffset=0,frameReady=false;
  const pendingHits=new Set();
+ let lastTimeoutErrorAt=0;
  function estimatedServerNow(room){if(room?.revision!==lastRevision){lastRevision=room?.revision;serverOffset=(Number(room?.serverNow)||Date.now())-Date.now();}return Date.now()+serverOffset;}
  const expiryTimer=setInterval(()=>{if(!active)return;const r=getRoom(),ch=r?.match?.challenge;if(ch?.order?.[ch.index]!=='maulwurf-arena'||ch.phase!=='countdown')return;const now=estimatedServerNow(r);if(now>=ch.startAt+30000)sync();},300);
  function sync(){
@@ -24,7 +25,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
    timeoutPending=true;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-timeout','POST',{challengeId:ch.id})
     .then(result=>{if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);})
-    .catch(err=>{timeoutPending=false;timeoutRetryAt=Date.now()+3000;if(err?.message!=='CHALLENGE_NOT_ACTIVE')onError?.(err);});
+    .catch(err=>{timeoutPending=false;timeoutRetryAt=Date.now()+3000;if(err?.message!=='CHALLENGE_NOT_ACTIVE'&&Date.now()-lastTimeoutErrorAt>15000){lastTimeoutErrorAt=Date.now();onError?.(err);}});
   }
   const key=[ch.id,ch.index,ch.startAt,ch.phase,ch.maulwurf.hitCount,ch.maulwurf.score,JSON.stringify(ch.maulwurf.hitTicks||[]),JSON.stringify(ch.maulwurf.opponents||[]),seat].join(':');
   if(lastKey===key)return;lastKey=key;
@@ -55,7 +56,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   }
   finally{pendingHits.delete(hitKey);}
  }
- iframe.addEventListener('load',()=>{frameReady=true;lastKey='';sync()});
+ iframe.addEventListener('load',()=>{if(!active)return;frameReady=true;lastKey='';sync()});
  window.addEventListener('message',onMessage);
  return {sync,destroy(){active=false;clearInterval(expiryTimer);window.removeEventListener('message',onMessage);iframe.remove();}};
 }
