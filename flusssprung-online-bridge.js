@@ -5,7 +5,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
  frame.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,lastMove=0,timeoutPending=false,serverOffset=0,lastRevision=null;
- let lastKey='',lastError=0,resultSent=false,lastSnapshot='',lastSyncRevision=null;
+ let lastKey='',lastError=0,resultSent=false,lastSnapshot='',lastSyncRevision=null,pendingJump=false;
  const timer=setInterval(()=>{if(alive)sync()},500);
  function sync(){
   if(!alive||!ready||!frame.contentWindow)return;
@@ -16,7 +16,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   const localSeat=players.findIndex(p=>p.seat===seat);
   if(localSeat<0)return;
   const key=ch.id+':'+ch.index;
-  if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;resultSent=false;lastSnapshot='';lastSyncRevision=null;}
+  if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;resultSent=false;lastSnapshot='';lastSyncRevision=null;pendingJump=false;}
   if(ch.phase!=='countdown'){
    if(!resultSent&&ch.results?.some(r=>r.game==='flusssprung'&&r.index===ch.index)){
     resultSent=true;
@@ -37,7 +37,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    const m=moves[lastMove++-offset];
    if(!m)continue;
    const idx=players.findIndex(p=>p.seat===m.seat);
-   if(idx>=0&&idx!==localSeat)frame.contentWindow.postMessage({type:'flusssprung:remote-jump',seat:idx,col:m.col},location.origin);
+   if(idx>=0&&idx!==localSeat)frame.contentWindow.postMessage({type:'flusssprung:remote-jump',seat:idx,row:m.row,col:m.col},location.origin);
   }
   const snapshot=JSON.stringify((f.players||[]).map(p=>({index:players.findIndex(x=>x.seat===p.seat),row:p.row,falls:p.falls,finishedAt:p.finishedAt})));
   if(snapshot!==lastSnapshot||room.revision!==lastSyncRevision){
@@ -61,15 +61,17 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   if(!ch||ch.phase!=='countdown'||ch.order?.[ch.index]!=='flusssprung')return;
   const {row,col}=e.data;
   if(!Number.isInteger(row)||row<0||row>=5||!Number.isInteger(col)||col<0||col>=6)return;
+  if(pendingJump)return;
+  pendingJump=true;
   try{
    const r=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-flusssprung-jump','POST',{challengeId:ch.id,row,col});
-   if(!alive||getRoom()?.match?.challenge?.id!==ch.id)return;
+   if(!alive||getRoom()?.match?.challenge?.id!==ch.id){pendingJump=false;return;}
    frame.contentWindow?.postMessage({type:'flusssprung:jump-accepted',col},location.origin);
    if(r?.room)acceptRoom(r.room);
   }catch(err){
    if(alive)frame.contentWindow?.postMessage({type:'flusssprung:jump-rejected'},location.origin);
    if(Date.now()-lastError>12000){lastError=Date.now();onError?.(err)}
-  }
+  }finally{pendingJump=false}
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;sync()});
