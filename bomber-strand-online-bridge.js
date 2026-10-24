@@ -4,11 +4,12 @@ export function mountBomberOriginal({container,getRoom,request,acceptRoom,onErro
  frame.title='Bomber Strand Arena Online';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  container.replaceChildren(frame);
- let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,offset=0;
+ let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,offset=0,challengeKey='';
  function current(){const room=getRoom(),ch=room?.match?.challenge;return ch?.order?.[ch.index]==='bomber-strand-arena'?{room,ch}:null;}
  function sync(){
   if(!alive||!ready)return;const c=current();if(!c)return;
-  const {room,ch}=c,seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
+  const {room,ch}=c;if(ch.id!==challengeKey){challengeKey=ch.id;configured=false;lastSeq=0;lastTimeout=false;pending=false;}
+  const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
   const mine=room.players.find(p=>p.me)?.seat,localSeat=seats.indexOf(mine);
   if(localSeat<0)return;
   if(!configured){frame.contentWindow.postMessage({type:'bomber:configure',challengeId:ch.id,localSeat,roster:seats.map((seat,id)=>({id,seat,name:room.players.find(p=>p.seat===seat)?.name||'Spieler',bot:false}))},location.origin);return;}
