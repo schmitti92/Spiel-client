@@ -34,7 +34,17 @@ const heading=document.createElement('strong');heading.textContent='🆕 Neue SK
 const msg=document.createElement('div');msg.textContent='Es gibt Verbesserungen. Bitte aktualisiere das Spiel, damit alle mit der neuen Version spielen.';
 const reload=document.createElement('button');reload.textContent='🔄 Jetzt aktualisieren';
 const later=document.createElement('button');later.textContent='Später';later.className='dismiss';
-reload.addEventListener('click',()=>{location.reload();});
+reload.addEventListener('click',async()=>{
+ reload.disabled=true;
+ reload.textContent='⏳ Aktualisiere …';
+ try{
+   const keys=await caches.keys();
+   await Promise.all(keys.map(key=>caches.delete(key)));
+ }catch(e){console.warn('[SKYJO] Cache konnte nicht vollständig gelöscht werden',e);}
+ const url=new URL(location.href);
+ url.searchParams.set('skyjo_refresh',String(Date.now()));
+ location.replace(url.toString());
+});
 later.addEventListener('click',()=>{notice.hidden=true;});
 notice.append(heading,msg,reload,later);
 function clean(t){const span=document.createElement('span');span.innerHTML=t;return (span.textContent||'').trim();}
@@ -67,7 +77,16 @@ function syncServerCheck(){
  updating=true;
  fetch('skyjo_ui_version.json?ts='+Date.now(),{cache:'no-store'})
  .then(r=>{if(!r.ok)throw Error('version unavailable');return r.json()})
- .then(data=>{if(data.version&&data.version!==VERSION)notice.hidden=false;})
+ .then(data=>{
+   if(!data.version)return;
+   const latest=String(data.version);
+   const lastReload=Number(sessionStorage.getItem('skyjo_version_refresh_at')||0);
+   if(latest===VERSION||freshLoad&&Date.now()-lastReload<120000){
+     notice.hidden=true;
+     return;
+   }
+   notice.hidden=false;
+ })
  .catch(()=>{})
  .finally(()=>{updating=false;});
 }
