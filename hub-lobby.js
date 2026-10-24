@@ -222,7 +222,7 @@ function renderChallengeSetup(showStage){
  let box=el('challenge-settings-panel');
  if(!box){
   box=document.createElement('section');box.id='challenge-settings-panel';box.style.cssText='padding:18px;margin:14px 0;border:2px solid #e4b75d;border-radius:18px;background:#fff8e9;color:#24334b';
-  box.innerHTML='<h3>🏆 Party Challenge</h3><p>Alle bleiben im selben Raum. Der Host startet die Challenge ausdrücklich.</p><label for="challenge-count">Anzahl Minispiele: </label><select id="challenge-count"><option value="5">5 verschiedene Spiele</option><option value="9">Alle 9 Spiele</option></select> <button type="button" id="challenge-save">Auswahl speichern</button> <button type="button" id="challenge-bots">🤖 2 Testspieler hinzufügen</button><p id="challenge-feedback" role="status"></p>';
+  box.innerHTML='<h3>🏆 Party Challenge</h3><p>Alle bleiben im selben Raum. Der Host startet die Challenge ausdrücklich.</p><label for="challenge-count">Anzahl Minispiele: </label><select id="challenge-count"><option value="2">🧪 Test: 2 spielbare Minispiele</option><option value="5" disabled>5 Spiele – noch in Entwicklung</option><option value="9" disabled>9 Spiele – noch in Entwicklung</option></select> <button type="button" id="challenge-save">Auswahl speichern</button> <button type="button" id="challenge-bots">🤖 2 Testspieler hinzufügen</button><p id="challenge-feedback" role="status"></p>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
   el('challenge-bots').addEventListener('click',async()=>{
    if(!room?.host)return;
@@ -240,8 +240,9 @@ function renderChallengeSetup(showStage){
  }
  const active=showStage&&room?.game==='partychallenge';box.classList.toggle('hidden',!active);
  if(!active)return;
- const count=room.settings?.count===9?9:5;
- if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(count);
+ el('challenge-feedback').textContent=room.phase==='preparing'?'🧪 Aktuell online spielbar: Zeitgefühl und Recheninsel. Die 5-/9-Spiele-Challenge wird erst nach Integration aller Spiele freigeschaltet.':'';
+ const count=room.settings?.count===9?9:room.settings?.count===5?5:2;
+ if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(count===2?2:2);
  el('challenge-count').disabled=!room.host||room.phase!=='preparing';
  el('challenge-save').hidden=!room.host||room.phase!=='preparing';
  el('challenge-bots').hidden=!room.host||room.phase!=='preparing';
