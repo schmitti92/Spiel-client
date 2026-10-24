@@ -72,8 +72,22 @@ body.is-playing .player.sky-active-glow{
  to{filter:drop-shadow(0 0 17px #00ff80);outline-color:#20ff79}
 }
 @media(prefers-reduced-motion:reduce){body.is-playing .player.sky-active-glow{animation:none!important}}
+
+/* Board-only turn feedback: strong glow visible on standard and scenic layouts. */
+body.is-playing .player.sky-active-glow,
+body.is-playing .skyjo-scenic-stage .player.sky-active-glow{
+ isolation:isolate!important;
+ outline:5px solid #63ff9e!important;
+ outline-offset:0!important;
+ border:5px solid #56ffa1!important;
+ background-color:rgba(22,120,75,.33)!important;
+ box-shadow:0 0 0 3px #c7ffe0,0 0 22px 8px #00ff88,0 0 55px 18px #00f97899,inset 0 0 28px #64ff9e66!important;
+ filter:brightness(1.24)!important;
+ animation:sky-player-glow 1.25s ease-in-out infinite alternate!important;
+}
+.sky-turn-indicator{display:none!important}
 </style>
-<script src="skyjo_turn_and_update.js?v=2" defer></script>
+<script src="skyjo_turn_and_update.js?v=3" defer></script>
 <script src="skyjo_tablet_autofit.js?v=1" defer></script>
 </body>
 </html>
