@@ -73,7 +73,9 @@
   if(e.data?.type!=='maulwurf:state')return;
   const previous=state;
   state=e.data;
-  if(!previous||previous.challengeId!==state.challengeId||previous.startAt!==state.startAt)offset=(Number(state.serverNow)||Date.now())-Date.now();
+  const measuredOffset=(Number(state.serverNow)||Date.now())-Date.now();
+  if(!previous||previous.challengeId!==state.challengeId||previous.startAt!==state.startAt)offset=measuredOffset;
+  else if(Math.abs(measuredOffset-offset)>250)offset=measuredOffset;
   init();
   for(const tick of state.hitTicks||[])sent.add(tick);
   const liveTick=Math.floor((Date.now()+offset-state.startAt)/1000);
