@@ -8,12 +8,12 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';
  iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);
- let active=true,lastKey='',timeoutPending=false,timeoutKey='',lastRevision=null,serverOffset=0;
+ let active=true,lastKey='',timeoutPending=false,timeoutKey='',lastRevision=null,serverOffset=0,frameReady=false;
  const pendingHits=new Set();
  function estimatedServerNow(room){if(room?.revision!==lastRevision){lastRevision=room?.revision;serverOffset=(Number(room?.serverNow)||Date.now())-Date.now();}return Date.now()+serverOffset;}
  const expiryTimer=setInterval(()=>{if(!active)return;const r=getRoom(),ch=r?.match?.challenge;if(ch?.order?.[ch.index]!=='maulwurf-arena'||ch.phase!=='countdown')return;const now=estimatedServerNow(r);if(now>=ch.startAt+30000)sync();},300);
  function sync(){
-  if(!active||!iframe.contentWindow)return;
+  if(!active||!frameReady||!iframe.contentWindow)return;
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='maulwurf-arena'||!ch.maulwurf)return;
   const seat=room.players?.find(p=>p.me)?.seat;
@@ -35,7 +35,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='maulwurf-arena'||ch.id!==event.data.challengeId||ch.phase!=='countdown')return;
   const {tick,hole}=event.data;
-  if(!Number.isInteger(tick)||!Number.isInteger(hole))return;
+  if(!Number.isInteger(tick)||tick<0||tick>=30||!Number.isInteger(hole)||hole<0||hole>8)return;
   const hitKey=ch.id+':'+ch.index+':'+tick;
   if(pendingHits.has(hitKey))return;
   pendingHits.add(hitKey);
@@ -43,7 +43,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   catch(err){onError?.(err);lastKey='';sync();}
   finally{pendingHits.delete(hitKey);}
  }
- iframe.addEventListener('load',()=>{lastKey='';sync()});
+ iframe.addEventListener('load',()=>{frameReady=true;lastKey='';sync()});
  window.addEventListener('message',onMessage);
  return {sync,destroy(){active=false;clearInterval(expiryTimer);window.removeEventListener('message',onMessage);iframe.remove();}};
 }
