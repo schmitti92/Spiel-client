@@ -247,6 +247,7 @@ function renderChallengeProgress(){
   choices.forEach(value=>{const btn=document.createElement('button');btn.type='button';btn.textContent=String(value);btn.dataset.value=String(value);btn.setAttribute('aria-label','Antwort '+value);btn.addEventListener('click',()=>{if(btn.disabled||answered||Number(ch.startAt)>(Number(room.serverNow)||Date.now()))return;mathBoard.querySelectorAll('button').forEach(b=>{b.classList.remove('selected');b.disabled=true;});btn.classList.add('selected');el('challenge-math-input').value=String(value);el('challenge-math-send').click();});mathBoard.append(btn);});
  }
  mathBoard.querySelectorAll('button').forEach(btn=>{btn.disabled=answered||Number(ch.startAt)>Number(room.serverNow);});
+ if(isMath&&answered)mathBoard.querySelectorAll('button').forEach(btn=>btn.disabled=true);
  const mathRoundKey=ch.id+':'+index+':'+(ch.math?.round||1);
  if(el('challenge-math').dataset.round!==mathRoundKey){el('challenge-math').dataset.round=mathRoundKey;el('challenge-math-input').value='';}
  if(isMath&&ch.phase==='countdown'){
@@ -274,7 +275,15 @@ function renderChallengeProgress(){
  if(ch.phase==='results'||ch.phase==='finished'){
   const result=ch.results[ch.results.length-1];
   const title=document.createElement('h3');title.textContent=ch.phase==='finished'?'🏆 Finale Siegerehrung':'🎉 Minispiel abgeschlossen';resultsBox.append(title);
-  if(result?.game==='recheninsel'&&Array.isArray(result.rounds)){const summary=document.createElement('p');summary.textContent=result.rounds.map(r=>'Runde '+r.round+': '+r.question+' = '+r.answer).join('  ·  ');resultsBox.append(summary);}
+  if(result?.game==='recheninsel'&&Array.isArray(result.rounds)){
+   const rounds=document.createElement('div');rounds.style.cssText='display:grid;gap:10px;max-width:650px;margin:14px auto';
+   result.rounds.forEach(r=>{
+    const section=document.createElement('div');section.style.cssText='padding:12px;border-radius:12px;background:#061e30bd;text-align:left;border:1px solid #ffe3a155';
+    const heading=document.createElement('strong');heading.textContent='🏴‍☠️ Runde '+r.round+' · '+r.question+' = '+r.answer;section.append(heading);
+    (r.standings||[]).forEach(entry=>{const line=document.createElement('div');line.style.cssText='display:flex;justify-content:space-between;gap:12px;margin-top:6px';const name=document.createElement('span');name.textContent=entry.name;const score=document.createElement('span');score.textContent=(entry.correct?'✓ ':'✗ ')+(entry.challengePoints||0)+' Punkte';line.append(name,score);section.append(line);});
+    rounds.append(section);
+   });resultsBox.append(rounds);
+  }
   if(result?.game==='recheninsel'&&typeof result.answer==='number'){const solution=document.createElement('p');solution.textContent='🏴‍☠️ Lösung: '+result.question+' = '+result.answer;resultsBox.append(solution);}
   if(result?.standings){
    const list=document.createElement('div');list.style.cssText='display:grid;gap:9px;margin:14px auto;max-width:540px';
