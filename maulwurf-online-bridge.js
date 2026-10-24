@@ -4,11 +4,12 @@
 export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onError}){
  if(!container||!getRoom||!request||!acceptRoom)throw Error('Maulwurf bridge: missing dependency');
  const iframe=document.createElement('iframe');
- iframe.title='Maulwurf Arena – Online';iframe.src='maulwurf-original-online.html?v=1';
+ iframe.title='Maulwurf Arena – Online';iframe.src='maulwurf-original-online.html?v=2';
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';
  iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);
  let active=true,lastKey='',timeoutPending=false,timeoutKey='',lastRevision=null,serverOffset=0;
+ const pendingHits=new Set();
  function estimatedServerNow(room){if(room?.revision!==lastRevision){lastRevision=room?.revision;serverOffset=(Number(room?.serverNow)||Date.now())-Date.now();}return Date.now()+serverOffset;}
  const expiryTimer=setInterval(()=>{if(!active)return;const r=getRoom(),ch=r?.match?.challenge;if(ch?.order?.[ch.index]!=='maulwurf-arena'||ch.phase!=='countdown')return;const now=estimatedServerNow(r);if(now>=ch.startAt+30000)sync();},300);
  function sync(){
@@ -35,9 +36,12 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   if(!ch||ch.order?.[ch.index]!=='maulwurf-arena'||ch.id!==event.data.challengeId||ch.phase!=='countdown')return;
   const {tick,hole}=event.data;
   if(!Number.isInteger(tick)||!Number.isInteger(hole))return;
+  const hitKey=ch.id+':'+ch.index+':'+tick;
+  if(pendingHits.has(hitKey))return;
+  pendingHits.add(hitKey);
   try{const result=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-hit','POST',{challengeId:ch.id,tick,hole});if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);}
   catch(err){onError?.(err);lastKey='';sync();}
-
+  finally{pendingHits.delete(hitKey);}
  }
  iframe.addEventListener('load',()=>{lastKey='';sync()});
  window.addEventListener('message',onMessage);
