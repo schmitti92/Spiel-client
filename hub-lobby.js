@@ -234,7 +234,7 @@ async function ensureLavaOriginalBridge(){
  if(lavaOriginalBridge||lavaOriginalLoading||lavaOriginalFailed)return;
  lavaOriginalLoading=true;
  try{
-  const {mountLavaOriginal}=await import('./lava-arena-online-bridge.js?v=2');
+  const {mountLavaOriginal}=await import('./lava-arena-online-bridge.js?v=3');
   const ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='lava-arena'||ch.phase!=='countdown')return;
   const target=el('challenge-original-frame');if(!target)return;
