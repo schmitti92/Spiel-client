@@ -47,3 +47,17 @@ test('rejects server errors with status',async()=>{
     await assert.rejects(t.request('/rooms/ABCDEF'),e=>e.status===403&&e.message==='HOST_ONLY');
   }finally{globalThis.fetch=previous;}
 });
+
+test('duplicate revisions are not rendered twice',()=>{
+ const seen=[];const t=new PartyOnlineTransport({getToken:async()=> 'token',onRoom:r=>seen.push(r.revision)});
+ t.code='ABCDEF';
+ assert.equal(t.accept({code:'ABCDEF',revision:7}),true);
+ assert.equal(t.accept({code:'ABCDEF',revision:7}),false);
+ assert.deepEqual(seen,[7]);
+});
+test('watch validates polling cadence and destroy resets revision',()=>{
+ const t=new PartyOnlineTransport({getToken:async()=> 'token'});
+ assert.throws(()=>t.watch(10),/INVALID_POLL_INTERVAL/);
+ t.code='ABCDEF';t.sequence=12;t.destroy();
+ assert.equal(t.sequence,-1);
+});
