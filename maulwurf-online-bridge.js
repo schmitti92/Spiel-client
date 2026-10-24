@@ -44,15 +44,20 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   catch(err){
    // A transport error is ambiguous: the server may have accepted the hit.
    // Fetch the authoritative room before removing optimistic feedback.
+   let recovered=false,confirmed=false;
    try{
     const response=await request('/rooms/'+encodeURIComponent(room.code));
     const latest=response?.room;
     if(!active)return;
-    if(latest?.match?.challenge?.id===ch.id)acceptRoom(latest);
-    const accepted=latest?.match?.challenge?.maulwurf?.hitTicks?.includes(tick);
-    if(!accepted&&iframe.contentWindow)iframe.contentWindow.postMessage({type:'maulwurf:hit-rejected',challengeId:ch.id,tick,hole},location.origin);
+    recovered=true;
+    if(latest?.match?.challenge?.id===ch.id){
+     acceptRoom(latest);
+     confirmed=!!latest.match.challenge.maulwurf?.hitTicks?.includes(tick);
+    }
+    if(!confirmed&&iframe.contentWindow)iframe.contentWindow.postMessage({type:'maulwurf:hit-rejected',challengeId:ch.id,tick,hole},location.origin);
    }catch(_refreshError){/* Keep the optimistic mark until the next authoritative sync. */}
-   if(err?.message!=='MAULWURF_NOT_VISIBLE'&&err?.message!=='MAULWURF_WRONG_HOLE')onError?.(err);
+   // Do not alarm players when a failed response actually committed the hit.
+   if(!confirmed&&(!recovered||!['MAULWURF_NOT_VISIBLE','MAULWURF_WRONG_HOLE'].includes(err?.message)))onError?.(err);
    lastKey='';sync();
   }
   finally{pendingHits.delete(hitKey);}
