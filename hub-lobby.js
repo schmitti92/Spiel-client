@@ -160,12 +160,14 @@ function renderChallengeProgress(){
  const index=Math.min(Math.max(0,ch.index||0),ch.order.length-1);
  el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
+ const estimatedServerNow=Number(room.serverNow)||Date.now();
+ const observedAt=Date.now();
  const draw=()=>{
-  const remaining=Number(ch.startAt)-Date.now();
+  const remaining=Number(ch.startAt)-(estimatedServerNow+Date.now()-observedAt);
   if(ch.phase==='countdown'&&remaining>0){el('challenge-clock').textContent=String(Math.max(1,Math.ceil(remaining/1000)));el('challenge-progress-status').textContent='Start wird vom Server gesteuert. Bitte bereithalten.';}
   else{el('challenge-clock').textContent='LOS!';el('challenge-progress-status').textContent='Countdown beendet · Online-Spielanbindung noch in Entwicklung.';if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}}
  };
- draw();if(ch.phase==='countdown'&&Number(ch.startAt)>Date.now())challengeClockTimer=setInterval(draw,80);
+ draw();if(ch.phase==='countdown'&&Number(ch.startAt)>estimatedServerNow)challengeClockTimer=setInterval(draw,80);
 }
 function renderChallengeSetup(showStage){
  let box=el('challenge-settings-panel');
