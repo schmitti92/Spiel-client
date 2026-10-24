@@ -16,7 +16,7 @@
   const board=document.createElement('section');board.className='arena-board human';
   const head=document.createElement('div');head.className='arena-board-header';
   const title=document.createElement('span');title.textContent=(state.players||[]).find(p=>p.seat===state.mySeat)?.name||'Dein Spielfeld';
-  const score=document.createElement('span');score.className='score-value';score.id='online-score';score.textContent='0 Treffer';
+  const score=document.createElement('span');score.className='score-value';score.id='online-score';score.textContent='0 Punkte';
   head.append(title,score);board.append(head);
   const grid=document.createElement('div');grid.className='grid';board.append(grid);wrap.append(board);
   holes=Array.from({length:9},(_,i)=>{
@@ -54,7 +54,7 @@
    }
   }
   const count=Number(state.hitCount)||0;
-  const score=$('online-score');if(score)score.textContent=count+' bestätigte Treffer';
+  const score=$('online-score');if(score)score.textContent=(Number(state.score)||0)+' Punkte · '+count+' Treffer';
   if(elapsed>=30000)$('status').textContent='🏁 Zeit abgelaufen – Server wertet aus';
  }
  window.addEventListener('message',e=>{
