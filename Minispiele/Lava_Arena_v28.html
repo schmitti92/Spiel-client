@@ -139,4 +139,4 @@ const jump=document.querySelector('#jump');jump.addEventListener('pointerdown',e
 // Beim Verlassen der Steuerungsfläche keine hängenden Eingaben zurücklassen.
 document.querySelector('#touch').addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(running)togglePause(true)});document.querySelector("#pause").style.display="none";render(0);
-})();document.querySelector('#count').addEventListener('change',()=>{const n=+document.querySelector('#count').value,h=document.querySelector('#humans');if(+h.value>n)h.value=String(n);for(const option of h.options)option.disabled=+option.value>n});</script><script src="../party-players.js"></script><script src="party-minigame-bridge.js"></script></body></html>
+})();document.querySelector('#count').addEventListener('change',()=>{const n=+document.querySelector('#count').value,h=document.querySelector('#humans');if(+h.value>n)h.value=String(n);for(const option of h.options)option.disabled=+option.value>n});</script><script src="../party-players.js?v=20261024-roster5"></script><script src="party-minigame-bridge.js"></script></body></html>
