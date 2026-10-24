@@ -207,8 +207,11 @@ function renderChallengeProgress(){
   }
   if(ch.phase==='finished'){
    const total=document.createElement('h3');total.textContent='Gesamtwertung';resultsBox.append(total);
-   const standings=(ch.totals||[]).slice().sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));
-   standings.forEach((entry,i)=>{const row=document.createElement('p');row.textContent=(['🏆','🥈','🥉'][i]||'🎮')+' '+entry.name+' · '+entry.points+' Punkte';resultsBox.append(row);});
+   const standings=(ch.totals||[]).slice().sort((a,b)=>b.points-a.points||a.seat-b.seat);
+   const winners=standings.filter(p=>p.points===standings[0]?.points);
+   if(winners.length){const banner=document.createElement('div');banner.style.cssText='padding:18px;margin:15px auto;border-radius:18px;background:linear-gradient(120deg,#ffe8a3,#ffc964);color:#42310d;font-size:clamp(19px,3vw,29px);font-weight:900;max-width:570px';banner.textContent=winners.length===1?'🏆 Sieger: '+winners[0].name:'🏆 Gemeinsamer Sieg: '+winners.map(p=>p.name).join(' & ');resultsBox.append(banner);}
+   const podium=document.createElement('div');podium.style.cssText='display:grid;gap:10px;max-width:570px;margin:12px auto';
+   standings.forEach((entry,i)=>{const row=document.createElement('div');const rank=standings.findIndex(p=>p.points===entry.points)+1;row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-radius:15px;background:'+(rank===1?'linear-gradient(120deg,#ffe3a0,#f8c65b);color:#3c2b0c':'#ffffff22;color:white')+';font-weight:750';const name=document.createElement('span');name.textContent=(rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'🎮')+' '+entry.name;const points=document.createElement('strong');points.textContent=entry.points+' Punkte';row.append(name,points);podium.append(row);});resultsBox.append(podium);
   }
  }
  const estimatedServerNow=Number(room.serverNow)||Date.now();
@@ -227,7 +230,7 @@ function renderChallengeProgress(){
    return;
   }
   if(isTime){
-   clockEl.textContent=stopped?'✓':remaining<=-3000?'❓':String(Math.max(0,Math.floor(-remaining/1000)));
+   clockEl.textContent=stopped?'✓':remaining<=-3000?'❓':String(Math.max(1,Math.floor(-remaining/1000)+1));
    statusEl.textContent=stopped?'✓ Stopp gespeichert – warte auf die Mitspieler.':'⏱️ Zeitgefühl läuft – drücke STOPP bei deiner geschätzten Zielzeit.';
    if(!stopped)el('challenge-time-stop').disabled=challengeStopBusy;
   }else if(isMath){
