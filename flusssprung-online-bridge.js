@@ -5,7 +5,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
  frame.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,lastMove=0,timeoutPending=false,serverOffset=0,lastRevision=null;
- let lastKey='',lastError=0,resultSent=false;
+ let lastKey='',lastError=0,resultSent=false,lastSnapshot='',lastSyncRevision=null;
  const timer=setInterval(()=>{if(alive)sync()},500);
  function sync(){
   if(!alive||!ready||!frame.contentWindow)return;
@@ -16,7 +16,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   const localSeat=players.findIndex(p=>p.seat===seat);
   if(localSeat<0)return;
   const key=ch.id+':'+ch.index;
-  if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;resultSent=false;}
+  if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;resultSent=false;lastSnapshot='';lastSyncRevision=null;}
   if(ch.phase!=='countdown'){
    if(!resultSent&&ch.results?.some(r=>r.game==='flusssprung'&&r.index===ch.index)){
     resultSent=true;
@@ -29,7 +29,6 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    frame.contentWindow.postMessage({type:'flusssprung:configure',challengeId:key,path:f.path,localSeat,seats:players.map(p=>({name:p.name}))},location.origin);
    return;
   }
-  frame.contentWindow.postMessage({type:'flusssprung:server-state',players:(f.players||[]).map(p=>({index:players.findIndex(x=>x.seat===p.seat),row:p.row,falls:p.falls,finishedAt:p.finishedAt}))},location.origin);
   const moves=f.moves||[];
   const total=Number.isInteger(f.moveCount)?f.moveCount:moves.length;
   const offset=Math.max(0,total-moves.length);
@@ -39,6 +38,11 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    if(!m)continue;
    const idx=players.findIndex(p=>p.seat===m.seat);
    if(idx>=0&&idx!==localSeat)frame.contentWindow.postMessage({type:'flusssprung:remote-jump',seat:idx,col:m.col},location.origin);
+  }
+  const snapshot=JSON.stringify((f.players||[]).map(p=>({index:players.findIndex(x=>x.seat===p.seat),row:p.row,falls:p.falls,finishedAt:p.finishedAt})));
+  if(snapshot!==lastSnapshot||room.revision!==lastSyncRevision){
+   lastSnapshot=snapshot;lastSyncRevision=room.revision;
+   frame.contentWindow.postMessage({type:'flusssprung:server-state',players:JSON.parse(snapshot)},location.origin);
   }
   if(room.revision!==lastRevision){lastRevision=room.revision;serverOffset=(Number(room.serverNow)||Date.now())-Date.now();}
   const serverNow=Date.now()+serverOffset;
