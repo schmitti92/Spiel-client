@@ -24,9 +24,12 @@
    max-height:clamp(76px,17vh,150px)!important;
  }
  body.is-playing[data-players="3"] .table-area.three-player-layout{
-   grid-template-columns:minmax(0,.72fr) minmax(0,.61fr) minmax(0,1.72fr)!important;
+   grid-template-columns:minmax(0,1.85fr) minmax(0,.56fr) minmax(0,.68fr)!important;
    gap:clamp(4px,.55vw,9px)!important;
  }
+ body.is-playing[data-players="3"] .three-player-layout .own-seat{min-width:0!important;width:100%!important}
+ body.is-playing[data-players="3"] .three-player-layout .own-seat .player{width:100%!important;max-width:100%!important}
+ body.is-playing[data-players="3"] .three-player-layout .own-seat .grid{--card-w:clamp(60px,7vw,106px)!important}
  body.is-playing[data-players="3"] .three-player-layout .center-table .handbox{
    min-height:48px!important;padding:4px!important;margin-bottom:4px!important;
  }
