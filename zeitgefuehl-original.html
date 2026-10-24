@@ -17,7 +17,24 @@ const fmt=ms=>(ms/1000).toFixed(2).replace('.',',')+' s';
 let onlineMode=false,onlineSeat=null,onlineChallenge=null,onlineTimer=0,onlineOffset=0,onlineStartAt=0,onlineStopped=false;
 function onlineSync(data){
  if(!data||data.type!=='zeitgefuehl:state')return;
- onlineMode=true;onlineChallenge=data.challengeId;onlineSeat=data.mySeat;onlineOffset=Number(data.serverNow)-Date.now();onlineStartAt=Number(data.startAt);onlineStopped=!!data.stopped;
+ const sameRound=onlineMode&&onlineChallenge===data.challengeId&&onlineStartAt===Number(data.startAt);
+ onlineMode=true;onlineChallenge=data.challengeId;onlineSeat=data.mySeat;
+ const observedOffset=Number(data.serverNow)-Date.now();
+ onlineOffset=sameRound?onlineOffset*0.8+observedOffset*0.2:observedOffset;
+ onlineStartAt=Number(data.startAt);onlineStopped=!!data.stopped;
+ if(sameRound){
+  (data.players||[]).forEach(p=>{
+   const idx=entries.findIndex(e=>e.id===p.seat);
+   if(idx<0)return;
+   entries[idx].done=!!p.stopped;
+   const card=$('p'+idx);if(!card)return;
+   const button=card.querySelector('button');
+   if(button)button.disabled=p.seat!==onlineSeat||onlineStopped||phase!=='running';
+   const status=card.querySelector('.status');
+   if(status)status.textContent=p.stopped?'✓ Gestoppt':p.seat===onlineSeat?'Bereit zum Stoppen':'Spielt mit';
+  });
+  return;
+ }
  goal=Number(data.targetSeconds)*1000;
  if(!Number.isFinite(goal)||goal<10000||goal>20000)return;
  if(onlineTimer)clearInterval(onlineTimer);
@@ -42,6 +59,7 @@ function onlineSync(data){
   const elapsed=Date.now()+onlineOffset-onlineStartAt;
   if(elapsed<0){phase='countdown';digits.textContent=String(Math.max(1,Math.ceil(-elapsed/1000)));hint.textContent='Gemeinsamer Start in '+Math.ceil(-elapsed/1000);return;}
   phase='running';
+  const ownButton=entries.findIndex(e=>e.id===onlineSeat);if(ownButton>=0){const btn=$('p'+ownButton)?.querySelector('button');if(btn)btn.disabled=onlineStopped;}
   if(elapsed<3000){digits.textContent=(elapsed/1000).toFixed(2).replace('.',',');clock.classList.remove('hidden-time');scene.className='scene';}
   else{digits.textContent='?';clock.classList.add('hidden-time');scene.className='scene night';}
   hint.textContent=onlineStopped?'✓ Stopp gespeichert – warte auf Mitspieler':'Stoppe bei '+fmt(goal)+'!';
