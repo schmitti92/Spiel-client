@@ -57,7 +57,11 @@ function pick(i){if(onlineSession){onlinePick(i);return}if(phase!=='guess'||play
  players=(d.players||[]).slice(0,4).map(p=>({name:String(p.name||'Spieler').slice(0,24),bot:false,score:Number(p.score)||0}));
  round=d.round;
  $('setup').classList.add('hide');$('start').classList.add('hide');$('restart').classList.add('hide');$('next').classList.add('hide');
- beginRound();
+ const serverOffset=Number(d.serverNow)-Date.now();
+ const delay=Math.max(0,Number(d.startAt)-(Date.now()+serverOffset));
+ const currentToken=token;
+ msg('🎩 Bereit? Alle Spieler starten gemeinsam …');
+ setTimeout(()=>{if(token===currentToken&&onlineSession?.challengeId===d.challengeId&&onlineSession.round===d.round)beginRound()},Math.min(delay,10000));
 });
 $('playerCount').onchange=()=>{const c=+$('playerCount').value;for(const o of $('humanCount').options)o.disabled=+o.value>c;if(+$('humanCount').value>c)$('humanCount').value=c};$('start').onclick=start;$('restart').onclick=start;$('next').onclick=()=>{if(phase==='reveal'&&round<3){round++;beginRound()}};window.addEventListener('resize',()=>{if(!round||!cups.length)return;if(mixing){resizePending=true;return;}cups.forEach((c,i)=>place(c,i));if(phase==='show')ballAt(secret);if(phase==='reveal'||phase==='done')ballAt(positions.indexOf(secret))});window.addEventListener('keydown',e=>{if(phase!=='guess'||players[turn]?.bot||e.repeat)return;const i=Number(e.key)-1;if(i>=0&&i<cups.length)pick(i)});window.HuetchenChallenge={startWithPlayers:(entries)=>{if(!Array.isArray(entries)||entries.length<2||entries.length>4)throw Error('2–4 Spieler erforderlich');++token;players=entries.map((p,i)=>({name:String(p.name||'Spieler '+(i+1)).slice(0,24),bot:!!p.bot,score:0}));round=1;$('setup').classList.add('hide');$('start').classList.add('hide');$('restart').classList.add('hide');beginRound()},getResult:()=>phase==='done'?{game:'huetchen-challenge',rounds:3,players:players.map(p=>({name:p.name,score:p.score,bot:p.bot})),winnerIndices:players.map((p,i)=>({p,i})).filter(x=>x.p.score===Math.max(...players.map(q=>q.score))).map(x=>x.i)}:null};})();
 </script></body></html>
