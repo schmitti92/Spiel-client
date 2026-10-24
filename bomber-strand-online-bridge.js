@@ -12,7 +12,7 @@ export function mountBomberOriginal({container,getRoom,request,acceptRoom,onErro
   const mine=room.players.find(p=>p.me)?.seat,localSeat=seats.indexOf(mine);
   if(localSeat<0)return;
   if(!configured){frame.contentWindow.postMessage({type:'bomber:configure',challengeId:ch.id,localSeat,roster:seats.map((seat,id)=>({id,seat,name:room.players.find(p=>p.seat===seat)?.name||'Spieler',bot:false}))},location.origin);return;}
-  if(ch.bomber)frame.contentWindow.postMessage({type:'bomber:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.bomber.players.map((p,i)=>({...p,id:i})),bombs:ch.bomber.bombs,blasts:ch.bomber.blasts,destroyed:ch.bomber.destroyed},location.origin);
+  if(ch.bomber)frame.contentWindow.postMessage({type:'bomber:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.bomber.players.map((p,i)=>({...p,id:i})),bombs:ch.bomber.bombs,blasts:ch.bomber.blasts,destroyed:ch.bomber.destroyed,serverNow:room.serverNow},location.origin);
   if(ch.phase==='countdown'&&Date.now()+offset>ch.startAt+120000&&!lastTimeout){lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-bomber-timeout','POST',{challengeId:ch.id}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(e=>{lastTimeout=false;onError(e)});}
  }
  async function onMessage(e){
