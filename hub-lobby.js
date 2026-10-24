@@ -468,6 +468,22 @@ function renderChallengeProgress(){
  if(ch.phase==='results'||ch.phase==='finished'){
   const result=ch.results[ch.results.length-1];
   const title=document.createElement('h3');title.textContent=ch.phase==='finished'?'🏆 Finale Siegerehrung':'🎉 Minispiel abgeschlossen';resultsBox.append(title);
+  if(result?.game==='preisjaeger'&&Array.isArray(result.rounds)){
+   const rounds=document.createElement('div');rounds.style.cssText='display:grid;gap:12px;max-width:680px;margin:15px auto';
+   for(const round of result.rounds){
+    const section=document.createElement('section');section.style.cssText='padding:16px;border-radius:16px;background:#071d33;border:1px solid #d4b56b;text-align:left';
+    const heading=document.createElement('h4');heading.style.cssText='margin:0 0 10px;color:#ffd27b';heading.textContent='🛒 Frage '+round.round+' · '+round.product.name;section.append(heading);
+    const price=document.createElement('strong');price.textContent='💰 Richtiger Preis: '+Number(round.product.price).toLocaleString('de-DE',{style:'currency',currency:'EUR'});section.append(price);
+    for(const entry of round.entries){
+     const line=document.createElement('p');line.style.cssText='display:flex;justify-content:space-between;gap:10px;margin:9px 0 0';
+     const name=document.createElement('span');name.textContent=entry.name;
+     const value=document.createElement('span');value.textContent=(entry.guess?Number(entry.guess).toLocaleString('de-DE',{style:'currency',currency:'EUR'}):'Keine Antwort')+' · +'+entry.challengePoints+' Punkte';
+     line.append(name,value);section.append(line);
+    }
+    rounds.append(section);
+   }
+   resultsBox.append(rounds);
+  }
   if(result?.game==='recheninsel'&&Array.isArray(result.rounds)){
    const rounds=document.createElement('div');rounds.style.cssText='display:grid;gap:10px;max-width:650px;margin:14px auto';
    result.rounds.forEach(r=>{
