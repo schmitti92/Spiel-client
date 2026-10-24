@@ -5,7 +5,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
  frame.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,lastMove=0,timeoutPending=false,serverOffset=0,lastRevision=null;
- let lastKey='',lastError=0;
+ let lastKey='',lastError=0,resultSent=false;
  const timer=setInterval(()=>{if(alive)sync()},500);
  function sync(){
   if(!alive||!ready||!frame.contentWindow)return;
@@ -16,7 +16,15 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   const localSeat=players.findIndex(p=>p.seat===seat);
   if(localSeat<0)return;
   const key=ch.id+':'+ch.index;
-  if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;}
+  if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;resultSent=false;}
+  if(ch.phase!=='countdown'){
+   if(!resultSent&&ch.results?.some(r=>r.game==='flusssprung'&&r.index===ch.index)){
+    resultSent=true;
+    const result=ch.results.find(r=>r.game==='flusssprung'&&r.index===ch.index);
+    frame.contentWindow.postMessage({type:'flusssprung:result',standings:result.standings},location.origin);
+   }
+   return;
+  }
   if(!configured){
    frame.contentWindow.postMessage({type:'flusssprung:configure',challengeId:key,path:f.path,localSeat,seats:players.map(p=>({name:p.name}))},location.origin);
    return;
