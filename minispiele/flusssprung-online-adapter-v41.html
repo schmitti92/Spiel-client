@@ -403,6 +403,7 @@ window.addEventListener('message',event=>{
   const count=document.getElementById('count');count.value=String(seats.length);
   count.dispatchEvent(new Event('change'));
   seats.forEach((seat,i)=>{const type=document.getElementById('type'+i);if(type)type.value='human'});
+  newGame();players.forEach((p,i)=>{p.name=seats[i].name;p.bot=false});focus=m.localSeat;hud();updateChoice();
   window.parent.postMessage({type:'flusssprung:configured'},event.origin);
  }
  if(m.type==='flusssprung:remote-jump'&&window.FlusssprungOnlineConfig){
