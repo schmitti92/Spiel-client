@@ -49,6 +49,13 @@ header{background:linear-gradient(100deg,#052638ed,#104a57ee);box-shadow:0 4px 2
  .touch .bombBtn{width:clamp(80px,19dvh,112px)!important;height:clamp(80px,19dvh,112px)!important}
 }
 @media (orientation:portrait){.touch{justify-content:center!important;gap:14px!important}.touch .joySettings{display:none}}
+
+/* V24: bomb action stays on the right edge, joystick on the left. */
+.touch{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;width:100%!important;gap:12px!important}
+.touch #joystick{order:0!important;flex-shrink:0!important}
+.touch .joySettings{order:1!important;flex:1 1 auto!important;min-width:0!important}
+.touch #touchBomb{order:2!important;margin-left:auto!important;flex-shrink:0!important}
+@media(max-width:680px){.touch .joySettings{display:none!important}}
 </style><style>
 .joystick{position:relative;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,#3286a488,#0c354bbf);border:3px solid #a8f3ff88;box-shadow:inset 0 0 25px #041a2a,0 5px 20px #0006;touch-action:none;user-select:none;flex-shrink:0}
 .stick{position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#a4f6ff,#187b9e 70%);border:3px solid #d4faff;box-shadow:0 5px 15px #0009;pointer-events:none;will-change:transform}
