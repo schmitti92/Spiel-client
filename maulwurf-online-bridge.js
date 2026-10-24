@@ -8,14 +8,15 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';
  iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);
- let active=true,lastKey='',busy=false,timeoutPending=false,timeoutKey='';
- const expiryTimer=setInterval(()=>{if(!active)return;const r=getRoom(),ch=r?.match?.challenge;if(ch?.order?.[ch.index]!=='maulwurf-arena'||ch.phase!=='countdown')return;const now=Date.now()+((Number(r.serverNow)||Date.now())-(Number(r.clientReceivedAt)||Date.now()));if(now>=ch.startAt+30000)sync();},300);
+ let active=true,lastKey='',busy=false,timeoutPending=false,timeoutKey='',lastRevision=null,serverOffset=0;
+ function estimatedServerNow(room){if(room?.revision!==lastRevision){lastRevision=room?.revision;serverOffset=(Number(room?.serverNow)||Date.now())-Date.now();}return Date.now()+serverOffset;}
+ const expiryTimer=setInterval(()=>{if(!active)return;const r=getRoom(),ch=r?.match?.challenge;if(ch?.order?.[ch.index]!=='maulwurf-arena'||ch.phase!=='countdown')return;const now=estimatedServerNow(r);if(now>=ch.startAt+30000)sync();},300);
  function sync(){
   if(!active||!iframe.contentWindow)return;
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='maulwurf-arena'||!ch.maulwurf)return;
   const seat=room.players?.find(p=>p.me)?.seat;
-  const estimatedNow=Date.now()+((Number(room.serverNow)||Date.now())-(Number(room.clientReceivedAt)||Date.now()));
+  const estimatedNow=estimatedServerNow(room);
   const roundKey=ch.id+':'+ch.index+':'+ch.startAt;
   if(roundKey!==timeoutKey){timeoutKey=roundKey;timeoutPending=false;}
   if(ch.phase==='countdown'&&estimatedNow>=ch.startAt+30000&&!timeoutPending){
