@@ -3351,6 +3351,30 @@ if(actionEffectsState){
     }
   }
 
+  // Auto-resume only while the authoritative server snapshot is paused.
+  // The server still decides whether resuming is permitted.
+  let autoResumeTimer = null;
+  function stopAutoResume(){
+    if(autoResumeTimer !== null){ clearInterval(autoResumeTimer); autoResumeTimer = null; }
+  }
+  function syncAutoResume(){
+    const eligible = netMode === "host" && !!roomCode &&
+      !!ws && ws.readyState === WebSocket.OPEN &&
+      !!state && state.started && state.paused === true &&
+      !state.finished && state.phase !== "game_over";
+    if(!eligible){ stopAutoResume(); return; }
+    if(autoResumeTimer !== null) return;
+    const attempt = () => {
+      if(netMode !== "host" || !ws || ws.readyState !== WebSocket.OPEN ||
+         !state || !state.paused || state.finished || state.phase === "game_over"){
+        stopAutoResume(); return;
+      }
+      wsSend({type:"resume", ts:Date.now()});
+    };
+    // Wait for the server's join/snapshot handshake before the first request.
+    autoResumeTimer = setInterval(attempt, 2000);
+  }
+
   function scheduleReconnect(){
     if(reconnectTimer) return;
     reconnectAttempt++;
@@ -3532,6 +3556,7 @@ try{
 
       if(type==="room_update"){
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        syncAutoResume();
         try{
           const jc = Number(msg.jokerStartCount);
           if(Number.isInteger(jc) && jc >= 1 && jc <= 5){
@@ -3621,6 +3646,7 @@ try{
         if(msg.jokerCanceled) v104OnJokerCanceled(msg.jokerCanceled);
         updateEmojiUI();
         if(Array.isArray(msg.players)) setNetPlayers(msg.players);
+        syncAutoResume();
         return;
       }
       if(type==="roll"){
@@ -3651,6 +3677,7 @@ try{
       }
 
       if(type==="game_over"){
+        stopAutoResume();
         const wc = (msg.winnerColor ? String(msg.winnerColor) : null);
         if(state){
           state.phase = 'game_over';
@@ -3712,6 +3739,7 @@ try{
 
     ws.onerror = () => { setNetStatus("Fehler – Reconnect…", false); showNetBanner("Verbindungsfehler – Reconnect läuft…"); };
     ws.onclose = () => {
+      stopAutoResume();
       updateEmojiUI();
       try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
       try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
@@ -3724,6 +3752,7 @@ try{
   }
 
   function disconnectWS(){
+    stopAutoResume();
     stopReconnect();
     try{ if(_netWatchdogIv) clearInterval(_netWatchdogIv); }catch(_e){}
     try{ if(_netPingIv) clearInterval(_netPingIv); }catch(_e){}
