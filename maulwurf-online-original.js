@@ -69,7 +69,9 @@
   else $('status').textContent='🔨 Online – alle spielen gleichzeitig!';
  }
  window.addEventListener('message',e=>{
-  if(e.origin!==location.origin||e.source!==window.parent||e.data?.type!=='maulwurf:state')return;
+  if(e.origin!==location.origin||e.source!==window.parent)return;
+  if(e.data?.type==='maulwurf:hit-rejected'){if(state?.challengeId===e.data.challengeId&&!(state.hitTicks||[]).includes(e.data.tick)){sent.delete(e.data.tick);const h=holes[e.data.hole];if(h)h.className='hole';}return;}
+  if(e.data?.type!=='maulwurf:state')return;
   const previous=state;
   state=e.data;
   if(!previous||previous.challengeId!==state.challengeId||previous.startAt!==state.startAt)offset=(Number(state.serverNow)||Date.now())-Date.now();
