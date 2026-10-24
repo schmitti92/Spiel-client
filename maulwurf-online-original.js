@@ -53,6 +53,15 @@
     const e=state.events?.[tick];if(e&&holes[e.hole]&&!sent.has(tick)&&!(state.hitTicks||[]).includes(tick))holes[e.hole].className='hole up '+(e.kind==='normal'?'':e.kind);
    }
   }
+  const scoreboard=$('scores');
+  if(scoreboard){
+   const opponents=Array.isArray(state.opponents)?state.opponents:[];
+   if(scoreboard.children.length!==opponents.length){
+    scoreboard.replaceChildren();
+    for(const p of opponents){const card=document.createElement('div');card.className='score';const label=document.createElement('span');label.textContent=p.name;const value=document.createElement('strong');card.append(label,value);scoreboard.append(card);}
+   }
+   opponents.forEach((p,i)=>{const card=scoreboard.children[i];if(!card)return;card.classList.toggle('active',p.seat===state.mySeat);card.querySelector('strong').textContent=p.score+' Punkte';});
+  }
   const count=Number(state.hitCount)||0;
   const score=$('online-score');if(score)score.textContent=(Number(state.score)||0)+' Punkte · '+count+' Treffer';
   if(elapsed>=30000)$('status').textContent='🏁 Zeit abgelaufen – Server wertet aus';
