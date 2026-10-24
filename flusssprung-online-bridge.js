@@ -61,8 +61,15 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   if(!ch||ch.phase!=='countdown'||ch.order?.[ch.index]!=='flusssprung')return;
   const {row,col}=e.data;
   if(!Number.isInteger(row)||row<0||row>=5||!Number.isInteger(col)||col<0||col>=6)return;
-  try{const r=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-flusssprung-jump','POST',{challengeId:ch.id,row,col});if(alive&&r?.room)acceptRoom(r.room)}
-  catch(err){onError?.(err)}
+  try{
+   const r=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-flusssprung-jump','POST',{challengeId:ch.id,row,col});
+   if(!alive||getRoom()?.match?.challenge?.id!==ch.id)return;
+   if(r?.room)acceptRoom(r.room);
+   frame.contentWindow?.postMessage({type:'flusssprung:jump-accepted',col},location.origin);
+  }catch(err){
+   if(alive)frame.contentWindow?.postMessage({type:'flusssprung:jump-rejected'},location.origin);
+   if(Date.now()-lastError>12000){lastError=Date.now();onError?.(err)}
+  }
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;sync()});
