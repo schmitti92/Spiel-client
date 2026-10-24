@@ -10,12 +10,12 @@ export function mountHuetchenOriginal({container,getRoom,request,acceptRoom,onEr
   const seat=room.players?.find(p=>p.me)?.seat;
   const key=[ch.id,ch.index,h.round,ch.startAt,seat,(h.answered||[]).join(',')].join(':');
   if(key===lastKey)return;lastKey=key;
-  iframe.contentWindow.postMessage({type:'huetchen:state',challengeId:ch.id,round:h.round,secret:h.secret,swaps:h.swaps,submitted:h.answered?.includes(seat)||false,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
+  iframe.contentWindow.postMessage({type:'huetchen:state',challengeId:ch.id,round:h.round,secret:h.secret,swaps:h.swaps,submitted:h.answered?.includes(seat)||false,startAt:ch.startAt,serverNow:room.serverNow,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
  }
  async function onMessage(event){
   if(!active||busy||event.source!==iframe.contentWindow||event.origin!==location.origin||event.data?.type!=='huetchen:answer')return;
   const room=getRoom(),ch=room?.match?.challenge;
-  if(ch?.order?.[ch.index]!=='huetchen-challenge'||ch.id!==event.data.challengeId||ch.huetchen?.round!==event.data.round)return;
+  if(ch?.order?.[ch.index]!=='huetchen-challenge'||ch.phase!=='countdown'||ch.id!==event.data.challengeId||ch.huetchen?.round!==event.data.round)return;
   const slot=event.data.slot;if(!Number.isInteger(slot)||slot<0||slot>=ch.huetchen.round+2)return;
   busy=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-huetchen-answer','POST',{challengeId:ch.id,round:event.data.round,slot});acceptRoom(response.room);}
   catch(error){onError?.(error);lastKey='';sync()}finally{busy=false}
