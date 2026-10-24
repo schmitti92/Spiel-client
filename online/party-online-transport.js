@@ -33,6 +33,7 @@ export class PartyOnlineTransport {
     const version=room.revision==null?NaN:Number(room.revision);
     if(Number.isFinite(version)&&version<this.sequence)return false;
     if(Number.isFinite(version))this.sequence=version;
+    if(Number.isFinite(version)&&version===this.sequence&&this.room)return false;
     this.room=room;this.onRoom(room);return true;
   }
   async action(endpoint,body={}) {
@@ -43,17 +44,23 @@ export class PartyOnlineTransport {
     return result;
   }
   watch(intervalMs=1500) {
+    if(!Number.isFinite(intervalMs)||intervalMs<250)throw new RangeError('INVALID_POLL_INTERVAL');
     this.stop();
     const controller=new AbortController();this.controller=controller;
     const loop=async()=>{
       while(!controller.signal.aborted){
         try{if(typeof document==='undefined'||!document.hidden)await this.refresh();}
         catch(e){if(!controller.signal.aborted)this.onError(e);}
-        await new Promise(resolve=>{const timer=setTimeout(resolve,intervalMs);controller.signal.addEventListener('abort',()=>{clearTimeout(timer);resolve();},{once:true});});
+        await new Promise(resolve=>{
+          const finish=()=>{clearTimeout(timer);controller.signal.removeEventListener('abort',finish);resolve();};
+          const timer=setTimeout(finish,intervalMs);
+          controller.signal.addEventListener('abort',finish,{once:true});
+          if(controller.signal.aborted)finish();
+        });
       }
     };
-    void loop();return ()=>this.stop();
+    void loop();return ()=>{controller.abort();if(this.controller===controller)this.controller=null;};
   }
   stop(){this.controller?.abort();this.controller=null;}
-  destroy(){this.stop();this.room=null;this.code=null;this.sequence=0;}
+  destroy(){this.stop();this.room=null;this.code=null;this.sequence=-1;}
 }
