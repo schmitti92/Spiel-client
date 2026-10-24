@@ -163,7 +163,7 @@ function resolveExplosions(initial){
    if(hidden.has(k)){pickups.set(k,hidden.get(k));hidden.delete(k)}
   }
  }
- for(const p of players)if(p.alive&&hit.has(key(Math.floor(p.x),Math.floor(p.y))))p.alive=false;
+ for(const p of players)if(p.alive&&hit.has(key(Math.floor(p.x),Math.floor(p.y)))){p.alive=false;p.eliminatedAt=eliminationClock}
  updateUI();
 }
 function explode(b){resolveExplosions(b)}
