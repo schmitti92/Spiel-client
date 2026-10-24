@@ -16,7 +16,7 @@ function fit(){
    const width=window.visualViewport?.width||window.innerWidth;
    const naturalH=Math.max(root.scrollHeight,root.getBoundingClientRect().height);
    const naturalW=Math.max(root.scrollWidth,root.getBoundingClientRect().width);
-   const reserve=8;
+   const reserve=3;
    let scale=Math.min(1,(viewport-reserve)/Math.max(1,naturalH),(width-reserve)/Math.max(1,naturalW));
    scale=Math.max(.55,Math.floor(scale*1000)/1000);
    root.style.zoom=String(scale);
@@ -27,6 +27,15 @@ function fit(){
     if(overflow<=2)break;
     scale=Math.max(.5,scale*Math.max(.85,(viewport-reserve)/(actual.height+Math.max(0,overflow))));
     root.style.zoom=String(scale);
+   }
+   // Use remaining vertical space when the first pass was overly conservative.
+   const finalBox=root.getBoundingClientRect();
+   const free=Math.max(0,viewport-3-finalBox.bottom);
+   if(free>14&&scale<1&&finalBox.height>0){
+     const boost=Math.min(1/scale,1+free/Math.max(1,finalBox.height)*.65);
+     scale=Math.min(1,scale*boost);
+     root.style.zoom=String(scale);
+     if(root.getBoundingClientRect().bottom>viewport-2){scale*=Math.max(.9,(viewport-3)/root.getBoundingClientRect().bottom);root.style.zoom=String(scale);}
    }
    last=scale;
    document.documentElement.style.overflow='hidden';
