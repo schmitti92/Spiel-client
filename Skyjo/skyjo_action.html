@@ -45,5 +45,18 @@
 <script src="skyjo_action-loader.js?v=7"></script>
 <script src="skyjo_two_test_players.js?v=7" defer></script>
 <script src="../profile-core.js" defer></script>
+<style>
+/* Sichtbare Zuganzeige, ohne Eingriff in SKYJO-Spielregeln */
+.sky-turn-indicator{position:fixed;left:50%;top:9px;transform:translateX(-50%);z-index:90;max-width:min(420px,62vw);pointer-events:none;background:rgba(10,35,40,.95);color:white;border:2px solid #ffd770;border-radius:16px;padding:9px 18px;text-align:center;box-shadow:0 6px 25px #0008;font:700 clamp(13px,1.8vw,18px) system-ui}
+.sky-turn-indicator.mine{border-color:#4df3a0;background:#07553d;box-shadow:0 0 22px #3af19c9c}
+.sky-turn-indicator[hidden]{display:none}
+.skyjo-update-notice{position:fixed;inset:auto 12px 16px;z-index:9999;max-width:500px;margin:auto;background:#122b34;color:#fff;border:2px solid #ffcf73;border-radius:18px;box-shadow:0 12px 35px #000b;padding:17px;font:15px system-ui}
+.skyjo-update-notice[hidden]{display:none}
+.skyjo-update-notice strong{font-size:19px;display:block;margin-bottom:5px}
+.skyjo-update-notice button{margin-top:12px;background:#f6ce67;color:#182128;border:0;border-radius:10px;padding:12px 17px;font-weight:800;cursor:pointer}
+.skyjo-update-notice .dismiss{background:transparent;color:white;border:1px solid #74858b;margin-left:8px}
+@media(max-width:700px){.sky-turn-indicator{top:4px;max-width:54vw;padding:6px 10px;font-size:12px}}
+</style>
+<script src="skyjo_turn_and_update.js?v=1" defer></script>
 </body>
 </html>
