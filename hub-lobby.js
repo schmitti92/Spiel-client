@@ -151,7 +151,7 @@ function renderChallengeSetup(showStage){
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
   el('challenge-save').addEventListener('click',async()=>{
    const button=el('challenge-save');button.disabled=true;
-   try{await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:Number(el('challenge-count').value)});el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';await loadRoom();}
+   try{await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:Number(el('challenge-count').value)});el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(room.code));acceptRoom(updated.room);}
    catch(e){el('challenge-feedback').textContent='Speichern fehlgeschlagen: '+e.message;}
    finally{button.disabled=false;}
   });
