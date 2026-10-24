@@ -196,6 +196,20 @@ const CHALLENGE_STAGE_CSS=`
 function ensureChallengeStageStyle(){if(document.getElementById('challenge-stage-style'))return;const style=document.createElement('style');style.id='challenge-stage-style';style.textContent=CHALLENGE_STAGE_CSS;document.head.append(style);}
 let challengeClockTimer=null;
 let challengeStopBusy=false;
+let zeitgefuehlOriginalBridge=null,zeitgefuehlOriginalLoading=false,zeitgefuehlOriginalFailed=false;
+async function ensureZeitgefuehlOriginalBridge(){
+ if(zeitgefuehlOriginalBridge||zeitgefuehlOriginalLoading||zeitgefuehlOriginalFailed)return;
+ zeitgefuehlOriginalLoading=true;
+ try{
+  const {mountZeitgefuehlOriginal}=await import('./zeitgefuehl-online-bridge.js?v=1');
+  const container=el('challenge-original-frame');
+  if(!container)return;
+  recheninselOriginalBridge?.destroy();recheninselOriginalBridge=null;
+  zeitgefuehlOriginalBridge=mountZeitgefuehlOriginal({container,getRoom:()=>room,request,acceptRoom,onError:showError});
+  zeitgefuehlOriginalBridge.sync();
+ }catch(error){zeitgefuehlOriginalFailed=true;showError(error);}
+ finally{zeitgefuehlOriginalLoading=false;}
+}
 let recheninselOriginalBridge=null;
 let recheninselOriginalLoading=false;
 let recheninselOriginalFailed=false;
@@ -205,6 +219,7 @@ async function ensureRecheninselOriginalBridge(){
  try{
   const {mountRecheninselOriginal}=await import('./recheninsel-online-bridge.js?v=2');
   const target=el('challenge-original-frame');
+  zeitgefuehlOriginalBridge?.destroy();zeitgefuehlOriginalBridge=null;
   if(!target)return;
   recheninselOriginalBridge=mountRecheninselOriginal({
    container:target,src:'recheninsel-original-online.html',
@@ -246,9 +261,12 @@ function renderChallengeProgress(){
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
  el('challenge-next').hidden=!room.host||ch.phase!=='results';
  const isMath=ch.order[index]==='recheninsel';
- const originalActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
+ const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
+ const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
+ const originalActive=originalMathActive||originalTimeActive;
  el('challenge-original-frame').hidden=!originalActive;
- if(originalActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
+ if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
+ if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
 
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
@@ -292,7 +310,7 @@ function renderChallengeProgress(){
  const mySeat=room.players.find(p=>p.me)?.seat;
  const stopped=(ch.stopped||[]).includes(mySeat);
  el('challenge-time-target').textContent=isTime?'🎯 Ziel: '+ch.targetSeconds+' Sekunden · Die ersten drei Sekunden werden angezeigt. Danach schätze die Zeit!':'';
- el('challenge-time-stop').hidden=!isTime||ch.phase!=='countdown'||stopped;
+ el('challenge-time-stop').hidden=!isTime||ch.phase!=='countdown'||stopped||originalTimeActive;
  el('challenge-time-stop').disabled=challengeStopBusy||Number(ch.startAt)>Number(room.serverNow)||stopped;
  const resultsBox=el('challenge-results');
  resultsBox.replaceChildren();
