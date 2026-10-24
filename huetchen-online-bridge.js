@@ -16,7 +16,7 @@ export function mountHuetchenOriginal({container,getRoom,request,acceptRoom,onEr
    const token=ch.id+':'+ch.index+':'+h.round;
    if(timeoutKey!==token){timeoutKey=token;
     request('/rooms/'+encodeURIComponent(room.code)+'/challenge-huetchen-timeout','POST',{challengeId:ch.id,round:h.round})
-     .then(response=>{if(active)acceptRoom(response.room)})
+     .then(response=>{if(active&&getRoom()?.code===room.code)acceptRoom(response.room)})
      .catch(error=>{timeoutKey='';onError?.(error)});
    }
   }
@@ -30,7 +30,7 @@ export function mountHuetchenOriginal({container,getRoom,request,acceptRoom,onEr
   const room=getRoom(),ch=room?.match?.challenge;
   if(ch?.order?.[ch.index]!=='huetchen-challenge'||ch.phase!=='countdown'||ch.id!==event.data.challengeId||ch.huetchen?.round!==event.data.round)return;
   const slot=event.data.slot;if(!Number.isInteger(slot)||slot<0||slot>=ch.huetchen.round+2)return;
-  busy=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-huetchen-answer','POST',{challengeId:ch.id,round:event.data.round,slot});acceptRoom(response.room);}
+  busy=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-huetchen-answer','POST',{challengeId:ch.id,round:event.data.round,slot});if(active&&getRoom()?.code===room.code)acceptRoom(response.room);}
   catch(error){onError?.(error);lastKey='';sync()}finally{busy=false}
  }
  iframe.addEventListener('load',()=>{ready=true;lastKey='';sync()});window.addEventListener('message',onMessage);
