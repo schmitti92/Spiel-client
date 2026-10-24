@@ -145,13 +145,33 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
 function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
 const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
+const CHALLENGE_STAGE_CSS=`
+#challenge-progress:not(.hidden){position:fixed!important;inset:0!important;z-index:10020!important;margin:0!important;border-radius:0!important;overflow:auto!important;overscroll-behavior:contain;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.4vh,16px);padding:clamp(20px,4vh,46px) clamp(18px,5vw,70px)!important;box-sizing:border-box;background:radial-gradient(ellipse at 50% 105%,#d5b575 0%,#b68c55 12%,transparent 38%),radial-gradient(ellipse at 7% 88%,#163f30 0%,#163f30 14%,transparent 31%),radial-gradient(ellipse at 96% 82%,#124f3a 0%,#124f3a 12%,transparent 30%),linear-gradient(180deg,#051b30 0%,#0b4765 45%,#1b8290 75%,#174f56 100%)!important;color:#fff!important;text-shadow:0 2px 12px #001b2e88;box-shadow:none!important}
+#challenge-progress::before{content:"🏝️";position:fixed;left:2vw;bottom:3vh;font-size:clamp(75px,16vw,220px);opacity:.72;pointer-events:none;filter:drop-shadow(0 12px 20px #001b2b)}
+#challenge-progress::after{content:"⛵";position:fixed;right:5vw;bottom:12vh;font-size:clamp(58px,10vw,135px);opacity:.72;pointer-events:none;filter:drop-shadow(0 12px 20px #001b2b)}
+#challenge-progress>*{position:relative;z-index:1;max-width:min(92vw,900px);margin:0!important}
+#challenge-progress>h2{font-size:clamp(25px,4.5vw,52px);letter-spacing:.025em;color:#ffe3a1;filter:drop-shadow(0 4px 12px #0008)}
+#challenge-progress-name{font-size:clamp(17px,2.5vw,26px);font-weight:750;color:#ffebc4}
+#challenge-progress-status{font-size:clamp(17px,2.3vw,24px);font-weight:650}
+#challenge-progress-order{background:#071c2a99;padding:8px 16px;border-radius:30px}
+#challenge-math:not([hidden]){display:flex;flex-direction:column;align-items:center;gap:clamp(12px,2vh,24px);width:min(92vw,780px);padding:clamp(20px,4vw,42px);border:2px solid #f6d99a7a;border-radius:28px;background:linear-gradient(145deg,#132e3cdd,#091d2cdd);box-shadow:0 22px 65px #00152288, inset 0 1px #ffffff30}
+#challenge-math-question{font-size:clamp(42px,8vw,96px)!important;line-height:1.1;margin:0!important;letter-spacing:.02em}
+#challenge-math-input{width:min(72vw,280px)!important;font-size:clamp(28px,4vw,42px)!important;text-align:center;background:#fff9eb;color:#152d39;border:3px solid #f7d68c;padding:12px!important}
+#challenge-math-send,#challenge-next,#challenge-time-stop{border:0!important;border-radius:18px!important;padding:15px 30px!important;background:linear-gradient(#ffebad,#e7ab45)!important;color:#24323b!important;font-size:clamp(18px,2.5vw,25px)!important;font-weight:850!important;box-shadow:0 6px 0 #926223,0 12px 25px #00152266;cursor:pointer}
+#challenge-math-send:disabled,#challenge-time-stop:disabled{opacity:.58;cursor:default}
+#challenge-results{width:min(92vw,720px);max-height:55vh;overflow:auto}
+#challenge-progress [hidden]{display:none!important}
+@media(max-height:650px){#challenge-progress:not(.hidden){justify-content:flex-start;padding-top:15px!important;gap:7px}#challenge-progress>h2{font-size:23px}#challenge-math:not([hidden]){padding:12px;gap:8px}#challenge-math-question{font-size:40px!important}}
+`;
+function ensureChallengeStageStyle(){if(document.getElementById('challenge-stage-style'))return;const style=document.createElement('style');style.id='challenge-stage-style';style.textContent=CHALLENGE_STAGE_CSS;document.head.append(style);}
 let challengeClockTimer=null;
 let challengeStopBusy=false;
 function renderChallengeProgress(){
+ ensureChallengeStageStyle();
  let box=el('challenge-progress');
  if(!box){
   box=document.createElement('section');box.id='challenge-progress';box.style.cssText='margin:16px 0;padding:22px;border-radius:22px;background:linear-gradient(135deg,#122946,#223f69);color:white;text-align:center;box-shadow:0 14px 30px #10294b30';
-  box.innerHTML='<h2 style="margin:0 0 10px">🏆 Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px"><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px">Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
+  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px"><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px">Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
   el('challenge-math-send').addEventListener('click',async()=>{
    const ch=room?.match?.challenge;
