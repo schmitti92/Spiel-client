@@ -312,7 +312,7 @@ window.addEventListener('message',event=>{
   const c=window.BomberOnlineConfig;
   for(const q of m.players){const p=players[q.id];if(!p)continue;
    if(q.id!==c.localSeat&&Number.isFinite(q.x)&&Number.isFinite(q.y)){p.x=q.x;p.y=q.y;}
-   if(q.alive===false)p.alive=false;
+   if(q.alive===false){p.alive=false;if(p.eliminatedAt===null)p.eliminatedAt=eliminationClock;}
   }
   if(Array.isArray(m.bombs))for(const b of m.bombs){
    if(c.seenBombs.has(b.id))continue;c.seenBombs.add(b.id);
@@ -320,6 +320,8 @@ window.addEventListener('message',event=>{
    const owner=players.find(p=>p.id===m.players.findIndex(q=>q.seat===b.seat));
    if(owner&&!bombs.some(q=>q.x===b.x&&q.y===b.y)){bombs.push({x:b.x,y:b.y,owner:owner.id,range:b.range,fuse:Math.max(.05,2.1-(Date.now()-(b.placedAt||Date.now()))/1000),passThrough:new Set()});owner.active++;}
   }
+  if(Array.isArray(m.destroyed))for(const i of m.destroyed){if(Number.isInteger(i)&&i>=0&&i<cells.length&&cells[i]==='crate'){cells[i]=null;hidden.delete(i);}}
+  if(Array.isArray(m.blasts))for(const b of m.blasts){if(Number.isInteger(b.x)&&Number.isInteger(b.y)&&within(b.x,b.y)&&!flames.some(f=>f.x===b.x&&f.y===b.y)){flames.push({x:b.x,y:b.y,life:Math.max(.05,(b.until-Date.now())/1000)});}}
   updateUI();
  }
  if(m?.type==='bomber:snapshot'&&window.BomberOnlineConfig?.challengeId===m.challengeId){
