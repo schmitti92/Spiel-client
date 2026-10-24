@@ -26,9 +26,9 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
     .then(result=>{if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);})
     .catch(err=>{onError?.(err);timeoutPending=false;});
   }
-  const key=[ch.id,ch.index,ch.startAt,ch.phase,ch.maulwurf.hitCount,ch.maulwurf.score,seat].join(':');
+  const key=[ch.id,ch.index,ch.startAt,ch.phase,ch.maulwurf.hitCount,ch.maulwurf.score,JSON.stringify(ch.maulwurf.opponents||[]),seat].join(':');
   if(lastKey===key)return;lastKey=key;
-  iframe.contentWindow.postMessage({type:'maulwurf:state',challengeId:ch.id,phase:ch.phase,startAt:ch.startAt,serverNow:room.serverNow,events:ch.maulwurf.events,hitCount:ch.maulwurf.hitCount,score:ch.maulwurf.score,hitTicks:ch.maulwurf.hitTicks,mySeat:seat,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
+  iframe.contentWindow.postMessage({type:'maulwurf:state',challengeId:ch.id,phase:ch.phase,startAt:ch.startAt,serverNow:room.serverNow,events:ch.maulwurf.events,hitCount:ch.maulwurf.hitCount,score:ch.maulwurf.score,hitTicks:ch.maulwurf.hitTicks,opponents:ch.maulwurf.opponents,mySeat:seat,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
  }
  async function onMessage(event){
   if(!active||event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='maulwurf:hit')return;
