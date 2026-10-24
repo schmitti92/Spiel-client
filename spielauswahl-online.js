@@ -6,11 +6,11 @@ const code=String(input.get('room')||'').toUpperCase();
 const codeValid=/^[A-HJ-NP-Z2-9]{6}$/.test(code);
 const chooseAnother=input.get('choose')==='1';
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge'};
 const byId=id=>document.getElementById(id);
 const buttons=[...document.querySelectorAll('[data-select-game]')];
 let loading=false,choosing=false,room=null,notifiedUid=null;
-const roomLocation=game=>game==='skyjo'?'Skyjo/skyjo_start.html?room='+encodeURIComponent(code):game==='barikade'?'Barikade/barikade_start.html?room='+encodeURIComponent(code):game==='business'?'Business/business_start.html?room='+encodeURIComponent(code):game==='kreuz'?'KreuzKunter/kreuzkunter_start.html?room='+encodeURIComponent(code):'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1';
+const roomLocation=game=>game==='partychallenge'?'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1':game==='skyjo'?'Skyjo/skyjo_start.html?room='+encodeURIComponent(code):game==='barikade'?'Barikade/barikade_start.html?room='+encodeURIComponent(code):game==='business'?'Business/business_start.html?room='+encodeURIComponent(code):game==='kreuz'?'KreuzKunter/kreuzkunter_start.html?room='+encodeURIComponent(code):'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1';
 function status(message,error=false){
  const box=byId('online-notice');
  if(box){box.textContent=message;box.classList.toggle('error',!!error);}
