@@ -196,6 +196,7 @@ const CHALLENGE_STAGE_CSS=`
 function ensureChallengeStageStyle(){if(document.getElementById('challenge-stage-style'))return;const style=document.createElement('style');style.id='challenge-stage-style';style.textContent=CHALLENGE_STAGE_CSS;document.head.append(style);}
 let challengeClockTimer=null;
 let challengeStopBusy=false;
+const challengeMathTimeoutPending=new Set();
 function renderChallengeProgress(){
  ensureChallengeStageStyle();
  let box=el('challenge-progress');
@@ -338,9 +339,24 @@ function renderChallengeProgress(){
    statusEl.textContent=stopped?'✓ Stopp gespeichert – warte auf die Mitspieler.':'⏱️ Zeitgefühl läuft – drücke STOPP bei deiner geschätzten Zielzeit.';
    if(!stopped)el('challenge-time-stop').disabled=challengeStopBusy;
   }else if(isMath){
-   clockEl.textContent='🏴‍☠️';
+   const round=ch.math?.round||1,limitMs=[18000,16000,15000][Math.min(2,round-1)];
+   const elapsedMs=Math.max(0,-remaining);
+   const secondsLeft=Math.max(0,Math.ceil((limitMs-elapsedMs)/1000));
+   clockEl.textContent=secondsLeft+' s';
+   if(elapsedMs>=limitMs){
+    statusEl.textContent='⏳ Zeit abgelaufen – Antworten werden ausgewertet.';
+    el('challenge-math-board').querySelectorAll('button').forEach(btn=>btn.disabled=true);
+    const key=ch.id+':'+index+':'+round;
+    if(!challengeMathTimeoutPending.has(key)){
+     challengeMathTimeoutPending.add(key);
+     request('/rooms/'+encodeURIComponent(room.code)+'/challenge-math-timeout','POST',{challengeId:ch.id,round})
+      .then(response=>acceptRoom(response.room))
+      .catch(()=>{setTimeout(()=>challengeMathTimeoutPending.delete(key),1800);});
+    }
+   }else{
    statusEl.textContent=answered?'Antwort gespeichert – warte auf die Mitspieler.':'Löse die Rechenaufgabe und sende deine Antwort ab.';
    if(!answered){el('challenge-math-send').disabled=false;el('challenge-math-board').querySelectorAll('button').forEach(b=>b.disabled=false);}
+   }
   }else{
    clockEl.textContent='⏳';
    statusEl.textContent='⚠️ Dieses Minispiel ist noch nicht online verfügbar.';
