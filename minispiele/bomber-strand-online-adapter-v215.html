@@ -327,7 +327,7 @@ window.addEventListener('message',event=>{
  }
  if(m?.type==='bomber:snapshot'&&window.BomberOnlineConfig?.challengeId===m.challengeId){
   if(m.phase==='results'||m.phase==='finished'){
-   playing=false;gameOver=true;$('overlay').hidden=false;$('title').textContent='🏆 Online-Ergebnis';$('message').textContent='Platzierungen und Punkte stehen in der gemeinsamen Lobby.';
+   playing=false;gameOver=true;$('overlay').hidden=false;$('title').textContent='🏆 Online-Ergebnis';$('message').textContent='Platzierungen und Punkte stehen in der gemeinsamen Lobby. Der Host startet das nächste Minispiel.';$('restart').hidden=true;$('play').hidden=true;
   }
  }
 });
