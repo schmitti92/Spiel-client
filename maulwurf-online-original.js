@@ -47,11 +47,10 @@
   const remaining=Math.max(0,Math.ceil((30000-elapsed)/1000));
   $('clock').textContent=elapsed<0?'⏳ '+Math.ceil(-elapsed/1000)+' s':'⏱️ '+remaining+' s';
   $('time-fill').style.width=Math.max(0,Math.min(100,(30000-elapsed)/300))+'%';
-  if(tick!==currentTick){
-   currentTick=tick;holes.forEach(h=>h.className='hole');
-   if(tick>=0&&tick<30&&state.phase==='countdown'){
-    const e=state.events?.[tick];if(e&&holes[e.hole]&&!sent.has(tick)&&!(state.hitTicks||[]).includes(tick))holes[e.hole].className='hole up '+(e.kind==='normal'?'':e.kind);
-   }
+  if(tick!==currentTick){currentTick=tick;holes.forEach(h=>h.className='hole');}
+  if(tick>=0&&tick<30&&state.phase==='countdown'){
+   const e=state.events?.[tick];
+   if(e&&holes[e.hole])holes[e.hole].className=(sent.has(tick)||(state.hitTicks||[]).includes(tick))?'hole hit':'hole up '+(e.kind==='normal'?'':e.kind);
   }
   const scoreboard=$('scores');
   if(scoreboard){
