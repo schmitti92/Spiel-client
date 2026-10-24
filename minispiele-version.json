@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.24-cachefix.4",
+  "version": "2026.10.24-roster.5",
   "released": "2026-10-24",
-  "notes": "Behebung veralteter Challenge-Dateien im Browsercache"
+  "notes": "Stabile Spielerübernahme während laufender Party Challenges"
 }
