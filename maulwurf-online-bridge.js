@@ -45,7 +45,8 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
    // A transport error is ambiguous: the server may have accepted the hit.
    // Fetch the authoritative room before removing optimistic feedback.
    try{
-    const latest=await request('/rooms/'+encodeURIComponent(room.code));
+    const response=await request('/rooms/'+encodeURIComponent(room.code));
+    const latest=response?.room;
     if(!active)return;
     if(latest?.match?.challenge?.id===ch.id)acceptRoom(latest);
     const accepted=latest?.match?.challenge?.maulwurf?.hitTicks?.includes(tick);
