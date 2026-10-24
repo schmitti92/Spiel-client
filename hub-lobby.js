@@ -385,7 +385,7 @@ function renderChallengeProgress(){
    const totalTitle=document.createElement('h3');totalTitle.textContent='🏆 Gesamtwertung nach '+(index+1)+' von '+ch.order.length+' Spielen';totalTitle.style.cssText='margin:18px 0 8px;color:#ffe4a2';resultsBox.append(totalTitle);
    const totalList=document.createElement('div');totalList.style.cssText='display:grid;gap:7px;max-width:540px;margin:0 auto 14px';
    const totals=ch.totals.slice().sort((a,b)=>b.points-a.points||a.seat-b.seat);
-   totals.forEach((entry,i)=>{const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;padding:11px 15px;border:1px solid #f8d68d66;border-radius:12px;background:#071e2abf';const name=document.createElement('strong');name.textContent=(['🥇','🥈','🥉'][i]||'🎮')+' '+entry.name;const points=document.createElement('strong');points.textContent=entry.points+' Punkte gesamt';row.append(name,points);totalList.append(row);});resultsBox.append(totalList);
+   totals.forEach((entry,i)=>{const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;padding:11px 15px;border:1px solid #f8d68d66;border-radius:12px;background:#071e2abf';const name=document.createElement('strong');const rank=totals.findIndex(p=>p.points===entry.points);name.textContent=(['🥇','🥈','🥉'][rank]||'🎮')+' '+entry.name;const points=document.createElement('strong');points.textContent=entry.points+' Punkte gesamt';row.append(name,points);totalList.append(row);});resultsBox.append(totalList);
   }
   if(ch.phase==='finished'){
    const total=document.createElement('h3');total.textContent='Gesamtwertung';resultsBox.append(total);
