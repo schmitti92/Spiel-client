@@ -1,6 +1,6 @@
 export function mountBomberOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/bomber-strand-online-adapter-v215.html?v=4';
+ frame.src='./minispiele/bomber-strand-online-adapter-v215.html?v=5';
  frame.title='Bomber Strand Arena Online';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  container.replaceChildren(frame);
