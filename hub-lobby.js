@@ -229,6 +229,19 @@ async function ensureZeitgefuehlOriginalBridge(){
  }catch(error){zeitgefuehlOriginalFailed=true;showError(error);}
  finally{zeitgefuehlOriginalLoading=false;}
 }
+let bomberOriginalBridge=null,bomberOriginalLoading=false,bomberOriginalFailed=false;
+async function ensureBomberOriginalBridge(){
+ if(bomberOriginalBridge||bomberOriginalLoading||bomberOriginalFailed)return;
+ bomberOriginalLoading=true;
+ try{
+  const {mountBomberOriginal}=await import('./bomber-strand-online-bridge.js?v=1');
+  const ch=room?.match?.challenge;
+  if(!ch||ch.order?.[ch.index]!=='bomber-strand-arena'||ch.phase!=='countdown')return;
+  const target=el('challenge-original-frame');if(!target)return;
+  bomberOriginalBridge=mountBomberOriginal({container:target,getRoom:()=>room,request,acceptRoom,onError:showError});
+  bomberOriginalBridge.sync();
+ }catch(e){bomberOriginalFailed=true;showError(e)}finally{bomberOriginalLoading=false;}
+}
 let snakeOriginalBridge=null,snakeOriginalLoading=false,snakeOriginalFailed=false;
 async function ensureSnakeOriginalBridge(){
  if(snakeOriginalBridge||snakeOriginalLoading||snakeOriginalFailed)return;
@@ -344,16 +357,18 @@ function renderChallengeProgress(){
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
+ const originalBomberActive=ch.order[index]==='bomber-strand-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!bomberOriginalFailed;
  const originalSnakeActive=ch.order[index]==='snake-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!snakeOriginalFailed;
  const originalLavaActive=ch.order[index]==='lava-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!lavaOriginalFailed;
  const originalFlusssprungActive=ch.order[index]==='flusssprung'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!flusssprungOriginalFailed;
- const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive;
+ const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive;
  if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
+ if(!originalBomberActive&&bomberOriginalBridge){bomberOriginalBridge.destroy();bomberOriginalBridge=null;}
  if(!originalSnakeActive&&snakeOriginalBridge){snakeOriginalBridge.destroy();snakeOriginalBridge=null;}
  if(!originalLavaActive&&lavaOriginalBridge){lavaOriginalBridge.destroy();lavaOriginalBridge=null;}
  if(!originalFlusssprungActive&&flusssprungOriginalBridge){flusssprungOriginalBridge.destroy();flusssprungOriginalBridge=null;}
  el('challenge-original-frame').hidden=!originalActive;
- box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive);
+ box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive);
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
  if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
@@ -361,6 +376,7 @@ function renderChallengeProgress(){
  if(originalFlusssprungActive){ensureFlusssprungOriginalBridge();flusssprungOriginalBridge?.sync();}
  if(originalLavaActive){ensureLavaOriginalBridge();lavaOriginalBridge?.sync();}
  if(originalSnakeActive){ensureSnakeOriginalBridge();snakeOriginalBridge?.sync();}
+ if(originalBomberActive){ensureBomberOriginalBridge();bomberOriginalBridge?.sync();}
 
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
