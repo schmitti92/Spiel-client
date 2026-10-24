@@ -59,9 +59,9 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   if(e.data?.type==='flusssprung:configured'){configured=true;sync();return;}
   if(e.data?.type!=='flusssprung:jump')return;
   const room=getRoom(),ch=room?.match?.challenge;
-  if(!ch||ch.phase!=='countdown'||ch.order?.[ch.index]!=='flusssprung')return;
+  if(!ch||ch.phase!=='countdown'||ch.order?.[ch.index]!=='flusssprung'){frame.contentWindow?.postMessage({type:'flusssprung:jump-rejected'},location.origin);return;}
   const {row,col}=e.data;
-  if(!Number.isInteger(row)||row<0||row>=5||!Number.isInteger(col)||col<0||col>=6)return;
+  if(!Number.isInteger(row)||row<0||row>=5||!Number.isInteger(col)||col<0||col>=6){frame.contentWindow?.postMessage({type:'flusssprung:jump-rejected'},location.origin);return;}
   if(pendingJump)return;
   pendingJump=true;
   try{
@@ -75,6 +75,6 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   }finally{pendingJump=false}
  }
  window.addEventListener('message',onMessage);
- frame.addEventListener('load',()=>{ready=true;sync()});
+ frame.addEventListener('load',()=>{ready=true;configured=false;lastMove=0;lastSnapshot='';lastSyncRevision=null;resultSent=false;pendingJump=false;sync()});
  return {sync,destroy(){alive=false;clearInterval(timer);window.removeEventListener('message',onMessage);frame.remove()}};
 }
