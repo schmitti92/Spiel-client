@@ -318,7 +318,7 @@ function renderChallengeProgress(){
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
- const originalFlusssprungActive=ch.order[index]==='flusssprung'&&ch.phase==='countdown'&&!flusssprungOriginalFailed;
+ const originalFlusssprungActive=ch.order[index]==='flusssprung'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!flusssprungOriginalFailed;
  const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive;
  if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
  if(!originalFlusssprungActive&&flusssprungOriginalBridge){flusssprungOriginalBridge.destroy();flusssprungOriginalBridge=null;}
