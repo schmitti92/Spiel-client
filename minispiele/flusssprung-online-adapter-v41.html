@@ -430,7 +430,7 @@ window.addEventListener('message',event=>{
    if(Number.isInteger(entry.row)&&entry.row>=-1&&entry.row<=4){
     p.row=entry.row;
     if(entry.finishedAt)p.state='goal';
-    if(p.actor){const q=entry.row>=0?pos(entry.row,p.col,entry.index):pos(-1,2,entry.index);if(q){p.actor.style.left=q.x+'%';p.actor.style.top=q.y+'%';}}
+    if(p.actor){if(entry.row<0)p.col=2;moveActor(p,entry.index);}
    }
   }
   hud();
