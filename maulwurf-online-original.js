@@ -5,7 +5,7 @@
  const $=id=>document.getElementById(id);
  const mole='<div class="mole"><div class="ear left"></div><div class="ear right"></div><div class="body"></div><div class="cheek left"></div><div class="cheek right"></div><div class="eyes"><i></i><i></i></div><div class="nose"></div><div class="mouth"></div><div class="tooth"></div><div class="brow brow-left"></div><div class="brow brow-right"></div><div class="paw paw-left"></div><div class="paw paw-right"></div><div class="sparkle">✦</div></div>';
  let state=null,offset=0,lastKey='',timer=null,holes=[],sent=new Set(),currentTick=-1;
- const css=document.createElement('style');css.textContent='.arena-boards.online-boards{grid-template-columns:1fr;grid-template-rows:1fr}.online-boards .arena-board{width:100%;height:100%}.online-boards .arena-board .grid{max-width:640px;margin:auto;width:100%}.online-boards .arena-board .hole{touch-action:manipulation}';document.head.append(css);
+ const css=document.createElement('style');css.textContent='.arena-boards.online-boards{grid-template-columns:1fr;grid-template-rows:1fr}.online-boards .arena-board{width:100%;height:100%}.online-boards .arena-board .grid{max-width:640px;margin:auto;width:100%}.online-boards .arena-board .hole{touch-action:manipulation}';css.textContent+=' .score .mini-field{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:90px;margin:5px auto 0}.score .mini-field i{display:block;aspect-ratio:1;border-radius:50%;background:#18352a;border:1px solid #ffffff26;box-shadow:inset 0 2px 3px #071c13}.score .mini-field i.up{background:#c58c4e;border-color:#ffdf8e;box-shadow:0 0 7px #ffcb70}.score .mini-field i.gold{background:#ffd34c}.score .mini-field i.bad{background:#da5961}@media(orientation:landscape) and (max-height:450px){.score .mini-field{display:none}}';document.head.append(css);
  function init(){
   if(!state)return;
   const key=state.challengeId+':'+state.startAt;
@@ -57,9 +57,9 @@
    const opponents=Array.isArray(state.opponents)?state.opponents:[];
    if(scoreboard.children.length!==opponents.length||opponents.some((p,i)=>scoreboard.children[i]?.dataset.seat!==String(p.seat))){
     scoreboard.replaceChildren();
-    for(const p of opponents){const card=document.createElement('div');card.className='score';card.dataset.seat=String(p.seat);const label=document.createElement('span');label.textContent=p.name;const value=document.createElement('strong');card.append(label,value);scoreboard.append(card);}
+    for(const p of opponents){const card=document.createElement('div');card.className='score';card.dataset.seat=String(p.seat);const label=document.createElement('span');label.textContent=p.name;const value=document.createElement('strong');const mini=document.createElement('div');mini.className='mini-field';mini.setAttribute('aria-hidden','true');for(let j=0;j<9;j++)mini.append(document.createElement('i'));card.append(label,value,mini);scoreboard.append(card);}
    }
-   opponents.forEach((p,i)=>{const card=scoreboard.children[i];if(!card)return;card.classList.toggle('active',p.seat===state.mySeat);card.querySelector('span').textContent=p.name;card.querySelector('strong').textContent=p.score+' Punkte';});
+   opponents.forEach((p,i)=>{const card=scoreboard.children[i];if(!card)return;card.classList.toggle('active',p.seat===state.mySeat);card.querySelector('span').textContent=p.name;card.querySelector('strong').textContent=p.score+' Punkte';const liveTick=Math.floor((Date.now()+offset-state.startAt)/1000);const ev=liveTick>=0&&liveTick<30&&state.phase==='countdown'?state.events?.[liveTick]:null;card.querySelectorAll('.mini-field i').forEach((cell,hole)=>{cell.className=ev?.hole===hole?'up '+(ev.kind||'normal'):'';});});
   }
   const myTitle=document.querySelector('.online-boards .arena-board-header span');
   if(myTitle)myTitle.textContent=(state.players||[]).find(p=>p.seat===state.mySeat)?.name||'Dein Spielfeld';
