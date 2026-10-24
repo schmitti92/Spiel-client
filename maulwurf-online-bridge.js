@@ -55,9 +55,13 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
     recovered=true;
     if(latest?.match?.challenge?.id===ch.id){
      acceptRoom(latest);
-     confirmed=!!latest.match.challenge.maulwurf?.hitTicks?.includes(tick);
+     // A hit can still be confirmed after the round has switched to results.
+     const current=latest.match.challenge;
+     confirmed=!!current.maulwurf?.hitTicks?.includes(tick);
+     if(!confirmed&&current.phase==='countdown'&&iframe.contentWindow){
+      iframe.contentWindow.postMessage({type:'maulwurf:hit-rejected',challengeId:ch.id,tick,hole},location.origin);
+     }
     }
-    if(!confirmed&&iframe.contentWindow)iframe.contentWindow.postMessage({type:'maulwurf:hit-rejected',challengeId:ch.id,tick,hole},location.origin);
    }catch(_refreshError){/* Keep the optimistic mark until the next authoritative sync. */}
    // Do not alarm players when a failed response actually committed the hit.
    if(!confirmed&&(!recovered||!['MAULWURF_NOT_VISIBLE','MAULWURF_WRONG_HOLE'].includes(err?.message)))onError?.(err);
