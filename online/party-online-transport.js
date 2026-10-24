@@ -7,7 +7,7 @@ export class PartyOnlineTransport {
     if(typeof getToken!=='function')throw new TypeError('getToken must be a function');
     this.base=server.replace(/\/$/,'')+'/api/hub';
     this.getToken=getToken;this.onRoom=onRoom||(()=>{});this.onError=onError||(()=>{});
-    this.code=null;this.room=null;this.controller=null;this.sequence=0;
+    this.code=null;this.room=null;this.controller=null;this.sequence=-1;
   }
   async request(path,method='GET',body) {
     const token=await this.getToken();
@@ -19,25 +19,27 @@ export class PartyOnlineTransport {
   }
   async attach(code) {
     if(!/^[A-HJ-NP-Z2-9]{6}$/i.test(code))throw new Error('INVALID_ROOM_CODE');
-    this.code=code.toUpperCase();return this.refresh();
+    this.stop();this.code=code.toUpperCase();this.room=null;this.sequence=-1;return this.refresh();
   }
   async refresh() {
     if(!this.code)throw new Error('ROOM_NOT_ATTACHED');
-    const result=await this.request('/rooms/'+encodeURIComponent(this.code));
-    if(result.room)this.accept(result.room);
+    const code=this.code;
+    const result=await this.request('/rooms/'+encodeURIComponent(code));
+    if(code===this.code&&result.room)this.accept(result.room);
     return result;
   }
   accept(room) {
     if(!room||room.code!==this.code)return false;
-    const version=Number(room.revision);
+    const version=room.revision==null?NaN:Number(room.revision);
     if(Number.isFinite(version)&&version<this.sequence)return false;
     if(Number.isFinite(version))this.sequence=version;
     this.room=room;this.onRoom(room);return true;
   }
   async action(endpoint,body={}) {
     if(!this.code)throw new Error('ROOM_NOT_ATTACHED');
-    const result=await this.request('/rooms/'+encodeURIComponent(this.code)+'/'+endpoint,'POST',body);
-    if(result.room)this.accept(result.room);
+    const code=this.code;
+    const result=await this.request('/rooms/'+encodeURIComponent(code)+'/'+endpoint,'POST',body);
+    if(code===this.code&&result.room)this.accept(result.room);
     return result;
   }
   watch(intervalMs=1500) {
