@@ -176,6 +176,8 @@ function renderChallengeProgress(){
  const isMath=ch.order[index]==='recheninsel';
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
+ const mathRoundKey=ch.id+':'+index;
+ if(el('challenge-math').dataset.round!==mathRoundKey){el('challenge-math').dataset.round=mathRoundKey;el('challenge-math-input').value='';}
  el('challenge-math').hidden=!isMath||ch.phase!=='countdown';
  el('challenge-math-question').textContent=isMath&&ch.math?ch.math.a+' '+ch.math.operator+' '+ch.math.b+' = ?':'';
  el('challenge-math-send').disabled=answered||Number(ch.startAt)>Number(room.serverNow);
