@@ -67,7 +67,15 @@ function onlineSync(data){
  }
  drawOnline();onlineTimer=setInterval(drawOnline,60);
 }
-window.addEventListener('message',event=>{if(event.source!==window.parent||event.origin!==location.origin)return;onlineSync(event.data)});
+window.addEventListener('message',event=>{if(event.source!==window.parent||event.origin!==location.origin)return;
+if(event.data?.type==='zeitgefuehl:stop-rejected'&&event.data.challengeId===onlineChallenge&&phase==='running'){
+ onlineStopped=false;
+ const index=entries.findIndex(e=>e.id===onlineSeat);
+ if(index>=0){const button=$('p'+index)?.querySelector('button');if(button)button.disabled=false;}
+ hint.textContent='Verbindung fehlgeschlagen – bitte erneut stoppen.';
+ return;
+}
+onlineSync(event.data)});
 
 function schedule(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id}
 function conceal(){if(hidden||phase!=='running')return;hidden=true;digits.textContent='?';clock.classList.add('hidden-time');scene.className='scene night';$('subtitle').textContent='TIPPE DIE RICHTIGE ZEIT!';hint.textContent='Die Zeit läuft unsichtbar weiter. Stoppe bei '+fmt(goal)+'!'}
