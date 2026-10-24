@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.24-bomber.22",
+  "version": "2026.10.24-bomber.23",
   "released": "2026-10-24",
-  "notes": "Bomber-Strand-Arena: Überlebensmodus berücksichtigt alle Menschen; sichereres Bot-Respawning"
+  "notes": "Bomber: Bot an erster Position unterstützt, Challenge-Regeln fixiert und Siegeranzeige korrigiert; Freigabe nach Spieltests"
 }
