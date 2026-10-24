@@ -40,7 +40,11 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   if(pendingHits.has(hitKey))return;
   pendingHits.add(hitKey);
   try{const result=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-hit','POST',{challengeId:ch.id,tick,hole});if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);}
-  catch(err){onError?.(err);lastKey='';sync();}
+  catch(err){
+   if(active&&iframe.contentWindow)iframe.contentWindow.postMessage({type:'maulwurf:hit-rejected',challengeId:ch.id,tick,hole},location.origin);
+   if(err?.message!=='MAULWURF_NOT_VISIBLE'&&err?.message!=='MAULWURF_WRONG_HOLE')onError?.(err);
+   lastKey='';sync();
+  }
   finally{pendingHits.delete(hitKey);}
  }
  iframe.addEventListener('load',()=>{frameReady=true;lastKey='';sync()});
