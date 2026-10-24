@@ -168,6 +168,25 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-math-board button:focus-visible{outline:3px solid #ffe3a1;outline-offset:3px}
 #challenge-math:not([hidden]){width:min(98vw,1060px);padding:clamp(10px,2vw,24px)}
 @media(max-width:650px){#challenge-math-board{grid-template-columns:repeat(3,minmax(0,1fr))}#challenge-math-board button{min-height:52px}}
+
+/* Recheninsel V30 – Spielbrett nach dem Original-Layout */
+#challenge-progress:has(#challenge-math:not([hidden])){justify-content:flex-start!important;padding-top:clamp(12px,2vh,25px)!important;gap:8px!important}
+#challenge-progress:has(#challenge-math:not([hidden]))>h2{font-family:Georgia,serif;font-size:clamp(22px,3vw,38px);color:#ffdc87;margin:0}
+#challenge-progress:has(#challenge-math:not([hidden])) #challenge-clock{font-size:clamp(20px,3vw,36px)!important;line-height:1.1}
+#challenge-math:not([hidden]){position:relative;width:min(97vw,1180px)!important;max-width:1180px!important;gap:9px!important;padding:clamp(12px,2vw,25px)!important;border:2px solid #b58c4c!important;border-radius:25px!important;background:linear-gradient(145deg,#203f5df0,#0d2039f5 55%,#152d47f0)!important;box-shadow:0 25px 60px #0009,inset 0 0 0 5px #ffffff08!important}
+#challenge-math-question{font-family:Georgia,serif;color:#fff0c9;text-shadow:0 7px 22px #0008;font-weight:1000!important;font-size:clamp(34px,6vw,75px)!important}
+#challenge-math-board{width:100%!important;gap:clamp(6px,1.1vw,13px)!important}
+#challenge-math-board button{background:linear-gradient(145deg,#346a9a,#173956)!important;border:2px solid #ffffff3c!important;border-radius:15px!important;box-shadow:inset 0 3px 0 #ffffff20,0 7px 0 #081b2e,0 10px 18px #0006!important;font-family:Georgia,serif;transition:transform .12s,filter .12s}
+#challenge-math-board button:before{content:'✦';font-size:11px;opacity:.45}
+#challenge-math-board button:not(:disabled):hover{filter:brightness(1.18)}
+#challenge-math-board button.selected{background:linear-gradient(145deg,#248c6d,#165b56)!important;border-color:#75f0a6!important;box-shadow:0 0 0 3px #75f0a655,0 0 24px #54f8a077!important;opacity:1!important}
+#challenge-math-players{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(97vw,1180px);margin:4px auto}
+#challenge-math-players .pirate-player{border:2px solid #ffffff22;background:#132942dd;border-radius:16px;padding:10px;text-align:left;min-height:65px}
+#challenge-math-players .pirate-player.me{border-color:#ffda79;box-shadow:0 0 0 2px #ffda7933}
+#challenge-math-players .pirate-player.done{border-color:#75e4b1}
+#challenge-math-players strong{display:block;color:#fff0c9;font-size:clamp(12px,1.5vw,17px)}
+#challenge-math-players small{display:block;color:#c4d4e9;margin-top:4px}
+@media(max-width:650px){#challenge-math-players{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#challenge-math-players .pirate-player{padding:7px;min-height:52px}#challenge-math-board button{min-height:53px}}
 #challenge-start-overlay:not([hidden]){position:fixed!important;inset:0!important;z-index:10030!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#031526e8;backdrop-filter:blur(7px);pointer-events:auto}
 #challenge-start-number{font-size:clamp(110px,28vw,290px);font-weight:1000;line-height:1;color:#ffe2a1;text-shadow:0 0 50px #e5a643aa,0 12px 0 #4b321e}
 #challenge-start-caption{font-size:clamp(18px,3vw,35px);font-weight:850;letter-spacing:.05em}
@@ -182,7 +201,7 @@ function renderChallengeProgress(){
  let box=el('challenge-progress');
  if(!box){
   box=document.createElement('section');box.id='challenge-progress';box.style.cssText='margin:16px 0;padding:22px;border-radius:22px;background:linear-gradient(135deg,#122946,#223f69);color:white;text-align:center;box-shadow:0 14px 30px #10294b30';
-  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><div id="challenge-math-board" role="group" aria-label="15 Schatzfässer – wähle deine Antwort"></div><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px" hidden><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px" hidden>Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
+  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><div id="challenge-math-board" role="group" aria-label="15 Schatzfässer – wähle deine Antwort"></div><div id="challenge-math-players" aria-label="Mitspieler"></div><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px" hidden><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px" hidden>Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
   const overlay=document.createElement('div');overlay.id='challenge-start-overlay';overlay.hidden=true;overlay.setAttribute('aria-live','off');overlay.innerHTML='<div id="challenge-start-caption">🏴‍☠️ Macht euch bereit!</div><div id="challenge-start-number">3</div>';box.append(overlay);
   el('challenge-math-send').addEventListener('click',async()=>{
@@ -230,6 +249,15 @@ function renderChallengeProgress(){
  mathBoard.querySelectorAll('button').forEach(btn=>{btn.disabled=answered||Number(ch.startAt)>Number(room.serverNow);});
  const mathRoundKey=ch.id+':'+index+':'+(ch.math?.round||1);
  if(el('challenge-math').dataset.round!==mathRoundKey){el('challenge-math').dataset.round=mathRoundKey;el('challenge-math-input').value='';}
+ if(isMath&&ch.phase==='countdown'){
+  const playerList=el('challenge-math-players');playerList.replaceChildren();
+  (room.players||[]).filter(p=>p.participating).forEach(p=>{
+   const card=document.createElement('div');card.className='pirate-player'+(p.me?' me':'')+(ch.math?.answered?.includes(p.seat)?' done':'');
+   const name=document.createElement('strong');name.textContent=(p.me?'⭐ ':'🏴‍☠️ ')+(p.name||'Spieler');
+   const status=document.createElement('small');status.textContent=ch.math?.answered?.includes(p.seat)?'✓ Antwort abgegeben':'⏳ Überlegt noch';
+   card.append(name,status);playerList.append(card);
+  });
+ }
  el('challenge-math').hidden=!isMath||ch.phase!=='countdown';
  el('challenge-math-question').textContent=isMath&&ch.math?'Runde '+(ch.math.round||1)+' / '+(ch.math.totalRounds||3)+' · '+ch.math.a+' '+ch.math.operator+' '+ch.math.b+' = ?':'';
  el('challenge-math-send').disabled=answered||Number(ch.startAt)>Number(room.serverNow);
