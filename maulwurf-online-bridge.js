@@ -24,7 +24,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   if(ch.phase==='countdown'&&estimatedNow>=ch.startAt+30000&&!timeoutPending&&Date.now()>=timeoutRetryAt){
    timeoutPending=true;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-timeout','POST',{challengeId:ch.id})
-    .then(result=>{if(active&&timeoutKey===roundKey&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);})
+    .then(result=>{if(active&&timeoutKey===roundKey&&getRoom()?.code===room.code&&getRoom()?.match?.challenge?.id===ch.id&&result?.room?.code===room.code)acceptRoom(result.room);})
     .catch(err=>{if(!active||timeoutKey!==roundKey)return;timeoutPending=false;timeoutRetryAt=Date.now()+3000;if(err?.message!=='CHALLENGE_NOT_ACTIVE'&&Date.now()-lastTimeoutErrorAt>15000){lastTimeoutErrorAt=Date.now();onError?.(err);}});
   }
   const key=[ch.id,ch.index,ch.startAt,ch.phase,ch.maulwurf.hitCount,ch.maulwurf.score,JSON.stringify(ch.maulwurf.hitTicks||[]),JSON.stringify(ch.maulwurf.opponents||[]),JSON.stringify((room.players||[]).filter(p=>p.participating).map(p=>[p.seat,p.name])),seat].join(':');
@@ -43,7 +43,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   const hitKey=ch.id+':'+ch.index+':'+tick;
   if(pendingHits.has(hitKey))return;
   pendingHits.add(hitKey);
-  try{const result=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-hit','POST',{challengeId:ch.id,tick,hole});if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);}
+  try{const result=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-hit','POST',{challengeId:ch.id,tick,hole});if(active&&getRoom()?.code===room.code&&getRoom()?.match?.challenge?.id===ch.id&&result?.room?.code===room.code)acceptRoom(result.room);}
   catch(err){
    // A transport error is ambiguous: the server may have accepted the hit.
    // Fetch the authoritative room before removing optimistic feedback.
@@ -51,7 +51,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
    try{
     const response=await request('/rooms/'+encodeURIComponent(room.code));
     const latest=response?.room;
-    if(!active)return;
+    if(!active||getRoom()?.code!==room.code)return;
     recovered=true;
     if(latest?.match?.challenge?.id===ch.id){
      acceptRoom(latest);
