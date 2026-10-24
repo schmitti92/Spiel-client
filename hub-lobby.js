@@ -232,7 +232,7 @@ async function ensureRecheninselOriginalBridge(){
  if(recheninselOriginalBridge||recheninselOriginalLoading||recheninselOriginalFailed)return;
  recheninselOriginalLoading=true;
  try{
-  const {mountRecheninselOriginal}=await import('./recheninsel-online-bridge.js?v=2');
+  const {mountRecheninselOriginal}=await import('./recheninsel-online-bridge.js?v=3');
   const target=el('challenge-original-frame');
   zeitgefuehlOriginalBridge?.destroy();zeitgefuehlOriginalBridge=null;
   huetchenOriginalBridge?.destroy();huetchenOriginalBridge=null;
