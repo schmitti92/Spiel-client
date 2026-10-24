@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.24-stability.3",
+  "version": "2026.10.24-cachefix.4",
   "released": "2026-10-24",
-  "notes": "Party Challenge Stabilität und Ergebnis-Schutz"
+  "notes": "Behebung veralteter Challenge-Dateien im Browsercache"
 }
