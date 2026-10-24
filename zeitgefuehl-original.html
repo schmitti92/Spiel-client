@@ -14,9 +14,46 @@ const $=id=>document.getElementById(id),scene=$('scene'),digits=$('digits'),cloc
 const MAX_TIME=30000,colors=['#38a8ff','#ff5868','#45d88e','#ffce49'];
 let phase='idle',entries=[],goal=0,startAt=0,raf=0,timers=[],hidden=false;
 const fmt=ms=>(ms/1000).toFixed(2).replace('.',',')+' s';
+let onlineMode=false,onlineSeat=null,onlineChallenge=null,onlineTimer=0,onlineOffset=0,onlineStartAt=0,onlineStopped=false;
+function onlineSync(data){
+ if(!data||data.type!=='zeitgefuehl:state')return;
+ onlineMode=true;onlineChallenge=data.challengeId;onlineSeat=data.mySeat;onlineOffset=Number(data.serverNow)-Date.now();onlineStartAt=Number(data.startAt);onlineStopped=!!data.stopped;
+ goal=Number(data.targetSeconds)*1000;
+ if(!Number.isFinite(goal)||goal<10000||goal>20000)return;
+ if(onlineTimer)clearInterval(onlineTimer);
+ if(raf)cancelAnimationFrame(raf);
+ timers.forEach(clearTimeout);timers=[];
+ phase='countdown';hidden=false;startAt=performance.now();
+ entries=(data.players||[]).map(p=>({id:p.seat,name:p.name,bot:false,done:!!p.stopped,timeout:false,ms:0}));
+ $('setup').hidden=true;$('target').textContent='🎯 ZIELZEIT: '+fmt(goal);
+ $('heading').textContent='ZEITGEFÜHL';$('subtitle').textContent='ONLINE · DIE ZEIT LÄUFT FÜR ALLE GLEICH';
+ $('end').hidden=true;results.hidden=true;players.hidden=false;clock.hidden=false;
+ players.replaceChildren();
+ entries.forEach((e,i)=>{
+  const card=document.createElement('article');card.className='player';card.id='p'+i;card.style.setProperty('--accent',colors[i%4]);
+  const av=document.createElement('div');av.className='avatar';av.textContent=['🧑','👩','🧑‍🚀','👨‍🦰'][i%4];
+  const title=document.createElement('h2');title.textContent=e.name;
+  const btn=document.createElement('button');btn.className='stop';btn.textContent=e.id===onlineSeat?'STOPP!':'MIT SPIELER';btn.disabled=e.id!==onlineSeat||onlineStopped;
+  btn.addEventListener('click',()=>{if(phase==='running'&&!onlineStopped&&e.id===onlineSeat){onlineStopped=true;btn.disabled=true;window.parent.postMessage({type:'zeitgefuehl:stop',challengeId:onlineChallenge},location.origin)}});
+  const status=document.createElement('div');status.className='status';status.textContent=e.id===onlineSeat?(onlineStopped?'✓ Gespeichert':'Bereit zum Stoppen'):(e.done?'✓ Gestoppt':'Spielt mit');
+  card.append(av,title,btn,status);players.append(card);
+ });
+ function drawOnline(){
+  const elapsed=Date.now()+onlineOffset-onlineStartAt;
+  if(elapsed<0){phase='countdown';digits.textContent=String(Math.max(1,Math.ceil(-elapsed/1000)));hint.textContent='Gemeinsamer Start in '+Math.ceil(-elapsed/1000);return;}
+  phase='running';
+  if(elapsed<3000){digits.textContent=(elapsed/1000).toFixed(2).replace('.',',');clock.classList.remove('hidden-time');scene.className='scene';}
+  else{digits.textContent='?';clock.classList.add('hidden-time');scene.className='scene night';}
+  hint.textContent=onlineStopped?'✓ Stopp gespeichert – warte auf Mitspieler':'Stoppe bei '+fmt(goal)+'!';
+  if(elapsed>=30000){phase='finished';clearInterval(onlineTimer);$('subtitle').textContent='Warte auf die Server-Auswertung';}
+ }
+ drawOnline();onlineTimer=setInterval(drawOnline,60);
+}
+window.addEventListener('message',event=>{if(event.source!==window.parent||event.origin!==location.origin)return;onlineSync(event.data)});
+
 function schedule(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id}
 function conceal(){if(hidden||phase!=='running')return;hidden=true;digits.textContent='?';clock.classList.add('hidden-time');scene.className='scene night';$('subtitle').textContent='TIPPE DIE RICHTIGE ZEIT!';hint.textContent='Die Zeit läuft unsichtbar weiter. Stoppe bei '+fmt(goal)+'!'}
-function stop(i,at=performance.now(),timeout=false){const e=entries[i];if(phase!=='running'||!e||e.done)return;e.ms=Math.max(0,at-startAt);e.done=true;e.timeout=timeout;const el=$('p'+i);el.classList.add('done');el.querySelector('button').disabled=true;el.querySelector('.status').textContent=timeout?'⌛ Zeit abgelaufen':'✓ Gestoppt – Zeit bleibt geheim';if(entries.every(x=>x.done))finish()}
+function stop(i,at=performance.now(),timeout=false){if(onlineMode)return;const e=entries[i];if(phase!=='running'||!e||e.done)return;e.ms=Math.max(0,at-startAt);e.done=true;e.timeout=timeout;const el=$('p'+i);el.classList.add('done');el.querySelector('button').disabled=true;el.querySelector('.status').textContent=timeout?'⌛ Zeit abgelaufen':'✓ Gestoppt – Zeit bleibt geheim';if(entries.every(x=>x.done))finish()}
 function finish(){phase='finished';cancelAnimationFrame(raf);timers.forEach(clearTimeout);timers=[];scene.className='scene treasure';$('heading').textContent='ERGEBNIS';$('subtitle').textContent='DIE SCHATZKAMMER DER ZEIT';$('target').textContent='🎯 ZIELZEIT: '+fmt(goal);clock.hidden=true;players.hidden=true;results.hidden=false;$('end').hidden=false;hint.textContent='Alle haben gestoppt – die einzige Runde ist beendet.';
 const order=entries.map((e,i)=>({...e,i,diff:Math.abs(e.ms-goal)})).sort((a,b)=>a.diff-b.diff||a.i-b.i);const best=order[0].diff;results.innerHTML='';let prev=-1,place=0;
 order.forEach((e,idx)=>{if(prev<0||Math.abs(e.diff-prev)>=5)place=idx+1;prev=e.diff;const tie=Math.abs(e.diff-best)<5;const card=document.createElement('article');card.className='result-card'+(tie?' winner':'');card.style.setProperty('--accent',colors[e.i%4]);const medal=tie?'🏆':place===2?'🥈':place===3?'🥉':'🎖️';card.innerHTML='<div class="medal">'+medal+'</div><h2></h2><strong></strong><p></p><p></p>';card.querySelector('h2').textContent=e.name;card.querySelector('strong').textContent=fmt(e.ms);card.querySelectorAll('p')[0].textContent='Abweichung: '+fmt(e.diff);card.querySelectorAll('p')[1].textContent=tie?'👑 Gewinner!':e.timeout?'Zeitlimit erreicht':'Platz '+place;results.append(card)});
@@ -24,7 +61,7 @@ const payload={game:'zeitgefuehl',version:6,targetMs:goal,results:order.map(e=>(
 function tick(){if(phase!=='running')return;const elapsed=performance.now()-startAt;if(elapsed>=3000)conceal();else digits.textContent=(elapsed/1000).toFixed(2).replace('.',',');raf=requestAnimationFrame(tick)}
 function begin(){phase='running';hidden=false;startAt=performance.now();digits.textContent='0,00';entries.forEach((e,i)=>{if(e.bot){const noise=(Math.random()+Math.random()+Math.random()-1.5)*1700;const target=Math.max(3200,goal+noise);schedule(()=>stop(i,startAt+target),target)}else $('p'+i).querySelector('button').disabled=false});tick();schedule(conceal,3000);schedule(()=>{if(phase==='running')entries.forEach((e,i)=>{if(!e.done)stop(i,startAt+MAX_TIME,true)})},MAX_TIME)}
 function countdown(n){if(phase!=='countdown')return;if(n===0){begin();return}digits.textContent=String(n);hint.textContent='Bereit machen … Start in '+n;schedule(()=>countdown(n-1),1000)}
-function run(){if(phase!=='idle')return;const h=+$('humans').value,b=Math.min(4-h,+$('bots').value);goal=(10+Math.floor(Math.random()*11))*1000;entries=Array.from({length:h+b},(_,i)=>({id:i+1,name:i<h?'Spieler '+(i+1):'Computer '+(i-h+1),bot:i>=h,done:false,timeout:false,ms:0}));$('target').textContent='🎯 ZIELZEIT: '+fmt(goal);$('setup').hidden=true;players.innerHTML='';players.hidden=false;entries.forEach((e,i)=>{const card=document.createElement('article');card.className='player';card.id='p'+i;card.style.setProperty('--accent',colors[i]);const av=document.createElement('div');av.className='avatar';av.textContent=e.bot?'🤖':['🧑','👩','🧑‍🚀','👨‍🦰'][i%4];const title=document.createElement('h2');title.textContent=e.name;const btn=document.createElement('button');btn.className='stop';btn.textContent=e.bot?'COMPUTER':'STOPP!';btn.disabled=true;btn.setAttribute('aria-label',e.name+' Zeit stoppen');btn.addEventListener('pointerdown',ev=>{if(!e.bot){ev.preventDefault();stop(i)}});btn.addEventListener('click',()=>{if(!e.bot)stop(i)});const status=document.createElement('div');status.className='status';status.textContent=e.bot?'Computer bereit':'Taste '+(i+1)+' · Wartet auf Start';card.append(av,title,btn,status);players.append(card)});phase='countdown';countdown(3)}
-$('start').addEventListener('click',run);$('humans').addEventListener('change',()=>{$('bots').value=Math.min(+$('bots').value,4-(+$('humans').value))});$('bots').addEventListener('change',()=>{$('bots').value=Math.min(+$('bots').value,4-(+$('humans').value))});document.addEventListener('keydown',ev=>{if(ev.repeat||ev.target.matches('select,input,button'))return;const map={Digit1:0,Digit2:1,Digit3:2,Digit4:3,Numpad1:0,Numpad2:1,Numpad3:2,Numpad4:3,Space:0};if(map[ev.code]!==undefined){ev.preventDefault();const i=map[ev.code];if(entries[i]&&!entries[i].bot)stop(i)}});
+function run(){if(onlineMode||phase!=='idle')return;const h=+$('humans').value,b=Math.min(4-h,+$('bots').value);goal=(10+Math.floor(Math.random()*11))*1000;entries=Array.from({length:h+b},(_,i)=>({id:i+1,name:i<h?'Spieler '+(i+1):'Computer '+(i-h+1),bot:i>=h,done:false,timeout:false,ms:0}));$('target').textContent='🎯 ZIELZEIT: '+fmt(goal);$('setup').hidden=true;players.innerHTML='';players.hidden=false;entries.forEach((e,i)=>{const card=document.createElement('article');card.className='player';card.id='p'+i;card.style.setProperty('--accent',colors[i]);const av=document.createElement('div');av.className='avatar';av.textContent=e.bot?'🤖':['🧑','👩','🧑‍🚀','👨‍🦰'][i%4];const title=document.createElement('h2');title.textContent=e.name;const btn=document.createElement('button');btn.className='stop';btn.textContent=e.bot?'COMPUTER':'STOPP!';btn.disabled=true;btn.setAttribute('aria-label',e.name+' Zeit stoppen');btn.addEventListener('pointerdown',ev=>{if(!e.bot){ev.preventDefault();stop(i)}});btn.addEventListener('click',()=>{if(!e.bot)stop(i)});const status=document.createElement('div');status.className='status';status.textContent=e.bot?'Computer bereit':'Taste '+(i+1)+' · Wartet auf Start';card.append(av,title,btn,status);players.append(card)});phase='countdown';countdown(3)}
+$('start').addEventListener('click',run);$('humans').addEventListener('change',()=>{$('bots').value=Math.min(+$('bots').value,4-(+$('humans').value))});$('bots').addEventListener('change',()=>{$('bots').value=Math.min(+$('bots').value,4-(+$('humans').value))});document.addEventListener('keydown',ev=>{if(ev.repeat||ev.target.matches('select,input,button'))return;const map={Digit1:0,Digit2:1,Digit3:2,Digit4:3,Numpad1:0,Numpad2:1,Numpad3:2,Numpad4:3,Space:0};if(map[ev.code]!==undefined){ev.preventDefault();const i=map[ev.code];if(!onlineMode&&entries[i]&&!entries[i].bot)stop(i)}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&phase==='running'&&performance.now()-startAt>=3000)conceal()});
 })();</script></body></html>
