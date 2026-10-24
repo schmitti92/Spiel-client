@@ -204,8 +204,15 @@ function renderChallengeSetup(showStage){
  let box=el('challenge-settings-panel');
  if(!box){
   box=document.createElement('section');box.id='challenge-settings-panel';box.style.cssText='padding:18px;margin:14px 0;border:2px solid #e4b75d;border-radius:18px;background:#fff8e9;color:#24334b';
-  box.innerHTML='<h3>🏆 Party Challenge</h3><p>Alle bleiben im selben Raum. Der Host startet die Challenge ausdrücklich.</p><label for="challenge-count">Anzahl Minispiele: </label><select id="challenge-count"><option value="5">5 verschiedene Spiele</option><option value="9">Alle 9 Spiele</option></select> <button type="button" id="challenge-save">Auswahl speichern</button><p id="challenge-feedback" role="status"></p>';
+  box.innerHTML='<h3>🏆 Party Challenge</h3><p>Alle bleiben im selben Raum. Der Host startet die Challenge ausdrücklich.</p><label for="challenge-count">Anzahl Minispiele: </label><select id="challenge-count"><option value="5">5 verschiedene Spiele</option><option value="9">Alle 9 Spiele</option></select> <button type="button" id="challenge-save">Auswahl speichern</button> <button type="button" id="challenge-bots">🤖 2 Testspieler hinzufügen</button><p id="challenge-feedback" role="status"></p>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
+  el('challenge-bots').addEventListener('click',async()=>{
+   if(!room?.host)return;
+   const button=el('challenge-bots');button.disabled=true;
+   try{const enabled=!room.players.some(p=>p.testBot);const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-test-players','POST',{enabled});acceptRoom(response.room);el('challenge-feedback').textContent=enabled?'Zwei Testspieler hinzugefügt.':'Testspieler entfernt.';}
+   catch(e){el('challenge-feedback').textContent='Testspieler: '+e.message;}
+   finally{button.disabled=false;}
+  });
   el('challenge-save').addEventListener('click',async()=>{
    const button=el('challenge-save');button.disabled=true;
    try{await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:Number(el('challenge-count').value)});el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(room.code));acceptRoom(updated.room);}
@@ -219,6 +226,8 @@ function renderChallengeSetup(showStage){
  if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(count);
  el('challenge-count').disabled=!room.host||room.phase!=='preparing';
  el('challenge-save').hidden=!room.host||room.phase!=='preparing';
+ el('challenge-bots').hidden=!room.host||room.phase!=='preparing';
+ el('challenge-bots').textContent=room.players.some(p=>p.testBot)?'🤖 2 Testspieler entfernen':'🤖 2 Testspieler hinzufügen';
 }
 function render(){
  if(room?.game==='kreuz'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
