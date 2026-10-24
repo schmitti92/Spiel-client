@@ -144,6 +144,29 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  },4500);}
 function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
+const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
+let challengeClockTimer=null;
+function renderChallengeProgress(){
+ let box=el('challenge-progress');
+ if(!box){
+  box=document.createElement('section');box.id='challenge-progress';box.style.cssText='margin:16px 0;padding:22px;border-radius:22px;background:linear-gradient(135deg,#122946,#223f69);color:white;text-align:center;box-shadow:0 14px 30px #10294b30';
+  box.innerHTML='<h2 style="margin:0 0 10px">🏆 Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p>';
+  el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
+ }
+ const ch=room?.match?.game==='partychallenge'?room.match.challenge:null;
+ box.classList.toggle('hidden',!ch);
+ if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}
+ if(!ch)return;
+ const index=Math.min(Math.max(0,ch.index||0),ch.order.length-1);
+ el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
+ el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
+ const draw=()=>{
+  const remaining=Number(ch.startAt)-Date.now();
+  if(ch.phase==='countdown'&&remaining>0){el('challenge-clock').textContent=String(Math.max(1,Math.ceil(remaining/1000)));el('challenge-progress-status').textContent='Start wird vom Server gesteuert. Bitte bereithalten.';}
+  else{el('challenge-clock').textContent='LOS!';el('challenge-progress-status').textContent='Countdown beendet · Online-Spielanbindung noch in Entwicklung.';if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}}
+ };
+ draw();if(ch.phase==='countdown'&&Number(ch.startAt)>Date.now())challengeClockTimer=setInterval(draw,80);
+}
 function renderChallengeSetup(showStage){
  let box=el('challenge-settings-panel');
  if(!box){
@@ -202,6 +225,7 @@ function render(){
  el('ready-panel').classList.toggle('hidden',!showStage);
  el('kreuz-settings-panel').classList.toggle('hidden',!showStage||room.game!=='kreuz');
  renderChallengeSetup(showStage);
+ renderChallengeProgress();
  el('change-game-btn').classList.toggle('hidden',!room.host||room.phase==='playing');
  if(showStage){
   el('game-stage-hero').dataset.game=room.game;
@@ -289,7 +313,7 @@ function render(){
  el('ready-progressbar').setAttribute('aria-valuenow',String(percent));
  el('ready-title').textContent=room.phase==='playing'?'🎮 Eure Partie läuft':'Bereit für '+(GAME[room.game]||'die Partie')+'?';
  el('ready-status').textContent=`${readyCount} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
- el('start-btn').classList.toggle('hidden',!room.host||(room.phase!=='playing'&&!(room.game==='partychallenge'&&room.phase==='preparing')));
+ el('start-btn').classList.toggle('hidden',!room.host||(room.phase!=='playing'&&!(room.game==='partychallenge'&&room.phase==='preparing'))||(room.game==='partychallenge'&&room.phase==='playing'));
  el('cancel-match-btn').classList.toggle('hidden',!room.host||room.phase!=='playing');
  el('cancel-match-btn').disabled=operation||!room.host||room.phase!=='playing';
  el('start-btn').disabled=operation||!room.host||(room.phase==='preparing'&&!room.allReady);
@@ -356,7 +380,7 @@ el('start-btn').addEventListener('click',()=>command(async()=>{
   if(!room.allReady)throw Error('PLAYERS_NOT_READY');
   const {room:r}=await request('/rooms/'+code+'/start','POST');activateRoom(r);notice('Challenge gestartet: gemeinsamer Countdown läuft.');return;
  }
- if(room?.phase!=='playing')return;
+ if(room?.phase!=='playing'||room.game==='partychallenge')return;
  const {room:r}=await request('/rooms/'+code+'/finish','POST');
  activateRoom(r);notice('Partie abgeschlossen. Ihr könnt das nächste Spiel auswählen.');
 }));
