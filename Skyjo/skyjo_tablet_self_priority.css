@@ -1,0 +1,36 @@
+/* Tablet landscape: prioritize the local player's board over opponent/hand columns. */
+@media (pointer:coarse) and (orientation:landscape) and (min-width:700px) and (max-width:1400px){
+ body.is-playing .skyjo-scenic-stage{
+   grid-template-columns:minmax(0,.72fr) minmax(0,1.65fr) minmax(0,.67fr)!important;
+   gap:clamp(4px,.55vw,9px)!important;
+ }
+ body.is-playing .skyjo-scenic-stage .scene-side{width:100%!important;min-width:0!important;max-width:100%!important}
+ body.is-playing .skyjo-scenic-stage .scene-side .player{width:100%!important;min-width:0!important;padding:clamp(3px,.45vw,7px)!important}
+ body.is-playing .skyjo-scenic-stage .scene-side .player.skyjo-xl-board .grid{
+   --card-w:clamp(22px,2.65vw,40px)!important;gap:clamp(2px,.3vw,5px)!important;
+ }
+ body.is-playing .skyjo-scenic-stage .scene-self{min-width:0!important;width:100%!important}
+ body.is-playing .skyjo-scenic-stage .scene-self .player{width:100%!important;max-width:100%!important}
+ body.is-playing .skyjo-scenic-stage .scene-self .player.skyjo-xl-board .grid{
+   --card-w:clamp(64px,7.6vw,112px)!important;
+ }
+ body.is-playing .skyjo-scenic-stage .scene-pile-stage{min-width:0!important;max-width:100%!important}
+ body.is-playing .skyjo-scenic-stage .scene-pile-stage .real-hand-zone,
+ body.is-playing .skyjo-scenic-stage .scene-pile-stage .handbox{
+   padding:clamp(4px,.5vw,8px)!important;min-height:0!important;
+ }
+ body.is-playing .skyjo-scenic-stage .scene-pile-stage .premium-piles{gap:4px!important}
+ body.is-playing .skyjo-scenic-stage .scene-pile-stage .premium-piles .card{
+   max-height:clamp(76px,17vh,150px)!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout{
+   grid-template-columns:minmax(0,.72fr) minmax(0,.61fr) minmax(0,1.72fr)!important;
+   gap:clamp(4px,.55vw,9px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox{
+   min-height:48px!important;padding:4px!important;margin-bottom:4px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .card{
+   max-height:clamp(37px,6.8vh,63px)!important;
+ }
+}
