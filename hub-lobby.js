@@ -4,16 +4,17 @@
 const el=id=>document.getElementById(id);
 const config=window.SPIELPORTAL_CONFIG||{};
 const API=String(config.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge'};
 let code=null,room=null,operation=false,poll=null,accountUid=null,pollErrors=0;
 let playMode=new URL(location.href).searchParams.get('view')==='local'?'local':'online';
 let choosingGame=false,displayGame=null;
-const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼'};
+const GAME_ICON={barikade:'🎲',skyjo:'🃏',kreuz:'🎯',business:'💼',partychallenge:'🏆'};
 const GAME_DESCRIPTIONS={
  barikade:'Das Brettspiel mit Barikaden, Action-Regeln und optionalem Bossmodus.',
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
  kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
- business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.'
+ business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
+ partychallenge:'Fünf oder neun Minispiele in einem Raum; der Host startet jedes Spiel.'
 };
 function setPlayMode(next){
  playMode=next==='local'?'local':'online';
@@ -141,6 +142,27 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
  },4500);}
 function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
+
+function renderChallengeSetup(showStage){
+ let box=el('challenge-settings-panel');
+ if(!box){
+  box=document.createElement('section');box.id='challenge-settings-panel';box.style.cssText='padding:18px;margin:14px 0;border:2px solid #e4b75d;border-radius:18px;background:#fff8e9;color:#24334b';
+  box.innerHTML='<h3>🏆 Party Challenge</h3><p>Alle bleiben im selben Raum. Der Host startet die Challenge ausdrücklich.</p><label for="challenge-count">Anzahl Minispiele: </label><select id="challenge-count"><option value="5">5 verschiedene Spiele</option><option value="9">Alle 9 Spiele</option></select> <button type="button" id="challenge-save">Auswahl speichern</button><p id="challenge-feedback" role="status"></p>';
+  el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
+  el('challenge-save').addEventListener('click',async()=>{
+   const button=el('challenge-save');button.disabled=true;
+   try{await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:Number(el('challenge-count').value)});el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';await loadRoom();}
+   catch(e){el('challenge-feedback').textContent='Speichern fehlgeschlagen: '+e.message;}
+   finally{button.disabled=false;}
+  });
+ }
+ const active=showStage&&room?.game==='partychallenge';box.classList.toggle('hidden',!active);
+ if(!active)return;
+ const count=room.settings?.count===9?9:5;
+ if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(count);
+ el('challenge-count').disabled=!room.host||room.phase!=='preparing';
+ el('challenge-save').hidden=!room.host||room.phase!=='preparing';
+}
 function render(){
  if(room?.game==='kreuz'&&room.phase==='preparing'&&new URL(location.href).searchParams.get('stage')==='1'){
   location.replace('KreuzKunter/kreuzkunter_start.html?room='+encodeURIComponent(room.code));
@@ -178,6 +200,7 @@ function render(){
  el('game-stage-hero').classList.toggle('hidden',!showStage);
  el('ready-panel').classList.toggle('hidden',!showStage);
  el('kreuz-settings-panel').classList.toggle('hidden',!showStage||room.game!=='kreuz');
+ renderChallengeSetup(showStage);
  el('change-game-btn').classList.toggle('hidden',!room.host||room.phase==='playing');
  if(showStage){
   el('game-stage-hero').dataset.game=room.game;
