@@ -35,6 +35,9 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   if(!active||event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='maulwurf:hit')return;
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='maulwurf-arena'||ch.id!==event.data.challengeId||ch.phase!=='countdown')return;
+  // A stale iframe must not submit a hit after its round has already ended.
+  const serverNow=estimatedServerNow(room);
+  if(serverNow<ch.startAt||serverNow>=ch.startAt+30000)return;
   const {tick,hole}=event.data;
   if(!Number.isInteger(tick)||tick<0||tick>=30||!Number.isInteger(hole)||hole<0||hole>8)return;
   const hitKey=ch.id+':'+ch.index+':'+tick;
