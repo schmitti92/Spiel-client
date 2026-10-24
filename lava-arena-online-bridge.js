@@ -12,7 +12,7 @@ export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}
   if(localSeat<0)return;
   if(!configured){frame.contentWindow.postMessage({type:'lava-arena:configure',challengeId:ch.id,localSeat,seats},location.origin);return}
   if(ch.lava)frame.contentWindow.postMessage({type:'lava-arena:snapshot',challengeId:ch.id,players:ch.lava.players.map(p=>({...p,id:seats.indexOf(p.seat)})),tiles:ch.lava.tiles,phase:ch.phase},location.origin);
-  if(ch.phase==='countdown'&&Date.now()>ch.startAt+90000&&!lastTimeout){lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-lava-timeout','POST',{challengeId:ch.id}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(onError)}
+  if(ch.phase==='countdown'&&(Number.isFinite(room.serverNow)?room.serverNow:Date.now())>ch.startAt+90000&&!lastTimeout){lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-lava-timeout','POST',{challengeId:ch.id}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(error=>{lastTimeout=false;onError(error)})}
  }
  async function onMessage(e){
   if(!alive||e.origin!==location.origin||e.source!==frame.contentWindow)return;
