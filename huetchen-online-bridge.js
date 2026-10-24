@@ -1,10 +1,20 @@
 /* Original Huetchen Premium iframe bridge. Activate only when original HTML is deployed. */
 export function mountHuetchenOriginal({container,getRoom,request,acceptRoom,onError}){
- const iframe=document.createElement('iframe');iframe.title='Hütchen Challenge Original';iframe.src='huetchen-original-online.html';
+ const iframe=document.createElement('iframe');iframe.title='Hütchen Challenge Original';
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';iframe.setAttribute('sandbox','allow-scripts allow-same-origin');container.replaceChildren(iframe);
- let active=true,lastKey='',busy=false,timeoutKey='';
+ let active=true,lastKey='',busy=false,timeoutKey='',ready=false;
+ (async()=>{
+  try{
+   const urls=Array.from({length:25},(_,i)=>'huetchen-original-parts/part-'+String(i+1).padStart(2,'0')+'.txt');
+   const parts=await Promise.all(urls.map(async url=>{const response=await fetch(url);if(!response.ok)throw Error('Originaldatei fehlt: '+url);return response.text()}));
+   if(!active)return;
+   const html=parts.join('');
+   if(!html.includes('huetchen:state')||!html.includes('</html>'))throw Error('Hütchen-Originaldatei unvollständig');
+   iframe.srcdoc=html;
+  }catch(error){onError?.(error)}
+ })();
  function sync(){
-  if(!active||!iframe.contentWindow)return;
+  if(!active||!ready||!iframe.contentWindow)return;
   const room=getRoom(),ch=room?.match?.challenge,h=ch?.huetchen;
   if(ch?.order?.[ch.index]!=='huetchen-challenge'||!h)return;
   const seat=room.players?.find(p=>p.me)?.seat;
@@ -31,6 +41,6 @@ export function mountHuetchenOriginal({container,getRoom,request,acceptRoom,onEr
   busy=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-huetchen-answer','POST',{challengeId:ch.id,round:event.data.round,slot});acceptRoom(response.room);}
   catch(error){onError?.(error);lastKey='';sync()}finally{busy=false}
  }
- iframe.addEventListener('load',()=>{lastKey='';sync()});window.addEventListener('message',onMessage);
+ iframe.addEventListener('load',()=>{ready=true;lastKey='';sync()});window.addEventListener('message',onMessage);
  return {sync,destroy(){active=false;window.removeEventListener('message',onMessage);iframe.remove()}};
 }
