@@ -380,7 +380,7 @@ function renderChallengeProgress(){
   el('pj-guess').disabled=!!done||ch.phase!=='countdown'||room.serverNow<ch.startAt;
   el('pj-submit').disabled=!!done||ch.phase!=='countdown'||room.serverNow<ch.startAt;
   el('pj-feedback').textContent=done?'✓ Deine geheime Schätzung wurde gespeichert.':'';
-  el('pj-opponents').textContent=(room.match?.members||[]).map(m=>(pj.answered||[]).includes(m.seat)?'✓ '+m.name:'⏳ '+m.name).join('  ·  ');
+  el('pj-opponents').textContent=(room.players||[]).filter(m=>m.participating).map(m=>(pj.answered||[]).includes(m.seat)?'✓ '+m.name:'⏳ '+m.name).join('  ·  ');
   const previous=pj.history?.[pj.history.length-1];
   let reveal=el('pj-last-reveal');
   if(!reveal){reveal=document.createElement('div');reveal.id='pj-last-reveal';reveal.style.cssText='margin:16px 0;padding:15px;border-radius:14px;background:#263e59;border:1px solid #e8c479';el('pj-round-label').after(reveal);}
