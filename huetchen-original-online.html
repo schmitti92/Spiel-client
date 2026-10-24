@@ -10,7 +10,7 @@
   }));
   const html=parts.join('');
   if(!html.startsWith('<!doctype html>')||!html.includes('huetchen:state')||html.length<6900000)throw Error('Originalspiel unvollständig');
-  document.open();document.write(html);document.close();
+  document.open();document.write(html);document.close();setTimeout(()=>window.parent.postMessage({type:'huetchen:ready'},location.origin),50);
  }catch(error){status.textContent='⚠️ Originalspiel konnte nicht geladen werden: '+error.message;console.error(error);}
 })();
 </script></body></html>
