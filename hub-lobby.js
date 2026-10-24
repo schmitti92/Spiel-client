@@ -160,6 +160,9 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-math-send,#challenge-next,#challenge-time-stop{border:0!important;border-radius:18px!important;padding:15px 30px!important;background:linear-gradient(#ffebad,#e7ab45)!important;color:#24323b!important;font-size:clamp(18px,2.5vw,25px)!important;font-weight:850!important;box-shadow:0 6px 0 #926223,0 12px 25px #00152266;cursor:pointer}
 #challenge-math-send:disabled,#challenge-time-stop:disabled{opacity:.58;cursor:default}
 #challenge-results{width:min(92vw,720px);max-height:55vh;overflow:auto}
+#challenge-start-overlay:not([hidden]){position:fixed!important;inset:0!important;z-index:10030!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#031526e8;backdrop-filter:blur(7px);pointer-events:auto}
+#challenge-start-number{font-size:clamp(110px,28vw,290px);font-weight:1000;line-height:1;color:#ffe2a1;text-shadow:0 0 50px #e5a643aa,0 12px 0 #4b321e}
+#challenge-start-caption{font-size:clamp(18px,3vw,35px);font-weight:850;letter-spacing:.05em}
 #challenge-progress [hidden]{display:none!important}
 @media(max-height:650px){#challenge-progress:not(.hidden){justify-content:flex-start;padding-top:15px!important;gap:7px}#challenge-progress>h2{font-size:23px}#challenge-math:not([hidden]){padding:12px;gap:8px}#challenge-math-question{font-size:40px!important}}
 `;
@@ -173,6 +176,7 @@ function renderChallengeProgress(){
   box=document.createElement('section');box.id='challenge-progress';box.style.cssText='margin:16px 0;padding:22px;border-radius:22px;background:linear-gradient(135deg,#122946,#223f69);color:white;text-align:center;box-shadow:0 14px 30px #10294b30';
   box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px"><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px">Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
+  const overlay=document.createElement('div');overlay.id='challenge-start-overlay';overlay.hidden=true;overlay.setAttribute('aria-live','off');overlay.innerHTML='<div id="challenge-start-caption">🏴‍☠️ Macht euch bereit!</div><div id="challenge-start-number">3</div>';box.append(overlay);
   el('challenge-math-send').addEventListener('click',async()=>{
    const ch=room?.match?.challenge;
    if(!ch)return;
@@ -189,7 +193,7 @@ function renderChallengeProgress(){
  const ch=room?.match?.game==='partychallenge'?room.match.challenge:null;
  box.classList.toggle('hidden',!ch);
  if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}
- if(!ch)return;
+ if(!ch){const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;return;}
  const index=Math.min(Math.max(0,ch.index||0),ch.order.length-1);
  el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
@@ -244,11 +248,19 @@ function renderChallengeProgress(){
    statusEl.textContent=ch.phase==='finished'?'Die Challenge ist beendet.':'Auswertung abgeschlossen. Der Host startet das nächste Spiel.';
    return;
   }
+  const startOverlay=el('challenge-start-overlay');
+  if(startOverlay){
+   const visible=remaining>0&&remaining<=4000;
+   startOverlay.hidden=!visible;
+   if(visible)el('challenge-start-number').textContent=String(Math.max(1,Math.ceil(remaining/1000)));
+  }
   if(remaining>0){
    clockEl.textContent=String(Math.max(1,Math.ceil(remaining/1000)));
    statusEl.textContent='Start wird vom Server gesteuert. Bitte bereithalten.';
    return;
   }
+  if(remaining<=0&&remaining>-950&&startOverlay){startOverlay.hidden=false;el('challenge-start-number').textContent='0';el('challenge-start-caption').textContent='⚔️ LOS GEHT’S!';}
+  else if(startOverlay){el('challenge-start-caption').textContent='🏴‍☠️ Macht euch bereit!';}
   if(isTime){
    clockEl.textContent=stopped?'✓':remaining<=-3000?'❓':String(Math.max(1,Math.floor(-remaining/1000)+1));
    statusEl.textContent=stopped?'✓ Stopp gespeichert – warte auf die Mitspieler.':'⏱️ Zeitgefühl läuft – drücke STOPP bei deiner geschätzten Zielzeit.';
@@ -263,7 +275,7 @@ function renderChallengeProgress(){
   }
  };
  draw();
- if(ch.phase==='countdown'&&(Number(ch.startAt)>estimatedServerNow||isTime&&!stopped))challengeClockTimer=setInterval(draw,80);
+ if(ch.phase==='countdown'&&(Number(ch.startAt)>estimatedServerNow||isTime&&!stopped||isMath))challengeClockTimer=setInterval(draw,80);
 }
 function renderChallengeSetup(showStage){
  let box=el('challenge-settings-panel');
