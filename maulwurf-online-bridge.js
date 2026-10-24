@@ -24,7 +24,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   if(ch.phase==='countdown'&&estimatedNow>=ch.startAt+30000&&!timeoutPending&&Date.now()>=timeoutRetryAt){
    timeoutPending=true;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-timeout','POST',{challengeId:ch.id})
-    .then(result=>{if(active&&timeoutKey===roundKey&&getRoom()?.code===room.code&&getRoom()?.match?.challenge?.id===ch.id&&result?.room?.code===room.code)acceptRoom(result.room);})
+    .then(result=>{if(active&&timeoutKey===roundKey&&getRoom()?.code===room.code&&getRoom()?.match?.challenge?.id===ch.id&&getRoom()?.match?.challenge?.index===ch.index&&result?.room?.code===room.code)acceptRoom(result.room);})
     .catch(err=>{if(!active||timeoutKey!==roundKey)return;timeoutPending=false;timeoutRetryAt=Date.now()+3000;if(err?.message!=='CHALLENGE_NOT_ACTIVE'&&Date.now()-lastTimeoutErrorAt>15000){lastTimeoutErrorAt=Date.now();onError?.(err);}});
   }
   const key=[ch.id,ch.index,ch.startAt,ch.phase,ch.maulwurf.hitCount,ch.maulwurf.score,JSON.stringify(ch.maulwurf.hitTicks||[]),JSON.stringify(ch.maulwurf.opponents||[]),JSON.stringify((room.players||[]).filter(p=>p.participating).map(p=>[p.seat,p.name])),seat].join(':');
@@ -53,7 +53,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
     const latest=response?.room;
     if(!active||getRoom()?.code!==room.code)return;
     recovered=true;
-    if(latest?.match?.challenge?.id===ch.id){
+    if(latest?.match?.challenge?.id===ch.id&&latest.match.challenge.index===ch.index&&getRoom()?.match?.challenge?.index===ch.index){
      acceptRoom(latest);
      // A hit can still be confirmed after the round has switched to results.
      const current=latest.match.challenge;
