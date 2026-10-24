@@ -15,13 +15,15 @@
   $('difficulty').textContent=label[round-1]||'Schwer';
   $('expression').textContent=a+' '+operator+' '+b+' = ?';
   const board=$('board');board.replaceChildren();
-  const open=phase==='countdown'&&Date.now()+offset>=startAt&&!mine&&!submitted;
+  const deadline=startAt+[18000,16000,15000][Math.max(0,Math.min(2,round-1))];
+  const now=Date.now()+offset;
+  const open=phase==='countdown'&&now>=startAt&&now<deadline&&!mine&&!submitted;
   options.forEach(value=>{
    const button=document.createElement('button');button.type='button';button.className='answer';
    button.textContent=String(value);button.disabled=!open;
    if(submitted&&value===lastAnswer)button.classList.add('active');
    button.addEventListener('click',()=>{
-    if(!state||submitted||answered.includes(mySeat)||Date.now()+offset<startAt)return;
+    if(!state||submitted||answered.includes(mySeat)||Date.now()+offset<startAt||Date.now()+offset>=deadline)return;
     submitted=true;lastAnswer=value;render();
     window.parent.postMessage({type:'recheninsel:answer',challengeId:state.challengeId,round:state.round,answer:value},location.origin);
    });
@@ -42,7 +44,9 @@
  function tick(){
   if(!state)return;
   const remaining=Math.max(0,Math.ceil((state.startAt-(Date.now()+offset))/1000));
-  $('timer').textContent=remaining?'Start in '+remaining+' s':'⏱️ Jetzt antworten';
+  const limit=[18000,16000,15000][Math.max(0,Math.min(2,state.round-1))];
+  const left=Math.max(0,(state.startAt+limit-(Date.now()+offset))/1000);
+  $('timer').textContent=remaining?'Start in '+remaining+' s':left>0?'⏱️ '+left.toFixed(1)+' s':'⏱️ 0.0 s';
   if(remaining===0&&state.phase==='countdown'&&!submitted&&!state.answered.includes(state.mySeat)){
    const first=$('board').querySelector('.answer');
    if(first?.disabled)render();
