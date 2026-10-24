@@ -429,7 +429,7 @@ window.addEventListener('message',event=>{
    if(Number.isInteger(entry.falls))p.falls=entry.falls;
    if(Number.isInteger(entry.row)&&entry.row>=-1&&entry.row<=4){
     p.row=entry.row;
-    if(entry.finishedAt)p.state='goal';
+    if(entry.finishedAt)p.state='goal';else if(p.state==='goal')p.state='ready';
     if(p.actor){if(entry.row<0)p.col=2;moveActor(p,entry.index);}
    }
   }
