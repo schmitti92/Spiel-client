@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.24-bomber.18",
+  "version": "2026.10.24-bomber.19",
   "released": "2026-10-24",
-  "notes": "Bomber-Strand-Arena: Ergebnisbridge und gemeinsame Spielerübernahme für 1 Mensch mit Bots vorbereitet"
+  "notes": "Bomber-Strand-Arena: gleichzeitige Tastatursteuerung für 2–4 Menschen und korrigiertes Spielende"
 }
