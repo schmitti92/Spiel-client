@@ -14,7 +14,7 @@ const GAME_DESCRIPTIONS={
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
  kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
  business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
- partychallenge:'Fünf oder neun Minispiele in einem Raum; der Host startet jedes Spiel.'
+ partychallenge:'Acht Online-Minispiele in einem Raum; Preisjäger wird noch integriert.'
 };
 function setPlayMode(next){
  playMode=next==='local'?'local':'online';
