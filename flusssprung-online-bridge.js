@@ -18,7 +18,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   const key=ch.id+':'+ch.index;
   if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;}
   if(!configured){
-   frame.contentWindow.postMessage({type:'flusssprung:configure',path:f.path,localSeat,seats:players.map(p=>({name:p.name}))},location.origin);
+   frame.contentWindow.postMessage({type:'flusssprung:configure',challengeId:key,path:f.path,localSeat,seats:players.map(p=>({name:p.name}))},location.origin);
    return;
   }
   const moves=f.moves||[];
