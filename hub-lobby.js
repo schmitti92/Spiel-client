@@ -203,7 +203,7 @@ function renderChallengeProgress(){
   }
   if(ch.phase==='finished'){
    const total=document.createElement('h3');total.textContent='Gesamtwertung';resultsBox.append(total);
-   const standings=room.players.filter(p=>p.participating).sort((a,b)=>a.seat-b.seat).map((m,i)=>({name:m.name,points:ch.points[i]})).sort((a,b)=>b.points-a.points);
+   const standings=(ch.totals||[]).slice().sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));
    standings.forEach((entry,i)=>{const row=document.createElement('p');row.textContent=(['🏆','🥈','🥉'][i]||'🎮')+' '+entry.name+' · '+entry.points+' Punkte';resultsBox.append(row);});
   }
  }
