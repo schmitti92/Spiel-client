@@ -117,6 +117,14 @@ body.is-playing .player.sky-active-glow :is(.player-head,.player-header,.player-
  color:#30200a!important;
  box-shadow:inset 0 1px 0 #fff9,0 2px 12px #ffd45b66!important;
 }
+
+/* Correct XL scoring: 15 cards are FIVE columns and THREE rows. */
+.sky-score-board:has(> :nth-child(15):last-child),
+.sky-score-mini-grid:has(> :nth-child(15):last-child){
+ display:grid!important;
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ grid-template-rows:repeat(3,minmax(0,auto))!important;
+}
 </style>
 <script src="skyjo_turn_and_update.js?v=4" defer></script>
 <script src="skyjo_tablet_autofit.js?v=2" defer></script>
