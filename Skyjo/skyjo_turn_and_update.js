@@ -4,14 +4,27 @@ const VERSION='2026-10-24-turn-update-1';
 let lastTurn='',lastToastAt=0,updating=false;
 function highlightPlayer(name,playing){
  const players=[...document.querySelectorAll('.player')];
+ const normalize=s=>String(s||'').normalize('NFKC').trim().replace(/\\s+/g,' ').toLocaleLowerCase('de');
+ const target=normalize(name);
  let match=null;
- for(const el of players){
-   const header=el.querySelector('.player-name,.player-head,.player-header,.name,h3,h4,strong,b');
-   const label=(header?.textContent||'').trim();
-   if(playing&&name&&(label===name||label.startsWith(name+' ')||label.startsWith(name+'\n'))) {match=el;break;}
+ if(playing&&target){
+   // Prefer the actual player name header; names can be wrapped in spans or include badges.
+   const selectors=['.player-name','.player-header','.player-head','.player-title','.name','h2','h3','h4','header','strong','b'];
+   for(const selector of selectors){
+     for(const el of players){
+       const nodes=el.querySelectorAll(selector);
+       if([...nodes].some(n=>normalize(n.textContent)===target)){match=el;break;}
+     }
+     if(match)break;
+   }
+   if(!match){
+     match=players.find(el=>[...el.querySelectorAll('*')].some(n=>n.children.length===0&&normalize(n.textContent)===target))||null;
+   }
+   if(!match){
+     match=players.find(el=>normalize(el.textContent).includes(target))||null;
+   }
  }
- if(!match&&playing){match=players.find(el=>[...el.querySelectorAll('b,strong,h3,h4')].some(n=>n.textContent.trim()===name))||null;}
- players.forEach(el=>{el.classList.toggle('sky-active-glow',el===match&&playing);});
+ players.forEach(el=>el.classList.toggle('sky-active-glow',playing&&el===match));
 }
 
 const tag=(name,cls)=>{const el=document.createElement(name);el.className=cls;document.body.append(el);return el;};
@@ -34,10 +47,10 @@ function updateTurn(){
  const playing=/am Zug/i.test(game.textContent||'')&&!/Rundenende/i.test(game.textContent||'');
  const mine=playing?(!pill||pill.classList.contains('mine')):false;
  const key=name+'|'+playing+'|'+mine;
- indicator.hidden=!playing;
+ indicator.hidden=true;
  highlightPlayer(name,playing);
  if(playing){
-   indicator.textContent=mine?'🎯 DU BIST DRAN!':'🎯 '+name+' IST AM ZUG';
+   // Persistent top banner intentionally removed; only the active board glows.
    indicator.classList.toggle('mine',mine);
  }
  if(key!==lastTurn){
