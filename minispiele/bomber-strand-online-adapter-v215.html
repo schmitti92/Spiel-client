@@ -135,7 +135,7 @@ function move(p,dx,dy,dt){if(!p.alive)return;const magnitude=Math.hypot(dx,dy);i
  for(const b of bombs)if(b.passThrough?.has(p.id)&& (p.x+r<=b.x||p.x-r>=b.x+1||p.y+r<=b.y||p.y-r>=b.y+1))b.passThrough.delete(p.id);
  }
  const k=key(Math.floor(p.x),Math.floor(p.y));if(pickups.has(k)&&!flames.some(f=>key(f.x,f.y)===k)){const type=pickups.get(k);pickups.delete(k);burst(Math.floor(p.x),Math.floor(p.y),'#fff1a1',18);sound(850,.16);if(type==='blast')p.range=Math.min(9,p.range+1);if(type==='speed')p.spd=Math.min(2.2,p.spd*1.08);if(type==='bomb')p.limit=Math.min(16,p.limit+1);if(p.human)$('status').textContent=({blast:'💥 Explosionsradius erhöht!',speed:'⚡ Du bist schneller!',bomb:'💣 Eine zusätzliche Bombe!'})[type];updateUI()}}
-function plant(p){if(!playing||!p.alive||p.active>=p.limit)return;const x=Math.floor(p.x),y=Math.floor(p.y);if(bombs.some(b=>b.x===x&&b.y===y))return;bombs.push({x,y,owner:p.id,range:p.range,fuse:2.1,passThrough:new Set(players.filter(q=>q.alive&&q.x+.22>x&&q.x-.22<x+1&&q.y+.22>y&&q.y-.22<y+1).map(q=>q.id))});p.active++;if(p.human)bombsPlaced++;sound(220,.07,'triangle')}
+function plant(p){if(!playing||!p.alive||p.active>=p.limit)return;const x=Math.floor(p.x),y=Math.floor(p.y);if(bombs.some(b=>b.x===x&&b.y===y))return;bombs.push({x,y,owner:p.id,range:p.range,fuse:2.1,passThrough:new Set(players.filter(q=>q.alive&&q.x+.22>x&&q.x-.22<x+1&&q.y+.22>y&&q.y-.22<y+1).map(q=>q.id))});p.active++;if(p.human)bombsPlaced++;if(window.BomberOnlineConfig&&p.id===window.BomberOnlineConfig.localSeat){const c=window.BomberOnlineConfig;parent.postMessage({type:'bomber:bomb',challengeId:c.challengeId,seq:++c.bombSeq,x,y,range:p.range},location.origin);}sound(220,.07,'triangle')}
 // V20.5: resolve explosions as one deterministic chain-reaction batch.
 function blastTiles(b, blocking){
  const out=[[b.x,b.y]];
@@ -302,7 +302,7 @@ window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==parent)return;
  const m=event.data;
  if(m?.type==='bomber:configure'&&typeof m.challengeId==='string'&&Array.isArray(m.roster)&&m.roster.length>=2&&m.roster.length<=4){
-  window.BomberOnlineConfig={challengeId:m.challengeId,roster:m.roster,localSeat:m.localSeat,seq:0};
+  window.BomberOnlineConfig={challengeId:m.challengeId,roster:m.roster,localSeat:m.localSeat,seq:0,bombSeq:0,seenBombs:new Set()};
   reset();$('status').textContent='🌐 Online-Arena vorbereitet';
   parent.postMessage({type:'bomber:configured',challengeId:m.challengeId},event.origin);
   if(!window.bomberOnlineTicker)window.bomberOnlineTicker=setInterval(()=>{const c=window.BomberOnlineConfig,p=players[c?.localSeat];if(!c||!p)return;parent.postMessage({type:'bomber:state',challengeId:c.challengeId,seq:++c.seq,x:p.x,y:p.y,alive:p.alive,bombsPlaced},location.origin);},250);
@@ -313,6 +313,12 @@ window.addEventListener('message',event=>{
   for(const q of m.players){const p=players[q.id];if(!p)continue;
    if(q.id!==c.localSeat&&Number.isFinite(q.x)&&Number.isFinite(q.y)){p.x=q.x;p.y=q.y;}
    if(q.alive===false)p.alive=false;
+  }
+  if(Array.isArray(m.bombs))for(const b of m.bombs){
+   if(c.seenBombs.has(b.id))continue;c.seenBombs.add(b.id);
+   if(b.seat===c.roster[c.localSeat]?.seat||b.seat===c.localSeat)continue;
+   const owner=players.find(p=>p.id===m.players.findIndex(q=>q.seat===b.seat));
+   if(owner&&owner.alive&&!bombs.some(q=>q.x===b.x&&q.y===b.y)){bombs.push({x:b.x,y:b.y,owner:owner.id,range:b.range,fuse:Math.max(.05,2.1-(Date.now()-(b.placedAt||Date.now()))/1000),passThrough:new Set()});owner.active++;}
   }
   updateUI();
  }
