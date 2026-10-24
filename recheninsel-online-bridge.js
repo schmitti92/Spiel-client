@@ -25,7 +25,7 @@ export function mountRecheninselOriginal({container,src,getRoom,request,acceptRo
   const options=[...candidates].sort((x,y)=>{const hash=n=>(Math.imul(n+17,2654435761)^Math.imul(a+31,2246822519)^Math.imul(b+29,3266489917)^Math.imul(math.round,668265263))>>>0;return hash(x)-hash(y);});
   const key=ch.id+':'+ch.index+':'+math.round+':'+(math.answered||[]).join(',');
   if(latestKey===key)return;latestKey=key;
-  iframe.contentWindow.postMessage({type:'recheninsel:state',challengeId:ch.id,round:math.round,mySeat,a,b,operator:op,options,answered:math.answered||[],phase:ch.phase,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
+  iframe.contentWindow.postMessage({type:'recheninsel:state',challengeId:ch.id,round:math.round,mySeat,a,b,operator:op,options,answered:math.answered||[],phase:ch.phase,startAt:ch.startAt,serverNow:room.serverNow,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
  }
  async function onMessage(event){
   if(!active||event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='recheninsel:answer')return;
