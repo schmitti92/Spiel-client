@@ -305,7 +305,7 @@ window.addEventListener('message',event=>{
   window.BomberOnlineConfig={challengeId:m.challengeId,roster:m.roster,localSeat:m.localSeat,seq:0,bombSeq:0,seenBombs:new Set()};
   reset();$('status').textContent='🌐 Online-Arena vorbereitet';
   parent.postMessage({type:'bomber:configured',challengeId:m.challengeId},event.origin);
-  if(!window.bomberOnlineTicker)window.bomberOnlineTicker=setInterval(()=>{const c=window.BomberOnlineConfig,p=players[c?.localSeat];if(!c||!p)return;parent.postMessage({type:'bomber:state',challengeId:c.challengeId,seq:++c.seq,x:p.x,y:p.y,alive:p.alive,bombsPlaced},location.origin);},250);
+  if(!window.bomberOnlineTicker)window.bomberOnlineTicker=setInterval(()=>{const c=window.BomberOnlineConfig,p=players[c?.localSeat];if(!c||!p||!playing)return;parent.postMessage({type:'bomber:state',challengeId:c.challengeId,seq:++c.seq,x:p.x,y:p.y,alive:p.alive,bombsPlaced},location.origin);},250);
  }
 
  if(m?.type==='bomber:snapshot'&&window.BomberOnlineConfig?.challengeId===m.challengeId&&Array.isArray(m.players)){
@@ -318,10 +318,10 @@ window.addEventListener('message',event=>{
    if(c.seenBombs.has(b.id))continue;c.seenBombs.add(b.id);
    if(b.seat===c.roster[c.localSeat]?.seat)continue;
    const owner=players.find(p=>p.id===m.players.findIndex(q=>q.seat===b.seat));
-   if(owner&&!bombs.some(q=>q.x===b.x&&q.y===b.y)){bombs.push({x:b.x,y:b.y,owner:owner.id,range:b.range,fuse:Math.max(.05,2.1-(Date.now()-(b.placedAt||Date.now()))/1000),passThrough:new Set()});owner.active++;}
+   if(owner&&!bombs.some(q=>q.x===b.x&&q.y===b.y)){bombs.push({x:b.x,y:b.y,owner:owner.id,range:b.range,fuse:Math.max(.05,2.1-(serverTime-(b.placedAt||serverTime))/1000),passThrough:new Set()});owner.active++;}
   }
   if(Array.isArray(m.destroyed))for(const i of m.destroyed){if(Number.isInteger(i)&&i>=0&&i<cells.length&&cells[i]==='crate'){cells[i]=null;hidden.delete(i);}}
-  if(Array.isArray(m.blasts))for(const b of m.blasts){if(Number.isInteger(b.x)&&Number.isInteger(b.y)&&within(b.x,b.y)&&!flames.some(f=>f.x===b.x&&f.y===b.y)){flames.push({x:b.x,y:b.y,life:Math.max(.05,(b.until-Date.now())/1000)});}}
+  if(Array.isArray(m.blasts))for(const b of m.blasts){if(Number.isInteger(b.x)&&Number.isInteger(b.y)&&within(b.x,b.y)&&!flames.some(f=>f.x===b.x&&f.y===b.y)){flames.push({x:b.x,y:b.y,life:Math.max(.05,(b.until-serverTime)/1000)});}}
   updateUI();
  }
  if(m?.type==='bomber:snapshot'&&window.BomberOnlineConfig?.challengeId===m.challengeId){
