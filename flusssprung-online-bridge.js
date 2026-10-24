@@ -64,8 +64,8 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   try{
    const r=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-flusssprung-jump','POST',{challengeId:ch.id,row,col});
    if(!alive||getRoom()?.match?.challenge?.id!==ch.id)return;
-   if(r?.room)acceptRoom(r.room);
    frame.contentWindow?.postMessage({type:'flusssprung:jump-accepted',col},location.origin);
+   if(r?.room)acceptRoom(r.room);
   }catch(err){
    if(alive)frame.contentWindow?.postMessage({type:'flusssprung:jump-rejected'},location.origin);
    if(Date.now()-lastError>12000){lastError=Date.now();onError?.(err)}
