@@ -299,7 +299,7 @@ function updateFullscreenLabel(){fullscreenBtn.textContent=document.fullscreenEl
 fullscreenBtn.addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else $('status').textContent='Vollbild wird von diesem Browser nicht unterstützt';}catch{$('status').textContent='Vollbild konnte nicht aktiviert werden'}});
 document.addEventListener('fullscreenchange',updateFullscreenLabel);
 $('closeResults').addEventListener('click',()=>{$('results').hidden=true});init();
-</script><script src="../party-players.js?v=20261024-roster5"></script><script src="party-minigame-bridge.js">
+</script><script src="../party-players.js?v=20261024-roster5"></script><script src="../party-minigame-bridge.js"></script><script>
 // Online-Modul: Original-Zeichnung und Steuerung bleiben erhalten.
 // Die Server-Simulation wird erst nach der Raum-/Challenge-Anbindung aktiviert.
 window.addEventListener('message',event=>{
