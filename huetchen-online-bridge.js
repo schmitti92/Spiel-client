@@ -22,7 +22,9 @@ export function mountHuetchenOriginal({container,getRoom,request,acceptRoom,onEr
   iframe.contentWindow.postMessage({type:'huetchen:state',challengeId:ch.id,round:h.round,secret:h.secret,swaps:h.swaps,submitted:h.answered?.includes(seat)||false,startAt:ch.startAt,serverNow:room.serverNow,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
  }
  async function onMessage(event){
-  if(!active||busy||event.source!==iframe.contentWindow||event.origin!==location.origin||event.data?.type!=='huetchen:answer')return;
+  if(!active||event.source!==iframe.contentWindow||event.origin!==location.origin)return;
+  if(event.data?.type==='huetchen:ready'){lastKey='';sync();return;}
+  if(busy||event.data?.type!=='huetchen:answer')return;
   const room=getRoom(),ch=room?.match?.challenge;
   if(ch?.order?.[ch.index]!=='huetchen-challenge'||ch.phase!=='countdown'||ch.id!==event.data.challengeId||ch.huetchen?.round!==event.data.round)return;
   const slot=event.data.slot;if(!Number.isInteger(slot)||slot<0||slot>=ch.huetchen.round+2)return;
