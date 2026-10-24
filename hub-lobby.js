@@ -196,13 +196,32 @@ const CHALLENGE_STAGE_CSS=`
 function ensureChallengeStageStyle(){if(document.getElementById('challenge-stage-style'))return;const style=document.createElement('style');style.id='challenge-stage-style';style.textContent=CHALLENGE_STAGE_CSS;document.head.append(style);}
 let challengeClockTimer=null;
 let challengeStopBusy=false;
+let recheninselOriginalBridge=null;
+let recheninselOriginalLoading=false;
+let recheninselOriginalFailed=false;
+async function ensureRecheninselOriginalBridge(){
+ if(recheninselOriginalBridge||recheninselOriginalLoading||recheninselOriginalFailed)return;
+ recheninselOriginalLoading=true;
+ try{
+  const {mountRecheninselOriginal}=await import('./recheninsel-online-bridge.js?v=2');
+  const target=el('challenge-original-frame');
+  if(!target)return;
+  recheninselOriginalBridge=mountRecheninselOriginal({
+   container:target,src:'recheninsel-original-online.html',
+   getRoom:()=>room,request,acceptRoom,onError:showError
+  });
+  recheninselOriginalBridge.sync();
+ }catch(error){recheninselOriginalFailed=true;console.error('Original-Recheninsel nicht geladen',error);showError(error);}
+ finally{recheninselOriginalLoading=false;}
+}
+
 const challengeMathTimeoutPending=new Set();
 function renderChallengeProgress(){
  ensureChallengeStageStyle();
  let box=el('challenge-progress');
  if(!box){
   box=document.createElement('section');box.id='challenge-progress';box.style.cssText='margin:16px 0;padding:22px;border-radius:22px;background:linear-gradient(135deg,#122946,#223f69);color:white;text-align:center;box-shadow:0 14px 30px #10294b30';
-  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><div id="challenge-math-board" role="group" aria-label="15 Schatzfässer – wähle deine Antwort"></div><div id="challenge-math-players" aria-label="Mitspieler"></div><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px" hidden><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px" hidden>Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
+  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-original-frame" hidden style="width:min(98vw,1300px);height:min(77dvh,850px);min-height:340px;flex-shrink:0;margin:0 auto;border-radius:18px;overflow:hidden;border:2px solid #c8a56c;box-shadow:0 18px 45px #0007"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><div id="challenge-math-board" role="group" aria-label="15 Schatzfässer – wähle deine Antwort"></div><div id="challenge-math-players" aria-label="Mitspieler"></div><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px" hidden><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px" hidden>Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
   const overlay=document.createElement('div');overlay.id='challenge-start-overlay';overlay.hidden=true;overlay.setAttribute('aria-live','off');overlay.innerHTML='<div id="challenge-start-caption">🏴‍☠️ Macht euch bereit!</div><div id="challenge-start-number">3</div>';box.append(overlay);
   el('challenge-math-send').addEventListener('click',async()=>{
@@ -221,12 +240,16 @@ function renderChallengeProgress(){
  const ch=room?.match?.game==='partychallenge'?room.match.challenge:null;
  box.classList.toggle('hidden',!ch);
  if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}
- if(!ch){const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;return;}
+ if(!ch){const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;el('challenge-original-frame').hidden=true;return;}
  const index=Math.min(Math.max(0,ch.index||0),ch.order.length-1);
  el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
  el('challenge-next').hidden=!room.host||ch.phase!=='results';
  const isMath=ch.order[index]==='recheninsel';
+ const originalActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
+ el('challenge-original-frame').hidden=!originalActive;
+ if(originalActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
+
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
  const mathBoard=el('challenge-math-board');
@@ -260,7 +283,7 @@ function renderChallengeProgress(){
    card.append(name,status);playerList.append(card);
   });
  }
- el('challenge-math').hidden=!isMath||ch.phase!=='countdown';
+ el('challenge-math').hidden=!isMath||ch.phase!=='countdown'||originalActive;
  el('challenge-math-question').textContent=isMath&&ch.math?'Runde '+(ch.math.round||1)+' / '+(ch.math.totalRounds||3)+' · '+ch.math.a+' '+ch.math.operator+' '+ch.math.b+' = ?':'';
  el('challenge-math-send').disabled=answered||Number(ch.startAt)>Number(room.serverNow);
  el('challenge-math-input').disabled=answered;
