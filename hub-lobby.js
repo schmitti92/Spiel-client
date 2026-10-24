@@ -229,6 +229,19 @@ async function ensureZeitgefuehlOriginalBridge(){
  }catch(error){zeitgefuehlOriginalFailed=true;showError(error);}
  finally{zeitgefuehlOriginalLoading=false;}
 }
+let snakeOriginalBridge=null,snakeOriginalLoading=false,snakeOriginalFailed=false;
+async function ensureSnakeOriginalBridge(){
+ if(snakeOriginalBridge||snakeOriginalLoading||snakeOriginalFailed)return;
+ snakeOriginalLoading=true;
+ try{
+  const {mountSnakeOriginal}=await import('./snake-arena-online-bridge.js?v=1');
+  const ch=room?.match?.challenge;
+  if(!ch||ch.order?.[ch.index]!=='snake-arena'||ch.phase!=='countdown')return;
+  const target=el('challenge-original-frame');if(!target)return;
+  snakeOriginalBridge=mountSnakeOriginal({container:target,getRoom:()=>room,request,acceptRoom,onError:showError});
+  snakeOriginalBridge.sync();
+ }catch(e){snakeOriginalFailed=true;showError(e)}finally{snakeOriginalLoading=false;}
+}
 let lavaOriginalBridge=null,lavaOriginalLoading=false,lavaOriginalFailed=false;
 async function ensureLavaOriginalBridge(){
  if(lavaOriginalBridge||lavaOriginalLoading||lavaOriginalFailed)return;
@@ -331,20 +344,23 @@ function renderChallengeProgress(){
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
+ const originalSnakeActive=ch.order[index]==='snake-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!snakeOriginalFailed;
  const originalLavaActive=ch.order[index]==='lava-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!lavaOriginalFailed;
  const originalFlusssprungActive=ch.order[index]==='flusssprung'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!flusssprungOriginalFailed;
- const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive;
+ const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive;
  if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
+ if(!originalSnakeActive&&snakeOriginalBridge){snakeOriginalBridge.destroy();snakeOriginalBridge=null;}
  if(!originalLavaActive&&lavaOriginalBridge){lavaOriginalBridge.destroy();lavaOriginalBridge=null;}
  if(!originalFlusssprungActive&&flusssprungOriginalBridge){flusssprungOriginalBridge.destroy();flusssprungOriginalBridge=null;}
  el('challenge-original-frame').hidden=!originalActive;
- box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive);
+ box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive);
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
  if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
  if(originalMaulwurfActive){ensureMaulwurfOriginalBridge();maulwurfOriginalBridge?.sync();}
  if(originalFlusssprungActive){ensureFlusssprungOriginalBridge();flusssprungOriginalBridge?.sync();}
  if(originalLavaActive){ensureLavaOriginalBridge();lavaOriginalBridge?.sync();}
+ if(originalSnakeActive){ensureSnakeOriginalBridge();snakeOriginalBridge?.sync();}
 
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
