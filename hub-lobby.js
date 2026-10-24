@@ -261,7 +261,7 @@ function renderChallengeSetup(showStage){
   });
   el('challenge-save').addEventListener('click',async()=>{
    const button=el('challenge-save');button.disabled=true;
-   try{await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:Number(el('challenge-count').value)});el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(room.code));acceptRoom(updated.room);}
+   try{if(Number(el('challenge-count').value)===Number(room.settings?.partychallenge?.count)){el('challenge-feedback').textContent='✓ Bereits gespeichert – die Bereitmeldungen bleiben erhalten.';return;}await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:Number(el('challenge-count').value)});el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(room.code));acceptRoom(updated.room);}
    catch(e){el('challenge-feedback').textContent='Speichern fehlgeschlagen: '+e.message;}
    finally{button.disabled=false;}
   });
