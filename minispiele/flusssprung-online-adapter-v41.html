@@ -395,11 +395,12 @@ window.addEventListener('message',event=>{
  const m=event.data;
  if(!m||typeof m!=='object')return;
  if(m.type==='flusssprung:configure'){
+  if(window.FlusssprungOnlineConfig&&window.FlusssprungOnlineConfig.challengeId===m.challengeId){window.parent.postMessage({type:'flusssprung:configured'},event.origin);return;}
   const seats=m.seats;
   if(!Array.isArray(seats)||seats.length<2||seats.length>4||!seats.every(x=>typeof x.name==='string'&&x.name.length<=40))return;
   if(!Array.isArray(m.path)||m.path.length!==5||!m.path.every(x=>Number.isInteger(x)&&x>=0&&x<6))return;
   if(!Number.isInteger(m.localSeat)||m.localSeat<0||m.localSeat>=seats.length)return;
-  window.FlusssprungOnlineConfig={path:m.path.slice(),localSeat:m.localSeat};
+  window.FlusssprungOnlineConfig={path:m.path.slice(),localSeat:m.localSeat,challengeId:m.challengeId};
   const count=document.getElementById('count');count.value=String(seats.length);
   count.dispatchEvent(new Event('change'));
   seats.forEach((seat,i)=>{const type=document.getElementById('type'+i);if(type)type.value='human'});
