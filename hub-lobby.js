@@ -411,7 +411,7 @@ function render(){
   :room.phase==='lobby'&&room.lastCompleted?.id
    ?(room.lastCompleted.status==='aborted'?'⏹ Partie ohne Wertung beendet: ':'🎉 Letzte Partie abgeschlossen: ')+(GAME[room.lastCompleted.game]||room.lastCompleted.game)+'. Ihr seid weiterhin im selben Raum – der Host kann das nächste Spiel auswählen.'
    :room.canLaunch
-    ?'Alle ausgewählten Mitspieler melden sich bereit. Das Spiel startet automatisch.'
+    ?room.game==='partychallenge'?'Alle bereit? Dann startet der Host die Challenge mit dem Startknopf.':'Alle ausgewählten Mitspieler melden sich bereit. Das Spiel startet automatisch.'
     :'Alle vier Spiele sind mit dem gemeinsamen Raum verbunden – Beta.';
 }
 async function command(run){if(operation)return;operation=true;render();notice('');
