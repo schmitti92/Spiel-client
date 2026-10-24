@@ -228,6 +228,21 @@
     .minispiele-card .mini-art{position:absolute;right:6%;top:15%;font-size:clamp(40px,7vw,95px);letter-spacing:-.2em;opacity:.75;filter:drop-shadow(0 12px 12px #0008);pointer-events:none}
     .minispiele-card .btn{background:linear-gradient(125deg,#f7c86b,#d68b35);border-color:#ffdc8b;color:#211725;text-shadow:none}
     @media(min-width:711px){.minispiele-card{grid-column:1/-1;min-height:250px}}
+
+/* Premium-Minispielfläche: echte vorhandene Spielmotive statt Emoji-Platzhalter */
+.minispiele-card{--scene:linear-gradient(90deg,#08182b 0%,transparent 65%),url('Assets/game-backgrounds/barikade.webp');min-height:344px!important;border-color:#e8b96988!important}
+.minispiele-card::before{background-image:linear-gradient(90deg,#0b1323dd 0%,#0b1323bb 37%,transparent 75%),url('Assets/game-backgrounds/barikade.webp')!important;background-position:center,center!important}
+.minispiele-card::after{background:linear-gradient(90deg,#070e1ff5 0%,#071224df 35%,#07132372 70%,#06101b30 100%)!important}
+.minispiele-card .mini-art{right:3%;top:9%;bottom:9%;width:48%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:9px;transform:perspective(850px) rotateY(-9deg);font-size:0!important;letter-spacing:normal!important;opacity:1!important;filter:drop-shadow(0 14px 18px #000b)!important}
+.minispiele-card .mini-art span{display:block;border:3px solid #ffe3a966;border-radius:15px;background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px #fff3,0 7px 17px #000a;overflow:hidden}
+.minispiele-card .mini-art span:nth-child(1){background-image:url('Assets/game-backgrounds/barikade.webp')}
+.minispiele-card .mini-art span:nth-child(2){background-image:url('Assets/game-backgrounds/skyjo.webp')}
+.minispiele-card .mini-art span:nth-child(3){background-image:url('Assets/game-backgrounds/kreuzkunter.webp')}
+.minispiele-card .mini-art span:nth-child(4){background-image:url('Assets/game-backgrounds/business.webp')}
+.minispiele-card .game-title,.minispiele-card>p,.minispiele-card .features,.minispiele-card .actions{position:relative;z-index:2;max-width:53%}
+.minispiele-card .btn{background:linear-gradient(135deg,#ffe4a0,#e9a943 58%,#bc7928)!important;border:1px solid #fff0bc!important;color:#302014!important;box-shadow:inset 0 2px #fff8,0 7px 0 #795023,0 13px 22px #0009!important;text-shadow:none!important}
+.minispiele-card .btn:hover{filter:brightness(1.1);transform:translateY(-2px)}
+@media(max-width:710px){.minispiele-card{min-height:360px!important}.minispiele-card .mini-art{right:3%;top:13%;width:48%;height:63%;bottom:auto;gap:5px}.minispiele-card .mini-art span{border-radius:9px;border-width:2px}.minispiele-card .game-title,.minispiele-card>p,.minispiele-card .features,.minispiele-card .actions{max-width:70%}.minispiele-card .game-title h2{font-size:24px}.minispiele-card .features{font-size:12px}.minispiele-card .actions{max-width:100%}}
 </style>
 </head>
 <body>
@@ -293,7 +308,7 @@
       </article>
     
       <article class="game minispiele-card">
-        <div class="mini-art" aria-hidden="true">🌋 🐍 💣</div>
+        <div class="mini-art" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
         <div class="game-title"><h2>🏆 Minispiele – Party Challenge</h2><span class="badge gold">9 Minispiele · Lokal</span></div>
         <p>Neun abwechslungsreiche Herausforderungen: Lava Arena, Flusssprung, Snake, Bomber Arena und mehr.</p>
         <ul class="features"><li>🎮 Einzelne Minispiele auswählen</li><li>🤖 Menschen und Computergegner – je nach Spiel</li><li>✨ Ohne Online-Lobby spielen</li></ul>
