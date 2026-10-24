@@ -14,7 +14,7 @@ const GAME_DESCRIPTIONS={
  skyjo:'Karten, Joker und spannende Runden. Der Host legt die Regeln fest.',
  kreuz:'Würfeln, Farben ankreuzen und gemeinsam Punkte sammeln.',
  business:'Unternehmen, Aktien und Branchen – mit 10, 20 oder 30 Runden.',
- partychallenge:'Fünf oder neun Minispiele in einem Raum; der Host startet jedes Spiel.'
+ partychallenge:'Mehrere Minispiele in einem Raum; der Host startet jedes Spiel.'
 };
 function setPlayMode(next){
  playMode=next==='local'?'local':'online';
@@ -287,7 +287,7 @@ function renderChallengeProgress(){
  const ch=room?.match?.game==='partychallenge'?room.match.challenge:null;
  box.classList.toggle('hidden',!ch);
  if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}
- if(!ch){const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;el('challenge-original-frame').hidden=true;return;}
+ if(!ch){const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;el('challenge-original-frame').hidden=true;if(maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}return;}
  const index=Math.min(Math.max(0,ch.index||0),ch.order.length-1);
  el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
