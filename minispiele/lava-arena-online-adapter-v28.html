@@ -157,9 +157,17 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
   }
   if(m.type==='lava-arena:snapshot'&&window.LavaArenaOnlineConfig?.challengeId===m.challengeId){
    if(!Array.isArray(m.players))return;
+   if(m.phase==='results'||m.phase==='finished'){
+    if(running){running=false;ended=true;keys.clear();touch.x=touch.y=0;touch.jump=false;
+     document.querySelector('#winner').textContent='🏆 Online-Ergebnis';
+     document.querySelector('#details').textContent='Die Platzierung und Punkte stehen in der gemeinsamen Lobby.';
+     document.querySelector('#result').style.display='grid';document.querySelector('#again').style.display='none';
+     document.querySelector('#pause').style.display='none';document.querySelector('#touch').classList.remove('active');}
+    return;
+   }
    if(Array.isArray(m.tiles)&&m.tiles.length===tiles.length){for(let i=0;i<tiles.length;i++){const t=m.tiles[i];if(t&&Number.isInteger(t.state)&&t.state>=0&&t.state<=2)tiles[i].state=t.state;if(t&&Number.isFinite(t.damage))tiles[i].damage=clamp(t.damage,0,1);}}
    for(const q of m.players){
-    if(!Number.isInteger(q.id)||q.id<0||q.id>=players.length||q.id===window.LavaArenaOnlineConfig.localSeat)continue;
+    if(!Number.isInteger(q.id)||q.id<0||q.id>=players.length)continue; if(q.id===window.LavaArenaOnlineConfig.localSeat){if(q.alive===false)players[q.id].alive=false;continue;}
     const p=players[q.id];if(!p)continue;
     if(Number.isFinite(q.x))p.x=clamp(q.x,13,SIZE-13);
     if(Number.isFinite(q.y))p.y=clamp(q.y,13,SIZE-13);
