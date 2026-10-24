@@ -229,6 +229,19 @@ async function ensureZeitgefuehlOriginalBridge(){
  }catch(error){zeitgefuehlOriginalFailed=true;showError(error);}
  finally{zeitgefuehlOriginalLoading=false;}
 }
+let lavaOriginalBridge=null,lavaOriginalLoading=false,lavaOriginalFailed=false;
+async function ensureLavaOriginalBridge(){
+ if(lavaOriginalBridge||lavaOriginalLoading||lavaOriginalFailed)return;
+ lavaOriginalLoading=true;
+ try{
+  const {mountLavaOriginal}=await import('./lava-arena-online-bridge.js?v=2');
+  const ch=room?.match?.challenge;
+  if(!ch||ch.order?.[ch.index]!=='lava-arena'||ch.phase!=='countdown')return;
+  const target=el('challenge-original-frame');if(!target)return;
+  lavaOriginalBridge=mountLavaOriginal({container:target,getRoom:()=>room,request,acceptRoom,onError:showError});
+  lavaOriginalBridge.sync();
+ }catch(e){lavaOriginalFailed=true;showError(e)}finally{lavaOriginalLoading=false}
+}
 let flusssprungOriginalBridge=null,flusssprungOriginalLoading=false,flusssprungOriginalFailed=false;
 async function ensureFlusssprungOriginalBridge(){
  if(flusssprungOriginalBridge||flusssprungOriginalLoading||flusssprungOriginalFailed)return;
@@ -318,17 +331,20 @@ function renderChallengeProgress(){
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
+ const originalLavaActive=ch.order[index]==='lava-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!lavaOriginalFailed;
  const originalFlusssprungActive=ch.order[index]==='flusssprung'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!flusssprungOriginalFailed;
- const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive;
+ const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive;
  if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
+ if(!originalLavaActive&&lavaOriginalBridge){lavaOriginalBridge.destroy();lavaOriginalBridge=null;}
  if(!originalFlusssprungActive&&flusssprungOriginalBridge){flusssprungOriginalBridge.destroy();flusssprungOriginalBridge=null;}
  el('challenge-original-frame').hidden=!originalActive;
- box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive);
+ box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive);
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
  if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
  if(originalMaulwurfActive){ensureMaulwurfOriginalBridge();maulwurfOriginalBridge?.sync();}
  if(originalFlusssprungActive){ensureFlusssprungOriginalBridge();flusssprungOriginalBridge?.sync();}
+ if(originalLavaActive){ensureLavaOriginalBridge();lavaOriginalBridge?.sync();}
 
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
