@@ -147,6 +147,10 @@ function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;se
 const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
 const CHALLENGE_STAGE_CSS=`
 #challenge-progress:not(.hidden){position:fixed!important;inset:0!important;z-index:10020!important;margin:0!important;border-radius:0!important;overflow:auto!important;overscroll-behavior:contain;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.4vh,16px);padding:clamp(20px,4vh,46px) clamp(18px,5vw,70px)!important;box-sizing:border-box;background:radial-gradient(ellipse at 50% 105%,#d5b575 0%,#b68c55 12%,transparent 38%),radial-gradient(ellipse at 7% 88%,#163f30 0%,#163f30 14%,transparent 31%),radial-gradient(ellipse at 96% 82%,#124f3a 0%,#124f3a 12%,transparent 30%),linear-gradient(180deg,#051b30 0%,#0b4765 45%,#1b8290 75%,#174f56 100%)!important;color:#fff!important;text-shadow:0 2px 12px #001b2e88;box-shadow:none!important}
+#challenge-progress.maulwurf-playing{justify-content:flex-start!important;gap:4px!important;padding:4px!important;overflow:hidden!important}
+#challenge-progress.maulwurf-playing::before,#challenge-progress.maulwurf-playing::after{display:none!important}
+#challenge-progress.maulwurf-playing>h2,#challenge-progress.maulwurf-playing>#challenge-progress-order,#challenge-progress.maulwurf-playing>#challenge-progress-status,#challenge-progress.maulwurf-playing>#challenge-progress-name,#challenge-progress.maulwurf-playing>#challenge-clock{display:none!important}
+#challenge-progress.maulwurf-playing>#challenge-original-frame{width:100%!important;max-width:none!important;height:calc(100dvh - 12px)!important;min-height:0!important;flex:1!important;border:0!important;border-radius:12px!important;box-shadow:none!important}
 #challenge-progress::before{content:"🏝️";position:fixed;left:2vw;bottom:3vh;font-size:clamp(75px,16vw,220px);opacity:.72;pointer-events:none;filter:drop-shadow(0 12px 20px #001b2b)}
 #challenge-progress::after{content:"⛵";position:fixed;right:5vw;bottom:12vh;font-size:clamp(58px,10vw,135px);opacity:.72;pointer-events:none;filter:drop-shadow(0 12px 20px #001b2b)}
 #challenge-progress>*{position:relative;z-index:1;max-width:min(92vw,900px);margin:0!important}
@@ -225,6 +229,21 @@ async function ensureZeitgefuehlOriginalBridge(){
  }catch(error){zeitgefuehlOriginalFailed=true;showError(error);}
  finally{zeitgefuehlOriginalLoading=false;}
 }
+let maulwurfOriginalBridge=null,maulwurfOriginalLoading=false,maulwurfOriginalFailed=false;
+async function ensureMaulwurfOriginalBridge(){
+ if(maulwurfOriginalBridge||maulwurfOriginalLoading||maulwurfOriginalFailed)return;
+ maulwurfOriginalLoading=true;
+ try{
+  const {mountMaulwurfOriginal}=await import('./maulwurf-online-bridge.js?v=1');
+  const target=el('challenge-original-frame');if(!target)return;
+  recheninselOriginalBridge?.destroy();recheninselOriginalBridge=null;
+  zeitgefuehlOriginalBridge?.destroy();zeitgefuehlOriginalBridge=null;
+  huetchenOriginalBridge?.destroy();huetchenOriginalBridge=null;
+  maulwurfOriginalBridge=mountMaulwurfOriginal({container:target,getRoom:()=>room,request,acceptRoom,onError:showError});
+  maulwurfOriginalBridge.sync();
+ }catch(error){maulwurfOriginalFailed=true;showError(error);}
+ finally{maulwurfOriginalLoading=false;}
+}
 let recheninselOriginalBridge=null;
 let recheninselOriginalLoading=false;
 let recheninselOriginalFailed=false;
@@ -272,7 +291,7 @@ function renderChallengeProgress(){
  const ch=room?.match?.game==='partychallenge'?room.match.challenge:null;
  box.classList.toggle('hidden',!ch);
  if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}
- if(!ch){const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;el('challenge-original-frame').hidden=true;return;}
+ if(!ch){box.classList.remove('maulwurf-playing');if(maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;el('challenge-original-frame').hidden=true;return;}
  const index=Math.min(Math.max(0,ch.index||0),ch.order.length-1);
  el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
@@ -281,11 +300,15 @@ function renderChallengeProgress(){
  const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
- const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive;
+ const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
+ const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive;
+ if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
  el('challenge-original-frame').hidden=!originalActive;
+ box.classList.toggle('maulwurf-playing',originalMaulwurfActive);
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
  if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
+ if(originalMaulwurfActive){ensureMaulwurfOriginalBridge();maulwurfOriginalBridge?.sync();}
 
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
