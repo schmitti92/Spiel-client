@@ -11,7 +11,7 @@ export function mountBomberOriginal({container,getRoom,request,acceptRoom,onErro
   const {room,ch}=c,seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
   const mine=room.players.find(p=>p.me)?.seat,localSeat=seats.indexOf(mine);
   if(localSeat<0)return;
-  if(!configured){frame.contentWindow.postMessage({type:'bomber:configure',challengeId:ch.id,localSeat,roster:seats.map((seat,id)=>({id,name:room.players.find(p=>p.seat===seat)?.name||'Spieler',bot:false}))},location.origin);return;}
+  if(!configured){frame.contentWindow.postMessage({type:'bomber:configure',challengeId:ch.id,localSeat,roster:seats.map((seat,id)=>({id,seat,name:room.players.find(p=>p.seat===seat)?.name||'Spieler',bot:false}))},location.origin);return;}
   if(ch.bomber)frame.contentWindow.postMessage({type:'bomber:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.bomber.players.map((p,i)=>({...p,id:i})),bombs:ch.bomber.bombs},location.origin);
   if(ch.phase==='countdown'&&Date.now()+offset>ch.startAt+120000&&!lastTimeout){lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-bomber-timeout','POST',{challengeId:ch.id}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(e=>{lastTimeout=false;onError(e)});}
  }
@@ -19,6 +19,7 @@ export function mountBomberOriginal({container,getRoom,request,acceptRoom,onErro
   if(!alive||e.origin!==location.origin||e.source!==frame.contentWindow)return;
   const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
   if(m.type==='bomber:configured'){configured=true;sync();return;}
+  if(m.type==='bomber:bomb'){if(c.ch.phase!=='countdown')return;try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-bomber-bomb','POST',{challengeId:c.ch.id,seq:m.seq,x:m.x,y:m.y,range:m.range});if(r?.room)acceptRoom(r.room)}catch(error){onError(error)}return;}
   if(m.type!=='bomber:state'||pending||c.ch.phase!=='countdown'||Date.now()+offset<c.ch.startAt||Date.now()-lastSend<180||!Number.isSafeInteger(m.seq)||m.seq<=lastSeq)return;
   if(![m.x,m.y].every(Number.isFinite))return;
   pending=true;lastSend=Date.now();lastSeq=m.seq;
