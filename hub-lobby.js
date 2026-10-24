@@ -89,6 +89,7 @@ function enterCurrentMatch(){
  if(room?.match?.game==='kreuz')return enterKreuz();
  if(room?.match?.game==='skyjo')return enterSkyjo();
  if(room?.match?.game==='business')return enterBusiness();
+ if(room?.match?.game==='partychallenge')return;
  throw Error('GAME_NOT_CONNECTED');
 }
 function enterBarikade(){
@@ -288,12 +289,12 @@ function render(){
  el('ready-progressbar').setAttribute('aria-valuenow',String(percent));
  el('ready-title').textContent=room.phase==='playing'?'🎮 Eure Partie läuft':'Bereit für '+(GAME[room.game]||'die Partie')+'?';
  el('ready-status').textContent=`${readyCount} von ${playing.length} Mitspielern bereit · ${room.players.length-playing.length} Zuschauer${room.allReady?' · Alle bereit!':''}`;
- el('start-btn').classList.toggle('hidden',!room.host||room.phase!=='playing');
+ el('start-btn').classList.toggle('hidden',!room.host||(room.phase!=='playing'&&!(room.game==='partychallenge'&&room.phase==='preparing')));
  el('cancel-match-btn').classList.toggle('hidden',!room.host||room.phase!=='playing');
  el('cancel-match-btn').disabled=operation||!room.host||room.phase!=='playing';
- el('start-btn').disabled=!(room.phase==='playing'&&room.host)||operation;
- el('start-btn').textContent=room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
- el('start-btn').title=room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.canLaunch?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
+ el('start-btn').disabled=operation||!room.host||(room.phase==='preparing'&&!room.allReady);
+ el('start-btn').textContent=room.game==='partychallenge'&&room.phase==='preparing'?'🏆 Challenge starten (3–2–1–0)':room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
+ el('start-btn').title=room.game==='partychallenge'?'Der Host startet ausdrücklich. Der Server bestimmt die Startzeit.':room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.canLaunch?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
  el('leave-btn').disabled=room.phase==='playing'||operation;
  el('integration-note').textContent=room.phase==='playing'
   ?'Die Partie läuft. Nach dem bestätigten Spielende kehren alle automatisch in diesen Raum zurück.'
@@ -350,7 +351,12 @@ el('ready-btn').addEventListener('click',()=>command(async()=>{
  const {room:r}=await request('/rooms/'+code+'/ready','POST',{ready:!me.ready});activateRoom(r);
 }));
 el('start-btn').addEventListener('click',()=>command(async()=>{
- if(room?.phase!=='playing'||!room.host)return;
+ if(!room?.host)return;
+ if(room.game==='partychallenge'&&room.phase==='preparing'){
+  if(!room.allReady)throw Error('PLAYERS_NOT_READY');
+  const {room:r}=await request('/rooms/'+code+'/start','POST');activateRoom(r);notice('Challenge gestartet: gemeinsamer Countdown läuft.');return;
+ }
+ if(room?.phase!=='playing')return;
  const {room:r}=await request('/rooms/'+code+'/finish','POST');
  activateRoom(r);notice('Partie abgeschlossen. Ihr könnt das nächste Spiel auswählen.');
 }));
