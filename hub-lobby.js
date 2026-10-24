@@ -216,10 +216,10 @@ function renderChallengeProgress(){
   mathBoard.replaceChildren();
   const a=Number(ch.math.a),b=Number(ch.math.b),op=ch.math.operator;
   const correct=op==='+'?a+b:op==='-'||op==='−'?a-b:op==='×'||op==='*'?a*b:op==='÷'?a/b:NaN;
-  const candidates=new Set([correct]);
-  for(let i=1;candidates.size<15&&i<100;i++){
+  const candidates=new Set(Number.isInteger(correct)&&correct>=0?[correct]:[0]);
+  for(let i=1;candidates.size<15&&i<300;i++){
    const delta=Math.ceil(i/2)*(i%2?-1:1)*(correct<30?1:correct<100?2:5);
-   if(Number.isInteger(correct+delta)&&correct+delta>=0)candidates.add(correct+delta);
+   if(Number.isInteger(correct+delta)&&correct+delta>=0&&correct+delta<=1000)candidates.add(correct+delta);
   }
   const choices=[...candidates].sort((x,y)=>{
    const hash=n=>{let v=(Math.imul((n+101)|0,2654435761)^Math.imul((a+11)|0,2246822519)^Math.imul((b+7)|0,3266489917))>>>0;return v;};
@@ -294,7 +294,7 @@ function renderChallengeProgress(){
    return;
   }
   if(remaining<=0&&remaining>-950&&startOverlay){startOverlay.hidden=false;el('challenge-start-number').textContent='0';el('challenge-start-caption').textContent='⚔️ LOS GEHT’S!';}
-  else if(startOverlay){el('challenge-start-caption').textContent='🏴‍☠️ Macht euch bereit!';}
+  else if(startOverlay){startOverlay.hidden=true;el('challenge-start-caption').textContent='🏴‍☠️ Macht euch bereit!';}
   if(isTime){
    clockEl.textContent=stopped?'✓':remaining<=-3000?'❓':String(Math.max(1,Math.floor(-remaining/1000)+1));
    statusEl.textContent=stopped?'✓ Stopp gespeichert – warte auf die Mitspieler.':'⏱️ Zeitgefühl läuft – drücke STOPP bei deiner geschätzten Zielzeit.';
