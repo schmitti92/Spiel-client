@@ -151,8 +151,17 @@ function renderChallengeProgress(){
  let box=el('challenge-progress');
  if(!box){
   box=document.createElement('section');box.id='challenge-progress';box.style.cssText='margin:16px 0;padding:22px;border-radius:22px;background:linear-gradient(135deg,#122946,#223f69);color:white;text-align:center;box-shadow:0 14px 30px #10294b30';
-  box.innerHTML='<h2 style="margin:0 0 10px">🏆 Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
+  box.innerHTML='<h2 style="margin:0 0 10px">🏆 Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px"><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px">Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
+  el('challenge-math-send').addEventListener('click',async()=>{
+   const ch=room?.match?.challenge;
+   if(!ch)return;
+   const answer=Number(el('challenge-math-input').value);
+   if(!Number.isInteger(answer)||el('challenge-math-input').value.trim()===''){el('challenge-math-feedback').textContent='Bitte eine ganze Zahl eingeben.';return;}
+   const button=el('challenge-math-send');button.disabled=true;
+   try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-math-answer','POST',{challengeId:ch.id,answer});acceptRoom(response.room);}
+   catch(e){el('challenge-math-feedback').textContent=e.message;button.disabled=false;}
+  });
   el('challenge-next').addEventListener('click',async()=>{if(!room?.host||!room?.match?.challenge)return;const btn=el('challenge-next');btn.disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-next','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{btn.disabled=false;}});
   el('challenge-time-stop').addEventListener('click',async()=>{if(challengeStopBusy||!room?.match?.challenge)return;challengeStopBusy=true;el('challenge-time-stop').disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-time-stop','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{challengeStopBusy=false;}});
  }
@@ -164,6 +173,14 @@ function renderChallengeProgress(){
  el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
  el('challenge-next').hidden=!room.host||ch.phase!=='results';
+ const isMath=ch.order[index]==='recheninsel';
+ const myMathSeat=room.players.find(p=>p.me)?.seat;
+ const answered=!!ch.math?.answered?.includes(myMathSeat);
+ el('challenge-math').hidden=!isMath||ch.phase!=='countdown';
+ el('challenge-math-question').textContent=isMath&&ch.math?ch.math.a+' '+ch.math.operator+' '+ch.math.b+' = ?':'';
+ el('challenge-math-send').disabled=answered||Number(ch.startAt)>Number(room.serverNow);
+ el('challenge-math-input').disabled=answered;
+ el('challenge-math-feedback').textContent=answered?'✓ Antwort gespeichert. Warte auf die Mitspieler.':'';
  const isTime=ch.order[index]==='zeitgefuehl';
  const mySeat=room.players.find(p=>p.me)?.seat;
  const stopped=(ch.stopped||[]).includes(mySeat);
@@ -180,7 +197,7 @@ function renderChallengeProgress(){
    result.standings.forEach((entry,i)=>{
     const card=document.createElement('div');card.style.cssText='padding:12px;border-radius:12px;background:#ffffff1c;display:flex;justify-content:space-between;gap:12px';
     const name=document.createElement('strong');name.textContent=(['🥇','🥈','🥉'][i]||'🎮')+' '+entry.name;
-    const points=document.createElement('span');points.textContent=(entry.elapsedMs/1000).toFixed(2)+' s · +'+entry.challengePoints+' Punkte';
+    const points=document.createElement('span');points.textContent=(typeof entry.elapsedMs==='number'?(entry.elapsedMs/1000).toFixed(2)+' s · ':'')+(typeof entry.correct==='boolean'?(entry.correct?'✓ Richtig · ':'✗ Falsch · '):'')+'+'+entry.challengePoints+' Punkte';
     card.append(name,points);list.append(card);
    });resultsBox.append(list);
   }
@@ -197,6 +214,7 @@ function renderChallengeProgress(){
   if(ch.phase==='countdown'&&remaining>0){el('challenge-clock').textContent=String(Math.max(1,Math.ceil(remaining/1000)));el('challenge-progress-status').textContent='Start wird vom Server gesteuert. Bitte bereithalten.';}
   else{el('challenge-clock').textContent=!isTime?'⏳':remaining< -3000?'❓':String(Math.max(0,Math.floor(-remaining/1000)));el('challenge-progress-status').textContent=isTime?'⏱️ Zeitgefühl läuft – drücke STOPP, wenn du die Zielzeit erreicht hast.':'⚠️ '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index])+' ist noch nicht online spielbar. Bitte Challenge abbrechen und später erneut starten.';if(!isTime&&challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}}
   if(isTime&&!stopped&&ch.phase==='countdown'&&remaining<=0)el('challenge-time-stop').disabled=challengeStopBusy;
+  if(isMath&&!answered&&remaining<=0)el('challenge-math-send').disabled=false;
  };
  draw();if(ch.phase==='countdown'&&(Number(ch.startAt)>estimatedServerNow||isTime&&!stopped))challengeClockTimer=setInterval(draw,80);
 }
