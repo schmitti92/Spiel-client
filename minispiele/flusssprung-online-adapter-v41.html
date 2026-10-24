@@ -437,7 +437,7 @@ window.addEventListener('message',event=>{
   for(const entry of m.players){
    if(!Number.isInteger(entry.index)||entry.index<0||entry.index>=players.length)continue;
    const p=players[entry.index];
-   if(!p||p.state==='jump')continue;
+   if(!p||p.state==='jump'||p.state==='await-server')continue;
    if(Number.isInteger(entry.falls))p.falls=entry.falls;
    if(Number.isInteger(entry.row)&&entry.row>=-1&&entry.row<=4){
     p.row=entry.row;
@@ -450,8 +450,11 @@ window.addEventListener('message',event=>{
  }
  if(m.type==='flusssprung:remote-jump'&&window.FlusssprungOnlineConfig){
   if(!Number.isInteger(m.seat)||m.seat<0||m.seat>=players.length||!Number.isInteger(m.col)||m.col<0||m.col>5)return;
+  const p=players[m.seat];
+  if(!p||p.state!=='ready')return;
+  if(Number.isInteger(m.row)&&m.row!==p.row+1)return;
   window.FlusssprungOnlineRemoteAction=true;
-  try{jump(players[m.seat],m.col)}finally{window.FlusssprungOnlineRemoteAction=false}
+  try{jump(p,m.col)}finally{window.FlusssprungOnlineRemoteAction=false}
  }
 });
 </script></body></html>
