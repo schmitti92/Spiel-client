@@ -10,7 +10,7 @@ export function mountRecheninselOriginal({container,src,getRoom,request,acceptRo
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';
  iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);
- let active=true,latestKey='';
+ let active=true,latestKey='',answerBusy=false;
  function sync(){
   if(!active||!iframe.contentWindow)return;
   const room=getRoom(),ch=room?.match?.challenge;
@@ -28,13 +28,15 @@ export function mountRecheninselOriginal({container,src,getRoom,request,acceptRo
   iframe.contentWindow.postMessage({type:'recheninsel:state',challengeId:ch.id,round:math.round,mySeat,a,b,operator:op,options,answered:math.answered||[],phase:ch.phase,startAt:ch.startAt,serverNow:room.serverNow,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
  }
  async function onMessage(event){
-  if(!active||event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='recheninsel:answer')return;
+  if(!active||answerBusy||event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='recheninsel:answer')return;
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='recheninsel'||ch.phase!=='countdown'||ch.id!==event.data.challengeId||ch.math?.round!==event.data.round)return;
   const answer=event.data.answer;
   if(!Number.isInteger(answer)||answer<0||answer>1000)return;
+  answerBusy=true;
   try{const result=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-math-answer','POST',{challengeId:ch.id,answer});acceptRoom(result.room);}
-  catch(err){if(onError)onError(err);}
+  catch(err){if(onError)onError(err);latestKey='';sync();}
+  finally{answerBusy=false;}
  }
  iframe.addEventListener('load',()=>{latestKey='';sync();});
  window.addEventListener('message',onMessage);
