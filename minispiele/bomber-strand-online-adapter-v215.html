@@ -316,9 +316,9 @@ window.addEventListener('message',event=>{
   }
   if(Array.isArray(m.bombs))for(const b of m.bombs){
    if(c.seenBombs.has(b.id))continue;c.seenBombs.add(b.id);
-   if(b.seat===c.roster[c.localSeat]?.seat||b.seat===c.localSeat)continue;
+   if(b.seat===c.roster[c.localSeat]?.seat)continue;
    const owner=players.find(p=>p.id===m.players.findIndex(q=>q.seat===b.seat));
-   if(owner&&owner.alive&&!bombs.some(q=>q.x===b.x&&q.y===b.y)){bombs.push({x:b.x,y:b.y,owner:owner.id,range:b.range,fuse:Math.max(.05,2.1-(Date.now()-(b.placedAt||Date.now()))/1000),passThrough:new Set()});owner.active++;}
+   if(owner&&!bombs.some(q=>q.x===b.x&&q.y===b.y)){bombs.push({x:b.x,y:b.y,owner:owner.id,range:b.range,fuse:Math.max(.05,2.1-(Date.now()-(b.placedAt||Date.now()))/1000),passThrough:new Set()});owner.active++;}
   }
   updateUI();
  }
