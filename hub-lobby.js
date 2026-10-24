@@ -147,6 +147,14 @@ function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;se
 const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
 const CHALLENGE_STAGE_CSS=`
 #challenge-progress:not(.hidden){position:fixed!important;inset:0!important;z-index:10020!important;margin:0!important;border-radius:0!important;overflow:auto!important;overscroll-behavior:contain;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.4vh,16px);padding:clamp(20px,4vh,46px) clamp(18px,5vw,70px)!important;box-sizing:border-box;background:radial-gradient(ellipse at 50% 105%,#d5b575 0%,#b68c55 12%,transparent 38%),radial-gradient(ellipse at 7% 88%,#163f30 0%,#163f30 14%,transparent 31%),radial-gradient(ellipse at 96% 82%,#124f3a 0%,#124f3a 12%,transparent 30%),linear-gradient(180deg,#051b30 0%,#0b4765 45%,#1b8290 75%,#174f56 100%)!important;color:#fff!important;text-shadow:0 2px 12px #001b2e88;box-shadow:none!important}
+#challenge-progress.preisjaeger-playing{justify-content:flex-start!important;gap:clamp(4px,.8vh,10px)!important;padding:clamp(8px,1.6vh,16px)!important;overflow:auto!important}
+#challenge-progress.preisjaeger-playing>h2,#challenge-progress.preisjaeger-playing>#challenge-progress-order{display:none!important}
+#challenge-progress.preisjaeger-playing>#challenge-clock{font-size:clamp(28px,6vh,54px)!important;line-height:1!important}
+#challenge-progress.preisjaeger-playing>#challenge-progress-name{font-size:clamp(15px,2.2vh,22px)!important}
+#challenge-progress.preisjaeger-playing>#challenge-progress-status{font-size:clamp(13px,1.9vh,18px)!important}
+#challenge-progress.preisjaeger-playing>#challenge-preisjaeger{box-sizing:border-box;padding:clamp(10px,2vh,22px)!important;max-width:min(96vw,780px)!important}
+#challenge-progress.preisjaeger-playing>#challenge-preisjaeger #pj-product-photo{max-height:clamp(85px,23vh,230px)!important}
+#challenge-progress.preisjaeger-playing>#challenge-preisjaeger #pj-product-icon{margin:0!important;font-size:clamp(35px,7vh,60px)!important}
 #challenge-progress.maulwurf-playing{justify-content:flex-start!important;gap:4px!important;padding:4px!important;overflow:hidden!important}
 #challenge-progress.maulwurf-playing::before,#challenge-progress.maulwurf-playing::after{display:none!important}
 #challenge-progress.maulwurf-playing>h2,#challenge-progress.maulwurf-playing>#challenge-progress-order,#challenge-progress.maulwurf-playing>#challenge-progress-status,#challenge-progress.maulwurf-playing>#challenge-progress-name,#challenge-progress.maulwurf-playing>#challenge-clock{display:none!important}
@@ -416,6 +424,7 @@ function renderChallengeProgress(){
  if(!originalFlusssprungActive&&flusssprungOriginalBridge){flusssprungOriginalBridge.destroy();flusssprungOriginalBridge=null;}
  el('challenge-original-frame').hidden=!originalActive;
  box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive);
+ box.classList.toggle('preisjaeger-playing',isPreisjaeger&&ch.phase==='countdown');
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
  if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
