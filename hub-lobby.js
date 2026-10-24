@@ -222,7 +222,7 @@ async function ensureRecheninselOriginalBridge(){
   zeitgefuehlOriginalBridge?.destroy();zeitgefuehlOriginalBridge=null;
   if(!target)return;
   recheninselOriginalBridge=mountRecheninselOriginal({
-   container:target,src:'recheninsel-original-online.html',
+   container:target,src:'recheninsel-original-online.html?v=2',
    getRoom:()=>room,request,acceptRoom,onError:showError
   });
   recheninselOriginalBridge.sync();
