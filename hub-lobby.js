@@ -298,6 +298,7 @@ function renderChallengeProgress(){
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
  const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive;
+ if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
  el('challenge-original-frame').hidden=!originalActive;
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
@@ -411,6 +412,11 @@ function renderChallengeProgress(){
   }
   if(remaining<=0&&remaining>-950&&startOverlay){startOverlay.hidden=false;el('challenge-start-number').textContent='0';el('challenge-start-caption').textContent='⚔️ LOS GEHT’S!';}
   else if(startOverlay){startOverlay.hidden=true;el('challenge-start-caption').textContent='🏴‍☠️ Macht euch bereit!';}
+  if(originalMaulwurfActive){
+   clockEl.textContent='🔨';
+   statusEl.textContent=remaining<=-30000?'🏁 Zeit abgelaufen – Server wertet aus.':'🔨 Triff die Maulwürfe auf deinem großen Spielfeld!';
+   return;
+  }
   if(isTime){
    if(remaining<=-30000){
     statusEl.textContent='⏳ Zeitlimit erreicht – Server wertet aus.';
