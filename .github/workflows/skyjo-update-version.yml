@@ -1,0 +1,38 @@
+name: SKYJO update notification version
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Skyjo/**'
+      - '!Skyjo/skyjo_ui_version.json'
+permissions:
+  contents: write
+jobs:
+  publish-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish new SKYJO version marker
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          path=Path('Skyjo/skyjo_ui_version.json')
+          version=os.environ['GITHUB_SHA'][:12]
+          path.write_text(json.dumps({'version':version,'message':'SKYJO wurde aktualisiert. Bitte Seite neu laden.'},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          script=Path('Skyjo/skyjo_turn_and_update.js')
+          text=script.read_text(encoding='utf-8')
+          import re
+          text=re.sub(r"const VERSION='[^']*';",f"const VERSION='{version}';",text,count=1)
+          script.write_text(text,encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Skyjo/skyjo_ui_version.json Skyjo/skyjo_turn_and_update.js
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(skyjo): publish client update version [skip ci]"
+            git push
+          fi
