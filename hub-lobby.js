@@ -195,10 +195,10 @@ function renderChallengeProgress(){
  const draw=()=>{
   const remaining=Number(ch.startAt)-(estimatedServerNow+Date.now()-observedAt);
   if(ch.phase==='countdown'&&remaining>0){el('challenge-clock').textContent=String(Math.max(1,Math.ceil(remaining/1000)));el('challenge-progress-status').textContent='Start wird vom Server gesteuert. Bitte bereithalten.';}
-  else{el('challenge-clock').textContent=!isTime?'⏳':remaining< -3000?'❓':'LOS!';el('challenge-progress-status').textContent=isTime?'⏱️ Zeitgefühl läuft – drücke STOPP, wenn du die Zielzeit erreicht hast.':'⚠️ '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index])+' ist noch nicht online spielbar. Bitte Challenge abbrechen und später erneut starten.';if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}}
+  else{el('challenge-clock').textContent=!isTime?'⏳':remaining< -3000?'❓':String(Math.max(0,Math.floor(-remaining/1000)));el('challenge-progress-status').textContent=isTime?'⏱️ Zeitgefühl läuft – drücke STOPP, wenn du die Zielzeit erreicht hast.':'⚠️ '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index])+' ist noch nicht online spielbar. Bitte Challenge abbrechen und später erneut starten.';if(!isTime&&challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}}
   if(isTime&&!stopped&&ch.phase==='countdown'&&remaining<=0)el('challenge-time-stop').disabled=challengeStopBusy;
  };
- draw();if(ch.phase==='countdown'&&Number(ch.startAt)>estimatedServerNow)challengeClockTimer=setInterval(draw,80);
+ draw();if(ch.phase==='countdown'&&(Number(ch.startAt)>estimatedServerNow||isTime&&!stopped))challengeClockTimer=setInterval(draw,80);
 }
 function renderChallengeSetup(showStage){
  let box=el('challenge-settings-panel');
