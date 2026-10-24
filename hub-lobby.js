@@ -328,7 +328,7 @@ function renderChallengeProgress(){
  let box=el('challenge-progress');
  if(!box){
   box=document.createElement('section');box.id='challenge-progress';box.style.cssText='margin:16px 0;padding:22px;border-radius:22px;background:linear-gradient(135deg,#122946,#223f69);color:white;text-align:center;box-shadow:0 14px 30px #10294b30';
-  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-original-frame" hidden style="width:min(98vw,1300px);height:min(77dvh,850px);min-height:340px;flex-shrink:0;margin:0 auto;border-radius:18px;overflow:hidden;border:2px solid #c8a56c;box-shadow:0 18px 45px #0007"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><div id="challenge-math-board" role="group" aria-label="15 Schatzfässer – wähle deine Antwort"></div><div id="challenge-math-players" aria-label="Mitspieler"></div><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px" hidden><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px" hidden>Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
+  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-preisjaeger" hidden style="width:min(96vw,780px);padding:24px;border:2px solid #d4b56b;border-radius:24px;background:linear-gradient(135deg,#152b44,#102035);box-shadow:0 18px 45px #0006"><div style="font-size:13px;letter-spacing:3px;color:#ffd27b">🛒 PREISJÄGER · GOLD EDITION ONLINE</div><div id="pj-product-icon" style="font-size:64px;margin:14px">🛍️</div><h2 id="pj-product-name" style="font-size:clamp(20px,4vw,35px);margin:12px 0"></h2><p id="pj-product-category" style="opacity:.8"></p><p id="pj-round-label" style="color:#ffd27b"></p><form id="pj-guess-form" style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap"><input id="pj-guess" type="text" inputmode="decimal" autocomplete="off" placeholder="Dein Preis in €" aria-label="Geschätzter Preis in Euro" style="padding:14px;border-radius:12px;font-size:22px;width:200px"><button id="pj-submit" type="submit" style="background:#ffd27b;color:#152b44;border:0;border-radius:12px;padding:14px 20px;font-weight:900">🔒 Schätzung abgeben</button></form><p id="pj-feedback" role="status"></p><p id="pj-opponents" style="opacity:.85"></p></div><div id="challenge-original-frame" hidden style="width:min(98vw,1300px);height:min(77dvh,850px);min-height:340px;flex-shrink:0;margin:0 auto;border-radius:18px;overflow:hidden;border:2px solid #c8a56c;box-shadow:0 18px 45px #0007"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><div id="challenge-math-board" role="group" aria-label="15 Schatzfässer – wähle deine Antwort"></div><div id="challenge-math-players" aria-label="Mitspieler"></div><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px" hidden><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px" hidden>Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
   const overlay=document.createElement('div');overlay.id='challenge-start-overlay';overlay.hidden=true;overlay.setAttribute('aria-live','off');overlay.innerHTML='<div id="challenge-start-caption">🏴‍☠️ Macht euch bereit!</div><div id="challenge-start-number">3</div>';box.append(overlay);
   el('challenge-math-send').addEventListener('click',async()=>{
@@ -339,6 +339,17 @@ function renderChallengeProgress(){
    const button=el('challenge-math-send');button.disabled=true;
    try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-math-answer','POST',{challengeId:ch.id,answer});acceptRoom(response.room);}
    catch(e){el('challenge-math-feedback').textContent=e.message;button.disabled=false;el('challenge-math-board').querySelectorAll('button').forEach(b=>{b.disabled=false;b.classList.remove('selected');});}
+  });
+  el('pj-guess-form').addEventListener('submit',async event=>{
+   event.preventDefault();const ch=room?.match?.challenge,pj=ch?.preisjaeger;
+   if(!ch||!pj||ch.order[ch.index]!=='preisjaeger')return;
+   const raw=el('pj-guess').value.trim().replace(/\s|€/g,'').replace(',','.');
+   if(!/^\d+(?:\.\d{1,2})?$/.test(raw)){el('pj-feedback').textContent='Bitte einen gültigen Preis eingeben.';return;}
+   const guess=Math.round(Number(raw)*100);
+   if(!Number.isSafeInteger(guess)||guess<1||guess>100000000){el('pj-feedback').textContent='Preis außerhalb des erlaubten Bereichs.';return;}
+   el('pj-submit').disabled=true;
+   try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-preisjaeger-answer','POST',{challengeId:ch.id,round:pj.round,guess});acceptRoom(response.room);}
+   catch(e){el('pj-feedback').textContent=e.message;el('pj-submit').disabled=false;}
   });
   el('challenge-math-input').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&!el('challenge-math-send').disabled){event.preventDefault();el('challenge-math-send').click();}});
   el('challenge-next').addEventListener('click',async()=>{if(!room?.host||!room?.match?.challenge)return;const btn=el('challenge-next');btn.disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-next','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{btn.disabled=false;}});
@@ -352,6 +363,22 @@ function renderChallengeProgress(){
  el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
  el('challenge-next').hidden=!room.host||ch.phase!=='results';
+ const isPreisjaeger=ch.order[index]==='preisjaeger';
+ const pj=ch.preisjaeger;
+ el('challenge-preisjaeger').hidden=!isPreisjaeger||ch.phase!=='countdown';
+ if(isPreisjaeger&&pj){
+  const key=ch.id+':'+ch.index+':'+pj.round;
+  if(el('challenge-preisjaeger').dataset.round!==key){el('challenge-preisjaeger').dataset.round=key;el('pj-guess').value='';el('pj-feedback').textContent='';}
+  el('pj-product-name').textContent=pj.product?.name||'Produkt wird vorbereitet';
+  el('pj-product-icon').textContent=pj.product?.icon||'🛍️';
+  el('pj-product-category').textContent=[pj.product?.category,pj.product?.shop].filter(Boolean).join(' · ');
+  el('pj-round-label').textContent='Preisfrage '+pj.round+' von 3';
+  const mySeat=room.players.find(p=>p.me)?.seat,done=pj.answered?.includes(mySeat);
+  el('pj-guess').disabled=!!done||ch.phase!=='countdown'||room.serverNow<ch.startAt;
+  el('pj-submit').disabled=!!done||ch.phase!=='countdown'||room.serverNow<ch.startAt;
+  el('pj-feedback').textContent=done?'✓ Deine geheime Schätzung wurde gespeichert.':'';
+  el('pj-opponents').textContent=(room.match?.members||[]).map(m=>(pj.answered||[]).includes(m.seat)?'✓ '+m.name:'⏳ '+m.name).join('  ·  ');
+ }
  const isMath=ch.order[index]==='recheninsel';
  const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
