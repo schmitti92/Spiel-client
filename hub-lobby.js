@@ -323,6 +323,7 @@ async function ensureRecheninselOriginalBridge(){
 
 const challengeMathTimeoutPending=new Set();
 const challengeTimeTimeoutPending=new Set();
+let pjTimeoutKey='';
 function renderChallengeProgress(){
  ensureChallengeStageStyle();
  let box=el('challenge-progress');
@@ -364,6 +365,8 @@ function renderChallengeProgress(){
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
  el('challenge-next').hidden=!room.host||ch.phase!=='results';
  const isPreisjaeger=ch.order[index]==='preisjaeger';
+ if(!isPreisjaeger)pjTimeoutKey='';
+
  const pj=ch.preisjaeger;
  el('challenge-preisjaeger').hidden=!isPreisjaeger||ch.phase!=='countdown';
  if(isPreisjaeger&&pj){
@@ -378,6 +381,17 @@ function renderChallengeProgress(){
   el('pj-submit').disabled=!!done||ch.phase!=='countdown'||room.serverNow<ch.startAt;
   el('pj-feedback').textContent=done?'✓ Deine geheime Schätzung wurde gespeichert.':'';
   el('pj-opponents').textContent=(room.match?.members||[]).map(m=>(pj.answered||[]).includes(m.seat)?'✓ '+m.name:'⏳ '+m.name).join('  ·  ');
+  const previous=pj.history?.[pj.history.length-1];
+  let reveal=el('pj-last-reveal');
+  if(!reveal){reveal=document.createElement('div');reveal.id='pj-last-reveal';reveal.style.cssText='margin:16px 0;padding:15px;border-radius:14px;background:#263e59;border:1px solid #e8c479';el('pj-round-label').after(reveal);}
+  reveal.hidden=!previous;
+  if(previous){
+   reveal.replaceChildren();
+   const heading=document.createElement('strong');heading.textContent='🏆 Letzte Frage: '+previous.product.name+' · Richtiger Preis: '+Number(previous.product.price).toLocaleString('de-DE',{style:'currency',currency:'EUR'});reveal.append(heading);
+   for(const entry of previous.entries){const line=document.createElement('p');line.style.margin='6px 0';line.textContent=entry.name+': '+(entry.guess?Number(entry.guess).toLocaleString('de-DE',{style:'currency',currency:'EUR'}):'Keine Antwort')+' · +'+entry.challengePoints+' Punkte';reveal.append(line);}
+  }
+  if(room.serverNow>=ch.startAt+45000&&pjTimeoutKey!==key){pjTimeoutKey=key;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-preisjaeger-timeout','POST',{challengeId:ch.id,round:pj.round}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(e=>{pjTimeoutKey='';console.warn('Preisjäger Timeout',e)});}
+
  }
  const isMath=ch.order[index]==='recheninsel';
  const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
