@@ -231,6 +231,7 @@ async function ensureRecheninselOriginalBridge(){
 }
 
 const challengeMathTimeoutPending=new Set();
+const challengeTimeTimeoutPending=new Set();
 function renderChallengeProgress(){
  ensureChallengeStageStyle();
  let box=el('challenge-progress');
@@ -376,9 +377,20 @@ function renderChallengeProgress(){
   if(remaining<=0&&remaining>-950&&startOverlay){startOverlay.hidden=false;el('challenge-start-number').textContent='0';el('challenge-start-caption').textContent='⚔️ LOS GEHT’S!';}
   else if(startOverlay){startOverlay.hidden=true;el('challenge-start-caption').textContent='🏴‍☠️ Macht euch bereit!';}
   if(isTime){
+   if(remaining<=-30000){
+    statusEl.textContent='⏳ Zeitlimit erreicht – Server wertet aus.';
+    el('challenge-time-stop').disabled=true;
+    const key=ch.id+':'+index;
+    if(!challengeTimeTimeoutPending.has(key)){
+     challengeTimeTimeoutPending.add(key);
+     request('/rooms/'+encodeURIComponent(room.code)+'/challenge-time-timeout','POST',{challengeId:ch.id})
+      .then(response=>acceptRoom(response.room))
+      .catch(()=>setTimeout(()=>challengeTimeTimeoutPending.delete(key),1800));
+    }
+   }
    clockEl.textContent=stopped?'✓':remaining<=-3000?'❓':String(Math.max(1,Math.floor(-remaining/1000)+1));
    statusEl.textContent=stopped?'✓ Stopp gespeichert – warte auf die Mitspieler.':'⏱️ Zeitgefühl läuft – drücke STOPP bei deiner geschätzten Zielzeit.';
-   if(!stopped)el('challenge-time-stop').disabled=challengeStopBusy;
+   if(!stopped)el('challenge-time-stop').disabled=challengeStopBusy||remaining<=-30000;
   }else if(isMath){
    const round=ch.math?.round||1,limitMs=[18000,16000,15000][Math.min(2,round-1)];
    const elapsedMs=Math.max(0,-remaining);
