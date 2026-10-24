@@ -234,7 +234,7 @@ async function ensureFlusssprungOriginalBridge(){
  if(flusssprungOriginalBridge||flusssprungOriginalLoading||flusssprungOriginalFailed)return;
  flusssprungOriginalLoading=true;
  try{
-  const {mountFlusssprungOriginal}=await import('./flusssprung-online-bridge.js?v=1');
+  const {mountFlusssprungOriginal}=await import('./flusssprung-online-bridge.js?v=3');
   const ch=room?.match?.challenge;
   if(!ch||ch.phase!=='countdown'||ch.order?.[ch.index]!=='flusssprung')return;
   const target=el('challenge-original-frame');if(!target)return;
