@@ -8,13 +8,17 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';
  iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);
- let active=true,lastKey='',busy=false,timeoutPending=false;
+ let active=true,lastKey='',busy=false,timeoutPending=false,timeoutKey='';
+ const expiryTimer=setInterval(()=>{if(!active)return;const r=getRoom(),ch=r?.match?.challenge;if(ch?.order?.[ch.index]!=='maulwurf-arena'||ch.phase!=='countdown')return;const now=Date.now()+((Number(r.serverNow)||Date.now())-(Number(r.clientReceivedAt)||Date.now()));if(now>=ch.startAt+30000)sync();},300);
  function sync(){
   if(!active||!iframe.contentWindow)return;
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='maulwurf-arena'||!ch.maulwurf)return;
   const seat=room.players?.find(p=>p.me)?.seat;
-  if(ch.phase==='countdown'&&room.serverNow>=ch.startAt+30000&&!timeoutPending){
+  const estimatedNow=Date.now()+((Number(room.serverNow)||Date.now())-(Number(room.clientReceivedAt)||Date.now()));
+  const roundKey=ch.id+':'+ch.index+':'+ch.startAt;
+  if(roundKey!==timeoutKey){timeoutKey=roundKey;timeoutPending=false;}
+  if(ch.phase==='countdown'&&estimatedNow>=ch.startAt+30000&&!timeoutPending){
    timeoutPending=true;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-timeout','POST',{challengeId:ch.id})
     .then(result=>{if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);})
@@ -37,5 +41,5 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
  }
  iframe.addEventListener('load',()=>{lastKey='';sync()});
  window.addEventListener('message',onMessage);
- return {sync,destroy(){active=false;window.removeEventListener('message',onMessage);iframe.remove();}};
+ return {sync,destroy(){active=false;clearInterval(expiryTimer);window.removeEventListener('message',onMessage);iframe.remove();}};
 }
