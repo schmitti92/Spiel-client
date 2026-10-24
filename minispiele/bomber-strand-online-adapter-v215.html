@@ -1,0 +1,315 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Bomber Strand Arena</title><style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 50% -30%,#196d84,#071a2d 65%);font:600 15px system-ui,sans-serif;color:#f5f7ff}header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 20px;background:#071b2cbb;border-bottom:1px solid #ffffff22}h1{font-size:clamp(18px,3vw,27px);margin:0;color:#ffdc8d}header small{display:block;color:#a7dce3;font-size:11px}button,select{border:1px solid #ffffff33;background:#19475c;color:white;border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer}button:hover{background:#236f7d}.primary{background:#f1a23a;color:#16252e;border:0}.primary:hover{background:#ffd071}.shell{max-width:1180px;margin:auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:17px}.boardWrap{position:relative;border:8px solid #a87946;border-radius:19px;box-shadow:0 22px 60px #0008,inset 0 0 0 2px #f5c68b;background:#d5b076;overflow:hidden}canvas{width:100%;height:auto;aspect-ratio:1;display:block;touch-action:none}.overlay{position:absolute;inset:0;background:#061b2bbd;display:grid;place-items:center;text-align:center;padding:20px}.overlay[hidden]{display:none}.modal{max-width:430px;padding:25px;border-radius:22px;background:#102f40ee;border:1px solid #ffffff33;box-shadow:0 20px 60px #0009}.modal h2{font-size:32px;margin:0 0 10px}.modal p{line-height:1.55;color:#c4e6e6}.panel{display:flex;flex-direction:column;gap:13px}.card{background:#102e42;border:1px solid #ffffff19;border-radius:18px;padding:16px;box-shadow:0 8px 20px #0003}.card h2{font-size:16px;margin:0 0 12px;color:#f9d79c}.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{padding:11px;background:#1b4656;border-radius:12px}.stat b{display:block;font-size:21px}.stat span{font-size:11px;color:#b6d3da}.players{display:grid;gap:9px}.player{display:flex;justify-content:space-between;align-items:center;gap:7px}.dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px}.legend{line-height:2;color:#d3e9e8;font-size:13px}.hint{font-size:12px;line-height:1.6;color:#a9c7cf}.touch{display:none;justify-content:space-between;align-items:center;gap:12px;padding:12px}.pad{display:grid;grid-template-columns:repeat(3,55px);grid-template-rows:repeat(3,48px);gap:4px}.pad button{padding:0;font-size:22px;touch-action:none;user-select:none}.pad .up{grid-column:2;grid-row:1}.pad .left{grid-column:1;grid-row:2}.pad .down{grid-column:2;grid-row:3}.pad .right{grid-column:3;grid-row:2}.bombBtn{height:90px;width:90px;border-radius:50%;background:#f1a23a;color:#15212c;font-size:17px;touch-action:none}.banner{padding:9px 14px;background:#173b4a;border-radius:12px;color:#f3d08e;font-size:12px}@media(max-width:800px){.shell{display:block;padding:8px}.panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}.card{padding:12px}.touch{display:flex}.boardWrap{border-width:5px}header{padding:9px}header small{display:none}}@media(max-width:440px){.panel{grid-template-columns:1fr 1fr}.panel .legendCard{grid-column:1/-1}.stat b{font-size:17px}.card h2{font-size:13px}}
+
+/* Tablet landscape: board and controls always fit into the visible viewport. */
+html,body{overscroll-behavior:none}button{-webkit-tap-highlight-color:transparent}
+@media (pointer:coarse){.touch{display:flex}}
+@media (orientation:landscape) and (max-height:950px){
+ body{height:100dvh;overflow:hidden}header{height:48px;padding:4px 12px}header h1{font-size:18px}header small{display:none}header button,header select{padding:6px 9px}
+ .shell{max-width:none;height:calc(100dvh - 48px);padding:6px;display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,245px);gap:8px;align-items:center}
+ .shell>div:first-child{min-width:0;min-height:0;height:100%;display:flex;align-items:center;justify-content:center;gap:10px}
+ .boardWrap{height:min(calc(100dvh - 62px),calc(100vw - 330px));width:min(calc(100dvh - 62px),calc(100vw - 330px));flex:none;border-width:5px}
+ .boardWrap canvas{width:100%;height:100%}
+ .touch{display:flex!important;flex-direction:column;justify-content:center;padding:4px;gap:20px;flex:none}
+ .pad{grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:3px}
+ .pad button{border-radius:14px;font-size:25px;background:#21627c}
+ .bombBtn{width:112px;height:90px;align-self:center;box-shadow:0 5px 0 #995d19;font-size:17px}
+ .panel{display:flex!important;flex-direction:column;gap:7px;margin:0;min-height:0;max-height:100%;overflow:auto}
+ .card{padding:9px;border-radius:12px}.card h2{font-size:13px;margin:0 0 5px}.legend{line-height:1.45;font-size:11px}.hint{font-size:10px;line-height:1.4;margin:5px 0}.stats{gap:4px}.stat{padding:6px}.stat b{font-size:17px}.stat span{font-size:9px}.players{gap:3px}.player{font-size:12px}.banner{font-size:10px;padding:6px}
+}
+@media (orientation:landscape) and (max-width:1050px){.shell{grid-template-columns:minmax(0,1fr) 170px}.boardWrap{height:min(calc(100dvh - 62px),calc(100vw - 330px));width:min(calc(100dvh - 62px),calc(100vw - 330px))}.pad{grid-template-columns:repeat(3,40px);grid-template-rows:repeat(3,40px)}.bombBtn{height:76px;width:98px}.panel .legendCard{display:none}}
+@media (orientation:portrait) and (pointer:coarse){.touch{display:flex!important;position:sticky;bottom:0;z-index:3;background:#071b2ce8;border-radius:16px}.pad{grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,52px)}.panel .legendCard{display:none}}
+@media (orientation:landscape) and (max-height:700px){.shell{grid-template-columns:minmax(0,1fr) 180px}.shell>div:first-child{gap:6px}.touch{gap:12px}.pad{grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px)}.bombBtn{width:96px;height:76px}.panel .legendCard{display:none}}
+
+/* V5 responsive fit: playfield and controls remain visible in landscape */
+@media (orientation:landscape){.shell{grid-template-columns:minmax(0,1fr) 190px!important}.shell>div:first-child{justify-content:center}.boardWrap{width:min(calc(100dvh - 62px),calc(100vw - 390px))!important;height:min(calc(100dvh - 62px),calc(100vw - 390px))!important}.touch{display:flex!important}.panel{overflow:auto}}
+@media (max-width:700px) and (orientation:landscape){.panel{display:none!important}.boardWrap{width:min(calc(100dvh - 60px),calc(100vw - 155px))!important;height:min(calc(100dvh - 60px),calc(100vw - 155px))!important}}
+
+/* V20 tropical premium presentation */
+:root{--sea:#063d51;--gold:#ffe0a1}body{background:radial-gradient(circle at 15% 0%,#20869a55,transparent 35%),linear-gradient(130deg,#041927,#075065 58%,#06283d);font-family:system-ui,Arial,sans-serif}
+header{background:linear-gradient(100deg,#052638ed,#104a57ee);box-shadow:0 4px 20px #0005}h1{letter-spacing:.045em;text-shadow:0 2px 9px #0008}
+.boardWrap{border:6px solid #d5a567;box-shadow:0 0 0 2px #f7d99c55,0 16px 50px #0009,0 0 45px #22c4b422;border-radius:20px}
+.card{background:linear-gradient(145deg,#16475b,#0a283d);border:1px solid #b9f5e32b;box-shadow:0 8px 20px #0004}.stat{background:linear-gradient(160deg,#22627a,#143a4d)}
+.primary,.bombBtn{background:linear-gradient(145deg,#ffe5a0,#f6a739);box-shadow:0 5px 18px #f5ae3344}
+.pad button{background:linear-gradient(150deg,#267d91,#123f59)!important;border:1px solid #b5f9ff55;box-shadow:inset 0 1px 2px #fff3,0 4px 9px #0006}
+.pad button:active,.bombBtn:active{transform:scale(.95);filter:brightness(1.2)}
+#soundToggle{min-width:43px}#fxLabel{position:absolute;left:12px;top:10px;pointer-events:none;padding:6px 10px;background:#063d4cb5;border-radius:20px;color:#fff2cb;font-size:11px;z-index:1}
+@media (orientation:landscape) and (max-height:700px){header h1{font-size:14px}header select{max-width:115px}}
+@media (orientation:landscape) and (max-height:700px){.shell{grid-template-columns:minmax(0,1fr) 180px}.panel .legendCard{display:none}.boardWrap{width:min(calc(100dvh - 110px),calc(100vw - 370px))!important;height:min(calc(100dvh - 110px),calc(100vw - 370px))!important}.touch{gap:12px}.pad{grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px)}.bombBtn{width:96px;height:76px}}
+
+/* V21.5: joystick and bomb button grouped directly next to each other */
+.touch{justify-content:center!important;gap:12px!important}
+.touch .joystick,.touch .bombBtn{align-self:center!important;margin:0!important;flex-shrink:0}
+.touch .joySettings{order:3}
+@media (orientation:landscape) and (pointer:coarse){
+ .touch{inset:auto auto 8px 8px!important;width:auto!important;height:auto!important;max-width:none!important;display:flex!important;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:10px!important;padding:6px!important;border-radius:18px;background:#082e3cbd!important;pointer-events:none}
+ .touch .joystick,.touch .bombBtn{pointer-events:auto}
+ .touch .joySettings{display:none!important}
+ .touch .joystick{width:clamp(80px,19dvh,112px)!important;height:clamp(80px,19dvh,112px)!important}
+ .touch .bombBtn{width:clamp(80px,19dvh,112px)!important;height:clamp(80px,19dvh,112px)!important}
+}
+@media (orientation:portrait){.touch{justify-content:center!important;gap:14px!important}.touch .joySettings{display:none}}
+
+/* V24: bomb action stays on the right edge, joystick on the left. */
+.touch{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;width:100%!important;gap:12px!important}
+.touch #joystick{order:0!important;flex-shrink:0!important}
+.touch .joySettings{order:1!important;flex:1 1 auto!important;min-width:0!important}
+.touch #touchBomb{order:2!important;margin-left:auto!important;flex-shrink:0!important}
+@media(max-width:680px){.touch .joySettings{display:none!important}}
+</style><style>
+.joystick{position:relative;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,#3286a488,#0c354bbf);border:3px solid #a8f3ff88;box-shadow:inset 0 0 25px #041a2a,0 5px 20px #0006;touch-action:none;user-select:none;flex-shrink:0}
+.stick{position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#a4f6ff,#187b9e 70%);border:3px solid #d4faff;box-shadow:0 5px 15px #0009;pointer-events:none;will-change:transform}
+.touch{touch-action:none}.bombBtn{min-width:105px;min-height:105px;border-radius:50%;user-select:none}
+@media (orientation:landscape){.touch{align-items:center!important}.joystick{width:clamp(90px,21dvh,150px);height:clamp(90px,21dvh,150px)}.bombBtn{min-width:90px;min-height:90px}}
+@media (orientation:portrait){.touch{flex-direction:row!important}.joystick{width:130px;height:130px}}
+
+/* V20.8: enhanced blast visuals, retains existing controls */
+/* V20.5: compact landscape controls and accessible adjustment */
+@media (orientation:landscape) and (max-height:650px){header{padding:5px 10px}header h1{font-size:17px}.shell{padding:5px;gap:8px}.touch{padding:3px 8px}.card{padding:8px}.panel{gap:5px}}
+.joySettings{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:#d4edf0}.joySettings input{width:95px;accent-color:#ffbf61}.joySettings label{white-space:nowrap}
+
+/* V21 responsive game-first interface */
+:root{--sea:#0b3444;--gold:#ffd184}
+body{overflow-x:hidden;background:radial-gradient(circle at 40% -20%,#237c91,#071522 75%)}
+header{position:relative;z-index:5;min-height:54px;padding:7px 12px;gap:8px;box-shadow:0 5px 20px #0004}
+header>div:last-child{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+header select,header button{padding:8px;border-radius:10px;font-size:12px}
+.shell{max-width:1400px;grid-template-columns:minmax(0,1fr) 220px;gap:10px;padding:10px}
+.shell>div:first-child{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.boardWrap{width:min(100%,calc(100dvh - 92px));height:auto;aspect-ratio:1;flex-shrink:0;border:5px solid #b78a53;box-shadow:0 12px 35px #0008}
+.panel{gap:8px}.card{padding:11px}.card h2{margin-bottom:7px}
+.touch{width:100%;max-width:670px;display:flex;justify-content:space-between;align-items:center;padding:5px 12px;border-radius:20px;background:#082e3ca8;border:1px solid #b2f3ff2b}
+.joystick{width:clamp(90px,17dvh,125px);height:clamp(90px,17dvh,125px)}
+.bombBtn{width:clamp(88px,17dvh,115px)!important;height:clamp(88px,17dvh,115px)!important;min-width:0!important;min-height:0!important;box-shadow:0 7px 0 #925020,0 12px 24px #0008;background:radial-gradient(circle at 30% 20%,#ffe19a,#ed962b 70%)}
+.bombBtn:active{transform:translateY(5px);box-shadow:0 2px 0 #925020}
+#uiMenu{display:none;background:#215569}
+@media (orientation:landscape) and (pointer:coarse){
+ body{height:100dvh;overflow:hidden}
+ header{height:48px;min-height:48px;overflow:visible}
+ header h1{font-size:clamp(13px,2.5vw,19px)}
+ .shell{height:calc(100dvh - 48px);display:grid!important;grid-template-columns:minmax(0,1fr) 170px!important;gap:7px;padding:5px}
+ .shell>div:first-child{height:100%;position:relative;display:flex;justify-content:center;align-items:center}
+ .boardWrap{width:min(calc(100dvh - 62px),calc(100vw - 360px))!important;height:min(calc(100dvh - 62px),calc(100vw - 360px))!important;max-width:none;flex-shrink:0}
+ .touch{position:absolute;inset:0;max-width:none;width:100%;height:100%;padding:4px;pointer-events:none;border:0;background:none;justify-content:space-between}
+ .touch>*{pointer-events:auto}
+ .joystick{width:clamp(80px,22dvh,130px);height:clamp(80px,22dvh,130px);align-self:flex-end;margin-bottom:10px}
+ .bombBtn{align-self:flex-end;margin-bottom:14px}
+ .joySettings{position:absolute;left:8px;top:5px;background:#082a39cc;padding:4px;border-radius:8px}
+ .panel{display:flex!important;flex-direction:column;overflow:auto;min-width:0;margin:0}
+ .panel .legendCard{display:none}
+ #uiMenu{display:inline-flex}
+ header>div:last-child{display:none;position:absolute;top:46px;right:5px;max-width:min(340px,90vw);padding:10px;background:#092b3b;border:1px solid #a8f3ff55;border-radius:12px;box-shadow:0 8px 25px #000a}
+ header>div:last-child.menuOpen{display:flex}
+}
+@media (orientation:landscape) and (pointer:coarse) and (max-width:730px){
+ .shell{grid-template-columns:minmax(0,1fr) 112px!important}
+ .boardWrap{width:min(calc(100dvh - 62px),calc(100vw - 235px))!important;height:min(calc(100dvh - 62px),calc(100vw - 235px))!important}
+ .card{padding:5px}.stats{gap:3px}.stat{padding:4px}.stat b{font-size:15px}.stat span{font-size:9px}
+ .joySettings{display:none}
+}
+@media (orientation:portrait) and (pointer:coarse){.boardWrap{width:min(100%,60dvh)!important;height:auto!important}.touch{position:sticky;bottom:0;z-index:4}.shell{display:block}.panel{display:grid;grid-template-columns:1fr 1fr}}
+</style></head><body><header><button id="uiMenu" aria-label="Spieleinstellungen öffnen" aria-expanded="false">⚙️ Menü</button><div><h1>🏝️ BOMBER STRAND ARENA V21.5</h1><small>V21.5 · Tropical Paradise Premium</small></div><div><select id="bots" aria-label="Anzahl Gegner"><option value="1">1 Gegner</option><option value="2" selected>2 Gegner</option><option value="3">3 Gegner</option></select> <select id="difficulty" aria-label="KI Schwierigkeit"><option value="easy">KI Einfach</option><option value="normal" selected>KI Normal</option><option value="hard">KI Schwer</option></select> <select id="mode" aria-label="Spielmodus"><option value="classic">Klassisch</option><option value="survival">Überleben</option></select> <button id="soundToggle" title="Sound an/aus" aria-label="Sound an oder aus">🔊</button> <button id="restart" class="primary">↻ Neue Runde</button></div></header><main class="shell"><div><div class="boardWrap"><div id="fxLabel">🌴 TROPICAL PARADISE</div><canvas id="game" width="800" height="800" aria-label="Bomber Arena Spielfeld"></canvas><div class="overlay" id="overlay"><div class="modal"><h2 id="title">💣 Bereit für die Arena?</h2><p id="message">Sprenge Holzkisten, sammle 45 zufällig versteckte Power-ups und besiege deine Gegner!</p><button id="play" class="primary">▶ SPIEL STARTEN</button></div></div></div><div class="touch"><div class="joystick" id="joystick" aria-label="Virtueller Joystick"><div class="stick" id="stick"></div></div><div class="joySettings"><label for="joySize">📏 Joystick-Größe</label><input id="joySize" type="range" min="80" max="180" value="125" step="5"><output id="joySizeValue">125 px</output><label for="joySensitivity">🕹️ Empfindlichkeit</label><input id="joySensitivity" type="range" min="50" max="150" value="100" step="5" aria-label="Joystick Empfindlichkeit"><output id="joyValue">100%</output></div><button class="bombBtn" id="touchBomb">💣<br>BOMBE</button></div></div><aside class="panel"><div class="card"><h2>🏆 Dein Fortschritt</h2><div class="stats"><div class="stat"><b id="blast">2</b><span>💥 Reichweite</span></div><div class="stat"><b id="speed">1.0×</b><span>⚡ Tempo</span></div><div class="stat"><b id="capacity">1</b><span>💣 Bomben</span></div><div class="stat"><b id="crates">88</b><span>📦 Kisten</span></div></div></div><div class="card"><h2>👥 Spieler</h2><div id="players" class="players"></div></div><div class="card legendCard"><h2>✨ 45 versteckte Power-ups</h2><div class="legend">💥 15 × größere Explosion<br>⚡ 15 × Geschwindigkeit<br>💣 15 × zusätzliche Bombe</div><p class="hint">Jede Runde neu und zufällig unter den Kisten. Erst nach dem Zerstören werden sie sichtbar.</p></div><div class="card legendCard"><h2>🎮 Steuerung</h2><div class="hint">WASD / Pfeiltasten: Bewegen<br>Leertaste: Bombe legen<br>Auf Tablet/Handy: Joystick links, Bombe rechts<br>Überlebe als letzter Spieler!</div></div><div class="banner" id="status">Bereit zum Start!</div></aside></main><script>
+'use strict';
+const MAP={"format":"bomber-arena-map","version":2,"name":"Strand Arena – Power-ups","width":10,"height":10,"ground":["sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand","sand"],"objects":["spawn1",null,"crate","crate","crate","crate","crate","crate",null,"spawn3",null,"crate","crate","crate","crate","crate","crate","crate","crate",null,"crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate","crate",null,"crate","crate","crate","crate","crate","crate","crate","crate",null,"spawn2",null,"crate","crate","crate","crate","crate","crate",null,"spawn4"],"savedAt":"2026-10-24T09:37:47.372Z","powerupSettings":{"distribution":"server_randomized_at_each_round_start","seedMode":"new_random_seed_each_round","total":45,"perType":{"blast":15,"speed":15,"bomb":15},"spawn":"hidden_under_destructible_crates","pickup":"on_player_contact","duration":"until_round_end","effects":{"blast":{"blastRangeIncrement":1},"speed":{"speedMultiplierPerPickup":1.08,"maxSpeedMultiplier":2.2},"bomb":{"simultaneousBombLimitIncrement":1}},"multiplayer":"server_authoritative","implementation":"Call createRoundPowerups(map) from bomber-powerups.js on the authoritative game server once per round; broadcast result."}};
+const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),W=MAP.width,H=MAP.height,T=80;
+const $=id=>document.getElementById(id);
+let roundStartedAt=0, cratesDestroyed=0, bombsPlaced=0, bestWins=0;try{bestWins=Number(localStorage.getItem("bomberWins")||0)}catch(e){}
+let cells=[],players=[],bombs=[],flames=[],pickups=new Map(),hidden=new Map(),playing=false,round=0,last=0,aiClock=0,gameOver=false;
+let survivalElapsed=0,survivalWave=1,challengeRoster=null,eliminationClock=0,roundResultSent=false;
+const colors=['#32c8ff','#f47478','#aaf06c','#d29bff'];
+const random=n=>Math.floor(Math.random()*n), key=(x,y)=>y*W+x, within=(x,y)=>x>=0&&y>=0&&x<W&&y<H;
+const tile=(x,y)=>cells[key(x,y)];
+function reset(){roundResultSent=false;eliminationClock=0;survivalElapsed=0;survivalWave=1;roundStartedAt=performance.now();cratesDestroyed=0;bombsPlaced=0;characterMotion.clear();particles=[];round++;cells=MAP.objects.map(o=>o==='crate'?'crate':null);bombs=[];flames=[];pickups=new Map();hidden=new Map();gameOver=false;aiClock=0;
+ const spots=MAP.objects.flatMap((o,i)=>o==='crate'?[i]:[]);for(let i=spots.length-1;i>0;i--){const j=random(i+1);[spots[i],spots[j]]=[spots[j],spots[i]]}
+ const types=['blast','speed','bomb'].flatMap(t=>Array(15).fill(t));for(let i=types.length-1;i>0;i--){const j=random(i+1);[types[i],types[j]]=[types[j],types[i]]}types.slice(0,spots.length).forEach((type,i)=>hidden.set(spots[i],type));
+ const spawns=MAP.objects.flatMap((o,i)=>typeof o==='string'&&o.startsWith('spawn')?[{id:Number(o.slice(-1)),x:i%W,y:Math.floor(i/W)}]:[]).sort((a,b)=>a.id-b.id);
+ const shared=window.BomberOnlineConfig?.roster||(window.PartyPlayers&&window.parent!==window?window.PartyPlayers.get():null);const compatibleRoster=Array.isArray(shared)&&shared.length>=2&&shared.length<=4&&shared.every((p,i)=>p&&Number(p.id)===i&&typeof p.bot==='boolean');const roster=compatibleRoster?shared:null;challengeRoster=roster;if(roster){$('bots').value=String(roster.length-1);$('mode').value='classic';$('mode').disabled=true;$('bots').disabled=true;}players=[spawns[0],...spawns.slice(1,(roster?roster.length-1:Number($('bots').value))+1)].map((s,i)=>({x:s.x+.5,y:s.y+.5,tx:s.x,ty:s.y,id:i,human:roster?!roster[i].bot:i===0,alive:true,eliminatedAt:null,range:2,limit:1,spd:1,active:0,dir:'',aiTimer:0,color:colors[i],kills:0}));
+ // Free the two neighboring approach tiles near each starting position (the original map already contains them).
+ players.forEach(p=>{for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const x=p.tx+dx,y=p.ty+dy;if(within(x,y)&&MAP.objects[key(x,y)]===null)cells[key(x,y)]=null}});
+ playing=true;$('overlay').hidden=true;for(let i=0;i<touchVectors.length;i++)touchVectors[i]=[0,0];joyVector=[0,0];joy.style.display=players[0]?.human?'':'none';$('touchBomb').style.display=players[0]?.human?'':'none';if(typeof buildExtraPads==='function')buildExtraPads();updateUI();$('status').textContent=`Runde ${round}: 45 Power-ups neu verteilt · ${$('mode').value==='survival'?'Überlebenswelle 1':'Klassisch'}!`;
+}
+function solid(x,y,p){if(!within(x,y)||tile(x,y)==='crate')return true;const b=bombs.find(b=>b.x===x&&b.y===y);return !!(b && !(p&&b.passThrough?.has(p.id)));}
+function move(p,dx,dy,dt){if(!p.alive)return;const magnitude=Math.hypot(dx,dy);if(magnitude>1){dx/=magnitude;dy/=magnitude}dt=Math.min(Math.max(0,dt),.05);const distance=(p.human?3:2.55)*p.spd*dt;const r=.20;
+ const free=(x,y)=>!solid(Math.floor(x-r),Math.floor(y-r),p)&&!solid(Math.floor(x+r),Math.floor(y-r),p)&&!solid(Math.floor(x-r),Math.floor(y+r),p)&&!solid(Math.floor(x+r),Math.floor(y+r),p);
+ const steps=Math.max(1,Math.ceil(distance/.04));for(let i=0;i<steps;i++){let sx=dx*distance/steps,sy=dy*distance/steps;if(free(p.x+sx,p.y))p.x+=sx;if(free(p.x,p.y+sy))p.y+=sy;
+ for(const b of bombs)if(b.passThrough?.has(p.id)&& (p.x+r<=b.x||p.x-r>=b.x+1||p.y+r<=b.y||p.y-r>=b.y+1))b.passThrough.delete(p.id);
+ }
+ const k=key(Math.floor(p.x),Math.floor(p.y));if(pickups.has(k)&&!flames.some(f=>key(f.x,f.y)===k)){const type=pickups.get(k);pickups.delete(k);burst(Math.floor(p.x),Math.floor(p.y),'#fff1a1',18);sound(850,.16);if(type==='blast')p.range=Math.min(9,p.range+1);if(type==='speed')p.spd=Math.min(2.2,p.spd*1.08);if(type==='bomb')p.limit=Math.min(16,p.limit+1);if(p.human)$('status').textContent=({blast:'💥 Explosionsradius erhöht!',speed:'⚡ Du bist schneller!',bomb:'💣 Eine zusätzliche Bombe!'})[type];updateUI()}}
+function plant(p){if(!playing||!p.alive||p.active>=p.limit)return;const x=Math.floor(p.x),y=Math.floor(p.y);if(bombs.some(b=>b.x===x&&b.y===y))return;bombs.push({x,y,owner:p.id,range:p.range,fuse:2.1,passThrough:new Set(players.filter(q=>q.alive&&q.x+.22>x&&q.x-.22<x+1&&q.y+.22>y&&q.y-.22<y+1).map(q=>q.id))});p.active++;if(p.human)bombsPlaced++;sound(220,.07,'triangle')}
+// V20.5: resolve explosions as one deterministic chain-reaction batch.
+function blastTiles(b, blocking){
+ const out=[[b.x,b.y]];
+ for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+  for(let n=1;n<=b.range;n++){
+   const x=b.x+dx*n,y=b.y+dy*n;
+   if(!within(x,y))break;
+   out.push([x,y]);
+   if(blocking.has(key(x,y)))break;
+  }
+ }
+ return out;
+}
+function resolveExplosions(initial){
+ const blocking=new Set();for(let i=0;i<cells.length;i++)if(cells[i]==='crate')blocking.add(i);
+ const queue=[initial],detonated=new Set(),hit=new Set(),owners=[];
+ while(queue.length){
+  const b=queue.shift();if(detonated.has(b))continue;
+  detonated.add(b);owners.push(b.owner);
+  for(const [x,y] of blastTiles(b,blocking)){
+   const k=key(x,y);hit.add(k);
+   for(const other of bombs)if(!detonated.has(other)&&other.x===x&&other.y===y&&!queue.includes(other))queue.push(other);
+  }
+ }
+ bombs=bombs.filter(b=>!detonated.has(b));
+ for(const owner of owners){const p=players[owner];if(p)p.active=Math.max(0,p.active-1)}
+ sound(120,.24,'sawtooth',.06);
+ for(const k of hit){const x=k%W,y=Math.floor(k/W);
+  burst(x,y,'#ffb744',9);flames.push({x,y,life:.55});pickups.delete(k);
+  if(blocking.has(k)){
+   burst(x,y,'#b97c42',18);cells[k]=null;
+   if(hidden.has(k)){pickups.set(k,hidden.get(k));hidden.delete(k)}
+  }
+ }
+ for(const p of players)if(p.alive&&hit.has(key(Math.floor(p.x),Math.floor(p.y)))){p.alive=false;p.eliminatedAt=eliminationClock}
+ updateUI();
+}
+function explode(b){resolveExplosions(b)}
+
+// V20 visual effects, procedural particles, optional audio
+let particles=[],soundOn=false,audioContext=null;
+const characterMotion=new Map();
+function sound(freq=300,duration=.08,type='sine',volume=.035){if(!soundOn)return;try{audioContext ||= new (window.AudioContext||window.webkitAudioContext)();const o=audioContext.createOscillator(),g=audioContext.createGain();o.type=type;o.frequency.setValueAtTime(freq,audioContext.currentTime);o.frequency.exponentialRampToValueAtTime(Math.max(50,freq*.55),audioContext.currentTime+duration);g.gain.setValueAtTime(volume,audioContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);o.connect(g).connect(audioContext.destination);o.start();o.stop(audioContext.currentTime+duration)}catch(e){}}
+function burst(x,y,color,count=12){for(let i=0;i<count;i++){const a=Math.random()*Math.PI*2,v=45+Math.random()*130;particles.push({x:(x+.5)*T,y:(y+.5)*T,vx:Math.cos(a)*v,vy:Math.sin(a)*v-35,life:.35+Math.random()*.5,max:.85,color,size:2+Math.random()*6})}if(particles.length>450)particles.splice(0,particles.length-450)}
+function drawParticles(dt){ctx.save();for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;if(p.life<=0){particles.splice(i,1);continue}p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=120*dt;ctx.globalAlpha=Math.min(1,p.life*2);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=9;ctx.beginPath();ctx.arc(p.x,p.y,p.size*Math.max(.15,p.life),0,Math.PI*2);ctx.fill()}ctx.restore()}
+$('soundToggle').onclick=()=>{soundOn=!soundOn;$('soundToggle').textContent=soundOn?'🔊':'🔇';if(soundOn)sound(550,.09)};
+
+const held=new Set();function inputDir(id=0){const active=k=>held.has(k);const layouts=[['ArrowUp','ArrowLeft','ArrowDown','ArrowRight'],['i','j','k','l'],['t','f','g','h'],['8','4','5','6']];const [up,left,down,right]=layouts[id]||layouts[0];const x=Number(active(right)||(id===0&&active('d')))-Number(active(left)||(id===0&&active('a'))),y=Number(active(down)||(id===0&&active('s')))-Number(active(up)||(id===0&&active('w')));return x||y?[x,y]:(id===0?joyVector:touchVectors[id])||[0,0]}
+function hazard(x,y){if(flames.some(f=>f.x===x&&f.y===y))return 100;let score=0;for(const b of bombs){if(b.x===x&&b.y===y)return 100;if(b.x!==x&&b.y!==y)continue;let dist=Math.abs(b.x-x)+Math.abs(b.y-y);if(dist>b.range)continue;let blocked=false;if(b.x===x){for(let yy=Math.min(b.y,y)+1;yy<Math.max(b.y,y);yy++)if(tile(x,yy)==='crate')blocked=true}else{for(let xx=Math.min(b.x,x)+1;xx<Math.max(b.x,x);xx++)if(tile(xx,y)==='crate')blocked=true}if(!blocked)score+=b.fuse<1?80:25}return score}
+// Evaluate blast lines respecting crates and chain reactions.
+function blastCells(x,y,range){const result=[[x,y]];for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])for(let n=1;n<=range;n++){const xx=x+dx*n,yy=y+dy*n;if(!within(xx,yy))break;result.push([xx,yy]);if(tile(xx,yy)==='crate')break}return result}
+function imminentDanger(x,y,seconds=1.8){if(flames.some(f=>f.x===x&&f.y===y))return true;return bombs.some(b=>b.fuse<=seconds&&blastCells(b.x,b.y,b.range).some(([xx,yy])=>xx===x&&yy===y))}
+// Time-aware breadth-first search: avoid routes that cannot be completed before detonation.
+function escapeRoute(p,extraBomb){
+ const sx=Math.floor(p.x),sy=Math.floor(p.y),all=bombs.slice();
+ if(extraBomb)all.push({...extraBomb,fuse:2.35});
+ const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+ const speed=Math.max(.5,p.spd||1);
+ const stepTime=1/speed;
+ const q=[{x:sx,y:sy,first:null,steps:0}];
+ const seen=new Set([key(sx,sy)]);
+ const threatened=(x,y,arrival)=>flames.some(f=>f.x===x&&f.y===y)||all.some(b=>{
+   if(b.fuse+0.45<arrival)return false;
+   return blastCells(b.x,b.y,b.range).some(([bx,by])=>bx===x&&by===y);
+ });
+ for(let i=0;i<q.length;i++){
+   const cur=q[i],arrival=cur.steps*stepTime;
+   if(cur.steps>0&&!threatened(cur.x,cur.y,arrival+0.2))return cur.first;
+   if(cur.steps>=8)continue;
+   for(const [dx,dy] of dirs){
+     const nx=cur.x+dx,ny=cur.y+dy,k=key(nx,ny),nextArrival=(cur.steps+1)*stepTime;
+     if(seen.has(k)||solid(nx,ny,p)||(extraBomb&&nx===extraBomb.x&&ny===extraBomb.y))continue;
+     if(all.some(b=>b.fuse<=nextArrival+0.12&&b.fuse+0.45>=nextArrival&&blastCells(b.x,b.y,b.range).some(([bx,by])=>bx===nx&&by===ny)))continue;
+     seen.add(k);q.push({x:nx,y:ny,first:cur.first||[dx,dy],steps:cur.steps+1});
+   }
+ }
+ return null;
+}
+function updateBots(dt){for(const p of players){if(p.human||!p.alive)continue;p.aiTimer-=dt;const difficulty=$('difficulty').value;const x=Math.floor(p.x),y=Math.floor(p.y);
+ if(p.aiTimer<=0){p.aiTimer=.16+Math.random()*.12;
+ const danger=imminentDanger(x,y,1.5);let escape=danger?escapeRoute(p):null;
+ if(escape){p.dir=escape;p.escapeUntil=1.1}
+ else if(p.escapeUntil>0&&p.dir&&!solid(x+p.dir[0],y+p.dir[1],p)){p.escapeUntil-=p.aiTimer}
+ else {p.escapeUntil=0;const dirs=[[1,0],[-1,0],[0,1],[0,-1],[0,0]];
+ const options=dirs.filter(([dx,dy])=>!solid(x+dx,y+dy,p)&&!imminentDanger(x+dx,y+dy,1.25));
+ let best=-Infinity,choice=[0,0];for(const d of options){const nx=x+d[0],ny=y+d[1];let score=Math.random()*5+(pickups.has(key(nx,ny))?24:0)+(d[0]||d[1]?3:-7);if(p.dir&&d[0]===p.dir[0]&&d[1]===p.dir[1])score+=4;const target=players.filter(o=>o!==p&&o.alive).sort((a,b)=>Math.hypot(a.x-nx,a.y-ny)-Math.hypot(b.x-nx,b.y-ny))[0];if(target)score-=Math.hypot(target.x-nx,target.y-ny)*.7;if(score>best){best=score;choice=d}}p.dir=choice;
+ const adjacent=[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>within(x+dx,y+dy)&&tile(x+dx,y+dy)==='crate');
+ const enemyNear=players.some(o=>o!==p&&o.alive&&Math.abs(o.x-p.x)+Math.abs(o.y-p.y)<2.5);
+ if((adjacent||enemyNear)&&p.active<p.limit&&!imminentDanger(x,y,2)&&Math.random()<(difficulty==='hard'?.30:difficulty==='easy'?.08:.16)){const hypothetical={x,y,range:p.range,fuse:2.35};const route=escapeRoute(p,hypothetical);if(route){plant(p);p.dir=route;p.escapeUntil=1.25;p.aiTimer=difficulty==='hard'?.08:difficulty==='easy'?.3:.12}}}}
+ if(p.dir)move(p,p.dir[0],p.dir[1],dt)}}
+function finish(){const alive=players.filter(p=>p.alive);const survival=$('mode').value==='survival';if((survival&&!players.some(p=>p.human&&p.alive))||(!survival&&alive.length<=1)){playing=false;gameOver=true;$('overlay').hidden=false;$('title').textContent=alive.length===1?'🏆 '+(challengeRoster?.[alive[0].id]?.name||(alive[0].human?'Spieler '+(alive[0].id+1):'Bot '+alive[0].id))+' gewinnt!':alive.length===0?'🤝 Alle ausgeschieden!':'💥 Runde beendet!';const won=players[0].alive&&alive.length===1;if(won){bestWins++;try{localStorage.setItem('bomberWins',String(bestWins))}catch(e){}}const duration=Math.max(0,Math.floor((performance.now()-roundStartedAt)/1000));const destroyed=MAP.objects.filter((o,i)=>o==='crate'&&cells[i]!=='crate').length;$('message').innerHTML=`<strong>${won?'🏆 Sieg!':'💥 Ausgeschieden'}</strong><br>⏱️ Überlebt: ${Math.floor(duration/60)}:${String(duration%60).padStart(2,'0')}<br>💣 Bomben gelegt: ${bombsPlaced}<br>📦 Zerstörte Kisten: ${destroyed}<br>${survival?'🌊 Erreichte Welle: '+survivalWave+'<br>':''}🏅 Gesamtsiege: ${bestWins}<br><small>Alle 45 Power-ups werden in der nächsten Runde neu versteckt.</small>`;$('play').textContent='↻ NOCHMAL SPIELEN';if(!roundResultSent&&window.PartyMinigame&&players.length>=2&&players.length<=4){roundResultSent=true;const scores=players.map(p=>p.alive?eliminationClock+1:(p.eliminatedAt??0));const max=Math.max(...scores);const winners=players.filter((p,i)=>scores[i]===max);const winnerIndex=winners.length===1?winners[0].id:null;const payload=window.PartyMinigame.normalize('bomber-strand-arena',players.map((p,i)=>({id:i,name:challengeRoster?.[i]?.name||(i===0?'Du':'Bot '+i),bot:!p.human,score:scores[i]})),winnerIndex,{mode:$('mode').value,draw:winners.length>1});window.PartyMinigame.send(payload)}}}
+function update(dt){if(!playing)return;eliminationClock+=dt;
+ if($('mode').value==='survival'&&players.some(p=>p.human&&p.alive)){
+  survivalElapsed+=dt;
+  const targetWave=1+Math.floor(survivalElapsed/25);
+  if(targetWave>survivalWave){survivalWave=targetWave;players.filter(q=>!q.human&&q.alive).forEach(q=>q.spd=Math.min(1.65,1+survivalWave*.05));
+   const inactive=players.filter(q=>!q.human&&!q.alive);
+   const spawn=inactive[0];
+   if(spawn&&players.some(p=>p.human&&p.alive)){const spawnCells=MAP.objects.flatMap((o,i)=>typeof o==='string'&&o.startsWith('spawn')?[i]:[]);
+    const freeSpawns=spawnCells.filter(i=>cells[i]!== 'crate'&&!bombs.some(b=>key(b.x,b.y)===i)&&!flames.some(f=>key(f.x,f.y)===i)&&players.filter(p=>p.human&&p.alive).every(p=>Math.hypot(p.x-(i%W+.5),p.y-(Math.floor(i/W)+.5))>2));
+    if(freeSpawns.length){const i=freeSpawns[random(freeSpawns.length)];Object.assign(spawn,{x:i%W+.5,y:Math.floor(i/W)+.5,alive:true,active:0,aiTimer:0,dir:null,escapeUntil:0,spd:Math.min(1.65,1+survivalWave*.05)});}
+   }
+   $('status').textContent='🌊 Überlebenswelle '+survivalWave+' – Gegner werden stärker!';updateUI();
+  }
+ }
+ for(const p of players.filter(p=>p.human&&p.alive)){let [dx,dy]=inputDir(p.id);const magnitude=Math.hypot(dx,dy);if(magnitude>1){dx/=magnitude;dy/=magnitude}move(p,dx,dy,dt)}updateBots(dt);for(const b of bombs)b.fuse-=dt;const expired=bombs.find(b=>b.fuse<=0);if(expired)resolveExplosions(expired);for(const f of [...flames]){f.life-=dt;if(f.life<=0)flames.splice(flames.indexOf(f),1)}for(const f of flames)for(const q of players)if(q.alive&&Math.floor(q.x)===f.x&&Math.floor(q.y)===f.y){q.alive=false;q.eliminatedAt=eliminationClock}finish()}
+function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+function draw(t){const time=t/1000;ctx.clearRect(0,0,800,800);
+// Decorative shoreline stays outside the collision map; it never blocks movement.
+const water=ctx.createLinearGradient(0,0,800,800);water.addColorStop(0,'#dff5e7');water.addColorStop(.5,'#a6e8db');water.addColorStop(1,'#e7f2d0');ctx.fillStyle=water;ctx.fillRect(0,0,800,800);
+for(let y=0;y<H;y++)for(let x=0;x<W;x++){const px=x*T,py=y*T;ctx.fillStyle=(x+y)%2?'#e9c48a':'#f4d9a4';ctx.fillRect(px,py,T,T);ctx.fillStyle='#bd985f55';for(let i=0;i<3;i++){let ox=(x*37+y*23+i*31)%70,oy=(x*13+y*47+i*19)%72;ctx.fillRect(px+ox+5,py+oy+5,2,2)}if((x*7+y*11)%19===0){ctx.font='23px serif';ctx.fillText('🐚',px+7,py+34)}if((x*13+y*17)%37===0){ctx.font='18px serif';ctx.fillText('🌿',px+44,py+67)}if(tile(x,y)==='crate'){rounded(px+8,py+13,65,63,10,'#543a2b');rounded(px+7,py+8,66,65,9,'#75472c');rounded(px+10,py+8,60,59,7,'#bc7e46');ctx.fillStyle='#f9d6a24a';ctx.fillRect(px+14,py+12,51,6);ctx.strokeStyle='#e5aa66';ctx.lineWidth=5;ctx.strokeRect(px+16,py+15,48,43);ctx.strokeStyle='#86532f';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(px+16,py+15);ctx.lineTo(px+64,py+58);ctx.moveTo(px+64,py+15);ctx.lineTo(px+16,py+58);ctx.stroke();ctx.fillStyle='#f3cb81';ctx.fillRect(px+35,py+12,10,52)}else if(pickups.has(key(x,y))){const type=pickups.get(key(x,y));ctx.save();ctx.shadowColor='#fff0a8';ctx.shadowBlur=20;rounded(px+15,py+15,50,50,15,'#fff1c0');ctx.restore();ctx.font='35px serif';ctx.textAlign='center';ctx.fillText(({blast:'💥',speed:'⚡',bomb:'💣'})[type],px+40,py+53);ctx.textAlign='start'}}
+ // Tropical ambience: restrained moving highlights and palm fronds, never hiding bombs or players.
+ ctx.save();ctx.globalAlpha=.22;ctx.strokeStyle='#fff9d5';ctx.lineWidth=2;
+ for(let i=0;i<9;i++){const yy=(i*103+Math.sin(time*.7+i)*8+800)%800;ctx.beginPath();ctx.moveTo(0,yy);ctx.quadraticCurveTo(30,yy-7,55,yy);ctx.stroke();}
+ ctx.restore();
+ for(const [gx,gy] of [[1,0],[8,0],[1,9],[8,9]]){
+  if(tile(gx,gy)==='crate')continue;
+  const px=(gx+.5)*T,py=(gy+.5)*T;
+  ctx.save();ctx.translate(px,py);ctx.rotate(Math.sin(time*.85+gx)*.055);ctx.globalAlpha=.62;
+  ctx.strokeStyle='#6c5932';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,12);ctx.lineTo(0,-9);ctx.stroke();
+  for(let a=0;a<6;a++){const angle=a*Math.PI/3;ctx.strokeStyle=a%2?'#37865a':'#4a9e63';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,-9);ctx.quadraticCurveTo(Math.cos(angle)*13,-22+Math.sin(angle)*9,Math.cos(angle)*23,-13+Math.sin(angle)*20);ctx.stroke();}
+  ctx.restore();
+ }
+ for(const b of bombs){const px=(b.x+.5)*T,py=(b.y+.5)*T;ctx.fillStyle='#1b2731';ctx.beginPath();ctx.arc(px,py+6,24+Math.sin(time*11)*2,0,Math.PI*2);ctx.fill();ctx.fillStyle=b.fuse<.65?'#f97947':'#526578';ctx.beginPath();ctx.arc(px-7,py-4,9,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#f5cb68';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(px+10,py-15);ctx.quadraticCurveTo(px+20,py-35,px+28,py-25);ctx.stroke();ctx.font='20px serif';ctx.fillText('✨',px+19,py-20)}
+ for(const f of flames){const px=f.x*T,py=f.y*T,cx=px+40,cy=py+40,fade=Math.min(1,f.life*3),pulse=1+.08*Math.sin(time*25+f.x);ctx.save();ctx.globalAlpha=fade;ctx.shadowColor='#ff9a23';ctx.shadowBlur=20;const glow=ctx.createRadialGradient(cx,cy,4,cx,cy,43);glow.addColorStop(0,'#fff7b0');glow.addColorStop(.42,'#ffd45b');glow.addColorStop(.8,'#ff7529');glow.addColorStop(1,'#e83c1300');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(cx,cy,40*pulse,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;for(let i=0;i<5;i++){const a=i*Math.PI*2/5+time*2;ctx.fillStyle=i%2?'#ff9a30':'#ffe59a';ctx.beginPath();ctx.ellipse(cx+Math.cos(a)*19,cy+Math.sin(a)*19,8,15,a,0,Math.PI*2);ctx.fill()}ctx.restore()}for(const p of players){if(!p.alive)continue;const px=p.x*T,py=p.y*T;const motion=characterMotion.get(p.id)||{x:p.x,y:p.y,facing:0,walk:0};const vx=p.x-motion.x,vy=p.y-motion.y;const walking=playing&&Math.hypot(vx,vy)>.0008;if(walking){motion.facing=Math.atan2(vy,vx);motion.walk+=Math.hypot(vx,vy)*22}motion.x=p.x;motion.y=p.y;characterMotion.set(p.id,motion);const stride=walking?Math.sin(motion.walk)*4:0;ctx.save();ctx.translate(px,py);if(walking){ctx.rotate(Math.sin(motion.walk)*.035)}ctx.fillStyle='#342c3160';ctx.beginPath();ctx.ellipse(0,24,24,9,0,0,Math.PI*2);ctx.fill();
+// Animated feet, body and distinct character accessories.
+ctx.fillStyle='#283647';rounded(-16,15+stride,12,12,4,'#293849');rounded(4,15-stride,12,12,4,'#293849');
+ctx.shadowColor=p.color;ctx.shadowBlur=8;rounded(-21,-14,42,39,13,p.color);ctx.shadowBlur=0;
+ctx.fillStyle='#f7d4a8';ctx.beginPath();ctx.arc(0,-10,17,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#203448';ctx.beginPath();const eyeShift=walking?Math.cos(motion.facing)*2:0;ctx.arc(-6+eyeShift,-12,2.7,0,Math.PI*2);ctx.arc(6+eyeShift,-12,2.7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a36a4c';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,-7,6,0,Math.PI);ctx.stroke();
+if(p.human){rounded(-20,-27,40,8,4,'#26d7e3');rounded(-12,-35,24,12,5,'#1b8ea7');ctx.fillStyle='#142e42';ctx.fillRect(-13,-17,26,5)}else if(p.id===1){rounded(-22,-29,44,8,4,'#a53845');rounded(-13,-40,26,15,4,'#c94855');ctx.fillStyle='#f6e5ae';ctx.fillRect(12,-35,5,9)}else if(p.id===2){rounded(-22,-29,44,7,3,'#e2b15d');rounded(-13,-37,26,11,4,'#9e7741');ctx.fillStyle='#e7c88c';ctx.fillRect(-3,-40,6,9)}else{rounded(-21,-29,42,7,3,'#86bd6b');rounded(-13,-37,26,12,5,'#568e57');ctx.fillStyle='#d4e9c1';ctx.fillRect(-7,-35,14,3)}
+ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.strokeStyle='#173243';ctx.lineWidth=4;const label=p.human?'DU':'BOT '+p.id;ctx.strokeText(label,0,-47);ctx.fillText(label,0,-47);ctx.restore()}ctx.textAlign='start'}
+function updateUI(){const p=players.find(q=>q.human)||players[0];if(!p)return;$('blast').textContent=p.range;$('speed').textContent=p.spd.toFixed(1)+'×';$('capacity').textContent=p.limit;$('crates').textContent=cells.filter(c=>c==='crate').length;$('players').innerHTML=players.map(q=>`<div class="player"><span><i class="dot" style="background:${q.color}"></i>${challengeRoster?.[q.id]?.name||(q.human?'Spieler '+(q.id+1):'Bot '+q.id)}</span><strong>${q.alive?'🟢 Aktiv':'☠️ Aus'}</strong></div>`).join('')}
+function frame(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);draw(t);drawParticles(dt);if(playing&&Math.floor(t/250)!==Math.floor((t-16)/250))updateUI();requestAnimationFrame(frame)}
+window.addEventListener('keydown',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','w','a','s','d'].includes(k))e.preventDefault();held.add(k);if(!e.repeat){const bombKeys={' ':'0',u:'1',r:'2','7':'3'};const index=bombKeys[k];if(index!==undefined&&players[Number(index)]?.human)plant(players[Number(index)])}});window.addEventListener('keyup',e=>held.delete(e.key.length===1?e.key.toLowerCase():e.key));window.addEventListener('blur',()=>{held.clear();last=0});
+const touchPointers=new Map();
+const joy=document.getElementById('joystick'),stick=document.getElementById('stick');
+let joyPointer=null,joyVector=[0,0];const touchVectors=[[0,0],[0,0],[0,0],[0,0]];const extraPads=document.createElement('div');extraPads.id='bomberExtraPads';extraPads.style.cssText='display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:8px;';$('joystick').parentElement.parentElement.append(extraPads);function buildExtraPads(){extraPads.replaceChildren();for(const p of players.slice(1).filter(p=>p.human)){const group=document.createElement('div');group.style.cssText='display:flex;align-items:center;gap:8px;background:#173c53dd;padding:8px;border-radius:16px;color:white;font-weight:700';const label=document.createElement('span');label.textContent=challengeRoster?.[p.id]?.name||'Spieler '+(p.id+1);const pad=document.createElement('div');pad.style.cssText='width:104px;height:104px;border-radius:50%;background:#24637a;position:relative;touch-action:none;border:3px solid #80d9e7';const knob=document.createElement('div');knob.style.cssText='position:absolute;left:32px;top:32px;width:34px;height:34px;border-radius:50%;background:#ffe2a0;pointer-events:none';pad.append(knob);let pointer=null;const move=e=>{const r=pad.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),length=Math.hypot(dx,dy),factor=length?Math.min(1,35/length):0;touchVectors[p.id]=length<10?[0,0]:[dx*factor/35,dy*factor/35];knob.style.transform=`translate(${dx*factor}px,${dy*factor}px)`};pad.addEventListener('pointerdown',e=>{e.preventDefault();if(pointer!==null)return;pointer=e.pointerId;pad.setPointerCapture(e.pointerId);move(e)});pad.addEventListener('pointermove',e=>{if(e.pointerId===pointer){e.preventDefault();move(e)}});for(const type of ['pointerup','pointercancel','lostpointercapture'])pad.addEventListener(type,e=>{if(pointer===e.pointerId){pointer=null;touchVectors[p.id]=[0,0];knob.style.transform='translate(0,0)'}});const bomb=document.createElement('button');bomb.textContent='💣';bomb.style.cssText='font-size:26px;padding:15px;border-radius:14px;touch-action:manipulation';bomb.addEventListener('pointerdown',e=>{e.preventDefault();plant(p)});group.append(label,pad,bomb);extraPads.append(group)}}
+const joySize=$('joySize');
+try{joySize.value=localStorage.getItem('bomberJoySize')||'125'}catch(e){}
+function applyJoySize(){const px=Number(joySize.value);joy.style.width=px+'px';joy.style.height=px+'px';$('joySizeValue').textContent=px+' px';try{localStorage.setItem('bomberJoySize',String(px))}catch(e){}}
+joySize.addEventListener('input',applyJoySize);applyJoySize();
+const sensitivity=$('joySensitivity');try{sensitivity.value=localStorage.getItem('bomberJoySensitivity')||'100'}catch(e){};$('joyValue').textContent=sensitivity.value+'%';
+sensitivity.addEventListener('input',()=>{$('joyValue').textContent=sensitivity.value+'%';try{localStorage.setItem('bomberJoySensitivity',sensitivity.value)}catch(e){}});
+function syncTouchDirections(){}
+function updateJoystick(e){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+ const max=r.width*.34,dx=e.clientX-cx,dy=e.clientY-cy,dist=Math.hypot(dx,dy),scale=dist?Math.min(1,max/dist):0;
+ const vx=dx*scale/max,vy=dy*scale/max;joyVector=dist<max*.16?[0,0]:[vx*Number(sensitivity.value)/100,vy*Number(sensitivity.value)/100];stick.style.transform=`translate(${dx*scale}px,${dy*scale}px)`;}
+joy.addEventListener('pointerdown',e=>{e.preventDefault();if(joyPointer!==null)return;joyPointer=e.pointerId;joy.setPointerCapture(e.pointerId);updateJoystick(e)});
+joy.addEventListener('pointermove',e=>{if(e.pointerId===joyPointer){e.preventDefault();updateJoystick(e)}});
+function releaseJoystick(e){if(e.pointerId!==joyPointer)return;joyPointer=null;joyVector=[0,0];stick.style.transform='translate(0,0)'}
+for(const ev of ['pointerup','pointercancel','lostpointercapture'])joy.addEventListener(ev,releaseJoystick);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){held.clear();joyPointer=null;joyVector=[0,0];stick.style.transform='translate(0,0)'}});
+// The playfield does not capture touch: only the joystick steers movement.
+window.addEventListener('blur',()=>{for(let i=0;i<touchVectors.length;i++)touchVectors[i]=[0,0];touchPointers.clear();joyPointer=null;joyVector=[0,0];stick.style.transform='translate(0,0)';syncTouchDirections()});
+const uiMenu=$('uiMenu');const headerOptions=document.querySelector('header>div:last-child');
+uiMenu.addEventListener('click',()=>{const open=headerOptions.classList.toggle('menuOpen');uiMenu.setAttribute('aria-expanded',String(open))});
+headerOptions.addEventListener('click',e=>{if(e.target.closest('button')&&e.target.id!=='soundToggle'){headerOptions.classList.remove('menuOpen');uiMenu.setAttribute('aria-expanded','false')}});
+$('touchBomb').addEventListener('pointerdown',e=>{e.preventDefault();if(players[0])plant(players[0])});$('restart').onclick=reset;$('play').onclick=reset;reset();playing=false;$('overlay').hidden=false;requestAnimationFrame(frame);
+</script><script src="../party-players.js?v=20261024-roster5"></script><script src="../party-minigame-bridge.js"></script>
+<script>
+// Online adapter for the original V21.5: retains artwork, physics and controls.
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.source!==parent)return;
+ const m=event.data;
+ if(m?.type==='bomber:configure'&&typeof m.challengeId==='string'&&Array.isArray(m.roster)&&m.roster.length>=2&&m.roster.length<=4){
+  window.BomberOnlineConfig={challengeId:m.challengeId,roster:m.roster,localSeat:m.localSeat,seq:0};
+  reset();$('status').textContent='🌐 Online-Arena vorbereitet';
+  parent.postMessage({type:'bomber:configured',challengeId:m.challengeId},event.origin);
+ }
+ if(m?.type==='bomber:snapshot'&&window.BomberOnlineConfig?.challengeId===m.challengeId){
+  if(m.phase==='results'||m.phase==='finished'){
+   playing=false;gameOver=true;$('overlay').hidden=false;$('title').textContent='🏆 Online-Ergebnis';$('message').textContent='Platzierungen und Punkte stehen in der gemeinsamen Lobby.';
+  }
+ }
+});
+</script></body></html>
