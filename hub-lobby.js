@@ -234,7 +234,7 @@ async function ensureMaulwurfOriginalBridge(){
  if(maulwurfOriginalBridge||maulwurfOriginalLoading||maulwurfOriginalFailed)return;
  maulwurfOriginalLoading=true;
  try{
-  const {mountMaulwurfOriginal}=await import('./maulwurf-online-bridge.js?v=5');
+  const {mountMaulwurfOriginal}=await import('./maulwurf-online-bridge.js?v=6');
   // The player may have left the room while the module was downloading.
   const current=room?.match?.challenge;
   if(!current||current.phase!=='countdown'||current.order?.[current.index]!=='maulwurf-arena')return;
