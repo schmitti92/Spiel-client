@@ -315,11 +315,18 @@ window.addEventListener('message',event=>{
    if(q.id!==c.localSeat&&Number.isFinite(q.x)&&Number.isFinite(q.y)){p.x=q.x;p.y=q.y;}
    if(q.alive===false){p.alive=false;if(p.eliminatedAt===null)p.eliminatedAt=eliminationClock;}
   }
-  if(Array.isArray(m.bombs))for(const b of m.bombs){
-   if(c.seenBombs.has(b.id))continue;c.seenBombs.add(b.id);
-   if(b.seat===c.roster[c.localSeat]?.seat)continue;
-   const owner=players[m.players.findIndex(q=>q.seat===b.seat)];
-   if(owner&&!bombs.some(q=>q.x===b.x&&q.y===b.y)){bombs.push({x:b.x,y:b.y,owner:owner.id,range:b.range,fuse:Math.max(.05,2.1-(serverTime-(b.placedAt||serverTime))/1000),passThrough:new Set()});owner.active++;}
+  // Server owns the bomb list: rebuild active bombs from each snapshot so
+  // rejected local placements and stale client fuses cannot desynchronize players.
+  if(Array.isArray(m.bombs)){
+   const previous=bombs;
+   bombs=m.bombs.filter(b=>Number.isInteger(b.x)&&Number.isInteger(b.y)&&within(b.x,b.y)).map(b=>{
+    const ownerId=m.players.findIndex(q=>q.seat===b.seat);
+    const existing=previous.find(q=>q.serverId===b.id);
+    return {serverId:b.id,x:b.x,y:b.y,owner:ownerId,range:b.range,
+     fuse:Math.max(.05,2.1-(serverTime-b.placedAt)/1000),
+     passThrough:existing?.passThrough||new Set(ownerId>=0?[ownerId]:[])};
+   });
+   for(const p of players)p.active=bombs.filter(b=>b.owner===p.id).length;
   }
   if(Array.isArray(m.destroyed))for(const i of m.destroyed){if(Number.isInteger(i)&&i>=0&&i<cells.length&&cells[i]==='crate'){cells[i]=null;hidden.delete(i);}}
   if(Array.isArray(m.blasts))for(const b of m.blasts){if(Number.isInteger(b.x)&&Number.isInteger(b.y)&&within(b.x,b.y)&&!flames.some(f=>f.x===b.x&&f.y===b.y)){flames.push({x:b.x,y:b.y,life:Math.max(.05,(b.until-serverTime)/1000)});}}
