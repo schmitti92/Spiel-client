@@ -1,7 +1,9 @@
 /* Run: node --test tests/party-online-transport.test.mjs */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {PartyOnlineTransport} from '../online/party-online-transport.js';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('../online/party-online-transport.js',import.meta.url),'utf8');
+const {PartyOnlineTransport}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 
 test('requires authenticated token provider',()=>{
   assert.throws(()=>new PartyOnlineTransport(),/getToken/);
