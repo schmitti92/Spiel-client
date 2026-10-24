@@ -32,10 +32,10 @@ test('room switch resets revision and ignores delayed response from old room',as
     const t=new PartyOnlineTransport({getToken:async()=> 'token'});
     const old=t.attach('ABCDEF');
     await new Promise(resolve=>setTimeout(resolve,0));
-    await t.attach('GHIJKL');
+    await t.attach('GHJKLM');
     release();
     await old;
-    assert.equal(t.room.code,'GHIJKL');
+    assert.equal(t.room.code,'GHJKLM');
     assert.equal(t.sequence,1);
   }finally{globalThis.fetch=previous;}
 });
