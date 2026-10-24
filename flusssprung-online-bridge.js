@@ -29,6 +29,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    frame.contentWindow.postMessage({type:'flusssprung:configure',challengeId:key,path:f.path,localSeat,seats:players.map(p=>({name:p.name}))},location.origin);
    return;
   }
+  frame.contentWindow.postMessage({type:'flusssprung:server-state',players:(f.players||[]).map(p=>({index:players.findIndex(x=>x.seat===p.seat),row:p.row,falls:p.falls,finishedAt:p.finishedAt}))},location.origin);
   const moves=f.moves||[];
   const total=Number.isInteger(f.moveCount)?f.moveCount:moves.length;
   const offset=Math.max(0,total-moves.length);
