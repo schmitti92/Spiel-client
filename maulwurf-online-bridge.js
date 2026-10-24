@@ -41,7 +41,15 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   pendingHits.add(hitKey);
   try{const result=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-hit','POST',{challengeId:ch.id,tick,hole});if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);}
   catch(err){
-   if(active&&iframe.contentWindow)iframe.contentWindow.postMessage({type:'maulwurf:hit-rejected',challengeId:ch.id,tick,hole},location.origin);
+   // A transport error is ambiguous: the server may have accepted the hit.
+   // Fetch the authoritative room before removing optimistic feedback.
+   try{
+    const latest=await request('/rooms/'+encodeURIComponent(room.code));
+    if(!active)return;
+    if(latest?.match?.challenge?.id===ch.id)acceptRoom(latest);
+    const accepted=latest?.match?.challenge?.maulwurf?.hitTicks?.includes(tick);
+    if(!accepted&&iframe.contentWindow)iframe.contentWindow.postMessage({type:'maulwurf:hit-rejected',challengeId:ch.id,tick,hole},location.origin);
+   }catch(_refreshError){/* Keep the optimistic mark until the next authoritative sync. */}
    if(err?.message!=='MAULWURF_NOT_VISIBLE'&&err?.message!=='MAULWURF_WRONG_HOLE')onError?.(err);
    lastKey='';sync();
   }
