@@ -210,7 +210,7 @@ function renderChallengeProgress(){
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
  const mathBoard=el('challenge-math-board');
- const mathBoardKey=ch.id+':'+index+':'+(ch.math?.a??'')+':'+(ch.math?.b??'');
+ const mathBoardKey=ch.id+':'+index+':'+(ch.math?.round||1)+':'+(ch.math?.a??'')+':'+(ch.math?.b??'');
  if(isMath&&ch.math&&mathBoard.dataset.round!==mathBoardKey){
   mathBoard.dataset.round=mathBoardKey;
   mathBoard.replaceChildren();
@@ -228,10 +228,10 @@ function renderChallengeProgress(){
   choices.forEach(value=>{const btn=document.createElement('button');btn.type='button';btn.textContent=String(value);btn.dataset.value=String(value);btn.setAttribute('aria-label','Antwort '+value);btn.addEventListener('click',()=>{if(btn.disabled||answered||Number(ch.startAt)>(Number(room.serverNow)||Date.now()))return;mathBoard.querySelectorAll('button').forEach(b=>{b.classList.remove('selected');b.disabled=true;});btn.classList.add('selected');el('challenge-math-input').value=String(value);el('challenge-math-send').click();});mathBoard.append(btn);});
  }
  mathBoard.querySelectorAll('button').forEach(btn=>{btn.disabled=answered||Number(ch.startAt)>Number(room.serverNow);});
- const mathRoundKey=ch.id+':'+index;
+ const mathRoundKey=ch.id+':'+index+':'+(ch.math?.round||1);
  if(el('challenge-math').dataset.round!==mathRoundKey){el('challenge-math').dataset.round=mathRoundKey;el('challenge-math-input').value='';}
  el('challenge-math').hidden=!isMath||ch.phase!=='countdown';
- el('challenge-math-question').textContent=isMath&&ch.math?ch.math.a+' '+ch.math.operator+' '+ch.math.b+' = ?':'';
+ el('challenge-math-question').textContent=isMath&&ch.math?'Runde '+(ch.math.round||1)+' / '+(ch.math.totalRounds||3)+' · '+ch.math.a+' '+ch.math.operator+' '+ch.math.b+' = ?':'';
  el('challenge-math-send').disabled=answered||Number(ch.startAt)>Number(room.serverNow);
  el('challenge-math-input').disabled=answered;
  el('challenge-math-feedback').textContent=answered?'✓ Antwort gespeichert. Warte auf die Mitspieler.':'';
@@ -246,6 +246,7 @@ function renderChallengeProgress(){
  if(ch.phase==='results'||ch.phase==='finished'){
   const result=ch.results[ch.results.length-1];
   const title=document.createElement('h3');title.textContent=ch.phase==='finished'?'🏆 Finale Siegerehrung':'🎉 Minispiel abgeschlossen';resultsBox.append(title);
+  if(result?.game==='recheninsel'&&Array.isArray(result.rounds)){const summary=document.createElement('p');summary.textContent=result.rounds.map(r=>'Runde '+r.round+': '+r.question+' = '+r.answer).join('  ·  ');resultsBox.append(summary);}
   if(result?.game==='recheninsel'&&typeof result.answer==='number'){const solution=document.createElement('p');solution.textContent='🏴‍☠️ Lösung: '+result.question+' = '+result.answer;resultsBox.append(solution);}
   if(result?.standings){
    const list=document.createElement('div');list.style.cssText='display:grid;gap:9px;margin:14px auto;max-width:540px';
