@@ -17,7 +17,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   if(localSeat<0)return;
   const key=ch.id+':'+ch.index;
   if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;resultSent=false;lastSnapshot='';lastSyncRevision=null;pendingJump=false;}
-  if(ch.phase!=='countdown'){
+  if(ch.phase!=='countdown'&&configured){
    if(!resultSent&&ch.results?.some(r=>r.game==='flusssprung'&&r.index===ch.index)){
     resultSent=true;
     const result=ch.results.find(r=>r.game==='flusssprung'&&r.index===ch.index);
@@ -29,6 +29,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    frame.contentWindow.postMessage({type:'flusssprung:configure',challengeId:key,path:f.path,localSeat,seats:players.map(p=>({name:p.name}))},location.origin);
    return;
   }
+  if(ch.phase!=='countdown')return;
   const moves=f.moves||[];
   const total=Number.isInteger(f.moveCount)?f.moveCount:moves.length;
   const offset=Math.max(0,total-moves.length);
