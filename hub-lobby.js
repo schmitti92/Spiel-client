@@ -234,7 +234,7 @@ async function ensureBomberOriginalBridge(){
  if(bomberOriginalBridge||bomberOriginalLoading||bomberOriginalFailed)return;
  bomberOriginalLoading=true;
  try{
-  const {mountBomberOriginal}=await import('./bomber-strand-online-bridge.js?v=3');
+  const {mountBomberOriginal}=await import('./bomber-strand-online-bridge.js?v=4');
   const ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='bomber-strand-arena'||ch.phase!=='countdown')return;
   const target=el('challenge-original-frame');if(!target)return;
