@@ -1,0 +1,24 @@
+name: Minigame Online Transport Tests
+on:
+  push:
+    branches:
+      - feature/minigames-online-foundation-20261024
+    paths:
+      - 'online/**'
+      - 'tests/party-online-transport.test.mjs'
+      - '.github/workflows/minigame-online-tests.yml'
+  pull_request:
+    paths:
+      - 'online/**'
+      - 'tests/party-online-transport.test.mjs'
+jobs:
+  transport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run online room transport regression tests
+        run: node --test tests/party-online-transport.test.mjs
