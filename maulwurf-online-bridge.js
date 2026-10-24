@@ -8,7 +8,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';
  iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);
- let active=true,lastKey='',timeoutPending=false,timeoutKey='',lastRevision=null,serverOffset=0,frameReady=false;
+ let active=true,lastKey='',timeoutPending=false,timeoutKey='',timeoutRetryAt=0,lastRevision=null,serverOffset=0,frameReady=false;
  const pendingHits=new Set();
  function estimatedServerNow(room){if(room?.revision!==lastRevision){lastRevision=room?.revision;serverOffset=(Number(room?.serverNow)||Date.now())-Date.now();}return Date.now()+serverOffset;}
  const expiryTimer=setInterval(()=>{if(!active)return;const r=getRoom(),ch=r?.match?.challenge;if(ch?.order?.[ch.index]!=='maulwurf-arena'||ch.phase!=='countdown')return;const now=estimatedServerNow(r);if(now>=ch.startAt+30000)sync();},300);
@@ -19,12 +19,12 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   const seat=room.players?.find(p=>p.me)?.seat;
   const estimatedNow=estimatedServerNow(room);
   const roundKey=ch.id+':'+ch.index+':'+ch.startAt;
-  if(roundKey!==timeoutKey){timeoutKey=roundKey;timeoutPending=false;}
-  if(ch.phase==='countdown'&&estimatedNow>=ch.startAt+30000&&!timeoutPending){
+  if(roundKey!==timeoutKey){timeoutKey=roundKey;timeoutPending=false;timeoutRetryAt=0;}
+  if(ch.phase==='countdown'&&estimatedNow>=ch.startAt+30000&&!timeoutPending&&Date.now()>=timeoutRetryAt){
    timeoutPending=true;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-timeout','POST',{challengeId:ch.id})
     .then(result=>{if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);})
-    .catch(err=>{onError?.(err);timeoutPending=false;});
+    .catch(err=>{timeoutPending=false;timeoutRetryAt=Date.now()+3000;if(err?.message!=='CHALLENGE_NOT_ACTIVE')onError?.(err);});
   }
   const key=[ch.id,ch.index,ch.startAt,ch.phase,ch.maulwurf.hitCount,ch.maulwurf.score,JSON.stringify(ch.maulwurf.hitTicks||[]),JSON.stringify(ch.maulwurf.opponents||[]),seat].join(':');
   if(lastKey===key)return;lastKey=key;
