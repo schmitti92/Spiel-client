@@ -37,3 +37,38 @@
    max-height:clamp(37px,6.8vh,63px)!important;
  }
 }
+
+/* v3: exploit spare tablet width for ALL three player boards. */
+@media (pointer:coarse) and (orientation:landscape) and (min-width:700px) and (max-width:1400px){
+ body.is-playing[data-players="3"] .table-area.three-player-layout{
+   grid-template-columns:minmax(0,1.44fr) minmax(0,.48fr) minmax(0,1.08fr)!important;
+   width:100%!important;max-width:100%!important;
+   gap:clamp(3px,.4vw,7px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-players-stack{
+   width:100%!important;gap:clamp(3px,.6vh,7px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap{
+   width:100%!important;min-width:0!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player{
+   width:100%!important;max-width:100%!important;
+   padding:clamp(3px,.4vw,6px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .grid{
+   width:100%!important;max-width:100%!important;
+   gap:clamp(2px,.3vw,5px)!important;padding:clamp(2px,.3vw,5px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .card{
+   max-height:clamp(48px,10.8vh,102px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .own-seat .player .gridwrap{
+   width:100%!important;max-width:100%!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table{
+   padding:clamp(3px,.4vw,6px)!important;gap:clamp(3px,.5vh,6px)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles .card{
+   max-height:clamp(70px,16vh,135px)!important;
+ }
+}
