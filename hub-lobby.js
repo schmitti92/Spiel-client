@@ -160,6 +160,14 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-math-send,#challenge-next,#challenge-time-stop{border:0!important;border-radius:18px!important;padding:15px 30px!important;background:linear-gradient(#ffebad,#e7ab45)!important;color:#24323b!important;font-size:clamp(18px,2.5vw,25px)!important;font-weight:850!important;box-shadow:0 6px 0 #926223,0 12px 25px #00152266;cursor:pointer}
 #challenge-math-send:disabled,#challenge-time-stop:disabled{opacity:.58;cursor:default}
 #challenge-results{width:min(92vw,720px);max-height:55vh;overflow:auto}
+#challenge-math-board{width:min(94vw,960px);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(6px,1vw,14px);margin:12px auto 0}
+#challenge-math-board button{position:relative;min-height:clamp(58px,10vh,100px);border:2px solid #d9ac6e;border-radius:15px;color:#fff4d6;font-size:clamp(20px,3vw,36px);font-weight:950;background:linear-gradient(145deg,#86582d,#4e2a1c 55%,#2e1c18);box-shadow:inset 0 3px #ffe7ae42,0 6px 0 #201313,0 10px 18px #0009;cursor:pointer;touch-action:manipulation}
+#challenge-math-board button:before{content:'⚓';position:absolute;top:3px;left:7px;font-size:12px;opacity:.6}
+#challenge-math-board button.selected{background:linear-gradient(145deg,#65db8d,#1d8459);border-color:#b8ffd0;box-shadow:0 0 0 3px #8affab,0 0 24px #54f8a077}
+#challenge-math-board button:disabled:not(.selected){opacity:.55;cursor:default}
+#challenge-math-board button:focus-visible{outline:3px solid #ffe3a1;outline-offset:3px}
+#challenge-math:not([hidden]){width:min(98vw,1060px);padding:clamp(10px,2vw,24px)}
+@media(max-width:650px){#challenge-math-board{grid-template-columns:repeat(3,minmax(0,1fr))}#challenge-math-board button{min-height:52px}}
 #challenge-start-overlay:not([hidden]){position:fixed!important;inset:0!important;z-index:10030!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#031526e8;backdrop-filter:blur(7px);pointer-events:auto}
 #challenge-start-number{font-size:clamp(110px,28vw,290px);font-weight:1000;line-height:1;color:#ffe2a1;text-shadow:0 0 50px #e5a643aa,0 12px 0 #4b321e}
 #challenge-start-caption{font-size:clamp(18px,3vw,35px);font-weight:850;letter-spacing:.05em}
@@ -174,7 +182,7 @@ function renderChallengeProgress(){
  let box=el('challenge-progress');
  if(!box){
   box=document.createElement('section');box.id='challenge-progress';box.style.cssText='margin:16px 0;padding:22px;border-radius:22px;background:linear-gradient(135deg,#122946,#223f69);color:white;text-align:center;box-shadow:0 14px 30px #10294b30';
-  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px"><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px">Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
+  box.innerHTML='<h2 style="margin:0 0 10px">🏴‍☠️ Party Challenge</h2><p id="challenge-progress-name"></p><div id="challenge-clock" aria-live="off" style="font-size:clamp(58px,15vw,130px);font-weight:900;line-height:1.1;color:#ffcf6b"></div><p id="challenge-progress-status" role="status"></p><p id="challenge-progress-order" style="font-size:13px;opacity:.85"></p><button id="challenge-time-stop" type="button" style="font-size:24px;padding:16px 36px;border-radius:16px;background:#ffcf6b;color:#122946;font-weight:900;border:0" hidden>⏱️ STOPP!</button><p id="challenge-time-target"></p><div id="challenge-results"></div><div id="challenge-math" hidden><p id="challenge-math-question" style="font-size:clamp(30px,7vw,58px);font-weight:900"></p><div id="challenge-math-board" role="group" aria-label="15 Schatzfässer – wähle deine Antwort"></div><input id="challenge-math-input" type="number" min="0" max="1000" inputmode="numeric" aria-label="Ergebnis eingeben" style="width:140px;padding:12px;font-size:24px;border-radius:12px" hidden><button type="button" id="challenge-math-send" style="padding:14px;border-radius:12px" hidden>Antwort abgeben</button><p id="challenge-math-feedback" role="status"></p></div><button type="button" id="challenge-next" hidden>▶ Nächstes Minispiel starten</button>';
   el('ready-panel').parentNode.insertBefore(box,el('ready-panel'));
   const overlay=document.createElement('div');overlay.id='challenge-start-overlay';overlay.hidden=true;overlay.setAttribute('aria-live','off');overlay.innerHTML='<div id="challenge-start-caption">🏴‍☠️ Macht euch bereit!</div><div id="challenge-start-number">3</div>';box.append(overlay);
   el('challenge-math-send').addEventListener('click',async()=>{
@@ -184,7 +192,7 @@ function renderChallengeProgress(){
    if(!Number.isInteger(answer)||el('challenge-math-input').value.trim()===''){el('challenge-math-feedback').textContent='Bitte eine ganze Zahl eingeben.';return;}
    const button=el('challenge-math-send');button.disabled=true;
    try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-math-answer','POST',{challengeId:ch.id,answer});acceptRoom(response.room);}
-   catch(e){el('challenge-math-feedback').textContent=e.message;button.disabled=false;}
+   catch(e){el('challenge-math-feedback').textContent=e.message;button.disabled=false;el('challenge-math-board').querySelectorAll('button').forEach(b=>{b.disabled=false;b.classList.remove('selected');});}
   });
   el('challenge-math-input').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&!el('challenge-math-send').disabled){event.preventDefault();el('challenge-math-send').click();}});
   el('challenge-next').addEventListener('click',async()=>{if(!room?.host||!room?.match?.challenge)return;const btn=el('challenge-next');btn.disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-next','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{btn.disabled=false;}});
@@ -201,6 +209,25 @@ function renderChallengeProgress(){
  const isMath=ch.order[index]==='recheninsel';
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
+ const mathBoard=el('challenge-math-board');
+ const mathBoardKey=ch.id+':'+index+':'+(ch.math?.a??'')+':'+(ch.math?.b??'');
+ if(isMath&&ch.math&&mathBoard.dataset.round!==mathBoardKey){
+  mathBoard.dataset.round=mathBoardKey;
+  mathBoard.replaceChildren();
+  const a=Number(ch.math.a),b=Number(ch.math.b),op=ch.math.operator;
+  const correct=op==='+'?a+b:op==='-'||op==='−'?a-b:op==='×'||op==='*'?a*b:op==='÷'?a/b:NaN;
+  const candidates=new Set([correct]);
+  for(let i=1;candidates.size<15&&i<100;i++){
+   const delta=Math.ceil(i/2)*(i%2?-1:1)*(correct<30?1:correct<100?2:5);
+   if(Number.isInteger(correct+delta)&&correct+delta>=0)candidates.add(correct+delta);
+  }
+  const choices=[...candidates].sort((x,y)=>{
+   const hash=n=>{let v=(Math.imul((n+101)|0,2654435761)^Math.imul((a+11)|0,2246822519)^Math.imul((b+7)|0,3266489917))>>>0;return v;};
+   return hash(x)-hash(y);
+  });
+  choices.forEach(value=>{const btn=document.createElement('button');btn.type='button';btn.textContent=String(value);btn.dataset.value=String(value);btn.setAttribute('aria-label','Antwort '+value);btn.addEventListener('click',()=>{if(btn.disabled||answered||Number(ch.startAt)>(Number(room.serverNow)||Date.now()))return;mathBoard.querySelectorAll('button').forEach(b=>{b.classList.remove('selected');b.disabled=true;});btn.classList.add('selected');el('challenge-math-input').value=String(value);el('challenge-math-send').click();});mathBoard.append(btn);});
+ }
+ mathBoard.querySelectorAll('button').forEach(btn=>{btn.disabled=answered||Number(ch.startAt)>Number(room.serverNow);});
  const mathRoundKey=ch.id+':'+index;
  if(el('challenge-math').dataset.round!==mathRoundKey){el('challenge-math').dataset.round=mathRoundKey;el('challenge-math-input').value='';}
  el('challenge-math').hidden=!isMath||ch.phase!=='countdown';
@@ -275,7 +302,7 @@ function renderChallengeProgress(){
   }else if(isMath){
    clockEl.textContent='🏴‍☠️';
    statusEl.textContent=answered?'Antwort gespeichert – warte auf die Mitspieler.':'Löse die Rechenaufgabe und sende deine Antwort ab.';
-   if(!answered)el('challenge-math-send').disabled=false;
+   if(!answered){el('challenge-math-send').disabled=false;el('challenge-math-board').querySelectorAll('button').forEach(b=>b.disabled=false);}
   }else{
    clockEl.textContent='⏳';
    statusEl.textContent='⚠️ Dieses Minispiel ist noch nicht online verfügbar.';
