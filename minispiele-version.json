@@ -1,5 +1,5 @@
 {
   "version": "2026.10.24-snake.16",
   "released": "2026-10-24",
-  "notes": "Snake Arena: eigene Wischsteuerung für mehrere menschliche Spieler und Zweitspieler-Tastatur"
+  "notes": "Snake Arena: unabhängige Tastatursteuerung für bis zu vier Menschen"
 }
