@@ -50,7 +50,7 @@
   if(tick!==currentTick){
    currentTick=tick;holes.forEach(h=>h.className='hole');
    if(tick>=0&&tick<30&&state.phase==='countdown'){
-    const e=state.events?.[tick];if(e&&holes[e.hole])holes[e.hole].className='hole up '+(e.kind==='normal'?'':e.kind);
+    const e=state.events?.[tick];if(e&&holes[e.hole]&&!sent.has(tick)&&!(state.hitTicks||[]).includes(tick))holes[e.hole].className='hole up '+(e.kind==='normal'?'':e.kind);
    }
   }
   const count=Number(state.hitCount)||0;
@@ -59,7 +59,10 @@
  }
  window.addEventListener('message',e=>{
   if(e.origin!==location.origin||e.source!==window.parent||e.data?.type!=='maulwurf:state')return;
-  state=e.data;offset=(Number(state.serverNow)||Date.now())-Date.now();
+  const previous=state;
+  state=e.data;
+  if(!previous||previous.challengeId!==state.challengeId||previous.startAt!==state.startAt)offset=(Number(state.serverNow)||Date.now())-Date.now();
+  for(const tick of state.hitTicks||[])sent.add(tick);
   init();draw();if(!timer)timer=setInterval(draw,60);
  });
 })();
