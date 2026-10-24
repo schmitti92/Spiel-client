@@ -4,7 +4,7 @@
 export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onError}){
  if(!container||!getRoom||!request||!acceptRoom)throw Error('Maulwurf bridge: missing dependency');
  const iframe=document.createElement('iframe');
- iframe.title='Maulwurf Arena – Online';iframe.src='maulwurf-original-online.html?v=2';
+ iframe.title='Maulwurf Arena – Online';iframe.src='maulwurf-original-online.html?v=3';
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';
  iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);
