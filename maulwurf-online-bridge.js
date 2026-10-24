@@ -24,10 +24,10 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   if(ch.phase==='countdown'&&estimatedNow>=ch.startAt+30000&&!timeoutPending&&Date.now()>=timeoutRetryAt){
    timeoutPending=true;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-timeout','POST',{challengeId:ch.id})
-    .then(result=>{if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);})
+    .then(result=>{if(active&&timeoutKey===roundKey&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);})
     .catch(err=>{if(!active||timeoutKey!==roundKey)return;timeoutPending=false;timeoutRetryAt=Date.now()+3000;if(err?.message!=='CHALLENGE_NOT_ACTIVE'&&Date.now()-lastTimeoutErrorAt>15000){lastTimeoutErrorAt=Date.now();onError?.(err);}});
   }
-  const key=[ch.id,ch.index,ch.startAt,ch.phase,ch.maulwurf.hitCount,ch.maulwurf.score,JSON.stringify(ch.maulwurf.hitTicks||[]),JSON.stringify(ch.maulwurf.opponents||[]),seat].join(':');
+  const key=[ch.id,ch.index,ch.startAt,ch.phase,ch.maulwurf.hitCount,ch.maulwurf.score,JSON.stringify(ch.maulwurf.hitTicks||[]),JSON.stringify(ch.maulwurf.opponents||[]),JSON.stringify((room.players||[]).filter(p=>p.participating).map(p=>[p.seat,p.name])),seat].join(':');
   if(lastKey===key)return;lastKey=key;
   iframe.contentWindow.postMessage({type:'maulwurf:state',challengeId:ch.id,phase:ch.phase,startAt:ch.startAt,serverNow:estimatedNow,events:ch.maulwurf.events,hitCount:ch.maulwurf.hitCount,score:ch.maulwurf.score,hitTicks:ch.maulwurf.hitTicks,opponents:ch.maulwurf.opponents,mySeat:seat,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
  }
