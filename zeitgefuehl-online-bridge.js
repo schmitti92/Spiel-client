@@ -19,7 +19,11 @@ export function mountZeitgefuehlOriginal({container,getRoom,request,acceptRoom,o
   if(!ch||ch.order?.[ch.index]!=='zeitgefuehl'||ch.id!==event.data.challengeId||ch.phase!=='countdown')return;
   busy=true;
   try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-time-stop','POST',{challengeId:ch.id});acceptRoom(response.room);}
-  catch(error){onError?.(error);lastKey='';sync();}
+  catch(error){
+   onError?.(error);
+   iframe.contentWindow?.postMessage({type:'zeitgefuehl:stop-rejected',challengeId:ch.id},location.origin);
+   lastKey='';sync();
+  }
   finally{busy=false;}
  }
  iframe.addEventListener('load',()=>{lastKey='';sync()});window.addEventListener('message',onMessage);
