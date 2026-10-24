@@ -225,6 +225,21 @@ async function ensureZeitgefuehlOriginalBridge(){
  }catch(error){zeitgefuehlOriginalFailed=true;showError(error);}
  finally{zeitgefuehlOriginalLoading=false;}
 }
+let maulwurfOriginalBridge=null,maulwurfOriginalLoading=false,maulwurfOriginalFailed=false;
+async function ensureMaulwurfOriginalBridge(){
+ if(maulwurfOriginalBridge||maulwurfOriginalLoading||maulwurfOriginalFailed)return;
+ maulwurfOriginalLoading=true;
+ try{
+  const {mountMaulwurfOriginal}=await import('./maulwurf-online-bridge.js?v=1');
+  const target=el('challenge-original-frame');if(!target)return;
+  recheninselOriginalBridge?.destroy();recheninselOriginalBridge=null;
+  zeitgefuehlOriginalBridge?.destroy();zeitgefuehlOriginalBridge=null;
+  huetchenOriginalBridge?.destroy();huetchenOriginalBridge=null;
+  maulwurfOriginalBridge=mountMaulwurfOriginal({container:target,getRoom:()=>room,request,acceptRoom,onError:showError});
+  maulwurfOriginalBridge.sync();
+ }catch(error){maulwurfOriginalFailed=true;showError(error);}
+ finally{maulwurfOriginalLoading=false;}
+}
 let recheninselOriginalBridge=null;
 let recheninselOriginalLoading=false;
 let recheninselOriginalFailed=false;
@@ -281,11 +296,13 @@ function renderChallengeProgress(){
  const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
- const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive;
+ const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
+ const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive;
  el('challenge-original-frame').hidden=!originalActive;
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
  if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
+ if(originalMaulwurfActive){ensureMaulwurfOriginalBridge();maulwurfOriginalBridge?.sync();}
 
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
