@@ -157,7 +157,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
   }
   if(m.type==='lava-arena:snapshot'&&window.LavaArenaOnlineConfig?.challengeId===m.challengeId){
    if(!Array.isArray(m.players))return;
-   if(Array.isArray(m.tiles)&&m.tiles.length===tiles.length){for(let i=0;i<tiles.length;i++){const t=m.tiles[i];if(Number.isInteger(t.state)&&t.state>=0&&t.state<=2)t.state=t.state;if(Number.isFinite(t.damage))t.damage=clamp(t.damage,0,1);}}
+   if(Array.isArray(m.tiles)&&m.tiles.length===tiles.length){for(let i=0;i<tiles.length;i++){const t=m.tiles[i];if(t&&Number.isInteger(t.state)&&t.state>=0&&t.state<=2)tiles[i].state=t.state;if(t&&Number.isFinite(t.damage))tiles[i].damage=clamp(t.damage,0,1);}}
    for(const q of m.players){
     if(!Number.isInteger(q.id)||q.id<0||q.id>=players.length||q.id===window.LavaArenaOnlineConfig.localSeat)continue;
     const p=players[q.id];if(!p)continue;
