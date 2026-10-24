@@ -102,6 +102,19 @@ body.is-playing .skyjo-scenic-stage .player.sky-active-glow{
  grid-template-rows:repeat(3,minmax(0,auto))!important;
 }
 .sky-score-board>.sky-score-tile,.sky-score-mini-grid>.sky-score-tile{min-width:0!important}
+
+/* Active player: brighten existing yellow header into gold, without a frame. */
+body.is-playing .player.sky-active-glow,
+body.is-playing .skyjo-scenic-stage .player.sky-active-glow{
+ outline:none!important;border-color:transparent!important;
+ box-shadow:none!important;filter:none!important;animation:none!important;
+ background-color:inherit!important;
+}
+body.is-playing .player.sky-active-glow :is(.player-head,.player-header,.player-title,.player-top,.player-topbar,.player-namebar,.phead,.head){
+ background:linear-gradient(105deg,#f4bc39 0%,#fff3a1 42%,#ffd04d 75%,#e9a51d 100%)!important;
+ color:#30200a!important;
+ box-shadow:inset 0 1px 0 #fff9,0 2px 12px #ffd45b66!important;
+}
 </style>
 <script src="skyjo_turn_and_update.js?v=3" defer></script>
 <script src="skyjo_tablet_autofit.js?v=1" defer></script>
