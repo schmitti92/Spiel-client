@@ -196,6 +196,20 @@ const CHALLENGE_STAGE_CSS=`
 function ensureChallengeStageStyle(){if(document.getElementById('challenge-stage-style'))return;const style=document.createElement('style');style.id='challenge-stage-style';style.textContent=CHALLENGE_STAGE_CSS;document.head.append(style);}
 let challengeClockTimer=null;
 let challengeStopBusy=false;
+let huetchenOriginalBridge=null,huetchenOriginalLoading=false,huetchenOriginalFailed=false;
+async function ensureHuetchenOriginalBridge(){
+ if(huetchenOriginalBridge||huetchenOriginalLoading||huetchenOriginalFailed)return;
+ huetchenOriginalLoading=true;
+ try{
+  const {mountHuetchenOriginal}=await import('./huetchen-online-bridge.js?v=3');
+  const container=el('challenge-original-frame');if(!container)return;
+  recheninselOriginalBridge?.destroy();recheninselOriginalBridge=null;
+  zeitgefuehlOriginalBridge?.destroy();zeitgefuehlOriginalBridge=null;
+  huetchenOriginalBridge=mountHuetchenOriginal({container,getRoom:()=>room,request,acceptRoom,onError:showError});
+  huetchenOriginalBridge.sync();
+ }catch(error){huetchenOriginalFailed=true;showError(error)}
+ finally{huetchenOriginalLoading=false;}
+}
 let zeitgefuehlOriginalBridge=null,zeitgefuehlOriginalLoading=false,zeitgefuehlOriginalFailed=false;
 async function ensureZeitgefuehlOriginalBridge(){
  if(zeitgefuehlOriginalBridge||zeitgefuehlOriginalLoading||zeitgefuehlOriginalFailed)return;
@@ -205,6 +219,7 @@ async function ensureZeitgefuehlOriginalBridge(){
   const container=el('challenge-original-frame');
   if(!container)return;
   recheninselOriginalBridge?.destroy();recheninselOriginalBridge=null;
+  huetchenOriginalBridge?.destroy();huetchenOriginalBridge=null;
   zeitgefuehlOriginalBridge=mountZeitgefuehlOriginal({container,getRoom:()=>room,request,acceptRoom,onError:showError});
   zeitgefuehlOriginalBridge.sync();
  }catch(error){zeitgefuehlOriginalFailed=true;showError(error);}
@@ -220,6 +235,7 @@ async function ensureRecheninselOriginalBridge(){
   const {mountRecheninselOriginal}=await import('./recheninsel-online-bridge.js?v=2');
   const target=el('challenge-original-frame');
   zeitgefuehlOriginalBridge?.destroy();zeitgefuehlOriginalBridge=null;
+  huetchenOriginalBridge?.destroy();huetchenOriginalBridge=null;
   if(!target)return;
   recheninselOriginalBridge=mountRecheninselOriginal({
    container:target,src:'recheninsel-original-online.html?v=2',
@@ -264,10 +280,12 @@ function renderChallengeProgress(){
  const isMath=ch.order[index]==='recheninsel';
  const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
- const originalActive=originalMathActive||originalTimeActive;
+ const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
+ const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive;
  el('challenge-original-frame').hidden=!originalActive;
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
+ if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
 
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
