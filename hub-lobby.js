@@ -170,7 +170,26 @@ function renderChallengeProgress(){
  el('challenge-time-target').textContent=isTime?'🎯 Ziel: '+ch.targetSeconds+' Sekunden · Die ersten drei Sekunden werden angezeigt. Danach schätze die Zeit!':'';
  el('challenge-time-stop').hidden=!isTime||ch.phase!=='countdown'||stopped;
  el('challenge-time-stop').disabled=challengeStopBusy||Number(ch.startAt)>Number(room.serverNow)||stopped;
- el('challenge-results').textContent=ch.phase==='results'||ch.phase==='finished'?'Ergebnisse: '+JSON.stringify(ch.results[ch.results.length-1]||{}):'';
+ const resultsBox=el('challenge-results');
+ resultsBox.replaceChildren();
+ if(ch.phase==='results'||ch.phase==='finished'){
+  const result=ch.results[ch.results.length-1];
+  const title=document.createElement('h3');title.textContent=ch.phase==='finished'?'🏆 Finale Siegerehrung':'🎉 Minispiel abgeschlossen';resultsBox.append(title);
+  if(result?.standings){
+   const list=document.createElement('div');list.style.cssText='display:grid;gap:9px;margin:14px auto;max-width:540px';
+   result.standings.forEach((entry,i)=>{
+    const card=document.createElement('div');card.style.cssText='padding:12px;border-radius:12px;background:#ffffff1c;display:flex;justify-content:space-between;gap:12px';
+    const name=document.createElement('strong');name.textContent=(['🥇','🥈','🥉'][i]||'🎮')+' '+entry.name;
+    const points=document.createElement('span');points.textContent=(entry.elapsedMs/1000).toFixed(2)+' s · +'+entry.challengePoints+' Punkte';
+    card.append(name,points);list.append(card);
+   });resultsBox.append(list);
+  }
+  if(ch.phase==='finished'){
+   const total=document.createElement('h3');total.textContent='Gesamtwertung';resultsBox.append(total);
+   const standings=room.match.members.map((m,i)=>({name:m.name,points:ch.points[i]})).sort((a,b)=>b.points-a.points);
+   standings.forEach((entry,i)=>{const row=document.createElement('p');row.textContent=(['🏆','🥈','🥉'][i]||'🎮')+' '+entry.name+' · '+entry.points+' Punkte';resultsBox.append(row);});
+  }
+ }
  const estimatedServerNow=Number(room.serverNow)||Date.now();
  const observedAt=Date.now();
  const draw=()=>{
