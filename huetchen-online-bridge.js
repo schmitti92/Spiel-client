@@ -3,16 +3,8 @@ export function mountHuetchenOriginal({container,getRoom,request,acceptRoom,onEr
  const iframe=document.createElement('iframe');iframe.title='Hütchen Challenge Original';
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';iframe.setAttribute('sandbox','allow-scripts allow-same-origin');container.replaceChildren(iframe);
  let active=true,lastKey='',busy=false,timeoutKey='',ready=false;
- (async()=>{
-  try{
-   const urls=Array.from({length:25},(_,i)=>'huetchen-original-parts/part-'+String(i+1).padStart(2,'0')+'.txt');
-   const parts=await Promise.all(urls.map(async url=>{const response=await fetch(url);if(!response.ok)throw Error('Originaldatei fehlt: '+url);return response.text()}));
-   if(!active)return;
-   const html=parts.join('');
-   if(!html.includes('huetchen:state')||!html.includes('</html>'))throw Error('Hütchen-Originaldatei unvollständig');
-   iframe.srcdoc=html;
-  }catch(error){onError?.(error)}
- })();
+ iframe.src='huetchen-original-online.html?v=4';
+
  function sync(){
   if(!active||!ready||!iframe.contentWindow)return;
   const room=getRoom(),ch=room?.match?.challenge,h=ch?.huetchen;
