@@ -4,7 +4,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  frame.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(frame);
- let alive=true,ready=false,configured=false,lastMove=0,timeoutPending=false;
+ let alive=true,ready=false,configured=false,lastMove=0,timeoutPending=false,serverOffset=0,lastRevision=null;
  let lastKey='',lastError=0;
  const timer=setInterval(()=>{if(alive)sync()},500);
  function sync(){
@@ -22,12 +22,17 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    return;
   }
   const moves=f.moves||[];
-  while(lastMove<moves.length){
-   const m=moves[lastMove++];
+  const total=Number.isInteger(f.moveCount)?f.moveCount:moves.length;
+  const offset=Math.max(0,total-moves.length);
+  if(lastMove<offset)lastMove=offset;
+  while(lastMove<total){
+   const m=moves[lastMove++-offset];
+   if(!m)continue;
    const idx=players.findIndex(p=>p.seat===m.seat);
    if(idx>=0&&idx!==localSeat)frame.contentWindow.postMessage({type:'flusssprung:remote-jump',seat:idx,col:m.col},location.origin);
   }
-  const serverNow=Number(room.serverNow)||Date.now();
+  if(room.revision!==lastRevision){lastRevision=room.revision;serverOffset=(Number(room.serverNow)||Date.now())-Date.now();}
+  const serverNow=Date.now()+serverOffset;
   if(ch.phase==='countdown'&&serverNow>=ch.startAt+60000&&!timeoutPending){
    timeoutPending=true;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-flusssprung-timeout','POST',{challengeId:ch.id})
