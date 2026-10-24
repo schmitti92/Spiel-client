@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070e1c">
-  <meta name="description" content="Wähle eines unserer vier Spiele: Barikade, SKYJO Action, KreuzKunter oder Das große Business.">
+  <meta name="description" content="Barikade, SKYJO Action, KreuzKunter, Das große Business und neun Minispiele.">
   <title>Spielauswahl | Unsere Spiele</title>
   <style>
     :root {
@@ -221,6 +221,13 @@
 .index-room-quick .index-room-last{background:#354c79;border:1px solid #6889c0}
 .index-room-quick .index-room-last[hidden]{display:none!important}
 @media(max-width:630px){.index-room-quick{flex-wrap:wrap}.index-room-quick .index-room-last{font-size:11px}}
+
+    /* Minispiele – fünfte Karte, bestehende vier bleiben unverändert */
+    .minispiele-card{--scene:linear-gradient(125deg,#122d3a,#315c63 34%,#67435b 64%,#192c45);border-color:rgba(249,197,112,.52)}
+    .minispiele-card::after{background:linear-gradient(90deg,rgba(6,13,25,.96),rgba(9,22,35,.84) 45%,rgba(7,16,31,.33))}
+    .minispiele-card .mini-art{position:absolute;right:6%;top:15%;font-size:clamp(40px,7vw,95px);letter-spacing:-.2em;opacity:.75;filter:drop-shadow(0 12px 12px #0008);pointer-events:none}
+    .minispiele-card .btn{background:linear-gradient(125deg,#f7c86b,#d68b35);border-color:#ffdc8b;color:#211725;text-shadow:none}
+    @media(min-width:711px){.minispiele-card{grid-column:1/-1;min-height:250px}}
 </style>
 </head>
 <body>
@@ -283,6 +290,14 @@
           <a class="btn green" href="Business/business_local.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-7H9v7H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Lokal spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
           <a class="btn gold" href="spielauswahl-online.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c-5 4-5 14 0 18m0-18c5 4 5 14 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Online spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
         </div>
+      </article>
+    
+      <article class="game minispiele-card">
+        <div class="mini-art" aria-hidden="true">🌋 🐍 💣</div>
+        <div class="game-title"><h2>🏆 Minispiele – Party Challenge</h2><span class="badge gold">9 Minispiele · Lokal</span></div>
+        <p>Neun abwechslungsreiche Herausforderungen: Lava Arena, Flusssprung, Snake, Bomber Arena und mehr.</p>
+        <ul class="features"><li>🎮 Einzelne Minispiele auswählen</li><li>🤖 Menschen und Computergegner – je nach Spiel</li><li>✨ Ohne Online-Lobby spielen</li></ul>
+        <div class="actions"><a class="btn primary gold" href="minispiele.html"><span>Minispiele öffnen</span><span aria-hidden="true">➜</span></a></div>
       </article>
     </section>
   </main>
