@@ -71,7 +71,7 @@
  }
  window.addEventListener('message',e=>{
   if(e.origin!==location.origin||e.source!==window.parent)return;
-  if(e.data?.type==='maulwurf:hit-rejected'){if(state?.challengeId===e.data.challengeId&&!(state.hitTicks||[]).includes(e.data.tick)){sent.delete(e.data.tick);const liveTick=Math.floor((Date.now()+offset-state.startAt)/1000);if(liveTick===e.data.tick){const h=holes[e.data.hole];if(h)h.className='hole up '+(state.events?.[liveTick]?.kind||'normal');}}return;}
+  if(e.data?.type==='maulwurf:hit-rejected'){if(state?.challengeId===e.data.challengeId&&state.phase==='countdown'&&Number.isInteger(e.data.tick)&&Number.isInteger(e.data.hole)&&e.data.hole>=0&&e.data.hole<9&&!(state.hitTicks||[]).includes(e.data.tick)){sent.delete(e.data.tick);const liveTick=Math.floor((Date.now()+offset-state.startAt)/1000);if(liveTick===e.data.tick){const h=holes[e.data.hole];if(h)h.className='hole up '+(state.events?.[liveTick]?.kind||'normal');}}return;}
   if(e.data?.type!=='maulwurf:state')return;
   const previous=state;
   state=e.data;
