@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.24-scoring.6",
+  "version": "2026.10.24-podium.7",
   "released": "2026-10-24",
-  "notes": "Korrekte Gleichstandswertung in der Party Challenge"
+  "notes": "Siegerpodest, Spielhistorie und animierte Siegerehrung"
 }
