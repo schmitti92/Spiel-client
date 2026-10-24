@@ -241,7 +241,7 @@ function renderChallengeProgress(){
    if(Number.isInteger(correct+delta)&&correct+delta>=0&&correct+delta<=1000)candidates.add(correct+delta);
   }
   const choices=[...candidates].sort((x,y)=>{
-   const hash=n=>{let v=(Math.imul((n+101)|0,2654435761)^Math.imul((a+11)|0,2246822519)^Math.imul((b+7)|0,3266489917))>>>0;return v;};
+   const hash=n=>{let v=(Math.imul((n+101)|0,2654435761)^Math.imul((a+11)|0,2246822519)^Math.imul((b+7)|0,3266489917)^Math.imul((ch.math.round||1),668265263))>>>0;return v;};
    return hash(x)-hash(y);
   });
   choices.forEach(value=>{const btn=document.createElement('button');btn.type='button';btn.textContent=String(value);btn.dataset.value=String(value);btn.setAttribute('aria-label','Antwort '+value);btn.addEventListener('click',()=>{if(btn.disabled||answered||Number(ch.startAt)>(Number(room.serverNow)||Date.now()))return;mathBoard.querySelectorAll('button').forEach(b=>{b.classList.remove('selected');b.disabled=true;});btn.classList.add('selected');el('challenge-math-input').value=String(value);el('challenge-math-send').click();});mathBoard.append(btn);});
