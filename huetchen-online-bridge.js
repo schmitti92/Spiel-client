@@ -3,7 +3,7 @@ export function mountHuetchenOriginal({container,getRoom,request,acceptRoom,onEr
  const iframe=document.createElement('iframe');iframe.title='Hütchen Challenge Original';
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';iframe.setAttribute('sandbox','allow-scripts allow-same-origin');container.replaceChildren(iframe);
  let active=true,lastKey='',busy=false,timeoutKey='',ready=false;
- iframe.src='huetchen-original-online.html?v=4';
+ iframe.src='huetchen-original-online.html?v=5';
 
  function sync(){
   if(!active||!ready||!iframe.contentWindow)return;
