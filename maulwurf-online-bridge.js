@@ -8,7 +8,7 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';
  iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);
- let active=true,lastKey='',busy=false,timeoutPending=false,timeoutKey='',lastRevision=null,serverOffset=0;
+ let active=true,lastKey='',timeoutPending=false,timeoutKey='',lastRevision=null,serverOffset=0;
  function estimatedServerNow(room){if(room?.revision!==lastRevision){lastRevision=room?.revision;serverOffset=(Number(room?.serverNow)||Date.now())-Date.now();}return Date.now()+serverOffset;}
  const expiryTimer=setInterval(()=>{if(!active)return;const r=getRoom(),ch=r?.match?.challenge;if(ch?.order?.[ch.index]!=='maulwurf-arena'||ch.phase!=='countdown')return;const now=estimatedServerNow(r);if(now>=ch.startAt+30000)sync();},300);
  function sync(){
@@ -30,15 +30,14 @@ export function mountMaulwurfOriginal({container,getRoom,request,acceptRoom,onEr
   iframe.contentWindow.postMessage({type:'maulwurf:state',challengeId:ch.id,phase:ch.phase,startAt:ch.startAt,serverNow:room.serverNow,events:ch.maulwurf.events,hitCount:ch.maulwurf.hitCount,score:ch.maulwurf.score,hitTicks:ch.maulwurf.hitTicks,mySeat:seat,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name}))},location.origin);
  }
  async function onMessage(event){
-  if(!active||busy||event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='maulwurf:hit')return;
+  if(!active||event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='maulwurf:hit')return;
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='maulwurf-arena'||ch.id!==event.data.challengeId||ch.phase!=='countdown')return;
   const {tick,hole}=event.data;
   if(!Number.isInteger(tick)||!Number.isInteger(hole))return;
-  busy=true;
   try{const result=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-maulwurf-hit','POST',{challengeId:ch.id,tick,hole});if(active&&getRoom()?.match?.challenge?.id===ch.id)acceptRoom(result.room);}
   catch(err){onError?.(err);lastKey='';sync();}
-  finally{busy=false;}
+
  }
  iframe.addEventListener('load',()=>{lastKey='';sync()});
  window.addEventListener('message',onMessage);
