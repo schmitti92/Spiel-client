@@ -229,6 +229,20 @@ async function ensureZeitgefuehlOriginalBridge(){
  }catch(error){zeitgefuehlOriginalFailed=true;showError(error);}
  finally{zeitgefuehlOriginalLoading=false;}
 }
+let flusssprungOriginalBridge=null,flusssprungOriginalLoading=false,flusssprungOriginalFailed=false;
+async function ensureFlusssprungOriginalBridge(){
+ if(flusssprungOriginalBridge||flusssprungOriginalLoading||flusssprungOriginalFailed)return;
+ flusssprungOriginalLoading=true;
+ try{
+  const {mountFlusssprungOriginal}=await import('./flusssprung-online-bridge.js?v=1');
+  const ch=room?.match?.challenge;
+  if(!ch||ch.phase!=='countdown'||ch.order?.[ch.index]!=='flusssprung')return;
+  const target=el('challenge-original-frame');if(!target)return;
+  flusssprungOriginalBridge=mountFlusssprungOriginal({container:target,getRoom:()=>room,request,acceptRoom,onError:showError});
+  flusssprungOriginalBridge.sync();
+ }catch(e){flusssprungOriginalFailed=true;showError(e)}
+ finally{flusssprungOriginalLoading=false}
+}
 let maulwurfOriginalBridge=null,maulwurfOriginalLoading=false,maulwurfOriginalFailed=false;
 async function ensureMaulwurfOriginalBridge(){
  if(maulwurfOriginalBridge||maulwurfOriginalLoading||maulwurfOriginalFailed)return;
@@ -304,14 +318,17 @@ function renderChallengeProgress(){
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
- const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive;
+ const originalFlusssprungActive=ch.order[index]==='flusssprung'&&ch.phase==='countdown'&&!flusssprungOriginalFailed;
+ const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive;
  if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
+ if(!originalFlusssprungActive&&flusssprungOriginalBridge){flusssprungOriginalBridge.destroy();flusssprungOriginalBridge=null;}
  el('challenge-original-frame').hidden=!originalActive;
- box.classList.toggle('maulwurf-playing',originalMaulwurfActive);
+ box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive);
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
  if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
  if(originalMaulwurfActive){ensureMaulwurfOriginalBridge();maulwurfOriginalBridge?.sync();}
+ if(originalFlusssprungActive){ensureFlusssprungOriginalBridge();flusssprungOriginalBridge?.sync();}
 
  const myMathSeat=room.players.find(p=>p.me)?.seat;
  const answered=!!ch.math?.answered?.includes(myMathSeat);
