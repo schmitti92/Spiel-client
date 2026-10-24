@@ -1,5 +1,5 @@
 {
-  "version": "2026.10.24-bomber.21",
+  "version": "2026.10.24-bomber.22",
   "released": "2026-10-24",
-  "notes": "Bomber-Strand-Arena: unabhängige Touch-Joysticks und Bombenknöpfe für Spieler 2–4"
+  "notes": "Bomber-Strand-Arena: Überlebensmodus berücksichtigt alle Menschen; sichereres Bot-Respawning"
 }
