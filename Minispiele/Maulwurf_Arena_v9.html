@@ -133,4 +133,4 @@ $('count').addEventListener('change',()=>{$('humans').value=Math.min(+$('count')
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&active){active=false;cancelAll();$('status').textContent='Runde unterbrochen';show('⏸️ Runde unterbrochen','Der Browser wurde verlassen. Aus Fairness wird diese Runde für '+players[turn].name+' wiederholt.','▶ Runde wiederholen');players[turn].score=roundStartScore;players[turn].hits=roundStartHits;players[turn].positiveHits=roundStartPositive;players[turn].badHits=roundStartBad;renderScores()}});
 window.MaulwurfArena={getState:()=>({active,turn,remaining,players:players.map(p=>({...p})),roundHits,roundMisses,visible:[...live].map(([i,v])=>({hole:i,kind:v.kind}))}),restart:()=> $('restart').click()};
 renderScores();
-</script><script src="../party-players.js"></script><script src="party-minigame-bridge.js"></script></body></html>
+</script><script src="../party-players.js?v=20261024-roster5"></script><script src="party-minigame-bridge.js"></script></body></html>
