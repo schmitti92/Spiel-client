@@ -73,9 +73,10 @@
   const previous=state;
   state=e.data;
   if(!previous||previous.challengeId!==state.challengeId||previous.startAt!==state.startAt)offset=(Number(state.serverNow)||Date.now())-Date.now();
+  init();
   for(const tick of state.hitTicks||[])sent.add(tick);
   const liveTick=Math.floor((Date.now()+offset-state.startAt)/1000);
   if(liveTick>=0&&liveTick<30&&sent.has(liveTick)&&holes[state.events?.[liveTick]?.hole])holes[state.events[liveTick].hole].className='hole hit';
-  init();draw();if(!timer)timer=setInterval(draw,60);
+  draw();if(!timer)timer=setInterval(draw,60);
  });
 })();
