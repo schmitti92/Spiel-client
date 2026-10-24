@@ -18,14 +18,14 @@ function fit(){
    const naturalW=Math.max(root.scrollWidth,root.getBoundingClientRect().width);
    const reserve=3;
    let scale=Math.min(1,(viewport-reserve)/Math.max(1,naturalH),(width-reserve)/Math.max(1,naturalW));
-   scale=Math.max(.55,Math.floor(scale*1000)/1000);
+   scale=Math.min(1,Math.max(.35,Math.floor(scale*1000)/1000));
    root.style.zoom=String(scale);
    // A zoom change may reflow grids. Re-evaluate the actual rendered height.
    for(let i=0;i<3;i++){
     const actual=root.getBoundingClientRect();
     const overflow=Math.max(actual.bottom,document.documentElement.scrollHeight)-viewport;
     if(overflow<=2)break;
-    scale=Math.max(.5,scale*Math.max(.85,(viewport-reserve)/(actual.height+Math.max(0,overflow))));
+    scale=Math.max(.35,scale*Math.max(.85,(viewport-reserve)/(actual.height+Math.max(0,overflow))));
     root.style.zoom=String(scale);
    }
    // Use remaining vertical space when the first pass was overly conservative.
