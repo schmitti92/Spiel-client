@@ -307,7 +307,7 @@ window.addEventListener('message',event=>{
  const m=event.data;
  if(m?.type==='snake-arena:configure'&&typeof m.challengeId==='string'&&Array.isArray(m.seats)&&m.seats.length>=2&&m.seats.length<=4&&Number.isInteger(m.localSeat)&&m.localSeat>=0&&m.localSeat<m.seats.length){
   window.SnakeArenaOnlineConfig={challengeId:m.challengeId,seats:m.seats,localSeat:m.localSeat};
-  init();$('mode').value='survival';$('status').textContent='🌐 Online-Spiel wird vorbereitet';
+  $('mode').value='timed';init();$('status').textContent='🌐 Online-Spiel läuft';run();
   parent.postMessage({type:'snake-arena:configured',challengeId:m.challengeId},event.origin);
  }
 });
