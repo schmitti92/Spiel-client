@@ -29,7 +29,7 @@ export class PartyOnlineTransport {
   }
   accept(room) {
     if(!room||room.code!==this.code)return false;
-    const version=Number(room.version);
+    const version=Number(room.revision);
     if(Number.isFinite(version)&&version<this.sequence)return false;
     if(Number.isFinite(version))this.sequence=version;
     this.room=room;this.onRoom(room);return true;
