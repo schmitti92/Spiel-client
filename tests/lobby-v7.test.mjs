@@ -294,3 +294,14 @@ test('Preisjäger final podium reads authoritative server totals',()=>{
  assert.match(original,/finalScores/);
  assert.match(original,/data\.totals/);
 });
+
+
+test('Preisjäger online input supports Enter and isolates offline submit handler',()=>{
+ const original=text('Minispiele/Preisjaeger_v11_0_RC23.html');
+ assert.match(original,/function submitOnlineGuess\(event\)/);
+ assert.match(original,/addEventListener\('click',submitOnlineGuess,true\)/);
+ assert.match(original,/event\.key==='Enter'/);
+ assert.match(original,/event\?\.stopImmediatePropagation\(\)/);
+ assert.match(original,/PREISJAEGER_ONLINE_ERROR/);
+ assert.match(js,/const fail=message=>/);
+});
