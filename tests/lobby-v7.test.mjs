@@ -395,3 +395,11 @@ test('Recheninsel online landscape fits all answer barrels and hides offline con
  assert.match(game,/document\.body\.classList\.add\('rechen-online'\)/);
  assert.match(js,/recheninsel-original-online\.html\?v=3/);
 });
+
+test('Recheninsel finale replaces generic Party Challenge ending with full-screen pirate podium',()=>{
+ assert.match(js,/classList\.toggle\('rechen-finale',ch\.order\[index\]==='recheninsel'&&ch\.phase==='finished'&&ch\.order\.length===1\)/);
+ assert.match(js,/PIRATEN-SIEGEREHRUNG/);
+ assert.match(js,/rechen-finale-winner/);
+ assert.match(js,/rechen-finale-podium/);
+ assert.match(js,/#challenge-progress\.rechen-finale:not\(\.hidden\)/);
+});
