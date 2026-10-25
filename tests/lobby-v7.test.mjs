@@ -216,3 +216,14 @@ test('Tablet room sidebar reserves space for readiness and start controls',()=>{
  assert.match(css,/#challenge-host-launch #start-btn\{min-height:43px!important/);
  assert.match(css,/#players \.player\{min-height:38px!important/);
 });
+
+
+test('Challenge ready controls are initially inside room panel before launch',()=>{
+ const ready=html.indexOf('<section id="ready-panel"');
+ const launch=html.indexOf('<div id="challenge-host-launch"');
+ const players=html.indexOf('id="players"');
+ const roomSection=html.indexOf('<section class="panel" aria-labelledby="room-title">');
+ assert.ok(roomSection>=0&&players>roomSection&&ready>players&&launch>ready,'ready dock must live between seats and launch');
+ assert.equal((html.match(/id="ready-panel"/g)||[]).length,1);
+ assert.equal((html.match(/id="ready-btn"/g)||[]).length,1);
+});
