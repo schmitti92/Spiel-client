@@ -387,3 +387,11 @@ test('inactive Preisjäger iframe never overlays another original minigame',()=>
  assert.match(js,/frame\.hidden=true/);
  assert.match(js,/\.preisjaeger-original-playing:not\(\.hidden\)>#preisjaeger-original-online:not\(\[hidden\]\)/);
 });
+
+test('Recheninsel online landscape fits all answer barrels and hides offline controls',()=>{
+ const game=text('recheninsel-original-online.html');
+ assert.match(game,/body\.rechen-online \.board\{flex:1;min-height:0;grid-template-rows:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(game,/body\.rechen-online #restart/);
+ assert.match(game,/document\.body\.classList\.add\('rechen-online'\)/);
+ assert.match(js,/recheninsel-original-online\.html\?v=3/);
+});
