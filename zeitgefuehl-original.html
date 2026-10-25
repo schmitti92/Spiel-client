@@ -76,7 +76,7 @@ function onlineSync(data){
   if(elapsed<3000){digits.textContent=(elapsed/1000).toFixed(2).replace('.',',');clock.classList.remove('hidden-time');scene.className='scene online-play';}
   else{digits.textContent='?';clock.classList.add('hidden-time');scene.className='scene night online-play';}
   hint.textContent=onlineStopped?'✓ Stopp gespeichert – warte auf Mitspieler':'Stoppe bei '+fmt(goal)+'!';
-  if(elapsed>=30000){phase='finished';clearInterval(onlineTimer);$('subtitle').textContent='Warte auf die Server-Auswertung';}
+  if(elapsed>=30000){phase='finished';clearInterval(onlineTimer);digits.textContent='✓';hint.textContent='Zeit abgelaufen – Server wertet aus.';$('subtitle').textContent='Warte auf die Server-Auswertung';const btn=entries.findIndex(e=>e.id===onlineSeat);if(btn>=0){const button=$('p'+btn)?.querySelector('button');if(button)button.disabled=true;}}
  }
  drawOnline();onlineTimer=setInterval(drawOnline,60);
 }
