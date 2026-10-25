@@ -670,7 +670,7 @@ function renderChallengeSetup(showStage){
    if(!room?.host||room.phase!=='preparing'||challengeSettingsBusy)return;
    const button=el('challenge-marathon');if(button.disabled)return;
    challengeSettingsBusy=true;button.disabled=true;
-   try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:9,selectedGame:null});acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle neun Minispiele ausgewählt.';}
+   try{const requestedCode=room.code;const response=await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count:9,selectedGame:null});if(code!==requestedCode)return;acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle neun Minispiele ausgewählt.';}
    catch(e){el('challenge-feedback').textContent=e.message;}
    finally{button.disabled=false;challengeSettingsBusy=false;}
   });
@@ -678,7 +678,7 @@ function renderChallengeSetup(showStage){
    if(challengeSettingsBusy)return;
    const button=el('challenge-save');if(button.disabled)return;
    challengeSettingsBusy=true;button.disabled=true;
-   try{if(!room?.host||room.phase!=='preparing')return;const selectedGame=el('challenge-count').value==='1'?(room.settings?.partychallenge?.selectedGame||'zeitgefuehl'):null;const count=selectedGame?1:9;if(count===Number(room.settings?.partychallenge?.count)&&(selectedGame||null)===(room.settings?.partychallenge?.selectedGame||null)){el('challenge-feedback').textContent='✓ Bereits gespeichert – die Bereitmeldungen bleiben erhalten.';return;}await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count,selectedGame});el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(room.code));acceptRoom(updated.room);}
+   try{if(!room?.host||room.phase!=='preparing')return;const selectedGame=el('challenge-count').value==='1'?(room.settings?.partychallenge?.selectedGame||'zeitgefuehl'):null;const count=selectedGame?1:9;if(count===Number(room.settings?.partychallenge?.count)&&(selectedGame||null)===(room.settings?.partychallenge?.selectedGame||null)){el('challenge-feedback').textContent='✓ Bereits gespeichert – die Bereitmeldungen bleiben erhalten.';return;}const requestedCode=room.code;await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count,selectedGame});if(code!==requestedCode)return;el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;acceptRoom(updated.room);}
    catch(e){el('challenge-feedback').textContent='Speichern fehlgeschlagen: '+e.message;}
    finally{button.disabled=false;challengeSettingsBusy=false;}
   });
