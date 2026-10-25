@@ -165,7 +165,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
      document.querySelector('#pause').style.display='none';document.querySelector('#touch').classList.remove('active');}
     return;
    }
-   if(Array.isArray(m.tiles)&&m.tiles.length===tiles.length){for(let i=0;i<tiles.length;i++){const t=m.tiles[i],local=tiles[i];if(!t||!Number.isInteger(t.state)||t.state<0||t.state>2)continue;const previous=local.state;local.state=t.state;if(Number.isFinite(t.damage))local.damage=clamp(t.damage,0,1);if(previous!==2&&t.state===2){dangerPulses.push({x:(local.x+.5)*TILE,y:(local.y+.5)*TILE,age:0});if(dangerPulses.length>40)dangerPulses.shift();burstTile(local);}}}
+   if(Array.isArray(m.tiles)&&m.tiles.length===tiles.length){for(let i=0;i<tiles.length;i++){const t=m.tiles[i],local=tiles[i];if(!t||!Number.isInteger(t.state)||t.state<0||t.state>2)continue;const previous=local.state;local.state=Math.max(previous,t.state);if(Number.isFinite(t.damage))local.damage=clamp(t.damage,0,1);if(previous!==2&&local.state===2){dangerPulses.push({x:(local.x+.5)*TILE,y:(local.y+.5)*TILE,age:0});if(dangerPulses.length>40)dangerPulses.shift();burstTile(local);}}}
    for(const q of m.players){
     if(!Number.isInteger(q.id)||q.id<0||q.id>=players.length)continue; if(q.id===window.LavaArenaOnlineConfig.localSeat){const local=players[q.id];if(q.alive===false)local.alive=false;if(q.alive===true&&local.alive&&window.LavaArenaOnlineConfig.firstSnapshot!==true&&Number.isFinite(q.x)&&Number.isFinite(q.y)){local.x=clamp(q.x,13,SIZE-13);local.y=clamp(q.y,13,SIZE-13);window.LavaArenaOnlineConfig.firstSnapshot=true;}continue;}
     const p=players[q.id];if(!p)continue;
