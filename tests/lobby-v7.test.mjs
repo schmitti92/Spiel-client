@@ -353,3 +353,14 @@ test('Zeitgefühl V57 original results use server standings and preserve host co
  assert.match(js,/originalTimeActive=ch\.order\[index\]==='zeitgefuehl'&&\['countdown','results','finished'\]/);
  assert.match(js,/#challenge-single-actions:not\(\[hidden\]\)/);
 });
+
+
+test('Zeitgefühl V58 results display ties and missed stops accurately',()=>{
+ const original=text('zeitgefuehl-original.html');
+ const bridge=text('zeitgefuehl-online-bridge.js');
+ assert.match(original,/shared=i>0&&Number\(p\.deltaMs\)===Number\(sorted\[0\]\?\.deltaMs\)/);
+ assert.match(original,/Nicht gestoppt/);
+ assert.match(original,/\.scene\.online-play \.results/);
+ assert.match(bridge,/zeitgefuehl-original\.html\?v=7/);
+ assert.match(js,/zeitgefuehl-online-bridge\.js\?v=7/);
+});
