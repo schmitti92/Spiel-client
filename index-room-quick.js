@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const API=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const CODE=/^[A-HJ-NP-Z2-9]{6}$/;
+const CODE=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/;
 function init(){
  const head=document.querySelector('.page-head');if(!head)return;
  const wrap=document.createElement('form');wrap.className='index-room-quick';
@@ -43,7 +43,7 @@ function init(){
   try{await request(path);}catch(e){message(e.name==='AbortError'?'Zeitüberschreitung beim Server. Bitte erneut versuchen.':e.message||'Verbindung fehlgeschlagen.');}
   finally{busy=false;join.disabled=create.disabled=recent.disabled=false;refreshLast();}
  }
- wrap.addEventListener('submit',e=>{e.preventDefault();const code=input.value.trim().toUpperCase();input.value=code;if(!CODE.test(code)){message('Bitte einen gültigen sechsstelligen Raumcode eingeben.');return;}perform('/rooms/'+encodeURIComponent(code)+'/join');});
+ wrap.addEventListener('submit',e=>{e.preventDefault();const code=input.value.trim().toUpperCase();input.value=code;if(!CODE.test(code)){message('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.');return;}perform('/rooms/'+encodeURIComponent(code)+'/join');});
  create.addEventListener('click',()=>perform('/rooms'));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
