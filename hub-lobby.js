@@ -170,6 +170,8 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-progress.preisjaeger-playing>#challenge-preisjaeger{box-sizing:border-box;padding:clamp(10px,2vh,22px)!important;max-width:min(96vw,780px)!important}
 #challenge-progress.preisjaeger-playing>#challenge-preisjaeger #pj-product-photo{max-height:clamp(85px,23vh,230px)!important}
 #challenge-progress.preisjaeger-playing>#challenge-preisjaeger #pj-product-icon{margin:0!important;font-size:clamp(35px,7vh,60px)!important}
+#challenge-fullscreen-button{position:fixed;right:calc(10px + env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:10100;border:1px solid #ffe6a2;border-radius:12px;background:#10283be8;color:#ffe5a6;padding:8px 13px;font:700 14px system-ui;box-shadow:0 4px 15px #0008;cursor:pointer;touch-action:manipulation}
+#challenge-fullscreen-button[hidden]{display:none!important}
 #challenge-progress.zeitgefuehl-playing{justify-content:flex-start!important;gap:0!important;padding:0!important;overflow:hidden!important}
 #challenge-progress.zeitgefuehl-playing::before,#challenge-progress.zeitgefuehl-playing::after{display:none!important}
 #challenge-progress.zeitgefuehl-playing>h2,#challenge-progress.zeitgefuehl-playing>#challenge-progress-name,#challenge-progress.zeitgefuehl-playing>#challenge-progress-status,#challenge-progress.zeitgefuehl-playing>#challenge-progress-order,#challenge-progress.zeitgefuehl-playing>#challenge-clock,#challenge-progress.zeitgefuehl-playing>#challenge-time-stop,#challenge-progress.zeitgefuehl-playing>#challenge-time-target{display:none!important}
@@ -490,6 +492,27 @@ function renderChallengeProgress(){
   el('challenge-time-stop').addEventListener('click',async()=>{if(challengeStopBusy||!room?.match?.challenge)return;challengeStopBusy=true;el('challenge-time-stop').disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-time-stop','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{challengeStopBusy=false;}});
  }
  const ch=room?.match?.game==='partychallenge'?room.match.challenge:null;
+ let fullscreenButton=el('challenge-fullscreen-button');
+ if(!fullscreenButton){
+  fullscreenButton=document.createElement('button');
+  fullscreenButton.id='challenge-fullscreen-button';
+  fullscreenButton.type='button';
+  fullscreenButton.textContent='⛶ Vollbild';
+  fullscreenButton.addEventListener('click',event=>{
+   event.preventDefault();event.stopPropagation();
+   const stage=el('challenge-progress');
+   if(document.fullscreenElement){document.exitFullscreen?.().catch(()=>{});return;}
+   challengeFullscreenRequested=false;
+   if(stage&&stage.requestFullscreen){
+    challengeFullscreenRequested=true;
+    Promise.resolve(stage.requestFullscreen()).catch(()=>{challengeFullscreenRequested=false;});
+   }else if(stage?.webkitRequestFullscreen){
+    try{stage.webkitRequestFullscreen()}catch{challengeFullscreenRequested=false}
+   }
+  });
+  box.append(fullscreenButton);
+ }
+ fullscreenButton.hidden=!ch;
  box.classList.toggle('hidden',!ch);
  if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}
  if(!ch){if(document.fullscreenElement===box)document.exitFullscreen?.().catch(()=>{});challengeFullscreenRequested=false;box.classList.remove('maulwurf-playing','zeitgefuehl-playing');if(maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;el('challenge-original-frame').hidden=true;return;}
