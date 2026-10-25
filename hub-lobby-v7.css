@@ -566,3 +566,32 @@ body.challenge-room-active #challenge-single-grid>button .mini-picked{position:r
  body.challenge-room-active #ready-panel .notice{font-size:10px!important}
  body.challenge-room-active #challenge-settings-panel #challenge-feedback:not(:empty){font-size:11px!important;margin:4px 0 0!important}
 }
+
+
+/* Premium V28 – Samsung landscape: the screenshot has ~170px cards because
+   older height overrides win on viewports above 950px. Apply the viewport
+   budget consistently up to 1200px and keep all interactive controls. */
+@media (min-width:901px) and (orientation:landscape) and (max-height:1200px){
+ body.challenge-room-active #room-view{grid-template-columns:minmax(0,7fr) minmax(280px,3fr)!important;gap:10px!important;margin-top:7px!important}
+ body.challenge-room-active #challenge-settings-panel{padding:8px!important}
+ body.challenge-room-active #challenge-settings-panel>div:first-child{min-height:39px!important;padding:5px 10px!important;margin-bottom:4px!important}
+ body.challenge-room-active #challenge-settings-panel>div:has(#challenge-single-grid){padding:6px!important;margin:0!important}
+ body.challenge-room-active #challenge-settings-panel>div:has(#challenge-single-grid)>p{font-size:11px!important;margin:2px 0 5px!important;line-height:1.2!important}
+ body.challenge-room-active #challenge-single-grid{gap:6px!important;margin-top:4px!important}
+ body.challenge-room-active #challenge-single-grid>button{height:clamp(88px,11.5dvh,125px)!important;min-height:0!important;aspect-ratio:auto!important;padding:7px 9px!important}
+ body.challenge-room-active #challenge-single-grid>button .mini-art{font-size:20px!important}
+ body.challenge-room-active #challenge-single-grid>button strong{font-size:clamp(12px,1.3vw,17px)!important}
+ body.challenge-room-active #challenge-single-grid>button .mini-meta{font-size:clamp(9px,.85vw,12px)!important}
+ body.challenge-room-active #challenge-settings-panel #challenge-choice-status{padding:5px 9px!important;margin:5px 0!important;font-size:11px!important}
+ body.challenge-room-active #challenge-settings-panel>label[for="challenge-count"]{margin:4px 0 2px!important;font-size:11px!important}
+ body.challenge-room-active #challenge-count{min-height:32px!important;padding:3px 8px!important;font-size:12px!important}
+ body.challenge-room-active #challenge-marathon{min-height:34px!important;margin-top:5px!important;padding:5px 10px!important;font-size:12px!important}
+ body.challenge-room-active #challenge-save,body.challenge-room-active #challenge-bots{min-height:34px!important;padding:5px 10px!important;font-size:12px!important}
+ body.challenge-room-active #challenge-feedback{margin:4px 0 0!important;font-size:11px!important}
+ body.challenge-room-active #ready-panel{padding:8px 10px!important}
+ body.challenge-room-active #ready-panel .row{margin-top:5px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child{padding:10px!important}
+ body.challenge-room-active #players .player{min-height:43px!important;padding:6px 8px!important}
+ body.challenge-room-active #players{gap:6px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:nth-child(2){padding:8px 10px!important}
+}
