@@ -412,3 +412,30 @@ body.challenge-room-active #players .player{background:linear-gradient(100deg,#1
 body.challenge-room-active #challenge-bots{background:linear-gradient(180deg,#08d990,#008a64)!important;color:#fff!important;border-color:#60ffbb!important;box-shadow:0 5px 16px #00b88055!important}
 body.challenge-room-active #challenge-host-launch #start-btn:not(:disabled){background:linear-gradient(180deg,#ffe29a,#ffb63d 56%,#ed830d)!important;border-color:#ffe6a7!important;color:#38200d!important;box-shadow:0 6px 18px #ff9e3270!important}
 @media(prefers-reduced-motion:reduce){body.challenge-room-active *{scroll-behavior:auto!important}}
+
+
+/* Premium V21: tablet first-screen composition. Keep all original controls in DOM. */
+@media (min-width:901px) and (orientation:landscape) and (max-height:950px){
+ body.challenge-room-active #room-view>.stack:first-child{gap:5px!important}
+ body.challenge-room-active #challenge-settings-panel>div:first-child{min-height:37px!important}
+ body.challenge-room-active #challenge-settings-panel>div:first-child>span{font-size:27px!important}
+ body.challenge-room-active #challenge-settings-panel>div:has(#challenge-single-grid)>div:first-child{font-size:15px!important}
+ body.challenge-room-active #challenge-settings-panel>div:has(#challenge-single-grid)>p{font-size:11px!important;margin:2px 0 4px!important}
+ body.challenge-room-active #challenge-single-grid{gap:5px!important}
+ body.challenge-room-active #challenge-single-grid>button{height:clamp(76px,10.5dvh,103px)!important}
+ body.challenge-room-active #challenge-settings-panel #challenge-choice-status{margin:4px 0!important;padding:5px 8px!important;font-size:11px!important}
+ body.challenge-room-active #challenge-settings-panel #challenge-marathon{margin-top:4px!important}
+ body.challenge-room-active #ready-panel{padding:7px 10px!important}
+ body.challenge-room-active #ready-panel .eyebrow{margin-bottom:2px!important}
+ body.challenge-room-active #ready-panel h2{font-size:15px!important;margin-bottom:2px!important}
+ body.challenge-room-active #ready-panel .row{margin-top:5px!important}
+ body.challenge-room-active #ready-panel #ready-btn{min-height:36px!important;padding:5px 12px!important}
+ body.challenge-room-active #ready-panel .ready-progress{margin-top:4px!important}
+ body.challenge-room-active #ready-panel .ready-bar{margin-top:3px!important}
+ body.challenge-room-active #ready-panel .status{margin-top:3px!important;min-height:0!important}
+ body.challenge-room-active #ready-panel .notice{margin-top:3px!important;padding:5px 8px!important}
+ body.challenge-room-active #ready-panel .ready-hint{margin-top:3px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-head{padding:9px!important;margin-bottom:7px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .players{margin-top:6px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .row{margin-top:8px!important}
+}
