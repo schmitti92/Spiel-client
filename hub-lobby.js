@@ -861,6 +861,21 @@ function render(){
  el('start-btn').disabled=operation||!room.host||(room.phase==='preparing'&&!room.allReady);
  el('start-btn').textContent=room.game==='partychallenge'&&room.phase==='preparing'?'🏆 Challenge starten (3–2–1–0)':room.phase==='playing'?'Beendete Partie abschließen':room.canLaunch?'Startet automatisch bei allen Bereitmeldungen':'Spielanbindung folgt';
  el('start-btn').title=room.game==='partychallenge'?'Der Host startet ausdrücklich. Der Server bestimmt die Startzeit.':room.phase==='playing'?'Nur nach beendetem Spiel möglich; der Server prüft den Sieger.':room.canLaunch?'Alle gewählten Mitspieler melden sich bereit.':'Dieses Spiel wird später angeschlossen.';
+ // Keep the original start button and its event handlers; only relocate it in Party Challenge.
+ const launchSlot=el('challenge-host-launch');
+ const startButton=el('start-btn');
+ const readyRow=el('ready-btn')?.parentElement;
+ const showLaunch=room.game==='partychallenge'&&room.phase==='preparing'&&room.host;
+ if(launchSlot&&startButton&&readyRow){
+  launchSlot.classList.toggle('hidden',!showLaunch);
+  if(showLaunch){
+   if(startButton.parentElement!==launchSlot)launchSlot.append(startButton);
+  }else if(startButton.parentElement===launchSlot){
+   const cancelButton=el('cancel-match-btn');
+   if(cancelButton&&cancelButton.parentElement===readyRow)readyRow.insertBefore(startButton,cancelButton);
+   else readyRow.append(startButton);
+  }
+ }
  el('leave-btn').disabled=room.phase==='playing'||operation;
  el('integration-note').textContent=room.phase==='playing'
   ?'Die Partie läuft. Nach dem bestätigten Spielende kehren alle automatisch in diesen Raum zurück.'
