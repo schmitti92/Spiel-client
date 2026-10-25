@@ -369,7 +369,7 @@ function syncPreisjaegerOriginal(ch){
  const mySeat=room.players.find(p=>p.me)?.seat;
  const state={
   challengeId:ch.id,round:pj.round,finished:ch.phase==='finished',totals:ch.phase==='finished'?(ch.totals||[]):[],startsInMs:Math.max(0,(ch.startAt||0)-((room.serverNow||Date.now())+Math.max(0,Date.now()-preisjaegerClockReceivedAt))),product:{
-   name:pj.product?.name||'',category:pj.product?.category||'',shop:pj.product?.shop||'',
+   name:pj.product?.name||'',category:pj.product?.category||'',shop:pj.product?.shop||'',description:pj.product?.description||'',
    image:pj.product?.image||'',icon:pj.product?.icon||'🛒'
   },
   history:Array.isArray(pj.history)?pj.history.slice(-1):[],
