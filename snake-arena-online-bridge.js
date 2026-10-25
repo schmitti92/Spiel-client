@@ -1,10 +1,10 @@
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=3';
+ frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=4';
  frame.title='Snake Arena Online';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  container.replaceChildren(frame);
- let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,offset=0;
+ let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,offset=0,queuedState=null;
  function current(){const room=getRoom(),ch=room?.match?.challenge;return ch?.order?.[ch.index]==='snake-arena'?{room,ch}:null}
  function sync(){
   if(!alive||!ready)return;
@@ -23,11 +23,12 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(!alive||e.origin!==location.origin||e.source!==frame.contentWindow)return;
   const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
   if(m.type==='snake-arena:configured'){configured=true;sync();return;}
-  if(m.type!=='snake-arena:state'||pending||c.ch.phase!=='countdown'||Date.now()+offset<c.ch.startAt||Date.now()-lastSend<180||!Number.isSafeInteger(m.seq)||m.seq<=lastSeq)return;
+  if(m.type!=='snake-arena:state'||c.ch.phase!=='countdown'||Date.now()+offset<c.ch.startAt||!Number.isSafeInteger(m.seq)||m.seq<=lastSeq)return;
+  if(pending||Date.now()-lastSend<180){if(m.player?.finished)queuedState=m;return;}
   const p=m.player;if(!p)return;
   pending=true;lastSend=Date.now();lastSeq=m.seq;
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,...p});if(r?.room)acceptRoom(r.room)}
-  catch(error){onError(error)}finally{pending=false;}
+  catch(error){onError(error)}finally{pending=false;if(queuedState&&alive){const q=queuedState;queuedState=null;queueMicrotask(()=>onMessage({origin:location.origin,source:frame.contentWindow,data:q}));}}
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;configured=false;sync()});
