@@ -124,6 +124,52 @@ body.is-playing .player.sky-active-glow :is(.player-head,.player-header,.player-
  grid-template-rows:repeat(3,minmax(0,auto))!important;
 }
 </style>
+<style id="skyjo-landscape-three-player-fit-v3">
+/* Three-player XL on landscape tablets: prioritise visible full boards.
+   Own cards are untouched; side cards reduce by at most ~12% at this breakpoint. */
+@media (min-width:1050px) and (orientation:landscape) and (max-height:850px){
+ body.is-playing[data-players="3"] .table-area.three-player-layout{
+   gap:6px!important;align-items:start!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-players-stack{
+   gap:5px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player{
+   padding:3px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player-head{
+   padding:2px 6px!important;min-height:0!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .gridwrap{
+   padding:3px 4px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .grid{
+   --card-w:clamp(38px,2.8vw,44px)!important;
+   gap:3px!important;padding:2px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .card-slot{
+   width:var(--card-w)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table{
+   gap:4px!important;padding:4px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox{
+   min-height:0!important;padding:5px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles{
+   gap:4px!important;
+ }
+ body.is-playing[data-players="3"] .topbar{
+   min-height:38px!important;padding-block:2px!important;
+ }
+ body.is-playing[data-players="3"] .status.premium-status{
+   margin-block:2px 4px!important;
+ }
+ body.is-playing[data-players="3"] .status.premium-status .stat{
+   min-height:38px!important;padding-block:3px!important;
+ }
+}
+</style>
 <style id="skyjo-tablet-height-fit-v1">
 /* Landscape tablets: keep all three seats, hand and piles inside the usable height. */
 @media (orientation:landscape) and (min-width:1000px) and (max-height:900px){
