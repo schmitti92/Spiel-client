@@ -1,6 +1,6 @@
 /* Original Zeitgefuehl – online iframe bridge. The server measures all stop timestamps. */
 export function mountZeitgefuehlOriginal({container,getRoom,request,acceptRoom,onError}){
- const iframe=document.createElement('iframe');iframe.src='zeitgefuehl-original.html?v=5';iframe.title='Zeitgefühl Original – Online';
+ const iframe=document.createElement('iframe');iframe.src='zeitgefuehl-original.html?v=6';iframe.title='Zeitgefühl Original – Online';
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);let active=true,lastKey='';
  function sync(){
@@ -8,6 +8,11 @@ export function mountZeitgefuehlOriginal({container,getRoom,request,acceptRoom,o
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='zeitgefuehl')return;
   const seat=room.players?.find(p=>p.me)?.seat,stopped=(ch.stopped||[]).includes(seat);
+  if(ch.phase==='results'||ch.phase==='finished'){
+   const result=(ch.results||[]).findLast(r=>r.game==='zeitgefuehl'&&r.index===ch.index);
+   if(result)iframe.contentWindow.postMessage({type:'zeitgefuehl:result',challengeId:ch.id,targetSeconds:result.targetSeconds,standings:result.standings},location.origin);
+   return;
+  }
   const key=[ch.id,ch.index,ch.startAt,ch.targetSeconds,seat,(ch.stopped||[]).join(',')].join(':');
   if(lastKey===key)return;lastKey=key;
   iframe.contentWindow.postMessage({type:'zeitgefuehl:state',challengeId:ch.id,mySeat:seat,startAt:ch.startAt,serverNow:room.serverNow,targetSeconds:ch.targetSeconds,stopped,players:(room.players||[]).filter(p=>p.participating).map(p=>({seat:p.seat,name:p.name,stopped:(ch.stopped||[]).includes(p.seat)}))},location.origin);
