@@ -733,3 +733,53 @@ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #read
  body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel{padding:9px!important}
  body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel #ready-btn{min-height:42px!important}
 }
+
+
+/* Premium V35 – responsive sidebar budget after moving the real ready panel.
+   No elements are removed from DOM and no online actions are altered. */
+@media (min-width:901px) and (orientation:landscape) and (max-height:1200px){
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child{
+  display:flex!important;flex-direction:column!important;gap:0!important;
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel{
+  flex:0 0 auto!important;margin:5px 0!important;padding:5px 8px!important;
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel h2{
+  font-size:12px!important;margin:0 0 4px!important;
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel .row{
+  margin:0!important;gap:5px!important
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel #ready-btn{
+  min-height:34px!important;width:100%!important;font-size:13px!important;
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel .ready-progress{
+  margin:4px 0 1px!important;font-size:10px!important
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel #ready-status:empty{
+  display:none!important
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #challenge-host-launch:not(.hidden){
+  margin:5px 0 0!important
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #challenge-host-launch #start-btn{
+  min-height:45px!important;padding:7px 8px!important;font-size:15px!important
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.row{
+  margin-top:6px!important
+ }
+}
+@media (min-width:901px) and (orientation:landscape) and (max-height:750px){
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-head{
+  min-height:68px!important
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #players .player{
+  min-height:34px!important
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel .ready-bar{
+  height:3px!important
+ }
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel #ready-btn{
+  min-height:31px!important
+ }
+}
