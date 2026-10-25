@@ -337,8 +337,8 @@ test('Zeitgefühl V56 prevents late stop and refreshes iframe bridge',()=>{
  const bridge=text('zeitgefuehl-online-bridge.js');
  assert.match(original,/Zeit abgelaufen – Server wertet aus/);
  assert.match(original,/if\(button\)button\.disabled=true/);
- assert.match(bridge,/zeitgefuehl-original\.html\?v=6/);
- assert.match(js,/zeitgefuehl-online-bridge\.js\?v=6/);
+ assert.match(bridge,/zeitgefuehl-original\.html\?v=7/);
+ assert.match(js,/zeitgefuehl-online-bridge\.js\?v=7/);
 });
 
 
