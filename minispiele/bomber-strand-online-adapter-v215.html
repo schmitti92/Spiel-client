@@ -328,7 +328,13 @@ window.addEventListener('message',event=>{
    });
    for(const p of players)p.active=bombs.filter(b=>b.owner===p.id).length;
   }
-  if(Array.isArray(m.destroyed))for(const i of m.destroyed){if(Number.isInteger(i)&&i>=0&&i<cells.length&&cells[i]==='crate'){cells[i]=null;hidden.delete(i);}}
+  if(Array.isArray(m.destroyed)){
+   const removed=new Set(m.destroyed);
+   for(let i=0;i<cells.length;i++)if(MAP.objects[i]==='crate'){
+    if(removed.has(i)){cells[i]=null;hidden.delete(i);pickups.delete(i);}
+    else cells[i]='crate';
+   }
+  }
   if(Array.isArray(m.blasts))for(const b of m.blasts){if(Number.isInteger(b.x)&&Number.isInteger(b.y)&&within(b.x,b.y)&&!flames.some(f=>f.x===b.x&&f.y===b.y)){flames.push({x:b.x,y:b.y,life:Math.max(.05,(b.until-serverTime)/1000)});}}
   updateUI();
  }
