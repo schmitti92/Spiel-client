@@ -380,3 +380,10 @@ test('all embedded originals use shared edge-to-edge stage and preserve hidden f
  assert.match(js,/#challenge-original-frame:not\(\[hidden\]\)/);
  assert.match(js,/classList\.remove\('maulwurf-playing','zeitgefuehl-playing','original-edge-playing'\)/);
 });
+
+
+test('inactive Preisjäger iframe never overlays another original minigame',()=>{
+ assert.match(js,/frame\.hidden=!active/);
+ assert.match(js,/frame\.hidden=true/);
+ assert.match(js,/\.preisjaeger-original-playing:not\(\.hidden\)>#preisjaeger-original-online:not\(\[hidden\]\)/);
+});
