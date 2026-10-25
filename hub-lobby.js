@@ -174,7 +174,9 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-fullscreen-button[hidden]{display:none!important}
 /* Zeitgefühl: the original game alone fills the entire stage; no surrounding lobby chrome. */
 #challenge-progress.zeitgefuehl-playing:not(.hidden){position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;display:block!important;margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#061624!important}
-#challenge-progress.zeitgefuehl-playing:not(.hidden)>:not(#challenge-original-frame):not(#challenge-fullscreen-button){display:none!important}
+#challenge-progress.zeitgefuehl-playing:not(.hidden)>:not(#challenge-original-frame):not(#challenge-fullscreen-button):not(#challenge-single-actions):not(#challenge-next){display:none!important}
+#challenge-progress.zeitgefuehl-playing:not(.hidden)>#challenge-single-actions:not([hidden]){position:fixed!important;z-index:10110!important;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex!important;gap:10px}
+#challenge-progress.zeitgefuehl-playing:not(.hidden)>#challenge-next:not([hidden]){position:fixed!important;z-index:10110!important;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:block!important}
 #challenge-progress.zeitgefuehl-playing:not(.hidden)>#challenge-original-frame{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important}
 #challenge-progress.zeitgefuehl-playing:not(.hidden)>#challenge-fullscreen-button:not([hidden]){display:block;top:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));right:calc(8px + env(safe-area-inset-right,0px));opacity:.55;font-size:12px;padding:5px 9px}
 #challenge-progress.zeitgefuehl-playing{justify-content:flex-start!important;gap:0!important;padding:0!important;overflow:hidden!important}
