@@ -142,10 +142,11 @@ async function request(path,method='GET',data){
  }finally{clearTimeout(timeout);}
 }
 function setRoomCode(next){code=next;const u=new URL(location.href);if(code)u.searchParams.set('room',code);else u.searchParams.delete('room');history.replaceState(null,'',u);}
+let preisjaegerClockReceivedAt=Date.now();
 function acceptRoom(next){
  if(!next||next.code!==code)return false;
  if(room?.code===next.code&&Number.isFinite(Number(next.revision))&&Number.isFinite(Number(room.revision))&&Number(next.revision)<Number(room.revision))return false;
- room=next;render();return true;
+ room=next;preisjaegerClockReceivedAt=Date.now();render();return true;
 }
 function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();setRoomCode(result.code);acceptRoom(result);}
 
@@ -353,7 +354,7 @@ function ensurePreisjaegerOriginalFrame(){
  frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
  frame.setAttribute('referrerpolicy','same-origin');
  frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
- frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=51';
+ frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=52';
  el('challenge-progress').append(frame);
  return frame;
 }
@@ -367,7 +368,7 @@ function syncPreisjaegerOriginal(ch){
  const pj=ch.preisjaeger;
  const mySeat=room.players.find(p=>p.me)?.seat;
  const state={
-  challengeId:ch.id,round:pj.round,finished:ch.phase==='finished',totals:ch.phase==='finished'?(ch.totals||[]):[],startsInMs:Math.max(0,(ch.startAt||0)-(room.serverNow||Date.now())),product:{
+  challengeId:ch.id,round:pj.round,finished:ch.phase==='finished',totals:ch.phase==='finished'?(ch.totals||[]):[],startsInMs:Math.max(0,(ch.startAt||0)-((room.serverNow||Date.now())+Math.max(0,Date.now()-preisjaegerClockReceivedAt))),product:{
    name:pj.product?.name||'',category:pj.product?.category||'',shop:pj.product?.shop||'',
    image:pj.product?.image||'',icon:pj.product?.icon||'🛒'
   },
@@ -377,6 +378,23 @@ function syncPreisjaegerOriginal(ch){
  };
  frame.contentWindow?.postMessage({type:'PREISJAEGER_ONLINE_STATE',state},location.origin);
 }
+// Refresh the round countdown locally even when the room socket is idle.
+setInterval(()=>{
+ const ch=room?.match?.challenge;
+ if(!ch||ch.order?.[ch.index]!=='preisjaeger'||ch.phase!=='countdown')return;
+ syncPreisjaegerOriginal(ch);
+ const now=(room.serverNow||Date.now())+Math.max(0,Date.now()-preisjaegerClockReceivedAt);
+ const pj=ch.preisjaeger;
+ if(pj&&now>=ch.startAt+45000){
+  const key=ch.id+':'+ch.index+':'+pj.round;
+  if(pjTimeoutKey!==key){
+   pjTimeoutKey=key;
+   request('/rooms/'+encodeURIComponent(room.code)+'/challenge-preisjaeger-timeout','POST',{challengeId:ch.id,round:pj.round})
+    .then(r=>{if(r?.room)acceptRoom(r.room)})
+    .catch(()=>{pjTimeoutKey=''});
+  }
+ }
+},1000);
 window.addEventListener('message',async event=>{
  if(event.origin!==location.origin||event.source!==document.getElementById('preisjaeger-original-online')?.contentWindow)return;
  if(event.data?.type==='PREISJAEGER_ONLINE_READY'){
