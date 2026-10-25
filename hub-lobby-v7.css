@@ -446,3 +446,30 @@ body.challenge-room-active #challenge-single-grid>button{background-blend-mode:n
 body.challenge-room-active #challenge-single-grid>button strong{position:relative;z-index:1;font-weight:900!important;text-shadow:0 2px 6px #000,0 0 12px #000!important}
 body.challenge-room-active #challenge-single-grid>button[aria-pressed="true"]{border-color:#ffdc72!important;box-shadow:0 0 0 2px #eec45e,0 0 20px #ffc84e85,inset 0 0 18px #e9ba4a25!important}
 @media(hover:hover){body.challenge-room-active #challenge-single-grid>button:hover:not(:disabled){filter:brightness(1.12)!important}}
+
+
+/* Premium V23 – room chrome, navigation and clear tablet touch targets. */
+body.challenge-room-active .premium-nav{gap:clamp(3px,.6vw,11px)!important}
+body.challenge-room-active .premium-nav a{min-width:clamp(55px,6vw,91px)!important;border-radius:12px!important;text-shadow:0 1px 3px #00152b!important}
+body.challenge-room-active .premium-nav a:first-child{border:1px solid #65b9ff!important;box-shadow:inset 0 1px 0 #a4dcff77,0 0 15px #168aff88!important}
+body.challenge-room-active .shell>header .brand{color:#ffe0a1!important;text-shadow:0 2px 5px #001a32!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-head{position:relative;overflow:hidden}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-head::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 15%,#fff2bf1b 28%,transparent 39%);opacity:.65}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #copy-btn{background:linear-gradient(160deg,#286d9a,#11496e)!important;color:#fff!important;border:1px solid #4da8cf!important;box-shadow:0 3px 9px #001a2a77!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #copy-btn:focus-visible{outline:3px solid #ffe6a4!important}
+body.challenge-room-active #players .player .avatar{border-radius:50%!important;box-shadow:0 0 0 2px #0c4c6b,0 2px 8px #00182b!important}
+body.challenge-room-active #players .player .ready.yes{background:#075f48!important;color:#9fffd2!important;border:1px solid #36d49a!important}
+body.challenge-room-active #players .player .ready:not(.yes){border:1px solid #b4864b55!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #refresh-btn{background:#174e70!important;color:#e6f7ff!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #leave-btn{background:#663a49!important;color:#ffe1e7!important}
+@media(min-width:901px) and (max-height:950px) and (orientation:landscape){
+ body.challenge-room-active .shell>header{padding:4px 10px!important;min-height:48px!important}
+ body.challenge-room-active .premium-nav a{min-height:40px!important;font-size:17px!important;padding:3px 8px!important}
+ body.challenge-room-active .premium-nav a span{font-size:10px!important}
+ body.challenge-room-active .shell>header .edition{font-size:10px!important}
+ body.challenge-room-active .shell>header .pill{font-size:10px!important;padding:4px 8px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-head{padding:7px 9px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-head h2{font-size:17px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-code{font-size:clamp(23px,3vw,34px)!important}
+ body.challenge-room-active #players .player .avatar{width:32px!important;height:32px!important;font-size:18px!important}
+}
