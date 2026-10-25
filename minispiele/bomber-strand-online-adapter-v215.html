@@ -166,8 +166,8 @@ function resolveExplosions(initial){
  for(const k of hit){const x=k%W,y=Math.floor(k/W);
   burst(x,y,'#ffb744',9);flames.push({x,y,life:.55});pickups.delete(k);
   if(blocking.has(k)){
-   burst(x,y,'#b97c42',18);cells[k]=null;
-   if(hidden.has(k)){pickups.set(k,hidden.get(k));hidden.delete(k)}
+   burst(x,y,'#b97c42',18);if(!window.BomberOnlineConfig)cells[k]=null;
+   if(!window.BomberOnlineConfig&&hidden.has(k)){pickups.set(k,hidden.get(k));hidden.delete(k)}
   }
  }
  if(!window.BomberOnlineConfig)for(const p of players)if(p.alive&&hit.has(key(Math.floor(p.x),Math.floor(p.y)))){p.alive=false;p.eliminatedAt=eliminationClock}
