@@ -21,6 +21,10 @@ body:has(.scene.online-play) {height:100dvh;overflow:hidden}
 .scene.online-play .status{margin-top:4px;min-height:16px}
 .scene.online-play .clock{width:clamp(105px,19vh,180px);height:clamp(105px,19vh,180px)}
 .scene.online-play .foot{display:none!important}
+.scene.online-play .results{max-height:min(60dvh,440px);overflow-y:auto;overscroll-behavior:contain}
+.scene.online-play .result-card{padding:clamp(8px,1.5vh,18px)}
+.scene.online-play .end{margin:4px auto!important}
+
 .scene.online-play .header{flex:0 0 auto;margin:0!important;padding:0!important}
 .scene.online-play .header h1{font-size:clamp(28px,7vh,65px)!important;line-height:1.05!important;margin:0!important}
 .scene.online-play .subtitle{font-size:clamp(10px,1.7vh,16px)!important;margin:3px 0!important}
@@ -96,10 +100,10 @@ function showOnlineResults(data){
  $('target').textContent='🎯 ZIELZEIT: '+Number(data.targetSeconds).toFixed(2).replace('.',',')+' s';
  hint.textContent='Die genaueste Schätzung gewinnt!';
  results.replaceChildren();results.hidden=false;
- const sorted=data.standings.slice().sort((a,b)=>Number(a.deltaMs)-Number(b.deltaMs)||Number(a.seat)-Number(b.seat));
+ const sorted=data.standings.slice().sort((a,b)=>(Number.isFinite(Number(a.deltaMs))?Number(a.deltaMs):Infinity)-(Number.isFinite(Number(b.deltaMs))?Number(b.deltaMs):Infinity)||Number(a.seat)-Number(b.seat));
  sorted.forEach((p,i)=>{
   const card=document.createElement('article');card.className='result-card'+(i===0?' winner':'');
-  const title=document.createElement('h2');title.textContent=(i===0?'🏆 ':i===1?'🥈 ':i===2?'🥉 ':'')+String(p.name||'Spieler');
+  const shared=i>0&&Number(p.deltaMs)===Number(sorted[0]?.deltaMs);const title=document.createElement('h2');title.textContent=(i===0||shared?'🏆 ':i===1?'🥈 ':i===2?'🥉 ':'')+String(p.name||'Spieler');
   const time=document.createElement('div');time.textContent='⏱️ '+(Number(p.elapsedMs)/1000).toFixed(2).replace('.',',')+' s';
   const delta=document.createElement('div');delta.textContent='Abweichung: '+(Number(p.deltaMs)/1000).toFixed(2).replace('.',',')+' s';
   const points=document.createElement('strong');points.textContent='+'+(Number(p.challengePoints)||0)+' Punkte';
