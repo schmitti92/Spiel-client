@@ -201,6 +201,27 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-progress.rechen-finale:not(.hidden)>#challenge-single-actions:not([hidden]) button{flex:1;min-width:0;padding:clamp(10px,1.5vh,16px)!important;font-size:clamp(13px,2vw,20px)!important}
 #challenge-progress.rechen-finale:not(.hidden)>#challenge-fullscreen-button:not([hidden]){position:fixed!important;top:4px!important;right:4px!important;z-index:10120!important;opacity:.6;font-size:12px!important}
 @media(max-height:650px){#challenge-progress.rechen-finale:not(.hidden){padding-top:7px!important;gap:5px!important}#challenge-progress.rechen-finale #challenge-results>.rechen-finale-winner{padding:8px!important}#challenge-progress.rechen-finale #challenge-results>.rechen-finale-podium>div{padding:9px!important;gap:3px}}
+
+/* Recheninsel victory screen: readable single-viewport landscape layout. */
+#challenge-progress.rechen-finale:not(.hidden){overflow:hidden!important;padding:clamp(7px,1.3vh,14px) clamp(12px,2vw,30px) calc(73px + env(safe-area-inset-bottom,0px))!important;gap:0!important;background:radial-gradient(ellipse at 50% 105%,#138e9f55,transparent 60%),radial-gradient(ellipse at 52% 3%,#4e809b55,transparent 45%),linear-gradient(155deg,#051326,#092d42 65%,#06334b)!important}
+#challenge-progress.rechen-finale:not(.hidden)::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(110deg,transparent 0 75px,#ffffff03 76px 77px);opacity:.6}
+#challenge-progress.rechen-finale:not(.hidden)>#challenge-results{position:relative;display:grid!important;grid-template-columns:minmax(0,.83fr) minmax(0,1.17fr)!important;grid-template-rows:auto auto minmax(0,1fr) auto!important;column-gap:clamp(12px,2vw,28px)!important;row-gap:clamp(5px,1vh,10px)!important;align-items:stretch!important;width:min(100%,1280px)!important;height:100%!important;min-height:0!important;overflow:hidden!important}
+#challenge-progress.rechen-finale #challenge-results>.rechen-finale-heading{grid-column:1/-1;font-size:clamp(25px,4.4vw,54px)!important;line-height:1.02!important;letter-spacing:.02em;margin:0!important}
+#challenge-progress.rechen-finale #challenge-results>.rechen-finale-subtitle{grid-column:1/-1;font-size:clamp(11px,1.35vw,16px)!important;margin:0!important}
+#challenge-progress.rechen-finale #challenge-results>.rechen-finale-hero{grid-column:1;grid-row:3;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:0;padding:clamp(9px,2vh,22px);border:2px solid #e6b95e;border-radius:24px;background:radial-gradient(circle at 50% 20%,#ffd87f44,transparent 60%),linear-gradient(155deg,#78511f,#3c2b27 65%,#10283c);box-shadow:inset 0 0 35px #ffe6a014,0 12px 34px #0008;text-align:center}
+.rechen-finale-emblem{font-size:clamp(33px,8vh,78px);line-height:1;filter:drop-shadow(0 6px 6px #0008)}.rechen-finale-kicker{font-size:clamp(10px,1.6vw,16px);letter-spacing:.12em;color:#ffe7a0;font-weight:900;margin-top:7px}.rechen-finale-champion{font-weight:1000;font-size:clamp(24px,3.6vw,44px);overflow-wrap:anywhere;line-height:1.1;margin:6px 0;color:#fff7df;text-shadow:0 4px 12px #000a}.rechen-finale-lead{font-size:clamp(14px,1.8vw,20px);font-weight:850;color:#ffdf8c}
+#challenge-progress.rechen-finale #challenge-results>.rechen-finale-podium{grid-column:2;grid-row:3;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:clamp(5px,1vh,10px)!important;width:100%!important;margin:0!important;min-height:0;overflow:auto;max-width:none!important}
+#challenge-progress.rechen-finale .rechen-finale-rank{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:clamp(8px,1.3vw,15px)!important;min-height:0;flex:1;max-height:100px;padding:clamp(8px,1.4vh,16px) clamp(11px,1.5vw,20px)!important;background:linear-gradient(120deg,#163c51,#0b253b)!important;border:1px solid #6d9fa9!important;border-radius:16px!important;color:white!important;box-shadow:0 5px 15px #0006;font-size:clamp(13px,1.7vw,22px)!important;transform:none!important}
+#challenge-progress.rechen-finale .rechen-finale-rank.first{border:2px solid #ffd57d!important;background:linear-gradient(120deg,#9e6a30,#4d361d)!important}
+.rechen-finale-rank strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rechen-finale-medal{font-size:clamp(20px,2.7vw,32px)}.rechen-finale-points{color:#ffe3a1;font-weight:1000;font-size:clamp(15px,2vw,26px);white-space:nowrap}
+#challenge-progress.rechen-finale .rechen-finale-details-label{display:none!important}
+#challenge-progress.rechen-finale #challenge-results>.rechen-finale-rounds{grid-column:1/-1;grid-row:4;width:100%!important;max-width:none!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:clamp(6px,1vw,12px)!important;min-height:0;overflow:hidden;margin:0!important}
+#challenge-progress.rechen-finale .rechen-round-card{padding:clamp(7px,1vh,12px)!important;border-radius:13px;background:#061b2cdd!important;border:1px solid #b68e58!important;min-width:0;min-height:0}
+.rechen-round-heading{display:block;font-size:clamp(12px,1.2vw,16px);color:#ffe2a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rechen-round-entries{display:grid;gap:2px;margin-top:5px}.rechen-round-entry{display:flex;justify-content:space-between;gap:6px;font-size:clamp(10px,1.1vw,14px);white-space:nowrap}.rechen-round-entry span:first-child{overflow:hidden;text-overflow:ellipsis}.rechen-correct{color:#85f0b8}.rechen-incorrect{color:#ffb3ae}
+#challenge-progress.rechen-finale:not(.hidden)>#challenge-single-actions:not([hidden]){bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;width:min(92vw,720px)!important;padding:5px!important;gap:9px!important;background:#061728eb!important}
+#challenge-progress.rechen-finale:not(.hidden)>#challenge-single-actions:not([hidden]) button{padding:clamp(8px,1.4vh,14px)!important;min-height:43px!important}
+@media(max-width:650px),(max-height:430px){#challenge-progress.rechen-finale:not(.hidden){overflow-y:auto!important}#challenge-progress.rechen-finale:not(.hidden)>#challenge-results{height:auto!important;min-height:100%;overflow:visible!important}#challenge-progress.rechen-finale .rechen-finale-rank{min-height:44px!important}#challenge-progress.rechen-finale .rechen-round-entries{display:none!important}}
+@media(max-width:650px) and (orientation:portrait){#challenge-progress.rechen-finale:not(.hidden)>#challenge-results{grid-template-columns:1fr!important;grid-template-rows:auto auto auto auto auto!important}#challenge-progress.rechen-finale #challenge-results>.rechen-finale-hero{grid-column:1;grid-row:3}#challenge-progress.rechen-finale #challenge-results>.rechen-finale-podium{grid-column:1;grid-row:4}#challenge-progress.rechen-finale #challenge-results>.rechen-finale-rounds{grid-column:1;grid-row:5;grid-template-columns:1fr!important}#challenge-progress.rechen-finale .rechen-round-entries{display:grid!important}}
 /* Shared edge-to-edge presentation for every embedded original minigame. */
 #challenge-progress.original-edge-playing:not(.hidden){position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;display:block!important;margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#061624!important;box-shadow:none!important;z-index:10000!important}
 #challenge-progress.original-edge-playing:not(.hidden)::before,#challenge-progress.original-edge-playing:not(.hidden)::after{display:none!important}
@@ -700,16 +721,22 @@ function renderChallengeProgress(){
    resultsBox.append(rounds);
   }
   if(result?.game==='recheninsel'&&Array.isArray(result.rounds)){
-   const rounds=document.createElement('div');rounds.style.cssText='display:grid;gap:10px;max-width:650px;margin:14px auto';if(rechenFinale)rounds.className='rechen-finale-rounds';
+   const rounds=document.createElement('div');rounds.className=rechenFinale?'rechen-finale-rounds':'rechen-rounds';
    result.rounds.forEach(r=>{
-    const section=document.createElement('div');section.style.cssText='padding:12px;border-radius:12px;background:#061e30bd;text-align:left;border:1px solid #ffe3a155';
-    const heading=document.createElement('strong');heading.textContent='🏴‍☠️ Runde '+r.round+' · '+r.question+' = '+r.answer;section.append(heading);
-    (r.standings||[]).forEach(entry=>{const line=document.createElement('div');line.style.cssText='display:flex;justify-content:space-between;gap:12px;margin-top:6px';const name=document.createElement('span');name.textContent=entry.name;const score=document.createElement('span');score.textContent=(entry.correct?'✓ ':'✗ ')+(entry.challengePoints||0)+' Punkte';line.append(name,score);section.append(line);});
-    rounds.append(section);
+    const section=document.createElement('section');section.className='rechen-round-card';
+    const heading=document.createElement('strong');heading.className='rechen-round-heading';heading.textContent='🧭 Runde '+r.round+' · '+r.question+' = '+r.answer;section.append(heading);
+    const entries=document.createElement('div');entries.className='rechen-round-entries';
+    (r.standings||[]).forEach(entry=>{
+     const line=document.createElement('div');line.className='rechen-round-entry';
+     const name=document.createElement('span');name.textContent=entry.name;
+     const score=document.createElement('span');score.className=entry.correct?'rechen-correct':'rechen-incorrect';
+     score.textContent=(entry.correct?'✓ ':'✕ ')+(entry.challengePoints||0)+' P.';
+     line.append(name,score);entries.append(line);
+    });section.append(entries);rounds.append(section);
    });resultsBox.append(rounds);
   }
   if(result?.game==='recheninsel'&&typeof result.answer==='number'){const solution=document.createElement('p');solution.textContent='🏴‍☠️ Lösung: '+result.question+' = '+result.answer;resultsBox.append(solution);}
-  if(result?.standings){
+  if(result?.standings&&!rechenFinale){
    const list=document.createElement('div');list.style.cssText='display:grid;gap:9px;margin:14px auto;max-width:540px';
    result.standings.slice().sort((a,b)=>(b.challengePoints||0)-(a.challengePoints||0)||(a.deltaMs??0)-(b.deltaMs??0)||a.name.localeCompare(b.name)).forEach((entry,i,sorted)=>{
     const card=document.createElement('div');card.style.cssText='padding:12px;border-radius:12px;background:#ffffff1c;display:flex;justify-content:space-between;gap:12px';
@@ -725,12 +752,33 @@ function renderChallengeProgress(){
    totals.forEach((entry,i)=>{const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:12px;padding:11px 15px;border:1px solid #f8d68d66;border-radius:12px;background:#071e2abf';const name=document.createElement('strong');const rank=totals.findIndex(p=>p.points===entry.points);name.textContent=(['🥇','🥈','🥉'][rank]||'🎮')+' '+entry.name;const points=document.createElement('strong');points.textContent=entry.points+' Punkte gesamt';row.append(name,points);totalList.append(row);});resultsBox.append(totalList);
   }
   if(ch.phase==='finished'){
+   if(rechenFinale){
+    const standings=(ch.totals||[]).slice().sort((a,b)=>b.points-a.points||a.seat-b.seat);
+    const winners=standings.filter(p=>p.points===standings[0]?.points);
+    const hero=document.createElement('div');hero.className='rechen-finale-hero';
+    const emblem=document.createElement('div');emblem.className='rechen-finale-emblem';emblem.textContent='🏆';hero.append(emblem);
+    const kicker=document.createElement('div');kicker.className='rechen-finale-kicker';kicker.textContent=winners.length>1?'GEMEINSAMER SCHATZSIEG':'KAPITÄN DER RECHENINSEL';hero.append(kicker);
+    const champion=document.createElement('div');champion.className='rechen-finale-champion';champion.textContent=winners.length?winners.map(p=>p.name).join(' & '):'Schatzrunde beendet';hero.append(champion);
+    if(winners.length){const lead=document.createElement('div');lead.className='rechen-finale-lead';lead.textContent=winners[0].points+' Punkte · '+(winners.length>1?'Gleichstand!':'Platz 1');hero.append(lead);}
+    resultsBox.append(hero);
+    const podium=document.createElement('div');podium.className='rechen-finale-podium';
+    standings.forEach((entry,i)=>{
+     const rank=standings.findIndex(p=>p.points===entry.points)+1;
+     const row=document.createElement('div');row.className='rechen-finale-rank'+(rank===1?' first':'');
+     const medal=document.createElement('span');medal.className='rechen-finale-medal';medal.textContent=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'🏴‍☠️';
+     const name=document.createElement('strong');name.textContent=entry.name;
+     const points=document.createElement('span');points.className='rechen-finale-points';points.textContent=entry.points+' Punkte';
+     row.append(medal,name,points);podium.append(row);
+    });resultsBox.append(podium);
+    if(result?.rounds?.length){const detail=document.createElement('div');detail.className='rechen-finale-details-label';detail.textContent='📜 Die drei Schatzprüfungen';const rounds=resultsBox.querySelector('.rechen-finale-rounds');if(rounds)resultsBox.insertBefore(detail,rounds);}
+   }else{
    const total=document.createElement('h3');total.textContent='Gesamtwertung';if(!rechenFinale)resultsBox.append(total);
    const standings=(ch.totals||[]).slice().sort((a,b)=>b.points-a.points||a.seat-b.seat);
    const winners=standings.filter(p=>p.points===standings[0]?.points);
    if(winners.length){const banner=document.createElement('div');banner.style.cssText='padding:18px;margin:15px auto;border-radius:18px;background:linear-gradient(120deg,#ffe8a3,#ffc964);color:#42310d;font-size:clamp(19px,3vw,29px);font-weight:900;max-width:570px';banner.textContent=winners.length===1?'🏆 Sieger: '+winners[0].name:'🏆 Gemeinsamer Sieg: '+winners.map(p=>p.name).join(' & ');if(rechenFinale)banner.className='rechen-finale-winner';resultsBox.append(banner);}
    const podium=document.createElement('div');podium.style.cssText='display:grid;gap:10px;max-width:570px;margin:12px auto';
    if(rechenFinale)podium.className='rechen-finale-podium';standings.forEach((entry,i)=>{const row=document.createElement('div');const rank=standings.findIndex(p=>p.points===entry.points)+1;row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-radius:15px;background:'+(rank===1?'linear-gradient(120deg,#ffe3a0,#f8c65b);color:#3c2b0c':'#ffffff22;color:white')+';font-weight:750';const name=document.createElement('span');name.textContent=(rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'🎮')+' '+entry.name;const points=document.createElement('strong');points.textContent=entry.points+' Punkte';row.append(name,points);podium.append(row);});resultsBox.append(podium);
+   }
   }
  }
  const estimatedServerNow=Number(room.serverNow)||Date.now();
