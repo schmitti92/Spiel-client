@@ -9,7 +9,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
  function sync(){
   if(!alive||!ready)return;
   const c=current();if(!c)return;
-  const {room,ch}=c;if(activeChallengeId!==ch.id){activeChallengeId=ch.id;configured=false;lastSeq=0;lastSend=0;lastTimeout=false;queuedState=null;lastTickRequest=0;}const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
+  const {room,ch}=c;if(activeChallengeId!==ch.id){activeChallengeId=ch.id;configured=false;lastSeq=0;lastSend=0;lastTimeout=false;queuedState=null;lastTickRequest=0;tickPending=false;}const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
   const mine=room.players.find(p=>p.me)?.seat,localSeat=seats.indexOf(mine);
   if(localSeat<0)return;
   if(!configured){frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
@@ -20,7 +20,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:expectedId}).then(r=>{if(alive&&current()?.ch.id===expectedId&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{tickPending=false});
   }
   if(configured&&ch.phase==='countdown'&&Date.now()+offset>ch.startAt+180000&&!lastTimeout){
-   lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:ch.id}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(e=>{lastTimeout=false;onError(e)});
+   lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:ch.id}).then(r=>{if(alive&&current()?.ch.id===ch.id&&r?.room)acceptRoom(r.room)}).catch(e=>{lastTimeout=false;if(alive)onError(e)});
   }
  }
  async function onMessage(e){
