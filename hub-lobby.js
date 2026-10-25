@@ -188,7 +188,7 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-progress.original-edge-playing:not(.hidden){position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;display:block!important;margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#061624!important;box-shadow:none!important;z-index:10000!important}
 #challenge-progress.original-edge-playing:not(.hidden)::before,#challenge-progress.original-edge-playing:not(.hidden)::after{display:none!important}
 #challenge-progress.original-edge-playing:not(.hidden)>:not(#challenge-original-frame):not(#preisjaeger-original-online):not(#challenge-fullscreen-button):not(#challenge-single-actions):not(#challenge-next){display:none!important}
-#challenge-progress.original-edge-playing:not(.hidden)>#challenge-original-frame:not([hidden]),#challenge-progress.original-edge-playing:not(.hidden)>#preisjaeger-original-online:not([hidden]){position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important}
+#challenge-progress.original-edge-playing:not(.hidden)>#challenge-original-frame:not([hidden]),#challenge-progress.original-edge-playing.preisjaeger-original-playing:not(.hidden)>#preisjaeger-original-online:not([hidden]){position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important}
 #challenge-progress.original-edge-playing:not(.hidden)>#challenge-fullscreen-button:not([hidden]){position:fixed!important;top:calc(4px + env(safe-area-inset-top,0px))!important;right:calc(4px + env(safe-area-inset-right,0px))!important;left:auto!important;bottom:auto!important;z-index:10120!important;opacity:.55;padding:4px 8px!important;font-size:12px!important}
 #challenge-progress.original-edge-playing:not(.hidden)>#challenge-single-actions:not([hidden]){position:fixed!important;z-index:10110!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%)!important;display:flex!important;gap:12px!important;width:min(92vw,620px)!important;padding:7px 10px!important;border-radius:20px!important;background:#071b2ce8!important}
 #challenge-progress.original-edge-playing:not(.hidden)>#challenge-single-actions:not([hidden]) button{flex:1;min-width:0}
@@ -374,6 +374,7 @@ function ensurePreisjaegerOriginalFrame(){
  if(frame)return frame;
  frame=document.createElement('iframe');
  frame.id='preisjaeger-original-online';
+ frame.hidden=true;
  frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
  frame.setAttribute('referrerpolicy','same-origin');
  frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
@@ -384,6 +385,7 @@ function ensurePreisjaegerOriginalFrame(){
 function syncPreisjaegerOriginal(ch){
  const frame=ensurePreisjaegerOriginalFrame();
  const active=ch?.order?.[ch.index]==='preisjaeger'&&(ch.phase==='countdown'||ch.phase==='finished')&&!!ch.preisjaeger;
+ frame.hidden=!active;
  frame.style.display=active?'block':'none';
  el('challenge-preisjaeger').hidden=true;
  if(!active)return;
