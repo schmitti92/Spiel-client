@@ -152,7 +152,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
     window.LavaArenaOnlineConfig={challengeId:m.challengeId,localSeat:m.localSeat,firstSnapshot:false};document.querySelector('#lava-version').textContent='V28 ONLINE';remoteTargets.clear();onlineSeq=0;onlineLastReport=0;
     document.querySelector('#count').value=String(m.seats.length);
     document.querySelector('#humans').value='1';
-    init();players.forEach((p,i)=>{p.human=i===m.localSeat;});document.querySelector('#pause').style.display='none';
+    init();players.forEach((p,i)=>{p.human=i===m.localSeat;if(i!==m.localSeat&&Array.isArray(m.botSeats)&&m.botSeats.includes(m.seats[i]))remoteTargets.set(i,{x:p.x,y:p.y,jump:0,at:performance.now(),testBot:true,seq:0,lastMovedAt:performance.now()});});document.querySelector('#pause').style.display='none';
     document.querySelector('#again').style.display='none';
     document.querySelector('#touch').classList.add('active');
    }
