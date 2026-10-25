@@ -182,3 +182,7 @@ test('Joining or leaving a room cancels pending restoration retries',()=>{
  assert.match(js,/function activateRoom\(result\)\{if\(!result\?\.code\)return;cancelPendingRecovery\(\);setRoomCode/);
  assert.match(js,/function leaveView\(\)\{cancelPendingRecovery\(\);pollStop\(\)/);
 });
+
+test('Late failed recovery responses do not affect a newly active room',()=>{
+ assert.match(js,/catch\(e\)\{if\(pendingRoomRecovery!==requestedCode\|\|room\|\|code\)return;if\(\['ROOM_NOT_FOUND','NOT_A_MEMBER'\]/);
+});
