@@ -3,7 +3,7 @@
 'use strict';
 const input=new URL(location.href).searchParams;
 const code=String(input.get('room')||'').toUpperCase();
-const codeValid=/^[A-HJ-NP-Z2-9]{6}$/.test(code);
+const codeValid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
 const chooseAnother=input.get('choose')==='1';
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge'};
@@ -109,11 +109,11 @@ for(const button of buttons){
 }
 const quickForm=byId('online-quick-room'),quickCode=byId('online-quick-code'),quickJoin=byId('online-quick-join'),quickCreate=byId('online-quick-create');
 let quickBusy=false;
-quickCode?.addEventListener('input',()=>{quickCode.value=quickCode.value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,'').slice(0,6);});
+quickCode?.addEventListener('input',()=>{quickCode.value=quickCode.value.toUpperCase().replace(/[^0-9A-HJ-NP-Z]/g,'').slice(0,6);});
 async function quickRoom(action){
  if(quickBusy)return;
  const nextCode=quickCode.value.trim().toUpperCase();
- if(action==='join'&&!/^[A-HJ-NP-Z2-9]{6}$/.test(nextCode)){status('Bitte einen gültigen sechsstelligen Raumcode eingeben.',true);quickCode.focus();return;}
+ if(action==='join'&&!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(nextCode)){status('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.',true);quickCode.focus();return;}
  quickBusy=true;quickJoin.disabled=true;quickCreate.disabled=true;
  status(action==='join'?'Raum wird betreten …':'Neuer Raum wird erstellt …');
  try{
