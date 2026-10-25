@@ -176,3 +176,9 @@ test('Temporary room restoration failures use bounded exponential retry delays',
  assert.match(js,/recoveryRetryTimer=setTimeout\(\(\)=>\{recoveryRetryTimer=null;void recoverPendingRoom\(\);\},delay\)/);
  assert.match(js,/pendingRoomRecovery=null;clearRecoveryRetry\(\);activateRoom\(r\);pollStart\(\)/);
 });
+
+test('Joining or leaving a room cancels pending restoration retries',()=>{
+ assert.match(js,/function cancelPendingRecovery\(\)\{pendingRoomRecovery=null;clearRecoveryRetry\(\);\}/);
+ assert.match(js,/function activateRoom\(result\)\{if\(!result\?\.code\)return;cancelPendingRecovery\(\);setRoomCode/);
+ assert.match(js,/function leaveView\(\)\{cancelPendingRecovery\(\);pollStop\(\)/);
+});
