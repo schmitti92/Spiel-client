@@ -437,7 +437,9 @@ window.addEventListener('message',event=>{
   for(const entry of m.players){
    if(!Number.isInteger(entry.index)||entry.index<0||entry.index>=players.length)continue;
    const p=players[entry.index];
-   if(!p||p.state==='jump'||p.state==='await-server')continue;
+   if(!p)continue;
+   // Never overwrite an in-flight jump with a stale snapshot. Reconcile again when it completes.
+   if(p.state==='jump'||p.state==='await-server')continue;
    if(Number.isInteger(entry.falls))p.falls=entry.falls;
    // Restore the correct stone position after reconnect, not just the row.
    const history=Array.isArray(m.moves)?m.moves:[];
