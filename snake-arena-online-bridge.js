@@ -4,12 +4,12 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
  frame.title='Snake Arena Online';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  container.replaceChildren(frame);
- let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,offset=0,queuedState=null,activeChallengeId=null,lastTickRequest=0,tickPending=false;
+ let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,offset=0,queuedState=null,activeChallengeId=null,lastTickRequest=0,tickPending=false,retryAfter=0;
  function current(){const room=getRoom(),ch=room?.match?.challenge;return ch?.order?.[ch.index]==='snake-arena'?{room,ch}:null}
  function sync(){
   if(!alive||!ready)return;
   const c=current();if(!c)return;
-  const {room,ch}=c;if(activeChallengeId!==ch.id){activeChallengeId=ch.id;configured=false;lastSeq=0;lastSend=0;lastTimeout=false;queuedState=null;lastTickRequest=0;tickPending=false;}const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
+  const {room,ch}=c;if(activeChallengeId!==ch.id){activeChallengeId=ch.id;configured=false;lastSeq=0;lastSend=0;lastTimeout=false;queuedState=null;lastTickRequest=0;tickPending=false;retryAfter=0;}const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
   const mine=room.players.find(p=>p.me)?.seat,localSeat=seats.indexOf(mine);
   if(localSeat<0)return;
   if(!configured){const savedSeq=ch.snake?.players?.find(p=>p.seat===mine)?.seq||0;frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,startAt:ch.startAt,serverOffset:offset,initialSeq:savedSeq,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
@@ -29,11 +29,11 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
   if(m.type==='snake-arena:configured'){configured=true;sync();return;}
   if(m.type!=='snake-arena:state'||c.ch.phase!=='countdown'||Date.now()+offset<c.ch.startAt||!Number.isSafeInteger(m.seq)||m.seq<=lastSeq)return;
-  if(pending||Date.now()-lastSend<180){queuedState=m;if(!pending)setTimeout(()=>{if(!queuedState||!alive)return;const q=queuedState;queuedState=null;onMessage({origin:location.origin,source:frame.contentWindow,data:q});},Math.max(30,190-(Date.now()-lastSend)));return;}
+  if(pending||Date.now()-lastSend<180||Date.now()<retryAfter){queuedState=m;if(!pending)setTimeout(()=>{if(!queuedState||!alive)return;const q=queuedState;queuedState=null;onMessage({origin:location.origin,source:frame.contentWindow,data:q});},Math.max(30,190-(Date.now()-lastSend),retryAfter-Date.now()));return;}
   const p=m.player;if(!p)return;
   pending=true;lastSend=Date.now();
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,...p});if(r?.room&&alive&&current()?.ch.id===c.ch.id){lastSeq=Math.max(lastSeq,m.seq);acceptRoom(r.room)}}
-  catch(error){if(alive){if(!queuedState||queuedState.seq<m.seq)queuedState=m;onError(error)}}finally{pending=false;if(queuedState&&alive){const q=queuedState;queuedState=null;queueMicrotask(()=>onMessage({origin:location.origin,source:frame.contentWindow,data:q}));}}
+  catch(error){if(alive){if(!queuedState||queuedState.seq<m.seq)queuedState=m;retryAfter=Date.now()+1200;onError(error)}}finally{pending=false;if(queuedState&&alive){const q=queuedState;queuedState=null;queueMicrotask(()=>onMessage({origin:location.origin,source:frame.contentWindow,data:q}));}}
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;configured=false;sync()});
