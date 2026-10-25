@@ -33,7 +33,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   const p=m.player;if(!p)return;
   pending=true;lastSend=Date.now();
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,...p});if(r?.room&&alive&&current()?.ch.id===c.ch.id){lastSeq=Math.max(lastSeq,m.seq);acceptRoom(r.room)}}
-  catch(error){if(alive){queuedState=queuedState&&queuedState.seq>m.seq?queuedState:m;onError(error)}}finally{pending=false;if(queuedState&&alive){const q=queuedState;queuedState=null;queueMicrotask(()=>onMessage({origin:location.origin,source:frame.contentWindow,data:q}));}}
+  catch(error){if(alive){if(!queuedState||queuedState.seq<m.seq)queuedState=m;onError(error)}}finally{pending=false;if(queuedState&&alive){const q=queuedState;queuedState=null;queueMicrotask(()=>onMessage({origin:location.origin,source:frame.contentWindow,data:q}));}}
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;configured=false;sync()});
