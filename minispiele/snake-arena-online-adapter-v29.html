@@ -311,7 +311,7 @@ window.addEventListener('message',event=>{
   window.SnakeArenaOnlineConfig={challengeId:m.challengeId,seats:m.seats,localSeat:m.localSeat,startAt:Number(m.startAt)||0,serverOffset:Number(m.serverOffset)||0,seq:0,completed:false};
   $('mode').value='timed';init();$('status').textContent='🌐 Online-Spiel läuft';for(const id of ['start','pause','reset','settingsBtn'])$(id).hidden=true;run();
   parent.postMessage({type:'snake-arena:configured',challengeId:m.challengeId},event.origin);
-  if(!window.snakeOnlineTicker){window.snakeOnlineTicker=setInterval(()=>{const c=window.SnakeArenaOnlineConfig;if(!c||!started||ended||c.completed||!games[0]?.alive)return;sendSnakeOnlineState();},250);}
+  if(!window.snakeOnlineTicker){window.snakeOnlineTicker=setInterval(()=>{const c=window.SnakeArenaOnlineConfig;if(!c||!started||ended||c.completed||!games[0]?.alive)return;if((games[0].queue[0]||games[0].dir)!==c.lastSentDirection){c.lastSentDirection=games[0].queue[0]||games[0].dir;sendSnakeOnlineState();}},100);}
  }
  if(m?.type==='snake-arena:snapshot'&&window.SnakeArenaOnlineConfig?.challengeId===m.challengeId&&Array.isArray(m.players)){
   // Every participant has independent server-authoritative food.
