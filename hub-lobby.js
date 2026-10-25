@@ -353,13 +353,13 @@ function ensurePreisjaegerOriginalFrame(){
  frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
  frame.setAttribute('referrerpolicy','same-origin');
  frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
- frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=49';
+ frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=50';
  el('challenge-progress').append(frame);
  return frame;
 }
 function syncPreisjaegerOriginal(ch){
  const frame=ensurePreisjaegerOriginalFrame();
- const active=ch?.order?.[ch.index]==='preisjaeger'&&ch.phase==='countdown'&&!!ch.preisjaeger;
+ const active=ch?.order?.[ch.index]==='preisjaeger'&&(ch.phase==='countdown'||ch.phase==='finished')&&!!ch.preisjaeger;
  frame.style.display=active?'block':'none';
  el('challenge-preisjaeger').hidden=true;
  if(!active)return;
@@ -367,7 +367,7 @@ function syncPreisjaegerOriginal(ch){
  const pj=ch.preisjaeger;
  const mySeat=room.players.find(p=>p.me)?.seat;
  const state={
-  challengeId:ch.id,round:pj.round,startsInMs:Math.max(0,(ch.startAt||0)-(room.serverNow||Date.now())),product:{
+  challengeId:ch.id,round:pj.round,finished:ch.phase==='finished',totals:ch.phase==='finished'?(ch.totals||[]):[],startsInMs:Math.max(0,(ch.startAt||0)-(room.serverNow||Date.now())),product:{
    name:pj.product?.name||'',category:pj.product?.category||'',shop:pj.product?.shop||'',
    image:pj.product?.image||'',icon:pj.product?.icon||'🛒'
   },
@@ -462,7 +462,7 @@ function renderChallengeProgress(){
  el('challenge-select').hidden=!room.host;
  if(ch.phase==='finished'&&ch.order.length===1&&!room.host){el('challenge-progress-status').textContent='🏁 Partie beendet. Der Host kann erneut spielen oder ein anderes Minispiel wählen.';}
  const isPreisjaeger=ch.order[index]==='preisjaeger';
- box.classList.toggle('preisjaeger-original-playing',isPreisjaeger&&ch.phase==='countdown');
+ box.classList.toggle('preisjaeger-original-playing',isPreisjaeger&&(ch.phase==='countdown'||ch.phase==='finished'));
  if(!isPreisjaeger)pjTimeoutKey='';
 
  const pj=ch.preisjaeger;
