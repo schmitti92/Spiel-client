@@ -162,3 +162,10 @@ test('Room recovery tolerates delayed Firebase authentication initialization',()
  assert.match(js,/if\(!activeProfile\(\)&&elapsed<30000\)return/);
  assert.doesNotMatch(js,/if\(!activeProfile\(\)&&elapsed<12000\)return/);
 });
+
+test('Delayed Firebase login can recover the original room without duplicate fetches',()=>{
+ assert.match(js,/let pendingRoomRecovery=null,recoveryInFlight=false/);
+ assert.match(js,/if\(!pendingRoomRecovery\|\|room\|\|code\|\|!activeProfile\(\)\|\|recoveryInFlight\)return/);
+ assert.match(js,/if\(pendingRoomRecovery!==requestedCode\|\|room\|\|code\|\|r\?\.code!==requestedCode\)return/);
+ assert.match(js,/render\(\);if\(uid\)void recoverPendingRoom\(\)/);
+});
