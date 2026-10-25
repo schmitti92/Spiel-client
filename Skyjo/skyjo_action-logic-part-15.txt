@@ -108,13 +108,14 @@ function bestStarBonus(p){const groups=[];for(let r=0;r<3;r++){const idx=[r*4,r*
 function liveJokerEndValueForGrid(p,idx){
  const c=p?.grid?.[idx];
  if(!c||c.type!=='star')return c?cardPoints(c):0;
- const row=Math.floor(idx/4),col=idx%4,values=[];
- for(let k=0;k<4;k++){
-   const x=p.grid[row*4+k];
+ const cols=state?.layoutMode==='xl'?5:4,rows=3;
+ const row=Math.floor(idx/cols),col=idx%cols,values=[];
+ for(let k=0;k<cols;k++){
+   const x=p.grid[row*cols+k];
    if(x&&x.type==='number')values.push(Number(x.value)||0)
  }
- for(let k=0;k<3;k++){
-   const x=p.grid[k*4+col];
+ for(let k=0;k<rows;k++){
+   const x=p.grid[k*cols+col];
    if(x&&x.type==='number')values.push(Number(x.value)||0)
  }
  return values.length?Math.min(...values):0
