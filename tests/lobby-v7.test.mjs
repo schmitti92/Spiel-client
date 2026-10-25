@@ -337,8 +337,8 @@ test('Zeitgefühl V56 prevents late stop and refreshes iframe bridge',()=>{
  const bridge=text('zeitgefuehl-online-bridge.js');
  assert.match(original,/Zeit abgelaufen – Server wertet aus/);
  assert.match(original,/if\(button\)button\.disabled=true/);
- assert.match(bridge,/zeitgefuehl-original\.html\?v=7/);
- assert.match(js,/zeitgefuehl-online-bridge\.js\?v=7/);
+ assert.match(bridge,/zeitgefuehl-original\.html\?v=8/);
+ assert.match(js,/zeitgefuehl-online-bridge\.js\?v=8/);
 });
 
 
@@ -361,6 +361,15 @@ test('Zeitgefühl V58 results display ties and missed stops accurately',()=>{
  assert.match(original,/shared=i>0&&Number\(p\.deltaMs\)===Number\(sorted\[0\]\?\.deltaMs\)/);
  assert.match(original,/Nicht gestoppt/);
  assert.match(original,/\.scene\.online-play \.results/);
- assert.match(bridge,/zeitgefuehl-original\.html\?v=7/);
- assert.match(js,/zeitgefuehl-online-bridge\.js\?v=7/);
+ assert.match(bridge,/zeitgefuehl-original\.html\?v=8/);
+ assert.match(js,/zeitgefuehl-online-bridge\.js\?v=8/);
+});
+
+test('Zeitgefühl V59 podium reserves separate space for replay controls',()=>{
+ const original=text('zeitgefuehl-original.html');
+ assert.match(original,/\.scene\.online-play\.online-results/);
+ assert.match(original,/scene\.classList\.add\('online-play','online-results'\)/);
+ assert.match(original,/The shared lobby provides replay and game-selection controls/);
+ assert.match(js,/#challenge-single-actions:not\(\[hidden\]\)/);
+ assert.match(js,/background:#071b2ce8/);
 });
