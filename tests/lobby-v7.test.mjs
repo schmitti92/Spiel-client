@@ -72,3 +72,18 @@ test('SKYJO reference sidebar shows standings without exposing current card sums
  assert.match(html,/skyjo_action/);
  assert.doesNotMatch(html,/meta-chip open-chip/);
 });
+
+// Guard the nine original games and the landscape tablet layout against regressions.
+test('Party Challenge renders exactly nine unique original game choices',()=>{
+ const source=js.match(/const singleGames=\[([\s\S]*?)\];/);
+ assert.ok(source,'missing minigame registry');
+ const gameIds=[...source[1].matchAll(/\['([^']+)','[^']+','[^']+'\]/g)].map(m=>m[1]);
+ assert.equal(gameIds.length,9);
+ assert.equal(new Set(gameIds).size,9);
+ assert.match(js,/if\(seen\.has\(button\.dataset\.minigame\)\)button\.remove\(\)/);
+});
+test('Tablet landscape card sizing remains bounded and cache version matches',()=>{
+ assert.match(css,/@media \(min-width:901px\) and \(max-height:850px\) and \(orientation:landscape\)/);
+ assert.match(css,/height:clamp\(91px,12\.5dvh,111px\)/);
+ assert.match(html,/hub-lobby-v7\.css\?v=20261025-premium-18/);
+});
