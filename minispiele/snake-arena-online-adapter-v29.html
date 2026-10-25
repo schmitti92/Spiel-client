@@ -262,7 +262,7 @@ function draw(g,c,scale){
  for(const particle of g.particles){const x=(particle.x+.5)*CELL,y=(particle.y+.5)*CELL;c.globalAlpha=Math.max(0,particle.life);c.fillStyle='#ffe98d';c.font='bold 22px system-ui';c.textAlign='center';c.fillText('+'+particle.value,x,y-25*(1-particle.life));c.globalAlpha=1;particle.life-=.015}g.particles=g.particles.filter(p=>p.life>0);
  if(!g.alive){c.fillStyle='#04111edb';c.fillRect(0,0,BW,BH);c.fillStyle='#fff';c.font='bold 35px system-ui';c.textAlign='center';c.fillText('AUSGESCHIEDEN',BW/2,BH/2)}
 }
-function drawAll(){if(window.SnakeArenaOnlineConfig){draw(games[0],ctx,1);for(const g of games.slice(1)){drawSnakeOverlay(g,ctx);draw(g,g.context,2/3)}return;}draw(games[0],ctx,1);for(const g of games.slice(1))draw(g,g.context,2/3)}
+function drawAll(){if(window.SnakeArenaOnlineConfig){draw(games[0],ctx,1);for(const g of games.slice(1)){drawSnakeOverlay(g,ctx);}return;}draw(games[0],ctx,1);for(const g of games.slice(1))draw(g,g.context,2/3)}
 function drawSnakeOverlay(g,c){if(!g.alive)return;c.save();c.fillStyle=g.color;c.strokeStyle='#05161c';c.lineWidth=2;for(const p of g.points){c.beginPath();c.roundRect(p.x*CELL+2,p.y*CELL+2,CELL-4,CELL-4,6);c.fill();c.stroke()}c.restore()}
 // Eigenes Touch-Feld für jeden menschlichen Mitspieler (auch Gegner-Vorschau).
 function attachSnakeTouch(canvas,g){let gesture=null;canvas.style.touchAction='none';canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();gesture={id:e.pointerId,x:e.clientX,y:e.clientY};try{canvas.setPointerCapture(e.pointerId)}catch{}});canvas.addEventListener('pointermove',e=>{if(!gesture||gesture.id!==e.pointerId)return;e.preventDefault();const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;if(Math.max(Math.abs(dx),Math.abs(dy))<18||Math.max(Math.abs(dx),Math.abs(dy))<Math.min(Math.abs(dx),Math.abs(dy))*1.28)return;requestDirection(g,Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));gesture.x=e.clientX;gesture.y=e.clientY});for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,e=>{if(gesture?.id===e.pointerId)gesture=null})}
@@ -311,10 +311,10 @@ window.addEventListener('message',event=>{
   window.SnakeArenaOnlineConfig={challengeId:m.challengeId,seats:m.seats,localSeat:m.localSeat,seq:0,completed:false};
   $('mode').value='timed';init();$('status').textContent='🌐 Online-Spiel läuft';for(const id of ['start','pause','reset','settingsBtn'])$(id).hidden=true;run();
   parent.postMessage({type:'snake-arena:configured',challengeId:m.challengeId},event.origin);
-  if(!window.snakeOnlineTicker){window.snakeOnlineTicker=setInterval(()=>{const c=window.SnakeArenaOnlineConfig;if(!c||!started||ended||c.completed)return;sendSnakeOnlineState();},250);}
+  if(!window.snakeOnlineTicker){window.snakeOnlineTicker=setInterval(()=>{const c=window.SnakeArenaOnlineConfig;if(!c||!started||ended||c.completed||!games[0]?.alive)return;sendSnakeOnlineState();},250);}
  }
  if(m?.type==='snake-arena:snapshot'&&window.SnakeArenaOnlineConfig?.challengeId===m.challengeId&&Array.isArray(m.players)){
-  if(m.food)for(const g of games)g.food=m.food;
+  for(const g of games)g.food=m.food||null;
   const c=window.SnakeArenaOnlineConfig;
   for(let i=0;i<m.players.length;i++){
    const q=m.players[(c.localSeat+i)%m.players.length],g=games[i];
