@@ -51,7 +51,7 @@ test('Reconnect cannot overwrite newer hub revisions or create overlapping HTTP 
  assert.match(js,/Number\(next\.revision\)<Number\(room\.revision\)/);
  assert.match(js,/pollInFlight/);
  assert.match(js,/if\(code!==requestedCode\)return/);
- assert.match(js,/hubSocket===socket&&data\?\.type==='room'/);
+ assert.match(js,/hubSocket===socket&&code===subscribedCode&&data\?\.type==='room'/);
  assert.match(js,/acceptRoom\(data\.room\)/);
 });
 
