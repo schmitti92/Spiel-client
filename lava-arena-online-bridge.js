@@ -1,6 +1,6 @@
 export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/lava-arena-online-adapter-v28.html?v=22';
+ frame.src='./minispiele/lava-arena-online-adapter-v28.html?v=23';
  frame.title='Lava Arena Online';frame.style.cssText='width:100%;height:100%;border:0;display:block';frame.setAttribute('allow','fullscreen');
  container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,seqOffset=null,challengeKey='',clockOffset=0,requestEpoch=0,configuredSeat=-1,configuredSeatsKey='',lastServerNow=null,lastTick=0,tickPending=false;
