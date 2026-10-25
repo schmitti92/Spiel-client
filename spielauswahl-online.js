@@ -9,7 +9,7 @@ const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge'};
 const byId=id=>document.getElementById(id);
 const buttons=[...document.querySelectorAll('[data-select-game]')];
-let loading=false,choosing=false,room=null,notifiedUid=null;
+let loading=false,choosing=false,room=null,notifiedUid=null,activeSelectionUid=null;
 const roomLocation=game=>game==='partychallenge'?'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1':game==='skyjo'?'Skyjo/skyjo_start.html?room='+encodeURIComponent(code):game==='barikade'?'Barikade/barikade_start.html?room='+encodeURIComponent(code):game==='business'?'Business/business_start.html?room='+encodeURIComponent(code):game==='kreuz'?'KreuzKunter/kreuzkunter_start.html?room='+encodeURIComponent(code):'hub-lobby.html?room='+encodeURIComponent(code)+'&stage=1';
 function status(message,error=false){
  const box=byId('online-notice');
@@ -136,7 +136,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refre
  // HTTP polling stays as a 60s recovery fallback if the stream is interrupted.
  let selectionSocket=null,retrySelectionSocket=null,selectionHeartbeat=null,selectionStreamReady=false;
  function stopSelectionStream(){
-   selectionStreamReady=false;
+   selectionStreamReady=false;activeSelectionUid=null;
    if(retrySelectionSocket){clearTimeout(retrySelectionSocket);retrySelectionSocket=null;}
    if(selectionHeartbeat){clearInterval(selectionHeartbeat);selectionHeartbeat=null;}
    if(selectionSocket){const old=selectionSocket;selectionSocket=null;old.onclose=null;try{old.close();}catch(_){}}
@@ -145,7 +145,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refre
    if(!codeValid||document.hidden||!user()||selectionSocket)return;
    let socket;
    try{socket=new WebSocket(base.replace(/^http/i,'ws')+'/hub');}catch(_){return;}
-   selectionSocket=socket;
+   selectionSocket=socket;activeSelectionUid=user()?.uid||null;
    let lastPong=Date.now();
    socket.onopen=async()=>{
      try{
@@ -162,6 +162,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refre
    socket.onmessage=event=>{
      let data;try{data=JSON.parse(event.data);}catch(_){return;}
      if(selectionSocket!==socket)return;
+     if(!user()||user().uid!==activeSelectionUid){stopSelectionStream();return;}
      if(data?.type==='pong')lastPong=Date.now();
      if(data?.type==='room'&&data.room?.code===code){
        lastPong=Date.now();selectionStreamReady=true;update(data.room);
@@ -179,7 +180,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refre
  }
  window.addEventListener('spielonline-change',()=>{
    const person=user();
-   if(!person||notifiedUid&&person.uid!==notifiedUid)stopSelectionStream();
+   if(!person||(activeSelectionUid&&person.uid!==activeSelectionUid))stopSelectionStream();
    if(person)startSelectionStream();
  });
  document.addEventListener('visibilitychange',()=>{
