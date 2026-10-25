@@ -4,12 +4,12 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
  frame.title='Snake Arena Online';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  container.replaceChildren(frame);
- let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,offset=0,queuedState=null;
+ let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,offset=0,queuedState=null,activeChallengeId=null;
  function current(){const room=getRoom(),ch=room?.match?.challenge;return ch?.order?.[ch.index]==='snake-arena'?{room,ch}:null}
  function sync(){
   if(!alive||!ready)return;
   const c=current();if(!c)return;
-  const {room,ch}=c,seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
+  const {room,ch}=c;if(activeChallengeId!==ch.id){activeChallengeId=ch.id;configured=false;lastSeq=0;lastSend=0;lastTimeout=false;queuedState=null;}const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
   const mine=room.players.find(p=>p.me)?.seat,localSeat=seats.indexOf(mine);
   if(localSeat<0)return;
   if(!configured){frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
