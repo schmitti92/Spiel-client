@@ -1,6 +1,6 @@
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=22&session='+Date.now();
+ frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=23&session='+Date.now();
  frame.title='Snake Arena Online';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  container.replaceChildren(frame);
