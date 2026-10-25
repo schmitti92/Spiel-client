@@ -253,7 +253,7 @@ test('All nine premium illustrations are self-contained SVG assets',()=>{
 test('Premium settings navigation points to the active game controls',()=>{
  assert.match(html,/data-lobby-settings/);
  assert.match(js,/settingsNav\.setAttribute\('href',active\?'#challenge-settings-panel':'#ready-panel'\)/);
- assert.match(js,/id='challenge-settings-panel'/);
+ assert.match(js,/box\.id='challenge-settings-panel'/);
  assert.match(html,/id="ready-panel"/);
 });
 
