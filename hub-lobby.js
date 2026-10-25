@@ -398,7 +398,7 @@ function renderChallengeProgress(){
   const mySeat=room.players.find(p=>p.me)?.seat,done=pj.answered?.includes(mySeat);
   el('pj-guess').disabled=!!done||ch.phase!=='countdown'||room.serverNow<ch.startAt;
   el('pj-submit').disabled=!!done||ch.phase!=='countdown'||room.serverNow<ch.startAt;
-  el('pj-feedback').textContent=done?'✓ Deine geheime Schätzung wurde gespeichert.':'';
+  el('pj-feedback').textContent=done?'🔒 Deine Schätzung: '+(typeof pj.myGuess==='number'?pj.myGuess.toLocaleString('de-DE',{style:'currency',currency:'EUR'}):'gespeichert')+' · Warte auf die Mitspieler.':'';
   el('pj-opponents').textContent=(room.players||[]).filter(m=>m.participating).map(m=>(pj.answered||[]).includes(m.seat)?'✓ '+m.name:'⏳ '+m.name).join('  ·  ');
   const previous=pj.history?.[pj.history.length-1];
   let reveal=el('pj-last-reveal');
