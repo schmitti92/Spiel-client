@@ -29,7 +29,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
   if(m.type==='snake-arena:configured'){configured=true;sync();return;}
   if(m.type!=='snake-arena:state'||c.ch.phase!=='countdown'||Date.now()+offset<c.ch.startAt||!Number.isSafeInteger(m.seq)||m.seq<=lastSeq)return;
-  if(pending||Date.now()-lastSend<180||Date.now()<retryAfter){queuedState=m;if(!pending)setTimeout(()=>{if(!queuedState||!alive)return;const q=queuedState;queuedState=null;onMessage({origin:location.origin,source:frame.contentWindow,data:q});},Math.max(30,190-(Date.now()-lastSend),retryAfter-Date.now()));return;}
+  if(pending||Date.now()-lastSend<180||Date.now()<retryAfter){if(!queuedState||m.seq>=queuedState.seq)queuedState=m;if(!pending)setTimeout(()=>{if(!queuedState||!alive)return;const q=queuedState;queuedState=null;onMessage({origin:location.origin,source:frame.contentWindow,data:q});},Math.max(30,190-(Date.now()-lastSend),retryAfter-Date.now()));return;}
   const p=m.player;if(!p)return;
   pending=true;lastSend=Date.now();
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,...p});if(r?.room&&alive&&current()?.ch.id===c.ch.id){lastSeq=Math.max(lastSeq,m.seq);acceptRoom(r.room)}}
