@@ -131,7 +131,7 @@ async function request(path,method='GET',data){
 function setRoomCode(next){code=next;const u=new URL(location.href);if(code)u.searchParams.set('room',code);else u.searchParams.delete('room');history.replaceState(null,'',u);}
 function acceptRoom(next){
  if(!next||next.code!==code)return false;
- if(room?.code===next.code&&Number(next.revision)<Number(room.revision))return false;
+ if(room?.code===next.code&&Number.isFinite(Number(next.revision))&&Number.isFinite(Number(room.revision))&&Number(next.revision)<Number(room.revision))return false;
  room=next;render();return true;
 }
 function activateRoom(result){if(!result?.code)return;setRoomCode(result.code);acceptRoom(result);}
@@ -661,7 +661,7 @@ function renderChallengeSetup(showStage){
    btn.addEventListener('click',async()=>{
     if(!room?.host||room.phase!=='preparing'||challengeSettingsBusy)return;
     challengeSettingsBusy=true;btn.disabled=true;
-    try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:1,selectedGame:id});acceptRoom(response.room);el('challenge-feedback').textContent='✓ '+title+' ausgewählt! Alle Spieler können sich bereit melden.';}
+    try{const requestedCode=room.code;const response=await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count:1,selectedGame:id});if(code!==requestedCode)return;acceptRoom(response.room);el('challenge-feedback').textContent='✓ '+title+' ausgewählt! Alle Spieler können sich bereit melden.';}
     catch(e){el('challenge-feedback').textContent='Auswahl fehlgeschlagen: '+e.message;}
     finally{btn.disabled=false;challengeSettingsBusy=false;}
    });grid.append(btn);
