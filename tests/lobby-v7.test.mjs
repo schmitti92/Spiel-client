@@ -144,3 +144,9 @@ test('Closed socket cannot schedule a reconnect for an obsolete room',()=>{
  assert.match(js,/if\(code&&room&&activeProfile\(\)&&code===subscribedCode\)retrySocket=setTimeout/);
  assert.match(js,/if\(code===subscribedCode\)startWatch\(\)/);
 });
+
+test('Stuck WebSocket handshakes time out and release reconnect fallback',()=>{
+ assert.match(js,/const connectTimeout=setTimeout\(\(\)=>\{if\(hubSocket===socket&&socket\.readyState===0\)socket\.close\(\);\},15000\)/);
+ assert.match(js,/socket\.onopen=async\(\)=>\{\s*clearTimeout\(connectTimeout\)/);
+ assert.match(js,/socket\.onclose=\(\)=>\{\s*clearTimeout\(connectTimeout\)/);
+});
