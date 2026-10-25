@@ -214,3 +214,19 @@ header{background:linear-gradient(90deg,#052947fa,#063453ef);border:1px solid #4
 #challenge-premium #challenge-marathon{min-height:45px}
 #challenge-premium #challenge-bots{background:linear-gradient(180deg,#09b878,#067853)!important;border:1px solid #50e4a7!important;box-shadow:0 3px 15px #00b57a55}
 @media(max-width:600px){#challenge-single-grid>button .mini-players{padding:2px 5px}#challenge-single-grid>button .mini-online{font-size:10px}#challenge-single-grid>button .mini-art{font-size:32px!important}}
+
+/* V6: individual offline-friendly SVG illustrations for all nine original minigames */
+#challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/zeitgefuehl.svg")!important}
+#challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/recheninsel.svg")!important}
+#challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/huetchen.svg")!important}
+#challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/maulwurf.svg")!important}
+#challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/fluss.svg")!important}
+#challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/lava.svg")!important}
+#challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/snake.svg")!important}
+#challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/bomber.svg")!important}
+#challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#021b2bef 0%,#073e5840 55%,transparent 85%),url("Assets/challenge/preis.svg")!important}
+#challenge-single-grid>button .mini-art{visibility:hidden!important}
+#challenge-single-grid>button{background-size:cover!important;background-repeat:no-repeat!important}
+#challenge-single-grid>button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#challenge-premium>div:first-child{background:linear-gradient(100deg,#70411f,#0a3a60)!important;border:2px solid #d99b4b!important}
+#challenge-premium #challenge-single-grid>button strong{color:white!important;text-shadow:0 2px 7px #000,0 1px 2px #000!important}
