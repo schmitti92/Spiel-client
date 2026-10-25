@@ -64,6 +64,15 @@ function startWatch(){
  };
  socket.onerror=()=>{}; // close event triggers HTTP fallback and retry
 }
+async function refreshRoomAfterReconnect(){
+ if(!code||!room||!activeProfile()||pollInFlight||operation)return;
+ const requestedCode=code;pollInFlight=true;
+ try{const result=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}
+ catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}
+ finally{pollInFlight=false;}
+}
+window.addEventListener('online',()=>{if(!code||!room)return;if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}void refreshRoomAfterReconnect();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden||!code||!room)return;if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}void refreshRoomAfterReconnect();});
 function enterKreuz(){
  if(room?.phase!=='playing'||room.match?.game!=='kreuz'||!room.match.participating)return;
  const match=room.match;
