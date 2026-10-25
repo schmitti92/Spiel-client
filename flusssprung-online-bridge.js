@@ -68,9 +68,12 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   pendingJump=true;
   try{
    const r=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-flusssprung-jump','POST',{challengeId:ch.id,row,col});
-   if(!alive||getRoom()?.match?.challenge?.id!==ch.id||getRoom()?.match?.challenge?.index!==ch.index||getRoom()?.match?.challenge?.phase!=='countdown'){pendingJump=false;return;}
-   frame.contentWindow?.postMessage({type:'flusssprung:jump-accepted',col},location.origin);
+   if(!alive||getRoom()?.match?.challenge?.id!==ch.id||getRoom()?.match?.challenge?.index!==ch.index){return;}
+   // The final valid jump can finish the round on the server immediately.
+   // Accept that authoritative result before checking whether play is still active.
    if(r?.room)acceptRoom(r.room);
+   frame.contentWindow?.postMessage({type:'flusssprung:jump-accepted',col},location.origin);
+   sync();
   }catch(err){
    if(alive)frame.contentWindow?.postMessage({type:'flusssprung:jump-rejected'},location.origin);
    if(Date.now()-lastError>12000){lastError=Date.now();onError?.(err)}
