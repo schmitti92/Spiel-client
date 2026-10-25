@@ -157,3 +157,8 @@ test('Lobby boot preserves room links on authentication and temporary network er
  assert.match(js,/if\(r\?\.code!==requestedCode\)return;activateRoom\(r\);pollStart\(\)/);
  assert.match(js,/Raum vorübergehend nicht erreichbar\. Aktualisiere die Seite/);
 });
+
+test('Room recovery tolerates delayed Firebase authentication initialization',()=>{
+ assert.match(js,/if\(!activeProfile\(\)&&elapsed<30000\)return/);
+ assert.doesNotMatch(js,/if\(!activeProfile\(\)&&elapsed<12000\)return/);
+});
