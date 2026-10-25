@@ -113,3 +113,9 @@ test('Selection responses cannot update a different room after navigation',()=>{
  assert.match(js,/if\(code!==requestedCode\)return;acceptRoom\(response\.room\)/);
  assert.match(js,/const updated=await request\('\/rooms\/'\+encodeURIComponent\(requestedCode\)\);if\(code!==requestedCode\)return;acceptRoom\(updated\.room\)/);
 });
+
+test('Post-game actions discard stale responses after changing rooms',()=>{
+ assert.match(js,/const challengeId=room\.match\.challenge\.id;const response=await request\('\/rooms\/'\+encodeURIComponent\(requestedCode\)\+'\/'\+route/);
+ assert.match(js,/const challengeId=room\.match\.challenge\.id;const response=await request\('\/rooms\/'\+encodeURIComponent\(requestedCode\)\+'\/challenge-next'/);
+ assert.match(js,/if\(code!==requestedCode\)return;acceptRoom\(response\.room\)/);
+});
