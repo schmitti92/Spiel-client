@@ -340,3 +340,16 @@ test('Zeitgefühl V56 prevents late stop and refreshes iframe bridge',()=>{
  assert.match(bridge,/zeitgefuehl-original\.html\?v=5/);
  assert.match(js,/zeitgefuehl-online-bridge\.js\?v=5/);
 });
+
+
+test('Zeitgefühl V57 original results use server standings and preserve host controls',()=>{
+ const original=text('zeitgefuehl-original.html');
+ const bridge=text('zeitgefuehl-online-bridge.js');
+ assert.match(original,/function showOnlineResults\(data\)/);
+ assert.match(original,/zeitgefuehl:result/);
+ assert.match(original,/p\.challengePoints/);
+ assert.match(original,/\.scene\.online-play \.foot\{display:none/);
+ assert.match(bridge,/standings:result\.standings/);
+ assert.match(js,/originalTimeActive=ch\.order\[index\]==='zeitgefuehl'&&\['countdown','results','finished'\]/);
+ assert.match(js,/#challenge-single-actions:not\(\[hidden\]\)/);
+});
