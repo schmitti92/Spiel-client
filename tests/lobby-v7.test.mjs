@@ -284,3 +284,13 @@ test('Preisjäger original reveal is sourced from completed server history',()=>
  assert.match(original,/last\.entries/);
  assert.match(original,/previous\.hidden=!last\|\|!waitingForNext/);
 });
+
+
+test('Preisjäger final podium reads authoritative server totals',()=>{
+ const original=text('Minispiele/Preisjaeger_v11_0_RC23.html');
+ assert.match(js,/finished:ch\.phase==='finished'/);
+ assert.match(js,/totals:ch\.phase==='finished'/);
+ assert.match(original,/if\(data\.finished\)/);
+ assert.match(original,/finalScores/);
+ assert.match(original,/data\.totals/);
+});
