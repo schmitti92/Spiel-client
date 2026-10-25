@@ -119,3 +119,11 @@ test('Post-game actions discard stale responses after changing rooms',()=>{
  assert.match(js,/const challengeId=room\.match\.challenge\.id;const response=await request\('\/rooms\/'\+encodeURIComponent\(requestedCode\)\+'\/challenge-next'/);
  assert.match(js,/if\(code!==requestedCode\)return;acceptRoom\(response\.room\)/);
 });
+
+test('Returning online or foreground refreshes the current room without concurrent polls',()=>{
+ assert.match(js,/async function refreshRoomAfterReconnect\(\)/);
+ assert.match(js,/if\(!code\|\|!room\|\|!activeProfile\(\)\|\|pollInFlight\|\|operation\)return;/);
+ assert.match(js,/if\(code!==requestedCode\)return;pollErrors=0;acceptRoom\(result\.room\)/);
+ assert.match(js,/window\.addEventListener\('online',/);
+ assert.match(js,/document\.addEventListener\('visibilitychange',/);
+});
