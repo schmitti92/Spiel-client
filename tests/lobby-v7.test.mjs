@@ -323,3 +323,10 @@ test('Zeitgefühl fullscreen tablet layout keeps stop controls in viewport',()=>
  assert.match(original,/scene\.className='scene night online-play'/);
  assert.match(original,/env\(safe-area-inset-bottom/);
 });
+
+
+test('Zeitgefühl original uses edge-to-edge stage without surrounding lobby elements',()=>{
+ assert.match(js,/#challenge-progress\.zeitgefuehl-playing:not\(\.hidden\)>:not\(#challenge-original-frame\):not\(#challenge-fullscreen-button\)/);
+ assert.match(js,/#challenge-progress\.zeitgefuehl-playing:not\(\.hidden\)>#challenge-original-frame/);
+ assert.match(js,/height:100dvh!important/);
+});
