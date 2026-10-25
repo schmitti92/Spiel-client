@@ -783,3 +783,30 @@ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #read
   min-height:31px!important
  }
 }
+
+
+/* Premium V36 – polished interactive states; accessibility and safe focus. */
+body.challenge-room-active #challenge-single-grid>button:focus-visible{
+ outline:3px solid #ffed99!important;outline-offset:2px!important;
+ box-shadow:0 0 0 3px #16394f,0 0 16px #ffdf83!important
+}
+body.challenge-room-active #challenge-single-grid>button[aria-pressed="true"]{
+ border-color:#ffdc72!important;
+ box-shadow:0 0 0 2px #eec45e,0 0 20px #ffc84e85,inset 0 0 18px #e9ba4a25!important
+}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel #ready-btn:focus-visible{
+ outline:3px solid #fff0a2!important;outline-offset:2px!important
+}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #challenge-host-launch #start-btn:disabled{
+ filter:saturate(.65)!important;opacity:.72!important
+}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #challenge-host-launch #start-btn:not(:disabled){
+ background:linear-gradient(180deg,#ffecaa,#ffbe4c 54%,#e99516)!important;
+ border-color:#ffe7a4!important;box-shadow:0 5px 16px #f5a62377!important
+}
+@media(prefers-reduced-motion:reduce){
+ body.challenge-room-active #challenge-single-grid>button,
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #start-btn{
+  animation:none!important;transition:none!important
+ }
+}
