@@ -499,7 +499,7 @@ function offerChallengeFullscreen(){
 }
 document.addEventListener('pointerdown',event=>{
  const stage=el('challenge-progress');
- if(stage&&!stage.classList.contains('hidden')&&stage.contains(event.target))offerChallengeFullscreen();
+ if(stage&&!stage.classList.contains('hidden')&&stage.contains(event.target)&&room?.match?.challenge?.order?.[room.match.challenge.index]!=='lava-arena')offerChallengeFullscreen();
 },true);
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)challengeFullscreenRequested=false;});
 function renderChallengeProgress(){
