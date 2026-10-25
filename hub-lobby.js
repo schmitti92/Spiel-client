@@ -152,10 +152,12 @@ function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();se
 
 function pollStop(){if(poll){clearInterval(poll);poll=null;}stopWatch();}
 function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code||operation||pollInFlight||!activeProfile()||document.hidden)return;
- if(streamReady && hubSocket?.readyState===1)return;
+ // Keep a periodic authoritative Firestore-backed HTTP reconciliation even while WS is open.
+ // A live socket can miss Firestore notifications without being disconnected.
+ if(streamReady && hubSocket?.readyState===1 && Date.now()-streamLast<2500)return;
  const requestedCode=code;pollInFlight=true;
  try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
- },4500);}
+ },3000);}
 function leaveView(){cancelPendingRecovery();pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
 const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
