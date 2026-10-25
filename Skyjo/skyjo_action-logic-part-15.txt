@@ -126,26 +126,12 @@ function jokerEndValueForGrid(p,idx){
  const locked=state?.roundJokerValues?.[c.id];
  return Number.isFinite(locked)?Number(locked):liveJokerEndValueForGrid(p,idx)
 }
-/* A joker matching two numeric cards in a complete three-card column must
-   be cleared before scoring. If an adjacent row offers zero instead, prefer
-   that legal value: the two negative cards then remain countable. */
-function resolveRoundJokerChoice(p,idx){
- const cols=state?.layoutMode==='xl'?5:4,row=Math.floor(idx/cols),col=idx%cols;
- const rowNumbers=[],columnNumbers=[];
- for(let k=0;k<cols;k++){const c=p.grid[row*cols+k];if(c?.type==='number')rowNumbers.push(Number(c.value))}
- for(let k=0;k<3;k++){const c=p.grid[k*cols+col];if(c?.type==='number')columnNumbers.push(Number(c.value))}
- const all=[...rowNumbers,...columnNumbers];
- if(!all.length)return 0;
- const lowest=Math.min(...all);
- if(lowest<0&&columnNumbers.length===2&&columnNumbers.every(v=>v===lowest)&&rowNumbers.includes(0))return 0;
- return lowest;
-}
 function buildRoundEndJokerValueMap(){
  const values={};
  for(const p of state?.players||[]){
    for(let i=0;i<(p.grid||[]).length;i++){
      const c=p.grid[i];
-     if(c?.type==='star')values[c.id]=resolveRoundJokerChoice(p,i)
+     if(c?.type==='star')values[c.id]=liveJokerEndValueForGrid(p,i)
    }
  }
  return values
