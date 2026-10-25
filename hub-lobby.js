@@ -256,7 +256,7 @@ async function ensureZeitgefuehlOriginalBridge(){
  if(zeitgefuehlOriginalBridge||zeitgefuehlOriginalLoading||zeitgefuehlOriginalFailed)return;
  zeitgefuehlOriginalLoading=true;
  try{
-  const {mountZeitgefuehlOriginal}=await import('./zeitgefuehl-online-bridge.js?v=7');
+  const {mountZeitgefuehlOriginal}=await import('./zeitgefuehl-online-bridge.js?v=8');
   const container=el('challenge-original-frame');
   if(!container)return;
   recheninselOriginalBridge?.destroy();recheninselOriginalBridge=null;
