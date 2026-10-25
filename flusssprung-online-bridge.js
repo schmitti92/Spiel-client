@@ -10,11 +10,12 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
  function sync(){
   if(!alive||!ready||!frame.contentWindow)return;
   const room=getRoom(),ch=room?.match?.challenge,f=ch?.flusssprung;
-  if(!f||ch.order?.[ch.index]!=='flusssprung')return;
+  if(ch?.order?.[ch.index]!=='flusssprung')return;
+  if(!f){if(Date.now()-lastError>12000){lastError=Date.now();onError?.(new Error('Flusssprung: Online-Spielstand fehlt. Bitte Runde über die gemeinsame Lobby starten.'));}return;}
   const seat=room.players?.find(p=>p.me)?.seat;
   const memberSeats=(room.match?.members||[]).map(p=>p.seat);const players=memberSeats.length?memberSeats.map(seat=>(room.players||[]).find(p=>p.seat===seat)).filter(Boolean):(room.players||[]).filter(p=>p.participating);
   const localSeat=players.findIndex(p=>p.seat===seat);
-  if(localSeat<0)return;
+  if(localSeat<0){if(Date.now()-lastError>12000){lastError=Date.now();onError?.(new Error('Flusssprung: Dein Spielerplatz fehlt in dieser Online-Runde.'));}return;}
   const key=ch.id+':'+ch.index;
   if(key!==lastKey){lastKey=key;configured=false;lastMove=0;timeoutPending=false;resultSent=false;lastSnapshot='';lastSyncRevision=null;pendingJump=false;}
   if(ch.phase!=='countdown'&&configured){
