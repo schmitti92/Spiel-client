@@ -169,3 +169,10 @@ test('Delayed Firebase login can recover the original room without duplicate fet
  assert.match(js,/if\(pendingRoomRecovery!==requestedCode\|\|room\|\|code\|\|r\?\.code!==requestedCode\)return/);
  assert.match(js,/render\(\);if\(uid\)void recoverPendingRoom\(\)/);
 });
+
+test('Temporary room restoration failures use bounded exponential retry delays',()=>{
+ assert.match(js,/recoveryAttempts>=5/);
+ assert.match(js,/Math\.min\(30000,2000\*2\*\*recoveryAttempts\+\+\)/);
+ assert.match(js,/recoveryRetryTimer=setTimeout\(\(\)=>\{recoveryRetryTimer=null;void recoverPendingRoom\(\);\},delay\)/);
+ assert.match(js,/pendingRoomRecovery=null;clearRecoveryRetry\(\);activateRoom\(r\);pollStart\(\)/);
+});
