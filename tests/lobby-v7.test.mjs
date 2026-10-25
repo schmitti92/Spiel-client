@@ -92,3 +92,10 @@ test('Marathon selection prevents duplicate submissions while a request is pendi
  assert.match(js,/const button=el\('challenge-marathon'\);if\(button\.disabled\)return;/);
  assert.match(js,/button\.disabled=true;[\s\S]*?count:9,selectedGame:null[\s\S]*?finally\{button\.disabled=false;\}/);
 });
+
+test('Replay, return-to-selection and next-game controls ignore duplicate taps',()=>{
+ assert.match(js,/for\(const \[id,route\] of \[\['challenge-replay','challenge-replay'\],\['challenge-select','challenge-select'\]\]\)/);
+ assert.match(js,/const btn=el\(id\);if\(btn\.disabled\)return;/);
+ assert.match(js,/const btn=el\('challenge-next'\);if\(btn\.disabled\)return;btn\.disabled=true;/);
+ assert.match(js,/catch\(e\)\{showError\(e\);\}finally\{btn\.disabled=false;\}/);
+});
