@@ -107,3 +107,9 @@ test('Challenge settings requests are serialized across cards, marathon and save
  assert.match(js,/finally\{btn\.disabled=false;challengeSettingsBusy=false;\}/);
  assert.match(js,/if\(challengeSettingsBusy\)return;\s*const button=el\('challenge-save'\)/);
 });
+
+test('Selection responses cannot update a different room after navigation',()=>{
+ assert.match(js,/const requestedCode=room\.code;const response=await request\('\/rooms\/'\+encodeURIComponent\(requestedCode\)\+'\/challenge-settings'/);
+ assert.match(js,/if\(code!==requestedCode\)return;acceptRoom\(response\.room\)/);
+ assert.match(js,/const updated=await request\('\/rooms\/'\+encodeURIComponent\(requestedCode\)\);if\(code!==requestedCode\)return;acceptRoom\(updated\.room\)/);
+});
