@@ -655,7 +655,7 @@ function renderChallengeSetup(showStage){
   for(const [id,icon,title] of singleGames){
    const btn=document.createElement('button');btn.type='button';btn.dataset.minigame=id;
    btn.style.cssText='min-height:100px;border-radius:15px;border:2px solid #ffffff55;background:linear-gradient(150deg,#ffffff22,#071b3288);color:white;cursor:pointer;padding:12px;text-align:center;transition:transform .12s,border-color .12s';
-   btn.innerHTML='<span style="font-size:29px;display:block;margin-bottom:6px">'+icon+'</span><strong>'+title+'</strong><span class="mini-picked" style="display:block;font-size:12px;margin-top:8px;color:#ffecaa" aria-hidden="true"></span>';
+   btn.innerHTML='<span class="mini-art" aria-hidden="true">'+icon+'</span><strong>'+title+'</strong><span class="mini-meta"><span class="mini-online">● Online verfügbar</span><span class="mini-players">♟ 2–4</span></span><span class="mini-picked" aria-hidden="true"></span>';
    btn.addEventListener('click',async()=>{
     if(!room?.host||room.phase!=='preparing')return;
     btn.disabled=true;
