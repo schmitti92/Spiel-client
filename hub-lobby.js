@@ -370,12 +370,13 @@ function renderChallengeProgress(){
   for(const [id,route] of [['challenge-replay','challenge-replay'],['challenge-select','challenge-select']]){
    el(id).addEventListener('click',async()=>{
     if(!room?.host||!room?.match?.challenge)return;
-    const btn=el(id);btn.disabled=true;
+    const btn=el(id);if(btn.disabled)return;
+    btn.disabled=true;
     try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/'+route,'POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}
     catch(e){showError(e);}finally{btn.disabled=false;}
    });
   }
-  el('challenge-next').addEventListener('click',async()=>{if(!room?.host||!room?.match?.challenge)return;const btn=el('challenge-next');btn.disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-next','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{btn.disabled=false;}});
+  el('challenge-next').addEventListener('click',async()=>{if(!room?.host||!room?.match?.challenge)return;const btn=el('challenge-next');if(btn.disabled)return;btn.disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-next','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{btn.disabled=false;}});
   el('challenge-time-stop').addEventListener('click',async()=>{if(challengeStopBusy||!room?.match?.challenge)return;challengeStopBusy=true;el('challenge-time-stop').disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-time-stop','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{challengeStopBusy=false;}});
  }
  const ch=room?.match?.game==='partychallenge'?room.match.challenge:null;
