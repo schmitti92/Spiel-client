@@ -824,3 +824,9 @@ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#play
 body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel{order:4!important}
 body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#challenge-host-launch{order:5!important}
 body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.row{order:6!important}
+
+
+/* Premium V38: refresh the first three upgraded illustrated environments. */
+body.challenge-room-active #challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/zeitgefuehl.svg?v=38")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/fluss.svg?v=38")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/lava.svg?v=38")!important}
