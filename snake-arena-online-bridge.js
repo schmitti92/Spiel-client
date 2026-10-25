@@ -15,7 +15,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(!configured){frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,startAt:ch.startAt,serverOffset:offset,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
   if(ch.snake){const p=ch.snake.players?.find(p=>p.seat===mine);if(p&&Number.isSafeInteger(p.seq))lastSeq=Math.max(lastSeq,p.seq);
    frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.snake.players,food:ch.snake.food},location.origin);}
-  const tickLeader=seats[0]===mine || (Date.now()+offset-(ch.snake?.lastTickAt||0)>3000);
+  const serverTickAge=Date.now()+offset-(ch.snake?.lastTickAt||ch.startAt);const tickLeader=seats[0]===mine || serverTickAge>3000 && Math.floor((Date.now()+offset)/2500)%Math.max(1,seats.length)===localSeat;
   if(configured&&tickLeader&&ch.phase==='countdown'&&Date.now()+offset>=ch.startAt&&!tickPending&&Date.now()-lastTickRequest >=1200){
    tickPending=true;lastTickRequest=Date.now();const expectedId=ch.id;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:expectedId}).then(r=>{if(alive&&current()?.ch.id===expectedId&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{tickPending=false});
