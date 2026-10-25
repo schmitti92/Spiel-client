@@ -148,7 +148,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
    if(window.LavaArenaOnlineConfig?.challengeId!==m.challengeId){
     window.LavaArenaOnlineConfig={challengeId:m.challengeId,localSeat:m.localSeat};
     document.querySelector('#count').value=String(m.seats.length);
-    document.querySelector('#humans').value=String(m.seats.length);
+    document.querySelector('#humans').value='1';
     init();document.querySelector('#pause').style.display='none';
     document.querySelector('#again').style.display='none';
     document.querySelector('#touch').classList.add('active');
