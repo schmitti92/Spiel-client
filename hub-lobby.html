@@ -17,7 +17,7 @@ button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allow
 footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{color:#3078bf}
 @media(max-width:700px){.hero{display:block}.hero .pill{margin-top:14px}.cols{grid-template-columns:1fr}.shell{padding-top:15px}.panel{padding:17px;border-radius:18px}.room-code{font-size:25px}.game-grid{gap:8px}.game{padding:9px;min-height:76px}.game .emoji{font-size:22px}.row .btn{flex:1}}
 </style>
-<link rel="stylesheet" href="hub-lobby-v7.css?v=20261025-premium-33">
+<link rel="stylesheet" href="hub-lobby-v7.css?v=20261025-premium-34">
 </head>
 <body>
 <div class="shell">
@@ -109,7 +109,11 @@ footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{c
         <div class="settings-summary">2–6 Mitspieler · Klassische Würfelregeln · Automatische Wertung</div>
         <p class="setup-note">👑 Der Host bestimmt, wer mitspielt. Die Teilnehmer melden sich selbst bereit; das Spiel startet anschließend automatisch.</p>
       </section>
-      <section id="ready-panel" class="panel hidden"><div class="eyebrow">Online-Vorraum · Gemeinsam starten</div><h2 id="ready-title">Bereit für die Partie?</h2><p class="subtle" id="ready-help">Wähle zuerst ein Spiel aus.</p>
+
+    </div>
+    <div class="stack">
+      <section class="panel" aria-labelledby="room-title"><div class="eyebrow">Dein gemeinsamer Raum</div><div class="room-head"><div><h2 id="room-title">Raumcode</h2><span class="room-code" id="room-code">——————</span></div><button type="button" class="btn light" id="copy-btn">Code kopieren</button></div>
+        <p class="subtle">Deine Freunde können diesen Code einmalig eingeben. Auch Zuschauer bleiben im Raum.</p><div class="players" id="players"></div>      <section id="ready-panel" class="panel hidden"><div class="eyebrow">Online-Vorraum · Gemeinsam starten</div><h2 id="ready-title">Bereit für die Partie?</h2><p class="subtle" id="ready-help">Wähle zuerst ein Spiel aus.</p>
         <div class="row" style="margin-top:17px"><button type="button" class="btn blue" id="ready-btn" disabled>Ich bin bereit</button><button type="button" class="btn light" id="start-btn" disabled>Partie starten</button><button type="button" class="btn light hidden" id="cancel-match-btn" style="color:#9e2937;border:1px solid #d7a8ad" disabled>Partie abbrechen</button></div>
         <div class="ready-progress"><span id="ready-counter">Warte auf Mitspieler</span><span id="ready-fraction">0 / 0</span></div>
         <div class="ready-bar" role="progressbar" aria-label="Bereitmeldungen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="ready-progressbar"><span id="ready-progress-fill"></span></div>
@@ -117,10 +121,7 @@ footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{c
         <p class="notice" id="integration-note">Die vier Spiele sind mit dem gemeinsamen Raum verbunden.</p>
         <p class="ready-hint">Sobald mindestens zwei und alle ausgewählten Mitspieler bereit sind, startet der Server die Partie automatisch.</p>
       </section>
-    </div>
-    <div class="stack">
-      <section class="panel" aria-labelledby="room-title"><div class="eyebrow">Dein gemeinsamer Raum</div><div class="room-head"><div><h2 id="room-title">Raumcode</h2><span class="room-code" id="room-code">——————</span></div><button type="button" class="btn light" id="copy-btn">Code kopieren</button></div>
-        <p class="subtle">Deine Freunde können diesen Code einmalig eingeben. Auch Zuschauer bleiben im Raum.</p><div class="players" id="players"></div><div id="challenge-host-launch" class="challenge-host-launch hidden" aria-label="Challenge starten"></div>
+        <div id="challenge-host-launch" class="challenge-host-launch hidden" aria-label="Challenge starten"></div>
         <div class="row" style="margin-top:20px"><button type="button" class="btn ghost" id="refresh-btn">↻ Aktualisieren</button><button type="button" class="btn danger" id="leave-btn">Raum verlassen</button></div>
       </section>
       <section class="panel"><div class="eyebrow">So funktioniert dein Spieleabend</div><p class="subtle">👑 Nur der Host wählt Spiele und stellt deren Regeln ein. Jeder aktive Spieler klickt auf „Ich bin bereit“. Zuschauer bleiben im Raum. Bei Spielwechsel bleibt der Raumcode erhalten; dein Online-Profil wird serverseitig geprüft.</p></section>
