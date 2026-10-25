@@ -976,10 +976,18 @@ el('copy-btn').addEventListener('click',async()=>{
  try{await navigator.clipboard.writeText(room?.code||'');notice('Raumcode kopiert.');}catch{notice('Raumcode: '+room?.code);}
 });
 el('leave-btn').addEventListener('click',()=>command(async()=>{await request('/rooms/'+code+'/leave','POST');leaveView();notice('Du hast den Raum verlassen.');}));
+let pendingRoomRecovery=null,recoveryInFlight=false;
+async function recoverPendingRoom(){
+ if(!pendingRoomRecovery||room||code||!activeProfile()||recoveryInFlight)return;
+ const requestedCode=pendingRoomRecovery;recoveryInFlight=true;
+ try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(pendingRoomRecovery!==requestedCode||room||code||r?.code!==requestedCode)return;pendingRoomRecovery=null;activateRoom(r);pollStart();}
+ catch(e){if(pendingRoomRecovery!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Erneuter Versuch bei der nächsten Anmeldung.');}}
+ finally{recoveryInFlight=false;}
+}
 window.addEventListener('spielonline-change',()=>{
  const uid=activeProfile()?.user?.uid||null;
  if(uid!==accountUid){accountUid=uid;if(room){leaveView();notice('Das Spielerprofil hat gewechselt. Bitte dem Raum erneut beitreten.');}}
- render();
+ render();if(uid)void recoverPendingRoom();
 });
 async function boot(){
  render();
@@ -999,7 +1007,7 @@ async function boot(){
   elapsed+=250;
   if(!activeProfile()&&elapsed<30000)return;
   clearInterval(timer);
-  if(!activeProfile()){el('join-code').value=fromUrl.toUpperCase();notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen.');return;}
+  if(!activeProfile()){pendingRoomRecovery=fromUrl.toUpperCase();el('join-code').value=fromUrl.toUpperCase();notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen.');return;}
   const requestedCode=fromUrl.toUpperCase();
   try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(r?.code!==requestedCode)return;activateRoom(r);pollStart();}
   catch(e){el('join-code').value=requestedCode;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Aktualisiere die Seite, um es erneut zu versuchen.');}}
