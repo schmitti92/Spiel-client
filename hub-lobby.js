@@ -346,7 +346,7 @@ async function ensureRecheninselOriginalBridge(){
 /* Original Preisjäger V11: server-authoritative presentation, never local game state. */
 let preisjaegerOriginalReady=false;
 function ensurePreisjaegerOriginalFrame(){
- let frame=el('preisjaeger-original-online');
+ let frame=document.getElementById('preisjaeger-original-online');
  if(frame)return frame;
  frame=document.createElement('iframe');
  frame.id='preisjaeger-original-online';
@@ -377,7 +377,7 @@ function syncPreisjaegerOriginal(ch){
  frame.contentWindow?.postMessage({type:'PREISJAEGER_ONLINE_STATE',state},location.origin);
 }
 window.addEventListener('message',async event=>{
- if(event.origin!==location.origin||event.source!==el('preisjaeger-original-online')?.contentWindow)return;
+ if(event.origin!==location.origin||event.source!==document.getElementById('preisjaeger-original-online')?.contentWindow)return;
  if(event.data?.type==='PREISJAEGER_ONLINE_READY'){
   preisjaegerOriginalReady=true;
   const ch=room?.match?.challenge;
