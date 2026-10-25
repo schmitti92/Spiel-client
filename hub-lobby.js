@@ -353,7 +353,7 @@ function ensurePreisjaegerOriginalFrame(){
  frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
  frame.setAttribute('referrerpolicy','same-origin');
  frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
- frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=47';
+ frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=48';
  el('challenge-progress').append(frame);
  return frame;
 }
@@ -367,7 +367,7 @@ function syncPreisjaegerOriginal(ch){
  const pj=ch.preisjaeger;
  const mySeat=room.players.find(p=>p.me)?.seat;
  const state={
-  challengeId:ch.id,round:pj.round,product:{
+  challengeId:ch.id,round:pj.round,startsInMs:Math.max(0,(ch.startAt||0)-(room.serverNow||Date.now())),product:{
    name:pj.product?.name||'',category:pj.product?.category||'',shop:pj.product?.shop||'',
    image:pj.product?.image||'',icon:pj.product?.icon||'🛒'
   },
