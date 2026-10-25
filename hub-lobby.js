@@ -722,7 +722,23 @@ function renderChallengeSetup(showStage){
    if(card&&cardGrid.children[index]!==card)cardGrid.insertBefore(card,cardGrid.children[index]||null);
   });
  }
- const active=showStage&&room?.game==='partychallenge';box.classList.toggle('hidden',!active);document.body.classList.toggle('challenge-room-active',Boolean(active));const genericChooser=el('game-chooser');if(genericChooser){genericChooser.hidden=Boolean(active);genericChooser.style.display=active?'none':'';}
+ const active=showStage&&room?.game==='partychallenge';
+// Keep the ready button beside the room seats on Challenge only; restore it
+// to its original column for every other game. Moving the same DOM node
+// preserves listeners, IDs, readiness state and server-side permissions.
+const readyPanel=el('ready-panel');
+const roomColumns=el('room-view')?.querySelectorAll(':scope > .stack');
+const challengeRoomCard=roomColumns?.[1]?.querySelector(':scope > .panel');
+if(readyPanel&&roomColumns?.length===2&&challengeRoomCard){
+ if(active&&readyPanel.parentElement!==challengeRoomCard){
+  const launch=el('challenge-host-launch');
+  if(launch?.parentElement===challengeRoomCard)challengeRoomCard.insertBefore(readyPanel,launch);
+  else challengeRoomCard.append(readyPanel);
+ }else if(!active&&readyPanel.parentElement!==roomColumns[0]){
+  roomColumns[0].append(readyPanel);
+ }
+}
+box.classList.toggle('hidden',!active);document.body.classList.toggle('challenge-room-active',Boolean(active));const genericChooser=el('game-chooser');if(genericChooser){genericChooser.hidden=Boolean(active);genericChooser.style.display=active?'none':'';}
  if(!active)return;
  if(room.phase!=='preparing')el('challenge-feedback').textContent='';
  if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(room.settings?.partychallenge?.selectedGame?1:9);
