@@ -1,6 +1,6 @@
 export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.title='Flusssprung – Online';frame.src='minispiele/flusssprung-online-adapter-v41.html?v=4';
+ frame.title='Flusssprung – Online';frame.src='minispiele/flusssprung-online-adapter-v41.html?v=5';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  frame.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(frame);
@@ -26,7 +26,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    return;
   }
   if(!configured){
-   frame.contentWindow.postMessage({type:'flusssprung:configure',challengeId:key,path:f.path,localSeat,seats:players.map(p=>({name:p.name}))},location.origin);
+   frame.contentWindow.postMessage({type:'flusssprung:configure',challengeId:key,path:f.path,localSeat,startAt:ch.startAt,serverNow:room.serverNow,seats:players.map(p=>({name:p.name}))},location.origin);
    return;
   }
   if(ch.phase!=='countdown')return;
