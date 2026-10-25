@@ -6,7 +6,7 @@ const query=new URL(location.href).searchParams;
 const code=String(query.get('room')||'').toUpperCase();
 const CODE=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/;
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let room=null,busy=false,refreshBusy=false,socket=null,lastSocket=null,reconnectTimer=null,pollTimer=null;
+let room=null,busy=false,refreshBusy=false,socket=null,lastSocket=null,reconnectTimer=null,pollTimer=null,lastStreamRoomAt=0,lastHttpAt=0;
 const limits={target:{min:50,max:500,step:10},jokerCount:{min:0,max:30,step:1}};
 const supported=['layoutMode','target','jokerCount','streetModeEnabled','jokerEnabled','beginner'];
 const descriptions={
@@ -171,7 +171,10 @@ function receive(data){
 }
 async function refresh(){
  if(refreshBusy||busy||document.hidden||!identity())return;
- refreshBusy=true;
+ // WebSocket snapshots give immediate updates; HTTP corrects missed events at a bounded rate.
+ if(socket?.readyState===1 && Date.now()-lastStreamRoomAt<12000)return;
+ if(socket?.readyState===1 && Date.now()-lastHttpAt<15000)return;
+ refreshBusy=true;lastHttpAt=Date.now();
  try{receive(await request(''))}
  catch(e){if(!room)note(cleanError(e),true)}
  finally{refreshBusy=false;}
@@ -190,7 +193,7 @@ function connect(){
  };
  ws.onmessage=e=>{
   let data;try{data=JSON.parse(e.data)}catch(_e){return}
-  if(data?.type==='room'&&data.room?.code===code)receive(data.room);
+  if(data?.type==='room'&&data.room?.code===code){lastStreamRoomAt=Date.now();receive(data.room);}
  };
  ws.onerror=()=>{};
  ws.onclose=()=>{
