@@ -150,3 +150,10 @@ test('Stuck WebSocket handshakes time out and release reconnect fallback',()=>{
  assert.match(js,/socket\.onopen=async\(\)=>\{\s*clearTimeout\(connectTimeout\)/);
  assert.match(js,/socket\.onclose=\(\)=>\{\s*clearTimeout\(connectTimeout\)/);
 });
+
+test('Lobby boot preserves room links on authentication and temporary network errors',()=>{
+ assert.match(js,/Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen/);
+ assert.match(js,/const requestedCode=fromUrl\.toUpperCase\(\)/);
+ assert.match(js,/if\(r\?\.code!==requestedCode\)return;activateRoom\(r\);pollStart\(\)/);
+ assert.match(js,/Raum vorübergehend nicht erreichbar\. Aktualisiere die Seite/);
+});
