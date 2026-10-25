@@ -258,3 +258,11 @@ body.challenge-room-active #ready-panel .muted{font-size:12px}
 body.challenge-room-active #challenge-settings-panel #challenge-count{max-width:100%!important}
 @media(max-width:900px){body.challenge-room-active #room-view{grid-template-columns:1fr!important}body.challenge-room-active #room-view>.stack:last-child{position:static}}
 @media(max-width:600px){body.challenge-room-active #challenge-single-grid>button{min-height:108px!important;aspect-ratio:1.4!important}}
+
+/* v9 regression guard: never show the generic chooser alongside Party Challenge */
+body.challenge-room-active #game-chooser,body.challenge-room-active #game-chooser *{display:none!important}
+body.challenge-room-active #challenge-settings-panel{display:block!important}
+body.challenge-room-active #challenge-settings-panel.hidden{display:none!important}
+body.challenge-room-active #challenge-single-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(n+10){display:none!important}
+@media(max-width:620px){body.challenge-room-active #challenge-single-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
