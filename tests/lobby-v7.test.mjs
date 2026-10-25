@@ -256,3 +256,12 @@ test('Premium settings navigation points to the active game controls',()=>{
  assert.match(html,/id="challenge-settings-panel"/);
  assert.match(html,/id="ready-panel"/);
 });
+
+
+test('Preisjäger original UI is connected to server-authoritative Challenge state',()=>{
+ assert.match(js,/Minispiele\/Preisjaeger_v11_0_RC23\.html\?onlineView=1/);
+ assert.match(js,/PREISJAEGER_ONLINE_STATE/);
+ assert.match(js,/PREISJAEGER_ONLINE_GUESS/);
+ assert.match(js,/challenge-preisjaeger-answer/);
+ assert.match(js,/event\.origin!==location\.origin/);
+});
