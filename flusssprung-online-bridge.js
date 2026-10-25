@@ -30,7 +30,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    return;
   }
   if(ch.phase!=='countdown')return;
-  const moves=f.moves||[];
+  const moves=Array.isArray(f.moves)?f.moves:[];
   const total=Number.isInteger(f.moveCount)?f.moveCount:moves.length;
   const offset=Math.max(0,total-moves.length);
   if(lastMove<offset)lastMove=offset; // Older moves were compacted; the authoritative snapshot below restores their state.
@@ -38,7 +38,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    const m=moves[lastMove++-offset];
    if(!m)continue;
    const idx=players.findIndex(p=>p.seat===m.seat);
-   if(idx>=0&&idx!==localSeat)frame.contentWindow.postMessage({type:'flusssprung:remote-jump',seat:idx,row:m.row,col:m.col},location.origin);
+   if(idx>=0&&idx!==localSeat&&Number.isInteger(m.row)&&Number.isInteger(m.col))frame.contentWindow.postMessage({type:'flusssprung:remote-jump',seat:idx,row:m.row,col:m.col},location.origin);
   }
   const snapshot=JSON.stringify((f.players||[]).map(p=>({index:players.findIndex(x=>x.seat===p.seat),row:p.row,falls:p.falls,finishedAt:p.finishedAt})));
   if(snapshot!==lastSnapshot||room.revision!==lastSyncRevision){
