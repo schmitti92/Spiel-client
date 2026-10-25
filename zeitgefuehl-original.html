@@ -88,7 +88,28 @@ function onlineSync(data){
  }
  drawOnline();onlineTimer=setInterval(drawOnline,60);
 }
+function showOnlineResults(data){
+ if(!onlineMode||data.challengeId!==onlineChallenge||!Array.isArray(data.standings))return;
+ if(onlineTimer){clearInterval(onlineTimer);onlineTimer=null;}
+ phase='finished';players.hidden=true;clock.hidden=true;
+ $('subtitle').textContent='🏆 DIE AUSWERTUNG';
+ $('target').textContent='🎯 ZIELZEIT: '+Number(data.targetSeconds).toFixed(2).replace('.',',')+' s';
+ hint.textContent='Die genaueste Schätzung gewinnt!';
+ results.replaceChildren();results.hidden=false;
+ const sorted=data.standings.slice().sort((a,b)=>Number(a.deltaMs)-Number(b.deltaMs)||Number(a.seat)-Number(b.seat));
+ sorted.forEach((p,i)=>{
+  const card=document.createElement('article');card.className='result-card'+(i===0?' winner':'');
+  const title=document.createElement('h2');title.textContent=(i===0?'🏆 ':i===1?'🥈 ':i===2?'🥉 ':'')+String(p.name||'Spieler');
+  const time=document.createElement('div');time.textContent='⏱️ '+(Number(p.elapsedMs)/1000).toFixed(2).replace('.',',')+' s';
+  const delta=document.createElement('div');delta.textContent='Abweichung: '+(Number(p.deltaMs)/1000).toFixed(2).replace('.',',')+' s';
+  const points=document.createElement('strong');points.textContent='+'+(Number(p.challengePoints)||0)+' Punkte';
+  card.append(title,time,delta,points);results.append(card);
+ });
+ $('end').hidden=false;
+ $('end').textContent='🏁 Minispiel beendet · Der Host kann zur Spielauswahl zurückkehren.';
+}
 window.addEventListener('message',event=>{if(event.source!==window.parent||event.origin!==location.origin)return;
+if(event.data?.type==='zeitgefuehl:result'){showOnlineResults(event.data);return;}
 if(event.data?.type==='zeitgefuehl:stop-rejected'&&event.data.challengeId===onlineChallenge&&phase==='running'){
  onlineStopped=false;
  const index=entries.findIndex(e=>e.id===onlineSeat);
