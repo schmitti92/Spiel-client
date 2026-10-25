@@ -314,7 +314,7 @@ window.addEventListener('message',event=>{
   if(!window.snakeOnlineTicker){window.snakeOnlineTicker=setInterval(()=>{const c=window.SnakeArenaOnlineConfig;if(!c||!started||ended||c.completed||!games[0]?.alive)return;sendSnakeOnlineState();},250);}
  }
  if(m?.type==='snake-arena:snapshot'&&window.SnakeArenaOnlineConfig?.challengeId===m.challengeId&&Array.isArray(m.players)){
-  for(const g of games)g.food=m.food||null;
+  // Every participant has independent server-authoritative food.
   const c=window.SnakeArenaOnlineConfig;
   for(let i=0;i<m.players.length;i++){
    const q=m.players[(c.localSeat+i)%m.players.length],g=games[i];
