@@ -976,12 +976,18 @@ el('copy-btn').addEventListener('click',async()=>{
  try{await navigator.clipboard.writeText(room?.code||'');notice('Raumcode kopiert.');}catch{notice('Raumcode: '+room?.code);}
 });
 el('leave-btn').addEventListener('click',()=>command(async()=>{await request('/rooms/'+code+'/leave','POST');leaveView();notice('Du hast den Raum verlassen.');}));
-let pendingRoomRecovery=null,recoveryInFlight=false;
+let pendingRoomRecovery=null,recoveryInFlight=false,recoveryRetryTimer=null,recoveryAttempts=0;
+function clearRecoveryRetry(){if(recoveryRetryTimer){clearTimeout(recoveryRetryTimer);recoveryRetryTimer=null;}recoveryAttempts=0;}
+function scheduleRecoveryRetry(){
+ if(!pendingRoomRecovery||recoveryRetryTimer||recoveryAttempts>=5)return;
+ const delay=Math.min(30000,2000*2**recoveryAttempts++);
+ recoveryRetryTimer=setTimeout(()=>{recoveryRetryTimer=null;void recoverPendingRoom();},delay);
+}
 async function recoverPendingRoom(){
  if(!pendingRoomRecovery||room||code||!activeProfile()||recoveryInFlight)return;
  const requestedCode=pendingRoomRecovery;recoveryInFlight=true;
- try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(pendingRoomRecovery!==requestedCode||room||code||r?.code!==requestedCode)return;pendingRoomRecovery=null;activateRoom(r);pollStart();}
- catch(e){if(pendingRoomRecovery!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Erneuter Versuch bei der nächsten Anmeldung.');}}
+ try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(pendingRoomRecovery!==requestedCode||room||code||r?.code!==requestedCode)return;pendingRoomRecovery=null;clearRecoveryRetry();activateRoom(r);pollStart();}
+ catch(e){if(pendingRoomRecovery!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;clearRecoveryRetry();notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Wiederherstellung wird erneut versucht.');scheduleRecoveryRetry();}}
  finally{recoveryInFlight=false;}
 }
 window.addEventListener('spielonline-change',()=>{
