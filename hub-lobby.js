@@ -826,6 +826,17 @@ function render(){
   }
   return div;
  }));
+ // Display all four lobby seats without inventing actual participants.
+ const playersPanel=el('players');
+ playersPanel.querySelectorAll('.seat-placeholder').forEach(node=>node.remove());
+ if(room.game==='partychallenge'&&room.phase==='preparing'){
+  const occupied=room.players.filter(p=>p.participating).length;
+  for(let i=occupied;i<4;i++){
+   const seat=document.createElement('div');seat.className='player seat-placeholder';
+   seat.innerHTML='<span class="avatar seat-plus" aria-hidden="true">＋</span><span class="name">Freier Platz</span>';
+   playersPanel.append(seat);
+  }
+ }
  document.querySelectorAll('[data-game]').forEach(btn=>{
   btn.classList.toggle('active',btn.dataset.game===room.game);
   btn.disabled=!room.host||operation||room.phase==='playing';
