@@ -1,6 +1,6 @@
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=4';
+ frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=5';
  frame.title='Snake Arena Online';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  container.replaceChildren(frame);
@@ -14,7 +14,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(localSeat<0)return;
   if(!configured){frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
   if(ch.snake){const p=ch.snake.players?.find(p=>p.seat===mine);if(p&&Number.isSafeInteger(p.seq))lastSeq=Math.max(lastSeq,p.seq);
-   frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.snake.players},location.origin);}
+   frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.snake.players,food:ch.snake.food},location.origin);}
   if(ch.phase==='countdown'&&Date.now()+offset>ch.startAt+180000&&!lastTimeout){
    lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:ch.id}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(e=>{lastTimeout=false;onError(e)});
   }
