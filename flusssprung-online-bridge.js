@@ -1,6 +1,6 @@
 export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.title='Flusssprung – Online';frame.src='minispiele/flusssprung-online-adapter-v41.html?v=3';
+ frame.title='Flusssprung – Online';frame.src='minispiele/flusssprung-online-adapter-v41.html?v=4';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  frame.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(frame);
@@ -33,7 +33,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   const moves=f.moves||[];
   const total=Number.isInteger(f.moveCount)?f.moveCount:moves.length;
   const offset=Math.max(0,total-moves.length);
-  if(lastMove<offset)lastMove=offset;
+  if(lastMove<offset)lastMove=offset; // Older moves were compacted; the authoritative snapshot below restores their state.
   while(lastMove<total){
    const m=moves[lastMove++-offset];
    if(!m)continue;
