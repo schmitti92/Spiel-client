@@ -997,7 +997,7 @@ async function boot(){
  }
  let elapsed=0;const timer=setInterval(async()=>{
   elapsed+=250;
-  if(!activeProfile()&&elapsed<12000)return;
+  if(!activeProfile()&&elapsed<30000)return;
   clearInterval(timer);
   if(!activeProfile()){el('join-code').value=fromUrl.toUpperCase();notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen.');return;}
   const requestedCode=fromUrl.toUpperCase();
