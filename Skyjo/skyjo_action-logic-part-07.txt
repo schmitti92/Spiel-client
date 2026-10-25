@@ -10,12 +10,19 @@ function applyCloudDoc(remote,rev){
  if(!isRoomDoc(remote))return false;
  const nextRev=Number(rev)||0;
  if(nextRev&&nextRev<Number(cloud.rev||0))return false;
+ /* Identical room payloads can arrive with a newer revision. Update revision
+    bookkeeping but avoid rebuilding every card and restarting visual effects. */
+ const incomingJSON=JSON.stringify(remote);
+ if(cloud.doc&&incomingJSON===cloud.lastPushedJSON){
+   cloud.rev=Math.max(Number(cloud.rev||0),nextRev);
+   return true;
+ }
  const prevPhase=state?.phase||'',prevRound=Number(state?.round||0),hadGame=!!state;
  cloud.applying=true;
  try{
    cloud.doc=clone(remote);
    cloud.rev=nextRev;
-   cloud.lastPushedJSON=JSON.stringify(cloud.doc);
+   cloud.lastPushedJSON=incomingJSON;
    cloud.role=isHostDevice()?'host':'player';
    const me=myPlayerIndex();
    if(me>=0){cloud.myName=cloud.doc.lobby.players[me]?.name||cloud.myName;saveIdentity()}
