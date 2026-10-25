@@ -58,7 +58,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
  }
  async function onMessage(e){
   if(!alive||e.origin!==location.origin||e.source!==frame.contentWindow)return;
-  if(e.data?.type==='flusssprung:configured'){if(e.data.challengeId!==lastKey)return;configured=true;sync();return;}
+  if(e.data?.type==='flusssprung:configured'){if(e.data.challengeId!==lastKey)return;const current=getRoom()?.match?.challenge?.flusssprung;lastMove=Number.isInteger(current?.moveCount)?current.moveCount:(current?.moves?.length||0);configured=true;sync();return;}
   if(e.data?.type!=='flusssprung:jump')return;
   const room=getRoom(),ch=room?.match?.challenge;
   if(!ch||ch.phase!=='countdown'||ch.order?.[ch.index]!=='flusssprung'){frame.contentWindow?.postMessage({type:'flusssprung:jump-rejected'},location.origin);return;}
