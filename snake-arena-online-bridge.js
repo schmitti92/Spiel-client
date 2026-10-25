@@ -15,11 +15,11 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(!configured){frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
   if(ch.snake){const p=ch.snake.players?.find(p=>p.seat===mine);if(p&&Number.isSafeInteger(p.seq))lastSeq=Math.max(lastSeq,p.seq);
    frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.snake.players,food:ch.snake.food},location.origin);}
-  if(ch.phase==='countdown'&&Date.now()+offset>=ch.startAt&&!tickPending&&Date.now()-lastTickRequest>=700){
+  if(configured&&ch.phase==='countdown'&&Date.now()+offset>=ch.startAt&&!tickPending&&Date.now()-lastTickRequest>=700){
    tickPending=true;lastTickRequest=Date.now();const expectedId=ch.id;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:expectedId}).then(r=>{if(alive&&current()?.ch.id===expectedId&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{tickPending=false});
   }
-  if(ch.phase==='countdown'&&Date.now()+offset>ch.startAt+180000&&!lastTimeout){
+  if(configured&&ch.phase==='countdown'&&Date.now()+offset>ch.startAt+180000&&!lastTimeout){
    lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:ch.id}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(e=>{lastTimeout=false;onError(e)});
   }
  }
@@ -31,8 +31,8 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(pending||Date.now()-lastSend<180){queuedState=m;if(!pending)setTimeout(()=>{if(!queuedState||!alive)return;const q=queuedState;queuedState=null;onMessage({origin:location.origin,source:frame.contentWindow,data:q});},Math.max(30,190-(Date.now()-lastSend)));return;}
   const p=m.player;if(!p)return;
   pending=true;lastSend=Date.now();lastSeq=m.seq;
-  try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,...p});if(r?.room)acceptRoom(r.room)}
-  catch(error){onError(error)}finally{pending=false;if(queuedState&&alive){const q=queuedState;queuedState=null;queueMicrotask(()=>onMessage({origin:location.origin,source:frame.contentWindow,data:q}));}}
+  try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,...p});if(r?.room&&alive&&current()?.ch.id===c.ch.id)acceptRoom(r.room)}
+  catch(error){if(alive)onError(error)}finally{pending=false;if(queuedState&&alive){const q=queuedState;queuedState=null;queueMicrotask(()=>onMessage({origin:location.origin,source:frame.contentWindow,data:q}));}}
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;configured=false;sync()});
