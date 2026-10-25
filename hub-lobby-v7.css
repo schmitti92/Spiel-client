@@ -439,3 +439,10 @@ body.challenge-room-active #challenge-host-launch #start-btn:not(:disabled){back
  body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .players{margin-top:6px!important}
  body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .row{margin-top:8px!important}
 }
+
+
+/* Premium V22 – richer nine-card artwork, reference-inspired gold/green rim */
+body.challenge-room-active #challenge-single-grid>button{background-blend-mode:normal!important;border:2px solid #4be1ac!important;transition:filter .16s ease,border-color .16s ease,box-shadow .16s ease!important}
+body.challenge-room-active #challenge-single-grid>button strong{position:relative;z-index:1;font-weight:900!important;text-shadow:0 2px 6px #000,0 0 12px #000!important}
+body.challenge-room-active #challenge-single-grid>button[aria-pressed="true"]{border-color:#ffdc72!important;box-shadow:0 0 0 2px #eec45e,0 0 20px #ffc84e85,inset 0 0 18px #e9ba4a25!important}
+@media(hover:hover){body.challenge-room-active #challenge-single-grid>button:hover:not(:disabled){filter:brightness(1.12)!important}}
