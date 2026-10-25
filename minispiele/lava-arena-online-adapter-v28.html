@@ -158,6 +158,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
   if(m.type==='lava-arena:snapshot'&&window.LavaArenaOnlineConfig?.challengeId===m.challengeId){
    if(!Array.isArray(m.players))return;
    if(m.phase==='results'||m.phase==='finished'){
+    for(const q of m.players){if(Number.isInteger(q.id)&&q.id>=0&&q.id<players.length&&typeof q.alive==='boolean')players[q.id].alive=q.alive;}
     if(running){running=false;ended=true;keys.clear();touch.x=touch.y=0;touch.jump=false;
      document.querySelector('#winner').textContent='🏆 Online-Ergebnis';
      document.querySelector('#details').textContent='Die Platzierung und Punkte stehen in der gemeinsamen Lobby.';
