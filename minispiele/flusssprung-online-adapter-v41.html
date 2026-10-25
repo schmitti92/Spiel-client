@@ -393,6 +393,17 @@ requestAnimationFrame(()=>{layoutActors();hud();const t=window.FlusssprungSelfTe
 </script><script>
 /* Online bridge hooks; server-authoritative transport is provided by the parent lobby. */
 window.FlusssprungOnlineConfig=null;
+// The embedded online game must never expose the local player setup while
+// waiting for the lobby handshake (or after a temporary connection delay).
+if(window.parent!==window){
+ const onlineWaiting=document.createElement('div');
+ onlineWaiting.id='flusssprung-online-waiting';
+ onlineWaiting.setAttribute('role','status');
+ onlineWaiting.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,#062b2c,#124f52);color:#fff;font:700 clamp(20px,3vw,34px) system-ui;text-align:center;padding:24px';
+ onlineWaiting.textContent='🌊 Verbindung zur gemeinsamen Spielrunde …';
+ document.body.appendChild(onlineWaiting);
+}
+
 window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  const m=event.data;
@@ -407,7 +418,7 @@ window.addEventListener('message',event=>{
   const count=document.getElementById('count');count.value=String(seats.length);
   count.dispatchEvent(new Event('change'));
   seats.forEach((seat,i)=>{const type=document.getElementById('type'+i);if(type)type.value='human'});
-  newGame();players.forEach((p,i)=>{p.name=seats[i].name;p.bot=false});focus=m.localSeat;hud();updateChoice();
+  newGame();players.forEach((p,i)=>{p.name=seats[i].name;p.bot=false});focus=m.localSeat;hud();updateChoice();document.getElementById('flusssprung-online-waiting')?.remove();
   window.parent.postMessage({type:'flusssprung:configured',challengeId:m.challengeId},event.origin);
  }
  if(m.type==='flusssprung:result'&&window.FlusssprungOnlineConfig){
