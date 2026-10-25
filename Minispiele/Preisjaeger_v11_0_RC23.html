@@ -1872,7 +1872,7 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
    if(event.data.key!==pendingKey)return;
    pendingKey='';
    byId('guessBtn').disabled=false;byId('guessInput').disabled=false;
-   byId('guessError').textContent='Speichern fehlgeschlagen. Bitte erneut versuchen.';
+   byId('guessError').textContent=safe(event.data.message||'Speichern fehlgeschlagen. Bitte erneut versuchen.',180);
   }
  });
  function submitOnlineGuess(event){
