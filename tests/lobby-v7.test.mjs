@@ -139,3 +139,8 @@ test('WebSocket subscriptions remain bound to their original room',()=>{
  assert.match(js,/type:'subscribe',code:subscribedCode,profileIdToken:token/);
  assert.match(js,/hubSocket===socket&&code===subscribedCode&&data\?\.type==='room'&&data\.room\?\.code===subscribedCode/);
 });
+
+test('Closed socket cannot schedule a reconnect for an obsolete room',()=>{
+ assert.match(js,/if\(code&&room&&activeProfile\(\)&&code===subscribedCode\)retrySocket=setTimeout/);
+ assert.match(js,/if\(code===subscribedCode\)startWatch\(\)/);
+});
