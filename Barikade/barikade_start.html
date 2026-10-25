@@ -2,7 +2,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#112d40">
 <title>Barikade · Online-Spiel-Lobby</title>
-<link rel="stylesheet" href="barikade_start.css?v=10.0.1"></head><body>
+<link rel="stylesheet" href="barikade_start.css?v=10.0.1"><style>.event-range{width:100%;min-width:130px;max-width:230px;display:grid;gap:5px}.event-range-head{text-align:center;font-weight:800;color:#f4cf79}.event-range input[type=range]{width:100%;accent-color:#e9b94c;cursor:pointer;touch-action:pan-x}.event-range input:disabled{opacity:.5;cursor:not-allowed}.event-range-labels{display:flex;justify-content:space-between;font-size:12px;opacity:.85}</style></head><body>
 <main class="wrap">
 <header class="mast">
   <a id="back-link" class="back" href="../spielauswahl-online.html">← Zurück</a>
@@ -45,7 +45,7 @@
     <section class="panel settings-box"><h2>⚙ Spieleinstellungen</h2><div id="host-status" class="host-status">👑 Nur der Host ändert die Regeln.</div>
       <div class="setting"><span class="setting-name">👥 Spielerzahl<small>Aktive Plätze (maximal 4)</small></span><div class="setting-values" id="player-setting"><span id="active-count">0 / 4</span><small>Über Spielerliste einstellen</small></div></div>
       <div class="setting"><span class="setting-name">🪵 Barikaden<small>Originalregeln: 12 Barikaden</small></span><div class="setting-values locked">12 · Standard</div></div>
-      <div class="setting"><span class="setting-name">🎲 Ereignisfelder<small>Im Bossmodus / Action-Modus</small></span><div class="select-row" id="events-options"><button data-event="5" type="button">Wenig</button><button data-event="8" type="button">Normal</button><button data-event="15" type="button">Häufig</button></div></div>
+      <div class="setting"><span class="setting-name">🎲 Ereignisfelder<small>Im Bossmodus / Action-Modus</small></span><div class="event-range" id="events-options"><div class="event-range-head"><output id="event-count-value" for="event-count">8 Ereignisfelder</output></div><input id="event-count" type="range" min="5" max="20" step="1" value="8" aria-label="Anzahl der Ereignisfelder"><div class="event-range-labels"><span>5</span><span>20</span></div></div></div>
       <div class="setting"><span class="setting-name">🃏 Joker<small>Joker je Sorte</small></span><div class="select-row" id="joker-options"><button data-joker="0" type="button">Aus</button><button data-joker="1" type="button">1</button><button data-joker="3" type="button">3</button><button data-joker="5" type="button">5</button></div></div>
       <div class="setting"><span class="setting-name">💀 Boss-Modus<small>Zusatzbosse und Portale</small></span><div class="select-row" id="boss-options"><button data-boss="false" type="button">Aus</button><button data-boss="true" type="button">Ein</button></div></div>
       <div class="setting"><span class="setting-name">⚡ Spielmodus<small>Action / Klassisch</small></span><div class="select-row" id="mode-options"><button data-mode="classic" type="button">Klassisch</button><button data-mode="action" type="button">Action</button></div></div>
@@ -61,5 +61,5 @@
 </div>
 <p id="status" class="status" role="status" aria-live="polite"></p>
 </main>
-<script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="barikade_start.js?v=10.0.2" defer></script>
+<script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script src="barikade_start.js?v=10.0.3" defer></script>
 </body></html>
