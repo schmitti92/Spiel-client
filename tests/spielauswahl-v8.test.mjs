@@ -8,7 +8,7 @@ const online=source('spielauswahl-online.html');
 const controller=source('spielauswahl-online.js');
 const hub=source('hub-lobby.js');
 const bridge=source('hub-game-bridge.js');
-const GAME_KEYS=['barikade','skyjo','kreuz','business'];
+const GAME_KEYS=['barikade','skyjo','kreuz','business','partychallenge'];
 test('Local mode lands on artwork-rich game selection with no online/auth controls',()=>{
  assert.equal((local.match(/<article class="game/g)||[]).length,4);
  assert.match(local,/Assets\/game-backgrounds\/barikade\.webp/);
@@ -17,10 +17,10 @@ test('Local mode lands on artwork-rich game selection with no online/auth contro
  assert.doesNotMatch(local,/profile-auth\.js|profile-core\.js|spielauswahl-online\.js/);
  assert.doesNotMatch(local,/href="[^"]*(?:mode=online|business_online)/);
 });
-test('Online game selection uses four server-protected game buttons, not independent room links',()=>{
- assert.equal((online.match(/<article class="game/g)||[]).length,4);
+test('Online game selection uses five server-protected game buttons, not independent room links',()=>{
+ assert.equal((online.match(/<article class="game/g)||[]).length,5);
  for(const g of GAME_KEYS)assert.ok(online.includes('data-select-game="'+g+'"'));
- assert.equal((online.match(/data-select-game=/g)||[]).length,4);
+ assert.equal((online.match(/data-select-game=/g)||[]).length,5);
  assert.doesNotMatch(online,/href="(?:Skyjo\/skyjo_action|Business\/business_online|KreuzKunter\/kreuzkunter)/);
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/\/rooms\/'.*?\+code\+'\/select'/s);
@@ -34,7 +34,7 @@ test('Entering or creating a room navigates to online game-selection home',()=>{
 function simulate({host=true,phase='lobby',game=null,choose=false}={}){
  const buttons=GAME_KEYS.map(g=>({dataset:{selectGame:g},disabled:false,listeners:{},addEventListener(t,fn){this.listeners[t]=fn;}}));
  const elements=new Map();
- const el=id=>{if(!elements.has(id))elements.set(id,{textContent:'',classList:{toggle(){}},disabled:false});return elements.get(id);};
+ const el=id=>{if(!elements.has(id))elements.set(id,{textContent:'',value:'',style:{},classList:{toggle(){}},disabled:false,addEventListener(){},focus(){}});return elements.get(id);};
  const navigated=[],requests=[];
  const room={code:'ABC23D',host,phase,game,players:[{name:'Alice',host:true},{name:'Bob',host:false}]};
  const person={uid:host?'alice':'bob',getIdToken:async()=> 'signed-token'};
