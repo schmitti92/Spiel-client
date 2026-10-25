@@ -411,7 +411,7 @@ window.addEventListener('message',event=>{
   window.parent.postMessage({type:'flusssprung:configured'},event.origin);
  }
  if(m.type==='flusssprung:result'&&window.FlusssprungOnlineConfig){
-  if(ended)return;
+  // Always show the authoritative online ranking, even if a local finish animation already set ended=true.
   const standings=Array.isArray(m.standings)?m.standings:[];
   const sorted=standings.slice().sort((a,b)=>(b.challengePoints||0)-(a.challengePoints||0)||(a.falls||0)-(b.falls||0));
   ended=true;playing=false;clearTimers();session++;
