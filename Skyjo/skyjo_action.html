@@ -124,6 +124,28 @@ body.is-playing .player.sky-active-glow :is(.player-head,.player-header,.player-
  grid-template-rows:repeat(3,minmax(0,auto))!important;
 }
 </style>
+<style id="skyjo-tablet-performance-v2">
+/* Rendering optimizations only: no changes to layout, card dimensions or gameplay. */
+@media (orientation:landscape) and (min-width:1000px) and (max-height:1000px){
+ body.is-playing .three-player-layout .player .card:not(.moving):not(.flipping),
+ body.is-playing .three-player-layout .player .card-slot:not(.moving){
+   backface-visibility:hidden;
+   -webkit-backface-visibility:hidden;
+ }
+ body.is-playing .three-player-layout .gridwrap,
+ body.is-playing .three-player-layout .center-table,
+ body.is-playing .three-player-layout .player{
+   background-attachment:scroll!important;
+ }
+ body.is-playing .three-player-layout .player .card:not(.moving):not(.flipping){
+   will-change:auto!important;
+ }
+ body.is-playing .three-player-layout .card.moving,
+ body.is-playing .three-player-layout .card.flipping{
+   will-change:transform,opacity;
+ }
+}
+</style>
 <style id="skyjo-tablet-performance-v1">
 /* Limit expensive compositing on Android tablets without changing card dimensions. */
 @media (orientation:landscape) and (min-width:1000px) and (max-height:1000px){
