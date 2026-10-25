@@ -265,3 +265,12 @@ test('Preisjäger original UI is connected to server-authoritative Challenge sta
  assert.match(js,/challenge-preisjaeger-answer/);
  assert.match(js,/event\.origin!==location\.origin/);
 });
+
+
+test('Preisjäger original online submission has retry and duplicate protection',()=>{
+ const original=text('Minispiele/Preisjaeger_v11_0_RC23.html');
+ assert.match(original,/PREISJAEGER_ONLINE_ERROR/);
+ assert.match(original,/pendingKey===stateKey\(state\)/);
+ assert.match(original,/Schätzung wird gespeichert/);
+ assert.match(js,/type:'PREISJAEGER_ONLINE_ERROR'/);
+});
