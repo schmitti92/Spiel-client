@@ -12,7 +12,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   const room=getRoom(),ch=room?.match?.challenge,f=ch?.flusssprung;
   if(!f||ch.order?.[ch.index]!=='flusssprung')return;
   const seat=room.players?.find(p=>p.me)?.seat;
-  const players=(room.players||[]).filter(p=>p.participating).sort((a,b)=>a.seat-b.seat);
+  const memberSeats=(room.match?.members||[]).map(p=>p.seat);const players=memberSeats.length?memberSeats.map(seat=>(room.players||[]).find(p=>p.seat===seat)).filter(Boolean):(room.players||[]).filter(p=>p.participating);
   const localSeat=players.findIndex(p=>p.seat===seat);
   if(localSeat<0)return;
   const key=ch.id+':'+ch.index;
