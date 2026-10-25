@@ -786,8 +786,8 @@ function render(){
     :'🔒 Der Host legt Regeln und Teilnehmer fest. Du kannst dich selbst bereit melden, sobald du einen Spielplatz hast.';
  }
  if(room.phase==='playing'&&room.match?.participating&&room.match.id!==stayInMatchId&&room.match.id!==launchedMatchId){
-   launchedMatchId=room.match.id;
-   try{enterCurrentMatch();}catch(e){showError(e);}
+   const matchId=room.match.id;
+   try{enterCurrentMatch();launchedMatchId=matchId;}catch(e){showError(e);}
  }
  el('room-code').textContent=room.code;
  el('select-help').textContent=room.phase==='playing'?'Die Partie läuft. Alle bleiben im gemeinsamen Raum.':room.host?'Du bist Host: Wähle ein Spiel für deine Gruppe.':'Der Host wählt das nächste Spiel. Du kannst dich anschließend bereit melden.';
