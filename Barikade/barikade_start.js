@@ -139,7 +139,8 @@ function render(){
   btn.setAttribute('aria-pressed',String(s.boardTheme===btn.dataset.board));
  });
  el('board-stage').dataset.theme=s.boardTheme||'wood';
- document.querySelectorAll('[data-event]').forEach(b=>{b.classList.toggle('active',safeNum(b.dataset.event)===s.eventFieldCount);b.disabled=!canEdit;});
+ const eventSlider=el('event-count');
+ if(eventSlider){const count=Math.max(5,Math.min(20,Number.isInteger(Number(s.eventFieldCount))?Number(s.eventFieldCount):8));if(document.activeElement!==eventSlider)eventSlider.value=String(count);el('event-count-value').textContent=count+' Ereignisfelder';eventSlider.disabled=!canEdit;}
  document.querySelectorAll('[data-boss]').forEach(b=>{b.classList.toggle('active',String(s.bossMode)===b.dataset.boss);b.disabled=!canEdit;});
  document.querySelectorAll('[data-mode]').forEach(b=>{b.classList.toggle('active',s.mode===b.dataset.mode);b.disabled=!canEdit;});
  document.querySelectorAll('[data-joker]').forEach(b=>{b.classList.toggle('active',safeNum(b.dataset.joker)===s.jokerStartCount||(b.dataset.joker==='0'&&s.mode==='classic'));b.disabled=!canEdit;});
@@ -198,7 +199,8 @@ function updateSettings(delta){
  if(!hostOnly())return;
  void mutate('/settings',{settings:{...room.settings,...delta}});
 }
-document.querySelectorAll('[data-event]').forEach(b=>b.addEventListener('click',()=>updateSettings({eventFieldCount:Number(b.dataset.event)})));
+const eventSlider=el('event-count');
+if(eventSlider){eventSlider.addEventListener('input',()=>{el('event-count-value').textContent=eventSlider.value+' Ereignisfelder';});eventSlider.addEventListener('change',()=>{if(hostOnly())updateSettings({eventFieldCount:Number(eventSlider.value)});});}
 document.querySelectorAll('[data-boss]').forEach(b=>b.addEventListener('click',()=>updateSettings({bossMode:b.dataset.boss==='true'})));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>updateSettings({mode:b.dataset.mode})));
 document.querySelectorAll('[data-color]').forEach(b=>b.addEventListener('click',()=>updateSettings({colorMode:b.dataset.color})));
