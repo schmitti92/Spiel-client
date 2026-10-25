@@ -234,3 +234,17 @@ test('Premium Challenge readiness visually follows the player seats',()=>{
  assert.match(css,/#room-view>\.stack:last-child>\.panel:first-child>#ready-panel\{order:4!important\}/);
  assert.match(css,/#room-view>\.stack:last-child>\.panel:first-child>#challenge-host-launch\{order:5!important\}/);
 });
+
+
+test('All nine premium illustrations are self-contained SVG assets',()=>{
+ const names=['zeitgefuehl','recheninsel','huetchen','maulwurf','fluss','lava','snake','bomber','preis'];
+ for(const name of names){
+  const art=text('Assets/challenge/'+name+'.svg');
+  assert.match(art,/^<svg\s/,'invalid SVG opening for '+name);
+  assert.match(art,/<\/svg>\s*$/,'missing SVG closing for '+name);
+  assert.match(art,/viewBox="0 0 720 420"/,'incorrect card aspect ratio for '+name);
+  assert.ok(art.length>1000,'suspiciously empty artwork for '+name);
+  assert.doesNotMatch(art,/<(?:script|foreignObject|image)\b|(?:https?:)?\/\//i,'unsafe or remote SVG content in '+name);
+  assert.ok(css.includes('Assets/challenge/'+name+'.svg'),'card not mapped to '+name);
+ }
+});
