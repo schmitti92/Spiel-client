@@ -147,3 +147,20 @@ header{background:#071e35ed;border:1px solid #4b91ba80;border-radius:22px;paddin
 #challenge-premium label{color:#d2f0ff}
 @media(min-width:1050px){#room-view{grid-template-columns:minmax(0,2.2fr) minmax(310px,.85fr)}}
 @media(max-width:700px){#challenge-single-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#challenge-single-grid>button{aspect-ratio:1.4;min-height:115px!important}}
+
+/* Premium top navigation and compact room overview */
+.premium-nav{display:flex;align-items:center;gap:8px;margin:auto}
+.premium-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:88px;min-height:55px;padding:6px 13px;border-radius:13px;text-decoration:none;color:#d2ebff;font-size:19px;font-weight:900;transition:background .16s}
+.premium-nav a span{font-size:11px;font-weight:800}
+.premium-nav a:hover,.premium-nav a:focus-visible{background:#1c6394;color:white}
+.premium-nav a:first-child{background:linear-gradient(150deg,#087cfa,#0057ae);color:#fff;box-shadow:0 0 14px #168dff8a}
+#room-view>.stack:last-child>.panel:first-child{background:linear-gradient(160deg,#0a3854ed,#05243def);border-color:#5bb5d4}
+#room-view>.stack:last-child>.panel:first-child .room-head{background:linear-gradient(115deg,#654120,#3d2a1c);border:1px solid #c18b45;border-radius:14px;padding:15px}
+#room-view>.stack:last-child>.panel:first-child .room-code{color:#ffdf80;font-size:clamp(27px,3vw,38px)}
+#room-view>.stack:last-child>.panel:first-child .players{margin-top:16px}
+#room-view>.stack:last-child>.panel:first-child .player{min-height:58px;border-radius:13px}
+#room-view>.stack:last-child>.panel:first-child .player .avatar{border-radius:50%;border:2px solid #77d6fa}
+#challenge-premium #challenge-count{max-width:none!important;background:#f0f9ff!important}
+@media(min-width:1150px){.shell{padding-top:10px}header{margin-bottom:14px}.hero{margin:12px 0}.hero h1{font-size:31px}.mode-chooser{margin-bottom:12px}.mode-option{min-height:62px;padding:10px 16px}#online-area>.account{margin-bottom:12px;padding:14px 20px}}
+@media(max-width:920px){.premium-nav{gap:3px}.premium-nav a{min-width:55px;padding:5px 7px}}
+@media(max-width:650px){.premium-nav{order:3;width:100%;justify-content:space-around}.premium-nav a{min-width:58px}header{flex-wrap:wrap}.premium-nav a span{font-size:10px}}
