@@ -413,9 +413,10 @@ window.addEventListener('message',event=>{
  if(m.type==='flusssprung:configure'){
   if(window.FlusssprungOnlineConfig&&window.FlusssprungOnlineConfig.challengeId===m.challengeId){window.FlusssprungOnlineConfig.serverOffset=Number(m.serverNow)-Date.now()||window.FlusssprungOnlineConfig.serverOffset;window.parent.postMessage({type:'flusssprung:configured',challengeId:m.challengeId},event.origin);return;}
   const seats=m.seats;
-  if(!Array.isArray(seats)||seats.length<2||seats.length>4||!seats.every(x=>typeof x.name==='string'&&x.name.length<=40))return;
-  if(!Array.isArray(m.path)||m.path.length!==5||!m.path.every(x=>Number.isInteger(x)&&x>=0&&x<6))return;
-  if(!Number.isInteger(m.localSeat)||m.localSeat<0||m.localSeat>=seats.length)return;
+  const fail=reason=>{const waiting=document.getElementById('flusssprung-online-waiting');if(waiting)waiting.textContent='⚠️ Online-Start fehlgeschlagen: '+reason;window.parent.postMessage({type:'flusssprung:config-error',challengeId:m.challengeId,reason},event.origin);};
+  if(!Array.isArray(seats)||seats.length<2||seats.length>4||!seats.every(x=>typeof x.name==='string'&&x.name.length<=80)){fail('Ungültige Spielerliste');return;}
+  if(!Array.isArray(m.path)||m.path.length!==5||!m.path.every(x=>Number.isInteger(x)&&x>=0&&x<6)){fail('Ungültiger Spielpfad');return;}
+  if(!Number.isInteger(m.localSeat)||m.localSeat<0||m.localSeat>=seats.length){fail('Spielerplatz nicht zugeordnet');return;}
   window.FlusssprungOnlineConfig={path:m.path.slice(),localSeat:m.localSeat,challengeId:m.challengeId,startAt:Number(m.startAt),serverOffset:Number(m.serverNow)-Date.now()||0};
   const count=document.getElementById('count');count.value=String(seats.length);
   count.dispatchEvent(new Event('change'));
