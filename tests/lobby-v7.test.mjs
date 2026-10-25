@@ -248,3 +248,11 @@ test('All nine premium illustrations are self-contained SVG assets',()=>{
   assert.ok(css.includes('Assets/challenge/'+name+'.svg'),'card not mapped to '+name);
  }
 });
+
+
+test('Premium settings navigation points to the active game controls',()=>{
+ assert.match(html,/data-lobby-settings/);
+ assert.match(js,/settingsNav\.setAttribute\('href',active\?'#challenge-settings-panel':'#ready-panel'\)/);
+ assert.match(html,/id="challenge-settings-panel"/);
+ assert.match(html,/id="ready-panel"/);
+});
