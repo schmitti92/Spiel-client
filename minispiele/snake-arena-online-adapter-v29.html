@@ -316,6 +316,8 @@ window.addEventListener('message',event=>{
  if(m?.type==='snake-arena:snapshot'&&window.SnakeArenaOnlineConfig?.challengeId===m.challengeId&&Array.isArray(m.players)){
   // Every participant has independent server-authoritative food.
   const c=window.SnakeArenaOnlineConfig;
+  if(Number.isSafeInteger(m.tick)&&Number.isSafeInteger(c.lastServerTick)&&m.tick<c.lastServerTick)return;
+  if(Number.isSafeInteger(m.tick))c.lastServerTick=m.tick;
   for(let i=0;i<m.players.length;i++){
    const q=m.players[(c.localSeat+i)%m.players.length],g=games[i];
    if(!q||!g)continue;
