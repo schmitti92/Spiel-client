@@ -353,7 +353,7 @@ function ensurePreisjaegerOriginalFrame(){
  frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
  frame.setAttribute('referrerpolicy','same-origin');
  frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
- frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=44';
+ frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=45';
  el('challenge-progress').append(frame);
  return frame;
 }
