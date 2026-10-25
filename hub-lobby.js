@@ -428,6 +428,22 @@ const challengeMathTimeoutPending=new Set();
 const challengeTimeTimeoutPending=new Set();
 let pjTimeoutKey='';
 let pjSubmitPendingKey='';
+let challengeFullscreenRequested=false;
+function offerChallengeFullscreen(){
+ const stage=el('challenge-progress');
+ if(!stage||stage.classList.contains('hidden'))return;
+ if(document.fullscreenElement||challengeFullscreenRequested)return;
+ // Browsers require a real user gesture; never repeatedly trigger a blocked request.
+ const request=stage.requestFullscreen||stage.webkitRequestFullscreen;
+ if(!request)return;
+ challengeFullscreenRequested=true;
+ try{Promise.resolve(request.call(stage)).catch(()=>{});}catch{}
+}
+document.addEventListener('pointerdown',event=>{
+ const stage=el('challenge-progress');
+ if(stage&&!stage.classList.contains('hidden')&&stage.contains(event.target))offerChallengeFullscreen();
+},true);
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)challengeFullscreenRequested=false;});
 function renderChallengeProgress(){
  ensureChallengeStageStyle();
  let box=el('challenge-progress');
