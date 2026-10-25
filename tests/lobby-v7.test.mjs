@@ -274,3 +274,13 @@ test('Preisjäger original online submission has retry and duplicate protection'
  assert.match(original,/Schätzung wird gespeichert/);
  assert.match(js,/type:'PREISJAEGER_ONLINE_ERROR'/);
 });
+
+
+test('Preisjäger original reveal is sourced from completed server history',()=>{
+ const original=text('Minispiele/Preisjaeger_v11_0_RC23.html');
+ assert.match(js,/history:Array\.isArray\(pj\.history\)\?pj\.history\.slice\(-1\):\[\]/);
+ assert.match(original,/pj-online-previous-reveal/);
+ assert.match(original,/last\.product\?\.price/);
+ assert.match(original,/last\.entries/);
+ assert.match(original,/previous\.hidden=!last\|\|!waitingForNext/);
+});
