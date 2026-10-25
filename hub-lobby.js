@@ -346,7 +346,7 @@ async function ensureLavaOriginalBridge(){
  try{
   const {mountLavaOriginal}=await import('./lava-arena-online-bridge.js?v=8');
   const ch=room?.match?.challenge;
-  if(!ch||ch.order?.[ch.index]!=='lava-arena'||ch.phase!=='countdown')return;
+  if(!ch||ch.order?.[ch.index]!=='lava-arena'||!['countdown','results','finished'].includes(ch.phase))return;
   const target=el('challenge-original-frame');if(!target)return;
   lavaOriginalBridge=mountLavaOriginal({container:target,getRoom:()=>room,request,acceptRoom,onError:showError});
   lavaOriginalBridge.sync();
