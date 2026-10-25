@@ -328,7 +328,7 @@ window.addEventListener('message',event=>{
    if(typeof q.alive==='boolean')g.alive=q.alive;
   }
   update();drawAll();
-  if(m.phase==='results'||m.phase==='finished'){if(!ended){if(window.SnakeArenaOnlineConfig)window.SnakeArenaOnlineConfig.completed=true;finish('🏆 Online-Runde abgeschlossen');}}
+  if(m.phase==='results'||m.phase==='finished'){if(!ended){if(window.SnakeArenaOnlineConfig)window.SnakeArenaOnlineConfig.completed=true;finish('🏆 Online-Runde abgeschlossen');}}else if(!ended&&started){$('status').textContent=games[0].alive?'🟢 Online-Runde läuft':'🐍 Ausgeschieden · Andere spielen weiter';}
  }
 });
 </script></body></html>
