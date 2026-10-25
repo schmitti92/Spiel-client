@@ -330,3 +330,13 @@ test('Zeitgefühl original uses edge-to-edge stage without surrounding lobby ele
  assert.match(js,/#challenge-progress\.zeitgefuehl-playing:not\(\.hidden\)>#challenge-original-frame/);
  assert.match(js,/height:100dvh!important/);
 });
+
+
+test('Zeitgefühl V56 prevents late stop and refreshes iframe bridge',()=>{
+ const original=text('zeitgefuehl-original.html');
+ const bridge=text('zeitgefuehl-online-bridge.js');
+ assert.match(original,/Zeit abgelaufen – Server wertet aus/);
+ assert.match(original,/if\(button\)button\.disabled=true/);
+ assert.match(bridge,/zeitgefuehl-original\.html\?v=5/);
+ assert.match(js,/zeitgefuehl-online-bridge\.js\?v=5/);
+});
