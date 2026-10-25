@@ -738,7 +738,14 @@ if(readyPanel&&roomColumns?.length===2&&challengeRoomCard){
   roomColumns[0].append(readyPanel);
  }
 }
-box.classList.toggle('hidden',!active);document.body.classList.toggle('challenge-room-active',Boolean(active));const genericChooser=el('game-chooser');if(genericChooser){genericChooser.hidden=Boolean(active);genericChooser.style.display=active?'none':'';}
+box.classList.toggle('hidden',!active);document.body.classList.toggle('challenge-room-active',Boolean(active));
+// The top navigation must lead to the visible Challenge settings rather than
+// the readiness button (which is now docked in the right-hand room rail).
+const settingsNav=document.querySelector('.premium-nav a[data-lobby-settings]');
+if(settingsNav){
+ settingsNav.setAttribute('href',active?'#challenge-settings-panel':'#ready-panel');
+ settingsNav.setAttribute('aria-label',active?'Challenge-Einstellungen öffnen':'Spiel-Einstellungen und Bereitschaft öffnen');
+}const genericChooser=el('game-chooser');if(genericChooser){genericChooser.hidden=Boolean(active);genericChooser.style.display=active?'none':'';}
  if(!active)return;
  if(room.phase!=='preparing')el('challenge-feedback').textContent='';
  if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(room.settings?.partychallenge?.selectedGame?1:9);
