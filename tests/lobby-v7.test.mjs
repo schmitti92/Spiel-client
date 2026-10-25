@@ -201,3 +201,18 @@ test('Premium tablet landscape supports taller browser viewports and all nine ma
   assert.ok(css.includes('url("Assets/challenge/'+name+'.svg")'),'missing artwork '+name);
  });
 });
+
+
+test('Challenge ready panel uses its original controls and restores them on game switch',()=>{
+ assert.match(js,/const readyPanel=el\('ready-panel'\)/);
+ assert.match(js,/if\(active&&readyPanel\.parentElement!==challengeRoomCard\)/);
+ assert.match(js,/challengeRoomCard\.insertBefore\(readyPanel,launch\)/);
+ assert.match(js,/else if\(!active&&readyPanel\.parentElement!==roomColumns\[0\]\)/);
+ assert.match(js,/roomColumns\[0\]\.append\(readyPanel\)/);
+ assert.match(css,/#room-view>\.stack:last-child>\.panel:first-child>#ready-panel/);
+ assert.match(css,/#ready-panel\.hidden\{display:none!important\}/);
+});
+test('Tablet room sidebar reserves space for readiness and start controls',()=>{
+ assert.match(css,/#challenge-host-launch #start-btn\{min-height:43px!important/);
+ assert.match(css,/#players \.player\{min-height:38px!important/);
+});
