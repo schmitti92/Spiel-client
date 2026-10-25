@@ -184,6 +184,15 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-progress.zeitgefuehl-playing>h2,#challenge-progress.zeitgefuehl-playing>#challenge-progress-name,#challenge-progress.zeitgefuehl-playing>#challenge-progress-status,#challenge-progress.zeitgefuehl-playing>#challenge-progress-order,#challenge-progress.zeitgefuehl-playing>#challenge-clock,#challenge-progress.zeitgefuehl-playing>#challenge-time-stop,#challenge-progress.zeitgefuehl-playing>#challenge-time-target{display:none!important}
 #challenge-progress.zeitgefuehl-playing>#challenge-original-frame{width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;flex:1!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 #challenge-progress.zeitgefuehl-playing>#challenge-results{display:none!important}
+/* Shared edge-to-edge presentation for every embedded original minigame. */
+#challenge-progress.original-edge-playing:not(.hidden){position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;display:block!important;margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#061624!important;box-shadow:none!important;z-index:10000!important}
+#challenge-progress.original-edge-playing:not(.hidden)::before,#challenge-progress.original-edge-playing:not(.hidden)::after{display:none!important}
+#challenge-progress.original-edge-playing:not(.hidden)>:not(#challenge-original-frame):not(#preisjaeger-original-online):not(#challenge-fullscreen-button):not(#challenge-single-actions):not(#challenge-next){display:none!important}
+#challenge-progress.original-edge-playing:not(.hidden)>#challenge-original-frame,#challenge-progress.original-edge-playing:not(.hidden)>#preisjaeger-original-online{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important}
+#challenge-progress.original-edge-playing:not(.hidden)>#challenge-fullscreen-button:not([hidden]){position:fixed!important;top:calc(4px + env(safe-area-inset-top,0px))!important;right:calc(4px + env(safe-area-inset-right,0px))!important;left:auto!important;bottom:auto!important;z-index:10120!important;opacity:.55;padding:4px 8px!important;font-size:12px!important}
+#challenge-progress.original-edge-playing:not(.hidden)>#challenge-single-actions:not([hidden]){position:fixed!important;z-index:10110!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%)!important;display:flex!important;gap:12px!important;width:min(92vw,620px)!important;padding:7px 10px!important;border-radius:20px!important;background:#071b2ce8!important}
+#challenge-progress.original-edge-playing:not(.hidden)>#challenge-single-actions:not([hidden]) button{flex:1;min-width:0}
+#challenge-progress.original-edge-playing:not(.hidden)>#challenge-next:not([hidden]){position:fixed!important;z-index:10110!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;left:50%!important;transform:translateX(-50%)!important}
 #challenge-progress.maulwurf-playing{justify-content:flex-start!important;gap:4px!important;padding:4px!important;overflow:hidden!important}
 #challenge-progress.maulwurf-playing::before,#challenge-progress.maulwurf-playing::after{display:none!important}
 #challenge-progress.maulwurf-playing>h2,#challenge-progress.maulwurf-playing>#challenge-progress-order,#challenge-progress.maulwurf-playing>#challenge-progress-status,#challenge-progress.maulwurf-playing>#challenge-progress-name,#challenge-progress.maulwurf-playing>#challenge-clock{display:none!important}
@@ -522,7 +531,7 @@ function renderChallengeProgress(){
  fullscreenButton.hidden=!ch;
  box.classList.toggle('hidden',!ch);
  if(challengeClockTimer){clearInterval(challengeClockTimer);challengeClockTimer=null;}
- if(!ch){if(document.fullscreenElement===box)document.exitFullscreen?.().catch(()=>{});challengeFullscreenRequested=false;box.classList.remove('maulwurf-playing','zeitgefuehl-playing');if(maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;el('challenge-original-frame').hidden=true;return;}
+ if(!ch){if(document.fullscreenElement===box)document.exitFullscreen?.().catch(()=>{});challengeFullscreenRequested=false;box.classList.remove('maulwurf-playing','zeitgefuehl-playing','original-edge-playing');if(maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}const overlay=el('challenge-start-overlay');if(overlay)overlay.hidden=true;el('challenge-original-frame').hidden=true;return;}
  const index=Math.min(Math.max(0,ch.index||0),ch.order.length-1);
  el('challenge-progress-name').textContent='Spiel '+(index+1)+' von '+ch.order.length+' · '+(CHALLENGE_LABELS[ch.order[index]]||ch.order[index]);
  el('challenge-progress-order').textContent=ch.order.map((g,i)=>(i===index?'➤ ':'')+(i+1)+'. '+(CHALLENGE_LABELS[g]||g)).join('  ·  ');
@@ -590,6 +599,7 @@ function renderChallengeProgress(){
  if(!originalSnakeActive&&snakeOriginalBridge){snakeOriginalBridge.destroy();snakeOriginalBridge=null;}
  if(!originalLavaActive&&lavaOriginalBridge){lavaOriginalBridge.destroy();lavaOriginalBridge=null;}
  if(!originalFlusssprungActive&&flusssprungOriginalBridge){flusssprungOriginalBridge.destroy();flusssprungOriginalBridge=null;}
+ box.classList.toggle('original-edge-playing',originalActive||(isPreisjaeger&&['countdown','results','finished'].includes(ch.phase)));
  el('challenge-original-frame').hidden=!originalActive;
  box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive);
  box.classList.toggle('preisjaeger-playing',isPreisjaeger&&ch.phase==='countdown');
