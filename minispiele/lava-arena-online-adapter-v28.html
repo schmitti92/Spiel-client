@@ -176,7 +176,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
     const target=remoteTargets.get(q.id);
     if(!target||Math.hypot(x-p.x,y-p.y)>170){p.x=x;p.y=y;p.jump=jump;}
     remoteTargets.set(q.id,{x,y,jump,at:performance.now()});
-    if(typeof q.alive==='boolean')p.alive=q.alive;
+    if(typeof q.alive==='boolean')p.alive=q.alive;if(!p.alive)remoteTargets.delete(q.id);
    }
   }
  });
