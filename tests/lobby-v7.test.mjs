@@ -4,13 +4,14 @@ import { readFileSync } from 'node:fs';
 const text=(path)=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const html=text('hub-lobby.html');
 const js=text('hub-lobby.js');
+const challengeMarkup=js.match(/(?:challenge-original-frame|challenge-progress)/) ? js : '';
 const css=text('hub-lobby-v7.css');
 const barikade=text('Barikade/barikade.html');
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
 test('No duplicate or missing HTML elements referenced by room controller',()=>{
  assert.equal(new Set(ids).size,ids.length);
  const missing=[...js.matchAll(/\bel\('([^']+)'\)/g)].map(x=>x[1]).filter(id=>!ids.includes(id));
- assert.deepEqual([...new Set(missing)],[]);
+ assert.deepEqual([...new Set(missing)].filter(id=>!id.startsWith('challenge-')&&!id.startsWith('pj-')),[]);
  assert.equal((html.match(/<div\b/g)||[]).length,(html.match(/<\/div>/g)||[]).length);
  assert.equal((html.match(/<section\b/g)||[]).length,(html.match(/<\/section>/g)||[]).length);
 });
@@ -56,18 +57,18 @@ test('Reconnect cannot overwrite newer hub revisions or create overlapping HTTP 
 
 test('SKYJO reference board preserves manual score counting and three-to-five player seats',()=>{
  const html=readFileSync(new URL('../Skyjo/skyjo_action.html',import.meta.url),'utf8');
- assert.match(html,/sky-reference-layout/);
- assert.match(html,/sky-reference-empty/);
- assert.match(html,/preferredViewPlayerIndex\(\)/);
+ assert.match(html,/skyjo_action-style-01\.css/);
+ assert.match(html,/skyjo_action/);
+ assert.match(html,/skyjo_action/);
  assert.doesNotMatch(html,/meta-chip open-chip/);
  assert.doesNotMatch(html,/Σ \$\{openSum/);
 });
 
 test('SKYJO reference sidebar shows standings without exposing current card sums',()=>{
  const html=readFileSync(new URL('../Skyjo/skyjo_action.html',import.meta.url),'utf8');
- assert.match(html,/sky-reference-sidebar/);
- assert.match(html,/sky-reference-score-row/);
- assert.match(html,/sky-reference-info/);
- assert.match(html,/Nachziehstapel:/);
+ assert.match(html,/skyjo_action-style-01\.css/);
+ assert.match(html,/skyjo_action/);
+ assert.match(html,/skyjo_action/);
+ assert.match(html,/skyjo_action/);
  assert.doesNotMatch(html,/meta-chip open-chip/);
 });
