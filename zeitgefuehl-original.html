@@ -9,6 +9,18 @@
 @keyframes winnerPop{from{transform:scale(.9);opacity:.4}to{transform:scale(1);opacity:1}}
 @media(max-width:640px){.stop{min-height:72px}.player{min-width:0}.scene{padding-bottom:32px}}
 @media(prefers-reduced-motion:reduce){.result-card.winner{animation:none}.stop{transition:none}}
+/* Online tablet layout: keep every STOPP button above system navigation. */
+body:has(.scene.online-play) {height:100dvh;overflow:hidden}
+.scene.online-play{height:100dvh;min-height:0;overflow:hidden;padding:clamp(5px,1vh,12px) clamp(8px,1vw,16px) max(8px,env(safe-area-inset-bottom,0px))}
+.scene.online-play .stage{flex:1;min-height:0;justify-content:space-evenly;gap:clamp(2px,.7vh,8px);padding-top:0}
+.scene.online-play .players{margin-top:0;flex-shrink:0;gap:clamp(5px,1vw,12px)}
+.scene.online-play .player{padding:clamp(4px,.8vh,9px) 5px}
+.scene.online-play .player h2{margin:2px 0 4px}
+.scene.online-play .avatar{font-size:clamp(18px,3vh,30px)}
+.scene.online-play .stop{padding:clamp(7px,1.1vh,12px) 4px;min-height:40px}
+.scene.online-play .status{margin-top:4px;min-height:16px}
+.scene.online-play .clock{width:clamp(105px,19vh,180px);height:clamp(105px,19vh,180px)}
+@media(max-height:540px){.scene.online-play .hint{padding:3px}.scene.online-play .target{padding:4px 12px}.scene.online-play .player h2{font-size:13px}.scene.online-play .status{font-size:11px}}
 </style></head><body><main class="scene jungle" id="scene"><header class="header"><h1 id="heading">ZEITGEFÜHL</h1><p class="subtitle" id="subtitle">WIE GUT IST DEIN ZEITGEFÜHL?</p></header><section class="stage"><div class="target" id="target">🎯 Zielzeit wird ausgelost</div><div class="clock" id="clock"><span id="digits">0,00</span></div><div class="hint" id="hint">Die ersten 3 Sekunden siehst du die Uhr. Danach läuft sie unsichtbar weiter!</div><div class="setup" id="setup"><label>👤 Menschen <select id="humans"><option>1</option><option>2</option><option>3</option><option selected>4</option></select></label><label>🤖 Computer <select id="bots"><option selected>0</option><option>1</option><option>2</option><option>3</option></select></label><button class="gold" id="start">▶ SPIEL STARTEN</button></div><div class="players" id="players"></div><div class="results" id="results" hidden></div><div class="end" id="end" hidden>🏁 Minispiel beendet</div></section><footer class="foot">Eine Runde · 10–20 Sekunden Zufallsziel · Offline · Tasten 1–4</footer></main><script>(()=>{'use strict';
 const $=id=>document.getElementById(id),scene=$('scene'),digits=$('digits'),clock=$('clock'),players=$('players'),results=$('results'),hint=$('hint');
 const MAX_TIME=30000,colors=['#38a8ff','#ff5868','#45d88e','#ffce49'];
@@ -19,6 +31,7 @@ function onlineSync(data){
  if(!data||data.type!=='zeitgefuehl:state')return;
  const sameRound=onlineMode&&onlineChallenge===data.challengeId&&onlineStartAt===Number(data.startAt);
  onlineMode=true;onlineChallenge=data.challengeId;onlineSeat=data.mySeat;
+ scene.classList.add('online-play');
  const observedOffset=Number(data.serverNow)-Date.now();
  onlineOffset=sameRound?onlineOffset*0.8+observedOffset*0.2:observedOffset;
  onlineStartAt=Number(data.startAt);onlineStopped=!!data.stopped;
@@ -60,8 +73,8 @@ function onlineSync(data){
   if(elapsed<0){phase='countdown';digits.textContent=String(Math.max(1,Math.ceil(-elapsed/1000)));hint.textContent='Gemeinsamer Start in '+Math.ceil(-elapsed/1000);return;}
   phase='running';
   const ownButton=entries.findIndex(e=>e.id===onlineSeat);if(ownButton>=0){const btn=$('p'+ownButton)?.querySelector('button');if(btn)btn.disabled=onlineStopped;}
-  if(elapsed<3000){digits.textContent=(elapsed/1000).toFixed(2).replace('.',',');clock.classList.remove('hidden-time');scene.className='scene';}
-  else{digits.textContent='?';clock.classList.add('hidden-time');scene.className='scene night';}
+  if(elapsed<3000){digits.textContent=(elapsed/1000).toFixed(2).replace('.',',');clock.classList.remove('hidden-time');scene.className='scene online-play';}
+  else{digits.textContent='?';clock.classList.add('hidden-time');scene.className='scene night online-play';}
   hint.textContent=onlineStopped?'✓ Stopp gespeichert – warte auf Mitspieler':'Stoppe bei '+fmt(goal)+'!';
   if(elapsed>=30000){phase='finished';clearInterval(onlineTimer);$('subtitle').textContent='Warte auf die Server-Auswertung';}
  }
