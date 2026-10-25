@@ -90,7 +90,7 @@ test('Tablet landscape card sizing remains bounded and cache version matches',()
 
 test('Marathon selection prevents duplicate submissions while a request is pending',()=>{
  assert.match(js,/const button=el\('challenge-marathon'\);if\(button\.disabled\)return;/);
- assert.match(js,/button\.disabled=true;[\s\S]*?count:9,selectedGame:null[\s\S]*?finally\{button\.disabled=false;\}/);
+ assert.match(js,/button\.disabled=true;[\s\S]*?count:9,selectedGame:null[\s\S]*?finally\{button\.disabled=false;challengeSettingsBusy=false;\}/);
 });
 
 test('Replay, return-to-selection and next-game controls ignore duplicate taps',()=>{
