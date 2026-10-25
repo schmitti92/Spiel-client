@@ -3,11 +3,11 @@ export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}
  frame.src='./minispiele/lava-arena-online-adapter-v28.html?v=21';
  frame.title='Lava Arena Online';frame.style.cssText='width:100%;height:100%;border:0;display:block';frame.setAttribute('allow','fullscreen');
  container.replaceChildren(frame);
- let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,seqOffset=null,challengeKey='',clockOffset=0,requestEpoch=0,configuredSeat=-1,configuredSeatsKey='';
+ let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,seqOffset=null,challengeKey='',clockOffset=0,requestEpoch=0,configuredSeat=-1,configuredSeatsKey='',lastServerNow=null;
  function current(){const room=getRoom(),ch=room?.match?.challenge;return ch?.order?.[ch.index]==='lava-arena'?{room,ch}:null}
  function sync(){
   if(!alive||!ready)return;const c=current();if(!c)return;
-  const {room,ch}=c;clockOffset=Number.isFinite(room.serverNow)?room.serverNow-Date.now():clockOffset;const nextKey=ch.id+':'+ch.index;if(nextKey!==challengeKey){challengeKey=nextKey;requestEpoch++;configured=false;pending=false;lastSeq=0;seqOffset=null;lastTimeout=false;}const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
+  const {room,ch}=c;if(Number.isFinite(room.serverNow)&&room.serverNow!==lastServerNow){lastServerNow=room.serverNow;clockOffset=room.serverNow-Date.now();}const nextKey=ch.id+':'+ch.index;if(nextKey!==challengeKey){challengeKey=nextKey;requestEpoch++;configured=false;pending=false;lastSeq=0;seqOffset=null;lastTimeout=false;}const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
   const mine=room.players.find(p=>p.me)?.seat;const localSeat=seats.indexOf(mine);
   if(localSeat<0)return;
   const seatsKey=seats.join(',');
