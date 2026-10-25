@@ -326,3 +326,9 @@ body.challenge-room-active #challenge-single-grid>button{transition:transform .1
 @media(hover:hover){body.challenge-room-active #challenge-single-grid>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 22px #0008!important}}
 body.challenge-room-active #challenge-single-grid>button:focus-visible{outline:3px solid #ffe18a!important;outline-offset:2px!important}
 @media(prefers-reduced-motion:reduce){body.challenge-room-active #challenge-single-grid>button{transition:none!important}}
+
+/* Premium V15: fix Samsung tablet grid overflow introduced by compact aspect ratio */
+body.challenge-room-active #challenge-single-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;min-width:0!important;width:100%!important;box-sizing:border-box!important;gap:9px!important}
+body.challenge-room-active #challenge-single-grid>button{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;justify-self:stretch!important;overflow:hidden!important;aspect-ratio:auto!important;height:clamp(112px,11vw,155px)!important;min-height:0!important}
+body.challenge-room-active #challenge-single-grid>button *{max-width:100%}
+@media(max-width:620px){body.challenge-room-active #challenge-single-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
