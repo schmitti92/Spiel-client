@@ -21,6 +21,18 @@ body:has(.scene.online-play) {height:100dvh;overflow:hidden}
 .scene.online-play .status{margin-top:4px;min-height:16px}
 .scene.online-play .clock{width:clamp(105px,19vh,180px);height:clamp(105px,19vh,180px)}
 .scene.online-play .foot{display:none!important}
+/* Online podium: reserve a clear footer lane for lobby replay/navigation buttons. */
+.scene.online-play.online-results{display:flex;flex-direction:column;justify-content:flex-start;gap:clamp(4px,1vh,12px);padding:clamp(8px,1.5vh,16px) 16px clamp(90px,14vh,116px)!important;box-sizing:border-box}
+.scene.online-play.online-results .header{flex:0 0 auto}
+.scene.online-play.online-results .stage{display:flex;flex-direction:column;justify-content:flex-start;flex:1;min-height:0;gap:clamp(4px,1vh,12px);padding:0!important}
+.scene.online-play.online-results .results{margin:clamp(8px,2vh,20px) auto 0!important;align-content:center;align-items:stretch;grid-template-columns:repeat(var(--result-count,3),minmax(0,1fr));gap:clamp(7px,1vw,16px);width:min(1040px,96%);max-height:100%;overflow-y:auto}
+.scene.online-play.online-results .result-card{padding:clamp(10px,1.7vh,18px) clamp(7px,1vw,14px);border-radius:20px}
+.scene.online-play.online-results .result-card h2{margin:0 0 clamp(5px,1vh,12px);font-size:clamp(17px,2.2vw,26px)}
+.scene.online-play.online-results .result-card strong{font-size:clamp(22px,3vw,36px)}
+.scene.online-play.online-results .end{display:none!important}
+.scene.online-play.online-results .foot{display:none!important}
+@media(max-height:650px){.scene.online-play.online-results{padding-bottom:clamp(76px,15vh,100px)!important}.scene.online-play.online-results .header h1{font-size:clamp(25px,6vh,43px)!important}.scene.online-play.online-results .result-card{padding:8px}}
+@media(max-width:650px){.scene.online-play.online-results .results{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .scene.online-play .results{max-height:min(60dvh,440px);overflow-y:auto;overscroll-behavior:contain}
 .scene.online-play .result-card{padding:clamp(8px,1.5vh,18px)}
 .scene.online-play .end{margin:4px auto!important}
@@ -43,7 +55,7 @@ function onlineSync(data){
  if(!data||data.type!=='zeitgefuehl:state')return;
  const sameRound=onlineMode&&onlineChallenge===data.challengeId&&onlineStartAt===Number(data.startAt);
  onlineMode=true;onlineChallenge=data.challengeId;onlineSeat=data.mySeat;
- scene.classList.add('online-play');
+ scene.classList.add('online-play');scene.classList.remove('online-results');
  const observedOffset=Number(data.serverNow)-Date.now();
  onlineOffset=sameRound?onlineOffset*0.8+observedOffset*0.2:observedOffset;
  onlineStartAt=Number(data.startAt);onlineStopped=!!data.stopped;
@@ -95,11 +107,12 @@ function onlineSync(data){
 function showOnlineResults(data){
  if(!onlineMode||data.challengeId!==onlineChallenge||!Array.isArray(data.standings))return;
  if(onlineTimer){clearInterval(onlineTimer);onlineTimer=null;}
- phase='finished';players.hidden=true;clock.hidden=true;
+ phase='finished';scene.classList.add('online-play','online-results');players.hidden=true;clock.hidden=true;
  $('subtitle').textContent='🏆 DIE AUSWERTUNG';
  $('target').textContent='🎯 ZIELZEIT: '+Number(data.targetSeconds).toFixed(2).replace('.',',')+' s';
  hint.textContent='Die genaueste Schätzung gewinnt!';
  results.replaceChildren();results.hidden=false;
+ results.style.setProperty('--result-count',Math.min(4,Math.max(1,data.standings.length)));
  const sorted=data.standings.slice().sort((a,b)=>(Number.isFinite(Number(a.deltaMs))?Number(a.deltaMs):Infinity)-(Number.isFinite(Number(b.deltaMs))?Number(b.deltaMs):Infinity)||Number(a.seat)-Number(b.seat));
  sorted.forEach((p,i)=>{
   const card=document.createElement('article');card.className='result-card'+(i===0||i>0&&Number(p.deltaMs)===Number(sorted[0]?.deltaMs)?' winner':'');
@@ -109,8 +122,7 @@ function showOnlineResults(data){
   const points=document.createElement('strong');points.textContent='+'+(Number(p.challengePoints)||0)+' Punkte';
   card.append(title,time,delta,points);results.append(card);
  });
- $('end').hidden=false;
- $('end').textContent='🏁 Minispiel beendet · Der Host kann zur Spielauswahl zurückkehren.';
+ $('end').hidden=true; // The shared lobby provides replay and game-selection controls.
 }
 window.addEventListener('message',event=>{if(event.source!==window.parent||event.origin!==location.origin)return;
 if(event.data?.type==='zeitgefuehl:result'){showOnlineResults(event.data);return;}
