@@ -26,11 +26,11 @@ test('No duplicate or missing UI elements referenced in new controller',()=>{
 test('UI includes supported settings and exactly two selectable boards',()=>{
  for(const key of ['target','jokerCount','streetModeEnabled','jokerEnabled','beginner'])assert.ok(html.includes('data-key="'+key+'"'),key);
  for(const key of ['streetScoring','specialCards','maxPlayers'])assert.ok(html.includes('data-key="'+key+'"'),key);
- for(const board of ['classic','illustrated'])assert.ok(html.includes('data-board="'+board+'"'),board);
- assert.equal((html.match(/class="sj-board(?: active)?"/g)||[]).length,2);
+ for(const board of ['classic'])assert.ok(html.includes('data-board="'+board+'"'),board);
+ assert.equal((html.match(/class="sj-board(?: active)?"/g)||[]).length,1);
 });
 test('Unsupported settings remain preview-only and do not change game rules',()=>{
- assert.match(html,/Die Auswahl gilt für alle Spieler im Online-Raum/i);
+ assert.match(html,/Aktuell steht ausschließlich das klassische Spielfeld zur Verfügung/i);
  assert.match(html,/Weitere Wertungen sind noch nicht im Spiel verfügbar/);
  assert.match(js,/const supported=\['target','jokerCount','streetModeEnabled','jokerEnabled','beginner'\]/);
  assert.doesNotMatch(js,/mutate\('\/skyjo-settings'.*?(?:streetScoring|specialCards)/);
