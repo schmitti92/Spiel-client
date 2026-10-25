@@ -332,3 +332,12 @@ body.challenge-room-active #challenge-single-grid{display:grid!important;grid-te
 body.challenge-room-active #challenge-single-grid>button{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;justify-self:stretch!important;overflow:hidden!important;aspect-ratio:auto!important;height:clamp(112px,11vw,155px)!important;min-height:0!important}
 body.challenge-room-active #challenge-single-grid>button *{max-width:100%}
 @media(max-width:620px){body.challenge-room-active #challenge-single-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* Premium V16: compact tablet spacing and clearer wood room card */
+@media(min-width:900px) and (max-width:1700px){
+ body.challenge-room-active #challenge-single-grid{gap:10px!important}
+ body.challenge-room-active #challenge-single-grid>button{height:clamp(110px,10.4vw,150px)!important}
+ body.challenge-room-active #challenge-single-grid>button{background-position:center!important}
+}
+body.challenge-room-active #challenge-single-grid>button{isolation:isolate!important}
+body.challenge-room-active #challenge-single-grid>button:focus-visible{outline:3px solid #ffdf80!important;outline-offset:2px!important}
