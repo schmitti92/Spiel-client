@@ -41,7 +41,9 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    if(idx>=0&&idx!==localSeat&&Number.isInteger(m.row)&&Number.isInteger(m.col))frame.contentWindow.postMessage({type:'flusssprung:remote-jump',seat:idx,row:m.row,col:m.col},location.origin);
   }
   const snapshot=JSON.stringify((f.players||[]).map(p=>({index:players.findIndex(x=>x.seat===p.seat),row:p.row,falls:p.falls,finishedAt:p.finishedAt})));
-  if(snapshot!==lastSnapshot||room.revision!==lastSyncRevision){
+  // Always re-send the authoritative snapshot: the iframe may have skipped an update while an actor was mid-jump.
+  // 500 ms postMessage retries are local-only; this does not add network polling.
+  {
    lastSnapshot=snapshot;lastSyncRevision=room.revision;
    frame.contentWindow.postMessage({type:'flusssprung:server-state',players:JSON.parse(snapshot),moves:moves.map(m=>({index:players.findIndex(p=>p.seat===m.seat),row:m.row,col:m.col}))},location.origin);
   }
