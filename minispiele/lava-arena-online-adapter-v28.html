@@ -140,6 +140,8 @@ const jump=document.querySelector('#jump');jump.addEventListener('pointerdown',e
 document.querySelector('#touch').addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(running)togglePause(true)});document.querySelector("#pause").style.display="none";render(0);
  let onlineLastReport=0,onlineSeq=0;const remoteTargets=new Map();
+ function updateOnlineStart(m){const c=window.LavaArenaOnlineConfig;if(!c)return;if(Number.isFinite(m.startAt))c.startAt=m.startAt;if(Number.isFinite(m.serverOffset))c.serverOffset=m.serverOffset;}
+ function onlineCanMove(){const c=window.LavaArenaOnlineConfig;return !c||!Number.isFinite(c.startAt)||Date.now()+(c.serverOffset||0)>=c.startAt;}
  window.addEventListener('message',e=>{
   if(e.origin!==location.origin||e.source!==parent)return;
   const m=e.data;if(!m||typeof m!=='object')return;
@@ -153,10 +155,12 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
     document.querySelector('#again').style.display='none';
     document.querySelector('#touch').classList.add('active');
    }
+   updateOnlineStart(m);
    parent.postMessage({type:'lava-arena:configured',challengeId:m.challengeId},e.origin);
   }
   if(m.type==='lava-arena:snapshot'&&window.LavaArenaOnlineConfig?.challengeId===m.challengeId){
    if(!Array.isArray(m.players))return;
+   updateOnlineStart(m);
    if(m.phase==='results'||m.phase==='finished'){
     for(const q of m.players){if(Number.isInteger(q.id)&&q.id>=0&&q.id<players.length&&typeof q.alive==='boolean')players[q.id].alive=q.alive;}
     if(running){running=false;ended=true;keys.clear();touch.x=touch.y=0;touch.jump=false;
@@ -181,7 +185,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
   }
  });
  const offlineUpdate=update;
- update=function(dt){offlineUpdate(dt);const c=window.LavaArenaOnlineConfig;
+ update=function(dt){if(!onlineCanMove()){last=performance.now();return;}offlineUpdate(dt);const c=window.LavaArenaOnlineConfig;
   if(c&&running){for(const [id,target] of remoteTargets){const p=players[id];if(!p||!p.alive||id===c.localSeat){remoteTargets.delete(id);continue;}const elapsed=performance.now()-target.at;if(elapsed>2500){remoteTargets.delete(id);continue;}const blend=1-Math.exp(-Math.min(dt,.05)*14);p.x+=(target.x-p.x)*blend;p.y+=(target.y-p.y)*blend;p.jump+=(target.jump-p.jump)*blend;}}
   if(!c||!running||performance.now()-onlineLastReport<100)return;
   onlineLastReport=performance.now();const p=players[c.localSeat];
