@@ -838,3 +838,32 @@ body.challenge-room-active #challenge-single-grid>button:nth-child(4){background
 body.challenge-room-active #challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/snake.svg?v=39")!important}
 body.challenge-room-active #challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/bomber.svg?v=39")!important}
 body.challenge-room-active #challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/preis.svg?v=39")!important}
+
+
+/* Premium V40 – artwork polish without increasing card or sidebar dimensions. */
+body.challenge-room-active #challenge-single-grid>button{
+ isolation:isolate!important;overflow:hidden!important;
+}
+body.challenge-room-active #challenge-single-grid>button::after{
+ content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ border-radius:inherit;
+ background:linear-gradient(165deg,#ffffff26 0%,transparent 30%,transparent 67%,#00152354 100%);
+}
+body.challenge-room-active #challenge-single-grid>button strong,
+body.challenge-room-active #challenge-single-grid>button .mini-meta,
+body.challenge-room-active #challenge-single-grid>button .mini-picked{
+ z-index:2!important;
+}
+body.challenge-room-active #challenge-single-grid>button:focus-visible{
+ outline:3px solid #ffe59a!important;outline-offset:2px!important;
+ box-shadow:0 0 0 5px #062f48,0 0 18px #ffde7c!important;
+}
+body.challenge-room-active #challenge-single-grid>button[aria-pressed="true"]::after{
+ background:linear-gradient(165deg,#ffe39b38,transparent 35%,#ffbb4430)!important;
+}
+@media(prefers-reduced-motion:reduce){
+ body.challenge-room-active #challenge-single-grid>button,
+ body.challenge-room-active #challenge-single-grid>button:hover{
+  transition:none!important;animation:none!important;transform:none!important;
+ }
+}
