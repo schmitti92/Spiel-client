@@ -12,7 +12,7 @@ export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}
   if(localSeat<0)return;
   if(!configured){frame.contentWindow.postMessage({type:'lava-arena:configure',challengeId:ch.id,localSeat,seats},location.origin);return}
   if(ch.lava&&Array.isArray(ch.lava.players)){const mineState=ch.lava.players.find(p=>p.seat===mine);if(mineState&&Number.isSafeInteger(mineState.seq)){lastSeq=Math.max(lastSeq,mineState.seq);if(seqOffset===null)seqOffset=mineState.seq;}frame.contentWindow.postMessage({type:'lava-arena:snapshot',challengeId:ch.id,players:ch.lava.players.map(p=>({...p,id:seats.indexOf(p.seat)})).filter(p=>p.id>=0),tiles:ch.lava.tiles,phase:ch.phase},location.origin);}
-  if(ch.phase==='countdown'&&Date.now()+clockOffset>ch.startAt+90000&&!lastTimeout){lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-lava-timeout','POST',{challengeId:ch.id}).then(r=>{if(alive&&r?.room)acceptRoom(r.room)}).catch(error=>{lastTimeout=false;onError(error)})}
+  if(ch.phase==='countdown'&&Number.isFinite(ch.startAt)&&Date.now()+clockOffset>ch.startAt+90000&&!lastTimeout){const timeoutEpoch=requestEpoch;lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-lava-timeout','POST',{challengeId:ch.id}).then(r=>{if(alive&&timeoutEpoch===requestEpoch&&r?.room)acceptRoom(r.room)}).catch(error=>{if(alive&&timeoutEpoch===requestEpoch){lastTimeout=false;onError(error)}})}
  }
  async function onMessage(e){
   if(!alive||e.origin!==location.origin||e.source!==frame.contentWindow)return;
@@ -21,7 +21,7 @@ export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}
   if(m.type!=='lava-arena:state'||pending||!Number.isSafeInteger(m.seq)||m.seq+(seqOffset||0)<=lastSeq||Date.now()-lastSend<90||c.ch.phase!=='countdown'||Date.now()+clockOffset<c.ch.startAt)return;
   const p=m.player;if(!p||![p.x,p.y,p.jump].every(Number.isFinite)||p.x<0||p.x>800||p.y<0||p.y>800||p.jump<0||p.jump>1.3)return;
   const epoch=requestEpoch, sentSeq=m.seq+(seqOffset||0);pending=true;lastSend=Date.now();lastSeq=Math.max(lastSeq,sentSeq);
-  try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-lava-state','POST',{challengeId:c.ch.id,seq:sentSeq,x:p.x,y:p.y,jump:p.jump});if(r?.room)acceptRoom(r.room)}
+  try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-lava-state','POST',{challengeId:c.ch.id,seq:sentSeq,x:p.x,y:p.y,jump:p.jump});if(alive&&epoch===requestEpoch&&r?.room)acceptRoom(r.room)}
   catch(error){if(alive&&epoch===requestEpoch){lastSeq=Math.min(lastSeq,sentSeq-1);onError(error)}}finally{if(epoch===requestEpoch)pending=false}
  }
  window.addEventListener('message',onMessage);
