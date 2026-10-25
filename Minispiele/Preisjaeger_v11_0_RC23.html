@@ -1883,7 +1883,7 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
    byId('guessError').textContent='Die Preisfrage startet gleich. Bitte kurz warten.';
    return;
   }
-  const raw=byId('guessInput').value.trim().replace(/\\s|€/g,'').replace(',','.');
+  const raw=byId('guessInput').value.trim().replace(/\s|€/g,'').replace(',','.');
   const guess=Number(raw);
   if(!raw||!Number.isFinite(guess)||guess<=0||guess>1000000){
    byId('guessError').textContent='Bitte einen Preis über 0 € eingeben (z. B. 4,99).';
