@@ -20,7 +20,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
    tickPending=true;lastTickRequest=Date.now();const expectedId=ch.id;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:expectedId}).then(r=>{if(alive&&current()?.ch.id===expectedId&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{tickPending=false});
   }
-  if(configured&&tickLeader&&ch.phase==='countdown'&&Date.now()+offset>ch.startAt+180000&&!lastTimeout){
+  if(configured&&tickLeader&&ch.phase==='countdown'&&Date.now()+offset>ch.startAt+180000&&!lastTimeout&&!tickPending){
    lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:ch.id}).then(r=>{if(alive&&current()?.ch.id===ch.id&&r?.room)acceptRoom(r.room)}).catch(e=>{lastTimeout=false;if(alive)onError(e)});
   }
  }
