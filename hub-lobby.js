@@ -37,12 +37,13 @@ function stopWatch(){
 }
 function startWatch(){
  if(!code||!room||!activeProfile()||hubSocket)return;
+ const subscribedCode=code;
  const socket=new WebSocket(API.replace(/^http/i,'ws')+'/hub');hubSocket=socket;
  let lastPong=Date.now();
  socket.onopen=async()=>{
   try{const token=await logged().user.getIdToken();
-    if(hubSocket===socket&&socket.readyState===1){
-      socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));
+    if(hubSocket===socket&&code===subscribedCode&&socket.readyState===1){
+      socket.send(JSON.stringify({type:'subscribe',code:subscribedCode,profileIdToken:token}));
       hubHeartbeat=setInterval(()=>{
         if(hubSocket!==socket||socket.readyState!==1)return;
         if(Date.now()-lastPong>95000){socket.close();return;}
@@ -54,7 +55,7 @@ function startWatch(){
  socket.onmessage=event=>{
   let data;try{data=JSON.parse(event.data);}catch(_e){return;}
   if(data?.type==='pong')lastPong=Date.now();
-  if(hubSocket===socket&&data?.type==='room'&&data.room?.code===code){lastPong=Date.now();streamReady=true;streamLast=Date.now();acceptRoom(data.room);}
+  if(hubSocket===socket&&code===subscribedCode&&data?.type==='room'&&data.room?.code===subscribedCode){lastPong=Date.now();streamReady=true;streamLast=Date.now();acceptRoom(data.room);}
  };
  socket.onclose=()=>{
   if(hubSocket!==socket)return;
