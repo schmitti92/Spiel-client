@@ -132,7 +132,64 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refre
 // Keep the existing HTTP fallback, but avoid a Firestore read every 3.5 seconds
  // per player. Immediate refreshes on login/visibility and after actions remain.
  // Polling continues while visible so game selection still works without WS.
- setInterval(refresh,15000);
+ // Use the existing authenticated hub stream for immediate updates.
+ // HTTP polling stays as a 60s recovery fallback if the stream is interrupted.
+ let selectionSocket=null,retrySelectionSocket=null,selectionHeartbeat=null,selectionStreamReady=false;
+ function stopSelectionStream(){
+   selectionStreamReady=false;
+   if(retrySelectionSocket){clearTimeout(retrySelectionSocket);retrySelectionSocket=null;}
+   if(selectionHeartbeat){clearInterval(selectionHeartbeat);selectionHeartbeat=null;}
+   if(selectionSocket){const old=selectionSocket;selectionSocket=null;old.onclose=null;try{old.close();}catch(_){}}
+ }
+ function startSelectionStream(){
+   if(!codeValid||document.hidden||!user()||selectionSocket)return;
+   let socket;
+   try{socket=new WebSocket(base.replace(/^http/i,'ws')+'/hub');}catch(_){return;}
+   selectionSocket=socket;
+   let lastPong=Date.now();
+   socket.onopen=async()=>{
+     try{
+       const person=user(),uid=person?.uid,token=await person?.getIdToken();
+       if(!uid||user()?.uid!==uid||selectionSocket!==socket||socket.readyState!==1){socket.close();return;}
+       socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));
+       selectionHeartbeat=setInterval(()=>{
+         if(selectionSocket!==socket||socket.readyState!==1)return;
+         if(Date.now()-lastPong>95000){socket.close();return;}
+         socket.send(JSON.stringify({type:'ping'}));
+       },30000);
+     }catch(_){try{socket.close();}catch(_e){}}
+   };
+   socket.onmessage=event=>{
+     let data;try{data=JSON.parse(event.data);}catch(_){return;}
+     if(selectionSocket!==socket)return;
+     if(data?.type==='pong')lastPong=Date.now();
+     if(data?.type==='room'&&data.room?.code===code){
+       lastPong=Date.now();selectionStreamReady=true;update(data.room);
+     }
+   };
+   socket.onclose=()=>{
+     if(selectionSocket!==socket)return;
+     selectionSocket=null;selectionStreamReady=false;
+     if(selectionHeartbeat){clearInterval(selectionHeartbeat);selectionHeartbeat=null;}
+     if(!document.hidden&&user())retrySelectionSocket=setTimeout(()=>{
+       retrySelectionSocket=null;void refresh();startSelectionStream();
+     },4500);
+   };
+   socket.onerror=()=>{};
+ }
+ window.addEventListener('spielonline-change',()=>{
+   const person=user();
+   if(!person||notifiedUid&&person.uid!==notifiedUid)stopSelectionStream();
+   if(person)startSelectionStream();
+ });
+ document.addEventListener('visibilitychange',()=>{
+   if(document.hidden)stopSelectionStream();
+   else startSelectionStream();
+ });
+ window.addEventListener('pagehide',stopSelectionStream);
+ setInterval(()=>{if(!selectionStreamReady)void refresh();},15000);
+ setInterval(()=>{if(selectionStreamReady)void refresh();},60000);
+ startSelectionStream();
 renderProfileShortcut();
 void refresh();
 })();
