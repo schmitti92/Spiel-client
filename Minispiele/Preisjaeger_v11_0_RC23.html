@@ -1763,6 +1763,8 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
  const send=(type,payload={})=>window.parent.postMessage({type,...payload},location.origin);
  const safe=(value,max=180)=>String(value??'').slice(0,max);
  let state=null;
+ let pendingKey='';
+ const stateKey=data=>String(data?.challengeId||'')+':'+String(data?.round||'');
  function render(data){
   if(!data||typeof data!=='object'||!data.product)return;
   state=data;
@@ -1798,14 +1800,22 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
   for(const id of ['handoff','guessPanel','revealPanel','resultPanel'])byId(id).classList.add('hidden');
   byId('guessPanel').classList.remove('hidden');
   byId('guessTitle').textContent=data.answered?'🔒 Deine Schätzung wurde gespeichert':'Was kostet dieses Produkt?';
-  byId('guessInput').disabled=!!data.answered;
-  byId('guessBtn').disabled=!!data.answered;
-  byId('guessError').textContent=data.answered?'Warte auf die anderen Spieler.':'';
+  const pending=pendingKey===stateKey(data);
+  byId('guessInput').disabled=!!data.answered||pending;
+  byId('guessBtn').disabled=!!data.answered||pending;
+  byId('guessError').textContent=data.answered?'Warte auf die anderen Spieler.':pending?'Schätzung wird gespeichert …':'';
+  if(data.answered||pendingKey&&pendingKey!==stateKey(data))pendingKey='';
   byId('exitBtn').hidden=true;
  }
  window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==window.parent)return;
   if(event.data?.type==='PREISJAEGER_ONLINE_STATE')render(event.data.state);
+  if(event.data?.type==='PREISJAEGER_ONLINE_ERROR'){
+   if(event.data.key!==pendingKey)return;
+   pendingKey='';
+   byId('guessBtn').disabled=false;byId('guessInput').disabled=false;
+   byId('guessError').textContent='Speichern fehlgeschlagen. Bitte erneut versuchen.';
+  }
  });
  byId('guessBtn').addEventListener('click',event=>{
   if(!state)return;
@@ -1813,7 +1823,10 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
   const raw=byId('guessInput').value.trim().replace(',','.');
   const guess=Number(raw);
   if(!raw||!Number.isFinite(guess)||guess<0||guess>1000000){byId('guessError').textContent='Bitte einen gültigen Preis eingeben.';return}
+  if(pendingKey===stateKey(state)||state.answered)return;
+  pendingKey=stateKey(state);
   byId('guessBtn').disabled=true;
+  byId('guessError').textContent='Schätzung wird gespeichert …';
   send('PREISJAEGER_ONLINE_GUESS',{guess,challengeId:safe(state.challengeId,100),round:Number(state.round)||1});
  },true);
  send('PREISJAEGER_ONLINE_READY');
