@@ -1,6 +1,6 @@
 export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/lava-arena-online-adapter-v28.html?v=20';
+ frame.src='./minispiele/lava-arena-online-adapter-v28.html?v=21';
  frame.title='Lava Arena Online';frame.style.cssText='width:100%;height:100%;border:0;display:block';frame.setAttribute('allow','fullscreen');
  container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,seqOffset=null,challengeKey='',clockOffset=0,requestEpoch=0,configuredSeat=-1,configuredSeatsKey='';
@@ -21,7 +21,7 @@ export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}
   const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
   if(m.type==='lava-arena:configured'){configured=true;sync();return}
   if(m.type!=='lava-arena:state'||pending||!Number.isSafeInteger(m.seq)||m.seq+(seqOffset||0)<=lastSeq||Date.now()-lastSend<90||c.ch.phase!=='countdown'||Date.now()+clockOffset<c.ch.startAt)return;
-  const p=m.player;if(!p||![p.x,p.y,p.jump].every(Number.isFinite)||p.x<0||p.x>800||p.y<0||p.y>800||p.jump<0||p.jump>1.3)return;
+  const p=m.player;if(!p||![p.x,p.y,p.jump].every(Number.isFinite)||p.x<0||p.x>600||p.y<0||p.y>600||p.jump<0||p.jump>1.3)return;
   const epoch=requestEpoch, sentSeq=m.seq+(seqOffset||0);pending=true;lastSend=Date.now();lastSeq=Math.max(lastSeq,sentSeq);
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-lava-state','POST',{challengeId:c.ch.id,seq:sentSeq,x:p.x,y:p.y,jump:p.jump});if(alive&&epoch===requestEpoch&&r?.room)acceptRoom(r.room)}
   catch(error){if(alive&&epoch===requestEpoch){lastSeq=Math.min(lastSeq,sentSeq-1);onError(error)}}finally{if(epoch===requestEpoch)pending=false}
