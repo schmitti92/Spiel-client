@@ -20,6 +20,14 @@ body:has(.scene.online-play) {height:100dvh;overflow:hidden}
 .scene.online-play .stop{padding:clamp(7px,1.1vh,12px) 4px;min-height:40px}
 .scene.online-play .status{margin-top:4px;min-height:16px}
 .scene.online-play .clock{width:clamp(105px,19vh,180px);height:clamp(105px,19vh,180px)}
+.scene.online-play .foot{display:none!important}
+.scene.online-play .header{flex:0 0 auto;margin:0!important;padding:0!important}
+.scene.online-play .header h1{font-size:clamp(28px,7vh,65px)!important;line-height:1.05!important;margin:0!important}
+.scene.online-play .subtitle{font-size:clamp(10px,1.7vh,16px)!important;margin:3px 0!important}
+.scene.online-play .stage{width:100%;max-width:100%;padding-bottom:0!important}
+.scene.online-play .players{width:min(1100px,100%);margin-inline:auto;align-self:center}
+.scene.online-play .hint{padding:clamp(5px,1vh,10px) 12px}
+@media(max-height:650px){.scene.online-play .clock{width:clamp(90px,16vh,140px);height:clamp(90px,16vh,140px)}.scene.online-play .header h1{font-size:clamp(24px,6vh,44px)!important}}
 @media(max-height:540px){.scene.online-play .hint{padding:3px}.scene.online-play .target{padding:4px 12px}.scene.online-play .player h2{font-size:13px}.scene.online-play .status{font-size:11px}}
 </style></head><body><main class="scene jungle" id="scene"><header class="header"><h1 id="heading">ZEITGEFÜHL</h1><p class="subtitle" id="subtitle">WIE GUT IST DEIN ZEITGEFÜHL?</p></header><section class="stage"><div class="target" id="target">🎯 Zielzeit wird ausgelost</div><div class="clock" id="clock"><span id="digits">0,00</span></div><div class="hint" id="hint">Die ersten 3 Sekunden siehst du die Uhr. Danach läuft sie unsichtbar weiter!</div><div class="setup" id="setup"><label>👤 Menschen <select id="humans"><option>1</option><option>2</option><option>3</option><option selected>4</option></select></label><label>🤖 Computer <select id="bots"><option selected>0</option><option>1</option><option>2</option><option>3</option></select></label><button class="gold" id="start">▶ SPIEL STARTEN</button></div><div class="players" id="players"></div><div class="results" id="results" hidden></div><div class="end" id="end" hidden>🏁 Minispiel beendet</div></section><footer class="foot">Eine Runde · 10–20 Sekunden Zufallsziel · Offline · Tasten 1–4</footer></main><script>(()=>{'use strict';
 const $=id=>document.getElementById(id),scene=$('scene'),digits=$('digits'),clock=$('clock'),players=$('players'),results=$('results'),hint=$('hint');
