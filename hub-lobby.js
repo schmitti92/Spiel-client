@@ -382,11 +382,16 @@ function renderChallengeProgress(){
   if(el('challenge-preisjaeger').dataset.round!==key){el('challenge-preisjaeger').dataset.round=key;el('pj-guess').value='';el('pj-feedback').textContent='';}
   el('pj-product-name').textContent=pj.product?.name||'Produkt wird vorbereitet';
   el('pj-product-icon').textContent=pj.product?.icon||'🛍️';
-  const photo=el('pj-product-photo'),url=pj.product?.image||'';
-  if(photo.dataset.src!==url){photo.dataset.src=url;photo.hidden=!url;photo.removeAttribute('src');if(url)photo.src=url;}
-  photo.onerror=()=>{photo.hidden=true;el('pj-product-icon').hidden=false;};
-  photo.onload=()=>{photo.hidden=false;el('pj-product-icon').hidden=true;};
-  if(!url){photo.hidden=true;el('pj-product-icon').hidden=false;}
+  const photo=el('pj-product-photo'),icon=el('pj-product-icon'),url=pj.product?.image||'';
+  if(photo.dataset.src!==url){
+   photo.dataset.src=url;
+   photo.hidden=true;icon.hidden=false;
+   photo.onload=()=>{if(photo.dataset.src===url){photo.hidden=false;icon.hidden=true;}};
+   photo.onerror=()=>{if(photo.dataset.src===url){photo.hidden=true;icon.hidden=false;}};
+   photo.removeAttribute('src');
+   if(url&&/^https:\/\//.test(url))photo.src=url;
+  }
+  if(!url){photo.hidden=true;icon.hidden=false;}
 
   el('pj-product-category').textContent=[pj.product?.category,pj.product?.shop].filter(Boolean).join(' · ');
   el('pj-round-label').textContent='Preisfrage '+pj.round+' von 3';
