@@ -189,3 +189,15 @@ test('Joining or leaving a room cancels pending restoration retries',()=>{
 test('Late failed recovery responses do not affect a newly active room',()=>{
  assert.match(js,/catch\(e\)\{if\(pendingRoomRecovery!==requestedCode\|\|room\|\|code\)return;if\(\['ROOM_NOT_FOUND','NOT_A_MEMBER'\]/);
 });
+
+
+test('Premium tablet landscape supports taller browser viewports and all nine matching artworks',()=>{
+ assert.match(css,/@media \(min-width:901px\) and \(orientation:landscape\) and \(max-height:1200px\)/);
+ assert.match(css,/height:clamp\(88px,11\.5dvh,125px\)/);
+ const artworks=['zeitgefuehl','recheninsel','huetchen','maulwurf','fluss','lava','snake','bomber','preis'];
+ artworks.forEach((name,index)=>{
+  const selector=new RegExp('body\\.challenge-room-active #challenge-single-grid>button:nth-child\\('+(index+1)+'\\)');
+  assert.match(css,selector,'missing card selector '+name);
+  assert.ok(css.includes('url("Assets/challenge/'+name+'.svg")'),'missing artwork '+name);
+ });
+});
