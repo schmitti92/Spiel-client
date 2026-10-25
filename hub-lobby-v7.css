@@ -125,11 +125,11 @@ header{background:#071e35ed;border:1px solid #4b91ba80;border-radius:22px;paddin
 @media(prefers-reduced-motion:reduce){#game-chooser .game{transition:none}}
 
 /* Party Challenge: reference-inspired compact island dashboard */
-#challenge-premium{color:#fff!important}
-#challenge-premium h3{color:#ffe1a0;font-size:clamp(22px,2.6vw,32px)!important}
-#challenge-premium>div:first-child{background:linear-gradient(90deg,#6e421e80,#123b57);border:1px solid #ad854b;border-radius:16px;padding:12px}
-#challenge-premium>p{color:#cfe8f6!important;margin:12px 0!important}
-#challenge-premium>div:has(> #challenge-single-grid){background:linear-gradient(140deg,#052840,#06466a)!important;padding:13px!important;margin:10px 0!important;border:1px solid #2b8caa;border-radius:17px!important}
+.challenge-premium{color:#fff!important}
+.challenge-premium h3{color:#ffe1a0;font-size:clamp(22px,2.6vw,32px)!important}
+.challenge-premium>div:first-child{background:linear-gradient(90deg,#6e421e80,#123b57);border:1px solid #ad854b;border-radius:16px;padding:12px}
+.challenge-premium>p{color:#cfe8f6!important;margin:12px 0!important}
+.challenge-premium>div:has(> #challenge-single-grid){background:linear-gradient(140deg,#052840,#06466a)!important;padding:13px!important;margin:10px 0!important;border:1px solid #2b8caa;border-radius:17px!important}
 #challenge-single-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
 #challenge-single-grid>button{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;text-align:left!important;aspect-ratio:1.72;min-height:116px!important;padding:13px!important;overflow:hidden;border-radius:15px!important;border:2px solid #55d1a8!important;background:linear-gradient(0deg,#021b2bf5 0%,#073e5899 53%,#0d799233),url("Assets/game-backgrounds/barikade.webp") center/cover!important;box-shadow:inset 0 0 22px #001e3c,0 4px 10px #001728!important}
 #challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#021b2bf5,#073e5899 53%,#0d799233),url("Assets/game-backgrounds/business.webp")!important}
@@ -141,10 +141,10 @@ header{background:#071e35ed;border:1px solid #4b91ba80;border-radius:22px;paddin
 #challenge-single-grid>button:hover:not(:disabled){transform:translateY(-3px)!important;border-color:#ffda71!important}
 #challenge-single-grid>button[aria-pressed="true"]{border-color:#ffd16d!important;box-shadow:0 0 0 2px #ffdc6d,inset 0 0 25px #001b2b!important}
 #challenge-marathon{background:linear-gradient(#ffdc87,#ed9e2c)!important;color:#13253a!important;border:2px solid #fff0b5!important}
-#challenge-premium #challenge-save{background:linear-gradient(120deg,#07c38a,#008b70)!important}
-#challenge-premium #challenge-bots{background:#144a68!important;color:#fff!important;border-color:#4aa2bf!important}
-#challenge-premium #challenge-feedback{color:#bce9fa!important}
-#challenge-premium label{color:#d2f0ff}
+.challenge-premium #challenge-save{background:linear-gradient(120deg,#07c38a,#008b70)!important}
+.challenge-premium #challenge-bots{background:#144a68!important;color:#fff!important;border-color:#4aa2bf!important}
+.challenge-premium #challenge-feedback{color:#bce9fa!important}
+.challenge-premium label{color:#d2f0ff}
 @media(min-width:1050px){#room-view{grid-template-columns:minmax(0,2.2fr) minmax(310px,.85fr)}}
 @media(max-width:700px){#challenge-single-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#challenge-single-grid>button{aspect-ratio:1.4;min-height:115px!important}}
 
@@ -160,7 +160,7 @@ header{background:#071e35ed;border:1px solid #4b91ba80;border-radius:22px;paddin
 #room-view>.stack:last-child>.panel:first-child .players{margin-top:16px}
 #room-view>.stack:last-child>.panel:first-child .player{min-height:58px;border-radius:13px}
 #room-view>.stack:last-child>.panel:first-child .player .avatar{border-radius:50%;border:2px solid #77d6fa}
-#challenge-premium #challenge-count{max-width:none!important;background:#f0f9ff!important}
+.challenge-premium #challenge-count{max-width:none!important;background:#f0f9ff!important}
 @media(min-width:1150px){.shell{padding-top:10px}header{margin-bottom:14px}.hero{margin:12px 0}.hero h1{font-size:31px}.mode-chooser{margin-bottom:12px}.mode-option{min-height:62px;padding:10px 16px}#online-area>.account{margin-bottom:12px;padding:14px 20px}}
 @media(max-width:920px){.premium-nav{gap:3px}.premium-nav a{min-width:55px;padding:5px 7px}}
 @media(max-width:650px){.premium-nav{order:3;width:100%;justify-content:space-around}.premium-nav a{min-width:58px}header{flex-wrap:wrap}.premium-nav a span{font-size:10px}}
@@ -169,29 +169,29 @@ header{background:#071e35ed;border:1px solid #4b91ba80;border-radius:22px;paddin
 body{background:linear-gradient(90deg,#031b2c65,#052e4b32),url("Assets/game-backgrounds/barikade.webp") center/cover fixed}
 .shell{width:min(1510px,calc(100% - 30px))}
 header{background:linear-gradient(90deg,#052947fa,#063453ef);border:1px solid #4ba6d7;border-radius:20px;padding:9px 16px;box-shadow:0 4px 0 #0c87c655,0 10px 26px #0007}
-#room-view:has(#challenge-premium:not(.hidden)){grid-template-columns:minmax(0,2.35fr) minmax(310px,.92fr);gap:14px;align-items:start}
-#room-view:has(#challenge-premium:not(.hidden))>.stack:first-child{gap:12px}
-#room-view:has(#challenge-premium:not(.hidden)) #game-chooser{display:none}
-#room-view:has(#challenge-premium:not(.hidden)) #game-stage-hero{display:none}
-#room-view:has(#challenge-premium:not(.hidden)) #challenge-premium{margin:0!important;padding:13px!important;border:2px solid #3f9cbd!important;border-radius:20px!important;background:linear-gradient(135deg,#052c4cf7,#05334ef7)!important}
-#challenge-premium>div:first-child{margin-bottom:8px!important}
-#challenge-premium>p{font-size:13px!important;margin:6px 0 10px!important}
-#challenge-premium>div:has(> #challenge-single-grid){padding:12px!important;margin:7px 0!important}
+#room-view:has(.challenge-premium:not(.hidden)){grid-template-columns:minmax(0,2.35fr) minmax(310px,.92fr);gap:14px;align-items:start}
+#room-view:has(.challenge-premium:not(.hidden))>.stack:first-child{gap:12px}
+#room-view:has(.challenge-premium:not(.hidden)) #game-chooser{display:none}
+#room-view:has(.challenge-premium:not(.hidden)) #game-stage-hero{display:none}
+#room-view:has(.challenge-premium:not(.hidden)) .challenge-premium{margin:0!important;padding:13px!important;border:2px solid #3f9cbd!important;border-radius:20px!important;background:linear-gradient(135deg,#052c4cf7,#05334ef7)!important}
+.challenge-premium>div:first-child{margin-bottom:8px!important}
+.challenge-premium>p{font-size:13px!important;margin:6px 0 10px!important}
+.challenge-premium>div:has(> #challenge-single-grid){padding:12px!important;margin:7px 0!important}
 #challenge-single-grid>button{min-height:128px!important}
-#challenge-premium #challenge-choice-status{background:#0a614f!important;color:#d8fff3!important;margin:9px 0!important}
-#challenge-premium #challenge-count{min-height:43px!important}
-#room-view:has(#challenge-premium:not(.hidden))>.stack:last-child{position:sticky;top:12px;gap:12px}
-#room-view:has(#challenge-premium:not(.hidden))>.stack:last-child>.panel:last-child{display:none}
-#room-view:has(#challenge-premium:not(.hidden)) #ready-panel{border:2px solid #dca24e;background:linear-gradient(135deg,#143b50,#073048);box-shadow:0 8px 25px #001828}
-#room-view:has(#challenge-premium:not(.hidden)) #ready-panel .btn.blue{background:linear-gradient(180deg,#ffde69,#f49417);color:#152940;font-size:17px}
-#room-view:has(#challenge-premium:not(.hidden)) #players{min-height:240px}
-#room-view:has(#challenge-premium:not(.hidden)) #players .player{min-height:58px}
-#room-view:has(#challenge-premium:not(.hidden)) #players::after{content:"＋ Freie Plätze werden beim Beitreten automatisch besetzt";display:block;color:#9ccce2;font-size:12px;padding:10px;border:1px dashed #3c8eaa;border-radius:12px;text-align:center}
-#room-view:has(#challenge-premium:not(.hidden)) #refresh-btn{padding:9px}
-#room-view:has(#challenge-premium:not(.hidden)) #leave-btn{padding:9px}
-@media(min-width:1100px){#room-view:has(#challenge-premium:not(.hidden)) #challenge-single-grid>button{min-height:150px!important}.hero{margin:8px 0 12px}.hero h1{font-size:28px}.hero .lead{margin-top:4px}.account{padding:12px 18px}}
-@media(max-width:900px){#room-view:has(#challenge-premium:not(.hidden)){grid-template-columns:minmax(0,1fr)}#room-view:has(#challenge-premium:not(.hidden))>.stack:last-child{position:static}#room-view:has(#challenge-premium:not(.hidden)) #players{min-height:0}}
-@media(max-width:620px){#challenge-single-grid>button{min-height:112px!important}#room-view:has(#challenge-premium:not(.hidden)) #challenge-premium{padding:10px!important}}
+.challenge-premium #challenge-choice-status{background:#0a614f!important;color:#d8fff3!important;margin:9px 0!important}
+.challenge-premium #challenge-count{min-height:43px!important}
+#room-view:has(.challenge-premium:not(.hidden))>.stack:last-child{position:sticky;top:12px;gap:12px}
+#room-view:has(.challenge-premium:not(.hidden))>.stack:last-child>.panel:last-child{display:none}
+#room-view:has(.challenge-premium:not(.hidden)) #ready-panel{border:2px solid #dca24e;background:linear-gradient(135deg,#143b50,#073048);box-shadow:0 8px 25px #001828}
+#room-view:has(.challenge-premium:not(.hidden)) #ready-panel .btn.blue{background:linear-gradient(180deg,#ffde69,#f49417);color:#152940;font-size:17px}
+#room-view:has(.challenge-premium:not(.hidden)) #players{min-height:240px}
+#room-view:has(.challenge-premium:not(.hidden)) #players .player{min-height:58px}
+#room-view:has(.challenge-premium:not(.hidden)) #players::after{content:"＋ Freie Plätze werden beim Beitreten automatisch besetzt";display:block;color:#9ccce2;font-size:12px;padding:10px;border:1px dashed #3c8eaa;border-radius:12px;text-align:center}
+#room-view:has(.challenge-premium:not(.hidden)) #refresh-btn{padding:9px}
+#room-view:has(.challenge-premium:not(.hidden)) #leave-btn{padding:9px}
+@media(min-width:1100px){#room-view:has(.challenge-premium:not(.hidden)) #challenge-single-grid>button{min-height:150px!important}.hero{margin:8px 0 12px}.hero h1{font-size:28px}.hero .lead{margin-top:4px}.account{padding:12px 18px}}
+@media(max-width:900px){#room-view:has(.challenge-premium:not(.hidden)){grid-template-columns:minmax(0,1fr)}#room-view:has(.challenge-premium:not(.hidden))>.stack:last-child{position:static}#room-view:has(.challenge-premium:not(.hidden)) #players{min-height:0}}
+@media(max-width:620px){#challenge-single-grid>button{min-height:112px!important}#room-view:has(.challenge-premium:not(.hidden)) .challenge-premium{padding:10px!important}}
 
 /* Premium v5: reference tile anatomy, responsive status badges */
 #challenge-single-grid>button{display:flex!important;flex-direction:column!important;justify-content:flex-end!important;align-items:stretch!important;gap:4px!important;text-align:left!important;background-size:cover!important;background-position:center!important}
@@ -211,8 +211,8 @@ header{background:linear-gradient(90deg,#052947fa,#063453ef);border:1px solid #4
 #challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#021b2bf5,#073e5880 58%,#0d799233),url("Assets/game-backgrounds/kreuzkunter.webp")!important}
 #challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#021b2bf5,#073e5880 58%,#0d799233),url("Assets/game-backgrounds/barikade.webp")!important}
 #challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#021b2bf5,#073e5880 58%,#0d799233),url("Assets/game-backgrounds/business.webp")!important}
-#challenge-premium #challenge-marathon{min-height:45px}
-#challenge-premium #challenge-bots{background:linear-gradient(180deg,#09b878,#067853)!important;border:1px solid #50e4a7!important;box-shadow:0 3px 15px #00b57a55}
+.challenge-premium #challenge-marathon{min-height:45px}
+.challenge-premium #challenge-bots{background:linear-gradient(180deg,#09b878,#067853)!important;border:1px solid #50e4a7!important;box-shadow:0 3px 15px #00b57a55}
 @media(max-width:600px){#challenge-single-grid>button .mini-players{padding:2px 5px}#challenge-single-grid>button .mini-online{font-size:10px}#challenge-single-grid>button .mini-art{font-size:32px!important}}
 
 /* V6: individual offline-friendly SVG illustrations for all nine original minigames */
@@ -228,5 +228,11 @@ header{background:linear-gradient(90deg,#052947fa,#063453ef);border:1px solid #4
 #challenge-single-grid>button .mini-art{visibility:hidden!important}
 #challenge-single-grid>button{background-size:cover!important;background-repeat:no-repeat!important}
 #challenge-single-grid>button:focus-visible{outline:3px solid #fff;outline-offset:2px}
-#challenge-premium>div:first-child{background:linear-gradient(100deg,#70411f,#0a3a60)!important;border:2px solid #d99b4b!important}
-#challenge-premium #challenge-single-grid>button strong{color:white!important;text-shadow:0 2px 7px #000,0 1px 2px #000!important}
+.challenge-premium>div:first-child{background:linear-gradient(100deg,#70411f,#0a3a60)!important;border:2px solid #d99b4b!important}
+.challenge-premium #challenge-single-grid>button strong{color:white!important;text-shadow:0 2px 7px #000,0 1px 2px #000!important}
+
+/* Prevent the game setup panel from being duplicated or expanding the page unexpectedly */
+#challenge-settings-panel.challenge-premium{display:block}
+#challenge-settings-panel.challenge-premium.hidden{display:none!important}
+#challenge-single-grid>button{background-size:cover!important;background-position:center!important}
+#challenge-single-grid>button[aria-pressed="true"]{border-color:#ffce67!important}
