@@ -24,7 +24,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
   if(m.type==='snake-arena:configured'){configured=true;sync();return;}
   if(m.type!=='snake-arena:state'||c.ch.phase!=='countdown'||Date.now()+offset<c.ch.startAt||!Number.isSafeInteger(m.seq)||m.seq<=lastSeq)return;
-  if(pending||Date.now()-lastSend<180){if(m.player?.finished)queuedState=m;return;}
+  if(pending||Date.now()-lastSend<180){if(m.player?.finished){queuedState=m;if(!pending)setTimeout(()=>{if(!queuedState||!alive)return;const q=queuedState;queuedState=null;onMessage({origin:location.origin,source:frame.contentWindow,data:q});},200);}return;}
   const p=m.player;if(!p)return;
   pending=true;lastSend=Date.now();lastSeq=m.seq;
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,...p});if(r?.room)acceptRoom(r.room)}
