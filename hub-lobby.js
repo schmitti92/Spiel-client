@@ -254,7 +254,7 @@ async function ensureZeitgefuehlOriginalBridge(){
  if(zeitgefuehlOriginalBridge||zeitgefuehlOriginalLoading||zeitgefuehlOriginalFailed)return;
  zeitgefuehlOriginalLoading=true;
  try{
-  const {mountZeitgefuehlOriginal}=await import('./zeitgefuehl-online-bridge.js?v=5');
+  const {mountZeitgefuehlOriginal}=await import('./zeitgefuehl-online-bridge.js?v=6');
   const container=el('challenge-original-frame');
   if(!container)return;
   recheninselOriginalBridge?.destroy();recheninselOriginalBridge=null;
@@ -530,7 +530,7 @@ function renderChallengeProgress(){
  el('challenge-replay').hidden=!room.host;
  el('challenge-select').hidden=!room.host;
  if(ch.phase==='finished'&&ch.order.length===1&&!room.host){el('challenge-progress-status').textContent='🏁 Partie beendet. Der Host kann erneut spielen oder ein anderes Minispiel wählen.';}
- box.classList.toggle('zeitgefuehl-playing',ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown');
+ box.classList.toggle('zeitgefuehl-playing',ch.order[index]==='zeitgefuehl'&&['countdown','results','finished'].includes(ch.phase));
  const isPreisjaeger=ch.order[index]==='preisjaeger';
  box.classList.toggle('preisjaeger-original-playing',isPreisjaeger&&(ch.phase==='countdown'||ch.phase==='finished'));
  if(!isPreisjaeger)pjTimeoutKey='';
@@ -575,7 +575,7 @@ function renderChallengeProgress(){
  }
  const isMath=ch.order[index]==='recheninsel';
  const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
- const originalTimeActive=ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown'&&!zeitgefuehlOriginalFailed;
+ const originalTimeActive=ch.order[index]==='zeitgefuehl'&&['countdown','results','finished'].includes(ch.phase)&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
  const originalBomberActive=ch.order[index]==='bomber-strand-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!bomberOriginalFailed;
