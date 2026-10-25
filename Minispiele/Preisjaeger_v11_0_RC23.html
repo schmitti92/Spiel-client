@@ -1740,7 +1740,8 @@ html.pj-online #visual img{width:100%!important;height:100%!important;max-height
 html.pj-online #productPanel .show-info{min-height:0!important;overflow:auto!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
 html.pj-online #productName{font-size:clamp(19px,2.25vw,34px)!important;line-height:1.16!important;overflow-wrap:anywhere}
 html.pj-online #productDescription{font-size:clamp(12px,1.15vw,16px)!important}
-html.pj-online #guessPanel{display:none!important}
+html.pj-online #game #guessPanel:not(.hidden){display:block!important;position:static!important;padding:8px!important;margin:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+html.pj-online #game #guessPanel.hidden{display:none!important}
 html.pj-online #productPanel #actionSlot{display:flex!important;flex-direction:column!important;gap:8px!important}
 html.pj-online #productPanel #actionSlot #guessTitle{font-size:clamp(17px,1.8vw,24px)!important}
 html.pj-online #productPanel #actionSlot .row{display:flex!important;gap:9px!important;flex-wrap:wrap!important}
