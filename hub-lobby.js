@@ -461,6 +461,7 @@ function renderChallengeProgress(){
  el('challenge-select').hidden=!room.host;
  if(ch.phase==='finished'&&ch.order.length===1&&!room.host){el('challenge-progress-status').textContent='🏁 Partie beendet. Der Host kann erneut spielen oder ein anderes Minispiel wählen.';}
  const isPreisjaeger=ch.order[index]==='preisjaeger';
+ box.classList.toggle('preisjaeger-original-playing',isPreisjaeger&&ch.phase==='countdown');
  if(!isPreisjaeger)pjTimeoutKey='';
 
  const pj=ch.preisjaeger;
