@@ -132,3 +132,10 @@ test('Failed game navigation remains retryable on a subsequent room update',()=>
  assert.match(js,/const matchId=room\.match\.id;\s*try\{enterCurrentMatch\(\);launchedMatchId=matchId;\}catch\(e\)\{showError\(e\);\}/);
  assert.doesNotMatch(js,/launchedMatchId=room\.match\.id;\s*try\{enterCurrentMatch\(\)/);
 });
+
+test('WebSocket subscriptions remain bound to their original room',()=>{
+ assert.match(js,/const subscribedCode=code;/);
+ assert.match(js,/hubSocket===socket&&code===subscribedCode&&socket\.readyState===1/);
+ assert.match(js,/type:'subscribe',code:subscribedCode,profileIdToken:token/);
+ assert.match(js,/hubSocket===socket&&code===subscribedCode&&data\?\.type==='room'&&data\.room\?\.code===subscribedCode/);
+});
