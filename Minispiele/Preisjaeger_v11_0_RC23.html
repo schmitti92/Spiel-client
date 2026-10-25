@@ -1720,6 +1720,35 @@ const photoCoverageObserver=new MutationObserver(()=>refreshPhotoCoverage());
 const photoSelect=$("originalPhotoProduct");if(photoSelect)photoCoverageObserver.observe(photoSelect,{childList:true});
 refreshPhotoCoverage();
 </script>
+<style id="preisjaeger-online-tablet-v44">
+/* Only the opt-in online bridge: preserve original standalone gameplay. */
+html.pj-online,html.pj-online body{height:100%;min-height:0;overflow:hidden}
+html.pj-online body{display:flex;flex-direction:column}
+html.pj-online header{flex:0 0 auto;padding:9px 18px!important;min-height:42px}
+html.pj-online main{flex:1 1 auto;min-height:0;width:100%!important;max-width:none!important;margin:0!important;padding:6px 10px 8px!important;box-sizing:border-box;overflow:hidden}
+html.pj-online #game:not(.hidden){height:100%!important;min-height:0!important;display:grid!important;grid-template-rows:minmax(0,1fr) auto!important;gap:7px!important}
+html.pj-online #game>.panel:first-child{order:2!important;grid-row:2!important;padding:5px 10px!important;margin:0!important;min-height:0!important;overflow:visible!important}
+html.pj-online #game>.panel:first-child>.row{display:none!important}
+html.pj-online #game #scoreBoard{margin:0!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+html.pj-online #game #scoreBoard .player{min-height:0!important;padding:7px 9px!important;font-size:clamp(12px,1.35vw,16px)!important;line-height:1.25!important;overflow:hidden}
+html.pj-online #game #scoreBoard .player strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.pj-online #productPanel{order:1!important;grid-row:1!important;min-height:0!important;overflow:hidden!important;padding:8px!important;margin:0!important}
+html.pj-online #productPanel:before{display:none!important}
+html.pj-online #productPanel .product{height:100%!important;min-height:0!important;display:grid!important;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)!important;gap:clamp(10px,2vw,24px)!important;align-items:stretch!important}
+html.pj-online #visual{min-height:0!important;height:100%!important;max-height:none!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:10px!important;box-sizing:border-box}
+html.pj-online #visual img{width:100%!important;height:100%!important;max-height:100%!important;object-fit:contain!important}
+html.pj-online #productPanel .show-info{min-height:0!important;overflow:auto!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+html.pj-online #productName{font-size:clamp(19px,2.25vw,34px)!important;line-height:1.16!important;overflow-wrap:anywhere}
+html.pj-online #productDescription{font-size:clamp(12px,1.15vw,16px)!important}
+html.pj-online #guessPanel{display:none!important}
+html.pj-online #productPanel #actionSlot{display:flex!important;flex-direction:column!important;gap:8px!important}
+html.pj-online #productPanel #actionSlot #guessTitle{font-size:clamp(17px,1.8vw,24px)!important}
+html.pj-online #productPanel #actionSlot .row{display:flex!important;gap:9px!important;flex-wrap:wrap!important}
+html.pj-online #productPanel #actionSlot input{flex:1 1 160px!important;min-width:0!important;max-width:none!important}
+html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-height:48px!important}
+@media(max-width:700px){html.pj-online #productPanel .product{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:45% 55%!important}html.pj-online #game #scoreBoard{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+</style>
+<script>if(new URLSearchParams(location.search).get('onlineView')==='1')document.documentElement.classList.add('pj-online');</script>
 <script>
 /* Original V11 UI / server-driven bridge. Opt-in only: ?onlineView=1.
    The authoritative product, timing, guesses and results remain on the server. */
