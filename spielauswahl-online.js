@@ -129,7 +129,10 @@ if(!codeValid)status('Kein gültiger Online-Raum angegeben. Bitte zuerst einen R
 else{byId('online-room-code').textContent=code;}
 window.addEventListener('spielonline-change',()=>{renderProfileShortcut();void refresh();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh();});
-setInterval(refresh,3500);
+// Keep the existing HTTP fallback, but avoid a Firestore read every 3.5 seconds
+ // per player. Immediate refreshes on login/visibility and after actions remain.
+ // Polling continues while visible so game selection still works without WS.
+ setInterval(refresh,15000);
 renderProfileShortcut();
 void refresh();
 })();
