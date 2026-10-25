@@ -1,6 +1,6 @@
 export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/lava-arena-online-adapter-v28.html?v=6';
+ frame.src='./minispiele/lava-arena-online-adapter-v28.html?v=7';
  frame.title='Lava Arena Online';frame.style.cssText='width:100%;height:100%;border:0;display:block';frame.setAttribute('allow','fullscreen');
  container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,pending=false,lastSeq=0,lastSend=0,lastTimeout=false,seqOffset=null,challengeKey='',clockOffset=0;
@@ -10,7 +10,7 @@ export function mountLavaOriginal({container,getRoom,request,acceptRoom,onError}
   const {room,ch}=c;clockOffset=Number.isFinite(room.serverNow)?room.serverNow-Date.now():clockOffset;const nextKey=ch.id+':'+ch.index;if(nextKey!==challengeKey){challengeKey=nextKey;configured=false;pending=false;lastSeq=0;seqOffset=null;lastTimeout=false;}const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
   const mine=room.players.find(p=>p.me)?.seat;const localSeat=seats.indexOf(mine);
   if(localSeat<0)return;
-  if(!configured){if(ch.phase==='countdown'&&Date.now()+clockOffset<ch.startAt)return;frame.contentWindow.postMessage({type:'lava-arena:configure',challengeId:ch.id,localSeat,seats},location.origin);return}
+  if(!configured){frame.contentWindow.postMessage({type:'lava-arena:configure',challengeId:ch.id,localSeat,seats},location.origin);return}
   if(ch.lava){const mineState=ch.lava.players?.find(p=>p.seat===mine);if(mineState&&Number.isSafeInteger(mineState.seq)){lastSeq=Math.max(lastSeq,mineState.seq);if(seqOffset===null)seqOffset=mineState.seq;}frame.contentWindow.postMessage({type:'lava-arena:snapshot',challengeId:ch.id,players:ch.lava.players.map(p=>({...p,id:seats.indexOf(p.seat)})),tiles:ch.lava.tiles,phase:ch.phase},location.origin);}
   if(ch.phase==='countdown'&&Date.now()+clockOffset>ch.startAt+90000&&!lastTimeout){lastTimeout=true;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-lava-timeout','POST',{challengeId:ch.id}).then(r=>{if(r?.room)acceptRoom(r.room)}).catch(error=>{lastTimeout=false;onError(error)})}
  }
