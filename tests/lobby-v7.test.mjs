@@ -99,3 +99,11 @@ test('Replay, return-to-selection and next-game controls ignore duplicate taps',
  assert.match(js,/const btn=el\('challenge-next'\);if\(btn\.disabled\)return;btn\.disabled=true;/);
  assert.match(js,/catch\(e\)\{showError\(e\);\}finally\{btn\.disabled=false;\}/);
 });
+
+test('Challenge settings requests are serialized across cards, marathon and save',()=>{
+ assert.match(js,/let challengeSettingsBusy=false;/);
+ assert.match(js,/room\.phase!=='preparing'\|\|challengeSettingsBusy\)return;/);
+ assert.match(js,/challengeSettingsBusy=true;btn\.disabled=true;/);
+ assert.match(js,/finally\{btn\.disabled=false;challengeSettingsBusy=false;\}/);
+ assert.match(js,/if\(challengeSettingsBusy\)return;\s*const button=el\('challenge-save'\)/);
+});
