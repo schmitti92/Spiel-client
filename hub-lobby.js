@@ -61,7 +61,7 @@ function startWatch(){
   if(hubSocket!==socket)return;
   hubSocket=null;streamReady=false;
   if(hubHeartbeat){clearInterval(hubHeartbeat);hubHeartbeat=null;}
-  if(code&&room&&activeProfile())retrySocket=setTimeout(()=>{retrySocket=null;startWatch();},4500);
+  if(code&&room&&activeProfile()&&code===subscribedCode)retrySocket=setTimeout(()=>{retrySocket=null;if(code===subscribedCode)startWatch();},4500);
  };
  socket.onerror=()=>{}; // close event triggers HTTP fallback and retry
 }
