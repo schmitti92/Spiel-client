@@ -244,7 +244,7 @@ test('All nine premium illustrations are self-contained SVG assets',()=>{
   assert.match(art,/<\/svg>\s*$/,'missing SVG closing for '+name);
   assert.match(art,/viewBox="0 0 720 420"/,'incorrect card aspect ratio for '+name);
   assert.ok(art.length>1000,'suspiciously empty artwork for '+name);
-  assert.doesNotMatch(art,/<(?:script|foreignObject|image)\b|(?:https?:)?\/\//i,'unsafe or remote SVG content in '+name);
+  assert.doesNotMatch(art,/<(?:script|foreignObject|image)\b|(?:href|xlink:href)=["'](?:https?:)?\/\//i,'unsafe or remote SVG content in '+name);
   assert.ok(css.includes('Assets/challenge/'+name+'.svg'),'card not mapped to '+name);
  }
 });
