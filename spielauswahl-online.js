@@ -123,8 +123,8 @@ async function quickRoom(action){
   location.assign('spielauswahl-online.html?room='+encodeURIComponent(result.room.code));
  }catch(e){status(e.message==='LOGIN_REQUIRED'?'Bitte zuerst mit deinem Online-Spielerprofil anmelden.':'Raumaktion fehlgeschlagen: '+(e.message||'Netzwerkfehler'),true);quickBusy=false;quickJoin.disabled=false;quickCreate.disabled=false;}
 }
-quickForm?.addEventListener('submit',e=>{e.preventDefault();void quickRoom('join');});
-quickCreate?.addEventListener('click',()=>{void quickRoom('create');});
+quickForm?.addEventListener?.('submit',e=>{e.preventDefault();void quickRoom('join');});
+quickCreate?.addEventListener?.('click',()=>{void quickRoom('create');});
 if(!codeValid)status('Kein gültiger Online-Raum angegeben. Bitte zuerst einen Raum betreten.',true);
 else{byId('online-room-code').textContent=code;}
 window.addEventListener('spielonline-change',()=>{renderProfileShortcut();void refresh();});
