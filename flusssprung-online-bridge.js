@@ -43,7 +43,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
   const snapshot=JSON.stringify((f.players||[]).map(p=>({index:players.findIndex(x=>x.seat===p.seat),row:p.row,falls:p.falls,finishedAt:p.finishedAt})));
   if(snapshot!==lastSnapshot||room.revision!==lastSyncRevision){
    lastSnapshot=snapshot;lastSyncRevision=room.revision;
-   frame.contentWindow.postMessage({type:'flusssprung:server-state',players:JSON.parse(snapshot)},location.origin);
+   frame.contentWindow.postMessage({type:'flusssprung:server-state',players:JSON.parse(snapshot),moves:moves.map(m=>({index:players.findIndex(p=>p.seat===m.seat),row:m.row,col:m.col}))},location.origin);
   }
   if(room.revision!==lastRevision){lastRevision=room.revision;serverOffset=(Number(room.serverNow)||Date.now())-Date.now();}
   const serverNow=Date.now()+serverOffset;
