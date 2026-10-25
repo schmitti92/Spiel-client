@@ -393,6 +393,8 @@ requestAnimationFrame(()=>{layoutActors();hud();const t=window.FlusssprungSelfTe
 </script><script>
 /* Online bridge hooks; server-authoritative transport is provided by the parent lobby. */
 window.FlusssprungOnlineConfig=null;
+// Online embeds must never show the local configuration dialog, including during slow initialization.
+if(window.parent!==window){document.documentElement.classList.add('flusssprung-embedded-online');const style=document.createElement('style');style.textContent='.flusssprung-embedded-online #modal{display:none!important}.flusssprung-embedded-online #restart,.flusssprung-embedded-online #victory-config{display:none!important}';document.head.appendChild(style);}
 // The embedded online game must never expose the local player setup while
 // waiting for the lobby handshake (or after a temporary connection delay).
 if(window.parent!==window){
