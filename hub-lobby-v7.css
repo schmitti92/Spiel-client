@@ -283,3 +283,28 @@ body.challenge-room-active #challenge-host-launch #start-btn:disabled{opacity:.6
 body.challenge-room-active #challenge-host-launch #start-btn:not(:disabled){box-shadow:0 8px 25px #f5a62388!important}
 body.challenge-room-active #ready-panel .ready-hint{font-size:12px!important;line-height:1.35!important}
 body.challenge-room-active #challenge-settings-panel #challenge-feedback:empty{display:none!important}
+
+/* Premium V13: dedicated challenge screen, no landing-page hero above game selection */
+body.challenge-room-active .shell>.hero,
+body.challenge-room-active .shell>.mode-chooser,
+body.challenge-room-active #online-area>.account{display:none!important}
+body.challenge-room-active .shell{padding-top:8px!important}
+body.challenge-room-active #room-view{margin-top:10px!important}
+body.challenge-room-active #challenge-settings-panel{padding:12px!important;border-color:#2d829c!important}
+body.challenge-room-active #challenge-settings-panel>div:first-child{min-height:62px!important;margin-bottom:7px!important}
+body.challenge-room-active #challenge-settings-panel>div:first-child>span{font-size:42px!important}
+body.challenge-room-active #challenge-settings-panel>div:has(#challenge-single-grid){padding:12px!important;margin:0!important}
+body.challenge-room-active #challenge-settings-panel>div:has(#challenge-single-grid)>div:first-child{font-size:18px!important}
+body.challenge-room-active #challenge-single-grid{gap:9px!important}
+body.challenge-room-active #challenge-single-grid>button{min-height:116px!important;aspect-ratio:1.85!important;padding:9px!important}
+body.challenge-room-active #challenge-settings-panel>label[for="challenge-count"]{font-size:14px!important;margin:9px 0 5px!important}
+body.challenge-room-active #challenge-count{min-height:38px!important;padding:6px 10px!important}
+body.challenge-room-active #challenge-save,
+body.challenge-room-active #challenge-bots{min-height:42px!important;padding:9px 13px!important}
+body.challenge-room-active #challenge-marathon{min-height:40px!important;padding:8px 12px!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel{padding:15px!important}
+body.challenge-room-active #room-view>.stack:last-child .room-head{gap:8px!important}
+body.challenge-room-active #room-view>.stack:last-child .room-code{font-size:clamp(24px,3vw,36px)!important}
+@media(max-width:1100px){body.challenge-room-active #challenge-single-grid>button{min-height:100px!important}body.challenge-room-active #room-view{grid-template-columns:minmax(0,2fr) minmax(275px,.85fr)!important}}
+@media(max-width:900px){body.challenge-room-active #room-view{grid-template-columns:1fr!important}}
+@media(max-width:600px){body.challenge-room-active #challenge-single-grid>button{aspect-ratio:1.3!important}}
