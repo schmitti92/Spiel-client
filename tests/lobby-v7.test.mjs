@@ -87,3 +87,8 @@ test('Tablet landscape card sizing remains bounded and cache version matches',()
  assert.match(css,/height:clamp\(91px,12\.5dvh,111px\)/);
  assert.match(html,/hub-lobby-v7\.css\?v=20261025-premium-18/);
 });
+
+test('Marathon selection prevents duplicate submissions while a request is pending',()=>{
+ assert.match(js,/const button=el\('challenge-marathon'\);if\(button\.disabled\)return;/);
+ assert.match(js,/button\.disabled=true;[\s\S]*?count:9,selectedGame:null[\s\S]*?finally\{button\.disabled=false;\}/);
+});
