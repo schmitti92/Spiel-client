@@ -181,7 +181,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
  });
  const offlineUpdate=update;
  update=function(dt){offlineUpdate(dt);const c=window.LavaArenaOnlineConfig;
-  if(c){for(const [id,target] of remoteTargets){const p=players[id];if(!p||id===c.localSeat){remoteTargets.delete(id);continue;}const elapsed=performance.now()-target.at;if(elapsed>2500){remoteTargets.delete(id);continue;}const blend=1-Math.exp(-Math.min(dt,.05)*14);p.x+=(target.x-p.x)*blend;p.y+=(target.y-p.y)*blend;p.jump+=(target.jump-p.jump)*blend;}}
+  if(c&&running){for(const [id,target] of remoteTargets){const p=players[id];if(!p||id===c.localSeat){remoteTargets.delete(id);continue;}const elapsed=performance.now()-target.at;if(elapsed>2500){remoteTargets.delete(id);continue;}const blend=1-Math.exp(-Math.min(dt,.05)*14);p.x+=(target.x-p.x)*blend;p.y+=(target.y-p.y)*blend;p.jump+=(target.jump-p.jump)*blend;}}
   if(!c||!running||performance.now()-onlineLastReport<100)return;
   onlineLastReport=performance.now();const p=players[c.localSeat];
   if(p)parent.postMessage({type:'lava-arena:state',challengeId:c.challengeId,seq:++onlineSeq,player:{id:p.id,x:p.x,y:p.y,vx:p.vx,vy:p.vy,alive:p.alive,jump:p.jump,deathTime:p.deathTime}},location.origin);
