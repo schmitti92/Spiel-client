@@ -32,7 +32,7 @@ test('UI includes supported settings and exactly two selectable boards',()=>{
 test('Unsupported settings remain preview-only and do not change game rules',()=>{
  assert.match(html,/Aktuell steht ausschließlich das klassische Spielfeld zur Verfügung/i);
  assert.match(html,/Weitere Wertungen sind noch nicht im Spiel verfügbar/);
- assert.match(js,/const supported=\['target','jokerCount','streetModeEnabled','jokerEnabled','beginner'\]/);
+ assert.match(js,/const supported=\['layoutMode','target','jokerCount','streetModeEnabled','jokerEnabled','beginner'\]/);
  assert.doesNotMatch(js,/mutate\('\/skyjo-settings'.*?(?:streetScoring|specialCards)/);
 });
 test('All settings changes use authenticated server endpoints with server-host restrictions',()=>{
