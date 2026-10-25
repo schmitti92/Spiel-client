@@ -1775,6 +1775,26 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
  function render(data){
   if(!data||typeof data!=='object'||!data.product)return;
   state=data;
+  if(data.finished){
+   byId('boardLoading').classList.add('hidden');
+   byId('setup').classList.add('hidden');
+   byId('game').classList.add('hidden');
+   byId('final').classList.remove('hidden');
+   const scores=byId('finalScores');scores.replaceChildren();
+   const standings=(Array.isArray(data.totals)?data.totals:[]).slice().sort((a,b)=>Number(b.points)-Number(a.points));
+   byId('finalSubtitle').textContent='Alle Preisfragen abgeschlossen!';
+   const title=document.createElement('h2');
+   title.textContent='🏆 '+(standings[0]?.name||'Spiel beendet');
+   scores.append(title);
+   for(const player of standings){
+    const row=document.createElement('div');
+    row.className='player';
+    row.textContent=String(player.name||'Spieler')+' · '+(Number(player.points)||0)+' Punkte';
+    scores.append(row);
+   }
+   byId('restartBtn').hidden=true;
+   return;
+  }
   byId('boardLoading').classList.add('hidden');
   byId('setup').classList.add('hidden');
   byId('final').classList.add('hidden');
