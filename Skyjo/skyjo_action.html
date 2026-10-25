@@ -124,6 +124,27 @@ body.is-playing .player.sky-active-glow :is(.player-head,.player-header,.player-
  grid-template-rows:repeat(3,minmax(0,auto))!important;
 }
 </style>
+<style id="skyjo-score-contrast-fix">
+/* Own score must remain legible against the dark badge, including the gold active-player header. */
+body.is-playing .player.mine .score-stack .scorechip,
+body.is-playing .player.mine.sky-active-glow .score-stack .scorechip{
+ background:linear-gradient(160deg,#101d2c,#06101b)!important;
+ border:1px solid #d9b66a!important;
+ color:#fff8dd!important;
+ opacity:1!important;
+}
+body.is-playing .player.mine .score-stack .scorechip small,
+body.is-playing .player.mine .score-stack .scorechip b,
+body.is-playing .player.mine.sky-active-glow .score-stack .scorechip small,
+body.is-playing .player.mine.sky-active-glow .score-stack .scorechip b{
+ color:#fff8dd!important;
+ -webkit-text-fill-color:#fff8dd!important;
+ opacity:1!important;
+ filter:none!important;
+ text-shadow:0 1px 2px #000!important;
+}
+body.is-playing .player.mine .score-stack .scorechip b{font-weight:900!important}
+</style>
 <script>
 /* Shared hub is authoritative: skip SKYJO's obsolete second start confirmation. */
 (function(){
