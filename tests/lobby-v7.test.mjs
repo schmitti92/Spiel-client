@@ -127,3 +127,8 @@ test('Returning online or foreground refreshes the current room without concurre
  assert.match(js,/window\.addEventListener\('online',/);
  assert.match(js,/document\.addEventListener\('visibilitychange',/);
 });
+
+test('Failed game navigation remains retryable on a subsequent room update',()=>{
+ assert.match(js,/const matchId=room\.match\.id;\s*try\{enterCurrentMatch\(\);launchedMatchId=matchId;\}catch\(e\)\{showError\(e\);\}/);
+ assert.doesNotMatch(js,/launchedMatchId=room\.match\.id;\s*try\{enterCurrentMatch\(\)/);
+});
