@@ -1737,6 +1737,13 @@ html.pj-online #productPanel:before{display:none!important}
 html.pj-online #productPanel .product{height:100%!important;min-height:0!important;display:grid!important;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)!important;gap:clamp(10px,2vw,24px)!important;align-items:stretch!important}
 html.pj-online #visual{min-height:0!important;height:100%!important;max-height:none!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:10px!important;box-sizing:border-box}
 html.pj-online #visual img{width:100%!important;height:100%!important;max-height:100%!important;object-fit:contain!important}
+html.pj-online #productPanel{position:relative!important}
+html.pj-online #pj-online-previous-reveal:not([hidden]){position:absolute;z-index:12;inset:8px;background:linear-gradient(145deg,#10213a,#203a58);color:#fff;border:2px solid #e8c479;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(5px,1vh,13px);padding:clamp(10px,2vw,25px);text-align:center;overflow:auto;box-shadow:0 12px 35px #0008}
+html.pj-online #pj-online-previous-reveal[hidden]{display:none!important}
+html.pj-online #pj-online-previous-reveal strong{color:#ffd67b;font-size:clamp(18px,2.5vw,34px)}
+html.pj-online #pj-online-previous-reveal b{color:#8ff0ba;font-size:clamp(20px,2.8vw,38px)}
+html.pj-online .pj-online-reveal-entries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 18px;width:min(100%,720px);font-size:clamp(12px,1.35vw,18px)}
+html.pj-online #pj-online-previous-reveal small{color:#ffe3a0;font-size:clamp(12px,1.4vw,18px)}
 html.pj-online .pj-online-photo-missing{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;color:#25354a;max-width:90%;line-height:1.35}
 html.pj-online .pj-online-photo-missing strong{font-size:clamp(19px,2.3vw,32px)}
 html.pj-online .pj-online-photo-missing span{font-size:clamp(13px,1.3vw,19px)}
@@ -1788,6 +1795,35 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
    const title=document.createElement('strong');title.textContent='📷 Produktfoto nicht verfügbar';
    const description=document.createElement('span');description.textContent='Bitte anhand der genauen Produktbezeichnung schätzen.';
    unavailable.append(title,description);visual.append(unavailable);
+  }
+  // Show only already revealed server results. Never expose current product price.
+  let previous=document.getElementById('pj-online-previous-reveal');
+  if(!previous){
+   previous=document.createElement('section');previous.id='pj-online-previous-reveal';
+   previous.setAttribute('aria-live','polite');
+   byId('productPanel').append(previous);
+  }
+  const last=Array.isArray(data.history)?data.history.at(-1):null;
+  const waitingForNext=Number.isFinite(data.startsInMs)&&data.startsInMs>0;
+  previous.hidden=!last||!waitingForNext;
+  if(!previous.hidden){
+   previous.replaceChildren();
+   const title=document.createElement('strong');
+   title.textContent='🏆 Preisenthüllung · Frage '+(Number(last.round)||'?');
+   const product=document.createElement('div');
+   product.textContent=String(last.product?.name||'Produkt');
+   const actual=document.createElement('b');
+   const euro=value=>Number(value).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+   actual.textContent='Richtiger Preis: '+euro(last.product?.price);
+   const entries=document.createElement('div');entries.className='pj-online-reveal-entries';
+   for(const entry of (Array.isArray(last.entries)?last.entries:[]).slice(0,4)){
+    const line=document.createElement('div');
+    line.textContent=String(entry.name||'Spieler')+' · '+(Number(entry.guess)>0?euro(entry.guess):'Keine Schätzung')+' · +'+(Number(entry.challengePoints)||0)+' Punkte';
+    entries.append(line);
+   }
+   const next=document.createElement('small');
+   next.textContent='Nächste Preisfrage in '+Math.ceil(data.startsInMs/1000)+' Sekunden';
+   previous.append(title,product,actual,entries,next);
   }
   byId('photoStatus').textContent='Original-Spieloberfläche · gemeinsamer Online-Raum';
   const score=byId('scoreBoard');score.replaceChildren();
