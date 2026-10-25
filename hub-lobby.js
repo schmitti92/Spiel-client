@@ -653,7 +653,7 @@ function renderChallengeSetup(showStage){
   for(const [id,icon,title] of singleGames){
    const btn=document.createElement('button');btn.type='button';btn.dataset.minigame=id;
    btn.style.cssText='min-height:100px;border-radius:15px;border:2px solid #ffffff55;background:linear-gradient(150deg,#ffffff22,#071b3288);color:white;cursor:pointer;padding:12px;text-align:center;transition:transform .12s,border-color .12s';
-   btn.innerHTML='<span style="font-size:29px;display:block;margin-bottom:6px">'+icon+'</span><strong>'+title+'</strong>';
+   btn.innerHTML='<span style="font-size:29px;display:block;margin-bottom:6px">'+icon+'</span><strong>'+title+'</strong><span class="mini-picked" style="display:block;font-size:12px;margin-top:8px;color:#ffecaa" aria-hidden="true"></span>';
    btn.addEventListener('click',async()=>{
     if(!room?.host||room.phase!=='preparing')return;
     btn.disabled=true;
@@ -679,7 +679,11 @@ function renderChallengeSetup(showStage){
  if(room.phase!=='preparing')el('challenge-feedback').textContent='';
  if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(room.settings?.partychallenge?.selectedGame?1:9);
  const selected=room.settings?.partychallenge?.selectedGame||null;
- el('challenge-single-grid').querySelectorAll('button').forEach(btn=>{const chosen=btn.dataset.minigame===selected;btn.style.borderColor=chosen?'#ffdd7b':'#ffffff55';btn.style.background=chosen?'linear-gradient(140deg,#2c8e78,#176c70)':'linear-gradient(150deg,#ffffff22,#071b3288)';btn.style.boxShadow=chosen?'0 0 0 3px #ffdd7b66':'none';btn.disabled=!room.host||room.phase!=='preparing';});
+ el('challenge-single-grid').querySelectorAll('button').forEach(btn=>{const chosen=btn.dataset.minigame===selected;btn.style.borderColor=chosen?'#ffdd7b':'#ffffff55';btn.style.background=chosen?'linear-gradient(140deg,#2c8e78,#176c70)':'linear-gradient(150deg,#ffffff22,#071b3288)';btn.style.boxShadow=chosen?'0 0 0 3px #ffdd7b66':'none';btn.setAttribute('aria-pressed',String(chosen));btn.querySelector('.mini-picked').textContent=chosen?'✓ AUSGEWÄHLT':'';btn.disabled=!room.host||room.phase!=='preparing';});
+ let choiceStatus=el('challenge-choice-status');
+ if(!choiceStatus){choiceStatus=document.createElement('div');choiceStatus.id='challenge-choice-status';choiceStatus.style.cssText='margin:12px 0;padding:12px 16px;border-radius:14px;background:#e7f4f0;color:#16584d;font-weight:750';el('challenge-single-grid').after(choiceStatus);}
+ const selectedTitle=selected?(CHALLENGE_LABELS[selected]||selected):null;
+ choiceStatus.textContent=selectedTitle?'🎮 Gewählt: '+selectedTitle+' · '+(room.host?'Warte auf die Bereitmeldungen.':'Der Host hat dieses Minispiel ausgewählt.'):'🏆 Party-Challenge mit allen neun Spielen ausgewählt.';
  el('challenge-marathon').disabled=!room.host||room.phase!=='preparing';
  el('challenge-count').disabled=!room.host||room.phase!=='preparing';
  el('challenge-save').hidden=!room.host||room.phase!=='preparing';
