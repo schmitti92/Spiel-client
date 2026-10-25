@@ -227,3 +227,10 @@ test('Challenge ready controls are initially inside room panel before launch',()
  assert.equal((html.match(/id="ready-panel"/g)||[]).length,1);
  assert.equal((html.match(/id="ready-btn"/g)||[]).length,1);
 });
+
+
+test('Premium Challenge readiness visually follows the player seats',()=>{
+ assert.match(css,/#room-view>\.stack:last-child>\.panel:first-child>#players\{order:3!important\}/);
+ assert.match(css,/#room-view>\.stack:last-child>\.panel:first-child>#ready-panel\{order:4!important\}/);
+ assert.match(css,/#room-view>\.stack:last-child>\.panel:first-child>#challenge-host-launch\{order:5!important\}/);
+});
