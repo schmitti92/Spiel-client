@@ -595,3 +595,27 @@ body.challenge-room-active #challenge-single-grid>button .mini-picked{position:r
  body.challenge-room-active #players{gap:6px!important}
  body.challenge-room-active #room-view>.stack:last-child>.panel:nth-child(2){padding:8px 10px!important}
 }
+
+
+/* Premium V29: fix high-specificity legacy 150px minimum that defeats V28.
+   Screenshot target: all controls + readiness visible without vertical scrolling. */
+@media (min-width:901px) and (orientation:landscape) and (max-height:1200px){
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #challenge-single-grid>button{
+  box-sizing:border-box!important;min-height:0!important;height:clamp(78px,9.2dvh,106px)!important;
+  max-height:106px!important;aspect-ratio:auto!important;padding:5px 8px!important
+ }
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #challenge-single-grid{gap:5px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #challenge-settings-panel>div:first-child{min-height:34px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #challenge-settings-panel>div:has(#challenge-single-grid)>div:first-child{font-size:14px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #challenge-settings-panel>div:has(#challenge-single-grid)>p{margin:2px 0 4px!important;font-size:10px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #challenge-settings-panel>div:has(#challenge-single-grid){padding:5px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel{padding:7px 10px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel h2{font-size:14px!important;margin:0!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel .eyebrow{font-size:9px!important;margin:0!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel .muted{font-size:10px!important;line-height:1.2!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel #ready-btn{min-height:32px!important;padding:4px 12px!important;font-size:13px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel .ready-progress{margin:4px 0 2px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel .ready-bar{height:5px!important;margin:2px 0!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel .ready-hint{font-size:10px!important;margin-top:2px!important}
+ body.challenge-room-active #room-view:has(.challenge-premium:not(.hidden)) #ready-panel .notice{padding:3px 7px!important;margin-top:2px!important;font-size:10px!important}
+}
