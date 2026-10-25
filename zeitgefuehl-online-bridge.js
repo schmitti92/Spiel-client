@@ -1,6 +1,6 @@
 /* Original Zeitgefuehl – online iframe bridge. The server measures all stop timestamps. */
 export function mountZeitgefuehlOriginal({container,getRoom,request,acceptRoom,onError}){
- const iframe=document.createElement('iframe');iframe.src='zeitgefuehl-original.html?v=3';iframe.title='Zeitgefühl Original – Online';
+ const iframe=document.createElement('iframe');iframe.src='zeitgefuehl-original.html?v=4';iframe.title='Zeitgefühl Original – Online';
  iframe.style.cssText='width:100%;height:100%;border:0;display:block';iframe.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(iframe);let active=true,lastKey='';
  function sync(){
