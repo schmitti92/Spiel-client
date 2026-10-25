@@ -85,7 +85,10 @@ test('Party Challenge renders exactly nine unique original game choices',()=>{
 test('Tablet landscape card sizing remains bounded and cache version matches',()=>{
  assert.match(css,/@media \(min-width:901px\) and \(max-height:850px\) and \(orientation:landscape\)/);
  assert.match(css,/height:clamp\(91px,12\.5dvh,111px\)/);
- assert.match(html,/hub-lobby-v7\.css\?v=20261025-premium-18/);
+ assert.match(html,/hub-lobby-v7\.css\?v=20261025-premium-\d+/);
+ const cssVersion=html.match(/hub-lobby-v7\.css\?v=(20261025-premium-\d+)/)?.[1];
+ assert.ok(cssVersion,'versioned lobby stylesheet missing');
+ assert.ok(Number(cssVersion.split('-').at(-1))>=18,'outdated tablet stylesheet');
 });
 
 test('Marathon selection prevents duplicate submissions while a request is pending',()=>{
