@@ -236,3 +236,25 @@ header{background:linear-gradient(90deg,#052947fa,#063453ef);border:1px solid #4
 #challenge-settings-panel.challenge-premium.hidden{display:none!important}
 #challenge-single-grid>button{background-size:cover!important;background-position:center!important}
 #challenge-single-grid>button[aria-pressed="true"]{border-color:#ffce67!important}
+
+/* V8: deterministic layout without fragile :has selector, preserve all ready controls */
+body.challenge-room-active #game-stage-hero{display:none!important}
+body.challenge-room-active #game-chooser{display:none!important}
+body.challenge-room-active #challenge-settings-panel{order:-2!important;margin:0!important}
+body.challenge-room-active #ready-panel{order:-1!important}
+body.challenge-room-active #room-view{grid-template-columns:minmax(0,2.3fr) minmax(300px,.9fr)!important;align-items:start;gap:14px}
+body.challenge-room-active #room-view>.stack:first-child{display:flex;flex-direction:column;gap:12px}
+body.challenge-room-active #room-view>.stack:last-child{position:sticky;top:12px}
+body.challenge-room-active #challenge-settings-panel>p{display:none}
+body.challenge-room-active #challenge-settings-panel>div:has(#challenge-single-grid)>p{font-size:13px;margin:4px 0 10px!important}
+body.challenge-room-active #challenge-single-grid>button{min-height:132px!important;aspect-ratio:1.75!important}
+body.challenge-room-active #challenge-settings-panel>div:first-child{padding:9px 14px!important}
+body.challenge-room-active #challenge-settings-panel>div:first-child h3{font-size:22px!important}
+body.challenge-room-active #challenge-settings-panel>div:has(#challenge-single-grid){margin:8px 0!important}
+body.challenge-room-active #challenge-settings-panel #challenge-marathon{margin-top:8px!important}
+body.challenge-room-active #ready-panel{padding:13px!important}
+body.challenge-room-active #ready-panel h2{font-size:19px!important}
+body.challenge-room-active #ready-panel .muted{font-size:12px}
+body.challenge-room-active #challenge-settings-panel #challenge-count{max-width:100%!important}
+@media(max-width:900px){body.challenge-room-active #room-view{grid-template-columns:1fr!important}body.challenge-room-active #room-view>.stack:last-child{position:static}}
+@media(max-width:600px){body.challenge-room-active #challenge-single-grid>button{min-height:108px!important;aspect-ratio:1.4!important}}
