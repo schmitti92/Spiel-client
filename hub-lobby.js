@@ -170,6 +170,11 @@ const CHALLENGE_STAGE_CSS=`
 #challenge-progress.preisjaeger-playing>#challenge-preisjaeger{box-sizing:border-box;padding:clamp(10px,2vh,22px)!important;max-width:min(96vw,780px)!important}
 #challenge-progress.preisjaeger-playing>#challenge-preisjaeger #pj-product-photo{max-height:clamp(85px,23vh,230px)!important}
 #challenge-progress.preisjaeger-playing>#challenge-preisjaeger #pj-product-icon{margin:0!important;font-size:clamp(35px,7vh,60px)!important}
+#challenge-progress.zeitgefuehl-playing{justify-content:flex-start!important;gap:0!important;padding:0!important;overflow:hidden!important}
+#challenge-progress.zeitgefuehl-playing::before,#challenge-progress.zeitgefuehl-playing::after{display:none!important}
+#challenge-progress.zeitgefuehl-playing>h2,#challenge-progress.zeitgefuehl-playing>#challenge-progress-name,#challenge-progress.zeitgefuehl-playing>#challenge-progress-status,#challenge-progress.zeitgefuehl-playing>#challenge-progress-order,#challenge-progress.zeitgefuehl-playing>#challenge-clock,#challenge-progress.zeitgefuehl-playing>#challenge-time-stop,#challenge-progress.zeitgefuehl-playing>#challenge-time-target{display:none!important}
+#challenge-progress.zeitgefuehl-playing>#challenge-original-frame{width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;flex:1!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+#challenge-progress.zeitgefuehl-playing>#challenge-results{display:none!important}
 #challenge-progress.maulwurf-playing{justify-content:flex-start!important;gap:4px!important;padding:4px!important;overflow:hidden!important}
 #challenge-progress.maulwurf-playing::before,#challenge-progress.maulwurf-playing::after{display:none!important}
 #challenge-progress.maulwurf-playing>h2,#challenge-progress.maulwurf-playing>#challenge-progress-order,#challenge-progress.maulwurf-playing>#challenge-progress-status,#challenge-progress.maulwurf-playing>#challenge-progress-name,#challenge-progress.maulwurf-playing>#challenge-clock{display:none!important}
@@ -481,6 +486,7 @@ function renderChallengeProgress(){
  el('challenge-replay').hidden=!room.host;
  el('challenge-select').hidden=!room.host;
  if(ch.phase==='finished'&&ch.order.length===1&&!room.host){el('challenge-progress-status').textContent='🏁 Partie beendet. Der Host kann erneut spielen oder ein anderes Minispiel wählen.';}
+ box.classList.toggle('zeitgefuehl-playing',ch.order[index]==='zeitgefuehl'&&ch.phase==='countdown');
  const isPreisjaeger=ch.order[index]==='preisjaeger';
  box.classList.toggle('preisjaeger-original-playing',isPreisjaeger&&(ch.phase==='countdown'||ch.phase==='finished'));
  if(!isPreisjaeger)pjTimeoutKey='';
