@@ -439,6 +439,11 @@ window.addEventListener('message',event=>{
    const p=players[entry.index];
    if(!p||p.state==='jump'||p.state==='await-server')continue;
    if(Number.isInteger(entry.falls))p.falls=entry.falls;
+   // Restore the correct stone position after reconnect, not just the row.
+   const history=Array.isArray(m.moves)?m.moves:[];
+   const safe=history.filter(x=>x.index===entry.index&&x.row===entry.row&&Number.isInteger(x.col)&&x.col>=0&&x.col<6&&path[x.row]===x.col);
+   if(safe.length)p.col=safe[safe.length-1].col;
+   if(entry.row===-1)p.col=2;
    if(Number.isInteger(entry.row)&&entry.row>=-1&&entry.row<=4){
     p.row=entry.row;
     if(entry.finishedAt)p.state='goal';else if(p.state==='goal')p.state='ready';
