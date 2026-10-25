@@ -378,7 +378,7 @@ test('all embedded originals use shared edge-to-edge stage and preserve hidden f
  assert.match(js,/classList\.toggle\('original-edge-playing',originalActive/);
  assert.match(js,/#challenge-progress\.original-edge-playing:not\(\.hidden\)/);
  assert.match(js,/#challenge-original-frame:not\(\[hidden\]\)/);
- assert.match(js,/classList\.remove\('maulwurf-playing','zeitgefuehl-playing','original-edge-playing'\)/);
+ assert.match(js,/classList\.remove\('maulwurf-playing','zeitgefuehl-playing','original-edge-playing','rechen-finale'\)/);
 });
 
 
