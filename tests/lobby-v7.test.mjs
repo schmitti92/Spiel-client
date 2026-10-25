@@ -305,3 +305,11 @@ test('Preisjäger online input supports Enter and isolates offline submit handle
  assert.match(original,/PREISJAEGER_ONLINE_ERROR/);
  assert.match(js,/const fail=message=>/);
 });
+
+
+test('Preisjäger countdown progresses even when room socket is idle',()=>{
+ assert.match(js,/preisjaegerClockReceivedAt=Date\.now\(\)/);
+ assert.match(js,/Math\.max\(0,Date\.now\(\)-preisjaegerClockReceivedAt\)/);
+ assert.match(js,/syncPreisjaegerOriginal\(ch\)/);
+ assert.match(js,/challenge-preisjaeger-timeout/);
+});
