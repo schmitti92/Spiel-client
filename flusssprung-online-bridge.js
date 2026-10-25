@@ -1,6 +1,6 @@
 export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.title='Flusssprung – Online';frame.src='minispiele/flusssprung-online-adapter-v41.html?v=6';
+ frame.title='Flusssprung – Online';frame.src='minispiele/flusssprung-online-adapter-v41.html?v=7';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  frame.setAttribute('sandbox','allow-scripts allow-same-origin');
  container.replaceChildren(frame);
