@@ -109,7 +109,7 @@ function update(){const player=games[0];$('score').textContent=player.score;$('l
 function requestDirection(g,dir){
  if(!vectors[dir]||!g.alive)return;
  const last=g.queue.length?g.queue[g.queue.length-1]:g.dir;
- if(dir!==last&&dir!==opposite[last]&&g.queue.length<2)g.queue.push(dir);
+ if(dir!==last&&dir!==opposite[last]&&g.queue.length<2){g.queue.push(dir);if(window.SnakeArenaOnlineConfig&&g===games[0]){g.visualRequestedDir=dir;g.visualRequestedAt=performance.now();}}
 }
 function reachableSpace(start, occupied, limit=COLS*ROWS){
  const blocked=new Set(occupied.map(p=>p.x+','+p.y));
@@ -201,7 +201,7 @@ function draw(g,c,scale){
   c.shadowBlur=0;c.strokeStyle='#795235';c.lineWidth=2;c.beginPath();c.moveTo(0,-9);c.lineTo(2,-16);c.stroke();c.fillStyle='#88d970';c.beginPath();c.ellipse(6,-13,6,3,-.5,0,TAU);c.fill();c.strokeStyle='#eaffc566';c.lineWidth=.8;c.stroke();if(kind===1){c.fillStyle='#fff8';c.beginPath();c.arc(-3,-3,1,0,TAU);c.fill()}c.restore()}
  const alpha=window.SnakeArenaOnlineConfig?Math.min(1,(performance.now()-(g.snapshotAt||0))/Math.max(180,g.snapshotInterval||700)):Math.min(1,accumulator/Math.max(1,Number($('speed').value)));
  // Kürzesten Weg über den Spielfeldrand interpolieren; keine Teleport-Sprünge.
- const online=window.SnakeArenaOnlineConfig;const age=online&&g.snapshotAt?Math.max(0,performance.now()-g.snapshotAt):0;const predictedSteps=online&&g.snapshotAt&&g.alive?Math.min(5,Math.floor(age/180)):0;let visualPoints=g.points;let visualDir=g.dir;if(predictedSteps){visualPoints=g.points.map(p=>({...p}));for(let step=0;step<predictedSteps;step++){if(step===0&&g===games[0]&&g.queue.length&&g.queue[0]!==opposite[visualDir])visualDir=g.queue[0];const v=vectors[visualDir];if(!v)break;const h=visualPoints[0];visualPoints.unshift({x:wrap(h.x+v[0],COLS),y:wrap(h.y+v[1],ROWS)});visualPoints.pop();}}const positions=visualPoints.map((p,i)=>{const prev=predictedSteps?(i===0?g.points[0]:(visualPoints[i+1]||g.points[i]||p)):g.previous?.[i]||p;
+ const online=window.SnakeArenaOnlineConfig;const age=online&&g.snapshotAt?Math.max(0,performance.now()-g.snapshotAt):0;const predictedSteps=online&&g.snapshotAt&&g.alive?Math.min(5,Math.floor(age/180)):0;let visualPoints=g.points;let visualDir=g.dir;if(predictedSteps){visualPoints=g.points.map(p=>({...p}));for(let step=0;step<predictedSteps;step++){if(step===0&&g===games[0]){const requested=g.queue[0]||g.visualRequestedDir;if(requested&&requested!==opposite[visualDir])visualDir=requested;}const v=vectors[visualDir];if(!v)break;const h=visualPoints[0];visualPoints.unshift({x:wrap(h.x+v[0],COLS),y:wrap(h.y+v[1],ROWS)});visualPoints.pop();}}const positions=visualPoints.map((p,i)=>{const prev=predictedSteps?(i===0?g.points[0]:(visualPoints[i+1]||g.points[i]||p)):g.previous?.[i]||p;
   let dx=p.x-prev.x,dy=p.y-prev.y;
   if(dx>COLS/2)dx-=COLS;else if(dx<-COLS/2)dx+=COLS;
   if(dy>ROWS/2)dy-=ROWS;else if(dy<-ROWS/2)dy+=ROWS;
@@ -319,7 +319,7 @@ window.addEventListener('message',event=>{
   for(let i=0;i<m.players.length;i++){
    const q=m.players[(c.localSeat+i)%m.players.length],g=games[i];
    if(!q||!g)continue;
-   if(i===0){if(Array.isArray(q.points)&&q.points){const changed=!g.points||g.points.length!==q.points.length||q.points.some((p,j)=>p.x!==g.points[j]?.x||p.y!==g.points[j]?.y);if(changed){g.previous=g.points?.length===q.points.length?g.points.map(p=>({x:p.x,y:p.y})):null;const now=performance.now();g.snapshotInterval=g.snapshotAt?Math.min(1600,Math.max(180,now-g.snapshotAt)):700;g.snapshotAt=now;g.points=q.points.map(p=>({x:p.x,y:p.y}));}}if(q.food)g.food=q.food;if(q.dir)g.dir=q.dir;if(Number.isFinite(q.score))g.score=q.score;if(Number.isFinite(q.survived))g.survived=q.survived;g.alive=q.alive!==false;g.queue=g.queue.filter(d=>d!==g.dir);continue;}
+   if(i===0){if(Array.isArray(q.points)&&q.points){const changed=!g.points||g.points.length!==q.points.length||q.points.some((p,j)=>p.x!==g.points[j]?.x||p.y!==g.points[j]?.y);if(changed){g.previous=g.points?.length===q.points.length?g.points.map(p=>({x:p.x,y:p.y})):null;const now=performance.now();g.snapshotInterval=g.snapshotAt?Math.min(1600,Math.max(180,now-g.snapshotAt)):700;g.snapshotAt=now;g.points=q.points.map(p=>({x:p.x,y:p.y}));}}if(q.food)g.food=q.food;if(q.dir){g.dir=q.dir;if(g.visualRequestedDir===q.dir)g.visualRequestedDir=null;}if(Number.isFinite(q.score))g.score=q.score;if(Number.isFinite(q.survived))g.survived=q.survived;g.alive=q.alive!==false;g.queue=g.queue.filter(d=>d!==g.dir);continue;}
    if(Array.isArray(q.points)&&q.points.length){const changed=!g.points||g.points.length!==q.points.length||q.points.some((p,j)=>p.x!==g.points[j]?.x||p.y!==g.points[j]?.y);if(changed){g.previous=g.points?.length===q.points.length?g.points.map(p=>({x:p.x,y:p.y})):null;const now=performance.now();g.snapshotInterval=g.snapshotAt?Math.min(1600,Math.max(180,now-g.snapshotAt)):700;g.snapshotAt=now;g.points=q.points.map(p=>({x:p.x,y:p.y}));}}
    if(q.food)g.food={x:q.food.x,y:q.food.y};
    if(['up','down','left','right'].includes(q.dir))g.dir=q.dir;
