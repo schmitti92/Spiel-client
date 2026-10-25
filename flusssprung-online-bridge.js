@@ -47,7 +47,7 @@ export function mountFlusssprungOriginal({container,getRoom,request,acceptRoom,o
    lastSnapshot=snapshot;lastSyncRevision=room.revision;
    frame.contentWindow.postMessage({type:'flusssprung:server-state',players:JSON.parse(snapshot),moves:moves.map(m=>({index:players.findIndex(p=>p.seat===m.seat),row:m.row,col:m.col}))},location.origin);
   }
-  if(room.revision!==lastRevision){lastRevision=room.revision;serverOffset=(Number(room.serverNow)||Date.now())-Date.now();}
+  if(Number.isFinite(room.serverNow)&&room.serverNow!==lastRevision){lastRevision=room.serverNow;serverOffset=room.serverNow-Date.now();}
   const serverNow=Date.now()+serverOffset;
   if(ch.phase==='countdown'&&serverNow>=ch.startAt+60000&&!timeoutPending){
    timeoutPending=true;
