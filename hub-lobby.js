@@ -331,7 +331,7 @@ async function ensureSnakeOriginalBridge(){
  if(snakeOriginalBridge||snakeOriginalLoading||snakeOriginalFailed)return;
  snakeOriginalLoading=true;
  try{
-  const {mountSnakeOriginal}=await import('./snake-arena-online-bridge.js?v=1');
+  const {mountSnakeOriginal}=await import('./snake-arena-online-bridge.js?v=2');
   const ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='snake-arena'||ch.phase!=='countdown')return;
   const target=el('challenge-original-frame');if(!target)return;
