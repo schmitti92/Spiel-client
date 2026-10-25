@@ -529,3 +529,25 @@ body.challenge-room-active #challenge-host-launch #start-btn:not(:disabled){text
  body.challenge-room-active #players .player{min-height:40px!important}
 }
 @media(prefers-reduced-motion:reduce){body.challenge-room-active #challenge-single-grid>button{transition:none!important}}
+
+
+/* Premium V26: accurate nine game artworks. Override legacy four-game thumbnails. */
+body.challenge-room-active #challenge-single-grid>button{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(1){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/zeitgefuehl.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(2){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/recheninsel.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(3){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/huetchen.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(4){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/maulwurf.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(5){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/fluss.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(6){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/lava.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(7){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/snake.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(8){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/bomber.svg")!important}
+body.challenge-room-active #challenge-single-grid>button:nth-child(9){background-image:linear-gradient(0deg,#001726e8,#00172611 78%),url("Assets/challenge/preis.svg")!important}
+body.challenge-room-active #challenge-single-grid>button .mini-art{position:absolute!important;right:8px;top:5px;opacity:.64;font-size:clamp(16px,2.7dvh,24px)!important;min-height:0!important;flex:none!important;pointer-events:none}
+body.challenge-room-active #challenge-single-grid>button strong{margin-top:auto!important}
+body.challenge-room-active #challenge-single-grid>button .mini-meta{position:relative;z-index:1}
+body.challenge-room-active #challenge-single-grid>button .mini-picked{position:relative;z-index:1}
+@media(min-width:901px) and (orientation:landscape) and (max-height:950px){
+ body.challenge-room-active #challenge-single-grid>button{padding:6px 9px!important}
+ body.challenge-room-active #challenge-single-grid>button strong{font-size:clamp(12px,1.8dvh,17px)!important}
+ body.challenge-room-active #challenge-single-grid>button .mini-meta{font-size:clamp(9px,1.3dvh,12px)!important}
+}
