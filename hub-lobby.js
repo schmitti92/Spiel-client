@@ -1149,10 +1149,10 @@ el('change-game-btn').addEventListener('click',()=>{if(room?.host&&room.phase===
 el('create-btn').addEventListener('click',()=>command(async()=>{
  const {room:r}=await request('/rooms','POST');location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
-el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,'').slice(0,6);notice('');});
+el('join-code').addEventListener('input',event=>{event.target.value=event.target.value.toUpperCase().replace(/[^0-9A-HJ-NP-Z]/g,'').slice(0,6);notice('');});
 el('join-code').addEventListener('keydown',e=>{if(e.key==='Enter')el('join-btn').click();});
 el('join-btn').addEventListener('click',()=>command(async()=>{
- const c=el('join-code').value.trim().toUpperCase();if(!/^[A-HJ-NP-Z2-9]{6}$/.test(c))throw Error('Bitte einen gültigen Raumcode mit 6 Zeichen eingeben.');
+ const c=el('join-code').value.trim().toUpperCase();if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(c))throw Error('Bitte einen dreistelligen Zahlencode oder bisherigen sechsstelligen Raumcode eingeben.');
  const {room:r}=await request('/rooms/'+c+'/join','POST');location.assign('spielauswahl-online.html?room='+encodeURIComponent(r.code));
 }));
 document.querySelectorAll('[data-game]').forEach(btn=>btn.addEventListener('click',()=>command(async()=>{
@@ -1233,12 +1233,12 @@ async function boot(){
  render();
  const params=new URL(location.href).searchParams;
  const invite=params.get('invite');
- if(invite&&/^[A-HJ-NP-Z2-9]{6}$/i.test(invite)){
+ if(invite&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
   el('join-code').value=invite.toUpperCase();
   notice('Einladung erhalten: Bitte dem Raum '+invite.toUpperCase()+' beitreten.');
  }
  const fromUrl=params.get('room');
- if(!fromUrl||!/^[A-HJ-NP-Z2-9]{6}$/i.test(fromUrl))return;
+ if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
  if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
    location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));
    return;
