@@ -373,3 +373,10 @@ test('Zeitgefühl V59 podium reserves separate space for replay controls',()=>{
  assert.match(js,/#challenge-single-actions:not\(\[hidden\]\)/);
  assert.match(js,/background:#071b2ce8/);
 });
+
+test('all embedded originals use shared edge-to-edge stage and preserve hidden frames',()=>{
+ assert.match(js,/classList\.toggle\('original-edge-playing',originalActive/);
+ assert.match(js,/#challenge-progress\.original-edge-playing:not\(\.hidden\)/);
+ assert.match(js,/#challenge-original-frame:not\(\[hidden\]\)/);
+ assert.match(js,/classList\.remove\('maulwurf-playing','zeitgefuehl-playing','original-edge-playing'\)/);
+});
