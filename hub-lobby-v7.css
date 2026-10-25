@@ -867,3 +867,24 @@ body.challenge-room-active #challenge-single-grid>button[aria-pressed="true"]::a
   transition:none!important;animation:none!important;transform:none!important;
  }
 }
+
+
+/* V42 – show the actual original Preisjäger V11 inside the shared online round. */
+#challenge-progress.preisjaeger-original-playing{
+ padding:4px!important;gap:3px!important;overflow:hidden!important;
+}
+#challenge-progress.preisjaeger-original-playing>#preisjaeger-original-online{
+ display:block!important;flex:1 1 auto!important;width:100%!important;
+ max-width:none!important;height:calc(100dvh - 10px)!important;
+ min-height:0!important;border:0!important;border-radius:10px!important;
+}
+#challenge-progress.preisjaeger-original-playing>#challenge-preisjaeger,
+#challenge-progress.preisjaeger-original-playing>#challenge-clock,
+#challenge-progress.preisjaeger-original-playing>#challenge-progress-name,
+#challenge-progress.preisjaeger-original-playing>#challenge-progress-status,
+#challenge-progress.preisjaeger-original-playing>#challenge-progress-order,
+#challenge-progress.preisjaeger-original-playing>h2{
+ display:none!important;
+}
+#challenge-progress.preisjaeger-original-playing::before,
+#challenge-progress.preisjaeger-original-playing::after{display:none!important}
