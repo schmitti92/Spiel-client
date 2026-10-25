@@ -147,7 +147,7 @@ function acceptRoom(next){
  if(room?.code===next.code&&Number.isFinite(Number(next.revision))&&Number.isFinite(Number(room.revision))&&Number(next.revision)<Number(room.revision))return false;
  room=next;render();return true;
 }
-function activateRoom(result){if(!result?.code)return;setRoomCode(result.code);acceptRoom(result);}
+function activateRoom(result){if(!result?.code)return;cancelPendingRecovery();setRoomCode(result.code);acceptRoom(result);}
 
 function pollStop(){if(poll){clearInterval(poll);poll=null;}stopWatch();}
 function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code||operation||pollInFlight||!activeProfile()||document.hidden)return;
@@ -155,7 +155,7 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  const requestedCode=code;pollInFlight=true;
  try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
  },4500);}
-function leaveView(){pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
+function leaveView(){cancelPendingRecovery();pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
 const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
 const CHALLENGE_STAGE_CSS=`
@@ -978,6 +978,7 @@ el('copy-btn').addEventListener('click',async()=>{
 el('leave-btn').addEventListener('click',()=>command(async()=>{await request('/rooms/'+code+'/leave','POST');leaveView();notice('Du hast den Raum verlassen.');}));
 let pendingRoomRecovery=null,recoveryInFlight=false,recoveryRetryTimer=null,recoveryAttempts=0;
 function clearRecoveryRetry(){if(recoveryRetryTimer){clearTimeout(recoveryRetryTimer);recoveryRetryTimer=null;}recoveryAttempts=0;}
+function cancelPendingRecovery(){pendingRoomRecovery=null;clearRecoveryRetry();}
 function scheduleRecoveryRetry(){
  if(!pendingRoomRecovery||recoveryRetryTimer||recoveryAttempts>=5)return;
  const delay=Math.min(30000,2000*2**recoveryAttempts++);
