@@ -126,12 +126,63 @@ function jokerEndValueForGrid(p,idx){
  const locked=state?.roundJokerValues?.[c.id];
  return Number.isFinite(locked)?Number(locked):liveJokerEndValueForGrid(p,idx)
 }
+/* Choose each joker's legal neighboring value by the final board score.
+   Completed equal-number groups are removed only when that improves the result. */
+function optimalRoundJokerValues(p){
+ const cols=state?.layoutMode==='xl'?5:4,stars=[];
+ for(let i=0;i<p.grid.length;i++){
+  if(p.grid[i]?.type!=='star')continue;
+  const row=Math.floor(i/cols),col=i%cols,values=new Set();
+  for(let k=0;k<cols;k++){const c=p.grid[row*cols+k];if(c?.type==='number')values.add(Number(c.value))}
+  for(let k=0;k<3;k++){const c=p.grid[k*cols+col];if(c?.type==='number')values.add(Number(c.value))}
+  stars.push({id:p.grid[i].id,values:[...values].sort((a,b)=>a-b).slice(0,8)})
+ }
+ const result={},original=state.roundJokerValues||{},memo=new Map();
+ function evaluate(){
+  const grid=p.grid,groups=[];
+  for(let c=0;c<cols;c++){const ids=[c,c+cols,c+2*cols];if(ids.every(i=>grid[i]))groups.push(ids)}
+  for(let r=0;r<3;r++){const ids=Array.from({length:cols},(_,c)=>r*cols+c).filter(i=>grid[i]);if(ids.length>=3)groups.push(ids)}
+  const choices=groups.filter(ids=>{
+   const cards=ids.map(i=>grid[i]);
+   if(cards.every(c=>c.type==='star'))return true;
+   const vals=cards.map((c,j)=>c.type==='star'?result[c.id]:Number(c.value));
+   return vals.every(v=>v===vals[0]);
+  });
+  const score=(removed,bonus)=>{
+   const key=removed.join(',')+':'+bonus;
+   if(memo.has(key))return memo.get(key);
+   let sum=bonus+(Number(p.bankedStarBonus)||0);
+   for(let i=0;i<grid.length;i++){const c=grid[i];if(!c||removed.includes(i))continue;sum+=c.type==='star'?(result[c.id]??0):cardPoints(c)}
+   for(const c of p.extras||[])if(c)sum+=c.type==='star'?0:cardPoints(c);
+   if(jokerSpecialsEnabled())sum+=(p.actions||[]).length*10;
+   let best=sum;
+   for(const ids of choices){
+    if(ids.some(i=>removed.includes(i)))continue;
+    const pure=ids.every(i=>grid[i].type==='star');
+    const next=score([...removed,...ids].sort((a,b)=>a-b),bonus+(pure?(ids.length===4&&ids[1]===ids[0]+1?-15:-10):0));
+    if(next<best)best=next;
+   }
+   memo.set(key,best);return best;
+  };
+  memo.clear();return score([],0);
+ }
+ let best=Infinity,bestValues={};
+ function visit(k){
+  if(k===stars.length){const value=evaluate();if(value<best){best=value;bestValues={...result}}return}
+  const item=stars[k];
+  for(const v of item.values.length?item.values:[0]){result[item.id]=v;visit(k+1)}
+ }
+ /* Keep the search bounded for very unusual all-joker boards. */
+ if(stars.reduce((n,x)=>n*Math.max(1,x.values.length),1)>8192)return Object.fromEntries(stars.map(x=>[x.id,x.values[0]??0]));
+ visit(0);return bestValues;
+}
 function buildRoundEndJokerValueMap(){
  const values={};
  for(const p of state?.players||[]){
+   const optimal=optimalRoundJokerValues(p);
    for(let i=0;i<(p.grid||[]).length;i++){
      const c=p.grid[i];
-     if(c?.type==='star')values[c.id]=liveJokerEndValueForGrid(p,i)
+     if(c?.type==='star')values[c.id]=optimal[c.id]??liveJokerEndValueForGrid(p,i)
    }
  }
  return values
