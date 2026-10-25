@@ -676,7 +676,18 @@ function renderChallengeSetup(showStage){
    finally{button.disabled=false;}
   });
  }
- const active=showStage&&room?.game==='partychallenge';box.classList.toggle('hidden',!active);document.body.classList.toggle('challenge-room-active',Boolean(active));
+ // Keep exactly one selector and exactly nine buttons even after repeated room refreshes.
+ const panels=document.querySelectorAll('#challenge-settings-panel');
+ panels.forEach((panel,index)=>{if(index>0)panel.remove();});
+ const cardGrid=box.querySelector('#challenge-single-grid');
+ if(cardGrid){
+  const seen=new Set();
+  cardGrid.querySelectorAll('button[data-minigame]').forEach(button=>{
+   if(seen.has(button.dataset.minigame))button.remove();
+   else seen.add(button.dataset.minigame);
+  });
+ }
+ const active=showStage&&room?.game==='partychallenge';box.classList.toggle('hidden',!active);document.body.classList.toggle('challenge-room-active',Boolean(active));const genericChooser=el('game-chooser');if(genericChooser){genericChooser.hidden=Boolean(active);genericChooser.style.display=active?'none':'';}
  if(!active)return;
  if(room.phase!=='preparing')el('challenge-feedback').textContent='';
  if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(room.settings?.partychallenge?.selectedGame?1:9);
