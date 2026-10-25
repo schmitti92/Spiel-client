@@ -687,6 +687,21 @@ function renderChallengeSetup(showStage){
    else seen.add(button.dataset.minigame);
   });
  }
+ // Normalize duplicate nodes, including buttons accidentally inserted without data attributes.
+ const expectedIds=['zeitgefuehl','recheninsel','huetchen-challenge','maulwurf-arena','flusssprung','lava-arena','snake-arena','bomber-strand-arena','preisjaeger'];
+ if(cardGrid){
+  const cards=Array.from(cardGrid.children);
+  const kept=new Set();
+  cards.forEach(card=>{
+   const id=card.dataset?.minigame;
+   if(!expectedIds.includes(id)||kept.has(id)){card.remove();return;}
+   kept.add(id);
+  });
+  expectedIds.forEach((id,index)=>{
+   const card=Array.from(cardGrid.children).find(item=>item.dataset?.minigame===id);
+   if(card&&cardGrid.children[index]!==card)cardGrid.insertBefore(card,cardGrid.children[index]||null);
+  });
+ }
  const active=showStage&&room?.game==='partychallenge';box.classList.toggle('hidden',!active);document.body.classList.toggle('challenge-room-active',Boolean(active));const genericChooser=el('game-chooser');if(genericChooser){genericChooser.hidden=Boolean(active);genericChooser.style.display=active?'none':'';}
  if(!active)return;
  if(room.phase!=='preparing')el('challenge-feedback').textContent='';
