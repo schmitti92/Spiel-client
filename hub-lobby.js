@@ -359,7 +359,7 @@ async function ensureRecheninselOriginalBridge(){
   huetchenOriginalBridge?.destroy();huetchenOriginalBridge=null;
   if(!target)return;
   recheninselOriginalBridge=mountRecheninselOriginal({
-   container:target,src:'recheninsel-original-online.html?v=2',
+   container:target,src:'recheninsel-original-online.html?v=3',
    getRoom:()=>room,request,acceptRoom,onError:showError
   });
   recheninselOriginalBridge.sync();
