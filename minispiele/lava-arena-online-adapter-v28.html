@@ -145,7 +145,7 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
   const m=e.data;if(!m||typeof m!=='object')return;
   if(m.type==='lava-arena:configure'){
    if(typeof m.challengeId!=='string'||!Number.isInteger(m.localSeat)||!Array.isArray(m.seats)||m.seats.length<2||m.seats.length>4||m.localSeat<0||m.localSeat>=m.seats.length)return;
-   if(window.LavaArenaOnlineConfig?.challengeId!==m.challengeId){
+   if(window.LavaArenaOnlineConfig?.challengeId!==m.challengeId||window.LavaArenaOnlineConfig?.localSeat!==m.localSeat){
     window.LavaArenaOnlineConfig={challengeId:m.challengeId,localSeat:m.localSeat,firstSnapshot:false};remoteTargets.clear();onlineSeq=0;onlineLastReport=0;
     document.querySelector('#count').value=String(m.seats.length);
     document.querySelector('#humans').value='1';
