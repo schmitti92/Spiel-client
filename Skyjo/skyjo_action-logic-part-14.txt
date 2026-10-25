@@ -3,7 +3,7 @@
    if(cards.some(c=>!c.faceUp))continue;
    const nums=[...new Set(cards.filter(c=>c.type==='number').map(c=>c.value))],stars=cards.filter(c=>c.type==='star').length;
    const signature=`${g.name}:${cards.map(c=>c?.id||`${c?.type}:${c?.value}`).join('|')}`;
-   if(nums.length===1&&!(stars&&streetModeActive()&&isNumberStreet(cards)))out.push({...g,key:signature,optional:true,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`});
+   if(nums.length===1&&!(stars&&streetModeActive()&&isNumberStreet(cards))&&!(state?.phase==='roundReveal'&&state?.roundClose?.stage==='remove'&&cards.some(c=>c.type==='star'&&Number.isFinite(state?.roundJokerValues?.[c.id])&&Number(state.roundJokerValues[c.id])!==Number(nums[0]))))out.push({...g,key:signature,optional:true,label:`${g.name}: ${nums[0]}${stars?` + ${stars}★`:''}`});
    else if(nums.length===0&&stars===cards.length)out.push({...g,key:signature,optional:true,pureStars:true,label:`${g.name}: nur Joker`})
  }
  if(streetModeActive()){
