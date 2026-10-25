@@ -4,7 +4,7 @@
 const $=id=>document.getElementById(id);
 const query=new URL(location.href).searchParams;
 const code=String(query.get('room')||'').toUpperCase();
-const CODE=/^[A-HJ-NP-Z2-9]{6}$/;
+const CODE=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/;
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let room=null,busy=false,refreshBusy=false,socket=null,lastSocket=null,reconnectTimer=null,pollTimer=null;
 const limits={target:{min:50,max:500,step:10},jokerCount:{min:0,max:30,step:1}};
