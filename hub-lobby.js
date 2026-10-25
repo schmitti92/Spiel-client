@@ -353,7 +353,7 @@ function ensurePreisjaegerOriginalFrame(){
  frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
  frame.setAttribute('referrerpolicy','same-origin');
  frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
- frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=46';
+ frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=47';
  el('challenge-progress').append(frame);
  return frame;
 }
@@ -394,7 +394,7 @@ window.addEventListener('message',async event=>{
  if(pjSubmitPendingKey===key)return;
  pjSubmitPendingKey=key;
  try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-preisjaeger-answer','POST',{challengeId:ch.id,round:pj.round,guess});acceptRoom(response.room)}
- catch(error){showError(error);preisjaegerOriginalReady=true;syncPreisjaegerOriginal(ch)}
+ catch(error){showError(error);document.getElementById('preisjaeger-original-online')?.contentWindow?.postMessage({type:'PREISJAEGER_ONLINE_ERROR',key:ch.id+':'+pj.round},location.origin)}
  finally{if(pjSubmitPendingKey===key)pjSubmitPendingKey=''}
 });
 
