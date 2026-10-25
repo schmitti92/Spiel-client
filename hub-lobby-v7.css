@@ -810,3 +810,17 @@ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #chal
   animation:none!important;transition:none!important
  }
 }
+
+
+/* Premium V37 – correct the visual order of the readiness dock.
+   Legacy order:-1 moved it above the room code even though HTML is correct. */
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel{
+ order:0!important;
+}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.eyebrow{order:0!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.room-head{order:1!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>p.subtle{order:2!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#players{order:3!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel{order:4!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#challenge-host-launch{order:5!important}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.row{order:6!important}
