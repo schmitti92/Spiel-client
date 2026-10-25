@@ -332,6 +332,7 @@ async function ensureRecheninselOriginalBridge(){
 const challengeMathTimeoutPending=new Set();
 const challengeTimeTimeoutPending=new Set();
 let pjTimeoutKey='';
+let pjSubmitPendingKey='';
 function renderChallengeProgress(){
  ensureChallengeStageStyle();
  let box=el('challenge-progress');
@@ -356,9 +357,13 @@ function renderChallengeProgress(){
    if(!/^\d+(?:\.\d{1,2})?$/.test(raw)){el('pj-feedback').textContent='Bitte einen gültigen Preis eingeben.';return;}
    const guess=Math.round(Number(raw)*100);
    if(!Number.isSafeInteger(guess)||guess<1||guess>100000000){el('pj-feedback').textContent='Preis außerhalb des erlaubten Bereichs.';return;}
-   el('pj-submit').disabled=true;
+   const key=ch.id+':'+ch.index+':'+pj.round;
+   if(pjSubmitPendingKey===key)return;
+   pjSubmitPendingKey=key;
+   el('pj-submit').disabled=true;el('pj-feedback').textContent='⏳ Schätzung wird sicher übertragen …';
    try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-preisjaeger-answer','POST',{challengeId:ch.id,round:pj.round,guess});acceptRoom(response.room);}
-   catch(e){el('pj-feedback').textContent=e.message;el('pj-submit').disabled=false;}
+   catch(e){if(room?.match?.challenge?.preisjaeger?.round===pj.round){el('pj-feedback').textContent='⚠️ '+e.message;el('pj-submit').disabled=false;}}
+   finally{if(pjSubmitPendingKey===key)pjSubmitPendingKey='';}
   });
   el('challenge-math-input').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&!el('challenge-math-send').disabled){event.preventDefault();el('challenge-math-send').click();}});
   el('challenge-next').addEventListener('click',async()=>{if(!room?.host||!room?.match?.challenge)return;const btn=el('challenge-next');btn.disabled=true;try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-next','POST',{challengeId:room.match.challenge.id});acceptRoom(response.room);}catch(e){showError(e);}finally{btn.disabled=false;}});
