@@ -1489,8 +1489,13 @@ const directStart = () => {
   $("boardRetry").textContent="Produktverwaltung öffnen";
   beginBoardWithWatchdog();
 };
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",directStart,{once:true});
-else directStart();
+// In server-controlled Party Challenge the original local game must never
+// start a second, unsynchronised match or reveal its own prices.
+const preisjaegerServerView=new URLSearchParams(location.search).get('onlineView')==='1';
+if(!preisjaegerServerView){
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",directStart,{once:true});
+ else directStart();
+}
 
 // V8.6: highlight changed scores without changing the scoring algorithm.
 (()=>{
@@ -1714,4 +1719,63 @@ $("originalPhotoRestore").addEventListener("change",async e=>{
 const photoCoverageObserver=new MutationObserver(()=>refreshPhotoCoverage());
 const photoSelect=$("originalPhotoProduct");if(photoSelect)photoCoverageObserver.observe(photoSelect,{childList:true});
 refreshPhotoCoverage();
-</script></body></html>
+</script>
+<script>
+/* Original V11 UI / server-driven bridge. Opt-in only: ?onlineView=1.
+   The authoritative product, timing, guesses and results remain on the server. */
+(()=>{'use strict';
+ if(new URLSearchParams(location.search).get('onlineView')!=='1')return;
+ const byId=id=>document.getElementById(id);
+ const send=(type,payload={})=>window.parent.postMessage({type,...payload},location.origin);
+ const safe=(value,max=180)=>String(value??'').slice(0,max);
+ let state=null;
+ function render(data){
+  if(!data||typeof data!=='object'||!data.product)return;
+  state=data;
+  byId('boardLoading').classList.add('hidden');
+  byId('setup').classList.add('hidden');
+  byId('final').classList.add('hidden');
+  byId('game').classList.remove('hidden');
+  byId('roundLabel').textContent='Preisfrage '+(Number(data.round)||1)+' von 3';
+  byId('progressLabel').textContent=safe(data.status,90);
+  byId('productName').textContent=safe(data.product.name);
+  byId('productDescription').textContent=safe(data.product.description||'',250);
+  byId('categoryLabel').textContent=safe(data.product.category,60);
+  byId('shopLabel').textContent=safe(data.product.shop,60);
+  const visual=byId('visual');visual.replaceChildren();
+  if(typeof data.product.image==='string'&&/^https:\/\//.test(data.product.image)){
+   const img=document.createElement('img');img.src=data.product.image;img.alt=safe(data.product.name);img.referrerPolicy='no-referrer';img.style.cssText='max-width:100%;max-height:28dvh;object-fit:contain';visual.append(img);
+  }else{const icon=document.createElement('span');icon.textContent=safe(data.product.icon||'🛒',8);icon.style.fontSize='80px';visual.append(icon)}
+  byId('photoStatus').textContent='Original-Spieloberfläche · gemeinsamer Online-Raum';
+  const score=byId('scoreBoard');score.replaceChildren();
+  for(const player of (Array.isArray(data.players)?data.players:[]).slice(0,4)){
+   const seat=document.createElement('div');seat.className='player';
+   const label=document.createElement('strong');label.textContent=safe(player.name,50);
+   const mark=document.createElement('small');mark.textContent=player.answered?'✓ Geschätzt':'○ Noch offen';
+   seat.append(label,mark);score.append(seat);
+  }
+  for(const id of ['handoff','guessPanel','revealPanel','resultPanel'])byId(id).classList.add('hidden');
+  byId('guessPanel').classList.remove('hidden');
+  byId('guessTitle').textContent=data.answered?'🔒 Deine Schätzung wurde gespeichert':'Was kostet dieses Produkt?';
+  byId('guessInput').disabled=!!data.answered;
+  byId('guessBtn').disabled=!!data.answered;
+  byId('guessError').textContent=data.answered?'Warte auf die anderen Spieler.':'';
+  byId('exitBtn').hidden=true;
+ }
+ window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==window.parent)return;
+  if(event.data?.type==='PREISJAEGER_ONLINE_STATE')render(event.data.state);
+ });
+ byId('guessBtn').addEventListener('click',event=>{
+  if(!state)return;
+  event.stopImmediatePropagation();
+  const raw=byId('guessInput').value.trim().replace(',','.');
+  const guess=Number(raw);
+  if(!raw||!Number.isFinite(guess)||guess<0||guess>1000000){byId('guessError').textContent='Bitte einen gültigen Preis eingeben.';return}
+  byId('guessBtn').disabled=true;
+  send('PREISJAEGER_ONLINE_GUESS',{guess,challengeId:safe(state.challengeId,100),round:Number(state.round)||1});
+ },true);
+ send('PREISJAEGER_ONLINE_READY');
+})();
+</script>
+</body></html>
