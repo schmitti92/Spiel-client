@@ -139,14 +139,14 @@ const jump=document.querySelector('#jump');jump.addEventListener('pointerdown',e
 // Beim Verlassen der Steuerungsfläche keine hängenden Eingaben zurücklassen.
 document.querySelector('#touch').addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(running)togglePause(true)});document.querySelector("#pause").style.display="none";render(0);
- let onlineLastReport=0,onlineSeq=0;
+ let onlineLastReport=0,onlineSeq=0;const remoteTargets=new Map();
  window.addEventListener('message',e=>{
   if(e.origin!==location.origin||e.source!==parent)return;
   const m=e.data;if(!m||typeof m!=='object')return;
   if(m.type==='lava-arena:configure'){
    if(typeof m.challengeId!=='string'||!Number.isInteger(m.localSeat)||!Array.isArray(m.seats)||m.seats.length<2||m.seats.length>4||m.localSeat<0||m.localSeat>=m.seats.length)return;
    if(window.LavaArenaOnlineConfig?.challengeId!==m.challengeId){
-    window.LavaArenaOnlineConfig={challengeId:m.challengeId,localSeat:m.localSeat};
+    window.LavaArenaOnlineConfig={challengeId:m.challengeId,localSeat:m.localSeat};remoteTargets.clear();onlineSeq=0;onlineLastReport=0;
     document.querySelector('#count').value=String(m.seats.length);
     document.querySelector('#humans').value='1';
     init();players.forEach((p,i)=>{p.human=i===m.localSeat;});document.querySelector('#pause').style.display='none';
@@ -169,15 +169,19 @@ addEventListener('pagehide',()=>{keys.clear();resetStick();touch.jump=false;if(r
    for(const q of m.players){
     if(!Number.isInteger(q.id)||q.id<0||q.id>=players.length)continue; if(q.id===window.LavaArenaOnlineConfig.localSeat){const local=players[q.id];if(q.alive===false)local.alive=false;if(q.alive===true&&local.alive&&window.LavaArenaOnlineConfig.firstSnapshot!==true&&Number.isFinite(q.x)&&Number.isFinite(q.y)){local.x=clamp(q.x,13,SIZE-13);local.y=clamp(q.y,13,SIZE-13);window.LavaArenaOnlineConfig.firstSnapshot=true;}continue;}
     const p=players[q.id];if(!p)continue;
-    if(Number.isFinite(q.x))p.x=clamp(q.x,13,SIZE-13);
-    if(Number.isFinite(q.y))p.y=clamp(q.y,13,SIZE-13);
+    const x=Number.isFinite(q.x)?clamp(q.x,13,SIZE-13):p.x;
+    const y=Number.isFinite(q.y)?clamp(q.y,13,SIZE-13):p.y;
+    const jump=Number.isFinite(q.jump)?clamp(q.jump,0,1.3):p.jump;
+    const target=remoteTargets.get(q.id);
+    if(!target||Math.hypot(x-p.x,y-p.y)>170){p.x=x;p.y=y;p.jump=jump;}
+    remoteTargets.set(q.id,{x,y,jump,at:performance.now()});
     if(typeof q.alive==='boolean')p.alive=q.alive;
-    if(Number.isFinite(q.jump))p.jump=clamp(q.jump,0,1.3);
    }
   }
  });
  const offlineUpdate=update;
  update=function(dt){offlineUpdate(dt);const c=window.LavaArenaOnlineConfig;
+  if(c){for(const [id,target] of remoteTargets){const p=players[id];if(!p||id===c.localSeat){remoteTargets.delete(id);continue;}const elapsed=performance.now()-target.at;if(elapsed>2500){remoteTargets.delete(id);continue;}const blend=1-Math.exp(-Math.min(dt,.05)*14);p.x+=(target.x-p.x)*blend;p.y+=(target.y-p.y)*blend;p.jump+=(target.jump-p.jump)*blend;}}
   if(!c||!running||performance.now()-onlineLastReport<100)return;
   onlineLastReport=performance.now();const p=players[c.localSeat];
   if(p)parent.postMessage({type:'lava-arena:state',challengeId:c.challengeId,seq:++onlineSeq,player:{id:p.id,x:p.x,y:p.y,vx:p.vx,vy:p.vy,alive:p.alive,jump:p.jump,deathTime:p.deathTime}},location.origin);
