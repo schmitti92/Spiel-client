@@ -199,7 +199,7 @@ function draw(g,c,scale){
   else if(kind===3){c.rotate(t*.45);c.fillStyle='#ffe16a';c.beginPath();for(let k=0;k<10;k++){const ang=-Math.PI/2+k*Math.PI/5,r=k%2?6:14;c.lineTo(Math.cos(ang)*r,Math.sin(ang)*r)}c.closePath();c.fill()}
   else{const grad=c.createRadialGradient(-4,-6,1,0,1,13);grad.addColorStop(0,'#fff1ba');grad.addColorStop(.24,kind===1?'#ffce5c':'#ff7385');grad.addColorStop(1,kind===1?'#b95a18':'#a51543');c.fillStyle=grad;c.beginPath();c.arc(0,1,11,0,TAU);c.fill()}
   c.shadowBlur=0;c.strokeStyle='#795235';c.lineWidth=2;c.beginPath();c.moveTo(0,-9);c.lineTo(2,-16);c.stroke();c.fillStyle='#88d970';c.beginPath();c.ellipse(6,-13,6,3,-.5,0,TAU);c.fill();c.strokeStyle='#eaffc566';c.lineWidth=.8;c.stroke();if(kind===1){c.fillStyle='#fff8';c.beginPath();c.arc(-3,-3,1,0,TAU);c.fill()}c.restore()}
- const alpha=Math.min(1,accumulator/Math.max(1,Number($('speed').value)));
+ const alpha=window.SnakeArenaOnlineConfig?Math.min(1,(performance.now()-(g.snapshotAt||0))/Math.max(180,g.snapshotInterval||700)):Math.min(1,accumulator/Math.max(1,Number($('speed').value)));
  // Kürzesten Weg über den Spielfeldrand interpolieren; keine Teleport-Sprünge.
  const positions=g.points.map((p,i)=>{const prev=g.previous?.[i]||p;
   let dx=p.x-prev.x,dy=p.y-prev.y;
@@ -319,8 +319,8 @@ window.addEventListener('message',event=>{
   for(let i=0;i<m.players.length;i++){
    const q=m.players[(c.localSeat+i)%m.players.length],g=games[i];
    if(!q||!g)continue;
-   if(i===0){if(Array.isArray(q.points)&&q.points.length)g.points=q.points.map(p=>({x:p.x,y:p.y}));g.previous=null;if(q.food)g.food=q.food;if(q.dir)g.dir=q.dir;if(Number.isFinite(q.score))g.score=q.score;if(Number.isFinite(q.survived))g.survived=q.survived;g.alive=q.alive!==false;g.queue=g.queue.filter(d=>d!==g.dir);continue;}
-   if(Array.isArray(q.points)&&q.points.length){g.points=q.points.map(p=>({x:p.x,y:p.y}));g.previous=null;}
+   if(i===0){if(Array.isArray(q.points)&&q.points){const changed=!g.points||g.points.length!==q.points.length||q.points.some((p,j)=>p.x!==g.points[j]?.x||p.y!==g.points[j]?.y);if(changed){g.previous=g.points?.length===q.points.length?g.points.map(p=>({x:p.x,y:p.y})):null;const now=performance.now();g.snapshotInterval=g.snapshotAt?Math.min(1600,Math.max(180,now-g.snapshotAt)):700;g.snapshotAt=now;g.points=q.points.map(p=>({x:p.x,y:p.y}));}}if(q.food)g.food=q.food;if(q.dir)g.dir=q.dir;if(Number.isFinite(q.score))g.score=q.score;if(Number.isFinite(q.survived))g.survived=q.survived;g.alive=q.alive!==false;g.queue=g.queue.filter(d=>d!==g.dir);continue;}
+   if(Array.isArray(q.points)&&q.points.length){const changed=!g.points||g.points.length!==q.points.length||q.points.some((p,j)=>p.x!==g.points[j]?.x||p.y!==g.points[j]?.y);if(changed){g.previous=g.points?.length===q.points.length?g.points.map(p=>({x:p.x,y:p.y})):null;const now=performance.now();g.snapshotInterval=g.snapshotAt?Math.min(1600,Math.max(180,now-g.snapshotAt)):700;g.snapshotAt=now;g.points=q.points.map(p=>({x:p.x,y:p.y}));}}
    if(q.food)g.food={x:q.food.x,y:q.food.y};
    if(['up','down','left','right'].includes(q.dir))g.dir=q.dir;
    if(Number.isFinite(q.score))g.score=q.score;
