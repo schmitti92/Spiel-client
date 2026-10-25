@@ -19,8 +19,8 @@
  body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .grid{
    gap:3px!important;padding:5px!important;
  }
+ /* Do not cap opponent card height: card size is controlled by the board grid. */
  body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .card{
-   max-height:clamp(42px,7vh,65px)!important;
    min-height:0!important;
  }
  body.is-playing[data-players="3"] .three-player-layout .center-table{
@@ -48,4 +48,26 @@
    min-width:35px!important;font-size:clamp(19px,2.8vh,29px)!important;
  }
  body.is-playing .bottom-actions{padding-top:3px!important;padding-bottom:3px!important}
+}
+
+/* v2: reclaim height from chrome, not from cards. */
+@media (min-width:1050px) and (orientation:landscape) and (max-height:900px){
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player-head{
+   padding-block:3px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .gridwrap{
+   padding-block:3px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-players-stack{
+   gap:5px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table{
+   gap:5px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox{
+   margin-bottom:0!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles{
+   margin-top:0!important;
+ }
 }
