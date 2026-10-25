@@ -353,7 +353,7 @@ function ensurePreisjaegerOriginalFrame(){
  frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
  frame.setAttribute('referrerpolicy','same-origin');
  frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
- frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=50';
+ frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1&build=51';
  el('challenge-progress').append(frame);
  return frame;
 }
@@ -389,13 +389,15 @@ window.addEventListener('message',async event=>{
  const ch=room?.match?.challenge,pj=ch?.preisjaeger;
  if(!ch||ch.phase!=='countdown'||ch.order[ch.index]!=='preisjaeger'||!pj)return;
  if(event.data.challengeId!==ch.id||event.data.round!==pj.round)return;
+ const fail=message=>document.getElementById('preisjaeger-original-online')?.contentWindow?.postMessage({type:'PREISJAEGER_ONLINE_ERROR',key:ch.id+':'+pj.round,message},location.origin);
+ if((pj.answered||[]).includes(room.players.find(p=>p.me)?.seat))return fail('Deine Schätzung ist bereits gespeichert.');
  const guess=Math.round(Number(event.data.guess)*100);
- if(!Number.isSafeInteger(guess)||guess<1||guess>100000000)return;
+ if(!Number.isSafeInteger(guess)||guess<1||guess>100000000)return fail('Bitte einen gültigen Preis eingeben.');
  const key=ch.id+':'+ch.index+':'+pj.round;
  if(pjSubmitPendingKey===key)return;
  pjSubmitPendingKey=key;
  try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-preisjaeger-answer','POST',{challengeId:ch.id,round:pj.round,guess});acceptRoom(response.room)}
- catch(error){showError(error);document.getElementById('preisjaeger-original-online')?.contentWindow?.postMessage({type:'PREISJAEGER_ONLINE_ERROR',key:ch.id+':'+pj.round},location.origin)}
+ catch(error){showError(error);fail(error?.message||'Speichern fehlgeschlagen. Bitte erneut versuchen.')}
  finally{if(pjSubmitPendingKey===key)pjSubmitPendingKey=''}
 });
 
