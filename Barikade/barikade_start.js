@@ -3,7 +3,7 @@
 'use strict';
 const el=id=>document.getElementById(id),q=new URL(location.href).searchParams;
 const code=String(q.get('room')||'').toUpperCase();
-const GOOD=/^[A-HJ-NP-Z2-9]{6}$/;
+const GOOD=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/;
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const COLOR={red:'#f34850',blue:'#298cff',yellow:'#f7c442',green:'#39be6b'};
 let room=null,busy=false,loading=false,ws=null,pollTimer=null,retry=null,currentUser=null;
