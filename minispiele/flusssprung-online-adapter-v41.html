@@ -398,7 +398,7 @@ window.addEventListener('message',event=>{
  const m=event.data;
  if(!m||typeof m!=='object')return;
  if(m.type==='flusssprung:configure'){
-  if(window.FlusssprungOnlineConfig&&window.FlusssprungOnlineConfig.challengeId===m.challengeId){window.parent.postMessage({type:'flusssprung:configured'},event.origin);return;}
+  if(window.FlusssprungOnlineConfig&&window.FlusssprungOnlineConfig.challengeId===m.challengeId){window.FlusssprungOnlineConfig.serverOffset=Number(m.serverNow)-Date.now()||window.FlusssprungOnlineConfig.serverOffset;window.parent.postMessage({type:'flusssprung:configured',challengeId:m.challengeId},event.origin);return;}
   const seats=m.seats;
   if(!Array.isArray(seats)||seats.length<2||seats.length>4||!seats.every(x=>typeof x.name==='string'&&x.name.length<=40))return;
   if(!Array.isArray(m.path)||m.path.length!==5||!m.path.every(x=>Number.isInteger(x)&&x>=0&&x<6))return;
@@ -408,7 +408,7 @@ window.addEventListener('message',event=>{
   count.dispatchEvent(new Event('change'));
   seats.forEach((seat,i)=>{const type=document.getElementById('type'+i);if(type)type.value='human'});
   newGame();players.forEach((p,i)=>{p.name=seats[i].name;p.bot=false});focus=m.localSeat;hud();updateChoice();
-  window.parent.postMessage({type:'flusssprung:configured'},event.origin);
+  window.parent.postMessage({type:'flusssprung:configured',challengeId:m.challengeId},event.origin);
  }
  if(m.type==='flusssprung:result'&&window.FlusssprungOnlineConfig){
   // Always show the authoritative online ranking, even if a local finish animation already set ended=true.
