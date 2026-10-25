@@ -11,7 +11,7 @@ const SKYJO_HUB_QUERY=new URLSearchParams(location.search);
 const SKYJO_HUB_CODE=SKYJO_HUB_QUERY.get('hub')||'';
 const SKYJO_HUB_MATCH=SKYJO_HUB_QUERY.get('match')||'';
 const SKYJO_HUB_ROOM=SKYJO_HUB_QUERY.get('room')||'';
-const SKYJO_IS_HUB=/^[A-HJ-NP-Z2-9]{6}$/.test(SKYJO_HUB_CODE)&&/^[0-9a-f-]{36}$/i.test(SKYJO_HUB_MATCH)&&/^S[A-HJ-NP-Z2-9]{9}$/.test(SKYJO_HUB_ROOM);
+const SKYJO_IS_HUB=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(SKYJO_HUB_CODE)&&/^[0-9a-f-]{36}$/i.test(SKYJO_HUB_MATCH)&&/^S[A-HJ-NP-Z2-9]{9}$/.test(SKYJO_HUB_ROOM);
 async function skyjoHubToken(){const user=window.SpielOnline?.state?.()?.user;if(!user?.uid||typeof user.getIdToken!=='function')throw Error('Bitte mit deinem Online-Spielerprofil anmelden.');return user.getIdToken();}
 function skyjoHubReturn(){location.assign('../hub-lobby.html?room='+encodeURIComponent(SKYJO_HUB_CODE)+'&stayMatch='+encodeURIComponent(SKYJO_HUB_MATCH));}
 const SKYJO_ENTRY_MODE=(new URLSearchParams(location.search).get('mode')||'').toLowerCase();
