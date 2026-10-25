@@ -999,10 +999,10 @@ async function boot(){
   elapsed+=250;
   if(!activeProfile()&&elapsed<12000)return;
   clearInterval(timer);
-  if(!activeProfile())return;
-  code=fromUrl.toUpperCase();
-  try{const {room:r}=await request('/rooms/'+code);activateRoom(r);pollStart();}
-  catch(e){setRoomCode(null);el('join-code').value=fromUrl.toUpperCase();notice('Gib den Raumcode ein und klicke auf „Beitreten“.');}
+  if(!activeProfile()){el('join-code').value=fromUrl.toUpperCase();notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen.');return;}
+  const requestedCode=fromUrl.toUpperCase();
+  try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(r?.code!==requestedCode)return;activateRoom(r);pollStart();}
+  catch(e){el('join-code').value=requestedCode;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Aktualisiere die Seite, um es erneut zu versuchen.');}}
  },250);
 }
 setPlayMode(playMode);
