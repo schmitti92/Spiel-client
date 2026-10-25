@@ -313,3 +313,13 @@ test('Preisjäger countdown progresses even when room socket is idle',()=>{
  assert.match(js,/syncPreisjaegerOriginal\(ch\)/);
  assert.match(js,/challenge-preisjaeger-timeout/);
 });
+
+
+test('Zeitgefühl fullscreen tablet layout keeps stop controls in viewport',()=>{
+ const original=text('zeitgefuehl-original.html');
+ assert.match(js,/challenge-fullscreen-button/);
+ assert.match(js,/zeitgefuehl-playing/);
+ assert.match(original,/\.scene\.online-play \.stop/);
+ assert.match(original,/scene\.className='scene night online-play'/);
+ assert.match(original,/env\(safe-area-inset-bottom/);
+});
