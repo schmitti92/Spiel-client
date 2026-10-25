@@ -666,8 +666,11 @@ function renderChallengeSetup(showStage){
   }
   el('challenge-marathon').addEventListener('click',async()=>{
    if(!room?.host||room.phase!=='preparing')return;
+   const button=el('challenge-marathon');if(button.disabled)return;
+   button.disabled=true;
    try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-settings','POST',{count:9,selectedGame:null});acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle neun Minispiele ausgewählt.';}
    catch(e){el('challenge-feedback').textContent=e.message;}
+   finally{button.disabled=false;}
   });
   el('challenge-save').addEventListener('click',async()=>{
    const button=el('challenge-save');button.disabled=true;
