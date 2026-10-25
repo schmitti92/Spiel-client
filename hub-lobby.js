@@ -39,8 +39,10 @@ function startWatch(){
  if(!code||!room||!activeProfile()||hubSocket)return;
  const subscribedCode=code;
  const socket=new WebSocket(API.replace(/^http/i,'ws')+'/hub');hubSocket=socket;
+ const connectTimeout=setTimeout(()=>{if(hubSocket===socket&&socket.readyState===0)socket.close();},15000);
  let lastPong=Date.now();
  socket.onopen=async()=>{
+  clearTimeout(connectTimeout);
   try{const token=await logged().user.getIdToken();
     if(hubSocket===socket&&code===subscribedCode&&socket.readyState===1){
       socket.send(JSON.stringify({type:'subscribe',code:subscribedCode,profileIdToken:token}));
@@ -58,6 +60,7 @@ function startWatch(){
   if(hubSocket===socket&&code===subscribedCode&&data?.type==='room'&&data.room?.code===subscribedCode){lastPong=Date.now();streamReady=true;streamLast=Date.now();acceptRoom(data.room);}
  };
  socket.onclose=()=>{
+  clearTimeout(connectTimeout);
   if(hubSocket!==socket)return;
   hubSocket=null;streamReady=false;
   if(hubHeartbeat){clearInterval(hubHeartbeat);hubHeartbeat=null;}
