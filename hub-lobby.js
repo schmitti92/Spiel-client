@@ -343,6 +343,61 @@ async function ensureRecheninselOriginalBridge(){
  finally{recheninselOriginalLoading=false;}
 }
 
+/* Original Preisjäger V11: server-authoritative presentation, never local game state. */
+let preisjaegerOriginalReady=false;
+function ensurePreisjaegerOriginalFrame(){
+ let frame=el('preisjaeger-original-online');
+ if(frame)return frame;
+ frame=document.createElement('iframe');
+ frame.id='preisjaeger-original-online';
+ frame.title='Preisjäger Original V11 – gemeinsamer Online-Raum';
+ frame.setAttribute('referrerpolicy','same-origin');
+ frame.style.cssText='display:none;width:min(98vw,1100px);height:min(78dvh,730px);min-height:400px;border:0;border-radius:14px;background:#09111f';
+ frame.src='Minispiele/Preisjaeger_v11_0_RC23.html?onlineView=1';
+ el('challenge-progress').append(frame);
+ return frame;
+}
+function syncPreisjaegerOriginal(ch){
+ const frame=ensurePreisjaegerOriginalFrame();
+ const active=ch?.order?.[ch.index]==='preisjaeger'&&ch.phase==='countdown'&&!!ch.preisjaeger;
+ frame.style.display=active?'block':'none';
+ el('challenge-preisjaeger').hidden=true;
+ if(!active)return;
+ if(!preisjaegerOriginalReady)return;
+ const pj=ch.preisjaeger;
+ const mySeat=room.players.find(p=>p.me)?.seat;
+ const state={
+  challengeId:ch.id,round:pj.round,product:{
+   name:pj.product?.name||'',category:pj.product?.category||'',shop:pj.product?.shop||'',
+   image:pj.product?.image||'',icon:pj.product?.icon||'🛒'
+  },
+  answered:(pj.answered||[]).includes(mySeat),
+  players:(room.players||[]).filter(p=>p.participating).map(p=>({name:p.name,answered:(pj.answered||[]).includes(p.seat)}))
+ };
+ frame.contentWindow?.postMessage({type:'PREISJAEGER_ONLINE_STATE',state},location.origin);
+}
+window.addEventListener('message',async event=>{
+ if(event.origin!==location.origin||event.source!==el('preisjaeger-original-online')?.contentWindow)return;
+ if(event.data?.type==='PREISJAEGER_ONLINE_READY'){
+  preisjaegerOriginalReady=true;
+  const ch=room?.match?.challenge;
+  if(ch)syncPreisjaegerOriginal(ch);
+  return;
+ }
+ if(event.data?.type!=='PREISJAEGER_ONLINE_GUESS')return;
+ const ch=room?.match?.challenge,pj=ch?.preisjaeger;
+ if(!ch||ch.phase!=='countdown'||ch.order[ch.index]!=='preisjaeger'||!pj)return;
+ if(event.data.challengeId!==ch.id||event.data.round!==pj.round)return;
+ const guess=Math.round(Number(event.data.guess)*100);
+ if(!Number.isSafeInteger(guess)||guess<1||guess>100000000)return;
+ const key=ch.id+':'+ch.index+':'+pj.round;
+ if(pjSubmitPendingKey===key)return;
+ pjSubmitPendingKey=key;
+ try{const response=await request('/rooms/'+encodeURIComponent(room.code)+'/challenge-preisjaeger-answer','POST',{challengeId:ch.id,round:pj.round,guess});acceptRoom(response.room)}
+ catch(error){showError(error);preisjaegerOriginalReady=true;syncPreisjaegerOriginal(ch)}
+ finally{if(pjSubmitPendingKey===key)pjSubmitPendingKey=''}
+});
+
 const challengeMathTimeoutPending=new Set();
 const challengeTimeTimeoutPending=new Set();
 let pjTimeoutKey='';
@@ -409,7 +464,8 @@ function renderChallengeProgress(){
  if(!isPreisjaeger)pjTimeoutKey='';
 
  const pj=ch.preisjaeger;
- el('challenge-preisjaeger').hidden=!isPreisjaeger||ch.phase!=='countdown';
+ el('challenge-preisjaeger').hidden=true;
+ syncPreisjaegerOriginal(ch);
  if(isPreisjaeger&&pj){
   const key=ch.id+':'+ch.index+':'+pj.round;
   if(el('challenge-preisjaeger').dataset.round!==key){el('challenge-preisjaeger').dataset.round=key;el('pj-guess').value='';el('pj-feedback').textContent='';}
