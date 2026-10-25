@@ -709,3 +709,27 @@ body.challenge-room-active #challenge-settings-panel #challenge-bots{
  body.challenge-room-active #challenge-single-grid>button strong{font-size:clamp(12px,1.25vw,17px)!important}
  body.challenge-room-active #challenge-single-grid>button .mini-meta{font-size:clamp(9px,.85vw,12px)!important}
 }
+
+
+/* Premium V33 – responsive room rail and accessibility guardrails. */
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #ready-btn:focus-visible,
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #start-btn:focus-visible{
+ outline:3px solid #fff0a2!important;outline-offset:2px!important
+}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #ready-btn.is-ready{
+ background:linear-gradient(180deg,#32d5a4,#0c9c72)!important;
+ color:#07372c!important;border-color:#6bffd4!important
+}
+body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #ready-btn:disabled{
+ opacity:.65!important;cursor:not-allowed!important
+}
+@media(min-width:901px) and (orientation:landscape) and (max-height:1200px){
+ body.challenge-room-active #room-view>.stack:last-child{gap:6px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:nth-child(2){display:none!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child{max-width:100%!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #challenge-host-launch #start-btn{width:100%!important}
+}
+@media(max-width:900px){
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel{padding:9px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel #ready-btn{min-height:42px!important}
+}
