@@ -73,3 +73,53 @@ footer{padding-bottom:12px}
 #ready-panel .btn.blue{min-width:0}
 }
 @media(max-width:370px){.game-stage-cover h2{font-size:23px}.mode-option strong{font-size:13px}.game-stage-description{font-size:12px}}
+
+/* Premium tropical lobby refresh: presentation only, existing controls remain intact. */
+:root{color:#f3f8ff;background:#071b30}
+body{background:linear-gradient(110deg,#06192ed9,#073452bc),url("Assets/game-backgrounds/barikade.webp") center/cover fixed;color:#f3f8ff}
+.shell{width:min(1440px,calc(100% - 34px));padding-top:18px}
+header{background:#071e35ed;border:1px solid #4b91ba80;border-radius:22px;padding:14px 22px;box-shadow:0 12px 36px #00142570}
+.brand,.brand .edition{color:#fff}header .edition{color:#bbd7ed}.logo{background:linear-gradient(145deg,#1c75a6,#082c54);border-color:#5bb9e4}
+.hero{margin:22px 0}.hero h1{color:#fff;text-shadow:0 3px 18px #0008}.hero .lead{color:#c5e3f3}
+.eyebrow{color:#83d5ed}.subtle,.chooser-note,.setup-note,.stage-note{color:#b9d3e5}
+.panel{background:linear-gradient(145deg,#0a2942f5,#08243af5);border:1px solid #3282a49c;box-shadow:0 14px 40px #00132175;color:#fff}
+.account{background:linear-gradient(95deg,#123d5cf5,#09253ff5)}
+.mode-option{background:#0a2a44ef;border-color:#4386a8;color:#fff}
+.mode-option strong{color:#fff}.mode-option small{color:#bad6e6}.mode-option.active{background:#124a73;border-color:#66d9ff;box-shadow:0 0 0 2px #53c8f433}
+.mode-option .mode-symbol{background:#19577d}
+.btn.blue{background:linear-gradient(135deg,#08b57d,#008b76);box-shadow:0 7px 18px #00a77a36}
+.btn.light{background:#174b72;color:#effaff;border:1px solid #448caf}
+.btn.ghost{background:#164260;color:#e4f4ff}.btn.danger{background:#542e39;color:#ffd8df}
+#room-view{grid-template-columns:minmax(0,1.85fr) minmax(290px,.8fr);align-items:start}
+#room-view>.stack{min-width:0}
+#game-stage-hero{border-color:#ffc46d;box-shadow:0 12px 35px #0007}
+#game-stage-hero[data-game="partychallenge"] .game-stage-cover{--cover:url("Assets/game-backgrounds/barikade.webp")}
+.game-stage-cover{min-height:155px;background:linear-gradient(90deg,#06192de8,#08243a85),var(--cover) center/cover}
+#game-chooser{background:linear-gradient(145deg,#072d4bf5,#073651f2)}
+#game-chooser .game-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#game-chooser .game{min-height:110px;align-items:flex-end;padding:13px;border:2px solid #36ad9b;border-radius:17px;background:linear-gradient(0deg,#061829f0,#0d3a59c0),url("Assets/game-backgrounds/barikade.webp") center/cover;color:#fff;box-shadow:inset 0 0 25px #001a29,0 5px 12px #00162760;transition:transform .17s,border-color .17s,box-shadow .17s}
+#game-chooser .game[data-game="skyjo"]{background-image:linear-gradient(0deg,#061829ed,#0d3a5980),url("Assets/game-backgrounds/skyjo.webp")}
+#game-chooser .game[data-game="kreuz"]{background-image:linear-gradient(0deg,#061829ed,#0d3a5980),url("Assets/game-backgrounds/kreuzkunter.webp")}
+#game-chooser .game[data-game="business"]{background-image:linear-gradient(0deg,#061829ed,#0d3a5980),url("Assets/game-backgrounds/business.webp")}
+#game-chooser .game .emoji{font-size:33px;filter:drop-shadow(0 2px 4px #0009)}
+#game-chooser .game b{color:#fff;font-size:15px;text-shadow:0 2px 6px #000}
+#game-chooser .game small{color:#9ff0c9;font-size:12px}
+#game-chooser .game:enabled:hover{transform:translateY(-3px);border-color:#ffd166;box-shadow:0 0 0 2px #f6c66570,0 12px 25px #0008}
+#game-chooser .game.active{border-color:#ffd05d;box-shadow:0 0 0 2px #ffc14c80,0 0 23px #ffcb5470}
+#game-chooser .game:disabled{opacity:.75}
+.room-code{color:#ffdf85;text-shadow:0 2px 8px #000b;font-size:clamp(28px,3vw,40px)}
+.player{background:#0b3655;border-color:#397ba0;color:#fff}.player .avatar{background:#185d81}
+.player .tag{color:#b9d8ed}.player .ready{background:#63462a;color:#ffdda2}
+.player .ready.yes{background:#11654d;color:#b4ffe1}
+.player .ready.spectator{background:#284860;color:#c5d9e8}
+.seat-button{background:#164d70;color:#fff;border-color:#4d8fac}
+.settings-summary,.notice{background:#123f59;border-color:#427b91;color:#e1f4ff}
+#ready-panel{background:linear-gradient(145deg,#0b3654,#09273d);border-color:#3da5c1}
+#ready-panel .ready-progress,#ready-panel .ready-hint{color:#c4ddeb}
+#ready-panel .ready-bar{background:#164a6c}
+.settings-grid label{color:#d1e6f2}
+.settings-grid select,.settings-grid input,.setup-color select,.text-field{background:#eff8ff;color:#153955;border-color:#7ca8bd}
+#main-status{color:#d4efff}footer,footer a{color:#c2e3f4}
+@media(max-width:950px){#room-view{grid-template-columns:minmax(0,1fr)}#game-chooser .game-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.shell{width:calc(100% - 20px)}header{padding:12px}.panel{padding:16px}#game-chooser .game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#game-chooser .game{min-height:108px;padding:10px}#game-chooser .game b{font-size:13px}.room-code{font-size:30px}}
+@media(prefers-reduced-motion:reduce){#game-chooser .game{transition:none}}
