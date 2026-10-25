@@ -5,7 +5,7 @@
 const $=id=>document.getElementById(id);
 const params=new URL(location.href).searchParams;
 const code=String(params.get('room')||'').toUpperCase();
-const CODE=/^[A-HJ-NP-Z2-9]{6}$/;
+const CODE=/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/;
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const designNames=['Klassisch','Nachtstadt','Gold'];
 let room=null,busy=false,loading=false,ws=null,retry=null,pollTimer=null,themeIndex=0,closed=false;
