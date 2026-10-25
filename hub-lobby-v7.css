@@ -645,3 +645,23 @@ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#read
  body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel h2{font-size:11px!important}
  body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel #ready-btn{min-height:31px!important;font-size:12px!important}
 }
+
+
+/* Premium V31 – right-hand room panel fits its new ready dock on Samsung tablets. */
+@media(min-width:901px) and (orientation:landscape) and (max-height:1200px){
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child{padding:8px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.eyebrow{font-size:10px!important;margin:0 0 3px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-head{padding:7px 9px!important;margin:0 0 5px!important;min-height:82px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-head h2{font-size:15px!important;margin:0 0 3px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child .room-code{font-size:clamp(22px,2.5vw,32px)!important;line-height:1.05!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>p.subtle{font-size:10px!important;line-height:1.2!important;margin:3px 0 5px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #players{gap:4px!important;margin:3px 0!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #players .player{min-height:38px!important;padding:4px 7px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #players .player .avatar{width:29px!important;height:29px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #players::after{padding:4px!important;font-size:10px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>#ready-panel{margin:5px 0!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #challenge-host-launch{margin:5px 0!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child #challenge-host-launch #start-btn{min-height:43px!important;padding:7px!important;font-size:15px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.row{margin-top:5px!important;gap:5px!important}
+ body.challenge-room-active #room-view>.stack:last-child>.panel:first-child>.row>button{min-height:32px!important;padding:5px 8px!important;font-size:11px!important}
+}
