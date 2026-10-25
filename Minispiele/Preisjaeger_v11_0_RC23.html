@@ -1860,6 +1860,7 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
   const waiting=Number.isFinite(data.startsInMs)&&data.startsInMs>0;
   byId('guessInput').disabled=!!data.answered||pending||waiting;
   byId('guessBtn').disabled=!!data.answered||pending||waiting;
+  byId('guessInput').setAttribute('inputmode','decimal');
   byId('guessError').textContent=data.answered?'Warte auf die anderen Spieler.':pending?'Schätzung wird gespeichert …':waiting?'Nächste Frage beginnt in '+Math.ceil(data.startsInMs/1000)+' Sekunden …':'';
   if(data.answered||pendingKey&&pendingKey!==stateKey(data))pendingKey='';
   byId('exitBtn').hidden=true;
@@ -1874,18 +1875,30 @@ html.pj-online #productPanel #actionSlot button{flex:0 1 auto!important;min-heig
    byId('guessError').textContent='Speichern fehlgeschlagen. Bitte erneut versuchen.';
   }
  });
- byId('guessBtn').addEventListener('click',event=>{
-  if(!state)return;
-  event.stopImmediatePropagation();
-  if(Number.isFinite(state.startsInMs)&&state.startsInMs>0)return;
-  const raw=byId('guessInput').value.trim().replace(',','.');
+ function submitOnlineGuess(event){
+  event?.preventDefault();
+  event?.stopImmediatePropagation();
+  if(!state||state.finished||state.answered)return;
+  if(Number.isFinite(state.startsInMs)&&state.startsInMs>0){
+   byId('guessError').textContent='Die Preisfrage startet gleich. Bitte kurz warten.';
+   return;
+  }
+  const raw=byId('guessInput').value.trim().replace(/\\s|€/g,'').replace(',','.');
   const guess=Number(raw);
-  if(!raw||!Number.isFinite(guess)||guess<0||guess>1000000){byId('guessError').textContent='Bitte einen gültigen Preis eingeben.';return}
-  if(pendingKey===stateKey(state)||state.answered)return;
+  if(!raw||!Number.isFinite(guess)||guess<=0||guess>1000000){
+   byId('guessError').textContent='Bitte einen Preis über 0 € eingeben (z. B. 4,99).';
+   return;
+  }
+  if(pendingKey===stateKey(state))return;
   pendingKey=stateKey(state);
   byId('guessBtn').disabled=true;
+  byId('guessInput').disabled=true;
   byId('guessError').textContent='Schätzung wird gespeichert …';
   send('PREISJAEGER_ONLINE_GUESS',{guess,challengeId:safe(state.challengeId,100),round:Number(state.round)||1});
+ }
+ byId('guessBtn').addEventListener('click',submitOnlineGuess,true);
+ byId('guessInput').addEventListener('keydown',event=>{
+  if(event.key==='Enter'){event.preventDefault();event.stopImmediatePropagation();submitOnlineGuess(event)}
  },true);
  send('PREISJAEGER_ONLINE_READY');
 })();
