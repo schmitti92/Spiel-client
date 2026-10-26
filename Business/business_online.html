@@ -4607,7 +4607,7 @@ const BO_HUB=new URL(location.href).searchParams;
 const BO_HUB_ROOM=BO_HUB.get('hub')||'';
 const BO_HUB_MATCH=BO_HUB.get('match')||'';
 const BO_HUB_CODE=BO_HUB.get('gameCode')||'';
-const BO_IS_HUB=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(BO_HUB_ROOM)&&/^D[A-HJ-NP-Z2-9]{9}$/.test(BO_HUB_CODE)&&BO_HUB_CODE.slice(1,1+BO_HUB_ROOM.length)===BO_HUB_ROOM&&!!BO_HUB_MATCH;
+const BO_IS_HUB=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(BO_HUB_ROOM)&&/^D[A-HJ-NP-Z2-9]{9}$/.test(BO_HUB_CODE)&&BO_HUB_CODE.slice(1,7)===(BO_HUB_ROOM.length===3?BO_HUB_ROOM.replace(/0/g,'A').replace(/1/g,'B')+'AAA':BO_HUB_ROOM)&&!!BO_HUB_MATCH;
 async function boHubHeaders(){
  const user=window.SpielOnline?.state?.()?.user;
  if(!user)throw Error('LOGIN_REQUIRED');
