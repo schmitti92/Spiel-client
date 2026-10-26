@@ -333,7 +333,7 @@ async function ensureSnakeOriginalBridge(){
  if(snakeOriginalBridge||snakeOriginalLoading||snakeOriginalFailed)return;
  snakeOriginalLoading=true;
  try{
-  const {mountSnakeOriginal}=await import('./snake-arena-online-bridge.js?v=7');
+  const {mountSnakeOriginal}=await import('./snake-arena-online-bridge.js?v=31');
   const ch=room?.match?.challenge;
   if(!ch||ch.order?.[ch.index]!=='snake-arena'||ch.phase!=='countdown')return;
   const target=el('challenge-original-frame');if(!target)return;
@@ -633,7 +633,7 @@ function renderChallengeProgress(){
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
  const originalBomberActive=ch.order[index]==='bomber-strand-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!bomberOriginalFailed;
- const originalSnakeActive=ch.order[index]==='snake-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!snakeOriginalFailed;
+ const originalSnakeActive=ch.order[index]==='snake-arena'&&ch.phase==='countdown'&&!snakeOriginalFailed;
  const originalLavaActive=ch.order[index]==='lava-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!lavaOriginalFailed;
  const originalFlusssprungActive=ch.order[index]==='flusssprung'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!flusssprungOriginalFailed;
  const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive;
