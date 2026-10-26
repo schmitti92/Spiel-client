@@ -88,6 +88,36 @@ body.is-playing .player.active .card-slot{filter:none!important}
  @keyframes skyjoPremiumActivePulse{from{box-shadow:0 0 0 2px #fff0ac,0 0 17px 4px #ffbd3288,0 8px 24px #0009}to{box-shadow:0 0 0 2px #fff0ac,0 0 27px 8px #ffd65cbb,0 8px 24px #0009}}
 }
 </style>
+<style id="skyjo-active-visibility-v3">
+/* High specificity overrides late theme CSS, without recoloring the card field. */
+html body.is-playing section.player.active,
+html body.is-playing .table-area section.player.active,
+html body.is-playing .skyjo-scenic-stage section.player.active {
+ outline: 5px solid #ffe45e !important;
+ outline-offset: -2px !important;
+ border: 5px solid #ffb900 !important;
+ box-shadow: 0 0 0 3px #fff4b8, 0 0 22px 9px #ffca38, 0 0 45px 13px #ff9e0066, inset 0 0 15px #ffd76688 !important;
+ filter: drop-shadow(0 0 8px #ffbf38) !important;
+}
+html body.is-playing section.player.active > .player-head {
+ background: linear-gradient(90deg,#ffcf49,#fff0aa 48%,#f4ad27) !important;
+ border: 3px solid #fff1ad !important;
+ box-shadow: inset 0 0 9px #fff7cb, 0 0 15px #ffc42c !important;
+}
+html body.is-playing section.player.active > .gridwrap {
+ outline: 4px solid #ffd64c !important;
+ outline-offset: -2px !important;
+ box-shadow: inset 0 0 15px #ffc64066, 0 0 12px #ffcf44 !important;
+}
+html body.is-playing section.player.active .scorechip {
+ border: 3px solid #ffe96e !important;
+ box-shadow: 0 0 14px 3px #ffca43 !important;
+}
+@media(prefers-reduced-motion:no-preference){
+ html body.is-playing section.player.active {animation:skyjoActiveGoldPulse 1.8s ease-in-out infinite alternate !important}
+ @keyframes skyjoActiveGoldPulse {from{box-shadow:0 0 0 3px #fff4b8,0 0 18px 6px #ffc52d,inset 0 0 12px #ffd76666}to{box-shadow:0 0 0 4px #fff4b8,0 0 33px 12px #ffbd24,inset 0 0 18px #ffd766aa}}
+}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div>
