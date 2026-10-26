@@ -1,11 +1,11 @@
-/* SKYJO V19: deterministic loader with retries, integrity and visible errors. */
+/* SKYJO V20: deterministic loader with retries, integrity and visible errors. */
 (async function(){
   'use strict';
   const script=document.currentScript;
   const baseUrl=script && script.src;
   const app=document.getElementById('app');
   function fail(message,error){
-    console.error('[SKYJO V19]',message,error||'');
+    console.error('[SKYJO V20]',message,error||'');
     if(app){app.replaceChildren();const panel=document.createElement('div');panel.setAttribute('role','alert');panel.style.cssText='margin:32px auto;max-width:520px;padding:24px;border-radius:14px;background:#17353a;color:white;font:16px system-ui;text-align:center';const title=document.createElement('strong');title.textContent='SKYJO konnte nicht vollständig geladen werden';const p=document.createElement('p');p.textContent=message;const button=document.createElement('button');button.type='button';button.textContent='Erneut versuchen';button.style.cssText='padding:12px 20px;border:0;border-radius:8px;cursor:pointer';button.onclick=()=>location.reload();panel.append(title,p,button);app.append(panel);}
   }
   async function fetchWithRetry(name,attempts=3){
@@ -21,7 +21,7 @@
     if(!baseUrl)throw Error('Loader-URL nicht verfügbar');
     if(!window.SKYJO_ACTION_DEFINITIONS||Object.keys(window.SKYJO_ACTION_DEFINITIONS).length!==9)throw Error('Spezialkarten-Katalog fehlt oder ist unvollständig');
     const manifest=JSON.parse(await fetchWithRetry('skyjo_action-manifest.json'));
-    if(manifest.version!==19||!manifest.parts)throw Error('Ungültige SKYJO-Modulliste');
+    if(manifest.version!==20||!manifest.parts)throw Error('Ungültige SKYJO-Modulliste');
     const names=Object.keys(manifest.parts);
     if(names.length!==35)throw Error('Erwartet: 35 Logikteile, gefunden: '+names.length);
     const texts=await Promise.all(names.map(n=>fetchWithRetry(n)));
