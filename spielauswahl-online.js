@@ -55,7 +55,7 @@ function update(snapshot){
  byId('online-room-players').textContent=snapshot.players?.map(p=>(p.host?'👑 ':'')+p.name).join(' · ')||'';
  byId('online-room-status').textContent=snapshot.host?'👑 Du bist Host – wähle euer nächstes Spiel.':'Du bist verbunden. Der Host wählt das nächste Spiel.';
  const permitted=!!snapshot.host&&snapshot.phase!=='playing'&&!choosing;
- for(const btn of buttons)btn.disabled=!permitted;
+ for(const btn of buttons){btn.disabled=false;btn.setAttribute('aria-disabled',String(!permitted));}
  if(snapshot.game&&['preparing','playing'].includes(snapshot.phase)&&!(chooseAnother&&snapshot.host&&snapshot.phase==='preparing')){
   location.replace(roomLocation(snapshot.game));
   return;
@@ -96,6 +96,7 @@ for(const button of buttons){
   if(choosing||!Object.hasOwn(GAME,game))return;
   if(!user()){status('Bitte zuerst oben rechts mit deinem Online-Profil anmelden.',true);return;}
   if(codeValid&&room&&!room.host){status('Nur der Host darf das Spiel auswählen.',true);return;}
+  if(codeValid&&room?.phase==='playing'){status('Ein Spiel läuft bereits. Bitte erst in die Raum-Lobby zurückkehren.',true);return;}
   choosing=true;buttons.forEach(b=>b.disabled=true);
   status('Starte '+GAME[game]+' …');
   try{
@@ -109,12 +110,18 @@ for(const button of buttons){
    if(result?.room?.game!==game)throw Error('GAME_SELECT_FAILED');
    location.assign(roomLocation(game));
   }catch(e){
-   choosing=false;
+   choosing=false;buttons.forEach(b=>b.disabled=false);
    status(e?.message==='HOST_ONLY'?'Nur der Host kann das Spiel auswählen.':'Die Spielauswahl ist fehlgeschlagen: '+(e.message||'Netzwerkfehler'),true);
    void refresh();
   }
  });
 }
+/* Make the entire illustrated card a reliable touch/click target, independent of overlay layout. */
+document.querySelectorAll('.game').forEach(card=>{
+ const btn=card.querySelector('[data-select-game]');if(!btn)return;
+ card.style.cursor='pointer';
+ card.addEventListener('click',event=>{if(event.target.closest('button,a,input,select,textarea'))return;btn.click();});
+});
 const quickForm=byId('online-quick-room'),quickCode=byId('online-quick-code'),quickJoin=byId('online-quick-join'),quickCreate=byId('online-quick-create');
 let quickBusy=false;
 quickCode?.addEventListener('input',()=>{quickCode.value=quickCode.value.toUpperCase().replace(/[^0-9A-HJ-NP-Z]/g,'').slice(0,6);});
