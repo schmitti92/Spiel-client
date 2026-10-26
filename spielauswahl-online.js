@@ -6,7 +6,7 @@ const code=String(input.get('room')||'').toUpperCase();
 const codeValid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
 const chooseAnother=input.get('choose')==='1';
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Party Challenge'};
+const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Mini-Spiele'};
 const byId=id=>document.getElementById(id);
 const buttons=[...document.querySelectorAll('[data-select-game]')];
 let loading=false,choosing=false,room=null,notifiedUid=null,activeSelectionUid=null;
