@@ -2537,7 +2537,7 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
 @media(max-width:1280px){#game .depot-panel.portfolio-panel{margin-left:0!important;}}
 </style>
 
-</head>
+<style id="business-local-score-highlight">#scoreDock .payout-row.score-current{background:linear-gradient(90deg,#ffe7a0,#ffcf56)!important;color:#15283a!important;box-shadow:inset 0 0 0 3px #fff2ba,0 0 16px #ffd45b!important;animation:businessScoreGlow 1.2s ease-in-out infinite alternate}#scoreDock .payout-row.score-current .payout-name,#scoreDock .payout-row.score-current .payout-value{color:#172638!important;font-weight:900!important}@keyframes businessScoreGlow{from{filter:brightness(1)}to{filter:brightness(1.15)}}</style></head>
 <body data-business-mode="online">
 
 <div id="game" class="hidden">
@@ -3079,7 +3079,7 @@ function playDieHTML(face){
  return `<div class="play-die-face">${map[face].map(p=>`<span class="play-pip ${p}"></span>`).join("")}</div>`;
 }
 function renderPayoutOverlay(){
- const currentName=(state.rolls>0&&state.phase==="roll")?evaluate(state.dice).name:null;
+ const currentName=state.rolls>0&&!state.gameEnded?evaluate(state.dice).name:null;
 
  const tableHTML = `<div class="payout-head"><div>Würfelergebnis</div><div>Auszahlung</div></div>` +
    payoutRows.map(row=>`
@@ -4243,7 +4243,7 @@ function finishRoll(finalDice=null,finalBranch=null){
  if(firstThrow&&!finalBranch){const k=Math.floor(Math.random()*6);finalBranch=k===5?"news":branches[k].id}
  state.dice=finalDice.slice(0,5);if(firstThrow)state.branchRoll=finalBranch;state.rolls++;state.locked=false;
  if(state.rollEvent){state.rollEvent.completed=true;state.rollEvent.completedAt=Date.now()}
- renderDice();if(firstThrow)resolveBranch();const best=evaluate(state.dice);q("result").innerHTML=`Wurf ${state.rolls}/3 · <b>${best.name}</b>${best.value?` = ${best.value} Z`:""}`;render();renderDiceArena();
+ renderDice();if(firstThrow)resolveBranch();const best=evaluate(state.dice);q("result").innerHTML=`Wurf ${state.rolls}/3 · <b>${best.name}</b>${best.value?` = ${best.value} Z`:""}`;render();renderDiceArena();if(state.rolls>=3&&state.phase==="roll"&&!state.locked&&!state.gameEnded){setTimeout(()=>{if(state.rolls>=3&&state.phase==="roll"&&!state.locked&&!state.gameEnded)settleDice()},900)}
 }
 
 function branchBonus(normalShareCount){return normalShareCount<2?0:Math.min(12,(normalShareCount-1)*4)}
