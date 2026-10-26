@@ -102,12 +102,13 @@ function render(){
  renderPlayers();
  const me=room.players.find(p=>p.me);
  const playing=room.players.filter(p=>p.participating),ready=playing.filter(p=>p.ready).length;
+ const isPreparing=room.phase==='preparing';
  const botCount=room.players.filter(p=>p.testBot).length;
  const botBtn=$('test-players-btn');
  botBtn.hidden=!room.host||!isPreparing;
  botBtn.disabled=busy||(!botCount&&room.players.filter(p=>p.participating&&!p.testBot).length+2>(room.maxPlayers||5));
  botBtn.textContent=botCount?'🤖 Testspieler entfernen':'🤖 + 2 Testspieler hinzufügen';
- const isPreparing=room.phase==='preparing';
+
  $('ready-btn').disabled=busy||!isPreparing||!me?.participating;
  $('ready-btn').textContent=me?.ready?'✔ Bereitmeldung zurücknehmen':'✓ Ich bin bereit';
  $('ready-btn').classList.toggle('active',!!me?.ready);
