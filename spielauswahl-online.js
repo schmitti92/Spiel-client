@@ -63,13 +63,13 @@ function update(snapshot){
  status(snapshot.host?'Wähle unten ein Spiel, um den Online-Vorraum für alle zu öffnen.':'Warte, bis der Host ein Spiel ausgewählt hat. Alle bleiben im selben Raum.');
 }
 async function refresh(){
- if(!codeValid){buttons.forEach(b=>b.disabled=!user()||choosing);status(user()?'Wähle ein Spiel. Ein neuer Online-Raum wird automatisch erstellt.':'Bitte melde dich an, um ein Online-Spiel zu starten.');return;}
+ if(!codeValid){buttons.forEach(b=>b.disabled=choosing);status(user()?'Wähle ein Spiel. Ein neuer Online-Raum wird automatisch erstellt.':'Bitte melde dich an, um ein Online-Spiel zu starten.');return;}
  if(loading||choosing||document.hidden)return;
  if(!user()){
   const authState=window.SpielOnline?.state?.();
   if(['initializing','loading'].includes(authState?.status)){status('Dein gespeichertes Spielerprofil wird verbunden …');return;}
   if(notifiedUid!==null)room=null;
-  buttons.forEach(b=>b.disabled=true);
+  buttons.forEach(b=>b.disabled=false);
   status('Bitte melde dich mit deinem Online-Profil an, um auf diesen Raum zuzugreifen.');
   return;
  }
@@ -81,7 +81,7 @@ async function refresh(){
   const result=await request('/rooms/'+code);
   update(result.room);
  }catch(e){
-  buttons.forEach(b=>b.disabled=true);
+  buttons.forEach(b=>b.disabled=false);
   if(['LOGIN_REQUIRED','PROFILE_REQUIRED','NOT_A_MEMBER','ROOM_NOT_FOUND'].includes(e?.message)){
    room=null;
    status(e.message==='NOT_A_MEMBER'?'Du gehörst noch nicht zu diesem Raum. Bitte über die Raum-Lobby beitreten.':
@@ -90,10 +90,12 @@ async function refresh(){
  }finally{loading=false;}
 }
 for(const button of buttons){
- button.disabled=true;
+ button.disabled=false;
  button.addEventListener('click',async()=>{
   const game=button.dataset.selectGame;
-  if(choosing||!Object.hasOwn(GAME,game)|| (codeValid&&!room?.host))return;
+  if(choosing||!Object.hasOwn(GAME,game))return;
+  if(!user()){status('Bitte zuerst oben rechts mit deinem Online-Profil anmelden.',true);return;}
+  if(codeValid&&room&&!room.host){status('Nur der Host darf das Spiel auswählen.',true);return;}
   choosing=true;buttons.forEach(b=>b.disabled=true);
   status('Starte '+GAME[game]+' …');
   try{
