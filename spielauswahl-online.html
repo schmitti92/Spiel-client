@@ -246,6 +246,12 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
 .game .actions .image-card-button:disabled{cursor:not-allowed;opacity:.65!important;background:#0003!important}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:700px){.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card{aspect-ratio:696/320;min-height:0!important}}
+
+/* Progressive enhancement: Spielname sichtbar, bis das Originalbild wirklich geladen ist */
+.game.barikade-card:not(.original-art-loaded) .game-title,.game.skyjo-card:not(.original-art-loaded) .game-title,.game.kreuzkunter-card:not(.original-art-loaded) .game-title,.game.business-card:not(.original-art-loaded) .game-title{display:flex!important;position:absolute;inset:0;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+.game.barikade-card.original-art-loaded .game-title,.game.skyjo-card.original-art-loaded .game-title,.game.kreuzkunter-card.original-art-loaded .game-title,.game.business-card.original-art-loaded .game-title{display:none!important}
+.game.barikade-card:not(.original-art-loaded)::after,.game.skyjo-card:not(.original-art-loaded)::after,.game.kreuzkunter-card:not(.original-art-loaded)::after,.game.business-card:not(.original-art-loaded)::after{display:block!important;background:linear-gradient(180deg,#0004,#0008)!important}
+.game.barikade-card.original-art-loaded,.game.skyjo-card.original-art-loaded,.game.kreuzkunter-card.original-art-loaded,.game.business-card.original-art-loaded{background-size:cover}
 </style>
 
 <style>
@@ -330,27 +336,27 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
       <article class="game barikade-card">
         
         <div class="actions">
-          <button type="button" class="btn purple online-game-button image-card-button" aria-label="barikade auswählen" data-select-game="barikade" disabled><span class="visually-hidden">barikade auswählen</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="Barikade auswählen" data-select-game="barikade" disabled><span class="visually-hidden">barikade auswählen</span></button>
         </div>
       </article>
       <article class="game skyjo-card">
         
         <div class="actions skyjo-actions">
-          <button type="button" class="btn purple online-game-button image-card-button" aria-label="skyjo auswählen" data-select-game="skyjo" disabled><span class="visually-hidden">skyjo auswählen</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="SKYJO Action auswählen" data-select-game="skyjo" disabled><span class="visually-hidden">skyjo auswählen</span></button>
           
         </div>
       </article>
       <article class="game kreuzkunter-card">
         
         <div class="actions skyjo-actions kreuzkunter-actions">
-          <button type="button" class="btn purple online-game-button image-card-button" aria-label="kreuz auswählen" data-select-game="kreuz" disabled><span class="visually-hidden">kreuz auswählen</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="KreuzKunter auswählen" data-select-game="kreuz" disabled><span class="visually-hidden">kreuz auswählen</span></button>
           
         </div>
       </article>
       <article class="game business-card">
         
         <div class="actions business-actions">
-          <button type="button" class="btn purple online-game-button image-card-button" aria-label="business auswählen" data-select-game="business" disabled><span class="visually-hidden">business auswählen</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="Das große Business auswählen" data-select-game="business" disabled><span class="visually-hidden">business auswählen</span></button>
           
         </div>
       </article>
@@ -364,5 +370,13 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
 <script src="profile-config.js"></script>
 <script src="profile-auth.js"></script>
 <script src="spielauswahl-online.js?v=8.1-challenge" defer></script>
-<script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script></body>
+<script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script>
+<script>
+/* Bildtitel nur ausblenden, wenn die vier Originaldateien wirklich vorhanden sind. */
+(function(){
+ const images=[['barikade-card','Barikade_EXAKT_AUS_VORLAGE.webp'],['skyjo-card','SKYJO_Action_EXAKT_AUS_VORLAGE.webp'],['kreuzkunter-card','KreuzKunter_EXAKT_AUS_VORLAGE.webp'],['business-card','Das_grosse_Business_EXAKT_AUS_VORLAGE.webp']];
+ images.forEach(function(entry){const card=document.querySelector('.'+entry[0]);if(!card)return;const img=new Image();img.onload=function(){if(img.naturalWidth>100)card.classList.add('original-art-loaded')};img.src='Assets/game-backgrounds/'+entry[1]});
+})();
+</script>
+</body>
 </html>
