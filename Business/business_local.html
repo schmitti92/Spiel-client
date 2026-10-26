@@ -2537,7 +2537,35 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
 @media(max-width:1280px){#game .depot-panel.portfolio-panel{margin-left:0!important;}}
 </style>
 
-<style id="business-local-score-highlight">#scoreDock .payout-row.score-current{background:linear-gradient(90deg,#ffe7a0,#ffcf56)!important;color:#15283a!important;box-shadow:inset 0 0 0 3px #fff2ba,0 0 16px #ffd45b!important;animation:businessScoreGlow 1.2s ease-in-out infinite alternate}#scoreDock .payout-row.score-current .payout-name,#scoreDock .payout-row.score-current .payout-value{color:#172638!important;font-weight:900!important}@keyframes businessScoreGlow{from{filter:brightness(1)}to{filter:brightness(1.15)}}</style></head>
+<style id="business-local-score-highlight">
+/* Lesbarer Ergebnisfokus: dunkler Grund, goldene Kontur, klarer Text. */
+#scoreDock .payout-row.score-current{
+  position:relative;
+  background:linear-gradient(105deg,#17364b 0%,#25455a 52%,#17364b 100%)!important;
+  color:#fff5d2!important;
+  border:2px solid #ffcf65!important;
+  border-radius:11px!important;
+  box-shadow:inset 0 0 0 1px rgba(255,240,186,.32),0 0 11px rgba(255,195,62,.48)!important;
+  animation:businessScoreGlow 1.8s ease-in-out infinite alternate;
+}
+#scoreDock .payout-row.score-current .payout-name{
+  color:#fff6df!important;
+  font-weight:900!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.8)!important;
+}
+#scoreDock .payout-row.score-current .payout-value{
+  color:#ffe08a!important;
+  font-weight:900!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.8)!important;
+}
+#scoreDock .payout-row.score-current .payout-left,
+#scoreDock .payout-row.score-current .dice-strip{opacity:1!important}
+@keyframes businessScoreGlow{
+  from{box-shadow:inset 0 0 0 1px rgba(255,240,186,.25),0 0 7px rgba(255,195,62,.3)}
+  to{box-shadow:inset 0 0 0 1px rgba(255,240,186,.48),0 0 15px rgba(255,195,62,.62)}
+}
+@media(prefers-reduced-motion:reduce){#scoreDock .payout-row.score-current{animation:none!important}}
+</style></head>
 <body data-business-mode="online">
 
 <div id="game" class="hidden">
