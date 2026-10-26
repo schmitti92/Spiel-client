@@ -1,6 +1,6 @@
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=32&session='+Date.now();
+ frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=33&session='+Date.now();
  frame.title='Snake Arena Online';frame.style.cssText='width:100%;height:100%;border:0;display:block';container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,challengeId=null,offset=0,seq=0,pending=false,queued=null,lastSent=0,lastPoll=0,pollPending=false;
  const current=()=>{const room=getRoom(),ch=room?.match?.challenge;return ch?.order?.[ch.index]==='snake-arena'?{room,ch}:null};
