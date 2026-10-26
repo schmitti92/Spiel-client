@@ -6852,5 +6852,71 @@ setup();$('game').classList.add('hidden');shell.classList.remove('hidden');
 </script>
 
 
+<style id="business-card-redesign-v1">
+/* Karten-Relaunch: ruhige Premium-Börsenkarten, kontrastreich und touchfreundlich. */
+#game .market-slot .invest-card .card-shell,
+#game .depot-fan-card .card-shell{
+  border-radius:19px!important;
+  border:2px solid rgba(255,222,142,.85)!important;
+  box-shadow:inset 0 0 0 2px rgba(9,23,35,.85),0 7px 19px rgba(0,0,0,.4)!important;
+}
+#game .market-slot .invest-card .card-shell .real-card-type{
+  top:10px!important;left:10px!important;right:47px!important;
+  width:auto!important;max-width:none!important;height:31px!important;
+  padding:0 12px!important;border-radius:9px!important;
+  background:rgba(5,21,35,.94)!important;border:1px solid rgba(237,205,137,.62)!important;
+  color:#ffe7a9!important;font:800 11px/31px Arial,sans-serif!important;
+  letter-spacing:.12em!important;text-shadow:none!important;opacity:1!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.32)!important;
+}
+#game .market-slot .invest-card .card-shell .card-info{
+  top:10px!important;right:10px!important;width:31px!important;height:31px!important;
+  border-radius:9px!important;background:#f5e8c8!important;color:#0c2b41!important;
+  border:1px solid #fff7df!important;box-shadow:0 3px 9px rgba(0,0,0,.3)!important;
+}
+#game .market-slot .invest-card .card-shell .real-card-body{
+  min-height:45%!important;max-height:62%!important;
+  padding:35px 12px 82px!important;
+  background:linear-gradient(180deg,transparent 0%,rgba(4,16,28,.65) 19%,rgba(3,15,26,.97) 67%,#071a29 100%)!important;
+}
+#game .market-slot .invest-card .card-shell .real-card-company{
+  font:800 clamp(15px,1.45vw,24px)/1.08 Georgia,serif!important;
+  color:#fff9e8!important;letter-spacing:-.015em!important;
+  overflow-wrap:anywhere!important;text-shadow:0 2px 5px #000!important;
+}
+#game .market-slot .invest-card .card-shell .real-card-desc{display:none!important}
+#game .market-slot .invest-card .card-shell .real-card-price,
+#game .market-slot .invest-card .card-shell .real-card-yield{
+  bottom:12px!important;height:52px!important;min-width:0!important;
+  border-radius:11px!important;display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;
+  box-shadow:0 3px 9px rgba(0,0,0,.35)!important;
+}
+#game .market-slot .invest-card .card-shell .real-card-price{
+  left:11px!important;width:43%!important;background:#f3e6c8!important;
+  color:#392614!important;font:900 clamp(17px,2vw,28px)/1 Arial,sans-serif!important;
+}
+#game .market-slot .invest-card .card-shell .real-card-yield{
+  right:11px!important;width:43%!important;background:#bdebd3!important;
+  color:#10563a!important;
+}
+#game .market-slot .invest-card .card-shell .real-card-yield small{
+  color:#236d50!important;font:800 9px/1.1 Arial,sans-serif!important;letter-spacing:.08em!important;
+}
+#game .market-slot .invest-card .card-shell .real-card-yield b{
+  color:#10563a!important;font:900 clamp(16px,1.8vw,25px)/1.1 Arial,sans-serif!important;
+}
+#game .market-slot .invest-card .selected .card-shell,
+#game .market-slot .invest-card.selected .card-shell{
+  outline:3px solid #76d7ff!important;outline-offset:-4px!important;
+}
+@media(max-width:900px){
+ #game .market-slot .invest-card .card-shell .real-card-type{font-size:9px!important;height:25px!important;line-height:25px!important}
+ #game .market-slot .invest-card .card-shell .card-info{width:25px!important;height:25px!important}
+ #game .market-slot .invest-card .card-shell .real-card-price,
+ #game .market-slot .invest-card .card-shell .real-card-yield{height:42px!important}
+ #game .market-slot .invest-card .card-shell .real-card-body{padding-bottom:66px!important}
+}
+</style>
 </body>
 </html>
