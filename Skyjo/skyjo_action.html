@@ -34,35 +34,30 @@
 <link rel="stylesheet" href="skyjo_board_layout_polish.css?v=3">
 <link rel="stylesheet" href="skyjo_royal_redesign.css?v=2">
 <link rel="stylesheet" href="skyjo_xl_layout.css?v=15">
-<style id="skyjo-active-gold-v1">
-/* Active player: entire board gold, not just the name bar. */
+<style id="skyjo-active-gold-v2">
+/* Active board: preserve original dark blue card area and wood background. */
 body.is-playing .player.active {
-  border: 4px solid #ffdb69 !important;
+  border: 4px solid #ffd15b !important;
   border-radius: 22px !important;
-  background: linear-gradient(145deg,#d9a441 0%,#f9da81 35%,#b97920 100%) !important;
-  box-shadow: 0 0 0 2px #fff1a8, 0 0 26px 8px #ffbe36aa, inset 0 0 22px #fff3b780 !important;
+  background: inherit !important;
+  box-shadow: 0 0 0 2px #fff0a2, 0 0 16px 4px #ffc442b3, 0 0 32px 8px #ffb62a77, inset 0 0 12px #ffd36566 !important;
 }
 body.is-playing .player.active .player-head {
-  background: linear-gradient(100deg,#b77a1b,#ffe49a 48%,#c68a24) !important;
-  border-color:#ffe9a2 !important;
+  border: 2px solid #ffe38b !important;
+  background: linear-gradient(100deg,#bf812a,#ffdf83 48%,#bd7e28) !important;
+  box-shadow: 0 0 15px #ffcb55aa, inset 0 1px 3px #fff2b8 !important;
 }
 body.is-playing .player.active .gridwrap {
-  border: 3px solid #ffdc70 !important;
+  border: 3px solid #ffda69 !important;
   border-radius: 15px !important;
-  background: linear-gradient(140deg,#795018,#c58d30 55%,#795018) !important;
-  box-shadow: inset 0 0 20px #3e230d88,0 0 14px #ffd05a88 !important;
-}
-body.is-playing .player.active .grid {
-  background: transparent !important;
+  background: revert-layer !important;
+  box-shadow: 0 0 12px #ffd15fbb, inset 0 0 12px #ffdc6655 !important;
 }
 body.is-playing .player.active .scorechip {
   border: 2px solid #fff0a5 !important;
   box-shadow: 0 0 13px #ffd455aa !important;
 }
-@media (prefers-reduced-motion: no-preference) {
- body.is-playing .player.active {animation:skyjoGoldGlow 2.8s ease-in-out infinite alternate !important}
- @keyframes skyjoGoldGlow {from{filter:brightness(1)}to{filter:brightness(1.09)}}
-}
+body.is-playing .player.active .grid { background: transparent !important; }
 </style>
 <style id="skyjo-active-gold-premium-v2">
 /* Golden active-player board: visual only; preserves game interaction. */
