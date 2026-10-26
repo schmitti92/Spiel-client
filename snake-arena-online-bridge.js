@@ -8,10 +8,10 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(!alive||!ready)return;const c=current();if(!c)return;const {room,ch}=c;
   if(challengeId!==ch.id){challengeId=ch.id;configured=false;seq=0;queued=null;pending=false;lastSent=0;lastPoll=0;}
   const seats=(room.match?.members||room.players.filter(p=>p.participating)).map(p=>p.seat);
-  const mine=room.players.find(p=>p.me||p.isMe||p.uid===room.myUid)?.seat,localSeat=seats.indexOf(mine);if(localSeat<0)return;
+  const mine=room.players.find(p=>p.me||p.isMe||p.uid===room.myUid)?.seat,localSeat=seats.indexOf(mine);if(localSeat<0){onError(new Error('Snake: Eigener Spielerplatz konnte nicht zugeordnet werden'));return;}
   if(!configured){seq=Math.max(seq,...Object.values(ch.snake?.players||{}).filter(p=>p.seat===mine).map(p=>p.seq||0),0);frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,startAt:ch.startAt,serverOffset:offset,initialSeq:seq,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
   if(ch.snake||ch.phase!=='countdown')frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.snake?.players||{},standings:ch.results?.find(r=>r.game==='snake-arena'&&r.index===ch.index)?.standings},location.origin);
-  if(ch.phase==='countdown'&&Date.now()-lastPoll>1800&&!pollPending){pollPending=true;lastPoll=Date.now();const id=ch.id;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:id}).then(r=>{if(alive&&current()?.ch.id===id&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{pollPending=false});}
+  if(ch.phase==='countdown'&&Date.now()-lastPoll>800&&!pollPending){pollPending=true;lastPoll=Date.now();const id=ch.id;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:id}).then(r=>{if(alive&&current()?.ch.id===id&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{pollPending=false});}
  }
  async function send(){
   if(!alive||pending||!queued)return;
