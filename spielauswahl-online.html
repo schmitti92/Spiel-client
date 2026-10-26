@@ -263,6 +263,11 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
 .game.party-challenge-card:hover::before{filter:saturate(1.35) brightness(.9);scale:1.035}
 .game.party-challenge-card:focus-within{outline:3px solid #fff;outline-offset:3px}
 @media(max-width:700px){.game.party-challenge-card{aspect-ratio:696/320!important;min-height:0!important}.game.party-challenge-card .game-title h2{font-size:clamp(24px,6vw,43px)!important}}
+
+/* New mini-game artwork: show once uploaded; keep collage as a fallback. */
+.game.party-challenge-card.mini-art-loaded::before{background-image:url('Assets/game-backgrounds/Mini-Spiele.png')!important;background-size:cover!important;background-position:center!important;filter:none!important}
+.game.party-challenge-card.mini-art-loaded::after{display:none!important}
+.game.party-challenge-card.mini-art-loaded .game-title{display:none!important}
 </style>
 
 <style>
@@ -372,8 +377,8 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
         </div>
       </article>
       <article class="game party-challenge-card">
-        <div class="game-title"><h2>Party Challenge</h2></div>
-        <div class="actions"><button type="button" class="btn primary gold online-game-button image-card-button" aria-label="Party Challenge auswählen" data-select-game="partychallenge" disabled><span class="visually-hidden">Party Challenge auswählen</span></button></div>
+        <div class="game-title"><h2>Mini-Spiele</h2></div>
+        <div class="actions"><button type="button" class="btn primary gold online-game-button image-card-button" aria-label="Mini-Spiele auswählen" data-select-game="partychallenge" disabled><span class="visually-hidden">Mini-Spiele auswählen</span></button></div>
       </article>
     </section>
   </main>
@@ -388,6 +393,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
  const images=[['barikade-card','Barikade_EXAKT_AUS_VORLAGE.webp'],['skyjo-card','SKYJO_Action_EXAKT_AUS_VORLAGE.webp'],['kreuzkunter-card','KreuzKunter_EXAKT_AUS_VORLAGE.webp'],['business-card','Das_grosse_Business_EXAKT_AUS_VORLAGE.webp']];
  images.forEach(function(entry){const card=document.querySelector('.'+entry[0]);if(!card)return;const img=new Image();img.onload=function(){if(img.naturalWidth>100)card.classList.add('original-art-loaded')};img.src='Assets/game-backgrounds/'+entry[1]});
 })();
+</script>
+
+<script>
+(function(){const card=document.querySelector('.party-challenge-card');if(!card)return;const img=new Image();img.onload=function(){if(img.naturalWidth>100)card.classList.add('mini-art-loaded')};img.src='Assets/game-backgrounds/Mini-Spiele.png';})();
 </script>
 </body>
 </html>
