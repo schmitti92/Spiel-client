@@ -55,7 +55,7 @@ function update(snapshot){
  byId('online-room-players').textContent=snapshot.players?.map(p=>(p.host?'👑 ':'')+p.name).join(' · ')||'';
  byId('online-room-status').textContent=snapshot.host?'👑 Du bist Host – wähle euer nächstes Spiel.':'Du bist verbunden. Der Host wählt das nächste Spiel.';
  const permitted=!!snapshot.host&&snapshot.phase!=='playing'&&!choosing;
- for(const btn of buttons){btn.disabled=false;btn.setAttribute('aria-disabled',String(!permitted));}
+ for(const btn of buttons)btn.disabled=!permitted;
  if(snapshot.game&&['preparing','playing'].includes(snapshot.phase)&&!(chooseAnother&&snapshot.host&&snapshot.phase==='preparing')){
   location.replace(roomLocation(snapshot.game));
   return;
