@@ -1,6 +1,6 @@
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=23&session='+Date.now();
+ frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=24&session='+Date.now();
  frame.title='Snake Arena Online';
  frame.style.cssText='width:100%;height:100%;border:0;display:block';
  container.replaceChildren(frame);
@@ -16,7 +16,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(ch.snake){const p=ch.snake.players?.find(p=>p.seat===mine);if(p&&Number.isSafeInteger(p.seq))lastSeq=Math.max(lastSeq,p.seq);
    frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,tick:ch.snake.tick,stepMs:ch.snake.stepMs,players:ch.snake.players,food:ch.snake.food},location.origin);}
   const serverTickAge=Date.now()+offset-(ch.snake?.lastTickAt||ch.startAt);const humanSeats=(room.match?.members||[]).filter(m=>!String(m.uid||'').startsWith('testbot:')).map(m=>m.seat);const tickLeader=(humanSeats[0]??seats[0])===mine || (serverTickAge>3000&&humanSeats.indexOf(mine)>=0&&Math.floor((Date.now()+offset)/2500)%Math.max(1,humanSeats.length)===humanSeats.indexOf(mine));
-  if(configured&&tickLeader&&ch.phase==='countdown'&&Date.now()+offset>=ch.startAt&&!tickPending&&Date.now()-lastTickRequest >=1200){
+  if(configured&&tickLeader&&ch.phase==='countdown'&&Date.now()+offset>=ch.startAt&&!tickPending&&Date.now()-lastTickRequest >=250){
    tickPending=true;lastTickRequest=Date.now();const expectedId=ch.id;
    request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:expectedId}).then(r=>{if(alive&&current()?.ch.id===expectedId&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{tickPending=false});
   }
@@ -37,6 +37,6 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;configured=false;sync()});
- const timer=setInterval(()=>{const r=getRoom();if(Number.isFinite(r?.serverNow))offset=r.serverNow-Date.now();sync()},350);
+ const timer=setInterval(()=>{const r=getRoom();if(Number.isFinite(r?.serverNow))offset=r.serverNow-Date.now();sync()},100);
  return {sync,destroy(){alive=false;clearInterval(timer);window.removeEventListener('message',onMessage);frame.remove()}};
 }
