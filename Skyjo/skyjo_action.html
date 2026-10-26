@@ -64,6 +64,35 @@ body.is-playing .player.active .scorechip {
  @keyframes skyjoGoldGlow {from{filter:brightness(1)}to{filter:brightness(1.09)}}
 }
 </style>
+<style id="skyjo-active-gold-premium-v2">
+/* Golden active-player board: visual only; preserves game interaction. */
+body.is-playing .player.active{
+ background:linear-gradient(135deg,#f7d16a 0%,#b87512 45%,#ffe69c 100%)!important;
+ border:4px solid #ffe17c!important;
+ border-radius:22px!important;
+ box-shadow:0 0 0 2px #fff0ac,0 0 22px 5px #ffbd32a6,0 8px 24px #0009,inset 0 0 14px #fff3b8!important;
+}
+body.is-playing .player.active .player-head{
+ background:linear-gradient(110deg,#d99c2e 0%,#ffe69c 42%,#efbc4e 72%,#a86913 100%)!important;
+ border:2px solid #fff0b2!important;
+ box-shadow:inset 0 2px 5px #fff9c3b0,0 3px 9px #71460c80!important;
+ color:#281907!important;
+}
+body.is-playing .player.active .player-name{color:#2d1b09!important;text-shadow:0 1px 1px #fff0ad!important}
+body.is-playing .player.active .gridwrap{
+ background:linear-gradient(145deg,#e7b64f 0%,#a86b16 48%,#eac269 100%)!important;
+ border:3px solid #ffeb9b!important;
+ border-radius:18px!important;
+ box-shadow:inset 0 0 17px #71400e77,0 0 12px #ffe18b99!important;
+}
+body.is-playing .player.active .grid{background:transparent!important}
+body.is-playing .player.active .scorechip{border:2px solid #ffedac!important;box-shadow:0 0 12px #ffd867a8!important}
+body.is-playing .player.active .card-slot{filter:none!important}
+@media(prefers-reduced-motion:no-preference){
+ body.is-playing .player.active{animation:skyjoPremiumActivePulse 3s ease-in-out infinite alternate!important}
+ @keyframes skyjoPremiumActivePulse{from{box-shadow:0 0 0 2px #fff0ac,0 0 17px 4px #ffbd3288,0 8px 24px #0009}to{box-shadow:0 0 0 2px #fff0ac,0 0 27px 8px #ffd65cbb,0 8px 24px #0009}}
+}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div>
