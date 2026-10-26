@@ -8,7 +8,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(!alive||!ready)return;const c=current();if(!c)return;const {room,ch}=c;
   if(challengeId!==ch.id){challengeId=ch.id;configured=false;seq=0;queued=null;pending=false;lastSent=0;lastPoll=0;}
   const seats=(room.match?.members?.length?room.match.members:room.players.filter(p=>p.participating)).map(p=>p.seat);
-  const mine=room.players.find(p=>p.me||p.isMe||p.uid===room.myUid)?.seat,localSeat=seats.indexOf(mine);if(localSeat<0){onError(new Error('Snake: Eigener Spielerplatz konnte nicht zugeordnet werden'));return;}
+  const mine=room.players.find(p=>p.me||p.isMe||p.uid===room.myUid)?.seat,localSeat=seats.indexOf(mine);if(localSeat<0)return;
   if(!configured){seq=Math.max(seq,...(Array.isArray(ch.snake?.players)?ch.snake.players:Object.values(ch.snake?.players||{})).filter(p=>p.seat===mine).map(p=>p.seq||0),0);frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,startAt:ch.startAt,serverOffset:offset,initialSeq:seq,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
   if(ch.snake||ch.phase!=='countdown')frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players:ch.snake?.players||[],standings:ch.results?.find(r=>r.game==='snake-arena'&&r.index===ch.index)?.standings},location.origin);
   if(ch.phase==='countdown'&&Date.now()-lastPoll>800&&!pollPending){pollPending=true;lastPoll=Date.now();const id=ch.id;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:id}).then(r=>{if(alive&&current()?.ch.id===id&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{pollPending=false});}
@@ -18,7 +18,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   const c=current();if(!c||c.ch.phase!=='countdown')return;
   const m=queued;queued=null;pending=true;lastSent=Date.now();
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,score:m.score,survived:m.survived,finished:m.finished});if(alive&&current()?.ch.id===c.ch.id&&r?.room)acceptRoom(r.room)}
-  catch(e){if(alive){if(!queued||queued.seq<m.seq)queued=m;onError(e);}}finally{pending=false;if(queued&&alive)setTimeout(send,queued.finished?300:700);}
+  catch(e){if(alive){if(!queued||queued.seq<m.seq)queued={...m,finished:m.finished||!!queued?.finished};if(e?.status===409||e?.status===403){queued=null;}else onError(e);}}finally{pending=false;if(queued&&alive)setTimeout(send,queued.finished?300:700);}
  }
  function onMessage(e){
   if(!alive||e.origin!==location.origin||e.source!==frame.contentWindow)return;const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
