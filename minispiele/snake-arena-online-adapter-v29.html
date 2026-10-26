@@ -329,18 +329,39 @@ window.addEventListener('message',event=>{
   if(Array.isArray(m.players)){
    opponents.hidden=false;
    const others=m.players.filter(p=>p.seat!==c.seats[c.localSeat]?.seat);
-   opponents.replaceChildren();
+   const cards=c.opponentCards||(c.opponentCards=new Map());
+   const present=new Set();
    for(const player of others){
-    const card=document.createElement('div');
-    card.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin:8px 0;border-radius:15px;background:'+(player.alive?'linear-gradient(110deg,#133c50,#1c5866)':'linear-gradient(110deg,#473b44,#2b3340)')+';border:1px solid '+(player.alive?'#57c9d488':'#e6a7a788')+';color:#fff;box-shadow:0 5px 16px #0004';
-    const info=document.createElement('div');
-    const name=document.createElement('strong');name.textContent=player.name||'Spieler';name.style.cssText='display:block;font-size:clamp(14px,2.5vw,19px)';
-    const status=document.createElement('small');status.textContent=player.alive?'🟢 Im Spiel':'🔴 Ausgeschieden';status.style.cssText='display:block;opacity:.9;margin-top:4px';
-    const score=document.createElement('b');score.textContent=String(player.score||0)+' Punkte';score.style.cssText='font-size:clamp(15px,2.5vw,21px);white-space:nowrap;color:'+(player.alive?'#b4f8c9':'#ffd5b2');
-    info.append(name,status);card.append(info,score);opponents.append(card);
+    present.add(player.seat);
+    let item=cards.get(player.seat);
+    if(!item){
+     const card=document.createElement('div');
+     card.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin:8px 0;border-radius:15px;color:#fff;box-shadow:0 5px 16px #0004;transition:background .2s,border-color .2s';
+     const info=document.createElement('div');
+     const name=document.createElement('strong');name.style.cssText='display:block;font-size:clamp(14px,2.5vw,19px)';
+     const status=document.createElement('small');status.style.cssText='display:block;opacity:.9;margin-top:4px';
+     const score=document.createElement('b');score.style.cssText='font-size:clamp(15px,2.5vw,21px);white-space:nowrap;transition:transform .18s,color .18s';
+     info.append(name,status);card.append(info,score);opponents.append(card);
+     item={card,name,status,score,lastScore:null,lastAlive:null};cards.set(player.seat,item);
+    }
+    const {card,name,status,score}=item;
+    const points=Number(player.score)||0;
+    name.textContent=player.name||'Spieler';
+    status.textContent=player.alive?'🟢 Im Spiel':'🔴 AUSGESCHIEDEN';
+    card.style.background=player.alive?'linear-gradient(110deg,#133c50,#1c5866)':'linear-gradient(110deg,#473b44,#2b3340)';
+    card.style.border='1px solid '+(player.alive?'#57c9d488':'#e6a7a788');
+    score.style.color=player.alive?'#b4f8c9':'#ffd5b2';
+    if(item.lastScore!==points){
+     score.textContent=points+' Punkte';
+     if(item.lastScore!==null){score.animate([{transform:'scale(1)',filter:'brightness(1)'},{transform:'scale(1.23)',filter:'brightness(1.8)'},{transform:'scale(1)',filter:'brightness(1)'}],{duration:380,easing:'ease-out'});}
+     item.lastScore=points;
+    }
+    if(item.lastAlive===true&&!player.alive)card.animate([{transform:'scale(1)',opacity:1},{transform:'scale(1.025)',opacity:.7},{transform:'scale(1)',opacity:1}],{duration:480});
+    item.lastAlive=!!player.alive;
    }
+   for(const [seat,item] of cards)if(!present.has(seat)){item.card.remove();cards.delete(seat);}
    const heading=document.querySelector('.side h2');if(heading)heading.textContent='👥 Live-Punktestände';
-   const note=document.querySelector('.side .note');if(note)note.textContent='Punkte werden vom Server übertragen. Ausgeschiedene Spieler bleiben mit ihrem Endstand sichtbar.';
+   const note=document.querySelector('.side .note');if(note)note.textContent='Jeder neue Punktestand erscheint sofort. Ausgeschiedene Spieler bleiben mit ihrem Endstand sichtbar.';
   }
   if(m.phase==='results'||m.phase==='finished'){
    c.completed=true;
