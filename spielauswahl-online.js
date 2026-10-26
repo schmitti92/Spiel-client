@@ -2,8 +2,8 @@
 (()=>{
 'use strict';
 const input=new URL(location.href).searchParams;
-const code=String(input.get('room')||'').toUpperCase();
-const codeValid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
+let code=String(input.get('room')||'').toUpperCase();
+let codeValid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
 const chooseAnother=input.get('choose')==='1';
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const GAME={barikade:'Barikade',skyjo:'SKYJO Action',kreuz:'KreuzKunter',business:'Das große Business',partychallenge:'Mini-Spiele'};
@@ -63,7 +63,7 @@ function update(snapshot){
  status(snapshot.host?'Wähle unten ein Spiel, um den Online-Vorraum für alle zu öffnen.':'Warte, bis der Host ein Spiel ausgewählt hat. Alle bleiben im selben Raum.');
 }
 async function refresh(){
- if(!codeValid){status('Der Raumcode fehlt oder ist ungültig. Bitte gehe zurück zur Raum-Lobby.',true);return;}
+ if(!codeValid){buttons.forEach(b=>b.disabled=!user()||choosing);status(user()?'Wähle ein Spiel. Ein neuer Online-Raum wird automatisch erstellt.':'Bitte melde dich an, um ein Online-Spiel zu starten.');return;}
  if(loading||choosing||document.hidden)return;
  if(!user()){
   const authState=window.SpielOnline?.state?.();
@@ -93,10 +93,16 @@ for(const button of buttons){
  button.disabled=true;
  button.addEventListener('click',async()=>{
   const game=button.dataset.selectGame;
-  if(!room?.host||choosing||!Object.hasOwn(GAME,game))return;
+  if(choosing||!Object.hasOwn(GAME,game)|| (codeValid&&!room?.host))return;
   choosing=true;buttons.forEach(b=>b.disabled=true);
-  status('Der Host wählt '+GAME[game]+' …');
+  status('Starte '+GAME[game]+' …');
   try{
+   if(!codeValid){
+    const created=await request('/rooms','POST');
+    if(!created?.room?.code)throw Error('ROOM_RESPONSE_INVALID');
+    code=created.room.code;codeValid=true;room=created.room;
+    try{const uid=user()?.uid;if(uid)localStorage.setItem('spielportal:last-room:'+uid,code);}catch(_){}
+   }
    const result=await request('/rooms/'+code+'/select','POST',{game});
    if(result?.room?.game!==game)throw Error('GAME_SELECT_FAILED');
    location.assign(roomLocation(game));
@@ -125,7 +131,7 @@ async function quickRoom(action){
 }
 quickForm?.addEventListener?.('submit',e=>{e.preventDefault();void quickRoom('join');});
 quickCreate?.addEventListener?.('click',()=>{void quickRoom('create');});
-if(!codeValid)status('Kein gültiger Online-Raum angegeben. Bitte zuerst einen Raum betreten.',true);
+if(!codeValid)status('Wähle ein Spiel. Dein Online-Raum wird beim Start automatisch erstellt.');
 else{byId('online-room-code').textContent=code;}
 window.addEventListener('spielonline-change',()=>{renderProfileShortcut();void refresh();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh();});
