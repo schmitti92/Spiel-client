@@ -218,6 +218,23 @@
 .game .actions .online-game-button .chevron{margin-left:9px!important}
 .online-room-notice{padding:9px 14px!important;margin-bottom:12px!important;font-size:12px!important}
 @media(max-width:700px){.game-grid{grid-template-columns:1fr;gap:13px}.game{min-height:250px;padding:18px}.game .actions .online-game-button{min-height:40px!important;padding:8px 11px!important;font-size:12px!important}}
+
+/* Cinematic boardgame-gallery: inspired by approved artwork */
+body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17 100%)}
+.page-head{min-height:85px!important;padding-top:8px!important;margin-bottom:12px!important}
+.page-head h1{font-size:clamp(30px,3vw,46px);letter-spacing:-.035em}
+.online-head-actions{z-index:12}
+.game-grid{gap:16px 20px}
+.game{min-height:clamp(250px,25vw,355px)!important;border:2px solid rgba(246,198,116,.62)!important;border-radius:24px!important;box-shadow:0 15px 35px #0009,0 0 20px #e7b46719!important}
+.game:nth-child(2){border-color:#56c5ff!important}.game:nth-child(3){border-color:#90d57c!important}.game:nth-child(4){border-color:#ffd078!important}
+.game::after{background:linear-gradient(180deg,rgba(3,8,16,.18),transparent 40%,rgba(3,8,16,.4))!important}
+.game-title{align-self:center;text-align:center;margin:auto 0!important;width:100%}
+.game-title h2{font-size:clamp(30px,3.6vw,52px)!important;font-weight:950;letter-spacing:-.04em;color:#fff;text-shadow:0 4px 0 #402916,0 7px 12px #000,0 0 20px #000}
+.game .actions{align-self:flex-end;margin:0!important;padding:0!important}
+.game .actions .online-game-button{min-height:36px!important;padding:7px 12px!important;font-size:12px!important;opacity:.95}
+.online-room-notice{margin:0 0 10px!important}
+.online-room-notice:not(.error):not(.is-error){display:none}
+@media(max-width:700px){.page-head{min-height:65px!important}.game{min-height:230px!important}.game-title h2{font-size:clamp(27px,7vw,38px)!important}}
 </style>
 
 <style>
