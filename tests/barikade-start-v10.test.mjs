@@ -37,7 +37,7 @@ test('Existing supported themes selectable; future themes clearly marked preview
  assert.match(js,/nur eine Vorschau/);
 });
 test('All Barikade host setting changes use server-validated options',()=>{
- for(const kind of ['data-event=','data-joker=','data-boss=','data-mode=','data-board=','data-color='])
+ for(const kind of ['id="event-count"','type="range" min="5" max="20"','data-joker=','data-boss=','data-mode=','data-board=','data-color='])
   assert.ok(html.includes(kind),kind);
  assert.match(js,/mutate\('\/settings'/);
  assert.match(js,/const hostOnly=.*room\?\.host/);
