@@ -233,7 +233,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
 .game .actions{align-self:flex-end;margin:0!important;padding:0!important}
 .game .actions .online-game-button{min-height:36px!important;padding:7px 12px!important;font-size:12px!important;opacity:.95}
 .online-room-notice{margin:0 0 10px!important}
-.online-room-notice:not(.error):not(.is-error){display:none}
+.online-room-notice:not(.error):not(.is-error){display:block}
 @media(max-width:700px){.page-head{min-height:65px!important}.game{min-height:230px!important}.game-title h2{font-size:clamp(27px,7vw,38px)!important}}
 
 /* Originalvorlage als komplette klickbare Spielkarte; Auswahl bleibt an vorhandener Spiellogik */
@@ -352,40 +352,40 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
       <article class="game barikade-card">
         
         <div class="actions">
-          <button type="button" class="btn purple online-game-button image-card-button" aria-label="Barikade auswählen" data-select-game="barikade" disabled><span class="visually-hidden">barikade auswählen</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="Barikade auswählen" data-select-game="barikade"><span class="visually-hidden">barikade auswählen</span></button>
         </div>
       </article>
       <article class="game skyjo-card">
         
         <div class="actions skyjo-actions">
-          <button type="button" class="btn purple online-game-button image-card-button" aria-label="SKYJO Action auswählen" data-select-game="skyjo" disabled><span class="visually-hidden">skyjo auswählen</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="SKYJO Action auswählen" data-select-game="skyjo"><span class="visually-hidden">skyjo auswählen</span></button>
           
         </div>
       </article>
       <article class="game kreuzkunter-card">
         
         <div class="actions skyjo-actions kreuzkunter-actions">
-          <button type="button" class="btn purple online-game-button image-card-button" aria-label="KreuzKunter auswählen" data-select-game="kreuz" disabled><span class="visually-hidden">kreuz auswählen</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="KreuzKunter auswählen" data-select-game="kreuz"><span class="visually-hidden">kreuz auswählen</span></button>
           
         </div>
       </article>
       <article class="game business-card">
         
         <div class="actions business-actions">
-          <button type="button" class="btn purple online-game-button image-card-button" aria-label="Das große Business auswählen" data-select-game="business" disabled><span class="visually-hidden">business auswählen</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="Das große Business auswählen" data-select-game="business"><span class="visually-hidden">business auswählen</span></button>
           
         </div>
       </article>
       <article class="game party-challenge-card">
         <div class="game-title"><h2>Mini-Spiele</h2></div>
-        <div class="actions"><button type="button" class="btn primary gold online-game-button image-card-button" aria-label="Mini-Spiele auswählen" data-select-game="partychallenge" disabled><span class="visually-hidden">Mini-Spiele auswählen</span></button></div>
+        <div class="actions"><button type="button" class="btn primary gold online-game-button image-card-button" aria-label="Mini-Spiele auswählen" data-select-game="partychallenge"><span class="visually-hidden">Mini-Spiele auswählen</span></button></div>
       </article>
     </section>
   </main>
 
 <script src="profile-config.js"></script>
 <script src="profile-auth.js"></script>
-<script src="spielauswahl-online.js?v=8.1-challenge" defer></script>
+<script src="spielauswahl-online.js?v=20261026-clickfix-2" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script>
 <script>
 /* Bildtitel nur ausblenden, wenn die vier Originaldateien wirklich vorhanden sind. */
