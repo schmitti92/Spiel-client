@@ -106,7 +106,7 @@ function cloudPollDelay(){
  let base=1100;
  if(state?.phase==='gameOver')base=1800;
  else if(state&&(state.phase==='betweenRounds'||state.phase==='initialReveal'))base=700;
- else if(state&&cloud.enabled&&!isMyActorDevice())base=820;
+ else if(state&&cloud.enabled&&!isMyActorDevice())base=650;
  return Math.min(10000,base*Math.pow(2,errors))
 }
 function startCloudPolling(){
