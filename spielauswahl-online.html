@@ -348,6 +348,19 @@ body::before{background:linear-gradient(180deg,rgba(5,20,33,.30),rgba(8,22,35,.3
 .online-room-dropdown>summary:focus-visible{outline:3px solid #ffdc8b;outline-offset:3px}
 @media(max-width:1000px){.page-head{padding-right:0}.online-head-actions{position:absolute;top:0;right:0;margin:0}.page-head{padding-top:0;padding-right:225px;min-height:132px}}
 @media(max-width:650px){.page-head{padding-right:0;padding-top:85px;min-height:0}.online-head-actions{top:0;right:0}.online-profile-avatar{width:48px;height:48px}.online-room-dropdown-panel{right:-62px}}
+
+/* Stable terrace background: fixed independent layer avoids Samsung browser scroll jitter. */
+html{background:#142c3d!important}
+body{background:transparent!important;isolation:isolate}
+body::before{content:''!important;position:fixed!important;inset:-2px!important;z-index:-2!important;background:#213b4b url('Assets/game-backgrounds/Spieleauswahl_Hintergrund.png') center center / cover no-repeat!important;transform:translateZ(0);pointer-events:none}
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(6,22,35,.32),rgba(7,25,38,.22) 50%,rgba(5,20,33,.4))}
+.container{width:min(1460px,calc(100% - 64px))!important;position:relative;z-index:1}
+.game-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px 22px!important}
+.game-grid>.game{aspect-ratio:696/320!important;min-height:0!important;width:100%;border-radius:23px!important}
+.game-grid>.game.party-challenge-card{grid-column:1/-1;aspect-ratio:696/210!important;max-width:100%}
+.page-head{background:rgba(12,32,50,.34)!important;border:1px solid #ffffff2b!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+@media(max-width:760px){.container{width:calc(100% - 24px)!important}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.game-grid>.game{aspect-ratio:696/400!important;border-radius:14px!important}.game-grid>.game.party-challenge-card{aspect-ratio:696/230!important}}
+@media(max-width:520px){.game-grid{grid-template-columns:1fr!important}.game-grid>.game{aspect-ratio:696/320!important}.game-grid>.game.party-challenge-card{grid-column:auto;aspect-ratio:696/320!important}}
 </style></head>
 <body>
   <main class="container">
