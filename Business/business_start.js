@@ -70,13 +70,13 @@ function renderPlayers(){
  const active=room.players.filter(p=>p.participating);
  $('room-count').textContent=room.players.length+' im Raum · '+active.length+'/'+max+' spielen';
  room.players.forEach((p,i)=>{
-  const item=create('div','biz-player'+(p.host?' host':''));
+  const item=create('div','biz-player'+(p.host?' host':'')+(p.testBot?' test-bot':''));
   const avatar=create('span','avatar',(p.name||'?').slice(0,1).toUpperCase());avatar.style.borderColor=['#e6bd68','#e88ba3','#5db9ec','#93c76a','#bf95e7'][i%5];
   const person=create('div','person',p.name||'Spieler');
-  person.append(create('small','',(p.host?'👑 Host · ':'')+(p.me?'Du · ':'')+(p.participating?'Mitspieler':'Zuschauer')));
+  person.append(create('small','',(p.host?'👑 Host · ':'')+(p.me?'Du · ':'')+(p.testBot?'Computer · ':'')+(p.participating?'Mitspieler':'Zuschauer')));
   const state=create('span','state'+(p.ready&&p.participating?' ok':''),p.participating?(p.ready?'✔ Bereit':'○ Wartet'):'Zuschauer');
   item.append(avatar,person,state);
-  if(room.host&&room.phase==='preparing'&&!p.host){
+  if(room.host&&room.phase==='preparing'&&!p.host&&!p.testBot){
    const seat=create('button','seat-btn',p.participating?'Zuschauen':'Mitspielen');
    seat.type='button';seat.disabled=busy;
    seat.addEventListener('click',()=>mutate('/seats',{seat:p.seat,participating:!p.participating}));
@@ -102,6 +102,11 @@ function render(){
  renderPlayers();
  const me=room.players.find(p=>p.me);
  const playing=room.players.filter(p=>p.participating),ready=playing.filter(p=>p.ready).length;
+ const botCount=room.players.filter(p=>p.testBot).length;
+ const botBtn=$('test-players-btn');
+ botBtn.hidden=!room.host||!isPreparing;
+ botBtn.disabled=busy||(!botCount&&room.players.filter(p=>p.participating&&!p.testBot).length+2>(room.maxPlayers||5));
+ botBtn.textContent=botCount?'🤖 Testspieler entfernen':'🤖 + 2 Testspieler hinzufügen';
  const isPreparing=room.phase==='preparing';
  $('ready-btn').disabled=busy||!isPreparing||!me?.participating;
  $('ready-btn').textContent=me?.ready?'✔ Bereitmeldung zurücknehmen':'✓ Ich bin bereit';
@@ -186,6 +191,10 @@ $('leave-btn').addEventListener('click',async()=>{
 });
 $('copy-btn').addEventListener('click',()=>share('code'));
 $('invite-btn').addEventListener('click',()=>share('share'));
+$('test-players-btn').addEventListener('click',()=>{
+ if(!room?.host||room.phase!=='preparing'||busy)return;
+ void mutate('/business-test-players',{enabled:!room.players.some(p=>p.testBot)});
+});
 $('theme-prev').addEventListener('click',()=>rotateTheme(-1));
 $('theme-next').addEventListener('click',()=>rotateTheme(1));
 $('help-btn').addEventListener('click',()=>note('👑 Nur der Host ändert die Rundenanzahl und Spielplätze. Jeder aktive Spieler klickt auf „Ich bin bereit“. Danach startet das Spiel automatisch.'));
