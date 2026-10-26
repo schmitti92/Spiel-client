@@ -6750,7 +6750,7 @@ setup();$('game').classList.add('hidden');shell.classList.remove('hidden');
       isAnimating?'🎲 Würfel rollen …':state.phase==='invest'?'✓ Wurf abgeschlossen':state.phase==='roll'&&state.rolls>=3?'✓ 3 Würfe beendet':'🎲 Warten';
     felt.classList.toggle('business-has-rolled',Number(state.rolls)>0);
     const hint=$('businessInlineSwipeMessage');
-    if(hint)hint.textContent=isAnimating?'🎲 Die Würfel rollen …':ready?'↑ Hier nach oben wischen – oder Würfeln anklicken':state.rolls===0?'Warte auf den aktiven Spieler':'Würfel antippen, um sie zu halten';
+    if(hint)hint.textContent=isAnimating?'🎲 Die Würfel rollen …':ready?' ':state.rolls===0?'Warte auf den aktiven Spieler':'Würfel antippen, um sie zu halten';
     showBranch();
   }
   window.renderBusinessReferenceStage=refreshStage;
