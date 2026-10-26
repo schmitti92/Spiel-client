@@ -25,7 +25,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   if(m.type==='snake-arena:configured'){configured=true;sync();return;}
   if(m.type!=='snake-arena:state'||c.ch.phase!=='countdown')return;
   if(!Number.isSafeInteger(m.score)||!Number.isSafeInteger(m.survived)||typeof m.finished!=='boolean')return;
-  queued={...m,seq:++seq};if(!pending&&(m.finished||Date.now()-lastSent>=350))send();
+  const previous=queued;queued={...m,seq:++seq,finished:m.finished||!!previous?.finished};if(!pending&&(m.finished||Date.now()-lastSent>=350))send();
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;configured=false;sync()});
