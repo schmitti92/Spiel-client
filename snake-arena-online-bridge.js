@@ -1,6 +1,6 @@
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=30&session='+Date.now();
+ frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=32&session='+Date.now();
  frame.title='Snake Arena Online';frame.style.cssText='width:100%;height:100%;border:0;display:block';container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,challengeId=null,offset=0,seq=0,pending=false,queued=null,lastSent=0,lastPoll=0,pollPending=false;
  const current=()=>{const room=getRoom(),ch=room?.match?.challenge;return ch?.order?.[ch.index]==='snake-arena'?{room,ch}:null};
@@ -10,7 +10,7 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   const seats=(room.match?.members?.length?room.match.members:room.players.filter(p=>p.participating)).map(p=>p.seat);
   const mine=room.players.find(p=>p.me||p.isMe||p.uid===room.myUid)?.seat,localSeat=seats.indexOf(mine);if(localSeat<0)return;
   if(!configured){seq=Math.max(seq,...(Array.isArray(ch.snake?.players)?ch.snake.players:Object.values(ch.snake?.players||{})).filter(p=>p.seat===mine).map(p=>p.seq||0),0);frame.contentWindow.postMessage({type:'snake-arena:configure',challengeId:ch.id,startAt:ch.startAt,serverOffset:offset,initialSeq:seq,localSeat,seats:seats.map(seat=>({name:room.players.find(p=>p.seat===seat)?.name||'Spieler'}))},location.origin);return;}
-  if(ch.snake||ch.phase!=='countdown'){const players=ch.snake?.players||[];const alive=players.filter(p=>p.alive);const eliminated=players.filter(p=>!p.alive);frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players,winningTarget:alive.length===1&&alive[0].seat===mine&&eliminated.length?Math.max(...eliminated.map(p=>p.score)):null,standings:ch.results?.find(r=>r.game==='snake-arena'&&r.index===ch.index)?.standings},location.origin);}
+  if(ch.snake||ch.phase!=='countdown'){const players=ch.snake?.players||[];const alive=players.filter(p=>p.alive);const eliminated=players.filter(p=>!p.alive);frame.contentWindow.postMessage({type:'snake-arena:snapshot',challengeId:ch.id,phase:ch.phase,players,winningTarget:alive.length===1&&alive[0].seat===mine&&eliminated.length?(Number.isFinite(ch.snake?.winningTarget)?ch.snake.winningTarget:Math.max(...eliminated.map(p=>p.score))):null,standings:ch.results?.find(r=>r.game==='snake-arena'&&r.index===ch.index)?.standings},location.origin);}
   if(ch.phase==='countdown'&&Date.now()-lastPoll>800&&!pollPending){pollPending=true;lastPoll=Date.now();const id=ch.id;request('/rooms/'+encodeURIComponent(room.code)+'/challenge-snake-timeout','POST',{challengeId:id}).then(r=>{if(alive&&current()?.ch.id===id&&r?.room)acceptRoom(r.room)}).catch(e=>{if(alive)onError(e)}).finally(()=>{pollPending=false});}
  }
  async function send(){
