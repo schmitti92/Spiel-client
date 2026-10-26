@@ -319,11 +319,12 @@ window.addEventListener('message',event=>{
    const c=window.SnakeArenaOnlineConfig,g=games[0];if(!c||!g||c.completed)return;
    if(Date.now()+c.serverOffset<c.startAt)return;
    if(!g.alive){if(!c.reportedFinish||Date.now()-(c.lastFinishReport||0)>1000){sendSnakeOnlineState(true);c.lastFinishReport=Date.now();}$('status').textContent='🐍 Ausgeschieden · Warte auf Wertung';return;}
-   if(g.score!==c.lastScore||g.survived-c.lastSurvived>=10)sendSnakeOnlineState(false);
+   if(g.score!==c.lastScore||g.survived-c.lastSurvived>=10)sendSnakeOnlineState(false);if(Number.isFinite(c.winningTarget)&&g.alive&&g.score>c.winningTarget){sendSnakeOnlineState(false);$('status').textContent='🏆 Siegpunktzahl erreicht · Server bestätigt Ergebnis';}
   },100);
  }
  if(m?.type==='snake-arena:snapshot'&&window.SnakeArenaOnlineConfig?.challengeId===m.challengeId){
   const c=window.SnakeArenaOnlineConfig;
+  c.winningTarget=Number.isFinite(m.winningTarget)?m.winningTarget:null;
   if(m.phase==='results'||m.phase==='finished'){
    c.completed=true;
    if(!ended){const local=games[0];if(local)stop();const authoritative=Array.isArray(m.standings)?m.standings:null;if(authoritative){for(let i=0;i<games.length;i++){const seat=c.seats[(c.localSeat+i)%c.seats.length];const record=authoritative.find(p=>p.seat===seat);if(record){games[i].score=record.score;games[i].survived=record.survived;}}}finish('🏆 Online-Runde abgeschlossen');}
