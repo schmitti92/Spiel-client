@@ -118,7 +118,7 @@ for(const button of buttons){
 }
 /* Make the entire illustrated card a reliable touch/click target, independent of overlay layout. */
 document.querySelectorAll('.game').forEach(card=>{
- const btn=card.querySelector('[data-select-game]');if(!btn)return;
+ const btn=typeof card.querySelector==='function'?card.querySelector('[data-select-game]'):null;if(!btn)return;
  card.style.cursor='pointer';
  card.addEventListener('click',event=>{if(event.target.closest('button,a,input,select,textarea'))return;btn.click();});
 });
