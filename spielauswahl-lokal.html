@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070e1c">
-  <meta name="description" content="Wähle eines unserer vier Spiele: Barikade, SKYJO Action, KreuzKunter oder Das große Business.">
-  <title>Lokal spielen · Spielauswahl | Unsere Spiele</title>
+  <meta name="description" content="Offline-Spieleauswahl mit vier Spielen.">
+  <title>Lokale Spieleauswahl | Spielesammlung</title>
   <style>
     :root {
       color-scheme: dark;
@@ -81,10 +81,10 @@
     }
     .game:hover { transform: translateY(-2px); border-color: rgba(201,216,243,.48); box-shadow: 0 17px 40px rgba(0,0,0,.24); }
     .game:hover::before { transform: scale(1.04); }
-    .barikade-card { --scene: url('Assets/game-backgrounds/barikade.webp'); border-color: rgba(180,130,79,.4); }
-    .skyjo-card { --scene: url('Assets/game-backgrounds/skyjo.webp'); border-color: rgba(146,115,238,.42); }
-    .kreuzkunter-card { --scene: url('Assets/game-backgrounds/kreuzkunter.webp'); border-color: rgba(28,164,228,.55); }
-    .business-card { --scene: url('Assets/game-backgrounds/business.webp'); border-color: rgba(199,149,54,.44); }
+    .barikade-card { --scene: url('Assets/game-backgrounds/Barikade_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(180,130,79,.4); }
+    .skyjo-card { --scene: url('Assets/game-backgrounds/SKYJO_Action_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(146,115,238,.42); }
+    .kreuzkunter-card { --scene: url('Assets/game-backgrounds/KreuzKunter_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(28,164,228,.55); }
+    .business-card { --scene: url('Assets/game-backgrounds/Das_grosse_Business_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(199,149,54,.44); }
     .game-title { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 11px; margin-bottom: 12px; }
     .game-title h2 { font-size: clamp(23px,2vw,30px); font-weight: 820; line-height: 1.13; letter-spacing: -.034em; margin:0; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
     .game p { max-width: 390px; margin: 0; color:#f0f2fa; line-height: 1.42; font-size: clamp(15px,1.18vw,18px); text-shadow: 0 1px 8px rgba(0,0,0,.4); }
@@ -206,6 +206,86 @@
 .sp-index-menu .sp-menu-actions button,.sp-index-menu .sp-menu-actions a{border-radius:13px!important;font-weight:900!important;transition:transform .16s ease,box-shadow .16s ease}
 .sp-index-menu .sp-menu-actions button:hover,.sp-index-menu .sp-menu-actions a:hover{transform:translateY(-1px)}
 .sp-index-menu .sp-menu-actions button.sp-new,.sp-index-menu .sp-menu-actions button.sp-login,.sp-index-menu .sp-menu-actions button.sp-resume{background:linear-gradient(110deg,#129ceb,#316be9)!important;box-shadow:0 8px 20px #277ee735!important}
+
+/* Online-Spieleauswahl: Bildkarten, kurze Titel, kleine Buttons */
+.page-head{margin-bottom:14px}
+.game-grid{gap:17px}
+.game{min-height:clamp(275px,29vw,410px);padding:23px;justify-content:space-between}
+.game::after{background:linear-gradient(180deg,rgba(4,9,22,.54),transparent 43%,rgba(4,9,22,.67))!important}
+.game-title{position:relative;z-index:2}.game-title h2{font-size:clamp(25px,2.6vw,37px);text-shadow:0 3px 15px #000}
+.game .actions{margin-top:auto;padding-top:10px;position:relative;z-index:2}
+.game .actions .online-game-button,.game .actions .online-game-button.btn.primary{flex:0 1 auto!important;width:auto!important;min-width:0!important;min-height:42px!important;padding:9px 15px!important;font-size:13px!important;border-radius:13px!important;gap:8px}
+.game .actions .online-game-button .chevron{margin-left:9px!important}
+.online-room-notice{padding:9px 14px!important;margin-bottom:12px!important;font-size:12px!important}
+@media(max-width:700px){.game-grid{grid-template-columns:1fr;gap:13px}.game{min-height:250px;padding:18px}.game .actions .online-game-button{min-height:40px!important;padding:8px 11px!important;font-size:12px!important}}
+
+/* Cinematic boardgame-gallery: inspired by approved artwork */
+body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17 100%)}
+.page-head{min-height:85px!important;padding-top:8px!important;margin-bottom:12px!important}
+.page-head h1{font-size:clamp(30px,3vw,46px);letter-spacing:-.035em}
+.online-head-actions{z-index:12}
+.game-grid{gap:16px 20px}
+.game{min-height:clamp(250px,25vw,355px)!important;border:2px solid rgba(246,198,116,.62)!important;border-radius:24px!important;box-shadow:0 15px 35px #0009,0 0 20px #e7b46719!important}
+.game:nth-child(2){border-color:#56c5ff!important}.game:nth-child(3){border-color:#90d57c!important}.game:nth-child(4){border-color:#ffd078!important}
+.game::after{background:linear-gradient(180deg,rgba(3,8,16,.18),transparent 40%,rgba(3,8,16,.4))!important}
+.game-title{align-self:center;text-align:center;margin:auto 0!important;width:100%}
+.game-title h2{font-size:clamp(30px,3.6vw,52px)!important;font-weight:950;letter-spacing:-.04em;color:#fff;text-shadow:0 4px 0 #402916,0 7px 12px #000,0 0 20px #000}
+.game .actions{align-self:flex-end;margin:0!important;padding:0!important}
+.game .actions .online-game-button{min-height:36px!important;padding:7px 12px!important;font-size:12px!important;opacity:.95}
+.online-room-notice{margin:0 0 10px!important}
+.online-room-notice:not(.error):not(.is-error){display:block}
+@media(max-width:700px){.page-head{min-height:65px!important}.game{min-height:230px!important}.game-title h2{font-size:clamp(27px,7vw,38px)!important}}
+
+/* Originalvorlage als komplette klickbare Spielkarte; Auswahl bleibt an vorhandener Spiellogik */
+.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card{padding:0!important;aspect-ratio:696/320;min-height:0!important;display:block;cursor:pointer}
+.game.barikade-card::before,.game.skyjo-card::before,.game.kreuzkunter-card::before,.game.business-card::before{z-index:-1;background-position:center;background-size:cover}
+.game.barikade-card::after,.game.skyjo-card::after,.game.kreuzkunter-card::after,.game.business-card::after{display:none!important}
+.game .actions:has(.image-card-button){position:absolute!important;inset:0;z-index:3;margin:0!important;padding:0!important;display:block}
+.game .actions .image-card-button{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;border:0!important;border-radius:inherit!important;background:transparent!important;box-shadow:none!important;opacity:1!important;color:transparent!important;cursor:pointer}
+.game .actions .image-card-button:focus-visible{outline:4px solid #fff;outline-offset:-6px}
+.game .actions .image-card-button:disabled{cursor:pointer;opacity:1!important;background:transparent!important}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card{aspect-ratio:696/320;min-height:0!important}}
+
+/* Progressive enhancement: Spielname sichtbar, bis das Originalbild wirklich geladen ist */
+.game.barikade-card:not(.original-art-loaded) .game-title,.game.skyjo-card:not(.original-art-loaded) .game-title,.game.kreuzkunter-card:not(.original-art-loaded) .game-title,.game.business-card:not(.original-art-loaded) .game-title{display:flex!important;position:absolute;inset:0;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+.game.barikade-card.original-art-loaded .game-title,.game.skyjo-card.original-art-loaded .game-title,.game.kreuzkunter-card.original-art-loaded .game-title,.game.business-card.original-art-loaded .game-title{display:none!important}
+.game.barikade-card:not(.original-art-loaded)::after,.game.skyjo-card:not(.original-art-loaded)::after,.game.kreuzkunter-card:not(.original-art-loaded)::after,.game.business-card:not(.original-art-loaded)::after{display:block!important;background:linear-gradient(180deg,#0004,#0008)!important}
+.game.barikade-card.original-art-loaded,.game.skyjo-card.original-art-loaded,.game.kreuzkunter-card.original-art-loaded,.game.business-card.original-art-loaded{background-size:cover}
+
+/* Party Challenge – premium illustrated tile using the four existing game artworks */
+.game.party-challenge-card{position:relative;display:flex!important;align-items:center;justify-content:center;overflow:hidden;isolation:isolate;padding:0!important;min-height:0!important;aspect-ratio:696/320;border:3px solid #f3c86c!important;border-radius:24px!important;background:radial-gradient(ellipse at 50% 55%,#6347a3 0%,#1b2c63 60%,#081327 100%)!important;box-shadow:0 12px 35px #0006,inset 0 0 0 2px #fff3!important}
+.game.party-challenge-card::before{content:'';position:absolute;inset:0;z-index:-2;transform:none!important;background-image:url('Assets/game-backgrounds/Barikade_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/SKYJO_Action_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/KreuzKunter_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/Das_grosse_Business_EXAKT_AUS_VORLAGE.webp');background-size:50% 50%,50% 50%,50% 50%,50% 50%;background-position:left top,right top,left bottom,right bottom;background-repeat:no-repeat;filter:saturate(1.2) brightness(.78);transition:filter .25s ease,scale .35s ease}
+.game.party-challenge-card::after{content:'';display:block!important;position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,#101028d9 0%,#101028a0 28%,#0c10283b 65%,#0003 100%)!important}
+.game.party-challenge-card .game-title{position:relative!important;z-index:2;display:flex!important;justify-content:center;align-items:center;margin:0!important;width:100%;pointer-events:none;text-align:center}
+.game.party-challenge-card .game-title h2{font-size:clamp(28px,4.2vw,65px)!important;line-height:1.06!important;font-weight:1000!important;letter-spacing:-.035em!important;color:#fff3c3!important;-webkit-text-stroke:1px #663a13;text-shadow:0 3px 0 #a96723,0 6px 0 #653817,0 9px 14px #000,0 0 30px #ffcb66!important;padding:8px 16px;max-width:100%}
+.game.party-challenge-card .actions{position:absolute!important;inset:0;z-index:4;margin:0!important;padding:0!important;display:block!important}
+.game.party-challenge-card:hover::before{filter:saturate(1.35) brightness(.9);scale:1.035}
+.game.party-challenge-card:focus-within{outline:3px solid #fff;outline-offset:3px}
+@media(max-width:700px){.game.party-challenge-card{aspect-ratio:696/320!important;min-height:0!important}.game.party-challenge-card .game-title h2{font-size:clamp(24px,6vw,43px)!important}}
+
+/* New mini-game artwork: show once uploaded; keep collage as a fallback. */
+.game.party-challenge-card.mini-art-loaded::before{background-image:url('Assets/game-backgrounds/Mini-Spiele.png')!important;background-size:cover!important;background-position:center!important;filter:none!important}
+.game.party-challenge-card.mini-art-loaded::after{display:none!important}
+.game.party-challenge-card.mini-art-loaded .game-title{display:none!important}
+
+/* Mediterranean terrace theme, scalable catalog layout (2026-10-26). */
+:root{color-scheme:dark}
+body{background:#213b4b url('Assets/game-backgrounds/Spieleauswahl_Hintergrund.png') center center / cover fixed no-repeat!important}
+body::before{background:linear-gradient(180deg,rgba(5,20,33,.30),rgba(8,22,35,.38) 43%,rgba(5,17,29,.48))!important}
+.container{width:min(1536px,calc(100% - 64px));padding-top:30px}
+.page-head{background:rgba(12,32,50,.37);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:22px 260px 22px 24px!important;min-height:100px!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);margin:0 0 14px!important;box-shadow:0 12px 30px #071b2940}
+.page-head h1{font-size:clamp(27px,2.7vw,43px)!important;text-shadow:0 2px 12px #071a28b3}
+.online-room-notice{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:rgba(13,35,55,.76)!important;border:1px solid #ffffff40!important;color:#fff!important}
+.game-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:18px!important;align-items:start}
+.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card,.game.party-challenge-card{width:100%;aspect-ratio:1.15!important;min-height:0!important;border-radius:19px!important;box-shadow:0 10px 24px #05121d80,0 0 0 1px #ffffff24!important}
+.game-grid .game::before{background-position:center!important}
+.game-grid .game:hover{transform:translateY(-4px)}
+.game-grid .game:focus-within{outline:3px solid #f9f0cb;outline-offset:3px}
+@media(max-width:1100px){.game-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.page-head{padding-right:230px!important}}
+@media(max-width:760px){.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.container{width:calc(100% - 24px);padding-top:16px}.page-head{padding:16px!important;padding-top:84px!important;min-height:0!important}.online-head-actions{top:12px;right:12px}.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card,.game.party-challenge-card{aspect-ratio:1.2!important;border-radius:14px!important}}
+@media(max-width:420px){.game-grid{gap:9px!important}.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card,.game.party-challenge-card{aspect-ratio:1.05!important}.page-head h1{font-size:25px!important}}
+@media(prefers-reduced-motion:reduce){body{background-attachment:scroll!important}}
 </style>
 
 <style>
@@ -225,72 +305,80 @@
  .game .actions .online-game-button .chevron{margin-left:auto}
  @media(max-width:710px){.start-mode-banner{flex-wrap:wrap;padding:15px;gap:9px}.start-mode-banner strong{font-size:16px}.start-mode-banner a{width:100%;text-align:center}.start-mode-banner .mode-icon{font-size:24px}}
  </style>
-</head>
-<body>
-  <main class="container">
-    <header class="page-head">
-      <h1>🏠 Lokal spielen</h1>
-      <p class="subtitle">Wähle ein Spiel – ohne Online-Raum und ohne Anmeldung.</p>
-      <p class="hint" id="main-hint">🎲 Direkt auf diesem Gerät starten · keine Online-Anmeldung.</p>
-    </header>
-    <section class="start-mode-banner"><span class="mode-icon">🏠</span><div><strong>Lokaler Spielmodus</strong><p>Wähle unten eines der vier Spiele. Es wird kein gemeinsamer Online-Raum erstellt.</p></div><a href="hub-lobby.html">← Modus ändern</a></section>
-<section class="game-grid" aria-label="Verfügbare Spiele">
-      <article class="game barikade-card">
-        <div class="game-title"><h2>Barikade (Original)</h2></div>
-        <p>Dein bisheriges Barikade-Spiel mit allen bestehenden Funktionen.</p>
-        <ul class="features">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 20v-2a7 7 0 0 1 14 0v2M4 8a3 3 0 0 0-1 5m17-5a3 3 0 0 1 1 5"/></svg>Klassisches Brettspiel</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.8 3.1h4.4l.6 2.1 2 .8 1.9-1 3.1 3.1-1 1.9.8 2 2.1.6v4.4l-2.1.6-.8 2 1 1.9-3.1 3.1-1.9-1-2 .8-.6 2.1H9.8l-.6-2.1-2-.8-1.9 1-3.1-3.1 1-1.9-.8-2-2.1-.6v-4.4l2.1-.6.8-2-1-1.9 3.1-3.1 1.9 1 2-.8z" transform="translate(3 1) scale(.75)"/><circle cx="12" cy="13" r="3"/></svg>Alle bekannten Funktionen</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9m7 10V4m7 15v-7" stroke-width="3.5"/></svg>Unverändert</li>
-        </ul>
-        <div class="actions">
-          <a class="btn primary green" href="Barikade/barikade.html?offline=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 3.5a1 1 0 0 1 1.55-.83l14 8.5a1 1 0 0 1 0 1.66l-14 8.5A1 1 0 0 1 6 20.5z"/></svg><span>Barikade öffnen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
-        </div>
-      </article>
-      <article class="game skyjo-card">
-        <div class="game-title"><h2>SKYJO Action</h2><span class="badge purple">Lokal &amp; Online</span></div>
-        <p>Kartenspiel mit Zahlenkarten, Aktionskarten, Stern-/Jokerkarten, Rundenwertung und Multiplayer-Speicherung.</p>
-        <ul class="features">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="13" height="17" rx="2"/><path d="M9 7h5m-5 4h5"/></svg>Zahlen- und Aktionskarten</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="none" d="m12 2 3.1 6.4 7.1 1-5.1 5 .9 7-6-3.3-6 3.3.9-7-5.1-5 7.1-1z"/></svg>Stern- / Jokerkarten</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9m7 10V4m7 15v-7" stroke-width="3.5"/></svg>Rundenwertung</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a5 5 0 1 1 2-9 6 6 0 0 1 11 3 3 3 0 0 1-1 6z"/></svg>Multiplayer-Speicherung</li>
-        </ul>
-        <div class="actions skyjo-actions">
-          <a class="btn blue" href="Skyjo/skyjo_action.html?mode=local"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-7H9v7H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Lokal spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
-          
-        </div>
-      </article>
-      <article class="game kreuzkunter-card">
-        <div class="game-title"><h2>🎲 KreuzKunter</h2><span class="badge purple">Lokal &amp; Online</span></div>
-        <p>Buntes Würfel- und Ankreuzspiel für 1–6 Personen mit Solo-Modus, Spielräumen und automatischer Wertung.</p>
-        <ul class="features">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1" fill="currentColor"/><circle cx="16" cy="8" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="8" cy="16" r="1" fill="currentColor"/><circle cx="16" cy="16" r="1" fill="currentColor"/></svg>1–6 Personen</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg>Solo-Modus</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 6v12M6 12h12"/></svg>Spielräume</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9m7 10V4m7 15v-7" stroke-width="3.5"/></svg>Automatische Wertung</li>
-        </ul>
-        <div class="actions skyjo-actions kreuzkunter-actions">
-          <a class="btn blue" href="KreuzKunter/kreuzkunter.html?mode=local"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-7H9v7H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Lokal spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
-          
-        </div>
-      </article>
-      <article class="game business-card">
-        <div class="game-title"><h2>💼 Das große Business</h2><span class="badge green">Lokal</span><span class="badge gold">Online</span></div>
-        <p>Wirtschaftsspiel mit Aktienmarkt, Branchenwürfel, Börsennews und Investments für 2–5 Spieler.</p>
-        <ul class="features">
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-6 9 6zM5 10v10m4-10v10m6-10v10m4-10v10M3 21h18"/></svg>Aktienmarkt &amp; Investments</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Branchenwürfel &amp; Börsennews</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="8" r="2"/><path d="M3 20v-2a6 6 0 0 1 12 0v2m1-8a5 5 0 0 1 5 5v3"/></svg>2–5 Spieler</li>
-        </ul>
-        <div class="actions business-actions">
-          <a class="btn green" href="Business/business_local.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-7H9v7H3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Lokal spielen</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m9 5 7 7-7 7"/></svg></a>
-          
-        </div>
-      </article>
-    </section>
-  </main>
 
-<script>/* Lokaler Modus: absichtlich keine Authentifizierung, Raum-API oder Online-Verbindungen. */</script>
-<script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script></body>
-</html>
+<style>
+.page-head{position:relative;padding-right:min(380px,38vw);min-height:148px}
+.online-head-actions{position:absolute;top:0;right:0;display:flex;align-items:center;gap:14px;z-index:4}
+.online-head-actions a{box-sizing:border-box;text-decoration:none;display:flex;align-items:center;justify-content:center;font-weight:800;transition:filter .16s,transform .16s}
+.online-room-manage{min-height:54px;padding:12px 18px;border-radius:16px;background:linear-gradient(125deg,#254f82,#1972aa);border:1px solid #75b8ec;color:#fff!important;box-shadow:0 6px 18px #020d2440;font-size:15px;white-space:nowrap}
+.online-profile-shortcut{flex-direction:column;gap:5px;color:#e8f2ff!important;font-size:12px}
+.online-profile-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#234b75 center/cover no-repeat;border:3px solid #f0c36f;box-shadow:0 4px 17px #0006;font-size:32px}
+.online-head-actions a:hover{filter:brightness(1.14)}.online-head-actions a:focus-visible{outline:3px solid #ffdb88;outline-offset:3px}
+@media(max-width:900px){.page-head{padding-right:0;min-height:0}.online-head-actions{position:static;justify-content:flex-end;margin:14px 0 8px}.online-profile-avatar{width:56px;height:56px}.online-room-manage{white-space:normal;text-align:center}}
+@media(max-width:480px){.online-head-actions{justify-content:space-between}.online-room-manage{font-size:13px;padding:10px}.online-profile-label{font-size:11px}}
+</style>
+<style>
+.page-head{padding-right:min(540px,51vw)}
+.online-head-actions{gap:12px}
+.online-quick-room{display:flex;gap:7px;align-items:center;padding:6px;border-radius:15px;background:#122d4b;border:1px solid #4779a4}
+.online-quick-room input{width:112px;min-width:0;background:#091b31;color:white;border:1px solid #6089ae;border-radius:9px;padding:10px 9px;text-transform:uppercase;letter-spacing:1px;font-weight:800}
+.online-quick-room button{border:0;border-radius:9px;padding:10px 11px;background:#2878bc;color:white;font:700 13px system-ui;cursor:pointer}
+.online-quick-room #online-quick-create{background:#176a5d}
+.online-quick-room button:disabled{opacity:.5;cursor:wait}
+.online-quick-room :focus-visible{outline:2px solid #ffe5a6;outline-offset:2px}
+.online-room-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#16345a;border:1px solid #335e8b;border-radius:12px;padding:10px 15px;margin:0 0 14px;color:#dbeeff;font-size:13px}
+.online-room-meta strong{color:#ffe2a4;letter-spacing:1px}
+.online-room-meta #online-room-status{color:#c3dbf2}
+.online-room-meta #online-room-players{margin:0}
+@media(max-width:1000px){.page-head{padding-right:0}.online-head-actions{position:static;justify-content:flex-end;margin:12px 0}.online-quick-room{flex-wrap:wrap}}
+@media(max-width:520px){.online-quick-room{flex:1}.online-quick-room input{flex:1;min-width:90px}.online-quick-room button{padding:9px}.online-profile-avatar{width:48px;height:48px}}
+</style><style>
+/* Compact, collapsible room controls in the top-right header */
+.page-head{padding-right:min(320px,34vw);min-height:115px}
+.online-head-actions{top:2px;right:0;align-items:flex-start}
+.online-room-dropdown{position:relative;z-index:10}
+.online-room-dropdown>summary{list-style:none;cursor:pointer;border:1px solid #5b8bb5;background:linear-gradient(120deg,#193d65,#236da0);color:#fff;border-radius:12px;padding:13px 16px;font:800 14px system-ui;box-shadow:0 5px 15px #0004;white-space:nowrap}
+.online-room-dropdown>summary::-webkit-details-marker{display:none}
+.online-room-dropdown[open]>summary{border-radius:12px 12px 0 0}
+.online-room-dropdown-panel{position:absolute;right:0;top:100%;width:min(350px,calc(100vw - 28px));box-sizing:border-box;padding:12px;background:#0e2641;border:1px solid #5b8bb5;border-radius:12px 0 12px 12px;box-shadow:0 14px 30px #0009}
+.online-room-dropdown .online-room-meta{margin:0 0 10px;padding:8px;display:flex;gap:5px;flex-direction:column;background:#183b61}
+.online-room-dropdown .online-quick-room{display:flex;flex-wrap:wrap;gap:8px}
+.online-room-dropdown .online-quick-room input{flex:1;min-width:110px}
+.online-room-dropdown .online-quick-room button{flex:1;min-width:95px}
+.online-room-dropdown>summary:focus-visible{outline:3px solid #ffdc8b;outline-offset:3px}
+@media(max-width:1000px){.page-head{padding-right:0}.online-head-actions{position:absolute;top:0;right:0;margin:0}.page-head{padding-top:0;padding-right:225px;min-height:132px}}
+@media(max-width:650px){.page-head{padding-right:0;padding-top:85px;min-height:0}.online-head-actions{top:0;right:0}.online-profile-avatar{width:48px;height:48px}.online-room-dropdown-panel{right:-62px}}
+
+/* Stable terrace background: fixed independent layer avoids Samsung browser scroll jitter. */
+html{background:#142c3d!important}
+body{background:transparent!important;isolation:isolate}
+body::before{content:''!important;position:fixed!important;inset:-2px!important;z-index:-2!important;background:#213b4b url('Assets/game-backgrounds/Spieleauswahl_Hintergrund.png') center center / cover no-repeat!important;transform:translateZ(0);pointer-events:none}
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(6,22,35,.32),rgba(7,25,38,.22) 50%,rgba(5,20,33,.4))}
+.container{width:min(1460px,calc(100% - 64px))!important;position:relative;z-index:1}
+.game-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px 22px!important}
+.game-grid>.game{aspect-ratio:696/320!important;min-height:0!important;width:100%;border-radius:23px!important}
+.game-grid>.game.party-challenge-card{grid-column:1/-1;aspect-ratio:696/210!important;max-width:100%}
+.page-head{background:rgba(12,32,50,.34)!important;border:1px solid #ffffff2b!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+@media(max-width:760px){.container{width:calc(100% - 24px)!important}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.game-grid>.game{aspect-ratio:696/400!important;border-radius:14px!important}.game-grid>.game.party-challenge-card{aspect-ratio:696/230!important}}
+@media(max-width:520px){.game-grid{grid-template-columns:1fr!important}.game-grid>.game{aspect-ratio:696/320!important}.game-grid>.game.party-challenge-card{grid-column:auto;aspect-ratio:696/320!important}}
+
+/* Local catalog: same original art and stable terrace as online; no login or room needed. */
+.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.local-game-link{position:absolute;inset:0;z-index:5;display:block;cursor:pointer;border-radius:inherit;-webkit-tap-highlight-color:transparent}
+.local-game-link:focus-visible{outline:4px solid #fff3a3;outline-offset:-5px}
+.game-grid>.game.party-challenge-card{display:none!important}
+@media(max-width:520px){.game-grid{grid-template-columns:1fr!important}}
+/* Legacy fallback asset retained for older browsers: Assets/game-backgrounds/barikade.webp */
+</style></head>
+<body>
+<main class="container">
+<header class="page-head"><h1>🎮 Spieleauswahl</h1></header>
+<section class="game-grid" aria-label="Lokale Spiele">
+      <article class="game barikade-card"><a class="local-game-link" href="Barikade/barikade.html?offline=1" aria-label="Barikade lokal spielen"><span class="visually-hidden">Barikade lokal spielen</span></a></article>
+      <article class="game skyjo-card"><a class="local-game-link" href="Skyjo/skyjo_action.html?mode=local" aria-label="SKYJO Action lokal spielen"><span class="visually-hidden">SKYJO Action lokal spielen</span></a></article>
+      <article class="game kreuzkunter-card"><a class="local-game-link" href="KreuzKunter/kreuzkunter.html?mode=local" aria-label="KreuzKunter lokal spielen"><span class="visually-hidden">KreuzKunter lokal spielen</span></a></article>
+      <article class="game business-card"><a class="local-game-link" href="Business/business_local.html" aria-label="Das große Business lokal spielen"><span class="visually-hidden">Das große Business lokal spielen</span></a></article>
+</section>
+</main>
+<script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script>
+</body></html>
