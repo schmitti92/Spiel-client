@@ -81,10 +81,10 @@
     }
     .game:hover { transform: translateY(-2px); border-color: rgba(201,216,243,.48); box-shadow: 0 17px 40px rgba(0,0,0,.24); }
     .game:hover::before { transform: scale(1.04); }
-    .barikade-card { --scene: url('Assets/game-backgrounds/barikade.webp'); border-color: rgba(180,130,79,.4); }
-    .skyjo-card { --scene: url('Assets/game-backgrounds/skyjo.webp'); border-color: rgba(146,115,238,.42); }
-    .kreuzkunter-card { --scene: url('Assets/game-backgrounds/kreuzkunter.webp'); border-color: rgba(28,164,228,.55); }
-    .business-card { --scene: url('Assets/game-backgrounds/business.webp'); border-color: rgba(199,149,54,.44); }
+    .barikade-card { --scene: url('Assets/game-backgrounds/Barikade_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(180,130,79,.4); }
+    .skyjo-card { --scene: url('Assets/game-backgrounds/SKYJO_Action_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(146,115,238,.42); }
+    .kreuzkunter-card { --scene: url('Assets/game-backgrounds/KreuzKunter_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(28,164,228,.55); }
+    .business-card { --scene: url('Assets/game-backgrounds/Das_grosse_Business_EXAKT_AUS_VORLAGE.webp'); border-color: rgba(199,149,54,.44); }
     .game-title { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 11px; margin-bottom: 12px; }
     .game-title h2 { font-size: clamp(23px,2vw,30px); font-weight: 820; line-height: 1.13; letter-spacing: -.034em; margin:0; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
     .game p { max-width: 390px; margin: 0; color:#f0f2fa; line-height: 1.42; font-size: clamp(15px,1.18vw,18px); text-shadow: 0 1px 8px rgba(0,0,0,.4); }
@@ -235,6 +235,17 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
 .online-room-notice{margin:0 0 10px!important}
 .online-room-notice:not(.error):not(.is-error){display:none}
 @media(max-width:700px){.page-head{min-height:65px!important}.game{min-height:230px!important}.game-title h2{font-size:clamp(27px,7vw,38px)!important}}
+
+/* Originalvorlage als komplette klickbare Spielkarte; Auswahl bleibt an vorhandener Spiellogik */
+.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card{padding:0!important;aspect-ratio:696/320;min-height:0!important;display:block;cursor:pointer}
+.game.barikade-card::before,.game.skyjo-card::before,.game.kreuzkunter-card::before,.game.business-card::before{z-index:-1;background-position:center;background-size:cover}
+.game.barikade-card::after,.game.skyjo-card::after,.game.kreuzkunter-card::after,.game.business-card::after{display:none!important}
+.game .actions:has(.image-card-button){position:absolute!important;inset:0;z-index:3;margin:0!important;padding:0!important;display:block}
+.game .actions .image-card-button{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;border:0!important;border-radius:inherit!important;background:transparent!important;box-shadow:none!important;opacity:1!important;color:transparent!important;cursor:pointer}
+.game .actions .image-card-button:focus-visible{outline:4px solid #fff;outline-offset:-6px}
+.game .actions .image-card-button:disabled{cursor:not-allowed;opacity:.65!important;background:#0003!important}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card{aspect-ratio:696/320;min-height:0!important}}
 </style>
 
 <style>
@@ -317,29 +328,29 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
  <p id="online-notice" class="online-room-notice" role="status">Bitte warten, bis dein Online-Profil verbunden ist.</p>
 <section class="game-grid" aria-label="Verfügbare Spiele">
       <article class="game barikade-card">
-        <div class="game-title"><h2>Barikade</h2></div>
+        
         <div class="actions">
-          <button type="button" class="btn purple online-game-button" data-select-game="barikade" disabled><span>🎮 Barikade auswählen</span><span class="chevron">›</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="barikade auswählen" data-select-game="barikade" disabled><span class="visually-hidden">barikade auswählen</span></button>
         </div>
       </article>
       <article class="game skyjo-card">
-        <div class="game-title"><h2>SKYJO Action</h2></div>
+        
         <div class="actions skyjo-actions">
-          <button type="button" class="btn purple online-game-button" data-select-game="skyjo" disabled><span>🎮 SKYJO Action auswählen</span><span class="chevron">›</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="skyjo auswählen" data-select-game="skyjo" disabled><span class="visually-hidden">skyjo auswählen</span></button>
           
         </div>
       </article>
       <article class="game kreuzkunter-card">
-        <div class="game-title"><h2>KreuzKunter</h2></div>
+        
         <div class="actions skyjo-actions kreuzkunter-actions">
-          <button type="button" class="btn purple online-game-button" data-select-game="kreuz" disabled><span>🎮 KreuzKunter auswählen</span><span class="chevron">›</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="kreuz auswählen" data-select-game="kreuz" disabled><span class="visually-hidden">kreuz auswählen</span></button>
           
         </div>
       </article>
       <article class="game business-card">
-        <div class="game-title"><h2>Das große Business</h2></div>
+        
         <div class="actions business-actions">
-          <button type="button" class="btn purple online-game-button" data-select-game="business" disabled><span>🎮 Das große Business auswählen</span><span class="chevron">›</span></button>
+          <button type="button" class="btn purple online-game-button image-card-button" aria-label="business auswählen" data-select-game="business" disabled><span class="visually-hidden">business auswählen</span></button>
           
         </div>
       </article>
