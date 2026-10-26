@@ -1,6 +1,6 @@
 export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError}){
  const frame=document.createElement('iframe');
- frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=34&session='+Date.now();
+ frame.src='./minispiele/snake-arena-online-adapter-v29.html?v=35&session='+Date.now();
  frame.title='Snake Arena Online';frame.style.cssText='width:100%;height:100%;border:0;display:block';container.replaceChildren(frame);
  let alive=true,ready=false,configured=false,challengeId=null,offset=0,seq=0,pending=false,queued=null,lastSent=0,lastPoll=0,pollPending=false;
  const current=()=>{const room=getRoom(),ch=room?.match?.challenge;return ch?.order?.[ch.index]==='snake-arena'?{room,ch}:null};
@@ -18,17 +18,17 @@ export function mountSnakeOriginal({container,getRoom,request,acceptRoom,onError
   const c=current();if(!c||c.ch.phase!=='countdown')return;
   const m=queued;queued=null;pending=true;lastSent=Date.now();
   try{const r=await request('/rooms/'+encodeURIComponent(c.room.code)+'/challenge-snake-state','POST',{challengeId:c.ch.id,seq:m.seq,score:m.score,survived:m.survived,finished:m.finished});if(alive&&current()?.ch.id===c.ch.id&&r?.room)acceptRoom(r.room)}
-  catch(e){if(alive){if(!queued||queued.seq<m.seq)queued={...m,finished:m.finished||!!queued?.finished};if(e?.status===409||e?.status===403){queued=null;}else onError(e);}}finally{pending=false;if(queued&&alive)setTimeout(send,queued.finished?300:700);}
+  catch(e){if(alive){if(!queued||queued.seq<m.seq)queued={...m,finished:m.finished||!!queued?.finished};if(e?.status===409||e?.status===403){queued=null;}else onError(e);}}finally{pending=false;if(queued&&alive)setTimeout(send,queued.finished?0:80);}
  }
  function onMessage(e){
   if(!alive||e.origin!==location.origin||e.source!==frame.contentWindow)return;const m=e.data,c=current();if(!c||m?.challengeId!==c.ch.id)return;
   if(m.type==='snake-arena:configured'){configured=true;sync();return;}
   if(m.type!=='snake-arena:state'||c.ch.phase!=='countdown')return;
   if(!Number.isSafeInteger(m.score)||!Number.isSafeInteger(m.survived)||typeof m.finished!=='boolean')return;
-  const previous=queued;queued={...m,seq:++seq,finished:m.finished||!!previous?.finished};if(!pending&&(m.finished||Date.now()-lastSent>=350))send();
+  const previous=queued;queued={...m,seq:++seq,finished:m.finished||!!previous?.finished};if(!pending&&(m.finished||Date.now()-lastSent>=80))send();
  }
  window.addEventListener('message',onMessage);
  frame.addEventListener('load',()=>{ready=true;configured=false;sync()});
- const timer=setInterval(()=>{const r=getRoom();if(Number.isFinite(r?.serverNow))offset=r.serverNow-Date.now();sync();if(queued&&!pending&&Date.now()-lastSent>=350)send();},250);
+ const timer=setInterval(()=>{const r=getRoom();if(Number.isFinite(r?.serverNow))offset=r.serverNow-Date.now();sync();if(queued&&!pending&&Date.now()-lastSent>=350)send();},80);
  return {sync,destroy(){alive=false;clearInterval(timer);window.removeEventListener('message',onMessage);frame.remove()}};
 }
