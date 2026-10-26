@@ -252,6 +252,17 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
 .game.barikade-card.original-art-loaded .game-title,.game.skyjo-card.original-art-loaded .game-title,.game.kreuzkunter-card.original-art-loaded .game-title,.game.business-card.original-art-loaded .game-title{display:none!important}
 .game.barikade-card:not(.original-art-loaded)::after,.game.skyjo-card:not(.original-art-loaded)::after,.game.kreuzkunter-card:not(.original-art-loaded)::after,.game.business-card:not(.original-art-loaded)::after{display:block!important;background:linear-gradient(180deg,#0004,#0008)!important}
 .game.barikade-card.original-art-loaded,.game.skyjo-card.original-art-loaded,.game.kreuzkunter-card.original-art-loaded,.game.business-card.original-art-loaded{background-size:cover}
+
+/* Party Challenge – premium illustrated tile using the four existing game artworks */
+.game.party-challenge-card{position:relative;display:flex!important;align-items:center;justify-content:center;overflow:hidden;isolation:isolate;padding:0!important;min-height:0!important;aspect-ratio:696/320;border:3px solid #f3c86c!important;border-radius:24px!important;background:radial-gradient(ellipse at 50% 55%,#6347a3 0%,#1b2c63 60%,#081327 100%)!important;box-shadow:0 12px 35px #0006,inset 0 0 0 2px #fff3!important}
+.game.party-challenge-card::before{content:'';position:absolute;inset:0;z-index:-2;transform:none!important;background-image:url('Assets/game-backgrounds/Barikade_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/SKYJO_Action_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/KreuzKunter_EXAKT_AUS_VORLAGE.webp'),url('Assets/game-backgrounds/Das_grosse_Business_EXAKT_AUS_VORLAGE.webp');background-size:50% 50%,50% 50%,50% 50%,50% 50%;background-position:left top,right top,left bottom,right bottom;background-repeat:no-repeat;filter:saturate(1.2) brightness(.78);transition:filter .25s ease,scale .35s ease}
+.game.party-challenge-card::after{content:'';display:block!important;position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,#101028d9 0%,#101028a0 28%,#0c10283b 65%,#0003 100%)!important}
+.game.party-challenge-card .game-title{position:relative!important;z-index:2;display:flex!important;justify-content:center;align-items:center;margin:0!important;width:100%;pointer-events:none;text-align:center}
+.game.party-challenge-card .game-title h2{font-size:clamp(28px,4.2vw,65px)!important;line-height:1.06!important;font-weight:1000!important;letter-spacing:-.035em!important;color:#fff3c3!important;-webkit-text-stroke:1px #663a13;text-shadow:0 3px 0 #a96723,0 6px 0 #653817,0 9px 14px #000,0 0 30px #ffcb66!important;padding:8px 16px;max-width:100%}
+.game.party-challenge-card .actions{position:absolute!important;inset:0;z-index:4;margin:0!important;padding:0!important;display:block!important}
+.game.party-challenge-card:hover::before{filter:saturate(1.35) brightness(.9);scale:1.035}
+.game.party-challenge-card:focus-within{outline:3px solid #fff;outline-offset:3px}
+@media(max-width:700px){.game.party-challenge-card{aspect-ratio:696/320!important;min-height:0!important}.game.party-challenge-card .game-title h2{font-size:clamp(24px,6vw,43px)!important}}
 </style>
 
 <style>
@@ -360,9 +371,9 @@ body{background:radial-gradient(ellipse at 50% 0%,#153e58 0%,#081827 43%,#050d17
           
         </div>
       </article>
-      <article class="game" style="border:2px solid #e4b75d;background:linear-gradient(145deg,#172e46,#0d1728);padding:22px;border-radius:22px">
+      <article class="game party-challenge-card">
         <div class="game-title"><h2>Party Challenge</h2></div>
-        <div class="actions"><button type="button" class="btn primary gold online-game-button" data-select-game="partychallenge" disabled>🎮 Party Challenge auswählen <span class="chevron">›</span></button></div>
+        <div class="actions"><button type="button" class="btn primary gold online-game-button image-card-button" aria-label="Party Challenge auswählen" data-select-game="partychallenge" disabled><span class="visually-hidden">Party Challenge auswählen</span></button></div>
       </article>
     </section>
   </main>
