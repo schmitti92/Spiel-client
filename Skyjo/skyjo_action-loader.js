@@ -21,7 +21,7 @@
     if(!baseUrl)throw Error('Loader-URL nicht verfügbar');
     if(!window.SKYJO_ACTION_DEFINITIONS||Object.keys(window.SKYJO_ACTION_DEFINITIONS).length!==9)throw Error('Spezialkarten-Katalog fehlt oder ist unvollständig');
     const manifest=JSON.parse(await fetchWithRetry('skyjo_action-manifest.json'));
-    if(manifest.version!==20||!manifest.parts)throw Error('Ungültige SKYJO-Modulliste');
+    if(!manifest.parts||!Number.isInteger(manifest.version)||manifest.version<19)throw Error('Ungültige SKYJO-Modulliste');
     const names=Object.keys(manifest.parts);
     if(names.length!==35)throw Error('Erwartet: 35 Logikteile, gefunden: '+names.length);
     const texts=await Promise.all(names.map(n=>fetchWithRetry(n)));
