@@ -4654,7 +4654,34 @@ function boNet(ok,msg){const e=$bo("businessNetPill");e.classList.remove("hidden
 function boStatus(msg){$bo("boStatus").textContent=msg}
 function boLeaveToLobby(){if(BO_IS_HUB){location.href='../hub-lobby.html?room='+encodeURIComponent(BO_HUB_ROOM)+'&stayMatch='+encodeURIComponent(BO_HUB_MATCH);return}localStorage.removeItem("business_room");localStorage.removeItem("business_mode");localStorage.removeItem("business_online");location.href="../index.html"}
 function boActiveName(){return state?.players?.[state.current]?.name||""}
-function boCanAct(){return cloud.gameApplied&&!state.gameEnded&&boActiveName()===cloud.name}
+const boTestNames=new Set();
+let boBotBusy=false,boBotLast='',boBotTimer=0;
+function boIsHostBotTurn(){return BO_IS_HUB&&cloud.mode==='host'&&boTestNames.has(boActiveName())}
+function boCanAct(){return cloud.gameApplied&&!state.gameEnded&&(boActiveName()===cloud.name||boIsHostBotTurn())}
+function boBotTick(){
+ if(!boIsHostBotTurn()||!cloud.gameApplied||state.gameEnded||cloud.applying||cloud.inFlight||cloud.pending||cloud.dirty||cloud.spectating||state.locked||boBotBusy||document.hidden)return;
+ const stamp=state.turnNumber+':'+state.phase+':'+state.rolls+':'+cloud.rev;
+ if(boBotLast===stamp)return;
+ boBotLast=stamp;boBotBusy=true;
+ try{
+  if(state.phase==='roll'){
+   if(state.rolls===0){
+    // Test agents use the same first-throw branch resolution as real players.
+    const values=Array.from({length:5},()=>1+Math.floor(Math.random()*6));
+    const k=Math.floor(Math.random()*6),branch=k===5?'news':branches[k].id;
+    finishRoll(values,branch);
+   }else settleDice();
+  }else if(state.phase==='invest'){
+   const player=state.players[state.current];
+   const candidates=state.market.map((card,i)=>({card,i})).filter(({card})=>card&&card.cost<=player.cash);
+   candidates.sort((a,b)=>(b.card.rent||0)-(a.card.rent||0)||a.card.cost-b.card.cost);
+   if(candidates.length&&Math.random()<.75)buyCard(candidates[0].i);
+   else nextTurn();
+  }
+ }catch(e){console.warn('[business/testbot]',e);boBotLast='';}
+ finally{boBotBusy=false;}
+}
+function boLoadTestBots(players){boTestNames.clear();for(const p of players||[])if(p.testBot)boTestNames.add(p.name);boBotLast='';}
 window.businessCanUseDiceArena=()=>boCanAct();
 function boUpdateTurnUI(){
  const mine=boCanAct();document.body.classList.toggle("business-my-turn",mine);
@@ -4763,7 +4790,7 @@ async function boSpectateRoll(ev){
    },260)
  });
 }
-async function boPoll(){if(!cloud.room||cloud.pollBusy||cloud.dirty||cloud.inFlight||cloud.spectating)return;const now=Date.now(),gap=document.hidden?6000:(cloud.gameApplied?650:1500);if(now-cloud.lastPollAt<gap)return;cloud.lastPollAt=now;cloud.pollBusy=true;try{const j=await boGet(true);boNet(true,"Online");boRenderPlayers(j.players||[],j.hostName||"");if(j.phase==="game"&&j.game&&!j.unchanged){const sig=JSON.stringify(j.game);if(sig!==cloud.lastPushedJSON&&sig!==cloud.lastRemoteJSON)boApplyGame(j.game)}else if(j.phase==="finished"&&j.game&&!j.unchanged){boApplyGame(j.game)}else if(!cloud.gameApplied)$bo("businessOnlineShell").classList.remove("hidden")}catch(e){boNet(false,"Render schläft / offline")}finally{cloud.pollBusy=false}}
+async function boPoll(){if(!cloud.room||cloud.pollBusy||cloud.dirty||cloud.inFlight||cloud.spectating)return;const now=Date.now(),gap=document.hidden?6000:(cloud.gameApplied?650:1500);if(now-cloud.lastPollAt<gap)return;cloud.lastPollAt=now;cloud.pollBusy=true;try{const j=await boGet(true);boNet(true,"Online");boRenderPlayers(j.players||[],j.hostName||"");if(BO_IS_HUB&&j.players)boLoadTestBots(j.players);if(j.phase==="game"&&j.game&&!j.unchanged){const sig=JSON.stringify(j.game);if(sig!==cloud.lastPushedJSON&&sig!==cloud.lastRemoteJSON)boApplyGame(j.game)}else if(j.phase==="finished"&&j.game&&!j.unchanged){boApplyGame(j.game)}else if(!cloud.gameApplied)$bo("businessOnlineShell").classList.remove("hidden")}catch(e){boNet(false,"Render schläft / offline")}finally{cloud.pollBusy=false}}
 function boWrapMutation(name,delay=30){const orig=window[name];if(typeof orig!=="function")return;window[name]=function(...args){if(cloud.gameApplied&&!boCanAct())return;const actor=boActiveName();cloud.dirty=true;const ret=orig.apply(this,args);setTimeout(()=>boQueueSnapshot(actor),delay);return ret}}
 function boPatchGame(){window.onDiceArenaRollPrepared=ev=>{if(boCanAct()){cloud.dirty=true;boQueueSnapshot(boActiveName())}};const origRoll=rollDice;rollDice=function(...args){if(!boCanAct())return;if(state.phase!=="roll"||state.rolls>=3||state.locked)return;cloud.dirty=true;return origRoll.apply(this,args)};boWrapMutation("finishRoll",40);boWrapMutation("settleDice",30);boWrapMutation("buyCard",40);boWrapMutation("nextTurn",40);const origEnd=endGame;endGame=function(...args){if(cloud.gameApplied&&!boCanAct()&&!state.gameEnded)return;const actor=boActiveName();cloud.dirty=true;const ret=origEnd.apply(this,args);cloud.lastGameEnded=true;if(q("modalOk")){q("modalOk").textContent="Zur Spielauswahl";q("modalOk").onclick=boLeaveToLobby}setTimeout(()=>boQueueSnapshot(actor),35);return ret};const release=q("releaseBtn");release?.addEventListener("click",()=>{if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)});q("dice")?.addEventListener("click",e=>{if(boCanAct()&&e.target.closest(".die:not(.branch-die)"))setTimeout(()=>boQueueSnapshot(boActiveName()),20)});document.addEventListener("business-state-mutated",()=>{
  if(boCanAct())setTimeout(()=>boQueueSnapshot(boActiveName()),20)
@@ -4787,6 +4814,7 @@ async function boHubResume(){
    let info=await boGet(false);
    if(info.matchId!==BO_HUB_MATCH)throw Error('WRONG_MATCH');
    cloud.mode=info.host?'host':'client';cloud.name=boNormName(info.myName);cloud.joined=true;
+   boLoadTestBots(info.players);
    boSelectedRounds=info.settings.rounds;
    boRenderPlayers(info.players||[],info.hostName||'');
    if(!info.found&&info.host){
@@ -4814,7 +4842,7 @@ async function boHubResume(){
  $bo('businessOnlineShell').classList.remove('hidden');boStatus('Render nicht erreichbar. Zur Lobby zurückgehen und erneut versuchen.');
 }
 async function boResume(){if(BO_IS_HUB)return boHubResume();cloud.room='' +boNormRoom(localStorage.getItem("business_room")||"");cloud.name=boNormName(localStorage.getItem("business_name")||"");cloud.mode=localStorage.getItem("business_mode")||"";$bo("boRoom").value=cloud.room;if(!cloud.room){$bo("businessOnlineShell").classList.remove("hidden");return}if(!await boWake()){$bo("businessOnlineShell").classList.remove("hidden");return}try{const j=await boGet(false);if(!j.found){cloud.room="";$bo("businessOnlineShell").classList.remove("hidden");return}if(cloud.name){const {r,j:joined}=await boFetch(`${BO_BASE}/business/${encodeURIComponent(cloud.room)}/join`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionToken:SESSION,name:cloud.name})});if(r.ok&&joined?.ok){cloud.joined=true;cloud.rev=Number(joined.rev||cloud.rev);void boClaimOnlineProfile();boRenderPlayers(joined.players||[],joined.hostName||"");if((joined.phase==="game"||joined.phase==="finished")&&joined.game){boApplyGame(joined.game);return}}}boRenderPlayers(j.players||[],j.hostName||"");$bo("businessOnlineShell").classList.remove("hidden");boStatus(`Raum ${cloud.room} geladen.`)}catch(e){$bo("businessOnlineShell").classList.remove("hidden");boNet(false,"Render nicht erreichbar")}}
-$bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart").onclick=boStart;$bo("boBack").onclick=boLeaveToLobby;document.querySelectorAll("[data-bo-rounds]").forEach(b=>b.onclick=()=>boSetRounds(b.dataset.boRounds));document.querySelectorAll("[data-bo-name]").forEach(b=>b.onclick=()=>boClaimName(b.dataset.boName));$bo("boCustomUse").onclick=()=>boClaimName($bo("boCustomName").value);$bo("boCustomName").addEventListener("keydown",e=>{if(e.key==="Enter")boClaimName(e.target.value)});$bo("businessOnlineShell").classList.remove("hidden");q("game").classList.add("hidden");boRenderRoundSelector();boPatchGame();boResume();setInterval(()=>{boPoll();if(cloud.joined&&Date.now()-cloud.lastHeartbeatAt>10000)boHeartbeat()},500);document.addEventListener("visibilitychange",()=>{if(!document.hidden)boPoll()});
+$bo("boCreate").onclick=boCreate;$bo("boJoin").onclick=boJoinRoom;$bo("boStart").onclick=boStart;$bo("boBack").onclick=boLeaveToLobby;document.querySelectorAll("[data-bo-rounds]").forEach(b=>b.onclick=()=>boSetRounds(b.dataset.boRounds));document.querySelectorAll("[data-bo-name]").forEach(b=>b.onclick=()=>boClaimName(b.dataset.boName));$bo("boCustomUse").onclick=()=>boClaimName($bo("boCustomName").value);$bo("boCustomName").addEventListener("keydown",e=>{if(e.key==="Enter")boClaimName(e.target.value)});$bo("businessOnlineShell").classList.remove("hidden");q("game").classList.add("hidden");boRenderRoundSelector();boPatchGame();boResume();setInterval(()=>{boPoll();boBotTick();if(cloud.joined&&Date.now()-cloud.lastHeartbeatAt>10000)boHeartbeat()},500);document.addEventListener("visibilitychange",()=>{if(!document.hidden)boPoll()});
 })();
 </script>
 <style id="v50-card-dice-patch">
