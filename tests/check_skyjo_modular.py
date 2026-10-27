@@ -133,3 +133,7 @@ local_css = (folder / "skyjo_local_layout_v3.css").read_text(encoding="utf-8")
 assert "skyjo-local-layout-ready" in local_css
 assert "overflow-x:auto" in local_css and "touch" in local_css
 print("SKYJO local tablet safety: opt-in preview and scrollable reactions OK")
+
+assert 'hudSelectors' in adapter
+assert 'position:absolute!important' not in local_css
+print('SKYJO footer layout remains in document flow')
