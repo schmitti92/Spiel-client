@@ -1,0 +1,83 @@
+/* SKYJO Local Royal Table – visual-only, 3-player landscape preset.
+   Does not touch game state, card hit handlers or online version. */
+@media (min-width:1050px) and (orientation:landscape) {
+ body.is-playing[data-players="3"]{
+  background:radial-gradient(ellipse at 50% 20%,#70402a 0%,#412619 56%,#1a1010 100%)!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.13fr) minmax(0,.79fr) minmax(0,1fr)!important;
+  gap:clamp(9px,1vw,16px)!important;
+  align-items:stretch!important;
+  min-height:clamp(490px,69vh,790px)!important;
+  padding:5px 8px 10px!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .own-seat,
+ body.is-playing[data-players="3"] .table-area.three-player-layout .center-table,
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-players-stack{
+  min-width:0!important;min-height:0!important;height:100%!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .own-seat>.player{
+  height:100%!important;display:flex!important;flex-direction:column!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .own-seat>.player>.gridwrap{
+  flex:1!important;min-height:0!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .center-table{
+  display:grid!important;grid-template-rows:minmax(0,.83fr) minmax(0,1.17fr)!important;gap:12px!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .center-table .handbox,
+ body.is-playing[data-players="3"] .table-area.three-player-layout .center-table .premium-piles{
+  height:100%!important;min-height:0!important;margin:0!important;
+  border:2px solid #c69855!important;border-radius:19px!important;
+  background:linear-gradient(150deg,#13374b,#061724 74%)!important;
+  box-shadow:inset 0 1px 0 #ffe2a344,0 8px 18px #0007!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-players-stack{
+  display:grid!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:12px!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-player-wrap,
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-player-wrap>.player{
+  min-height:0!important;height:100%!important;margin:0!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout section.player{
+  border:2px solid #c69b61!important;border-radius:20px!important;
+  background:linear-gradient(155deg,#163950,#081e2f)!important;
+  box-shadow:0 8px 20px #0009,inset 0 0 0 1px #ffe6a328!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout section.player.active{
+  border:4px solid #ffce36!important;
+  box-shadow:0 0 0 2px #fff0a6,0 0 22px 5px #ffbf38a8!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .player-head{
+  background:linear-gradient(100deg,#b57831,#f7ce69 52%,#8d5729)!important;
+  color:#fff8d7!important;border-radius:15px 15px 7px 7px!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-player-wrap:first-child .player-head{
+  background:linear-gradient(100deg,#802034,#d63853,#8b1b35)!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-player-wrap:nth-child(2) .player-head{
+  background:linear-gradient(100deg,#14613a,#2a9e59,#0d5231)!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .player .gridwrap{
+  background:radial-gradient(ellipse at center,#103953,#061b2c)!important;
+  border-radius:12px!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-player-wrap:first-child .gridwrap{
+  background:radial-gradient(ellipse at center,#78162c,#2b0918)!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-player-wrap:nth-child(2) .gridwrap{
+  background:radial-gradient(ellipse at center,#125f37,#08271b)!important;
+ }
+ body.is-playing[data-players="3"] .status.premium-status .stat{
+  border:1px solid #bd9258!important;
+  background:linear-gradient(160deg,#102e43,#041521)!important;
+  box-shadow:inset 0 1px #fff3,0 4px 12px #0006!important;
+ }
+ body.is-playing[data-players="3"] .bottom-actions{
+  border:1px solid #ae854d!important;
+  background:linear-gradient(160deg,#0e2b3b,#04141e)!important;
+  border-radius:14px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){body.is-playing[data-players="3"] *{scroll-behavior:auto!important}}
