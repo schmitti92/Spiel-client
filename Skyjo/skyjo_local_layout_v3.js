@@ -74,7 +74,10 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
  if(new URLSearchParams(location.search).get('layoutPreview')==='1'){
    const renderPreview=()=>{
      const board=document.querySelector('.table-area.three-player-layout');
-     if(!board||!document.body.classList.contains('skyjo-local-layout-ready'))return;
+     if(!board||!document.body.classList.contains('skyjo-local-layout-ready')){
+       document.getElementById('skyjo-v3-preview')?.remove();
+       return;
+     }
      let overlay=document.getElementById('skyjo-v3-preview');
      if(!overlay){
        overlay=document.createElement('div');overlay.id='skyjo-v3-preview';
