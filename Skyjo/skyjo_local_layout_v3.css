@@ -216,3 +216,23 @@
    height:100%!important;
  }
 }
+
+/* Reserve a real footer band under the absolute-positioned JSON board.
+   HUD controls stay in their original containers with their handlers intact. */
+@media (min-width:900px) and (orientation:landscape) {
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active {
+   height:clamp(420px,62vh,710px)!important;
+   min-height:0!important;
+   max-height:calc(100dvh - 185px)!important;
+   overflow:visible!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active ~ .status.premium-status {
+   position:relative!important;
+   z-index:5!important;
+   margin-top:clamp(8px,1.2vh,16px)!important;
+ }
+ body.skyjo-local-layout-ready .bottom-actions {
+   position:relative!important;
+   z-index:6!important;
+ }
+}
