@@ -170,3 +170,15 @@
    box-shadow:0 0 0 2px #a16c19,0 0 25px 7px #ffc93c99!important;
  }
 }
+
+/* JSON dimensions, only when the real five regions are present. */
+@media (min-width:900px) and (orientation:landscape) {
+ .table-area.three-player-layout.skyjo-json-board-active {
+   grid-template-columns:minmax(0,var(--skyjo-v3-player1-w,37%)) minmax(0,var(--skyjo-v3-hand-w,21%)) minmax(0,var(--skyjo-v3-player2-w,34%))!important;
+   column-gap:0!important;
+   justify-content:space-between!important;
+ }
+ .table-area.three-player-layout.skyjo-json-board-active .center-seat > .center-table {
+   grid-template-rows:minmax(0,25fr) minmax(0,35.5fr)!important;
+ }
+}
