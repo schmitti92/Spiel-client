@@ -29,7 +29,7 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
    root.style.setProperty(prefix+'z',String(block.z));
  }
  // Optional design overlay: ?layoutPreview=1. No game DOM is repositioned.
- if(new URLSearchParams(location.search).has('layoutPreview')){
+ if(new URLSearchParams(location.search).get('layoutPreview')==='1'){
    const renderPreview=()=>{
      const board=document.querySelector('.table-area.three-player-layout');
      if(!board||!document.body.classList.contains('skyjo-local-layout-ready'))return;
