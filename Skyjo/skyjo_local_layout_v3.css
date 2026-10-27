@@ -365,3 +365,44 @@
    overflow:hidden!important;
  }
 }
+
+/* v16: User-requested bottom-right utility group: toilet / joke / bible.
+   Reactions stay directly to its left; the opponent score is unobstructed. */
+@media (min-width:900px) and (orientation:landscape) {
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .luxe-tool-dock {
+   position:fixed!important;
+   top:auto!important;
+   left:auto!important;
+   right:clamp(14px,1.4vw,26px)!important;
+   bottom:calc(16px + env(safe-area-inset-bottom))!important;
+   display:flex!important;
+   flex-direction:row!important;
+   align-items:center!important;
+   justify-content:flex-end!important;
+   gap:clamp(5px,.5vw,10px)!important;
+   z-index:70!important;
+   max-width:34vw!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .luxe-tool-dock .toilet-side-btn,
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .luxe-tool-dock .joke-side-btn,
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .luxe-tool-dock .bible-side-btn {
+   position:relative!important;
+   inset:auto!important;
+   transform:none!important;
+   width:clamp(45px,3.6vw,58px)!important;
+   min-width:45px!important;
+   height:clamp(45px,5.3vh,54px)!important;
+   min-height:45px!important;
+   flex:0 0 auto!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions {
+   padding-right:clamp(175px,16vw,255px)!important;
+   box-sizing:border-box!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions .emoji-reaction-bar {
+   justify-content:flex-end!important;
+   flex:1 1 auto!important;
+   min-width:0!important;
+   max-width:100%!important;
+ }
+}
