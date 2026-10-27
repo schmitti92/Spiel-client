@@ -1,26 +1,78 @@
 #!/usr/bin/env python3
-"""Verify current SKYJO manifest, part hashes, loader and JavaScript syntax."""
+"""Check SKYJO manifest integrity, entrypoint dependencies and JS syntax."""
 from pathlib import Path
-import json,hashlib,subprocess,re
-root=Path(__file__).resolve().parents[1]
-folder=root/'Skyjo'
-manifest=json.loads((folder/'skyjo_action-manifest.json').read_text())
-assert manifest['version']==19
-parts=manifest['parts']
-assert len(parts)==35 and len(parts)==len(set(parts))
-source=b''
-for name,sha in parts.items():
-    p=folder/name
-    assert p.is_file(),f'Missing {name}'
-    data=p.read_bytes()
-    assert hashlib.sha256(data).hexdigest()==sha,f'Changed {name}'
-    source+=data
-check=subprocess.run(['node','--check','-'],input=source,capture_output=True)
-assert check.returncode==0,check.stderr.decode()
-loader=(folder/'skyjo_action-loader.js').read_text()
-assert 'manifest.version!==19' in loader
-html=(folder/'skyjo_action.html').read_text()
-assert 'skyjo_action-loader.js' in html
-nested=(folder/'Skyjo'/'skyjo_action.html').read_text()
-assert 'skyjo_action.html' in nested
-print('SKYJO V19 integrity OK:',len(parts),'parts,',len(source),'bytes, syntax and entrypoints')
+import hashlib
+from html.parser import HTMLParser
+import json
+import re
+import subprocess
+from urllib.parse import urlsplit
+
+root = Path(__file__).resolve().parents[1]
+folder = root / "Skyjo"
+manifest = json.loads((folder / "skyjo_action-manifest.json").read_text(encoding="utf-8"))
+assert isinstance(manifest.get("version"), int) and manifest["version"] >= 19
+parts = manifest["parts"]
+assert len(parts) == 35 and len(parts) == len(set(parts)), "Expected 35 unique logic parts"
+source = b""
+for name, sha in parts.items():
+    assert re.fullmatch(r"skyjo_action-logic-part-\d{2}\.txt", name), name
+    path = folder / name
+    assert path.is_file(), f"Missing {name}"
+    data = path.read_bytes()
+    assert hashlib.sha256(data).hexdigest() == sha, f"SHA-256 mismatch: {name}"
+    source += data
+
+def node_check(data, label):
+    result = subprocess.run(["node", "--check", "-"], input=data, capture_output=True)
+    assert result.returncode == 0, f"{label}: {result.stderr.decode(errors='replace')}"
+
+node_check(source, "Concatenated SKYJO logic")
+loader = (folder / "skyjo_action-loader.js").read_text(encoding="utf-8")
+assert "skyjo_action-manifest.json" in loader
+assert "manifest.version<19" in loader, "Update test when loader validation changes"
+
+class Dependencies(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.assets = []
+        self.inline_style = 0
+        self.inline_script = 0
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "style":
+            self.inline_style += 1
+        if tag == "script":
+            if "src" in attrs:
+                self.assets.append(attrs["src"])
+            else:
+                self.inline_script += 1
+        if tag == "link" and attrs.get("rel") == "stylesheet":
+            self.assets.append(attrs["href"])
+
+js_paths = {folder / "skyjo_action-loader.js"}
+for entry in ("skyjo_action_local.html", "skyjo_action.html"):
+    html = (folder / entry).read_text(encoding="utf-8")
+    parser = Dependencies()
+    parser.feed(html)
+    assert parser.inline_style == 0, f"{entry}: inline CSS reintroduced"
+    assert parser.inline_script == 0, f"{entry}: inline JS reintroduced"
+    assert "skyjo_action-loader.js" in html, f"{entry}: loader missing"
+    assert len(parser.assets) == len(set(parser.assets)), f"{entry}: duplicate dependency URL"
+    for asset in parser.assets:
+        url = urlsplit(asset)
+        assert not url.scheme and not url.netloc, f"{entry}: unexpected remote asset {asset}"
+        resolved = (folder / url.path).resolve()
+        assert resolved.is_relative_to(root.resolve()), f"{entry}: asset escapes repository: {asset}"
+        assert resolved.is_file(), f"{entry}: missing asset: {asset}"
+        if resolved.suffix == ".js":
+            js_paths.add(resolved)
+    print(f"{entry}: {len(parser.assets)} dependencies, 0 inline CSS/JS")
+
+for path in sorted(js_paths):
+    node_check(path.read_bytes(), str(path.relative_to(root)))
+nested = folder / "Skyjo" / "skyjo_action.html"
+assert nested.is_file() and "skyjo_action.html" in nested.read_text(encoding="utf-8")
+print(f"SKYJO integrity OK: manifest v{manifest['version']}, {len(parts)} logic parts, "
+      f"{len(source)} logic bytes, {len(js_paths)} JS syntax checks")
