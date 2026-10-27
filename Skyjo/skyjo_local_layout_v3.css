@@ -183,37 +183,53 @@
  }
 }
 
-/* Exact JSON X/Y placement for the five card-bearing regions. The center
-   and rival wrappers stay in the DOM, but become layout-transparent. */
+/* Stable three-column board: never absolutely position nested card panels.
+   Their parent wrappers define the containing blocks; absolute positioning
+   previously stacked opponents over player one on tablets. */
 @media (min-width:900px) and (orientation:landscape) {
  .table-area.three-player-layout.skyjo-json-board-active {
+   display:grid!important;
    position:relative!important;
-   display:block!important;
-   box-sizing:border-box!important;
-   min-height:clamp(500px,70vh,800px)!important;
- }
- .table-area.three-player-layout.skyjo-json-board-active > .center-seat,
- .table-area.three-player-layout.skyjo-json-board-active > .mini-seat,
- .table-area.three-player-layout.skyjo-json-board-active .center-table,
- .table-area.three-player-layout.skyjo-json-board-active .mini-players-stack {
-   display:contents!important;
+   grid-template-columns:minmax(0,37fr) minmax(0,21fr) minmax(0,34fr)!important;
+   gap:clamp(10px,1.1vw,18px)!important;
+   align-items:stretch!important;
+   min-height:0!important;
  }
  .table-area.three-player-layout.skyjo-json-board-active > .own-seat,
+ .table-area.three-player-layout.skyjo-json-board-active > .center-seat,
+ .table-area.three-player-layout.skyjo-json-board-active > .mini-seat {
+   display:block!important;
+   position:relative!important;
+   width:auto!important;
+   height:auto!important;
+   min-width:0!important;
+   min-height:0!important;
+   grid-row:1!important;
+ }
+ .table-area.three-player-layout.skyjo-json-board-active > .own-seat {grid-column:1!important}
+ .table-area.three-player-layout.skyjo-json-board-active > .center-seat {grid-column:2!important}
+ .table-area.three-player-layout.skyjo-json-board-active > .mini-seat {grid-column:3!important}
+ .table-area.three-player-layout.skyjo-json-board-active .center-table {
+   display:grid!important;
+   grid-template-rows:minmax(0,25fr) minmax(0,35.5fr)!important;
+   height:100%!important;
+   min-height:0!important;
+ }
+ .table-area.three-player-layout.skyjo-json-board-active .mini-players-stack {
+   display:grid!important;
+   grid-template-rows:minmax(0,45fr) minmax(0,45fr)!important;
+   height:100%!important;
+   min-height:0!important;
+ }
  .table-area.three-player-layout.skyjo-json-board-active .handbox,
  .table-area.three-player-layout.skyjo-json-board-active .premium-piles,
  .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap {
-   position:absolute!important;
-   box-sizing:border-box!important;
-   left:var(--skyjo-json-x)!important;
-   top:var(--skyjo-json-y)!important;
-   width:var(--skyjo-json-w)!important;
-   height:var(--skyjo-json-h)!important;
-   min-height:0!important;
+   position:relative!important;
+   inset:auto!important;
+   width:auto!important;
    min-width:0!important;
+   min-height:0!important;
    margin:0!important;
- }
- .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap > .player {
-   height:100%!important;
  }
 }
 
