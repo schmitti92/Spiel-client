@@ -135,3 +135,10 @@ Stand: 2026-10-27.
 - Local layout assets are cache-busted to v2 in the offline entrypoint; online entrypoint unchanged.
 - Added regression checks for status grid, reaction targets and local asset references.
 - This does not establish exact JSON HUD placement; visual browser/tablet validation remains pending.
+
+## Local three-player footer spacing
+- Added responsive gaps between board, status and action footer without taking controls out of normal flow.
+- Status text now clips with ellipsis instead of spilling across neighboring tiles.
+- Debug HUD geometry reports are deduplicated by their measured JSON snapshot, reducing console noise during DOM updates.
+- Refreshed local layout CSS/JS asset versions to v3 and updated structural tests accordingly.
+- Browser screenshot/tablet testing and exact nine-block placement remain outstanding.
