@@ -105,3 +105,9 @@ Stand: 2026-10-27.
 - `layoutDebug` now reports read-only selector matches and target JSON coordinates for stats, status, reactions and pause.
 - The current footer mapping is diagnostic, not a verified one-to-one placement. The same status selector is provisionally used for stats and status until the rendered DOM is inspected.
 - Automated guard prevents absolute positioning of the footer in the local v3 stylesheet.
+
+## Full-screen layout preview
+- The nine imported block coordinates are now drawn against the visible viewport rather than the board rectangle, so footer targets use the same percentage reference.
+- Pause diagnostics now search pause-specific selectors instead of identifying the entire bottom action bar as the pause button. A missing match is reported as missing, not silently guessed.
+- Automated tests assert viewport-based preview sizing. The preview remains optional and pointer-transparent.
+- Real footer relocation and physical tablet verification are still pending.
