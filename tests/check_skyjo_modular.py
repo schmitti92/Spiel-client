@@ -156,7 +156,7 @@ print('SKYJO live geometry deltas and shared HUD mapping OK')
 assert 'grid-template-columns:repeat(5,minmax(0,1fr))' in local_css
 assert 'min-width:40px!important' in local_css
 assert 'min-height:40px!important' in local_css
-assert 'skyjo_local_layout_v3.css?v=6' in local_html
+assert 'skyjo_local_layout_v3.css?v=7' in local_html
 assert 'skyjo_local_layout_v3.js?v=4' in local_html
 print('SKYJO local footer: five status tiles, touch targets and refreshed assets OK')
 
@@ -178,12 +178,12 @@ print('SKYJO active-player gold frame and compact landscape layout OK')
 
 assert 'body.is-playing:has(.table-area.three-player-layout)' in local_css
 assert 'border:5px solid #ffdb57' in local_css
-assert 'skyjo_local_layout_v3.css?v=6' in local_html
+assert 'skyjo_local_layout_v3.css?v=7' in local_html
 print('SKYJO screenshot feedback: visible local board styling and cache refresh OK')
 
 assert '.table-area.three-player-layout .handbox {' in local_css
 assert '.table-area.three-player-layout section.player.active {' in local_css
-assert 'skyjo_local_layout_v3.css?v=6' in local_html
+assert 'skyjo_local_layout_v3.css?v=7' in local_html
 print('SKYJO local-only three-player direct selectors and cache v6 OK')
 
 assert 'skyjo_local_entry_redirect.js?v=1' in online_html
@@ -191,3 +191,8 @@ redirect = (folder / 'skyjo_local_entry_redirect.js').read_text(encoding='utf-8'
 assert "get('mode')!=='local'" in redirect
 assert 'destination.search=url.search' in redirect and 'destination.hash=url.hash' in redirect
 print('SKYJO shared entry redirects only local sessions and preserves URL parameters')
+
+assert 'grid-template-columns:var(--skyjo-v3-columns' in local_css
+assert 'grid-template-rows:var(--skyjo-v3-center-rows' in local_css
+assert 'grid-template-rows:var(--skyjo-v3-rival-rows' in local_css
+print('SKYJO final three-player CSS consumes JSON layout proportions')
