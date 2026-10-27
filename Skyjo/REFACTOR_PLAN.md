@@ -68,3 +68,10 @@ Stand: 2026-10-27.
 - CSS-Reihenfolge und Regeln wurden übernommen; ursprüngliche Dateien bleiben als Rückfalloption erhalten.
 - Aktuelle Einbindungen: lokal 19 Stylesheets, online 18; beide ohne Inline-CSS und Inline-JavaScript.
 - Nächster Schritt: Browser-Sichtvergleich und Kaskadenanalyse, danach gezielte Entfernung tatsächlich überschüssiger Selektoren. Automatische Strukturtests ersetzen keine visuelle Prüfung.
+
+## Lokales Layout aus Nutzer-JSON v3
+- `skyjo_layout_local_v3.json` enthält die neun vom Nutzer übermittelten Blöcke samt Positionen, Größen, Sichtbarkeit und Z-Index.
+- `skyjo_local_layout_v3.js` validiert die Datei ohne Firebase und setzt CSS-Variablen für die relativen Größen der drei Spielspalten, Hand-/Stapelzonen und beiden rechten Spielerbereiche.
+- `skyjo_local_layout_v3.css` aktiviert die Größenverhältnisse ausschließlich für die lokale Drei-Spieler-Querformatansicht; bei Fehlern bleibt das bisherige Layout erhalten.
+- Die exakten X-/Y-Positionen, Statistik-/Status-/Reaktions-/Pause-Geometrie sind **noch nicht** übernommen, weil diese Elemente teilweise außerhalb der Spielfeld-Gridstruktur liegen und eine eigene Kollisionsprüfung benötigen.
+- Automatischer Test validiert neun Blöcke und stellt sicher, dass Online-HTML unverändert bleibt. Visuelle Prüfung auf Tablet weiterhin ausstehend.
