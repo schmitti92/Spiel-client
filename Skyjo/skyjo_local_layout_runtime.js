@@ -16,7 +16,9 @@ body.skyjo-local-layout-ready .table-area.three-player-layout .mini-player-wrap:
 body.skyjo-local-layout-ready .table-area.three-player-layout .mini-player-wrap:nth-child(2) .gridwrap{background:radial-gradient(ellipse,#135e39,#08271b)!important}
 body.skyjo-local-layout-ready .table-area.three-player-layout .center-table .handbox,
 body.skyjo-local-layout-ready .table-area.three-player-layout .center-table .premium-piles{min-height:0!important;height:100%!important}
-body.skyjo-local-layout-ready .status.premium-status{margin-top:9px!important;order:20!important}\nbody.skyjo-local-layout-ready .table-area.three-player-layout .mini-player-wrap{min-height:0!important}\nbody.skyjo-local-layout-ready .table-area.three-player-layout .mini-player-wrap > .player{height:100%!important}
+body.skyjo-local-layout-ready .status.premium-status{margin-top:9px!important;order:20!important}
+body.skyjo-local-layout-ready .table-area.three-player-layout .mini-player-wrap{min-height:0!important}
+body.skyjo-local-layout-ready .table-area.three-player-layout .mini-player-wrap > .player{height:100%!important}
 }`;
 const style=document.createElement('style');style.id='skyjo-local-layout-runtime';style.textContent=CSS;document.head.append(style);
 let previous=false;
