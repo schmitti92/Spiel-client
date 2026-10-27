@@ -152,3 +152,10 @@ assert 'deltaX:rect?' in adapter and 'deltaY:rect?' in adapter
 assert 'first-status-tile-provisional' in adapter and 'full-status-bar' in adapter
 assert 'new MutationObserver(schedule).observe(app' in adapter
 print('SKYJO live geometry deltas and shared HUD mapping OK')
+
+assert 'grid-template-columns:repeat(5,minmax(0,1fr))' in local_css
+assert 'min-width:40px!important' in local_css
+assert 'min-height:40px!important' in local_css
+assert 'skyjo_local_layout_v3.css?v=2' in local_html
+assert 'skyjo_local_layout_v3.js?v=2' in local_html
+print('SKYJO local footer: five status tiles, touch targets and refreshed assets OK')
