@@ -86,3 +86,9 @@ Stand: 2026-10-27.
 - Fixed two escaped newline artifacts in runtime stylesheet.
 - Optional `layoutPreview=1` draws noninteractive rectangles from nine JSON blocks, relative to the board. This is diagnostic only, not exact final positioning.
 - Added regression tests; tablet visual verification and exact placement of external controls remain open.
+
+## Local v3 preview fixes
+- Preview now starts even if the layout JSON resolves after DOMContentLoaded.
+- Preview redraws are limited to animation frames and respond to scrolling.
+- Duplicate JSON block IDs are rejected to preserve the previous layout.
+- Structural tests cover startup and redraw scheduling. Exact placement and visual tablet regression remain pending.
