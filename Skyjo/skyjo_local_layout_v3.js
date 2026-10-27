@@ -12,6 +12,15 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
  root.style.setProperty('--skyjo-v3-columns',[a.w,Math.max(h.w,d.w),Math.max(b.w,c.w)].map(x=>x+'fr').join(' '));
  root.style.setProperty('--skyjo-v3-center-rows',h.h+'fr '+d.h+'fr');
  root.style.setProperty('--skyjo-v3-rival-rows',b.h+'fr '+c.h+'fr');
+ // Horizontal spacing follows the gaps in the supplied canvas (37.1 -> 40.2 -> 65.8).
+ const firstGap=Math.max(0,Math.min(h.x,d.x)-(a.x+a.w));
+ const secondGap=Math.max(0,Math.min(b.x,c.x)-Math.max(h.x+h.w,d.x+d.w));
+ const gap=Math.max(0,Math.min(5,(firstGap+secondGap)/2));
+ root.style.setProperty('--skyjo-v3-column-gap','clamp(8px,'+gap+'vw,48px)');
+ const centerGap=Math.max(0,d.y-(h.y+h.h));
+ const rivalGap=Math.max(0,c.y-(b.y+b.h));
+ root.style.setProperty('--skyjo-v3-center-gap','clamp(5px,'+Math.min(4,centerGap)+'vh,28px)');
+ root.style.setProperty('--skyjo-v3-rival-gap','clamp(5px,'+Math.min(4,rivalGap)+'vh,28px)');
  // Expose the original geometry for diagnostics and later exact-position mapping.
  // Percentages are relative to the user's original design canvas, not the viewport.
  for(const block of m.values()){
