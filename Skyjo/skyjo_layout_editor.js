@@ -1,5 +1,5 @@
 /* SKYJO local visual layout lab. Does not persist until explicitly saved. */
-(()=>{'use strict';if(new URLSearchParams(location.search).get('mode')!=='local')return;
+(()=>{'use strict';const params=new URLSearchParams(location.search);if(params.get('mode')!=='local'||params.get('layoutEditor')!=='1')return;
 const selectors=['#player-0','#player-1','#player-2','#player-3','.hand-zone','.handzone','#handZone','.center-area','.center-zone','.game-stats','.stats-bar','.top-stats'];
 let editing=false,selected=null,overlay,box,drag=null;
 const style=document.createElement('style');style.textContent=`
