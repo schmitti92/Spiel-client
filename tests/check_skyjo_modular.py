@@ -156,7 +156,7 @@ print('SKYJO live geometry deltas and shared HUD mapping OK')
 assert 'grid-template-columns:repeat(5,minmax(0,1fr))' in local_css
 assert 'min-width:40px!important' in local_css
 assert 'min-height:40px!important' in local_css
-assert 'skyjo_local_layout_v3.css?v=4' in local_html
+assert 'skyjo_local_layout_v3.css?v=5' in local_html
 assert 'skyjo_local_layout_v3.js?v=4' in local_html
 print('SKYJO local footer: five status tiles, touch targets and refreshed assets OK')
 
@@ -175,3 +175,8 @@ print('SKYJO preview lifecycle and hidden HUD diagnostics OK')
 assert 'section.player.active' in local_css and 'outline:2px solid #fff0a5' in local_css
 assert 'max-height:760px' in local_css and 'min-height:min(62vh,560px)' in local_css
 print('SKYJO active-player gold frame and compact landscape layout OK')
+
+assert 'body.is-playing:has(.table-area.three-player-layout)' in local_css
+assert 'border:5px solid #ffdb57' in local_css
+assert 'skyjo_local_layout_v3.css?v=5' in local_html
+print('SKYJO screenshot feedback: visible local board styling and cache refresh OK')
