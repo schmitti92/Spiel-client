@@ -335,3 +335,33 @@
    min-height:0!important;
  }
 }
+
+/* v15: Opponents stay within their own halves. Reserve a safe strip for the
+   floating utility buttons without changing the working three-column board. */
+@media (min-width:900px) and (orientation:landscape) {
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active > .mini-seat {
+   padding-right:clamp(12px,1.1vw,20px)!important;
+   box-sizing:border-box!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .mini-players-stack {
+   grid-template-rows:var(--skyjo-v3-rival-rows,minmax(0,45fr) minmax(0,45fr))!important;
+   gap:clamp(12px,1.4vh,18px)!important;
+   min-height:0!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap {
+   box-sizing:border-box!important;
+   min-width:0!important;
+   min-height:0!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap .player-head {
+   flex:0 0 auto!important;
+   min-width:0!important;
+   padding-right:clamp(64px,5vw,90px)!important;
+   box-sizing:border-box!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap .gridwrap {
+   min-width:0!important;
+   max-height:100%!important;
+   overflow:hidden!important;
+ }
+}
