@@ -111,3 +111,8 @@ Stand: 2026-10-27.
 - Pause diagnostics now search pause-specific selectors instead of identifying the entire bottom action bar as the pause button. A missing match is reported as missing, not silently guessed.
 - Automated tests assert viewport-based preview sizing. The preview remains optional and pointer-transparent.
 - Real footer relocation and physical tablet verification are still pending.
+
+## Local editor and viewport measurement
+- The drag-and-resize editor is now explicitly opt-in via `?mode=local&layoutEditor=1`; ordinary offline games no longer show its floating button.
+- `layoutDebug` reports actual HUD bounds as percentages of the viewport alongside the imported target values. This is read-only.
+- The HUD selectors remain provisional until verified against a rendered three-player session; no automatic HUD repositioning is enabled.
