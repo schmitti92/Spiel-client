@@ -92,3 +92,9 @@ Stand: 2026-10-27.
 - Preview redraws are limited to animation frames and respond to scrolling.
 - Duplicate JSON block IDs are rejected to preserve the previous layout.
 - Structural tests cover startup and redraw scheduling. Exact placement and visual tablet regression remain pending.
+
+## Local tablet safety refinements
+- All three board columns have minimum-size safeguards in the local landscape stylesheet.
+- Reaction strip retains horizontal touch scrolling when width is constrained.
+- JSON diagnostic overlay now requires `layoutPreview=1` explicitly; regular games remain overlay-free.
+- Bottom HUD blocks are not absolutely repositioned yet because their placement relative to the board requires device-level visual verification.
