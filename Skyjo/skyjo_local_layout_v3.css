@@ -46,3 +46,30 @@
    min-width:0!important;
  }
 }
+
+/* Footer polish: preserve native buttons and card interactions.
+   Apply only to the verified three-player local landscape board. */
+@media (min-width:900px) and (orientation:landscape) {
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .status.premium-status {
+   display:grid!important;
+   grid-template-columns:repeat(5,minmax(0,1fr))!important;
+   gap:clamp(4px,.55vw,9px)!important;
+   width:100%!important;
+   min-width:0!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .status.premium-status .stat {
+   min-width:0!important;
+   box-sizing:border-box!important;
+   overflow:hidden!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .bottom-actions .emoji-reaction-btn {
+   min-width:40px!important;
+   min-height:40px!important;
+   flex-shrink:0!important;
+   touch-action:manipulation!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .bottom-actions .emoji-reaction-list {
+   max-width:100%!important;
+   scrollbar-width:thin;
+ }
+}
