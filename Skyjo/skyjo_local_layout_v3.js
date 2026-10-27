@@ -42,11 +42,14 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
      const b=m.get(id);
      const rect=el&&el.getBoundingClientRect();
      const px=v=>Math.round(v*10)/10;
+     const actualX=rect?px(rect.left/window.innerWidth*100):null;
+     const actualY=rect?px(rect.top/window.innerHeight*100):null;
+     const actualW=rect?px(rect.width/window.innerWidth*100):null;
+     const actualH=rect?px(rect.height/window.innerHeight*100):null;
      return {id,selector,found:!!el,targetX:b.x,targetY:b.y,targetW:b.w,targetH:b.h,
-       actualX:rect?px(rect.left/window.innerWidth*100):null,
-       actualY:rect?px(rect.top/window.innerHeight*100):null,
-       actualW:rect?px(rect.width/window.innerWidth*100):null,
-       actualH:rect?px(rect.height/window.innerHeight*100):null};
+       actualX,actualY,actualW,actualH,
+       deltaX:rect?px(actualX-b.x):null,deltaY:rect?px(actualY-b.y):null,
+       deltaW:rect?px(actualW-b.w):null,deltaH:rect?px(actualH-b.h):null};
    }));
    const startReport=()=>{
      let pending=false;
