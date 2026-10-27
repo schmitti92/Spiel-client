@@ -98,7 +98,7 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
        overlay.append(el);
      }
    };
-   (document.readyState==='loading'?document.addEventListener.bind(document,'DOMContentLoaded'):fn=>fn())(()=>{
+   const startPreview=()=>{
      let scheduled=false;
      const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;renderPreview()})};
      schedule();
@@ -106,7 +106,9 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
      window.addEventListener('scroll',schedule,{passive:true});
      const app=document.getElementById('app');
      if(app)new MutationObserver(schedule).observe(app,{childList:true,subtree:true});
-   },{once:true});
+   };
+   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startPreview,{once:true});
+   else startPreview();
  }
  root.dataset.skyjoLocalLayout='v3';
  if(new URLSearchParams(location.search).has('layoutDebug')){
