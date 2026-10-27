@@ -182,3 +182,37 @@
    grid-template-rows:minmax(0,25fr) minmax(0,35.5fr)!important;
  }
 }
+
+/* Exact JSON X/Y placement for the five card-bearing regions. The center
+   and rival wrappers stay in the DOM, but become layout-transparent. */
+@media (min-width:900px) and (orientation:landscape) {
+ .table-area.three-player-layout.skyjo-json-board-active {
+   position:relative!important;
+   display:block!important;
+   box-sizing:border-box!important;
+   min-height:clamp(500px,70vh,800px)!important;
+ }
+ .table-area.three-player-layout.skyjo-json-board-active > .center-seat,
+ .table-area.three-player-layout.skyjo-json-board-active > .mini-seat,
+ .table-area.three-player-layout.skyjo-json-board-active .center-table,
+ .table-area.three-player-layout.skyjo-json-board-active .mini-players-stack {
+   display:contents!important;
+ }
+ .table-area.three-player-layout.skyjo-json-board-active > .own-seat,
+ .table-area.three-player-layout.skyjo-json-board-active .handbox,
+ .table-area.three-player-layout.skyjo-json-board-active .premium-piles,
+ .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap {
+   position:absolute!important;
+   box-sizing:border-box!important;
+   left:var(--skyjo-json-x)!important;
+   top:var(--skyjo-json-y)!important;
+   width:var(--skyjo-json-w)!important;
+   height:var(--skyjo-json-h)!important;
+   min-height:0!important;
+   min-width:0!important;
+   margin:0!important;
+ }
+ .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap > .player {
+   height:100%!important;
+ }
+}
