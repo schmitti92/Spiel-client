@@ -236,3 +236,48 @@
    z-index:6!important;
  }
 }
+
+/* SKYJO JSON footer: group existing HUD elements into a compact bottom band.
+   Only active for a verified 3-player local tablet board. */
+@media (min-width:900px) and (orientation:landscape) {
+ body.skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status {
+   display:grid!important;
+   grid-template-columns:repeat(auto-fit,minmax(115px,1fr))!important;
+   gap:clamp(5px,.7vw,12px)!important;
+   align-items:stretch!important;
+   width:100%!important;
+   max-width:100%!important;
+   box-sizing:border-box!important;
+   margin:clamp(6px,.8vh,12px) 0!important;
+ }
+ body.skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status > .stat {
+   min-width:0!important;
+   width:auto!important;
+   padding:clamp(5px,.65vw,10px)!important;
+   white-space:normal!important;
+ }
+ body.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions {
+   display:flex!important;
+   flex-wrap:wrap!important;
+   justify-content:space-between!important;
+   align-items:center!important;
+   gap:clamp(6px,.8vw,12px)!important;
+   max-width:100%!important;
+   box-sizing:border-box!important;
+ }
+ body.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions .emoji-reaction-bar {
+   display:flex!important;
+   flex-wrap:wrap!important;
+   gap:clamp(4px,.5vw,9px)!important;
+   justify-content:center!important;
+   flex:1 1 240px!important;
+ }
+ body.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions [data-action="pause"],
+ body.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions #pauseBtn,
+ body.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions .pause-btn {
+   min-width:44px!important;
+   min-height:44px!important;
+   flex:0 0 auto!important;
+   margin-left:auto!important;
+ }
+}
