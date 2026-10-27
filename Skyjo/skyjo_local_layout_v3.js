@@ -42,7 +42,10 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
      const rect=board.getBoundingClientRect();
      overlay.style.left=rect.left+'px';overlay.style.top=rect.top+'px';
      overlay.style.width=rect.width+'px';overlay.style.height=rect.height+'px';
-     overlay.replaceChildren();
+     // Diagnostics use the game board as the shared reference rectangle.
+   // Bottom HUD elements intentionally remain preview-only until their
+   // real DOM containers can be safely positioned without covering cards.
+   overlay.replaceChildren();
      for(const b of data.blocks){
        if(!b.visible)continue;
        const el=document.createElement('div');
