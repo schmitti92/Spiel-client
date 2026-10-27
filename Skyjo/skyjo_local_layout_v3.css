@@ -73,3 +73,22 @@
    scrollbar-width:thin;
  }
 }
+
+/* Keep the three-player board and the native footer separated.
+   No fixed/absolute HUD positioning: controls remain keyboard and touch reachable. */
+@media (min-width:900px) and (orientation:landscape) {
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout {
+   margin-bottom:clamp(6px,1vh,14px)!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .status.premium-status {
+   margin-top:clamp(6px,1vh,12px)!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .bottom-actions {
+   margin-top:clamp(6px,.8vh,12px)!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .status.premium-status .stat b,
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .status.premium-status .stat span {
+   overflow:hidden!important;
+   text-overflow:ellipsis!important;
+ }
+}
