@@ -28,6 +28,23 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
    for(const key of ['x','y','w','h'])root.style.setProperty(prefix+key,block[key]+'%');
    root.style.setProperty(prefix+'z',String(block.z));
  }
+ // Read-only mapping for the HUD blocks. Never reparent controls or replace
+ // their contents: that would risk breaking click handlers and game state.
+ const hudSelectors={
+   stats:'.status.premium-status',
+   status:'.status.premium-status',
+   reactions:'.bottom-actions .emoji-reaction-bar',
+   pause:'.bottom-actions'
+ };
+ if(new URLSearchParams(location.search).has('layoutDebug')){
+   const report=()=>console.table(Object.entries(hudSelectors).map(([id,selector])=>{
+     const el=document.querySelector(selector);
+     const b=m.get(id);
+     return {id,selector,found:!!el,targetX:b.x,targetY:b.y,targetW:b.w,targetH:b.h};
+   }));
+   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',report,{once:true});
+   else report();
+ }
  // Optional design overlay: ?layoutPreview=1. No game DOM is repositioned.
  if(new URLSearchParams(location.search).get('layoutPreview')==='1'){
    const renderPreview=()=>{
