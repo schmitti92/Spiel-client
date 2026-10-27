@@ -40,7 +40,13 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
    const report=()=>console.table(Object.entries(hudSelectors).map(([id,selector])=>{
      const el=document.querySelector(selector);
      const b=m.get(id);
-     return {id,selector,found:!!el,targetX:b.x,targetY:b.y,targetW:b.w,targetH:b.h};
+     const rect=el&&el.getBoundingClientRect();
+     const px=v=>Math.round(v*10)/10;
+     return {id,selector,found:!!el,targetX:b.x,targetY:b.y,targetW:b.w,targetH:b.h,
+       actualX:rect?px(rect.left/window.innerWidth*100):null,
+       actualY:rect?px(rect.top/window.innerHeight*100):null,
+       actualW:rect?px(rect.width/window.innerWidth*100):null,
+       actualH:rect?px(rect.height/window.innerHeight*100):null};
    }));
    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',report,{once:true});
    else report();
