@@ -61,10 +61,8 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
      overlay.style.left='0px';overlay.style.top='0px';
      overlay.style.width=window.innerWidth+'px';
      overlay.style.height=window.innerHeight+'px';
-     // Diagnostics use the game board as the shared reference rectangle.
-   // Bottom HUD elements intentionally remain preview-only until their
-   // real DOM containers can be safely positioned without covering cards.
-   overlay.replaceChildren();
+     // Preview remains noninteractive; no game controls are moved.
+     overlay.replaceChildren();
      for(const b of data.blocks){
        if(!b.visible)continue;
        const el=document.createElement('div');
