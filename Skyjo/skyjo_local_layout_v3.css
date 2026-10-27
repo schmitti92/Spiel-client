@@ -179,7 +179,7 @@
    justify-content:space-between!important;
  }
  .table-area.three-player-layout.skyjo-json-board-active .center-seat > .center-table {
-   grid-template-rows:minmax(0,25fr) minmax(0,35.5fr)!important;
+   grid-template-rows:var(--skyjo-v3-center-rows,minmax(0,25fr) minmax(0,35.5fr))!important;
  }
 }
 
@@ -190,7 +190,7 @@
  .table-area.three-player-layout.skyjo-json-board-active {
    display:grid!important;
    position:relative!important;
-   grid-template-columns:minmax(0,37fr) minmax(0,21fr) minmax(0,34fr)!important;
+   grid-template-columns:var(--skyjo-v3-columns,minmax(0,37fr) minmax(0,21fr) minmax(0,34fr))!important;
    gap:clamp(10px,1.1vw,18px)!important;
    align-items:stretch!important;
    min-height:0!important;
@@ -217,7 +217,7 @@
  }
  .table-area.three-player-layout.skyjo-json-board-active .mini-players-stack {
    display:grid!important;
-   grid-template-rows:minmax(0,45fr) minmax(0,45fr)!important;
+   grid-template-rows:var(--skyjo-v3-rival-rows,minmax(0,45fr) minmax(0,45fr))!important;
    height:100%!important;
    min-height:0!important;
  }
