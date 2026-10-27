@@ -147,3 +147,8 @@ editor = (folder / 'skyjo_layout_editor.js').read_text(encoding='utf-8')
 assert "params.get('layoutEditor')!=='1'" in editor
 assert 'actualX:rect?' in adapter and 'actualY:rect?' in adapter
 print('SKYJO layout editor opt-in and HUD geometry diagnostics OK')
+
+assert 'deltaX:rect?' in adapter and 'deltaY:rect?' in adapter
+assert 'shared-status-container' in adapter
+assert 'new MutationObserver(schedule).observe(app' in adapter
+print('SKYJO live geometry deltas and shared HUD mapping OK')
