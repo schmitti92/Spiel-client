@@ -12,7 +12,7 @@ const GAME_KEYS=['barikade','skyjo','kreuz','business','partychallenge'];
 test('Local mode lands on artwork-rich game selection with no online/auth controls',()=>{
  assert.equal((local.match(/<article class="game/g)||[]).length,4);
  assert.match(local,/Assets\/game-backgrounds\/barikade\.webp/);
- for(const path of ['Barikade/barikade.html?offline=1','Skyjo/skyjo_action.html?mode=local',
+ for(const path of ['Barikade/barikade.html?offline=1','Skyjo/skyjo_action_local.html?mode=local',
   'KreuzKunter/kreuzkunter.html?mode=local','Business/business_local.html'])assert.ok(local.includes(path),path);
  assert.doesNotMatch(local,/profile-auth\.js|profile-core\.js|spielauswahl-online\.js/);
  assert.doesNotMatch(local,/href="[^"]*(?:mode=online|business_online)/);
