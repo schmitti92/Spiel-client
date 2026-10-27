@@ -3,11 +3,14 @@
 @media (min-width:900px) and (orientation:landscape) {
  html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout {
    grid-template-columns:var(--skyjo-v3-columns)!important;
+   gap:var(--skyjo-v3-column-gap,1.3vw)!important;
  }
  html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout .center-seat > .center-table {
    grid-template-rows:var(--skyjo-v3-center-rows)!important;
+   gap:var(--skyjo-v3-center-gap,9px)!important;
  }
  html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout .mini-players-stack {
    grid-template-rows:var(--skyjo-v3-rival-rows)!important;
+   gap:var(--skyjo-v3-rival-gap,10px)!important;
  }
 }
