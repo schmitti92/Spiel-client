@@ -120,5 +120,8 @@ runtime = (folder / "skyjo_local_layout_runtime.js").read_text(encoding="utf-8")
 assert r"\nbody.skyjo-local-layout-ready" not in runtime, "Escaped CSS newline breaks player height rules"
 adapter = (folder / "skyjo_local_layout_v3.js").read_text(encoding="utf-8")
 assert "layoutPreview" in adapter and "pointer-events:none" in adapter
+assert "document.readyState" in adapter, "Preview must handle late JSON load"
+assert "requestAnimationFrame" in adapter, "Preview redraws must be throttled"
+assert "addEventListener(\'scroll\'" in adapter, "Preview must follow scrolling"
 assert "skyjo_layout_local_v3.json" in adapter
 print("SKYJO local layout: runtime CSS and non-interactive preview OK")
