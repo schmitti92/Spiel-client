@@ -54,3 +54,10 @@ Stand: 2026-10-27.
 - Ursprungsdateien 10 und 12 verbleiben als Rückfalloption im Repository, werden jedoch von den beiden Hauptseiten nicht mehr geladen.
 - Vor dem Zusammenführen wurden beide Dateipaare auf `@charset`, `@import` und geschweifte Klammern geprüft. Reihenfolge der Regeln blieb erhalten.
 - Für den nächsten Schritt: verbleibende Stylesheets auf relative `url(...)`-Referenzen und Kaskadenwirkung prüfen; Browser-Sichtprüfung erforderlich.
+
+## CSS-Konsolidierung – weitere vier Dateipaare
+- Originalsegmente 01+02, 03+04, 05+06, 07+08 wurden jeweils in den ungeraden Teil zusammengeführt.
+- CSS-Einbindungen der historischen zwölf Dateien sind damit auf sechs reduziert: 01, 03, 05, 07, 09, 11.
+- Ursprungsdateien 02, 04, 06, 08, 10 und 12 bleiben im Repository, werden von den zwei Einstiegspunkten nicht geladen.
+- Es wurden keine Regeln entfernt und die Reihenfolge der Segmente blieb erhalten. Dadurch ist dies eine Kaskaden-konsistente Konsolidierung, noch keine Selektor-Entdoppelung.
+- Vor dem Löschen alter Dateien sind weitere Referenzen anderer Seiten zu prüfen.
