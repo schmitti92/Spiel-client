@@ -9,3 +9,6 @@ test('online entry does not load local layout runtime',()=>{const html=read('Sky
 test('local HTML has no literal escaped newlines between scripts',()=>{const html=read('Skyjo/skyjo_action_local.html');assert.equal(html.includes('</script>'+String.fromCharCode(92)+'n<script'),false);assert.equal(html.includes('</script>'+String.fromCharCode(92)+'n</body>'),false);});
 
 test('three-player layout maps actual outer DOM wrappers',()=>{const source=read('Skyjo/skyjo_local_layout_runtime.js');for(const selector of ['> .center-seat','> .mini-seat',':scope > .own-seat'])assert.ok(source.includes(selector),selector);});
+
+test('local CSS runtime does not contain escaped newline tokens',()=>{const source=read('Skyjo/skyjo_local_layout_runtime.js');assert.equal(source.includes(String.fromCharCode(92)+'nbody.skyjo-local-layout-ready'),false);});
+test('local layout targets exact player columns',()=>{const source=read('Skyjo/skyjo_local_layout_runtime.js');for(const selector of ['> .own-seat','> .center-seat','> .mini-seat'])assert.ok(source.includes(selector));});
