@@ -76,3 +76,21 @@ nested = folder / "Skyjo" / "skyjo_action.html"
 assert nested.is_file() and "skyjo_action.html" in nested.read_text(encoding="utf-8")
 print(f"SKYJO integrity OK: manifest v{manifest['version']}, {len(parts)} logic parts, "
       f"{len(source)} logic bytes, {len(js_paths)} JS syntax checks")
+
+
+# User-provided layout is local-only: validate all nine blocks and wiring.
+layout = json.loads((folder / "skyjo_layout_local_v3.json").read_text(encoding="utf-8"))
+assert layout["version"] == 3
+expected = {"stats", "player1", "hand", "deck", "player2", "player3", "status", "reactions", "pause"}
+blocks = layout["blocks"]
+assert len(blocks) == len(expected) and {b["id"] for b in blocks} == expected
+for block in blocks:
+    assert block["visible"] is True
+    assert all(isinstance(block[key], (int, float)) and not isinstance(block[key], bool)
+               for key in ("x", "y", "w", "h", "z"))
+    assert block["w"] > 0 and block["h"] > 0
+local_html = (folder / "skyjo_action_local.html").read_text(encoding="utf-8")
+online_html = (folder / "skyjo_action.html").read_text(encoding="utf-8")
+assert "skyjo_local_layout_v3.js" in local_html and "skyjo_local_layout_v3.css" in local_html
+assert "skyjo_local_layout_v3.js" not in online_html and "skyjo_local_layout_v3.css" not in online_html
+print("SKYJO local layout v3: nine validated blocks, local-only wiring OK")
