@@ -47,3 +47,10 @@ Stand: 2026-10-27.
 - Lokal: 29 CSS- und 12 JS-Verlinkungen; online: 28 CSS- und 12 JS-Verlinkungen (einschließlich Profilskripten).
 - Die zwölf historischen CSS-Teile beginnen mit Basisselektoren und enthalten zahlreiche `!important`-Überschreibungen. Sie dürfen nicht ungeprüft entfernt oder alphabetisch neu sortiert werden.
 - **Nächster Gate:** automatisierte Linkprüfung und CSS-Kaskadeninventar; danach visuelle Regression auf Tablet/PC, erst dann tatsächliches Zusammenführen/Löschen von CSS.
+
+## CSS-Konsolidierung – 2026-10-27
+- `skyjo_action-style-12.css` unverändert an Ende von `skyjo_action-style-11.css` angehängt; Einbindung von 12 in beiden Einstiegspunkten entfernt.
+- `skyjo_action-style-10.css` unverändert an Ende von `skyjo_action-style-09.css` angehängt; Einbindung von 10 in beiden Einstiegspunkten entfernt.
+- Ursprungsdateien 10 und 12 verbleiben als Rückfalloption im Repository, werden jedoch von den beiden Hauptseiten nicht mehr geladen.
+- Vor dem Zusammenführen wurden beide Dateipaare auf `@charset`, `@import` und geschweifte Klammern geprüft. Reihenfolge der Regeln blieb erhalten.
+- Für den nächsten Schritt: verbleibende Stylesheets auf relative `url(...)`-Referenzen und Kaskadenwirkung prüfen; Browser-Sichtprüfung erforderlich.
