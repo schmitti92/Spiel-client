@@ -46,12 +46,13 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
      // Flag this instead of treating the measurement as an exact mapping.
      const mapping=id==='stats'?'first-status-tile-provisional':id==='status'?'full-status-bar':'candidate';
      const rect=el&&el.getBoundingClientRect();
+     const visible=!!rect&&rect.width>0&&rect.height>0;
      const px=v=>Math.round(v*10)/10;
      const actualX=rect?px(rect.left/window.innerWidth*100):null;
      const actualY=rect?px(rect.top/window.innerHeight*100):null;
      const actualW=rect?px(rect.width/window.innerWidth*100):null;
      const actualH=rect?px(rect.height/window.innerHeight*100):null;
-     return {id,selector,mapping,found:!!el,targetX:b.x,targetY:b.y,targetW:b.w,targetH:b.h,
+     return {id,selector,mapping,found:!!el,visible,targetX:b.x,targetY:b.y,targetW:b.w,targetH:b.h,
        actualX,actualY,actualW,actualH,
        deltaX:rect?px(actualX-b.x):null,deltaY:rect?px(actualY-b.y):null,
        deltaW:rect?px(actualW-b.w):null,deltaH:rect?px(actualH-b.h):null};
