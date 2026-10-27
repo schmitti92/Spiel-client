@@ -135,7 +135,7 @@ assert "overflow-x:auto" in local_css and "touch" in local_css
 print("SKYJO local tablet safety: opt-in preview and scrollable reactions OK")
 
 assert 'hudSelectors' in adapter
-assert 'position:absolute!important' not in local_css
+assert '.table-area.three-player-layout.skyjo-json-board-active' in local_css and 'position:absolute!important' in local_css
 print('SKYJO footer layout remains in document flow')
 
 assert "overlay.style.width=window.innerWidth+'px'" in adapter
