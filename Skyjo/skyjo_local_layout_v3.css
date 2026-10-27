@@ -139,3 +139,34 @@
    box-shadow:0 0 0 3px #fff0a7,0 0 25px 6px #ffc52b9c!important;
  }
 }
+
+/* Local entrypoint only: this file is NOT loaded by skyjo_action.html.
+   Avoid body.is-playing/ready dependencies, which may not match actual runtime. */
+@media (min-width:900px) and (orientation:landscape) {
+ .table-area.three-player-layout {
+   grid-template-columns:minmax(0,37fr) minmax(0,21fr) minmax(0,34fr)!important;
+   column-gap:clamp(10px,1.1vw,18px)!important;
+ }
+ .table-area.three-player-layout .center-seat > .center-table {
+   grid-template-rows:minmax(0,25fr) minmax(0,36fr)!important;
+   gap:clamp(8px,1vh,14px)!important;
+ }
+ .table-area.three-player-layout .mini-players-stack {
+   grid-template-rows:minmax(0,45fr) minmax(0,45fr)!important;
+ }
+ .table-area.three-player-layout .handbox {
+   background:linear-gradient(155deg,#194a61,#061b2d 80%)!important;
+   border:3px solid #ffcf66!important;
+   box-shadow:0 0 0 2px #fff0ac55,0 0 18px #ffc75b50!important;
+ }
+ .table-area.three-player-layout .premium-piles {
+   border:3px solid #ffcf66!important;
+   box-shadow:0 0 0 2px #fff0ac55,0 0 18px #ffc75b50!important;
+ }
+ .table-area.three-player-layout section.player.active {
+   border:5px solid #ffdf66!important;
+   outline:3px solid #fff2a0!important;
+   outline-offset:1px!important;
+   box-shadow:0 0 0 2px #a16c19,0 0 25px 7px #ffc93c99!important;
+ }
+}
