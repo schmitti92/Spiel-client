@@ -185,3 +185,9 @@ assert '.table-area.three-player-layout .handbox {' in local_css
 assert '.table-area.three-player-layout section.player.active {' in local_css
 assert 'skyjo_local_layout_v3.css?v=6' in local_html
 print('SKYJO local-only three-player direct selectors and cache v6 OK')
+
+assert 'skyjo_local_entry_redirect.js?v=1' in online_html
+redirect = (folder / 'skyjo_local_entry_redirect.js').read_text(encoding='utf-8')
+assert "get('mode')!=='local'" in redirect
+assert 'destination.search=url.search' in redirect and 'destination.hash=url.hash' in redirect
+print('SKYJO shared entry redirects only local sessions and preserves URL parameters')
