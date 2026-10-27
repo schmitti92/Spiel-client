@@ -142,3 +142,10 @@ Stand: 2026-10-27.
 - Debug HUD geometry reports are deduplicated by their measured JSON snapshot, reducing console noise during DOM updates.
 - Refreshed local layout CSS/JS asset versions to v3 and updated structural tests accordingly.
 - Browser screenshot/tablet testing and exact nine-block placement remain outstanding.
+
+## Preview lifecycle and visibility diagnostics
+- Simplified opt-in preview startup for both early and late DOM readiness.
+- When the three-player local board is removed, its old overlay is removed too, avoiding stale guides in other game states.
+- HUD diagnostics now distinguish DOM presence from nonzero on-screen dimensions.
+- Added structural regression checks and refreshed the local preview JS asset to v4.
+- Exact DOM-to-JSON footer placement and device screenshots are not yet verified.
