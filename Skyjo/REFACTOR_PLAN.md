@@ -98,3 +98,10 @@ Stand: 2026-10-27.
 - Reaction strip retains horizontal touch scrolling when width is constrained.
 - JSON diagnostic overlay now requires `layoutPreview=1` explicitly; regular games remain overlay-free.
 - Bottom HUD blocks are not absolutely repositioned yet because their placement relative to the board requires device-level visual verification.
+
+## Local v3 footer mapping
+- Keep the full width of all five status fields; rejected a 60%-width experiment before proceeding.
+- Local CSS retains normal document flow for status and reaction controls.
+- `layoutDebug` now reports read-only selector matches and target JSON coordinates for stats, status, reactions and pause.
+- The current footer mapping is diagnostic, not a verified one-to-one placement. The same status selector is provisionally used for stats and status until the rendered DOM is inspected.
+- Automated guard prevents absolute positioning of the footer in the local v3 stylesheet.
