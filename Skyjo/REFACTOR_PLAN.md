@@ -33,3 +33,10 @@ Stand: 2026-10-27.
 - Historische CSS-Überschreibungen können absichtlich sein: keine Massenlöschung.
 - Inline-Styles im Body können von der Position in der CSS-Kaskade abhängen.
 - Vollständige Browser- und Spieltests sind noch offen.
+
+## Fortschritt 2026-10-27 – JavaScript
+- Fünf identische Inline-Skripte in eigenständige JS-Dateien ausgelagert: `skyjo_hub_autostart.js`, `skyjo_active_outline_sync.js`, `skyjo_online_motion.js`, `skyjo_clear_board_bonus.js`, `skyjo_clear_victory.js`.
+- Reihenfolge der klassischen Skripte und DOM-Platzierung beibehalten (keine neuen `async`/`defer`-Attribute).
+- HTML-Nachkontrolle: online 0 Inline-Skripte, lokal 1 Inline-Skript für den lokalen URL-Modus; beide 0 Inline-CSS-Blöcke.
+- Vor Entfernung weiterer CSS-Dateien: visuelle Regression und Überprüfung von Selektor-Überschreibungen erforderlich.
+- WICHTIG: Auslagerung ist noch keine nachgewiesene Browser-Funktionsprüfung; Tests auf Tablet und im Mehrspielermodus stehen aus.
