@@ -125,3 +125,11 @@ assert "requestAnimationFrame" in adapter, "Preview redraws must be throttled"
 assert "addEventListener(\'scroll\'" in adapter, "Preview must follow scrolling"
 assert "skyjo_layout_local_v3.json" in adapter
 print("SKYJO local layout: runtime CSS and non-interactive preview OK")
+
+
+# Ensure diagnostic overlays never become visible in ordinary local games.
+assert "get('layoutPreview')==='1'" in adapter
+local_css = (folder / "skyjo_local_layout_v3.css").read_text(encoding="utf-8")
+assert "skyjo-local-layout-ready" in local_css
+assert "overflow-x:auto" in local_css and "touch" in local_css
+print("SKYJO local tablet safety: opt-in preview and scrollable reactions OK")
