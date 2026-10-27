@@ -56,9 +56,11 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
        overlay.style.cssText='position:fixed;pointer-events:none;z-index:2147483000;overflow:visible;font:600 11px system-ui';
        document.body.append(overlay);
      }
-     const rect=board.getBoundingClientRect();
-     overlay.style.left=rect.left+'px';overlay.style.top=rect.top+'px';
-     overlay.style.width=rect.width+'px';overlay.style.height=rect.height+'px';
+     // The imported x/y coordinates describe the whole layout canvas,
+     // including the footer. Use the visible viewport, not only the board.
+     overlay.style.left='0px';overlay.style.top='0px';
+     overlay.style.width=window.innerWidth+'px';
+     overlay.style.height=window.innerHeight+'px';
      // Diagnostics use the game board as the shared reference rectangle.
    // Bottom HUD elements intentionally remain preview-only until their
    // real DOM containers can be safely positioned without covering cards.
