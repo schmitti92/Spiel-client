@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>SKYJO Action – Offline Edition</title>
+<meta name="theme-color" content="#061b1d" />
+<meta name="color-scheme" content="dark" />
+<link rel="stylesheet" href="skyjo_action-style-01.css">
+<link rel="stylesheet" href="skyjo_action-style-02.css">
+<link rel="stylesheet" href="skyjo_action-style-03.css">
+<link rel="stylesheet" href="skyjo_action-style-04.css">
+<link rel="stylesheet" href="skyjo_action-style-05.css">
+<link rel="stylesheet" href="skyjo_action-style-06.css">
+<link rel="stylesheet" href="skyjo_action-style-07.css">
+<link rel="stylesheet" href="skyjo_action-style-08.css">
+<link rel="stylesheet" href="skyjo_action-style-09.css">
+<link rel="stylesheet" href="skyjo_action-style-10.css">
+<link rel="stylesheet" href="skyjo_action-style-11.css">
+<link rel="stylesheet" href="skyjo_action-style-12.css">
+<link rel="stylesheet" href="skyjo_royal_table_v2.css?v=4">
+<link rel="stylesheet" href="skyjo_tablet_fit.css?v=2-preserve-cards">
+<link rel="stylesheet" href="skyjo_polish_phase12.css?v=1">
+<link rel="stylesheet" href="skyjo_reaction_dock.css?v=1">
+<link rel="stylesheet" href="skyjo_status_touch_fix.css?v=1">
+<link rel="stylesheet" href="skyjo_royal_realism.css?v=1">
+<link rel="stylesheet" href="skyjo_royal_detail.css?v=1">
+<link rel="stylesheet" href="skyjo_reference_finish.css?v=1">
+<link rel="stylesheet" href="skyjo_photo_backdrop.css?v=1">
+<link rel="stylesheet" href="skyjo_theme_visibility_fix.css?v=1">
+<link rel="stylesheet" href="skyjo_board_layout_polish.css?v=3">
+<link rel="stylesheet" href="skyjo_royal_redesign.css?v=2">
+<link rel="stylesheet" href="skyjo_xl_layout.css?v=15">
+
+
+
+<style id="skyjo-active-single-outline-v4">
+/* Exactly one gold outline around the active player's whole board. */
+html body.is-playing section.player.active {
+  border: 4px solid #ffcc32 !important;
+  outline: none !important;
+  border-radius: 19px !important;
+  box-shadow: 0 0 0 1px #fff0a0, 0 0 15px 4px #ffb800a6 !important;
+  filter: none !important;
+  animation: none !important;
+}
+html body.is-playing section.player.active > .player-head,
+html body.is-playing section.player.active > .gridwrap,
+html body.is-playing section.player.active .scorechip {
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+html body.is-playing section.player.active > .gridwrap {
+  border-color: transparent !important;
+}
+</style>
+<style id="skyjo-premium-cards-v1">
+/* Visual-only card polish. Keeps card sizes, hit targets and game logic unchanged. */
+body.is-playing .player .card,
+body.is-playing .premium-piles .card,
+body.is-playing .real-hand-card .card {
+ border-radius: 10px !important;
+ border: 1px solid rgba(255,231,171,.8) !important;
+ box-shadow: inset 0 1px 1px #ffffffb0, inset 0 -3px 5px #00000030, 0 3px 0 #120d0c, 0 5px 9px #0008 !important;
+ text-shadow: 0 1px 1px #fff8, 0 2px 2px #0002;
+ overflow: hidden;
+}
+body.is-playing .player .card::after,
+body.is-playing .premium-piles .card::after,
+body.is-playing .real-hand-card .card::after {
+ content: ""; position:absolute; inset:3px; border-radius:7px; pointer-events:none;
+ border:1px solid #ffffff45;
+ background:linear-gradient(145deg,#ffffff30 0%,transparent 34%,transparent 72%,#00000013 100%);
+}
+body.is-playing .player .card.back,
+body.is-playing .premium-piles .card.back,
+body.is-playing .real-hand-card .card.back {
+ border: 2px solid #c89d4b !important;
+ background-color:#06284b !important;
+ background-image:radial-gradient(ellipse at 48% 38%,#184f80 0%,#082b52 58%,#03172f 100%) !important;
+ box-shadow: inset 0 0 0 2px #071d36, inset 0 0 0 3px #c39a4b, inset 0 0 15px #0008, 0 3px 0 #100c0a, 0 5px 9px #0008 !important;
+}
+body.is-playing .player .card .mini,
+body.is-playing .premium-piles .card .mini,
+body.is-playing .real-hand-card .card .mini {display:none !important;}
+@media(prefers-reduced-motion:no-preference) and (hover:hover){
+ body.is-playing .player .card.clickable:hover {filter:brightness(1.08);transform:translateY(-2px);}
+}
+</style>
+<style id="skyjo-active-outline-4x3-fix">
+/* The 4x3 and 5x3 layouts both use the same player element. One outline only. */
+html body section.player.active,
+html body .table-area section.player.active,
+html body .three-player-layout section.player.active,
+html body .four-player-layout section.player.active {
+ position:relative !important;
+ isolation:isolate;
+ border:4px solid #ffce30 !important;
+ outline:none !important;
+ border-radius:19px !important;
+ box-shadow:0 0 0 2px #fff1a2,0 0 17px 5px #ffbd30b0 !important;
+}
+html body section.player.active::before {
+ content:""; position:absolute; inset:-4px; border:4px solid #ffd52f;
+ border-radius:19px; pointer-events:none; z-index:10;
+ box-shadow:0 0 13px 3px #ffbd36aa;
+}
+html body section.player.active > .gridwrap,
+html body section.player.active > .player-head {outline:none !important;}
+</style>
+<script>if(new URLSearchParams(location.search).get("mode")!=="local")location.replace("skyjo_action_local.html?mode=local");</script>
+</head>
+<body>
+<div id="app" class="app"></div>
+<div id="toast" class="toast"></div>
+<div id="modalBack" class="modal-back"><div id="modal" class="modal"></div></div>
+
+
+<script src="skyjo_action-actions.js"></script>
+<script src="skyjo_action-loader.js?v=21-cache-repair-local"></script>
+<script src="skyjo_two_test_players.js?v=7" defer></script>
+
+<style>
+/* Sichtbare Zuganzeige, ohne Eingriff in SKYJO-Spielregeln */
+.sky-turn-indicator{position:fixed;left:50%;top:9px;transform:translateX(-50%);z-index:90;max-width:min(420px,62vw);pointer-events:none;background:rgba(10,35,40,.95);color:white;border:2px solid #ffd770;border-radius:16px;padding:9px 18px;text-align:center;box-shadow:0 6px 25px #0008;font:700 clamp(13px,1.8vw,18px) system-ui}
+.sky-turn-indicator.mine{border-color:#4df3a0;background:#07553d;box-shadow:0 0 22px #3af19c9c}
+.sky-turn-indicator[hidden]{display:none}
+.skyjo-update-notice{position:fixed;inset:auto 12px 16px;z-index:9999;max-width:500px;margin:auto;background:#122b34;color:#fff;border:2px solid #ffcf73;border-radius:18px;box-shadow:0 12px 35px #000b;padding:17px;font:15px system-ui}
+.skyjo-update-notice[hidden]{display:none}
+.skyjo-update-notice strong{font-size:19px;display:block;margin-bottom:5px}
+.skyjo-update-notice button{margin-top:12px;background:#f6ce67;color:#182128;border:0;border-radius:10px;padding:12px 17px;font-weight:800;cursor:pointer}
+.skyjo-update-notice .dismiss{background:transparent;color:white;border:1px solid #74858b;margin-left:8px}
+@media(max-width:700px){.sky-turn-indicator{top:4px;max-width:54vw;padding:6px 10px;font-size:12px}}
+
+/* Active player: strong luminous border around the entire player board. */
+body.is-playing .player.sky-active-glow{
+ position:relative!important;
+ z-index:8!important;
+ outline:4px solid #6affac!important;
+ outline-offset:2px!important;
+ border-radius:15px!important;
+ box-shadow:0 0 0 2px #eaffb7,0 0 14px 5px #24ff88,0 0 36px 12px #18ed75a8,inset 0 0 22px #4dff9255!important;
+ animation:sky-player-glow 1.6s ease-in-out infinite alternate!important;
+}
+@keyframes sky-player-glow{
+ from{filter:drop-shadow(0 0 3px #37ff87);outline-color:#b7ffcf}
+ to{filter:drop-shadow(0 0 17px #00ff80);outline-color:#20ff79}
+}
+@media(prefers-reduced-motion:reduce){body.is-playing .player.sky-active-glow{animation:none!important}}
+
+/* Board-only turn feedback: strong glow visible on standard and scenic layouts. */
+body.is-playing .player.sky-active-glow,
+body.is-playing .skyjo-scenic-stage .player.sky-active-glow{
+ isolation:isolate!important;
+ outline:5px solid #63ff9e!important;
+ outline-offset:0!important;
+ border:5px solid #56ffa1!important;
+ background-color:rgba(22,120,75,.33)!important;
+ box-shadow:0 0 0 3px #c7ffe0,0 0 22px 8px #00ff88,0 0 55px 18px #00f97899,inset 0 0 28px #64ff9e66!important;
+ filter:brightness(1.24)!important;
+ animation:sky-player-glow 1.25s ease-in-out infinite alternate!important;
+}
+.sky-turn-indicator{display:none!important}
+
+/* Scoreboard must retain the same row-major card positions as the game board.
+   12 cards: 4 columns x 3 rows; 15-card variant: 3 columns x 5 rows. */
+.sky-score-board:has(> :nth-child(15):last-child),
+.sky-score-mini-grid:has(> :nth-child(15):last-child){
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ grid-template-rows:repeat(5,minmax(0,auto))!important;
+}
+.sky-score-board:has(> :nth-child(12):last-child),
+.sky-score-mini-grid:has(> :nth-child(12):last-child){
+ display:grid!important;
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ grid-template-rows:repeat(3,minmax(0,auto))!important;
+}
+.sky-score-board>.sky-score-tile,.sky-score-mini-grid>.sky-score-tile{min-width:0!important}
+
+/* Active player: brighten existing yellow header into gold, without a frame. */
+body.is-playing .player.sky-active-glow,
+body.is-playing .skyjo-scenic-stage .player.sky-active-glow{
+ outline:none!important;border-color:transparent!important;
+ box-shadow:none!important;filter:none!important;animation:none!important;
+ background-color:inherit!important;
+}
+body.is-playing .player.sky-active-glow :is(.player-head,.player-header,.player-title,.player-top,.player-topbar,.player-namebar,.phead,.head){
+ background:linear-gradient(105deg,#f4bc39 0%,#fff3a1 42%,#ffd04d 75%,#e9a51d 100%)!important;
+ color:#30200a!important;
+ box-shadow:inset 0 1px 0 #fff9,0 2px 12px #ffd45b66!important;
+}
+
+/* Correct XL scoring: 15 cards are FIVE columns and THREE rows. */
+.sky-score-board:has(> :nth-child(15):last-child),
+.sky-score-mini-grid:has(> :nth-child(15):last-child){
+ display:grid!important;
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ grid-template-rows:repeat(3,minmax(0,auto))!important;
+}
+</style>
+<style id="skyjo-tablet-performance-v2">
+/* Rendering optimizations only: no changes to layout, card dimensions or gameplay. */
+@media (orientation:landscape) and (min-width:1000px) and (max-height:1000px){
+ body.is-playing .three-player-layout .player .card:not(.moving):not(.flipping),
+ body.is-playing .three-player-layout .player .card-slot:not(.moving){
+   backface-visibility:hidden;
+   -webkit-backface-visibility:hidden;
+ }
+ body.is-playing .three-player-layout .gridwrap,
+ body.is-playing .three-player-layout .center-table,
+ body.is-playing .three-player-layout .player{
+   background-attachment:scroll!important;
+ }
+ body.is-playing .three-player-layout .player .card:not(.moving):not(.flipping){
+   will-change:auto!important;
+ }
+ body.is-playing .three-player-layout .card.moving,
+ body.is-playing .three-player-layout .card.flipping{
+   will-change:transform,opacity;
+ }
+}
+</style>
+<style id="skyjo-tablet-performance-v1">
+/* Limit expensive compositing on Android tablets without changing card dimensions. */
+@media (orientation:landscape) and (min-width:1000px) and (max-height:1000px){
+ body.is-playing .table-area.three-player-layout .player .grid,
+ body.is-playing .table-area.three-player-layout .player .gridwrap{
+   filter:none!important;
+   backdrop-filter:none!important;
+   -webkit-backdrop-filter:none!important;
+ }
+ body.is-playing .table-area.three-player-layout .card,
+ body.is-playing .table-area.three-player-layout .card-slot{
+   backdrop-filter:none!important;
+   -webkit-backdrop-filter:none!important;
+ }
+ body.is-playing .table-area.three-player-layout .mini-players-stack .player{
+   box-shadow:0 2px 7px #0006!important;
+ }
+ body.is-playing .table-area.three-player-layout .card:not(.moving):not(.flipping){
+   transition-property:transform,opacity!important;
+ }
+}
+@media (prefers-reduced-motion:reduce){
+ body.is-playing .table-area.three-player-layout .card:not(.moving):not(.flipping){
+   transition-duration:0ms!important;
+ }
+}
+</style>
+<style id="skyjo-landscape-three-player-fit-v3">
+/* Three-player XL on landscape tablets: prioritise visible full boards.
+   Own cards are untouched; side cards reduce by at most ~12% at this breakpoint. */
+@media (min-width:1050px) and (orientation:landscape) and (max-height:850px){
+ body.is-playing[data-players="3"] .table-area.three-player-layout{
+   gap:6px!important;align-items:start!important;
+ }
+ body.is-playing[data-players="3"] .table-area.three-player-layout .mini-players-stack{
+   gap:5px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player{
+   padding:3px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player-head{
+   padding:2px 6px!important;min-height:0!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .gridwrap{
+   padding:3px 4px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .grid{
+   --card-w:clamp(38px,2.8vw,44px)!important;
+   gap:3px!important;padding:2px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .mini-player-wrap .player .card-slot{
+   width:var(--card-w)!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table{
+   gap:4px!important;padding:4px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .handbox{
+   min-height:0!important;padding:5px!important;
+ }
+ body.is-playing[data-players="3"] .three-player-layout .center-table .premium-piles{
+   gap:4px!important;
+ }
+ body.is-playing[data-players="3"] .topbar{
+   min-height:38px!important;padding-block:2px!important;
+ }
+ body.is-playing[data-players="3"] .status.premium-status{
+   margin-block:2px 4px!important;
+ }
+ body.is-playing[data-players="3"] .status.premium-status .stat{
+   min-height:38px!important;padding-block:3px!important;
+ }
+}
+</style>
+<style id="skyjo-tablet-height-fit-v1">
+/* Landscape tablets: keep all three seats, hand and piles inside the usable height. */
+@media (orientation:landscape) and (min-width:1000px) and (max-height:900px){
+ body.is-playing .three-player-layout{
+  align-items:start!important;
+  gap:clamp(5px,.65vh,9px)!important;
+ }
+ body.is-playing .three-player-layout .player,
+ body.is-playing .three-player-layout .center-table{
+  padding:clamp(4px,.65vh,8px)!important;
+ }
+ body.is-playing .three-player-layout .player-head{
+  padding:clamp(3px,.5vh,7px)!important;
+  min-height:0!important;
+ }
+ body.is-playing .three-player-layout .player .gridwrap{
+  padding:clamp(3px,.55vh,7px)!important;
+ }
+ body.is-playing .three-player-layout .grid{
+  gap:clamp(2px,.4vh,5px)!important;
+ }
+ body.is-playing .three-player-layout .mini-player-wrap{
+  gap:clamp(4px,.65vh,8px)!important;
+ }
+ body.is-playing .three-player-layout .mini-player-wrap .player .gridwrap{
+  padding:clamp(2px,.4vh,5px)!important;
+ }
+ body.is-playing .three-player-layout .match-actions,
+ body.is-playing .three-player-layout .match-resolve{
+  margin-top:clamp(3px,.5vh,7px)!important;
+  padding:clamp(3px,.5vh,7px)!important;
+ }
+ body.is-playing .three-player-layout .match-resolve-btn{
+  padding:clamp(4px,.55vh,7px) clamp(5px,.6vw,9px)!important;
+  min-height:0!important;
+ }
+ body.is-playing .three-player-layout .center-table .handbox,
+ body.is-playing .three-player-layout .center-table .premium-piles{
+  margin-bottom:clamp(4px,.6vh,8px)!important;
+ }
+}
+</style>
+<style id="skyjo-score-contrast-fix">
+/* Own score must remain legible against the dark badge, including the gold active-player header. */
+body.is-playing .player.mine .score-stack .scorechip,
+body.is-playing .player.mine.sky-active-glow .score-stack .scorechip{
+ background:linear-gradient(160deg,#101d2c,#06101b)!important;
+ border:1px solid #d9b66a!important;
+ color:#fff8dd!important;
+ opacity:1!important;
+}
+body.is-playing .player.mine .score-stack .scorechip small,
+body.is-playing .player.mine .score-stack .scorechip b,
+body.is-playing .player.mine.sky-active-glow .score-stack .scorechip small,
+body.is-playing .player.mine.sky-active-glow .score-stack .scorechip b{
+ color:#fff8dd!important;
+ -webkit-text-fill-color:#fff8dd!important;
+ opacity:1!important;
+ filter:none!important;
+ text-shadow:0 1px 2px #000!important;
+}
+body.is-playing .player.mine .score-stack .scorechip b{font-weight:900!important}
+</style>
+<script>
+/* Shared hub is authoritative: skip SKYJO's obsolete second start confirmation. */
+(function(){
+ const q=new URLSearchParams(location.search);
+ if(!/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/.test(q.get('hub')||'')||!q.get('match')||!/^S[A-HJ-NP-Z2-9]{9}$/.test(q.get('room')||''))return;
+ let started=false;
+ const begin=()=>{
+   if(started)return;
+   const button=document.querySelector('button[onclick="Game.startOnlineGame()"]');
+   if(!button||button.disabled)return;
+   started=true;
+   button.click();
+ };
+ const watcher=new MutationObserver(begin);
+ const start=()=>{watcher.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});begin();};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+ window.addEventListener('pagehide',()=>watcher.disconnect(),{once:true});
+})();
+</script>
+<script src="skyjo_turn_and_update.js?v=4" defer></script>
+<script id="skyjo-gold-active-sync-v1">
+/* Applies the same outer gold outline in 4x3 and 5x3, including after rerenders. */
+(function(){
+ const gold='4px solid #ffd12e';
+ function sync(){
+   document.querySelectorAll('section.player').forEach(function(el){
+     if(el.classList.contains('active')){
+       el.style.setProperty('border',gold,'important');
+       el.style.setProperty('outline','none','important');
+       el.style.setProperty('box-shadow','0 0 0 2px #fff1a2, 0 0 17px 5px #ffbd30b0','important');
+       el.style.setProperty('border-radius','19px','important');
+     }else{
+       ['border','outline','box-shadow','border-radius'].forEach(function(prop){
+         if(el.style.getPropertyPriority(prop)==='important')el.style.removeProperty(prop);
+       });
+     }
+   });
+ }
+ let pending=false;
+ const schedule=function(){if(!pending){pending=true;requestAnimationFrame(function(){pending=false;sync()})}};
+ document.addEventListener('DOMContentLoaded',function(){
+   const root=document.getElementById('app');
+   if(root)new MutationObserver(schedule).observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+   sync();
+ });
+})();
+</script>
+<script id="skyjo-online-motion-fast-v1">
+/* Faster card transitions in online rooms, without additional server reads.
+   Loaded logic is assembled asynchronously; install once it becomes available. */
+(function(){
+ let attempts=0;
+ const timer=setInterval(function(){
+   attempts++;
+   if(typeof motionSpec==='function' && typeof cloud!=='undefined'){
+     clearInterval(timer);
+     const original=motionSpec;
+     motionSpec=function(){
+       const spec=original();
+       if(!cloud || !cloud.enabled)return spec;
+       return {...spec,
+         flight:Math.min(spec.flight,125),
+         settle:Math.min(spec.settle,14),
+         swapGap:Math.min(spec.swapGap,12),
+         pause:Math.min(spec.pause,6),
+         flip:Math.min(spec.flip,95),
+         revealPause:Math.min(spec.revealPause,12)};
+     };
+   }else if(attempts>=100)clearInterval(timer);
+ },150);
+})();
+</script>
+<script id="skyjo-clear-board-minus20-v1">
+/* Complete-clear bonus: only an entirely empty board (including extras) qualifies.
+   Applied in the authoritative scoring functions, not merely in the display. */
+(function(){
+ let tries=0;
+ const install=setInterval(function(){
+   tries++;
+   if(typeof rawRoundScore==='function' && typeof scoreItemsForPlayer==='function'){
+     clearInterval(install);
+     const originalScore=rawRoundScore;
+     const originalItems=scoreItemsForPlayer;
+     const cleared=function(p){
+       return !!p && Array.isArray(p.grid) && p.grid.length>0 &&
+         p.grid.every(function(c){return c==null}) &&
+         (!Array.isArray(p.extras)||p.extras.every(function(c){return c==null}));
+     };
+     rawRoundScore=function(p){return originalScore(p)-(cleared(p)?20:0)};
+     scoreItemsForPlayer=function(p){
+       const items=originalItems(p);
+       if(cleared(p))items.push({kind:'bonus',value:-20,label:'Alle Karten abgebaut'});
+       return items;
+     };
+   }else if(tries>=120)clearInterval(install);
+ },100);
+})();
+</script>
+<style id="skyjo-clear-victory-style-v1">
+.skyjo-clear-victory{position:fixed;inset:0;z-index:2147482000;display:grid;place-items:center;pointer-events:none;overflow:hidden;background:radial-gradient(ellipse at center,#092f46a8,#010811cf);animation:skyjoClearBackdrop 3.5s ease both}
+.skyjo-clear-victory .skyjo-clear-panel{position:relative;text-align:center;padding:clamp(25px,6vw,65px);border:3px solid #ffe18b;border-radius:28px;background:linear-gradient(145deg,#112c42f5,#05121ff5);box-shadow:0 0 65px #ffcb54a8,inset 0 0 35px #ffcf4430;animation:skyjoClearArrival .8s cubic-bezier(.2,1.4,.3,1) both;max-width:92vw}
+.skyjo-clear-victory .skyjo-clear-crown{font-size:clamp(55px,11vw,120px);filter:drop-shadow(0 0 25px #ffde69);animation:skyjoClearCrown 1.4s ease-in-out infinite alternate}
+.skyjo-clear-victory .skyjo-clear-title{font-size:clamp(27px,6vw,68px);font-weight:1000;letter-spacing:.06em;color:#ffdf79;text-shadow:0 0 22px #f8a300,0 3px 0 #713a00}
+.skyjo-clear-victory .skyjo-clear-name{color:#fff;font-size:clamp(19px,3vw,35px);font-weight:800;margin-top:10px}
+.skyjo-clear-victory .skyjo-clear-score{font-size:clamp(50px,10vw,112px);font-weight:1000;line-height:1.1;color:#8affd6;text-shadow:0 0 26px #13e5a8;margin-top:12px}
+.skyjo-clear-victory .skyjo-clear-particle{position:absolute;left:50%;top:50%;width:8px;height:16px;border-radius:2px;background:var(--color);transform:translate(-50%,-50%);animation:skyjoClearParticle var(--duration) ease-out var(--delay) both}
+@keyframes skyjoClearArrival{from{opacity:0;transform:scale(.25) rotate(-7deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes skyjoClearBackdrop{0%{opacity:0}12%,78%{opacity:1}100%{opacity:0}}
+@keyframes skyjoClearCrown{to{transform:translateY(-10px) scale(1.08)}}
+@keyframes skyjoClearParticle{0%{opacity:0;transform:translate(-50%,-50%) rotate(0) scale(.2)}15%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) rotate(var(--rot)) scale(.8)}}
+@media(prefers-reduced-motion:reduce){.skyjo-clear-victory,.skyjo-clear-victory *{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+<script id="skyjo-clear-victory-script-v1">
+(function(){
+ const seen=new Set();
+ function celebrate(){
+   const seq=(typeof state!=='undefined'&&state)?state.scoreSequence:null;
+   if(!seq||!seq.id||seen.has(seq.id))return;
+   seen.add(seq.id);
+   const winners=(seq.players||[]).filter(function(p){return Array.isArray(p.gridSnapshot)&&p.gridSnapshot.length>0&&p.gridSnapshot.every(function(c){return c==null})&&(!Array.isArray(p.openingExtras)||!p.openingExtras.length||!(typeof state!=='undefined'&&state.players&&state.players[p.index]&&state.players[p.index].extras||[]).some(Boolean))});
+   if(!winners.length)return;
+   let index=0;
+   function show(){
+     if(index>=winners.length)return;
+     const player=winners[index++];
+     const layer=document.createElement('div');
+     layer.className='skyjo-clear-victory';
+     layer.setAttribute('role','status');
+     const panel=document.createElement('div');
+     panel.className='skyjo-clear-panel';
+     const crown=document.createElement('div');crown.className='skyjo-clear-crown';crown.textContent='🏆';
+     const title=document.createElement('div');title.className='skyjo-clear-title';title.textContent='PERFEKT ABGERÄUMT!';
+     const name=document.createElement('div');name.className='skyjo-clear-name';name.textContent=player.name||'Spieler';
+     const score=document.createElement('div');score.className='skyjo-clear-score';score.textContent='−20 PUNKTE';
+     panel.append(crown,title,name,score);layer.append(panel);
+     if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+       const colors=['#ffdb70','#fff1b5','#65e7d3','#ffffff','#f6a13b'];
+       for(let i=0;i<75;i++){const p=document.createElement('i');p.className='skyjo-clear-particle';p.style.setProperty('--color',colors[i%colors.length]);p.style.setProperty('--x',Math.round((Math.random()-.5)*window.innerWidth*1.6)+'px');p.style.setProperty('--y',Math.round((Math.random()-.5)*window.innerHeight*1.5)+'px');p.style.setProperty('--rot',Math.round(Math.random()*960)+'deg');p.style.setProperty('--duration',(1.3+Math.random()*1.4)+'s');p.style.setProperty('--delay',(Math.random()*.45)+'s');layer.append(p)}
+     }
+     document.body.append(layer);
+     if(navigator.vibrate)try{navigator.vibrate([70,50,120,70,170])}catch(_e){}
+     setTimeout(function(){layer.remove();show()},3500);
+   }
+   show();
+ }
+ let queued=false;
+ function schedule(){if(queued)return;queued=true;requestAnimationFrame(function(){queued=false;celebrate()})}
+ document.addEventListener('DOMContentLoaded',function(){
+   const app=document.getElementById('app');
+   if(app)new MutationObserver(schedule).observe(app,{childList:true,subtree:false});
+   schedule();
+ });
+})();
+</script>
+</body>
+</html>
