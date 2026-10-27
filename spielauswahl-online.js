@@ -203,8 +203,8 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refre
    else startSelectionStream();
  });
  window.addEventListener('pagehide',stopSelectionStream);
- setInterval(()=>{if(!selectionStreamReady)void refresh();},15000);
- setInterval(()=>{if(selectionStreamReady)void refresh();},60000);
+ setInterval(()=>{if(!selectionStreamReady)void refresh();},30000);
+ setInterval(()=>{if(selectionStreamReady)void refresh();},180000);
  startSelectionStream();
 renderProfileShortcut();
 void refresh();
