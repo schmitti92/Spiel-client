@@ -149,3 +149,9 @@ Stand: 2026-10-27.
 - HUD diagnostics now distinguish DOM presence from nonzero on-screen dimensions.
 - Added structural regression checks and refreshed the local preview JS asset to v4.
 - Exact DOM-to-JSON footer placement and device screenshots are not yet verified.
+
+## Active-player frame and compact tablet sizing
+- The active player's full card section gets a stronger continuous gold border and glow in local three-player landscape only.
+- Short landscape viewports (900px+ wide, 760px or less tall) use a lower board minimum height so footer controls have more room.
+- Local CSS cache version advanced to v4 and regression checks added.
+- Visual tablet screenshot and card hit-testing still need confirmation; nine-block exact HUD positioning remains incomplete.
