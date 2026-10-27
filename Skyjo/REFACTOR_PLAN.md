@@ -116,3 +116,9 @@ Stand: 2026-10-27.
 - The drag-and-resize editor is now explicitly opt-in via `?mode=local&layoutEditor=1`; ordinary offline games no longer show its floating button.
 - `layoutDebug` reports actual HUD bounds as percentages of the viewport alongside the imported target values. This is read-only.
 - The HUD selectors remain provisional until verified against a rendered three-player session; no automatic HUD repositioning is enabled.
+
+## Live local HUD geometry diagnostics
+- `layoutDebug` now refreshes after DOM child changes and viewport resizing, with redraws limited to animation frames.
+- HUD diagnostics include actual viewport percentages and deltas to the JSON targets.
+- Stats/status are explicitly marked as a shared DOM container; their distinct target rectangles must not be applied blindly.
+- Still pending: exact footer DOM mapping, automated browser screenshot verification, and physical tablet validation.
