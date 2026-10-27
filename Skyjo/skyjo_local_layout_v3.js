@@ -34,7 +34,7 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
    stats:'.status.premium-status',
    status:'.status.premium-status',
    reactions:'.bottom-actions .emoji-reaction-bar',
-   pause:'.bottom-actions button, .bottom-actions [role="button"]'
+   pause:'[data-action="pause"], #pauseBtn, .pause-btn'
  };
  if(new URLSearchParams(location.search).has('layoutDebug')){
    const report=()=>console.table(Object.entries(hudSelectors).map(([id,selector])=>{
