@@ -37,7 +37,9 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
    pause:'[data-action="pause"], #pauseBtn, .pause-btn'
  };
  if(new URLSearchParams(location.search).has('layoutDebug')){
-   const report=()=>console.table(Object.entries(hudSelectors).map(([id,selector])=>{
+   let previousReport='';
+   const report=()=>{
+     const rows=Object.entries(hudSelectors).map(([id,selector])=>{
      const el=document.querySelector(selector);
      const b=m.get(id);
      // The two status-related JSON blocks still share one real container.
@@ -53,7 +55,10 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
        actualX,actualY,actualW,actualH,
        deltaX:rect?px(actualX-b.x):null,deltaY:rect?px(actualY-b.y):null,
        deltaW:rect?px(actualW-b.w):null,deltaH:rect?px(actualH-b.h):null};
-   }));
+     });
+     const snapshot=JSON.stringify(rows);
+     if(snapshot!==previousReport){previousReport=snapshot;console.table(rows)}
+   };
    const startReport=()=>{
      let pending=false;
      const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;report()})};
