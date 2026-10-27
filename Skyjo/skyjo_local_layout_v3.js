@@ -54,9 +54,13 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
      }
    };
    (document.readyState==='loading'?document.addEventListener.bind(document,'DOMContentLoaded'):fn=>fn())(()=>{
-     renderPreview();
-     window.addEventListener('resize',renderPreview,{passive:true});
-     new MutationObserver(renderPreview).observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+     let scheduled=false;
+     const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;renderPreview()})};
+     schedule();
+     window.addEventListener('resize',schedule,{passive:true});
+     window.addEventListener('scroll',schedule,{passive:true});
+     const app=document.getElementById('app');
+     if(app)new MutationObserver(schedule).observe(app,{childList:true,subtree:true});
    },{once:true});
  }
  root.dataset.skyjoLocalLayout='v3';
