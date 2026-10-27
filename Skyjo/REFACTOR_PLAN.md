@@ -81,3 +81,8 @@ Stand: 2026-10-27.
 - Abstände zwischen den drei Spalten sowie zwischen Handzone/Stapel und den rechten Spielerfeldern werden aus den gelieferten Koordinaten berechnet, mit begrenzten responsiven CSS-Werten.
 - Nur die lokale Drei-Spieler-Querformatansicht verwendet diese Abstände; die exakte absolute Positionierung von Status, Statistik, Reaktionen und Pause steht noch aus.
 - Der Integritätstest überprüft zusätzlich die Originalinhalte aller sechs historischen CSS-Zusammenführungen und beider neuen Design-Bundles.
+
+## Local layout v3 diagnostic
+- Fixed two escaped newline artifacts in runtime stylesheet.
+- Optional `layoutPreview=1` draws noninteractive rectangles from nine JSON blocks, relative to the board. This is diagnostic only, not exact final positioning.
+- Added regression tests; tablet visual verification and exact placement of external controls remain open.
