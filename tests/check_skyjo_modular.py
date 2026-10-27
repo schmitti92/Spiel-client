@@ -145,7 +145,7 @@ print('SKYJO layout preview uses viewport and pause-specific diagnostics')
 
 editor = (folder / 'skyjo_layout_editor.js').read_text(encoding='utf-8')
 assert "params.get('layoutEditor')!=='1'" in editor
-assert 'actualX:rect?' in adapter and 'actualY:rect?' in adapter
+assert 'const actualX=rect?' in adapter and 'const actualY=rect?' in adapter
 print('SKYJO layout editor opt-in and HUD geometry diagnostics OK')
 
 assert 'deltaX:rect?' in adapter and 'deltaY:rect?' in adapter
