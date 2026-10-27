@@ -297,3 +297,41 @@
    margin-left:auto!important;
  }
 }
+
+/* v13: Hand area is deliberately large. Lock both grid tracks so drawing
+   or playing a hand card cannot push the discard/deck area vertically. */
+@media (min-width:900px) and (orientation:landscape) {
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .center-seat,
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .center-table {
+   min-height:0!important;
+   height:100%!important;
+   overflow:visible!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .center-table {
+   display:grid!important;
+   grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;
+   grid-auto-rows:0!important;
+   align-content:stretch!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .handbox,
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .premium-piles {
+   height:100%!important;
+   min-height:0!important;
+   max-height:100%!important;
+   overflow:hidden!important;
+   box-sizing:border-box!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap {
+   overflow:hidden!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap > .player {
+   height:100%!important;
+   min-height:0!important;
+   display:flex!important;
+   flex-direction:column!important;
+ }
+ body.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .mini-player-wrap .gridwrap {
+   flex:1 1 auto!important;
+   min-height:0!important;
+ }
+}
