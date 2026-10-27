@@ -87,3 +87,33 @@
 body.is-playing:has(.table-area.three-player-layout) .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:first-child .player-head{background:linear-gradient(100deg,#8c1b32,#d53b56,#79152b)!important;color:#fff!important}
 body.is-playing:has(.table-area.three-player-layout) .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:nth-child(2) .player-head{background:linear-gradient(100deg,#0d5d39,#279b5a,#0a4b2c)!important;color:#fff!important}
 }
+
+/* v3: target the actual three-player DOM without relying on body.is-playing.
+   The uploaded layout places stats at bottom and enlarges player columns. */
+@media (min-width:900px) and (orientation:landscape){
+ body:has(.table-area.three-player-layout) .table-area.three-player-layout{
+  grid-template-columns:minmax(0,1.12fr) minmax(0,.68fr) minmax(0,1.03fr)!important;
+  align-items:stretch!important;min-height: min(69vh,680px)!important;
+ }
+ body:has(.table-area.three-player-layout) .table-area.three-player-layout .mini-players-stack{
+  display:grid!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;
+ }
+ body:has(.table-area.three-player-layout) .table-area.three-player-layout .mini-player-wrap:first-child .gridwrap{
+  background:radial-gradient(ellipse,#78253c,#270d1b)!important;
+ }
+ body:has(.table-area.three-player-layout) .table-area.three-player-layout .mini-player-wrap:nth-child(2) .gridwrap{
+  background:radial-gradient(ellipse,#18633c,#08271b)!important;
+ }
+ body:has(.table-area.three-player-layout) .table-area.three-player-layout .mini-player-wrap:first-child .player-head{
+  background:linear-gradient(100deg,#8c243b,#d94a67,#772033)!important;color:#fff!important;
+ }
+ body:has(.table-area.three-player-layout) .table-area.three-player-layout .mini-player-wrap:nth-child(2) .player-head{
+  background:linear-gradient(100deg,#0c5e37,#35a466,#0c482b)!important;color:#fff!important;
+ }
+ body:has(.table-area.three-player-layout) .table-area.three-player-layout .own-seat .player{
+  min-height:100%!important;
+ }
+ body:has(.table-area.three-player-layout) .status.premium-status{
+  position:relative!important;order:99!important;
+ }
+}
