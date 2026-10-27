@@ -1,0 +1,31 @@
+/* SKYJO local visual layout lab. Does not persist until explicitly saved. */
+(()=>{'use strict';if(new URLSearchParams(location.search).get('mode')!=='local')return;
+const selectors=['#player-0','#player-1','#player-2','#player-3','.hand-zone','.handzone','#handZone','.center-area','.center-zone','.game-stats','.stats-bar','.top-stats'];
+let editing=false,selected=null,overlay,box,drag=null;
+const style=document.createElement('style');style.textContent=`
+body.skyjo-editing .skyjo-edit-target{outline:2px dashed #6be9ff!important;outline-offset:2px;cursor:move!important;touch-action:none!important}
+#skyjo-editor-panel{position:fixed;right:12px;top:100px;z-index:2147483000;background:#091e2bf2;color:#fff;border:2px solid #eac26a;border-radius:16px;padding:14px;width:260px;max-height:78vh;overflow:auto;font:14px system-ui;box-shadow:0 10px 40px #000b}
+#skyjo-editor-panel button,#skyjo-editor-panel input{font:inherit}#skyjo-editor-panel button{background:#234b65;color:white;border:1px solid #7194a8;border-radius:9px;padding:8px;margin:3px;cursor:pointer}#skyjo-editor-panel input{width:100%}#skyjo-editor-panel label{display:block;margin:10px 0 3px}#skyjo-editor-panel .selected{color:#ffda83;font-weight:bold}
+#skyjo-editor-toggle{position:fixed;right:12px;bottom:90px;z-index:2147483001;background:#f4c663;color:#13202c;border:2px solid #fff1c5;border-radius:12px;padding:12px;font:bold 15px system-ui;box-shadow:0 4px 18px #0008}
+`;document.head.append(style);
+const toggle=document.createElement('button');toggle.id='skyjo-editor-toggle';toggle.textContent='🎨 Layout bearbeiten';document.body.append(toggle);
+const panel=document.createElement('div');panel.id='skyjo-editor-panel';panel.hidden=true;panel.innerHTML='<strong>🎨 SKYJO Layout-Labor</strong><p>Blöcke antippen, ziehen und vergrößern. Nur lokale Ansicht.</p><div class="selected">Kein Block gewählt</div><label>Breite <span id="ed-w-val">100%</span></label><input id="ed-w" type="range" min="50" max="180" value="100"><label>Höhe <span id="ed-h-val">100%</span></label><input id="ed-h" type="range" min="50" max="180" value="100"><div><button id="ed-reset">Zurücksetzen</button><button id="ed-save">Speichern</button><button id="ed-close">Schließen</button></div><small>Position und Größe bleiben nach Speichern nur in diesem Browser gespeichert. Kein Firebase.</small>';document.body.append(panel);
+const key='skyjo-local-layout-lab-v1';
+function candidates(){let out=[];for(const s of selectors){try{out.push(...document.querySelectorAll(s))}catch(e){}}return [...new Set(out)].filter(x=>x instanceof HTMLElement&&!x.closest('#skyjo-editor-panel')&&!x.closest('#skyjo-editor-toggle'))}
+function identity(el){if(el.id)return '#'+CSS.escape(el.id);const cls=[...el.classList].filter(x=>!x.startsWith('skyjo-edit'));if(!cls.length)return null;const c='.'+cls.map(x=>CSS.escape(x)).join('.');const list=[...document.querySelectorAll(c)];return c+'::'+list.indexOf(el)}
+function resolve(id){if(!id)return null;const i=id.lastIndexOf('::');try{return i<0?document.querySelector(id):document.querySelectorAll(id.slice(0,i))[Number(id.slice(i+2))]}catch(e){return null}}
+function set(el,x,y,w,h){el.style.setProperty('transform',`translate(${x}px,${y}px) scale(${w/100},${h/100})`,'important');el.style.transformOrigin='center center';el.dataset.skyjoEd=JSON.stringify({x,y,w,h})}
+function get(el){try{return JSON.parse(el.dataset.skyjoEd)}catch(e){return{x:0,y:0,w:100,h:100}}}
+function choose(el){selected=el;const d=get(el);panel.querySelector('.selected').textContent=el.id||[...el.classList].slice(0,2).join(' ');panel.querySelector('#ed-w').value=d.w;panel.querySelector('#ed-h').value=d.h;panel.querySelector('#ed-w-val').textContent=d.w+'%';panel.querySelector('#ed-h-val').textContent=d.h+'%'}
+function mark(){document.querySelectorAll('.skyjo-edit-target').forEach(x=>x.classList.remove('skyjo-edit-target'));if(editing)candidates().forEach(x=>x.classList.add('skyjo-edit-target'))}
+function restore(){try{const saved=JSON.parse(localStorage.getItem(key)||'{}');Object.entries(saved).forEach(([id,d])=>{const el=resolve(id);if(el)set(el,d.x,d.y,d.w,d.h)})}catch(e){}}
+toggle.onclick=()=>{editing=!editing;panel.hidden=!editing;toggle.textContent=editing?'✓ Layout-Modus':'🎨 Layout bearbeiten';document.body.classList.toggle('skyjo-editing',editing);mark()};
+panel.querySelector('#ed-close').onclick=()=>toggle.click();
+for(const [axis,input] of [['w','#ed-w'],['h','#ed-h']])panel.querySelector(input).addEventListener('input',e=>{if(!selected)return;const d=get(selected);d[axis]=Number(e.target.value);set(selected,d.x,d.y,d.w,d.h);panel.querySelector('#ed-'+axis+'-val').textContent=d[axis]+'%'});
+panel.querySelector('#ed-save').onclick=()=>{const data={};candidates().forEach(el=>{if(el.dataset.skyjoEd){const id=identity(el);if(id)data[id]=get(el)}});localStorage.setItem(key,JSON.stringify(data));alert('Layout lokal gespeichert – ohne Firebase.')};
+panel.querySelector('#ed-reset').onclick=()=>{localStorage.removeItem(key);candidates().forEach(el=>{el.style.removeProperty('transform');el.style.removeProperty('transform-origin');delete el.dataset.skyjoEd});selected=null;panel.querySelector('.selected').textContent='Zurückgesetzt'};
+document.addEventListener('pointerdown',e=>{if(!editing||e.target.closest('#skyjo-editor-panel,#skyjo-editor-toggle'))return;const el=e.target.closest('.skyjo-edit-target');if(!el)return;e.preventDefault();e.stopPropagation();choose(el);const d=get(el);drag={el,id:e.pointerId,sx:e.clientX,sy:e.clientY,x:d.x,y:d.y};},{capture:true});
+document.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();const d=get(drag.el);set(drag.el,drag.x+e.clientX-drag.sx,drag.y+e.clientY-drag.sy,d.w,d.h)},{capture:true});
+document.addEventListener('pointerup',e=>{if(drag&&drag.id===e.pointerId){e.preventDefault();drag=null}},{capture:true});
+new MutationObserver(()=>{if(editing)mark()}).observe(document.getElementById('app')||document.body,{childList:true,subtree:true});setTimeout(restore,1800);
+})();
