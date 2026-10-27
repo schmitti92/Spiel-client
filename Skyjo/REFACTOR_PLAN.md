@@ -128,3 +128,10 @@ Stand: 2026-10-27.
 - Diagnostics now distinguish the first `.status.premium-status .stat` tile (provisional stats mapping) from the complete `.status.premium-status` bar (status mapping).
 - This is read-only instrumentation, not a new visual layout or a verified correspondence to the user's separate stats/status JSON blocks.
 - Full browser-based visual validation and footer placement remain outstanding.
+
+## Local footer polish
+- Three-player landscape local layout now explicitly uses five equal-width status tiles while preserving their normal flow.
+- Reaction touch targets have a minimum 40x40 CSS-pixel area and remain horizontally scrollable when crowded.
+- Local layout assets are cache-busted to v2 in the offline entrypoint; online entrypoint unchanged.
+- Added regression checks for status grid, reaction targets and local asset references.
+- This does not establish exact JSON HUD placement; visual browser/tablet validation remains pending.
