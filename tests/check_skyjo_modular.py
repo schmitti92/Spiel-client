@@ -156,8 +156,8 @@ print('SKYJO live geometry deltas and shared HUD mapping OK')
 assert 'grid-template-columns:repeat(5,minmax(0,1fr))' in local_css
 assert 'min-width:40px!important' in local_css
 assert 'min-height:40px!important' in local_css
-assert 'skyjo_local_layout_v3.css?v=7' in local_html
-assert 'skyjo_local_layout_v3.js?v=4' in local_html
+assert 'skyjo_local_layout_v3.css?v=8' in local_html
+assert 'skyjo_local_layout_v3.js?v=8' in local_html
 print('SKYJO local footer: five status tiles, touch targets and refreshed assets OK')
 
 assert 'margin-bottom:clamp(6px,1vh,14px)' in local_css
@@ -178,12 +178,12 @@ print('SKYJO active-player gold frame and compact landscape layout OK')
 
 assert 'body.is-playing:has(.table-area.three-player-layout)' in local_css
 assert 'border:5px solid #ffdb57' in local_css
-assert 'skyjo_local_layout_v3.css?v=7' in local_html
+assert 'skyjo_local_layout_v3.css?v=8' in local_html
 print('SKYJO screenshot feedback: visible local board styling and cache refresh OK')
 
 assert '.table-area.three-player-layout .handbox {' in local_css
 assert '.table-area.three-player-layout section.player.active {' in local_css
-assert 'skyjo_local_layout_v3.css?v=7' in local_html
+assert 'skyjo_local_layout_v3.css?v=8' in local_html
 print('SKYJO local-only three-player direct selectors and cache v6 OK')
 
 assert 'skyjo_local_entry_redirect.js?v=1' in online_html
@@ -196,3 +196,8 @@ assert 'grid-template-columns:var(--skyjo-v3-columns' in local_css
 assert 'grid-template-rows:var(--skyjo-v3-center-rows' in local_css
 assert 'grid-template-rows:var(--skyjo-v3-rival-rows' in local_css
 print('SKYJO final three-player CSS consumes JSON layout proportions')
+
+assert 'skyjo-json-board-active' in adapter and 'skyjo-json-board-active' in local_css
+assert "place(own,'player1')" in adapter
+assert 'grid-template-columns:minmax(0,var(--skyjo-v3-player1-w' in local_css
+print('SKYJO JSON region mapping is connected to the visible local board')
