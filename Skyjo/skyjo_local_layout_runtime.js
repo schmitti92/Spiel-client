@@ -21,9 +21,11 @@ let previous=false;
 function update(){
  const board=document.querySelector('.table-area.three-player-layout');
  const active=!!board && board.querySelectorAll('.player').length>=3;
- if(active!==previous){document.body.classList.toggle('skyjo-local-layout-ready',active);previous=active}\n const diagnostic=document.getElementById('skyjo-layout-diagnostic');if(diagnostic){const count=document.querySelectorAll('.player').length;diagnostic.textContent='Layout: '+(active?'AKTIV':'NICHT AKTIV')+' · Board: '+(board?'gefunden':'fehlt')+' · Spieler: '+count+' · Mitte: '+(!!document.querySelector('.center-table'))+' · Rechts: '+(!!document.querySelector('.mini-players-stack'));}
+ if(active!==previous){document.body.classList.toggle('skyjo-local-layout-ready',active);previous=active}
+ const diagnostic=document.getElementById('skyjo-layout-diagnostic');if(diagnostic){const count=document.querySelectorAll('.player').length;diagnostic.textContent='Layout: '+(active?'AKTIV':'NICHT AKTIV')+' · Board: '+(board?'gefunden':'fehlt')+' · Spieler: '+count+' · Mitte: '+(!!document.querySelector('.center-table'))+' · Rechts: '+(!!document.querySelector('.mini-players-stack'));}
 }
-document.addEventListener('DOMContentLoaded',()=>{\n const diagnostic=document.createElement('div');diagnostic.id='skyjo-layout-diagnostic';diagnostic.setAttribute('role','status');diagnostic.style.cssText='position:fixed;bottom:96px;left:12px;z-index:2147483000;padding:7px 12px;background:#08202df0;color:#ffe09d;border:1px solid #d4ac63;border-radius:9px;font:12px system-ui;pointer-events:none;max-width:70vw';if(new URLSearchParams(location.search).has('layoutDebug'))document.body.append(diagnostic);
+document.addEventListener('DOMContentLoaded',()=>{
+ const diagnostic=document.createElement('div');diagnostic.id='skyjo-layout-diagnostic';diagnostic.setAttribute('role','status');diagnostic.style.cssText='position:fixed;bottom:96px;left:12px;z-index:2147483000;padding:7px 12px;background:#08202df0;color:#ffe09d;border:1px solid #d4ac63;border-radius:9px;font:12px system-ui;pointer-events:none;max-width:70vw';if(new URLSearchParams(location.search).has('layoutDebug'))document.body.append(diagnostic);
  update();const app=document.getElementById('app')||document.body;
  const observer=new MutationObserver(update);observer.observe(app,{childList:true,subtree:true});
 });
