@@ -12,6 +12,16 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
  root.style.setProperty('--skyjo-v3-columns',[a.w,Math.max(h.w,d.w),Math.max(b.w,c.w)].map(x=>x+'fr').join(' '));
  root.style.setProperty('--skyjo-v3-center-rows',h.h+'fr '+d.h+'fr');
  root.style.setProperty('--skyjo-v3-rival-rows',b.h+'fr '+c.h+'fr');
+ // Expose the original geometry for diagnostics and later exact-position mapping.
+ // Percentages are relative to the user's original design canvas, not the viewport.
+ for(const block of m.values()){
+   const prefix='--skyjo-v3-'+block.id+'-';
+   for(const key of ['x','y','w','h'])root.style.setProperty(prefix+key,block[key]+'%');
+   root.style.setProperty(prefix+'z',String(block.z));
+ }
  root.dataset.skyjoLocalLayout='v3';
+ if(new URLSearchParams(location.search).has('layoutDebug')){
+   console.table(data.blocks.map(({id,x,y,w,h,z})=>({id,x,y,w,h,z})));
+ }
 }).catch(e=>console.warn('[SKYJO local layout] Existing layout retained:',e.message));
 })();
