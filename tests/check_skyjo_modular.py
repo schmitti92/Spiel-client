@@ -199,5 +199,7 @@ print('SKYJO final three-player CSS consumes JSON layout proportions')
 
 assert 'skyjo-json-board-active' in adapter and 'skyjo-json-board-active' in local_css
 assert "board.classList.add('skyjo-json-board-active')" in adapter
-assert 'grid-template-columns:minmax(0,var(--skyjo-v3-player1-w' in local_css
+assert 'grid-template-columns:var(--skyjo-v3-columns' in local_css
+assert 'position:absolute!important' not in local_css
+assert 'grid-auto-rows:0!important' in local_css
 print('SKYJO JSON region mapping is connected to the visible local board')
