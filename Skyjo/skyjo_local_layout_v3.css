@@ -144,15 +144,15 @@
    Avoid body.is-playing/ready dependencies, which may not match actual runtime. */
 @media (min-width:900px) and (orientation:landscape) {
  .table-area.three-player-layout {
-   grid-template-columns:minmax(0,37fr) minmax(0,21fr) minmax(0,34fr)!important;
+   grid-template-columns:var(--skyjo-v3-columns,minmax(0,37fr) minmax(0,21fr) minmax(0,34fr))!important;
    column-gap:clamp(10px,1.1vw,18px)!important;
  }
  .table-area.three-player-layout .center-seat > .center-table {
-   grid-template-rows:minmax(0,25fr) minmax(0,36fr)!important;
+   grid-template-rows:var(--skyjo-v3-center-rows,minmax(0,25fr) minmax(0,36fr))!important;
    gap:clamp(8px,1vh,14px)!important;
  }
  .table-area.three-player-layout .mini-players-stack {
-   grid-template-rows:minmax(0,45fr) minmax(0,45fr)!important;
+   grid-template-rows:var(--skyjo-v3-rival-rows,minmax(0,45fr) minmax(0,45fr))!important;
  }
  .table-area.three-player-layout .handbox {
    background:linear-gradient(155deg,#194a61,#061b2d 80%)!important;
