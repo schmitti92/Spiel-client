@@ -48,8 +48,16 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
        actualW:rect?px(rect.width/window.innerWidth*100):null,
        actualH:rect?px(rect.height/window.innerHeight*100):null};
    }));
-   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',report,{once:true});
-   else report();
+   const startReport=()=>{
+     let pending=false;
+     const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;report()})};
+     schedule();
+     const app=document.getElementById('app');
+     if(app)new MutationObserver(schedule).observe(app,{childList:true,subtree:true});
+     window.addEventListener('resize',schedule,{passive:true});
+   };
+   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startReport,{once:true});
+   else startReport();
  }
  // Optional design overlay: ?layoutPreview=1. No game DOM is repositioned.
  if(new URLSearchParams(location.search).get('layoutPreview')==='1'){
