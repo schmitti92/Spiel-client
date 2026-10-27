@@ -53,7 +53,7 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
        overlay.append(el);
      }
    };
-   document.addEventListener('DOMContentLoaded',()=>{
+   (document.readyState==='loading'?document.addEventListener.bind(document,'DOMContentLoaded'):fn=>fn())(()=>{
      renderPreview();
      window.addEventListener('resize',renderPreview,{passive:true});
      new MutationObserver(renderPreview).observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
