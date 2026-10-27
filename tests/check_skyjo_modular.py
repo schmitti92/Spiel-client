@@ -178,7 +178,7 @@ print('SKYJO active-player gold frame and compact landscape layout OK')
 
 assert 'body.is-playing:has(.table-area.three-player-layout)' in local_css
 assert 'border:5px solid #ffdb57' in local_css
-assert 'skyjo_local_layout_v3.css?v=5' in local_html
+assert 'skyjo_local_layout_v3.css?v=6' in local_html
 print('SKYJO screenshot feedback: visible local board styling and cache refresh OK')
 
 assert '.table-area.three-player-layout .handbox {' in local_css
