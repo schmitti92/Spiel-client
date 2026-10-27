@@ -149,6 +149,6 @@ assert 'const actualX=rect?' in adapter and 'const actualY=rect?' in adapter
 print('SKYJO layout editor opt-in and HUD geometry diagnostics OK')
 
 assert 'deltaX:rect?' in adapter and 'deltaY:rect?' in adapter
-assert 'shared-status-container' in adapter
+assert 'first-status-tile-provisional' in adapter and 'full-status-bar' in adapter
 assert 'new MutationObserver(schedule).observe(app' in adapter
 print('SKYJO live geometry deltas and shared HUD mapping OK')
