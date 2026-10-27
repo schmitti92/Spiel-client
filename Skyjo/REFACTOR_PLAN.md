@@ -122,3 +122,9 @@ Stand: 2026-10-27.
 - HUD diagnostics include actual viewport percentages and deltas to the JSON targets.
 - Stats/status are explicitly marked as a shared DOM container; their distinct target rectangles must not be applied blindly.
 - Still pending: exact footer DOM mapping, automated browser screenshot verification, and physical tablet validation.
+
+## Integrity recovery and HUD mapping refinement
+- Fixed a stale Python structural assertion after the HUD actualX/actualY variables were refactored. SKYJO structural integrity passed for the corrective commit.
+- Diagnostics now distinguish the first `.status.premium-status .stat` tile (provisional stats mapping) from the complete `.status.premium-status` bar (status mapping).
+- This is read-only instrumentation, not a new visual layout or a verified correspondence to the user's separate stats/status JSON blocks.
+- Full browser-based visual validation and footer placement remain outstanding.
