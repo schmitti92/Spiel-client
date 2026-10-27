@@ -42,7 +42,7 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
      const b=m.get(id);
      // The two status-related JSON blocks still share one real container.
      // Flag this instead of treating the measurement as an exact mapping.
-     const mapping=id==='stats'||id==='status'?'shared-status-container':'candidate';
+     const mapping=id==='stats'?'first-status-tile-provisional':id==='status'?'full-status-bar':'candidate';
      const rect=el&&el.getBoundingClientRect();
      const px=v=>Math.round(v*10)/10;
      const actualX=rect?px(rect.left/window.innerWidth*100):null;
