@@ -155,3 +155,10 @@ Stand: 2026-10-27.
 - Short landscape viewports (900px+ wide, 760px or less tall) use a lower board minimum height so footer controls have more room.
 - Local CSS cache version advanced to v4 and regression checks added.
 - Visual tablet screenshot and card hit-testing still need confirmation; nine-block exact HUD positioning remains incomplete.
+
+## Local entrypoint routing and JSON geometry authority
+- Found a key visibility issue: `skyjo_action.html?mode=local` did not load the dedicated local layout entrypoint.
+- Added a synchronous head redirect for `mode=local` to `skyjo_action_local.html`, preserving query parameters and hash. Online mode is unaffected.
+- Removed the last hardcoded three-column and two-row grid proportions overriding JSON-derived CSS variables in the local stylesheet.
+- Refreshed local stylesheet cache version to v7 and extended structural tests.
+- Still pending: exact x/y viewport positioning for all nine JSON blocks, footer DOM separation and real tablet visual verification.
