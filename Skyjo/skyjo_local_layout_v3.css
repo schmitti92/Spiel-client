@@ -14,3 +14,24 @@
    gap:var(--skyjo-v3-rival-gap,10px)!important;
  }
 }
+
+/* The imported player-1 block is 90% high; reserve the remaining strip for
+   existing HUD controls rather than allowing the board to swallow the footer. */
+@media (min-width:900px) and (orientation:landscape) {
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout {
+   box-sizing:border-box!important;
+   min-width:0!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout > .own-seat,
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout > .center-seat,
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout > .mini-seat {
+   min-width:0!important;
+   min-height:0!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .bottom-actions .emoji-reaction-list {
+   min-width:0!important;
+   overflow-x:auto!important;
+   overscroll-behavior-x:contain;
+   -webkit-overflow-scrolling:touch;
+ }
+}
