@@ -132,22 +132,9 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
      board.classList.remove('skyjo-json-board-active');
      return;
    }
-   const gameIds=['player1','hand','deck','player2','player3'];
-   // Relative positioning inside the board, preserving every card's event listeners.
-   // Do not activate absolute layout before all five targets are mapped.
+   // The JSON proportions are applied through the parent grid. Do not
+   // absolutely position nested cards: their offset parents differ.
    board.classList.add('skyjo-json-board-active');
-   const yTop=Math.min(m.get('player1').y,m.get('player2').y);
-   const yBottom=Math.max(...gameIds.map(id=>m.get(id).y+m.get(id).h));
-   const height=Math.max(1,yBottom-yTop);
-   const place=(el,id)=>{
-     const b=m.get(id);
-     el.style.setProperty('--skyjo-json-x',b.x+'%');
-     el.style.setProperty('--skyjo-json-y',((b.y-yTop)/height*100)+'%');
-     el.style.setProperty('--skyjo-json-w',b.w+'%');
-     el.style.setProperty('--skyjo-json-h',(b.h/height*100)+'%');
-   };
-   place(own,'player1');place(hand,'hand');place(deck,'deck');
-   place(rivalCards[0],'player2');place(rivalCards[1],'player3');
  };
  const initExactBoard=()=>{
    installExactBoard();
