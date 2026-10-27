@@ -35,3 +35,22 @@
    -webkit-overflow-scrolling:touch;
  }
 }
+
+/* Local-only bottom HUD: keep existing controls in document flow.
+   Use the JSON's 20:40:20 width intent without covering cards. */
+@media (min-width:1050px) and (orientation:landscape) {
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .status.premium-status {
+   width:min(100%,calc(var(--skyjo-v3-stats-w,40%) + var(--skyjo-v3-status-w,20%)))!important;
+   margin-inline:auto!important;
+   box-sizing:border-box!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .bottom-actions {
+   box-sizing:border-box!important;
+   max-width:100%!important;
+   min-width:0!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .bottom-actions .emoji-reaction-bar {
+   min-width:0!important;
+   max-width:100%!important;
+ }
+}
