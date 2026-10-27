@@ -1,0 +1,21 @@
+name: SKYJO structural integrity
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Skyjo/**'
+      - 'tests/check_skyjo_modular.py'
+      - '.github/workflows/skyjo-structural-integrity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  skyjo-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify SKYJO logic, syntax and asset references
+        run: python3 tests/check_skyjo_modular.py
