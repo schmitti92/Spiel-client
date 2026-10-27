@@ -118,7 +118,10 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
  // Keep the native footer in flow until its distinct DOM controls are mapped.
  const installExactBoard=()=>{
    const board=document.querySelector('.table-area.three-player-layout');
-   if(!board||!window.matchMedia('(min-width:900px) and (orientation:landscape)').matches)return;
+   if(!board||!window.matchMedia('(min-width:900px) and (orientation:landscape)').matches){
+     document.querySelectorAll('.table-area.skyjo-json-board-active').forEach(el=>el.classList.remove('skyjo-json-board-active'));
+     return;
+   }
    const own=board.querySelector(':scope > .own-seat');
    const center=board.querySelector(':scope > .center-seat');
    const rivals=board.querySelector(':scope > .mini-seat');
