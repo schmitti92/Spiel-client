@@ -3,6 +3,7 @@
   "blocks": [
     {
       "id": "stats",
+      "name": "Statistikleiste",
       "x": 22.2,
       "y": 94.3,
       "w": 40,
@@ -12,6 +13,7 @@
     },
     {
       "id": "player1",
+      "name": "Spieler 1",
       "x": 0.1,
       "y": -0.5,
       "w": 37,
@@ -21,6 +23,7 @@
     },
     {
       "id": "hand",
+      "name": "Handzone",
       "x": 40.3,
       "y": 18.1,
       "w": 21,
@@ -30,6 +33,7 @@
     },
     {
       "id": "deck",
+      "name": "Nachzieh- & Ablagestapel",
       "x": 40.2,
       "y": 47.3,
       "w": 21.1,
@@ -39,6 +43,7 @@
     },
     {
       "id": "player2",
+      "name": "Spieler 2",
       "x": 66.3,
       "y": -0.9,
       "w": 34,
@@ -48,6 +53,7 @@
     },
     {
       "id": "player3",
+      "name": "Spieler 3",
       "x": 65.8,
       "y": 45.7,
       "w": 34,
@@ -57,6 +63,7 @@
     },
     {
       "id": "status",
+      "name": "Statusleiste",
       "x": 0.4,
       "y": 92.4,
       "w": 20,
@@ -66,6 +73,7 @@
     },
     {
       "id": "reactions",
+      "name": "Reaktionen",
       "x": 64.5,
       "y": 92,
       "w": 20,
@@ -75,6 +83,7 @@
     },
     {
       "id": "pause",
+      "name": "Pause",
       "x": 88.1,
       "y": 93,
       "w": 8.9,
