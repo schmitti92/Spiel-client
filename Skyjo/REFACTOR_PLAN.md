@@ -61,3 +61,10 @@ Stand: 2026-10-27.
 - Ursprungsdateien 02, 04, 06, 08, 10 und 12 bleiben im Repository, werden von den zwei Einstiegspunkten nicht geladen.
 - Es wurden keine Regeln entfernt und die Reihenfolge der Segmente blieb erhalten. Dadurch ist dies eine Kaskaden-konsistente Konsolidierung, noch keine Selektor-Entdoppelung.
 - Vor dem Löschen alter Dateien sind weitere Referenzen anderer Seiten zu prüfen.
+
+## Design-CSS Konsolidierung (2026-10-27)
+- Vier benachbarte Royal-Gestaltungsdateien in `skyjo_royal_visual_bundle.css` zusammengeführt: realism, detail, reference_finish, photo_backdrop.
+- Reaktionsleiste und Touch-Status-Korrektur in `skyjo_reactions_status_bundle.css` zusammengeführt.
+- CSS-Reihenfolge und Regeln wurden übernommen; ursprüngliche Dateien bleiben als Rückfalloption erhalten.
+- Aktuelle Einbindungen: lokal 19 Stylesheets, online 18; beide ohne Inline-CSS und Inline-JavaScript.
+- Nächster Schritt: Browser-Sichtvergleich und Kaskadenanalyse, danach gezielte Entfernung tatsächlich überschüssiger Selektoren. Automatische Strukturtests ersetzen keine visuelle Prüfung.
