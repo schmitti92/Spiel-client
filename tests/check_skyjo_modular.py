@@ -94,3 +94,22 @@ online_html = (folder / "skyjo_action.html").read_text(encoding="utf-8")
 assert "skyjo_local_layout_v3.js" in local_html and "skyjo_local_layout_v3.css" in local_html
 assert "skyjo_local_layout_v3.js" not in online_html and "skyjo_local_layout_v3.css" not in online_html
 print("SKYJO local layout v3: nine validated blocks, local-only wiring OK")
+
+
+# Ensure bundled CSS is byte-for-byte equivalent to its source sequence.
+visual_sources = [
+    "skyjo_royal_realism.css", "skyjo_royal_detail.css",
+    "skyjo_reference_finish.css", "skyjo_photo_backdrop.css"
+]
+visual = (folder / "skyjo_royal_visual_bundle.css").read_text(encoding="utf-8")
+for name in visual_sources:
+    content = (folder / name).read_text(encoding="utf-8")
+    assert content in visual, f"Royal CSS source changed during bundling: {name}"
+reaction = (folder / "skyjo_reactions_status_bundle.css").read_text(encoding="utf-8")
+for name in ("skyjo_reaction_dock.css", "skyjo_status_touch_fix.css"):
+    assert (folder / name).read_text(encoding="utf-8") in reaction, f"Missing bundled CSS: {name}"
+for left, right in (("01","02"),("03","04"),("05","06"),("07","08"),("09","10"),("11","12")):
+    merged = (folder / f"skyjo_action-style-{left}.css").read_text(encoding="utf-8")
+    original = (folder / f"skyjo_action-style-{right}.css").read_text(encoding="utf-8")
+    assert original in merged, f"Missing legacy CSS segment {right}"
+print("SKYJO CSS consolidation: all six legacy and two design bundles contain original rules")
