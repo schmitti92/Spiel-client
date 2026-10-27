@@ -114,6 +114,42 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startPreview,{once:true});
    else startPreview();
  }
+ // Apply the supplied JSON coordinates to the six game regions only.
+ // Keep the native footer in flow until its distinct DOM controls are mapped.
+ const installExactBoard=()=>{
+   const board=document.querySelector('.table-area.three-player-layout');
+   if(!board||!window.matchMedia('(min-width:900px) and (orientation:landscape)').matches)return;
+   const own=board.querySelector(':scope > .own-seat');
+   const center=board.querySelector(':scope > .center-seat');
+   const rivals=board.querySelector(':scope > .mini-seat');
+   const hand=center?.querySelector('.handbox');
+   const deck=center?.querySelector('.premium-piles');
+   const rivalCards=rivals?.querySelectorAll('.mini-player-wrap');
+   if(!own||!center||!rivals||!hand||!deck||rivalCards.length!==2)return;
+   const gameIds=['player1','hand','deck','player2','player3'];
+   // Relative positioning inside the board, preserving every card's event listeners.
+   board.classList.add('skyjo-json-board-active');
+   const yTop=Math.min(m.get('player1').y,m.get('player2').y);
+   const yBottom=Math.max(...gameIds.map(id=>m.get(id).y+m.get(id).h));
+   const height=Math.max(1,yBottom-yTop);
+   const place=(el,id)=>{
+     const b=m.get(id);
+     el.style.setProperty('--skyjo-json-x',b.x+'%');
+     el.style.setProperty('--skyjo-json-y',((b.y-yTop)/height*100)+'%');
+     el.style.setProperty('--skyjo-json-w',b.w+'%');
+     el.style.setProperty('--skyjo-json-h',(b.h/height*100)+'%');
+   };
+   place(own,'player1');place(hand,'hand');place(deck,'deck');
+   place(rivalCards[0],'player2');place(rivalCards[1],'player3');
+ };
+ const initExactBoard=()=>{
+   installExactBoard();
+   const app=document.getElementById('app');
+   if(app)new MutationObserver(installExactBoard).observe(app,{childList:true,subtree:true});
+   window.addEventListener('resize',installExactBoard,{passive:true});
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initExactBoard,{once:true});
+ else initExactBoard();
  root.dataset.skyjoLocalLayout='v3';
  if(new URLSearchParams(location.search).has('layoutDebug')){
    console.table(data.blocks.map(({id,x,y,w,h,z})=>({id,x,y,w,h,z})));
