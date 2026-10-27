@@ -5,7 +5,7 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
  const ids=['stats','player1','hand','deck','player2','player3','status','reactions','pause'];
  if(data.version!==3||!Array.isArray(data.blocks)||data.blocks.length!==ids.length)throw Error('invalid schema');
  const m=new Map(data.blocks.map(b=>[b.id,b]));
- if(ids.some(id=>!m.has(id)))throw Error('missing block');
+ if(m.size!==ids.length||ids.some(id=>!m.has(id)))throw Error('missing or duplicate block');
  for(const b of m.values())if(!ids.includes(b.id)||!['x','y','w','h','z'].every(k=>Number.isFinite(b[k]))||b.w<=0||b.h<=0)throw Error('invalid geometry');
  const a=m.get('player1'),h=m.get('hand'),d=m.get('deck'),b=m.get('player2'),c=m.get('player3');
  const root=document.documentElement;
