@@ -137,3 +137,8 @@ print("SKYJO local tablet safety: opt-in preview and scrollable reactions OK")
 assert 'hudSelectors' in adapter
 assert 'position:absolute!important' not in local_css
 print('SKYJO footer layout remains in document flow')
+
+assert "overlay.style.width=window.innerWidth+'px'" in adapter
+assert "overlay.style.height=window.innerHeight+'px'" in adapter
+assert "pause:'[data-action=\"pause\"], #pauseBtn, .pause-btn'" in adapter
+print('SKYJO layout preview uses viewport and pause-specific diagnostics')
