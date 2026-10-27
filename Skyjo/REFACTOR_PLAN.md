@@ -40,3 +40,10 @@ Stand: 2026-10-27.
 - HTML-Nachkontrolle: online 0 Inline-Skripte, lokal 1 Inline-Skript für den lokalen URL-Modus; beide 0 Inline-CSS-Blöcke.
 - Vor Entfernung weiterer CSS-Dateien: visuelle Regression und Überprüfung von Selektor-Überschreibungen erforderlich.
 - WICHTIG: Auslagerung ist noch keine nachgewiesene Browser-Funktionsprüfung; Tests auf Tablet und im Mehrspielermodus stehen aus.
+
+## Fortschritt – Inline-Code vollständig entfernt
+- `skyjo_local_mode_guard.js` enthält jetzt auch den bisher letzten Inline-JavaScript-Block der lokalen Einstiegsseite.
+- Nachkontrolle der GitHub-Dateien: beide Einstiege enthalten 0 Inline-CSS und 0 Inline-JavaScript.
+- Lokal: 29 CSS- und 12 JS-Verlinkungen; online: 28 CSS- und 12 JS-Verlinkungen (einschließlich Profilskripten).
+- Die zwölf historischen CSS-Teile beginnen mit Basisselektoren und enthalten zahlreiche `!important`-Überschreibungen. Sie dürfen nicht ungeprüft entfernt oder alphabetisch neu sortiert werden.
+- **Nächster Gate:** automatisierte Linkprüfung und CSS-Kaskadeninventar; danach visuelle Regression auf Tablet/PC, erst dann tatsächliches Zusammenführen/Löschen von CSS.
