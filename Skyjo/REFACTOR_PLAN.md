@@ -75,3 +75,9 @@ Stand: 2026-10-27.
 - `skyjo_local_layout_v3.css` aktiviert die Größenverhältnisse ausschließlich für die lokale Drei-Spieler-Querformatansicht; bei Fehlern bleibt das bisherige Layout erhalten.
 - Die exakten X-/Y-Positionen, Statistik-/Status-/Reaktions-/Pause-Geometrie sind **noch nicht** übernommen, weil diese Elemente teilweise außerhalb der Spielfeld-Gridstruktur liegen und eine eigene Kollisionsprüfung benötigen.
 - Automatischer Test validiert neun Blöcke und stellt sicher, dass Online-HTML unverändert bleibt. Visuelle Prüfung auf Tablet weiterhin ausstehend.
+
+## Layout v3 – Koordinaten und Abstände
+- Alle neun JSON-Blöcke werden als CSS-Variablen `--skyjo-v3-<id>-{x,y,w,h,z}` bereitgestellt.
+- Abstände zwischen den drei Spalten sowie zwischen Handzone/Stapel und den rechten Spielerfeldern werden aus den gelieferten Koordinaten berechnet, mit begrenzten responsiven CSS-Werten.
+- Nur die lokale Drei-Spieler-Querformatansicht verwendet diese Abstände; die exakte absolute Positionierung von Status, Statistik, Reaktionen und Pause steht noch aus.
+- Der Integritätstest überprüft zusätzlich die Originalinhalte aller sechs historischen CSS-Zusammenführungen und beider neuen Design-Bundles.
