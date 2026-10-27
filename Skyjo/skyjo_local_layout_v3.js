@@ -128,9 +128,13 @@ fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw E
    const hand=center?.querySelector('.handbox');
    const deck=center?.querySelector('.premium-piles');
    const rivalCards=rivals?.querySelectorAll('.mini-player-wrap');
-   if(!own||!center||!rivals||!hand||!deck||rivalCards.length!==2)return;
+   if(!own||!center||!rivals||!hand||!deck||rivalCards.length!==2){
+     board.classList.remove('skyjo-json-board-active');
+     return;
+   }
    const gameIds=['player1','hand','deck','player2','player3'];
    // Relative positioning inside the board, preserving every card's event listeners.
+   // Do not activate absolute layout before all five targets are mapped.
    board.classList.add('skyjo-json-board-active');
    const yTop=Math.min(m.get('player1').y,m.get('player2').y);
    const yBottom=Math.max(...gameIds.map(id=>m.get(id).y+m.get(id).h));
