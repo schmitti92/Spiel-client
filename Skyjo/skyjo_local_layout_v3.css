@@ -118,3 +118,24 @@
    min-height:0!important;
  }
 }
+
+/* Screenshot follow-up: apply the visible polish using the actual playing-board
+   marker as fallback if the strict runtime ready class is not set. */
+@media (min-width:900px) and (orientation:landscape) {
+ body.is-playing:has(.table-area.three-player-layout) .table-area.three-player-layout {
+   grid-template-columns:minmax(0,37fr) minmax(0,22fr) minmax(0,34fr)!important;
+   gap:clamp(10px,1.1vw,18px)!important;
+ }
+ body.is-playing:has(.table-area.three-player-layout) .table-area.three-player-layout .center-seat > .center-table {
+   gap:clamp(8px,1vh,14px)!important;
+ }
+ body.is-playing:has(.table-area.three-player-layout) .table-area.three-player-layout .handbox,
+ body.is-playing:has(.table-area.three-player-layout) .table-area.three-player-layout .premium-piles {
+   border:3px solid #e8b85d!important;
+   box-shadow:0 0 0 1px #fff0b45c,0 8px 22px #0008,inset 0 0 18px #0a273c!important;
+ }
+ body.is-playing:has(.table-area.three-player-layout) .table-area.three-player-layout section.player.active {
+   border:5px solid #ffdb57!important;
+   box-shadow:0 0 0 3px #fff0a7,0 0 25px 6px #ffc52b9c!important;
+ }
+}
