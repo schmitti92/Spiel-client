@@ -159,3 +159,9 @@ assert 'min-height:40px!important' in local_css
 assert 'skyjo_local_layout_v3.css?v=2' in local_html
 assert 'skyjo_local_layout_v3.js?v=2' in local_html
 print('SKYJO local footer: five status tiles, touch targets and refreshed assets OK')
+
+assert 'margin-bottom:clamp(6px,1vh,14px)' in local_css
+assert 'margin-top:clamp(6px,.8vh,12px)' in local_css
+assert 'text-overflow:ellipsis' in local_css
+assert 'snapshot!==previousReport' in adapter
+print('SKYJO local footer spacing and deduplicated diagnostics OK')
