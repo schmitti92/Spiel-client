@@ -113,3 +113,12 @@ for left, right in (("01","02"),("03","04"),("05","06"),("07","08"),("09","10"),
     original = (folder / f"skyjo_action-style-{right}.css").read_text(encoding="utf-8")
     assert original in merged, f"Missing legacy CSS segment {right}"
 print("SKYJO CSS consolidation: all six legacy and two design bundles contain original rules")
+
+
+# Local layout runtime CSS must not contain literal escaped line breaks between selectors.
+runtime = (folder / "skyjo_local_layout_runtime.js").read_text(encoding="utf-8")
+assert r"\nbody.skyjo-local-layout-ready" not in runtime, "Escaped CSS newline breaks player height rules"
+adapter = (folder / "skyjo_local_layout_v3.js").read_text(encoding="utf-8")
+assert "layoutPreview" in adapter and "pointer-events:none" in adapter
+assert "skyjo_layout_local_v3.json" in adapter
+print("SKYJO local layout: runtime CSS and non-interactive preview OK")
