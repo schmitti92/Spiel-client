@@ -165,3 +165,9 @@ assert 'margin-top:clamp(6px,.8vh,12px)' in local_css
 assert 'text-overflow:ellipsis' in local_css
 assert 'snapshot!==previousReport' in adapter
 print('SKYJO local footer spacing and deduplicated diagnostics OK')
+
+assert 'const startPreview=()=>{' in adapter
+assert "document.addEventListener('DOMContentLoaded',startPreview,{once:true})" in adapter
+assert "document.getElementById('skyjo-v3-preview')?.remove()" in adapter
+assert 'visible=!!rect&&rect.width>0&&rect.height>0' in adapter
+print('SKYJO preview lifecycle and hidden HUD diagnostics OK')
