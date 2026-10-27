@@ -1,0 +1,13 @@
+/* Tablet landscape v3: use user geometry for three-player proportions only.
+   Keep legacy positioning for other player counts and orientations. */
+@media (min-width:900px) and (orientation:landscape) {
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout {
+   grid-template-columns:var(--skyjo-v3-columns)!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout .center-seat > .center-table {
+   grid-template-rows:var(--skyjo-v3-center-rows)!important;
+ }
+ html[data-skyjo-local-layout="v3"] body.skyjo-local-layout-ready .table-area.three-player-layout .mini-players-stack {
+   grid-template-rows:var(--skyjo-v3-rival-rows)!important;
+ }
+}
