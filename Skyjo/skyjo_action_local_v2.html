@@ -7,7 +7,7 @@
 <button id="fullscreen" type="button" aria-label="Vollbild aktivieren" style="position:fixed;z-index:12;right:160px;top:8px;background:#244d40;color:#fff3d5;border:1px solid #c6a36a;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:12px">⛶ Vollbild</button><div class="notice"><strong>Layout-Prototyp · 3 Spieler</strong> · Noch keine Spiellogik · Positionen aus deiner JSON</div><label class="import" for="upload">📐 Layout-JSON laden</label><input type="file" id="upload" accept=".json,application/json">
 <script>
 "use strict";
-const initial=[{"id":"stats","x":21.9,"y":93.3,"w":40,"h":3.9,"z":3},{"id":"player1","x":0.2,"y":0.2,"w":40,"h":91.2,"z":1},{"id":"hand","x":42.2,"y":17.7,"w":21,"h":25,"z":1},{"id":"deck","x":41.9,"y":51,"w":21.1,"h":35.5,"z":1},{"id":"player2","x":66.2,"y":0.2,"w":33.6,"h":44.9,"z":1},{"id":"player3","x":66.2,"y":45.6,"w":33.6,"h":45.8,"z":1},{"id":"status","x":0.4,"y":92.4,"w":20,"h":7,"z":1},{"id":"reactions","x":65.9,"y":93.1,"w":20,"h":6,"z":2},{"id":"pause","x":88.7,"y":93.5,"w":8.9,"h":4.7,"z":1}];
+const initial=[{"id":"stats","x":21.9,"y":93.3,"w":40,"h":3.9,"z":3},{"id":"player1","x":0.2,"y":0.2,"w":40,"h":91.2,"z":1},{"id":"hand","x":41.5,"y":17.7,"w":22.7,"h":25,"z":1},{"id":"deck","x":41.5,"y":51,"w":22.7,"h":35.5,"z":1},{"id":"player2","x":66.2,"y":0.2,"w":33.6,"h":44.9,"z":1},{"id":"player3","x":66.2,"y":45.6,"w":33.6,"h":45.8,"z":1},{"id":"status","x":0.4,"y":92.4,"w":20,"h":7,"z":1},{"id":"reactions","x":65.9,"y":93.1,"w":20,"h":6,"z":2},{"id":"pause","x":88.7,"y":93.5,"w":8.9,"h":4.7,"z":1}];
 const stage=document.getElementById("stage");let zones=[];
 const zoneContent={
 player1:()=>player("Spieler 1",false,true),player2:()=>player("Spieler 2",true,false),player3:()=>player("Spieler 3",true,false),
