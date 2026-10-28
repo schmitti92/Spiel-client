@@ -1,49 +1,53 @@
 /* SKYJO Wald-Edition – V1. Nur bei explizit gewähltem Thema aktiv.
    Bestehende Spiellogik, Karten-Events und Lobby bleiben erhalten. */
-body.is-playing[data-skyjo-theme="wald"]{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]){
  background:#09251c url("skyjo_wald_hintergrund.webp") center center/cover fixed no-repeat!important;
 }
-body.is-playing[data-skyjo-theme="wald"] .app{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .app{
  background:transparent!important;
 }
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout{
  display:grid!important;
  grid-template-columns:minmax(0,40fr) minmax(0,29fr) minmax(0,31fr)!important;
  gap:clamp(6px,.7vw,13px)!important;
  align-items:stretch!important;
 }
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .own-seat,
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .center-seat,
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .mini-seat{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .own-seat,
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .center-seat,
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .mini-seat{
  min-width:0!important;
 }
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .player,
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .center-table{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .player,
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .center-table{
  background:linear-gradient(135deg,rgba(9,43,35,.91),rgba(8,37,31,.93))!important;
  border:3px solid #a88145!important;border-radius:24px!important;
  box-shadow:inset 0 0 0 3px #d8b57424,0 8px 24px #0008!important;
 }
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .player.active{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .player.active{
  border-color:#ffd875!important;
  box-shadow:0 0 0 5px #f8d27d88,inset 0 0 0 3px #fff5c444,0 0 32px #ffd66b66!important;
 }
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .mini-players-stack{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .mini-players-stack{
  display:grid!important;grid-template-rows:1fr 1fr!important;gap:10px!important;height:100%;
 }
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .mini-player-wrap{min-height:0!important}
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .player .gridwrap{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .mini-player-wrap{min-height:0!important}
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .player .gridwrap{
  background:transparent!important;border:0!important;box-shadow:none!important;
 }
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .player .player-head{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .player .player-head{
  background:linear-gradient(110deg,#1c4b3d,#0c2f27)!important;
  color:#ffe4a0!important;border:1px solid #a88145!important;
 }
-body.is-playing[data-skyjo-theme="wald"] .three-player-layout .card.back{
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .three-player-layout .card.back{
  background-image:url("skyjo_wald_kartenrueckseite-1.webp")!important;
  background-size:cover!important;background-position:center!important;
 }
 /* Die Handkarten-Zone ist leer unsichtbar, ohne Bedienelemente zu deaktivieren. */
-body.is-playing[data-skyjo-theme="wald"] .center-table .handbox:has(.handcard:empty){
+body.is-playing:is([data-skyjo-theme="wald"],[data-skyjo-local-board="wald"]) .center-table .handbox:has(.handcard:empty){
  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
 }
 /* Kartenmaße bewusst NICHT global überschreiben: 4x3/5x3 und Touch bleiben intakt. */
+
+/* Lokaler Test: die bestehende JSON-Geometrie hat Vorrang. */
+body.is-playing[data-skyjo-local-board="wald"] .three-player-layout .player .card.back,
+body.is-playing[data-skyjo-local-board="wald"] .three-player-layout .card.back{background-image:url("skyjo_wald_kartenrueckseite-1.webp")!important;background-position:center!important;background-size:cover!important}
