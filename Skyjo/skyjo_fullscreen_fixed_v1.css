@@ -1,0 +1,48 @@
+/* SKYJO fixed fullscreen: local three-player landscape only. Other modes untouched. */
+@media (min-width:900px) and (orientation:landscape) {
+ html:has(body.is-playing.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active),
+ html:has(body.is-playing.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active) body {
+   width:100%!important;height:100%!important;overflow:hidden!important;overscroll-behavior:none!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) #app {
+   height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+   overflow:hidden!important;box-sizing:border-box!important;
+ }
+ body.is-playing.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active {
+   position:fixed!important;left:1vw!important;top:1dvh!important;
+   width:98vw!important;height:90dvh!important;min-height:0!important;max-height:90dvh!important;
+   margin:0!important;padding:0!important;box-sizing:border-box!important;
+   grid-template-columns:var(--skyjo-v3-columns)!important;
+   overflow:hidden!important;align-items:stretch!important;
+ }
+ body.is-playing.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active > .own-seat,
+ body.is-playing.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active > .center-seat,
+ body.is-playing.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active > .mini-seat {
+   min-height:0!important;max-height:100%!important;height:100%!important;overflow:hidden!important;
+ }
+ body.is-playing.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .center-table,
+ body.is-playing.skyjo-local-layout-ready .table-area.three-player-layout.skyjo-json-board-active .mini-players-stack {
+   height:100%!important;min-height:0!important;max-height:100%!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status {
+   position:fixed!important;top:92.4dvh!important;bottom:auto!important;left:.4vw!important;right:auto!important;
+   width:20vw!important;height:7dvh!important;min-height:0!important;max-height:7dvh!important;
+   margin:0!important;padding:0!important;overflow:hidden!important;
+   grid-template-columns:repeat(auto-fit,minmax(0,1fr))!important;z-index:72!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions .emoji-reaction-bar {
+   position:fixed!important;top:93.1dvh!important;bottom:auto!important;left:65.9vw!important;right:auto!important;
+   width:20vw!important;height:6dvh!important;max-width:20vw!important;min-height:0!important;
+   margin:0!important;padding:0!important;overflow:hidden!important;z-index:72!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .luxe-tool-dock {
+   position:fixed!important;top:93.5dvh!important;bottom:auto!important;left:88.7vw!important;right:auto!important;
+   width:8.9vw!important;height:4.7dvh!important;max-width:none!important;min-height:0!important;
+   margin:0!important;padding:0!important;gap:2px!important;z-index:73!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .luxe-tool-dock > button {
+   flex:1 1 0!important;width:auto!important;min-width:0!important;height:100%!important;min-height:0!important;
+   padding:0!important;font-size:clamp(11px,1.4vw,20px)!important;
+ }
+}
+/* Never lock scrolling on setup screens, dialogs, or 2/4-player layouts. */
