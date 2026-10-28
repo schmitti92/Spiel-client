@@ -16,15 +16,25 @@ function sync(){
   const stats=joker.closest('.status.premium-status');
   stats.insertBefore(btn,stats.firstElementChild);
  }
- // Bestehenden Spieleauswahl-Button in die einklappbare Topbar verschieben.
- // Originalelement und dessen Ereignisbehandlung bleiben erhalten.
+ // Spieleauswahl kann außerhalb von #app liegen. Originalbutton bleibt am Ort,
+ // wird im Waldmodus verborgen und durch einen Menü-Proxy ausgelöst.
  const bar=document.querySelector('#app .topbar');
  if(bar){
-  const buttons=[...document.querySelectorAll('#app button, #app a, #app [role="button"]')];
-  const exit=buttons.find(el=>el.id!=='skyjo-wald-menu-toggle'&&
+  const candidates=[...document.querySelectorAll('button,a,[role="button"]')];
+  const exit=candidates.find(el=>el.id!=='skyjo-wald-menu-toggle'&&
+   !el.closest('#skyjo-wald-menu-proxy,.modal,dialog')&&
    (el.textContent||'').trim().includes('Zur Spieleauswahl')&&
-   !bar.contains(el)&&!el.closest('.modal,dialog'));
-  if(exit){exit.classList.add('skyjo-wald-menu-exit');bar.appendChild(exit)}
+   !bar.contains(el));
+  if(exit){
+   exit.classList.add('skyjo-wald-external-exit');
+   if(!document.getElementById('skyjo-wald-menu-proxy')){
+    const proxy=document.createElement('button');
+    proxy.id='skyjo-wald-menu-proxy';proxy.type='button';
+    proxy.textContent='🏠 Zur Spieleauswahl';
+    proxy.addEventListener('click',()=>{exit.click();open=false;update()});
+    bar.appendChild(proxy);
+   }
+  }
  }
  update();
 }
