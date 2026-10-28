@@ -16,6 +16,16 @@ function sync(){
   const stats=joker.closest('.status.premium-status');
   stats.insertBefore(btn,stats.firstElementChild);
  }
+ // Bestehenden Spieleauswahl-Button in die einklappbare Topbar verschieben.
+ // Originalelement und dessen Ereignisbehandlung bleiben erhalten.
+ const bar=document.querySelector('#app .topbar');
+ if(bar){
+  const buttons=[...document.querySelectorAll('#app button, #app a, #app [role="button"]')];
+  const exit=buttons.find(el=>el.id!=='skyjo-wald-menu-toggle'&&
+   (el.textContent||'').trim().includes('Zur Spieleauswahl')&&
+   !bar.contains(el)&&!el.closest('.modal,dialog'));
+  if(exit){exit.classList.add('skyjo-wald-menu-exit');bar.appendChild(exit)}
+ }
  update();
 }
 function update(){
