@@ -337,3 +337,18 @@ body.skyjo-wald-menu-enabled #app .status.premium-status #skyjo-wald-menu-toggle
   gap:clamp(3px,.36vw,7px)!important;
  }
 }
+
+/* V13: Leere Handzone vollständig ausblenden, ohne die Handkartenlogik
+   oder die Größe des reservierten Layoutbereichs zu verändern. */
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:has(.real-hand-card.empty){
+ visibility:hidden!important;opacity:0!important;
+ pointer-events:none!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)){
+ visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
+/* V13: Nur die verdeckte Nachziehkarte bekommt den Baumrücken;
+   Ablage und aufgedeckte Handkarte behalten ihr Zahlensprite. */
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout #play-deck-pile .card.back{
+ background:#12392d url("skyjo_wald_kartenrueckseite-1.webp") center/100% 100% no-repeat!important;
+}
