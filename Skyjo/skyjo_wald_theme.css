@@ -107,3 +107,23 @@ html:has(body.is-playing[data-skyjo-local-board="wald"]) body.is-playing .table-
 html:has(body.is-playing[data-skyjo-local-board="wald"]) body.is-playing .table-area.three-player-layout .player .gridwrap{
  background:transparent!important;background-image:none!important;
 }
+
+/* V5: die lokalen Royal-Regeln setzen Mini-Spieler per :first-child und :nth-child
+   mit höherer Spezifität. Nur im Wald-Modus gezielt überschreiben. */
+html body.is-playing[data-skyjo-local-board="wald"]:has(.table-area.three-player-layout)
+ .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:first-child .player,
+html body.is-playing[data-skyjo-local-board="wald"]:has(.table-area.three-player-layout)
+ .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:nth-child(2) .player,
+html body.is-playing[data-skyjo-local-board="wald"]:has(.table-area.three-player-layout)
+ .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:first-child .gridwrap,
+html body.is-playing[data-skyjo-local-board="wald"]:has(.table-area.three-player-layout)
+ .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:nth-child(2) .gridwrap{
+ background:linear-gradient(135deg,rgba(9,43,35,.91),rgba(8,37,31,.93))!important;
+ background-image:linear-gradient(135deg,rgba(9,43,35,.91),rgba(8,37,31,.93))!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"]:has(.table-area.three-player-layout)
+ .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:first-child .player-head,
+html body.is-playing[data-skyjo-local-board="wald"]:has(.table-area.three-player-layout)
+ .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:nth-child(2) .player-head{
+ background:linear-gradient(110deg,#1c4b3d,#0c2f27)!important;color:#ffe4a0!important;
+}
