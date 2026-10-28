@@ -379,3 +379,28 @@ html body.skyjo-wald-menu-enabled #app .topbar .skyjo-wald-menu-exit{
  position:static!important;inset:auto!important;transform:none!important;
  margin:3px!important;max-width:100%!important;
 }
+
+/* V15: vollständige Zuganweisungen auf zwei Zeilen statt Abschneiden.
+   Der bestehende instructionText() bleibt unverändert. */
+@media (min-width:900px) and (orientation:landscape){
+ html body.skyjo-wald-menu-enabled #app .bottom-actions .instruction{
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2!important;
+  line-height:1.15!important;
+  font-size:clamp(10px,.79vw,12px)!important;
+  max-height:29px!important;
+ }
+ html body.skyjo-wald-menu-enabled #app .bottom-actions .bottom-inner{
+  justify-content:space-evenly!important;
+ }
+}
+/* Der direkte Link zur Spieleauswahl darf das Spielbrett nicht überlagern.
+   Das Menü erhält dieselbe Aktion als zusätzlichen Eintrag (V15-JS). */
+body.skyjo-wald-menu-enabled .skyjo-wald-external-exit{
+ display:none!important;
+}
