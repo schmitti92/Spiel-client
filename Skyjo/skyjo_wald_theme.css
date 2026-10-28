@@ -168,3 +168,24 @@ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-lay
   overflow:hidden!important;text-overflow:ellipsis!important;
  }
 }
+
+/* V7: Werte -2 bis 12 entsprechen Sprite-Kacheln 0 bis 14 (8x2).
+   Datenattribute stammen direkt aus cardHTML() in Logikmodul 26.
+   Joker/Stern, Rückseiten und leere Karten sind ausgeschlossen. */
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"]{background-image:url("skyjo_zahlen_sprite.webp")!important;background-size:800% 200%!important;background-repeat:no-repeat!important;border-color:transparent!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"] .corner,html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"] .center-value{visibility:hidden!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="-2"]{background-position:0.000000% 0%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="-1"]{background-position:14.285714% 0%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="0"]{background-position:28.571429% 0%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="1"]{background-position:42.857143% 0%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="2"]{background-position:57.142857% 0%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="3"]{background-position:71.428571% 0%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="4"]{background-position:85.714286% 0%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="5"]{background-position:100.000000% 0%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="6"]{background-position:0.000000% 100%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="7"]{background-position:14.285714% 100%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="8"]{background-position:28.571429% 100%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="9"]{background-position:42.857143% 100%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="10"]{background-position:57.142857% 100%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="11"]{background-position:71.428571% 100%!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="12"]{background-position:85.714286% 100%!important}
