@@ -33,16 +33,32 @@
 .player.small .cards .card{width:100%;min-width:0}
 /* Stapelmotiv vollständig: im 170x215-Slot Bild unverzerrt einpassen statt abschneiden. */
 .pile .card.back{background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;border-color:transparent!important;box-shadow:none!important;background-color:transparent!important}
+/* Zahlenkarten Entwurf 3: naturgetreue Holzmaserung, dezentes Laub, eine Zahl. */
+.card.front{--wood-light:#e9d5aa;--wood-mid:#cda976;--wood-dark:#886342;--ink:#294936;--leaf:#467c45;--metal:#9b8460;
+background:repeating-linear-gradient(91deg,transparent 0 9px,#fff8 10px 11px,transparent 13px 26px,#593b2215 28px 29px,transparent 31px 49px),linear-gradient(110deg,#fff9 0%,transparent 25%,#5b38151a 50%,transparent 75%),linear-gradient(160deg,var(--wood-light),var(--wood-mid) 58%,var(--wood-dark))!important;
+color:var(--ink)!important;border:3px solid var(--metal)!important;border-radius:9px;box-shadow:inset 0 0 0 2px #f7e6c080,inset 0 0 0 6px #59432733,0 3px 7px #0006!important}
+.card.front[data-tone="cold"]{--wood-light:#c9e1e5;--wood-mid:#8db8c6;--wood-dark:#426b81;--ink:#173e60;--leaf:#568b9b;--metal:#809eab}
+.card.front[data-tone="neutral"]{--wood-light:#f0e5c4;--wood-mid:#d7bc8b;--wood-dark:#9a794c;--ink:#26533b;--leaf:#53844c;--metal:#b7a06f}
+.card.front[data-tone="warm"]{--wood-light:#f6d4a5;--wood-mid:#d79c63;--wood-dark:#875032;--ink:#653c20;--leaf:#a85b2f;--metal:#b08a5e}
+.card.front[data-tone="hot"]{--wood-light:#d9c4b5;--wood-mid:#aa8b86;--wood-dark:#59404b;--ink:#4b255a;--leaf:#875b93;--metal:#9a849b}
+.card.front:before{content:"";position:absolute;inset:4px;pointer-events:none;opacity:.9;background:
+radial-gradient(ellipse 12px 24px at 8% 7%,var(--leaf) 0 40%,transparent 43%),
+radial-gradient(ellipse 9px 19px at 18% 5%,var(--leaf) 0 43%,transparent 47%),
+radial-gradient(ellipse 12px 24px at 93% 94%,var(--leaf) 0 40%,transparent 43%),
+radial-gradient(ellipse 9px 19px at 82% 97%,var(--leaf) 0 43%,transparent 47%);filter:drop-shadow(1px 2px 1px #0005)}
+.card.front .face{position:relative;z-index:1;font-weight:900;text-shadow:0 2px 1px #fff9,1px 3px 3px #0004;font-variant-numeric:tabular-nums}
+.player.small .card.front .face{font-size:clamp(35px,3.2vw,74px)}
+/* Joker-Vorschau folgt später; diese Regeln betreffen ausschließlich die Vorderseiten. */
 /* Wald-Kartensystem: eigenständige Darstellung, keine Spielregeln */
 .card{position:relative;isolation:isolate;overflow:hidden;user-select:none;aspect-ratio:auto;transition:transform .18s ease,filter .18s ease}.card:after{content:none!important}.card .face{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:clamp(24px,3.5vw,85px);font-weight:950;line-height:1}.card.back{background:radial-gradient(circle at 50% 38%,#38796a,#12483f 75%);border-color:#d4ae68}.card.back .face{color:#b9d3b7;font-size:clamp(25px,3vw,66px);opacity:.68}.card.front{background:linear-gradient(145deg,#fff9e7,#e6e9d1);color:#164b38;border-color:#d5ad65}.card.front[data-tone="cold"]{background:linear-gradient(145deg,#e5f6fc,#9acdd9);color:#19567a}.card.front[data-tone="warm"]{background:linear-gradient(145deg,#fff1d4,#f2bb83);color:#7c3d22}.card.front[data-tone="hot"]{background:linear-gradient(145deg,#ffddbd,#e9917d);color:#852b2b}.card.front[data-tone="joker"]{background:linear-gradient(145deg,#f6e8ff,#b79de1);color:#542f83}.card.front:before{content:"✦";position:absolute;top:6px;left:9px;font-size:14px;opacity:.4}.card.preview{cursor:pointer}.card.preview:hover{filter:brightness(1.08)}.card.preview:focus-visible{outline:5px solid #ffe68d;outline-offset:-5px}.player .cards .card .face{font-size:clamp(32px,4vw,90px)}.player.small .cards .card .face{font-size:clamp(24px,2.8vw,67px)}.player .cards .card.back .face{font-size:clamp(24px,3vw,65px)}.player.small .cards .card.back .face{font-size:clamp(22px,2.4vw,50px)}.pile .card .face{font-size:78px}.pile .card.back .face{font-size:54px}.handcard{background:linear-gradient(145deg,#fff9e7,#d8e9d7);box-shadow:inset 0 0 0 3px #ffffff70,0 5px 15px #0006}.card .face{pointer-events:none}@media(prefers-reduced-motion:reduce){.card{transition:none}}
 </style></head><body>
 <div id="stage"><div class="topnote">🌲 SKYJO ACTION 🌲</div></div>
-<button id="fullscreen" type="button" aria-label="Vollbild aktivieren" style="position:fixed;z-index:12;right:160px;top:8px;background:#244d40;color:#fff3d5;border:1px solid #c6a36a;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:12px">⛶ Vollbild</button><div class="notice"><strong>Layout-Prototyp · 3 Spieler</strong> · Noch keine Spiellogik · Positionen aus deiner JSON</div><label class="import" for="upload">📐 Layout-JSON laden</label><input type="file" id="upload" accept=".json,application/json">
+<button id="fullscreen" type="button" aria-label="Vollbild aktivieren" style="position:fixed;z-index:12;right:160px;top:8px;background:#244d40;color:#fff3d5;border:1px solid #c6a36a;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:12px">⛶ Vollbild</button><div class="notice"><strong>Layout-Prototyp · 3 Spieler</strong> · Karten anklicken zum Aufdecken · Noch keine Spiellogik <button id="demo-next" type="button" style="margin-left:10px;background:#2b5b45;color:#fff3d5;border:1px solid #bda46e;border-radius:5px;cursor:pointer">Weitere Zahlen testen</button></div><label class="import" for="upload">📐 Layout-JSON laden</label><input type="file" id="upload" accept=".json,application/json">
 <script>
 "use strict";
 const initial=[{"id":"stats","x":21.4,"y":92.5,"w":40.4,"h":6.6,"z":3},{"id":"player1","x":0.2,"y":0.2,"w":40,"h":91.2,"z":1},{"id":"hand","x":43.35,"y":17.7,"w":22.7,"h":25,"z":1},{"id":"deck","x":43.35,"y":51,"w":22.7,"h":35.5,"z":1},{"id":"player2","x":69.2,"y":0.2,"w":30.6,"h":44.9,"z":1},{"id":"player3","x":69.2,"y":45.6,"w":30.6,"h":45.8,"z":1},{"id":"status","x":0.2,"y":92.5,"w":20.4,"h":6.6,"z":1},{"id":"reactions","x":62.6,"y":92.5,"w":20.4,"h":6.6,"z":2},{"id":"pause","x":83.8,"y":92.5,"w":16,"h":6.6,"z":1}];
 const stage=document.getElementById("stage");let zones=[];
-const demoValues=[-2,-1,0,1,2,3,4,5,6,8,10,12];
+const demoValues=Array.from({length:15},(_,i)=>i-2);let demoOffset=0;
 function tone(value){return value<0?"cold":value>=10?"hot":value>=6?"warm":"neutral"}
 function cardMarkup(value,preview=false){const open=value!==null;return '<div class="card '+(open?'front':'back')+(preview?' preview':'')+'" '+(preview?'role="button" tabindex="0" ':'')+'data-tone="'+(open?tone(value):'back')+'" aria-label="'+(open?'Karte '+value:'Verdeckte Karte')+'"><span class="face">'+(open?value:'❧')+'</span></div>'}
 const zoneContent={
@@ -54,8 +70,8 @@ status:()=>'<span>🟡 Spieler 1 am Zug</span>',
 reactions:()=>'<span>😀 😂 ❤️ 👍 👏</span>',
 pause:()=>'<button type="button">🚻</button><button type="button">📖</button>'
 };
-function player(name,small){return '<div class="label"><span>'+name+'</span><span class="badge">0 Punkte</span></div><div class="cards">'+demoValues.map(()=>cardMarkup(null,true)).join('')+'</div>'}
-function togglePreview(el){if(!el||!el.classList.contains("preview"))return;const cards=Array.from(el.parentElement.children);const idx=cards.indexOf(el);const value=demoValues[idx];const open=el.classList.toggle("front");el.classList.toggle("back",!open);el.dataset.tone=open?tone(value):"back";el.querySelector(".face").textContent=open?value:"❧";el.setAttribute("aria-label",open?"Karte "+value:"Verdeckte Karte")}
+function player(name,small){return '<div class="label"><span>'+name+'</span><span class="badge">0 Punkte</span></div><div class="cards">'+demoValues.slice(0,12).map(()=>cardMarkup(null,true)).join('')+'</div>'}
+function togglePreview(el){if(!el||!el.classList.contains("preview"))return;const cards=Array.from(el.parentElement.children);const idx=cards.indexOf(el);const value=demoValues[(idx+demoOffset)%demoValues.length];const open=el.classList.toggle("front");el.classList.toggle("back",!open);el.dataset.tone=open?tone(value):"back";el.querySelector(".face").textContent=open?value:"❧";el.setAttribute("aria-label",open?"Karte "+value:"Verdeckte Karte")}
 stage.addEventListener("click",e=>togglePreview(e.target.closest(".card.preview")));
 stage.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".card.preview")){e.preventDefault();togglePreview(e.target)}});
 function validate(blocks){const ids=new Set(initial.map(b=>b.id));if(!Array.isArray(blocks)||blocks.length!==9)throw Error("Es werden genau neun Layoutbereiche benötigt.");const seen=new Set();for(const b of blocks){if(!ids.has(b.id)||seen.has(b.id)||!["x","y","w","h"].every(k=>Number.isFinite(b[k]))||b.w<=0||b.h<=0)throw Error("Ungültiger Bereich: "+b.id);seen.add(b.id)}}
@@ -66,5 +82,5 @@ const fsButton=document.getElementById("fullscreen");
 async function toggleFullscreen(){try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen({navigationUI:"hide"})}else{alert("Dieser Browser unterstützt den Vollbildmodus hier nicht. Nutze gegebenenfalls die Browseroption Vollbild oder Zum Startbildschirm hinzufügen.")}}catch(e){alert("Vollbild konnte nicht aktiviert werden: "+e.message)}}
 fsButton.addEventListener("click",toggleFullscreen);
 document.addEventListener("fullscreenchange",()=>{fsButton.textContent=document.fullscreenElement?"⛶ Vollbild verlassen":"⛶ Vollbild";fit()});
-addEventListener("resize",fit);render(initial);fit();
+document.getElementById("demo-next").addEventListener("click",()=>{demoOffset=(demoOffset+3)%demoValues.length;render(zones)});addEventListener("resize",fit);render(initial);fit();
 </script></body></html>
