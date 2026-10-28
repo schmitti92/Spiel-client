@@ -1,6 +1,6 @@
 /* SKYJO Action UI improvements: independent of game rules and checksum modules. */
 (()=>{'use strict';
-const VERSION='6a163bb4cbd7';
+const VERSION='6b8eec369862';
 let lastTurn='',lastToastAt=0,updating=false;
 function highlightPlayer(name,playing){
  const players=[...document.querySelectorAll('.player')];
