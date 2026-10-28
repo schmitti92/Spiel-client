@@ -352,3 +352,30 @@ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-lay
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout #play-deck-pile .card.back{
  background:#12392d url("skyjo_wald_kartenrueckseite-1.webp") center/100% 100% no-repeat!important;
 }
+
+/* V14: Jokerstatus in der schmalen Fußleiste ohne abgeschnittene Sätze. */
+html body.skyjo-wald-menu-enabled #app .status.premium-status .joker-stat{
+ overflow:hidden!important;min-width:0!important;
+}
+html body.skyjo-wald-menu-enabled #app .status.premium-status .joker-stat>span{
+ display:block!important;max-width:100%!important;
+ font-size:clamp(9px,.7vw,11px)!important;line-height:1.12!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;
+}
+html body.skyjo-wald-menu-enabled #app .status.premium-status .joker-stat>span::after{
+ content:none!important;
+}
+/* Nur der sichtbare Text wird verkürzt; das originale Joker-Management
+   und sein vollständiger Tooltip bleiben unverändert. */
+html body.skyjo-wald-menu-enabled #app .status.premium-status .joker-stat>span{
+ font-size:0!important;
+}
+html body.skyjo-wald-menu-enabled #app .status.premium-status .joker-stat>span::before{
+ content:"Joker verwalten"!important;
+ font-size:clamp(10px,.8vw,12px)!important;
+}
+/* Die verschobene Spieleauswahl ist ausschließlich bei geöffnetem Menü erreichbar. */
+html body.skyjo-wald-menu-enabled #app .topbar .skyjo-wald-menu-exit{
+ position:static!important;inset:auto!important;transform:none!important;
+ margin:3px!important;max-width:100%!important;
+}
