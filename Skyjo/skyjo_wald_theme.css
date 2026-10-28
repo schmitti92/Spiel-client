@@ -224,3 +224,10 @@ body.skyjo-wald-menu-enabled #app .status.premium-status #skyjo-wald-menu-toggle
 @media(prefers-reduced-motion:reduce){
  body.skyjo-wald-menu-enabled #app .topbar{transition:none!important}
 }
+
+@media(min-width:900px) and (orientation:landscape){
+ html body.skyjo-wald-menu-enabled.skyjo-local-layout-ready #app .status.premium-status:has(#skyjo-wald-menu-toggle){
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr)) 50px!important;
+  width:clamp(440px,43vw,650px)!important;gap:5px!important;
+ }
+}
