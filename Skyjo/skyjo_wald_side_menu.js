@@ -13,7 +13,8 @@ function sync(){
   btn=document.createElement('button');btn.id='skyjo-wald-menu-toggle';btn.type='button';
   btn.setAttribute('aria-label','Spielmenü öffnen');btn.setAttribute('aria-expanded',String(open));
   btn.addEventListener('click',e=>{e.stopPropagation();open=!open;update()});
-  joker.insertAdjacentElement('afterend',btn);
+  const stats=joker.closest('.status.premium-status');
+  stats.insertBefore(btn,stats.firstElementChild);
  }
  update();
 }
