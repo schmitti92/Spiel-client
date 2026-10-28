@@ -49,6 +49,26 @@ radial-gradient(ellipse 9px 19px at 82% 97%,var(--leaf) 0 43%,transparent 47%);f
 .card.front .face{position:relative;z-index:1;font-weight:900;text-shadow:0 2px 1px #fff9,1px 3px 3px #0004;font-variant-numeric:tabular-nums}
 .player.small .card.front .face{font-size:clamp(35px,3.2vw,74px)}
 /* Joker-Vorschau folgt später; diese Regeln betreffen ausschließlich die Vorderseiten. */
+/* Original-Holzkarten: Sprite mit 15 Motiven, 8 Spalten x 2 Reihen.
+   Datei: Skyjo/skyjo_zahlen_sprite.webp. Bis zum Upload bleibt die CSS-Holzvorschau sichtbar. */
+.card.front[data-card-index]{background-image:url("skyjo_zahlen_sprite.webp")!important;background-size:800% 200%!important;background-repeat:no-repeat!important;border:0!important;box-shadow:0 3px 7px #0006!important}
+.card.front[data-card-index] .face{opacity:0!important}
+.card.front[data-card-index="0"]{background-position:0% 0%!important}
+.card.front[data-card-index="1"]{background-position:14.285714% 0%!important}
+.card.front[data-card-index="2"]{background-position:28.571429% 0%!important}
+.card.front[data-card-index="3"]{background-position:42.857143% 0%!important}
+.card.front[data-card-index="4"]{background-position:57.142857% 0%!important}
+.card.front[data-card-index="5"]{background-position:71.428571% 0%!important}
+.card.front[data-card-index="6"]{background-position:85.714286% 0%!important}
+.card.front[data-card-index="7"]{background-position:100% 0%!important}
+.card.front[data-card-index="8"]{background-position:0% 100%!important}
+.card.front[data-card-index="9"]{background-position:14.285714% 100%!important}
+.card.front[data-card-index="10"]{background-position:28.571429% 100%!important}
+.card.front[data-card-index="11"]{background-position:42.857143% 100%!important}
+.card.front[data-card-index="12"]{background-position:57.142857% 100%!important}
+.card.front[data-card-index="13"]{background-position:71.428571% 100%!important}
+.card.front[data-card-index="14"]{background-position:85.714286% 100%!important}
+.card.front[data-card-index]:before{display:none!important}
 /* Wald-Kartensystem: eigenständige Darstellung, keine Spielregeln */
 .card{position:relative;isolation:isolate;overflow:hidden;user-select:none;aspect-ratio:auto;transition:transform .18s ease,filter .18s ease}.card:after{content:none!important}.card .face{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:clamp(24px,3.5vw,85px);font-weight:950;line-height:1}.card.back{background:radial-gradient(circle at 50% 38%,#38796a,#12483f 75%);border-color:#d4ae68}.card.back .face{color:#b9d3b7;font-size:clamp(25px,3vw,66px);opacity:.68}.card.front{background:linear-gradient(145deg,#fff9e7,#e6e9d1);color:#164b38;border-color:#d5ad65}.card.front[data-tone="cold"]{background:linear-gradient(145deg,#e5f6fc,#9acdd9);color:#19567a}.card.front[data-tone="warm"]{background:linear-gradient(145deg,#fff1d4,#f2bb83);color:#7c3d22}.card.front[data-tone="hot"]{background:linear-gradient(145deg,#ffddbd,#e9917d);color:#852b2b}.card.front[data-tone="joker"]{background:linear-gradient(145deg,#f6e8ff,#b79de1);color:#542f83}.card.front:before{content:"✦";position:absolute;top:6px;left:9px;font-size:14px;opacity:.4}.card.preview{cursor:pointer}.card.preview:hover{filter:brightness(1.08)}.card.preview:focus-visible{outline:5px solid #ffe68d;outline-offset:-5px}.player .cards .card .face{font-size:clamp(32px,4vw,90px)}.player.small .cards .card .face{font-size:clamp(24px,2.8vw,67px)}.player .cards .card.back .face{font-size:clamp(24px,3vw,65px)}.player.small .cards .card.back .face{font-size:clamp(22px,2.4vw,50px)}.pile .card .face{font-size:78px}.pile .card.back .face{font-size:54px}.handcard{background:linear-gradient(145deg,#fff9e7,#d8e9d7);box-shadow:inset 0 0 0 3px #ffffff70,0 5px 15px #0006}.card .face{pointer-events:none}@media(prefers-reduced-motion:reduce){.card{transition:none}}
 </style></head><body>
@@ -60,7 +80,7 @@ const initial=[{"id":"stats","x":21.4,"y":92.5,"w":40.4,"h":6.6,"z":3},{"id":"pl
 const stage=document.getElementById("stage");let zones=[];
 const demoValues=Array.from({length:15},(_,i)=>i-2);let demoOffset=0;
 function tone(value){return value<0?"cold":value>=10?"hot":value>=6?"warm":"neutral"}
-function cardMarkup(value,preview=false){const open=value!==null;return '<div class="card '+(open?'front':'back')+(preview?' preview':'')+'" '+(preview?'role="button" tabindex="0" ':'')+'data-tone="'+(open?tone(value):'back')+'" aria-label="'+(open?'Karte '+value:'Verdeckte Karte')+'"><span class="face">'+(open?value:'❧')+'</span></div>'}
+function cardMarkup(value,preview=false){const open=value!==null;return '<div class="card '+(open?'front':'back')+(preview?' preview':'')+'" '+(preview?'role="button" tabindex="0" ':'')+'data-card-index="'+(open?value+2:'')+'" data-tone="'+(open?tone(value):'back')+'" aria-label="'+(open?'Karte '+value:'Verdeckte Karte')+'"><span class="face">'+(open?value:'❧')+'</span></div>'}
 const zoneContent={
 player1:()=>player("Spieler 1",false),player2:()=>player("Spieler 2",true),player3:()=>player("Spieler 3",true),
 hand:()=>'<div class="center"><h2>Handkarte</h2><div class="handcard" aria-label="Handkarte als Platzhalter">?</div></div>',
@@ -71,7 +91,7 @@ reactions:()=>'<span>😀 😂 ❤️ 👍 👏</span>',
 pause:()=>'<button type="button">🚻</button><button type="button">📖</button>'
 };
 function player(name,small){return '<div class="label"><span>'+name+'</span><span class="badge">0 Punkte</span></div><div class="cards">'+demoValues.slice(0,12).map(()=>cardMarkup(null,true)).join('')+'</div>'}
-function togglePreview(el){if(!el||!el.classList.contains("preview"))return;const cards=Array.from(el.parentElement.children);const idx=cards.indexOf(el);const value=demoValues[(idx+demoOffset)%demoValues.length];const open=el.classList.toggle("front");el.classList.toggle("back",!open);el.dataset.tone=open?tone(value):"back";el.querySelector(".face").textContent=open?value:"❧";el.setAttribute("aria-label",open?"Karte "+value:"Verdeckte Karte")}
+function togglePreview(el){if(!el||!el.classList.contains("preview"))return;const cards=Array.from(el.parentElement.children);const idx=cards.indexOf(el);const value=demoValues[(idx+demoOffset)%demoValues.length];const open=el.classList.toggle("front");el.classList.toggle("back",!open);el.dataset.tone=open?tone(value):"back";el.dataset.cardIndex=open?String(value+2):"";el.querySelector(".face").textContent=open?value:"❧";el.setAttribute("aria-label",open?"Karte "+value:"Verdeckte Karte")}
 stage.addEventListener("click",e=>togglePreview(e.target.closest(".card.preview")));
 stage.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".card.preview")){e.preventDefault();togglePreview(e.target)}});
 function validate(blocks){const ids=new Set(initial.map(b=>b.id));if(!Array.isArray(blocks)||blocks.length!==9)throw Error("Es werden genau neun Layoutbereiche benötigt.");const seen=new Set();for(const b of blocks){if(!ids.has(b.id)||seen.has(b.id)||!["x","y","w","h"].every(k=>Number.isFinite(b[k]))||b.w<=0||b.h<=0)throw Error("Ungültiger Bereich: "+b.id);seen.add(b.id)}}
