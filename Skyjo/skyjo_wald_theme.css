@@ -87,3 +87,6 @@ body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .
   font-size:clamp(9px,1vw,15px)!important;line-height:1.15!important;
  }
 }
+
+/* Hintergrund nach dem Reset explizit wiederherstellen. */
+html body.is-playing[data-skyjo-local-board="wald"]{background:#09251c url("skyjo_wald_hintergrund.webp") center center/cover fixed no-repeat!important}
