@@ -325,3 +325,15 @@ body.skyjo-wald-menu-enabled #app .status.premium-status #skyjo-wald-menu-toggle
   margin-inline:auto!important;
  }
 }
+
+/* V12: Gegnerkarten nutzen mehr Platz im rechten 4x3-Spielfeld.
+   Breite und Höhe sind gemeinsam begrenzt, Spieler 1 bleibt unverändert. */
+@media (min-width:900px) and (orientation:landscape){
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat{
+  --card-w:min(7.1vw,13.1vh,108px)!important;
+  --card-h:calc(var(--card-w)*1.37)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid{
+  gap:clamp(3px,.36vw,7px)!important;
+ }
+}
