@@ -280,3 +280,28 @@ body.skyjo-wald-menu-enabled #app .status.premium-status #skyjo-wald-menu-toggle
   margin:0!important;z-index:130!important;
  }
 }
+
+/* V10: Wald-Kartenmaße aus dem 1920x1080-Prototyp auf Tablet-Querformat
+   übertragen. Große eigene Karten, kompakte Gegnerkarten, 4x3 bleibt fix. */
+@media (min-width:900px) and (orientation:landscape){
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .own-seat{
+  --card-w:clamp(78px,6.45vw,104px)!important;
+  --card-h:calc(var(--card-w)*1.37)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat{
+  --card-w:clamp(42px,3.55vw,58px)!important;
+  --card-h:calc(var(--card-w)*1.37)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .own-seat .grid,
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid{
+  grid-template-columns:repeat(4,var(--card-w))!important;
+  grid-template-rows:repeat(3,var(--card-h))!important;
+  justify-content:center!important;align-content:center!important;
+  gap:clamp(4px,.55vw,10px)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .own-seat .grid .card,
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid .card{
+  box-sizing:border-box!important;width:var(--card-w)!important;height:var(--card-h)!important;
+  min-width:0!important;min-height:0!important;
+ }
+}
