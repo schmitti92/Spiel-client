@@ -468,3 +468,44 @@
    flex:0 1 auto!important;
  }
 }
+
+/* v18: Footer is responsive and cannot overlap statistics or utility actions.
+   Desktop uses a single measured row; narrower tablets keep native flow. */
+@media (min-width:1100px) and (orientation:landscape) {
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status {
+   width:clamp(260px,29vw,410px)!important;
+   grid-template-columns:repeat(auto-fit,minmax(0,1fr))!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions .emoji-reaction-bar {
+   left:calc(clamp(12px,1vw,20px) + clamp(260px,29vw,410px) + 8px)!important;
+   right:calc(clamp(14px,1.4vw,26px) + 3 * clamp(45px,3.6vw,58px) + 24px)!important;
+   max-width:none!important;
+   width:auto!important;
+   justify-content:center!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions .emoji-reaction-list {
+   overflow-x:auto!important;
+   scrollbar-width:thin;
+   max-width:100%!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions .emoji-reaction-btn {
+   flex:0 0 auto!important;
+ }
+}
+@media (min-width:900px) and (max-width:1099px) and (orientation:landscape) {
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status {
+   position:relative!important;
+   width:100%!important;
+   height:auto!important;
+   grid-template-columns:repeat(auto-fit,minmax(100px,1fr))!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions {
+   padding-right:clamp(170px,23vw,235px)!important;
+ }
+ body.is-playing.skyjo-local-layout-ready:has(.skyjo-json-board-active) .bottom-actions .emoji-reaction-bar {
+   position:relative!important;
+   inset:auto!important;
+   max-width:100%!important;
+   justify-content:flex-start!important;
+ }
+}
