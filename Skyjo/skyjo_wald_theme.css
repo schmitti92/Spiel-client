@@ -189,3 +189,38 @@ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-lay
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="10"]{background-position:57.142857% 100%!important}
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="11"]{background-position:71.428571% 100%!important}
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .card[data-sky-kind="number"][data-sky-value="12"]{background-position:85.714286% 100%!important}
+
+/* V8: Spielmenü als Schublade. Auslöser unmittelbar rechts der Jokerzahl. */
+body.skyjo-wald-menu-enabled #app .topbar{
+ position:fixed!important;top:clamp(75px,11vh,120px)!important;right:12px!important;
+ left:auto!important;bottom:auto!important;width:min(370px,86vw)!important;
+ max-height:72vh!important;overflow-y:auto!important;
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+ gap:8px!important;padding:16px!important;
+ background:linear-gradient(145deg,#103a30f5,#071f1cf9)!important;
+ border:2px solid #d3a95e!important;border-radius:18px!important;
+ box-shadow:0 12px 35px #000b!important;z-index:200000!important;
+ transform:translateX(calc(100% + 28px))!important;
+ visibility:hidden!important;pointer-events:none!important;
+ transition:transform .25s ease,visibility .25s!important;
+}
+body.skyjo-wald-menu-enabled.skyjo-wald-menu-open #app .topbar{
+ transform:translateX(0)!important;visibility:visible!important;pointer-events:auto!important;
+}
+body.skyjo-wald-menu-enabled #app .status.premium-status #skyjo-wald-menu-toggle{
+ appearance:none!important;display:flex!important;align-items:center!important;justify-content:center!important;
+ position:relative!important;flex:0 0 50px!important;min-width:50px!important;
+ width:50px!important;height:50px!important;min-height:50px!important;
+ background:linear-gradient(145deg,#164c3b,#092b24)!important;color:#ffe3a3!important;
+ border:2px solid #d3a95e!important;border-radius:13px!important;
+ font:700 28px/1 system-ui!important;cursor:pointer!important;z-index:2!important;
+}
+body.skyjo-wald-menu-enabled #app .status.premium-status{
+ overflow:visible!important;
+}
+body.skyjo-wald-menu-enabled #app .status.premium-status #skyjo-wald-menu-toggle:focus-visible{
+ outline:3px solid #fff2bc!important;outline-offset:3px!important;
+}
+@media(prefers-reduced-motion:reduce){
+ body.skyjo-wald-menu-enabled #app .topbar{transition:none!important}
+}
