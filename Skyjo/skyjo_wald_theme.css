@@ -127,3 +127,44 @@ html body.is-playing[data-skyjo-local-board="wald"]:has(.table-area.three-player
  .table-area.three-player-layout .mini-players-stack>.mini-player-wrap:nth-child(2) .player-head{
  background:linear-gradient(110deg,#1c4b3d,#0c2f27)!important;color:#ffe4a0!important;
 }
+
+/* V6: tatsächliches Handkarten-Markup aus Logikmodul 02:
+   .real-hand-card.empty ist der einzige verlässliche Leerzustand. */
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .handbox:has(.real-hand-card.empty){
+ background:transparent!important;background-image:none!important;
+ border-color:transparent!important;box-shadow:none!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .handbox:has(.real-hand-card.empty) .real-hand-card.empty{
+ visibility:hidden!important;pointer-events:none!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .handbox:has(.real-hand-card.empty) .real-hand-zone{
+ background:transparent!important;background-image:none!important;border-color:transparent!important;box-shadow:none!important;
+}
+/* V6: vier echte HUD-Statistiken in einer einzigen Zeile, Wert über Beschriftung.
+   Nur lokales Wald-Layout im Tablet-Querformat. */
+@media(min-width:1100px) and (orientation:landscape){
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status{
+  width:clamp(370px,39vw,590px)!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status>.stat{
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+  padding:2px 4px!important;gap:1px!important;white-space:nowrap!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status>.stat::before,
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status>.stat::after{
+  display:none!important;content:none!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status>.stat>b{
+  display:block!important;position:static!important;transform:none!important;
+  font-size:clamp(13px,1.2vw,18px)!important;line-height:1.1!important;
+  margin:0!important;padding:0!important;max-width:100%!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready:has(.skyjo-json-board-active) .status.premium-status>.stat>span{
+  display:block!important;position:static!important;transform:none!important;
+  font-size:clamp(9px,.77vw,11px)!important;line-height:1.1!important;
+  margin:0!important;padding:0!important;max-width:100%!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;
+ }
+}
