@@ -305,3 +305,23 @@ body.skyjo-wald-menu-enabled #app .status.premium-status #skyjo-wald-menu-toggle
   min-width:0!important;min-height:0!important;
  }
 }
+
+/* V11: Kartenraster füllt die Spielfläche als geschlossener 4x3-Block.
+   Breite UND Höhe werden begrenzt, damit auf Tablets keine Karte abgeschnitten wird.
+   3 Spieler, lokale Wald-Edition; Stapelkarten bleiben unverändert. */
+@media (min-width:900px) and (orientation:landscape){
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .own-seat{
+  --card-w:min(8.1vw,19.5vh,140px)!important;
+  --card-h:calc(var(--card-w)*1.37)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat{
+  --card-w:min(6.35vw,11.2vh,94px)!important;
+  --card-h:calc(var(--card-w)*1.37)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .own-seat .grid,
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid{
+  gap:clamp(4px,.45vw,8px)!important;
+  width:max-content!important;max-width:100%!important;
+  margin-inline:auto!important;
+ }
+}
