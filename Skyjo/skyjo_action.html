@@ -61,6 +61,18 @@
  const check=()=>{
   if(document.body.dataset.skyjoLocalBoard!=='wald')document.body.dataset.skyjoLocalBoard='wald';
   // Clearly label the standalone room before play, not just the game board.
+  // One-device Wald preview uses the existing offline AI engine, not the online room.
+  const app=document.getElementById('app');
+  if(app && !document.getElementById('skyjo-wald-preview-link') && !document.body.classList.contains('is-playing')){
+   const anchor=document.createElement('a');
+   anchor.id='skyjo-wald-preview-link';
+   anchor.href='skyjo_action_local.html?mode=local&board=wald&testPlayers=2&layout=classic';
+   anchor.textContent='🌲 Waldlayout mit 2 Testspielern öffnen';
+   anchor.style.cssText='display:block;text-align:center;padding:13px 18px;margin:12px auto;max-width:680px;background:linear-gradient(135deg,#27754d,#134d3a);color:white;border:2px solid #c9a764;border-radius:12px;text-decoration:none;font:700 17px system-ui';
+   const setup=app.querySelector('#target');
+   if(setup){const panel=setup.closest('.panel')||setup.parentElement;panel?.prepend(anchor)}
+   else if(app.querySelector('.lobby-card'))app.querySelector('.lobby-card').prepend(anchor);
+  }
   if(!playingBannerPresent()){
    const app=document.getElementById('app');
    if(app && app.querySelector('.topbar') && !document.body.classList.contains('is-playing')){
