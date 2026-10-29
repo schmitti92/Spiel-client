@@ -1,6 +1,6 @@
 /* Local-only JSON layout geometry; does not alter game state. */
 (()=>{'use strict';
-if(new URLSearchParams(location.search).get('mode')!=='local')return;
+if(!(new URLSearchParams(location.search).get('mode')==='local'||(new URLSearchParams(location.search).get('mode')==='online'&&new URLSearchParams(location.search).get('board')==='wald')))return;
 fetch('skyjo_layout_local_v3.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('missing layout');return r.json()}).then(data=>{
  const ids=['stats','player1','hand','deck','player2','player3','status','reactions','pause'];
  if(data.version!==3||!Array.isArray(data.blocks)||data.blocks.length!==ids.length)throw Error('invalid schema');
