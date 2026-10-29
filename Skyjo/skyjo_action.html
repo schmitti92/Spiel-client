@@ -82,6 +82,22 @@
     app.prepend(tag);
    }
   }
+  // Internal SKYJO online lobby: disable start until the third real player joined.
+  // The engine independently rejects invalid counts, so this is a UI safeguard.
+  const lobby=app?.querySelector('.lobby-card');
+  if(lobby && !document.body.classList.contains('is-playing')){
+   const slots=lobby.querySelectorAll('.player-slot').length;
+   const start=lobby.querySelector('button[onclick*="startOnlineGame"]');
+   if(start){
+    const ready=slots===3;
+    if(start.disabled!==!ready)start.disabled=!ready;
+    const title=ready?'🎮 Waldpartie mit 3 Spielern starten':'🌲 Warte auf 3 Spieler ('+slots+'/3)';
+    if(start.textContent!==title)start.textContent=title;
+    start.setAttribute('aria-disabled',String(!ready));
+   }
+   const head=lobby.querySelector('.lobby-head .hint');
+   if(head && head.textContent!==slots+'/3 Spieler im Wald-Raum')head.textContent=slots+'/3 Spieler im Wald-Raum';
+  }
   const playing=document.body.classList.contains('is-playing');
   const board=document.querySelector('.table-area.three-player-layout');
   const valid=!!board && !!board.querySelector(':scope > .own-seat') && !!board.querySelector(':scope > .center-seat') && !!board.querySelector(':scope > .mini-seat') && board.querySelectorAll('section.player').length===3;
