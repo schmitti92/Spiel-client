@@ -136,7 +136,7 @@
 <script src="skyjo_clear_victory.js?v=1"></script>
 <script>
 if(new URLSearchParams(location.search).get('mode')==='online'&&new URLSearchParams(location.search).get('board')==='wald'){
- for(const file of ['skyjo_local_layout_runtime.js','skyjo_local_layout_v3.js','skyjo_wald_rival_fit.js']){
+ for(const file of ['skyjo_local_layout_runtime.js','skyjo_local_layout_v3.js','skyjo_wald_rival_fit.js','skyjo_wald_side_menu.js']){
   const s=document.createElement('script');s.src=file+'?v=online-wald-2';s.defer=true;document.body.appendChild(s);
  }
 }
