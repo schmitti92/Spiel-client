@@ -481,3 +481,11 @@ margin:0!important;max-width:none!important;max-height:none!important;
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid{grid-template-columns:repeat(4,var(--wald-rival-w,80px))!important;grid-template-rows:repeat(3,var(--wald-rival-h,110px))!important;gap:2px!important}
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid :is(.card,.card-slot){width:var(--wald-rival-w,80px)!important;height:var(--wald-rival-h,110px)!important}
 }
+
+/* V19.1: opponent grids stay below the heading and inside their panels. */
+@media(min-width:900px) and (orientation:landscape){
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .mini-player-wrap .player{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .mini-player-wrap .player-head{flex:0 0 auto!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .mini-player-wrap .gridwrap{flex:1 1 0!important;min-height:0!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .mini-player-wrap .grid{flex:0 0 auto!important}
+}
