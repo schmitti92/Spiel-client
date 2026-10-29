@@ -31,8 +31,8 @@ const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 
 /* V129: Spielfelder sind reine Ansichtseinstellungen. Die Raumregel ist synchron,
    die persönliche Auswahl bleibt ausschließlich auf diesem Gerät/Tab. */
-const SKYJO_BOARD_THEMES=Object.freeze({standard:'Standard · Royal Table'});
-const SKYJO_BOARD_THEME_IMAGE=Object.freeze({standard:'../Assets/game-backgrounds/skyjo.webp'});
+const SKYJO_BOARD_THEMES=Object.freeze({standard:'Standard · Royal Table',wald:'🌲 Wald-Edition'});
+const SKYJO_BOARD_THEME_IMAGE=Object.freeze({standard:'../Assets/game-backgrounds/skyjo.webp',wald:'../Assets/game-backgrounds/skyjo.webp'});
 let setupBoardPolicy='free';
 let setupHostBoardTheme='standard';
 let hostBoardThemeChosenManually=false;
@@ -52,11 +52,12 @@ function personalBoardTheme(){const key=personalBoardStorageKey();return transie
 function resetBoardChoiceForNewGame(){transientBoardChoice=null}
 function hostBoardSettings(){return cloud.enabled&&isRoomDoc(cloud.doc)?cloud.doc.lobby?.settings||null:null}
 function isHostBoardLocked(){return hostBoardSettings()?.boardPolicy==='fixed'}
-function effectiveBoardTheme(){return isHostBoardLocked()?validBoardTheme(hostBoardSettings()?.boardTheme):personalBoardTheme()}
+function effectiveBoardTheme(){if(SKYJO_REQUESTED_MODE==='online'&&SKYJO_HUB_QUERY.get('board')==='wald')return 'wald';return isHostBoardLocked()?validBoardTheme(hostBoardSettings()?.boardTheme):personalBoardTheme()}
 function syncBoardTheme(){
  if(!hostBoardThemeChosenManually&&window.SpielProfile?.active?.())setupHostBoardTheme=profileBoardFavorite();
  const selected=effectiveBoardTheme();
  if(document.body.dataset.skyjoTheme!==selected)document.body.dataset.skyjoTheme=selected;
+ if(SKYJO_REQUESTED_MODE==='online'&&SKYJO_HUB_QUERY.get('board')==='wald')document.body.dataset.skyjoLocalBoard='wald';
  document.documentElement.style.setProperty('--skyjo-theme-preview',`url("${SKYJO_BOARD_THEME_IMAGE[selected]}")`);
 }
 function choosePersonalBoardTheme(theme){
@@ -74,7 +75,7 @@ function renderHostBoardSelection(){
 }
 function boardChoiceHTML(current,onclickName,disabled=false){return Object.entries(SKYJO_BOARD_THEMES).map(([id,title])=>`<button type="button" class="skyjo-board-choice ${current===id?'selected':''}" aria-pressed="${current===id}" data-${onclickName==='pickHostBoardTheme'?'host-board':'player-board'}="${id}" ${disabled?'disabled':''} onclick="Game.${onclickName}('${id}')"><span class="skyjo-board-picture" style="background-image:url('${SKYJO_BOARD_THEME_IMAGE[id]}')"></span><span class="skyjo-board-choice-text"><b>${title}</b><small>${current===id?'✓ Ausgewählt':'Vorschau auswählen'}</small></span></button>`).join('')}
 function showBoardMenu(){
- modal('<div class="skyjo-board-menu"><h3>🎴 Klassisches Spielfeld</h3><p>Derzeit ist ausschließlich das klassische SKYJO-Spielfeld verfügbar.</p><div class="modal-actions"><button class="primary" onclick="Game.closeModal()">Fertig</button></div></div>',false)
+ modal('<div class="skyjo-board-menu"><h3>🎴 Spielfeld</h3><p>'+((SKYJO_REQUESTED_MODE==='online'&&SKYJO_HUB_QUERY.get('board')==='wald')?'🌲 Wald-Edition · Online mit genau 3 Spielern. Das Spielfeld wird für alle Teilnehmer durch den gemeinsamen Raum festgelegt.':'Klassisches Spielfeld')+'</p><div class="modal-actions"><button class="primary" onclick="Game.closeModal()">Fertig</button></div></div>',false)
 }
 
 
