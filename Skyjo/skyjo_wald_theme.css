@@ -504,3 +504,18 @@ max-width:100%!important;max-height:100%!important;aspect-ratio:1/1.37!important
 margin-inline:auto!important;flex:0 1 auto!important;
 }
 }
+
+/* V19.4: drawn hand card at twice its former visual size. */
+@media(min-width:900px) and (orientation:landscape){
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)) .real-hand-card:not(.empty){
+width:clamp(112px,8vw,160px)!important;
+height:auto!important;
+aspect-ratio:1 / 1.37!important;
+max-width:90%!important;
+max-height:88%!important;
+object-fit:fill!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)) .real-hand-zone{
+width:100%!important;height:100%!important;min-height:0!important;
+}
+}
