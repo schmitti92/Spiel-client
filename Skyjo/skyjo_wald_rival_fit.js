@@ -9,13 +9,13 @@ function fit(){
   const grid=seat.querySelector('.grid'),host=grid?.closest('.gridwrap');
   if(!grid||!host)return;
   if(!observed.has(host)){ro.observe(host);observed.add(host)}
-  const rect=host.getBoundingClientRect(),s=getComputedStyle(host);
-  const width=rect.width-(parseFloat(s.paddingLeft)||0)-(parseFloat(s.paddingRight)||0);
-  const height=rect.height-(parseFloat(s.paddingTop)||0)-(parseFloat(s.paddingBottom)||0);
+  const rect=host.getBoundingClientRect(),seatRect=seat.getBoundingClientRect(),s=getComputedStyle(host);
+  const width=Math.max(rect.width,seatRect.width-12)-(parseFloat(s.paddingLeft)||0)-(parseFloat(s.paddingRight)||0);
+  const height=Math.max(rect.height,seatRect.bottom-rect.top-8)-(parseFloat(s.paddingTop)||0)-(parseFloat(s.paddingBottom)||0);
   if(width<80||height<100)return;
   // Nur 2px Rasterabstand; Größe durch den begrenzenden Faktor.
   const gap=2,ratio=1.37;
-  const cw=Math.max(1,Math.floor(Math.min((width-3*gap-2)/4,(height-2*gap-2)/(3*ratio))));
+  const cw=Math.floor(Math.min((width-3*gap-2)/4,(height-2*gap-2)/(3*ratio)));if(cw<28)return;
   const ch=Math.floor(cw*ratio);
   if(grid.style.getPropertyValue('--wald-rival-w')!==cw+'px'){
    grid.style.setProperty('--wald-rival-w',cw+'px');
