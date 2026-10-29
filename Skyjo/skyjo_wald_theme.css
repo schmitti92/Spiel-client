@@ -590,3 +590,17 @@ border:0!important;border-radius:0!important;
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-card:not(.empty){
 border:0!important;border-radius:0!important;
 }
+
+/* V20: transparent forest stage for hand and piles; preserve card sprites. */
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat :is(.center-table,.handbox,.pilebox,.play-pilebox,.real-hand-zone,.real-hand-card,.real-hand-copy){
+background:transparent!important;background-color:transparent!important;background-image:none!important;
+border:0!important;border-color:transparent!important;box-shadow:none!important;outline:none!important;
+backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat :is(.center-table,.handbox,.pilebox,.play-pilebox,.real-hand-zone)::before,
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat :is(.center-table,.handbox,.pilebox,.play-pilebox,.real-hand-zone)::after{
+content:none!important;display:none!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-zone{
+border-radius:0!important;
+}
