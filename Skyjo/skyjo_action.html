@@ -39,9 +39,7 @@
 
 
 <link rel="stylesheet" href="skyjo_shared_head.css?v=1">
-<link rel="stylesheet" href="skyjo_local_royal_layout.css?v=3">
 <link rel="stylesheet" href="skyjo_local_layout_v3.css?v=18">
-<link rel="stylesheet" href="skyjo_fullscreen_fixed_v1.css?v=1">
 <link rel="stylesheet" href="skyjo_wald_theme.css?v=20.1">
 </head>
 <body>
@@ -50,6 +48,7 @@
 (()=>{
  const q=new URLSearchParams(location.search);
  if(q.get('mode')!=='online'||q.get('board')!=='wald')return;
+ for(const href of ['skyjo_local_royal_layout.css?v=3','skyjo_fullscreen_fixed_v1.css?v=1']){const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);}
  document.body.dataset.skyjoLocalBoard='wald';
  document.body.dataset.skyjoTheme='wald';
  const check=()=>{
