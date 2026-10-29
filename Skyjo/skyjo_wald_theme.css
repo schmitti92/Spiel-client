@@ -609,3 +609,20 @@ border-radius:0!important;
 html body.is-playing[data-skyjo-local-board="wald"] .real-hand-copy small,
 html body.is-playing[data-skyjo-local-board="wald"] .real-hand-copy .hand-hint,
 html body.is-playing[data-skyjo-local-board="wald"] .real-hand-copy .hand-instruction{display:none!important}
+
+/* V20.2 – Tablet-Feinschliff: Aktionshinweis kontrastreich und zweizeilig.
+   Nur Darstellung; keine Änderungen an Karten, Zügen oder Synchronisierung. */
+@media (min-width:900px) and (orientation:landscape){
+ html body.is-playing[data-skyjo-local-board="wald"] #app .bottom-actions .instruction{
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  line-height:1.2!important;
+  padding:5px 12px!important;
+  color:#fff4d4!important;
+  background:rgba(5,28,25,.91)!important;
+  border:1px solid rgba(219,183,101,.58)!important;
+  border-radius:10px!important;
+  text-shadow:0 1px 3px #000!important;
+ }
+}
