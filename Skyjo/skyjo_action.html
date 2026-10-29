@@ -49,10 +49,13 @@
  if(q.get('mode')!=='online'||q.get('board')!=='wald')return;
  for(const href of ['skyjo_local_royal_layout.css?v=3','skyjo_local_layout_v3.css?v=18','skyjo_fullscreen_fixed_v1.css?v=1']){const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);}
  document.body.dataset.skyjoLocalBoard='wald';
- document.body.dataset.skyjoTheme='wald';
+ /* The game engine may reset data-skyjo-theme to standard during renders.
+    Wald styling relies on the independent data-skyjo-local-board marker. */
  const check=()=>{
+  if(document.body.dataset.skyjoLocalBoard!=='wald')document.body.dataset.skyjoLocalBoard='wald';
   const playing=document.body.classList.contains('is-playing');
-  const valid=!!document.querySelector('.table-area.three-player-layout');
+  const board=document.querySelector('.table-area.three-player-layout');
+  const valid=!!board && !!board.querySelector(':scope > .own-seat') && !!board.querySelector(':scope > .center-seat') && !!board.querySelector(':scope > .mini-seat') && board.querySelectorAll('section.player').length===3;
   let note=document.getElementById('wald-online-three-only');
   if(playing&&!valid&&!note){
    note=document.createElement('div');note.id='wald-online-three-only';note.setAttribute('role','alert');
