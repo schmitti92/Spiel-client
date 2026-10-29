@@ -532,3 +532,20 @@ max-width:none!important;max-height:none!important;aspect-ratio:1 / 1.37!importa
 transform:none!important;margin:0!important;flex:0 0 100%!important;
 }
 }
+
+/* V19.6: fix confirmed 3-player 52x70px legacy override on nested hand card. */
+@media(min-width:900px) and (orientation:landscape){
+html body.is-playing[data-skyjo-local-board="wald"][data-players="3"] .table-area.three-player-layout .center-seat .center-table .handbox .real-hand-zone .real-hand-card:not(.empty) .card{
+--card-w:clamp(104px,9vw,148px)!important;
+width:var(--card-w)!important;
+height:calc(var(--card-w)*1.37)!important;
+min-width:var(--card-w)!important;
+min-height:calc(var(--card-w)*1.37)!important;
+max-width:none!important;max-height:none!important;
+flex:0 0 auto!important;transform:none!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"][data-players="3"] .table-area.three-player-layout .center-seat .center-table .handbox .real-hand-zone .real-hand-card:not(.empty){
+width:clamp(104px,9vw,148px)!important;
+height:calc(clamp(104px,9vw,148px)*1.37)!important;
+}
+}
