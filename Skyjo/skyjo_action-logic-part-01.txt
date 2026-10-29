@@ -75,7 +75,15 @@ function renderHostBoardSelection(){
 }
 function boardChoiceHTML(current,onclickName,disabled=false){return Object.entries(SKYJO_BOARD_THEMES).map(([id,title])=>`<button type="button" class="skyjo-board-choice ${current===id?'selected':''}" aria-pressed="${current===id}" data-${onclickName==='pickHostBoardTheme'?'host-board':'player-board'}="${id}" ${disabled?'disabled':''} onclick="Game.${onclickName}('${id}')"><span class="skyjo-board-picture" style="background-image:url('${SKYJO_BOARD_THEME_IMAGE[id]}')"></span><span class="skyjo-board-choice-text"><b>${title}</b><small>${current===id?'✓ Ausgewählt':'Vorschau auswählen'}</small></span></button>`).join('')}
 function showBoardMenu(){
- modal('<div class="skyjo-board-menu"><h3>🎴 Spielfeld</h3><p>'+((SKYJO_REQUESTED_MODE==='online'&&SKYJO_HUB_QUERY.get('board')==='wald')?'🌲 Wald-Edition · Online mit genau 3 Spielern. Das Spielfeld wird für alle Teilnehmer durch den gemeinsamen Raum festgelegt.':'Klassisches Spielfeld')+'</p><div class="modal-actions"><button class="primary" onclick="Game.closeModal()">Fertig</button></div></div>',false)
+ const forestOnline=SKYJO_REQUESTED_MODE==='online'&&SKYJO_HUB_QUERY.get('board')==='wald';
+ const selected=effectiveBoardTheme();
+ const choices=forestOnline
+  ? '<div class="skyjo-board-choice selected" aria-label="Wald-Edition ausgewählt"><span class="skyjo-board-choice-text"><b>🌲 Wald-Edition</b><small>✓ Online für genau 3 Spieler aktiviert</small></span></div>'
+  : boardChoiceHTML(selected,'choosePersonalBoardTheme',isHostBoardLocked());
+ const hint=forestOnline
+  ? 'Die Wald-Edition ist für diesen Online-Raum festgelegt.'
+  : isHostBoardLocked()?'👑 Der Host hat das Spielfeld festgelegt.':'Wähle dein Spielfeld. Die Auswahl gilt nur für deine Ansicht.';
+ modal('<div class="skyjo-board-menu"><h3>🎴 Spielfeld auswählen</h3><p>'+hint+'</p><div class="skyjo-board-choices">'+choices+'</div><div class="modal-actions"><button class="primary" onclick="Game.closeModal()">Fertig</button></div></div>',false);
 }
 
 
