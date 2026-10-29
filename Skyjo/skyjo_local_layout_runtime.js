@@ -1,6 +1,6 @@
 /* Local-only layout mapping; uses existing DOM and never changes game state. */
 (()=>{'use strict';
-if(new URLSearchParams(location.search).get('mode')!=='local')return;
+if(!(new URLSearchParams(location.search).get('mode')==='local'||(new URLSearchParams(location.search).get('mode')==='online'&&new URLSearchParams(location.search).get('board')==='wald')))return;
 const CSS=`
 @media(min-width:900px) and (orientation:landscape){
 body.skyjo-local-layout-ready .table-area.three-player-layout{display:grid!important;grid-template-columns:minmax(0,37fr) minmax(0,25fr) minmax(0,34fr)!important;gap:1.3vw!important;align-items:stretch!important;min-height:min(66vh,680px)!important}
