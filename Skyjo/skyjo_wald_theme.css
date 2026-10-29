@@ -566,3 +566,7 @@ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-lay
 font-size:10px!important;padding:6px!important;min-height:30px!important;
 }
 }
+
+/* V19.8: hide redundant hand-zone discard action; pile action remains available. */
+html body.is-playing[data-skyjo-local-board="wald"] .table-area .real-hand-copy .big-discard-btn,
+html body.is-playing[data-skyjo-local-board="wald"] .table-area .real-hand-actions .drop{display:none!important}
