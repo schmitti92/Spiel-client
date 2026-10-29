@@ -46,13 +46,30 @@
 /* Visual-only Wald selection; existing online engine owns game state. */
 (()=>{
  const q=new URLSearchParams(location.search);
- if(q.get('mode')!=='online'||q.get('board')!=='wald')return;
+ if(q.get('mode')!=='online')return;
+ // Standalone rooms previously lacked board=wald, leaving the old Classic UI.
+ // This online edition uses Wald for every online entry, including invite links.
+ if(q.get('board')!=='wald'){
+  q.set('board','wald');
+  history.replaceState(history.state,'',location.pathname+'?'+q.toString()+location.hash);
+ }
  for(const href of ['skyjo_local_royal_layout.css?v=3','skyjo_local_layout_v3.css?v=18','skyjo_fullscreen_fixed_v1.css?v=1']){const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);}
  document.body.dataset.skyjoLocalBoard='wald';
  /* The game engine may reset data-skyjo-theme to standard during renders.
     Wald styling relies on the independent data-skyjo-local-board marker. */
+ const playingBannerPresent=()=>!!document.getElementById('skyjo-wald-online-label');
  const check=()=>{
   if(document.body.dataset.skyjoLocalBoard!=='wald')document.body.dataset.skyjoLocalBoard='wald';
+  // Clearly label the standalone room before play, not just the game board.
+  if(!playingBannerPresent()){
+   const app=document.getElementById('app');
+   if(app && app.querySelector('.topbar') && !document.body.classList.contains('is-playing')){
+    const tag=document.createElement('div');tag.id='skyjo-wald-online-label';
+    tag.textContent='🌲 SKYJO Wald · Online · genau 3 Spieler';
+    tag.style.cssText='text-align:center;padding:8px 12px;background:#174e3e;color:#f7e6b9;font:700 16px system-ui;border-radius:10px;margin:8px auto;max-width:680px';
+    app.prepend(tag);
+   }
+  }
   const playing=document.body.classList.contains('is-playing');
   const board=document.querySelector('.table-area.three-player-layout');
   const valid=!!board && !!board.querySelector(':scope > .own-seat') && !!board.querySelector(':scope > .center-seat') && !!board.querySelector(':scope > .mini-seat') && board.querySelectorAll('section.player').length===3;
