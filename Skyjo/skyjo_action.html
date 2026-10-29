@@ -39,6 +39,9 @@
 
 
 <link rel="stylesheet" href="skyjo_shared_head.css?v=1">
+<link rel="stylesheet" href="skyjo_local_royal_layout.css?v=3">
+<link rel="stylesheet" href="skyjo_local_layout_v3.css?v=18">
+<link rel="stylesheet" href="skyjo_fullscreen_fixed_v1.css?v=1">
 <link rel="stylesheet" href="skyjo_wald_theme.css?v=20.1">
 </head>
 <body>
@@ -53,7 +56,7 @@
   q.set('board','wald');
   history.replaceState(history.state,'',location.pathname+'?'+q.toString()+location.hash);
  }
- for(const href of ['skyjo_local_royal_layout.css?v=3','skyjo_local_layout_v3.css?v=18','skyjo_fullscreen_fixed_v1.css?v=1']){const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);}
+ // Wald styles are linked in the document head, identical to the local edition.
  document.body.dataset.skyjoLocalBoard='wald';
  /* The game engine may reset data-skyjo-theme to standard during renders.
     Wald styling relies on the independent data-skyjo-local-board marker. */
@@ -134,12 +137,9 @@
 <script src="skyjo_clear_board_bonus.js?v=1"></script>
 <link rel="stylesheet" href="skyjo_clear_victory.css?v=1">
 <script src="skyjo_clear_victory.js?v=1"></script>
-<script>
-if(new URLSearchParams(location.search).get('mode')==='online'&&new URLSearchParams(location.search).get('board')==='wald'){
- for(const file of ['skyjo_local_layout_runtime.js','skyjo_local_layout_v3.js','skyjo_wald_rival_fit.js','skyjo_wald_side_menu.js']){
-  const s=document.createElement('script');s.src=file+'?v=online-wald-2';s.defer=true;document.body.appendChild(s);
- }
-}
-</script>
+<script src="skyjo_local_layout_runtime.js?v=5-online-ready" defer></script>
+<script src="skyjo_local_layout_v3.js?v=13-online-ready" defer></script>
+<script src="skyjo_wald_rival_fit.js?v=19.2" defer></script>
+<script src="skyjo_wald_side_menu.js?v=5-online" defer></script>
 </body>
 </html>
