@@ -29,6 +29,12 @@
    finished=true;
    clearInterval(timer);
    try{
+     // Establish the forest board before the AI engine renders the first frame.
+     // This avoids depending on a later MutationObserver tick.
+     if(q.get('board')==='wald'){
+       document.body.dataset.skyjoLocalBoard='wald';
+       try{localStorage.setItem('skyjo_local_board_choice_v1','wald')}catch(_e){}
+     }
      game.selectSetupMode('ai');
      const countAfter=document.getElementById('aiCount')||count;
      countAfter.value='2';
@@ -37,6 +43,13 @@
      if(difficulty)difficulty.value='normal';
      if(q.get('layout')==='xl')sessionStorage.setItem('skyjoLocalLayout','xl');
      game.startAIFromSetup();
+     if(q.get('board')==='wald'){
+       requestAnimationFrame(()=>{
+         const seats=document.querySelectorAll('.table-area.three-player-layout section.player').length;
+         console.info('[SKYJO Wald preview]',{seats,forest:document.body.dataset.skyjoLocalBoard,mode:'local',aiPlayers:2});
+         if(document.body.dataset.skyjoLocalBoard!=='wald')report('Waldlayout wurde nicht aktiviert.');
+       });
+     }
      const board=document.querySelector('#player-0 .grid');
      const countNow=board?.querySelectorAll('.card')?.length||board?.children?.length||0;
      console.info('[SKYJO XL diagnostic]',{requested:q.get('layout'),cardCount:countNow,boardClass:document.querySelector('#player-0')?.className});
