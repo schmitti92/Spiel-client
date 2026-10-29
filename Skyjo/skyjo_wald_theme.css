@@ -519,3 +519,16 @@ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-lay
 width:100%!important;height:100%!important;min-height:0!important;
 }
 }
+
+/* V19.5: the visible card is nested inside real-hand-card. Scale that card too. */
+@media(min-width:900px) and (orientation:landscape){
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)) .real-hand-card:not(.empty){
+width:min(12vw,22vh,172px)!important;height:calc(min(12vw,22vh,172px)*1.37)!important;
+display:flex!important;align-items:center!important;justify-content:center!important;overflow:visible!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)) .real-hand-card:not(.empty) > .card{
+width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;
+max-width:none!important;max-height:none!important;aspect-ratio:1 / 1.37!important;
+transform:none!important;margin:0!important;flex:0 0 100%!important;
+}
+}
