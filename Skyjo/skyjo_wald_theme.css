@@ -570,3 +570,23 @@ font-size:10px!important;padding:6px!important;min-height:30px!important;
 /* V19.8: hide redundant hand-zone discard action; pile action remains available. */
 html body.is-playing[data-skyjo-local-board="wald"] .table-area .real-hand-copy .big-discard-btn,
 html body.is-playing[data-skyjo-local-board="wald"] .table-area .real-hand-actions .drop{display:none!important}
+
+/* V19.9: only the floating drawn card remains; forest shows through hand area. */
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat,
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .center-table,
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .handbox,
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-zone,
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-card{
+background:transparent!important;background-image:none!important;
+border-color:transparent!important;box-shadow:none!important;outline:none!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-zone::before,
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-zone::after{
+content:none!important;display:none!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-zone{
+border:0!important;border-radius:0!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-card:not(.empty){
+border:0!important;border-radius:0!important;
+}
