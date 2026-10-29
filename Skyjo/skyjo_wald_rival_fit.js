@@ -5,7 +5,7 @@ const active=()=>document.body.classList.contains('is-playing')&&document.body.d
 let queued=false,observer;
 function fit(){
  queued=false;if(!active())return;
- const seats=[...document.querySelectorAll(ROOT+' .mini-seat')];
+ const seats=[...document.querySelectorAll(ROOT+' .mini-seat .mini-player-wrap')];
  if(!seats.length)return;
  const entries=seats.map(seat=>{
   const grid=seat.querySelector('.grid');
