@@ -1,7 +1,7 @@
 /* Wald V19: stabile Gegnerkarten, unabhängig von schrumpfenden Grid-Containern. */
 (()=>{'use strict';
 const ROOT='.table-area.three-player-layout';
-const active=()=>document.body.classList.contains('is-playing')&&document.body.dataset.skyjoLocalBoard==='wald'&&innerWidth>=900&&matchMedia('(orientation:landscape)').matches;
+const active=()=>document.body.classList.contains('is-playing')&&(document.body.dataset.skyjoLocalBoard==='wald'||document.body.dataset.skyjoTheme==='wald')&&innerWidth>=900&&matchMedia('(orientation:landscape)').matches;
 let queued=false,observer;
 function fit(){
  queued=false;if(!active())return;
