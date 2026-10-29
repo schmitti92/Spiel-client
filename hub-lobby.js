@@ -88,6 +88,9 @@ function enterSkyjo(){
  const m=room.match;
  if(!/^S[A-HJ-NP-Z2-9]{9}$/.test(m.gameCode))throw Error('MATCH_CODE_INVALID');
  const q=new URLSearchParams({mode:'online',hub:room.code,match:m.id,room:m.gameCode});
+ // Wald is enabled consistently for every participant of a three-player match.
+ // Other player counts retain the established classic online presentation.
+ if(Number(m.playerCount)===3)q.set('board','wald');
  location.assign('Skyjo/skyjo_action.html?'+q.toString());
 }
 function enterBusiness(){
