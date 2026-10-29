@@ -1,6 +1,7 @@
 /* Lokales Wald-Menü: bestehende Topbar-Buttons bleiben erhalten. */
 (()=>{'use strict';
-if(new URLSearchParams(location.search).get('mode')!=='local')return;
+const params=new URLSearchParams(location.search);
+if(!(params.get('mode')==='local'||(params.get('mode')==='online'&&params.get('board')==='wald')))return;
 let open=false,queued=false;
 const active=()=>document.body.classList.contains('is-playing')&&document.body.dataset.skyjoLocalBoard==='wald';
 function sync(){
