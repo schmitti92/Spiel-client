@@ -475,3 +475,9 @@ aspect-ratio:1 / 1.37!important;
 margin:0!important;max-width:none!important;max-height:none!important;
 }
 }
+
+/* V19: safe fallback while rival geometry initializes. */
+@media(min-width:900px) and (orientation:landscape){
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid{grid-template-columns:repeat(4,var(--wald-rival-w,80px))!important;grid-template-rows:repeat(3,var(--wald-rival-h,110px))!important;gap:2px!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid :is(.card,.card-slot){width:var(--wald-rival-w,80px)!important;height:var(--wald-rival-h,110px)!important}
+}
