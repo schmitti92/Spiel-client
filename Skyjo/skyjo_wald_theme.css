@@ -549,3 +549,20 @@ width:clamp(104px,9vw,148px)!important;
 height:calc(clamp(104px,9vw,148px)*1.37)!important;
 }
 }
+
+/* V19.7: center the drawn card independently of optional decision controls. */
+@media(min-width:900px) and (orientation:landscape){
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)) .real-hand-zone{
+position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;
+padding:36px 12px 12px!important;box-sizing:border-box!important;min-width:0!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)) .real-hand-card:not(.empty){
+flex:0 0 auto!important;margin:auto!important;justify-self:center!important;align-self:center!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .real-hand-copy{
+position:absolute!important;right:6px!important;bottom:6px!important;max-width:100%!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .real-hand-copy .big-discard-btn{
+font-size:10px!important;padding:6px!important;min-height:30px!important;
+}
+}
