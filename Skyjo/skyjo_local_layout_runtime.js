@@ -24,13 +24,21 @@ const style=document.createElement('style');style.id='skyjo-local-layout-runtime
 let previous=false;
 function update(){
  const board=document.querySelector('.table-area.three-player-layout');
- const active=!!board && !!board.querySelector(':scope > .own-seat') && !!board.querySelector(':scope > .center-seat') && !!board.querySelector(':scope > .mini-seat') && board.querySelectorAll('section.player').length===3;
+ const own=board?.querySelector(':scope > .own-seat');
+ const center=board?.querySelector(':scope > .center-seat');
+ const rivals=board?.querySelector(':scope > .mini-seat');
+ // The online renderer does not consistently use <section class="player">.
+ // Validate the three-seat geometry, not an HTML tag name.
+ const rivalCount=rivals?.querySelectorAll('.mini-player-wrap').length||0;
+ const active=!!(own&&center&&rivals&&rivalCount===2);
  if(active!==previous){document.body.classList.toggle('skyjo-local-layout-ready',active);previous=active}
  const diagnostic=document.getElementById('skyjo-layout-diagnostic');if(diagnostic){const count=document.querySelectorAll('.player').length;diagnostic.textContent='Layout: '+(active?'AKTIV':'NICHT AKTIV')+' · Board: '+(board?'gefunden':'fehlt')+' · Spieler: '+count+' · Mitte: '+(!!document.querySelector('.table-area.three-player-layout > .center-seat'))+' · Rechts: '+(!!document.querySelector('.table-area.three-player-layout > .mini-seat'));}
 }
-document.addEventListener('DOMContentLoaded',()=>{
+function init(){
  const diagnostic=document.createElement('div');diagnostic.id='skyjo-layout-diagnostic';diagnostic.setAttribute('role','status');diagnostic.style.cssText='position:fixed;bottom:96px;left:12px;z-index:2147483000;padding:7px 12px;background:#08202df0;color:#ffe09d;border:1px solid #d4ac63;border-radius:9px;font:12px system-ui;pointer-events:none;max-width:70vw';if(new URLSearchParams(location.search).has('layoutDebug'))document.body.append(diagnostic);
  update();const app=document.getElementById('app')||document.body;
  const observer=new MutationObserver(update);observer.observe(app,{childList:true,subtree:true});
-});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+else init();
 })();
