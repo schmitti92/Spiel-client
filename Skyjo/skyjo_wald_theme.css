@@ -489,3 +489,18 @@ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-lay
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .mini-player-wrap .gridwrap{flex:1 1 0!important;min-height:0!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important}
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .mini-player-wrap .grid{flex:0 0 auto!important}
 }
+
+/* V19.3: Wald hand card – enlarged without changing the center column. */
+@media(min-width:900px) and (orientation:landscape){
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)){
+display:flex!important;align-items:center!important;justify-content:center!important;min-width:0!important;overflow:hidden!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)) .real-hand-zone{
+display:flex!important;align-items:center!important;justify-content:center!important;max-width:100%!important;max-height:100%!important;
+}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-table .handbox:not(:has(.real-hand-card.empty)) .real-hand-card:not(.empty){
+width:min(13vw,23vh,180px)!important;height:min(17.81vw,31.51vh,247px)!important;
+max-width:100%!important;max-height:100%!important;aspect-ratio:1/1.37!important;
+margin-inline:auto!important;flex:0 1 auto!important;
+}
+}
