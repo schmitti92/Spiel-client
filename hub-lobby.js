@@ -90,7 +90,14 @@ function enterSkyjo(){
  const q=new URLSearchParams({mode:'online',hub:room.code,match:m.id,room:m.gameCode});
  // Wald is enabled consistently for every participant of a three-player match.
  // Other player counts retain the established classic online presentation.
- if(Number(m.playerCount)===3)q.set('board','wald');
+ const participants=Array.isArray(room.players)?room.players.filter(p=>p.participating).length:0;
+ // Hub match payload does not consistently expose playerCount; use room roster.
+ // Never silently launch a different board for a Wald-only 3-player session.
+ if(participants!==3){
+  notice('🌲 SKYJO Wald Online benötigt genau 3 aktive Spieler. Aktuell: '+participants+'.');
+  return;
+ }
+ q.set('board','wald');
  location.assign('Skyjo/skyjo_action.html?'+q.toString());
 }
 function enterBusiness(){
