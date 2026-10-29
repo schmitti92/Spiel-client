@@ -1108,12 +1108,12 @@ function render(){
  });
  el('ready-help').textContent=room.game?`${GAME[room.game]||room.game} ist ausgewählt. Nur die ausgewählten Mitspieler melden sich bereit; Zuschauer bleiben im Raum.`:'Der Host wählt zuerst ein Spiel.';
  el('ready-btn').textContent=room.phase==='playing'?'Zur laufenden Partie':player?.ready?'Bereitmeldung zurücknehmen':'Ich bin bereit';
- el('ready-btn').disabled=!room.game||!player?.participating||operation;
+ el('ready-btn').disabled=!room.game||!player?.participating||operation||(room.game==='skyjo'&&room.phase!=='playing'&&room.players.filter(p=>p.participating).length!==3);
  el('ready-btn').classList.toggle('is-ready',!!player?.ready);
  const playing=room.players.filter(p=>p.participating);
  const readyCount=playing.filter(p=>p.ready).length;
  const percent=playing.length?Math.round(readyCount/playing.length*100):0;
- el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':playing.length<2?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
+ el('ready-counter').textContent=room.phase==='playing'?'Partie läuft':room.game==='skyjo'&&playing.length!==3?'🌲 SKYJO Wald benötigt genau 3 Spieler ('+playing.length+'/3)':playing.length<2?'Mindestens 2 Spieler benötigt':room.allReady?'Alle bereit!':'Warten auf Bereitmeldungen';
  el('ready-fraction').textContent=readyCount+' / '+playing.length;
  el('ready-progress-fill').style.width=percent+'%';
  el('ready-progressbar').setAttribute('aria-valuenow',String(percent));
