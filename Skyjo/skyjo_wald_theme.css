@@ -604,3 +604,8 @@ content:none!important;display:none!important;
 html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .center-seat .real-hand-zone{
 border-radius:0!important;
 }
+
+/* V20.1: remove redundant drawn-card instruction under the status message. */
+html body.is-playing[data-skyjo-local-board="wald"] .real-hand-copy small,
+html body.is-playing[data-skyjo-local-board="wald"] .real-hand-copy .hand-hint,
+html body.is-playing[data-skyjo-local-board="wald"] .real-hand-copy .hand-instruction{display:none!important}
