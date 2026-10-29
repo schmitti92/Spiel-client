@@ -13,20 +13,26 @@ function fit(){
   const head=player?.querySelector('.player-head');
   if(!grid||!player)return null;
   const box=player.getBoundingClientRect(),hbox=head?.getBoundingClientRect();
+  const wrap=grid.closest('.gridwrap');
+  const wr=wrap?.getBoundingClientRect();
   const s=getComputedStyle(player);
   const w=box.width-(parseFloat(s.paddingLeft)||0)-(parseFloat(s.paddingRight)||0)-8;
-  const h=box.height-(hbox?.height||0)-(parseFloat(s.paddingTop)||0)-(parseFloat(s.paddingBottom)||0)-12;
+  const availableByPlayer=box.height-(hbox?.height||0)-(parseFloat(s.paddingTop)||0)-(parseFloat(s.paddingBottom)||0)-18;
+  // Der Abstand vom sichtbaren Rasteranfang bis zur unteren Spielergrenze ist maßgeblich.
+  const availableByGrid=box.bottom-(wr?.top||box.top)-12;
+  const h=Math.max(0,Math.min(availableByPlayer,availableByGrid));
   const gap=2,ratio=1.37;
-  const cw=w>100&&h>100?Math.floor(Math.min((w-3*gap)/4,(h-2*gap)/(3*ratio))):0;
+  const cw=w>100&&h>60?Math.floor(Math.min((w-3*gap)/4,(h-2*gap)/(3*ratio))):0;
   return {grid,cw,player};
  }).filter(Boolean);
  const valid=entries.map(e=>e.cw).filter(n=>n>=28);
- const reference=valid.length?Math.max(...valid):null;
+ const reference=valid.length?valid[0]:null;
  entries.forEach(e=>{
   // Gleiche Gegnerblockhöhe: Referenz verwenden, falls eine Messung kollabiert.
   let cw=e.cw>=28?e.cw:reference;
   if(!cw||cw<28)return;
-  if(reference&&cw<reference*.7)cw=reference;
+  // Nie eine zu große Referenz in einen kleineren Gegnerblock erzwingen.
+  if(reference&&cw>reference*1.25)cw=reference;
   const ch=Math.floor(cw*1.37);
   if(e.grid.style.getPropertyValue('--wald-rival-w')!==cw+'px'){
    e.grid.style.setProperty('--wald-rival-w',cw+'px');
