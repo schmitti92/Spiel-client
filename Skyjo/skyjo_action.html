@@ -104,16 +104,10 @@
     else if(value==='Aktuell steht ausschließlich das klassische Spielfeld zur Verfügung.')node.textContent='🌲 Wald ist online aktiv. Zum Testen mit 2 Computergegnern den grünen Button wählen.';
    }
   }
-  const playing=document.body.classList.contains('is-playing');
-  const board=document.querySelector('.table-area.three-player-layout');
-  const valid=!!board && !!board.querySelector(':scope > .own-seat') && !!board.querySelector(':scope > .center-seat') && !!board.querySelector(':scope > .mini-seat') && board.querySelectorAll('section.player').length===3;
-  let note=document.getElementById('wald-online-three-only');
-  if(playing&&!valid&&!note){
-   note=document.createElement('div');note.id='wald-online-three-only';note.setAttribute('role','alert');
-   note.textContent='🌲 Wald Online benötigt genau 3 Spieler. Bitte einen Raum mit drei Spielern starten.';
-   note.style.cssText='position:fixed;z-index:2147483000;top:60px;left:50%;transform:translateX(-50%);max-width:90vw;padding:12px 18px;background:#12372d;color:white;border:2px solid #cda85b;border-radius:12px;font:bold 15px system-ui';
-   document.body.append(note);
-  }else if((!playing||valid)&&note)note.remove();
+  // Do not infer player count from CSS classes. The engine and server validate
+  // the actual room participants; DOM geometry is not a reliable game-state source.
+  // Remove stale warnings left by older deployed versions of this entry script.
+  document.getElementById('wald-online-three-only')?.remove();
  };
  addEventListener('DOMContentLoaded',()=>{new MutationObserver(check).observe(document.getElementById('app')||document.body,{childList:true,subtree:true});check()});
 })();
