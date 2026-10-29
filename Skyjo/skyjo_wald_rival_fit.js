@@ -10,8 +10,8 @@ function fit(){
   if(!grid||!host)return;
   if(!observed.has(host)){ro.observe(host);observed.add(host)}
   const rect=host.getBoundingClientRect(),seatRect=seat.getBoundingClientRect(),s=getComputedStyle(host);
-  const width=Math.max(rect.width,seatRect.width-12)-(parseFloat(s.paddingLeft)||0)-(parseFloat(s.paddingRight)||0);
-  const height=Math.max(rect.height,seatRect.bottom-rect.top-8)-(parseFloat(s.paddingTop)||0)-(parseFloat(s.paddingBottom)||0);
+  const width=rect.width-(parseFloat(s.paddingLeft)||0)-(parseFloat(s.paddingRight)||0);
+  const height=rect.height-(parseFloat(s.paddingTop)||0)-(parseFloat(s.paddingBottom)||0);
   if(width<80||height<100)return;
   // Nur 2px Rasterabstand; Größe durch den begrenzenden Faktor.
   const gap=2,ratio=1.37;
