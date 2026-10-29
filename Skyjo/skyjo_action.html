@@ -98,6 +98,28 @@
    const head=lobby.querySelector('.lobby-head .hint');
    if(head && head.textContent!==slots+'/3 Spieler im Wald-Raum')head.textContent=slots+'/3 Spieler im Wald-Raum';
   }
+  // The standalone lobby is rendered dynamically and does not always use
+  // .lobby-card or #target. Anchor the Wald preview beside its real test button.
+  if(app && !document.body.classList.contains('is-playing')){
+   const buttons=Array.from(app.querySelectorAll('button'));
+   const classicTest=buttons.find(b=>/mit 2 Testspielern starten/i.test(b.textContent||''));
+   if(classicTest && !document.getElementById('skyjo-wald-preview-near-test')){
+    const forest=document.createElement('a');
+    forest.id='skyjo-wald-preview-near-test';
+    forest.href='skyjo_action_local.html?mode=local&board=wald&testPlayers=2&layout=classic';
+    forest.textContent='🌲 Waldlayout mit 2 Testspielern starten';
+    forest.style.cssText='display:block;box-sizing:border-box;width:100%;padding:14px;margin:9px 0;background:linear-gradient(135deg,#247a4f,#0c4937);border:2px solid #dbbc74;border-radius:12px;color:white;text-align:center;font:700 17px system-ui;text-decoration:none';
+    classicTest.insertAdjacentElement('afterend',forest);
+   }
+   // Replace misleading legacy copy without changing game-state rules.
+   for(const node of app.querySelectorAll('small,span,p,div')){
+    if(node.children.length)continue;
+    const value=(node.textContent||'').trim();
+    if(value==='Online spielbar mit 2 bis 5 Spielern')node.textContent='🌲 Wald Online: genau 3 Spieler';
+    else if(value==='5 Spieler' && node.closest('.setting-row,.setting-item,.setting'))node.textContent='3 Spieler';
+    else if(value==='Aktuell steht ausschließlich das klassische Spielfeld zur Verfügung.')node.textContent='🌲 Wald ist online aktiv. Zum Testen mit 2 Computergegnern den grünen Button wählen.';
+   }
+  }
   const playing=document.body.classList.contains('is-playing');
   const board=document.querySelector('.table-area.three-player-layout');
   const valid=!!board && !!board.querySelector(':scope > .own-seat') && !!board.querySelector(':scope > .center-seat') && !!board.querySelector(':scope > .mini-seat') && board.querySelectorAll('section.player').length===3;
