@@ -404,3 +404,42 @@ html body.skyjo-wald-menu-enabled #app .topbar .skyjo-wald-menu-exit{
 body.skyjo-wald-menu-enabled .skyjo-wald-external-exit{
  display:none!important;
 }
+
+/* V16: Wald-Tablet – Karten statt leerer Dekorflächen priorisieren. */
+@media (min-width:900px) and (orientation:landscape){
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .own-seat{
+  --card-w:min(9.2vw,20vh,155px)!important;
+  --card-h:calc(var(--card-w)*1.37)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat{
+  --card-w:min(7.6vw,13.8vh,116px)!important;
+  --card-h:calc(var(--card-w)*1.37)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .player .gridwrap,
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .player .grid{
+  background:transparent!important;background-image:none!important;
+  box-shadow:none!important;border-color:transparent!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .player .gridwrap{
+  padding:clamp(2px,.3vw,6px)!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .player .grid{
+  gap:clamp(3px,.35vw,7px)!important;
+ }
+ html body.skyjo-wald-menu-enabled.is-playing[data-skyjo-local-board="wald"] #app .status.premium-status:has(#skyjo-wald-menu-toggle){
+  width:clamp(270px,27vw,430px)!important;
+  grid-template-columns:50px repeat(2,minmax(0,1fr))!important;
+ }
+ html body.skyjo-wald-menu-enabled.is-playing[data-skyjo-local-board="wald"] #app .status.premium-status>.stat:nth-of-type(1),
+ html body.skyjo-wald-menu-enabled.is-playing[data-skyjo-local-board="wald"] #app .status.premium-status>.stat:nth-of-type(2){
+  display:none!important;
+ }
+ html body.skyjo-wald-menu-enabled.is-playing[data-skyjo-local-board="wald"] #app .bottom-actions{
+  left:28%!important;width:36%!important;
+  background:rgba(8,38,31,.68)!important;
+ }
+ html body.skyjo-wald-menu-enabled.is-playing[data-skyjo-local-board="wald"] #app .bottom-actions .emoji-reaction-bar{
+  left:65%!important;width:19%!important;max-width:19%!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+ }
+}
