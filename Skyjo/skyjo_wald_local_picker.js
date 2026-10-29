@@ -3,7 +3,7 @@
  const q=new URLSearchParams(location.search);
  if(q.get('mode')!=='local')return;
  const KEY='skyjo_local_board_choice_v1';
- let choice='standard';try{choice=localStorage.getItem(KEY)==='wald'?'wald':'standard'}catch(_e){}
+ let choice=q.get('board')==='wald'?'wald':'standard';if(q.get('board')!=='wald'){try{choice=localStorage.getItem(KEY)==='wald'?'wald':'standard'}catch(_e){}}
  function apply(){document.body.dataset.skyjoLocalBoard=choice;}
  function select(value){choice=value==='wald'?'wald':'standard';try{localStorage.setItem(KEY,choice)}catch(_e){}apply();update();}
  function update(){const sel=document.getElementById('skyjo-local-board-select');if(sel&&sel.value!==choice)sel.value=choice;}
