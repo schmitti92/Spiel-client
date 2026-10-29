@@ -443,3 +443,9 @@ body.skyjo-wald-menu-enabled .skyjo-wald-external-exit{
   overflow-x:auto!important;overflow-y:hidden!important;
  }
 }
+
+/* V17: Rival cards – exact six-pixel gaps, responsive 4x3 grid. */
+@media(min-width:900px) and (orientation:landscape){
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid{grid-template-columns:repeat(4,var(--wald-rival-w,var(--card-w)))!important;grid-template-rows:repeat(3,var(--wald-rival-h,var(--card-h)))!important;gap:6px!important;width:max-content!important;max-width:100%!important;margin:auto!important;justify-content:center!important;align-content:center!important}
+html body.is-playing[data-skyjo-local-board="wald"] .table-area.three-player-layout .mini-seat .grid :is(.card,.card-slot){width:var(--wald-rival-w,var(--card-w))!important;height:var(--wald-rival-h,var(--card-h))!important;min-width:0!important;min-height:0!important;box-sizing:border-box!important}
+}
