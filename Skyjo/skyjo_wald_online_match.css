@@ -1,0 +1,32 @@
+/* Wald Online visual parity with the verified local 3-player landscape board.
+   Only affects the forest online game; no game-state or networking changes. */
+@media (min-width:900px) and (orientation:landscape) {
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready .table-area.three-player-layout {
+   display:grid!important;
+   grid-template-columns:var(--skyjo-v3-columns,minmax(0,39.2fr) minmax(0,21.1fr) minmax(0,34fr))!important;
+   gap:var(--skyjo-v3-column-gap,clamp(8px,1.3vw,24px))!important;
+   align-items:stretch!important;
+   min-width:0!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready .table-area.three-player-layout > .own-seat {
+   grid-column:1!important;grid-row:1!important;min-width:0!important;min-height:0!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready .table-area.three-player-layout > .center-seat {
+   grid-column:2!important;grid-row:1!important;min-width:0!important;min-height:0!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready .table-area.three-player-layout > .mini-seat {
+   grid-column:3!important;grid-row:1!important;min-width:0!important;min-height:0!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready .table-area.three-player-layout .mini-players-stack {
+   display:grid!important;
+   grid-template-rows:var(--skyjo-v3-rival-rows,minmax(0,1fr) minmax(0,1fr))!important;
+   gap:var(--skyjo-v3-rival-gap,10px)!important;
+   min-height:0!important;
+ }
+ html body.is-playing[data-skyjo-local-board="wald"].skyjo-local-layout-ready .table-area.three-player-layout .center-seat > .center-table {
+   grid-template-rows:var(--skyjo-v3-center-rows,minmax(0,25fr) minmax(0,35.5fr))!important;
+   gap:var(--skyjo-v3-center-gap,9px)!important;
+   min-height:0!important;
+ }
+}
+/* The diagnostic flag is visual-only. The actual 3-player rule stays in the engine. */
