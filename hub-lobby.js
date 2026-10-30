@@ -169,7 +169,7 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  },12000);}
 function leaveView(){cancelPendingRecovery();pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
-const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger','fallende-gegenstaende':'Fallende Gegenstände'};
+const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger','eisstock':'Eisstock','fallende-gegenstaende':'Fallende Gegenstände'};
 const CHALLENGE_STAGE_CSS=`
 #challenge-progress:not(.hidden){position:fixed!important;inset:0!important;z-index:10020!important;margin:0!important;border-radius:0!important;overflow:auto!important;overscroll-behavior:contain;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.4vh,16px);padding:clamp(20px,4vh,46px) clamp(18px,5vw,70px)!important;box-sizing:border-box;background:radial-gradient(ellipse at 50% 105%,#d5b575 0%,#b68c55 12%,transparent 38%),radial-gradient(ellipse at 7% 88%,#163f30 0%,#163f30 14%,transparent 31%),radial-gradient(ellipse at 96% 82%,#124f3a 0%,#124f3a 12%,transparent 30%),linear-gradient(180deg,#051b30 0%,#0b4765 45%,#1b8290 75%,#174f56 100%)!important;color:#fff!important;text-shadow:0 2px 12px #001b2e88;box-shadow:none!important}
 #challenge-single-actions[hidden],#challenge-single-actions button[hidden]{display:none!important}
@@ -308,6 +308,15 @@ async function ensureHuetchenOriginalBridge(){
   huetchenOriginalBridge.sync();
  }catch(error){huetchenOriginalFailed=true;showError(error)}
  finally{huetchenOriginalLoading=false;}
+}
+let eisstockOriginalBridge=null,eisstockOriginalLoading=false,eisstockOriginalFailed=false;
+async function ensureEisstockOriginalBridge(){
+ if(eisstockOriginalBridge||eisstockOriginalLoading||eisstockOriginalFailed)return;
+ eisstockOriginalLoading=true;
+ try{const {mountEisstockOriginal}=await import('./eisstock-online-bridge.js?v=1');
+ const container=el('challenge-original-frame');if(!container)return;
+ eisstockOriginalBridge=mountEisstockOriginal({container,getRoom:()=>room,request,acceptRoom,onError:showError});eisstockOriginalBridge.sync();
+ }catch(e){eisstockOriginalFailed=true;showError(e)}finally{eisstockOriginalLoading=false}
 }
 let fallingOriginalBridge=null,fallingOriginalLoading=false,fallingOriginalFailed=false;
 async function ensureFallingOriginalBridge(){
@@ -648,6 +657,7 @@ function renderChallengeProgress(){
  }
  const isMath=ch.order[index]==='recheninsel';
  const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
+ const originalEisstockActive=ch.order[index]==='eisstock'&&['countdown','results','finished'].includes(ch.phase)&&!eisstockOriginalFailed;
  const originalFallingActive=ch.order[index]==='fallende-gegenstaende'&&['countdown','results','finished'].includes(ch.phase)&&!fallingOriginalFailed;
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&['countdown','results','finished'].includes(ch.phase)&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
@@ -656,7 +666,8 @@ function renderChallengeProgress(){
  const originalSnakeActive=ch.order[index]==='snake-arena'&&ch.phase==='countdown'&&!snakeOriginalFailed;
  const originalLavaActive=ch.order[index]==='lava-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!lavaOriginalFailed;
  const originalFlusssprungActive=ch.order[index]==='flusssprung'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!flusssprungOriginalFailed;
- const originalActive=originalFallingActive||originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive;
+ const originalActive=originalEisstockActive||originalFallingActive||originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive;
+ if(!originalEisstockActive&&eisstockOriginalBridge){eisstockOriginalBridge.destroy();eisstockOriginalBridge=null;}
  if(!originalFallingActive&&fallingOriginalBridge){fallingOriginalBridge.destroy();fallingOriginalBridge=null;}
  if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
  if(!originalBomberActive&&bomberOriginalBridge){bomberOriginalBridge.destroy();bomberOriginalBridge=null;}
@@ -667,6 +678,7 @@ function renderChallengeProgress(){
  el('challenge-original-frame').hidden=!originalActive;
  box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive);
  box.classList.toggle('preisjaeger-playing',isPreisjaeger&&ch.phase==='countdown');
+ if(originalEisstockActive){ensureEisstockOriginalBridge();eisstockOriginalBridge?.sync();}
  if(originalFallingActive){ensureFallingOriginalBridge();fallingOriginalBridge?.sync();}
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
@@ -899,7 +911,7 @@ function renderChallengeSetup(showStage){
    finally{button.disabled=false;}
   });
   let challengeSettingsBusy=false;
-  const singleGames=[['fallende-gegenstaende','🎹','Fallende Gegenstände'],['zeitgefuehl','⏱️','Zeitgefühl'],['recheninsel','🏴‍☠️','Recheninsel'],['huetchen-challenge','🎩','Hütchen Challenge'],['maulwurf-arena','🔨','Maulwurf Arena'],['flusssprung','🌊','Flusssprung'],['lava-arena','🌋','Lava Arena'],['snake-arena','🐍','Snake Arena'],['bomber-strand-arena','💣','Bomber Strand'],['preisjaeger','🛒','Preisjäger']];
+  const singleGames=[['eisstock','🥌','Eisstock'],['fallende-gegenstaende','🎹','Fallende Gegenstände'],['zeitgefuehl','⏱️','Zeitgefühl'],['recheninsel','🏴‍☠️','Recheninsel'],['huetchen-challenge','🎩','Hütchen Challenge'],['maulwurf-arena','🔨','Maulwurf Arena'],['flusssprung','🌊','Flusssprung'],['lava-arena','🌋','Lava Arena'],['snake-arena','🐍','Snake Arena'],['bomber-strand-arena','💣','Bomber Strand'],['preisjaeger','🛒','Preisjäger']];
   const grid=el('challenge-single-grid');
   for(const [id,icon,title] of singleGames){
    const btn=document.createElement('button');btn.type='button';btn.dataset.minigame=id;
