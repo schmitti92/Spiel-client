@@ -13,6 +13,17 @@
 - Diese Regel gilt für Offline-Minispiele und später für den gemeinsamen Online-Adapter.
 - Spielindividuelle Mechaniken dürfen 1-Spieler-Partien nicht stillschweigend verbieten; falls ein Modus technisch nicht sinnvoll ist, muss die Ausnahme ausdrücklich entschieden werden.
 
+## Lokaler Neustart — Entscheidung A
+
+- Jeder menschliche Teilnehmer kann einen lokalen Neustart auslösen.
+- Der Neustart betrifft **die gesamte aktuelle Minispiel-Partie** und alle 1–4 Teilnehmer gleichzeitig, niemals nur den auslösenden Spieler.
+- Alle rundenspezifischen Punkte, Aktionen und laufenden Zeitwerte werden zurückgesetzt.
+- Teilnehmerliste und ausdrücklich gewählte Bots bleiben unverändert; keine automatische Ergänzung.
+- Die Zustandsrevision bleibt monoton steigend, damit alte Aktionen nicht für die neue Runde gelten.
+- Ein Neustart verändert keine Ergebnisse bereits abgeschlossener anderer Minispiele und setzt nicht das gesamte Partybrettspiel zurück.
+- Die Berechtigungen und Bestätigungsregeln für Online-Partien werden separat festgelegt.
+- Vor Freigabe muss ein Vertragstest den globalen Neustart für gemischte menschliche/Bot-Gruppen absichern.
+
 ## Einheitliche Schnittstellen
 
 Jedes Spiel implementiert `id`, `createInitialState(context)`, `validateAction(state, action, context)`, `applyAction(state, action, context)`, `getBotAction(state, context)`, `isFinished(state)`, `getResult(state)`.
