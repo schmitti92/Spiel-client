@@ -95,6 +95,14 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     const due = typeof game.getTimedAction === 'function'
       ? game.getTimedAction(structuredClone(state), ctx) : null;
     if (due) dispatchAction(due, { at });
+    if (status === 'playing') {
+      for (const player of roster) {
+        if (status !== 'playing') break;
+        if (player.type !== 'bot') continue;
+        const action = getBotAction(player.id, at);
+        if (action) dispatchAction(action, { at });
+      }
+    }
     return snapshot();
   }
   function destroyGame() { state = undefined; status = 'idle'; lastTime = null; revision++; }
