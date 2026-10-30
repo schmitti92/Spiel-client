@@ -72,7 +72,7 @@ async function refreshRoomAfterReconnect(){
  if(!code||!room||!activeProfile()||pollInFlight||operation)return;
  const requestedCode=code;pollInFlight=true;
  try{const result=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}
- catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}
+ catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=requestedCode;render();showError(e);}else if(e.message==='LOGIN_REQUIRED'){pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=requestedCode;render();notice('Anmeldung wird erneuert. Dein Raumcode bleibt erhalten.');}else if(++pollErrors===3)showError(e);}
  finally{pollInFlight=false;}
 }
 window.addEventListener('online',()=>{if(!code||!room)return;if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}void refreshRoomAfterReconnect();});
@@ -1263,7 +1263,7 @@ async function recoverPendingRoom(){
 }
 window.addEventListener('spielonline-change',()=>{
  const uid=activeProfile()?.user?.uid||null;
- if(uid!==accountUid){accountUid=uid;if(room){leaveView();notice('Das Spielerprofil hat gewechselt. Bitte dem Raum erneut beitreten.');}}
+ if(uid!==accountUid){const previousUid=accountUid;accountUid=uid;if(room&&previousUid&&uid&&previousUid!==uid){const savedCode=code;pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=savedCode;render();notice('Spielerprofil gewechselt. Der bisherige Raumcode bleibt erhalten; Zugriff wird erneut geprüft.');}else if(room&&previousUid&&!uid){const savedCode=code;pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=savedCode;render();notice('Anmeldung unterbrochen. Der Raumcode bleibt erhalten.');}}
  render();if(uid)void recoverPendingRoom();
 });
 async function boot(){
