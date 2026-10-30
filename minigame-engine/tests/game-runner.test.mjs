@@ -72,3 +72,21 @@ test('restart begins new time epoch but keeps revision increasing', () => {
   assert.ok(after.revision > before.revision);
   assert.equal(after.gameData.points.a, 0);
 });
+
+test('one human stays alone: no bots are added automatically', () => {
+  const runner = createGameRunner(game, { players: [{ id: 'solo', type: 'human' }] });
+  const state = runner.startGame();
+  assert.equal(state.players.length, 1);
+  assert.deepEqual(state.players.map(p => p.type), ['human']);
+});
+test('configured player and bot counts are preserved exactly', () => {
+  for (const [humans, bots] of [[1, 0], [1, 1], [1, 3], [2, 2], [4, 0], [0, 4]]) {
+    const players = [
+      ...Array.from({ length: humans }, (_, i) => ({ id: 'h' + i, type: 'human' })),
+      ...Array.from({ length: bots }, (_, i) => ({ id: 'b' + i, type: 'bot' }))
+    ];
+    const state = createGameRunner(game, { players }).startGame();
+    assert.equal(state.players.length, humans + bots);
+    assert.equal(state.players.filter(p => p.type === 'bot').length, bots);
+  }
+});
