@@ -80,3 +80,23 @@ test('shared clock does not overwrite a prior stop', () => {
   assert.equal(done.gameData.stopped.a, 9000);
   assert.equal(done.gameData.stopped.b, 30000);
 });
+
+test('bots stop through the same action mechanism as humans', () => {
+  const roster = [{ id: 'h', type: 'human' }, { id: 'b', type: 'bot' }];
+  const runner = createGameRunner(zeitgefuehlGame, { players: roster, seed: 11 });
+  const started = runner.startGame();
+  const stopAt = started.gameData.botStopAt.b;
+  assert.ok(stopAt >= started.gameData.startedAt + 3200);
+  assert.equal(runner.getBotAction('b', stopAt - 1), null);
+  const action = runner.getBotAction('b', stopAt);
+  assert.deepEqual(action, { type: 'stop', playerId: 'b' });
+  assert.equal(runner.dispatchAction(action, { at: stopAt }).accepted, true);
+  assert.equal(runner.getBotAction('b', stopAt), null);
+});
+test('bot stop schedule is deterministic and reset on restart', () => {
+  const roster = [{ id: 'b', type: 'bot' }];
+  const a = createGameRunner(zeitgefuehlGame, { players: roster, seed: 9 });
+  const b = createGameRunner(zeitgefuehlGame, { players: roster, seed: 9 });
+  assert.deepEqual(a.startGame().gameData, b.startGame().gameData);
+  assert.deepEqual(a.restartGame().gameData, b.restartGame().gameData);
+});
