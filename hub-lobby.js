@@ -1276,10 +1276,9 @@ async function boot(){
  }
  const fromUrl=params.get('room');
  if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
- if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
-   location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));
-   return;
- }
+ // A room belongs to the shared lobby. Do not redirect away before recovery:
+ // the selection page can open this view without stage=1.
+ 
  let elapsed=0;const timer=setInterval(async()=>{
   elapsed+=250;
   if(!activeProfile()&&elapsed<30000)return;
