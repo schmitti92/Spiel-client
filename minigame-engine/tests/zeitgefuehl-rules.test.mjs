@@ -41,3 +41,25 @@ test('tied groups compare with group best rather than chaining close gaps', () =
   const result = zeitgefuehlGame.getResult(state);
   assert.deepEqual(result.results.map(x => x.rank), [1, 1, 3]);
 });
+
+test('timeout stops all remaining players at exactly 30000ms and scores normally', () => {
+  const runner = createGameRunner(zeitgefuehlGame, { players, seed: 5 });
+  const initial = runner.startGame();
+  runner.dispatchAction({ type: 'stop', playerId: 'a' }, { at: 11000 });
+  assert.equal(runner.dispatchAction({ type: 'timeout', playerId: 'a' }, { at: 32999 }).accepted, false);
+  const done = runner.dispatchAction({ type: 'timeout', playerId: 'a' }, { at: 33000 });
+  assert.equal(done.accepted, true);
+  assert.equal(done.state.status, 'finished');
+  assert.equal(done.state.gameData.stopped.b, 30000);
+  assert.equal(done.state.gameData.stopped.a, 8000);
+  const b = done.state.result.results.find(p => p.playerId === 'b');
+  assert.equal(b.deviationMs, Math.abs(30000 - initial.gameData.targetMs));
+});
+test('timeout applies to bot and human participants identically', () => {
+  const roster = [{ id: 'h', type: 'human' }, { id: 'bot', type: 'bot' }];
+  const runner = createGameRunner(zeitgefuehlGame, { players: roster });
+  runner.startGame();
+  const done = runner.dispatchAction({ type: 'timeout', playerId: 'h' }, { at: 33000 });
+  assert.equal(done.accepted, true);
+  assert.deepEqual(done.state.gameData.stopped, { h: 30000, bot: 30000 });
+});
