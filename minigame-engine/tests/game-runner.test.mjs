@@ -46,3 +46,14 @@ test('rejects duplicate players and invalid sizes', () => {
   assert.throws(() => createGameRunner(game, { players: Array(5).fill({ type: 'bot' }) }), /1–4/);
   assert.throws(() => createGameRunner(game, { players: [{ id: 'x', type: 'bot' }, { id: 'x', type: 'bot' }] }), /Duplicate/);
 });
+
+test('rejects actions with missing or unknown player id without changing state', () => {
+  const runner = createGameRunner(game, { players: [{ id: 'a', type: 'human' }] });
+  const initial = runner.startGame();
+  for (const action of [null, {}, { type: 'score' }, { type: 'score', playerId: 'outsider' }]) {
+    const result = runner.dispatchAction(action);
+    assert.equal(result.accepted, false);
+    assert.equal(result.reason, 'unknown-player');
+    assert.equal(runner.getState().revision, initial.revision);
+  }
+});
