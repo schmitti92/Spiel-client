@@ -57,3 +57,18 @@ test('rejects actions with missing or unknown player id without changing state',
     assert.equal(runner.getState().revision, initial.revision);
   }
 });
+
+test('runner rejects backwards time after an accepted action', () => {
+  const runner = createGameRunner(game, { players: [{ id: 'a', type: 'human' }, { id: 'b', type: 'human' }] });
+  runner.startGame(1000);
+  assert.equal(runner.dispatchAction({ type: 'score', playerId: 'a' }, { at: 2000 }).accepted, true);
+  assert.throws(() => runner.dispatchAction({ type: 'score', playerId: 'b' }, { at: 1500 }), /backwards/);
+  assert.equal(runner.getState().gameData.points.b, 0);
+});
+test('restart begins new time epoch but keeps revision increasing', () => {
+  const runner = createGameRunner(game, { players: [{ id: 'a', type: 'human' }] });
+  const before = runner.startGame(10000);
+  const after = runner.restartGame(0);
+  assert.ok(after.revision > before.revision);
+  assert.equal(after.gameData.points.a, 0);
+});
