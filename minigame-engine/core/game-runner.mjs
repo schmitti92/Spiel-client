@@ -97,16 +97,22 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   function advanceTime(at) {
     context(at);
     if (status !== 'playing') return snapshot();
-    // Process scheduled bot stops in chronological order, even if the host clock jumps.
-    // Timeout is always last at the same instant and catches remaining players.
-    const dueBots = roster.filter(p => p.type === 'bot')
-      .map(p => ({ playerId: p.id, at: state?.botStopAt?.[p.id] }))
-      .filter(x => Number.isFinite(x.at) && x.at <= at && x.at >= (lastTime ?? 0))
-      .sort((a, b) => a.at - b.at);
-    for (const due of dueBots) {
-      if (status !== 'playing') break;
-      const action = getBotAction(due.playerId, due.at);
-      if (action) dispatchAction(action, { at: due.at });
+    // Optional shared scheduling contract: [{ at, action }].
+    // Process events in chronological order; games never expose private state fields.
+    let processed = 0;
+    while (status === 'playing') {
+      const events = typeof game.getScheduledActions === 'function'
+        ? game.getScheduledActions(structuredClone(state), { ...config, now: at })
+        : [];
+      if (!Array.isArray(events)) throw new TypeError('getScheduledActions must return an array');
+      const due = events.filter(event => event && Number.isFinite(event.at)
+        && event.at >= (lastTime ?? 0) && event.at <= at
+        && event.action && typeof event.action === 'object')
+        .sort((a, b) => a.at - b.at)[0];
+      if (!due) break;
+      if (++processed > 1000) throw new RangeError('Too many scheduled actions');
+      const outcome = dispatchAction(due.action, { at: due.at });
+      if (!outcome.accepted) throw new Error('Invalid scheduled action: ' + outcome.reason);
     }
     if (status === 'playing') {
       const ctx = context(at);
