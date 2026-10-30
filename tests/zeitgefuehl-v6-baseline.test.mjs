@@ -22,7 +22,7 @@ function setup(random = () => 0) {
       this.style = { setProperty() {} };
       this.classList = { add() {}, remove() {} };
     }
-    append(...children) { this.children.push(...children); }
+    append(...children) { this.children.push(...children); for (const child of children) if (child.id) elements.set(child.id, child); }
     querySelector(selector) {
       if (selector === 'button') return this.children.find(c => c.tag === 'button');
       return new Element();
