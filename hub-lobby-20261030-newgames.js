@@ -901,7 +901,7 @@ function renderChallengeSetup(showStage){
  if(!box){
   box=document.createElement('section');box.id='challenge-settings-panel';
   box.style.cssText='padding:18px;margin:12px 0;border:1px solid #49a6c5;border-radius:20px;background:linear-gradient(145deg,#092b47,#06253e);color:#fff;box-shadow:0 12px 32px #00162980';box.classList.add('challenge-premium');
-  box.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><span style="font-size:36px">🏆</span><div><h3 style="margin:0;font-size:25px">Party Challenge</h3><small style="color:#d5eaff">ALLE 9 MINISPIELE · EIN GEMEINSAMER RAUM</small></div></div><p style="color:#d4e7f6;margin:12px 0 20px">Wähle die Challenge. Die Minispiele werden nacheinander gespielt und alle Punkte zusammengezählt.</p><div style="margin:20px 0 12px;padding:16px;border-radius:18px;background:linear-gradient(135deg,#132c48,#285b71);color:white"><div style="font-size:20px;font-weight:900">🎮 Wähle dein Minispiel</div><p style="margin:7px 0 14px;color:#d3e6f5">Wählt euer Spiel. Nach der Runde könnt ihr direkt wiederholen oder ein anderes Spiel auswählen.</p><div id="challenge-single-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px"></div><button type="button" id="challenge-marathon" style="margin-top:14px;padding:12px 18px;border-radius:12px;border:2px solid #d9b878;background:#f8e7bd;color:#24334b;font-weight:900;cursor:pointer">🏆 Challenge spielen</button></div><label for="challenge-count" style="display:block;font-weight:700;margin:18px 0 7px">🎲 Challenge-Umfang</label><select id="challenge-count" style="width:100%;max-width:440px;min-height:45px;border-radius:12px;border:1px solid #c7d4e3;padding:8px 12px;background:white"><option value="9">✅ 9 Online-Minispiele</option><option value="1">🎮 Ein einzelnes Minispiel</option></select><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px"><button type="button" id="challenge-save" style="border:0;border-radius:12px;padding:12px 17px;background:#167d72;color:white;font-weight:700">✓ Auswahl speichern</button><button type="button" id="challenge-bots" style="border:1px solid #c8d7e8;border-radius:12px;padding:12px 17px;background:white;color:#243b5a;font-weight:700">🤖 2 Testspieler hinzufügen</button></div><p id="challenge-feedback" role="status" style="font-size:13px;color:#c6e5f5;margin:12px 0 0"></p>`;
+  box.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><span style="font-size:36px">🏆</span><div><h3 style="margin:0;font-size:25px">Party Challenge</h3><small style="color:#d5eaff">ALLE MINISPIELE · EIN GEMEINSAMER RAUM</small></div></div><p style="color:#d4e7f6;margin:12px 0 20px">Wähle die Challenge. Die Minispiele werden nacheinander gespielt und alle Punkte zusammengezählt.</p><div style="margin:20px 0 12px;padding:16px;border-radius:18px;background:linear-gradient(135deg,#132c48,#285b71);color:white"><div style="font-size:20px;font-weight:900">🎮 Wähle dein Minispiel</div><p style="margin:7px 0 14px;color:#d3e6f5">Wählt euer Spiel. Nach der Runde könnt ihr direkt wiederholen oder ein anderes Spiel auswählen.</p><div id="challenge-single-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px"></div><button type="button" id="challenge-marathon" style="margin-top:14px;padding:12px 18px;border-radius:12px;border:2px solid #d9b878;background:#f8e7bd;color:#24334b;font-weight:900;cursor:pointer">🏆 Challenge spielen</button></div><label for="challenge-count" style="display:block;font-weight:700;margin:18px 0 7px">🎲 Challenge-Umfang</label><select id="challenge-count" style="width:100%;max-width:440px;min-height:45px;border-radius:12px;border:1px solid #c7d4e3;padding:8px 12px;background:white"><option value="9">✅ 9 Online-Minispiele</option><option value="1">🎮 Ein einzelnes Minispiel</option></select><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px"><button type="button" id="challenge-save" style="border:0;border-radius:12px;padding:12px 17px;background:#167d72;color:white;font-weight:700">✓ Auswahl speichern</button><button type="button" id="challenge-bots" style="border:1px solid #c8d7e8;border-radius:12px;padding:12px 17px;background:white;color:#243b5a;font-weight:700">🤖 2 Testspieler hinzufügen</button></div><p id="challenge-feedback" role="status" style="font-size:13px;color:#c6e5f5;margin:12px 0 0"></p>`;
   const anchor=el('game-stage-hero');anchor.parentNode.insertBefore(box,anchor);
   el('challenge-bots').addEventListener('click',async()=>{
    if(!room?.host)return;
@@ -929,7 +929,7 @@ function renderChallengeSetup(showStage){
    if(!room?.host||room.phase!=='preparing'||challengeSettingsBusy)return;
    const button=el('challenge-marathon');if(button.disabled)return;
    challengeSettingsBusy=true;button.disabled=true;
-   try{const requestedCode=room.code;const response=await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count:9,selectedGame:null});if(code!==requestedCode)return;acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle neun Minispiele ausgewählt.';}
+   try{const requestedCode=room.code;const response=await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count:9,selectedGame:null});if(code!==requestedCode)return;acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle verfügbaren Minispiele ausgewählt.';}
    catch(e){el('challenge-feedback').textContent=e.message;}
    finally{button.disabled=false;challengeSettingsBusy=false;}
   });
@@ -942,7 +942,7 @@ function renderChallengeSetup(showStage){
    finally{button.disabled=false;challengeSettingsBusy=false;}
   });
  }
- // Keep exactly one selector and exactly nine buttons even after repeated room refreshes.
+ // Keep exactly one selector and all registered game buttons even after repeated room refreshes.
  const panels=document.querySelectorAll('#challenge-settings-panel');
  panels.forEach((panel,index)=>{if(index>0)panel.remove();});
  const cardGrid=box.querySelector('#challenge-single-grid');
@@ -954,7 +954,7 @@ function renderChallengeSetup(showStage){
   });
  }
  // Normalize duplicate nodes, including buttons accidentally inserted without data attributes.
- const expectedIds=['zeitgefuehl','recheninsel','huetchen-challenge','maulwurf-arena','flusssprung','lava-arena','snake-arena','bomber-strand-arena','preisjaeger'];
+ const expectedIds=singleGames.map(([id])=>id);
  if(cardGrid){
   const cards=Array.from(cardGrid.children);
   const kept=new Set();
