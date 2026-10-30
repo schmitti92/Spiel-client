@@ -23,14 +23,15 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   let revision = 0;
   let status = 'idle';
   let lastTime = null;
+  let epoch = 0;
   function context(at) {
     if (!Number.isFinite(at) || at < 0) throw new RangeError('Invalid time');
     if (lastTime !== null && at < lastTime) throw new RangeError('Game time cannot move backwards');
     return { ...config, now: at };
   }
   function snapshot() {
-    if (status === 'idle') return { gameId: game.id, status, revision, players: roster, gameData: null, result: null };
-    return { gameId: game.id, status, revision, players: roster, gameData: structuredClone(state), result: status === 'finished' ? structuredClone(game.getResult(state)) : null };
+    if (status === 'idle') return { gameId: game.id, status, revision, epoch, players: roster, gameData: null, result: null };
+    return { gameId: game.id, status, revision, epoch, players: roster, gameData: structuredClone(state), result: status === 'finished' ? structuredClone(game.getResult(structuredClone(state))) : null };
   }
   function startGame(at = now) {
     if (status !== 'idle') throw new Error('Game already started; use restartGame');
@@ -38,6 +39,7 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     state = structuredClone(game.createInitialState(ctx));
     lastTime = at;
     status = game.isFinished(state) ? 'finished' : 'playing';
+    epoch++;
     revision++;
     return snapshot();
   }
@@ -60,7 +62,18 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     if (!player || player.type !== 'bot' || status !== 'playing') return null;
     return game.getBotAction(structuredClone(state), { ...context(at), playerId: player.id });
   }
-  function restartGame(at = now) { state = undefined; status = 'idle'; lastTime = null; return startGame(at); }
+  function restartGame(at = now) {
+    // Prepare the new round before replacing the current one.
+    if (!Number.isFinite(at) || at < 0) throw new RangeError('Invalid time');
+    const next = structuredClone(game.createInitialState({ ...config, now: at }));
+    const nextStatus = game.isFinished(next) ? 'finished' : 'playing';
+    state = next;
+    status = nextStatus;
+    lastTime = at;
+    revision++;
+    epoch++;
+    return snapshot();
+  }
   function destroyGame() { state = undefined; status = 'idle'; lastTime = null; revision++; }
   return { startGame, dispatchAction, getState: snapshot, getBotAction, restartGame, destroyGame };
 }
