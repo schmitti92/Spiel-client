@@ -41,6 +41,7 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     if (status !== 'playing') return { accepted: false, reason: 'not-playing', state: snapshot() };
     if (expectedRevision !== undefined && expectedRevision !== revision) return { accepted: false, reason: 'stale-revision', state: snapshot() };
     const ctx = context(at);
+    if (!action || typeof action !== 'object' || typeof action.playerId !== 'string' || !roster.some(p => p.id === action.playerId)) return { accepted: false, reason: 'unknown-player', state: snapshot() };
     if (!game.validateAction(structuredClone(state), action, ctx)) return { accepted: false, reason: 'invalid-action', state: snapshot() };
     const next = game.applyAction(structuredClone(state), action, ctx);
     if (next === undefined) throw new TypeError('applyAction must return state');
