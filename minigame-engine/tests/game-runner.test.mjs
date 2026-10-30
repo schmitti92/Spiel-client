@@ -197,3 +197,11 @@ test('restart discards old round scheduled events', () => {
   assert.equal(runner.advanceTime(1099).status, 'playing');
   assert.equal(runner.advanceTime(1100).status, 'finished');
 });
+
+test('advancing time with no events forbids later actions in the past', () => {
+  const runner = createGameRunner(game, { players: [{ id: 'a', type: 'human' }] });
+  runner.startGame(0);
+  runner.advanceTime(5000);
+  assert.throws(() => runner.dispatchAction({ type: 'score', playerId: 'a' }, { at: 4999 }), /backwards/);
+  assert.equal(runner.dispatchAction({ type: 'score', playerId: 'a' }).accepted, true);
+});
