@@ -7,6 +7,8 @@ on:
     paths:
       - 'Minispiele/Zeitgefuehl_v6_Premium.html'
       - 'tests/zeitgefuehl-v6-baseline.test.mjs'
+      - 'minigame-engine/**'
+      - 'minigame-engine/**'
       - '.github/workflows/minigame-engine-contract.yml'
   pull_request:
     paths:
@@ -22,4 +24,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/zeitgefuehl-v6-baseline.test.mjs
+      - run: node --test tests/zeitgefuehl-v6-baseline.test.mjs minigame-engine/tests/*.test.mjs
