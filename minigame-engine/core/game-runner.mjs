@@ -120,6 +120,8 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
         ? game.getTimedAction(structuredClone(state), ctx) : null;
       if (timed) dispatchAction(timed, { at });
     }
+    // Advancing an empty interval still moves the authoritative logical clock.
+    if (lastTime === null || at > lastTime) lastTime = at;
     return snapshot();
   }
   function destroyGame() { state = undefined; status = 'idle'; lastTime = null; revision++; }
