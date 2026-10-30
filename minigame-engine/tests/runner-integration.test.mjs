@@ -93,3 +93,26 @@ test('failed restart does not consume random values', () => {
   fail = false;
   assert.equal(a.restartGame().gameData.target, b.restartGame().gameData.target);
 });
+
+test('accepted actions advance random stream, rejected actions do not', () => {
+  const actionGame = {
+    ...game,
+    createInitialState: () => ({ values: [] }),
+    validateAction: (state, action, context) => {
+      context.random(); // even an impure validator must not commit random on rejection
+      return action.type === 'roll';
+    },
+    applyAction: (state, action, context) => ({ values: [...state.values, context.random()] }),
+    getBotAction: (state, context) => { context.random(); return null; },
+    isFinished: () => false,
+    getResult: state => state
+  };
+  const make = () => createGameRunner(actionGame, { players: [{ id: 'h', type: 'human' }, { id: 'b', type: 'bot' }], seed: 7 });
+  const a = make(), b = make();
+  a.startGame(); b.startGame();
+  a.getBotAction('b');
+  assert.equal(a.dispatchAction({ type: 'skip', playerId: 'h' }).accepted, false);
+  const resultA = a.dispatchAction({ type: 'roll', playerId: 'h' });
+  const resultB = b.dispatchAction({ type: 'roll', playerId: 'h' });
+  assert.deepEqual(resultA.state.gameData.values, resultB.state.gameData.values);
+});
