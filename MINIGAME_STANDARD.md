@@ -24,6 +24,16 @@
 - Die Berechtigungen und Bestätigungsregeln für Online-Partien werden separat festgelegt.
 - Vor Freigabe muss ein Vertragstest den globalen Neustart für gemischte menschliche/Bot-Gruppen absichern.
 
+## Zeitgefühl — Neustartentscheidung A
+
+- Bei **jedem Neustart** wird eine neue Zielzeit aus dem bisherigen Bereich **10 bis 20 Sekunden (einschließlich)** gezogen.
+- Diese neue Zielzeit gilt für alle Teilnehmer derselben Runde.
+- Vorherige Stoppzeiten, Rundenergebnisse und laufende Botaktionen werden zurückgesetzt.
+- Die Teilnehmerkonfiguration bleibt unverändert.
+- Die gemeinsame Zufallsquelle soll über Runden hinweg deterministisch fortschreiten, statt bei jedem Neustart auf denselben Startwert zurückgesetzt zu werden.
+- Es ist möglich, dass zwei aufeinanderfolgende Ziehungen zufällig denselben Sekundenwert ergeben. Eine erzwungene unterschiedliche Zahl wäre eine zusätzliche Regeländerung und ist **nicht** beschlossen.
+- Umsetzung und Regeltests sind vor der Migration von Zeitgefühl erforderlich.
+
 ## Einheitliche Schnittstellen
 
 Jedes Spiel implementiert `id`, `createInitialState(context)`, `validateAction(state, action, context)`, `applyAction(state, action, context)`, `getBotAction(state, context)`, `isFinished(state)`, `getResult(state)`.
