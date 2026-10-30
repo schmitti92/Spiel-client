@@ -112,7 +112,7 @@ test('deviation below five milliseconds counts as shared winner', () => {
   assert.deepEqual(Array.from(g.window.zeitgefuehlResult.results, x => x.rank), [1, 1]);
 });
 test('bots use the same stop and results pipeline', () => {
-  const g = setup(() => 0.5); g.start(1, 1); g.advance(15000);
+  const g = setup(() => 0.5); g.start(1, 1); g.advance(15000); g.stop(0);
   const r = g.window.zeitgefuehlResult.results;
   assert.equal(r.length, 2);
   assert.equal(r.some(x => x.isComputer), true);
