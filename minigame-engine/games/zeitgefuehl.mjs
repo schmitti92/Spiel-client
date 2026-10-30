@@ -8,6 +8,10 @@ export const zeitgefuehlGame = {
       targetSeconds, targetMs: targetSeconds * 1000,
       startedAt: now + 3000, // three-second countdown
       stopped: {},
+      botStopAt: Object.fromEntries(players.filter(p => p.type === 'bot').map(p => {
+        const noise = (random() + random() + random() - 1.5) * 1700;
+        return [p.id, now + 3000 + Math.max(3200, targetSeconds * 1000 + noise)];
+      })),
       finished: false
     };
   },
@@ -33,8 +37,10 @@ export const zeitgefuehlGame = {
     return pending ? { type: 'timeout', playerId: pending.id } : null;
   },
   getBotAction(state, { playerId, now }) {
-    // Bot timing strategy will be attached after baseline parity tests.
-    return null;
+    if (state.finished || Object.hasOwn(state.stopped, playerId)) return null;
+    const stopAt = state.botStopAt[playerId];
+    return Number.isFinite(stopAt) && now >= stopAt
+      ? { type: 'stop', playerId } : null;
   },
   isFinished(state) { return state.finished; },
   getResult(state) {
