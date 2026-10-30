@@ -143,6 +143,18 @@ footer{margin-top:24px;text-align:center;color:#8298af;font-size:12px}footer a{c
   <p class="status" id="main-status" aria-live="polite"></p>
   <footer><a href="hub-lobby.html">← Zum Spielmodus</a> · Online und Lokal · Vier Spiele</footer>
 </div>
-<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby-20261030-newgames.js" defer></script>
+<script src="profile-config.js"></script><script src="profile-auth.js"></script><script src="hub-lobby-20261030-newgames.js?v=20261030-check-3" defer></script>
+<script>
+window.addEventListener('load',()=>{
+ const grid=document.getElementById('challenge-single-grid');
+ if(!grid)return;
+ const diagnostic=document.createElement('div');
+ diagnostic.id='minigame-build-diagnostic';
+ diagnostic.style.cssText='font:600 12px system-ui;color:#b9d7e3;padding:5px 0;text-align:center';
+ const count=grid.querySelectorAll('[data-minigame]').length;
+ diagnostic.textContent='Minispiele-Version 30.10 · '+count+' Karten geladen'+(count<11?' · alte Spielliste erkannt':'');
+ grid.insertAdjacentElement('afterend',diagnostic);
+});
+</script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script></body>
 </html>
