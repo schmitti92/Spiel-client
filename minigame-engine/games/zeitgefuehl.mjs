@@ -31,6 +31,17 @@ export const zeitgefuehlGame = {
     const results = Object.entries(state.stopped).map(([playerId, elapsedMs]) => ({
       playerId, elapsedMs, deviationMs: Math.abs(elapsedMs - state.targetMs)
     })).sort((a, b) => a.deviationMs - b.deviationMs);
+    // Compare each result with the best deviation of its tied group.
+    // Competition ranking: 1, 1, 3 (not 1, 1, 2).
+    let groupBest = null;
+    let groupRank = 0;
+    results.forEach((entry, index) => {
+      if (groupBest === null || entry.deviationMs - groupBest >= 5) {
+        groupBest = entry.deviationMs;
+        groupRank = index + 1;
+      }
+      entry.rank = groupRank;
+    });
     return { targetSeconds: state.targetSeconds, results };
   }
 };
