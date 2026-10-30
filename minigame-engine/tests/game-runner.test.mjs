@@ -157,3 +157,15 @@ test('failed getResult leaves state unchanged', () => {
   assert.throws(() => runner.dispatchAction({ type: 'score', playerId: 'a' }), /result failed/);
   assert.deepEqual(runner.getState(), before);
 });
+
+test('generic scheduler runs due actions in chronological order', () => {
+  const scheduled = { ...game, getScheduledActions: (state) =>
+    Object.entries(state.points).filter(([, value]) => value === 0)
+      .map(([playerId], i) => ({ at: playerId === 'a' ? 300 : 200, action: { type: 'score', playerId } }))
+  };
+  const runner = createGameRunner(scheduled, { players: [{ id: 'a', type: 'bot' }, { id: 'b', type: 'bot' }] });
+  runner.startGame(0);
+  const end = runner.advanceTime(500);
+  assert.equal(end.status, 'finished');
+  assert.deepEqual(end.gameData.points, { a: 1, b: 1 });
+});
