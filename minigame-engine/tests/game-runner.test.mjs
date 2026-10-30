@@ -128,3 +128,32 @@ test('getResult cannot mutate runner state', () => {
   assert.equal(runner.getState().result.points.a, 999);
   assert.equal(runner.getState().gameData.points.a, 1);
 });
+
+test('omitted action time follows last accepted logical time', () => {
+  const runner = createGameRunner(game, { players: [{ id: 'a', type: 'human' }, { id: 'b', type: 'human' }] });
+  runner.startGame(100);
+  assert.equal(runner.dispatchAction({ type: 'score', playerId: 'a' }, { at: 200 }).accepted, true);
+  assert.equal(runner.dispatchAction({ type: 'score', playerId: 'b' }).accepted, true);
+});
+test('failed isFinished leaves state, revision and random unchanged', () => {
+  let fail = false;
+  const fragile = { ...game, applyAction: (state, action, ctx) => {
+    ctx.random();
+    return game.applyAction(state, action, ctx);
+  }, isFinished: state => {
+    if (fail && Object.values(state.points).some(x => x === 1)) throw new Error('finish failed');
+    return game.isFinished(state);
+  } };
+  const runner = createGameRunner(fragile, { players: [{ id: 'a', type: 'human' }] });
+  const before = runner.startGame();
+  fail = true;
+  assert.throws(() => runner.dispatchAction({ type: 'score', playerId: 'a' }), /finish failed/);
+  assert.deepEqual(runner.getState(), before);
+});
+test('failed getResult leaves state unchanged', () => {
+  const fragile = { ...game, getResult: () => { throw new Error('result failed'); } };
+  const runner = createGameRunner(fragile, { players: [{ id: 'a', type: 'human' }] });
+  const before = runner.startGame();
+  assert.throws(() => runner.dispatchAction({ type: 'score', playerId: 'a' }), /result failed/);
+  assert.deepEqual(runner.getState(), before);
+});
