@@ -1,3 +1,4 @@
+import { createRandom } from './random.mjs';
 // MiniGame Engine 1.0 — environment-independent runner.
 // Time and random values are supplied by the caller; game rules never access browser globals.
 export function assertGameContract(game) {
@@ -9,6 +10,7 @@ export function assertGameContract(game) {
 }
 export function createGameRunner(game, { players, settings = {}, seed = 1, now = 0 } = {}) {
   assertGameContract(game);
+  createRandom(seed); // validate seed before constructing the runner
   if (!Array.isArray(players) || players.length < 1 || players.length > 4) throw new RangeError('Expected 1–4 players');
   const ids = new Set();
   const roster = players.map((p, seat) => {
@@ -24,6 +26,13 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   let status = 'idle';
   let lastTime = null;
   let epoch = 0;
+  let randomState = seed >>> 0;
+  function prepareRound(at) {
+    if (!Number.isFinite(at) || at < 0) throw new RangeError('Invalid time');
+    const random = createRandom(randomState);
+    const next = structuredClone(game.createInitialState({ ...config, now: at, random: () => random.next() }));
+    return { next, nextStatus: game.isFinished(next) ? 'finished' : 'playing', nextRandomState: random.getState() };
+  }
   function context(at) {
     if (!Number.isFinite(at) || at < 0) throw new RangeError('Invalid time');
     if (lastTime !== null && at < lastTime) throw new RangeError('Game time cannot move backwards');
@@ -35,10 +44,11 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   }
   function startGame(at = now) {
     if (status !== 'idle') throw new Error('Game already started; use restartGame');
-    const ctx = context(at);
-    state = structuredClone(game.createInitialState(ctx));
+    const prepared = prepareRound(at);
+    state = prepared.next;
+    randomState = prepared.nextRandomState;
     lastTime = at;
-    status = game.isFinished(state) ? 'finished' : 'playing';
+    status = prepared.nextStatus;
     epoch++;
     revision++;
     return snapshot();
@@ -64,11 +74,10 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   }
   function restartGame(at = now) {
     // Prepare the new round before replacing the current one.
-    if (!Number.isFinite(at) || at < 0) throw new RangeError('Invalid time');
-    const next = structuredClone(game.createInitialState({ ...config, now: at }));
-    const nextStatus = game.isFinished(next) ? 'finished' : 'playing';
-    state = next;
-    status = nextStatus;
+    const prepared = prepareRound(at);
+    state = prepared.next;
+    randomState = prepared.nextRandomState;
+    status = prepared.nextStatus;
     lastTime = at;
     revision++;
     epoch++;
