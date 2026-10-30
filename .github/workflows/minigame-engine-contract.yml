@@ -1,4 +1,5 @@
 name: MiniGame Engine Contract Tests
+# Baseline checks run against the original Zeitgefuehl V6 script.
 on:
   push:
     branches:
