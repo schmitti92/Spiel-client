@@ -955,7 +955,7 @@ function renderChallengeSetup(showStage){
   });
  }
  // Normalize duplicate nodes, including buttons accidentally inserted without data attributes.
- const expectedIds=singleGames.map(([id])=>id);
+ const expectedIds=['zeitgefuehl','recheninsel','huetchen-challenge','maulwurf-arena','flusssprung','lava-arena','snake-arena','bomber-strand-arena','preisjaeger','eisstock','fallende-gegenstaende'];
  if(cardGrid){
   const cards=Array.from(cardGrid.children);
   const kept=new Set();
