@@ -13,6 +13,6 @@ test('return bridge accepts current 3-digit and legacy 6-character hub codes',()
 });
 
 test('return bridge keeps the same hub code in lobby navigation',()=>{
-  assert.match(source,/spielauswahl-online\\.html\\?room='\\+encodeURIComponent\\(hub\\)/);
-  assert.match(source,/const gotoHub=\\(\\)=>location\\.assign\\(hubUrl\\)/);
+  assert.ok(source.includes("spielauswahl-online.html?room='+encodeURIComponent(hub)"));
+  assert.ok(source.includes('const gotoHub=()=>location.assign(hubUrl)'));
 });
