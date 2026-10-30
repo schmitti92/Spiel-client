@@ -30,3 +30,14 @@ test('Zeitgefühl restarts entire round and draws next seeded target', () => {
   assert.deepEqual(next.players, first.players);
   assert.equal(next.epoch, first.epoch + 1);
 });
+
+test('deviations under 5ms tie, exactly 5ms do not', () => {
+  const state = { targetSeconds: 10, targetMs: 10000, stopped: { a: 10100, b: 10103, c: 10105, d: 10250 }, finished: true };
+  const result = zeitgefuehlGame.getResult(state);
+  assert.deepEqual(result.results.map(x => x.rank), [1, 1, 3, 4]);
+});
+test('tied groups compare with group best rather than chaining close gaps', () => {
+  const state = { targetSeconds: 10, targetMs: 10000, stopped: { a: 10100, b: 10104, c: 10108 }, finished: true };
+  const result = zeitgefuehlGame.getResult(state);
+  assert.deepEqual(result.results.map(x => x.rank), [1, 1, 3]);
+});
