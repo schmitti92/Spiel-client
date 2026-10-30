@@ -27,6 +27,11 @@ export const zeitgefuehlGame = {
       : { ...state.stopped, [action.playerId]: now - state.startedAt };
     return { ...state, stopped, finished: players.every(p => Object.hasOwn(stopped, p.id)) };
   },
+  getTimedAction(state, { now, players }) {
+    if (state.finished || now < state.startedAt + 30000) return null;
+    const pending = players.find(p => !Object.hasOwn(state.stopped, p.id));
+    return pending ? { type: 'timeout', playerId: pending.id } : null;
+  },
   getBotAction(state, { playerId, now }) {
     // Bot timing strategy will be attached after baseline parity tests.
     return null;
