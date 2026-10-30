@@ -169,3 +169,31 @@ test('generic scheduler runs due actions in chronological order', () => {
   assert.equal(end.status, 'finished');
   assert.deepEqual(end.gameData.points, { a: 1, b: 1 });
 });
+
+test('scheduled simultaneous events process deterministically in roster order', () => {
+  const scheduled = { ...game, getScheduledActions: state =>
+    Object.keys(state.points).filter(id => state.points[id] === 0)
+      .map(playerId => ({ at: 100, action: { type: 'score', playerId } })) };
+  const runner = createGameRunner(scheduled, { players: [{ id: 'a', type: 'bot' }, { id: 'b', type: 'bot' }] });
+  runner.startGame(0);
+  assert.equal(runner.advanceTime(100).status, 'finished');
+  assert.deepEqual(runner.getState().gameData.points, { a: 1, b: 1 });
+});
+test('invalid scheduled action fails visibly without committing invalid action', () => {
+  const scheduled = { ...game, getScheduledActions: () => [{ at: 100, action: { type: 'bad', playerId: 'a' } }] };
+  const runner = createGameRunner(scheduled, { players: [{ id: 'a', type: 'bot' }] });
+  const before = runner.startGame();
+  assert.throws(() => runner.advanceTime(100), /Invalid scheduled action/);
+  assert.deepEqual(runner.getState(), before);
+});
+test('restart discards old round scheduled events', () => {
+  const scheduled = { ...game, createInitialState: ctx => ({ ...game.createInitialState(ctx), dueAt: ctx.now + 100 }),
+    getScheduledActions: state => Object.keys(state.points).filter(id => state.points[id] === 0)
+      .map(playerId => ({ at: state.dueAt, action: { type: 'score', playerId } })) };
+  const runner = createGameRunner(scheduled, { players: [{ id: 'a', type: 'bot' }] });
+  runner.startGame(0);
+  const restarted = runner.restartGame(1000);
+  assert.equal(restarted.gameData.dueAt, 1100);
+  assert.equal(runner.advanceTime(1099).status, 'playing');
+  assert.equal(runner.advanceTime(1100).status, 'finished');
+});
