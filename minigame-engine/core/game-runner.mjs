@@ -89,19 +89,24 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     return snapshot();
   }
   function advanceTime(at) {
-    const ctx = context(at);
+    context(at);
     if (status !== 'playing') return snapshot();
-    // Hosts drive this with their shared clock. Rules never schedule timers.
-    const due = typeof game.getTimedAction === 'function'
-      ? game.getTimedAction(structuredClone(state), ctx) : null;
-    if (due) dispatchAction(due, { at });
+    // Process scheduled bot stops in chronological order, even if the host clock jumps.
+    // Timeout is always last at the same instant and catches remaining players.
+    const dueBots = roster.filter(p => p.type === 'bot')
+      .map(p => ({ playerId: p.id, at: state?.botStopAt?.[p.id] }))
+      .filter(x => Number.isFinite(x.at) && x.at <= at && x.at >= (lastTime ?? 0))
+      .sort((a, b) => a.at - b.at);
+    for (const due of dueBots) {
+      if (status !== 'playing') break;
+      const action = getBotAction(due.playerId, due.at);
+      if (action) dispatchAction(action, { at: due.at });
+    }
     if (status === 'playing') {
-      for (const player of roster) {
-        if (status !== 'playing') break;
-        if (player.type !== 'bot') continue;
-        const action = getBotAction(player.id, at);
-        if (action) dispatchAction(action, { at });
-      }
+      const ctx = context(at);
+      const timed = typeof game.getTimedAction === 'function'
+        ? game.getTimedAction(structuredClone(state), ctx) : null;
+      if (timed) dispatchAction(timed, { at });
     }
     return snapshot();
   }
