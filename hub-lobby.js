@@ -1270,12 +1270,12 @@ async function boot(){
  render();
  const params=new URL(location.href).searchParams;
  const invite=params.get('invite');
- if(invite&&/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
+ if(invite&&/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
   el('join-code').value=invite.toUpperCase();
   notice('Einladung erhalten: Bitte dem Raum '+invite.toUpperCase()+' beitreten.');
  }
  const fromUrl=params.get('room');
- if(!fromUrl||!/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
+ if(!fromUrl||!/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
  // Never create a replacement room when restoring an existing invitation.
  const requestedCode=fromUrl.toUpperCase();
  setRoomCode(requestedCode);
