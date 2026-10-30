@@ -12,14 +12,19 @@ export const zeitgefuehlGame = {
     };
   },
   validateAction(state, action, { now }) {
+    if (action?.type === 'timeout') {
+      return !state.finished && now >= state.startedAt + 30000;
+    }
     return action?.type === 'stop'
       && !state.finished
       && now >= state.startedAt
-      && now <= state.startedAt + 30000
+      && now < state.startedAt + 30000
       && !Object.hasOwn(state.stopped, action.playerId);
   },
   applyAction(state, action, { now, players }) {
-    const stopped = { ...state.stopped, [action.playerId]: Math.min(30000, now - state.startedAt) };
+    const stopped = action.type === 'timeout'
+      ? Object.fromEntries(players.map(p => [p.id, state.stopped[p.id] ?? 30000]))
+      : { ...state.stopped, [action.playerId]: now - state.startedAt };
     return { ...state, stopped, finished: players.every(p => Object.hasOwn(stopped, p.id)) };
   },
   getBotAction(state, { playerId, now }) {
