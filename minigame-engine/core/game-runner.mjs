@@ -56,12 +56,15 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   function dispatchAction(action, { at = now, expectedRevision } = {}) {
     if (status !== 'playing') return { accepted: false, reason: 'not-playing', state: snapshot() };
     if (expectedRevision !== undefined && expectedRevision !== revision) return { accepted: false, reason: 'stale-revision', state: snapshot() };
-    const ctx = context(at);
+    const baseCtx = context(at);
+    const actionRandom = createRandom(randomState);
+    const ctx = { ...baseCtx, random: () => actionRandom.next() };
     if (!action || typeof action !== 'object' || typeof action.playerId !== 'string' || !roster.some(p => p.id === action.playerId)) return { accepted: false, reason: 'unknown-player', state: snapshot() };
     if (!game.validateAction(structuredClone(state), action, ctx)) return { accepted: false, reason: 'invalid-action', state: snapshot() };
     const next = game.applyAction(structuredClone(state), action, ctx);
     if (next === undefined) throw new TypeError('applyAction must return state');
     state = structuredClone(next);
+    randomState = actionRandom.getState();
     lastTime = at;
     revision++;
     if (game.isFinished(state)) status = 'finished';
@@ -70,7 +73,9 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   function getBotAction(playerId, at = now) {
     const player = roster.find(p => p.id === String(playerId));
     if (!player || player.type !== 'bot' || status !== 'playing') return null;
-    return game.getBotAction(structuredClone(state), { ...context(at), playerId: player.id });
+    // Bot strategy may inspect random numbers but cannot advance the authoritative stream.
+    const botRandom = createRandom(randomState);
+    return game.getBotAction(structuredClone(state), { ...context(at), playerId: player.id, random: () => botRandom.next() });
   }
   function restartGame(at = now) {
     // Prepare the new round before replacing the current one.
