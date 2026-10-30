@@ -100,3 +100,27 @@ test('bot stop schedule is deterministic and reset on restart', () => {
   assert.deepEqual(a.startGame().gameData, b.startGame().gameData);
   assert.deepEqual(a.restartGame().gameData, b.restartGame().gameData);
 });
+
+test('shared clock automatically executes bot stop at scheduled time', () => {
+  const runner = createGameRunner(zeitgefuehlGame, { players: [{ id: 'bot', type: 'bot' }], seed: 19 });
+  const started = runner.startGame();
+  const stopAt = started.gameData.botStopAt.bot;
+  assert.equal(runner.advanceTime(stopAt - 1).status, 'playing');
+  const done = runner.advanceTime(stopAt);
+  assert.equal(done.status, 'finished');
+  assert.equal(done.gameData.stopped.bot, stopAt - done.gameData.startedAt);
+});
+test('mixed players: bot stops automatically, human remains until own action', () => {
+  const runner = createGameRunner(zeitgefuehlGame, {
+    players: [{ id: 'h', type: 'human' }, { id: 'b', type: 'bot' }], seed: 22
+  });
+  const started = runner.startGame();
+  const stopAt = started.gameData.botStopAt.b;
+  const afterBot = runner.advanceTime(stopAt);
+  assert.equal(afterBot.status, 'playing');
+  assert.equal(Object.hasOwn(afterBot.gameData.stopped, 'b'), true);
+  assert.equal(Object.hasOwn(afterBot.gameData.stopped, 'h'), false);
+  const done = runner.advanceTime(33000);
+  assert.equal(done.status, 'finished');
+  assert.equal(done.gameData.stopped.h, 30000);
+});
