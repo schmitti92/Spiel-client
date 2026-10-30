@@ -57,3 +57,39 @@ test('restart keeps configured roster and seed', () => {
   assert.deepEqual(restarted.players, first.players);
   assert.ok(restarted.revision > first.revision);
 });
+
+test('runner provides deterministic advancing random stream on restart', () => {
+  const randomGame = {
+    ...game,
+    createInitialState: ({ random }) => ({ target: 10 + Math.floor(random() * 11) }),
+    isFinished: () => false,
+    getResult: state => state
+  };
+  const make = () => createGameRunner(randomGame, { players: [{ id: 'h', type: 'human' }], seed: 41 });
+  const a = make(), b = make();
+  const aValues = [a.startGame().gameData.target, ...Array.from({ length: 8 }, () => a.restartGame().gameData.target)];
+  const bValues = [b.startGame().gameData.target, ...Array.from({ length: 8 }, () => b.restartGame().gameData.target)];
+  assert.deepEqual(aValues, bValues);
+  assert.ok(aValues.every(x => x >= 10 && x <= 20));
+  assert.ok(new Set(aValues).size > 1);
+});
+test('failed restart does not consume random values', () => {
+  let fail = false;
+  const randomGame = {
+    ...game,
+    createInitialState: ({ random }) => {
+      const target = random();
+      if (fail) throw new Error('failed');
+      return { target };
+    },
+    isFinished: () => false,
+    getResult: state => state
+  };
+  const a = createGameRunner(randomGame, { players: [{ type: 'human' }], seed: 12 });
+  const b = createGameRunner(randomGame, { players: [{ type: 'human' }], seed: 12 });
+  a.startGame(); b.startGame();
+  fail = true;
+  assert.throws(() => a.restartGame(), /failed/);
+  fail = false;
+  assert.equal(a.restartGame().gameData.target, b.restartGame().gameData.target);
+});
