@@ -33,6 +33,7 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     const next = structuredClone(game.createInitialState({ ...config, now: at, random: () => random.next() }));
     return { next, nextStatus: game.isFinished(next) ? 'finished' : 'playing', nextRandomState: random.getState() };
   }
+  function currentTime(at) { return at === undefined ? (lastTime ?? now) : at; }
   function context(at) {
     if (!Number.isFinite(at) || at < 0) throw new RangeError('Invalid time');
     if (lastTime !== null && at < lastTime) throw new RangeError('Game time cannot move backwards');
@@ -53,9 +54,10 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     revision++;
     return snapshot();
   }
-  function dispatchAction(action, { at = now, expectedRevision } = {}) {
+  function dispatchAction(action, { at, expectedRevision } = {}) {
     if (status !== 'playing') return { accepted: false, reason: 'not-playing', state: snapshot() };
     if (expectedRevision !== undefined && expectedRevision !== revision) return { accepted: false, reason: 'stale-revision', state: snapshot() };
+    at = currentTime(at);
     const baseCtx = context(at);
     const actionRandom = createRandom(randomState);
     const ctx = { ...baseCtx, random: () => actionRandom.next() };
@@ -63,14 +65,18 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     if (!game.validateAction(structuredClone(state), action, ctx)) return { accepted: false, reason: 'invalid-action', state: snapshot() };
     const next = game.applyAction(structuredClone(state), action, ctx);
     if (next === undefined) throw new TypeError('applyAction must return state');
-    state = structuredClone(next);
+    const prepared = structuredClone(next);
+    const nextStatus = game.isFinished(structuredClone(prepared)) ? 'finished' : 'playing';
+    const nextResult = nextStatus === 'finished' ? structuredClone(game.getResult(structuredClone(prepared))) : null;
+    state = prepared;
     randomState = actionRandom.getState();
     lastTime = at;
     revision++;
-    if (game.isFinished(state)) status = 'finished';
+    status = nextStatus;
     return { accepted: true, state: snapshot() };
   }
-  function getBotAction(playerId, at = now) {
+  function getBotAction(playerId, at) {
+    at = currentTime(at);
     const player = roster.find(p => p.id === String(playerId));
     if (!player || player.type !== 'bot' || status !== 'playing') return null;
     // Bot strategy may inspect random numbers but cannot advance the authoritative stream.
