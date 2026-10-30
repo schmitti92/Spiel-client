@@ -1270,24 +1270,22 @@ async function boot(){
  render();
  const params=new URL(location.href).searchParams;
  const invite=params.get('invite');
- if(invite&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
+ if(invite&&/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
   el('join-code').value=invite.toUpperCase();
   notice('Einladung erhalten: Bitte dem Raum '+invite.toUpperCase()+' beitreten.');
  }
  const fromUrl=params.get('room');
- if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
- // A room belongs to the shared lobby. Do not redirect away before recovery:
- // the selection page can open this view without stage=1.
- 
- let elapsed=0;const timer=setInterval(async()=>{
-  elapsed+=250;
-  if(!activeProfile()&&elapsed<30000)return;
-  clearInterval(timer);
-  if(!activeProfile()){pendingRoomRecovery=fromUrl.toUpperCase();el('join-code').value=fromUrl.toUpperCase();notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen.');return;}
-  const requestedCode=fromUrl.toUpperCase();
-  try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(r?.code!==requestedCode)return;activateRoom(r);pollStart();}
-  catch(e){el('join-code').value=requestedCode;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{pendingRoomRecovery=requestedCode;setRoomCode(requestedCode);notice('Raum vorübergehend nicht erreichbar. Verbindung wird automatisch erneut versucht.');scheduleRecoveryRetry();}}
- },250);
+ if(!fromUrl||!/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
+ // Never create a replacement room when restoring an existing invitation.
+ const requestedCode=fromUrl.toUpperCase();
+ setRoomCode(requestedCode);
+ el('join-code').value=requestedCode;
+ pendingRoomRecovery=requestedCode;
+ notice('Bestehender Raum '+requestedCode+' wird geladen …');
+ if(activeProfile())void recoverPendingRoom();
+ // Authentication may finish after the page loads. The profile-change handler
+ // retries as soon as a valid profile becomes available.
+ else notice('Raum '+requestedCode+' gespeichert. Warte auf die Online-Anmeldung …');
 }
 setPlayMode(playMode);
 boot();
