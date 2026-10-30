@@ -63,3 +63,20 @@ test('timeout applies to bot and human participants identically', () => {
   assert.equal(done.accepted, true);
   assert.deepEqual(done.state.gameData.stopped, { h: 30000, bot: 30000 });
 });
+
+test('shared engine clock triggers timeout automatically when advanced', () => {
+  const runner = createGameRunner(zeitgefuehlGame, { players });
+  runner.startGame();
+  assert.equal(runner.advanceTime(32999).status, 'playing');
+  const done = runner.advanceTime(33000);
+  assert.equal(done.status, 'finished');
+  assert.deepEqual(done.gameData.stopped, { a: 30000, b: 30000 });
+});
+test('shared clock does not overwrite a prior stop', () => {
+  const runner = createGameRunner(zeitgefuehlGame, { players });
+  runner.startGame();
+  runner.dispatchAction({ type: 'stop', playerId: 'a' }, { at: 12000 });
+  const done = runner.advanceTime(33000);
+  assert.equal(done.gameData.stopped.a, 9000);
+  assert.equal(done.gameData.stopped.b, 30000);
+});
