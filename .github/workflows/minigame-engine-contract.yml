@@ -8,12 +8,12 @@ on:
       - 'Minispiele/Zeitgefuehl_v6_Premium.html'
       - 'tests/zeitgefuehl-v6-baseline.test.mjs'
       - 'minigame-engine/**'
-      - 'minigame-engine/**'
       - '.github/workflows/minigame-engine-contract.yml'
   pull_request:
     paths:
       - 'Minispiele/Zeitgefuehl_v6_Premium.html'
       - 'tests/zeitgefuehl-v6-baseline.test.mjs'
+      - 'minigame-engine/**'
       - '.github/workflows/minigame-engine-contract.yml'
 jobs:
   baseline:
