@@ -124,3 +124,25 @@ test('mixed players: bot stops automatically, human remains until own action', (
   assert.equal(done.status, 'finished');
   assert.equal(done.gameData.stopped.h, 30000);
 });
+
+test('clock jump to timeout preserves bot scheduled stop rather than timing it at 30s', () => {
+  const runner = createGameRunner(zeitgefuehlGame, {
+    players: [{ id: 'b', type: 'bot' }, { id: 'h', type: 'human' }], seed: 14
+  });
+  const started = runner.startGame();
+  const scheduled = started.gameData.botStopAt.b;
+  const done = runner.advanceTime(33000);
+  assert.equal(done.status, 'finished');
+  assert.equal(done.gameData.stopped.b, scheduled - started.gameData.startedAt);
+  assert.equal(done.gameData.stopped.h, 30000);
+});
+test('clock jump stops multiple bots at their own scheduled times', () => {
+  const roster = [1, 2, 3, 4].map(i => ({ id: String(i), type: 'bot' }));
+  const runner = createGameRunner(zeitgefuehlGame, { players: roster, seed: 37 });
+  const started = runner.startGame();
+  const done = runner.advanceTime(33000);
+  assert.equal(done.status, 'finished');
+  for (const player of roster) {
+    assert.equal(done.gameData.stopped[player.id], started.gameData.botStopAt[player.id] - started.gameData.startedAt);
+  }
+});
