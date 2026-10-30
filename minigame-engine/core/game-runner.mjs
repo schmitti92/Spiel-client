@@ -22,8 +22,10 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   let state;
   let revision = 0;
   let status = 'idle';
+  let lastTime = null;
   function context(at) {
     if (!Number.isFinite(at) || at < 0) throw new RangeError('Invalid time');
+    if (lastTime !== null && at < lastTime) throw new RangeError('Game time cannot move backwards');
     return { ...config, now: at };
   }
   function snapshot() {
@@ -32,7 +34,9 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
   }
   function startGame(at = now) {
     if (status !== 'idle') throw new Error('Game already started; use restartGame');
-    state = structuredClone(game.createInitialState(context(at)));
+    const ctx = context(at);
+    state = structuredClone(game.createInitialState(ctx));
+    lastTime = at;
     status = game.isFinished(state) ? 'finished' : 'playing';
     revision++;
     return snapshot();
@@ -46,6 +50,7 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     const next = game.applyAction(structuredClone(state), action, ctx);
     if (next === undefined) throw new TypeError('applyAction must return state');
     state = structuredClone(next);
+    lastTime = at;
     revision++;
     if (game.isFinished(state)) status = 'finished';
     return { accepted: true, state: snapshot() };
@@ -55,7 +60,7 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     if (!player || player.type !== 'bot' || status !== 'playing') return null;
     return game.getBotAction(structuredClone(state), { ...context(at), playerId: player.id });
   }
-  function restartGame(at = now) { state = undefined; status = 'idle'; return startGame(at); }
-  function destroyGame() { state = undefined; status = 'idle'; revision++; }
+  function restartGame(at = now) { state = undefined; status = 'idle'; lastTime = null; return startGame(at); }
+  function destroyGame() { state = undefined; status = 'idle'; lastTime = null; revision++; }
   return { startGame, dispatchAction, getState: snapshot, getBotAction, restartGame, destroyGame };
 }
