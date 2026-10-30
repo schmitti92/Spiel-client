@@ -165,7 +165,7 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  // A live socket can miss Firestore notifications without being disconnected.
  if(streamReady && hubSocket?.readyState===1 && (Date.now()-streamLast<45000 || Date.now()-lastRoomPollAt<90000))return;
  const requestedCode=code;pollInFlight=true;lastRoomPollAt=Date.now();
- try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
+ try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pollStop();room=null;pendingRoomRecovery=requestedCode;render();showError(e);}else if(e.message==='LOGIN_REQUIRED'){pollStop();room=null;pendingRoomRecovery=requestedCode;render();notice('Anmeldung wird erneuert. Raumcode bleibt erhalten.');scheduleRecoveryRetry();}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
  },12000);}
 function leaveView(){cancelPendingRecovery();pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
