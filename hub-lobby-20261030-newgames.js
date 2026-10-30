@@ -313,7 +313,7 @@ let eisstockOriginalBridge=null,eisstockOriginalLoading=false,eisstockOriginalFa
 async function ensureEisstockOriginalBridge(){
  if(eisstockOriginalBridge||eisstockOriginalLoading||eisstockOriginalFailed)return;
  eisstockOriginalLoading=true;
- try{const {mountEisstockOriginal}=await import('./eisstock-online-bridge.js?v=1');
+ try{const {mountEisstockOriginal}=await import('./eisstock-online-bridge.js?v=2');
  const container=el('challenge-original-frame');if(!container)return;
  eisstockOriginalBridge=mountEisstockOriginal({container,getRoom:()=>room,request,acceptRoom,onError:showError});eisstockOriginalBridge.sync();
  }catch(e){eisstockOriginalFailed=true;showError(e)}finally{eisstockOriginalLoading=false}
