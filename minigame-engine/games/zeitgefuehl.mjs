@@ -31,6 +31,11 @@ export const zeitgefuehlGame = {
       : { ...state.stopped, [action.playerId]: now - state.startedAt };
     return { ...state, stopped, finished: players.every(p => Object.hasOwn(stopped, p.id)) };
   },
+  getScheduledActions(state, { players }) {
+    if (state.finished) return [];
+    return players.filter(p => p.type === 'bot' && !Object.hasOwn(state.stopped, p.id))
+      .map(p => ({ at: state.botStopAt[p.id], action: { type: 'stop', playerId: p.id } }));
+  },
   getTimedAction(state, { now, players }) {
     if (state.finished || now < state.startedAt + 30000) return null;
     const pending = players.find(p => !Object.hasOwn(state.stopped, p.id));
