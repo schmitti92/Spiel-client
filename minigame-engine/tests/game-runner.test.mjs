@@ -90,3 +90,41 @@ test('configured player and bot counts are preserved exactly', () => {
     assert.equal(state.players.filter(p => p.type === 'bot').length, bots);
   }
 });
+
+test('failed restart preserves running game and its revision', () => {
+  let fail = false;
+  const fragile = { ...game, createInitialState: ctx => {
+    if (fail) throw new Error('start failed');
+    return game.createInitialState(ctx);
+  } };
+  const runner = createGameRunner(fragile, { players: [{ id: 'a', type: 'human' }, { id: 'b', type: 'bot' }] });
+  runner.startGame(100);
+  runner.dispatchAction({ type: 'score', playerId: 'a' }, { at: 200 });
+  const before = runner.getState();
+  fail = true;
+  assert.throws(() => runner.restartGame(0), /start failed/);
+  assert.deepEqual(runner.getState(), before);
+});
+test('restarting four participants resets all scores and advances round epoch', () => {
+  const players = [{ id: 'h1', type: 'human' }, { id: 'h2', type: 'human' }, { id: 'b1', type: 'bot' }, { id: 'b2', type: 'bot' }];
+  const runner = createGameRunner(game, { players });
+  const first = runner.startGame();
+  for (const p of players) assert.equal(runner.dispatchAction({ type: 'score', playerId: p.id }).accepted, true);
+  assert.equal(runner.getState().status, 'finished');
+  const restarted = runner.restartGame();
+  assert.equal(restarted.status, 'playing');
+  assert.equal(restarted.epoch, first.epoch + 1);
+  assert.deepEqual(restarted.players.map(p => p.id), players.map(p => p.id));
+  assert.deepEqual(Object.values(restarted.gameData.points), [0, 0, 0, 0]);
+});
+test('getResult cannot mutate runner state', () => {
+  const impure = { ...game, getResult: state => {
+    state.points.a = 999;
+    return { points: state.points };
+  } };
+  const runner = createGameRunner(impure, { players: [{ id: 'a', type: 'human' }] });
+  runner.startGame();
+  runner.dispatchAction({ type: 'score', playerId: 'a' });
+  assert.equal(runner.getState().result.points.a, 999);
+  assert.equal(runner.getState().gameData.points.a, 1);
+});
