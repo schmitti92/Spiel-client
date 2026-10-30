@@ -21,3 +21,11 @@ test('recovery never creates a replacement room and retries transient errors',()
  assert.match(recovery,/scheduleRecoveryRetry\(\)/);
  assert.doesNotMatch(recovery,/request\('\/rooms','POST'/);
 });
+
+test('polling errors preserve the existing room code rather than leaving the room',()=>{
+ const start=source.indexOf('function pollStart(){');
+ const end=source.indexOf('function leaveView(){',start);
+ const polling=source.slice(start,end);
+ assert.match(polling,/pendingRoomRecovery=requestedCode/);
+ assert.doesNotMatch(polling,/leaveView\(\)/);
+});
