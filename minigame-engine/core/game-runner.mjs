@@ -88,6 +88,15 @@ export function createGameRunner(game, { players, settings = {}, seed = 1, now =
     epoch++;
     return snapshot();
   }
+  function advanceTime(at) {
+    const ctx = context(at);
+    if (status !== 'playing') return snapshot();
+    // Hosts drive this with their shared clock. Rules never schedule timers.
+    const due = typeof game.getTimedAction === 'function'
+      ? game.getTimedAction(structuredClone(state), ctx) : null;
+    if (due) dispatchAction(due, { at });
+    return snapshot();
+  }
   function destroyGame() { state = undefined; status = 'idle'; lastTime = null; revision++; }
-  return { startGame, dispatchAction, getState: snapshot, getBotAction, restartGame, destroyGame };
+  return { startGame, dispatchAction, advanceTime, getState: snapshot, getBotAction, restartGame, destroyGame };
 }
