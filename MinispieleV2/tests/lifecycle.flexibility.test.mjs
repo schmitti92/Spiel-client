@@ -150,3 +150,27 @@ test('failed bot result validation does not commit a lifecycle transition',()=>{
  assert.throws(()=>s.botTurn('b'),/INVALID_RESULT_COUNT/);
  assert.deepEqual(s.snapshot(),before);
 });
+
+test('scoreless v2 results finish and restart cleanly without inventing scores',()=>{
+ const scoreless={...game(2),getResult:state=>state.actions>=2?{resultVersion:2,finished:true,results:[{playerId:'h',outcome:'survived'},{playerId:'b',outcome:'eliminated'}],reason:'last-survivor'}:null};
+ const s=createManagedSession(scoreless,roster);
+ assert.equal(s.start().phase,'playing');
+ assert.equal(s.dispatch('h',{type:'act'}).result,null);
+ const finished=s.botTurn('b');
+ assert.equal(finished.phase,'finished');
+ assert.equal(finished.result.reason,'last-survivor');
+ assert.deepEqual(finished.result.results.map(x=>x.outcome),['survived','eliminated']);
+ assert.deepEqual(s.snapshot().result,finished.result);
+ const next=s.restart();
+ assert.equal(next.phase,'ready');
+ assert.equal(next.result,null);
+ assert.equal(next.generation,1);
+ assert.equal(s.start().phase,'playing');
+});
+test('invalid v2 optional score rolls back action and preserves lifecycle',()=>{
+ const invalid={...game(1),getResult:state=>state.actions?{resultVersion:2,finished:true,results:[{playerId:'h',score:Infinity},{playerId:'b',outcome:'ok'}]}:null};
+ const s=createManagedSession(invalid,roster);
+ s.start();const before=s.snapshot();
+ assert.throws(()=>s.dispatch('h',{type:'act'}),/INVALID_RESULT_SCORE/);
+ assert.deepEqual(s.snapshot(),before);
+});
