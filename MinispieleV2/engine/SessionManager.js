@@ -5,11 +5,12 @@ export function createManagedSession(game, players, options = {}) {
   const playerManager = createPlayerManager(players);
   const roster = playerManager.list();
   const session = createStandardSession(game, roster, options);
-  const ids = roster.map(p => p.id);
   let phase = 'ready';
   let generation = 0;
   const accepted = new Map();
   const view = () => Object.freeze({phase, generation, ...session.snapshot()});
+  // Lifecycle transitions depend only on the game's result contract, never on a fixed round or timer.
+  const updatePhase = result => { if (result !== null) phase = 'finished'; };
   return Object.freeze({
     snapshot: view,
     players: () => playerManager.list(),
@@ -34,7 +35,7 @@ export function createManagedSession(game, players, options = {}) {
       if (expectedRevision !== undefined && expectedRevision !== session.snapshot().revision) throw Error('STALE_REVISION');
       const next = session.dispatch(playerId, action);
       if (key !== null) accepted.set(key, JSON.stringify(action));
-      if (next.result !== null) phase = 'finished';
+      updatePhase(next.result);
       return view();
     },
     botTurn(playerId) {
