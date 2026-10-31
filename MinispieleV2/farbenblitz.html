@@ -21,6 +21,25 @@ header>.tag{position:absolute;right:0;top:5px}.hidden{display:none!important}
 #feedback{min-height:16px;text-align:center;color:#d6eaff;font-weight:800}#finish{order:2}footer{order:3;text-align:center;font-size:11px;color:#c3d9c8;margin-top:5px}
 @media(max-width:650px){main{padding:8px;border-radius:14px}h1{font-size:32px}.controls{grid-template-columns:1fr}#scores{min-height:40px}.score-pill{font-size:11px;padding:6px 3px}#play{padding:10px;border-width:5px}.hud .tag{display:none}#word{font-size:clamp(43px,13vw,78px)}.colors button{font-size:22px;min-height:clamp(56px,11vh,95px)}}
 @media(max-height:610px) and (orientation:landscape){header{margin:0}h1{font-size:clamp(28px,5vh,45px)}#scores{min-height:38px;margin-bottom:4px}.score-pill{padding:5px}.hud{font-size:15px}#play{padding:8px 18px;gap:4px}.question p{font-size:16px}#word{font-size:clamp(38px,10vh,70px);padding:4px}.colors button{min-height:48px;font-size:22px}footer{display:none}}
+
+/* Tablet landscape: reserve real space for every row; no overlapping content */
+main{min-height:0}
+#play{grid-template-rows:min-content minmax(0,1fr) minmax(125px,36%) min-content;overflow:hidden}
+.question{overflow:hidden;justify-content:space-evenly;gap:3px}
+.question p{flex:none;line-height:1.15;font-size:clamp(15px,1.7vw,23px)}
+#word{flex:0 1 auto;min-height:0;font-size:clamp(40px,7.3vh,84px);line-height:1.08;padding:clamp(4px,1vh,12px);max-width:800px}
+.colors{min-height:0;grid-template-rows:repeat(2,minmax(0,1fr))}
+.colors button{min-height:0;height:100%;font-size:clamp(21px,3vw,43px)}
+#feedback{min-height:0;font-size:12px}
+@media(max-height:700px) and (orientation:landscape){
+header{margin-bottom:3px}h1{font-size:clamp(27px,5.2vh,48px)}
+#scores{min-height:0;margin-bottom:5px}.score-pill{padding:6px 5px}
+#play{grid-template-rows:min-content minmax(0,1fr) minmax(115px,40%) min-content;padding:9px 18px;gap:5px}
+.hud{font-size:clamp(14px,1.5vw,20px)}
+.question p{font-size:clamp(15px,1.6vw,21px)}
+#word{font-size:clamp(40px,8.2vh,70px);padding:4px 10px;border-radius:16px}
+.colors button{font-size:clamp(21px,2.6vw,35px);min-height:0}
+}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
