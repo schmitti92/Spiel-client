@@ -97,7 +97,7 @@ test('start remains ready when a snapshot fails during start',()=>{
  const unstable={...game(2),getResult:()=>{if(++reads===failAt)throw Error('RESULT_READ_FAILED');return null;}};
  const s=createManagedSession(unstable,roster);
  assert.equal(s.snapshot().phase,'ready');
- failAt=reads+2;
+ failAt=reads+1;
  assert.throws(()=>s.start(),/RESULT_READ_FAILED/);
  assert.equal(s.snapshot().phase,'ready');
  assert.equal(s.start().phase,'playing');
