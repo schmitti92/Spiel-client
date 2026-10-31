@@ -59,6 +59,16 @@ main{padding:10px 14px}header{margin:0 0 4px}h1{font-size:clamp(30px,6vh,60px)}
 .colors{gap:8px}.colors button{font-size:clamp(21px,2.5vw,35px)}
 footer{display:none}
 }
+
+/* Forest artwork and arcade logo: visual-only; keep measured game grid intact */
+body{background:#071d17 url('./assets/farbenblitz-forest.svg') center center / cover no-repeat fixed}
+main{background:linear-gradient(90deg,#04170f85,#102a1822 20%,#102a1822 80%,#04170f85),url('./assets/farbenblitz-forest.svg') center center / cover no-repeat;box-shadow:inset 0 0 90px #07150caa,0 16px 60px #000a}
+main:before,main:after{content:none}
+header{isolation:isolate}
+h1{display:inline-block;position:relative;padding:0 .55em .12em;background:linear-gradient(95deg,#fa333c 2%,#ffad20 24%,#f7e64d 45%,#3bd56b 65%,#2389f5 85%,#ba58f5 100%);background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-stroke:1px #3c220c;text-shadow:0 6px 8px #000b;filter:drop-shadow(0 0 8px #ffcc5a);letter-spacing:-.045em}
+header>div{background:linear-gradient(90deg,transparent,#071421a8 15%,#071421a8 85%,transparent);border-radius:25px}
+#play{background:linear-gradient(145deg,#17233cf2,#071427f4);border-color:#cb8d43;box-shadow:0 12px 32px #000c,inset 0 0 35px #07182e}
+.score-pill{background:linear-gradient(180deg,#143b53,#050e1d);box-shadow:0 4px 10px #0009,inset 0 1px #ffffff66}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
