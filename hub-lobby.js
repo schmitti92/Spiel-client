@@ -72,7 +72,7 @@ async function refreshRoomAfterReconnect(){
  if(!code||!room||!activeProfile()||pollInFlight||operation)return;
  const requestedCode=code;pollInFlight=true;
  try{const result=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}
- catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=requestedCode;render();showError(e);}else if(e.message==='LOGIN_REQUIRED'){pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=requestedCode;render();notice('Anmeldung wird erneuert. Dein Raumcode bleibt erhalten.');}else if(++pollErrors===3)showError(e);}
+ catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}
  finally{pollInFlight=false;}
 }
 window.addEventListener('online',()=>{if(!code||!room)return;if(!hubSocket||hubSocket.readyState>1){stopWatch();startWatch();}void refreshRoomAfterReconnect();});
@@ -165,11 +165,11 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  // A live socket can miss Firestore notifications without being disconnected.
  if(streamReady && hubSocket?.readyState===1 && (Date.now()-streamLast<45000 || Date.now()-lastRoomPollAt<90000))return;
  const requestedCode=code;pollInFlight=true;lastRoomPollAt=Date.now();
- try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=requestedCode;render();showError(e);if(e.message==='LOGIN_REQUIRED')notice('Anmeldung unterbrochen. Raumcode '+requestedCode+' bleibt erhalten; Verbindung wird nach Anmeldung wiederhergestellt.');else if(e.message==='NOT_A_MEMBER')notice('Kein Zugriff auf Raum '+requestedCode+'. Raumcode bleibt zur erneuten Anmeldung erhalten.');else notice('Raum '+requestedCode+' wurde nicht gefunden. Der Code bleibt zur Prüfung erhalten.');}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
+ try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
  },12000);}
 function leaveView(){cancelPendingRecovery();pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
-const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger','eisstock':'Eisstock','fallende-gegenstaende':'Fallende Gegenstände'};
+const CHALLENGE_LABELS={'lava-arena':'Lava Arena','maulwurf-arena':'Maulwurf Arena',recheninsel:'Recheninsel',flusssprung:'Flusssprung',zeitgefuehl:'Zeitgefühl','huetchen-challenge':'Hütchen Challenge','snake-arena':'Snake Arena','bomber-strand-arena':'Bomber Strand Arena',preisjaeger:'Preisjäger'};
 const CHALLENGE_STAGE_CSS=`
 #challenge-progress:not(.hidden){position:fixed!important;inset:0!important;z-index:10020!important;margin:0!important;border-radius:0!important;overflow:auto!important;overscroll-behavior:contain;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.4vh,16px);padding:clamp(20px,4vh,46px) clamp(18px,5vw,70px)!important;box-sizing:border-box;background:radial-gradient(ellipse at 50% 105%,#d5b575 0%,#b68c55 12%,transparent 38%),radial-gradient(ellipse at 7% 88%,#163f30 0%,#163f30 14%,transparent 31%),radial-gradient(ellipse at 96% 82%,#124f3a 0%,#124f3a 12%,transparent 30%),linear-gradient(180deg,#051b30 0%,#0b4765 45%,#1b8290 75%,#174f56 100%)!important;color:#fff!important;text-shadow:0 2px 12px #001b2e88;box-shadow:none!important}
 #challenge-single-actions[hidden],#challenge-single-actions button[hidden]{display:none!important}
@@ -308,25 +308,6 @@ async function ensureHuetchenOriginalBridge(){
   huetchenOriginalBridge.sync();
  }catch(error){huetchenOriginalFailed=true;showError(error)}
  finally{huetchenOriginalLoading=false;}
-}
-let eisstockOriginalBridge=null,eisstockOriginalLoading=false,eisstockOriginalFailed=false;
-async function ensureEisstockOriginalBridge(){
- if(eisstockOriginalBridge||eisstockOriginalLoading||eisstockOriginalFailed)return;
- eisstockOriginalLoading=true;
- try{const {mountEisstockOriginal}=await import('./eisstock-online-bridge.js?v=1');
- const container=el('challenge-original-frame');if(!container)return;
- eisstockOriginalBridge=mountEisstockOriginal({container,getRoom:()=>room,request,acceptRoom,onError:showError});eisstockOriginalBridge.sync();
- }catch(e){eisstockOriginalFailed=true;showError(e)}finally{eisstockOriginalLoading=false}
-}
-let fallingOriginalBridge=null,fallingOriginalLoading=false,fallingOriginalFailed=false;
-async function ensureFallingOriginalBridge(){
- if(fallingOriginalBridge||fallingOriginalLoading||fallingOriginalFailed)return;
- fallingOriginalLoading=true;
- try{const {mountFallingOriginal}=await import('./fallende-gegenstaende-online-bridge.js?v=1');
-  const container=el('challenge-original-frame');if(!container)return;
-  fallingOriginalBridge=mountFallingOriginal({container,getRoom:()=>room,request,acceptRoom,onError:showError});
-  fallingOriginalBridge.sync();
- }catch(e){fallingOriginalFailed=true;showError(e)}finally{fallingOriginalLoading=false}
 }
 let zeitgefuehlOriginalBridge=null,zeitgefuehlOriginalLoading=false,zeitgefuehlOriginalFailed=false;
 async function ensureZeitgefuehlOriginalBridge(){
@@ -657,8 +638,6 @@ function renderChallengeProgress(){
  }
  const isMath=ch.order[index]==='recheninsel';
  const originalMathActive=isMath&&ch.phase==='countdown'&&!recheninselOriginalFailed;
- const originalEisstockActive=ch.order[index]==='eisstock'&&['countdown','results','finished'].includes(ch.phase)&&!eisstockOriginalFailed;
- const originalFallingActive=ch.order[index]==='fallende-gegenstaende'&&['countdown','results','finished'].includes(ch.phase)&&!fallingOriginalFailed;
  const originalTimeActive=ch.order[index]==='zeitgefuehl'&&['countdown','results','finished'].includes(ch.phase)&&!zeitgefuehlOriginalFailed;
  const originalHuetchenActive=ch.order[index]==='huetchen-challenge'&&ch.phase==='countdown'&&!huetchenOriginalFailed;
  const originalMaulwurfActive=ch.order[index]==='maulwurf-arena'&&ch.phase==='countdown'&&!maulwurfOriginalFailed;
@@ -666,9 +645,7 @@ function renderChallengeProgress(){
  const originalSnakeActive=ch.order[index]==='snake-arena'&&ch.phase==='countdown'&&!snakeOriginalFailed;
  const originalLavaActive=ch.order[index]==='lava-arena'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!lavaOriginalFailed;
  const originalFlusssprungActive=ch.order[index]==='flusssprung'&&(ch.phase==='countdown'||ch.phase==='results'||ch.phase==='finished')&&!flusssprungOriginalFailed;
- const originalActive=originalEisstockActive||originalFallingActive||originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive;
- if(!originalEisstockActive&&eisstockOriginalBridge){eisstockOriginalBridge.destroy();eisstockOriginalBridge=null;}
- if(!originalFallingActive&&fallingOriginalBridge){fallingOriginalBridge.destroy();fallingOriginalBridge=null;}
+ const originalActive=originalMathActive||originalTimeActive||originalHuetchenActive||originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive;
  if(!originalMaulwurfActive&&maulwurfOriginalBridge){maulwurfOriginalBridge.destroy();maulwurfOriginalBridge=null;}
  if(!originalBomberActive&&bomberOriginalBridge){bomberOriginalBridge.destroy();bomberOriginalBridge=null;}
  if(!originalSnakeActive&&snakeOriginalBridge){snakeOriginalBridge.destroy();snakeOriginalBridge=null;}
@@ -678,8 +655,6 @@ function renderChallengeProgress(){
  el('challenge-original-frame').hidden=!originalActive;
  box.classList.toggle('maulwurf-playing',originalMaulwurfActive||originalFlusssprungActive||originalLavaActive||originalSnakeActive||originalBomberActive);
  box.classList.toggle('preisjaeger-playing',isPreisjaeger&&ch.phase==='countdown');
- if(originalEisstockActive){ensureEisstockOriginalBridge();eisstockOriginalBridge?.sync();}
- if(originalFallingActive){ensureFallingOriginalBridge();fallingOriginalBridge?.sync();}
  if(originalMathActive){ensureRecheninselOriginalBridge();recheninselOriginalBridge?.sync();}
  if(originalTimeActive){ensureZeitgefuehlOriginalBridge();zeitgefuehlOriginalBridge?.sync();}
  if(originalHuetchenActive){ensureHuetchenOriginalBridge();huetchenOriginalBridge?.sync();}
@@ -901,7 +876,7 @@ function renderChallengeSetup(showStage){
  if(!box){
   box=document.createElement('section');box.id='challenge-settings-panel';
   box.style.cssText='padding:18px;margin:12px 0;border:1px solid #49a6c5;border-radius:20px;background:linear-gradient(145deg,#092b47,#06253e);color:#fff;box-shadow:0 12px 32px #00162980';box.classList.add('challenge-premium');
-  box.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><span style="font-size:36px">🏆</span><div><h3 style="margin:0;font-size:25px">Party Challenge</h3><small style="color:#d5eaff">ALLE 11 MINISPIELE · EIN GEMEINSAMER RAUM</small></div></div><p style="color:#d4e7f6;margin:12px 0 20px">Wähle die Challenge. Die Minispiele werden nacheinander gespielt und alle Punkte zusammengezählt.</p><div style="margin:20px 0 12px;padding:16px;border-radius:18px;background:linear-gradient(135deg,#132c48,#285b71);color:white"><div style="font-size:20px;font-weight:900">🎮 Wähle dein Minispiel</div><p style="margin:7px 0 14px;color:#d3e6f5">Wählt euer Spiel. Nach der Runde könnt ihr direkt wiederholen oder ein anderes Spiel auswählen.</p><div id="challenge-single-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px"></div><button type="button" id="challenge-marathon" style="margin-top:14px;padding:12px 18px;border-radius:12px;border:2px solid #d9b878;background:#f8e7bd;color:#24334b;font-weight:900;cursor:pointer">🏆 Challenge spielen</button></div><label for="challenge-count" style="display:block;font-weight:700;margin:18px 0 7px">🎲 Challenge-Umfang</label><select id="challenge-count" style="width:100%;max-width:440px;min-height:45px;border-radius:12px;border:1px solid #c7d4e3;padding:8px 12px;background:white"><option value="11">✅ 11 Online-Minispiele</option><option value="1">🎮 Ein einzelnes Minispiel</option></select><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px"><button type="button" id="challenge-save" style="border:0;border-radius:12px;padding:12px 17px;background:#167d72;color:white;font-weight:700">✓ Auswahl speichern</button><button type="button" id="challenge-bots" style="border:1px solid #c8d7e8;border-radius:12px;padding:12px 17px;background:white;color:#243b5a;font-weight:700">🤖 2 Testspieler hinzufügen</button></div><p id="challenge-feedback" role="status" style="font-size:13px;color:#c6e5f5;margin:12px 0 0"></p>`;
+  box.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><span style="font-size:36px">🏆</span><div><h3 style="margin:0;font-size:25px">Party Challenge</h3><small style="color:#d5eaff">ALLE 9 MINISPIELE · EIN GEMEINSAMER RAUM</small></div></div><p style="color:#d4e7f6;margin:12px 0 20px">Wähle die Challenge. Die Minispiele werden nacheinander gespielt und alle Punkte zusammengezählt.</p><div style="margin:20px 0 12px;padding:16px;border-radius:18px;background:linear-gradient(135deg,#132c48,#285b71);color:white"><div style="font-size:20px;font-weight:900">🎮 Wähle dein Minispiel</div><p style="margin:7px 0 14px;color:#d3e6f5">Wählt euer Spiel. Nach der Runde könnt ihr direkt wiederholen oder ein anderes Spiel auswählen.</p><div id="challenge-single-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px"></div><button type="button" id="challenge-marathon" style="margin-top:14px;padding:12px 18px;border-radius:12px;border:2px solid #d9b878;background:#f8e7bd;color:#24334b;font-weight:900;cursor:pointer">🏆 Alle 9 als Challenge spielen</button></div><label for="challenge-count" style="display:block;font-weight:700;margin:18px 0 7px">🎲 Challenge-Umfang</label><select id="challenge-count" style="width:100%;max-width:440px;min-height:45px;border-radius:12px;border:1px solid #c7d4e3;padding:8px 12px;background:white"><option value="9">✅ 9 Online-Minispiele</option><option value="1">🎮 Ein einzelnes Minispiel</option></select><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px"><button type="button" id="challenge-save" style="border:0;border-radius:12px;padding:12px 17px;background:#167d72;color:white;font-weight:700">✓ Auswahl speichern</button><button type="button" id="challenge-bots" style="border:1px solid #c8d7e8;border-radius:12px;padding:12px 17px;background:white;color:#243b5a;font-weight:700">🤖 2 Testspieler hinzufügen</button></div><p id="challenge-feedback" role="status" style="font-size:13px;color:#c6e5f5;margin:12px 0 0"></p>`;
   const anchor=el('game-stage-hero');anchor.parentNode.insertBefore(box,anchor);
   el('challenge-bots').addEventListener('click',async()=>{
    if(!room?.host)return;
@@ -911,8 +886,7 @@ function renderChallengeSetup(showStage){
    finally{button.disabled=false;}
   });
   let challengeSettingsBusy=false;
-  const totalMinigames=11;
-  const singleGames=[['zeitgefuehl','⏱️','Zeitgefühl'],['recheninsel','🏴‍☠️','Recheninsel'],['huetchen-challenge','🎩','Hütchen Challenge'],['maulwurf-arena','🔨','Maulwurf Arena'],['flusssprung','🌊','Flusssprung'],['lava-arena','🌋','Lava Arena'],['snake-arena','🐍','Snake Arena'],['bomber-strand-arena','💣','Bomber Strand'],['preisjaeger','🛒','Preisjäger'],['eisstock','🥌','Eisstock'],['fallende-gegenstaende','🎹','Fallende Gegenstände']];
+  const singleGames=[['zeitgefuehl','⏱️','Zeitgefühl'],['recheninsel','🏴‍☠️','Recheninsel'],['huetchen-challenge','🎩','Hütchen Challenge'],['maulwurf-arena','🔨','Maulwurf Arena'],['flusssprung','🌊','Flusssprung'],['lava-arena','🌋','Lava Arena'],['snake-arena','🐍','Snake Arena'],['bomber-strand-arena','💣','Bomber Strand'],['preisjaeger','🛒','Preisjäger']];
   const grid=el('challenge-single-grid');
   for(const [id,icon,title] of singleGames){
    const btn=document.createElement('button');btn.type='button';btn.dataset.minigame=id;
@@ -930,7 +904,7 @@ function renderChallengeSetup(showStage){
    if(!room?.host||room.phase!=='preparing'||challengeSettingsBusy)return;
    const button=el('challenge-marathon');if(button.disabled)return;
    challengeSettingsBusy=true;button.disabled=true;
-   try{const requestedCode=room.code;const response=await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count:totalMinigames,selectedGame:null});if(code!==requestedCode)return;acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle neun Minispiele ausgewählt.';}
+   try{const requestedCode=room.code;const response=await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count:9,selectedGame:null});if(code!==requestedCode)return;acceptRoom(response.room);el('challenge-feedback').textContent='🏆 Alle neun Minispiele ausgewählt.';}
    catch(e){el('challenge-feedback').textContent=e.message;}
    finally{button.disabled=false;challengeSettingsBusy=false;}
   });
@@ -938,7 +912,7 @@ function renderChallengeSetup(showStage){
    if(challengeSettingsBusy)return;
    const button=el('challenge-save');if(button.disabled)return;
    challengeSettingsBusy=true;button.disabled=true;
-   try{if(!room?.host||room.phase!=='preparing')return;const selectedGame=el('challenge-count').value==='1'?(room.settings?.partychallenge?.selectedGame||'zeitgefuehl'):null;const count=selectedGame?1:totalMinigames;if(count===Number(room.settings?.partychallenge?.count)&&(selectedGame||null)===(room.settings?.partychallenge?.selectedGame||null)){el('challenge-feedback').textContent='✓ Bereits gespeichert – die Bereitmeldungen bleiben erhalten.';return;}const requestedCode=room.code;await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count,selectedGame});if(code!==requestedCode)return;el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;acceptRoom(updated.room);}
+   try{if(!room?.host||room.phase!=='preparing')return;const selectedGame=el('challenge-count').value==='1'?(room.settings?.partychallenge?.selectedGame||'zeitgefuehl'):null;const count=selectedGame?1:9;if(count===Number(room.settings?.partychallenge?.count)&&(selectedGame||null)===(room.settings?.partychallenge?.selectedGame||null)){el('challenge-feedback').textContent='✓ Bereits gespeichert – die Bereitmeldungen bleiben erhalten.';return;}const requestedCode=room.code;await request('/rooms/'+encodeURIComponent(requestedCode)+'/challenge-settings','POST',{count,selectedGame});if(code!==requestedCode)return;el('challenge-feedback').textContent='Auswahl gespeichert. Alle Spieler müssen erneut bereit sein.';const updated=await request('/rooms/'+encodeURIComponent(requestedCode));if(code!==requestedCode)return;acceptRoom(updated.room);}
    catch(e){el('challenge-feedback').textContent='Speichern fehlgeschlagen: '+e.message;}
    finally{button.disabled=false;challengeSettingsBusy=false;}
   });
@@ -955,7 +929,7 @@ function renderChallengeSetup(showStage){
   });
  }
  // Normalize duplicate nodes, including buttons accidentally inserted without data attributes.
- const expectedIds=['zeitgefuehl','recheninsel','huetchen-challenge','maulwurf-arena','flusssprung','lava-arena','snake-arena','bomber-strand-arena','preisjaeger','eisstock','fallende-gegenstaende'];
+ const expectedIds=['zeitgefuehl','recheninsel','huetchen-challenge','maulwurf-arena','flusssprung','lava-arena','snake-arena','bomber-strand-arena','preisjaeger'];
  if(cardGrid){
   const cards=Array.from(cardGrid.children);
   const kept=new Set();
@@ -995,13 +969,13 @@ if(settingsNav){
 }const genericChooser=el('game-chooser');if(genericChooser){genericChooser.hidden=Boolean(active);genericChooser.style.display=active?'none':'';}
  if(!active)return;
  if(room.phase!=='preparing')el('challenge-feedback').textContent='';
- if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(room.settings?.partychallenge?.selectedGame?1:totalMinigames);
+ if(document.activeElement!==el('challenge-count'))el('challenge-count').value=String(room.settings?.partychallenge?.selectedGame?1:9);
  const selected=room.settings?.partychallenge?.selectedGame||null;
  el('challenge-single-grid').querySelectorAll('button').forEach(btn=>{const chosen=btn.dataset.minigame===selected;btn.style.borderColor=chosen?'#ffdd7b':'#ffffff55';btn.style.boxShadow=chosen?'0 0 0 3px #ffdd7b66':'none';btn.setAttribute('aria-pressed',String(chosen));btn.querySelector('.mini-picked').textContent=chosen?'✓ AUSGEWÄHLT':'';btn.disabled=!room.host||room.phase!=='preparing';});
  let choiceStatus=el('challenge-choice-status');
  if(!choiceStatus){choiceStatus=document.createElement('div');choiceStatus.id='challenge-choice-status';choiceStatus.style.cssText='margin:12px 0;padding:12px 16px;border-radius:14px;background:#e7f4f0;color:#16584d;font-weight:750';el('challenge-single-grid').after(choiceStatus);}
  const selectedTitle=selected?(CHALLENGE_LABELS[selected]||selected):null;
- choiceStatus.textContent=selectedTitle?'🎮 Gewählt: '+selectedTitle+' · '+(room.host?'Warte auf die Bereitmeldungen.':'Der Host hat dieses Minispiel ausgewählt.'):'🏆 Party-Challenge mit allen verfügbaren Spielen ausgewählt.';
+ choiceStatus.textContent=selectedTitle?'🎮 Gewählt: '+selectedTitle+' · '+(room.host?'Warte auf die Bereitmeldungen.':'Der Host hat dieses Minispiel ausgewählt.'):'🏆 Party-Challenge mit allen neun Spielen ausgewählt.';
  el('challenge-marathon').disabled=!room.host||room.phase!=='preparing';
  el('challenge-count').disabled=!room.host||room.phase!=='preparing';
  el('challenge-save').hidden=!room.host||room.phase!=='preparing';
@@ -1255,37 +1229,40 @@ function scheduleRecoveryRetry(){
  recoveryRetryTimer=setTimeout(()=>{recoveryRetryTimer=null;void recoverPendingRoom();},delay);
 }
 async function recoverPendingRoom(){
- if(!pendingRoomRecovery||room||(code&&code!==pendingRoomRecovery)||!activeProfile()||recoveryInFlight)return;
+ if(!pendingRoomRecovery||room||code||!activeProfile()||recoveryInFlight)return;
  const requestedCode=pendingRoomRecovery;recoveryInFlight=true;
- try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(pendingRoomRecovery!==requestedCode||room||(code&&code!==requestedCode)||r?.code!==requestedCode)return;pendingRoomRecovery=null;clearRecoveryRetry();activateRoom(r);pollStart();}
- catch(e){if(pendingRoomRecovery!==requestedCode||room||(code&&code!==requestedCode))return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;clearRecoveryRetry();notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Wiederherstellung wird erneut versucht.');scheduleRecoveryRetry();}}
+ try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(pendingRoomRecovery!==requestedCode||room||code||r?.code!==requestedCode)return;pendingRoomRecovery=null;clearRecoveryRetry();activateRoom(r);pollStart();}
+ catch(e){if(pendingRoomRecovery!==requestedCode||room||code)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){pendingRoomRecovery=null;clearRecoveryRetry();notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Wiederherstellung wird erneut versucht.');scheduleRecoveryRetry();}}
  finally{recoveryInFlight=false;}
 }
 window.addEventListener('spielonline-change',()=>{
  const uid=activeProfile()?.user?.uid||null;
- if(uid!==accountUid){const previousUid=accountUid;accountUid=uid;if(room&&previousUid&&uid&&previousUid!==uid){const savedCode=code;pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=savedCode;render();notice('Spielerprofil gewechselt. Der bisherige Raumcode bleibt erhalten; Zugriff wird erneut geprüft.');}else if(room&&previousUid&&!uid){const savedCode=code;pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=savedCode;render();notice('Anmeldung unterbrochen. Der Raumcode bleibt erhalten.');}}
+ if(uid!==accountUid){accountUid=uid;if(room){leaveView();notice('Das Spielerprofil hat gewechselt. Bitte dem Raum erneut beitreten.');}}
  render();if(uid)void recoverPendingRoom();
 });
 async function boot(){
  render();
  const params=new URL(location.href).searchParams;
  const invite=params.get('invite');
- if(invite&&/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
+ if(invite&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
   el('join-code').value=invite.toUpperCase();
   notice('Einladung erhalten: Bitte dem Raum '+invite.toUpperCase()+' beitreten.');
  }
  const fromUrl=params.get('room');
- if(!fromUrl||!/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
- // Never create a replacement room when restoring an existing invitation.
- const requestedCode=fromUrl.toUpperCase();
- setRoomCode(requestedCode);
- el('join-code').value=requestedCode;
- pendingRoomRecovery=requestedCode;
- notice('Bestehender Raum '+requestedCode+' wird geladen …');
- if(activeProfile())void recoverPendingRoom();
- // Authentication may finish after the page loads. The profile-change handler
- // retries as soon as a valid profile becomes available.
- else notice('Raum '+requestedCode+' gespeichert. Warte auf die Online-Anmeldung …');
+ if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
+ if(new URL(location.href).searchParams.get('stage')!=='1'&&!stayInMatchId){
+   location.replace('spielauswahl-online.html?room='+encodeURIComponent(fromUrl.toUpperCase()));
+   return;
+ }
+ let elapsed=0;const timer=setInterval(async()=>{
+  elapsed+=250;
+  if(!activeProfile()&&elapsed<30000)return;
+  clearInterval(timer);
+  if(!activeProfile()){pendingRoomRecovery=fromUrl.toUpperCase();el('join-code').value=fromUrl.toUpperCase();notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen.');return;}
+  const requestedCode=fromUrl.toUpperCase();
+  try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(r?.code!==requestedCode)return;activateRoom(r);pollStart();}
+  catch(e){el('join-code').value=requestedCode;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Aktualisiere die Seite, um es erneut zu versuchen.');}}
+ },250);
 }
 setPlayMode(playMode);
 boot();
