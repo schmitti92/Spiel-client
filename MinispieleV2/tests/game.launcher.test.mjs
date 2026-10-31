@@ -77,3 +77,57 @@ test('game-specific participant limits are enforced at launch',()=>{
  assert.throws(()=>launch.create('two-to-four',[roster[0]]),/GAME_PLAYER_LIMITS/);
  assert.equal(launch.create('two-to-four',roster).snapshot().players.length,2);
 });
+
+test('launcher handles 1-4 mixed human/bot players with game-defined results and restart',()=>{
+ const definition={
+  id:'roster-independent-probe',
+  initialState:participants=>({remaining:participants.map(p=>p.id),moves:[]}),
+  applyAction:(state,{playerId,action})=>{
+   if(!state.remaining.includes(playerId))throw Error('PLAYER_ALREADY_DONE');
+   if(action.type!=='finish')throw Error('INVALID_GAME_ACTION');
+   return {remaining:state.remaining.filter(id=>id!==playerId),moves:[...state.moves,playerId]};
+  },
+  getResult:state=>state.remaining.length===0?{
+   resultVersion:2,finished:true,
+   results:state.moves.map(playerId=>({playerId,outcome:'completed'}))
+  }:null,
+  botAction:()=>({type:'finish'})
+ };
+ const launch=createGameLauncher(createGameRegistry([definition]));
+ for(let count=1;count<=4;count++){
+  const participants=Array.from({length:count},(_,i)=>({id:'player-'+i,type:i%2?'bot':'human'}));
+  const session=launch.create(definition.id,participants);
+  assert.equal(session.start().phase,'playing');
+  for(const player of participants){
+   const snap=player.type==='bot'?session.botTurn(player.id):session.dispatch(player.id,{type:'finish'});
+   assert.equal(snap.phase,snap.state.remaining.length===0?'finished':'playing');
+  }
+  assert.deepEqual(session.snapshot().result.results.map(r=>r.playerId),participants.map(p=>p.id));
+  assert.equal(session.restart().phase,'ready');
+  assert.equal(session.start().phase,'playing');
+  assert.equal(session.snapshot().result,null);
+ }
+});
+test('invalid game action through launcher cannot corrupt independent sessions',()=>{
+ const definition={
+  id:'rollback-probe',
+  initialState:()=>({count:0}),
+  applyAction:(state,{action})=>{
+   state.count++;
+   if(action.type==='invalid')throw Error('GAME_RULE_REJECTED');
+   return state;
+  },
+  getResult:()=>null,
+  botAction:()=>({type:'valid'})
+ };
+ const launch=createGameLauncher(createGameRegistry([definition]));
+ const first=launch.create('rollback-probe',roster);
+ const second=launch.create('rollback-probe',roster);
+ first.start();second.start();
+ const before=first.snapshot();
+ assert.throws(()=>first.dispatch('human',{type:'invalid'}),/GAME_RULE_REJECTED/);
+ assert.deepEqual(first.snapshot(),before);
+ assert.equal(second.snapshot().state.count,0);
+ assert.equal(first.dispatch('human',{type:'valid'}).state.count,1);
+ assert.equal(second.botTurn('bot').state.count,1);
+});
