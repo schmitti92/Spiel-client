@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+const gameContractSource=readFileSync(new URL('../engine/GameContract.js',import.meta.url),'utf8');
+const gameContractUrl='data:text/javascript;charset=utf-8,'+encodeURIComponent(gameContractSource);
 const source=readFileSync(new URL('../engine/MiniGameEngine.js',import.meta.url),'utf8');
-const {createSession,validateGame}=await import('data:text/javascript;charset=utf-8,'+encodeURIComponent(source));
+const {createSession,validateGame}=await import('data:text/javascript;charset=utf-8,'+encodeURIComponent(source.replace("'./GameContract.js'",JSON.stringify(gameContractUrl))));
 const game={
  id:'contract-demo',
  initialState:(players)=>({turn:0,score:Object.fromEntries(players.map(p=>[p.id,0]))}),
