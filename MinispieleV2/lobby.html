@@ -11,7 +11,7 @@ const back=()=>location.href='../spielauswahl-online.html'+(valid?'?room='+encod
 document.getElementById('back').onclick=back;
 document.querySelector('main > p > a').href='../spielauswahl-online.html'+(valid?'?room='+encodeURIComponent(code):'');
 roomEl.textContent=valid?code:'Kein Raum';
-let snapshot=null,bots=0,socket=null,retry=null,heartbeat=null,fetching=false,activeUid=null,connected=false;
+let snapshot=null,bots=0,socket=null,retry=null,heartbeat=null,fetching=false,activeUid=null,connected=false,lastUid=null;
 function person(){const s=window.SpielOnline?.state?.();return s?.status==='online'&&s?.profile?.setupComplete!==false&&s?.user?.getIdToken?s.user:null}
 function status(message){statusEl.textContent=message}
 function render(){
@@ -47,6 +47,7 @@ async function refresh(){
     const data=await response.json();
     if(!response.ok||data.ok!==true)throw Error(data.error||'SERVER_ERROR');
     if(data.room?.code!==code)throw Error('ROOM_MISMATCH');
+    if(person()?.uid!==uid)return;
     snapshot=data.room;render();
     status('Raum bestätigt · '+(snapshot.players?.length||0)+' echte Teilnehmer'+(connected?' · Live verbunden':' · Verbindung wird aufgebaut'));
   }catch(e){
@@ -63,7 +64,8 @@ function stop(){
 function connect(){
   const u=person();
   if(!u||document.hidden||socket)return;
-  const ws=new WebSocket(base.replace(/^http/i,'ws')+'/hub');
+  let ws;
+  try{ws=new WebSocket(base.replace(/^http/i,'ws')+'/hub')}catch(_){status('WebSocket konnte nicht geöffnet werden. HTTP-Verbindung wird weiter geprüft.');return}
   socket=ws;activeUid=u.uid;
   let lastPong=Date.now();
   ws.onopen=async()=>{
@@ -83,6 +85,7 @@ function connect(){
     if(socket!==ws)return;
     if(person()?.uid!==activeUid){stop();return}
     if(data.type==='pong')lastPong=Date.now();
+    if(data.type==='error'){status('Raum-Stream meldet: '+String(data.error||'Verbindungsfehler'));try{ws.close()}catch(_){}return}
     if(data.type==='room'&&data.room?.code===code){
       connected=true;lastPong=Date.now();snapshot=data.room;render();
       status('Live verbunden · '+(snapshot.players?.length||0)+' echte Teilnehmer');
@@ -100,12 +103,12 @@ function connect(){
 window.addEventListener('spielonline-change',()=>{
   const u=person();
   if(!u||(activeUid&&u.uid!==activeUid))stop();
-  if(u){void refresh();connect()}
+  if(u){if(lastUid!==u.uid){lastUid=u.uid;void refresh()}connect()}else{lastUid=null;snapshot=null;render()}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else{void refresh();connect()}});
 window.addEventListener('pagehide',stop);
-setInterval(()=>{if(!document.hidden&&!connected)void refresh()},30000);
-setInterval(()=>{if(!document.hidden&&connected)void refresh()},180000);
+setInterval(()=>{if(!document.hidden&&!connected)void refresh()},60000);
+// Live room events arrive via the shared hub stream; no periodic HTTP reads while connected.
 void refresh();connect();
 })();
 </script></body></html>
