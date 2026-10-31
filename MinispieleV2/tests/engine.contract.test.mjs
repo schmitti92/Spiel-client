@@ -110,3 +110,38 @@ test('failed result evaluation during restart preserves prior session',()=>{
  assert.throws(()=>session.restart(),/RESTART_RESULT_FAILED/);
  assert.deepEqual(session.snapshot(),before);
 });
+
+test('all-human, all-bot and mixed rosters work independently for 1–4 players',()=>{
+ for(let n=1;n<=4;n++)for(const mode of ['human','bot','mixed']){
+  const players=Array.from({length:n},(_,i)=>({id:'p'+i,type:mode==='mixed'?(i%2?'bot':'human'):mode}));
+  const session=createSession(game,players);
+  for(const player of players){
+   if(player.type==='bot')session.botTurn(player.id);
+   else session.dispatch(player.id,{type:'score',value:2});
+  }
+  assert.equal(session.snapshot().revision,n);
+  assert.equal(session.restart().revision,n+1);
+  assert.deepEqual(session.snapshot().players,players);
+ }
+});
+test('bot failure cannot change state or revision',()=>{
+ const players=[{id:'human',type:'human'},{id:'bot',type:'bot'}];
+ const broken={...game,botAction:()=>({type:'invalid'})};
+ const session=createSession(broken,players);
+ const before=session.snapshot();
+ assert.throws(()=>session.botTurn('bot'),/INVALID_ACTION_TYPE/);
+ assert.deepEqual(session.snapshot(),before);
+ assert.throws(()=>session.botTurn('human'),/NOT_A_BOT/);
+ assert.deepEqual(session.snapshot(),before);
+});
+test('bot receives isolated state and roster copies',()=>{
+ const players=[{id:'bot',type:'bot'}];
+ const probe={...game,botAction:(state,id,roster)=>{
+  state.score[id]=1000;
+  roster[0].type='human';
+  return {type:'score',value:1};
+ }};
+ const session=createSession(probe,players);
+ assert.equal(session.botTurn('bot').state.score.bot,1);
+ assert.equal(session.snapshot().players[0].type,'bot');
+});
