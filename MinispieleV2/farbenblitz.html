@@ -2,22 +2,43 @@
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Farbenblitz – MiniGame Engine V2</title>
 <style>
-:root{font-family:system-ui,sans-serif;color:#f7f7ff;background:#101b32}*{box-sizing:border-box}body{margin:0;padding:20px;min-height:100vh;display:grid;place-items:center}
-main{width:min(680px,100%);background:#1b2a47;border:1px solid #3b4d6c;border-radius:22px;padding:24px;box-shadow:0 16px 50px #0005}
-h1{margin:0 0 8px}p{color:#c9d4ed}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}label{display:grid;gap:6px}select,button{font:inherit;border-radius:12px;border:0;padding:13px 16px}select{background:#ecf1ff;color:#101b32}button{cursor:pointer;background:#85ddf5;color:#10223c;font-weight:700}button:disabled{opacity:.4;cursor:default}.hidden{display:none!important}
-#word{font-size:clamp(48px,10vw,90px);font-weight:900;text-align:center;letter-spacing:2px;margin:28px 0;text-transform:uppercase}
-.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.colors button{min-height:76px;color:white;font-size:20px;border:2px solid #ffffff60}
-#status,#scores,#feedback{margin-top:16px;line-height:1.6}#feedback{font-weight:700}small{color:#bdcbe5}
+:root{font-family:system-ui,-apple-system,sans-serif;color:#f8fbff;background:#091326}*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 50% 0%,#23426a 0%,#101d35 45%,#080e1e 100%);display:grid;place-items:center;padding:clamp(8px,2vw,20px)}
+main{width:min(1100px,100%);height:min(860px,calc(100dvh - 16px));min-height:510px;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(150deg,#1b3153ee,#111c33f5);border:1px solid #6380a255;border-radius:26px;padding:clamp(14px,2.4vw,28px);box-shadow:0 22px 70px #0008}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:clamp(26px,4vw,42px);margin:0;letter-spacing:-1px}header p{margin:3px 0;color:#a9c2e2;font-size:13px}
+.tag{background:#294968;border:1px solid #6781a088;border-radius:30px;padding:7px 12px;font-size:12px;color:#dceeff}
+section{min-height:0}.hidden{display:none!important}
+#setup,#finish{margin:auto;max-width:680px;width:100%;text-align:center}
+.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:28px 0}
+label{display:grid;gap:9px;text-align:left;color:#d3e4fa;font-weight:650;font-size:14px}
+select,button{font:inherit;border-radius:13px;border:0;padding:13px 15px}select{width:100%;background:#eaf1ff;color:#13213a}
+button{cursor:pointer;background:#8ee8f6;color:#0e233d;font-weight:800;touch-action:manipulation}button:active{transform:scale(.98)}button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+#start,#again{background:linear-gradient(100deg,#5de7e6,#a6f3c8);padding:16px 26px}
+#play{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;flex:1;gap:10px}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+#status{background:#233c60;border:1px solid #58749966;border-radius:13px;padding:10px 16px;font-weight:750}
+#scores{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-top:10px;min-height:40px}
+.score-pill{background:#243b5c;border:1px solid #607ea077;padding:8px 13px;border-radius:12px;font-size:14px;font-weight:700}
+.question{min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;border-radius:22px;background:radial-gradient(ellipse,#263d62 0%,#172641 75%);border:1px solid #5c76964d;padding:12px}
+.question p{margin:0;color:#d1e3fa;text-align:center;font-size:clamp(15px,2vw,22px);font-weight:650}
+#word{font-size:clamp(60px,11vw,132px);font-weight:1000;text-align:center;letter-spacing:3px;line-height:1.15;margin:10px 0;text-transform:uppercase;text-shadow:0 7px 15px #0005;overflow-wrap:anywhere}
+.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,15px)}
+.colors button{min-height:clamp(66px,12vh,116px);color:white;font-size:clamp(20px,3vw,30px);border:2px solid #ffffff65;box-shadow:inset 0 2px 0 #ffffff25,0 6px 14px #0003;text-shadow:0 2px 4px #0006}
+#feedback{text-align:center;color:#b9e9f5;font-weight:750;min-height:22px}
+#results p{padding:10px;background:#263e5e;border-radius:12px}
+footer{font-size:11px;text-align:center;color:#91a9c9;margin-top:8px}
+@media(max-width:600px){main{border-radius:16px;padding:12px;min-height:0;height:calc(100dvh - 12px)}.controls{grid-template-columns:1fr}#word{font-size:clamp(48px,14vw,86px)}.colors button{min-height:clamp(64px,11vh,96px)}header p{font-size:11px}.tag{font-size:10px;padding:6px 9px}}
+@media(max-height:570px) and (orientation:landscape){main{padding:10px 18px}header p,footer{display:none}#play{gap:5px}.question{padding:4px}#word{font-size:clamp(42px,9vh,76px);margin:3px}.colors button{min-height:55px}#scores{margin-top:4px;min-height:30px}.score-pill{padding:4px 10px}}
 </style></head><body><main>
-<h1>⚡ Farbenblitz</h1><p>Engine V2 · lokaler Test mit Computergegnern</p>
+<header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
 <label>Spieler insgesamt<select id="count"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
 <label>Schwierigkeit<select id="level"><option value="leicht">Leicht – Wort lesen</option><option value="mittel" selected>Mittel – Schriftfarbe</option><option value="schwer">Schwer – Schriftfarbe</option></select></label>
 <label>Runden<select id="rounds"><option>5</option><option selected>10</option><option>20</option><option>30</option></select></label>
 </div><button id="start">Spiel starten</button></section>
-<section id="play" class="hidden"><div id="status"></div><div id="word"></div><div class="colors" id="colors"></div><div id="feedback" aria-live="polite"></div></section>
+<section id="play" class="hidden"><div class="hud"><div id="status"></div><span class="tag">🎯 Wähle die richtige Farbe</span></div><div class="question"><p id="prompt">In welcher FARBE ist das Wort geschrieben?</p><div id="word"></div></div><div class="colors" id="colors"></div><div id="feedback" aria-live="polite"></div></section>
 <section id="finish" class="hidden"><h2>🏆 Ergebnis</h2><div id="results"></div><button id="again">Nochmal spielen</button><button id="back">Zur Auswahl</button></section>
-<div id="scores" aria-live="polite"></div><small>Die Engine steuert Spieler, Aktionen, Ergebnisse und Neustarts. Noch kein Online-Multiplayer.</small>
+<div id="scores" aria-live="polite"></div><footer>Vorschau mit Computergegnern · gemeinsamer Online-Modus folgt später</footer>
 </main>
 <script type="module">
 import {games} from './games.js';
@@ -38,7 +59,7 @@ function startNew(){
  const count=Number($('count').value),rounds=Number($('rounds').value);
  const players=[{id:'player-1',type:'human'},...Array.from({length:count-1},(_,i)=>({id:'bot-'+(i+1),type:'bot'}))];
  flow.select({roomId:'offline-demo',matchId:'farbenblitz-'+(++serial),gameId:'farbenblitz',players,options:{rounds,level:$('level').value}});
- flow.start();show('play');render();
+ flow.start();$('feedback').textContent='';show('play');render();
 }
 function answer(color){
  const s=flow.snapshot();if(s.stage!=='playing')return;
@@ -50,12 +71,13 @@ function answer(color){
   flow.botTurn(p.id);current=flow.snapshot();
  }
  if(current.stage==='result'){finish();return;}
- $('feedback').textContent='Antwort gespeichert – nächste Runde';
+ $('feedback').textContent='';
  render();
 }
 function render(){
  const s=flow.snapshot(),state=s.session.state;
  $('status').textContent='Runde '+(state.round+1)+' / '+state.rounds+' · '+(state.level==='leicht'?'Wort lesen':'Schriftfarbe wählen');
+ $('prompt').textContent=state.level==='leicht'?'Welches WORT steht hier?':'In welcher FARBE ist das Wort geschrieben?';
  $('word').textContent=state.challenge.word.toUpperCase();
  $('word').style.color=colors[state.challenge.ink];
  $('colors').replaceChildren();
@@ -63,7 +85,8 @@ function render(){
   const b=document.createElement('button');b.textContent=name.toUpperCase();b.style.background=color;
   b.addEventListener('click',()=>answer(name));$('colors').append(b);
  }
- $('scores').textContent=Object.entries(state.scores).map(([id,n])=>id+': '+n).join(' · ');
+ $('scores').replaceChildren();
+ for(const [id,n] of Object.entries(state.scores)){const el=document.createElement('span');el.className='score-pill';el.textContent=(id==='player-1'?'👤 Du':'🤖 '+id.replace('bot-','Bot '))+' · '+n+' Punkte';$('scores').append(el);}
 }
 function finish(){
  const s=flow.snapshot();show('finish');
@@ -73,6 +96,6 @@ function finish(){
  $('scores').textContent='';
 }
 $('start').addEventListener('click',startNew);
-$('again').addEventListener('click',()=>{flow.replay();flow.start();show('play');render();});
+$('again').addEventListener('click',()=>{flow.replay();flow.start();$('feedback').textContent='';show('play');render();});
 $('back').addEventListener('click',()=>{flow.returnToSelection();show('setup');$('scores').textContent='';});
 </script></body></html>
