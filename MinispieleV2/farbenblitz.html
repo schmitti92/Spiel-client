@@ -2,182 +2,20 @@
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Farbenblitz – MiniGame Engine V2</title>
 <style>
-:root{font-family:system-ui,sans-serif;color:white;background:#09251d}*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 10%,#e7c65d88,transparent 36%),radial-gradient(ellipse at 15% 65%,#41883d,#173d2c 55%,#071c17 100%);padding:8px}
-main{width:min(1480px,100%);height:calc(100dvh - 16px);min-height:480px;display:flex;flex-direction:column;overflow:hidden;position:relative;border-radius:24px;padding:clamp(10px,2vw,24px);background:linear-gradient(90deg,#071b18aa,#071b1811 17%,#071b1811 83%,#071b18aa),radial-gradient(ellipse at top,#75a54b77,transparent 50%);box-shadow:inset 0 0 95px #03150f,0 16px 60px #0009}
-main:before,main:after{content:"🌳";position:absolute;top:12%;font-size:clamp(100px,21vw,320px);opacity:.55;pointer-events:none;filter:drop-shadow(0 0 18px #102b0c);z-index:0}main:before{left:-9%}main:after{right:-9%;transform:scaleX(-1)}
-header,#setup,#play,#finish,#scores,footer{position:relative;z-index:1}header{display:flex;justify-content:center;align-items:center;text-align:center;margin-bottom:8px}h1{font-size:clamp(32px,5.6vw,74px);margin:0;font-weight:1000;font-style:italic;letter-spacing:-2px;color:#fff0ca;text-shadow:0 4px #633b16,0 7px 3px #160c07,0 0 18px #ffb727;transform:skew(-4deg)}header p{display:none}.tag{font-size:13px;background:#0b1c2ce8;border:2px solid #7c9eb5;border-radius:24px;padding:7px 13px}
-header>.tag{position:absolute;right:0;top:5px}.hidden{display:none!important}
-#setup,#finish{margin:auto;max-width:680px;width:100%;padding:28px;border:4px solid #bd7d38;border-radius:24px;background:#101d2de8;text-align:center}
-.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}label{display:grid;gap:8px;text-align:left;font-weight:750}select,button{font:inherit;border-radius:16px;padding:12px;border:0}select{min-width:0;width:100%;background:#f6f0e5;color:#18243c}button{cursor:pointer;font-weight:950;touch-action:manipulation}button:focus-visible{outline:4px solid white;outline-offset:2px}button:active{transform:scale(.98)}#start,#again,#back{background:linear-gradient(#ffec83,#ffae18);color:#312008;padding:15px 28px;margin:6px}
-#scores{order:1;display:flex;justify-content:center;gap:clamp(6px,2vw,20px);margin:0 auto 10px;width:100%;max-width:1340px;min-height:58px}
-.score-pill{flex:1;min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:2px solid #7dcaff;border-radius:15px;background:linear-gradient(#122e43,#050e1c);box-shadow:0 4px 8px #0009,inset 0 1px #fff5;padding:clamp(8px,1.2vw,13px) 5px;font-size:clamp(13px,1.5vw,20px);font-weight:900}
-.score-pill:first-child{border-color:#ffd65b;box-shadow:0 0 13px #ffd34c8c,0 4px 8px #0009}
-#play{order:2;flex:1;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:clamp(7px,1.4vh,14px);width:min(1320px,100%);margin:auto;background:linear-gradient(125deg,#17243bf5,#0a1426f8);border:clamp(5px,.7vw,10px) ridge #b97b36;border-radius:clamp(16px,2.5vw,38px);padding:clamp(12px,2.2vw,30px);box-shadow:0 10px 35px #000c,inset 0 0 30px #030a17}
-.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:clamp(14px,2vw,25px);font-weight:850}#status{border-bottom:1px solid #9d683b;padding-bottom:8px}.hud .tag{border:0;background:transparent;font-size:clamp(12px,1.5vw,19px)}
-.question{min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}.question p{font-size:clamp(16px,2.2vw,28px);font-weight:850;text-align:center;margin:0;text-shadow:0 3px 5px #000}
-#word{width:min(860px,100%);text-align:center;font-size:clamp(58px,10vw,125px);font-weight:1000;line-height:1.25;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(#1a3551,#10223a);border:3px solid #d6dfe8;border-radius:28px;padding:clamp(6px,2vh,22px);box-shadow:0 0 13px #ffb964,inset 0 -7px 14px #0008,0 10px 12px #0007;text-shadow:0 5px 5px #0009}
-.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,18px)}
-.colors button{min-height:clamp(63px,11vh,130px);color:#fff;font-size:clamp(23px,3.5vw,49px);border:3px solid #fff9;border-radius:clamp(14px,2vw,27px);box-shadow:inset 0 7px 6px #ffffff58,inset 0 -8px 6px #0005,0 5px 0 #071321,0 0 12px currentColor;text-shadow:0 4px 4px #0007}
-#feedback{min-height:16px;text-align:center;color:#d6eaff;font-weight:800}#finish{order:2}footer{order:3;text-align:center;font-size:11px;color:#c3d9c8;margin-top:5px}
-@media(max-width:650px){main{padding:8px;border-radius:14px}h1{font-size:32px}.controls{grid-template-columns:1fr}#scores{min-height:40px}.score-pill{font-size:11px;padding:6px 3px}#play{padding:10px;border-width:5px}.hud .tag{display:none}#word{font-size:clamp(43px,13vw,78px)}.colors button{font-size:22px;min-height:clamp(56px,11vh,95px)}}
-@media(max-height:610px) and (orientation:landscape){header{margin:0}h1{font-size:clamp(28px,5vh,45px)}#scores{min-height:38px;margin-bottom:4px}.score-pill{padding:5px}.hud{font-size:15px}#play{padding:8px 18px;gap:4px}.question p{font-size:16px}#word{font-size:clamp(38px,10vh,70px);padding:4px}.colors button{min-height:48px;font-size:22px}footer{display:none}}
+:root{font-family:system-ui,Arial,sans-serif;color:#fff;background:#091c15}*{box-sizing:border-box}body{margin:0;padding:8px;min-height:100dvh;background:#071d17}button,select{font:inherit}button{cursor:pointer;touch-action:manipulation;font-weight:900}button:focus-visible,select:focus-visible{outline:3px solid #fff;outline-offset:3px}button:active{transform:translateY(2px)}.hidden{display:none!important}
+main{width:100%;max-width:1600px;height:calc(100dvh - 16px);min-height:0;margin:auto;padding:clamp(8px,1vw,16px);display:flex;flex-direction:column;overflow:hidden;border-radius:24px;position:relative;background:linear-gradient(90deg,#071a13a6,#071a1330 24%,#071a1330 76%,#071a13a6),url('https://commons.wikimedia.org/wiki/Special:FilePath/Sun_rays_through_fir_forest%2C_Gro%C3%9Fer_Feldberg.jpg?width=1600') center/cover no-repeat,url('./assets/farbenblitz-forest.svg') center/cover no-repeat;box-shadow:inset 0 0 75px #0008}
+header{position:relative;flex:0 0 clamp(65px,10vh,110px);display:flex;justify-content:center;align-items:center}header>div{width:min(58vw,790px);height:100%}header h1{font-size:0;width:100%;height:100%;margin:0;background:url('./assets/farbenblitz-logo.svg') center/contain no-repeat;filter:drop-shadow(0 5px 5px #000b)}header p{display:none}.tag{border-radius:30px;background:#091c2be8;border:2px solid #8caac4;padding:7px 14px;font-size:clamp(11px,1.1vw,15px);font-weight:800}header>.tag{position:absolute;right:2px;top:8px}
+#scores{display:flex;gap:clamp(8px,1.5vw,20px);flex:0 0 clamp(40px,6vh,58px);margin-bottom:7px}#scores:empty{display:none}.score-pill{min-width:0;flex:1;display:grid;place-items:center;text-align:center;border:2px solid #7dd1ff;border-radius:17px;background:linear-gradient(#193c53,#06121f);box-shadow:0 4px 10px #000a;font-size:clamp(12px,1.5vw,21px);font-weight:900;white-space:nowrap;overflow:hidden}.score-pill:first-child{border-color:#ffdc75;box-shadow:0 0 12px #ffd65a88}
+#setup,#finish{width:min(800px,96%);margin:auto;padding:clamp(20px,3vw,38px);background:#0a1c2de9;border:4px solid #bb7d36;border-radius:25px;box-shadow:0 15px 35px #000a;text-align:center}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:15px 0 22px}.controls label{display:grid;gap:8px;text-align:left;font-size:clamp(12px,1.4vw,18px);font-weight:800}.controls select{width:100%;min-width:0;padding:14px;border:0;border-radius:15px;background:#f8f2e9;color:#1c2c3b;font-weight:750}#start,#again,#back{padding:15px 28px;border:0;border-radius:17px;background:linear-gradient(#ffec87,#ffb524);color:#332009;margin:5px}
+#play{flex:1;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) minmax(0,1.22fr);gap:clamp(7px,1.1vh,13px);padding:clamp(12px,1.3vw,22px);border:8px solid #a66a2f;border-radius:30px;background:linear-gradient(90deg,#2d100ac2,#391808a3 15%,#361508a3 85%,#2d100ac2),url('./assets/farbenblitz-wood.svg') center/100% 100% no-repeat;box-shadow:0 0 0 3px #51290f,0 0 0 5px #e0a351,0 15px 35px #000c,inset 0 0 0 3px #e7ac5a,inset 0 0 30px #000b}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:clamp(13px,1.6vw,23px);font-weight:950;text-shadow:0 3px 4px #000c}.hud .tag{background:transparent;border:0;padding:0;font-size:inherit}
+.question{min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.2vh,12px)}.question p{flex:none;margin:0;text-align:center;font-size:clamp(16px,2vw,29px);font-weight:950;text-shadow:0 3px 5px #000c}
+#word{flex:0 1 auto;display:grid;place-items:center;width:84%;height:clamp(70px,16vh,145px);max-height:65%;min-height:0;padding:4px 12px;border:3px solid #ffce67;border-radius:24px;background:linear-gradient(#153648,#05131e);box-shadow:0 0 0 3px #522b12,0 0 19px #ffc35e,inset 0 0 22px #000b;text-align:center;font-size:clamp(40px,8.8vh,95px);font-weight:1000;line-height:1;letter-spacing:.025em;text-shadow:0 5px 5px #000b}
+.colors{min-height:0;height:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(8px,1vw,15px)}.colors button{height:100%;min-height:0;padding:4px;border:3px solid #fffd;border-radius:23px;color:white;font-size:clamp(22px,3vw,43px);text-shadow:0 4px 5px #0009;box-shadow:inset 0 7px 9px #ffffff75,inset 0 -9px 9px #0006,0 4px 0 #071321,0 0 9px #ffffff55}#feedback{display:none}footer{display:none}
+@media(orientation:landscape) and (max-height:900px){header{flex-basis:clamp(58px,9vh,85px)}#play{grid-template-rows:auto minmax(0,1fr) minmax(0,1.23fr);gap:7px;padding:11px 16px;border-width:6px}.question{gap:6px}#word{width:84%;height:clamp(72px,16vh,120px);max-height:72%;font-size:clamp(38px,8vh,80px)}.colors{gap:9px}}
+@media(max-width:650px){main{border-radius:13px;padding:7px}header{flex-basis:60px}header>div{width:70vw;margin-right:30px}header>.tag{font-size:10px;padding:5px}#play{padding:8px;border-width:5px;border-radius:20px}.hud{font-size:12px}.hud .tag{display:none}.question p{font-size:15px}#word{width:94%;font-size:clamp(33px,7vh,65px)}.colors button{font-size:clamp(19px,5vw,30px);border-radius:16px}.controls{grid-template-columns:1fr}}
+@media(orientation:portrait){#play{grid-template-rows:auto minmax(0,1fr) minmax(0,1.2fr)}#word{width:94%}}
 
-/* Tablet landscape: reserve real space for every row; no overlapping content */
-main{min-height:0}
-#play{grid-template-rows:min-content minmax(0,1fr) minmax(125px,36%) min-content;overflow:hidden}
-.question{overflow:hidden;justify-content:space-evenly;gap:3px}
-.question p{flex:none;line-height:1.15;font-size:clamp(15px,1.7vw,23px)}
-#word{flex:0 1 auto;min-height:0;font-size:clamp(40px,7.3vh,84px);line-height:1.08;padding:clamp(4px,1vh,12px);max-width:800px}
-.colors{min-height:0;grid-template-rows:repeat(2,minmax(0,1fr))}
-.colors button{min-height:0;height:100%;font-size:clamp(21px,3vw,43px)}
-#feedback{min-height:0;font-size:12px}
-@media(max-height:700px) and (orientation:landscape){
-header{margin-bottom:3px}h1{font-size:clamp(27px,5.2vh,48px)}
-#scores{min-height:0;margin-bottom:5px}.score-pill{padding:6px 5px}
-#play{grid-template-rows:min-content minmax(0,1fr) minmax(115px,40%) min-content;padding:9px 18px;gap:5px}
-.hud{font-size:clamp(14px,1.5vw,20px)}
-.question p{font-size:clamp(15px,1.6vw,21px)}
-#word{font-size:clamp(40px,8.2vh,70px);padding:4px 10px;border-radius:16px}
-.colors button{font-size:clamp(21px,2.6vw,35px);min-height:0}
-}
-
-/* Landscape tablet: strictly separated HUD, prompt, word and answer rows */
-#play{display:grid;grid-template-rows:min-content minmax(0,1fr) minmax(0,1.15fr);gap:10px;align-content:stretch}
-.question{display:grid;grid-template-rows:min-content minmax(0,1fr);align-items:center;justify-items:center;gap:8px;min-height:0;overflow:hidden}
-.question p{position:static;line-height:1.15;margin:0;font-size:clamp(15px,1.8vw,25px);text-align:center}
-#word{width:min(850px,100%);height:100%;max-height:100%;display:grid;place-items:center;line-height:1;font-size:clamp(38px,7vh,78px);padding:4px 12px;overflow:hidden}
-.colors{height:100%;min-height:0;grid-template-rows:repeat(2,minmax(0,1fr));gap:10px}
-.colors button{height:100%;min-height:0;padding:4px 12px;font-size:clamp(20px,2.7vw,40px)}
-#feedback{display:none}
-@media (orientation:landscape) and (max-height:900px){
-main{padding:10px 14px}header{margin:0 0 4px}h1{font-size:clamp(30px,6vh,60px)}
-#scores{margin-bottom:5px;min-height:0}.score-pill{padding:7px 5px}
-#play{padding:10px 20px;gap:7px;grid-template-rows:min-content minmax(0,1fr) minmax(0,1.25fr)}
-.hud{font-size:clamp(14px,1.6vw,21px)}#status{padding-bottom:3px}
-.question{gap:5px}.question p{font-size:clamp(15px,1.6vw,21px)}
-#word{font-size:clamp(38px,7.5vh,72px);border-radius:16px}
-.colors{gap:8px}.colors button{font-size:clamp(21px,2.5vw,35px)}
-footer{display:none}
-}
-
-/* Forest artwork and arcade logo: visual-only; keep measured game grid intact */
-body{background:#071d17 url('./assets/farbenblitz-forest.svg') center center / cover no-repeat fixed}
-main{background:linear-gradient(90deg,#04170f85,#102a1822 20%,#102a1822 80%,#04170f85),url('./assets/farbenblitz-forest.svg') center center / cover no-repeat;box-shadow:inset 0 0 90px #07150caa,0 16px 60px #000a}
-main:before,main:after{content:none}
-header{isolation:isolate}
-h1{display:inline-block;position:relative;padding:0 .55em .12em;background:linear-gradient(95deg,#fa333c 2%,#ffad20 24%,#f7e64d 45%,#3bd56b 65%,#2389f5 85%,#ba58f5 100%);background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-stroke:1px #3c220c;text-shadow:0 6px 8px #000b;filter:drop-shadow(0 0 8px #ffcc5a);letter-spacing:-.045em}
-header>div{background:linear-gradient(90deg,transparent,#071421a8 15%,#071421a8 85%,transparent);border-radius:25px}
-#play{background:linear-gradient(145deg,#17233cf2,#071427f4);border-color:#cb8d43;box-shadow:0 12px 32px #000c,inset 0 0 35px #07182e}
-.score-pill{background:linear-gradient(180deg,#143b53,#050e1d);box-shadow:0 4px 10px #0009,inset 0 1px #ffffff66}
-
-/* Dedicated graphics assets; preserve the working responsive geometry */
-header h1{font-size:0!important;width:clamp(250px,42vw,630px);height:clamp(50px,8vh,110px);background:url('./assets/farbenblitz-logo.svg') center / contain no-repeat!important;filter:drop-shadow(0 5px 7px #0009);-webkit-text-stroke:0!important;text-shadow:none!important;padding:0!important;transform:none!important;display:block}
-header>div{background:none}
-#play{background:linear-gradient(120deg,#120a06a8,#180c0a77),url('./assets/farbenblitz-wood.svg') center / 100% 100% no-repeat!important;border:0!important;box-shadow:0 15px 35px #000b,inset 0 0 20px #0006!important}
-#word{background:linear-gradient(180deg,#173148,#081421)!important;border-color:#eab45d!important;box-shadow:0 0 14px #ffb73c99,inset 0 0 16px #0008!important}
-.colors button{border-color:#fff8!important;box-shadow:inset 0 6px 8px #ffffff70,inset 0 -10px 8px #0005,0 5px 0 #050e19,0 0 10px #ffdd8a66!important}
-
-/* Premium wood treatment and wide challenge panel; preserve layout grid */
-#play{
- background:linear-gradient(90deg,#110804b8,#1c0b0680 12%,#160a0580 88%,#100602b8),url('./assets/farbenblitz-wood.svg') center / 100% 100% no-repeat!important;
- border:9px solid transparent!important;
- border-image:linear-gradient(135deg,#ffdb8d 0%,#9e5424 17%,#48200e 42%,#e3a253 70%,#51230d 100%) 1!important;
- border-radius:25px!important;
- box-shadow:inset 0 0 0 4px #3b1809,inset 0 0 28px #000a,0 14px 30px #000a!important;
-}
-.question{width:100%;min-width:0}
-#word{
- width:min(94%,1060px)!important;
- justify-self:center!important;
- height:min(100%,clamp(80px,15vh,140px))!important;
- min-height:70px!important;
- align-self:center!important;
- border:3px solid #ffc464!important;
- border-radius:24px!important;
- background:linear-gradient(170deg,#1c3347,#081320 70%,#102b3c)!important;
- box-shadow:0 0 0 3px #58351d,0 0 18px #ffca6caa,inset 0 8px 18px #ffffff0b,inset 0 -8px 22px #000b!important;
- font-size:clamp(42px,8vh,88px)!important;
-}
-#scores{max-width:1300px}
-.score-pill{border-width:2px;border-radius:16px}
-@media(orientation:landscape) and (max-height:900px){
-#play{border-width:7px!important;padding:10px 19px}
-#word{height:min(100%,clamp(72px,14vh,120px))!important;min-height:65px!important;font-size:clamp(40px,7.7vh,75px)!important}
-}
-@media(max-width:650px){#play{border-width:5px!important;padding:8px}#word{min-height:55px!important;font-size:clamp(36px,8vh,65px)!important}}
-
-/* Farbenblitz premium board V3: layered artwork without baked-in controls */
-main{background:linear-gradient(90deg,#04170f66,#102a1811 20%,#102a1811 80%,#04170f66),url('./assets/farbenblitz-forest.svg') center/cover no-repeat!important}
-#play{
- border:8px solid #a65d24!important;
- border-radius:30px!important;
- background:linear-gradient(90deg,#1309058c,#15080522 15%,#15080522 85%,#1309058c),url('./assets/farbenblitz-wood.svg') center/100% 100% no-repeat!important;
- box-shadow:0 0 0 3px #4a230e,0 0 0 6px #dca252,0 13px 28px #000b,inset 0 0 0 3px #f1bc67,inset 0 0 34px #000a!important
-}
-.question p{font-weight:950!important;text-shadow:0 3px 3px #000c!important}
-#word{
- width:min(96%,1120px)!important;
- height:min(100%,clamp(74px,14vh,130px))!important;
- min-height:0!important;
- font-size:clamp(40px,8vh,83px)!important;
- border-radius:22px!important;
- border:3px solid #ffcc5e!important;
- box-shadow:0 0 0 2px #4e270d,0 0 18px #ffc64b,inset 0 0 18px #000b!important;
- background:linear-gradient(180deg,#14384a,#041520 78%)!important
-}
-.colors button{border-radius:22px!important;border:3px solid #ffffffc9!important;box-shadow:inset 0 6px 8px #ffffff88,inset 0 -8px 8px #0006,0 5px 0 #080e13,0 0 12px #ffffff55!important;transition:filter .12s,transform .12s}
-.colors button:active{filter:brightness(1.18);transform:translateY(3px) scale(.99)}
-@media(orientation:landscape) and (max-height:900px){
-#play{border-width:6px!important;grid-template-rows:min-content minmax(0,1fr) minmax(0,1.25fr)!important}
-#word{height:min(100%,clamp(70px,13vh,115px))!important;font-size:clamp(38px,7.6vh,72px)!important}
-}
-
-/* Photographic forest with a bundled illustrated fallback.
-   Photo: Gerda Arendt, Wikimedia Commons, CC0. */
-body{
- background:#071d17 url('./assets/farbenblitz-forest.svg') center/cover no-repeat fixed;
-}
-main{
- background-image:linear-gradient(90deg,#03170bb8 0%,#03170b38 18%,#03170b20 82%,#03170bb8 100%),url('https://commons.wikimedia.org/wiki/Special:FilePath/Sun_rays_through_fir_forest%2C_Gro%C3%9Fer_Feldberg.jpg?width=1600'),url('./assets/farbenblitz-forest.svg')!important;
- background-position:center!important;
- background-size:cover!important;
- background-repeat:no-repeat!important;
-}
-#play{background-color:#170d09!important}
-#word{width:min(96%,1100px)!important}
-footer{color:#e4e3c7;text-shadow:0 2px 5px #000}
-
-/* Tablet visual refinement V4: closer prompt, wide word, warm wood, prominent logo */
-header h1{
- width:clamp(320px,51vw,780px)!important;
- height:clamp(55px,9.5vh,120px)!important;
- max-width:calc(100vw - 180px)!important;
-}
-#play{
- background-image:linear-gradient(90deg,#241006a6,#3415088c 13%,#2b110878 50%,#3415088c 87%,#241006a6),url('./assets/farbenblitz-wood.svg')!important;
- background-blend-mode:multiply,normal!important;
-}
-.question{
- grid-template-rows:min-content minmax(0,1fr)!important;
- align-content:center!important;
- gap:3px!important;
-}
-.question p{align-self:end!important;margin-bottom:2px!important}
-#word{
- width:82%!important;
- max-width:none!important;
- height:clamp(80px,17vh,150px)!important;
- max-height:100%!important;
- min-height:0!important;
- align-self:start!important;
- font-size:clamp(44px,9vh,94px)!important;
-}
-@media(orientation:landscape) and (max-height:900px){
-#play{grid-template-rows:min-content minmax(0,1fr) minmax(0,1.25fr)!important}
-.question{grid-template-rows:min-content minmax(0,1fr)!important;align-content:center!important}
-#word{width:84%!important;height:clamp(72px,15vh,125px)!important;max-height:100%!important;font-size:clamp(42px,8vh,78px)!important}
-}
-@media(max-width:650px){header h1{max-width:calc(100vw - 95px)!important}#word{width:92%!important;height:clamp(60px,14vh,105px)!important}}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
