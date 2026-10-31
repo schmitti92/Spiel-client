@@ -69,3 +69,24 @@ test('rejects invalid game capabilities and malformed configuration limits',()=>
  assert.throws(()=>createSession({...game,minPlayers:0},roster),/INVALID_GAME_PLAYER_LIMITS/);
  assert.throws(()=>createSession({...game,maxPlayers:1.5},roster),/INVALID_GAME_PLAYER_LIMITS/);
 });
+
+test('rejects malformed game options without calling initialState',()=>{
+ let calls=0;
+ const probe={...game,initialState:ps=>{calls++;return game.initialState(ps);}};
+ const players=[{id:'a',type:'human'}];
+ for(const options of [null,[],false,'invalid',42]){
+  assert.throws(()=>createSession(probe,players,options),/INVALID_GAME_OPTIONS/);
+ }
+ assert.equal(calls,0);
+});
+test('passes independent configuration snapshots to initialState and restart',()=>{
+ const options={difficulty:{level:2}};
+ const probe={...game,initialState:(ps,config)=>{
+  config.difficulty.level=99;
+  return game.initialState(ps);
+ }};
+ const session=createSession(probe,[{id:'a',type:'human'}],options);
+ assert.equal(options.difficulty.level,2);
+ session.restart();
+ assert.equal(options.difficulty.level,2);
+});
