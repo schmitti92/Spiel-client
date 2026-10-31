@@ -59,3 +59,35 @@ test('stale actions are rejected without changing lifecycle state',()=>{
  assert.throws(()=>s.dispatch('h',{type:'act'},{expectedRevision:99}),/STALE_REVISION/);
  assert.deepEqual(s.snapshot(),before);
 });
+
+test('invalid game result rolls back human action and keeps session playing',()=>{
+ const invalid={...game(2),getResult:state=>state.actions===1?{finished:true,results:[]} : null};
+ const s=createManagedSession(invalid,roster);
+ s.start();const before=s.snapshot();
+ assert.throws(()=>s.dispatch('h',{type:'act'},{requestId:'retry'}),/INVALID_RESULT_COUNT/);
+ assert.deepEqual(s.snapshot(),before);
+ assert.throws(()=>s.dispatch('h',{type:'act'},{requestId:'retry'}),/INVALID_RESULT_COUNT/);
+ assert.deepEqual(s.snapshot(),before);
+});
+test('failed restart preserves finished session and allows retry',()=>{
+ let starts=0;
+ const probe={...game(1),initialState:()=>++starts===2?null:{actions:0}};
+ const s=createManagedSession(probe,roster);
+ s.start();s.dispatch('h',{type:'act'});
+ const before=s.snapshot();
+ assert.equal(before.phase,'finished');
+ assert.throws(()=>s.restart(),/INVALID_INITIAL_STATE/);
+ assert.deepEqual(s.snapshot(),before);
+ const restarted=s.restart();
+ assert.equal(restarted.phase,'ready');
+ assert.equal(restarted.generation,before.generation+1);
+ assert.equal(restarted.state.actions,0);
+});
+test('request ids are scoped to a generation after restart',()=>{
+ const s=createManagedSession(game(1),roster);
+ s.start();
+ assert.equal(s.dispatch('h',{type:'act'},{requestId:'one'}).phase,'finished');
+ s.restart();s.start();
+ assert.equal(s.dispatch('h',{type:'act'},{requestId:'one'}).phase,'finished');
+ assert.equal(s.snapshot().generation,1);
+});
