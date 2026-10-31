@@ -408,7 +408,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
           
         </div>
       </article>
-      <article class="game mini-new-card"><div class="game-title"><h2>🎮 Minispiele NEU</h2></div><div class="actions"><a class="btn green" href="MinispieleV2/lobby.html" aria-label="Neue Minispiele-Lobby öffnen">Neue Lobby öffnen ›</a></div></article>
+      <article class="game mini-new-card"><div class="game-title"><h2>🎮 Minispiele NEU</h2></div><div class="actions"><a class="btn green" href="MinispieleV2/lobby.html" id="mini-v2-entry" aria-label="Neue Minispiele-Lobby öffnen">Neue Lobby öffnen ›</a></div></article>
     </section>
   </main>
 
@@ -426,6 +426,18 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 
 <script>
 (function(){const card=document.querySelector('.party-challenge-card');if(!card)return;const img=new Image();img.onload=function(){if(img.naturalWidth>100)card.classList.add('mini-art-loaded')};img.src='Assets/game-backgrounds/Mini-Spiele.png';})();
+</script>
+<script>
+(function(){
+  const entry=document.getElementById('mini-v2-entry');
+  if(!entry)return;
+  function syncLink(){
+    const code=new URLSearchParams(location.search).get('room');
+    entry.href='MinispieleV2/lobby.html'+(code&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(code)?'?room='+encodeURIComponent(code):'');
+  }
+  syncLink();
+  window.addEventListener('popstate',syncLink);
+})();
 </script>
 </body>
 </html>
