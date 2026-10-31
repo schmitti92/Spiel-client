@@ -105,6 +105,32 @@ header>div{background:none}
 #word{height:min(100%,clamp(72px,14vh,120px))!important;min-height:65px!important;font-size:clamp(40px,7.7vh,75px)!important}
 }
 @media(max-width:650px){#play{border-width:5px!important;padding:8px}#word{min-height:55px!important;font-size:clamp(36px,8vh,65px)!important}}
+
+/* Farbenblitz premium board V3: layered artwork without baked-in controls */
+main{background:linear-gradient(90deg,#04170f66,#102a1811 20%,#102a1811 80%,#04170f66),url('./assets/farbenblitz-forest.svg') center/cover no-repeat!important}
+#play{
+ border:8px solid #a65d24!important;
+ border-radius:30px!important;
+ background:linear-gradient(90deg,#1309058c,#15080522 15%,#15080522 85%,#1309058c),url('./assets/farbenblitz-wood.svg') center/100% 100% no-repeat!important;
+ box-shadow:0 0 0 3px #4a230e,0 0 0 6px #dca252,0 13px 28px #000b,inset 0 0 0 3px #f1bc67,inset 0 0 34px #000a!important
+}
+.question p{font-weight:950!important;text-shadow:0 3px 3px #000c!important}
+#word{
+ width:min(96%,1120px)!important;
+ height:min(100%,clamp(74px,14vh,130px))!important;
+ min-height:0!important;
+ font-size:clamp(40px,8vh,83px)!important;
+ border-radius:22px!important;
+ border:3px solid #ffcc5e!important;
+ box-shadow:0 0 0 2px #4e270d,0 0 18px #ffc64b,inset 0 0 18px #000b!important;
+ background:linear-gradient(180deg,#14384a,#041520 78%)!important
+}
+.colors button{border-radius:22px!important;border:3px solid #ffffffc9!important;box-shadow:inset 0 6px 8px #ffffff88,inset 0 -8px 8px #0006,0 5px 0 #080e13,0 0 12px #ffffff55!important;transition:filter .12s,transform .12s}
+.colors button:active{filter:brightness(1.18);transform:translateY(3px) scale(.99)}
+@media(orientation:landscape) and (max-height:900px){
+#play{border-width:6px!important;grid-template-rows:min-content minmax(0,1fr) minmax(0,1.25fr)!important}
+#word{height:min(100%,clamp(70px,13vh,115px))!important;font-size:clamp(38px,7.6vh,72px)!important}
+}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
