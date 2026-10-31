@@ -1,0 +1,39 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=path=>readFileSync(new URL(path,import.meta.url),'utf8');
+const url=source=>'data:text/javascript;charset=utf-8,'+encodeURIComponent(source);
+const engine=url(read('../engine/MiniGameEngine.js'));
+const result=url(read('../engine/ResultContract.js'));
+const standard=url(read('../engine/StandardSession.js').replace("'./MiniGameEngine.js'",JSON.stringify(engine)).replace("'./ResultContract.js'",JSON.stringify(result)));
+const managed=url(read('../engine/SessionManager.js').replace("'./StandardSession.js'",JSON.stringify(standard)));
+const {createManagedSession}=await import(managed);
+const players=[{id:'a',type:'human'},{id:'b',type:'bot'}];
+const game={id:'lifecycle-test',initialState:ps=>({done:false,scores:Object.fromEntries(ps.map(p=>[p.id,0]))}),applyAction:(s,{playerId,action})=>{if(action.type==='finish')s.done=true;else if(action.type==='score')s.scores[playerId]++;else throw Error('INVALID_ACTION');return s;},getResult:s=>s.done?{finished:true,results:Object.entries(s.scores).map(([playerId,score])=>({playerId,score}))}:null,botAction:()=>({type:'score'})};
+test('starts ready, rejects actions until start, then plays',()=>{
+ const s=createManagedSession(game,players);
+ assert.equal(s.snapshot().phase,'ready');
+ assert.throws(()=>s.dispatch('a',{type:'score'}),/SESSION_NOT_PLAYING/);
+ assert.equal(s.start().phase,'playing');
+ assert.throws(()=>s.start(),/SESSION_NOT_READY/);
+ assert.equal(s.botTurn('b').state.scores.b,1);
+});
+test('finishes once and only finished session can restart',()=>{
+ const s=createManagedSession(game,players);
+ assert.throws(()=>s.restart(),/SESSION_NOT_FINISHED/);
+ s.start();
+ assert.equal(s.dispatch('a',{type:'finish'}).phase,'finished');
+ assert.throws(()=>s.dispatch('a',{type:'score'}),/SESSION_NOT_PLAYING/);
+ const restarted=s.restart();
+ assert.equal(restarted.phase,'ready');
+ assert.equal(restarted.generation,1);
+ assert.equal(restarted.result,null);
+ assert.equal(s.start().phase,'playing');
+});
+test('invalid participant does not change revision or phase',()=>{
+ const s=createManagedSession(game,players);s.start();
+ const before=s.snapshot();
+ assert.throws(()=>s.dispatch('unknown',{type:'score'}),/UNKNOWN_PLAYER/);
+ assert.equal(s.snapshot().revision,before.revision);
+ assert.equal(s.snapshot().phase,before.phase);
+});
