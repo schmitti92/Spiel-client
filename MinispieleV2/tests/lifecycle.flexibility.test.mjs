@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=p=>readFileSync(new URL(p,import.meta.url),'utf8');
+const data=s=>'data:text/javascript;charset=utf-8,'+encodeURIComponent(s);
+const contract=data(read('../engine/GameContract.js'));
+const engine=data(read('../engine/MiniGameEngine.js').replace("'./GameContract.js'",JSON.stringify(contract)));
+const results=data(read('../engine/ResultContract.js'));
+const standard=data(read('../engine/StandardSession.js').replace("'./MiniGameEngine.js'",JSON.stringify(engine)).replace("'./ResultContract.js'",JSON.stringify(results)));
+const players=data(read('../engine/PlayerManager.js'));
+const session=data(read('../engine/SessionManager.js').replace("'./StandardSession.js'",JSON.stringify(standard)).replace("'./PlayerManager.js'",JSON.stringify(players)));
+const {createManagedSession}=await import(session);
+const roster=[{id:'h',type:'human'},{id:'b',type:'bot'}];
+const game=(limit)=>({id:'lifecycle-probe',minPlayers:1,maxPlayers:4,initialState:()=>({actions:0}),applyAction:(state)=>({...state,actions:state.actions+1}),getResult:state=>state.actions>=limit?{finished:true,results:roster.map(p=>({playerId:p.id,score:state.actions}))}:null,botAction:()=>({type:'act'})});
+test('game-defined finish condition controls lifecycle without engine round limits',()=>{
+ for(const limit of [1,3,7]){
+  const s=createManagedSession(game(limit),roster);
+  assert.equal(s.snapshot().phase,'ready');
+  s.start();
+  for(let i=0;i<limit;i++){
+   const snap=i%2?s.botTurn('b'):s.dispatch('h',{type:'act'});
+   assert.equal(snap.phase,i===limit-1?'finished':'playing');
+  }
+  assert.throws(()=>s.dispatch('h',{type:'act'}),/SESSION_NOT_PLAYING/);
+  assert.equal(s.restart().phase,'ready');
+  assert.equal(s.start().phase,'playing');
+ }
+});
+test('failed bot action leaves managed session playing and revision unchanged',()=>{
+ const broken={...game(2),botAction:()=>({type:'bad'}),applyAction:(state,{action})=>{if(action.type==='bad')throw Error('BAD_BOT_ACTION');return {...state,actions:state.actions+1};}};
+ const s=createManagedSession(broken,roster);
+ s.start();const before=s.snapshot();
+ assert.throws(()=>s.botTurn('b'),/BAD_BOT_ACTION/);
+ assert.deepEqual(s.snapshot(),before);
+});
