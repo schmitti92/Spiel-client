@@ -131,6 +131,21 @@ main{background:linear-gradient(90deg,#04170f66,#102a1811 20%,#102a1811 80%,#041
 #play{border-width:6px!important;grid-template-rows:min-content minmax(0,1fr) minmax(0,1.25fr)!important}
 #word{height:min(100%,clamp(70px,13vh,115px))!important;font-size:clamp(38px,7.6vh,72px)!important}
 }
+
+/* Photographic forest with a bundled illustrated fallback.
+   Photo: Gerda Arendt, Wikimedia Commons, CC0. */
+body{
+ background:#071d17 url('./assets/farbenblitz-forest.svg') center/cover no-repeat fixed;
+}
+main{
+ background-image:linear-gradient(90deg,#03170bb8 0%,#03170b38 18%,#03170b20 82%,#03170bb8 100%),url('https://commons.wikimedia.org/wiki/Special:FilePath/Sun_rays_through_fir_forest%2C_Gro%C3%9Fer_Feldberg.jpg?width=1600'),url('./assets/farbenblitz-forest.svg')!important;
+ background-position:center!important;
+ background-size:cover!important;
+ background-repeat:no-repeat!important;
+}
+#play{background-color:#170d09!important}
+#word{width:min(96%,1100px)!important}
+footer{color:#e4e3c7;text-shadow:0 2px 5px #000}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
@@ -140,7 +155,7 @@ main{background:linear-gradient(90deg,#04170f66,#102a1811 20%,#102a1811 80%,#041
 </div><button id="start">Spiel starten</button></section>
 <section id="play" class="hidden"><div class="hud"><div id="status"></div><span class="tag">🎯 Wähle die richtige Farbe</span></div><div class="question"><p id="prompt">In welcher FARBE ist das Wort geschrieben?</p><div id="word"></div></div><div class="colors" id="colors"></div><div id="feedback" aria-live="polite"></div></section>
 <section id="finish" class="hidden"><h2>🏆 Ergebnis</h2><div id="results"></div><button id="again">Nochmal spielen</button><button id="back">Zur Auswahl</button></section>
-<div id="scores" aria-live="polite"></div><footer>Vorschau mit Computergegnern · gemeinsamer Online-Modus folgt später</footer>
+<div id="scores" aria-live="polite"></div><footer>Vorschau mit Computergegnern · Waldaufnahme: Gerda Arendt (CC0) · Online-Modus folgt später</footer>
 </main>
 <script type="module">
 import {games} from './games.js';
