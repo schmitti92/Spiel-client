@@ -89,3 +89,19 @@ const overview = ledger.snapshot(existingRoom.id); // {roomId,totals,matches}
 Die gezeigte Wertungsfunktion ist nur ein technisches Beispiel: Unterschiedliche Spielwerte (Zeit, Treffer, Rang, kooperative Ergebnisse) dürfen nicht ungeprüft addiert werden. Die Turnierregeln werden im übergeordneten System definiert.
 
 Ergebnisse werden pro Raum und `(matchId,generation)` höchstens einmal übernommen. Wiederholte identische Lieferungen ändern keine Punkte; widersprüchliche Lieferungen werden abgewiesen. `ResultLedger` verwaltet weder Räume noch Online-Identitäten, UI, Navigation oder Persistenz. Die Lobby bleibt verantwortlich für Berechtigungen, eindeutige Match-IDs und das Speichern bzw. Wiederherstellen der Gesamtauswertung. 
+
+## Einheitlicher Offline-Spielablauf
+
+`createMiniGameFlow(bridge, ledger)` aus `engine/MiniGameFlow.js` führt die gemeinsame Spielauswahl durch die Zustände `selection → ready → playing → result`. Die Oberfläche liest ausschließlich `flow.snapshot()` und löst Aktionen aus. Die gemeinsame Lobby stellt die bereits bestehenden Raum-/Spieler-IDs bereit; der Flow erstellt keine Räume.
+
+```js
+import {createMiniGameFlow} from './engine/MiniGameFlow.js';
+const flow=createMiniGameFlow(bridge,ledger);
+flow.select({roomId:existingRoom.id,matchId:match.id,gameId:game.id,players:lobbyPlayers});
+flow.start();
+flow.dispatch(playerId,{type:'move'}); // alternativ flow.botTurn(botId)
+const view=flow.snapshot(); // stage, identity, session, completion, standings
+// Nach Ergebnis: flow.replay() oder flow.returnToSelection()
+```
+
+`flow` übernimmt abgeschlossene Ergebnisse automatisch und höchstens einmal in die zentrale Wertung. Die Resultatphase wird erst nach erfolgreicher Ergebnisübernahme erreicht. Ein Neustart startet eine neue Generation; bei Auswahl eines anderen Spiels bleibt die Raumwertung erhalten. Das ist ein rein lokaler Ablaufvertrag, **keine** fertige Benutzeroberfläche und **keine** Online-Lobby-Anbindung.
