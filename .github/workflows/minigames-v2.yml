@@ -1,0 +1,19 @@
+name: MiniGame Engine V2 contracts
+on:
+  push:
+    paths:
+      - 'MinispieleV2/**'
+      - '.github/workflows/minigames-v2.yml'
+  pull_request:
+    paths:
+      - 'MinispieleV2/**'
+      - '.github/workflows/minigames-v2.yml'
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test MinispieleV2/tests/*.test.mjs
