@@ -47,3 +47,17 @@ test('invalid completed result cannot change state or revision',()=>{
  assert.throws(()=>session.dispatch('a',{type:'finish'}),/INVALID_RESULT_FORMAT/);
  assert.deepEqual(session.snapshot(),before);
 });
+
+test('invalid bot result cannot change state or revision',()=>{
+ const invalid={...game,id:'invalid-bot-result',botAction:()=>({type:'finish'}),getResult:state=>state.finished?{finished:true,results:[{playerId:'a',score:1}]}:null};
+ const session=createStandardSession(invalid,players);
+ const before=session.snapshot();
+ assert.throws(()=>session.botTurn('b'),/INVALID_RESULT_COUNT/);
+ assert.deepEqual(session.snapshot(),before);
+});
+test('game action exceptions do not mutate session',()=>{
+ const session=createStandardSession(game,players);
+ const before=session.snapshot();
+ assert.throws(()=>session.dispatch('a',{type:'unsupported'}),/INVALID_ACTION/);
+ assert.deepEqual(session.snapshot(),before);
+});
