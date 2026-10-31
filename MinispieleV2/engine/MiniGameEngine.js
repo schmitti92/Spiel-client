@@ -11,6 +11,7 @@ export function validateGame(game) {
 }
 export function createSession(game, players, options = {}) {
  validateGame(game);
+ assert(options !== null && typeof options === 'object' && !Array.isArray(options),'INVALID_GAME_OPTIONS');
  assert(Array.isArray(players) && players.length>=1 && players.length<=4,'PLAYER_COUNT_1_TO_4');
  assert(players.length >= (game.minPlayers ?? 1) && players.length <= (game.maxPlayers ?? 4),'GAME_PLAYER_LIMITS');
  const ids = players.map(p=>p.id);
