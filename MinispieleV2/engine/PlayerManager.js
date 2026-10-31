@@ -10,6 +10,17 @@ export function validatePlayers(players) {
   return players.map(({id,type})=>Object.freeze({id,type}));
 }
 
+/** Check a game's individual participant limits without changing the shared roster. */
+export function validateGamePlayers(players, game) {
+  const roster = validatePlayers(players);
+  if (!game || typeof game !== 'object' || Array.isArray(game)) throw Error('GAME_REQUIRED');
+  const min = game.minPlayers ?? 1;
+  const max = game.maxPlayers ?? 4;
+  if (!Number.isInteger(min) || !Number.isInteger(max) || min < 1 || max > 4 || min > max) throw Error('INVALID_GAME_PLAYER_LIMITS');
+  if (roster.length < min || roster.length > max) throw Error('GAME_PLAYER_LIMITS');
+  return roster;
+}
+
 export function createPlayerManager(players) {
   const roster = Object.freeze(validatePlayers(players));
   const lookup = new Map(roster.map(p=>[p.id,p]));
