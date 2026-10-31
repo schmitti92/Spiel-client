@@ -18,7 +18,9 @@ export function createSession(game, players, options = {}) {
  assert(players.every(p=>typeof p.id==='string' && p.id && ['human','bot'].includes(p.type)),'INVALID_PLAYER');
  assert(new Set(ids).size===ids.length,'DUPLICATE_PLAYER');
  const roster=clone(players.map(({id,type})=>({id,type})));
- let state=clone(game.initialState(clone(roster),clone(options)));
+ const initial=game.initialState(clone(roster),clone(options));
+ assert(initial && typeof initial==='object' && !Array.isArray(initial),'INVALID_INITIAL_STATE');
+ let state=clone(initial);
  let revision=0;
  const snapshot=()=>({gameId:game.id,revision,players:clone(roster),state:clone(state),result:clone(game.getResult(clone(state)))});
  return Object.freeze({
@@ -37,6 +39,10 @@ export function createSession(game, players, options = {}) {
    const action=game.botAction(clone(state),playerId,clone(roster));
    return this.dispatch(playerId,action);
   },
-  restart() {state=clone(game.initialState(clone(roster),clone(options)));revision++;return snapshot();}
+  restart() {
+   const next=game.initialState(clone(roster),clone(options));
+   assert(next && typeof next==='object' && !Array.isArray(next),'INVALID_INITIAL_STATE');
+   state=clone(next);revision++;return snapshot();
+  }
  });
 }
