@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
-const source=readFileSync(new URL('../hub-lobby.js',import.meta.url),'utf8');
+const source=readFileSync(new URL('../hub-lobby-20261030-newgames.js',import.meta.url),'utf8');
 const boot=source.slice(source.indexOf('async function boot(){'),source.indexOf('\nsetPlayMode(playMode);'));
 
 test('lobby preserves a valid room code before fetching room data',()=>{
