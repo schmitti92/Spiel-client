@@ -1,7 +1,7 @@
 import {createSession} from '../engine/MiniGameEngine.js';
 export async function mountGame({entry,players,container,onExit}){
  if(!entry||!container||!Array.isArray(players))throw Error('INVALID_HOST_OPTIONS');
- const [rules,view]=await Promise.all([import(entry.module),import(entry.module.replace(/game\.js$/,'view.js'))]);
+ const [rules,view]=await Promise.all([import(new URL(entry.module, new URL('../', import.meta.url)).href),import(new URL(entry.module.replace(/game\.js$/,'view.js'), new URL('../', import.meta.url)).href)]);
  if(rules.id!==entry.id||typeof view.mount!=='function')throw Error('INVALID_GAME_MODULE');
  let session=createSession(rules,players);
  let disposed=false;
