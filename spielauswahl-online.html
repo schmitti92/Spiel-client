@@ -361,6 +361,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .page-head{background:rgba(12,32,50,.34)!important;border:1px solid #ffffff2b!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 @media(max-width:760px){.container{width:calc(100% - 24px)!important}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.game-grid>.game{aspect-ratio:696/400!important;border-radius:14px!important}.game-grid>.game.party-challenge-card{aspect-ratio:696/230!important}}
 @media(max-width:520px){.game-grid{grid-template-columns:1fr!important}.game-grid>.game{aspect-ratio:696/320!important}.game-grid>.game.party-challenge-card{grid-column:auto;aspect-ratio:696/320!important}}
+ .mini-new-card{background:linear-gradient(130deg,#102d42,#124a55)!important;border-color:#42b9b1!important}.mini-new-card::before{background-image:radial-gradient(circle at 75% 40%,#278e9b,#0d253e 65%)!important}.mini-new-card::after{background:linear-gradient(90deg,#061b30dd,transparent)!important}.mini-new-card .actions{position:relative;z-index:2}
 </style></head>
 <body>
   <main class="container">
@@ -411,6 +412,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
         <div class="game-title"><h2>Mini-Spiele</h2></div>
         <div class="actions"><button type="button" class="btn primary gold online-game-button image-card-button" aria-label="Mini-Spiele auswählen" data-select-game="partychallenge"><span class="visually-hidden">Mini-Spiele auswählen</span></button></div>
       </article>
+      <article class="game mini-new-card"><div class="game-title"><h2>🎮 Minispiele NEU</h2></div><div class="actions"><a class="btn green" href="MinispieleV2/lobby.html" aria-label="Neue Minispiele-Lobby öffnen">Neue Lobby öffnen ›</a></div></article>
     </section>
   </main>
 
