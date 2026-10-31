@@ -1,2 +1,1 @@
-import {registerMiniGame} from './GameCatalog.js';
-registerMiniGame({id:'zeitgefuehl',name:'Zeitgefühl',minPlayers:1,maxPlayers:4,module:'./games/zeitgefuehl/game.js',image:'./assets/zeitgefuehl.svg'});
+// Minispiele V2: Spielkatalog bewusst leer. Neue Spiele erst nach stabiler Raumverwaltung und ausdrücklicher Freigabe.\n
