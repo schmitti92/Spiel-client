@@ -4,6 +4,11 @@ import {validateResult} from './ResultContract.js';
 export function createStandardSession(game, players, options = {}) {
   const checkedGame = {
     ...game,
+    initialState(roster, config) {
+      const next = game.initialState(roster, config);
+      if (next && typeof next === 'object') validateResult(game.getResult(structuredClone(next)), players);
+      return next;
+    },
     applyAction(state, context) {
       const next = game.applyAction(state, context);
       // Validate before MiniGameEngine commits the returned state.
