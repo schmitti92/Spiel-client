@@ -165,7 +165,7 @@ function pollStart(){pollStop();startWatch();poll=setInterval(async()=>{if(!code
  // A live socket can miss Firestore notifications without being disconnected.
  if(streamReady && hubSocket?.readyState===1 && (Date.now()-streamLast<45000 || Date.now()-lastRoomPollAt<90000))return;
  const requestedCode=code;pollInFlight=true;lastRoomPollAt=Date.now();
- try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){leaveView();showError(e);}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
+ try{const result=await request('/rooms/'+requestedCode);if(code!==requestedCode)return;pollErrors=0;acceptRoom(result.room);}catch(e){if(code!==requestedCode)return;if(['ROOM_NOT_FOUND','NOT_A_MEMBER','LOGIN_REQUIRED'].includes(e.message)){pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=requestedCode;render();showError(e);if(e.message==='LOGIN_REQUIRED')notice('Anmeldung unterbrochen. Raumcode '+requestedCode+' bleibt erhalten; Verbindung wird nach Anmeldung wiederhergestellt.');else if(e.message==='NOT_A_MEMBER')notice('Kein Zugriff auf Raum '+requestedCode+'. Raumcode bleibt zur erneuten Anmeldung erhalten.');else notice('Raum '+requestedCode+' wurde nicht gefunden. Der Code bleibt zur Prüfung erhalten.');}else if(++pollErrors===3)showError(e);}finally{pollInFlight=false;}
  },12000);}
 function leaveView(){cancelPendingRecovery();pollStop();room=null;choosingGame=false;displayGame=null;setRoomCode(null);render();}
 
@@ -1270,24 +1270,22 @@ async function boot(){
  render();
  const params=new URL(location.href).searchParams;
  const invite=params.get('invite');
- if(invite&&/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
+ if(invite&&/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(invite)){
   el('join-code').value=invite.toUpperCase();
   notice('Einladung erhalten: Bitte dem Raum '+invite.toUpperCase()+' beitreten.');
  }
  const fromUrl=params.get('room');
- if(!fromUrl||!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
- // A room belongs to the shared lobby. Do not redirect away before recovery:
- // the selection page can open this view without stage=1.
- 
- let elapsed=0;const timer=setInterval(async()=>{
-  elapsed+=250;
-  if(!activeProfile()&&elapsed<30000)return;
-  clearInterval(timer);
-  if(!activeProfile()){pendingRoomRecovery=fromUrl.toUpperCase();el('join-code').value=fromUrl.toUpperCase();notice('Bitte melde dich an, um deinen bestehenden Raum wiederherzustellen.');return;}
-  const requestedCode=fromUrl.toUpperCase();
-  try{const {room:r}=await request('/rooms/'+encodeURIComponent(requestedCode));if(r?.code!==requestedCode)return;activateRoom(r);pollStart();}
-  catch(e){el('join-code').value=requestedCode;if(['ROOM_NOT_FOUND','NOT_A_MEMBER'].includes(e.message)){notice('Raum nicht zugänglich. Prüfe den Raumcode oder tritt erneut bei.');}else{notice('Raum vorübergehend nicht erreichbar. Aktualisiere die Seite, um es erneut zu versuchen.');}}
- },250);
+ if(!fromUrl||!/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(fromUrl))return;
+ // Never create a replacement room when restoring an existing invitation.
+ const requestedCode=fromUrl.toUpperCase();
+ setRoomCode(requestedCode);
+ el('join-code').value=requestedCode;
+ pendingRoomRecovery=requestedCode;
+ notice('Bestehender Raum '+requestedCode+' wird geladen …');
+ if(activeProfile())void recoverPendingRoom();
+ // Authentication may finish after the page loads. The profile-change handler
+ // retries as soon as a valid profile becomes available.
+ else notice('Raum '+requestedCode+' gespeichert. Warte auf die Online-Anmeldung …');
 }
 setPlayMode(playMode);
 boot();
