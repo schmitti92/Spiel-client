@@ -32,3 +32,24 @@ test('pending results remain null; invalid completed shapes are rejected',()=>{
   assert.throws(()=>validateResult(value,players.slice(0,1)),/INVALID_RESULT_FORMAT/);
  }
 });
+
+test('result contract preserves game-defined metadata without imposing winners or score direction',()=>{
+ const roster=players.slice(0,3);
+ const result={finished:true,results:[
+  {playerId:'p2',score:0,detail:{accuracy:0.8}},
+  {playerId:'p0',score:-4,detail:{accuracy:0.2}},
+  {playerId:'p1',score:0,detail:{accuracy:0.8}}
+ ],reason:'game-defined',extra:{roundsPlayed:7}};
+ assert.equal(validateResult(result,roster),result);
+ assert.deepEqual(result.results.map(r=>r.playerId),['p2','p0','p1']);
+ assert.equal(result.reason,'game-defined');
+});
+test('result contract does not mutate result or participant input',()=>{
+ const roster=structuredClone(players.slice(0,2));
+ const result={finished:true,results:[{playerId:'p0',score:2},{playerId:'p1',score:2}]};
+ const originalRoster=structuredClone(roster);
+ const originalResult=structuredClone(result);
+ validateResult(result,roster);
+ assert.deepEqual(roster,originalRoster);
+ assert.deepEqual(result,originalResult);
+});
