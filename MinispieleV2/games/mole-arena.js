@@ -12,7 +12,7 @@ export const moleArena={
   if(state.finished)throw Error('GAME_FINISHED');
   if(!action||typeof action!=='object')throw Error('INVALID_ACTION');
   if(action.type==='tick'){
-   if(playerId!==null)throw Error('TICK_REQUIRES_SYSTEM');
+   if(!players.some(p=>p.id===playerId))throw Error('UNKNOWN_PLAYER');
    if(!Number.isSafeInteger(action.ms)||action.ms<=0||action.ms>30000)throw Error('INVALID_TICK');
    const elapsedMs=Math.min(30000,state.elapsedMs+action.ms);
    const round=Math.floor(elapsedMs/1000);
