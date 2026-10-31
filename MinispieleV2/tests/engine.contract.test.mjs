@@ -90,3 +90,23 @@ test('passes independent configuration snapshots to initialState and restart',()
  session.restart();
  assert.equal(options.difficulty.level,2);
 });
+
+test('failed result evaluation rolls back action and revision',()=>{
+ const probe={...game,getResult:state=>{if(state.turn===1)throw Error('RESULT_EVALUATION_FAILED');return null;}};
+ const session=createSession(probe,[{id:'a',type:'human'}]);
+ const before=session.snapshot();
+ assert.throws(()=>session.dispatch('a',{type:'score',value:2}),/RESULT_EVALUATION_FAILED/);
+ assert.deepEqual(session.snapshot(),before);
+});
+test('failed result evaluation during restart preserves prior session',()=>{
+ let starts=0;
+ const probe={...game,initialState:ps=>({ ...game.initialState(ps),restartMarker:starts++ }),getResult:state=>{
+  if(state.restartMarker===1)throw Error('RESTART_RESULT_FAILED');
+  return null;
+ }};
+ const session=createSession(probe,[{id:'a',type:'human'}]);
+ session.dispatch('a',{type:'score',value:2});
+ const before=session.snapshot();
+ assert.throws(()=>session.restart(),/RESTART_RESULT_FAILED/);
+ assert.deepEqual(session.snapshot(),before);
+});
