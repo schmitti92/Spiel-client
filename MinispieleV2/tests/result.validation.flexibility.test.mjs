@@ -53,3 +53,18 @@ test('result contract does not mutate result or participant input',()=>{
  assert.deepEqual(roster,originalRoster);
  assert.deepEqual(result,originalResult);
 });
+
+test('v2 results support scoreless outcomes while preserving legacy v1 requirements',()=>{
+ const roster=players.slice(0,2);
+ const scoreless={resultVersion:2,finished:true,results:[{playerId:'p0',outcome:'survived'},{playerId:'p1',outcome:'eliminated'}]};
+ assert.equal(validateResult(scoreless,roster),scoreless);
+ assert.throws(()=>validateResult({...scoreless,resultVersion:1},roster),/INVALID_RESULT_SCORE/);
+ assert.throws(()=>validateResult({...scoreless,resultVersion:3},roster),/UNSUPPORTED_RESULT_CONTRACT_VERSION/);
+ assert.throws(()=>validateResult({...scoreless,resultVersion:0},roster),/UNSUPPORTED_RESULT_CONTRACT_VERSION/);
+});
+test('v2 results accept optional scores, shared outcomes and ties',()=>{
+ const roster=players.slice(0,3);
+ const result={resultVersion:2,finished:true,results:[{playerId:'p0',score:0},{playerId:'p1',outcome:'team-win'},{playerId:'p2',score:0}],teamOutcome:'success'};
+ assert.equal(validateResult(result,roster),result);
+ assert.throws(()=>validateResult({...result,results:[{playerId:'p0',score:NaN},...result.results.slice(1)]},roster),/INVALID_RESULT_SCORE/);
+});
