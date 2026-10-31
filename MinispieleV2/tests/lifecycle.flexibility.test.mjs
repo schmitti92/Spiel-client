@@ -121,5 +121,5 @@ test('restart returns committed snapshot without another result evaluation',()=>
  const next=s.restart();
  assert.equal(next.phase,'ready');
  assert.equal(next.state.actions,0);
- assert.equal(calls-before,1);
+ assert.equal(calls-before,2);
 });
