@@ -1,0 +1,30 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=path=>readFileSync(new URL(path,import.meta.url),'utf8');
+const url=source=>'data:text/javascript;charset=utf-8,'+encodeURIComponent(source);
+const engine=url(read('../engine/MiniGameEngine.js'));
+const result=url(read('../engine/ResultContract.js'));
+const players=url(read('../engine/PlayerManager.js'));
+const standard=url(read('../engine/StandardSession.js').replace("'./MiniGameEngine.js'",JSON.stringify(engine)).replace("'./ResultContract.js'",JSON.stringify(result)));
+const manager=url(read('../engine/SessionManager.js').replace("'./StandardSession.js'",JSON.stringify(standard)).replace("'./PlayerManager.js'",JSON.stringify(players)));
+const {createManagedSession}=await import(manager);
+const roster=[{id:'human',type:'human'},{id:'bot',type:'bot'}];
+const game={id:'role-test',initialState:ps=>({done:false,scores:Object.fromEntries(ps.map(p=>[p.id,0]))}),applyAction:(s,{playerId,action})=>{if(action.type==='score')s.scores[playerId]++;else if(action.type==='finish')s.done=true;return s;},getResult:s=>s.done?{finished:true,results:Object.entries(s.scores).map(([playerId,score])=>({playerId,score}))}:null,botAction:()=>({type:'score'})};
+test('human actions and bot actions use separate authorized entry points',()=>{
+ const s=createManagedSession(game,roster);s.start();
+ assert.equal(s.dispatch('human',{type:'score'}).state.scores.human,1);
+ assert.equal(s.botTurn('bot').state.scores.bot,1);
+ assert.throws(()=>s.dispatch('bot',{type:'score'}),/PLAYER_NOT_HUMAN/);
+ assert.throws(()=>s.botTurn('human'),/PLAYER_NOT_BOT/);
+ assert.equal(s.snapshot().revision,2);
+});
+test('manager freezes roster identity for the whole session',()=>{
+ const input=structuredClone(roster);
+ const s=createManagedSession(game,input);
+ input[0].type='bot';
+ const listed=s.players();listed[0].type='bot';
+ assert.equal(s.players()[0].type,'human');
+ s.start();
+ assert.equal(s.dispatch('human',{type:'score'}).state.scores.human,1);
+});
