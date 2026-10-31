@@ -2,33 +2,25 @@
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Farbenblitz – MiniGame Engine V2</title>
 <style>
-:root{font-family:system-ui,-apple-system,sans-serif;color:#f8fbff;background:#091326}*{box-sizing:border-box}
-body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 50% 0%,#23426a 0%,#101d35 45%,#080e1e 100%);display:grid;place-items:center;padding:clamp(8px,2vw,20px)}
-main{width:min(1100px,100%);height:min(860px,calc(100dvh - 16px));min-height:510px;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(150deg,#1b3153ee,#111c33f5);border:1px solid #6380a255;border-radius:26px;padding:clamp(14px,2.4vw,28px);box-shadow:0 22px 70px #0008}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:clamp(26px,4vw,42px);margin:0;letter-spacing:-1px}header p{margin:3px 0;color:#a9c2e2;font-size:13px}
-.tag{background:#294968;border:1px solid #6781a088;border-radius:30px;padding:7px 12px;font-size:12px;color:#dceeff}
-section{min-height:0}.hidden{display:none!important}
-#setup,#finish{margin:auto;max-width:680px;width:100%;text-align:center}
-.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:28px 0}
-label{display:grid;gap:9px;text-align:left;color:#d3e4fa;font-weight:650;font-size:14px}
-select,button{font:inherit;border-radius:13px;border:0;padding:13px 15px}select{width:100%;background:#eaf1ff;color:#13213a}
-button{cursor:pointer;background:#8ee8f6;color:#0e233d;font-weight:800;touch-action:manipulation}button:active{transform:scale(.98)}button:focus-visible{outline:3px solid #fff;outline-offset:3px}
-#start,#again{background:linear-gradient(100deg,#5de7e6,#a6f3c8);padding:16px 26px}
-#play{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;flex:1;gap:10px}
-.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-#status{background:#233c60;border:1px solid #58749966;border-radius:13px;padding:10px 16px;font-weight:750}
-#scores{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-top:10px;min-height:40px}
-.score-pill{background:#243b5c;border:1px solid #607ea077;padding:8px 13px;border-radius:12px;font-size:14px;font-weight:700}
-.question{min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;border-radius:22px;background:radial-gradient(ellipse,#263d62 0%,#172641 75%);border:1px solid #5c76964d;padding:12px}
-.question p{margin:0;color:#d1e3fa;text-align:center;font-size:clamp(15px,2vw,22px);font-weight:650}
-#word{font-size:clamp(60px,11vw,132px);font-weight:1000;text-align:center;letter-spacing:3px;line-height:1.15;margin:10px 0;text-transform:uppercase;text-shadow:0 7px 15px #0005;overflow-wrap:anywhere}
-.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,15px)}
-.colors button{min-height:clamp(66px,12vh,116px);color:white;font-size:clamp(20px,3vw,30px);border:2px solid #ffffff65;box-shadow:inset 0 2px 0 #ffffff25,0 6px 14px #0003;text-shadow:0 2px 4px #0006}
-#feedback{text-align:center;color:#b9e9f5;font-weight:750;min-height:22px}
-#results p{padding:10px;background:#263e5e;border-radius:12px}
-footer{font-size:11px;text-align:center;color:#91a9c9;margin-top:8px}
-@media(max-width:600px){main{border-radius:16px;padding:12px;min-height:0;height:calc(100dvh - 12px)}.controls{grid-template-columns:1fr}#word{font-size:clamp(48px,14vw,86px)}.colors button{min-height:clamp(64px,11vh,96px)}header p{font-size:11px}.tag{font-size:10px;padding:6px 9px}}
-@media(max-height:570px) and (orientation:landscape){main{padding:10px 18px}header p,footer{display:none}#play{gap:5px}.question{padding:4px}#word{font-size:clamp(42px,9vh,76px);margin:3px}.colors button{min-height:55px}#scores{margin-top:4px;min-height:30px}.score-pill{padding:4px 10px}}
+:root{font-family:system-ui,sans-serif;color:white;background:#09251d}*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 10%,#e7c65d88,transparent 36%),radial-gradient(ellipse at 15% 65%,#41883d,#173d2c 55%,#071c17 100%);padding:8px}
+main{width:min(1480px,100%);height:calc(100dvh - 16px);min-height:480px;display:flex;flex-direction:column;overflow:hidden;position:relative;border-radius:24px;padding:clamp(10px,2vw,24px);background:linear-gradient(90deg,#071b18aa,#071b1811 17%,#071b1811 83%,#071b18aa),radial-gradient(ellipse at top,#75a54b77,transparent 50%);box-shadow:inset 0 0 95px #03150f,0 16px 60px #0009}
+main:before,main:after{content:"🌳";position:absolute;top:12%;font-size:clamp(100px,21vw,320px);opacity:.55;pointer-events:none;filter:drop-shadow(0 0 18px #102b0c);z-index:0}main:before{left:-9%}main:after{right:-9%;transform:scaleX(-1)}
+header,#setup,#play,#finish,#scores,footer{position:relative;z-index:1}header{display:flex;justify-content:center;align-items:center;text-align:center;margin-bottom:8px}h1{font-size:clamp(32px,5.6vw,74px);margin:0;font-weight:1000;font-style:italic;letter-spacing:-2px;color:#fff0ca;text-shadow:0 4px #633b16,0 7px 3px #160c07,0 0 18px #ffb727;transform:skew(-4deg)}header p{display:none}.tag{font-size:13px;background:#0b1c2ce8;border:2px solid #7c9eb5;border-radius:24px;padding:7px 13px}
+header>.tag{position:absolute;right:0;top:5px}.hidden{display:none!important}
+#setup,#finish{margin:auto;max-width:680px;width:100%;padding:28px;border:4px solid #bd7d38;border-radius:24px;background:#101d2de8;text-align:center}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}label{display:grid;gap:8px;text-align:left;font-weight:750}select,button{font:inherit;border-radius:16px;padding:12px;border:0}select{min-width:0;width:100%;background:#f6f0e5;color:#18243c}button{cursor:pointer;font-weight:950;touch-action:manipulation}button:focus-visible{outline:4px solid white;outline-offset:2px}button:active{transform:scale(.98)}#start,#again,#back{background:linear-gradient(#ffec83,#ffae18);color:#312008;padding:15px 28px;margin:6px}
+#scores{order:1;display:flex;justify-content:center;gap:clamp(6px,2vw,20px);margin:0 auto 10px;width:100%;max-width:1340px;min-height:58px}
+.score-pill{flex:1;min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:2px solid #7dcaff;border-radius:15px;background:linear-gradient(#122e43,#050e1c);box-shadow:0 4px 8px #0009,inset 0 1px #fff5;padding:clamp(8px,1.2vw,13px) 5px;font-size:clamp(13px,1.5vw,20px);font-weight:900}
+.score-pill:first-child{border-color:#ffd65b;box-shadow:0 0 13px #ffd34c8c,0 4px 8px #0009}
+#play{order:2;flex:1;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:clamp(7px,1.4vh,14px);width:min(1320px,100%);margin:auto;background:linear-gradient(125deg,#17243bf5,#0a1426f8);border:clamp(5px,.7vw,10px) ridge #b97b36;border-radius:clamp(16px,2.5vw,38px);padding:clamp(12px,2.2vw,30px);box-shadow:0 10px 35px #000c,inset 0 0 30px #030a17}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:clamp(14px,2vw,25px);font-weight:850}#status{border-bottom:1px solid #9d683b;padding-bottom:8px}.hud .tag{border:0;background:transparent;font-size:clamp(12px,1.5vw,19px)}
+.question{min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}.question p{font-size:clamp(16px,2.2vw,28px);font-weight:850;text-align:center;margin:0;text-shadow:0 3px 5px #000}
+#word{width:min(860px,100%);text-align:center;font-size:clamp(58px,10vw,125px);font-weight:1000;line-height:1.25;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(#1a3551,#10223a);border:3px solid #d6dfe8;border-radius:28px;padding:clamp(6px,2vh,22px);box-shadow:0 0 13px #ffb964,inset 0 -7px 14px #0008,0 10px 12px #0007;text-shadow:0 5px 5px #0009}
+.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,18px)}
+.colors button{min-height:clamp(63px,11vh,130px);color:#fff;font-size:clamp(23px,3.5vw,49px);border:3px solid #fff9;border-radius:clamp(14px,2vw,27px);box-shadow:inset 0 7px 6px #ffffff58,inset 0 -8px 6px #0005,0 5px 0 #071321,0 0 12px currentColor;text-shadow:0 4px 4px #0007}
+#feedback{min-height:16px;text-align:center;color:#d6eaff;font-weight:800}#finish{order:2}footer{order:3;text-align:center;font-size:11px;color:#c3d9c8;margin-top:5px}
+@media(max-width:650px){main{padding:8px;border-radius:14px}h1{font-size:32px}.controls{grid-template-columns:1fr}#scores{min-height:40px}.score-pill{font-size:11px;padding:6px 3px}#play{padding:10px;border-width:5px}.hud .tag{display:none}#word{font-size:clamp(43px,13vw,78px)}.colors button{font-size:22px;min-height:clamp(56px,11vh,95px)}}
+@media(max-height:610px) and (orientation:landscape){header{margin:0}h1{font-size:clamp(28px,5vh,45px)}#scores{min-height:38px;margin-bottom:4px}.score-pill{padding:5px}.hud{font-size:15px}#play{padding:8px 18px;gap:4px}.question p{font-size:16px}#word{font-size:clamp(38px,10vh,70px);padding:4px}.colors button{min-height:48px;font-size:22px}footer{display:none}}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
@@ -86,16 +78,16 @@ function render(){
   b.addEventListener('click',()=>answer(name));$('colors').append(b);
  }
  $('scores').replaceChildren();
- for(const [id,n] of Object.entries(state.scores)){const el=document.createElement('span');el.className='score-pill';el.textContent=(id==='player-1'?'👤 Du':'🤖 '+id.replace('bot-','Bot '))+' · '+n+' Punkte';$('scores').append(el);}
+ for(const [id,n] of Object.entries(state.scores)){const el=document.createElement('span');el.className='score-pill';el.textContent=id==='player-1'?'👤 Spieler 1':'🤖 '+id.replace('bot-','Bot ');$('scores').append(el);}
 }
 function finish(){
  const s=flow.snapshot();show('finish');
  const rows=[...s.completion.result.results].sort((a,b)=>b.score-a.score);
  $('results').replaceChildren();
  for(const [i,r] of rows.entries()){const p=document.createElement('p');p.textContent=(i+1)+'. '+r.playerId+' – '+r.score+' richtig';$('results').append(p);}
- $('scores').textContent='';
+ $('scores').replaceChildren();
 }
 $('start').addEventListener('click',startNew);
 $('again').addEventListener('click',()=>{flow.replay();flow.start();$('feedback').textContent='';show('play');render();});
-$('back').addEventListener('click',()=>{flow.returnToSelection();show('setup');$('scores').textContent='';});
+$('back').addEventListener('click',()=>{flow.returnToSelection();show('setup');$('scores').replaceChildren();});
 </script></body></html>
