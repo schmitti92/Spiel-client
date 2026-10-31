@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const load=async path=>import('data:text/javascript;charset=utf-8,'+encodeURIComponent(readFileSync(new URL(path,import.meta.url),'utf8')));
-const {createSession}=await load('../engine/MiniGameEngine.js');
+const gameContractSource=readFileSync(new URL('../engine/GameContract.js',import.meta.url),'utf8');
+const gameContractUrl='data:text/javascript;charset=utf-8,'+encodeURIComponent(gameContractSource);
+const engineSource=readFileSync(new URL('../engine/MiniGameEngine.js',import.meta.url),'utf8').replace("'./GameContract.js'",JSON.stringify(gameContractUrl));
+const {createSession}=await import('data:text/javascript;charset=utf-8,'+encodeURIComponent(engineSource));
 const {validateResult}=await load('../engine/ResultContract.js');
 const legacy=await load('../games/zeitgefuehl/game.js');
 
