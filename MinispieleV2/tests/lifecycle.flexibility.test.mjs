@@ -33,3 +33,29 @@ test('failed bot action leaves managed session playing and revision unchanged',(
  assert.throws(()=>s.botTurn('b'),/BAD_BOT_ACTION/);
  assert.deepEqual(s.snapshot(),before);
 });
+
+test('a game may finish immediately on start without a round or timer',()=>{
+ const instant={...game(1),getResult:()=>({finished:true,results:roster.map(p=>({playerId:p.id,score:0}))})};
+ const s=createManagedSession(instant,roster);
+ assert.equal(s.start().phase,'finished');
+ assert.throws(()=>s.botTurn('b'),/SESSION_NOT_PLAYING/);
+ assert.equal(s.restart().phase,'ready');
+ assert.equal(s.start().phase,'finished');
+});
+test('duplicate human requests do not advance a game twice',()=>{
+ const s=createManagedSession(game(3),roster);
+ s.start();
+ const first=s.dispatch('h',{type:'act'},{requestId:'same',expectedRevision:0});
+ const repeat=s.dispatch('h',{type:'act'},{requestId:'same',expectedRevision:0});
+ assert.equal(repeat.revision,first.revision);
+ assert.equal(repeat.state.actions,1);
+ assert.throws(()=>s.dispatch('h',{type:'different'},{requestId:'same'}),/REQUEST_ID_CONFLICT/);
+ assert.equal(s.snapshot().state.actions,1);
+});
+test('stale actions are rejected without changing lifecycle state',()=>{
+ const s=createManagedSession(game(2),roster);
+ s.start();
+ const before=s.snapshot();
+ assert.throws(()=>s.dispatch('h',{type:'act'},{expectedRevision:99}),/STALE_REVISION/);
+ assert.deepEqual(s.snapshot(),before);
+});
