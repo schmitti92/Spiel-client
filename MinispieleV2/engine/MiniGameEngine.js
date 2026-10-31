@@ -22,7 +22,8 @@ export function createSession(game, players, options = {}) {
  assert(initial && typeof initial==='object' && !Array.isArray(initial),'INVALID_INITIAL_STATE');
  let state=clone(initial);
  let revision=0;
- const snapshot=()=>({gameId:game.id,revision,players:clone(roster),state:clone(state),result:clone(game.getResult(clone(state)))});
+ const makeSnapshot=(candidate,nextRevision)=>({gameId:game.id,revision:nextRevision,players:clone(roster),state:clone(candidate),result:clone(game.getResult(clone(candidate)))});
+ const snapshot=()=>makeSnapshot(state,revision);
  return Object.freeze({
   snapshot,
   dispatch(playerId,action) {
@@ -30,8 +31,10 @@ export function createSession(game, players, options = {}) {
    assert(action && typeof action==='object','INVALID_ACTION');
    const next=game.applyAction(clone(state),{playerId,action:clone(action),players:clone(roster)});
    assert(next && typeof next==='object','INVALID_NEXT_STATE');
-   state=clone(next);revision++;
-   return snapshot();
+   const candidate=clone(next);
+   const result=makeSnapshot(candidate,revision+1);
+   state=candidate;revision++;
+   return result;
   },
   botTurn(playerId) {
    const player=roster.find(p=>p.id===playerId);
@@ -42,7 +45,10 @@ export function createSession(game, players, options = {}) {
   restart() {
    const next=game.initialState(clone(roster),clone(options));
    assert(next && typeof next==='object' && !Array.isArray(next),'INVALID_INITIAL_STATE');
-   state=clone(next);revision++;return snapshot();
+   const candidate=clone(next);
+   const result=makeSnapshot(candidate,revision+1);
+   state=candidate;revision++;
+   return result;
   }
  });
 }
