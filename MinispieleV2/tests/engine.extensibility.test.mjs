@@ -48,7 +48,10 @@ for(const scenario of cases){
    const finished=s.dispatch('p0',scenario.human);
    if(scenario.expected==='score'&&n>1){
     assert.equal(finished.phase,'playing');
-    for(let i=1;i<n;i++)s.botTurn('p'+i);
+    for(let i=1;i<n;i++){
+     if(participants[i].type==='bot')s.botTurn('p'+i);
+     else s.dispatch('p'+i,scenario.human);
+    }
    }else assert.equal(finished.phase,'finished');
    const result=s.snapshot().result;
    assert.equal(result.results.length,n);
