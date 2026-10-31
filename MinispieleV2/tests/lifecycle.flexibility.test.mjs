@@ -93,10 +93,11 @@ test('request ids are scoped to a generation after restart',()=>{
 });
 
 test('start remains ready when a snapshot fails during start',()=>{
- let reads=0;
- const unstable={...game(2),getResult:()=>{if(++reads===4)throw Error('RESULT_READ_FAILED');return null;}};
+ let reads=0, failAt=Infinity;
+ const unstable={...game(2),getResult:()=>{if(++reads===failAt)throw Error('RESULT_READ_FAILED');return null;}};
  const s=createManagedSession(unstable,roster);
  assert.equal(s.snapshot().phase,'ready');
+ failAt=reads+2;
  assert.throws(()=>s.start(),/RESULT_READ_FAILED/);
  assert.equal(s.snapshot().phase,'ready');
  assert.equal(s.start().phase,'playing');
