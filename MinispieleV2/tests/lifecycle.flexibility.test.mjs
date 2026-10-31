@@ -102,3 +102,24 @@ test('start remains ready when a snapshot fails during start',()=>{
  assert.equal(s.snapshot().phase,'ready');
  assert.equal(s.start().phase,'playing');
 });
+
+test('successful action does not re-evaluate result after commit',()=>{
+ let calls=0;
+ const probe={...game(1),getResult:state=>{calls++;return state.actions?{finished:true,results:roster.map(p=>({playerId:p.id,score:1}))}:null;}};
+ const s=createManagedSession(probe,roster);
+ s.start();const before=calls;
+ const result=s.dispatch('h',{type:'act'});
+ assert.equal(result.phase,'finished');
+ assert.equal(calls-before,2); // precommit validation and committed snapshot
+});
+test('restart returns committed snapshot without another result evaluation',()=>{
+ let calls=0;
+ const probe={...game(1),getResult:state=>{calls++;return state.actions?{finished:true,results:roster.map(p=>({playerId:p.id,score:1}))}:null;}};
+ const s=createManagedSession(probe,roster);
+ s.start();s.dispatch('h',{type:'act'});
+ const before=calls;
+ const next=s.restart();
+ assert.equal(next.phase,'ready');
+ assert.equal(next.state.actions,0);
+ assert.equal(calls-before,1);
+});
