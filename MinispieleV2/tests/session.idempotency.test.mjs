@@ -27,8 +27,8 @@ test('request id reused with different action is rejected',()=>{
 test('stale revision is rejected without mutating state',()=>{
  const s=createManagedSession(game,players);s.start();
  s.dispatch('a',{type:'score'},{requestId:'first',expectedRevision:0});
- assert.throws(()=>s.dispatch('b',{type:'score'},{requestId:'second',expectedRevision:0}),/STALE_REVISION/);
- assert.equal(s.snapshot().state.scores.b,0);
+ assert.throws(()=>s.dispatch('a',{type:'score'},{requestId:'second',expectedRevision:0}),/STALE_REVISION/);
+ assert.equal(s.snapshot().state.scores.a,1);
 });
 test('retransmitted finishing request stays idempotent',()=>{
  const s=createManagedSession(game,players);s.start();
