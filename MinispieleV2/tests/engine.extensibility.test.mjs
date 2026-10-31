@@ -134,3 +134,66 @@ test('multi-stage game controls its own transitions and finishing rule',()=>{
  assert.equal(s.dispatch('p0',{type:'try'}).state.stage,'review');
  assert.equal(s.dispatch('p0',{type:'confirm'}).phase,'finished');
 });
+
+test('elimination game supports players leaving active play without changing roster',()=>{
+ const participants=roster(4);
+ const game={
+  id:'elimination-probe',
+  initialState:()=>({alive:participants.map(p=>p.id)}),
+  applyAction:(state,{action})=>{
+   if(!state.alive.includes(action.target))throw Error('ALREADY_ELIMINATED');
+   return {...state,alive:state.alive.filter(id=>id!==action.target)};
+  },
+  getResult:state=>state.alive.length===1?finish(participants,p=>({playerId:p.id,outcome:state.alive.includes(p.id)?'survivor':'eliminated'})):null,
+  botAction:()=>({target:'p2'})
+ };
+ const s=createManagedSession(game,participants);
+ s.start();
+ assert.equal(s.dispatch('p0',{target:'p1'}).phase,'playing');
+ assert.equal(s.dispatch('p2',{target:'p3'}).phase,'playing');
+ assert.equal(s.dispatch('p0',{target:'p2'}).phase,'finished');
+ assert.equal(s.snapshot().players.length,4);
+ assert.equal(s.snapshot().result.results.find(p=>p.playerId==='p0').outcome,'survivor');
+});
+test('asymmetric roles and custom turn rules remain game-owned',()=>{
+ const participants=roster(2);
+ const game={
+  id:'asymmetric-probe',
+  initialState:()=>({turn:'p0',roles:{p0:'hunter',p1:'runner'},moves:0}),
+  applyAction:(state,{playerId,action})=>{
+   if(playerId!==state.turn)throw Error('OUT_OF_TURN');
+   if(action.role!==state.roles[playerId])throw Error('WRONG_ROLE');
+   return {...state,moves:state.moves+1,turn:playerId==='p0'?'p1':'p0'};
+  },
+  getResult:state=>state.moves===2?finish(participants,p=>({playerId:p.id,role:state.roles[p.id]})):null,
+  botAction:state=>({role:state.roles.p1})
+ };
+ const s=createManagedSession(game,participants);
+ s.start();
+ const before=s.snapshot();
+ assert.throws(()=>s.botTurn('p1'),/OUT_OF_TURN/);
+ assert.deepEqual(s.snapshot(),before);
+ assert.equal(s.dispatch('p0',{role:'hunter'}).phase,'playing');
+ assert.equal(s.botTurn('p1').phase,'finished');
+ assert.deepEqual(s.snapshot().result.results.map(p=>p.role),['hunter','runner']);
+});
+test('nonlinear progression and sudden-death conditions are game-owned',()=>{
+ const participants=roster(1);
+ const game={
+  id:'sudden-death-probe',
+  initialState:()=>({level:1,health:3,history:[]}),
+  applyAction:(state,{action})=>({
+   ...state,level:action.skipTo??state.level+1,health:state.health-action.damage,
+   history:[...state.history,action]
+  }),
+  getResult:state=>state.health<=0?finish(participants,p=>({playerId:p.id,outcome:'defeated'}),{reason:'health-depleted'}):null,
+  botAction:()=>({damage:0})
+ };
+ const s=createManagedSession(game,participants);
+ s.start();
+ assert.equal(s.dispatch('p0',{skipTo:50,damage:1}).state.level,50);
+ const final=s.dispatch('p0',{skipTo:3,damage:2});
+ assert.equal(final.phase,'finished');
+ assert.equal(final.state.level,3);
+ assert.equal(final.result.reason,'health-depleted');
+});
