@@ -51,3 +51,21 @@ test('invalid restarted state preserves prior state and revision',()=>{
  assert.throws(()=>session.restart(),/INVALID_INITIAL_STATE/);
  assert.deepEqual(session.snapshot(),before);
 });
+
+test('enforces declared game-specific player limits',()=>{
+ const restricted={...game,minPlayers:2,maxPlayers:3};
+ const roster=n=>Array.from({length:n},(_,i)=>({id:'p'+i,type:'human'}));
+ assert.throws(()=>createSession(restricted,roster(1)),/GAME_PLAYER_LIMITS/);
+ assert.equal(createSession(restricted,roster(2)).snapshot().players.length,2);
+ assert.equal(createSession(restricted,roster(3)).snapshot().players.length,3);
+ assert.throws(()=>createSession(restricted,roster(4)),/GAME_PLAYER_LIMITS/);
+});
+test('rejects unsupported contract versions before starting a game',()=>{
+ assert.throws(()=>createSession({...game,contractVersion:2},[{id:'a',type:'human'}]),/UNSUPPORTED_GAME_CONTRACT_VERSION/);
+});
+test('rejects invalid game capabilities and malformed configuration limits',()=>{
+ const roster=[{id:'a',type:'human'}];
+ assert.throws(()=>createSession({...game,capabilities:['network']},roster),/INVALID_GAME_CAPABILITIES/);
+ assert.throws(()=>createSession({...game,minPlayers:0},roster),/INVALID_GAME_PLAYER_LIMITS/);
+ assert.throws(()=>createSession({...game,maxPlayers:1.5},roster),/INVALID_GAME_PLAYER_LIMITS/);
+});
