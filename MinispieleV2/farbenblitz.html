@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Farbenblitz – MiniGame Engine V2</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#f7f7ff;background:#101b32}*{box-sizing:border-box}body{margin:0;padding:20px;min-height:100vh;display:grid;place-items:center}
+main{width:min(680px,100%);background:#1b2a47;border:1px solid #3b4d6c;border-radius:22px;padding:24px;box-shadow:0 16px 50px #0005}
+h1{margin:0 0 8px}p{color:#c9d4ed}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}label{display:grid;gap:6px}select,button{font:inherit;border-radius:12px;border:0;padding:13px 16px}select{background:#ecf1ff;color:#101b32}button{cursor:pointer;background:#85ddf5;color:#10223c;font-weight:700}button:disabled{opacity:.4;cursor:default}.hidden{display:none!important}
+#word{font-size:clamp(48px,10vw,90px);font-weight:900;text-align:center;letter-spacing:2px;margin:28px 0;text-transform:uppercase}
+.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.colors button{min-height:76px;color:white;font-size:20px;border:2px solid #ffffff60}
+#status,#scores,#feedback{margin-top:16px;line-height:1.6}#feedback{font-weight:700}small{color:#bdcbe5}
+</style></head><body><main>
+<h1>⚡ Farbenblitz</h1><p>Engine V2 · lokaler Test mit Computergegnern</p>
+<section id="setup"><div class="controls">
+<label>Spieler insgesamt<select id="count"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+<label>Schwierigkeit<select id="level"><option value="leicht">Leicht – Wort lesen</option><option value="mittel" selected>Mittel – Schriftfarbe</option><option value="schwer">Schwer – Schriftfarbe</option></select></label>
+<label>Runden<select id="rounds"><option>5</option><option selected>10</option><option>20</option><option>30</option></select></label>
+</div><button id="start">Spiel starten</button></section>
+<section id="play" class="hidden"><div id="status"></div><div id="word"></div><div class="colors" id="colors"></div><div id="feedback" aria-live="polite"></div></section>
+<section id="finish" class="hidden"><h2>🏆 Ergebnis</h2><div id="results"></div><button id="again">Nochmal spielen</button><button id="back">Zur Auswahl</button></section>
+<div id="scores" aria-live="polite"></div><small>Die Engine steuert Spieler, Aktionen, Ergebnisse und Neustarts. Noch kein Online-Multiplayer.</small>
+</main>
+<script type="module">
+import {games} from './games.js';
+import {createGameRegistry} from './engine/GameRegistry.js';
+import {createGameLauncher} from './engine/GameLauncher.js';
+import {createLobbyGameBridge} from './engine/LobbyGameBridge.js';
+import {createResultLedger} from './engine/ResultLedger.js';
+import {createMiniGameFlow} from './engine/MiniGameFlow.js';
+const $=id=>document.getElementById(id);
+const colors={rot:'#f04455',blau:'#3489ee',gruen:'#23b86a',gelb:'#e0ae15'};
+const registry=createGameRegistry(games);
+const bridge=createLobbyGameBridge(createGameLauncher(registry));
+const ledger=createResultLedger(c=>c.result.results.map(r=>({playerId:r.playerId,points:r.score})));
+const flow=createMiniGameFlow(bridge,ledger);
+let serial=0;
+function show(name){for(const id of ['setup','play','finish'])$(id).classList.toggle('hidden',id!==name);}
+function startNew(){
+ const count=Number($('count').value),rounds=Number($('rounds').value);
+ const players=[{id:'player-1',type:'human'},...Array.from({length:count-1},(_,i)=>({id:'bot-'+(i+1),type:'bot'}))];
+ flow.select({roomId:'offline-demo',matchId:'farbenblitz-'+(++serial),gameId:'farbenblitz',players,options:{rounds,level:$('level').value}});
+ flow.start();show('play');render();
+}
+function answer(color){
+ const s=flow.snapshot();if(s.stage!=='playing')return;
+ const round=s.session.state.round;
+ flow.dispatch('player-1',{type:'answer',round,color});
+ let current=flow.snapshot();
+ for(const p of current.session.players.filter(p=>p.type==='bot')){
+  if(current.stage!=='playing')break;
+  flow.botTurn(p.id);current=flow.snapshot();
+ }
+ if(current.stage==='result'){finish();return;}
+ $('feedback').textContent='Antwort gespeichert – nächste Runde';
+ render();
+}
+function render(){
+ const s=flow.snapshot(),state=s.session.state;
+ $('status').textContent='Runde '+(state.round+1)+' / '+state.rounds+' · '+(state.level==='leicht'?'Wort lesen':'Schriftfarbe wählen');
+ $('word').textContent=state.challenge.word.toUpperCase();
+ $('word').style.color=colors[state.challenge.ink];
+ $('colors').replaceChildren();
+ for(const [name,color] of Object.entries(colors)){
+  const b=document.createElement('button');b.textContent=name.toUpperCase();b.style.background=color;
+  b.addEventListener('click',()=>answer(name));$('colors').append(b);
+ }
+ $('scores').textContent=Object.entries(state.scores).map(([id,n])=>id+': '+n).join(' · ');
+}
+function finish(){
+ const s=flow.snapshot();show('finish');
+ const rows=[...s.completion.result.results].sort((a,b)=>b.score-a.score);
+ $('results').replaceChildren();
+ for(const [i,r] of rows.entries()){const p=document.createElement('p');p.textContent=(i+1)+'. '+r.playerId+' – '+r.score+' richtig';$('results').append(p);}
+ $('scores').textContent='';
+}
+$('start').addEventListener('click',startNew);
+$('again').addEventListener('click',()=>{flow.replay();flow.start();show('play');render();});
+$('back').addEventListener('click',()=>{flow.returnToSelection();show('setup');$('scores').textContent='';});
+</script></body></html>
