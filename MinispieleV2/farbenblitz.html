@@ -69,6 +69,13 @@ h1{display:inline-block;position:relative;padding:0 .55em .12em;background:linea
 header>div{background:linear-gradient(90deg,transparent,#071421a8 15%,#071421a8 85%,transparent);border-radius:25px}
 #play{background:linear-gradient(145deg,#17233cf2,#071427f4);border-color:#cb8d43;box-shadow:0 12px 32px #000c,inset 0 0 35px #07182e}
 .score-pill{background:linear-gradient(180deg,#143b53,#050e1d);box-shadow:0 4px 10px #0009,inset 0 1px #ffffff66}
+
+/* Dedicated graphics assets; preserve the working responsive geometry */
+header h1{font-size:0!important;width:clamp(250px,42vw,630px);height:clamp(50px,8vh,110px);background:url('./assets/farbenblitz-logo.svg') center / contain no-repeat!important;filter:drop-shadow(0 5px 7px #0009);-webkit-text-stroke:0!important;text-shadow:none!important;padding:0!important;transform:none!important;display:block}
+header>div{background:none}
+#play{background:linear-gradient(120deg,#120a06a8,#180c0a77),url('./assets/farbenblitz-wood.svg') center / 100% 100% no-repeat!important;border:0!important;box-shadow:0 15px 35px #000b,inset 0 0 20px #0006!important}
+#word{background:linear-gradient(180deg,#173148,#081421)!important;border-color:#eab45d!important;box-shadow:0 0 14px #ffb73c99,inset 0 0 16px #0008!important}
+.colors button{border-color:#fff8!important;box-shadow:inset 0 6px 8px #ffffff70,inset 0 -10px 8px #0005,0 5px 0 #050e19,0 0 10px #ffdd8a66!important}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
