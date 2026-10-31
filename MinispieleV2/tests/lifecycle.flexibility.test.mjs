@@ -123,3 +123,30 @@ test('restart returns committed snapshot without another result evaluation',()=>
  assert.equal(next.state.actions,0);
  assert.equal(calls-before,2);
 });
+
+test('lifecycle rejects invalid transitions without advancing revision',()=>{
+ const s=createManagedSession(game(2),roster);
+ const initial=s.snapshot();
+ assert.throws(()=>s.dispatch('h',{type:'act'}),/SESSION_NOT_PLAYING/);
+ assert.throws(()=>s.botTurn('b'),/SESSION_NOT_PLAYING/);
+ assert.throws(()=>s.restart(),/SESSION_NOT_FINISHED/);
+ assert.deepEqual(s.snapshot(),initial);
+ s.start();
+ assert.throws(()=>s.start(),/SESSION_NOT_READY/);
+ assert.throws(()=>s.restart(),/SESSION_NOT_FINISHED/);
+ assert.equal(s.snapshot().revision,initial.revision);
+ s.dispatch('h',{type:'act'});
+ s.botTurn('b');
+ const finished=s.snapshot();
+ assert.equal(finished.phase,'finished');
+ assert.throws(()=>s.start(),/SESSION_NOT_READY/);
+ assert.throws(()=>s.botTurn('b'),/SESSION_NOT_PLAYING/);
+ assert.deepEqual(s.snapshot(),finished);
+});
+test('failed bot result validation does not commit a lifecycle transition',()=>{
+ const invalid={...game(2),getResult:state=>state.actions===1?{finished:true,results:[]} : null};
+ const s=createManagedSession(invalid,roster);
+ s.start();const before=s.snapshot();
+ assert.throws(()=>s.botTurn('b'),/INVALID_RESULT_COUNT/);
+ assert.deepEqual(s.snapshot(),before);
+});
