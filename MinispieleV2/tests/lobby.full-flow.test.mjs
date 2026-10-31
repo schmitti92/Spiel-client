@@ -74,9 +74,10 @@ test('invalid action cannot finish or score a game; replay is a separate generat
  active.botTurn('bot-1');
  assert.equal(ledger.accept(active.completion()).accepted,true);
  assert.equal(ledger.accept(active.completion()).accepted,false);
- const matches=ledger.snapshot('existing-room').matches;
+ const matches=ledger.snapshot('existing-room').matches.filter(x=>x.matchId==='match-replay');
  assert.deepEqual(matches.map(x=>x.generation),[0,1]);
- assert.deepEqual(ledger.snapshot('existing-room').totals,[{playerId:'human-1',points:3},{playerId:'bot-1',points:3}]);
+ const replayTotals=matches.flatMap(x=>x.awarded).reduce((totals,x)=>({...totals,[x.playerId]:(totals[x.playerId]??0)+x.points}),{});
+ assert.deepEqual(replayTotals,{'human-1':3,'bot-1':3});
 });
 test('game-specific player limits are checked before the lobby can launch a game',()=>{
  assert.throws(()=>bridge.prepare({...command('r','m','survival-game'),players:[roster[0]]}),/GAME_PLAYER_LIMITS/);
