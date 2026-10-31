@@ -71,3 +71,21 @@ const finished = active.completion(); // null bis zum Spielende
 Die Ergebnisübergabe ist **lesend und wiederholbar**, kein Netzwerk- oder Speicheraufruf. Die gemeinsame Auswertung übernimmt ein Ergebnis pro `(roomId, matchId, generation)` höchstens einmal (idempotente Verarbeitung). Ein erneuter Abruf von `completion()` darf keine zweite Punktevergabe auslösen. Die Zuordnung von individuellen Spielresultaten zu Turnierpunkten und die Rücknavigation bleiben Aufgaben des übergeordneten Systems.
 
 Für jedes neue Minispiel gelten dieselben Grenzen: keine eigene Raumverwaltung, keine eigenen Spieleridentitäten, keine eigenen Netzwerkverbindungen und keine Speicherung innerhalb der Spiellogik. Der Bridge-Adapter ist zunächst rein lokal und wird erst nach den Offline-Minispielen und dem Partybrettspiel an den gemeinsamen Online-Hub angebunden.
+
+## Zentrale Gesamtwertung (lokal, ohne Speicherung)
+
+`createResultLedger(scoreResult)` aus `engine/ResultLedger.js` sammelt abgeschlossene Spielinstanzen raumbezogen. Die Lobby übergibt `active.completion()` an `ledger.accept(completion)`, sobald das Spiel beendet ist. Die Wertungsfunktion `scoreResult(completion)` liefert **genau einen Eintrag `{playerId,points}` je Teilnehmer**; Punkte müssen endliche Zahlen sein. Sie ist die einzige Stelle, die individuelle Spielwerte in vergleichbare Turnierpunkte umrechnet. Die Engine selbst entscheidet nicht über Sieger oder Punkte.
+
+```js
+import {createResultLedger} from './engine/ResultLedger.js';
+const ledger = createResultLedger(completion =>
+  completion.result.results.map(entry => ({playerId:entry.playerId,points:entry.score ?? 0}))
+);
+const completed = active.completion();
+if (completed) ledger.accept(completed);
+const overview = ledger.snapshot(existingRoom.id); // {roomId,totals,matches}
+```
+
+Die gezeigte Wertungsfunktion ist nur ein technisches Beispiel: Unterschiedliche Spielwerte (Zeit, Treffer, Rang, kooperative Ergebnisse) dürfen nicht ungeprüft addiert werden. Die Turnierregeln werden im übergeordneten System definiert.
+
+Ergebnisse werden pro Raum und `(matchId,generation)` höchstens einmal übernommen. Wiederholte identische Lieferungen ändern keine Punkte; widersprüchliche Lieferungen werden abgewiesen. `ResultLedger` verwaltet weder Räume noch Online-Identitäten, UI, Navigation oder Persistenz. Die Lobby bleibt verantwortlich für Berechtigungen, eindeutige Match-IDs und das Speichern bzw. Wiederherstellen der Gesamtauswertung. 
