@@ -16,8 +16,11 @@ export function createManagedSession(game, players, options = {}) {
     players: () => playerManager.list(),
     start() {
       if (phase !== 'ready') throw Error('SESSION_NOT_READY');
-      phase = session.snapshot().result === null ? 'playing' : 'finished';
-      return view();
+      const current = session.snapshot();
+      const nextPhase = current.result === null ? 'playing' : 'finished';
+      const nextView = Object.freeze({phase: nextPhase, generation, ...current});
+      phase = nextPhase;
+      return nextView;
     },
     dispatch(playerId, action, meta = {}) {
       if (!meta || typeof meta !== 'object' || Array.isArray(meta)) throw Error('INVALID_ACTION_META');
