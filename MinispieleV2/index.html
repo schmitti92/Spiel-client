@@ -8,6 +8,10 @@ import './games.js';
 import {listMiniGames} from './GameCatalog.js';
 import {mountGame} from './host/GameHost.js';
 const el=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search);
+const requestedBots=Number(params.get('bots'));
+if(params.has('bots')&&Number.isInteger(requestedBots)&&requestedBots>=0&&requestedBots<=2)el('players').value=String(requestedBots+1);
+
 function selection(){el('selection').classList.remove('hidden');el('play').classList.add('hidden');}
 for(const entry of listMiniGames()){
  const card=document.createElement('div');card.className='game';
@@ -24,5 +28,6 @@ for(const entry of listMiniGames()){
   finally{button.disabled=false;}
  });
  card.append(label,button);el('games').append(card);
+ if(params.get('game')===entry.id)queueMicrotask(()=>button.click());
 }
 </script></body></html>
