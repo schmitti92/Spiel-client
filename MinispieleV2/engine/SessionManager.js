@@ -42,7 +42,7 @@ export function createManagedSession(game, players, options = {}) {
       if (phase !== 'playing') throw Error('SESSION_NOT_PLAYING');
       playerManager.requireBot(playerId);
       const next = session.botTurn(playerId);
-      if (next.result !== null) phase = 'finished';
+      updatePhase(next.result);
       return view();
     },
     restart() {
