@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=path=>readFileSync(new URL(path,import.meta.url),'utf8');
 const data=source=>'data:text/javascript;charset=utf-8,'+encodeURIComponent(source);
-const engineUrl=data(read('../engine/MiniGameEngine.js'));
+const gameContractUrl=data(read('../engine/GameContract.js'));
+const engineUrl=data(read('../engine/MiniGameEngine.js').replace("'./GameContract.js'",JSON.stringify(gameContractUrl)));
 const resultUrl=data(read('../engine/ResultContract.js'));
 const standardSource=read('../engine/StandardSession.js')
   .replace("'./MiniGameEngine.js'",JSON.stringify(engineUrl))
