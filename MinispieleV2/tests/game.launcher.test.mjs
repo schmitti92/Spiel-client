@@ -48,3 +48,32 @@ test('launcher sees newly registered games without changes to launcher',()=>{
  assert.equal(session.start().phase,'playing');
  assert.equal(session.dispatch('human',{type:'finish'}).phase,'finished');
 });
+
+test('each launch receives independent configuration and state',()=>{
+ const catalog=createGameRegistry([{
+  id:'configurable-probe',
+  initialState:(participants,options)=>({target:options.target,steps:0,participants:participants.length}),
+  applyAction:state=>({...state,steps:state.steps+1}),
+  getResult:state=>state.steps>=state.target?{resultVersion:2,finished:true,results:[{playerId:'human',outcome:'done'}]}:null,
+  botAction:()=>({type:'step'})
+ }]);
+ const launch=createGameLauncher(catalog);
+ const one=[{id:'human',type:'human'}];
+ const configA={target:1};
+ const configB={target:3};
+ const a=launch.create('configurable-probe',one,configA);
+ const b=launch.create('configurable-probe',one,configB);
+ configA.target=99;
+ assert.equal(a.start().state.target,1);
+ assert.equal(b.start().state.target,3);
+ assert.equal(a.dispatch('human',{type:'step'}).phase,'finished');
+ assert.equal(b.dispatch('human',{type:'step'}).phase,'playing');
+ assert.equal(b.snapshot().state.steps,1);
+ assert.equal(a.restart().state.target,1);
+});
+test('game-specific participant limits are enforced at launch',()=>{
+ const limited={...makeGame('two-to-four',1),minPlayers:2,maxPlayers:4};
+ const launch=createGameLauncher(createGameRegistry([limited]));
+ assert.throws(()=>launch.create('two-to-four',[roster[0]]),/GAME_PLAYER_LIMITS/);
+ assert.equal(launch.create('two-to-four',roster).snapshot().players.length,2);
+});
