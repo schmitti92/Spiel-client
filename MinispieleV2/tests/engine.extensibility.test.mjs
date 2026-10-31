@@ -62,3 +62,75 @@ for(const scenario of cases){
   }
  });
 }
+
+test('complex nested game state and actions are isolated from callers',()=>{
+ const participants=roster(2);
+ const game={
+  id:'nested-state-probe',
+  initialState:()=>({board:{cells:[{occupants:['p0']}]},events:[]}),
+  applyAction:(state,{action,playerId})=>{
+   state.board.cells[0].occupants.push(playerId);
+   state.events.push({kind:action.kind,payload:action.payload});
+   return state;
+  },
+  getResult:()=>null,
+  botAction:()=>({kind:'move',payload:{distance:2}})
+ };
+ const s=createManagedSession(game,participants);
+ s.start();
+ const action={kind:'move',payload:{distance:3}};
+ const next=s.dispatch('p0',action);
+ action.payload.distance=99;
+ next.state.board.cells[0].occupants.push('intruder');
+ next.state.events[0].payload.distance=500;
+ const stable=s.snapshot();
+ assert.deepEqual(stable.state.board.cells[0].occupants,['p0','p0']);
+ assert.equal(stable.state.events[0].payload.distance,3);
+ assert.equal(s.botTurn('p1').state.events[1].payload.distance,2);
+});
+test('simultaneous games decide when pending actions resolve',()=>{
+ const participants=roster(4);
+ const game={
+  id:'simultaneous-probe',capabilities:['simultaneous'],
+  initialState:()=>({pending:{},round:1}),
+  applyAction:(state,{playerId,action})=>{
+   if(Object.hasOwn(state.pending,playerId))throw Error('ALREADY_SUBMITTED');
+   const pending={...state.pending,[playerId]:action.choice};
+   return Object.keys(pending).length===participants.length?{pending:{},round:state.round+1}:{...state,pending};
+  },
+  getResult:state=>state.round===2?finish(participants,p=>({playerId:p.id,outcome:'completed'})):null,
+  botAction:()=>({choice:'bot'})
+ };
+ const s=createManagedSession(game,participants);
+ s.start();
+ assert.equal(s.dispatch('p0',{choice:'left'}).phase,'playing');
+ assert.equal(s.botTurn('p1').phase,'playing');
+ assert.equal(s.dispatch('p2',{choice:'right'}).phase,'playing');
+ assert.throws(()=>s.dispatch('p2',{choice:'again'}),/ALREADY_SUBMITTED/);
+ assert.equal(s.snapshot().state.round,1);
+ assert.equal(s.botTurn('p3').phase,'finished');
+ assert.equal(s.snapshot().state.round,2);
+});
+test('multi-stage game controls its own transitions and finishing rule',()=>{
+ const participants=roster(1);
+ const game={
+  id:'multi-stage-probe',
+  initialState:()=>({stage:'prepare',attempts:0}),
+  applyAction:(state,{action})=>{
+   if(state.stage==='prepare'&&action.type==='begin')return {...state,stage:'challenge'};
+   if(state.stage==='challenge'&&action.type==='try')return {...state,attempts:state.attempts+1,stage:'review'};
+   if(state.stage==='review'&&action.type==='confirm')return {...state,stage:'done'};
+   throw Error('INVALID_STAGE_ACTION');
+  },
+  getResult:state=>state.stage==='done'?finish(participants,p=>({playerId:p.id,outcome:'complete'})):null,
+  botAction:()=>({type:'begin'})
+ };
+ const s=createManagedSession(game,participants);
+ s.start();
+ assert.equal(s.dispatch('p0',{type:'begin'}).state.stage,'challenge');
+ const before=s.snapshot();
+ assert.throws(()=>s.dispatch('p0',{type:'begin'}),/INVALID_STAGE_ACTION/);
+ assert.deepEqual(s.snapshot(),before);
+ assert.equal(s.dispatch('p0',{type:'try'}).state.stage,'review');
+ assert.equal(s.dispatch('p0',{type:'confirm'}).phase,'finished');
+});
