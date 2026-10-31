@@ -47,3 +47,27 @@ Spielmodule verwenden die vom gemeinsamen System gelieferten Spieler-IDs. `Minis
 `node --test MinispieleV2/tests/*.test.mjs`
 
 Neue Spielregeln zusätzlich mit individuellen Regeltests absichern. Keine Anpassungen am gemeinsamen Engine-Kern für einzelne Spielmechaniken; falls eine neue Schnittstelle unvermeidbar ist, zuerst Vertrag und Rückwärtskompatibilität prüfen.
+
+## Gemeinsame Lobby-Übergabe (offline testbar)
+
+Die gemeinsame Raumverwaltung erstellt und verwaltet den Raum. Die Lobby prüft verbindlich, ob die Spieler-IDs zum Raum gehören und ob die Spielinstanz gültig ist. **Die Engine überprüft keine Raum-Mitgliedschaft und erstellt keine Räume.**
+
+```js
+import {createLobbyGameBridge} from './engine/LobbyGameBridge.js';
+const bridge = createLobbyGameBridge(launcher);
+const active = bridge.prepare({
+  roomId: existingRoom.id,
+  matchId: selectedMatch.id,
+  gameId: selectedGame.id,
+  players: lobbyPlayers,
+  options: selectedGameOptions
+});
+active.start();
+// Aktionen: active.dispatch(playerId, action), Bots: active.botTurn(botId)
+const finished = active.completion(); // null bis zum Spielende
+// finished: {roomId, matchId, gameId, generation, revision, players, result}
+```
+
+Die Ergebnisübergabe ist **lesend und wiederholbar**, kein Netzwerk- oder Speicheraufruf. Die gemeinsame Auswertung übernimmt ein Ergebnis pro `(roomId, matchId, generation)` höchstens einmal (idempotente Verarbeitung). Ein erneuter Abruf von `completion()` darf keine zweite Punktevergabe auslösen. Die Zuordnung von individuellen Spielresultaten zu Turnierpunkten und die Rücknavigation bleiben Aufgaben des übergeordneten Systems.
+
+Für jedes neue Minispiel gelten dieselben Grenzen: keine eigene Raumverwaltung, keine eigenen Spieleridentitäten, keine eigenen Netzwerkverbindungen und keine Speicherung innerhalb der Spiellogik. Der Bridge-Adapter ist zunächst rein lokal und wird erst nach den Offline-Minispielen und dem Partybrettspiel an den gemeinsamen Online-Hub angebunden.
