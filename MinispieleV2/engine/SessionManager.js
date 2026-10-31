@@ -10,7 +10,7 @@ export function createManagedSession(game, players, options = {}) {
   const accepted = new Map();
   const view = () => Object.freeze({phase, generation, ...session.snapshot()});
   // Lifecycle transitions depend only on the game's result contract, never on a fixed round or timer.
-  const updatePhase = result => { if (result !== null) phase = 'finished'; };
+  const committedView = next => Object.freeze({phase: next.result === null ? 'playing' : 'finished', generation, ...next});
   return Object.freeze({
     snapshot: view,
     players: () => playerManager.list(),
@@ -38,8 +38,9 @@ export function createManagedSession(game, players, options = {}) {
       if (expectedRevision !== undefined && expectedRevision !== session.snapshot().revision) throw Error('STALE_REVISION');
       const next = session.dispatch(playerId, action);
       if (key !== null) accepted.set(key, JSON.stringify(action));
-      updatePhase(next.result);
-      return view();
+      const response = committedView(next);
+      phase = response.phase;
+      return response;
     },
     botTurn(playerId) {
       if (phase !== 'playing') throw Error('SESSION_NOT_PLAYING');
@@ -50,11 +51,13 @@ export function createManagedSession(game, players, options = {}) {
     },
     restart() {
       if (phase !== 'finished') throw Error('SESSION_NOT_FINISHED');
-      session.restart();
-      generation++;
+      const next = session.restart();
+      const nextGeneration = generation + 1;
+      const response = Object.freeze({phase: 'ready', generation: nextGeneration, ...next});
+      generation = nextGeneration;
       accepted.clear();
       phase = 'ready';
-      return view();
+      return response;
     }
   });
 }
