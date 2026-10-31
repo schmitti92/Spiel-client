@@ -26,3 +26,26 @@ test('shared roster remains isolated from external mutations',()=>{
  manager.list()[0].type='bot';
  assert.equal(manager.isHuman('a'),true);
 });
+
+test('rejects duplicate, missing and invalid participant identities',()=>{
+ const invalid=[[],humans(5),[{id:'x',type:'human'},{id:'x',type:'bot'}],[{id:'',type:'human'}],[{id:'x',type:'spectator'}],[null]];
+ for(const roster of invalid)assert.throws(()=>createPlayerManager(roster));
+});
+test('invalid game limits never mutate the original roster',()=>{
+ const roster=humans(2);
+ const before=structuredClone(roster);
+ for(const game of [{minPlayers:0},{maxPlayers:5},{minPlayers:3,maxPlayers:2},{minPlayers:1.5},{maxPlayers:NaN},null]){
+  assert.throws(()=>validateGamePlayers(roster,game));
+  assert.deepEqual(roster,before);
+ }
+});
+test('unknown identities and role checks have stable error codes',()=>{
+ const manager=createPlayerManager([{id:'h',type:'human'},{id:'b',type:'bot'}]);
+ assert.equal(manager.get('missing'),null);
+ assert.equal(manager.isBot('missing'),false);
+ assert.equal(manager.isHuman('missing'),false);
+ assert.throws(()=>manager.requireHuman('missing'),/UNKNOWN_PLAYER/);
+ assert.throws(()=>manager.requireBot('missing'),/UNKNOWN_PLAYER/);
+ assert.throws(()=>manager.requireHuman('b'),/PLAYER_NOT_HUMAN/);
+ assert.throws(()=>manager.requireBot('h'),/PLAYER_NOT_BOT/);
+});
