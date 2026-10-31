@@ -146,6 +146,38 @@ main{
 #play{background-color:#170d09!important}
 #word{width:min(96%,1100px)!important}
 footer{color:#e4e3c7;text-shadow:0 2px 5px #000}
+
+/* Tablet visual refinement V4: closer prompt, wide word, warm wood, prominent logo */
+header h1{
+ width:clamp(320px,51vw,780px)!important;
+ height:clamp(55px,9.5vh,120px)!important;
+ max-width:calc(100vw - 180px)!important;
+}
+#play{
+ background-image:linear-gradient(90deg,#241006a6,#3415088c 13%,#2b110878 50%,#3415088c 87%,#241006a6),url('./assets/farbenblitz-wood.svg')!important;
+ background-blend-mode:multiply,normal!important;
+}
+.question{
+ grid-template-rows:min-content minmax(0,1fr)!important;
+ align-content:center!important;
+ gap:3px!important;
+}
+.question p{align-self:end!important;margin-bottom:2px!important}
+#word{
+ width:82%!important;
+ max-width:none!important;
+ height:clamp(80px,17vh,150px)!important;
+ max-height:100%!important;
+ min-height:0!important;
+ align-self:start!important;
+ font-size:clamp(44px,9vh,94px)!important;
+}
+@media(orientation:landscape) and (max-height:900px){
+#play{grid-template-rows:min-content minmax(0,1fr) minmax(0,1.25fr)!important}
+.question{grid-template-rows:min-content minmax(0,1fr)!important;align-content:center!important}
+#word{width:84%!important;height:clamp(72px,15vh,125px)!important;max-height:100%!important;font-size:clamp(42px,8vh,78px)!important}
+}
+@media(max-width:650px){header h1{max-width:calc(100vw - 95px)!important}#word{width:92%!important;height:clamp(60px,14vh,105px)!important}}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <section id="setup"><div class="controls">
