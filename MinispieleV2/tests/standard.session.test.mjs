@@ -39,3 +39,11 @@ test('strict V2 session rejects invalid initial result',()=>{
  const invalid={...game,id:'invalid-start',getResult:()=>({finished:true,results:[]})};
  assert.throws(()=>createStandardSession(invalid,players),/INVALID_RESULT_COUNT/);
 });
+
+test('invalid completed result cannot change state or revision',()=>{
+ const invalid={...game,id:'rollback-check',getResult:state=>state.finished?{ranking:[]}:null};
+ const session=createStandardSession(invalid,players);
+ const before=session.snapshot();
+ assert.throws(()=>session.dispatch('a',{type:'finish'}),/INVALID_RESULT_FORMAT/);
+ assert.deepEqual(session.snapshot(),before);
+});
