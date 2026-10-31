@@ -1029,6 +1029,7 @@ function render(){
  el('account-name').textContent=account?.profile?.name||account?.user?.email||'Noch nicht angemeldet';
  el('account-info').textContent=account?'Dein verifiziertes Online-Spielerprofil ist verbunden.':'Bitte anmelden oder ein Profil erstellen, um einen Raum zu betreten.';
  el('login-btn').textContent=account?'Profil ansehen':'Anmelden';
+ el('room-code').textContent=room?.code||code||'——————';
  const inside=!!room;
  if(inside&&room.phase==='lobby'&&!room.game&&new URL(location.href).searchParams.get('stage')==='1'){
   location.replace('spielauswahl-online.html?room='+encodeURIComponent(room.code));
@@ -1265,6 +1266,7 @@ window.addEventListener('spielonline-change',()=>{
  const uid=activeProfile()?.user?.uid||null;
  if(uid!==accountUid){const previousUid=accountUid;accountUid=uid;if(room&&previousUid&&uid&&previousUid!==uid){const savedCode=code;pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=savedCode;render();notice('Spielerprofil gewechselt. Der bisherige Raumcode bleibt erhalten; Zugriff wird erneut geprüft.');}else if(room&&previousUid&&!uid){const savedCode=code;pollStop();room=null;choosingGame=false;displayGame=null;pendingRoomRecovery=savedCode;render();notice('Anmeldung unterbrochen. Der Raumcode bleibt erhalten.');}}
  render();if(uid)void recoverPendingRoom();
+ else if(pendingRoomRecovery){const state=window.SpielOnline?.state?.();notice('Raum '+pendingRoomRecovery+' gespeichert. Online-Profil: '+(state?.status||'nicht initialisiert')+(state?.error?' – '+state.error:'')+'.');}
 });
 async function boot(){
  render();
@@ -1282,7 +1284,7 @@ async function boot(){
  pendingRoomRecovery=requestedCode;
  notice('Bestehender Raum '+requestedCode+' wird geladen …');
  if(activeProfile())void recoverPendingRoom();
- else notice('Raum '+requestedCode+' gespeichert. Warte auf die Online-Anmeldung …');
+ else {const state=window.SpielOnline?.state?.();notice('Raum '+requestedCode+' gespeichert. Online-Profil: '+(state?.status||'nicht initialisiert')+(state?.error?' – '+state.error:'')+'.');}
 }
 setPlayMode(playMode);
 boot();
