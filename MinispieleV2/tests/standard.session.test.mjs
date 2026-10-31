@@ -61,3 +61,16 @@ test('game action exceptions do not mutate session',()=>{
  assert.throws(()=>session.dispatch('a',{type:'unsupported'}),/INVALID_ACTION/);
  assert.deepEqual(session.snapshot(),before);
 });
+
+test('invalid restart result cannot change state or revision',()=>{
+ let starts=0;
+ const invalid={...game,id:'invalid-restart',initialState:ps=>{
+  starts++;
+  return {finished:starts>1,scores:Object.fromEntries(ps.map(p=>[p.id,0]))};
+ },getResult:state=>state.finished?{ranking:[]}:null};
+ const session=createStandardSession(invalid,players);
+ session.dispatch('a',{type:'finish'});
+ const before=session.snapshot();
+ assert.throws(()=>session.restart(),/INVALID_RESULT_FORMAT/);
+ assert.deepEqual(session.snapshot(),before);
+});
