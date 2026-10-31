@@ -66,8 +66,8 @@ test('invalid restart result cannot change state or revision',()=>{
  let starts=0;
  const invalid={...game,id:'invalid-restart',initialState:ps=>{
   starts++;
-  return {finished:starts>1,scores:Object.fromEntries(ps.map(p=>[p.id,0]))};
- },getResult:state=>state.finished?(starts>1?{ranking:[]}:{finished:true,results:Object.entries(state.scores).map(([playerId,score])=>({playerId,score}))}):null};
+  return {finished:starts>1,invalidRestart:starts>1,scores:Object.fromEntries(ps.map(p=>[p.id,0]))};
+ },getResult:state=>state.finished?(state.invalidRestart?{ranking:[]}:{finished:true,results:Object.entries(state.scores).map(([playerId,score])=>({playerId,score}))}):null};
  const session=createStandardSession(invalid,players);
  session.dispatch('a',{type:'finish'});
  const before=session.snapshot();
