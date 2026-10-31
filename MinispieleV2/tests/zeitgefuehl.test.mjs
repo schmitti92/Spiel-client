@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const load=async path=>import('data:text/javascript;charset=utf-8,'+encodeURIComponent(readFileSync(new URL(path,import.meta.url),'utf8')));
-const {createSession}=await load('../engine/MiniGameEngine.js');
+const contractUrl='data:text/javascript;charset=utf-8,'+encodeURIComponent(readFileSync(new URL('../engine/GameContract.js',import.meta.url),'utf8'));
+const engineSource=readFileSync(new URL('../engine/MiniGameEngine.js',import.meta.url),'utf8').replace("'./GameContract.js'",JSON.stringify(contractUrl));
+const {createSession}=await import('data:text/javascript;charset=utf-8,'+encodeURIComponent(engineSource));
 const game=await load('../games/zeitgefuehl/game.js');
 test('Zeitgefühl ends after every participant submits and scores nearest first',()=>{
  const session=createSession(game,[{id:'a',type:'human'},{id:'b',type:'bot'}],{targetSeconds:14});
