@@ -33,3 +33,19 @@ test('bots use the same action pipeline',()=>{
  assert.equal(s.botTurn('bot').state.score.bot,1);
  assert.throws(()=>s.dispatch('missing',{type:'score',value:1}),/UNKNOWN_PLAYER/);
 });
+
+test('rejects invalid initial state without creating a session',()=>{
+ for (const invalid of [null, 0, 'bad']) {
+  const broken={...game,initialState:()=>invalid};
+  assert.throws(()=>createSession(broken,[{id:'a',type:'human'}]),/INVALID_INITIAL_STATE/);
+ }
+});
+test('invalid restarted state preserves prior state and revision',()=>{
+ let starts=0;
+ const broken={...game,initialState:ps=>++starts===1?game.initialState(ps):null};
+ const session=createSession(broken,[{id:'a',type:'human'}]);
+ session.dispatch('a',{type:'score',value:3});
+ const before=session.snapshot();
+ assert.throws(()=>session.restart(),/INVALID_INITIAL_STATE/);
+ assert.deepEqual(session.snapshot(),before);
+});
