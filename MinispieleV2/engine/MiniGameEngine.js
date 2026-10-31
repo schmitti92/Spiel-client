@@ -1,19 +1,18 @@
+import {validateGameDefinition,GAME_CONTRACT_VERSION} from './GameContract.js';
 /**
  * MiniGame Engine 2.0 — pure game-session orchestration.
  * No DOM, network, browser storage or player identity handling.
  */
-export const CONTRACT_VERSION = 1;
-const required = ['id','initialState','applyAction','getResult','botAction'];
+export const CONTRACT_VERSION = GAME_CONTRACT_VERSION;
 const clone = value => structuredClone(value);
 const assert = (condition,message) => { if(!condition) throw new Error(message); };
 export function validateGame(game) {
- assert(game && typeof game === 'object','GAME_REQUIRED');
- for(const key of required) assert(typeof game[key] === (key==='id'?'string':'function'),'GAME_CONTRACT_'+key);
- return game;
+ return validateGameDefinition(game);
 }
 export function createSession(game, players, options = {}) {
  validateGame(game);
  assert(Array.isArray(players) && players.length>=1 && players.length<=4,'PLAYER_COUNT_1_TO_4');
+ assert(players.length >= (game.minPlayers ?? 1) && players.length <= (game.maxPlayers ?? 4),'GAME_PLAYER_LIMITS');
  const ids = players.map(p=>p.id);
  assert(players.every(p=>typeof p.id==='string' && p.id && ['human','bot'].includes(p.type)),'INVALID_PLAYER');
  assert(new Set(ids).size===ids.length,'DUPLICATE_PLAYER');
