@@ -18,7 +18,8 @@ export function createSession(game, players, options = {}) {
  assert(players.every(p=>typeof p.id==='string' && p.id && ['human','bot'].includes(p.type)),'INVALID_PLAYER');
  assert(new Set(ids).size===ids.length,'DUPLICATE_PLAYER');
  const roster=clone(players.map(({id,type})=>({id,type})));
- const initial=game.initialState(clone(roster),clone(options));
+ const sessionOptions=clone(options);
+ const initial=game.initialState(clone(roster),clone(sessionOptions));
  assert(initial && typeof initial==='object' && !Array.isArray(initial),'INVALID_INITIAL_STATE');
  let state=clone(initial);
  let revision=0;
@@ -43,7 +44,7 @@ export function createSession(game, players, options = {}) {
    return this.dispatch(playerId,action);
   },
   restart() {
-   const next=game.initialState(clone(roster),clone(options));
+   const next=game.initialState(clone(roster),clone(sessionOptions));
    assert(next && typeof next==='object' && !Array.isArray(next),'INVALID_INITIAL_STATE');
    const candidate=clone(next);
    const result=makeSnapshot(candidate,revision+1);
