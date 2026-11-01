@@ -1,0 +1,26 @@
+name: MiniGame Engine guard
+on:
+  pull_request:
+    paths:
+      - 'MinispieleV2/engine/**'
+      - 'MinispieleV2/games.js'
+      - '.github/workflows/minigame-engine-guard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'MinispieleV2/engine/**'
+      - 'MinispieleV2/games.js'
+      - '.github/workflows/minigame-engine-guard.yml'
+permissions:
+  contents: read
+jobs:
+  engine-change-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Warn when engine internals change
+        run: |
+          echo "::warning::Shared MiniGame Engine changed. Review contracts, player counts and affected games before release."
+          echo "Engine changes must be intentional and accompanied by tests."
