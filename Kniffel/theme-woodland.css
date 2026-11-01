@@ -230,3 +230,27 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 }
 @media(max-width:850px){.tabletop .tray{--die-size:min(95px,calc((100% - 44px)/5));gap:5px}}
 @media(prefers-reduced-motion:reduce){.tabletop .die.just-rolled:not(.held){animation:none}}
+
+/* Dice v5.1: seamless wooden dice faces, no image background artifacts. */
+.tabletop .tray button.die:not(.unrolled){
+  background:
+    radial-gradient(ellipse at 25% 18%,#fff0c4aa,transparent 58%),
+    repeating-linear-gradient(93deg,transparent 0 9px,#99602d13 10px 11px,transparent 12px 21px),
+    linear-gradient(140deg,#f4d5a1 0%,#e8bb7f 54%,#b47b43 100%)!important;
+  border:2px solid #bd884b!important;
+  border-radius:clamp(12px,1.3vw,19px)!important;
+  box-shadow:inset 4px 5px 7px #fff3cfaa,inset -8px -9px 11px #80502c88,2px 4px 0 #89582f,4px 10px 9px #001d1499!important;
+}
+.tabletop .tray button.die:not(.unrolled) .pips{
+  opacity:1!important;display:grid!important;width:76%;height:76%;gap:2px;
+}
+.tabletop .tray button.die:not(.unrolled) .pip{
+  width:clamp(8px,1.15vw,15px);height:clamp(8px,1.15vw,15px);
+  background:radial-gradient(circle at 45% 40%,#100c0a 0%,#26190e 62%,#704a2a 95%)!important;
+  box-shadow:inset 1px 2px 2px #070401c9,0 1px 1px #ffe3aeaa!important;
+}
+.tabletop .tray button.die.held:not(.unrolled){
+  background:radial-gradient(ellipse at 24% 16%,#fff9c8b8,transparent 55%),linear-gradient(135deg,#ffdf79,#e8ae39 65%,#bd7924)!important;
+  border-color:#f7d36b!important;
+  box-shadow:inset 4px 5px 7px #fff4c5a8,inset -8px -9px 11px #99611d88,2px 4px 0 #a86c24,0 0 18px #ffce5a88,4px 10px 9px #001d1499!important;
+}
