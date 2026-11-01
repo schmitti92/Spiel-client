@@ -262,7 +262,8 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
  left:0!important;top:0!important;
  width:100%!important;height:100%!important;
  max-width:none!important;max-height:none!important;
- transform:none!important;
+ transform:scale(2.35)!important;
+ transform-origin:center center!important;
  object-fit:contain!important;
  filter:drop-shadow(1px 6px 4px #001a1199)!important;
  pointer-events:none;
