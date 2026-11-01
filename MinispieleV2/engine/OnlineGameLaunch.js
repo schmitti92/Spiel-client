@@ -4,7 +4,7 @@
  */
 export function nextMiniGameLaunch(room,currentMatchId=null){
  const match=room?.match;
- if(room?.phase!=='playing'||!match||typeof match.id!=='string'||!match.id||
+ if(room?.phase!=='playing'||!match||match.farbenblitz?.phase==='finished'||typeof match.id!=='string'||!match.id||
     typeof match.game!=='string'||!match.game)return null;
  if(!Array.isArray(room.players)||!room.players.some(p=>p.me&&p.participating))return null;
  if(match.id===currentMatchId)return null;
