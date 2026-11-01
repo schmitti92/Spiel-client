@@ -297,7 +297,7 @@ $('online-abort').onclick=async()=>{
  if(!window.confirm(msg))return;
  if(!host){location.assign('./lobby.html?room='+encodeURIComponent(code)+'&stay=1');return}
  if(busy)return;busy=true;$('online-abort').disabled=true;
- try{await request('/finish',{});location.assign('./lobby.html?room='+encodeURIComponent(code)+'&stay=1')}
+ try{await request('/cancel',{});location.assign('./lobby.html?room='+encodeURIComponent(code)+'&stay=1')}
  catch(e){busy=false;$('online-abort').disabled=false;status('Abbrechen fehlgeschlagen: '+e.message)}
 };
 $('online-undo').onclick=()=>send({type:'undo-request'});
