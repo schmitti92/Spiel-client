@@ -217,3 +217,18 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
  #game #sheet .wood-score .wood-score-heading{padding-block:3px!important}
  #game #sheet .wood-score .compact-score-summary{min-height:23px!important;padding-block:1px!important}
 }
+
+
+/* Three-column variant: same parchment, green headings, blue ink and gold totals. */
+#game #sheet:has(.wood-variant-table){display:flex!important;flex-direction:column!important;overflow:hidden!important}
+#game #sheet .wood-variant-table{width:100%!important;height:100%!important;flex:1!important;table-layout:fixed!important;border-collapse:separate!important;border-spacing:2px!important;font-family:Georgia,serif!important}
+#game #sheet .wood-variant-table tr{height:auto!important}
+#game #sheet .wood-variant-table th,#game #sheet .wood-variant-table td{padding:clamp(2px,.45dvh,6px) 5px!important;border:1px solid #d7c19d!important;border-radius:5px!important;background:#fff8e9c9!important}
+#game #sheet .wood-variant-table th.score-player-head,#game #sheet .wood-variant-table tr.score-directions th{background:linear-gradient(90deg,#165f41,#2b8155)!important;color:#fff5d9!important;font-weight:800!important}
+#game #sheet .wood-variant-table .score-label{width:38%!important;font-weight:700!important;color:#35251a!important;font-size:clamp(11px,1.08vw,17px)!important}
+#game #sheet .wood-variant-table .score-player-cell{width:20.6%!important;text-align:center!important;font:bold italic clamp(18px,2vw,29px) Georgia,serif!important;color:#1d3b69!important}
+#game #sheet .wood-variant-table .score-open{background:#eaf3d6!important;cursor:pointer!important;touch-action:manipulation!important}
+#game #sheet .wood-variant-table .score-open:focus-visible{outline:2px solid #21794a!important}
+#game #sheet .wood-variant-table .score-summary td{background:#e5e8b2!important;font-weight:800!important;font-size:clamp(13px,1.4vw,21px)!important}
+#game #sheet .wood-variant-table .score-total td{background:linear-gradient(100deg,#ffe37a,#efb92c)!important;color:#3b260e!important;font-size:clamp(17px,1.8vw,26px)!important}
+#game #sheet .wood-variant-table .score-bonus td{background:#f3c7d2!important}
