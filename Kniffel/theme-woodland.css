@@ -1,7 +1,7 @@
 /* Kniffel woodland theme v2 — independent of rules and game state */
 :root{--wood-dark:#28170f;--wood:#6c3e20;--gold:#dfb66a;--paper:#f1dcb1;--felt:#125236}
 body{background:#24190f!important;isolation:isolate}
-body::before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(15,23,16,.04) 0%,rgba(17,28,18,.24) 30%,rgba(29,17,10,.78) 55%,rgba(23,13,8,.94) 100%),url("assets/forest.webp") center center/cover no-repeat,linear-gradient(175deg,#d99b62 0%,#876e53 20%,#25442f 38%,#152a20 52%,#482914 60%,#2c190e 100%);pointer-events:none}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(15,23,16,.04) 0%,rgba(17,28,18,.24) 30%,rgba(29,17,10,.78) 55%,rgba(23,13,8,.94) 100%),url("forest.webp") center center/cover no-repeat,linear-gradient(175deg,#d99b62 0%,#876e53 20%,#25442f 38%,#152a20 52%,#482914 60%,#2c190e 100%);pointer-events:none}
 body::after{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(12,22,15,.15),rgba(31,17,10,.35) 50%,rgba(26,14,7,.75));pointer-events:none}
 header{background:linear-gradient(180deg,#28180eea,#2e1b11ca)!important;border-bottom:2px solid #b98b46;box-shadow:0 4px 18px #0007;position:relative;z-index:1}
 header h1{font-family:Georgia,serif!important;color:#ffe0a0!important;text-shadow:0 2px 4px #000,0 0 14px #b57a2d;font-size:clamp(23px,2.5vw,39px)!important}
