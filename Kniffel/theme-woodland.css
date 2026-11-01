@@ -1,0 +1,34 @@
+/* Kniffel woodland theme v2 — independent of rules and game state */
+:root{--wood-dark:#28170f;--wood:#6c3e20;--gold:#dfb66a;--paper:#f1dcb1;--felt:#125236}
+body{background:#24190f!important;isolation:isolate}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(90deg,rgba(23,17,12,.80),rgba(19,28,17,.50) 52%,rgba(29,18,12,.76)),url("../Assets/game-backgrounds/kniffel-kachel.webp") center 32%/cover no-repeat;filter:blur(8px) saturate(.85);transform:scale(1.035);pointer-events:none}
+body::after{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(12,22,15,.15),rgba(31,17,10,.35) 50%,rgba(26,14,7,.75));pointer-events:none}
+header{background:linear-gradient(180deg,#28180eea,#2e1b11ca)!important;border-bottom:2px solid #b98b46;box-shadow:0 4px 18px #0007;position:relative;z-index:1}
+header h1{font-family:Georgia,serif!important;color:#ffe0a0!important;text-shadow:0 2px 4px #000,0 0 14px #b57a2d;font-size:clamp(23px,2.5vw,39px)!important}
+#players{position:relative;z-index:1}
+.player{background:linear-gradient(145deg,#412b1b,#24170f)!important;border:2px solid #986c37!important;color:#ffe8c4!important;box-shadow:0 3px 10px #0007}
+.player.active{border-color:#ffe18c!important;box-shadow:0 0 18px #ffca66a8!important}
+.scores{background:linear-gradient(105deg,#f6e4bf,#e8cca0)!important;border:9px ridge #a9773d!important;box-shadow:0 10px 26px #0009,inset 0 0 18px #b68c4544!important}
+.scores h2{font-family:Georgia,serif;color:#4c2a16}
+.scores th{color:#4b2b1b;border-bottom:2px solid #b89053!important}
+.scores td{border-bottom:1px solid #a7814e77!important}
+.scores tr:last-child{background:#165c38;color:#fff4d0;font-weight:900}
+.scores tr:last-child td{border-color:#d3ac66!important}
+.scores tr:nth-last-child(2){background:#f1c77c66}
+.tabletop{background:linear-gradient(155deg,#4c2a16,#6b3e1f 42%,#321e13)!important;border:9px ridge #a9763e!important;box-shadow:0 12px 28px #0009,inset 0 0 20px #0005!important;color:#f8ebce}
+.tabletop #status{font-family:Georgia,serif;text-shadow:0 2px 4px #000a}
+.tray{background:radial-gradient(ellipse at 50% 40%,#176443,#07351e)!important;border:12px ridge #b58142!important;box-shadow:inset 0 0 40px #001a0f,0 6px 15px #0008!important}
+.die{background:linear-gradient(135deg,#fffef6,#e8dfc8)!important;border-color:#eee0b9!important}
+.die.held{background:linear-gradient(135deg,#fff0ac,#e9bd54)!important}
+#roll{background:linear-gradient(#27944a,#086027 65%,#03491e)!important;border:3px solid #e5c16b!important;color:#fff8e1!important;text-shadow:0 2px 2px #073817;box-shadow:0 5px 15px #0008,inset 0 2px 4px #ffffff5c}
+.social-extension{background:linear-gradient(90deg,#382314,#53331d,#382314);border:2px solid #916334;border-radius:13px;margin-top:auto!important;flex-shrink:0}
+.extension-slot{color:#f4dba6;opacity:.85}
+@media(min-width:851px) and (orientation:landscape){
+ #game .layout{grid-template-columns:minmax(350px,46%) minmax(0,1fr)!important;gap:clamp(10px,1.4vw,24px)!important}
+ #game .scores{height:100%;align-self:stretch!important}
+ #game .tabletop{height:100%;min-height:0}
+ #game .tray{max-height:48%;min-height:150px}
+ #game .scores h2{margin-bottom:5px!important}
+ #game #sheet table{height:100%!important}
+}
+@media(max-width:850px){body{overflow:auto!important}.social-extension{margin-top:16px!important}}
