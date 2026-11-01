@@ -439,3 +439,34 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 .tabletop .die.unrolled:nth-child(even){transform:rotate(2deg)!important}
 .tabletop .die.unrolled .die-ready{width:100%!important;height:100%!important;display:grid!important;place-items:center!important;font-size:clamp(29px,3.5vw,48px)!important;line-height:1!important}
 @media(prefers-reduced-motion:reduce){#sheet button.score-choice{transition:none!important}}
+
+
+/* Phase 4.3 — starter face: the visible wooden square is its own layer.
+   Prevent inherited ::before bevel and ::after shine from looking like a pill. */
+.tabletop .tray button.die.unrolled{
+  position:relative!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:var(--die-size)!important;height:var(--die-size)!important;
+  min-height:var(--die-size)!important;max-height:var(--die-size)!important;
+  flex:0 0 var(--die-size)!important;aspect-ratio:1!important;
+  padding:0!important;line-height:1!important;
+  background:transparent!important;border:0!important;
+  border-radius:18px!important;box-shadow:none!important;
+  overflow:visible!important;
+}
+.tabletop .tray button.die.unrolled::before{
+  content:""!important;display:block!important;position:absolute!important;
+  inset:3px!important;z-index:0!important;
+  border:2px solid #bd8649!important;border-radius:17px!important;
+  background:radial-gradient(ellipse at 26% 14%,#fff3d4c9,transparent 60%),repeating-linear-gradient(93deg,transparent 0 8px,#96612c16 9px 10px,transparent 11px 18px),linear-gradient(140deg,#f8dda8,#c58e51)!important;
+  box-shadow:inset 4px 4px 7px #fff4d4b5,inset -8px -9px 12px #88542c91,2px 5px 0 #85542d,4px 10px 10px #001e1480!important;
+  pointer-events:none!important;
+}
+.tabletop .tray button.die.unrolled::after{content:none!important;display:none!important}
+.tabletop .tray button.die.unrolled .die-ready{
+  position:relative!important;z-index:1!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;height:100%!important;line-height:1!important;
+  color:#67421f!important;text-shadow:0 1px 1px #fff0c2!important;
+  transform:none!important;
+}
