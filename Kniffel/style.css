@@ -1,114 +1,78 @@
-:root{font-family:system-ui,sans-serif;color:#f9edd6;background:#2b180f}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:repeating-linear-gradient(92deg,#382115 0 65px,#45291a 67px 70px,#321c12 72px 145px)}header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 3vw;background:#21140fbb}header h1{margin:0;font-family:Georgia,serif;color:#f8d68e}a{color:#ffdf9b}button,select,input{font:inherit}button{border:2px solid #dfbb70;border-radius:12px;background:linear-gradient(#f6d88a,#c18b36);color:#302012;font-weight:800;padding:11px 18px;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}main{max-width:1400px;margin:auto;padding:20px}.panel{border:4px ridge #a7793e;border-radius:16px;background:#ead7ad;color:#392918;padding:16px;box-shadow:0 8px 24px #0006}#setup{max-width:580px;margin:5vh auto}#slots{display:grid;gap:10px;margin-bottom:20px}.slot{display:flex;gap:10px;align-items:center}.slot input{min-width:0;flex:1}.slot select{width:130px}.slot input,.slot select{padding:10px;border:1px solid #aa8c64;border-radius:8px}#players{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}.player{background:#392418;border:2px solid #866037;padding:10px 20px;border-radius:12px;min-width:125px;text-align:center}.player.active{border-color:#f7d570;box-shadow:0 0 14px #efbf62}.layout{display:grid;grid-template-columns:minmax(340px,46%) 1fr;gap:20px;align-items:start}.scores{overflow:auto}.scores h2{margin:0 0 12px}table{border-collapse:collapse;width:100%;font-size:clamp(12px,1.25vw,16px)}td,th{border-bottom:1px solid #baa17b;padding:8px 5px;text-align:center}td:first-child,th:first-child{text-align:left;white-space:nowrap}td button{padding:5px 8px;min-width:40px;font-size:13px}.tabletop{min-height:450px;border:10px ridge #6f4828;border-radius:24px;background:radial-gradient(ellipse,#26734d,#0e422c);padding:26px;text-align:center;box-shadow:inset 0 0 45px #082a20,0 10px 20px #0008}.tray{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:40px 10px;margin:28px auto;border:9px solid #80532d;border-radius:22px;background:#145035;box-shadow:inset 0 6px 25px #072a1d}.die{width:clamp(58px,7vw,92px);height:clamp(58px,7vw,92px);background:#fff8e9;border:3px solid #d5c7a7;border-radius:15px;box-shadow:5px 7px 3px #09271c;color:#24211c;font-size:40px;display:grid;place-items:center;padding:0;transition:transform .2s}.die.held{background:#f8d376;border-color:#fff0a4;transform:translateY(-14px);box-shadow:0 0 20px #f9c856}.tabletop p{color:#d6e6d9}#status{font-size:22px;font-weight:800}#notice{padding:16px;font-weight:700}#roll{font-size:20px}#game[hidden],#setup[hidden]{display:none}@media(max-width:850px){.layout{grid-template-columns:1fr}.tabletop{min-height:320px;grid-row:1}.tray{margin:15px auto;padding:25px 5px}.scores{grid-row:2}main{padding:10px}header h1{font-size:22px}}
-/* Kniffel tablet landscape: compact scorecard and realistic dice */
-@media (min-width:851px) and (orientation:landscape){
- main{max-width:1600px;padding:8px 14px}
- header{padding:5px 2vw;min-height:44px}
- header h1{font-size:25px}
- header button{padding:5px 12px}
- #players{margin:3px 0 8px;gap:8px}
- .player{padding:5px 12px;min-width:110px;font-size:13px}
- .layout{grid-template-columns:minmax(440px,48%) minmax(0,1fr);gap:12px}
- .scores{padding:8px 12px;overflow:visible}
- .scores h2{font-size:19px;margin:0 0 3px}
- .scores table{font-size:clamp(11px,1vw,14px)}
- .scores td,.scores th{padding:2px 4px;line-height:1.15;height:29px}
- .scores td button{padding:2px 7px;min-width:34px;line-height:1.15}
- .tabletop{min-height:0;padding:15px 12px;border-width:7px}
- .tray{margin:12px auto;padding:26px 6px 17px;gap:10px;border-width:7px}
- .tabletop p{margin:8px}
- #notice{padding:8px}
- #roll{font-size:17px;padding:8px 18px}
- #status{font-size:19px}
-}
-.die{position:relative;flex:none;box-shadow:inset -6px -7px 10px #c8bea9, inset 4px 4px 7px #fff,5px 7px 5px #082a1e;transform:rotate(-2deg);border-radius:17px}
+/* Kniffel layout v2: one source of truth, no historical overrides */
+:root{font-family:system-ui,sans-serif;color:#f9edd6;background:#2b180f}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 2vw;min-height:52px}
+header h1{margin:0;font:700 clamp(22px,2.5vw,35px) Georgia,serif}
+a{color:#ffdf9b}
+button,select,input{font:inherit}
+button{border:2px solid #dfbb70;border-radius:12px;background:linear-gradient(#f6d88a,#c18b36);color:#302012;font-weight:800;padding:9px 14px;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.header-actions{display:flex;align-items:center;gap:8px}
+#fullscreen{background:linear-gradient(#2c604b,#17402e);color:#f8e5ae;border-color:#c69b4c}
+main{width:100%;max-width:1600px;margin:auto;padding:8px 14px 12px}
+.panel{border:4px ridge #a7793e;border-radius:16px;background:#ead7ad;color:#392918;padding:12px;box-shadow:0 8px 24px #0006}
+#setup{max-width:580px;margin:5vh auto}
+#slots{display:grid;gap:10px;margin-bottom:20px}
+.slot{display:flex;gap:10px;align-items:center}
+.slot input{min-width:0;flex:1}
+.slot select{width:130px}
+.slot input,.slot select{padding:10px;border:1px solid #aa8c64;border-radius:8px}
+#game[hidden],#setup[hidden],#fullscreen-hint[hidden]{display:none}
+#players{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 6px}
+.player{background:#392418;border:2px solid #866037;padding:5px 12px;border-radius:12px;min-width:110px;text-align:center;font-size:13px}
+.player.active{border-color:#f7d570;box-shadow:0 0 14px #efbf62}
+.layout{display:grid;grid-template-columns:minmax(0,46fr) minmax(0,54fr);gap:clamp(10px,1.4vw,24px);align-items:stretch;min-height:0}
+.scores{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.scores h2{margin:0 0 5px;font-size:clamp(15px,2.2dvh,20px);line-height:1.1}
+#sheet{min-height:0;flex:1}
+#sheet table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:clamp(10px,1.55dvh,14px);height:100%}
+#sheet td,#sheet th{border-bottom:1px solid #baa17b;padding:1px 4px;text-align:center;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sheet td:first-child,#sheet th:first-child{text-align:left;width:34%}
+#sheet td button{min-width:28px;min-height:19px;padding:0 5px;font-size:inherit;line-height:1.1;border-radius:7px}
+.tabletop{min-width:0;min-height:0;border:9px ridge #6f4828;border-radius:24px;background:radial-gradient(ellipse,#26734d,#0e422c);padding:clamp(10px,2dvh,24px);text-align:center;display:flex;flex-direction:column;align-items:stretch}
+#status{font-size:clamp(18px,2.8dvh,29px);font-weight:800}
+.tray{width:100%;min-height:125px;flex:1;max-height:48%;display:flex;flex-wrap:wrap;justify-content:center;align-content:center;align-items:center;gap:clamp(5px,1vw,14px);padding:12px 6px;margin:clamp(8px,2dvh,22px) auto;border:9px solid #80532d;border-radius:22px;background:#145035;box-shadow:inset 0 6px 25px #072a1d}
+.die{width:clamp(48px,6vw,92px);height:clamp(48px,6vw,92px);background:#fff8e9;border:3px solid #d5c7a7;border-radius:17px;box-shadow:inset -6px -7px 10px #c8bea9,inset 4px 4px 7px #fff,5px 7px 5px #082a1e;color:#24211c;display:grid;place-items:center;padding:0;transition:transform .2s;transform:rotate(-2deg);flex:none}
 .die:nth-child(even){transform:rotate(3deg)}
-.die.held,.die.held:nth-child(even){transform:translateY(-12px) rotate(0)}
+.die.held,.die.held:nth-child(even){background:#f8d376;transform:translateY(-12px);box-shadow:0 0 20px #f9c856}
 .pips{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:75%;height:75%;gap:3px;align-items:center;justify-items:center}
 .pip{width:clamp(7px,1.1vw,12px);height:clamp(7px,1.1vw,12px);border-radius:50%;background:radial-gradient(circle at 35% 30%,#41413e,#111 70%);box-shadow:inset 1px 1px 2px #0009,1px 1px 1px #fff8;visibility:hidden}
 .face-1 .pip-4,.face-2 .pip-0,.face-2 .pip-8,.face-3 .pip-0,.face-3 .pip-4,.face-3 .pip-8,.face-4 .pip-0,.face-4 .pip-2,.face-4 .pip-6,.face-4 .pip-8,.face-5 .pip-0,.face-5 .pip-2,.face-5 .pip-4,.face-5 .pip-6,.face-5 .pip-8,.face-6 .pip-0,.face-6 .pip-2,.face-6 .pip-3,.face-6 .pip-5,.face-6 .pip-6,.face-6 .pip-8{visibility:visible}
-@media(max-width:850px){.scores td,.scores th{padding:5px 3px}.scores td button{padding:4px 7px}}
-
-/* v1.2: viewport-fitted tablet board */
-@media (min-width:851px) and (orientation:landscape) {
+.tabletop p{color:#d6e6d9;margin:7px 0;font-size:clamp(12px,1.8dvh,17px)}
+#roll{align-self:center;width:min(90%,450px);padding:10px 18px;font-size:18px}
+#notice{padding:8px;font-weight:700}
+.social-extension{margin-top:auto;min-height:44px;display:flex;align-items:center;justify-content:center;gap:12px;border-top:1px solid #ffffff30;padding:6px;color:#e9dbb5}
+.extension-caption{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
+.extension-slot{border:1px dashed #d7bd795e;border-radius:12px;padding:6px 12px;font-size:13px;opacity:.75}
+#fullscreen-hint:not([hidden]){position:fixed;z-index:1000;top:65px;left:50%;transform:translateX(-50%);width:min(92vw,640px);padding:15px;border:2px solid #d8b46a;border-radius:12px;background:#352419;color:#fff2d5;box-shadow:0 10px 32px #0009;font-size:14px}
+:fullscreen{width:100%;height:100%;background:#2b180f}
+@media(min-width:851px) and (orientation:landscape){
  body:has(#game:not([hidden])){height:100dvh;overflow:hidden;display:flex;flex-direction:column}
  body:has(#game:not([hidden])) header{flex:0 0 auto}
- body:has(#game:not([hidden])) main{flex:1;min-height:0;width:100%;padding:5px 12px 8px}
- #game:not([hidden]){height:100%;display:flex;flex-direction:column;min-height:0}
- #game #players{flex:0 0 auto;margin:0 0 5px}
- #game .layout{flex:1;min-height:0;grid-template-columns:minmax(390px,47%) minmax(0,1fr);align-items:stretch}
- #game .scores{min-height:0;display:flex;flex-direction:column;padding:6px 10px;overflow:hidden}
- #game .scores h2{flex:0 0 auto;font-size:clamp(14px,2.4dvh,19px);line-height:1.05;margin:0 0 3px}
- #game #sheet{flex:1;min-height:0}
- #game #sheet table{height:100%;table-layout:fixed;font-size:clamp(10px,1.55dvh,14px)}
- #game #sheet th,#game #sheet td{height:auto;padding:0 3px;line-height:1;white-space:nowrap}
- #game #sheet th:first-child,#game #sheet td:first-child{width:34%;overflow:hidden;text-overflow:ellipsis}
- #game #sheet td button{padding:0 7px;min-height:clamp(18px,2.5dvh,27px);font-size:inherit}
- #game .tabletop{min-height:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(8px,2dvh,18px)}
- #game .tray{width:100%;padding:clamp(12px,3dvh,28px) 4px;margin:clamp(8px,2dvh,18px) auto;gap:clamp(4px,1vw,14px)}
- #game .die{width:clamp(49px,6.3vw,86px);height:clamp(49px,6.3vw,86px)}
- #game .tabletop p{margin:5px}
- #game #notice{padding:6px}
-}
-@media(max-width:1100px) and (min-width:851px) and (orientation:landscape){
- #game .layout{grid-template-columns:minmax(330px,48%) minmax(0,1fr)}
- #game .die{width:clamp(44px,5.5vw,70px);height:clamp(44px,5.5vw,70px)}
-}
-@media (max-height:650px) and (min-width:851px) and (orientation:landscape){
- #game #sheet table{font-size:clamp(9px,1.6dvh,12px)}
- #game .player{padding:2px 8px}
- #game .tabletop p{display:none}
-}
-
-/* v1.3 Samsung landscape: hard compact score sheet independent of viewport calculations */
-@media (min-width:851px) and (orientation:landscape){
- #game .scores{align-self:start!important;padding:7px 12px!important;overflow:visible!important}
- #game .scores h2{font-size:19px!important;line-height:23px!important;margin:0 0 4px!important}
- #game #sheet table{height:auto!important;font-size:clamp(11px,1vw,14px)!important;border-collapse:collapse!important}
- #game #sheet table tr{height:27px!important;max-height:27px!important}
- #game #sheet table th,#game #sheet table td{height:27px!important;max-height:27px!important;line-height:18px!important;padding:0 4px!important;vertical-align:middle!important}
- #game #sheet table td button{height:22px!important;min-height:0!important;line-height:18px!important;padding:0 8px!important;border-radius:8px!important}
- #game .layout{align-items:start!important}
-}
-@media (min-width:851px) and (orientation:landscape) and (max-height:750px){
- #game #sheet table tr,#game #sheet table th,#game #sheet table td{height:23px!important;max-height:23px!important}
- #game #sheet table td button{height:19px!important}
-}
-
-/* Fullscreen controls */
-.header-actions{display:flex;align-items:center;gap:9px}
-#fullscreen{background:linear-gradient(#2c604b,#17402e);color:#f8e5ae;border-color:#c69b4c}
-:fullscreen{width:100%;height:100%;background:#2b180f}
-:fullscreen body{min-height:100dvh}
-@media(max-width:600px){header{gap:5px;padding:8px}header h1{font-size:19px}.header-actions{gap:5px}.header-actions button{padding:7px;font-size:12px}header a{font-size:12px}}
-
-#fullscreen-hint:not([hidden]){position:fixed;z-index:1000;top:65px;left:50%;transform:translateX(-50%);width:min(92vw,640px);padding:15px 42px 15px 16px;border:2px solid #d8b46a;border-radius:12px;background:#352419;color:#fff2d5;box-shadow:0 10px 32px #0009;font-size:14px}
-#fullscreen-hint[hidden]{display:none}
-
-/* v1.8 Fullscreen board: balanced heights with future extension dock */
-.social-extension{margin-top:auto;min-height:50px;display:flex;align-items:center;justify-content:center;gap:12px;border-top:1px solid #ffffff30;padding:9px;color:#e9dbb5}
-.extension-caption{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
-.extension-slot{border:1px dashed #d7bd795e;border-radius:12px;padding:8px 16px;font-size:13px;opacity:.75}
-@media(min-width:851px) and (orientation:landscape){
- body:has(#game:not([hidden])) main{padding:8px 14px 12px}
- #game:not([hidden]){height:100%;min-height:0}
- #game .layout{height:100%;align-items:stretch!important;grid-template-columns:minmax(350px,47%) minmax(0,1fr)}
- #game .scores{align-self:stretch!important;min-height:0;display:flex;flex-direction:column;justify-content:flex-start}
- #game #sheet{flex:1;min-height:0}
- #game #sheet table{height:100%!important}
- #game #sheet table tr{height:auto!important;max-height:none!important}
- #game #sheet table td,#game #sheet table th{height:auto!important;max-height:none!important;padding:1px 4px!important}
- #game .tabletop{height:100%;min-height:0;justify-content:flex-start!important;padding:clamp(14px,2.2dvh,28px)}
- #game #status{font-size:clamp(20px,2.8dvh,30px);padding:clamp(8px,2dvh,20px) 0}
- #game .tray{flex:1;min-height:130px;max-height:50%;align-content:center;align-items:center;margin:clamp(12px,2.5dvh,28px) auto!important;padding:clamp(12px,2.5dvh,30px) 10px!important}
- #game .die{width:clamp(56px,6vw,98px);height:clamp(56px,6vw,98px)}
- #game #roll{align-self:center;width:min(90%,450px);padding:12px 20px;font-size:19px}
- #game .tabletop p{display:block!important;font-size:clamp(12px,1.8dvh,17px);margin:9px 0!important}
- #game #notice{padding:10px!important}
+ body:has(#game:not([hidden])) main{flex:1;min-height:0;display:flex;flex-direction:column}
+ #game:not([hidden]){height:100%;min-height:0;display:flex;flex-direction:column}
+ #game .layout{flex:1}
+ #game .scores{height:100%}
+ #game .tabletop{height:100%}
 }
 @media(min-width:851px) and (orientation:landscape) and (max-height:720px){
- #game .tray{max-height:42%}
- #game .social-extension{min-height:35px;padding:4px}
- #game #sheet table{font-size:clamp(10px,1.55dvh,13px)!important}
- #game #roll{padding:7px}
+ #sheet table{font-size:clamp(9px,1.55dvh,12px)}
+ .player{padding:3px 9px}
+ .social-extension{min-height:32px;padding:3px}
+ .tray{max-height:42%}
+ #roll{padding:6px}
 }
-@media(max-width:850px){.social-extension{flex-wrap:wrap}.extension-caption{display:none}}
+@media(max-width:850px){
+ body{overflow:auto}
+ .layout{grid-template-columns:minmax(0,1fr)}
+ .tabletop{min-height:320px;grid-row:1}
+ .scores{grid-row:2;overflow:auto}
+ #sheet table{height:auto;font-size:12px}
+ #sheet td,#sheet th{padding:5px 3px}
+ .tray{max-height:none}
+ main{padding:10px}
+ .social-extension{flex-wrap:wrap;margin-top:16px}
+ .extension-caption{display:none}
+}
+@media(max-width:600px){header{gap:5px;padding:8px}header h1{font-size:19px}.header-actions{gap:5px}.header-actions button{padding:7px;font-size:12px}header a{font-size:12px}}
