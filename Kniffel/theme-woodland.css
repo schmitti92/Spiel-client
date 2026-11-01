@@ -96,3 +96,38 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
   100%{transform:translateY(0) rotate(-2deg) scale(1)}
 }
 @media(prefers-reduced-motion:reduce){.tabletop .die.just-rolled{animation:none}}
+
+/* Phase 3.1 — selected variant 2: natural beechwood dice */
+.tabletop .die,
+.tabletop .die.unrolled{
+ background:
+  radial-gradient(ellipse at 26% 17%,#fff0c6aa,transparent 53%),
+  repeating-linear-gradient(91deg,transparent 0 7px,#99622a13 8px 9px,transparent 10px 17px,#fff1c024 18px 20px),
+  linear-gradient(130deg,#f4d49a 0%,#deb47a 49%,#b67b43 100%)!important;
+ border:2px solid #d7a66d!important;
+ border-radius:clamp(10px,1.1vw,17px)!important;
+ box-shadow:inset 3px 4px 6px #fff0c2a8,inset -7px -9px 12px #80502280,0 10px 5px #001e1299,0 15px 15px #001e1266!important;
+ filter:none!important;
+}
+.tabletop .die::after{
+ content:"";position:absolute;inset:3px;pointer-events:none;
+ border-radius:inherit;
+ border-top:1px solid #fff5d28a;
+ border-left:1px solid #fff2c075;
+}
+.tabletop .die .pip{
+ width:clamp(8px,1.1vw,13px);
+ height:clamp(8px,1.1vw,13px);
+ background:radial-gradient(circle at 48% 45%,#15110e 0%,#24170d 54%,#624125 84%,#8d6035 100%)!important;
+ box-shadow:inset 1px 2px 3px #050302db,0 1px 1px #ffdc9b9e!important;
+}
+.tabletop .die.held{
+ background:
+  radial-gradient(ellipse at 26% 17%,#fff0c6aa,transparent 53%),
+  repeating-linear-gradient(91deg,transparent 0 7px,#99622a13 8px 9px,transparent 10px 17px),
+  linear-gradient(130deg,#f4d49a,#deb47a 49%,#b67b43)!important;
+ outline:3px solid #ffda6c;
+ outline-offset:2px;
+ box-shadow:inset 3px 4px 6px #fff0c2a8,inset -7px -9px 12px #80502280,0 0 17px #ffe18e,0 12px 10px #001e1299!important;
+}
+.tabletop .die .starter-pips{color:#322014;text-shadow:1px 1px 1px #fff1ce}
