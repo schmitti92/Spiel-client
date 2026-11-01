@@ -83,3 +83,32 @@
 
 #fullscreen-hint:not([hidden]){position:fixed;z-index:1000;top:65px;left:50%;transform:translateX(-50%);width:min(92vw,640px);padding:15px 42px 15px 16px;border:2px solid #d8b46a;border-radius:12px;background:#352419;color:#fff2d5;box-shadow:0 10px 32px #0009;font-size:14px}
 #fullscreen-hint[hidden]{display:none}
+
+/* v1.8 Fullscreen board: balanced heights with future extension dock */
+.social-extension{margin-top:auto;min-height:50px;display:flex;align-items:center;justify-content:center;gap:12px;border-top:1px solid #ffffff30;padding:9px;color:#e9dbb5}
+.extension-caption{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
+.extension-slot{border:1px dashed #d7bd795e;border-radius:12px;padding:8px 16px;font-size:13px;opacity:.75}
+@media(min-width:851px) and (orientation:landscape){
+ body:has(#game:not([hidden])) main{padding:8px 14px 12px}
+ #game:not([hidden]){height:100%;min-height:0}
+ #game .layout{height:100%;align-items:stretch!important;grid-template-columns:minmax(350px,47%) minmax(0,1fr)}
+ #game .scores{align-self:stretch!important;min-height:0;display:flex;flex-direction:column;justify-content:flex-start}
+ #game #sheet{flex:1;min-height:0}
+ #game #sheet table{height:100%!important}
+ #game #sheet table tr{height:auto!important;max-height:none!important}
+ #game #sheet table td,#game #sheet table th{height:auto!important;max-height:none!important;padding:1px 4px!important}
+ #game .tabletop{height:100%;min-height:0;justify-content:flex-start!important;padding:clamp(14px,2.2dvh,28px)}
+ #game #status{font-size:clamp(20px,2.8dvh,30px);padding:clamp(8px,2dvh,20px) 0}
+ #game .tray{flex:1;min-height:130px;max-height:50%;align-content:center;align-items:center;margin:clamp(12px,2.5dvh,28px) auto!important;padding:clamp(12px,2.5dvh,30px) 10px!important}
+ #game .die{width:clamp(56px,6vw,98px);height:clamp(56px,6vw,98px)}
+ #game #roll{align-self:center;width:min(90%,450px);padding:12px 20px;font-size:19px}
+ #game .tabletop p{display:block!important;font-size:clamp(12px,1.8dvh,17px);margin:9px 0!important}
+ #game #notice{padding:10px!important}
+}
+@media(min-width:851px) and (orientation:landscape) and (max-height:720px){
+ #game .tray{max-height:42%}
+ #game .social-extension{min-height:35px;padding:4px}
+ #game #sheet table{font-size:clamp(10px,1.55dvh,13px)!important}
+ #game #roll{padding:7px}
+}
+@media(max-width:850px){.social-extension{flex-wrap:wrap}.extension-caption{display:none}}
