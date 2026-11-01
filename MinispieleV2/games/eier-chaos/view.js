@@ -90,7 +90,7 @@ export function mount(container,host){
   if(s.finished){
    stop();
    const ranking=Object.entries(s.scores).sort((a,b)=>b[1]-a[1]);
-   result.textContent='🏆 Siegerehrung\\n\\n'+ranking.map(([id,score],i)=>(i+1)+'. '+(id===player?'Du':id)+' – '+score+' Eier').join('\\n');
+   result.textContent='🏆 Siegerehrung\n\n'+ranking.map(([id,score],i)=>(i+1)+'. '+(id===player?'Du':id)+' – '+score+' Punkte').join('\n');
    result.hidden=false;
   }else{result.hidden=true;}
   start.disabled=running||s.finished;renderControls(s);
