@@ -48,10 +48,10 @@ function confirmScore(label,points,onConfirm){
 
 function renderCompactScore(g,shownPlayer,viewPlayer,mine){
  const sheet=$('sheet'),col=shownPlayer.sheet[0],sums=totals(col);
- const wrap=document.createElement('div');wrap.className='compact-score';
+ const wrap=document.createElement('div');wrap.className='compact-score wood-score';
  const group=(items)=>{const section=document.createElement('div');section.className='compact-score-group';items.forEach(c=>{
   const row=document.createElement('div');row.className='compact-score-row';
-  const label=document.createElement('span');label.className='compact-score-label';label.textContent=CATEGORIES[c];
+  const label=document.createElement('span');label.className='compact-score-label';label.textContent=CATEGORIES[c];if(c>=0&&c<=5){const die=document.createElement('span');die.className='wood-score-die';die.textContent=['⚀','⚁','⚂','⚃','⚄','⚅'][c];label.prepend(die)}else{const symbol=document.createElement('span');symbol.className='wood-score-icon';symbol.textContent=({6:'🎲',7:'🎲',8:'🎲',9:'🛤️',10:'🛤️',11:'👑',12:'🎲'})[c]||'🎲';label.prepend(symbol)}
   const value=document.createElement('span');value.className='compact-score-value';
   if(col[c]!==null){value.textContent=col[c];value.classList.add('score-ink')}
   else if(mine&&viewPlayer===g.turn&&g.rolls>0&&onlineAllowed(g,0).includes(c)){
@@ -61,15 +61,15 @@ function renderCompactScore(g,shownPlayer,viewPlayer,mine){
   }else value.textContent='–';
   row.append(label,value);section.append(row);
  });return section};
- const pair=(left,right)=>{const grid=document.createElement('div');grid.className='compact-score-pair';grid.append(group(left),group(right));wrap.append(grid)};
- pair([0,1,2],[3,4,5]);
+ const pair=(left,right,titles=null)=>{const grid=document.createElement('div');grid.className='compact-score-pair';const l=group(left),r=group(right);if(titles){[l,r].forEach((section,i)=>{const heading=document.createElement('div');heading.className='wood-score-heading';heading.textContent=titles[i];section.prepend(heading)})}grid.append(l,r);wrap.append(grid)};
+ pair([0,1,2],[3,4,5],['Obere Zahlen (1–3)','Obere Zahlen (4–6)']);
  const summary=(label,value,cls='')=>{const row=document.createElement('div');row.className='compact-score-summary '+cls;const l=document.createElement('span');l.textContent=label;const v=document.createElement('strong');v.textContent=value;row.append(l,v);wrap.append(row)};
- summary('Oberer Teil',sums.upper,'upper');
- summary('Bonus (63+)',sums.upper<63?sums.upper+' / 63':sums.bonus,'bonus');
+ summary('Oberer Teil (1–6)',sums.upper,'upper');
+ summary('⭐ Bonus (ab 63)',sums.bonus,'bonus');
  pair([6,7,8],[9,10,11]);
  const chance=group([12]);chance.classList.add('compact-score-chance');wrap.append(chance);
  if(g.mode==='joker')summary('Jokerbonus',shownPlayer.jokerBonus||0);
- summary('Gesamt',sums.total+(shownPlayer.jokerBonus||0),'total');
+ summary('🏆 Gesamtpunktzahl',sums.total+(shownPlayer.jokerBonus||0),'total');
  sheet.append(wrap);
 }
 
