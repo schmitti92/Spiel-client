@@ -409,3 +409,33 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 }
 #sheet button.score-choice:active{background:#d6b16d88!important}
 @media(hover:none){#sheet button.score-choice:hover{background:transparent!important;color:#176044!important}}
+
+
+/* Phase 4.2 — scorebook refinement; scalable player-column structure */
+#sheet table{border-collapse:separate;border-spacing:0}
+#sheet th.score-player-head,#sheet td.score-player-cell{border-left:1px solid #8d693b38!important}
+#sheet th.score-player-head{font-family:Georgia,serif;font-size:1.04em;letter-spacing:.015em;overflow:hidden;text-overflow:ellipsis}
+#sheet td.score-player-cell{font-variant-numeric:tabular-nums}
+#sheet td.score-current-player:not(.score-ink):not(:has(.score-choice)){background:#f8e8bb22}
+#sheet td.score-ink{font-family:Georgia,"Times New Roman",serif!important;font-style:italic;font-size:1.12em!important;color:#473622!important;letter-spacing:.02em}
+#sheet tr.score-total td.score-ink{color:#fff4d6!important}
+#sheet tr.score-total td.score-player-cell{border-left-color:#e4c68a44!important}
+#sheet button.score-choice{min-width:40px;min-height:26px;text-decoration:none!important;border:1px solid #b8a07966!important;background:#fff0ca55!important;border-radius:5px!important}
+#sheet button.score-choice:focus-visible{outline:2px solid #176044!important;outline-offset:1px}
+#sheet tr.score-section-start td{border-top:2px solid #a97a3f!important}
+#sheet tr.score-summary td{font-weight:750}
+@media(max-width:850px){#sheet th.score-player-head{font-size:12px}#sheet button.score-choice{min-height:32px}}
+/* Starter dice: square, consistent, tactile wooden blocks, not stretched pills */
+.tabletop .die.unrolled,.tabletop .die.unrolled:has(> .die-art){
+ width:var(--die-size)!important;height:var(--die-size)!important;
+ aspect-ratio:1/1!important;min-width:0!important;
+ border-radius:clamp(13px,1.3vw,20px)!important;
+ background:radial-gradient(ellipse at 25% 15%,#fff2c8aa,transparent 58%),repeating-linear-gradient(93deg,transparent 0 9px,#a76b2917 10px 11px,transparent 12px 19px),linear-gradient(140deg,#f5d8a4,#c38d52)!important;
+ border:2px solid #c28c4d!important;
+ box-shadow:inset 4px 4px 7px #fff4d4b5,inset -8px -9px 12px #88542c91,2px 5px 0 #85542d,4px 10px 10px #001e1480!important;
+ display:grid!important;place-items:center!important;
+ transform:rotate(0deg)!important;
+}
+.tabletop .die.unrolled:nth-child(even){transform:rotate(2deg)!important}
+.tabletop .die.unrolled .die-ready{width:100%!important;height:100%!important;display:grid!important;place-items:center!important;font-size:clamp(29px,3.5vw,48px)!important;line-height:1!important}
+@media(prefers-reduced-motion:reduce){#sheet button.score-choice{transition:none!important}}
