@@ -18,7 +18,7 @@ async function runBot(){
     botHold(game);roll(game);render(true);
    }
    await new Promise(r=>setTimeout(r,720));if(game!==current)return;
-   commit(game,chooseCategory(game));render();
+   const choice=chooseCategory(game);commit(game,choice.category,choice.column);render();
    if(!game.finished)showTurnChange(previous,game.players[game.turn].name);
   }
  }catch(error){if(game===session)message('Computerzug fehlgeschlagen: '+error.message);}
