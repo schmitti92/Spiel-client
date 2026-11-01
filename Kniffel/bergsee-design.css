@@ -712,3 +712,96 @@ body>header{
  box-shadow:0 2px 7px #5e410b99!important;
 }
 #game .tabletop #dice.tray > button.die:disabled{cursor:default!important}
+
+
+/* Bergsee Glas & Gold — premium scorecard (tablet-first; score logic untouched). */
+#game .panel.scores{
+ background:linear-gradient(140deg,rgba(241,251,255,.54),rgba(188,226,249,.40))!important;
+ border:2px solid rgba(245,205,101,.92)!important;
+ border-radius:24px!important;
+ box-shadow:inset 0 0 0 3px rgba(248,253,255,.85),inset 0 0 0 5px rgba(67,151,199,.52),0 9px 25px rgba(5,43,74,.34),0 0 15px rgba(246,204,106,.22)!important;
+ padding:clamp(8px,.8vw,13px)!important;
+ backdrop-filter:blur(3px) saturate(1.12)!important;
+ -webkit-backdrop-filter:blur(3px) saturate(1.12)!important;
+}
+#game .panel.scores h2{
+ background:linear-gradient(110deg,rgba(226,247,255,.83),rgba(154,211,241,.72),rgba(228,247,255,.83))!important;
+ border:1px solid rgba(255,230,163,.94)!important;
+ border-radius:16px!important;
+ color:#092f55!important;
+ text-shadow:0 1px 1px #fff!important;
+ box-shadow:inset 0 1px 2px #fff,0 2px 8px #0c51722c!important;
+}
+#game #sheet .score-player-tab{
+ border:1px solid #9bc8e0!important;
+ border-radius:13px!important;
+ color:#15354e!important;
+ background:linear-gradient(#fffefd,#dbeefa)!important;
+ box-shadow:inset 0 1px #fff,0 2px 4px #10486c30!important;
+}
+#game #sheet .score-player-tab.selected{
+ color:#fff!important;
+ background:linear-gradient(180deg,#0ab7ef,#0576ae 75%,#045a90)!important;
+ border:2px solid #f2ca66!important;
+ box-shadow:0 0 0 2px rgba(255,228,136,.55),0 3px 9px #074f8270,inset 0 1px #ffffffb0!important;
+}
+#game #sheet .wood-variant-table{
+ border-collapse:separate!important;
+ border-spacing:1px!important;
+ background:rgba(225,245,255,.16)!important;
+}
+#game #sheet .wood-variant-table .score-head th.score-player-head,
+#game #sheet .wood-variant-table tr.score-directions th{
+ background:linear-gradient(180deg,#119fcf,#05608f)!important;
+ color:#fff!important;
+ border-color:#9fd8ed!important;
+ text-shadow:0 1px 2px #063b61!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-label{
+ background:rgba(222,241,254,.82)!important;
+ color:#123d5b!important;
+ font-weight:750!important;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td.score-label{
+ background:rgba(195,226,247,.79)!important;
+}
+#game #sheet .wood-variant-table tr.score-category td:not(.score-label):not(.score-positive-option){
+ background:rgba(241,250,255,.80)!important;
+ border-color:rgba(144,189,214,.7)!important;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td:not(.score-label):not(.score-positive-option){
+ background:rgba(214,235,250,.79)!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-ink{
+ color:#092f60!important;
+ font-weight:800!important;
+}
+#game #sheet .wood-variant-table tr.score-upper td{
+ background:linear-gradient(180deg,#e5fbdc,#c7eebd)!important;
+ color:#22462d!important;
+}
+#game #sheet .wood-variant-table tr.score-bonus td{
+ background:linear-gradient(180deg,#ffebf8,#f1cde8)!important;
+ color:#593d59!important;
+}
+#game #sheet .wood-variant-table tr.score-total td{
+ background:linear-gradient(180deg,#fff1b6 0%,#ffd96a 55%,#eeb83f 100%)!important;
+ border:1px solid #bc8424!important;
+ color:#39250c!important;
+ font-weight:900!important;
+ box-shadow:inset 0 2px 2px #fff6d3,0 1px 4px #94621844!important;
+}
+#game #sheet .wood-variant-table tr.score-total td:first-child{
+ text-shadow:0 1px #fff3bc!important;
+}
+#game #sheet .wood-variant-table td.score-positive-option,
+#game #sheet .wood-variant-table tr.score-category td.score-positive-option{
+ background:#ccefc2!important;
+ border-color:#70b966!important;
+ box-shadow:inset 0 0 0 2px #8acb7d!important;
+ color:#194d27!important;
+}
+@media(max-width:850px){
+ #game .panel.scores{border-radius:17px!important;padding:7px!important}
+ #game #sheet .wood-variant-table{border-spacing:0!important}
+}
