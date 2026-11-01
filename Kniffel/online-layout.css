@@ -681,3 +681,89 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
  box-shadow:none!important;border-top:2px solid #bba16c!important;
 }
 #game #sheet .wood-variant-table tr.score-total td:first-child::before{content:""!important}
+
+
+/* v29 — cohesive light oak + sage board, quieter joker cards and clearer actions. */
+#game .tabletop{
+ background:linear-gradient(145deg,#fbf1df,#f0dfc4 68%,#e9d2b0)!important;
+ border-radius:24px!important;
+}
+#game .tabletop #status{
+ background:#f8edda!important;
+ border:1px solid #d9c3a2!important;
+ border-radius:18px!important;
+ box-shadow:0 2px 5px #7055361a!important;
+}
+#game .tabletop #dice.tray{
+ background:linear-gradient(175deg,#f0ddbc,#e5c99e)!important;
+ border:3px solid #c5a67c!important;
+ box-shadow:inset 0 2px 8px #8b6a4038,0 3px 6px #7e5c3728!important;
+}
+#game .tabletop #dice.tray > button.die{
+ background:linear-gradient(140deg,#fff,#fffef7 55%,#e8e7dc)!important;
+ border-color:#d7d4c9!important;
+ box-shadow:inset 1px 1px 3px #fff,0 5px 9px #56472f50!important;
+}
+#game .tabletop #dice.tray > button.die.held{
+ border-color:#427d5c!important;
+ background:linear-gradient(145deg,#fff,#eff6eb)!important;
+ box-shadow:0 0 0 2px #bad6bc,0 4px 8px #456a4b44!important;
+}
+#game .joker-panel{
+ background:#eee0c9!important;
+ border:2px solid #c9af8a!important;
+ border-radius:21px!important;
+ box-shadow:inset 0 1px #fff8e9,0 3px 7px #71533724!important;
+}
+#game .joker-panel-heading{
+ background:#f7ebd7!important;
+ border:1px solid #dbc5a4!important;
+ color:#493e30!important;
+ border-radius:13px!important;
+ text-shadow:none!important;
+}
+#game .joker-panel-actions button:not([hidden]){
+ background:linear-gradient(180deg,#f8f0df,#e6d8bf)!important;
+ color:#3b493b!important;
+ border:2px solid #c5b18e!important;
+ border-radius:16px!important;
+ text-shadow:none!important;
+ box-shadow:0 3px 5px #7357372b,inset 0 1px #fff!important;
+}
+#game .joker-panel-actions button:not([hidden]):not(:disabled){
+ background:linear-gradient(180deg,#f3f7e9,#d8e8d3)!important;
+ border-color:#7ea48b!important;
+ color:#234f38!important;
+}
+#game .joker-panel-actions button:not([hidden]):disabled{
+ background:linear-gradient(180deg,#ece5d8,#dcd3c3)!important;
+ color:#72695d!important;
+ border-color:#c9bba6!important;
+ opacity:.78!important;
+ filter:none!important;
+}
+#game .joker-panel-actions button .joker-icon{
+ filter:none!important;text-shadow:none!important;
+}
+#game #social-extension{
+ background:#f8edda!important;border:1px solid #d9c3a2!important;
+ border-radius:14px!important;color:#5e4c38!important;
+ box-shadow:none!important;
+}
+#game #social-extension .extension-caption,
+#game #social-extension .extension-slot{
+ color:#645341!important;text-shadow:none!important;
+}
+#game .tabletop #notice{font-size:clamp(12px,1.5dvh,16px)!important}
+#game #sheet .wood-variant-table td.score-open.score-row-action{
+ background:#e3f0db!important;
+ border:1px solid #91b18c!important;
+ box-shadow:inset 0 0 0 1px #c7e0bf!important;
+ cursor:pointer!important;
+}
+#game #sheet .wood-variant-table td.score-open.score-row-action:focus-visible{
+ outline:2px solid #367453!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-label{
+ color:#443a2d!important;
+}
