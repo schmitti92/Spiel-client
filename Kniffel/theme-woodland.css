@@ -302,3 +302,31 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 @media(prefers-reduced-motion:reduce){
  .tabletop .die.just-rolled:not(.held){animation:none!important}
 }
+
+/* 3.11: Gold instead of a selection outline; avoid rectangular glow. */
+.tabletop .die.held,
+.tabletop .die.held:has(> .die-art){
+ outline:0!important;
+ border:0!important;
+ box-shadow:none!important;
+ background:transparent!important;
+ filter:none!important;
+ transform:translateY(-5px)!important;
+}
+.tabletop .die.held::before,
+.tabletop .die.held::after,
+.tabletop .die.held:has(> .die-art)::after{
+ display:none!important;
+ content:none!important;
+ border:0!important;
+ box-shadow:none!important;
+}
+.tabletop .die.held .die-art{
+ filter:sepia(1) saturate(2.1) hue-rotate(350deg) brightness(1.13) contrast(1.12) drop-shadow(0 0 9px #ffd15a) drop-shadow(1px 6px 4px #281407)!important;
+}
+.tabletop .die:not(.held) .die-art{
+ filter:drop-shadow(1px 6px 4px #001a1199)!important;
+}
+.tabletop .die.held .die-ready{
+ color:#fff0a3!important;
+}
