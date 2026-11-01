@@ -767,3 +767,18 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
 #game #sheet .wood-variant-table tr.score-category td.score-label{
  color:#443a2d!important;
 }
+
+
+/* v30 — available score/strike cells remain visually identical to empty cells. */
+#game #sheet .wood-variant-table td.score-open.score-row-action,
+#game #sheet .wood-variant-table td.score-open.score-row-action:hover,
+#game #sheet .wood-variant-table td.score-open.score-row-action:active{
+ background:#fffaf0!important;
+ border:1px solid #dfd2b9!important;
+ box-shadow:none!important;
+ color:#443a2d!important;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td.score-open.score-row-action,
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td.score-open.score-row-action:hover{
+ background:#f7efdf!important;
+}
