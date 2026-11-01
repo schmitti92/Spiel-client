@@ -121,10 +121,14 @@ function renderCompactScore(g,shownPlayer,viewPlayer,mine){
 }
 
 
-let scoreReveal=null,scoreRevealTimer=null;
+let scoreReveal=null,scoreRevealTimer=null,heldScorePlayer=null;
 function acceptSnapshot(fresh){
  if(snapshot&&Number(fresh.revision)<Number(snapshot.revision))return false;
- const before=current();snapshot=fresh;const next=current();
+ const before=current();
+ const oldMatch=snapshot?.match?.id;
+ snapshot=fresh;
+ const next=current();
+ if(oldMatch&&oldMatch!==snapshot?.match?.id){heldScorePlayer=null;scoreReveal=null;clearTimeout(scoreRevealTimer);viewPlayer=null;lastTurnKey=null;}
  if(before&&next&&before.turn!==next.turn&&before.players?.length===next.players?.length){
   const old=before.players[before.turn],updated=next.players[before.turn];
   let changed=null;
@@ -133,11 +137,20 @@ function acceptSnapshot(fresh){
     if(old.sheet[j]?.[c]===null&&updated.sheet[j][c]!==null)changed={column:j,category:c};
   }
   if(changed){
-   clearTimeout(scoreRevealTimer);
+   heldScorePlayer=before.turn;
    scoreReveal={player:before.turn,...changed};
    viewPlayer=before.turn;
-   scoreRevealTimer=setTimeout(()=>{scoreReveal=null;viewPlayer=null;render()},1150);
+   clearTimeout(scoreRevealTimer);
+   // The number settles after the animation; the scorecard does NOT switch yet.
+   scoreRevealTimer=setTimeout(()=>{scoreReveal=null;render()},1150);
+  }else{
+   // Undo or another non-scoring turn change must not leave a stale scorecard.
+   heldScorePlayer=null;scoreReveal=null;clearTimeout(scoreRevealTimer);
   }
+ }
+ if(next?.rolls>0&&heldScorePlayer!==null){
+  heldScorePlayer=null;scoreReveal=null;clearTimeout(scoreRevealTimer);
+  viewPlayer=next.turn;
  }
  return true;
 }
@@ -169,7 +182,15 @@ function render(){
  }else dialog?.remove();
  $('game').classList.toggle('multi-score',p.sheet.length===3);
  const turnKey=(snapshot?.match?.id||'')+':'+g.turn;
- if(viewPlayer===null||(!scoreReveal&&lastTurnKey!==turnKey)||viewPlayer>=g.players.length){viewPlayer=g.turn;lastTurnKey=turnKey}
+ if(heldScorePlayer===null&&g.rolls===0&&g.lastScoredTurn?.state&&g.lastScoredTurn.state.turn!==g.turn){
+  heldScorePlayer=g.lastScoredTurn.state.turn;
+}
+if(heldScorePlayer!==null&&g.rolls===0){
+  viewPlayer=heldScorePlayer;
+}else if(viewPlayer===null||lastTurnKey!==turnKey||viewPlayer>=g.players.length){
+  viewPlayer=g.turn;
+}
+lastTurnKey=turnKey;
  const shownPlayer=g.players[viewPlayer];
  // Animate only genuine turn changes, never on ordinary room updates or tab clicks.
  // Skip the first snapshot after opening/reloading the page.
