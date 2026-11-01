@@ -205,3 +205,12 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 .score-preview-confirm{background:linear-gradient(#288452,#0c5634);border-color:#d3b36e;color:#fff6d9}
 #sheet td.score-current-player{background-color:#f2d99d35}
 #sheet th.score-player-head{overflow:hidden;text-overflow:ellipsis}
+
+/* v9: unobtrusive turn banner and parchment results */
+#turn-change:not([hidden]){position:fixed;top:clamp(70px,12vh,125px);left:50%;transform:translateX(-50%);z-index:1200;max-width:92vw;padding:10px 22px;border:2px solid #e7c378;border-radius:999px;background:#392213f2;color:#ffefc3;box-shadow:0 8px 20px #0008;text-align:center;font-weight:800;pointer-events:none;animation:turn-notice-in .22s ease-out}
+@keyframes turn-notice-in{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
+.kniffel-results{max-height:90dvh;overflow:auto}
+.kniffel-results .kniffel-rankings{padding:0;list-style:none;margin:18px 0;text-align:left}
+.kniffel-rankings li{padding:10px 14px;border-bottom:1px solid #a57c4b88;font:700 clamp(16px,2.5vw,21px) Georgia,serif}
+.kniffel-rankings li:first-child{color:#13623c;background:#fff5c666;border-radius:8px}
+@media(prefers-reduced-motion:reduce){#turn-change:not([hidden]){animation:none}}
