@@ -43,9 +43,16 @@ export function mount(container,host){
   }
   if(running)raf=requestAnimationFrame(frame);
  }
- start.onclick=()=>{if(running)return;running=true;last=performance.now();carry=0;start.disabled=true;raf=requestAnimationFrame(frame)};
+ start.onclick=()=>{if(running)return;
+  // Fullscreen requests must originate from the user's start-button gesture.
+  if(document.fullscreenElement!==shell&&!shell.classList.contains('egg-fallback-fullscreen')){
+   if(shell.requestFullscreen){try{const request=shell.requestFullscreen();Promise.resolve(request).catch(()=>{if(!disposed&&!document.fullscreenElement)shell.classList.add('egg-fallback-fullscreen');updateFullscreen();});}catch{shell.classList.add('egg-fallback-fullscreen');}}
+   else shell.classList.add('egg-fallback-fullscreen');
+  }
+  running=true;last=performance.now();carry=0;start.disabled=true;raf=requestAnimationFrame(frame);
+ };
  again.onclick=()=>{stop();host.restart();result.textContent='';result.hidden=true;info.hidden=false;};
- back.onclick=()=>{stop();disposed=true;document.removeEventListener('fullscreenchange',updateFullscreen);if(document.fullscreenElement===shell)document.exitFullscreen().catch(()=>{});host.exit()};
+ back.onclick=()=>{stop();disposed=true;document.removeEventListener('fullscreenchange',updateFullscreen);if(document.fullscreenElement===shell)document.exitFullscreen().catch(()=>{});shell.classList.remove('egg-fallback-fullscreen');host.exit()};
  return {render(snapshot){
   const s=snapshot.state,player=human()||owner();
   hud.textContent='⏱ '+Math.ceil((60000-s.elapsedMs)/1000)+' s  ·  🥚 '+(s.scores[player]||0)+' Punkte  ·  Stufe '+(s.elapsedMs<20000?1:s.elapsedMs<40000?2:3);
