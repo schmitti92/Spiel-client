@@ -1,4 +1,4 @@
-import {CATEGORIES,MODES,scoreForGame,allowedCategories,totals} from './rules.js?v=first-anywhere-1';
+import {CATEGORIES,MODES,scoreForGame,allowedCategories,totals} from './rules.js?v=first-roll-anywhere-2';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),code=String(params.get('room')||'').toUpperCase(),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 $('online-reload').onclick=()=>window.location.reload();
 const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
