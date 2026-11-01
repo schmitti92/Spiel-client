@@ -79,9 +79,21 @@ function onlineRender(room){
   show('instructions');$('understood').disabled=state.readyCount>=state.playerCount||!!window.__farbenblitzAcknowledged;
   $('ready-status').textContent='Bereit: '+state.readyCount+' von '+state.playerCount;
  }else if(state.phase==='countdown'){
-  show('countdown');const remaining=Math.max(0,Math.ceil((state.startAt-room.serverNow)/1000));
+  show('countdown');onlineClockOffset=room.serverNow-Date.now();
+  const remaining=Math.max(0,Math.ceil((state.startAt-(Date.now()+onlineClockOffset))/1000));
   $('count-number').textContent=remaining||'LOS!';
+  if(remaining===0){show('play');renderOnlinePlaying(state,room);}
  }else if(state.phase==='playing'){
+  renderOnlinePlaying(state,room);
+ }else if(state.phase==='finished'){
+  show('finish');$('results').replaceChildren();
+  for(const [i,p] of [...state.results].sort((a,b)=>b.score-a.score).entries()){
+   const row=document.createElement('p');row.textContent=(i+1)+'. '+p.name+' – '+p.score+' richtig';$('results').append(row);
+  }
+  $('scores').replaceChildren();$('again').disabled=true;
+ }
+}
+function renderOnlinePlaying(state,room){
   show('play');$('status').textContent='Runde '+(state.round+1)+' / '+state.rounds+' · '+(state.level==='leicht'?'Wort lesen':'Schriftfarbe wählen');
   $('prompt').textContent=state.level==='leicht'?'Welches WORT steht hier?':'In welcher FARBE ist das Wort geschrieben?';
   $('word').textContent=state.challenge?.word?.toUpperCase()||'';
@@ -94,13 +106,6 @@ function onlineRender(room){
   $('feedback').textContent=state.myAnswered?'Antwort gespeichert · warte auf Mitspieler':'';
   $('scores').replaceChildren();
   for(const p of room.players.filter(p=>p.participating)){const el=document.createElement('span');el.className='score-pill';el.textContent='👤 '+p.name;$('scores').append(el);}
- }else if(state.phase==='finished'){
-  show('finish');$('results').replaceChildren();
-  for(const [i,p] of [...state.results].sort((a,b)=>b.score-a.score).entries()){
-   const row=document.createElement('p');row.textContent=(i+1)+'. '+p.name+' – '+p.score+' richtig';$('results').append(row);
-  }
-  $('scores').replaceChildren();$('again').disabled=true;
- }
 }
 async function onlineRefresh(){
  if(!online||onlineBusy||document.hidden)return;onlineBusy=true;
@@ -131,6 +136,7 @@ let serial=0;
 let pendingConfig=null;
 let startGate=null;
 let countdownTimers=[];
+let onlineClockOffset=0;
 function cancelCountdown(){for(const timer of countdownTimers)clearTimeout(timer);countdownTimers=[];}
 
 function show(name){for(const id of ['setup','instructions','countdown','play','finish'])$(id).classList.toggle('hidden',id!==name);}
@@ -162,12 +168,18 @@ function acknowledge(){
  countdownTimers.push(setTimeout(()=>{
   countdownTimers=[];
   if(!pendingConfig||!startGate?.canStart(Date.now()))return;
-  const config=pendingConfig;pendingConfig=null;
-  flow.select(config);
-  flow.start();
-  $('feedback').textContent='';
-  show('play');
-  render();
+  const config=pendingConfig;
+  try{
+   flow.select(config);
+   flow.start();
+   pendingConfig=null;
+   $('feedback').textContent='';
+   show('play');
+   render();
+  }catch(e){
+   $('count-number').textContent='Startfehler: '+e.message;
+   console.error('Farbenblitz offline start failed',e);
+  }
  },3500));
 }
 function answer(color){
