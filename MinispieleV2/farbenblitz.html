@@ -47,6 +47,7 @@ header{position:relative;flex:0 0 clamp(65px,10vh,110px);display:flex;justify-co
 <section id="finish" class="hidden"><h2>🏆 Ergebnis</h2><div id="results"></div><button id="again">Nochmal spielen</button><button id="back">Zur Auswahl</button></section>
 <footer>Vorschau mit Computergegnern · Waldaufnahme: Gerda Arendt (CC0) · Online-Modus folgt später</footer>
 </main>
+<script src="../profile-config.js"></script><script src="../profile-auth.js"></script>
 <script type="module">
 import {games} from './games.js';
 import {createGameStartGate} from './engine/GameStartGate.js';
@@ -56,6 +57,71 @@ import {createLobbyGameBridge} from './engine/LobbyGameBridge.js';
 import {createResultLedger} from './engine/ResultLedger.js';
 import {createMiniGameFlow} from './engine/MiniGameFlow.js';
 const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search);
+const onlineRoom=String(params.get('room')||'').toUpperCase();
+const online=/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(onlineRoom)&&params.get('mode')==='online';
+const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+let onlineMatch=null,onlineSnapshot=null,onlineBusy=false,onlineTimer=null,lastOnlineRound=-1;
+const onlineUser=()=>window.SpielOnline?.state?.()?.user;
+async function hubRequest(path,body){
+ const user=onlineUser();if(!user?.getIdToken)throw Error('Bitte online anmelden');
+ const token=await user.getIdToken();
+ const response=await fetch(api+'/api/hub/rooms/'+encodeURIComponent(onlineRoom)+path,{
+  method:body===undefined?'GET':'POST',headers:{Authorization:'Bearer '+token,...(body===undefined?{}:{'Content-Type':'application/json'})},
+  ...(body===undefined?{}:{body:JSON.stringify(body)}),cache:'no-store'});
+ const data=await response.json();if(!response.ok||data.ok!==true)throw Error(data.error||'SERVER_ERROR');
+ return data.room;
+}
+function onlineRender(room){
+ const match=room?.match;if(match?.game!=='farbenblitz'){show('setup');$('start').disabled=true;$('start').textContent='Warte auf Spielstart in der Lobby';return;}
+ onlineMatch=match.id;const state=match.farbenblitz;if(!state)return;
+ if(state.phase==='instructions'){
+  show('instructions');$('understood').disabled=state.readyCount>=state.playerCount||!!window.__farbenblitzAcknowledged;
+  $('ready-status').textContent='Bereit: '+state.readyCount+' von '+state.playerCount;
+ }else if(state.phase==='countdown'){
+  show('countdown');const remaining=Math.max(0,Math.ceil((state.startAt-(Date.now()+(room.serverNow-Date.now())))/1000));
+  $('count-number').textContent=remaining||'LOS!';
+ }else if(state.phase==='playing'){
+  show('play');$('status').textContent='Runde '+(state.round+1)+' / '+state.rounds+' · '+(state.level==='leicht'?'Wort lesen':'Schriftfarbe wählen');
+  $('prompt').textContent=state.level==='leicht'?'Welches WORT steht hier?':'In welcher FARBE ist das Wort geschrieben?';
+  $('word').textContent=state.challenge?.word?.toUpperCase()||'';
+  $('word').style.color=colors[state.challenge?.ink]||'#fff';
+  $('colors').replaceChildren();
+  for(const [name,color] of Object.entries(colors)){
+   const b=document.createElement('button');b.textContent=name.toUpperCase();b.style.background=color;b.disabled=state.myAnswered;
+   b.onclick=()=>void onlineAnswer(name);$('colors').append(b);
+  }
+  $('feedback').textContent=state.myAnswered?'Antwort gespeichert · warte auf Mitspieler':'';
+  $('scores').replaceChildren();
+  for(const p of room.players.filter(p=>p.participating)){const el=document.createElement('span');el.className='score-pill';el.textContent='👤 '+p.name;$('scores').append(el);}
+ }else if(state.phase==='finished'){
+  show('finish');$('results').replaceChildren();
+  for(const [i,p] of [...state.results].sort((a,b)=>b.score-a.score).entries()){
+   const row=document.createElement('p');row.textContent=(i+1)+'. '+p.name+' – '+p.score+' richtig';$('results').append(row);
+  }
+  $('scores').replaceChildren();$('again').disabled=true;
+ }
+}
+async function onlineRefresh(){
+ if(!online||onlineBusy||document.hidden)return;onlineBusy=true;
+ try{const room=await hubRequest('');onlineSnapshot=room;onlineRender(room);}
+ catch(e){$('feedback').textContent='Verbindung: '+e.message;}
+ finally{onlineBusy=false;}
+}
+async function onlineUnderstood(){
+ if(!onlineMatch)return;
+ $('understood').disabled=true;
+ try{await hubRequest('/farbenblitz/understood',{matchId:onlineMatch});window.__farbenblitzAcknowledged=true;await onlineRefresh();}
+ catch(e){$('understood').disabled=false;$('ready-status').textContent=e.message;}
+}
+async function onlineAnswer(color){
+ if(!onlineMatch||!onlineSnapshot?.match?.farbenblitz)return;
+ const round=onlineSnapshot.match.farbenblitz.round;
+ try{await hubRequest('/farbenblitz/answer',{matchId:onlineMatch,round,color});await onlineRefresh();}
+ catch(e){$('feedback').textContent=e.message;}
+}
+if(online){$('start').disabled=true;$('start').textContent='Warte auf Spielstart in der Lobby';onlineTimer=setInterval(()=>void onlineRefresh(),1100);void onlineRefresh();}
+
 const colors={rot:'#f04455',blau:'#3489ee',gruen:'#23b86a',gelb:'#e0ae15'};
 const registry=createGameRegistry(games);
 const bridge=createLobbyGameBridge(createGameLauncher(registry));
@@ -80,6 +146,7 @@ function startNew(){
  show('instructions');
 }
 function acknowledge(){
+ if(online){void onlineUnderstood();return;}
  if(!pendingConfig || $('instructions').classList.contains('hidden'))return;
  $('understood').disabled=true;
  const readiness=startGate.acknowledge('player-1',Date.now());
@@ -104,6 +171,7 @@ function acknowledge(){
  },3500));
 }
 function answer(color){
+ if(online){void onlineAnswer(color);return;}
  const s=flow.snapshot();if(s.stage!=='playing')return;
  const round=s.session.state.round;
  flow.dispatch('player-1',{type:'answer',round,color});
@@ -140,5 +208,5 @@ function finish(){
 $('start').addEventListener('click',startNew);
 $('understood').addEventListener('click',acknowledge);
 $('again').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;startGate=null;flow.replay();show('setup');$('scores').replaceChildren();});
-$('back').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;startGate=null;flow.returnToSelection();show('setup');$('scores').replaceChildren();});
+$('back').addEventListener('click',()=>{if(online){location.href='./lobby.html?room='+encodeURIComponent(onlineRoom);return;}cancelCountdown();pendingConfig=null;startGate=null;flow.returnToSelection();show('setup');$('scores').replaceChildren();});
 </script></body></html>
