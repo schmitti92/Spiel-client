@@ -4,6 +4,30 @@ const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
 $('online-room').textContent='Raum '+(valid?code:'nicht verbunden');
 $('online-back').href='./lobby.html'+(valid?'?room='+encodeURIComponent(code):'');
 let snapshot=null,ws=null,busy=false,connecting=false,retryTimer=null,heartbeat=null,viewPlayer=null,lastTurnKey=null,announcedTurnKey=null;
+function onlineScore(g,c,j){
+ if(g.dice.length===5)return scoreForGame(g,c,j);
+ const dice=g.dice,counts=Array.from({length:7},(_,i)=>dice.filter(d=>d===i).length),sum=dice.reduce((a,b)=>a+b,0),unique=new Set(dice);
+ const col=g.players[g.turn].sheet[j],face=dice.find(d=>dice.filter(v=>v===d).length>=5);
+ if(g.mode==='joker'&&face&&col[11]===50&&col[face-1]!==null&&[8,9,10].includes(c))return [25,30,40][c-8];
+ if(c<6)return counts[c+1]*(c+1);
+ if(c===6)return Math.max(...counts)>=3?sum:0;
+ if(c===7)return Math.max(...counts)>=4?sum:0;
+ if(c===8)return counts.some(n=>n>=3)&&counts.filter(n=>n>=2).length>=2?25:0;
+ if(c===9)return [[1,2,3,4],[2,3,4,5],[3,4,5,6]].some(seq=>seq.every(n=>unique.has(n)))?30:0;
+ if(c===10)return [[1,2,3,4,5],[2,3,4,5,6]].some(seq=>seq.every(n=>unique.has(n)))?40:0;
+ if(c===11)return Math.max(...counts)>=5?50:0;
+ return sum;
+}
+function onlineAllowed(g,j){
+ if(g.dice.length===5)return allowedCategories(g,j);
+ const col=g.players[g.turn].sheet[j],face=g.dice.find(d=>g.dice.filter(v=>v===d).length>=5);
+ if(g.mode==='joker'&&g.rolls>0&&face&&col[11]===50){
+  if(col[face-1]===null)return [face-1];
+  const lower=col.flatMap((v,i)=>i>=6&&v===null?[i]:[]);
+  return lower.length?lower:col.flatMap((v,i)=>v===null?[i]:[]);
+ }
+ return allowedCategories(g,j);
+}
 const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s?.user?.getIdToken?s.user:null};
 const status=t=>$('notice').textContent=t;
 const current=()=>snapshot?.match?.game==='kniffel'?snapshot.match.kniffel:null;
@@ -11,7 +35,7 @@ function render(){
  const g=current();
  $('online-connection').textContent=ws?.readyState===1?'🟢 Live':'🟡 Verbinde …';
  $('players').replaceChildren();$('sheet').replaceChildren();$('dice').replaceChildren();$('online-result').replaceChildren();
- if(!g){$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('joker-panel').hidden=true;return}
+ if(!g){$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('extra-die-joker').hidden=true;$('joker-panel').hidden=true;return}
  const p=g.players[g.turn],mine=!g.finished&&p?.uid===user()?.uid;
  $('game').classList.toggle('multi-score',p.sheet.length===3);
  const turnKey=(snapshot?.match?.id||'')+':'+g.turn;
@@ -39,8 +63,9 @@ function render(){
  $('status').textContent=g.finished?'🏆 Partie beendet':p.name+' · Wurf '+g.rolls+' / '+(g.extraRollActive?4:3)+(mine?' · Du bist dran':'');
  g.dice.forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.className='die'+(g.held[i]?' held':'')+(g.rolls===0?' unrolled':'');b.style.setProperty('--die-index',i);if(g.rolls){const face=document.createElement('span');face.className='pips face-'+n;for(let k=0;k<9;k++){const pip=document.createElement('i');pip.className='pip pip-'+k;face.append(pip)}b.append(face)}else{const ready=document.createElement('span');ready.className='die-ready';ready.textContent='?';b.append(ready)}b.setAttribute('aria-label','Würfel '+(i+1)+': '+(g.rolls?n:'noch nicht geworfen'));b.disabled=!mine||busy||g.rolls===0||g.rolls>=(g.extraRollActive?4:3);b.onclick=()=>send({type:'hold',index:i});$('dice').append(b)});
  const limit=g.extraRollActive?4:3;
- const joker=$('extra-roll-joker');
+ const joker=$('extra-roll-joker'),dieJoker=$('extra-die-joker');
  joker.hidden=!g.extraJokers;
+ dieJoker.hidden=!g.extraJokers;
  $('joker-panel').hidden=!g.extraJokers;
  const used=!!p.extraRollUsed;
  const available=mine&&!busy&&g.rolls===0&&!used&&!g.extraRollActive;
@@ -50,6 +75,14 @@ function render(){
  joker.title=g.extraRollActive?'Aktiv: 4 Würfe':used?'Bereits eingesetzt':g.rolls>0?'Nur vor dem ersten Wurf aktivierbar':mine?'Jetzt für 4 Würfe aktivieren':'Nur im eigenen Zug aktivierbar';
  joker.setAttribute('aria-label','Glückswurf-Joker: '+joker.title);
  $('extra-roll-joker-label').textContent=g.extraRollActive?'4 Würfe':used?'Verbraucht':'+1 Wurf';
+ const dieUsed=!!p.extraDieUsed;
+ const dieAvailable=mine&&!busy&&g.rolls===0&&!dieUsed&&!g.extraDieActive;
+ dieJoker.disabled=!dieAvailable;
+ dieJoker.classList.toggle('joker-active',!!g.extraDieActive);
+ dieJoker.classList.toggle('joker-used',dieUsed&&!g.extraDieActive);
+ dieJoker.title=g.extraDieActive?'Aktiv: 6 Würfel':dieUsed?'Bereits eingesetzt':g.rolls>0?'Nur vor dem ersten Wurf aktivierbar':mine?'Jetzt mit 6 Würfeln spielen':'Nur im eigenen Zug aktivierbar';
+ dieJoker.setAttribute('aria-label','Sechster Würfel: '+dieJoker.title);
+ $('extra-die-joker-label').textContent=g.extraDieActive?'6 Würfel':dieUsed?'Verbraucht':'+1 Würfel';
  $('roll').disabled=!mine||busy||g.rolls>=limit;
  const table=document.createElement('table');if(!['classic','joker'].includes(g.mode))table.className='variant-table';
  const head=document.createElement('tr');head.className='score-head';
@@ -60,7 +93,7 @@ function render(){
  const symbol={Aufwärts:'↑',Abwärts:'↓',Frei:'='};
  [[shownPlayer,viewPlayer]].forEach(([player,i])=>MODES[g.mode].columns.forEach((column,j)=>{const th=document.createElement('th');const icon=symbol[column]||'=';th.textContent=icon;th.title=player.name+' – '+(column==='Aufwärts'?'von unten nach oben':column==='Abwärts'?'von oben nach unten':'freie Reihenfolge');th.setAttribute('aria-label',th.title);th.className='score-direction';directions.append(th)}));
  table.append(directions);
- CATEGORIES.forEach((label,c)=>{const tr=document.createElement('tr');tr.className='score-category'+(c===6?' score-section-start':'');const name=document.createElement('td');name.className='score-label';name.textContent=label;tr.append(name);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach((col,j)=>{const td=document.createElement('td');td.className='score-player-cell'+(i===g.turn&&!g.finished?' score-current-player':'');const value=col[c];if(value!==null){td.textContent=value;td.classList.add('score-ink')}else if(mine&&i===g.turn&&g.rolls>0&&allowedCategories(g,j).includes(c)){const button=document.createElement('button');button.type='button';button.className='score-choice';button.textContent=scoreForGame(g,c,j);button.title=label+' eintragen';button.onclick=()=>{if(confirm(label+(player.sheet.length>1?' · '+MODES[g.mode].columns[j]:'')+' mit '+button.textContent+' Punkten eintragen?'))send({type:'score',category:c,column:j})};td.append(button);td.classList.add('score-open')}else td.textContent='–';tr.append(td)}));table.append(tr)});
+ CATEGORIES.forEach((label,c)=>{const tr=document.createElement('tr');tr.className='score-category'+(c===6?' score-section-start':'');const name=document.createElement('td');name.className='score-label';name.textContent=label;tr.append(name);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach((col,j)=>{const td=document.createElement('td');td.className='score-player-cell'+(i===g.turn&&!g.finished?' score-current-player':'');const value=col[c];if(value!==null){td.textContent=value;td.classList.add('score-ink')}else if(mine&&i===g.turn&&g.rolls>0&&onlineAllowed(g,j).includes(c)){const button=document.createElement('button');button.type='button';button.className='score-choice';button.textContent=onlineScore(g,c,j);button.title=label+' eintragen';button.onclick=()=>{if(confirm(label+(player.sheet.length>1?' · '+MODES[g.mode].columns[j]:'')+' mit '+button.textContent+' Punkten eintragen?'))send({type:'score',category:c,column:j})};td.append(button);td.classList.add('score-open')}else td.textContent='–';tr.append(td)}));table.append(tr)});
  for(const [label,key] of [['Oberer Teil','upper'],['Bonus (63+)','bonus'],['Gesamt','total']]){const tr=document.createElement('tr');tr.className='score-summary score-'+key;const td=document.createElement('td');td.textContent=label;tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach(col=>{const cell=document.createElement('td');const sums=totals(col);cell.textContent=key==='bonus'&&sums.upper<63?sums.upper+' / 63':key==='total'?sums.total+(player.jokerBonus||0):sums[key];tr.append(cell)}));table.append(tr)}
  if(g.mode==='joker'){const tr=document.createElement('tr');tr.className='score-summary';const td=document.createElement('td');td.textContent='Jokerbonus';tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>{const cell=document.createElement('td');cell.className='player-tint-'+(i%4);cell.textContent=player.jokerBonus||0;tr.append(cell)});table.append(tr)}
  $('sheet').append(table);
@@ -72,6 +105,7 @@ async function refresh(){if(!valid||!user())return;try{const fresh=await request
 async function send(action){const g=current();if(!g||busy)return;busy=true;render();try{const fresh=await request('/kniffel/action',{matchId:snapshot.match.id,revision:g.revision,action});if(!snapshot||Number(fresh.revision)>=Number(snapshot.revision))snapshot=fresh;status('Aktion bestätigt');render()}catch(e){status('Aktion abgelehnt: '+e.message);await refresh()}finally{busy=false;render()}}
 $('roll').onclick=()=>send({type:'roll'});
 $('extra-roll-joker').onclick=()=>send({type:'extra-roll'});
+$('extra-die-joker').onclick=()=>send({type:'extra-die'});
 async function connect(){if(!valid||!user()||ws||connecting||document.hidden)return;connecting=true;try{const socket=new WebSocket(base.replace(/^http/i,'ws')+'/hub');ws=socket;socket.onopen=async()=>{try{const token=await user().getIdToken();if(ws===socket){socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));heartbeat=setInterval(()=>{if(ws===socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ping'}))},30000)}}catch(_){socket.close()}};socket.onmessage=e=>{let msg;try{msg=JSON.parse(e.data)}catch(_){return}if(msg.type==='room'&&msg.room?.code===code){if(!snapshot||Number(msg.room.revision)>=Number(snapshot.revision)){snapshot=msg.room;render();status('Raum synchronisiert')}}if(msg.type==='error')status('Verbindung: '+msg.error)};socket.onclose=()=>{if(heartbeat){clearInterval(heartbeat);heartbeat=null}if(ws===socket)ws=null;render();if(!document.hidden)retryTimer=setTimeout(connect,4500)};socket.onerror=()=>socket.close()}catch(e){status(e.message)}finally{connecting=false}}
 if(!valid)status('Bitte Kniffel über die Online-Spielauswahl mit einem gültigen Raum öffnen.');
 else{const boot=async()=>{if(!user())return;await refresh();connect()};boot();window.addEventListener('spielonline-change',boot);document.addEventListener('visibilitychange',()=>{if(!document.hidden){refresh();connect()}else if(ws){ws.close();ws=null}})}
