@@ -48,3 +48,16 @@ body>header h1{margin:0!important;font-size:clamp(19px,2.3vw,29px)!important}
 #sheet .score-directions th{font-family:system-ui,sans-serif;font-size:clamp(18px,2.1vw,27px);font-weight:900;line-height:1;padding:3px 0 5px!important;background:#ead0a0;color:#3b5635;text-align:center}
 #sheet .score-directions th[title*="oben nach unten"]{color:#805020}
 #game.multi-score #sheet .variant-table .score-directions th{min-width:60px!important}
+
+/* Subtle parchment-tinted player groups, shared across every score column.
+   Slightly translucent overlays preserve the original wooden paper texture. */
+#game #sheet{--player-0:rgba(109,153,123,.15);--player-1:rgba(114,146,177,.15);--player-2:rgba(187,145,103,.15);--player-3:rgba(157,130,168,.15)}
+#game #sheet th.player-tint-0,#game #sheet td.player-tint-0{background-color:var(--player-0)!important;background-image:linear-gradient(var(--player-0),var(--player-0))!important}
+#game #sheet th.player-tint-1,#game #sheet td.player-tint-1{background-color:var(--player-1)!important;background-image:linear-gradient(var(--player-1),var(--player-1))!important}
+#game #sheet th.player-tint-2,#game #sheet td.player-tint-2{background-color:var(--player-2)!important;background-image:linear-gradient(var(--player-2),var(--player-2))!important}
+#game #sheet th.player-tint-3,#game #sheet td.player-tint-3{background-color:var(--player-3)!important;background-image:linear-gradient(var(--player-3),var(--player-3))!important}
+#game #sheet .score-head th.player-tint-0{box-shadow:inset 0 4px #73937a}
+#game #sheet .score-head th.player-tint-1{box-shadow:inset 0 4px #7992a8}
+#game #sheet .score-head th.player-tint-2{box-shadow:inset 0 4px #b28a62}
+#game #sheet .score-head th.player-tint-3{box-shadow:inset 0 4px #a18ba8}
+#game #sheet .score-current-player{outline:1px solid rgba(69,108,66,.28);outline-offset:-1px}
