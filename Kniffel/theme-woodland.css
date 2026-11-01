@@ -28,13 +28,29 @@ header h1{font-family:Georgia,serif!important;color:#ffe0a0!important;text-shado
 /* Reference-image fidelity: engraved sign, parchment, recessed felt and polished wood */
 header{min-height:clamp(54px,7dvh,82px);background:linear-gradient(90deg,#1f170fcf,#49301aab,#1f170fcf)!important}
 header h1{position:relative;letter-spacing:.025em;font-size:clamp(25px,3.5vw,50px)!important;line-height:1.05;padding:3px 18px 7px;border-radius:14px;background:linear-gradient(180deg,#664021d6,#29170d99);border-top:2px solid #b78948;text-shadow:0 3px 3px #1c0c04,0 0 13px #ffce70}
-header h1::after{content:"Das Würfelklassiker";position:absolute;left:50%;top:90%;transform:translateX(-50%);white-space:nowrap;font:700 clamp(8px,1.1vw,13px) Georgia,serif;color:#3b210c;text-shadow:none;background:linear-gradient(#ffe393,#c68b28);padding:1px 15px;border-radius:2px 2px 10px 10px;border:1px solid #8d591f}
+header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:90%;transform:translateX(-50%);white-space:nowrap;font:700 clamp(8px,1.1vw,13px) Georgia,serif;color:#3b210c;text-shadow:none;background:linear-gradient(#ffe393,#c68b28);padding:1px 15px;border-radius:2px 2px 10px 10px;border:1px solid #8d591f}
 .scores{background:linear-gradient(90deg,#c58d4940,transparent 8%,transparent 93%,#b77c3530),repeating-linear-gradient(0deg,#fff2d20b 0 3px,#b68a4909 3px 6px),linear-gradient(120deg,#ffedca,#efd1a0)!important;border-radius:17px!important;border:9px ridge #b77938!important}
 .scores h2{font-weight:900;font-size:clamp(16px,2.2dvh,23px)!important}
 .scores #sheet td button{background:linear-gradient(#ffe7a2,#e7b74f)!important;border:1px solid #bb8735!important;box-shadow:inset 0 2px 2px #fff9,0 2px 3px #6b3c2444!important}
-.tabletop{background:repeating-linear-gradient(3deg,#6b3d20 0 14px,#704324 15px 17px,#4c2a17 18px 34px)!important;border-radius:25px!important;border-color:#ad743b!important}
+.tabletop{
+  /* Use the actual wooden tabletop from the uploaded scenery, not artificial stripes. */
+  background-image:linear-gradient(180deg,#30170933,#2a120b48),url("forest.webp")!important;
+  background-repeat:no-repeat!important;
+  background-size:100% 100%,100% 220%!important;
+  background-position:center,center bottom!important;
+  background-color:#653617!important;
+  border-radius:25px!important;
+  border-color:#ad743b!important;
+}
 .tray{border-radius:38px!important;border:13px ridge #c38b49!important;background:radial-gradient(ellipse at 45% 36%,#0d7540,#064b28 68%,#012d16)!important;box-shadow:inset 0 0 9px 5px #002c16,inset 0 0 45px #00180e,0 10px 12px #160a0580!important}
 .player{border-radius:40px!important;padding:6px 17px!important}
 #roll{border-radius:30px!important;font-size:clamp(17px,2.6dvh,26px)!important;box-shadow:inset 0 3px 6px #ffffff77,0 5px 12px #100803a8!important}
 .social-extension{border-radius:16px!important;background:linear-gradient(180deg,#744521,#3d210f)!important;box-shadow:inset 0 2px 4px #fff2,0 3px 7px #0006}
 @media(min-width:851px) and (orientation:landscape){body:has(#game:not([hidden])) main{padding-top:12px;padding-bottom:10px}#game #players{margin-bottom:12px}#game .layout{gap:clamp(13px,2vw,30px)}}
+
+/* Phase 2 refinement: balanced felt depth without sacrificing the scorecard. */
+@media(min-width:851px) and (orientation:landscape) and (min-height:721px){
+  .tabletop .tray{max-height:51%;margin-top:clamp(13px,2.6dvh,26px);margin-bottom:clamp(9px,1.8dvh,18px)}
+  .tabletop #status{position:relative;z-index:1}
+}
+@media(prefers-reduced-motion:reduce){.die{transition:none}}
