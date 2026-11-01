@@ -2,7 +2,7 @@ import {CATEGORIES,MODES,scoreForGame,allowedCategories,totals} from './rules.js
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),code=String(params.get('room')||'').toUpperCase(),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
 $('online-room').textContent='Raum '+(valid?code:'nicht verbunden');
-$('online-back').href='../spielauswahl-online.html'+(valid?'?room='+encodeURIComponent(code):'');
+$('online-back').href='./lobby.html'+(valid?'?room='+encodeURIComponent(code):'');
 let snapshot=null,ws=null,busy=false,connecting=false,retryTimer=null,heartbeat=null;
 const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s?.user?.getIdToken?s.user:null};
 const status=t=>$('online-status').textContent=t;
