@@ -42,3 +42,9 @@ body>header h1{margin:0!important;font-size:clamp(19px,2.3vw,29px)!important}
 #game.multi-score #sheet .variant-table th:first-child,#game.multi-score #sheet .variant-table td:first-child{min-width:116px!important;width:116px!important;position:sticky!important;left:0;z-index:2;background:#ead3a4!important}
 #game.multi-score #sheet .variant-table th:first-child{z-index:3}
 #game.multi-score #sheet .variant-table .score-choice{min-width:38px;min-height:27px}
+
+/* Compact grouped player headings with accessible direction symbols. */
+#sheet .score-head .score-player-head{text-align:center;font-weight:850;white-space:normal;overflow-wrap:anywhere;padding:4px 3px!important}
+#sheet .score-directions th{font-family:system-ui,sans-serif;font-size:clamp(18px,2.1vw,27px);font-weight:900;line-height:1;padding:3px 0 5px!important;background:#ead0a0;color:#3b5635;text-align:center}
+#sheet .score-directions th[title*="oben nach unten"]{color:#805020}
+#game.multi-score #sheet .variant-table .score-directions th{min-width:60px!important}
