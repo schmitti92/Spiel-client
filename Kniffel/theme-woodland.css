@@ -23,12 +23,4 @@ header h1{font-family:Georgia,serif!important;color:#ffe0a0!important;text-shado
 #roll{background:linear-gradient(#27944a,#086027 65%,#03491e)!important;border:3px solid #e5c16b!important;color:#fff8e1!important;text-shadow:0 2px 2px #073817;box-shadow:0 5px 15px #0008,inset 0 2px 4px #ffffff5c}
 .social-extension{background:linear-gradient(90deg,#382314,#53331d,#382314);border:2px solid #916334;border-radius:13px;margin-top:auto!important;flex-shrink:0}
 .extension-slot{color:#f4dba6;opacity:.85}
-@media(min-width:851px) and (orientation:landscape){
- #game .layout{grid-template-columns:minmax(350px,46%) minmax(0,1fr)!important;gap:clamp(10px,1.4vw,24px)!important}
- #game .scores{height:100%;align-self:stretch!important}
- #game .tabletop{height:100%;min-height:0}
- #game .tray{max-height:48%;min-height:150px}
- #game .scores h2{margin-bottom:5px!important}
- #game #sheet table{height:100%!important}
-}
-@media(max-width:850px){body{overflow:auto!important}.social-extension{margin-top:16px!important}}
+/* Responsive sizing belongs exclusively to style.css. */
