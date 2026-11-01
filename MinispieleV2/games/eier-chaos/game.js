@@ -3,7 +3,7 @@ export const id='eier-chaos';
 export const minPlayers=1,maxPlayers=4,capabilities=['timed','simultaneous'],timeLimitMs=60000,scoreDirection='higher';
 const DURATION=60000;
 const clamp=x=>Math.max(0,Math.min(1,x));
-const STAGES=Object.freeze([{start:0,count:30,interval:600,fall:1600},{start:20000,count:50,interval:360,fall:1250},{start:40000,count:120,interval:155,fall:950}]);
+const STAGES=Object.freeze([{start:0,count:40,interval:460,fall:1600},{start:20000,count:70,interval:260,fall:1250},{start:40000,count:90,interval:205,fall:950}]);
 export const EGG_COUNT=STAGES.reduce((sum,stage)=>sum+stage.count,0);
 export function eggAt(index){
  if(!Number.isSafeInteger(index)||index<0)throw Error('INVALID_EGG_INDEX');
@@ -14,8 +14,9 @@ export function eggAt(index){
   offset-=stage.count;
  }
  const lane=((index*37+11)%91+4)/100;
- const special=(index%10===3); // exactly 20 special eggs, same positions for every player
- return {index,spawnMs,landMs:spawnMs+speed,x:lane,special,points:special?3:1};
+ const special=index%10===3; // 20 goldene Eier
+ const rotten=index%10===7; // 20 faule Eier, keine Überschneidung
+ return {index,spawnMs,landMs:spawnMs+speed,x:lane,special,rotten,points:special?3:rotten?-1:1};
 }
 export function initialState(players){
  return {elapsedMs:0,finished:false,scores:Object.fromEntries(players.map(p=>[p.id,0])),baskets:Object.fromEntries(players.map(p=>[p.id,.5])),caught:Object.fromEntries(players.map(p=>[p.id,[]]))};
