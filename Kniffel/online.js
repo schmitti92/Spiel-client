@@ -146,8 +146,27 @@ function render(){
  const g=current();
  $('online-connection').textContent=ws?.readyState===1?'🟢 Live':'🟡 Verbinde …';
  $('players').replaceChildren();$('sheet').replaceChildren();$('dice').replaceChildren();$('online-result').replaceChildren();
- if(!g){$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('extra-die-joker').hidden=true;$('joker-panel').hidden=true;return}
+ if(!g){$('online-undo').disabled=true;$('online-undo-vote')?.remove();$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('extra-die-joker').hidden=true;$('joker-panel').hidden=true;return}
  const p=g.players[g.turn],mine=!g.finished&&p?.uid===user()?.uid;
+ const vote=g.undoVote,uid=user()?.uid;
+ $('online-undo').disabled=busy||!!vote||!g.lastScoredTurn||!g.players.some(p=>p.uid===uid);
+ $('online-undo').textContent=vote?'↶ Abstimmung läuft':'↶ Rückgängig';
+ let dialog=$('online-undo-vote');
+ if(vote){
+  if(!dialog){
+   dialog=document.createElement('div');dialog.id='online-undo-vote';dialog.className='undo-vote-overlay';
+   dialog.innerHTML='<div class="undo-vote-card" role="dialog" aria-modal="true" aria-labelledby="undo-vote-title"><h2 id="undo-vote-title">↶ Letzten Zug zurücknehmen?</h2><p id="undo-vote-detail"></p><div class="undo-vote-actions"><button id="undo-approve">✓ Zustimmen</button><button id="undo-decline">✕ Ablehnen</button></div></div>';
+   document.body.append(dialog);
+  }
+  const requester=g.players.find(p=>p.uid===vote.requester)?.name||'Ein Spieler';
+  $('undo-vote-detail').textContent=requester+' möchte die letzte Wertung rückgängig machen. Zustimmung: '+vote.approvals.length+' / '+vote.voters.length+'.';
+  const voted=vote.approvals.includes(uid);
+  $('undo-approve').disabled=busy||voted||!vote.voters.includes(uid);
+  $('undo-approve').textContent=voted?'✓ Zugestimmt':'✓ Zustimmen';
+  $('undo-decline').disabled=busy||!vote.voters.includes(uid);
+  $('undo-approve').onclick=()=>send({type:'undo-vote',approve:true});
+  $('undo-decline').onclick=()=>send({type:'undo-vote',approve:false});
+ }else dialog?.remove();
  $('game').classList.toggle('multi-score',p.sheet.length===3);
  const turnKey=(snapshot?.match?.id||'')+':'+g.turn;
  if(viewPlayer===null||(!scoreReveal&&lastTurnKey!==turnKey)||viewPlayer>=g.players.length){viewPlayer=g.turn;lastTurnKey=turnKey}
@@ -230,6 +249,7 @@ function render(){
 async function request(path,body=null){const u=user();if(!u)throw Error('Bitte zuerst online anmelden');const token=await u.getIdToken(),res=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(code)+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data.room}
 async function refresh(){if(!valid||!user())return;try{const fresh=await request('');if(acceptSnapshot(fresh))render()}catch(e){status('Raum nicht verfügbar: '+e.message)}}
 async function send(action){const g=current();if(!g||busy)return;busy=true;render();try{const fresh=await request('/kniffel/action',{matchId:snapshot.match.id,revision:g.revision,action});acceptSnapshot(fresh);status('Aktion bestätigt');render()}catch(e){status('Aktion abgelehnt: '+e.message);await refresh()}finally{busy=false;render()}}
+$('online-undo').onclick=()=>send({type:'undo-request'});
 $('roll').onclick=()=>send({type:'roll'});
 $('extra-roll-joker').onclick=()=>send({type:'extra-roll'});
 $('extra-die-joker').onclick=()=>send({type:'extra-die'});
