@@ -865,3 +865,7 @@ body>header{
  color:#486779!important;
  opacity:.76!important;
 }
+
+#kniffel-joker-toast{position:fixed;top:15%;left:50%;transform:translate(-50%,-14px);z-index:10050;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;max-width:min(90vw,560px);padding:15px 24px;border-radius:18px;border:2px solid #f9d478;background:linear-gradient(130deg,rgba(7,74,112,.97),rgba(5,119,155,.97));box-shadow:0 8px 28px #002e50a0,0 0 0 3px #ffffff55;color:#fff;font-size:clamp(17px,2.1vw,27px);font-weight:800;text-align:center;text-shadow:0 2px 3px #003450}
+#kniffel-joker-toast.visible{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){#kniffel-joker-toast{transition:none}}
