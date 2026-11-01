@@ -66,6 +66,7 @@ function render(){
  const joker=$('extra-roll-joker'),dieJoker=$('extra-die-joker');
  joker.hidden=false;
  dieJoker.hidden=false;
+ const rerollJoker=$('reroll-joker');rerollJoker.hidden=false;
  $('joker-panel').hidden=false;
  $('joker-panel').title=g.extraJokers?'Joker für diese Partie verfügbar':'Joker wurden in der Lobby für diese Partie nicht aktiviert';
  const used=!!p.extraRollUsed;
@@ -84,6 +85,10 @@ function render(){
  dieJoker.title=g.extraDieActive?'Aktiv: 6 Würfel':dieUsed?'Bereits eingesetzt':g.rolls>0?'Nur vor dem ersten Wurf aktivierbar':mine?'Jetzt mit 6 Würfeln spielen':'Nur im eigenen Zug aktivierbar';
  dieJoker.setAttribute('aria-label','Sechster Würfel: '+dieJoker.title);
  $('extra-die-joker-label').textContent=g.extraDieActive?'6 Würfel':dieUsed?'Verbraucht':'+1 Würfel';
+ rerollJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||!!p.rerollUsed;
+ rerollJoker.classList.toggle('joker-used',!!p.rerollUsed);
+ rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':p.rerollUsed?'Bereits verwendet':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle Würfel neu werfen';
+ $('reroll-joker-label').textContent=p.rerollUsed?'Verbraucht':'Neuwurf';
  $('roll').disabled=!mine||busy||g.rolls>=limit;
  const table=document.createElement('table');if(!['classic','joker'].includes(g.mode))table.className='variant-table';
  const head=document.createElement('tr');head.className='score-head';
@@ -107,6 +112,7 @@ async function send(action){const g=current();if(!g||busy)return;busy=true;rende
 $('roll').onclick=()=>send({type:'roll'});
 $('extra-roll-joker').onclick=()=>send({type:'extra-roll'});
 $('extra-die-joker').onclick=()=>send({type:'extra-die'});
+$('reroll-joker').onclick=()=>send({type:'reroll'});
 async function connect(){if(!valid||!user()||ws||connecting||document.hidden)return;connecting=true;try{const socket=new WebSocket(base.replace(/^http/i,'ws')+'/hub');ws=socket;socket.onopen=async()=>{try{const token=await user().getIdToken();if(ws===socket){socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));heartbeat=setInterval(()=>{if(ws===socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ping'}))},30000)}}catch(_){socket.close()}};socket.onmessage=e=>{let msg;try{msg=JSON.parse(e.data)}catch(_){return}if(msg.type==='room'&&msg.room?.code===code){if(!snapshot||Number(msg.room.revision)>=Number(snapshot.revision)){snapshot=msg.room;render();status('Raum synchronisiert')}}if(msg.type==='error')status('Verbindung: '+msg.error)};socket.onclose=()=>{if(heartbeat){clearInterval(heartbeat);heartbeat=null}if(ws===socket)ws=null;render();if(!document.hidden)retryTimer=setTimeout(connect,4500)};socket.onerror=()=>socket.close()}catch(e){status(e.message)}finally{connecting=false}}
 if(!valid)status('Bitte Kniffel über die Online-Spielauswahl mit einem gültigen Raum öffnen.');
 else{const boot=async()=>{if(!user())return;await refresh();connect()};boot();window.addEventListener('spielonline-change',boot);document.addEventListener('visibilitychange',()=>{if(!document.hidden){refresh();connect()}else if(ws){ws.close();ws=null}})}
