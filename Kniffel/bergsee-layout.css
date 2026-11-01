@@ -99,3 +99,33 @@
   font-size:clamp(21px,2.4vw,36px)!important;
  }
 }
+
+
+/* Spectator dice: disabled means read-only, never visually dimmed. */
+#game .tabletop #dice.tray > button.die:disabled,
+#game .tabletop #dice.tray > button.die:not(:disabled){
+  opacity:1!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  background:linear-gradient(145deg,#fff 0%,#f5fbff 75%,#dcebf6 100%)!important;
+  border:3px solid #f8fdff!important;
+  box-shadow:inset 0 2px 4px #fff,0 5px 13px #153d5970!important;
+}
+#game .tabletop #dice.tray > button.die:disabled .pips,
+#game .tabletop #dice.tray > button.die:disabled .pip{
+  opacity:1!important;
+  filter:none!important;
+}
+#game .tabletop #dice.tray > button.die .pip{
+  background:#172735!important;
+  box-shadow:inset 1px 2px 2px #0007!important;
+}
+#game .tabletop #dice.tray > button.die.held,
+#game .tabletop #dice.tray > button.die.held:disabled{
+  opacity:1!important;
+  filter:none!important;
+  background:linear-gradient(145deg,#fff3a4,#ffd044 52%,#d99b0c)!important;
+  border:4px solid #a86c00!important;
+  box-shadow:inset 0 2px 4px #fff8c7,0 0 0 3px #ffe27c,0 0 0 5px #b77805,0 7px 15px #5c3b0b9c!important;
+}
+#game .tabletop #dice.tray > button.die:disabled{cursor:default!important}
