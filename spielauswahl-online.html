@@ -292,6 +292,13 @@ body::before{background:linear-gradient(180deg,rgba(5,20,33,.30),rgba(8,22,35,.3
 @media(max-width:760px){.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.container{width:calc(100% - 24px);padding-top:16px}.page-head{padding:16px!important;padding-top:84px!important;min-height:0!important}.online-head-actions{top:12px;right:12px}.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card,.game.party-challenge-card{aspect-ratio:1.2!important;border-radius:14px!important}}
 @media(max-width:420px){.game-grid{gap:9px!important}.game.barikade-card,.game.skyjo-card,.game.kreuzkunter-card,.game.business-card,.game.party-challenge-card{aspect-ratio:1.05!important}.page-head h1{font-size:25px!important}}
 @media(prefers-reduced-motion:reduce){body{background-attachment:scroll!important}}
+
+/* Tablet landscape: room dropdown must remain a compact anchored popover. */
+.online-room-dropdown[open]{z-index:100!important}
+.online-room-dropdown .online-room-dropdown-panel{position:absolute!important;top:calc(100% + 2px)!important;right:0!important;left:auto!important;width:min(350px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:min(72dvh,540px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;transform:none!important;font-size:14px!important;line-height:1.35!important}
+.online-room-dropdown .online-room-meta{font-size:13px!important;line-height:1.4!important}
+.online-room-dropdown .online-room-dropdown-panel button,.online-room-dropdown .online-room-dropdown-panel input{font-size:14px!important;max-width:100%!important}
+@media(max-width:1000px){.online-head-actions .online-room-dropdown-panel{right:0!important}}
 </style>
 
 <style>
