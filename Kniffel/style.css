@@ -27,3 +27,34 @@
 .pip{width:clamp(7px,1.1vw,12px);height:clamp(7px,1.1vw,12px);border-radius:50%;background:radial-gradient(circle at 35% 30%,#41413e,#111 70%);box-shadow:inset 1px 1px 2px #0009,1px 1px 1px #fff8;visibility:hidden}
 .face-1 .pip-4,.face-2 .pip-0,.face-2 .pip-8,.face-3 .pip-0,.face-3 .pip-4,.face-3 .pip-8,.face-4 .pip-0,.face-4 .pip-2,.face-4 .pip-6,.face-4 .pip-8,.face-5 .pip-0,.face-5 .pip-2,.face-5 .pip-4,.face-5 .pip-6,.face-5 .pip-8,.face-6 .pip-0,.face-6 .pip-2,.face-6 .pip-3,.face-6 .pip-5,.face-6 .pip-6,.face-6 .pip-8{visibility:visible}
 @media(max-width:850px){.scores td,.scores th{padding:5px 3px}.scores td button{padding:4px 7px}}
+
+/* v1.2: viewport-fitted tablet board */
+@media (min-width:851px) and (orientation:landscape) {
+ body:has(#game:not([hidden])){height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+ body:has(#game:not([hidden])) header{flex:0 0 auto}
+ body:has(#game:not([hidden])) main{flex:1;min-height:0;width:100%;padding:5px 12px 8px}
+ #game:not([hidden]){height:100%;display:flex;flex-direction:column;min-height:0}
+ #game #players{flex:0 0 auto;margin:0 0 5px}
+ #game .layout{flex:1;min-height:0;grid-template-columns:minmax(390px,47%) minmax(0,1fr);align-items:stretch}
+ #game .scores{min-height:0;display:flex;flex-direction:column;padding:6px 10px;overflow:hidden}
+ #game .scores h2{flex:0 0 auto;font-size:clamp(14px,2.4dvh,19px);line-height:1.05;margin:0 0 3px}
+ #game #sheet{flex:1;min-height:0}
+ #game #sheet table{height:100%;table-layout:fixed;font-size:clamp(10px,1.55dvh,14px)}
+ #game #sheet th,#game #sheet td{height:auto;padding:0 3px;line-height:1;white-space:nowrap}
+ #game #sheet th:first-child,#game #sheet td:first-child{width:34%;overflow:hidden;text-overflow:ellipsis}
+ #game #sheet td button{padding:0 7px;min-height:clamp(18px,2.5dvh,27px);font-size:inherit}
+ #game .tabletop{min-height:0;display:flex;flex-direction:column;justify-content:center;padding:clamp(8px,2dvh,18px)}
+ #game .tray{width:100%;padding:clamp(12px,3dvh,28px) 4px;margin:clamp(8px,2dvh,18px) auto;gap:clamp(4px,1vw,14px)}
+ #game .die{width:clamp(49px,6.3vw,86px);height:clamp(49px,6.3vw,86px)}
+ #game .tabletop p{margin:5px}
+ #game #notice{padding:6px}
+}
+@media(max-width:1100px) and (min-width:851px) and (orientation:landscape){
+ #game .layout{grid-template-columns:minmax(330px,48%) minmax(0,1fr)}
+ #game .die{width:clamp(44px,5.5vw,70px);height:clamp(44px,5.5vw,70px)}
+}
+@media (max-height:650px) and (min-width:851px) and (orientation:landscape){
+ #game #sheet table{font-size:clamp(9px,1.6dvh,12px)}
+ #game .player{padding:2px 8px}
+ #game .tabletop p{display:none}
+}
