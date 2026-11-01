@@ -2,6 +2,8 @@
 export const id='eier-chaos';
 export const minPlayers=1,maxPlayers=4,capabilities=['timed','simultaneous'],timeLimitMs=60000,scoreDirection='higher';
 const DURATION=60000;
+// Center of an egg must be inside the basket mouth, not touching its sides.
+const BASKET_MOUTH_HALF_WIDTH=.055;
 const clamp=x=>Math.max(0,Math.min(1,x));
 const STAGES=Object.freeze([{start:0,count:40,interval:460,fall:1600},{start:20000,count:70,interval:260,fall:1250},{start:40000,count:90,interval:205,fall:950}]);
 export const EGG_COUNT=STAGES.reduce((sum,stage)=>sum+stage.count,0);
@@ -42,7 +44,7 @@ export function applyAction(state,{playerId,action,players}){
   const egg=eggAt(i);
   if(egg.landMs<=state.elapsedMs||egg.landMs>end||egg.spawnMs>=DURATION)continue;
   for(const p of players){
-   if(Math.abs(state.baskets[p.id]-egg.x)<=.115){scores[p.id]+=egg.points;caught[p.id].push(i);}
+   if(Math.abs(state.baskets[p.id]-egg.x)<=BASKET_MOUTH_HALF_WIDTH){scores[p.id]+=egg.points;caught[p.id].push(i);}
   }
  }
  return {...state,elapsedMs:end,scores,caught,finished:end===DURATION};
