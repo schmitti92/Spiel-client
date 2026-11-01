@@ -121,14 +121,14 @@ function renderCompactScore(g,shownPlayer,viewPlayer,mine){
 }
 
 
-let scoreReveal=null,scoreRevealTimer=null,heldScorePlayer=null;
+let scoreReveal=null,scoreRevealTimer=null,heldScorePlayer=null,scoreHoldUntil=0;
 function acceptSnapshot(fresh){
  if(snapshot&&Number(fresh.revision)<Number(snapshot.revision))return false;
  const before=current();
  const oldMatch=snapshot?.match?.id;
  snapshot=fresh;
  const next=current();
- if(oldMatch&&oldMatch!==snapshot?.match?.id){heldScorePlayer=null;scoreReveal=null;clearTimeout(scoreRevealTimer);viewPlayer=null;lastTurnKey=null;}
+ if(oldMatch&&oldMatch!==snapshot?.match?.id){heldScorePlayer=null;scoreHoldUntil=0;scoreReveal=null;clearTimeout(scoreRevealTimer);viewPlayer=null;lastTurnKey=null;}
  if(before&&next&&before.turn!==next.turn&&before.players?.length===next.players?.length){
   const old=before.players[before.turn],updated=next.players[before.turn];
   let changed=null;
@@ -138,11 +138,12 @@ function acceptSnapshot(fresh){
   }
   if(changed){
    heldScorePlayer=before.turn;
+    scoreHoldUntil=Date.now()+3000;
    scoreReveal={player:before.turn,...changed};
    viewPlayer=before.turn;
    clearTimeout(scoreRevealTimer);
    // The number settles after the animation; the scorecard does NOT switch yet.
-   scoreRevealTimer=setTimeout(()=>{scoreReveal=null;render()},1150);
+   scoreRevealTimer=setTimeout(()=>{scoreReveal=null;heldScorePlayer=null;scoreHoldUntil=0;viewPlayer=next.turn;render()},3000);
   }else{
    // Undo or another non-scoring turn change must not leave a stale scorecard.
    heldScorePlayer=null;scoreReveal=null;clearTimeout(scoreRevealTimer);
@@ -185,7 +186,7 @@ function render(){
  if(heldScorePlayer===null&&g.rolls===0&&g.lastScoredTurn?.state&&g.lastScoredTurn.state.turn!==g.turn){
   heldScorePlayer=g.lastScoredTurn.state.turn;
 }
-if(heldScorePlayer!==null&&g.rolls===0){
+if(heldScorePlayer!==null&&g.rolls===0&&Date.now()<scoreHoldUntil){
   viewPlayer=heldScorePlayer;
 }else if(viewPlayer===null||lastTurnKey!==turnKey||viewPlayer>=g.players.length){
   viewPlayer=g.turn;
