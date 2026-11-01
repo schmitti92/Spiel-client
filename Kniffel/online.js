@@ -62,6 +62,30 @@ function chooseScore(g,c,column=0){
  strike.onclick=()=>{overlay.remove();send({type:'score',category:c,column,crossOut:true})};
  actions.append(cancel,enter,strike);card.append(heading,description,actions);overlay.append(card);document.body.append(overlay);enter.focus();
 }
+function chooseMoveJoker(g){
+ const player=g.players.find(p=>p.uid===user()?.uid);
+ if(!player)return;
+ const choices=[];
+ player.sheet.forEach((col,fromColumn)=>col.forEach((value,category)=>{
+  if(value===null)return;
+  player.sheet.forEach((dest,toColumn)=>{
+   if(fromColumn!==toColumn&&dest[category]===null)choices.push({category,fromColumn,toColumn,value});
+  });
+ }));
+ if(!choices.length){status('Keine verschiebbare Wertung mit freiem Zielfeld vorhanden.');return}
+ document.getElementById('online-score-confirm')?.remove();
+ const overlay=document.createElement('div');overlay.id='online-score-confirm';overlay.className='score-preview-overlay';
+ const card=document.createElement('div');card.className='score-preview-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
+ const heading=document.createElement('h2');heading.textContent='🔀 Verschiebe-Joker';
+ const description=document.createElement('p');description.textContent='Wähle eine eingetragene Wertung und ihre neue Spalte. Der alte Platz wird frei.';
+ const select=document.createElement('select');select.className='move-joker-select';select.setAttribute('aria-label','Wertung und Zielspalte auswählen');
+ const labels=MODES[g.mode].columns;
+ choices.forEach((entry,i)=>{const option=document.createElement('option');option.value=String(i);option.textContent=CATEGORIES[entry.category]+' ('+(player.crossedOut?.[entry.fromColumn]?.[entry.category]?'gestrichen':entry.value+' Punkte')+') · '+labels[entry.fromColumn]+' → '+labels[entry.toColumn];select.append(option)});
+ const actions=document.createElement('div');actions.className='score-preview-actions';
+ const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Zurück';cancel.onclick=()=>overlay.remove();
+ const accept=document.createElement('button');accept.type='button';accept.className='score-preview-confirm';accept.textContent='Jetzt verschieben';accept.onclick=()=>{const entry=choices[Number(select.value)];if(!entry)return;overlay.remove();send({type:'move-score',category:entry.category,fromColumn:entry.fromColumn,toColumn:entry.toColumn})};
+ actions.append(cancel,accept);card.append(heading,description,select,actions);overlay.append(card);document.body.append(overlay);select.focus();
+}
 function renderCompactScore(g,shownPlayer,viewPlayer,mine){
  const sheet=$('sheet'),col=shownPlayer.sheet[0],sums=totals(col);
  const wrap=document.createElement('div');wrap.className='compact-score wood-score';
@@ -130,6 +154,7 @@ function render(){
  joker.hidden=false;
  dieJoker.hidden=false;
  const rerollJoker=$('reroll-joker');rerollJoker.hidden=false;
+ const moveJoker=$('move-score-joker');moveJoker.hidden=false;
  $('joker-panel').hidden=false;
  $('joker-panel').title=g.extraJokers?'Joker für diese Partie verfügbar':'Joker wurden in der Lobby für diese Partie nicht aktiviert';
  const used=!!p.extraRollUsed;
@@ -152,6 +177,12 @@ function render(){
  rerollJoker.classList.toggle('joker-used',!!p.rerollUsed);
  rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':p.rerollUsed?'Bereits verwendet':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle Würfel neu werfen';
  $('reroll-joker-label').textContent=p.rerollUsed?'Verbraucht':'Neuwurf';
+ const ownPlayer=g.players.find(x=>x.uid===user()?.uid);
+ const movePossible=ownPlayer?.sheet?.length>1&&ownPlayer.sheet.some((col,j)=>col.some((value,c)=>value!==null&&ownPlayer.sheet.some((target,k)=>k!==j&&target[c]===null)));
+ moveJoker.disabled=!g.extraJokers||busy||g.finished||!ownPlayer||!!ownPlayer.moveUsed||!movePossible;
+ moveJoker.classList.toggle('joker-used',!!ownPlayer?.moveUsed);
+ moveJoker.title=ownPlayer?.moveUsed?'Bereits verwendet':!g.extraJokers?'In der Lobby nicht aktiviert':!movePossible?'Keine verschiebbare Wertung vorhanden':'Eigene Wertung jederzeit in eine andere Spalte verschieben';
+ $('move-score-joker-label').textContent=ownPlayer?.moveUsed?'Verbraucht':'Verschieben';
  $('roll').disabled=!mine||busy||g.rolls>=limit;
  if(['classic','joker'].includes(g.mode)&&shownPlayer.sheet.length===1){renderCompactScore(g,shownPlayer,viewPlayer,mine)}else{
  const table=document.createElement('table');if(!['classic','joker'].includes(g.mode))table.className='variant-table wood-variant-table';
@@ -178,6 +209,7 @@ $('roll').onclick=()=>send({type:'roll'});
 $('extra-roll-joker').onclick=()=>send({type:'extra-roll'});
 $('extra-die-joker').onclick=()=>send({type:'extra-die'});
 $('reroll-joker').onclick=()=>send({type:'reroll'});
+$('move-score-joker').onclick=()=>{const g=current();if(g)chooseMoveJoker(g)};
 async function connect(){if(!valid||!user()||ws||connecting||document.hidden)return;connecting=true;try{const socket=new WebSocket(base.replace(/^http/i,'ws')+'/hub');ws=socket;socket.onopen=async()=>{try{const token=await user().getIdToken();if(ws===socket){socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));heartbeat=setInterval(()=>{if(ws===socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ping'}))},30000)}}catch(_){socket.close()}};socket.onmessage=e=>{let msg;try{msg=JSON.parse(e.data)}catch(_){return}if(msg.type==='room'&&msg.room?.code===code){if(!snapshot||Number(msg.room.revision)>=Number(snapshot.revision)){snapshot=msg.room;render();status('Raum synchronisiert')}}if(msg.type==='error')status('Verbindung: '+msg.error)};socket.onclose=()=>{if(heartbeat){clearInterval(heartbeat);heartbeat=null}if(ws===socket)ws=null;render();if(!document.hidden)retryTimer=setTimeout(connect,4500)};socket.onerror=()=>socket.close()}catch(e){status(e.message)}finally{connecting=false}}
 if(!valid)status('Bitte Kniffel über die Online-Spielauswahl mit einem gültigen Raum öffnen.');
 else{const boot=async()=>{if(!user())return;await refresh();connect()};boot();window.addEventListener('spielonline-change',boot);document.addEventListener('visibilitychange',()=>{if(!document.hidden){refresh();connect()}else if(ws){ws.close();ws=null}})}
