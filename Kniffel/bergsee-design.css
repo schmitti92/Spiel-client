@@ -668,3 +668,47 @@ body>header{
 @supports not (backdrop-filter:blur(1px)){
  #game .panel.scores{background:rgba(232,246,255,.78)!important}
 }
+
+
+/* Bergsee v15: readable shared dice for all players; vivid gold held state. */
+#game .tabletop #dice.tray > button.die,
+#game .tabletop #dice.tray > button.die:disabled{
+ opacity:1!important;
+ filter:none!important;
+ background:linear-gradient(145deg,#ffffff 0%,#f7fbff 65%,#dce9f3 100%)!important;
+ border:2px solid #f4fbff!important;
+ box-shadow:inset 0 2px 3px #fff,0 5px 13px #123b6080!important;
+ color:#111820!important;
+ -webkit-text-fill-color:initial;
+}
+#game .tabletop #dice.tray > button.die .pip,
+#game .tabletop #dice.tray > button.die:disabled .pip{
+ background:#151b23!important;
+ opacity:1!important;
+ box-shadow:inset 1px 2px 2px #0007!important;
+}
+#game .tabletop #dice.tray > button.die.held,
+#game .tabletop #dice.tray > button.die.held:disabled,
+#game .tabletop #dice.tray:has(> .die:nth-child(6)) > button.die.held{
+ opacity:1!important;
+ filter:none!important;
+ background:linear-gradient(145deg,#fff3a4 0%,#ffd044 47%,#d99b0c 100%)!important;
+ border:4px solid #a86c00!important;
+ box-shadow:inset 0 2px 4px #fff8c7,0 0 0 3px #ffe27c,0 0 0 5px #b77805,0 7px 15px #5c3b0b9c!important;
+ transform:translateY(-4px)!important;
+ z-index:5!important;
+}
+#game .tabletop #dice.tray > button.die.held .pip,
+#game .tabletop #dice.tray > button.die.held:disabled .pip{
+ background:#231805!important;
+ box-shadow:inset 1px 2px 2px #0008!important;
+}
+#game .tabletop #dice.tray > button.die.held::after,
+#game .tabletop #dice.tray > button.die.held:disabled::after{
+ content:"✓"!important;
+ background:#b47b04!important;
+ border:2px solid #fff7ce!important;
+ color:white!important;
+ box-shadow:0 2px 7px #5e410b99!important;
+}
+#game .tabletop #dice.tray > button.die:disabled{cursor:default!important}
