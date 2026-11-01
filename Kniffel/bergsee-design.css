@@ -2,7 +2,7 @@
 /* BERGSEE DESIGN 2 — stage 1, visual foundation. Loaded after the legacy themes. */
 :root{--wood-dark:#073b5b;--wood:#146d9e;--gold:#82c9e9;--paper:#e9f5ff;--felt:#b9d9ed}
 body{background:#0b689e!important;color:#132e43!important}
-body::before{background:linear-gradient(180deg,#1386bd1a,#00618c0d),url("./bergsee-background.svg") center center/cover no-repeat!important}
+body::before{background:linear-gradient(180deg,#1386bd1a,#00618c0d),url("./bergsee-background.svg?v=2") center center/cover no-repeat!important}
 body::after{background:linear-gradient(180deg,#ffffff00 0%,#063c6410 70%,#004a6a1f)!important}
 body>header{
  background:linear-gradient(180deg,#08649cdd,#1679b7d9)!important;
