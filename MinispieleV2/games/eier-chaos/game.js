@@ -1,62 +1,58 @@
-/** Eier-Chaos: deterministic 1–4 player rules, independent of UI, network and storage. */
+/** Eier-Chaos: pure, deterministic rules. No UI, timers, storage or network. */
 export const id='eier-chaos';
 export const DURATION_MS=60000;
 export const EGG_VALUES=Object.freeze({normal:1,gold:5,rotten:-3,rainbow:10});
-export const BASKET_SPEED=1.8; // normalized field widths per second
-export const CATCH_RADIUS=.105;
-const PHASE_COUNTS=[12,18,24];
-const FALL_MS=[2400,1750,1250];
-const TYPES=['normal','normal','gold','normal','rotten','normal','rainbow','normal','normal','normal'];
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const TYPES=['normal','normal','normal','normal','gold','normal','rotten','normal','normal','rainbow'];
+const SPEEDS=[2400,1750,1250];
+const COUNTS=[12,18,24];
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+/** Every participant gets the same immutable schedule, including positions and speeds. */
 export function makeSchedule(){
- const eggs=[];let id=0;
+ const events=[];
+ let serial=0;
  for(let phase=0;phase<3;phase++){
-  const count=PHASE_COUNTS[phase];
-  const window=20000-FALL_MS[phase]-600;
+  const count=COUNTS[phase];
   for(let i=0;i<count;i++){
-   const spawnMs=phase*20000+Math.round((i+.25)*window/count);
-   eggs.push(Object.freeze({
-    id:id++,phase,spawnMs,landMs:spawnMs+FALL_MS[phase],
-    x:.12+((i*37+phase*23)%77)/100,
-    type:TYPES[(i*7+phase*3)%TYPES.length]
-   }));
+   const spawnMs=phase*20000+Math.floor((i+.35)*19500/count);
+   const type=TYPES[(i*7+phase*3)%TYPES.length];
+   const x=.12+(((i*37+phase*23)%77)/100);
+   events.push(Object.freeze({id:serial++,spawnMs,landMs:spawnMs+SPEEDS[phase],x,type,phase}));
   }
  }
- return Object.freeze(eggs);
+ return Object.freeze(events);
 }
 export const SCHEDULE=makeSchedule();
 export const MAX_SCORE=SCHEDULE.reduce((sum,e)=>sum+Math.max(0,EGG_VALUES[e.type]),0);
-const scores=players=>Object.fromEntries(players.map(p=>[p.id,0]));
 export const eierChaos={
- id,contractVersion:1,minPlayers:1,maxPlayers:4,scoreDirection:'higher',
+ id,minPlayers:1,maxPlayers:4,scoreDirection:'higher',
  capabilities:['timed','simultaneous'],timeLimitMs:DURATION_MS,
  initialState(players){
-  return {finished:false,maxScore:MAX_SCORE,scores:scores(players),
-   participants:Object.fromEntries(players.map(p=>[p.id,{elapsedMs:0,x:.5,caught:[],done:false}]))};
+  return {elapsedMs:0,finished:false,scores:Object.fromEntries(players.map(p=>[p.id,0])),
+   caught:Object.fromEntries(players.map(p=>[p.id,[]])),
+   baskets:Object.fromEntries(players.map(p=>[p.id,.5])),
+   maxScore:MAX_SCORE};
  },
  applyAction(state,{playerId,action,players}){
   if(state.finished)throw Error('GAME_FINISHED');
   if(!players.some(p=>p.id===playerId))throw Error('UNKNOWN_PLAYER');
-  if(!action||action.type!=='step'||!Number.isSafeInteger(action.elapsedMs)||
-   !Number.isFinite(action.x)||action.x<0||action.x>1)throw Error('INVALID_STEP');
-  const previous=state.participants[playerId];
-  if(previous.done||action.elapsedMs<=previous.elapsedMs||action.elapsedMs>DURATION_MS)throw Error('INVALID_TIME');
-  const dt=action.elapsedMs-previous.elapsedMs;
-  const x=clamp(action.x,previous.x-BASKET_SPEED*dt/1000,previous.x+BASKET_SPEED*dt/1000);
-  let score=state.scores[playerId];
-  const caught=[...previous.caught];
-  for(const egg of SCHEDULE){
-   if(egg.landMs<=previous.elapsedMs||egg.landMs>action.elapsedMs)continue;
-   const fraction=(egg.landMs-previous.elapsedMs)/dt;
-   const atLanding=previous.x+(x-previous.x)*fraction;
-   if(Math.abs(atLanding-egg.x)<=CATCH_RADIUS){
-    score+=EGG_VALUES[egg.type];
-    caught.push(egg.id);
-   }
+  if(!action||typeof action!=='object')throw Error('INVALID_ACTION');
+  if(action.type==='move'){
+   if(!Number.isFinite(action.x)||action.x<0||action.x>1)throw Error('INVALID_POSITION');
+   return {...state,baskets:{...state.baskets,[playerId]:action.x}};
   }
-  const participants={...state.participants,[playerId]:{elapsedMs:action.elapsedMs,x,caught,done:action.elapsedMs===DURATION_MS}};
-  return {...state,participants,scores:{...state.scores,[playerId]:score},
-   finished:players.every(p=>participants[p.id].done)};
+  if(action.type==='catch'){
+   const egg=SCHEDULE[action.eggId];
+   if(!egg||state.caught[playerId].includes(egg.id))throw Error('INVALID_EGG');
+   if(egg.landMs>state.elapsedMs||egg.landMs<state.elapsedMs-150)throw Error('EGG_NOT_LANDING');
+   if(Math.abs(state.baskets[playerId]-egg.x)>.105)throw Error('BASKET_MISSED');
+   return {...state,scores:{...state.scores,[playerId]:state.scores[playerId]+EGG_VALUES[egg.type]},
+    caught:{...state.caught,[playerId]:[...state.caught[playerId],egg.id]}};
+  }
+  if(action.type==='advance'){
+   if(!Number.isSafeInteger(action.elapsedMs)||action.elapsedMs<state.elapsedMs||action.elapsedMs>DURATION_MS)throw Error('INVALID_ELAPSED');
+   return {...state,elapsedMs:action.elapsedMs,finished:action.elapsedMs===DURATION_MS};
+  }
+  throw Error('UNKNOWN_ACTION');
  },
  getResult(state){
   if(!state.finished)return null;
@@ -64,10 +60,8 @@ export const eierChaos={
  },
  botAction(state,playerId,players){
   if(!players.some(p=>p.id===playerId))throw Error('UNKNOWN_PLAYER');
-  const p=state.participants[playerId];
-  const elapsedMs=Math.min(DURATION_MS,p.elapsedMs+50);
-  const upcoming=SCHEDULE.find(e=>e.landMs>p.elapsedMs&&EGG_VALUES[e.type]>0);
-  return {type:'step',elapsedMs,x:upcoming?.x??.5};
+  const egg=SCHEDULE.find(e=>e.landMs>=state.elapsedMs&&e.landMs<state.elapsedMs+200&&EGG_VALUES[e.type]>0);
+  return {type:'move',x:egg?egg.x:.5};
  }
 };
 export const initialState=eierChaos.initialState;
