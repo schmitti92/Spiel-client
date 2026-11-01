@@ -9,8 +9,14 @@ test('Eier-Chaos supports 1-4 players and common engine contract',()=>{
 test('deterministic eggs, speed increases every 20 seconds',()=>{
  assert.deepEqual(game.eggAt(10),game.eggAt(10));
  assert.equal(game.eggAt(0).landMs-game.eggAt(0).spawnMs,1600);
- assert.equal(game.eggAt(40).landMs-game.eggAt(40).spawnMs,1250);
- assert.equal(game.eggAt(80).landMs-game.eggAt(80).spawnMs,950);
+ assert.equal(game.eggAt(39).spawnMs,20000);
+ assert.equal(game.eggAt(39).landMs-game.eggAt(39).spawnMs,1250);
+ assert.equal(game.eggAt(98).spawnMs,40000);
+ assert.equal(game.eggAt(98).landMs-game.eggAt(98).spawnMs,950);
+ assert.equal(game.eggAt(38).spawnMs,19760);
+ assert.equal(game.eggAt(97).spawnMs,39720);
+ assert.equal(game.EGG_COUNT,194);
+ assert.throws(()=>game.eggAt(game.EGG_COUNT),/INVALID_EGG_INDEX/);
 });
 test('catch, miss, finish, result and restart',()=>{
  const s=createSession(game,roster);
@@ -30,4 +36,10 @@ test('rejects invalid moves, ticks and unauthorized clock',()=>{
  assert.throws(()=>s.dispatch('a',{type:'move',x:2}),/INVALID_POSITION/);
  assert.throws(()=>s.dispatch('b',{type:'tick',ms:50}),/CLOCK_OWNER_REQUIRED/);
  assert.throws(()=>s.dispatch('a',{type:'tick',ms:1001}),/INVALID_TICK/);
+});
+
+test('egg frequency rises at each 20-second boundary',()=>{
+ assert.equal(game.eggAt(1).spawnMs-game.eggAt(0).spawnMs,520);
+ assert.equal(game.eggAt(40).spawnMs-game.eggAt(39).spawnMs,340);
+ assert.equal(game.eggAt(99).spawnMs-game.eggAt(98).spawnMs,210);
 });
