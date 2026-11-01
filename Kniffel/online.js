@@ -151,7 +151,7 @@ function acceptSnapshot(fresh){
   const moving=next.dice.map((_,i)=>oldRolls===0||!oldHeld[i]);
   diceMotion={key:[snapshot?.match?.id,next.turn,next.rolls].join(':'),moving};
   clearTimeout(diceMotionTimer);
-  diceMotionTimer=setTimeout(()=>{diceMotion=null;document.querySelectorAll('#dice .die.dice-tumbling').forEach(el=>el.classList.remove('dice-tumbling'))},1050);
+  diceMotionTimer=setTimeout(()=>{diceMotion=null;document.querySelectorAll('#dice .die.dice-tumbling').forEach(el=>el.classList.remove('dice-tumbling'))},1550);
  }
  // Announce confirmed joker activation to every connected player, not on page load.
  if(before&&next&&oldMatch===snapshot?.match?.id){
