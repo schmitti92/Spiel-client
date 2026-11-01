@@ -86,3 +86,11 @@ body>header h1{margin:0!important;font-size:clamp(19px,2.3vw,29px)!important}
  #game #sheet td button{min-height:18px;padding:0 5px!important;line-height:1!important}
  #game #sheet .variant-table th:first-child,#game #sheet .variant-table td:first-child{position:static!important}
 }
+
+/* Player-turn feedback: a brief, nonblocking overlay and a warm highlight. */
+#online-turn-banner{position:fixed;left:50%;top:clamp(72px,12dvh,132px);z-index:40;pointer-events:none;max-width:90vw;padding:12px 26px;border:2px solid #d9b873;border-radius:18px;background:linear-gradient(135deg,#52331feF,#27190feF);color:#ffe6a6;font:800 clamp(18px,2.3vw,28px)/1.2 Georgia,serif;text-align:center;text-shadow:0 2px 3px #0008;box-shadow:0 10px 30px #0008;opacity:0;visibility:hidden;transform:translate(-50%,-12px)}
+#online-turn-banner.show{visibility:visible;animation:kniffel-turn-banner 1.8s ease-in-out both}
+#players .player.turn-arrived{animation:kniffel-turn-player 1.8s ease-out}
+@keyframes kniffel-turn-banner{0%{opacity:0;transform:translate(-50%,-16px) scale(.95)}15%,72%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-6px) scale(1)}}
+@keyframes kniffel-turn-player{0%{filter:brightness(1)}22%{filter:brightness(1.35);box-shadow:0 0 23px #ffda83}100%{filter:brightness(1)}}
+@media(prefers-reduced-motion:reduce){#online-turn-banner.show{animation:none;visibility:hidden}#players .player.turn-arrived{animation:none}}
