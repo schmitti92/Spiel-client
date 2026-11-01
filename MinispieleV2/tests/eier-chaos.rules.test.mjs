@@ -78,3 +78,11 @@ test('rotten eggs cost one point when caught and none when missed',()=>{
  assert.ok(session.snapshot().state.caught.a.includes(egg.index));
  assert.equal(session.snapshot().state.scores.a,session.snapshot().state.scores.b);
 });
+
+test('eggs use exactly six deterministic hen nest lanes, independent of egg type',()=>{
+ const eggs=Array.from({length:game.EGG_COUNT},(_,i)=>game.eggAt(i));
+ const lanes=[...new Set(eggs.map(e=>e.x))].sort((a,b)=>a-b);
+ assert.equal(lanes.length,6);
+ assert.ok(lanes.every(x=>x>=.08&&x<=.92));
+ for(const kind of ['rotten','special'])assert.equal(new Set(eggs.filter(e=>e[kind]).map(e=>e.x)).size,6);
+});
