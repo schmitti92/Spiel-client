@@ -114,3 +114,85 @@ body>header h1{color:#fff!important;text-shadow:0 2px 3px #003d65!important}
 }
 #game .joker-panel-actions button:not([hidden]):disabled{opacity:.7!important}
 #game .joker-panel-actions button .joker-icon{text-shadow:none!important}
+
+/* Bergsee stage 3: remove surviving woodland palette; align scorecard and jokers to reference. */
+#game .scores #sheet .wood-variant-table,
+#game .scores #sheet .wood-variant-table th,
+#game .scores #sheet .wood-variant-table td {
+ border-color:#a4c5dc!important;
+ text-shadow:none!important;
+}
+#game .scores #sheet .wood-variant-table thead th,
+#game .scores #sheet .wood-variant-table tr.score-directions th,
+#game .scores #sheet .wood-variant-table tr.score-directions td,
+#game .scores #sheet .wood-variant-table .score-directions th{
+ background:linear-gradient(180deg,#1c9bd1,#086292)!important;
+ color:#fff!important;border-color:#8bbad8!important;
+}
+#game .scores #sheet .wood-variant-table th:first-child,
+#game .scores #sheet .wood-variant-table .score-category-header{
+ background:linear-gradient(180deg,#e7f4fc,#cfe6f6)!important;
+ color:#193a54!important;
+}
+#game .scores #sheet .wood-variant-table tr.score-category td.score-label,
+#game .scores #sheet .wood-variant-table tr.score-category td:first-child{
+ background:#e9f5fd!important;
+ color:#153850!important;
+}
+#game .scores #sheet .wood-variant-table tr.score-category:nth-child(even) td.score-label,
+#game .scores #sheet .wood-variant-table tr.score-category:nth-child(even) td:first-child{
+ background:#dceefa!important;
+}
+#game .scores #sheet .wood-variant-table tr.score-category td:not(:first-child){
+ background:#f6fbff!important;
+ color:#123f76!important;
+}
+#game .scores #sheet .wood-variant-table tr.score-category:nth-child(even) td:not(:first-child){
+ background:#e8f4fc!important;
+}
+#game .scores #sheet .wood-variant-table tr.score-category td.score-open.score-row-action,
+#game .scores #sheet .wood-variant-table tr.score-category:nth-child(even) td.score-open.score-row-action{
+ box-shadow:none!important;
+}
+#game .scores #sheet .wood-variant-table tr.score-upper td,
+#game .scores #sheet .wood-variant-table tr.score-upper th{
+ background:#d6f2ce!important;color:#244b34!important
+}
+#game .scores #sheet .wood-variant-table tr.score-bonus td,
+#game .scores #sheet .wood-variant-table tr.score-bonus th{
+ background:#f4d8ee!important;color:#5d3858!important
+}
+#game .scores #sheet .wood-variant-table tr.score-total td,
+#game .scores #sheet .wood-variant-table tr.score-total th{
+ background:linear-gradient(#ffeaa6,#f5ce68)!important;color:#44300c!important
+}
+#game .tabletop .joker-panel .joker-panel-heading{
+ background:linear-gradient(#f7fcff,#d4eafa)!important;
+ border:1px solid #9dc9e3!important;
+ color:#173a52!important;
+ box-shadow:0 2px 4px #235e8124!important;
+}
+#game .tabletop .joker-panel .joker-panel-actions button,
+#game .tabletop .joker-panel .joker-panel-actions button:not([hidden]):not(:disabled),
+#game .tabletop .joker-panel .joker-panel-actions button:not([hidden]):disabled{
+ background:linear-gradient(180deg,#fff,#d9effc)!important;
+ color:#15354a!important;
+ border:2px solid #a4cde6!important;
+ border-radius:16px!important;
+ box-shadow:inset 0 1px white,0 3px 6px #164c7033!important;
+ text-shadow:none!important;
+ filter:none!important;
+}
+#game .tabletop .joker-panel .joker-panel-actions button:disabled{
+ opacity:.65!important;
+}
+#game .tabletop .joker-panel .joker-panel-actions button .joker-icon{
+ filter:none!important;text-shadow:none!important;
+}
+#game .tabletop #dice.tray > button.die{
+ color:#121a21!important;
+}
+#game .tabletop #dice.tray > button.die .pip,
+#game .tabletop #dice.tray > button.die .dot{
+ background:#111820!important;
+}
