@@ -554,3 +554,29 @@ body>header{
 @supports not (backdrop-filter:blur(1px)){
  #game .tabletop{background:rgba(232,246,255,.91)!important}
 }
+
+/* Bergsee glass refinement v13: landscape visible through open right panel. */
+#game .tabletop{
+ background:linear-gradient(155deg,rgba(244,252,255,.60),rgba(209,235,250,.43))!important;
+ -webkit-backdrop-filter:blur(3px) saturate(1.08)!important;
+ backdrop-filter:blur(3px) saturate(1.08)!important;
+ border-color:rgba(245,253,255,.89)!important;
+ box-shadow:inset 0 0 0 2px rgba(255,255,255,.44),0 8px 22px rgba(8,55,83,.22)!important;
+}
+#game .tabletop #dice.tray{
+ background:linear-gradient(160deg,rgba(227,245,254,.96),rgba(188,224,244,.93))!important;
+}
+#game .tabletop .joker-panel:not([hidden]){
+ background:linear-gradient(165deg,rgba(229,246,255,.69),rgba(192,225,244,.59))!important;
+ border-color:rgba(180,216,236,.79)!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.75),0 3px 9px rgba(24,79,110,.15)!important;
+}
+#game .tabletop .joker-panel:not([hidden]) .joker-panel-actions button{
+ background-color:rgba(243,250,255,.93);
+}
+#game .tabletop #social-extension{
+ background:rgba(244,251,255,.77)!important;
+}
+@supports not (backdrop-filter:blur(1px)){
+ #game .tabletop{background:rgba(225,243,254,.82)!important}
+}
