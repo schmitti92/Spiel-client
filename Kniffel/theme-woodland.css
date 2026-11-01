@@ -167,90 +167,26 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 #sheet tr.score-summary td{font-weight:750}
 @media(max-width:850px){#sheet th.score-player-head{font-size:12px}#sheet button.score-choice{min-height:32px}}
 
-/* Dice v5 — one canonical presentation, no historical overrides. */
-.tabletop .tray{
-  --die-size:min(120px,clamp(64px,8vw,120px),calc((100% - 60px)/5));
-  gap:clamp(5px,.8vw,12px);
-}
+/* Dice v6: one square wooden face per button; no layered sprites. */
+.tabletop .tray{--die-size:min(120px,clamp(64px,8vw,120px),calc((100% - 60px)/5));gap:clamp(5px,.8vw,12px)}
 .tabletop .tray button.die{
-  position:relative;isolation:isolate;box-sizing:border-box;
-  width:var(--die-size);height:var(--die-size);
-  min-width:0;min-height:0;max-width:none;max-height:none;
-  flex:0 0 var(--die-size);aspect-ratio:1;
-  display:grid;place-items:center;padding:0;margin:0;
-  border:0;border-radius:18px;background:transparent;
-  box-shadow:none;outline:0;overflow:visible;
-  transform:none;filter:none;touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;
-  transition:transform .18s ease;
-}
-.tabletop .die::before,.tabletop .die::after{content:none;display:none}
-.tabletop .die .die-art{
-  position:absolute;inset:0;width:100%;height:100%;
-  object-fit:contain;transform:scale(2.35);transform-origin:center;
-  pointer-events:none;user-select:none;
-  filter:drop-shadow(1px 6px 4px #001a1199);
-}
-.tabletop .die .pips{opacity:0;pointer-events:none}
-.tabletop .die:not(:has(.die-art)) .pips{opacity:1}
-.tabletop .die:not(:has(.die-art)):not(.unrolled){
-  background:linear-gradient(140deg,#f3d7a6,#c58b4b);
-  border:2px solid #b78247;
-  box-shadow:inset 4px 4px 7px #fff3d0,inset -7px -7px 9px #7c4c2c,0 7px 9px #001d14a0;
-}
-.tabletop .die.unrolled{
-  border:2px solid #c38b49;background:linear-gradient(140deg,#f4d9a7,#dfb77e 60%,#b97f46);
-  border-radius:17px;
-  box-shadow:inset 4px 5px 7px #fff5d4a6,inset -8px -9px 12px #84502988,3px 5px 0 #88572d,5px 10px 9px #001b1288;
-}
-.tabletop .die.unrolled .die-ready{
-  display:grid;place-items:center;
-  font:700 clamp(32px,3.5vw,47px)/1 Georgia,serif;
-  color:#6e4925;text-shadow:0 1px 1px #fff1cf;
-}
-.tabletop .die.held{transform:translateY(-5px);outline:0;border:0}
-.tabletop .die.held .die-art{
-  filter:sepia(1) saturate(2.1) hue-rotate(350deg) brightness(1.13) contrast(1.12)
-    drop-shadow(0 0 9px #ffd15a) drop-shadow(1px 6px 4px #281407);
-}
-.tabletop .die.held:not(:has(.die-art)){
-  background:linear-gradient(135deg,#fff0a3,#dca63d);
-  border:2px solid #e6b64c;
-}
-.tabletop .die.just-rolled:not(.held){
-  animation:kniffel-clean-roll .68s cubic-bezier(.2,.7,.24,1) both;
-  animation-delay:calc(var(--die-index) * 55ms);
-}
-@keyframes kniffel-clean-roll{
-  0%{transform:translate(-13px,-36px) rotate(-25deg) scale(.85)}
-  35%{transform:translate(6px,5px) rotate(10deg) scale(1.03)}
-  58%{transform:translate(-3px,-9px) rotate(-6deg) scale(.98)}
-  78%{transform:translate(2px,1px) rotate(3deg)}
-  100%{transform:translate(0,0) rotate(0) scale(1)}
-}
-@media(max-width:850px){.tabletop .tray{--die-size:min(95px,calc((100% - 44px)/5));gap:5px}}
-@media(prefers-reduced-motion:reduce){.tabletop .die.just-rolled:not(.held){animation:none}}
-
-/* Dice v5.1: seamless wooden dice faces, no image background artifacts. */
-.tabletop .tray button.die:not(.unrolled){
-  background:
-    radial-gradient(ellipse at 25% 18%,#fff0c4aa,transparent 58%),
-    repeating-linear-gradient(93deg,transparent 0 9px,#99602d13 10px 11px,transparent 12px 21px),
-    linear-gradient(140deg,#f4d5a1 0%,#e8bb7f 54%,#b47b43 100%)!important;
-  border:2px solid #bd884b!important;
-  border-radius:clamp(12px,1.3vw,19px)!important;
+  box-sizing:border-box!important;position:relative!important;
+  width:var(--die-size)!important;height:var(--die-size)!important;
+  min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+  flex:0 0 var(--die-size)!important;aspect-ratio:1!important;
+  padding:0!important;margin:0!important;display:grid!important;place-items:center!important;
+  border:2px solid #bd884b!important;border-radius:clamp(12px,1.3vw,19px)!important;
+  background:radial-gradient(ellipse at 25% 18%,#fff0c4aa,transparent 58%),repeating-linear-gradient(93deg,transparent 0 9px,#99602d13 10px 11px,transparent 12px 21px),linear-gradient(140deg,#f4d5a1,#e8bb7f 54%,#b47b43)!important;
   box-shadow:inset 4px 5px 7px #fff3cfaa,inset -8px -9px 11px #80502c88,2px 4px 0 #89582f,4px 10px 9px #001d1499!important;
+  outline:0!important;filter:none!important;overflow:hidden!important;
+  transform:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
 }
-.tabletop .tray button.die:not(.unrolled) .pips{
-  opacity:1!important;display:grid!important;width:76%;height:76%;gap:2px;
-}
-.tabletop .tray button.die:not(.unrolled) .pip{
-  width:clamp(8px,1.15vw,15px);height:clamp(8px,1.15vw,15px);
-  background:radial-gradient(circle at 45% 40%,#100c0a 0%,#26190e 62%,#704a2a 95%)!important;
-  box-shadow:inset 1px 2px 2px #070401c9,0 1px 1px #ffe3aeaa!important;
-}
-.tabletop .tray button.die.held:not(.unrolled){
-  background:radial-gradient(ellipse at 24% 16%,#fff9c8b8,transparent 55%),linear-gradient(135deg,#ffdf79,#e8ae39 65%,#bd7924)!important;
-  border-color:#f7d36b!important;
-  box-shadow:inset 4px 5px 7px #fff4c5a8,inset -8px -9px 11px #99611d88,2px 4px 0 #a86c24,0 0 18px #ffce5a88,4px 10px 9px #001d1499!important;
-}
+.tabletop .tray button.die::before,.tabletop .tray button.die::after{content:none!important;display:none!important}
+.tabletop .tray button.die .pips{display:grid!important;opacity:1!important;width:76%;height:76%;gap:2px}
+.tabletop .tray button.die .pip{width:clamp(8px,1.15vw,15px);height:clamp(8px,1.15vw,15px);background:radial-gradient(circle at 45% 40%,#100c0a,#26190e 62%,#704a2a 95%)!important;box-shadow:inset 1px 2px 2px #070401c9,0 1px 1px #ffe3aeaa!important}
+.tabletop .tray button.die.held{background:radial-gradient(ellipse at 24% 16%,#fff9c8b8,transparent 55%),linear-gradient(135deg,#ffdf79,#e8ae39 65%,#bd7924)!important;border-color:#f7d36b!important;box-shadow:inset 4px 5px 7px #fff4c5a8,inset -8px -9px 11px #99611d88,0 0 16px #ffce5a88,4px 10px 9px #001d1499!important}
+.tabletop .tray button.die.unrolled .die-ready{display:grid;place-items:center;font:700 clamp(32px,3.5vw,47px)/1 Georgia,serif;color:#6e4925;text-shadow:0 1px 1px #fff1cf}
+.tabletop .tray button.die.just-rolled:not(.held){animation:kniffel-v6-roll .58s cubic-bezier(.2,.7,.24,1) both;animation-delay:calc(var(--die-index) * 45ms)}
+@keyframes kniffel-v6-roll{0%{transform:translateY(-22px) rotate(-18deg) scale(.9)}40%{transform:translateY(4px) rotate(8deg) scale(1.02)}70%{transform:translateY(-5px) rotate(-3deg)}100%{transform:none}}
+@media(max-width:850px){.tabletop .tray{--die-size:min(95px,calc((100% - 44px)/5));gap:5px}}
+@media(prefers-reduced-motion:reduce){.tabletop .tray button.die.just-rolled:not(.held){animation:none}}
