@@ -86,3 +86,15 @@ test('eggs use exactly six deterministic hen nest lanes, independent of egg type
  assert.ok(lanes.every(x=>x>=.08&&x<=.92));
  for(const kind of ['rotten','special'])assert.equal(new Set(eggs.filter(e=>e[kind]).map(e=>e.x)).size,6);
 });
+
+test('only eggs centered inside the basket opening score; side grazes miss',()=>{
+ const egg=game.eggAt(0);
+ const players=[{id:'a',type:'human'},{id:'b',type:'human'}];
+ const session=createSession(game,players);
+ session.dispatch('a',{type:'move',x:egg.x});
+ session.dispatch('b',{type:'move',x:egg.x<.5?egg.x+.10:egg.x-.10});
+ session.dispatch('a',{type:'tick',ms:1000});
+ session.dispatch('a',{type:'tick',ms:1000});
+ assert.ok(session.snapshot().state.caught.a.includes(0));
+ assert.ok(!session.snapshot().state.caught.b.includes(0));
+});
