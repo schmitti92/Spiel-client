@@ -1041,3 +1041,10 @@ body>header{
  #game .panel.scores{border-radius:16px!important}
  #game #sheet .wood-variant-table{border-spacing:0!important}
 }
+
+/* Direct scorecard selection for the move/swap joker */
+#move-pick-guide{position:fixed;z-index:9500;top:76px;left:50%;transform:translateX(-50%);width:min(680px,92vw);display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px;padding:10px 15px;border:2px solid #f5d17c;border-radius:16px;background:rgba(7,64,103,.96);color:white;box-shadow:0 8px 25px #001f3e88;font:700 15px system-ui;text-align:center}
+#move-pick-guide button{padding:7px 13px;border-radius:9px;border:1px solid #fff;background:#f4e5c5;color:#233d4f;font-weight:800}
+#game #sheet td.move-pick-cell{cursor:pointer!important;outline:2px solid #e6ad32!important;outline-offset:-3px!important;background:#fff2bc!important;color:#173c56!important}
+#game #sheet td.move-pick-cell.move-pick-source{outline:3px solid #f6b51e!important;background:#f8d16c!important}
+#game #sheet td.move-pick-cell:focus-visible{outline:4px solid #165cbb!important}
