@@ -782,3 +782,21 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
 #game #sheet .wood-variant-table tr.score-category:nth-child(even) td.score-open.score-row-action:hover{
  background:#f7efdf!important;
 }
+
+
+/* v31 — a gentle one-second score reveal before switching player. */
+#game #sheet .score-reveal-cell{
+ position:relative!important;z-index:2!important;
+ color:#23583d!important;
+ background:#e5f0d7!important;
+ animation:kniffel-score-reveal 1.05s cubic-bezier(.2,.7,.2,1) both!important;
+ transform-origin:center!important;
+}
+@keyframes kniffel-score-reveal{
+ 0%{transform:scale(1.65);filter:brightness(1.12);box-shadow:0 2px 12px #5e8c5266}
+ 45%{transform:scale(1.23);box-shadow:0 2px 9px #5e8c5233}
+ 100%{transform:scale(1);filter:none;box-shadow:none}
+}
+@media(prefers-reduced-motion:reduce){
+ #game #sheet .score-reveal-cell{animation:none!important}
+}
