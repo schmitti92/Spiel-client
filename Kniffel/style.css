@@ -58,3 +58,18 @@
  #game .player{padding:2px 8px}
  #game .tabletop p{display:none}
 }
+
+/* v1.3 Samsung landscape: hard compact score sheet independent of viewport calculations */
+@media (min-width:851px) and (orientation:landscape){
+ #game .scores{align-self:start!important;padding:7px 12px!important;overflow:visible!important}
+ #game .scores h2{font-size:19px!important;line-height:23px!important;margin:0 0 4px!important}
+ #game #sheet table{height:auto!important;font-size:clamp(11px,1vw,14px)!important;border-collapse:collapse!important}
+ #game #sheet table tr{height:27px!important;max-height:27px!important}
+ #game #sheet table th,#game #sheet table td{height:27px!important;max-height:27px!important;line-height:18px!important;padding:0 4px!important;vertical-align:middle!important}
+ #game #sheet table td button{height:22px!important;min-height:0!important;line-height:18px!important;padding:0 8px!important;border-radius:8px!important}
+ #game .layout{align-items:start!important}
+}
+@media (min-width:851px) and (orientation:landscape) and (max-height:750px){
+ #game #sheet table tr,#game #sheet table th,#game #sheet table td{height:23px!important;max-height:23px!important}
+ #game #sheet table td button{height:19px!important}
+}
