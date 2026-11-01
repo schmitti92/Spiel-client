@@ -102,7 +102,6 @@ function renderOnlinePlaying(state,room){
   $('prompt').textContent=state.level==='leicht'?'Welches WORT steht hier?':'In welcher FARBE ist das Wort geschrieben?';
   $('word').textContent=state.challenge?.word?.toUpperCase()||'';
   $('word').style.color=colors[state.challenge?.ink]||'#fff';
-  markWordVisible('online:'+onlineMatch+':'+state.round);
   $('colors').replaceChildren();
   const chosen=state.myColor??(onlineChoice?.round===state.round?onlineChoice.color:null);
   if(!state.myAnswered&&onlineChoice?.round!==state.round)onlineChoice=null;
@@ -111,6 +110,7 @@ function renderOnlinePlaying(state,room){
    if(chosen!==null){b.classList.add(name===chosen?'chosen':'locked');}
    b.onclick=()=>void onlineAnswer(name);$('colors').append(b);
   }
+  markWordVisible('online:'+onlineMatch+':'+state.round,!state.myAnswered&&chosen===null);
   $('feedback').textContent=state.myAnswered?'Antwort gespeichert · warte auf Mitspieler':'';
   $('scores').replaceChildren();
   for(const p of room.players.filter(p=>p.participating)){const el=document.createElement('span');el.className='score-pill';el.textContent='👤 '+p.name;$('scores').append(el);}
@@ -131,6 +131,7 @@ async function onlineAnswer(color){
  if(!onlineMatch||!onlineSnapshot?.match?.farbenblitz)return;
  const round=onlineSnapshot.match.farbenblitz.round;
  const elapsedMs=responseTime();
+ if(elapsedMs===null)return;
  onlineChoice={round,color};
  for(const b of $('colors').querySelectorAll('button')){b.disabled=true;b.classList.add(b.textContent.toLowerCase()===color?'chosen':'locked');}
  try{await hubRequest('/farbenblitz/answer',{matchId:onlineMatch,round,color,elapsedMs});await onlineRefresh();}
@@ -150,12 +151,21 @@ let countdownTimers=[];
 let onlineClockOffset=0;
 let visibleRoundKey=null,wordVisibleAt=null,offlineTotalMs=0;
 const seconds=ms=>(ms/1000).toFixed(2).replace('.',',')+' s';
-function markWordVisible(key){
+function markWordVisible(key,canAnswer=true){
  if(visibleRoundKey===key)return;
  visibleRoundKey=key;wordVisibleAt=null;
- requestAnimationFrame(()=>{requestAnimationFrame(()=>{if(visibleRoundKey===key)wordVisibleAt=performance.now();});});
+ if(!canAnswer)return;
+ // The word AND all answer buttons must exist before the local clock starts.
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  if(visibleRoundKey!==key||document.hidden)return;
+  if(!$('play').classList.contains('hidden')&&[...$('colors').querySelectorAll('button')].some(b=>!b.disabled))wordVisibleAt=performance.now();
+ }));
 }
-function responseTime(){return Math.max(0,Math.round(performance.now()-(wordVisibleAt??performance.now())));}
+function responseTime(){
+ // Never silently report zero when the screen has not yet become actionable.
+ if(wordVisibleAt===null)return null;
+ return Math.max(0,Math.round(performance.now()-wordVisibleAt));
+}
 
 function cancelCountdown(){for(const timer of countdownTimers)clearTimeout(timer);countdownTimers=[];}
 
@@ -213,7 +223,9 @@ function answer(color){
  if(offlineWaiting)return;
  const s=flow.snapshot();if(s.stage!=='playing')return;
  const round=s.session.state.round;
- offlineTotalMs+=responseTime();
+ const elapsedMs=responseTime();
+ if(elapsedMs===null)return;
+ offlineTotalMs+=elapsedMs;
  offlineChoice={round,color};offlineWaiting=true;
  for(const b of $('colors').querySelectorAll('button')){
   b.disabled=true;b.classList.add(b.textContent.toLowerCase()===color?'chosen':'locked');
@@ -245,6 +257,7 @@ function render(){
   const b=document.createElement('button');b.textContent=name.toUpperCase();b.style.background=color;
   b.addEventListener('click',()=>answer(name));$('colors').append(b);
  }
+ markWordVisible('offline:'+serial+':'+state.round);
  $('scores').replaceChildren();
  for(const [id,n] of Object.entries(state.scores)){const el=document.createElement('span');el.className='score-pill';el.textContent=id==='player-1'?'👤 Spieler 1':'🤖 '+id.replace('bot-','Bot ');$('scores').append(el);}
 }
