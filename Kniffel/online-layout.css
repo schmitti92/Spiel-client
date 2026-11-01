@@ -148,3 +148,17 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
 @media(min-width:851px) and (orientation:landscape){
  #game #roll{min-height:clamp(58px,8dvh,80px)!important;font-size:clamp(23px,2.6vw,32px)!important}
 }
+
+/* Compact dice tray: exactly 6px inner clearance above and below the unchanged dice. */
+#game .tabletop .tray,
+#game .tabletop:has(.joker-panel:not([hidden])) .tray{
+  box-sizing:content-box!important;
+  height:calc(var(--die-size, clamp(54px,7.2vw,112px)) + 12px)!important;
+  min-height:0!important;
+  max-height:none!important;
+  flex:0 0 auto!important;
+  padding-top:6px!important;
+  padding-bottom:6px!important;
+  align-content:center!important;
+  align-items:center!important;
+}
