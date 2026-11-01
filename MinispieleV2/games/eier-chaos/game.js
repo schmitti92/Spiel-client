@@ -3,10 +3,16 @@ export const id='eier-chaos';
 export const minPlayers=1,maxPlayers=4,capabilities=['timed','simultaneous'],timeLimitMs=60000,scoreDirection='higher';
 const DURATION=60000;
 const clamp=x=>Math.max(0,Math.min(1,x));
+const STAGES=Object.freeze([{start:0,count:39,interval:520,fall:1600},{start:20000,count:59,interval:340,fall:1250},{start:40000,count:96,interval:210,fall:950}]);
+export const EGG_COUNT=STAGES.reduce((sum,stage)=>sum+stage.count,0);
 export function eggAt(index){
  if(!Number.isSafeInteger(index)||index<0)throw Error('INVALID_EGG_INDEX');
- const spawnMs=index*520;
- const speed=spawnMs<20000?1600:spawnMs<40000?1250:950;
+ if(index>=EGG_COUNT)throw Error('INVALID_EGG_INDEX');
+ let offset=index,spawnMs,speed;
+ for(const stage of STAGES){
+  if(offset<stage.count){spawnMs=stage.start+offset*stage.interval;speed=stage.fall;break;}
+  offset-=stage.count;
+ }
  const lane=((index*37+11)%91+4)/100;
  return {index,spawnMs,landMs:spawnMs+speed,x:lane};
 }
@@ -26,7 +32,7 @@ export function applyAction(state,{playerId,action,players}){
  if(playerId!==players[0].id)throw Error('CLOCK_OWNER_REQUIRED');
  const end=Math.min(DURATION,state.elapsedMs+action.ms);
  const scores={...state.scores},caught=Object.fromEntries(Object.entries(state.caught).map(([k,v])=>[k,[...v]]));
- for(let i=Math.max(0,Math.floor((state.elapsedMs-2000)/520));i<=Math.floor(end/520);i++){
+ for(let i=0;i<EGG_COUNT;i++){
   const egg=eggAt(i);
   if(egg.landMs<=state.elapsedMs||egg.landMs>end||egg.spawnMs>=DURATION)continue;
   for(const p of players){
@@ -40,6 +46,6 @@ export function getResult(state){
  return {finished:true,resultVersion:2,results:Object.entries(state.scores).map(([playerId,score])=>({playerId,score}))};
 }
 export function botAction(state,playerId){
- const active=Array.from({length:Math.ceil(state.elapsedMs/520)+2},(_,i)=>eggAt(i)).find(e=>e.landMs>state.elapsedMs&&e.spawnMs<=state.elapsedMs+1200);
+ const active=Array.from({length:EGG_COUNT},(_,i)=>eggAt(i)).find(e=>e.landMs>state.elapsedMs&&e.spawnMs<=state.elapsedMs+1200);
  return {type:'move',x:active?.x??.5};
 }
