@@ -55,9 +55,15 @@ function renderCompactScore(g,shownPlayer,viewPlayer,mine){
   const value=document.createElement('span');value.className='compact-score-value';
   if(col[c]!==null){value.textContent=col[c];value.classList.add('score-ink')}
   else if(mine&&viewPlayer===g.turn&&g.rolls>0&&onlineAllowed(g,0).includes(c)){
-   const button=document.createElement('button');button.type='button';button.className='score-choice';
-   button.textContent=onlineScore(g,c,0);button.onclick=()=>confirmScore(CATEGORIES[c],button.textContent,()=>send({type:'score',category:c,column:0}));
-   value.append(button);
+   const score=onlineScore(g,c,0);
+   value.textContent=score;
+   row.classList.add('score-row-action');
+   row.setAttribute('role','button');row.setAttribute('tabindex','0');
+   row.setAttribute('aria-label',CATEGORIES[c]+': '+score+' Punkte eintragen oder Kategorie streichen');
+   const choose=()=>confirmScore(CATEGORIES[c],String(score),()=>send({type:'score',category:c,column:0}));
+   row.addEventListener('click',choose);
+   row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}});
+
   }else value.textContent='–';
   row.append(label,value);section.append(row);
  });return section};
