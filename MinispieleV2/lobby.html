@@ -17,6 +17,7 @@ let snapshot=null,bots=0,socket=null,retry=null,heartbeat=null,fetching=false,ac
 const gamePages=Object.freeze({farbenblitz:'./farbenblitz.html'});
 let navigating=false;
 function autoLaunch(room){
+ if(new URLSearchParams(location.search).get('stay')==='1')return;
  if(navigating)return;
  const next=nextMiniGameLaunch(room);
  if(!next)return;
