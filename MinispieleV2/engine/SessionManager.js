@@ -14,6 +14,7 @@ export function createManagedSession(game, players, options = {}) {
   return Object.freeze({
     snapshot: view,
     players: () => playerManager.list(),
+    participantCounts: () => playerManager.counts(),
     start() {
       if (phase !== 'ready') throw Error('SESSION_NOT_READY');
       const current = session.snapshot();
