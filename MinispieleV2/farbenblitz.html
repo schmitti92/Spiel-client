@@ -49,6 +49,7 @@ header{position:relative;flex:0 0 clamp(65px,10vh,110px);display:flex;justify-co
 </main>
 <script type="module">
 import {games} from './games.js';
+import {createGameStartGate} from './engine/GameStartGate.js';
 import {createGameRegistry} from './engine/GameRegistry.js';
 import {createGameLauncher} from './engine/GameLauncher.js';
 import {createLobbyGameBridge} from './engine/LobbyGameBridge.js';
@@ -62,6 +63,7 @@ const ledger=createResultLedger(c=>c.result.results.map(r=>({playerId:r.playerId
 const flow=createMiniGameFlow(bridge,ledger);
 let serial=0;
 let pendingConfig=null;
+let startGate=null;
 let countdownTimers=[];
 function cancelCountdown(){for(const timer of countdownTimers)clearTimeout(timer);countdownTimers=[];}
 
@@ -70,16 +72,19 @@ function startNew(){
  cancelCountdown();
  const count=Number($('count').value),rounds=Number($('rounds').value);
  const players=[{id:'player-1',type:'human'},...Array.from({length:count-1},(_,i)=>({id:'bot-'+(i+1),type:'bot'}))];
+ startGate=createGameStartGate(players);
  pendingConfig={roomId:'offline-demo',matchId:'farbenblitz-'+(++serial),gameId:'farbenblitz',players,options:{rounds,level:$('level').value}};
  $('scores').replaceChildren();
- $('ready-status').textContent='Bereit: '+(count-1)+' von '+count+' · Computergegner sind automatisch bereit.';
+ $('ready-status').textContent='Bereit: '+startGate.snapshot().ready+' von '+startGate.snapshot().total+' · Computergegner sind automatisch bereit.';
  $('understood').disabled=false;
  show('instructions');
 }
 function acknowledge(){
  if(!pendingConfig || $('instructions').classList.contains('hidden'))return;
  $('understood').disabled=true;
- $('ready-status').textContent='Alle Teilnehmer bereit!';
+ const readiness=startGate.acknowledge('player-1',Date.now());
+ $('ready-status').textContent='Bereit: '+readiness.ready+' von '+readiness.total;
+ if(readiness.startAt===null)return;
  show('countdown');
  $('count-number').textContent='3';
  for(let i=1;i<=3;i++){
@@ -89,7 +94,7 @@ function acknowledge(){
  }
  countdownTimers.push(setTimeout(()=>{
   countdownTimers=[];
-  if(!pendingConfig)return;
+  if(!pendingConfig||!startGate?.canStart(Date.now()))return;
   const config=pendingConfig;pendingConfig=null;
   flow.select(config);
   flow.start();
@@ -134,6 +139,6 @@ function finish(){
 }
 $('start').addEventListener('click',startNew);
 $('understood').addEventListener('click',acknowledge);
-$('again').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;flow.replay();show('setup');$('scores').replaceChildren();});
-$('back').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;flow.returnToSelection();show('setup');$('scores').replaceChildren();});
+$('again').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;startGate=null;flow.replay();show('setup');$('scores').replaceChildren();});
+$('back').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;startGate=null;flow.returnToSelection();show('setup');$('scores').replaceChildren();});
 </script></body></html>
