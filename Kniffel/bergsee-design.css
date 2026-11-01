@@ -991,3 +991,53 @@ body>header{
  #game .tabletop #dice.tray>button.die.dice-tumbling,
  #game .tabletop #dice.tray>button.die.dice-tumbling .pips{animation:none!important}
 }
+
+
+/* v22 – Bergsee premium scorecard: crisp hierarchy, polished cells, tablet-safe. */
+#game .panel.scores{
+ border-radius:23px!important;
+ border:2px solid rgba(238,196,91,.94)!important;
+ box-shadow:0 14px 36px rgba(0,35,66,.34),0 0 0 1px rgba(255,255,255,.72),inset 0 0 0 3px rgba(255,255,255,.48)!important;
+}
+#game .panel.scores h2{
+ border-radius:16px!important;
+ box-shadow:inset 0 2px 1px rgba(255,255,255,.92),0 3px 10px rgba(6,65,108,.16)!important;
+}
+#game #sheet .wood-variant-table tr.score-category td{
+ background-image:linear-gradient(135deg,rgba(255,255,255,.31),rgba(185,220,240,.10))!important;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-of-type(even) td{
+ background-color:rgba(219,238,249,.91)!important;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-of-type(odd) td{
+ background-color:rgba(245,251,255,.91)!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-ink{
+ color:#103c62!important;
+ font-weight:850!important;
+ text-shadow:0 1px rgba(255,255,255,.8)!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-label{
+ color:#16374d!important;
+ font-weight:800!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-positive-option{
+ background:linear-gradient(145deg,#f1ffe5,#bfe9ac)!important;
+ box-shadow:inset 0 0 0 2px rgba(90,156,78,.55),0 0 7px rgba(126,195,89,.32)!important;
+}
+#game #sheet .wood-variant-table tr.score-total td{
+ background:linear-gradient(180deg,#fff2b4 0%,#f8d675 55%,#dca83f 100%)!important;
+ border-top:2px solid #b77f23!important;
+ font-weight:900!important;
+ color:#422b12!important;
+ text-shadow:0 1px rgba(255,255,255,.72)!important;
+}
+#game #sheet .score-player-tab.selected{
+ background:linear-gradient(180deg,#21c5ed,#067bb1 75%,#075c8c)!important;
+ border-color:#f5d27d!important;
+ box-shadow:0 0 0 2px rgba(255,215,111,.72),0 3px 10px rgba(0,74,116,.25)!important;
+}
+@media(max-width:850px){
+ #game .panel.scores{border-radius:16px!important}
+ #game #sheet .wood-variant-table{border-spacing:0!important}
+}
