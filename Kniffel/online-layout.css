@@ -197,3 +197,23 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
 #game #sheet .wood-score .compact-score-summary strong{color:#17365f;font:bold italic clamp(19px,2.1vw,31px) Georgia,serif!important}
 #game #sheet .wood-score .compact-score-summary.total strong{color:#34200b!important;font-size:clamp(23px,2.7vw,38px)!important}
 #game #sheet .wood-score .compact-score-chance .compact-score-row{min-height:clamp(28px,4dvh,40px)!important}
+
+
+/* Use all available score-sheet height without changing the two-column layout. */
+#game #sheet:has(.wood-score){display:flex!important;flex-direction:column!important;overflow:hidden!important}
+#game #sheet .compact-score.wood-score{flex:1 1 auto!important;height:100%!important;min-height:0!important;justify-content:space-between!important;gap:clamp(3px,.55dvh,7px)!important}
+#game #sheet .wood-score .compact-score-pair{flex:1 1 0!important;min-height:0!important}
+#game #sheet .wood-score .compact-score-group{flex:1 1 0!important;min-height:0!important;justify-content:space-between!important}
+#game #sheet .wood-score .compact-score-row{flex:1 1 0!important;min-height:0!important}
+#game #sheet .wood-score .compact-score-summary{flex:0 0 auto!important}
+#game #sheet .wood-score .compact-score-chance{flex:0 0 auto!important;min-height:clamp(32px,5dvh,49px)!important}
+#game #sheet .wood-score .compact-score-chance .compact-score-row{height:100%!important}
+#game #sheet .wood-score .score-row-action{cursor:pointer!important;touch-action:manipulation!important;border-color:#b28a42!important;background:linear-gradient(100deg,#fff9e6,#e9f4d0)!important;box-shadow:inset 0 0 0 1px #dbbc75!important}
+#game #sheet .wood-score .score-row-action:hover,#game #sheet .wood-score .score-row-action:focus-visible{background:#e5f2c4!important;outline:2px solid #227c4a!important;outline-offset:-2px}
+#game #sheet .wood-score .score-row-action:active{background:#cde6a2!important}
+#game #sheet .wood-score .score-row-action .compact-score-value{color:#1e7348!important}
+@media(max-height:620px) and (orientation:landscape){
+ #game #sheet .wood-score .compact-score-row{padding-block:0!important}
+ #game #sheet .wood-score .wood-score-heading{padding-block:3px!important}
+ #game #sheet .wood-score .compact-score-summary{min-height:23px!important;padding-block:1px!important}
+}
