@@ -3,11 +3,13 @@
  */
 export const COLORS=Object.freeze(['rot','blau','gruen','gelb']);
 const LEVELS=Object.freeze(['leicht','mittel','schwer']);
+// Four-round balanced rotation: each word and ink color occurs once per cycle.
 const challenge=(round,level)=>{
- const offset=LEVELS.indexOf(level);
- const target=(round*3+offset)%COLORS.length;
- const ink=(target+1+round%3)%COLORS.length;
- return {word:COLORS[target],ink:COLORS[ink],correct:level==='leicht'?COLORS[target]:COLORS[ink]};
+ const cycle=Math.floor(round/4),index=round%4;
+ const wordIndex=(index+cycle)%COLORS.length;
+ const inkIndex=(index+cycle+1+cycle%2)%COLORS.length;
+ return {word:COLORS[wordIndex],ink:COLORS[inkIndex],
+  correct:level==='leicht'?COLORS[wordIndex]:COLORS[inkIndex]};
 };
 export const farbenblitz={
  id:'farbenblitz',minPlayers:1,maxPlayers:4,scoreDirection:'higher',
