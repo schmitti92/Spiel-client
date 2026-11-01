@@ -467,3 +467,58 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
   padding:0 2px!important;
  }
 }
+
+
+/* v25 — restrained golden woodland detailing inspired by the new concept. */
+#game .panel.scores{
+ border-color:#c3944c!important;
+ box-shadow:inset 0 0 0 2px #fff2d2,inset 0 0 18px #ad743c38,0 8px 19px #160a0788!important;
+}
+#game .panel.scores h2{
+ background:linear-gradient(180deg,#f9e9c9,#d6a76a)!important;
+ border:2px solid #996b36!important;
+ box-shadow:inset 0 1px 2px #fff8dd,0 2px 5px #6e3c1b66!important;
+ color:#422710!important;
+ text-shadow:0 1px #fff4d6!important;
+}
+#game #sheet .score-player-tab.selected{
+ background:linear-gradient(180deg,#ffe9b0,#d8a24a)!important;
+ box-shadow:inset 0 1px 3px #fff4c9,0 0 0 1px #e8bd65,0 2px 5px #8b602e55!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-label{
+ background:linear-gradient(95deg,#f5e1b8,#e9cc99)!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-label::before{
+ content:"⚄";display:inline-block;vertical-align:baseline;
+ margin-right:clamp(3px,.5vw,8px);color:#997039;
+ font:700 clamp(10px,1.35dvh,14px)/1 Georgia,serif;
+ opacity:.8;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(-n+8) td.score-label::before{content:"⚀"}
+#game #sheet .wood-variant-table tr.score-section-start td.score-label{
+ border-top:3px solid #946b32!important;
+}
+#game #sheet .wood-variant-table tr.score-total td{
+ box-shadow:inset 0 2px 1px #fff0b7,inset 0 -2px 3px #a9762788!important;
+}
+#game #sheet .wood-variant-table tr.score-total td:first-child::before{
+ content:"🏆 ";font-style:normal;
+}
+#game .tabletop #roll:not(:disabled){
+ background:linear-gradient(180deg,#179955,#086d39 55%,#034b2b)!important;
+ border:3px solid #f4cc70!important;
+ color:#fff3c8!important;
+ text-shadow:0 2px 3px #06361f!important;
+ box-shadow:inset 0 2px 3px #c5ffd47a,inset 0 -5px 8px #003a21,0 0 0 2px #97652c,0 0 17px #ffc65d80!important;
+}
+#game .tabletop #roll:not(:disabled):active{filter:brightness(1.12)}
+#game .joker-panel-heading{border-color:#e5b65b!important;box-shadow:inset 0 1px 3px #f7d48b66!important}
+#game .joker-panel-actions button:not([hidden]){
+ border-color:#f0c46b!important;
+ box-shadow:inset 0 2px 3px #fff8b459,inset 0 -5px 7px #001909,0 4px 7px #0008!important;
+}
+@media(min-width:851px) and (orientation:landscape){
+ #game #sheet .wood-variant-table tr.score-category td.score-label::before{
+  margin-right:4px;
+ }
+}
