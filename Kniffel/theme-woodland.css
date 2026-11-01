@@ -151,3 +151,27 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 .tabletop .die .wood-mark{font:700 clamp(25px,3.8vw,50px) Georgia,serif;color:#7c4b23;text-shadow:0 1px 1px #fff1c2,0 -1px 1px #55331d8a}
 .tabletop .die.held{outline:3px solid #ffe07e;outline-offset:3px}
 @media(max-width:850px){.tabletop .die{box-shadow:inset 3px 3px 5px #fff5d4b0,inset -7px -7px 10px #81512e99,2px 3px 0 #8e5b32,4px 6px 7px #001d14a0!important}}
+
+/* Phase 3.3 — real transparent wooden dice assets; original pip grid is fallback */
+.tabletop .die:has(> .die-art){
+ background:transparent!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ overflow:visible;
+}
+.tabletop .die:has(> .die-art)::before,
+.tabletop .die:has(> .die-art)::after{display:none!important}
+.tabletop .die:has(> .die-art) .pips{opacity:0;pointer-events:none}
+.tabletop .die .die-art{
+ position:absolute;inset:0;width:100%;height:100%;
+ object-fit:contain;pointer-events:none;user-select:none;
+ filter:drop-shadow(2px 8px 5px #001a11aa);
+}
+.tabletop .die.held:has(> .die-art){
+ outline:3px solid #ffe07e!important;
+ outline-offset:3px;
+ border-radius:18px!important;
+ filter:drop-shadow(0 0 8px #ffd96b);
+}
+@media(prefers-reduced-motion:reduce){.tabletop .die.just-rolled{animation:none!important}}
