@@ -74,29 +74,38 @@ function chooseScore(g,c,column=0){
  strike.onclick=()=>{overlay.remove();send({type:'score',category:c,column,crossOut:true})};
  actions.append(cancel,enter,strike);card.append(heading,description,actions);overlay.append(card);document.body.append(overlay);enter.focus();
 }
+let movePick=null;
+function clearMovePick(){movePick=null;document.getElementById('move-pick-guide')?.remove();render()}
 function chooseMoveJoker(g){
  const player=g.players.find(p=>p.uid===user()?.uid);
- if(!player)return;
- const choices=[];
- player.sheet.forEach((col,fromColumn)=>col.forEach((value,category)=>{
-  if(value===null)return;
-  player.sheet.forEach((dest,toColumn)=>{
-   if(fromColumn!==toColumn)choices.push({category,fromColumn,toColumn,value,targetValue:dest[category]});
-  });
- }));
- if(!choices.length){status('Keine verschiebbare Wertung mit freiem Zielfeld vorhanden.');return}
- document.getElementById('online-score-confirm')?.remove();
+ if(!player||player.sheet.length<2)return;
+ if(!player.sheet.some(col=>col.some(value=>value!==null))){status('Noch keine Wertung zum Verschieben vorhanden.');return}
+ movePick={category:null,fromColumn:null};
+ const guide=document.createElement('div');guide.id='move-pick-guide';guide.setAttribute('role','status');
+ guide.innerHTML='<strong>🔀 Verschieben / Tauschen</strong><span>Tippe zuerst auf eine eingetragene Wertung im Punkteblock.</span>';
+ const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Abbrechen';cancel.onclick=clearMovePick;
+ guide.append(cancel);document.body.append(guide);render();
+}
+function moveCellClick(category,column){
+ const g=current(),p=g?.players.find(x=>x.uid===user()?.uid);
+ if(!movePick||!p||!g.extraJokers||p.moveUsed)return;
+ if(movePick.category===null){
+  if(p.sheet[column]?.[category]===null)return;
+  movePick={category,fromColumn:column};
+  document.querySelector('#move-pick-guide span').textContent='Jetzt in derselben Zeile die Zielspalte antippen (auch belegte Felder).';
+  render();return;
+ }
+ if(category!==movePick.category||column===movePick.fromColumn)return;
+ const from=movePick.fromColumn,source=p.sheet[from][category],target=p.sheet[column][category];
+ if(source===null)return;
  const overlay=document.createElement('div');overlay.id='online-score-confirm';overlay.className='score-preview-overlay';
  const card=document.createElement('div');card.className='score-preview-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
- const heading=document.createElement('h2');heading.textContent='🔀 Verschiebe-Joker';
- const description=document.createElement('p');description.textContent='Wähle eine Wertung und ihre Zielspalte. Ist das Ziel belegt, werden beide Werte getauscht.';
- const select=document.createElement('select');select.className='move-joker-select';select.setAttribute('aria-label','Wertung und Zielspalte auswählen');
- const labels=MODES[g.mode].columns;
- choices.forEach((entry,i)=>{const option=document.createElement('option');option.value=String(i);option.textContent=CATEGORIES[entry.category]+' ('+(player.crossedOut?.[entry.fromColumn]?.[entry.category]?'gestrichen':entry.value+' Punkte')+') · '+labels[entry.fromColumn]+' → '+labels[entry.toColumn]+(entry.targetValue===null?' (verschieben)':' (tauschen mit '+entry.targetValue+')');select.append(option)});
+ const title=document.createElement('h2');title.textContent=target===null?'🔀 Wertung verschieben':'🔀 Wertungen tauschen';
+ const desc=document.createElement('p');desc.textContent=CATEGORIES[category]+': '+MODES[g.mode].columns[from]+' ('+(p.crossedOut?.[from]?.[category]?'gestrichen':source+' Punkte')+') → '+MODES[g.mode].columns[column]+(target===null?' (frei)':' ('+(p.crossedOut?.[column]?.[category]?'gestrichen':target+' Punkte')+')');
  const actions=document.createElement('div');actions.className='score-preview-actions';
- const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Zurück';cancel.onclick=()=>overlay.remove();
- const accept=document.createElement('button');accept.type='button';accept.className='score-preview-confirm';accept.textContent='Verschieben / Tauschen';accept.onclick=()=>{const entry=choices[Number(select.value)];if(!entry)return;overlay.remove();send({type:'move-score',category:entry.category,fromColumn:entry.fromColumn,toColumn:entry.toColumn})};
- actions.append(cancel,accept);card.append(heading,description,select,actions);overlay.append(card);document.body.append(overlay);select.focus();
+ const back=document.createElement('button');back.type='button';back.textContent='Zurück';back.onclick=()=>overlay.remove();
+ const yes=document.createElement('button');yes.type='button';yes.className='score-preview-confirm';yes.textContent='Bestätigen';yes.onclick=()=>{overlay.remove();movePick=null;document.getElementById('move-pick-guide')?.remove();send({type:'move-score',category,fromColumn:from,toColumn:column})};
+ actions.append(back,yes);card.append(title,desc,actions);overlay.append(card);document.body.append(overlay);yes.focus();
 }
 function renderCompactScore(g,shownPlayer,viewPlayer,mine){
  const sheet=$('sheet'),col=shownPlayer.sheet[0],sums=totals(col);
@@ -280,7 +289,7 @@ lastTurnKey=turnKey;
    banner.addEventListener('animationend',()=>{banner.classList.remove('show');banner.setAttribute('aria-hidden','true')},{once:true});
  }
  const playerTabs=document.createElement('div');playerTabs.className='score-player-tabs';playerTabs.setAttribute('role','group');playerTabs.setAttribute('aria-label','Punkteblock für Spieler auswählen');
- g.players.forEach((player,i)=>{const tab=document.createElement('button');tab.type='button';tab.className='score-player-tab'+(i===viewPlayer?' selected':'');tab.textContent=(player.bot?'🤖 ':'')+player.name;tab.setAttribute('aria-pressed',String(i===viewPlayer));tab.onclick=()=>{viewPlayer=i;render()};playerTabs.append(tab)});
+ g.players.forEach((player,i)=>{const tab=document.createElement('button');tab.type='button';tab.className='score-player-tab'+(i===viewPlayer?' selected':'');tab.textContent=(player.bot?'🤖 ':'')+player.name;tab.setAttribute('aria-pressed',String(i===viewPlayer));tab.onclick=()=>{if(movePick)return;viewPlayer=i;render()};playerTabs.append(tab)});
  $('sheet').append(playerTabs);
  $('online-mode').textContent='Modus: '+({'classic':'Klassisch','joker':'Joker','triple-free':'Drei Spalten frei','top-down':'Von oben nach unten','bottom-up':'Von unten nach oben','triple-mixed':'Drei Spalten gemischt'}[g.mode]||g.mode);
  g.players.forEach((player,i)=>{const el=document.createElement('div');el.className='player'+(i===g.turn&&!g.finished?' active':'')+(announceTurn&&i===g.turn?' turn-arrived':'');el.textContent=(player.bot?'🤖 ':'👤 ')+player.name+' · '+(player.sheet.reduce((n,col)=>n+totals(col).total,0)+(player.jokerBonus||0))+' P.';$('players').append(el)});
@@ -332,7 +341,7 @@ lastTurnKey=turnKey;
  const symbol={Aufwärts:'↑',Abwärts:'↓',Frei:'='};
  [[shownPlayer,viewPlayer]].forEach(([player,i])=>MODES[g.mode].columns.forEach((column,j)=>{const th=document.createElement('th');const icon=symbol[column]||'=';th.textContent=icon;th.title=player.name+' – '+(column==='Aufwärts'?'von unten nach oben':column==='Abwärts'?'von oben nach unten':'freie Reihenfolge');th.setAttribute('aria-label',th.title);th.className='score-direction';directions.append(th)}));
  table.append(directions);
- CATEGORIES.forEach((label,c)=>{const tr=document.createElement('tr');tr.className='score-category'+(c===6?' score-section-start':'');const name=document.createElement('td');name.className='score-label';name.textContent=label;tr.append(name);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach((col,j)=>{const td=document.createElement('td');td.className='score-player-cell'+(i===g.turn&&!g.finished?' score-current-player':'');const value=col[c];if(value!==null){td.textContent=player.crossedOut?.[j]?.[c]?'—':String(value);td.classList.add('score-ink')}else if(mine&&i===g.turn&&scoreCellState(g,j,c).kind!=='closed'){td.textContent='';td.classList.add('score-open','score-row-action');if(scoreCellState(g,j,c).kind==='score')td.classList.add('score-positive-option');td.setAttribute('role','button');td.tabIndex=0;const choose=()=>chooseScore(g,c,j);td.onclick=choose;td.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}}}else td.textContent='';tr.append(td)}));table.append(tr)});
+ CATEGORIES.forEach((label,c)=>{const tr=document.createElement('tr');tr.className='score-category'+(c===6?' score-section-start':'');const name=document.createElement('td');name.className='score-label';name.textContent=label;tr.append(name);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach((col,j)=>{const td=document.createElement('td');td.className='score-player-cell'+(i===g.turn&&!g.finished?' score-current-player':'');const value=col[c];if(movePick&&mine&&i===g.turn&&j<player.sheet.length&&(movePick.category===null?value!==null:c===movePick.category)){td.classList.add('move-pick-cell');if(movePick.category===c&&movePick.fromColumn===j)td.classList.add('move-pick-source');if(movePick.category===null||j!==movePick.fromColumn){td.setAttribute('role','button');td.tabIndex=0;td.onclick=()=>moveCellClick(c,j);td.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();moveCellClick(c,j)}}}}if(value!==null){td.textContent=player.crossedOut?.[j]?.[c]?'—':String(value);td.classList.add('score-ink')}else if(mine&&i===g.turn&&scoreCellState(g,j,c).kind!=='closed'){td.textContent='';td.classList.add('score-open','score-row-action');if(scoreCellState(g,j,c).kind==='score')td.classList.add('score-positive-option');td.setAttribute('role','button');td.tabIndex=0;const choose=()=>chooseScore(g,c,j);td.onclick=choose;td.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}}}else td.textContent='';tr.append(td)}));table.append(tr)});
  for(const [label,key] of [['Oberer Teil','upper'],['Bonus (63+)','bonus'],['Gesamt','total']]){const tr=document.createElement('tr');tr.className='score-summary score-'+key;const td=document.createElement('td');td.textContent=label;tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach(col=>{const cell=document.createElement('td');const sums=totals(col);cell.textContent=key==='bonus'&&sums.upper<63?sums.upper+' / 63':key==='total'?sums.total+(player.jokerBonus||0):sums[key];tr.append(cell)}));table.append(tr)}
  if(g.mode==='joker'){const tr=document.createElement('tr');tr.className='score-summary';const td=document.createElement('td');td.textContent='Jokerbonus';tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>{const cell=document.createElement('td');cell.className='player-tint-'+(i%4);cell.textContent=player.jokerBonus||0;tr.append(cell)});table.append(tr)}
  $('sheet').append(table);
