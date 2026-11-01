@@ -69,7 +69,7 @@ function chooseMoveJoker(g){
  player.sheet.forEach((col,fromColumn)=>col.forEach((value,category)=>{
   if(value===null)return;
   player.sheet.forEach((dest,toColumn)=>{
-   if(fromColumn!==toColumn&&dest[category]===null)choices.push({category,fromColumn,toColumn,value});
+   if(fromColumn!==toColumn)choices.push({category,fromColumn,toColumn,value,targetValue:dest[category]});
   });
  }));
  if(!choices.length){status('Keine verschiebbare Wertung mit freiem Zielfeld vorhanden.');return}
@@ -77,13 +77,13 @@ function chooseMoveJoker(g){
  const overlay=document.createElement('div');overlay.id='online-score-confirm';overlay.className='score-preview-overlay';
  const card=document.createElement('div');card.className='score-preview-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
  const heading=document.createElement('h2');heading.textContent='🔀 Verschiebe-Joker';
- const description=document.createElement('p');description.textContent='Wähle eine eingetragene Wertung und ihre neue Spalte. Der alte Platz wird frei.';
+ const description=document.createElement('p');description.textContent='Wähle eine Wertung und ihre Zielspalte. Ist das Ziel belegt, werden beide Werte getauscht.';
  const select=document.createElement('select');select.className='move-joker-select';select.setAttribute('aria-label','Wertung und Zielspalte auswählen');
  const labels=MODES[g.mode].columns;
- choices.forEach((entry,i)=>{const option=document.createElement('option');option.value=String(i);option.textContent=CATEGORIES[entry.category]+' ('+(player.crossedOut?.[entry.fromColumn]?.[entry.category]?'gestrichen':entry.value+' Punkte')+') · '+labels[entry.fromColumn]+' → '+labels[entry.toColumn];select.append(option)});
+ choices.forEach((entry,i)=>{const option=document.createElement('option');option.value=String(i);option.textContent=CATEGORIES[entry.category]+' ('+(player.crossedOut?.[entry.fromColumn]?.[entry.category]?'gestrichen':entry.value+' Punkte')+') · '+labels[entry.fromColumn]+' → '+labels[entry.toColumn]+(entry.targetValue===null?' (verschieben)':' (tauschen mit '+entry.targetValue+')');select.append(option)});
  const actions=document.createElement('div');actions.className='score-preview-actions';
  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Zurück';cancel.onclick=()=>overlay.remove();
- const accept=document.createElement('button');accept.type='button';accept.className='score-preview-confirm';accept.textContent='Jetzt verschieben';accept.onclick=()=>{const entry=choices[Number(select.value)];if(!entry)return;overlay.remove();send({type:'move-score',category:entry.category,fromColumn:entry.fromColumn,toColumn:entry.toColumn})};
+ const accept=document.createElement('button');accept.type='button';accept.className='score-preview-confirm';accept.textContent='Verschieben / Tauschen';accept.onclick=()=>{const entry=choices[Number(select.value)];if(!entry)return;overlay.remove();send({type:'move-score',category:entry.category,fromColumn:entry.fromColumn,toColumn:entry.toColumn})};
  actions.append(cancel,accept);card.append(heading,description,select,actions);overlay.append(card);document.body.append(overlay);select.focus();
 }
 function renderCompactScore(g,shownPlayer,viewPlayer,mine){
@@ -178,11 +178,11 @@ function render(){
  rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':p.rerollUsed?'Bereits verwendet':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle Würfel neu werfen';
  $('reroll-joker-label').textContent=p.rerollUsed?'Verbraucht':'Neuwurf';
  const ownPlayer=g.players.find(x=>x.uid===user()?.uid);
- const movePossible=ownPlayer?.sheet?.length>1&&ownPlayer.sheet.some((col,j)=>col.some((value,c)=>value!==null&&ownPlayer.sheet.some((target,k)=>k!==j&&target[c]===null)));
+ const movePossible=ownPlayer?.sheet?.length>1&&ownPlayer.sheet.some((col,j)=>col.some((value,c)=>value!==null&&ownPlayer.sheet.some((target,k)=>k!==j&&true)));
  moveJoker.disabled=!g.extraJokers||busy||g.finished||!ownPlayer||!!ownPlayer.moveUsed||!movePossible;
  moveJoker.classList.toggle('joker-used',!!ownPlayer?.moveUsed);
- moveJoker.title=ownPlayer?.moveUsed?'Bereits verwendet':!g.extraJokers?'In der Lobby nicht aktiviert':!movePossible?'Keine verschiebbare Wertung vorhanden':'Eigene Wertung jederzeit in eine andere Spalte verschieben';
- $('move-score-joker-label').textContent=ownPlayer?.moveUsed?'Verbraucht':'Verschieben';
+ moveJoker.title=ownPlayer?.moveUsed?'Bereits verwendet':!g.extraJokers?'In der Lobby nicht aktiviert':!movePossible?'Keine eingetragene Wertung vorhanden':'Wertungen zwischen Spalten verschieben oder tauschen';
+ $('move-score-joker-label').textContent=ownPlayer?.moveUsed?'Verbraucht':'Verschieben / Tauschen';
  $('roll').disabled=!mine||busy||g.rolls>=limit;
  if(['classic','joker'].includes(g.mode)&&shownPlayer.sheet.length===1){renderCompactScore(g,shownPlayer,viewPlayer,mine)}else{
  const table=document.createElement('table');if(!['classic','joker'].includes(g.mode))table.className='variant-table wood-variant-table';
