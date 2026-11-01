@@ -335,3 +335,18 @@ body>header{
 @media (prefers-reduced-motion:reduce){
  #game .tabletop #dice.tray>button.die{transition:none!important}
 }
+
+/* Positive scoring opportunities only. Strike-only choices remain neutral. */
+#game #sheet .wood-variant-table td.score-positive-option,
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td.score-positive-option,
+#game #sheet .wood-variant-table tr.score-category:nth-child(odd) td.score-positive-option,
+#game #sheet .wood-variant-table td.score-open.score-row-action.score-positive-option,
+#game #sheet .wood-variant-table td.score-open.score-row-action.score-positive-option:hover{
+ background:linear-gradient(180deg,#e6f9dd,#c8edb8)!important;
+ border:1px solid #83bf75!important;
+ box-shadow:inset 0 0 0 1px #b2e5a1!important;
+}
+#game #sheet .compact-score-row.score-positive-option{
+ background:linear-gradient(180deg,#e6f9dd,#c8edb8)!important;
+ border-color:#83bf75!important;
+}
