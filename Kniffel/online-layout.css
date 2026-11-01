@@ -329,3 +329,56 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
   padding:6px!important;
  }
 }
+
+
+/* v23 — Stable full-viewport score sheet. Prevent entered scores from
+   increasing the intrinsic height of the three-column score table. */
+@media (min-width:851px) and (orientation:landscape){
+ body:has(#game:not([hidden])) main,
+ body:has(#game:not([hidden])) #game,
+ #game .layout,
+ #game .scores,
+ #game #sheet{min-height:0!important;max-height:100%!important}
+ #game .scores{overflow:hidden!important}
+ #game #sheet{flex:1 1 0%!important;height:0!important;overflow:hidden!important}
+ #game #sheet .score-player-tabs{flex:0 0 auto!important;margin-bottom:3px!important}
+ #game #sheet .wood-variant-table{
+   flex:1 1 0%!important;height:100%!important;min-height:0!important;
+   max-height:100%!important;table-layout:fixed!important;
+   border-spacing:2px 1px!important;
+ }
+ #game #sheet .wood-variant-table tr{height:1px!important;max-height:none!important}
+ #game #sheet .wood-variant-table th,
+ #game #sheet .wood-variant-table td{
+   box-sizing:border-box!important;
+   height:auto!important;min-height:0!important;
+   padding:0 3px!important;line-height:1!important;
+   overflow:hidden!important;text-overflow:ellipsis!important;
+   vertical-align:middle!important;
+ }
+ #game #sheet .wood-variant-table .score-player-cell{
+   font-size:clamp(15px,1.85dvh,24px)!important;
+   line-height:1!important;
+ }
+ #game #sheet .wood-variant-table .score-label{
+   font-size:clamp(10px,1.45dvh,15px)!important;
+   line-height:1!important;
+ }
+ #game #sheet .wood-variant-table .score-summary td{
+   font-size:clamp(11px,1.6dvh,18px)!important;
+ }
+ #game #sheet .wood-variant-table .score-total td{
+   font-size:clamp(14px,2dvh,23px)!important;
+ }
+ #game #sheet .wood-variant-table .score-choice,
+ #game #sheet .wood-variant-table button{
+   min-height:0!important;max-height:100%!important;
+   padding:0 3px!important;line-height:1!important;
+ }
+}
+@media (min-width:851px) and (orientation:landscape) and (max-height:700px){
+ #game .panel.scores h2{padding:3px 7px!important;margin-bottom:2px!important}
+ #game #sheet .score-player-tab{min-height:24px!important;padding:1px!important}
+ #game #sheet .wood-variant-table .score-player-cell{font-size:clamp(12px,2.2dvh,18px)!important}
+ #game #sheet .wood-variant-table .score-label{font-size:clamp(9px,1.8dvh,12px)!important}
+}
