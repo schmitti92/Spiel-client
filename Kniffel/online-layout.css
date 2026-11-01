@@ -49,32 +49,40 @@ body>header h1{margin:0!important;font-size:clamp(19px,2.3vw,29px)!important}
 #sheet .score-directions th[title*="oben nach unten"]{color:#805020}
 #game.multi-score #sheet .variant-table .score-directions th{min-width:60px!important}
 
-/* Subtle parchment-tinted player groups, shared across every score column.
-   Slightly translucent overlays preserve the original wooden paper texture. */
-#game #sheet{--player-0:rgba(109,153,123,.15);--player-1:rgba(114,146,177,.15);--player-2:rgba(187,145,103,.15);--player-3:rgba(157,130,168,.15)}
-#game #sheet th.player-tint-0,#game #sheet td.player-tint-0{background-color:var(--player-0)!important;background-image:linear-gradient(var(--player-0),var(--player-0))!important}
-#game #sheet th.player-tint-1,#game #sheet td.player-tint-1{background-color:var(--player-1)!important;background-image:linear-gradient(var(--player-1),var(--player-1))!important}
-#game #sheet th.player-tint-2,#game #sheet td.player-tint-2{background-color:var(--player-2)!important;background-image:linear-gradient(var(--player-2),var(--player-2))!important}
-#game #sheet th.player-tint-3,#game #sheet td.player-tint-3{background-color:var(--player-3)!important;background-image:linear-gradient(var(--player-3),var(--player-3))!important}
-#game #sheet .score-head th.player-tint-0{box-shadow:inset 0 4px #73937a}
-#game #sheet .score-head th.player-tint-1{box-shadow:inset 0 4px #7992a8}
-#game #sheet .score-head th.player-tint-2{box-shadow:inset 0 4px #b28a62}
-#game #sheet .score-head th.player-tint-3{box-shadow:inset 0 4px #a18ba8}
-#game #sheet .score-current-player{outline:1px solid rgba(69,108,66,.28);outline-offset:-1px}
-
 /* One player's scorecard at a time; quick tabs keep all participants accessible. */
 #game #sheet .score-player-tabs{display:flex;gap:5px;margin:0 0 9px;padding:3px;border-radius:11px;background:rgba(90,58,28,.13)}
 #game #sheet .score-player-tab{flex:1;min-width:0;min-height:36px;padding:6px 3px;border:1px solid rgba(110,78,45,.2);border-radius:9px;background:rgba(255,247,224,.55);color:#49311e;font:700 clamp(11px,1.2vw,15px)/1.2 system-ui,sans-serif;overflow-wrap:anywhere;cursor:pointer;touch-action:manipulation}
 #game #sheet .score-player-tab.selected{background:#f8ebd1;box-shadow:inset 0 -3px #84633b,0 1px 4px #0002;border-color:#98754b}
-#game #sheet .score-player-tab.player-tint-0{box-shadow:inset 0 3px #73937a}
-#game #sheet .score-player-tab.player-tint-1{box-shadow:inset 0 3px #7992a8}
-#game #sheet .score-player-tab.player-tint-2{box-shadow:inset 0 3px #b28a62}
-#game #sheet .score-player-tab.player-tint-3{box-shadow:inset 0 3px #a18ba8}
-#game #sheet .score-player-tab.selected.player-tint-0{box-shadow:inset 0 4px #73937a,0 2px 5px #0002}
-#game #sheet .score-player-tab.selected.player-tint-1{box-shadow:inset 0 4px #7992a8,0 2px 5px #0002}
-#game #sheet .score-player-tab.selected.player-tint-2{box-shadow:inset 0 4px #b28a62,0 2px 5px #0002}
-#game #sheet .score-player-tab.selected.player-tint-3{box-shadow:inset 0 4px #a18ba8,0 2px 5px #0002}
 #game.multi-score #sheet .variant-table{width:100%!important;min-width:0!important;table-layout:fixed!important}
 #game.multi-score #sheet .variant-table th,#game.multi-score #sheet .variant-table td{min-width:0!important;max-width:none!important}
 #game.multi-score #sheet .variant-table th:first-child,#game.multi-score #sheet .variant-table td:first-child{width:36%!important;min-width:0!important}
 @media(max-width:650px){#game #sheet .score-player-tabs{gap:3px}#game #sheet .score-player-tab{font-size:11px;min-height:42px}}
+
+/* The tabs already identify the player: use one consistent parchment palette. */
+#game #sheet th.score-player-head,#game #sheet th.score-direction,#game #sheet td.score-player-cell{background-image:none!important;background-color:transparent!important;box-shadow:none!important}
+#game #sheet .score-current-player{outline:none!important}
+#game #sheet .score-player-tab{box-shadow:none!important}
+#game #sheet .score-player-tab.selected{background:#e8d0a6!important;border-color:#a47c4b!important;box-shadow:inset 0 0 0 1px #c49d64!important}
+#game #sheet .score-directions th{background:#e9d2a8!important;color:#4b321f!important}
+#game #sheet .score-head th{background:#e6cda1!important}
+#game #sheet .score-summary td{background:#e8d0a4!important}
+#game #sheet .score-total td{background:#165c38!important;color:#fff4d0!important}
+/* Landscape: all 13 categories and 3 summary rows fit without vertical scrolling. */
+@media(min-width:851px) and (orientation:landscape){
+ body:has(#game:not([hidden])){height:100dvh;max-height:100dvh;overflow:hidden}
+ body:has(#game:not([hidden])) main{padding-top:5px;padding-bottom:5px;overflow:hidden}
+ #game:not([hidden]){min-height:0;overflow:hidden}
+ #game #players{flex:0 0 auto;margin-bottom:4px}
+ #game .layout{min-height:0;overflow:hidden}
+ #game .scores{min-height:0;padding:7px 9px 8px!important}
+ #game .scores h2{flex:0 0 auto;margin-bottom:3px}
+ #game #sheet{display:flex;flex-direction:column;min-height:0;overflow:hidden!important}
+ #game #sheet .score-player-tabs{flex:0 0 auto;margin-bottom:4px;padding:2px}
+ #game #sheet .score-player-tab{min-height:30px;padding:3px}
+ #game #sheet table{flex:1 1 0%;height:0!important;min-height:0;max-height:100%;font-size:clamp(10px,1.35dvh,13px)!important}
+ #game #sheet table tr{height:auto}
+ #game #sheet table th,#game #sheet table td{padding:0 3px!important;line-height:1.04!important}
+ #game #sheet .score-directions th{font-size:clamp(15px,2.1dvh,23px);padding:0!important}
+ #game #sheet td button{min-height:18px;padding:0 5px!important;line-height:1!important}
+ #game #sheet .variant-table th:first-child,#game #sheet .variant-table td:first-child{position:static!important}
+}
