@@ -257,6 +257,21 @@ function finish(){
 }
 $('start').addEventListener('click',startNew);
 $('understood').addEventListener('click',acknowledge);
-$('again').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;startGate=null;flow.replay();show('setup');$('scores').replaceChildren();});
-$('back').addEventListener('click',()=>{if(online){location.href='./lobby.html?room='+encodeURIComponent(onlineRoom);return;}cancelCountdown();pendingConfig=null;startGate=null;flow.returnToSelection();show('setup');$('scores').replaceChildren();});
+$('again').addEventListener('click',()=>{
+ if(online){location.href='./lobby.html?room='+encodeURIComponent(onlineRoom)+'&stay=1';return;}
+ cancelCountdown();pendingConfig=null;startGate=null;
+ try{if(flow.snapshot().stage==='result')flow.replay();}catch(e){console.error('Replay failed',e);}
+ // A replayed session is ready, not in selection: begin directly without selecting twice.
+ if(flow.snapshot().stage==='ready'){
+  flow.returnToSelection();
+ }
+ $('scores').replaceChildren();$('results').replaceChildren();show('setup');
+});
+$('back').addEventListener('click',()=>{
+ if(online){location.href='./lobby.html?room='+encodeURIComponent(onlineRoom)+'&stay=1';return;}
+ cancelCountdown();pendingConfig=null;startGate=null;
+ const stage=flow.snapshot().stage;
+ if(stage==='result'||stage==='ready')flow.returnToSelection();
+ $('scores').replaceChildren();$('results').replaceChildren();show('setup');
+});
 </script></body></html>
