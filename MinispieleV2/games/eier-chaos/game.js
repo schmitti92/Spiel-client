@@ -5,6 +5,9 @@ const DURATION=60000;
 const clamp=x=>Math.max(0,Math.min(1,x));
 const STAGES=Object.freeze([{start:0,count:40,interval:460,fall:1600},{start:20000,count:70,interval:260,fall:1250},{start:40000,count:90,interval:205,fall:950}]);
 export const EGG_COUNT=STAGES.reduce((sum,stage)=>sum+stage.count,0);
+const rottenAt=index=>{let offset=index;for(const stage of STAGES){if(offset<stage.count)return (offset+1)%(stage.start===0?10:stage.start===20000?4:3)===0;offset-=stage.count;}return false;};
+const eligible=Array.from({length:EGG_COUNT},(_,i)=>i).filter(i=>!rottenAt(i));
+const golden=new Set(Array.from({length:20},(_,k)=>eligible[Math.floor((k+.5)*eligible.length/20)]));
 export function eggAt(index){
  if(!Number.isSafeInteger(index)||index<0)throw Error('INVALID_EGG_INDEX');
  if(index>=EGG_COUNT)throw Error('INVALID_EGG_INDEX');
@@ -14,8 +17,8 @@ export function eggAt(index){
   offset-=stage.count;
  }
  const lane=((index*37+11)%91+4)/100;
- const special=index%10===3; // 20 goldene Eier
- const rotten=index%10===7; // 20 faule Eier, keine Überschneidung
+ const rotten=rottenAt(index);
+ const special=golden.has(index); // 20 goldene Eier ohne Überschneidung
  return {index,spawnMs,landMs:spawnMs+speed,x:lane,special,rotten,points:special?3:rotten?-1:1};
 }
 export function initialState(players){
