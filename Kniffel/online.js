@@ -134,12 +134,25 @@ function renderCompactScore(g,shownPlayer,viewPlayer,mine){
 
 
 let scoreReveal=null,scoreRevealTimer=null,heldScorePlayer=null,scoreHoldUntil=0;
+let diceMotion=null,diceMotionTimer=null;
 function acceptSnapshot(fresh){
  if(snapshot&&Number(fresh.revision)<Number(snapshot.revision))return false;
  const before=current();
+ const previousMatchId=snapshot?.match?.id;
+ const oldDice=before?.dice?.slice()||[];
+ const oldRolls=before?.rolls||0;
+ const oldTurn=before?.turn;
+ const oldHeld=before?.held?.slice()||[];
  const oldMatch=snapshot?.match?.id;
  snapshot=fresh;
  const next=current();
+ // Animate confirmed new rolls on every device; never animate a mere refresh.
+ if(before&&next&&previousMatchId===snapshot?.match?.id&&oldTurn===next.turn&&next.rolls>oldRolls&&next.rolls>0){
+  const moving=next.dice.map((_,i)=>oldRolls===0||!oldHeld[i]);
+  diceMotion={key:[snapshot?.match?.id,next.turn,next.rolls].join(':'),moving};
+  clearTimeout(diceMotionTimer);
+  diceMotionTimer=setTimeout(()=>{diceMotion=null;document.querySelectorAll('#dice .die.dice-tumbling').forEach(el=>el.classList.remove('dice-tumbling'))},1050);
+ }
  // Announce confirmed joker activation to every connected player, not on page load.
  if(before&&next&&oldMatch===snapshot?.match?.id){
   const labels=[['extraRollUsed','+1 Wurf'],['extraDieUsed','+1 Würfel'],['rerollUsed','Neuwurf'],['moveUsed','Verschieben / Tauschen']];
@@ -273,7 +286,7 @@ lastTurnKey=turnKey;
  g.players.forEach((player,i)=>{const el=document.createElement('div');el.className='player'+(i===g.turn&&!g.finished?' active':'')+(announceTurn&&i===g.turn?' turn-arrived':'');el.textContent=(player.bot?'🤖 ':'👤 ')+player.name+' · '+(player.sheet.reduce((n,col)=>n+totals(col).total,0)+(player.jokerBonus||0))+' P.';$('players').append(el)});
  $('status').textContent=g.finished?'🏆 Partie beendet':p.name+' · Wurf '+g.rolls+' / '+(g.extraRollActive?4:3)+(mine?' · Du bist dran':'');
  showFirstRollAchievement(g);
- g.dice.forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.className='die'+(g.held[i]?' held':'')+(g.rolls===0?' unrolled':'');b.style.setProperty('--die-index',i);if(g.rolls){const face=document.createElement('span');face.className='pips face-'+n;for(let k=0;k<9;k++){const pip=document.createElement('i');pip.className='pip pip-'+k;face.append(pip)}b.append(face)}else{const ready=document.createElement('span');ready.className='die-ready';ready.textContent='?';b.append(ready)}b.setAttribute('aria-label','Würfel '+(i+1)+': '+(g.rolls?n:'noch nicht geworfen'));b.disabled=!mine||busy||g.rolls===0||g.rolls>=(g.extraRollActive?4:3);b.onclick=()=>send({type:'hold',index:i});$('dice').append(b)});
+ g.dice.forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.className='die'+(g.held[i]?' held':'')+(g.rolls===0?' unrolled':'');b.style.setProperty('--die-index',i);if(diceMotion&&diceMotion.key===[snapshot?.match?.id,g.turn,g.rolls].join(':')&&diceMotion.moving[i])b.classList.add('dice-tumbling');if(g.rolls){const face=document.createElement('span');face.className='pips face-'+n;for(let k=0;k<9;k++){const pip=document.createElement('i');pip.className='pip pip-'+k;face.append(pip)}b.append(face)}else{const ready=document.createElement('span');ready.className='die-ready';ready.textContent='?';b.append(ready)}b.setAttribute('aria-label','Würfel '+(i+1)+': '+(g.rolls?n:'noch nicht geworfen'));b.disabled=!mine||busy||g.rolls===0||g.rolls>=(g.extraRollActive?4:3);b.onclick=()=>send({type:'hold',index:i});$('dice').append(b)});
  const limit=g.extraRollActive?4:3;
  const joker=$('extra-roll-joker'),dieJoker=$('extra-die-joker');
  joker.hidden=false;
