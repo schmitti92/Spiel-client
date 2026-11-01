@@ -143,14 +143,14 @@ function acceptSnapshot(fresh){
    viewPlayer=before.turn;
    clearTimeout(scoreRevealTimer);
    // The number settles after the animation; the scorecard does NOT switch yet.
-   scoreRevealTimer=setTimeout(()=>{scoreReveal=null;heldScorePlayer=null;scoreHoldUntil=0;viewPlayer=next.turn;render()},3000);
+   scoreRevealTimer=setTimeout(()=>{scoreReveal=null;heldScorePlayer=null;scoreHoldUntil=0;viewPlayer=current()?.turn??next.turn;render()},3000);
   }else{
    // Undo or another non-scoring turn change must not leave a stale scorecard.
-   heldScorePlayer=null;scoreReveal=null;clearTimeout(scoreRevealTimer);
+   heldScorePlayer=null;scoreHoldUntil=0;scoreReveal=null;clearTimeout(scoreRevealTimer);
   }
  }
  if(next?.rolls>0&&heldScorePlayer!==null){
-  heldScorePlayer=null;scoreReveal=null;clearTimeout(scoreRevealTimer);
+  heldScorePlayer=null;scoreHoldUntil=0;scoreReveal=null;clearTimeout(scoreRevealTimer);
   viewPlayer=next.turn;
  }
  return true;
@@ -183,9 +183,6 @@ function render(){
  }else dialog?.remove();
  $('game').classList.toggle('multi-score',p.sheet.length===3);
  const turnKey=(snapshot?.match?.id||'')+':'+g.turn;
- if(heldScorePlayer===null&&g.rolls===0&&g.lastScoredTurn?.state&&g.lastScoredTurn.state.turn!==g.turn){
-  heldScorePlayer=g.lastScoredTurn.state.turn;
-}
 if(heldScorePlayer!==null&&g.rolls===0&&Date.now()<scoreHoldUntil){
   viewPlayer=heldScorePlayer;
 }else if(viewPlayer===null||lastTurnKey!==turnKey||viewPlayer>=g.players.length){
