@@ -31,6 +31,7 @@ export function createLobbyGameBridge(launcher) {
    return Object.freeze({
     identity,
     players:()=>structuredClone(roster),
+    participantCounts:()=>session.participantCounts(),
     snapshot:read,
     start:()=>session.start(),
     dispatch:(playerId,action,meta)=>session.dispatch(playerId,action,meta),
