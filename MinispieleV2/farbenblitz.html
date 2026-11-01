@@ -16,6 +16,16 @@ header{position:relative;flex:0 0 clamp(65px,10vh,110px);display:flex;justify-co
 @media(max-width:650px){main{border-radius:13px;padding:7px}header{flex-basis:60px}header>div{width:70vw;margin-right:30px}header>.tag{font-size:10px;padding:5px}#play{padding:8px;border-width:5px;border-radius:20px}.hud{font-size:12px}.hud .tag{display:none}.question p{font-size:15px}#word{width:94%;font-size:clamp(43px,10vh,95px)}.colors button{font-size:clamp(19px,5vw,30px);border-radius:16px}.controls{grid-template-columns:1fr}}
 @media(orientation:portrait){#play{grid-template-rows:auto minmax(0,1fr) minmax(0,1.2fr)}#word{width:94%}}
 
+
+#instructions,#countdown{width:min(760px,96%);margin:auto;padding:clamp(20px,3vw,38px);border:4px solid #d8a354;border-radius:26px;background:linear-gradient(145deg,#152c3cf2,#0b1724f5);box-shadow:0 15px 35px #000b;text-align:center}
+#instructions h2{font-size:clamp(25px,3vw,38px);margin:0 0 15px}
+#instructions p{font-size:clamp(17px,1.9vw,25px);line-height:1.5;margin:12px 0}
+#instructions strong{color:#ffda6d}
+#understood{border:0;border-radius:18px;padding:15px 36px;margin-top:16px;background:linear-gradient(#fff093,#ffb526);color:#392308;font-size:clamp(20px,2vw,28px)}
+#ready-status{color:#d9eaf5;font-size:clamp(14px,1.5vw,19px);margin-top:13px}
+#countdown{display:grid;place-items:center;gap:8px}
+#countdown h2{margin:0;font-size:clamp(22px,3vw,35px)}
+#count-number{font-size:clamp(110px,25vh,230px);line-height:1.05;color:#ffdb64;text-shadow:0 8px 0 #6c320d,0 0 30px #ffc34e;font-weight:1000}
 </style></head><body><main>
 <header><div><h1>⚡ Farbenblitz</h1><p>MiniGame Engine V2 · Design-Test</p></div><span class="tag">🎮 Offline-Test</span></header>
 <div id="scores" aria-live="polite"></div>
@@ -24,6 +34,15 @@ header{position:relative;flex:0 0 clamp(65px,10vh,110px);display:flex;justify-co
 <label>Schwierigkeit<select id="level"><option value="leicht">Leicht – Wort lesen</option><option value="mittel" selected>Mittel – Schriftfarbe</option><option value="schwer">Schwer – Schriftfarbe</option></select></label>
 <label>Runden<select id="rounds"><option>5</option><option selected>10</option><option>20</option><option>30</option></select></label>
 </div><button id="start">Spiel starten</button></section>
+<section id="instructions" class="hidden" aria-labelledby="instructions-title">
+<h2 id="instructions-title">⚡ So funktioniert Farbenblitz</h2>
+<p>🎯 <strong>Schau genau hin:</strong> Bei „Schriftfarbe“ zählt die <strong>Farbe der Buchstaben</strong> – nicht das geschriebene Wort.</p>
+<p>🎨 Tippe auf <strong>ROT, BLAU, GRUEN oder GELB</strong>. Bei „Wort lesen“ zählt dagegen das geschriebene Wort.</p>
+<p>🏆 Wer die meisten Antworten richtig hat, gewinnt. Die Punkte bleiben bis zum Schluss geheim.</p>
+<div id="ready-status" aria-live="polite"></div>
+<button id="understood">✓ Verstanden</button>
+</section>
+<section id="countdown" class="hidden" aria-live="assertive"><h2>Bereit? Es geht gleich los!</h2><div id="count-number">3</div></section>
 <section id="play" class="hidden"><div class="hud"><div id="status"></div><span class="tag">🎯 Wähle die richtige Farbe</span></div><div class="question"><p id="prompt">In welcher FARBE ist das Wort geschrieben?</p><div id="word"></div></div><div class="colors" id="colors"></div><div id="feedback" aria-live="polite"></div></section>
 <section id="finish" class="hidden"><h2>🏆 Ergebnis</h2><div id="results"></div><button id="again">Nochmal spielen</button><button id="back">Zur Auswahl</button></section>
 <footer>Vorschau mit Computergegnern · Waldaufnahme: Gerda Arendt (CC0) · Online-Modus folgt später</footer>
@@ -42,12 +61,42 @@ const bridge=createLobbyGameBridge(createGameLauncher(registry));
 const ledger=createResultLedger(c=>c.result.results.map(r=>({playerId:r.playerId,points:r.score})));
 const flow=createMiniGameFlow(bridge,ledger);
 let serial=0;
-function show(name){for(const id of ['setup','play','finish'])$(id).classList.toggle('hidden',id!==name);}
+let pendingConfig=null;
+let countdownTimers=[];
+function cancelCountdown(){for(const timer of countdownTimers)clearTimeout(timer);countdownTimers=[];}
+
+function show(name){for(const id of ['setup','instructions','countdown','play','finish'])$(id).classList.toggle('hidden',id!==name);}
 function startNew(){
+ cancelCountdown();
  const count=Number($('count').value),rounds=Number($('rounds').value);
  const players=[{id:'player-1',type:'human'},...Array.from({length:count-1},(_,i)=>({id:'bot-'+(i+1),type:'bot'}))];
- flow.select({roomId:'offline-demo',matchId:'farbenblitz-'+(++serial),gameId:'farbenblitz',players,options:{rounds,level:$('level').value}});
- flow.start();$('feedback').textContent='';show('play');render();
+ pendingConfig={roomId:'offline-demo',matchId:'farbenblitz-'+(++serial),gameId:'farbenblitz',players,options:{rounds,level:$('level').value}};
+ $('scores').replaceChildren();
+ $('ready-status').textContent='Bereit: '+(count-1)+' von '+count+' · Computergegner sind automatisch bereit.';
+ $('understood').disabled=false;
+ show('instructions');
+}
+function acknowledge(){
+ if(!pendingConfig || $('instructions').classList.contains('hidden'))return;
+ $('understood').disabled=true;
+ $('ready-status').textContent='Alle Teilnehmer bereit!';
+ show('countdown');
+ $('count-number').textContent='3';
+ for(let i=1;i<=3;i++){
+  countdownTimers.push(setTimeout(()=>{
+   $('count-number').textContent=i===3?'LOS!':String(3-i);
+  },i*1000));
+ }
+ countdownTimers.push(setTimeout(()=>{
+  countdownTimers=[];
+  if(!pendingConfig)return;
+  const config=pendingConfig;pendingConfig=null;
+  flow.select(config);
+  flow.start();
+  $('feedback').textContent='';
+  show('play');
+  render();
+ },3500));
 }
 function answer(color){
  const s=flow.snapshot();if(s.stage!=='playing')return;
@@ -84,6 +133,7 @@ function finish(){
  $('scores').replaceChildren();
 }
 $('start').addEventListener('click',startNew);
-$('again').addEventListener('click',()=>{flow.replay();flow.start();$('feedback').textContent='';show('play');render();});
-$('back').addEventListener('click',()=>{flow.returnToSelection();show('setup');$('scores').replaceChildren();});
+$('understood').addEventListener('click',acknowledge);
+$('again').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;flow.replay();show('setup');$('scores').replaceChildren();});
+$('back').addEventListener('click',()=>{cancelCountdown();pendingConfig=null;flow.returnToSelection();show('setup');$('scores').replaceChildren();});
 </script></body></html>
