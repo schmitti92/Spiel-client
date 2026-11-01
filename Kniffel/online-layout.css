@@ -249,3 +249,41 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
 #game .joker-panel #extra-roll-joker.joker-active,#game .joker-panel #extra-die-joker.joker-active{background:radial-gradient(ellipse at 30% 10%,#ad8533,#654016 80%)!important;box-shadow:0 0 12px #ffd15d9e,inset 0 2px 6px #ffe4a859!important}
 #game .joker-panel #extra-roll-joker.joker-used,#game .joker-panel #extra-die-joker.joker-used,#game .joker-panel #reroll-joker.joker-used{opacity:.4!important}
 @media(max-width:700px){#game .joker-panel-heading{flex-basis:62px!important;flex-direction:column!important;font-size:11px!important}#game .joker-panel button{gap:2px!important}#game .joker-panel .joker-icon{font-size:19px!important}}
+
+
+/* Joker cabinet v2: independent, larger visual block for landscape tablets. */
+#game .tabletop .joker-panel:not([hidden]){
+ flex:0 0 auto!important;min-height:clamp(100px,15dvh,148px)!important;
+ margin-top:clamp(9px,1.5dvh,16px)!important;padding:clamp(9px,1.2vw,16px)!important;
+ border:4px ridge #edbc62!important;border-radius:22px!important;
+ background:linear-gradient(125deg,#8d542b,#3b1c0b 48%,#73421e)!important;
+ box-shadow:0 0 0 4px #241006aa,inset 0 2px 5px #ffe2a37a,0 8px 15px #0008!important;
+}
+#game .joker-panel-heading{
+ flex:0 0 clamp(100px,18%,190px)!important;min-height:clamp(75px,11dvh,112px)!important;
+ flex-direction:column!important;gap:4px!important;font-size:clamp(18px,1.85vw,28px)!important;
+ border-radius:15px!important;
+}
+#game .joker-clover{font-size:clamp(30px,3.8vw,54px)!important}
+#game .joker-panel-actions{height:100%!important;align-items:stretch!important;gap:clamp(8px,1vw,16px)!important}
+#game .joker-panel #extra-roll-joker:not([hidden]),
+#game .joker-panel #extra-die-joker:not([hidden]),
+#game .joker-panel #reroll-joker:not([hidden]){
+ min-height:clamp(75px,11dvh,112px)!important;
+ flex-direction:column!important;gap:5px!important;
+ padding:8px 6px!important;border-width:4px!important;
+ font-size:clamp(16px,1.65vw,25px)!important;line-height:1.1!important;
+ border-radius:18px!important;
+}
+#game .joker-panel .joker-icon{font-size:clamp(29px,3.2vw,48px)!important}
+#game .joker-panel .joker-replay{font-size:clamp(38px,4.2vw,58px)!important}
+#game .joker-panel #extra-roll-joker:disabled:not(.joker-active),
+#game .joker-panel #extra-die-joker:disabled:not(.joker-active),
+#game .joker-panel #reroll-joker:disabled{
+ filter:grayscale(.45)!important;opacity:.76!important;
+}
+#game .joker-panel button.joker-used{opacity:.42!important}
+@media(max-height:650px) and (orientation:landscape){
+ #game .tabletop .joker-panel:not([hidden]){min-height:88px!important;padding:6px!important}
+ #game .joker-panel-heading,#game .joker-panel #extra-roll-joker:not([hidden]),#game .joker-panel #extra-die-joker:not([hidden]),#game .joker-panel #reroll-joker:not([hidden]){min-height:68px!important}
+}
