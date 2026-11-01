@@ -92,7 +92,7 @@ function onlineRender(room){
  }else if(state.phase==='finished'){
   show('finish');$('results').replaceChildren();
   for(const [i,p] of [...state.results].sort((a,b)=>b.score-a.score).entries()){
-   const row=document.createElement('p');row.textContent=(i+1)+'. '+p.name+' – '+p.score+' richtig';$('results').append(row);
+   const row=document.createElement('p');row.textContent=(i+1)+'. '+p.name+' – '+p.score+' richtig · '+seconds(p.timeMs??0);$('results').append(row);
   }
   $('scores').replaceChildren();$('again').disabled=true;
  }
@@ -102,6 +102,7 @@ function renderOnlinePlaying(state,room){
   $('prompt').textContent=state.level==='leicht'?'Welches WORT steht hier?':'In welcher FARBE ist das Wort geschrieben?';
   $('word').textContent=state.challenge?.word?.toUpperCase()||'';
   $('word').style.color=colors[state.challenge?.ink]||'#fff';
+  markWordVisible('online:'+onlineMatch+':'+state.round);
   $('colors').replaceChildren();
   const chosen=state.myColor??(onlineChoice?.round===state.round?onlineChoice.color:null);
   if(!state.myAnswered&&onlineChoice?.round!==state.round)onlineChoice=null;
@@ -129,9 +130,10 @@ async function onlineUnderstood(){
 async function onlineAnswer(color){
  if(!onlineMatch||!onlineSnapshot?.match?.farbenblitz)return;
  const round=onlineSnapshot.match.farbenblitz.round;
+ const elapsedMs=responseTime();
  onlineChoice={round,color};
  for(const b of $('colors').querySelectorAll('button')){b.disabled=true;b.classList.add(b.textContent.toLowerCase()===color?'chosen':'locked');}
- try{await hubRequest('/farbenblitz/answer',{matchId:onlineMatch,round,color});await onlineRefresh();}
+ try{await hubRequest('/farbenblitz/answer',{matchId:onlineMatch,round,color,elapsedMs});await onlineRefresh();}
  catch(e){onlineChoice=null;$('feedback').textContent=e.message;await onlineRefresh();}
 }
 if(online){$('start').disabled=true;$('start').textContent='Warte auf Spielstart in der Lobby';onlineTimer=setInterval(()=>void onlineRefresh(),1100);void onlineRefresh();}
@@ -146,6 +148,15 @@ let pendingConfig=null;
 let startGate=null;
 let countdownTimers=[];
 let onlineClockOffset=0;
+let visibleRoundKey=null,wordVisibleAt=null,offlineTotalMs=0;
+const seconds=ms=>(ms/1000).toFixed(2).replace('.',',')+' s';
+function markWordVisible(key){
+ if(visibleRoundKey===key)return;
+ visibleRoundKey=key;wordVisibleAt=null;
+ requestAnimationFrame(()=>{requestAnimationFrame(()=>{if(visibleRoundKey===key)wordVisibleAt=performance.now();});});
+}
+function responseTime(){return Math.max(0,Math.round(performance.now()-(wordVisibleAt??performance.now())));}
+
 function cancelCountdown(){for(const timer of countdownTimers)clearTimeout(timer);countdownTimers=[];}
 
 function show(name){for(const id of ['setup','instructions','countdown','play','finish'])$(id).classList.toggle('hidden',id!==name);}
@@ -154,6 +165,7 @@ function startNew(){
  const count=Number($('count').value),rounds=Number($('rounds').value);
  const players=[{id:'player-1',type:'human'},...Array.from({length:count-1},(_,i)=>({id:'bot-'+(i+1),type:'bot'}))];
  startGate=createGameStartGate(players);
+ visibleRoundKey=null;wordVisibleAt=null;offlineTotalMs=0;
  pendingConfig={roomId:'offline-demo',matchId:'farbenblitz-'+(++serial),gameId:'farbenblitz',players,options:{rounds,level:$('level').value}};
  offlineChoice=null;offlineWaiting=false;
  $('scores').replaceChildren();
@@ -201,6 +213,7 @@ function answer(color){
  if(offlineWaiting)return;
  const s=flow.snapshot();if(s.stage!=='playing')return;
  const round=s.session.state.round;
+ offlineTotalMs+=responseTime();
  offlineChoice={round,color};offlineWaiting=true;
  for(const b of $('colors').querySelectorAll('button')){
   b.disabled=true;b.classList.add(b.textContent.toLowerCase()===color?'chosen':'locked');
@@ -239,7 +252,7 @@ function finish(){
  const s=flow.snapshot();show('finish');
  const rows=[...s.completion.result.results].sort((a,b)=>b.score-a.score);
  $('results').replaceChildren();
- for(const [i,r] of rows.entries()){const p=document.createElement('p');p.textContent=(i+1)+'. '+r.playerId+' – '+r.score+' richtig';$('results').append(p);}
+ for(const [i,r] of rows.entries()){const p=document.createElement('p');p.textContent=(i+1)+'. '+r.playerId+' – '+r.score+' richtig'+(r.playerId==='player-1'?' · '+seconds(offlineTotalMs):'');$('results').append(p);}
  $('scores').replaceChildren();
 }
 $('start').addEventListener('click',startNew);
