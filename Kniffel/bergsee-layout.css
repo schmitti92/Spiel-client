@@ -1,0 +1,72 @@
+/* Kniffel Bergsee — Stage 2: dedicated layout only.
+   Palette and visual effects belong in bergsee-design.css.
+   This file intentionally does not alter game logic, DOM order, or score availability. */
+@media (min-width:851px) and (orientation:landscape) {
+  body:has(#game:not([hidden])) main {min-height:0!important}
+  #game:not([hidden]) {display:flex!important;flex-direction:column!important;min-height:0!important}
+  #game #players {flex:0 0 auto!important;min-height:0!important}
+  #game .layout {
+    display:grid!important;
+    grid-template-columns:minmax(0, 46%) minmax(0, 54%)!important;
+    gap:clamp(10px,1.2vw,20px)!important;
+    align-items:stretch!important;
+    flex:1 1 0%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  #game .layout>.scores,#game .layout>.tabletop {
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  #game .scores {display:flex!important;flex-direction:column!important}
+  #game .scores #sheet {flex:1 1 0%!important;min-height:0!important}
+  #game .tabletop {
+    display:flex!important;
+    flex-direction:column!important;
+    gap:clamp(4px,.65dvh,9px)!important;
+    padding:clamp(10px,1.2vw,20px)!important;
+  }
+  #game .tabletop #status {flex:0 0 auto!important}
+  #game .tabletop #dice.tray {
+    flex:0 0 auto!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    min-height:clamp(112px,17dvh,210px)!important;
+    max-height:clamp(138px,24dvh,250px)!important;
+    margin:0!important;
+  }
+  #game .tabletop #dice.tray>button.die {
+    flex:0 1 auto!important;
+    width:min(17%,clamp(66px,8vw,122px))!important;
+    aspect-ratio:1!important;
+    min-width:0!important;
+    min-height:0!important;
+  }
+  #game .tabletop>p {flex:0 0 auto!important;margin:clamp(3px,.5dvh,7px) 0!important}
+  #game .tabletop #roll {flex:0 0 auto!important}
+  #game .tabletop #notice {flex:0 0 auto!important}
+  #game .tabletop .social-extension {
+    flex:0 0 auto!important;
+    margin-top:auto!important;
+  }
+  #game .tabletop .joker-panel:not([hidden]) {
+    flex:0 0 auto!important;
+    margin:0!important;
+    width:100%!important;
+    min-height:clamp(70px,12dvh,132px)!important;
+  }
+  #game .joker-panel-actions {min-width:0!important;flex:1 1 auto!important}
+  #game .joker-panel-actions button:not([hidden]) {
+    min-width:0!important;
+    flex:1 1 0%!important;
+    overflow-wrap:normal!important;
+  }
+}
+/* Narrow displays keep the existing responsive stacking rather than clipping. */
+@media (max-width:850px), (orientation:portrait) {
+  #game .layout {min-width:0!important}
+  #game .layout>.scores,#game .layout>.tabletop {min-width:0!important}
+}
