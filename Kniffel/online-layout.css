@@ -163,3 +163,15 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
   align-content:center!important;align-items:center!important;
  }
 }
+
+#game #sheet .compact-score{display:flex;flex-direction:column;gap:4px;flex:1;min-height:0}
+#game #sheet .compact-score-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;min-height:0}
+#game #sheet .compact-score-group{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+#game #sheet .compact-score-row{display:flex;justify-content:space-between;align-items:center;gap:3px;flex:1;min-height:26px;padding:2px 7px;background:#f3dfb9;border:1px solid #c7a572;border-radius:7px}
+#game #sheet .compact-score-label{font-size:clamp(11px,1.1vw,17px);font-weight:700}
+#game #sheet .compact-score-value{font-size:clamp(17px,1.9vw,29px);font-weight:900;font-variant-numeric:tabular-nums}
+#game #sheet .compact-score-value .score-choice{font-size:inherit!important;min-height:26px!important;padding:1px 7px!important}
+#game #sheet .compact-score-summary{display:flex;justify-content:space-between;align-items:center;padding:3px 12px;min-height:25px;background:#e5c28b;border-radius:8px;font-weight:800}
+#game #sheet .compact-score-summary strong{font-size:clamp(18px,2vw,29px)}
+#game #sheet .compact-score-summary.total{background:linear-gradient(#ffe8a4,#dba341)}
+#game #sheet .compact-score-chance{flex:0 0 auto}
