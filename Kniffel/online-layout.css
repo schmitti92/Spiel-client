@@ -382,3 +382,88 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
  #game #sheet .wood-variant-table .score-player-cell{font-size:clamp(12px,2.2dvh,18px)!important}
  #game #sheet .wood-variant-table .score-label{font-size:clamp(9px,1.8dvh,12px)!important}
 }
+
+
+/* v24 — Woodland scorecard visual polish; no extra rows or layout growth. */
+#game .panel.scores{
+ background:linear-gradient(125deg,#f8e9cb,#e7c693 70%,#cda46d)!important;
+ box-shadow:inset 0 0 0 2px #fff0c8,0 9px 20px #140b0777!important;
+}
+#game #sheet .score-player-tabs{background:#6c482021!important;border:1px solid #b78a4a66!important}
+#game #sheet .score-player-tab{
+ background:linear-gradient(180deg,#fff8e9,#f0ddba)!important;
+ border:1px solid #c8ac80!important;color:#4d3421!important;
+ transition:background .15s,box-shadow .15s!important;
+}
+#game #sheet .score-player-tab.selected{
+ background:linear-gradient(180deg,#f8e5ba,#dfb875)!important;
+ border:2px solid #a47736!important;
+ box-shadow:inset 0 1px 2px #fff6d7,0 0 0 1px #e8c885!important;
+}
+#game #sheet .wood-variant-table{
+ border-spacing:2px 1px!important;
+ background:transparent!important;
+}
+#game #sheet .wood-variant-table .score-head th.score-player-head{
+ background:linear-gradient(180deg,#20724e,#105036)!important;
+ color:#fff3ce!important;letter-spacing:.035em!important;
+}
+#game #sheet .wood-variant-table .score-directions th{
+ background:linear-gradient(180deg,#286e4c,#12583b)!important;
+ color:#ffefbd!important;
+ text-shadow:0 1px 2px #082a19!important;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td{
+ background-color:#f5e9d4!important;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(odd) td{
+ background-color:#fff8eb!important;
+}
+#game #sheet .wood-variant-table tr.score-category td.score-label{
+ background:linear-gradient(100deg,#f1deb8,#e7cca0)!important;
+ color:#49321e!important;font-weight:750!important;
+ border-left:3px solid #b48a4b!important;
+}
+#game #sheet .wood-variant-table tr.score-section-start td{
+ border-top:3px solid #97703d!important;
+}
+#game #sheet .wood-variant-table td.score-ink{
+ color:#203e65!important;font-family:Georgia,serif!important;
+ font-style:italic!important;font-weight:900!important;
+ text-shadow:0 1px #fff!important;
+}
+#game #sheet .wood-variant-table td.score-open.score-row-action{
+ background:linear-gradient(135deg,#f1f7d8,#dcefb9)!important;
+ box-shadow:inset 0 0 0 1px #b5cf84!important;
+ border:1px solid #8db16d!important;
+}
+#game #sheet .wood-variant-table td.score-open.score-row-action:focus-visible{
+ outline:2px solid #146b45!important;outline-offset:-2px!important;
+}
+#game #sheet .wood-variant-table tr.score-upper td{
+ background:linear-gradient(180deg,#e8ebbc,#d8e2a3)!important;
+ color:#4a391c!important;font-weight:900!important;
+ border-top:2px solid #a7a96c!important;
+}
+#game #sheet .wood-variant-table tr.score-bonus td{
+ background:linear-gradient(180deg,#f7d8df,#edbdcb)!important;
+ color:#623747!important;font-weight:800!important;
+}
+#game #sheet .wood-variant-table tr.score-total td{
+ background:linear-gradient(180deg,#ffe894,#edba38)!important;
+ color:#3e290e!important;font-weight:950!important;
+ border-top:3px solid #ae7925!important;
+ text-shadow:0 1px #fff0b6!important;
+}
+#game #sheet .wood-variant-table tr.score-total td:first-child{
+ letter-spacing:.02em!important;
+}
+@media(min-width:851px) and (orientation:landscape){
+ #game #sheet .wood-variant-table tr.score-category td.score-label,
+ #game #sheet .wood-variant-table tr.score-category td.score-player-cell{
+  padding-block:0!important;
+ }
+ #game #sheet .wood-variant-table .score-directions th{
+  padding:0 2px!important;
+ }
+}
