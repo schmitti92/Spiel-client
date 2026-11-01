@@ -5,6 +5,8 @@ on:
       - 'MinispieleV2/engine/**'
       - 'MinispieleV2/games.js'
       - '.github/workflows/minigame-engine-guard.yml'
+      - 'MinispieleV2/games/farbenblitz.js'
+      - 'MinispieleV2/tests/**'
   push:
     branches: [main]
     paths:
@@ -20,6 +22,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
+      - name: Run Farbenblitz rule tests
+        run: node --test MinispieleV2/tests/farbenblitz.test.js
       - name: Warn when engine internals change
         run: |
           echo "::warning::Shared MiniGame Engine changed. Review contracts, player counts and affected games before release."
