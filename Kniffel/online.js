@@ -20,14 +20,14 @@ function onlineScore(g,c,j){
  return sum;
 }
 function onlineAllowed(g,j){
- if(g.dice.length===5)return allowedCategories(g,j);
+ if(g.dice.length===5){const normal=allowedCategories(g,j);const col=g.players[g.turn].sheet[j];return g.rolls>0&&col?.[11]===null&&g.dice.some(d=>g.dice.filter(v=>v===d).length>=5)?[...new Set([...normal,11])]:normal;}
  const col=g.players[g.turn].sheet[j],face=g.dice.find(d=>g.dice.filter(v=>v===d).length>=5);
  if(g.mode==='joker'&&g.rolls>0&&face&&col[11]===50){
   if(col[face-1]===null)return [face-1];
   const lower=col.flatMap((v,i)=>i>=6&&v===null?[i]:[]);
   return lower.length?lower:col.flatMap((v,i)=>v===null?[i]:[]);
  }
- return allowedCategories(g,j);
+ const normal=allowedCategories(g,j);return g.rolls>0&&col?.[11]===null&&g.dice.some(v=>g.dice.filter(x=>x===v).length>=5)?[...new Set([...normal,11])]:normal;
 }
 const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s?.user?.getIdToken?s.user:null};
 const status=t=>$('notice').textContent=t;
