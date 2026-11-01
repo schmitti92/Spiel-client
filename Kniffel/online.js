@@ -48,14 +48,15 @@ function confirmScore(label,points,onConfirm){
 
 function chooseScore(g,c,column=0){
  document.getElementById('online-score-confirm')?.remove();
- const score=onlineScore(g,c,column);
+ const canEnter=onlineAllowed(g,column).includes(c);
+ const score=canEnter?onlineScore(g,c,column):0;
  const overlay=document.createElement('div');overlay.id='online-score-confirm';overlay.className='score-preview-overlay';
  const card=document.createElement('div');card.className='score-preview-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
  const heading=document.createElement('h2');heading.textContent=CATEGORIES[c];
- const description=document.createElement('p');description.textContent='Wie möchtest du dieses Feld werten?';
+ const description=document.createElement('p');description.textContent=canEnter?'Wie möchtest du dieses Feld werten?':'Nach dem dritten Wurf kannst du dieses Feld frei streichen.';
  const actions=document.createElement('div');actions.className='score-preview-actions';
  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Zurück';
- const enter=document.createElement('button');enter.type='button';enter.className='score-preview-confirm';enter.textContent=score+' Punkte eintragen';
+ const enter=document.createElement('button');enter.type='button';enter.className='score-preview-confirm';enter.textContent=score+' Punkte eintragen';enter.disabled=!canEnter;if(!canEnter)enter.hidden=true;
  const strike=document.createElement('button');strike.type='button';strike.textContent='Feld streichen (—)';
  cancel.onclick=()=>overlay.remove();
  enter.onclick=()=>{overlay.remove();send({type:'score',category:c,column})};
@@ -94,7 +95,7 @@ function renderCompactScore(g,shownPlayer,viewPlayer,mine){
   const label=document.createElement('span');label.className='compact-score-label';label.textContent=CATEGORIES[c];if(c>=0&&c<=5){const die=document.createElement('span');die.className='wood-score-die';die.textContent=['⚀','⚁','⚂','⚃','⚄','⚅'][c];label.prepend(die)}else{const symbol=document.createElement('span');symbol.className='wood-score-icon';symbol.textContent=({6:'🎲',7:'🎲',8:'🎲',9:'🛤️',10:'🛤️',11:'👑',12:'🎲'})[c]||'🎲';label.prepend(symbol)}
   const value=document.createElement('span');value.className='compact-score-value';
   if(col[c]!==null){value.textContent=shownPlayer.crossedOut?.[0]?.[c]?'—':String(col[c]);value.classList.add('score-ink')}
-  else if(mine&&viewPlayer===g.turn&&g.rolls>0&&onlineAllowed(g,0).includes(c)){
+  else if(mine&&viewPlayer===g.turn&&g.rolls>0&&(onlineAllowed(g,0).includes(c)||(g.rolls>=3&&col[c]===null))){
    value.textContent='';
    row.classList.add('score-row-action');
    row.setAttribute('role','button');row.setAttribute('tabindex','0');
@@ -194,7 +195,7 @@ function render(){
  const symbol={Aufwärts:'↑',Abwärts:'↓',Frei:'='};
  [[shownPlayer,viewPlayer]].forEach(([player,i])=>MODES[g.mode].columns.forEach((column,j)=>{const th=document.createElement('th');const icon=symbol[column]||'=';th.textContent=icon;th.title=player.name+' – '+(column==='Aufwärts'?'von unten nach oben':column==='Abwärts'?'von oben nach unten':'freie Reihenfolge');th.setAttribute('aria-label',th.title);th.className='score-direction';directions.append(th)}));
  table.append(directions);
- CATEGORIES.forEach((label,c)=>{const tr=document.createElement('tr');tr.className='score-category'+(c===6?' score-section-start':'');const name=document.createElement('td');name.className='score-label';name.textContent=label;tr.append(name);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach((col,j)=>{const td=document.createElement('td');td.className='score-player-cell'+(i===g.turn&&!g.finished?' score-current-player':'');const value=col[c];if(value!==null){td.textContent=player.crossedOut?.[j]?.[c]?'—':String(value);td.classList.add('score-ink')}else if(mine&&i===g.turn&&g.rolls>0&&onlineAllowed(g,j).includes(c)){td.textContent='';td.classList.add('score-open','score-row-action');td.setAttribute('role','button');td.tabIndex=0;const choose=()=>chooseScore(g,c,j);td.onclick=choose;td.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}}}else td.textContent='';tr.append(td)}));table.append(tr)});
+ CATEGORIES.forEach((label,c)=>{const tr=document.createElement('tr');tr.className='score-category'+(c===6?' score-section-start':'');const name=document.createElement('td');name.className='score-label';name.textContent=label;tr.append(name);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach((col,j)=>{const td=document.createElement('td');td.className='score-player-cell'+(i===g.turn&&!g.finished?' score-current-player':'');const value=col[c];if(value!==null){td.textContent=player.crossedOut?.[j]?.[c]?'—':String(value);td.classList.add('score-ink')}else if(mine&&i===g.turn&&g.rolls>0&&(onlineAllowed(g,j).includes(c)||(g.rolls>=3&&col[c]===null))){td.textContent='';td.classList.add('score-open','score-row-action');td.setAttribute('role','button');td.tabIndex=0;const choose=()=>chooseScore(g,c,j);td.onclick=choose;td.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}}}else td.textContent='';tr.append(td)}));table.append(tr)});
  for(const [label,key] of [['Oberer Teil','upper'],['Bonus (63+)','bonus'],['Gesamt','total']]){const tr=document.createElement('tr');tr.className='score-summary score-'+key;const td=document.createElement('td');td.textContent=label;tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach(col=>{const cell=document.createElement('td');const sums=totals(col);cell.textContent=key==='bonus'&&sums.upper<63?sums.upper+' / 63':key==='total'?sums.total+(player.jokerBonus||0):sums[key];tr.append(cell)}));table.append(tr)}
  if(g.mode==='joker'){const tr=document.createElement('tr');tr.className='score-summary';const td=document.createElement('td');td.textContent='Jokerbonus';tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>{const cell=document.createElement('td');cell.className='player-tint-'+(i%4);cell.textContent=player.jokerBonus||0;tr.append(cell)});table.append(tr)}
  $('sheet').append(table);
