@@ -61,3 +61,20 @@ body>header h1{margin:0!important;font-size:clamp(19px,2.3vw,29px)!important}
 #game #sheet .score-head th.player-tint-2{box-shadow:inset 0 4px #b28a62}
 #game #sheet .score-head th.player-tint-3{box-shadow:inset 0 4px #a18ba8}
 #game #sheet .score-current-player{outline:1px solid rgba(69,108,66,.28);outline-offset:-1px}
+
+/* One player's scorecard at a time; quick tabs keep all participants accessible. */
+#game #sheet .score-player-tabs{display:flex;gap:5px;margin:0 0 9px;padding:3px;border-radius:11px;background:rgba(90,58,28,.13)}
+#game #sheet .score-player-tab{flex:1;min-width:0;min-height:36px;padding:6px 3px;border:1px solid rgba(110,78,45,.2);border-radius:9px;background:rgba(255,247,224,.55);color:#49311e;font:700 clamp(11px,1.2vw,15px)/1.2 system-ui,sans-serif;overflow-wrap:anywhere;cursor:pointer;touch-action:manipulation}
+#game #sheet .score-player-tab.selected{background:#f8ebd1;box-shadow:inset 0 -3px #84633b,0 1px 4px #0002;border-color:#98754b}
+#game #sheet .score-player-tab.player-tint-0{box-shadow:inset 0 3px #73937a}
+#game #sheet .score-player-tab.player-tint-1{box-shadow:inset 0 3px #7992a8}
+#game #sheet .score-player-tab.player-tint-2{box-shadow:inset 0 3px #b28a62}
+#game #sheet .score-player-tab.player-tint-3{box-shadow:inset 0 3px #a18ba8}
+#game #sheet .score-player-tab.selected.player-tint-0{box-shadow:inset 0 4px #73937a,0 2px 5px #0002}
+#game #sheet .score-player-tab.selected.player-tint-1{box-shadow:inset 0 4px #7992a8,0 2px 5px #0002}
+#game #sheet .score-player-tab.selected.player-tint-2{box-shadow:inset 0 4px #b28a62,0 2px 5px #0002}
+#game #sheet .score-player-tab.selected.player-tint-3{box-shadow:inset 0 4px #a18ba8,0 2px 5px #0002}
+#game.multi-score #sheet .variant-table{width:100%!important;min-width:0!important;table-layout:fixed!important}
+#game.multi-score #sheet .variant-table th,#game.multi-score #sheet .variant-table td{min-width:0!important;max-width:none!important}
+#game.multi-score #sheet .variant-table th:first-child,#game.multi-score #sheet .variant-table td:first-child{width:36%!important;min-width:0!important}
+@media(max-width:650px){#game #sheet .score-player-tabs{gap:3px}#game #sheet .score-player-tab{font-size:11px;min-height:42px}}
