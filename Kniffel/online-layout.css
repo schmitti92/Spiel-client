@@ -124,3 +124,18 @@ body>header h1{margin:0!important;font-size:clamp(19px,2.3vw,29px)!important}
 #game .tray:has(.die:nth-child(6)){gap:clamp(5px,1vw,14px)}
 #game .tray:has(.die:nth-child(6)) .die{flex:0 1 15%;min-width:0}
 @media(min-width:851px) and (orientation:landscape){#game .joker-panel #extra-die-joker:not([hidden]){min-height:32px;padding:5px 10px;font-size:13px}}
+
+/* Tablet landscape: joker shelf stays visible without clipping below the viewport. */
+#game .joker-panel-actions{flex-wrap:wrap;justify-content:flex-start}
+#game .joker-panel #reroll-joker:not([hidden]){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:130px;min-height:36px;margin:0;padding:5px 12px;border-radius:28px;border:3px solid #e5c16e;background:radial-gradient(circle at 30% 20%,#3aa65e,#075a32 78%);color:#fff0b8;font:800 13px/1.1 system-ui,sans-serif;cursor:pointer}
+#game .joker-panel #reroll-joker:disabled{filter:grayscale(1);opacity:.55;cursor:not-allowed}
+#game .joker-panel #reroll-joker.joker-used{opacity:.38}
+@media(min-width:851px) and (orientation:landscape){
+ #game .tabletop{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}
+ #game .tabletop .tray{flex:1 1 auto!important;min-height:120px!important;max-height:none!important}
+ #game .tabletop .social-extension{flex:0 0 auto!important;margin-top:auto!important}
+ #game .tabletop .joker-panel{flex:0 0 auto!important;margin-top:4px!important;min-height:40px!important}
+ #game .joker-panel-actions{flex-wrap:nowrap;gap:5px}
+ #game .joker-panel #extra-roll-joker:not([hidden]),#game .joker-panel #extra-die-joker:not([hidden]),#game .joker-panel #reroll-joker:not([hidden]){min-width:0;flex:1 1 0;padding:4px 6px;font-size:12px}
+ #game .tabletop:has(.joker-panel:not([hidden])) .tray{max-height:none!important}
+}
