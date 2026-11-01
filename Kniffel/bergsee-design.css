@@ -387,3 +387,32 @@ body>header{
  background:#15191e!important;
  box-shadow:inset 1px 2px 2px #0008!important;
 }
+
+/* Finished-match ceremony: centered, scroll-safe and shared across clients. */
+#game:has(.kniffel-victory) #online-result{
+ position:fixed!important;inset:0!important;z-index:1500!important;
+ display:grid!important;place-items:center!important;
+ padding:clamp(12px,3vw,30px)!important;
+ background:#072d4bba!important;backdrop-filter:blur(7px)!important;
+ overflow:auto!important;
+}
+#game .kniffel-victory{
+ box-sizing:border-box;max-width:610px;width:min(100%,610px);
+ max-height:calc(100dvh - 24px);overflow:auto;
+ padding:clamp(18px,3vw,32px);
+ border:3px solid #f3d47b;border-radius:28px;
+ background:linear-gradient(150deg,#fffefa,#e5f4ff 65%,#c7e7f8);
+ box-shadow:0 18px 65px #001f3e8c,inset 0 0 0 3px #fff;
+ color:#173b55;text-align:center;
+}
+#game .victory-trophy{font-size:clamp(42px,7vh,72px);line-height:1.1}
+#game .kniffel-victory h2{font:800 clamp(24px,3vw,37px)/1.15 Georgia,serif;margin:7px 0;color:#173c60}
+#game .victory-winner{font-size:clamp(18px,2vw,25px);font-weight:800;margin:8px 0 17px;color:#a16b16}
+#game .victory-podium{display:grid;gap:7px;margin:0 auto 18px;max-width:480px}
+#game .victory-standing{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:8px;text-align:left;padding:10px 14px;border-radius:12px;background:#ffffffb8;border:1px solid #b5d3e7;font-size:clamp(14px,1.5vw,18px)}
+#game .victory-standing.winner{background:#fff0bd;border-color:#d9ae47}
+#game .victory-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#game .victory-actions>a,#game .victory-actions>button{display:grid;place-items:center;min-height:48px;padding:9px 5px;border-radius:12px;border:1px solid #80b6d6;background:#e2f3ff;color:#16415d;font:800 clamp(12px,1.2vw,16px)/1.15 system-ui,sans-serif;text-decoration:none;cursor:pointer}
+#game .victory-actions>button{background:linear-gradient(#159ad6,#056596);color:white;border-color:#006392}
+#game .victory-hint{font-size:12px;color:#587185;margin:12px 0 0}
+@media(max-width:500px){#game .victory-actions{grid-template-columns:1fr}}
