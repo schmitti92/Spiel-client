@@ -16,7 +16,8 @@ export function eggAt(index){
   if(offset<stage.count){spawnMs=stage.start+offset*stage.interval;speed=stage.fall;break;}
   offset-=stage.count;
  }
- const lane=((index*37+11)%91+4)/100;
+ // Six fixed nests; the extra offset avoids tying egg types to specific hens.
+ const lane=[.105,.263,.421,.579,.737,.895][(index*37+Math.floor(index/2)*3)%6];
  const rotten=rottenAt(index);
  const special=golden.has(index); // 20 goldene Eier ohne Überschneidung
  return {index,spawnMs,landMs:spawnMs+speed,x:lane,special,rotten,points:special?3:rotten?-1:1};
