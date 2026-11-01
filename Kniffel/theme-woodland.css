@@ -34,7 +34,7 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 .scores #sheet td button{background:linear-gradient(#ffe7a2,#e7b74f)!important;border:1px solid #bb8735!important;box-shadow:inset 0 2px 2px #fff9,0 2px 3px #6b3c2444!important}
 .tabletop{
   /* Use the actual wooden tabletop from the uploaded scenery, not artificial stripes. */
-  background-image:linear-gradient(180deg,#30170933,#2a120b48),url("forest.webp")!important;
+  background-image:linear-gradient(180deg,#30170922,#2a120b55),url("forest.webp")!important;
   background-repeat:no-repeat!important;
   background-size:100% 100%,100% 220%!important;
   background-position:center,center bottom!important;
@@ -54,3 +54,21 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
   .tabletop #status{position:relative;z-index:1}
 }
 @media(prefers-reduced-motion:reduce){.die{transition:none}}
+
+/* Phase 2.4: tactile felt and dimensional tray, without extra image assets */
+.tabletop .tray{
+ background-image:
+ radial-gradient(ellipse at 50% 40%,#15804755 0%,transparent 65%),
+ repeating-linear-gradient(35deg,#ffffff09 0px,#ffffff09 1px,#001d1209 2px,#001d1209 3px),
+ repeating-linear-gradient(125deg,#ffffff08 0px,#ffffff08 1px,#001b110c 2px,#001b110c 4px),
+ radial-gradient(ellipse at 45% 35%,#08733d,#054b29 72%,#002b19)!important;
+ border:12px ridge #b47b39!important;
+ box-shadow:inset 0 11px 15px #001a0dbb,inset 0 0 0 4px #dba45a77,inset 0 -12px 19px #001c12aa,0 9px 12px #120901a6!important;
+}
+.tabletop .die{
+ box-shadow:inset -7px -9px 11px #b7ae9b,inset 5px 5px 8px #fff,0 10px 5px #001e1299,0 15px 15px #001e1266!important;
+}
+.tabletop .die.held{
+ box-shadow:inset -7px -9px 11px #d2a54d,inset 5px 5px 8px #fff6ca,0 0 18px #ffdc6e,0 12px 10px #001e1299!important;
+}
+.tabletop #status{background:linear-gradient(90deg,transparent,#3b1d0bd9 15%,#4a2913eb 50%,#3b1d0bd9 85%,transparent);border-top:1px solid #d7a35d7a;border-bottom:1px solid #13080355;border-radius:22px;padding:5px 10px;align-self:center;width:min(95%,550px)}
