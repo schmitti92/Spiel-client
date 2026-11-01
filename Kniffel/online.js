@@ -163,6 +163,9 @@ function render(){
  $('players').replaceChildren();$('sheet').replaceChildren();$('dice').replaceChildren();$('online-result').replaceChildren();
  if(!g){$('online-undo').disabled=true;$('online-undo-vote')?.remove();$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('extra-die-joker').hidden=true;$('joker-panel').hidden=true;return}
  const p=g.players[g.turn],mine=!g.finished&&p?.uid===user()?.uid;
+ $('online-abort').hidden=!!g.finished;
+ $('online-abort').textContent=snapshot?.host?'✕ Spiel abbrechen':'← Spiel verlassen';
+ $('online-abort').disabled=busy;
  const vote=g.undoVote,uid=user()?.uid;
  $('online-undo').disabled=busy||!!vote||!g.lastScoredTurn||!g.players.some(p=>p.uid===uid);
  $('online-undo').textContent=vote?'↶ Abstimmung läuft':'↶ Rückgängig';
@@ -288,6 +291,15 @@ lastTurnKey=turnKey;
 async function request(path,body=null){const u=user();if(!u)throw Error('Bitte zuerst online anmelden');const token=await u.getIdToken(),res=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(code)+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data.room}
 async function refresh(){if(!valid||!user())return;try{const fresh=await request('');if(acceptSnapshot(fresh))render()}catch(e){status('Raum nicht verfügbar: '+e.message)}}
 async function send(action){const g=current();if(!g||busy)return;busy=true;render();try{const fresh=await request('/kniffel/action',{matchId:snapshot.match.id,revision:g.revision,action});acceptSnapshot(fresh);status('Aktion bestätigt');render()}catch(e){status('Aktion abgelehnt: '+e.message);await refresh()}finally{busy=false;render()}}
+$('online-abort').onclick=async()=>{
+ const host=!!snapshot?.host;
+ const msg=host?'Laufendes Kniffel-Spiel für alle Spieler abbrechen? Die aktuelle Partie wird beendet.':'Laufendes Spiel verlassen? Die Partie der anderen Spieler wird dadurch nicht beendet.';
+ if(!window.confirm(msg))return;
+ if(!host){location.assign('./lobby.html?room='+encodeURIComponent(code)+'&stay=1');return}
+ if(busy)return;busy=true;$('online-abort').disabled=true;
+ try{await request('/finish',{});location.assign('./lobby.html?room='+encodeURIComponent(code)+'&stay=1')}
+ catch(e){busy=false;$('online-abort').disabled=false;status('Abbrechen fehlgeschlagen: '+e.message)}
+};
 $('online-undo').onclick=()=>send({type:'undo-request'});
 $('roll').onclick=()=>send({type:'roll'});
 $('extra-roll-joker').onclick=()=>send({type:'extra-roll'});
