@@ -115,3 +115,12 @@ body>header h1{margin:0!important;font-size:clamp(19px,2.3vw,29px)!important}
  #game .tabletop:has(.joker-panel:not([hidden])) .tray{max-height:47%!important;margin-top:5px!important;margin-bottom:5px!important}
  #game .tabletop:has(.joker-panel:not([hidden])) .social-extension{padding-top:3px!important;padding-bottom:3px!important}
 }
+
+/* Both once-per-game joker chips share the same availability colors. */
+#game .joker-panel #extra-die-joker:not([hidden]){display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:140px;min-height:40px;margin:0;padding:5px 14px;border-radius:32px;border:3px solid #e5c16e;background:radial-gradient(circle at 30% 20%,#3aa65e,#075a32 78%);color:#fff0b8;font:800 14px/1.1 system-ui,sans-serif;box-shadow:inset 0 2px 6px #fff3,0 4px 10px #0006;cursor:pointer;touch-action:manipulation}
+#game .joker-panel #extra-die-joker:disabled:not(.joker-active){filter:grayscale(1);opacity:.55;cursor:not-allowed}
+#game .joker-panel #extra-die-joker.joker-active{border-color:#ffe7a0;background:radial-gradient(circle at 30% 20%,#b68d32,#755018 80%);box-shadow:0 0 15px #f6cc6d99}
+#game .joker-panel #extra-die-joker.joker-used{opacity:.38}
+#game .tray:has(.die:nth-child(6)){gap:clamp(5px,1vw,14px)}
+#game .tray:has(.die:nth-child(6)) .die{flex:0 1 15%;min-width:0}
+@media(min-width:851px) and (orientation:landscape){#game .joker-panel #extra-die-joker:not([hidden]){min-height:32px;padding:5px 10px;font-size:13px}}
