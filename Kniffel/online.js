@@ -168,6 +168,35 @@ function acceptSnapshot(fresh){
  return true;
 }
 
+// First-roll achievements are derived from dice, independent of available score slots.
+let celebratedRollKey='',celebrationTimer=null;
+function firstRollAchievements(g){
+ if(!g||g.finished||g.rolls!==1)return [];
+ const d=g.dice||[],counts=Array.from({length:7},(_,i)=>d.filter(x=>x===i).length),unique=new Set(d);
+ const out=[];
+ if(counts.some(n=>n>=5))out.push('Kniffel');
+ if([[1,2,3,4,5],[2,3,4,5,6]].some(seq=>seq.every(n=>unique.has(n))))out.push('Große Straße');
+ else if([[1,2,3,4],[2,3,4,5],[3,4,5,6]].some(seq=>seq.every(n=>unique.has(n))))out.push('Kleine Straße');
+ if(counts.some(n=>n>=4))out.push('Viererpasch');
+ if(counts.some(n=>n>=3)&&counts.filter(n=>n>=2).length>=2)out.push('Full House');
+ return out;
+}
+function showFirstRollAchievement(g){
+ const toast=document.getElementById('first-roll-celebration');
+ if(!toast)return;
+ if(g?.rolls!==1||g?.finished){toast.hidden=true;return}
+ const key=[snapshot?.match?.id||'',g.turn,g.players[g.turn]?.uid,g.rolls,(g.dice||[]).join(',')].join(':');
+ if(key===celebratedRollKey)return;
+ celebratedRollKey=key;
+ const hits=firstRollAchievements(g);
+ if(!hits.length){toast.hidden=true;return}
+ toast.replaceChildren();
+ const title=document.createElement('strong');title.textContent='🎉 Herzlichen Glückwunsch!';
+ const detail=document.createElement('span');detail.textContent=hits.join(' · ');
+ toast.append(title,detail);toast.hidden=false;
+ clearTimeout(celebrationTimer);
+ celebrationTimer=setTimeout(()=>{toast.hidden=true},3500);
+}
 function render(){
  const g=current();
  $('online-connection').textContent=ws?.readyState===1?'🟢 Live':'🟡 Verbinde …';
@@ -225,6 +254,7 @@ lastTurnKey=turnKey;
  $('online-mode').textContent='Modus: '+({'classic':'Klassisch','joker':'Joker','triple-free':'Drei Spalten frei','top-down':'Von oben nach unten','bottom-up':'Von unten nach oben','triple-mixed':'Drei Spalten gemischt'}[g.mode]||g.mode);
  g.players.forEach((player,i)=>{const el=document.createElement('div');el.className='player'+(i===g.turn&&!g.finished?' active':'')+(announceTurn&&i===g.turn?' turn-arrived':'');el.textContent=(player.bot?'🤖 ':'👤 ')+player.name+' · '+(player.sheet.reduce((n,col)=>n+totals(col).total,0)+(player.jokerBonus||0))+' P.';$('players').append(el)});
  $('status').textContent=g.finished?'🏆 Partie beendet':p.name+' · Wurf '+g.rolls+' / '+(g.extraRollActive?4:3)+(mine?' · Du bist dran':'');
+ showFirstRollAchievement(g);
  g.dice.forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.className='die'+(g.held[i]?' held':'')+(g.rolls===0?' unrolled':'');b.style.setProperty('--die-index',i);if(g.rolls){const face=document.createElement('span');face.className='pips face-'+n;for(let k=0;k<9;k++){const pip=document.createElement('i');pip.className='pip pip-'+k;face.append(pip)}b.append(face)}else{const ready=document.createElement('span');ready.className='die-ready';ready.textContent='?';b.append(ready)}b.setAttribute('aria-label','Würfel '+(i+1)+': '+(g.rolls?n:'noch nicht geworfen'));b.disabled=!mine||busy||g.rolls===0||g.rolls>=(g.extraRollActive?4:3);b.onclick=()=>send({type:'hold',index:i});$('dice').append(b)});
  const limit=g.extraRollActive?4:3;
  const joker=$('extra-roll-joker'),dieJoker=$('extra-die-joker');
