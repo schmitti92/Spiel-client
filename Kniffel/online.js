@@ -264,7 +264,26 @@ lastTurnKey=turnKey;
  if(scoreReveal&&viewPlayer===scoreReveal.player){const cell=table.rows[scoreReveal.category+2]?.cells[scoreReveal.column+1];if(cell)cell.classList.add('score-reveal-cell');}
  }
  $('notice').textContent=g.finished?'Partie beendet':!mine?'Warte auf '+p.name+' …':g.rolls===(g.extraRollActive?4:3)?'Würfe abgeschlossen – Wertung wählen!':g.rolls?'Wertung wählen oder erneut würfeln.':'Jetzt würfeln!';
- if(g.finished){const result=document.createElement('p');result.textContent='🏆 '+(g.standings||[]).map(x=>x.name+': '+x.total+' Punkte').join(' · ');$('online-result').append(result);if(snapshot?.host){const finish=document.createElement('button');finish.type='button';finish.textContent='✓ Partie abschließen und zurück zur Lobby';finish.onclick=async()=>{if(busy)return;busy=true;finish.disabled=true;try{await request('/finish',{});location.assign('./lobby.html?room='+encodeURIComponent(code)+'&stay=1')}catch(e){status('Abschließen fehlgeschlagen: '+e.message);busy=false;finish.disabled=false}};$('online-result').append(finish)}}
+ if(g.finished){
+  const standings=(g.standings?.length?g.standings:g.players.map(p=>({name:p.name,total:p.sheet.reduce((sum,col)=>sum+totals(col).total,0)+(p.jokerBonus||0)}))).slice().sort((a,b)=>b.total-a.total);
+  const top=standings[0]?.total;
+  const winners=standings.filter(p=>p.total===top);
+  const panel=document.createElement('section');panel.className='kniffel-victory';panel.setAttribute('aria-label','Siegerehrung');
+  const trophy=document.createElement('div');trophy.className='victory-trophy';trophy.textContent='🏆';panel.append(trophy);
+  const title=document.createElement('h2');title.textContent=winners.length>1?'Unentschieden!':'Herzlichen Glückwunsch!';panel.append(title);
+  const champion=document.createElement('p');champion.className='victory-winner';champion.textContent=winners.map(p=>p.name).join(' & ')+(winners.length>1?' teilen sich den Sieg!':' gewinnt!');panel.append(champion);
+  const podium=document.createElement('div');podium.className='victory-podium';
+  standings.forEach((p,i)=>{const line=document.createElement('div');line.className='victory-standing'+(p.total===top?' winner':'');const rank=document.createElement('span');rank.textContent=['🥇','🥈','🥉'][i]||String(i+1)+'.';const name=document.createElement('strong');name.textContent=p.name;const points=document.createElement('b');points.textContent=p.total+' Punkte';line.append(rank,name,points);podium.append(line)});
+  panel.append(podium);
+  const actions=document.createElement('div');actions.className='victory-actions';
+  const lobbyUrl='./lobby.html?room='+encodeURIComponent(code)+'&stay=1';
+  const again=document.createElement('button');again.type='button';again.textContent='🎲 Neustart';again.onclick=async()=>{if(!snapshot?.host){location.assign(lobbyUrl);return}if(busy)return;busy=true;again.disabled=true;try{await request('/finish',{});location.assign(lobbyUrl)}catch(e){status('Neustart fehlgeschlagen: '+e.message);busy=false;again.disabled=false}};
+  const lobby=document.createElement('a');lobby.href=lobbyUrl;lobby.textContent='← Zur Lobby';
+  const selection=document.createElement('a');selection.href='../spielauswahl-online.html?room='+encodeURIComponent(code)+'&stay=1';selection.textContent='🎮 Spielauswahl';
+  actions.append(again,lobby,selection);panel.append(actions);
+  const hint=document.createElement('p');hint.className='victory-hint';hint.textContent='Neustart öffnet die Lobby, um die nächste Partie gemeinsam zu starten.';panel.append(hint);
+  $('online-result').append(panel);
+ }
 }
 async function request(path,body=null){const u=user();if(!u)throw Error('Bitte zuerst online anmelden');const token=await u.getIdToken(),res=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(code)+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data.room}
 async function refresh(){if(!valid||!user())return;try{const fresh=await request('');if(acceptSnapshot(fresh))render()}catch(e){status('Raum nicht verfügbar: '+e.message)}}
