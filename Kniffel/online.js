@@ -11,7 +11,7 @@ function render(){
  const g=current();
  $('online-connection').textContent=ws?.readyState===1?'🟢 Live':'🟡 Verbinde …';
  $('players').replaceChildren();$('sheet').replaceChildren();$('dice').replaceChildren();$('online-result').replaceChildren();
- if(!g){$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;return}
+ if(!g){$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('joker-panel').hidden=true;return}
  const p=g.players[g.turn],mine=!g.finished&&p?.uid===user()?.uid;
  $('game').classList.toggle('multi-score',p.sheet.length===3);
  const turnKey=(snapshot?.match?.id||'')+':'+g.turn;
@@ -41,6 +41,7 @@ function render(){
  const limit=g.extraRollActive?4:3;
  const joker=$('extra-roll-joker');
  joker.hidden=!g.extraJokers;
+ $('joker-panel').hidden=!g.extraJokers;
  const used=!!p.extraRollUsed;
  const available=mine&&!busy&&g.rolls===0&&!used&&!g.extraRollActive;
  joker.disabled=!available;
