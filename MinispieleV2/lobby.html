@@ -18,6 +18,7 @@ const gamePages=Object.freeze({farbenblitz:'./farbenblitz.html'});
 let navigating=false;
 function autoLaunch(room){
  if(new URLSearchParams(location.search).get('stay')==='1')return;
+ if(room?.match?.game==='farbenblitz'&&room.match.farbenblitz?.phase==='finished')return;
  if(navigating)return;
  const next=nextMiniGameLaunch(room);
  if(!next)return;
@@ -41,18 +42,18 @@ launch.onclick=async()=>{
  if(!valid||!snapshot)return;
  launch.disabled=true;launchError.textContent='';
  try{
-  if(snapshot.match?.game==='farbenblitz'){
+  if(snapshot.match?.game==='farbenblitz'&&snapshot.match.farbenblitz?.phase!=='finished'){
    location.href='./farbenblitz.html?mode=online&room='+encodeURIComponent(code);return;
   }
-  if(!snapshot.host)throw Error('Der Host muss Farbenblitz zuerst öffnen.');
+  if(!snapshot.host)throw Error('Der Host muss die neue Partie zuerst starten.');
   await gameAction('/farbenblitz/launch',{});
   location.href='./farbenblitz.html?mode=online&room='+encodeURIComponent(code);
  }catch(e){launchError.textContent='Start nicht möglich: '+e.message;launch.disabled=false;}
 };
 function render(){
-  launch.disabled=!valid||!snapshot||(snapshot.phase==='playing'&&snapshot.match?.game!=='farbenblitz');
+  launch.disabled=!valid||!snapshot||(snapshot.phase==='playing'&&snapshot.match?.game!=='farbenblitz')||(snapshot.match?.farbenblitz?.phase==='finished'&&!snapshot.host);
   launch.title=snapshot?.phase==='playing'&&snapshot.match?.game!=='farbenblitz'?'Ein anderes Spiel läuft bereits':'Farbenblitz öffnen';
-  const phaseText=snapshot?.phase==='playing'&&snapshot.match?.game!=='farbenblitz'?'Im Raum läuft bereits '+(snapshot.gameTitle||snapshot.game||'ein Spiel')+'.':snapshot?.match?.game==='farbenblitz'?'Farbenblitz läuft: Tippe auf die Spielkarte, um beizutreten.':'Tippe auf Farbenblitz, um die Spielanleitung zu öffnen.';
+  const phaseText=snapshot?.phase==='playing'&&snapshot.match?.game!=='farbenblitz'?'Im Raum läuft bereits '+(snapshot.gameTitle||snapshot.game||'ein Spiel')+'.':snapshot?.match?.farbenblitz?.phase==='finished'?'Partie beendet. Der Host kann Farbenblitz erneut auswählen und eine neue Partie starten.':snapshot?.match?.game==='farbenblitz'?'Farbenblitz läuft: Tippe auf die Spielkarte, um beizutreten.':'Tippe auf Farbenblitz, um die Spielanleitung zu öffnen.';
   document.getElementById('game-phase-info').textContent=phaseText;
   slotsEl.replaceChildren();
   const players=Array.isArray(snapshot?.players)?snapshot.players:[];
