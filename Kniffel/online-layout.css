@@ -298,3 +298,34 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
 #game .joker-panel #move-score-joker:focus-visible{outline:3px solid #fff7c2!important;outline-offset:2px!important}
 .move-joker-select{display:block;width:100%;min-width:0;max-width:100%;padding:12px 8px;margin:12px 0;border:2px solid #c79a4b;border-radius:10px;background:#fff6df;color:#35230f;font:600 16px Georgia,serif}
 @media(max-height:650px) and (orientation:landscape){#game .joker-panel #move-score-joker:not([hidden]){min-height:68px!important}}
+
+
+/* Six-die joker: single centered row, never wrap or overlap status text. */
+#game .tabletop #dice.tray:has(> .die:nth-child(6)){
+ --die-size:clamp(48px,6.25vw,96px)!important;
+ display:flex!important;flex-flow:row nowrap!important;
+ align-items:center!important;justify-content:center!important;
+ align-content:center!important;gap:clamp(4px,.65vw,10px)!important;
+ overflow:hidden!important;
+}
+#game .tabletop #dice.tray:has(> .die:nth-child(6)) > button.die{
+ box-sizing:border-box!important;flex:0 1 var(--die-size)!important;
+ width:var(--die-size)!important;height:var(--die-size)!important;
+ min-width:0!important;min-height:0!important;
+ max-width:var(--die-size)!important;max-height:var(--die-size)!important;
+ margin:0!important;transform:none;
+}
+#game .tabletop #dice.tray:has(> .die:nth-child(6)) > button.die.held{
+ transform:translateY(-3px)!important;
+}
+#game .tabletop #dice.tray:has(> .die:nth-child(6)) > button.die:nth-child(6){
+ border-color:#ffdb7b!important;
+ box-shadow:inset 2px 3px 5px #fff9d7a0,inset -6px -6px 8px #9a651d55,0 0 0 2px #f3b83e,0 0 13px 3px #ffce6a8a!important;
+}
+@media(min-width:851px) and (orientation:landscape){
+ #game .tabletop #dice.tray:has(> .die:nth-child(6)){
+  height:calc(var(--die-size) + 36px)!important;
+  flex:0 0 calc(var(--die-size) + 36px)!important;
+  padding:6px!important;
+ }
+}
