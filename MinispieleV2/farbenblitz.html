@@ -167,7 +167,11 @@ function acknowledge(){
  }
  countdownTimers.push(setTimeout(()=>{
   countdownTimers=[];
-  if(!pendingConfig||!startGate?.canStart(Date.now()))return;
+  if(!pendingConfig)return;
+  if(!startGate?.canStart(Date.now())){
+   countdownTimers.push(setTimeout(()=>{if(pendingConfig) $('count-number').textContent='Start wird vorbereitet …';},250));
+   return;
+  }
   const config=pendingConfig;
   try{
    flow.select(config);
