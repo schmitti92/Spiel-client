@@ -416,3 +416,7 @@ body>header{
 #game .victory-actions>button{background:linear-gradient(#159ad6,#056596);color:white;border-color:#006392}
 #game .victory-hint{font-size:12px;color:#587185;margin:12px 0 0}
 @media(max-width:500px){#game .victory-actions{grid-template-columns:1fr}}
+
+/* Active game cancellation in top toolbar */
+#online-abort:not([hidden]){display:inline-flex;align-items:center;justify-content:center;padding:8px 13px;border-radius:12px;border:1px solid #c6a9a5;background:linear-gradient(#fff5f1,#f3dedb);color:#8c3632;font:700 14px system-ui,sans-serif;cursor:pointer}
+#online-abort:disabled{opacity:.5;cursor:wait}
