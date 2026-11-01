@@ -2,9 +2,9 @@
 import {eggAt,EGG_COUNT} from './game.js';
 export function mount(container,host){
  const style=document.createElement('style');
- style.textContent=`#egg-stage{position:relative;overflow:hidden;touch-action:none;height:min(65dvh,560px);min-height:300px;border-radius:22px;border:3px solid #9ed4f5;background:linear-gradient(#80c9f6,#d6f4ff 72%,#8cbd69 73%,#4c8945);user-select:none}#egg-stage .egg{position:absolute;font-size:clamp(24px,4vw,39px);transform:translate(-50%,-50%);pointer-events:none}#egg-basket{position:absolute;bottom:2%;left:50%;transform:translateX(-50%);font-size:clamp(58px,9vw,88px);pointer-events:none}#egg-hud{display:flex;justify-content:space-between;gap:10px;font-weight:800;font-size:clamp(18px,3vw,26px)}#egg-controls{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}#egg-controls button{padding:12px 18px;border-radius:12px;border:0;background:#f2c46d;color:#18283c;font-weight:800}#egg-result{display:none;position:absolute;inset:5%;z-index:5;overflow:auto;padding:18px;border-radius:20px;background:rgba(13,34,55,.93);color:#fff;white-space:pre-wrap;font-size:clamp(18px,3vw,26px);font-weight:700;text-align:center;align-content:center}#egg-result:not([hidden]){display:block}`;
+ style.textContent=`#egg-stage{position:relative;overflow:hidden;touch-action:none;height:min(65dvh,560px);min-height:300px;border-radius:22px;border:3px solid #9ed4f5;background:linear-gradient(#80c9f6,#d6f4ff 72%,#8cbd69 73%,#4c8945);user-select:none}#egg-stage .egg.special{filter:drop-shadow(0 0 8px #ffd54f);font-size:clamp(28px,4.5vw,45px)}#egg-stage .egg{position:absolute;font-size:clamp(24px,4vw,39px);transform:translate(-50%,-50%);pointer-events:none}#egg-basket{position:absolute;bottom:2%;left:50%;transform:translateX(-50%);font-size:clamp(58px,9vw,88px);pointer-events:none}#egg-hud{display:flex;justify-content:space-between;gap:10px;font-weight:800;font-size:clamp(18px,3vw,26px)}#egg-controls{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}#egg-controls button{padding:12px 18px;border-radius:12px;border:0;background:#f2c46d;color:#18283c;font-weight:800}#egg-result{display:none;position:absolute;inset:5%;z-index:5;overflow:auto;padding:18px;border-radius:20px;background:rgba(13,34,55,.93);color:#fff;white-space:pre-wrap;font-size:clamp(18px,3vw,26px);font-weight:700;text-align:center;align-content:center}#egg-result:not([hidden]){display:block}`;
  const heading=document.createElement('h2');heading.textContent='🥚 Eier-Chaos';
- const info=document.createElement('p');info.textContent='60 Sekunden · Ziehe den Korb mit dem Finger und fange die fallenden Eier. Alle Spieler bekommen dieselbe Eierfolge. Verpasste Eier geben keine Minuspunkte.';
+ const info=document.createElement('p');info.textContent='60 Sekunden · Ziehe den Korb mit dem Finger und fange die fallenden Eier. Alle Spieler bekommen dieselbe Eierfolge. 30 Eier in den ersten 20 Sekunden, dann 50 und zuletzt 120. ⭐ Goldene Eier zählen 3 Punkte, normale Eier 1 Punkt. Verpasste Eier geben keine Minuspunkte.';
  const hud=document.createElement('div');hud.id='egg-hud';
  const stage=document.createElement('div');stage.id='egg-stage';stage.setAttribute('aria-label','Spielfeld: Korb mit Finger bewegen');
  const basket=document.createElement('div');basket.id='egg-basket';basket.textContent='🧺';stage.append(basket);
@@ -50,7 +50,7 @@ export function mount(container,host){
   if(!s.finished)for(let i=0;i<EGG_COUNT;i++){
    const e=eggAt(i),progress=(s.elapsedMs-e.spawnMs)/(e.landMs-e.spawnMs);
    if(progress<0||progress>=1||e.spawnMs>=60000)continue;
-   const node=document.createElement('div');node.className='egg';node.textContent='🥚';node.style.left=(e.x*100)+'%';node.style.top=(progress*83+4)+'%';stage.append(node);
+   const node=document.createElement('div');node.className=e.special?'egg special':'egg';node.textContent=e.special?'🌟':'🥚';node.style.left=(e.x*100)+'%';node.style.top=(progress*83+4)+'%';stage.append(node);
   }
   if(s.finished){
    stop();
