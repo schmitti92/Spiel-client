@@ -608,3 +608,63 @@ body>header{
 @supports not (backdrop-filter:blur(1px)){
  #game .panel.scores{background:rgba(231,245,254,.90)!important}
 }
+
+
+/* Bergsee open landscape v14 — scorecard glass, no opaque right-side curtain. */
+#game .tabletop{
+ background:transparent!important;
+ background-image:none!important;
+ -webkit-backdrop-filter:none!important;
+ backdrop-filter:none!important;
+ border-color:transparent!important;
+ box-shadow:none!important;
+}
+#game .tabletop #status{
+ color:#102e47!important;
+ text-shadow:0 1px 3px rgba(255,255,255,.95),0 0 8px rgba(255,255,255,.85)!important;
+}
+#game .tabletop #dice.tray{
+ background:rgba(220,241,252,.47)!important;
+ -webkit-backdrop-filter:blur(2px)!important;
+ backdrop-filter:blur(2px)!important;
+ border:1px solid rgba(239,251,255,.72)!important;
+ box-shadow:0 3px 13px rgba(11,61,94,.21),inset 0 1px rgba(255,255,255,.65)!important;
+}
+#game .tabletop #roll:not(:disabled){
+ background:linear-gradient(180deg,#20b9e8,#078cc5 55%,#075c97)!important;
+ border:2px solid #f0fbff!important;
+ box-shadow:0 4px 12px rgba(5,53,85,.35),inset 0 1px rgba(255,255,255,.7)!important;
+}
+#game .tabletop #social-extension{
+ background:rgba(233,247,255,.55)!important;
+ -webkit-backdrop-filter:blur(2px);
+ backdrop-filter:blur(2px);
+}
+#game .tabletop .joker-panel:not([hidden]),
+#game .tabletop #joker-panel.joker-panel:not([hidden]){
+ background:rgba(222,243,253,.39)!important;
+ -webkit-backdrop-filter:blur(2px)!important;
+ backdrop-filter:blur(2px)!important;
+ border:1px solid rgba(235,251,255,.72)!important;
+ box-shadow:0 4px 13px rgba(8,60,91,.23)!important;
+}
+#game .panel.scores{
+ background:linear-gradient(145deg,rgba(244,251,255,.58),rgba(212,236,250,.49))!important;
+ -webkit-backdrop-filter:blur(2px) saturate(1.06)!important;
+ backdrop-filter:blur(2px) saturate(1.06)!important;
+ border:2px solid rgba(248,254,255,.89)!important;
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.52),0 5px 17px rgba(8,54,84,.23)!important;
+}
+#game #sheet .wood-variant-table tr.score-category td:not(.score-positive-option){
+ background:rgba(239,249,255,.74)!important;
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td:not(.score-positive-option){
+ background:rgba(215,237,251,.73)!important;
+}
+/* Keep score highlights, held dice and joker states authoritative. */
+#game #sheet .wood-variant-table td.score-positive-option{
+ background:#ccefc2!important;
+}
+@supports not (backdrop-filter:blur(1px)){
+ #game .panel.scores{background:rgba(232,246,255,.78)!important}
+}
