@@ -331,40 +331,81 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
  color:#fff0a3!important;
 }
 
-/* Phase 4 — scorecard hierarchy and tactile scoring */
+
+/* Phase 4.1 — real parchment score sheet, ink instead of score tokens */
+.scores{
+ background:
+ linear-gradient(90deg,#a66d3633 0%,transparent 5%,transparent 95%,#9c622c2b 100%),
+ radial-gradient(ellipse at 24% 11%,#fff9e9aa,transparent 60%),
+ repeating-linear-gradient(0deg,transparent 0 5px,#9d77400a 6px 7px),
+ linear-gradient(115deg,#f9e8c8,#f0d6a9 65%,#e5c18a)!important;
+ border:8px ridge #aa773c!important;
+ box-shadow:0 9px 22px #120c0699,inset 0 0 0 2px #fff1cd,inset 0 0 19px #b7854266!important;
+}
+.scores h2{
+ color:#4d2f1b!important;
+ text-shadow:0 1px #fff4d7;
+ border-bottom:1px solid #b9955f88;
+ padding-bottom:4px;
+}
+#sheet table{color:#51351f}
+#sheet td,#sheet th{border-bottom:1px solid #b5905a66!important}
 #sheet tr.score-head th{
- color:#52351c;
- border-bottom:2px solid #b98b48!important;
+ color:#53351c;
+ border-bottom:2px solid #a87c46!important;
  font-weight:800;
 }
 #sheet tr.score-section-start td{
- border-top:2px solid #b58b50!important;
+ border-top:2px solid #ad824c!important;
 }
 #sheet tr.score-summary:not(.score-total) td{
- background:linear-gradient(90deg,#e5c58b77,#f4dfad66)!important;
- font-weight:700;
+ background:#d8b47b2c!important;
+ font-weight:750;
+ border-top:1px solid #a7804e88!important;
 }
+#sheet tr.score-bonus td{background:#e5bd6a42!important}
 #sheet tr.score-total td{
- background:#175b3c!important;
- color:#fff3d0!important;
- font-weight:800!important;
+ background:linear-gradient(90deg,#205d40,#124c33)!important;
+ color:#fff4d6!important;
+ font-weight:850!important;
+ border-color:#caa365!important;
 }
-#sheet button.score-choice{
- background:linear-gradient(#fff2bd,#e8b951)!important;
- color:#51310c!important;
- border:1px solid #b88936!important;
- border-radius:8px!important;
- box-shadow:0 2px 3px #593a1940,inset 0 1px #fff8d6!important;
+#sheet td.score-ink{
+ color:#493220!important;
+ font-family:Georgia,serif;
+ font-size:1.08em;
+ font-weight:700;
+ font-variant-numeric:tabular-nums;
+ text-shadow:0 1px #fff4dc88;
+}
+#sheet td.score-open{background:#f7e6b333!important}
+#sheet button.score-choice,
+.scores #sheet td button.score-choice{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
  min-width:34px;
- min-height:23px;
+ min-height:24px;
+ padding:1px 6px!important;
+ background:transparent!important;
+ color:#176044!important;
+ border:1px dashed #a48a5777!important;
+ border-radius:4px!important;
+ box-shadow:none!important;
+ font-family:Georgia,serif;
+ font-weight:800;
+ text-decoration:underline;
+ text-decoration-thickness:1px;
+ text-underline-offset:3px;
  cursor:pointer;
- transition:filter .14s,transform .14s;
+ transition:background .15s,color .15s;
 }
 #sheet button.score-choice:hover,
 #sheet button.score-choice:focus-visible{
- filter:brightness(1.1);
- outline:2px solid #176343!important;
- outline-offset:1px;
+ background:#e3c48777!important;
+ color:#143e2c!important;
+ outline:2px solid #1b654a!important;
+ outline-offset:0;
 }
-#sheet button.score-choice:active{transform:scale(.95)}
-@media (hover:none){#sheet button.score-choice:hover{filter:none}}
+#sheet button.score-choice:active{background:#d6b16d88!important}
+@media(hover:none){#sheet button.score-choice:hover{background:transparent!important;color:#176044!important}}
