@@ -274,3 +274,11 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
  left:-12.5%!important;top:-12.5%!important;
  object-fit:contain!important;
 }
+
+/* 3.7 — cropped assets require no artificial image enlargement */
+.tabletop .die:has(> .die-art) .die-art{
+ width:100%!important;height:100%!important;
+ left:0!important;top:0!important;
+ inset:0!important;
+ object-fit:contain!important;
+}
