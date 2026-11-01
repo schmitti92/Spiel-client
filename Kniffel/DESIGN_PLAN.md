@@ -58,3 +58,12 @@ Erst Hintergrundbild als eigenständige, UI-freie Szene erstellen, dann Papier/H
 
 ## Stand
 Phase 1: technische Inventur abgeschlossen, visuelle 1:1-Referenzmessung noch offen. Phase 2: nicht gestartet. Keine Online-Implementierung.
+
+
+## Zukunftsoption – Mehrspalten-Kniffel (nur Architekturplanung, NICHT implementieren)
+- Der bisherige klassische Modus mit genau einer Wertungsspalte pro Spieler bleibt unverändert und Standard.
+- Später kann eine Partie **drei unabhängige Wertungsspalten je Spieler** besitzen. Bei jedem Eintrag wählt der aktive Spieler eine freie Kategorie in einer der drei Spalten; genaue Bonus-/Runden-/Endregeln werden erst bei Umsetzung verbindlich festgelegt.
+- Datenmodell künftig auf `player.sheets[]` (oder gleichwertige isolierte Scorecards) erweiterbar halten; derzeitiges `player.sheet` nicht ohne Migration ändern.
+- Wertungsansicht soll je Spieler umschaltbar sein; bei 4 Spielern nicht zwölf schmale Spalten gleichzeitig erzwingen. Spielerübersicht oben zeigt Gegner und Zwischenstände; anklickbare Gegnerdetails sind später möglich.
+- Scoring-Logik pro Scorecard von Gesamtwertung/Auswahl trennen. Ergebnisadapter muss später beide Varianten eindeutig unterscheiden können.
+- **Kein neuer Modus, keine Regeländerung, keine zusätzliche UI in der aktuellen Phase.** Erst Würfel/klassischen Punkteblock fertigstellen.
