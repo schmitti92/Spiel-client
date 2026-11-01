@@ -214,3 +214,12 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 .kniffel-rankings li{padding:10px 14px;border-bottom:1px solid #a57c4b88;font:700 clamp(16px,2.5vw,21px) Georgia,serif}
 .kniffel-rankings li:first-child{color:#13623c;background:#fff5c666;border-radius:8px}
 @media(prefers-reduced-motion:reduce){#turn-change:not([hidden]){animation:none}}
+
+/* Variant mode setup and compact multicolumn scoring */
+#kniffel-mode{display:block;width:100%;max-width:440px;min-height:46px;margin:8px 0 4px;padding:8px 12px;border-radius:9px;background:#fff0c9;color:#392516;border:2px solid #9b7443;font-weight:700}
+#mode-description{font-size:13px;opacity:.85;margin:3px 0 14px}
+#sheet:has(.variant-table){overflow-x:auto;max-width:100%;min-width:0}
+#sheet .variant-table{width:max(100%,620px);table-layout:auto;font-size:clamp(10px,1.3dvh,13px)}
+#sheet .variant-table th,#sheet .variant-table td{min-width:42px;padding:3px 4px}
+#sheet .variant-table th:first-child,#sheet .variant-table td:first-child{position:sticky;left:0;z-index:1;min-width:100px;background:#ead3a4;color:#4a2b13}
+#sheet .variant-table .score-choice{min-width:32px;padding:3px}
