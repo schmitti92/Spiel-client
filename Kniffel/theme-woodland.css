@@ -223,3 +223,29 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 #sheet .variant-table th,#sheet .variant-table td{min-width:42px;padding:3px 4px}
 #sheet .variant-table th:first-child,#sheet .variant-table td:first-child{position:sticky;left:0;z-index:1;min-width:100px;background:#ead3a4;color:#4a2b13}
 #sheet .variant-table .score-choice{min-width:32px;padding:3px}
+
+/* v13: Three-column scorebooks use the entire available screen width. */
+@media(min-width:851px) and (orientation:landscape){
+ #game.multi-score .layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:8px}
+ #game.multi-score .scores{height:auto;min-height:0;padding:5px 9px;border-width:5px!important}
+ #game.multi-score .scores h2{font-size:14px!important;margin:0 0 2px;padding-bottom:1px}
+ #game.multi-score #sheet{min-height:0;overflow:hidden}
+ #game.multi-score #sheet .variant-table{width:100%;min-width:0;table-layout:fixed;height:100%;font-size:clamp(9px,1.6dvh,13px)}
+ #game.multi-score #sheet .variant-table th,#game.multi-score #sheet .variant-table td{min-width:0;padding:1px 2px;overflow:hidden;text-overflow:ellipsis}
+ #game.multi-score #sheet .variant-table th:first-child,#game.multi-score #sheet .variant-table td:first-child{width:14%;min-width:0}
+ #game.multi-score #sheet .variant-table .score-choice{min-width:0;min-height:20px;width:100%;padding:0!important}
+ #game.multi-score .tabletop{height:auto;min-height:0;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;gap:4px 12px;padding:6px 12px;border-width:5px}
+ #game.multi-score .tabletop #status{grid-column:1;grid-row:1;align-self:center;font-size:15px;width:auto}
+ #game.multi-score .tabletop .tray{grid-column:2;grid-row:1/3;width:100%;min-height:76px;max-height:none;margin:0;padding:5px;border-width:6px!important}
+ #game.multi-score .tabletop .tray{--die-size:clamp(40px,5dvh,62px)}
+ #game.multi-score .tabletop #roll{grid-column:3;grid-row:1;min-width:125px;font-size:15px!important;padding:6px 10px}
+ #game.multi-score .tabletop #notice{grid-column:3;grid-row:2;font-size:11px;padding:2px}
+ #game.multi-score .tabletop>p,#game.multi-score .tabletop .social-extension{display:none}
+}
+@media(max-width:850px){
+ #game.multi-score #sheet .variant-table{width:100%;min-width:0;table-layout:fixed;font-size:clamp(9px,2vw,12px)}
+ #game.multi-score #sheet .variant-table th,#game.multi-score #sheet .variant-table td{min-width:0;padding:3px 1px}
+ #game.multi-score #sheet .variant-table th:first-child,#game.multi-score #sheet .variant-table td:first-child{min-width:82px;width:26%}
+ #game.multi-score #sheet .variant-table .score-choice{min-width:0;width:100%;padding:1px!important}
+}
+@media(max-width:520px){#game.multi-score #sheet .variant-table{min-width:480px}#game.multi-score #sheet{overflow-x:auto}}
