@@ -235,3 +235,34 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 @media(prefers-reduced-motion:reduce){
  .tabletop .die.just-rolled:not(.held){animation:none!important}
 }
+
+/* Phase 3.5 — correct transparent padding in uploaded WebP assets.
+   Visible cube occupies only ~1/3 of the source image in tablet screenshots.
+   Zoom image INSIDE its unchanged hit target; no game logic changes. */
+.tabletop .die:has(> .die-art) .die-art{
+ width:270%!important;
+ height:270%!important;
+ max-width:none!important;
+ max-height:none!important;
+ inset:auto!important;
+ left:-85%!important;
+ top:-85%!important;
+ object-fit:contain!important;
+ filter:drop-shadow(1px 3px 2px #001b1399)!important;
+}
+.tabletop .die.held:has(> .die-art){
+ outline:2px solid #ffe38b!important;
+ outline-offset:-7px!important;
+ border-radius:22px!important;
+ filter:none!important;
+}
+.tabletop .die.held:has(> .die-art)::after{
+ inset:5px!important;
+ border-radius:18px!important;
+ box-shadow:0 0 12px #ffcc58aa,inset 0 0 5px #ffce5b77!important;
+}
+.tabletop .die.unrolled{
+ transform:rotate(-2deg) scale(.85)!important;
+ box-shadow:inset 4px 5px 5px #fff5d4b0,inset -10px -10px 12px #81512e99,3px 4px 0 #8e5b32,6px 8px 3px #4d301db0!important;
+}
+.tabletop .die.unrolled .pips{opacity:.75}
