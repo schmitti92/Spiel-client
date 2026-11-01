@@ -274,3 +274,64 @@ body>header h1{color:#fff!important;text-shadow:0 2px 3px #003d65!important}
 #game .tabletop #dice.tray>button.die .pip{
  background:#14191e!important;
 }
+
+/* Bergsee finishing pass: restrained contrast, consistent surfaces, tactile dice. */
+body>header{
+ background:linear-gradient(180deg,#08669aca,#0b70a3b8)!important;
+ box-shadow:0 2px 9px #003d5a35!important;
+}
+#game .panel.scores,#game .tabletop{
+ background:linear-gradient(145deg,#f6fbfffa,#e5f3fdf7 62%,#dceefbf7)!important;
+ border:2px solid #acd8f1!important;
+ box-shadow:inset 0 0 0 2px #ffffffd9,0 5px 15px #08446b30!important;
+}
+#game .panel.scores h2{
+ background:linear-gradient(180deg,#ffffffd9,#d8edfb)!important;
+ border:1px solid #b5d8ed!important;
+}
+#game #sheet .score-player-tab{
+ border-radius:11px!important;
+}
+#game #sheet .wood-variant-table{
+ border-color:#accbdc!important;
+}
+#game #sheet .wood-variant-table tr.score-category td{
+ border-color:#bfd6e4!important;
+}
+#game .tabletop #dice.tray{
+ background:linear-gradient(165deg,#cfe8f8,#a9d3ed)!important;
+ border:2px solid #90bddb!important;
+ box-shadow:inset 0 3px 11px #2c789c25,0 2px 4px #164e6c17!important;
+}
+#game .tabletop #dice.tray>button.die{
+ background:linear-gradient(142deg,#fff 0%,#fff 36%,#eef4f9 78%,#d9e5ee 100%)!important;
+ border:2px solid #d9e5ee!important;
+ border-radius:19px!important;
+ box-shadow:inset 2px 2px 4px #fff, inset -2px -2px 3px #b4c5d34d,0 5px 8px #15456555!important;
+ transform:translateZ(0);
+}
+#game .tabletop #dice.tray>button.die.held{
+ border:3px solid #178ac1!important;
+ box-shadow:0 0 0 2px #e3f8ff,0 5px 9px #164c6b5c!important;
+}
+#game .tabletop #dice.tray>button.die .pip{
+ background:#121820!important;
+ box-shadow:inset 1px 2px 2px #0007,0 1px 1px #fff6!important;
+}
+#game #joker-panel .joker-panel-actions button:not([hidden]){
+ letter-spacing:-.015em!important;
+}
+#game #joker-panel #extra-roll-joker:not([hidden]),
+#game #joker-panel #extra-die-joker:not([hidden]),
+#game #joker-panel #reroll-joker:not([hidden]),
+#game #joker-panel #move-score-joker:not([hidden]){
+ border-radius:15px!important;
+ box-shadow:inset 0 1px #fff,0 2px 5px #164f7130!important;
+}
+#game .tabletop #social-extension{
+ background:#eaf5fdcc!important;
+ border-color:#bed9ea!important;
+}
+@media (prefers-reduced-motion:reduce){
+ #game .tabletop #dice.tray>button.die{transition:none!important}
+}
