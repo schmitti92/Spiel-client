@@ -32,3 +32,13 @@ body>header h1{margin:0!important;font-size:clamp(19px,2.3vw,29px)!important}
 #online-result{font-weight:800;text-align:center;font-size:20px}
 @media(max-width:900px){#online-panel{width:calc(100% - 12px)}#online-board table{min-width:720px}#online-board th,#online-board td{padding:5px 2px!important}}
 @media(max-width:580px){body>header{padding:6px 9px}#online-dice{border-width:5px;padding:7px}#online-dice button{border-radius:10px!important;padding:6px}#online-board table{min-width:660px}#online-board th:first-child,#online-board td:first-child{width:110px}}
+
+/* Wide three-column games: keep the local board layout and make all player columns reachable. */
+#game.multi-score .scores{min-width:0;overflow:hidden!important}
+#game.multi-score #sheet{min-width:0;max-width:100%;overflow-x:auto!important;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#95652f #e8cf9f;touch-action:pan-x pan-y;overscroll-behavior-x:contain}
+#game.multi-score #sheet .variant-table{width:max-content!important;min-width:100%;table-layout:auto!important}
+#game.multi-score #sheet .variant-table th{min-width:92px!important;max-width:125px;white-space:normal!important;line-height:1.15;overflow-wrap:anywhere}
+#game.multi-score #sheet .variant-table td{min-width:92px!important}
+#game.multi-score #sheet .variant-table th:first-child,#game.multi-score #sheet .variant-table td:first-child{min-width:116px!important;width:116px!important;position:sticky!important;left:0;z-index:2;background:#ead3a4!important}
+#game.multi-score #sheet .variant-table th:first-child{z-index:3}
+#game.multi-score #sheet .variant-table .score-choice{min-width:38px;min-height:27px}
