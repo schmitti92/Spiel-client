@@ -1,6 +1,14 @@
 <!doctype html>
 <html lang="de">
 <head>
+<style id="kniffel-card-layout-fix">
+.game.kniffel-card{padding:0!important;min-height:344px!important;background:#24170e!important;border:2px solid #d6aa5c!important;overflow:hidden!important}
+.game.kniffel-card::before,.game.kniffel-card::after{display:none!important}
+.kniffel-cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;overflow:hidden}
+.kniffel-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center}
+.kniffel-fallback{display:none}
+.kniffel-cover:focus-visible{outline:4px solid white;outline-offset:-6px}
+</style>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070e1c">
