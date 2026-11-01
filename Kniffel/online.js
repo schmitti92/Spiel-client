@@ -46,6 +46,22 @@ function confirmScore(label,points,onConfirm){
  accept.focus();
 }
 
+function chooseScore(g,c,column=0){
+ document.getElementById('online-score-confirm')?.remove();
+ const score=onlineScore(g,c,column);
+ const overlay=document.createElement('div');overlay.id='online-score-confirm';overlay.className='score-preview-overlay';
+ const card=document.createElement('div');card.className='score-preview-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
+ const heading=document.createElement('h2');heading.textContent=CATEGORIES[c];
+ const description=document.createElement('p');description.textContent='Wie möchtest du dieses Feld werten?';
+ const actions=document.createElement('div');actions.className='score-preview-actions';
+ const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Zurück';
+ const enter=document.createElement('button');enter.type='button';enter.className='score-preview-confirm';enter.textContent=score+' Punkte eintragen';
+ const strike=document.createElement('button');strike.type='button';strike.textContent='Feld streichen (—)';
+ cancel.onclick=()=>overlay.remove();
+ enter.onclick=()=>{overlay.remove();send({type:'score',category:c,column})};
+ strike.onclick=()=>{overlay.remove();send({type:'score',category:c,column,crossOut:true})};
+ actions.append(cancel,enter,strike);card.append(heading,description,actions);overlay.append(card);document.body.append(overlay);enter.focus();
+}
 function renderCompactScore(g,shownPlayer,viewPlayer,mine){
  const sheet=$('sheet'),col=shownPlayer.sheet[0],sums=totals(col);
  const wrap=document.createElement('div');wrap.className='compact-score wood-score';
@@ -53,18 +69,17 @@ function renderCompactScore(g,shownPlayer,viewPlayer,mine){
   const row=document.createElement('div');row.className='compact-score-row';
   const label=document.createElement('span');label.className='compact-score-label';label.textContent=CATEGORIES[c];if(c>=0&&c<=5){const die=document.createElement('span');die.className='wood-score-die';die.textContent=['⚀','⚁','⚂','⚃','⚄','⚅'][c];label.prepend(die)}else{const symbol=document.createElement('span');symbol.className='wood-score-icon';symbol.textContent=({6:'🎲',7:'🎲',8:'🎲',9:'🛤️',10:'🛤️',11:'👑',12:'🎲'})[c]||'🎲';label.prepend(symbol)}
   const value=document.createElement('span');value.className='compact-score-value';
-  if(col[c]!==null){value.textContent=col[c];value.classList.add('score-ink')}
+  if(col[c]!==null){value.textContent=shownPlayer.crossedOut?.[0]?.[c]?'—':String(col[c]);value.classList.add('score-ink')}
   else if(mine&&viewPlayer===g.turn&&g.rolls>0&&onlineAllowed(g,0).includes(c)){
-   const score=onlineScore(g,c,0);
-   value.textContent=score;
+   value.textContent='';
    row.classList.add('score-row-action');
    row.setAttribute('role','button');row.setAttribute('tabindex','0');
-   row.setAttribute('aria-label',CATEGORIES[c]+': '+score+' Punkte eintragen oder Kategorie streichen');
-   const choose=()=>confirmScore(CATEGORIES[c],String(score),()=>send({type:'score',category:c,column:0}));
+   row.setAttribute('aria-label',CATEGORIES[c]+': Wertung auswählen oder streichen');
+   const choose=()=>chooseScore(g,c,0);
    row.addEventListener('click',choose);
    row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}});
 
-  }else value.textContent='–';
+  }else value.textContent='';
   row.append(label,value);section.append(row);
  });return section};
  const pair=(left,right,titles=null)=>{const grid=document.createElement('div');grid.className='compact-score-pair';const l=group(left),r=group(right);if(titles){[l,r].forEach((section,i)=>{const heading=document.createElement('div');heading.className='wood-score-heading';heading.textContent=titles[i];section.prepend(heading)})}grid.append(l,r);wrap.append(grid)};
