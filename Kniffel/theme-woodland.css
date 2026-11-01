@@ -167,26 +167,27 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 #sheet tr.score-summary td{font-weight:750}
 @media(max-width:850px){#sheet th.score-player-head{font-size:12px}#sheet button.score-choice{min-height:32px}}
 
-/* Dice v6: one square wooden face per button; no layered sprites. */
-.tabletop .tray{--die-size:clamp(54px,7.2vw,112px);gap:clamp(5px,.8vw,12px)}
+/* Dice v7 — consistent carved wooden cubes, stable square geometry */
+.tabletop .tray{--die-size:clamp(54px,7.2vw,112px);gap:clamp(6px,1vw,14px)}
 .tabletop .tray button.die{
-  box-sizing:border-box!important;position:relative!important;
-  width:var(--die-size)!important;height:var(--die-size)!important;
-  min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
-  flex:0 0 var(--die-size)!important;aspect-ratio:1!important;
-  padding:0!important;margin:0!important;display:grid!important;place-items:center!important;
-  border:2px solid #bd884b!important;border-radius:clamp(12px,1.3vw,19px)!important;
-  background:radial-gradient(ellipse at 25% 18%,#fff0c4aa,transparent 58%),repeating-linear-gradient(93deg,transparent 0 9px,#99602d13 10px 11px,transparent 12px 21px),linear-gradient(140deg,#f4d5a1,#e8bb7f 54%,#b47b43)!important;
-  box-shadow:inset 4px 5px 7px #fff3cfaa,inset -8px -9px 11px #80502c88,2px 4px 0 #89582f,4px 10px 9px #001d1499!important;
-  outline:0!important;filter:none!important;overflow:hidden!important;
-  transform:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+ box-sizing:border-box!important;position:relative!important;
+ width:var(--die-size)!important;height:var(--die-size)!important;
+ min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+ flex:0 0 var(--die-size)!important;aspect-ratio:1!important;
+ display:grid!important;place-items:center!important;padding:0!important;margin:0!important;
+ border:2px solid #c9975b!important;border-radius:18%!important;
+ background:radial-gradient(ellipse at 24% 15%,#fff2d1b0,transparent 55%),repeating-linear-gradient(94deg,transparent 0 12px,#a96b3414 13px 14px,transparent 15px 26px),linear-gradient(145deg,#f6d9a7 0%,#e8bb80 53%,#b77b43 100%)!important;
+ box-shadow:inset 3px 4px 5px #fff2c6a6,inset -7px -8px 9px #8a552b91,0 5px 0 #89572f,0 11px 13px #00190f9c!important;
+ outline:0!important;filter:none!important;overflow:visible!important;
+ transform:translateZ(0);will-change:transform;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
 }
-.tabletop .tray button.die::before,.tabletop .tray button.die::after{content:none!important;display:none!important}
-.tabletop .tray button.die .pips{display:grid!important;opacity:1!important;width:76%;height:76%;gap:2px}
-.tabletop .tray button.die .pip{width:clamp(8px,1.15vw,15px);height:clamp(8px,1.15vw,15px);background:radial-gradient(circle at 45% 40%,#100c0a,#26190e 62%,#704a2a 95%)!important;box-shadow:inset 1px 2px 2px #070401c9,0 1px 1px #ffe3aeaa!important}
-.tabletop .tray button.die.held{background:radial-gradient(ellipse at 24% 16%,#fff9c8b8,transparent 55%),linear-gradient(135deg,#ffdf79,#e8ae39 65%,#bd7924)!important;border-color:#f7d36b!important;box-shadow:inset 4px 5px 7px #fff4c5a8,inset -8px -9px 11px #99611d88,0 0 16px #ffce5a88,4px 10px 9px #001d1499!important}
-.tabletop .tray button.die.unrolled .die-ready{display:grid;place-items:center;font:700 clamp(32px,3.5vw,47px)/1 Georgia,serif;color:#6e4925;text-shadow:0 1px 1px #fff1cf}
-.tabletop .tray button.die.just-rolled:not(.held){animation:kniffel-v6-roll .58s cubic-bezier(.2,.7,.24,1) both;animation-delay:calc(var(--die-index) * 45ms)}
-@keyframes kniffel-v6-roll{0%{transform:translateY(-22px) rotate(-18deg) scale(.9)}40%{transform:translateY(4px) rotate(8deg) scale(1.02)}70%{transform:translateY(-5px) rotate(-3deg)}100%{transform:none}}
+.tabletop .tray button.die::before{content:""!important;display:block!important;position:absolute;pointer-events:none;inset:4px;border-radius:15%;border:1px solid #fff3d034;background:linear-gradient(145deg,#fff8db18,transparent 48%,#67371412);z-index:0}
+.tabletop .tray button.die::after{content:none!important;display:none!important}
+.tabletop .tray button.die .pips{position:relative;z-index:1;display:grid!important;opacity:1!important;width:76%;height:76%;gap:2px}
+.tabletop .tray button.die .pip{width:clamp(8px,1.15vw,15px);height:clamp(8px,1.15vw,15px);background:radial-gradient(circle at 42% 36%,#100c0a,#26190e 65%,#704a2a)!important;box-shadow:inset 1px 2px 2px #070401c9,0 1px 1px #ffe3aeaa!important}
+.tabletop .tray button.die.held{background:radial-gradient(ellipse at 24% 15%,#fffce0bd,transparent 54%),linear-gradient(145deg,#ffeaa1,#eabb4c 55%,#b97b26)!important;border-color:#ffdf83!important;box-shadow:inset 3px 4px 5px #fffbd3b0,inset -7px -8px 9px #99611d88,0 5px 0 #9b681d,0 0 15px #ffce5a6b,0 11px 13px #00190f9c!important}
+.tabletop .tray button.die.unrolled .die-ready{position:relative;z-index:1;display:grid;place-items:center;font:700 clamp(32px,3.5vw,47px)/1 Georgia,serif;color:#6e4925;text-shadow:0 1px 1px #fff1cf}
+.tabletop .tray button.die.just-rolled:not(.held){animation:kniffel-v7-roll .64s cubic-bezier(.21,.7,.25,1) both;animation-delay:calc(var(--die-index) * 45ms)}
+@keyframes kniffel-v7-roll{0%{transform:translate3d(-9px,-24px,0) rotate(-16deg) scale(.93)}35%{transform:translate3d(5px,3px,0) rotate(9deg) scale(1.025)}62%{transform:translate3d(-2px,-7px,0) rotate(-4deg)}82%{transform:translate3d(1px,1px,0) rotate(1deg)}100%{transform:translateZ(0) rotate(0) scale(1)}}
 @media(max-width:850px){.tabletop .tray{--die-size:clamp(42px,10vw,80px);gap:5px}}
 @media(prefers-reduced-motion:reduce){.tabletop .tray button.die.just-rolled:not(.held){animation:none}}
