@@ -59,8 +59,8 @@ import {createMiniGameFlow} from './engine/MiniGameFlow.js';
 const $=id=>document.getElementById(id);
 const params=new URLSearchParams(location.search);
 const onlineRoom=String(params.get('room')||'').toUpperCase();
-const online=/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(onlineRoom)&&params.get('mode')==='online';
-const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+const online=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(onlineRoom)&&params.get('mode')==='online';
+const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let onlineMatch=null,onlineSnapshot=null,onlineBusy=false,onlineTimer=null,lastOnlineRound=-1;
 const onlineUser=()=>window.SpielOnline?.state?.()?.user;
 async function hubRequest(path,body){
@@ -79,7 +79,7 @@ function onlineRender(room){
   show('instructions');$('understood').disabled=state.readyCount>=state.playerCount||!!window.__farbenblitzAcknowledged;
   $('ready-status').textContent='Bereit: '+state.readyCount+' von '+state.playerCount;
  }else if(state.phase==='countdown'){
-  show('countdown');const remaining=Math.max(0,Math.ceil((state.startAt-(Date.now()+(room.serverNow-Date.now())))/1000));
+  show('countdown');const remaining=Math.max(0,Math.ceil((state.startAt-room.serverNow)/1000));
   $('count-number').textContent=remaining||'LOS!';
  }else if(state.phase==='playing'){
   show('play');$('status').textContent='Runde '+(state.round+1)+' / '+state.rounds+' · '+(state.level==='leicht'?'Wort lesen':'Schriftfarbe wählen');
