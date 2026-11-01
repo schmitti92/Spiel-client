@@ -32,6 +32,19 @@ function onlineAllowed(g,j){
 const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s?.user?.getIdToken?s.user:null};
 const status=t=>$('notice').textContent=t;
 const current=()=>snapshot?.match?.game==='kniffel'?snapshot.match.kniffel:null;
+function confirmScore(label,points,onConfirm){
+ document.getElementById('online-score-confirm')?.remove();
+ const overlay=document.createElement('div');overlay.id='online-score-confirm';overlay.className='score-preview-overlay';
+ const card=document.createElement('div');card.className='score-preview-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
+ const heading=document.createElement('h2');heading.textContent=label;
+ const description=document.createElement('p');description.textContent=points+' Punkte eintragen?';
+ const actions=document.createElement('div');actions.className='score-preview-actions';
+ const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Zurück';
+ const accept=document.createElement('button');accept.type='button';accept.textContent='Eintragen';accept.className='score-preview-confirm';
+ cancel.onclick=()=>overlay.remove();accept.onclick=()=>{overlay.remove();onConfirm()};
+ actions.append(cancel,accept);card.append(heading,description,actions);overlay.append(card);document.body.append(overlay);
+ accept.focus();
+}
 function render(){
  const g=current();
  $('online-connection').textContent=ws?.readyState===1?'🟢 Live':'🟡 Verbinde …';
@@ -100,7 +113,7 @@ function render(){
  const symbol={Aufwärts:'↑',Abwärts:'↓',Frei:'='};
  [[shownPlayer,viewPlayer]].forEach(([player,i])=>MODES[g.mode].columns.forEach((column,j)=>{const th=document.createElement('th');const icon=symbol[column]||'=';th.textContent=icon;th.title=player.name+' – '+(column==='Aufwärts'?'von unten nach oben':column==='Abwärts'?'von oben nach unten':'freie Reihenfolge');th.setAttribute('aria-label',th.title);th.className='score-direction';directions.append(th)}));
  table.append(directions);
- CATEGORIES.forEach((label,c)=>{const tr=document.createElement('tr');tr.className='score-category'+(c===6?' score-section-start':'');const name=document.createElement('td');name.className='score-label';name.textContent=label;tr.append(name);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach((col,j)=>{const td=document.createElement('td');td.className='score-player-cell'+(i===g.turn&&!g.finished?' score-current-player':'');const value=col[c];if(value!==null){td.textContent=value;td.classList.add('score-ink')}else if(mine&&i===g.turn&&g.rolls>0&&onlineAllowed(g,j).includes(c)){const button=document.createElement('button');button.type='button';button.className='score-choice';button.textContent=onlineScore(g,c,j);button.title=label+' eintragen';button.onclick=()=>{if(confirm(label+(player.sheet.length>1?' · '+MODES[g.mode].columns[j]:'')+' mit '+button.textContent+' Punkten eintragen?'))send({type:'score',category:c,column:j})};td.append(button);td.classList.add('score-open')}else td.textContent='–';tr.append(td)}));table.append(tr)});
+ CATEGORIES.forEach((label,c)=>{const tr=document.createElement('tr');tr.className='score-category'+(c===6?' score-section-start':'');const name=document.createElement('td');name.className='score-label';name.textContent=label;tr.append(name);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach((col,j)=>{const td=document.createElement('td');td.className='score-player-cell'+(i===g.turn&&!g.finished?' score-current-player':'');const value=col[c];if(value!==null){td.textContent=value;td.classList.add('score-ink')}else if(mine&&i===g.turn&&g.rolls>0&&onlineAllowed(g,j).includes(c)){const button=document.createElement('button');button.type='button';button.className='score-choice';button.textContent=onlineScore(g,c,j);button.title=label+' eintragen';button.onclick=()=>{confirmScore(label+(player.sheet.length>1?' · '+MODES[g.mode].columns[j]:''),button.textContent,()=>send({type:'score',category:c,column:j}))};td.append(button);td.classList.add('score-open')}else td.textContent='–';tr.append(td)}));table.append(tr)});
  for(const [label,key] of [['Oberer Teil','upper'],['Bonus (63+)','bonus'],['Gesamt','total']]){const tr=document.createElement('tr');tr.className='score-summary score-'+key;const td=document.createElement('td');td.textContent=label;tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach(col=>{const cell=document.createElement('td');const sums=totals(col);cell.textContent=key==='bonus'&&sums.upper<63?sums.upper+' / 63':key==='total'?sums.total+(player.jokerBonus||0):sums[key];tr.append(cell)}));table.append(tr)}
  if(g.mode==='joker'){const tr=document.createElement('tr');tr.className='score-summary';const td=document.createElement('td');td.textContent='Jokerbonus';tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>{const cell=document.createElement('td');cell.className='player-tint-'+(i%4);cell.textContent=player.jokerBonus||0;tr.append(cell)});table.append(tr)}
  $('sheet').append(table);
