@@ -45,6 +45,34 @@ function confirmScore(label,points,onConfirm){
  actions.append(cancel,accept);card.append(heading,description,actions);overlay.append(card);document.body.append(overlay);
  accept.focus();
 }
+
+function renderCompactScore(g,shownPlayer,viewPlayer,mine){
+ const sheet=$('sheet'),col=shownPlayer.sheet[0],sums=totals(col);
+ const wrap=document.createElement('div');wrap.className='compact-score';
+ const group=(items)=>{const section=document.createElement('div');section.className='compact-score-group';items.forEach(c=>{
+  const row=document.createElement('div');row.className='compact-score-row';
+  const label=document.createElement('span');label.className='compact-score-label';label.textContent=CATEGORIES[c];
+  const value=document.createElement('span');value.className='compact-score-value';
+  if(col[c]!==null){value.textContent=col[c];value.classList.add('score-ink')}
+  else if(mine&&viewPlayer===g.turn&&g.rolls>0&&onlineAllowed(g,0).includes(c)){
+   const button=document.createElement('button');button.type='button';button.className='score-choice';
+   button.textContent=onlineScore(g,c,0);button.onclick=()=>confirmScore(CATEGORIES[c],button.textContent,()=>send({type:'score',category:c,column:0}));
+   value.append(button);
+  }else value.textContent='–';
+  row.append(label,value);section.append(row);
+ });return section};
+ const pair=(left,right)=>{const grid=document.createElement('div');grid.className='compact-score-pair';grid.append(group(left),group(right));wrap.append(grid)};
+ pair([0,1,2],[3,4,5]);
+ const summary=(label,value,cls='')=>{const row=document.createElement('div');row.className='compact-score-summary '+cls;const l=document.createElement('span');l.textContent=label;const v=document.createElement('strong');v.textContent=value;row.append(l,v);wrap.append(row)};
+ summary('Oberer Teil',sums.upper,'upper');
+ summary('Bonus (63+)',sums.upper<63?sums.upper+' / 63':sums.bonus,'bonus');
+ pair([6,7,8],[9,10,11]);
+ const chance=group([12]);chance.classList.add('compact-score-chance');wrap.append(chance);
+ if(g.mode==='joker')summary('Jokerbonus',shownPlayer.jokerBonus||0);
+ summary('Gesamt',sums.total+(shownPlayer.jokerBonus||0),'total');
+ sheet.append(wrap);
+}
+
 function render(){
  const g=current();
  $('online-connection').textContent=ws?.readyState===1?'🟢 Live':'🟡 Verbinde …';
@@ -104,6 +132,7 @@ function render(){
  rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':p.rerollUsed?'Bereits verwendet':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle Würfel neu werfen';
  $('reroll-joker-label').textContent=p.rerollUsed?'Verbraucht':'Neuwurf';
  $('roll').disabled=!mine||busy||g.rolls>=limit;
+ if(['classic','joker'].includes(g.mode)&&shownPlayer.sheet.length===1){renderCompactScore(g,shownPlayer,viewPlayer,mine)}else{
  const table=document.createElement('table');if(!['classic','joker'].includes(g.mode))table.className='variant-table';
  const head=document.createElement('tr');head.className='score-head';
  const categoryHead=document.createElement('th');categoryHead.textContent='Kategorie';categoryHead.rowSpan=2;head.append(categoryHead);
@@ -117,6 +146,7 @@ function render(){
  for(const [label,key] of [['Oberer Teil','upper'],['Bonus (63+)','bonus'],['Gesamt','total']]){const tr=document.createElement('tr');tr.className='score-summary score-'+key;const td=document.createElement('td');td.textContent=label;tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach(col=>{const cell=document.createElement('td');const sums=totals(col);cell.textContent=key==='bonus'&&sums.upper<63?sums.upper+' / 63':key==='total'?sums.total+(player.jokerBonus||0):sums[key];tr.append(cell)}));table.append(tr)}
  if(g.mode==='joker'){const tr=document.createElement('tr');tr.className='score-summary';const td=document.createElement('td');td.textContent='Jokerbonus';tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>{const cell=document.createElement('td');cell.className='player-tint-'+(i%4);cell.textContent=player.jokerBonus||0;tr.append(cell)});table.append(tr)}
  $('sheet').append(table);
+ }
  $('notice').textContent=g.finished?'Partie beendet':!mine?'Warte auf '+p.name+' …':g.rolls===(g.extraRollActive?4:3)?'Würfe abgeschlossen – Wertung wählen!':g.rolls?'Wertung wählen oder erneut würfeln.':'Jetzt würfeln!';
  if(g.finished){const result=document.createElement('p');result.textContent='🏆 '+(g.standings||[]).map(x=>x.name+': '+x.total+' Punkte').join(' · ');$('online-result').append(result)}
 }
