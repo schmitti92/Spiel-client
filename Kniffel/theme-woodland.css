@@ -191,3 +191,17 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
 @keyframes kniffel-v7-roll{0%{transform:translate3d(-9px,-24px,0) rotate(-16deg) scale(.93)}35%{transform:translate3d(5px,3px,0) rotate(9deg) scale(1.025)}62%{transform:translate3d(-2px,-7px,0) rotate(-4deg)}82%{transform:translate3d(1px,1px,0) rotate(1deg)}100%{transform:translateZ(0) rotate(0) scale(1)}}
 @media(max-width:850px){.tabletop .tray{--die-size:clamp(42px,10vw,80px);gap:5px}}
 @media(prefers-reduced-motion:reduce){.tabletop .tray button.die.just-rolled:not(.held){animation:none}}
+
+/* Score confirmation — parchment dialog, touch friendly */
+.score-preview-overlay{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:16px;background:#140b06b9;backdrop-filter:blur(3px)}
+.score-preview-card{width:min(92vw,430px);padding:22px 24px;text-align:center;color:#4a2d17;background:linear-gradient(145deg,#fff1d0,#e9c58c);border:7px ridge #a97839;border-radius:19px;box-shadow:0 20px 55px #000b,inset 0 0 16px #fff9}
+.score-preview-card h2{font:700 clamp(24px,4vw,34px) Georgia,serif;margin:10px 0}
+.score-preview-caption{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.score-preview-value{font:700 clamp(28px,5vw,42px) Georgia,serif;color:#14603b}
+.score-preview-card p{font-size:14px;line-height:1.5}
+.score-preview-actions{display:flex;gap:12px;justify-content:center;margin-top:18px}
+.score-preview-actions button{min-height:48px;flex:1}
+.score-preview-cancel{background:linear-gradient(#f6e8cc,#c6ac82);border-color:#ad8858}
+.score-preview-confirm{background:linear-gradient(#288452,#0c5634);border-color:#d3b36e;color:#fff6d9}
+#sheet td.score-current-player{background-color:#f2d99d35}
+#sheet th.score-player-head{overflow:hidden;text-overflow:ellipsis}
