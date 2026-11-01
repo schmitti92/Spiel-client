@@ -175,3 +175,63 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
  filter:drop-shadow(0 0 8px #ffd96b);
 }
 @media(prefers-reduced-motion:reduce){.tabletop .die.just-rolled{animation:none!important}}
+
+/* Phase 3 FINAL — 30% larger dice, staggered rolling, polished hold feedback.
+   Dice are sized relative to the previous 92px maximum (now 120px).
+   The flex tray still accommodates all five dice in landscape. */
+.tabletop .tray{
+ --die-size:min(120px,clamp(62px,7.8vw,120px),calc((100% - 64px)/5));
+ gap:clamp(5px,.8vw,12px)!important;
+}
+.tabletop .die{
+ width:var(--die-size)!important;
+ height:var(--die-size)!important;
+ flex:0 0 var(--die-size)!important;
+ transform:rotate(-2deg);
+ transform-origin:center 65%;
+ touch-action:manipulation;
+ -webkit-tap-highlight-color:transparent;
+}
+.tabletop .die:nth-child(even){transform:rotate(2deg)}
+.tabletop .die.held:has(> .die-art),
+.tabletop .die.held{
+ transform:translateY(-7px) rotate(0deg)!important;
+ outline:2px solid #ffe58d!important;
+ outline-offset:3px!important;
+ border-radius:19px!important;
+ filter:drop-shadow(0 0 8px #ffdb66)!important;
+}
+.tabletop .die.held:has(> .die-art)::after{
+ display:block!important;
+ content:"";position:absolute;inset:-6px;
+ border:2px solid #ffd66a;border-radius:21px;
+ box-shadow:0 0 9px #ffc34d77,inset 0 0 5px #ffcf5377;
+ pointer-events:none;
+}
+.tabletop .die.just-rolled:not(.held){
+ animation:kniffel-final-roll .68s cubic-bezier(.2,.7,.24,1) both!important;
+ animation-delay:calc(var(--die-index) * 55ms)!important;
+}
+@keyframes kniffel-final-roll{
+ 0%{transform:translate(-13px,-42px) rotate(-32deg) scale(.82);filter:brightness(1.18) drop-shadow(1px 20px 5px #001c1299)}
+ 30%{transform:translate(7px,6px) rotate(14deg) scale(1.04)}
+ 50%{transform:translate(-4px,-15px) rotate(-11deg) scale(.97)}
+ 73%{transform:translate(3px,1px) rotate(5deg) scale(1.02)}
+ 100%{transform:translate(0,0) rotate(-2deg) scale(1);filter:none}
+}
+.tabletop .die.just-rolled:nth-child(even):not(.held){
+ animation-name:kniffel-final-roll-even!important;
+}
+@keyframes kniffel-final-roll-even{
+ 0%{transform:translate(12px,-39px) rotate(29deg) scale(.85)}
+ 31%{transform:translate(-7px,7px) rotate(-15deg) scale(1.03)}
+ 53%{transform:translate(4px,-13px) rotate(10deg) scale(.97)}
+ 75%{transform:translate(-2px,1px) rotate(-4deg) scale(1.01)}
+ 100%{transform:translate(0,0) rotate(2deg) scale(1)}
+}
+@media(max-width:850px){
+ .tabletop .tray{--die-size:min(110px,calc((100% - 48px)/5));gap:6px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .tabletop .die.just-rolled:not(.held){animation:none!important}
+}
