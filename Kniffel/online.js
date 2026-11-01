@@ -140,6 +140,24 @@ function acceptSnapshot(fresh){
  const oldMatch=snapshot?.match?.id;
  snapshot=fresh;
  const next=current();
+ // Announce confirmed joker activation to every connected player, not on page load.
+ if(before&&next&&oldMatch===snapshot?.match?.id){
+  const labels=[['extraRollUsed','+1 Wurf'],['extraDieUsed','+1 Würfel'],['rerollUsed','Neuwurf'],['moveUsed','Verschieben / Tauschen']];
+  for(const p of next.players||[]){
+   const prev=before.players?.find(q=>q.uid===p.uid);
+   if(!prev)continue;
+   const activated=labels.find(([key])=>!prev[key]&&!!p[key]);
+   if(activated){
+    const toast=document.getElementById('kniffel-joker-toast')||document.createElement('div');
+    toast.id='kniffel-joker-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');
+    toast.textContent='🍀 Joker aktiviert! · '+p.name+' · '+activated[1];
+    document.body.append(toast);toast.classList.add('visible');
+    clearTimeout(window.kniffelJokerToastTimer);
+    window.kniffelJokerToastTimer=setTimeout(()=>toast.classList.remove('visible'),3200);
+    break;
+   }
+  }
+ }
  if(oldMatch&&oldMatch!==snapshot?.match?.id){heldScorePlayer=null;scoreHoldUntil=0;scoreReveal=null;clearTimeout(scoreRevealTimer);viewPlayer=null;lastTurnKey=null;}
  if(before&&next&&before.turn!==next.turn&&before.players?.length===next.players?.length){
   const old=before.players[before.turn],updated=next.players[before.turn];
