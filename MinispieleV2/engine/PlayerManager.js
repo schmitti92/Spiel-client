@@ -24,8 +24,10 @@ export function validateGamePlayers(players, game) {
 export function createPlayerManager(players) {
   const roster = Object.freeze(validatePlayers(players));
   const lookup = new Map(roster.map(p=>[p.id,p]));
+  const counts = Object.freeze({total:roster.length,humans:roster.filter(p=>p.type==='human').length,bots:roster.filter(p=>p.type==='bot').length});
   return Object.freeze({
     list: () => roster.map(p=>({...p})),
+    counts: () => ({...counts}),
     get: id => lookup.has(id) ? {...lookup.get(id)} : null,
     isBot: id => lookup.get(id)?.type === 'bot',
     isHuman: id => lookup.get(id)?.type === 'human',
