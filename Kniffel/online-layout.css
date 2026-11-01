@@ -522,3 +522,31 @@ body>header .header-actions{display:flex;align-items:center;gap:clamp(6px,1vw,14
   margin-right:4px;
  }
 }
+
+
+/* v26: Light oak dice beam instead of green felt. Dice remain interactive. */
+#game .tabletop #dice.tray{
+ background:
+  repeating-linear-gradient(174deg,transparent 0 13px,#92551e12 14px,#fff4d51a 16px,transparent 20px 37px),
+  repeating-linear-gradient(2deg,transparent 0 35px,#a46d2d24 36px,transparent 38px 69px),
+  linear-gradient(180deg,#fbe4ad 0%,#eec37f 24%,#dca45f 54%,#f0c987 79%,#bc8241 100%)!important;
+ border:7px ridge #d9a553!important;
+ border-radius:25px!important;
+ box-shadow:inset 0 3px 4px #fff2cc,inset 0 -8px 14px #85501f88,0 0 0 2px #6c3d1a,0 7px 13px #100a0677!important;
+}
+#game .tabletop #dice.tray > button.die{
+ background:linear-gradient(145deg,#fff5dc,#f3d8a8 45%,#d9ab6a)!important;
+ border:2px solid #b47c3e!important;
+ box-shadow:inset 2px 2px 4px #fff6df,inset -4px -5px 6px #9d6b3f66,2px 4px 7px #613b2077!important;
+}
+#game .tabletop #dice.tray > button.die.held{
+ background:linear-gradient(145deg,#fff1b7,#dca74d)!important;
+ border-color:#ffde78!important;
+ box-shadow:inset 0 2px 3px #fff6ca,0 0 0 2px #a66e25,0 0 12px #ffca4c!important;
+}
+#game .tabletop #dice.tray > button.die .pip{
+ background:radial-gradient(circle at 35% 30%,#603b20,#261609 75%)!important;
+}
+@media(min-width:851px) and (orientation:landscape){
+ #game .tabletop #dice.tray{padding:clamp(5px,.8dvh,10px)!important}
+}
