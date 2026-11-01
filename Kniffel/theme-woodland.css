@@ -282,3 +282,16 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
  inset:0!important;
  object-fit:contain!important;
 }
+
+/* 3.8 tablet screenshot correction: clean dice art was visually undersized.
+   Keep hit areas at 120px, scale the image independently. */
+.tabletop .die:has(> .die-art) .die-art{
+ inset:0!important;left:0!important;top:0!important;
+ width:100%!important;height:100%!important;
+ transform:scale(2.15)!important;
+ transform-origin:center center!important;
+ object-fit:contain!important;
+}
+.tabletop .die.held:has(> .die-art)::after{
+ inset:0!important;border-radius:20px!important;
+}
