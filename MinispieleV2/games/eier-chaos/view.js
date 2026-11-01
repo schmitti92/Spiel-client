@@ -11,6 +11,7 @@ export function mount(container,host){
  style.textContent+=`#egg-coop .hen{filter:drop-shadow(0 3px 1px #fff8) drop-shadow(0 8px 6px #1f0d0677)}#egg-coop .hen.brown{filter:drop-shadow(0 3px 1px #ffd68b77) drop-shadow(0 8px 6px #1f0d0677)}#egg-coop .hen:after{background:repeating-linear-gradient(28deg,transparent 0 7px,#f5cc66 8px 11px,transparent 12px 18px),repeating-linear-gradient(145deg,#f8dd8b 0 8px,#d59b36 9px 13px,#f3c15c 14px 19px);border:3px solid #a66b28;box-shadow:inset 0 4px 5px #fff3c488,inset 0 -5px 6px #79471966,0 5px 5px #2b180e99}#egg-coop .hen.laying{animation:egg-hen-lay .3s ease-in-out 2}#egg-coop .hen.laying:after{filter:brightness(1.12)}`;
  style.textContent+=`#egg-stage{background-image:url('./games/eier-chaos/assets/background-farm.webp'),url('./games/eier-chaos/assets/background.svg?v=farm2');background-position:center center;background-size:cover;background-repeat:no-repeat}`;
  style.textContent+=`#egg-stage{background:#b77b3d url('./games/eier-chaos/assets/file_00000000810882108432bad43aaf11e8.png?v=coop1') center center/100% 100% no-repeat}#egg-coop{background:none!important;border:0;box-shadow:none;height:30%}#egg-coop:before{display:none}#egg-coop .hen:after{display:none}#egg-coop .hen{height:68%;bottom:0;width:14%;background-position:center bottom}#egg-coop .hen.brown{height:68%}#egg-stage .egg-broken{bottom:2%}`;
+ style.textContent+=`#egg-stage .egg{z-index:5}#egg-basket{z-index:6}#egg-stage .egg-catch-effect{position:absolute;z-index:5;pointer-events:none;width:clamp(28px,3.7vw,53px);height:clamp(38px,5vw,69px);background:center/contain no-repeat;transform:translate(-50%,-50%);animation:egg-drop-in .42s ease-in forwards}@keyframes egg-drop-in{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}55%{opacity:1;transform:translate(-50%,15%) scale(.72)}100%{opacity:0;transform:translate(-50%,80%) scale(.25)}}`;
  const shell=document.createElement('div');shell.id='egg-shell';
  const heading=document.createElement('h2');heading.textContent='🥚 Eier-Chaos';heading.title='Bauernhof-Grafikversion 3';
  const info=document.createElement('p');info.textContent='60 Sekunden · Ziehe den Korb mit dem Finger und fange die fallenden Eier. Alle Spieler bekommen dieselbe Eierfolge. 40 Eier in den ersten 20 Sekunden, dann 70 und zuletzt 90. ⭐ Goldene Eier +3 Punkte, faule Eier -1 Punkt, normale Eier +1 Punkt. Verpasste Eier geben keine Minuspunkte.';
@@ -30,6 +31,7 @@ export function mount(container,host){
  const result=document.createElement('div');result.id='egg-result';result.hidden=true;result.setAttribute('aria-live','polite');stage.append(result);
  shell.append(heading,info,hud,stage,controls);container.append(style,shell);
  let running=false,raf=0,last=0,carry=0,disposed=false,menuOpen=false;
+ let previouslyCaught=new Set();
  menu.onclick=()=>{menuOpen=!menuOpen;renderControls(host.snapshot().state);};
  function renderControls(state){const active=running&&!state.finished;start.hidden=active;menu.hidden=!active;back.hidden=active&&!menuOpen;fullscreen.hidden=active&&!menuOpen;again.hidden=!state.finished;menu.textContent=menuOpen?'✕ Schließen':'☰ Menü';}
  const updateFullscreen=()=>{fullscreen.textContent=document.fullscreenElement===shell?'⛶ Vollbild beenden':'⛶ Vollbild';};
@@ -65,7 +67,7 @@ export function mount(container,host){
   }
   running=true;menuOpen=false;renderControls(host.snapshot().state);last=performance.now();carry=0;start.disabled=true;raf=requestAnimationFrame(frame);
  };
- again.onclick=()=>{stop();menuOpen=false;host.restart();result.textContent='';result.hidden=true;info.hidden=false;renderControls(host.snapshot().state);};
+ again.onclick=()=>{stop();previouslyCaught.clear();stage.querySelectorAll('.egg-catch-effect').forEach(el=>el.remove());menuOpen=false;host.restart();result.textContent='';result.hidden=true;info.hidden=false;renderControls(host.snapshot().state);};
  back.onclick=()=>{stop();disposed=true;document.removeEventListener('fullscreenchange',updateFullscreen);if(document.fullscreenElement===shell)document.exitFullscreen().catch(()=>{});shell.classList.remove('egg-fallback-fullscreen');host.exit()};
  return {render(snapshot){
   const s=snapshot.state,player=human()||owner();
@@ -74,6 +76,15 @@ export function mount(container,host){
   basket.style.left=(s.baskets[player]*100)+'%';
   stage.querySelectorAll('.egg,.egg-broken').forEach(el=>el.remove());
   const caught=new Set(s.caught[player]||[]);
+  for(const index of caught){
+   if(previouslyCaught.has(index)||s.elapsedMs===0)continue;
+   const egg=eggAt(index);
+   const effect=document.createElement('div');effect.className='egg-catch-effect';
+   effect.style.left=(egg.x*100)+'%';effect.style.top='79%';
+   effect.style.backgroundImage="url('./games/eier-chaos/assets/egg-"+(egg.special?'golden':egg.rotten?'rotten':'normal')+".svg?v=catch2')";
+   stage.append(effect);effect.addEventListener('animationend',()=>effect.remove(),{once:true});
+  }
+  previouslyCaught=caught;
   coop.querySelectorAll('.hen').forEach((hen,i)=>{const active=Array.from({length:EGG_COUNT},(_,n)=>eggAt(n)).some(e=>Math.abs(e.x-lanes[i])<.001&&s.elapsedMs>=e.spawnMs&&s.elapsedMs<e.spawnMs+320);hen.classList.toggle('laying',active);});
   if(!s.finished)for(let i=0;i<EGG_COUNT;i++){
    const e=eggAt(i),progress=(s.elapsedMs-e.spawnMs)/(e.landMs-e.spawnMs);
