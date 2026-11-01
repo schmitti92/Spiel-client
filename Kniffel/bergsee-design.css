@@ -420,3 +420,22 @@ body>header{
 /* Active game cancellation in top toolbar */
 #online-abort:not([hidden]){display:inline-flex;align-items:center;justify-content:center;padding:8px 13px;border-radius:12px;border:1px solid #c6a9a5;background:linear-gradient(#fff5f1,#f3dedb);color:#8c3632;font:700 14px system-ui,sans-serif;cursor:pointer}
 #online-abort:disabled{opacity:.5;cursor:wait}
+
+/* Score suggestions: every legal positive destination, including mixed/free columns.
+   Strike-only destinations stay neutral. */
+#game #sheet td.score-positive-option,
+#game #sheet td.score-open.score-positive-option,
+#game #sheet .wood-variant-table tbody tr:nth-child(even) td.score-positive-option,
+#game #sheet .wood-variant-table tbody tr:nth-child(odd) td.score-positive-option,
+#game #sheet .score-positive-option.score-row-action,
+#game #sheet .compact-score-row.score-positive-option{
+ background:#ccefc2!important;
+ background-image:none!important;
+ border-color:#70b966!important;
+ box-shadow:inset 0 0 0 2px #8acb7d!important;
+ color:#194d27!important;
+}
+#game #sheet td.score-positive-option:hover,
+#game #sheet .compact-score-row.score-positive-option:hover{
+ background:#b6e8aa!important;
+}
