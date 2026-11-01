@@ -44,13 +44,16 @@ test('egg frequency rises at each 20-second boundary',()=>{
  assert.equal(game.eggAt(111).spawnMs-game.eggAt(110).spawnMs,205);
 });
 
-test('exactly 40, 70 and 90 eggs with 20 golden and 20 rotten eggs',()=>{
+test('exactly 40, 70 and 90 eggs with 20 golden and 51 rotten eggs',()=>{
  const eggs=Array.from({length:game.EGG_COUNT},(_,i)=>game.eggAt(i));
  assert.deepEqual([eggs.filter(e=>e.spawnMs<20000).length,eggs.filter(e=>e.spawnMs>=20000&&e.spawnMs<40000).length,eggs.filter(e=>e.spawnMs>=40000).length],[40,70,90]);
  assert.equal(eggs.filter(e=>e.special).length,20);
- assert.equal(eggs.filter(e=>e.rotten).length,20);
- assert.equal(eggs.filter(e=>!e.special&&!e.rotten).length,160);
- assert.equal(eggs.reduce((n,e)=>n+e.points,0),200);
+ assert.equal(eggs.filter(e=>e.rotten).length,51);
+ assert.deepEqual([eggs.slice(0,40),eggs.slice(40,110),eggs.slice(110)].map(stage=>stage.filter(e=>e.rotten).length),[4,17,30]);
+ for(const [start,count,every] of [[0,40,10],[40,70,4],[110,90,3]])for(let i=0;i<count;i++)assert.equal(eggs[start+i].rotten,(i+1)%every===0);
+ assert.equal(eggs.filter(e=>!e.special&&!e.rotten).length,129);
+ assert.ok(eggs.every(e=>!(e.special&&e.rotten)));
+ assert.equal(eggs.reduce((n,e)=>n+e.points,0),138);
  assert.ok(eggs.every(e=>e.landMs<=60000));
  assert.deepEqual(eggs,Array.from({length:200},(_,i)=>game.eggAt(i)));
 });
