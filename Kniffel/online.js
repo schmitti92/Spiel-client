@@ -56,7 +56,7 @@ function chooseScore(g,c,column=0){
  const description=document.createElement('p');description.textContent=canEnter?'Wie möchtest du dieses Feld werten?':'Nach dem dritten Wurf kannst du dieses Feld frei streichen.';
  const actions=document.createElement('div');actions.className='score-preview-actions';
  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Zurück';
- const enter=document.createElement('button');enter.type='button';enter.className='score-preview-confirm';enter.textContent=score+' Punkte eintragen';enter.disabled=!canEnter;if(!canEnter)enter.hidden=true;
+ const enter=document.createElement('button');enter.type='button';enter.className='score-preview-confirm';enter.textContent=score+' Punkte eintragen';enter.disabled=!canEnter||score===0;if(!canEnter||score===0)enter.hidden=true;
  const strike=document.createElement('button');strike.type='button';strike.textContent='Feld streichen (—)';
  cancel.onclick=()=>overlay.remove();
  enter.onclick=()=>{overlay.remove();send({type:'score',category:c,column})};
