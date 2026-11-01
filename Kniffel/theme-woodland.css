@@ -266,3 +266,11 @@ header h1::after{content:"Der Würfelklassiker";position:absolute;left:50%;top:9
  box-shadow:inset 4px 5px 5px #fff5d4b0,inset -10px -10px 12px #81512e99,3px 4px 0 #8e5b32,6px 8px 3px #4d301db0!important;
 }
 .tabletop .die.unrolled .pips{opacity:.75}
+
+/* 3.6: fix oversized image zoom clipping wooden cube edges.
+   Uploaded 512px assets already occupy ~75% of their canvas. */
+.tabletop .die:has(> .die-art) .die-art{
+ width:125%!important;height:125%!important;
+ left:-12.5%!important;top:-12.5%!important;
+ object-fit:contain!important;
+}
