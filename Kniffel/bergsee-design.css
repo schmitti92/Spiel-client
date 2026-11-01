@@ -953,3 +953,34 @@ body>header{
  background:linear-gradient(180deg,#f9e4f2,#efd0e9)!important;
 }
 @media(max-width:850px){#game .panel.scores{backdrop-filter:blur(5px)!important;-webkit-backdrop-filter:blur(5px)!important}}
+
+/* v21: physical tumble and landing of freshly rolled dice, including spectators. */
+#game .tabletop #dice.tray{perspective:900px!important}
+#game .tabletop #dice.tray>button.die.dice-tumbling{
+ animation:bergseeDieTumble .92s cubic-bezier(.22,.68,.2,1) both!important;
+ animation-delay:calc(var(--die-index) * 45ms)!important;
+ transform-origin:50% 65%!important;
+ backface-visibility:visible!important;
+ will-change:transform!important;
+}
+#game .tabletop #dice.tray>button.die.dice-tumbling .pips{
+ animation:bergseeFaceSettle .92s ease-out both!important;
+ animation-delay:calc(var(--die-index) * 45ms)!important;
+}
+@keyframes bergseeDieTumble{
+ 0%{transform:translate3d(-12px,-35px,0) rotate(-32deg) rotateY(65deg) scale(.82)}
+ 23%{transform:translate3d(9px,-25px,25px) rotate(75deg) rotateY(135deg) scale(.94)}
+ 47%{transform:translate3d(-7px,-12px,18px) rotate(185deg) rotateY(250deg) scale(1.07)}
+ 68%{transform:translate3d(5px,0,0) rotate(350deg) rotateY(355deg) scale(.96)}
+ 82%{transform:translate3d(0,-9px,0) rotate(365deg) rotateY(360deg) scale(1.02)}
+ 100%{transform:translate3d(0,0,0) rotate(360deg) rotateY(360deg) scale(1)}
+}
+@keyframes bergseeFaceSettle{
+ 0%,55%{opacity:.45;filter:blur(2px)}
+ 78%{opacity:.85;filter:blur(.4px)}
+ 100%{opacity:1;filter:none}
+}
+@media(prefers-reduced-motion:reduce){
+ #game .tabletop #dice.tray>button.die.dice-tumbling,
+ #game .tabletop #dice.tray>button.die.dice-tumbling .pips{animation:none!important}
+}
