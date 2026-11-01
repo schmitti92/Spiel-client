@@ -64,11 +64,12 @@ function render(){
  g.dice.forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.className='die'+(g.held[i]?' held':'')+(g.rolls===0?' unrolled':'');b.style.setProperty('--die-index',i);if(g.rolls){const face=document.createElement('span');face.className='pips face-'+n;for(let k=0;k<9;k++){const pip=document.createElement('i');pip.className='pip pip-'+k;face.append(pip)}b.append(face)}else{const ready=document.createElement('span');ready.className='die-ready';ready.textContent='?';b.append(ready)}b.setAttribute('aria-label','Würfel '+(i+1)+': '+(g.rolls?n:'noch nicht geworfen'));b.disabled=!mine||busy||g.rolls===0||g.rolls>=(g.extraRollActive?4:3);b.onclick=()=>send({type:'hold',index:i});$('dice').append(b)});
  const limit=g.extraRollActive?4:3;
  const joker=$('extra-roll-joker'),dieJoker=$('extra-die-joker');
- joker.hidden=!g.extraJokers;
- dieJoker.hidden=!g.extraJokers;
- $('joker-panel').hidden=!g.extraJokers;
+ joker.hidden=false;
+ dieJoker.hidden=false;
+ $('joker-panel').hidden=false;
+ $('joker-panel').title=g.extraJokers?'Joker für diese Partie verfügbar':'Joker wurden in der Lobby für diese Partie nicht aktiviert';
  const used=!!p.extraRollUsed;
- const available=mine&&!busy&&g.rolls===0&&!used&&!g.extraRollActive;
+ const available=g.extraJokers&&mine&&!busy&&g.rolls===0&&!used&&!g.extraRollActive;
  joker.disabled=!available;
  joker.classList.toggle('joker-active',!!g.extraRollActive);
  joker.classList.toggle('joker-used',used&&!g.extraRollActive);
@@ -76,7 +77,7 @@ function render(){
  joker.setAttribute('aria-label','Glückswurf-Joker: '+joker.title);
  $('extra-roll-joker-label').textContent=g.extraRollActive?'4 Würfe':used?'Verbraucht':'+1 Wurf';
  const dieUsed=!!p.extraDieUsed;
- const dieAvailable=mine&&!busy&&g.rolls===0&&!dieUsed&&!g.extraDieActive;
+ const dieAvailable=g.extraJokers&&mine&&!busy&&g.rolls===0&&!dieUsed&&!g.extraDieActive;
  dieJoker.disabled=!dieAvailable;
  dieJoker.classList.toggle('joker-active',!!g.extraDieActive);
  dieJoker.classList.toggle('joker-used',dieUsed&&!g.extraDieActive);
