@@ -1,0 +1,116 @@
+
+/* BERGSEE DESIGN 2 — stage 1, visual foundation. Loaded after the legacy themes. */
+:root{--wood-dark:#073b5b;--wood:#146d9e;--gold:#82c9e9;--paper:#e9f5ff;--felt:#b9d9ed}
+body{background:#0b689e!important;color:#132e43!important}
+body::before{background:linear-gradient(180deg,#1386bd1a,#00618c0d),url("./bergsee-background.svg") center center/cover no-repeat!important}
+body::after{background:linear-gradient(180deg,#ffffff00 0%,#063c6410 70%,#004a6a1f)!important}
+body>header{
+ background:linear-gradient(180deg,#08649cdd,#1679b7d9)!important;
+ border-bottom:2px solid #c6ecff!important;
+ box-shadow:0 3px 12px #00385b55!important;color:#fff!important
+}
+body>header h1{color:#fff!important;text-shadow:0 2px 3px #003d65!important}
+#online-back{color:#fff!important}
+#online-undo{background:linear-gradient(#fff,#d9edfb)!important;color:#153b57!important;border:1px solid #8ac7e8!important}
+#online-reload,#fullscreen{background:linear-gradient(#167bb4,#07537f)!important;color:white!important;border:1px solid #b4e6fa!important}
+#players .player{
+ background:linear-gradient(#237eb5,#07507c)!important;
+ border:2px solid #d2f1ff!important;
+ color:white!important;box-shadow:0 3px 8px #00385455!important;
+}
+#players .player.active{background:linear-gradient(#21b7ee,#0075ba)!important;border-color:white!important;box-shadow:0 0 0 2px #39c3fa88!important}
+#game .panel.scores,#game .tabletop{
+ background:linear-gradient(150deg,#f4fbff,#d7eafb 75%,#c5e2f3)!important;
+ border:3px solid #a5d8f5!important;
+ box-shadow:inset 0 0 0 2px #fff,0 6px 16px #003a5b55!important;
+ border-radius:24px!important;color:#102b43!important
+}
+#game .panel.scores h2{
+ background:linear-gradient(#f6fcff,#d3eafa)!important;
+ border:1px solid #9dc8e5!important;
+ color:#132f48!important;text-shadow:none!important;
+ box-shadow:none!important
+}
+#game #sheet .score-player-tab{
+ background:linear-gradient(#fff,#e1f0fa)!important;
+ color:#15354b!important;border:1px solid #a5c9e0!important;
+ box-shadow:none!important
+}
+#game #sheet .score-player-tab.selected{
+ background:linear-gradient(#24c2f8,#007bbf)!important;
+ color:white!important;border:1px solid #006fa7!important;
+ box-shadow:0 2px 5px #00578855!important
+}
+#game #sheet .wood-variant-table .score-head th.score-player-head,
+#game #sheet .wood-variant-table .score-directions th{
+ background:linear-gradient(#1488c4,#055582)!important;
+ color:white!important;text-shadow:none!important
+}
+#game #sheet .wood-variant-table tr.score-category td.score-label{
+ background:#e7f2fb!important;color:#16354b!important;
+ border-left:2px solid #a8cfe7!important
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(odd) td,
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td{
+ background:#f5fbff!important;color:#173e6b!important
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td{background:#eaf5fc!important}
+#game #sheet .wood-variant-table td.score-open.score-row-action,
+#game #sheet .wood-variant-table td.score-open.score-row-action:hover{
+ background:#f5fbff!important;border:1px solid #b7d2e4!important;box-shadow:none!important
+}
+#game #sheet .wood-variant-table tr.score-category:nth-child(even) td.score-open.score-row-action{background:#eaf5fc!important}
+#game #sheet .wood-variant-table td.score-ink{color:#083e83!important;text-shadow:none!important}
+#game #sheet .wood-variant-table tr.score-upper td{background:#d5f3ca!important;color:#24462c!important}
+#game #sheet .wood-variant-table tr.score-bonus td{background:#f6d7ec!important;color:#573b55!important}
+#game #sheet .wood-variant-table tr.score-total td{background:linear-gradient(#ffe9a0,#f6ca5a)!important;color:#332913!important}
+#game .tabletop #status{
+ background:transparent!important;border:0!important;box-shadow:none!important;
+ color:#122f46!important;text-shadow:none!important
+}
+#game .tabletop #dice.tray{
+ background:linear-gradient(#d3e9f8,#bbd9ed)!important;
+ border:2px solid #95bfdb!important;outline:0!important;
+ border-radius:20px!important;box-shadow:inset 0 2px 9px #427d9e33!important
+}
+#game .tabletop #dice.tray::before,#game .tabletop #dice.tray::after{content:none!important}
+#game .tabletop #dice.tray > button.die{
+ background:linear-gradient(145deg,#fff,#f7fbff 65%,#dbe5ee)!important;
+ border:2px solid #d5e3ed!important;
+ box-shadow:inset 2px 2px 4px white,0 5px 8px #18496966!important;
+}
+#game .tabletop #dice.tray > button.die .pip{
+ background:#151a20!important;box-shadow:inset 1px 1px 2px #0009!important
+}
+#game .tabletop #dice.tray > button.die.held{
+ border:3px solid #258dbb!important;box-shadow:0 0 0 2px #b9edff,0 4px 9px #185c8266!important
+}
+#game .tabletop #roll:not(:disabled){
+ background:linear-gradient(#19b6e9,#087fbd 48%,#005487)!important;
+ color:white!important;border:3px solid #effbff!important;
+ text-shadow:0 2px 3px #034d78!important;
+ box-shadow:0 3px 8px #07507877!important
+}
+#game .tabletop #roll:disabled{
+ background:linear-gradient(#b5ddec,#83b7d1)!important;color:#3c687d!important;
+ border:2px solid #e5f7ff!important;box-shadow:none!important
+}
+#game .tabletop #notice,#game .tabletop p{color:#183b50!important;text-shadow:none!important}
+#game .tabletop #social-extension{
+ background:#e8f4fc!important;border:1px solid #b2d4e9!important;
+ box-shadow:none!important;color:#36556b!important
+}
+#game .tabletop .joker-panel:not([hidden]){
+ background:linear-gradient(#d9effb,#9fd1eb)!important;
+ border:2px solid #8ac5e6!important;box-shadow:0 3px 8px #0b56834a!important
+}
+#game .joker-panel-heading{background:linear-gradient(#f7fcff,#d9edf8)!important;border:1px solid #9acbe6!important;color:#17364c!important;text-shadow:none!important;box-shadow:none!important}
+#game .joker-panel-actions button:not([hidden]),
+#game .joker-panel-actions button:not([hidden]):not(:disabled),
+#game .joker-panel-actions button:not([hidden]):disabled{
+ background:linear-gradient(#f7fcff,#cbe7f7)!important;
+ color:#15334b!important;border:2px solid #8ec4e3!important;
+ box-shadow:0 2px 5px #0b4b753d!important;text-shadow:none!important;filter:none!important
+}
+#game .joker-panel-actions button:not([hidden]):disabled{opacity:.7!important}
+#game .joker-panel-actions button .joker-icon{text-shadow:none!important}
