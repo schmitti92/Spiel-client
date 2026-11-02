@@ -369,6 +369,13 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .game-grid>.game.party-challenge-card{display:none!important}
 @media(max-width:520px){.game-grid{grid-template-columns:1fr!important}}
 /* Legacy fallback asset retained for older browsers: Assets/game-backgrounds/barikade.webp */
+
+/* Merk-Matrix: independent local offline game; online lobby stays untouched. */
+.game-grid>.game.merk-matrix-card{--scene:radial-gradient(ellipse at 78% 38%,rgba(138,88,245,.55),transparent 47%),radial-gradient(ellipse at 50% 70%,rgba(35,195,249,.42),transparent 58%),linear-gradient(120deg,#081a3a,#20205d 65%,#100d35);border:2px solid #6c9dff;box-shadow:0 0 22px #3587ff55,inset 0 0 24px #9c63ff33;justify-content:center;gap:12px}
+.game-grid>.game.merk-matrix-card::after{background:linear-gradient(90deg,rgba(5,10,31,.88),rgba(10,16,53,.42))}
+.merk-matrix-card .merk-label{font-weight:850;font-size:clamp(23px,2.3vw,35px);letter-spacing:.03em;color:#baf9ff;text-shadow:0 0 14px #39ccff}
+.merk-matrix-card .merk-info{color:#f2eaff;font-size:clamp(14px,1.2vw,18px);max-width:520px}
+.merk-matrix-card .merk-play{align-self:flex-start;border:1px solid #78eaff;border-radius:20px;padding:10px 19px;background:linear-gradient(100deg,#1594d9,#6657e8);color:white;font-weight:800;box-shadow:0 0 14px #38bdff80}
 </style></head>
 <body>
 <main class="container">
@@ -377,6 +384,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
       <article class="game barikade-card"><a class="local-game-link" href="Barikade/barikade.html?offline=1" aria-label="Barikade lokal spielen"><span class="visually-hidden">Barikade lokal spielen</span></a></article>
       <article class="game skyjo-card"><a class="local-game-link" href="Skyjo/skyjo_action_local.html?mode=local" aria-label="SKYJO Action lokal spielen"><span class="visually-hidden">SKYJO Action lokal spielen</span></a></article>
       <article class="game kreuzkunter-card"><a class="local-game-link" href="KreuzKunter/kreuzkunter.html?mode=local" aria-label="KreuzKunter lokal spielen"><span class="visually-hidden">KreuzKunter lokal spielen</span></a></article>
+      <article class="game merk-matrix-card"><a class="local-game-link" href="MinispieleV2/games/merk-matrix/index.html" aria-label="Merk-Matrix 2 lokal spielen"><span class="visually-hidden">Merk-Matrix 2 lokal spielen</span></a><div class="merk-label">🧠 MERK-MATRIX 2</div><p class="merk-info">Das Gedächtnis-Duell · 1 Mensch + 3 Bots · Neon-Finale mit 8×8-Feld</p><span class="merk-play" aria-hidden="true">▶ Lokal spielen</span></article>
       <article class="game business-card"><a class="local-game-link" href="Business/business_local.html" aria-label="Das große Business lokal spielen"><span class="visually-hidden">Das große Business lokal spielen</span></a></article>
 </section>
 </main>
