@@ -108,7 +108,7 @@ function frame(){
   if(phase==='playing'){
    $('time').textContent=Math.max(0,Math.ceil((60000-elapsed)/1000))+' s';
    draw(Math.max(0,Math.min(60000,elapsed)));
-   if(elapsed>=60000&&!finishing){finishing=true;void request('/eier-chaos/finish',{matchId}).then(()=>refresh()).catch(e=>{$('notice').textContent=e.message;finishing=false;});}
+   if(elapsed>=60000&&!finishing){finishing=true;void (async()=>{try{while(moving)await new Promise(resolve=>setTimeout(resolve,50));await request('/eier-chaos/move',{matchId,x:basket});await request('/eier-chaos/finish',{matchId});await refresh();}catch(e){$('notice').textContent=e.message;finishing=false;}})();}
   }
  }
  requestAnimationFrame(frame);
