@@ -52,9 +52,14 @@ function movePointer(e){if(phase!=='playing')return;const rect=$('field').getBou
 async function request(path,body){
  const user=window.SpielOnline?.state?.()?.user;
  if(!user?.getIdToken)throw Error('Bitte mit deinem Online-Profil anmelden');
- const token=await user.getIdToken();
- const response=await fetch(api+'/api/hub/rooms/'+encodeURIComponent(roomCode)+path,{method:body===undefined?'GET':'POST',headers:{Authorization:'Bearer '+token,...(body===undefined?{}:{'Content-Type':'application/json'})},...(body===undefined?{}:{body:JSON.stringify(body)}),cache:'no-store'});
- const data=await response.json();if(!response.ok||data.ok!==true)throw Error(data.error||'SERVER_ERROR');return data.room;
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),14000);
+ try{
+  const token=await user.getIdToken();
+  const response=await fetch(api+'/api/hub/rooms/'+encodeURIComponent(roomCode)+path,{method:body===undefined?'GET':'POST',headers:{Authorization:'Bearer '+token,...(body===undefined?{}:{'Content-Type':'application/json'})},...(body===undefined?{}:{body:JSON.stringify(body)}),cache:'no-store',signal:controller.signal});
+  const data=await response.json();if(!response.ok||data.ok!==true)throw Error(data.error||'SERVER_ERROR');return data.room;
+ }catch(e){if(e.name==='AbortError')throw Error('Zeitüberschreitung – Verbindung wird erneut geprüft');throw e;}
+ finally{clearTimeout(timer);}
 }
 async function refresh(){
  if(fetching||document.hidden||!valid)return;fetching=true;
