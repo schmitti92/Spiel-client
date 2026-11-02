@@ -33,11 +33,12 @@ button:disabled{opacity:.5}#shell{position:relative;height:100dvh;width:100vw;ov
 <script src="../profile-config.js"></script><script src="../profile-auth.js"></script>
 <script type="module">
 import {eggAt,EGG_COUNT} from './games/eier-chaos/game.js';
+import {createScoreRace} from './engine/ScoreRace.js';
 const $=id=>document.getElementById(id);
 const params=new URLSearchParams(location.search),roomCode=String(params.get('room')||'').toUpperCase();
 const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
-let racedMatch=null,raceStart=0,racers=[],raceDone=false;
+let racedMatch=null,raceStart=0,racers=[],raceModel=null,raceDone=false;
 let matchId=null,phase=null,startAt=null,offset=0,basket=.5,lastMove=0,moving=false,fetching=false,acknowledged=false,finishing=false,shown=new Set(),ended=false;
 const back=()=>location.href='./lobby.html?room='+encodeURIComponent(roomCode)+'&stay=1';
 $('back').onclick=back;$('return').onclick=back;
@@ -74,7 +75,7 @@ async function refresh(){
   }else if(phase==='finished'){
     ended=true;shown.clear();$('field').replaceChildren();
     const results=[...(game.results||[])].sort((a,b)=>a.seat-b.seat);
-    if(racedMatch!==match.id){racedMatch=match.id;raceStart=performance.now();raceDone=false;racers=results;}
+    if(racedMatch!==match.id){racedMatch=match.id;raceStart=performance.now();raceDone=false;racers=results;raceModel=createScoreRace(results.map((p,i)=>({playerId:String(p.seat??i),name:p.name,score:p.score,seat:p.seat??i})));}
     $('heading').textContent='🏁 Das Punkterennen!';
     $('body').textContent='Wer erreicht als Erster die Spitze?';
     let race=$('race');if(!race){race=document.createElement('div');race.id='race';$('body').after(race);}
@@ -122,19 +123,17 @@ function draw(time){
  }
 }
 function animateRace(){
- if(!racedMatch||raceDone)return;
- const duration=8500,progress=Math.min(1,(performance.now()-raceStart)/duration);
- const eased=1-Math.pow(1-progress,2);
- const max=Math.max(1,...racers.map(p=>Math.max(0,p.score)));
+ if(!raceModel||raceDone)return;
+ const frame=raceModel.frame(performance.now()-raceStart);
  const lanes=[...document.querySelectorAll('#race .racer')];
- racers.forEach((p,i)=>{
+ frame.lanes.forEach((p,i)=>{
   const fill=lanes[i]?.querySelector('.racer-fill'),label=lanes[i]?.querySelector('.racer-score');
-  if(fill)fill.style.width=(Math.max(0,p.score)/max*eased*100).toFixed(2)+'%';
-  if(label)label.textContent=progress>=1?p.score+' Punkte':'? Punkte';
+  if(fill)fill.style.width=p.fillPercent.toFixed(2)+'%';
+  if(label)label.textContent=p.score===null?'? Punkte':p.score+' Punkte';
  });
- if(progress>=1){
-  raceDone=true;const best=Math.max(...racers.map(p=>p.score));
-  const winners=racers.filter(p=>p.score===best);
+ if(frame.finished){
+  raceDone=true;
+  const winners=frame.lanes.filter(p=>p.winner);
   $('race-winner').textContent='🏆 '+winners.map(p=>p.name).join(' & ')+(winners.length>1?' – Gleichstand!':' gewinnt!');
   $('heading').textContent='🏆 Siegerehrung';$('return').hidden=false;
   $('notice').textContent='🏆 Endergebnis enthüllt';
