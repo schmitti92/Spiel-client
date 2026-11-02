@@ -76,8 +76,7 @@ async function refresh(){
     ended=true;shown.clear();$('field').replaceChildren();
     const results=[...(game.results||[])].sort((a,b)=>a.seat-b.seat);
     if(racedMatch!==match.id){racedMatch=match.id;raceStart=performance.now();raceDone=false;racers=results;raceModel=createScoreRace(results.map((p,i)=>({playerId:String(p.seat??i),name:p.name,score:p.score,seat:p.seat??i})));}
-    $('heading').textContent='🏁 Das Punkterennen!';
-    $('body').textContent='Wer erreicht als Erster die Spitze?';
+    if(!raceDone){$('heading').textContent='🏁 Das Punkterennen!';$('body').textContent='Wer erreicht als Erster die Spitze?';}
     let race=$('race');if(!race){race=document.createElement('div');race.id='race';$('body').after(race);}
     if(race.children.length!==results.length){
       race.replaceChildren();
@@ -92,8 +91,8 @@ async function refresh(){
       }
     }
     let winner=$('race-winner');if(!winner){winner=document.createElement('div');winner.id='race-winner';race.after(winner);}
-    winner.textContent='';$('modal').classList.remove('hidden');$('understood').hidden=true;$('return').hidden=true;
-    $('notice').textContent='🏁 Die Punktebalken starten gleichzeitig …';
+    if(!raceDone){winner.textContent='';$('return').hidden=true;$('notice').textContent='🏁 Die Punktebalken starten gleichzeitig …';}
+    $('modal').classList.remove('hidden');$('understood').hidden=true;
 
   }
  }catch(e){$('notice').textContent='Verbindung: '+e.message;}finally{fetching=false;}
