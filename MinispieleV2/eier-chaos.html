@@ -66,13 +66,13 @@ async function refresh(){
  try{
   const room=await request('');offset=room.serverNow-Date.now();const match=room.match;
   if(match?.game!=='eier-chaos'){modal('🥚 Eier-Chaos','Noch kein Eier-Chaos-Spiel aktiv. Starte das Spiel über die Minispiele-V2-Lobby.');$('return').hidden=false;return;}
-  if(matchId&&match.id!==matchId){acknowledged=false;shown.clear();}
+  if(matchId&&match.id!==matchId){acknowledged=false;finishing=false;ended=false;startAt=null;shown.clear();$('understood').disabled=false;}
   matchId=match.id;const game=match.eierChaos;if(!game){modal('⏳ Spielstart wird vorbereitet','Der Raum ist verbunden, aber die Eier-Chaos-Spieldaten fehlen noch. Bitte in der Lobby prüfen, ob die Partie korrekt gestartet wurde.');$('notice').textContent='Spielzustand unvollständig – Eier-Chaos-Daten fehlen';return;}
   $('players').textContent='👥 '+game.playerCount+' Spieler';
-  if(game.startAt!==null)startAt=game.startAt;
+  startAt=game.startAt??null;
   phase=game.phase;
   if(phase==='instructions'){
-    modal('🥚 Eier-Chaos','Fange 60 Sekunden lang Eier im Korb. Goldene Eier bringen 3 Punkte, normale 1 Punkt und faule Eier −1 Punkt. Nur Eier, die wirklich im Korb landen, zählen. Alle spielen gleichzeitig. Bereit: '+game.readyCount+' / '+game.playerCount,!acknowledged);
+    modal('🥚 Eier-Chaos','Fange 60 Sekunden lang Eier im Korb. Goldene Eier bringen 3 Punkte, normale 1 Punkt und faule Eier −1 Punkt. Nur Eier, die wirklich im Korb landen, zählen. Alle spielen gleichzeitig. Bereit: '+game.readyCount+' / '+game.playerCount,!acknowledged);$('understood').disabled=false;
     $('notice').textContent='Warte auf alle Spieler …';
   }else if(phase==='countdown'){
     modal('Gleich geht’s los!','Alle Spieler sind bereit. Der Countdown läuft …');$('notice').textContent='Gemeinsamer Start in wenigen Sekunden';
@@ -169,7 +169,7 @@ function frame(){
   if(phase==='playing'){
    $('time').textContent=Math.max(0,Math.ceil((60000-elapsed)/1000))+' s';
    draw(Math.max(0,Math.min(60000,elapsed)));
-   if(elapsed>=60000&&!finishing){finishing=true;void (async()=>{try{while(moving)await new Promise(resolve=>setTimeout(resolve,50));await request('/eier-chaos/move',{matchId,x:basket});await request('/eier-chaos/finish',{matchId});await refresh();}catch(e){$('notice').textContent=e.message;finishing=false;}})();}
+   if(elapsed>=60000&&!finishing){finishing=true;const completedMatch=matchId;void (async()=>{try{await request('/eier-chaos/finish',{matchId:completedMatch});if(matchId===completedMatch)await refresh();}catch(e){$('notice').textContent='Abschluss wird erneut versucht: '+e.message;if(matchId===completedMatch)finishing=false;}})();}
   }
  }
  requestAnimationFrame(frame);
