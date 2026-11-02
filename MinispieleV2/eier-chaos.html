@@ -62,7 +62,7 @@ async function refresh(){
   const room=await request('');offset=room.serverNow-Date.now();const match=room.match;
   if(match?.game!=='eier-chaos'){modal('🥚 Eier-Chaos','Noch kein Eier-Chaos-Spiel aktiv. Starte das Spiel über die Minispiele-V2-Lobby.');$('return').hidden=false;return;}
   if(matchId&&match.id!==matchId){acknowledged=false;shown.clear();}
-  matchId=match.id;const game=match.eierChaos;if(!game)return;
+  matchId=match.id;const game=match.eierChaos;if(!game){modal('⏳ Spielstart wird vorbereitet','Der Raum ist verbunden, aber die Eier-Chaos-Spieldaten fehlen noch. Bitte in der Lobby prüfen, ob die Partie korrekt gestartet wurde.');$('notice').textContent='Spielzustand unvollständig – Eier-Chaos-Daten fehlen';return;}
   $('players').textContent='👥 '+game.playerCount+' Spieler';
   if(game.startAt!==null)startAt=game.startAt;
   phase=game.phase;
