@@ -20,6 +20,7 @@ function onlineScore(g,c,j){
  return sum;
 }
 function onlineAllowed(g,j){
+ if(g.freeEntryActive&&g.rolls>0)return g.players[g.turn].sheet[j].flatMap((v,i)=>v===null?[i]:[]);
  if(g.dice.length===5){const normal=allowedCategories(g,j);const col=g.players[g.turn].sheet[j];return g.rolls>0&&col?.[11]===null&&g.dice.some(d=>g.dice.filter(v=>v===d).length>=5)?[...new Set([...normal,11])]:normal;}
  const col=g.players[g.turn].sheet[j],face=g.dice.find(d=>g.dice.filter(v=>v===d).length>=5);
  if(g.mode==='joker'&&g.rolls>0&&face&&col[11]===50){
@@ -241,7 +242,7 @@ function render(){
  const g=current();
  $('online-connection').textContent=ws?.readyState===1?'🟢 Live':'🟡 Verbinde …';
  $('players').replaceChildren();$('sheet').replaceChildren();$('dice').replaceChildren();$('online-result').replaceChildren();
- if(!g){$('online-undo').disabled=true;$('online-undo-vote')?.remove();$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('extra-die-joker').hidden=true;$('joker-panel').hidden=true;return}
+ if(!g){$('online-undo').disabled=true;$('online-undo-vote')?.remove();$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('extra-die-joker').hidden=true;$('free-entry-joker').hidden=true;$('joker-panel').hidden=true;return}
  const p=g.players[g.turn],mine=!g.finished&&p?.uid===user()?.uid;
  $('online-abort').hidden=!!g.finished;
  $('online-abort').textContent=snapshot?.host?'✕ Spiel abbrechen':'← Spiel verlassen';
@@ -301,6 +302,7 @@ lastTurnKey=turnKey;
  joker.hidden=false;
  dieJoker.hidden=false;
  const rerollJoker=$('reroll-joker');rerollJoker.hidden=false;
+ const freeJoker=$('free-entry-joker');freeJoker.hidden=false;
  const moveJoker=$('move-score-joker');moveJoker.hidden=false;
  $('joker-panel').hidden=false;
  $('joker-panel').title=g.extraJokers?'Joker für diese Partie verfügbar':'Joker wurden in der Lobby für diese Partie nicht aktiviert';
@@ -324,6 +326,12 @@ lastTurnKey=turnKey;
  rerollJoker.classList.toggle('joker-used',!!p.rerollUsed);
  rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':p.rerollUsed?'Bereits verwendet':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle Würfel neu werfen';
  $('reroll-joker-label').textContent=p.rerollUsed?'Verbraucht':'Neuwurf';
+ const freeUsed=!!p.freeEntryUsed;
+ freeJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||freeUsed||!!g.freeEntryActive;
+ freeJoker.classList.toggle('joker-active',!!g.freeEntryActive);
+ freeJoker.classList.toggle('joker-used',freeUsed&&!g.freeEntryActive);
+ freeJoker.title=g.freeEntryActive?'Aktiv: Ein beliebiges leeres Feld wählen':freeUsed?'Bereits verwendet':!g.extraJokers?'In der Lobby nicht aktiviert':g.rolls<1?'Erst nach dem ersten Wurf aktivierbar':'Alle noch leeren Felder freigeben';
+ $('free-entry-joker-label').textContent=g.freeEntryActive?'Freie Wahl aktiv':freeUsed?'Verbraucht':'Freie Eintragung';
  const ownPlayer=g.players.find(x=>x.uid===user()?.uid);
  const movePossible=ownPlayer?.sheet?.length>1&&ownPlayer.sheet.some((col,j)=>col.some((value,c)=>value!==null&&ownPlayer.sheet.some((target,k)=>k!==j&&true)));
  moveJoker.disabled=!g.extraJokers||busy||g.finished||!ownPlayer||!!ownPlayer.moveUsed||!movePossible;
@@ -386,6 +394,7 @@ $('roll').onclick=()=>send({type:'roll'});
 $('extra-roll-joker').onclick=()=>send({type:'extra-roll'});
 $('extra-die-joker').onclick=()=>send({type:'extra-die'});
 $('reroll-joker').onclick=()=>send({type:'reroll'});
+$('free-entry-joker').onclick=()=>send({type:'free-entry'});
 $('move-score-joker').onclick=()=>{const g=current();if(g)chooseMoveJoker(g)};
 async function connect(){if(!valid||!user()||ws||connecting||document.hidden)return;connecting=true;try{const socket=new WebSocket(base.replace(/^http/i,'ws')+'/hub');ws=socket;socket.onopen=async()=>{try{const token=await user().getIdToken();if(ws===socket){socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));heartbeat=setInterval(()=>{if(ws===socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ping'}))},30000)}}catch(_){socket.close()}};socket.onmessage=e=>{let msg;try{msg=JSON.parse(e.data)}catch(_){return}if(msg.type==='room'&&msg.room?.code===code){if(acceptSnapshot(msg.room)){render();status('Raum synchronisiert')}}if(msg.type==='error')status('Verbindung: '+msg.error)};socket.onclose=()=>{if(heartbeat){clearInterval(heartbeat);heartbeat=null}if(ws===socket)ws=null;render();if(!document.hidden)retryTimer=setTimeout(connect,4500)};socket.onerror=()=>socket.close()}catch(e){status(e.message)}finally{connecting=false}}
 if(!valid)status('Bitte Kniffel über die Online-Spielauswahl mit einem gültigen Raum öffnen.');
