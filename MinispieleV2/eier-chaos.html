@@ -16,6 +16,14 @@ button:disabled{opacity:.5}#shell{position:relative;height:100dvh;width:100vw;ov
 #panel button{background:#28643b;color:white;font-size:20px;margin:8px}#panel .secondary{background:#705137}
 #countdown{font-size:clamp(80px,18vw,180px);font-weight:1000;text-shadow:0 8px 18px #0009}
 #notice{position:absolute;z-index:11;bottom:2%;left:50%;transform:translateX(-50%);padding:8px 15px;border-radius:15px;background:#13291ac9;font-weight:800;text-align:center;max-width:95vw}
+#race{display:grid;gap:13px;margin:18px 0 12px;text-align:left}
+.racer{padding:10px;border-radius:13px;background:#fff8e9;border:2px solid #c49d5c}
+.racer-head{display:flex;justify-content:space-between;gap:8px;align-items:center;font-weight:900;margin-bottom:7px}
+.racer-track{height:23px;background:repeating-linear-gradient(90deg,#cdbd9e 0 18px,#dfd0b5 18px 36px);border-radius:18px;overflow:hidden;position:relative}
+.racer-fill{height:100%;width:0%;border-radius:18px;background:linear-gradient(90deg,var(--race-color),#ffe4a0);transition:none;position:relative}
+.racer-fill:after{content:'🥚';position:absolute;right:-4px;top:-4px;font-size:24px;filter:drop-shadow(1px 1px 1px #543)}
+#race-message{font-size:18px;font-weight:900;min-height:28px}
+#race-winner{font-size:25px;font-weight:1000;margin-top:12px}
 #results{list-style:none;padding:0;margin:14px 0;text-align:left}#results li{background:#fff7df;margin:7px 0;border-radius:12px;padding:10px 14px;font-weight:800}
 </style></head><body>
 <div id="shell"><div id="field"></div><div id="basket"></div>
@@ -29,6 +37,7 @@ const $=id=>document.getElementById(id);
 const params=new URLSearchParams(location.search),roomCode=String(params.get('room')||'').toUpperCase();
 const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
+let racedMatch=null,raceStart=0,racers=[],raceDone=false;
 let matchId=null,phase=null,startAt=null,offset=0,basket=.5,lastMove=0,moving=false,fetching=false,acknowledged=false,finishing=false,shown=new Set(),ended=false;
 const back=()=>location.href='./lobby.html?room='+encodeURIComponent(roomCode)+'&stay=1';
 $('back').onclick=back;$('return').onclick=back;
@@ -63,13 +72,28 @@ async function refresh(){
   }else if(phase==='playing'){
     hideModal();$('notice').textContent='🥚 Fange die Eier – Punkte bleiben bis zum Ende geheim';
   }else if(phase==='finished'){
-    phase='finished';ended=true;shown.clear();$('field').replaceChildren();
-    $('heading').textContent='🏆 Siegerehrung';$('body').textContent='';
-    let list=$('results');if(!list){list=document.createElement('ol');list.id='results';$('body').after(list);}
-    list.replaceChildren();
-    for(const [i,p] of [...(game.results||[])].sort((a,b)=>b.score-a.score).entries()){const li=document.createElement('li');li.textContent=(i+1)+'. '+p.name+' – '+p.score+' Punkte';list.append(li);}
-    $('modal').classList.remove('hidden');$('understood').hidden=true;$('return').hidden=false;
-    $('notice').textContent='Partie beendet · Ergebnisse sind sichtbar';
+    ended=true;shown.clear();$('field').replaceChildren();
+    const results=[...(game.results||[])].sort((a,b)=>a.seat-b.seat);
+    if(racedMatch!==match.id){racedMatch=match.id;raceStart=performance.now();raceDone=false;racers=results;}
+    $('heading').textContent='🏁 Das Punkterennen!';
+    $('body').textContent='Wer erreicht als Erster die Spitze?';
+    let race=$('race');if(!race){race=document.createElement('div');race.id='race';$('body').after(race);}
+    if(race.children.length!==results.length){
+      race.replaceChildren();
+      for(const [i,p] of results.entries()){
+        const lane=document.createElement('div');lane.className='racer';
+        const head=document.createElement('div');head.className='racer-head';
+        const name=document.createElement('span');name.textContent=(i+1)+'. '+p.name;
+        const score=document.createElement('span');score.textContent='? Punkte';score.className='racer-score';
+        head.append(name,score);
+        const track=document.createElement('div');track.className='racer-track';
+        const fill=document.createElement('div');fill.className='racer-fill';fill.style.setProperty('--race-color',['#f6a52b','#52b7e9','#9a77e6','#67bc72'][i%4]);track.append(fill);lane.append(head,track);race.append(lane);
+      }
+    }
+    let winner=$('race-winner');if(!winner){winner=document.createElement('div');winner.id='race-winner';race.after(winner);}
+    winner.textContent='';$('modal').classList.remove('hidden');$('understood').hidden=true;$('return').hidden=true;
+    $('notice').textContent='🏁 Die Punktebalken starten gleichzeitig …';
+
   }
  }catch(e){$('notice').textContent='Verbindung: '+e.message;}finally{fetching=false;}
 }
@@ -97,7 +121,27 @@ function draw(time){
   el.style.left=(egg.x*100)+'%';el.style.top=(12+progress*77)+'%';
  }
 }
+function animateRace(){
+ if(!racedMatch||raceDone)return;
+ const duration=8500,progress=Math.min(1,(performance.now()-raceStart)/duration);
+ const eased=1-Math.pow(1-progress,2);
+ const max=Math.max(1,...racers.map(p=>Math.max(0,p.score)));
+ const lanes=[...document.querySelectorAll('#race .racer')];
+ racers.forEach((p,i)=>{
+  const fill=lanes[i]?.querySelector('.racer-fill'),label=lanes[i]?.querySelector('.racer-score');
+  if(fill)fill.style.width=(Math.max(0,p.score)/max*eased*100).toFixed(2)+'%';
+  if(label)label.textContent=progress>=1?p.score+' Punkte':'? Punkte';
+ });
+ if(progress>=1){
+  raceDone=true;const best=Math.max(...racers.map(p=>p.score));
+  const winners=racers.filter(p=>p.score===best);
+  $('race-winner').textContent='🏆 '+winners.map(p=>p.name).join(' & ')+(winners.length>1?' – Gleichstand!':' gewinnt!');
+  $('heading').textContent='🏆 Siegerehrung';$('return').hidden=false;
+  $('notice').textContent='🏆 Endergebnis enthüllt';
+ }
+}
 function frame(){
+ if(ended)animateRace();
  if(startAt!==null&&!ended){
   const elapsed=now()-startAt;
   if(phase==='countdown'){
