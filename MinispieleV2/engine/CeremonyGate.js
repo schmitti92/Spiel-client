@@ -16,5 +16,7 @@ export function ceremonyReadiness(participants,results){
 }
 export function ceremonySeatReadiness(playerCount,results){
  if(!Number.isInteger(playerCount)||playerCount<1||playerCount>4)throw Error('PLAYER_COUNT_1_TO_4');
- return ceremonyReadiness(Array.from({length:playerCount},(_,i)=>String(i)),Array.isArray(results)?results.map(r=>({...r,playerId:String(r?.seat)})):[]);
+ const seats=Array.isArray(results)?results.map(r=>r?.seat):[];
+ const base=seats.length>0&&seats.every(seat=>Number.isInteger(seat)&&seat>=1&&seat<=playerCount)?1:0;
+ return ceremonyReadiness(Array.from({length:playerCount},(_,i)=>String(i+base)),Array.isArray(results)?results.map(r=>({...r,playerId:String(r?.seat)})):[]);
 }
