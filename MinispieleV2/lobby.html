@@ -57,6 +57,10 @@ eggLaunch.onclick=async()=>{
  eggLaunch.disabled=true;eggError.textContent='';
  try{
    if(snapshot.match?.game==='eier-chaos'&&snapshot.match.status?.phase!=='finished'){
+     const actual=snapshot.match.playerCount??snapshot.players?.filter(p=>p.participating).length??0;
+     if(bots>0&&actual<(snapshot.players||[]).filter(p=>!p.testBot).length+bots){
+       throw Error('Die laufende Partie hat nur '+actual+' Teilnehmer. Die ausgewählten Testspieler gelten erst für eine NEUE Partie. Bitte zuerst die laufende Partie beenden.');
+     }
      location.href='./eier-chaos.html?mode=online&room='+encodeURIComponent(code);return;
    }
    if(!snapshot.host)throw Error('Nur der Host kann eine neue Partie starten.');
@@ -75,16 +79,22 @@ function render(){
   document.getElementById('game-phase-info').textContent=phaseText;
   slotsEl.replaceChildren();
   const players=Array.isArray(snapshot?.players)?snapshot.players:[];
-  const remaining=Math.max(0,4-players.length);
+  const realPlayers=players.filter(p=>!p.testBot);
+  const liveBots=players.filter(p=>p.testBot);
+  const remaining=Math.max(0,4-realPlayers.length);
   bots=Math.min(bots,3,remaining);
+  const activeEgg=snapshot?.match?.game==='eier-chaos'&&snapshot?.match?.status?.phase!=='finished';
+  if(activeEgg)bots=liveBots.length;
+  const shownPlayers=activeEgg?players:realPlayers;
   for(let i=0;i<4;i++){
     const div=document.createElement('div');div.className='slot';
-    const p=players[i];
-    div.textContent=p?(p.testBot?'🤖 ':p.host?'👑 ':'👤 ')+(p.name||'Spieler')+(p.testBot?' · Computer':' · Online'):i<players.length+bots?'🤖 Testspieler '+(i-players.length+1)+' · bereit für Eier-Chaos':'Platz '+(i+1)+' · frei';
+    const p=shownPlayers[i];
+    div.textContent=p?(p.testBot?'🤖 ':p.host?'👑 ':'👤 ')+(p.name||'Spieler')+(p.testBot?' · im laufenden Spiel':' · Online'):i<shownPlayers.length+bots?'🤖 Testspieler '+(i-shownPlayers.length+1)+' · für nächste Partie vorgemerkt':'Platz '+(i+1)+' · frei';
     slotsEl.append(div);
   }
-  add.disabled=bots>=3||bots>=remaining;
-  remove.disabled=bots===0;
+  add.disabled=activeEgg||bots>=3||bots>=remaining;
+  remove.disabled=activeEgg||bots===0;
+  eggLaunch.title=activeEgg?'Laufende Partie mit '+(snapshot.match.playerCount??shownPlayers.length)+' Teilnehmern öffnen':'Neue Partie mit '+(realPlayers.length+bots)+' Teilnehmern starten';
 }
 add.onclick=()=>{bots=Math.min(3,bots+1);render()};
 remove.onclick=()=>{bots=Math.max(0,bots-1);render()};
