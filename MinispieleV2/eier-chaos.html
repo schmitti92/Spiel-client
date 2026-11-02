@@ -27,8 +27,8 @@ button:disabled{opacity:.5}#shell{position:relative;height:100dvh;width:100vw;ov
 import {eggAt,EGG_COUNT} from './games/eier-chaos/game.js';
 const $=id=>document.getElementById(id);
 const params=new URLSearchParams(location.search),roomCode=String(params.get('room')||'').toUpperCase();
-const valid=/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
-const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
+const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let matchId=null,phase=null,startAt=null,offset=0,basket=.5,lastMove=0,moving=false,fetching=false,acknowledged=false,finishing=false,shown=new Set(),ended=false;
 const back=()=>location.href='./lobby.html?room='+encodeURIComponent(roomCode)+'&stay=1';
 $('back').onclick=back;$('return').onclick=back;
