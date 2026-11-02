@@ -375,6 +375,28 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 @media(max-width:760px){.container{width:calc(100% - 24px)!important}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.game-grid>.game{aspect-ratio:696/400!important;border-radius:14px!important}.game-grid>.game.party-challenge-card{aspect-ratio:696/230!important}}
 @media(max-width:520px){.game-grid{grid-template-columns:1fr!important}.game-grid>.game{aspect-ratio:696/320!important}.game-grid>.game.party-challenge-card{grid-column:auto;aspect-ratio:696/320!important}}
  .mini-new-card{background:linear-gradient(130deg,#102d42,#124a55)!important;border-color:#42b9b1!important}.mini-new-card::before{background-image:radial-gradient(circle at 75% 40%,#278e9b,#0d253e 65%)!important}.mini-new-card::after{background:linear-gradient(90deg,#061b30dd,transparent)!important}.mini-new-card .actions{position:relative;z-index:2}
+</style>
+<style>
+/* Accessible room dialog: independent of header and notice stacking contexts. */
+.online-room-dropdown-panel{display:none!important}
+.online-room-dropdown[open]>.online-room-dropdown-panel{display:none!important}
+.online-room-dialog{position:fixed;inset:0;z-index:2147483000;border:0;width:100%;max-width:none;height:100%;max-height:none;margin:0;padding:20px;background:transparent;color:#f5f8ff;overflow:auto;overscroll-behavior:contain}
+.online-room-dialog:not([open]){display:none}
+.online-room-dialog::backdrop{background:rgba(2,9,23,.77);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.online-room-dialog-card{width:min(440px,100%);max-height:calc(100dvh - 40px);overflow:auto;margin:min(7vh,55px) auto 0;padding:24px;border:1px solid #79aeec88;border-radius:24px;background:linear-gradient(150deg,#18395c,#0b1d36 75%);box-shadow:0 28px 90px #000b}
+.online-room-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+.online-room-dialog-head h2{margin:0;font-size:23px;color:#fff}
+.online-room-dialog-close{width:40px;height:40px;flex:none;border-radius:50%;border:1px solid #88afd2;background:#294d70;color:white;font-size:24px;cursor:pointer}
+.online-room-dialog .online-room-meta{display:flex;flex-direction:column;align-items:stretch;gap:9px;padding:15px;background:#102b4c;border:1px solid #4b749d;border-radius:15px;color:#e5f2ff;font-size:14px;line-height:1.5}
+.online-room-dialog #online-room-code{font-size:21px;letter-spacing:2px}
+.online-room-dialog .online-quick-room{margin-top:14px;padding:13px;background:#102b4c;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.online-room-dialog .online-quick-room input{grid-column:1/-1;width:100%;min-width:0;font-size:16px}
+.online-room-dialog .online-quick-room button{min-height:44px;font-size:14px}
+.online-room-dialog .online-room-secondary{display:grid;gap:9px;margin-top:15px;padding-top:15px;border-top:1px solid #6385a377}
+.online-room-dialog .online-room-secondary button{width:100%;min-height:46px;border:1px solid #ce9a78;border-radius:13px;background:#57382d;color:#fff;font:750 15px system-ui;cursor:pointer}
+.online-room-dialog .online-room-secondary button:disabled{opacity:.5;cursor:not-allowed}
+.online-room-dialog .online-room-feedback{min-height:18px;margin:10px 0 0;color:#ffccaa;font-size:13px}
+@media(max-width:520px){.online-room-dialog{padding:12px}.online-room-dialog-card{margin:12px auto 0;max-height:calc(100dvh - 24px);padding:17px}.online-room-dialog-head h2{font-size:20px}}
 </style></head>
 <body>
   <main class="container">
@@ -382,16 +404,19 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
       <h1>🌐 Online-Spielauswahl</h1>
 
       <nav class="online-head-actions" aria-label="Raum und Profil">
-        <details class="online-room-dropdown">
-          <summary>🌐 Raum <span aria-hidden="true">▾</span></summary>
-          <div class="online-room-dropdown-panel">
-            <div class="online-room-meta" role="status"><span>Raum <strong id="online-room-code">······</strong></span><span id="online-room-status">Verbindung wird geprüft …</span><span id="online-room-players"></span></div>
-            <form id="online-quick-room" class="online-quick-room" aria-label="Online-Raum verwalten"><input id="online-quick-code" aria-label="Raumcode eingeben" maxlength="6" inputmode="numeric" placeholder="Raumcode" autocomplete="off" spellcheck="false" inputmode="text"><button type="submit" id="online-quick-join">Beitreten</button><button type="button" id="online-quick-create">＋ Erstellen</button></form>
-          </div>
-        </details>
+        <button type="button" id="online-room-dialog-trigger" class="online-room-manage" aria-haspopup="dialog" aria-controls="online-room-dialog">🌐 Raum ▾</button>
         <a class="online-profile-shortcut" href="profile.html" aria-label="Mein Spielerprofil öffnen" title="Mein Spielerprofil"><span class="online-profile-avatar" id="online-profile-avatar" aria-hidden="true">👤</span><span class="online-profile-label">Profil</span></a>
       </nav>
     </header>
+  <dialog id="online-room-dialog" class="online-room-dialog" aria-labelledby="online-room-dialog-title">
+    <div class="online-room-dialog-card">
+      <div class="online-room-dialog-head"><h2 id="online-room-dialog-title">🌐 Raumverwaltung</h2><button type="button" id="online-room-dialog-close" class="online-room-dialog-close" aria-label="Raummenü schließen">×</button></div>
+      <div class="online-room-meta" role="status"><span>Raumcode: <strong id="online-room-code">······</strong></span><span id="online-room-status">Verbindung wird geprüft …</span><span id="online-room-players"></span></div>
+      <form id="online-quick-room" class="online-quick-room" aria-label="Online-Raum verwalten"><input id="online-quick-code" aria-label="Raumcode eingeben" maxlength="6" placeholder="Raumcode" autocomplete="off" spellcheck="false" inputmode="text"><button type="submit" id="online-quick-join">Beitreten</button><button type="button" id="online-quick-create">＋ Erstellen</button></form>
+      <div class="online-room-secondary"><button type="button" id="online-room-leave" disabled>🚪 Raum verlassen</button></div>
+      <p class="online-room-feedback" id="online-room-feedback" role="alert"></p>
+    </div>
+  </dialog>
  <p id="online-notice" class="online-room-notice" role="status">Bitte warten, bis dein Online-Profil verbunden ist.</p>
 <section class="game-grid" aria-label="Verfügbare Spiele">
       <article class="game barikade-card">
@@ -431,7 +456,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 
 <script src="profile-config.js"></script>
 <script src="profile-auth.js"></script>
-<script src="spielauswahl-online.js?v=kniffel-nav2" defer></script>
+<script src="spielauswahl-online.js?v=room-dialog-20261102" defer></script>
 <script src="global-update.js?v=20261025-global-1" data-build="20261025-global-1" defer></script>
 <script>
 /* Bildtitel nur ausblenden, wenn die vier Originaldateien wirklich vorhanden sind. */
@@ -481,6 +506,16 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
     }
   });
 })();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const dialog=document.getElementById('online-room-dialog');
+ const trigger=document.getElementById('online-room-dialog-trigger');
+ const close=document.getElementById('online-room-dialog-close');
+ trigger?.addEventListener('click',()=>{if(!dialog?.open)dialog.showModal();});
+ close?.addEventListener('click',()=>dialog?.close());
+ dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
+});
 </script>
 </body>
 </html>
