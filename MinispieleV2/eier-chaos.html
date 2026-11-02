@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>🥚 Eier-Chaos Online</title>
+<style>
+:root{font-family:system-ui,Arial,sans-serif;color:#fff;background:#122419}*{box-sizing:border-box}
+body{margin:0;overflow:hidden}button{font:inherit;cursor:pointer;border:0;border-radius:13px;padding:12px 18px;font-weight:800;background:#f2bc57;color:#2b1c0d}
+button:disabled{opacity:.5}#shell{position:relative;height:100dvh;width:100vw;overflow:hidden;background:#9d6535 url('./games/eier-chaos/assets/file_00000000810882108432bad43aaf11e8.png') center/100% 100% no-repeat;touch-action:none}
+#top{position:absolute;z-index:10;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(#18251be0,#18251b55);font-weight:900}
+#top button{font-size:13px;padding:9px 13px}#time{font-size:clamp(20px,4vw,36px);text-shadow:0 2px 5px #000}
+#field{position:absolute;inset:0;overflow:hidden;touch-action:none}
+.egg{position:absolute;width:clamp(27px,4vw,54px);height:clamp(36px,5vw,69px);background-position:center;background-size:contain;background-repeat:no-repeat;transform:translate(-50%,-50%);pointer-events:none;z-index:3}
+#basket{position:absolute;bottom:4%;left:50%;width:clamp(110px,18vw,205px);height:clamp(78px,12vw,135px);background:url('./games/eier-chaos/assets/basket.svg') center/contain no-repeat;transform:translateX(-50%);z-index:4;pointer-events:none;filter:drop-shadow(0 5px 4px #29180880)}
+#modal{position:absolute;z-index:20;inset:0;background:#06170bba;display:flex;align-items:center;justify-content:center;padding:20px}
+#modal.hidden{display:none}#panel{width:min(95vw,550px);max-height:92dvh;overflow:auto;text-align:center;padding:clamp(20px,4vw,40px);border-radius:25px;background:linear-gradient(150deg,#fff3d4,#e5c993);border:5px solid #91632d;box-shadow:0 20px 80px #0009;color:#3d2915}
+#panel h1{font-size:clamp(26px,6vw,48px);margin:0 0 15px}#panel p{line-height:1.5;font-size:clamp(15px,2vw,20px)}
+#panel button{background:#28643b;color:white;font-size:20px;margin:8px}#panel .secondary{background:#705137}
+#countdown{font-size:clamp(80px,18vw,180px);font-weight:1000;text-shadow:0 8px 18px #0009}
+#notice{position:absolute;z-index:11;bottom:2%;left:50%;transform:translateX(-50%);padding:8px 15px;border-radius:15px;background:#13291ac9;font-weight:800;text-align:center;max-width:95vw}
+#results{list-style:none;padding:0;margin:14px 0;text-align:left}#results li{background:#fff7df;margin:7px 0;border-radius:12px;padding:10px 14px;font-weight:800}
+</style></head><body>
+<div id="shell"><div id="field"></div><div id="basket"></div>
+<div id="top"><button id="back">← Lobby</button><span id="time">60 s</span><span id="players">🥚 Eier-Chaos</span></div>
+<div id="notice">Verbindung zur gemeinsamen Lobby wird geprüft …</div>
+<div id="modal"><div id="panel"><h1 id="heading">🥚 Eier-Chaos</h1><div id="body">Verbinde mit dem Spielraum …</div><button id="understood" hidden>Verstanden ✓</button><button id="return" class="secondary" hidden>Zur Lobby</button></div></div></div>
+<script src="../profile-config.js"></script><script src="../profile-auth.js"></script>
+<script type="module">
+import {eggAt,EGG_COUNT} from './games/eier-chaos/game.js';
+const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search),roomCode=String(params.get('room')||'').toUpperCase();
+const valid=/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
+const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'');
+let matchId=null,phase=null,startAt=null,offset=0,basket=.5,lastMove=0,moving=false,fetching=false,acknowledged=false,finishing=false,shown=new Set(),ended=false;
+const back=()=>location.href='./lobby.html?room='+encodeURIComponent(roomCode)+'&stay=1';
+$('back').onclick=back;$('return').onclick=back;
+function modal(title,content,button=false){$('modal').classList.remove('hidden');$('heading').textContent=title;$('body').textContent=content;$('understood').hidden=!button;$('return').hidden=button;}
+function hideModal(){$('modal').classList.add('hidden');}
+function now(){return Date.now()+offset;}
+function setBasket(x){basket=Math.max(0,Math.min(1,x));$('basket').style.left=(basket*100)+'%';}
+$('field').addEventListener('pointerdown',movePointer);$('field').addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')movePointer(e);});
+function movePointer(e){if(phase!=='playing')return;const rect=$('field').getBoundingClientRect();setBasket((e.clientX-rect.left)/rect.width);}
+async function request(path,body){
+ const user=window.SpielOnline?.state?.()?.user;
+ if(!user?.getIdToken)throw Error('Bitte mit deinem Online-Profil anmelden');
+ const token=await user.getIdToken();
+ const response=await fetch(api+'/api/hub/rooms/'+encodeURIComponent(roomCode)+path,{method:body===undefined?'GET':'POST',headers:{Authorization:'Bearer '+token,...(body===undefined?{}:{'Content-Type':'application/json'})},...(body===undefined?{}:{body:JSON.stringify(body)}),cache:'no-store'});
+ const data=await response.json();if(!response.ok||data.ok!==true)throw Error(data.error||'SERVER_ERROR');return data.room;
+}
+async function refresh(){
+ if(fetching||document.hidden||!valid)return;fetching=true;
+ try{
+  const room=await request('');offset=room.serverNow-Date.now();const match=room.match;
+  if(match?.game!=='eier-chaos'){modal('🥚 Eier-Chaos','Noch kein Eier-Chaos-Spiel aktiv. Starte das Spiel über die Minispiele-V2-Lobby.');$('return').hidden=false;return;}
+  if(matchId&&match.id!==matchId){acknowledged=false;shown.clear();}
+  matchId=match.id;const game=match.eierChaos;if(!game)return;
+  $('players').textContent='👥 '+game.playerCount+' Spieler';
+  if(game.startAt!==null)startAt=game.startAt;
+  phase=game.phase;
+  if(phase==='instructions'){
+    modal('🥚 Eier-Chaos','Fange 60 Sekunden lang Eier im Korb. Goldene Eier bringen 3 Punkte, normale 1 Punkt und faule Eier −1 Punkt. Nur Eier, die wirklich im Korb landen, zählen. Alle spielen gleichzeitig. Bereit: '+game.readyCount+' / '+game.playerCount,!acknowledged);
+    $('notice').textContent='Warte auf alle Spieler …';
+  }else if(phase==='countdown'){
+    modal('Gleich geht’s los!','Alle Spieler sind bereit. Der Countdown läuft …');$('notice').textContent='Gemeinsamer Start in wenigen Sekunden';
+  }else if(phase==='playing'){
+    hideModal();$('notice').textContent='🥚 Fange die Eier – Punkte bleiben bis zum Ende geheim';
+  }else if(phase==='finished'){
+    phase='finished';ended=true;shown.clear();$('field').replaceChildren();
+    $('heading').textContent='🏆 Siegerehrung';$('body').textContent='';
+    let list=$('results');if(!list){list=document.createElement('ol');list.id='results';$('body').after(list);}
+    list.replaceChildren();
+    for(const [i,p] of [...(game.results||[])].sort((a,b)=>b.score-a.score).entries()){const li=document.createElement('li');li.textContent=(i+1)+'. '+p.name+' – '+p.score+' Punkte';list.append(li);}
+    $('modal').classList.remove('hidden');$('understood').hidden=true;$('return').hidden=false;
+    $('notice').textContent='Partie beendet · Ergebnisse sind sichtbar';
+  }
+ }catch(e){$('notice').textContent='Verbindung: '+e.message;}finally{fetching=false;}
+}
+$('understood').onclick=async()=>{
+ if(!matchId)return;$('understood').disabled=true;
+ try{await request('/eier-chaos/understood',{matchId});acknowledged=true;await refresh();}
+ catch(e){$('understood').disabled=false;$('notice').textContent=e.message;}
+};
+async function sendMove(){
+ if(moving||phase!=='playing'||!matchId)return;
+ moving=true;
+ try{await request('/eier-chaos/move',{matchId,x:basket});}
+ catch(e){$('notice').textContent='Bewegung: '+e.message;}
+ finally{moving=false;}
+}
+function draw(time){
+ const field=$('field');const width=field.clientWidth,height=field.clientHeight;
+ for(let i=0;i<EGG_COUNT;i++){
+  const egg=eggAt(i),progress=(time-egg.spawnMs)/(egg.landMs-egg.spawnMs);
+  let el=document.getElementById('egg-'+i);
+  if(progress<0||progress>1){
+    if(el){el.remove();shown.delete(i);}continue;
+  }
+  if(!el){el=document.createElement('div');el.className='egg';el.id='egg-'+i;el.style.backgroundImage="url('./games/eier-chaos/assets/egg-"+(egg.special?'golden':egg.rotten?'rotten':'normal')+".svg')";field.append(el);shown.add(i);}
+  el.style.left=(egg.x*100)+'%';el.style.top=(12+progress*77)+'%';
+ }
+}
+function frame(){
+ if(startAt!==null&&!ended){
+  const elapsed=now()-startAt;
+  if(phase==='countdown'){
+   const remaining=Math.max(0,Math.ceil(-elapsed/1000));
+   $('heading').textContent=remaining?String(remaining):'LOS!';
+   if(elapsed>=0){phase='playing';hideModal();}
+  }
+  if(phase==='playing'){
+   $('time').textContent=Math.max(0,Math.ceil((60000-elapsed)/1000))+' s';
+   draw(Math.max(0,Math.min(60000,elapsed)));
+   if(elapsed>=60000&&!finishing){finishing=true;void request('/eier-chaos/finish',{matchId}).then(()=>refresh()).catch(e=>{$('notice').textContent=e.message;finishing=false;});}
+  }
+ }
+ requestAnimationFrame(frame);
+}
+if(!valid)modal('Ungültiger Raum','Bitte über die gemeinsame Lobby öffnen.');
+else{setInterval(()=>void refresh(),1800);setInterval(()=>void sendMove(),950);void refresh();requestAnimationFrame(frame);}
+</script></body></html>
