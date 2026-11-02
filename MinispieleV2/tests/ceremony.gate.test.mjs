@@ -23,3 +23,5 @@ test('invalid roster is rejected',()=>{
  assert.throws(()=>ceremonySeatReadiness(5,[]),/PLAYER_COUNT/);
  assert.throws(()=>ceremonyReadiness(['a','a'],[]),/INVALID_CEREMONY_PLAYERS/);
 });
+
+test('one-based online hub seats are supported',()=>{assert.equal(ceremonySeatReadiness(2,[{seat:1,score:2},{seat:2,score:0}]).ready,true);});
