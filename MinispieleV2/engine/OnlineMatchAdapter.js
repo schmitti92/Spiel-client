@@ -2,6 +2,7 @@
  * Does not own rooms, identity, network, clocks or persistence.
  */
 import {matchPhase,canEnterMatch} from './MatchLifecycle.js';
+import {validatePlayers} from './PlayerManager.js';
 export function readOnlineMatch(room,gameId){
  if(typeof gameId!=='string'||!gameId)throw Error('INVALID_GAME_ID');
  const match=room?.match;
@@ -16,7 +17,7 @@ export function normalizeOnlineParticipants(members){
  return members.map((m,i)=>{
   if(typeof m?.uid!=='string'||!m.uid||seen.has(m.uid))throw Error('INVALID_PLAYER');
   seen.add(m.uid);
-  return Object.freeze({id:m.uid,name:typeof m.name==='string'&&m.name?m.name:'Spieler '+(i+1),type:m.testBot||m.uid.startsWith('testbot:')?'bot':'human',seat:m.seat??i});
+  return Object.freeze({id:m.uid,name:typeof m.name==='string'&&m.name?m.name:'Spieler '+(i+1),type:m.type==='bot'||m.testBot===true?'bot':'human',seat:m.seat??i});
  });
 }
 export function onlineGameActions(gameId){
