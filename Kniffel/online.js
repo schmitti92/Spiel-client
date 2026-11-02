@@ -156,6 +156,11 @@ function acceptSnapshot(fresh){
  const oldMatch=snapshot?.match?.id;
  snapshot=fresh;
  const next=current();
+ if(before&&next&&previousMatchId===snapshot?.match?.id&&oldTurn===next.turn&&oldRolls>0&&next.rolls===0&&next.players?.[next.turn]?.fullRestartUsed){
+  diceMotion=null;clearTimeout(diceMotionTimer);
+  heldScorePlayer=null;scoreHoldUntil=0;scoreReveal=null;clearTimeout(scoreRevealTimer);
+  document.getElementById('online-score-confirm')?.remove();
+ }
  // Animate confirmed new rolls on every device; never animate a mere refresh.
  if(before&&next&&previousMatchId===snapshot?.match?.id&&oldTurn===next.turn&&next.rolls>oldRolls&&next.rolls>0){
   const moving=next.dice.map((_,i)=>oldRolls===0||!oldHeld[i]);
@@ -165,7 +170,7 @@ function acceptSnapshot(fresh){
  }
  // Announce confirmed joker activation to every connected player, not on page load.
  if(before&&next&&oldMatch===snapshot?.match?.id){
-  const labels=[['extraRollUsed','+1 Wurf'],['extraDieUsed','+1 Würfel'],['rerollUsed','Neuwurf'],['moveUsed','Verschieben / Tauschen']];
+  const labels=[['fullRestartUsed','Kompletter Neustart'],['freeEntryUsed','Freie Eintragung'],['extraRollUsed','+1 Wurf'],['extraDieUsed','+1 Würfel'],['rerollUsed','Neuwurf'],['moveUsed','Verschieben / Tauschen']];
   for(const p of next.players||[]){
    const prev=before.players?.find(q=>q.uid===p.uid);
    if(!prev)continue;
@@ -383,7 +388,7 @@ lastTurnKey=turnKey;
 }
 async function request(path,body=null){const u=user();if(!u)throw Error('Bitte zuerst online anmelden');const token=await u.getIdToken(),res=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(code)+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data.room}
 async function refresh(){if(!valid||!user())return;try{const fresh=await request('');if(acceptSnapshot(fresh))render()}catch(e){status('Raum nicht verfügbar: '+e.message)}}
-async function send(action){const g=current();if(!g||busy)return;busy=true;render();try{const fresh=await request('/kniffel/action',{matchId:snapshot.match.id,revision:g.revision,action});acceptSnapshot(fresh);if(action.type==='full-restart'){const updated=current();if(updated?.rolls!==0||updated?.dice?.length!==5||updated?.held?.some(Boolean)){throw Error('Neustart nicht bestätigt – Spielzustand erneut laden');}status('🔄 Neustart erfolgreich: 5 Würfel freigegeben, wieder 3 Würfe verfügbar!');}else status('Aktion bestätigt');render()}catch(e){status('Aktion abgelehnt: '+e.message);await refresh()}finally{busy=false;render()}}
+async function send(action){const g=current();if(!g||busy)return;busy=true;render();try{const fresh=await request('/kniffel/action',{matchId:snapshot.match.id,revision:g.revision,action});acceptSnapshot(fresh);if(action.type==='full-restart'){const updated=current();if(!updated||updated.rolls!==0||updated.dice?.length!==5||updated.held?.some(Boolean)||updated.extraDieActive||updated.extraRollActive){throw Error('Neustart nicht bestätigt – Spielzustand erneut laden');}status('🔄 Neustart erfolgreich: 5 Würfel freigegeben, wieder 3 Würfe verfügbar!');}else status('Aktion bestätigt');render()}catch(e){status('Aktion abgelehnt: '+e.message);await refresh()}finally{busy=false;render()}}
 $('online-abort').onclick=async()=>{
  const host=!!snapshot?.host;
  const msg=host?'Laufendes Kniffel-Spiel für alle Spieler abbrechen? Die aktuelle Partie wird beendet.':'Laufendes Spiel verlassen? Die Partie der anderen Spieler wird dadurch nicht beendet.';
