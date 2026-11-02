@@ -48,9 +48,18 @@ function renderProfileShortcut(){
  const asset=idx<8?'profile-avatars.webp':'profile-avatars-extra.webp';const cell=idx<8?idx:idx-8;
  el.style.backgroundImage='url('+JSON.stringify(asset)+')';el.style.backgroundSize='400% 200%';el.style.backgroundPosition=((cell%4)*100/3)+'% '+(Math.floor(cell/4)*100)+'%';el.textContent='';
 }
+function renderRoomLeave(){
+ const leave=byId('online-room-leave'), feedback=byId('online-room-feedback');
+ if(!leave)return;
+ leave.disabled=!codeValid||!room||room.phase==='playing'||!user()||quickBusy;
+ leave.textContent=room?.host?'🚪 Raum verlassen (Host abgeben)':'🚪 Raum verlassen';
+ leave.title=room?.phase==='playing'?'Während eines laufenden Spiels ist Austreten nicht möglich.':'';
+ if(feedback&&!feedback.textContent&&room?.phase==='playing')feedback.textContent='Laufende Spiele müssen vor dem Austreten beendet werden.';
+}
 function update(snapshot){
  if(snapshot.code!==code)return;
  room=snapshot;
+ renderRoomLeave();
  try{const uid=user()?.uid;if(uid)localStorage.setItem('spielportal:last-room:'+uid,code);}catch(_){}
  byId('online-room-code').textContent=code;
  byId('online-room-players').textContent=snapshot.players?.map(p=>(p.host?'👑 ':'')+p.name).join(' · ')||'';
@@ -70,6 +79,7 @@ async function refresh(){
   const authState=window.SpielOnline?.state?.();
   if(['initializing','loading'].includes(authState?.status)){status('Dein gespeichertes Spielerprofil wird verbunden …');return;}
   if(notifiedUid!==null)room=null;
+  renderRoomLeave();
   buttons.forEach(b=>b.disabled=false);
   status('Bitte melde dich mit deinem Online-Profil an, um auf diesen Raum zuzugreifen.');
   return;
@@ -85,6 +95,7 @@ async function refresh(){
   buttons.forEach(b=>b.disabled=false);
   if(['LOGIN_REQUIRED','PROFILE_REQUIRED','NOT_A_MEMBER','ROOM_NOT_FOUND'].includes(e?.message)){
    room=null;
+   renderRoomLeave();
    status(e.message==='NOT_A_MEMBER'?'Du gehörst noch nicht zu diesem Raum. Bitte über die Raum-Lobby beitreten.':
     e.message==='ROOM_NOT_FOUND'?'Diesen Raum gibt es nicht mehr. Bitte erstelle einen neuen.':'Bitte melde dich an und tritt dem Raum erneut bei.',true);
   }else status('Die Verbindung zum Spielserver ist derzeit nicht verfügbar. Wir versuchen es erneut.',true);
@@ -141,6 +152,26 @@ async function quickRoom(action){
 }
 quickForm?.addEventListener?.('submit',e=>{e.preventDefault();void quickRoom('join');});
 quickCreate?.addEventListener?.('click',()=>{void quickRoom('create');});
+const leaveRoom=byId('online-room-leave');
+leaveRoom?.addEventListener('click',async()=>{
+ if(!codeValid||!room||quickBusy)return;
+ const message=room.host?'Du verlässt den Raum. Ein anderer Spieler wird Host; falls du allein bist, wird der Raum gelöscht. Fortfahren?':'Möchtest du diesen Raum wirklich verlassen?';
+ if(!window.confirm(message))return;
+ quickBusy=true;leaveRoom.disabled=true;
+ const feedback=byId('online-room-feedback');
+ if(feedback)feedback.textContent='Raum wird verlassen …';
+ try{
+  await request('/rooms/'+code+'/leave','POST');
+  const uid=user()?.uid;
+  try{if(uid&&localStorage.getItem('spielportal:last-room:'+uid)===code)localStorage.removeItem('spielportal:last-room:'+uid);}catch(_){}
+  location.assign('spielauswahl-online.html');
+ }catch(e){
+  quickBusy=false;renderRoomLeave();
+  if(feedback)feedback.textContent=e?.message==='MATCH_IN_PROGRESS'?'Bitte erst das laufende Spiel beenden.':'Austreten fehlgeschlagen: '+(e?.message||'Verbindungsfehler');
+ }
+});
+renderRoomLeave();
+
 if(!codeValid)status('Wähle ein Spiel. Dein Online-Raum wird beim Start automatisch erstellt.');
 else{byId('online-room-code').textContent=code;}
 window.addEventListener('spielonline-change',()=>{renderProfileShortcut();void refresh();});
