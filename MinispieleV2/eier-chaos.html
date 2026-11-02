@@ -34,6 +34,7 @@ button:disabled{opacity:.5}#shell{position:relative;height:100dvh;width:100vw;ov
 <script type="module">
 import {eggAt,EGG_COUNT} from './games/eier-chaos/game.js';
 import {createScoreRace} from './engine/ScoreRace.js';
+import {ceremonySeatReadiness} from './engine/CeremonyGate.js';
 const $=id=>document.getElementById(id);\nconst NEST_LANES=[.105,.263,.421,.579,.737,.895];\nfor(const [i,x] of NEST_LANES.entries()){const hen=document.createElement('div');hen.className='hen';hen.style.left=x*100+'%';hen.style.backgroundImage=\"url('./games/eier-chaos/assets/hen-\"+(i%2?'brown':'white')+\".svg')\";$('hens').append(hen);}\n
 const params=new URLSearchParams(location.search),roomCode=String(params.get('room')||'').toUpperCase();
 const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
@@ -75,6 +76,14 @@ async function refresh(){
   }else if(phase==='finished'){
     ended=true;shown.clear();$('field').replaceChildren();
     const results=[...(game.results||[])].sort((a,b)=>a.seat-b.seat);
+    const readiness=ceremonySeatReadiness(game.playerCount,results);
+    if(!readiness.ready){
+      raceModel=null;raceDone=false;racedMatch=null;
+      const previous=$('race');if(previous)previous.remove();const winner=$('race-winner');if(winner)winner.remove();
+      modal('⏳ Warte auf Mitspieler','Ergebnisse eingegangen: '+readiness.received+' von '+readiness.expected+'. Die Siegerehrung beginnt erst, wenn alle fertig sind.');
+      $('return').hidden=true;$('notice').textContent='⏳ Warte auf alle Ergebnisse …';
+      return;
+    }
     if(racedMatch!==match.id){racedMatch=match.id;raceStart=performance.now();raceDone=false;racers=results;raceModel=createScoreRace(results.map((p,i)=>({playerId:String(p.seat??i),name:p.name,score:p.score,seat:p.seat??i})));}
     if(!raceDone){$('heading').textContent='🏁 Das Punkterennen!';$('body').textContent='Wer erreicht als Erster die Spitze?';}
     let race=$('race');if(!race){race=document.createElement('div');race.id='race';$('body').after(race);}
