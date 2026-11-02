@@ -1048,3 +1048,9 @@ body>header{
 #game #sheet td.move-pick-cell{cursor:pointer!important;outline:2px solid #e6ad32!important;outline-offset:-3px!important;background:#fff2bc!important;color:#173c56!important}
 #game #sheet td.move-pick-cell.move-pick-source{outline:3px solid #f6b51e!important;background:#f8d16c!important}
 #game #sheet td.move-pick-cell:focus-visible{outline:4px solid #165cbb!important}
+
+/* Strong, aligned separator between Sechser and Dreierpasch */
+#game #sheet .wood-variant-table tr.score-section-start td{border-top:5px solid #b88732!important;box-shadow:inset 0 3px 0 rgba(255,241,192,.95)!important;background-clip:padding-box!important}
+#game #sheet .wood-variant-table tr.score-section-start td.score-label{position:relative;font-weight:900!important;color:#17384f!important}
+#game #sheet .wood-variant-table tr.score-section-start td.score-label::before{content:'UNTERER TEIL';display:block;font:800 9px/1.2 system-ui,sans-serif;letter-spacing:1.3px;color:#825c23;margin-bottom:2px}
+@media(max-width:850px){#game #sheet .wood-variant-table tr.score-section-start td{border-top-width:4px!important}}
