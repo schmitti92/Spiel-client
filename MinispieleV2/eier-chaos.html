@@ -73,6 +73,11 @@ async function refresh(){
     modal('Gleich geht’s los!','Alle Spieler sind bereit. Der Countdown läuft …');$('notice').textContent='Gemeinsamer Start in wenigen Sekunden';
   }else if(phase==='playing'){
     hideModal();$('notice').textContent='🥚 Fange die Eier – Punkte bleiben bis zum Ende geheim';
+  }else if(phase==='awaiting-results'){
+    ended=true;raceModel=null;
+    const race=$('race');if(race)race.remove();const winner=$('race-winner');if(winner)winner.remove();
+    modal('⏳ Warte auf Mitspieler','Ergebnisse eingegangen: '+(game.submittedCount??0)+' von '+game.playerCount+'. Die Siegerehrung beginnt, sobald alle fertig sind.');
+    $('return').hidden=true;$('notice').textContent='⏳ Ergebnisse werden gesammelt …';
   }else if(phase==='finished'){
     ended=true;shown.clear();$('field').replaceChildren();
     const results=[...(game.results||[])].sort((a,b)=>a.seat-b.seat);
