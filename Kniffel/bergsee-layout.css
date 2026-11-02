@@ -129,3 +129,15 @@
   box-shadow:inset 0 2px 4px #fff8c7,0 0 0 3px #ffe27c,0 0 0 5px #b77805,0 7px 15px #5c3b0b9c!important;
 }
 #game .tabletop #dice.tray > button.die:disabled{cursor:default!important}
+
+/* Tablet landscape: keep the player strip to the right, reclaim vertical space for scorecard. */
+@media (min-width:851px) and (orientation:landscape){
+ #game:not([hidden]){position:relative!important}
+ #game #players{position:absolute!important;top:0!important;right:0!important;width:52%!important;z-index:3!important;max-width:52%!important;display:flex!important;justify-content:flex-end!important;gap:6px!important;margin:0!important;padding:0 8px!important;box-sizing:border-box!important}
+ #game #players>*{min-width:0!important}
+ #game .layout{padding-top:0!important;margin-top:0!important}
+ #game .layout>.scores{align-self:stretch!important}
+}
+/* Section divider: full-width gold band plus compact lower-section heading. */
+#game #sheet .wood-variant-table tr.score-section-start td{border-top:6px solid #ae7926!important;box-shadow:inset 0 3px 0 #ffecb2!important}
+#game #sheet .wood-variant-table tr.score-section-start td.score-label::before{content:'UNTERER TEIL'!important;display:block!important;font:800 9px/1.1 system-ui!important;letter-spacing:1px!important;color:#916522!important;margin:0 0 2px!important}
