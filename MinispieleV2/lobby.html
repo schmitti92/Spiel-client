@@ -13,7 +13,7 @@ const back=()=>location.href='../spielauswahl-online.html'+(valid?'?room='+encod
 document.getElementById('back').onclick=back;
 document.querySelector('main > p > a').href='../spielauswahl-online.html'+(valid?'?room='+encodeURIComponent(code):'');
 roomEl.textContent=valid?code:'Kein Raum';
-let snapshot=null,bots=0,socket=null,retry=null,heartbeat=null,fetching=false,activeUid=null,connected=false,lastUid=null;
+let snapshot=null,bots=2,socket=null,retry=null,heartbeat=null,fetching=false,activeUid=null,connected=false,lastUid=null;
 const gamePages=Object.freeze({farbenblitz:'./farbenblitz.html','eier-chaos':'./eier-chaos.html'});
 let navigating=false;
 function autoLaunch(room){
@@ -60,6 +60,9 @@ eggLaunch.onclick=async()=>{
      location.href='./eier-chaos.html?mode=online&room='+encodeURIComponent(code);return;
    }
    if(!snapshot.host)throw Error('Nur der Host kann eine neue Partie starten.');
+   if(bots===0&&!(snapshot.players||[]).some(p=>p.testBot)){
+     if(!confirm('Es sind keine Testspieler ausgewählt. Möchtest du wirklich alleine spielen?')){eggLaunch.disabled=false;return;}
+   }
    await gameAction('/eier-chaos/launch',{bots});
    location.href='./eier-chaos.html?mode=online&room='+encodeURIComponent(code);
  }catch(e){eggError.textContent='Start nicht möglich: '+e.message;eggLaunch.disabled=false;}
@@ -77,7 +80,7 @@ function render(){
   for(let i=0;i<4;i++){
     const div=document.createElement('div');div.className='slot';
     const p=players[i];
-    div.textContent=p?(p.host?'👑 ':'👤 ')+(p.name||'Spieler')+' · Online':i<players.length+bots?'🤖 Testspieler '+(i-players.length+1)+' · bereit für Eier-Chaos':'Platz '+(i+1)+' · frei';
+    div.textContent=p?(p.testBot?'🤖 ':p.host?'👑 ':'👤 ')+(p.name||'Spieler')+(p.testBot?' · Computer':' · Online'):i<players.length+bots?'🤖 Testspieler '+(i-players.length+1)+' · bereit für Eier-Chaos':'Platz '+(i+1)+' · frei';
     slotsEl.append(div);
   }
   add.disabled=bots>=3||bots>=remaining;
