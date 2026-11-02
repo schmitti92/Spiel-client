@@ -7,7 +7,7 @@ body{margin:0;overflow:hidden}button{font:inherit;cursor:pointer;border:0;border
 button:disabled{opacity:.5}#shell{position:relative;height:100dvh;width:100vw;overflow:hidden;background:#9d6535 url('./games/eier-chaos/assets/file_00000000810882108432bad43aaf11e8.png') center/100% 100% no-repeat;touch-action:none}
 #top{position:absolute;z-index:10;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(#18251be0,#18251b55);font-weight:900}
 #top button{font-size:13px;padding:9px 13px}#time{font-size:clamp(20px,4vw,36px);text-shadow:0 2px 5px #000}
-#field{position:absolute;inset:0;overflow:hidden;touch-action:none}
+#field{position:absolute;inset:0;overflow:hidden;touch-action:none}\n#hens{position:absolute;inset:0;z-index:2;pointer-events:none}.hen{position:absolute;top:27%;width:clamp(58px,13vw,110px);height:clamp(68px,15vw,125px);background:center bottom/contain no-repeat;transform:translateX(-50%);filter:drop-shadow(0 5px 5px #4c271c88)}
 .egg{position:absolute;width:clamp(27px,4vw,54px);height:clamp(36px,5vw,69px);background-position:center;background-size:contain;background-repeat:no-repeat;transform:translate(-50%,-50%);pointer-events:none;z-index:3}
 #basket{position:absolute;bottom:4%;left:50%;width:clamp(110px,18vw,205px);height:clamp(78px,12vw,135px);background:url('./games/eier-chaos/assets/basket.svg') center/contain no-repeat;transform:translateX(-50%);z-index:4;pointer-events:none;filter:drop-shadow(0 5px 4px #29180880)}
 #modal{position:absolute;z-index:20;inset:0;background:#06170bba;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -26,7 +26,7 @@ button:disabled{opacity:.5}#shell{position:relative;height:100dvh;width:100vw;ov
 #race-winner{font-size:25px;font-weight:1000;margin-top:12px}
 #results{list-style:none;padding:0;margin:14px 0;text-align:left}#results li{background:#fff7df;margin:7px 0;border-radius:12px;padding:10px 14px;font-weight:800}
 </style></head><body>
-<div id="shell"><div id="field"></div><div id="basket"></div>
+<div id="shell"><div id="hens"></div><div id="field"></div><div id="basket"></div>
 <div id="top"><button id="back">← Lobby</button><span id="time">60 s</span><span id="players">🥚 Eier-Chaos</span></div>
 <div id="notice">Verbindung zur gemeinsamen Lobby wird geprüft …</div>
 <div id="modal"><div id="panel"><h1 id="heading">🥚 Eier-Chaos</h1><div id="body">Verbinde mit dem Spielraum …</div><button id="understood" hidden>Verstanden ✓</button><button id="return" class="secondary" hidden>Zur Lobby</button></div></div></div>
@@ -34,7 +34,7 @@ button:disabled{opacity:.5}#shell{position:relative;height:100dvh;width:100vw;ov
 <script type="module">
 import {eggAt,EGG_COUNT} from './games/eier-chaos/game.js';
 import {createScoreRace} from './engine/ScoreRace.js';
-const $=id=>document.getElementById(id);
+const $=id=>document.getElementById(id);\nconst NEST_LANES=[.105,.263,.421,.579,.737,.895];\nfor(const [i,x] of NEST_LANES.entries()){const hen=document.createElement('div');hen.className='hen';hen.style.left=x*100+'%';hen.style.backgroundImage=\"url('./games/eier-chaos/assets/hen-\"+(i%2?'brown':'white')+\".svg')\";$('hens').append(hen);}\n
 const params=new URLSearchParams(location.search),roomCode=String(params.get('room')||'').toUpperCase();
 const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(roomCode);
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -118,7 +118,7 @@ function draw(time){
     if(el){el.remove();shown.delete(i);}continue;
   }
   if(!el){el=document.createElement('div');el.className='egg';el.id='egg-'+i;el.style.backgroundImage="url('./games/eier-chaos/assets/egg-"+(egg.special?'golden':egg.rotten?'rotten':'normal')+".svg')";field.append(el);shown.add(i);}
-  el.style.left=(egg.x*100)+'%';el.style.top=(12+progress*77)+'%';
+  // Eggs emerge below the hen/nest shelf and fall to the basket area.\n  el.style.left=(egg.x*100)+'%';el.style.top=(37+progress*49)+'%';
  }
 }
 function animateRace(){
