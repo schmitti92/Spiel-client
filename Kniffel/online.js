@@ -16,7 +16,7 @@ function onlineScore(g,c,j){
  if(c===8)return counts.some(n=>n>=3)&&counts.filter(n=>n>=2).length>=2?25:0;
  if(c===9)return [[1,2,3,4],[2,3,4,5],[3,4,5,6]].some(seq=>seq.every(n=>unique.has(n)))?30:0;
  if(c===10)return [[1,2,3,4,5],[2,3,4,5,6]].some(seq=>seq.every(n=>unique.has(n)))?40:0;
- if(c===11)return Math.max(...counts)>=5?50:0;
+ if(c===11)return Math.max(...counts)>=6?100:Math.max(...counts)>=5?50:0;
  return sum;
 }
 function onlineAllowed(g,j){
