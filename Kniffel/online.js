@@ -185,11 +185,11 @@ function acceptSnapshot(fresh){
  }
  // Announce confirmed joker activation to every connected player, not on page load.
  if(before&&next&&oldMatch===snapshot?.match?.id){
-  const labels=[['fullRestartUsed','Kompletter Neustart'],['freeEntryUsed','Freie Eintragung'],['extraRollUsed','+1 Wurf'],['extraDieUsed','+1 Würfel'],['rerollUsed','Neuwurf'],['moveUsed','Verschieben / Tauschen']];
+  const labels=[['copyRollUsed','Wurf kopieren'],['fullRestartUsed','Kompletter Neustart'],['freeEntryUsed','Freie Eintragung'],['extraRollUsed','+1 Wurf'],['extraDieUsed','+1 Würfel'],['rerollUsed','Neuwurf'],['moveUsed','Verschieben / Tauschen']];
   for(const p of next.players||[]){
    const prev=before.players?.find(q=>q.uid===p.uid);
    if(!prev)continue;
-   const usedKeys={fullRestartUsed:'fullRestart',freeEntryUsed:'freeEntry',extraRollUsed:'extraRoll',extraDieUsed:'extraDie',rerollUsed:'reroll',moveUsed:'move'};const activated=labels.find(([key])=>(p.jokerUses?.[usedKeys[key]]??(p[key]?1:0))>(prev.jokerUses?.[usedKeys[key]]??(prev[key]?1:0)));
+   const usedKeys={copyRollUsed:'copyRoll',fullRestartUsed:'fullRestart',freeEntryUsed:'freeEntry',extraRollUsed:'extraRoll',extraDieUsed:'extraDie',rerollUsed:'reroll',moveUsed:'move'};const activated=labels.find(([key])=>(p.jokerUses?.[usedKeys[key]]??(p[key]?1:0))>(prev.jokerUses?.[usedKeys[key]]??(prev[key]?1:0)));
    if(activated){
     const toast=document.getElementById('kniffel-joker-toast')||document.createElement('div');
     toast.id='kniffel-joker-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');
@@ -262,7 +262,7 @@ function render(){
  const g=current();
  $('online-connection').textContent=ws?.readyState===1?'🟢 Live':'🟡 Verbinde …';
  $('players').replaceChildren();$('sheet').replaceChildren();$('dice').replaceChildren();$('online-result').replaceChildren();
- if(!g){$('online-undo').disabled=true;$('online-undo-vote')?.remove();$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('extra-die-joker').hidden=true;$('free-entry-joker').hidden=true;$('full-restart-joker').hidden=true;$('joker-panel').hidden=true;return}
+ if(!g){$('online-undo').disabled=true;$('online-undo-vote')?.remove();$('status').textContent='Warte auf Kniffel-Partie …';$('roll').disabled=true;$('extra-roll-joker').hidden=true;$('extra-die-joker').hidden=true;$('free-entry-joker').hidden=true;$('full-restart-joker').hidden=true;$('copy-roll-joker').hidden=true;$('joker-panel').hidden=true;return}
  const p=g.players[g.turn],mine=!g.finished&&p?.uid===user()?.uid;
  $('online-abort').hidden=!!g.finished;
  $('online-abort').textContent=snapshot?.host?'✕ Spiel abbrechen':'← Spiel verlassen';
@@ -316,7 +316,7 @@ lastTurnKey=turnKey;
  g.players.forEach((player,i)=>{const el=document.createElement('div');el.className='player'+(i===g.turn&&!g.finished?' active':'')+(announceTurn&&i===g.turn?' turn-arrived':'');el.textContent=(player.bot?'🤖 ':'👤 ')+player.name+' · '+(player.sheet.reduce((n,col)=>n+totals(col).total,0)+(player.jokerBonus||0))+' P.';$('players').append(el)});
  $('status').textContent=g.finished?'🏆 Partie beendet':p.name+' · Wurf '+g.rolls+' / '+(g.extraRollActive?4:3)+(mine?' · Du bist dran':'');
  showFirstRollAchievement(g);
- g.dice.forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.className='die'+(g.held[i]?' held':'')+(g.rolls===0?' unrolled':'');b.style.setProperty('--die-index',i);if(diceMotion&&diceMotion.key===[snapshot?.match?.id,g.turn,g.rolls].join(':')&&diceMotion.moving[i])b.classList.add('dice-tumbling');if(g.rolls){const face=document.createElement('span');face.className='pips face-'+n;for(let k=0;k<9;k++){const pip=document.createElement('i');pip.className='pip pip-'+k;face.append(pip)}b.append(face)}else{const ready=document.createElement('span');ready.className='die-ready';ready.textContent='?';b.append(ready)}b.setAttribute('aria-label','Würfel '+(i+1)+': '+(g.rolls?n:'noch nicht geworfen'));b.disabled=!mine||busy||g.rolls===0||g.rolls>=(g.extraRollActive?4:3);b.onclick=()=>send({type:'hold',index:i});$('dice').append(b)});
+ g.dice.forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.className='die'+(g.held[i]?' held':'')+(g.rolls===0?' unrolled':'');b.style.setProperty('--die-index',i);if(diceMotion&&diceMotion.key===[snapshot?.match?.id,g.turn,g.rolls].join(':')&&diceMotion.moving[i])b.classList.add('dice-tumbling');if(g.rolls){const face=document.createElement('span');face.className='pips face-'+n;for(let k=0;k<9;k++){const pip=document.createElement('i');pip.className='pip pip-'+k;face.append(pip)}b.append(face)}else{const ready=document.createElement('span');ready.className='die-ready';ready.textContent='?';b.append(ready)}b.setAttribute('aria-label','Würfel '+(i+1)+': '+(g.rolls?n:'noch nicht geworfen'));b.disabled=!mine||busy||!!p.pendingCopy||g.rolls===0||g.rolls>=(g.extraRollActive?4:3);b.onclick=()=>send({type:'hold',index:i});$('dice').append(b)});
  const limit=g.extraRollActive?4:3;
  // Joker-Leiste zeigt immer denselben Spieler wie der aktuell sichtbare Punkteblock.
  const jokerOwner=shownPlayer;
@@ -327,16 +327,25 @@ lastTurnKey=turnKey;
  const rerollJoker=$('reroll-joker');rerollJoker.hidden=false;
  const freeJoker=$('free-entry-joker');freeJoker.hidden=false;
  const restartJoker=$('full-restart-joker');restartJoker.hidden=false;
- restartJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||jokerLeft(g,jokerOwner,'fullRestart','fullRestartUsed')===0;
+ restartJoker.disabled=!g.extraJokers||!mine||!!p.pendingCopy||busy||g.rolls<1||jokerLeft(g,jokerOwner,'fullRestart','fullRestartUsed')===0;
  restartJoker.classList.toggle('joker-used',jokerLeft(g,jokerOwner,'fullRestart','fullRestartUsed')===0);
  $('full-restart-joker-label').textContent=countLabel('Komplett neu',jokerLeft(g,jokerOwner,'fullRestart','fullRestartUsed'));
  const moveJoker=$('move-score-joker');moveJoker.hidden=false;
+ const copyJoker=$('copy-roll-joker');copyJoker.hidden=false;
  $('joker-panel').hidden=false;
  $('joker-panel').setAttribute('aria-label','Joker von '+jokerOwner.name);
  $('joker-panel').dataset.player=String(viewPlayer);
  $('joker-panel').title=g.extraJokers?'Joker für diese Partie verfügbar':'Joker wurden in der Lobby für diese Partie nicht aktiviert';
+ const copyLeft=jokerLeft(g,jokerOwner,'copyRoll','copyRollUsed');
+ const copying=!!jokerOwner?.pendingCopy;
+ copyJoker.disabled=!g.extraJokers||busy||g.finished||!jokerMine||g.players[g.turn]?.uid===jokerOwner?.uid||g.rolls!==3||copyLeft===0||copying;
+ copyJoker.classList.toggle('joker-used',copyLeft===0);
+ copyJoker.classList.toggle('joker-active',copying);
+ copyJoker.title=copying?'Wurf von '+jokerOwner.pendingCopy.sourceName+' für deinen nächsten Zug gespeichert':copyLeft===0?'Alle Kopierjoker verbraucht':g.rolls!==3?'Warte auf den dritten Wurf eines Mitspielers':'Diesen Wurf für deinen nächsten Zug übernehmen';
+ $('copy-roll-joker-label').textContent=countLabel(copying?'Wurf gespeichert':'Wurf kopieren',copyLeft);
+ const copiedTurn=!!p.pendingCopy;
  const leftRoll=jokerLeft(g,jokerOwner,'extraRoll','extraRollUsed');const used=leftRoll===0;
- const available=g.extraJokers&&mine&&!busy&&g.rolls===0&&!used&&!g.extraRollActive;
+ const available=g.extraJokers&&mine&&!busy&&!copiedTurn&&g.rolls===0&&!used&&!g.extraRollActive;
  joker.disabled=!available;
  joker.classList.toggle('joker-active',!!g.extraRollActive);
  joker.classList.toggle('joker-used',used&&!g.extraRollActive);
@@ -344,19 +353,19 @@ lastTurnKey=turnKey;
  joker.setAttribute('aria-label','Glückswurf-Joker: '+joker.title);
  $('extra-roll-joker-label').textContent=countLabel(g.extraRollActive?'4 Würfe':'+1 Wurf',leftRoll);
  const leftDie=jokerLeft(g,jokerOwner,'extraDie','extraDieUsed');const dieUsed=leftDie===0;
- const dieAvailable=g.extraJokers&&mine&&!busy&&g.rolls===0&&!dieUsed&&!g.extraDieActive;
+ const dieAvailable=g.extraJokers&&mine&&!busy&&!copiedTurn&&g.rolls===0&&!dieUsed&&!g.extraDieActive;
  dieJoker.disabled=!dieAvailable;
  dieJoker.classList.toggle('joker-active',!!g.extraDieActive);
  dieJoker.classList.toggle('joker-used',dieUsed&&!g.extraDieActive);
  dieJoker.title=g.extraDieActive?'Aktiv: 6 Würfel':dieUsed?'Bereits eingesetzt':g.rolls>0?'Nur vor dem ersten Wurf aktivierbar':mine?'Jetzt mit 6 Würfeln spielen':'Nur im eigenen Zug aktivierbar';
  dieJoker.setAttribute('aria-label','Sechster Würfel: '+dieJoker.title);
  $('extra-die-joker-label').textContent=countLabel(g.extraDieActive?'6 Würfel':'+1 Würfel',leftDie);
- rerollJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||jokerLeft(g,jokerOwner,'reroll','rerollUsed')===0;
+ rerollJoker.disabled=!g.extraJokers||!mine||!!p.pendingCopy||busy||g.rolls<1||jokerLeft(g,jokerOwner,'reroll','rerollUsed')===0;
  rerollJoker.classList.toggle('joker-used',jokerLeft(g,jokerOwner,'reroll','rerollUsed')===0);
  rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':jokerLeft(g,jokerOwner,'reroll','rerollUsed')===0?'Alle verbraucht':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle nicht gehaltenen Würfel neu werfen';
  $('reroll-joker-label').textContent=countLabel('Neuwurf',jokerLeft(g,jokerOwner,'reroll','rerollUsed'));
  const leftFree=jokerLeft(g,jokerOwner,'freeEntry','freeEntryUsed');const freeUsed=leftFree===0;
- freeJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||freeUsed||!!g.freeEntryActive;
+ freeJoker.disabled=!g.extraJokers||!mine||!!p.pendingCopy||busy||g.rolls<1||freeUsed||!!g.freeEntryActive;
  freeJoker.classList.toggle('joker-active',!!g.freeEntryActive);
  freeJoker.classList.toggle('joker-used',freeUsed&&!g.freeEntryActive);
  freeJoker.title=g.freeEntryActive?'Aktiv: Ein beliebiges leeres Feld wählen':freeUsed?'Bereits verwendet':!g.extraJokers?'In der Lobby nicht aktiviert':g.rolls<1?'Erst nach dem ersten Wurf aktivierbar':'Alle noch leeren Felder freigeben';
@@ -367,7 +376,7 @@ lastTurnKey=turnKey;
  moveJoker.classList.toggle('joker-used',jokerLeft(g,ownPlayer,'move','moveUsed')===0);
  moveJoker.title=jokerLeft(g,ownPlayer,'move','moveUsed')===0?'Alle verbraucht':!g.extraJokers?'In der Lobby nicht aktiviert':!movePossible?'Keine eingetragene Wertung vorhanden':'Wertungen zwischen Spalten verschieben oder tauschen';
  $('move-score-joker-label').textContent=countLabel('Verschieben / Tauschen',jokerLeft(g,ownPlayer,'move','moveUsed'));
- $('roll').disabled=!mine||busy||g.rolls>=limit;
+ $('roll').disabled=!mine||busy||!!p.pendingCopy||g.rolls>=limit;
  if(['classic','joker'].includes(g.mode)&&shownPlayer.sheet.length===1){renderCompactScore(g,shownPlayer,viewPlayer,mine)}else{
  const table=document.createElement('table');if(!['classic','joker'].includes(g.mode))table.className='variant-table wood-variant-table';
  const head=document.createElement('tr');head.className='score-head';
@@ -384,7 +393,7 @@ lastTurnKey=turnKey;
  $('sheet').append(table);
  if(scoreReveal&&viewPlayer===scoreReveal.player){const cell=table.rows[scoreReveal.category+2]?.cells[scoreReveal.column+1];if(cell)cell.classList.add('score-reveal-cell');}
  }
- $('notice').textContent=g.finished?'Partie beendet':!mine?'Warte auf '+p.name+' …':g.rolls===(g.extraRollActive?4:3)?'Würfe abgeschlossen – Wertung wählen!':g.rolls?'Wertung wählen oder erneut würfeln.':'Jetzt würfeln!';
+ $('notice').textContent=g.finished?'Partie beendet':mine&&p.pendingCopy?'📋 Kopierter Wurf von '+p.pendingCopy.sourceName+' – jetzt Wertung eintragen; kein Würfeln erlaubt!':!mine?'Warte auf '+p.name+' …':g.rolls===(g.extraRollActive?4:3)?'Würfe abgeschlossen – Wertung wählen!':g.rolls?'Wertung wählen oder erneut würfeln.':'Jetzt würfeln!';
  if(g.finished){
   const standings=(g.standings?.length?g.standings:g.players.map(p=>({name:p.name,total:p.sheet.reduce((sum,col)=>sum+totals(col).total,0)+(p.jokerBonus||0)}))).slice().sort((a,b)=>b.total-a.total);
   const top=standings[0]?.total;
@@ -425,6 +434,11 @@ $('extra-roll-joker').onclick=()=>send({type:'extra-roll'});
 $('extra-die-joker').onclick=()=>send({type:'extra-die'});
 $('reroll-joker').onclick=()=>send({type:'reroll'});
 $('free-entry-joker').onclick=()=>send({type:'free-entry'});
+$('copy-roll-joker').onclick=()=>{
+ const g=current(),p=g?.players[g.turn];
+ if(!g||!p)return;
+ confirmInGame('📋 Wurf kopieren','Den dritten Wurf von '+p.name+' übernehmen? Die Würfel werden gespeichert und ersetzen deinen nächsten Spielzug vollständig.',()=>send({type:'copy-roll'}));
+};
 $('full-restart-joker').onclick=()=>confirmInGame('🔄 Komplettneuwurf','Alle bisherigen Würfe dieses Zuges verwerfen und mit 5 Würfeln sowie 3 Würfen neu starten?',()=>send({type:'full-restart'}));
 $('move-score-joker').onclick=()=>{const g=current();if(g)chooseMoveJoker(g)};
 async function connect(){if(!valid||!user()||ws||connecting||document.hidden)return;connecting=true;try{const socket=new WebSocket(base.replace(/^http/i,'ws')+'/hub');ws=socket;socket.onopen=async()=>{try{const token=await user().getIdToken();if(ws===socket){socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));heartbeat=setInterval(()=>{if(ws===socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ping'}))},30000)}}catch(_){socket.close()}};socket.onmessage=e=>{let msg;try{msg=JSON.parse(e.data)}catch(_){return}if(msg.type==='room'&&msg.room?.code===code){if(acceptSnapshot(msg.room)){render();status('Raum synchronisiert')}}if(msg.type==='error')status('Verbindung: '+msg.error)};socket.onclose=()=>{if(heartbeat){clearInterval(heartbeat);heartbeat=null}if(ws===socket)ws=null;render();if(!document.hidden)retryTimer=setTimeout(connect,4500)};socket.onerror=()=>socket.close()}catch(e){status(e.message)}finally{connecting=false}}
