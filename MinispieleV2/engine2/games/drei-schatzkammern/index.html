@@ -88,13 +88,23 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 .roster{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
 .roster-item{border:1px solid #d5bb8677;border-radius:20px;background:#202743d9;padding:5px 10px;font-size:12px}
 .roster-item.lost{filter:grayscale(1);opacity:.45;text-decoration:line-through}
+
+/* Doors are the sole selection controls */
+.door-wrap .arch{cursor:pointer;touch-action:manipulation;transition:filter .2s,box-shadow .2s,transform .2s}
+.door-wrap .arch:focus-visible{outline:5px solid #ffe28a;outline-offset:4px}
+.arena.selecting .arch:hover,.arena.selecting .arch:focus-visible{filter:brightness(1.24);box-shadow:0 0 0 4px #ffd77b99,0 0 35px #e5a43b88}
+.arena.selecting .arch:active{transform:scale(.975)}
+.arena:not(.selecting) .arch{cursor:default}
+#action{padding:8px 14px;min-height:53px}
+#action .status{font-size:clamp(16px,2vw,23px)}
+@media(orientation:landscape){.arena{max-height:calc(100dvh - 158px)}.arch{height:clamp(180px,36vh,340px)}}
 </style></head><body><main>
 <header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Drei geheimnisvolle Kammern · Drei Türen · Eine Falle</div></header>
 <section class="panel" id="setup"><div class="setup"><label>Menschen<select id="humans"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><label>Computergegner<select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button class="primary" id="newGame">Abenteuer beginnen ✨</button></div><p class="sub" style="text-align:center">Offline-Test mit MiniGame Engine 2.0 · insgesamt maximal vier Abenteurer</p></section>
-<section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer wählt geheim eine von drei Türen. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Nach drei Kammern gewinnen alle, die noch stehen. Sobald nur noch ein Abenteurer übrig ist, gewinnt dieser sofort!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
+<section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer tippt direkt auf eine der drei Türen. Die Auswahl bleibt bis zur Auflösung geheim. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Nach drei Kammern gewinnen alle, die noch stehen. Sobald nur noch ein Abenteurer übrig ist, gewinnt dieser sofort!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
 <div class="hud hidden" id="hud"><span class="hud-chip">🏰 <strong id="hudRound">1</strong> / 3</span><span class="hud-chip">🧙 Noch dabei: <strong id="hudAlive">0</strong></span><span class="hud-chip">🚪 Entscheidungen: <strong id="hudChoices">0</strong></span><button id="fullscreen" title="Vollbild umschalten">⛶ Vollbild</button><button id="reset">↻ Neustart</button></div>
 <section class="arena hidden" id="arena"><div class="ambient" aria-hidden="true"></div><div class="stage-banner" id="stage">KAMMER 1</div><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
-<section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="choice" id="choices"><button data-door="0">🚪 Tür 1</button><button data-door="1">🚪 Tür 2</button><button data-door="2">🚪 Tür 3</button></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
+<section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
 <div class="handoff hidden" id="handoff"><div class="handoff-card"><div style="font-size:54px" id="handoffFace">🧙</div><h2 id="handoffTitle">Spieler 1 ist dran</h2><p>Gib das Tablet weiter. Deine Türwahl bleibt geheim.</p><button class="primary" id="handoffGo">Ich bin bereit!</button></div></div>
 <section class="panel results hidden" id="results"><h2>🏆 Abenteuer beendet!</h2><div id="winner"></div><div class="roster" id="resultRoster"></div><button class="primary" id="again">Nochmal spielen ↻</button></section>
 </main><script type="module">
@@ -123,12 +133,12 @@ function render(visualState=null,animateDoor=null){
  $('doors').innerHTML=[0,1,2].map(d=>{
  const revealed=g.reveals.find(x=>x.door===d);
  const visitors=revealed?revealed.visitors:(g.phase==='choosing'||!prepared?[]:g.alive.filter(id=>g.choices[id]===d));
- return '<div class="door-wrap"><div class="arch '+(revealed&&d!==animateDoor?(revealed.locked?'locked':'open'):'')+'" data-door-arch="'+d+'"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(id=>figure(id,g.alive)).join('')+'</div></div>';
+ return '<div class="door-wrap"><div class="arch '+(revealed&&d!==animateDoor?(revealed.locked?'locked':'open'):'')+'" data-door-arch="'+d+'" role="button" tabindex="0" aria-label="Tür '+(d+1)+' wählen"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(id=>figure(id,g.alive)).join('')+'</div></div>';
  }).join('');
 }
 function nextHuman(){
  if(revealing)return;
- prepared=false;
+ prepared=false;$('arena').classList.add('selecting');
  let g=session.game;
  for(const bot of g.alive.filter(p=>p.startsWith('bot:')&&!Object.hasOwn(g.choices,p))){session.botChoose(bot,g.round+all.indexOf(bot));g=session.game;}
  $('stage').textContent='KAMMER '+(g.round+1);
@@ -136,21 +146,20 @@ function nextHuman(){
  const waiting=humans.find(id=>g.alive.includes(id)&&!Object.hasOwn(g.choices,id));
  if(waiting){
   const i=all.indexOf(waiting);
-  $('turn').textContent=faces[i]+' Spieler '+(i+1)+': Wähle deine Tür!';
-  show('choices',false);show('next',false);
+  $('turn').textContent=faces[i]+' Spieler '+(i+1)+': Tippe direkt auf eine Tür!';
+  show('next',false);
   awaitingHandoff=waiting;$('handoffFace').textContent=faces[i];$('handoffTitle').textContent='Spieler '+(i+1)+' ist dran';show('handoff');
  }else{
-  awaitingHandoff=null;show('handoff',false);
-  show('choices',false);
-  $('turn').textContent='Alle Türen gewählt! Die Entscheidungen bleiben bis zur Auflösung geheim.';
+  awaitingHandoff=null;show('handoff',false);$('arena').classList.remove('selecting');
+  $('turn').textContent='Alle haben gewählt – bereit für die Türöffnung!';
   $('next').textContent='Türen öffnen 🚪';show('next');
  }
  render();
 }
 async function reveal(){
  if(revealing||session.game.phase!=='revealing')return;
- revealing=true;const thisToken=token;
- show('next',false);show('choices',false);
+ revealing=true;const thisToken=token;$('arena').classList.remove('selecting');
+ show('next',false);
  for(let d=0;d<3;d++){
   $('status').textContent='Die Abenteurer laufen zu den Türen …';
   prepared=true;render();await sleep(850);if(thisToken!==token)return;
@@ -168,7 +177,7 @@ async function reveal(){
  if(session.game.finished){
   const end=session.finish().result;
   prepared=false;
-  show('action',false);show('results');$('results').classList.add('celebrate');
+  show('action',false);show('results');$('arena').classList.remove('selecting');$('results').classList.add('celebrate');
   $('resultRoster').innerHTML=all.map(id=>'<span class="roster-item '+(end.survivors.includes(id)?'':'lost')+'">'+faces[all.indexOf(id)]+' '+label(id)+'</span>').join('');
   $('winner').textContent=end.winnerIds.length===0?'Niemand hat die Schatzkammern überstanden!':end.winnerIds.length===1?'🎉 '+label(end.winnerIds[0])+' gewinnt!':'🏅 Gemeinsam geschafft: '+end.winnerIds.map(label).join(', ');
   $('status').textContent='Das Abenteuer ist beendet!';
@@ -183,7 +192,7 @@ async function reveal(){
 }
 function label(id){return id.startsWith('bot:')?'Computer '+(all.indexOf(id)+1):'Spieler '+(all.indexOf(id)+1)}
 $('newGame').onclick=setup;$('again').onclick=setup;
-$('handoffGo').onclick=()=>{if(!awaitingHandoff||!session||session.game.phase!=='choosing')return;awaitingHandoff=null;show('handoff',false);show('choices');};$('reset').onclick=()=>{if(confirm('Abenteuer wirklich neu starten?'))setup();};
+$('handoffGo').onclick=()=>{if(!awaitingHandoff||!session||session.game.phase!=='choosing')return;awaitingHandoff=null;show('handoff',false);};$('reset').onclick=()=>{if(confirm('Abenteuer wirklich neu starten?'))setup();};
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{ $('status').textContent='Vollbild wird von diesem Browser nicht unterstützt.';}};
 document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'⛶ Vollbild verlassen':'⛶ Vollbild';});
 $('understood').onclick=async()=>{
@@ -194,16 +203,18 @@ $('understood').onclick=async()=>{
  for(let n=3;n>=1;n--){$('status').textContent='Start in '+n+' …';await sleep(1000);if(thisToken!==token)return;}
  session.start();started=true;show('action');$('status').textContent='Runde 1 – welche Tür führt zum Schatz?';nextHuman();
 };
-document.querySelectorAll('[data-door]').forEach(b=>b.onclick=()=>{
+function selectDoor(door){
  if(!started||awaitingHandoff||revealing||session.game.phase!=='choosing')return;
  const id=humans.find(p=>session.game.alive.includes(p)&&!Object.hasOwn(session.game.choices,p));
  if(!id)return;
- session.choose(id,Number(b.dataset.door));
+ session.choose(id,door);
  nextHuman();
-});
+}
+$('doors').addEventListener('click',e=>{const target=e.target.closest('[data-door-arch]');if(target)selectDoor(Number(target.dataset.doorArch));});
+$('doors').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const target=e.target.closest('[data-door-arch]');if(target){e.preventDefault();selectDoor(Number(target.dataset.doorArch));}}});
 $('next').onclick=()=>{if(!revealing&&session.game.phase==='revealing')reveal();};
 document.addEventListener('keydown',e=>{if(e.repeat||e.altKey||e.ctrlKey||e.metaKey||!session||!started)return;
- if(['1','2','3'].includes(e.key)&&!revealing){const button=document.querySelector('[data-door="'+(Number(e.key)-1)+'"]');if(button&&!$('choices').classList.contains('hidden'))button.click();}
+ if(['1','2','3'].includes(e.key)&&!revealing)selectDoor(Number(e.key)-1);
  if(e.key==='Enter'&&!$('next').classList.contains('hidden'))$('next').click();
 });
 </script></body></html>
