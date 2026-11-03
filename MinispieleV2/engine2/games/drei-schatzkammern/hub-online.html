@@ -30,7 +30,7 @@ function render(){
  show('arena',true);show('roomPanel',true);show('lobby',false);
  $('roomCode').textContent=code;
  $('members').textContent=room.players.filter(p=>p.participating).map(p=>p.name).join(' · ');
- show('prepare',false);show('ready',match.status.phase==='instructions'&&match.participating&&!g.engine?.readyCount);
+ show('prepare',false);show('ready',match.status.phase==='instructions'&&match.participating&&!g.myReady);
  show('result',g.phase==='finished');show('replay',room.host&&g.phase==='finished');
  const canChoose=match.status.phase==='playing'&&g.phase==='choosing'&&g.alive.includes(user()?.uid)&&!g.hasChosen;
  $('status').textContent=g.phase==='finished'?'🏆 Abenteuer beendet!':match.status.phase==='instructions'?'📜 Anleitung lesen und Verstanden drücken':canChoose?'🚪 Tippe direkt auf deine Tür!':g.hasChosen?'✓ Deine Wahl ist geheim gespeichert.':'⏳ Warte auf die anderen Abenteurer …';
@@ -39,7 +39,7 @@ function render(){
  const entry=reveal.find(x=>x.door===d);
  return '<div class="door-wrap"><div class="arch '+(entry?(entry.locked?'locked':'open'):'')+(canChoose?' enabled':'')+'" data-door="'+d+'" role="button" tabindex="0" aria-label="Tür '+(d+1)+' wählen"><div class="door"></div></div><div class="door-label">Tür '+(d+1)+'</div><div class="visitors">'+(entry?entry.visitors.map(id=>faces[match.treasure.engine.roster.indexOf(id)]||'🧙').join(''):'')+'</div></div>';
  }).join('');
- if(g.phase==='finished')$('winners').textContent=g.result.winnerIds.length?'🎉 Überlebt: '+g.result.winnerIds.map(id=>room.players.find(p=>p.me&&user()?.uid===id)?.name||match.treasure.engine.roster.indexOf(id)+1+'. Abenteurer').join(', '):'Niemand hat überlebt!';
+ if(g.phase==='finished')$('winners').textContent=g.result.winnerIds.length?'🎉 Überlebt: '+g.result.winnerIds.map(id=>room.players.find(p=>p.me&&user()?.uid===id)?.name||('Abenteurer '+(match.treasure.engine.roster.indexOf(id)+1))).join(', '):'Niemand hat überlebt!';
 }
 $('ready').onclick=()=>act('ready');
 $('replay').onclick=()=>location.assign('../../../lobby.html?room='+encodeURIComponent(code));
