@@ -391,7 +391,7 @@ lastTurnKey=turnKey;
  for(const [label,key] of [['Oberer Teil','upper'],['Bonus (63+)','bonus'],['Gesamt','total']]){const tr=document.createElement('tr');tr.className='score-summary score-'+key;const td=document.createElement('td');td.textContent=label;tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>player.sheet.forEach(col=>{const cell=document.createElement('td');const sums=totals(col);cell.textContent=key==='bonus'&&sums.upper<63?sums.upper+' / 63':key==='total'?sums.total+(player.jokerBonus||0):sums[key];tr.append(cell)}));table.append(tr)}
  if(g.mode==='joker'){const tr=document.createElement('tr');tr.className='score-summary';const td=document.createElement('td');td.textContent='Jokerbonus';tr.append(td);[[shownPlayer,viewPlayer]].forEach(([player,i])=>{const cell=document.createElement('td');cell.className='player-tint-'+(i%4);cell.textContent=player.jokerBonus||0;tr.append(cell)});table.append(tr)}
  $('sheet').append(table);
- if(scoreReveal&&viewPlayer===scoreReveal.player){const cell=table.rows[scoreReveal.category+2]?.cells[scoreReveal.column+1];if(cell)cell.classList.add('score-reveal-cell');}
+ if(scoreReveal&&viewPlayer===scoreReveal.player){const cell=table.rows[scoreReveal.category+2]?.cells[scoreReveal.column+1];if(cell){cell.classList.add('score-reveal-cell');cell.dataset.scoreReveal=cell.textContent.trim();}}
  }
  $('notice').textContent=g.finished?'Partie beendet':mine&&p.pendingCopy?'📋 Kopierter Wurf von '+p.pendingCopy.sourceName+' – jetzt Wertung eintragen; kein Würfeln erlaubt!':!mine?'Warte auf '+p.name+' …':g.rolls===(g.extraRollActive?4:3)?'Würfe abgeschlossen – Wertung wählen!':g.rolls?'Wertung wählen oder erneut würfeln.':'Jetzt würfeln!';
  if(g.finished){
