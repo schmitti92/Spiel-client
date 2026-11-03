@@ -65,10 +65,21 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 .ambient:before,.ambient:after{content:'✦ ✧ ✦ ✧ ✦';position:absolute;top:18%;left:7%;color:#f7d48e;font-size:24px;letter-spacing:42px;animation:twinkle 3s ease-in-out infinite alternate}
 .ambient:after{top:47%;left:20%;font-size:13px;animation-delay:1s}
 @keyframes twinkle{from{opacity:.2;transform:translateY(0)}to{opacity:.9;transform:translateY(-14px)}}
+
+.hud{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:2px auto;max-width:1000px}
+.hud-chip{border:1px solid #e4c18077;border-radius:24px;background:#161b31b8;padding:5px 12px;font-size:13px;color:#ffe6a8;font-weight:750}
+.hud-chip strong{color:#fff}
+#reset{font-size:12px;padding:6px 12px}
+#results{border:2px solid #f2c76e;background:radial-gradient(ellipse at top,#6d4d38,#22223e 75%);box-shadow:0 0 38px #eeb64b4d;animation:resultsPop .7s ease both}
+#results h2{font-size:clamp(26px,4vw,46px);margin:8px 0}
+#winner{padding:10px;font-size:clamp(20px,3vw,34px);font-weight:900;color:#ffe3a1;text-shadow:0 3px 12px #000}
+@keyframes resultsPop{from{opacity:0;transform:scale(.85) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@media(orientation:landscape) and (max-height:800px){.hud-chip{font-size:11px;padding:3px 9px}.hud{gap:5px}}
 </style></head><body><main>
 <header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Ein Abenteuer mit drei Türen – eine davon bleibt verschlossen!</div></header>
 <section class="panel" id="setup"><div class="setup"><label>Menschen<select id="humans"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><label>Computergegner<select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button class="primary" id="newGame">Abenteuer beginnen ✨</button></div><p class="sub" style="text-align:center">Offline-Test mit MiniGame Engine 2.0 · insgesamt maximal vier Abenteurer</p></section>
 <section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer wählt geheim eine von drei Türen. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Wer am Ende noch steht, gewinnt!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
+<div class="hud hidden" id="hud"><span class="hud-chip">🏰 <strong id="hudRound">1</strong> / 8</span><span class="hud-chip">🧙 Noch dabei: <strong id="hudAlive">0</strong></span><span class="hud-chip">🚪 Entscheidungen: <strong id="hudChoices">0</strong></span><button id="reset">↻ Neustart</button></div>
 <section class="arena hidden" id="arena"><div class="ambient" aria-hidden="true"></div><div class="stage-banner" id="stage">KAMMER 1</div><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
 <section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="choice" id="choices"><button data-door="0">🚪 Tür 1</button><button data-door="1">🚪 Tür 2</button><button data-door="2">🚪 Tür 3</button></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
 <section class="panel results hidden" id="results"><h2>🏆 Abenteuer beendet!</h2><div id="winner"></div><button class="primary" id="again">Nochmal spielen ↻</button></section>
@@ -84,7 +95,7 @@ function setup(){
  humans=Array.from({length:count},(_,i)=>'human:'+(i+1));
  session=createTreasureSession({roomId:'offline-treasure-'+(++run),hostId:humans[0],players:humans,botPreset:bots,lockedDoors:lockedDoors()});
  all=session.room.match.roster;started=false;revealing=false;prepared=false;token++;
- show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);
+ show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);show('hud',false);
 }
 function figure(id){
  const i=all.indexOf(id),name=id.startsWith('bot:')?'Bot '+(i+1):'Spieler '+(i+1);
@@ -92,6 +103,9 @@ function figure(id){
 }
 function render(visualState=null,animateDoor=null){
  const g=visualState||session.game;
+ $('hudRound').textContent=String(g.round+1);
+ $('hudAlive').textContent=String(g.alive.length);
+ $('hudChoices').textContent=String(Object.keys(g.choices).length)+' / '+g.alive.length;
  $('doors').innerHTML=[0,1,2].map(d=>{
  const revealed=g.reveals.find(x=>x.door===d);
  const visitors=revealed?revealed.visitors:(g.phase==='choosing'||!prepared?[]:g.alive.filter(id=>g.choices[id]===d));
@@ -151,10 +165,10 @@ async function reveal(){
  revealing=false;
 }
 function label(id){return id.startsWith('bot:')?'Computer '+(all.indexOf(id)+1):'Spieler '+(all.indexOf(id)+1)}
-$('newGame').onclick=setup;$('again').onclick=setup;
+$('newGame').onclick=setup;$('again').onclick=setup;$('reset').onclick=()=>{if(confirm('Abenteuer wirklich neu starten?'))setup();};
 $('understood').onclick=async()=>{
  if(started||session.room.match.phase!=='instructions')return;
- show('instructions',false);show('arena');render();$('status').textContent='Alle Abenteurer machen sich bereit …';
+ show('instructions',false);show('arena');show('hud');render();$('status').textContent='Alle Abenteurer machen sich bereit …';
  for(const id of humans)session.acknowledge(id);
  const thisToken=token;
  for(let n=3;n>=1;n--){$('status').textContent='Start in '+n+' …';await sleep(1000);if(thisToken!==token)return;}
