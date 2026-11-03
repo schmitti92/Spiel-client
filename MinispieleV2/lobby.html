@@ -97,7 +97,22 @@ eggLaunch.onclick=async()=>{
    location.href='./eier-chaos.html?mode=online&room='+encodeURIComponent(code);
  }catch(e){eggError.textContent='Start nicht möglich: '+e.message;eggLaunch.disabled=false;}
 };
+const treasureLaunch=document.getElementById('drei-schatzkammern-launch');
+const treasureError=document.getElementById('drei-schatzkammern-launch-error');
+treasureLaunch.onclick=async()=>{
+ treasureLaunch.disabled=true;treasureError.textContent='';
+ try{
+  if(!snapshot)throw Error('Raum noch nicht verbunden');
+  if(snapshot.match?.game==='drei-schatzkammern'&&snapshot.match.status?.phase!=='finished'){
+   location.href='./engine2/games/drei-schatzkammern/hub-online.html?room='+encodeURIComponent(code);return;
+  }
+  if(!snapshot.host)throw Error('Nur der Host kann eine neue Partie starten.');
+  await gameAction('/drei-schatzkammern/launch',{bots});
+  location.href='./engine2/games/drei-schatzkammern/hub-online.html?room='+encodeURIComponent(code);
+ }catch(e){treasureError.textContent='Start nicht möglich: '+e.message;treasureLaunch.disabled=false;}
+};
 function render(){
+  treasureLaunch.disabled=!valid||!snapshot||(snapshot.phase==='playing'&&snapshot.match?.game!=='drei-schatzkammern');
   eggLaunch.disabled=!valid||!snapshot||(snapshot.phase==='playing'&&snapshot.match?.game!=='eier-chaos');
   matrixLaunch.disabled=!valid||!snapshot||(snapshot.phase==='playing'&&snapshot.match?.game!=='merk-matrix');
   launch.disabled=!valid||!snapshot||(snapshot.phase==='playing'&&snapshot.match?.game!=='farbenblitz')||(snapshot.match?.status?.phase==='finished'&&!snapshot.host);
@@ -110,7 +125,7 @@ function render(){
   const liveBots=players.filter(p=>p.testBot);
   const remaining=Math.max(0,4-realPlayers.length);
   bots=Math.min(bots,3,remaining);
-  const activeEgg=['eier-chaos','merk-matrix'].includes(snapshot?.match?.game)&&snapshot?.match?.status?.phase!=='finished';
+  const activeEgg=['eier-chaos','merk-matrix','drei-schatzkammern'].includes(snapshot?.match?.game)&&snapshot?.match?.status?.phase!=='finished';
   if(activeEgg)bots=liveBots.length;
   const shownPlayers=activeEgg?players:realPlayers;
   for(let i=0;i<4;i++){
