@@ -125,7 +125,7 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 </main><script type="module">
 import {createTreasureSession} from './offline-adapter.js';
 const $=id=>document.getElementById(id), faces=['🧙','🧝','🥷','🦸'],colors=['#f3b44d','#67d6c2','#bca1ff','#fa95ae'];
-let session=null,humans=[],all=[],run=0,started=false,revealing=false,token=0,prepared=false,awaitingHandoff=null;
+let session=null,humans=[],all=[],run=0,started=false,revealing=false,token=0,prepared=false,awaitingHandoff=null,stageReveals=[],stageVisitors=null;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const show=(id,on=true)=>$(id).classList.toggle('hidden',!on);
 const lockedDoors=()=>Array.from({length:3},()=>Math.floor(Math.random()*3));
@@ -133,7 +133,7 @@ function setup(){
  let count=Number($('humans').value),bots=Number($('bots').value);bots=Math.min(bots,4-count);$('bots').value=String(bots);
  humans=Array.from({length:count},(_,i)=>'human:'+(i+1));
  session=createTreasureSession({roomId:'offline-treasure-'+(++run),hostId:humans[0],players:humans,botPreset:bots,lockedDoors:lockedDoors()});
- all=session.room.match.roster;started=false;revealing=false;prepared=false;awaitingHandoff=null;token++;show('handoff',false);
+ all=session.room.match.roster;started=false;revealing=false;prepared=false;awaitingHandoff=null;stageReveals=[];stageVisitors=null;token++;show('handoff',false);
  show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);show('hud',false);$('results').classList.remove('celebrate');
 }
 function figure(id,alive){
@@ -146,14 +146,14 @@ function render(visualState=null,animateDoor=null){
  $('hudAlive').textContent=String(g.alive.length);
  $('hudChoices').textContent=String(Object.keys(g.choices).length)+' / '+g.alive.length;
  $('doors').innerHTML=[0,1,2].map(d=>{
- const revealed=g.reveals.find(x=>x.door===d);
- const visitors=revealed?revealed.visitors:(g.phase==='choosing'||!prepared?[]:g.alive.filter(id=>g.choices[id]===d));
+ const revealed=stageReveals.find(x=>x.door===d);
+ const visitors=stageVisitors?stageVisitors.filter(id=>g.choices[id]===d):[];
  return '<div class="door-wrap"><div class="arch '+(revealed&&d!==animateDoor?(revealed.locked?'locked':'open'):'')+'" data-door-arch="'+d+'" role="button" tabindex="0" aria-label="Tür '+(d+1)+' wählen"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(id=>figure(id,g.alive)).join('')+'</div></div>';
  }).join('');
 }
 function nextHuman(){
  if(revealing)return;
- prepared=false;$('arena').classList.add('selecting');
+ prepared=false;stageReveals=[];stageVisitors=null;$('arena').classList.add('selecting');
  let g=session.game;
  for(const bot of g.alive.filter(p=>p.startsWith('bot:')&&!Object.hasOwn(g.choices,p))){session.botChoose(bot,g.round+all.indexOf(bot));g=session.game;}
  $('stage').textContent='KAMMER '+(g.round+1);
@@ -163,7 +163,7 @@ function nextHuman(){
   const i=all.indexOf(waiting);
   $('turn').textContent=faces[i]+' Spieler '+(i+1)+': Tippe direkt auf eine Tür!';
   show('next',false);
-  awaitingHandoff=waiting;$('handoffFace').textContent=faces[i];$('handoffTitle').textContent='Spieler '+(i+1)+' ist dran';show('handoff');
+  awaitingHandoff=waiting;$('handoffFace').textContent=faces[i];$('handoffTitle').textContent='Spieler '+(i+1)+' ist dran';show('handoff',humans.length>1);if(humans.length===1)awaitingHandoff=null;
  }else{
   awaitingHandoff=null;show('handoff',false);$('arena').classList.remove('selecting');
   $('turn').textContent='Alle haben gewählt – bereit für die Türöffnung!';
@@ -177,17 +177,19 @@ async function reveal(){
  show('next',false);
  for(let d=0;d<3;d++){
   $('status').textContent='Die Abenteurer laufen zu den Türen …';
-  prepared=true;render();await sleep(850);if(thisToken!==token)return;
+  prepared=true;stageVisitors=[...session.game.alive];render();await sleep(850);if(thisToken!==token)return;
   const before=session.game;
   session.reveal();
   const r=session.game.reveals.at(-1)||{door:d,locked:before.lockedDoors[before.round]===d,visitors:before.alive.filter(id=>before.choices[id]===d)};
-  const visual={...before,reveals:[...before.reveals,r],alive:r.locked?before.alive.filter(id=>!r.visitors.includes(id)):before.alive};
+  stageReveals.push(r);
+  const visual={...before,reveals:[...stageReveals],alive:r.locked?before.alive.filter(id=>!r.visitors.includes(id)):before.alive};
   render(visual,d);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
    if(thisToken===token){const arch=document.querySelector('[data-door-arch="'+d+'"]');if(arch)arch.classList.add(r.locked?'locked':'open');}
   }));
   $('status').textContent=r.locked?'🔒 Tür '+(d+1)+' ist verschlossen! '+(r.visitors.length?'Oh nein! 😵':'Niemand erwischt!'):'✨ Tür '+(d+1)+' öffnet sich!';
   await sleep(1400);if(thisToken!==token)return;
+  stageVisitors=stageVisitors.filter(id=>session.game.alive.includes(id));
  }
  if(session.game.finished){
   const end=session.finish().result;
@@ -201,7 +203,7 @@ async function reveal(){
   $('arena').classList.remove('room-flash');void $('arena').offsetWidth;$('arena').classList.add('room-flash');
   await sleep(800);if(thisToken!==token)return;
   $('status').textContent='Runde '+(session.game.round+1)+' – drei neue Türen warten!';
-  render();show('action');revealing=false;nextHuman();
+  stageReveals=[];stageVisitors=null;render();show('action');revealing=false;nextHuman();
  }
  revealing=false;
 }
