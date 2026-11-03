@@ -46,6 +46,18 @@ const current=()=>snapshot?.match?.game==='kniffel'?snapshot.match.kniffel:null;
 const jokerLeft=(game,player,key,flag)=>Math.max(0,(game.jokerCount??1)-(player?.jokerUses?.[key]??(player?.[flag]?1:0)));
 const countLabel=(label,left)=>label+' · '+left+'×';
 
+function confirmInGame(title,message,onConfirm){
+ document.getElementById('online-action-confirm')?.remove();
+ const overlay=document.createElement('div');overlay.id='online-action-confirm';overlay.className='score-preview-overlay';
+ const card=document.createElement('div');card.className='score-preview-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-labelledby','online-action-confirm-title');
+ const heading=document.createElement('h2');heading.id='online-action-confirm-title';heading.textContent=title;
+ const description=document.createElement('p');description.textContent=message;
+ const actions=document.createElement('div');actions.className='score-preview-actions';
+ const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Abbrechen';
+ const accept=document.createElement('button');accept.type='button';accept.className='score-preview-confirm';accept.textContent='Bestätigen';
+ cancel.onclick=()=>overlay.remove();accept.onclick=()=>{overlay.remove();onConfirm()};
+ actions.append(cancel,accept);card.append(heading,description,actions);overlay.append(card);document.body.append(overlay);cancel.focus();
+}
 function confirmScore(label,points,onConfirm){
  document.getElementById('online-score-confirm')?.remove();
  const overlay=document.createElement('div');overlay.id='online-score-confirm';overlay.className='score-preview-overlay';
@@ -400,11 +412,12 @@ async function send(action){const g=current();if(!g||busy)return;busy=true;rende
 $('online-abort').onclick=async()=>{
  const host=!!snapshot?.host;
  const msg=host?'Laufendes Kniffel-Spiel für alle Spieler abbrechen? Die aktuelle Partie wird beendet.':'Laufendes Spiel verlassen? Die Partie der anderen Spieler wird dadurch nicht beendet.';
- if(!window.confirm(msg))return;
+ confirmInGame(host?'Spiel abbrechen?':'Spiel verlassen?',msg,async()=>{
  if(!host){location.assign('./lobby.html?room='+encodeURIComponent(code)+'&stay=1');return}
  if(busy)return;busy=true;$('online-abort').disabled=true;
  try{await request('/cancel',{});location.assign('./lobby.html?room='+encodeURIComponent(code)+'&stay=1')}
  catch(e){busy=false;$('online-abort').disabled=false;status('Abbrechen fehlgeschlagen: '+e.message)}
+ });
 };
 $('online-undo').onclick=()=>send({type:'undo-request'});
 $('roll').onclick=()=>send({type:'roll'});
@@ -412,7 +425,7 @@ $('extra-roll-joker').onclick=()=>send({type:'extra-roll'});
 $('extra-die-joker').onclick=()=>send({type:'extra-die'});
 $('reroll-joker').onclick=()=>send({type:'reroll'});
 $('free-entry-joker').onclick=()=>send({type:'free-entry'});
-$('full-restart-joker').onclick=()=>{if(confirm('Alle bisherigen Würfe dieses Zuges verwerfen und mit 5 Würfeln sowie 3 Würfen neu starten?'))send({type:'full-restart'});};
+$('full-restart-joker').onclick=()=>confirmInGame('🔄 Komplettneuwurf','Alle bisherigen Würfe dieses Zuges verwerfen und mit 5 Würfeln sowie 3 Würfen neu starten?',()=>send({type:'full-restart'}));
 $('move-score-joker').onclick=()=>{const g=current();if(g)chooseMoveJoker(g)};
 async function connect(){if(!valid||!user()||ws||connecting||document.hidden)return;connecting=true;try{const socket=new WebSocket(base.replace(/^http/i,'ws')+'/hub');ws=socket;socket.onopen=async()=>{try{const token=await user().getIdToken();if(ws===socket){socket.send(JSON.stringify({type:'subscribe',code,profileIdToken:token}));heartbeat=setInterval(()=>{if(ws===socket&&socket.readyState===1)socket.send(JSON.stringify({type:'ping'}))},30000)}}catch(_){socket.close()}};socket.onmessage=e=>{let msg;try{msg=JSON.parse(e.data)}catch(_){return}if(msg.type==='room'&&msg.room?.code===code){if(acceptSnapshot(msg.room)){render();status('Raum synchronisiert')}}if(msg.type==='error')status('Verbindung: '+msg.error)};socket.onclose=()=>{if(heartbeat){clearInterval(heartbeat);heartbeat=null}if(ws===socket)ws=null;render();if(!document.hidden)retryTimer=setTimeout(connect,4500)};socket.onerror=()=>socket.close()}catch(e){status(e.message)}finally{connecting=false}}
 if(!valid)status('Bitte Kniffel über die Online-Spielauswahl mit einem gültigen Raum öffnen.');
