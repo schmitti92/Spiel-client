@@ -1,0 +1,26 @@
+/* Kniffel Bergsee: illustrated joker cards and clearly separated score sections */
+#game .joker-panel-actions button:not([hidden]){padding:5px 4px 6px!important;gap:3px!important;overflow:hidden!important}
+#game .joker-panel-actions .joker-art{display:block!important;flex:0 0 auto;width:clamp(31px,3.7vw,52px)!important;height:clamp(31px,3.7vw,52px)!important;object-fit:contain!important;border-radius:12px!important;filter:drop-shadow(0 3px 3px #042a5266);transition:transform .2s ease,filter .2s ease}
+#game .joker-panel-actions button:not(:disabled):hover .joker-art{transform:translateY(-2px) rotate(-4deg) scale(1.07);filter:drop-shadow(0 5px 6px #042a5277)}
+#game .joker-panel-actions button.joker-active .joker-art{filter:drop-shadow(0 0 9px #ffca57)}
+#game .joker-panel-actions button.joker-used .joker-art{filter:grayscale(.75) brightness(.82)}
+#game .joker-panel-actions button span[id$="-joker-label"]{font-weight:900!important;letter-spacing:-.01em!important;line-height:1.12!important}
+#game .joker-panel-actions button[data-joker-group="würfeln"]{background:linear-gradient(150deg,#f4fbff,#c7e8fa 70%,#9ecce8)!important}
+#game .joker-panel-actions button[data-joker-group="wertung"]{background:linear-gradient(150deg,#fffdf2,#f7e6b5 70%,#e5c782)!important}
+#game .joker-panel-actions button.joker-used{background:linear-gradient(155deg,#718b9b,#526778)!important}
+#game .joker-panel-actions button.joker-active{background:linear-gradient(145deg,#fff8d6,#f9ce70)!important}
+#game #sheet .wood-variant-table tr.score-section-start td{border-top:13px solid #9b6c31!important;box-shadow:inset 0 4px #ffe2a1,0 -3px 0 #f5e1b8!important;background-clip:padding-box!important}
+#game #sheet .wood-variant-table tr.score-section-start td:first-child{position:relative!important;font-weight:950!important;color:#103d58!important;background:linear-gradient(180deg,#d4edfa,#eef8ff)!important}
+#game #sheet .wood-variant-table tr.score-section-start td:first-child::before{content:"▼ Unterer Teil";position:absolute;left:4px;top:-12px;height:11px;line-height:11px;z-index:5;white-space:nowrap;font:900 9px/11px system-ui,sans-serif;letter-spacing:.05em;color:#fff6d5;text-shadow:0 1px #5a3612}
+#game #sheet .wood-variant-table tr.score-section-start td:not(:first-child){background:linear-gradient(180deg,#d8f0fa,#edf8ff)!important}
+#game #sheet .wood-variant-table tr.score-section-start td.score-open.score-positive-option{background:linear-gradient(150deg,#dcffe7,#b2edc7)!important}
+#game #sheet .wood-variant-table tr.score-category:nth-child(9) td.score-label{font-weight:900!important}
+#game #sheet .wood-variant-table tr.score-category:nth-child(11) td.score-label{font-weight:900!important}
+#game #sheet .wood-variant-table tr.score-category td.score-label{letter-spacing:.005em}
+#game .scores{box-shadow:0 0 0 3px #ba934a,0 17px 39px #002e4a70,inset 0 2px #fff!important}
+#game #sheet .wood-variant-table{background:#94b7c9!important;border-spacing:1px!important}
+#game #sheet .wood-variant-table tr.score-category:hover td{filter:brightness(1.035)}
+@media(min-width:851px) and (orientation:landscape){#game .joker-panel-actions button:not([hidden]){min-height:clamp(49px,7.5dvh,85px)!important}#game .joker-panel-actions .joker-art{width:clamp(28px,3.4vw,48px)!important;height:clamp(28px,3.4vw,48px)!important}}
+@media(max-height:700px) and (min-width:851px){#game .joker-panel-actions button:not([hidden]){min-height:42px!important;padding:2px!important}#game .joker-panel-actions .joker-art{width:25px!important;height:25px!important}#game #sheet .wood-variant-table tr.score-section-start td{border-top-width:9px!important}#game #sheet .wood-variant-table tr.score-section-start td:first-child::before{top:-9px;font-size:8px;line-height:8px}}
+@media(max-width:850px){#game .joker-panel-actions .joker-art{width:44px!important;height:44px!important}}
+@media(prefers-reduced-motion:reduce){#game .joker-panel-actions .joker-art{transition:none!important}}
