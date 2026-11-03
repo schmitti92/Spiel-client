@@ -7,7 +7,7 @@
 <section class="arena hidden" id="arena"><div class="status" id="status">Warte auf Spielstart …</div><div class="doors" id="doors"></div></section>
 <section class="panel hidden" id="result"><h2>🏆 Abenteuer beendet!</h2><div id="winners"></div><button id="replay" class="hidden">Neues Abenteuer vorbereiten</button></section>
 <p id="error" role="alert"></p><p><a href="./index.html">Offline spielen</a></p></main>
-<script src="../../../profile-config.js"></script><script src="../../../profile-auth.js"></script><script type="module">
+<script src="../../../../profile-config.js"></script><script src="../../../../profile-auth.js"></script><script type="module">
 import {currentUser,engine2Request,engine2Room,engine2Action} from '../../Engine2Transport.js';
 const $=id=>document.getElementById(id),show=(id,v)=>$(id).classList.toggle('hidden',!v),faces=['🧙','🧝','🥷','🦸'];
 let code=new URLSearchParams(location.search).get('room')?.toUpperCase()||'',snapshot=null,busy=false,animating=false,lastRound=0,refreshing=false;
