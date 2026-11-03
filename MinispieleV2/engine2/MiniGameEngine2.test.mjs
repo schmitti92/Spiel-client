@@ -1,0 +1,63 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createRoom,dispatch,project,ENGINE_VERSION} from './MiniGameEngine2.js';
+const run=(state,type,actorId,extra={})=>dispatch(state,{type,actorId,commandId:'c'+(state.revision+1),expectedRevision:state.revision,now:100,...extra}).state;
+test('independent V2 coordinator and one-to-four roster',()=>{
+ let s=createRoom({roomId:'r',hostId:'a',botPreset:2});
+ assert.equal(s.version,ENGINE_VERSION);
+ s=run(s,'prepare','a',{matchId:'m1',gameId:'eggs'});
+ assert.deepEqual(s.match.roster,['a','bot:r:0','bot:r:1']);
+ s=run(s,'ready','a');
+ assert.equal(s.match.phase,'countdown');
+ s=run(s,'tick','a',{now:3100});
+ assert.equal(s.match.phase,'playing');
+});
+test('spectators join mid-match and cannot submit results',()=>{
+ let s=createRoom({roomId:'r',hostId:'a'});
+ s=run(s,'prepare','a',{matchId:'m1',gameId:'eggs'});
+ s=run(s,'ready','a');
+ s=run(s,'tick','a',{now:3100});
+ s=run(s,'join','b',{name:'B'});
+ assert.deepEqual(s.waitlist,['b']);
+ assert.throws(()=>run(s,'submit-result','b',{score:4,verified:true}),/NOT_SELECTED/);
+ s=run(s,'submit-result','a',{score:4,verified:true});
+ assert.equal(s.match.phase,'finished');
+ assert.equal(project(s,'b').match.results.a.score,4);
+ s=run(s,'prepare','a',{matchId:'m2',gameId:'eggs'});
+ assert.deepEqual(s.match.roster,['b','a']);
+});
+test('excluded player cannot reenter same preparation; promoted player must ready',()=>{
+ let s=createRoom({roomId:'r',hostId:'a'});
+ for(const id of ['b','c','d','e'])s=run(s,'join',id);
+ s=run(s,'prepare','a',{matchId:'m1',gameId:'eggs'});
+ assert.deepEqual(s.match.roster,['a','b','c','d']);
+ s=run(s,'exclude','a',{targetId:'c'});
+ assert.deepEqual(s.match.roster,['a','b','d','e']);
+ assert(s.match.excluded.includes('c'));
+ assert.throws(()=>run(s,'ready','c'),/NOT_SELECTED/);
+ for(const id of ['a','b','d'])s=run(s,'ready',id);
+ assert.equal(s.match.phase,'instructions');
+ s=run(s,'ready','e');
+ assert.equal(s.match.phase,'countdown');
+});
+test('stale revisions, idempotency, unauthorized host and private scores',()=>{
+ let s=createRoom({roomId:'r',hostId:'a'});
+ assert.throws(()=>run(s,'prepare','x',{matchId:'m',gameId:'g'}),/NOT_A_MEMBER/);
+ s=run(s,'prepare','a',{matchId:'m',gameId:'g'});
+ const cmd={type:'ready',actorId:'a',commandId:'repeat',expectedRevision:s.revision,now:100};
+ const first=dispatch(s,cmd);
+ assert.equal(dispatch(first.state,cmd).duplicate,true);
+ assert.throws(()=>dispatch(first.state,{...cmd,commandId:'fresh'}),/STALE_REVISION/);
+ assert.equal(project(first.state,'x').match.results,null);
+});
+test('abort has no result and host cannot close protected match',()=>{
+ let s=createRoom({roomId:'r',hostId:'a'});
+ s=run(s,'prepare','a',{matchId:'m',gameId:'g'});
+ s=run(s,'ready','a');
+ assert.throws(()=>run(s,'close','a'),/PROTECTED_MATCH/);
+ s=run(s,'abort','a');
+ assert.equal(s.archive[0].phase,'aborted');
+ assert.deepEqual(s.archive[0].results,{});
+ s=run(s,'close','a');
+ assert.equal(s.closed,true);
+});
