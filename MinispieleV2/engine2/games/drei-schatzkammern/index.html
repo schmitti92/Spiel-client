@@ -84,7 +84,7 @@ function render(visualState=null){
  const g=visualState||session.game;
  $('doors').innerHTML=[0,1,2].map(d=>{
  const revealed=g.reveals.find(x=>x.door===d);
- const visitors=revealed?revealed.visitors:g.alive.filter(id=>g.choices[id]===d);
+ const visitors=revealed?revealed.visitors:(g.phase==='choosing'||!revealing?[]:g.alive.filter(id=>g.choices[id]===d));
  return '<div class="door-wrap"><div class="arch '+(revealed?(revealed.locked?'locked':'open'):'')+'"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(figure).join('')+'</div></div>';
  }).join('');
 }
@@ -100,7 +100,7 @@ function nextHuman(){
   show('choices');show('next',false);
  }else{
   show('choices',false);
-  $('turn').textContent='Alle Türen gewählt. Bereit für die Auflösung?';
+  $('turn').textContent='Alle Türen gewählt! Die Entscheidungen bleiben bis zur Auflösung geheim.';
   $('next').textContent='Türen öffnen 🚪';show('next');
  }
  render();
@@ -111,7 +111,7 @@ async function reveal(){
  show('next',false);show('choices',false);
  for(let d=0;d<3;d++){
   $('status').textContent='Die Abenteurer laufen zu den Türen …';
-  await sleep(850);if(thisToken!==token)return;
+  render();await sleep(850);if(thisToken!==token)return;
   const before=session.game;
   session.reveal();
   const r=session.game.reveals.at(-1)||{door:d,locked:before.lockedDoors[before.round]===d,visitors:before.alive.filter(id=>before.choices[id]===d)};
