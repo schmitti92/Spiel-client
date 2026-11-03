@@ -336,7 +336,7 @@ lastTurnKey=turnKey;
  $('joker-panel').setAttribute('aria-label','Joker von '+jokerOwner.name);
  $('joker-panel').dataset.player=String(viewPlayer);
  $('joker-panel').title=g.extraJokers?'Joker für diese Partie verfügbar':'Joker wurden in der Lobby für diese Partie nicht aktiviert';
- const copyLeft=jokerLeft(g,jokerOwner,'copyRoll','copyRollUsed');
+ const copyLeft=Math.max(0,1-(jokerOwner?.jokerUses?.copyRoll??(jokerOwner?.copyRollUsed?1:0)));
  const copying=!!jokerOwner?.pendingCopy;
  copyJoker.disabled=!g.extraJokers||busy||g.finished||!jokerMine||g.players[g.turn]?.uid===jokerOwner?.uid||g.rolls!==3||copyLeft===0||copying;
  copyJoker.classList.toggle('joker-used',copyLeft===0);
