@@ -89,9 +89,9 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 .roster-item{border:1px solid #d5bb8677;border-radius:20px;background:#202743d9;padding:5px 10px;font-size:12px}
 .roster-item.lost{filter:grayscale(1);opacity:.45;text-decoration:line-through}
 </style></head><body><main>
-<header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Ein Abenteuer mit drei Türen – eine davon bleibt verschlossen!</div></header>
+<header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Drei geheimnisvolle Kammern · Drei Türen · Eine Falle</div></header>
 <section class="panel" id="setup"><div class="setup"><label>Menschen<select id="humans"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><label>Computergegner<select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button class="primary" id="newGame">Abenteuer beginnen ✨</button></div><p class="sub" style="text-align:center">Offline-Test mit MiniGame Engine 2.0 · insgesamt maximal vier Abenteurer</p></section>
-<section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer wählt geheim eine von drei Türen. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Wer am Ende noch steht, gewinnt!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
+<section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer wählt geheim eine von drei Türen. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Nach drei Kammern gewinnen alle, die noch stehen. Sobald nur noch ein Abenteurer übrig ist, gewinnt dieser sofort!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
 <div class="hud hidden" id="hud"><span class="hud-chip">🏰 <strong id="hudRound">1</strong> / 3</span><span class="hud-chip">🧙 Noch dabei: <strong id="hudAlive">0</strong></span><span class="hud-chip">🚪 Entscheidungen: <strong id="hudChoices">0</strong></span><button id="fullscreen" title="Vollbild umschalten">⛶ Vollbild</button><button id="reset">↻ Neustart</button></div>
 <section class="arena hidden" id="arena"><div class="ambient" aria-hidden="true"></div><div class="stage-banner" id="stage">KAMMER 1</div><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
 <section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="choice" id="choices"><button data-door="0">🚪 Tür 1</button><button data-door="1">🚪 Tür 2</button><button data-door="2">🚪 Tür 3</button></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
@@ -109,7 +109,7 @@ function setup(){
  humans=Array.from({length:count},(_,i)=>'human:'+(i+1));
  session=createTreasureSession({roomId:'offline-treasure-'+(++run),hostId:humans[0],players:humans,botPreset:bots,lockedDoors:lockedDoors()});
  all=session.room.match.roster;started=false;revealing=false;prepared=false;awaitingHandoff=null;token++;show('handoff',false);
- show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);show('hud',false);
+ show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);show('hud',false);$('results').classList.remove('celebrate');
 }
 function figure(id,alive){
  const i=all.indexOf(id),name=id.startsWith('bot:')?'Bot '+(i+1):'Spieler '+(i+1);
