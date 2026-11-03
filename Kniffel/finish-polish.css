@@ -1,0 +1,42 @@
+/* Kniffel Bergsee — finish pass, 2026-11-03. Presentation only. */
+:root{--kf-ink:#123c58;--kf-deep:#063e63;--kf-gold:#eac36a;--kf-glass:rgba(238,249,255,.89)}
+#game .panel.scores,#game .tabletop{backdrop-filter:blur(11px) saturate(1.14);-webkit-backdrop-filter:blur(11px) saturate(1.14);border-color:rgba(222,242,255,.85)!important;box-shadow:0 16px 35px rgba(2,37,66,.22),inset 0 1px 0 #fff!important}
+#game .scores h2{letter-spacing:.045em!important;font-weight:900!important}
+#game #sheet .score-player-tabs{gap:5px!important}
+#game #sheet .score-player-tab{border-radius:11px!important;transition:transform .18s,box-shadow .18s!important;font-weight:850!important}
+#game #sheet .score-player-tab.selected{transform:translateY(-1px)!important}
+#game #sheet .wood-variant-table{border-radius:13px;overflow:hidden}
+#game #sheet .wood-variant-table tr.score-category td{transition:background .18s,box-shadow .18s!important}
+#game #sheet td.score-open.score-row-action{cursor:pointer!important;position:relative!important;outline:1px solid rgba(14,127,117,.26)!important;outline-offset:-2px!important}
+#game #sheet td.score-open.score-row-action.score-positive-option{background:linear-gradient(140deg,#e6fff0,#b5efcb)!important;box-shadow:inset 0 0 0 2px rgba(20,139,80,.5),0 0 8px rgba(56,172,106,.18)!important}
+#game #sheet td.score-open.score-row-action.score-positive-option::after{content:'✓';position:absolute;right:2px;top:0;font-size:10px;font-weight:900;color:#18794d}
+#game #sheet td.score-open.score-row-action:hover,#game #sheet td.score-open.score-row-action:focus-visible{outline:3px solid #e2ac43!important;outline-offset:-3px!important;background:#fff2bc!important}
+#game #sheet td.score-ink{font-weight:900!important;font-variant-numeric:tabular-nums!important}
+#game #sheet td.score-reveal-cell{position:relative!important;overflow:visible!important;isolation:isolate;z-index:8!important;animation:kf-cell-glow 2.6s ease-out both!important}
+#game #sheet td.score-reveal-cell::after{content:attr(data-score-reveal);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(2.8);font-size:clamp(29px,4.8vw,67px);line-height:1;font-weight:1000;color:#fff9d4;-webkit-text-stroke:1.5px #86561a;text-shadow:0 4px 0 #86561a,0 8px 19px #143c63;pointer-events:none;z-index:20;animation:kf-score-land 2.55s cubic-bezier(.2,.85,.2,1) both}
+@keyframes kf-score-land{0%{opacity:0;transform:translate(-50%,-120%) scale(3.8) rotate(-8deg)}15%{opacity:1;transform:translate(-50%,-75%) scale(3.3) rotate(3deg)}46%{opacity:1;transform:translate(-50%,-50%) scale(2.25)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.85)}}
+@keyframes kf-cell-glow{0%,75%{box-shadow:inset 0 0 0 3px #f5bb41,0 0 20px #ffc94f!important;background:#fff0b7!important}100%{box-shadow:none}}
+#game .tabletop #dice.tray{position:relative!important;isolation:isolate;border:2px solid rgba(255,255,255,.75)!important;background:linear-gradient(145deg,rgba(215,241,255,.8),rgba(117,187,221,.55))!important;box-shadow:inset 0 8px 25px rgba(12,72,109,.2),0 10px 26px rgba(9,62,99,.16)!important}
+#game .tabletop #dice.tray::before{content:'';position:absolute;inset:5px;border:1px solid rgba(255,255,255,.45);border-radius:15px;pointer-events:none}
+#game .tabletop #dice.tray>button.die{transform-style:preserve-3d!important;backface-visibility:hidden;will-change:transform;transition:transform .22s cubic-bezier(.22,.8,.2,1),box-shadow .22s!important}
+#game .tabletop #dice.tray>button.die:not(:disabled):hover{filter:brightness(1.04);transform:translateY(-4px) rotate(4deg)!important}
+#game .tabletop #dice.tray>button.die.dice-tumbling{animation:kf-dice-throw 1.28s cubic-bezier(.15,.68,.2,1) both!important;animation-delay:calc(var(--die-index)*55ms)!important}
+@keyframes kf-dice-throw{0%{transform:translate3d(-12px,-52px,0) rotate(-42deg) rotateY(0deg) scale(.84);filter:blur(1.4px)}22%{transform:translate3d(12px,-22px,0) rotate(120deg) rotateY(145deg) scale(1.08)}44%{transform:translate3d(-8px,8px,0) rotate(290deg) rotateY(280deg) scale(.96)}65%{transform:translate3d(4px,-13px,0) rotate(370deg) rotateY(355deg) scale(1.04)}83%{transform:translate3d(0,3px,0) rotate(355deg) rotateY(360deg)}100%{transform:translate3d(0,0,0) rotate(360deg) rotateY(360deg);filter:none}}
+#game .tabletop #dice.tray>button.die.held{box-shadow:0 0 0 3px #ffdd6d,0 6px 21px rgba(163,108,7,.4),inset 0 2px 4px #fff7c2!important}
+#game .tabletop #roll{border-radius:17px!important;background:linear-gradient(160deg,#ffe9a0,#e2ac46 62%,#bc7c25)!important;border:2px solid #fff1bb!important;box-shadow:0 6px 0 #a16a27,0 12px 22px #163e5b44!important;color:#392915!important;font-weight:950!important;letter-spacing:.035em;transition:transform .15s,box-shadow .15s!important}
+#game .tabletop #roll:not(:disabled):active{transform:translateY(4px)!important;box-shadow:0 2px 0 #a16a27!important}
+#game .joker-panel:not([hidden]){border:1px solid rgba(246,214,137,.9)!important;border-radius:18px!important;background:linear-gradient(140deg,rgba(9,61,97,.93),rgba(12,95,129,.88))!important;box-shadow:0 9px 22px rgba(4,45,71,.25),inset 0 1px rgba(255,255,255,.25)!important}
+#game .joker-panel-heading{color:#fff3c5!important;font-weight:950!important;letter-spacing:.07em!important}
+#game .joker-panel-actions{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:clamp(5px,.6vw,10px)!important;align-items:stretch!important}
+#game .joker-panel-actions button:not([hidden]){display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:3px!important;min-width:0!important;min-height:clamp(55px,8dvh,86px)!important;padding:6px 4px!important;border:1px solid #c8e5f1!important;border-radius:12px!important;background:linear-gradient(155deg,#f9fcff,#c8e7f6)!important;color:#103e60!important;font-weight:850!important;font-size:clamp(10px,.94vw,14px)!important;line-height:1.13!important;box-shadow:0 3px 0 #6897ae,0 6px 10px #002b4933!important;white-space:normal!important;overflow-wrap:anywhere!important;transition:transform .16s,filter .16s!important}
+#game .joker-panel-actions button .joker-icon{font-size:clamp(21px,2.1vw,31px)!important;line-height:1!important}
+#game .joker-panel-actions button:not(:disabled):hover{transform:translateY(-3px)!important;filter:brightness(1.08)!important}
+#game .joker-panel-actions button.joker-active{background:linear-gradient(145deg,#fff1bb,#f2be5a)!important;border-color:#fff2ba!important;box-shadow:0 0 0 2px #e3ac3d,0 5px 12px #ffca5a66!important}
+#game .joker-panel-actions button.joker-used{background:linear-gradient(150deg,#7d99a7,#536d7d)!important;color:#ecf3f6!important;filter:saturate(.45)!important}
+#game .joker-panel-actions button:disabled{opacity:.64!important}
+#game .joker-panel-actions button:focus-visible{outline:3px solid #ffd86d!important;outline-offset:2px!important}
+#game #notice{border-radius:11px!important;color:#153b57!important;font-weight:800!important}
+#game .score-preview-overlay .score-preview-card{box-shadow:0 24px 70px #001c39aa!important}
+@media(min-width:851px) and (orientation:landscape){#game .tabletop .joker-panel:not([hidden]){min-height:0!important}#game .tabletop .joker-panel .joker-panel-actions{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}#game .tabletop .joker-panel .joker-panel-actions button:not([hidden]){flex:none!important;min-height:clamp(48px,7dvh,78px)!important;padding:4px!important;font-size:clamp(10px,.95vw,13px)!important}#game .tabletop .joker-panel .joker-panel-actions button .joker-icon{font-size:clamp(18px,2vw,29px)!important}}
+@media(max-width:850px){#game .joker-panel-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}#game .joker-panel-actions button:not([hidden]){min-height:70px!important}#game .panel.scores,#game .tabletop{backdrop-filter:none}}
+@media(prefers-reduced-motion:reduce){#game .tabletop #dice.tray>button.die.dice-tumbling,#game #sheet td.score-reveal-cell,#game #sheet td.score-reveal-cell::after{animation:none!important}#game .joker-panel-actions button,#game .tabletop #roll{transition:none!important}}
