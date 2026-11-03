@@ -128,10 +128,10 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 </style></head><body><main>
 <header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Drei geheimnisvolle Kammern · Drei Türen · Eine Falle</div></header>
 <section class="panel" id="setup"><div class="setup"><label>Menschen<select id="humans"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><label>Computergegner<select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button class="primary" id="newGame">Abenteuer beginnen ✨</button></div><p class="sub" style="text-align:center">Offline-Test mit MiniGame Engine 2.0 · insgesamt maximal vier Abenteurer</p></section>
-<section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer tippt direkt auf eine der drei Türen. Die Auswahl bleibt bis zur Auflösung geheim. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Nach drei Kammern gewinnen alle, die noch stehen. Sobald nur noch ein Abenteurer übrig ist, gewinnt dieser sofort!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
+<section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer tippt direkt auf eine der drei Türen. Die Auswahl bleibt bis zur Auflösung geheim. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Sobald alle gewählt haben, öffnen sich die Türen automatisch nacheinander. Nach drei Kammern gewinnen alle, die noch stehen. Sobald nur noch ein Abenteurer übrig ist, gewinnt dieser sofort!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
 <div class="hud hidden" id="hud"><span class="hud-chip">🏰 <strong id="hudRound">1</strong> / 3</span><span class="hud-chip">🧙 Noch dabei: <strong id="hudAlive">0</strong></span><span class="hud-chip">🚪 Entscheidungen: <strong id="hudChoices">0</strong></span><button id="fullscreen" title="Vollbild umschalten">⛶ Vollbild</button><button id="reset">↻ Neustart</button></div>
 <section class="arena hidden" id="arena"><div class="ambient" aria-hidden="true"></div><div class="stage-banner" id="stage">KAMMER 1</div><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
-<section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
+<section class="panel hidden" id="action"><div class="status" id="turn"></div></section>
 <div class="handoff hidden" id="handoff"><div class="handoff-card"><div style="font-size:54px" id="handoffFace">🧙</div><h2 id="handoffTitle">Spieler 1 ist dran</h2><p>Gib das Tablet weiter. Deine Türwahl bleibt geheim.</p><button class="primary" id="handoffGo">Ich bin bereit!</button></div></div>
 <section class="panel results hidden" id="results"><h2>🏆 Abenteuer beendet!</h2><div id="winner"></div><div class="roster" id="resultRoster"></div><button class="primary" id="again">Nochmal spielen ↻</button></section>
 </main><script type="module">
@@ -174,19 +174,19 @@ function nextHuman(){
  if(waiting){
   const i=all.indexOf(waiting);
   $('turn').textContent=faces[i]+' Spieler '+(i+1)+': Tippe direkt auf eine Tür!';
-  show('next',false);
   awaitingHandoff=waiting;$('handoffFace').textContent=faces[i];$('handoffTitle').textContent='Spieler '+(i+1)+' ist dran';show('handoff',humans.length>1);if(humans.length===1)awaitingHandoff=null;
  }else{
   awaitingHandoff=null;show('handoff',false);$('arena').classList.remove('selecting');
   $('turn').textContent='Alle haben gewählt – bereit für die Türöffnung!';
-  $('next').textContent='Türen öffnen 🚪';show('next');
+  const thisToken=token;
+  $('turn').textContent='Alle Türen gewählt! Die Türen öffnen sich gleich …';
+  setTimeout(()=>{if(thisToken===token&&!revealing&&session.game.phase==='revealing')reveal();},950);
  }
  render();
 }
 async function reveal(){
  if(revealing||session.game.phase!=='revealing')return;
  revealing=true;const thisToken=token;$('arena').classList.remove('selecting');
- show('next',false);
  for(let d=0;d<3;d++){
   $('status').textContent='Die Abenteurer laufen zu den Türen …';
   prepared=true;stageVisitors=[...session.game.alive];render();await sleep(850);if(thisToken!==token)return;
@@ -241,9 +241,7 @@ function selectDoor(door){
 }
 $('doors').addEventListener('click',e=>{const target=e.target.closest('[data-door-arch]');if(target)selectDoor(Number(target.dataset.doorArch));});
 $('doors').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const target=e.target.closest('[data-door-arch]');if(target){e.preventDefault();selectDoor(Number(target.dataset.doorArch));}}});
-$('next').onclick=()=>{if(!revealing&&session.game.phase==='revealing')reveal();};
 document.addEventListener('keydown',e=>{if(e.repeat||e.altKey||e.ctrlKey||e.metaKey||!session||!started)return;
  if(['1','2','3'].includes(e.key)&&!revealing)selectDoor(Number(e.key)-1);
- if(e.key==='Enter'&&!$('next').classList.contains('hidden'))$('next').click();
 });
 </script></body></html>
