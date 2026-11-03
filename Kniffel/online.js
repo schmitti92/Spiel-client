@@ -43,6 +43,9 @@ function scoreCellState(g,column,category){
 const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'&&s?.user?.getIdToken?s.user:null};
 const status=t=>$('notice').textContent=t;
 const current=()=>snapshot?.match?.game==='kniffel'?snapshot.match.kniffel:null;
+const jokerLeft=(game,player,key,flag)=>Math.max(0,(game.jokerCount??1)-(player?.jokerUses?.[key]??(player?.[flag]?1:0)));
+const countLabel=(label,left)=>label+' · '+left+'×';
+
 function confirmScore(label,points,onConfirm){
  document.getElementById('online-score-confirm')?.remove();
  const overlay=document.createElement('div');overlay.id='online-score-confirm';overlay.className='score-preview-overlay';
@@ -89,7 +92,7 @@ function chooseMoveJoker(g){
 }
 function moveCellClick(category,column){
  const g=current(),p=g?.players.find(x=>x.uid===user()?.uid);
- if(!movePick||!p||!g.extraJokers||p.moveUsed)return;
+ if(!movePick||!p||!g.extraJokers||jokerLeft(g,p,'move','moveUsed')===0)return;
  if(movePick.category===null){
   if(p.sheet[column]?.[category]===null)return;
   movePick={category,fromColumn:column};
@@ -174,7 +177,7 @@ function acceptSnapshot(fresh){
   for(const p of next.players||[]){
    const prev=before.players?.find(q=>q.uid===p.uid);
    if(!prev)continue;
-   const activated=labels.find(([key])=>!prev[key]&&!!p[key]);
+   const usedKeys={fullRestartUsed:'fullRestart',freeEntryUsed:'freeEntry',extraRollUsed:'extraRoll',extraDieUsed:'extraDie',rerollUsed:'reroll',moveUsed:'move'};const activated=labels.find(([key])=>(p.jokerUses?.[usedKeys[key]]??(p[key]?1:0))>(prev.jokerUses?.[usedKeys[key]]??(prev[key]?1:0)));
    if(activated){
     const toast=document.getElementById('kniffel-joker-toast')||document.createElement('div');
     toast.id='kniffel-joker-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');
@@ -309,44 +312,44 @@ lastTurnKey=turnKey;
  const rerollJoker=$('reroll-joker');rerollJoker.hidden=false;
  const freeJoker=$('free-entry-joker');freeJoker.hidden=false;
  const restartJoker=$('full-restart-joker');restartJoker.hidden=false;
- restartJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||!!p.fullRestartUsed;
- restartJoker.classList.toggle('joker-used',!!p.fullRestartUsed);
- $('full-restart-joker-label').textContent=p.fullRestartUsed?'Verbraucht':'Komplett neu';
+ restartJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||jokerLeft(g,p,'fullRestart','fullRestartUsed')===0;
+ restartJoker.classList.toggle('joker-used',jokerLeft(g,p,'fullRestart','fullRestartUsed')===0);
+ $('full-restart-joker-label').textContent=countLabel('Komplett neu',jokerLeft(g,p,'fullRestart','fullRestartUsed'));
  const moveJoker=$('move-score-joker');moveJoker.hidden=false;
  $('joker-panel').hidden=false;
  $('joker-panel').title=g.extraJokers?'Joker für diese Partie verfügbar':'Joker wurden in der Lobby für diese Partie nicht aktiviert';
- const used=!!p.extraRollUsed;
+ const leftRoll=jokerLeft(g,p,'extraRoll','extraRollUsed');const used=leftRoll===0;
  const available=g.extraJokers&&mine&&!busy&&g.rolls===0&&!used&&!g.extraRollActive;
  joker.disabled=!available;
  joker.classList.toggle('joker-active',!!g.extraRollActive);
  joker.classList.toggle('joker-used',used&&!g.extraRollActive);
  joker.title=g.extraRollActive?'Aktiv: 4 Würfe':used?'Bereits eingesetzt':g.rolls>0?'Nur vor dem ersten Wurf aktivierbar':mine?'Jetzt für 4 Würfe aktivieren':'Nur im eigenen Zug aktivierbar';
  joker.setAttribute('aria-label','Glückswurf-Joker: '+joker.title);
- $('extra-roll-joker-label').textContent=g.extraRollActive?'4 Würfe':used?'Verbraucht':'+1 Wurf';
- const dieUsed=!!p.extraDieUsed;
+ $('extra-roll-joker-label').textContent=countLabel(g.extraRollActive?'4 Würfe':'+1 Wurf',leftRoll);
+ const leftDie=jokerLeft(g,p,'extraDie','extraDieUsed');const dieUsed=leftDie===0;
  const dieAvailable=g.extraJokers&&mine&&!busy&&g.rolls===0&&!dieUsed&&!g.extraDieActive;
  dieJoker.disabled=!dieAvailable;
  dieJoker.classList.toggle('joker-active',!!g.extraDieActive);
  dieJoker.classList.toggle('joker-used',dieUsed&&!g.extraDieActive);
  dieJoker.title=g.extraDieActive?'Aktiv: 6 Würfel':dieUsed?'Bereits eingesetzt':g.rolls>0?'Nur vor dem ersten Wurf aktivierbar':mine?'Jetzt mit 6 Würfeln spielen':'Nur im eigenen Zug aktivierbar';
  dieJoker.setAttribute('aria-label','Sechster Würfel: '+dieJoker.title);
- $('extra-die-joker-label').textContent=g.extraDieActive?'6 Würfel':dieUsed?'Verbraucht':'+1 Würfel';
- rerollJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||!!p.rerollUsed;
- rerollJoker.classList.toggle('joker-used',!!p.rerollUsed);
- rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':p.rerollUsed?'Bereits verwendet':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle Würfel neu werfen';
- $('reroll-joker-label').textContent=p.rerollUsed?'Verbraucht':'Neuwurf';
- const freeUsed=!!p.freeEntryUsed;
+ $('extra-die-joker-label').textContent=countLabel(g.extraDieActive?'6 Würfel':'+1 Würfel',leftDie);
+ rerollJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||jokerLeft(g,p,'reroll','rerollUsed')===0;
+ rerollJoker.classList.toggle('joker-used',jokerLeft(g,p,'reroll','rerollUsed')===0);
+ rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':jokerLeft(g,p,'reroll','rerollUsed')===0?'Alle verbraucht':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle nicht gehaltenen Würfel neu werfen';
+ $('reroll-joker-label').textContent=countLabel('Neuwurf',jokerLeft(g,p,'reroll','rerollUsed'));
+ const leftFree=jokerLeft(g,p,'freeEntry','freeEntryUsed');const freeUsed=leftFree===0;
  freeJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||freeUsed||!!g.freeEntryActive;
  freeJoker.classList.toggle('joker-active',!!g.freeEntryActive);
  freeJoker.classList.toggle('joker-used',freeUsed&&!g.freeEntryActive);
  freeJoker.title=g.freeEntryActive?'Aktiv: Ein beliebiges leeres Feld wählen':freeUsed?'Bereits verwendet':!g.extraJokers?'In der Lobby nicht aktiviert':g.rolls<1?'Erst nach dem ersten Wurf aktivierbar':'Alle noch leeren Felder freigeben';
- $('free-entry-joker-label').textContent=g.freeEntryActive?'Freie Wahl aktiv':freeUsed?'Verbraucht':'Freie Eintragung';
+ $('free-entry-joker-label').textContent=countLabel(g.freeEntryActive?'Freie Wahl aktiv':'Freie Eintragung',leftFree);
  const ownPlayer=g.players.find(x=>x.uid===user()?.uid);
  const movePossible=ownPlayer?.sheet?.length>1&&ownPlayer.sheet.some((col,j)=>col.some((value,c)=>value!==null&&ownPlayer.sheet.some((target,k)=>k!==j&&true)));
- moveJoker.disabled=!g.extraJokers||busy||g.finished||!ownPlayer||!!ownPlayer.moveUsed||!movePossible;
- moveJoker.classList.toggle('joker-used',!!ownPlayer?.moveUsed);
- moveJoker.title=ownPlayer?.moveUsed?'Bereits verwendet':!g.extraJokers?'In der Lobby nicht aktiviert':!movePossible?'Keine eingetragene Wertung vorhanden':'Wertungen zwischen Spalten verschieben oder tauschen';
- $('move-score-joker-label').textContent=ownPlayer?.moveUsed?'Verbraucht':'Verschieben / Tauschen';
+ moveJoker.disabled=!g.extraJokers||busy||g.finished||!ownPlayer||jokerLeft(g,ownPlayer,'move','moveUsed')===0||!movePossible;
+ moveJoker.classList.toggle('joker-used',jokerLeft(g,ownPlayer,'move','moveUsed')===0);
+ moveJoker.title=jokerLeft(g,ownPlayer,'move','moveUsed')===0?'Alle verbraucht':!g.extraJokers?'In der Lobby nicht aktiviert':!movePossible?'Keine eingetragene Wertung vorhanden':'Wertungen zwischen Spalten verschieben oder tauschen';
+ $('move-score-joker-label').textContent=countLabel('Verschieben / Tauschen',jokerLeft(g,ownPlayer,'move','moveUsed'));
  $('roll').disabled=!mine||busy||g.rolls>=limit;
  if(['classic','joker'].includes(g.mode)&&shownPlayer.sheet.length===1){renderCompactScore(g,shownPlayer,viewPlayer,mine)}else{
  const table=document.createElement('table');if(!['classic','joker'].includes(g.mode))table.className='variant-table wood-variant-table';
