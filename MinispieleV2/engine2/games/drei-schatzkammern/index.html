@@ -55,11 +55,20 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
  .panel{padding:8px 12px}#action .status{min-height:25px}.choice button{min-height:42px;padding:7px}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.arena[data-theme="1"]{background:linear-gradient(180deg,#1b2335 0%,#314d58 61%,#69523a 61%,#352e2b 100%);border-color:#77b9ad}
+.arena[data-theme="2"]{background:linear-gradient(180deg,#2b1b38 0%,#593b60 61%,#675037 61%,#302436 100%);border-color:#b78bd3}
+.arena[data-theme="3"]{background:linear-gradient(180deg,#37251d 0%,#655033 61%,#705039 61%,#3b2b20 100%);border-color:#f0bd68}
+.arena[data-theme="0"]{border-color:#c29a57}
+.ambient{position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.38}
+.ambient:before,.ambient:after{content:'✦ ✧ ✦ ✧ ✦';position:absolute;top:18%;left:7%;color:#f7d48e;font-size:24px;letter-spacing:42px;animation:twinkle 3s ease-in-out infinite alternate}
+.ambient:after{top:47%;left:20%;font-size:13px;animation-delay:1s}
+@keyframes twinkle{from{opacity:.2;transform:translateY(0)}to{opacity:.9;transform:translateY(-14px)}}
 </style></head><body><main>
 <header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Ein Abenteuer mit drei Türen – eine davon bleibt verschlossen!</div></header>
 <section class="panel" id="setup"><div class="setup"><label>Menschen<select id="humans"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><label>Computergegner<select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button class="primary" id="newGame">Abenteuer beginnen ✨</button></div><p class="sub" style="text-align:center">Offline-Test mit MiniGame Engine 2.0 · insgesamt maximal vier Abenteurer</p></section>
 <section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer wählt geheim eine von drei Türen. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Wer am Ende noch steht, gewinnt!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
-<section class="arena hidden" id="arena"><div class="stage-banner" id="stage">KAMMER 1</div><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
+<section class="arena hidden" id="arena"><div class="ambient" aria-hidden="true"></div><div class="stage-banner" id="stage">KAMMER 1</div><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
 <section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="choice" id="choices"><button data-door="0">🚪 Tür 1</button><button data-door="1">🚪 Tür 2</button><button data-door="2">🚪 Tür 3</button></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
 <section class="panel results hidden" id="results"><h2>🏆 Abenteuer beendet!</h2><div id="winner"></div><button class="primary" id="again">Nochmal spielen ↻</button></section>
 </main><script type="module">
@@ -93,6 +102,7 @@ function nextHuman(){
  let g=session.game;
  for(const bot of g.alive.filter(p=>p.startsWith('bot:')&&!Object.hasOwn(g.choices,p))){session.botChoose(bot,g.round+all.indexOf(bot));g=session.game;}
  $('stage').textContent='KAMMER '+(g.round+1);
+ $('arena').dataset.theme=String(g.round%4);
  const waiting=humans.find(id=>g.alive.includes(id)&&!Object.hasOwn(g.choices,id));
  if(waiting){
   const i=all.indexOf(waiting);
