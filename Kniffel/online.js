@@ -369,7 +369,7 @@ lastTurnKey=turnKey;
  rerollJoker.title=!g.extraJokers?'In der Lobby nicht aktiviert':jokerLeft(g,jokerOwner,'reroll','rerollUsed')===0?'Alle verbraucht':g.rolls<1?'Ab dem ersten Wurf verfügbar':'Alle nicht gehaltenen Würfel neu werfen';
  $('reroll-joker-label').textContent=countLabel('Neuwurf',jokerLeft(g,jokerOwner,'reroll','rerollUsed'));
  const leftFree=jokerLeft(g,jokerOwner,'freeEntry','freeEntryUsed');const freeUsed=leftFree===0;
- freeJoker.disabled=!g.extraJokers||!mine||!!p.pendingCopy||busy||g.rolls<1||freeUsed||!!g.freeEntryActive;
+ freeJoker.disabled=!g.extraJokers||!mine||busy||g.rolls<1||freeUsed||!!g.freeEntryActive;
  freeJoker.classList.toggle('joker-active',!!g.freeEntryActive);
  freeJoker.classList.toggle('joker-used',freeUsed&&!g.freeEntryActive);
  freeJoker.title=g.freeEntryActive?'Aktiv: Ein beliebiges leeres Feld wählen':freeUsed?'Bereits verwendet':!g.extraJokers?'In der Lobby nicht aktiviert':g.rolls<1?'Erst nach dem ersten Wurf aktivierbar':'Alle noch leeren Felder freigeben';
