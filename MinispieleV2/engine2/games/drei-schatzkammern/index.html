@@ -18,17 +18,54 @@ button,select{font:inherit;border:1px solid #f9d99d80;border-radius:12px;padding
 .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:center}.choice{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.choice button{padding:15px 4px;font-weight:800}.choice button.selected{background:#936a2d}
 .hidden{display:none!important}.results{text-align:center;font-size:22px}.pill{display:inline-block;padding:5px 10px;border-radius:20px;background:#384564;margin:4px}
 @media(max-width:550px){main{padding:8px}.panel{padding:12px}.arena{min-height:345px;padding:15px 5px}.arch{border-width:4px;padding:3px}.door{border-width:3px}.figures{min-height:60px}.figure small{font-size:9px}}
+
+/* Tablet-first adventure stage */
+html,body{min-height:100%;overscroll-behavior:none}
+main{max-width:1440px;min-height:100dvh;display:flex;flex-direction:column;gap:8px;padding:8px 16px}
+header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
+.panel{margin:4px auto;padding:12px 16px}
+.arena{width:100%;flex:1;min-height:330px;max-height:calc(100dvh - 195px);background:linear-gradient(180deg,#13162c 0%,#2a3150 24%,#464064 62%,#65503c 62%,#3e2f28 100%);border-color:#c29a57;box-shadow:inset 0 0 75px #0008,0 12px 40px #0008}
+.arena:after{content:'';pointer-events:none;position:absolute;inset:0;background:radial-gradient(ellipse at 50% 18%,#ffe6a81a,transparent 70%)}
+.doors{margin-top:4px;max-width:1000px;height:calc(100% - 54px);align-items:end}
+.door-wrap{position:relative}
+.arch{height:clamp(155px,31vh,300px);border:9px solid #8b8997;border-bottom:0;background:radial-gradient(#403358,#0d0b17);box-shadow:0 8px 0 #282338,0 0 25px #1119;overflow:hidden}
+.arch:before{content:'💎 ✨';position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(23px,4vw,52px)}
+.door{background:repeating-linear-gradient(90deg,#63351e 0 22%,#a76a38 22% 25%,#8b4e28 25% 47%,#63351e 47% 50%);box-shadow:inset 0 0 24px #120b0a,0 0 8px #120b0a}
+.arch.locked:before{content:'⛓️ 🔒';font-size:clamp(20px,4vw,45px)}
+.arch.locked .door{transform:translateX(-4px) rotate(-2deg);filter:grayscale(.35) brightness(.65)}
+.door-num{margin:6px 0 2px}
+.figures{min-height:70px;position:relative}
+.figure{animation:arrive .7s cubic-bezier(.2,1.3,.3,1) both;transform-origin:50% 90%}
+.figure .face{font-size:clamp(30px,5vw,56px)}
+.figure.out{animation:stumble .8s ease forwards}
+@keyframes arrive{from{transform:translateY(48px) scale(.75);opacity:.1}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes stumble{0%{transform:rotate(0)}45%{transform:rotate(-18deg) translateY(-8px)}100%{transform:rotate(75deg) translateY(12px);opacity:.4}}
+.status{min-height:44px;font-size:clamp(16px,2vw,24px)}
+#action{width:100%;max-width:1000px;flex-shrink:0}
+#action .status{min-height:30px;font-size:clamp(16px,2vw,22px)}
+.choice{margin-top:4px}.choice button{padding:12px 5px;min-height:48px}
+.stage-banner{position:absolute;top:5px;right:14px;font-size:12px;letter-spacing:1px;color:#ffdc98}
+.room-flash{animation:roomEnter .8s ease}
+@keyframes roomEnter{0%{filter:brightness(2);transform:scale(1.01)}100%{filter:brightness(1);transform:scale(1)}}
+@media (orientation:landscape) and (max-height:800px){
+ main{gap:4px}header h1{font-size:clamp(24px,3vw,36px)}
+ .arena{min-height:280px;max-height:calc(100dvh - 175px);padding:10px 12px}
+ .arch{height:clamp(130px,28vh,230px)}.doors{margin-top:0}
+ .figures{min-height:60px}.figure .face{font-size:clamp(25px,3vw,42px)}
+ .panel{padding:8px 12px}#action .status{min-height:25px}.choice button{min-height:42px;padding:7px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style></head><body><main>
 <header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Ein Abenteuer mit drei Türen – eine davon bleibt verschlossen!</div></header>
 <section class="panel" id="setup"><div class="setup"><label>Menschen<select id="humans"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><label>Computergegner<select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button class="primary" id="newGame">Abenteuer beginnen ✨</button></div><p class="sub" style="text-align:center">Offline-Test mit MiniGame Engine 2.0 · insgesamt maximal vier Abenteurer</p></section>
 <section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer wählt geheim eine von drei Türen. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Wer am Ende noch steht, gewinnt!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
-<section class="arena hidden" id="arena"><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
+<section class="arena hidden" id="arena"><div class="stage-banner" id="stage">KAMMER 1</div><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
 <section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="choice" id="choices"><button data-door="0">🚪 Tür 1</button><button data-door="1">🚪 Tür 2</button><button data-door="2">🚪 Tür 3</button></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
 <section class="panel results hidden" id="results"><h2>🏆 Abenteuer beendet!</h2><div id="winner"></div><button class="primary" id="again">Nochmal spielen ↻</button></section>
 </main><script type="module">
 import {createTreasureSession} from './offline-adapter.js';
 const $=id=>document.getElementById(id), faces=['🧙','🧝','🥷','🦸'],colors=['#f3b44d','#67d6c2','#bca1ff','#fa95ae'];
-let session=null,humans=[],all=[],current=0,run=0,started=false;
+let session=null,humans=[],all=[],run=0,started=false,revealing=false,token=0;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const show=(id,on=true)=>$(id).classList.toggle('hidden',!on);
 const lockedDoors=()=>Array.from({length:8},()=>Math.floor(Math.random()*3));
@@ -36,7 +73,7 @@ function setup(){
  let count=Number($('humans').value),bots=Number($('bots').value);bots=Math.min(bots,4-count);$('bots').value=String(bots);
  humans=Array.from({length:count},(_,i)=>'human:'+(i+1));
  session=createTreasureSession({roomId:'offline-treasure-'+(++run),hostId:humans[0],players:humans,botPreset:bots,lockedDoors:lockedDoors()});
- all=session.room.match.roster;current=0;started=false;
+ all=session.room.match.roster;started=false;revealing=false;token++;
  show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);
 }
 function figure(id){
@@ -46,13 +83,16 @@ function figure(id){
 function render(){
  const g=session.game;
  $('doors').innerHTML=[0,1,2].map(d=>{
- const revealed=g.reveals.filter(x=>x.door===d).at(-1);
+ const revealed=g.reveals.find(x=>x.door===d);
  const visitors=revealed?revealed.visitors:g.alive.filter(id=>g.choices[id]===d);
  return '<div class="door-wrap"><div class="arch '+(revealed?(revealed.locked?'locked':'open'):'')+'"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(figure).join('')+'</div></div>';
  }).join('');
 }
 function nextHuman(){
- const g=session.game;
+ if(revealing)return;
+ let g=session.game;
+ for(const bot of g.alive.filter(p=>p.startsWith('bot:')&&!Object.hasOwn(g.choices,p))){session.botChoose(bot,g.round+all.indexOf(bot));g=session.game;}
+ $('stage').textContent='KAMMER '+(g.round+1);
  const waiting=humans.find(id=>g.alive.includes(id)&&!Object.hasOwn(g.choices,id));
  if(waiting){
   const i=all.indexOf(waiting);
@@ -66,14 +106,16 @@ function nextHuman(){
  render();
 }
 async function reveal(){
- show('next',false);show('choices',false);show('turn',true);
+ if(revealing||session.game.phase!=='revealing')return;
+ revealing=true;const thisToken=token;
+ show('next',false);show('choices',false);
  for(let d=0;d<3;d++){
   $('status').textContent='Die Abenteurer laufen zu den Türen …';
-  await sleep(850);
+  await sleep(850);if(thisToken!==token)return;
   session.reveal();render();
   const r=session.game.reveals.at(-1);
   $('status').textContent=r.locked?'🔒 Tür '+(d+1)+' ist verschlossen! '+(r.visitors.length?'Oh nein! 😵':'Niemand erwischt!'):'✨ Tür '+(d+1)+' öffnet sich!';
-  await sleep(1400);
+  await sleep(1400);if(thisToken!==token)return;
  }
  if(session.game.finished){
   const end=session.finish().result;
@@ -81,9 +123,13 @@ async function reveal(){
   $('winner').textContent=end.winnerIds.length===0?'Niemand hat die Schatzkammern überstanden!':end.winnerIds.length===1?'🎉 '+label(end.winnerIds[0])+' gewinnt!':'🏅 Gemeinsam geschafft: '+end.winnerIds.map(label).join(', ');
   $('status').textContent='Das Abenteuer ist beendet!';
  }else{
-  $('status').textContent='Runde '+(session.game.round+1)+' – die nächste Schatzkammer wartet!';
-  show('action');nextHuman();
+  $('status').textContent='✨ Geschafft! Die Überlebenden betreten die nächste Kammer …';
+  $('arena').classList.remove('room-flash');void $('arena').offsetWidth;$('arena').classList.add('room-flash');
+  await sleep(800);if(thisToken!==token)return;
+  $('status').textContent='Runde '+(session.game.round+1)+' – drei neue Türen warten!';
+  render();show('action');revealing=false;nextHuman();
  }
+ revealing=false;
 }
 function label(id){return id.startsWith('bot:')?'Computer '+(all.indexOf(id)+1):'Spieler '+(all.indexOf(id)+1)}
 $('newGame').onclick=setup;$('again').onclick=setup;
@@ -98,8 +144,7 @@ document.querySelectorAll('[data-door]').forEach(b=>b.onclick=()=>{
  const id=humans.find(p=>session.game.alive.includes(p)&&!Object.hasOwn(session.game.choices,p));
  if(!id)return;
  session.choose(id,Number(b.dataset.door));
- for(const bot of session.game.alive.filter(p=>p.startsWith('bot:')&&!Object.hasOwn(session.game.choices,p)))session.botChoose(bot,session.game.round+all.indexOf(bot));
  nextHuman();
 });
-$('next').onclick=()=>{if(session.game.phase==='revealing')reveal();};
+$('next').onclick=()=>{if(!revealing&&session.game.phase==='revealing')reveal();};
 </script></body></html>
