@@ -80,8 +80,8 @@ function figure(id){
  const i=all.indexOf(id),name=id.startsWith('bot:')?'Bot '+(i+1):'Spieler '+(i+1);
  return '<span class="figure '+(!session.game.alive.includes(id)?'out':'')+'" style="--tone:'+colors[i]+'"><span class="face">'+faces[i]+'</span><small>'+name+'</small></span>';
 }
-function render(){
- const g=session.game;
+function render(visualState=null){
+ const g=visualState||session.game;
  $('doors').innerHTML=[0,1,2].map(d=>{
  const revealed=g.reveals.find(x=>x.door===d);
  const visitors=revealed?revealed.visitors:g.alive.filter(id=>g.choices[id]===d);
@@ -112,8 +112,11 @@ async function reveal(){
  for(let d=0;d<3;d++){
   $('status').textContent='Die Abenteurer laufen zu den Türen …';
   await sleep(850);if(thisToken!==token)return;
-  session.reveal();render();
-  const r=session.game.reveals.at(-1);
+  const before=session.game;
+  session.reveal();
+  const r=session.game.reveals.at(-1)||{door:d,locked:before.lockedDoors[before.round]===d,visitors:before.alive.filter(id=>before.choices[id]===d)};
+  const visual=session.game.reveals.length?null:{...before,reveals:[...before.reveals,r],alive:r.locked?before.alive.filter(id=>!r.visitors.includes(id)):before.alive};
+  render(visual);
   $('status').textContent=r.locked?'🔒 Tür '+(d+1)+' ist verschlossen! '+(r.visitors.length?'Oh nein! 😵':'Niemand erwischt!'):'✨ Tür '+(d+1)+' öffnet sich!';
   await sleep(1400);if(thisToken!==token)return;
  }
