@@ -30,10 +30,32 @@ function render(){
  $('doors').innerHTML=[0,1,2].map(d=>{const reveal=display.find(x=>x.door===d);return '<div class="door-wrap"><div class="arch '+(reveal?(reveal.locked?'locked':'open'):'')+(canChoose?' enabled':'')+'" data-door="'+d+'" role="button" tabindex="0" aria-label="Tür '+(d+1)+' wählen"><div class="door"></div></div><div class="door-label">Tür '+(d+1)+'</div><div class="visitors">'+(reveal?reveal.visitors.map(id=>faces[match.roster.indexOf(id)]||'🧙').join(''):'')+'</div></div>'}).join('');
  if(game.phase==='finished')$('winners').textContent=game.result.winnerIds.length?'🎉 Gewinner: '+game.result.winnerIds.map(id=>room.members.find(m=>m.id===id)?.name||'Computer').join(', '):'Niemand hat überlebt!';
 }
-async function load(){if(!code||refreshing||animating)return;refreshing=true;try{const next=await engine2Room(code);snapshot=next;render()}catch(e){err(e)}finally{refreshing=false}}
-async function act(name,data={}){snapshot=await engine2Action(code,name,data);render()}
-$('create').onclick=()=>call(async()=>{snapshot=await engine2Request('/rooms',{bots:Number($('bots').value)});code=snapshot.room.roomId;history.replaceState(null,'','?room='+encodeURIComponent(code));render()});
-$('join').onclick=()=>call(async()=>{code=$('code').value.trim().toUpperCase();snapshot=await engine2Action(code,'join');history.replaceState(null,'','?room='+encodeURIComponent(code));render()});
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function applySnapshot(next){
+ snapshot=next;
+ const reveal=next.game?.lastReveal;
+ if(reveal&&reveal.round>lastRound){
+  lastRound=reveal.round;
+  animating=true;render();show('arena',true);
+  $('status').textContent='🏃 Die Abenteurer laufen zu den Türen …';
+  await wait(600);
+  for(const entry of reveal.doors){
+   const arch=$('doors').querySelector('[data-door="'+entry.door+'"]');
+   if(arch){
+    arch.classList.add(entry.locked?'locked':'open');
+    arch.parentElement.querySelector('.visitors').textContent=entry.visitors.map(id=>faces[next.room.match.roster.indexOf(id)]||'🧙').join('');
+   }
+   $('status').textContent=entry.locked?'🔒 Tür '+(entry.door+1)+' ist verschlossen!':'✨ Tür '+(entry.door+1)+' öffnet sich!';
+   await wait(1150);
+  }
+  animating=false;
+ }
+ render();
+}
+async function load(){if(!code||refreshing||animating)return;refreshing=true;try{const next=await engine2Room(code);await applySnapshot(next)}catch(e){err(e)}finally{refreshing=false}}
+async function act(name,data={}){const next=await engine2Action(code,name,data);await applySnapshot(next)}
+$('create').onclick=()=>call(async()=>{const next=await engine2Request('/rooms',{bots:Number($('bots').value)});code=next.room.roomId;history.replaceState(null,'','?room='+encodeURIComponent(code));await applySnapshot(next)});
+$('join').onclick=()=>call(async()=>{code=$('code').value.trim().toUpperCase();const next=await engine2Action(code,'join');history.replaceState(null,'','?room='+encodeURIComponent(code));await applySnapshot(next)});
 $('prepare').onclick=()=>call(()=>act('prepare'));
 $('ready').onclick=()=>call(()=>act('ready'));
 $('replay').onclick=()=>call(()=>act('prepare'));
