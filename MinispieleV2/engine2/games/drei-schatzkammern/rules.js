@@ -29,7 +29,7 @@ export function revealNext(state){
  if(locked)s.alive=s.alive.filter(id=>!visitors.includes(id));
  s.revealIndex++;
  if(s.revealIndex===3){
-  if(s.alive.length<=1||s.round+1>=s.lockedDoors.length){
+  if(s.alive.length===0||(s.players.length>1&&s.alive.length===1)||s.round+1>=s.lockedDoors.length){
    s.phase='finished';s.finished=true;s.winnerIds=[...s.alive];
   }else{
    s.round++;s.phase='choosing';s.choices={};s.revealIndex=0;s.reveals=[];
