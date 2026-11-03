@@ -75,6 +75,19 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 #winner{padding:10px;font-size:clamp(20px,3vw,34px);font-weight:900;color:#ffe3a1;text-shadow:0 3px 12px #000}
 @keyframes resultsPop{from{opacity:0;transform:scale(.85) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @media(orientation:landscape) and (max-height:800px){.hud-chip{font-size:11px;padding:3px 9px}.hud{gap:5px}}
+
+/* Shared-tablet privacy handoff and finish effects */
+.handoff{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:#080c1eea;backdrop-filter:blur(13px);padding:24px}
+.handoff-card{max-width:490px;width:100%;border:2px solid #d8b16e;border-radius:28px;padding:30px;text-align:center;background:radial-gradient(ellipse at top,#4d3d58,#151c34);box-shadow:0 18px 90px #000b}
+.handoff-card h2{font-size:clamp(25px,4vw,40px);color:#ffe1a2;margin:8px}
+.handoff-card p{color:#e7dbcc}
+.handoff-card button{font-size:20px;min-width:220px;margin-top:12px}
+.celebrate{position:relative;overflow:hidden}
+.celebrate:before{content:'✦  ✧  ★  ✦  ✧  ★  ✦';position:absolute;top:-10px;left:0;right:0;letter-spacing:15px;color:#ffda70;font-size:30px;animation:confetti 2s ease-in-out infinite alternate;pointer-events:none}
+@keyframes confetti{from{opacity:.25;transform:translateY(-15px)}to{opacity:1;transform:translateY(35px)}}
+.roster{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.roster-item{border:1px solid #d5bb8677;border-radius:20px;background:#202743d9;padding:5px 10px;font-size:12px}
+.roster-item.lost{filter:grayscale(1);opacity:.45;text-decoration:line-through}
 </style></head><body><main>
 <header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Ein Abenteuer mit drei Türen – eine davon bleibt verschlossen!</div></header>
 <section class="panel" id="setup"><div class="setup"><label>Menschen<select id="humans"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><label>Computergegner<select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button class="primary" id="newGame">Abenteuer beginnen ✨</button></div><p class="sub" style="text-align:center">Offline-Test mit MiniGame Engine 2.0 · insgesamt maximal vier Abenteurer</p></section>
@@ -82,11 +95,12 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 <div class="hud hidden" id="hud"><span class="hud-chip">🏰 <strong id="hudRound">1</strong> / 3</span><span class="hud-chip">🧙 Noch dabei: <strong id="hudAlive">0</strong></span><span class="hud-chip">🚪 Entscheidungen: <strong id="hudChoices">0</strong></span><button id="fullscreen" title="Vollbild umschalten">⛶ Vollbild</button><button id="reset">↻ Neustart</button></div>
 <section class="arena hidden" id="arena"><div class="ambient" aria-hidden="true"></div><div class="stage-banner" id="stage">KAMMER 1</div><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
 <section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="choice" id="choices"><button data-door="0">🚪 Tür 1</button><button data-door="1">🚪 Tür 2</button><button data-door="2">🚪 Tür 3</button></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
-<section class="panel results hidden" id="results"><h2>🏆 Abenteuer beendet!</h2><div id="winner"></div><button class="primary" id="again">Nochmal spielen ↻</button></section>
+<div class="handoff hidden" id="handoff"><div class="handoff-card"><div style="font-size:54px" id="handoffFace">🧙</div><h2 id="handoffTitle">Spieler 1 ist dran</h2><p>Gib das Tablet weiter. Deine Türwahl bleibt geheim.</p><button class="primary" id="handoffGo">Ich bin bereit!</button></div></div>
+<section class="panel results hidden" id="results"><h2>🏆 Abenteuer beendet!</h2><div id="winner"></div><div class="roster" id="resultRoster"></div><button class="primary" id="again">Nochmal spielen ↻</button></section>
 </main><script type="module">
 import {createTreasureSession} from './offline-adapter.js';
 const $=id=>document.getElementById(id), faces=['🧙','🧝','🥷','🦸'],colors=['#f3b44d','#67d6c2','#bca1ff','#fa95ae'];
-let session=null,humans=[],all=[],run=0,started=false,revealing=false,token=0,prepared=false;
+let session=null,humans=[],all=[],run=0,started=false,revealing=false,token=0,prepared=false,awaitingHandoff=null;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const show=(id,on=true)=>$(id).classList.toggle('hidden',!on);
 const lockedDoors=()=>Array.from({length:3},()=>Math.floor(Math.random()*3));
@@ -94,7 +108,7 @@ function setup(){
  let count=Number($('humans').value),bots=Number($('bots').value);bots=Math.min(bots,4-count);$('bots').value=String(bots);
  humans=Array.from({length:count},(_,i)=>'human:'+(i+1));
  session=createTreasureSession({roomId:'offline-treasure-'+(++run),hostId:humans[0],players:humans,botPreset:bots,lockedDoors:lockedDoors()});
- all=session.room.match.roster;started=false;revealing=false;prepared=false;token++;
+ all=session.room.match.roster;started=false;revealing=false;prepared=false;awaitingHandoff=null;token++;show('handoff',false);
  show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);show('hud',false);
 }
 function figure(id,alive){
@@ -123,8 +137,10 @@ function nextHuman(){
  if(waiting){
   const i=all.indexOf(waiting);
   $('turn').textContent=faces[i]+' Spieler '+(i+1)+': Wähle deine Tür!';
-  show('choices');show('next',false);
+  show('choices',false);show('next',false);
+  awaitingHandoff=waiting;$('handoffFace').textContent=faces[i];$('handoffTitle').textContent='Spieler '+(i+1)+' ist dran';show('handoff');
  }else{
+  awaitingHandoff=null;show('handoff',false);
   show('choices',false);
   $('turn').textContent='Alle Türen gewählt! Die Entscheidungen bleiben bis zur Auflösung geheim.';
   $('next').textContent='Türen öffnen 🚪';show('next');
@@ -152,7 +168,8 @@ async function reveal(){
  if(session.game.finished){
   const end=session.finish().result;
   prepared=false;
-  show('action',false);show('results');
+  show('action',false);show('results');$('results').classList.add('celebrate');
+  $('resultRoster').innerHTML=all.map(id=>'<span class="roster-item '+(end.survivors.includes(id)?'':'lost')+'">'+faces[all.indexOf(id)]+' '+label(id)+'</span>').join('');
   $('winner').textContent=end.winnerIds.length===0?'Niemand hat die Schatzkammern überstanden!':end.winnerIds.length===1?'🎉 '+label(end.winnerIds[0])+' gewinnt!':'🏅 Gemeinsam geschafft: '+end.winnerIds.map(label).join(', ');
   $('status').textContent='Das Abenteuer ist beendet!';
  }else{
@@ -165,7 +182,8 @@ async function reveal(){
  revealing=false;
 }
 function label(id){return id.startsWith('bot:')?'Computer '+(all.indexOf(id)+1):'Spieler '+(all.indexOf(id)+1)}
-$('newGame').onclick=setup;$('again').onclick=setup;$('reset').onclick=()=>{if(confirm('Abenteuer wirklich neu starten?'))setup();};
+$('newGame').onclick=setup;$('again').onclick=setup;
+$('handoffGo').onclick=()=>{if(!awaitingHandoff||!session||session.game.phase!=='choosing')return;awaitingHandoff=null;show('handoff',false);show('choices');};$('reset').onclick=()=>{if(confirm('Abenteuer wirklich neu starten?'))setup();};
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{ $('status').textContent='Vollbild wird von diesem Browser nicht unterstützt.';}};
 document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'⛶ Vollbild verlassen':'⛶ Vollbild';});
 $('understood').onclick=async()=>{
@@ -177,7 +195,7 @@ $('understood').onclick=async()=>{
  session.start();started=true;show('action');$('status').textContent='Runde 1 – welche Tür führt zum Schatz?';nextHuman();
 };
 document.querySelectorAll('[data-door]').forEach(b=>b.onclick=()=>{
- if(!started||session.game.phase!=='choosing')return;
+ if(!started||awaitingHandoff||revealing||session.game.phase!=='choosing')return;
  const id=humans.find(p=>session.game.alive.includes(p)&&!Object.hasOwn(session.game.choices,p));
  if(!id)return;
  session.choose(id,Number(b.dataset.door));
