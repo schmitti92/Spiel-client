@@ -32,7 +32,7 @@ export function revealNext(state){
   if(s.alive.length<=1||s.round+1>=s.lockedDoors.length){
    s.phase='finished';s.finished=true;s.winnerIds=[...s.alive];
   }else{
-   s.round++;s.phase='choosing';s.choices={};s.revealIndex=0;
+   s.round++;s.phase='choosing';s.choices={};s.revealIndex=0;s.reveals=[];
   }
  }
  return s;
