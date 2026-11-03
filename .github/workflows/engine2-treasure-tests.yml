@@ -1,0 +1,22 @@
+name: Engine 2.0 – Treasure Chambers tests
+on:
+  push:
+    paths:
+      - 'MinispieleV2/engine2/**'
+      - '.github/workflows/engine2-treasure-tests.yml'
+  pull_request:
+    paths:
+      - 'MinispieleV2/engine2/**'
+      - '.github/workflows/engine2-treasure-tests.yml'
+  workflow_dispatch:
+jobs:
+  engine2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run isolated engine and game tests
+        run: |
+          node --test MinispieleV2/engine2/MiniGameEngine2.test.mjs MinispieleV2/engine2/games/drei-schatzkammern/rules.test.mjs MinispieleV2/engine2/games/drei-schatzkammern/offline-adapter.test.mjs
