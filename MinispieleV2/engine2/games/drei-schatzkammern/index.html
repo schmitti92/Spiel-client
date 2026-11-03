@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Die drei Schatzkammern – Engine 2.0</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#fff6df;background:#121324}*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 50% 25%,#38436c,#181a35 60%,#0d1020)}
+main{max-width:1100px;margin:auto;padding:16px}header{text-align:center}h1{font-size:clamp(28px,5vw,52px);margin:8px 0;color:#ffda8b;text-shadow:0 3px 14px #000}p{line-height:1.5}.sub{color:#cbd1e5}
+.panel{border:1px solid #ffffff40;background:#121b35c9;box-shadow:0 10px 35px #0006;border-radius:20px;padding:18px;margin:14px auto;max-width:900px}
+button,select{font:inherit;border:1px solid #f9d99d80;border-radius:12px;padding:12px 18px;background:#263454;color:white;cursor:pointer}button:hover{background:#3e5179}button:disabled{opacity:.45;cursor:default}.primary{background:linear-gradient(120deg,#c98832,#8d4d19);font-weight:800}
+.setup{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center}.setup label{display:grid;gap:5px}
+.arena{position:relative;background:linear-gradient(#394369 0 61%,#3a3144 61% 73%,#554436 73%);border:3px solid #998060;border-radius:22px;padding:25px 12px 15px;min-height:430px;overflow:hidden}
+.arena:before{content:'✦  ✧  ✦  ✧  ✦';position:absolute;left:0;right:0;top:8px;text-align:center;color:#d2c08966;letter-spacing:22px}
+.doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,2vw,28px);margin:25px auto 0;max-width:850px}
+.door-wrap{text-align:center;min-width:0}.arch{border:7px solid #7f7b8e;border-bottom:0;border-radius:85px 85px 5px 5px;background:#171627;padding:7px;box-shadow:0 8px 0 #242235,inset 0 0 20px #05040c;height:clamp(150px,28vw,270px);position:relative;overflow:hidden}
+.door{width:100%;height:100%;border:5px solid #8e5227;border-radius:75px 75px 3px 3px;background:repeating-linear-gradient(90deg,#854b25 0 25%,#a96c36 25% 27%,#6f3c1e 27% 52%);position:relative;transform-origin:left center;transition:transform 1.1s ease,filter .5s}
+.door:after{content:'●';position:absolute;right:12%;top:55%;color:#f7d07b;font-size:24px;text-shadow:0 0 6px #f4cb55}.arch.open .door{transform:perspective(500px) rotateY(-75deg)}.arch.locked{box-shadow:inset 0 0 35px #d94251,0 8px 0 #242235}.arch.locked .door{filter:grayscale(.4)}.arch.open:before{content:'💎 ✨';position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(20px,4vw,45px)}
+.door-num{font-weight:800;margin:12px 0 4px;color:#ffe0a5}.figures{display:flex;justify-content:center;flex-wrap:wrap;gap:3px;min-height:75px;align-items:end}.figure{display:inline-flex;flex-direction:column;align-items:center;transition:transform .6s,opacity .6s;filter:drop-shadow(0 4px 2px #0007)}.figure .face{font-size:clamp(27px,4vw,48px)}.figure small{font-size:11px;font-weight:bold;border-radius:12px;padding:2px 5px;background:var(--tone);color:#101323}.figure.out{transform:rotate(85deg) translateY(15px);opacity:.55}
+.status{text-align:center;min-height:58px;font-size:clamp(16px,2.5vw,23px);font-weight:750;color:#ffe6a8}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:center}.choice{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.choice button{padding:15px 4px;font-weight:800}.choice button.selected{background:#936a2d}
+.hidden{display:none!important}.results{text-align:center;font-size:22px}.pill{display:inline-block;padding:5px 10px;border-radius:20px;background:#384564;margin:4px}
+@media(max-width:550px){main{padding:8px}.panel{padding:12px}.arena{min-height:345px;padding:15px 5px}.arch{border-width:4px;padding:3px}.door{border-width:3px}.figures{min-height:60px}.figure small{font-size:9px}}
+</style></head><body><main>
+<header><h1>🏰 Die drei Schatzkammern</h1><div class="sub">Ein Abenteuer mit drei Türen – eine davon bleibt verschlossen!</div></header>
+<section class="panel" id="setup"><div class="setup"><label>Menschen<select id="humans"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label><label>Computergegner<select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button class="primary" id="newGame">Abenteuer beginnen ✨</button></div><p class="sub" style="text-align:center">Offline-Test mit MiniGame Engine 2.0 · insgesamt maximal vier Abenteurer</p></section>
+<section class="panel hidden" id="instructions"><h2>📜 So wird gespielt</h2><p>Jeder Abenteurer wählt geheim eine von drei Türen. Hinter einer Tür ist der Weg versperrt. Alle an dieser Tür scheiden aus – auch wenn mehrere dieselbe Tür gewählt haben. Die Türen werden nacheinander geöffnet. Wer am Ende noch steht, gewinnt!</p><div class="controls"><button class="primary" id="understood">Verstanden ✓</button></div></section>
+<section class="arena hidden" id="arena"><div class="status" id="status"></div><div class="doors" id="doors"></div></section>
+<section class="panel hidden" id="action"><div class="status" id="turn"></div><div class="choice" id="choices"><button data-door="0">🚪 Tür 1</button><button data-door="1">🚪 Tür 2</button><button data-door="2">🚪 Tür 3</button></div><div class="controls" style="margin-top:12px"><button class="primary hidden" id="next">Weiter</button></div></section>
+<section class="panel results hidden" id="results"><h2>🏆 Abenteuer beendet!</h2><div id="winner"></div><button class="primary" id="again">Nochmal spielen ↻</button></section>
+</main><script type="module">
+import {createTreasureSession} from './offline-adapter.js';
+const $=id=>document.getElementById(id), faces=['🧙','🧝','🥷','🦸'],colors=['#f3b44d','#67d6c2','#bca1ff','#fa95ae'];
+let session=null,humans=[],all=[],current=0,run=0,started=false;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const show=(id,on=true)=>$(id).classList.toggle('hidden',!on);
+const lockedDoors=()=>Array.from({length:8},()=>Math.floor(Math.random()*3));
+function setup(){
+ let count=Number($('humans').value),bots=Number($('bots').value);bots=Math.min(bots,4-count);$('bots').value=String(bots);
+ humans=Array.from({length:count},(_,i)=>'human:'+(i+1));
+ session=createTreasureSession({roomId:'offline-treasure-'+(++run),hostId:humans[0],players:humans,botPreset:bots,lockedDoors:lockedDoors()});
+ all=session.room.match.roster;current=0;started=false;
+ show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);
+}
+function figure(id){
+ const i=all.indexOf(id),name=id.startsWith('bot:')?'Bot '+(i+1):'Spieler '+(i+1);
+ return '<span class="figure '+(!session.game.alive.includes(id)?'out':'')+'" style="--tone:'+colors[i]+'"><span class="face">'+faces[i]+'</span><small>'+name+'</small></span>';
+}
+function render(){
+ const g=session.game;
+ $('doors').innerHTML=[0,1,2].map(d=>{
+ const revealed=g.reveals.filter(x=>x.door===d).at(-1);
+ const visitors=revealed?revealed.visitors:g.alive.filter(id=>g.choices[id]===d);
+ return '<div class="door-wrap"><div class="arch '+(revealed?(revealed.locked?'locked':'open'):'')+'"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(figure).join('')+'</div></div>';
+ }).join('');
+}
+function nextHuman(){
+ const g=session.game;
+ const waiting=humans.find(id=>g.alive.includes(id)&&!Object.hasOwn(g.choices,id));
+ if(waiting){
+  const i=all.indexOf(waiting);
+  $('turn').textContent=faces[i]+' Spieler '+(i+1)+': Wähle deine Tür!';
+  show('choices');show('next',false);
+ }else{
+  show('choices',false);
+  $('turn').textContent='Alle Türen gewählt. Bereit für die Auflösung?';
+  $('next').textContent='Türen öffnen 🚪';show('next');
+ }
+ render();
+}
+async function reveal(){
+ show('next',false);show('choices',false);show('turn',true);
+ for(let d=0;d<3;d++){
+  $('status').textContent='Die Abenteurer laufen zu den Türen …';
+  await sleep(850);
+  session.reveal();render();
+  const r=session.game.reveals.at(-1);
+  $('status').textContent=r.locked?'🔒 Tür '+(d+1)+' ist verschlossen! '+(r.visitors.length?'Oh nein! 😵':'Niemand erwischt!'):'✨ Tür '+(d+1)+' öffnet sich!';
+  await sleep(1400);
+ }
+ if(session.game.finished){
+  const end=session.finish().result;
+  show('action',false);show('results');
+  $('winner').textContent=end.winnerIds.length===0?'Niemand hat die Schatzkammern überstanden!':end.winnerIds.length===1?'🎉 '+label(end.winnerIds[0])+' gewinnt!':'🏅 Gemeinsam geschafft: '+end.winnerIds.map(label).join(', ');
+  $('status').textContent='Das Abenteuer ist beendet!';
+ }else{
+  $('status').textContent='Runde '+(session.game.round+1)+' – die nächste Schatzkammer wartet!';
+  show('action');nextHuman();
+ }
+}
+function label(id){return id.startsWith('bot:')?'Computer '+(all.indexOf(id)+1):'Spieler '+(all.indexOf(id)+1)}
+$('newGame').onclick=setup;$('again').onclick=setup;
+$('understood').onclick=async()=>{
+ show('instructions',false);show('arena');render();$('status').textContent='Alle Abenteurer machen sich bereit …';
+ for(const id of humans)session.acknowledge(id);
+ for(let n=3;n>=1;n--){$('status').textContent='Start in '+n+' …';await sleep(950)}
+ session.start();started=true;show('action');$('status').textContent='Runde 1 – welche Tür führt zum Schatz?';nextHuman();
+};
+document.querySelectorAll('[data-door]').forEach(b=>b.onclick=()=>{
+ if(!started||session.game.phase!=='choosing')return;
+ const id=humans.find(p=>session.game.alive.includes(p)&&!Object.hasOwn(session.game.choices,p));
+ if(!id)return;
+ session.choose(id,Number(b.dataset.door));
+ for(const bot of session.game.alive.filter(p=>p.startsWith('bot:')&&!Object.hasOwn(session.game.choices,p)))session.botChoose(bot,session.game.round+all.indexOf(bot));
+ nextHuman();
+});
+$('next').onclick=()=>{if(session.game.phase==='revealing')reveal();};
+</script></body></html>
