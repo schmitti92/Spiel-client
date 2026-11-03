@@ -74,7 +74,7 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 </main><script type="module">
 import {createTreasureSession} from './offline-adapter.js';
 const $=id=>document.getElementById(id), faces=['🧙','🧝','🥷','🦸'],colors=['#f3b44d','#67d6c2','#bca1ff','#fa95ae'];
-let session=null,humans=[],all=[],run=0,started=false,revealing=false,token=0;
+let session=null,humans=[],all=[],run=0,started=false,revealing=false,token=0,prepared=false;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const show=(id,on=true)=>$(id).classList.toggle('hidden',!on);
 const lockedDoors=()=>Array.from({length:8},()=>Math.floor(Math.random()*3));
@@ -82,7 +82,7 @@ function setup(){
  let count=Number($('humans').value),bots=Number($('bots').value);bots=Math.min(bots,4-count);$('bots').value=String(bots);
  humans=Array.from({length:count},(_,i)=>'human:'+(i+1));
  session=createTreasureSession({roomId:'offline-treasure-'+(++run),hostId:humans[0],players:humans,botPreset:bots,lockedDoors:lockedDoors()});
- all=session.room.match.roster;started=false;revealing=false;token++;
+ all=session.room.match.roster;started=false;revealing=false;prepared=false;token++;
  show('setup',false);show('instructions');show('arena',false);show('action',false);show('results',false);
 }
 function figure(id){
@@ -93,12 +93,13 @@ function render(visualState=null){
  const g=visualState||session.game;
  $('doors').innerHTML=[0,1,2].map(d=>{
  const revealed=g.reveals.find(x=>x.door===d);
- const visitors=revealed?revealed.visitors:(g.phase==='choosing'||!revealing?[]:g.alive.filter(id=>g.choices[id]===d));
+ const visitors=revealed?revealed.visitors:(g.phase==='choosing'||!prepared?[]:g.alive.filter(id=>g.choices[id]===d));
  return '<div class="door-wrap"><div class="arch '+(revealed?(revealed.locked?'locked':'open'):'')+'"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(figure).join('')+'</div></div>';
  }).join('');
 }
 function nextHuman(){
  if(revealing)return;
+ prepared=false;
  let g=session.game;
  for(const bot of g.alive.filter(p=>p.startsWith('bot:')&&!Object.hasOwn(g.choices,p))){session.botChoose(bot,g.round+all.indexOf(bot));g=session.game;}
  $('stage').textContent='KAMMER '+(g.round+1);
@@ -121,17 +122,18 @@ async function reveal(){
  show('next',false);show('choices',false);
  for(let d=0;d<3;d++){
   $('status').textContent='Die Abenteurer laufen zu den Türen …';
-  render();await sleep(850);if(thisToken!==token)return;
+  prepared=true;render();await sleep(850);if(thisToken!==token)return;
   const before=session.game;
   session.reveal();
   const r=session.game.reveals.at(-1)||{door:d,locked:before.lockedDoors[before.round]===d,visitors:before.alive.filter(id=>before.choices[id]===d)};
-  const visual=session.game.reveals.length?null:{...before,reveals:[...before.reveals,r],alive:r.locked?before.alive.filter(id=>!r.visitors.includes(id)):before.alive};
+  const visual={...before,reveals:[...before.reveals,r],alive:r.locked?before.alive.filter(id=>!r.visitors.includes(id)):before.alive};
   render(visual);
   $('status').textContent=r.locked?'🔒 Tür '+(d+1)+' ist verschlossen! '+(r.visitors.length?'Oh nein! 😵':'Niemand erwischt!'):'✨ Tür '+(d+1)+' öffnet sich!';
   await sleep(1400);if(thisToken!==token)return;
  }
  if(session.game.finished){
   const end=session.finish().result;
+  prepared=false;
   show('action',false);show('results');
   $('winner').textContent=end.winnerIds.length===0?'Niemand hat die Schatzkammern überstanden!':end.winnerIds.length===1?'🎉 '+label(end.winnerIds[0])+' gewinnt!':'🏅 Gemeinsam geschafft: '+end.winnerIds.map(label).join(', ');
   $('status').textContent='Das Abenteuer ist beendet!';
@@ -147,9 +149,11 @@ async function reveal(){
 function label(id){return id.startsWith('bot:')?'Computer '+(all.indexOf(id)+1):'Spieler '+(all.indexOf(id)+1)}
 $('newGame').onclick=setup;$('again').onclick=setup;
 $('understood').onclick=async()=>{
+ if(started||session.room.match.phase!=='instructions')return;
  show('instructions',false);show('arena');render();$('status').textContent='Alle Abenteurer machen sich bereit …';
  for(const id of humans)session.acknowledge(id);
- for(let n=3;n>=1;n--){$('status').textContent='Start in '+n+' …';await sleep(950)}
+ const thisToken=token;
+ for(let n=3;n>=1;n--){$('status').textContent='Start in '+n+' …';await sleep(1000);if(thisToken!==token)return;}
  session.start();started=true;show('action');$('status').textContent='Runde 1 – welche Tür führt zum Schatz?';nextHuman();
 };
 document.querySelectorAll('[data-door]').forEach(b=>b.onclick=()=>{
