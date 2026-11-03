@@ -44,3 +44,24 @@ test('one to four players and deterministic bots',()=>{
  const s=createGame({players:['bot:r:0'],lockedDoors:[1]});
  assert.deepEqual(botAction(s,'bot:r:0',7),botAction(s,'bot:r:0',7));
 });
+
+test('a new chamber closes all doors and clears the previous round reveal',()=>{
+ let s=createGame({players:['a','b'],lockedDoors:[2,0]});
+ s=chooseDoor(s,'a',1);s=chooseDoor(s,'b',1);
+ s=revealAll(s);
+ assert.equal(s.phase,'choosing');
+ assert.equal(s.round,1);
+ assert.deepEqual(s.reveals,[]);
+ assert.deepEqual(s.choices,{});
+ s=chooseDoor(s,'a',2);s=chooseDoor(s,'b',2);
+ assert.equal(publicGame(s,'a').reveals.length,0);
+ s=revealNext(s);
+ assert.deepEqual(s.reveals.map(r=>r.door),[0]);
+});
+test('a single survivor ends the adventure early',()=>{
+ let s=createGame({players:['a','b'],lockedDoors:[1,2,0]});
+ s=chooseDoor(s,'a',0);s=chooseDoor(s,'b',1);
+ s=revealAll(s);
+ assert.equal(s.phase,'finished');
+ assert.deepEqual(s.winnerIds,['a']);
+});
