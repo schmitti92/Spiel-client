@@ -10,7 +10,52 @@
 <script src="../../../../profile-config.js"></script><script src="../../../../profile-auth.js"></script><script type="module">
 const $=id=>document.getElementById(id),show=(id,v)=>$(id).classList.toggle('hidden',!v);
 const code=new URLSearchParams(location.search).get('room')||'';
-const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/$/,'');
+const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(new RegExp('/+;
+const faces=['🧙','🧝','🥷','🦸'];
+let snapshot=null,busy=false,loading=false,lastRevealRound=0;
+const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null};
+const error=e=>{$('error').textContent=e?.message||String(e)};
+async function request(path,body){
+ const u=user();if(!u?.getIdToken)throw Error('Bitte online anmelden');
+ const token=await u.getIdToken();
+ const response=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(code)+path,{method:body===undefined?'GET':'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
+ const data=await response.json();
+ if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');
+ return data.room;
+}
+async function act(name,data={}){if(busy)return;busy=true;try{snapshot=await request('/drei-schatzkammern/'+name,data);render()}catch(e){error(e)}finally{busy=false}}
+function render(){
+ const room=snapshot,match=room?.match,g=match?.treasure;
+ if(!room||match?.game!=='drei-schatzkammern'){show('arena',false);$('status').textContent='Keine Schatzkammer-Partie aktiv';return}
+ show('arena',true);show('roomPanel',true);show('lobby',false);
+ $('roomCode').textContent=code;
+ $('members').textContent=room.players.filter(p=>p.participating).map(p=>p.name).join(' · ');
+ show('prepare',false);show('ready',match.status.phase==='instructions'&&match.participating&&!g.myReady);
+ show('result',g.phase==='finished');show('replay',room.host&&g.phase==='finished');
+ const canChoose=match.status.phase==='playing'&&g.phase==='choosing'&&g.alive.includes(user()?.uid)&&!g.hasChosen;
+ $('status').textContent=g.phase==='finished'?'🏆 Abenteuer beendet!':match.status.phase==='instructions'?'📜 Anleitung lesen und Verstanden drücken':canChoose?'🚪 Tippe direkt auf deine Tür!':g.hasChosen?'✓ Deine Wahl ist geheim gespeichert.':'⏳ Warte auf die anderen Abenteurer …';
+ const reveal=g.lastReveal?.round===g.round?g.lastReveal.doors:[];
+ $('doors').innerHTML=[0,1,2].map(d=>{
+ const entry=reveal.find(x=>x.door===d);
+ return '<div class="door-wrap"><div class="arch '+(entry?(entry.locked?'locked':'open'):'')+(canChoose?' enabled':'')+'" data-door="'+d+'" role="button" tabindex="0" aria-label="Tür '+(d+1)+' wählen"><div class="door"></div></div><div class="door-label">Tür '+(d+1)+'</div><div class="visitors">'+(entry?entry.visitors.map(id=>faces[match.treasure.engine.roster.indexOf(id)]||'🧙').join(''):'')+'</div></div>';
+ }).join('');
+ if(g.phase==='finished')$('winners').textContent=g.result.winnerIds.length?'🎉 Überlebt: '+g.result.winnerIds.map(id=>room.players.find(p=>p.me&&user()?.uid===id)?.name||('Abenteurer '+(match.treasure.engine.roster.indexOf(id)+1))).join(', '):'Niemand hat überlebt!';
+}
+$('ready').onclick=()=>act('ready');
+$('replay').onclick=()=>location.assign('../../../lobby.html?room='+encodeURIComponent(code));
+$('refresh').onclick=load;
+$('copy').onclick=()=>navigator.clipboard?.writeText(code);
+$('doors').addEventListener('click',e=>{
+ const el=e.target.closest('[data-door]');if(!el||!snapshot)return;
+ const g=snapshot.match?.treasure;
+ if(g?.phase==='choosing'&&!g.hasChosen&&g.alive.includes(user()?.uid)&&snapshot.match.status.phase==='playing')act('choose',{door:Number(el.dataset.door)});
+});
+$('doors').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.target.closest('[data-door]')?.click()}});
+async function load(){if(loading||busy||!code||!user())return;loading=true;try{snapshot=await request('');render()}catch(e){error(e)}finally{loading=false}}
+$('lobby').innerHTML='<a href="../../../lobby.html?room='+encodeURIComponent(code)+'">← Zur gemeinsamen Lobby</a>';
+show('lobby',true);show('roomPanel',false);
+setInterval(load,2500);load();
+</script></body></html>),'');
 const faces=['🧙','🧝','🥷','🦸'];
 let snapshot=null,busy=false,loading=false,lastRevealRound=0;
 const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null};
