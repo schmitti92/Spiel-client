@@ -154,7 +154,7 @@ function renderCompactScore(g,shownPlayer,viewPlayer,mine){
  if(g.mode==='joker')summary('Jokerbonus',shownPlayer.jokerBonus||0);
  summary('🏆 Gesamtpunktzahl',sums.total+(shownPlayer.jokerBonus||0),'total');
  sheet.append(wrap);
- if(scoreReveal&&viewPlayer===scoreReveal.player){const row=wrap.querySelectorAll('.compact-score-row')[scoreReveal.category];row?.querySelector('.compact-score-value')?.classList.add('score-reveal-cell')}
+ if(scoreReveal&&viewPlayer===scoreReveal.player){const row=wrap.querySelectorAll('.compact-score-row')[scoreReveal.category];{const cell=row?.querySelector('.compact-score-value');if(cell){cell.classList.add('score-reveal-cell');cell.dataset.scoreReveal=cell.textContent.trim()}}}
 }
 
 
@@ -332,6 +332,10 @@ lastTurnKey=turnKey;
  $('full-restart-joker-label').textContent=countLabel('Komplett neu',jokerLeft(g,jokerOwner,'fullRestart','fullRestartUsed'));
  const moveJoker=$('move-score-joker');moveJoker.hidden=false;
  const copyJoker=$('copy-roll-joker');copyJoker.hidden=false;
+ // Presentation groups only; gameplay and action IDs remain unchanged.
+ for(const [id,group] of [['extra-roll-joker','würfeln'],['extra-die-joker','würfeln'],['reroll-joker','würfeln'],['full-restart-joker','würfeln'],['free-entry-joker','wertung'],['move-score-joker','wertung'],['copy-roll-joker','wertung']]){
+  const button=$(id);if(button)button.dataset.jokerGroup=group;
+ }
  $('joker-panel').hidden=false;
  $('joker-panel').setAttribute('aria-label','Joker von '+jokerOwner.name);
  $('joker-panel').dataset.player=String(viewPlayer);
