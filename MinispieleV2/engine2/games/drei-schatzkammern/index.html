@@ -32,7 +32,8 @@ header h1{font-size:clamp(25px,3.5vw,42px);margin:0}header .sub{font-size:13px}
 .arch:before{content:'💎 ✨';position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(23px,4vw,52px)}
 .door{background:repeating-linear-gradient(90deg,#63351e 0 22%,#a76a38 22% 25%,#8b4e28 25% 47%,#63351e 47% 50%);box-shadow:inset 0 0 24px #120b0a,0 0 8px #120b0a}
 .arch.locked:before{content:'⛓️ 🔒';font-size:clamp(20px,4vw,45px)}
-.arch.locked .door{transform:translateX(-4px) rotate(-2deg);filter:grayscale(.35) brightness(.65)}
+.arch.locked .door{transform:translateX(-4px) rotate(-2deg);filter:grayscale(.35) brightness(.65);animation:lockedShake .55s ease .2s both}
+@keyframes lockedShake{0%,100%{translate:0}20%,60%{translate:-7px}40%,80%{translate:7px}}
 .door-num{margin:6px 0 2px}
 .figures{min-height:70px;position:relative}
 .figure{animation:arrive .7s cubic-bezier(.2,1.3,.3,1) both;transform-origin:50% 90%}
@@ -89,12 +90,12 @@ function figure(id){
  const i=all.indexOf(id),name=id.startsWith('bot:')?'Bot '+(i+1):'Spieler '+(i+1);
  return '<span class="figure '+(!session.game.alive.includes(id)?'out':'')+'" style="--tone:'+colors[i]+'"><span class="face">'+faces[i]+'</span><small>'+name+'</small></span>';
 }
-function render(visualState=null){
+function render(visualState=null,animateDoor=null){
  const g=visualState||session.game;
  $('doors').innerHTML=[0,1,2].map(d=>{
  const revealed=g.reveals.find(x=>x.door===d);
  const visitors=revealed?revealed.visitors:(g.phase==='choosing'||!prepared?[]:g.alive.filter(id=>g.choices[id]===d));
- return '<div class="door-wrap"><div class="arch '+(revealed?(revealed.locked?'locked':'open'):'')+'"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(figure).join('')+'</div></div>';
+ return '<div class="door-wrap"><div class="arch '+(revealed&&d!==animateDoor?(revealed.locked?'locked':'open'):'')+'" data-door-arch="'+d+'"><div class="door"></div></div><div class="door-num">Tür '+(d+1)+'</div><div class="figures">'+visitors.map(figure).join('')+'</div></div>';
  }).join('');
 }
 function nextHuman(){
@@ -127,7 +128,10 @@ async function reveal(){
   session.reveal();
   const r=session.game.reveals.at(-1)||{door:d,locked:before.lockedDoors[before.round]===d,visitors:before.alive.filter(id=>before.choices[id]===d)};
   const visual={...before,reveals:[...before.reveals,r],alive:r.locked?before.alive.filter(id=>!r.visitors.includes(id)):before.alive};
-  render(visual);
+  render(visual,d);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+   if(thisToken===token){const arch=document.querySelector('[data-door-arch="'+d+'"]');if(arch)arch.classList.add(r.locked?'locked':'open');}
+  }));
   $('status').textContent=r.locked?'🔒 Tür '+(d+1)+' ist verschlossen! '+(r.visitors.length?'Oh nein! 😵':'Niemand erwischt!'):'✨ Tür '+(d+1)+' öffnet sich!';
   await sleep(1400);if(thisToken!==token)return;
  }
