@@ -65,3 +65,15 @@ test('a single survivor ends the adventure early',()=>{
  assert.equal(s.phase,'finished');
  assert.deepEqual(s.winnerIds,['a']);
 });
+
+test('solo adventurer must clear all three rooms to win',()=>{
+ let s=createGame({players:['solo'],lockedDoors:[2,1,0]});
+ s=chooseDoor(s,'solo',0);s=revealAll(s);
+ assert.equal(s.phase,'choosing');
+ s=chooseDoor(s,'solo',0);s=revealAll(s);
+ assert.equal(s.phase,'choosing');
+ s=chooseDoor(s,'solo',2);s=revealAll(s);
+ assert.equal(s.phase,'finished');
+ assert.deepEqual(s.winnerIds,['solo']);
+ assert.equal(getResult(s).roundsPlayed,3);
+});
