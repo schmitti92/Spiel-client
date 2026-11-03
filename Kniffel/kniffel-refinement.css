@@ -1,0 +1,26 @@
+/* Kniffel: focused refinement of hierarchy, readability and tactile feedback.
+   Visual layer only: does not change score or multiplayer rules. */
+#game .joker-panel-actions{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-content:start!important;gap:clamp(5px,.55vw,9px)!important}
+#game .joker-panel-actions .joker-category-title{grid-column:1/-1;display:flex;align-items:center;gap:9px;min-width:0;color:#e8f7ff;font:800 clamp(10px,.9vw,13px)/1.15 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:3px 4px 1px;text-shadow:0 1px 3px #001d38}
+#game .joker-panel-actions .joker-category-title::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,#ffe4a1a8,transparent)}
+#game .joker-panel-actions button:not([hidden]){min-width:0!important;min-height:clamp(47px,6.6dvh,74px)!important;padding:4px 5px!important;line-height:1.15!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important}
+#game .joker-panel-actions button .joker-icon{font-size:clamp(20px,2vw,29px)!important}
+#game .joker-panel-actions button span[id$="-joker-label"]{display:block;max-width:100%;font-size:clamp(10px,.95vw,14px)!important;line-height:1.16!important;overflow-wrap:anywhere;text-align:center}
+#game .joker-panel-actions button.joker-used{filter:grayscale(.45)!important;opacity:.66!important}
+#game .joker-panel-actions button.joker-active{outline:2px solid #fff5c6!important;outline-offset:1px!important}
+#game .joker-panel-actions button:not(:disabled):hover{transform:translateY(-2px)!important}
+#game .scores h2{font-size:clamp(19px,2vw,30px)!important}
+#game #sheet .score-player-tab{font-size:clamp(12px,1.1vw,17px)!important}
+#game #sheet td.score-open.score-row-action:focus-visible,#game #sheet td.move-pick-cell:focus-visible{outline:3px solid #eaa52b!important;outline-offset:-3px!important}
+#game #sheet td.score-open.score-row-action.score-positive-option{background:linear-gradient(135deg,#effff2,#b0ebc7)!important}
+#game #sheet td.score-open.score-row-action.score-positive-option::after{content:"+"!important;display:block!important;color:#116a4c!important;font-weight:950!important}
+#game #sheet td.score-reveal-cell::after,#game #sheet .compact-score-value.score-reveal-cell::after{animation:kf-final-score-arrive 2.65s cubic-bezier(.18,.74,.2,1) both!important}
+@keyframes kf-final-score-arrive{0%{opacity:0;transform:translate(-50%,-145%) scale(3.5) rotate(-7deg)}14%{opacity:1;transform:translate(-50%,-92%) scale(2.7) rotate(3deg)}39%{opacity:1;transform:translate(-50%,-50%) scale(2)}72%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}88%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
+#game .tabletop #dice.tray>button.die.dice-tumbling{animation:kf-final-roll 1.38s cubic-bezier(.18,.68,.22,1) both!important;animation-delay:calc(var(--die-index)*65ms)!important}
+@keyframes kf-final-roll{0%{transform:translate3d(-13px,-55px,0) rotate(-55deg) rotateY(-55deg) scale(.78);filter:blur(1.5px)}22%{transform:translate3d(14px,-31px,0) rotate(110deg) rotateY(130deg) scale(1.07)}45%{transform:translate3d(-9px,4px,0) rotate(255deg) rotateY(260deg) scale(.94)}65%{transform:translate3d(6px,-14px,0) rotate(345deg) rotateY(355deg) scale(1.04)}83%{transform:translate3d(-2px,3px,0) rotate(369deg) rotateY(370deg) scale(.98)}100%{transform:translate3d(0,0,0) rotate(360deg) rotateY(360deg) scale(1);filter:none}}
+#game .tabletop #status{line-height:1.2!important}
+#game #notice:not(:empty){border-left:4px solid #f5c45d!important;background:linear-gradient(90deg,#f5f9ffe8,#d8eef9b8)!important}
+@media(min-width:851px) and (orientation:landscape){#game .joker-panel:not([hidden]){padding:clamp(5px,.65vw,10px)!important}#game .joker-panel-heading{padding-bottom:2px!important}#game .joker-panel-actions .joker-category-title{padding:1px 4px 0;font-size:clamp(9px,.8vw,12px)}}
+@media(max-height:700px) and (min-width:851px){#game .joker-panel-actions{gap:3px!important}#game .joker-panel-actions button:not([hidden]){min-height:39px!important;padding:2px!important}#game .joker-panel-actions button .joker-icon{font-size:17px!important}#game .joker-panel-actions .joker-category-title{font-size:9px;padding:0 4px}}
+@media(max-width:850px){#game .joker-panel-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}#game .joker-panel-actions button:not([hidden]){min-height:66px!important}#game .joker-panel-actions .joker-category-title{font-size:11px}}
+@media(prefers-reduced-motion:reduce){#game #sheet td.score-reveal-cell::after,#game #sheet .compact-score-value.score-reveal-cell::after,#game .tabletop #dice.tray>button.die.dice-tumbling{animation:none!important}}
