@@ -213,7 +213,34 @@ main{max-width:1700px;padding:12px clamp(10px,1.3vw,22px) 34px}
 .bank .banker{filter:drop-shadow(0 0 15px #5f9bcc44)}
 .player.turn .candidate-avatar{border-color:#ffe6a7;box-shadow:0 0 22px #ffd47b9a}
 @media(min-width:1101px){.bank .banker{min-height:240px}}
-</style></head><body><header><div><h1>✦ DEAL OR NO DEAL</h1><small>MULTIPLAYER BATTLE · GOLDSTUDIO ONLINE</small></div><a id="back" href="lobby.html">← Lobby</a></header><main><div class="showbar" aria-live="polite"><div><span class="eyebrow">Live aus dem Goldstudio</span><strong id="show-phase">Bereit für die Show</strong><div class="studio-progress" aria-hidden="true"><span id="studio-progress-fill"></span></div></div><div class="round" id="show-round">26 Koffer · bis zu 4 Spieler</div></div><div class="status" id="status">Verbinde mit dem Goldstudio …</div><div class="layout"><section class="panel"><h2>💰 Geldtafel</h2><div class="money" id="money"></div></section><section class="panel"><h2>🧳 26 Goldkoffer</h2><div class="cases" id="cases"></div></section><section class="panel bank"><h2>☎ Der Banker</h2><div class="banker">♟</div><div id="offer"></div><p class="bank-quote" id="bank-quote">„Jeder Koffer verändert das Spiel. Wie mutig bist du?“</p><details id="bank-history"><summary>☎ Bisherige Bankangebote</summary><div class="history-list" id="history-list"></div></details></section></div><section class="final-show" id="final-show" hidden aria-live="polite"><h2>🏆 DAS GROSSE FINALE</h2><p class="final-sub" id="final-sub"></p><div class="final-rankings" id="final-rankings"></div></section><div class="players" id="players"></div><div class="actions" id="actions"></div></main><div class="overlay hidden" id="overlay"><div class="modal" id="modal"></div></div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script>
+
+/* V13 — preserve approved screenshot composition; enhance stage motion */
+:root{--stage-amber:#f7d48b}
+.panel:nth-child(2){isolation:isolate}
+.panel:nth-child(2) .cases{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(20% - 7px),#dcb56e 20%,#583516 calc(20% + 4px),transparent calc(20% + 9px)),radial-gradient(ellipse at 50% 2%,#5a729b20,transparent 70%);background-color:transparent}
+.case-shell{transition:filter .18s,box-shadow .18s}
+.case:not(:disabled):hover .case-shell{filter:brightness(1.12);box-shadow:0 0 19px #f8d38588,0 7px 12px #0009}
+.case.revealing .case-shell{animation:stage-focus 3.15s ease-out both}
+.case.revealing .case-lid{animation:lid-open 2.9s cubic-bezier(.22,.61,.25,1) both}
+.case.revealing .case-interior{background:radial-gradient(ellipse,#fff5c8,#c99147 67%,#593312)}
+.case.revealing .case-interior:before{content:"";position:absolute;inset:-30%;background:conic-gradient(from 0deg,transparent 0 12%,#fff9db88 14%,transparent 18% 38%,#fff9db77 42%,transparent 46% 100%);animation:reveal-shine 3s ease-out both;pointer-events:none}
+@keyframes stage-focus{0%{filter:brightness(1)}35%{filter:brightness(1.4);box-shadow:0 0 18px #ffdd8a}65%{filter:brightness(1.7);box-shadow:0 0 35px #ffdf9f}100%{filter:brightness(1.1)}}
+@keyframes reveal-shine{0%,15%{opacity:0;transform:rotate(-40deg)}45%{opacity:1}100%{opacity:0;transform:rotate(90deg)}}
+.case.opened .case-interior{box-shadow:inset 0 5px 11px #4b280f88,0 0 10px #f6d89e1c}
+.case.opened .case-amount{position:relative;z-index:2;text-shadow:0 1px #fff3c8aa}
+.money span{transition:opacity .4s,background .4s}
+.money span.gone{opacity:.3;filter:grayscale(.6)}
+.money span:not(.gone):nth-child(n+17){text-shadow:0 0 9px #f6d2814d}
+.bank .banker{border-radius:12px;box-shadow:inset 0 0 22px #061329}
+.bank .banker:focus{outline:none}
+.bank .bank-quote{border-left-color:#edc27b}
+.player{transition:box-shadow .3s,border-color .3s,transform .3s}
+.player.turn{transform:translateY(-3px)}
+.player.turn .candidate-avatar{animation:portrait-spotlight 3s ease-in-out infinite alternate}
+@keyframes portrait-spotlight{to{box-shadow:0 0 28px #ffe5a0b5}}
+.studio-live-dot{display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:#e64747;box-shadow:0 0 8px #ff5c5c;vertical-align:middle}
+@media(prefers-reduced-motion:reduce){.case.revealing .case-shell,.case.revealing .case-interior:before,.player.turn .candidate-avatar{animation:none!important}.player.turn{transform:none}}
+</style></head><body><header><div><h1>✦ DEAL OR NO DEAL</h1><small>MULTIPLAYER BATTLE · GOLDSTUDIO ONLINE</small></div><a id="back" href="lobby.html">← Lobby</a></header><main><div class="showbar" aria-live="polite"><div><span class="eyebrow"><span class="studio-live-dot" aria-hidden="true"></span>Live aus dem Goldstudio</span><strong id="show-phase">Bereit für die Show</strong><div class="studio-progress" aria-hidden="true"><span id="studio-progress-fill"></span></div></div><div class="round" id="show-round">26 Koffer · bis zu 4 Spieler</div></div><div class="status" id="status">Verbinde mit dem Goldstudio …</div><div class="layout"><section class="panel"><h2>💰 Geldtafel</h2><div class="money" id="money"></div></section><section class="panel"><h2>🧳 26 Goldkoffer</h2><div class="cases" id="cases"></div></section><section class="panel bank"><h2>☎ Der Banker</h2><div class="banker">♟</div><div id="offer"></div><p class="bank-quote" id="bank-quote">„Jeder Koffer verändert das Spiel. Wie mutig bist du?“</p><details id="bank-history"><summary>☎ Bisherige Bankangebote</summary><div class="history-list" id="history-list"></div></details></section></div><section class="final-show" id="final-show" hidden aria-live="polite"><h2>🏆 DAS GROSSE FINALE</h2><p class="final-sub" id="final-sub"></p><div class="final-rankings" id="final-rankings"></div></section><div class="players" id="players"></div><div class="actions" id="actions"></div></main><div class="overlay hidden" id="overlay"><div class="modal" id="modal"></div></div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script>
 'use strict';const $=id=>document.getElementById(id),code=new URLSearchParams(location.search).get('room'),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,''),values=[1,100,500,1000,2500,5000,7500,10000,20000,30000,40000,50000,75000,100000,500000,1000000,2500000,5000000,7500000,10000000,20000000,30000000,40000000,50000000,75000000,100000000],eur=v=>(v/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});let g=null,busy=false,lastReveal=null,revealTimer=null,lastError='';
 $('back').href='lobby.html?room='+encodeURIComponent(code||'');
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null}
