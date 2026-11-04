@@ -1,6 +1,6 @@
 <!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Die drei Schatzkammern · Engine 2.0 Online</title>
 <style>
-:root{font-family:system-ui;color:#fff1d7;background:#101426}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#303b66,#101426 70%);min-height:100dvh}main{max-width:1200px;margin:auto;padding:12px}h1{text-align:center;color:#ffda8b;font-size:clamp(24px,4vw,44px);margin:6px}p{text-align:center}.panel{background:#151d36e8;border:1px solid #aa8b5d;border-radius:20px;padding:14px;margin:12px auto;max-width:900px;text-align:center}button,input,select{font:inherit;border-radius:12px;padding:11px;border:1px solid #c7a16e;background:#263450;color:white}button{cursor:pointer;background:#93612d;font-weight:750}button:disabled{opacity:.4}input{width:130px;text-transform:uppercase}a{color:#ffe0a4}.hidden{display:none!important}.controls{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;align-items:center}.code{font-size:28px;font-weight:900;letter-spacing:4px;color:#ffe4a3}.arena{border:3px solid #bd9c64;border-radius:25px;min-height:clamp(310px,60vh,580px);background:linear-gradient(#18223766,#111d2a44),url('./assets/treasure-hall.svg') center/cover;box-shadow:inset 0 0 70px #0008;position:relative;overflow:hidden}.doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,3vw,35px);max-width:1000px;margin:30px auto;padding:12px}.arch{height:clamp(180px,38vh,330px);border:9px solid #858594;border-radius:100px 100px 6px 6px;position:relative;background:#111526;overflow:hidden;cursor:pointer;touch-action:manipulation;box-shadow:0 9px 0 #1b1627,0 0 25px #0008}.arch:before{content:'💎 ✨';position:absolute;inset:0;display:grid;place-items:center;font-size:42px}.door{position:relative;width:100%;height:100%;border:5px solid #c49759;border-radius:90px 90px 3px 3px;background:repeating-linear-gradient(90deg,#5b301c 0 22%,#a56b3c 22% 25%,#70391e 25% 50%);transform-origin:left;transition:transform 1.1s ease}.door:after{content:'✦';position:absolute;top:25%;left:0;right:0;text-align:center;color:#ffdb86;font-size:44px}.door-wrap:nth-child(2) .door{background:repeating-linear-gradient(90deg,#173c58 0 22%,#377aa4 22% 25%,#1c4a71 25% 50%)}.door-wrap:nth-child(3) .door{background:repeating-linear-gradient(90deg,#1d4a2c 0 22%,#55965c 22% 25%,#285e36 25% 50%)}.arch.open .door{transform:perspective(500px) rotateY(-78deg)}.arch.locked{box-shadow:0 0 28px #d33a52}.arch.locked .door{filter:brightness(.55);animation:shake .5s}.arch.locked:before{content:'⛓️ 🔒'}@keyframes shake{25%,75%{translate:-7px}50%{translate:7px}}.arch:focus-visible{outline:5px solid #ffe0a0}.arch.enabled:hover{filter:brightness(1.25)}.door-label{margin:12px;font-weight:850;text-align:center}.visitors{display:flex;justify-content:center;gap:8px;min-height:48px;font-size:32px}.status{font-weight:800;color:#ffe0a2;font-size:clamp(17px,2.5vw,26px);min-height:40px;text-align:center;margin-top:8px}.hint{color:#cad1e2}.badge{display:inline-block;padding:5px 12px;border:1px solid #b68e55;border-radius:25px;margin:3px;background:#151c30}#error{color:#ffb7b7;font-weight:bold}@media(max-width:600px){main{padding:5px}.doors{gap:6px;padding:4px}.arch{height:clamp(150px,30vh,230px);border-width:5px}.panel{padding:10px}.visitors{font-size:24px}}
+:root{font-family:system-ui;color:#fff1d7;background:#101426}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#303b66,#101426 70%);min-height:100dvh}main{max-width:1200px;margin:auto;padding:12px}h1{text-align:center;color:#ffda8b;font-size:clamp(24px,4vw,44px);margin:6px}p{text-align:center}.panel{background:#151d36e8;border:1px solid #aa8b5d;border-radius:20px;padding:14px;margin:12px auto;max-width:900px;text-align:center}button,input,select{font:inherit;border-radius:12px;padding:11px;border:1px solid #c7a16e;background:#263450;color:white}button{cursor:pointer;background:#93612d;font-weight:750}button:disabled{opacity:.4}input{width:130px;text-transform:uppercase}a{color:#ffe0a4}.hidden{display:none!important}.controls{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;align-items:center}.code{font-size:28px;font-weight:900;letter-spacing:4px;color:#ffe4a3}.arena{border:3px solid #bd9c64;border-radius:25px;min-height:clamp(310px,60vh,580px);background:linear-gradient(#18223766,#111d2a44),url('./assets/treasure-hall.svg') center/cover;box-shadow:inset 0 0 70px #0008;position:relative;overflow:hidden}.doors.five{grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(3px,1vw,12px)}.doors.five .arch{height:clamp(120px,29vh,270px);border-width:5px}.doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,3vw,35px);max-width:1000px;margin:30px auto;padding:12px}.arch{height:clamp(180px,38vh,330px);border:9px solid #858594;border-radius:100px 100px 6px 6px;position:relative;background:#111526;overflow:hidden;cursor:pointer;touch-action:manipulation;box-shadow:0 9px 0 #1b1627,0 0 25px #0008}.arch:before{content:'💎 ✨';position:absolute;inset:0;display:grid;place-items:center;font-size:42px}.door{position:relative;width:100%;height:100%;border:5px solid #c49759;border-radius:90px 90px 3px 3px;background:repeating-linear-gradient(90deg,#5b301c 0 22%,#a56b3c 22% 25%,#70391e 25% 50%);transform-origin:left;transition:transform 1.1s ease}.door:after{content:'✦';position:absolute;top:25%;left:0;right:0;text-align:center;color:#ffdb86;font-size:44px}.door-wrap:nth-child(2) .door{background:repeating-linear-gradient(90deg,#173c58 0 22%,#377aa4 22% 25%,#1c4a71 25% 50%)}.door-wrap:nth-child(3) .door{background:repeating-linear-gradient(90deg,#1d4a2c 0 22%,#55965c 22% 25%,#285e36 25% 50%)}.arch.open .door{transform:perspective(500px) rotateY(-78deg)}.arch.locked{box-shadow:0 0 28px #d33a52}.arch.locked .door{filter:brightness(.55);animation:shake .5s}.arch.locked:before{content:'⛓️ 🔒'}@keyframes shake{25%,75%{translate:-7px}50%{translate:7px}}.arch:focus-visible{outline:5px solid #ffe0a0}.arch.enabled:hover{filter:brightness(1.25)}.door-label{margin:12px;font-weight:850;text-align:center}.visitors{display:flex;justify-content:center;gap:8px;min-height:48px;font-size:32px}.status{font-weight:800;color:#ffe0a2;font-size:clamp(17px,2.5vw,26px);min-height:40px;text-align:center;margin-top:8px}.hint{color:#cad1e2}.badge{display:inline-block;padding:5px 12px;border:1px solid #b68e55;border-radius:25px;margin:3px;background:#151c30}#error{color:#ffb7b7;font-weight:bold}@media(max-width:600px){main{padding:5px}.doors{gap:6px;padding:4px}.arch{height:clamp(150px,30vh,230px);border-width:5px}.panel{padding:10px}.visitors{font-size:24px}}
 </style></head><body><main><h1>🏰 Die drei Schatzkammern</h1><p>🌐 MiniGame Engine 2.0 · Gemeinsamer Online-Raum</p>
 <section class="panel" id="lobby"><div class="controls"><label>Computergegner <select id="bots"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label><button id="create">Neuen Engine-2-Raum erstellen</button><input id="code" placeholder="Raumcode" maxlength="6" aria-label="Raumcode"><button id="join">Raum beitreten</button></div><p class="hint">Alle Teilnehmer müssen mit ihrem Spielprofil angemeldet sein. Jeder spielt auf seinem eigenen Gerät.</p></section>
 <section class="panel hidden" id="roomPanel"><div>Raumcode <span class="code" id="roomCode"></span></div><div id="members"></div><div class="controls"><button id="prepare" class="hidden">Spiel vorbereiten</button><button id="ready" class="hidden">Verstanden · Bereit!</button><button id="refresh">Aktualisieren</button><button id="copy">Raumcode kopieren</button></div></section>
@@ -10,9 +10,9 @@
 <script src="../../../../profile-config.js"></script><script src="../../../../profile-auth.js"></script><script type="module">
 const $=id=>document.getElementById(id),show=(id,v)=>$(id).classList.toggle('hidden',!v);
 const code=new URLSearchParams(location.search).get('room')||'';
-const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(new RegExp('/+;
+const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 const faces=['🧙','🧝','🥷','🦸'];
-let snapshot=null,busy=false,loading=false,lastRevealRound=0;
+let snapshot=null,busy=false,loading=false;
 const user=()=>{const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null};
 const error=e=>{$('error').textContent=e?.message||String(e)};
 async function request(path,body){
@@ -26,20 +26,32 @@ async function request(path,body){
 async function act(name,data={}){if(busy)return;busy=true;try{snapshot=await request('/drei-schatzkammern/'+name,data);render()}catch(e){error(e)}finally{busy=false}}
 function render(){
  const room=snapshot,match=room?.match,g=match?.treasure;
- if(!room||match?.game!=='drei-schatzkammern'){show('arena',false);$('status').textContent='Keine Schatzkammer-Partie aktiv';return}
+ if(!room||match?.game!=='drei-schatzkammern'){show('arena',false);return;}
  show('arena',true);show('roomPanel',true);show('lobby',false);
  $('roomCode').textContent=code;
  $('members').textContent=room.players.filter(p=>p.participating).map(p=>p.name).join(' · ');
- show('prepare',false);show('ready',match.status.phase==='instructions'&&match.participating&&!g.myReady);
- show('result',g.phase==='finished');show('replay',room.host&&g.phase==='finished');
- const canChoose=match.status.phase==='playing'&&g.phase==='choosing'&&g.alive.includes(user()?.uid)&&!g.hasChosen;
- $('status').textContent=g.phase==='finished'?'🏆 Abenteuer beendet!':match.status.phase==='instructions'?'📜 Anleitung lesen und Verstanden drücken':canChoose?'🚪 Tippe direkt auf deine Tür!':g.hasChosen?'✓ Deine Wahl ist geheim gespeichert.':'⏳ Warte auf die anderen Abenteurer …';
- const reveal=g.lastReveal?.round===g.round?g.lastReveal.doors:[];
- $('doors').innerHTML=[0,1,2].map(d=>{
- const entry=reveal.find(x=>x.door===d);
- return '<div class="door-wrap"><div class="arch '+(entry?(entry.locked?'locked':'open'):'')+(canChoose?' enabled':'')+'" data-door="'+d+'" role="button" tabindex="0" aria-label="Tür '+(d+1)+' wählen"><div class="door"></div></div><div class="door-label">Tür '+(d+1)+'</div><div class="visitors">'+(entry?entry.visitors.map(id=>faces[match.treasure.engine.roster.indexOf(id)]||'🧙').join(''):'')+'</div></div>';
+ const phase=g.engine?.phase||match.status?.phase;
+ const history=g.revealHistory||[];
+ const now=Date.now();
+ const active=history.find(r=>now>=r.startedAt&&now<r.endsAt);
+ const recent=history.at(-1);
+ const countdown=phase==='countdown'&&g.engine?.startedAt>now;
+ const animating=!!active;
+ const canChoose=phase==='playing'&&g.phase==='choosing'&&!animating&&(!recent||now>=recent.endsAt)&&g.alive.includes(user()?.uid)&&!g.hasChosen;
+ show('prepare',false);show('ready',phase==='instructions'&&match.participating&&!g.myReady);
+ show('result',g.phase==='finished'&&!animating);show('replay',room.host&&g.phase==='finished'&&!animating);
+ let shownRound=active?.round||g.round;
+ let count=shownRound===3?5:3;
+ $('doors').classList.toggle('five',count===5);
+ const revealed=active?active.doors.filter(d=>now>=d.revealAt):[];
+ $('status').textContent=countdown?'⏳ Start in '+Math.ceil((g.engine.startedAt-now)/1000)+' …':animating?'🏰 Raum '+shownRound+' · Die Türen öffnen sich nacheinander!':g.phase==='finished'?'🏆 Abenteuer beendet!':phase==='instructions'?'📜 Anleitung lesen und Verstanden drücken':canChoose?'🚪 Tippe direkt auf deine Tür!':g.hasChosen?'✓ Deine Wahl ist geheim gespeichert.':'⏳ Warte auf die anderen Abenteurer …';
+ const roster=g.engine?.roster||[];
+ $('doors').innerHTML=Array.from({length:count},(_,d)=>{
+  const entry=revealed.find(x=>x.door===d);
+  const visitors=entry?entry.visitors.map(id=>faces[roster.indexOf(id)]||'🧙').join(''):'';
+  return '<div class="door-wrap"><div class="arch '+(entry?(entry.locked?'locked':'open'):'')+(canChoose?' enabled':'')+'" data-door="'+d+'" role="button" tabindex="0" aria-label="Tür '+(d+1)+' wählen" aria-disabled="'+(!canChoose)+'"><div class="door"></div></div><div class="door-label">Tür '+(d+1)+'</div><div class="visitors">'+visitors+'</div></div>';
  }).join('');
- if(g.phase==='finished')$('winners').textContent=g.result.winnerIds.length?'🎉 Überlebt: '+g.result.winnerIds.map(id=>room.players.find(p=>p.me&&user()?.uid===id)?.name||('Abenteurer '+(match.treasure.engine.roster.indexOf(id)+1))).join(', '):'Niemand hat überlebt!';
+ if(g.phase==='finished'&&!animating)$('winners').textContent=g.result.winnerIds.length?'🎉 Überlebt: '+g.result.winnerIds.map(id=>room.players.find(p=>p.uid===id)?.name||('Abenteurer '+(roster.indexOf(id)+1))).join(', '):'Niemand hat überlebt!';
 }
 $('ready').onclick=()=>act('ready');
 $('replay').onclick=()=>location.assign('../../../lobby.html?room='+encodeURIComponent(code));
@@ -48,11 +60,11 @@ $('copy').onclick=()=>navigator.clipboard?.writeText(code);
 $('doors').addEventListener('click',e=>{
  const el=e.target.closest('[data-door]');if(!el||!snapshot)return;
  const g=snapshot.match?.treasure;
- if(g?.phase==='choosing'&&!g.hasChosen&&g.alive.includes(user()?.uid)&&snapshot.match.status.phase==='playing')act('choose',{door:Number(el.dataset.door)});
+ if(g?.phase==='choosing'&&!g.hasChosen&&g.alive.includes(user()?.uid)&&g.engine?.phase==='playing'&&!(g.revealHistory||[]).some(r=>Date.now()>=r.startedAt&&Date.now()<r.endsAt))act('choose',{door:Number(el.dataset.door)});
 });
 $('doors').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.target.closest('[data-door]')?.click()}});
 async function load(){if(loading||busy||!code||!user())return;loading=true;try{snapshot=await request('');render()}catch(e){error(e)}finally{loading=false}}
 $('lobby').innerHTML='<a href="../../../lobby.html?room='+encodeURIComponent(code)+'">← Zur gemeinsamen Lobby</a>';
 show('lobby',true);show('roomPanel',false);
-setInterval(load,2500);load();
+setInterval(load,1500);setInterval(()=>{if(snapshot&&!loading)render()},120);load();
 </script></body></html>
