@@ -397,7 +397,8 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .online-room-dialog .online-room-secondary button:disabled{opacity:.5;cursor:not-allowed}
 .online-room-dialog .online-room-feedback{min-height:18px;margin:10px 0 0;color:#ffccaa;font-size:13px}
 @media(max-width:520px){.online-room-dialog{padding:12px}.online-room-dialog-card{margin:12px auto 0;max-height:calc(100dvh - 24px);padding:17px}.online-room-dialog-head h2{font-size:20px}}
-</style></head>
+</style><style id="deal-card-style">.deal-card{background:radial-gradient(circle at 65% 32%,#c99b4d,#182748 55%,#070e20)!important;border:2px solid #d5a65d!important}.deal-card::before{background-image:linear-gradient(125deg,#090e1b,#293d60 60%,#b57d2c)!important}.deal-card::after{background:linear-gradient(90deg,#061024e8,#06102422)!important}.deal-card .game-title h2{color:#ffe2a2;text-shadow:0 3px 15px #000}.deal-card .actions{position:relative;z-index:2}.deal-card .btn.gold{background:linear-gradient(120deg,#f1c978,#a9762d);color:#201406;border-color:#ffe3a6}</style>
+</head>
 <body>
   <main class="container">
     <header class="page-head">
@@ -450,6 +451,7 @@ body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;bac
         <img class="kniffel-art" src="Assets/game-backgrounds/kniffel-kachel.webp" alt="Kniffel" loading="lazy">
         <div class="actions"><button type="button" class="btn purple online-game-button image-card-button" aria-label="Kniffel online auswählen" data-select-game="kniffel"><span class="visually-hidden">Kniffel auswählen</span></button></div>
       </article>
+      <article class="game deal-card"><div class="game-title"><h2>💼 Deal or No Deal</h2></div><p>26 Koffer · Der Banker · Multiplayer Battle</p><div class="actions"><a class="btn gold" id="deal-online-entry" href="DealOrNoDeal/lobby.html">Goldstudio-Lobby öffnen ›</a></div></article>
       <article class="game mini-new-card"><div class="game-title"><h2>🎮 Minispiele NEU</h2></div><div class="actions"><a class="btn green" href="MinispieleV2/lobby.html" id="mini-v2-entry" aria-label="Neue Minispiele-Lobby öffnen">Neue Lobby öffnen ›</a></div></article>
     </section>
   </main>
@@ -517,5 +519,6 @@ document.addEventListener('DOMContentLoaded',()=>{
  dialog?.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
 });
 </script>
+<script id="deal-entry-room-preserve">(function(){const a=document.getElementById('deal-online-entry');if(!a)return;function sync(){const code=new URLSearchParams(location.search).get('room');a.href='DealOrNoDeal/lobby.html'+(code&&/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/i.test(code)?'?room='+encodeURIComponent(code):'')}sync();window.addEventListener('popstate',sync)})();</script>
 </body>
 </html>
