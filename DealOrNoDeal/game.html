@@ -802,7 +802,7 @@ function updateBankerCall(){
  $('banker-call-deal').disabled=busy;
  $('banker-call-no-deal').disabled=busy;
 }
-$('banker-call-deal').addEventListener('click',()=>{if(confirm('DEAL über '+eur(g.offer)+' verbindlich annehmen?'))action('decide',{deal:true})});
+$('banker-call-deal').addEventListener('click',()=>action('decide',{deal:true}));
 $('banker-call-no-deal').addEventListener('click',()=>action('decide',{deal:false}));
 let lastVoteRevealKey='';let voteRevealTimer=null;
 function closeVoteReveal(){if(voteRevealTimer!==null){clearTimeout(voteRevealTimer);voteRevealTimer=null}if(lastVoteRevealKey)sessionStorage.setItem(lastVoteRevealKey,'seen');$('vote-reveal').hidden=true}
