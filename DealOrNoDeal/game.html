@@ -291,6 +291,42 @@ body{background-image:linear-gradient(180deg,#07132936 0%,#07132916 45%,#0713297
 .panel{background:linear-gradient(150deg,#152a49f0 0%,#0b1b35e9 45%,#06132bec 100%)!important}
 .panel:nth-child(2){background:linear-gradient(145deg,#0b1933ee,#07142de7)!important}
 @media(max-width:900px){body{background-attachment:scroll!important;background-position:center top,center top,center top!important;background-size:cover,auto 100vh,auto 100vh!important}}
+
+/* V17 — tablet landscape: entire studio, all 26 cases and players in one viewport */
+@media (min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+ html,body{min-height:100%;overflow-x:hidden}
+ header{min-height:0!important;padding:5px 18px!important}
+ header h1{font-size:clamp(18px,2vw,25px)!important;line-height:1.1!important}
+ header small{font-size:9px!important;letter-spacing:1px!important}
+ header #back{padding:7px 12px!important;font-size:12px!important}
+ main{max-width:none!important;padding:6px 12px 12px!important}
+ .showbar{padding:5px 12px!important;margin-bottom:5px!important;min-height:0!important}
+ .showbar .eyebrow{font-size:8px!important;letter-spacing:1px!important}
+ .showbar strong{font-size:13px!important}
+ .studio-progress{height:3px!important;margin-top:3px!important}
+ .showbar .round{padding:5px 10px!important;font-size:11px!important}
+ .studio-tool{padding:5px 9px!important;font-size:11px!important}
+ .status{padding:6px 11px!important;margin:0 0 5px!important;font-size:12px!important;line-height:1.25!important}
+ .layout{grid-template-columns:minmax(180px,1.03fr) minmax(500px,3.15fr) minmax(180px,1.04fr)!important;gap:8px!important;align-items:stretch}
+ .panel{padding:7px!important;border-radius:15px!important;min-width:0}
+ .panel h2{font-size:15px!important;line-height:1.2!important;margin:-7px -7px 5px!important;padding:7px 4px!important}
+ .cases{gap:clamp(5px,.6vw,9px)!important;padding:13px 6px 7px!important}
+ .case{min-height:0!important;height:clamp(48px,calc((100dvh - 265px)/5),90px)!important}
+ .case:before{top:-7px!important;height:7px!important}
+ .money{gap:3px!important}
+ .money span{min-height:0!important;padding:3px 1px!important;font-size:clamp(9px,.83vw,12px)!important;line-height:1.2!important}
+ .bank .banker{min-height:clamp(110px,18dvh,155px)!important;max-height:155px!important;margin:0 0 5px!important}
+ .bank #offer{font-size:clamp(15px,1.4vw,22px)!important}
+ .bank-quote{padding:5px 7px!important;margin:5px 0!important;font-size:10px!important;line-height:1.2!important}
+ .bank details{margin-top:auto!important}
+ .bank summary{font-size:11px!important;padding:6px!important}
+ .players{margin-top:6px!important;gap:8px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .player{min-height:0!important;padding:5px 7px!important;grid-template-columns:48px minmax(0,1fr)!important;gap:5px!important;border-radius:12px!important}
+ .player .candidate-avatar{width:44px!important;height:52px!important}
+ .player.turn{transform:none!important}
+ .actions{margin:6px 0!important;gap:6px!important}
+ .actions .btn{padding:7px 10px!important;font-size:12px!important}
+}
 </style></head><body><header><div><h1>✦ DEAL OR NO DEAL</h1><small>MULTIPLAYER BATTLE · GOLDSTUDIO ONLINE</small></div><a id="back" href="lobby.html">← Lobby</a></header><main><div class="showbar" aria-live="polite"><div><span class="eyebrow"><span class="studio-live-dot" aria-hidden="true"></span>Live aus dem Goldstudio</span><strong id="show-phase">Bereit für die Show</strong><div class="studio-progress" aria-hidden="true"><span id="studio-progress-fill"></span></div></div><div class="studio-tools"><div class="round" id="show-round">26 Koffer · bis zu 4 Spieler</div><button class="studio-tool" id="studio-refresh" type="button" aria-label="Seite neu laden" title="Seite aktualisieren">↻ Aktualisieren</button><button class="studio-tool" id="studio-fullscreen" type="button" aria-label="Vollbildmodus umschalten">⛶ Vollbild</button></div></div><div class="status" id="status">Verbinde mit dem Goldstudio …</div><div class="layout"><section class="panel"><h2>💰 Geldtafel</h2><div class="money" id="money"></div></section><section class="panel"><h2>🧳 26 Goldkoffer</h2><div class="cases" id="cases"></div></section><section class="panel bank"><h2>☎ Der Banker</h2><div class="banker">♟</div><div id="offer"></div><p class="bank-quote" id="bank-quote">„Jeder Koffer verändert das Spiel. Wie mutig bist du?“</p><details id="bank-history"><summary>☎ Bisherige Bankangebote</summary><div class="history-list" id="history-list"></div></details></section></div><section class="final-show" id="final-show" hidden aria-live="polite"><h2>🏆 DAS GROSSE FINALE</h2><p class="final-sub" id="final-sub"></p><div class="final-rankings" id="final-rankings"></div></section><div class="players" id="players"></div><div class="actions" id="actions"></div></main><div class="overlay hidden" id="overlay"><div class="modal" id="modal"></div></div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script>
 'use strict';const $=id=>document.getElementById(id),code=new URLSearchParams(location.search).get('room'),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,''),values=[1,100,500,1000,2500,5000,7500,10000,20000,30000,40000,50000,75000,100000,500000,1000000,2500000,5000000,7500000,10000000,20000000,30000000,40000000,50000000,75000000,100000000],eur=v=>(v/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});let g=null,busy=false,lastReveal=null,revealTimer=null,lastError='';
 $('back').href='lobby.html?room='+encodeURIComponent(code||'');
