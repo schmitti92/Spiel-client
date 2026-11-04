@@ -67,6 +67,18 @@ main{padding:12px 16px 28px}
 
 
 @media(prefers-reduced-motion:reduce){.case.revealing .case-lid{transform:rotateX(-114deg);animation:none}.case.revealing .case-interior:after{animation:none;opacity:1}}
+
+/* V9 tablet refinements */
+.cases .case:nth-child(25){grid-column:3}.cases .case:nth-child(26){grid-column:4}
+.case.opened .case-lid{pointer-events:none}
+.case.opened .case-interior{z-index:5}
+.case.revealing .case-interior{z-index:2}
+.case.opened .case-lid{z-index:4}
+.case.revealing .case-lid{z-index:6}
+.case.opened .case-number{font-size:clamp(10px,1vw,14px)}
+.case.opened .case-lid{opacity:.55}
+.case.opened .case-amount{font-size:clamp(9px,1vw,15px)}
+@media(max-width:690px){.cases .case:nth-child(25){grid-column:3}.cases .case:nth-child(26){grid-column:4}}
 </style></head><body><header><div><h1>✦ DEAL OR NO DEAL</h1><small>MULTIPLAYER BATTLE · GOLDSTUDIO ONLINE</small></div><a id="back" href="lobby.html">← Lobby</a></header><main><div class="status" id="status">Verbinde mit dem Goldstudio …</div><div class="layout"><section class="panel"><h2>💰 Geldtafel</h2><div class="money" id="money"></div></section><section class="panel"><h2>🧳 26 Goldkoffer</h2><div class="cases" id="cases"></div></section><section class="panel bank"><h2>☎ Der Banker</h2><div class="banker">♟</div><div id="offer"></div></section></div><div class="players" id="players"></div><div class="actions" id="actions"></div></main><div class="overlay hidden" id="overlay"><div class="modal" id="modal"></div></div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script>
 'use strict';const $=id=>document.getElementById(id),code=new URLSearchParams(location.search).get('room'),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,''),values=[1,100,500,1000,2500,5000,7500,10000,20000,30000,40000,50000,75000,100000,500000,1000000,2500000,5000000,7500000,10000000,20000000,30000000,40000000,50000000,75000000,100000000],eur=v=>(v/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});let g=null,busy=false,lastReveal=null,revealTimer=null,lastError='';
 $('back').href='lobby.html?room='+encodeURIComponent(code||'');
