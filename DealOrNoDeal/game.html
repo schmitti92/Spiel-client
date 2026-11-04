@@ -449,6 +449,69 @@ header small{color:#f1d39d!important;letter-spacing:.23em!important}
  .player{padding:4px 6px!important}
 }
 @media(max-width:999px){.layout{grid-template-columns:1fr!important}.panel{min-width:0}}
+
+/* V22 — detail pass: legibility, depth, case mechanics, broadcast motion and tablet fit */
+:root{--broadcast-light:#ffe8a7;--broadcast-edge:#b57a31}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.panel{position:relative;isolation:isolate}
+.panel:after{content:"";position:absolute;inset:2px;border:1px solid #ffe6a116;border-radius:19px;pointer-events:none;z-index:0}
+.panel>*{position:relative;z-index:1}
+.panel h2{font-weight:950!important;line-height:1.15!important;text-shadow:0 2px 4px #000d,0 0 10px #f4bf6244!important}
+.panel:nth-child(2) h2{border-color:#ffe09a!important;box-shadow:0 0 15px #f6bf5c2b,inset 0 1px #fff6cc66!important}
+.cases{position:relative}
+.cases:after{content:"";position:absolute;inset:0;border:1px solid #f2be6424;border-radius:12px;pointer-events:none}
+.case{outline-offset:3px}
+.case-shell{overflow:visible}
+.case-lid{background:linear-gradient(150deg,#fff4ca 0%,#eec17b 18%,#b97834 42%,#f9d68d 69%,#a56a2d 100%)!important;box-shadow:inset 0 2px 3px #fff9dfd9,inset 0 -5px 9px #6a3a0c9c,0 2px 4px #0008!important}
+.case-lid:after{content:"";position:absolute;inset:7px;border:1px solid #fff0bc9c;border-radius:6px;pointer-events:none;box-shadow:inset 0 0 0 1px #7e4b1e55}
+.case-handle{background:linear-gradient(90deg,#7e4c1b,#f8d28b 35%,#a87130 70%,#6d3e16)!important;box-shadow:0 -2px 4px #0008,inset 0 1px #fff2bfaa}
+.case-number{font-variant-numeric:tabular-nums;filter:drop-shadow(0 1px 1px #ffe1a1)}
+.case.opened .case-interior{background:radial-gradient(ellipse at center,#fff0bd,#d5a462 62%,#5b3214)!important}
+.case.opened .case-amount{font-size:clamp(9px,1vw,15px)!important;letter-spacing:-.35px!important;line-height:1.05!important}
+.case.personal .case-lid{background:linear-gradient(140deg,#3976a7,#0a2447 70%)!important}
+.case.personal .case-number{color:#a8e6ff!important;text-shadow:0 0 13px #74caff!important}
+.money span{font-variant-numeric:tabular-nums;letter-spacing:-.15px;transition:opacity .35s,filter .35s,background .35s}
+.money span:not(.gone){position:relative}
+.money span:not(.gone):before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#b6d9ff66,transparent)}
+.money span.gone{color:#9da9b8!important;text-decoration-color:#a3a9b0!important}
+.player{overflow:hidden}
+.player:after{content:"";position:absolute;inset:auto -30% -90% -30%;height:120%;background:radial-gradient(ellipse,#d6a55419,transparent 65%);pointer-events:none}
+.player.turn:after{background:radial-gradient(ellipse,#f6c66736,transparent 68%)}
+.player .candidate-name{letter-spacing:.01em;text-shadow:0 2px 3px #0009}
+.player .candidate-avatar{background-size:cover!important;background-position:center top!important}
+.personalcase{border:1px solid #ffe2a0!important;box-shadow:inset 0 1px #fff6d6,0 2px 8px #0008!important}
+.bank #offer{font-variant-numeric:tabular-nums}
+.bank-quote{line-height:1.45!important}
+.banker-call-card{background:radial-gradient(ellipse at 50% 0%,#2b5174 0%,#0d2342 40%,#030b1b 100%)!important}
+.banker-call-quote{box-shadow:inset 0 1px #ffe4a02b,0 4px 15px #0008!important}
+.banker-call-amount{letter-spacing:-.03em;line-height:1.15}
+.banker-call-actions button{box-shadow:inset 0 1px #ffffff77,0 6px 15px #000a!important;transition:transform .15s,filter .15s}
+.banker-call-actions button:not(:disabled):active{transform:translateY(2px)}
+.banker-call-actions button:focus-visible,.vote-reveal-card button:focus-visible,.studio-tool:focus-visible{outline:3px solid #9bdcff;outline-offset:3px}
+.vote-reveal-person{font-variant-numeric:tabular-nums}
+.vote-reveal-person:not(.no-deal){background:linear-gradient(120deg,#36512d,#142c32)!important;border-color:#e7ca79!important}
+.vote-reveal-person.no-deal{background:linear-gradient(120deg,#253a58,#10213b)!important}
+@media(min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+ main{padding-bottom:8px!important}
+ .layout{gap:9px!important}
+ .panel{padding:6px!important}
+ .panel h2{margin:-6px -6px 5px!important}
+ .cases{gap:clamp(4px,.55vw,8px)!important}
+ .case{height:clamp(44px,calc((100dvh - 250px)/5),86px)!important}
+ .case-lid:after{inset:4px}
+ .player{min-height:0!important}
+ .player .candidate-name{font-size:clamp(12px,1.1vw,16px)!important}
+}
+@media(max-height:650px) and (min-width:1000px) and (orientation:landscape){
+ header{padding:3px 12px!important}
+ .showbar{padding:3px 9px!important;margin-bottom:3px!important}
+ .status{padding:4px 9px!important;margin-bottom:3px!important}
+ .case{height:clamp(35px,calc((100dvh - 200px)/5),70px)!important}
+ .players{margin-top:4px!important}
+ .player .candidate-avatar{height:42px!important;width:39px!important}
+ .player{grid-template-columns:40px minmax(0,1fr)!important}
+}
+@media(prefers-reduced-motion:reduce){.money span,.banker-call-actions button{transition:none!important}}
 </style></head><body><header><div><h1>✦ DEAL OR NO DEAL</h1><small>MULTIPLAYER BATTLE · GOLDSTUDIO ONLINE</small></div><a id="back" href="lobby.html">← Lobby</a></header><main><div class="showbar" aria-live="polite"><div><span class="eyebrow"><span class="studio-live-dot" aria-hidden="true"></span>Live aus dem Goldstudio</span><strong id="show-phase">Bereit für die Show</strong><div class="studio-progress" aria-hidden="true"><span id="studio-progress-fill"></span></div></div><div class="studio-tools"><div class="round" id="show-round">26 Koffer · bis zu 4 Spieler</div><button class="studio-tool" id="studio-refresh" type="button" aria-label="Seite neu laden" title="Seite aktualisieren">↻ Aktualisieren</button><button class="studio-tool" id="studio-fullscreen" type="button" aria-label="Vollbildmodus umschalten">⛶ Vollbild</button></div></div><div class="status" id="status">Verbinde mit dem Goldstudio …</div><div class="layout"><section class="panel"><h2>💰 Geldtafel</h2><div class="money" id="money"></div></section><section class="panel"><h2>🧳 26 Goldkoffer</h2><div class="cases" id="cases"></div></section><section class="panel bank"><h2>☎ Der Banker</h2><div class="banker">♟</div><div id="offer"></div><p class="bank-quote" id="bank-quote">„Jeder Koffer verändert das Spiel. Wie mutig bist du?“</p><details id="bank-history"><summary>☎ Bisherige Bankangebote</summary><div class="history-list" id="history-list"></div></details></section></div><section class="final-show" id="final-show" hidden aria-live="polite"><h2>🏆 DAS GROSSE FINALE</h2><p class="final-sub" id="final-sub"></p><div class="final-rankings" id="final-rankings"></div></section><div class="players" id="players"></div><div class="actions" id="actions"></div></main><div class="banker-call" id="banker-call" hidden role="dialog" aria-modal="true" aria-labelledby="banker-call-title"><div class="banker-call-card"><div class="banker-call-eyebrow">● LIVE · DIREKTLEITUNG ZUR BANK</div><div class="banker-call-phone" aria-hidden="true">☎️</div><h2 id="banker-call-title">Der Banker ist am Telefon!</h2><div class="banker-call-quote" id="banker-call-quote"></div><div class="banker-call-eyebrow">DAS EXKLUSIVE BANKANGEBOT</div><div class="banker-call-amount" id="banker-call-amount"></div><div class="banker-call-sub" id="banker-call-sub"></div><div class="banker-call-actions" id="banker-call-actions"><button type="button" id="banker-call-deal">🤝 DEAL</button><button type="button" id="banker-call-no-deal">🔥 NO DEAL</button></div><div class="banker-call-wait" id="banker-call-wait" hidden>⏳ Die anderen Kandidaten entscheiden noch …</div></div></div><div class="vote-reveal" id="vote-reveal" hidden role="dialog" aria-modal="true" aria-labelledby="vote-reveal-title"><div class="vote-reveal-card"><div style="font-size:34px">🎬 🤝 🎬</div><h2 id="vote-reveal-title">Alle haben entschieden!</h2><div class="vote-reveal-list" id="vote-reveal-list"></div><button type="button" id="vote-reveal-close">Weiter zur Show</button></div></div><div class="overlay hidden" id="overlay"><div class="modal" id="modal"></div></div><script src="../profile-config.js"></script><script src="../profile-auth.js"></script><script>
 'use strict';const $=id=>document.getElementById(id),code=new URLSearchParams(location.search).get('room'),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,''),values=[1,100,500,1000,2500,5000,7500,10000,20000,30000,40000,50000,75000,100000,500000,1000000,2500000,5000000,7500000,10000000,20000000,30000000,40000000,50000000,75000000,100000000],eur=v=>(v/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});let g=null,busy=false,lastReveal=null,revealTimer=null,lastError='';
 $('back').href='lobby.html?room='+encodeURIComponent(code||'');
