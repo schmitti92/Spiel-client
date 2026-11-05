@@ -74,3 +74,65 @@ body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
 .broadcast-odds[data-risk="high"] strong{color:#ffae9a}
 @media(max-width:550px){.broadcast-odds{grid-template-columns:auto auto minmax(38px,1fr);gap:5px;padding:5px;font-size:9px}.broadcast-odds strong{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.broadcast-odds-track i{transition:none}}
+
+/* Full-stage banker offer: television picture on the left, all decisions on the right.
+   Last stylesheet wins over earlier compact-screen banker rules. */
+#banker-call.banker-call{padding:clamp(8px,1.5vw,22px)!important;overscroll-behavior:contain}
+#banker-call .banker-call-card{
+  box-sizing:border-box;width:min(1500px,98vw)!important;max-width:none!important;
+  height:min(850px,calc(100dvh - 24px));max-height:calc(100dvh - 16px)!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);
+  grid-template-rows:repeat(9,auto) minmax(0,1fr);column-gap:clamp(14px,2.4vw,38px);
+  align-content:center;align-items:center;padding:clamp(14px,2.2vw,34px)!important;
+  text-align:center;border-radius:clamp(18px,2vw,30px)!important;
+}
+#banker-call .banker-call-eyebrow:first-child{grid-column:1/-1;grid-row:1;font-size:clamp(11px,1.3vw,17px);letter-spacing:.16em}
+#banker-call .banker-call-phone{grid-column:1;grid-row:2;justify-self:center;align-self:end;font-size:clamp(23px,3vw,43px);margin:0!important}
+#banker-call .banker-call-portrait{
+  grid-column:1;grid-row:3/10;align-self:stretch;
+  width:100%!important;max-width:none!important;
+  height:auto!important;min-height:clamp(250px,46dvh,580px)!important;
+  background-size:cover!important;background-position:center 35%!important;
+  margin:0!important;
+}
+#banker-call #banker-call-title{grid-column:2;grid-row:2;margin:0!important;font-size:clamp(20px,2.1vw,35px)}
+#banker-call .banker-call-quote{grid-column:2;grid-row:3;margin:4px 0!important;padding:clamp(9px,1vw,15px)!important;font-size:clamp(13px,1.3vw,19px)}
+#banker-call .banker-call-eyebrow:not(:first-child){grid-column:2;grid-row:4;margin:0!important}
+#banker-call .banker-call-amount{grid-column:2;grid-row:5;font-size:clamp(32px,4vw,67px)!important;line-height:1.1;white-space:normal!important;overflow-wrap:anywhere}
+#banker-call .banker-call-sub{grid-column:2;grid-row:6;margin:0!important}
+#banker-call .broadcast-offer-math,#banker-call .final-choice-compare{grid-column:2;grid-row:7;max-width:none!important;margin:5px 0!important}
+#banker-call .banker-vote-progress{grid-column:2;grid-row:8;margin:5px 0!important}
+#banker-call .banker-call-actions,#banker-call .banker-call-wait{grid-column:2;grid-row:9;margin:5px 0!important;width:100%}
+#banker-call .banker-call-actions button{min-height:clamp(48px,6dvh,70px)!important;font-size:clamp(15px,1.6vw,23px)!important}
+#banker-call .banker-call-wait[hidden],#banker-call .final-choice-compare[hidden]{display:none!important}
+@media(max-width:760px),(max-height:540px){
+ #banker-call .banker-call-card{height:auto;min-height:0;max-height:calc(100dvh - 12px)!important;
+  display:flex!important;flex-direction:column;justify-content:flex-start;gap:5px;
+  padding:clamp(9px,2.4vw,17px)!important}
+ #banker-call .banker-call-phone{display:none}
+ #banker-call .banker-call-portrait{flex:none;height:clamp(120px,24dvh,250px)!important;
+  min-height:0!important;width:100%!important;max-width:600px!important}
+ #banker-call #banker-call-title{font-size:clamp(19px,4vw,27px)}
+ #banker-call .banker-call-quote{font-size:clamp(12px,2.8vw,16px);padding:7px!important}
+ #banker-call .banker-call-amount{font-size:clamp(27px,6vw,43px)!important}
+ #banker-call .broadcast-offer-math{padding:7px!important;margin:2px 0!important}
+ #banker-call .banker-call-actions{margin-top:3px!important}
+ #banker-call .banker-call-actions button{min-height:48px!important;font-size:15px!important}
+}
+@media(min-width:761px) and (max-height:720px){
+ #banker-call .banker-call-card{height:calc(100dvh - 14px);padding:12px!important}
+ #banker-call .banker-call-portrait{min-height:0!important}
+ #banker-call .broadcast-offer-math{padding:6px 9px!important}
+ #banker-call .banker-call-quote{padding:7px!important}
+ #banker-call .banker-call-actions button{min-height:43px!important}
+}
+
+/* Last offer can show both the case comparison and the mathematical overview. */
+@media(min-width:761px) and (min-height:541px){
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .final-choice-compare{grid-row:7}
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .broadcast-offer-math{grid-row:8}
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-vote-progress{grid-row:9}
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-actions,
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-wait{grid-row:10}
+}
