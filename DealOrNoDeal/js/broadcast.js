@@ -1,0 +1,102 @@
+'use strict';
+/* Goldstudio Broadcast V2. Public, read-only show graphics; never sends commands. */
+(() => {
+  const stage = document.querySelector('.case-stage');
+  const feed = document.querySelector('#banker-call .banker-call-portrait');
+  const call = document.getElementById('banker-call');
+  if (!stage || !feed || !call) return;
+
+  const strap = document.createElement('div');
+  strap.className = 'broadcast-strap';
+  strap.innerHTML =
+    '<div class="broadcast-identity"><span class="broadcast-emblem">✦</span><span>GOLDSTUDIO <small>PRIMETIME</small></span></div>' +
+    '<div class="broadcast-ticker" id="broadcast-ticker">26 Koffer. Eine große Entscheidung.</div>' +
+    '<span class="broadcast-stakes" id="broadcast-stakes">● LIVE</span>';
+  stage.insertBefore(strap, stage.querySelector('.cases'));
+
+  const feedLabels = document.createElement('div');
+  feedLabels.className = 'broadcast-feed-labels';
+  feedLabels.setAttribute('aria-hidden', 'true');
+  feedLabels.innerHTML =
+    '<div class="broadcast-feed-top"><b><span class="broadcast-feed-dot"></span> LIVE</b><span>EXKLUSIV · BANKBÜRO</span></div>' +
+    '<span class="broadcast-feed-bottom">DIREKTLEITUNG 01 <i>▂▄▆▄▂</i></span>';
+  feed.append(feedLabels);
+
+  const offerMath = document.createElement('div');
+  offerMath.id = 'broadcast-offer-math';
+  offerMath.className = 'broadcast-offer-math';
+  offerMath.setAttribute('aria-label', 'Einordnung des Bankangebots');
+  offerMath.hidden = true;
+  offerMath.innerHTML =
+    '<div class="broadcast-math-title">📊 DIE ZAHLEN HINTER DEM DEAL</div>' +
+    '<div class="broadcast-math-grid">' +
+    '<div><span>Durchschnitt der unbekannten Beträge</span><strong id="broadcast-math-average">–</strong></div>' +
+    '<div><span>Bankangebot im Vergleich</span><strong id="broadcast-math-ratio">–</strong></div>' +
+    '</div><p id="broadcast-math-note">Rechnerische Orientierung, keine Gewinnprognose.</p>';
+  const callSub = document.getElementById('banker-call-sub');
+  if (callSub) callSub.insertAdjacentElement('afterend', offerMath);
+
+  const $ = id => document.getElementById(id);
+  const currency = amount => typeof eur === 'function'
+    ? eur(amount)
+    : (amount / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+  let previousKey = '';
+  function update() {
+    if (document.hidden) return;
+    const game = typeof g === 'undefined' ? null : g;
+    const openedAmounts = Array.isArray(game?.openedAmounts) ? game.openedAmounts : [];
+    const stateKey = String(game?.id || 'none') + ':' + String(game?.revision ?? '-') + ':' + String(game?.phase || '');
+    if (previousKey === stateKey) return;
+    previousKey = stateKey;
+    const opened = new Set(openedAmounts.map(item => item.amount));
+    const scale = typeof values === 'undefined' ? [] : values;
+    const remaining = scale.filter(value => !opened.has(value));
+    const count = remaining.length;
+    const largest = count ? Math.max(...remaining) : 0;
+    const highCount = remaining.filter(v => v >= 100000000).length; // At least one million euros, values are cents.
+    const phase = game?.phase || 'waiting';
+
+    let headline;
+    if (!game) headline = 'Willkommen zur großen Koffershow!';
+    else if (phase === 'select') headline = 'Wählt euren persönlichen Glückskoffer!';
+    else if (phase === 'reveal') headline = 'Achtung: Der nächste Koffer öffnet sich!';
+    else if (phase === 'decision') headline = '☎ Der Banker ist in der Leitung – Deal oder No Deal?';
+    else if (phase === 'final') headline = '🏆 Das große Finale – jetzt fällt die Entscheidung!';
+    else if (phase === 'open') {
+      headline = highCount
+        ? highCount + ' Millionenbeträge sind noch im Rennen!'
+        : 'Jetzt entscheidet jeder Koffer über das Finale!';
+    } else headline = 'Goldstudio · Deine große Show';
+    const ticker = $('broadcast-ticker');
+    if (ticker && ticker.textContent !== headline) {
+      ticker.textContent = headline;
+      ticker.classList.remove('broadcast-reel');
+      void ticker.offsetWidth;
+      ticker.classList.add('broadcast-reel');
+    }
+    const stakes = $('broadcast-stakes');
+    if (stakes) stakes.textContent = game
+      ? (phase === 'decision' ? '☎ BANKER LIVE' : phase === 'final' ? '★ FINALE' : '★ TOP ' + currency(largest))
+      : '● LIVE';
+    document.body.classList.toggle('broadcast-bank-live', phase === 'decision');
+    document.body.classList.toggle('broadcast-finale', phase === 'final');
+    document.body.classList.toggle('broadcast-high-risk', phase !== 'final' && count > 0 && count <= 5);
+    document.body.classList.toggle('broadcast-modal-active', phase === 'decision' || phase === 'final');
+
+    if (!offerMath.isConnected) return;
+    if (phase !== 'decision' || !Number.isFinite(game.offer) || count === 0) {
+      offerMath.hidden = true;
+      return;
+    }
+    const avg = remaining.reduce((sum, amount) => sum + amount, 0) / count;
+    const ratio = avg > 0 ? game.offer / avg * 100 : 0;
+    $('broadcast-math-average').textContent = currency(avg);
+    $('broadcast-math-ratio').textContent = ratio.toLocaleString('de-DE', { maximumFractionDigits: 0 }) + ' %';
+    $('broadcast-math-note').textContent = count + ' unbekannte Beträge · ' +
+      highCount + ' davon mindestens 1 Mio. € · Der Durchschnitt ist keine Garantie.';
+    offerMath.hidden = false;
+  }
+  update();
+  window.setInterval(update, 850);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { previousKey = ''; update(); } });
+})();
