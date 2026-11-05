@@ -19,7 +19,7 @@ function makeFixture() {
   const ids = new Map();
   for (const name of ['banker-call', 'banker-call-sub', 'broadcast-ticker',
     'broadcast-stakes', 'broadcast-math-average', 'broadcast-math-ratio',
-    'broadcast-math-note', 'broadcast-trend', 'broadcast-odds', 'broadcast-odds-title', 'broadcast-odds-value', 'broadcast-odds-fill']) {
+    'broadcast-math-note', 'broadcast-trend', 'broadcast-odds', 'broadcast-odds-title', 'broadcast-odds-value', 'broadcast-odds-fill', 'broadcast-pressure-fill', 'broadcast-pressure-caption']) {
     ids.set(name, {
       isConnected: true, hidden: false, textContent: '', dataset: {}, style: {}, classList: makeClasses(),
       insertAdjacentElement() {}
@@ -142,4 +142,21 @@ test('risk meter derives exact public probability and hides outside opening', ()
   refresh();
   assert.equal(ids.get('broadcast-odds-value').textContent,'0 %');
   assert.equal(ids.get('broadcast-odds').dataset.risk,'low');
+});
+
+test('offer-strength gauge clamps to its 200 percent scale without changing game state', () => {
+  const {context, ids, refresh} = makeFixture();
+  const game = {id:'pressure', revision:1, phase:'decision', offer:100,
+    openedAmounts:[{case:0,amount:100}], history:[{round:1,offer:100}]};
+  context.g = game;
+  refresh();
+  assert.equal(ids.get('broadcast-pressure-fill').style.width,'12.50%');
+  assert.equal(ids.get('broadcast-pressure-fill').dataset.pressure,'low');
+  assert.match(ids.get('broadcast-pressure-caption').textContent,/POKERT/);
+  context.g = {...game, revision:2, offer:800};
+  refresh();
+  assert.equal(ids.get('broadcast-pressure-fill').style.width,'100.00%');
+  assert.equal(ids.get('broadcast-pressure-fill').dataset.pressure,'high');
+  assert.match(ids.get('broadcast-pressure-caption').textContent,/ERNST/);
+  assert.equal(game.offer,100, 'The original game state must remain unchanged');
 });
