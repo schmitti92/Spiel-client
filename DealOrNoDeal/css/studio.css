@@ -39,7 +39,7 @@
 .player .candidate-avatar{background-color:#132747!important;background-image:var(--candidate-image)!important;background-position:center 17%!important;background-repeat:no-repeat!important;background-size:cover!important;border:2px solid #e8c17e;box-shadow:0 4px 16px #000a,inset 0 1px #fff3c0}
 .player .candidate-avatar:after{display:none!important}
 .player:nth-child(2) .candidate-avatar,.player:nth-child(3) .candidate-avatar,.player:nth-child(4) .candidate-avatar{background-image:var(--candidate-image)!important}
-.bank .banker{background-image:linear-gradient(180deg,#05172b00,#08152b88),url('assets/banker.svg')!important;background-position:center!important;background-repeat:no-repeat!important;background-size:contain!important}
+.bank .banker{background-image:linear-gradient(180deg,#05172b00,#08152b88),url('../assets/banker.svg')!important;background-position:center!important;background-repeat:no-repeat!important;background-size:contain!important}
 .bank .banker:before,.bank .banker:after{display:none!important}
 .bank .banker{filter:drop-shadow(0 0 15px #5f9bcc44)}
 .player.turn .candidate-avatar{border-color:#ffe6a7;box-shadow:0 0 22px #ffd47b9a}
@@ -108,7 +108,7 @@ body.offer-moment .player.turn{box-shadow:0 0 32px #ffce8f9e}
 @media(max-width:760px){.money span{font-size:9px}.case.opened .case-amount{font-size:8px;letter-spacing:-.65px}}
 
 /* V15 clean gold television studio image behind interactive controls */
-body{background-color:#071329!important;background-image:linear-gradient(180deg,#07132955 0%,#07132926 48%,#071329a0 100%),url('assets/studio-background.svg')!important;background-position:center top!important;background-size:cover!important;background-repeat:no-repeat!important;background-attachment:fixed!important}
+body{background-color:#071329!important;background-image:linear-gradient(180deg,#07132955 0%,#07132926 48%,#071329a0 100%),url('../assets/studio-background.svg')!important;background-position:center top!important;background-size:cover!important;background-repeat:no-repeat!important;background-attachment:fixed!important}
 header{background:linear-gradient(90deg,#050b1de8,#142544dc 48%,#050b1de8)!important;backdrop-filter:blur(6px)}
 .panel{background:linear-gradient(150deg,#152a49ed 0%,#0b1b35e6 45%,#06132be9 100%)!important;backdrop-filter:blur(2px)}
 .panel:nth-child(2){background:linear-gradient(145deg,#0b1933e8,#07142ddc)!important}
@@ -118,7 +118,7 @@ header{background:linear-gradient(90deg,#050b1de8,#142544dc 48%,#050b1de8)!impor
 @media(max-width:900px){body{background-attachment:scroll!important;background-position:center top!important;background-size:auto 100vh!important}}
 
 /* V16: photographic background layer with safe vector fallback until image is uploaded */
-body{background-image:linear-gradient(180deg,#07132936 0%,#07132916 45%,#07132970 100%),url('assets/1000029058.png'),url('assets/studio-background.svg')!important;background-position:center top,center center,center top!important;background-size:cover,cover,cover!important;background-repeat:no-repeat!important;background-attachment:fixed!important}
+body{background-image:linear-gradient(180deg,#07132936 0%,#07132916 45%,#07132970 100%),url('../assets/1000029058.png'),url('../assets/studio-background.svg')!important;background-position:center top,center center,center top!important;background-size:cover,cover,cover!important;background-repeat:no-repeat!important;background-attachment:fixed!important}
 .panel{background:linear-gradient(150deg,#152a49f0 0%,#0b1b35e9 45%,#06132bec 100%)!important}
 .panel:nth-child(2){background:linear-gradient(145deg,#0b1933ee,#07142de7)!important}
 @media(max-width:900px){body{background-attachment:scroll!important;background-position:center top,center top,center top!important;background-size:cover,auto 100vh,auto 100vh!important}}
@@ -236,7 +236,7 @@ header h1{font-weight:950!important;letter-spacing:.075em;text-shadow:0 2px 0 #6
 
 /* V21 — premium broadcast set inspired by approved visual concept */
 :root{--show-gold:#ffdb81;--show-brass:#bc7826;--show-blue:#061329;--show-electric:#1373e4}
-body{color:#fff0c9!important;background-image:linear-gradient(180deg,#0108183b,#07132c44 56%,#0409158c),url('assets/1000029058.png')!important;background-size:cover,cover!important;background-position:center center!important}
+body{color:#fff0c9!important;background-image:linear-gradient(180deg,#0108183b,#07132c44 56%,#0409158c),url('../assets/1000029058.png')!important;background-size:cover,cover!important;background-position:center center!important}
 header{background:linear-gradient(90deg,#030916ed,#0a1b38b8 48%,#030916ed)!important;border-bottom:2px solid #f9c16a!important}
 header h1{font-size:clamp(22px,2.8vw,43px)!important;letter-spacing:.045em!important;background:linear-gradient(#fff7d4 5%,#ffe8a0 35%,#d49332 70%,#fff0ba);-webkit-background-clip:text;background-clip:text;color:transparent!important;filter:drop-shadow(0 2px 2px #000);text-shadow:none!important}
 header small{color:#f1d39d!important;letter-spacing:.23em!important}
