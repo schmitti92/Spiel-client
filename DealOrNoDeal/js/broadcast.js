@@ -13,6 +13,14 @@
     '<div class="broadcast-ticker" id="broadcast-ticker">26 Koffer. Eine große Entscheidung.</div>' +
     '<span class="broadcast-stakes" id="broadcast-stakes">● LIVE</span>';
   stage.insertBefore(strap, stage.querySelector('.cases'));
+  // A non-blocking television stinger for a unanimous NO DEAL decision.
+  const stinger = document.createElement('div');
+  stinger.id = 'broadcast-no-deal-stinger';
+  stinger.className = 'broadcast-no-deal-stinger';
+  stinger.hidden = true;
+  stinger.setAttribute('role', 'status');
+  stinger.innerHTML = '<span>🔥 DIE KANDIDATEN BLEIBEN MUTIG</span><strong>ALLE SAGEN NO DEAL!</strong><small>Die Kofferjagd geht weiter …</small>';
+  stage.append(stinger);
 
   const feedLabels = document.createElement('div');
   feedLabels.className = 'broadcast-feed-labels';
@@ -41,7 +49,9 @@
   const currency = amount => typeof eur === 'function'
     ? eur(amount)
     : (amount / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-  let previousKey = '';
+  let previousKey = '', previousPhase = '', previousGameId = '';
+  let noDealTimer = null;
+  const shownNoDeals = new Set();
   function update() {
     if (document.hidden) return;
     const game = typeof g === 'undefined' ? null : g;
@@ -56,6 +66,30 @@
     const largest = count ? Math.max(...remaining) : 0;
     const highCount = remaining.filter(v => v >= 100000000).length; // At least one million euros, values are cents.
     const phase = game?.phase || 'waiting';
+    const lastRound = game?.history?.at(-1);
+    const allRefused = lastRound?.participants?.length > 0 &&
+      lastRound.decisions?.length === lastRound.participants.length &&
+      lastRound.decisions.every(decision => decision.deal === false);
+    const roundKey = String(game?.id || '') + ':' + String(lastRound?.round || '');
+    if (game && game.id === previousGameId && previousPhase === 'decision' &&
+      phase === 'open' && allRefused && !shownNoDeals.has(roundKey)) {
+      shownNoDeals.add(roundKey);
+      stinger.hidden = false;
+      stinger.classList.remove('on-air');
+      void stinger.offsetWidth;
+      stinger.classList.add('on-air');
+      window.clearTimeout(noDealTimer);
+      noDealTimer = window.setTimeout(() => {
+        stinger.hidden = true;
+        stinger.classList.remove('on-air');
+      }, 2200);
+    } else if (phase === 'final' || !game || (game.id !== previousGameId && previousGameId)) {
+      window.clearTimeout(noDealTimer);
+      stinger.hidden = true;
+      stinger.classList.remove('on-air');
+    }
+    previousPhase = phase;
+    previousGameId = game?.id || '';
 
     let headline;
     if (!game) headline = 'Willkommen zur großen Koffershow!';

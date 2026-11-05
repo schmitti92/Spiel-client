@@ -35,6 +35,11 @@
    }else if(phaseName==='final'){
     beep(523,.16);setTimeout(()=>beep(659,.18),220);
     setTimeout(()=>beep(784,.19),450);setTimeout(()=>beep(1047,.42),710);
+   }else if(phaseName==='open'&&lastPhase==='decision'&&
+     game.history?.at(-1)?.decisions?.length===game.history?.at(-1)?.participants?.length&&
+     game.history.at(-1).decisions.every(v=>v.deal===false)){
+    // An original victory-like swell for a unanimous risk-taking decision.
+    beep(440,.11);setTimeout(()=>beep(554,.12),160);setTimeout(()=>beep(740,.26),340);
    }
   }
   if(game&&lastOpened>=0&&opened>lastOpened){
