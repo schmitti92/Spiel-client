@@ -171,3 +171,39 @@ body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
  #banker-call .banker-director-caption{animation:none!important}
  #banker-call #banker-vote-progress-fill{transition:none!important}
 }
+
+/* V8 — the entire 26-amount money ladder remains visible during every banker offer. */
+#banker-call .banker-call-card{grid-template-columns:minmax(155px,.62fr) minmax(0,1.03fr) minmax(0,1.15fr)!important;column-gap:clamp(10px,1.6vw,25px)}
+#banker-call .banker-call-eyebrow:first-child{grid-column:1/-1}
+#banker-call .banker-money-board{grid-column:1;grid-row:2/11;align-self:stretch;min-width:0;display:flex;flex-direction:column;gap:7px;padding:clamp(9px,1.2vw,17px);border:2px solid #dfb76d;border-radius:15px;background:linear-gradient(160deg,#0e2848e8,#06172eea);box-shadow:inset 0 1px #fff1bb40,0 8px 26px #0009;text-align:center}
+#banker-call .banker-money-board h3{font-size:clamp(13px,1.2vw,19px);letter-spacing:.08em;color:#ffe4a2;margin:0}
+#banker-call #banker-money-count{font-size:clamp(10px,.95vw,13px);color:#f4e6c9;margin:0}
+#banker-call .banker-money-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(13,minmax(0,1fr));gap:clamp(2px,.32vw,5px);flex:1;min-height:0}
+#banker-call .banker-money-value{display:flex;align-items:center;justify-content:center;min-width:0;padding:2px 1px;border:1px solid #f1d18a7c;border-radius:5px;background:linear-gradient(100deg,#6a4c25,#c69b50 45%,#715021);color:#fff3d2;font-size:clamp(9px,.8vw,12px);font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .35s,filter .35s,background .35s}
+#banker-call .banker-money-value[data-status="gone"]{background:#122238;color:#8793a2;border-color:#59677c6e;text-decoration:line-through;text-decoration-thickness:2px;opacity:.55;filter:saturate(.2)}
+#banker-call .banker-money-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:5px 9px;font-size:clamp(9px,.75vw,11px);color:#e2d7c5}
+#banker-call .banker-money-legend span{display:flex;align-items:center;gap:4px}
+#banker-call .banker-money-legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+#banker-call .banker-legend-live{background:#d5ac61;border:1px solid #ffde99}
+#banker-call .banker-legend-gone{background:#24344b;border:1px solid #758398}
+#banker-call .banker-call-phone,#banker-call .banker-call-portrait{grid-column:2}
+#banker-call #banker-call-title,#banker-call .banker-call-quote,
+#banker-call .banker-call-eyebrow:not(:first-child),#banker-call .banker-call-amount,
+#banker-call .banker-call-sub,#banker-call .broadcast-offer-math,
+#banker-call .final-choice-compare,#banker-call .banker-vote-progress,
+#banker-call .banker-call-actions,#banker-call .banker-call-wait{grid-column:3}
+@media(max-width:900px) and (min-height:541px) and (min-width:761px){
+ #banker-call .banker-call-card{grid-template-columns:minmax(140px,.65fr) minmax(0,.85fr) minmax(0,1.2fr)!important;column-gap:9px;padding:10px!important}
+ #banker-call .banker-money-board{padding:7px}
+ #banker-call .banker-money-value{font-size:9px}
+}
+@media(max-width:760px),(max-height:540px){
+ #banker-call .banker-call-card{display:flex!important;flex-direction:column!important}
+ #banker-call .banker-money-board{width:100%;flex:none;align-self:stretch;gap:4px;padding:7px}
+ #banker-call .banker-money-board h3{font-size:13px}
+ #banker-call #banker-money-count{font-size:11px}
+ #banker-call .banker-money-list{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto;gap:3px}
+ #banker-call .banker-money-value{min-height:24px;font-size:clamp(9px,2.2vw,12px);padding:3px 1px}
+ #banker-call .banker-money-legend{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){#banker-call .banker-money-value{transition:none!important}}
