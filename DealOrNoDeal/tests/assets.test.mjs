@@ -48,3 +48,15 @@ test('CSS sections are balanced and nonempty', () => {
     assert.equal(comment, false, path);
   }
 });
+
+test('CSS image URLs resolve relative to extracted CSS files', () => {
+  for (const path of css) {
+    const source = readFileSync(resolve(root, path), 'utf8');
+    const urls = [...source.matchAll(/url\\(\\s*(['"]?)(.*?)\\1\\s*\\)/gi)].map(m => m[2].trim());
+    for (const url of urls) {
+      if (/^(?:data:|https?:|#|\\/)/i.test(url)) continue;
+      const target = url.split(/[?#]/)[0];
+      assert.ok(existsSync(resolve(root, 'css', target)), `${path}: broken CSS image URL ${url}`);
+    }
+  }
+});
