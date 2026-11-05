@@ -136,3 +136,16 @@ body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
  #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-actions,
  #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-wait{grid-row:10}
 }
+
+/* V6: broadcaster's offer-strength gauge. 50% track marks the unknown-value average. */
+.broadcast-offer-pressure{margin:9px 0 0;padding:9px 10px 6px;background:linear-gradient(110deg,#091b32e0,#1b2944a6);border:1px solid #e2c28b57;border-radius:10px}
+.broadcast-pressure-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;color:#ead3a4;font-size:clamp(10px,1vw,13px);font-weight:900;letter-spacing:.05em}
+.broadcast-pressure-heading strong{color:#fff0b9;font-size:clamp(10px,1vw,12px);text-align:right}
+.broadcast-pressure-track{height:clamp(12px,1.6vw,18px);margin:8px 0 3px;position:relative;border-radius:20px;border:1px solid #ffffff44;background:linear-gradient(90deg,#c45044aa,#c4a65b88 50%,#62c9a28a);box-shadow:inset 0 2px 7px #0009;overflow:visible}
+.broadcast-pressure-track>span{display:block;width:0;height:100%;border-radius:20px;background:linear-gradient(90deg,#ffbd7e,#fff0bd);box-shadow:0 0 12px #fbd58fa1,inset 0 2px #fff9;transition:width .65s cubic-bezier(.2,.8,.2,1)}
+.broadcast-pressure-track>span[data-pressure="low"]{background:linear-gradient(90deg,#ff7a65,#ffc397)}
+.broadcast-pressure-track>span[data-pressure="high"]{background:linear-gradient(90deg,#8ad6ac,#d9ffd8)}
+.broadcast-pressure-marker{position:absolute;top:-4px;bottom:-4px;left:50%;border-left:2px dashed #ffffffde;filter:drop-shadow(0 1px 2px #000)}
+.broadcast-pressure-labels{display:flex;justify-content:space-between;color:#cad4e1;font-size:9px;gap:3px}
+@media(max-width:760px){.broadcast-offer-pressure{padding:6px 8px 4px;margin-top:5px}.broadcast-pressure-heading{font-size:10px}.broadcast-pressure-labels{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.broadcast-pressure-track>span{transition:none}}

@@ -43,7 +43,11 @@
     '<div class="broadcast-math-grid">' +
     '<div><span>Durchschnitt der unbekannten Beträge</span><strong id="broadcast-math-average">–</strong></div>' +
     '<div><span>Bankangebot im Vergleich</span><strong id="broadcast-math-ratio">–</strong></div>' +
-    '</div><div class="broadcast-trend" id="broadcast-trend">☎ Das erste Angebot ist da!</div>' +
+    '</div><div class="broadcast-offer-pressure" aria-label="Vergleich des Angebots mit dem Durchschnitt">' +
+    '<div class="broadcast-pressure-heading"><span>ANGEBOTSKRAFT</span><strong id="broadcast-pressure-caption">Berechnung läuft …</strong></div>' +
+    '<div class="broadcast-pressure-track"><span id="broadcast-pressure-fill"></span><i class="broadcast-pressure-marker" title="100 % des Durchschnitts"></i></div>' +
+    '<div class="broadcast-pressure-labels"><span>0 %</span><span>100 % = Durchschnitt</span><span>200 %+</span></div></div>' +
+    '<div class="broadcast-trend" id="broadcast-trend">☎ Das erste Angebot ist da!</div>' +
     '<p id="broadcast-math-note">Rechnerische Orientierung, keine Gewinnprognose.</p>';
   const callSub = document.getElementById('banker-call-sub');
   if (callSub) callSub.insertAdjacentElement('afterend', offerMath);
@@ -73,13 +77,13 @@
     const oddsTitle = $('broadcast-odds-title');
     const oddsValue = $('broadcast-odds-value');
     const oddsFill = $('broadcast-odds-fill');
-    // Conditional probability only: the next random unopened case, not any selected personal case.
+    // Share of all still unknown amounts, including personal cases; not a prediction for a specific selectable case.
     const canOpen = game && (phase === 'open' || phase === 'reveal') && count > 0;
     if (oddsPanel && oddsTitle && oddsValue && oddsFill) {
       oddsPanel.hidden = !canOpen;
       if (canOpen) {
         const probability = highCount / count * 100;
-        oddsTitle.textContent = 'RISIKO: ≥ 1 MIO. €';
+        oddsTitle.textContent = 'ANTEIL ≥ 1 MIO. €';
         oddsValue.textContent = probability.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' %';
         oddsFill.style.width = probability.toFixed(2) + '%';
         oddsPanel.dataset.risk = probability >= 50 ? 'high' : probability >= 20 ? 'medium' : 'low';
@@ -163,6 +167,15 @@
     }
     const mood = ratio < 35 ? 'poker' : ratio >= 80 ? 'generous' : 'calculating';
     feed.dataset.bankerMood = mood;
+    const pressure = $('broadcast-pressure-fill');
+    const pressureCaption = $('broadcast-pressure-caption');
+    if (pressure && pressureCaption) {
+      pressure.style.width = Math.max(0, Math.min(100, ratio / 2)).toFixed(2) + '%';
+      pressure.dataset.pressure = ratio < 35 ? 'low' : ratio < 80 ? 'medium' : 'high';
+      pressureCaption.textContent = ratio < 35 ? 'DER BANKER POKERT HART'
+        : ratio < 80 ? 'EIN ANGEBOT ZUM NACHDENKEN'
+        : 'DER BANKER MACHT ERNST';
+    }
     $('broadcast-math-average').textContent = currency(avg);
     $('broadcast-math-ratio').textContent = ratio.toLocaleString('de-DE', { maximumFractionDigits: 0 }) + ' %';
     $('broadcast-math-note').textContent = count + ' unbekannte Beträge · ' +
