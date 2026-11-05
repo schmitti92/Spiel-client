@@ -47,7 +47,7 @@ function cardArtwork(card,owned){
  number:'<circle cx="90" cy="96" r="61" fill="'+deep+'" stroke="'+light+'" stroke-width="5"/><text x="90" y="128" font-size="95" font-weight="900" text-anchor="middle" fill="'+light+'">7</text>'
  };
  const stars=Array.from({length:12},(_,i)=>{const x=(i*47+19)%175+3,y=(i*31+11)%170+3;return '<circle cx="'+x+'" cy="'+y+'" r="'+(i%3===0?2:1)+'" fill="'+light+'" opacity=".65"/>'}).join('');
- const svg='<svg class="card-svg" viewBox="0 0 180 180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="artGlow"><stop stop-color="'+deep+'" stop-opacity=".8"/><stop offset="1" stop-color="#060e20" stop-opacity=".2"/></radialGradient></defs><circle cx="90" cy="90" r="86" fill="url(#artGlow)"/>'+stars+'<circle cx="90" cy="95" r="71" fill="none" stroke="'+light+'" stroke-opacity=".25"/>'+shapes[kind]+'</svg>';
+ const gradientId='artGlow-'+card.id;const svg='<svg class="card-svg" viewBox="0 0 180 180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="'+gradientId+'"><stop stop-color="'+deep+'" stop-opacity=".8"/><stop offset="1" stop-color="#060e20" stop-opacity=".2"/></radialGradient></defs><circle cx="90" cy="90" r="86" fill="url(#'+gradientId+')"/>'+stars+'<circle cx="90" cy="95" r="71" fill="none" stroke="'+light+'" stroke-opacity=".25"/>'+shapes[kind]+'</svg>';
  const holder=document.createElement('span');holder.className='card-vector';holder.innerHTML=svg;
  if(!owned)holder.setAttribute('aria-hidden','true');
  return holder;
