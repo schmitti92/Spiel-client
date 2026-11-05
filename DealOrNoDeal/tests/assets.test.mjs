@@ -60,3 +60,28 @@ test('CSS image URLs resolve relative to extracted CSS files', () => {
     }
   }
 });
+
+test('static DOM references point to real HTML elements', () => {
+  const ids = new Set([...html.matchAll(/\\bid="([^"]+)"/g)].map(m => m[1]));
+  const source = js.map(path => readFileSync(resolve(root, path), 'utf8')).join('\\n');
+  for (const match of source.matchAll(/\\$\\('([^']+)'\\)(\\?\\.)?/g)) {
+    // Optional chaining intentionally supports elements created later by scripts.
+    if (match[2]) continue;
+    assert.ok(ids.has(match[1]), `Missing HTML id: ${match[1]}`);
+  }
+});
+
+test('game scripts contain exactly one copy of each declared function', () => {
+  const names = new Map();
+  for (const path of js) {
+    const source = readFileSync(resolve(root, path), 'utf8');
+    for (const match of source.matchAll(/(?:^|\\n)(?:async )?function\\s+([A-Za-z_$][\\w$]*)/g)) {
+      const name = match[1];
+      assert.ok(!names.has(name), `Duplicate function ${name} in ${path} and ${names.get(name)}`);
+      names.set(name, path);
+    }
+  }
+  for (const required of ['makeCase', 'directorReveal', 'bankerPhrase', 'updateBankerCall', 'startFinaleCinema', 'announceScene', 'showCandidateCutaway', 'render', 'poll']) {
+    assert.ok(names.has(required), `Missing game function: ${required}`);
+  }
+});
