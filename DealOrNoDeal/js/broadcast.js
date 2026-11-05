@@ -56,6 +56,35 @@
   const currency = amount => typeof eur === 'function'
     ? eur(amount)
     : (amount / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+  // Mirror the public money ladder in the full-stage banker window.
+  // The original game board remains in place; hidden case assignments are never read.
+  const moneyBoard = $('banker-money-board');
+  const moneyList = $('banker-money-list');
+  const moneyCount = $('banker-money-count');
+  const moneyCells = new Map();
+  if (moneyBoard && moneyList && typeof values !== 'undefined') {
+    for (const amount of values) {
+      const cell = document.createElement('span');
+      cell.className = 'banker-money-value';
+      cell.textContent = currency(amount);
+      cell.dataset.amount = String(amount);
+      cell.dataset.status = 'live';
+      moneyList.append(cell);
+      moneyCells.set(amount, cell);
+    }
+  }
+  function updateMoneyBoard(openedAmounts) {
+    if (!moneyBoard || !moneyList || !moneyCount) return;
+    const removed = new Set(openedAmounts.map(entry => entry.amount));
+    let remainingCount = 0;
+    for (const [amount, cell] of moneyCells) {
+      const isGone = removed.has(amount);
+      cell.dataset.status = isGone ? 'gone' : 'live';
+      cell.setAttribute('aria-label', currency(amount) + (isGone ? ', ausgeschieden' : ', noch im Spiel'));
+      if (!isGone) remainingCount++;
+    }
+    moneyCount.textContent = remainingCount + ' von ' + moneyCells.size + ' Beträgen noch im Spiel';
+  }
   let previousKey = '', previousPhase = '', previousGameId = '';
   let noDealTimer = null;
   const shownNoDeals = new Set();
@@ -66,6 +95,7 @@
     const stateKey = String(game?.id || 'none') + ':' + String(game?.revision ?? '-') + ':' + String(game?.phase || '');
     if (previousKey === stateKey) return;
     previousKey = stateKey;
+    updateMoneyBoard(openedAmounts);
     const opened = new Set(openedAmounts.map(item => item.amount));
     const scale = typeof values === 'undefined' ? [] : values;
     const remaining = scale.filter(value => !opened.has(value));
