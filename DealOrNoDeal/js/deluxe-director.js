@@ -29,10 +29,25 @@
   document.body.classList.toggle('deluxe-climax',opened>=23);
   document.body.classList.toggle('deluxe-decision',phaseName==='decision');
   if(game&&lastPhase&&phaseName!==lastPhase){
-   if(phaseName==='decision'){beep(540,.22);setTimeout(()=>beep(760,.3),260)}
-   else if(phaseName==='final'){beep(660,.2);setTimeout(()=>beep(880,.35),260)}
+   if(phaseName==='decision'){
+    // Original three-note incoming call. Sound remains opt-in.
+    beep(392,.16);setTimeout(()=>beep(523,.18),220);setTimeout(()=>beep(659,.3),470);
+   }else if(phaseName==='final'){
+    beep(523,.16);setTimeout(()=>beep(659,.18),220);
+    setTimeout(()=>beep(784,.19),450);setTimeout(()=>beep(1047,.42),710);
+   }
   }
-  if(game&&lastOpened>=0&&opened>lastOpened){beep(360,.18)}
+  if(game&&lastOpened>=0&&opened>lastOpened){
+   const amount=game.openedAmounts?.at(-1)?.amount;
+   if(amount>=100000000){
+    // A million-euro amount has been eliminated.
+    beep(440,.16);setTimeout(()=>beep(330,.24),200);
+    setTimeout(()=>beep(220,.37),460);
+   }else if(Number.isFinite(amount)&&amount<=7500){
+    // The big-money amounts have survived this reveal.
+    beep(587,.12);setTimeout(()=>beep(784,.21),175);
+   }else beep(360,.18);
+  }
   lastPhase=phaseName;lastOpened=opened;
  }
  tick();setInterval(()=>{if(!document.hidden)tick()},500);
