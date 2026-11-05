@@ -228,3 +228,8 @@ main{padding-top:clamp(5px,1vw,12px)!important}
  #players .player .candidate-status{font-size:12px}
  #players .player .personalcase{font-size:11px}
 }
+
+/* V66 — use real image elements for reliable avatar rendering. */
+#players .player .candidate-avatar img.candidate-photo{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center 18%;z-index:1;opacity:1;visibility:visible;pointer-events:none}
+#players .player .candidate-avatar .avatar-portrait{display:none!important}
+@media(max-width:700px){#players .player .candidate-avatar img.candidate-photo{object-position:center 15%}}
