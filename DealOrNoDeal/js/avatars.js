@@ -8,7 +8,7 @@ function showCandidateCutaway(kind,caption,duration=2650){
  const panel=$('candidate-cutaway');if(!panel)return;
  clearTimeout(candidateCutawayTimer);const token=++candidateCutawayToken;
  panel.dataset.mood=kind;
- $('candidate-cutaway-portrait').style.backgroundImage="url('assets/avatar-"+avatarNumber+".svg?v=57')";
+ $('candidate-cutaway-portrait').style.backgroundImage="url('assets/"+(avatarNumber===1?'stromberg-avatar.webp':'avatar-'+avatarNumber+'.svg')+"')";
  $('candidate-cutaway-name').textContent=current.name;
  $('candidate-cutaway-caption').textContent=caption;
  $('candidate-cutaway-kicker').textContent=kind==='shock'?'● LIVE · SCHOCKREAKTION':kind==='cheer'?'● LIVE · ERLEICHTERUNG':'● LIVE · KANDIDATENREAKTION';
