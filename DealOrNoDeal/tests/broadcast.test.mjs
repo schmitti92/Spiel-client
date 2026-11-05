@@ -19,15 +19,15 @@ function makeFixture() {
   const ids = new Map();
   for (const name of ['banker-call', 'banker-call-sub', 'broadcast-ticker',
     'broadcast-stakes', 'broadcast-math-average', 'broadcast-math-ratio',
-    'broadcast-math-note']) {
+    'broadcast-math-note', 'broadcast-trend']) {
     ids.set(name, {
-      isConnected: true, hidden: false, textContent: '', classList: makeClasses(),
+      isConnected: true, hidden: false, textContent: '', dataset: {}, classList: makeClasses(),
       insertAdjacentElement() {}
     });
   }
   let insertions = 0;
   const stage = {querySelector: () => ({}), insertBefore() {insertions++}};
-  const feed = {append() {insertions++}};
+  const feed = {dataset: {}, append() {insertions++}};
   const callbacks = [];
   const document = {
     hidden: false,
@@ -36,7 +36,7 @@ function makeFixture() {
       : key === '#banker-call .banker-call-portrait' ? feed : null,
     getElementById: id => ids.get(id) || null,
     createElement: () => ({
-      innerHTML: '', hidden: false, isConnected: true, classList: makeClasses(),
+      innerHTML: '', hidden: false, isConnected: true, dataset: {}, classList: makeClasses(),
       setAttribute() {}
     }),
     addEventListener() {}
@@ -46,7 +46,7 @@ function makeFixture() {
   vm.runInNewContext(script, context, {timeout: 1000});
   assert.equal(insertions, 2, 'The stage strap and the banker feed must be initialized');
   assert.equal(callbacks.length, 1);
-  return {context, ids, classes, refresh: callbacks[0]};
+  return {context, ids, classes, feed, refresh: callbacks[0]};
 }
 
 test('the banker comparison uses public remaining amounts and respects the phase', () => {
@@ -74,4 +74,24 @@ test('hidden case assignments never enter the broadcast copy', () => {
   const copy = [ids.get('broadcast-ticker').textContent,ids.get('broadcast-stakes').textContent].join(' ');
   assert.doesNotMatch(copy, /Koffer 1|case 0|case 2/);
   assert.match(copy, /Noch|Koffer|Goldstudio|Millionen|entscheidet/i);
+});
+
+test('banker quote presentation reacts to increased, reduced, and generous offers', () => {
+  const {context, ids, feed, refresh} = makeFixture();
+  context.g = {id:'offer', revision:1, phase:'decision', openedAmounts:[{case:1,amount:100}],
+    offer:200, history:[{offer:100},{offer:200}]};
+  refresh();
+  assert.equal(ids.get('broadcast-trend').dataset.direction, 'up');
+  assert.match(ids.get('broadcast-trend').textContent, /100 %/);
+  assert.equal(feed.dataset.bankerMood, 'calculating');
+
+  context.g = {...context.g, revision:2, offer:100, history:[{offer:200},{offer:100}]};
+  refresh();
+  assert.equal(ids.get('broadcast-trend').dataset.direction, 'down');
+  assert.equal(feed.dataset.bankerMood, 'poker');
+
+  context.g = {...context.g, revision:3, offer:400, history:[{offer:100},{offer:400}]};
+  refresh();
+  assert.equal(ids.get('broadcast-trend').dataset.direction, 'up');
+  assert.equal(feed.dataset.bankerMood, 'generous');
 });
