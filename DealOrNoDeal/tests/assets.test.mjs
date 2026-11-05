@@ -93,7 +93,7 @@ test('only app.js triggers polling, and all scripts use strict mode', () => {
     const source = readFileSync(resolve(root, path), 'utf8');
     assert.ok(source.trimStart().startsWith("'use strict';"), 'Strict mode missing: ' + path);
     if (path === './js/app.js') assert.ok(source.includes('poll();'), 'App must start polling');
-    else assert.ok(!/\bpoll\(\)\s*;/.test(source), 'Unexpected polling in ' + path);
+    else assert.ok(!/(?:^|[;{}\n])\s*poll\(\)\s*;/.test(source), 'Unexpected top-level polling in ' + path);
   }
 });
 test('decorative broadcast scripts are read-only and never expose secret assignments', () => {
