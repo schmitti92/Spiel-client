@@ -8,37 +8,40 @@ import { execFileSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(resolve(root, 'game.html'), 'utf8');
-const css = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="(\.\/css\/[^"]+)"/g)].map(m => m[1]);
-const js = [...html.matchAll(/<script\s+src="(\.\/js\/[^"]+)"\s*><\/script>/g)].map(m => m[1]);
-const expectedCss = ['foundation', 'studio', 'cases', 'banker', 'avatars', 'effects'].map(n => './css/' + n + '.css');
-const expectedJs = ['core', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'app'].map(n => './js/' + n + '.js');
+const css = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="(\.\/css\/[^"]+)"/g)].map(m => m[1].split('?')[0]);
+const js = [...html.matchAll(/<script\s+src="(\.\/js\/[^"]+)"\s*><\/script>/g)].map(m => m[1].split('?')[0]);
+const expectedCss = ['foundation', 'studio', 'cases', 'banker', 'avatars', 'effects', 'deluxe-director', 'broadcast'].map(n => './css/' + n + '.css');
+const expectedJs = ['core', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'app', 'deluxe-director', 'broadcast'].map(n => './js/' + n + '.js');
 
-test('HTML includes all assets exactly once and in stable order', () => {
+test('HTML assets are complete, unique, and loaded in the intended order', () => {
   assert.deepEqual(css, expectedCss);
   assert.deepEqual(js, expectedJs);
+  assert.equal(new Set([...css, ...js]).size, css.length + js.length);
   assert.ok(html.indexOf('profile-auth.js') < html.indexOf('./js/core.js'));
   assert.ok(!/<style\b/i.test(html));
   assert.ok(!/<script(?![^>]*\bsrc=)[^>]*>/i.test(html));
 });
-test('all referenced local assets exist', () => {
+test('all referenced local CSS and JS assets exist', () => {
   for (const path of [...css, ...js]) assert.ok(existsSync(resolve(root, path)), path);
 });
-test('all game JavaScript files parse as classic scripts', () => {
-  for (const path of js) {
-    const absolute = resolve(root, path);
-    assert.doesNotThrow(() => execFileSync(process.execPath, ['--check', absolute], { stdio: 'pipe' }), path);
-  }
+test('all game JS assets parse as classic scripts', () => {
+  for (const path of js) assert.doesNotThrow(() =>
+    execFileSync(process.execPath, ['--check', resolve(root, path)], {stdio: 'pipe'}), path);
 });
-test('CSS sections are balanced and nonempty', () => {
+test('CSS rules are balanced and nonempty', () => {
   for (const path of css) {
     const source = readFileSync(resolve(root, path), 'utf8');
     assert.ok(source.trim().length > 0, path);
-    // Each split ends at a top-level CSS rule boundary.
     let depth = 0, comment = false, quote = '', escaped = false;
     for (let i = 0; i < source.length; i++) {
       const c = source[i], n = source[i + 1];
       if (comment) { if (c === '*' && n === '/') { comment = false; i++; } continue; }
-      if (quote) { if (escaped) escaped = false; else if (c === '\\') escaped = true; else if (c === quote) quote = ''; continue; }
+      if (quote) {
+        if (escaped) escaped = false;
+        else if (c === '\\') escaped = true;
+        else if (c === quote) quote = '';
+        continue;
+      }
       if (c === '/' && n === '*') { comment = true; i++; continue; }
       if (c === '"' || c === "'") { quote = c; continue; }
       if (c === '{') depth++;
@@ -48,60 +51,55 @@ test('CSS sections are balanced and nonempty', () => {
     assert.equal(comment, false, path);
   }
 });
-
-test('CSS image URLs resolve relative to extracted CSS files', () => {
+test('CSS image paths resolve relative to CSS files', () => {
   for (const path of css) {
     const source = readFileSync(resolve(root, path), 'utf8');
-    const urls = [...source.matchAll(/url\\(\\s*(['"]?)(.*?)\\1\\s*\\)/gi)].map(m => m[2].trim());
-    for (const url of urls) {
-      if (/^(?:data:|https?:|#|\\/)/i.test(url)) continue;
-      const target = url.split(/[?#]/)[0];
-      assert.ok(existsSync(resolve(root, 'css', target)), `${path}: broken CSS image URL ${url}`);
+    for (const match of source.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gi)) {
+      const target = match[2].trim().split(/[?#]/)[0];
+      if (/^(?:data:|https?:|#|\/)/i.test(target)) continue;
+      assert.ok(existsSync(resolve(root, 'css', target)), path + ': missing ' + target);
     }
   }
 });
-
-test('static DOM references point to real HTML elements', () => {
-  const ids = new Set([...html.matchAll(/\\bid="([^"]+)"/g)].map(m => m[1]));
-  const source = js.map(path => readFileSync(resolve(root, path), 'utf8')).join('\\n');
-  for (const match of source.matchAll(/\\$\\('([^']+)'\\)(\\?\\.)?/g)) {
-    // Optional chaining intentionally supports elements created later by scripts.
-    if (match[2]) continue;
-    assert.ok(ids.has(match[1]), `Missing HTML id: ${match[1]}`);
+test('DOM lookups refer to declared or dynamically created IDs', () => {
+  const source = js.map(path => readFileSync(resolve(root, path), 'utf8')).join('\n');
+  const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g), ...source.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
+  for (const match of source.matchAll(/\$\('([^']+)'\)(\?\.)?/g)) {
+    if (!match[2]) assert.ok(ids.has(match[1]), 'Missing DOM id: ' + match[1]);
   }
 });
-
-test('game scripts contain exactly one copy of each declared function', () => {
+test('game functions are not accidentally duplicated', () => {
   const names = new Map();
   for (const path of js) {
     const source = readFileSync(resolve(root, path), 'utf8');
-    for (const match of source.matchAll(/(?:^|\\n)(?:async )?function\\s+([A-Za-z_$][\\w$]*)/g)) {
-      const name = match[1];
-      assert.ok(!names.has(name), `Duplicate function ${name} in ${path} and ${names.get(name)}`);
-      names.set(name, path);
+    for (const match of source.matchAll(/(?:^|\n)(?:async )?function\s+([A-Za-z_$][\w$]*)/g)) {
+      assert.ok(!names.has(match[1]), 'Duplicate ' + match[1] + ' in ' + path);
+      names.set(match[1], path);
     }
   }
-  for (const required of ['makeCase', 'directorReveal', 'bankerPhrase', 'updateBankerCall', 'startFinaleCinema', 'announceScene', 'showCandidateCutaway', 'render', 'poll']) {
-    assert.ok(names.has(required), `Missing game function: ${required}`);
+  for (const fn of ['makeCase', 'directorReveal', 'bankerPhrase', 'updateBankerCall',
+    'startFinaleCinema', 'announceScene', 'showCandidateCutaway', 'render', 'poll']) {
+    assert.ok(names.has(fn), 'Missing function ' + fn);
   }
 });
-
-test('HTML local asset references resolve and have no duplicate script includes', () => {
-  const srcs = [...html.matchAll(/<(?:script|img)\\b[^>]*\\bsrc="([^"]+)"/g)].map(m => m[1]);
-  const hrefs = [...html.matchAll(/<link\\b[^>]*\\bhref="([^"]+)"/g)].map(m => m[1]);
-  assert.equal(new Set(srcs.filter(p => p.endsWith('.js'))).size, srcs.filter(p => p.endsWith('.js')).length);
-  for (const url of [...srcs, ...hrefs]) {
-    if (/^(?:https?:|data:|#|\\/)/i.test(url)) continue;
-    const target = url.split(/[?#]/)[0];
-    assert.ok(existsSync(resolve(root, target)), `Missing HTML asset: ${url}`);
+test('all local HTML source assets exist (including cache-busted paths)', () => {
+  const links = [...html.matchAll(/<(?:script|img|link)\b[^>]*\b(?:src|href)="([^"]+)"/g)]
+    .map(m => m[1]).filter(v => !/^(?:https?:|data:|#|\/)/i.test(v));
+  for (const link of links) assert.ok(existsSync(resolve(root, link.split('?')[0])), 'Missing asset ' + link);
+});
+test('only app.js triggers polling, and all scripts use strict mode', () => {
+  assert.ok(js.includes('./js/app.js'));
+  for (const path of js) {
+    const source = readFileSync(resolve(root, path), 'utf8');
+    assert.ok(source.trimStart().startsWith("'use strict';"), 'Strict mode missing: ' + path);
+    if (path === './js/app.js') assert.ok(source.includes('poll();'), 'App must start polling');
+    else assert.ok(!/\bpoll\(\)\s*;/.test(source), 'Unexpected polling in ' + path);
   }
 });
-
-test('module functions are declared before startup and polling begins only in app.js', () => {
-  const source = js.map(path => readFileSync(resolve(root, path), 'utf8'));
-  assert.ok(source.at(-1).includes('poll();'), 'app.js must start polling');
-  for (const part of source.slice(0, -1)) {
-    assert.ok(!/(?:^|[;{}\\n])\\s*poll\\(\\)\\s*;/.test(part), 'Only app.js may start polling');
+test('decorative broadcast scripts are read-only and never expose secret assignments', () => {
+  for (const name of ['deluxe-director', 'broadcast']) {
+    const source = readFileSync(resolve(root, 'js', name + '.js'), 'utf8');
+    assert.doesNotMatch(source, /\/api\/deal-or-no-deal|request\s*\(\s*['"]POST['"]|action\s*\(\s*['"]/);
+    assert.doesNotMatch(source, /\.finalValues|\.values\s*\[/);
   }
-  for (let i = 0; i < source.length; i++) {\n    assert.ok(source[i].trimStart().startsWith("'use strict';"), `${js[i]} must preserve original strict mode`);\n  }
 });
