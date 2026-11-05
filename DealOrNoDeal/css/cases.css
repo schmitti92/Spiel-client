@@ -1,0 +1,250 @@
+
+.layout{grid-template-columns:minmax(175px,1.03fr) minmax(480px,3.15fr) minmax(175px,1.04fr);gap:12px}
+.panel{background:linear-gradient(155deg,#061b39f4,#061127f2 65%,#030b1bf5)!important;border:2px solid #f3bd63!important;border-radius:23px!important;box-shadow:inset 0 0 0 1px #ffe9a142,0 0 20px #ffb44830,0 12px 30px #000c!important}
+.panel h2{background:linear-gradient(180deg,#112b4e,#020b20)!important;color:#ffe1a0!important;border:1px solid #b88439!important;border-radius:13px!important;box-shadow:inset 0 1px #fff0bf55,0 3px 12px #0008!important;text-transform:uppercase;letter-spacing:.07em!important}
+.panel:nth-child(2){background:linear-gradient(180deg,#07152adf,#030c1cf0)!important;border-color:#ffd887!important}
+.panel:nth-child(2) .cases{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(20% - 5px),#ffdf83 20%,#6e451d calc(20% + 3px),transparent calc(20% + 7px)),radial-gradient(ellipse at 50% 60%,#0e56ac35,transparent 75%)!important;background-color:#06122c8c!important}
+.case-shell{background:linear-gradient(140deg,#fff4c7 0%,#f5c665 15%,#b8731d 38%,#ffe08b 55%,#c7862c 77%,#ffdf91 100%)!important;border:2px solid #ffe6a0!important;border-radius:12px!important;box-shadow:inset 0 2px 4px #fff7cfc9,inset 0 -6px 9px #69390799,0 3px 0 #774518,0 6px 12px #000c,0 0 12px #f6c05b66!important}
+.case:not(:disabled):hover .case-shell{box-shadow:inset 0 2px 4px #fff9d9,0 4px 0 #74471b,0 0 26px #ffe09f!important}
+.case-number{color:#201406!important;font-weight:950!important;text-shadow:0 1px 1px #ffe7a1!important}
+.case.personal .case-shell{background:linear-gradient(150deg,#245789,#071a36)!important;border:2px dashed #91d5ff!important}
+.case.opened .case-shell,.case.revealing .case-shell{background:linear-gradient(145deg,#d7a359,#75431f)!important}
+.money{gap:4px!important}
+.money span{border-radius:7px!important;border:1px solid #2e75b7!important;background:linear-gradient(#0c325e,#04162d)!important;color:#f8f0df!important;box-shadow:inset 0 1px #6aa5e155,0 2px 6px #0009!important}
+.money span:not(.gone):nth-child(n+17){background:linear-gradient(135deg,#d2a04b,#66401d)!important;border-color:#f3d081!important;color:#fff1bb!important}
+.money span.gone{opacity:.22!important}
+.bank .banker{background-color:#07162c!important;border:2px solid #dca753!important;border-radius:15px!important;box-shadow:inset 0 0 20px #000a,0 0 18px #d8a54a44!important}
+.bank .bank-quote{border:1px solid #b68a4e!important;border-radius:13px!important;padding:10px!important;background:linear-gradient(135deg,#0d2241,#030c1d)!important;color:#ffe7b6!important;text-align:center}
+.bank .offer-active{background:linear-gradient(135deg,#5e421d,#14233b)!important;border:2px solid #ffe2a0!important;color:#fff0b7!important}
+.player{border:2px solid #e2aa50!important;border-radius:17px!important;background:linear-gradient(120deg,#081b38f5,#0a1d38ef)!important;box-shadow:inset 0 1px #fff1bd70,0 0 12px #f7b54c30,0 6px 14px #0009!important}
+.player.turn{border-color:#ffe39a!important;background:linear-gradient(120deg,#2c2515f5,#102448f2)!important;box-shadow:0 0 0 2px #f9cf73,0 0 30px #f6b94399!important}
+.player .candidate-avatar{border:2px solid #f2cb79!important;border-radius:13px!important}
+.player .candidate-badge{color:#ffe1a0!important}
+.banker-call-card,.vote-reveal-card{border-color:#ffda83!important;box-shadow:0 0 0 2px #9d632c,0 0 70px #f5bc5d77,0 22px 60px #000d!important}
+.banker-call-amount{background:linear-gradient(#fff6d2,#ffc95c);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+@media(min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+ header{padding:5px 14px!important}
+ header h1{font-size:clamp(19px,2.2vw,30px)!important}
+ .panel h2{font-size:13px!important;padding:6px 3px!important}
+ .cases{padding:13px 5px 7px!important;gap:clamp(4px,.5vw,8px)!important}
+ .case{height:clamp(45px,calc((100dvh - 255px)/5),85px)!important}
+ .money span{padding:2px 1px!important}
+ .bank .bank-quote{padding:5px!important}
+ .player{padding:4px 6px!important}
+}
+@media(max-width:999px){.layout{grid-template-columns:1fr!important}.panel{min-width:0}}
+
+/* V22 — detail pass: legibility, depth, case mechanics, broadcast motion and tablet fit */
+:root{--broadcast-light:#ffe8a7;--broadcast-edge:#b57a31}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.panel{position:relative;isolation:isolate}
+.panel:after{content:"";position:absolute;inset:2px;border:1px solid #ffe6a116;border-radius:19px;pointer-events:none;z-index:0}
+.panel>*{position:relative;z-index:1}
+.panel h2{font-weight:950!important;line-height:1.15!important;text-shadow:0 2px 4px #000d,0 0 10px #f4bf6244!important}
+.panel:nth-child(2) h2{border-color:#ffe09a!important;box-shadow:0 0 15px #f6bf5c2b,inset 0 1px #fff6cc66!important}
+.cases{position:relative}
+.cases:after{content:"";position:absolute;inset:0;border:1px solid #f2be6424;border-radius:12px;pointer-events:none}
+.case{outline-offset:3px}
+.case-shell{overflow:visible}
+.case-lid{background:linear-gradient(150deg,#fff4ca 0%,#eec17b 18%,#b97834 42%,#f9d68d 69%,#a56a2d 100%)!important;box-shadow:inset 0 2px 3px #fff9dfd9,inset 0 -5px 9px #6a3a0c9c,0 2px 4px #0008!important}
+.case-lid:after{content:"";position:absolute;inset:7px;border:1px solid #fff0bc9c;border-radius:6px;pointer-events:none;box-shadow:inset 0 0 0 1px #7e4b1e55}
+.case-handle{background:linear-gradient(90deg,#7e4c1b,#f8d28b 35%,#a87130 70%,#6d3e16)!important;box-shadow:0 -2px 4px #0008,inset 0 1px #fff2bfaa}
+.case-number{font-variant-numeric:tabular-nums;filter:drop-shadow(0 1px 1px #ffe1a1)}
+.case.opened .case-interior{background:radial-gradient(ellipse at center,#fff0bd,#d5a462 62%,#5b3214)!important}
+.case.opened .case-amount{font-size:clamp(9px,1vw,15px)!important;letter-spacing:-.35px!important;line-height:1.05!important}
+.case.personal .case-lid{background:linear-gradient(140deg,#3976a7,#0a2447 70%)!important}
+.case.personal .case-number{color:#a8e6ff!important;text-shadow:0 0 13px #74caff!important}
+.money span{font-variant-numeric:tabular-nums;letter-spacing:-.15px;transition:opacity .35s,filter .35s,background .35s}
+.money span:not(.gone){position:relative}
+.money span:not(.gone):before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#b6d9ff66,transparent)}
+.money span.gone{color:#9da9b8!important;text-decoration-color:#a3a9b0!important}
+.player{overflow:hidden}
+.player:after{content:"";position:absolute;inset:auto -30% -90% -30%;height:120%;background:radial-gradient(ellipse,#d6a55419,transparent 65%);pointer-events:none}
+.player.turn:after{background:radial-gradient(ellipse,#f6c66736,transparent 68%)}
+.player .candidate-name{letter-spacing:.01em;text-shadow:0 2px 3px #0009}
+.player .candidate-avatar{background-size:cover!important;background-position:center top!important}
+.personalcase{border:1px solid #ffe2a0!important;box-shadow:inset 0 1px #fff6d6,0 2px 8px #0008!important}
+.bank #offer{font-variant-numeric:tabular-nums}
+.bank-quote{line-height:1.45!important}
+.banker-call-card{background:radial-gradient(ellipse at 50% 0%,#2b5174 0%,#0d2342 40%,#030b1b 100%)!important}
+.banker-call-quote{box-shadow:inset 0 1px #ffe4a02b,0 4px 15px #0008!important}
+.banker-call-amount{letter-spacing:-.03em;line-height:1.15}
+.banker-call-actions button{box-shadow:inset 0 1px #ffffff77,0 6px 15px #000a!important;transition:transform .15s,filter .15s}
+.banker-call-actions button:not(:disabled):active{transform:translateY(2px)}
+.banker-call-actions button:focus-visible,.vote-reveal-card button:focus-visible,.studio-tool:focus-visible{outline:3px solid #9bdcff;outline-offset:3px}
+.vote-reveal-person{font-variant-numeric:tabular-nums}
+.vote-reveal-person:not(.no-deal){background:linear-gradient(120deg,#36512d,#142c32)!important;border-color:#e7ca79!important}
+.vote-reveal-person.no-deal{background:linear-gradient(120deg,#253a58,#10213b)!important}
+@media(min-width:1000px) and (orientation:landscape) and (max-height:1000px){
+ main{padding-bottom:8px!important}
+ .layout{gap:9px!important}
+ .panel{padding:6px!important}
+ .panel h2{margin:-6px -6px 5px!important}
+ .cases{gap:clamp(4px,.55vw,8px)!important}
+ .case{height:clamp(44px,calc((100dvh - 250px)/5),86px)!important}
+ .case-lid:after{inset:4px}
+ .player{min-height:0!important}
+ .player .candidate-name{font-size:clamp(12px,1.1vw,16px)!important}
+}
+@media(max-height:650px) and (min-width:1000px) and (orientation:landscape){
+ header{padding:3px 12px!important}
+ .showbar{padding:3px 9px!important;margin-bottom:3px!important}
+ .status{padding:4px 9px!important;margin-bottom:3px!important}
+ .case{height:clamp(35px,calc((100dvh - 200px)/5),70px)!important}
+ .players{margin-top:4px!important}
+ .player .candidate-avatar{height:42px!important;width:39px!important}
+ .player{grid-template-columns:40px minmax(0,1fr)!important}
+}
+@media(prefers-reduced-motion:reduce){.money span,.banker-call-actions button{transition:none!important}}
+
+/* V23 — uploaded photorealistic banker artwork */
+.bank .banker{background-image:linear-gradient(180deg,#08182c08 0%,#08182c10 68%,#06132b88 100%),url('assets/banker-goldstudio.png')!important;background-size:cover!important;background-position:44% 45%!important;background-repeat:no-repeat!important;color:transparent!important;text-shadow:none!important;overflow:hidden}
+.banker-call-portrait{width:min(100%,420px);height:clamp(115px,21dvh,190px);margin:8px auto 10px;border:2px solid #f0c77b;border-radius:14px;background:linear-gradient(180deg,#07172a0a,#06132a55),url('assets/banker-goldstudio.png') center 43%/cover no-repeat;box-shadow:inset 0 0 0 2px #ffe3a12c,0 4px 22px #000a,0 0 16px #e3ad4a40}
+@media(min-width:1000px) and (orientation:landscape) and (max-height:850px){.bank .banker{background-position:43% 35%!important}.banker-call-portrait{height:clamp(85px,17dvh,145px)}}
+.final-avatar{height:52px;width:45px;object-fit:cover;border:2px solid #f5cb7b;border-radius:9px;float:left;margin:0 10px 6px 0;box-shadow:0 2px 12px #0008}.candidate-avatar{background-size:cover!important;background-position:center center!important}
+/* V24 — visible live money ladder during banker call and 2-second cinematic reveal */
+.banker-call{background:linear-gradient(90deg,transparent 0%,transparent 19%,#01071555 32%,#010715b8 100%)!important;backdrop-filter:none!important;pointer-events:none!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;padding:clamp(8px,1.5vw,24px)!important}
+.banker-call[hidden]{display:none!important}
+.banker-call-card{pointer-events:auto!important;width:min(680px,calc(100vw - 350px))!important;max-height:89dvh!important;overflow:auto!important;margin-right:clamp(0px,3vw,60px)!important;background:radial-gradient(ellipse at 48% 0%,#2c4b73,#07162e 72%)!important;border:3px solid #ffd789!important;box-shadow:inset 0 0 0 2px #754a1f,0 0 0 1px #ffebaf,0 0 45px #e6ae5377,0 20px 50px #000c!important}
+.banker-call-card:before{content:"☎ LIVE · DER BANKER RUFT AN";display:block;font-size:clamp(11px,1.2vw,16px);letter-spacing:.15em;color:#ffe2a0;font-weight:950;margin:0 auto 5px}
+.banker-call-portrait{width:min(100%,390px)!important;height:clamp(95px,18dvh,170px)!important;border-radius:16px!important;box-shadow:0 0 20px #d9a34b55,inset 0 0 0 1px #fff4c455!important}
+.banker-call-quote{border:2px solid #f0c46c!important;border-radius:17px!important;background:linear-gradient(140deg,#102b51,#06132b)!important;color:#fff0d1!important;box-shadow:inset 0 1px #fff2bc44,0 4px 17px #000a!important}
+.banker-call-amount{font-size:clamp(29px,4.2vw,60px)!important;filter:drop-shadow(0 0 12px #f5b54b55)}
+.banker-call-actions button{border-radius:15px!important;border-color:#f9df9d!important;box-shadow:inset 0 2px #ffffff85,0 0 14px #efba4d50,0 7px 14px #000a!important}
+.vote-reveal{background:#02081669!important;backdrop-filter:blur(2px)!important;pointer-events:none!important;align-items:end!important;padding:clamp(12px,3vh,30px)!important}
+.vote-reveal-card{pointer-events:none!important;width:min(750px,93vw)!important;max-height:48dvh!important;overflow:hidden!important;padding:clamp(12px,2vw,20px)!important;border:3px solid #ffe09a!important;background:linear-gradient(145deg,#17385c,#06152c)!important;box-shadow:0 0 40px #f2bd5a9a,0 12px 35px #000c!important}
+.vote-reveal-card h2{font-size:clamp(17px,2vw,27px)!important;margin:2px 0 8px!important}
+.vote-reveal-list{display:flex!important;flex-wrap:wrap;justify-content:center;gap:8px!important;margin:8px 0!important}
+.vote-reveal-person{flex:1 1 170px;max-width:320px;font-size:clamp(12px,1.25vw,17px)!important;padding:9px!important;border:2px solid #f0c77b!important;box-shadow:inset 0 1px #ffeab366,0 0 12px #e5ae4a44!important}
+.vote-reveal-person strong{font-size:clamp(12px,1.3vw,17px)!important}
+#vote-reveal-close{display:none!important}
+.vote-reveal-countdown{height:5px;background:#09162a;border:1px solid #c99d50;border-radius:12px;overflow:hidden;margin-top:10px}
+.vote-reveal-countdown:after{content:"";display:block;width:100%;height:100%;background:linear-gradient(90deg,#eaa52b,#ffe9a2);animation:vote-two-seconds 2s linear forwards}
+@keyframes vote-two-seconds{to{width:0}}
+@media(max-width:800px){.banker-call{justify-content:center!important;background:#020916ba!important}.banker-call-card{width:min(95vw,680px)!important;margin:0!important}.vote-reveal-card{max-height:65dvh!important}}
+@media(prefers-reduced-motion:reduce){.vote-reveal-countdown:after{animation:none}}
+
+/* V25 — coherent studio design system, contrast and touch polish */
+:root{--tv-ivory:#fff0c7;--tv-gold:#f5c979;--tv-blue:#071a37;--tv-border:#d8a85b}
+header{isolation:isolate;background:linear-gradient(100deg,#071126f7,#122e51f0 55%,#071126f7)!important}
+header small{font-size:clamp(8px,.72vw,12px)!important;letter-spacing:.17em!important}
+.showbar,.status,.panel,.player{backdrop-filter:blur(4px)}
+.showbar{border-radius:15px!important}
+.showbar .round{font-variant-numeric:tabular-nums;white-space:nowrap}
+.studio-tool{min-height:34px;touch-action:manipulation}
+.status{min-height:0!important;color:#fff0d1!important;text-shadow:0 1px 2px #0009}
+.panel{border-width:1.5px!important;background:linear-gradient(150deg,#10284adf,#06152cf2 72%)!important}
+.panel:nth-child(2){background:linear-gradient(180deg,#07172bea,#051329ee)!important}
+.panel h2{font-size:clamp(13px,1.15vw,18px)!important;letter-spacing:.045em!important}
+.money span{font-size:clamp(10px,.88vw,14px)!important;min-width:0!important;line-height:1.1!important;min-height:0!important}
+.money span.gone{opacity:.35!important;text-decoration:line-through;text-decoration-thickness:2px}
+.money span:not(.gone){filter:drop-shadow(0 0 2px #8dcaff15)}
+.cases{align-content:space-evenly;justify-items:stretch;isolation:isolate}
+.case{user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.case:focus-visible{outline:3px solid #9feaff!important;outline-offset:2px}
+.case:not(:disabled):active{transform:scale(.96)!important}
+.case.opened .case-amount{font-size:clamp(9px,.93vw,15px)!important;overflow-wrap:anywhere}
+.case.personal{filter:drop-shadow(0 0 8px #78c7fc5e)}
+.bank .banker{aspect-ratio:1.38/1;min-height:0!important;max-height:clamp(120px,20vh,230px)!important;background-position:center 37%!important}
+.bank #offer{line-height:1.3!important;overflow-wrap:anywhere}
+.bank-quote{font-size:clamp(11px,.9vw,14px)!important;line-height:1.35!important}
+#bank-history summary{cursor:pointer;touch-action:manipulation}
+.players{align-items:stretch}
+.player{min-width:0;transition:border-color .2s,box-shadow .2s}
+.player .candidate-avatar{flex-shrink:0}
+.player .candidate-name{overflow-wrap:anywhere}
+.player.turn{animation:tv-player-pulse 3s ease-in-out infinite}
+@keyframes tv-player-pulse{50%{box-shadow:0 0 0 1px #ffe4a5,0 0 13px #f3bf5e88!important}}
+.banker-call-card{outline:1px solid #ffe6a449;outline-offset:-8px}
+.banker-call-quote{max-width:55ch;margin-inline:auto!important}
+.banker-call-actions button{min-height:52px;touch-action:manipulation}
+.banker-call-wait{color:#fff0cb}
+.vote-reveal-card{border-radius:20px!important}
+.vote-reveal-person{line-height:1.3}
+.final-show{background:linear-gradient(140deg,#0d2444ee,#071226f2)!important;border-color:#f2c778!important}
+.final-rankings{font-variant-numeric:tabular-nums}
+@media(min-width:1000px) and (orientation:landscape) and (max-height:950px){
+ main{padding-top:5px!important}
+ .showbar{margin-bottom:4px!important}
+ .status{padding:5px 10px!important;margin:4px 0!important}
+ .layout{gap:9px!important}
+ .panel{padding:5px!important}
+ .panel h2{margin:-5px -5px 5px!important;padding:6px 4px!important}
+ .cases{padding:11px 6px 6px!important}
+ .case{height:clamp(42px,calc((100dvh - 238px)/5),87px)!important}
+ .money{gap:3px!important}
+ .money span{padding:2px 1px!important}
+ .players{margin-top:7px!important;gap:8px!important}
+ .player{padding:5px!important}
+ .bank .banker{max-height:clamp(105px,18vh,180px)!important}
+}
+@media(max-width:800px){.banker-call{padding:10px!important}.banker-call-card{max-height:92dvh!important}.banker-call-portrait{height:clamp(90px,17dvh,150px)!important}}
+@media(prefers-reduced-motion:reduce){.player.turn{animation:none!important}}
+
+/* V26 — money-board broadcast tally and accessible offer detail */
+.money-summary{font-size:clamp(10px,.84vw,13px);font-weight:850;letter-spacing:.025em;text-align:center;color:#ffe2a0;border:1px solid #bd924b;border-radius:9px;background:linear-gradient(90deg,#0a1b34,#254466,#0a1b34);padding:5px 3px;margin:0 0 7px;font-variant-numeric:tabular-nums}
+.banker-call-sub{color:#ffebc2!important;font-weight:750;line-height:1.5}
+@media(min-width:1000px) and (orientation:landscape) and (max-height:950px){.money-summary{padding:2px 1px!important;margin-bottom:3px!important}}
+
+/* V27 — motion direction: physically opening cases and broadcast telephone entrance */
+.case{perspective:750px;transform-style:preserve-3d}
+.case-shell{transform-style:preserve-3d}
+.case.revealing{animation:tv-case-tension 3.1s ease-in-out both!important;z-index:3}
+.case.revealing .case-lid{transform-origin:50% 10%;backface-visibility:hidden;animation:tv-lid-lift 3.1s cubic-bezier(.25,.75,.25,1) both!important}
+.case.revealing .case-interior{animation:tv-interior-glow 3.1s ease-out both!important}
+.case.revealing .case-amount{animation:tv-value-reveal 3.1s ease-out both!important}
+.case.revealing:after{content:"";position:absolute;inset:-16px;border-radius:16px;border:2px solid #ffeab9;box-shadow:0 0 15px #ffe3a9,0 0 35px #ffc45d;pointer-events:none;animation:tv-case-aura 3.1s ease-out both}
+@keyframes tv-case-tension{0%,12%{transform:scale(1)}22%,34%{transform:scale(1.035) rotate(-1deg)}29%{transform:scale(1.035) rotate(1deg)}42%{transform:scale(1.06)}75%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes tv-lid-lift{0%,36%{transform:perspective(600px) rotateX(0deg)}55%,88%{transform:perspective(600px) rotateX(-112deg) translateY(-5px);filter:brightness(1.18)}100%{transform:perspective(600px) rotateX(-130deg);opacity:0}}
+@keyframes tv-interior-glow{0%,38%{filter:brightness(.55)}56%,78%{filter:brightness(1.7)}100%{filter:brightness(1)}}
+@keyframes tv-value-reveal{0%,42%{opacity:0;transform:scale(.5)}61%{opacity:1;transform:scale(1.28)}79%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+@keyframes tv-case-aura{0%,22%{opacity:0;transform:scale(.94)}43%,64%{opacity:1;transform:scale(1.06)}100%{opacity:0;transform:scale(1.16)}}
+.banker-call:not([hidden]) .banker-call-card{animation:tv-phone-stage-in .6s cubic-bezier(.2,.85,.2,1) both!important}
+.banker-call:not([hidden]) .banker-call-portrait{animation:tv-phone-portrait .75s .12s ease-out both}
+.banker-call:not([hidden]) .banker-call-amount{animation:tv-offer-number .8s .35s cubic-bezier(.18,.89,.3,1.25) both}
+.banker-call:not([hidden]) .banker-call-quote{animation:tv-offer-quote .6s .22s ease-out both}
+.banker-call:not([hidden]) .banker-call-actions{animation:tv-offer-quote .55s .55s ease-out both}
+.banker-call-phone{transform-origin:center 70%;animation:tv-phone-ring 2.5s ease-in-out infinite!important}
+@keyframes tv-phone-stage-in{from{opacity:0;transform:translateX(65px) scale(.94);filter:brightness(.5)}to{opacity:1;transform:translateX(0) scale(1);filter:brightness(1)}}
+@keyframes tv-phone-portrait{from{opacity:0;transform:translateY(-15px);filter:blur(6px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes tv-offer-number{from{opacity:0;transform:scale(.72);filter:blur(5px)}70%{opacity:1;transform:scale(1.06);filter:blur(0)}to{opacity:1;transform:scale(1)}}
+@keyframes tv-offer-quote{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tv-phone-ring{0%,60%,100%{transform:rotate(0)}65%,75%{transform:rotate(-11deg)}70%,80%{transform:rotate(11deg)}}
+@media(prefers-reduced-motion:reduce){.case.revealing,.case.revealing .case-lid,.case.revealing .case-interior,.case.revealing .case-amount,.case.revealing:after,.banker-call:not([hidden]) .banker-call-card,.banker-call:not([hidden]) .banker-call-portrait,.banker-call:not([hidden]) .banker-call-amount,.banker-call:not([hidden]) .banker-call-quote,.banker-call:not([hidden]) .banker-call-actions,.banker-call-phone{animation:none!important}.case.revealing .case-lid{opacity:0!important}}
+
+/* V28 — final broadcast details and no-interaction-obscuring motion */
+.case.opened:not(.revealing) .case-interior{box-shadow:inset 0 7px 13px #3b220caa,0 0 9px #ffde9c24!important}
+.case.opened:not(.revealing) .case-amount{color:#211303!important;text-shadow:0 1px #fff5d3}
+.case:not(.opened):not(.personal):not(:disabled):hover .case-lid{filter:brightness(1.14)}
+.case:not(.opened):not(.personal):not(:disabled):focus-visible .case-lid{filter:brightness(1.2)}
+.banker-call-amount{position:relative;isolation:isolate}
+.banker-call-amount:after{content:"";position:absolute;left:15%;right:15%;bottom:-5px;height:2px;background:linear-gradient(90deg,transparent,#ffdb85,transparent);box-shadow:0 0 12px #ffc965;pointer-events:none}
+.banker-call-actions button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+.banker-call-actions button:not(:disabled):active{transform:scale(.96)}
+.banker-call-actions button:focus-visible{outline:3px solid #b9e8ff;outline-offset:3px}
+.vote-reveal-person{transition:none}
+@media(prefers-reduced-motion:reduce){.banker-call-actions button{transition:none}}
+
+/* V29 — private voting progress, readable banker decision state */
+.banker-vote-progress{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;margin:12px 0 8px;color:#ffe7b0;font-size:clamp(10px,.95vw,13px);font-weight:800}
+.banker-vote-progress-track{height:10px;background:#020b1b;border:1px solid #b18a4c;border-radius:30px;overflow:hidden;box-shadow:inset 0 2px 5px #000a}
+#banker-vote-progress-fill{display:block;height:100%;width:0;background:linear-gradient(90deg,#946121,#ffd780,#fff2c0);box-shadow:0 0 14px #ffda84;transition:width .4s ease}
+#banker-vote-progress-text{font-variant-numeric:tabular-nums;white-space:nowrap}
+.banker-call-actions[hidden],.banker-call-wait[hidden]{display:none!important}
+.banker-call-wait{border-color:#d5ae6b!important;background:linear-gradient(110deg,#102846,#213b59,#102846)!important;color:#ffe7af!important}
+@media(max-width:720px){.banker-vote-progress{grid-template-columns:1fr;gap:5px}}
+@media(prefers-reduced-motion:reduce){#banker-vote-progress-fill{transition:none}}
+
+/* V31 — studio finishing: layered brass edges, clearer states and tablet precision */
+:root{--show-highlight:#fff0b9;--show-shadow:#030916;--show-border:#d3a457}
+.panel{box-shadow:inset 0 1px 0 #fff1bf55,inset 0 0 0 1px #4e391d,0 10px 26px #000a,0 0 18px #d69d3a25!important}
+.panel h2{position:relative;overflow:hidden}
+.panel h2:after{content:"";position:absolute;left:15%;right:15%;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#ffe6a9,transparent);pointer-events:none}
+.money-summary{background:linear-gradient(110deg,#09182d,#1b3859,#09182d)!important;box-shadow:inset 0 1px #fff0bd30!important}
+.money span:not(.gone){text-shadow:0 1px 2px #0009}
+.case:not(:disabled):not(.opened):not(.personal){cursor:pointer}
+.case:not(:disabled):not(.opened):not(.personal):hover{filter:drop-shadow(0 0 8px #ffe1a488)}
+.case.personal .case-shell{box-shadow:inset 0 1px 6px #8fd9ff99,0 0 13px #64b9ff88,0 4px 10px #000b!important}
+.case.opened .case-shell{border-color:#bd945e!important}
+.player.turn{position:relative}
+.player.turn:before{content:"LIVE";position:absolute;right:9px;top:7px;color:#ffe9b2;font-size:9px;letter-spacing:.12em;font-weight:900;text-shadow:0 0 8px #e4b454}

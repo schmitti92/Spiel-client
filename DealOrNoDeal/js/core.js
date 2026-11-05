@@ -1,0 +1,11 @@
+
+'use strict';const $=id=>document.getElementById(id),code=new URLSearchParams(location.search).get('room'),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,''),values=[1,100,500,1000,2500,5000,7500,10000,20000,30000,40000,50000,75000,100000,500000,1000000,2500000,5000000,7500000,10000000,20000000,30000000,40000000,50000000,75000000,100000000],eur=v=>(v/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});let g=null,busy=false,lastReveal=null,revealTimer=null,lastError='';
+$('back').href='lobby.html?room='+encodeURIComponent(code||'');
+function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null}
+function myId(){return user()?.uid||null}
+async function request(method,path,body){let u=user();if(!u)throw Error('Bitte anmelden');let token=await u.getIdToken();let r=await fetch(base+'/api/deal-or-no-deal/'+encodeURIComponent(code)+path,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});let data=await r.json();if(!r.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data}
+function button(label,fn){let b=document.createElement('button');b.className='btn';b.textContent=label;b.disabled=busy;b.onclick=fn;return b}
+async function action(type,extra={}){if(!g||busy)return;busy=true;lastError='';$('status').textContent='⏳ '+(type==='open'?'Koffer wird geöffnet …':'Aktion wird gespeichert …');try{let data=await request('POST','/action',{type,...extra,revision:g.revision,id:crypto.randomUUID()});g=data.game;render()}catch(e){lastError='⚠️ Aktion fehlgeschlagen: '+e.message;await poll();$('status').textContent=lastError}finally{busy=false;render();if(lastError)$('status').textContent=lastError}}
+function turn(){if(!g)return null;for(let i=0;i<g.order.length;i++){let id=g.order[(g.turnIndex+i)%g.order.length];if(g.players.some(p=>p.id===id&&p.deal===null))return id}return null}
+function free(i){return !g.opened.includes(i)&&!g.players.some(p=>p.case===i)}
+function currentDecision(){let h=g?.history?.at(-1);return h?.participants.includes(myId())&&!h.decisions.some(d=>d.id===myId())?myId():null}

@@ -1,0 +1,216 @@
+
+.case .case-lid:before,.case .case-lid:after{bottom:9px!important;width:12px!important;height:15px!important;border-radius:3px!important;background:linear-gradient(90deg,#55320d,#ffe7a2 42%,#88521e)!important;box-shadow:inset 0 1px #fff2c0,0 2px 4px #000b!important}
+.case .case-number{border:2px solid #7e511e;border-radius:7px;min-width:clamp(28px,3vw,47px);min-height:clamp(29px,3vw,41px);font-size:clamp(15px,2vw,28px);background:linear-gradient(145deg,#fff3ca,#e9bd68 50%,#9c692b);box-shadow:inset 0 1px #fff9dc,0 3px 6px #0008;color:#241607}
+.case .case-interior{background:radial-gradient(ellipse at 50% 55%,#d2a35a,#4a301c 72%);border:2px solid #8e6637;box-shadow:inset 0 7px 18px #000c}
+.case .case-amount{font-size:clamp(10px,1.12vw,17px);max-width:100%;overflow-wrap:anywhere}
+.case.personal{filter:drop-shadow(0 0 10px #5fc8ff7c)!important}.case.personal .case-shell{border-color:#88c7ef}.case.personal .case-lid{background:linear-gradient(110deg,#123353,#76b2d9 22%,#193e67 65%,#639dc4);border-color:#9bd3fa}.case.personal .case-number{color:#13304a;background:linear-gradient(#f3fbff,#88c8ee)}
+.case.revealing{z-index:3;filter:drop-shadow(0 0 20px #ffdd83)!important}
+.case.revealing .case-lid{animation:director-case-lid 3.1s cubic-bezier(.25,.6,.25,1) both!important}
+@keyframes director-case-lid{0%,22%{transform:perspective(650px) rotateX(0)}36%{transform:perspective(650px) rotateX(-7deg)}49%{transform:perspective(650px) rotateX(5deg)}67%{transform:perspective(650px) rotateX(25deg)}86%,100%{transform:perspective(650px) rotateX(114deg)}}
+.case.opened .case-lid{transform:perspective(650px) rotateX(114deg)!important;pointer-events:none}
+.case:not(:disabled):focus-visible{outline:3px solid #fff3c1!important;outline-offset:5px}
+.money span{transition:opacity .5s,filter .5s,transform .5s}.money .gone{transform:scale(.94);filter:grayscale(.8)}
+.player.turn{animation:director-turn 2.4s ease-in-out infinite alternate!important}
+@keyframes director-turn{0%{box-shadow:inset 0 1px #ffe3a333,0 0 9px #f7c26b36}100%{box-shadow:inset 0 1px #ffe3a355,0 0 26px #ffdb87b0}}
+.player.dealt{border-color:#80d5a0!important}.player.dealt .candidate-badge{color:#a7f2b7!important}
+#banker-call:not([hidden]) .banker-call-phone{animation:director-phone 1.15s ease-in-out infinite!important;transform-origin:50% 65%}
+@keyframes director-phone{0%,100%{transform:rotate(0)}12%,28%{transform:rotate(-12deg)}20%,36%{transform:rotate(12deg)}44%{transform:rotate(0)}}
+#banker-call:not([hidden]) .banker-call-amount{filter:drop-shadow(0 0 15px #ffcf6a88)}
+#scene-transition{z-index:7!important;transition:opacity .3s,visibility .3s!important}
+#scene-transition .scene-title{letter-spacing:.075em;text-shadow:0 6px 18px #0007}
+#scene-transition.active .scene-line{animation:director-line 1.1s ease-out both}
+@keyframes director-line{from{transform:scaleX(.05);opacity:0}to{transform:scaleX(1);opacity:1}}
+@media(max-width:700px){.case .case-handle{top:-10px!important;height:12px!important;border-width:3px!important}.case .case-lid:before,.case .case-lid:after{width:7px!important;height:10px!important;bottom:5px!important}.case .case-lid:before{left:7%!important}.case .case-lid:after{right:7%!important}.case .case-number{min-width:24px;min-height:25px;padding:0 3px;font-size:clamp(13px,3.3vw,20px)}}
+@media(prefers-reduced-motion:reduce){body:before,.layout>.panel.case-stage:before,.player.turn,#banker-call:not([hidden]) .banker-call-phone,#scene-transition.active .scene-line{animation:none!important}.case.revealing .case-lid{animation:none!important;transform:perspective(650px) rotateX(114deg)!important}}
+
+/* V41 — live camera director: focused reveal, physical stage, prize flash */
+.layout>.panel.case-stage .cases{background:radial-gradient(ellipse 90% 65% at 50% 48%,#d7ad5c20,transparent 78%),linear-gradient(180deg,#08162b16,#0a142b30 80%,#0007)!important;border-bottom:2px solid #e3b96a4d;border-radius:16px}
+.layout>.panel.case-stage .cases:before{content:'';position:absolute;z-index:-1;left:0;right:0;bottom:0;height:26%;background:linear-gradient(180deg,transparent,#e7b66316 50%,#f9d78c24);transform:perspective(420px) rotateX(58deg);transform-origin:bottom;pointer-events:none}
+body.reveal-spotlight .layout>.panel.case-stage{filter:drop-shadow(0 0 16px #f4c87355)}
+body.reveal-spotlight .case:not(.revealing){filter:brightness(.58) saturate(.7)!important;transition:filter .45s,transform .3s!important}
+body.reveal-spotlight .case.revealing{transform:scale(1.09) translateY(-5px)!important;filter:drop-shadow(0 0 28px #ffe3a6)!important}
+body.reveal-spotlight .cases{background:radial-gradient(ellipse at 50% 50%,#ffdc8c31,transparent 78%)!important}
+.case .case-shell{transform:translateZ(0)}
+.case .case-lid{transform-style:preserve-3d}
+.case .case-lid .case-number:after{content:'';position:absolute;inset:3px;border:1px solid #fff9df99;border-radius:4px;pointer-events:none}
+.case .case-handle:after{content:'';position:absolute;left:15%;right:15%;top:3px;height:2px;border-radius:3px;background:#fff1b9b3}
+#prize-flash{position:fixed;z-index:8;inset:0;pointer-events:none;display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;background:radial-gradient(ellipse at 50% 45%,#c58c3440,#050d20d9 70%)}
+#prize-flash.active{opacity:1;visibility:visible}
+.prize-flash-card{text-align:center;padding:26px 36px;border:1px solid #ffe2a37a;border-radius:24px;background:linear-gradient(145deg,#1e2940e8,#0a162bf2);box-shadow:0 0 55px #e3ae6055,0 15px 45px #0009;transform:translateY(22px) scale(.93);transition:transform .38s;max-width:min(90vw,620px)}
+#prize-flash.active .prize-flash-card{transform:translateY(0) scale(1)}
+.prize-flash-kicker{color:#e7c78e;letter-spacing:.2em;font-size:clamp(12px,1.5vw,17px);font-weight:900}
+.prize-flash-value{font-size:clamp(36px,7vw,82px);font-weight:1000;line-height:1.15;color:#ffe3a0;filter:drop-shadow(0 3px 16px #edbc69a3);overflow-wrap:anywhere}
+.prize-flash-note{color:#fff2d6;margin-top:12px;font-size:clamp(14px,2vw,21px)}
+@media(prefers-reduced-motion:reduce){body.reveal-spotlight .case:not(.revealing){filter:none!important}#prize-flash,.prize-flash-card{transition:none!important}}
+
+/* V42 · FINAL BROADCAST POLISH — cinematic banker, live suspense, championship */
+#banker-call:not([hidden]){isolation:isolate}
+#banker-call:not([hidden]):before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 30%,#f8c87526,transparent 55%);animation:banker-light-breathe 3.8s ease-in-out infinite alternate}
+@keyframes banker-light-breathe{to{opacity:.35}}
+.banker-call-card{position:relative;overflow:hidden;box-shadow:0 26px 80px #000c,0 0 38px #f6ca7944,inset 0 1px 0 #fff2bd59!important;border:1px solid #ffe0a07a!important}
+.banker-call-card:before{content:'';position:absolute;inset:-70%;pointer-events:none;background:conic-gradient(transparent 0 35%,#f6dca513 40%,transparent 46% 100%);animation:studio-spotlights 14s linear infinite}
+.banker-call-card>*{position:relative;z-index:1}
+.banker-call-eyebrow{letter-spacing:.15em;text-shadow:0 2px 8px #000b}
+.banker-call-portrait{box-shadow:inset 0 -25px 30px #071429,0 0 25px #e6ba6e36!important}
+.banker-call-amount{font-variant-numeric:tabular-nums;overflow-wrap:anywhere;animation:banker-amount-pulse 2.5s ease-in-out infinite alternate}
+@keyframes banker-amount-pulse{to{filter:drop-shadow(0 0 24px #ffde9bd9);transform:scale(1.025)}}
+.banker-call-quote{position:relative;text-wrap:pretty}
+.banker-call-quote:before{content:'“';font-family:Georgia,serif;font-size:42px;line-height:.6;color:#f3c77e99;margin-right:5px}
+#finale-cinema:not([hidden]){background:radial-gradient(ellipse at 50% 38%,#5d421e6e,#020817f5 70%)!important}
+#finale-cinema:not([hidden]):before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-conic-gradient(from 0deg at 50% -20%,#f6d78a0b 0deg 8deg,transparent 9deg 23deg);animation:finale-rays 13s linear infinite}
+@keyframes finale-rays{to{transform:rotate(9deg)}}
+#finale-cinema .finale-player{transition:transform .6s,box-shadow .6s,filter .6s}
+#finale-cinema .finale-player.winner{filter:drop-shadow(0 0 22px #ffe1a0)!important}
+#finale-cinema .finale-player.champion-focus{animation:champion-glow 2.5s ease-in-out infinite alternate}
+@keyframes champion-glow{to{filter:drop-shadow(0 0 38px #ffe0a4);transform:translateY(-6px)}}
+#finale-champion:not([hidden]){filter:drop-shadow(0 0 25px #f4c56a6b)}
+#finale-champion-value{font-variant-numeric:tabular-nums}
+#show-phase,#show-round{font-variant-numeric:tabular-nums}
+@media(max-width:650px){.banker-call-card{max-height:94dvh;overflow-y:auto!important;overscroll-behavior:contain}.banker-call-amount{font-size:clamp(27px,8vw,48px)!important}}
+@media(prefers-reduced-motion:reduce){#banker-call:not([hidden]):before,.banker-call-card:before,.banker-call-amount,#finale-cinema:not([hidden]):before,#finale-cinema .finale-player.champion-focus{animation:none!important}}
+
+/* V43 · Broadcast camera direction, tactile briefcases and synchronized spotlight */
+.case-stage{--camera-x:50%;--camera-y:50%}
+.case-stage:after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;opacity:0;background:radial-gradient(circle 165px at var(--camera-x) var(--camera-y),transparent 15%,#0208152b 68%,#01050dc9 100%);transition:opacity .45s}
+body.reveal-spotlight .case-stage:after{opacity:1}
+body.reveal-spotlight .case-stage .cases{isolation:isolate}
+.case.revealing{z-index:4!important;position:relative}
+.case .case-lid{will-change:transform}
+.case .case-shell{border-radius:10px 10px 12px 12px}
+.case .case-shell:after{background:linear-gradient(135deg,#fff8d930,transparent 30%,#4225072e 85%)}
+.case .case-interior:before{content:'';position:absolute;inset:5px;border-radius:3px;border:1px dashed #fff0b654;pointer-events:none}
+.case .case-amount{position:relative;z-index:1;padding:3px;text-shadow:0 2px 5px #000,0 0 8px #fff4a95c}
+.case:not(:disabled):hover .case-number{filter:brightness(1.15)}
+.case:not(:disabled):active .case-shell{transform:translateY(3px)}
+.case .case-handle{transform-origin:bottom center}
+.case.revealing .case-handle{animation:handle-rattle .55s ease-in-out 2}
+@keyframes handle-rattle{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+#prize-flash .prize-flash-value{font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+#prize-flash.prize-huge .prize-flash-card{border-color:#ffe7b5;box-shadow:0 0 75px #ffc75b7a,0 18px 45px #000b}
+#prize-flash.prize-huge .prize-flash-value{background:linear-gradient(180deg,#fff9dc,#ffd77d,#d69635);background-clip:text;-webkit-background-clip:text;color:transparent}
+@media(max-width:650px){.case-stage:after{background:radial-gradient(circle 95px at var(--camera-x) var(--camera-y),transparent 5%,#01050d91 100%)}}
+@media(prefers-reduced-motion:reduce){.case-stage:after{display:none}.case.revealing .case-handle{animation:none!important}}
+
+/* V44 · precision direction: reveal target, synchronized money-board exit, layered cinematic HUD */
+.money span.just-eliminated{position:relative;z-index:2;animation:money-eliminated 1.6s ease-out both!important;border:1px solid #ffda87!important}
+@keyframes money-eliminated{0%{opacity:1;filter:brightness(2.3);transform:scale(1.12);box-shadow:0 0 22px #ffd57a}35%{opacity:1;filter:brightness(1.6);transform:scale(1.06)}100%{opacity:.25;filter:grayscale(.9);transform:scale(.94);box-shadow:none}}
+.case-stage .cases .case.revealing{z-index:6!important}
+.case-stage .cases .case.revealing .case-shell{box-shadow:inset 0 1px #fff7d2,0 5px 0 #714c21,0 0 28px #ffdc83a3,0 16px 25px #000b!important}
+.showbar #show-phase{transition:color .3s,text-shadow .3s}
+body.reveal-spotlight #show-phase{color:#ffe4a5!important;text-shadow:0 0 13px #f3c36b!important}
+#prize-flash:not(.prize-huge) .prize-flash-card{box-shadow:0 10px 30px #000b,0 0 25px #e5b76a55}
+@media(prefers-reduced-motion:reduce){.money span.just-eliminated{animation:none!important}}
+
+/* V45 · FINAL ROUNDS: escalating visual tension without changing game timing */
+body.show-high-stakes .showbar{box-shadow:inset 0 0 20px #e5ae4b24,0 0 22px #d6a65c25!important;border-color:#f6d18588!important}
+body.show-high-stakes .showbar #show-phase{color:#ffe8b5!important;text-shadow:0 0 13px #f3c56a73}
+body.show-high-stakes .case:not(.opened):not(.personal) .case-shell{box-shadow:inset 0 1px 0 #fff5c5,inset 0 -4px 6px #35200b7a,0 5px 0 #67451d,0 11px 17px #000b,0 0 13px #f8c86e42!important}
+body.show-final-stakes .case:not(.opened):not(.personal) .case-shell{box-shadow:inset 0 1px 0 #fff5c5,inset 0 -4px 6px #35200b7a,0 5px 0 #67451d,0 11px 17px #000b,0 0 22px #f8c86e83!important}
+body.show-final-stakes .showbar{border-color:#ffe6ac!important;box-shadow:0 0 30px #e9bd6c3a,inset 0 0 22px #e5ae4b26!important}
+body.show-final-stakes #money-summary{background:linear-gradient(90deg,#1d1820,#5a3b20,#1d1820)!important;border-color:#ffe1a3!important;color:#fff0c9!important}
+body.show-final-stakes .cases{background:radial-gradient(ellipse at 50% 40%,#f6c77d30,transparent 70%),linear-gradient(180deg,#06142c22,#0007)!important}
+body.show-final-stakes .case:not(:disabled):hover{filter:drop-shadow(0 0 20px #ffe2a6) drop-shadow(0 12px 10px #000c)!important}
+#scene-transition{pointer-events:none!important}
+#scene-transition.active{backdrop-filter:blur(3px)}
+@media(prefers-reduced-motion:reduce){#scene-transition.active{backdrop-filter:none}}
+
+/* V46 · THE LAST DECISION — cinematic split-screen deal versus mystery */
+.final-choice-compare[hidden]{display:none!important}
+.final-choice-compare{position:relative;margin:14px auto 18px;padding:14px;border:1px solid #e8c37d88;border-radius:18px;background:linear-gradient(145deg,#081326f5,#15294ae8 52%,#091629f5);box-shadow:inset 0 1px #fff5d033,0 12px 25px #0008;max-width:710px;overflow:hidden}
+.final-choice-compare:before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,#f4c56b22,transparent 55%),radial-gradient(ellipse at 80% 50%,#69a9d522,transparent 55%)}
+.final-choice-heading{position:relative;color:#ffe3a2;letter-spacing:.17em;font-weight:1000;font-size:clamp(11px,1.4vw,15px);margin-bottom:12px}
+.final-choice-columns{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:8px}
+.final-choice-option{display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:0;padding:15px 9px;border:1px solid #e5bd706e;border-radius:13px;background:linear-gradient(155deg,#71512270,#171d2dce);box-shadow:inset 0 1px #fff3c92e}
+.final-choice-mystery{border-color:#8fc8ef85;background:linear-gradient(155deg,#17456a9c,#121e36c9)}
+.final-choice-label{color:#ffe6b4;font-weight:900;letter-spacing:.04em;font-size:clamp(10px,1.2vw,14px);text-align:center}
+.final-choice-option strong{font-size:clamp(22px,4.2vw,45px);font-weight:1000;color:#ffe2a0;overflow-wrap:anywhere;line-height:1.15;margin:8px 0;font-variant-numeric:tabular-nums;text-shadow:0 2px 10px #000b}
+.final-choice-mystery strong{font-size:clamp(42px,7vw,76px);color:#bce4ff;animation:final-mystery 2s ease-in-out infinite alternate}
+@keyframes final-mystery{to{filter:drop-shadow(0 0 16px #8fd8ff);transform:scale(1.09)}}
+.final-choice-option small{font-size:clamp(10px,1vw,13px);line-height:1.3;color:#e6d9bf;text-align:center}
+.final-choice-vs{align-self:center;color:#fff0cb;font-weight:1000;font-size:clamp(10px,1.5vw,15px);text-shadow:0 0 13px #ffdb88}
+.final-choice-footnote{position:relative;margin-top:12px;color:#ffe4af;font-size:clamp(11px,1.2vw,14px);font-weight:750}
+.banker-call-card:has(.final-choice-compare:not([hidden])){max-width:min(96vw,850px)!important}
+@media(max-width:480px){.final-choice-compare{padding:9px}.final-choice-columns{gap:4px}.final-choice-option{padding:12px 5px}.final-choice-vs{font-size:10px}.final-choice-heading{letter-spacing:.08em}}
+@media(prefers-reduced-motion:reduce){.final-choice-mystery strong{animation:none}}
+
+/* V47 — coordinated transitions: no competing full-screen scenes */
+#scene-transition{pointer-events:none!important}
+#scene-transition .scene-content{transform:translateY(12px) scale(.97);transition:transform .4s cubic-bezier(.2,.7,.2,1)}
+#scene-transition.active .scene-content{transform:translateY(0) scale(1)}
+#scene-transition.active .scene-title{animation:director-title-reveal .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes director-title-reveal{from{opacity:0;transform:translateY(18px);letter-spacing:.16em}to{opacity:1;transform:translateY(0);letter-spacing:.075em}}
+#banker-call.call-entering .banker-call-card{animation:director-call-entrance .65s cubic-bezier(.18,.8,.24,1) both!important}
+@keyframes director-call-entrance{from{opacity:0;transform:translateY(38px) scale(.92);filter:blur(5px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+#prize-flash.active .prize-flash-value{animation:director-prize-arrival .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes director-prize-arrival{from{opacity:0;transform:translateY(16px) scale(.86)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){#scene-transition .scene-content,#scene-transition.active .scene-title,#banker-call.call-entering .banker-call-card,#prize-flash.active .prize-flash-value{animation:none!important;transition:none!important;transform:none!important;filter:none!important}}
+
+/* V48 — five-beat physical briefcase opening, latch mechanics and final reveal */
+.case .case-lid:before,.case .case-lid:after{display:none!important}
+.case .case-locks{position:absolute;inset:auto 8% 7px;z-index:4;display:flex;justify-content:space-between;pointer-events:none;perspective:400px}
+.case .case-locks i{display:block;width:clamp(7px,1.2vw,14px);height:clamp(10px,1.5vw,18px);border:1px solid #fff0be;border-radius:3px;background:linear-gradient(90deg,#6a4318,#ffdf91 38%,#986022 72%,#4a3016);box-shadow:0 2px 4px #000a,inset 0 1px #fff8d5;transform-origin:top center}
+.case.revealing .case-locks i:first-child{animation:case-unlock-left 2.25s ease-in-out both!important}
+.case.revealing .case-locks i:last-child{animation:case-unlock-right 2.25s ease-in-out both!important}
+@keyframes case-unlock-left{0%,15%{transform:rotateX(0)}23%,100%{transform:rotateX(-68deg)}}
+@keyframes case-unlock-right{0%,27%{transform:rotateX(0)}35%,100%{transform:rotateX(-68deg)}}
+.case.revealing .case-lid{animation:case-five-beats 2.25s cubic-bezier(.22,.7,.22,1) both!important}
+@keyframes case-five-beats{
+0%,9%{transform:perspective(650px) rotateX(0) translateZ(0)}
+16%{transform:perspective(650px) rotateX(-3deg) translateZ(0)}
+25%{transform:perspective(650px) rotateX(2deg) translateZ(0)}
+35%{transform:perspective(650px) rotateX(0) translateZ(0)}
+45%{transform:perspective(650px) rotateX(12deg) translateZ(0)}
+63%{transform:perspective(650px) rotateX(53deg) translateZ(0)}
+85%,100%{transform:perspective(650px) rotateX(114deg) translateZ(0)}
+}
+.case.revealing .case-shell{animation:case-physical-rumble 2.25s ease-in-out both}
+@keyframes case-physical-rumble{0%,16%,35%,100%{transform:translate(0,0)}20%{transform:translate(-1px,1px)}25%{transform:translate(1px,-1px)}29%{transform:translate(-1px,0)}}
+.case.revealing .case-interior{animation:case-interior-glow 2.25s ease-in-out both}
+@keyframes case-interior-glow{0%,38%{filter:brightness(.35)}70%{filter:brightness(.85)}100%{filter:brightness(1.2)}}
+.case.opened .case-locks i{transform:rotateX(-68deg)}
+.case.opened .case-interior{filter:brightness(1)}
+@media(max-width:650px){.case .case-locks{bottom:4px;inset-inline:7%}.case .case-locks i{width:7px;height:10px}}
+@media(prefers-reduced-motion:reduce){.case.revealing .case-lid,.case.revealing .case-locks i,.case.revealing .case-shell,.case.revealing .case-interior{animation:none!important}.case.revealing .case-lid{transform:perspective(650px) rotateX(114deg)!important}.case.revealing .case-locks i{transform:rotateX(-68deg)}}
+
+/* V49 · amount reveal follows the briefcase, not the polling tick */
+.case.case-newly-opened.opened .case-lid{animation:case-last-lift .75s cubic-bezier(.2,.7,.2,1) both!important}
+@keyframes case-last-lift{0%{transform:perspective(650px) rotateX(20deg)}65%{transform:perspective(650px) rotateX(108deg)}100%{transform:perspective(650px) rotateX(118deg)}}
+.case.case-newly-opened.opened .case-amount{animation:case-amount-entrance .8s cubic-bezier(.18,.75,.2,1) both}
+@keyframes case-amount-entrance{0%,32%{opacity:0;transform:translateY(9px) scale(.75);filter:blur(3px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+.case.case-newly-opened.opened .case-interior{animation:case-reveal-interior .8s ease-out both}
+@keyframes case-reveal-interior{0%{filter:brightness(.4)}100%{filter:brightness(1)}}
+@media(prefers-reduced-motion:reduce){.case.case-newly-opened.opened .case-lid,.case.case-newly-opened.opened .case-amount,.case.case-newly-opened.opened .case-interior{animation:none!important}}
+
+/* V50 · unified case camera: focus -> reveal -> money board response */
+body.case-camera-reveal .layout>.panel.case-stage{position:relative;z-index:3;isolation:isolate}
+body.case-camera-reveal .case:not(.camera-hero){filter:brightness(.42) saturate(.62) blur(.35px)!important;transition:filter .32s ease!important}
+body.case-camera-reveal .case.camera-hero{position:relative;z-index:5;transform:translateY(-9px) scale(1.12)!important;filter:drop-shadow(0 0 28px #ffe6aa) drop-shadow(0 14px 13px #000b)!important;transition:transform .42s cubic-bezier(.2,.75,.2,1),filter .42s!important}
+body.case-camera-reveal .case-stage .cases{background:radial-gradient(ellipse at var(--camera-x,50%) var(--camera-y,50%),#ffde9352,transparent 52%)!important}
+body.case-camera-reveal #money{filter:brightness(.65);transition:filter .4s ease}
+body.case-camera-afterglow #money{filter:brightness(1.16);transition:filter .4s ease}
+body.case-camera-afterglow #money .just-eliminated{animation:director-money-exit .8s ease-out both}
+@keyframes director-money-exit{0%{filter:brightness(1.8);transform:scale(1.13)}60%{filter:brightness(1.25)}100%{filter:brightness(.6);transform:scale(.96)}}
+@media(prefers-reduced-motion:reduce){body.case-camera-reveal .case,body.case-camera-reveal .case.camera-hero,body.case-camera-reveal #money,body.case-camera-afterglow #money,body.case-camera-afterglow #money .just-eliminated{animation:none!important;transition:none!important;transform:none!important;filter:none!important}}
+
+/* V51 — reaction direction based on the actual prize ladder */
+#prize-flash.prize-relief .prize-flash-card{border-color:#9fe7c4aa;box-shadow:0 0 55px #4bd2a03a,0 15px 45px #0009;background:linear-gradient(145deg,#173d3be8,#081a2cf2)}
+#prize-flash.prize-relief .prize-flash-value{color:#b9ffe0;filter:drop-shadow(0 3px 16px #71e7ac70)}
+body.case-camera-reveal[data-reveal-mood="loss"] .case.camera-hero{filter:drop-shadow(0 0 30px #ffbc78) drop-shadow(0 14px 13px #000b)!important}
+body.case-camera-reveal[data-reveal-mood="relief"] .case.camera-hero{filter:drop-shadow(0 0 28px #b9ffe0) drop-shadow(0 14px 13px #000b)!important}
+body.case-camera-afterglow[data-reveal-mood="loss"] #money{filter:brightness(1.28) saturate(1.2)}
+body.case-camera-afterglow[data-reveal-mood="relief"] #money{filter:brightness(1.12)}
+@media(prefers-reduced-motion:reduce){body.case-camera-reveal[data-reveal-mood] .case.camera-hero,body.case-camera-afterglow[data-reveal-mood] #money{filter:none!important}}
+
+/* V52 · coherent broadcast pacing: last cases, banker, championship */
+body.show-high-stakes:not(.show-final-stakes) .case:not(.opened):not(.personal) .case-number{transition:box-shadow .35s ease;text-shadow:0 1px #fff7d7,0 0 8px #fff3c3}
+body.show-final-stakes .case:not(.opened):not(.personal) .case-number{box-shadow:0 0 14px #ffd78b7a,0 3px 5px #3a1f0c77}
+body.show-final-stakes .case-stage{isolation:isolate}
+body.show-final-stakes .case-stage .cases{transition:background .55s ease}
+#banker-call:not([hidden]) .banker-call-phone{filter:drop-shadow(0 0 14px #f6d58d6b)}
+#banker-call:not([hidden]) .banker-call-amount{font-variant-numeric:tabular-nums}
+#banker-call:not([hidden]) .final-choice-option{transition:border-color .3s,box-shadow .3s}
+#banker-call:not([hidden]) .final-choice-option:first-child{box-shadow:inset 0 1px #fff3c92e,0 0 22px #e4ba6540}
+#banker-call:not([hidden]) .final-choice-mystery{box-shadow:inset 0 1px #d2f2ff2b,0 0 22px #76bff13b}
+#finale-cinema:not([hidden]){isolation:isolate}
+#finale-cinema:not([hidden]) .finale-player{transition:transform .5s cubic-bezier(.2,.75,.2,1),filter .5s ease}
+@media(prefers-reduced-motion:reduce){body.show-high-stakes .case-number,body.show-final-stakes .case-stage .cases,#banker-call .final-choice-option,#finale-cinema .finale-player{transition:none!important}}

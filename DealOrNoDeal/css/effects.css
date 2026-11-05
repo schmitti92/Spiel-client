@@ -1,0 +1,206 @@
+
+
+/* V53 · tablet and phone stage layout, accessible tap targets and safe-area modals */
+@media(max-width:980px){
+ .layout{grid-template-columns:minmax(0,1fr) minmax(0,2fr)!important;gap:12px!important}
+ .layout>.panel{min-width:0}
+ .layout>.panel.bank{grid-column:1/-1}
+ .case-stage .cases{gap:clamp(5px,1vw,10px)!important}
+ #banker-call .banker-call-card{width:min(94vw,760px);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
+ #finale-cinema .finale-stage{width:min(96vw,900px);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
+}
+@media(max-width:680px){
+ .layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+ .layout>.panel.bank{grid-column:auto}
+ .case-stage{order:0}.layout>.panel:not(.case-stage):not(.bank){order:1}.layout>.panel.bank{order:2}
+ .case-stage .cases{gap:clamp(4px,1.15vw,7px)!important;padding:12px 3px 5px!important}
+ .case-stage .case{min-width:0;min-height:clamp(46px,12vw,65px)!important;touch-action:manipulation}
+ .case .case-number{min-width:0;min-height:28px;padding:0 4px;font-size:clamp(14px,4vw,23px)}
+ .case .case-handle{top:-11px;height:13px;border-width:3px}
+ .case .case-amount{font-size:clamp(9px,2.6vw,14px);overflow-wrap:anywhere;text-align:center}
+ .money{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ #banker-call{padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+ #banker-call .banker-call-card{width:100%;max-height:calc(100dvh - 16px);padding:clamp(12px,3vw,22px)!important}
+ #banker-call .banker-call-amount{font-size:clamp(30px,9vw,54px)!important;overflow-wrap:anywhere}
+ #banker-call .banker-call-quote{font-size:clamp(14px,3.8vw,19px)}
+ #banker-call .final-choice-columns{grid-template-columns:minmax(0,1fr)!important;gap:9px}
+ #banker-call button{min-height:44px;touch-action:manipulation}
+ #finale-cinema{padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+ #finale-cinema .finale-stage{width:100%;max-height:calc(100dvh - 16px);padding:clamp(14px,3vw,24px)!important}
+ #finale-cinema .finale-cases{gap:8px}
+ #finale-cinema .finale-player{min-width:0;overflow-wrap:anywhere}
+ #finale-cinema .finale-skip{min-height:44px;touch-action:manipulation}
+ .actions button{min-height:44px;touch-action:manipulation}
+}
+@media(max-width:380px){
+ .case-stage .cases{gap:4px!important}
+ .case .case-number{font-size:14px;min-height:25px}
+ #banker-call .banker-call-portrait{max-height:110px}
+ #finale-cinema .finale-cases{gap:5px}
+}
+@media(orientation:landscape) and (max-height:520px){
+ #banker-call .banker-call-card,#finale-cinema .finale-stage{max-height:calc(100dvh - 12px);overflow-y:auto}
+ #banker-call .banker-call-portrait{max-height:90px}
+}
+
+/* V54 · animated candidate portraits, restrained studio character acting */
+.player .candidate-avatar{position:relative!important;display:block!important;isolation:isolate;overflow:hidden!important;background-image:linear-gradient(160deg,#1b3855,#0a1628)!important;transform:translateZ(0);box-shadow:inset 0 0 0 1px #fff5ce55,0 6px 18px #0008!important}
+.player .candidate-avatar .avatar-portrait{position:absolute;inset:-2px;display:block;background-image:var(--candidate-image);background-position:center top;background-size:cover;background-repeat:no-repeat;transform-origin:50% 83%;animation:avatar-breathe 5.6s ease-in-out infinite;animation-delay:var(--avatar-delay,0s);will-change:transform}
+.player .candidate-avatar:before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(105deg,transparent 25%,#fff8d11f 47%,transparent 66%);opacity:.55;transform:translateX(-110%);animation:avatar-studio-glint 11s ease-in-out infinite;animation-delay:var(--avatar-delay,0s)}
+.player .candidate-avatar:after{content:''!important;display:block!important;position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(180deg,#fff6d222,transparent 27%,transparent 70%,#020914a8);box-shadow:inset 0 0 13px #030a17a8;border-radius:inherit}
+.player.turn .candidate-avatar .avatar-portrait{animation:avatar-attentive 3.7s ease-in-out infinite;animation-delay:var(--avatar-delay,0s)}
+.player.dealt .candidate-avatar .avatar-portrait{animation:avatar-deal-nod 4.5s ease-in-out infinite;animation-delay:var(--avatar-delay,0s)}
+.player.turn .candidate-avatar{border-color:#ffe5a2!important;box-shadow:0 0 20px #ffd27b75,0 6px 18px #0009!important}
+@keyframes avatar-breathe{0%,100%{transform:translateY(0) scale(1.025) rotate(0)}40%{transform:translateY(-1.5%) scale(1.045) rotate(-.45deg)}70%{transform:translateY(.5%) scale(1.02) rotate(.35deg)}}
+@keyframes avatar-attentive{0%,100%{transform:translateY(0) scale(1.035) rotate(0)}32%{transform:translateY(-3%) scale(1.07) rotate(-1deg)}56%{transform:translateY(-1%) scale(1.05) rotate(1deg)}}
+@keyframes avatar-deal-nod{0%,100%{transform:translateY(0) rotate(0) scale(1.025)}20%{transform:translateY(2%) rotate(1.3deg) scale(1.035)}33%{transform:translateY(-1%) rotate(-.7deg) scale(1.03)}}
+@keyframes avatar-studio-glint{0%,70%,100%{transform:translateX(-110%);opacity:0}78%{opacity:.6}91%{transform:translateX(110%);opacity:0}}
+@media(prefers-reduced-motion:reduce){.player .candidate-avatar .avatar-portrait,.player .candidate-avatar:before{animation:none!important;transform:none!important}}
+
+/* V55 · character direction: shock, relief, suspense and thinking */
+.player[data-reaction] .candidate-avatar{overflow:hidden!important}
+.player[data-reaction="shock"] .avatar-portrait{animation:avatar-shock .85s cubic-bezier(.2,.75,.2,1) 2!important}
+.player[data-reaction="cheer"] .avatar-portrait{animation:avatar-cheer .75s ease-in-out 3!important}
+.player[data-reaction="curious"] .avatar-portrait{animation:avatar-curious 1.4s ease-in-out 2!important}
+.player[data-reaction="thinking"] .avatar-portrait{animation:avatar-thinking 2.3s ease-in-out 1!important}
+.player[data-reaction="shock"] .candidate-avatar{border-color:#ffb18a!important;box-shadow:0 0 18px #ff895c77!important}
+.player[data-reaction="cheer"] .candidate-avatar{border-color:#a7ffda!important;box-shadow:0 0 18px #63f6b777!important}
+.player[data-reaction="thinking"] .candidate-avatar{border-color:#c3d6ff!important}
+@keyframes avatar-shock{0%,100%{transform:translateY(0) scale(1.025)}18%{transform:translateY(-7%) scale(1.11) rotate(-2deg)}38%{transform:translateY(2%) scale(1.045) rotate(1.4deg)}}
+@keyframes avatar-cheer{0%,100%{transform:translateY(0) rotate(0) scale(1.025)}30%{transform:translateY(-8%) rotate(-2deg) scale(1.09)}60%{transform:translateY(-3%) rotate(2deg) scale(1.06)}}
+@keyframes avatar-curious{0%,100%{transform:rotate(0) scale(1.025)}40%{transform:rotate(-2deg) scale(1.055)}75%{transform:rotate(1deg) scale(1.035)}}
+@keyframes avatar-thinking{0%,100%{transform:translateY(0) rotate(0) scale(1.025)}35%,65%{transform:translateY(1%) rotate(2.5deg) scale(1.035)}}
+@media(prefers-reduced-motion:reduce){.player[data-reaction] .avatar-portrait{animation:none!important}.player[data-reaction] .candidate-avatar{box-shadow:none!important}}
+
+/* V56 · four distinct character acting styles; no separate image requests */
+.player .candidate-avatar[data-personality="0"]{--idle-duration:5.8s;--idle-tilt:-.55deg;--reaction-tilt:-2.5deg;--avatar-glow:#ffd98a}
+.player .candidate-avatar[data-personality="1"]{--idle-duration:7.1s;--idle-tilt:.85deg;--reaction-tilt:2deg;--avatar-glow:#9ed9ff}
+.player .candidate-avatar[data-personality="2"]{--idle-duration:4.8s;--idle-tilt:-1deg;--reaction-tilt:-3deg;--avatar-glow:#b8ffe2}
+.player .candidate-avatar[data-personality="3"]{--idle-duration:6.4s;--idle-tilt:.35deg;--reaction-tilt:1.5deg;--avatar-glow:#e1b7ff}
+.player .candidate-avatar .avatar-portrait{animation-name:avatar-personality-idle;animation-duration:var(--idle-duration,6s);animation-delay:var(--avatar-delay,0s)}
+@keyframes avatar-personality-idle{
+ 0%,100%{transform:translateY(0) rotate(0) scale(1.025)}
+ 32%{transform:translateY(-2%) rotate(var(--idle-tilt,0deg)) scale(1.055)}
+ 68%{transform:translateY(.5%) rotate(calc(var(--idle-tilt,0deg) * -.55)) scale(1.03)}
+}
+.player .candidate-avatar .avatar-portrait:after{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(180deg,transparent 0 32%,#18213633 36%,transparent 41%);animation:avatar-soft-blink 8.7s steps(1,end) infinite;animation-delay:var(--avatar-delay,0s)}
+@keyframes avatar-soft-blink{0%,43%,46%,100%{opacity:0}44%,45%{opacity:.75}}
+.player[data-reaction="shock"] .candidate-avatar[data-personality="1"] .avatar-portrait{animation:avatar-shock-side .95s ease-in-out 2!important}
+.player[data-reaction="cheer"] .candidate-avatar[data-personality="2"] .avatar-portrait{animation:avatar-cheer-bold .7s ease-in-out 3!important}
+.player[data-reaction="thinking"] .candidate-avatar[data-personality="3"] .avatar-portrait{animation:avatar-thinking-calm 2.3s ease-in-out 1!important}
+@keyframes avatar-shock-side{0%,100%{transform:translateY(0) rotate(0) scale(1.025)}25%{transform:translateY(-5%) rotate(3deg) scale(1.07)}55%{transform:translateY(1%) rotate(-2deg) scale(1.04)}}
+@keyframes avatar-cheer-bold{0%,100%{transform:translateY(0) rotate(0) scale(1.025)}40%{transform:translateY(-11%) rotate(-3deg) scale(1.12)}70%{transform:translateY(-2%) rotate(2deg) scale(1.06)}}
+@keyframes avatar-thinking-calm{0%,100%{transform:rotate(0) scale(1.025)}50%{transform:rotate(1.2deg) scale(1.035)}}
+.player.turn .candidate-avatar[data-personality]{box-shadow:0 0 19px var(--avatar-glow,#ffd98a),0 6px 18px #0009!important}
+@media(prefers-reduced-motion:reduce){.player .candidate-avatar .avatar-portrait:after,.player .candidate-avatar .avatar-portrait{animation:none!important}}
+
+/* V57: native SVG facial blinking replaces the simulated portrait overlay. */
+.player .candidate-avatar .avatar-portrait:after{animation:none!important;opacity:0!important}
+
+/* V58 · expression overlays are positioned on the original 360×420 portraits. */
+.player .candidate-avatar .avatar-expression{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .16s}
+.player[data-reaction="shock"] .avatar-expression,.player[data-reaction="cheer"] .avatar-expression,.player[data-reaction="thinking"] .avatar-expression{opacity:1}
+.player .avatar-expression>span{position:absolute;display:block;box-sizing:border-box}
+.player .avatar-expression>span:nth-child(1),.player .avatar-expression>span:nth-child(2){top:41.5%;width:16%;height:3%;border-top:2px solid #4c302b;border-radius:65% 65% 0 0}
+.player .avatar-expression>span:nth-child(1){left:33%;transform:rotate(-10deg)}
+.player .avatar-expression>span:nth-child(2){right:32%;transform:rotate(10deg)}
+.player .avatar-expression>span:nth-child(3){left:45%;top:57%;width:13%;height:4%;border-bottom:2px solid #8a4942;border-radius:0 0 50% 50%;background:#7e343326}
+.player[data-reaction="shock"] .avatar-expression>span:nth-child(1){transform:translateY(-35%) rotate(-17deg)}
+.player[data-reaction="shock"] .avatar-expression>span:nth-child(2){transform:translateY(-35%) rotate(17deg)}
+.player[data-reaction="shock"] .avatar-expression>span:nth-child(3){top:55%;left:46%;width:10%;height:9%;border:2px solid #a35e56;border-radius:50%;background:#4c1b28b8;animation:avatar-mouth-gasp .65s ease-in-out 3}
+.player[data-reaction="cheer"] .avatar-expression>span:nth-child(1){transform:rotate(9deg)}
+.player[data-reaction="cheer"] .avatar-expression>span:nth-child(2){transform:rotate(-9deg)}
+.player[data-reaction="cheer"] .avatar-expression>span:nth-child(3){top:57%;left:42%;width:18%;height:7%;border:2px solid #ad665d;border-top:0;border-radius:0 0 70% 70%;background:#5a202b8c;animation:avatar-mouth-smile .75s ease-in-out 3}
+.player[data-reaction="thinking"] .avatar-expression>span:nth-child(1){transform:translateY(-35%) rotate(-8deg)}
+.player[data-reaction="thinking"] .avatar-expression>span:nth-child(2){transform:translateY(15%) rotate(4deg)}
+.player[data-reaction="thinking"] .avatar-expression>span:nth-child(3){left:46%;width:13%;height:2%;border-bottom:2px solid #6d3b36;transform:rotate(-9deg);background:transparent}
+@keyframes avatar-mouth-gasp{50%{transform:scaleY(1.22)}}
+@keyframes avatar-mouth-smile{50%{transform:scaleX(1.12) scaleY(1.1)}}
+/* Mechanical and masked characters keep their native illustrated faces. */
+.player .candidate-avatar[data-avatar-number="6"] .avatar-expression,
+.player .candidate-avatar[data-avatar-number="7"] .avatar-expression,
+.player .candidate-avatar[data-avatar-number="8"] .avatar-expression{display:none}
+@media(prefers-reduced-motion:reduce){.player .avatar-expression,.player .avatar-expression>span{animation:none!important;transition:none!important}}
+
+/* V59 · broadcast control rail: reclaim stage height without removing gameplay controls. */
+header{display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:58px!important;padding:8px clamp(10px,2vw,24px)!important}
+header>div:first-child{min-width:0}
+header h1{font-size:clamp(15px,2.4vw,25px)!important;line-height:1.15;margin:0!important}
+.studio-header-controls{display:flex;align-items:center;justify-content:flex-end;gap:clamp(5px,.9vw,12px);flex-wrap:wrap}
+.studio-header-controls .header-round{font-size:clamp(11px,1.25vw,15px);font-weight:850;white-space:nowrap;color:#ffe4a4;padding:7px 10px;border:1px solid #cfa55d88;border-radius:10px;background:#07162c9c;font-variant-numeric:tabular-nums}
+.studio-header-controls .studio-tool,.studio-header-controls #back{display:inline-flex!important;align-items:center;justify-content:center;min-height:38px;padding:7px 11px!important;border-radius:10px;font-size:clamp(11px,1.3vw,14px)!important;white-space:nowrap;text-decoration:none;touch-action:manipulation}
+main>.showbar,main>.status{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;padding:0!important;margin:0!important;border:0!important}
+main{padding-top:clamp(5px,1vw,12px)!important}
+@media(max-width:680px){header{flex-wrap:wrap;gap:6px!important}header>div:first-child{flex:1 1 100%}.studio-header-controls{width:100%;justify-content:space-between;gap:4px}.studio-header-controls .header-round{flex:1 1 auto;text-align:center;padding:7px 4px;font-size:11px}.studio-header-controls .studio-tool,.studio-header-controls #back{min-height:40px;padding:6px!important;font-size:11px!important}main{padding-top:4px!important}}
+@media(max-width:390px){.studio-header-controls{display:grid;grid-template-columns:1fr 1fr 1fr}.studio-header-controls .header-round{grid-column:1/-1}.studio-header-controls .studio-tool,.studio-header-controls #back{width:100%}}
+
+/* V60 · persistent living portraits: stable nodes survive the 1.8s state refresh. */
+.player .candidate-avatar{contain:paint;perspective:400px}
+.player .candidate-avatar .avatar-portrait{backface-visibility:hidden}
+.player .candidate-avatar[data-personality="0"] .avatar-portrait{transform-origin:50% 85%}
+.player .candidate-avatar[data-personality="1"] .avatar-portrait{transform-origin:43% 82%}
+.player .candidate-avatar[data-personality="2"] .avatar-portrait{transform-origin:56% 86%}
+.player .candidate-avatar[data-personality="3"] .avatar-portrait{transform-origin:49% 80%}
+.player .candidate-avatar .avatar-expression{transform-origin:50% 83%;animation:avatar-face-follow var(--idle-duration,6s) ease-in-out infinite;animation-delay:var(--avatar-delay,0s)}
+@keyframes avatar-face-follow{0%,100%{transform:translateY(0) rotate(0)}32%{transform:translateY(-2%) rotate(var(--idle-tilt,0deg))}68%{transform:translateY(.5%) rotate(calc(var(--idle-tilt,0deg) * -.55))}}
+.player[data-reaction="shock"] .avatar-expression{animation:avatar-shock .85s cubic-bezier(.2,.75,.2,1) 2}
+.player[data-reaction="cheer"] .avatar-expression{animation:avatar-cheer .75s ease-in-out 3}
+.player[data-reaction="thinking"] .avatar-expression{animation:avatar-thinking 2.3s ease-in-out 1}
+@media(prefers-reduced-motion:reduce){.player .avatar-expression{animation:none!important}}
+
+/* V61 · individualized responses: four different characters do not react in unison. */
+.player[data-reaction="disbelief"] .avatar-portrait{animation:avatar-disbelief 1.05s ease-in-out 2!important}
+.player[data-reaction="freeze"] .avatar-portrait{animation:avatar-freeze 2.25s ease-in-out 1!important}
+.player[data-reaction="relief"] .avatar-portrait{animation:avatar-relief 1.1s ease-in-out 2!important}
+.player[data-reaction="smile"] .avatar-portrait{animation:avatar-soft-smile 2.15s ease-in-out 1!important}
+.player[data-reaction="disbelief"] .candidate-avatar{border-color:#ffbc94!important}
+.player[data-reaction="relief"],.player[data-reaction="smile"]{--emotion-glow:#8beacb}
+.player[data-reaction="relief"] .candidate-avatar,.player[data-reaction="smile"] .candidate-avatar{box-shadow:0 0 16px #79e8bc55!important}
+@keyframes avatar-disbelief{0%,100%{transform:translateY(0) rotate(0) scale(1.025)}24%{transform:translateY(-3%) rotate(-4deg) scale(1.07)}58%{transform:translateY(1%) rotate(3deg) scale(1.04)}}
+@keyframes avatar-freeze{0%,100%{transform:translateY(0) scale(1.025)}18%,82%{transform:translateY(-2%) scale(1.045)}}
+@keyframes avatar-relief{0%,100%{transform:translateY(0) scale(1.025)}35%{transform:translateY(2%) rotate(1.5deg) scale(1.04)}65%{transform:translateY(-2%) rotate(-1deg) scale(1.06)}}
+@keyframes avatar-soft-smile{0%,100%{transform:translateY(0) scale(1.025)}50%{transform:translateY(-1%) rotate(1deg) scale(1.045)}}
+.player[data-reaction="disbelief"] .avatar-expression,.player[data-reaction="relief"] .avatar-expression,.player[data-reaction="smile"] .avatar-expression{opacity:1}
+.player[data-reaction="disbelief"] .avatar-expression>span:nth-child(1){transform:translateY(-45%) rotate(-20deg)}
+.player[data-reaction="disbelief"] .avatar-expression>span:nth-child(2){transform:translateY(-45%) rotate(20deg)}
+.player[data-reaction="disbelief"] .avatar-expression>span:nth-child(3){width:12%;height:5%;border-radius:50%;background:#532b35a8}
+.player[data-reaction="relief"] .avatar-expression>span:nth-child(3),.player[data-reaction="smile"] .avatar-expression>span:nth-child(3){left:42%;width:18%;height:6%;border-bottom:3px solid #8a4942;border-radius:0 0 70% 70%}
+.player[data-reaction="freeze"] .avatar-expression{opacity:0}
+.player .candidate-avatar[data-avatar-number="6"] .avatar-expression,.player .candidate-avatar[data-avatar-number="7"] .avatar-expression,.player .candidate-avatar[data-avatar-number="8"] .avatar-expression{display:none!important}
+@media(prefers-reduced-motion:reduce){.player[data-reaction] .avatar-portrait{animation:none!important}}
+
+/* V62 · candidate gallery: wider portraits and a genuine TV-stage hierarchy. */
+#players.players{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,1.2vw,18px);margin-top:clamp(10px,1.5vw,20px);align-items:stretch}
+#players .player{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(82px,40%) minmax(0,1fr);grid-template-rows:auto auto 1fr auto;column-gap:clamp(7px,1vw,16px);row-gap:5px;align-items:center;min-height:clamp(145px,16vw,205px);padding:clamp(9px,1.2vw,17px);overflow:hidden;border-radius:20px;background:radial-gradient(ellipse at 28% 4%,#3158788c,transparent 65%),linear-gradient(160deg,#172c49 0%,#071427 90%);border:1px solid #a78756a6;box-shadow:inset 0 1px #fff2c233,0 10px 26px #0007}
+#players .player:before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 28%,#ffe6a50a 45%,transparent 60%),radial-gradient(ellipse at 50% 115%,#f6bd6255,transparent 58%);z-index:-1}
+#players .player:after{content:'';position:absolute;left:10%;right:10%;bottom:0;height:4px;border-radius:50%;background:linear-gradient(90deg,transparent,#c29b57,transparent);box-shadow:0 -4px 16px #e6ac5a50;pointer-events:none}
+#players .player .candidate-avatar{grid-column:1!important;grid-row:1 / span 4!important;align-self:stretch;justify-self:stretch;width:100%!important;height:100%!important;min-height:125px;border-radius:15px!important;border:2px solid #d6b678!important;box-shadow:inset 0 0 0 1px #ffefc740,0 10px 23px #0009!important}
+#players .player .candidate-name{grid-column:2;grid-row:1;min-width:0;overflow-wrap:anywhere;font-size:clamp(13px,1.6vw,21px);line-height:1.12;color:#fff2d5;text-shadow:0 2px 8px #000}
+#players .player .candidate-badge{grid-column:2;grid-row:2;justify-self:start}
+#players .player .candidate-status{grid-column:2;grid-row:3;align-self:start;min-width:0;overflow-wrap:anywhere}
+#players .player .personalcase{grid-column:2;grid-row:4;justify-self:start;margin:0;font-size:clamp(10px,1.1vw,13px);padding:6px 8px}
+#players .player.turn{border:2px solid #ffe2a0!important;background:radial-gradient(ellipse at 28% 4%,#79582b9c,transparent 70%),linear-gradient(150deg,#303452,#111b31)!important;box-shadow:0 0 0 2px #ffd88b35,0 0 35px #f1b9596b,0 14px 30px #0009!important;transform:translateY(-3px);z-index:2}
+#players .player.turn:before{background:linear-gradient(115deg,transparent 15%,#fff2bb22 40%,transparent 65%),radial-gradient(ellipse at 50% 115%,#ffc8698c,transparent 60%)}
+#players .player.turn .candidate-avatar{border-color:#ffe9b0!important;box-shadow:0 0 22px #f7cf8b88,0 10px 23px #0009!important}
+#players .player.turn .candidate-badge{background:linear-gradient(135deg,#ffe8ac,#bc812f);color:#201406;font-weight:900}
+#players .player.dealt:not(.turn){filter:saturate(.83)}
+@media(max-width:1000px){#players.players{grid-template-columns:repeat(2,minmax(0,1fr))}#players .player{min-height:165px;grid-template-columns:minmax(90px,34%) minmax(0,1fr)}#players .player .candidate-name{font-size:clamp(15px,2.4vw,21px)}}
+@media(max-width:530px){#players.players{gap:8px}#players .player{min-height:120px;padding:7px;grid-template-columns:minmax(57px,39%) minmax(0,1fr);column-gap:7px;border-radius:13px}#players .player .candidate-avatar{min-height:100px;border-radius:10px!important}#players .player .candidate-name{font-size:13px}#players .player .candidate-status{font-size:11px}#players .player .candidate-badge{font-size:10px;padding:3px 5px}#players .player .personalcase{font-size:10px;padding:4px 5px}}
+@media(max-width:355px){#players.players{grid-template-columns:1fr}#players .player{min-height:125px;grid-template-columns:110px 1fr}}
+@media(prefers-reduced-motion:reduce){#players .player.turn{transform:none}}
+
+/* V63 · TV director reaction shot, non-modal and non-blocking. */
+.candidate-cutaway[hidden]{display:none!important}
+.candidate-cutaway{position:fixed;right:clamp(10px,2.5vw,36px);bottom:clamp(12px,3vh,35px);z-index:7;display:flex;align-items:center;gap:13px;width:min(390px,calc(100vw - 24px));min-height:142px;padding:11px 16px 11px 10px;border:2px solid #e3b96d;border-radius:20px;background:linear-gradient(115deg,#1e3152f5,#071225f7);box-shadow:0 0 0 2px #ffe8aa22,0 12px 44px #000c,0 0 32px #e4ac4a40;pointer-events:none;opacity:0;transform:translateY(20px) scale(.95);transition:opacity .3s ease,transform .4s cubic-bezier(.16,1,.3,1)}
+.candidate-cutaway.is-visible{opacity:1;transform:translateY(0) scale(1)}
+.candidate-cutaway:before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 20%,#fff5c415 42%,transparent 64%);pointer-events:none}
+.candidate-cutaway-portrait{flex:0 0 112px;width:112px;height:134px;border:2px solid #f8d693;border-radius:13px;background-color:#142b49;background-position:center top;background-size:cover;box-shadow:0 5px 20px #000a;animation:cutaway-entrance .65s ease-out both}
+.candidate-cutaway-copy{display:flex;flex-direction:column;gap:8px;min-width:0;color:#fff0d2}
+#candidate-cutaway-kicker{font-size:10px;letter-spacing:.12em;font-weight:900;color:#ffd47d}
+#candidate-cutaway-name{font-size:clamp(17px,2vw,24px);line-height:1.1;overflow-wrap:anywhere}
+#candidate-cutaway-caption{font-size:clamp(12px,1.2vw,15px);line-height:1.35;color:#e3d4bd}
+.candidate-cutaway[data-mood="shock"]{border-color:#ff9f80;box-shadow:0 12px 44px #000c,0 0 34px #ff6b5255}
+.candidate-cutaway[data-mood="cheer"]{border-color:#a5eac7;box-shadow:0 12px 44px #000c,0 0 34px #71e9b455}
+@keyframes cutaway-entrance{0%{transform:translateX(-12px) scale(.92)}100%{transform:translateX(0) scale(1)}}
+@media(max-width:530px){.candidate-cutaway{right:8px;bottom:8px;width:min(290px,calc(100vw - 16px));min-height:105px;padding:8px;gap:9px}.candidate-cutaway-portrait{flex-basis:78px;width:78px;height:94px}#candidate-cutaway-kicker{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.candidate-cutaway,.candidate-cutaway-portrait{transition:none!important;animation:none!important}}

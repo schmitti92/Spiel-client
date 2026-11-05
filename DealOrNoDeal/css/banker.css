@@ -1,0 +1,182 @@
+
+.banker-call-card{scrollbar-width:thin;scrollbar-color:#e3b765 #0c1b31}
+.banker-call-portrait{background-position:center 38%!important}
+.banker-vote-progress-track{height:12px!important}
+.vote-reveal-card{background:radial-gradient(ellipse at top,#244f77,#08162f 80%)!important}
+.vote-reveal-person{border-radius:12px!important}
+.vote-reveal-countdown{height:7px!important}
+@media(min-width:1000px) and (orientation:landscape) and (max-height:760px){.banker-call-card{padding:10px!important}.banker-call-portrait{height:85px!important}.banker-call-quote{padding:8px!important}.banker-call-amount{font-size:clamp(26px,3vw,42px)!important}.banker-call-actions button{min-height:42px!important}}
+@media(prefers-reduced-motion:reduce){.player.turn{animation:none!important}.case.revealing:after{display:none!important}}
+
+/* V32 — run phone entrance once per distinct offer, avoid visual restart on polling */
+.banker-call:not([hidden]) .banker-call-card,.banker-call:not([hidden]) .banker-call-portrait,.banker-call:not([hidden]) .banker-call-amount,.banker-call:not([hidden]) .banker-call-quote,.banker-call:not([hidden]) .banker-call-actions{animation:none!important}
+.banker-call.call-entering:not([hidden]) .banker-call-card{animation:tv-phone-stage-in .6s cubic-bezier(.2,.85,.2,1) both!important}
+.banker-call.call-entering:not([hidden]) .banker-call-portrait{animation:tv-phone-portrait .75s .12s ease-out both!important}
+.banker-call.call-entering:not([hidden]) .banker-call-amount{animation:tv-offer-number .8s .35s cubic-bezier(.18,.89,.3,1.25) both!important}
+.banker-call.call-entering:not([hidden]) .banker-call-quote{animation:tv-offer-quote .6s .22s ease-out both!important}
+.banker-call.call-entering:not([hidden]) .banker-call-actions{animation:tv-offer-quote .55s .55s ease-out both!important}
+@media(prefers-reduced-motion:reduce){.banker-call.call-entering:not([hidden]) .banker-call-card,.banker-call.call-entering:not([hidden]) .banker-call-portrait,.banker-call.call-entering:not([hidden]) .banker-call-amount,.banker-call.call-entering:not([hidden]) .banker-call-quote,.banker-call.call-entering:not([hidden]) .banker-call-actions{animation:none!important}}
+
+/* V33 — synchronized televised final case reveal */
+.finale-cinema{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:clamp(8px,2vw,26px);background:radial-gradient(ellipse at center,#102e54ef,#020817f7 76%);backdrop-filter:blur(7px)}
+.finale-cinema[hidden],.finale-champion[hidden]{display:none!important}
+.finale-stage{width:min(1180px,97vw);max-height:96dvh;overflow:auto;position:relative;text-align:center;border:3px solid #ffe0a0;border-radius:27px;padding:clamp(12px,2.2vw,30px);background:radial-gradient(ellipse at 50% 0%,#2a5279,#091d3d 54%,#030b1d);box-shadow:inset 0 0 0 2px #855621,0 0 65px #e5ad4b70,0 24px 65px #000d}
+.finale-stage:before{content:"";position:absolute;inset:9px;border:1px solid #ffe4a333;border-radius:20px;pointer-events:none}
+.finale-eyebrow{font-size:clamp(10px,1.1vw,15px);font-weight:950;letter-spacing:.22em;color:#f3c876}
+.finale-stage h2{font-size:clamp(20px,3.1vw,40px);color:#ffe5a5;margin:6px 0;text-shadow:0 2px 7px #000,0 0 18px #eab95570}
+.finale-caption{font-size:clamp(12px,1.4vw,18px);color:#e9e0c9;min-height:1.4em;margin:4px 0 12px}
+.finale-cases{display:flex;align-items:stretch;justify-content:center;gap:clamp(9px,1.7vw,24px);min-height:clamp(185px,35dvh,340px)}
+.finale-player{flex:1 1 0;max-width:260px;min-width:0;position:relative;border:2px solid #a77b3d;border-radius:20px;padding:clamp(8px,1.2vw,17px);background:linear-gradient(150deg,#1a3658,#06152c);box-shadow:0 7px 20px #0009;transition:transform .7s ease,opacity .7s ease,box-shadow .7s ease}
+.finale-player-name{color:#fff0c9;font-weight:900;font-size:clamp(12px,1.4vw,19px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finale-player-avatar{height:clamp(34px,6dvh,66px);max-width:70px;object-fit:cover;border:2px solid #e4bd70;border-radius:10px;margin:5px auto}
+.finale-briefcase{width:100%;height:clamp(85px,18dvh,175px);position:relative;margin:6px auto;perspective:850px;transform-style:preserve-3d}
+.finale-briefcase-front,.finale-briefcase-back{position:absolute;inset:6px 2px;border:3px solid #ffe4a2;border-radius:14px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;box-shadow:inset 0 2px 12px #fff2c4b5,inset 0 -8px 12px #65350e8a,0 8px 14px #000a;transition:transform .85s cubic-bezier(.2,.7,.2,1)}
+.finale-briefcase-front{background:linear-gradient(130deg,#fff2b8,#bd7d2d 28%,#ffe5a0 53%,#9c5d20 80%,#f6ce7c);color:#291606;font-weight:950;font-size:clamp(22px,4vw,54px)}
+.finale-briefcase-front:before{content:"";position:absolute;width:30%;height:13px;border:4px solid #f6d38d;border-bottom:0;border-radius:9px 9px 0 0;top:-18px;box-shadow:0 -2px 4px #0008}
+.finale-briefcase-back{background:radial-gradient(ellipse,#fff0bd,#cf9951 72%,#6a3815);color:#2b1808;transform:rotateY(-180deg);font-size:clamp(13px,1.8vw,24px);font-weight:950;overflow-wrap:anywhere}
+.finale-player.revealed .finale-briefcase-front{transform:rotateY(180deg)}
+.finale-player.revealed .finale-briefcase-back{transform:rotateY(0)}
+.finale-player.winner{border-color:#ffe8a6;box-shadow:0 0 0 2px #eab85e,0 0 38px #f2b748a1;background:linear-gradient(150deg,#4d371a,#132a47);z-index:2}
+.finale-player.winner.champion-focus{transform:scale(1.17);box-shadow:0 0 0 3px #ffe5a0,0 0 65px #ffcb64cf}
+.finale-cases.champion-phase .finale-player:not(.winner){opacity:.22;transform:scale(.85)}
+.finale-player-note{font-size:clamp(10px,1vw,14px);color:#ffebbf;min-height:1.4em}
+.finale-champion{margin:12px auto 5px;animation:finale-congrats-in .7s ease-out both}
+.finale-congrats{font-size:clamp(19px,3vw,37px);font-weight:1000;color:#ffe3a0;text-shadow:0 0 20px #ffc24d}
+.finale-champion-name{font-size:clamp(17px,2.2vw,27px);font-weight:900;color:white}
+.finale-champion-value{font-size:clamp(19px,3vw,35px);font-weight:950;color:#f8d383}
+.finale-skip{display:block;margin:14px auto 0;border:2px solid #f5d18c;border-radius:12px;background:linear-gradient(#2d5175,#0a1e3b);color:#ffe7b2;font-weight:900;font-size:clamp(12px,1.2vw,16px);padding:10px 22px;cursor:pointer;touch-action:manipulation}
+@keyframes finale-congrats-in{from{opacity:0;transform:translateY(14px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-height:680px){.finale-stage{padding:9px}.finale-cases{min-height:165px}.finale-briefcase{height:90px}.finale-player-avatar{height:35px}.finale-stage h2{margin:3px 0}.finale-champion{margin:4px}}
+@media(prefers-reduced-motion:reduce){.finale-player,.finale-briefcase-front,.finale-briefcase-back,.finale-champion{transition:none!important;animation:none!important}}
+
+/* V33.1 — champion becomes the visual centerpiece */
+.finale-cases.champion-phase{gap:clamp(6px,1vw,12px)}
+.finale-cases.champion-phase .finale-player.winner{flex-grow:2.2;max-width:430px;transform:scale(1.14);z-index:3}
+.finale-cases.champion-phase .finale-player:not(.winner){flex-grow:.65;opacity:.18;transform:scale(.82)}
+.finale-cases.champion-phase .finale-player.winner .finale-briefcase{height:clamp(110px,22dvh,215px)}
+.finale-cases.champion-phase .finale-player.winner .finale-briefcase-back{font-size:clamp(20px,2.7vw,38px)}
+@media(max-height:680px){.finale-cases.champion-phase .finale-player.winner .finale-briefcase{height:105px}}
+
+/* V34 — cinematic suspense, countdown, spotlights and victory confetti */
+.finale-stage{overflow:hidden!important;background:radial-gradient(ellipse at 50% -20%,#315f8d,#091d3d 54%,#030b1d)!important}
+.finale-stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 24%,#ffdc8c0b 35%,transparent 46%,#b2d6ff0b 65%,transparent 78%);animation:finale-stage-lights 6s ease-in-out infinite alternate}
+@keyframes finale-stage-lights{to{transform:translateX(9%);opacity:.5}}
+.finale-tension{font-size:clamp(15px,2.3vw,31px);font-weight:1000;letter-spacing:.14em;color:#ffe9b4;min-height:1.5em;margin:4px 0 10px;text-shadow:0 0 14px #ffc761,0 3px 8px #000;animation:finale-tension-pulse 1.2s ease-in-out infinite}
+@keyframes finale-tension-pulse{50%{opacity:.68;transform:scale(1.045)}}
+.finale-cases.finale-suspense .finale-player{animation:finale-case-tremble 1.3s ease-in-out infinite}
+.finale-cases.finale-suspense .finale-player:nth-child(2){animation-delay:.17s}
+.finale-cases.finale-suspense .finale-player:nth-child(3){animation-delay:.36s}
+.finale-cases.finale-suspense .finale-player:nth-child(4){animation-delay:.54s}
+@keyframes finale-case-tremble{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.finale-player.first-reveal{box-shadow:0 0 0 2px #ffe8ae,0 0 32px #f8c66a!important}
+.finale-player.group-reveal{animation:finale-group-flash 1s ease-out}
+@keyframes finale-group-flash{0%{filter:brightness(2);transform:scale(1.07)}100%{filter:brightness(1);transform:scale(1)}}
+.finale-cases.champion-phase .finale-player.winner{animation:finale-winner-rise 1.4s ease-out both}
+@keyframes finale-winner-rise{0%{filter:brightness(2);transform:scale(.95)}55%{filter:brightness(1.4);transform:scale(1.22)}100%{filter:brightness(1);transform:scale(1.14)}}
+.finale-sparks{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:8}
+.finale-confetti{position:absolute;top:-20px;width:9px;height:18px;border-radius:2px;opacity:0;animation:finale-confetti-fall 3.8s var(--delay) ease-in forwards;box-shadow:0 0 7px #fff8}
+@keyframes finale-confetti-fall{0%{transform:translate(0,-15px) rotate(0);opacity:0}8%{opacity:1}90%{opacity:1}100%{transform:translate(var(--drift),100dvh) rotate(900deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){.finale-stage:after,.finale-tension,.finale-cases.finale-suspense .finale-player,.finale-player.group-reveal,.finale-cases.champion-phase .finale-player.winner,.finale-confetti{animation:none!important}}
+
+/* V35 — all contestants vote simultaneously */
+.banker-call-sub{font-size:clamp(12px,1.1vw,16px)!important}
+.banker-call-wait{padding:12px!important;border:1px solid #d6ac62!important;border-radius:12px!important;font-weight:850!important}
+.banker-vote-progress{margin-top:13px!important}
+
+/* V36 — only accepted deals trigger a full-screen premium announcement */
+.vote-reveal{z-index:34!important;inset:0!important;padding:clamp(10px,2vw,30px)!important;background:radial-gradient(ellipse at center,#123a64f2,#020814fa 78%)!important;backdrop-filter:blur(10px)!important}
+.vote-reveal-card.deal-accepted-card{width:min(1050px,96vw)!important;max-width:none!important;max-height:94dvh!important;overflow:auto!important;padding:clamp(18px,3.5vw,54px)!important;border:4px solid #f4ce84!important;border-radius:30px!important;background:radial-gradient(ellipse at 50% 0%,#315d82,#0b2142 58%,#050d1e)!important;box-shadow:inset 0 0 0 2px #795024,0 0 85px #f0b95091,0 28px 75px #000d!important;animation:deal-accepted-enter .7s cubic-bezier(.2,.85,.2,1) both!important}
+.deal-accepted-eyebrow{font-size:clamp(11px,1.2vw,16px);font-weight:900;letter-spacing:.2em;color:#ffe3a5}
+.deal-accepted-icon{font-size:clamp(44px,7vw,94px);filter:drop-shadow(0 0 18px #ffc861);animation:deal-accepted-pop 1s ease-out both}
+.deal-accepted-card h2{font-size:clamp(28px,5vw,70px)!important;font-weight:1000!important;color:#ffe3a0!important;text-shadow:0 0 26px #ffca65a8,0 4px 8px #000!important;margin:5px 0 20px!important}
+.deal-accepted-card .vote-reveal-list{display:grid!important;gap:clamp(12px,2vw,22px)!important}
+.deal-accepted-person{padding:clamp(15px,2vw,26px);border:2px solid #edc47b;border-radius:18px;background:linear-gradient(110deg,#163b61,#0c2444,#163b61);box-shadow:inset 0 1px #fff2bf55,0 7px 22px #0008;animation:deal-accepted-pop .65s ease-out both}
+.deal-accepted-name{font-size:clamp(20px,3.4vw,43px);font-weight:950;color:#fff4d7;line-height:1.25}
+.deal-accepted-amount{display:block;margin-top:10px;font-size:clamp(34px,6vw,83px);font-weight:1000;color:#ffdd89;letter-spacing:-.03em;text-shadow:0 0 25px #ffcb6e80}
+.deal-accepted-footer{font-size:clamp(12px,1.3vw,17px);color:#d8e3f3;margin:20px 0 10px}
+.deal-accepted-card #vote-reveal-close{font-size:clamp(14px,1.5vw,20px)!important;padding:13px 30px!important;min-height:48px}
+@keyframes deal-accepted-enter{from{opacity:0;transform:scale(.83) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes deal-accepted-pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.vote-reveal-card.deal-accepted-card,.deal-accepted-icon,.deal-accepted-person{animation:none!important}}
+
+/* V37 — open studio stage: cases float over the original scenic backdrop */
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.layout>.panel.case-stage{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;padding:0!important;overflow:visible!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.layout>.panel.case-stage:before,.layout>.panel.case-stage:after{display:none!important}
+.layout>.panel.case-stage .cases{background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important;backdrop-filter:none!important;padding:12px 5px 5px!important;overflow:visible!important}
+.layout>.panel.case-stage .case{filter:drop-shadow(0 6px 7px #0009)}
+.layout>.panel:not(.case-stage){background:linear-gradient(150deg,#0d2546a8,#06162db8 70%)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border-color:#d8ad6a9c!important}
+.layout>.panel.bank{background:linear-gradient(150deg,#0b24428f,#051328ae)!important}
+.showbar{background:linear-gradient(95deg,#071b36a3,#0b2446a3)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.status{background:#081b34a8!important;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border-color:#b9945377!important}
+.player{background:linear-gradient(140deg,#0b2344b8,#06162fc5)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.panel h2{background:linear-gradient(90deg,#142a47a8,#0b1c34b3)!important}
+.case-stage h2{display:none!important}
+@media(max-width:900px){.layout>.panel.case-stage .cases{padding:8px 4px!important}}
+
+/* V38 — truly translucent studio HUD: phase, round, money ladder and banker */
+.showbar,.showbar:before,.showbar:after{background:transparent!important;box-shadow:none!important;border-color:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.showbar{padding:4px 8px!important}
+.showbar #show-phase,.showbar #show-round{background:#071a32a1!important;border:1px solid #edc87a69!important;border-radius:10px!important;box-shadow:0 3px 14px #0005!important;text-shadow:0 2px 5px #000!important;padding:5px 11px!important}
+.showbar .studio-progress{background:#08172b60!important;border-color:#f2c77755!important}
+.status{background:transparent!important;border-color:transparent!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:4px 8px!important;min-height:0!important;text-shadow:0 2px 5px #000!important}
+.layout>.panel:not(.case-stage),.layout>.panel.bank{background:#07172a38!important;border-color:#e0b66e5c!important;box-shadow:inset 0 1px 0 #fff3c51a,0 5px 16px #0003!important;backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
+.layout>.panel:not(.case-stage) h2{background:#07172a4d!important;box-shadow:none!important;border-color:#edc77c33!important}
+.layout .money span{background:#081c3770!important;border-color:#d9b66b38!important;box-shadow:none!important;text-shadow:0 2px 3px #000!important}
+.layout .money span.gone{background:#08152930!important;opacity:.35}
+.layout>.panel.bank .bank-quote,.layout>.panel.bank #offer,.layout>.panel.bank #bank-history{background:transparent!important;box-shadow:none!important}
+.layout>.panel.bank .banker{background-image:linear-gradient(180deg,#07172a00 65%,#07172a77),url('assets/banker-goldstudio.png')!important;background-position:center 35%!important;background-size:cover!important;background-repeat:no-repeat!important;box-shadow:0 6px 18px #0005!important;color:transparent!important;text-shadow:none!important;border-radius:13px!important;min-height:125px!important}
+@media(max-width:600px){.showbar #show-phase,.showbar #show-round{padding:4px 6px!important}}
+
+/* V39 — broadcast-grade physical cases and scene transitions */
+.case{perspective:900px;overflow:visible!important;transform-style:preserve-3d;filter:drop-shadow(0 7px 6px #0009);transition:transform .3s cubic-bezier(.2,.8,.2,1),filter .3s!important}
+.case:not(:disabled):hover{transform:translateY(-6px) rotateX(3deg) scale(1.035)!important;filter:drop-shadow(0 14px 12px #000c) drop-shadow(0 0 10px #fbd47e8a)}
+.case .case-shell{position:relative;display:block;width:100%;height:100%;min-height:inherit;transform-style:preserve-3d;border-radius:9px;background:linear-gradient(90deg,#60451e 0%,#e9c47a 5%,#ffedb7 12%,#a36b2a 51%,#f4d58b 88%,#745026 100%);box-shadow:inset 0 0 0 3px #fff0b555,inset 0 -9px 9px #24140980,0 4px 0 #604018,0 8px 12px #000a;overflow:visible}
+.case .case-shell:after{content:'';position:absolute;pointer-events:none;inset:8px 7px;border:1px solid #fff1bc7a;border-radius:5px;box-shadow:inset 0 1px 2px #fff3c47a}
+.case .case-handle{position:absolute!important;z-index:1;left:33%;top:-16px;width:34%;height:18px;border:5px solid #c79b53;border-bottom:0;border-radius:9px 9px 0 0;background:linear-gradient(#4b341d,#a97d42)!important;box-shadow:inset 0 2px 2px #f6d69b,0 -2px 3px #0009}
+.case .case-lid{position:absolute;inset:0;z-index:3;display:grid;place-items:center;border-radius:8px;background:linear-gradient(115deg,#fce6a5 0%,#a87a3a 15%,#f9d995 32%,#b5833b 56%,#f8d992 83%,#80521d);border:2px solid #ffecb2;box-shadow:inset 0 2px 3px #fff7d2c7,inset 0 -8px 10px #5c351b8c,0 2px 4px #0009;transform-origin:top center;backface-visibility:hidden}
+.case .case-lid:before,.case .case-lid:after{content:'';position:absolute;bottom:7px;width:10px;height:14px;background:linear-gradient(90deg,#664117,#f9d48a,#81551f);border:1px solid #ffecb3;border-radius:2px;box-shadow:0 1px 3px #0009}
+.case .case-lid:before{left:11%}.case .case-lid:after{right:11%}
+.case .case-number{position:relative;z-index:2;display:grid;place-items:center;min-width:39px;min-height:35px;padding:0 6px;border-radius:7px;border:1px solid #ffebaf;background:linear-gradient(135deg,#b88a46,#ffedb3 45%,#d3a457);box-shadow:0 3px 5px #3a1f0c77;color:#2b1b0a;text-shadow:0 1px #fff7d7;font-weight:1000;font-size:clamp(18px,2.1vw,30px)}
+.case .case-interior{position:absolute;inset:5px;display:grid;place-items:center;background:linear-gradient(150deg,#35241a,#9b713d 40%,#35251c);border-radius:5px;box-shadow:inset 0 5px 12px #000c}
+.case .case-amount{font-size:clamp(10px,1.1vw,18px);color:#fff0bb;text-shadow:0 2px 6px #000;font-weight:950}
+.case.opened .case-lid{transform:perspective(500px) rotateX(118deg);transition:transform .85s cubic-bezier(.2,.7,.2,1)}
+.case.opened .case-interior{box-shadow:inset 0 5px 13px #000,0 0 16px #ffd06b5c}
+.case.revealing .case-lid{animation:case-lid-suspense 3.1s ease-in-out both}
+.case.revealing{animation:case-suspense 3.1s ease-in-out both!important}
+@keyframes case-lid-suspense{0%,22%{transform:rotateX(0)}35%{transform:rotateX(-8deg)}53%{transform:rotateX(15deg)}72%{transform:rotateX(48deg)}100%{transform:rotateX(110deg)}}
+@keyframes case-suspense{0%,35%{filter:drop-shadow(0 5px 7px #000a)}55%,85%{filter:drop-shadow(0 0 23px #ffd67f)}100%{filter:drop-shadow(0 7px 6px #000a)}}
+.case.personal .case-lid{background:linear-gradient(125deg,#12334d,#44749c 37%,#132d4d 70%,#4a8db4);border-color:#a9d6ef}.case.personal .case-number{background:linear-gradient(#d5f0ff,#639cc2);color:#12324a}
+.case.opened .case-number{opacity:0}.case.opened .case-shell:after{opacity:.3}
+#scene-transition{position:fixed;inset:0;z-index:8;display:grid;place-items:center;pointer-events:none;opacity:0;visibility:hidden;background:radial-gradient(ellipse at 50% 48%,#1d3558ed,#030817ed 70%);transition:opacity .35s,visibility .35s;overflow:hidden}
+#scene-transition.active{opacity:1;visibility:visible}
+#scene-transition:before,#scene-transition:after{content:'';position:absolute;inset:-45%;background:conic-gradient(from 0deg at 50% 50%,transparent 0 17deg,#ffd47e22 20deg,transparent 27deg 60deg,#fff0c51a 65deg,transparent 75deg);animation:studio-spotlights 8s linear infinite}
+#scene-transition:after{animation-direction:reverse;opacity:.6}
+@keyframes studio-spotlights{to{transform:rotate(360deg)}}
+.scene-content{position:relative;z-index:1;text-align:center;padding:30px;transform:scale(.86);transition:transform .5s}
+#scene-transition.active .scene-content{transform:scale(1)}
+.scene-kicker{color:#e7bf77;font-size:clamp(12px,1.8vw,19px);letter-spacing:.34em;font-weight:900}
+.scene-title{font-size:clamp(32px,6vw,85px);font-weight:1000;line-height:1.08;letter-spacing:.04em;background:linear-gradient(#fff5cf,#e5b154 65%,#b37c2d);background-clip:text;-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 5px 15px #000)}
+.scene-subtitle{font-size:clamp(15px,2vw,25px);color:#fff1d1;margin-top:13px}
+.scene-line{height:3px;width:min(60vw,370px);margin:23px auto;background:linear-gradient(90deg,transparent,#ffe3a0,transparent);box-shadow:0 0 19px #f3c367}
+@media(prefers-reduced-motion:reduce){.case.revealing,.case.revealing .case-lid,#scene-transition:before,#scene-transition:after{animation:none!important}#scene-transition{transition:none}}
+
+/* V40 · GOLDSTUDIO DIRECTOR'S CUT: premium material, live lighting, motion hierarchy */
+:root{--show-gold:#f6d68f;--show-brass:#b78337;--show-midnight:#071428}
+body{position:relative;background:linear-gradient(180deg,#0207114d,#030b1a38),url('assets/1000029058.png') center top/cover fixed!important}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 33% 56% at 50% 6%,#f5cb7840,transparent 85%),radial-gradient(ellipse 24% 55% at 9% 25%,#6994dc1d,transparent 90%),radial-gradient(ellipse 24% 55% at 91% 25%,#f6b95d1c,transparent 90%);animation:director-lights 13s ease-in-out infinite alternate}
+@keyframes director-lights{0%{opacity:.55;filter:hue-rotate(-8deg)}100%{opacity:1;filter:hue-rotate(9deg)}}
+body>header,body>main{position:relative;z-index:1}
+header{background:linear-gradient(90deg,#030b19e8,#132748cf 50%,#030b19e8)!important;border-bottom:1px solid #f2cb8159!important;box-shadow:0 8px 24px #0007,inset 0 -1px 0 #fff3bd18!important}
+header h1{background:linear-gradient(180deg,#fff8d9,#f1c978 55%,#ac762e);-webkit-background-clip:text;background-clip:text;color:transparent!important;filter:drop-shadow(0 3px 6px #000a);letter-spacing:.085em}
+.layout>.panel.case-stage{overflow:visible!important;position:relative}
+.layout>.panel.case-stage:before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:24px;background:radial-gradient(ellipse 55% 40% at 50% 52%,#eab7671d,transparent 95%);animation:stage-glow 8s ease-in-out infinite alternate}
+@keyframes stage-glow{to{opacity:.35;transform:scale(1.025)}}
+.cases{position:relative;isolation:isolate;perspective:1200px}
+.cases:after{content:'';position:absolute;pointer-events:none;inset:0;z-index:-1;background:repeating-linear-gradient(0deg,transparent 0 20%,#ffcb6a17 20.3%,transparent 21%);mask-image:linear-gradient(90deg,transparent,#000 8% 92%,transparent)}
+.case{border:0!important;background:transparent!important;padding:2px!important;isolation:isolate;min-width:0;box-shadow:none!important;text-shadow:none!important;touch-action:manipulation}
+.case:before,.case:after{display:none!important}
+.case .case-shell{height:100%;min-height:inherit;border:1px solid #f9dc9c;border-radius:10px;background:linear-gradient(90deg,#765024 0%,#ffdf94 6%,#a46d31 48%,#ffdc8b 94%,#6c481f 100%);box-shadow:inset 0 1px 0 #fff5c5,inset 0 -4px 6px #35200b7a,0 5px 0 #67451d,0 11px 13px #0009}
+.case .case-shell:before{content:'';position:absolute;left:4px;right:4px;bottom:0;height:11px;border-radius:0 0 8px 8px;background:linear-gradient(#b48646,#583818);box-shadow:0 3px 4px #0008;pointer-events:none}
+.case .case-handle{z-index:5!important;top:-13px!important;border-width:4px!important;box-shadow:inset 0 2px 3px #fff3c8,0 0 0 1px #5a381c,0 3px 5px #0009}
+.case .case-lid{background:linear-gradient(108deg,#9a642a,#ffefb9 8%,#d8a455 17%,#f6d78d 35%,#b07c3d 57%,#f7d995 80%,#956027 97%);box-shadow:inset 0 2px 4px #fff5c9,inset 0 -8px 10px #65401b8c,0 2px 4px #0009}
