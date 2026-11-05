@@ -103,5 +103,5 @@ test('module functions are declared before startup and polling begins only in ap
   for (const part of source.slice(0, -1)) {
     assert.ok(!/(?:^|[;{}\\n])\\s*poll\\(\\)\\s*;/.test(part), 'Only app.js may start polling');
   }
-  assert.ok(source[0].includes("'use strict'"), 'Core must establish strict mode');
+  for (let i = 0; i < source.length; i++) {\n    assert.ok(source[i].startsWith("'use strict';"), `${js[i]} must preserve original strict mode`);\n  }
 });
