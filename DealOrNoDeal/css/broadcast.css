@@ -1,0 +1,44 @@
+/* Goldstudio Broadcast V2: layered premium studio and simulated TV banker feed. */
+.case-stage{isolation:isolate;position:relative}
+.case-stage:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 36% 60% at 15% 5%,rgba(255,236,172,.15),transparent 80%),radial-gradient(ellipse 35% 55% at 88% 6%,rgba(255,235,164,.15),transparent 80%);border-radius:inherit}
+.case-stage>.cases{position:relative;z-index:1}
+.broadcast-strap{position:relative;z-index:2;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:9px 13px;margin:0 0 7px;background:linear-gradient(100deg,rgba(6,16,34,.96),rgba(32,40,63,.92),rgba(6,16,34,.96));border:1px solid rgba(244,200,110,.5);border-radius:12px;box-shadow:inset 0 1px rgba(255,245,205,.13),0 7px 22px #0005;overflow:hidden}
+.broadcast-strap:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(102deg,transparent 38%,rgba(255,240,194,.085) 52%,transparent 66%);animation:broadcast-sweep 7s linear infinite}
+.broadcast-identity{display:flex;align-items:center;gap:8px;font:900 11px/1.1 system-ui,sans-serif;letter-spacing:.1em;color:#fff0c7;white-space:nowrap}
+.broadcast-identity small{display:block;margin-top:2px;letter-spacing:.22em;font-size:8px;color:#d9b56a}
+.broadcast-emblem{font-size:25px;color:#ffe29a;text-shadow:0 0 12px #efb64c88}
+.broadcast-ticker{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-weight:800;font-size:clamp(10px,1.05vw,13px);color:#fff7dc}
+.broadcast-ticker.broadcast-reel{animation:broadcast-caption .5s ease-out both}
+.broadcast-stakes{color:#ffe7a8;font-size:clamp(9px,.86vw,12px);font-weight:900;white-space:nowrap;text-shadow:0 0 10px #e6ae524b}
+.broadcast-high-risk .broadcast-strap{border-color:#ffab79;box-shadow:inset 0 0 12px #ff923025,0 0 18px #fb91412a}
+.broadcast-finale .broadcast-strap{border-color:#ffdb8b}
+#banker-call .banker-call-card{position:relative;isolation:isolate;background-image:radial-gradient(ellipse at 50% 0%,rgba(217,172,85,.16),transparent 65%)}
+#banker-call .banker-call-portrait{position:relative;isolation:isolate;overflow:hidden;border:3px solid #b89150!important;border-radius:17px!important;box-shadow:0 0 0 3px #0c2039,0 0 22px #f5c36555,inset 0 0 24px #000a!important}
+#banker-call .banker-call-portrait:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,rgba(0,0,0,.11) 0 1px,transparent 1px 4px);opacity:.42}
+#banker-call .banker-call-portrait:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:linear-gradient(110deg,transparent 36%,rgba(255,255,255,.15) 49%,transparent 61%);transform:translateX(-150%);animation:broadcast-screen-reflection 8s ease-in-out infinite}
+.broadcast-feed-labels{position:absolute;z-index:5;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:8px 10px;color:#faf2df;font:800 10px/1.2 system-ui,sans-serif;letter-spacing:.09em;text-shadow:0 1px 4px #000,0 0 9px #000}
+.broadcast-feed-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.broadcast-feed-top b{padding:5px 9px;background:#b9223b;border:1px solid #ff6b77;border-radius:5px;box-shadow:0 0 12px #ff334b77}
+.broadcast-feed-top>span{padding:5px 7px;background:rgba(8,16,32,.75);border-radius:4px}
+.broadcast-feed-dot{display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:50%;background:#fff;animation:broadcast-blink 1.5s infinite}
+.broadcast-feed-bottom{align-self:stretch;display:flex;justify-content:space-between;background:linear-gradient(90deg,rgba(4,13,27,.92),rgba(4,13,27,.3));padding:5px 8px;border-left:3px solid #ffd988;box-shadow:0 0 9px #0007}
+.broadcast-feed-bottom i{color:#9df2c7;letter-spacing:2px;animation:broadcast-signal 1.3s ease-in-out infinite}
+#banker-call .banker-call-amount{text-shadow:0 2px 2px #000,0 0 26px #ffe59980}
+.broadcast-offer-math{width:100%;margin:10px auto 12px;max-width:600px;padding:10px 12px;border:1px solid #d2ac667e;border-radius:12px;background:linear-gradient(115deg,#0a1831ef,#172b45ed);color:#f1e4c5;box-shadow:inset 0 1px #ffffff18}
+.broadcast-offer-math[hidden]{display:none!important}
+.broadcast-math-title{text-align:center;color:#ffe1a0;font-weight:900;letter-spacing:.12em;font-size:10px;margin:0 0 9px}
+.broadcast-math-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.broadcast-math-grid>div{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:8px;border-radius:8px;background:rgba(255,255,255,.045);border:1px solid #ffffff16}
+.broadcast-math-grid span{font-size:10px;color:#c8d4df}
+.broadcast-math-grid strong{font-size:clamp(14px,2vw,20px);font-variant-numeric:tabular-nums;color:#ffe5a5}
+#broadcast-math-note{margin:8px 0 0;text-align:center;font-size:10px;color:#c9d6e4;line-height:1.35}
+body.broadcast-modal-active #deluxe-director{opacity:0;visibility:hidden;pointer-events:none}
+body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
+@keyframes broadcast-caption{from{opacity:.1;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes broadcast-sweep{0%,70%{transform:translateX(-180%)}100%{transform:translateX(180%)}}
+@keyframes broadcast-screen-reflection{0%,75%{transform:translateX(-180%)}100%{transform:translateX(180%)}}
+@keyframes broadcast-blink{50%{opacity:.35}}
+@keyframes broadcast-signal{50%{opacity:.35}}
+@media(max-width:900px){.broadcast-strap{gap:6px;padding:7px 8px}.broadcast-identity{font-size:9px}.broadcast-identity small{font-size:7px}.broadcast-emblem{font-size:17px}.broadcast-ticker{font-size:10px}}
+@media(max-width:550px){.broadcast-strap{grid-template-columns:auto minmax(0,1fr);gap:5px}.broadcast-stakes{grid-column:1/-1;text-align:center;font-size:10px}.broadcast-ticker{white-space:normal;line-height:1.25;max-height:2.5em}.broadcast-math-grid{gap:5px}.broadcast-math-grid strong{font-size:14px}.broadcast-feed-labels{padding:5px;font-size:8px}}
+@media(prefers-reduced-motion:reduce){.broadcast-strap:after,#banker-call .banker-call-portrait:after,.broadcast-feed-dot,.broadcast-feed-bottom i,.broadcast-ticker.broadcast-reel{animation:none!important}}
