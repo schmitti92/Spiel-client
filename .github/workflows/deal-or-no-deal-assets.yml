@@ -21,4 +21,4 @@ jobs:
         with:
           node-version: '22'
       - name: Validate extracted game assets
-        run: node --test DealOrNoDeal/tests/assets.test.mjs
+        run: node --test DealOrNoDeal/tests/*.test.mjs
