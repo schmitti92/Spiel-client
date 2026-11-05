@@ -25,8 +25,24 @@ function updateBankerCall(){
  $('banker-call-sub').textContent=(26-(g.openedAmounts?.length||0))+' Kofferwerte noch im Spiel · '+(mine?'Entscheide jetzt selbst: Deal oder No Deal?':voted?'Deine Stimme ist gespeichert. Warte auf die anderen Spieler.':'Die Spieler stimmen gleichzeitig ab …');
  const total=h.participants.length;
  const castVotes=h.decisions.length;
- $('banker-vote-progress-fill').style.width=(total?100*castVotes/total:0)+'%';
- $('banker-vote-progress-text').textContent=castVotes+' von '+total+' Stimmen abgegeben · Entscheidungen geheim';
+ const voteProgress=$('banker-vote-progress');
+ const percent=total?Math.min(100,Math.max(0,100*castVotes/total)):0;
+ $('banker-vote-progress-fill').style.width=percent+'%';
+ voteProgress.dataset.stage=total>0&&castVotes===total?'complete':castVotes>0?'voting':'waiting';
+ voteProgress.setAttribute('aria-label',castVotes+' von '+total+' Stimmen abgegeben; die Entscheidungen bleiben geheim');
+ $('banker-vote-progress-text').textContent=total>0&&castVotes===total
+  ? '✦ Alle Stimmen eingegangen · Gleich folgt die Auflösung!'
+  : castVotes+' von '+total+' Stimmen abgegeben · Entscheidungen geheim';
+ // A live show caption reacts only to the public number of votes.
+ const directorCaption=$('banker-director-caption');
+ if(directorCaption){
+  directorCaption.textContent=total>0&&castVotes===total
+   ? 'ALLE STIMMEN SIND DA · DIE ENTSCHEIDUNG FÄLLT'
+   : castVotes>0
+    ? 'DIE KANDIDATEN ENTSCHEIDEN · '+castVotes+' / '+total
+    : 'DIE LEITUNG IST OFFEN · JETZT ENTSCHEIDEN';
+ }
+
  $('banker-call-actions').hidden=!mine;
  $('banker-call-wait').hidden=!!mine;
  $('banker-call-deal').disabled=busy;
