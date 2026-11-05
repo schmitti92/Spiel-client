@@ -204,3 +204,17 @@ main{padding-top:clamp(5px,1vw,12px)!important}
 @keyframes cutaway-entrance{0%{transform:translateX(-12px) scale(.92)}100%{transform:translateX(0) scale(1)}}
 @media(max-width:530px){.candidate-cutaway{right:8px;bottom:8px;width:min(290px,calc(100vw - 16px));min-height:105px;padding:8px;gap:9px}.candidate-cutaway-portrait{flex-basis:78px;width:78px;height:94px}#candidate-cutaway-kicker{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.candidate-cutaway,.candidate-cutaway-portrait{transition:none!important;animation:none!important}}
+
+/* V64 — narrow-screen containment for studio columns and player cards. */
+@media(max-width:700px){
+ html,body{max-width:100%;overflow-x:clip}
+ main,.layout,.layout>.panel,#players{min-width:0;max-width:100%}
+ .layout{display:grid;grid-template-columns:minmax(0,1fr)!important}
+ .layout>.panel{grid-column:1/-1!important;width:100%;min-width:0}
+ #players.players{grid-template-columns:minmax(0,1fr)!important}
+ #players .player{width:100%;min-width:0;grid-template-columns:minmax(76px,35%) minmax(0,1fr)!important}
+ #players .player .candidate-avatar{min-width:0;max-width:100%;background-size:cover!important}
+ .bank,.bank .banker,.bank-quote,#bank-history{min-width:0;max-width:100%}
+ .bank-quote{white-space:normal;overflow-wrap:anywhere}
+ .bank .banker{background-size:contain!important}
+}
