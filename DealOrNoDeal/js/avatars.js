@@ -1,3 +1,4 @@
+'use strict';
 function showCandidateCutaway(kind,caption,duration=2650){
  if(!g||document.hidden||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  if(g.phase==='final'||!g.players?.length)return;
