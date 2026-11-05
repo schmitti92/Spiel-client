@@ -25,10 +25,10 @@ function makeFixture() {
       insertAdjacentElement() {}
     });
   }
-  let insertions = 0;
-  const stage = {querySelector: () => ({}), insertBefore() {insertions++}};
+  let insertions = 0, stinger = null;
+  const stage = {querySelector: () => ({}), insertBefore() {insertions++}, append(el) {insertions++; if (el.id === 'broadcast-no-deal-stinger') stinger = el;}};
   const feed = {dataset: {}, append() {insertions++}};
-  const callbacks = [];
+  const callbacks = [], timers = [];
   const document = {
     hidden: false,
     body: {classList: makeClasses()},
@@ -41,12 +41,12 @@ function makeFixture() {
     }),
     addEventListener() {}
   };
-  const context = { document, window: { setInterval: callback => callbacks.push(callback) },
+  const context = { document, window: { setInterval: callback => callbacks.push(callback), setTimeout: callback => (timers.push(callback), timers.length), clearTimeout() {} },
     g: null, values: [100, 300, 500], eur: value => '€' + (value / 100).toFixed(2) };
   vm.runInNewContext(script, context, {timeout: 1000});
-  assert.equal(insertions, 2, 'The stage strap and the banker feed must be initialized');
+  assert.equal(insertions, 3, 'The stage strap, the nonblocking stinger and banker feed must be initialized');
   assert.equal(callbacks.length, 1);
-  return {context, ids, classes, feed, refresh: callbacks[0]};
+  return {context, ids, classes, feed, stinger, timers, refresh: callbacks[0]};
 }
 
 test('the banker comparison uses public remaining amounts and respects the phase', () => {
@@ -94,4 +94,34 @@ test('banker quote presentation reacts to increased, reduced, and generous offer
   refresh();
   assert.equal(ids.get('broadcast-trend').dataset.direction, 'up');
   assert.equal(feed.dataset.bankerMood, 'generous');
+});
+
+test('unanimous No Deal produces one nonblocking TV stinger after public votes', () => {
+  const {context, refresh, stinger, timers} = makeFixture();
+  assert.equal(stinger.hidden, true);
+  context.g = {id:'show', revision:1, phase:'decision', offer:200, openedAmounts:[],
+    history:[{round:1,participants:['a','b'],decisions:[{id:'a'}]}]};
+  refresh();
+  assert.equal(stinger.hidden,true, 'No secret vote must be revealed early');
+
+  context.g = {...context.g, revision:2, phase:'open', offer:null,
+    history:[{round:1,participants:['a','b'],decisions:[{id:'a',deal:false},{id:'b',deal:false}]}]};
+  refresh();
+  assert.equal(stinger.hidden,false);
+  assert.equal(timers.length,1);
+  context.g = {...context.g, revision:3};
+  refresh();
+  assert.equal(timers.length,1, 'A round must never replay its stinger');
+  timers[0]();
+  assert.equal(stinger.hidden,true);
+
+  context.g = {...context.g, revision:4, phase:'decision', offer:200,
+    history:[{round:1,participants:['a','b'],decisions:[{id:'a',deal:false},{id:'b',deal:false}]},
+      {round:2,participants:['a','b'],decisions:[{id:'a'}]}]};
+  refresh();
+  context.g = {...context.g, revision:5, phase:'open', offer:null,
+    history:[context.g.history[0],{round:2,participants:['a','b'],
+      decisions:[{id:'a',deal:true},{id:'b',deal:false}]}]};
+  refresh();
+  assert.equal(stinger.hidden,true, 'A Deal round must not show the No Deal celebration');
 });
