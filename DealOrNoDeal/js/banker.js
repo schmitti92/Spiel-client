@@ -1,3 +1,4 @@
+'use strict';
 function bankerPhrase(h){
  const seed=String(g?.id||'')+':'+String(h.round);
  let hash=2166136261;for(let i=0;i<seed.length;i++){hash=Math.imul(hash^seed.charCodeAt(i),16777619)}
