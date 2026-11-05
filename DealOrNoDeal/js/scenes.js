@@ -1,3 +1,7 @@
+function clearSceneTransition(){
+ clearTimeout(sceneTimer);sceneTimer=null;
+ const overlay=$('scene-transition');if(overlay){overlay.classList.remove('active');overlay.setAttribute('aria-hidden','true')}
+}
 function announceScene(){
  if(!g){lastSceneKey='';sceneEpoch++;clearSceneTransition();return}
  const phase=g.phase,round=g.round||0;
