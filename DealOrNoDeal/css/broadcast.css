@@ -63,3 +63,14 @@ body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
 @keyframes broadcast-no-deal-burst{0%{opacity:0;transform:translate(-50%,-50%) scale(.78)}10%,72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}}
 @media(max-width:600px){.broadcast-no-deal-stinger{padding:16px 11px}.broadcast-no-deal-stinger strong{font-size:clamp(21px,6vw,32px)}}
 @media(prefers-reduced-motion:reduce){.broadcast-no-deal-stinger.on-air{animation:none!important}}
+
+/* Goldstudio probability broadcast: public odds, not secret case positions. */
+.broadcast-odds{grid-column:1/-1;display:grid;grid-template-columns:auto auto minmax(90px,1fr);gap:9px;align-items:center;padding:5px 9px;border:1px solid #e4bc6855;border-radius:8px;background:linear-gradient(90deg,#162c42b0,#08192ab0);font:800 10px/1.2 system-ui,sans-serif;color:#e5e8e7;letter-spacing:.08em}
+.broadcast-odds[hidden]{display:none!important}
+.broadcast-odds strong{font-size:13px;color:#ffe8b2;font-variant-numeric:tabular-nums}
+.broadcast-odds-track{height:7px;border-radius:8px;background:#ffffff25;overflow:hidden}
+.broadcast-odds-track i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6ccead,#e7c166,#fa6756);transition:width .6s ease}
+.broadcast-odds[data-risk="high"]{border-color:#f57d7088;background:linear-gradient(90deg,#502b3a,#1a243a)}
+.broadcast-odds[data-risk="high"] strong{color:#ffae9a}
+@media(max-width:550px){.broadcast-odds{grid-template-columns:auto auto minmax(38px,1fr);gap:5px;padding:5px;font-size:9px}.broadcast-odds strong{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.broadcast-odds-track i{transition:none}}
