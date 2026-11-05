@@ -52,3 +52,14 @@ body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
 #banker-call .banker-call-portrait[data-banker-mood="generous"]{border-color:#e9d28a!important;box-shadow:0 0 0 3px #0c2039,0 0 30px #f9e09490,inset 0 0 20px #0009!important}
 #banker-call .banker-call-portrait[data-banker-mood="calculating"]{border-color:#a2c4d6!important;box-shadow:0 0 0 3px #0c2039,0 0 23px #64abc76b,inset 0 0 25px #0009!important}
 @media(max-width:550px){.broadcast-trend{font-size:11px;line-height:1.35}}
+
+/* V4 — unanimous NO DEAL gets a television moment, without pausing the round. */
+.broadcast-no-deal-stinger{position:absolute;left:50%;top:50%;z-index:12;transform:translate(-50%,-50%);width:min(91%,570px);pointer-events:none;padding:clamp(16px,3vw,30px);text-align:center;display:grid;gap:8px;border:2px solid #ffe08f;border-radius:22px;background:radial-gradient(ellipse at 50% 0,#553335,#1e1b36 60%,#0b1326);box-shadow:0 0 0 7px #110e2555,0 0 58px #f5aa6577,0 14px 48px #000b;color:#fff0c5}
+.broadcast-no-deal-stinger[hidden]{display:none!important}
+.broadcast-no-deal-stinger span{font-size:clamp(10px,1.25vw,14px);font-weight:800;letter-spacing:.16em;color:#ffc49d}
+.broadcast-no-deal-stinger strong{font-size:clamp(22px,4vw,45px);line-height:1.05;letter-spacing:.06em;color:#fff2ba;text-shadow:0 0 25px #f68f4b8c}
+.broadcast-no-deal-stinger small{font-size:clamp(11px,1.3vw,16px);color:#e6edf4}
+.broadcast-no-deal-stinger.on-air{animation:broadcast-no-deal-burst 2.2s ease-in-out both}
+@keyframes broadcast-no-deal-burst{0%{opacity:0;transform:translate(-50%,-50%) scale(.78)}10%,72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}}
+@media(max-width:600px){.broadcast-no-deal-stinger{padding:16px 11px}.broadcast-no-deal-stinger strong{font-size:clamp(21px,6vw,32px)}}
+@media(prefers-reduced-motion:reduce){.broadcast-no-deal-stinger.on-air{animation:none!important}}
