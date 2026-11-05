@@ -85,3 +85,23 @@ test('game scripts contain exactly one copy of each declared function', () => {
     assert.ok(names.has(required), `Missing game function: ${required}`);
   }
 });
+
+test('HTML local asset references resolve and have no duplicate script includes', () => {
+  const srcs = [...html.matchAll(/<(?:script|img)\\b[^>]*\\bsrc="([^"]+)"/g)].map(m => m[1]);
+  const hrefs = [...html.matchAll(/<link\\b[^>]*\\bhref="([^"]+)"/g)].map(m => m[1]);
+  assert.equal(new Set(srcs.filter(p => p.endsWith('.js'))).size, srcs.filter(p => p.endsWith('.js')).length);
+  for (const url of [...srcs, ...hrefs]) {
+    if (/^(?:https?:|data:|#|\\/)/i.test(url)) continue;
+    const target = url.split(/[?#]/)[0];
+    assert.ok(existsSync(resolve(root, target)), `Missing HTML asset: ${url}`);
+  }
+});
+
+test('module functions are declared before startup and polling begins only in app.js', () => {
+  const source = js.map(path => readFileSync(resolve(root, path), 'utf8'));
+  assert.ok(source.at(-1).includes('poll();'), 'app.js must start polling');
+  for (const part of source.slice(0, -1)) {
+    assert.ok(!/(?:^|[;{}\\n])\\s*poll\\(\\)\\s*;/.test(part), 'Only app.js may start polling');
+  }
+  assert.ok(source[0].includes("'use strict'"), 'Core must establish strict mode');
+});
