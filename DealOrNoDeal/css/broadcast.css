@@ -149,3 +149,25 @@ body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
 .broadcast-pressure-labels{display:flex;justify-content:space-between;color:#cad4e1;font-size:9px;gap:3px}
 @media(max-width:760px){.broadcast-offer-pressure{padding:6px 8px 4px;margin-top:5px}.broadcast-pressure-heading{font-size:10px}.broadcast-pressure-labels{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.broadcast-pressure-track>span{transition:none}}
+
+/* V7 — TV director lower-third, suspense voting and stage camera language. */
+#banker-call .banker-call-portrait{overflow:hidden;isolation:isolate}
+#banker-call .banker-director-caption{position:absolute;z-index:6;bottom:clamp(38px,5.4vw,58px);left:clamp(8px,1.5vw,22px);right:clamp(8px,1.5vw,22px);display:block;padding:clamp(7px,1vw,13px);background:linear-gradient(100deg,#081d39f0,#102e51c9 75%,#0b1e39c9);border-left:4px solid #ffd18a;border-bottom:1px solid #f7cc8260;border-radius:4px 9px 9px 4px;color:#fff4d8;font:900 clamp(10px,1.05vw,15px)/1.4 system-ui,sans-serif;letter-spacing:.08em;text-align:left;text-shadow:0 2px 4px #000;box-shadow:0 5px 20px #0009;animation:banker-lower-third-in .7s ease-out both}
+@keyframes banker-lower-third-in{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+#banker-call .banker-vote-progress{padding:10px 12px;border:1px solid #e2c27d59;border-radius:11px;background:#091b32b8;transition:border-color .35s,background .35s}
+#banker-call .banker-vote-progress-track{height:clamp(12px,1.5vw,19px)!important;overflow:hidden;border-radius:18px;background:#061324;border:1px solid #f4d49455}
+#banker-call #banker-vote-progress-fill{display:block;height:100%;border-radius:18px;background:linear-gradient(90deg,#ac7b42,#f5ce78,#fff3b5);box-shadow:0 0 14px #f5c9758c;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+#banker-call .banker-vote-progress[data-stage="complete"]{border-color:#b4efc4;background:linear-gradient(120deg,#0d3b38,#0c253b);box-shadow:0 0 22px #65d4a52a}
+#banker-call .banker-vote-progress[data-stage="complete"] #banker-vote-progress-fill{background:linear-gradient(90deg,#4aaf8c,#aaf2c2,#eaffd8)}
+#banker-call .banker-vote-progress[data-stage="complete"] #banker-vote-progress-text{color:#c8ffe0;font-weight:950}
+#banker-call .banker-call-card{scrollbar-gutter:stable}
+#banker-call .banker-call-portrait{background-size:cover!important}
+@media(max-width:760px),(max-height:540px){
+ #banker-call .banker-director-caption{bottom:30px;left:8px;right:8px;padding:5px 7px;font-size:10px;letter-spacing:.02em}
+ #banker-call .banker-vote-progress{padding:6px 8px}
+ #banker-call .banker-vote-progress-track{height:12px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #banker-call .banker-director-caption{animation:none!important}
+ #banker-call #banker-vote-progress-fill{transition:none!important}
+}
