@@ -11,7 +11,10 @@
   strap.innerHTML =
     '<div class="broadcast-identity"><span class="broadcast-emblem">✦</span><span>GOLDSTUDIO <small>PRIMETIME</small></span></div>' +
     '<div class="broadcast-ticker" id="broadcast-ticker">26 Koffer. Eine große Entscheidung.</div>' +
-    '<span class="broadcast-stakes" id="broadcast-stakes">● LIVE</span>';
+    '<span class="broadcast-stakes" id="broadcast-stakes">● LIVE</span>' +
+    '<div class="broadcast-odds" id="broadcast-odds" aria-label="Wahrscheinlichkeit beim nächsten Koffer">' +
+    '<span id="broadcast-odds-title">NÄCHSTER KOFFER</span><strong id="broadcast-odds-value">–</strong>' +
+    '<div class="broadcast-odds-track"><i id="broadcast-odds-fill"></i></div></div>';
   stage.insertBefore(strap, stage.querySelector('.cases'));
   // A non-blocking television stinger for a unanimous NO DEAL decision.
   const stinger = document.createElement('div');
@@ -66,6 +69,22 @@
     const largest = count ? Math.max(...remaining) : 0;
     const highCount = remaining.filter(v => v >= 100000000).length; // At least one million euros, values are cents.
     const phase = game?.phase || 'waiting';
+    const oddsPanel = $('broadcast-odds');
+    const oddsTitle = $('broadcast-odds-title');
+    const oddsValue = $('broadcast-odds-value');
+    const oddsFill = $('broadcast-odds-fill');
+    // Conditional probability only: the next random unopened case, not any selected personal case.
+    const canOpen = game && (phase === 'open' || phase === 'reveal') && count > 0;
+    if (oddsPanel && oddsTitle && oddsValue && oddsFill) {
+      oddsPanel.hidden = !canOpen;
+      if (canOpen) {
+        const probability = highCount / count * 100;
+        oddsTitle.textContent = 'RISIKO: ≥ 1 MIO. €';
+        oddsValue.textContent = probability.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' %';
+        oddsFill.style.width = probability.toFixed(2) + '%';
+        oddsPanel.dataset.risk = probability >= 50 ? 'high' : probability >= 20 ? 'medium' : 'low';
+      }
+    }
     const lastRound = game?.history?.at(-1);
     const allRefused = lastRound?.participants?.length > 0 &&
       lastRound.decisions?.length === lastRound.participants.length &&
