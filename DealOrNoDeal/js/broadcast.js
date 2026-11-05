@@ -32,7 +32,8 @@
     '<div class="broadcast-math-grid">' +
     '<div><span>Durchschnitt der unbekannten Beträge</span><strong id="broadcast-math-average">–</strong></div>' +
     '<div><span>Bankangebot im Vergleich</span><strong id="broadcast-math-ratio">–</strong></div>' +
-    '</div><p id="broadcast-math-note">Rechnerische Orientierung, keine Gewinnprognose.</p>';
+    '</div><div class="broadcast-trend" id="broadcast-trend">☎ Das erste Angebot ist da!</div>' +
+    '<p id="broadcast-math-note">Rechnerische Orientierung, keine Gewinnprognose.</p>';
   const callSub = document.getElementById('banker-call-sub');
   if (callSub) callSub.insertAdjacentElement('afterend', offerMath);
 
@@ -86,10 +87,29 @@
     if (!offerMath.isConnected) return;
     if (phase !== 'decision' || !Number.isFinite(game.offer) || count === 0) {
       offerMath.hidden = true;
+      feed.dataset.bankerMood = 'idle';
       return;
     }
     const avg = remaining.reduce((sum, amount) => sum + amount, 0) / count;
     const ratio = avg > 0 ? game.offer / avg * 100 : 0;
+    const previousOffer = game.history?.length > 1 ? game.history.at(-2)?.offer : null;
+    const trend = $('broadcast-trend');
+    if (trend) {
+      if (Number.isFinite(previousOffer) && previousOffer > 0) {
+        const percentage = Math.round((game.offer - previousOffer) / previousOffer * 100);
+        trend.textContent = percentage > 0
+          ? '↗ Der Banker erhöht sein Angebot um ' + percentage + ' %.'
+          : percentage < 0
+            ? '↘ Der Banker senkt sein Angebot um ' + Math.abs(percentage) + ' %.'
+            : '→ Der Banker bleibt bei seinem bisherigen Angebot.';
+        trend.dataset.direction = percentage > 0 ? 'up' : percentage < 0 ? 'down' : 'same';
+      } else {
+        trend.textContent = '☎ Das erste Bankangebot liegt auf dem Tisch.';
+        trend.dataset.direction = 'first';
+      }
+    }
+    const mood = ratio < 35 ? 'poker' : ratio >= 80 ? 'generous' : 'calculating';
+    feed.dataset.bankerMood = mood;
     $('broadcast-math-average').textContent = currency(avg);
     $('broadcast-math-ratio').textContent = ratio.toLocaleString('de-DE', { maximumFractionDigits: 0 }) + ' %';
     $('broadcast-math-note').textContent = count + ' unbekannte Beträge · ' +
