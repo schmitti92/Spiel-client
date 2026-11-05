@@ -1,3 +1,8 @@
+function bankerPhrase(h){
+ const seed=String(g?.id||'')+':'+String(h.round);
+ let hash=2166136261;for(let i=0;i<seed.length;i++){hash=Math.imul(hash^seed.charCodeAt(i),16777619)}
+ return bankerPhrases[(hash>>>0)%bankerPhrases.length];
+}
 function updateBankerCall(){
  const call=$('banker-call');
  if(!g||g.phase!=='decision'||!g.history?.length){call.hidden=true;call.classList.remove('call-entering');call.removeAttribute('data-offer-key');return}
