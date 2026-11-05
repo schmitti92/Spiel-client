@@ -1,3 +1,4 @@
+'use strict';
 function clearSceneTransition(){
  clearTimeout(sceneTimer);sceneTimer=null;
  const overlay=$('scene-transition');if(overlay){overlay.classList.remove('active');overlay.setAttribute('aria-hidden','true')}
