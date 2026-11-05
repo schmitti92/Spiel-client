@@ -27,7 +27,3 @@ function startFinaleCinema(){
 }
 /* V47 — centralized visual scene director. Server phases remain authoritative. */
 let lastSceneKey='',sceneTimer=null,sceneEpoch=0;
-function clearSceneTransition(){
- clearTimeout(sceneTimer);sceneTimer=null;
- const overlay=$('scene-transition');if(overlay){overlay.classList.remove('active');overlay.setAttribute('aria-hidden','true')}
-}
