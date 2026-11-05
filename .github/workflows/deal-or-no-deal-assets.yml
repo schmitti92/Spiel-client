@@ -2,6 +2,7 @@ name: Deal or No Deal asset checks
 on:
   push:
     branches:
+      - main
       - refactor/deal-or-no-deal-assets-20261105
     paths:
       - 'DealOrNoDeal/**'
