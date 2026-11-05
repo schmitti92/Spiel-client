@@ -19,9 +19,9 @@ function makeFixture() {
   const ids = new Map();
   for (const name of ['banker-call', 'banker-call-sub', 'broadcast-ticker',
     'broadcast-stakes', 'broadcast-math-average', 'broadcast-math-ratio',
-    'broadcast-math-note', 'broadcast-trend']) {
+    'broadcast-math-note', 'broadcast-trend', 'broadcast-odds', 'broadcast-odds-title', 'broadcast-odds-value', 'broadcast-odds-fill']) {
     ids.set(name, {
-      isConnected: true, hidden: false, textContent: '', dataset: {}, classList: makeClasses(),
+      isConnected: true, hidden: false, textContent: '', dataset: {}, style: {}, classList: makeClasses(),
       insertAdjacentElement() {}
     });
   }
@@ -124,4 +124,22 @@ test('unanimous No Deal produces one nonblocking TV stinger after public votes',
       decisions:[{id:'a',deal:true},{id:'b',deal:false}]}]};
   refresh();
   assert.equal(stinger.hidden,true, 'A Deal round must not show the No Deal celebration');
+});
+
+test('risk meter derives exact public probability and hides outside opening', () => {
+  const {context, ids, refresh} = makeFixture();
+  context.values = [100, 100000000, 500, 200000000];
+  context.g = {id:'risk', revision:1, phase:'open', openedAmounts:[{case:0,amount:100}]};
+  refresh();
+  assert.equal(ids.get('broadcast-odds').hidden,false);
+  assert.equal(ids.get('broadcast-odds-value').textContent,'66,7 %');
+  assert.equal(ids.get('broadcast-odds-fill').style.width,'66.67%');
+  assert.equal(ids.get('broadcast-odds').dataset.risk,'high');
+  context.g = {...context.g, revision:2, phase:'decision', offer:200};
+  refresh();
+  assert.equal(ids.get('broadcast-odds').hidden,true);
+  context.g = {...context.g, revision:3, phase:'open', openedAmounts:[{case:0,amount:100},{case:1,amount:100000000},{case:3,amount:200000000}]};
+  refresh();
+  assert.equal(ids.get('broadcast-odds-value').textContent,'0 %');
+  assert.equal(ids.get('broadcast-odds').dataset.risk,'low');
 });
