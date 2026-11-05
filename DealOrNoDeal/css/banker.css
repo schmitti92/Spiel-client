@@ -125,7 +125,7 @@
 .layout .money span{background:#081c3770!important;border-color:#d9b66b38!important;box-shadow:none!important;text-shadow:0 2px 3px #000!important}
 .layout .money span.gone{background:#08152930!important;opacity:.35}
 .layout>.panel.bank .bank-quote,.layout>.panel.bank #offer,.layout>.panel.bank #bank-history{background:transparent!important;box-shadow:none!important}
-.layout>.panel.bank .banker{background-image:linear-gradient(180deg,#07172a00 65%,#07172a77),url('assets/banker-goldstudio.png')!important;background-position:center 35%!important;background-size:cover!important;background-repeat:no-repeat!important;box-shadow:0 6px 18px #0005!important;color:transparent!important;text-shadow:none!important;border-radius:13px!important;min-height:125px!important}
+.layout>.panel.bank .banker{background-image:linear-gradient(180deg,#07172a00 65%,#07172a77),url('../assets/banker-goldstudio.png')!important;background-position:center 35%!important;background-size:cover!important;background-repeat:no-repeat!important;box-shadow:0 6px 18px #0005!important;color:transparent!important;text-shadow:none!important;border-radius:13px!important;min-height:125px!important}
 @media(max-width:600px){.showbar #show-phase,.showbar #show-round{padding:4px 6px!important}}
 
 /* V39 — broadcast-grade physical cases and scene transitions */
@@ -163,7 +163,7 @@
 
 /* V40 · GOLDSTUDIO DIRECTOR'S CUT: premium material, live lighting, motion hierarchy */
 :root{--show-gold:#f6d68f;--show-brass:#b78337;--show-midnight:#071428}
-body{position:relative;background:linear-gradient(180deg,#0207114d,#030b1a38),url('assets/1000029058.png') center top/cover fixed!important}
+body{position:relative;background:linear-gradient(180deg,#0207114d,#030b1a38),url('../assets/1000029058.png') center top/cover fixed!important}
 body:before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 33% 56% at 50% 6%,#f5cb7840,transparent 85%),radial-gradient(ellipse 24% 55% at 9% 25%,#6994dc1d,transparent 90%),radial-gradient(ellipse 24% 55% at 91% 25%,#f6b95d1c,transparent 90%);animation:director-lights 13s ease-in-out infinite alternate}
 @keyframes director-lights{0%{opacity:.55;filter:hue-rotate(-8deg)}100%{opacity:1;filter:hue-rotate(9deg)}}
 body>header,body>main{position:relative;z-index:1}
