@@ -218,3 +218,13 @@ main{padding-top:clamp(5px,1vw,12px)!important}
  .bank-quote{white-space:normal;overflow-wrap:anywhere}
  .bank .banker{background-size:contain!important}
 }
+
+/* V65 — compact candidate cards on narrow touch screens. */
+@media(max-width:700px){
+ #players.players{gap:9px;margin-top:10px}
+ #players .player{min-height:112px;grid-template-columns:minmax(80px,28%) minmax(0,1fr)!important;grid-template-rows:auto auto 1fr auto;row-gap:3px;padding:8px 10px}
+ #players .player .candidate-avatar{min-height:92px;max-height:118px;align-self:center;height:100%!important}
+ #players .player .candidate-name{font-size:clamp(15px,4vw,19px)}
+ #players .player .candidate-status{font-size:12px}
+ #players .player .personalcase{font-size:11px}
+}
