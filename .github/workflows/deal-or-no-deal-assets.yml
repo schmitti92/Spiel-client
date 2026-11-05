@@ -1,0 +1,23 @@
+name: Deal or No Deal asset checks
+on:
+  push:
+    branches:
+      - refactor/deal-or-no-deal-assets-20261105
+    paths:
+      - 'DealOrNoDeal/**'
+      - '.github/workflows/deal-or-no-deal-assets.yml'
+  pull_request:
+    paths:
+      - 'DealOrNoDeal/**'
+      - '.github/workflows/deal-or-no-deal-assets.yml'
+  workflow_dispatch:
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate extracted game assets
+        run: node --test DealOrNoDeal/tests/assets.test.mjs
