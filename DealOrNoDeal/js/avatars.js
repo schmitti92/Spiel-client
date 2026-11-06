@@ -4,11 +4,11 @@ function showCandidateCutaway(kind,caption,duration=2650){
  if(g.phase==='final'||!g.players?.length)return;
  const current=g.players.find(p=>p.id===g.currentPlayerId)||g.players.find(p=>p.id===g.turnPlayerId)||g.players[0];
  if(!current)return;
- const avatarNumber=Number.isInteger(current.avatar)&&current.avatar>=1&&current.avatar<=10?current.avatar:g.players.indexOf(current)%4+1;
+ const avatarNumber=Number.isInteger(current.avatar)&&current.avatar>=1&&current.avatar<=11?current.avatar:g.players.indexOf(current)%4+1;
  const panel=$('candidate-cutaway');if(!panel)return;
  clearTimeout(candidateCutawayTimer);const token=++candidateCutawayToken;
  panel.dataset.mood=kind;
- $('candidate-cutaway-portrait').style.backgroundImage="url('assets/"+(avatarNumber===2?'bert-avatar.webp':avatarNumber===3?'ernie-avatar.webp':avatarNumber===5?'buero-portrait-02-avatar.webp':avatarNumber===7?'avatar-portrait-05-avatar.webp':avatarNumber===1?'buero-portrait-01-avatar.webp':avatarNumber===4?'heinz-becker-avatar.webp':'avatar-'+avatarNumber+'.svg')+"')";
+ $('candidate-cutaway-portrait').style.backgroundImage="url('assets/"+(avatarNumber===11?'weihnachts_event/reindeer-9985063_640.jpg':avatarNumber===2?'bert-avatar.webp':avatarNumber===3?'ernie-avatar.webp':avatarNumber===5?'buero-portrait-02-avatar.webp':avatarNumber===7?'avatar-portrait-05-avatar.webp':avatarNumber===1?'buero-portrait-01-avatar.webp':avatarNumber===4?'heinz-becker-avatar.webp':'avatar-'+avatarNumber+'.svg')+"')";
  $('candidate-cutaway-name').textContent=current.name;
  $('candidate-cutaway-caption').textContent=caption;
  $('candidate-cutaway-kicker').textContent=kind==='shock'?'● LIVE · SCHOCKREAKTION':kind==='cheer'?'● LIVE · ERLEICHTERUNG':'● LIVE · KANDIDATENREAKTION';
