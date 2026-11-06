@@ -20,7 +20,7 @@ function directorReveal(){
  const lowThreshold=sortedScale[Math.floor(sortedScale.length*.25)]??-Infinity;
  const huge=item.amount>=highThreshold,small=item.amount<=lowThreshold;
  const mood=huge?'loss':small?'relief':'neutral';
- setAvatarReaction(huge?'shock':small?'cheer':'curious',2300);showCandidateCutaway(huge?'shock':small?'cheer':'curious',huge?'Ein großer Gewinn ist verloren!':small?'Die hohen Gewinne bleiben im Spiel!':'Ein weiterer Koffer ist geöffnet.',2550);
+ setAvatarReaction(huge?'shock':small?'cheer':'curious',2300);
  const label=huge?'SCHOCK IM GOLDSTUDIO!':small?'GLÜCK GEHABT!':'KOFFER '+(item.case+1)+' GEÖFFNET';
  const flash=$('prize-flash');
  clearTimeout(prizeFlashTimer);clearTimeout(prizeFlashDelay);
