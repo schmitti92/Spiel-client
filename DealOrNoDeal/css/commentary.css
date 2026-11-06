@@ -1,13 +1,31 @@
-/* Studio character commentary, below banker without changing banker height */
-.layout{position:relative}
-.studio-commentary{grid-column:3;align-self:start;display:flex;align-items:center;gap:10px;padding:11px;border:1px solid #dfb975;border-radius:14px;background:linear-gradient(145deg,#07172de8,#172b4de5);color:#fff0cb;box-shadow:0 5px 18px #0008;min-width:0}
+/* Character commentary: large studio speech card at bottom right.
+   Presentation only. Hidden state and reduced motion are respected. */
 .studio-commentary[hidden]{display:none!important}
-.studio-commentary img{width:54px;height:62px;object-fit:cover;border:1px solid #eac77e;border-radius:10px;flex:none}
-.studio-commentary strong{display:block;font-size:13px;color:#ffdb8c;margin-bottom:4px}
-.studio-commentary p{font-size:clamp(12px,1.05vw,15px);line-height:1.35;margin:0}
-@media(min-width:761px){.layout>.studio-commentary{grid-column:3;grid-row:1;align-self:end;transform:translateY(calc(100% + 9px));z-index:2;pointer-events:none}}
-@media(max-width:760px){.layout>.studio-commentary{grid-column:1/-1;grid-row:auto;transform:none}}
-@media(prefers-reduced-motion:no-preference){.studio-commentary:not([hidden]){animation:studio-comment-in .25s ease-out}@keyframes studio-comment-in{from{opacity:0;filter:blur(3px)}to{opacity:1;filter:none}}}
-
-@media(min-width:761px){.layout>.bank{position:relative!important;overflow:visible!important}.layout>.bank>.studio-commentary{position:absolute;top:calc(100% + 12px);left:0;width:100%;box-sizing:border-box;transform:none!important;pointer-events:none}}
-@media(max-width:760px){.layout>.bank>.studio-commentary{position:static;width:100%;box-sizing:border-box;margin-top:12px}}
+.layout>.bank>.studio-commentary{
+ position:fixed!important;left:auto!important;top:auto!important;
+ right:clamp(12px,1.5vw,28px)!important;bottom:clamp(16px,3vh,36px)!important;
+ width:clamp(360px,35vw,550px)!important;max-width:calc(100vw - 24px)!important;
+ min-height:148px!important;box-sizing:border-box!important;
+ display:flex!important;align-items:center!important;gap:18px!important;
+ padding:19px 22px!important;border:2px solid #e9c17a!important;
+ border-radius:20px!important;background:linear-gradient(135deg,#07172ff5,#1a3157f2)!important;
+ color:#fff2d2!important;box-shadow:0 14px 42px #000b,inset 0 1px #fff4,0 0 20px #d5a24d45!important;
+ z-index:75!important;transform:none!important;pointer-events:none!important;
+}
+.studio-commentary img{
+ width:clamp(88px,8vw,124px)!important;height:clamp(105px,10vw,142px)!important;
+ flex:none!important;object-fit:cover!important;border:2px solid #f1cf86!important;
+ border-radius:14px!important;box-shadow:0 4px 14px #0009!important
+}
+.studio-commentary>div{min-width:0;flex:1}
+.studio-commentary strong{display:block;color:#ffdc91;font-size:clamp(19px,1.65vw,26px);margin-bottom:10px;line-height:1.15}
+.studio-commentary p{margin:0;color:#fff4df;font-size:clamp(17px,1.45vw,23px);line-height:1.4;font-weight:600;overflow-wrap:break-word}
+@media(max-width:760px){
+ .layout>.bank>.studio-commentary{right:10px!important;bottom:12px!important;width:min(440px,calc(100vw - 20px))!important;min-height:100px!important;padding:12px!important;gap:12px!important}
+ .studio-commentary img{width:74px!important;height:88px!important}
+ .studio-commentary strong{font-size:17px}.studio-commentary p{font-size:15px}
+}
+@media(prefers-reduced-motion:no-preference){
+ .studio-commentary:not([hidden]){animation:studio-comment-in .3s ease-out}
+ @keyframes studio-comment-in{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+}
