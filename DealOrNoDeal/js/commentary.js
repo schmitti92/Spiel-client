@@ -25,7 +25,7 @@ function studioCommentRender(){
  const mood=entry.mood||'nachdenklich';
  if(entry.name==='Stromberg'){
   portrait.onerror=()=>{portrait.onerror=null;portrait.src='./assets/'+entry.image};
-  portrait.src='./assets/stromberg-'+mood+'.webp';
+  portrait.src='./assets/stromberg-'+mood+'.png';
  }else{portrait.onerror=null;portrait.src='./assets/'+entry.image}
  portrait.alt='';
  document.getElementById('studio-commentary-name').textContent=entry.name;
