@@ -32,7 +32,7 @@ function studioCommentRender(){
  document.getElementById('studio-commentary-line').textContent=entry.line;
  el.hidden=false;
  clearTimeout(studioCommentary.timer);
- studioCommentary.timer=setTimeout(studioCommentRender,5700);
+ studioCommentary.timer=setTimeout(studioCommentRender,3800);
 }
 function studioStrombergMood(category,line){
  if(/millionLost|huge/.test(category))return 'ueberrascht';
@@ -53,12 +53,8 @@ function studioCommentExpression(category,priority){
 function studioCommentQueue(entry,priority=1){
  if(!entry?.line)return;
  const state=studioCommentary;
- // One memorable remark is better than a backlog of stale commentary.
- if(state.active&&priority<3)return;
- if(state.queue.length){
-  if(priority<=state.queue[0].priority)return;
-  state.queue.length=0;
- }
+ // Every opened case gets its own reaction, even when earlier reactions are playing.
+ // Banker remarks may queue too, but must never displace case reactions.
  state.queue.push({...entry,mood:entry.name==='Stromberg'?(entry.mood||studioStrombergMood(entry.category,entry.line)):null,priority});
  if(!state.active)studioCommentRender();
 }
@@ -105,9 +101,9 @@ function studioCommentObserve(game){
  const avatar=Number(current?.avatar);
  const personality=studioCommentLines[avatar];
  if(!personality)return;
- for(const item of fresh.slice(-2)){
+ for(const item of fresh){
   const amount=Number(item.amount);
-  const category=avatar===1?(amount<=100?'tiny':amount<=1000?'small':amount<=25000?'medium':amount<=200000?'high':amount<1000000?'huge':'millionLost'):(amount<=1000?'small':amount>=50000?'large':null);
+  const category=avatar===1?(amount<=100?'tiny':amount<=1000?'small':amount<=25000?'medium':amount<=200000?'high':amount<1000000?'huge':'millionLost'):(amount<=1000?'small':'large');
   if(!category)continue;
   state.lastEvent++;
   let priority=1,line=null;
@@ -125,16 +121,11 @@ function studioCommentObserve(game){
    }
    state.strombergMemory={case:item.case,good};
    if(!line)line=studioCommentPick(1,category,Number(item.case)+opened.length);
-   // Ordinary openings get occasional commentary; dramatic losses and story beats take precedence.
-   if(priority===1){
-    if(amount>=1000000)priority=3;
-    else if(amount>=200000)priority=2;
-    else if(state.lastEvent%3!==0)continue;
-   }
+
   }else{
-   if(state.lastEvent%2!==0)continue;
    line=studioCommentPick(avatar,category,Number(item.case)+opened.length);
   }
+  if(!line)line='Der nächste Koffer ist geöffnet.';
   studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
  }
 }
