@@ -42,6 +42,14 @@ function studioStrombergMood(category,line){
  if(/medium/.test(category))return 'nachdenklich';
  return /nicht meine|Ausführungsfehler|Zuständigkeiten/.test(line||'')?'scheinheilig':'nachdenklich';
 }
+function studioCommentExpression(category,priority){
+ if(category==='bankerGood')return 'thinking';
+ if(category==='bankerBad')return 'annoyed';
+ if(category==='millionLost'||category==='huge')return 'surprised';
+ if(category==='high')return 'angry';
+ if(category==='tiny'||category==='small')return 'proud';
+ return priority>=3?'smug':'thinking';
+}
 function studioCommentQueue(entry,priority=1){
  if(!entry?.line)return;
  const state=studioCommentary;
