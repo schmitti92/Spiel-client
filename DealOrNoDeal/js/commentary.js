@@ -2,13 +2,13 @@
 /* Local, presentation-only character reactions. No hidden information or game writes. */
 const studioCommentary={
  gameId:null,seen:new Set(),seenOffers:new Set(),lastLine:new Map(),queue:[],
- timer:null,active:false,lastShownAt:0,lastEvent:0,
+ timer:null,active:false,lastShownAt:0,lastEvent:0,decisionKeys:new Set(),
  strombergMemory:null,story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}
 };
 function studioCommentReset(game){
  clearTimeout(studioCommentary.timer);
  Object.assign(studioCommentary,{timer:null,queue:[],active:false,lastShownAt:0,lastEvent:0,
-  gameId:game?String(game.id):null,strombergMemory:null,
+  gameId:game?String(game.id):null,strombergMemory:null,decisionKeys:new Set(),
   story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}});
  studioCommentary.seen=new Set((game?.openedAmounts||[]).map(x=>x.case));
  studioCommentary.seenOffers=new Set((game?.history||[]).map(h=>String(h.round)+':'+String(h.offer)));
@@ -50,13 +50,22 @@ function studioCommentExpression(category,priority){
  if(category==='tiny'||category==='small')return 'proud';
  return priority>=3?'smug':'thinking';
 }
-function studioCommentQueue(entry,priority=1){
+function studioCommentQueue(entry,priority=1,immediate=false){
  if(!entry?.line)return;
  const state=studioCommentary;
  // Every opened case gets its own reaction, even when earlier reactions are playing.
  // Banker remarks may queue too, but must never displace case reactions.
- state.queue.push({...entry,mood:entry.name==='Stromberg'?(entry.mood||studioStrombergMood(entry.category,entry.line)):null,priority});
- if(!state.active)studioCommentRender();
+ const item={...entry,mood:entry.name==='Stromberg'?(entry.mood||studioStrombergMood(entry.category,entry.line)):null,priority};
+ if(immediate&&state.active){
+  // Show the player's confirmed decision now, without discarding pending case remarks.
+  clearTimeout(state.timer);
+  state.active=false;
+  state.queue.unshift(item);
+  studioCommentRender();
+ }else{
+  state.queue.push(item);
+  if(!state.active)studioCommentRender();
+ }
 }
 function studioCommentPick(avatar,category,seed){
  const choices=avatar===1?strombergCatalogue[category]:studioCommentLines[avatar]?.[category];
@@ -132,10 +141,14 @@ function studioCommentObserve(game){
 // Called after the server confirms the player's vote. Never reveals other players' votes.
 function studioCommentDecision(deal,game){
  if(!game)return;
+ if(String(game.id)!==studioCommentary.gameId)studioCommentReset(game);
+ const decisionKey=String(game.id)+':'+String(game.history?.at(-1)?.round)+':'+String(game.history?.at(-1)?.offer)+':'+String(typeof myId==='function'?myId():'local');
+ if(studioCommentary.decisionKeys.has(decisionKey))return;
+ studioCommentary.decisionKeys.add(decisionKey);
  const category=deal?'deal':'noDeal';
  const round=Number(game.history?.at(-1)?.round)||0;
  const line=studioCommentPick(1,category,round+(deal?0:7))||
   (deal?'Da hat jemand wenigstens mal eine Entscheidung getroffen.':'Na gut, dann spielen wir eben weiter.');
  studioCommentQueue({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line,category,
-  mood:deal?'selbstzufrieden':'nachdenklich'},3);
+  mood:deal?'selbstzufrieden':'nachdenklich'},3,true);
 }
