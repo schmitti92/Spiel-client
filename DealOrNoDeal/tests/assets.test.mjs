@@ -111,5 +111,5 @@ test('Stromberg expressions exist and the duplicate candidate overlay is absent'
  }
  assert.doesNotMatch(html,/id="candidate-cutaway"/);
  const cases=readFileSync(resolve(root,'js/cases.js'),'utf8');
- assert.doesNotMatch(cases,/showCandidateCutaway\\s*\\(/);
+ assert.ok(!cases.includes('showCandidateCutaway('),'Legacy cutaway call must be removed');
 });
