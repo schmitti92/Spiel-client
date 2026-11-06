@@ -1,11 +1,11 @@
 'use strict';
 /* Presentation-only commentary: no game-state writes, no network calls. */
-const studioCommentary={gameId:null,seen:new Set(),lastLine:new Map(),queue:[],timer:null,active:false};
+const studioCommentary={gameId:null,seen:new Set(),lastLine:new Map(),queue:[],timer:null,active:false,strombergMemory:null};
 function studioCommentReset(game){
  clearTimeout(studioCommentary.timer);studioCommentary.timer=null;studioCommentary.queue=[];
  studioCommentary.gameId=game?String(game.id):null;
  studioCommentary.seen=new Set((game?.openedAmounts||[]).map(x=>x.case));
- studioCommentary.lastLine.clear();studioCommentary.active=false;
+ studioCommentary.lastLine.clear();studioCommentary.active=false;studioCommentary.strombergMemory=null;
  const el=document.getElementById('studio-commentary');if(el)el.hidden=true;
 }
 function studioCommentRender(){
@@ -39,6 +39,20 @@ function studioCommentObserve(game){
   const amount=Number(item.amount);
   const category=avatar===1?(amount<=100?'tiny':amount<=1000?'small':amount<=25000?'medium':amount<=200000?'high':amount<1000000?'huge':'millionLost'):(amount<=1000?'small':amount>=50000?'large':null);
   if(!category)continue;
+  // A short-lived memory gives Stromberg his characteristic self-serving reversals.
+  // Never persist commentary into game state; it remains a local presentation feature.
+  if(avatar===1){
+   const good=amount<=1000;
+   const bad=amount>=50000;
+   const memory=studioCommentary.strombergMemory;
+   if(memory&&memory.case!==item.case&&memory.good!==good&&(good||bad)){
+    const reversal=good
+     ?'Hab ich doch gesagt: Genau so muss man das machen. Meine Linie.'
+     :'Also, das war jetzt nicht meine Entscheidung. Ich hab nur zugesehen.';
+    studioCommentary.queue.push({name:personality.name,image:personality.image,line:reversal});
+   }
+   studioCommentary.strombergMemory={case:item.case,good};
+  }
   const choices=avatar===1?strombergCatalogue[category]:personality[category];
   if(!Array.isArray(choices)||!choices.length)continue;
   const key=avatar+':'+category;
