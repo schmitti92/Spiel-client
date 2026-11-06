@@ -32,3 +32,35 @@
 
 /* The commentary is now a direct page child; no banker/grid clipping. */
 @media(min-width:761px){.studio-commentary:not([hidden]){bottom:clamp(22px,4vh,55px)!important;right:clamp(14px,2vw,34px)!important}}
+
+/* When the banker covers the stage, comments must stay visible above its overlay.
+   Compact positioning keeps the offer and vote controls accessible. */
+body:has(#banker-call:not([hidden])) .studio-commentary:not([hidden]){
+ z-index:32!important;
+ top:max(8px,env(safe-area-inset-top))!important;
+ bottom:auto!important;
+ right:max(8px,env(safe-area-inset-right))!important;
+ width:min(355px,calc(100vw - 16px))!important;
+ min-height:0!important;
+ padding:9px 12px!important;
+ gap:10px!important;
+ box-shadow:0 8px 28px #000c,0 0 0 1px #f1cb80!important;
+}
+body:has(#banker-call:not([hidden])) .studio-commentary img{
+ width:58px!important;height:68px!important;
+}
+body:has(#banker-call:not([hidden])) .studio-commentary strong{
+ font-size:15px!important;margin-bottom:3px!important;
+}
+body:has(#banker-call:not([hidden])) .studio-commentary p{
+ font-size:13px!important;line-height:1.28!important;
+}
+@media(max-width:600px){
+ body:has(#banker-call:not([hidden])) .studio-commentary:not([hidden]){
+  top:max(5px,env(safe-area-inset-top))!important;
+  right:5px!important;width:min(280px,calc(100vw - 10px))!important;
+  padding:7px!important;
+ }
+ body:has(#banker-call:not([hidden])) .studio-commentary img{width:44px!important;height:53px!important}
+ body:has(#banker-call:not([hidden])) .studio-commentary p{font-size:12px!important}
+}
