@@ -246,3 +246,10 @@ header small{color:#f1d39d!important;letter-spacing:.23em!important}
 .showbar .eyebrow{color:#ffdc9e!important}
 .showbar strong{color:#fff0bd!important}
 .status{background:linear-gradient(90deg,#071a35e8,#21416adf,#071a35e8)!important;border:1px solid #f1bf69!important;border-left:5px solid #f8d17f!important}
+/* V22: compact banker panel, ending around the fourth case row (100,000 €).
+   Keep the main case stage at full height and preserve the offer/history controls. */
+@media (min-width:761px){
+ .layout>.bank{align-self:start!important;height:78%!important;min-height:0!important;box-sizing:border-box!important;overflow:hidden!important}
+ .layout>.bank .bank-quote{margin-top:auto!important}
+ .layout>.bank details{margin-top:8px!important}
+}
