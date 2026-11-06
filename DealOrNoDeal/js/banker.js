@@ -9,7 +9,7 @@ function updateBankerCall(){
  if(!g||g.phase!=='decision'||!g.history?.length){call.hidden=true;call.classList.remove('call-entering');call.removeAttribute('data-offer-key');return}
  const h=g.history.at(-1);
  const offerKey=String(g.id)+'-'+String(h.round)+'-'+String(h.offer);
- if(call.dataset.offerKey!==offerKey){setAvatarReaction('thinking',2400);call.dataset.offerKey=offerKey;call.classList.remove('call-entering');void call.offsetWidth;if(!document.hidden&&!matchMedia('(prefers-reduced-motion: reduce)').matches)call.classList.add('call-entering')}
+ if(call.dataset.offerKey!==offerKey){setAvatarReaction('thinking',2400);call.dataset.offerKey=offerKey;call.classList.remove('call-entering');if(!document.hidden&&!matchMedia('(prefers-reduced-motion: reduce)').matches){void call.offsetWidth;call.classList.add('call-entering')}}
  call.hidden=false;
  $('banker-call-quote').textContent='„'+bankerPhrase(h)+'“';
  $('banker-call-amount').textContent=eur(h.offer);
@@ -48,6 +48,10 @@ function updateBankerCall(){
  $('banker-call-deal').disabled=busy;
  $('banker-call-no-deal').disabled=busy;
 }
+// Entrance effects are temporary: the open banker panel must remain completely still.
+$('banker-call').addEventListener('animationend',event=>{
+ if(event.target.classList.contains('banker-call-card'))$('banker-call').classList.remove('call-entering');
+});
 $('banker-call-deal').addEventListener('click',()=>action('decide',{deal:true}));
 $('banker-call-no-deal').addEventListener('click',()=>action('decide',{deal:false}));
 let lastVoteRevealKey='';let voteRevealTimer=null;
