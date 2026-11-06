@@ -8,3 +8,6 @@
 @media(min-width:761px){.layout>.studio-commentary{grid-column:3;grid-row:1;align-self:end;transform:translateY(calc(100% + 9px));z-index:2;pointer-events:none}}
 @media(max-width:760px){.layout>.studio-commentary{grid-column:1/-1;grid-row:auto;transform:none}}
 @media(prefers-reduced-motion:no-preference){.studio-commentary:not([hidden]){animation:studio-comment-in .25s ease-out}@keyframes studio-comment-in{from{opacity:0;filter:blur(3px)}to{opacity:1;filter:none}}}
+
+@media(min-width:761px){.layout>.bank{position:relative!important;overflow:visible!important}.layout>.bank>.studio-commentary{position:absolute;top:calc(100% + 12px);left:0;width:100%;box-sizing:border-box;transform:none!important;pointer-events:none}}
+@media(max-width:760px){.layout>.bank>.studio-commentary{position:static;width:100%;box-sizing:border-box;margin-top:12px}}
