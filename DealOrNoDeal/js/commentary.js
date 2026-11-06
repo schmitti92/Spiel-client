@@ -34,11 +34,13 @@ function studioCommentObserve(game){
  const avatar=Number(current?.avatar);
  const personality=studioCommentLines[avatar];
  if(!personality)return; // Other characters will be replaced later.
- const values=Array.isArray(game.values)?game.values:[];
+ // Exact amount bands for Stromberg; other characters retain their existing two-band rules.
  for(const item of fresh.slice(-2)){
-  const category=item.amount<=1000?'small':item.amount>=50000?'large':null;
+  const amount=Number(item.amount);
+  const category=avatar===1?(amount<=100?'tiny':amount<=1000?'small':amount<=25000?'medium':amount<=200000?'high':amount<1000000?'huge':'millionLost'):(amount<=1000?'small':amount>=50000?'large':null);
   if(!category)continue;
-  const choices=personality[category];
+  const choices=avatar===1?strombergCatalogue[category]:personality[category];
+  if(!Array.isArray(choices)||!choices.length)continue;
   const key=avatar+':'+category;
   const previous=studioCommentary.lastLine.get(key);
   const index=(Math.abs(Number(item.case)||0)+opened.length)%choices.length;
