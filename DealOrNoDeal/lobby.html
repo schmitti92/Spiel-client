@@ -353,6 +353,14 @@ body{background:linear-gradient(180deg,rgba(2,7,18,.2),rgba(3,9,21,.08) 45%,rgba
 .lobby-shortcuts .button,.lobby-back,.fullscreen-lobby,.settings-gear{box-shadow:0 2px 8px #0005!important}
 .launch-stage{background:linear-gradient(180deg,rgba(2,10,26,.3),rgba(2,9,25,.22)),url('./assets/weihnachts_event/file_000000005dd88210ae837b16b5932c0e.png') center/cover no-repeat!important;box-shadow:inset 0 0 19px #ffd27999,0 0 14px #eebc6260!important}
 .launch-stage .launch-actions .button{transition:transform .18s ease,filter .18s ease}
+.launch-stage:after{content:"";position:absolute;inset:5px;border:1px solid rgba(255,221,151,.27);border-radius:12px;pointer-events:none;z-index:0}
+.show-marquee{position:relative;z-index:1;box-shadow:0 0 0 3px #9d5b1c,0 0 20px #fdb74f99!important}
+.launch-stage .launch-actions{position:relative;z-index:1;max-width:850px}
+.wallet-panel .section-head h2,.room-panel .section-head h2,.avatar-panel .section-head h2{color:#ffe4ac!important;text-shadow:0 2px 6px #000a}
+.wallet-grid .wallet-card{background:linear-gradient(140deg,rgba(28,54,86,.88),rgba(7,23,44,.8))!important;border:1px solid rgba(241,198,121,.75)!important}
+.avatar-panel .avatar-nav{border:1px solid #e8b966!important;background:rgba(6,22,44,.75)!important;color:#ffdfa1!important}
+.avatar-panel .avatar-option:focus-visible,.avatar-panel .avatar-nav:focus-visible,.lobby-shortcuts a:focus-visible,.lobby-shortcuts button:focus-visible,.launch-stage a:focus-visible,.launch-stage button:focus-visible{outline:2px solid #fff2ce!important;outline-offset:2px!important}
+
 .launch-stage .launch-actions .button:not(:disabled):hover{transform:translateY(-2px);filter:brightness(1.1)}
 @media(prefers-reduced-motion:reduce){.avatar-panel .avatar-option,.room-panel #slots .slot,.launch-stage .launch-actions .button{transition:none!important}}
 @media(min-width:900px) and (orientation:landscape){
