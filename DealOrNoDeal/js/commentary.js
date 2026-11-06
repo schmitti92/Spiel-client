@@ -92,22 +92,21 @@ function studioCommentObserve(game){
    studioCommentQueue({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line,category},3);
   }
  }
- if(game.phase==='final')return;
  const opened=game.openedAmounts||[];
  const fresh=opened.filter(x=>!state.seen.has(x.case));
  opened.forEach(x=>state.seen.add(x.case));
  if(!fresh.length)return;
  const current=game.players?.find(p=>p.id===game.currentPlayerId)||game.players?.find(p=>p.id===game.turnPlayerId)||game.players?.[0];
  const avatar=Number(current?.avatar);
- const personality=studioCommentLines[avatar];
- if(!personality)return;
+ const personality=studioCommentLines[avatar]||studioCommentLines[1];
+ const speakerAvatar=studioCommentLines[avatar]?avatar:1;
  for(const item of fresh){
   const amount=Number(item.amount);
-  const category=avatar===1?(amount<=100?'tiny':amount<=1000?'small':amount<=25000?'medium':amount<=200000?'high':amount<1000000?'huge':'millionLost'):(amount<=1000?'small':'large');
+  const category=speakerAvatar===1?(amount<=100?'tiny':amount<=1000?'small':amount<=25000?'medium':amount<=200000?'high':amount<1000000?'huge':'millionLost'):(amount<=1000?'small':'large');
   if(!category)continue;
   state.lastEvent++;
   let priority=1,line=null;
-  if(avatar===1){
+  if(speakerAvatar===1){
    const good=amount<=1000,bad=amount>=50000;
    if(good){story.good++;story.bad=0}else if(bad){story.bad++;story.good=0}else{story.good=0;story.bad=0}
    const previous=state.strombergMemory;
@@ -123,9 +122,9 @@ function studioCommentObserve(game){
    if(!line)line=studioCommentPick(1,category,Number(item.case)+opened.length);
 
   }else{
-   line=studioCommentPick(avatar,category,Number(item.case)+opened.length);
+   line=studioCommentPick(speakerAvatar,category,Number(item.case)+opened.length);
   }
-  if(!line)line='Der nächste Koffer ist geöffnet.';
+  if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+amount.toLocaleString('de-DE')+' Euro.':'Die Spannung steigt.');
   studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
  }
 }
