@@ -36,7 +36,7 @@
 /* When the banker covers the stage, comments must stay visible above its overlay.
    Compact positioning keeps the offer and vote controls accessible. */
 body:has(#banker-call:not([hidden])) .studio-commentary:not([hidden]){
- z-index:32!important;
+ z-index:36!important;
  top:max(8px,env(safe-area-inset-top))!important;
  bottom:auto!important;
  right:max(8px,env(safe-area-inset-right))!important;
