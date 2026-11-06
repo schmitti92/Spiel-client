@@ -1,11 +1,11 @@
 'use strict';
 /* Presentation-only commentary: no game-state writes, no network calls. */
-const studioCommentary={gameId:null,seen:new Set(),lastLine:new Map(),queue:[],timer:null,active:false,strombergMemory:null,seenOffers:new Set(),lastOffer:null};
+const studioCommentary={gameId:null,seen:new Set(),lastLine:new Map(),queue:[],timer:null,active:false,strombergMemory:null,seenOffers:new Set(),lastOffer:null,story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}};
 function studioCommentReset(game){
  clearTimeout(studioCommentary.timer);studioCommentary.timer=null;studioCommentary.queue=[];
  studioCommentary.gameId=game?String(game.id):null;
  studioCommentary.seen=new Set((game?.openedAmounts||[]).map(x=>x.case));
- studioCommentary.lastLine.clear();studioCommentary.active=false;studioCommentary.strombergMemory=null;studioCommentary.seenOffers=new Set((game?.history||[]).map(h=>String(h.round)+':'+String(h.offer)));studioCommentary.lastOffer=null;
+ studioCommentary.lastLine.clear();studioCommentary.active=false;studioCommentary.strombergMemory=null;studioCommentary.seenOffers=new Set((game?.history||[]).map(h=>String(h.round)+':'+String(h.offer)));studioCommentary.lastOffer=null;studioCommentary.story={good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0};
  const el=document.getElementById('studio-commentary');if(el)el.hidden=true;
 }
 function studioCommentRender(){
@@ -20,6 +20,12 @@ function studioCommentRender(){
  el.hidden=false;
  clearTimeout(studioCommentary.timer);
  studioCommentary.timer=setTimeout(studioCommentRender,5500);
+}
+function studioStrombergSay(line){
+ if(!line)return;
+ studioCommentary.queue.push({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line});
+ if(studioCommentary.queue.length>3)studioCommentary.queue.splice(0,studioCommentary.queue.length-3);
+ if(!studioCommentary.active)studioCommentRender();
 }
 function studioCommentObserve(game){
  if(!game){if(studioCommentary.gameId!==null)studioCommentReset(null);return}
@@ -41,6 +47,11 @@ function studioCommentObserve(game){
     const index=Math.abs(Number(h.round)||0)%lines.length;
     studioCommentary.queue.push({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line:lines[index]});
     studioCommentary.lastOffer={key:offerKey,category};
+    studioCommentary.story.lastAdvice=category;
+    studioCommentary.story.rounds++;
+    if(studioCommentary.story.rounds>=2&&studioCommentary.story.rounds%2===0){
+     studioCommentary.queue.push({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line:category==='bankerGood'?'Ich sag ja seit Runden: Wenn der Preis stimmt, muss man auch mal Chef sein.':'Der Banker versucht das jetzt schon wieder. Und ich soll hier die Ruhe bewahren.'});
+    }
     if(!studioCommentary.active)studioCommentRender();
    }
   }
@@ -64,6 +75,15 @@ function studioCommentObserve(game){
   if(avatar===1){
    const good=amount<=1000;
    const bad=amount>=50000;
+   const story=studioCommentary.story;
+   if(good){story.good++;story.bad=0}else if(bad){story.bad++;story.good=0}else{story.good=0;story.bad=0}
+   if(story.lastAdvice&&story.lastOutcome!==null&&story.lastOutcome!==good&&(good||bad)){
+    studioCommentary.queue.push({name:personality.name,image:personality.image,line:good?'Sehen Sie? Ich habe die Lage von Anfang an richtig eingeschätzt.':'Das war ein Ausführungsfehler. Mit meiner Empfehlung hat das wenig zu tun.'});
+    story.lastAdvice=null;
+   }
+   if(story.good===3)studioCommentary.queue.push({name:personality.name,image:personality.image,line:'Drei gute Entscheidungen hintereinander. Das nenne ich Führung. Meine, wohlgemerkt.'});
+   if(story.bad===3)studioCommentary.queue.push({name:personality.name,image:personality.image,line:'Drei Fehlgriffe. Ich glaube, wir müssen hier dringend über Zuständigkeiten sprechen.'});
+   if(good||bad)story.lastOutcome=good;
    const memory=studioCommentary.strombergMemory;
    if(memory&&memory.case!==item.case&&memory.good!==good&&(good||bad)){
     const reversal=good
