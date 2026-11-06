@@ -218,3 +218,10 @@ body:not(.broadcast-modal-active) #deluxe-director{z-index:22}
 .case-stage>.broadcast-strap{display:none!important}
 #deluxe-director{display:none!important}
 body{padding-bottom:0!important}
+
+/* Banker stability: no layout jitter while votes and captions refresh. */
+#banker-call{scrollbar-gutter:stable;overscroll-behavior:contain}
+#banker-call .banker-call-card{scrollbar-gutter:stable;overflow-anchor:none;contain:layout style}
+#banker-call .banker-call-amount,#banker-call #banker-vote-progress-text{font-variant-numeric:tabular-nums}
+#banker-call:not(.call-entering) .banker-call-card,#banker-call:not(.call-entering) .banker-call-portrait,#banker-call:not(.call-entering) .banker-call-amount,#banker-call:not(.call-entering) .banker-call-quote{animation:none!important;transform:none!important}
+@media(prefers-reduced-motion:reduce){#banker-call .banker-call-card{scroll-behavior:auto}}
