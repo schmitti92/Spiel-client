@@ -78,7 +78,7 @@ test('game functions are not accidentally duplicated', () => {
     }
   }
   for (const fn of ['makeCase', 'directorReveal', 'bankerPhrase', 'updateBankerCall',
-    'startFinaleCinema', 'announceScene', 'showCandidateCutaway', 'render', 'poll']) {
+    'startFinaleCinema', 'announceScene', 'studioCommentObserve', 'render', 'poll']) {
     assert.ok(names.has(fn), 'Missing function ' + fn);
   }
 });
@@ -102,4 +102,14 @@ test('decorative broadcast scripts are read-only and never expose secret assignm
     assert.doesNotMatch(source, /\/api\/deal-or-no-deal|request\s*\(\s*['"]POST['"]|action\s*\(\s*['"]/);
     assert.doesNotMatch(source, /\.finalValues|\.values\s*\[/);
   }
+});
+
+// Character portraits are now the sole commentary overlay; all six expressions must be available.
+test('Stromberg expressions exist and the duplicate candidate overlay is absent', () => {
+ for (const name of ['selbstzufrieden','genervt','wuetend','ueberrascht','nachdenklich','scheinheilig']) {
+  assert.ok(existsSync(resolve(root,'assets','stromberg-'+name+'.png')),name);
+ }
+ assert.doesNotMatch(html,/id="candidate-cutaway"/);
+ const cases=readFileSync(resolve(root,'js/cases.js'),'utf8');
+ assert.doesNotMatch(cases,/showCandidateCutaway\\s*\\(/);
 });
