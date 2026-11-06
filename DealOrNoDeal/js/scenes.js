@@ -25,8 +25,3 @@ function announceScene(){
 let directorLastGame='',directorSeenOpened=new Set(),prizeFlashTimer=null,prizeFlashDelay=null,directorLatestAmount=null,directorLatestUntil=0,cameraSequenceTimer=null,cameraSequenceCase=-1;
 /* V55: reactions are derived from public server state; no secret votes are exposed. */
 let avatarReactionGame='',avatarReactionUntil=0,avatarReactionType='',avatarReactionTimer=null;
-let candidateCutawayTimer=null,candidateCutawayToken=0;
-function closeCandidateCutaway(){
- clearTimeout(candidateCutawayTimer);candidateCutawayToken++;
- const panel=$('candidate-cutaway');if(panel){panel.hidden=true;panel.setAttribute('aria-hidden','true');panel.classList.remove('is-visible')}
-}
