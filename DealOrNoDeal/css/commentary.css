@@ -1,7 +1,7 @@
 /* Character commentary: large studio speech card at bottom right.
    Presentation only. Hidden state and reduced motion are respected. */
 .studio-commentary[hidden]{display:none!important}
-.layout>.bank>.studio-commentary{
+.studio-commentary{
  position:fixed!important;left:auto!important;top:auto!important;
  right:clamp(12px,1.5vw,28px)!important;bottom:clamp(16px,3vh,36px)!important;
  width:clamp(360px,35vw,550px)!important;max-width:calc(100vw - 24px)!important;
@@ -21,7 +21,7 @@
 .studio-commentary strong{display:block;color:#ffdc91;font-size:clamp(19px,1.65vw,26px);margin-bottom:10px;line-height:1.15}
 .studio-commentary p{margin:0;color:#fff4df;font-size:clamp(17px,1.45vw,23px);line-height:1.4;font-weight:600;overflow-wrap:break-word}
 @media(max-width:760px){
- .layout>.bank>.studio-commentary{right:10px!important;bottom:12px!important;width:min(440px,calc(100vw - 20px))!important;min-height:100px!important;padding:12px!important;gap:12px!important}
+ .studio-commentary{right:10px!important;bottom:12px!important;width:min(440px,calc(100vw - 20px))!important;min-height:100px!important;padding:12px!important;gap:12px!important}
  .studio-commentary img{width:74px!important;height:88px!important}
  .studio-commentary strong{font-size:17px}.studio-commentary p{font-size:15px}
 }
@@ -29,3 +29,6 @@
  .studio-commentary:not([hidden]){animation:studio-comment-in .3s ease-out}
  @keyframes studio-comment-in{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
 }
+
+/* The commentary is now a direct page child; no banker/grid clipping. */
+@media(min-width:761px){.studio-commentary:not([hidden]){bottom:clamp(22px,4vh,55px)!important;right:clamp(14px,2vw,34px)!important}}
