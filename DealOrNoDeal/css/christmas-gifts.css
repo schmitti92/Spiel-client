@@ -39,7 +39,7 @@ body.gift-cases-active .case:not(.opened):not(.revealing) .case-lid::before{
 }
 /* Keep numeric labels functional, centered on the package, above both ribbons. */
 body.gift-cases-active .case:not(.opened):not(.revealing) .case-number{
- position:absolute!important;left:50%!important;top:calc(50% + 15px)!important;transform:translate(-50%,-50%)!important;
+ position:absolute!important;left:50%!important;top:235%!important;transform:translate(-50%,-50%)!important;
  z-index:12!important;display:grid!important;place-items:center!important;
  width:clamp(28px,3.4vw,48px)!important;height:clamp(26px,3.1vw,43px)!important;
  padding:0!important;margin:0!important;background:linear-gradient(145deg,#fff7c9,#f3cb6a 52%,#bd7b25)!important;
