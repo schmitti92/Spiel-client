@@ -253,3 +253,12 @@ header small{color:#f1d39d!important;letter-spacing:.23em!important}
  .layout>.bank .bank-quote{margin-top:auto!important}
  .layout>.bank details{margin-top:8px!important}
 }
+
+/* V23: banker ends alongside the fourth case row instead of stretching to the stage floor. */
+@media (min-width:761px){
+ .layout>.bank{height:auto!important;max-height:none!important;align-self:start!important;display:flex!important;flex-direction:column!important;overflow:visible!important;padding-bottom:9px!important}
+ .layout>.bank .banker{flex:0 0 auto!important}
+ .layout>.bank #offer{flex:0 0 auto!important;margin-top:5px!important}
+ .layout>.bank .bank-quote{margin-top:9px!important;margin-bottom:8px!important}
+ .layout>.bank #bank-history{margin-top:0!important}
+}
