@@ -32,7 +32,7 @@ function studioCommentRender(){
  document.getElementById('studio-commentary-line').textContent=entry.line;
  el.hidden=false;
  clearTimeout(studioCommentary.timer);
- studioCommentary.timer=setTimeout(studioCommentRender,3800);
+ studioCommentary.timer=setTimeout(studioCommentRender,5500);
 }
 function studioStrombergMood(category,line){
  if(/millionLost|huge/.test(category))return 'ueberrascht';
@@ -127,4 +127,15 @@ function studioCommentObserve(game){
   if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+amount.toLocaleString('de-DE')+' Euro.':'Die Spannung steigt.');
   studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
  }
+}
+
+// Called after the server confirms the player's vote. Never reveals other players' votes.
+function studioCommentDecision(deal,game){
+ if(!game)return;
+ const category=deal?'deal':'noDeal';
+ const round=Number(game.history?.at(-1)?.round)||0;
+ const line=studioCommentPick(1,category,round+(deal?0:7))||
+  (deal?'Da hat jemand wenigstens mal eine Entscheidung getroffen.':'Na gut, dann spielen wir eben weiter.');
+ studioCommentQueue({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line,category,
+  mood:deal?'selbstzufrieden':'nachdenklich'},3);
 }
