@@ -1,11 +1,11 @@
 'use strict';
 /* Presentation-only commentary: no game-state writes, no network calls. */
-const studioCommentary={gameId:null,seen:new Set(),lastLine:new Map(),queue:[],timer:null,active:false,strombergMemory:null};
+const studioCommentary={gameId:null,seen:new Set(),lastLine:new Map(),queue:[],timer:null,active:false,strombergMemory:null,seenOffers:new Set(),lastOffer:null};
 function studioCommentReset(game){
  clearTimeout(studioCommentary.timer);studioCommentary.timer=null;studioCommentary.queue=[];
  studioCommentary.gameId=game?String(game.id):null;
  studioCommentary.seen=new Set((game?.openedAmounts||[]).map(x=>x.case));
- studioCommentary.lastLine.clear();studioCommentary.active=false;studioCommentary.strombergMemory=null;
+ studioCommentary.lastLine.clear();studioCommentary.active=false;studioCommentary.strombergMemory=null;studioCommentary.seenOffers=new Set((game?.history||[]).map(h=>String(h.round)+':'+String(h.offer)));studioCommentary.lastOffer=null;
  const el=document.getElementById('studio-commentary');if(el)el.hidden=true;
 }
 function studioCommentRender(){
@@ -25,6 +25,26 @@ function studioCommentObserve(game){
  if(!game){if(studioCommentary.gameId!==null)studioCommentReset(null);return}
  const id=String(game.id);
  if(id!==studioCommentary.gameId){studioCommentReset(game);return}
+ // Banker comments use only public offer data, never private votes or hidden case values.
+ const h=game.history?.at(-1);
+ if(h&&game.phase==='decision'){
+  const offerKey=String(h.round)+':'+String(h.offer);
+  if(!studioCommentary.seenOffers.has(offerKey)){
+   studioCommentary.seenOffers.add(offerKey);
+   const stromberg=game.players?.find(p=>Number(p.avatar)===1);
+   if(stromberg){
+    const offered=Number(h.offer);
+    const remaining=(Array.isArray(game.values)?game.values:[]).filter(v=>!(game.openedAmounts||[]).some(x=>Number(x.amount)===Number(v)));
+    const average=remaining.length?remaining.reduce((a,b)=>a+Number(b),0)/remaining.length:offered;
+    const category=offered>=average*.75?'bankerGood':'bankerBad';
+    const lines=strombergCatalogue[category];
+    const index=Math.abs(Number(h.round)||0)%lines.length;
+    studioCommentary.queue.push({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line:lines[index]});
+    studioCommentary.lastOffer={key:offerKey,category};
+    if(!studioCommentary.active)studioCommentRender();
+   }
+  }
+ }
  if(game.phase==='final')return;
  const opened=game.openedAmounts||[];
  const fresh=opened.filter(x=>!studioCommentary.seen.has(x.case));
