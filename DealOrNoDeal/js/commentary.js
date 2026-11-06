@@ -22,12 +22,25 @@ function studioCommentRender(){
  studioCommentary.active=true;
  studioCommentary.lastShownAt=Date.now();
  const portrait=document.getElementById('studio-commentary-portrait');
- portrait.src='./assets/'+entry.image;portrait.alt='';
+ const mood=entry.mood||'nachdenklich';
+ if(entry.name==='Stromberg'){
+  portrait.onerror=()=>{portrait.onerror=null;portrait.src='./assets/'+entry.image};
+  portrait.src='./assets/stromberg-'+mood+'.webp';
+ }else{portrait.onerror=null;portrait.src='./assets/'+entry.image}
+ portrait.alt='';
  document.getElementById('studio-commentary-name').textContent=entry.name;
  document.getElementById('studio-commentary-line').textContent=entry.line;
  el.hidden=false;
  clearTimeout(studioCommentary.timer);
  studioCommentary.timer=setTimeout(studioCommentRender,5700);
+}
+function studioStrombergMood(category,line){
+ if(/millionLost|huge/.test(category))return 'ueberrascht';
+ if(/bankerBad|streakBad|lose/.test(category))return 'genervt';
+ if(/bankerGood|streakGood|win|tiny|small/.test(category))return 'selbstzufrieden';
+ if(/high/.test(category))return 'wuetend';
+ if(/medium/.test(category))return 'nachdenklich';
+ return /nicht meine|Ausführungsfehler|Zuständigkeiten/.test(line||'')?'scheinheilig':'nachdenklich';
 }
 function studioCommentQueue(entry,priority=1){
  if(!entry?.line)return;
@@ -38,7 +51,7 @@ function studioCommentQueue(entry,priority=1){
   if(priority<=state.queue[0].priority)return;
   state.queue.length=0;
  }
- state.queue.push({...entry,priority});
+ state.queue.push({...entry,mood:entry.name==='Stromberg'?(entry.mood||studioStrombergMood(entry.category,entry.line)):null,priority});
  if(!state.active)studioCommentRender();
 }
 function studioCommentPick(avatar,category,seed){
@@ -72,7 +85,7 @@ function studioCommentObserve(game){
    const line=story.rounds>1&&story.rounds%3===0
     ?(category==='bankerGood'?'Ich sag ja seit Runden: Man muss wissen, wann man die Hand aufhält.':'Wieder so ein Angebot. Da hat offenbar jemand den Etat falsch verstanden.')
     :studioCommentPick(1,category,h.round);
-   studioCommentQueue({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line},3);
+   studioCommentQueue({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line,category},3);
   }
  }
  if(game.phase==='final')return;
@@ -114,6 +127,6 @@ function studioCommentObserve(game){
    if(state.lastEvent%2!==0)continue;
    line=studioCommentPick(avatar,category,Number(item.case)+opened.length);
   }
-  studioCommentQueue({name:personality.name,image:personality.image,line},priority);
+  studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
  }
 }
