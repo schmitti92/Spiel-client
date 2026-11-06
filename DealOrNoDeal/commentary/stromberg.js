@@ -1,105 +1,217 @@
 'use strict';
-/* Stromberg catalogue v1. Original newly written game dialogue, not TV quotations.
-   Categories remain independent from the core game engine. */
+/* Stromberg: independently written original game dialogue; not quotes from the TV show. */
 const strombergCatalogue=Object.freeze({
   "tiny": [
     "Na bitte. Das war ja nicht mal die Portokasse.",
     "Für den Betrag kriegste heutzutage nicht mal einen vernünftigen Kaffee.",
     "Weg damit. Kleingeld gehört nicht auf die Chefetage.",
-    "Da kann man ja fast schon von einem Erfolg sprechen. Fast."
+    "Da kann man ja fast schon von einem Erfolg sprechen. Fast.",
+    "Das ist ja nicht mal ein Betrag, das ist ein Rundungsfehler.",
+    "Für so was macht bei uns keiner einen Antrag auf Dienstreise.",
+    "Die Summe kannste direkt in die Kaffeekasse legen.",
+    "Das war finanziell ungefähr ein feuchter Händedruck.",
+    "Da musste ja fast aufpassen, dass die Buchhaltung nicht lacht.",
+    "Für den Betrag steht bei uns nicht mal der Kopierer auf.",
+    "Klein, aber wenigstens ausnahmsweise richtig entschieden."
   ],
   "small": [
     "So. Wieder ein Problem weniger auf dem Schreibtisch.",
     "Das läuft. Aber bitte nicht gleich eine Betriebsfeier draus machen.",
     "Kleiner Betrag, große Wirkung. Muss man auch erst mal hinkriegen.",
-    "Ja gut, da hat selbst hier mal einer mitgedacht."
+    "Ja gut, da hat selbst hier mal einer mitgedacht.",
+    "Das war jetzt solide. Für unsere Verhältnisse fast schon sensationell.",
+    "Wenn hier alle so arbeiten würden, hätte ich weniger Termine.",
+    "Kann man gelten lassen. Ich bin heute großzügig.",
+    "Da hat sich das Denken ausnahmsweise mal gelohnt.",
+    "Das ist die Art von Schaden, die man noch unter Sonstiges abheften kann.",
+    "Ich hätte denselben genommen. Nur mit mehr Überzeugung.",
+    "Gut gemacht. Aber jetzt bitte nicht übermütig werden."
   ],
   "medium": [
     "Das tut weh, aber noch nicht so, dass man deswegen krankfeiern müsste.",
     "Nicht optimal. Sagen wir mal: ausbaufähig.",
     "Das war jetzt eher die mittlere Katastrophe.",
-    "Da hätte man vorher vielleicht mal kurz nachdenken können."
+    "Da hätte man vorher vielleicht mal kurz nachdenken können.",
+    "Das ist ärgerlich, aber noch kein Grund für einen Krisenstab.",
+    "Da muss man im Nachgang schon mal die Prozesse hinterfragen.",
+    "Das fällt unter: hätte besser laufen können.",
+    "Kein Beinbruch. Eher so ein geschäftlicher Bänderriss.",
+    "Jetzt aber nicht anfangen, sich gegenseitig Mut zuzureden.",
+    "Der Betrag ist weg. Dafür haben wir eine Erfahrung mehr. Toll.",
+    "Das war keine Glanzleistung, eher Bürobeleuchtung."
   ],
   "high": [
     "Ja, wunderbar. Da fliegt uns gerade das Jahresbudget um die Ohren.",
     "Das war jetzt strategisch eher so mittelprächtig.",
     "Da kann man sich die Erfolgsprämie erst mal abschminken.",
-    "Ich sag mal so: Ein Lob gibt's dafür heute nicht."
+    "Ich sag mal so: Ein Lob gibt's dafür heute nicht.",
+    "Da hat jemand gerade ordentlich Budget verbrannt.",
+    "Ich hätte vor der Entscheidung gern mal eine Risikoanalyse gesehen.",
+    "Das ist jetzt ein Problem mit eigenem Aktenordner.",
+    "Also das erklärt man dem Vorstand am besten schriftlich.",
+    "Wer sich so entscheidet, sollte wenigstens hinterher dazu stehen.",
+    "Das war die Sorte Fehler, die man im Jahresgespräch anspricht.",
+    "Das hat gesessen. Leider auf unserem Konto."
   ],
   "huge": [
     "Das ist jetzt natürlich eine Hausnummer. Leider die falsche.",
     "Wer hat denn diesen Koffer freigegeben?",
     "So, und wer erklärt das jetzt der Geschäftsführung?",
-    "Das war kein Rückschlag, das war eine ganze Rückwärtsabteilung."
+    "Das war kein Rückschlag, das war eine ganze Rückwärtsabteilung.",
+    "Das ist kein kleiner Ausrutscher, das ist eine ganze Rutschbahn.",
+    "Da geht gerade ein ziemlich großer Teil der Erfolgsstory flöten.",
+    "Ich hoffe, irgendwer hat dafür eine plausible Erklärung.",
+    "Also mit der Nummer bewirbst du dich besser nicht als Finanzchef.",
+    "Das ist der Moment, wo man die Tür zum Büro mal zumacht.",
+    "Da wird selbst der Banker kurz schlucken. Oder lachen.",
+    "Das war finanziell ein Sprung ins leere Schwimmbecken."
   ],
   "millionLost": [
     "Eine Million weg. Das muss man erst mal so konsequent versemmeln.",
     "Da kannste den Taschenrechner auch direkt wieder einpacken.",
     "Ich will ja niemanden verantwortlich machen. Aber irgendwer war's.",
-    "Na toll. Jetzt wird hier aus der großen Show eine Sparmaßnahme."
+    "Na toll. Jetzt wird hier aus der großen Show eine Sparmaßnahme.",
+    "So. Eine Million weniger. Das macht sich in der Bilanz natürlich super.",
+    "Jetzt bitte keine motivierenden Plakate aufhängen. Die helfen auch nicht.",
+    "Ich will nicht sagen, dass das schlecht war. Doch, eigentlich schon.",
+    "Das ist so ein Moment, wo plötzlich alle auf den Boden gucken.",
+    "Eine Million. Da ist sogar mein Optimismus kurz in der Mittagspause.",
+    "Die Zahl war groß. Der Fehler leider auch.",
+    "Da wäre eine kurze Rücksprache mit der Führung vielleicht sinnvoll gewesen."
   ],
   "millionSafe": [
     "Die Million ist noch drin. Also bitte nicht wieder alles kaputtmachen.",
     "Solange die Million bleibt, bleibt der Chef entspannt. Also ich.",
     "Noch ist alles möglich. Das vergessen hier ja einige gerne.",
-    "Die große Zahl steht noch. Endlich mal eine vernünftige Nachricht."
+    "Die große Zahl steht noch. Endlich mal eine vernünftige Nachricht.",
+    "Die Million steht noch. Also schön die Finger ruhig halten.",
+    "Na bitte. Noch ist hier keiner komplett aus dem Rennen.",
+    "Das ist der einzige Punkt, bei dem ich heute gute Laune bekomme.",
+    "Wenn wir das jetzt nicht vergeigen, könnte das noch was werden.",
+    "Die große Zahl ist noch im Spiel. Das ist Führung durch Hoffnung.",
+    "Gut. Die Million bleibt, der Blutdruck auch halbwegs.",
+    "Noch ist die Tür nach oben offen. Bitte nicht dagegenlaufen."
   ],
   "bankerGood": [
     "Das Angebot ist ordentlich. Muss man auch mal anerkennen.",
     "Ich würd da nicht zu lange überlegen. Geld wird vom Grübeln nicht mehr.",
     "Da spricht einer, der rechnen kann. Selten genug.",
-    "Also bevor das hier wieder schiefgeht: nachdenken."
+    "Also bevor das hier wieder schiefgeht: nachdenken.",
+    "Da muss man jetzt auch mal wissen, wann man die Hand aufhält.",
+    "Das ist ein Angebot, über das man im Chefbüro reden kann.",
+    "Nicht schlecht. Der Mann auf der anderen Seite ist ja nicht ganz doof.",
+    "Wenn man das nimmt, kann man wenigstens ruhig schlafen.",
+    "Bei dem Betrag muss man nicht gleich den Helden spielen.",
+    "Ich würde jetzt sachlich bleiben. Und sachlich heißt: rechnen.",
+    "Da hat der Banker immerhin mal einen vernünftigen Tag."
   ],
   "bankerBad": [
     "Das ist kein Angebot, das ist eine Frechheit auf Geschäftspapier.",
     "Für den Betrag kann er den Hörer gleich wieder auflegen.",
     "Der Banker hält uns wohl für die Praktikantenabteilung.",
-    "Da fehlt aber noch ein ordentlicher Batzen."
+    "Da fehlt aber noch ein ordentlicher Batzen.",
+    "Das ist doch eher ein Vorschlag für die Portokasse.",
+    "So einen Betrag würde ich nicht mal als Abfindung anbieten.",
+    "Der Banker hat offenbar den Taschenrechner falsch herum gehalten.",
+    "Für den Preis gibt's hier nicht mal einen ordentlichen Bürostuhl.",
+    "Das ist Verhandlungstaktik aus der untersten Schublade.",
+    "Da würde ich erst mal freundlich, aber sehr deutlich ablehnen.",
+    "Wer so bietet, will wohl früh Feierabend machen."
   ],
   "deal": [
     "Endlich mal einer, der weiß, wann Schluss ist.",
     "Geld auf dem Tisch. Das nenne ich einen geregelten Feierabend.",
     "Kann man so machen. Ich hätte es natürlich noch besser gemacht.",
-    "Sicher ist sicher. Das sage ich hier seit Jahren."
+    "Sicher ist sicher. Das sage ich hier seit Jahren.",
+    "So. Unterschrift drunter und gut ist.",
+    "Man muss auch mal den Ausgang finden, bevor's brennt.",
+    "Das ist keine Feigheit, das ist Risikomanagement.",
+    "Sehr schön. Dann kann hier endlich jemand die Akte schließen.",
+    "Ich hätte vielleicht noch nachverhandelt. Aber gut.",
+    "Geld gesichert. Jetzt bloß nicht wieder zurückrudern.",
+    "Endlich eine Entscheidung, die man in der Bilanz sehen kann."
   ],
   "noDeal": [
     "Mutig. Ob klug, sehen wir dann im Abschlussbericht.",
     "Na gut. Dann bitte hinterher nicht bei mir beschweren.",
     "Weiter also. Manche brauchen eben den Nervenkitzel.",
-    "Das Risiko tragen jetzt aber schön die anderen, ja?"
+    "Das Risiko tragen jetzt aber schön die anderen, ja?",
+    "Na gut. Dann tragen wir die Verantwortung aber gemeinsam. Also ihr.",
+    "Man kann auch aus Prinzip weiterlaufen. Muss man aber nicht.",
+    "Das ist jetzt entweder mutig oder ein Fall fürs Controlling.",
+    "Ich hab's zur Kenntnis genommen. Begeistert bin ich nicht.",
+    "Dann schauen wir mal, wie belastbar die Nerven hier wirklich sind.",
+    "Risiko ist ja schön, solange es nicht mein Konto betrifft.",
+    "Gut. Aber hinterher bitte keine langen Gesichter."
   ],
   "streakGood": [
     "Das läuft ja fast zu gut. Wer hat da nachgeholfen?",
     "Wenn das so weitergeht, nehme ich die Erfolgsprämie persönlich entgegen.",
     "Endlich mal eine Serie ohne Totalausfall.",
-    "Na also. Ein bisschen Führung, und schon klappt's."
+    "Na also. Ein bisschen Führung, und schon klappt's.",
+    "Jetzt bloß nicht anfangen, sich selbst für ein Genie zu halten.",
+    "Das läuft hier so rund, da werde ich schon misstrauisch.",
+    "Wenn das so bleibt, rede ich von meiner Strategie.",
+    "Man muss Erfolge auch mal genießen. Kurz. Dann weiterarbeiten.",
+    "Da scheint heute ausnahmsweise ein System dahinterzustecken.",
+    "Wunderbar. Endlich keine Krisensitzung.",
+    "Da hat der Laden ja fast mal funktioniert."
   ],
   "streakBad": [
     "Hier reiht sich ein Fehlgriff an den nächsten. Respekt.",
     "Das ist keine Pechsträhne mehr, das ist ein Geschäftsmodell.",
     "Vielleicht sollten wir mal jemanden ranlassen, der das kann.",
-    "Ich schreibe schon mal die Schadensmeldung."
+    "Ich schreibe schon mal die Schadensmeldung.",
+    "Wir brauchen hier langsam weniger Glück und mehr Kompetenz.",
+    "Das ist eine Serie, auf die keiner stolz sein sollte.",
+    "Wenn das noch einmal passiert, machen wir ein Meeting draus.",
+    "Man könnte meinen, die Koffer hätten sich gegen uns verschworen.",
+    "Hier wird gerade mit bemerkenswerter Konsequenz danebengegriffen.",
+    "Ich würde die nächsten Entscheidungen mal etwas ernster nehmen.",
+    "Da hilft jetzt auch kein motivierender Teamkreis mehr."
   ],
   "otherPlayer": [
     "Ich will ja keinen Namen nennen. Aber das war nicht die Sternstunde.",
     "Kollegialität ist wichtig. Kompetenz wäre allerdings auch schön.",
     "Ja, jeder darf mal ran. Das Ergebnis sieht man ja.",
-    "Ich hätte es anders gemacht. Aber mich fragt hier keiner."
+    "Ich hätte es anders gemacht. Aber mich fragt hier keiner.",
+    "Bei manchen Entscheidungen hilft auch kein Organigramm mehr.",
+    "Ich sag mal: Einsatz war da. Ergebnis eher weniger.",
+    "Vielleicht lassen wir beim nächsten Mal jemanden mit Erfahrung ran.",
+    "Das war ein schöner Versuch. Für den Versuch gibt's aber kein Geld.",
+    "Im Team muss man Fehler ansprechen dürfen. Also: Fehler.",
+    "Ich halte mich da raus. Außer es wird gut, dann war ich beteiligt.",
+    "Das ist natürlich eine Entscheidung gewesen. Mehr sage ich nicht."
   ],
   "finale": [
     "Jetzt wird sich zeigen, wer hier Nerven hat.",
     "Die letzten Entscheidungen sind Chefsache. Eigentlich.",
     "So, jetzt bitte keine Experimente mehr.",
-    "Wenn das gutgeht, war's natürlich Teamarbeit. Unter meiner Leitung."
+    "Wenn das gutgeht, war's natürlich Teamarbeit. Unter meiner Leitung.",
+    "Jetzt ist hier aber Schluss mit lustig. Also fast.",
+    "Das Finale ist kein Ort für Bauchgefühl aus der Kantine.",
+    "Die letzten Schritte müssen sitzen. Sonst war alles für die Katz.",
+    "Wer jetzt die Nerven verliert, kann direkt den Bericht schreiben.",
+    "So. Konzentration. Das ist hier kein Betriebsausflug.",
+    "Jetzt wird aus Glück langsam Verantwortung.",
+    "Hier trennt sich die Führungsetage vom Pausenraum."
   ],
   "win": [
     "Gewonnen. Wie erwartet, wenn man die richtigen Leute dabeihat.",
     "Ich hab das Potenzial von Anfang an gesehen. Ungefähr.",
-    "Na bitte. So sieht ein ordentliches Ergebnis aus."
+    "Na bitte. So sieht ein ordentliches Ergebnis aus.",
+    "Das Ergebnis kann man vorzeigen. Und ich werde das auch tun.",
+    "Ich hab natürlich immer an uns geglaubt. Mehr oder weniger.",
+    "So sieht Erfolg aus, wenn man ihn richtig organisiert.",
+    "Da könnte man jetzt fast mal klatschen. Aber nicht übertreiben."
   ],
   "lose": [
     "Verloren? Das war von Anfang an nicht mein Projekt.",
     "Ich hab früh gewarnt. Das steht bestimmt irgendwo.",
-    "Gut. Dann reden wir jetzt besser über was anderes."
+    "Gut. Dann reden wir jetzt besser über was anderes.",
+    "Da reden wir morgen drüber. Oder besser gar nicht.",
+    "So was passiert. Meistens allerdings den anderen.",
+    "Das ist natürlich bitter. Aber Schuldzuweisungen bringen nichts. Fast nichts.",
+    "Nächstes Mal machen wir das mit einer vernünftigen Planung."
   ]
 });
