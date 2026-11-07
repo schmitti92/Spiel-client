@@ -33,7 +33,7 @@ function studioCommentRender(){
  document.getElementById('studio-commentary-line').textContent=entry.line;
  el.hidden=false;
  clearTimeout(studioCommentary.timer);
- studioCommentary.timer=setTimeout(studioCommentRender,5500);
+ studioCommentary.timer=setTimeout(studioCommentRender,entry.dialogue?3300:4400);
 }
 function studioStrombergMood(category,line){
  if(/millionLost|huge|bigLossStreak/.test(category))return 'wuetend';
@@ -66,6 +66,12 @@ function studioCommentQueue(entry,priority=1,immediate=false){
   state.queue.unshift(item);
   studioCommentRender();
  }else{
+  // Preserve case reactions; drop stale optional conversations if the player acts quickly.
+  if(!item.dialogue){
+   state.queue=state.queue.filter(queued=>!queued.dialogue);
+  }else if(state.queue.length>=3){
+   return;
+  }
   state.queue.push(item);
   if(!state.active)studioCommentRender();
  }
@@ -100,7 +106,7 @@ function studioCommentTone(line){
 }
 function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  const state=studioCommentary;
- if(!Number.isFinite(amount)||state.lastEvent%6!==0)return;
+ if(!Number.isFinite(amount)||state.lastEvent%6!==0||state.queue.length>1)return;
  const ids=[1,2,3,4,5,7].filter(id=>id!==speakerAvatar);
  const responder=ids[state.replyCount%ids.length];
  const topic=studioReplyTopic(category,amount);
@@ -116,18 +122,18 @@ function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
    const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: '}[responder]||'';
    const objections=(typeof studioToneDisputes==='object'?studioToneDisputes[topic]?.[tone]:null)||scene.objections;
    const objection=opening+objections[turn%objections.length];
-   studioCommentQueue({name:persona.name,image:persona.image,line:objection,category:topic},0);
+   studioCommentQueue({name:persona.name,image:persona.image,line:objection,category:topic,dialogue:true},0);
    const others=ids.filter(id=>id!==responder);
    const closerId=others[turn%others.length];
    const closer=studioCommentLines[closerId];
    const closing={1:'Na gut. ',2:'Einverstanden. ',3:'Hihi, okay! ',4:'Jo, gut. ',5:'Halten wir fest: ',7:'Fest steht: '}[closerId]||'';
    studioCommentQueue({name:closer.name,image:closer.image,
-    line:closing+scene.closers[turn%scene.closers.length],category:topic},0);
+    line:closing+scene.closers[turn%scene.closers.length],category:topic,dialogue:true},0);
    return;
   }
  }
  studioCommentQueue({name:persona.name,image:persona.image,
-  line:replies[turn%replies.length],category:topic},0);
+  line:replies[turn%replies.length],category:topic,dialogue:true},0);
 }
 
 // Amounts are stored as euro cents. Exactly 100 € and 20,000 € are neutral.
