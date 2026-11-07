@@ -10,7 +10,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(resolve(root, 'game.html'), 'utf8');
 const css = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="(\.\/css\/[^"]+)"/g)].map(m => m[1].split('?')[0]);
 const js = [...html.matchAll(/<script\s+src="(\.\/js\/[^"]+)"\s*><\/script>/g)].map(m => m[1].split('?')[0]);
-const expectedCss = ['foundation', 'studio', 'cases', 'banker', 'avatars', 'effects', 'deluxe-director', 'broadcast', 'christmas-studio', 'christmas-gifts', 'commentary'].map(n => './css/' + n + '.css');
+const expectedCss = ['foundation', 'studio', 'cases', 'banker', 'avatars', 'effects', 'deluxe-director', 'broadcast', 'christmas-studio', 'christmas-gifts', 'commentary', 'banker-stage'].map(n => './css/' + n + '.css');
 const expectedJs = ['core', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'commentary-lines', 'commentary', 'app', 'deluxe-director', 'broadcast', 'christmas-themes'].map(n => './js/' + n + '.js');
 
 test('HTML assets are complete, unique, and loaded in the intended order', () => {
@@ -139,7 +139,7 @@ test('final banker offer has non-overlapping tracks and no duplicate amount', ()
 test('banker stage is opaque and loaded after legacy broadcast CSS', () => {
  const html=readFileSync(resolve(root,'game.html'),'utf8');
  const css=readFileSync(resolve(root,'css/banker-stage.css'),'utf8');
- assert.ok(html.indexOf('banker-stage.css?v=1')>html.indexOf('broadcast.css?'));
+ assert.ok(html.indexOf('banker-stage.css?v=2')>html.indexOf('broadcast.css?'));
  assert.match(css,/background:#061328!important/);
  assert.match(css,/backdrop-filter:none!important/);
  assert.match(css,/\.banker-call-card:has\(\.final-choice-compare:not\(\[hidden\]\)\) \.banker-call-amount/);
