@@ -525,18 +525,10 @@ document.addEventListener('DOMContentLoaded',()=>{
  if(!entry)return;
  const valid=code=>/^(?:[0-9]{3}|[A-HJ-NP-Z2-9]{6})$/i.test(String(code||''));
  function sync(){
-   let code=new URLSearchParams(location.search).get('room');
-   if(!valid(code)){
-     try{
-       const uid=window.SpielOnline?.state?.()?.user?.uid;
-       if(uid)code=localStorage.getItem('spielportal:last-room:'+uid);
-     }catch(_){}
-   }
+   const code=new URLSearchParams(location.search).get('room');
    entry.href='DealOrNoDeal/lobby.html'+(valid(code)?'?room='+encodeURIComponent(code):'');
  }
  sync();window.addEventListener('popstate',sync);
- window.addEventListener('spielonline-change',sync);
- entry.addEventListener('pointerdown',sync,{capture:true});
  let busy=false;
  entry.addEventListener('click',async event=>{
    const target=new URL(entry.href,location.href);
