@@ -1,0 +1,120 @@
+/* Banker Stage V1 — isolated, opaque, deterministic presentation.
+   Loaded last so the legacy banker selectors cannot create competing layers. */
+#banker-call.banker-call{
+ position:fixed!important;inset:0!important;z-index:24!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;padding:clamp(8px,1.2vw,20px)!important;
+ background:#061328!important;background-image:none!important;
+ opacity:1!important;visibility:visible!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ animation:none!important;transition:none!important;transform:none!important;
+ isolation:isolate!important;overflow:hidden!important;
+}
+#banker-call.banker-call[hidden]{display:none!important}
+#banker-call.banker-call::before,#banker-call.banker-call::after{content:none!important;display:none!important}
+#banker-call .banker-call-card{
+ position:relative!important;isolation:isolate!important;
+ box-sizing:border-box!important;
+ width:min(1480px,100%)!important;max-width:none!important;
+ height:min(900px,calc(100dvh - 20px))!important;min-height:0!important;
+ max-height:calc(100dvh - 20px)!important;
+ padding:clamp(10px,1.6vw,24px)!important;
+ display:grid!important;
+ grid-template-columns:minmax(200px,.64fr) minmax(260px,1fr) minmax(300px,1.12fr)!important;
+ grid-template-rows:auto minmax(0,1fr)!important;
+ column-gap:clamp(12px,1.4vw,24px)!important;row-gap:8px!important;
+ align-items:stretch!important;align-content:stretch!important;
+ overflow:hidden!important;overflow-anchor:none!important;
+ border:2px solid #bda06b!important;border-radius:22px!important;
+ background:#10223c!important;background-image:none!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ box-shadow:0 12px 48px #0009!important;
+ animation:none!important;transition:none!important;transform:none!important;contain:none!important;
+}
+#banker-call .banker-call-card::before,#banker-call .banker-call-card::after{content:none!important;display:none!important}
+#banker-call .banker-call-eyebrow:first-child{
+ grid-column:1/-1!important;grid-row:1!important;align-self:center!important;
+ margin:0!important;line-height:1.3!important;
+}
+#banker-call .banker-money-board{
+ grid-column:1!important;grid-row:2!important;
+ align-self:stretch!important;min-height:0!important;height:100%!important;
+ box-sizing:border-box!important;margin:0!important;overflow:hidden!important;
+ background:#0b1b32!important;
+}
+#banker-call .banker-money-list{min-height:0!important;overflow:hidden!important}
+#banker-call .banker-call-portrait{
+ grid-column:2!important;grid-row:2!important;
+ align-self:stretch!important;justify-self:stretch!important;
+ height:100%!important;min-height:0!important;max-height:none!important;
+ width:100%!important;max-width:none!important;margin:0!important;
+ background-color:#08152b!important;
+ animation:none!important;transition:none!important;transform:none!important;
+}
+#banker-call .banker-call-phone{display:none!important}
+#banker-call .banker-call-card > :not(.banker-call-eyebrow:first-child):not(.banker-money-board):not(.banker-call-portrait):not(.banker-call-phone){
+ grid-column:3!important;grid-row:2!important;
+}
+/* The right-hand panel is one nested layout instead of competing grid rows. */
+#banker-call .banker-call-card{grid-template-areas:"heading heading heading" "board portrait details"!important}
+#banker-call .banker-call-eyebrow:first-child{grid-area:heading!important}
+#banker-call .banker-money-board{grid-area:board!important}
+#banker-call .banker-call-portrait{grid-area:portrait!important}
+#banker-call .banker-call-card > #banker-call-title,
+#banker-call .banker-call-card > .banker-call-quote,
+#banker-call .banker-call-card > .banker-call-eyebrow:not(:first-child),
+#banker-call .banker-call-card > .banker-call-amount,
+#banker-call .banker-call-card > .banker-call-sub,
+#banker-call .banker-call-card > .final-choice-compare,
+#banker-call .banker-call-card > .broadcast-offer-math,
+#banker-call .banker-call-card > .banker-vote-progress,
+#banker-call .banker-call-card > .banker-call-actions,
+#banker-call .banker-call-card > .banker-call-wait{
+ grid-column:3!important;grid-row:2!important;
+}
+/* Use explicit vertical slots in the right column, never overlapping tracks. */
+#banker-call .banker-call-card{
+ grid-template-rows:auto repeat(10,minmax(0,auto)) minmax(0,1fr)!important;
+ align-content:start!important;
+}
+#banker-call .banker-money-board{grid-row:2/13!important}
+#banker-call .banker-call-portrait{grid-row:2/13!important}
+#banker-call #banker-call-title{grid-row:2!important}
+#banker-call .banker-call-quote{grid-row:3!important}
+#banker-call .banker-call-eyebrow:not(:first-child){grid-row:4!important}
+#banker-call .banker-call-amount{grid-row:5!important}
+#banker-call .banker-call-sub{grid-row:6!important}
+#banker-call .final-choice-compare{grid-row:7!important}
+#banker-call .broadcast-offer-math{grid-row:8!important}
+#banker-call .banker-vote-progress{grid-row:9!important}
+#banker-call .banker-call-actions,#banker-call .banker-call-wait{grid-row:10!important}
+#banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-eyebrow:not(:first-child),
+#banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-amount,
+#banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-sub,
+#banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .broadcast-offer-math{display:none!important}
+#banker-call .banker-call-card > *{animation:none!important;transition:none!important}
+#banker-call .banker-call-card .banker-director-caption{animation:none!important}
+#banker-call .banker-call-card .final-choice-compare{margin:6px 0!important;padding:clamp(8px,1vw,13px)!important}
+#banker-call .banker-call-card .final-choice-option{padding:clamp(7px,.8vw,12px)!important}
+#banker-call .banker-call-card .final-choice-option strong{font-size:clamp(20px,2.5vw,36px)!important}
+#banker-call .banker-call-card .banker-call-actions{margin:4px 0!important}
+@media(max-width:900px){
+ #banker-call.banker-call{overflow:auto!important;align-items:flex-start!important}
+ #banker-call .banker-call-card{
+  height:auto!important;max-height:none!important;min-height:calc(100dvh - 16px)!important;
+  overflow:visible!important;display:flex!important;flex-direction:column!important;gap:8px!important;
+ }
+ #banker-call .banker-money-board{order:8!important;width:100%!important;height:auto!important}
+ #banker-call .banker-money-list{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:auto!important}
+ #banker-call .banker-call-portrait{order:0!important;height:clamp(180px,34dvh,300px)!important;flex:none!important}
+ #banker-call .banker-call-phone{display:none!important}
+ #banker-call #banker-call-title{order:1!important}
+ #banker-call .banker-call-quote{order:2!important}
+ #banker-call .banker-call-eyebrow:not(:first-child){order:3!important}
+ #banker-call .banker-call-amount{order:4!important}
+ #banker-call .banker-call-sub{order:5!important}
+ #banker-call .final-choice-compare{order:5!important}
+ #banker-call .broadcast-offer-math{order:6!important}
+ #banker-call .banker-vote-progress{order:6!important}
+ #banker-call .banker-call-actions,#banker-call .banker-call-wait{order:7!important}
+}
