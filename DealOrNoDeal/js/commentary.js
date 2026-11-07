@@ -2,11 +2,13 @@
 /* Local, presentation-only character reactions. No hidden information or game writes. */
 const studioCommentary={
  gameId:null,seen:new Set(),seenOffers:new Set(),lastLine:new Map(),queue:[],
- timer:null,active:false,current:null,lastShownAt:0,lastEvent:0,decisionKeys:new Set(),
+ timer:null,active:false,current:null,lastShownAt:0,lastEvent:0,decisionKeys:new Set(),caseTimers:[],
  strombergMemory:null,replyCount:0,story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}
 };
 function studioCommentReset(game){
  clearTimeout(studioCommentary.timer);
+ for(const timer of studioCommentary.caseTimers)clearTimeout(timer);
+ studioCommentary.caseTimers=[];
  Object.assign(studioCommentary,{timer:null,queue:[],active:false,current:null,lastShownAt:0,lastEvent:0,
   gameId:game?String(game.id):null,strombergMemory:null,replyCount:0,decisionKeys:new Set(),
   story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}});
@@ -227,8 +229,16 @@ function studioCommentObserve(game){
     ||'Eine Million Euro ist aus dem Spiel. Das ist ein schwerer Verlust.';
   }
   if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+(amount/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'})+'.':'Die Spannung steigt.');
-  studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
-  studioCommentMaybeReply(speakerAvatar,category,amount,line);
+  // Show the number first. Character reactions start one second after the
+  // confirmed case amount becomes visible, not during the lid animation.
+  const observedGame=state.gameId;
+  const timer=setTimeout(()=>{
+   state.caseTimers=state.caseTimers.filter(t=>t!==timer);
+   if(state.gameId!==observedGame)return;
+   studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
+   studioCommentMaybeReply(speakerAvatar,category,amount,line);
+  },1000);
+  state.caseTimers.push(timer);
  }
 }
 
