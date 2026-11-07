@@ -12,6 +12,18 @@ function updateBankerCall(){
  const offerKey=String(g.id)+'-'+String(h.round)+'-'+String(h.offer);
  if(call.dataset.offerKey!==offerKey){setAvatarReaction('thinking',2400);call.dataset.offerKey=offerKey;call.classList.remove('call-entering')}
  call.hidden=false;
+ const quality=$('banker-offer-quality');
+ if(quality){
+  const removed=new Set((g.openedAmounts||[]).map(entry=>entry.amount));
+  const remaining=values.filter(amount=>!removed.has(amount));
+  const average=remaining.length?remaining.reduce((sum,amount)=>sum+amount,0)/remaining.length:0;
+  const ratio=average>0?h.offer/average*100:0;
+  const width=Math.max(0,Math.min(100,ratio/2)).toFixed(2)+'%';
+  if($('banker-offer-quality-fill').style.width!==width)$('banker-offer-quality-fill').style.width=width;
+  bankerSetText('banker-offer-quality-label',Math.round(ratio)+' % des Durchschnitts');
+  quality.dataset.strength=ratio<35?'low':ratio<80?'medium':'high';
+  quality.hidden=!average;
+ }
  bankerSetText('banker-call-quote','„'+bankerPhrase(h)+'“');
  bankerSetText('banker-call-amount',eur(h.offer));
  const remainingCases=26-(g.openedAmounts?.length||0);
