@@ -18,10 +18,12 @@ function updateBankerCall(){
   const remaining=values.filter(amount=>!removed.has(amount));
   const average=remaining.length?remaining.reduce((sum,amount)=>sum+amount,0)/remaining.length:0;
   const ratio=average>0?h.offer/average*100:0;
-  const width=Math.max(0,Math.min(100,ratio/2)).toFixed(2)+'%';
+  const strength=Math.max(0,Math.min(100,Math.round(ratio/2)));
+  const width=strength+'%';
   if($('banker-offer-quality-fill').style.width!==width)$('banker-offer-quality-fill').style.width=width;
-  bankerSetText('banker-offer-quality-label',Math.round(ratio)+' % des Durchschnitts');
-  quality.dataset.strength=ratio<35?'low':ratio<80?'medium':'high';
+  bankerSetText('banker-offer-quality-label',strength+' / 100 · '+(strength<40?'Schwach':strength<60?'Mittel':strength<80?'Gut':'Sehr stark'));
+  quality.setAttribute('aria-label','Angebotsstärke '+strength+' von 100; 50 entspricht dem Durchschnitt der verbleibenden Kofferwerte');
+  quality.dataset.strength=strength<40?'low':strength<60?'medium':'high';
   quality.hidden=!average;
  }
  bankerSetText('banker-call-quote','„'+bankerPhrase(h)+'“');
