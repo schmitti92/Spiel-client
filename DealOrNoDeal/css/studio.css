@@ -11,7 +11,7 @@
 .case.opened .case-amount{font-size:clamp(8px,.94vw,15px);letter-spacing:-.45px;overflow:visible}
 .case.opened .case-lid{transform:perspective(600px) rotateX(-122deg)}
 .case.revealing .case-shell{isolation:isolate}
-.case.revealing .case-lid{animation:lid-open 2.9s cubic-bezier(.2,.65,.2,1) both}
+.case.revealing .case-lid{animation:lid-open 1.9s cubic-bezier(.2,.65,.2,1) both}
 .case.opened .case-interior:after{content:"";position:absolute;inset:3px;border:1px solid #fff1c085;border-radius:5px;pointer-events:none}
 .panel:nth-child(2) .cases{overflow:visible}
 .btn:focus-visible,#back:focus-visible,#bank-history summary:focus-visible{outline:3px solid #79d4ff;outline-offset:3px}
@@ -51,10 +51,10 @@
 .panel:nth-child(2) .cases{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(20% - 7px),#dcb56e 20%,#583516 calc(20% + 4px),transparent calc(20% + 9px)),radial-gradient(ellipse at 50% 2%,#5a729b20,transparent 70%);background-color:transparent}
 .case-shell{transition:filter .18s,box-shadow .18s}
 .case:not(:disabled):hover .case-shell{filter:brightness(1.12);box-shadow:0 0 19px #f8d38588,0 7px 12px #0009}
-.case.revealing .case-shell{animation:stage-focus 3.15s ease-out both}
-.case.revealing .case-lid{animation:lid-open 2.9s cubic-bezier(.22,.61,.25,1) both}
+.case.revealing .case-shell{animation:stage-focus 2.15s ease-out both}
+.case.revealing .case-lid{animation:lid-open 1.9s cubic-bezier(.22,.61,.25,1) both}
 .case.revealing .case-interior{background:radial-gradient(ellipse,#fff5c8,#c99147 67%,#593312)}
-.case.revealing .case-interior:before{content:"";position:absolute;inset:-30%;background:conic-gradient(from 0deg,transparent 0 12%,#fff9db88 14%,transparent 18% 38%,#fff9db77 42%,transparent 46% 100%);animation:reveal-shine 3s ease-out both;pointer-events:none}
+.case.revealing .case-interior:before{content:"";position:absolute;inset:-30%;background:conic-gradient(from 0deg,transparent 0 12%,#fff9db88 14%,transparent 18% 38%,#fff9db77 42%,transparent 46% 100%);animation:reveal-shine 2s ease-out both;pointer-events:none}
 @keyframes stage-focus{0%{filter:brightness(1)}35%{filter:brightness(1.4);box-shadow:0 0 18px #ffdd8a}65%{filter:brightness(1.7);box-shadow:0 0 35px #ffdf9f}100%{filter:brightness(1.1)}}
 @keyframes reveal-shine{0%,15%{opacity:0;transform:rotate(-40deg)}45%{opacity:1}100%{opacity:0;transform:rotate(90deg)}}
 .case.opened .case-interior{box-shadow:inset 0 5px 11px #4b280f88,0 0 10px #f6d89e1c}
@@ -87,7 +87,7 @@ body.offer-moment .player.turn{box-shadow:0 0 32px #ffce8f9e}
 @media(max-width:620px){.studio-tools{width:100%;justify-content:space-between}.studio-tool{font-size:11px;padding:7px 9px}.showbar{flex-wrap:wrap}}
 
 /* V14 reliability: accurate reveal sequencing and bank-decision focus */
-.case.revealing .case-interior:after{content:"?";display:grid;place-items:center;position:absolute;inset:0;color:#fff1c5;font-size:clamp(19px,2.6vw,36px);font-weight:950;text-shadow:0 0 12px #fff2c0;animation:reveal-question 3.15s ease-in-out both}
+.case.revealing .case-interior:after{content:"?";display:grid;place-items:center;position:absolute;inset:0;color:#fff1c5;font-size:clamp(19px,2.6vw,36px);font-weight:950;text-shadow:0 0 12px #fff2c0;animation:reveal-question 2.15s ease-in-out both}
 @keyframes reveal-question{0%,25%{opacity:0;transform:scale(.6)}55%{opacity:1;transform:scale(1.15)}85%,100%{opacity:1;transform:scale(1)}}
 .case.revealing .case-amount{visibility:hidden}
 .case.opened .case-interior:after{content:"";display:block;animation:none}
