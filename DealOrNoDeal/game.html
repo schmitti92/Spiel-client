@@ -37,7 +37,10 @@ async function checkBankerRewards(){
   const reward=(data.rewards||[]).find(x=>x.gameId===g.id&&localStorage.getItem('deal-cent-reward-seen:'+user.uid+':'+x.id)!=='yes');
   if(!reward||window.SpielOnline?.state?.()?.user?.uid!==user.uid)return;
   box.dataset.reward=reward.id;box.hidden=false;
-  name.textContent='Der Banker schenkt dir ein Weihnachtspaket!';icon.textContent='🎁';cards.replaceChildren();
+  name.textContent=(reward.uid===user.uid?'Du erhältst ein Weihnachtspaket!':(reward.playerName||'Ein Spieler')+' erhält ein Weihnachtspaket!');icon.textContent='🎁';cards.replaceChildren();
+  document.querySelector('#cent-reward-title').textContent='🎄 Weihnachtsbonus für '+(reward.playerName||'Spieler');
+  box.querySelector('.cent-reward-card > p').textContent='Banker-Deal angenommen · Alle Spieler sehen die Karten';
+  box.querySelector('.cent-reward-card > p:last-of-type').textContent=reward.uid===user.uid?'Deine Karten sind deinem Weihnachtsalbum gutgeschrieben.':'Die Karten wurden dem Weihnachtsalbum von '+(reward.playerName||'Spieler')+' gutgeschrieben.';
   setTimeout(()=>{if(box.hidden||box.dataset.reward!==reward.id)return;
    name.textContent=reward.packName;icon.textContent=reward.packId==='premium'?'💎':reward.packId==='large'?'🥇':'🎁';
    for(const card of reward.revealed||[]){const item=document.createElement('span');item.textContent=card.name;cards.append(item)}
