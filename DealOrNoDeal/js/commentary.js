@@ -132,8 +132,11 @@ function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
    return;
   }
  }
+ const sarcastic=turn%3===2&&typeof studioSarcasmLines==='object'
+  ?studioSarcasmLines[topic]?.[responder]:null;
  studioCommentQueue({name:persona.name,image:persona.image,
-  line:replies[turn%replies.length],category:topic,dialogue:true},0);
+  line:sarcastic?.length?sarcastic[turn%sarcastic.length]:replies[turn%replies.length],
+  category:topic,dialogue:true},0);
 }
 
 // Amounts are stored as euro cents. Exactly 100 € and 20,000 € are neutral.
