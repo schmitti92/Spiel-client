@@ -234,3 +234,20 @@ test('expanded character pools provide varied situation-specific dialogue', asyn
   }
  }
 });
+
+test('situational dialogue triggers without overriding one-cent or million events', async () => {
+ const vm=await import('node:vm');
+ const context=vm.createContext({});
+ vm.runInContext(readFileSync(resolve(root,'commentary/stromberg.js'),'utf8')+'\n;globalThis.c=strombergCatalogue',context);
+ for(const category of ['finalCases','bigLossStreak','bankerVeryGood','bankerVeryBad']){
+  const pool=context.c[category];
+  assert.ok(pool.length>=6,category+' needs six lines');
+  assert.equal(new Set(pool).size,pool.length,'duplicates in '+category);
+ }
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/ratio>=1\.1\?'bankerVeryGood'/);
+ assert.match(logic,/ratio<=\.35\?'bankerVeryBad'/);
+ assert.match(logic,/story\.bad>=2/);
+ assert.match(logic,/casesLeft<=3/);
+ assert.ok(logic.indexOf("category==='millionLost'")<logic.indexOf('story.bad>=2'));
+});
