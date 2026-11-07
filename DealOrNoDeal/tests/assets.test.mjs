@@ -283,6 +283,23 @@ test('rare three-person disputes have unique speakers and finite closure', async
  }
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
  assert.match(logic,/state\.lastEvent%12===0/);
- assert.match(logic,/id!==speakerAvatar&&id!==responder/);
- assert.match(logic,/studioDisputeClosers\[closerId\]/);
+ assert.match(logic,/ids\.filter\(id=>id!==responder\)/);
+ assert.match(logic,/studioContextDisputes\[topic\]/);
+});
+
+test('contextual disagreements are fact-consistent across all eight topics', async () => {
+ const vm=await import('node:vm');
+ const ctx=vm.createContext({});
+ vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.scenes=studioContextDisputes',ctx);
+ for(const topic of ['oneCent','millionLost','good','neutral','bad','bankerGood','bankerBad','finalCases']){
+  const scene=ctx.scenes[topic];
+  assert.ok(scene.objections.length>=3,topic+' lacks objections');
+  assert.ok(scene.closers.length>=2,topic+' lacks closers');
+  assert.ok(scene.objections.every(line=>typeof line==='string'&&line.length>20));
+ }
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/function studioReplyTopic\(category,amount\)/);
+ assert.match(logic,/state\.lastEvent%12===0/);
+ assert.match(logic,/ids\.filter\(id=>id!==responder\)/);
+ assert.match(logic,/studioContextDisputes\[topic\]/);
 });
