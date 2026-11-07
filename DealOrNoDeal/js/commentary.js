@@ -123,7 +123,8 @@ function studioCommentObserve(game){
   const amount=Number(item.amount);
   const reaction=studioCaseReaction(amount);
   const millionCase=amount>=100000000;
-  const category=millionCase?'millionLost':speakerAvatar===1?(reaction==='good'?(amount<=100?'tiny':'small'):reaction==='neutral'?'medium':'high'):(reaction==='good'?'small':reaction==='bad'?'large':'neutral');
+  const oneCentCase=amount===1;
+  const category=oneCentCase?'oneCent':millionCase?'millionLost':speakerAvatar===1?(reaction==='good'?(amount<=100?'tiny':'small'):reaction==='neutral'?'medium':'high'):(reaction==='good'?'small':reaction==='bad'?'large':'neutral');
   if(!category)continue;
   state.lastEvent++;
   let priority=1,line=null;
@@ -131,7 +132,8 @@ function studioCommentObserve(game){
    const good=reaction==='good',bad=reaction==='bad';
    if(good){story.good++;story.bad=0}else if(bad){story.bad++;story.good=0}else{story.good=0;story.bad=0}
    const previous=state.strombergMemory;
-   if(category==='millionLost'){priority=3;line=studioCommentPick(1,'millionLost',Number(item.case)+opened.length)}
+   if(category==='oneCent'){priority=3;line=studioCommentPick(1,'oneCent',Number(item.case)+opened.length)}
+   else if(category==='millionLost'){priority=3;line=studioCommentPick(1,'millionLost',Number(item.case)+opened.length)}
    else if(story.good===3){priority=3;line='Drei gute Entscheidungen hintereinander. Das nenne ich Führung. Meine, wohlgemerkt.'}
    else if(story.bad===3){priority=3;line='Drei Fehlgriffe. Wir müssen dringend über Zuständigkeiten sprechen.'}
    else if(story.lastAdvice&&previous&&previous.reaction!==reaction&&(good||bad)){
@@ -145,6 +147,13 @@ function studioCommentObserve(game){
 
   }else{
    line=studioCommentPick(speakerAvatar,category,Number(item.case)+opened.length);
+  }
+  if(oneCentCase){
+   // The one-cent case always gets a celebratory one-cent line, never a generic streak remark.
+   priority=3;
+   line=studioCommentPick(speakerAvatar,'oneCent',Number(item.case)+opened.length)
+    ||studioCommentPick(1,'oneCent',Number(item.case)+opened.length)
+    ||'Nur ein Cent ist raus! Die großen Gewinne bleiben im Spiel.';
   }
   if(millionCase){
    // Million cases must NEVER fall through to generic streak, loss or neutral lines.
