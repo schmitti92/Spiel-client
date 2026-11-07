@@ -18,14 +18,14 @@
 .cent-wheel-stage[hidden],.cent-reveal-stage[hidden]{display:none!important}
 .cent-wheel-heading{font-size:clamp(15px,2vw,22px);font-weight:900;color:#ffe5a1;text-shadow:0 2px 16px #ffb90080}
 .cent-wheel-wrap{width:min(46vw,245px);aspect-ratio:1;position:relative;display:grid;place-items:center;filter:drop-shadow(0 0 18px #ffd26c55)}
-.cent-wheel{position:absolute;inset:6px;border:8px solid #f8d68b;border-radius:50%;background:conic-gradient(from -60deg,#2156a4 0deg 120deg,#a77a18 120deg 240deg,#7030a1 240deg 360deg);box-shadow:inset 0 0 0 4px #fff7cc80,0 0 0 3px #8c5a22,0 0 26px #eeb44c70;transition:transform 4.2s cubic-bezier(.13,.75,.13,1);transform:rotate(0deg)}
+.cent-wheel{position:absolute;inset:6px;border:8px solid #f8d68b;border-radius:50%;background:conic-gradient(from 0deg,#2156a4 0deg 144deg,#a77a18 144deg 324deg,#7030a1 324deg 360deg);box-shadow:inset 0 0 0 4px #fff7cc80,0 0 0 3px #8c5a22,0 0 26px #eeb44c70;transition:transform 4.2s cubic-bezier(.13,.75,.13,1);transform:rotate(0deg)}
 .cent-wheel-pointer{position:absolute;z-index:4;top:-17px;color:#ffe6a1;font-size:36px;line-height:1;text-shadow:0 2px 4px #171019}
 .cent-wheel-hub{position:relative;z-index:2;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#fff5c6,#e2a739);border:4px solid #fff1b3;font-size:30px;box-shadow:0 0 18px #ffe18a}
-.wheel-label{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:0;font-size:27px;line-height:1;transform-origin:center;text-shadow:0 2px 4px #111}.wheel-label small{font-size:11px;color:white;font-weight:900;margin-top:5px}.wheel-label-a{transform:translate(-50%,-50%) rotate(0deg) translateY(-68px)}.wheel-label-b{transform:translate(-50%,-50%) rotate(120deg) translateY(-68px) rotate(-120deg)}.wheel-label-c{transform:translate(-50%,-50%) rotate(240deg) translateY(-68px) rotate(-240deg)}
+.wheel-label{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:0;font-size:27px;line-height:1;transform-origin:center;text-shadow:0 2px 4px #111}.wheel-label small{font-size:11px;color:white;font-weight:900;margin-top:5px}.wheel-label-a{transform:translate(-50%,-50%) rotate(72deg) translateY(-68px) rotate(-72deg)}.wheel-label-b{transform:translate(-50%,-50%) rotate(234deg) translateY(-68px) rotate(-234deg)}.wheel-label-c{transform:translate(-50%,-50%) rotate(342deg) translateY(-68px) rotate(-342deg)}
 .cent-wheel-status{font-weight:800;color:#fff1c2;min-height:25px}
 .cent-reveal-stage{text-align:center;animation:cent-stage-enter .65s ease both}
 @keyframes cent-stage-enter{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
-@media(max-height:650px){.cent-wheel-wrap{width:min(30vh,180px)}.wheel-label-a{transform:translate(-50%,-50%) translateY(-48px)}.wheel-label-b{transform:translate(-50%,-50%) rotate(120deg) translateY(-48px) rotate(-120deg)}.wheel-label-c{transform:translate(-50%,-50%) rotate(240deg) translateY(-48px) rotate(-240deg)}}
+@media(max-height:650px){.cent-wheel-wrap{width:min(30vh,180px)}.wheel-label-a{transform:translate(-50%,-50%) rotate(72deg) translateY(-48px) rotate(-72deg)}.wheel-label-b{transform:translate(-50%,-50%) rotate(234deg) translateY(-48px) rotate(-234deg)}.wheel-label-c{transform:translate(-50%,-50%) rotate(342deg) translateY(-48px) rotate(-342deg)}}
 @media(prefers-reduced-motion:reduce){.cent-wheel{transition:none!important}.cent-reveal-stage{animation:none!important}}
 .cent-reward::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.65;background:radial-gradient(circle at 15% 20%,#ffcf7050 0 2px,transparent 4px),radial-gradient(circle at 75% 65%,#e3f3ff70 0 2px,transparent 5px),radial-gradient(circle at 40% 85%,#ffd97980 0 3px,transparent 6px);background-size:180px 160px,230px 200px,270px 210px;animation:reward-snow 12s linear infinite}
 @keyframes reward-snow{to{background-position:20px 900px,-40px 800px,30px 750px}}
@@ -47,7 +47,7 @@
 @media(prefers-reduced-motion:reduce){.cent-reward::before,.cent-wheel-pointer,.cent-reward-card,.cent-reward-pack{animation:none!important}}
 </style><div id="cent-reward" class="cent-reward" hidden role="dialog" aria-modal="true" aria-labelledby="cent-reward-title"><div class="cent-reward-card">
 <div>🎅 ✨ 🎄</div><h2 id="cent-reward-title">Weihnachtsbonus!</h2><p id="cent-reward-subtitle">Ein Weihnachtsgeschenk wird geöffnet!</p>
-<div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das Weihnachts-Glücksrad entscheidet ✨</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel"><span class="wheel-label wheel-label-a">🎁<small>Klein</small></span><span class="wheel-label wheel-label-b">🥇<small>Groß</small></span><span class="wheel-label wheel-label-c">💎<small>Premium</small></span></div><div class="cent-wheel-hub">🎄</div></div><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Das Rad dreht sich …</div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
+<div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das Weihnachts-Glücksrad entscheidet ✨</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel"><span class="wheel-label wheel-label-a">🎁<small>Klein · 40 %</small></span><span class="wheel-label wheel-label-b">🥇<small>Groß · 50 %</small></span><span class="wheel-label wheel-label-c">💎<small>Premium · 10 %</small></span></div><div class="cent-wheel-hub">🎄</div></div><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Das Rad dreht sich …</div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
 <div id="cent-reward-cards" class="cent-reward-cards"></div></div><p id="cent-reward-credit">Die Karten sind bereits sicher gespeichert.</p>
 <button id="cent-reward-close" type="button">🎁 Weiter zum Spiel</button></div></div>
 <script>
@@ -74,9 +74,9 @@
   wheelStage.hidden=false;revealStage.hidden=true;wheelStatus.textContent='🎡 Paketverlosung · Klein 40 % · Groß 50 % · Premium 10 %';
   wheel.style.transition='none';wheel.style.transform='rotate(0deg)';
   const pack=String(reward.packId||'small').toLowerCase();
-  const sector=pack==='large'?1:pack==='premium'?2:0;
+  const targetAngle=pack==='large'?234:pack==='premium'?342:72;
   // Server outcome is authoritative; the wheel is a presentation, not a second random draw.
-  const angle=360*6-sector*120;
+  const angle=360*7-targetAngle;
   const showCards=()=>{
    if(sequence!==current||box.hidden)return;
    wheelStage.hidden=true;revealStage.hidden=false;box.dataset.stage='reveal';
