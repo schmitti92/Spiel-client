@@ -36,9 +36,9 @@ function studioCommentRender(){
  studioCommentary.timer=setTimeout(studioCommentRender,5500);
 }
 function studioStrombergMood(category,line){
- if(/millionLost|huge/.test(category))return 'wuetend';
- if(/bankerBad|streakBad|lose/.test(category))return 'genervt';
- if(/bankerGood|streakGood|win|tiny|small/.test(category))return 'selbstzufrieden';
+ if(/millionLost|huge|bigLossStreak/.test(category))return 'wuetend';
+ if(/bankerBad|bankerVeryBad|streakBad|lose/.test(category))return 'genervt';
+ if(/bankerGood|bankerVeryGood|streakGood|win|tiny|small|oneCent/.test(category))return 'selbstzufrieden';
  if(/high/.test(category))return 'genervt';
  if(/medium/.test(category))return 'nachdenklich';
  return /nicht meine|Ausführungsfehler|Zuständigkeiten/.test(line||'')?'scheinheilig':'nachdenklich';
@@ -103,9 +103,10 @@ function studioCommentObserve(game){
    const amounts=Array.isArray(game.values)?game.values:[];
    const remaining=amounts.filter(v=>!revealed.has(Number(v)));
    const average=remaining.length?remaining.reduce((a,b)=>a+Number(b),0)/remaining.length:offered;
-   const category=offered>=average*.75?'bankerGood':'bankerBad';
+   const ratio=average>0?offered/average:1;
+   const category=ratio>=1.1?'bankerVeryGood':ratio<=.35?'bankerVeryBad':offered>=average*.75?'bankerGood':'bankerBad';
    story.rounds++;story.lastAdvice=category;
-   const line=story.rounds>1&&story.rounds%3===0
+   const line=(category==='bankerGood'||category==='bankerBad')&&story.rounds>1&&story.rounds%3===0
     ?(category==='bankerGood'?'Ich sag ja seit Runden: Man muss wissen, wann man die Hand aufhält.':'Wieder so ein Angebot. Da hat offenbar jemand den Etat falsch verstanden.')
     :studioCommentPick(1,category,h.round);
    studioCommentQueue({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line,category},3);
@@ -132,8 +133,12 @@ function studioCommentObserve(game){
    const good=reaction==='good',bad=reaction==='bad';
    if(good){story.good++;story.bad=0}else if(bad){story.bad++;story.good=0}else{story.good=0;story.bad=0}
    const previous=state.strombergMemory;
+   const totalCases=Array.isArray(game.values)?game.values.length:0;
+   const casesLeft=totalCases?totalCases-opened.length:Infinity;
    if(category==='oneCent'){priority=3;line=studioCommentPick(1,'oneCent',Number(item.case)+opened.length)}
    else if(category==='millionLost'){priority=3;line=studioCommentPick(1,'millionLost',Number(item.case)+opened.length)}
+   else if(bad&&story.bad>=2){priority=2;line=studioCommentPick(1,'bigLossStreak',Number(item.case)+opened.length)}
+   else if(casesLeft<=3&&casesLeft>=1){priority=2;line=studioCommentPick(1,'finalCases',Number(item.case)+opened.length)}
    else if(story.good===3){priority=3;line='Drei gute Entscheidungen hintereinander. Das nenne ich Führung. Meine, wohlgemerkt.'}
    else if(story.bad===3){priority=3;line='Drei Fehlgriffe. Wir müssen dringend über Zuständigkeiten sprechen.'}
    else if(story.lastAdvice&&previous&&previous.reaction!==reaction&&(good||bad)){
