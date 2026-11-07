@@ -4,20 +4,21 @@ function bankerPhrase(h){
  let hash=2166136261;for(let i=0;i<seed.length;i++){hash=Math.imul(hash^seed.charCodeAt(i),16777619)}
  return bankerPhrases[(hash>>>0)%bankerPhrases.length];
 }
+function bankerSetText(id,value){const el=$(id);if(el.textContent!==value)el.textContent=value}
 function updateBankerCall(){
  const call=$('banker-call');
  if(!g||g.phase!=='decision'||!g.history?.length){call.hidden=true;call.classList.remove('call-entering');call.removeAttribute('data-offer-key');return}
  const h=g.history.at(-1);
  const offerKey=String(g.id)+'-'+String(h.round)+'-'+String(h.offer);
- if(call.dataset.offerKey!==offerKey){setAvatarReaction('thinking',2400);call.dataset.offerKey=offerKey;call.classList.remove('call-entering');if(!document.hidden&&!matchMedia('(prefers-reduced-motion: reduce)').matches){void call.offsetWidth;call.classList.add('call-entering')}}
+ if(call.dataset.offerKey!==offerKey){setAvatarReaction('thinking',2400);call.dataset.offerKey=offerKey;call.classList.remove('call-entering')}
  call.hidden=false;
- $('banker-call-quote').textContent='„'+bankerPhrase(h)+'“';
- $('banker-call-amount').textContent=eur(h.offer);
+ bankerSetText('banker-call-quote','„'+bankerPhrase(h)+'“');
+ bankerSetText('banker-call-amount',eur(h.offer));
  const remainingCases=26-(g.openedAmounts?.length||0);
  const finalChoice=remainingCases<=3;
  $('final-choice-compare').hidden=!finalChoice;
  if(finalChoice){
-  $('final-choice-offer').textContent=eur(h.offer);
+  bankerSetText('final-choice-offer',eur(h.offer));
   $('final-choice-footnote').textContent=remainingCases===1?'Der letzte Koffer. Nimmst du das sichere Angebot oder riskierst du alles?':remainingCases+' Koffer sind noch im Spiel. Wie viel Risiko gehst du ein?';
  }
  const mine=h.participants.includes(myId())&&!h.decisions.some(d=>d.id===myId());
@@ -27,7 +28,7 @@ function updateBankerCall(){
  const castVotes=h.decisions.length;
  const voteProgress=$('banker-vote-progress');
  const percent=total?Math.min(100,Math.max(0,100*castVotes/total)):0;
- $('banker-vote-progress-fill').style.width=percent+'%';
+ const progressWidth=percent+'%';if($('banker-vote-progress-fill').style.width!==progressWidth)$('banker-vote-progress-fill').style.width=progressWidth;
  voteProgress.dataset.stage=total>0&&castVotes===total?'complete':castVotes>0?'voting':'waiting';
  voteProgress.setAttribute('aria-label',castVotes+' von '+total+' Stimmen abgegeben; die Entscheidungen bleiben geheim');
  $('banker-vote-progress-text').textContent=total>0&&castVotes===total
