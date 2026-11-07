@@ -157,7 +157,7 @@ test('rebuilt banker always displays a calculated offer quality gauge', () => {
  assert.match(css,/\.banker-offer-quality\[hidden\]\{display:none!important\}/);
 });
 
-test('opened-case reactions use the correct euro-cent boundaries', () => {
+test('opened-case reactions use the correct euro-cent boundaries', async () => {
  const vm=await import('node:vm');
  const script=readFileSync(resolve(root,'js/commentary.js'),'utf8');
  const context=vm.createContext({setTimeout,clearTimeout});
