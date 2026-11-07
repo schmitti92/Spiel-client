@@ -145,3 +145,14 @@ test('banker stage is opaque and loaded after legacy broadcast CSS', () => {
  assert.match(css,/\.banker-call-card:has\(\.final-choice-compare:not\(\[hidden\]\)\) \.banker-call-amount/);
  assert.match(css,/\.banker-money-board\{grid-row:2\/13!important\}/);
 });
+
+test('rebuilt banker always displays a calculated offer quality gauge', () => {
+ const html=readFileSync(resolve(root,'game.html'),'utf8');
+ const css=readFileSync(resolve(root,'css/banker-stage.css'),'utf8');
+ const js=readFileSync(resolve(root,'js/banker.js'),'utf8');
+ assert.match(html,/id="banker-offer-quality"/);
+ assert.match(html,/id="banker-offer-quality-fill"/);
+ assert.match(js,/h\.offer\/average\*100/);
+ assert.match(js,/values\.filter\(amount=>!removed\.has\(amount\)\)/);
+ assert.match(css,/\.banker-offer-quality\[hidden\]\{display:none!important\}/);
+});
