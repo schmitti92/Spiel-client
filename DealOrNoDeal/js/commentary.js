@@ -96,7 +96,7 @@ function studioParticipant(game,id){
  return players.find(p=>String(p.id)===String(id))||null;
 }
 function studioActor(game,event){
- const ids=[event?.playerId,event?.openedBy,event?.userId,event?.actorId,event?.by];
+ const ids=[event?.playerId];
  // Event attribution must not silently fall back to the next player's turn.
  if(!ids.some(id=>id!==undefined&&id!==null))return null;
  for(const id of ids){if(id!==undefined&&id!==null){const p=studioParticipant(game,id);if(p)return p;}}
@@ -166,7 +166,7 @@ function studioCommentObserve(game){
  if(String(game.id)!==studioCommentary.gameId){studioCommentReset(game);return}
  const state=studioCommentary,story=state.story;
  const h=game.history?.at(-1);
- const offerActor=h?studioActor(game,h):null;
+ const offerActor=null; // A banker offer has no unique acting player; do not assign a voice.
  if(h&&game.phase==='decision'){
   const offerKey=String(h.round)+':'+String(h.offer);
   if(!state.seenOffers.has(offerKey)){
