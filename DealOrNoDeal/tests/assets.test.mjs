@@ -204,3 +204,20 @@ test('every avatar has exclusive million lines and no generic fallback', async (
  assert.match(logic,/if\(millionCase\)\{/);
  assert.match(logic,/line=studioCommentPick\(speakerAvatar,'millionLost'/);
 });
+
+test('one-cent reactions are exclusive for every character', async () => {
+ const vm=await import('node:vm');
+ const catalogue=readFileSync(resolve(root,'commentary/stromberg.js'),'utf8');
+ const lines=readFileSync(resolve(root,'js/commentary-lines.js'),'utf8');
+ const context=vm.createContext({});
+ vm.runInContext(catalogue+'\n'+lines+'\n;globalThis.pool=studioCommentLines',context);
+ for(const id of [1,2,3,4,5,7]){
+  const pool=context.pool[id].oneCent;
+  assert.ok(pool.length>=3,'missing one-cent lines for '+id);
+  assert.ok(pool.every(line=>/cent/i.test(line)),'non-cent line for '+id);
+ }
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/const oneCentCase=amount===1/);
+ assert.match(logic,/if\(oneCentCase\)\{/);
+ assert.match(logic,/line=studioCommentPick\(speakerAvatar,'oneCent'/);
+});
