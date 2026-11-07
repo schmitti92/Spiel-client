@@ -270,5 +270,19 @@ test('all six characters can reply contextually without dialogue loops', async (
  assert.match(logic,/filter\(id=>id!==speakerAvatar\)/);
  assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount\)/);
  const html=readFileSync(resolve(root,'game.html'),'utf8');
- assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=cast96'));
+ assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=disputes30'));
+});
+
+test('rare three-person disputes have unique speakers and finite closure', async () => {
+ const vm=await import('node:vm');
+ const ctx=vm.createContext({});
+ vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.objections=studioDisputeLines;globalThis.closers=studioDisputeClosers',ctx);
+ for(const id of [1,2,3,4,5,7]){
+  assert.ok(ctx.objections[id].length>=3);
+  assert.ok(ctx.closers[id].length>=2);
+ }
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/state\.lastEvent%12===0/);
+ assert.match(logic,/id!==speakerAvatar&&id!==responder/);
+ assert.match(logic,/studioDisputeClosers\[closerId\]/);
 });
