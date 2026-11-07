@@ -167,10 +167,11 @@ function studioCommentObserve(game){
    const ratio=average>0?offered/average:1;
    const category=ratio>=1.1?'bankerVeryGood':ratio<=.35?'bankerVeryBad':offered>=average*.75?'bankerGood':'bankerBad';
    story.rounds++;story.lastAdvice=category;
-   const line=(category==='bankerGood'||category==='bankerBad')&&story.rounds>1&&story.rounds%3===0
+   const holidayAvatar=Number((game.players?.find(p=>p.id===game.currentPlayerId)||game.players?.find(p=>p.id===game.turnPlayerId)||game.players?.[0])?.avatar);const holidaySpeaker=holidayAvatar===12||holidayAvatar===13?studioCommentLines[holidayAvatar]:null;
+   const line=holidaySpeaker?studioCommentPick(holidayAvatar,category,h.round):((category==='bankerGood'||category==='bankerBad')&&story.rounds>1&&story.rounds%3===0
     ?(category==='bankerGood'?'Ich sag ja seit Runden: Man muss wissen, wann man die Hand aufhält.':'Wieder so ein Angebot. Da hat offenbar jemand den Etat falsch verstanden.')
-    :studioCommentPick(1,category,h.round);
-   studioCommentQueue({name:'Stromberg',image:'buero-portrait-01-avatar.webp',line,category},3);
+    :studioCommentPick(1,category,h.round));
+   studioCommentQueue({name:holidaySpeaker?.name||'Stromberg',image:holidaySpeaker?.image||'buero-portrait-01-avatar.webp',line,category},3);
   }
  }
  const opened=game.openedAmounts||[];
