@@ -320,3 +320,25 @@ test('cast disputes respond to the actual previous line instead of arbitrary obj
  assert.match(logic,/studioToneDisputes\[topic\]\?\.\[tone\]/);
  assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount,line\)/);
 });
+
+test('rapid case openings cancel stale banter but retain every case reaction', async () => {
+ const vm=await import('node:vm');
+ const source=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ const elements=new Map();
+ const document={getElementById(id){
+  if(!elements.has(id))elements.set(id,{hidden:true,src:'',textContent:'',onerror:null});
+  return elements.get(id);
+ }};
+ const context=vm.createContext({document,Date,clearTimeout(){},setTimeout(){return 1}});
+ vm.runInContext(source+'\n;globalThis.state=studioCommentary;globalThis.enqueue=studioCommentQueue;globalThis.render=studioCommentRender',context);
+ const enqueue=context.enqueue;
+ enqueue({name:'Bert',image:'bert.webp',line:'First case',category:'small'});
+ enqueue({name:'Ernie',image:'ernie.webp',line:'Reply',category:'good',dialogue:true});
+ enqueue({name:'Bernd',image:'bernd.webp',line:'Closing',category:'good',dialogue:true});
+ enqueue({name:'Heinz Becker',image:'heinz.webp',line:'Second case',category:'large'});
+ assert.equal(context.state.queue.length,1);
+ assert.equal(context.state.queue[0].line,'Second case');
+ context.render();
+ assert.equal(context.state.current.line,'Second case');
+ assert.equal(document.getElementById('studio-commentary-line').textContent,'Second case');
+});
