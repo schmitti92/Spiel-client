@@ -110,7 +110,7 @@ function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  const state=studioCommentary;
  if(!Number.isFinite(amount)||state.lastEvent%6!==0||state.queue.length>1)return;
  const ids=[1,2,3,4,5,7,12,13].filter(id=>id!==speakerAvatar);
- const responder=ids[state.replyCount%ids.length];
+ const responder=ids[(state.replyCount+state.lastEvent)%ids.length];
  const topic=studioReplyTopic(category,amount);
  const tone=studioCommentTone(sourceLine);
  const replies=typeof studioReplyLines==='object'?(studioHolidayReplies[topic]?.[responder]||studioReplyLines[topic]?.[responder]):null;
@@ -154,7 +154,7 @@ function studioCommentObserve(game){
  const state=studioCommentary,story=state.story;
  const stromberg=game.players?.find(p=>Number(p.avatar)===1);
  const h=game.history?.at(-1);
- if(stromberg&&h&&game.phase==='decision'){
+ if(h&&game.phase==='decision'){
   const offerKey=String(h.round)+':'+String(h.offer);
   if(!state.seenOffers.has(offerKey)){
    state.seenOffers.add(offerKey);
