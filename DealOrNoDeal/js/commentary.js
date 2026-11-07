@@ -109,7 +109,7 @@ function studioCommentTone(line){
 function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  const state=studioCommentary;
  if(!Number.isFinite(amount)||state.lastEvent%6!==0||state.queue.length>1)return;
- const ids=[1,2,3,4,5,7].filter(id=>id!==speakerAvatar);
+ const ids=[1,2,3,4,5,7,12,13].filter(id=>id!==speakerAvatar);
  const responder=ids[state.replyCount%ids.length];
  const topic=studioReplyTopic(category,amount);
  const tone=studioCommentTone(sourceLine);
@@ -121,14 +121,14 @@ function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  if(state.lastEvent%12===0&&tone!=='measured'&&typeof studioContextDisputes==='object'){
   const scene=studioContextDisputes[topic];
   if(scene?.objections?.length&&scene?.closers?.length){
-   const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: '}[responder]||'';
+   const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: ',12:'Ho ho, Moment! ',13:'Eiskalt widersprochen: '}[responder]||'';
    const objections=(typeof studioToneDisputes==='object'?studioToneDisputes[topic]?.[tone]:null)||scene.objections;
    const objection=opening+objections[turn%objections.length];
    studioCommentQueue({name:persona.name,image:persona.image,line:objection,category:topic,dialogue:true},0);
    const others=ids.filter(id=>id!==responder);
    const closerId=others[turn%others.length];
    const closer=studioCommentLines[closerId];
-   const closing={1:'Na gut. ',2:'Einverstanden. ',3:'Hihi, okay! ',4:'Jo, gut. ',5:'Halten wir fest: ',7:'Fest steht: '}[closerId]||'';
+   const closing={1:'Na gut. ',2:'Einverstanden. ',3:'Hihi, okay! ',4:'Jo, gut. ',5:'Halten wir fest: ',7:'Fest steht: ',12:'Ho ho, also: ',13:'Cool bleiben: '}[closerId]||'';
    studioCommentQueue({name:closer.name,image:closer.image,
     line:closing+scene.closers[turn%scene.closers.length],category:topic,dialogue:true},0);
    return;
