@@ -251,3 +251,24 @@ test('situational dialogue triggers without overriding one-cent or million event
  assert.match(logic,/casesLeft<=3/);
  assert.ok(logic.indexOf("category==='millionLost'")<logic.indexOf('story.bad>=2'));
 });
+
+test('all six characters can reply contextually without dialogue loops', async () => {
+ const vm=await import('node:vm');
+ const ctx=vm.createContext({});
+ vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.replies=studioReplyLines',ctx);
+ const ids=[1,2,3,4,5,7];
+ const topics=['oneCent','millionLost','good','neutral','bad','bankerGood','bankerBad','finalCases'];
+ for(const topic of topics){
+  for(const id of ids){
+   const lines=ctx.replies[topic][id];
+   assert.ok(lines.length>=2,topic+' missing avatar '+id);
+   assert.equal(new Set(lines).size,lines.length);
+  }
+ }
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/state\.lastEvent%6!==0/);
+ assert.match(logic,/filter\(id=>id!==speakerAvatar\)/);
+ assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount\)/);
+ const html=readFileSync(resolve(root,'game.html'),'utf8');
+ assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=cast96'));
+});
