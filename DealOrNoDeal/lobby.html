@@ -551,7 +551,7 @@ async function recoverRoom(){
  recoveringRoom=true;
  try{
   const saved=String(localStorage.getItem('spielportal:last-room:'+u.uid)||'').toUpperCase();
-  if(!/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(saved)){roomRecoveryChecked=true;$('status').textContent='Kein aktiver Raum gefunden. Bitte über die Spielauswahl einen Raum öffnen.';return}
+  if(!/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(saved)){roomRecoveryChecked=true;$('status').textContent='Kein aktiver Raum gefunden. Bitte über die Spielauswahl einen Raum öffnen.';return}
   $('status').textContent='Letzten Spielraum '+saved+' überprüfen …';
   const token=await u.getIdToken();
   const response=await fetch(base+'/api/hub/rooms/'+encodeURIComponent(saved),{headers:{Authorization:'Bearer '+token},cache:'no-store',signal:AbortSignal.timeout(12000)});
