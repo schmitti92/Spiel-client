@@ -31,7 +31,7 @@ async function checkBankerRewards(){
  bankerCheckBusy=true;
  try{
   const token=await user.getIdToken();
-  const response=await fetch(String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(room)+'/christmas-banker-rewards',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+  const response=await fetch(String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/[/]+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(room)+'/christmas-banker-rewards',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
   if(!response.ok)return;
   const data=await response.json();
   const reward=(data.rewards||[]).find(x=>x.gameId===g.id&&localStorage.getItem('deal-cent-reward-seen:'+user.uid+':'+x.id)!=='yes');
