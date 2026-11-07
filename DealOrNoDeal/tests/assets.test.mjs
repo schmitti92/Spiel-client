@@ -11,7 +11,7 @@ const html = readFileSync(resolve(root, 'game.html'), 'utf8');
 const css = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="(\.\/css\/[^"]+)"/g)].map(m => m[1].split('?')[0]);
 const js = [...html.matchAll(/<script\s+src="(\.\/js\/[^"]+)"\s*><\/script>/g)].map(m => m[1].split('?')[0]);
 const expectedCss = ['foundation', 'studio', 'cases', 'banker', 'avatars', 'effects', 'deluxe-director', 'broadcast', 'christmas-studio', 'christmas-gifts', 'commentary', 'banker-stage'].map(n => './css/' + n + '.css');
-const expectedJs = ['core', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'commentary-lines', 'commentary', 'app', 'deluxe-director', 'broadcast', 'christmas-themes'].map(n => './js/' + n + '.js');
+const expectedJs = ['core', 'cases', 'banker', 'finale', 'scenes', 'avatars', 'commentary-lines', 'commentary-replies', 'commentary', 'app', 'deluxe-director', 'broadcast', 'christmas-themes'].map(n => './js/' + n + '.js');
 
 test('HTML assets are complete, unique, and loaded in the intended order', () => {
   assert.deepEqual(css, expectedCss);
@@ -270,7 +270,7 @@ test('all six characters can reply contextually without dialogue loops', async (
  assert.match(logic,/filter\(id=>id!==speakerAvatar\)/);
  assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount,line\)/);
  const html=readFileSync(resolve(root,'game.html'),'utf8');
- assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=tone30'));
+ assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('./js/commentary.js'));
 });
 
 test('rare three-person disputes have unique speakers and finite closure', async () => {
