@@ -120,7 +120,7 @@ test('banker decision commentary stays visible and preserves case reactions', ()
  const core=readFileSync(resolve(root,'js/core.js'),'utf8');
  assert.match(style,/body:has\(#banker-call:not\(\[hidden\]\)\) \.studio-commentary:not\(\[hidden\]\)/);
  assert.match(style,/z-index:36!important/);
- assert.match(comments,/setTimeout\(studioCommentRender,5500\)/);
+ assert.match(comments,/setTimeout\(studioCommentRender,entry\.dialogue\?3300:4400\)/);
  assert.match(comments,/state\.queue\.unshift\(item\)/);
  assert.match(comments,/if\(state\.current\)state\.queue\.unshift\(state\.current\)/);
  assert.match(comments,/function studioCommentDecision\(deal,game\)/);
@@ -268,7 +268,7 @@ test('all six characters can reply contextually without dialogue loops', async (
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
  assert.match(logic,/state\.lastEvent%6!==0/);
  assert.match(logic,/filter\(id=>id!==speakerAvatar\)/);
- assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount\)/);
+ assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount,line\)/);
  const html=readFileSync(resolve(root,'game.html'),'utf8');
  assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=tone30'));
 });
