@@ -214,3 +214,10 @@ body.show-final-stakes .case-stage .cases{transition:background .55s ease}
 #finale-cinema:not([hidden]){isolation:isolate}
 #finale-cinema:not([hidden]) .finale-player{transition:transform .5s cubic-bezier(.2,.75,.2,1),filter .5s ease}
 @media(prefers-reduced-motion:reduce){body.show-high-stakes .case-number,body.show-final-stakes .case-stage .cases,#banker-call .final-choice-option,#finale-cinema .finale-player{transition:none!important}}
+/* V44 — compact player panels and uncropped character portraits (PC/tablet/touch). */
+#players.players{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),280px))!important;justify-content:center!important;align-items:stretch!important;gap:clamp(8px,1vw,14px)!important;margin-inline:auto!important}
+#players .player{width:100%!important;min-width:0!important;max-width:280px!important;min-height:124px!important;grid-template-columns:clamp(68px,7vw,92px) minmax(0,1fr)!important;grid-template-rows:auto auto 1fr auto!important;gap:4px 10px!important;padding:9px!important;border-radius:17px!important}
+#players .player .candidate-avatar{width:100%!important;height:clamp(110px,11vw,142px)!important;grid-column:1!important;grid-row:1/5!important;background-size:contain!important;background-position:center center!important;background-repeat:no-repeat!important;background-color:#102039!important;border-radius:13px!important;align-self:center!important}
+#players .player .candidate-name{min-width:0;overflow-wrap:anywhere}
+#players .player .personalcase{max-width:100%;margin-top:2px!important;padding:5px 9px!important}
+@media(max-width:600px){#players.players{grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))!important}#players .player{max-width:none!important;grid-template-columns:58px minmax(0,1fr)!important;padding:7px!important;gap:4px 7px!important}#players .player .candidate-avatar{height:100px!important}#players .player .candidate-name{font-size:clamp(13px,3.5vw,18px)!important}}
