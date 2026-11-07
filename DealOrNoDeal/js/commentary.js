@@ -114,7 +114,7 @@ function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
   const scene=studioContextDisputes[topic];
   if(scene?.objections?.length&&scene?.closers?.length){
    const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: '}[responder]||'';
-   const objections=scene.byTone?.[tone]||scene.objections;
+   const objections=(typeof studioToneDisputes==='object'?studioToneDisputes[topic]?.[tone]:null)||scene.objections;
    const objection=opening+objections[turn%objections.length];
    studioCommentQueue({name:persona.name,image:persona.image,line:objection,category:topic},0);
    const others=ids.filter(id=>id!==responder);
