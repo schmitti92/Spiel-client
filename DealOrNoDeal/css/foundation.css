@@ -19,7 +19,7 @@ main{padding:12px 16px 28px}
 .case:disabled{opacity:.8;cursor:default}.case.personal{opacity:1;background:linear-gradient(145deg,#1e416d,#0c2342);border:2px dashed #6bb8e8;box-shadow:inset 0 0 22px #70a6da25;color:#aedfff}
 .case.opened{opacity:1;background:linear-gradient(180deg,#a4763b 0%,#f5d797 26%,#e5b66d 80%,#7c5126);border:2px solid #ffdf96;box-shadow:inset 0 5px 9px #4d270d99,0 5px 9px #0009;color:#291703;font-size:clamp(9px,1.05vw,16px);text-shadow:0 1px 1px #fff9df;font-weight:900}
 .case.opened:after{content:"";position:absolute;inset:6px;border:1px solid #fff3c299;border-radius:5px;pointer-events:none}
-.case.revealing{animation:briefcase-open 3.1s ease-in-out both;transform-origin:bottom center;box-shadow:0 0 30px #ffdb7c}
+.case.revealing{animation:briefcase-open 2.1s ease-in-out both;transform-origin:bottom center;box-shadow:0 0 30px #ffdb7c}
 @keyframes briefcase-open{0%{transform:scale(1);filter:brightness(1)}20%{transform:perspective(500px) rotateX(12deg) scale(1.04)}42%{transform:perspective(500px) rotateX(-15deg) scale(1.07);filter:brightness(1.45)}65%{transform:scale(1.06);filter:brightness(1.7)}100%{transform:scale(1);filter:brightness(1)}}
 .bank{position:relative}.banker{font-size:100px;min-height:190px;background:radial-gradient(ellipse at center,#1f477b,#091932 70%);color:#020c1d;text-shadow:0 0 12px #6c9fd0,0 0 35px #3967aa;border-bottom:2px solid #a9824c;margin:-8px -4px 12px}
 #offer{padding:14px 8px;line-height:1.55;text-align:center;font-weight:700;color:#f9ddb0}
@@ -48,8 +48,8 @@ main{padding:12px 16px 28px}
 .case.opened .case-lid{transform:perspective(600px) rotateX(-114deg);box-shadow:0 3px 8px #0007;z-index:4}
 .case.opened .case-amount{animation:amount-appear .5s both}
 .case.revealing{animation:none!important;filter:none!important;transform:none!important}
-.case.revealing .case-lid{animation:lid-open 2.9s cubic-bezier(.2,.65,.2,1) both}
-.case.revealing .case-shell{animation:case-glow 2.9s ease-out both}
+.case.revealing .case-lid{animation:lid-open 1.9s cubic-bezier(.2,.65,.2,1) both}
+.case.revealing .case-shell{animation:case-glow 1.9s ease-out both}
 .case.revealing .case-amount{opacity:0}
 .case.personal .case-shell{background:linear-gradient(145deg,#17395f,#07192e);border:2px dashed #6bb8e8}
 .case.personal .case-lid{background:linear-gradient(145deg,#1a426d,#0c203a);border:2px dashed #6bb8e8}
@@ -62,7 +62,7 @@ main{padding:12px 16px 28px}
 @keyframes case-glow{0%{filter:brightness(1)}40%{filter:brightness(1.4)}70%{filter:brightness(1.8)}100%{filter:brightness(1.1)}}
 @keyframes amount-appear{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 .case.revealing .case-interior{background:radial-gradient(ellipse,#fff5c8,#e2b56d 66%,#714821)}
-.case.revealing .case-interior:after{content:"✦";font-size:clamp(16px,3vw,34px);color:#fff8d6;animation:case-sparkle 2.8s ease-out both}
+.case.revealing .case-interior:after{content:"✦";font-size:clamp(16px,3vw,34px);color:#fff8d6;animation:case-sparkle 1.8s ease-out both}
 @keyframes case-sparkle{0%,20%{opacity:0;transform:scale(.3)}55%{opacity:1;transform:scale(1.4)}100%{opacity:0;transform:scale(2)}}
 
 
