@@ -187,3 +187,20 @@ test('Stromberg has 20 additional exclusive million-loss reactions', async () =>
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
  assert.match(logic,/category==='millionLost'\)\{priority=3;line=studioCommentPick\(1,'millionLost'/);
 });
+
+test('every avatar has exclusive million lines and no generic fallback', async () => {
+ const vm=await import('node:vm');
+ const catalogue=readFileSync(resolve(root,'commentary/stromberg.js'),'utf8');
+ const lines=readFileSync(resolve(root,'js/commentary-lines.js'),'utf8');
+ const context=vm.createContext({});
+ vm.runInContext(catalogue+'\n'+lines+'\n;globalThis.pool=studioCommentLines',context);
+ for(const id of [1,2,3,4,5,7]){
+  const pool=context.pool[id].millionLost;
+  assert.ok(pool.length>=4,'missing million-only dialogue for avatar '+id);
+  assert.ok(pool.every(line=>/million/i.test(line)),'non-million dialogue in avatar '+id);
+ }
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/const millionCase=amount>=100000000/);
+ assert.match(logic,/if\(millionCase\)\{/);
+ assert.match(logic,/line=studioCommentPick\(speakerAvatar,'millionLost'/);
+});
