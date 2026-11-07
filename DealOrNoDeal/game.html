@@ -20,6 +20,32 @@ inFlight=true;try{const token=await uid.getIdToken();const response=await fetch(
 box.dataset.reward=reward.id;box.hidden=false;name.textContent='Dein Pack wird enthüllt …';icon.textContent='🎁';cards.replaceChildren();const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 setTimeout(()=>{if(box.hidden||box.dataset.reward!==reward.id)return;name.textContent=reward.packName;icon.textContent=reward.packId==='premium'?'💎':reward.packId==='large'?'🥇':'🎁';for(const card of reward.revealed||[]){const item=document.createElement('span');item.textContent=card.name;cards.append(item)}},reduced?0:1700);
 }catch(e){console.warn('Weihnachtsbonus noch nicht verfügbar',e)}finally{inFlight=false}}
+
+// Banker bonuses use the same reveal dialog and are shown only to the accepting player.
+let bankerCheckBusy=false;
+async function checkBankerRewards(){
+ if(bankerCheckBusy||!box.hidden||typeof g==='undefined'||!g?.id)return;
+ const user=window.SpielOnline?.state?.()?.user;if(!user?.getIdToken)return;
+ const room=new URLSearchParams(location.search).get('room')||'';
+ if(!room)return;
+ bankerCheckBusy=true;
+ try{
+  const token=await user.getIdToken();
+  const response=await fetch(String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(room)+'/christmas-banker-rewards',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+  if(!response.ok)return;
+  const data=await response.json();
+  const reward=(data.rewards||[]).find(x=>x.gameId===g.id&&localStorage.getItem('deal-cent-reward-seen:'+user.uid+':'+x.id)!=='yes');
+  if(!reward||window.SpielOnline?.state?.()?.user?.uid!==user.uid)return;
+  box.dataset.reward=reward.id;box.hidden=false;
+  name.textContent='Der Banker schenkt dir ein Weihnachtspaket!';icon.textContent='🎁';cards.replaceChildren();
+  setTimeout(()=>{if(box.hidden||box.dataset.reward!==reward.id)return;
+   name.textContent=reward.packName;icon.textContent=reward.packId==='premium'?'💎':reward.packId==='large'?'🥇':'🎁';
+   for(const card of reward.revealed||[]){const item=document.createElement('span');item.textContent=card.name;cards.append(item)}
+  },matchMedia('(prefers-reduced-motion: reduce)').matches?0:1700);
+ }catch(e){console.warn('Banker Weihnachtsbonus noch nicht verfügbar',e)}
+ finally{bankerCheckBusy=false}
+}
+setInterval(checkBankerRewards,2300);
 setInterval(check,1800);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
 })();
 </script>
