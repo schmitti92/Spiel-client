@@ -81,37 +81,43 @@ function studioCommentPick(avatar,category,seed){
  return line;
 }
 
-/* Sparse, one-level cast dialogue: never responds to a response and never exposes hidden values. */
+/* Short, context-grounded conversations; never infer unrevealed case contents. */
+function studioReplyTopic(category,amount){
+ if(category==='oneCent')return 'oneCent';
+ if(category==='millionLost')return 'millionLost';
+ if(category==='finalCases')return 'finalCases';
+ if(category==='bankerGood'||category==='bankerVeryGood')return 'bankerGood';
+ if(category==='bankerBad'||category==='bankerVeryBad')return 'bankerBad';
+ return studioCaseReaction(amount)==='good'?'good':studioCaseReaction(amount)==='bad'?'bad':'neutral';
+}
 function studioCommentMaybeReply(speakerAvatar,category,amount){
  const state=studioCommentary;
  if(!Number.isFinite(amount)||state.lastEvent%6!==0)return;
  const ids=[1,2,3,4,5,7].filter(id=>id!==speakerAvatar);
  const responder=ids[state.replyCount%ids.length];
- const topic=category==='oneCent'?'oneCent':category==='millionLost'?'millionLost':
-  studioCaseReaction(amount)==='good'?'good':studioCaseReaction(amount)==='bad'?'bad':'neutral';
+ const topic=studioReplyTopic(category,amount);
  const replies=typeof studioReplyLines==='object'?studioReplyLines[topic]?.[responder]:null;
  const persona=studioCommentLines[responder];
  if(!persona||!Array.isArray(replies)||!replies.length)return;
- const line=replies[state.replyCount%replies.length];
- state.replyCount++;
- // One out of two rare replies becomes a playful disagreement (every twelfth case).
- // Never chain from a reply: all speakers are selected here and queued exactly once.
- if(state.lastEvent%12===0&&typeof studioDisputeLines==='object'){
-  const objection=studioDisputeLines[responder];
-  const challengerLine=objection?.[(state.replyCount-1)%objection.length];
-  if(challengerLine){
-   studioCommentQueue({name:persona.name,image:persona.image,line:challengerLine,category:topic},0);
-   const thirdIds=[1,2,3,4,5,7].filter(id=>id!==speakerAvatar&&id!==responder);
-   const closerId=thirdIds[(state.replyCount-1)%thirdIds.length];
+ const turn=state.replyCount++;
+ // At most one exchange per 12 case openings; two additional speakers maximum.
+ if(state.lastEvent%12===0&&typeof studioContextDisputes==='object'){
+  const scene=studioContextDisputes[topic];
+  if(scene?.objections?.length&&scene?.closers?.length){
+   const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: '}[responder]||'';
+   const objection=opening+scene.objections[turn%scene.objections.length];
+   studioCommentQueue({name:persona.name,image:persona.image,line:objection,category:topic},0);
+   const others=ids.filter(id=>id!==responder);
+   const closerId=others[turn%others.length];
    const closer=studioCommentLines[closerId];
-   const closers=typeof studioDisputeClosers==='object'?studioDisputeClosers[closerId]:null;
-   if(closer&&closers?.length){
-    studioCommentQueue({name:closer.name,image:closer.image,line:closers[(state.replyCount-1)%closers.length],category:topic},0);
-   }
+   const closing={1:'Na gut. ',2:'Einverstanden. ',3:'Hihi, okay! ',4:'Jo, gut. ',5:'Halten wir fest: ',7:'Fest steht: '}[closerId]||'';
+   studioCommentQueue({name:closer.name,image:closer.image,
+    line:closing+scene.closers[turn%scene.closers.length],category:topic},0);
    return;
   }
  }
- studioCommentQueue({name:persona.name,image:persona.image,line,category:topic},0);
+ studioCommentQueue({name:persona.name,image:persona.image,
+  line:replies[turn%replies.length],category:topic},0);
 }
 
 // Amounts are stored as euro cents. Exactly 100 € and 20,000 € are neutral.
