@@ -4,14 +4,6 @@
 const input=new URL(location.href).searchParams;
 let code=String(input.get('room')||'').toUpperCase();
 let codeValid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(code);
-// Restore the user's current shared room when returning from a game without a room query.
-if(!codeValid){
- try{
-  const uid=window.SpielOnline?.state?.()?.user?.uid;
-  const previous=uid&&localStorage.getItem('spielportal:last-room:'+uid);
-  if(/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(String(previous||''))){code=String(previous);codeValid=true;}
- }catch(_){}
-}
 const chooseAnother=input.get('choose')==='1';
 const stayInSelection=input.get('stay')==='1';
 const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
@@ -235,16 +227,6 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refre
  }
  window.addEventListener('spielonline-change',()=>{
    const person=user();
-   if(person&&!codeValid){
-    try{
-     const previous=localStorage.getItem('spielportal:last-room:'+person.uid);
-     if(/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/.test(String(previous||''))){
-      code=String(previous);codeValid=true;
-      history.replaceState(history.state,'',location.pathname+'?room='+encodeURIComponent(code)+'&stay=1');
-      void refresh();
-     }
-    }catch(_){}
-   }
    if(!person||(activeSelectionUid&&person.uid!==activeSelectionUid))stopSelectionStream();
    if(person)startSelectionStream();
  });
