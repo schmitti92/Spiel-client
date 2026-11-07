@@ -5,13 +5,22 @@ function bankerPhrase(h){
  return bankerPhrases[(hash>>>0)%bankerPhrases.length];
 }
 function bankerSetText(id,value){const el=$(id);if(el.textContent!==value)el.textContent=value}
+let bankerEntranceKey='',bankerEntranceUntil=0,bankerEntranceTimer=null;
 function updateBankerCall(){
  const call=$('banker-call');
- if(!g||g.phase!=='decision'||!g.history?.length){call.hidden=true;call.classList.remove('call-entering');call.removeAttribute('data-offer-key');return}
+ if(!g||g.phase!=='decision'||!g.history?.length){bankerEntranceKey='';bankerEntranceUntil=0;clearTimeout(bankerEntranceTimer);call.hidden=true;call.classList.remove('call-entering');call.removeAttribute('data-offer-key');return}
  const h=g.history.at(-1);
  const offerKey=String(g.id)+'-'+String(h.round)+'-'+String(h.offer);
+ if(bankerEntranceKey!==offerKey){
+  bankerEntranceKey=offerKey;
+  // Keep the last revealed briefcase and its amount on screen before the banker arrives.
+  bankerEntranceUntil=Date.now()+3000;
+  clearTimeout(bankerEntranceTimer);
+  bankerEntranceTimer=setTimeout(()=>{if(g?.phase==='decision')updateBankerCall()},3050);
+ }
+ const waitingForReveal=Date.now()<bankerEntranceUntil;
  if(call.dataset.offerKey!==offerKey){setAvatarReaction('thinking',2400);call.dataset.offerKey=offerKey;call.classList.remove('call-entering')}
- call.hidden=false;
+ call.hidden=waitingForReveal;
  const quality=$('banker-offer-quality');
  if(quality){
   const removed=new Set((g.openedAmounts||[]).map(entry=>entry.amount));
