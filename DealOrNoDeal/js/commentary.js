@@ -36,17 +36,17 @@ function studioCommentRender(){
  studioCommentary.timer=setTimeout(studioCommentRender,5500);
 }
 function studioStrombergMood(category,line){
- if(/millionLost|huge/.test(category))return 'ueberrascht';
+ if(/millionLost|huge/.test(category))return 'wuetend';
  if(/bankerBad|streakBad|lose/.test(category))return 'genervt';
  if(/bankerGood|streakGood|win|tiny|small/.test(category))return 'selbstzufrieden';
- if(/high/.test(category))return 'wuetend';
+ if(/high/.test(category))return 'genervt';
  if(/medium/.test(category))return 'nachdenklich';
  return /nicht meine|Ausführungsfehler|Zuständigkeiten/.test(line||'')?'scheinheilig':'nachdenklich';
 }
 function studioCommentExpression(category,priority){
  if(category==='bankerGood')return 'thinking';
  if(category==='bankerBad')return 'annoyed';
- if(category==='millionLost'||category==='huge')return 'surprised';
+ if(category==='millionLost'||category==='huge')return 'angry';
  if(category==='high')return 'angry';
  if(category==='tiny'||category==='small')return 'proud';
  return priority>=3?'smug':'thinking';
@@ -135,7 +135,7 @@ function studioCommentObserve(game){
    else if(story.lastAdvice&&previous&&previous.reaction!==reaction&&(good||bad)){
     priority=3;line=good?'Hab ich doch gesagt. Genau so war meine Strategie.':'Das war ein Ausführungsfehler. Mit meinem Rat hat das nichts zu tun.';
     story.lastAdvice=null;
-   }else if(previous&&previous.good!==good&&(good||bad)){
+   }else if(previous&&previous.reaction!==reaction&&(good||bad)){
     priority=2;line=good?'Na also. Wenn man auf mich hört, läuft das.':'Das war nicht meine Entscheidung. Nur damit das klar ist.';
    }
    state.strombergMemory={case:item.case,reaction};
@@ -144,7 +144,7 @@ function studioCommentObserve(game){
   }else{
    line=studioCommentPick(speakerAvatar,category,Number(item.case)+opened.length);
   }
-  if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+amount.toLocaleString('de-DE')+' Euro.':'Die Spannung steigt.');
+  if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+(amount/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'})+'.':'Die Spannung steigt.');
   studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
  }
 }
