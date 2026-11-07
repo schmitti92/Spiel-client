@@ -94,6 +94,23 @@ function studioCommentMaybeReply(speakerAvatar,category,amount){
  if(!persona||!Array.isArray(replies)||!replies.length)return;
  const line=replies[state.replyCount%replies.length];
  state.replyCount++;
+ // One out of two rare replies becomes a playful disagreement (every twelfth case).
+ // Never chain from a reply: all speakers are selected here and queued exactly once.
+ if(state.lastEvent%12===0&&typeof studioDisputeLines==='object'){
+  const objection=studioDisputeLines[responder];
+  const challengerLine=objection?.[(state.replyCount-1)%objection.length];
+  if(challengerLine){
+   studioCommentQueue({name:persona.name,image:persona.image,line:challengerLine,category:topic},0);
+   const thirdIds=[1,2,3,4,5,7].filter(id=>id!==speakerAvatar&&id!==responder);
+   const closerId=thirdIds[(state.replyCount-1)%thirdIds.length];
+   const closer=studioCommentLines[closerId];
+   const closers=typeof studioDisputeClosers==='object'?studioDisputeClosers[closerId]:null;
+   if(closer&&closers?.length){
+    studioCommentQueue({name:closer.name,image:closer.image,line:closers[(state.replyCount-1)%closers.length],category:topic},0);
+   }
+   return;
+  }
+ }
  studioCommentQueue({name:persona.name,image:persona.image,line,category:topic},0);
 }
 
