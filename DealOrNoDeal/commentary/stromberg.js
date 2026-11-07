@@ -1,6 +1,10 @@
 'use strict';
 /* Stromberg: independently written original game dialogue; not quotes from the TV show. */
 const strombergCatalogue=Object.freeze({
+  "finalCases": ["Nur noch wenige Koffer. Jetzt ist Schluss mit lustigem Herumprobieren.","Das Feld wird kleiner. Die Verantwortung leider nicht.","So, jetzt bitte jede Entscheidung dreimal durchdenken.","Die letzten Koffer sind Chefsache. Zumindest theoretisch.","Jetzt entscheidet sich, ob hier einer Nerven hat.","Wenige Koffer, viel Druck. Willkommen in der Führungsetage."],
+  "bigLossStreak": ["Zwei große Beträge hintereinander weg. Das muss man auch erst mal schaffen.","Das ist keine Pechsträhne mehr, das ist eine Kostenstelle.","Noch so ein großer Verlust, und wir brauchen einen Sanierungsplan.","Hier fliegt gerade ein großer Betrag nach dem anderen raus.","Bei der Serie würde ich die Kofferwahl dringend neu besetzen.","Die teuren Koffer verschwinden im Akkord. Ganz großes Kino."],
+  "bankerVeryGood": ["Das Angebot ist ja fast schon großzügig. Ich würde mir das genau ansehen.","Wenn der Banker so viel bietet, muss man ernsthaft nachdenken.","Das ist ein Angebot, für das ich sogar die Sitzung unterbrechen würde.","So eine Summe legt man nicht einfach beiseite.","Da kommt richtig Geld auf den Tisch. Nicht leichtfertig wegwischen.","Bei dem Angebot würde ich erst mal den Taschenrechner holen."],
+  "bankerVeryBad": ["Das Angebot ist ja eine Beleidigung auf Briefpapier.","Für den Betrag kann der Banker den Hörer gleich wieder auflegen.","Der Mann bietet uns Kleingeld und nennt das Verhandlung.","So wenig? Da hätte er sich den Anruf sparen können.","Das ist kein Angebot, das ist ein schlechter Witz.","Da muss der Banker aber noch ordentlich nachlegen."],
   "oneCent": [
   "Ein Cent! Na bitte, endlich mal eine Entscheidung mit überschaubarem Schaden.",
   "Ein einziger Cent. Dafür würde bei uns nicht mal der Drucker anspringen.",
