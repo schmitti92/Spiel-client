@@ -2,12 +2,12 @@
 /* Local, presentation-only character reactions. No hidden information or game writes. */
 const studioCommentary={
  gameId:null,seen:new Set(),seenOffers:new Set(),lastLine:new Map(),queue:[],
- timer:null,active:false,lastShownAt:0,lastEvent:0,decisionKeys:new Set(),
+ timer:null,active:false,current:null,lastShownAt:0,lastEvent:0,decisionKeys:new Set(),
  strombergMemory:null,story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}
 };
 function studioCommentReset(game){
  clearTimeout(studioCommentary.timer);
- Object.assign(studioCommentary,{timer:null,queue:[],active:false,lastShownAt:0,lastEvent:0,
+ Object.assign(studioCommentary,{timer:null,queue:[],active:false,current:null,lastShownAt:0,lastEvent:0,
   gameId:game?String(game.id):null,strombergMemory:null,decisionKeys:new Set(),
   story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}});
  studioCommentary.seen=new Set((game?.openedAmounts||[]).map(x=>x.case));
@@ -18,8 +18,9 @@ function studioCommentReset(game){
 function studioCommentRender(){
  const el=document.getElementById('studio-commentary');if(!el)return;
  const entry=studioCommentary.queue.shift();
- if(!entry){studioCommentary.active=false;el.hidden=true;return}
+ if(!entry){studioCommentary.active=false;studioCommentary.current=null;el.hidden=true;return}
  studioCommentary.active=true;
+ studioCommentary.current=entry;
  studioCommentary.lastShownAt=Date.now();
  const portrait=document.getElementById('studio-commentary-portrait');
  const mood=entry.mood||'nachdenklich';
@@ -60,6 +61,8 @@ function studioCommentQueue(entry,priority=1,immediate=false){
   // Show the player's confirmed decision now, without discarding pending case remarks.
   clearTimeout(state.timer);
   state.active=false;
+  if(state.current)state.queue.unshift(state.current);
+  state.current=null;
   state.queue.unshift(item);
   studioCommentRender();
  }else{
