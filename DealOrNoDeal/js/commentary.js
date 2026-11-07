@@ -80,6 +80,13 @@ function studioCommentPick(avatar,category,seed){
  const line=choices[index];studioCommentary.lastLine.set(key,line);
  return line;
 }
+// Amounts are stored as euro cents. Exactly 100 € and 20,000 € are neutral.
+function studioCaseReaction(amount){
+ if(!Number.isFinite(amount))return 'neutral';
+ if(amount<10000)return 'good';
+ if(amount>2000000)return 'bad';
+ return 'neutral';
+}
 function studioCommentObserve(game){
  if(!game){if(studioCommentary.gameId!==null)studioCommentReset(null);return}
  if(String(game.id)!==studioCommentary.gameId){studioCommentReset(game);return}
@@ -114,23 +121,24 @@ function studioCommentObserve(game){
  const speakerAvatar=studioCommentLines[avatar]?avatar:1;
  for(const item of fresh){
   const amount=Number(item.amount);
-  const category=speakerAvatar===1?(amount<=100?'tiny':amount<=1000?'small':amount<=25000?'medium':amount<=200000?'high':amount<1000000?'huge':'millionLost'):(amount<=1000?'small':'large');
+  const reaction=studioCaseReaction(amount);
+  const category=speakerAvatar===1?(reaction==='good'?(amount<=100?'tiny':'small'):reaction==='neutral'?'medium':amount<100000000?'high':'millionLost'):(reaction==='good'?'small':reaction==='bad'?'large':'neutral');
   if(!category)continue;
   state.lastEvent++;
   let priority=1,line=null;
   if(speakerAvatar===1){
-   const good=amount<=1000,bad=amount>=50000;
+   const good=reaction==='good',bad=reaction==='bad';
    if(good){story.good++;story.bad=0}else if(bad){story.bad++;story.good=0}else{story.good=0;story.bad=0}
    const previous=state.strombergMemory;
    if(story.good===3){priority=3;line='Drei gute Entscheidungen hintereinander. Das nenne ich Führung. Meine, wohlgemerkt.'}
    else if(story.bad===3){priority=3;line='Drei Fehlgriffe. Wir müssen dringend über Zuständigkeiten sprechen.'}
-   else if(story.lastAdvice&&previous&&previous.good!==good&&(good||bad)){
+   else if(story.lastAdvice&&previous&&previous.reaction!==reaction&&(good||bad)){
     priority=3;line=good?'Hab ich doch gesagt. Genau so war meine Strategie.':'Das war ein Ausführungsfehler. Mit meinem Rat hat das nichts zu tun.';
     story.lastAdvice=null;
    }else if(previous&&previous.good!==good&&(good||bad)){
     priority=2;line=good?'Na also. Wenn man auf mich hört, läuft das.':'Das war nicht meine Entscheidung. Nur damit das klar ist.';
    }
-   state.strombergMemory={case:item.case,good};
+   state.strombergMemory={case:item.case,reaction};
    if(!line)line=studioCommentPick(1,category,Number(item.case)+opened.length);
 
   }else{
