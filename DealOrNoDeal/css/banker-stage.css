@@ -149,3 +149,65 @@
 @media(max-width:900px){
  #banker-call .banker-offer-quality{order:6!important}
 }
+
+/* V3: Independent right-hand offer panel fixes overlapping grid children.
+   The offer and rating must never be covered by Deal / No Deal buttons. */
+#banker-call .banker-call-card{
+ grid-template-columns:minmax(180px,.62fr) minmax(230px,1fr) minmax(300px,1.15fr)!important;
+ grid-template-rows:auto minmax(0,1fr)!important;
+ align-items:stretch!important;
+}
+#banker-call .banker-money-board{grid-column:1!important;grid-row:2!important;grid-area:auto!important;height:100%!important}
+#banker-call .banker-call-portrait{grid-column:2!important;grid-row:2!important;grid-area:auto!important;height:100%!important}
+#banker-call .banker-offer-details{
+ grid-column:3!important;grid-row:2!important;grid-area:auto!important;
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:clamp(6px,.8dvh,12px)!important;min-width:0;min-height:0;
+ overflow-y:auto!important;overflow-x:hidden!important;
+ padding:clamp(8px,1vw,16px)!important;
+ background:linear-gradient(160deg,#152d4c,#0a182d)!important;
+ border:1px solid #c9a46b99;border-radius:15px;
+ scrollbar-width:thin;scrollbar-color:#b79a65 #10213b;
+}
+#banker-call .banker-offer-details > *{
+ grid-area:auto!important;grid-column:auto!important;grid-row:auto!important;
+ position:relative!important;order:initial!important;
+ margin:0!important;min-width:0;flex-shrink:0;
+}
+#banker-call .banker-offer-details > [hidden]{display:none!important}
+#banker-call .banker-offer-details #banker-call-title{
+ display:block!important;font-size:clamp(16px,1.8vw,25px)!important;
+ color:#ffe3a2!important;line-height:1.15!important;
+}
+#banker-call .banker-offer-details .banker-call-quote{
+ display:block!important;max-height:5em;overflow:auto;
+ font-size:clamp(11px,1vw,15px)!important;line-height:1.35!important;
+}
+#banker-call .banker-offer-details .banker-call-eyebrow{display:block!important;font-size:clamp(11px,1vw,15px)!important}
+#banker-call .banker-offer-details .banker-call-amount{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ text-align:center!important;font-size:clamp(30px,4.4vw,65px)!important;
+ line-height:1.1!important;padding:clamp(9px,1.4vw,18px)!important;
+ color:#ffe39c!important;background:linear-gradient(120deg,#47321d,#7c5426,#382714)!important;
+ border:2px solid #f2cb76!important;border-radius:14px!important;
+ text-shadow:0 3px 12px #000b!important;white-space:nowrap!important;
+}
+#banker-call .banker-offer-details .banker-offer-quality{
+ display:block!important;width:100%!important;order:initial!important;
+}
+#banker-call .banker-offer-details .banker-call-actions{
+ display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;
+ margin-top:auto!important;min-height:64px;
+}
+#banker-call .banker-offer-details .banker-call-actions[hidden],
+#banker-call .banker-offer-details .banker-call-wait[hidden]{display:none!important}
+#banker-call .banker-offer-details .banker-call-actions button{min-width:0;min-height:62px}
+#banker-call .banker-offer-details .banker-offer-quality-track{height:18px}
+#banker-call .banker-offer-details .banker-offer-quality-head strong{font-size:clamp(16px,1.5vw,22px);color:#ffe19c}
+@media(max-width:900px),(max-height:540px){
+ #banker-call.banker-call{overflow:auto!important;align-items:flex-start!important}
+ #banker-call .banker-call-card{display:flex!important;flex-direction:column!important;height:auto!important;min-height:calc(100dvh - 16px)!important;max-height:none!important;overflow:visible!important}
+ #banker-call .banker-offer-details{order:1!important;width:100%!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important}
+ #banker-call .banker-call-portrait{order:0!important;height:clamp(170px,29dvh,260px)!important;flex:none!important}
+ #banker-call .banker-money-board{order:2!important;width:100%!important;height:auto!important;flex:none!important}
+}
