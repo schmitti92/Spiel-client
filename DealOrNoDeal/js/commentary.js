@@ -3,12 +3,12 @@
 const studioCommentary={
  gameId:null,seen:new Set(),seenOffers:new Set(),lastLine:new Map(),queue:[],
  timer:null,active:false,current:null,lastShownAt:0,lastEvent:0,decisionKeys:new Set(),
- strombergMemory:null,story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}
+ strombergMemory:null,replyCount:0,story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}
 };
 function studioCommentReset(game){
  clearTimeout(studioCommentary.timer);
  Object.assign(studioCommentary,{timer:null,queue:[],active:false,current:null,lastShownAt:0,lastEvent:0,
-  gameId:game?String(game.id):null,strombergMemory:null,decisionKeys:new Set(),
+  gameId:game?String(game.id):null,strombergMemory:null,replyCount:0,decisionKeys:new Set(),
   story:{good:0,bad:0,lastAdvice:null,lastOutcome:null,rounds:0}});
  studioCommentary.seen=new Set((game?.openedAmounts||[]).map(x=>x.case));
  studioCommentary.seenOffers=new Set((game?.history||[]).map(h=>String(h.round)+':'+String(h.offer)));
@@ -80,6 +80,23 @@ function studioCommentPick(avatar,category,seed){
  const line=choices[index];studioCommentary.lastLine.set(key,line);
  return line;
 }
+
+/* Sparse, one-level cast dialogue: never responds to a response and never exposes hidden values. */
+function studioCommentMaybeReply(speakerAvatar,category,amount){
+ const state=studioCommentary;
+ if(!Number.isFinite(amount)||state.lastEvent%6!==0)return;
+ const ids=[1,2,3,4,5,7].filter(id=>id!==speakerAvatar);
+ const responder=ids[state.replyCount%ids.length];
+ const topic=category==='oneCent'?'oneCent':category==='millionLost'?'millionLost':
+  studioCaseReaction(amount)==='good'?'good':studioCaseReaction(amount)==='bad'?'bad':'neutral';
+ const replies=typeof studioReplyLines==='object'?studioReplyLines[topic]?.[responder]:null;
+ const persona=studioCommentLines[responder];
+ if(!persona||!Array.isArray(replies)||!replies.length)return;
+ const line=replies[state.replyCount%replies.length];
+ state.replyCount++;
+ studioCommentQueue({name:persona.name,image:persona.image,line,category:topic},0);
+}
+
 // Amounts are stored as euro cents. Exactly 100 € and 20,000 € are neutral.
 function studioCaseReaction(amount){
  if(!Number.isFinite(amount))return 'neutral';
@@ -169,6 +186,7 @@ function studioCommentObserve(game){
   }
   if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+(amount/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'})+'.':'Die Spannung steigt.');
   studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
+  studioCommentMaybeReply(speakerAvatar,category,amount);
  }
 }
 
