@@ -27,6 +27,24 @@
 @keyframes cent-stage-enter{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
 @media(max-height:650px){.cent-wheel-wrap{width:min(30vh,180px)}.wheel-label-a{transform:translate(-50%,-50%) translateY(-48px)}.wheel-label-b{transform:translate(-50%,-50%) rotate(120deg) translateY(-48px) rotate(-120deg)}.wheel-label-c{transform:translate(-50%,-50%) rotate(240deg) translateY(-48px) rotate(-240deg)}}
 @media(prefers-reduced-motion:reduce){.cent-wheel{transition:none!important}.cent-reveal-stage{animation:none!important}}
+.cent-reward::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.65;background:radial-gradient(circle at 15% 20%,#ffcf7050 0 2px,transparent 4px),radial-gradient(circle at 75% 65%,#e3f3ff70 0 2px,transparent 5px),radial-gradient(circle at 40% 85%,#ffd97980 0 3px,transparent 6px);background-size:180px 160px,230px 200px,270px 210px;animation:reward-snow 12s linear infinite}
+@keyframes reward-snow{to{background-position:20px 900px,-40px 800px,30px 750px}}
+.cent-reward-card{position:relative;isolation:isolate;width:min(1050px,98vw);background:radial-gradient(ellipse at 50% -10%,#70502b,#172c49 65%,#0b1427);box-shadow:0 0 0 5px #edbf4b18,0 0 90px #ffc15d70,0 25px 80px #000c}
+.cent-wheel-wrap{width:min(45vw,260px);filter:drop-shadow(0 0 28px #ffd26c88)}
+.cent-wheel{box-shadow:inset 0 0 0 4px #fff7cc80,0 0 0 4px #8c5a22,0 0 40px #eeb44ca0}
+.cent-wheel-pointer{color:#fff4b5;filter:drop-shadow(0 0 12px #ffb928);animation:reward-pointer .16s ease-in-out infinite alternate}
+@keyframes reward-pointer{to{transform:translateY(-5px)}}
+.cent-reward[data-stage="result"] .cent-wheel-pointer{animation:none}
+.cent-reward[data-stage="reveal"] .cent-reward-pack{animation:reward-pop .8s cubic-bezier(.15,1.5,.4,1) both,cent-pulse 1.2s ease-in-out .8s infinite alternate}
+@keyframes reward-pop{from{transform:scale(.1) rotate(-30deg);opacity:0;filter:brightness(3)}to{transform:scale(1) rotate(0);opacity:1}}
+.cent-reward[data-stage="reveal"] .cent-reward-card{animation:reward-halo 1.2s ease-out}
+@keyframes reward-halo{50%{box-shadow:0 0 110px #ffda7dbb,0 0 0 9px #ffe9a844}}
+.cent-reward-cards .reward-card{min-height:115px;backface-visibility:hidden;transition:box-shadow .2s}
+.cent-reward-cards .reward-card[data-rarity="epic"]{box-shadow:0 0 25px #bb83ff55}
+.cent-reward-cards .reward-card[data-rarity="legendary"]{box-shadow:0 0 30px #ffcd57a0}
+.cent-wheel-stage[hidden],.cent-reveal-stage[hidden]{display:none!important}
+@media(max-height:760px){.cent-reward-card{padding:10px;max-height:96dvh}.cent-wheel-wrap{width:min(32vh,210px)}.cent-reward-cards .reward-card{min-height:90px}}
+@media(prefers-reduced-motion:reduce){.cent-reward::before,.cent-wheel-pointer,.cent-reward-card,.cent-reward-pack{animation:none!important}}
 </style><div id="cent-reward" class="cent-reward" hidden role="dialog" aria-modal="true" aria-labelledby="cent-reward-title"><div class="cent-reward-card">
 <div>🎅 ✨ 🎄</div><h2 id="cent-reward-title">Weihnachtsbonus!</h2><p id="cent-reward-subtitle">Ein Weihnachtsgeschenk wird geöffnet!</p>
 <div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das Weihnachts-Glücksrad entscheidet ✨</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel"><span class="wheel-label wheel-label-a">🎁<small>Klein</small></span><span class="wheel-label wheel-label-b">🥇<small>Groß</small></span><span class="wheel-label wheel-label-c">💎<small>Premium</small></span></div><div class="cent-wheel-hub">🎄</div></div><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Das Rad dreht sich …</div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
@@ -47,7 +65,7 @@
  const packNames={small:'Kleines Weihnachtspaket',large:'Großes Weihnachtspaket',premium:'Premium-Weihnachtspaket'};
  function openReward(reward,kind,uid){
   sequence++;const current=sequence;
-  box.dataset.reward=reward.id;box.hidden=false;close.disabled=true;
+  box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;
   const owner=reward.playerName||'Spieler';
   title.textContent=kind==='banker'?'🎄 Weihnachtsbonus für '+owner:'🎄 1-Cent-Weihnachtsbonus!';
   subtitle.textContent=kind==='banker'?'Banker-Deal angenommen · Alle Spieler sehen die Karten':'Du hast den 1-Cent-Koffer geöffnet!';
@@ -61,7 +79,7 @@
   const angle=360*6-sector*120;
   const showCards=()=>{
    if(sequence!==current||box.hidden)return;
-   wheelStage.hidden=true;revealStage.hidden=false;
+   wheelStage.hidden=true;revealStage.hidden=false;box.dataset.stage='reveal';
    name.textContent=reward.packName||packNames[pack]||'Weihnachtspaket';
    icon.textContent=pack==='premium'?'💎':pack==='large'?'🥇':'🎁';
    const rarityLabels={common:'Gewöhnlich',rare:'Selten',epic:'Episch',legendary:'Legendär'};
@@ -82,14 +100,14 @@
    wheel.style.transition='transform 4.2s cubic-bezier(.13,.75,.13,1)';
    wheel.style.transform='rotate('+angle+'deg)';
   }));
-  setTimeout(()=>{if(sequence!==current||box.hidden)return;wheelStatus.textContent='🎉 '+(reward.packName||packNames[pack]||'Gewonnen!');},4200);
+  setTimeout(()=>{if(sequence!==current||box.hidden)return;wheelStatus.textContent='🎉 GEWONNEN: '+(reward.packName||packNames[pack]||'Weihnachtspaket')+'!';box.dataset.stage='result';},4200);
   setTimeout(showCards,5250);
  }
 
  close.addEventListener('click',()=>{
   if(close.disabled)return;
   const uid=user()?.uid,id=box.dataset.reward;if(uid&&id)mark(uid,id);
-  sequence++;box.hidden=true;box.dataset.reward='';
+  sequence++;box.hidden=true;box.dataset.reward='';delete box.dataset.stage;
  });
  async function checkRewards(){
   if(checking||!box.hidden||typeof g==='undefined'||!g?.id||!room())return;
