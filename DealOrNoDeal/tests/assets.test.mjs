@@ -126,3 +126,12 @@ test('banker decision commentary stays visible and preserves case reactions', ()
  assert.match(comments,/function studioCommentDecision\(deal,game\)/);
  assert.match(core,/type==='decide'&&typeof studioCommentDecision==='function'/);
 });
+
+test('final banker offer has non-overlapping tracks and no duplicate amount', () => {
+ const css=readFileSync(resolve(root,'css/broadcast.css'),'utf8');
+ assert.match(css,/grid-row:7!important;position:relative!important/);
+ assert.match(css,/grid-row:9!important/);
+ assert.match(css,/grid-row:10!important/);
+ assert.match(css,/\.banker-call-card:has\(\.final-choice-compare:not\(\[hidden\]\)\) \.banker-call-amount/);
+ assert.match(css,/\.broadcast-offer-math\{display:none!important\}/);
+});
