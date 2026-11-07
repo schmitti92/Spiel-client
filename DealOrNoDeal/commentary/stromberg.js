@@ -28,17 +28,17 @@ const strombergCatalogue=Object.freeze({
     "Gut gemacht. Aber jetzt bitte nicht übermütig werden."
   ],
   "medium": [
-    "Das tut weh, aber noch nicht so, dass man deswegen krankfeiern müsste.",
-    "Nicht optimal. Sagen wir mal: ausbaufähig.",
-    "Das war jetzt eher die mittlere Katastrophe.",
-    "Da hätte man vorher vielleicht mal kurz nachdenken können.",
-    "Das ist ärgerlich, aber noch kein Grund für einen Krisenstab.",
-    "Da muss man im Nachgang schon mal die Prozesse hinterfragen.",
-    "Das fällt unter: hätte besser laufen können.",
-    "Kein Beinbruch. Eher so ein geschäftlicher Bänderriss.",
-    "Jetzt aber nicht anfangen, sich gegenseitig Mut zuzureden.",
-    "Der Betrag ist weg. Dafür haben wir eine Erfahrung mehr. Toll.",
-    "Das war keine Glanzleistung, eher Bürobeleuchtung."
+    "Na ja. Weder Grund zum Jubeln noch für eine Krisensitzung.",
+    "Das ist jetzt weder Fisch noch Fleisch. Weiter geht's.",
+    "Kann man mit leben. Die richtig großen Summen sind wichtiger.",
+    "So ein mittlerer Betrag. Nicht toll, aber auch kein Drama.",
+    "Da würde ich jetzt kein großes Fass für aufmachen.",
+    "Wir bleiben sachlich. Der Betrag ist weg, die Chancen bleiben.",
+    "Das war jetzt ein normaler Arbeitstag. Nicht mehr und nicht weniger.",
+    "Kein Glanzstück, aber auch keine Katastrophe.",
+    "Das nehmen wir zur Kenntnis und konzentrieren uns auf die nächsten Koffer.",
+    "So. Abhaken. Die großen Entscheidungen kommen noch.",
+    "Weder Bonus noch Abmahnung. Kann auch mal vorkommen."
   ],
   "high": [
     "Ja, wunderbar. Da fliegt uns gerade das Jahresbudget um die Ohren.",
