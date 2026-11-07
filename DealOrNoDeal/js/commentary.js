@@ -122,7 +122,8 @@ function studioCommentObserve(game){
  for(const item of fresh){
   const amount=Number(item.amount);
   const reaction=studioCaseReaction(amount);
-  const category=speakerAvatar===1?(reaction==='good'?(amount<=100?'tiny':'small'):reaction==='neutral'?'medium':amount<100000000?'high':'millionLost'):(reaction==='good'?'small':reaction==='bad'?'large':'neutral');
+  const millionCase=amount>=100000000;
+  const category=millionCase?'millionLost':speakerAvatar===1?(reaction==='good'?(amount<=100?'tiny':'small'):reaction==='neutral'?'medium':'high'):(reaction==='good'?'small':reaction==='bad'?'large':'neutral');
   if(!category)continue;
   state.lastEvent++;
   let priority=1,line=null;
@@ -144,6 +145,13 @@ function studioCommentObserve(game){
 
   }else{
    line=studioCommentPick(speakerAvatar,category,Number(item.case)+opened.length);
+  }
+  if(millionCase){
+   // Million cases must NEVER fall through to generic streak, loss or neutral lines.
+   priority=3;
+   line=studioCommentPick(speakerAvatar,'millionLost',Number(item.case)+opened.length)
+    ||studioCommentPick(1,'millionLost',Number(item.case)+opened.length)
+    ||'Eine Million Euro ist aus dem Spiel. Das ist ein schwerer Verlust.';
   }
   if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+(amount/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'})+'.':'Die Spannung steigt.');
   studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
