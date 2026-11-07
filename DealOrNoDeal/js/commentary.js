@@ -96,8 +96,9 @@ function studioParticipant(game,id){
  return players.find(p=>String(p.id)===String(id))||null;
 }
 function studioActor(game,event){
- const ids=[event?.playerId,event?.openedBy,event?.userId,event?.actorId,event?.by,
-  game?.turnPlayerId,game?.currentPlayerId];
+ const ids=[event?.playerId,event?.openedBy,event?.userId,event?.actorId,event?.by];
+ // Event attribution must not silently fall back to the next player's turn.
+ if(!ids.some(id=>id!==undefined&&id!==null))return null;
  for(const id of ids){if(id!==undefined&&id!==null){const p=studioParticipant(game,id);if(p)return p;}}
  return null;
 }
@@ -153,6 +154,8 @@ function studioHolidayContextReply(responder,sourceLine,topic,turn){
 function studioCommentMaybeReply(game,speakerAvatar,category,amount,sourceLine){
  const state=studioCommentary;
  if(!Number.isFinite(amount)||state.lastEvent%6!==0||state.queue.length>1)return;
+ // Only the player who made the move may comment. No other studio voices.
+ return;
  const ids=[...new Set((game?.players||[]).map(p=>Number(p.avatar)))].filter(id=>id!==speakerAvatar&&studioCommentLines[id]);
  if(!ids.length)return;
  const responder=ids[(state.replyCount+state.lastEvent)%ids.length];
@@ -199,8 +202,8 @@ function studioCommentObserve(game){
  if(!game){if(studioCommentary.gameId!==null)studioCommentReset(null);return}
  if(String(game.id)!==studioCommentary.gameId){studioCommentReset(game);return}
  const state=studioCommentary,story=state.story;
- const offerActor=studioActor(game,h);
  const h=game.history?.at(-1);
+ const offerActor=h?studioActor(game,h):null;
  if(h&&game.phase==='decision'){
   const offerKey=String(h.round)+':'+String(h.offer);
   if(!state.seenOffers.has(offerKey)){
@@ -225,11 +228,8 @@ function studioCommentObserve(game){
  const fresh=opened.filter(x=>!state.seen.has(x.case));
  opened.forEach(x=>state.seen.add(x.case));
  if(!fresh.length)return;
- const current=studioActor(game,fresh[0]);
- const persona=studioPersona(current);
- const speakerAvatar=persona?.avatar;
  for(const item of fresh){
-  const itemPersona=studioPersona(studioActor(game,item))||persona;
+  const itemPersona=studioPersona(studioActor(game,item));
   if(!itemPersona)continue;
   const speakerAvatar=itemPersona.avatar;
   const amount=Number(item.amount);
