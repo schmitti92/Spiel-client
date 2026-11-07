@@ -67,11 +67,11 @@
   sequence++;const current=sequence;
   box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;
   const owner=reward.playerName||'Spieler';
-  title.textContent=kind==='banker'?'🎄 Weihnachtsbonus für '+owner:'🎄 1-Cent-Weihnachtsbonus!';
-  subtitle.textContent=kind==='banker'?'Banker-Deal angenommen · Alle Spieler sehen die Karten':'Du hast den 1-Cent-Koffer geöffnet!';
+  title.textContent='🎄 '+owner+' gewinnt ein Weihnachtspaket!';
+  subtitle.textContent=(kind==='banker'?'Banker-Deal angenommen':'1-Cent-Koffer geöffnet')+' · Alle Spieler schauen live zu';
   credit.textContent=reward.uid===uid?'Deine Karten wurden deinem Weihnachtsalbum gutgeschrieben.':'Die Karten wurden dem Weihnachtsalbum von '+owner+' gutgeschrieben.';
   name.textContent='';icon.textContent='🎁';cards.replaceChildren();
-  wheelStage.hidden=false;revealStage.hidden=true;wheelStatus.textContent='🎡 Das Weihnachtsrad dreht sich …';
+  wheelStage.hidden=false;revealStage.hidden=true;wheelStatus.textContent='🎡 Paketverlosung · Klein 40 % · Groß 50 % · Premium 10 %';
   wheel.style.transition='none';wheel.style.transform='rotate(0deg)';
   const pack=String(reward.packId||'small').toLowerCase();
   const sector=pack==='large'?1:pack==='premium'?2:0;
@@ -121,7 +121,7 @@
     const data=await response.json();
     const rewards=endpoint.includes('banker')?data.rewards||[]:data.reward?[data.reward]:[];
     const reward=rewards.find(x=>x.gameId===g.id&&!seen(u.uid,x.id));
-    if(reward&&user()?.uid===u.uid){openReward(reward,endpoint.includes('banker')?'banker':'cent',u.uid);break}
+    if(reward){openReward(reward,endpoint.includes('banker')?'banker':'cent',u.uid);break}
    }
   }catch(e){console.warn('Weihnachtsbonus wird erneut geprüft',e)}
   finally{checking=false}
@@ -132,6 +132,15 @@
 })();
 </script>
 <style>
+
+/* Shared Christmas broadcast: stage lighting and readable spectator view */
+.cent-reward-card{width:min(1080px,98vw);border:3px solid #f4cf79;background:radial-gradient(ellipse at 50% -20%,#795326 0%,#1c3151 50%,#0a1226 100%);box-shadow:0 0 0 6px #ffd57220,0 0 85px #eeb84a77,0 30px 90px #000e}
+.cent-wheel-wrap{width:min(52vw,300px)}
+.cent-wheel{box-shadow:inset 0 0 0 5px #fff6cd,0 0 0 5px #ad6d2c,0 0 42px #ffcf7eab}
+.cent-wheel-heading{font-size:clamp(18px,2.8vw,29px);letter-spacing:.035em}
+.cent-reward-cards .reward-card[data-rarity="legendary"]{box-shadow:0 0 30px #ffd65fbb,0 0 0 2px #ffe9a355}
+.cent-reward-cards .reward-card[data-rarity="epic"]{box-shadow:0 0 24px #b27bff9c}
+@media(max-height:760px){.cent-wheel-wrap{width:min(34vh,205px)}.cent-reward-card{max-height:96dvh}}
 /* Banker broadcast: video is a layer within the portrait; money board stays visible. */
 .banker-call-portrait{position:relative;overflow:hidden}
 .banker-offer-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#09101b;z-index:1;opacity:0;pointer-events:none;transition:opacity .25s}
