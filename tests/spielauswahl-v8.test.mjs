@@ -10,7 +10,7 @@ const hub=source('hub-lobby.js');
 const bridge=source('hub-game-bridge.js');
 const GAME_KEYS=['barikade','skyjo','kreuz','business'];
 test('Local mode lands on artwork-rich game selection with no online/auth controls',()=>{
- assert.equal((local.match(/<article class="game/g)||[]).length,4);
+ assert.equal((local.match(/<article class="game/g)||[]).length,5);
  assert.match(local,/Assets\/game-backgrounds\/barikade\.webp/);
  for(const path of ['Barikade/barikade.html?offline=1','Skyjo/skyjo_action_local.html?mode=local',
   'KreuzKunter/kreuzkunter.html?mode=local','Business/business_local.html'])assert.ok(local.includes(path),path);
@@ -18,9 +18,10 @@ test('Local mode lands on artwork-rich game selection with no online/auth contro
  assert.doesNotMatch(local,/href="[^"]*(?:mode=online|business_online)/);
 });
 test('Online game selection uses four server-protected game buttons, not independent room links',()=>{
- assert.equal((online.match(/<article class="game/g)||[]).length,5);
+ assert.equal((online.match(/<article class="game/g)||[]).length,7);
  for(const g of GAME_KEYS)assert.ok(online.includes('data-select-game="'+g+'"'));
- assert.equal((online.match(/data-select-game=/g)||[]).length,4);
+ assert.ok(online.includes('data-select-game="kniffel"'));
+ assert.equal((online.match(/data-select-game=/g)||[]).length,5);
  assert.doesNotMatch(online,/href="(?:Skyjo\/skyjo_action|Business\/business_online|KreuzKunter\/kreuzkunter)/);
  assert.match(controller,/getIdToken\(\)/);
  assert.match(controller,/\/rooms\/'.*?\+code\+'\/select'/s);
