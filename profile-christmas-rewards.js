@@ -8,6 +8,9 @@ const santa=document.getElementById('christmas-santa-reward');
 const santaStatus=document.getElementById('christmas-santa-status');
 const equip=document.getElementById('christmas-santa-equip');
 const santaAsset=new URL('DealOrNoDeal/assets/weihnachts_event/a_high_quality_cartoon_3d_style_santa_claus_charac.png',document.baseURI).href;
+const trophy=document.getElementById('christmas-champion-trophy');
+const trophyStatus=document.getElementById('christmas-champion-status');
+function paintTrophy(unlocked,message){if(!trophy||!trophyStatus)return;trophy.classList.toggle('locked',!unlocked);trophyStatus.textContent=message;}
 const banner=document.getElementById('christmas-banner-reward');
 const bannerStatus=document.getElementById('christmas-banner-status');
 const bannerEquip=document.getElementById('christmas-banner-equip');
@@ -22,8 +25,8 @@ async function refresh(){
  const state=window.SpielOnline?.state?.();
  const user=state?.status==='online'?state.user:null;
  const id=user?.uid||'';
- if(!user?.getIdToken){uid='';serial++;paint(false,'🔒 Melde dich an, um deine Belohnungen zu sehen.');paintSanta(false,'🔒 Bitte anmelden.');paintBanner(false,'🔒 Bitte anmelden.');return;}
- const request=++serial;uid=id;paint(false,'⏳ Weihnachts-Belohnungen werden geprüft …');paintSanta(false,'⏳ Freischaltung wird geprüft …');paintBanner(false,'⏳ Freischaltung wird geprüft …');
+ if(!user?.getIdToken){uid='';serial++;paint(false,'🔒 Melde dich an, um deine Belohnungen zu sehen.');paintSanta(false,'🔒 Bitte anmelden.');paintBanner(false,'🔒 Bitte anmelden.');paintTrophy(false,'🔒 Bitte anmelden.');return;}
+ const request=++serial;uid=id;paint(false,'⏳ Weihnachts-Belohnungen werden geprüft …');paintSanta(false,'⏳ Freischaltung wird geprüft …');paintBanner(false,'⏳ Freischaltung wird geprüft …');paintTrophy(false,'⏳ Freischaltung wird geprüft …');
  try{
   const token=await user.getIdToken();
   const response=await fetch(api+'/api/deal-or-no-deal/christmas/me',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
@@ -39,7 +42,9 @@ async function refresh(){
   paintSanta(santaOk,santaOk?'✓ Freigeschaltet · jetzt als Profilbild auswählbar':'🔒 '+total+' / 12 Bingos');
   const bannerOk=total>=16&&data.progress.rewards.includes('christmas-profile-banner');
   paintBanner(bannerOk,bannerOk?'✓ Freigeschaltet · als Profilbanner auswählbar':'🔒 '+total+' / 16 Bingos');
- }catch(e){if(request===serial){paint(false,'⚠ Freischaltung konnte nicht geprüft werden. Bitte später erneut laden.');paintSanta(false,'⚠ Freischaltung konnte nicht geprüft werden.');paintBanner(false,'⚠ Freischaltung konnte nicht geprüft werden.');}}
+  const championOk=total>=20&&data.progress.rewards.includes('christmas-champion');
+  paintTrophy(championOk,championOk?'🏆 Freigeschaltet · Weihnachts-Champion!':'🔒 '+total+' / 20 Bingos');
+ }catch(e){if(request===serial){paint(false,'⚠ Freischaltung konnte nicht geprüft werden. Bitte später erneut laden.');paintSanta(false,'⚠ Freischaltung konnte nicht geprüft werden.');paintBanner(false,'⚠ Freischaltung konnte nicht geprüft werden.');paintTrophy(false,'⚠ Freischaltung konnte nicht geprüft werden.');}}
 }
 if(equip)equip.addEventListener('click',async()=>{
  if(!santaUnlocked||equip.disabled)return;
