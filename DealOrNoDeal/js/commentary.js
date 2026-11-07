@@ -90,22 +90,32 @@ function studioReplyTopic(category,amount){
  if(category==='bankerBad'||category==='bankerVeryBad')return 'bankerBad';
  return studioCaseReaction(amount)==='good'?'good':studioCaseReaction(amount)==='bad'?'bad':'neutral';
 }
-function studioCommentMaybeReply(speakerAvatar,category,amount){
+function studioCommentTone(line){
+ const value=String(line||'').toLowerCase();
+ if(/juhu|hurra|perfekt|hervorragend|optimal|wunderbar|fantastisch|feiern|gewonnen|sieg|glückstreffer|besser geht/.test(value))return 'celebration';
+ if(/schuld|fehler|versagt|verantwort|falsch|katastroph|unfähig|ausführungsfehler/.test(value))return 'blame';
+ if(/panik|furchtbar|schlimm|schrecklich|oh nein|auweia|bitter|schwerer verlust|weg!/.test(value))return 'alarm';
+ if(/sicher|unbedingt|muss man|auf jeden fall|sofort|keine frage/.test(value))return 'certainty';
+ return 'measured';
+}
+function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  const state=studioCommentary;
  if(!Number.isFinite(amount)||state.lastEvent%6!==0)return;
  const ids=[1,2,3,4,5,7].filter(id=>id!==speakerAvatar);
  const responder=ids[state.replyCount%ids.length];
  const topic=studioReplyTopic(category,amount);
+ const tone=studioCommentTone(sourceLine);
  const replies=typeof studioReplyLines==='object'?studioReplyLines[topic]?.[responder]:null;
  const persona=studioCommentLines[responder];
  if(!persona||!Array.isArray(replies)||!replies.length)return;
  const turn=state.replyCount++;
  // At most one exchange per 12 case openings; two additional speakers maximum.
- if(state.lastEvent%12===0&&typeof studioContextDisputes==='object'){
+ if(state.lastEvent%12===0&&tone!=='measured'&&typeof studioContextDisputes==='object'){
   const scene=studioContextDisputes[topic];
   if(scene?.objections?.length&&scene?.closers?.length){
    const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: '}[responder]||'';
-   const objection=opening+scene.objections[turn%scene.objections.length];
+   const objections=scene.byTone?.[tone]||scene.objections;
+   const objection=opening+objections[turn%objections.length];
    studioCommentQueue({name:persona.name,image:persona.image,line:objection,category:topic},0);
    const others=ids.filter(id=>id!==responder);
    const closerId=others[turn%others.length];
@@ -209,7 +219,7 @@ function studioCommentObserve(game){
   }
   if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+(amount/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'})+'.':'Die Spannung steigt.');
   studioCommentQueue({name:personality.name,image:personality.image,line,category},priority);
-  studioCommentMaybeReply(speakerAvatar,category,amount);
+  studioCommentMaybeReply(speakerAvatar,category,amount,line);
  }
 }
 
