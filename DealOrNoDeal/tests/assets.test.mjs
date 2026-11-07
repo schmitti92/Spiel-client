@@ -270,7 +270,7 @@ test('all six characters can reply contextually without dialogue loops', async (
  assert.match(logic,/filter\(id=>id!==speakerAvatar\)/);
  assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount\)/);
  const html=readFileSync(resolve(root,'game.html'),'utf8');
- assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=contextual40'));
+ assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=tone30'));
 });
 
 test('rare three-person disputes have unique speakers and finite closure', async () => {
