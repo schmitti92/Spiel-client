@@ -271,3 +271,35 @@ body:has(#banker-call:not([hidden])):before,
 body:has(#banker-call:not([hidden])) .layout>.panel.case-stage:before{
  animation-play-state:paused!important;
 }
+
+/* V9: final decision is ONE flow, never several layers in the same grid row.
+   Explicit tracks prevent the comparison card from painting over the offer. */
+@media(min-width:761px) and (min-height:541px){
+ #banker-call .banker-call-card{
+  grid-template-rows:repeat(11,minmax(0,auto))!important;
+  grid-auto-rows:min-content!important;
+  align-content:start!important;
+  align-items:start!important;
+  row-gap:clamp(4px,.65dvh,9px)!important;
+ }
+ #banker-call .banker-money-board{grid-column:1!important;grid-row:2/12!important;align-self:stretch!important}
+ #banker-call .banker-call-phone{grid-column:2!important;grid-row:2!important}
+ #banker-call .banker-call-portrait{grid-column:2!important;grid-row:3/12!important;align-self:stretch!important;min-height:0!important}
+ #banker-call #banker-call-title{grid-column:3!important;grid-row:2!important}
+ #banker-call .banker-call-quote{grid-column:3!important;grid-row:3!important}
+ #banker-call .banker-call-eyebrow:not(:first-child){grid-column:3!important;grid-row:4!important}
+ #banker-call .banker-call-amount{grid-column:3!important;grid-row:5!important}
+ #banker-call .banker-call-sub{grid-column:3!important;grid-row:6!important}
+ #banker-call .final-choice-compare{grid-column:3!important;grid-row:7!important;position:relative!important}
+ #banker-call .broadcast-offer-math{grid-column:3!important;grid-row:8!important}
+ #banker-call .banker-vote-progress{grid-column:3!important;grid-row:9!important}
+ #banker-call .banker-call-actions,#banker-call .banker-call-wait{grid-column:3!important;grid-row:10!important}
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-amount,
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-sub,
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .banker-call-eyebrow:not(:first-child),
+ #banker-call .banker-call-card:has(.final-choice-compare:not([hidden])) .broadcast-offer-math{display:none!important}
+ #banker-call .final-choice-compare{padding:clamp(8px,1vw,14px)!important;margin:0!important}
+ #banker-call .final-choice-option{padding:clamp(7px,.8vw,12px)!important}
+ #banker-call .final-choice-option strong{font-size:clamp(20px,2.6vw,38px)!important}
+ #banker-call .banker-call-actions{margin:0!important}
+}
