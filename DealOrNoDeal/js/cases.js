@@ -21,25 +21,14 @@ function directorReveal(){
  const huge=item.amount>=highThreshold,small=item.amount<=lowThreshold;
  const mood=huge?'loss':small?'relief':'neutral';
  setAvatarReaction(huge?'shock':small?'cheer':'curious',2300);
- const label=huge?'SCHOCK IM GOLDSTUDIO!':small?'GLÜCK GEHABT!':'KOFFER '+(item.case+1)+' GEÖFFNET';
- const flash=$('prize-flash');
+ // The revealed amount remains inside the physical briefcase; no fullscreen amount flash.
  clearTimeout(prizeFlashTimer);clearTimeout(prizeFlashDelay);
- flash.classList.remove('active');flash.setAttribute('aria-hidden','true');
- const showReveal=()=>{
-  if(!g||String(g.id)!==gameKey||g.phase==='final')return;
-  flash.classList.toggle('prize-huge',huge);flash.classList.toggle('prize-relief',small);
-  $('prize-flash-kicker').textContent=label;
-  $('prize-flash-value').textContent=eur(item.amount);
-  $('prize-flash-note').textContent=huge?'Ein Spitzenbetrag ist ausgeschieden!':small?'Ein kleiner Betrag ist weg – die großen Chancen bleiben!':'Das Rennen um den Hauptgewinn geht weiter.';
-  flash.classList.add('active');flash.setAttribute('aria-hidden','false');
-  prizeFlashTimer=setTimeout(()=>{flash.classList.remove('active');flash.setAttribute('aria-hidden','true')},matchMedia('(prefers-reduced-motion: reduce)').matches?650:1350);
- };
- /* Reveal follows the physical lid instead of racing it. The authoritative
-    game state and all controls update immediately, without any artificial wait. */
+ const flash=$('prize-flash');
+ flash.classList.remove('active','prize-huge','prize-relief');
+ flash.setAttribute('aria-hidden','true');
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const target=$('cases')?.children[item.case];
  showCaseCamera(item.case);
  document.body.dataset.revealMood=mood;
  if(target&&!reduced){target.classList.add('case-newly-opened');target.addEventListener('animationend',()=>target.classList.remove('case-newly-opened'),{once:true})}
- prizeFlashDelay=setTimeout(showReveal,reduced?0:700);
 }
