@@ -109,10 +109,19 @@ function studioCommentTone(line){
 
 // Dialogue follows the actual previous remark, not merely the amount category.
 function studioHolidayContextReply(responder,sourceLine,topic,turn){
- if(responder!==12&&responder!==13)return null;
+ if(responder!==11&&responder!==12&&responder!==13)return null;
  const said=String(sourceLine||'').toLowerCase();
  const snow=responder===13;
+ const rudolf=responder===11;
  const options=[];
+ if(rudolf){
+  if(/rudolf|rentier|schlitten|huf|geweih/.test(said))return 'Meine Hufe sind bereit. Aber die Kofferwahl müsst ihr selbst treffen!';
+  if(/million/.test(said))return 'Bei einer Million blinkt meine Nase Alarm. Das war wirklich bitter!';
+  if(/cent/.test(said))return 'Ein Cent weniger – meine Nase leuchtet vor Freude!';
+  if(/banker|angebot/.test(said))return 'Der Banker soll ein vernünftiges Angebot machen, sonst fliege ich weiter!';
+  if(/schmelz|schneemann|karottennase/.test(said))return 'Schneemann, bleib cool! Ich bringe dich notfalls zum Nordpol zurück!';
+  return null;
+ }
  if(/rudolf|rentier|schlitten/.test(said))options.push(snow?'Lasst Rudolf da raus. Der kann schließlich nichts für diesen Koffer!':'Rudolf hat genug zu tun. Die Kofferwahl müssen wir selbst verantworten!');
  if(/wichtel|geschenk|bescherung|weihnacht/.test(said))options.push(snow?'Bei so vielen Geschenken hoffe ich nur auf einen Kühlschrank für mich.':'Ein Geschenk ist erst dann gut, wenn wir wissen, was wirklich drinsteckt!');
  if(/karottennase|schal|schneebauch|schmelz|schneemann/.test(said))options.push(snow?'Meine Karottennase ist in Ordnung. Um die Gewinnchancen mache ich mir mehr Sorgen!':'Mein lieber Schneemann, bitte nicht schmelzen. Wir brauchen dich noch fürs Finale!');
@@ -127,7 +136,7 @@ function studioHolidayContextReply(responder,sourceLine,topic,turn){
 function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  const state=studioCommentary;
  if(!Number.isFinite(amount)||state.lastEvent%6!==0||state.queue.length>1)return;
- const ids=[1,2,3,4,5,7,12,13].filter(id=>id!==speakerAvatar);
+ const ids=[1,2,3,4,5,7,11,12,13].filter(id=>id!==speakerAvatar);
  const responder=ids[(state.replyCount+state.lastEvent)%ids.length];
  const topic=studioReplyTopic(category,amount);
  const tone=studioCommentTone(sourceLine);
@@ -141,14 +150,14 @@ function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  if(state.lastEvent%12===0&&tone!=='measured'&&typeof studioContextDisputes==='object'){
   const scene=studioContextDisputes[topic];
   if(scene?.objections?.length&&scene?.closers?.length){
-   const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: ',12:'Ho ho, Moment! ',13:'Eiskalt widersprochen: '}[responder]||'';
+   const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: ',11:'Meine Nase sagt: ',12:'Ho ho, Moment! ',13:'Eiskalt widersprochen: '}[responder]||'';
    const objections=(typeof studioToneDisputes==='object'?studioToneDisputes[topic]?.[tone]:null)||scene.objections;
    const objection=opening+objections[turn%objections.length];
    studioCommentQueue({name:persona.name,image:persona.image,line:objection,category:topic,dialogue:true},0);
    const others=ids.filter(id=>id!==responder);
    const closerId=others[turn%others.length];
    const closer=studioCommentLines[closerId];
-   const closing={1:'Na gut. ',2:'Einverstanden. ',3:'Hihi, okay! ',4:'Jo, gut. ',5:'Halten wir fest: ',7:'Fest steht: ',12:'Ho ho, also: ',13:'Cool bleiben: '}[closerId]||'';
+   const closing={1:'Na gut. ',2:'Einverstanden. ',3:'Hihi, okay! ',4:'Jo, gut. ',5:'Halten wir fest: ',7:'Fest steht: ',11:'Ich halte Kurs: ',12:'Ho ho, also: ',13:'Cool bleiben: '}[closerId]||'';
    studioCommentQueue({name:closer.name,image:closer.image,
     line:closing+scene.closers[turn%scene.closers.length],category:topic,dialogue:true},0);
    return;
@@ -187,7 +196,7 @@ function studioCommentObserve(game){
    const ratio=average>0?offered/average:1;
    const category=ratio>=1.1?'bankerVeryGood':ratio<=.35?'bankerVeryBad':offered>=average*.75?'bankerGood':'bankerBad';
    story.rounds++;story.lastAdvice=category;
-   const holidayAvatar=Number((game.players?.find(p=>p.id===game.currentPlayerId)||game.players?.find(p=>p.id===game.turnPlayerId)||game.players?.[0])?.avatar);const holidaySpeaker=holidayAvatar===12||holidayAvatar===13?studioCommentLines[holidayAvatar]:null;
+   const holidayAvatar=Number((game.players?.find(p=>p.id===game.currentPlayerId)||game.players?.find(p=>p.id===game.turnPlayerId)||game.players?.[0])?.avatar);const holidaySpeaker=holidayAvatar===11||holidayAvatar===12||holidayAvatar===13?studioCommentLines[holidayAvatar]:null;
    const line=holidaySpeaker?studioCommentPick(holidayAvatar,category,h.round):((category==='bankerGood'||category==='bankerBad')&&story.rounds>1&&story.rounds%3===0
     ?(category==='bankerGood'?'Ich sag ja seit Runden: Man muss wissen, wann man die Hand aufhält.':'Wieder so ein Angebot. Da hat offenbar jemand den Etat falsch verstanden.')
     :studioCommentPick(1,category,h.round));
