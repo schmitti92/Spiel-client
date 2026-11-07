@@ -34,7 +34,11 @@ const strombergCatalogue=Object.freeze({
     "Das war finanziell ungefähr ein feuchter Händedruck.",
     "Da musste ja fast aufpassen, dass die Buchhaltung nicht lacht.",
     "Für den Betrag steht bei uns nicht mal der Kopierer auf.",
-    "Klein, aber wenigstens ausnahmsweise richtig entschieden."
+    "Klein, aber wenigstens ausnahmsweise richtig entschieden.",
+    "Ein Cent. Da hat sich die ganze Aufregung ja richtig gelohnt.",
+    "Der Cent ist weg. Dafür gebe ich ausnahmsweise grünes Licht.",
+    "Ein Cent weniger. Das kann selbst unsere Abteilung verkraften.",
+    "Na bitte, den Cent haben wir erfolgreich aus dem Verkehr gezogen."
   ],
   "small": [
     "So. Wieder ein Problem weniger auf dem Schreibtisch.",
@@ -47,7 +51,11 @@ const strombergCatalogue=Object.freeze({
     "Da hat sich das Denken ausnahmsweise mal gelohnt.",
     "Das ist die Art von Schaden, die man noch unter Sonstiges abheften kann.",
     "Ich hätte denselben genommen. Nur mit mehr Überzeugung.",
-    "Gut gemacht. Aber jetzt bitte nicht übermütig werden."
+    "Gut gemacht. Aber jetzt bitte nicht übermütig werden.",
+    "Ein kleiner Betrag weniger. So funktioniert kontrolliertes Risiko.",
+    "Das war vernünftig. Ich bin fast schon irritiert.",
+    "Wenig Schaden, gute Wirkung. Da könnte man sich dran gewöhnen.",
+    "Solche Koffer dürft ihr von mir aus öfter öffnen."
   ],
   "medium": [
     "Na ja. Weder Grund zum Jubeln noch für eine Krisensitzung.",
@@ -60,7 +68,11 @@ const strombergCatalogue=Object.freeze({
     "Kein Glanzstück, aber auch keine Katastrophe.",
     "Das nehmen wir zur Kenntnis und konzentrieren uns auf die nächsten Koffer.",
     "So. Abhaken. Die großen Entscheidungen kommen noch.",
-    "Weder Bonus noch Abmahnung. Kann auch mal vorkommen."
+    "Weder Bonus noch Abmahnung. Kann auch mal vorkommen.",
+    "Ein mittlerer Betrag. Dafür braucht es weder Applaus noch einen Krisenstab.",
+    "Das Ergebnis kommt in die Ablage unter: Kann passieren.",
+    "Nicht besonders clever, aber auch keine Vollkatastrophe.",
+    "Da würde ich erst mal den nächsten Koffer abwarten."
   ],
   "high": [
     "Ja, wunderbar. Da fliegt uns gerade das Jahresbudget um die Ohren.",
@@ -73,7 +85,11 @@ const strombergCatalogue=Object.freeze({
     "Also das erklärt man dem Vorstand am besten schriftlich.",
     "Wer sich so entscheidet, sollte wenigstens hinterher dazu stehen.",
     "Das war die Sorte Fehler, die man im Jahresgespräch anspricht.",
-    "Das hat gesessen. Leider auf unserem Konto."
+    "Das hat gesessen. Leider auf unserem Konto.",
+    "Das war jetzt kein Betrag für die Kaffeekasse mehr.",
+    "Da muss man schon fragen, wer hier die Verantwortung trägt.",
+    "Ein großer Verlust. Das wird im Bericht nicht hübsch aussehen.",
+    "Da ist uns gerade ein ordentlicher Brocken weggebrochen."
   ],
   "huge": [
     "Das ist jetzt natürlich eine Hausnummer. Leider die falsche.",
@@ -119,7 +135,11 @@ const strombergCatalogue=Object.freeze({
     "Wenn wir so weitermachen, gibt's zum Finale einen Gutschein fürs Parkhaus.",
     "Das war kein kleiner Rückschlag. Das war ein kompletter Jahresabschluss.",
     "Ich brauche jetzt erst mal fünf Minuten und einen sehr starken Kaffee.",
-    "Eine Million weg. Und ich dachte, heute könnte man hier mal was gewinnen."
+    "Eine Million weg. Und ich dachte, heute könnte man hier mal was gewinnen.",
+    "Eine Million weg. Da kannste die Budgetplanung gleich neu ausdrucken.",
+    "Bei einer Million Verlust hilft auch kein freundliches Rundschreiben.",
+    "Eine Million! Das war gerade die teuerste Fehlentscheidung des Tages.",
+    "So eine Million verschwindet nicht unbemerkt. Nicht mal bei uns."
   ],
   "millionSafe": [
     "Die Million ist noch drin. Also bitte nicht wieder alles kaputtmachen.",
