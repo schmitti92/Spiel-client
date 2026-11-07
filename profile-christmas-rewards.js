@@ -11,7 +11,7 @@ const santaAsset=new URL('DealOrNoDeal/assets/weihnachts_event/a_high_quality_ca
 const snowman=document.getElementById('christmas-snowman-reward');
 const snowmanStatus=document.getElementById('christmas-snowman-status');
 const snowmanEquip=document.getElementById('christmas-snowman-equip');
-const snowmanAsset=new URL('DealOrNoDeal/assets/weihnachts_event/Weihnachtskarte_17_Schneemann.png',document.baseURI).href;
+const snowmanAsset=new URL('DealOrNoDeal/assets/weihnachts_event/schneemann_charakter.png',document.baseURI).href;
 let snowmanUnlocked=false;
 function paintSnowman(unlocked,message){snowmanUnlocked=unlocked;if(!snowman||!snowmanStatus||!snowmanEquip)return;snowman.classList.toggle('locked',!unlocked);const preview=snowman.querySelector('.snowman-profile-preview');preview.textContent=unlocked?'':'🔒';preview.style.backgroundImage=unlocked?'url("'+snowmanAsset+'")':'none';snowmanStatus.textContent=message;snowmanEquip.hidden=!unlocked;}
 const trophy=document.getElementById('christmas-champion-trophy');
