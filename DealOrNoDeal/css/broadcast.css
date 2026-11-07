@@ -225,3 +225,42 @@ body{padding-bottom:0!important}
 #banker-call .banker-call-amount,#banker-call #banker-vote-progress-text{font-variant-numeric:tabular-nums}
 #banker-call:not(.call-entering) .banker-call-card,#banker-call:not(.call-entering) .banker-call-portrait,#banker-call:not(.call-entering) .banker-call-amount,#banker-call:not(.call-entering) .banker-call-quote{animation:none!important;transform:none!important}
 @media(prefers-reduced-motion:reduce){#banker-call .banker-call-card{scroll-behavior:auto}}
+
+/* Banker render stabilization: one fixed backdrop, no competing entrance
+   transforms, blur layers, or continuous reflections on the offer stage. */
+#banker-call.banker-call{
+ background:#06142aee!important;
+ backdrop-filter:none!important;
+ -webkit-backdrop-filter:none!important;
+ transition:none!important;
+ animation:none!important;
+}
+#banker-call .banker-call-card{
+ animation:none!important;
+ transform:none!important;
+ transition:none!important;
+ contain:none!important;
+ overflow-anchor:none;
+ scrollbar-gutter:stable;
+}
+#banker-call .banker-call-portrait,
+#banker-call .banker-call-amount,
+#banker-call .banker-call-quote,
+#banker-call .banker-call-actions,
+#banker-call .banker-call-phone{
+ animation:none!important;
+ transform:none!important;
+ transition:none!important;
+}
+#banker-call .banker-call-portrait:after{
+ animation:none!important;
+ transform:none!important;
+ opacity:0!important;
+}
+#banker-call .banker-call-phone{filter:none!important}
+#banker-call .banker-call-card,
+#banker-call .banker-money-board,
+#banker-call .banker-call-portrait{
+ backdrop-filter:none!important;
+ -webkit-backdrop-filter:none!important;
+}
