@@ -13,9 +13,9 @@
 <script>
 (()=>{'use strict';const box=document.getElementById('cent-reward'),name=document.getElementById('cent-reward-name'),icon=document.getElementById('cent-reward-icon'),cards=document.getElementById('cent-reward-cards');let inFlight=false,lastGame='';
 document.getElementById('cent-reward-close').addEventListener('click',()=>{const uid=window.SpielOnline?.state?.()?.user?.uid;if(uid&&box.dataset.reward){try{localStorage.setItem('deal-cent-reward-seen:'+uid+':'+box.dataset.reward,'yes')}catch{}}box.hidden=true});
-async function check(){if(inFlight||!box.hidden||!window.g||!Array.isArray(window.g.openedAmounts)||!window.g.openedAmounts.some(x=>x.amount===1))return;
+async function check(){if(inFlight||!box.hidden||typeof g==='undefined'||!g||!Array.isArray(g.openedAmounts)||!g.openedAmounts.some(x=>x.amount===1))return;
 const uid=window.SpielOnline?.state?.()?.user;if(!uid?.getIdToken)return;
-const gameId=String(window.g.id||'');if(!gameId)return;
+const gameId=String(g.id||'');if(!gameId)return;
 inFlight=true;try{const token=await uid.getIdToken();const response=await fetch(String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(new URLSearchParams(location.search).get('room')||'')+'/christmas-cent-reward',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!response.ok)return;const data=await response.json();const reward=data.reward;if(!reward||reward.gameId!==gameId||window.SpielOnline?.state?.()?.user?.uid!==uid.uid)return;const key='deal-cent-reward-seen:'+uid.uid+':'+reward.id;if(localStorage.getItem(key)==='yes')return;
 box.dataset.reward=reward.id;box.hidden=false;name.textContent='Dein Pack wird enthüllt …';icon.textContent='🎁';cards.replaceChildren();const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 setTimeout(()=>{if(box.hidden||box.dataset.reward!==reward.id)return;name.textContent=reward.packName;icon.textContent=reward.packId==='premium'?'💎':reward.packId==='large'?'🥇':'🎁';for(const card of reward.revealed||[]){const item=document.createElement('span');item.textContent=card.name;cards.append(item)}},reduced?0:1700);
