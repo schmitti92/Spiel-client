@@ -113,3 +113,15 @@ test('Stromberg expressions exist and the duplicate candidate overlay is absent'
  const cases=readFileSync(resolve(root,'js/cases.js'),'utf8');
  assert.ok(!cases.includes('showCandidateCutaway('),'Legacy cutaway call must be removed');
 });
+
+test('banker decision commentary stays visible and preserves case reactions', () => {
+ const style=readFileSync(resolve(root,'css/commentary.css'),'utf8');
+ const comments=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ const core=readFileSync(resolve(root,'js/core.js'),'utf8');
+ assert.match(style,/body:has\(#banker-call:not\(\[hidden\]\)\) \.studio-commentary:not\(\[hidden\]\)/);
+ assert.match(style,/z-index:36!important/);
+ assert.match(comments,/setTimeout\(studioCommentRender,5500\)/);
+ assert.match(comments,/state\.queue\.unshift\(item\)/);
+ assert.match(comments,/function studioCommentDecision\(deal,game\)/);
+ assert.match(core,/type==='decide'&&typeof studioCommentDecision==='function'/);
+});
