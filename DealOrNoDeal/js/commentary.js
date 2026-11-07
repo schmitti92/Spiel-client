@@ -130,7 +130,8 @@ function studioCommentObserve(game){
    const good=reaction==='good',bad=reaction==='bad';
    if(good){story.good++;story.bad=0}else if(bad){story.bad++;story.good=0}else{story.good=0;story.bad=0}
    const previous=state.strombergMemory;
-   if(story.good===3){priority=3;line='Drei gute Entscheidungen hintereinander. Das nenne ich Führung. Meine, wohlgemerkt.'}
+   if(category==='millionLost'){priority=3;line=studioCommentPick(1,'millionLost',Number(item.case)+opened.length)}
+   else if(story.good===3){priority=3;line='Drei gute Entscheidungen hintereinander. Das nenne ich Führung. Meine, wohlgemerkt.'}
    else if(story.bad===3){priority=3;line='Drei Fehlgriffe. Wir müssen dringend über Zuständigkeiten sprechen.'}
    else if(story.lastAdvice&&previous&&previous.reaction!==reaction&&(good||bad)){
     priority=3;line=good?'Hab ich doch gesagt. Genau so war meine Strategie.':'Das war ein Ausführungsfehler. Mit meinem Rat hat das nichts zu tun.';
