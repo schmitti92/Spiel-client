@@ -28,6 +28,12 @@ function updateBankerCall(){
  }
  bankerSetText('banker-call-quote','„'+bankerPhrase(h)+'“');
  bankerSetText('banker-call-amount',eur(h.offer));
+ const bonus=$('banker-christmas-bonus');
+ if(bonus){
+  bonus.hidden=!h.bonusPack;
+  if(h.bonusPack)bankerSetText('banker-christmas-bonus-name',({small:'Kleines Weihnachtspaket',large:'Großes Weihnachtspaket',premium:'Premium-Weihnachtspaket'})[h.bonusPack]||'Weihnachtspaket');
+ }
+
  const remainingCases=26-(g.openedAmounts?.length||0);
  const finalChoice=remainingCases<=3;
  $('final-choice-compare').hidden=!finalChoice;
