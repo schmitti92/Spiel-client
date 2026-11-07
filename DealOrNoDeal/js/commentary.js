@@ -113,7 +113,7 @@ function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  const responder=ids[state.replyCount%ids.length];
  const topic=studioReplyTopic(category,amount);
  const tone=studioCommentTone(sourceLine);
- const replies=typeof studioReplyLines==='object'?studioReplyLines[topic]?.[responder]:null;
+ const replies=typeof studioReplyLines==='object'?(studioHolidayReplies[topic]?.[responder]||studioReplyLines[topic]?.[responder]):null;
  const persona=studioCommentLines[responder];
  if(!persona||!Array.isArray(replies)||!replies.length)return;
  const turn=state.replyCount++;
