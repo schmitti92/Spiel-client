@@ -122,6 +122,7 @@ test('banker decision commentary stays visible and preserves case reactions', ()
  assert.match(style,/z-index:36!important/);
  assert.match(comments,/setTimeout\(studioCommentRender,5500\)/);
  assert.match(comments,/state\.queue\.unshift\(item\)/);
+ assert.match(comments,/if\(state\.current\)state\.queue\.unshift\(state\.current\)/);
  assert.match(comments,/function studioCommentDecision\(deal,game\)/);
  assert.match(core,/type==='decide'&&typeof studioCommentDecision==='function'/);
 });
