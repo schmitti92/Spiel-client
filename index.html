@@ -271,6 +271,15 @@
 .minispiele-card .actions{max-width:100%}
 @media(max-width:700px){.game .actions{gap:8px}.game .actions .btn,.game .actions .btn.primary,.game .actions.skyjo-actions .btn,.game .actions.business-actions .btn{min-height:40px;padding:8px 11px;font-size:12px}}
 </style>
+<style>
+.xmas-intro[hidden]{display:none!important}
+.xmas-intro{position:fixed;inset:0;z-index:20000;background:rgba(2,8,20,.88);backdrop-filter:blur(10px);display:grid;place-items:center;padding:16px}
+.xmas-intro-panel{position:relative;width:min(1100px,96vw);max-height:94dvh;display:flex;flex-direction:column;align-items:center;gap:10px}
+.xmas-intro-panel img{display:block;max-width:100%;max-height:calc(94dvh - 72px);object-fit:contain;border-radius:15px;box-shadow:0 20px 75px #000a}
+.xmas-intro-confirm{min-height:48px;padding:10px 32px;border:2px solid #ffe19a;border-radius:16px;background:linear-gradient(#29a854,#086c36);color:white;font-weight:900;font-size:clamp(16px,2.5vw,22px);cursor:pointer;box-shadow:0 6px 24px #e9bd5477}
+.xmas-intro-confirm:focus-visible{outline:3px solid white;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.xmas-intro{backdrop-filter:none}}
+</style>
 </head>
 <body>
   <main class="container">
@@ -321,6 +330,39 @@
       </article>
     </section>
   </main>
+<div id="xmas-intro" class="xmas-intro" hidden role="dialog" aria-modal="true" aria-label="Weihnachtsevent Einführung">
+ <div class="xmas-intro-panel">
+  <img src="DealOrNoDeal/assets/weihnachts_event/a_vibrant_cinematic_high_detail_game_ui_pop_up_p.png" alt="Weihnachtsevent: Spiele spielen, Kartenpacks sammeln, Weihnachtskarten entdecken und das Weihnachtsalbum vervollständigen.">
+  <button type="button" class="xmas-intro-confirm" id="xmas-intro-confirm">✓ Verstanden – loslegen!</button>
+ </div>
+</div>
+<script>
+(()=>{'use strict';
+ const modal=document.getElementById('xmas-intro'),button=document.getElementById('xmas-intro-confirm');
+ let shownFor=null,checking=false;
+ const key=uid=>'spielportal:xmas-intro-2026:'+uid;
+ function check(){
+  const state=window.SpielOnline?.state?.();
+  const uid=state?.user?.uid;
+  if(!uid||state.status!=='online'||!state.profile||state.profile.setupComplete===false){modal.hidden=true;shownFor=null;return;}
+  if(shownFor===uid)return;
+  try{if(localStorage.getItem(key(uid))==='yes'){modal.hidden=true;return;}}catch(e){console.warn('Weihnachtsevent-Speicher nicht verfügbar',e);}
+  shownFor=uid;modal.hidden=false;button.focus();
+ }
+ button.addEventListener('click',()=>{
+  if(checking)return;
+  const uid=window.SpielOnline?.state?.()?.user?.uid;
+  if(!uid||uid!==shownFor)return;
+  checking=true;
+  try{localStorage.setItem(key(uid),'yes');modal.hidden=true;shownFor=null;}
+  catch(e){button.textContent='Speichern fehlgeschlagen – erneut versuchen';console.error(e);}
+  finally{checking=false;}
+ });
+ window.addEventListener('spielonline-change',check);
+ document.addEventListener('DOMContentLoaded',check);
+ check();
+})();
+</script>
 <script src="profile-config.js" defer></script>
 <script src="index-room-quick.js?v=3" defer></script>
 <script src="profile-auth.js?v=profile-v7" defer></script>
