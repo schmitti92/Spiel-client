@@ -177,3 +177,13 @@ test('opened-case reactions use the correct euro-cent boundaries', async () => {
  for(const avatar of [2,3,4,5,7])assert.ok(lines.includes(avatar+':{name:'));
  assert.match(lines,/neutral:/);
 });
+
+test('Stromberg has 20 additional exclusive million-loss reactions', async () => {
+ const vm=await import('node:vm');
+ const src=readFileSync(resolve(root,'commentary/stromberg.js'),'utf8');
+ const context=vm.createContext({});
+ vm.runInContext(src+';globalThis.__million=strombergCatalogue.millionLost',context);
+ assert.ok(context.__million.length>=31);
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/category==='millionLost'\)\{priority=3;line=studioCommentPick\(1,'millionLost'/);
+});
