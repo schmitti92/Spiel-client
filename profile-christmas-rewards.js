@@ -48,8 +48,8 @@ async function refresh(){
   paintSanta(santaOk,santaOk?'✓ Freigeschaltet · jetzt als Profilbild auswählbar':'🔒 '+total+' / 12 Bingos');
   const bannerOk=total>=16&&data.progress.rewards.includes('christmas-profile-banner');
   paintBanner(bannerOk,bannerOk?'✓ Freigeschaltet · als Profilbanner auswählbar':'🔒 '+total+' / 16 Bingos');
-  const snowmanOk=total>=18&&Array.isArray(data.progress.rewards)&&data.progress.rewards.includes('snowman-profile-avatar');
-  paintSnowman(snowmanOk,snowmanOk?'✓ Freigeschaltet · als Profilbild auswählbar':'🔒 '+total+' / 18 Bingos');
+  const snowmanOk=total>=10&&Array.isArray(data.progress.rewards)&&data.progress.rewards.includes('snowman-profile-avatar');
+  paintSnowman(snowmanOk,snowmanOk?'✓ Freigeschaltet · als Profilbild auswählbar':'🔒 '+total+' / 10 Bingos');
   const championOk=total>=20&&data.progress.rewards.includes('christmas-champion');
   paintTrophy(championOk,championOk?'🏆 Freigeschaltet · Weihnachts-Champion!':'🔒 '+total+' / 20 Bingos');
  }catch(e){if(request===serial){paint(false,'⚠ Freischaltung konnte nicht geprüft werden. Bitte später erneut laden.');paintSanta(false,'⚠ Freischaltung konnte nicht geprüft werden.');paintBanner(false,'⚠ Freischaltung konnte nicht geprüft werden.');paintTrophy(false,'⚠ Freischaltung konnte nicht geprüft werden.');paintSnowman(false,'⚠ Freischaltung konnte nicht geprüft werden.');}}
