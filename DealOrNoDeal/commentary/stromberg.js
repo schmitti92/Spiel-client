@@ -1,6 +1,28 @@
 'use strict';
 /* Stromberg: independently written original game dialogue; not quotes from the TV show. */
 const strombergCatalogue=Object.freeze({
+  "oneCent": [
+  "Ein Cent! Na bitte, endlich mal eine Entscheidung mit überschaubarem Schaden.",
+  "Ein einziger Cent. Dafür würde bei uns nicht mal der Drucker anspringen.",
+  "Den Cent können wir verschmerzen. Die Million bleibt hoffentlich drin.",
+  "Ein Cent weniger im Spiel. Das nenne ich effiziente Schadensbegrenzung.",
+  "Das ist ja nicht mal Kleingeld. Das ist Kleingelds Praktikant.",
+  "Ein Cent! Da hat sogar die Buchhaltung ausnahmsweise nichts zu meckern.",
+  "Für einen Cent würde ich nicht mal den Kugelschreiber ausleihen.",
+  "Na also. Den billigsten Koffer erwischt. So macht man das.",
+  "Ein Cent weg, die großen Beträge bleiben. Genau mein Humor.",
+  "Da hat jemand den Cent entsorgt. Ausnahmsweise eine saubere Leistung.",
+  "Ein Cent! Der Banker wird sich gerade nicht besonders freuen.",
+  "Der Cent ist raus. Jetzt bitte mit den Millionen genauso vorsichtig umgehen.",
+  "Für einen Cent gibt's heute nicht mal mehr einen Kaugummi. Perfekt also.",
+  "Das war der günstigste Abschied der ganzen Sendung.",
+  "Ein Cent weniger. Das ist ein Verlust, den sogar ich genehmige.",
+  "Na wunderbar, ein Cent. Da bleibt die Chefetage entspannt.",
+  "Ein Cent! Für diesen Koffer hätte man nicht mal eine Quittung gebraucht.",
+  "Genau so: Erst den Cent loswerden, dann über die großen Zahlen reden.",
+  "Der Cent ist Geschichte. Und das ist heute tatsächlich eine gute Nachricht.",
+  "Ein Cent aufgedeckt. Da kann ich ja fast mal jemanden loben."
+],
   "tiny": [
     "Na bitte. Das war ja nicht mal die Portokasse.",
     "Für den Betrag kriegste heutzutage nicht mal einen vernünftigen Kaffee.",
