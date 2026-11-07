@@ -270,7 +270,7 @@ test('all six characters can reply contextually without dialogue loops', async (
  assert.match(logic,/filter\(id=>id!==speakerAvatar\)/);
  assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount\)/);
  const html=readFileSync(resolve(root,'game.html'),'utf8');
- assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=disputes30'));
+ assert.ok(html.indexOf('commentary-replies.js')<html.indexOf('commentary.js?v=contextual40'));
 });
 
 test('rare three-person disputes have unique speakers and finite closure', async () => {
@@ -302,4 +302,21 @@ test('contextual disagreements are fact-consistent across all eight topics', asy
  assert.match(logic,/state\.lastEvent%12===0/);
  assert.match(logic,/ids\.filter\(id=>id!==responder\)/);
  assert.match(logic,/studioContextDisputes\[topic\]/);
+});
+
+test('cast disputes respond to the actual previous line instead of arbitrary objections', async () => {
+ const vm=await import('node:vm');
+ const ctx=vm.createContext({});
+ vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.tones=studioToneDisputes',ctx);
+ for(const [topic,tones] of Object.entries(ctx.tones)){
+  for(const [tone,lines] of Object.entries(tones)){
+   assert.ok(lines.length>=2,topic+':'+tone);
+   assert.equal(new Set(lines).size,lines.length);
+  }
+ }
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/function studioCommentTone\(line\)/);
+ assert.match(logic,/tone!=='measured'/);
+ assert.match(logic,/studioToneDisputes\[topic\]\?\.\[tone\]/);
+ assert.match(logic,/studioCommentMaybeReply\(speakerAvatar,category,amount,line\)/);
 });
