@@ -264,3 +264,10 @@ body{padding-bottom:0!important}
  backdrop-filter:none!important;
  -webkit-backdrop-filter:none!important;
 }
+
+/* Freeze decorative stage motion behind the opaque banker broadcast.
+   This avoids compositing flicker when a new offer opens. */
+body:has(#banker-call:not([hidden])):before,
+body:has(#banker-call:not([hidden])) .layout>.panel.case-stage:before{
+ animation-play-state:paused!important;
+}
