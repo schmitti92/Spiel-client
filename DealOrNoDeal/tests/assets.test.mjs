@@ -135,3 +135,13 @@ test('final banker offer has non-overlapping tracks and no duplicate amount', ()
  assert.match(css,/\.banker-call-card:has\(\.final-choice-compare:not\(\[hidden\]\)\) \.banker-call-amount/);
  assert.match(css,/\.broadcast-offer-math\{display:none!important\}/);
 });
+
+test('banker stage is opaque and loaded after legacy broadcast CSS', () => {
+ const html=readFileSync(resolve(root,'game.html'),'utf8');
+ const css=readFileSync(resolve(root,'css/banker-stage.css'),'utf8');
+ assert.ok(html.indexOf('banker-stage.css?v=1')>html.indexOf('broadcast.css?'));
+ assert.match(css,/background:#061328!important/);
+ assert.match(css,/backdrop-filter:none!important/);
+ assert.match(css,/\.banker-call-card:has\(\.final-choice-compare:not\(\[hidden\]\)\) \.banker-call-amount/);
+ assert.match(css,/\.banker-money-board\{grid-row:2\/13!important\}/);
+});
