@@ -156,3 +156,19 @@ test('rebuilt banker always displays a calculated offer quality gauge', () => {
  assert.match(js,/values\.filter\(amount=>!removed\.has\(amount\)\)/);
  assert.match(css,/\.banker-offer-quality\[hidden\]\{display:none!important\}/);
 });
+
+test('opened-case reactions use the correct euro-cent boundaries', () => {
+ const vm=await import('node:vm');
+ const script=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ const context=vm.createContext({setTimeout,clearTimeout});
+ vm.runInContext(script,context);
+ const classify=value=>vm.runInContext('studioCaseReaction('+value+')',context);
+ assert.equal(classify(99),'good');
+ assert.equal(classify(9999),'good');
+ assert.equal(classify(10000),'neutral');
+ assert.equal(classify(2000000),'neutral');
+ assert.equal(classify(2000001),'bad');
+ const lines=readFileSync(resolve(root,'js/commentary-lines.js'),'utf8');
+ for(const avatar of [2,3,4,5,7])assert.ok(lines.includes(avatar+':{name:'));
+ assert.match(lines,/neutral:/);
+});
