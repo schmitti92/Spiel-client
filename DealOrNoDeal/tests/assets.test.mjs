@@ -342,3 +342,19 @@ test('rapid case openings cancel stale banter but retain every case reaction', a
  assert.equal(context.state.current.line,'Second case');
  assert.equal(document.getElementById('studio-commentary-line').textContent,'Second case');
 });
+
+test('sarcasm stays rare and covers all six commentators in every game situation', async () => {
+ const vm=await import('node:vm');
+ const ctx=vm.createContext({});
+ vm.runInContext(readFileSync(resolve(root,'js/commentary-replies.js'),'utf8')+'\n;globalThis.sarcasm=studioSarcasmLines',ctx);
+ for(const topic of ['oneCent','millionLost','good','neutral','bad','bankerGood','bankerBad','finalCases']){
+  for(const id of [1,2,3,4,5,7]){
+   const lines=ctx.sarcasm[topic][id];
+   assert.equal(lines.length,2,topic+' avatar '+id);
+   assert.equal(new Set(lines).size,2);
+  }
+ }
+ const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.match(logic,/turn%3===2/);
+ assert.match(logic,/studioSarcasmLines\[topic\]\?\.\[responder\]/);
+});
