@@ -153,24 +153,29 @@
 'use strict';
 const call=document.getElementById('banker-call'),video=document.getElementById('banker-offer-video'),portrait=video?.closest('.banker-call-portrait'),amount=document.getElementById('banker-call-amount');
 if(!call||!video||!portrait||!amount)return;
-let lastOffer='',lastVisible=false;
+let lastOffer='',lastVisible=false,loopTimer=null;
+function stopLoop(){if(loopTimer!==null){clearInterval(loopTimer);loopTimer=null}}
+function restartClip(){
+ if(document.hidden||call.hidden)return;
+ try{video.pause();video.currentTime=0}catch(_error){}
+ const playing=video.play();
+ if(playing&&typeof playing.then==='function')playing.then(()=>portrait.classList.add('video-active')).catch(()=>portrait.classList.remove('video-active'));
+}
 function syncBankerVideo(){
  const visible=!call.hidden&&getComputedStyle(call).display!=='none';
  const offer=amount.textContent.trim();
- if(!visible){if(lastVisible){video.pause();video.currentTime=0;portrait.classList.remove('video-active')}lastVisible=false;return}
+ if(!visible){stopLoop();if(lastVisible){video.pause();video.currentTime=0;portrait.classList.remove('video-active')}lastVisible=false;return}
  if(!lastVisible||offer!==lastOffer){
   lastVisible=true;lastOffer=offer;
   if(!offer)return;
-  video.pause();video.currentTime=0;
-  const play=video.play();
-  if(play&&typeof play.then==='function')play.then(()=>portrait.classList.add('video-active')).catch(()=>portrait.classList.remove('video-active'));
+  stopLoop();restartClip();loopTimer=setInterval(restartClip,3000);
  }
 }
 new MutationObserver(syncBankerVideo).observe(call,{attributes:true,attributeFilter:['hidden','style']});
 new MutationObserver(syncBankerVideo).observe(amount,{childList:true,characterData:true,subtree:true});
 video.addEventListener('error',()=>portrait.classList.remove('video-active'));
 video.addEventListener('ended',()=>{video.pause()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){video.pause();stopLoop()}else syncBankerVideo()});
 syncBankerVideo();
 })();
 </script></body></html>
