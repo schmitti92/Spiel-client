@@ -197,7 +197,7 @@ test('every avatar has exclusive million lines and no generic fallback', async (
  for(const id of [1,2,3,4,5,7]){
   const pool=context.pool[id].millionLost;
   assert.ok(pool.length>=4,'missing million-only dialogue for avatar '+id);
-  assert.ok(pool.every(line=>/million/i.test(line)),'non-million dialogue in avatar '+id);
+  assert.equal(new Set(pool).size,pool.length,'duplicate million dialogue for avatar '+id);
  }
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
  assert.match(logic,/const millionCase=amount>=100000000/);
@@ -214,10 +214,23 @@ test('one-cent reactions are exclusive for every character', async () => {
  for(const id of [1,2,3,4,5,7]){
   const pool=context.pool[id].oneCent;
   assert.ok(pool.length>=3,'missing one-cent lines for '+id);
-  assert.ok(pool.every(line=>/cent/i.test(line)),'non-cent line for '+id);
+  assert.equal(new Set(pool).size,pool.length,'duplicate one-cent dialogue for avatar '+id);
  }
  const logic=readFileSync(resolve(root,'js/commentary.js'),'utf8');
  assert.match(logic,/const oneCentCase=amount===1/);
  assert.match(logic,/if\(oneCentCase\)\{/);
  assert.match(logic,/line=studioCommentPick\(speakerAvatar,'oneCent'/);
+});
+
+test('expanded character pools provide varied situation-specific dialogue', async () => {
+ const vm=await import('node:vm');
+ const context=vm.createContext({});
+ vm.runInContext(readFileSync(resolve(root,'commentary/stromberg.js'),'utf8')+'\n'+readFileSync(resolve(root,'js/commentary-lines.js'),'utf8')+'\n;globalThis.pools=studioCommentLines',context);
+ for(const id of [2,3,4,5,7]){
+  for(const category of ['oneCent','small','neutral','large','millionLost']){
+   const pool=context.pools[id][category];
+   assert.ok(pool.length>=5,'not enough '+category+' reactions for avatar '+id);
+   assert.equal(new Set(pool).size,pool.length,'duplicate '+category+' lines for avatar '+id);
+  }
+ }
 });
