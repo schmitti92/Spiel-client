@@ -151,45 +151,8 @@ function studioHolidayContextReply(responder,sourceLine,topic,turn){
  if(!options.length)return null;
  return options[turn%options.length];
 }
-function studioCommentMaybeReply(game,speakerAvatar,category,amount,sourceLine){
- const state=studioCommentary;
- if(!Number.isFinite(amount)||state.lastEvent%6!==0||state.queue.length>1)return;
- // Only the player who made the move may comment. No other studio voices.
- return;
- const ids=[...new Set((game?.players||[]).map(p=>Number(p.avatar)))].filter(id=>id!==speakerAvatar&&studioCommentLines[id]);
- if(!ids.length)return;
- const responder=ids[(state.replyCount+state.lastEvent)%ids.length];
- const topic=studioReplyTopic(category,amount);
- const tone=studioCommentTone(sourceLine);
- const replies=typeof studioReplyLines==='object'?(studioHolidayReplies[topic]?.[responder]||studioReplyLines[topic]?.[responder]):null;
- const persona=studioCommentLines[responder];
- if(!persona||!Array.isArray(replies)||!replies.length)return;
- const turn=state.replyCount++;
- const contextual=studioHolidayContextReply(responder,sourceLine,topic,turn);
- if(contextual){studioCommentQueue({name:persona.name,image:persona.image,line:contextual,category:topic,dialogue:true},0);return;}
- // At most one exchange per 12 case openings; two additional speakers maximum.
- if(state.lastEvent%12===0&&tone!=='measured'&&typeof studioContextDisputes==='object'){
-  const scene=studioContextDisputes[topic];
-  if(scene?.objections?.length&&scene?.closers?.length){
-   const opening={1:'Also bitte. ',2:'Moment. ',3:'Och, wartet mal! ',4:'Ei, moment emol! ',5:'Ich würde einwenden: ',7:'Nein, genauer betrachtet: ',11:'Meine Nase sagt: ',12:'Ho ho, Moment! ',13:'Eiskalt widersprochen: '}[responder]||'';
-   const objections=(typeof studioToneDisputes==='object'?studioToneDisputes[topic]?.[tone]:null)||scene.objections;
-   const objection=opening+objections[turn%objections.length];
-   studioCommentQueue({name:persona.name,image:persona.image,line:objection,category:topic,dialogue:true},0);
-   const others=ids.filter(id=>id!==responder);
-   const closerId=others[turn%others.length];
-   const closer=studioCommentLines[closerId];
-   const closing={1:'Na gut. ',2:'Einverstanden. ',3:'Hihi, okay! ',4:'Jo, gut. ',5:'Halten wir fest: ',7:'Fest steht: ',11:'Ich halte Kurs: ',12:'Ho ho, also: ',13:'Cool bleiben: '}[closerId]||'';
-   studioCommentQueue({name:closer.name,image:closer.image,
-    line:closing+scene.closers[turn%scene.closers.length],category:topic,dialogue:true},0);
-   return;
-  }
- }
- const sarcastic=turn%3===2&&typeof studioSarcasmLines==='object'
-  ?studioSarcasmLines[topic]?.[responder]:null;
- studioCommentQueue({name:persona.name,image:persona.image,
-  line:sarcastic?.length?sarcastic[turn%sarcastic.length]:replies[turn%replies.length],
-  category:topic,dialogue:true},0);
-}
+// Dialogue between players is intentionally disabled: only the acting player's character speaks.
+function studioCommentMaybeReply(){return;}
 
 // Amounts are stored as euro cents. Exactly 100 € and 20,000 € are neutral.
 function studioCaseReaction(amount){
@@ -284,7 +247,6 @@ function studioCommentObserve(game){
    state.caseTimers=state.caseTimers.filter(t=>t!==timer);
    if(state.gameId!==observedGame)return;
    studioCommentQueue({name:itemPersona.name,image:itemPersona.image,line,category},priority);
-   studioCommentMaybeReply(game,speakerAvatar,category,amount,line);
   },1000);
   state.caseTimers.push(timer);
  }
