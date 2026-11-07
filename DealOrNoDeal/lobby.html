@@ -514,7 +514,7 @@ $('gift-cases-toggle').onclick=()=>{if(!giftCasesUnlocked&&!previewEnabled())ret
 function paintPreview(){const on=previewEnabled();$('christmas-preview-toggle').textContent=on?'🧪 Testmodus beenden':'🧪 Alles zum Testen freischalten';$('christmas-preview-status').textContent=on?'🧪 AKTIV – nur in diesem Browser-Tab, keine echten Freischaltungen':'Nur lokale Vorschau – keine echten Belohnungen oder Käufe';document.body.classList.toggle('christmas-preview-active',on);paintAvatars();paintWinterTheme();paintStudioTheme();paintGiftCases()}
 $('christmas-preview-toggle').onclick=()=>{sessionStorage.setItem('deal-christmas-preview',previewEnabled()?'off':'on');paintPreview()};
 async function refreshChristmasAvatars(){const u=user();if(!u){rudolfUnlocked=false;winterLobbyUnlocked=false;christmasStudioUnlocked=false;giftCasesUnlocked=false;santaUnlocked=false;snowfallUnlocked=false;paintSnowfall();paintAvatars();paintWinterTheme();paintStudioTheme();paintGiftCases();return}try{const token=await u.getIdToken();const res=await fetch(base+'/api/deal-or-no-deal/christmas/me',{headers:{Authorization:'Bearer '+token},cache:'no-store'});const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');rudolfUnlocked=Array.isArray(data.progress?.rewards)&&data.progress.rewards.includes('rudolph');winterLobbyUnlocked=Array.isArray(data.progress?.rewards)&&data.progress.rewards.includes('winter-lobby');christmasStudioUnlocked=Array.isArray(data.progress?.rewards)&&data.progress.rewards.includes('christmas-studio');giftCasesUnlocked=Array.isArray(data.progress?.rewards)&&data.progress.rewards.includes('gift-cases');santaUnlocked=Array.isArray(data.progress?.rewards)&&data.progress.rewards.includes('santa');snowmanUnlocked=Array.isArray(data.progress?.rewards)&&data.progress.rewards.includes('snowman-profile-avatar');snowfallUnlocked=Array.isArray(data.progress?.rewards)&&data.progress.rewards.includes('lobby-snowfall');paintSnowfall();paintAvatars();paintWinterTheme();paintStudioTheme();paintGiftCases()}catch(e){rudolfUnlocked=false;winterLobbyUnlocked=false;christmasStudioUnlocked=false;giftCasesUnlocked=false;snowfallUnlocked=false;paintSnowfall();paintAvatars();paintWinterTheme();paintStudioTheme();paintGiftCases();$('avatar-status').textContent='Weihnachts-Freischaltungen konnten nicht geladen werden. Bitte später erneut versuchen.'}}
-window.addEventListener('spielonline-change',refreshChristmasAvatars);setTimeout(refreshChristmasAvatars,1300);paintPreview();
+window.addEventListener('spielonline-change',refreshChristmasAvatars);setTimeout(refreshChristmasAvatars,1300);
 $('shop-entry').href='./shop.html'+(valid?'?room='+encodeURIComponent(code):'');
 $('christmas-entry').href='./weihnachten.html'+(valid?'?room='+encodeURIComponent(code):'');
 const euros=cents=>(Number(cents||0)/100).toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:2});
@@ -547,5 +547,13 @@ $('start').onclick=async()=>{if($('start').disabled)return;$('start').disabled=t
 $('preview').href='./game.html?room='+encodeURIComponent(code);
 function boot(){if(!user())return;refresh();refreshBalances();refreshRoomAvatars();connect();if(savedAvatar!==selectedAvatar&&selectedAvatar!==11)saveAvatar()}
 setInterval(()=>{if(!document.hidden)refresh()},3500);setInterval(()=>{if(!document.hidden)refreshBalances()},12000);setInterval(()=>{if(!document.hidden)refreshRoomAvatars()},12000);
-window.addEventListener('spielonline-change',boot);document.addEventListener('visibilitychange',()=>{if(document.hidden){socket?.close();socket=null}else boot();paintSnowfall()});render();paintSnowfall();boot();
+window.addEventListener('spielonline-change',boot);document.addEventListener('visibilitychange',()=>{if(document.hidden){socket?.close();socket=null}else boot();paintSnowfall()});// Initialize core room UI first; optional Christmas controls must not block room startup.
+try{render()}catch(e){console.error('Deal lobby initial render:',e);$('status').textContent='Lobby-Anzeige: '+e.message}
+try{paintSnowfall()}catch(e){console.warn('Snowfall initialization:',e)}
+try{boot()}catch(e){console.error('Deal lobby boot:',e);$('status').textContent='Raumstart: '+e.message}
+try{paintPreview()}catch(e){console.warn('Christmas preview initialization:',e)}
+window.addEventListener('error',e=>{
+ console.error('Deal lobby runtime error:',e.message);
+ if(!room)$('status').textContent='Lobby-Fehler: '+e.message;
+});
 </script></body></html>
