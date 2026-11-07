@@ -268,17 +268,15 @@ function studioCommentObserve(game){
    // The one-cent case always gets a celebratory one-cent line, never a generic streak remark.
    priority=3;
    line=studioCommentPick(speakerAvatar,'oneCent',Number(item.case)+opened.length)
-    ||studioCommentPick(1,'oneCent',Number(item.case)+opened.length)
-    ||'Nur ein Cent ist raus! Die großen Gewinne bleiben im Spiel.';
+    ||null;
   }
   if(millionCase){
    // Million cases must NEVER fall through to generic streak, loss or neutral lines.
    priority=3;
    line=studioCommentPick(speakerAvatar,'millionLost',Number(item.case)+opened.length)
-    ||studioCommentPick(1,'millionLost',Number(item.case)+opened.length)
-    ||'Eine Million Euro ist aus dem Spiel. Das ist ein schwerer Verlust.';
+    ||null;
   }
-  if(!line)line='Koffer '+item.case+' ist geöffnet. '+(Number.isFinite(amount)?'Enthalten waren '+(amount/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'})+'.':'Die Spannung steigt.');
+  if(!line)continue; // Never attribute generic or another character's words to this player.
   // Show the number first. Character reactions start one second after the
   // confirmed case amount becomes visible, not during the lid animation.
   const observedGame=state.gameId;
