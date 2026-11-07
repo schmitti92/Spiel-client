@@ -118,3 +118,34 @@
  #banker-call .banker-vote-progress{order:6!important}
  #banker-call .banker-call-actions,#banker-call .banker-call-wait{order:7!important}
 }
+
+/* Independent offer quality gauge — always visible, including final decision. */
+#banker-call .banker-offer-quality{
+ grid-column:3!important;grid-row:9!important;
+ display:block!important;box-sizing:border-box!important;
+ width:100%!important;padding:9px 12px!important;margin:3px 0!important;
+ border:1px solid #c8a76b77;border-radius:12px;
+ background:#102b43;color:#f8e6b9;
+}
+#banker-call .banker-offer-quality[hidden]{display:none!important}
+#banker-call .banker-offer-quality-head,
+#banker-call .banker-offer-quality-scale{display:flex;justify-content:space-between;gap:8px;align-items:center}
+#banker-call .banker-offer-quality-head{font-size:12px;font-weight:800;letter-spacing:.04em}
+#banker-call .banker-offer-quality-head strong{color:#f9dc99;font-size:12px}
+#banker-call .banker-offer-quality-track{
+ height:15px;position:relative;margin:8px 0 5px;overflow:hidden;
+ border:1px solid #ffffff44;border-radius:12px;background:#0b1b31;
+}
+#banker-call .banker-offer-quality-track span{
+ display:block;height:100%;width:0;background:linear-gradient(90deg,#b86454,#edbf72,#7dd6a3);
+ border-radius:12px;transition:none!important;
+}
+#banker-call .banker-offer-quality-track i{
+ position:absolute;left:50%;top:0;bottom:0;border-left:2px dashed #fff9;pointer-events:none;
+}
+#banker-call .banker-offer-quality-scale{font-size:10px;color:#d3d9e5}
+#banker-call .banker-vote-progress{grid-row:10!important}
+#banker-call .banker-call-actions,#banker-call .banker-call-wait{grid-row:11!important}
+@media(max-width:900px){
+ #banker-call .banker-offer-quality{order:6!important}
+}
