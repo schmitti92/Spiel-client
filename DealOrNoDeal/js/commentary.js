@@ -106,6 +106,24 @@ function studioCommentTone(line){
  if(/sicher|unbedingt|muss man|auf jeden fall|sofort|keine frage/.test(value))return 'certainty';
  return 'measured';
 }
+
+// Dialogue follows the actual previous remark, not merely the amount category.
+function studioHolidayContextReply(responder,sourceLine,topic,turn){
+ if(responder!==12&&responder!==13)return null;
+ const said=String(sourceLine||'').toLowerCase();
+ const snow=responder===13;
+ const options=[];
+ if(/rudolf|rentier|schlitten/.test(said))options.push(snow?'Lasst Rudolf da raus. Der kann schließlich nichts für diesen Koffer!':'Rudolf hat genug zu tun. Die Kofferwahl müssen wir selbst verantworten!');
+ if(/wichtel|geschenk|bescherung|weihnacht/.test(said))options.push(snow?'Bei so vielen Geschenken hoffe ich nur auf einen Kühlschrank für mich.':'Ein Geschenk ist erst dann gut, wenn wir wissen, was wirklich drinsteckt!');
+ if(/karottennase|schal|schneebauch|schmelz|schneemann/.test(said))options.push(snow?'Meine Karottennase ist in Ordnung. Um die Gewinnchancen mache ich mir mehr Sorgen!':'Mein lieber Schneemann, bitte nicht schmelzen. Wir brauchen dich noch fürs Finale!');
+ if(/banker|angebot|offerte/.test(said))options.push(snow?'Bevor ich auftaue, sollte der Banker erst einmal ein besseres Angebot machen.':'Ho ho, der Banker sollte wissen: Wir verschenken unsere Chancen nicht!');
+ if(/million/.test(said))options.push(snow?'Eine Million lässt sich leider nicht wieder zusammenrollen wie ein Schneeball.':'Eine Million ist kein kleines Päckchen. Das tut uns allen weh.');
+ if(/cent|kleinste betrag/.test(said))options.push(snow?'Genau! Der Cent ist weg, und die wertvollen Koffer bleiben schön auf Eis.':'Ho ho, da sind wir uns einig: Den kleinsten Betrag wollten wir loswerden!');
+ if(/schuld|fehler|versagt|falsch/.test(said))options.push(snow?'Schuldzuweisungen machen die Tafel nicht besser. Bleiben wir cool.':'Wir brauchen jetzt einen klaren Kopf statt einer Liste mit Schuldigen.');
+ if(/panik|schreck|katastroph|furchtbar/.test(said))options.push(snow?'Panik bringt selbst meinen Schneebauch ins Rutschen. Ruhig bleiben!':'Ho ho, noch ist die Partie nicht vorbei. Keine voreilige Bescherung!');
+ if(!options.length)return null;
+ return options[turn%options.length];
+}
 function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  const state=studioCommentary;
  if(!Number.isFinite(amount)||state.lastEvent%6!==0||state.queue.length>1)return;
@@ -117,6 +135,8 @@ function studioCommentMaybeReply(speakerAvatar,category,amount,sourceLine){
  const persona=studioCommentLines[responder];
  if(!persona||!Array.isArray(replies)||!replies.length)return;
  const turn=state.replyCount++;
+ const contextual=studioHolidayContextReply(responder,sourceLine,topic,turn);
+ if(contextual){studioCommentQueue({name:persona.name,image:persona.image,line:contextual,category:topic,dialogue:true},0);return;}
  // At most one exchange per 12 case openings; two additional speakers maximum.
  if(state.lastEvent%12===0&&tone!=='measured'&&typeof studioContextDisputes==='object'){
   const scene=studioContextDisputes[topic];
