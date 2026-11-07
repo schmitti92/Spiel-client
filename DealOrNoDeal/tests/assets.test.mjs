@@ -163,11 +163,16 @@ test('opened-case reactions use the correct euro-cent boundaries', async () => {
  const context=vm.createContext({setTimeout,clearTimeout});
  vm.runInContext(script,context);
  const classify=value=>vm.runInContext('studioCaseReaction('+value+')',context);
+ assert.equal(classify(0),'good');
  assert.equal(classify(99),'good');
  assert.equal(classify(9999),'good');
  assert.equal(classify(10000),'neutral');
  assert.equal(classify(2000000),'neutral');
  assert.equal(classify(2000001),'bad');
+ assert.equal(classify(100000000),'bad');
+ const commentary=readFileSync(resolve(root,'js/commentary.js'),'utf8');
+ assert.ok(!commentary.includes('previous.good!==good'));
+ assert.match(commentary,/amount\/100\)\.toLocaleString/);
  const lines=readFileSync(resolve(root,'js/commentary-lines.js'),'utf8');
  for(const avatar of [2,3,4,5,7])assert.ok(lines.includes(avatar+':{name:'));
  assert.match(lines,/neutral:/);
