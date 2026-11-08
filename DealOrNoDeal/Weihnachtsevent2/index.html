@@ -252,12 +252,12 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 
 /* V44 prize wheel: cosmetic reveal only, never determines server rewards */
 .v44-prize-wheel{position:relative;width:clamp(120px,18vh,170px);height:clamp(120px,18vh,170px);margin:5px auto 9px}
-.v44-prize-wheel-face{position:absolute;inset:0;border-radius:50%;border:6px solid #f8d78d;background:conic-gradient(#c49132 0deg 120deg,#842e46 120deg 240deg,#24668a 240deg 360deg);box-shadow:0 0 0 3px #7b3a19,0 0 20px #ffdf6f8a,inset 0 0 18px #230913;animation:v44-prize-spin 2.3s cubic-bezier(.13,.73,.2,1) both}
+.v44-prize-wheel-face{position:absolute;inset:0;border-radius:50%;border:6px solid #f8d78d;background:conic-gradient(#c49132 0deg 180deg,#842e46 180deg 306deg,#24668a 306deg 360deg);box-shadow:0 0 0 3px #7b3a19,0 0 20px #ffdf6f8a,inset 0 0 18px #230913;animation:v44-prize-spin 8.5s cubic-bezier(.13,.73,.2,1) both}
 .v44-prize-wheel-face:after{content:'⭐';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;display:grid;place-items:center;border:3px solid #ffeab0;border-radius:50%;background:#5a192b}
-.v44-prize-wheel-face span{position:absolute;font-size:26px;filter:drop-shadow(0 2px 2px #0008)}
-.v44-prize-wheel-face span:nth-child(1){top:10%;left:calc(50% - 13px)}
-.v44-prize-wheel-face span:nth-child(2){right:13%;bottom:19%}
-.v44-prize-wheel-face span:nth-child(3){left:13%;bottom:19%}
+.v44-prize-wheel-face span{position:absolute;font-size:clamp(8px,1.2vw,12px);font-weight:900;color:#fff5d7;text-shadow:0 2px 3px #000;white-space:nowrap}
+.v44-prize-wheel-face span:nth-child(1){top:22%;right:9%;transform:rotate(45deg)}
+.v44-prize-wheel-face span:nth-child(2){left:8%;bottom:25%;transform:rotate(30deg)}
+.v44-prize-wheel-face span:nth-child(3){left:13%;top:17%;transform:rotate(-38deg)}
 .v44-prize-wheel-arrow{position:absolute;z-index:2;left:50%;top:-12px;transform:translateX(-50%);font-size:29px;color:#fff4c7;text-shadow:0 0 8px #ffc855}
 .v44-wheel-caption{position:relative;font-size:11px!important;line-height:1.3;margin:3px 0 7px!important;color:#ffe6ba}
 @keyframes v44-prize-spin{from{transform:rotate(0)}to{transform:rotate(var(--v44-wheel-end))}}
@@ -331,4 +331,4 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-puzzle-progress"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-hammer-wheel"></script></body></html>
