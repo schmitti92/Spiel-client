@@ -22,6 +22,7 @@
   // The winner explicitly releases the card reveal for every player.
   // Never start the hammer wheel merely because a local timer elapsed.
   if(!game.christmasWheelClosed?.['final:'+game.id])return;
+  if(Date.now()-started<12500)return;
   const packOverlay=document.getElementById('cent-reward');
   const finaleOverlay=document.getElementById('finale-cinema');
   if(packOverlay&&!packOverlay.hidden||finaleOverlay&&!finaleOverlay.hidden)return;
@@ -69,7 +70,7 @@
   const started=Number(game.christmasWheelSpins?.['final:'+game.id]||0);
   if(!started)return;
   if(!game.christmasWheelClosed?.['final:'+game.id])return;
-  const delay=0;
+  const delay=Math.max(0,12500-(Date.now()-started));
   clearTimeout(window.__iceHammerShowTimer);
   window.__iceHammerShowTimer=setTimeout(show,delay+250);
  }
