@@ -9,7 +9,7 @@
  dialog.innerHTML='<section id="peek-panel" role="dialog" aria-modal="true" aria-labelledby="peek-title"><h2 id="peek-title">🔐 Geheimer Kofferblick</h2><p id="peek-note">Nur du siehst den Betrag. Auch dein eigener Koffer ist erlaubt.</p><p id="peek-balance">Joker werden geprüft …</p><div id="peek-cases"></div><div id="peek-result" aria-live="polite"></div><p id="peek-error" role="alert"></p><button class="peek-btn" id="peek-confirm" type="button" hidden>1 Joker für diesen Koffer einsetzen</button><button class="peek-btn" id="peek-close" type="button">Schließen</button></section>';
  document.body.append(dialog);
  const el=id=>document.getElementById(id);
- let selected=null,balance=0,loading=false,receipt=null;
+ let selected=null,balance=0,loading=false,receipt=null,recoveringPending=false;
  const pendingKey=()=>['deal-peek-pending-v1',code,myId(),g?.id].join(':');
  const savePending=()=>{try{sessionStorage.setItem(pendingKey(),JSON.stringify({case:selected,requestId:receipt}))}catch{}};
  const clearPending=()=>{try{sessionStorage.removeItem(pendingKey())}catch{}};
@@ -34,11 +34,11 @@
    b.onclick=()=>{if(selected!==null&&selected!==i)return;selected=i;receipt=crypto.randomUUID();el('peek-confirm').hidden=false;el('peek-confirm').textContent='1 Joker für Koffer '+(i+1)+' einsetzen';el('peek-error').textContent='';draw()};
    root.append(b);
   }
-  el('peek-confirm').disabled=loading||selected===null||balance<1;
+  el('peek-confirm').disabled=loading||selected===null||(balance<1&&!recoveringPending);
  }
  async function open(){
   if(!active())return;
-  dialog.hidden=false;selected=null;receipt=null;const recovering=restorePending();loading=true;
+  dialog.hidden=false;selected=null;receipt=null;const recovering=restorePending();recoveringPending=recovering;loading=true;
   el('peek-result').textContent='';el('peek-error').textContent='';el('peek-confirm').hidden=true;
   el('peek-balance').textContent='Jokerbestand wird geprüft …';draw();
   try{const data=await api('GET','peek/me');balance=data.balance;el('peek-balance').textContent='Verfügbare Joker: '+balance;
@@ -47,7 +47,7 @@
   finally{loading=false;if(recovering){el('peek-confirm').hidden=false;el('peek-confirm').textContent='Koffer '+(selected+1)+' erneut prüfen (kein zweiter Verbrauch)';el('peek-error').textContent='Eine frühere Anfrage ist noch offen. Mit derselben Anfrage-ID sicher fortsetzen.'}draw()}
  }
  async function confirm(){
-  if(loading||selected===null||balance<1||!active())return;
+  if(loading||selected===null||(balance<1&&!recoveringPending)||!active())return;
   const chosen=selected;savePending();loading=true;el('peek-confirm').disabled=true;el('peek-error').textContent='';el('peek-result').textContent='🔒 Geheimnis wird enthüllt …';draw();
   try{
    const data=await api('POST',encodeURIComponent(code)+'/peek',{case:chosen,requestId:receipt});
@@ -55,7 +55,7 @@
    el('peek-result').textContent='Koffer '+(chosen+1)+': '+eur(data.amount);
    el('peek-note').textContent='Nur auf deinem Gerät sichtbar. Der Koffer bleibt verschlossen.';
    el('peek-confirm').hidden=true;
-   clearPending();selected=null;receipt=null;
+   clearPending();recoveringPending=false;selected=null;receipt=null;
   }catch(e){el('peek-result').textContent='';el('peek-error').textContent='Kofferblick fehlgeschlagen: '+e.message+'. Erneut versuchen ist möglich.'}
   finally{loading=false;draw()}
  }
