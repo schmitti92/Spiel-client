@@ -15,7 +15,7 @@ test('Deal stream and HTTP updates reject stale revisions',()=>{
  assert.match(core,/Number\(data\.game\?\.revision\)>Number\(g\.revision\)/);
 });
 test('Deal stream retains HTTP fallback and reward checks are event driven',()=>{
- assert.match(app,/if\(!dealSocketHealthy\(\)\)await poll\(\)/);
+ assert.match(app,/if\(!dealSocketHealthy\(\)\|\|Date\.now\(\)-lastHttpSafetySync>=60000\)await poll\(\)/);
  assert.match(html,/addEventListener\('deal-game-state-change',checkRewards\)/);
  assert.match(html,/setInterval\(checkRewards,30000\)/);
  assert.doesNotMatch(html,/setInterval\(checkRewards,1700\)/);
