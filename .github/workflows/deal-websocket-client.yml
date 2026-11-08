@@ -1,0 +1,25 @@
+name: Deal WebSocket client regression
+on:
+  pull_request:
+    paths:
+      - 'DealOrNoDeal/js/app.js'
+      - 'DealOrNoDeal/js/core.js'
+      - 'DealOrNoDeal/game.html'
+      - 'DealOrNoDeal/tests/websocket-contract.test.mjs'
+      - '.github/workflows/deal-websocket-client.yml'
+  workflow_dispatch:
+jobs:
+  websocket:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check browser scripts syntax
+        run: |
+          node --check DealOrNoDeal/js/app.js
+          node --check DealOrNoDeal/js/core.js
+      - name: Check WebSocket client and fallback contracts
+        run: node --test DealOrNoDeal/tests/websocket-contract.test.mjs
