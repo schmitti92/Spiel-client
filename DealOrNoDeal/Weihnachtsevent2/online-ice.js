@@ -23,6 +23,8 @@ function render(){
  '<div class="ice-board">'+(src?'<img alt="Weihnachtsbild '+number+'" src="'+src+'">':'<div class="ice-placeholder">🎄</div>')+
  '<div class="ice-tiles">'+Array.from({length:20},(_,i)=>'<button data-tile="'+i+'" '+(busy||finished||done||state.opened.includes(i)?'disabled':'')+' class="'+(state.opened.includes(i)||finished||done?'gone':'')+'" aria-label="Eisfeld '+(i+1)+'">❄️</button>').join('')+'</div></div>'+
  (finished&&!done?'<button id="ice-next">🎁 Geschenk ansehen und nächstes Bild</button>':done?'<p>🏆 Alle 70 Bilder geschafft!</p>':'');
+ root.insertAdjacentHTML('beforeend','<button id="ice-reset">↻ Spiel zurücksetzen</button><p style="font-size:12px;opacity:.8">Kein Testguthaben. Pro Bild stehen 20 kostenlose einfache Hammerschläge bereit. Bereits erhaltene Online-Joker bleiben beim Zurücksetzen erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.</p>');
+ root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker bleiben erhalten, Gewinne früherer Bilder werden nicht erneut ausgezahlt.'))run('reset')};
  root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{window.iceHammer=b.dataset.hammer;render()});
  root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>run('strike',{index:Number(b.dataset.tile),hammer:window.iceHammer||'single'}));
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
