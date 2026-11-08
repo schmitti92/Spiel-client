@@ -31,7 +31,7 @@ async function connectDealSocket(){
   ws.onopen=()=>{dealSocketRetry=0;ws.send(JSON.stringify({type:'subscribe',code,token}))};
   ws.onmessage=event=>{
    let msg;try{msg=JSON.parse(event.data)}catch{return}
-   if(msg.type==='deal-subscribed'){dealSocketReady=true;dealSocketLastMessage=Date.now()}
+   if(msg.type==='deal-subscribed'||msg.type==='pong'){if(msg.type==='deal-subscribed')dealSocketReady=true;dealSocketLastMessage=Date.now()}
    if(msg.type==='deal-state'&&dealSocketReady){dealSocketLastMessage=Date.now();applyDealState(msg.game)}
    if(msg.type==='deal-error'){dealSocketReady=false;console.warn('Deal stream:',msg.error)}
   };
