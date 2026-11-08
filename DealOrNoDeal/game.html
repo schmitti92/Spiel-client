@@ -92,6 +92,9 @@
   const isFinal=kind==='final';activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
   sequence++;const current=sequence;
   box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;
+  // A missed socket event or disconnected winner must never trap spectators.
+  setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){close.disabled=false;wheelStatus.textContent='⚠️ Drehung nicht gestartet. Du kannst zum Spiel zurückkehren.';}},18000);
+  setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){close.disabled=false;closeReward()}},35000);
   const owner=reward.playerName||'Spieler';
   title.textContent='🎄 '+owner+' gewinnt ein Weihnachtspaket!';
   subtitle.textContent=(isFinal?'🏆 Siegerbonus der Runde':kind==='banker'?'Banker-Deal angenommen':'1-Cent-Koffer geöffnet')+' · Alle Spieler schauen live zu';
@@ -149,7 +152,7 @@
    const data=await response.json();
    if(!response.ok||!data.ok)throw Error(data.error||'SPIN_FAILED');
    pendingSpin(data.startedAt);
-  }catch(e){spinButton.disabled=false;wheelStatus.textContent='Verbindung fehlgeschlagen – bitte erneut drehen.'}
+  }catch(e){spinButton.disabled=false;wheelStatus.textContent='Drehstart fehlgeschlagen ('+(e.message||'Verbindung')+'). Bitte erneut versuchen oder zum Spiel zurückkehren.';close.disabled=false;}
  }
  spinButton.addEventListener('click',startWheel);
  function syncWheel(){
