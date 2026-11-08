@@ -5,10 +5,10 @@ function finishFinaleCinema(){cancelFinaleTimers();if(finaleSequenceKey)sessionS
 $('finale-skip').addEventListener('click',finishFinaleCinema);
 // Restart is a server-authoritative host action, never a local reset of shared game state.
 let finaleRestartBusy=false;
-async function restartFromFinale(){
+async function restartFromFinale(skipFinalWheel=false){
  if(finaleRestartBusy||!g||g.phase!=='final')return;
  const spinAt=g.christmasWheelSpins?.['final:'+g.id];
- if(!spinAt||Date.now()-spinAt<12500){$('final-replay-status').textContent='🎡 Erst das Sieger-Glücksrad drehen und die Kartenenthüllung abwarten.';return;}
+ if(!skipFinalWheel&&(!spinAt||Date.now()-spinAt<12500)){$('final-replay-status').textContent='🎡 Erst das Sieger-Glücksrad drehen und die Kartenenthüllung abwarten.';return;}
  const currentGameId=g.id;
  const buttons=[$('finale-replay'),$('final-replay')];
  const messages=[$('finale-cinema-status'),$('final-replay-status')];
@@ -17,7 +17,7 @@ async function restartFromFinale(){
   const u=window.SpielOnline?.state?.()?.user;
   if(!u?.getIdToken)throw Error('Bitte mit deinem Online-Profil anmelden.');
   const token=await u.getIdToken();
-  const response=await fetch(String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(code)+'/start',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store'});
+  const response=await fetch(String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(code)+'/start',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({skipFinalWheel})});
   const data=await response.json();
   if(!response.ok||!data.ok)throw Error(data.error||'START_FAILED');
   // The shared room and players remain intact. Reload the game with its new server state.
@@ -28,8 +28,9 @@ async function restartFromFinale(){
   messages.forEach(m=>m.textContent=message);
  }finally{finaleRestartBusy=false;buttons.forEach((b,i)=>{b.disabled=false;b.textContent=i===0?'🎬 Direkt neue Runde starten':'🎬 Neue Runde starten'})}
 }
-$('finale-replay').addEventListener('click',restartFromFinale);
-$('final-replay').addEventListener('click',restartFromFinale);
+$('finale-replay').addEventListener('click',()=>restartFromFinale());
+$('final-replay').addEventListener('click',()=>restartFromFinale());
+$('final-recover').addEventListener('click',()=>{if(confirm('Das Sieger-Glücksrad wirklich überspringen und eine neue Partie starten? Bereits vergebene Karten bleiben erhalten.'))restartFromFinale(true)});
 $('final-lobby').href='lobby.html?room='+encodeURIComponent(code||'');
 function startFinaleCinema(){
  // The final accepted banker offer must be announced for three seconds first.
