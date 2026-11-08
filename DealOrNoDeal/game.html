@@ -120,7 +120,9 @@
   const u=user();if(!u?.getIdToken)return;checking=true;
   try{
    const token=await u.getIdToken(),headers={Authorization:'Bearer '+token};
-   const endpoints=['/christmas-banker-rewards','/christmas-cent-reward'];
+   const endpoints=[];
+   if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)))endpoints.push('/christmas-banker-rewards');
+   if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1))endpoints.push('/christmas-cent-reward');
    for(const endpoint of endpoints){
     const response=await fetch(api(endpoint),{headers,cache:'no-store'});
     if(!response.ok)continue;
