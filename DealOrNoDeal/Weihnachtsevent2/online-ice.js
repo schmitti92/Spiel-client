@@ -24,13 +24,13 @@ function render(){
  '<div class="ice-tiles">'+Array.from({length:20},(_,i)=>'<button data-tile="'+i+'" '+(busy||finished||done||state.opened.includes(i)?'disabled':'')+' class="'+(state.opened.includes(i)||finished||done?'gone':'')+'" aria-label="Eisfeld '+(i+1)+'">❄️</button>').join('')+'</div></div>'+
  (finished?'<section class="ice-gift"><div class="ice-gift-icon">🎁</div><strong>🌟 Weihnachtsstern gefunden!</strong><p>'+(()=>{const g=state.prizes?.find(x=>x.number===state.completed);return g?(g.kind==='money'?'💰 '+money(g.amount)+' gewonnen':g.kind==='hammer'?'🔨 Gratis-Hammer gewonnen: '+g.hammer:'🔐 Kofferblick-Joker gewonnen'):'Dieses Bild ist abgeschlossen. Eine bereits früher ausgegebene Belohnung wird nicht erneut gutgeschrieben.'})()+'</p></section>':'')+
  (finished&&!done?'<button id="ice-next">➡️ Nächstes Weihnachtsbild</button>':done?'<p>🏆 Alle 70 Bilder geschafft!</p>':'');
- root.insertAdjacentHTML('beforeend','<button id="ice-reset">↻ Spiel zurücksetzen</button><p style="font-size:12px;opacity:.8">Kein Testguthaben. Pro Bild stehen 20 kostenlose einfache Hammerschläge bereit. Bereits erhaltene Online-Joker bleiben beim Zurücksetzen erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.</p>');
+ root.insertAdjacentHTML('beforeend','<button id="ice-reset">↻ Spiel zurücksetzen</button><p style="font-size:12px;opacity:.8">Kein Testguthaben. Pro Bild stehen 20 kostenlose einfache Hammerschläge bereit. Bereits erhaltene Online-Joker und gewonnene Hammer bleiben beim Zurücksetzen erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.</p>');
  let stored=null;try{stored=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null')}catch{}
  if(stored?.uid===user()?.uid&&stored.requestId&&stored.type&&stored.key){
   root.insertAdjacentHTML('beforeend','<button id="ice-recover">🔄 Letzte Aktion sicher wiederholen</button>');
   root.querySelector('#ice-recover').onclick=()=>{pending={key:stored.key,requestId:stored.requestId};run(stored.type,stored.extra||{})};
  }
- root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker bleiben erhalten, Gewinne früherer Bilder werden nicht erneut ausgezahlt.'))run('reset')};
+ root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker und gewonnene Hammer bleiben erhalten, Gewinne früherer Bilder werden nicht erneut ausgezahlt.'))run('reset')};
  root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{window.iceHammer=b.dataset.hammer;render()});
  root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>run('strike',{index:Number(b.dataset.tile),hammer:window.iceHammer||'single'}));
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
