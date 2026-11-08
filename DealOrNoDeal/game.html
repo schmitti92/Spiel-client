@@ -375,7 +375,14 @@
   }
   return true;
  }
- window.addEventListener('deal-finale-finished',()=>{if(finishTiedFinal())return;lastRewardProbeKey='';checkRewards()});
+ window.addEventListener('deal-finale-finished',()=>{
+  if(finishTiedFinal())return;
+  // The final reward may be committed just after the game-state broadcast.
+  // Retry the handoff independently of further game revisions.
+  lastRewardProbeKey='';checkRewards();
+  setTimeout(()=>{if(g?.phase==='final'&&box.hidden&&!sessionStorage.getItem('final-wheel-complete:'+g.id)){lastRewardProbeKey='';checkRewards()}},3500);
+  setTimeout(()=>{if(g?.phase==='final'&&box.hidden&&!sessionStorage.getItem('final-wheel-complete:'+g.id)){lastRewardProbeKey='';checkRewards()}},9000);
+ });
  setInterval(()=>{if(!document.hidden&&rewardMayExist()&&box.hidden)checkRewards()},10000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkRewards();checkWheelStart();syncWheel()}});
  window.addEventListener('spielonline-change',checkRewards);
