@@ -53,6 +53,13 @@ function pollDelay(){if(!g)return 5000;if(g.phase==='final'||g.phase==='done')re
 // HTTP remains available during reconnects and for older backend deployments.
 let dealSocket=null,dealSocketReady=false,dealSocketRetry=0,dealSocketLastMessage=0,dealSocketConnecting=false,lastHttpSafetySync=0;
 let lastSocketHeartbeat=0;
+let reconnectTimer=null;
+function scheduleDealReconnect(){
+ if(reconnectTimer||document.hidden||!code||!user())return;
+ const wait=Math.min(8000,750*2**Math.min(dealSocketRetry,4));
+ reconnectTimer=setTimeout(()=>{reconnectTimer=null;if(!document.hidden)connectDealSocket()},wait);
+}
+
 function applyDealState(next){
  if(!next)return;
  if(!g||next.id!==g.id||Number(next.revision)>Number(g.revision)){
@@ -75,9 +82,9 @@ async function connectDealSocket(){
    if(msg.type==='deal-state'&&dealSocketReady){dealSocketLastMessage=Date.now();applyDealState(msg.game)}
    if(msg.type==='deal-error'){dealSocketReady=false;console.warn('Deal stream:',msg.error)}
   };
-  ws.onclose=()=>{if(dealSocket===ws){dealSocket=null;dealSocketReady=false;dealSocketRetry=Math.min(dealSocketRetry+1,6)}};
+  ws.onclose=()=>{if(dealSocket===ws){dealSocket=null;dealSocketReady=false;dealSocketRetry=Math.min(dealSocketRetry+1,6);scheduleDealReconnect()}};
   ws.onerror=()=>{if(dealSocket===ws)dealSocketReady=false};
- }catch(e){console.warn('Deal stream reconnect:',e)}finally{dealSocketConnecting=false}
+ }catch(e){console.warn('Deal stream reconnect:',e);dealSocketRetry=Math.min(dealSocketRetry+1,6);scheduleDealReconnect()}finally{dealSocketConnecting=false}
 }
 function dealSocketHealthy(){return dealSocketReady&&dealSocket?.readyState===WebSocket.OPEN&&Date.now()-dealSocketLastMessage<45000}
 async function pollLoop(){
@@ -92,4 +99,4 @@ async function pollLoop(){
  setTimeout(pollLoop,delay);
 }
 $('studio-refresh').addEventListener('click',()=>window.location.reload());
-$('studio-fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}else{$('status').textContent='Vollbild wird von diesem Browser nicht unterstützt.'}}catch(e){$('status').textContent='Vollbild nicht verfügbar: '+e.message}});document.addEventListener('fullscreenchange',()=>{document.body.classList.toggle('is-fullscreen',!!document.fullscreenElement);$('studio-fullscreen').textContent=document.fullscreenElement?'⛶ Vollbild beenden':'⛶ Vollbild'});render();window.addEventListener('spielonline-change',poll);document.addEventListener('visibilitychange',()=>{if(!document.hidden){poll();if(dealSocket?.readyState===WebSocket.OPEN){try{dealSocket.send(JSON.stringify({type:'ping'}))}catch{}}}});window.addEventListener('pageshow',e=>{if(e.persisted)poll()});pollLoop();
+$('studio-fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}else{$('status').textContent='Vollbild wird von diesem Browser nicht unterstützt.'}}catch(e){$('status').textContent='Vollbild nicht verfügbar: '+e.message}});document.addEventListener('fullscreenchange',()=>{document.body.classList.toggle('is-fullscreen',!!document.fullscreenElement);$('studio-fullscreen').textContent=document.fullscreenElement?'⛶ Vollbild beenden':'⛶ Vollbild'});render();window.addEventListener('spielonline-change',poll);document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!dealSocket||dealSocket.readyState===WebSocket.CLOSED)connectDealSocket();poll();if(dealSocket?.readyState===WebSocket.OPEN){try{dealSocket.send(JSON.stringify({type:'ping'}))}catch{}}}});window.addEventListener('pageshow',e=>{if(e.persisted)poll()});pollLoop();
