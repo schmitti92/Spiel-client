@@ -233,3 +233,28 @@ main{padding-top:clamp(5px,1vw,12px)!important}
 #players .player .candidate-avatar img.candidate-photo{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center 18%;z-index:1;opacity:1;visibility:visible;pointer-events:none}
 #players .player .candidate-avatar .avatar-portrait{display:none!important}
 @media(max-width:700px){#players .player .candidate-avatar img.candidate-photo{object-position:center 15%}}
+
+/* V55 · Goldstudio awards ceremony and immediate rematch */
+#finale-cinema{background:radial-gradient(ellipse at 50% 24%,#564018aa,#030815f2 72%)!important;backdrop-filter:blur(12px)}
+#finale-cinema .finale-stage{position:relative;isolation:isolate;width:min(1100px,97vw)!important;max-height:calc(100dvh - 20px);overflow-y:auto;border:2px solid #e9c77c;border-radius:26px;background:radial-gradient(ellipse at 50% 0%,#564322aa,#0b1830 62%,#060e1d)!important;box-shadow:0 0 0 5px #e4b65a24,0 0 85px #e0b65344,0 35px 110px #000d!important;text-align:center}
+#finale-cinema .finale-stage:before{content:"";position:absolute;inset:0 0 auto;height:45%;pointer-events:none;z-index:-1;background:repeating-conic-gradient(from 0deg at 50% 0%,#ffdb7522 0deg 8deg,transparent 8deg 22deg);mask-image:linear-gradient(#000,transparent);animation:finale-lightshow 18s linear infinite}
+#finale-cinema .finale-eyebrow{letter-spacing:.23em;color:#ffe5a1;font-weight:900;text-shadow:0 0 15px #f9c55b77}
+#finale-cinema #finale-title{font-size:clamp(27px,5vw,55px);line-height:1.05;color:#fff3d1;text-shadow:0 3px 0 #6c451c,0 0 32px #ffd47077}
+#finale-cinema .finale-player{border:1px solid #f3d58b88;border-radius:18px;background:linear-gradient(160deg,#263b56,#0b172d);box-shadow:0 12px 30px #0008;transition:transform .7s,box-shadow .7s}
+#finale-cinema .finale-player.winner{transform:translateY(-12px) scale(1.045);z-index:2;box-shadow:0 0 0 3px #ffe49a,0 0 42px #ffd464a8,0 18px 44px #000b}
+#finale-cinema .finale-player.winner:after{content:"🏆 CHAMPION";display:block;margin:6px auto;padding:5px 8px;border-radius:18px;width:max-content;max-width:95%;background:linear-gradient(90deg,#f5d887,#bd8c38);color:#24170a;font-size:11px;font-weight:950}
+#finale-cinema .finale-champion:not([hidden]){animation:finale-winner-arrival .65s cubic-bezier(.2,1.5,.4,1) both}
+#finale-cinema .finale-champion-name{font-size:clamp(28px,5vw,58px);color:#fff1bd;text-shadow:0 0 26px #ffca5f}
+#finale-cinema .finale-champion-value{font-size:clamp(22px,4vw,42px);font-weight:950;color:#ffe49d}
+.finale-champion-subtitle{margin:8px 0;font-size:12px;font-weight:900;letter-spacing:.17em;color:#eacb87}
+.finale-cinema-actions,.finale-replay-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px;margin:18px auto 5px}
+.finale-replay-button{padding:13px 22px;min-height:48px;border-radius:14px;border:2px solid #fff0bc;background:linear-gradient(135deg,#ffe9ac,#d6a348);color:#261804;font-size:clamp(14px,2vw,18px);font-weight:950;cursor:pointer;box-shadow:0 5px 22px #dca94466;transition:transform .15s,filter .15s}
+.finale-replay-button:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.12)}
+.finale-replay-button:disabled{opacity:.6;cursor:wait}
+.finale-lobby-link{color:#ffebbc;font-weight:800;padding:12px}
+.finale-replay-status{min-height:20px;color:#ffdb9a;font-size:13px;text-align:center}
+#finale-cinema .finale-skip{min-height:48px;padding:12px 18px}
+@keyframes finale-lightshow{to{transform:rotate(360deg)}}
+@keyframes finale-winner-arrival{from{opacity:0;transform:scale(.75) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@media(max-width:680px){#finale-cinema .finale-stage{padding:15px!important}#finale-cinema .finale-player.winner{transform:translateY(-5px) scale(1.01)}.finale-cinema-actions,.finale-replay-actions{gap:7px}.finale-replay-button{width:100%}}
+@media(prefers-reduced-motion:reduce){#finale-cinema .finale-stage:before,#finale-cinema .finale-champion{animation:none!important}}
