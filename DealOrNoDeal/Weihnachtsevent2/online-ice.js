@@ -22,6 +22,7 @@ function render(){
  const chosen=window.iceHammer||'single';
  const labels={single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'};
  const emojis={single:'🔨',double:'⚒️',lucky:'✨'};
+ const hammerArt={single:'hammer-einfach.webp',double:'hammer-doppel.webp',lucky:'hammer-glueck.webp'};
  const costs={single:0,double:500000,lucky:1000000};
  const price=k=>(state.freeHammers?.[k]||0)>0?'Gratis ('+state.freeHammers[k]+')':k==='single'?'Kostenlos':money(costs[k]);
  const first=galleryPage*6+1;
