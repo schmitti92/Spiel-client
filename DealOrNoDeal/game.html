@@ -348,7 +348,7 @@
   try{
    const token=await u.getIdToken(),headers={Authorization:'Bearer '+token};
    const endpoints=[];
-   if(g.phase==='final'&&document.getElementById('finale-cinema')?.hidden&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
+   if(g.phase==='final'&&document.getElementById('finale-cinema')?.hidden&&!finishTiedFinal()&&!sessionStorage.getItem('final-wheel-complete:'+g.id))endpoints.push('/christmas-final-reward');
    if((g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)))endpoints.push('/christmas-banker-rewards');
    if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1))endpoints.push('/christmas-cent-reward');
    for(const endpoint of endpoints){
@@ -363,7 +363,18 @@
   finally{checking=false}
  }
  // React to confirmed game-state changes; retain a slow safety poll for reconnects.
- window.addEventListener('deal-finale-finished',()=>{lastRewardProbeKey='';checkRewards()});
+ function finishTiedFinal(){
+  if(typeof g==='undefined'||!g||g.phase!=='final'||!Array.isArray(g.finalValues))return false;
+  const payouts=g.finalValues.map(p=>p.payout);
+  if(payouts.length<2||payouts.filter(v=>v===Math.max(...payouts)).length<2)return false;
+  const key='final-wheel-complete:'+g.id;
+  if(sessionStorage.getItem(key)!=='yes'){
+   sessionStorage.setItem(key,'yes');
+   window.dispatchEvent(new Event('deal-final-wheel-complete'));
+  }
+  return true;
+ }
+ window.addEventListener('deal-finale-finished',()=>{if(finishTiedFinal())return;lastRewardProbeKey='';checkRewards()});
  setInterval(()=>{if(!document.hidden&&rewardMayExist()&&box.hidden)checkRewards()},5000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkRewards();checkWheelStart();syncWheel()}});
  window.addEventListener('spielonline-change',checkRewards);
