@@ -216,6 +216,22 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 @keyframes v44-hit-hammer{0%{opacity:0;transform:translate(32px,-55px) rotate(-38deg) scale(1.3)}35%{opacity:1;transform:translate(0,0) rotate(22deg) scale(1.1)}75%{opacity:1;transform:translate(-4px,-9px) rotate(-18deg)}100%{opacity:0;transform:translate(-9px,-20px) rotate(-30deg) scale(.85)}}
 @keyframes v44-shard{0%{opacity:0;transform:rotate(var(--a)) translateX(0) scale(.3)}18%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(var(--d)) scale(.6)}}
 @media(prefers-reduced-motion:reduce){.v44-impact{display:none}}
+
+/* V44 star discovery and server-confirmed reward reveal */
+.v44-celebration{position:fixed;inset:0;z-index:10020;display:grid;place-items:center;padding:16px;background:radial-gradient(ellipse at center,#4d1538b8,#040715ec);backdrop-filter:blur(5px)}
+.v44-celebration-card{position:relative;overflow:hidden;width:min(560px,92vw);max-height:92dvh;overflow-y:auto;text-align:center;padding:22px 25px 25px;border:5px ridge #f3c36a;border-radius:22px;background:linear-gradient(160deg,#6b0b1c,#a32925 48%,#390a25);color:#fff4d2;box-shadow:0 0 65px #f1bb54a6,inset 0 0 32px #21020d;animation:v44-reveal-in .6s cubic-bezier(.2,1.5,.5,1) both}
+.v44-celebration-card:before{content:'';position:absolute;inset:0;pointer-events:none;background:url('./Weihnachtsbilder/weihnachtsdekoration.png') top center/100% auto no-repeat;opacity:.5}
+.v44-celebration-sparkles{position:relative;color:#fff4c5;font-size:23px;letter-spacing:12px;animation:v44-glow 1.5s ease-in-out infinite alternate}
+.v44-celebration-star{position:relative;font-size:clamp(65px,12vw,118px);line-height:1.3;filter:drop-shadow(0 0 20px #ffe76c);animation:v44-star-in .8s ease-out both}
+.v44-celebration-card h2{position:relative;margin:4px 0;color:#ffe4a0;font:900 clamp(23px,3vw,35px) Georgia,serif;text-shadow:0 3px 5px #210008}
+.v44-celebration-card p{position:relative;margin:8px 0 14px}
+.v44-celebration-gift{position:relative;display:flex;flex-direction:column;gap:7px;margin:10px auto 18px;padding:13px;border:2px solid #f4c971;border-radius:13px;background:#300b25e0;box-shadow:inset 0 0 20px #d8a14940}
+.v44-celebration-gift strong{font-size:clamp(17px,2.4vw,24px);color:#ffda86}
+.v44-celebration-gift span{font-size:clamp(14px,2vw,20px)}
+#v44-celebration-close{position:relative;padding:12px 22px;border:2px solid #fff0ac;border-radius:12px;background:linear-gradient(#ffe9a1,#bc741e);color:#4a1b0b;font:900 17px Georgia,serif;cursor:pointer}
+@keyframes v44-reveal-in{from{opacity:0;transform:scale(.45) rotate(-7deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes v44-glow{from{filter:brightness(.8)}to{filter:brightness(1.6)}}
+@media(prefers-reduced-motion:reduce){.v44-celebration-card,.v44-celebration-star,.v44-celebration-sparkles{animation:none}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -278,4 +294,4 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-impact-shards"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-star-reveal"></script></body></html>
