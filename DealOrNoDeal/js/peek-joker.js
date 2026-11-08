@@ -10,6 +10,10 @@
  document.body.append(dialog);
  const el=id=>document.getElementById(id);
  let selected=null,balance=0,loading=false,receipt=null;
+ const pendingKey=()=>['deal-peek-pending-v1',code,myId(),g?.id].join(':');
+ const savePending=()=>{try{sessionStorage.setItem(pendingKey(),JSON.stringify({case:selected,requestId:receipt}))}catch{}};
+ const clearPending=()=>{try{sessionStorage.removeItem(pendingKey())}catch{}};
+ const restorePending=()=>{try{const p=JSON.parse(sessionStorage.getItem(pendingKey())||'null');if(p&&Number.isInteger(p.case)&&p.case>=0&&p.case<26&&/^[a-zA-Z0-9_-]{12,90}$/.test(p.requestId)){selected=p.case;receipt=p.requestId;return true}}catch{}return false};
  const active=()=>typeof g!=='undefined'&&g&&['open','reveal','decision'].includes(g.phase)&&g.players?.some(p=>p.id===myId()&&p.deal===null);
  const api=async(method,path,body)=>{
   const u=user();if(!u)throw Error('Bitte anmelden');
@@ -27,31 +31,31 @@
    const b=document.createElement('button');b.type='button';b.textContent=String(i+1);b.classList.toggle('own',own===i);
    b.title='Koffer '+(i+1)+(own===i?' (dein Koffer)':'');
    b.disabled=loading||balance<1||g.opened.includes(i)||g.pending?.case===i||selected!==null&&selected!==i;
-   b.onclick=()=>{selected=i;receipt=crypto.randomUUID();el('peek-confirm').hidden=false;el('peek-confirm').textContent='1 Joker für Koffer '+(i+1)+' einsetzen';el('peek-error').textContent='';draw()};
+   b.onclick=()=>{if(selected!==null&&selected!==i)return;selected=i;receipt=crypto.randomUUID();el('peek-confirm').hidden=false;el('peek-confirm').textContent='1 Joker für Koffer '+(i+1)+' einsetzen';el('peek-error').textContent='';draw()};
    root.append(b);
   }
   el('peek-confirm').disabled=loading||selected===null||balance<1;
  }
  async function open(){
   if(!active())return;
-  dialog.hidden=false;selected=null;receipt=null;loading=true;
+  dialog.hidden=false;selected=null;receipt=null;const recovering=restorePending();loading=true;
   el('peek-result').textContent='';el('peek-error').textContent='';el('peek-confirm').hidden=true;
   el('peek-balance').textContent='Jokerbestand wird geprüft …';draw();
   try{const data=await api('GET','peek/me');balance=data.balance;el('peek-balance').textContent='Verfügbare Joker: '+balance;
    if(!balance)el('peek-error').textContent='Noch keine Online-Joker vorhanden. Offline-Joker können aus Sicherheitsgründen nicht automatisch übertragen werden.';
   }catch(e){balance=0;el('peek-error').textContent='Bestand konnte nicht geladen werden: '+e.message}
-  finally{loading=false;draw()}
+  finally{loading=false;if(recovering){el('peek-confirm').hidden=false;el('peek-confirm').textContent='Koffer '+(selected+1)+' erneut prüfen (kein zweiter Verbrauch)';el('peek-error').textContent='Eine frühere Anfrage ist noch offen. Mit derselben Anfrage-ID sicher fortsetzen.'}draw()}
  }
  async function confirm(){
   if(loading||selected===null||balance<1||!active())return;
-  const chosen=selected;loading=true;el('peek-confirm').disabled=true;el('peek-error').textContent='';el('peek-result').textContent='🔒 Geheimnis wird enthüllt …';draw();
+  const chosen=selected;savePending();loading=true;el('peek-confirm').disabled=true;el('peek-error').textContent='';el('peek-result').textContent='🔒 Geheimnis wird enthüllt …';draw();
   try{
    const data=await api('POST',encodeURIComponent(code)+'/peek',{case:chosen,requestId:receipt});
    balance=data.balance;el('peek-balance').textContent='Verfügbare Joker: '+balance;
    el('peek-result').textContent='Koffer '+(chosen+1)+': '+eur(data.amount);
    el('peek-note').textContent='Nur auf deinem Gerät sichtbar. Der Koffer bleibt verschlossen.';
    el('peek-confirm').hidden=true;
-   selected=null;receipt=null;
+   clearPending();selected=null;receipt=null;
   }catch(e){el('peek-result').textContent='';el('peek-error').textContent='Kofferblick fehlgeschlagen: '+e.message+'. Erneut versuchen ist möglich.'}
   finally{loading=false;draw()}
  }
