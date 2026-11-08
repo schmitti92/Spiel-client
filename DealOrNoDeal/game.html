@@ -161,6 +161,23 @@
   if(startedAt)pendingSpin(startedAt);
  }
  window.addEventListener('deal-game-state-change',()=>{syncWheel();checkRewards()});
+ // Independent fallback: spectators must not depend on a single missed WebSocket event.
+ // Only poll while a wheel is actually waiting; stop as soon as the spin begins.
+ let wheelStatusChecking=false;
+ async function checkWheelStart(){
+  if(wheelStatusChecking||!activeWheelReward||finalWheelStarted||box.hidden||!room())return;
+  const u=user();if(!u?.getIdToken)return;
+  wheelStatusChecking=true;
+  try{
+   const token=await u.getIdToken();
+   const response=await fetch(api('/christmas-wheel-status?kind='+encodeURIComponent(activeWheelKind)+'&rewardId='+encodeURIComponent(activeWheelReward.id)),{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+   if(!response.ok)return;
+   const data=await response.json();
+   if(data.startedAt&&pendingSpin)pendingSpin(data.startedAt);
+  }catch(e){console.warn('Glücksrad-Synchronisierung wird wiederholt',e)}
+  finally{wheelStatusChecking=false}
+ }
+ setInterval(checkWheelStart,1800);
  function closeReward(){
   if(close.disabled)return;
   const uid=user()?.uid,id=box.dataset.reward;if(uid&&id)mark(uid,id);
