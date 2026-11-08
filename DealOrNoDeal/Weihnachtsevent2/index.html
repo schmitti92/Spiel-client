@@ -276,6 +276,11 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 .v44-money-burst{font-size:clamp(20px,4vw,36px);animation:v44-money-rise .7s ease-out both}
 @keyframes v44-money-rise{from{opacity:0;transform:translateY(18px) scale(.65)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.v44-money-prize>span,.v44-money-burst{animation:none}}
+
+/* Keep the confirmed hammer at its stopping position after the wheel has finished. */
+.v44-prize-wheel-face.v44-wheel-settled{animation:none;transform:rotate(var(--v44-wheel-end))}
+.v44-prize-wheel-face.v44-wheel-spinning{animation:v44-prize-spin 8.5s cubic-bezier(.13,.73,.2,1) both}
+@media(prefers-reduced-motion:reduce){.v44-prize-wheel-face.v44-wheel-spinning{animation:none;transform:rotate(var(--v44-wheel-end))}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -338,4 +343,4 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-money-fixes"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-wheel-finale-fix"></script></body></html>
