@@ -243,6 +243,12 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 @keyframes v44-gift-bounce{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-13px) rotate(5deg)}}
 @keyframes v44-gift-reveal{from{opacity:0;transform:scale(.55) rotate(-6deg);filter:brightness(2)}to{opacity:1;transform:scale(1) rotate(0);filter:brightness(1)}}
 @media(prefers-reduced-motion:reduce){.v44-gift-box,.v44-gift-unwrapped{animation:none}}
+
+/* V44 complete album and endgame affordances */
+.v44-gallery-all{display:block;width:100%;margin:5px 0;padding:6px 8px;border:1px solid #f3d186;border-radius:9px;background:linear-gradient(#f6dc9e,#bb752b);color:#3e180a;font:900 12px Georgia,serif;cursor:pointer}
+.v44-finale-button{border:2px solid #ffe5a0;border-radius:10px;background:linear-gradient(115deg,#f4ce78,#bc7d22,#f4ce78);color:#40180c;font:900 13px Georgia,serif;padding:8px 13px;box-shadow:0 0 12px #f3d08088;cursor:pointer;animation:v44-glow 1.8s ease-in-out infinite alternate}
+#v44-celebration-close:disabled{opacity:.65;cursor:wait}
+@media(min-width:900px) and (max-height:1000px){.v44-gallery-all{padding:3px 7px;margin:3px 0;font-size:11px}.v44-finale-button{padding:4px 8px}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -305,4 +311,4 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-gift-unwrapping"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-flow-finale"></script></body></html>
