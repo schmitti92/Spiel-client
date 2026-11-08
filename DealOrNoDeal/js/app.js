@@ -44,7 +44,7 @@ async function connectDealSocket(){
 function dealSocketHealthy(){return dealSocketReady&&dealSocket?.readyState===WebSocket.OPEN&&Date.now()-dealSocketLastMessage<45000}
 async function pollLoop(){
  if(!document.hidden){
-  if(!dealSocket||dealSocket.readyState===WebSocket.CLOSED||dealSocket.readyState===WebSocket.CLOSING)connectDealSocket();
+  if(!dealSocket||dealSocket.readyState===WebSocket.CLOSED)connectDealSocket();
   if(dealSocketHealthy()){try{dealSocket.send(JSON.stringify({type:'ping'}))}catch{}}
   if(dealSocket?.readyState===WebSocket.OPEN&&!dealSocketHealthy()&&dealSocketLastMessage&&Date.now()-dealSocketLastMessage>45000)dealSocket.close();
   if(!dealSocketHealthy())await poll();
@@ -53,4 +53,4 @@ async function pollLoop(){
  setTimeout(pollLoop,delay);
 }
 $('studio-refresh').addEventListener('click',()=>window.location.reload());
-$('studio-fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}else{$('status').textContent='Vollbild wird von diesem Browser nicht unterstützt.'}}catch(e){$('status').textContent='Vollbild nicht verfügbar: '+e.message}});document.addEventListener('fullscreenchange',()=>{document.body.classList.toggle('is-fullscreen',!!document.fullscreenElement);$('studio-fullscreen').textContent=document.fullscreenElement?'⛶ Vollbild beenden':'⛶ Vollbild'});render();window.addEventListener('spielonline-change',poll);document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});window.addEventListener('pageshow',e=>{if(e.persisted)poll()});pollLoop();
+$('studio-fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}else{$('status').textContent='Vollbild wird von diesem Browser nicht unterstützt.'}}catch(e){$('status').textContent='Vollbild nicht verfügbar: '+e.message}});document.addEventListener('fullscreenchange',()=>{document.body.classList.toggle('is-fullscreen',!!document.fullscreenElement);$('studio-fullscreen').textContent=document.fullscreenElement?'⛶ Vollbild beenden':'⛶ Vollbild'});render();window.addEventListener('spielonline-change',poll);document.addEventListener('visibilitychange',()=>{if(!document.hidden){poll();if(dealSocket?.readyState===WebSocket.OPEN){try{dealSocket.send(JSON.stringify({type:'ping'}))}catch{}}}});window.addEventListener('pageshow',e=>{if(e.persisted)poll()});pollLoop();
