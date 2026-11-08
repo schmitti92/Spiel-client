@@ -92,6 +92,56 @@ nav a:focus-visible{outline:2px solid #fff}
 @media(max-width:850px){.v44-layout{grid-template-columns:minmax(120px,1fr) minmax(270px,2.5fr) minmax(145px,1fr);gap:5px}.v44-panel{padding:6px}.v44-hammer{grid-template-columns:30px 1fr;min-height:65px;padding:4px}.v44-hammer-icon{font-size:23px}.v44-hammer strong{font-size:12px}.v44-hammer small{font-size:10px}.v44-hammer b{font-size:10px;padding:3px}.v44-plaque{font-size:11px;padding:6px}}
 @media(max-width:620px){.v44-head{flex-wrap:wrap}.v44-heading{order:-1;flex-basis:100%}.v44-layout{grid-template-columns:1fr 1fr}.v44-board-panel{grid-column:1/-1;grid-row:1}.v44-hammer{grid-template-columns:30px 1fr}.v44-rewards{grid-template-columns:repeat(7,1fr)}.v44-reward{padding:3px}.v44-reward span{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.v44-victory,.v44-star{animation:none!important}}
+
+/* Tablet landscape: complete studio, including progress, fits in one viewport. */
+@media (min-width:900px) and (max-height:1000px){
+ nav{flex-wrap:nowrap;gap:6px;padding:5px 8px;min-height:48px}
+ nav a{min-height:34px;font-size:clamp(11px,1vw,14px);padding:5px 8px;white-space:nowrap}
+ .ice-switch{padding:4px 10px;min-height:39px}
+ .ice-switch strong{font-size:13px}
+ #ice-reload{padding:5px 10px;font-size:12px}
+ #ice-online-panel{padding:3px 9px 4px;overflow:auto}
+ #ice-online-status{font-size:12px;min-height:17px;line-height:17px;margin:0 0 2px}
+ .v44-app{height:auto}
+ .v44-head{margin-bottom:4px;min-height:30px}
+ .v44-heading h1{font-size:clamp(17px,1.6vw,25px)}
+ .v44-heading p{font-size:10px;margin:0}
+ .v44-plaque{padding:4px 8px;font-size:12px}
+ .v44-layout{grid-template-columns:minmax(160px,1fr) minmax(400px,2.9fr) minmax(190px,1.05fr);gap:7px}
+ .v44-panel{padding:6px 8px;border-radius:11px}
+ .v44-panel h2{font-size:clamp(14px,1.25vw,18px);margin:0 0 5px}
+ .v44-board{width:auto;max-width:100%;height:min(49dvh,calc((100vw - 420px)*.42));aspect-ratio:auto;margin:0 auto}
+ .v44-board .ice-tiles button{font-size:clamp(16px,2vw,28px);border-radius:5px}
+ .v44-gallery{gap:4px}
+ .v44-thumb{aspect-ratio:1.55;font-size:17px}
+ .v44-gallery-nav{margin:5px 0}
+ .v44-gallery-panel p{font-size:11px;margin:5px 0}
+ .v44-hammers{gap:6px}
+ .v44-hammer{min-height:65px;grid-template-columns:38px 1fr;padding:5px}
+ .v44-hammer-icon{font-size:26px}
+ .v44-hammer strong{font-size:13px}
+ .v44-hammer small{font-size:11px;margin:2px 0}
+ .v44-hammer b{font-size:11px;padding:3px}
+ .v44-instruction{font-size:11px;margin:4px 0 0}
+ .v44-progress{margin-top:6px}
+ .v44-progress h2{margin:0 0 4px}
+ .v44-reward{padding:3px}
+ .v44-reward span{font-size:17px}
+ .v44-reward strong{font-size:10px}
+ .v44-actions{margin-top:4px}
+ .v44-actions button{padding:4px 9px;font-size:11px}
+ .v44-note{margin:3px 0;font-size:10px}
+}
+@media (min-width:900px) and (max-height:760px){
+ .v44-board{height:42dvh}
+ .v44-hammer{min-height:52px}
+ .v44-hammer-icon{font-size:22px}
+ .v44-thumb{aspect-ratio:1.8}
+ .v44-heading p{display:none}
+}
+.v44-board .ice-tiles button.cracking{animation:v44-crack .34s ease-out forwards;pointer-events:none}
+@keyframes v44-crack{0%{transform:scale(1);filter:brightness(1)}30%{transform:scale(1.06) rotate(-2deg);filter:brightness(1.8)}100%{transform:scale(.72) rotate(10deg);opacity:.35;filter:blur(3px)}}
+@media(prefers-reduced-motion:reduce){.v44-board .ice-tiles button.cracking{animation:none}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -154,4 +204,4 @@ nav a:focus-visible{outline:2px solid #fff}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-online-studio"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-tablet-fit"></script></body></html>
