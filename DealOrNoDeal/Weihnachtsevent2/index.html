@@ -47,7 +47,7 @@ nav a:focus-visible{outline:2px solid #fff}
 </nav>
 <script>
 (function(){
- const valid=/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/i;
+ const valid=/^(?:\d{3}|[A-HJ-NP-Z2-9]{6})$/i;
  const param=new URLSearchParams(location.search).get('room');
  const saved=sessionStorage.getItem('deal-active-room');
  const room=valid.test(param||'')?param:valid.test(saved||'')?saved:null;
