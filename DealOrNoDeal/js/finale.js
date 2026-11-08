@@ -3,6 +3,26 @@ function cancelFinaleTimers(){for(const t of finaleTimers)clearTimeout(t);finale
 function finaleLater(fn,delay){finaleTimers.push(setTimeout(fn,delay))}
 function finishFinaleCinema(){cancelFinaleTimers();if(finaleSequenceKey)sessionStorage.setItem('finale-watched:'+finaleSequenceKey,'yes');$('finale-cinema').hidden=true;$('finale-sparks').replaceChildren();window.dispatchEvent(new Event('deal-finale-finished'))}
 $('finale-skip').addEventListener('click',finishFinaleCinema);
+// Replay only presentation state; never repeat payouts, case opening, or rewards.
+function replayFinaleSequence(){
+ if(!g||g.phase!=='final'||!Array.isArray(g.finalValues)||!g.finalValues.length){
+  $('status').textContent='⚠️ Finale-Daten fehlen noch. Bitte Verbindung prüfen.';
+  return;
+ }
+ cancelFinaleTimers();
+ if(finaleRecoveryTimer){clearTimeout(finaleRecoveryTimer);finaleRecoveryTimer=null}
+ const key=String(g.id)+':finale';
+ sessionStorage.removeItem('finale-watched:'+key);
+ // An interrupted banker announcement must not suppress a deliberate replay.
+ if(voteRevealTimer!==null){clearTimeout(voteRevealTimer);voteRevealTimer=null}
+ finalDealRevealUntil=0;
+ $('vote-reveal').hidden=true;
+ $('finale-cinema').hidden=true;
+ finaleSequenceKey='';
+ $('status').textContent='🎬 Finale wird erneut abgespielt. Danach wird der Siegerbonus geprüft.';
+ startFinaleCinema();
+}
+window.addEventListener('deal-replay-finale-sequence',replayFinaleSequence);
 // Restart is a server-authoritative host action, never a local reset of shared game state.
 let finaleRestartBusy=false;
 async function restartFromFinale(skipFinalWheel=false){
