@@ -337,15 +337,18 @@
   const banker=(g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true));
   return oneCent||banker||g.phase==='final';
  }
- async function checkRewards(){
-  if(checking||!box.hidden||typeof g==='undefined'||!g?.id||!room()||!rewardMayExist())return;
-  const u=user();if(!u?.getIdToken)return;
+ async function checkRewards(manual=false){
+  if(checking)return 'busy';
+  if(!box.hidden)return 'open';
+  if(typeof g==='undefined'||!g?.id||!room()||!rewardMayExist())return 'not-ready';
+  const u=user();if(!u?.getIdToken)return 'not-signed-in';
   // A new reward event is checked immediately; unchanged rewards retry at most
   // every 30 seconds, rather than reading Firestore on every case reveal.
   const rewardKey=g.id+':'+(g.phase==='final'?'final:'+!!g.finalWheelSpun:'')+':'+(g.events||[]).filter(e=>e.type==='opened'&&e.amount===1).map(e=>e.eventId).join(',')+':'+(g.history||[]).filter(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)).map(h=>h.round+':'+(h.decisions||[]).filter(d=>d.deal===true).map(d=>d.id).join(',')).join(';');
   const now=Date.now();
-  if(rewardKey===lastRewardProbeKey&&now-lastRewardProbeAt<5000)return;
+  if(!manual&&rewardKey===lastRewardProbeKey&&now-lastRewardProbeAt<5000)return 'cooldown';
   lastRewardProbeKey=rewardKey;lastRewardProbeAt=now;checking=true;
+  let outcome='no-reward';
   try{
    const token=await u.getIdToken(),headers={Authorization:'Bearer '+token};
    const endpoints=[];
@@ -354,14 +357,15 @@
    if((g.events||[]).some(e=>e.type==='opened'&&e.amount===1))endpoints.push('/christmas-cent-reward');
    for(const endpoint of endpoints){
     const response=await fetch(api(endpoint),{headers,cache:'no-store'});
-    if(!response.ok)continue;
+    if(!response.ok){outcome='HTTP '+response.status;continue}
     const data=await response.json();
     const rewards=endpoint.includes('banker')?data.rewards||[]:data.reward?[data.reward]:[];
     const reward=rewards.find(x=>x.gameId===g.id&&!seen(u.uid,x.id));
-    if(reward){openReward(reward,endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent',u.uid);syncWheel();break}
+    if(reward){openReward(reward,endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent',u.uid);syncWheel();outcome='opened';break}
    }
-  }catch(e){console.warn('Weihnachtsbonus wird erneut geprüft',e)}
+  }catch(e){outcome='error: '+String(e.message||e);console.warn('Weihnachtsbonus wird erneut geprüft',e)}
   finally{checking=false}
+  return outcome;
  }
  // React to confirmed game-state changes; retain a slow safety poll for reconnects.
  function finishTiedFinal(){
@@ -375,11 +379,15 @@
   }
   return true;
  }
- window.addEventListener('deal-final-wheel-retry',()=>{
-  if(typeof g==='undefined'||g?.phase!=='final')return;
+ window.addEventListener('deal-final-wheel-retry',async()=>{
+  const status=document.getElementById('status');
+  if(typeof g==='undefined'||g?.phase!=='final'){if(status)status.textContent='⚠️ Finale ist auf diesem Gerät noch nicht synchronisiert.';return}
+  if(status)status.textContent='🎡 Siegerbonus wird jetzt direkt beim Server geprüft …';
   lastRewardProbeKey='';lastRewardProbeAt=0;
-  checkRewards();
+  const result=await checkRewards(true);
   checkWheelStart();
+  if(result==='opened'){if(status)status.textContent='🎁 Siegerbonus gefunden – Glücksrad wird geöffnet.';return}
+  if(status)status.textContent=result==='no-reward'?'⚠️ Der Server meldet noch kein verfügbares Siegerpaket. Bitte prüfe, ob die Siegerehrung abgeschlossen ist.':result==='busy'?'⏳ Die Bonusprüfung läuft bereits.':result==='open'?'🎡 Das Glücksrad-Fenster ist bereits geöffnet.':'⚠️ Bonusprüfung: '+result;
  });
  window.addEventListener('deal-finale-finished',()=>{
   if(finishTiedFinal())return;
