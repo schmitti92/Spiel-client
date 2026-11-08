@@ -43,7 +43,7 @@ function updateBankerCall(){
   if(h.bonusPack)bankerSetText('banker-christmas-bonus-name',({small:'Kleines Weihnachtspaket',large:'Großes Weihnachtspaket',premium:'Premium-Weihnachtspaket'})[h.bonusPack]||'Weihnachtspaket');
  }
 
- const remainingCases=26-(g.openedAmounts?.length||0);
+ const remainingCases=(g.caseCount||26)-(g.openedAmounts?.length||0);
  const finalChoice=remainingCases<=3;
  $('final-choice-compare').hidden=!finalChoice;
  if(finalChoice){
@@ -52,7 +52,7 @@ function updateBankerCall(){
  }
  const mine=h.participants.includes(myId())&&!h.decisions.some(d=>d.id===myId());
  const voted=h.decisions.some(d=>d.id===myId());
- $('banker-call-sub').textContent=(26-(g.openedAmounts?.length||0))+' Kofferwerte noch im Spiel · '+(mine?'Entscheide jetzt selbst: Deal oder No Deal?':voted?'Deine Stimme ist gespeichert. Warte auf die anderen Spieler.':'Die Spieler stimmen gleichzeitig ab …');
+ $('banker-call-sub').textContent=((g.caseCount||26)-(g.openedAmounts?.length||0))+' Kofferwerte noch im Spiel · '+(mine?'Entscheide jetzt selbst: Deal oder No Deal?':voted?'Deine Stimme ist gespeichert. Warte auf die anderen Spieler.':'Die Spieler stimmen gleichzeitig ab …');
  const total=h.participants.length;
  const castVotes=h.decisions.length;
  const voteProgress=$('banker-vote-progress');
