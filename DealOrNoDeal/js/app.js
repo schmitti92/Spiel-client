@@ -40,7 +40,12 @@ $('actions').replaceChildren();if(g.phase==='reveal'&&g.pending?.actor===myId()&
  // Recover from a transient failed acknowledgement or a stale WebSocket
  // revision. The server still validates the actor and applies it exactly once.
  if(!revealRecoveryTimer){revealRecoveryTimer=setTimeout(()=>{revealRecoveryTimer=null;if(g?.phase==='reveal'&&g.pending?.actor===myId()&&!busy){action('ack-reveal')}},6500)}}if(g.phase==='final'&&$('finale-cinema').hidden&&!sessionStorage.getItem('final-wheel-complete:'+g.id)){
- const recover=button('🎡 Sieger-Glücksrad erneut prüfen',()=>window.dispatchEvent(new Event('deal-final-wheel-retry')));
+ const recover=button('🎡 Sieger-Glücksrad erneut prüfen',()=>{
+  recover.textContent='⏳ Siegerbonus wird geprüft …';
+  $('status').textContent='🎡 Manuelle Siegerbonus-Prüfung gestartet …';
+  window.dispatchEvent(new Event('deal-final-wheel-retry'));
+  setTimeout(()=>{if(recover.isConnected&&recover.textContent.includes('geprüft'))recover.textContent='🎡 Sieger-Glücksrad erneut prüfen'},5000);
+ });
  recover.disabled=false;$('actions').append(recover);
 }
 if(g.phase==='open'&&who!==myId())$('status').textContent+=' · Du bist gerade nicht am Zug.';if(g.phase==='final'&&g.finalValues){let max=Math.max(...g.finalValues.map(x=>x.payout));$('status').textContent='🏆 '+g.finalValues.filter(x=>x.payout===max).map(x=>g.players.find(p=>p.id===x.id)?.name).join(' & ')+' gewinnt mit '+eur(max)}revealVotesAfterAll();startFinaleCinema()}
