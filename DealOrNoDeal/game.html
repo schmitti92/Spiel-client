@@ -104,8 +104,7 @@
   sequence++;const current=sequence;
   box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;
   // A missed socket event or disconnected winner must never trap spectators.
-  setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){close.disabled=false;wheelStatus.textContent='⚠️ Drehung nicht gestartet. Du kannst zum Spiel zurückkehren.';}},18000);
-  setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){close.disabled=false;closeReward()}},35000);
+  setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){wheelStatus.textContent='⏳ Warte auf den gemeinsamen Drehstart. Verbindung wird automatisch geprüft …';checkWheelStart();}},12000);
   const owner=reward.playerName||'Spieler';
   title.textContent='🎄 '+owner+' gewinnt ein Weihnachtspaket!';
   subtitle.textContent=(isFinal?'🏆 Siegerbonus der Runde':kind==='banker'?'Banker-Deal angenommen':'1-Cent-Koffer geöffnet')+' · Alle Spieler schauen live zu';
@@ -142,9 +141,10 @@
    finalWheelStarted=true;
    spinButton.disabled=true;spinButton.hidden=true;wheelStatus.textContent='🎡 Das Rad dreht sich …';
    if(reduced){wheelStatus.textContent='🎉 '+(reward.packName||packNames[pack]);showCards();return}
+   // Align to the server start time; a late spectator catches up automatically.
    const elapsed=Math.max(0,Date.now()-(startedAt||Date.now()));
    const duration=Math.max(150,6800-elapsed);
-   if(elapsed>=7800){showCards();return}
+   if(elapsed>=7800){wheel.style.transition='none';wheel.style.transform='rotate('+angle+'deg)';showCards();return}
    requestAnimationFrame(()=>requestAnimationFrame(()=>{
     if(sequence!==current||box.hidden)return;
     wheel.style.transition='transform '+duration+'ms cubic-bezier(.12,.82,.12,1)';
@@ -173,7 +173,7 @@
   const startedAt=g.christmasWheelSpins?.[activeWheelKind+':'+activeWheelReward.id];
   if(startedAt)pendingSpin(startedAt);
  }
- window.addEventListener('deal-game-state-change',()=>{syncWheel();checkRewards()});
+ window.addEventListener('deal-game-state-change',()=>{syncWheel();checkRewards();checkWheelStart()});
  // Independent fallback: spectators must not depend on a single missed WebSocket event.
  // Only poll while a wheel is actually waiting; stop as soon as the spin begins.
  let wheelStatusChecking=false;
@@ -184,13 +184,13 @@
   try{
    const token=await u.getIdToken();
    const response=await fetch(api('/christmas-wheel-status?kind='+encodeURIComponent(activeWheelKind)+'&rewardId='+encodeURIComponent(activeWheelReward.id)),{headers:{Authorization:'Bearer '+token},cache:'no-store'});
-   if(!response.ok)return;
+   if(!response.ok)throw Error('HTTP '+response.status);
    const data=await response.json();
    if(data.startedAt&&pendingSpin)pendingSpin(data.startedAt);
   }catch(e){console.warn('Glücksrad-Synchronisierung wird wiederholt',e)}
   finally{wheelStatusChecking=false}
  }
- setInterval(checkWheelStart,1800);
+ setInterval(checkWheelStart,900);
  function closeReward(){
   if(close.disabled)return;
   const uid=user()?.uid,id=box.dataset.reward;if(uid&&id)mark(uid,id);
@@ -233,7 +233,7 @@
  // React to confirmed game-state changes; retain a slow safety poll for reconnects.
  window.addEventListener('deal-finale-finished',()=>{lastRewardProbeKey='';checkRewards()});
  setInterval(checkRewards,30000);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkRewards()});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkRewards();checkWheelStart();syncWheel()}});
  window.addEventListener('spielonline-change',checkRewards);
 })();
 </script>
