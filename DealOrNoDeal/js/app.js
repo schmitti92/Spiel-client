@@ -22,14 +22,14 @@ function applyDealState(next){
  }
 }
 async function connectDealSocket(){
- if(!code||!user()||dealSocketConnecting||dealSocket?.readyState===WebSocket.OPEN||dealSocket?.readyState===WebSocket.CONNECTING)return;
+ if(!code||!user()||dealSocketConnecting||dealSocket?.readyState===WebSocket.OPEN||dealSocket?.readyState===WebSocket.CONNECTING||dealSocket?.readyState===WebSocket.CLOSING)return;
  dealSocketConnecting=true;
  try{
   const token=await user().getIdToken();
   if(!user())return;
   const ws=new WebSocket(base.replace(/^http/,'ws')+'/deal-or-no-deal');
   dealSocket=ws;dealSocketReady=false;dealSocketConnecting=false;
-  ws.onopen=()=>{dealSocketRetry=0;ws.send(JSON.stringify({type:'subscribe',code,token}))};
+  ws.onopen=()=>{if(dealSocket!==ws){ws.close();return}dealSocketRetry=0;ws.send(JSON.stringify({type:'subscribe',code,token}))};
   ws.onmessage=event=>{
    if(dealSocket!==ws)return;
    let msg;try{msg=JSON.parse(event.data)}catch{return}
@@ -38,7 +38,7 @@ async function connectDealSocket(){
    if(msg.type==='deal-error'){dealSocketReady=false;console.warn('Deal stream:',msg.error)}
   };
   ws.onclose=()=>{if(dealSocket===ws){dealSocket=null;dealSocketReady=false;dealSocketRetry=Math.min(dealSocketRetry+1,6)}};
-  ws.onerror=()=>{dealSocketReady=false};
+  ws.onerror=()=>{if(dealSocket===ws)dealSocketReady=false};
  }catch(e){console.warn('Deal stream reconnect:',e)}finally{dealSocketConnecting=false}
 }
 function dealSocketHealthy(){return dealSocketReady&&dealSocket?.readyState===WebSocket.OPEN&&Date.now()-dealSocketLastMessage<45000}
