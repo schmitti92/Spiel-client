@@ -45,6 +45,23 @@ nav a:focus-visible{outline:2px solid #fff}
 <a href="./index.html" aria-current="page">❄️ Weihnachtsevent 2</a>
 <a href="../game.html">↩️ Zum Spiel</a><a href="#" id="event-guide-open" class="event-guide-open">📖 Spielanleitung</a>
 </nav>
+<script>
+(function(){
+ const valid=/^(?:\\d{3}|[A-HJ-NP-Z2-9]{6})$/i;
+ const param=new URLSearchParams(location.search).get('room');
+ const saved=sessionStorage.getItem('deal-active-room');
+ const room=valid.test(param||'')?param:valid.test(saved||'')?saved:null;
+ if(room){
+  sessionStorage.setItem('deal-active-room',room);
+  document.querySelector('nav a[href="../game.html"]').href='../game.html?room='+encodeURIComponent(room);
+  document.querySelectorAll('nav a[href^="../weihnachten.html"]').forEach(a=>{
+   const url=new URL(a.href);
+   url.searchParams.set('room',room);
+   a.href=url.href;
+  });
+ }
+})();
+</script>
 <div class="ice-switch"><strong>🌐 Weihnachtsevent 2 · Online</strong><button id="ice-reload" type="button">↻ Spielstand aktualisieren</button></div>
 <section id="ice-online-panel"><p id="ice-online-status" role="status"></p><div id="ice-online"></div></section>
 
