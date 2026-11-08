@@ -5,15 +5,15 @@
  const user=()=>window.SpielOnline?.state?.()?.user;
  const match=()=>typeof g!=='undefined'?g:null;
  const room=()=>typeof code==='string'?code:new URLSearchParams(location.search).get('room');
- const eligible=game=>{
-  const u=user();if(!game||game.phase!=='final'||!u?.uid)return false;
+ const winnerId=game=>{
+  const u=user();if(!game||game.phase!=='final')return null;
   const payouts=(game.players||[]).map(p=>({id:p.id,payout:p.deal??game.values?.[p.case]}));
-  if(!payouts.length||payouts.some(p=>!Number.isFinite(p.payout)))return false;
+  if(!payouts.length||payouts.some(p=>!Number.isFinite(p.payout)))return null;
   const max=Math.max(...payouts.map(p=>p.payout));
-  return payouts.filter(p=>p.payout===max).length===1&&payouts.some(p=>p.id===u.uid&&p.payout===max);
+  return payouts.filter(p=>p.payout===max).length===1?payouts.find(p=>p.payout===max).id:null;
  };
  function show(){
-  const game=match(),u=user();if(!eligible(game))return;
+  const game=match(),u=user(),winner=winnerId(game);if(!winner||!u?.uid)return;
   const started=Number(game.christmasWheelSpins?.['final:'+game.id]||0);
   if(!started)return;
   // Never cover the pack animation. If a tab was reloaded, the server timestamp
@@ -27,23 +27,38 @@
   overlay.innerHTML='<div class="ice-hammer-card"><h2>🔨 Sieger-Hammerrad</h2><p>Das Sammelkarten-Glücksrad ist abgeschlossen. Jetzt folgt dein zusätzlicher Hammergewinn!</p><div class="ice-hammer-wheel"><div class="ice-hammer-disc">🔨<span>Einfach · 50 %</span><span>Doppel · 35 %</span><span>Glück · 15 %</span></div></div><p class="ice-hammer-message" role="status">Bereit für deinen Siegerbonus</p><button class="ice-hammer-spin">🎡 Hammer-Glücksrad drehen</button><button class="ice-hammer-close" hidden>✓ Weiter zum Spiel</button></div>';
   document.body.append(overlay);
   const disc=overlay.querySelector('.ice-hammer-disc'),spin=overlay.querySelector('.ice-hammer-spin'),status=overlay.querySelector('.ice-hammer-message'),close=overlay.querySelector('.ice-hammer-close');
+  const labels={single:'🔨 Einfach-Hammer',double:'🔨 Doppel-Hammer',lucky:'✨ Glückshammer'};
+  const angles={single:60,double:220,lucky:320};
+  let revealed=false;
+  const reveal=award=>{
+   if(!award||award.gameId!==game.id||revealed)return;
+   revealed=true;busy=false;spin.hidden=true;
+   const elapsed=Math.max(0,Date.now()-award.startedAt);
+   const duration=Math.max(100,4300-elapsed);
+   disc.style.transition='transform '+duration+'ms cubic-bezier(.12,.8,.12,1)';
+   disc.style.transform='rotate('+(1800+360-angles[award.hammer])+'deg)';
+   status.textContent='🎡 Das Hammerrad dreht sich für alle …';
+   clearTimeout(spinTimer);
+   spinTimer=setTimeout(()=>{status.textContent='🎉 Gewonnen: '+labels[award.hammer]+'! '+(winner===u.uid?'Dein Hammer wurde gutgeschrieben.':'Der Sieger erhält diesen Hammer im Weihnachtsevent.');close.hidden=false},duration+100);
+  };
+  const onGameChange=()=>{const latest=match();if(latest?.id===game.id)reveal(latest.christmasHammerWheel)};
+  window.addEventListener('deal-game-state-change',onGameChange);
+  if(winner!==u.uid){spin.hidden=true;status.textContent='⏳ Der Sieger dreht das Hammerrad. Alle schauen gemeinsam zu …'}
+  else if(game.christmasHammerWheel){spin.hidden=true}
+  if(game.christmasHammerWheel)reveal(game.christmasHammerWheel);
   spin.onclick=async()=>{
    if(busy)return;busy=true;spin.disabled=true;status.textContent='⏳ Gewinnerbonus wird serverseitig geprüft …';
    try{
     const token=await u.getIdToken();
     const response=await fetch(base+'/api/christmas-ice/final-hammer',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({code:room(),gameId:game.id}),cache:'no-store'});
     const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');
-    const labels={single:'🔨 Einfach-Hammer',double:'🔨 Doppel-Hammer',lucky:'✨ Glückshammer'};
-    const angles={single:60,double:220,lucky:320};
-    disc.style.transform='rotate('+(1800+360-angles[data.hammer])+'deg)';
-    status.textContent='🎡 Das Hammerrad dreht sich …';
-    spinTimer=setTimeout(()=>{status.textContent='🎉 Gewonnen: '+labels[data.hammer]+'! Der Hammer wurde deinem Online-Weihnachtsevent gutgeschrieben.';spin.hidden=true;close.hidden=false},window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?100:4300);
+    reveal({gameId:game.id,hammer:data.hammer,startedAt:Date.now()});
    }catch(e){status.textContent='⚠️ '+e.message+' – bitte erneut versuchen.';spin.disabled=false;busy=false}
   };
-  close.onclick=()=>{clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');overlay.remove();busy=false};
+  close.onclick=()=>{window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');overlay.remove();busy=false};
  }
  function scheduleShow(){
-  const game=match();if(!eligible(game))return;
+  const game=match();if(!winnerId(game))return;
   const started=Number(game.christmasWheelSpins?.['final:'+game.id]||0);
   if(!started)return;
   const delay=Math.max(0,13000-(Date.now()-started));
