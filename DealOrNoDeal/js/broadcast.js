@@ -10,7 +10,7 @@
   strap.className = 'broadcast-strap';
   strap.innerHTML =
     '<div class="broadcast-identity"><span class="broadcast-emblem">✦</span><span>GOLDSTUDIO <small>PRIMETIME</small></span></div>' +
-    '<div class="broadcast-ticker" id="broadcast-ticker">26 Koffer. Eine große Entscheidung.</div>' +
+    '<div class="broadcast-ticker" id="broadcast-ticker">27 Koffer. Eine große Entscheidung.</div>' +
     '<span class="broadcast-stakes" id="broadcast-stakes">● LIVE</span>' +
     '<div class="broadcast-odds" id="broadcast-odds" aria-label="Wahrscheinlichkeit beim nächsten Koffer">' +
     '<span id="broadcast-odds-title">NÄCHSTER KOFFER</span><strong id="broadcast-odds-value">–</strong>' +
