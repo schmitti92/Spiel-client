@@ -14,7 +14,7 @@ async function poll(){if(!code||!user()||document.hidden||polling)return;polling
 function pollDelay(){if(!g)return 5000;if(g.phase==='final'||g.phase==='done')return 30000;if(g.phase==='select'||g.phase==='reveal'||g.phase==='decision')return 2500;if(Date.now()-lastStateChange>60000)return 8000;return 4000}
 // The server remains authoritative. WebSocket is an optional push channel;
 // HTTP remains available during reconnects and for older backend deployments.
-let dealSocket=null,dealSocketReady=false,dealSocketRetry=0,dealSocketLastMessage=0;
+let dealSocket=null,dealSocketReady=false,dealSocketRetry=0,dealSocketLastMessage=0,dealSocketConnecting=false;
 function applyDealState(next){
  if(!next)return;
  if(!g||next.id!==g.id||Number(next.revision)>Number(g.revision)){
@@ -22,14 +22,16 @@ function applyDealState(next){
  }
 }
 async function connectDealSocket(){
- if(!code||!user()||dealSocket?.readyState===WebSocket.OPEN||dealSocket?.readyState===WebSocket.CONNECTING)return;
+ if(!code||!user()||dealSocketConnecting||dealSocket?.readyState===WebSocket.OPEN||dealSocket?.readyState===WebSocket.CONNECTING)return;
+ dealSocketConnecting=true;
  try{
   const token=await user().getIdToken();
   if(!user())return;
   const ws=new WebSocket(base.replace(/^http/,'ws')+'/deal-or-no-deal');
-  dealSocket=ws;dealSocketReady=false;
+  dealSocket=ws;dealSocketReady=false;dealSocketConnecting=false;
   ws.onopen=()=>{dealSocketRetry=0;ws.send(JSON.stringify({type:'subscribe',code,token}))};
   ws.onmessage=event=>{
+   if(dealSocket!==ws)return;
    let msg;try{msg=JSON.parse(event.data)}catch{return}
    if(msg.type==='deal-subscribed'||msg.type==='pong'){if(msg.type==='deal-subscribed')dealSocketReady=true;dealSocketLastMessage=Date.now()}
    if(msg.type==='deal-state'&&dealSocketReady){dealSocketLastMessage=Date.now();applyDealState(msg.game)}
@@ -37,7 +39,7 @@ async function connectDealSocket(){
   };
   ws.onclose=()=>{if(dealSocket===ws){dealSocket=null;dealSocketReady=false;dealSocketRetry=Math.min(dealSocketRetry+1,6)}};
   ws.onerror=()=>{dealSocketReady=false};
- }catch(e){console.warn('Deal stream reconnect:',e)}
+ }catch(e){console.warn('Deal stream reconnect:',e)}finally{dealSocketConnecting=false}
 }
 function dealSocketHealthy(){return dealSocketReady&&dealSocket?.readyState===WebSocket.OPEN&&Date.now()-dealSocketLastMessage<45000}
 async function pollLoop(){
