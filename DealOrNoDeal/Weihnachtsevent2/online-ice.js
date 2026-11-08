@@ -4,7 +4,7 @@ const root=document.getElementById('ice-online'),status=document.getElementById(
 const names=["IMG-20261108-WA0000.jpg","IMG-20261108-WA0001.jpg","IMG-20261108-WA0002.jpg","IMG-20261108-WA0003.jpg","IMG-20261108-WA0004.jpg","IMG-20261108-WA0005.jpg","IMG-20261108-WA0006.jpg","IMG-20261108-WA0007.jpg","IMG-20261108-WA0011.jpg","IMG-20261108-WA0012.jpg","IMG-20261108-WA0013.jpg","IMG-20261108-WA0014.jpg","IMG-20261108-WA0015.jpg","IMG-20261108-WA0016.jpg","IMG-20261108-WA0017.jpg","IMG-20261108-WA0018.jpg","IMG-20261108-WA0023.jpg","IMG-20261108-WA0024.jpg","IMG-20261108-WA0025.jpg","IMG-20261108-WA0027.jpg","IMG-20261108-WA0030.jpg","IMG-20261108-WA0032.jpg","IMG-20261108-WA0033.jpg","IMG-20261108-WA0034.jpg","IMG-20261108-WA0035.jpg","IMG-20261108-WA0036.jpg","IMG-20261108-WA0038.jpg","IMG-20261108-WA0040.jpg","IMG-20261108-WA0041.jpg","IMG-20261108-WA0042.jpg","IMG-20261108-WA0043.jpg","IMG-20261108-WA0045.jpg","IMG-20261108-WA0046.jpg","IMG-20261108-WA0047.jpg","IMG-20261108-WA0048(1).jpg","IMG-20261108-WA0051.jpg","IMG-20261108-WA0052.jpg","IMG-20261108-WA0053.jpg","IMG-20261108-WA0054.jpg","IMG-20261108-WA0056.jpg","IMG-20261108-WA0065.jpg","IMG-20261108-WA0067.jpg","IMG-20261108-WA0068.jpg","IMG-20261108-WA0069.jpg","IMG-20261108-WA0070.jpg","IMG-20261108-WA0074.jpg","IMG-20261108-WA0075.jpg","IMG-20261108-WA0077.jpg","IMG-20261108-WA0079.jpg","IMG-20261108-WA0081.jpg","IMG-20261108-WA0084.jpg","IMG-20261108-WA0085.jpg","IMG-20261108-WA0086.jpg","IMG-20261108-WA0089.jpg","IMG-20261108-WA0091.jpg","IMG-20261108-WA0092.jpg","IMG-20261108-WA0094.jpg","IMG-20261108-WA0097.jpg","IMG-20261108-WA0099.jpg","IMG-20261108-WA0104.jpg","IMG-20261108-WA0105.jpg","IMG-20261108-WA0109.jpg","IMG-20261108-WA0110.jpg","IMG-20261108-WA0111.jpg","IMG-20261108-WA0113(1).jpg","IMG-20261108-WA0114.jpg","IMG-20261108-WA0121.jpg","motion_photo_3952067152776055351.jpg","motion_photo_4388198511032034292.jpg","motion_photo_6120708326686891259.jpg"];
 const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'');
 let state=null,busy=false,pending=null;
-const money=n=>Number(n||0).toLocaleString('de-DE')+' €';
+const money=n=>(Number(n||0)/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
 const user=()=>{const a=window.SpielOnline?.state?.();return a?.status==='online'?a.user:null};
 function message(t){status.textContent=t;status.hidden=/^✅ Online-Modus verbunden\.?$/.test(t)}
 async function request(type,body){
@@ -38,7 +38,7 @@ function render(){
  const labels={single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'};
  const emojis={single:'🔨',double:'⚒️',lucky:'✨'};
  const hammerArt={single:'hammer-einfach.webp',double:'hammer-doppel.webp',lucky:'hammer-glueck.webp'};
- const costs={single:300000,double:500000,lucky:1000000};
+ const costs={single:30000000,double:50000000,lucky:100000000};
  const price=k=>(state.freeHammers?.[k]||0)>0?'Gewonnen ('+state.freeHammers[k]+')':money(costs[k]);
  const first=galleryPage*6+1;
  const thumbs=Array.from({length:6},(_,i)=>first+i).filter(n=>n<=70).map(n=>'<button class="v44-thumb '+(n>state.completed+1?'locked':'')+'" data-preview="'+n+'" title="Bild '+n+'">'+(n<=state.completed?'<img loading="lazy" src="'+photo(n)+'" alt="Bild '+n+'">':n===number?'❄️':'🔒')+'<span>'+n+'</span></button>').join('');
