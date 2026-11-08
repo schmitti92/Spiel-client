@@ -38,7 +38,7 @@ function render(){
  root.querySelector('#v44-nextpage').onclick=()=>{galleryPage=Math.min(11,galleryPage+1);render()};
  root.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.preview);if(n===number)return;message(n<=state.completed?'🖼️ Bild '+n+' wurde bereits abgeschlossen. Dein aktuelles Bild bleibt '+number+'.':'🔒 Bild '+n+' wird erst später freigeschaltet.')});
  root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{window.iceHammer=b.dataset.hammer;render()});
- root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>run('strike',{index:Number(b.dataset.tile),hammer:window.iceHammer||'single'}));
+ root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{if(busy)return;b.classList.add('cracking');run('strike',{index:Number(b.dataset.tile),hammer:window.iceHammer||'single'});});
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
  root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker und gewonnene Hammer bleiben erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.'))run('reset')};
  let stored=null;try{stored=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null')}catch{}
