@@ -30,6 +30,8 @@ $('finale-replay').addEventListener('click',restartFromFinale);
 $('final-replay').addEventListener('click',restartFromFinale);
 $('final-lobby').href='lobby.html?room='+encodeURIComponent(code||'');
 function startFinaleCinema(){
+ // The final accepted banker offer must be announced for three seconds first.
+ if(!$('vote-reveal').hidden||Date.now()<finalDealRevealUntil)return;
  if(!g||g.phase!=='final'||!Array.isArray(g.finalValues)||!g.finalValues.length){if(!$('finale-cinema').hidden){cancelFinaleTimers();$('finale-cinema').hidden=true}return}
  const key=String(g.id)+':finale';
  if(finaleSequenceKey===key||sessionStorage.getItem('finale-watched:'+key)==='yes')return;
