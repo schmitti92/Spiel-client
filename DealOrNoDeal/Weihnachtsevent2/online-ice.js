@@ -10,8 +10,14 @@ function message(t){status.textContent=t;status.hidden=/^✅ Online-Modus verbun
 async function request(type,body){
  const u=user();if(!u)throw Error('Bitte zuerst im Spielerprofil anmelden.');
  const token=await u.getIdToken();
- const response=await fetch(api+'/api/christmas-ice/'+(type==='GET'?'me':'action'),{method:type,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store',body:body?JSON.stringify(body):undefined});
- const data=await response.json();if(!response.ok||!data.ok){const error=new Error(data.error||'SERVER_ERROR');error.confirmedRejection=true;throw error}return data;
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);
+ try{
+  const response=await fetch(api+'/api/christmas-ice/'+(type==='GET'?'me':'action'),{method:type,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store',signal:controller.signal,body:body?JSON.stringify(body):undefined});
+  const data=await response.json();if(!response.ok||!data.ok){const error=new Error(data.error||'SERVER_ERROR');error.confirmedRejection=true;throw error}return data;
+ }catch(error){
+  if(error?.name==='AbortError')throw Error('Zeitüberschreitung nach 25 Sekunden');
+  throw error;
+ }finally{clearTimeout(timeout)}
 }
 const id=()=>crypto.randomUUID();
 let galleryPage=0,showAllGallery=false,impactTimer=null,celebration=null,wheelTimer=null;
