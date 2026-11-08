@@ -6,11 +6,12 @@
  const match=()=>typeof g!=='undefined'?g:null;
  const room=()=>typeof code==='string'?code:new URLSearchParams(location.search).get('room');
  const winnerId=game=>{
-  const u=user();if(!game||game.phase!=='final')return null;
-  const payouts=(game.players||[]).map(p=>({id:p.id,payout:p.deal??game.values?.[p.case]}));
+  if(!game||game.phase!=='final'||!Array.isArray(game.finalValues))return null;
+  const payouts=game.finalValues.map(p=>({id:p.id,payout:p.payout}));
   if(!payouts.length||payouts.some(p=>!Number.isFinite(p.payout)))return null;
   const max=Math.max(...payouts.map(p=>p.payout));
-  return payouts.filter(p=>p.payout===max).length===1?payouts.find(p=>p.payout===max).id:null;
+  const winners=payouts.filter(p=>p.payout===max);
+  return winners.length===1?winners[0].id:null;
  };
  function show(){
   const game=match(),u=user(),winner=winnerId(game);if(!winner||!u?.uid)return;
