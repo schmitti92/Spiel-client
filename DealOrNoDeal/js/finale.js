@@ -37,7 +37,10 @@ function startFinaleCinema(){
  if(!$('vote-reveal').hidden||Date.now()<finalDealRevealUntil)return;
  if(!g||g.phase!=='final'||!Array.isArray(g.finalValues)||!g.finalValues.length){if(!$('finale-cinema').hidden){cancelFinaleTimers();$('finale-cinema').hidden=true}return}
  const key=String(g.id)+':finale';
- if(finaleSequenceKey===key||sessionStorage.getItem('finale-watched:'+key)==='yes')return;
+ // A stale in-memory key must not suppress a finale whose dialog is hidden.
+ // This can happen when another UI layer interrupted the first reveal.
+ if(finaleSequenceKey===key&&!$('finale-cinema').hidden)return;
+ if(sessionStorage.getItem('finale-watched:'+key)==='yes')return;
  finaleSequenceKey=key;cancelFinaleTimers();clearSceneTransition();resetCaseCamera();
  const entries=g.finalValues.map(f=>({f,p:g.players.find(p=>p.id===f.id)}));
  const ascending=[...entries].sort((a,b)=>a.f.amount-b.f.amount||a.f.case-b.f.case);
