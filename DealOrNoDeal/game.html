@@ -87,9 +87,9 @@
  const api=path=>String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/[/]+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(room())+path;
  const wheelStage=document.getElementById('cent-wheel-stage'),wheel=document.getElementById('cent-wheel'),wheelStatus=document.getElementById('cent-wheel-status'),revealStage=document.getElementById('cent-reveal-stage');
  const packNames={small:'Normales Kartenpaket',large:'Gold-Kartenpaket',premium:'Premium-Kartenpaket'};
- const spinButton=document.getElementById('cent-wheel-spin');let pendingSpin=null,finalWheelReward=null,finalWheelStarted=false;
+ const spinButton=document.getElementById('cent-wheel-spin');let pendingSpin=null,activeWheelReward=null,activeWheelKind=null,finalWheelStarted=false;
  function openReward(reward,kind,uid){
-  const isFinal=kind==='final';finalWheelReward=isFinal?reward:null;finalWheelStarted=false;
+  const isFinal=kind==='final';activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
   sequence++;const current=sequence;
   box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;
   const owner=reward.playerName||'Spieler';
@@ -98,7 +98,7 @@
   credit.textContent=reward.uid===uid?'Deine Karten wurden deinem Weihnachtsalbum gutgeschrieben.':'Die Karten wurden dem Weihnachtsalbum von '+owner+' gutgeschrieben.';
   name.textContent='';icon.textContent='🎁';cards.replaceChildren();
   wheelStage.hidden=false;revealStage.hidden=true;spinButton.hidden=false;spinButton.disabled=false;wheelStatus.textContent='🎡 Bereit? Drücke auf „Jetzt drehen“!';
-  if(isFinal&&reward.uid!==uid){spinButton.hidden=true;wheelStatus.textContent='🏆 '+owner+' darf das Sieger-Glücksrad drehen. Bitte warten …'}
+  if(reward.uid!==uid){spinButton.hidden=true;wheelStatus.textContent='🎡 '+owner+' darf drehen. Alle schauen gemeinsam zu …'}
   wheel.style.transition='none';wheel.style.transform='rotate(0deg)';
   const pack=String(reward.packId||'small').toLowerCase();
   const targetAngle=pack==='large'?234:pack==='premium'?342:72;
@@ -119,45 +119,52 @@
     const rarity=document.createElement('small');rarity.textContent=rarityLabels[card.rarity]||'Karte';
     item.append(symbol,label,rarity);cards.append(item);
    });
-   setTimeout(()=>{if(sequence===current&&!box.hidden)close.disabled=false},reduced?0:Math.max(600,(reward.revealed||[]).length*170+750));
+   setTimeout(()=>{if(sequence===current&&!box.hidden){close.disabled=false;setTimeout(()=>{if(sequence===current&&!box.hidden)closeReward()},Math.max(2200,(reward.revealed||[]).length*180+1000))}},reduced?0:Math.max(600,(reward.revealed||[]).length*170+750));
   };
-  pendingSpin=()=>{
+  pendingSpin=(startedAt)=>{
    if(sequence!==current||box.hidden||finalWheelStarted)return;
    finalWheelStarted=true;
    spinButton.disabled=true;spinButton.hidden=true;wheelStatus.textContent='🎡 Das Rad dreht sich …';
    if(reduced){wheelStatus.textContent='🎉 '+(reward.packName||packNames[pack]);showCards();return}
+   const elapsed=Math.max(0,Date.now()-(startedAt||Date.now()));
+   const duration=Math.max(150,6800-elapsed);
+   if(elapsed>=7800){showCards();return}
    requestAnimationFrame(()=>requestAnimationFrame(()=>{
     if(sequence!==current||box.hidden)return;
-    wheel.style.transition='transform 6.8s cubic-bezier(.12,.82,.12,1)';
+    wheel.style.transition='transform '+duration+'ms cubic-bezier(.12,.82,.12,1)';
     wheel.style.transform='rotate('+angle+'deg)';
    }));
-   setTimeout(()=>{if(sequence!==current||box.hidden)return;wheelStatus.textContent='🎉 GEWONNEN: '+(reward.packName||packNames[pack]||'Weihnachtspaket')+'!';box.dataset.stage='result';},6800);
-   setTimeout(()=>{if(sequence===current&&!box.hidden)showCards()},7800);
+   setTimeout(()=>{if(sequence!==current||box.hidden)return;wheelStatus.textContent='🎉 GEWONNEN: '+(reward.packName||packNames[pack]||'Weihnachtspaket')+'!';box.dataset.stage='result';},Math.max(0,6800-elapsed));
+   setTimeout(()=>{if(sequence===current&&!box.hidden)showCards()},Math.max(0,7800-elapsed));
   };
 
  }
 
- spinButton.addEventListener('click',async()=>{
-  if(!pendingSpin||spinButton.disabled)return;
-  if(finalWheelReward){
-   if(finalWheelReward.uid!==user()?.uid)return;
-   spinButton.disabled=true;wheelStatus.textContent='🎡 Das Glücksrad wird gestartet …';
-   try{
-    const token=await user().getIdToken();
-    const response=await fetch(api('/christmas-final-spin'),{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'});
-    if(!response.ok)throw Error('SPIN_FAILED');
-    finalWheelReward.spun=true;pendingSpin();
-   }catch(e){spinButton.disabled=false;wheelStatus.textContent='Verbindung fehlgeschlagen – bitte erneut drehen.'}
-  }else pendingSpin();
- });
- window.addEventListener('deal-game-state-change',()=>{
-  if(finalWheelReward&&!finalWheelStarted&&typeof g!=='undefined'&&g?.id===finalWheelReward.gameId&&g.finalWheelSpun&&pendingSpin)pendingSpin();
- });
- close.addEventListener('click',()=>{
+ async function startWheel(){
+  if(!pendingSpin||!activeWheelReward||spinButton.disabled||activeWheelReward.uid!==user()?.uid)return;
+  spinButton.disabled=true;wheelStatus.textContent='🎡 Starte das Glücksrad für alle …';
+  try{
+   const token=await user().getIdToken();
+   const response=await fetch(api('/christmas-wheel-spin'),{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({kind:activeWheelKind,rewardId:activeWheelReward.id})});
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw Error(data.error||'SPIN_FAILED');
+   pendingSpin(data.startedAt);
+  }catch(e){spinButton.disabled=false;wheelStatus.textContent='Verbindung fehlgeschlagen – bitte erneut drehen.'}
+ }
+ spinButton.addEventListener('click',startWheel);
+ function syncWheel(){
+  if(!activeWheelReward||finalWheelStarted||typeof g==='undefined'||g?.id!==activeWheelReward.gameId||!pendingSpin)return;
+  const startedAt=g.christmasWheelSpins?.[activeWheelKind+':'+activeWheelReward.id];
+  if(startedAt)pendingSpin(startedAt);
+ }
+ window.addEventListener('deal-game-state-change',()=>{syncWheel();checkRewards()});
+ function closeReward(){
   if(close.disabled)return;
   const uid=user()?.uid,id=box.dataset.reward;if(uid&&id)mark(uid,id);
-  sequence++;pendingSpin=null;finalWheelReward=null;finalWheelStarted=false;box.hidden=true;box.dataset.reward='';delete box.dataset.stage;
- });
+  sequence++;pendingSpin=null;activeWheelReward=null;activeWheelKind=null;finalWheelStarted=false;box.hidden=true;box.dataset.reward='';delete box.dataset.stage;
+  lastRewardProbeKey='';checkRewards();
+ }
+ close.addEventListener('click',closeReward);
  function rewardMayExist(){
   if(typeof g==='undefined'||!g)return false;
   const oneCent=(g.events||[]).some(e=>e.type==='opened'&&e.amount===1);
@@ -185,13 +192,12 @@
     const data=await response.json();
     const rewards=endpoint.includes('banker')?data.rewards||[]:data.reward?[data.reward]:[];
     const reward=rewards.find(x=>x.gameId===g.id&&!seen(u.uid,x.id));
-    if(reward){openReward(reward,endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent',u.uid);if(endpoint.includes('final')&&reward.spun&&pendingSpin)pendingSpin();break}
+    if(reward){openReward(reward,endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent',u.uid);syncWheel();break}
    }
   }catch(e){console.warn('Weihnachtsbonus wird erneut geprüft',e)}
   finally{checking=false}
  }
  // React to confirmed game-state changes; retain a slow safety poll for reconnects.
- window.addEventListener('deal-game-state-change',checkRewards);
  window.addEventListener('deal-finale-finished',()=>{lastRewardProbeKey='';checkRewards()});
  setInterval(checkRewards,30000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkRewards()});
