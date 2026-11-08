@@ -14,7 +14,7 @@ async function request(type,body){
  const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data;
 }
 const id=()=>crypto.randomUUID();
-let galleryPage=0,previousFinished=false,showAllGallery=false;
+let galleryPage=0,previousFinished=false,showAllGallery=false,impactTimer=null;
 function render(){
  if(!state){root.innerHTML='<p>Dein Online-Spielstand ist noch nicht gestartet.</p><button id="ice-start">❄️ Online-Spiel starten</button>';root.querySelector('#ice-start').onclick=()=>run('start');return}
  const finished=!!state.finished,done=state.completed>=70,number=Math.min(70,state.completed+1);
@@ -41,7 +41,7 @@ function render(){
  root.querySelector('#v44-nextpage').onclick=()=>{galleryPage=Math.min(11,galleryPage+1);render()};
  root.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.preview);if(n===number)return;message(n<=state.completed?'🖼️ Bild '+n+' wurde bereits abgeschlossen. Dein aktuelles Bild bleibt '+number+'.':'🔒 Bild '+n+' wird erst später freigeschaltet.')});
  root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{window.iceHammer=b.dataset.hammer;render()});
- root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{if(busy)return;b.classList.add('cracking');run('strike',{index:Number(b.dataset.tile),hammer:window.iceHammer||'single'});});
+ root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{if(busy||b.disabled)return;const hammer=window.iceHammer||'single';const board=root.querySelector('.v44-board');if(board){const impact=document.createElement('div');impact.className='v44-impact';impact.setAttribute('aria-hidden','true');const a=b.getBoundingClientRect(),p=board.getBoundingClientRect();impact.style.left=(a.left+a.width/2-p.left)+'px';impact.style.top=(a.top+a.height/2-p.top)+'px';impact.innerHTML='<span class="v44-impact-hammer">'+({single:'🔨',double:'⚒️',lucky:'✨'}[hammer]||'🔨')+'</span>'+Array.from({length:9},(_,i)=>'<i style="--a:'+(i*40)+'deg;--d:'+(34+i%3*14)+'px"></i>').join('');board.appendChild(impact);clearTimeout(impactTimer);impactTimer=setTimeout(()=>impact.remove(),750)}b.classList.add('cracking');run('strike',{index:Number(b.dataset.tile),hammer});});
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
  root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker und gewonnene Hammer bleiben erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.'))run('reset')};
  let stored=null;try{stored=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null')}catch{}
