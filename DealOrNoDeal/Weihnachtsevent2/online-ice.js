@@ -40,7 +40,7 @@ async function run(type,extra={}){
   else message('✅ Fortschritt serverseitig gespeichert.');
   render();
  }catch(e){message('⚠️ '+e.message+' – du kannst dieselbe Aktion erneut versuchen.');render()}
- finally{busy=false}
+ finally{busy=false;render()}
 }
 async function load(){
  if(busy)return;busy=true;message('⏳ Online-Spielstand laden …');
