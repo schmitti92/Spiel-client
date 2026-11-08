@@ -20,3 +20,8 @@ test('Deal stream retains HTTP fallback and reward checks are event driven',()=>
  assert.match(html,/setInterval\(checkRewards,30000\)/);
  assert.doesNotMatch(html,/setInterval\(checkRewards,1700\)/);
 });
+
+test('Healthy WebSocket performs a bounded periodic HTTP reconciliation',()=>{
+ assert.match(app,/Date\.now\(\)-lastHttpSafetySync>=60000/);
+ assert.match(app,/if\(!dealSocketHealthy\(\)\|\|Date\.now\(\)-lastHttpSafetySync>=60000\)await poll\(\)/);
+});
