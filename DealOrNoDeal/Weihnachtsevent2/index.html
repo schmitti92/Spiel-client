@@ -24,6 +24,19 @@ iframe{width:100%;border:0;flex:1;min-height:0;background:#081421}
 .event-guide-actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
 .event-guide-actions button{padding:11px 18px;background:linear-gradient(120deg,#bd832c,#f2c568);color:#251504;border:1px solid #ffdf96;border-radius:10px;font-weight:850;cursor:pointer}
 .event-guide-fallback{color:#fff;text-align:center}
+
+/* Online reveal: only local animation, no database reads */
+.ice-board{box-shadow:0 15px 55px #0009,inset 0 0 22px #7ddcff44;isolation:isolate}
+.ice-tiles button{position:relative;text-shadow:0 2px 8px #105479;transition:opacity .42s ease,transform .42s ease,filter .42s ease}
+.ice-tiles button.gone{visibility:visible!important;opacity:0;transform:scale(.7) rotate(12deg);pointer-events:none;filter:blur(8px)}
+.ice-tiles button:not(:disabled):hover{filter:brightness(1.16);box-shadow:inset 0 0 24px #fff9}
+.ice-gift{margin:12px auto;padding:15px;max-width:620px;border:2px solid #e6c178;border-radius:16px;background:linear-gradient(130deg,#20415d,#3c2748);text-align:center;box-shadow:0 8px 35px #0008;animation:ice-gift-enter .55s ease-out}
+.ice-gift-icon{font-size:48px;animation:ice-gift-pop .7s ease-out}
+.ice-gift strong{display:block;font-size:20px;color:#ffe8a5}.ice-gift p{font-weight:700}
+.ice-help{font-size:13px;opacity:.88;text-align:center}
+@keyframes ice-gift-enter{from{opacity:0;transform:translateY(22px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes ice-gift-pop{0%{transform:scale(.4) rotate(-12deg)}65%{transform:scale(1.2) rotate(8deg)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.ice-gift,.ice-gift-icon{animation:none}.ice-tiles button{transition:none}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -71,4 +84,4 @@ iframe{width:100%;border:0;flex:1;min-height:0;background:#081421}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108d"></script></body></html>
+<script src="./online-ice.js?v=20261108e"></script></body></html>
