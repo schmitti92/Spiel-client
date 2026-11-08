@@ -33,6 +33,24 @@
 @keyframes cent-special-title{from{opacity:0;transform:scale(1.5)}to{opacity:1;transform:scale(1)}}
 @keyframes cent-burst{from{transform:scale(.5) rotate(-25deg);opacity:.7}to{transform:scale(2.4) rotate(25deg);opacity:0}}
 @media(prefers-reduced-motion:reduce){#cent-reward .cent-special-overlay,#cent-reward .cent-special-overlay *{animation:none!important}}
+/* Full-art collectible cards: imagery fills the entire portrait, labels overlay the bottom. */
+#cent-reward .cent-reward-cards{grid-template-columns:repeat(auto-fit,minmax(clamp(100px,12vw,155px),1fr));gap:clamp(7px,1.1vw,15px)}
+#cent-reward .reward-card{aspect-ratio:3/4;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;padding:0!important;isolation:isolate;border-radius:14px;overflow:hidden;background:#122039}
+#cent-reward .reward-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:0;z-index:-1;filter:saturate(1.12) contrast(1.07)}
+#cent-reward .reward-card::after{content:'';position:absolute;inset:45% 0 0;z-index:-1;background:linear-gradient(transparent,#030713d9 60%,#030713f5);pointer-events:none}
+#cent-reward .reward-card strong{padding:4px 6px 0;font-size:clamp(10px,1.15vw,15px);line-height:1.16;color:#fff;text-shadow:0 2px 6px #000}
+#cent-reward .reward-card small{padding:0 6px 7px;font-size:clamp(9px,.8vw,11px);font-weight:900;text-shadow:0 2px 6px #000}
+#cent-reward .reward-card[data-rarity="epic"]{border:3px solid #ca85ff;box-shadow:0 0 20px #b45affaa,0 9px 25px #000a}
+#cent-reward .reward-card[data-rarity="epic"]::after{background:linear-gradient(transparent,#35114bcc 55%,#1d073bf5)}
+#cent-reward .reward-card[data-rarity="legendary"]{border:4px solid #ffe294;box-shadow:0 0 30px #ffca47cc,0 0 55px #ffb52a66,0 9px 25px #000a}
+#cent-reward .reward-card[data-rarity="legendary"]::after{background:linear-gradient(transparent,#6b4007c9 55%,#271504f5)}
+#cent-reward .reward-card[data-rarity="legendary"]::before{content:'✦';font-size:50px}
+#cent-reward .cent-special-frame{height:min(61vh,510px);max-height:61vh;width:min(47vh,365px);max-width:83vw;aspect-ratio:3/4;position:relative;overflow:hidden;display:block;padding:0;border-width:6px}
+#cent-reward .cent-special-frame img{display:block;width:100%;height:100%;max-height:none;max-width:none;object-fit:cover;border-radius:9px}
+#cent-reward .cent-special-frame::after{content:'✦  ✧  ✦';position:absolute;inset:auto 0 0;padding:14px 0;text-align:center;color:#f4d4ff;font-size:23px;background:linear-gradient(transparent,#200b39dd)}
+#cent-reward .cent-special-overlay[data-rarity="legendary"] .cent-special-frame::after{color:#fff3b0;background:linear-gradient(transparent,#5a3509dd)}
+#cent-reward .cent-special-overlay[data-rarity="legendary"] .cent-special-frame{animation:cent-special-card .9s cubic-bezier(.16,1.2,.35,1) both,christmas-legend-glow 1.5s ease-in-out 1s infinite alternate}
+@media(max-width:600px){#cent-reward .cent-reward-cards{grid-template-columns:repeat(auto-fit,minmax(94px,1fr))}#cent-reward .cent-special-frame{height:min(52vh,390px);width:min(39vh,290px)}}
 /* Cinematic illustrated Christmas card reveal: each server-selected card keeps its exact identity. */
 #cent-reward .cent-reward-card{width:min(1040px,98vw);padding:clamp(10px,1.5vw,18px)}
 #cent-reward .cent-reveal-stage{width:100%;perspective:1100px}
@@ -196,7 +214,7 @@
    drawn.forEach((card,i)=>{
     const item=document.createElement('div');item.className='reward-card';item.dataset.rarity=card.rarity||'common';
     item.style.setProperty('--delay',(reduced?0:i*480)+'ms');
-    const idMatch=/^christmas-(\\d{2})$/.exec(String(card.id||''));
+    const idMatch=/^christmas-(\d{2})$/.exec(String(card.id||''));
     const artIndex=idMatch?Number(idMatch[1])-1:-1;
     if(artIndex>=0&&artIndex<christmasArt.length){
      const picture=document.createElement('img');picture.src='assets/weihnachts_event/'+christmasArt[artIndex];picture.alt='Gezogene Weihnachtskarte: '+(card.name||'');picture.loading='eager';
