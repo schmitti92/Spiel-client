@@ -111,6 +111,7 @@ async function run(type,extra={}){
   const data=await request('POST',{type,requestId,...extra});
   const wasFinished=!!state?.finished,oldCompleted=Number(state?.completed||0);
   state=data.state;pending=null;
+  if(type==='start'&&!state.goldenHammerGift2026){try{const bonus=await request('POST',{type:'welcome',requestId:id()});state=bonus.state;message('🎁 Willkommensgeschenk: 3 goldene Glückshammer!')}catch{}}
   if(type==='strike'&&state.finished&&!wasFinished){
    const gift=data.result?.gift;
    const title=gift?(gift.kind==='money'?'💰 Geldgewinn':gift.kind==='joker'?'🔐 Kofferblick-Joker':'🔨 Gratis-Hammer'):'⭐ Bild abgeschlossen';
@@ -127,7 +128,9 @@ async function run(type,extra={}){
 }
 async function load(){
  if(busy)return;busy=true;message('⏳ Online-Spielstand laden …');
- try{const data=await request('GET');state=data.state;recoveredGift();message('✅ Online-Modus verbunden.');render()}
+ try{const data=await request('GET');state=data.state;
+  if(state&&!state.goldenHammerGift2026){const bonus=await request('POST',{type:'welcome',requestId:id()});state=bonus.state;if(bonus.result?.granted)message('🎁 Einmaliges Geschenk: 3 goldene Glückshammer wurden gutgeschrieben!');else message('✅ Online-Modus verbunden.');}
+  else message('✅ Online-Modus verbunden.');recoveredGift();render()}
  catch(e){message('⚠️ '+e.message);root.innerHTML='<button id="ice-retry">Erneut verbinden</button>';root.querySelector('#ice-retry').onclick=load}
  finally{busy=false}
 }
