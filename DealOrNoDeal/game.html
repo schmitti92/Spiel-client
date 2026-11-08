@@ -55,7 +55,7 @@
  const box=document.getElementById('cent-reward'),name=document.getElementById('cent-reward-name'),icon=document.getElementById('cent-reward-icon'),cards=document.getElementById('cent-reward-cards'),close=document.getElementById('cent-reward-close');
  const title=document.getElementById('cent-reward-title'),subtitle=document.getElementById('cent-reward-subtitle'),credit=document.getElementById('cent-reward-credit');
  const seenPrefix='deal-christmas-reward-seen:v2:',reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- let checking=false,sequence=0;
+ let checking=false,sequence=0,lastRewardProbeKey='',lastRewardProbeAt=0;
  const user=()=>window.SpielOnline?.state?.()?.user;
  const room=()=>new URLSearchParams(location.search).get('room')||'';
  const seen=(uid,id)=>{try{return localStorage.getItem(seenPrefix+uid+':'+id)==='yes'}catch{return false}};
@@ -117,7 +117,13 @@
  }
  async function checkRewards(){
   if(checking||!box.hidden||typeof g==='undefined'||!g?.id||!room()||!rewardMayExist())return;
-  const u=user();if(!u?.getIdToken)return;checking=true;
+  const u=user();if(!u?.getIdToken)return;
+  // A new reward event is checked immediately; unchanged rewards retry at most
+  // every 30 seconds, rather than reading Firestore on every case reveal.
+  const rewardKey=g.id+':'+(g.events||[]).filter(e=>e.type==='opened'&&e.amount===1).map(e=>e.eventId).join(',')+':'+(g.history||[]).filter(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)).map(h=>h.round+':'+(h.decisions||[]).filter(d=>d.deal===true).map(d=>d.id).join(',')).join(';');
+  const now=Date.now();
+  if(rewardKey===lastRewardProbeKey&&now-lastRewardProbeAt<30000)return;
+  lastRewardProbeKey=rewardKey;lastRewardProbeAt=now;checking=true;
   try{
    const token=await u.getIdToken(),headers={Authorization:'Bearer '+token};
    const endpoints=[];
