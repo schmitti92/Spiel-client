@@ -19,7 +19,7 @@
   // Never cover the pack animation. If a tab was reloaded, the server timestamp
   // still lets us recover the hammer ceremony without sessionStorage.
   if(Date.now()-started<13000)return;
-  const packOverlay=document.getElementById('christmas-wheel-overlay');
+  const packOverlay=document.getElementById('cent-reward');
   if(packOverlay&&!packOverlay.hidden)return;
   if(shown===game.id||sessionStorage.getItem('ice-hammer-wheel-seen:'+game.id)==='yes')return;
   shown=game.id;
