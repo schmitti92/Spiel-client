@@ -68,9 +68,5 @@ async function load(){
 }
 window.iceHammer='single';
 document.getElementById('ice-reload').onclick=load;
-document.getElementById('ice-online-tab').onclick=()=>{document.getElementById('ice-offline').hidden=true;document.getElementById('ice-online-panel').hidden=false;load()};
-document.getElementById('ice-offline-tab').onclick=()=>{document.getElementById('ice-offline').hidden=false;document.getElementById('ice-online-panel').hidden=true};
-document.getElementById('ice-offline').hidden=true;
-document.getElementById('ice-online-panel').hidden=false;
 load();
 })();
