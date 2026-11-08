@@ -109,8 +109,14 @@
   const uid=user()?.uid,id=box.dataset.reward;if(uid&&id)mark(uid,id);
   sequence++;box.hidden=true;box.dataset.reward='';delete box.dataset.stage;
  });
+ function rewardMayExist(){
+  if(typeof g==='undefined'||!g)return false;
+  const oneCent=(g.events||[]).some(e=>e.type==='opened'&&e.amount===1);
+  const banker=(g.history||[]).some(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true));
+  return oneCent||banker;
+ }
  async function checkRewards(){
-  if(checking||!box.hidden||typeof g==='undefined'||!g?.id||!room())return;
+  if(checking||!box.hidden||typeof g==='undefined'||!g?.id||!room()||!rewardMayExist())return;
   const u=user();if(!u?.getIdToken)return;checking=true;
   try{
    const token=await u.getIdToken(),headers={Authorization:'Bearer '+token};
