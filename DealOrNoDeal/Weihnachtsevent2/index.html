@@ -281,6 +281,12 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 .v44-prize-wheel-face.v44-wheel-settled{animation:none;transform:rotate(var(--v44-wheel-end))}
 .v44-prize-wheel-face.v44-wheel-spinning{animation:v44-prize-spin 8.5s cubic-bezier(.13,.73,.2,1) both}
 @media(prefers-reduced-motion:reduce){.v44-prize-wheel-face.v44-wheel-spinning{animation:none;transform:rotate(var(--v44-wheel-end))}}
+
+.v44-money-meter{height:17px;overflow:hidden;border:2px solid #f9e1a4;border-radius:99px;background:#251b1d;margin:12px auto 3px;max-width:440px;box-shadow:inset 0 1px 6px #000a}
+.v44-money-meter-fill{height:100%;width:var(--v44-money-percent);background:linear-gradient(90deg,#c38b20,#ffe48d,#f4b942);border-radius:99px;animation:v44-money-fill 2.2s ease-out both}
+.v44-money-scale{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#ffe8b3;max-width:440px;margin:auto}
+@keyframes v44-money-fill{from{width:0}to{width:var(--v44-money-percent)}}
+@media(prefers-reduced-motion:reduce){.v44-money-meter-fill{animation:none}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -343,4 +349,4 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-reload-header-fix"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-money-meter"></script></body></html>
