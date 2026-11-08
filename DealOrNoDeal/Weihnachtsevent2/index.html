@@ -153,6 +153,20 @@ nav a:focus-visible{outline:2px solid #fff}
 .v44-panel:before{content:'❄ ❄ ❄ ❄ ❄';display:block;position:absolute;top:-11px;left:8px;right:8px;text-align:center;color:#d6f7ff;letter-spacing:8px;pointer-events:none}
 .v44-panel{position:relative}
 @media(min-width:900px) and (max-height:1000px){.v44-hammer-art{max-height:50px}.v44-hammer{grid-template-columns:minmax(42px,32%) 1fr}}
+
+/* Original artwork uploaded from the V44 offline build */
+.v44-app{position:relative}
+.v44-head{position:relative;isolation:isolate;border:2px solid #e5b45b;border-radius:14px;padding:7px 15px;background:linear-gradient(90deg,#4c0c17d9,#872025b8,#4c0c17d9),url('./Weihnachtsbilder/startmotiv.webp') center/cover;box-shadow:inset 0 0 15px #19050a,0 3px 15px #0009}
+.v44-head:before,.v44-head:after{content:'';position:absolute;top:0;bottom:0;width:min(18%,160px);background:url('./Weihnachtsbilder/weihnachtsdekoration.png') center/contain no-repeat;pointer-events:none;z-index:-1;opacity:.78}
+.v44-head:before{left:0}
+.v44-head:after{right:0;transform:scaleX(-1)}
+.v44-heading h1,.v44-heading p,.v44-plaque{filter:drop-shadow(0 2px 2px #000)}
+.v44-hammer-art{max-height:72px;width:100%;object-fit:contain}
+.v44-hammer[data-hammer="single"]{background:linear-gradient(130deg,#14334e,#10233d 65%,#26496b)}
+.v44-hammer[data-hammer="double"]{background:linear-gradient(130deg,#40205a,#231632 65%,#4a2c64)}
+.v44-hammer[data-hammer="lucky"]{background:linear-gradient(130deg,#67421a,#352016 65%,#71511e)}
+.v44-hammer.selected{outline:2px solid #ffe7a0;outline-offset:1px}
+@media (min-width:900px) and (max-height:1000px){.v44-head{padding:3px 9px}.v44-hammer-art{max-height:54px}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -215,4 +229,4 @@ nav a:focus-visible{outline:2px solid #fff}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-original-assets"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-uploaded-art"></script></body></html>
