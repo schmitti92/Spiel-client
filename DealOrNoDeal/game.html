@@ -15,6 +15,24 @@
 #cent-reward .reward-card.rarity-featured[data-rarity="epic"]{box-shadow:0 0 45px #c576ff,0 0 80px #8c4dff!important}
 @keyframes rarity-featured-pop{to{transform:scale(1.16)!important;filter:brightness(1.3)}}
 @media(prefers-reduced-motion:reduce){#cent-reward .reward-card.rarity-featured{animation:none!important}}
+#cent-reward .cent-reveal-stage{position:relative}
+#cent-reward .cent-special-overlay[hidden]{display:none!important}
+#cent-reward .cent-special-overlay{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:clamp(6px,1.5vh,14px);padding:12px;background:radial-gradient(ellipse at center,#482361f5,#0a0615fa 75%);overflow:hidden;animation:cent-special-in .3s ease-out}
+#cent-reward .cent-special-overlay[data-rarity="legendary"]{background:radial-gradient(ellipse at center,#8b621bee,#180d13fc 74%)}
+#cent-reward .cent-special-burst{position:absolute;top:12%;font-size:clamp(60px,14vw,190px);color:#f7caff;opacity:.35;pointer-events:none;animation:cent-burst 2.5s ease-out infinite}
+#cent-reward .cent-special-overlay[data-rarity="legendary"] .cent-special-burst{color:#ffe98b}
+#cent-reward .cent-special-tier{font-size:clamp(22px,5vw,56px);font-weight:1000;color:#f3c6ff;text-shadow:0 0 25px #bb51ff,0 0 60px #9d45ff;z-index:1;text-align:center;letter-spacing:.04em;animation:cent-special-title .6s both}
+#cent-reward .cent-special-overlay[data-rarity="legendary"] .cent-special-tier{color:#fff2b1;text-shadow:0 0 25px #ffc130,0 0 65px #ffbd27}
+#cent-reward .cent-special-frame{z-index:1;max-height:58vh;max-width:80vw;aspect-ratio:3/4;border:5px solid #cb9aff;border-radius:18px;padding:6px;background:linear-gradient(135deg,#7b3bc2,#1a1239);box-shadow:0 0 40px #b44cff,0 0 100px #a149ff70;animation:cent-special-card .9s cubic-bezier(.16,1.2,.35,1) both}
+#cent-reward .cent-special-overlay[data-rarity="legendary"] .cent-special-frame{border-color:#ffe395;background:linear-gradient(135deg,#fff0b4,#9b5e09);box-shadow:0 0 55px #ffcd40,0 0 130px #ffc22b99}
+#cent-reward .cent-special-frame img{height:100%;max-height:54vh;max-width:100%;object-fit:contain;border-radius:10px}
+#cent-reward .cent-special-name{z-index:1;font-size:clamp(18px,3vw,35px);font-weight:900;color:white;text-shadow:0 2px 15px #000;text-align:center}
+#cent-reward .cent-special-owner{z-index:1;color:#ffeabf;font-size:clamp(12px,1.6vw,18px)}
+@keyframes cent-special-in{from{opacity:0}to{opacity:1}}
+@keyframes cent-special-card{from{opacity:0;transform:scale(.2) rotateY(100deg) translateY(80px)}to{opacity:1;transform:scale(1) rotateY(0) translateY(0)}}
+@keyframes cent-special-title{from{opacity:0;transform:scale(1.5)}to{opacity:1;transform:scale(1)}}
+@keyframes cent-burst{from{transform:scale(.5) rotate(-25deg);opacity:.7}to{transform:scale(2.4) rotate(25deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){#cent-reward .cent-special-overlay,#cent-reward .cent-special-overlay *{animation:none!important}}
 /* Cinematic illustrated Christmas card reveal: each server-selected card keeps its exact identity. */
 #cent-reward .cent-reward-card{width:min(1040px,98vw);padding:clamp(10px,1.5vw,18px)}
 #cent-reward .cent-reveal-stage{width:100%;perspective:1100px}
@@ -114,7 +132,7 @@
 #cent-reward .cent-wheel-pointer{z-index:5;top:-21px;filter:drop-shadow(0 3px 5px #251309)}
 </style>
 <div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das Weihnachts-Glücksrad entscheidet ✨</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel" role="img" aria-label="Weihnachts-Glücksrad mit vier Normal-, fünf Gold- und einem Premium-Feld"></div></div><div class="cent-pack-legend"><span>🎁 <strong>Normal</strong><small>40 %</small></span><span>🥇 <strong>Gold</strong><small>50 %</small></span><span>💎 <strong>Premium</strong><small>10 %</small></span></div><button id="cent-wheel-spin" class="cent-wheel-spin" type="button">🎡 JETZT DREHEN</button><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Bereit? Drücke auf „Jetzt drehen“!</div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
-<div id="cent-reward-cards" class="cent-reward-cards"></div></div><p id="cent-reward-credit">Die Karten sind bereits sicher gespeichert.</p>
+<div id="cent-reward-cards" class="cent-reward-cards"></div><div id="cent-special-overlay" class="cent-special-overlay" hidden><div class="cent-special-burst">✦ ✧ ✦</div><div id="cent-special-tier" class="cent-special-tier"></div><div class="cent-special-frame"><img id="cent-special-art" alt="Besondere gezogene Weihnachtskarte"></div><div id="cent-special-name" class="cent-special-name"></div><div id="cent-special-owner" class="cent-special-owner"></div></div></div><p id="cent-reward-credit">Die Karten sind bereits sicher gespeichert.</p>
 <button id="cent-reward-close" type="button">🎁 Weiter zum Spiel</button></div></div>
 <script>
 (()=>{'use strict';
@@ -140,7 +158,7 @@
   title.textContent='🎄 '+owner+' gewinnt ein Weihnachtspaket!';
   subtitle.textContent=(isFinal?'🏆 Siegerbonus der Runde':kind==='banker'?'Banker-Deal angenommen':'1-Cent-Koffer geöffnet')+' · Alle Spieler schauen live zu';
   credit.textContent=reward.uid===uid?'Deine Karten wurden deinem Weihnachtsalbum gutgeschrieben.':'Die Karten wurden dem Weihnachtsalbum von '+owner+' gutgeschrieben.';
-  name.textContent='';icon.textContent='🎁';cards.replaceChildren();
+  name.textContent='';icon.textContent='🎁';cards.replaceChildren();document.getElementById('cent-special-overlay').hidden=true;
   wheelStage.hidden=false;revealStage.hidden=true;spinButton.hidden=false;spinButton.disabled=false;wheelStatus.textContent='🎡 Bereit? Drücke auf „Jetzt drehen“!';
   if(reward.uid!==uid){spinButton.hidden=true;wheelStatus.textContent='🎡 '+owner+' darf drehen. Alle schauen gemeinsam zu …'}
   // Winner's missing click must not permanently block the whole room.
@@ -190,22 +208,35 @@
     item.append(label,rarity);cards.append(item);
    });
    const special=drawn.filter(c=>c.rarity==='legendary'||c.rarity==='epic');
-   const extraTime=special.length*2200;
+   const overlay=document.getElementById('cent-special-overlay');
+   const specialArt=document.getElementById('cent-special-art');
+   const specialTier=document.getElementById('cent-special-tier');
+   const specialName=document.getElementById('cent-special-name');
+   const specialOwner=document.getElementById('cent-special-owner');
+   overlay.hidden=true;
+   // Each special card receives its own uninterrupted, cinematic reveal.
+   const firstSpecialAt=reduced?0:drawn.length*480+600;
+   const specialInterval=reduced?1500:3500;
    special.forEach((card,i)=>{
+    const startAt=firstSpecialAt+i*specialInterval;
     setTimeout(()=>{
      if(sequence!==current||box.hidden)return;
      const match=/^christmas-(\d{2})$/.exec(String(card.id||''));
-     const index=match?Number(match[1])-1:-1;
-     const item=[...cards.children].find(el=>el.querySelector('strong')?.textContent===card.name&&el.dataset.rarity===card.rarity);
-     if(!item)return;
+     const artIndex=match?Number(match[1])-1:-1;
+     const artFile=artIndex>=0?christmasArt[artIndex]:null;
      const legendary=card.rarity==='legendary';
-     item.classList.add('rarity-featured');
-     name.textContent=(legendary?'🌟 LEGENDÄRE KARTE! ':'💜 EPISCHE KARTE! ')+(card.name||'');
+     overlay.dataset.rarity=legendary?'legendary':'epic';
+     specialTier.textContent=legendary?'🌟 LEGENDÄRE KARTE! 🌟':'💜 EPISCHE KARTE! 💜';
+     specialName.textContent=card.name||'Weihnachtskarte';
+     specialOwner.textContent='Gezogen von '+owner;
+     specialArt.hidden=!artFile;
+     if(artFile)specialArt.src='assets/weihnachts_event/'+artFile;
+     overlay.hidden=false;
      box.dataset.rarityMoment=legendary?'legendary':'epic';
-     setTimeout(()=>{if(sequence===current){item.classList.remove('rarity-featured');delete box.dataset.rarityMoment;name.textContent=reward.packName||packNames[pack]||'Weihnachtspaket'}},1900);
-    },(reduced?0:drawn.length*480)+i*2200);
+     setTimeout(()=>{if(sequence!==current)return;overlay.hidden=true;delete box.dataset.rarityMoment},reduced?1100:3000);
+    },startAt);
    });
-   const revealDuration=reduced?1000:drawn.length*480+extraTime+1600;
+   const revealDuration=firstSpecialAt+special.length*specialInterval+(reduced?800:1000);
    setTimeout(()=>{if(sequence===current&&!box.hidden){
     close.disabled=false;close.textContent='🎉 Alle Karten ansehen · Weiter';
     setTimeout(()=>{if(sequence===current&&!box.hidden)closeReward()},Math.max(5000,revealDuration+2500));
@@ -275,6 +306,7 @@
   const uid=user()?.uid,id=box.dataset.reward;if(uid&&id)mark(uid,id);
   const completedFinal=activeWheelKind==='final'&&finalWheelStarted&&activeWheelReward?.gameId;
   if(completedFinal)sessionStorage.setItem('final-wheel-complete:'+completedFinal,'yes');
+  document.getElementById('cent-special-overlay').hidden=true;
   sequence++;pendingSpin=null;activeWheelReward=null;activeWheelKind=null;finalWheelStarted=false;box.hidden=true;box.dataset.reward='';delete box.dataset.stage;
   if(completedFinal)window.dispatchEvent(new Event('deal-final-wheel-complete'));
   lastRewardProbeKey='';checkRewards();
