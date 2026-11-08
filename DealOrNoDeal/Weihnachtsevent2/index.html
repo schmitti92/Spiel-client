@@ -287,7 +287,21 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 .v44-money-scale{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#ffe8b3;max-width:440px;margin:auto}
 @keyframes v44-money-fill{from{width:0}to{width:var(--v44-money-percent)}}
 @media(prefers-reduced-motion:reduce){.v44-money-meter-fill{animation:none}}
-#ice-online-status[hidden]{display:none!important;min-height:0!important;margin:0!important}\n</style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
+#ice-online-status[hidden]{display:none!important;min-height:0!important;margin:0!important}\n
+/* Geldgewinn-Anzeige originalgetreu aus Offline-V44 */
+.v27-money-stage{width:min(490px,78vw);padding:10px 13px 14px;border:2px solid #e9c46e;border-radius:15px;background:linear-gradient(160deg,#43110d,#180c12);box-shadow:inset 0 0 25px #c27a2938,0 0 26px #e8a83255;position:relative;overflow:hidden;margin:auto}
+.v27-money-label{font-size:12px;letter-spacing:2px;color:#f5dca0;font-weight:800}
+.v27-money-value{font:900 clamp(26px,4.6vw,47px) Georgia,serif;color:#fff4c1;text-shadow:0 0 13px #ffb936;margin:6px 0}
+.v27-money-track{height:27px;border-radius:20px;border:2px solid #d3a34a;background:linear-gradient(#2b1520,#170e16);overflow:hidden;box-shadow:inset 0 2px 8px #000}
+.v27-money-fill{height:100%;width:0%;background:linear-gradient(90deg,#9a4d05,#f7b52c 35%,#fff6a5 65%,#ffb121);box-shadow:0 0 20px #ffd66a;position:relative}
+.v27-money-fill:after{content:'';position:absolute;right:0;top:0;bottom:0;width:12px;background:#fff9c5;filter:blur(5px)}
+.v27-money-scale{display:flex;justify-content:space-between;color:#e5c58e;font-size:11px;margin-top:5px}
+.v27-money-final{color:#fff2a5;font-weight:900;font-size:14px;min-height:20px}
+.v27-money-stage.v27-finished{animation:v27-celebrate .6s ease-out 1;box-shadow:0 0 28px #ffdb79,0 0 65px #ffba394d,inset 0 0 20px #ffc96b33}
+@keyframes v27-celebrate{50%{box-shadow:0 0 42px #ffe27b,inset 0 0 30px #f8be4c88;transform:scale(1.025)}}
+@media(max-height:680px){.v27-money-stage{padding:6px 10px}.v27-money-track{height:20px}.v27-money-value{margin:2px 0}}
+@media(prefers-reduced-motion:reduce){.v27-money-stage.v27-finished{animation:none}}
+</style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
 <a href="../weihnachten.html?view=packs">🎁 Pakete</a>
@@ -349,4 +363,4 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-affordability"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-original-money-stage"></script></body></html>
