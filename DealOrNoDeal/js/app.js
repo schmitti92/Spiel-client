@@ -16,6 +16,7 @@ function pollDelay(){if(!g)return 5000;if(g.phase==='final'||g.phase==='done')re
 // The server remains authoritative. WebSocket is an optional push channel;
 // HTTP remains available during reconnects and for older backend deployments.
 let dealSocket=null,dealSocketReady=false,dealSocketRetry=0,dealSocketLastMessage=0,dealSocketConnecting=false,lastHttpSafetySync=0;
+let lastSocketHeartbeat=0;
 function applyDealState(next){
  if(!next)return;
  if(!g||next.id!==g.id||Number(next.revision)>Number(g.revision)){
@@ -46,12 +47,12 @@ function dealSocketHealthy(){return dealSocketReady&&dealSocket?.readyState===We
 async function pollLoop(){
  if(!document.hidden){
   if(!dealSocket||dealSocket.readyState===WebSocket.CLOSED)connectDealSocket();
-  if(dealSocketHealthy()){try{dealSocket.send(JSON.stringify({type:'ping',revision:Number.isSafeInteger(Number(g?.revision))&&g?Number(g.revision):undefined}))}catch{}}
+  if(dealSocketHealthy()&&Date.now()-lastSocketHeartbeat>=12000){try{dealSocket.send(JSON.stringify({type:'ping',revision:Number.isSafeInteger(Number(g?.revision))&&g?Number(g.revision):undefined}));lastSocketHeartbeat=Date.now()}catch{}}
   if(dealSocket?.readyState===WebSocket.OPEN&&!dealSocketHealthy()&&dealSocketLastMessage&&Date.now()-dealSocketLastMessage>45000)dealSocket.close();
   // Safety sync catches missed broadcasts if clients reach different Render instances.
   if(!dealSocketHealthy()||Date.now()-lastHttpSafetySync>=60000)await poll();
  }
- const delay=dealSocketHealthy()?4000:Math.max(pollDelay(),Math.min(15000,1000*2**dealSocketRetry));
+ const delay=dealSocketHealthy()?8000:Math.max(pollDelay(),Math.min(15000,1000*2**dealSocketRetry));
  setTimeout(pollLoop,delay);
 }
 $('studio-refresh').addEventListener('click',()=>window.location.reload());
