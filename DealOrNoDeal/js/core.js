@@ -1,5 +1,5 @@
 
-'use strict';const $=id=>document.getElementById(id),code=new URLSearchParams(location.search).get('room'),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,''),values=[1,100,500,1000,2500,5000,7500,10000,20000,30000,40000,50000,75000,100000,500000,1000000,2500000,5000000,7500000,10000000,20000000,30000000,40000000,50000000,75000000,100000000],eur=v=>(v/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});let g=null,busy=false,lastReveal=null,revealTimer=null,lastError='';
+'use strict';const $=id=>document.getElementById(id),code=new URLSearchParams(location.search).get('room'),base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,''),values=[1,100,500,1000,2500,5000,7500,10000,20000,30000,40000,50000,75000,100000,500000,1000000,2500000,5000000,7500000,10000000,20000000,30000000,40000000,50000000,75000000,100000000,300000000],eur=v=>(v/100).toLocaleString('de-DE',{style:'currency',currency:'EUR'});let g=null,busy=false,lastReveal=null,revealTimer=null,lastError='';
 $('back').href='lobby.html?room='+encodeURIComponent(code||'');
 function user(){const s=window.SpielOnline?.state?.();return s?.status==='online'?s.user:null}
 function myId(){return user()?.uid||null}
