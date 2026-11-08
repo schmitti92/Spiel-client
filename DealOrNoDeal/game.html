@@ -318,7 +318,8 @@
   }catch(e){console.warn('Glücksrad-Synchronisierung wird wiederholt',e)}
   finally{wheelStatusChecking=false}
  }
- setInterval(checkWheelStart,1500);
+ // Game-state push starts the wheel immediately; HTTP remains a recovery fallback.
+ setInterval(()=>{if(!document.hidden)checkWheelStart()},4000);
  function closeReward(){
   if(close.disabled)return;
   const uid=user()?.uid,id=box.dataset.reward;if(uid&&id)mark(uid,id);
@@ -375,7 +376,7 @@
   return true;
  }
  window.addEventListener('deal-finale-finished',()=>{if(finishTiedFinal())return;lastRewardProbeKey='';checkRewards()});
- setInterval(()=>{if(!document.hidden&&rewardMayExist()&&box.hidden)checkRewards()},5000);
+ setInterval(()=>{if(!document.hidden&&rewardMayExist()&&box.hidden)checkRewards()},10000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkRewards();checkWheelStart();syncWheel()}});
  window.addEventListener('spielonline-change',checkRewards);
 })();
