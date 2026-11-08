@@ -71,7 +71,18 @@
 @media(prefers-reduced-motion:reduce){#cent-reward .cent-wheel-spin{animation:none}}
 </style><div id="cent-reward" class="cent-reward" hidden role="dialog" aria-modal="true" aria-labelledby="cent-reward-title"><div class="cent-reward-card">
 <div>🎅 ✨ 🎄</div><h2 id="cent-reward-title">Weihnachtsbonus!</h2><p id="cent-reward-subtitle">Ein Weihnachtsgeschenk wird geöffnet!</p>
-<div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das Weihnachts-Glücksrad entscheidet ✨</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel"><span class="wheel-label wheel-label-a"><b>🎁</b><small>NORMAL</small><em>40 %</em></span><span class="wheel-label wheel-label-b"><b>🥇</b><small>GOLD</small><em>50 %</em></span><span class="wheel-label wheel-label-c"><b>💎</b><small>PREMIUM</small><em>10 %</em></span></div><div class="cent-wheel-hub">🎄</div></div><div class="cent-pack-legend"><span>🎁 <strong>Normal</strong><small>40 %</small></span><span>🥇 <strong>Gold</strong><small>50 %</small></span><span>💎 <strong>Premium</strong><small>10 %</small></span></div><button id="cent-wheel-spin" class="cent-wheel-spin" type="button">🎡 JETZT DREHEN</button><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Bereit? Drücke auf „Jetzt drehen“!</div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
+<style>
+/* Uploaded 10-segment wheel: the image alone rotates, pointer remains fixed. */
+#cent-reward .cent-wheel{
+ inset:0;border:0;border-radius:50%;
+ background:transparent url("assets/weihnachts_gluecksrad_drehscheibe.png") center / contain no-repeat;
+ box-shadow:none;
+ will-change:transform;
+}
+#cent-reward .cent-wheel-wrap{overflow:visible}
+#cent-reward .cent-wheel-pointer{z-index:5;top:-21px;filter:drop-shadow(0 3px 5px #251309)}
+</style>
+<div id="cent-wheel-stage" class="cent-wheel-stage" hidden><div class="cent-wheel-heading">✨ Das Weihnachts-Glücksrad entscheidet ✨</div><div class="cent-wheel-wrap"><div class="cent-wheel-pointer">▼</div><div id="cent-wheel" class="cent-wheel" role="img" aria-label="Weihnachts-Glücksrad mit vier Normal-, fünf Gold- und einem Premium-Feld"></div></div><div class="cent-pack-legend"><span>🎁 <strong>Normal</strong><small>40 %</small></span><span>🥇 <strong>Gold</strong><small>50 %</small></span><span>💎 <strong>Premium</strong><small>10 %</small></span></div><button id="cent-wheel-spin" class="cent-wheel-spin" type="button">🎡 JETZT DREHEN</button><div id="cent-wheel-status" class="cent-wheel-status" aria-live="polite">Bereit? Drücke auf „Jetzt drehen“!</div></div><div id="cent-reveal-stage" class="cent-reveal-stage" hidden><div class="cent-reward-pack" id="cent-reward-icon">🎁</div><div class="cent-reward-name" id="cent-reward-name">Dein Geschenk wird enthüllt …</div>
 <div id="cent-reward-cards" class="cent-reward-cards"></div></div><p id="cent-reward-credit">Die Karten sind bereits sicher gespeichert.</p>
 <button id="cent-reward-close" type="button">🎁 Weiter zum Spiel</button></div></div>
 <script>
@@ -104,7 +115,9 @@
   if(reward.uid!==uid){spinButton.hidden=true;wheelStatus.textContent='🎡 '+owner+' darf drehen. Alle schauen gemeinsam zu …'}
   wheel.style.transition='none';wheel.style.transform='rotate(0deg)';
   const pack=String(reward.packId||'small').toLowerCase();
-  const targetAngle=pack==='large'?234:pack==='premium'?342:72;
+  // The uploaded artwork has gold at 0°, normal at 36° and premium at 180°.
+  // The fixed pointer is at 12 o'clock; rotate the selected segment underneath it.
+  const targetAngle=pack==='large'?0:pack==='premium'?180:36;
   // Server outcome is authoritative; the wheel is a presentation, not a second random draw.
   const angle=360*7-targetAngle;
   const showCards=()=>{
