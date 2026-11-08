@@ -232,6 +232,17 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 @keyframes v44-reveal-in{from{opacity:0;transform:scale(.45) rotate(-7deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes v44-glow{from{filter:brightness(.8)}to{filter:brightness(1.6)}}
 @media(prefers-reduced-motion:reduce){.v44-celebration-card,.v44-celebration-star,.v44-celebration-sparkles{animation:none}}
+
+/* V44 Christmas present reveal, purely visual and independent of server credit */
+.v44-gift-stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;margin:4px auto 18px}
+.v44-gift-box{font-size:clamp(80px,13vw,125px);line-height:1.2;filter:drop-shadow(0 0 25px #ffd26a);animation:v44-gift-bounce 1.25s ease-in-out infinite}
+.v44-gift-stage strong{font:900 clamp(17px,2.4vw,25px) Georgia,serif;color:#ffe4a0}
+.v44-gift-stage small{font-size:12px;color:#fff4dc}
+#v44-gift-open{position:relative;padding:12px 24px;border:2px solid #fff0ac;border-radius:12px;background:linear-gradient(#ffe9a1,#bc741e);color:#4a1b0b;font:900 18px Georgia,serif;cursor:pointer;box-shadow:0 0 17px #ffca69a8}
+.v44-gift-unwrapped{animation:v44-gift-reveal .7s cubic-bezier(.2,1.3,.3,1) both}
+@keyframes v44-gift-bounce{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-13px) rotate(5deg)}}
+@keyframes v44-gift-reveal{from{opacity:0;transform:scale(.55) rotate(-6deg);filter:brightness(2)}to{opacity:1;transform:scale(1) rotate(0);filter:brightness(1)}}
+@media(prefers-reduced-motion:reduce){.v44-gift-box,.v44-gift-unwrapped{animation:none}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -294,4 +305,4 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-v44-star-reveal"></script></body></html>
+<script src="./online-ice.js?v=20261108-v44-gift-unwrapping"></script></body></html>
