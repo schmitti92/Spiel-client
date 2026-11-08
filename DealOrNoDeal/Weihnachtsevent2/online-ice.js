@@ -36,7 +36,15 @@ function render(){
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
 }
 async function run(type,extra={}){
- if(busy)return;busy=true;message('⏳ Aktion wird gespeichert …');
+ if(busy)return;
+ // A timed-out request may already have committed. Never replace its id with a new action.
+ let unresolved=null;try{unresolved=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null')}catch{}
+ if(unresolved?.uid===user()?.uid&&unresolved.requestId){
+  const same=unresolved.type===type&&JSON.stringify(unresolved.extra||{})===JSON.stringify(extra);
+  if(!same){message('⚠️ Zuerst die ausstehende Aktion mit „Letzte Aktion sicher wiederholen“ abschließen. So werden keine Hammerschläge doppelt berechnet.');render();return}
+  pending={key:unresolved.key,requestId:unresolved.requestId};
+ }
+ busy=true;message('⏳ Aktion wird gespeichert …');
  const key=type==='strike'?'strike:'+String(state?.completed)+':'+extra.index+':'+extra.hammer:type+':'+String(state?.completed);
  let requestId=pending?.key===key?pending.requestId:id();
  pending={key,requestId};
