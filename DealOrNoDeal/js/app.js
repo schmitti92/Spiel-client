@@ -12,6 +12,42 @@ $('actions').replaceChildren();if(g.phase==='reveal'&&g.pending?.actor===myId()&
 let polling=false,lastStateChange=Date.now();
 async function poll(){if(!code||!user()||document.hidden||polling)return;polling=true;try{let data=await request('GET','');if(!g||data.game?.revision!==g.revision){lastStateChange=Date.now();g=data.game;render()}}catch(e){$('status').textContent='Verbindung: '+e.message}finally{polling=false}}
 function pollDelay(){if(!g)return 5000;if(g.phase==='final'||g.phase==='done')return 30000;if(g.phase==='select'||g.phase==='reveal'||g.phase==='decision')return 2500;if(Date.now()-lastStateChange>60000)return 8000;return 4000}
-async function pollLoop(){if(!document.hidden)await poll();setTimeout(pollLoop,pollDelay())}
+// The server remains authoritative. WebSocket is an optional push channel;
+// HTTP remains available during reconnects and for older backend deployments.
+let dealSocket=null,dealSocketReady=false,dealSocketRetry=0,dealSocketLastMessage=0,dealSocketTimer=null;
+function applyDealState(next){
+ if(!next)return;
+ if(!g||next.id!==g.id||Number(next.revision)>Number(g.revision)){
+  lastStateChange=Date.now();g=next;render();
+ }
+}
+async function connectDealSocket(){
+ if(!code||!user()||dealSocket?.readyState===WebSocket.OPEN||dealSocket?.readyState===WebSocket.CONNECTING)return;
+ try{
+  const token=await user().getIdToken();
+  if(!user())return;
+  const ws=new WebSocket(base.replace(/^http/,'ws')+'/deal-or-no-deal');
+  dealSocket=ws;dealSocketReady=false;
+  ws.onopen=()=>{dealSocketRetry=0;ws.send(JSON.stringify({type:'subscribe',code,token}))};
+  ws.onmessage=event=>{
+   let msg;try{msg=JSON.parse(event.data)}catch{return}
+   if(msg.type==='deal-subscribed'){dealSocketReady=true;dealSocketLastMessage=Date.now()}
+   if(msg.type==='deal-state'&&dealSocketReady){dealSocketLastMessage=Date.now();applyDealState(msg.game)}
+   if(msg.type==='deal-error'){dealSocketReady=false;console.warn('Deal stream:',msg.error)}
+  };
+  ws.onclose=()=>{if(dealSocket===ws){dealSocket=null;dealSocketReady=false;dealSocketRetry=Math.min(dealSocketRetry+1,6)}};
+  ws.onerror=()=>{dealSocketReady=false};
+ }catch(e){console.warn('Deal stream reconnect:',e)}
+}
+function dealSocketHealthy(){return dealSocketReady&&dealSocket?.readyState===WebSocket.OPEN&&Date.now()-dealSocketLastMessage<45000}
+async function pollLoop(){
+ if(!document.hidden){
+  if(!dealSocket||dealSocket.readyState===WebSocket.CLOSED)connectDealSocket();
+  if(dealSocketHealthy()){try{dealSocket.send(JSON.stringify({type:'ping'}))}catch{}}
+  if(!dealSocketHealthy())await poll();
+ }
+ const delay=dealSocketHealthy()?15000:Math.max(pollDelay(),Math.min(15000,1000*2**dealSocketRetry));
+ setTimeout(pollLoop,delay);
+}
 $('studio-refresh').addEventListener('click',()=>window.location.reload());
 $('studio-fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}else{$('status').textContent='Vollbild wird von diesem Browser nicht unterstützt.'}}catch(e){$('status').textContent='Vollbild nicht verfügbar: '+e.message}});document.addEventListener('fullscreenchange',()=>{document.body.classList.toggle('is-fullscreen',!!document.fullscreenElement);$('studio-fullscreen').textContent=document.fullscreenElement?'⛶ Vollbild beenden':'⛶ Vollbild'});render();window.addEventListener('spielonline-change',poll);document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});window.addEventListener('pageshow',e=>{if(e.persisted)poll()});pollLoop();
