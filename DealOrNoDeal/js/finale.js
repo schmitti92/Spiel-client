@@ -34,9 +34,15 @@ $('finale-replay').addEventListener('click',()=>restartFromFinale());
 $('final-replay').addEventListener('click',()=>restartFromFinale());
 $('final-recover').addEventListener('click',()=>{if(confirm('Das Sieger-Glücksrad wirklich überspringen und eine neue Partie starten? Bereits vergebene Karten bleiben erhalten.'))restartFromFinale(true)});
 $('final-lobby').href='lobby.html?room='+encodeURIComponent(code||'');
+let finaleRecoveryTimer=null;
 function startFinaleCinema(){
  // The final accepted banker offer must be announced for three seconds first.
- if(!$('vote-reveal').hidden||Date.now()<finalDealRevealUntil)return;
+ if(!$('vote-reveal').hidden||Date.now()<finalDealRevealUntil){
+  // A lost banker close timer must never block the final reveal indefinitely.
+  const wait=Math.max(100,Math.min(3500,finalDealRevealUntil-Date.now()+100));
+  if(!finaleRecoveryTimer)finaleRecoveryTimer=setTimeout(()=>{finaleRecoveryTimer=null;if(g?.phase==='final'){if(Date.now()>=finalDealRevealUntil&&!$('vote-reveal').hidden)closeVoteReveal();startFinaleCinema()}},wait);
+  return;
+ }
  if(!g||g.phase!=='final'||!Array.isArray(g.finalValues)||!g.finalValues.length){if(!$('finale-cinema').hidden){cancelFinaleTimers();$('finale-cinema').hidden=true}return}
  const key=String(g.id)+':finale';
  // A stale in-memory key must not suppress a finale whose dialog is hidden.
