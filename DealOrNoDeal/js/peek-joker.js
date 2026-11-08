@@ -31,7 +31,7 @@
    const b=document.createElement('button');b.type='button';b.textContent=String(i+1);b.classList.toggle('own',own===i);
    b.title='Koffer '+(i+1)+(own===i?' (dein Koffer)':'');
    b.disabled=loading||balance<1||g.opened.includes(i)||g.pending?.case===i||selected!==null&&selected!==i;
-   b.onclick=()=>{if(selected!==null&&selected!==i)return;selected=i;receipt=crypto.randomUUID();el('peek-confirm').hidden=false;el('peek-confirm').textContent='1 Joker für Koffer '+(i+1)+' einsetzen';el('peek-error').textContent='';draw()};
+   b.onclick=()=>{if(selected===i)return;if(selected!==null)return;selected=i;receipt=crypto.randomUUID();el('peek-confirm').hidden=false;el('peek-confirm').textContent='1 Joker für Koffer '+(i+1)+' einsetzen';el('peek-error').textContent='';draw()};
    root.append(b);
   }
   el('peek-confirm').disabled=loading||selected===null||(balance<1&&!recoveringPending);
