@@ -211,7 +211,7 @@
   // every 30 seconds, rather than reading Firestore on every case reveal.
   const rewardKey=g.id+':'+(g.phase==='final'?'final:'+!!g.finalWheelSpun:'')+':'+(g.events||[]).filter(e=>e.type==='opened'&&e.amount===1).map(e=>e.eventId).join(',')+':'+(g.history||[]).filter(h=>h.bonusPack&&(h.decisions||[]).some(d=>d.deal===true)).map(h=>h.round+':'+(h.decisions||[]).filter(d=>d.deal===true).map(d=>d.id).join(',')).join(';');
   const now=Date.now();
-  if(rewardKey===lastRewardProbeKey&&now-lastRewardProbeAt<30000)return;
+  if(rewardKey===lastRewardProbeKey&&now-lastRewardProbeAt<5000)return;
   lastRewardProbeKey=rewardKey;lastRewardProbeAt=now;checking=true;
   try{
    const token=await u.getIdToken(),headers={Authorization:'Bearer '+token};
@@ -232,7 +232,7 @@
  }
  // React to confirmed game-state changes; retain a slow safety poll for reconnects.
  window.addEventListener('deal-finale-finished',()=>{lastRewardProbeKey='';checkRewards()});
- setInterval(checkRewards,30000);
+ setInterval(()=>{if(!document.hidden&&rewardMayExist()&&box.hidden)checkRewards()},5000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkRewards();checkWheelStart();syncWheel()}});
  window.addEventListener('spielonline-change',checkRewards);
 })();
