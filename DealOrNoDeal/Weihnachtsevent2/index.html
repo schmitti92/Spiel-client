@@ -61,10 +61,9 @@ nav a:focus-visible{outline:2px solid #fff}
  'use strict';
  const modal=document.getElementById('event-guide'),img=document.getElementById('event-guide-img'),fallback=document.getElementById('event-guide-fallback');
  const keyBase='deal:event2:guide:v1:';
- const candidates=['./event2-spielanleitung.png','./a_detailed_vibrant_game_instruction_infographic_f.png','../assets/weihnachts_event/event2-spielanleitung.png','../assets/weihnachts_event/a_detailed_vibrant_game_instruction_infographic_f.png','../../event2-spielanleitung.png','../../a_detailed_vibrant_game_instruction_infographic_f.png'];
- let index=0,firstVisit=false,activeKey='';
- img.onerror=function(){if(++index<candidates.length){img.src=candidates[index];}else{img.hidden=true;fallback.hidden=false;}};
- img.src=candidates[0];
+ let firstVisit=false,activeKey='';
+ img.onerror=function(){img.hidden=true;fallback.hidden=false;};
+ img.src='./a_detailed_vibrant_game_instruction_infographic_f.png';
  function profileId(){
   const state=window.SpielOnline?.state?.();
   return state?.user?.uid || state?.profile?.id || 'local';
