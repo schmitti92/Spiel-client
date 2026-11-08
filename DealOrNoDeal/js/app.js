@@ -39,7 +39,7 @@ $('offer').classList.toggle('offer-active',g.phase==='decision');$('offer').text
 $('actions').replaceChildren();if(g.phase==='reveal'&&g.pending?.actor===myId()&&!busy){$('status').textContent='🧳 Koffer '+(g.pending.case+1)+' öffnet sich – Enthüllung läuft …';$('actions').append(button('🧳 Enthüllung jetzt abschließen',()=>action('ack-reveal')));if(lastReveal!==g.pending.eventId){lastReveal=g.pending.eventId;clearTimeout(revealTimer);revealTimer=setTimeout(()=>{if(g?.phase==='reveal'&&g.pending?.eventId===lastReveal)action('ack-reveal')},2200)}
  // Recover from a transient failed acknowledgement or a stale WebSocket
  // revision. The server still validates the actor and applies it exactly once.
- if(!revealRecoveryTimer){revealRecoveryTimer=setTimeout(()=>{revealRecoveryTimer=null;if(g?.phase==='reveal'&&g.pending?.actor===myId()&&!busy){action('ack-reveal')}},6500)}}if(g.phase==='final'&&$('finale-cinema').hidden&&!sessionStorage.getItem('final-wheel-complete:'+g.id)){
+ if(!revealRecoveryTimer){revealRecoveryTimer=setTimeout(()=>{revealRecoveryTimer=null;if(g?.phase==='reveal'&&g.pending?.actor===myId()&&!busy){action('ack-reveal')}},6500)}}if(g.phase==='final'&&$('finale-cinema').hidden){
  const recover=button('🎡 Sieger-Glücksrad erneut prüfen',()=>{
   recover.textContent='⏳ Siegerbonus wird geprüft …';
   $('status').textContent='🎡 Manuelle Siegerbonus-Prüfung gestartet …';
