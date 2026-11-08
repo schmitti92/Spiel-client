@@ -344,7 +344,7 @@
  close.addEventListener('click',continueReward);
  function syncSharedClose(){
   if(!activeWheelReward||box.hidden||typeof g==='undefined'||g?.id!==activeWheelReward.gameId)return;
-  if(g.christmasWheelClosed?.[activeWheelKind+':'+activeWheelReward.id])closeReward();
+  if(g.christmasWheelClosed?.[activeWheelKind+':'+activeWheelReward.id]){finalWheelStarted=true;closeReward()}
  }
  function rewardMayExist(){
   if(typeof g==='undefined'||!g)return false;
