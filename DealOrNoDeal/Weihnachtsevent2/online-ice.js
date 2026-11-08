@@ -113,7 +113,9 @@ async function loadWhenReady(){
  if(!accountReady())return;
  await load();
 }
-document.getElementById('ice-reload').onclick=loadWhenReady;
+// The redundant reload header was removed; startup must not depend on its button.
+const reloadButton=document.getElementById('ice-reload');
+if(reloadButton)reloadButton.onclick=loadWhenReady;
 window.addEventListener('spielonline-change',()=>{
  const a=window.SpielOnline?.state?.();
  if(a?.status==='online'&&a.user){
