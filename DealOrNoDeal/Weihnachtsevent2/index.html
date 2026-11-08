@@ -10,7 +10,8 @@ nav a[aria-current=page]{background:linear-gradient(120deg,#256c8e,#2e91a7);bord
 nav a:focus-visible{outline:2px solid #fff}
 iframe{width:100%;border:0;flex:1;min-height:0;background:#081421}
 @media(max-width:540px){nav{gap:4px;padding:5px}nav a{font-size:11px;min-height:35px;padding:5px 6px}}
-</style></head><body>
+.ice-switch{display:flex;gap:8px;padding:8px;background:#10293b}.ice-switch button,.ice-tools button,#ice-next,#ice-start,#ice-retry,#ice-reload{background:#1e506a;color:white;border:1px solid #a9d5ea;border-radius:9px;padding:9px;font-weight:700;cursor:pointer}.ice-switch button{flex:1}#ice-online-panel{overflow:auto;flex:1;padding:12px}#ice-online-panel[hidden],#ice-offline[hidden]{display:none}.ice-stats,.ice-tools{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px}.ice-stats strong{padding:7px;background:#19344c;border-radius:8px}.ice-tools button.chosen{background:#906b30}.ice-board{position:relative;width:min(620px,95vw);aspect-ratio:5/4;margin:12px auto;background:#13334b;border:3px solid #c9a76e;border-radius:15px;overflow:hidden}.ice-board img,.ice-placeholder{width:100%;height:100%;object-fit:cover}.ice-tiles{position:absolute;inset:0;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(4,1fr)}.ice-tiles button{border:1px solid #b6e8ff;background:linear-gradient(130deg,#77c6edeb,#b8eff8f0);font-size:clamp(12px,3vw,26px);cursor:pointer}.ice-tiles button.gone{visibility:hidden}#ice-online-status{text-align:center;min-height:24px}#ice-online{text-align:center}
+</style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
 <a href="../weihnachten.html?view=packs">🎁 Pakete</a>
@@ -18,5 +19,7 @@ iframe{width:100%;border:0;flex:1;min-height:0;background:#081421}
 <a href="./index.html" aria-current="page">❄️ Weihnachtsevent 2</a>
 <a href="../game.html">↩️ Zum Spiel</a>
 </nav>
-<iframe title="Weihnachtsevent 2 – Die magischen Weihnachtsbilder" src="./weihnachtsevent2_offline_v44_joker_final.html" allow="fullscreen" loading="eager"></iframe>
-</body></html>
+<div class="ice-switch"><button id="ice-online-tab">🌐 Online spielen (serverseitig)</button><button id="ice-offline-tab">📱 Offline spielen</button><button id="ice-reload">↻ Aktualisieren</button></div>
+<section id="ice-online-panel" hidden><p id="ice-online-status" role="status"></p><div id="ice-online"></div></section>
+<iframe id="ice-offline" title="Weihnachtsevent 2 – Die magischen Weihnachtsbilder" src="./weihnachtsevent2_offline_v44_joker_final.html" allow="fullscreen" loading="eager"></iframe>
+<script src="./online-ice.js?v=20261108a"></script></body></html>
