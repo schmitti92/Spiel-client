@@ -15,15 +15,60 @@ iframe{width:100%;border:0;flex:1;min-height:0;background:#081421}
 .ice-tiles button.gone{visibility:hidden}
 @media(prefers-reduced-motion:reduce){.ice-tiles button{transition:none!important}}#ice-online-status{text-align:center;min-height:24px}#ice-online{text-align:center}
 .ice-gift{max-width:620px;margin:14px auto;padding:16px;border:2px solid #e7c17b;border-radius:16px;background:linear-gradient(135deg,#183c4b,#604327);box-shadow:0 0 22px #f2c87b33;text-align:center;animation:ice-gift-in .5s ease-out}.ice-gift strong{display:block;font-size:clamp(19px,3vw,27px)}.ice-gift p{font-size:18px;font-weight:700}.ice-gift-icon{font-size:44px}@keyframes ice-gift-in{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+.event-guide-open{background:linear-gradient(120deg,#a56c23,#e0ad50)!important;color:#201307!important;border-color:#ffe3a3!important}
+.event-guide[hidden]{display:none!important}.event-guide{position:fixed;inset:0;z-index:99999;background:rgba(2,8,19,.94);display:flex;align-items:center;justify-content:center;padding:12px}
+.event-guide-panel{width:min(1500px,100%);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;gap:8px;align-items:center}
+.event-guide-title{margin:0;color:#ffdf99;font-size:clamp(17px,2.5vw,27px)}
+.event-guide-img{display:block;max-width:100%;max-height:calc(100dvh - 135px);object-fit:contain;border:2px solid #eac277;border-radius:10px;background:#14283c}
+.event-guide-actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+.event-guide-actions button{padding:11px 18px;background:linear-gradient(120deg,#bd832c,#f2c568);color:#251504;border:1px solid #ffdf96;border-radius:10px;font-weight:850;cursor:pointer}
+.event-guide-fallback{color:#fff;text-align:center}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
 <a href="../weihnachten.html?view=packs">🎁 Pakete</a>
 <a href="../weihnachten.html?view=bingo">🏆 Spielinformation</a>
 <a href="./index.html" aria-current="page">❄️ Weihnachtsevent 2</a>
-<a href="../game.html">↩️ Zum Spiel</a>
+<a href="../game.html">↩️ Zum Spiel</a><a href="#" id="event-guide-open" class="event-guide-open">📖 Spielanleitung</a>
 </nav>
 <div class="ice-switch"><button id="ice-online-tab">🌐 Online spielen (serverseitig)</button><button id="ice-offline-tab">📱 Offline spielen</button><button id="ice-reload">↻ Aktualisieren</button></div>
 <section id="ice-online-panel" hidden><p id="ice-online-status" role="status"></p><div id="ice-online"></div></section>
 <iframe id="ice-offline" title="Weihnachtsevent 2 – Die magischen Weihnachtsbilder" src="./weihnachtsevent2_offline_v44_joker_final.html" allow="fullscreen" loading="eager"></iframe>
+
+<div id="event-guide" class="event-guide" hidden role="dialog" aria-modal="true" aria-labelledby="event-guide-title">
+ <div class="event-guide-panel">
+  <h2 id="event-guide-title" class="event-guide-title">❄️ Spielanleitung · Weihnachtsevent 2</h2>
+  <img id="event-guide-img" class="event-guide-img" alt="Collage mit der Spielanleitung zu Weihnachtsevent 2">
+  <p id="event-guide-fallback" class="event-guide-fallback" hidden>Das hochgeladene Anleitungsbild wurde noch nicht gefunden. Bitte den Bildpfad prüfen.</p>
+  <div class="event-guide-actions"><button type="button" id="event-guide-close">✓ Verstanden – Event starten</button></div>
+ </div>
+</div>
+<script>
+(function(){
+ 'use strict';
+ const modal=document.getElementById('event-guide'),img=document.getElementById('event-guide-img'),fallback=document.getElementById('event-guide-fallback');
+ const keyBase='deal:event2:guide:v1:';
+ const candidates=['./event2-spielanleitung.png','./a_detailed_vibrant_game_instruction_infographic_f.png','../assets/weihnachts_event/event2-spielanleitung.png','../assets/weihnachts_event/a_detailed_vibrant_game_instruction_infographic_f.png','../../event2-spielanleitung.png','../../a_detailed_vibrant_game_instruction_infographic_f.png'];
+ let index=0,firstVisit=false,activeKey='';
+ img.onerror=function(){if(++index<candidates.length){img.src=candidates[index];}else{img.hidden=true;fallback.hidden=false;}};
+ img.src=candidates[0];
+ function profileId(){
+  const state=window.SpielOnline?.state?.();
+  return state?.user?.uid || state?.profile?.id || 'local';
+ }
+ function openGuide(force){
+  activeKey=keyBase+profileId();
+  try{if(!force&&localStorage.getItem(activeKey)==='yes')return;}catch(_){}
+  firstVisit=!force;modal.hidden=false;document.getElementById('event-guide-close').focus();
+ }
+ function closeGuide(){
+  if(firstVisit){try{localStorage.setItem(activeKey,'yes');}catch(_){}}
+  modal.hidden=true;firstVisit=false;
+ }
+ document.getElementById('event-guide-close').addEventListener('click',closeGuide);
+ document.getElementById('event-guide-open').addEventListener('click',function(e){e.preventDefault();openGuide(true);});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
+})();
+</script>
 <script src="./online-ice.js?v=20261108d"></script></body></html>
