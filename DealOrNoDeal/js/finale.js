@@ -1,14 +1,16 @@
 'use strict';
 function cancelFinaleTimers(){for(const t of finaleTimers)clearTimeout(t);finaleTimers=[]}
 function finaleLater(fn,delay){finaleTimers.push(setTimeout(fn,delay))}
-function finishFinaleCinema(){cancelFinaleTimers();if(finaleSequenceKey)sessionStorage.setItem('finale-watched:'+finaleSequenceKey,'yes');$('finale-cinema').hidden=true;$('finale-sparks').replaceChildren();window.dispatchEvent(new Event('deal-finale-finished'))}
+function finishFinaleCinema(){replayFinaleLocally=false;cancelFinaleTimers();if(finaleSequenceKey)sessionStorage.setItem('finale-watched:'+finaleSequenceKey,'yes');$('finale-cinema').hidden=true;$('finale-sparks').replaceChildren();window.dispatchEvent(new Event('deal-finale-finished'))}
 $('finale-skip').addEventListener('click',finishFinaleCinema);
 // Replay only presentation state; never repeat payouts, case opening, or rewards.
+let replayFinaleLocally=false;
 function replayFinaleSequence(){
  if(!g||g.phase!=='final'||!Array.isArray(g.finalValues)||!g.finalValues.length){
   $('status').textContent='⚠️ Finale-Daten fehlen noch. Bitte Verbindung prüfen.';
   return;
  }
+ replayFinaleLocally=true;
  cancelFinaleTimers();
  if(finaleRecoveryTimer){clearTimeout(finaleRecoveryTimer);finaleRecoveryTimer=null}
  const key=String(g.id)+':finale';
@@ -83,7 +85,7 @@ function startFinaleCinema(){
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  // All clients use the same server-issued finale timestamp. A late joiner
  // catches up rather than replaying the entire sequence several seconds late.
- const finaleElapsed=Number.isFinite(g.finalStartedAt)?Math.max(0,Date.now()-g.finalStartedAt):0;
+ const finaleElapsed=!replayFinaleLocally&&Number.isFinite(g.finalStartedAt)?Math.max(0,Date.now()-g.finalStartedAt):0;
  const at=ms=>Math.max(0,ms-finaleElapsed);
  const first=ascending[0];
  if(!reduced){grid.classList.add('finale-suspense');finaleLater(()=>{$('finale-tension').textContent='3'},at(450));finaleLater(()=>{$('finale-tension').textContent='2'},at(850));finaleLater(()=>{$('finale-tension').textContent='1'},at(1250))}
