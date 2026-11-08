@@ -54,7 +54,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .case.opened .case-amount{font-size:clamp(9px,1vw,15px)!important;letter-spacing:-.35px!important;line-height:1.05!important}
 .case.personal .case-lid{background:linear-gradient(140deg,#3976a7,#0a2447 70%)!important}
 .case.personal .case-number{color:#a8e6ff!important;text-shadow:0 0 13px #74caff!important}
-.money span{font-variant-numeric:tabular-nums;letter-spacing:-.15px;transition:opacity .35s,filter .35s,background .35s}
+.money span{font-variant-numeric:tabular-nums;letter-spacing:-.15px;transition:opacity .35s,background-color .35s}
 .money span:not(.gone){position:relative}
 .money span:not(.gone):before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#b6d9ff66,transparent)}
 .money span.gone{color:#9da9b8!important;text-decoration-color:#a3a9b0!important}
