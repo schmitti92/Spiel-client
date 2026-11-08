@@ -60,13 +60,13 @@ nav a:focus-visible{outline:2px solid #fff}
 (function(){
  'use strict';
  const modal=document.getElementById('event-guide'),img=document.getElementById('event-guide-img'),fallback=document.getElementById('event-guide-fallback');
- const keyBase='deal:event2:guide:v1:';
+ const keyBase='deal:event2:guide:v2:';
  let firstVisit=false,activeKey='';
  img.onerror=function(){img.hidden=true;fallback.hidden=false;};
- img.src='./a_detailed_vibrant_game_instruction_infographic_f.png';
+ img.src='./Weihnachtsbilder/file_0000000084748210bb97070abd56ebf0.png';
  function profileId(){
   const state=window.SpielOnline?.state?.();
-  return state?.user?.uid || state?.profile?.id || 'local';
+  return state?.user?.uid || state?.profile?.id || window.ProfileAuth?.currentUser?.uid || 'local';
  }
  function openGuide(force){
   activeKey=keyBase+profileId();
