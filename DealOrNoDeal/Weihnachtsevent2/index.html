@@ -301,6 +301,22 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
 @keyframes v27-celebrate{50%{box-shadow:0 0 42px #ffe27b,inset 0 0 30px #f8be4c88;transform:scale(1.025)}}
 @media(max-height:680px){.v27-money-stage{padding:6px 10px}.v27-money-track{height:20px}.v27-money-value{margin:2px 0}}
 @media(prefers-reduced-motion:reduce){.v27-money-stage.v27-finished{animation:none}}
+
+/* Full-size viewer for already completed Christmas pictures */
+.v44-gallery-open-image{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:zoom-in}
+.v44-gallery-open-image img{display:block;width:100%;height:100%;object-fit:cover}
+.v44-gallery-open-image span{position:absolute;top:0;right:0;left:0;padding:4px;background:#190f24b8;color:#fff4d2;font-size:11px;font-weight:800;opacity:0}
+.v44-gallery-open-image:hover span,.v44-gallery-open-image:focus-visible span{opacity:1}
+.v44-image-lightbox{position:fixed;inset:0;z-index:10030;display:grid;place-items:center;padding:12px;background:#020713f2;backdrop-filter:blur(8px)}
+.v44-image-viewer{width:min(1200px,97vw);max-height:96dvh;display:flex;flex-direction:column;gap:9px;padding:12px;border:3px solid #f1c774;border-radius:17px;background:linear-gradient(135deg,#4b102a,#15172c);color:#ffefcb;text-align:center;box-shadow:0 12px 60px #000b}
+.v44-image-viewer-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:clamp(14px,2vw,22px)}
+.v44-image-viewer button{border:1px solid #f4d18c;border-radius:9px;background:linear-gradient(#f5d78d,#ae6b28);color:#3b210b;font-weight:900;padding:9px 13px;cursor:pointer}
+.v44-image-viewer button:disabled{opacity:.3;cursor:default}
+.v44-image-viewer-stage{display:flex;align-items:center;justify-content:center;gap:8px;min-height:0;flex:1}
+.v44-image-viewer-stage img{display:block;max-width:calc(100% - 100px);max-height:75dvh;min-height:0;object-fit:contain;border:2px solid #f2cb80;border-radius:8px;box-shadow:0 6px 25px #0008}
+.v44-image-viewer-stage>button{flex-shrink:0}
+.v44-image-viewer p{margin:0;font-size:12px}
+@media(max-width:600px){.v44-image-viewer-stage img{max-width:calc(100% - 74px);max-height:70dvh}.v44-image-viewer-stage>button{padding:7px}.v44-image-viewer{padding:8px}}
 </style><script src="../../profile-config.js"></script><script src="../../profile-auth.js"></script></head><body>
 <nav aria-label="Weihnachtsevent Navigation">
 <a href="../weihnachten.html?view=album">🃏 Sammlung</a>
@@ -363,4 +379,4 @@ body{background:#071a32 linear-gradient(#071b37a8,#07152bd5),url('./Weihnachtsbi
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>openGuide(false));else openGuide(false);
 })();
 </script>
-<script src="./online-ice.js?v=20261108-golden3"></script></body></html>
+<script src="./online-ice.js?v=20261108-galleryzoom"></script></body></html>
