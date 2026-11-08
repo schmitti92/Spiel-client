@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(new RegExp('/+;
+ const base=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(new RegExp('/+$'),'');
  let shown='',busy=false;
  const user=()=>window.SpielOnline?.state?.()?.user;
  const match=()=>typeof g!=='undefined'?g:null;
