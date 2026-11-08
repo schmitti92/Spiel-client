@@ -6,7 +6,7 @@ const api=String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.o
 let state=null,busy=false,pending=null;
 const money=n=>Number(n||0).toLocaleString('de-DE')+' €';
 const user=()=>{const a=window.SpielOnline?.state?.();return a?.status==='online'?a.user:null};
-function message(t){status.textContent=t}
+function message(t){status.textContent=t;status.hidden=/^✅ Online-Modus verbunden\.?$/.test(t)}
 async function request(type,body){
  const u=user();if(!u)throw Error('Bitte zuerst im Spielerprofil anmelden.');
  const token=await u.getIdToken();
