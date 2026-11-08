@@ -19,7 +19,9 @@
   if(!started)return;
   // Never cover the pack animation. If a tab was reloaded, the server timestamp
   // still lets us recover the hammer ceremony without sessionStorage.
-  if(Date.now()-started<13000)return;
+  // The winner explicitly releases the card reveal for every player.
+  // Never start the hammer wheel merely because a local timer elapsed.
+  if(!game.christmasWheelClosed?.['final:'+game.id])return;
   const packOverlay=document.getElementById('cent-reward');
   const finaleOverlay=document.getElementById('finale-cinema');
   if(packOverlay&&!packOverlay.hidden||finaleOverlay&&!finaleOverlay.hidden)return;
@@ -41,7 +43,7 @@
    disc.style.transform='rotate('+(1800+360-angles[award.hammer])+'deg)';
    status.textContent='🎡 Das Hammerrad dreht sich für alle …';
    clearTimeout(spinTimer);
-   spinTimer=setTimeout(()=>{status.textContent='🎉 Gewonnen: '+labels[award.hammer]+'! '+(winner===u.uid?'Dein Hammer wurde gutgeschrieben.':'Der Sieger erhält diesen Hammer im Weihnachtsevent.');close.hidden=false},duration+100);
+   spinTimer=setTimeout(()=>{status.textContent='🎉 Gewonnen: '+labels[award.hammer]+'! '+(winner===u.uid?'Dein Hammer wurde gutgeschrieben.':'Der Sieger erhält diesen Hammer im Weihnachtsevent.');close.hidden=winner!==u.uid},duration+100);
   };
   const onGameChange=()=>{const latest=match();if(latest?.id===game.id)reveal(latest.christmasHammerWheel)};
   window.addEventListener('deal-game-state-change',onGameChange);
@@ -60,13 +62,15 @@
   // The winner's click is optional: start automatically so an idle device
   // cannot leave all spectators stuck at the wheel.
   if(winner===u.uid&&!game.christmasHammerWheel)setTimeout(()=>{if(overlay.isConnected&&!revealed&&!busy)spin.click()},1800);
-  close.onclick=()=>{window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');overlay.remove();busy=false};
+  if(winner!==u.uid)close.hidden=true;
+  close.onclick=()=>{if(winner!==u.uid)return;window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');overlay.remove();busy=false};
  }
  function scheduleShow(){
   const game=match();if(!winnerId(game))return;
   const started=Number(game.christmasWheelSpins?.['final:'+game.id]||0);
   if(!started)return;
-  const delay=Math.max(0,13000-(Date.now()-started));
+  if(!game.christmasWheelClosed?.['final:'+game.id])return;
+  const delay=0;
   clearTimeout(window.__iceHammerShowTimer);
   window.__iceHammerShowTimer=setTimeout(show,delay+250);
  }
