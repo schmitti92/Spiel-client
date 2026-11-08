@@ -14,26 +14,38 @@ async function request(type,body){
  const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data;
 }
 const id=()=>crypto.randomUUID();
+let galleryPage=0,previousFinished=false;
 function render(){
- if(!state){root.innerHTML='<p>Dein Online-Spielstand ist noch nicht gestartet.</p><button id="ice-start">❄️ Online-Spiel starten</button>';document.getElementById('ice-start').onclick=()=>run('start');return}
- const finished=state.finished,done=state.completed>=70,number=Math.min(70,state.completed+1);
- const src=names[(number-1)%names.length]?'./Weihnachtsbilder/'+encodeURIComponent(names[(number-1)%names.length]):'';
- root.innerHTML='<div class="ice-stats"><strong>Bild '+number+' / 70</strong><strong>💰 '+money(state.balance)+'</strong><strong>🔐 '+state.peekJokers+' Joker gewonnen</strong></div>'+
- '<div class="ice-tools">'+['single','double','lucky'].map((k,i)=>'<button data-hammer="'+k+'" class="'+(window.iceHammer===k?'chosen':'')+'">'+['🔨 Einfach','🔨 Doppel','✨ Glück'][i]+' · '+((state.freeHammers?.[k]||0)>0?'Gratis ('+state.freeHammers[k]+')':money([300000,500000,1000000][i]))+'</button>').join('')+'</div>'+
- '<p class="ice-help">💡 Die einfachen Hammerschläge sind kostenlos. Weitere Hammerarten kannst du mit gewonnenem Event-Geld nutzen.</p><div class="ice-board">'+(src?'<img alt="Weihnachtsbild '+number+'" src="'+src+'">':'<div class="ice-placeholder">🎄</div>')+
- '<div class="ice-tiles">'+Array.from({length:20},(_,i)=>'<button data-tile="'+i+'" '+(busy||finished||done||state.opened.includes(i)?'disabled':'')+' class="'+(state.opened.includes(i)||finished||done?'gone':'')+'" aria-label="Eisfeld '+(i+1)+'">❄️</button>').join('')+'</div></div>'+
- (finished?'<section class="ice-gift"><div class="ice-gift-icon">🎁</div><strong>🌟 Weihnachtsstern gefunden!</strong><p>'+(()=>{const g=state.prizes?.find(x=>x.number===state.completed);return g?(g.kind==='money'?'💰 '+money(g.amount)+' gewonnen':g.kind==='hammer'?'🔨 Gratis-Hammer gewonnen: '+g.hammer:'🔐 Kofferblick-Joker gewonnen'):'Dieses Bild ist abgeschlossen. Eine bereits früher ausgegebene Belohnung wird nicht erneut gutgeschrieben.'})()+'</p></section>':'')+
- (finished&&!done?'<button id="ice-next">➡️ Nächstes Weihnachtsbild</button>':done?'<p>🏆 Alle 70 Bilder geschafft!</p>':'');
- root.insertAdjacentHTML('beforeend','<button id="ice-reset">↻ Spiel zurücksetzen</button><p style="font-size:12px;opacity:.8">Kein Testguthaben. Pro Bild stehen 20 kostenlose einfache Hammerschläge bereit. Bereits erhaltene Online-Joker und gewonnene Hammer bleiben beim Zurücksetzen erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.</p>');
- let stored=null;try{stored=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null')}catch{}
- if(stored?.uid===user()?.uid&&stored.requestId&&stored.type&&stored.key){
-  root.insertAdjacentHTML('beforeend','<button id="ice-recover">🔄 Letzte Aktion sicher wiederholen</button>');
-  root.querySelector('#ice-recover').onclick=()=>{pending={key:stored.key,requestId:stored.requestId};run(stored.type,stored.extra||{})};
- }
- root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker und gewonnene Hammer bleiben erhalten, Gewinne früherer Bilder werden nicht erneut ausgezahlt.'))run('reset')};
+ if(!state){root.innerHTML='<p>Dein Online-Spielstand ist noch nicht gestartet.</p><button id="ice-start">❄️ Online-Spiel starten</button>';root.querySelector('#ice-start').onclick=()=>run('start');return}
+ const finished=!!state.finished,done=state.completed>=70,number=Math.min(70,state.completed+1);
+ const photo=n=>'./Weihnachtsbilder/'+encodeURIComponent(names[(n-1)%names.length]);
+ const chosen=window.iceHammer||'single';
+ const labels={single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'};
+ const emojis={single:'🔨',double:'⚒️',lucky:'✨'};
+ const costs={single:0,double:500000,lucky:1000000};
+ const price=k=>(state.freeHammers?.[k]||0)>0?'Gratis ('+state.freeHammers[k]+')':k==='single'?'Kostenlos':money(costs[k]);
+ const first=galleryPage*6+1;
+ const thumbs=Array.from({length:6},(_,i)=>first+i).filter(n=>n<=70).map(n=>'<button class="v44-thumb '+(n>state.completed+1?'locked':'')+'" data-preview="'+n+'" title="Bild '+n+'">'+(n<=state.completed?'<img loading="lazy" src="'+photo(n)+'" alt="Bild '+n+'">':n===number?'<img loading="lazy" src="'+photo(n)+'" alt="Aktuelles Bild">':'🔒')+'<span>'+n+'</span></button>').join('');
+ const milestones=Array.from({length:7},(_,i)=>(i+1)*10).map(n=>'<div class="v44-reward '+(state.completed>=n?'done':number<=n&&number>n-10?'current':'')+'"><span>🎁</span><strong>'+n+'/70</strong></div>').join('');
+ root.innerHTML='<div class="v44-app"><header class="v44-head"><div class="v44-plaque">🎄 Weihnachtsevent 2</div><div class="v44-heading"><h1>Die magischen Weihnachtsbilder</h1><p>⭐ 70 Bilder · Sternsuche · Überraschungsbelohnungen ⭐</p></div><div class="v44-plaque">💰 '+money(state.balance)+'</div></header>'+
+ '<div class="v44-layout"><section class="v44-panel v44-gallery-panel"><h2>🖼️ Bildergalerie</h2><div class="v44-gallery">'+thumbs+'</div><div class="v44-gallery-nav"><button id="v44-prev" '+(galleryPage===0?'disabled':'')+'>❮</button><span>Bilder '+first+'–'+Math.min(first+5,70)+'</span><button id="v44-nextpage" '+(first+5>=70?'disabled':'')+'>❯</button></div><p>🔓 '+state.completed+' von 70 Bildern abgeschlossen</p><p>🔐 '+state.peekJokers+' Kofferblick-Joker</p></section>'+
+ '<section class="v44-panel v44-board-panel"><h2>❄️ Bild '+number+' von 70</h2><div class="ice-board v44-board"><img alt="Weihnachtsbild '+number+'" src="'+photo(number)+'"><div class="ice-tiles">'+Array.from({length:20},(_,i)=>'<button data-tile="'+i+'" '+(busy||finished||done||state.opened.includes(i)?'disabled':'')+' class="'+(state.opened.includes(i)||finished||done?'gone':'')+'" aria-label="Eisfeld '+(i+1)+'">❄</button>').join('')+'</div></div><p class="v44-instruction">🔨 Wähle einen Hammer und tippe auf ein Eisfeld.</p></section>'+
+ '<section class="v44-panel v44-hammer-panel"><h2>🔨 Wähle deinen Hammer</h2><div class="v44-hammers">'+['single','double','lucky'].map(k=>'<button class="v44-hammer '+(chosen===k?'selected':'')+'" data-hammer="'+k+'"><span class="v44-hammer-icon">'+emojis[k]+'</span><span><strong>'+labels[k]+'</strong><small>'+({single:'1 Eisfeld',double:'2 Eisfelder',lucky:'Glückschance'}[k])+'</small><b>'+price(k)+'</b></span></button>').join('')+'</div></section></div>'+
+ '<div class="v44-panel v44-progress"><h2>🎁 Meilensteine & Fortschritt</h2><div class="v44-rewards">'+milestones+'</div><div class="v44-actions">'+(finished&&!done?'<button id="ice-next">➡️ Nächstes Weihnachtsbild</button>':'')+(done?'<strong>🏆 Alle 70 Bilder geschafft!</strong>':'')+'<button id="ice-reset">↻ Spiel zurücksetzen</button></div></div>'+
+ (finished?'<div class="v44-victory"><div class="v44-star">🌟</div><strong>Weihnachtsstern gefunden!</strong><p>'+(()=>{const g=state.prizes?.find(x=>x.number===state.completed);return g?(g.kind==='money'?'💰 '+money(g.amount)+' gewonnen':g.kind==='hammer'?'🔨 Gratis-Hammer: '+g.hammer:'🔐 Kofferblick-Joker gewonnen'):'Dieses Bild ist abgeschlossen. Bereits erhaltene Belohnungen werden nicht erneut ausgezahlt.'})()+'</p></div>':'')+
+ '<p class="v44-note">🔐 Fortschritt und Belohnungen werden online gespeichert. Kein Testguthaben.</p></div>';
+ root.querySelector('#v44-prev').onclick=()=>{galleryPage=Math.max(0,galleryPage-1);render()};
+ root.querySelector('#v44-nextpage').onclick=()=>{galleryPage=Math.min(11,galleryPage+1);render()};
+ root.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.preview);if(n===number)return;message(n<=state.completed?'🖼️ Bild '+n+' wurde bereits abgeschlossen. Dein aktuelles Bild bleibt '+number+'.':'🔒 Bild '+n+' wird erst später freigeschaltet.')});
  root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{window.iceHammer=b.dataset.hammer;render()});
  root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>run('strike',{index:Number(b.dataset.tile),hammer:window.iceHammer||'single'}));
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
+ root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker und gewonnene Hammer bleiben erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.'))run('reset')};
+ let stored=null;try{stored=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null')}catch{}
+ if(stored?.uid===user()?.uid&&stored.requestId&&stored.type&&stored.key){
+  const b=document.createElement('button');b.id='ice-recover';b.textContent='🔄 Letzte Aktion sicher wiederholen';root.querySelector('.v44-actions').appendChild(b);
+  b.onclick=()=>{pending={key:stored.key,requestId:stored.requestId};run(stored.type,stored.extra||{})};
+ }
 }
 async function run(type,extra={}){
  if(busy)return;
