@@ -169,7 +169,7 @@
  function openReward(reward,kind,uid){
   const isFinal=kind==='final';activeWheelReward=reward;activeWheelKind=kind;finalWheelStarted=false;
   sequence++;const current=sequence;
-  box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;
+  box.dataset.reward=reward.id;box.dataset.stage='wheel';box.hidden=false;close.disabled=true;close.hidden=reward.uid!==uid;
   // A missed socket event or disconnected winner must never trap spectators.
   setTimeout(()=>{if(sequence===current&&!box.hidden&&!finalWheelStarted){wheelStatus.textContent='⏳ Warte auf den gemeinsamen Drehstart. Verbindung wird automatisch geprüft …';checkWheelStart();}},12000);
   const owner=reward.playerName||'Spieler';
@@ -256,8 +256,9 @@
    });
    const revealDuration=firstSpecialAt+special.length*specialInterval+(reduced?800:1000);
    setTimeout(()=>{if(sequence===current&&!box.hidden){
-    close.disabled=false;close.textContent='🎉 Alle Karten ansehen · Weiter';
-    setTimeout(()=>{if(sequence===current&&!box.hidden)closeReward()},Math.max(5000,revealDuration+2500));
+    close.disabled=reward.uid!==user()?.uid;close.hidden=reward.uid!==user()?.uid;
+    close.textContent='🎉 Für alle Spieler fortfahren';
+    if(reward.uid!==user()?.uid)wheelStatus.textContent='⏳ Warte, bis '+owner+' die Karten bestätigt …';
    }},revealDuration);
   };
   pendingSpin=(startedAt)=>{
@@ -299,7 +300,7 @@
   const startedAt=g.christmasWheelSpins?.[activeWheelKind+':'+activeWheelReward.id];
   if(startedAt)pendingSpin(startedAt);
  }
- window.addEventListener('deal-game-state-change',()=>{syncWheel();checkRewards();checkWheelStart()});
+ window.addEventListener('deal-game-state-change',()=>{syncSharedClose();syncWheel();checkRewards();checkWheelStart()});
  // Independent fallback: spectators must not depend on a single missed WebSocket event.
  // Only poll while a wheel is actually waiting; stop as soon as the spin begins.
  let wheelStatusChecking=false;
@@ -321,7 +322,6 @@
  // Game-state push starts the wheel immediately; HTTP remains a recovery fallback.
  setInterval(()=>{if(!document.hidden)checkWheelStart()},4000);
  function closeReward(){
-  if(close.disabled)return;
   const uid=user()?.uid,id=box.dataset.reward;if(uid&&id)mark(uid,id);
   const completedFinal=activeWheelKind==='final'&&finalWheelStarted&&activeWheelReward?.gameId;
   if(completedFinal)sessionStorage.setItem('final-wheel-complete:'+completedFinal,'yes');
@@ -330,7 +330,22 @@
   if(completedFinal)window.dispatchEvent(new Event('deal-final-wheel-complete'));
   lastRewardProbeKey='';checkRewards();
  }
- close.addEventListener('click',closeReward);
+ async function continueReward(){
+  if(!activeWheelReward||activeWheelReward.uid!==user()?.uid||close.disabled||!finalWheelStarted)return;
+  close.disabled=true;close.textContent='⏳ Für alle wird fortgesetzt …';
+  try{
+   const token=await user().getIdToken();
+   const response=await fetch(api('/christmas-wheel-continue'),{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({kind:activeWheelKind,rewardId:activeWheelReward.id})});
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw Error(data.error||'CONTINUE_FAILED');
+   closeReward();
+  }catch(e){close.disabled=false;close.textContent='🔄 Erneut versuchen';wheelStatus.textContent='Fortsetzen fehlgeschlagen: '+(e.message||'Verbindung')}
+ }
+ close.addEventListener('click',continueReward);
+ function syncSharedClose(){
+  if(!activeWheelReward||box.hidden||typeof g==='undefined'||g?.id!==activeWheelReward.gameId)return;
+  if(g.christmasWheelClosed?.[activeWheelKind+':'+activeWheelReward.id])closeReward();
+ }
  function rewardMayExist(){
   if(typeof g==='undefined'||!g)return false;
   const oneCent=(g.events||[]).some(e=>e.type==='opened'&&e.amount===1);
@@ -360,7 +375,7 @@
     if(!response.ok){outcome='HTTP '+response.status;continue}
     const data=await response.json();
     const rewards=endpoint.includes('banker')?data.rewards||[]:data.reward?[data.reward]:[];
-    const reward=rewards.find(x=>x.gameId===g.id&&!seen(u.uid,x.id));
+    const reward=rewards.find(x=>x.gameId===g.id&&!seen(u.uid,x.id)&&!g.christmasWheelClosed?.[(endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent')+':'+x.id]);
     if(reward){openReward(reward,endpoint.includes('final')?'final':endpoint.includes('banker')?'banker':'cent',u.uid);syncWheel();outcome='opened';break}
    }
   }catch(e){outcome='error: '+String(e.message||e);console.warn('Weihnachtsbonus wird erneut geprüft',e)}
@@ -397,8 +412,8 @@
   setTimeout(()=>{if(g?.phase==='final'&&box.hidden&&!sessionStorage.getItem('final-wheel-complete:'+g.id)){lastRewardProbeKey='';checkRewards()}},3500);
   setTimeout(()=>{if(g?.phase==='final'&&box.hidden&&!sessionStorage.getItem('final-wheel-complete:'+g.id)){lastRewardProbeKey='';checkRewards()}},9000);
  });
- setInterval(()=>{if(!document.hidden&&rewardMayExist()&&box.hidden)checkRewards()},10000);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkRewards();checkWheelStart();syncWheel()}});
+ setInterval(()=>{if(!document.hidden){syncSharedClose();if(rewardMayExist()&&box.hidden)checkRewards()}},10000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){syncSharedClose();checkRewards();checkWheelStart();syncWheel()}});
  window.addEventListener('spielonline-change',checkRewards);
 })();
 </script>
