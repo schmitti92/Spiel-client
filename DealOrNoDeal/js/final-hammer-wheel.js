@@ -21,8 +21,9 @@
   // still lets us recover the hammer ceremony without sessionStorage.
   if(Date.now()-started<13000)return;
   const packOverlay=document.getElementById('cent-reward');
-  if(packOverlay&&!packOverlay.hidden)return;
-  if(shown===game.id||sessionStorage.getItem('ice-hammer-wheel-seen:'+game.id)==='yes')return;
+  const finaleOverlay=document.getElementById('finale-cinema');
+  if(packOverlay&&!packOverlay.hidden||finaleOverlay&&!finaleOverlay.hidden)return;
+  if(shown===game.id||document.getElementById('ice-hammer-bonus')||sessionStorage.getItem('ice-hammer-wheel-seen:'+game.id)==='yes')return;
   shown=game.id;
   const overlay=document.createElement('div');overlay.id='ice-hammer-bonus';
   overlay.innerHTML='<div class="ice-hammer-card"><h2>🔨 Sieger-Hammerrad</h2><p>Das Sammelkarten-Glücksrad ist abgeschlossen. Jetzt folgt dein zusätzlicher Hammergewinn!</p><div class="ice-hammer-wheel"><div class="ice-hammer-disc">🔨<span>Einfach · 50 %</span><span>Doppel · 35 %</span><span>Glück · 15 %</span></div></div><p class="ice-hammer-message" role="status">Bereit für deinen Siegerbonus</p><button class="ice-hammer-spin">🎡 Hammer-Glücksrad drehen</button><button class="ice-hammer-close" hidden>✓ Weiter zum Spiel</button></div>';
@@ -56,6 +57,9 @@
     reveal({gameId:game.id,hammer:data.hammer,startedAt:Date.now()});
    }catch(e){status.textContent='⚠️ '+e.message+' – bitte erneut versuchen.';spin.disabled=false;busy=false}
   };
+  // The winner's click is optional: start automatically so an idle device
+  // cannot leave all spectators stuck at the wheel.
+  if(winner===u.uid&&!game.christmasHammerWheel)setTimeout(()=>{if(overlay.isConnected&&!revealed&&!busy)spin.click()},1800);
   close.onclick=()=>{window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');overlay.remove();busy=false};
  }
  function scheduleShow(){
@@ -70,5 +74,8 @@
  window.addEventListener('deal-game-state-change',scheduleShow);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){scheduleShow();show()}});
  scheduleShow();
+ // Recover from missed socket updates and late reward-overlay dismissal without
+ // new Firestore listeners. This only reads the already-present in-memory game.
+ setInterval(()=>{if(!document.hidden){scheduleShow();show()}},2500);
  const style=document.createElement('style');style.textContent='#ice-hammer-bonus{position:fixed;inset:0;z-index:99999;background:#06111de9;display:grid;place-items:center;padding:14px;color:#ffeac4}.ice-hammer-card{width:min(95vw,520px);max-height:94vh;overflow:auto;text-align:center;padding:20px;border:3px solid #e8c26c;border-radius:22px;background:linear-gradient(145deg,#132d4a,#30213e);box-shadow:0 15px 60px #000b}.ice-hammer-wheel{width:min(62vw,270px);aspect-ratio:1;margin:15px auto;position:relative}.ice-hammer-wheel:before{content:"▼";position:absolute;top:-17px;left:calc(50% - 11px);z-index:2;color:#ffe68c;font-size:26px}.ice-hammer-disc{width:100%;height:100%;border:9px solid #e7c77d;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;font-size:29px;background:conic-gradient(#428dc7 0 50%,#b57d2e 50% 85%,#8b4cbb 85% 100%);transition:transform 4.2s cubic-bezier(.12,.8,.12,1);box-shadow:0 0 30px #ffdc7b80}.ice-hammer-disc span{font-size:13px;font-weight:900;text-shadow:0 2px 6px #000}.ice-hammer-card button{margin:7px;padding:13px 18px;border:2px solid #fff2b9;border-radius:12px;background:#e8bd5f;color:#23140b;font-weight:900;cursor:pointer}.ice-hammer-card button[hidden]{display:none}@media(prefers-reduced-motion:reduce){.ice-hammer-disc{transition:none}}';document.head.append(style);
 })();
