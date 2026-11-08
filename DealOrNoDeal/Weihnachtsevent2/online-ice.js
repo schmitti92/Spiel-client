@@ -67,6 +67,33 @@ async function load(){
  finally{busy=false}
 }
 window.iceHammer='single';
-document.getElementById('ice-reload').onclick=load;
-load();
+function accountReady(){
+ const auth=window.SpielOnline?.state?.();
+ if(auth?.status==='online'&&auth.user)return true;
+ if(auth?.status==='guest'||auth?.status==='unconfigured'){
+  message('🔐 Bitte zuerst im Spielerprofil anmelden.');
+  root.innerHTML='<button id="ice-login">🔐 Spielerprofil anmelden</button>';
+  root.querySelector('#ice-login').onclick=()=>window.SpielOnline?.openLogin?.();
+ }else if(auth?.status==='error'){
+  message('⚠️ Spielerprofil-Verbindung: '+(auth.error||'Bitte erneut versuchen.'));
+  root.innerHTML='<button id="ice-profile-retry">🔄 Profilverbindung erneut prüfen</button>';
+  root.querySelector('#ice-profile-retry').onclick=()=>window.SpielOnline?.refresh?.().catch(()=>{});
+ }else{
+  message('⏳ Spielerprofil wird geladen …');
+  root.innerHTML='<p>Die sichere Anmeldung wird geprüft. Bitte einen Moment warten.</p>';
+ }
+ return false;
+}
+async function loadWhenReady(){
+ if(!accountReady())return;
+ await load();
+}
+document.getElementById('ice-reload').onclick=loadWhenReady;
+window.addEventListener('spielonline-change',()=>{
+ const a=window.SpielOnline?.state?.();
+ if(a?.status==='online'&&a.user){
+  if(!state&&!busy)loadWhenReady();
+ }else if(!busy){state=null;accountReady();}
+});
+loadWhenReady();
 })();
