@@ -15,7 +15,7 @@ async function restartFromFinale(){
   const u=window.SpielOnline?.state?.()?.user;
   if(!u?.getIdToken)throw Error('Bitte mit deinem Online-Profil anmelden.');
   const token=await u.getIdToken();
-  const response=await fetch(String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\\/+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(code)+'/start',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store'});
+  const response=await fetch(String(window.SPIELPORTAL_CONFIG?.apiBase||'https://serverfinal-ynbe.onrender.com').replace(/\/+$/,'')+'/api/deal-or-no-deal/'+encodeURIComponent(code)+'/start',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store'});
   const data=await response.json();
   if(!response.ok||!data.ok)throw Error(data.error||'START_FAILED');
   // The shared room and players remain intact. Reload the game with its new server state.
