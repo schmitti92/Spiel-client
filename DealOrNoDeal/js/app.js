@@ -47,6 +47,8 @@ $('actions').replaceChildren();if(g.phase==='reveal'&&g.pending?.actor===myId()&
   setTimeout(()=>{if(recover.isConnected&&recover.textContent.includes('geprüft'))recover.textContent='🎡 Sieger-Glücksrad erneut prüfen'},5000);
  });
  recover.disabled=false;$('actions').append(recover);
+ const replay=button('🎬 Finale komplett wiederholen',()=>window.dispatchEvent(new Event('deal-replay-finale-sequence')));
+ replay.disabled=false;$('actions').append(replay);
 }
 if(g.phase==='open'&&who!==myId())$('status').textContent+=' · Du bist gerade nicht am Zug.';if(g.phase==='final'&&g.finalValues){let max=Math.max(...g.finalValues.map(x=>x.payout));$('status').textContent='🏆 '+g.finalValues.filter(x=>x.payout===max).map(x=>g.players.find(p=>p.id===x.id)?.name).join(' & ')+' gewinnt mit '+eur(max)}revealVotesAfterAll();startFinaleCinema()}
 window.addEventListener('deal-final-wheel-complete',()=>{if(g?.phase==='final'){render();$('final-show').scrollIntoView({behavior:'smooth',block:'start'})}});
