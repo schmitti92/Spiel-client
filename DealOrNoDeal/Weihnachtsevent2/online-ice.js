@@ -11,7 +11,7 @@ async function request(type,body){
  const u=user();if(!u)throw Error('Bitte zuerst im Spielerprofil anmelden.');
  const token=await u.getIdToken();
  const response=await fetch(api+'/api/christmas-ice/'+(type==='GET'?'me':'action'),{method:type,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store',body:body?JSON.stringify(body):undefined});
- const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');return data;
+ const data=await response.json();if(!response.ok||!data.ok){const error=new Error(data.error||'SERVER_ERROR');error.confirmedRejection=true;throw error}return data;
 }
 const id=()=>crypto.randomUUID();
 let galleryPage=0,showAllGallery=false,impactTimer=null,celebration=null,wheelTimer=null;
@@ -82,7 +82,7 @@ async function run(type,extra={}){
   else if(data.result?.found)message('🌟 Stern gefunden! Dieses Bild wurde bereits bei einem früheren Durchlauf belohnt.');
   else message('✅ Fortschritt serverseitig gespeichert.');
   render();
- }catch(e){message('⚠️ '+e.message+' – du kannst dieselbe Aktion erneut versuchen.');render()}
+ }catch(e){if(e.confirmedRejection){pending=null;try{sessionStorage.removeItem('christmasIcePending')}catch{}message('⚠️ '+e.message+' – die Aktion wurde vom Server abgelehnt. Du kannst eine andere Aktion wählen.')}else{message('⚠️ '+e.message+' – Verbindung unklar. Bitte dieselbe Aktion sicher wiederholen.')}render()}
  finally{busy=false;render()}
 }
 async function load(){
