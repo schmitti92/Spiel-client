@@ -12,7 +12,7 @@ test('Deal game subscribes to the dedicated authenticated socket',()=>{
 test('Deal stream and HTTP updates reject stale revisions',()=>{
  assert.match(app,/Number\(next\.revision\)>Number\(g\.revision\)/);
  assert.match(app,/Number\(data\.game\.revision\)>Number\(g\.revision\)/);
- assert.match(core,/Number\(data\.game\?\.revision\)>=Number\(g\.revision\)/);
+ assert.match(core,/Number\(data\.game\?\.revision\)>Number\(g\.revision\)/);
 });
 test('Deal stream retains HTTP fallback and reward checks are event driven',()=>{
  assert.match(app,/if\(!dealSocketHealthy\(\)\)await poll\(\)/);
