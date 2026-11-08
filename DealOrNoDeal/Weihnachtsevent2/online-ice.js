@@ -15,6 +15,15 @@ async function request(type,body){
 }
 const id=()=>crypto.randomUUID();
 let galleryPage=0,showAllGallery=false,impactTimer=null,celebration=null,wheelTimer=null;
+function recoveredGift(){
+ if(!state?.finished||state.completed>=70||celebration)return;
+ const gift=(state.prizes||[]).find(g=>g.number===state.completed);
+ if(!gift)return;
+ const title=gift.kind==='money'?'💰 Geldgewinn':gift.kind==='joker'?'🔐 Kofferblick-Joker':'🔨 Gratis-Hammer';
+ const detail=gift.kind==='money'?money(gift.amount):gift.kind==='joker'?'1 Kofferblick-Joker':({single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'}[gift.hammer]||'Hammer')+' erhalten';
+ celebration={number:state.completed,title,detail,kind:gift.kind,hammer:gift.hammer||null,amount:gift.amount||0,stage:'gift'};
+}
+
 function render(){
  if(!state){root.innerHTML='<p>Dein Online-Spielstand ist noch nicht gestartet.</p><button id="ice-start">❄️ Online-Spiel starten</button>';root.querySelector('#ice-start').onclick=()=>run('start');return}
  const finished=!!state.finished,done=state.completed>=70,number=Math.min(70,state.completed+1);
@@ -107,7 +116,7 @@ async function run(type,extra={}){
 }
 async function load(){
  if(busy)return;busy=true;message('⏳ Online-Spielstand laden …');
- try{const data=await request('GET');state=data.state;message('✅ Online-Modus verbunden.');render()}
+ try{const data=await request('GET');state=data.state;recoveredGift();message('✅ Online-Modus verbunden.');render()}
  catch(e){message('⚠️ '+e.message);root.innerHTML='<button id="ice-retry">Erneut verbinden</button>';root.querySelector('#ice-retry').onclick=load}
  finally{busy=false}
 }
