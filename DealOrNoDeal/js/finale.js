@@ -7,8 +7,10 @@ $('finale-skip').addEventListener('click',finishFinaleCinema);
 let finaleRestartBusy=false;
 async function restartFromFinale(skipFinalWheel=false){
  if(finaleRestartBusy||!g||g.phase!=='final')return;
+ const payouts=(g.finalValues||[]).map(v=>v.payout);
+ const tiedFinal=payouts.length>1&&payouts.filter(v=>v===Math.max(...payouts)).length>1;
  const spinAt=g.christmasWheelSpins?.['final:'+g.id];
- if(!skipFinalWheel&&(!spinAt||Date.now()-spinAt<12500)){$('final-replay-status').textContent='🎡 Erst das Sieger-Glücksrad drehen und die Kartenenthüllung abwarten.';return;}
+ if(!skipFinalWheel&&!tiedFinal&&(!spinAt||Date.now()-spinAt<12500)){$('final-replay-status').textContent='🎡 Erst das Sieger-Glücksrad drehen und die Kartenenthüllung abwarten.';return;}
  const currentGameId=g.id;
  const buttons=[$('finale-replay'),$('final-replay')];
  const messages=[$('finale-cinema-status'),$('final-replay-status')];
