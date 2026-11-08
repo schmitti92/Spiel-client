@@ -126,7 +126,9 @@
   }catch(e){console.warn('Weihnachtsbonus wird erneut geprüft',e)}
   finally{checking=false}
  }
- setInterval(checkRewards,1700);
+ // React to confirmed game-state changes; retain a slow safety poll for reconnects.
+ window.addEventListener('deal-game-state-change',checkRewards);
+ setInterval(checkRewards,30000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkRewards()});
  window.addEventListener('spielonline-change',checkRewards);
 })();
