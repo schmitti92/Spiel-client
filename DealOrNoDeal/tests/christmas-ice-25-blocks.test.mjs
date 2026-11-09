@@ -10,7 +10,7 @@ const html=read('Weihnachtsevent2/index.html');
 test('browser event scripts parse and 5x5 grid is enabled for 25 blocks',()=>{
  assert.doesNotThrow(()=>new Script(js));
  assert.match(html,/ice-tiles\.ice-tiles-25\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\);grid-template-rows:repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(html,/online-ice\.js\?v=20261109-no-star-after14-v1/);
+ assert.match(html,/online-ice\.js\?v=20261109-grand-reveal-v1/);
  assert.match(js,/ice-tiles-25/);
  assert.match(js,/Array\.from\(\{length:tileCount\}/);
  assert.doesNotMatch(js,/Array\.from\(\{length:20\}/);
@@ -55,7 +55,7 @@ test('cinematic hammer shatters follow server-confirmed targets only',()=>{
  assert.match(js,/!data\.result\?\.replayed/);
  assert.match(js,/nowOpened\.has\(i\)&&!beforeOpened\.has\(i\)/);
  assert.match(js,/window\.ChristmasIceHammerFX\?\.confirmed/);
- assert.match(js,/celebration&&!celebrationDelayTimer/);
+ assert.match(js,/celebration&&celebration\.stage!=='image'&&!celebrationDelayTimer/);
  assert.match(js,/celebrationDelayTimer=setTimeout/);
  assert.match(js,/number=Math\.min\(70,state\.completed\+\(finished\?0:1\)\)/);
  assert.doesNotMatch(fx,/\b(?:fetch|XMLHttpRequest|WebSocket|firebase|request)\s*\(/i);
@@ -70,5 +70,23 @@ test('from image 15, UI explains complete clearing without a hidden star',()=>{
  assert.match(js,/celebration\.number>=15\?'Alle Eisblöcke entfernt!'/);
  assert.match(js,/celebration\.number>=15\?'🧊':'🌟'/);
  assert.match(js,/Number\(state\.completed\)>=15\?'🧊 Alle Eisblöcke entfernt!/);
- assert.match(html,/online-ice\.js\?v=20261109-no-star-after14-v1/);
+ assert.match(html,/online-ice\.js\?v=20261109-grand-reveal-v1/);
+});
+
+test('every server-confirmed completed picture uses full-screen reveal before reward',()=>{
+ const css=read('Weihnachtsevent2/image-reveal-grand.css');
+ assert.match(html,/image-reveal-grand\.css\?v=20261109-grand-reveal-v1/);
+ assert.match(html,/online-ice\.js\?v=20261109-grand-reveal-v1/);
+ assert.match(js,/celebration\?\.stage==='image'&&!celebrationDelayTimer&&state\.finished&&Number\(state\.completed\)>=celebration\.number/);
+ assert.match(js,/photo\(celebration\.number\)/);
+ assert.match(js,/id="v44-big-reveal-continue"/);
+ assert.match(js,/celebration\.stage='gift';render\(\)/);
+ assert.match(js,/celebration=\{number:Number\(state\.completed\|\|oldCompleted\+1\),title,detail,kind:gift\?\.kind\|\|'other',hammer:gift\?\.hammer\|\|null,amount:gift\?\.amount\|\|0,stage:'image'\}/);
+ assert.match(js,/if\(type==='strike'&&state\.finished&&!wasFinished\)/);
+ assert.match(js,/celebrationDelayTimer=setTimeout\(\(\)=>\{celebrationDelayTimer=null;render\(\)\},950\)/);
+ assert.match(js,/if\(!celebration\|\|celebration\.stage!=='image'\|\|!state\?\.finished\|\|state\.completed<celebration\.number\)return/);
+ assert.match(js,/if\(n===number\)\{message\(number>=15\?'🧊 Das Bild wird erst enthüllt, wenn alle 25 Eisfelder entfernt wurden\./);
+ for(const c of ['v44-big-reveal-frame','v44-big-reveal-snow','v44-big-reveal-card'])assert.ok(css.includes(c));
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.doesNotMatch(css,/fetch\(|Firebase|api\/christmas-ice/i);
 });
