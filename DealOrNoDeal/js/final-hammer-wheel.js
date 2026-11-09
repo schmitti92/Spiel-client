@@ -22,6 +22,7 @@
   const box=document.getElementById('cent-reward');
   const finaleOverlay=document.getElementById('finale-cinema');
   if(!box||finaleOverlay&&!finaleOverlay.hidden)return;
+  if(!box.hidden&&window.__dealFinalWheelHandoff!==game.id)return;
   if(shown===game.id||sessionStorage.getItem('ice-hammer-wheel-seen:'+game.id)==='yes')return;
   shown=game.id;
   box.hidden=false;box.classList.add('final-dual-active','final-hammer-running');
@@ -34,9 +35,11 @@
   document.getElementById('cent-reward-title').textContent='🏆 Das große Sieger-Doppelglücksrad';
   document.getElementById('cent-reward-subtitle').textContent='🎁 Kartenpaket ausgelost · 🔨 Jetzt dreht das Hammerrad – live für alle';
   document.getElementById('cent-wheel-status').textContent='✓ Das Kartenpaket wurde bereits ausgelost';
+  document.getElementById('final-dual-hammer-disc').style.filter='none';
   const disc=document.getElementById('final-dual-hammer-disc');
   const status=document.getElementById('final-dual-hammer-status');
   const close=document.getElementById('cent-reward-close');
+  close.textContent='✓ Siegerbelohnungen abschließen';
   const spin=document.createElement('button');
   spin.className='final-hammer-retry';spin.textContent='🔄 Hammerauslosung erneut versuchen';spin.hidden=true;
   document.getElementById('final-dual-hammer').append(spin);
@@ -72,7 +75,7 @@
   };
   // Only the authenticated winner may request a spin; the server draws the award once.
   if(winner===u.uid&&!game.christmasHammerWheel)setTimeout(()=>{if(box.isConnected&&!box.hidden&&!busy&&!revealed)spin.click()},1400);
-  close.onclick=()=>{window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');box.hidden=true;box.classList.remove('final-hammer-running','final-dual-active');spin.remove();busy=false};
+  close.onclick=()=>{if(!revealed)return;window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');box.hidden=true;box.classList.remove('final-hammer-running','final-dual-active');spin.remove();busy=false};
  }
  function scheduleShow(){
   const game=match();if(!winnerId(game))return;
