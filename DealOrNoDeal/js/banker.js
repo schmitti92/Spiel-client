@@ -194,7 +194,7 @@ $('banker-bonus-reveal-skip')?.addEventListener('click',bankerBonusCloseReveal);
 $('banker-call-deal').addEventListener('click',()=>action('decide',{deal:true}));
 $('banker-call-no-deal').addEventListener('click',()=>action('decide',{deal:false}));
 let lastVoteRevealKey='';let voteRevealTimer=null;let finalDealRevealUntil=0;
-function closeVoteReveal(){if(g?.phase==='final'&&dealServerNow()<finalDealRevealUntil)return;if(voteRevealTimer!==null){clearTimeout(voteRevealTimer);voteRevealTimer=null}if(lastVoteRevealKey)sessionStorage.setItem(lastVoteRevealKey,'seen');$('vote-reveal').hidden=true;finalDealRevealUntil=0;if(g?.phase==='final')startFinaleCinema()}
+function closeVoteReveal(){if(g?.phase==='final'&&dealServerNow()<finalDealRevealUntil)return;if(voteRevealTimer!==null){clearTimeout(voteRevealTimer);voteRevealTimer=null}if(lastVoteRevealKey)sessionStorage.setItem(lastVoteRevealKey,'seen');$('vote-reveal').hidden=true;finalDealRevealUntil=0;if(g?.phase==='final')startFinaleCinema();window.dispatchEvent(new Event('deal-banker-reveal-finished'))}
 function revealVotesAfterAll(){
  if(!g||!g.history?.length)return;
  const h=g.history.at(-1);
