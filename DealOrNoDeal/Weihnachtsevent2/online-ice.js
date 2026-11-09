@@ -12,7 +12,9 @@ async function request(type,body){
  const token=await u.getIdToken();
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);
  try{
-  const response=await fetch(api+'/api/christmas-ice/'+(type==='GET'?'me':'action'),{method:type,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store',signal:controller.signal,body:body?JSON.stringify(body):undefined});
+  const pendingId=type==='GET'?String(body?.pendingId||''):'';
+  const endpoint=api+'/api/christmas-ice/'+(type==='GET'?'me':'action')+(pendingId?'?pendingId='+encodeURIComponent(pendingId):'');
+  const response=await fetch(endpoint,{method:type,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store',signal:controller.signal,body:type==='GET'?undefined:(body?JSON.stringify(body):undefined)});
   const data=await response.json();if(!response.ok||!data.ok){const error=new Error(data.error||'SERVER_ERROR');error.confirmedRejection=true;throw error}return data;
  }catch(error){
   if(error?.name==='AbortError')throw Error('Zeitüberschreitung nach 25 Sekunden');
@@ -20,6 +22,18 @@ async function request(type,body){
  }finally{clearTimeout(timeout)}
 }
 const id=()=>crypto.randomUUID();
+function readPending(){
+ try{
+  const item=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null');
+  return item?.uid===user()?.uid&&/^[A-Za-z0-9_-]{12,90}$/.test(item.requestId||'')&&
+   ['start','strike','next','reset'].includes(item.type)&&typeof item.key==='string'&&
+   item.extra&&typeof item.extra==='object'?item:null;
+ }catch{return null}
+}
+function forgetPending(){
+ pending=null;
+ try{sessionStorage.removeItem('christmasIcePending')}catch{}
+}
 let galleryPage=0,showAllGallery=false,largeGalleryImage=null,impactTimer=null,celebration=null,wheelTimer=null;
 function recoveredGift(){
  if(!state?.finished||state.completed>=70||celebration)return;
@@ -117,8 +131,8 @@ function render(){
  root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{if(busy||b.disabled)return;const hammer=window.iceHammer||'single';if((state.freeHammers?.[hammer]||0)<1&&Number(state.balance||0)<costs[hammer]){message('⚠️ Nicht genügend Eventguthaben für '+labels[hammer]+'. Wähle einen verfügbaren Hammer.');return}const board=root.querySelector('.v44-board');if(board){const impact=document.createElement('div');impact.className='v44-impact';impact.setAttribute('aria-hidden','true');const a=b.getBoundingClientRect(),p=board.getBoundingClientRect();impact.style.left=(a.left+a.width/2-p.left)+'px';impact.style.top=(a.top+a.height/2-p.top)+'px';impact.innerHTML='<span class="v44-impact-hammer">'+({single:'🔨',double:'⚒️',lucky:'✨'}[hammer]||'🔨')+'</span>'+Array.from({length:9},(_,i)=>'<i style="--a:'+(i*40)+'deg;--d:'+(34+i%3*14)+'px"></i>').join('');board.appendChild(impact);clearTimeout(impactTimer);impactTimer=setTimeout(()=>impact.remove(),750)}b.classList.add('cracking');run('strike',{index:Number(b.dataset.tile),hammer});});
  const next=root.querySelector('#ice-next');if(next)next.onclick=()=>run('next');
  root.querySelector('#ice-reset').onclick=()=>{if(confirm('Das Weihnachtsevent wirklich von Bild 1 neu beginnen? Bereits erhaltene Joker und gewonnene Hammer bleiben erhalten; frühere Bildgewinne werden nicht erneut ausgezahlt.'))run('reset')};
- let stored=null;try{stored=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null')}catch{}
- if(stored?.uid===user()?.uid&&stored.requestId&&stored.type&&stored.key){
+ const stored=readPending();
+ if(stored){
   const b=document.createElement('button');b.id='ice-recover';b.textContent='🔄 Letzte Aktion sicher wiederholen';root.querySelector('.v44-actions').appendChild(b);
   b.onclick=()=>{pending={key:stored.key,requestId:stored.requestId};run(stored.type,stored.extra||{})};
  }
@@ -126,17 +140,18 @@ function render(){
 async function run(type,extra={}){
  if(busy)return;
  // A timed-out request may already have committed. Never replace its id with a new action.
- let unresolved=null;try{unresolved=JSON.parse(sessionStorage.getItem('christmasIcePending')||'null')}catch{}
- if(unresolved?.uid===user()?.uid&&unresolved.requestId){
+ const unresolved=readPending();
+ if(unresolved){
   const same=unresolved.type===type&&JSON.stringify(unresolved.extra||{})===JSON.stringify(extra);
-  if(!same){message('⚠️ Zuerst die ausstehende Aktion mit „Letzte Aktion sicher wiederholen“ abschließen. So werden keine Hammerschläge doppelt berechnet.');render();return}
+  if(!same){message('⚠️ Zuerst „Letzte Aktion sicher wiederholen“ wählen. Wir gleichen den alten Hammerschlag ab, damit nichts doppelt berechnet wird.');render();return}
   pending={key:unresolved.key,requestId:unresolved.requestId};
  }
  busy=true;message('⏳ Aktion wird gespeichert …');
  const key=type==='strike'?'strike:'+String(state?.completed)+':'+extra.index+':'+extra.hammer:type+':'+String(state?.completed);
- let requestId=pending?.key===key?pending.requestId:id();
- pending={key,requestId};
- try{sessionStorage.setItem('christmasIcePending',JSON.stringify({uid:user()?.uid,key,requestId,extra,type}))}catch{}
+ // Reusing the original request ID is essential even when completed has changed.
+ const requestId=unresolved?.requestId||(pending?.key===key?pending.requestId:id());
+ pending={key:unresolved?.key||key,requestId};
+ try{sessionStorage.setItem('christmasIcePending',JSON.stringify({uid:user()?.uid,key:pending.key,requestId,extra,type}))}catch{}
  try{
   const data=await request('POST',{type,requestId,...extra});
   const wasFinished=!!state?.finished,oldCompleted=Number(state?.completed||0);
@@ -148,19 +163,34 @@ async function run(type,extra={}){
    const detail=gift?(gift.kind==='money'?money(gift.amount):gift.kind==='joker'?'1 Kofferblick-Joker':({single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'}[gift.hammer]||'Hammer')+' erhalten'):'Bereits erhaltene Belohnungen werden nicht erneut gutgeschrieben.';
    celebration={number:Number(state.completed||oldCompleted+1),title,detail,kind:gift?.kind||'other',hammer:gift?.hammer||null,amount:gift?.amount||0,stage:'gift'};
   }else if(type==='next'||type==='reset'){clearTimeout(wheelTimer);celebration=null;}
-  try{sessionStorage.removeItem('christmasIcePending')}catch{}
+  forgetPending();
   if(data.result?.gift){const gift=data.result.gift;message('🎁 '+(gift.kind==='joker'?'Kofferblick-Joker gewonnen!':gift.kind==='money'?money(gift.amount)+' gewonnen!':'Gratis-Hammer gewonnen: '+gift.hammer))}
   else if(data.result?.found)message('🌟 Stern gefunden! Dieses Bild wurde bereits bei einem früheren Durchlauf belohnt.');
   else message('✅ Fortschritt serverseitig gespeichert.');
   render();
- }catch(e){if(e.confirmedRejection){pending=null;try{sessionStorage.removeItem('christmasIcePending')}catch{}message('⚠️ '+e.message+' – die Aktion wurde vom Server abgelehnt. Du kannst eine andere Aktion wählen.')}else{message('⚠️ '+e.message+' – Verbindung unklar. Bitte dieselbe Aktion sicher wiederholen.')}render()}
+ }catch(e){if(e.confirmedRejection){forgetPending();message('⚠️ '+e.message+' – die Aktion wurde vom Server abgelehnt. Du kannst wieder einen Hammer auswählen.')}else{message('⚠️ '+e.message+' – Verbindung unklar. Bitte dieselbe Aktion sicher wiederholen.')}render()}
  finally{busy=false;render()}
 }
 async function load(){
  if(busy)return;busy=true;message('⏳ Online-Spielstand laden …');
- try{const data=await request('GET');state=data.state;
-  if(state&&!state.goldenHammerGift2026){const bonus=await request('POST',{type:'welcome',requestId:id()});state=bonus.state;if(bonus.result?.granted)message('🎁 Einmaliges Geschenk: 3 goldene Glückshammer wurden gutgeschrieben!');else message('✅ Online-Modus verbunden.');}
-  else message('✅ Online-Modus verbunden.');recoveredGift();render()}
+ try{
+  const stored=readPending();
+  const data=await request('GET',stored?{pendingId:stored.requestId}:undefined);
+  state=data.state;
+  // An uncertain write can already exist on the server. Never replay it
+  // with a fresh request ID after a page reload.
+  const confirmed=!!stored&&data.pendingAction?.applied===true;
+  if(confirmed)forgetPending();
+  if(state&&!state.goldenHammerGift2026){
+   const bonus=await request('POST',{type:'welcome',requestId:id()});
+   state=bonus.state;
+   if(bonus.result?.granted)message('🎁 Einmaliges Geschenk: 3 goldene Glückshammer wurden gutgeschrieben!');
+   else message('✅ Online-Modus verbunden.');
+  }else message('✅ Online-Modus verbunden.');
+  if(confirmed)message('✅ Letzte Aktion war bereits gespeichert. Du kannst weiterspielen.');
+  else if(stored)message('🔄 Letzte Aktion noch offen. Bitte „Letzte Aktion sicher wiederholen“ wählen.');
+  recoveredGift();render()
+ }
  catch(e){message('⚠️ '+e.message);root.innerHTML='<button id="ice-retry">Erneut verbinden</button>';root.querySelector('#ice-retry').onclick=load}
  finally{busy=false}
 }
