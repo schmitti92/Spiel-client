@@ -219,14 +219,24 @@ function render(){
   // stale. This is a GET receipt check, never a second paid strike.
   if(readPending()){
    message('🔄 Letzten Hammerschlag sicher abgleichen … Danach erneut auf ein Eisfeld tippen.');
+   const info=root.querySelector('.v44-instruction');
+   if(info)info.textContent='🔄 Alter Schlag wird sicher überprüft. Danach kannst du wieder auf Eis tippen.';
    void load();
    return;
   }
   const hammer=window.iceHammer||'single';
   if((state.freeHammers?.[hammer]||0)<1&&Number(state.balance||0)<costs[hammer]){
-   message('⚠️ '+labels[hammer]+' kostet '+money(costs[hammer])+'. Guthaben: '+money(state.balance)+'. Wähle einen Gratis-Hammer oder sammle Eventguthaben.');
+   const warning='⚠️ '+labels[hammer]+' kostet '+money(costs[hammer])+'. Guthaben: '+money(state.balance)+'. Wähle einen Gratis-Hammer oder sammle Eventguthaben.';
+   message(warning);
+   const info=root.querySelector('.v44-instruction');if(info)info.textContent=warning;
    return;
   }
+  // Immediate feedback stays on the board during a slow authenticated POST.
+  // It does not open, charge or hide a tile until the server confirms it.
+  b.classList?.add('ice-strike-wait');
+  b.setAttribute?.('aria-busy','true');
+  const instruction=root.querySelector('.v44-instruction');
+  if(instruction)instruction.textContent='⏳ '+labels[hammer]+' wird eingesetzt … Der Server bestätigt den Eisbruch.';
   // Visual cues are optional: a faulty graphics module may not block a
   // server-authorized ice hit. Only the server decides which tiles open.
   try{window.ChristmasIceHammerFX?.cue(b,hammer)}catch(error){console.warn('[Ice] Animation nicht verfügbar',error)}
