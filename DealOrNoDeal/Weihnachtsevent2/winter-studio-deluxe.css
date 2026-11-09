@@ -11,6 +11,20 @@ body.christmas-event-ice{
   background:#061526 linear-gradient(175deg,#0613216b,#061427a0 52%,#061121cb),
     url('./Weihnachtsbilder/originalgrafik-07.webp') center top/cover fixed!important;
 }
+/* Five Christmas destinations stay on one row on tablet and desktop. */
+body.christmas-event-ice nav.event-hub-nav{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+@media(max-width:700px){
+  body.christmas-event-ice nav.event-hub-nav{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:440px){
+  body.christmas-event-ice nav.event-hub-nav{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
 body.christmas-event-ice #ice-online-panel{
   width:100%;max-width:1670px;min-height:0!important;margin:0 auto;
   padding:12px clamp(10px,1.2vw,20px) 38px!important;
