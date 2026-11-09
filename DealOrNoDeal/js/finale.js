@@ -113,11 +113,128 @@ function startFinaleCinema(){
  // catches up rather than replaying the entire sequence several seconds late.
  const finaleElapsed=!replayFinaleLocally&&Number.isFinite(g.finalStartedAt)?Math.max(0,Date.now()-g.finalStartedAt):0;
  const at=ms=>Math.max(0,ms-finaleElapsed);
- const first=ascending[0];
- if(!reduced){grid.classList.add('finale-suspense');finaleLater(()=>{$('finale-tension').textContent='3'},at(450));finaleLater(()=>{$('finale-tension').textContent='2'},at(850));finaleLater(()=>{$('finale-tension').textContent='1'},at(1250))}
- finaleLater(()=>{const x=cards.get(first.f.id);x.card.classList.add('revealed','first-reveal');grid.classList.remove('finale-suspense');x.note.textContent='Kofferinhalt: '+eur(first.f.amount);$('finale-tension').textContent='ERSTE ENTHÜLLUNG';$('finale-caption').textContent='Der kleinste Kofferinhalt wird enthüllt …'},at(reduced?100:1600));
- finaleLater(()=>{for(const {f} of ascending.slice(1)){const x=cards.get(f.id);x.card.classList.add('revealed','group-reveal');x.note.textContent='Kofferinhalt: '+eur(f.amount)}$('finale-tension').textContent='ALLE KOFFERSCHÄTZE ENTHÜLLT';finaleLater(()=>{$('finale-skip').hidden=false},3000);$('finale-caption').textContent='Alle übrigen Koffer werden gleichzeitig enthüllt!'},at(reduced?200:4100));
- finaleLater(()=>{grid.classList.add('champion-phase');$('finale-tension').textContent='🏆 DIE ENTSCHEIDUNG IST GEFALLEN 🏆';for(let i=0;i<45&&!reduced;i++){const piece=document.createElement('i');piece.className='finale-confetti';piece.style.left=(i*37%100)+'%';piece.style.setProperty('--drift',((i*19%110)-55)+'px');piece.style.setProperty('--delay',(i*13%45)/100+'s');piece.style.background=['#ffe5a0','#e5a840','#ffffff','#78b9ff'][i%4];$('finale-sparks').append(piece)}for(const w of winners){const x=cards.get(w.f.id);x.card.classList.add('winner','champion-focus');x.note.textContent='🏆 '+(w.p?.deal!==null?'Deal: ':'Gewinn: ')+eur(w.f.payout)}$('finale-title').textContent=winners.length>1?'Wir haben mehrere Gewinner!':'Der Gewinner steht fest!';$('finale-caption').textContent='Entscheidend ist die tatsächliche Auszahlung – inklusive angenommener Deals.';$('finale-champion-name').textContent=winners.map(w=>w.p?.name||'Spieler').join(' & ');$('finale-champion-value').textContent='Gewinn: '+eur(top);$('finale-champion').hidden=false;$('finale-replay').hidden=true;finaleLater(()=>{if(!$('finale-cinema').hidden)finishFinaleCinema()},reduced?3000:3000)},at(reduced?3200:7100));
+
+ // Every participant's case is shown as a large, animated suitcase.
+ // The order is by case contents (smallest first), but payouts/winner use the
+ // actual accepted deal or case value as supplied by the server.
+ const spotlight=$('finale-spotlight');
+ const spotlightAvatar=$('finale-spotlight-avatar');
+ const spotlightName=$('finale-spotlight-name');
+ const spotlightNumber=$('finale-spotlight-case-number');
+ const spotlightValue=$('finale-spotlight-value');
+ const spotlightResult=$('finale-spotlight-result');
+ const spotlightProgress=$('finale-spotlight-progress');
+ const spotlightStatus=$('finale-spotlight-status');
+ spotlight.hidden=true;
+ spotlight.dataset.state='closed';
+ const introAt=reduced?150:1600;
+ const slotLength=reduced?1450:3100;
+ const openAfter=reduced?180:1050;
+ const championAt=introAt+ascending.length*slotLength+(reduced?120:480);
+ const finaleFinishAt=championAt+(reduced?1700:3500);
+ const openedCase=new Set();
+ function showMiniCase(entry){
+  if(openedCase.has(entry.f.id))return;
+  openedCase.add(entry.f.id);
+  const x=cards.get(entry.f.id);
+  if(!x)return;
+  x.card.classList.add('revealed','group-reveal');
+  x.note.textContent='Koffer '+(entry.f.case+1)+' · Inhalt: '+eur(entry.f.amount);
+ }
+ function showLargeCase(entry,index,opened=false){
+  const {f,p}=entry;
+  const x=cards.get(f.id);
+  if(!x)return;
+  spotlight.hidden=false;
+  spotlight.dataset.playerId=String(f.id);
+  spotlight.dataset.state=opened?'open':'closed';
+  spotlight.classList.remove('finale-spotlight-arrival');
+  // Restart the entrance effect when the next contestant steps forward.
+  void spotlight.offsetWidth;
+  spotlight.classList.add('finale-spotlight-arrival');
+  spotlightName.textContent=p?.name||'Spieler';
+  spotlightProgress.textContent='PERSÖNLICHER KOFFER · '+(index+1)+' / '+ascending.length;
+  spotlightNumber.textContent='KOFFER '+(f.case+1);
+  spotlightAvatar.src=x.card.querySelector('.finale-player-avatar')?.src||'';
+  spotlightAvatar.alt='Spielfigur von '+(p?.name||'Spieler');
+  spotlightValue.textContent=opened?eur(f.amount):'';
+  spotlightStatus.textContent=opened?'DER KOFFER IST GEÖFFNET':'Dieser Koffer wurde zu Spielbeginn gewählt';
+  spotlightResult.textContent=opened
+   ? (p?.deal!=null?'Kofferinhalt: '+eur(f.amount)+' · DEAL angenommen: '+eur(f.payout):'Kofferinhalt und Gewinn: '+eur(f.amount))
+   :'Der Geldbetrag bleibt bis zum Öffnen geheim.';
+  grid.querySelectorAll('.finale-player').forEach(c=>c.classList.remove('on-stage'));
+  x.card.classList.add('on-stage');
+  grid.classList.remove('finale-suspense');
+  $('finale-title').textContent='Der persönliche Koffer von '+(p?.name||'Spieler');
+  $('finale-tension').textContent=opened?'✨ KOFFER '+(f.case+1)+' ENTHÜLLT':'🧳 KOFFER '+(f.case+1)+' – WAS STECKT DRIN?';
+  $('finale-caption').textContent=opened?'Das Geheimnis des anfangs ausgewählten Koffers ist gelüftet.':'Der ausgewählte Koffer wird jetzt geöffnet …';
+  if(opened)showMiniCase(entry);
+ }
+ function openLargeCase(entry){
+  if(spotlight.hidden||spotlight.dataset.playerId!==String(entry.f.id))return;
+  // First insert the actual server value, then animate the golden lid away.
+  spotlightValue.textContent=eur(entry.f.amount);
+  spotlight.dataset.state='open';
+  spotlightStatus.textContent='DER KOFFER IST GEÖFFNET';
+  spotlightResult.textContent=entry.p?.deal!=null
+   ? 'Kofferinhalt: '+eur(entry.f.amount)+' · DEAL angenommen: '+eur(entry.f.payout)
+   : 'Kofferinhalt und Gewinn: '+eur(entry.f.amount);
+  $('finale-tension').textContent='✨ KOFFER '+(entry.f.case+1)+' ENTHÜLLT';
+  $('finale-caption').textContent=entry.p?.deal!=null
+   ? 'Der Kofferwert ist sichtbar – der angenommene Deal bleibt der Gewinn.'
+   : 'Der Kofferwert ist der tatsächliche Gewinn.';
+  showMiniCase(entry);
+ }
+ if(!reduced&&finaleElapsed<introAt){
+  grid.classList.add('finale-suspense');
+  for(const [word,ms] of [['3',450],['2',850],['1',1250]]){
+   if(finaleElapsed<=ms)finaleLater(()=>{$('finale-tension').textContent=word},at(ms));
+  }
+ }
+ ascending.forEach((entry,index)=>{
+  const startAt=introAt+index*slotLength,openAt=startAt+openAfter,endAt=startAt+slotLength;
+  if(finaleElapsed>=openAt)showMiniCase(entry);
+  if(finaleElapsed>=startAt&&finaleElapsed<endAt){
+   showLargeCase(entry,index,finaleElapsed>=openAt);
+   if(finaleElapsed<openAt)finaleLater(()=>openLargeCase(entry),at(openAt));
+  }else if(finaleElapsed<startAt){
+   finaleLater(()=>showLargeCase(entry,index),at(startAt));
+   finaleLater(()=>openLargeCase(entry),at(openAt));
+  }
+ });
+ function revealChampion(){
+  if($('finale-cinema').hidden)return;
+  spotlight.hidden=true;
+  grid.classList.add('champion-phase');
+  grid.querySelectorAll('.finale-player').forEach(c=>c.classList.remove('on-stage'));
+  $('finale-tension').textContent='🏆 DIE ENTSCHEIDUNG IST GEFALLEN 🏆';
+  for(const entry of ascending)showMiniCase(entry);
+  for(let i=0;i<45&&!reduced;i++){
+   const piece=document.createElement('i');
+   piece.className='finale-confetti';
+   piece.style.left=(i*37%100)+'%';
+   piece.style.setProperty('--drift',((i*19%110)-55)+'px');
+   piece.style.setProperty('--delay',(i*13%45)/100+'s');
+   piece.style.background=['#ffe5a0','#e5a840','#ffffff','#78b9ff'][i%4];
+   $('finale-sparks').append(piece);
+  }
+  for(const w of winners){
+   const x=cards.get(w.f.id);
+   x.card.classList.add('winner','champion-focus');
+   x.note.textContent='🏆 '+(w.p?.deal!=null?'Deal: ':'Gewinn: ')+eur(w.f.payout);
+  }
+  $('finale-title').textContent=winners.length>1?'Wir haben mehrere Gewinner!':'Der Gewinner steht fest!';
+  $('finale-caption').textContent='Entscheidend ist die tatsächliche Auszahlung – inklusive angenommener Deals.';
+  $('finale-champion-name').textContent=winners.map(w=>w.p?.name||'Spieler').join(' & ');
+  $('finale-champion-value').textContent='Gewinn: '+eur(top);
+  $('finale-champion').hidden=false;
+  $('finale-replay').hidden=true;
+  $('finale-skip').hidden=false;
+  $('finale-skip').textContent=winners.length===1?'🎁 Weiter zum Siegerbonus ›':'✓ Siegerehrung schließen';
+ }
+ if(finaleElapsed>=championAt)revealChampion();
+ else finaleLater(revealChampion,at(championAt));
+ finaleLater(()=>{if(!$('finale-cinema').hidden)finishFinaleCinema()},at(finaleFinishAt));
  // Keep the ceremony visible until the player chooses a new round or the results.
  // No automatic close: the winner and replay action remain accessible.
 }
