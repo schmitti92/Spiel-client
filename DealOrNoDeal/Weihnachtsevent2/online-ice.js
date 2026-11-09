@@ -73,11 +73,18 @@ function render(){
  const finished=!!state.finished,done=state.completed>=70,number=Math.min(70,state.completed+(finished?0:1));
  // Tile difficulty is authoritative from the server; fall back to the known
  // milestone only for old cached responses, never infer it from local storage.
- const tileCount=Number(state.tilesRequired||state.tileCount)==25?25
-  :Number(state.tilesRequired||state.tileCount)==20?20
-  :Math.max(Number(state.completed)||0,Number(state.maxRewarded)||0)>=10?25:20;
+ const completedImages=Number(state.completed)||0,earnedImages=Number(state.maxRewarded)||0;
+ const reportedTiles=Number(state.tilesRequired||state.tileCount);
+ const fallbackMilestone=completedImages>20||(completedImages===20&&!finished)?30
+  :completedImages>10||(completedImages===10&&!finished)?25:20;
+ const completedMilestone=finished&&(completedImages===10||completedImages===20);
+ const earnedMilestone=completedMilestone?20:earnedImages>=20?30:earnedImages>=10?25:20;
+ // Use server-authoritative tilesRequired; recover older cached responses safely.
+ const tileCount=[20,25,30].includes(Number(state.tilesRequired))?Number(state.tilesRequired)
+  :Math.max(fallbackMilestone,earnedMilestone,[20,25,30].includes(reportedTiles)?reportedTiles:20);
  const openedTiles=Math.min(tileCount,Array.isArray(state.opened)?state.opened.length:0);
- const fullClearPhase=tileCount===25;
+ const fullClearPhase=tileCount>=25;
+ const tileLayoutClass=tileCount===30?' ice-tiles-30':fullClearPhase?' ice-tiles-25':'';
  const photo=n=>'./Weihnachtsbilder/'+encodeURIComponent(names[(n-1)%names.length]);
  const chosen=window.iceHammer||'single';
  const labels={single:'Einfacher Hammer',double:'Doppelhammer',lucky:'Glückshammer'};
@@ -121,7 +128,7 @@ function render(){
  }).join('');
  root.innerHTML='<div class="v44-app"><div class="v44-recovery-bar" role="group" aria-label="Sichere Spielstand-Reparatur"><span>'+(readPending()?'⚠️ Letzte Aktion noch offen':'🔐 Spielstand wird online gesichert')+'</span><button id="ice-recover" type="button">'+(readPending()?'🔄 Letzte Aktion abschließen':'🔄 Spielstand prüfen')+'</button></div><header class="v44-head"><div class="v44-plaque v44-chapter-plaque">❄️ KAPITEL 2 · BILDERZAUBER</div><div class="v44-heading"><h1>Die magischen Weihnachtsbilder</h1><p>70 Bilder · Eisfelder freilegen · Meilenstein-Belohnungen</p></div><div class="v44-plaque">💰 '+money(state.balance)+'</div></header>'+
  '<div class="v44-layout"><section class="v44-panel v44-gallery-panel"><h2>🖼️ Bildergalerie</h2><div class="v44-gallery">'+thumbs+'</div><div class="v44-gallery-nav"><button id="v44-prev" '+(galleryPage===0?'disabled':'')+'>❮</button><span>Bilder '+first+'–'+Math.min(first+5,70)+'</span><button id="v44-nextpage" '+(first+5>=70?'disabled':'')+'>❯</button></div><button id="v44-gallery-all" class="v44-gallery-all">🖼️ Alle 70 Bilder ansehen</button><div class="v44-gallery-stats"><div class="v44-gallery-stat"><strong>🖼️ '+state.completed+'/70</strong>Bilder geschafft</div><div class="v44-gallery-stat"><strong>🔐 '+state.peekJokers+'</strong>Kofferblick-Joker</div></div></section>'+
- '<section class="v44-panel v44-board-panel"><h2>❄️ Bild '+number+' von 70</h2><div class="v44-ice-meter" aria-label="'+openedTiles+' von '+tileCount+' Eisfeldern geöffnet"><span>🧊 '+openedTiles+'/'+tileCount+' Eisfelder</span><div><i style="width:'+(openedTiles/tileCount*100)+'%"></i></div></div><div class="ice-board v44-board"><img alt="Weihnachtsbild '+number+'" src="'+photo(number)+'"><div class="ice-tiles'+(fullClearPhase?' ice-tiles-25':'')+'">'+Array.from({length:tileCount},(_,i)=>'<button data-tile="'+i+'" '+(busy||finished||done||state.opened.includes(i)?'disabled':'')+' class="'+(state.opened.includes(i)||finished||done?'gone':'')+'" aria-label="Eisfeld '+(i+1)+' von '+tileCount+'">❄</button>').join('')+'</div></div><p class="v44-instruction">'+(number>=17?'🧊 Ab Bild 17 gibt es keinen Stern mehr: Zerstöre alle 25 Eisblöcke, um das Bild vollständig freizulegen.':fullClearPhase?'🌟 25 Eisfelder: Finde den versteckten Stern! Er öffnet das ganze Bild sofort.':'🔨 Wähle einen Hammer und finde den versteckten Stern!')+'</p></section>'+
+ '<section class="v44-panel v44-board-panel"><h2>❄️ Bild '+number+' von 70</h2><div class="v44-ice-meter" aria-label="'+openedTiles+' von '+tileCount+' Eisfeldern geöffnet"><span>🧊 '+openedTiles+'/'+tileCount+' Eisfelder</span><div><i style="width:'+(openedTiles/tileCount*100)+'%"></i></div></div><div class="ice-board v44-board"><img alt="Weihnachtsbild '+number+'" src="'+photo(number)+'"><div class="ice-tiles'+tileLayoutClass+'">'+Array.from({length:tileCount},(_,i)=>'<button data-tile="'+i+'" '+(busy||finished||done||state.opened.includes(i)?'disabled':'')+' class="'+(state.opened.includes(i)||finished||done?'gone':'')+'" aria-label="Eisfeld '+(i+1)+' von '+tileCount+'">❄</button>').join('')+'</div></div><p class="v44-instruction">'+(number>=17?'🧊 Kein Stern mehr: Zerstöre alle '+tileCount+' Eisblöcke, um das Bild vollständig freizulegen.':fullClearPhase?'🌟 25 Eisfelder: Finde den versteckten Stern! Er öffnet das ganze Bild sofort.':'🔨 Wähle einen Hammer und finde den versteckten Stern!')+'</p></section>'+
  '<section class="v44-panel v44-hammer-panel"><h2>🔨 Wähle deinen Hammer</h2><div class="v44-hammers">'+['single','double','lucky'].map(k=>'<button class="v44-hammer '+(chosen===k?'selected':'')+'" data-hammer="'+k+'" aria-pressed="'+(chosen===k?'true':'false')+'"><span class="v44-hammer-icon"><img class="v44-hammer-art" src="./Weihnachtsbilder/'+hammerArt[k]+'" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="v44-hammer-fallback" hidden>'+emojis[k]+'</span></span><span><strong>'+labels[k]+'</strong><small>'+({single:'1 Eisfeld',double:'2 Eisfelder',lucky:'3–6 Eisfelder'}[k])+'</small><b>'+price(k)+'</b></span></button>').join('')+'</div></section></div>'+
  '<div class="v44-panel v44-progress"><h2>🎁 Meilensteine & Fortschritt</h2>'+progressIntro+'<div class="v44-rewards">'+milestones+'</div><div class="v44-actions">'+(finished&&!done?'<button id="ice-next">➡️ Nächstes Weihnachtsbild</button>':'')+(done?'<button id="v44-finale-open" class="v44-finale-button">🏆 Großes Weihnachtsfinale ansehen</button>':'')+'</div></div>'+
  (celebration?.stage==='image'&&!celebrationDelayTimer&&state.finished&&Number(state.completed)>=celebration.number
@@ -192,7 +199,7 @@ function render(){
  const lightbox=root.querySelector('.v44-image-lightbox');if(lightbox)lightbox.onclick=e=>{if(e.target===lightbox){largeGalleryImage=null;render()}};
  root.querySelector('#v44-prev').onclick=()=>{galleryPage=Math.max(0,galleryPage-1);render()};
  root.querySelector('#v44-nextpage').onclick=()=>{galleryPage=Math.min(11,galleryPage+1);render()};
- root.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.preview);if(n<=state.completed){showAllGallery=true;largeGalleryImage=n;render();return}if(n===number){message(number>=17?'🧊 Ab Bild 17 wird das Bild erst enthüllt, wenn alle 25 Eisfelder entfernt wurden.':'❄️ Das aktuelle Bild wird erst nach dem Sternfund vollständig enthüllt.');return}message(n<=state.completed?'🖼️ Bild '+n+' wurde bereits abgeschlossen. Dein aktuelles Bild bleibt '+number+'.':'🔒 Bild '+n+' wird erst später freigeschaltet.')});
+ root.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.preview);if(n<=state.completed){showAllGallery=true;largeGalleryImage=n;render();return}if(n===number){message(number>=17?'🧊 Ab Bild 17 wird das Bild erst enthüllt, wenn alle '+tileCount+' Eisfelder entfernt wurden.':'❄️ Das aktuelle Bild wird erst nach dem Sternfund vollständig enthüllt.');return}message(n<=state.completed?'🖼️ Bild '+n+' wurde bereits abgeschlossen. Dein aktuelles Bild bleibt '+number+'.':'🔒 Bild '+n+' wird erst später freigeschaltet.')});
  root.querySelectorAll('[data-hammer]').forEach(b=>b.onclick=()=>{window.iceHammer=b.dataset.hammer;render()});
  root.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{
   if(busy||b.disabled)return;
