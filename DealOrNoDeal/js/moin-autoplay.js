@@ -44,7 +44,9 @@
   if(!enabled)cancel();
   schedule();
  });
- (document.querySelector('.studio-header-controls')||document.body).append(button);
+ const refreshButton=document.getElementById('studio-refresh');
+ if(refreshButton?.parentElement)refreshButton.insertAdjacentElement('afterend',button);
+ else (document.querySelector('.studio-header-controls')||document.body).append(button);
  update();
  window.addEventListener('deal-game-state-change',schedule);
  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancel();else schedule()});
