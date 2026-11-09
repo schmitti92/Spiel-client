@@ -74,7 +74,7 @@ test('each card reveals, enlarges, then automatically reveals the next until sum
   ],index:-1,mode:'real'
  };
  const elements=new Map();
- const get=id=>{if(!elements.has(id))elements.set(id,{hidden:false,textContent:'',src:'',alt:'',className:'',classList:{toggle(){}}});return elements.get(id)};
+ const get=id=>{if(!elements.has(id))elements.set(id,{hidden:false,textContent:'',src:'',alt:'',className:'',dataset:{},classList:{toggle(){}}});return elements.get(id)};
  const timerJobs=new Map();let ticket=0,completed=0;
  const shown=[];
  const ctx={
