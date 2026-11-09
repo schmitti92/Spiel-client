@@ -1089,8 +1089,10 @@ function christmasCardImage(card){
  const index=identifier.startsWith('christmas-')?Number(identifier.slice(10))-1:-1;
  if(Number.isInteger(index)&&index>=0&&index<32)return albumAsset(cards[index][0]);
  if(Number.isInteger(index)&&index>=64&&index<96)return albumAsset(cards[index-32][0]);
+ // Lightweight, pre-rendered WebP versions of the original 32 Hammer-Bingo
+ // uploads. The original PNGs remain available for archival quality.
  if(Number.isInteger(index)&&index>=32&&index<64&&hammerBingoArtwork[index-32])
-  return './Weihnachtsevent2/Weihnachtsbilder/'+encodeURIComponent(hammerBingoArtwork[index-32][0]);
+  return './Weihnachtsevent2/Weihnachtsbilder/card-'+String(index+1).padStart(2,'0')+'.webp';
  return './assets/weihnachts_event/card-back-winter.svg';
 }
 let hammerStockBusy=false;
