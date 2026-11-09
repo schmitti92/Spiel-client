@@ -60,7 +60,7 @@ test('each opened card is a large spotlight with its own zoom and rarity finale'
  assert.match(css,/reveal-card\.epic/);
  assert.match(css,/@media\(max-width:380px\)/);
  assert.match(css,/prefers-reduced-motion:reduce/);
- assert.match(html,/sequential-v2/);
+ assert.match(html,/christmas-pack-cinema\.js\?v=20261109-platinum-v1/);
 });
 
 test('each card reveals, enlarges, then automatically reveals the next until summary',async()=>{
