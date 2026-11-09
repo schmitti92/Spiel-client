@@ -229,9 +229,10 @@
     clearTimeout(state.closeTimer);state.closeTimer=null;
     state.active=null;
     restoreBoard();
-    window.ChristmasShowDirector?.bingoEnded();
     const overlay=byId('hammer-cinema');
     if(overlay){overlay.hidden=true;overlay.setAttribute('aria-hidden','true');overlay.classList.remove('is-playing');}
+    // The previous scene must be fully hidden before any deferred gift opens.
+    window.ChristmasShowDirector?.bingoEnded();
     if(state.focusBefore?.isConnected){try{state.focusBefore.focus({preventScroll:true})}catch(_){}}
     state.focusBefore=null;
     // Deliberate tiny beat between prizes; claim logic never waits for this.
