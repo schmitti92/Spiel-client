@@ -26,6 +26,7 @@ const ICE_PENDING_KEY='christmasIcePending';
 const ICE_PENDING_DURABLE_KEY='christmasIcePendingV2';
 function validPending(item){
  return item?.uid===user()?.uid&&/^[A-Za-z0-9_-]{12,90}$/.test(item.requestId||'')&&
+  (item.expectedPicture===undefined||(Number.isInteger(item.expectedPicture)&&item.expectedPicture>=1&&item.expectedPicture<=70))&&
   ['start','strike','next','reset'].includes(item.type)&&typeof item.key==='string'&&
   item.extra&&typeof item.extra==='object';
 }
@@ -244,10 +245,17 @@ async function run(type,extra={}){
  // Reusing the original request ID is essential even when completed has changed.
  const requestId=unresolved?.requestId||(pending?.key===key?pending.requestId:id());
  pending={key:unresolved?.key||key,requestId};
- rememberPending({uid:user()?.uid,key:pending.key,requestId,extra,type});
+ // A new strike is bound to its original picture. A recovered strike
+ // reuses that number, never a later number from an updated game state.
+ const expectedPicture=type==='strike'
+  ?(unresolved?unresolved.expectedPicture:Number(state?.completed||0)+1)
+  :undefined;
+ rememberPending({uid:user()?.uid,key:pending.key,requestId,extra,type,
+  ...(expectedPicture!==undefined?{expectedPicture}:{})});
  try{
   const beforeOpened=type==='strike'?new Set(state?.opened||[]):null;
-  const data=await request('POST',{type,requestId,...extra});
+  const data=await request('POST',{type,requestId,...extra,
+   ...(expectedPicture!==undefined?{expectedPicture}:{})});
   const wasFinished=!!state?.finished,oldCompleted=Number(state?.completed||0);
   state=data.state;pending=null;
   // Server response remains authoritative: replayed or rejected requests
