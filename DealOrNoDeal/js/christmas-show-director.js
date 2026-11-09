@@ -7,7 +7,7 @@
  const id=name=>document.getElementById(name);
  const state={
   phase:'idle',packMode:null,claimPending:false,earned:0,
-  deferredPack:null,bridgeTimer:null,bridgeDeadline:null,bridgeSerial:0
+  deferredPack:null,bridgeTimer:null,bridgeDeadline:null,bridgeSerial:0,focusBeforeBridge:null
  };
  const reduced=()=>Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
  const isRealPack=()=>state.packMode==='real';
@@ -53,6 +53,8 @@
  function releaseBridge(){
   if(state.phase!=='transition')return;
   clearBridge();hideBridge();
+  const previousFocus=state.focusBeforeBridge;state.focusBeforeBridge=null;
+  if(previousFocus?.isConnected){try{previousFocus.focus({preventScroll:true})}catch(_){}}
   state.phase='idle';state.packMode=null;state.claimPending=false;state.earned=0;
   if(playQueuedPack())return;
   window.HammerBingoCinematics?.resume();
@@ -69,6 +71,7 @@
   },reduced()?40:state.earned?1150:250);
  }
  function bridge(){
+  state.focusBeforeBridge=document.activeElement;
   state.phase='transition';
   clearBridge();
   const overlay=id('christmas-show-transition');
@@ -81,6 +84,7 @@
   if(copy)copy.textContent=state.earned>0
    ?'Deine Paketkarten sind enthüllt – jetzt werden die bestätigten Hammer-Gewinne präsentiert.'
    :'Deine Paketkarten sind enthüllt. Die Gewinne werden noch sicher überprüft.';
+  id('christmas-show-transition-skip')?.focus?.({preventScroll:true});
   if(state.claimPending){
    const serial=state.bridgeSerial;
    // Never strand a user because a network request hangs. If the claim returns
