@@ -6,7 +6,8 @@
 (()=>{
  'use strict';
  const FALLBACK='./assets/weihnachts_event/card-back-winter.svg';
- const MAX_LOAD_MS=15000;
+ // Some Hammer-Bingo artwork exceeds 3 MB: allow slower mobile connections time to decode.
+ const MAX_LOAD_MS=45000;
  const pending=new Map();
  function load(source){
   const url=String(source||'');
@@ -45,16 +46,50 @@
    void load(imageFor(cards[i]));
   }
  }
- // Never leave an empty/broken thumbnail, even after a transient decode error.
+ // Retry once when a visible <img> fails, instead of replacing a valid
+ // already-awarded card with its winter back at the first transient network error.
+ // The retry is local image traffic only; no game-state read or prize request.
  function guard(img){
   if(!img)return;
   img.onerror=()=>{
-   if(img.getAttribute('src')===FALLBACK)return;
+   const src=String(img.getAttribute('src')||'');
+   if(!src||src===FALLBACK)return;
+   const original=String(img.dataset?.cardArtwork||src.split('?')[0]);
+   if(!img.dataset?.cardRetry){
+    if(img.dataset)img.dataset.cardRetry='once';
+    const separator=original.includes('?')?'&':'?';
+    // A different URL bypasses a transient browser/CDN error for this image only.
+    img.src=original+separator+'art_retry=1';
+    return;
+   }
    img.onerror=null;
    img.src=FALLBACK;
-   img.title='Das Kartenmotiv konnte nicht geladen werden.';
+   img.title='Das Kartenmotiv konnte nicht geladen werden. Erneut laden möglich.';
    img.classList.add('card-art-unavailable');
   };
+  img.onload=()=>{
+   if(img.naturalWidth>0&&img.getAttribute('src')!==FALLBACK){
+    img.classList.remove('card-art-unavailable');
+   }
+  };
  }
- window.ChristmasCardImages=Object.freeze({load,prefetch,guard,FALLBACK});
+ function show(img,src){
+  if(!img)return;
+  const url=String(src||'');
+  if(img.dataset){img.dataset.cardArtwork=url;delete img.dataset.cardRetry;}
+  img.src=url;
+ }
+ // Reattempt a slow card without ever exposing another player's unrevealed cards.
+ async function retry(img,source){
+  const url=String(source||'');
+  if(!img||!url||url===FALLBACK)return {src:FALLBACK,ok:false};
+  const result=await load(url);
+  if(String(img.dataset?.cardArtwork||'')!==url)return result;
+  if(result.ok){
+   img.classList.remove('card-art-unavailable');
+   show(img,url);
+  }
+  return result;
+ }
+ window.ChristmasCardImages=Object.freeze({load,prefetch,guard,show,retry,FALLBACK});
 })();
