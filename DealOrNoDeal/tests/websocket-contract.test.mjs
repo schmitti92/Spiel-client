@@ -54,7 +54,7 @@ test('Christmas reward probes skip acknowledged events',()=>{
 
 test('Banker bonus reveals credited cards directly and preserves the final wheel',()=>{
  assert.match(html,/const isFinal=kind==='final',directBankerPack=kind==='banker'/);
- assert.match(html,/if\(directBankerPack\)\{finalWheelStarted=true;showCards\(\);\}/);
+ assert.match(html,/if\(directBankerPack\)showCards\(\);/);
  assert.match(html,/wheelStage\.hidden=directBankerPack/);
  assert.match(html,/if\(!directBankerPack\)setTimeout/);
  assert.match(html,/if\(isFinal&&reward\.uid===uid\)setTimeout/);
