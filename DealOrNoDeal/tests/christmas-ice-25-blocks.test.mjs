@@ -37,7 +37,7 @@ test('client uses server-authoritative tile count and old states fall back to mi
 test('UI shows accurate 25-block progress and explicit clearing instruction',()=>{
  assert.ok(js.includes("openedTiles+' von '+tileCount+' Eisfeldern geöffnet"));
  assert.match(js,/openedTiles\/tileCount\*100/);
- assert.match(js,/Alle 25 Eisblöcke zerstören/);
+ assert.match(js,/Zerstöre alle 25 Eisblöcke/);
  assert.match(js,/Wähle einen Hammer und finde den versteckten Stern/);
  assert.match(js,/25 Eisfelder: Finde den versteckten Stern! Er öffnet das ganze Bild sofort/);
  assert.match(js,/state\.opened\.includes\(i\)/);
