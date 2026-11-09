@@ -29,7 +29,7 @@
   if(shown===game.id||document.getElementById('ice-hammer-bonus')||sessionStorage.getItem('ice-hammer-wheel-seen:'+game.id)==='yes')return;
   shown=game.id;
   const overlay=document.createElement('div');overlay.id='ice-hammer-bonus';
-  overlay.innerHTML='<div class="ice-hammer-card"><h2>🔨 DAS GROSSE SIEGER-HAMMERRAD</h2><p>Das Kartenpaket ist eingesammelt. Nur der Sieger dreht und erhält den Hammer – alle anderen Spieler schauen live zu.</p><div class="ice-hammer-wheel"><div class="ice-hammer-disc" role="img" aria-label="Hammer-Glücksrad mit 12 Feldern: 5 einfache Hammer, 5 Doppelhammer, 2 Glückshammer"></div><div class="ice-hammer-pointer" aria-hidden="true">▼</div></div><p class="ice-hammer-message" role="status">🎡 Der Sieger entscheidet, wann das Hammerrad startet</p><button class="ice-hammer-spin">🎡 Jetzt meinen Hammer auslosen</button><button class="ice-hammer-close" hidden>✓ Ergebnis schließen</button></div>';
+  overlay.innerHTML='<div class="ice-hammer-card"><h2>🏆 DAS GROSSE SIEGER-DOPPELGLÜCKSRAD</h2><p>Beide Räder gehören zur selben Siegerehrung · Alle Spieler schauen live zu.</p><div class="ice-dual-wheels"><section class="ice-dual-pack"><h3>1 · 🎁 KARTENPAKET</h3><div class="ice-dual-pack-wheel" role="img" aria-label="Kartenpaket-Glücksrad, bereits gedreht"></div><p>✓ Kartenpaket ausgelost</p></section><section class="ice-dual-hammer"><h3>2 · 🔨 HAMMER</h3><div class="ice-hammer-wheel"><div class="ice-hammer-disc" role="img" aria-label="Hammer-Glücksrad mit 12 Feldern: 5 einfache Hammer, 5 Doppelhammer, 2 Glückshammer"></div><div class="ice-hammer-pointer" aria-hidden="true">▼</div></div><p class="ice-hammer-message" role="status">⏳ Das Hammerrad startet automatisch …</p></section></div><button class="ice-hammer-spin" hidden>🎡 Hammerauslosung erneut versuchen</button><button class="ice-hammer-close" hidden>✓ Ergebnis schließen</button></div>';
   document.body.append(overlay);
   const disc=overlay.querySelector('.ice-hammer-disc'),spin=overlay.querySelector('.ice-hammer-spin'),status=overlay.querySelector('.ice-hammer-message'),close=overlay.querySelector('.ice-hammer-close');
   const labels={single:'🔨 Einfach-Hammer',double:'🔨 Doppel-Hammer',lucky:'✨ Glückshammer'};
@@ -49,7 +49,7 @@
   };
   const onGameChange=()=>{const latest=match();if(latest?.id===game.id)reveal(latest.christmasHammerWheel)};
   window.addEventListener('deal-game-state-change',onGameChange);
-  if(winner!==u.uid){spin.hidden=true;status.textContent='⏳ Warte auf den Sieger – nur er kann das Hammerrad drehen.'}
+  if(winner!==u.uid){spin.hidden=true;status.textContent='⏳ Der Sieger startet das Hammerrad automatisch – du schaust live zu.'}
   else if(game.christmasHammerWheel){spin.hidden=true}
   if(game.christmasHammerWheel)reveal(game.christmasHammerWheel);
   spin.onclick=async()=>{
@@ -60,9 +60,10 @@
     const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'SERVER_ERROR');
     const synchronized=match()?.christmasHammerWheel;
     reveal(synchronized?.gameId===game.id?synchronized:{gameId:game.id,hammer:data.hammer,startedAt:Date.now()});
-   }catch(e){status.textContent='⚠️ '+e.message+' – bitte erneut versuchen.';spin.disabled=false;busy=false}
+   }catch(e){status.textContent='⚠️ '+e.message+' – der Sieger kann erneut versuchen.';spin.hidden=winner!==u.uid;spin.disabled=false;busy=false}
   };
-  // Explicit user interaction is required: only the winner can trigger the spin.
+  // Only the authenticated winner may request a spin; the server draws the award once.
+  if(winner===u.uid&&!game.christmasHammerWheel)setTimeout(()=>{if(overlay.isConnected&&!busy&&!revealed)spin.click()},1400);
   close.onclick=()=>{window.removeEventListener('deal-game-state-change',onGameChange);clearTimeout(spinTimer);sessionStorage.setItem('ice-hammer-wheel-seen:'+game.id,'yes');overlay.remove();busy=false};
  }
  function scheduleShow(){
@@ -82,4 +83,25 @@
  // new Firestore listeners. This only reads the already-present in-memory game.
  setInterval(()=>{if(!document.hidden){scheduleShow();show()}},2500);
  const style=document.createElement('style');style.textContent=`#ice-hammer-bonus{position:fixed;inset:0;z-index:99999;background:#06111df2 url('./Weihnachtsevent2/Weihnachtsbilder/file_00000000817c821082904a82b332d479.png') center/cover no-repeat;display:grid;place-items:center;padding:12px;color:#ffeac4}.ice-hammer-card{width:min(96vw,1000px);max-height:96dvh;overflow:auto;text-align:center;padding:clamp(10px,2vw,22px);border:3px solid #e8c26c;border-radius:22px;background:linear-gradient(180deg,#081b35a8,#241028d9);box-shadow:0 15px 60px #000c,0 0 35px #eebc6266;backdrop-filter:blur(2px)}.ice-hammer-card h2{margin:2px 0 4px;color:#ffe4a0;text-shadow:0 3px 12px #000;font-size:clamp(19px,3vw,35px)}.ice-hammer-card p{margin:5px 0;text-shadow:0 2px 8px #000}.ice-hammer-wheel{width:min(68vw,52dvh,550px);aspect-ratio:1;margin:9px auto;position:relative;filter:drop-shadow(0 0 20px #ffd46d88)}.ice-hammer-disc{width:100%;height:100%;background:url('./Weihnachtsevent2/Weihnachtsbilder/file_00000000b9c48210b20aab8553d17e0a.png') center/contain no-repeat;transform:rotate(0deg);will-change:transform}.ice-hammer-pointer{position:absolute;top:-13px;left:50%;transform:translateX(-50%);z-index:3;color:#fff3c0;font-size:clamp(22px,3vw,35px);text-shadow:0 2px 5px #321500,0 0 9px #ffce40;pointer-events:none}.ice-hammer-message{font-size:clamp(14px,2vw,22px);font-weight:800;min-height:1.6em}.ice-hammer-card button{margin:6px;padding:12px 19px;border:2px solid #fff2b9;border-radius:12px;background:linear-gradient(#ffe7a3,#d89929);color:#23140b;font-weight:900;cursor:pointer}.ice-hammer-card button[hidden]{display:none}@media(max-height:620px){.ice-hammer-wheel{width:min(43vw,47dvh,380px)}.ice-hammer-card{padding:7px}.ice-hammer-card p{font-size:12px}}@media(prefers-reduced-motion:reduce){.ice-hammer-disc{transition:none!important}}`;document.head.append(style);
+
+ const dualStyle=document.createElement('style');dualStyle.textContent=`
+ #ice-hammer-bonus .ice-hammer-card{width:min(98vw,1100px)}
+ #ice-hammer-bonus .ice-dual-wheels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,2vw,24px);align-items:center;margin:10px 0}
+ #ice-hammer-bonus .ice-dual-wheels section{min-width:0;padding:clamp(8px,1.5vw,16px);border:1px solid #d9b36c8c;border-radius:18px;background:#06142ac9}
+ #ice-hammer-bonus .ice-dual-wheels h3{font-size:clamp(12px,2vw,22px);color:#ffe4a2;margin:0 0 8px}
+ #ice-hammer-bonus .ice-dual-pack-wheel{width:min(32vw,42dvh,380px);aspect-ratio:1;margin:auto;background:url('./assets/weihnachts_gluecksrad_drehscheibe.png') center/contain no-repeat;filter:drop-shadow(0 0 18px #ffd46d80)}
+ #ice-hammer-bonus .ice-hammer-wheel{width:min(32vw,42dvh,380px)}
+ #ice-hammer-bonus .ice-dual-pack p{color:#b8f4c9;font-weight:850}
+ #cent-reward.final-dual-active .final-dual-wheels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,2vw,22px);align-items:start}
+ #cent-reward.final-dual-active .final-dual-pack,#cent-reward.final-dual-active .final-dual-hammer{min-width:0;padding:8px;border:1px solid #e5c77a80;border-radius:16px;background:#07142cbb}
+ #cent-reward.final-dual-active .final-dual-label{font-weight:950;color:#ffe7a3;font-size:clamp(12px,1.5vw,19px);margin:0 0 8px}
+ #cent-reward.final-dual-active .cent-wheel-wrap{width:min(31vw,40dvh,350px);height:auto;aspect-ratio:1;margin:auto}
+ #cent-reward.final-dual-active .final-dual-hammer-wrap{position:relative;width:min(31vw,40dvh,350px);aspect-ratio:1;margin:auto;filter:drop-shadow(0 0 18px #ffd46d60)}
+ #cent-reward.final-dual-active .final-dual-hammer-disc{width:100%;height:100%;background:url('./Weihnachtsevent2/Weihnachtsbilder/file_00000000b9c48210b20aab8553d17e0a.png') center/contain no-repeat;filter:grayscale(.65) brightness(.65)}
+ #cent-reward.final-dual-active .final-dual-pointer{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:28px;color:#ffe5a3}
+ #cent-reward.final-dual-active #final-dual-hammer-status{color:#f8d79b;font-size:clamp(11px,1.2vw,16px)}
+ #cent-reward.final-dual-active .cent-pack-legend{flex-wrap:wrap}
+ @media(max-width:650px){#ice-hammer-bonus .ice-dual-wheels{gap:6px}#ice-hammer-bonus .ice-dual-wheels section{padding:6px}#ice-hammer-bonus .ice-dual-pack-wheel,#ice-hammer-bonus .ice-hammer-wheel{width:min(40vw,32dvh)}#cent-reward.final-dual-active .cent-wheel-wrap,#cent-reward.final-dual-active .final-dual-hammer-wrap{width:min(39vw,30dvh)}}
+ @media(prefers-reduced-motion:reduce){#ice-hammer-bonus .ice-hammer-disc{transition:none!important}}
+ `;document.head.append(dualStyle);
 })();
