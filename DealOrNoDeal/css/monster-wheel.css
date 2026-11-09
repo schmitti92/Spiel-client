@@ -110,31 +110,6 @@
  .monster-wheel-short{display:none}
 }
 
-/* Harmless read-only demo: visually unmistakable, works without a ticket. */
-.monster-trade .monster-test-open,.monster-test-button{
- display:inline-flex;align-items:center;justify-content:center;
- margin:8px 4px 2px;border:2px solid #86e8d1;border-radius:13px;
- padding:12px 16px;min-height:46px;cursor:pointer;
- font:900 clamp(12px,1.65vw,16px)/1.25 system-ui,sans-serif;
- color:#f2fff9;background:linear-gradient(135deg,#0b5656,#154455 52%,#302969);
- box-shadow:0 0 15px #3de4c84a,inset 0 1px #d6fff96e;
-}
-.monster-trade .monster-test-open:hover,.monster-test-button:hover{
- border-color:#dafff5;box-shadow:0 0 20px #66ffe26a;
-}
-.monster-trade .monster-test-open:disabled,.monster-test-button:disabled{
- cursor:not-allowed;opacity:.52;filter:grayscale(.7);
-}
-.monster-test-button{margin:0}
-.monster-test-label{display:block;margin:0 auto 9px;padding:8px 12px;
- border:2px solid #86e8d1;border-radius:10px;
- background:#0d514e;color:#e1fff7;font:950 clamp(11px,1.5vw,15px) system-ui,sans-serif;
- letter-spacing:.02em;
-}
-#monster-test-label[hidden]{display:none!important}
-#monster-wheel-prize:has(#monster-test-label:not([hidden])){border-color:#77e9ce;box-shadow:0 0 24px #47dbc159}
-@media(max-width:480px){.monster-trade .monster-test-open{width:100%;margin:8px 0 0}.monster-test-button{width:100%}}
-
 /* New final 25-sector hand-labelled wheel. The original transparent PNG is the
    ENTIRE spinning disc (including crown, gold, text and reward illustrations).
    Never add extra segment captions or an old artwork overlay on this image.
