@@ -2,7 +2,7 @@
 /* Visual-only Monster Wheel. The server determines prize and debits a ticket
    before this component is allowed to animate. No local RNG influences credit. */
 (()=>{
- let catalog=[],currentDegrees=0,rotating=false;
+ let catalog=[],currentDegrees=0,rotating=false,lastWinningIndex=-1;
  const $=id=>document.getElementById(id);
  const palette=['#9b30bd','#1364b8','#ee5f3a','#ab2672','#18a89e','#cc7829','#424fcd'];
  const colorFor=(slot,i)=>{
@@ -32,7 +32,14 @@
    mark.className='monster-wheel-segment';
    mark.dataset.featured=slot.featured||'';
    mark.dataset.monsterKind=slot.kind;
-   mark.textContent=slot.icon||'✦';
+   mark.dataset.monsterSlot=String(i);
+   const symbol=document.createElement('span');
+   symbol.className='monster-wheel-icon';
+   symbol.textContent=slot.icon||'✦';
+   const label=document.createElement('span');
+   label.className='monster-wheel-short';
+   label.textContent=slot.short||slot.label;
+   mark.append(symbol,label);
    mark.title=slot.label;
    mark.style.transform='rotate('+deg+'deg) translateY(-'+radius+'px) rotate(-'+deg+'deg)';
    disc.append(mark);
@@ -42,8 +49,10 @@
    row.textContent=(slot.featured?'✦ ':'')+(slot.icon||'✦')+' '+slot.label;
    list.append(row);
   }
+  highlight(lastWinningIndex);
  }
  function highlight(index){
+  lastWinningIndex=index;
   document.querySelectorAll('[data-monster-slot]').forEach(el=>el.classList.toggle('won',Number(el.dataset.monsterSlot)===index));
  }
  async function spin(index,duration=8000){
