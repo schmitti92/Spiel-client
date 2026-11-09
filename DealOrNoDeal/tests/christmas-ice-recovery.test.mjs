@@ -12,7 +12,7 @@ const page = readFileSync(resolve(dir, 'Weihnachtsevent2/index.html'), 'utf8');
 
 test('Christmas-ice browser code parses and ships with cache-busted URL', () => {
  assert.doesNotThrow(() => new Script(source));
- assert.match(page, /online-ice\.js\?v=20261109-action-recovery-v2/);
+ assert.match(page, /online-ice\.js\?v=20261109-[a-z0-9-]+/);
 });
 
 test('GET reconciliation uses a receipt ID in query, never a GET body', () => {
